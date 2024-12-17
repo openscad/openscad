@@ -136,8 +136,7 @@ Clipper2Lib::Paths64 fromPolygon2d(const Polygon2d& poly, int scale_bits)
 
 Clipper2Lib::Paths64 fromPolygon2d(const Polygon2d& poly)
 {
-  auto scale_bits = ClipperUtils::scaleBitsfromBounds(poly.getBoundingBox());
-  return fromPolygon2d(poly, scale_bits);
+  return fromPolygon2d(poly, scaleBitsFromPrecision());
 }
 
 std::unique_ptr<Clipper2Lib::PolyTree64> sanitize(const Clipper2Lib::Paths64& paths)
@@ -159,7 +158,7 @@ std::unique_ptr<Clipper2Lib::PolyTree64> sanitize(const Clipper2Lib::Paths64& pa
 
 std::unique_ptr<Polygon2d> sanitize(const Polygon2d& poly)
 {
-  auto scale_bits = ClipperUtils::scaleBitsfromBounds(poly.getBoundingBox());
+  auto scale_bits = scaleBitsFromPrecision();
 
   auto paths = ClipperUtils::fromPolygon2d(poly, scale_bits);
   return toPolygon2d(*sanitize(paths), scale_bits);
@@ -255,11 +254,7 @@ std::unique_ptr<Polygon2d> apply(const std::vector<Clipper2Lib::Paths64>& pathsv
 std::unique_ptr<Polygon2d> apply(const std::vector<std::shared_ptr<const Polygon2d>>& polygons,
 				 Clipper2Lib::ClipType clipType)
 {
-  BoundingBox bounds;
-  for (const auto &polygon : polygons) {
-    if (polygon) bounds.extend(polygon->getBoundingBox());
-  }
-  const int scale_bits = ClipperUtils::scaleBitsfromBounds(bounds);
+  const int scale_bits = scaleBitsFromPrecision();
 
   std::vector<Clipper2Lib::Paths64> pathsvector;
   for (const auto& polygon : polygons) {
@@ -288,17 +283,7 @@ std::unique_ptr<Polygon2d> applyMinkowski(const std::vector<std::shared_ptr<cons
   auto it = polygons.begin();
   while (it != polygons.end() && !(*it)) ++it;
   if (it == polygons.end()) return nullptr;
-  BoundingBox out_bounds = (*it)->getBoundingBox();
-  BoundingBox in_bounds;
-  for ( ; it != polygons.end(); ++it) {
-    if (*it) {
-      auto tmp = (*it)->getBoundingBox();
-      in_bounds.extend(tmp);
-      out_bounds.min() += tmp.min();
-      out_bounds.max() += tmp.max();
-    }
-  }
-  const int scale_bits = scaleBitsfromBounds(in_bounds.extend(out_bounds));
+  const int scale_bits = scaleBitsFromPrecision();
 
   Clipper2Lib::Clipper64 clipper;
   auto lhs = fromPolygon2d(polygons[0] ? *polygons[0] : Polygon2d(), scale_bits);
@@ -341,11 +326,7 @@ std::unique_ptr<Polygon2d> applyOffset(const Polygon2d& poly, double offset, Cli
 {
   const bool isMiter = joinType == Clipper2Lib::JoinType::Miter;
   const bool isRound = joinType == Clipper2Lib::JoinType::Round;
-  auto bounds = poly.getBoundingBox();
-  const double max_diff = std::abs(offset) * (isMiter ? miter_limit : 1.0);
-  bounds.min() -= Vector3d(max_diff, max_diff, 0);
-  bounds.max() += Vector3d(max_diff, max_diff, 0);
-  const int scale_bits = scaleBitsfromBounds(bounds);
+  const int scale_bits = scaleBitsFromPrecision();
   Clipper2Lib::ClipperOffset co(
     isMiter ? miter_limit : 2.0,
     isRound ? std::ldexp(arc_tolerance, scale_bits) : 1.0
@@ -359,11 +340,7 @@ std::unique_ptr<Polygon2d> applyOffset(const Polygon2d& poly, double offset, Cli
 
 std::unique_ptr<Polygon2d> applyProjection(const std::vector<std::shared_ptr<const Polygon2d>>& polygons)
 {
-  BoundingBox bounds;
-  for (const auto& polygon : polygons) {
-    bounds.extend(polygon->getBoundingBox());
-  }
-  const int scale_bits = ClipperUtils::scaleBitsfromBounds(bounds);
+  const int scale_bits = scaleBitsFromPrecision();
 
   Clipper2Lib::Clipper64 sumclipper;
   for (const auto &poly : polygons) {

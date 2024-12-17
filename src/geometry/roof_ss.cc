@@ -86,23 +86,23 @@ std::unique_ptr<PolySet> straight_skeleton_roof(const Polygon2d& poly)
 {
   PolySetBuilder hatbuilder;
 
-  int scale_bits = ClipperUtils::scaleBitsfromBounds(poly.getBoundingBox(), 32);
-  Clipper2Lib::Paths64 paths = ClipperUtils::fromPolygon2d(poly, scale_bits);
-  std::unique_ptr<Clipper2Lib::PolyTree64> polytree = ClipperUtils::sanitize(paths);
+  const int scale_bits = ClipperUtils::scaleBitsFromPrecision();
+  const Clipper2Lib::Paths64 paths = ClipperUtils::fromPolygon2d(poly, scale_bits);
+  const std::unique_ptr<Clipper2Lib::PolyTree64> polytree = ClipperUtils::sanitize(paths);
   auto poly_sanitized = ClipperUtils::toPolygon2d(*polytree, scale_bits);
 
   try {
     // roof
-    std::vector<CGAL_Polygon_with_holes_2> shapes = polygons_with_holes(*polytree, scale_bits);
+    const std::vector<CGAL_Polygon_with_holes_2> shapes = polygons_with_holes(*polytree, scale_bits);
     for (const CGAL_Polygon_with_holes_2& shape : shapes) {
-      CGAL_SsPtr ss = CGAL::create_interior_straight_skeleton_2(shape);
+      const CGAL_SsPtr ss = CGAL::create_interior_straight_skeleton_2(shape);
       // store heights of vertices
       auto vector2d_comp = [](const Vector2d& a, const Vector2d& b) {
           return (a[0] < b[0]) || (a[0] == b[0] && a[1] < b[1]);
         };
       std::map<Vector2d, double, decltype(vector2d_comp)> heights(vector2d_comp);
       for (auto v = ss->vertices_begin(); v != ss->vertices_end(); v++) {
-        Vector2d p(v->point().x(), v->point().y());
+        const Vector2d p(v->point().x(), v->point().y());
         heights[p] = v->time();
       }
 
@@ -110,7 +110,7 @@ std::unique_ptr<PolySet> straight_skeleton_roof(const Polygon2d& poly)
         // convert ss_face to cgal polygon
         CGAL_Polygon_2 face;
         for (auto h = ss_face->halfedge(); ;) {
-          CGAL_Point_2 pp = h->vertex()->point();
+          const CGAL_Point_2 pp = h->vertex()->point();
           face.push_back(pp);
           h = h->next();
           if (h == ss_face->halfedge()) {
@@ -129,7 +129,7 @@ std::unique_ptr<PolySet> straight_skeleton_roof(const Polygon2d& poly)
         for (const auto& facet : facets) {
           std::vector<int> roof;
           for (auto v = facet.vertices_begin(); v != facet.vertices_end(); v++) {
-            Vector2d vv(v->x(), v->y());
+            const Vector2d vv(v->x(), v->y());
             roof.push_back(hatbuilder.vertexIndex(Vector3d(v->x(), v->y(), heights[vv])));
           }
           hatbuilder.appendPolygon(roof);
