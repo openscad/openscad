@@ -340,4 +340,33 @@ std::unique_ptr<Polygon2d> applyOffset(const Polygon2d& poly, double offset, Cli
   co.Execute(result, std::ldexp(offset, pow2));
   return toPolygon2d(result, pow2);
 }
+
+std::unique_ptr<Polygon2d> applyProjection(const std::vector<std::shared_ptr<const Polygon2d>>& polygons)
+{
+  BoundingBox bounds;
+  for (const auto& polygon : polygons) {
+    bounds.extend(polygon->getBoundingBox());
+  }
+  const int pow2 = ClipperUtils::getScalePow2(bounds);
+
+  ClipperLib::Clipper sumclipper;
+  for (const auto &poly : polygons) {
+    ClipperLib::Paths result = ClipperUtils::fromPolygon2d(*poly, pow2);
+    // Using NonZero ensures that we don't create holes from polygons sharing
+    // edges since we're unioning a mesh
+    result = ClipperUtils::process(result, ClipperLib::ctUnion, ClipperLib::pftNonZero);
+    // Add correctly winded polygons to the main clipper
+    sumclipper.AddPaths(result, ClipperLib::ptSubject, true);
+  }
+
+  ClipperLib::PolyTree sumresult;
+  // This is key - without StrictlySimple, we tend to get self-intersecting results
+  sumclipper.StrictlySimple(true);
+  sumclipper.Execute(ClipperLib::ctUnion, sumresult, ClipperLib::pftNonZero, ClipperLib::pftNonZero);
+  if (sumresult.Total() > 0) {
+    return ClipperUtils::toPolygon2d(sumresult, pow2);
+  }
+  return {};
+}
+
 } // namespace ClipperUtils

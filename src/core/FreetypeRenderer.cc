@@ -546,7 +546,7 @@ FreetypeRenderer::TextMetrics::TextMetrics(
   ok = true;
 }
 
-std::vector<std::shared_ptr<const Geometry>> FreetypeRenderer::render(const FreetypeRenderer::Params& params) const
+std::vector<std::shared_ptr<const Polygon2d>> FreetypeRenderer::render(const FreetypeRenderer::Params& params) const
 {
   ShapeResults sr(params);
 
@@ -569,5 +569,8 @@ std::vector<std::shared_ptr<const Geometry>> FreetypeRenderer::render(const Free
     callback.finish_glyph();
   }
 
+  // FIXME: The returned Polygon2d currently contains only outlines with the 'positive' flag set to true,
+  // and where the winding order determines if the outlines should be interpreted as polygons or holes.
+  // We have to rely on any downstream processing to be aware of the winding order, and ignore the 'positive' flag.
   return callback.get_result();
 }

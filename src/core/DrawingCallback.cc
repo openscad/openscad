@@ -44,6 +44,7 @@ void DrawingCallback::start_glyph()
 {
   this->polygon = std::make_shared<Polygon2d>();
   // FIXME: Why do we think that a glyph is sanitized?
+  // This is technically not true, since we don't maintain correct values for the 'positive' flag.
   this->polygon->setSanitized(true);
 }
 
@@ -62,7 +63,7 @@ void DrawingCallback::finish_glyph()
   }
 }
 
-std::vector<std::shared_ptr<const Geometry>> DrawingCallback::get_result()
+std::vector<std::shared_ptr<const Polygon2d>> DrawingCallback::get_result()
 {
   return this->polygons;
 }
