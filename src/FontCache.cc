@@ -30,7 +30,7 @@
 #include <iostream>
 #include <vector>
 
-#include <boost/filesystem.hpp>
+#include <filesystem>
 #include <boost/algorithm/string.hpp>
 #include <string>
 #include <utility>
@@ -43,7 +43,7 @@ extern std::vector<std::string> librarypath;
 
 std::vector<std::string> fontpath;
 
-namespace fs = boost::filesystem;
+namespace fs = std::filesystem;
 
 const std::string get_fontconfig_version()
 {
@@ -130,7 +130,8 @@ FontCache::FontCache()
   // For system installs and dev environments, we leave this alone
   fs::path fontdir(PlatformUtils::resourcePath("fonts"));
   if (fs::is_regular_file(fontdir / "fonts.conf")) {
-    PlatformUtils::setenv("FONTCONFIG_PATH", (fs::absolute(fontdir).generic_string()).c_str(), 0);
+    auto abspath = fontdir.empty() ? fs::current_path() : fs::absolute(fontdir);
+    PlatformUtils::setenv("FONTCONFIG_PATH", (abspath.generic_string()).c_str(), 0);
   }
 
   // Just load the configs. We'll build the fonts once all configs are loaded

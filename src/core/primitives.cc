@@ -659,6 +659,7 @@ std::unique_ptr<const Geometry> PolygonNode::createGeometry() const
     }
     p->addOutline(outline);
   } else {
+    bool positive = true; // First outline is positive
     for (const auto& path : this->paths) {
       Outline2d outline;
       for (const auto& index : path) {
@@ -666,7 +667,9 @@ std::unique_ptr<const Geometry> PolygonNode::createGeometry() const
         const auto& point = points[index];
         outline.vertices.push_back(point);
       }
+      outline.positive = positive;
       p->addOutline(outline);
+      positive = false; // Subsequent outlines are holes
     }
   }
   if (p->outlines().size() > 0) {

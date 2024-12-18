@@ -125,7 +125,8 @@ def normalize_string(s):
 
     This also normalizes away import paths from 'file = ' arguments."""
 
-    s = re.sub(', timestamp = [0-9]+', '', s)
+    # timestamp can potentially be negative since stdlibc++ internally uses an epoch based in year 2174
+    s = re.sub(', timestamp = -?[0-9]+', '', s)
 
     """ Don't replace floats after implementing double-conversion library
     def floatrep(match):
@@ -137,9 +138,12 @@ def normalize_string(s):
         return "%.6g"%value
     s = re.sub('(-?[0-9]+(\\.[0-9]+)?(e[+-][0-9]+)?)', floatrep, s)
     """
+
+    """ Relative file paths are hopefully consistent across platforms now?
     def pathrep(match):
         return match.groups()[0] + match.groups()[2]
     s = re.sub('(file = ")([^"/]*/)*([^"]*")', pathrep, s)
+    """
 
     return s
 

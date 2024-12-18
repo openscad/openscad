@@ -17,8 +17,8 @@
 class PolySet;
 
 enum class FileFormat {
-  ASCIISTL,
-  STL,
+  ASCII_STL,
+  BINARY_STL,
   OBJ,
   OFF,
   WRL,
@@ -44,6 +44,27 @@ enum class FileFormat {
   PARAM
 };
 
+struct FileFormatInfo {
+  FileFormat format;
+  std::string identifier;
+  std::string suffix;
+  std::string description;
+};
+
+namespace fileformat {
+
+std::vector<FileFormat> all();
+std::vector<FileFormat> all2D();
+std::vector<FileFormat> all3D();
+
+const FileFormatInfo& info(FileFormat fileFormat);
+bool fromIdentifier(const std::string& identifier, FileFormat& format);
+const std::string& toSuffix(FileFormat format);
+bool canPreview(FileFormat format);
+bool is3D(FileFormat format);
+bool is2D(FileFormat format);
+
+}  // namespace FileFormat
 
 // Paper Data used by ExportPDF
 enum class paperSizes {
@@ -84,31 +105,24 @@ const std::array<std::string,3> paperOrientationsStrings{
 // include defaults to use without dialog or direction.
 // Defaults match values used prior to incorporation of options.
 struct ExportPdfOptions {
-    bool showScale=TRUE;
-    bool showScaleMsg=TRUE;
-    bool showGrid=FALSE;
-    double gridSize=10.; // New
-    bool showDsgnFN=TRUE;
-    paperOrientations Orientation=paperOrientations::PORTRAIT;
-    paperSizes paperSize=paperSizes::A4;
+    bool showScale = true;
+    bool showScaleMsg = true;
+    bool showGrid = false;
+    double gridSize = 10.0;
+    bool showDesignFilename = false;
+    paperOrientations Orientation = paperOrientations::PORTRAIT;
+    paperSizes paperSize = paperSizes::A4;
 };
 
 struct ExportInfo {
   FileFormat format;
-  std::string displayName;
-  std::string fileName;
-  std::string sourceFilePath;
-  std::string sourceFileName;
-  bool useStdOut;
+  std::string sourceFilePath; // Full path to the OpenSCAD source file
   ExportPdfOptions *options;
+  const Camera *camera;
 };
 
-
-bool canPreview(const FileFormat format);
-bool is3D(const FileFormat format);
-bool is2D(const FileFormat format);
-
-bool exportFileByName(const std::shared_ptr<const class Geometry>& root_geom, const ExportInfo& exportInfo);
+bool exportFileByName(const std::shared_ptr<const class Geometry>& root_geom, const std::string& filename, const ExportInfo& exportInfo);
+bool exportFileStdOut(const std::shared_ptr<const class Geometry>& root_geom, const ExportInfo& exportInfo);
 
 void export_stl(const std::shared_ptr<const Geometry>& geom, std::ostream& output,
                 bool binary = true);
@@ -127,36 +141,6 @@ bool export_assimp(const std::shared_ptr<const Geometry>& geom, std::ostream& ou
 
 enum class Previewer { OPENCSG, THROWNTOGETHER };
 enum class RenderType { GEOMETRY, BACKEND_SPECIFIC, OPENCSG, THROWNTOGETHER };
-
-struct ExportFileFormatOptions {
-  const std::map<const std::string, FileFormat> exportFileFormats{
-    {"asciistl", FileFormat::ASCIISTL},
-    {"binstl", FileFormat::STL},
-    {"stl", FileFormat::ASCIISTL}, // Deprecated.  Later to FileFormat::STL
-    {"obj", FileFormat::OBJ},
-    {"off", FileFormat::OFF},
-    {"wrl", FileFormat::WRL},
-    {"amf", FileFormat::AMF},
-    {"3mf", FileFormat::_3MF},
-    {"dae", FileFormat::COLLADA},
-    {"stp", FileFormat::STP},
-    {"ply", FileFormat::PLY},
-    {"glb", FileFormat::GLTF},
-    {"x3d", FileFormat::X3D},
-    {"dxf", FileFormat::DXF},
-    {"svg", FileFormat::SVG},
-    {"nefdbg", FileFormat::NEFDBG},
-    {"nef3", FileFormat::NEF3},
-    {"csg", FileFormat::CSG},
-    {"param", FileFormat::PARAM},
-    {"ast", FileFormat::AST},
-    {"term", FileFormat::TERM},
-    {"echo", FileFormat::ECHO},
-    {"png", FileFormat::PNG},
-    {"pdf", FileFormat::PDF},
-    {"pov", FileFormat::POV},
-  };
-};
 
 struct ViewOption {
   const std::string name;

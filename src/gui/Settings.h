@@ -178,7 +178,9 @@ public:
   static SettingsEntryBool enableLineNumbers;
   static SettingsEntryBool enableNumberScrollWheel;
   static SettingsEntryEnum modifierNumberScrollWheel;
-  static SettingsEntryEnum defaultPrintService;
+  static SettingsEntryString defaultPrintService;
+  static SettingsEntryString printServiceName;
+  static SettingsEntryString printServiceFileFormat;
   static SettingsEntryString octoPrintUrl;
   static SettingsEntryString octoPrintApiKey;
   static SettingsEntryEnum octoPrintFileFormat;
@@ -191,7 +193,6 @@ public:
   static SettingsEntryString localSlicerExecutable;
 
   static SettingsEntryBool manifoldEnabled;
-  static SettingsEntryBool exportUseAsciiSTL;
   static SettingsEntryEnum renderBackend3D;
   static SettingsEntryEnum toolbarExport3D;
   static SettingsEntryEnum toolbarExport2D;

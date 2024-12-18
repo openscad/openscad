@@ -159,10 +159,10 @@
 #include "printutils.h"
 #include "memory.h"
 #include <sstream>
-#include <boost/filesystem.hpp>
-#include "boost-utils.h"
+#include <filesystem>
+#include "io/fileutils.h"
 
-namespace fs = boost::filesystem;
+namespace fs = std::filesystem;
 
 #define YYMAXDEPTH 20000
 #define LOC(loc) Location(loc.first_line, loc.first_column, loc.last_line, loc.last_column, sourcefile())
@@ -1811,8 +1811,8 @@ yyreduce:
                         auto prevFile = assignment.location().fileName();
                         auto currFile = LOC((yyloc)).fileName();
                         
-                        const auto uncPathCurr = boostfs_uncomplete(currFile, mainFilePath.parent_path());
-                        const auto uncPathPrev = boostfs_uncomplete(prevFile, mainFilePath.parent_path());
+                        const auto uncPathCurr = fs_uncomplete(currFile, mainFilePath.parent_path());
+                        const auto uncPathPrev = fs_uncomplete(prevFile, mainFilePath.parent_path());
 
                         if(fileEnded){
                             //assigments via commandline

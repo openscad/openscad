@@ -25,7 +25,7 @@ jobs:
         brew install automake meson
     - name: Cache Libraries
       id: cache-libraries
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       with:
         path: ${{ env.OPENSCAD_LIBRARIES }}
         key: ${{ runner.os }}-libraries-1-${{ hashFiles('./scripts/macosx-build-dependencies.sh', '.github/workflows/macos-release.yml') }}

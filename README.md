@@ -109,7 +109,7 @@ Follow the instructions for the platform you're compiling on below.
 * [CGAL (5.4 ->)](https://www.cgal.org/)
  * [GMP (5.x)](https://gmplib.org/)
  * [MPFR (3.x)](https://www.mpfr.org/)
-* [boost (1.56 ->)](https://www.boost.org/)
+* [boost (1.61 ->)](https://www.boost.org/)
 * [OpenCSG (1.4.2 ->)](http://www.opencsg.org/)
 * [GLEW (1.5.4 ->)](http://glew.sourceforge.net/)
 * [Eigen (3.x)](https://eigen.tuxfamily.org/)
