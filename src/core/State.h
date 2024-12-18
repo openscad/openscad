@@ -25,6 +25,9 @@ public:
   void setMatrix(const Transform3d& m) { this->matrix_ = m; }
   void setColor(const Color4f& c) { this->color_ = c; }
   void setPreferNef(bool on) { FLAG(this->flags, PREFERNEF, on); }
+  void setSubtraction(bool on) { this->subtraction_ = on; }
+
+  [[nodiscard]] bool subtraction() const { return this->subtraction_; }
   [[nodiscard]] bool preferNef() const { return this->flags & PREFERNEF; }
 
   [[nodiscard]] bool isPrefix() const { return this->flags & PREFIX; }
@@ -61,4 +64,5 @@ private:
   // Transformation matrix and color. FIXME: Generalize such state variables?
   Transform3d matrix_;
   Color4f color_;
+  bool subtraction_{false};
 };

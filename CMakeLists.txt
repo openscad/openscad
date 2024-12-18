@@ -59,6 +59,7 @@ option(ENABLE_SPNAV "Enable support for libspnav input driver." ON)
 option(ENABLE_HIDAPI "Enable support for HIDAPI input driver." ON)
 option(ENABLE_CGAL "Enable CGAL." ON)
 option(ENABLE_MANIFOLD "Enable Manifold." ON)
+option(ENABLE_ASSIMP "Enable Assimp." ON)
 option(ALLOW_BUNDLED_HIDAPI "Allow usage of bundled HIDAPI library (Windows only)." OFF)
 option(ENABLE_PYTHON "Enable experimental Python Interpreter" OFF)
 option(BUILD_SHARED_LIBS "Build shared library" OFF)
@@ -66,6 +67,8 @@ include(CMakeDependentOption)
 cmake_dependent_option(APPLE_UNIX "Build OpenSCAD in Unix mode in MacOS X instead of an Apple Bundle" OFF "APPLE" OFF)
 cmake_dependent_option(ENABLE_QTDBUS "Enable DBus input driver for Qt." ON "NOT HEADLESS" OFF)
 cmake_dependent_option(ENABLE_GAMEPAD "Enable Qt5Gamepad input driver." ON "NOT HEADLESS;NOT USE_QT6" OFF)
+set(WASM_BUILD_TYPE "web" CACHE STRING 
+  "WebAssembly build type. Support web (builds an OpenSCAD module) or node (standalone .js executable)")
 
 if (USE_QT6)
   # Minimum version required for Qt-6.5
@@ -148,18 +151,58 @@ if (CMAKE_SYSTEM_NAME STREQUAL Emscripten)
   set(ENV{PKG_CONFIG_PATH} "/emsdk/upstream/emscripten/cache/sysroot/lib/pkgconfig")
   target_compile_definitions(OpenSCAD PRIVATE CGAL_DISABLE_ROUNDING_MATH_CHECK)
   target_link_libraries(OpenSCAD PRIVATE /emsdk/upstream/emscripten/cache/sysroot/lib/libz.a)
+  
+  # https://emscripten.org/docs/tools_reference/emcc.html
+  # https://emscripten.org/docs/tools_reference/settings_reference.html
+  target_compile_options(OpenSCAD PRIVATE -fexceptions)
   target_link_options(OpenSCAD PUBLIC
+    -fexceptions
+    -sABORT_ON_WASM_EXCEPTIONS
     -sALLOW_MEMORY_GROWTH=1
-    -sENVIRONMENT=web,worker
-    -sEXIT_RUNTIME=1
-    -sEXPORT_ES6=1
-    -sEXPORT_NAME=OpenSCAD
-    -sEXPORTED_RUNTIME_METHODS=['FS','ENV','callMain','ERRNO_CODES']
-    -sFORCE_FILESYSTEM=1
-    -sMODULARIZE=1
-    -sNO_DISABLE_EXCEPTION_CATCHING
-    -sUSE_PTHREADS=0
+    -sDISABLE_EXCEPTION_CATCHING=0
+    -sEXPORTED_RUNTIME_METHODS=['ENV','ERRNO_CODES','FS','PATH','callMain']
+    -sMAXIMUM_MEMORY=4GB
+    
+    # -g produces DWARF debug info, which is quite large and may need debugger extensions.
+    # Alternatively, can pass -gsource-map -sLOAD_SOURCE_MAP but then variable debugging isn't possible
+    $<$<CONFIG:Debug>:-g -O0>
   )
+  if (WASM_BUILD_TYPE STREQUAL "web")
+    target_link_options(OpenSCAD PUBLIC
+      -sENVIRONMENT=web,worker
+      -sEXIT_RUNTIME=1
+      -sEXPORT_ES6=1
+      -sEXPORT_NAME=OpenSCAD
+      -sMODULARIZE=1
+    )
+  elseif (WASM_BUILD_TYPE STREQUAL "node")
+    target_link_options(OpenSCAD PUBLIC
+      -sENVIRONMENT=node,worker
+      -sNODEJS_CATCH_EXIT
+      -sNODERAWFS
+
+      # Single .js (more elegant for CLI release) is larger than separate .js & .wasm (preferred for web)
+      $<$<CONFIG:Release>:-sSINGLE_FILE> 
+      
+      # Alternatively to single-file mode, code caching could make repeated runs faster:
+      # -sNODE_CODE_CACHING -sWASM_ASYNC_COMPILATION=0
+    )
+
+    # Ensure the resulting .js file is executable on Unix:
+    file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/prepend_node_shebang.cmake "
+      file(READ \"\${FILE}\" CONTENT)
+      file(WRITE \"\${FILE}\" \"#!/usr/bin/env node\n\${CONTENT}\")
+      if(CMAKE_HOST_UNIX)
+        execute_process(COMMAND chmod +x \"\${FILE}\")
+      endif()
+    ")
+    add_custom_command(
+      POST_BUILD TARGET OpenSCAD
+      COMMAND ${CMAKE_COMMAND} "-DFILE=$<TARGET_FILE:OpenSCAD>" -P "${CMAKE_CURRENT_BINARY_DIR}/prepend_node_shebang.cmake"
+    )
+  else()
+    message(FATAL_ERROR "Invalid WASM_BUILD_TYPE: ${WASM_BUILD_TYPE} (allowed: node, web)")
+  endif()
 endif()
 
 if(NULLGL)
@@ -408,11 +451,6 @@ if(ENABLE_CGAL)
   set(CMAKE_MODULE_PATH ${OPENSCAD_ORIGINAL_CMAKE_MODULE_PATH})
 endif(ENABLE_CGAL)
 
-find_package(LibZip REQUIRED QUIET)
-message(STATUS "libzip: ${LIBZIP_VERSION}")
-target_include_directories(OpenSCAD SYSTEM PRIVATE ${LIBZIP_INCLUDE_DIR_ZIP} ${LIBZIP_INCLUDE_DIR_ZIPCONF})
-target_link_libraries(OpenSCAD PRIVATE ${LIBZIP_LIBRARY})
-target_compile_definitions(OpenSCAD PRIVATE ENABLE_LIBZIP)
 
 find_package(Freetype 2.4.9 REQUIRED QUIET)
 message(STATUS "Freetype: ${FREETYPE_VERSION_STRING}")
@@ -839,6 +877,7 @@ set(CORE_SOURCES
   src/io/export_wrl.cc
   src/io/fileutils.cc
   src/io/import_amf.cc
+  src/io/import_stl.cc
   src/io/import_json.cc
   src/io/import_obj.cc
   src/io/import_off.cc
@@ -881,7 +920,12 @@ if(ENABLE_PYTHON)
 		    src/core/pyopenscad.cc )
 	target_compile_definitions(OpenSCAD PRIVATE ENABLE_PYTHON)
 endif()
-
+if (ENABLE_ASSIMP)
+  list(APPEND CORE_SOURCES
+    src/io/export_assimp.cc
+    src/io/import_assimp.cc
+  )
+endif()
 if(EXPERIMENTAL AND ENABLE_CGAL)
   list(APPEND CORE_SOURCES
   src/core/RoofNode.cc
@@ -972,6 +1016,12 @@ if(ENABLE_MANIFOLD)
   if (USE_MANIFOLD_TRIANGULATOR)
     target_compile_definitions(OpenSCAD PRIVATE USE_MANIFOLD_TRIANGULATOR)
   endif()
+endif()
+
+if (ENABLE_ASSIMP)
+  add_subdirectory(submodules/assimp EXCLUDE_FROM_ALL)
+  target_compile_definitions(OpenSCAD PRIVATE ENABLE_ASSIMP)
+  target_link_libraries(OpenSCAD PRIVATE assimp)
 endif()
 
 #

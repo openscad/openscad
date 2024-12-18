@@ -24,6 +24,12 @@ enum class FileFormat {
   WRL,
   AMF,
   _3MF,
+  GLTF,
+  COLLADA,
+  STP,
+  PLY,
+  X3D,
+
   DXF,
   SVG,
   NEFDBG,
@@ -131,7 +137,9 @@ void export_pov(const std::shared_ptr<const Geometry>& geom, std::ostream& outpu
 void export_pdf(const std::shared_ptr<const Geometry>& geom, std::ostream& output, const ExportInfo& exportInfo);
 void export_nefdbg(const std::shared_ptr<const Geometry>& geom, std::ostream& output);
 void export_nef3(const std::shared_ptr<const Geometry>& geom, std::ostream& output);
-
+#ifdef ENABLE_ASSIMP
+bool export_assimp(const std::shared_ptr<const Geometry>& geom, std::ostream& output, FileFormat fileFormat);
+#endif
 
 enum class Previewer { OPENCSG, THROWNTOGETHER };
 enum class RenderType { GEOMETRY, BACKEND_SPECIFIC, OPENCSG, THROWNTOGETHER };

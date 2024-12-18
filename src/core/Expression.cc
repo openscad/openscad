@@ -526,18 +526,20 @@ static SimplificationResult simplify_function_body(const Expression *expression,
           function_body = callable.function->expr.get();
           required_parameters = &callable.function->parameters;
           defining_context = callable.defining_context;
-        } else {
+        } else if (index == 2 || index == 3) {
           const FunctionType *function;
           if (index == 2) {
             function = &std::get<Value>(*f).toFunction();
           } else if (index == 3) {
             function = &std::get<const Value *>(*f)->toFunction();
-          } else {
-            assert(false);
           }
           function_body = function->getExpr().get();
           required_parameters = function->getParameters().get();
           defining_context = function->getContext();
+        } else if (index == 4) {
+          return std::get<std::shared_ptr<const BuiltinFunction>>(*f)->evaluate(context, call);
+        } else {
+          assert(false);
         }
       }
       ContextHandle<Context> body_context{Context::create<Context>(defining_context)};
