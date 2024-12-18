@@ -189,9 +189,9 @@ static const char * assimp_format_name(FileFormat fileFormat) {
   // Formats supported:
   // - Import: https://assimp-docs.readthedocs.io/en/latest/about/introduction.html
   // - Export: https://assimp-docs.readthedocs.io/en/latest/usage/use_the_lib.html#exporting-models
-  case FileFormat::ASCIISTL:
+  case FileFormat::ASCII_STL:
     return "stl";
-  case FileFormat::STL:
+  case FileFormat::BINARY_STL:
     return "stlb";
   case FileFormat::OBJ:
     return "obj";

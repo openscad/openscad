@@ -72,6 +72,13 @@ Containers &containers() {
     add_item(*containers, {FileFormat::WRL, "wrl", "wrl", "VRML"});
     add_item(*containers, {FileFormat::AMF, "amf", "amf", "AMF"});
     add_item(*containers, {FileFormat::_3MF, "3mf", "3mf", "3MF"});
+#ifdef ENABLE_ASSIMP
+    add_item(*containers, {FileFormat::GLTF, "gltf", "gltf", "GLTF"});
+    add_item(*containers, {FileFormat::COLLADA, "collada", "dae", "COLLADA"});
+    add_item(*containers, {FileFormat::X3D, "x3d", "x3d", "X3D"});
+    add_item(*containers, {FileFormat::STP, "stp", "stp", "STEP"});
+    add_item(*containers, {FileFormat::PLY, "ply", "ply", "PLY"});
+#endif
     add_item(*containers, {FileFormat::DXF, "dxf", "dxf", "DXF"});
     add_item(*containers, {FileFormat::SVG, "svg", "svg", "SVG"});
     add_item(*containers, {FileFormat::NEFDBG, "nefdbg", "nefdbg", "nefdbg"});
@@ -193,11 +200,14 @@ bool is2D(FileFormat format) {
 
 void exportFile(const std::shared_ptr<const Geometry>& root_geom, std::ostream& output, const ExportInfo& exportInfo)
 {
+#ifdef ENABLE_ASSIMP
   if (Feature::ExperimentalAssimp.is_enabled()) {
     if (export_assimp(root_geom, output, exportInfo.format)) {
       return;
     }
   }
+#endif
+
   switch (exportInfo.format) {
   case FileFormat::ASCII_STL:
     export_stl(root_geom, output, false);

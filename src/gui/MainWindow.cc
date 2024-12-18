@@ -317,6 +317,13 @@ MainWindow::MainWindow(const QStringList& filenames)
   knownFileExtensions["obj"] = importStatement;
   knownFileExtensions["3mf"] = importStatement;
   knownFileExtensions["off"] = importStatement;
+#ifdef ENABLE_ASSIMP
+  knownFileExtensions["glb"] = importStatement;
+  knownFileExtensions["x3d"] = importStatement;
+  knownFileExtensions["dae"] = importStatement;
+  knownFileExtensions["stp"] = importStatement;
+  knownFileExtensions["ply"] = importStatement;
+#endif
   knownFileExtensions["dxf"] = importStatement;
   knownFileExtensions["svg"] = importStatement;
   knownFileExtensions["amf"] = importStatement;
@@ -485,6 +492,14 @@ MainWindow::MainWindow(const QStringList& filenames)
   export_map[FileFormat::BINARY_STL] =this->fileActionExportBinarySTL;
   export_map[FileFormat::ASCII_STL] =this->fileActionExportAsciiSTL;
   export_map[FileFormat::_3MF] = this->fileActionExport3MF;
+#ifdef ENABLE_ASSIMP
+  export_map[FileFormat::GLTF] =  this->fileActionExportGLTF;
+  export_map[FileFormat::COLLADA] =  this->fileActionExportCOLLADA;
+  export_map[FileFormat::PLY] =  this->fileActionExportPLY;
+  export_map[FileFormat::X3D] =  this->fileActionExportX3D;
+  export_map[FileFormat::STP] =  this->fileActionExportSTP;
+  export_map[FileFormat::PLY] =  this->fileActionExportPLY;
+#endif
   export_map[FileFormat::OBJ] =  this->fileActionExportOBJ;
   export_map[FileFormat::OFF] =  this->fileActionExportOFF;
   export_map[FileFormat::WRL] =  this->fileActionExportWRL;
@@ -506,6 +521,15 @@ MainWindow::MainWindow(const QStringList& filenames)
 #ifndef ENABLE_LIB3MF
   this->fileActionExport3MF->setVisible(false);
 #endif
+
+#ifndef ENABLE_ASSIMP
+  this->fileActionExportGLTF->setVisible(false);
+  this->fileActionExportCOLLADA->setVisible(false);
+  this->fileActionExportX3D->setVisible(false);
+  this->fileActionExportSTP->setVisible(false);
+  this->fileActionExportPLY->setVisible(false);
+#endif
+
 
 #ifndef ENABLE_3D_PRINTING
   this->designAction3DPrint->setVisible(false);

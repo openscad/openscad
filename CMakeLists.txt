@@ -59,6 +59,7 @@ option(ENABLE_SPNAV "Enable support for libspnav input driver." ON)
 option(ENABLE_HIDAPI "Enable support for HIDAPI input driver." ON)
 option(ENABLE_CGAL "Enable CGAL." ON)
 option(ENABLE_MANIFOLD "Enable Manifold." ON)
+option(ENABLE_ASSIMP "Enable Assimp." ON)
 option(ALLOW_BUNDLED_HIDAPI "Allow usage of bundled HIDAPI library (Windows only)." OFF)
 option(ENABLE_PYTHON "Enable experimental Python Interpreter" OFF)
 option(BUILD_SHARED_LIBS "Build shared library" OFF)
@@ -864,7 +865,6 @@ set(CORE_SOURCES
   src/io/dxfdim.cc
   src/io/export.cc
   src/io/export_amf.cc
-  src/io/export_assimp.cc
   src/io/export_dxf.cc
   src/io/export_obj.cc
   src/io/export_off.cc
@@ -877,7 +877,6 @@ set(CORE_SOURCES
   src/io/export_wrl.cc
   src/io/fileutils.cc
   src/io/import_amf.cc
-  src/io/import_assimp.cc
   src/io/import_stl.cc
   src/io/import_json.cc
   src/io/import_obj.cc
@@ -921,7 +920,12 @@ if(ENABLE_PYTHON)
 		    src/core/pyopenscad.cc )
 	target_compile_definitions(OpenSCAD PRIVATE ENABLE_PYTHON)
 endif()
-
+if (ENABLE_ASSIMP)
+  list(APPEND CORE_SOURCES
+    src/io/export_assimp.cc
+    src/io/import_assimp.cc
+  )
+endif()
 if(EXPERIMENTAL AND ENABLE_CGAL)
   list(APPEND CORE_SOURCES
   src/core/RoofNode.cc
@@ -1006,13 +1010,18 @@ if(ENABLE_MANIFOLD)
     find_package(manifold REQUIRED QUIET)
     message(STATUS "mainfold: ${manifold_VERSION}")
   endif()
-  add_subdirectory(submodules/assimp EXCLUDE_FROM_ALL)
-  target_link_libraries(OpenSCAD PRIVATE manifold::manifold assimp)
+  target_link_libraries(OpenSCAD PRIVATE manifold::manifold)
   add_sanitizers(manifold)
 
   if (USE_MANIFOLD_TRIANGULATOR)
     target_compile_definitions(OpenSCAD PRIVATE USE_MANIFOLD_TRIANGULATOR)
   endif()
+endif()
+
+if (ENABLE_ASSIMP)
+  add_subdirectory(submodules/assimp EXCLUDE_FROM_ALL)
+  target_compile_definitions(OpenSCAD PRIVATE ENABLE_ASSIMP)
+  target_link_libraries(OpenSCAD PRIVATE assimp)
 endif()
 
 #

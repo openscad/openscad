@@ -23,9 +23,11 @@ public:
   static const Feature ExperimentalModuleFunctions;
   static const Feature ExperimentalTextMetricsFunctions;
   static const Feature ExperimentalImportFunction;
-  static const Feature ExperimentalAssimp;
   static const Feature ExperimentalPredictibleOutput;
   static const Feature ExperimentalRenderModifiers;
+#ifdef ENABLE_ASSIMP
+  static const Feature ExperimentalAssimp;
+#endif
 #ifdef ENABLE_PYTHON
   static const Feature ExperimentalPythonEngine;
 #endif
