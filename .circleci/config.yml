@@ -136,6 +136,7 @@ jobs:
       - run:
           name: Verify OpenSCAD WASM build
           command: |
+              export PATH="/usr/local/bin:$PATH"
               ./tests/wasm-check.sh << parameters.wasm-type >>
       - store_artifacts:
           path: /tmp/out
