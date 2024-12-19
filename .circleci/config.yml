@@ -118,7 +118,7 @@ jobs:
               fi
       - when:
           condition:
-            equal: [ web, << pipeline.parameters.wasm-type >> ]
+            equal: [ web, << parameters.wasm-type >> ]
           steps:
             - run:
                 name: Install Puppeteer
