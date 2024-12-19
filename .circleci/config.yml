@@ -116,6 +116,23 @@ jobs:
               else
                   echo "Skipping code signing."
               fi
+      - run:
+          when: << pipeline.parameters.wasm-type == 'web' >>
+          name: Install Puppeteer
+          command: |
+              npm i -g n
+              n latest
+              export PATH=/usr/local/bin:"brew$PATH"
+              npm init -y
+              npm i puppeteer
+              npx puppeteer browsers install chrome
+              apt-get install -y \
+                libatk1.0-0 libatk-bridge2.0-0 libdrm2 libxcomposite1 libxdamage1 \
+                libxfixes3 libxrandr2 libgbm1 libxkbcommon0 libpango-1.0-0 libcairo2
+      - run:
+          name: Verify OpenSCAD WASM build
+          command: |
+              ./tests/wasm-check.sh << parameters.wasm-type >>
       - store_artifacts:
           path: /tmp/out
           destination: wasm
