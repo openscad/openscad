@@ -122,7 +122,7 @@ jobs:
           command: |
               npm i -g n
               n latest
-              export PATH=/usr/local/bin:"brew$PATH"
+              export PATH="/usr/local/bin:$PATH"
               npm init -y
               npm i puppeteer
               npx puppeteer browsers install chrome
