@@ -1,0 +1,22 @@
+<html>
+  <body>
+    <pre id="output"></pre>
+    <script type="module"> 
+      import OpenSCAD from "../build/openscad.js";
+      
+      const instance = await OpenSCAD({ noInitialRun: true });
+      instance.FS.writeFile("input.scad", `
+        difference() {
+          cube([10, 10, 10]);
+          sphere(5);
+        }
+      `);
+      
+      const code = instance.callMain(['input.scad', "--backend=manifold", "-o", "out.stl"]);
+      if (code !== 0) throw new Error(`Exit code: ${code}`);
+
+      const output = document.getElementById("output");
+      output.innerText = instance.FS.readFile("out.stl", { encoding: "utf8" });
+    </script>
+  </body>
+</html>

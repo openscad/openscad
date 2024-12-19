@@ -708,7 +708,11 @@ int main(int argc, char **argv)
   PlatformUtils::ensureStdIO();
 #endif
 
+#ifdef __EMSCRIPTEN__
+  const auto applicationPath = boost::dll::fs::current_path();
+#else
   const auto applicationPath = weakly_canonical(boost::dll::program_location()).parent_path().generic_string();
+#endif
   PlatformUtils::registerApplicationPath(applicationPath);
 
 #ifdef ENABLE_CGAL
