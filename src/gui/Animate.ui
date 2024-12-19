@@ -202,6 +202,13 @@
            </widget>
           </item>
           <item>
+           <widget class="QCheckBox" name="pr_dump">
+            <property name="text">
+             <string>Dump PovRay scripts</string>
+            </property>
+           </widget>
+          </item>
+          <item>
            <spacer name="horizontalSpacer_4">
             <property name="orientation">
              <enum>Qt::Horizontal</enum>

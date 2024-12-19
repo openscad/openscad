@@ -33,6 +33,7 @@ void Animate::initGUI()
   this->anim_tval = 0.0;
   this->anim_dumping = false;
   this->anim_dump_start_step = 0;
+  this->is_step_timer = false;
 
   animate_timer = new QTimer(this);
   connect(animate_timer, SIGNAL(timeout()), this, SLOT(incrementTVal()));
@@ -41,6 +42,7 @@ void Animate::initGUI()
   connect(this->e_fps, SIGNAL(textChanged(QString)), this, SLOT(updatedAnimFpsAndAnimSteps()));
   connect(this->e_fsteps, SIGNAL(textChanged(QString)), this, SLOT(updatedAnimFpsAndAnimSteps()));
   connect(this->e_dump, SIGNAL(toggled(bool)), this, SLOT(updatedAnimDump(bool)));
+  connect(this->pr_dump, SIGNAL(toggled(bool)), this, SLOT(updatedAnimDumpPovRay(bool)));
 }
 
 void Animate::setMainWindow(MainWindow *mainWindow)
@@ -144,6 +146,8 @@ void Animate::updatedAnimFpsAndAnimSteps()
   animate_timer->stop();
   if (this->fps_ok && fps > 0 && this->anim_numsteps > 0) {
     this->anim_step = int(this->anim_tval * this->anim_numsteps) % this->anim_numsteps;
+    this->end_reached = false;
+    is_step_timer = pr_dump->isChecked();
     animate_timer->setSingleShot(false);
     animate_timer->setInterval(int(1000 / fps));
     animate_timer->start();
@@ -166,12 +170,12 @@ void Animate::updatedAnimFpsAndAnimSteps()
   updatePauseButtonIcon();
 }
 
-
 void Animate::updatedAnimDump(bool checked)
 {
-  if (!checked) this->anim_dumping = false;
+}
 
-  updatePauseButtonIcon();
+void Animate::updatedAnimDumpPovRay(bool checked)
+{
 }
 
 // Only called from animate_timer
@@ -183,18 +187,36 @@ void Animate::incrementTVal()
     if (mainWindow->activeEditor->parameterWidget->childHasFocus()) return;
   }
 
-  if (this->anim_numsteps > 1) {
-    this->anim_step = (this->anim_step + 1) % this->anim_numsteps;
-    this->anim_tval = 1.0 * this->anim_step / this->anim_numsteps;
-  } else if (this->anim_numsteps > 0) {
-    this->anim_step = 0;
-    this->anim_tval = 0.0;
+  if (this->is_step_timer == false) {
+    if (this->anim_numsteps > 1) {
+      this->anim_step = (this->anim_step + 1) % this->anim_numsteps;
+      if (this->anim_step == 0)
+        this->end_reached = true;
+      this->anim_tval = 1.0 * this->anim_step / this->anim_numsteps;
+    } else if (this->anim_numsteps > 0) {
+      this->anim_step = 0;
+      this->anim_tval = 0.0;
+    }
   }
 
   const QString txt = QString::number(this->anim_tval, 'f', 5);
   this->e_tval->setText(txt);
 
   updatePauseButtonIcon();
+}
+
+void Animate::stepTimer()
+{
+  if (this->is_step_timer && this->end_reached == false) {
+    this->anim_step = (this->anim_step + 1) % this->anim_numsteps;
+    if (this->anim_step == 0) {
+      this->end_reached = true;
+      animate_timer->stop();
+      updatePauseButtonIcon();
+      this->e_tval->setText("");
+    }
+    this->anim_tval = 1.0 * this->anim_step / this->anim_numsteps;
+  }
 }
 
 void Animate::updateTVal()
@@ -219,9 +241,15 @@ void Animate::updateTVal()
   updatePauseButtonIcon();
 }
 
-void Animate::pauseAnimation(){
+void Animate::pauseAnimation()
+{
   animate_timer->stop();
   updatePauseButtonIcon();
+}
+
+bool Animate::isRunning()
+{
+  return end_reached == false && this->anim_numsteps > 0 && (is_step_timer || animate_timer->isActive());
 }
 
 void Animate::on_pauseButton_pressed()
@@ -284,10 +312,15 @@ bool Animate::dumpPictures(){
   return this->e_dump->isChecked() && this->animate_timer->isActive();
 }
 
+bool Animate::dumpPovRay(){
+  return this->pr_dump->isChecked();
+}
+
 int Animate::nextFrame(){
   if (anim_dumping && anim_dump_start_step == anim_step) {
     anim_dumping = false;
     e_dump->setChecked(false);
+    pr_dump->setChecked(false);
   } else {
     if (!anim_dumping) {
       anim_dumping = true;
