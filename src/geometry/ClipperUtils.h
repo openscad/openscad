@@ -10,7 +10,7 @@ namespace ClipperUtils {
 
 constexpr int DEFAULT_PRECISION = 8;
 
-int scaleBitsfromBounds(const BoundingBox& bounds, int bits = 0);
+int scaleBitsFromBounds(const BoundingBox& bounds, int bits = 0);
 int scaleBitsFromPrecision(int precision = DEFAULT_PRECISION);
 
 std::unique_ptr<Clipper2Lib::PolyTree64> sanitize(const Clipper2Lib::Paths64& paths);

@@ -99,7 +99,7 @@ void fill_minkowski_insides(const Clipper2Lib::Paths64& a,
 // of data loss when converting back to double (see https://github.com/openscad/openscad/issues/5253).
 const int CLIPPER_BITS{ std::ilogb( 0x3FFFFFFFFFFFFFFFLL) };
 
-int scaleBitsfromBounds(const BoundingBox& bounds, int total_bits)
+int scaleBitsFromBounds(const BoundingBox& bounds, int total_bits)
 {
   const double maxCoeff = std::max({
       bounds.min().cwiseAbs().maxCoeff(),
