@@ -242,10 +242,8 @@ We support building OpenSCAD headless for WebAssembly w/ Emscripten, using a pre
 The following command creates `build-web/openscad.wasm` & `build-web/openscad.js`:
 
 ```bash
-docker run --rm -it -v $PWD:/src:rw --platform=linux/amd64 openscad/wasm-base:latest \
-  emcmake cmake -B build-web -DEXPERIMENTAL=ON -DCMAKE_BUILD_TYPE=Release && \
-docker run --rm -it -v $PWD:/src:rw --platform=linux/amd64 openscad/wasm-base:latest \
-  cmake --build build-web
+./scripts/wasm-base-docker-run.sh emcmake cmake -B build-web -DCMAKE_BUILD_TYPE=Debug -DEXPERIMENTAL=1
+./scripts/wasm-base-docker-run.sh cmake --build build-web -j2
 ```
 
 [openscad/openscad-playground](https://github.com/openscad/openscad-playground) uses this WASM build to provide a [Web UI](https://ochafik.com/openscad2/) with a subset of features of OpenSCAD.
@@ -258,11 +256,8 @@ docker run --rm -it -v $PWD:/src:rw --platform=linux/amd64 openscad/wasm-base:la
 The following command creates `build-node/openscad.js`, which is executable (requires `node`):
 
 ```bash
-docker run --rm -it -v $PWD:/src:rw --platform=linux/amd64 openscad/wasm-base:latest \
-  emcmake cmake -B build-node -DEXPERIMENTAL=ON -DCMAKE_BUILD_TYPE=Release -DWASM_BUILD_TYPE=node && \
-docker run --rm -it -v $PWD:/src:rw --platform=linux/amd64 openscad/wasm-base:latest \
-  cmake --build build-node -j10
-
+./scripts/wasm-base-docker-run.sh emcmake cmake -B build-node -DWASM_BUILD_TYPE=node -DCMAKE_BUILD_TYPE=Debug -DEXPERIMENTAL=1
+./scripts/wasm-base-docker-run.sh cmake --build build-node -j2
 build-node/openscad.js --help
 ```
 
