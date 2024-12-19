@@ -10,7 +10,7 @@ rm -f out.stl
 case $ENV in
   node)
     echo "Checking WASM node build..."
-    ./build/openscad.js \
+    ../build/openscad.js \
         --backend=manifold \
         examples/Basics/CSG.scad \
         -o out.stl
