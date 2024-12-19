@@ -117,7 +117,8 @@ jobs:
                   echo "Skipping code signing."
               fi
       - when:
-          condition: << pipeline.parameters.wasm-type == 'web' >>
+          condition:
+            equal: [ web, << pipeline.parameters.wasm-type >> ]
           steps:
             - run:
                 name: Install Puppeteer
