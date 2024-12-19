@@ -38,7 +38,7 @@
 
 #include <boost/optional.hpp>
 
-#include "polyclipping/clipper.hpp"
+#include "clipper2/clipper.h"
 
 namespace libsvg {
 class shape;
@@ -87,11 +87,11 @@ protected:
   bool selected{false};
 
   [[nodiscard]] double get_stroke_width() const;
-  [[nodiscard]] ClipperLib::EndType get_stroke_linecap() const;
-  [[nodiscard]] ClipperLib::JoinType get_stroke_linejoin() const;
+  [[nodiscard]] Clipper2Lib::EndType get_stroke_linecap() const;
+  [[nodiscard]] Clipper2Lib::JoinType get_stroke_linejoin() const;
   [[nodiscard]] const std::string get_style(const std::string& name) const;
   void draw_ellipse(path_t& path, double x, double y, double rx, double ry, void *context);
-  void offset_path(path_list_t& path_list, path_t& path, double stroke_width, ClipperLib::EndType stroke_linecap);
+  void offset_path(path_list_t& path_list, path_t& path, double stroke_width, Clipper2Lib::EndType stroke_linecap);
   void collect_transform_matrices(std::vector<Eigen::Matrix3d>& matrices, shape *s);
 
 public:
