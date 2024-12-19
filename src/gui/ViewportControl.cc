@@ -1,8 +1,16 @@
-#include "ViewportControl.h"
-#include "printutils.h"
-#include "MainWindow.h"
-#include "QGLView.h"
-#include <boost/filesystem.hpp>
+#include "gui/ViewportControl.h"
+#include "utils/printutils.h"
+#include "gui/MainWindow.h"
+#include "gui/QGLView.h"
+#include <QBoxLayout>
+#include <QGridLayout>
+#include <QLayoutItem>
+#include <QObject>
+#include <QResizeEvent>
+#include <QString>
+#include <QWidget>
+#include <iostream>
+#include <filesystem>
 #include <cfloat>
 #include <QDoubleSpinBox>
 
@@ -52,7 +60,7 @@ bool ViewportControl::isLightTheme()
 
 QString ViewportControl::yellowHintBackground()
 {
-  return {isLightTheme() ? "background-color:#ffffaa;" : "background-color:#30306;"};
+  return {isLightTheme() ? "background-color:#ffffaa;" : "background-color:#303006;"};
 }
 
 QString ViewportControl::redHintBackground()

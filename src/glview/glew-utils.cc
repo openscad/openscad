@@ -1,4 +1,4 @@
-#include "glew-utils.h"
+#include "glview/glew-utils.h"
 #include <cstdio>
 
 #include <GL/glew.h>

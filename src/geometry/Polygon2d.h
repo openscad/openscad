@@ -1,8 +1,12 @@
 #pragma once
 
+#include <utility>
+#include <memory>
+#include <cstddef>
+#include <string>
 #include <vector>
-#include "Geometry.h"
-#include "linalg.h"
+#include "geometry/Geometry.h"
+#include "geometry/linalg.h"
 #include <numeric>
 
 /*!

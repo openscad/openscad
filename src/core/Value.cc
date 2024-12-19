@@ -24,22 +24,32 @@
  *
  */
 
+#include "core/Value.h"
+
+#include <cmath>
+#include <variant>
+#include <limits>
+#include <ostream>
+#include <utility>
+#include <cstdint>
 #include <cassert>
+#include <cstddef>
 #include <memory>
-#include <numeric>
 #include <sstream>
+#include <string>
+#include <vector>
 #include <boost/lexical_cast.hpp>
 
-#include "Value.h"
-#include "EvaluationSession.h"
-#include "printutils.h"
-#include "StackCheck.h"
-#include "boost-utils.h"
-#include "double-conversion/double-conversion.h"
-#include "double-conversion/utils.h"
-#include "double-conversion/ieee.h"
+#include "core/EvaluationSession.h"
+#include "io/fileutils.h"
+#include "utils/printutils.h"
+#include "utils/StackCheck.h"
+#include "utils/boost-utils.h"
+#include <double-conversion/double-conversion.h>
+#include <double-conversion/utils.h>
+#include <double-conversion/ieee.h>
 
-namespace fs = boost::filesystem;
+namespace fs = std::filesystem;
 
 const Value Value::undefined;
 const VectorType VectorType::EMPTY(nullptr);
@@ -171,7 +181,7 @@ static uint32_t convert_to_uint32(const double d)
 std::ostream& operator<<(std::ostream& stream, const Filename& filename)
 {
   fs::path fnpath{static_cast<std::string>(filename)}; // gcc-4.6
-  auto fpath = boostfs_uncomplete(fnpath, fs::current_path());
+  auto fpath = fs_uncomplete(fnpath, fs::current_path());
   stream << QuotedString(fpath.generic_string());
   return stream;
 }

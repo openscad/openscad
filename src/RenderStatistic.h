@@ -25,9 +25,13 @@
 
 #pragma once
 
+#include <memory>
 #include <chrono>
-#include "Camera.h"
-#include "Geometry.h"
+#include <string>
+#include <vector>
+
+#include "glview/Camera.h"
+#include "geometry/Geometry.h"
 
 /**
  * An utility class to collect and print rendering statistics for the given

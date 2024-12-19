@@ -24,18 +24,25 @@
  *
  */
 
-#include "SourceFile.h"
-#include "SourceFileCache.h"
-#include "node.h"
-#include "printutils.h"
-#include "exceptions.h"
-#include "ScopeContext.h"
-#include "parsersettings.h"
-#include "StatCache.h"
+#include "core/SourceFile.h"
+#include "core/SourceFileCache.h"
+#include "core/node.h"
+#include "utils/printutils.h"
+#include "utils/exceptions.h"
+#include "core/ScopeContext.h"
+#include "core/parsersettings.h"
+#include "core/StatCache.h"
+#include <algorithm>
+#include <ctime>
+#include <ostream>
+#include <memory>
 #include <boost/algorithm/string.hpp>
-#include <boost/filesystem.hpp>
+#include <filesystem>
+#include <string>
 #include <utility>
-namespace fs = boost::filesystem;
+#include <vector>
+
+namespace fs = std::filesystem;
 #include "FontCache.h"
 #include <sys/stat.h>
 

@@ -1,11 +1,13 @@
 #pragma once
 
+#include <cassert>
+#include <utility>
 #include <cstddef>
 #include <string>
 #include <list>
 #include <memory>
 
-#include "linalg.h"
+#include "geometry/linalg.h"
 
 class AbstractNode;
 class CGAL_Nef_polyhedron;
@@ -40,6 +42,7 @@ public:
   [[nodiscard]] virtual size_t numFacets() const = 0;
   [[nodiscard]] unsigned int getConvexity() const { return convexity; }
   void setConvexity(int c) { this->convexity = c; }
+  virtual void setColor(const Color4f& c) {}
 
   virtual void transform(const Transform3d& /*mat*/) { assert(!"transform not implemented!"); }
   virtual void resize(const Vector3d& /*newsize*/, const Eigen::Matrix<bool, 3, 1>& /*autosize*/) {
@@ -52,7 +55,7 @@ protected:
 };
 
 /**
- * A Base clss for simple visitors to process different Geometry subclasses uniformly
+ * A Base class for simple visitors to process different Geometry subclasses uniformly
  */
 class GeometryVisitor
 {

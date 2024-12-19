@@ -1,7 +1,9 @@
 #pragma once
 
-#include "Renderer.h"
-#include "CSGNode.h"
+#include "glview/Renderer.h"
+#include "core/CSGNode.h"
+#include <utility>
+#include <memory>
 #include <boost/functional/hash.hpp>
 #include <unordered_map>
 

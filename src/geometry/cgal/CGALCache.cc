@@ -1,9 +1,15 @@
-#include "CGALCache.h"
-#include "printutils.h"
-#include "CGAL_Nef_polyhedron.h"
-#include "CGALHybridPolyhedron.h"
+#include "geometry/cgal/CGALCache.h"
+
+#include <cassert>
+#include <memory>
+#include <cstddef>
+#include <string>
+
+#include "utils/printutils.h"
+#include "geometry/cgal/CGAL_Nef_polyhedron.h"
+#include "geometry/cgal/CGALHybridPolyhedron.h"
 #ifdef ENABLE_MANIFOLD
-#include "ManifoldGeometry.h"
+#include "geometry/manifold/ManifoldGeometry.h"
 #endif
 
 CGALCache *CGALCache::inst = nullptr;

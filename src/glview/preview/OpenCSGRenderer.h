@@ -1,13 +1,18 @@
 #pragma once
 
-#include "Renderer.h"
-#include "system-gl.h"
+#include "glview/Renderer.h"
+#include "glview/system-gl.h"
+#include <utility>
+#include <memory>
 #ifdef ENABLE_OPENCSG
 #include <opencsg.h>
 #endif
-#include "CSGNode.h"
+#include "core/CSGNode.h"
 
-#include "VBORenderer.h"
+#include "glview/VBORenderer.h"
+
+#include <cstddef>
+#include <vector>
 
 class CSGChainObject;
 class CSGProducts;

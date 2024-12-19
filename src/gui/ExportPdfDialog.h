@@ -26,8 +26,9 @@
 
 #pragma once
 
-#include "qtgettext.h"
-#include "export.h"
+#include "gui/qtgettext.h"
+#include <QDialog>
+#include "io/export.h"
 #include "ui_ExportPdfDialog.h"
 
 class ExportPdfDialog : public QDialog, public Ui::ExportPdfDialog
@@ -42,12 +43,12 @@ public:
   paperOrientations getOrientation();
   bool getShowScale();
   bool getShowScaleMsg();
-  bool getShowDsnFn();
+  bool getShowDesignFilename();
   bool getShowGrid();
   
   void setShowScale(bool state);
   void setShowScaleMsg(bool state); 
-  void setShowDsnFn(bool state); 
+  void setShowDesignFilename(bool state); 
   void setShowGrid(bool state);
   
   void setPaperSize(paperSizes paper);  

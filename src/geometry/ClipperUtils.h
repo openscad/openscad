@@ -1,7 +1,10 @@
 #pragma once
 
-#include "ext/polyclipping/clipper.hpp"
-#include "Polygon2d.h"
+#include "polyclipping/clipper.hpp"
+#include "geometry/Polygon2d.h"
+
+#include <memory>
+#include <vector>
 
 namespace ClipperUtils {
 
@@ -22,5 +25,6 @@ ClipperLib::Paths process(const ClipperLib::Paths& polygons,
                           ClipperLib::ClipType, ClipperLib::PolyFillType);
 std::unique_ptr<Polygon2d> applyOffset(const Polygon2d& poly, double offset, ClipperLib::JoinType joinType, double miter_limit, double arc_tolerance);
 std::unique_ptr<Polygon2d> applyMinkowski(const std::vector<std::shared_ptr<const Polygon2d>>& polygons);
+std::unique_ptr<Polygon2d> applyProjection(const std::vector<std::shared_ptr<const Polygon2d>>& polygons);
 std::unique_ptr<Polygon2d> apply(const std::vector<std::shared_ptr<const Polygon2d>>& polygons, ClipperLib::ClipType);
 }

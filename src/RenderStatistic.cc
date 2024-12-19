@@ -24,26 +24,34 @@
  */
 
 
-#include <fstream>
-#include <json.hpp>
+#include "RenderStatistic.h"
 
-#include "printutils.h"
-#include "GeometryCache.h"
-#include "PolySet.h"
-#include "Polygon2d.h"
+#include <algorithm>
+#include <chrono>
+#include <cassert>
+#include <array>
+#include <iostream>
+#include <memory>
+#include <fstream>
+#include "json/json.hpp"
+#include <string>
+#include <vector>
+
+#include "utils/printutils.h"
+#include "geometry/GeometryCache.h"
+#include "geometry/PolySet.h"
+#include "geometry/Polygon2d.h"
 #ifdef ENABLE_CGAL
-#include "CGAL_Nef_polyhedron.h"
-#include "CGALHybridPolyhedron.h"
-#include "CGALCache.h"
+#include "geometry/cgal/CGAL_Nef_polyhedron.h"
+#include "geometry/cgal/CGALHybridPolyhedron.h"
+#include "geometry/cgal/CGALCache.h"
 #endif // ENABLE_CGAL
 
 #ifdef ENABLE_MANIFOLD
-#include "ManifoldGeometry.h"
-#include "manifold.h"
-#include "manifoldutils.h"
+#include "geometry/manifold/ManifoldGeometry.h"
+#include "geometry/manifold/manifoldutils.h"
 #endif // ENABLE_MANIFOLD
 
-#include "RenderStatistic.h"
 
 class GeometryList;
 
@@ -290,7 +298,7 @@ void LogVisitor::visit(const ManifoldGeometry& mani_geom)
 {
   LOG("   Top level object is a 3D object (manifold):");
   auto &mani = mani_geom.getManifold();
-  
+
   LOG("   Status:     %1$s", ManifoldUtils::statusToString(mani.Status()));
   LOG("   Genus:      %1$d", mani.Genus());
   LOG("   Vertices:   %1$6d", mani.NumVert());

@@ -1,11 +1,34 @@
-#include "Settings.h"
-#include "printutils.h"
-#include "input/InputEventMapper.h"
+#include "gui/Settings.h"
+#include "io/export.h"
+#include "glview/RenderSettings.h"
+#include "utils/printutils.h"
+#include "gui/input/InputEventMapper.h"
+#include <cassert>
+#include <array>
 #include <boost/algorithm/string.hpp>
 #include <boost/lexical_cast.hpp>
+#include <boost/range/adaptors.hpp>
+#include <cstddef>
+#include <iterator>
+#include <string>
 #include <utility>
+#include <vector>
 
 namespace Settings {
+
+namespace {
+
+std::vector<SettingsEntryEnum::Item> createFileFormatItems(std::vector<FileFormat> formats) {
+  std::vector<SettingsEntryEnum::Item> items;
+  std::transform(formats.begin(), formats.end(), std::back_inserter(items),
+                 [](const FileFormat& format){
+    const FileFormatInfo &info = fileformat::info(format);
+    return SettingsEntryEnum::Item{info.identifier, info.description};
+    });
+  return items;
+}
+
+}  // namespace
 
 static std::vector<SettingsEntry *> entries;
 
@@ -114,19 +137,35 @@ SettingsEntryBool Settings::enableLineNumbers("editor", "enableLineNumbers", tru
 SettingsEntryBool Settings::enableNumberScrollWheel("editor", "enableNumberScrollWheel", true);
 SettingsEntryEnum Settings::modifierNumberScrollWheel("editor", "modifierNumberScrollWheel", {{"Alt", _("Alt")}, {"Left Mouse Button", _("Left Mouse Button")}, {"Either", _("Either")}}, "Alt");
 
+SettingsEntryString Settings::defaultPrintService("printing", "printService", "NONE");
+
+SettingsEntryString Settings::printServiceName("printing", "printServiceName", "");
+SettingsEntryString Settings::printServiceFileFormat("printing", "printServiceFileFormat", "stl");
 
 SettingsEntryString Settings::octoPrintUrl("printing", "octoPrintUrl", "");
 SettingsEntryString Settings::octoPrintApiKey("printing", "octoPrintApiKey", "");
-SettingsEntryEnum Settings::octoPrintFileFormat("printing", "octoPrintFileFormat", {{"STL", "STL"}, {"OFF", "OFF"}, {"AMF", "AMF"}, {"3MF", "3MF"}}, "STL");
 SettingsEntryEnum Settings::octoPrintAction("printing", "octoPrintAction", {{"upload", _("Upload only")}, {"slice", _("Upload & Slice")}, {"select", _("Upload, Slice & Select for printing")}, {"print", _("Upload, Slice & Start printing")}}, "upload");
 SettingsEntryString Settings::octoPrintSlicerEngine("printing", "octoPrintSlicerEngine", "");
 SettingsEntryString Settings::octoPrintSlicerEngineDesc("printing", "octoPrintSlicerEngineDesc", "");
 SettingsEntryString Settings::octoPrintSlicerProfile("printing", "octoPrintSlicerProfile", "");
 SettingsEntryString Settings::octoPrintSlicerProfileDesc("printing", "octoPrintSlicerProfileDesc", "");
+SettingsEntryEnum Settings::octoPrintFileFormat(
+    "printing", "octoPrintFileFormat",
+    createFileFormatItems({FileFormat::ASCII_STL, FileFormat::BINARY_STL, FileFormat::_3MF, FileFormat::OFF}),
+    fileformat::info(FileFormat::ASCII_STL).description);
 
-SettingsEntryBool Settings::exportUseAsciiSTL("export", "useAsciiSTL", false);
-SettingsEntryEnum Settings::toolbarExport3D("advanced", "toolbarExport3D", {{"none", "none"}, {"STL", "STL"}, {"OFF", "OFF"}, {"WRL", "WRL"}, {"AMF", "AMF"}, {"3MF", "3MF"}}, "STL");
-SettingsEntryEnum Settings::toolbarExport2D("advanced", "toolbarExport2D", {{"none", "none"}, {"DXF", "DXF"}, {"SVG", "SVG"}, {"PDF", "PDF"}}, "none");
+SettingsEntryString Settings::localSlicerExecutable("printing", "localSlicerExecutable", "");
+SettingsEntryEnum Settings::localSlicerFileFormat(
+    "printing", "localSlicerFileFormat", createFileFormatItems(fileformat::all3D()),
+    fileformat::info(FileFormat::ASCII_STL).description);
+
+SettingsEntryEnum Settings::renderBackend3D("advanced", "renderBackend3D", {{"CGAL", "CGAL (old/slow)"}, {"Manifold", "Manifold (new/fast)"}}, "CGAL");
+
+SettingsEntryEnum Settings::toolbarExport3D("advanced", "toolbarExport3D",
+  createFileFormatItems(fileformat::all3D()), fileformat::info(FileFormat::ASCII_STL).description);
+
+SettingsEntryEnum Settings::toolbarExport2D("advanced", "toolbarExport2D",
+  createFileFormatItems(fileformat::all2D()), fileformat::info(FileFormat::DXF).description);
 
 SettingsEntryBool Settings::summaryCamera("summary", "camera", false);
 SettingsEntryBool Settings::summaryArea("summary", "measurementArea", false);

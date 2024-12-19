@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 set -e
 
@@ -31,7 +31,7 @@ do_build() {
 	mkdir "$BUILDDIR"
 	(
 		cd "$BUILDDIR"
-		cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_UNITY_BUILD=ON -DPROFILE=ON -DUSE_BUILTIN_OPENCSG=1 ${EXPERIMENTAL} ${PYTHON_DEFINE} ${USE_QT6} .. && make $PARALLEL_MAKE
+		cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_UNITY_BUILD=OFF -DPROFILE=ON -DUSE_BUILTIN_OPENCSG=1 ${EXPERIMENTAL} ${PYTHON_DEFINE} ${USE_QT6} .. && make $PARALLEL_MAKE
 	)
 	if [[ $? != 0 ]]; then
 		echo "Build failure"

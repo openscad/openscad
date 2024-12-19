@@ -1,11 +1,7 @@
 #pragma once
 
-#include <boost/filesystem.hpp>
-#include "printutils.h"
-namespace fs = boost::filesystem;
-
-fs::path boostfs_normalize(const fs::path& path);
-fs::path boostfs_uncomplete(fs::path const& p, fs::path const& base);
+#include <limits>
+#include "utils/printutils.h"
 
 #include <boost/cast.hpp>
 #include <sstream>

@@ -2,7 +2,7 @@
 
 #set(DEBUG_OSCD 1) # print debug info during cmake
 
-cmake_minimum_required(VERSION 3.0)
+cmake_minimum_required(VERSION 3.13)
 if(POLICY CMP0017)
   # Explicitly use new include policy to avoid globally shadowing included modules
   # https://cmake.org/cmake/help/v2.8.8/cmake.html#policy:CMP0017
@@ -29,8 +29,8 @@ set(TEST_SCAD_DIR       "${CCSD}/data/scad")
 set(TEST_CUSTOMIZER_DIR "${CCSD}/data/scad/customizer")
 set(TEST_PYTHON_DIR     "${CCSD}/data/python")
 # Test runner Python scripts
-set(CGALSTLSANITYTEST_PY "${CCSD}/cgalstlsanitytest.py")
-set(EX_IM_PNGTEST_PY     "${CCSD}/export_import_pngtest.py")
+set(STLEXPORTSANITYTEST_PY "${CCSD}/stlexportsanitytest.py")
+set(EXPORT_IMPORT_PNGTEST_PY     "${CCSD}/export_import_pngtest.py")
 set(EXPORT_PNGTEST_PY    "${CCSD}/export_pngtest.py")
 set(SHOULDFAIL_PY        "${CCSD}/shouldfail.py")
 set(TEST_CMDLINE_TOOL_PY "${CCSD}/test_cmdline_tool.py")
@@ -212,7 +212,7 @@ endif()
 #endif()
 list(APPEND CTEST_ENVIRONMENT "OPENSCAD_BINARY=${OPENSCAD_BINPATH}")
 # Argument used for import/export tests
-set(OPENSCAD_ARG "--openscad=${OPENSCAD_BINPATH}")
+set(OPENSCAD_EXE_ARG "--openscad=${OPENSCAD_BINPATH}")
 
 ###############################
 # Define Macros and Functions #
@@ -235,7 +235,7 @@ endfunction()
 # Tags the given tests as belonging to the given CONFIG, i.e. will
 # only be executed when run using ctest -C <CONFIG>
 #
-# Usage example: set_test_config(Heavy dumptest_testname opencsgtest_testname2)
+# Usage example: set_test_config(Heavy dumptest_testname previewtest_testname2)
 #
 function(set_test_config CONFIG)
   cmake_parse_arguments(TESTCFG "" "" "FILES;PREFIXES" ${ARGN})
@@ -261,7 +261,21 @@ function(set_test_config CONFIG)
   endif()
   # Export to parent scope
   set(${CONFIG}_TEST_CONFIG ${${CONFIG}_TEST_CONFIG} CACHE INTERNAL "")
-endfunction()
+endfunction(set_test_config)
+
+#
+# Removes a tag from the given tests
+#
+# Usage example: remove_test_config(Bugs FILES previewtest_testname2)
+#
+function(remove_test_config CONFIG)
+  cmake_parse_arguments(TESTCFG "" "" "FILES" ${ARGN})
+  list(APPEND FULLNAMES ${TESTCFG_FILES})
+  # Remove config from fullnames
+  list(REMOVE_ITEM ${CONFIG}_TEST_CONFIG ${FULLNAMES})
+  # Export to parent scope
+  set(${CONFIG}_TEST_CONFIG ${${CONFIG}_TEST_CONFIG} CACHE INTERNAL "")
+endfunction(remove_test_config)
 
 #
 # Returns a list of test configs
@@ -349,19 +363,19 @@ function(add_cmdline_test TESTCMD_BASENAME)
     # add global experimental options here
     set(EXPERIMENTAL_OPTION "")
 
-    # To give manifold some extra test coverage, enable manifold 
-    # for all tests except those marked as skipped.
-    if (EXPERIMENTAL
-        AND NOT SCADFILE IN_LIST SCADFILES_WITH_DIFFERENT_MANIFOLD_EXPECTATIONS
-        AND NOT SCADFILE IN_LIST SCADFILES_FAILING_WITH_MANIFOLD
-        AND NOT TEST_FULLNAME IN_LIST TESTS_FAILING_WITH_MANIFOLD
-        AND NOT TESTCMD_BASENAME MATCHES "^(stlexport|objexport)$"
-        AND NOT TESTCMD_BASENAME MATCHES "^openscad-viewoptions-.*"
-        AND NOT TESTCMD_BASENAME MATCHES "^remesh-.*")
-      set(MANIFOLD_OPTION "--enable=manifold")
-    else()
-      set(MANIFOLD_OPTION "")
-    endif()
+    # # To give manifold some extra test coverage, enable manifold 
+    # # for all tests except those marked as skipped.
+    # if (ENABLE_MANIFOLD
+    #     AND NOT SCADFILE IN_LIST SCADFILES_DIFFERENT_MANIFOLD_EXPECTATIONS
+    #     AND NOT SCADFILE IN_LIST SCADFILES_FAILING_WITH_MANIFOLD
+    #     AND NOT TEST_FULLNAME IN_LIST TESTS_FAILING_WITH_MANIFOLD
+    #     AND NOT TESTCMD_BASENAME MATCHES "^(stlexport|objexport)$"
+    #     AND NOT TESTCMD_BASENAME MATCHES "^openscad-viewoptions-.*"
+    #     AND NOT TESTCMD_BASENAME MATCHES "^remesh-.*")
+    #   set(MANIFOLD_OPTION "--backend=manifold")
+    # else()
+    set(MANIFOLD_OPTION "")
+    # endif()
 
     # 2D tests should be viewed from the top, not an angle.
     set(CAMERA_OPTION "")
@@ -513,14 +527,12 @@ add_custom_target(svg_viewbox_tests ALL
 ##################################
 
 # Find all scad files
-file(GLOB DEPRECATED_3D_FILES ${TEST_SCAD_DIR}/3D/deprecated/*.scad)
 file(GLOB FEATURES_2D_FILES   ${TEST_SCAD_DIR}/2D/features/*.scad)
 list(REMOVE_ITEM FEATURES_2D_FILES
   ${TEST_SCAD_DIR}/2D/features/text-metrics.scad # -> EXPERIMENTAL_TEXTMETRICS_FILES
 )
-file(GLOB FEATURES_3D_FILES   ${TEST_SCAD_DIR}/3D/features/*.scad)
 file(GLOB ISSUES_2D_FILES     ${TEST_SCAD_DIR}/2D/issues/*.scad)
-file(GLOB ISSUES_3D_FILES     ${TEST_SCAD_DIR}/3D/issues/*.scad)
+file(GLOB_RECURSE BUGS_2D_FILES    ${TEST_SCAD_DIR}/bugs2D/*.scad)
 file(GLOB SCAD_DXF_FILES      ${TEST_SCAD_DIR}/dxf/*.scad)
 file(GLOB SCAD_PDF_FILES      ${TEST_SCAD_DIR}/pdf/*.scad)
 file(GLOB SCAD_SVG_FILES      ${TEST_SCAD_DIR}/svg/svg-spec/*.scad
@@ -533,32 +545,36 @@ file(GLOB SCAD_SVG_FILES      ${TEST_SCAD_DIR}/svg/svg-spec/*.scad
   ${TEST_SCAD_DIR}/svg/use-transform.scad
   ${TEST_SCAD_DIR}/svg/fill-rule.scad
   ${TEST_SCAD_DIR}/svg/size-percent.scad)
+  list(APPEND EXAMPLE_2D_FILES
+  ${EXAMPLES_DIR}/Old/example015.scad
+  ${EXAMPLES_DIR}/Advanced/module_recursion.scad
+  ${EXAMPLES_DIR}/Functions/list_comprehensions.scad
+  ${EXAMPLES_DIR}/Functions/polygon_areas.scad
+  ${EXAMPLES_DIR}/Functions/recursion.scad
+)
+
+file(GLOB FEATURES_3D_FILES   ${TEST_SCAD_DIR}/3D/features/*.scad)
+file(GLOB DEPRECATED_3D_FILES ${TEST_SCAD_DIR}/3D/deprecated/*.scad)
+file(GLOB ISSUES_3D_FILES     ${TEST_SCAD_DIR}/3D/issues/*.scad)
 file(GLOB SCAD_AMF_FILES           ${TEST_SCAD_DIR}/amf/*.scad)
 file(GLOB SCAD_NEF3_FILES          ${TEST_SCAD_DIR}/nef3/*.scad)
 file(GLOB FUNCTION_FILES           ${TEST_SCAD_DIR}/functions/*.scad)
 file(GLOB REDEFINITION_FILES       ${TEST_SCAD_DIR}/redefinition/*.scad)
 file(GLOB_RECURSE BUGS_FILES       ${TEST_SCAD_DIR}/bugs/*.scad)
-file(GLOB_RECURSE BUGS_2D_FILES    ${TEST_SCAD_DIR}/bugs2D/*.scad)
-file(GLOB_RECURSE EXAMPLE_3D_FILES ${EXAMPLES_DIR}/*.scad)
+file(GLOB_RECURSE EXAMPLE_FILES    ${EXAMPLES_DIR}/*.scad)
+list(REMOVE_ITEM EXAMPLE_FILES
+  ${EXAMPLES_DIR}/Basics/roof.scad # -> EXPERIMENTAL_ROOF_FILES
+)
 
+list(APPEND EXAMPLE_3D_FILES ${EXAMPLE_FILES})
+# Remove 2D files from 3D examples
 list(REMOVE_ITEM EXAMPLE_3D_FILES
   ${EXAMPLES_DIR}/Old/example015.scad
   ${EXAMPLES_DIR}/Advanced/module_recursion.scad
   ${EXAMPLES_DIR}/Functions/list_comprehensions.scad
   ${EXAMPLES_DIR}/Functions/polygon_areas.scad
   ${EXAMPLES_DIR}/Functions/recursion.scad
-  ${EXAMPLES_DIR}/Basics/roof.scad # -> EXPERIMENTAL_ROOF_FILES
 )
-
-list(APPEND EXAMPLE_2D_FILES
-  ${EXAMPLES_DIR}/Old/example015.scad
-  ${EXAMPLES_DIR}/Advanced/module_recursion.scad
-  ${EXAMPLES_DIR}/Functions/list_comprehensions.scad
-  ${EXAMPLES_DIR}/Functions/polygon_areas.scad
-  ${EXAMPLES_DIR}/Functions/recursion.scad
-)
-
-list(APPEND EXAMPLE_FILES ${EXAMPLE_3D_FILES} ${EXAMPLE_2D_FILES})
 
 list(APPEND MISC_FILES
   ${TEST_SCAD_DIR}/misc/arg-permutations.scad
@@ -676,9 +692,9 @@ list(APPEND ASTDUMPTEST_FILES ${MISC_FILES}
 
 list(APPEND DUMPTEST_FILES ${FEATURES_2D_FILES} ${FEATURES_3D_FILES} ${DEPRECATED_3D_FILES} ${MISC_FILES})
 
-list(APPEND CGALPNGTEST_2D_FILES ${FEATURES_2D_FILES} ${SCAD_DXF_FILES} ${ISSUES_2D_FILES} ${EXAMPLE_2D_FILES})
-list(APPEND CGALPNGTEST_3D_FILES ${FEATURES_3D_FILES} ${SCAD_AMF_FILES} ${DEPRECATED_3D_FILES} ${ISSUES_3D_FILES} ${EXAMPLE_3D_FILES} ${SCAD_NEF3_FILES})
-list(APPEND CGALPNGTEST_3D_FILES
+list(APPEND RENDERTEST_2D_FILES ${FEATURES_2D_FILES} ${SCAD_DXF_FILES} ${ISSUES_2D_FILES} ${EXAMPLE_2D_FILES})
+list(APPEND RENDERTEST_3D_FILES ${FEATURES_3D_FILES} ${SCAD_AMF_FILES} ${DEPRECATED_3D_FILES} ${ISSUES_3D_FILES} ${EXAMPLE_3D_FILES} ${SCAD_NEF3_FILES})
+list(APPEND RENDERTEST_3D_FILES
   ${TEST_SCAD_DIR}/misc/include-tests.scad
   ${TEST_SCAD_DIR}/misc/use-tests.scad
   ${TEST_SCAD_DIR}/misc/assert-tests.scad
@@ -704,59 +720,32 @@ list(APPEND STL_IMPORT_FILES
   ${TEST_SCAD_DIR}/stl/stl-import-unparseable.scad
 )
 
-list(GET CGALPNGTEST_2D_FILES 0 1 2 CGALPNGSTDIOTEST_FILES)
-list(APPEND CGALPNGTEST_FILES ${CGALPNGTEST_2D_FILES} ${CGALPNGTEST_3D_FILES})
+list(GET RENDERTEST_2D_FILES 0 1 2 RENDERSTDIOTEST_FILES)
+list(APPEND RENDERTEST_FILES ${RENDERTEST_2D_FILES} ${RENDERTEST_3D_FILES} ${BUGS_FILES} ${BUGS_2D_FILES})
+
+list(APPEND PREVIEW_ONLY_FILES
+  ${TEST_SCAD_DIR}/3D/features/child-background.scad
+  ${TEST_SCAD_DIR}/3D/features/highlight-and-background-modifier.scad
+  ${TEST_SCAD_DIR}/3D/features/highlight-modifier2.scad
+  ${TEST_SCAD_DIR}/3D/features/background-modifier2.scad
+)
+
+list(REMOVE_ITEM RENDERTEST_FILES 
+  # These tests only makes sense in preview mode
+  ${PREVIEW_ONLY_FILES}
+  # These tests don't make sense in CGAL mode
+  ${TEST_SCAD_DIR}/3D/features/color-names-tests.scad
+  ${TEST_SCAD_DIR}/3D/features/hex-colors-tests.scad
+)
+
 set(PRUNE_TEST ${TEST_SCAD_DIR}/misc/intersection-prune-test.scad)
-list(APPEND OPENCSGTEST_FILES ${STL_IMPORT_FILES} ${CGALPNGTEST_FILES} ${BUGS_FILES} ${BUGS_2D_FILES} ${PRUNE_TEST})
-list(APPEND THROWNTOGETHERTEST_FILES ${CGALPNGTEST_FILES} ${PRUNE_TEST})
+list(APPEND PREVIEWTEST_FILES ${STL_IMPORT_FILES} ${RENDERTEST_FILES} ${PRUNE_TEST} ${PREVIEW_ONLY_FILES})
+list(APPEND THROWNTOGETHERTEST_FILES ${RENDERTEST_FILES} ${PRUNE_TEST} ${PREVIEW_ONLY_FILES})
 
-list(APPEND CGALSTLSANITYTEST_FILES ${TEST_SCAD_DIR}/misc/normal-nan.scad)
-
-list(APPEND EXPORT_STL_TEST_FILES
-  ${TEST_SCAD_DIR}/stl/stl-export.scad
-)
-
-list(APPEND EXPORT_OBJ_TEST_FILES ${TEST_SCAD_DIR}/obj/obj-export.scad)
-list(APPEND EXPORT_OBJ_TEST_FILES ${TEST_SCAD_DIR}/obj/obj-import-export_dodecahedron.scad)
-list(APPEND EXPORT_OBJ_TEST_FILES ${TEST_SCAD_DIR}/obj/obj-import-export_cube.scad)
-list(APPEND EXPORT_OBJ_TEST_FILES ${TEST_SCAD_DIR}/3D/features/polyhedron-cube.scad)
-
-list(APPEND EXPORT_3MF_TEST_FILES ${TEST_SCAD_DIR}/3mf/3mf-export.scad)
-
-list(APPEND EXPORT3D_CGALCGAL_TEST_FILES
-  ${TEST_SCAD_DIR}/3D/features/polyhedron-nonplanar-tests.scad
-  ${TEST_SCAD_DIR}/3D/features/rotate_extrude-tests.scad
-  ${TEST_SCAD_DIR}/3D/features/union-coincident-test.scad
-  ${TEST_SCAD_DIR}/3D/features/mirror-tests.scad
-  ${TEST_SCAD_DIR}/misc/null-polygons.scad
-  ${TEST_SCAD_DIR}/misc/internal-cavity.scad
-  ${TEST_SCAD_DIR}/misc/internal-cavity-polyhedron.scad
-  ${TEST_SCAD_DIR}/misc/bad-stl-pcbvicebar.scad
-  ${TEST_SCAD_DIR}/misc/bad-stl-tardis.scad
-  ${TEST_SCAD_DIR}/misc/rotate_extrude-hole.scad
-  ${TEST_SCAD_DIR}/3D/issues/issue904.scad
-  ${TEST_SCAD_DIR}/3D/issues/issue1105.scad
-  ${TEST_SCAD_DIR}/3D/issues/issue1105d.scad
-  ${TEST_SCAD_DIR}/3D/issues/issue1215.scad
-  ${TEST_SCAD_DIR}/3D/issues/issue1215c.scad
-  ${TEST_SCAD_DIR}/3D/issues/issue1221.scad
-  ${TEST_SCAD_DIR}/3D/issues/issue1225.scad
-  ${TEST_SCAD_DIR}/misc/preview_variable.scad
-  ${TEST_SCAD_DIR}/3D/issues/fn_bug.scad
-)
-
-list(APPEND EXPORT3D_CGAL_TEST_FILES
-  ${TEST_SCAD_DIR}/3D/features/polyhedron-tests.scad
-  ${TEST_SCAD_DIR}/3D/issues/issue1105b.scad
-  ${TEST_SCAD_DIR}/3D/issues/issue1105c.scad
-  ${TEST_SCAD_DIR}/3D/issues/issue1215b.scad
-  ${TEST_SCAD_DIR}/3D/issues/issue1258.scad
-  ${TEST_SCAD_DIR}/3D/issues/issue2259.scad
-)
-
-list(APPEND EXPORT3D_TEST_FILES
-  ${TEST_SCAD_DIR}/misc/nonmanifold-polyhedron.scad
-  ${TEST_SCAD_DIR}/misc/bad-stl-wing.scad
+list(APPEND COLOR_3D_TEST_FILES
+  ${TEST_SCAD_DIR}/3D/features/color-tests3.scad
+  ${TEST_SCAD_DIR}/3D/features/linear_extrude-parameter-tests.scad
+  ${TEST_SCAD_DIR}/3D/features/resize-tests.scad
 )
 
 # 2D tests
@@ -767,24 +756,6 @@ list(APPEND ALL_2D_FILES
   ${SCAD_SVG_FILES}
   ${TEST_SCAD_DIR}/2D/features/text-metrics.scad
 )
-
-# We know that we cannot import weakly manifold files into CGAL, so to make tests easier
-# to manage, don't try. Once we improve import, we can reenable this
-# Known good manifold files -> EXPORT3D_CGALCGAL_TEST_FILES
-# Known weak manifold files -> EXPORT3D_CGAL_TEST_FILES
-# Known non-manifold files -> EXPORT3D_TEST_FILES
-list(APPEND EXPORT3D_CGALCGAL_TEST_FILES
-  ${TEST_SCAD_DIR}/3D/issues/issue13.scad
-  ${TEST_SCAD_DIR}/3D/issues/issue13b.scad
-  # Note issue13c is still flaky in non-experimental mode, so it's still in bugs/
-  ${BUGS_FILES}
-  )
-#list(REMOVE_ITEM EXPORT3D_CGALCGAL_TEST_FILES
-#)
-#list(APPEND EXPORT3D_CGAL_TEST_FILES
-#)
-
-list(APPEND CGALPNGTEST_FILES ${BUGS_FILES} ${BUGS_2D_FILES})
 
 # lazy-union
 list(APPEND LAZYUNION_3D_FILES
@@ -813,6 +784,7 @@ list(APPEND SVG_VIEWBOX_TESTS
   viewbox_600x600_slice_xMinYMin viewbox_600x600_slice_xMinYMid viewbox_600x600_slice_xMinYMax
 )
 
+# FIXME(kintel): Not in use anymore, but keep for reference?
 list(APPEND SCADFILES_WITH_GREEN_FACES
   ${EXAMPLES_DIR}/Advanced/children.scad
   ${EXAMPLES_DIR}/Basics/CSG-modules.scad
@@ -835,11 +807,11 @@ list(APPEND SCADFILES_WITH_GREEN_FACES
   ${EXAMPLES_DIR}/Old/example024.scad
   ${TEST_SCAD_DIR}/3D/features/difference-tests.scad
   ${TEST_SCAD_DIR}/3D/features/for-tests.scad
-  ${TEST_SCAD_DIR}/3D/features/highlight-modifier.scad
   ${TEST_SCAD_DIR}/3D/features/highlight-modifier2.scad
   ${TEST_SCAD_DIR}/3D/features/minkowski3-erosion.scad
   ${TEST_SCAD_DIR}/3D/features/minkowski3-difference-test.scad
   ${TEST_SCAD_DIR}/3D/features/render-tests.scad
+  ${TEST_SCAD_DIR}/3D/features/resize-convexity-tests.scad
   ${TEST_SCAD_DIR}/3D/issues/issue1105.scad
   ${TEST_SCAD_DIR}/3D/issues/issue1105b.scad
   ${TEST_SCAD_DIR}/3D/issues/issue1105c.scad
@@ -862,32 +834,94 @@ list(APPEND SCADFILES_WITH_GREEN_FACES
   ${TEST_SCAD_DIR}/misc/rotate-empty-bbox.scad
 )
 
-list(APPEND SCADFILES_WITH_DIFFERENT_MANIFOLD_EXPECTATIONS
-  # No more green faces from differences.
-  ${SCADFILES_WITH_GREEN_FACES}
+list(APPEND SCADFILES_WITH_COLOR
+  ${TEST_SCAD_DIR}/3D/features/child-child-test.scad
+  ${TEST_SCAD_DIR}/3D/features/color-tests.scad
+  ${TEST_SCAD_DIR}/3D/features/color-tests2.scad
+  ${TEST_SCAD_DIR}/3D/features/color-tests3.scad
+  ${TEST_SCAD_DIR}/3D/features/highlight-modifier.scad
+  ${TEST_SCAD_DIR}/3D/features/linear_extrude-parameter-tests.scad
+  ${TEST_SCAD_DIR}/3D/features/rotate-parameters.scad
+  ${TEST_SCAD_DIR}/3D/features/resize-tests.scad
+  ${TEST_SCAD_DIR}/3D/features/color-names-tests.scad
+  ${TEST_SCAD_DIR}/3D/features/hex-colors-tests.scad
 
-  # Different vertex order
-  ${TEST_SCAD_DIR}/3mf/3mf-export.scad
-  ${TEST_SCAD_DIR}/stl/stl-import-nonmanifold.scad
+  ${EXAMPLES_DIR}/Advanced/assert.scad
+  ${EXAMPLES_DIR}/Advanced/animation.scad
+  ${EXAMPLES_DIR}/Advanced/GEB.scad
+  ${EXAMPLES_DIR}/Advanced/children.scad
+  ${EXAMPLES_DIR}/Advanced/children_indexed.scad
+  ${EXAMPLES_DIR}/Basics/CSG-modules.scad
+  ${EXAMPLES_DIR}/Basics/linear_extrude.scad
+  ${EXAMPLES_DIR}/Basics/logo_and_text.scad
+  ${EXAMPLES_DIR}/Basics/projection.scad
+  ${EXAMPLES_DIR}/Basics/text_on_cube.scad
+  ${EXAMPLES_DIR}/Advanced/surface_image.scad
+  ${EXAMPLES_DIR}/Functions/functions.scad
+  ${EXAMPLES_DIR}/Basics/rotate_extrude.scad
+  ${EXAMPLES_DIR}/Old/example017.scad
+
+  ${TEST_SCAD_DIR}/3D/issues/issue5217.scad
+
+  #${TEST_SCAD_DIR}/bugs/issue1000.scad
+)
+
+# Render in CGAL and Manifold should be the same, except for objects with color
+# ..but there are some exceptions.
+list(APPEND SCADFILES_DIFFERENT_MANIFOLD_RENDER_EXPECTATIONS
+  # Manifold backend supports color rendering
+  ${SCADFILES_WITH_COLOR}
+
+  # Manifold can repair winding order
+  ${TEST_SCAD_DIR}/3D/features/polyhedron-tests.scad
+
+  # Manifold can construct geometry which isn't representable in CGAL mode,
+  # causing CGAL-based operations like minkowski() to fail.
+  ${TEST_SCAD_DIR}/3D/issues/issue1137.scad
+
+  # render() in manifold mode preserves colors
+  ${TEST_SCAD_DIR}/3D/features/render-tests.scad
+  ${EXAMPLES_DIR}/Old/example016.scad
+
+  # Manifold can represent the very think slice
+  ${TEST_SCAD_DIR}/3D/issues/issue1165.scad
+)
+
+# Preview in CGAL and Manifold should be the same, except for objects with color
+# ..but there are some exceptions.
+list(APPEND SCADFILES_DIFFERENT_MANIFOLD_PREVIEW_EXPECTATIONS
+  # Manifold can construct geometry which isn't representable in CGAL mode,
+  # causing CGAL-based operations like minkowski() to fail.
+  ${TEST_SCAD_DIR}/3D/issues/issue1137.scad
+
+  # render() in manifold mode preserves colors
+  ${TEST_SCAD_DIR}/3D/features/render-tests.scad
+  ${TEST_SCAD_DIR}/misc/internal-cavity.scad
+
+  # resize() in manifold mode preserves colors
+  ${TEST_SCAD_DIR}/3D/features/resize-convexity-tests.scad
+
+  # TODO(kintel): Run bugs files
+  # ${TEST_SCAD_DIR}/bugs/issue1000.scad
+  # ${TEST_SCAD_DIR}/bugs/issue802.scad
+  # ${TEST_SCAD_DIR}/bugs2D/issue2220.scad
 )
 
 list(APPEND SCADFILES_FAILING_WITH_MANIFOLD
-  # Crashes with Input mesh not closed! / NoManifold
-  ${TEST_SCAD_DIR}/3D/features/polyhedron-tests.scad
-  ${TEST_SCAD_DIR}/3D/issues/issue1137.scad
-
-  # Resize issues!
-  ${TEST_SCAD_DIR}/3D/features/resize-convexity-tests.scad
-  ${TEST_SCAD_DIR}/3D/features/resize-tests.scad
-
-  # Misc
-  ${TEST_SCAD_DIR}/misc/normal-nan.scad
+  # Add any tests failing just w/ Manifold here.
 )
 
-list(APPEND TESTS_FAILING_WITH_MANIFOLD
-  # Need to flip faces if transform determinant is < 0
-  cgalstlcgalpngtest_mirror-tests
-  cgalbinstlcgalpngtest_mirror-tests
+list(APPEND RENDERMANIFOLDTEST_FILES ${RENDERTEST_FILES})
+list(REMOVE_ITEM RENDERMANIFOLDTEST_FILES
+  ${SCAD_NEF3_FILES}       # Nef3 import not supported in Manifold mode
+  ${SCADFILES_DIFFERENT_MANIFOLD_RENDER_EXPECTATIONS}
+  ${SCADFILES_FAILING_WITH_MANIFOLD}
+)
+
+list(APPEND PREVIEWMANIFOLDTEST_FILES ${PREVIEWTEST_FILES})
+list(REMOVE_ITEM PREVIEWMANIFOLDTEST_FILES
+  ${SCADFILES_DIFFERENT_MANIFOLD_PREVIEW_EXPECTATIONS}
+  ${SCADFILES_FAILING_WITH_MANIFOLD}
 )
 
 ##############################
@@ -902,22 +936,51 @@ endforeach()
 
 # Heavy tests are tests taking more than 5 seconds on a decent 2023 desktop
 set_test_config(Heavy FILES
-  csgpngtest_issue267-normalization-crash
-  cgalpngtest_issue267-normalization-crash
+  csgrendertest_issue267-normalization-crash
+  rendertest_issue267-normalization-crash
 )
 
 # Bugs
-set_test_config(Bugs FILES ${BUGS_FILES} ${BUGS_2D_FILES} PREFIXES opencsgtest cgalpngtest csgpngtest)
-set_test_config(Bugs FILES ${BUGS_FILES} PREFIXES offpngtest monotonepngtest stlpngtest stlcgalpngtest cgalstlcgalpngtest cgalbinstlcgalpngtest offcgalpngtest)
+set_test_config(Bugs FILES ${BUGS_FILES} ${BUGS_2D_FILES} PREFIXES
+ rendertest rendermanifoldtest csgrendertest previewtest previewmanifoldtest throwntogethertest)
+set_test_config(Bugs FILES ${BUGS_FILES} PREFIXES
+  offpreviewtest monotonerendertest 
+  stlpreviewtest stlpreviewmanifoldtest 
+  stlrendertest stlrendermanifoldtest
+  stlrenderforcetest stlrendermanifoldforcetest
+  binstlrenderforcetest binstlrendermanifoldforcetest
+  offrendertest)
+
+# Re-enable "fixed by manifold" bugs for Manifold
 set_test_config(Bugs FILES
-  offpngtest_nonmanifold-polyhedron
-  offpngtest_bad-stl-wing
-  cgalpngtest_escape-test.scad
+  # https://github.com/openscad/openscad/issues/3567
+  rendertest_linear_extrude-scale-zero-tests
+  csgrendertest_linear_extrude-scale-zero-tests
+
+)
+
+# Remove bugs fixed by manifold from the Bugs tag, to guard against regressions
+remove_test_config(Bugs FILES
+  stlrendermanifoldforcetest_issue584
+  rendermanifoldtest_issue591
+  rendermanifoldtest_issue791 
+  # FIXME: #802
+  stlrendermanifoldforcetest_issue945
+  stlrendermanifoldforcetest_issue945b
+  stlrendermanifoldforcetest_issue945c
+  stlrendermanifoldforcetest_issue945d
+  stlrendermanifoldforcetest_issue945e
+  stlrendermanifoldforcetest_issue945f
+  rendermanifoldtest_issue1455
 )
 
 # Examples
-set_test_config(Examples FILES ${EXAMPLE_FILES} PREFIXES cgalpngtest manifold-cgalpng opencsgtest throwntogethertest csgpngtest monotonepngtest stlpngtest stlcgalpngtest cgalstlcgalpngtest cgalbinstlcgalpngtest offpngtest offcgalpngtest dumptest-examples)
-set_test_config(Examples FILES ${EXAMPLE_2D_FILES} PREFIXES dxfpngtest)
+set_test_config(Examples FILES ${EXAMPLE_FILES} PREFIXES
+  rendertest rendermanifoldtest rendermanifoldtest-different 
+  previewtest previewmanifoldtest previewmanifoldtest-different previewtestthrowntogethertest 
+  csgrendertest monotonerendertest 
+  offpreviewtest offrendertest dumptest-examples)
+set_test_config(Examples FILES ${EXAMPLE_2D_FILES} PREFIXES dxfrendertest)
 
 #############
 # Add tests #
@@ -926,16 +989,18 @@ set_test_config(Examples FILES ${EXAMPLE_2D_FILES} PREFIXES dxfpngtest)
 # Types of tests:
 # o echotest: Just record console output
 # o dumptest: Export .csg
-# o cgalpngtest: Export to PNG using --render
-# o opencsgtest: Export to PNG using OpenCSG
+# o rendertest: Export to PNG using --render
+# o rendermanifoldtest: Export to PNG using --render with --backend=manifold
+# o previewtest: Export to PNG using OpenCSG
+# o previewmanifoldtest: Export to PNG in preview mode with --backend=manifold
 # o throwntogethertest: Export to PNG using the Throwntogether renderer
-# o csgpngtest: 1) Export to .csg, 2) import .csg and export to PNG (--render)
-# o monotonepngtest: Same as cgalpngtest but with the "Monotone" color scheme
-# o stlpngtest: Export to STL, Re-import and render to PNG (--render)
-# o stlcgalpngtest: Export to STL, Re-import and render to PNG (--render=force)
-# o offpngtest: Export to OFF, Re-import and render to PNG (--render)
-# o offcgalpngtest: Export to STL, Re-import and render to PNG (--render=force)
-# o dxfpngtest: Export to DXF, Re-import and render to PNG (--render=force)
+# o csgrendertest: 1) Export to .csg, 2) import .csg and export to PNG (--render)
+# o monotonerendertest: Same as rendertest but with the "Monotone" color scheme
+# o stlpreviewtest: Export to STL, Re-import and render to PNG (--render)
+# o stlrendertest: Export to STL, Re-import and render to PNG (--render=force)
+# o offpreviewtest: Export to OFF, Re-import and render to PNG (--render)
+# o offrendertest: Export to STL, Re-import and render to PNG (--render=force)
+# o dxfrendertest: Export to DXF, Re-import and render to PNG (--render=force)
 #
 
 add_cmdline_test(astdumptest OPENSCAD SUFFIX ast FILES
@@ -973,26 +1038,25 @@ add_cmdline_test(echotest         OPENSCAD SUFFIX echo FILES ${TEST_SCAD_DIR}/mi
 # This test is quiet to speed up the test and to have a stable and reproducable output
 add_cmdline_test(echotest         OPENSCAD SUFFIX echo FILES ${TEST_SCAD_DIR}/issues/issue4172-echo-vector-stack-exhaust.scad ARGS --quiet --trace-usermodule-parameters=false)
 
-# Test transcription of --camera options to $vp* for 7-argument --camera.
-add_cmdline_test(echotest-cli-view-variables-7         OPENSCAD SUFFIX echo FILES ${TEST_SCAD_DIR}/misc/test-view-variables.scad ARGS --camera 10,20,30,40,50,60,70)
-add_cmdline_test(dumptest-cli-view-variables-7         OPENSCAD SUFFIX csg FILES ${TEST_SCAD_DIR}/misc/test-view-variables.scad ARGS --camera 10,20,30,40,50,60,70)
-add_cmdline_test(opencsgtest-cli-view-variables-7         OPENSCAD SUFFIX png FILES ${TEST_SCAD_DIR}/misc/test-view-variables.scad ARGS --camera 10,20,30,40,50,60,70)
-
-# Test transcription of --camera options to $vp* for 6-argument --camera.
-add_cmdline_test(echotest-cli-view-variables-6         OPENSCAD SUFFIX echo FILES ${TEST_SCAD_DIR}/misc/test-view-variables.scad ARGS --camera 10,20,30,40,50,60)
-add_cmdline_test(dumptest-cli-view-variables-6         OPENSCAD SUFFIX csg FILES ${TEST_SCAD_DIR}/misc/test-view-variables.scad ARGS --camera 10,20,30,40,50,60)
-add_cmdline_test(opencsgtest-cli-view-variables-6         OPENSCAD SUFFIX png FILES ${TEST_SCAD_DIR}/misc/test-view-variables.scad ARGS --camera 10,20,30,40,50,60)
-
 add_cmdline_test(dumptest           OPENSCAD FILES ${FEATURES_2D_FILES} ${FEATURES_3D_FILES} ${DEPRECATED_3D_FILES} ${MISC_FILES} SUFFIX csg ARGS)
 add_cmdline_test(dumptest-examples  OPENSCAD FILES ${EXAMPLE_FILES} SUFFIX csg ARGS)
-add_cmdline_test(cgalpngtest        OPENSCAD FILES ${CGALPNGTEST_FILES} SUFFIX png ARGS --render)
-add_cmdline_test(cgalpngstdiotest   OPENSCAD FILES ${CGALPNGSTDIOTEST_FILES} SUFFIX png STDIO EXPECTEDDIR cgalpngtest ARGS --export-format png --render)
-add_cmdline_test(opencsgtest        OPENSCAD FILES ${OPENCSGTEST_FILES} SUFFIX png ARGS)
-add_cmdline_test(throwntogethertest OPENSCAD FILES ${THROWNTOGETHERTEST_FILES} ARGS --preview=throwntogether SUFFIX png)
-add_cmdline_test(csgpngtest         SCRIPT ${EX_IM_PNGTEST_PY} SUFFIX png FILES ${CGALPNGTEST_FILES} EXPECTEDDIR cgalpngtest ARGS ${OPENSCAD_ARG} --format=csg --render)
-# FIXME: We don't actually need to compare the output of cgalstlsanitytest
-# with anything. It's self-contained and returns != 0 on error
-add_cmdline_test(cgalstlsanitytest  SCRIPT ${CGALSTLSANITYTEST_PY} SUFFIX txt FILES ${CGALSTLSANITYTEST_FILES} ARGS ${OPENSCAD_ARG})
+# non-ASCII filenames
+add_cmdline_test(openscad-nonascii  OPENSCAD FILES ${TEST_SCAD_DIR}/misc/sfære.scad SUFFIX csg)
+
+# Baseline PNG tests
+add_cmdline_test(rendertest         OPENSCAD FILES ${RENDERTEST_FILES} SUFFIX png ARGS --render)
+add_cmdline_test(previewtest        OPENSCAD FILES ${PREVIEWTEST_FILES} SUFFIX png ARGS)
+add_cmdline_test(throwntogethertest OPENSCAD SUFFIX png FILES ${THROWNTOGETHERTEST_FILES} ARGS --preview=throwntogether)
+
+# Other PNG tests
+add_cmdline_test(renderstdiotest     OPENSCAD SUFFIX png FILES ${RENDERSTDIOTEST_FILES} STDIO EXPECTEDDIR rendertest ARGS --export-format png --render)
+add_cmdline_test(csgrendertest       SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png FILES ${RENDERTEST_FILES} EXPECTEDDIR rendertest ARGS ${OPENSCAD_EXE_ARG} --format=csg --render)
+if (ENABLE_MANIFOLD)
+add_cmdline_test(rendermanifoldtest            OPENSCAD SUFFIX png FILES ${RENDERMANIFOLDTEST_FILES} EXPECTEDDIR rendertest ARGS --render --backend=manifold)
+add_cmdline_test(rendermanifoldtest-different  OPENSCAD SUFFIX png FILES ${SCADFILES_DIFFERENT_MANIFOLD_RENDER_EXPECTATIONS} ARGS --render --backend=manifold)
+add_cmdline_test(previewmanifoldtest           OPENSCAD SUFFIX png FILES ${PREVIEWMANIFOLDTEST_FILES} EXPECTEDDIR previewtest ARGS --backend=manifold)
+add_cmdline_test(previewmanifoldtest-different OPENSCAD SUFFIX png FILES ${SCADFILES_DIFFERENT_MANIFOLD_PREVIEW_EXPECTATIONS} ARGS --backend=manifold)
+endif()
 
 set(VIEWBOX_TEST "${TEST_SCAD_DIR}/svg/extruded/viewbox-test.scad")
 foreach(TEST ${SVG_VIEWBOX_TESTS})
@@ -1004,53 +1068,114 @@ add_cmdline_test(svgimport OPENSCAD ARGS --imgsize 600,600 SUFFIX png FILES
   ${TEST_SCAD_DIR}/svg/extruded/simple-center.scad
 )
 
-add_cmdline_test(lazyunion-dump        EXPERIMENTAL OPENSCAD SUFFIX csg FILES ${LAZYUNION_FILES} ARGS --enable=lazy-union)
-add_cmdline_test(lazyunion-opencsg     EXPERIMENTAL OPENSCAD SUFFIX png FILES ${LAZYUNION_FILES} ARGS --enable=lazy-union)
-add_cmdline_test(lazyunion-cgalpng     EXPERIMENTAL OPENSCAD SUFFIX png FILES ${LAZYUNION_FILES} ARGS --enable=lazy-union --render)
-add_cmdline_test(lazyunion-monotonepng EXPERIMENTAL OPENSCAD SUFFIX png FILES ${LAZYUNION_3D_FILES} ARGS --colorscheme=Monotone --enable=lazy-union --render )
-add_cmdline_test(lazyunion-stlpngtest  EXPERIMENTAL SCRIPT ${EX_IM_PNGTEST_PY} SUFFIX png FILES ${LAZYUNION_3D_FILES} EXPECTEDDIR lazyunion-monotonepng ARGS ${OPENSCAD_ARG} --format=STL --enable=lazy-union --render=force)
-add_cmdline_test(lazyunion-offpngtest  EXPERIMENTAL SCRIPT ${EX_IM_PNGTEST_PY} SUFFIX png FILES ${LAZYUNION_3D_FILES} EXPECTEDDIR lazyunion-monotonepng ARGS ${OPENSCAD_ARG} --format=OFF --enable=lazy-union --render=force)
-add_cmdline_test(lazyunion-dxfpngtest  EXPERIMENTAL SCRIPT ${EX_IM_PNGTEST_PY} SUFFIX png FILES ${LAZYUNION_2D_FILES} EXPECTEDDIR lazyunion-cgalpng     ARGS ${OPENSCAD_ARG} --format=DXF --enable=lazy-union --render=force)
-add_cmdline_test(lazyunion-svgpngtest  EXPERIMENTAL SCRIPT ${EX_IM_PNGTEST_PY} SUFFIX png FILES ${LAZYUNION_2D_FILES} EXPECTEDDIR lazyunion-cgalpng     ARGS ${OPENSCAD_ARG} --format=SVG --enable=lazy-union --render=force)
+#
+# Export/import tests
+#
 
-add_cmdline_test(manifold-cgalpng      EXPERIMENTAL OPENSCAD SUFFIX png FILES ${SCADFILES_WITH_DIFFERENT_MANIFOLD_EXPECTATIONS} ARGS --enable=manifold --render)
+list(APPEND EXPORT_STL_TEST_FILES
+  ${TEST_SCAD_DIR}/stl/stl-export.scad
+)
 
-# Trivial Export/Import files
-# This sanity-checks bidirectional file format import/export
-set(EXP_IMP_2D_TEST ${TEST_SCAD_DIR}/misc/square10.scad)
-set(EXP_IMP_3D_TEST ${TEST_SCAD_DIR}/misc/cube10.scad)
-add_cmdline_test(monotonepngtest OPENSCAD SUFFIX png FILES ${EXP_IMP_2D_TEST} ${EXP_IMP_3D_TEST} ARGS --colorscheme=Monotone --render)
-add_cmdline_test(stlpngtest    SCRIPT ${EX_IM_PNGTEST_PY} SUFFIX png FILES ${EXP_IMP_3D_TEST} EXPECTEDDIR monotonepngtest ARGS ${OPENSCAD_ARG} --format=STL)
-add_cmdline_test(offpngtest    SCRIPT ${EX_IM_PNGTEST_PY} SUFFIX png FILES ${EXP_IMP_3D_TEST} EXPECTEDDIR monotonepngtest ARGS ${OPENSCAD_ARG} --format=OFF)
-add_cmdline_test(amfpngtest    SCRIPT ${EX_IM_PNGTEST_PY} SUFFIX png FILES ${EXP_IMP_3D_TEST} EXPECTEDDIR monotonepngtest ARGS ${OPENSCAD_ARG} --format=AMF)
-add_cmdline_test(3mfpngtest    SCRIPT ${EX_IM_PNGTEST_PY} SUFFIX png FILES ${EXP_IMP_3D_TEST} EXPECTEDDIR monotonepngtest ARGS ${OPENSCAD_ARG} --format=3MF)
-add_cmdline_test(objpngtest    SCRIPT ${EX_IM_PNGTEST_PY} SUFFIX png FILES ${EXP_IMP_3D_TEST} EXPECTEDDIR monotonepngtest ARGS ${OPENSCAD_ARG} --format=OBJ)
-add_cmdline_test(dxfpngtest    SCRIPT ${EX_IM_PNGTEST_PY} SUFFIX png FILES ${EXP_IMP_2D_TEST} EXPECTEDDIR monotonepngtest ARGS ${OPENSCAD_ARG} --format=DXF --render=force)
-add_cmdline_test(svgpngtest    SCRIPT ${EX_IM_PNGTEST_PY} SUFFIX png FILES ${EXP_IMP_2D_TEST} EXPECTEDDIR monotonepngtest ARGS ${OPENSCAD_ARG} --format=SVG --render=force)
-add_cmdline_test(pdfexporttest SCRIPT ${EXPORT_PNGTEST_PY} SUFFIX png FILES ${SCAD_PDF_FILES} EXPECTEDDIR pdfexporttest ARGS ${OPENSCAD_ARG} --format=PDF KERNEL Square:2)
+# FIXME: Reintroduce
+list(APPEND COLOR_EXPORT_TEST_FILES
+  ${TEST_SCAD_DIR}/misc/color-export.scad
+)
 
-# Corner-case Export/Import tests
-add_cmdline_test(monotonepngtest OPENSCAD SUFFIX png FILES ${EXPORT3D_CGAL_TEST_FILES} ${EXPORT3D_CGALCGAL_TEST_FILES} ARGS --colorscheme=Monotone --render)
-add_cmdline_test(stlexport             EXPERIMENTAL OPENSCAD SUFFIX stl FILES ${EXPORT_STL_TEST_FILES} ARGS --enable=predictible-output --render)
-add_cmdline_test(manifold-stlexport    EXPERIMENTAL OPENSCAD SUFFIX stl FILES ${EXPORT_STL_TEST_FILES} EXPECTEDDIR stlexport ARGS --enable=predictible-output --enable=manifold --render)
-add_cmdline_test(objexport             EXPERIMENTAL OPENSCAD SUFFIX obj FILES ${EXPORT_OBJ_TEST_FILES} ARGS --render --enable=predictible-output)
-add_cmdline_test(3mfexport             EXPERIMENTAL OPENSCAD SUFFIX 3mf FILES ${EXPORT_3MF_TEST_FILES} ARGS --enable=predictible-output)
+list(APPEND EXPORT_OBJ_TEST_FILES ${TEST_SCAD_DIR}/obj/obj-export.scad)
+list(APPEND EXPORT_OBJ_TEST_FILES ${TEST_SCAD_DIR}/obj/obj-import-export_dodecahedron.scad)
+list(APPEND EXPORT_OBJ_TEST_FILES ${TEST_SCAD_DIR}/obj/obj-import-export_cube.scad)
+list(APPEND EXPORT_OBJ_TEST_FILES ${TEST_SCAD_DIR}/3D/features/polyhedron-cube.scad)
 
-# stlpngtest: direct STL output, preview rendering
-add_cmdline_test(stlpngtest            SCRIPT ${EX_IM_PNGTEST_PY} ARGS ${OPENSCAD_ARG} --format=STL EXPECTEDDIR monotonepngtest SUFFIX png FILES ${EXPORT3D_TEST_FILES})
-# cgalstlpngtest: CGAL STL output, normal rendering
-add_cmdline_test(stlcgalpngtest        SCRIPT ${EX_IM_PNGTEST_PY} ARGS ${OPENSCAD_ARG} --format=STL --require-manifold --render EXPECTEDDIR monotonepngtest SUFFIX png FILES ${EXPORT3D_CGAL_TEST_FILES})
-# cgalstlcgalpngtest: CGAL STL output, CGAL rendering
-add_cmdline_test(cgalstlcgalpngtest    SCRIPT ${EX_IM_PNGTEST_PY} ARGS ${OPENSCAD_ARG} --format=ASCIISTL --require-manifold --render=force EXPECTEDDIR monotonepngtest SUFFIX png FILES ${EXPORT3D_CGALCGAL_TEST_FILES})
+list(APPEND EXPORT_3MF_TEST_FILES ${TEST_SCAD_DIR}/3mf/3mf-export.scad)
 
-# cgalbinstlcgalpngtest: CGAL binary STL output, CGAL rendering
-add_cmdline_test(cgalbinstlcgalpngtest SCRIPT ${EX_IM_PNGTEST_PY} ARGS ${OPENSCAD_ARG} --format=BINSTL --require-manifold --render=force EXPECTEDDIR monotonepngtest SUFFIX png FILES ${EXPORT3D_CGALCGAL_TEST_FILES})
-add_cmdline_test(offpngtest            SCRIPT ${EX_IM_PNGTEST_PY} ARGS ${OPENSCAD_ARG} --format=OFF --render EXPECTEDDIR monotonepngtest SUFFIX png FILES ${EXPORT3D_TEST_FILES})
-add_cmdline_test(offcgalpngtest        SCRIPT ${EX_IM_PNGTEST_PY} ARGS ${OPENSCAD_ARG} --format=OFF --render=force EXPECTEDDIR monotonepngtest SUFFIX png FILES ${EXPORT3D_CGAL_TEST_FILES})
-add_cmdline_test(dxfpngtest            SCRIPT ${EX_IM_PNGTEST_PY} ARGS ${OPENSCAD_ARG} --format=DXF --render=force EXPECTEDDIR cgalpngtest SUFFIX png FILES ${FILES_2D} ${SCAD_DXF_FILES})
-add_cmdline_test(svgpngtest            SCRIPT ${EX_IM_PNGTEST_PY} ARGS ${OPENSCAD_ARG} --format=SVG --render=force EXPECTEDDIR cgalpngtest SUFFIX png FILES ${FILES_2D} ${SCAD_SVG_FILES})
+list(APPEND EXPORT_POV_TEST_FILES ${TEST_SCAD_DIR}/pov/pov-export.scad)
 
-# Manifold corner cases
+list(APPEND EXPORT_IMPORT_3D_FILES
+${TEST_SCAD_DIR}/3D/features/mirror-tests.scad
+${TEST_SCAD_DIR}/3D/features/polyhedron-tests.scad
+${TEST_SCAD_DIR}/3D/features/polyhedron-nonplanar-tests.scad
+${TEST_SCAD_DIR}/3D/features/rotate_extrude-tests.scad
+${TEST_SCAD_DIR}/3D/features/union-coincident-test.scad
+${TEST_SCAD_DIR}/3D/issues/fn_bug.scad
+${TEST_SCAD_DIR}/3D/issues/issue904.scad
+${TEST_SCAD_DIR}/3D/issues/issue1105.scad
+${TEST_SCAD_DIR}/3D/issues/issue1105b.scad
+${TEST_SCAD_DIR}/3D/issues/issue1105c.scad
+${TEST_SCAD_DIR}/3D/issues/issue1105d.scad
+${TEST_SCAD_DIR}/3D/issues/issue1215.scad
+${TEST_SCAD_DIR}/3D/issues/issue1215b.scad
+${TEST_SCAD_DIR}/3D/issues/issue1215c.scad
+${TEST_SCAD_DIR}/3D/issues/issue1221.scad
+${TEST_SCAD_DIR}/3D/issues/issue1225.scad
+${TEST_SCAD_DIR}/3D/issues/issue1258.scad
+${TEST_SCAD_DIR}/3D/issues/issue2259.scad
+${TEST_SCAD_DIR}/misc/null-polygons.scad
+${TEST_SCAD_DIR}/misc/bad-stl-pcbvicebar.scad
+${TEST_SCAD_DIR}/misc/bad-stl-tardis.scad
+${TEST_SCAD_DIR}/misc/bad-stl-wing.scad
+${TEST_SCAD_DIR}/misc/internal-cavity.scad
+${TEST_SCAD_DIR}/misc/internal-cavity-polyhedron.scad
+${TEST_SCAD_DIR}/misc/nonmanifold-polyhedron.scad
+${TEST_SCAD_DIR}/misc/preview_variable.scad
+${TEST_SCAD_DIR}/misc/rotate_extrude-hole.scad
+)
+
+#
+# There are some caveats with export and import, so we need to test a few combinations:
+# 1. It may be possible to export a non-manifold mesh (e.g. malformed polyhedron) due to 
+#    no manifoldness checks at export time. This is by design, e.g. to allow users to 
+#    troubleshoot externally.
+# 2. It may be possible to import such non-manifolds and preview or render them, but it will
+#    likely fail when trying to construct a data structure requiring manifold objects (e.g. --render=force)
+#
+# This leads to three types of tests:
+# 1. <format>rendertest: Manifold object export + render (both with --render=force)
+# 2. <format>previewtest: Non-manifold polyhedron export + preview
+# 3. <format>rendertest: Complex Manifold polyhedron export + render (both with --render=force)
+#    e.g. self-touching polyhedron or malformed but repairable.
+#
+
+# Export tests (compare actually exported files)
+add_cmdline_test(stlexport              EXPERIMENTAL OPENSCAD SUFFIX stl FILES ${EXPORT_STL_TEST_FILES} ARGS --enable=predictible-output --render)
+add_cmdline_test(stlexport-stdout       EXPERIMENTAL OPENSCAD SUFFIX stl FILES ${EXPORT_STL_TEST_FILES} STDIO EXPECTEDDIR stlexport ARGS --enable=predictible-output --render --export-format asciistl)
+if (ENABLE_MANIFOLD)
+add_cmdline_test(manifold-stlexport     EXPERIMENTAL OPENSCAD SUFFIX stl FILES ${EXPORT_STL_TEST_FILES} EXPECTEDDIR stlexport ARGS --enable=predictible-output --backend=manifold --render)
+endif()
+
+add_cmdline_test(binstlexport           EXPERIMENTAL OPENSCAD SUFFIX stl FILES ${EXPORT_STL_TEST_FILES} ARGS --enable=predictible-output --render --export-format binstl)
+add_cmdline_test(binstlexport-stdout    EXPERIMENTAL OPENSCAD SUFFIX stl FILES ${EXPORT_STL_TEST_FILES} STDIO EXPECTEDDIR binstlexport ARGS --enable=predictible-output --render --export-format binstl)
+
+add_cmdline_test(objexport              EXPERIMENTAL OPENSCAD SUFFIX obj FILES ${EXPORT_OBJ_TEST_FILES} ARGS --render --enable=predictible-output)
+if (LIB3MF_FOUND)
+add_cmdline_test(3mfexport              EXPERIMENTAL OPENSCAD SUFFIX 3mf FILES ${EXPORT_3MF_TEST_FILES} ARGS --enable=predictible-output)
+endif()
+add_cmdline_test(povexport-as-is        EXPERIMENTAL OPENSCAD SUFFIX pov FILES ${EXPORT_POV_TEST_FILES} ARGS --enable=predictible-output --backend=manifold)
+add_cmdline_test(povexport-translate-1  EXPERIMENTAL OPENSCAD SUFFIX pov FILES ${EXPORT_POV_TEST_FILES} ARGS --enable=predictible-output --backend=manifold --camera=0,0,0,0,0,0,140)
+add_cmdline_test(povexport-translate-2  EXPERIMENTAL OPENSCAD SUFFIX pov FILES ${EXPORT_POV_TEST_FILES} ARGS --enable=predictible-output --backend=manifold --camera=10,0,0,0,0,0,140)
+add_cmdline_test(povexport-translate-3  EXPERIMENTAL OPENSCAD SUFFIX pov FILES ${EXPORT_POV_TEST_FILES} ARGS --enable=predictible-output --backend=manifold --camera=0,10,0,0,0,0,140)
+add_cmdline_test(povexport-translate-4  EXPERIMENTAL OPENSCAD SUFFIX pov FILES ${EXPORT_POV_TEST_FILES} ARGS --enable=predictible-output --backend=manifold --camera=0,0,10,0,0,0,140)
+add_cmdline_test(povexport-rotate-1     EXPERIMENTAL OPENSCAD SUFFIX pov FILES ${EXPORT_POV_TEST_FILES} ARGS --enable=predictible-output --backend=manifold --camera=0,0,0,90,0,0,140)
+add_cmdline_test(povexport-rotate-2     EXPERIMENTAL OPENSCAD SUFFIX pov FILES ${EXPORT_POV_TEST_FILES} ARGS --enable=predictible-output --backend=manifold --camera=0,0,0,0,90,0,140)
+add_cmdline_test(povexport-rotate-3     EXPERIMENTAL OPENSCAD SUFFIX pov FILES ${EXPORT_POV_TEST_FILES} ARGS --enable=predictible-output --backend=manifold --camera=0,0,0,0,0,90,140)
+add_cmdline_test(povexport-distance-1   EXPERIMENTAL OPENSCAD SUFFIX pov FILES ${EXPORT_POV_TEST_FILES} ARGS --enable=predictible-output --backend=manifold --camera=0,0,0,0,0,0,100)
+add_cmdline_test(povexport-all          EXPERIMENTAL OPENSCAD SUFFIX pov FILES ${EXPORT_POV_TEST_FILES} ARGS --enable=predictible-output --backend=manifold --camera=1,2,3,4,5,6,7)
+
+# Trivial Export/Import files: Sanity-checks bidirectional file format import/export
+set(SIMPLE_EXPORT_IMPORT_2D_FILES ${TEST_SCAD_DIR}/misc/square10.scad)
+set(SIMPLE_EXPORT_IMPORT_3D_FILES ${TEST_SCAD_DIR}/misc/cube10.scad)
+set(SIMPLE_EXPORT_IMPORT_NON_MANIFOLD ${TEST_SCAD_DIR}/3D/misc/polyhedron-single-triangle.scad)
+
+set(EXPORT_IMPORT_2D_RENDER_FILES ${SIMPLE_EXPORT_IMPORT_2D_TESTS} ${FILES_2D})
+
+set(EXPORT_IMPORT_3D_PREVIEW_FILES ${SIMPLE_EXPORT_IMPORT_NON_MANIFOLD} ${SIMPLE_EXPORT_IMPORT_3D_FILES})
+set(EXPORT_IMPORT_3D_RENDER_FILES ${SIMPLE_EXPORT_IMPORT_3D_FILES} ${EXPORT_IMPORT_3D_FILES})
+list(REMOVE_ITEM EXPORT_IMPORT_3D_RENDER_FILES
+  # Non-manifold polyhedrons can never be rendered
+  ${TEST_SCAD_DIR}/misc/nonmanifold-polyhedron.scad
+)
+set(EXPORT_IMPORT_3D_RENDERMANIFOLD_FILES ${EXPORT_IMPORT_3D_RENDER_FILES})
+
+# Manifoldness corner cases
 set(FILES_MANIFOLD_CORNER_CASES
   ${TEST_SCAD_DIR}/3D/misc/tetracyl-slim.scad
   ${TEST_SCAD_DIR}/3D/misc/tetracyl-touch-edge.scad
@@ -1073,18 +1198,58 @@ set(FILES_MANIFOLD_CORNER_CASES
   ${TEST_SCAD_DIR}/3D/features/rotate_extrude-touch-vertex.scad
 )
 
-# Tagging these tests as experimental since they only pass when using Manifold
-add_cmdline_test(3mfpngtest EXPERIMENTAL SCRIPT ${EX_IM_PNGTEST_PY} ARGS ${OPENSCAD_ARG} --format=3MF --render=force EXPECTEDDIR 3mfpngtest SUFFIX png FILES ${FILES_MANIFOLD_CORNER_CASES})
-add_cmdline_test(objpngtest EXPERIMENTAL SCRIPT ${EX_IM_PNGTEST_PY} ARGS ${OPENSCAD_ARG} --format=OBJ --render=force EXPECTEDDIR 3mfpngtest SUFFIX png FILES ${FILES_MANIFOLD_CORNER_CASES})
-add_cmdline_test(offpngtest EXPERIMENTAL SCRIPT ${EX_IM_PNGTEST_PY} ARGS ${OPENSCAD_ARG} --format=OFF --render=force EXPECTEDDIR 3mfpngtest SUFFIX png FILES ${FILES_MANIFOLD_CORNER_CASES})
-add_cmdline_test(stlpngtest EXPERIMENTAL SCRIPT ${EX_IM_PNGTEST_PY} ARGS ${OPENSCAD_ARG} --format=STL --render=force EXPECTEDDIR 3mfpngtest SUFFIX png FILES ${FILES_MANIFOLD_CORNER_CASES})
+# Export-import tests
+add_cmdline_test(monotonerendertest OPENSCAD SUFFIX png FILES ${EXPORT_IMPORT_3D_PREVIEW_FILES} ${SIMPLE_EXPORT_IMPORT_2D_FILES} ARGS --colorscheme=Monotone --render)
+add_cmdline_test(stlpreviewtest SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png FILES ${EXPORT_IMPORT_3D_PREVIEW_FILES} EXPECTEDDIR monotonerendertest ARGS ${OPENSCAD_EXE_ARG} --format=STL)
+add_cmdline_test(offpreviewtest SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png FILES ${EXPORT_IMPORT_3D_PREVIEW_FILES} EXPECTEDDIR monotonerendertest ARGS ${OPENSCAD_EXE_ARG} --format=OFF)
+add_cmdline_test(amfpreviewtest SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png FILES ${EXPORT_IMPORT_3D_PREVIEW_FILES} EXPECTEDDIR monotonerendertest ARGS ${OPENSCAD_EXE_ARG} --format=AMF)
+add_cmdline_test(objpreviewtest SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png FILES ${EXPORT_IMPORT_3D_PREVIEW_FILES} EXPECTEDDIR monotonerendertest ARGS ${OPENSCAD_EXE_ARG} --format=OBJ)
 
-set_tests_properties(
-  # Manifold construction error. Probably due to polygon soup strategy
-  PROPERTIES DISABLED TRUE
+add_cmdline_test(stlrendertest SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png FILES ${EXPORT_IMPORT_3D_RENDER_FILES} EXPECTEDDIR monotonerendertest ARGS ${OPENSCAD_EXE_ARG} --format=STL --render=force)
+add_cmdline_test(offrendertest SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png FILES ${EXPORT_IMPORT_3D_RENDER_FILES} EXPECTEDDIR monotonerendertest ARGS ${OPENSCAD_EXE_ARG} --format=OFF --render=force)
+add_cmdline_test(amfrendertest SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png FILES ${EXPORT_IMPORT_3D_RENDER_FILES} EXPECTEDDIR monotonerendertest ARGS ${OPENSCAD_EXE_ARG} --format=AMF --render=force)
+add_cmdline_test(objrendertest SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png FILES ${EXPORT_IMPORT_3D_RENDER_FILES} EXPECTEDDIR monotonerendertest ARGS ${OPENSCAD_EXE_ARG} --format=OBJ --render=force)
+
+if (ENABLE_MANIFOLD)
+add_cmdline_test(offrendermanifoldtest SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png FILES ${OFFRENDERMANIFOLDTEST_FILES} EXPECTEDDIR rendertest ARGS ${OPENSCAD_EXE_ARG} --format=OFF --render=force --backend=manifold)
+add_cmdline_test(offrendermanifoldtest SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png FILES ${TEST_SCAD_DIR}/misc/cube10.scad EXPECTEDDIR monotonerendertest ARGS ${OPENSCAD_EXE_ARG} --format=OFF --render=force --backend=manifold)
+add_cmdline_test(offrendermanifoldtest SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png FILES ${TEST_SCAD_DIR}/3D/features/polyhedron-tests.scad EXPECTEDDIR rendermanifoldtest-different ARGS ${OPENSCAD_EXE_ARG} --format=OFF --render=force --backend=manifold)
+add_cmdline_test(offrendermanifoldtest SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png FILES ${FILES_MANIFOLD_CORNER_CASES} ARGS ${OPENSCAD_EXE_ARG} --format=OFF --render=force --backend=manifold)
+
+add_cmdline_test(stlrendermanifoldtest SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png FILES ${EXPORT_IMPORT_3D_RENDERMANIFOLD_FILES} EXPECTEDDIR monotonerendertest ARGS ${OPENSCAD_EXE_ARG} --format=STL --render=force --backend=manifold)
+add_cmdline_test(stlrendermanifoldtest SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png FILES ${FILES_MANIFOLD_CORNER_CASES} EXPECTEDDIR offrendermanifoldtest ARGS ${OPENSCAD_EXE_ARG} --format=STL --render=force --backend=manifold)
+
+set(OFFRENDERMANIFOLDTEST_FILES ${EXPORT_IMPORT_3D_RENDERMANIFOLD_FILES})
+list(REMOVE_ITEM OFFRENDERMANIFOLDTEST_FILES
+  ${TEST_SCAD_DIR}/misc/cube10.scad
+  ${TEST_SCAD_DIR}/3D/features/polyhedron-tests.scad
 )
+add_cmdline_test(amfrendermanifoldtest SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png FILES ${EXPORT_IMPORT_3D_RENDERMANIFOLD_FILES} EXPECTEDDIR monotonerendertest ARGS ${OPENSCAD_EXE_ARG} --format=AMF --render=force --backend=manifold)
+add_cmdline_test(objrendermanifoldtest SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png FILES ${EXPORT_IMPORT_3D_RENDERMANIFOLD_FILES} EXPECTEDDIR monotonerendertest ARGS ${OPENSCAD_EXE_ARG} --format=OBJ --render=force --backend=manifold)
+add_cmdline_test(objrendermanifoldtest SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png FILES ${FILES_MANIFOLD_CORNER_CASES} EXPECTEDDIR offrendermanifoldtest ARGS ${OPENSCAD_EXE_ARG} --format=OBJ --render=force --backend=manifold)
+endif(ENABLE_MANIFOLD)
 
-# Failing tests
+if (LIB3MF_FOUND)
+add_cmdline_test(3mfpreviewtest SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png FILES ${EXPORT_IMPORT_3D_PREVIEW_FILES} EXPECTEDDIR monotonerendertest ARGS ${OPENSCAD_EXE_ARG} --format=3MF)
+add_cmdline_test(3mfrendertest SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png FILES ${EXPORT_IMPORT_3D_RENDER_FILES} EXPECTEDDIR monotonerendertest ARGS ${OPENSCAD_EXE_ARG} --format=3MF --render=force)
+add_cmdline_test(3mfrendermanifoldtest EXPERIMENTAL SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png FILES ${EXPORT_IMPORT_3D_RENDERMANIFOLD_FILES} EXPECTEDDIR monotonerendertest ARGS ${OPENSCAD_EXE_ARG} --format=3MF --render=force --backend=manifold)
+add_cmdline_test(3mfrendermanifoldtest EXPERIMENTAL SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png FILES ${FILES_MANIFOLD_CORNER_CASES} EXPECTEDDIR offrendermanifoldtest ARGS ${OPENSCAD_EXE_ARG} --format=3MF --render=force --backend=manifold)
+endif()
+
+add_cmdline_test(dxfrendertest  SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png FILES ${EXPORT_IMPORT_2D_RENDER_FILES} ${SCAD_DXF_FILES} EXPECTEDDIR rendertest ARGS ${OPENSCAD_EXE_ARG} --format=DXF --render=force)
+add_cmdline_test(svgrendertest  SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png FILES ${EXPORT_IMPORT_2D_RENDER_FILES} ${SCAD_SVG_FILES} EXPECTEDDIR rendertest ARGS ${OPENSCAD_EXE_ARG} --format=SVG --render=force)
+
+# FIXME: We don't actually need to compare the output of cgalstlsanitytest
+# with anything. It's self-contained and returns != 0 on error
+add_cmdline_test(stlexportsanitytest  SCRIPT ${STLEXPORTSANITYTEST_PY} SUFFIX txt FILES ${TEST_SCAD_DIR}/misc/normal-nan.scad ARGS ${OPENSCAD_EXE_ARG})
+
+# Export/import color support
+add_cmdline_test(offcolorpngtest EXPERIMENTAL SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png FILES ${COLOR_3D_TEST_FILES} EXPECTEDDIR rendermanifoldtest-different ARGS ${OPENSCAD_EXE_ARG} --format=OFF --backend=manifold --render)
+
+# PDF Export
+add_cmdline_test(pdfexporttest SCRIPT ${EXPORT_PNGTEST_PY} SUFFIX png FILES ${SCAD_PDF_FILES} ARGS ${OPENSCAD_EXE_ARG} --format=PDF KERNEL Square:2)
+
+# Expected failing tests
 add_failing_test(stlfailedtest         SUFFIX stl  FILES ${TEST_SCAD_DIR}/misc/empty-union.scad ARGS --retval=1)
 add_failing_test(offfailedtest         SUFFIX off  FILES ${TEST_SCAD_DIR}/misc/empty-union.scad ARGS --retval=1)
 add_failing_test(parsererrors          SUFFIX stl  FILES ${FAILING_FILES} ARGS --retval=1)
@@ -1101,7 +1266,9 @@ add_failing_test(hardwarnings          SUFFIX echo FILES ${TEST_SCAD_DIR}/misc/e
 # Also TEST_GENERATE=1 makes an expected image that makes the test fail.
 #set_property(TEST openscad-colorscheme-cornfield-alphafail_logo PROPERTY WILL_FAIL TRUE)
 
+#
 # Customizer tests
+#
 set(SET_OF_PARAM_TEST "${TEST_CUSTOMIZER_DIR}/setofparameter.scad")
 set(SET_OF_PARAM_JSON "${TEST_CUSTOMIZER_DIR}/setofparameter.json")
 add_cmdline_test(customizertest OPENSCAD ARGS SUFFIX ast FILES
@@ -1118,13 +1285,22 @@ add_cmdline_test(customizertest-incomplete     OPENSCAD FILES ${SET_OF_PARAM_TES
 add_cmdline_test(customizertest-imgset         OPENSCAD FILES ${SET_OF_PARAM_TEST} SUFFIX ast ARGS -p ${SET_OF_PARAM_JSON} -P imagine)
 add_cmdline_test(customizertest-setNameWithDot OPENSCAD FILES ${SET_OF_PARAM_TEST} SUFFIX ast ARGS -p ${SET_OF_PARAM_JSON} -P Name.dot)
 
-# non-ASCII filenames
-add_cmdline_test(openscad-nonascii             OPENSCAD FILES ${TEST_SCAD_DIR}/misc/sfære.scad SUFFIX csg)
-
 # Variable override (-D arg)
 add_cmdline_test(openscad-override         OPENSCAD FILES ${TEST_SCAD_DIR}/misc/override.scad SUFFIX echo ARGS -D a=3$<SEMICOLON>)
 
+#
 # Camera tests
+#
+# Test transcription of --camera options to $vp* for 7-argument --camera.
+add_cmdline_test(echotest-cli-view-variables-7         OPENSCAD SUFFIX echo FILES ${TEST_SCAD_DIR}/misc/test-view-variables.scad ARGS --camera 10,20,30,40,50,60,70)
+add_cmdline_test(dumptest-cli-view-variables-7         OPENSCAD SUFFIX csg FILES ${TEST_SCAD_DIR}/misc/test-view-variables.scad ARGS --camera 10,20,30,40,50,60,70)
+add_cmdline_test(previewtest-cli-view-variables-7      OPENSCAD SUFFIX png FILES ${TEST_SCAD_DIR}/misc/test-view-variables.scad ARGS --camera 10,20,30,40,50,60,70)
+
+# Test transcription of --camera options to $vp* for 6-argument --camera.
+add_cmdline_test(echotest-cli-view-variables-6         OPENSCAD SUFFIX echo FILES ${TEST_SCAD_DIR}/misc/test-view-variables.scad ARGS --camera 10,20,30,40,50,60)
+add_cmdline_test(dumptest-cli-view-variables-6         OPENSCAD SUFFIX csg FILES ${TEST_SCAD_DIR}/misc/test-view-variables.scad ARGS --camera 10,20,30,40,50,60)
+add_cmdline_test(previewtest-cli-view-variables-6      OPENSCAD SUFFIX png FILES ${TEST_SCAD_DIR}/misc/test-view-variables.scad ARGS --camera 10,20,30,40,50,60)
+
 set(CAMERA_TEST           "${TEST_SCAD_DIR}/3D/misc/camera-tests.scad")
 set(CAMERA_TEST_OFFCENTER "${TEST_SCAD_DIR}/3D/misc/camera-tests-offcenter.scad")
 set(CAMERA_TEST_VP        "${TEST_SCAD_DIR}/3D/misc/camera-vp.scad")
@@ -1160,7 +1336,9 @@ add_cmdline_test(openscad-cameyeortho-viewall OPENSCAD FILES ${CAMERA_TEST} SUFF
 add_cmdline_test(openscad-camvp-variables     OPENSCAD FILES ${CAMERA_TEST_VP} SUFFIX png ARGS ${IMGSIZE})
 add_cmdline_test(openscad-camvp-override      OPENSCAD FILES ${CAMERA_TEST_VP} SUFFIX png ARGS ${IMGSIZE} --camera=120,80,60,0,0,0)
 
+#
 # View Options tests
+#
 set(VIEW_OPTIONS_TEST "${TEST_SCAD_DIR}/3D/misc/view-options-tests.scad")
 add_cmdline_test(openscad-viewoptions-axes              OPENSCAD FILES ${VIEW_OPTIONS_TEST} SUFFIX png ARGS ${IMGSIZE} --camera=80,14,19,0,0,0 --viewall --view axes)
 add_cmdline_test(openscad-viewoptions-axes-scales       OPENSCAD FILES ${VIEW_OPTIONS_TEST} SUFFIX png ARGS ${IMGSIZE} --camera=80,14,19,0,0,0 --viewall --view axes,scales)
@@ -1169,7 +1347,9 @@ add_cmdline_test(openscad-viewoptions-axes-scales-edges OPENSCAD FILES ${VIEW_OP
 add_cmdline_test(openscad-viewoptions-wireframe         OPENSCAD FILES ${VIEW_OPTIONS_TEST} SUFFIX png ARGS ${IMGSIZE} --camera=80,14,19,0,0,0 --viewall --render --view wireframe)
 add_cmdline_test(openscad-viewoptions-crosshairs        OPENSCAD FILES ${VIEW_OPTIONS_TEST} SUFFIX png ARGS ${IMGSIZE} --camera=80,14,19,0,0,0 --viewall --render --view crosshairs)
 
+#
 # Colorscheme tests
+#
 set(LOGO_EXAMPLE ${EXAMPLES_DIR}/Basics/logo.scad)
 set(CSG_EXAMPLE  ${EXAMPLES_DIR}/Basics/CSG.scad)
 add_cmdline_test(openscad-colorscheme-cornfield       OPENSCAD FILES ${LOGO_EXAMPLE} SUFFIX png ARGS --colorscheme=Cornfield)
@@ -1180,26 +1360,46 @@ add_cmdline_test(openscad-colorscheme-monotone        OPENSCAD FILES ${LOGO_EXAM
 add_cmdline_test(openscad-colorscheme-clearsky        OPENSCAD FILES ${LOGO_EXAMPLE} SUFFIX png ARGS --colorscheme=ClearSky)
 add_cmdline_test(openscad-colorscheme-metallic-render OPENSCAD FILES ${CSG_EXAMPLE}  SUFFIX png ARGS --colorscheme=Metallic --render)
 
-#
-# Experimental tests
-#
+############################
+# Experimental tests       #
+############################
 
-# Roof tests
+#
+# --enable=lazyunion tests
+#
+add_cmdline_test(lazyunion-dump        EXPERIMENTAL OPENSCAD SUFFIX csg FILES ${LAZYUNION_FILES} ARGS --enable=lazy-union)
+add_cmdline_test(lazyunion-preview     EXPERIMENTAL OPENSCAD SUFFIX png FILES ${LAZYUNION_FILES} ARGS --enable=lazy-union)
+add_cmdline_test(lazyunion-render      EXPERIMENTAL OPENSCAD SUFFIX png FILES ${LAZYUNION_FILES} ARGS --enable=lazy-union --render)
+add_cmdline_test(lazyunion-monotonepng EXPERIMENTAL OPENSCAD SUFFIX png FILES ${LAZYUNION_3D_FILES} ARGS --colorscheme=Monotone --enable=lazy-union --render )
+add_cmdline_test(lazyunion-stlpreviewtest  EXPERIMENTAL SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png FILES ${LAZYUNION_3D_FILES} EXPECTEDDIR lazyunion-monotonepng ARGS ${OPENSCAD_EXE_ARG} --format=STL --enable=lazy-union --render=force)
+add_cmdline_test(lazyunion-offpreviewtest  EXPERIMENTAL SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png FILES ${LAZYUNION_3D_FILES} EXPECTEDDIR lazyunion-monotonepng ARGS ${OPENSCAD_EXE_ARG} --format=OFF --enable=lazy-union --render=force)
+add_cmdline_test(lazyunion-dxfrendertest  EXPERIMENTAL SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png FILES ${LAZYUNION_2D_FILES} EXPECTEDDIR lazyunion-render     ARGS ${OPENSCAD_EXE_ARG} --format=DXF --enable=lazy-union --render=force)
+add_cmdline_test(lazyunion-svgrendertest  EXPERIMENTAL SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png FILES ${LAZYUNION_2D_FILES} EXPECTEDDIR lazyunion-render     ARGS ${OPENSCAD_EXE_ARG} --format=SVG --enable=lazy-union --render=force)
+
+#
+# --enable=roof tests
+#
 list(APPEND EXPERIMENTAL_ROOF_FILES ${EXAMPLES_DIR}/Basics/roof.scad)
-add_cmdline_test(dumptest-examples  EXPERIMENTAL OPENSCAD FILES ${EXPERIMENTAL_ROOF_FILES} SUFFIX csg ARGS --enable=roof)
-add_cmdline_test(opencsgtest        EXPERIMENTAL OPENSCAD FILES ${EXPERIMENTAL_ROOF_FILES} SUFFIX png ARGS --enable=roof)
-add_cmdline_test(throwntogethertest EXPERIMENTAL OPENSCAD FILES ${EXPERIMENTAL_ROOF_FILES} ARGS --preview=throwntogether --enable=roof SUFFIX png)
-add_cmdline_test(csgpngtest         EXPERIMENTAL SCRIPT ${EX_IM_PNGTEST_PY} SUFFIX png FILES ${EXPERIMENTAL_ROOF_FILES} EXPECTEDDIR cgalpngtest ARGS ${OPENSCAD_ARG} --format=csg --render --enable=roof)
-add_cmdline_test(cgalpngtest        EXPERIMENTAL OPENSCAD FILES ${EXPERIMENTAL_ROOF_FILES} SUFFIX png ARGS --render --enable=roof)
+add_cmdline_test(dumptest-examples   EXPERIMENTAL OPENSCAD SUFFIX csg FILES ${EXPERIMENTAL_ROOF_FILES} ARGS --enable=roof)
+add_cmdline_test(rendertest          EXPERIMENTAL OPENSCAD SUFFIX png FILES ${EXPERIMENTAL_ROOF_FILES} ARGS --render --enable=roof)
+add_cmdline_test(csgrendertest       EXPERIMENTAL SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png FILES ${EXPERIMENTAL_ROOF_FILES} EXPECTEDDIR rendertest ARGS ${OPENSCAD_EXE_ARG} --format=csg --render --enable=roof)
+add_cmdline_test(rendermanifoldtest  EXPERIMENTAL OPENSCAD SUFFIX png FILES ${EXPERIMENTAL_ROOF_FILES} EXPECTEDDIR rendertest ARGS --render --enable=roof --backend=manifold)
+add_cmdline_test(previewtest         EXPERIMENTAL OPENSCAD SUFFIX png FILES ${EXPERIMENTAL_ROOF_FILES} ARGS --enable=roof)
+add_cmdline_test(previewmanifoldtest EXPERIMENTAL OPENSCAD SUFFIX png FILES ${EXPERIMENTAL_ROOF_FILES} ARGS --enable=roof --backend=manifold)
+add_cmdline_test(throwntogethertest  EXPERIMENTAL OPENSCAD SUFFIX png FILES ${EXPERIMENTAL_ROOF_FILES} ARGS --preview=throwntogether --enable=roof)
 
-# import-function tests
+#
+# --enable=import-function tests
+#
 list(APPEND EXPERIMENTAL_IMPORT_FILES
   ${TEST_SCAD_DIR}/json/import-json.scad
   ${TEST_SCAD_DIR}/json/import-json-relative-path.scad
   )
 add_cmdline_test(echotest           EXPERIMENTAL OPENSCAD SUFFIX echo FILES ${EXPERIMENTAL_IMPORT_FILES} ARGS --enable=import-function)
 
-# textmetrics tests
+#
+# --enable=textmetrics tests
+#
 list(APPEND EXPERIMENTAL_TEXTMETRICS_ECHOTEST_FILES
   ${TEST_SCAD_DIR}/misc/isobject-test.scad
   ${TEST_SCAD_DIR}/misc/text-metrics-test.scad
@@ -1208,13 +1408,13 @@ list(APPEND EXPERIMENTAL_TEXTMETRICS_FILES
   ${TEST_SCAD_DIR}/2D/features/text-metrics.scad
 )
 add_cmdline_test(echotest           EXPERIMENTAL OPENSCAD SUFFIX echo FILES ${EXPERIMENTAL_TEXTMETRICS_ECHOTEST_FILES} ARGS --enable=textmetrics)
-add_cmdline_test(dumptest           EXPERIMENTAL OPENSCAD FILES ${EXPERIMENTAL_TEXTMETRICS_FILES} SUFFIX csg ARGS --enable=textmetrics)
-add_cmdline_test(opencsgtest        EXPERIMENTAL OPENSCAD FILES ${EXPERIMENTAL_TEXTMETRICS_FILES} SUFFIX png ARGS --enable=textmetrics)
-add_cmdline_test(throwntogethertest EXPERIMENTAL OPENSCAD FILES ${EXPERIMENTAL_TEXTMETRICS_FILES} ARGS --preview=throwntogether --enable=textmetrics SUFFIX png)
-add_cmdline_test(csgpngtest         EXPERIMENTAL SCRIPT ${EX_IM_PNGTEST_PY} SUFFIX png FILES ${EXPERIMENTAL_TEXTMETRICS_FILES} EXPECTEDDIR cgalpngtest ARGS ${OPENSCAD_ARG} --format=csg --render --enable=textmetrics)
-add_cmdline_test(cgalpngtest        EXPERIMENTAL OPENSCAD FILES ${EXPERIMENTAL_TEXTMETRICS_FILES} SUFFIX png ARGS --render --enable=textmetrics)
-add_cmdline_test(dxfpngtest         EXPERIMENTAL SCRIPT ${EX_IM_PNGTEST_PY} ARGS ${OPENSCAD_ARG} --format=DXF --render=force --enable=textmetrics EXPECTEDDIR cgalpngtest SUFFIX png FILES ${EXPERIMENTAL_TEXTMETRICS_FILES})
-add_cmdline_test(svgpngtest         EXPERIMENTAL SCRIPT ${EX_IM_PNGTEST_PY} ARGS ${OPENSCAD_ARG} --format=SVG --render=force --enable=textmetrics EXPECTEDDIR cgalpngtest SUFFIX png FILES ${EXPERIMENTAL_TEXTMETRICS_FILES})
+add_cmdline_test(dumptest           EXPERIMENTAL OPENSCAD SUFFIX csg  FILES ${EXPERIMENTAL_TEXTMETRICS_FILES} ARGS --enable=textmetrics)
+add_cmdline_test(previewtest        EXPERIMENTAL OPENSCAD SUFFIX png  FILES ${EXPERIMENTAL_TEXTMETRICS_FILES} ARGS --enable=textmetrics)
+add_cmdline_test(throwntogethertest EXPERIMENTAL OPENSCAD SUFFIX png  FILES ${EXPERIMENTAL_TEXTMETRICS_FILES} ARGS --preview=throwntogether --enable=textmetrics)
+add_cmdline_test(csgrendertest      EXPERIMENTAL SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png FILES ${EXPERIMENTAL_TEXTMETRICS_FILES} EXPECTEDDIR rendertest ARGS ${OPENSCAD_EXE_ARG} --format=csg --render --enable=textmetrics)
+add_cmdline_test(rendertest         EXPERIMENTAL OPENSCAD SUFFIX png FILES ${EXPERIMENTAL_TEXTMETRICS_FILES} ARGS --render --enable=textmetrics)
+add_cmdline_test(dxfrendertest      EXPERIMENTAL SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png ARGS ${OPENSCAD_EXE_ARG} --format=DXF --render=force --enable=textmetrics EXPECTEDDIR rendertest FILES ${EXPERIMENTAL_TEXTMETRICS_FILES})
+add_cmdline_test(svgrendertest      EXPERIMENTAL SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png ARGS ${OPENSCAD_EXE_ARG} --format=SVG --render=force --enable=textmetrics EXPECTEDDIR rendertest FILES ${EXPERIMENTAL_TEXTMETRICS_FILES})
 
 
 ############################
@@ -1262,11 +1462,11 @@ set_tests_properties(
 
 set_tests_properties(
   # These don't output anything
-  dxfpngtest_text-empty-tests
-  dxfpngtest_nothing-decimal-comma-separated
-  dxfpngtest_nullspace-2d
-  svgpngtest_text-empty-tests
-  svgpngtest_nullspace-2d
+  dxfrendertest_text-empty-tests
+  dxfrendertest_nothing-decimal-comma-separated
+  dxfrendertest_nullspace-2d
+  svgrendertest_text-empty-tests
+  svgrendertest_nullspace-2d
 
   # Not useful
   throwntogethertest_internal-cavity
@@ -1275,27 +1475,10 @@ set_tests_properties(
 
   # z-fighting different on different machines
   throwntogethertest_issue1803
-  opencsgtest_issue1165
-  opencsgtest_issue1215
+  previewtest_issue1165
+  previewtest_issue1215
   throwntogethertest_issue1089
   throwntogethertest_issue1215
-
-  # FIXME: This test illustrates a weakness in child() combined with modifiers.
-  # Reenable it when this is improved
-  opencsgtest_child-background
-
-  # These tests only makes sense in OpenCSG mode
-  cgalpngtest_child-background
-  cgalpngtest_highlight-and-background-modifier
-  cgalpngtest_highlight-modifier2
-  cgalpngtest_background-modifier2
-  cgalpngtest_testcolornames
-  csgpngtest_child-background
-  csgpngtest_highlight-and-background-modifier
-  csgpngtest_highlight-modifier2
-  csgpngtest_background-modifier2
-  csgpngtest_testcolornames
-  throwntogethertest_testcolornames
 
   # This test won't render anything meaningful in throwntogether mode
   throwntogethertest_minkowski3-erosion
@@ -1306,95 +1489,159 @@ set_tests_properties(
   # FIXME: define export behavior for inf/nan when exporting CSG files
   # These tests return error code 1.
   # FIXME: We should have a way of running these and verify the return code
-  csgpngtest_primitive-inf-tests
-  csgpngtest_transform-nan-inf-tests
+  csgrendertest_primitive-inf-tests
+  csgrendertest_transform-nan-inf-tests
 
   # Triggers a floating point accuracy issue causing loaded .csg to
   # render slightly differently
-  cgalpngtest_nothing-decimal-comma-separated
-  cgalpngtest_import-empty-tests
-  cgalpngtest_empty-shape-tests
-  csgpngtest_issue1258
+  rendertest_nothing-decimal-comma-separated
+  rendertest_import-empty-tests
+  rendertest_empty-shape-tests
+  csgrendertest_issue1258
 
   # OpenCSG z fighting https://github.com/openscad/openscad/issues/4595
   openscad-viewoptions-edges_view-options-tests
   openscad-viewoptions-axes-scales-edges_view-options-tests
-  opencsgtest_surface_image
+  previewtest_surface_image
   throwntogethertest_surface_image
 
   # CGAL sometimes fail to union minkowski convex decompositions, causing visual differences
   # in rendering.
-  cgalpngtest_minkowski3-difference-test
-  csgpngtest_minkowski3-difference-test
+  rendertest_minkowski3-difference-test
+  csgrendertest_minkowski3-difference-test
+  previewtest_minkowski3-difference-test
 
-  # Disabled due to https://github.com/openscad/openscad/issues/5159
-  cgalpngtest_projection
-  csgpngtest_projection
+  # Transparent objects rendered differently on different machines
+  throwntogethertest_offset
 
-  # Disabled due to https://github.com/openscad/openscad/issues/5158
+  # https://github.com/openscad/openscad/issues/5159
+  rendertest_projection
+  csgrendertest_projection
+
+  # https://github.com/openscad/openscad/issues/5158
   throwntogethertest_example017
-  cgalpngtest_example017 
-  opencsgtest_example017
+  rendertest_example017 
+  previewtest_example017
+  
+  # https://github.com/openscad/openscad/issues/4398
+  csgrendertest_logo_and_text
 
-  # Disabled due to https://github.com/openscad/openscad/issues/4398
-  csgpngtest_logo_and_text
+  # https://github.com/openscad/openscad/issues/909
+  amfpreviewtest_polyhedron-single-triangle
+  amfrendertest_bad-stl-tardis
+  amfrendertest_bad-stl-pcbvicebar
+  amfrendertest_bad-stl-wing
+  
+  # We don't repair polygon winding order in CGAL mode
+  # We could perhaps split the test into good+bad polyhedrons
+  # and only disable the bad ones.
+  stlrendertest_polyhedron-tests
+  offrendertest_polyhedron-tests
+  amfrendertest_polyhedron-tests
+  objrendertest_polyhedron-tests
+
+  # When exported from CGAL, the file cannot be re-imported
+  stlrendertest_bad-stl-wing
+  offrendertest_bad-stl-wing
+  objrendertest_bad-stl-wing
+
+  # https://github.com/openscad/openscad/issues/2301
+  rendertest_issue2301
+  previewtest_issue2301
+  csgrendertest_issue2301
+
+  # https://github.com/openscad/openscad/issues/2090
+  rendertest_issue2090
+  previewtest_issue2090
+  throwntogethertest_issue2090
+  csgrendertest_issue2090
+
+  # https://github.com/openscad/openscad/issues/2841
+  rendertest_issue2841
+  previewtest_issue2841
+  csgrendertest_issue2841
+  throwntogethertest_issue2841
+  rendertest_issue2841b
+  previewtest_issue2841b
+  throwntogethertest_issue2841b
+  csgrendertest_issue2841b
+  
+  PROPERTIES DISABLED TRUE
+)
+if (ENABLE_MANIFOLD)
+set_tests_properties(
+  # z-fighting different on different machines
+  previewmanifoldtest_issue1165
+  previewmanifoldtest_issue1215
+
+  # Manifold triangle order not stable, causes transparent
+  # objects to render differently on different machines
+  rendermanifoldtest-different_color-tests
+  rendermanifoldtest-different_hex-colors-tests
+  rendermanifoldtest-different_projection
+
+  # https://github.com/openscad/openscad/issues/909
+  amfrendermanifoldtest_bad-stl-wing
+
+  # https://github.com/openscad/openscad/issues/2841
+  rendermanifoldtest_issue2841b
+  previewmanifoldtest_issue2841b
+
+  # OpenCSG z fighting https://github.com/openscad/openscad/issues/4595
+  previewmanifoldtest_surface_image
+
+  # https://github.com/openscad/openscad/issues/5158
+  previewmanifoldtest_example017
 
   PROPERTIES DISABLED TRUE
 )
+endif (ENABLE_MANIFOLD)
+if (EXPERIMENTAL)
+set_tests_properties(
+  # https://github.com/openscad/openscad/issues/5220
+  rendertest_roof
+  csgrendertest_roof
 
+  PROPERTIES DISABLED TRUE
+)
+endif (EXPERIMENTAL)
 
-if (NOT LIB3MF_FOUND)
-  if (EXPERIMENTAL)
-    set_tests_properties(
-      3mfexport_3mf-export
-      3mfpngtest_tetracyl-slim
-      3mfpngtest_tetracyl-touch-edge
-      3mfpngtest_tetracyl-touch-edge-nonmanifold
-      3mfpngtest_tetracyl-touch-vertex
-      3mfpngtest_tetracyl-touch-vertex-nonmanifold
-      3mfpngtest_polyhedrons-touch-edge
-      3mfpngtest_polyhedrons-touch-edge-nonmanifold
-      3mfpngtest_polyhedrons-touch-vertex
-      3mfpngtest_polyhedrons-touch-vertex-nonmanifold
-      3mfpngtest_polyhedron-self-touch-edge
-      3mfpngtest_polyhedron-self-touch-edge-nonmanifold
-      3mfpngtest_polyhedron-self-touch-vertex
-      3mfpngtest_polyhedron-self-touch-vertex-nonmanifold
-      PROPERTIES DISABLED TRUE
-    )
-  endif (EXPERIMENTAL)
+if (LIB3MF_FOUND)
   set_tests_properties(
-    opencsgtest_import_3mf-tests
-    cgalpngtest_import_3mf-tests
-    csgpngtest_import_3mf-tests
-    throwntogethertest_import_3mf-tests
-    3mfpngtest_cube10
+    # We don't repair polygon winding order in CGAL mode
+    # We could perhaps split the test into good+bad polyhedrons
+    # and only disable the bad ones.
+    3mfrendertest_polyhedron-tests
+
+    # When exported from CGAL, the file cannot be re-imported
+    3mfrendertest_bad-stl-wing
+
+    # For some reason, only failing on Linux
+    3mfrendertest_bad-stl-tardis
+    
     PROPERTIES DISABLED TRUE
   )
-endif(NOT LIB3MF_FOUND)
+else()
+  set_tests_properties(
+    previewtest_import_3mf-tests
+    rendertest_import_3mf-tests
+    csgrendertest_import_3mf-tests
+    throwntogethertest_import_3mf-tests
+    PROPERTIES DISABLED TRUE
+  )
+endif(LIB3MF_FOUND)
 
 list(APPEND NEF3_BROKEN_TESTS
-  cgalpngtest_nef3_broken
-  opencsgtest_nef3_broken
+  rendertest_nef3_broken
+  previewtest_nef3_broken
   throwntogethertest_nef3_broken
-  csgpngtest_nef3_broken
+  csgrendertest_nef3_broken
 )
-
-# Disable tests broken due to https://github.com/openscad/openscad/issues/3567
-if (NOT EXPERIMENTAL)
-    set_tests_properties(
-      cgalpngtest_linear_extrude-scale-zero-tests
-      csgpngtest_linear_extrude-scale-zero-tests
-      PROPERTIES DISABLED TRUE
-    )
-endif()
 
 # Platform specific test disable
 if(APPLE)
   set_tests_properties(
     ${NEF3_BROKEN_TESTS}
-    # issue3158 test failing on macos, see: https://github.com/openscad/openscad/issues/4509
-    opencsgtest_issue3158
     # On macOS, GL_POINTS are sometimes circular even though GL_POINT_SMOOTH is disabled
     openscad-viewoptions-wireframe_view-options-tests
     PROPERTIES DISABLED TRUE

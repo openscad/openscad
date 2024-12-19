@@ -1,7 +1,9 @@
-#include "cgalutils.h"
-#include "printutils.h"
-//#include "cgal.h"
-//#include "tess.h"
+#include "geometry/cgal/cgalutils.h"
+#include "utils/printutils.h"
+#include <list>
+#include <cstddef>
+//#include "geometry/cgal/cgal.h"
+//#include "libtess2/Source/tess.h"
 
 #include <CGAL/Constrained_Delaunay_triangulation_2.h>
 #if CGAL_VERSION_NR < CGAL_VERSION_NUMBER(5, 4, 0)
@@ -190,4 +192,3 @@ bool tessellatePolygon(const PolygonK& polygon,
 }
 
 }  // namespace CGALUtils
-

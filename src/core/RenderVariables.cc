@@ -1,6 +1,6 @@
-#include "RenderVariables.h"
-#include "Context.h"
-#include "BuiltinContext.h"
+#include "core/RenderVariables.h"
+#include "core/Context.h"
+#include "core/BuiltinContext.h"
 
 void
 RenderVariables::applyToContext(ContextHandle<BuiltinContext>& context) const

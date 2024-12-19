@@ -1,9 +1,10 @@
 #pragma once
 
+#include <cstdint>
 #include <memory>
 #include <string>
 
-#include "OpenGLContext.h"
+#include "glview/OpenGLContext.h"
 
 namespace OffscreenContextFactory {
 

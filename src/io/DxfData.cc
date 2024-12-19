@@ -24,33 +24,37 @@
  *
  */
 
-// NOLINTNEXTLINE(bugprone-reserved-identifier)
-#define _USE_MATH_DEFINES
+#include "io/DxfData.h"
+
+#include <stdexcept>
+#include <memory>
 #include <cmath>
 
-#include "DxfData.h"
-#include "Grid.h"
-#include "printutils.h"
-#include "calc.h"
+#include "geometry/Grid.h"
+#include "utils/printutils.h"
+#include "utils/calc.h"
 
-#include <fstream>
 #include <cassert>
+#include <cstddef>
+#include <fstream>
 #include <unordered_map>
+#include <vector>
 #include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string.hpp>
-#include <boost/filesystem.hpp>
+#include <filesystem>
 #include <algorithm>
 #include <sstream>
+#include <string>
 #include <map>
 
-#include "Value.h"
-#include "boost-utils.h"
-#include "Polygon2d.h"
-#include "printutils.h"
-#include "degree_trig.h"
+#include "core/Value.h"
+#include "geometry/Polygon2d.h"
+#include "io/fileutils.h"
+#include "utils/printutils.h"
+#include "utils/degree_trig.h"
 
 
-namespace fs = boost::filesystem;
+namespace fs = std::filesystem;
 
 /*! \class DxfData
 
@@ -67,9 +71,10 @@ namespace fs = boost::filesystem;
  */
 
 struct Line {
-  int idx[2]; // indices into DxfData::points
+  int idx[2] = {-1, -1}; // indices into DxfData::points
   bool disabled{false};
-  Line(int i1 = -1, int i2 = -1) : idx{i1, i2} { }
+  Line() = default;
+  Line(int i1, int i2) : idx{i1, i2} { }
 };
 
 /*!
@@ -379,10 +384,10 @@ DxfData::DxfData(double fn, double fs, double fa,
   for (const auto& i : unsupported_entities_list) {
     if (layername.empty()) {
       LOG(message_group::Warning,
-          "Unsupported DXF Entity '%1$s' (%2$x) in %3$s.", i.first, i.second, QuotedString(boostfs_uncomplete(filename, fs::current_path()).generic_string()));
+          "Unsupported DXF Entity '%1$s' (%2$x) in %3$s.", i.first, i.second, QuotedString(fs_uncomplete(filename, fs::current_path()).generic_string()));
     } else {
       LOG(message_group::Warning,
-          "Unsupported DXF Entity '%1$s' (%2$x) in layer '%3$s' of %4$s", i.first, i.second, layername, boostfs_uncomplete(filename, fs::current_path()).generic_string());
+          "Unsupported DXF Entity '%1$s' (%2$x) in layer '%3$s' of %4$s", i.first, i.second, layername, fs_uncomplete(filename, fs::current_path()).generic_string());
     }
   }
 
@@ -405,7 +410,7 @@ DxfData::DxfData(double fn, double fs, double fa,
         for (int k : lv) {
           if (k < 0 || static_cast<unsigned int>(k) >= lines.size()) {
             LOG(message_group::Warning,
-                "Bad DXF line index in %1$s.", QuotedString(boostfs_uncomplete(filename, fs::current_path()).generic_string()));
+                "Bad DXF line index in %1$s.", QuotedString(fs_uncomplete(filename, fs::current_path()).generic_string()));
             continue;
           }
           if (k == idx || lines[k].disabled) continue;
@@ -434,7 +439,7 @@ create_open_path:
       for (int k : lv) {
         if (k < 0 || static_cast<unsigned int>(k) >= lines.size()) {
           LOG(message_group::Warning,
-              "Bad DXF line index in %1$s.", QuotedString(boostfs_uncomplete(filename, fs::current_path()).generic_string()));
+              "Bad DXF line index in %1$s.", QuotedString(fs_uncomplete(filename, fs::current_path()).generic_string()));
           continue;
         }
         if (lines[k].disabled) continue;
@@ -475,7 +480,7 @@ found_next_line_in_open_path:;
       for (int k : lv) {
         if (k < 0 || static_cast<unsigned int>(k) >= lines.size()) {
           LOG(message_group::Warning,
-              "Bad DXF line index in %1$s.", QuotedString(boostfs_uncomplete(filename, fs::current_path()).generic_string()));
+              "Bad DXF line index in %1$s.", QuotedString(fs_uncomplete(filename, fs::current_path()).generic_string()));
           continue;
         }
         if (lines[k].disabled) continue;

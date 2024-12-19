@@ -24,11 +24,15 @@
  *
  */
 
-#include "GeometryUtils.h"
-#include "linalg.h"
-#include "node.h"
-#include <sstream>
+#include "geometry/GeometryUtils.h"
+#include "geometry/linalg.h"
+#include "core/node.h"
 
+#include <memory>
+#include <cstddef>
+#include <sstream>
+#include <string>
+#include <vector>
 
 class CubeNode : public LeafNode
 {
@@ -172,4 +176,3 @@ public:
   std::vector<std::vector<size_t>> paths;
   int convexity = 1;
 };
-

@@ -1,10 +1,13 @@
-#include "export.h"
-#include "PolySet.h"
-// #include "PolySetUtils.h"
-#include "printutils.h"
+#include "io/export.h"
+#include "geometry/PolySet.h"
+// #include "geometry/PolySetUtils.h"
+#include "utils/printutils.h"
 // #include "version.h"
-#include "version_helper.h"
+#include "utils/version_helper.h"
 
+#include <cassert>
+#include <ostream>
+#include <memory>
 #include <string>
 #include <cmath>
 
@@ -255,8 +258,9 @@ if (exportInfo.options==nullptr) {
     return;
   }
 
+
 #if CAIRO_VERSION >= CAIRO_VERSION_ENCODE(1, 16, 0)
-  cairo_pdf_surface_set_metadata(surface, CAIRO_PDF_METADATA_TITLE, exportInfo.sourceFileName.c_str());
+  cairo_pdf_surface_set_metadata(surface, CAIRO_PDF_METADATA_TITLE, std::filesystem::path(exportInfo.sourceFilePath).filename().string().c_str());
   cairo_pdf_surface_set_metadata(surface, CAIRO_PDF_METADATA_CREATOR, "OpenSCAD (https://www.openscad.org/)");
   cairo_pdf_surface_set_metadata(surface, CAIRO_PDF_METADATA_CREATE_DATE, "");
   cairo_pdf_surface_set_metadata(surface, CAIRO_PDF_METADATA_MOD_DATE, "");
@@ -275,7 +279,7 @@ if (exportInfo.options==nullptr) {
       std::string about = "Scale is to calibrate actual printed dimension. Check both X and Y. Measure between tick 0 and last tick";
     cairo_set_source_rgba(cr, 0., 0., 0., 0.48);
     // Design Filename
-    if (exportPdfOptions->showDsgnFN) draw_text(exportInfo.sourceFilePath.c_str(), cr, Mlx, Mby, 10.);
+    if (exportPdfOptions->showDesignFilename) draw_text(exportInfo.sourceFilePath.c_str(), cr, Mlx, Mby, 10.);
     // Scale
     if (exportPdfOptions->showScale) {
     	draw_axes(cr, Mlx,Mrx,Mty,Mby);

@@ -24,14 +24,17 @@
  *
  */
 
-#include "OffsetNode.h"
+#include "core/OffsetNode.h"
 
-#include "module.h"
-#include "ModuleInstantiation.h"
-#include "Children.h"
-#include "Parameters.h"
-#include "Builtins.h"
+#include "core/module.h"
+#include "core/ModuleInstantiation.h"
+#include "core/Children.h"
+#include "core/Parameters.h"
+#include "core/Builtins.h"
 
+#include <ios>
+#include <utility>
+#include <memory>
 #include <sstream>
 #include <boost/assign/std/vector.hpp>
 using namespace boost::assign; // bring 'operator+=()' into scope

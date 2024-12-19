@@ -104,12 +104,12 @@ Follow the instructions for the platform you're compiling on below.
 
 * A C++ compiler supporting C++17
 * [cmake (3.5 ->)](https://cmake.org/)
-* [Qt (5.4 ->)](https://qt.io/)
+* [Qt (5.12 ->)](https://qt.io/)
 * [QScintilla2 (2.9 ->)](https://riverbankcomputing.com/software/qscintilla/)
 * [CGAL (5.4 ->)](https://www.cgal.org/)
  * [GMP (5.x)](https://gmplib.org/)
  * [MPFR (3.x)](https://www.mpfr.org/)
-* [boost (1.56 ->)](https://www.boost.org/)
+* [boost (1.61 ->)](https://www.boost.org/)
 * [OpenCSG (1.4.2 ->)](http://www.opencsg.org/)
 * [GLEW (1.5.4 ->)](http://glew.sourceforge.net/)
 * [Eigen (3.x)](https://eigen.tuxfamily.org/)
@@ -245,7 +245,7 @@ The following command creates `build-web/openscad.wasm` & `build-web/openscad.js
 docker run --rm -it -v $PWD:/src:rw --platform=linux/amd64 openscad/wasm-base:latest \
   emcmake cmake -B build-web -DEXPERIMENTAL=ON -DCMAKE_BUILD_TYPE=Release && \
 docker run --rm -it -v $PWD:/src:rw --platform=linux/amd64 openscad/wasm-base:latest \
-  cmake --build build-web -j10  
+  cmake --build build-web
 ```
 
 [openscad/openscad-playground](https://github.com/openscad/openscad-playground) uses this WASM build to provide a [Web UI](https://ochafik.com/openscad2/) with a subset of features of OpenSCAD.
@@ -273,7 +273,7 @@ build-node/openscad.js --help
 
 First, run `cmake -B build -DEXPERIMENTAL=1` to generate a Makefile in the `build` folder.
 
-Then run `cmake --build build -j`. Finally, on Linux you might run `cmake --install build` as root.
+Then run `cmake --build build`. Finally, on Linux you might run `cmake --install build` as root.
 
 If you had problems compiling from source, raise a new issue in the
 [issue tracker on the github page](https://github.com/openscad/openscad/issues).
