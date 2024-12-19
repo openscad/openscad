@@ -20,6 +20,7 @@ Clipper2Lib::Paths64 process(const Clipper2Lib::Paths64& polygons,
 {
   Clipper2Lib::Paths64 result;
   Clipper2Lib::Clipper64 clipper;
+  clipper.PreserveCollinear(false);
   clipper.AddSubject(polygons);
   clipper.Execute(cliptype, polytype, result);
   return result;
@@ -143,6 +144,7 @@ std::unique_ptr<Clipper2Lib::PolyTree64> sanitize(const Clipper2Lib::Paths64& pa
 {
   auto result = std::make_unique<Clipper2Lib::PolyTree64>();
   Clipper2Lib::Clipper64 clipper;
+  clipper.PreserveCollinear(false);
   try {
     clipper.AddSubject(paths);
   } catch (...) {
@@ -211,6 +213,7 @@ std::unique_ptr<Polygon2d> apply(const std::vector<Clipper2Lib::Paths64>& pathsv
 				 Clipper2Lib::ClipType clipType, int scale_bits)
 {
   Clipper2Lib::Clipper64 clipper;
+  clipper.PreserveCollinear(false);
 
   if (clipType == Clipper2Lib::ClipType::Intersection && pathsvector.size() >= 2) {
     // intersection operations must be split into a sequence of binary operations
@@ -286,6 +289,7 @@ std::unique_ptr<Polygon2d> applyMinkowski(const std::vector<std::shared_ptr<cons
   const int scale_bits = scaleBitsFromPrecision();
 
   Clipper2Lib::Clipper64 clipper;
+  clipper.PreserveCollinear(false);
   auto lhs = fromPolygon2d(polygons[0] ? *polygons[0] : Polygon2d(), scale_bits);
 
   for (size_t i = 1; i < polygons.size(); ++i) {
@@ -343,6 +347,7 @@ std::unique_ptr<Polygon2d> applyProjection(const std::vector<std::shared_ptr<con
   const int scale_bits = scaleBitsFromPrecision();
 
   Clipper2Lib::Clipper64 sumclipper;
+  sumclipper.PreserveCollinear(false);
   for (const auto &poly : polygons) {
     Clipper2Lib::Paths64 result = ClipperUtils::fromPolygon2d(*poly, scale_bits);
     // Using NonZero ensures that we don't create holes from polygons sharing
