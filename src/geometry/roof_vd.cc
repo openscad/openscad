@@ -340,7 +340,9 @@ std::unique_ptr<PolySet> voronoi_diagram_roof(const Polygon2d& poly, double fa, 
   try {
 
     // input data for voronoi diagram is 32 bit integers
-    const int scale_bits = ClipperUtils::scaleBitsFromPrecision();
+    // FIXME: Why does this need to be 32 bits? The default we use elsewhere is 
+    // scaleBitsFromPrecision(DEFAULT_PRECISION) which is 10^8.
+    const int scale_bits = ClipperUtils::scaleBitsFromBounds(poly.getBoundingBox(), 32);
     const double scale = std::ldexp(1.0, scale_bits);
 
     Clipper2Lib::Paths64 paths = ClipperUtils::fromPolygon2d(poly, scale_bits);
