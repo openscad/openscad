@@ -35,6 +35,8 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/spirit/include/qi.hpp>
 
+#include <clipper2/clipper.offset.h>
+
 #include "ClipperUtils.h"
 #include "libsvg/circle.h"
 #include "libsvg/ellipse.h"
@@ -51,7 +53,6 @@
 #include "libsvg/use.h"
 
 #include "libsvg/transformation.h"
-#include "submodules/Clipper2/CPP/Clipper2Lib/include/clipper2/clipper.offset.h"
 #include "utils/degree_trig.h"
 #include "utils/calc.h"
 
