@@ -1,7 +1,7 @@
 #pragma once
 
 #include "core/node.h"
-#include "polyclipping/clipper.hpp"
+#include "clipper2/clipper.h"
 
 #include <string>
 
@@ -16,5 +16,5 @@ public:
   bool chamfer{false};
   double fn{0}, fs{0}, fa{0}, delta{1};
   double miter_limit{1000000.0}; // currently fixed high value to disable chamfers with jtMiter
-  ClipperLib::JoinType join_type{ClipperLib::jtRound};
+  Clipper2Lib::JoinType join_type{Clipper2Lib::JoinType::Round};
 };

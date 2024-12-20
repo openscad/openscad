@@ -33,6 +33,7 @@ option(ENABLE_TESTS "Run testsuite after building." ON)
 option(EXPERIMENTAL "Enable Experimental Features" OFF)
 option(USE_MANIFOLD_TRIANGULATOR "Use Manifold's triangulator instead of CGAL's" ON)
 option(USE_BUILTIN_MANIFOLD "Use manifold from submodule" ON)
+option(USE_BUILTIN_CLIPPER2 "Use Clipper2 from submodule" ON)
 option(USE_LEGACY_RENDERERS "Use legacy (non-VBO) OpenGL renderers" OFF)
 option(SNAPSHOT "Create dev snapshot, uses nightly icons" OFF)
 option(HEADLESS "Build without GUI frontend" OFF)
@@ -846,7 +847,6 @@ set(CORE_SOURCES
   src/ext/libtess2/Source/sweep.c
   src/ext/libtess2/Source/tess.c
   src/ext/lodepng/lodepng.cpp
-  src/ext/polyclipping/clipper.cpp
   src/geometry/ClipperUtils.cc
   src/geometry/Geometry.cc
   src/geometry/GeometryCache.cc
@@ -967,6 +967,19 @@ set(MANIFOLD_SOURCES
 set(MANIFOLD_CGAL_SOURCES
   src/geometry/manifold/manifold-applyops-minkowski.cc
 )
+
+if(USE_BUILTIN_CLIPPER2)
+  set(CLIPPER2_UTILS OFF)
+  set(CLIPPER2_EXAMPLES OFF)
+  set(CLIPPER2_TESTS OFF)
+  add_subdirectory("submodules/Clipper2/CPP" EXCLUDE_FROM_ALL)
+  set(Clipper2_FOUND "YES")
+  message(STATUS "Clipper2 submodule")
+else()
+  find_package(Clipper2 REQUIRED QUIET)
+  message(STATUS "Clipper2: ${Clipper2_VERSION}")
+endif()
+target_link_libraries(OpenSCAD PRIVATE Clipper2::Clipper2)
 
 if(ENABLE_MANIFOLD)
   if(NOT DEFINED MANIFOLD_PAR)
@@ -1224,11 +1237,6 @@ set(GUI_UIS
     src/gui/parameter/ParameterVector.ui
     src/gui/parameter/ParameterWidget.ui
 )
-
-if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
-  # Ignore specific warning on external lib
-  set_source_files_properties("src/ext/polyclipping/clipper.cpp" PROPERTIES COMPILE_FLAGS "-Wno-class-memaccess")
-endif()
 
 if (ENABLE_MANIFOLD)
   target_compile_definitions(OpenSCAD PRIVATE ENABLE_MANIFOLD)
