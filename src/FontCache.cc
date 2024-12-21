@@ -144,8 +144,11 @@ FontCache::FontCache()
   // Add the built-in fonts & config
   fs::path builtinfontpath(PlatformUtils::resourcePath("fonts"));
   if (fs::is_directory(builtinfontpath)) {
+#ifndef __EMSCRIPTEN__
+    builtinfontpath = fs::canonical(builtinfontpath);
+#endif
     FcConfigParseAndLoad(this->config, reinterpret_cast<const FcChar8 *>(builtinfontpath.generic_string().c_str()), false);
-    add_font_dir(fs::canonical(builtinfontpath).generic_string());
+    add_font_dir(builtinfontpath.generic_string());
   }
 
   const char *home = getenv("HOME");
