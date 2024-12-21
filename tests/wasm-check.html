@@ -2,7 +2,7 @@
   <body>
     <pre id="output"></pre>
     <script type="module"> 
-      import OpenSCAD from "../build/openscad.js";
+      import OpenSCAD from "../../build/openscad.js";
       
       const instance = await OpenSCAD({ noInitialRun: true });
       instance.FS.writeFile("input.scad", `
