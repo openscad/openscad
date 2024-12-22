@@ -33,6 +33,7 @@ option(ENABLE_TESTS "Run testsuite after building." ON)
 option(EXPERIMENTAL "Enable Experimental Features" OFF)
 option(USE_MANIFOLD_TRIANGULATOR "Use Manifold's triangulator instead of CGAL's" ON)
 option(USE_BUILTIN_MANIFOLD "Use manifold from submodule" ON)
+option(USE_BUILTIN_CLIPPER2 "Use Clipper2 from submodule" ON)
 option(USE_LEGACY_RENDERERS "Use legacy (non-VBO) OpenGL renderers" OFF)
 option(SNAPSHOT "Create dev snapshot, uses nightly icons" OFF)
 option(HEADLESS "Build without GUI frontend" OFF)
@@ -145,7 +146,7 @@ if (CMAKE_SYSTEM_NAME STREQUAL Emscripten)
   set(Boost_USE_STATIC_LIBS ON CACHE BOOL "" FORCE)
   set(Boost_USE_STATIC_RUNTIME ON CACHE BOOL "" FORCE)
   set(ENABLE_CAIRO OFF CACHE BOOL "" FORCE)
-  set(MANIFOLD_PAR OFF CACHE STRING "" FORCE)
+  set(MANIFOLD_PAR OFF CACHE BOOL "" FORCE)
   set(NULLGL ON CACHE BOOL "" FORCE)
   set(USE_MIMALLOC OFF CACHE BOOL "" FORCE)
   set(ENV{PKG_CONFIG_PATH} "/emsdk/upstream/emscripten/cache/sysroot/lib/pkgconfig")
@@ -160,6 +161,7 @@ if (CMAKE_SYSTEM_NAME STREQUAL Emscripten)
     -sABORT_ON_WASM_EXCEPTIONS
     -sALLOW_MEMORY_GROWTH=1
     -sDISABLE_EXCEPTION_CATCHING=0
+    -sEXIT_RUNTIME=1
     -sEXPORTED_RUNTIME_METHODS=['ENV','ERRNO_CODES','FS','PATH','callMain']
     -sMAXIMUM_MEMORY=4GB
     
@@ -170,7 +172,6 @@ if (CMAKE_SYSTEM_NAME STREQUAL Emscripten)
   if (WASM_BUILD_TYPE STREQUAL "web")
     target_link_options(OpenSCAD PUBLIC
       -sENVIRONMENT=web,worker
-      -sEXIT_RUNTIME=1
       -sEXPORT_ES6=1
       -sEXPORT_NAME=OpenSCAD
       -sMODULARIZE=1
@@ -842,7 +843,6 @@ set(CORE_SOURCES
   src/ext/libtess2/Source/sweep.c
   src/ext/libtess2/Source/tess.c
   src/ext/lodepng/lodepng.cpp
-  src/ext/polyclipping/clipper.cpp
   src/geometry/ClipperUtils.cc
   src/geometry/Geometry.cc
   src/geometry/GeometryCache.cc
@@ -970,6 +970,19 @@ set(MANIFOLD_CGAL_SOURCES
   src/geometry/manifold/manifold-applyops-minkowski.cc
 )
 
+if(USE_BUILTIN_CLIPPER2)
+  set(CLIPPER2_UTILS OFF)
+  set(CLIPPER2_EXAMPLES OFF)
+  set(CLIPPER2_TESTS OFF)
+  add_subdirectory("submodules/Clipper2/CPP" EXCLUDE_FROM_ALL)
+  set(Clipper2_FOUND "YES")
+  message(STATUS "Clipper2 submodule")
+else()
+  find_package(Clipper2 REQUIRED QUIET)
+  message(STATUS "Clipper2: ${Clipper2_VERSION}")
+endif()
+target_link_libraries(OpenSCAD PRIVATE Clipper2::Clipper2)
+
 if(ENABLE_MANIFOLD)
   if(NOT DEFINED MANIFOLD_PAR)
     # Note: currently only Manifold-related code makes use of TBB parallelization
@@ -992,7 +1005,7 @@ if(ENABLE_MANIFOLD)
     message(STATUS "TBB: ${TBB_VERSION}")
     target_link_libraries(OpenSCAD PRIVATE TBB::tbb)
 
-    set(MANIFOLD_PAR ON CACHE STRING "Parallel backend" FORCE)
+    set(MANIFOLD_PAR ON CACHE BOOL "Parallel backend" FORCE)
   endif()
 
   set(MANIFOLD_PYBIND OFF)
@@ -1232,11 +1245,6 @@ set(GUI_UIS
     src/gui/parameter/ParameterVector.ui
     src/gui/parameter/ParameterWidget.ui
 )
-
-if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
-  # Ignore specific warning on external lib
-  set_source_files_properties("src/ext/polyclipping/clipper.cpp" PROPERTIES COMPILE_FLAGS "-Wno-class-memaccess")
-endif()
 
 if (ENABLE_MANIFOLD)
   target_compile_definitions(OpenSCAD PRIVATE ENABLE_MANIFOLD)

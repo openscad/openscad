@@ -212,7 +212,7 @@ std::unique_ptr<Geometry> import_svg(double fn, double fs, double fa,
           }
           poly->addOutline(outline);
         }
-        polygons.push_back(poly);
+        if (!poly->isEmpty()) polygons.push_back(poly);
       }
     }
     libsvg_free(shapes);
@@ -224,14 +224,14 @@ std::unique_ptr<Geometry> import_svg(double fn, double fs, double fa,
       for (int i = polygons.size() - 1; i >= 0; --i) {
         auto& poly = polygons[i];
         assert(poly);
-        std::shared_ptr<const Polygon2d> full_poly = ClipperUtils::apply({poly}, ClipperLib::ctUnion);
+        std::shared_ptr<const Polygon2d> full_poly = ClipperUtils::apply({poly}, Clipper2Lib::ClipType::Union);
         std::shared_ptr<const Polygon2d> result_poly;
         if (!mask) {
           mask = full_poly;
           result_poly = full_poly;
         } else {
-          auto masked_poly = ClipperUtils::apply({full_poly, mask}, ClipperLib::ctDifference);
-          auto new_mask = ClipperUtils::apply({mask, full_poly}, ClipperLib::ctUnion);
+          auto masked_poly = ClipperUtils::apply({full_poly, mask}, Clipper2Lib::ClipType::Difference);
+          auto new_mask = ClipperUtils::apply({mask, full_poly}, Clipper2Lib::ClipType::Union);
           mask = std::move(new_mask);
           masked_poly->setColor(poly->getColor());
           result_poly = std::move(masked_poly);
@@ -246,7 +246,7 @@ std::unique_ptr<Geometry> import_svg(double fn, double fs, double fa,
       }
       return std::make_unique<GeometryList>(geoms);
     } else {
-      return ClipperUtils::apply(polygons, ClipperLib::ctUnion);
+      return ClipperUtils::apply(polygons, Clipper2Lib::ClipType::Union);
     }
   } catch (const std::exception& e) {
     LOG(message_group::Error, "%1$s, import() at line %2$d", e.what(), loc.firstLine());
