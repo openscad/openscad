@@ -24,12 +24,13 @@ enum class FileFormat {
   WRL,
   AMF,
   _3MF,
+#ifdef ENABLE_ASSIMP
   GLTF,
   COLLADA,
   STP,
   PLY,
   X3D,
-
+#endif
   DXF,
   SVG,
   NEFDBG,

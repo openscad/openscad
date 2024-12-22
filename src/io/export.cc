@@ -73,7 +73,7 @@ Containers &containers() {
     add_item(*containers, {FileFormat::AMF, "amf", "amf", "AMF"});
     add_item(*containers, {FileFormat::_3MF, "3mf", "3mf", "3MF"});
 #ifdef ENABLE_ASSIMP
-    add_item(*containers, {FileFormat::GLTF, "gltf", "gltf", "GLTF"});
+    add_item(*containers, {FileFormat::GLTF, "glb", "glb", "GLTF"});
     add_item(*containers, {FileFormat::COLLADA, "collada", "dae", "COLLADA"});
     add_item(*containers, {FileFormat::X3D, "x3d", "x3d", "X3D"});
     add_item(*containers, {FileFormat::STP, "stp", "stp", "STEP"});
@@ -180,11 +180,13 @@ return format == FileFormat::ASCII_STL ||
   format == FileFormat::WRL ||
   format == FileFormat::AMF ||
   format == FileFormat::_3MF ||
+#ifdef ENABLE_ASSIMP
+  format == FileFormat::GLTF ||
   format == FileFormat::COLLADA ||
   format == FileFormat::STP ||
   format == FileFormat::PLY ||
-  format == FileFormat::GLTF ||
   format == FileFormat::X3D ||
+#endif
   format == FileFormat::NEFDBG ||
   format == FileFormat::NEF3 ||
   format == FileFormat::POV;
