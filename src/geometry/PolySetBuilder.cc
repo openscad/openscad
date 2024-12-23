@@ -138,12 +138,25 @@ void PolySetBuilder::addVertex(const Vector3d &v)
   addVertex(vertexIndex(v));
 }
 
-void PolySetBuilder::endPolygon() {
+void PolySetBuilder::endPolygon(const Color4f &color) {
   // FIXME: Should we check for self-touching polygons (non-consecutive duplicate indices)?
 
   // FIXME: Can we move? What would the state of current_polygon_ be after move?
   if (current_polygon_.size() >= 3) {
     indices_.push_back(current_polygon_);
+
+    if (color.isValid()) {
+      if (color_indices_.empty() && indices_.size() > 1) {
+        color_indices_.resize(indices_.size() - 1, -1);
+      }
+      auto it = std::find(colors_.begin(), colors_.end(), color);
+      if (it == colors_.end()) {
+        color_indices_.push_back(colors_.size());
+        colors_.push_back(color);
+      } else {
+        color_indices_.push_back(it - colors_.begin());
+      }
+    }
   }
   current_polygon_.clear();
 }
