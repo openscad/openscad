@@ -340,13 +340,14 @@ std::unique_ptr<Polygon2d> applyOffset(const Polygon2d& poly, double offset, Cli
     isRound ? std::ldexp(arc_tolerance, scale_bits) : 1.0
     );
   auto p = ClipperUtils::fromPolygon2d(poly, scale_bits);
-  if (p.getColor().isValid()) {
-    result->setColor(p.getColor());
-  }
   co.AddPaths(p, joinType, Clipper2Lib::EndType::Polygon);
   Clipper2Lib::PolyTree64 result;
   co.Execute(std::ldexp(offset, scale_bits), result);
-  return toPolygon2d(result, scale_bits);
+  auto finalResult = toPolygon2d(result, scale_bits);
+  if (poly.getColor().isValid()) {
+    finalResult->setColor(poly.getColor());
+  }
+  return finalResult;
 }
 
 std::unique_ptr<Polygon2d> applyProjection(const std::vector<std::shared_ptr<const Polygon2d>>& polygons)
