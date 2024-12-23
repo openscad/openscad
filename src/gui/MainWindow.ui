@@ -235,6 +235,12 @@
      <addaction name="fileActionExportWRL"/>
      <addaction name="fileActionExportAMF"/>
      <addaction name="fileActionExport3MF"/>
+     <addaction name="fileActionExportCOLLADA"/>
+     <addaction name="fileActionExportSTP"/>
+     <addaction name="fileActionExportPLY"/>
+     <addaction name="fileActionExportGLTF"/>
+     <addaction name="fileActionExportX3D"/>
+     <addaction name="separator"/>
      <addaction name="fileActionExportDXF"/>
      <addaction name="fileActionExportSVG"/>
      <addaction name="fileActionExportCSG"/>
@@ -1069,6 +1075,31 @@
    <property name="text">
     <string>Export as &amp;WRL...</string>
    </property>
+  </action>
+  <action name="fileActionExportCOLLADA">
+    <property name="text">
+      <string>Export as &amp;COLLADA...</string>
+    </property>
+  </action>
+  <action name="fileActionExportSTP">
+    <property name="text">
+      <string>Export as &amp;STEP...</string>
+    </property>
+  </action>
+  <action name="fileActionExportPLY">
+    <property name="text">
+      <string>Export as &amp;PLY...</string>
+    </property>
+  </action>
+  <action name="fileActionExportGLTF">
+    <property name="text">
+      <string>Export as &amp;glTF...</string>
+    </property>
+  </action>
+  <action name="fileActionExportX3D">
+    <property name="text">
+      <string>Export as &amp;X3D...</string>
+    </property>
   </action>
   <action name="viewActionPreview">
    <property name="checkable">

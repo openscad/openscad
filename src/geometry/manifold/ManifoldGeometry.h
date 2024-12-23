@@ -6,7 +6,7 @@
 #include <cstdint>
 #include <memory>
 #include "geometry/linalg.h"
-#include <manifold/manifold.h>
+#include "manifold/manifold.h"
 #include <cstddef>
 #include <map>
 #include <set>

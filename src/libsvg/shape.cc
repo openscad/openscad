@@ -32,6 +32,7 @@
 #include <vector>
 
 #include <boost/tokenizer.hpp>
+#include <boost/optional.hpp>
 #include <boost/algorithm/string.hpp>
 #include <boost/spirit/include/qi.hpp>
 
@@ -55,6 +56,8 @@
 #include "libsvg/transformation.h"
 #include "utils/degree_trig.h"
 #include "utils/calc.h"
+
+extern boost::optional<Color4f> parse_color(const std::string& s);
 
 namespace libsvg {
 
@@ -103,6 +106,8 @@ shape::set_attrs(attr_map_t& attrs, void *context)
   this->stroke_linecap = attrs["stroke-linecap"];
   this->stroke_linejoin = attrs["stroke-linejoin"];
   this->style = attrs["style"];
+  this->fill = attrs["fill"];
+  this->fill_opacity = attrs["fill-opacity"];
 
   std::string display = get_style("display");
   if (display.empty()) {
@@ -194,6 +199,25 @@ shape::get_stroke_linejoin() const
     return Clipper2Lib::JoinType::Miter;
   }
   return Clipper2Lib::JoinType::Miter;
+}
+
+Color4f shape::get_fill_color() const {
+  auto fill = this->fill;
+  if (fill.empty()) {
+    fill = get_style("fill");
+  }
+  auto fill_opacity = this->fill_opacity;
+  if (fill_opacity.empty()) {
+    fill_opacity = get_style("fill-opacity");
+  }
+  auto color = parse_color(fill);
+  if (color.has_value()) {
+    if (!fill_opacity.empty()) {
+      (*color)[3] = (float) parse_double(fill_opacity);
+    }
+    return *color;
+  }
+  return Color4f();
 }
 
 void

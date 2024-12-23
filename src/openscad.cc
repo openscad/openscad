@@ -69,6 +69,12 @@
 #include "utils/StackCheck.h"
 #include "printutils.h"
 
+#define _OUTPUT_EXTENSIONS "stl, off, wrl, amf, 3mf, csg, dxf, svg, pdf, png, echo, ast, term, nef3, nefdbg"
+#ifdef ENABLE_ASSIMP
+#define OUTPUT_EXTENSIONS _OUTPUT_EXTENSIONS ", glb, dae, x3d, ply, stp"
+#else
+#define _OUTPUT_EXTENSIONS _OUTPUT_EXTENSIONS
+#endif
 
 #ifdef ENABLE_PYTHON
 extern std::shared_ptr<AbstractNode> python_result_node;
@@ -732,7 +738,7 @@ int main(int argc, char **argv)
   po::options_description desc("Allowed options");
   desc.add_options()
     ("export-format", po::value<std::string>(), "overrides format of exported scad file when using option '-o', arg can be any of its supported file extensions.  For ascii stl export, specify 'asciistl', and for binary stl export, specify 'binstl'.  Ascii export is the current stl default, but binary stl is planned as the future default so asciistl should be explicitly specified in scripts when needed.\n")
-    ("o,o", po::value<std::vector<std::string>>(), "output specified file instead of running the GUI, the file extension specifies the type: stl, off, wrl, amf, 3mf, csg, dxf, svg, pdf, png, echo, ast, term, nef3, nefdbg (May be used multiple time for different exports). Use '-' for stdout\n")
+    ("o,o", po::value<std::vector<std::string>>(), "output specified file instead of running the GUI, the file extension specifies the type: " OUTPUT_EXTENSIONS " (May be used multiple time for different exports). Use '-' for stdout\n")
     ("D,D", po::value<std::vector<std::string>>(), "var=val -pre-define variables")
     ("p,p", po::value<std::string>(), "customizer parameter file")
     ("P,P", po::value<std::string>(), "customizer parameter set")

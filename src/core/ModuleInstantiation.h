@@ -13,7 +13,7 @@ using ModuleInstantiationList = std::vector<class ModuleInstantiation *>;
 class ModuleInstantiation : public ASTNode
 {
 public:
-  ModuleInstantiation(std::string name, AssignmentList args = AssignmentList(), const Location& loc = Location::NONE)
+  ModuleInstantiation(const std::string& name, AssignmentList args = AssignmentList(), const Location& loc = Location::NONE)
     : ASTNode(loc), arguments(std::move(args)), modname(std::move(name)) { }
 
   virtual void print(std::ostream& stream, const std::string& indent, const bool inlined) const;

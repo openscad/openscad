@@ -24,21 +24,24 @@
  *
  */
 
+#include "Feature.h"
 #include "geometry/PolySet.h"
 #include "geometry/PolySetBuilder.h"
 #include "geometry/PolySetUtils.h"
 #include "geometry/Geometry.h"
+#include "glview/RenderSettings.h"
 #include "utils/printutils.h"
 #include "utils/version_helper.h"
 #include "core/AST.h"
 #include "lib3mf_implicit.hpp"
+#include <map>
 
 #include <utility>
 #include <memory>
 #include <vector>
 
 namespace {
-  std::unique_ptr<PolySet> getAsPolySet(const Lib3MF::PMeshObject& object) {
+  std::unique_ptr<PolySet> getAsPolySet(const Lib3MF::PModel& model, const Lib3MF::PMeshObject& object) {
     try {
       if (!object) return nullptr;
 
@@ -46,11 +49,40 @@ namespace {
       Lib3MF_uint64 triangle_count = object->GetTriangleCount();
       if (!vertex_count || !triangle_count) return nullptr;
 
+      auto colorsEnabled = RenderSettings::inst()->backend3D == RenderBackend3D::ManifoldBackend;
+      const Color4f invalidColor;
+
+      Lib3MF_uint32 objectLevelResourceId = 0;
+      Lib3MF_uint32 objectLevelPropertyId = 0;
+      auto hasObjectLevelColor = colorsEnabled && object->GetObjectLevelProperty(objectLevelResourceId, objectLevelPropertyId);
+      
+      // Colors keyed by resource id + property id.
+      // May need to use unordered_map if there are actual files w/ many colors.
+      std::map<std::pair<Lib3MF_uint32, Lib3MF_uint32>, Color4f> colorProperties;
+      auto get_color = [&](Lib3MF_uint32 resId, Lib3MF_uint32 propId) -> const Color4f & {
+        if (!colorsEnabled) return invalidColor;
+        if ((resId == 0) && hasObjectLevelColor) {
+          resId = objectLevelResourceId;
+          propId = objectLevelPropertyId;
+        }
+        auto mg = model->GetBaseMaterialGroupByID(resId);
+        if (!mg) {
+          return invalidColor;
+        }
+        auto col = mg->GetDisplayColor(propId);
+        auto & color = colorProperties[std::make_pair(resId, propId)];
+        color = {col.m_Red, col.m_Green, col.m_Blue, col.m_Alpha};
+        return color;
+      };
+
       PolySetBuilder builder(0,triangle_count);
       for (Lib3MF_uint64 idx = 0; idx < triangle_count; ++idx) {
         Lib3MF::sTriangle triangle = object->GetTriangle(idx);
-
-        builder.beginPolygon(3);
+        sLib3MFTriangleProperties props;
+        object->GetTriangleProperties(idx, props);
+        const auto & color = get_color(props.m_ResourceID, props.m_PropertyIDs[0]);
+        
+        builder.beginPolygon(3, color);
 
         for (unsigned int idx : triangle.m_Indices) {
           Lib3MF::sPosition vertex = object->GetVertex(idx);
@@ -149,7 +181,7 @@ std::unique_ptr<Geometry> import_3mf(const std::string& filename, const Location
   std::vector<std::unique_ptr<PolySet>> meshes;
   unsigned int mesh_idx = 0;
   while (object_it->MoveNext()) {
-      auto ps = getAsPolySet(object_it->GetCurrentMeshObject());
+      auto ps = getAsPolySet(model, object_it->GetCurrentMeshObject());
       // FIXME: Should we just return an empty object for all these cases, or is it valid to return existing geometry?
       if (!ps) return PolySet::createEmpty();
       PRINTDB("%s: mesh %d, vertex count: %lu, triangle count: %lu", filename.c_str() % mesh_idx % ps->vertices.size() % ps->indices.size());

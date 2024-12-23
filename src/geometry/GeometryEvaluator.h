@@ -100,6 +100,8 @@ private:
   void addToParent(const State& state, const AbstractNode& node, const std::shared_ptr<const Geometry>& geom);
   Response lazyEvaluateRootNode(State& state, const AbstractNode& node);
 
+  Geometry::Geometries extra_geometries;
+
   std::map<int, Geometry::Geometries> visitedchildren;
   const Tree& tree;
   std::shared_ptr<const Geometry> root;
