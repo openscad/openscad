@@ -8,6 +8,7 @@
 
 using Eigen::Vector2d;
 using Eigen::Vector3d;
+using Eigen::Vector4d;
 using Eigen::Vector3f;
 using Eigen::Vector3i;
 
@@ -60,6 +61,10 @@ public:
   }
 
   [[nodiscard]] bool isValid() const { return this->minCoeff() >= 0.0f; }
+  [[nodiscard]] float r() const { return coeff(0); }
+  [[nodiscard]] float g() const { return coeff(1); }
+  [[nodiscard]] float b() const { return coeff(2); }
+  [[nodiscard]] float a() const { return coeff(3); }
 
   bool operator<(const Color4f &b) const {
     for (int i = 0; i < 4; i++) {
