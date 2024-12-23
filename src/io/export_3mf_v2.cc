@@ -79,21 +79,23 @@ static bool append_polyset(const std::shared_ptr<const PolySet> & ps, Lib3MF::PW
     if (!mesh) return false;
     mesh->SetName("OpenSCAD Model");
 
-    Lib3MF::PBaseMaterialGroup baseMaterialGroup = model->AddBaseMaterialGroup();
     std::vector<Lib3MF_uint32> colorResourceIDs;
-    for (size_t i = 0; i < ps->colors.size(); i++) {
-      const auto & color = ps->colors[i];
-      Lib3MF::sColor sc {
-        (Lib3MF_uint8) (color[0] * 255),
-        (Lib3MF_uint8) (color[1] * 255),
-        (Lib3MF_uint8) (color[2] * 255),
-        (Lib3MF_uint8) (color[3] * 255)
-      };
-      auto name = "color_" + std::to_string(i);
-      colorResourceIDs.push_back(baseMaterialGroup->AddMaterial(name, sc));
-    }
+    Lib3MF_uint32 baseMaterialsResourceID = 0;
     if (!ps->colors.empty()) {
-      mesh->SetObjectLevelProperty(baseMaterialGroup->GetResourceID(), colorResourceIDs[0]);
+      Lib3MF::PBaseMaterialGroup baseMaterialGroup = model->AddBaseMaterialGroup();
+      baseMaterialsResourceID = baseMaterialGroup->GetResourceID();
+      for (size_t i = 0; i < ps->colors.size(); i++) {
+        const auto & color = ps->colors[i];
+        Lib3MF::sColor sc {
+          (Lib3MF_uint8) (color[0] * 255),
+          (Lib3MF_uint8) (color[1] * 255),
+          (Lib3MF_uint8) (color[2] * 255),
+          (Lib3MF_uint8) (color[3] * 255)
+        };
+        auto name = "color_" + std::to_string(i);
+        colorResourceIDs.push_back(baseMaterialGroup->AddMaterial(name, sc));
+      }
+      mesh->SetObjectLevelProperty(baseMaterialsResourceID, colorResourceIDs[0]);
     }
 
     auto vertexFunc = [&](const Vector3d& coords) -> bool {
@@ -112,10 +114,10 @@ static bool append_polyset(const std::shared_ptr<const PolySet> & ps, Lib3MF::PW
       try {
         Lib3MF::sTriangle t{(Lib3MF_uint32)indices[0], (Lib3MF_uint32)indices[1], (Lib3MF_uint32)indices[2]};
         auto iTriangle = mesh->AddTriangle(t);
-        if (color_index >= 0 && color_index < colorResourceIDs.size()) {
+        if (baseMaterialsResourceID && color_index >= 0 && color_index < colorResourceIDs.size()) {
           auto colorResourceID = colorResourceIDs[color_index];
           Lib3MF::sTriangleProperties props {
-            baseMaterialGroup->GetResourceID(), 
+            baseMaterialsResourceID, 
             { colorResourceID, colorResourceID, colorResourceID}
           };
           mesh->SetTriangleProperties(iTriangle, props);
