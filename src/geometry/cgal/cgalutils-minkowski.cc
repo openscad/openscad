@@ -12,8 +12,4 @@ void inPlaceNefMinkowski(
   lhs = CGAL::minkowski_sum_3(lhs, rhs);
 }
 
-template void inPlaceNefMinkowski(
-  CGAL::Nef_polyhedron_3<CGAL_HybridKernel3>& lhs,
-  CGAL::Nef_polyhedron_3<CGAL_HybridKernel3>& rhs);
-
 } // namespace CGALUtils

@@ -21,7 +21,6 @@
 
 #ifdef ENABLE_CGAL
 #include "geometry/cgal/cgalutils.h"
-#include "geometry/cgal/CGALHybridPolyhedron.h"
 #endif
 
 #ifdef ENABLE_MANIFOLD
@@ -536,22 +535,12 @@ std::shared_ptr<const Geometry> GeometryUtils::getBackendSpecificGeometry(const 
   }
 #endif
 #if ENABLE_CGAL
-  if (Feature::ExperimentalFastCsg.is_enabled()) {
-    if (auto ps = std::dynamic_pointer_cast<const PolySet>(geom)) {
-      return CGALUtils::createHybridPolyhedronFromPolySet(*ps);
-    } else if (auto poly = std::dynamic_pointer_cast<const CGALHybridPolyhedron>(geom)) {
-      return geom;
-    } else {
-      assert(false && "Unexpected geometry");
-    }
+  if (auto ps = std::dynamic_pointer_cast<const PolySet>(geom)) {
+    return CGALUtils::createNefPolyhedronFromPolySet(*ps);
+  } else if (auto poly = std::dynamic_pointer_cast<const CGAL_Nef_polyhedron>(geom)) {
+    return geom;
   } else {
-    if (auto ps = std::dynamic_pointer_cast<const PolySet>(geom)) {
-      return CGALUtils::createNefPolyhedronFromPolySet(*ps);
-    } else if (auto poly = std::dynamic_pointer_cast<const CGAL_Nef_polyhedron>(geom)) {
-      return geom;
-    } else {
-      assert(false && "Unexpected geometry");
-    }
+    assert(false && "Unexpected geometry");
   }
 #endif
   return nullptr;

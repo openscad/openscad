@@ -13,9 +13,6 @@ public:
   using list_t = std::vector<Feature *>;
   using iterator = list_t::iterator;
 
-  static const Feature ExperimentalFastCsg;
-  static const Feature ExperimentalFastCsgSafer;
-  static const Feature ExperimentalFastCsgDebug;
   static const Feature ExperimentalRoof;
   static const Feature ExperimentalInputDriverDBus;
   static const Feature ExperimentalLazyUnion;

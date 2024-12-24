@@ -935,13 +935,9 @@ endif()
 set(CGAL_SOURCES
   src/geometry/cgal/cgalutils.cc
   src/geometry/cgal/cgalutils-applyops.cc
-  src/geometry/cgal/cgalutils-applyops-hybrid.cc
-  src/geometry/cgal/cgalutils-applyops-hybrid-minkowski.cc
   src/geometry/cgal/cgalutils-closed.cc
   src/geometry/cgal/cgalutils-convex.cc
-  src/geometry/cgal/cgalutils-corefine.cc
   src/geometry/cgal/cgalutils-kernel.cc
-  src/geometry/cgal/cgalutils-hybrid.cc
   src/geometry/cgal/cgalutils-mesh.cc
   src/geometry/cgal/cgalutils-minkowski.cc
   src/geometry/cgal/cgalutils-nef.cc
@@ -950,7 +946,6 @@ set(CGAL_SOURCES
   src/geometry/cgal/cgalutils-project.cc
   src/geometry/cgal/cgalutils-tess.cc
   src/geometry/cgal/cgalutils-triangulate.cc
-  src/geometry/cgal/CGALHybridPolyhedron.cc
   src/geometry/cgal/CGAL_Nef_polyhedron.cc
   src/geometry/cgal/CGALCache.cc
   src/io/export_nef.cc
