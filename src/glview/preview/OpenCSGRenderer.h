@@ -14,32 +14,18 @@
 #include <cstddef>
 #include <vector>
 
-class CSGChainObject;
-class CSGProducts;
-class OpenCSGPrim;
 class OpenCSGVBOPrim;
 
 class OpenCSGVertexState : public VertexState
 {
 public:
-  OpenCSGVertexState()
-    : VertexState(), csg_object_index_(0)
-  {}
-  OpenCSGVertexState(GLenum draw_mode, GLsizei draw_size, GLenum draw_type,
-                     size_t draw_offset, size_t element_offset, GLuint vertices_vbo, GLuint elements_vbo)
-    : VertexState(draw_mode, draw_size, draw_type, draw_offset, element_offset, vertices_vbo, elements_vbo),
-    csg_object_index_(0)
-  {}
   OpenCSGVertexState(size_t csg_object_index = 0)
-    : VertexState(),
-    csg_object_index_(csg_object_index)
-  {}
+    : csg_object_index_(csg_object_index) {}
   OpenCSGVertexState(GLenum draw_mode, GLsizei draw_size, GLenum draw_type,
                      size_t draw_offset, size_t element_offset, GLuint vertices_vbo, GLuint elements_vbo,
-                     size_t csg_object_index)
+                     size_t csg_object_index = 0)
     : VertexState(draw_mode, draw_size, draw_type, draw_offset, element_offset, vertices_vbo, elements_vbo),
-    csg_object_index_(csg_object_index)
-  {}
+    csg_object_index_(csg_object_index) {}
 
   [[nodiscard]] size_t csgObjectIndex() const { return csg_object_index_; }
   void setCsgObjectIndex(size_t csg_object_index) { csg_object_index_ = csg_object_index; }

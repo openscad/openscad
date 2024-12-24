@@ -128,7 +128,7 @@ public:
   void addAttributeData(std::shared_ptr<IAttributeData> data)
   {
     stride_ += data->sizeofAttribute();
-    attributes_.emplace_back(std::move(data));
+    attributes_.emplace_back(data);
   }
 
   // Add position attribute data to vertex vector
@@ -136,24 +136,21 @@ public:
   {
     position_index_ = attributes_.size();
     stride_ += data->sizeofAttribute();
-    attributes_.emplace_back(std::move(data));
-    position_data_ = std::shared_ptr<IAttributeData>(attributes_.back());
+    position_data_ = attributes_.emplace_back(std::move(data));
   }
   // Add normal attribute data to vertex vector
   void addNormalData(std::shared_ptr<IAttributeData> data)
   {
     normal_index_ = attributes_.size();
     stride_ += data->sizeofAttribute();
-    attributes_.emplace_back(std::move(data));
-    normal_data_ = std::shared_ptr<IAttributeData>(attributes_.back());
+    normal_data_ = attributes_.emplace_back(std::move(data));
   }
   // Add color attribute data to vertex vector
   void addColorData(std::shared_ptr<IAttributeData> data)
   {
     color_index_ = attributes_.size();
     stride_ += data->sizeofAttribute();
-    attributes_.emplace_back(std::move(data));
-    color_data_ = std::shared_ptr<IAttributeData>(attributes_.back());
+    color_data_ = attributes_.emplace_back(std::move(data));
   }
 
   void clear() { for (auto& a : attributes_) a->clear(); }
@@ -242,8 +239,6 @@ public:
   }
   virtual ~VertexArray() = default;
 
-  // Add generic VertexData to VertexArray
-  void addVertexData(std::shared_ptr<VertexData> data) { vertices_.emplace_back(std::move(data)); }
   // Add common surface data vertex layout PNC
   void addSurfaceData();
   // Add common edge data vertex layout PC
@@ -271,12 +266,6 @@ public:
   inline std::vector<std::shared_ptr<VertexState>>& states() { return states_; }
   // Return reference to VertexData at current internal write index
   inline std::shared_ptr<VertexData> data() { return vertices_[write_index_]; }
-  // Return reference to VertexData at custom external write index
-  inline std::shared_ptr<VertexData> data(size_t write_index) { return vertices_[write_index]; }
-  // Return reference to surface VertexData if it exists
-  inline std::shared_ptr<VertexData> surfaceData() { return vertices_[surface_index_]; }
-  // Return reference to edge VertexData if it exists
-  inline std::shared_ptr<VertexData> edgeData() { return vertices_[edge_index_]; }
   // Return reference to elements
   inline VertexData& elements() { return elements_; }
   // Return reference to elements data if it exists
@@ -287,8 +276,6 @@ public:
   inline size_t sizeInBytes() const { size_t size = 0; for (const auto& data : vertices_) size += data->sizeInBytes(); return size; }
   // Return the current internal write index
   inline size_t writeIndex() const { return write_index_; }
-  // Set the internal write index
-  inline void writeIndex(size_t index) { if (index < vertices_.size()) write_index_ = index; }
   // Set the internal write index to the surface index
   inline void writeSurface() { write_index_ = surface_index_; }
   // Set the internal write index to the edge index
