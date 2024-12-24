@@ -16,15 +16,6 @@ using Vertex3K = CGAL::Point_3<K>;
 using PolygonK = std::vector<Vertex3K>;
 using PolyholeK = std::vector<PolygonK>;
 
-class CGALHybridPolyhedron;
-
-namespace CGAL {
-inline std::size_t hash_value(const CGAL_HybridKernel3::FT& x) {
-  std::hash<double> dh;
-  return dh(CGAL::to_double(x));
-}
-}
-
 namespace CGALUtils {
 
 template <typename Result, typename V>
@@ -39,10 +30,6 @@ template <typename K>
 bool is_weakly_convex(const CGAL::Surface_mesh<CGAL::Point_3<K>>& m);
 std::shared_ptr<const Geometry> applyOperator3D(const Geometry::Geometries& children, OpenSCADOperator op);
 std::unique_ptr<const Geometry> applyUnion3D(Geometry::Geometries::iterator chbegin, Geometry::Geometries::iterator chend);
-std::shared_ptr<CGALHybridPolyhedron> applyOperator3DHybrid(const Geometry::Geometries& children, OpenSCADOperator op);
-std::shared_ptr<CGALHybridPolyhedron> applyUnion3DHybrid(
-  const Geometry::Geometries::const_iterator& chbegin,
-  const Geometry::Geometries::const_iterator& chend);
 //FIXME: Old, can be removed:
 //void applyBinaryOperator(CGAL_Nef_polyhedron &target, const CGAL_Nef_polyhedron &src, OpenSCADOperator op);
 std::unique_ptr<Polygon2d> project(const CGAL_Nef_polyhedron& N, bool cut);
@@ -52,7 +39,6 @@ template <typename K>
 CGAL::Iso_cuboid_3<K> boundingBox(const CGAL::Surface_mesh<CGAL::Point_3<K>>& mesh);
 CGAL_Iso_cuboid_3 createIsoCuboidFromBoundingBox(const BoundingBox& bbox);
 bool is_approximately_convex(const PolySet& ps);
-std::shared_ptr<const Geometry> applyMinkowskiHybrid(const Geometry::Geometries& children);
 
 template <typename Polyhedron> std::unique_ptr<PolySet> createPolySetFromPolyhedron(const Polyhedron& p);
 template <class InputKernel, class OutputKernel>
@@ -105,12 +91,6 @@ getCartesianConverter()
   return CGAL::Cartesian_converter<
     FromKernel, ToKernel, KernelConverter<FromKernel, ToKernel>>();
 }
-std::shared_ptr<CGAL_Nef_polyhedron> createNefPolyhedronFromHybrid(const CGALHybridPolyhedron& hybrid);
-std::shared_ptr<CGALHybridPolyhedron> createHybridPolyhedronFromPolySet(const PolySet& ps);
-std::shared_ptr<CGALHybridPolyhedron> createMutableHybridPolyhedronFromGeometry(const std::shared_ptr<const Geometry>& geom);
-std::shared_ptr<const CGALHybridPolyhedron> getHybridPolyhedronFromGeometry(const std::shared_ptr<const Geometry>& geom);
-template <typename K>
-std::shared_ptr<CGALHybridPolyhedron> createHybridPolyhedronFromPolyhedron(const CGAL::Polyhedron_3<K>& poly);
 template <typename Polyhedron>
 void triangulateFaces(Polyhedron& polyhedron);
 template <typename Polyhedron>
@@ -138,7 +118,6 @@ bool corefineAndComputeDifference(TriangleMesh& lhs, TriangleMesh& rhs, Triangle
 
 template <typename K>
 void convertNefPolyhedronToTriangleMesh(const CGAL::Nef_polyhedron_3<K>& nef, CGAL::Surface_mesh<CGAL::Point_3<K>>& mesh);
-void cleanupMesh(CGAL_HybridMesh& mesh, bool is_corefinement_result);
 
 std::unique_ptr<PolySet> createTriangulatedPolySetFromPolygon2d(const Polygon2d& polygon2d);
 

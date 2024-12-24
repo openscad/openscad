@@ -29,9 +29,6 @@
 #include "geometry/PolySet.h"
 #include "geometry/PolySetUtils.h"
 #include "utils/printutils.h"
-#ifdef ENABLE_CGAL
-#include "geometry/cgal/CGALHybridPolyhedron.h"
-#endif
 #ifdef ENABLE_MANIFOLD
 #include "geometry/manifold/ManifoldGeometry.h"
 #endif
@@ -163,8 +160,6 @@ static bool append_3mf(const std::shared_ptr<const Geometry>& geom, Lib3MF::PWra
 #ifdef ENABLE_CGAL
   } else if (const auto N = std::dynamic_pointer_cast<const CGAL_Nef_polyhedron>(geom)) {
     return append_nef(*N, wrapper, model);
-  } else if (const auto hybrid = std::dynamic_pointer_cast<const CGALHybridPolyhedron>(geom)) {
-    return append_polyset(hybrid->toPolySet(), wrapper, model);
 #endif
 #ifdef ENABLE_MANIFOLD
   } else if (const auto mani = std::dynamic_pointer_cast<const ManifoldGeometry>(geom)) {

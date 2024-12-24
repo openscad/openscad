@@ -180,7 +180,6 @@ std::string SHA256HashString(std::string aString){
 #include "geometry/cgal/cgalutils.h"
 #include "geometry/cgal/CGALCache.h"
 #include "geometry/cgal/CGAL_Nef_polyhedron.h"
-#include "geometry/cgal/CGALHybridPolyhedron.h"
 #endif // ENABLE_CGAL
 
 #ifdef ENABLE_MANIFOLD
@@ -2685,8 +2684,6 @@ void MainWindow::actionCheckValidity()
 #ifdef ENABLE_CGAL 
  if (auto N = std::dynamic_pointer_cast<const CGAL_Nef_polyhedron>(this->root_geom)) {
     valid = N->p3 ? const_cast<CGAL_Nef_polyhedron3&>(*N->p3).is_valid() : false;
-  } else if (auto hybrid = std::dynamic_pointer_cast<const CGALHybridPolyhedron>(this->root_geom)) {
-    valid = hybrid->isValid();
   } else
 #endif
 #ifdef ENABLE_MANIFOLD

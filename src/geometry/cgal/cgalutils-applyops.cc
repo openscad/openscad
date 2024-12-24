@@ -9,7 +9,6 @@
 #include "geometry/PolySet.h"
 #include "utils/printutils.h"
 #include "core/progress.h"
-#include "geometry/cgal/CGALHybridPolyhedron.h"
 #ifdef ENABLE_MANIFOLD
 #include "geometry/manifold/ManifoldGeometry.h"
 #include "geometry/manifold/manifoldutils.h"
