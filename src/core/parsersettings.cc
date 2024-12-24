@@ -87,10 +87,18 @@ inline fs::path find_valid_path_(const fs::path& sourcepath,
                           const std::vector<std::string> *openfilenames)
 {
   if (localpath.is_absolute()) {
-    if (check_valid(localpath, openfilenames)) return fs::canonical(localpath);
+    if (check_valid(localpath, openfilenames)) {
+#ifndef __EMSCRIPTEN__
+      return fs::canonical(localpath);
+#else
+      return localpath;
+#endif
+    }
   } else {
     fs::path fpath = sourcepath / localpath;
+#ifndef __EMSCRIPTEN__
     if (fs::exists(fpath)) fpath = fs::canonical(fpath);
+#endif
     if (check_valid(fpath, openfilenames)) return fpath;
     fpath = search_libs(localpath);
     if (!fpath.empty() && check_valid(fpath, openfilenames)) return fpath;
