@@ -31,7 +31,7 @@ public:
   void addVertex(int ind);
   void addVertex(const Vector3d &v);
   // Calling this is optional; will be called automatically when adding a new polygon or building the PolySet
-  void endPolygon();
+  void endPolygon(const Color4f &color = {});
 
   void addColor(const Color4f& color);
   void addColorIndex(int idx); // should be paired with begin/endPolygon()

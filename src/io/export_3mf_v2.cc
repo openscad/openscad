@@ -69,12 +69,31 @@ static void export_3mf_error(std::string msg)
 /*
  * PolySet must be triangulated.
  */
-static bool append_polyset(std::shared_ptr<const PolySet> ps, Lib3MF::PWrapper& wrapper, Lib3MF::PModel& model)
+static bool append_polyset(const std::shared_ptr<const PolySet> & ps, Lib3MF::PWrapper& wrapper, Lib3MF::PModel& model)
 {
   try {
     auto mesh = model->AddMeshObject();
     if (!mesh) return false;
     mesh->SetName("OpenSCAD Model");
+
+    std::vector<Lib3MF_uint32> colorResourceIDs;
+    Lib3MF_uint32 baseMaterialsResourceID = 0;
+    if (!ps->colors.empty()) {
+      Lib3MF::PBaseMaterialGroup baseMaterialGroup = model->AddBaseMaterialGroup();
+      baseMaterialsResourceID = baseMaterialGroup->GetResourceID();
+      for (size_t i = 0; i < ps->colors.size(); i++) {
+        const auto & color = ps->colors[i];
+        Lib3MF::sColor sc {
+          (Lib3MF_uint8) (color[0] * 255),
+          (Lib3MF_uint8) (color[1] * 255),
+          (Lib3MF_uint8) (color[2] * 255),
+          (Lib3MF_uint8) (color[3] * 255)
+        };
+        auto name = "color_" + std::to_string(i);
+        colorResourceIDs.push_back(baseMaterialGroup->AddMaterial(name, sc));
+      }
+      mesh->SetObjectLevelProperty(baseMaterialsResourceID, colorResourceIDs[0]);
+    }
 
     auto vertexFunc = [&](const Vector3d& coords) -> bool {
       const auto f = coords.cast<float>();
@@ -88,10 +107,18 @@ static bool append_polyset(std::shared_ptr<const PolySet> ps, Lib3MF::PWrapper& 
       return true;
     };
 
-    auto triangleFunc = [&](const IndexedFace& indices) -> bool {
+    auto triangleFunc = [&](const IndexedFace& indices, int color_index) -> bool {
       try {
         Lib3MF::sTriangle t{(Lib3MF_uint32)indices[0], (Lib3MF_uint32)indices[1], (Lib3MF_uint32)indices[2]};
-        mesh->AddTriangle(t);
+        auto iTriangle = mesh->AddTriangle(t);
+        if (baseMaterialsResourceID && color_index >= 0 && color_index < colorResourceIDs.size()) {
+          auto colorResourceID = colorResourceIDs[color_index];
+          Lib3MF::sTriangleProperties props {
+            baseMaterialsResourceID, 
+            { colorResourceID, colorResourceID, colorResourceID}
+          };
+          mesh->SetTriangleProperties(iTriangle, props);
+        }
       } catch (Lib3MF::ELib3MFException& e) {
         export_3mf_error(e.what());
         return false;
@@ -111,8 +138,9 @@ static bool append_polyset(std::shared_ptr<const PolySet> ps, Lib3MF::PWrapper& 
       }
     }
 
-    for (const auto& poly : out_ps->indices) {
-      if (!triangleFunc(poly)) {
+    for (size_t i = 0; i < out_ps->indices.size(); i++) {
+      auto color_index = i < out_ps->color_indices.size() ? out_ps->color_indices[i] : -1;
+      if (!triangleFunc(out_ps->indices[i], color_index)) {
         export_3mf_error("Can't add triangle to 3MF model.");
         return false;
       }
