@@ -32,9 +32,9 @@ bool export_png(const std::shared_ptr<const Geometry>& root_geom, const ViewOpti
     return false;
   }
   std::shared_ptr<Renderer> geomRenderer;
-  // Choose PolySetRenderer for Manifold and FastCsg since we know that all
+  // Choose PolySetRenderer for Manifold since we know that all
   // geometries are convertible to PolySet.
-  if (RenderSettings::inst()->backend3D == RenderBackend3D::ManifoldBackend || Feature::ExperimentalFastCsg.is_enabled()) {
+  if (RenderSettings::inst()->backend3D == RenderBackend3D::ManifoldBackend) {
     geomRenderer = std::make_shared<PolySetRenderer>(root_geom);
   } else {
     geomRenderer = std::make_shared<CGALRenderer>(root_geom);

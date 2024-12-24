@@ -38,7 +38,6 @@
 #include "CGALRenderUtils.h"
 #ifdef ENABLE_CGAL
 #include "CGAL_Nef_polyhedron.h"
-#include "CGALHybridPolyhedron.h"
 #include "cgalutils.h"
 #endif
 #ifdef ENABLE_MANIFOLD
@@ -77,9 +76,6 @@ void PolySetRenderer::addGeometry(const std::shared_ptr<const Geometry>& geom)
   } else if (const auto poly = std::dynamic_pointer_cast<const Polygon2d>(geom)) {
     this->polysets_.push_back(std::shared_ptr<const PolySet>(poly->tessellate()));
 #ifdef ENABLE_CGAL
-  } else if (const auto hybrid = std::dynamic_pointer_cast<const CGALHybridPolyhedron>(geom)) {
-    // TODO(ochafik): Implement rendering of CGAL_HybridMesh (CGAL::Surface_mesh) instead.
-    this->polysets_.push_back(hybrid->toPolySet());
 #endif
 #ifdef ENABLE_MANIFOLD
   } else if (const auto mani = std::dynamic_pointer_cast<const ManifoldGeometry>(geom)) {
