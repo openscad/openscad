@@ -77,7 +77,10 @@ static std::string lookupResourcesPath()
   }
 
   // resourcedir defaults to applicationPath
-  std::string result = fs::canonical(resourcedir).generic_string();
+#ifndef __EMSCRIPTEN__
+  resourcedir = fs::canonical(resourcedir);
+#endif
+  std::string result = resourcedir.generic_string();
   PRINTDB("Using resource folder '%s'", result);
   return result;
 }
