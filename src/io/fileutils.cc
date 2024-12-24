@@ -37,7 +37,11 @@ std::string lookup_file(const std::string& filename,
 fs::path fs_uncomplete(fs::path const& p, fs::path const& base)
 {
   if (p == fs::path{}) return p;
+#ifndef __EMSCRIPTEN__
   return fs::relative(p, base == fs::path{} ? fs::path{"."} : base);
+#else
+  return p;
+#endif
 }
 
 int64_t fs_timestamp(fs::path const& path) {

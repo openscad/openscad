@@ -708,10 +708,10 @@ int main(int argc, char **argv)
   PlatformUtils::ensureStdIO();
 #endif
 
-#ifdef __EMSCRIPTEN__
-  const auto applicationPath = boost::dll::fs::current_path();
-#else
+#ifndef __EMSCRIPTEN__
   const auto applicationPath = weakly_canonical(boost::dll::program_location()).parent_path().generic_string();
+#else
+  const auto applicationPath = boost::dll::fs::current_path();
 #endif
   PlatformUtils::registerApplicationPath(applicationPath);
 
