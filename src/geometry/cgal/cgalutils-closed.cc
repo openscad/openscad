@@ -12,7 +12,6 @@ bool isClosed(const Polyhedron& p)
   return CGAL::is_closed(p);
 }
 
-template bool isClosed(const CGAL_HybridMesh& p);
 template bool isClosed(const CGAL_DoubleMesh& p);
 
 } // namespace CGALUtils

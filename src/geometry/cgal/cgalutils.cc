@@ -29,7 +29,6 @@
 
 #include "geometry/Reindexer.h"
 #include "geometry/GeometryUtils.h"
-#include "geometry/cgal/CGALHybridPolyhedron.h"
 #ifdef ENABLE_MANIFOLD
 #include "geometry/manifold/ManifoldGeometry.h"
 #endif
@@ -244,8 +243,6 @@ std::shared_ptr<const CGAL_Nef_polyhedron> getNefPolyhedronFromGeometry(const st
 {
   if (auto ps = std::dynamic_pointer_cast<const PolySet>(geom)) {
     return std::shared_ptr<CGAL_Nef_polyhedron>(createNefPolyhedronFromPolySet(*ps));
-  } else if (auto poly = std::dynamic_pointer_cast<const CGALHybridPolyhedron>(geom)) {
-    return createNefPolyhedronFromHybrid(*poly);
   } else if (auto poly2d = std::dynamic_pointer_cast<const Polygon2d>(geom)) {
     std::shared_ptr<PolySet> ps(poly2d->tessellate());
     return std::shared_ptr<CGAL_Nef_polyhedron>(createNefPolyhedronFromPolySet(*ps));
@@ -403,7 +400,6 @@ std::unique_ptr<PolySet> createPolySetFromNefPolyhedron3(const CGAL::Nef_polyhed
 }
 
 template std::unique_ptr<PolySet> createPolySetFromNefPolyhedron3(const CGAL_Nef_polyhedron3& N);
-template std::unique_ptr<PolySet> createPolySetFromNefPolyhedron3(const CGAL::Nef_polyhedron_3<CGAL_HybridKernel3>& N);
 
 template <typename K>
 CGAL::Aff_transformation_3<K> createAffineTransformFromMatrix(const Transform3d& matrix) {
@@ -412,7 +408,6 @@ CGAL::Aff_transformation_3<K> createAffineTransformFromMatrix(const Transform3d&
     matrix(1, 0), matrix(1, 1), matrix(1, 2), matrix(1, 3),
     matrix(2, 0), matrix(2, 1), matrix(2, 2), matrix(2, 3), matrix(3, 3));
 }
-template CGAL::Aff_transformation_3<CGAL_HybridKernel3> createAffineTransformFromMatrix(const Transform3d& matrix);
 
 template <typename K>
 void transform(CGAL::Nef_polyhedron_3<K>& N, const Transform3d& matrix)
@@ -422,7 +417,6 @@ void transform(CGAL::Nef_polyhedron_3<K>& N, const Transform3d& matrix)
 }
 
 template void transform(CGAL_Nef_polyhedron3& N, const Transform3d& matrix);
-template void transform(CGAL::Nef_polyhedron_3<CGAL_HybridKernel3>& N, const Transform3d& matrix);
 
 template <typename K>
 void transform(CGAL::Surface_mesh<CGAL::Point_3<K>>& mesh, const Transform3d& matrix)
@@ -435,7 +429,6 @@ void transform(CGAL::Surface_mesh<CGAL::Point_3<K>>& mesh, const Transform3d& ma
     pt = t(pt);
   }
 }
-template void transform(CGAL_HybridMesh& mesh, const Transform3d& matrix);
 
 template <typename K>
 Transform3d computeResizeTransform(
@@ -485,9 +478,6 @@ Transform3d computeResizeTransform(
 template Transform3d computeResizeTransform(
   const CGAL_Iso_cuboid_3& bb, unsigned int dimension, const Vector3d& newsize,
   const Eigen::Matrix<bool, 3, 1>& autosize);
-template Transform3d computeResizeTransform(
-  const CGAL::Iso_cuboid_3<CGAL_HybridKernel3>& bb, unsigned int dimension, const Vector3d& newsize,
-  const Eigen::Matrix<bool, 3, 1>& autosize);
 
 std::shared_ptr<const PolySet> getGeometryAsPolySet(const std::shared_ptr<const Geometry>& geom)
 {
@@ -504,9 +494,6 @@ std::shared_ptr<const PolySet> getGeometryAsPolySet(const std::shared_ptr<const 
       LOG(message_group::Error, "Nef->PolySet failed.");
     }
     return std::make_shared<PolySet>(3);
-  }
-  if (auto hybrid = std::dynamic_pointer_cast<const CGALHybridPolyhedron>(geom)) {
-    return hybrid->toPolySet();
   }
 #ifdef ENABLE_MANIFOLD
   if (auto mani = std::dynamic_pointer_cast<const ManifoldGeometry>(geom)) {

@@ -91,9 +91,6 @@ bool is_weakly_convex(const CGAL::Surface_mesh<CGAL::Point_3<K>>& m) {
   return visited.size() == m.number_of_faces();
 }
 
-template bool is_weakly_convex(const CGAL::Polyhedron_3<CGAL_HybridKernel3>& p);
-template bool is_weakly_convex(const CGAL_HybridMesh& p);
-
 }  // namespace CGALUtils
 
 #endif // ENABLE_CGAL

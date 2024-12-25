@@ -16,7 +16,6 @@
 #include "geometry/GeometryUtils.h"
 #ifdef ENABLE_CGAL
 #include "geometry/cgal/cgalutils.h"
-#include "geometry/cgal/CGALHybridPolyhedron.h"
 #endif
 #ifdef ENABLE_MANIFOLD
 #include "geometry/manifold/ManifoldGeometry.h"
@@ -193,9 +192,6 @@ std::shared_ptr<const PolySet> getGeometryAsPolySet(const std::shared_ptr<const 
       LOG(message_group::Error, "Nef->PolySet failed.");
     }
     return PolySet::createEmpty();
-  }
-  if (auto hybrid = std::dynamic_pointer_cast<const CGALHybridPolyhedron>(geom)) {
-    return hybrid->toPolySet();
   }
 #endif
 #ifdef ENABLE_MANIFOLD

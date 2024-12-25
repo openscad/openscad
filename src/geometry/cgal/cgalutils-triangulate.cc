@@ -101,7 +101,6 @@ void triangulateFaces(Polyhedron& polyhedron)
   CGAL::Polygon_mesh_processing::triangulate_faces(polyhedron);
 }
 
-template void triangulateFaces(CGAL_HybridMesh& polyhedron);
 template void triangulateFaces(CGAL::Surface_mesh<CGAL::Point_3<CGAL::Epick>>& polyhedron);
 
 std::unique_ptr<PolySet> createTriangulatedPolySetFromPolygon2d(const Polygon2d& polygon2d)

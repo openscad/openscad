@@ -65,13 +65,6 @@ using CGAL_Polygon_3 = std::vector<CGAL_Point_3>;
 using CGAL_Point_2e = CGAL_Nef_polyhedron2::Explorer::Point;
 using CGAL_Iso_rectangle_2e = CGAL::Iso_rectangle_2<CGAL::Simple_cartesian<NT2>>;
 
-#define FAST_CSG_KERNEL_IS_LAZY 1
-using CGAL_HybridKernel3 = CGAL::Epeck;
-
-using CGAL_HybridPoint = CGAL::Point_3<CGAL_HybridKernel3>;
-using CGAL_HybridNef = CGAL::Nef_polyhedron_3<CGAL_HybridKernel3>;
-using CGAL_HybridMesh = CGAL::Surface_mesh<CGAL_HybridPoint>;
-
 using CGAL_DoubleKernel = CGAL::Cartesian<double>;
 using CGAL_DoublePoint3 = CGAL_DoubleKernel::Point_3;
 using CGAL_DoubleMesh = CGAL::Surface_mesh<CGAL_DoublePoint3>;
