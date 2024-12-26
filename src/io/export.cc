@@ -86,21 +86,10 @@ Containers &containers() {
     add_item(*containers, {FileFormat::POV, "pov", "pov", "POV"});
 
     // Alias
-    containers->identifierToInfo["stl"] = containers->identifierToInfo["asciistl"];
-  
-    return std::move(containers);
+    containers->identifierToInfo["stl"] = containers->identifierToInfo["asciistl"];  
+    return containers;
   }();
   return *containers;
-}
-
-std::unordered_map<std::string, FileFormatInfo> &identifierToInfo() {
-  static auto identifierToInfo = std::make_unique<std::unordered_map<std::string, FileFormatInfo>>();
-  return *identifierToInfo;
-}
-
-std::unordered_map<FileFormat, FileFormatInfo> &fileFormatToInfo() {
-  static auto fileFormatToInfo = std::make_unique<std::unordered_map<FileFormat, FileFormatInfo>>();
-  return *fileFormatToInfo;
 }
 
 }  // namespace
@@ -208,7 +197,7 @@ void exportFile(const std::shared_ptr<const Geometry>& root_geom, std::ostream& 
     export_amf(root_geom, output);
     break;
   case FileFormat::_3MF:
-    export_3mf(root_geom, output);
+    export_3mf(root_geom, output, exportInfo);
     break;
   case FileFormat::DXF:
     export_dxf(root_geom, output);

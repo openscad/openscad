@@ -80,7 +80,14 @@ BYTE get_color_channel(Color4f col, int idx)
   return std::clamp(static_cast<int>(255 * col[idx]), 0, 255);
 }
 
+int count_mesh_objects(const Lib3MFPLib3MFModelMeshObject *& model) {
+    const auto mesh_object_it = model->
+    int count = 0;
+    while (mesh_object_it->MoveNext()) ++count;
+    return count;
 }
+
+} // namespace
 
 /*
  * PolySet must be triangulated.
@@ -94,7 +101,8 @@ static bool append_polyset(std::shared_ptr<const PolySet> ps, PLib3MFModelMeshOb
     export_3mf_error("Can't add mesh to 3MF model.", model);
     return false;
   }
-  if (lib3mf_object_setnameutf8(mesh, "OpenSCAD Model") != LIB3MF_OK) {
+  int mesh_count = count_mesh_objects(model);
+  if (lib3mf_object_setnameutf8(mesh, "OpenSCAD Model " + std::to_string(mesh_count)) != LIB3MF_OK) {
     export_3mf_error("Can't set name for 3MF model.", model);
     return false;
   }
@@ -263,7 +271,7 @@ static bool append_3mf(const std::shared_ptr<const Geometry>& geom, PLib3MFModel
     Saves the current 3D Geometry as 3MF to the given file.
     The file must be open.
  */
-void export_3mf(const std::shared_ptr<const Geometry>& geom, std::ostream& output)
+void export_3mf(const std::shared_ptr<const Geometry>& geom, std::ostream& output, const ExportInfo& exportInfo)
 {
   DWORD interfaceVersionMajor, interfaceVersionMinor, interfaceVersionMicro;
   HRESULT result = lib3mf_getinterfaceversion(&interfaceVersionMajor, &interfaceVersionMinor, &interfaceVersionMicro);

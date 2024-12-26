@@ -67,7 +67,10 @@ void export_pov(const std::shared_ptr<const Geometry>& geom, std::ostream& outpu
       output << "<" << x << ", " << y << ", " << z << ">";
     }
     output << ", <" << ps->vertices[polygon[0]].x() << ", " << ps->vertices[polygon[0]].y() << ", " << ps->vertices[polygon[0]].z() << ">";
-    float r = 0xf9 / 255., g = 0xd7 / 255., b = 0x2c / 255., f = 0.;  // CGAL_FACE_FRONT_COLOR
+    float r = exportInfo.defaultColor.r();
+    float g = exportInfo.defaultColor.g();
+    float b = exportInfo.defaultColor.b();
+    float f = 0.;
     if (has_color) {
       auto color_index = ps->color_indices[polygon_index];
       if (color_index >= 0) {
