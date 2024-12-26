@@ -45,7 +45,7 @@
 #include <vector>
 
 PolySetBuilder::PolySetBuilder(int vertices_count, int indices_count, int dim, boost::tribool convex)
-  : convex_(convex), dim_(dim)
+  : dim_(dim), convex_(convex)
 {
   reserve(vertices_count, indices_count);
 }
@@ -59,12 +59,26 @@ void PolySetBuilder::setConvexity(int convexity){
   convexity_ = convexity;
 }
 
+void PolySetBuilder::addColor(const Color4f& color)
+{
+  colors_.push_back(color);
+}
+
+void PolySetBuilder::addColorIndex(const int32_t idx)
+{
+  color_indices_.push_back(idx);
+}
+
 int PolySetBuilder::numVertices() const {
   return vertices_.size();
 }
 
 int PolySetBuilder::numPolygons() const {
   return indices_.size();
+}
+
+bool PolySetBuilder::isEmpty() const {
+  return vertices_.size() == 0 && indices_.size() == 0;
 }
 
 int PolySetBuilder::vertexIndex(const Vector3d& pt)
@@ -123,8 +137,7 @@ void PolySetBuilder::beginPolygon(int nvertices) {
 void PolySetBuilder::addVertex(int ind)
 {
   // Ignore consecutive duplicate indices
-  if (current_polygon_.empty() ||
-      ind != current_polygon_.back() && ind != current_polygon_.front()) {
+  if (current_polygon_.empty() || (ind != current_polygon_.back() && ind != current_polygon_.front())) {
     current_polygon_.push_back(ind);
   }
 }
