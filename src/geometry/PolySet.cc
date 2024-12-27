@@ -24,13 +24,18 @@
  *
  */
 
-#include "PolySet.h"
-#include "PolySetUtils.h"
-#include "linalg.h"
-#include "printutils.h"
-#include "Grid.h"
+#include "geometry/PolySet.h"
+#include "geometry/PolySetUtils.h"
+#include "geometry/linalg.h"
+#include "utils/printutils.h"
+#include "geometry/Grid.h"
+#include <algorithm>
+#include <sstream>
+#include <memory>
 #include <Eigen/LU>
-#include <utility>
+#include <cstddef>
+#include <string>
+#include <vector>
 
 /*! /class PolySet
 
@@ -96,7 +101,7 @@ void PolySet::transform(const Transform3d& mat)
   // If mirroring transform, flip faces to avoid the object to end up being inside-out
   bool mirrored = mat.matrix().determinant() < 0;
 
-  for (auto& v : this->vertices) 
+  for (auto& v : this->vertices)
       v = mat * v;
 
   if(mirrored)
@@ -104,6 +109,11 @@ void PolySet::transform(const Transform3d& mat)
       std::reverse(p.begin(), p.end());
   }
   bbox_.setNull();
+}
+
+void PolySet::setColor(const Color4f& c) {
+  colors = {c};
+  color_indices.assign(indices.size(), 0);
 }
 
 bool PolySet::isConvex() const {

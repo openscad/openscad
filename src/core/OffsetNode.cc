@@ -24,14 +24,18 @@
  *
  */
 
-#include "OffsetNode.h"
+#include "core/OffsetNode.h"
 
-#include "module.h"
-#include "ModuleInstantiation.h"
-#include "Children.h"
-#include "Parameters.h"
-#include "Builtins.h"
+#include "core/module.h"
+#include "core/ModuleInstantiation.h"
+#include "core/Children.h"
+#include "core/Parameters.h"
+#include "core/Builtins.h"
 
+#include <clipper2/clipper.offset.h>
+#include <ios>
+#include <utility>
+#include <memory>
 #include <sstream>
 #include <boost/assign/std/vector.hpp>
 using namespace boost::assign; // bring 'operator+=()' into scope
@@ -50,15 +54,15 @@ static std::shared_ptr<AbstractNode> builtin_offset(const ModuleInstantiation *i
   // radius takes precedence if both r and delta are given.
   node->delta = 1;
   node->chamfer = false;
-  node->join_type = ClipperLib::jtRound;
+  node->join_type = Clipper2Lib::JoinType::Round;
   if (parameters["r"].isDefinedAs(Value::Type::NUMBER)) {
     node->delta = parameters["r"].toDouble();
   } else if (parameters["delta"].isDefinedAs(Value::Type::NUMBER)) {
     node->delta = parameters["delta"].toDouble();
-    node->join_type = ClipperLib::jtMiter;
+    node->join_type = Clipper2Lib::JoinType::Miter;
     if (parameters["chamfer"].isDefinedAs(Value::Type::BOOL) && parameters["chamfer"].toBool()) {
       node->chamfer = true;
-      node->join_type = ClipperLib::jtSquare;
+      node->join_type = Clipper2Lib::JoinType::Square;
     }
   }
 
@@ -69,7 +73,7 @@ std::string OffsetNode::toString() const
 {
   std::ostringstream stream;
 
-  bool isRadius = this->join_type == ClipperLib::jtRound;
+  bool isRadius = this->join_type == Clipper2Lib::JoinType::Round;
   auto var = isRadius ? "(r = " : "(delta = ";
 
   stream << this->name() << var << std::dec << this->delta;

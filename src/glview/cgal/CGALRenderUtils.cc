@@ -1,4 +1,6 @@
-#include "CGALRenderUtils.h"
+#include "glview/cgal/CGALRenderUtils.h"
+
+#include <algorithm>
 
 
 // this function resolves a 3x3 linear eqauation system
@@ -8,9 +10,9 @@
 
 bool linsystem( Vector3d v1,Vector3d v2,Vector3d v3,Vector3d pt,Vector3d &res,double *detptr)
 {
-        float det,ad11,ad12,ad13,ad21,ad22,ad23,ad31,ad32,ad33;
+        double det,ad11,ad12,ad13,ad21,ad22,ad23,ad31,ad32,ad33;
         det=v1[0]*(v2[1]*v3[2]-v3[1]*v2[2])-v1[1]*(v2[0]*v3[2]-v3[0]*v2[2])+v1[2]*(v2[0]*v3[1]-v3[0]*v2[1]);
-        if(detptr != NULL) *detptr=det;
+        if(detptr != nullptr) *detptr=det;
         ad11=v2[1]*v3[2]-v3[1]*v2[2];
         ad12=v3[0]*v2[2]-v2[0]*v3[2];
         ad13=v2[0]*v3[1]-v3[0]*v2[1];

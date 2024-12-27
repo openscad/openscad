@@ -1,8 +1,9 @@
 #pragma once
 
+#include <cstdint>
 #include <memory>
 
-#include "OffscreenContext.h"
+#include "glview/OffscreenContext.h"
 
 namespace offscreen_old {
 

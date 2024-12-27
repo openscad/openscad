@@ -1,7 +1,9 @@
-#include <iostream>
-#include "QSettingsCached.h"
+#include "gui/Dock.h"
 
-#include "Dock.h"
+#include <QDockWidget>
+#include <QWidget>
+#include "gui/QSettingsCached.h"
+
 
 Dock::Dock(QWidget *parent) : QDockWidget(parent)
 {

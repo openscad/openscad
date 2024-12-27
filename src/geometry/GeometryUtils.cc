@@ -1,23 +1,30 @@
-#include "GeometryUtils.h"
+#include "geometry/GeometryUtils.h"
 
-#include <string>
+#include <algorithm>
+#include <cassert>
+#include <unordered_map>
+#include <list>
+#include <utility>
+#include <boost/functional/hash.hpp>
+#include <cstddef>
 #include <cmath>
 #include <memory>
-#include <boost/functional/hash.hpp>
+#include <string>
+#include <vector>
 
-#include "ext/libtess2/Include/tesselator.h"
-#include "printutils.h"
-#include "Reindexer.h"
+#include "libtess2/Include/tesselator.h"
+#include "utils/printutils.h"
+#include "geometry/Reindexer.h"
+#include "glview/RenderSettings.h"
 #include "Feature.h"
-#include "PolySet.h"
+#include "geometry/PolySet.h"
 
 #ifdef ENABLE_CGAL
-#include "cgalutils.h"
-#include "CGALHybridPolyhedron.h"
+#include "geometry/cgal/cgalutils.h"
 #endif
 
 #ifdef ENABLE_MANIFOLD
-#include "manifoldutils.h"
+#include "geometry/manifold/manifoldutils.h"
 #endif
 
 static void *stdAlloc(void *userData, unsigned int size) {
@@ -517,7 +524,7 @@ Transform3d GeometryUtils::getResizeTransform(const BoundingBox &bbox, const Vec
 std::shared_ptr<const Geometry> GeometryUtils::getBackendSpecificGeometry(const std::shared_ptr<const Geometry>& geom)
 {
 #if ENABLE_MANIFOLD
-  if (Feature::ExperimentalManifold.is_enabled()) {
+  if (RenderSettings::inst()->backend3D == RenderBackend3D::ManifoldBackend) {
     if (const auto ps = std::dynamic_pointer_cast<const PolySet>(geom)) {
       return ManifoldUtils::createManifoldFromPolySet(*ps);
     } else if (auto mani = std::dynamic_pointer_cast<const ManifoldGeometry>(geom)) {
@@ -528,22 +535,12 @@ std::shared_ptr<const Geometry> GeometryUtils::getBackendSpecificGeometry(const 
   }
 #endif
 #if ENABLE_CGAL
-  if (Feature::ExperimentalFastCsg.is_enabled()) {
-    if (auto ps = std::dynamic_pointer_cast<const PolySet>(geom)) {
-      return CGALUtils::createHybridPolyhedronFromPolySet(*ps);
-    } else if (auto poly = std::dynamic_pointer_cast<const CGALHybridPolyhedron>(geom)) {
-      return geom;
-    } else {
-      assert(false && "Unexpected geometry");
-    }
+  if (auto ps = std::dynamic_pointer_cast<const PolySet>(geom)) {
+    return CGALUtils::createNefPolyhedronFromPolySet(*ps);
+  } else if (auto poly = std::dynamic_pointer_cast<const CGAL_Nef_polyhedron>(geom)) {
+    return geom;
   } else {
-    if (auto ps = std::dynamic_pointer_cast<const PolySet>(geom)) {
-      return CGALUtils::createNefPolyhedronFromPolySet(*ps);
-    } else if (auto poly = std::dynamic_pointer_cast<const CGAL_Nef_polyhedron>(geom)) {
-      return geom;
-    } else {
-      assert(false && "Unexpected geometry");
-    }
+    assert(false && "Unexpected geometry");
   }
 #endif
   return nullptr;

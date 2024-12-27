@@ -24,18 +24,20 @@
  *
  */
 
-#include "GeometryUtils.h"
-#include "export.h"
-#include "PolySet.h"
-#include "PolySetUtils.h"
-#include "printutils.h"
-#ifdef ENABLE_CGAL
-#include "CGALHybridPolyhedron.h"
-#endif
+#include "geometry/GeometryUtils.h"
+#include "io/export.h"
+#include "geometry/PolySet.h"
+#include "geometry/PolySetUtils.h"
+#include "utils/printutils.h"
 #ifdef ENABLE_MANIFOLD
-#include "ManifoldGeometry.h"
+#include "geometry/manifold/ManifoldGeometry.h"
 #endif
 
+#include <cassert>
+#include <ostream>
+#include <cstdint>
+#include <memory>
+#include <string>
 
 static uint32_t lib3mf_write_callback(const char *data, uint32_t bytes, std::ostream *stream)
 {
@@ -56,9 +58,9 @@ using namespace NMR;
 #include <algorithm>
 
 #ifdef ENABLE_CGAL
-#include "cgal.h"
-#include "cgalutils.h"
-#include "CGAL_Nef_polyhedron.h"
+#include "geometry/cgal/cgal.h"
+#include "geometry/cgal/cgalutils.h"
+#include "geometry/cgal/CGAL_Nef_polyhedron.h"
 #endif
 
 static void export_3mf_error(std::string msg, PLib3MFModel *& model)
@@ -153,8 +155,6 @@ static bool append_3mf(const std::shared_ptr<const Geometry>& geom, PLib3MFModel
 #ifdef ENABLE_CGAL
   } else if (const auto N = std::dynamic_pointer_cast<const CGAL_Nef_polyhedron>(geom)) {
     return append_nef(*N, model);
-  } else if (const auto hybrid = std::dynamic_pointer_cast<const CGALHybridPolyhedron>(geom)) {
-    return append_polyset(hybrid->toPolySet(), model);
 #endif
 #ifdef ENABLE_MANIFOLD
   } else if (const auto mani = std::dynamic_pointer_cast<const ManifoldGeometry>(geom)) {

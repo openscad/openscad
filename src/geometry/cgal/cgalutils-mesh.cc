@@ -1,14 +1,20 @@
-#include "cgalutils.h"
+#include "geometry/cgal/cgalutils.h"
 #include "Feature.h"
-#include "linalg.h"
-#include "hash.h"
+#include "geometry/linalg.h"
+#include "utils/hash.h"
 
+#include <unordered_map>
+#include <memory>
 #include <CGAL/boost/graph/convert_nef_polyhedron_to_polygon_mesh.h>
 #include <CGAL/boost/graph/graph_traits_Surface_mesh.h>
 #include <CGAL/Surface_mesh.h>
-#include "PolySetBuilder.h"
+#include "geometry/PolySetBuilder.h"
 #include <CGAL/Polygon_mesh_processing/polygon_soup_to_polygon_mesh.h>
 #include <CGAL/Polygon_mesh_processing/repair_polygon_soup.h>
+
+#include <cstddef>
+#include <vector>
+
 namespace CGALUtils {
 
 namespace PMP = CGAL::Polygon_mesh_processing;
@@ -38,7 +44,6 @@ bool createMeshFromPolySet(const PolySet& ps, TriangleMesh& mesh)
   return false;
 }
 
-template bool createMeshFromPolySet(const PolySet& ps, CGAL_HybridMesh& mesh);
 template bool createMeshFromPolySet(const PolySet& ps, CGAL_DoubleMesh& mesh);
 
 
@@ -63,8 +68,6 @@ std::unique_ptr<PolySet> createPolySetFromMesh(const TriangleMesh& mesh)
   }
   return builder.build();
 }
-
-template std::unique_ptr<PolySet> createPolySetFromMesh(const CGAL_HybridMesh& mesh);
 
 template <class InputKernel, class OutputKernel>
 void copyMesh(
@@ -100,10 +103,6 @@ void copyMesh(
   }
 }
 
-template void copyMesh(const CGAL_HybridMesh& input, CGAL_HybridMesh& output);
-template void copyMesh(const CGAL::Surface_mesh<CGAL_Point_3>& input, CGAL_HybridMesh& output);
-template void copyMesh(const CGAL_HybridMesh& input, CGAL::Surface_mesh<CGAL_Point_3>& output);
-template void copyMesh(const CGAL::Surface_mesh<CGAL::Point_3<CGAL::Epick>>& input, CGAL_HybridMesh& output);
 template void copyMesh(const CGAL::Surface_mesh<CGAL::Point_3<CGAL::Epick>>& input, CGAL_DoubleMesh& output);
 
 template <typename K>
@@ -113,27 +112,6 @@ void convertNefPolyhedronToTriangleMesh(const CGAL::Nef_polyhedron_3<K>& nef, CG
 }
 
 template void convertNefPolyhedronToTriangleMesh(const CGAL::Nef_polyhedron_3<CGAL_Kernel3>& nef, CGAL::Surface_mesh<CGAL::Point_3<CGAL_Kernel3>>& mesh);
-template void convertNefPolyhedronToTriangleMesh(const CGAL::Nef_polyhedron_3<CGAL_HybridKernel3>& nef, CGAL_HybridMesh& mesh);
 
-/**
- * Will force lazy coordinates to be exact to avoid subsequent performance issues
- * (only if the kernel is lazy), and will also collect the mesh's garbage if applicable.
- */
-void cleanupMesh(CGAL_HybridMesh& mesh, bool is_corefinement_result)
-{
-  mesh.collect_garbage();
-#if FAST_CSG_KERNEL_IS_LAZY
-  // Don't make exact again if exact corefinement callbacks already did the job.
-  if (!is_corefinement_result) {
-    for (auto v : mesh.vertices()) {
-      auto& pt = mesh.point(v);
-      CGAL::exact(pt.x());
-      CGAL::exact(pt.y());
-      CGAL::exact(pt.z());
-    }
-  }
-#endif // FAST_CSG_KERNEL_IS_LAZY
-}
 
 } // namespace CGALUtils
-

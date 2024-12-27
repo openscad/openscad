@@ -1,12 +1,19 @@
-#include "ColorMap.h"
-#include "printutils.h"
-#include "PlatformUtils.h"
+#include "glview/ColorMap.h"
+#include "utils/printutils.h"
+#include "platform/PlatformUtils.h"
 
+#include <algorithm>
+#include <iomanip>
+#include <stdexcept>
+#include <list>
+#include <utility>
+#include <exception>
+#include <memory>
 #include <boost/property_tree/json_parser.hpp>
-#include <boost/filesystem.hpp>
+#include <filesystem>
 #include <cmath>
 
-namespace fs = boost::filesystem;
+namespace fs = std::filesystem;
 
 static const char *DEFAULT_COLOR_SCHEME_NAME = "Cornfield";
 

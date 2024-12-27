@@ -24,10 +24,14 @@
  *
  */
 
-#include "Arguments.h"
-#include "Expression.h"
-#include "function.h"
+#include "core/function.h"
 
+#include "core/Arguments.h"
+#include "core/Expression.h"
+
+#include <ostream>
+#include <memory>
+#include <cstddef>
 #include <utility>
 
 BuiltinFunction::BuiltinFunction(Value(*f)(const std::shared_ptr<const Context>&, const FunctionCall *), const Feature *feature) :

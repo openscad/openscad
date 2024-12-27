@@ -1,12 +1,12 @@
 #pragma once
 
-#include "NodeVisitor.h"
-#include "enums.h"
-#include "Geometry.h"
+#include "core/NodeVisitor.h"
+#include "core/enums.h"
+#include "geometry/Geometry.h"
 
+#include <cassert>
 #include <memory>
 #include <utility>
-#include <list>
 #include <vector>
 #include <map>
 
@@ -25,6 +25,7 @@ public:
   std::shared_ptr<const Geometry> evaluateGeometry(const AbstractNode& node, bool allownef);
 
   Response visit(State& state, const AbstractNode& node) override;
+  Response visit(State& state, const ColorNode& node) override;
   Response visit(State& state, const AbstractIntersectionNode& node) override;
   Response visit(State& state, const AbstractPolyNode& node) override;
   Response visit(State& state, const LinearExtrudeNode& node) override;

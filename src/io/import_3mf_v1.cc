@@ -24,13 +24,16 @@
  *
  */
 
-#include "PolySet.h"
-#include "PolySetBuilder.h"
-#include "PolySetUtils.h"
-#include "Geometry.h"
-#include "printutils.h"
-#include "version_helper.h"
-#include "AST.h"
+#include "geometry/PolySet.h"
+#include "geometry/PolySetBuilder.h"
+#include "geometry/PolySetUtils.h"
+#include "geometry/Geometry.h"
+#include "utils/printutils.h"
+#include "utils/version_helper.h"
+#include "core/AST.h"
+
+#include <memory>
+#include <string>
 
 #include <Model/COM/NMR_DLLInterfaces.h>
 #undef BOOL
@@ -51,7 +54,7 @@ const std::string get_lib3mf_version() {
 }
 
 #ifdef ENABLE_CGAL
-#include "cgalutils.h"
+#include "geometry/cgal/cgalutils.h"
 #endif
 
 static std::unique_ptr<PolySet> import_3mf_error(PLib3MFModel *model = nullptr, PLib3MFModelResourceIterator *object_it = nullptr)
@@ -151,8 +154,8 @@ std::unique_ptr<Geometry> import_3mf(const std::string& filename, const Location
       MODELMESHVERTEX vertex;
 
       builder.beginPolygon(3);
-      for(int i=0;i<3;i++) {
-        if (lib3mf_meshobject_getvertex(object, triangle.m_nIndices[i], &vertex) != LIB3MF_OK) {
+      for (auto m_nIndex : triangle.m_nIndices) {
+        if (lib3mf_meshobject_getvertex(object, m_nIndex, &vertex) != LIB3MF_OK) {
           return import_3mf_error(model, object_it);
         }
         builder.addVertex(Vector3d(vertex.m_fPosition[0], vertex.m_fPosition[1], vertex.m_fPosition[2]));

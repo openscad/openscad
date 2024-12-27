@@ -1,15 +1,23 @@
 // Portions of this file are Copyright 2023 Google LLC, and licensed under GPL2+. See COPYING.
 #ifdef ENABLE_MANIFOLD
 
-#include "cgal.h"
-#include "cgalutils.h"
+#include <iterator>
+#include <cassert>
+#include <list>
+#include <exception>
+#include <memory>
+#include <utility>
+#include <vector>
 #include <CGAL/convex_hull_3.h>
 
-#include "PolySet.h"
-#include "printutils.h"
-#include "manifoldutils.h"
-#include "ManifoldGeometry.h"
-#include "parallel.h"
+#include <manifold/manifold.h>
+#include "geometry/cgal/cgal.h"
+#include "geometry/cgal/cgalutils.h"
+#include "geometry/PolySet.h"
+#include "utils/printutils.h"
+#include "geometry/manifold/manifoldutils.h"
+#include "geometry/manifold/ManifoldGeometry.h"
+#include "utils/parallel.h"
 
 namespace ManifoldUtils {
 
@@ -18,10 +26,10 @@ namespace ManifoldUtils {
  */
 std::shared_ptr<const Geometry> applyMinkowskiManifold(const Geometry::Geometries& children)
 {
-  using Hull_Points = std::vector<glm::vec3>;
+  using Point = linalg::vec<double, 3>;
+  using Hull_Points = std::vector<Point>;
   using Nef_kernel = CGAL_Kernel3;
   using Polyhedron = CGAL_Polyhedron;
-  using Nef = CGAL_Nef_polyhedron3;
 
   auto polyhedronFromGeometry = [](const std::shared_ptr<const Geometry>& geom, bool *pIsConvexOut) -> std::shared_ptr<Polyhedron> 
   {
@@ -40,18 +48,17 @@ std::shared_ptr<const Geometry> applyMinkowskiManifold(const Geometry::Geometrie
     }
     throw 0;
   };
-  
-  CGAL::Timer t, t_tot;
   assert(children.size() >= 2);
   auto it = children.begin();
+  CGAL::Timer t_tot;
   t_tot.start();
   std::vector<std::shared_ptr<const Geometry>> operands = {it->second, std::shared_ptr<const Geometry>()};
 
   auto getHullPoints = [&](const Polyhedron &poly) {
-    std::vector<glm::vec3> out;
+    std::vector<Point> out;
     out.reserve(poly.size_of_vertices());
     for (auto pi = poly.vertices_begin(); pi != poly.vertices_end(); ++pi) {
-      out.emplace_back(CGALUtils::vector_convert<glm::vec3>(pi->point()));
+      out.emplace_back(CGALUtils::vector_convert<Point>(pi->point()));
     }
     return out;
   };
@@ -77,13 +84,18 @@ std::shared_ptr<const Geometry> applyMinkowskiManifold(const Geometry::Geometrie
         if (is_convex) {
           part_points.emplace_back(getHullPoints(*poly));
         } else {
-          Nef decomposed_nef(*poly);
+          // The CGAL_Nef_polyhedron3 constructor can crash on bad polyhedron, so don't try
+          if (!poly->is_valid()) throw 0;
 
+          // Nef_kernel decomposed_nef(*poly);
+          CGAL_Nef_polyhedron3 decomposed_nef(*poly);
+
+          CGAL::Timer t;
           t.start();
           CGAL::convex_decomposition_3(decomposed_nef);
 
           // the first volume is the outer volume, which ignored in the decomposition
-          Nef::Volume_const_iterator ci = ++decomposed_nef.volumes_begin();
+          CGAL_Nef_polyhedron3::Volume_const_iterator ci = ++decomposed_nef.volumes_begin();
           for (; ci != decomposed_nef.volumes_end(); ++ci) {
             if (ci->mark()) {
               Polyhedron poly;
@@ -103,7 +115,7 @@ std::shared_ptr<const Geometry> applyMinkowskiManifold(const Geometry::Geometrie
         CGAL::Timer t;
 
         t.start();
-        std::vector<glm::vec3> minkowski_points;
+        std::vector<Point> minkowski_points;
 
         auto np0 = points0.size();
         auto np1 = points1.size();
@@ -117,22 +129,22 @@ std::shared_ptr<const Geometry> applyMinkowskiManifold(const Geometry::Geometrie
         }
 
         if (minkowski_points.size() <= 3) {
-          t.stop();
+          // t.stop();
           return std::make_shared<const ManifoldGeometry>();
         }
 
         t.stop();
-        PRINTDB("Minkowski: Point cloud creation (%d ⨉ %d -> %d) took %f ms", points0.size() % points1.size() % minkowski_points.size() % (t.time() * 1000));
+        // PRINTDB("Minkowski: Point cloud creation (%d ⨉ %d -> %d) took %f ms", points0.size() % points1.size() % minkowski_points.size() % (t.time() * 1000));
         t.reset();
 
         t.start();
 
         auto hull = manifold::Manifold::Hull(minkowski_points);
         t.stop();
-        PRINTDB("Minkowski: Computing convex hull took %f s", t.time());
+        // PRINTDB("Minkowski: Computing convex hull took %f s", t.time());
         t.reset();
 
-        return std::make_shared<ManifoldGeometry>(std::make_shared<manifold::Manifold>(std::move(hull)));
+        return std::make_shared<ManifoldGeometry>(hull);
       };
 
       std::vector<std::shared_ptr<const ManifoldGeometry>> result_parts(part_points[0].size() * part_points[1].size());
@@ -143,6 +155,7 @@ std::shared_ptr<const Geometry> applyMinkowskiManifold(const Geometry::Geometrie
 
       if (it != std::next(children.begin())) operands[0].reset();
 
+      CGAL::Timer t;
       t.start();
       PRINTDB("Minkowski: Computing union of %d parts", result_parts.size());
       Geometry::Geometries fake_children;
@@ -151,7 +164,7 @@ std::shared_ptr<const Geometry> applyMinkowskiManifold(const Geometry::Geometrie
                                                 part));
       }
       auto N = ManifoldUtils::applyOperator3DManifold(fake_children, OpenSCADOperator::UNION);
-        
+
       // FIXME: This should really never throw.
       // Assert once we figured out what went wrong with issue #1069?
       if (!N) throw 0;
@@ -159,6 +172,7 @@ std::shared_ptr<const Geometry> applyMinkowskiManifold(const Geometry::Geometrie
       PRINTDB("Minkowski: Union done: %f s", t.time());
       t.reset();
 
+      N->toOriginal();
       operands[0] = N;
     }
 
@@ -169,14 +183,11 @@ std::shared_ptr<const Geometry> applyMinkowskiManifold(const Geometry::Geometrie
   } catch (const std::exception& e) {
     LOG(message_group::Warning,
         "[manifold] Minkowski failed with error, falling back to Nef operation: %1$s\n", e.what());
-
-    return ManifoldUtils::applyOperator3DManifold(children, OpenSCADOperator::MINKOWSKI);
   } catch (...) {
     LOG(message_group::Warning,
         "[manifold] Minkowski hard-crashed, falling back to Nef operation.");
-
-    return ManifoldUtils::applyOperator3DManifold(children, OpenSCADOperator::MINKOWSKI);
   }
+  return ManifoldUtils::applyOperator3DManifold(children, OpenSCADOperator::MINKOWSKI);
 }
 
 }  // namespace ManifoldUtils

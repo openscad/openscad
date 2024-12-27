@@ -1,12 +1,15 @@
 #pragma once
 
-#include "CSGNode.h"
-#include "Tree.h"
-#include "GeometryEvaluator.h"
-#include "CSGTreeEvaluator.h"
-#include "CSGTreeNormalizer.h"
-#include "RenderSettings.h"
-#include "printutils.h"
+#include "core/CSGNode.h"
+#include "core/Tree.h"
+#include "geometry/GeometryEvaluator.h"
+#include "core/CSGTreeEvaluator.h"
+#include "glview/preview/CSGTreeNormalizer.h"
+#include "glview/RenderSettings.h"
+#include "utils/printutils.h"
+
+#include <memory>
+#include <vector>
 
 /*
    Small helper class for compiling and normalizing node trees into CSG products

@@ -1,7 +1,11 @@
 #pragma once
 
+#include <QStringList>
+#include <map>
 #include <functional>
 #include <memory>
+#include <string>
+#include <vector>
 
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
@@ -14,8 +18,8 @@
 #include <QVBoxLayout>
 #include <Qsci/qsciscintilla.h>
 
-#include "Editor.h"
-#include "ScadApi.h"
+#include "gui/Editor.h"
+#include "gui/ScadApi.h"
 
 // don't need the full definition, because it confuses Qt
 class ScadLexer;
@@ -70,6 +74,10 @@ public:
   QPoint mapToGlobal(const QPoint&) override;
 
   void setCursorPosition(int line, int col) override;
+  void setSelectionIndicatorStatus(EditorSelectionIndicatorStatus satuts, int level, int lineFrom, int colFrom, int lineTo, int colTo) override;
+  void clearAllSelectionIndicators() override;
+  void clearSelectionIndicators(int lineFrom, int colFrom, int lineTo, int colTo);
+
   void setFocus() override;
   void setupAutoComplete(const bool forceOff = false);
 
@@ -147,7 +155,7 @@ private slots:
   void onIndicatorClicked(int line, int col, Qt::KeyboardModifiers state);
   void onIndicatorReleased(int line, int col, Qt::KeyboardModifiers state);
 signals:
-   void escapePressed(void);	
+  void escapePressed(void);
 
 public:
   void public_applySettings();
@@ -162,6 +170,9 @@ private:
   static const int hyperlinkIndicatorOffset = 100;
   static const int errMarkerNumber = 2;
   static const int bmMarkerNumber = 3;
+  static const int selectionMarkerLevelNumber = 20; //20 - 25, there is at max 5 level of depth
+  static const int selectionIndicatorIsActiveNumber = 11; //Represents the active selected area text 11 - 12
+  static const int selectionIndicatorIsImpactedNumber = 14; //Represents the impacted selected area text 14-15-16
 
   bool indicatorsActive = false;
 

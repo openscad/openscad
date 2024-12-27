@@ -23,10 +23,14 @@
  *
  */
 
-#include "export.h"
+#include "io/export.h"
 
-#include "PolySet.h"
-#include "PolySetUtils.h"
+#include "geometry/PolySet.h"
+#include "geometry/PolySetUtils.h"
+
+#include <ostream>
+#include <memory>
+#include <cstddef>
 
 void export_wrl(const std::shared_ptr<const Geometry>& geom, std::ostream& output)
 {

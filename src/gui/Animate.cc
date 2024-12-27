@@ -1,7 +1,16 @@
-#include "Animate.h"
-#include "printutils.h"
-#include "MainWindow.h"
-#include <boost/filesystem.hpp>
+#include "gui/Animate.h"
+#include "utils/printutils.h"
+#include "gui/MainWindow.h"
+#include <QAction>
+#include <QBoxLayout>
+#include <QIcon>
+#include <QList>
+#include <QPushButton>
+#include <QResizeEvent>
+#include <QTimer>
+#include <QWidget>
+#include <iostream>
+#include <filesystem>
 #include <QFormLayout>
 
 Animate::Animate(QWidget *parent) : QWidget(parent)

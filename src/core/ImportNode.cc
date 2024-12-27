@@ -24,34 +24,37 @@
  *
  */
 
-#include "io/import.h"
-#include "ImportNode.h"
+#include "core/ImportNode.h"
 
-#include "module.h"
-#include "ModuleInstantiation.h"
-#include "PolySet.h"
+#include "io/import.h"
+
+#include "core/module.h"
+#include "core/ModuleInstantiation.h"
+#include "geometry/PolySet.h"
 #ifdef ENABLE_CGAL
-#include "CGAL_Nef_polyhedron.h"
+#include "geometry/cgal/CGAL_Nef_polyhedron.h"
 #endif
-#include "Polygon2d.h"
-#include "Builtins.h"
-#include "Children.h"
-#include "DxfData.h"
-#include "Parameters.h"
-#include "printutils.h"
+#include "geometry/Polygon2d.h"
+#include "core/Builtins.h"
+#include "core/Children.h"
+#include "io/DxfData.h"
+#include "core/Parameters.h"
+#include "utils/printutils.h"
 #include "io/fileutils.h"
 #include "Feature.h"
 #include "handle_dep.h"
-#include "boost-utils.h"
+#include <cmath>
+#include <ios>
+#include <utility>
+#include <memory>
 #include <sys/types.h>
 #include <sstream>
 #include <boost/algorithm/string.hpp>
-#include <boost/filesystem.hpp>
-namespace fs = boost::filesystem;
+#include <filesystem>
+namespace fs = std::filesystem;
 #include <boost/assign/std/vector.hpp>
 using namespace boost::assign; // bring 'operator+=()' into scope
 
-#include <cstdint>
 
 static std::shared_ptr<AbstractNode> do_import(const ModuleInstantiation *inst, Arguments arguments, const Children& children, ImportType type)
 {
@@ -135,7 +138,7 @@ static std::shared_ptr<AbstractNode> do_import(const ModuleInstantiation *inst, 
   if (dpi.type() == Value::Type::NUMBER) {
     double val = dpi.toDouble();
     if (val < 0.001) {
-      std::string filePath = boostfs_uncomplete(inst->location().filePath(), parameters.documentRoot()).generic_string();
+      std::string filePath = fs_uncomplete(inst->location().filePath(), parameters.documentRoot()).generic_string();
       LOG(message_group::Warning,
           "Invalid dpi value giving, using default of %1$f dpi. Value must be positive and >= 0.001, file %2$s, import() at line %3$d",
           origin.toEchoStringNoThrow(), filePath, filePath, inst->location().firstLine()
@@ -239,7 +242,7 @@ std::string ImportNode::toString() const
   stream << ", scale = " << this->scale
          << ", convexity = " << this->convexity
          << ", $fn = " << this->fn << ", $fa = " << this->fa << ", $fs = " << this->fs
-         << ", timestamp = " << (fs::exists(path) ? fs::last_write_time(path) : 0)
+         << ", timestamp = " << fs_timestamp(path)
          << ")";
 
   return stream.str();
