@@ -203,7 +203,7 @@ std::string collect_mesh_objects(MeshObjectList& object_list, PLib3MFModelObject
       return "Could not get object component count";
     }
     PRINTDB("%sobject (%d components) type = %s, number = '%s', name = '%s' (%s)", boost::io::group(std::setw(2 * level), "") % componentcount % get_object_type_name(objecttype) % number % name % (hasuuid ? uuid : "<no uuid>"));
-    for (int idx = 0;idx < componentcount;++idx) {
+    for (DWORD idx = 0;idx < componentcount;++idx) {
       PLib3MFModelComponent *component = nullptr;
       if (lib3mf_componentsobject_getcomponent(object, idx, &component) != LIB3MF_OK) {
         return "Could not get object component";
