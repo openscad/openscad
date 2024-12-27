@@ -10,9 +10,6 @@
 #ifndef NULLGL
 
 #include "glview/cgal/CGALRenderer.h"
-#ifdef USE_LEGACY_RENDERERS
-#include "glview/cgal/LegacyCGALRenderer.h"
-#endif
 
 namespace {
 
@@ -34,11 +31,7 @@ bool export_png(const std::shared_ptr<const Geometry>& root_geom, const ViewOpti
     return false;
   }
   std::shared_ptr<Renderer> cgalRenderer;
-#ifdef USE_LEGACY_RENDERERS
-  cgalRenderer = std::make_shared<LegacyCGALRenderer>(root_geom);
-#else
   cgalRenderer = std::make_shared<CGALRenderer>(root_geom);
-#endif
   const BoundingBox bbox = cgalRenderer->getBoundingBox();
   setupCamera(camera, bbox);
 
@@ -57,15 +50,9 @@ bool export_png(const std::shared_ptr<const Geometry>& root_geom, const ViewOpti
 
 #ifdef ENABLE_OPENCSG
 #include "glview/preview/OpenCSGRenderer.h"
-#ifdef USE_LEGACY_RENDERERS
-#include "glview/preview/LegacyOpenCSGRenderer.h"
-#endif
 #include <opencsg.h>
 #endif
 #include "glview/preview/ThrownTogetherRenderer.h"
-#ifdef USE_LEGACY_RENDERERS
-#include "glview/preview/LegacyThrownTogetherRenderer.h"
-#endif
 
 std::unique_ptr<OffscreenView> prepare_preview(Tree& tree, const ViewOptions& options, Camera& camera)
 {
@@ -84,25 +71,15 @@ std::unique_ptr<OffscreenView> prepare_preview(Tree& tree, const ViewOptions& op
   std::shared_ptr<Renderer> renderer;
   if (options.previewer == Previewer::OPENCSG) {
 #ifdef ENABLE_OPENCSG
-#ifdef USE_LEGACY_RENDERERS
-    PRINTD("Initializing LegacyOpenCSGRenderer");
-    renderer = std::make_shared<LegacyOpenCSGRenderer>(csgInfo.root_products, csgInfo.highlights_products, csgInfo.background_products);
-#else
     PRINTD("Initializing OpenCSGRenderer");
     renderer = std::make_shared<OpenCSGRenderer>(csgInfo.root_products, csgInfo.highlights_products, csgInfo.background_products);
-#endif
 #else
     fprintf(stderr, "This openscad was built without OpenCSG support\n");
     return 0;
 #endif
   } else {
-#ifdef USE_LEGACY_RENDERERS
-    PRINTD("Initializing LegacyThrownTogetherRenderer");
-    renderer = std::make_shared<LegacyThrownTogetherRenderer>(csgInfo.root_products, csgInfo.highlights_products, csgInfo.background_products);
-#else
     PRINTD("Initializing ThrownTogetherRenderer");
     renderer = std::make_shared<ThrownTogetherRenderer>(csgInfo.root_products, csgInfo.highlights_products, csgInfo.background_products);
-#endif
   }
 
   glview->setRenderer(renderer);

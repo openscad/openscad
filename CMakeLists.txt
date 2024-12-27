@@ -34,7 +34,6 @@ option(EXPERIMENTAL "Enable Experimental Features" OFF)
 option(USE_MANIFOLD_TRIANGULATOR "Use Manifold's triangulator instead of CGAL's" ON)
 option(USE_BUILTIN_MANIFOLD "Use manifold from submodule" ON)
 option(USE_BUILTIN_CLIPPER2 "Use Clipper2 from submodule" ON)
-option(USE_LEGACY_RENDERERS "Use legacy (non-VBO) OpenGL renderers" OFF)
 option(SNAPSHOT "Create dev snapshot, uses nightly icons" OFF)
 option(HEADLESS "Build without GUI frontend" OFF)
 if(APPLE)
@@ -213,9 +212,6 @@ if(EXPERIMENTAL)
 endif()
 if(IDPREFIX)
   target_compile_definitions(OpenSCAD PRIVATE IDPREFIX)
-endif()
-if(USE_LEGACY_RENDERERS)
-  target_compile_definitions(OpenSCAD PRIVATE USE_LEGACY_RENDERERS)
 endif()
 
 if (NOT "${SUFFIX}" STREQUAL "")
@@ -1040,14 +1036,6 @@ if(NULLGL)
     src/io/export_png.cc
     src/io/imageutils.cc)
 else()
-  if(USE_LEGACY_RENDERERS)
-    set(LEGACY_RENDERER_SOURCES
-      src/glview/cgal/LegacyCGALRenderer.cc
-      src/glview/preview/LegacyOpenCSGRenderer.cc
-      src/glview/preview/LegacyThrownTogetherRenderer.cc
-      src/glview/LegacyRendererUtils.cc
-    )
-  endif()
   set(OFFSCREEN_SOURCES
     src/glview/OpenGLContext.cc
     src/glview/fbo.cc
@@ -1065,7 +1053,6 @@ else()
     src/glview/preview/ThrownTogetherRenderer.cc
     src/io/export_png.cc
     src/io/imageutils.cc
-    ${LEGACY_RENDERER_SOURCES}
     ${GLEW_SOURCES})
 endif()
 
