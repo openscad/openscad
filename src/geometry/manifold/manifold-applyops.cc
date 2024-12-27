@@ -24,7 +24,7 @@ std::unique_ptr<Geometry> applyHullManifold(const Geometry::Geometries& children
     auto chN = item.second ? createManifoldFromGeometry(item.second) : nullptr;
     if (chN) manifolds.emplace_back(chN->getManifold());
   }
-  return std::make_unique<ManifoldGeometry>(std::make_shared<manifold::Manifold>(manifold::Manifold::Hull(manifolds)));
+  return std::make_unique<ManifoldGeometry>(manifold::Manifold::Hull(manifolds));
 }
 
 /*!
