@@ -1,8 +1,8 @@
 RES=100;
 Logo(50, RES);
-colorValueR=246/255;
-colorValueG=241/255;
-colorValueB=200/255;
+colorValueR=255/255;
+colorValueG=250/255;
+colorValueB=100/255;
 
 module Logo(size=50, $fn=100) {
     hole = size/2;
@@ -24,7 +24,7 @@ module Logo(size=50, $fn=100) {
     
     difference(){
         color ([colorValueR,colorValueG,colorValueB, .75])rotate([90, 0, 0]) cylinder(d=hole, h=54, center=true);
-        color ([129/255,127/255,106/255, .85])translate ([6.5,0,0]) rotate([90, 0, 0]) cylinder(d=hole*0.8, h=cylinderHeight, center=true);
+        color ([colorValueR*0.5,colorValueG*0.5,colorValueB*0.5, .85])translate ([6.5,0,0]) rotate([90, 0, 0]) cylinder(d=hole*0.8, h=cylinderHeight, center=true);
     }
 }
 
