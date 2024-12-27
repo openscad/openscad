@@ -26,9 +26,8 @@ namespace ManifoldUtils {
  */
 std::shared_ptr<const Geometry> applyMinkowskiManifold(const Geometry::Geometries& children)
 {
-  using Point = linalg::vec<double, 3>;
-  using Hull_Points = std::vector<Point>;
-  using Nef_kernel = CGAL_Kernel3;
+  using Hull_Point = linalg::vec<double, 3>;
+  using Hull_Points = std::vector<Hull_Point>;
   using Polyhedron = CGAL_Polyhedron;
 
   auto polyhedronFromGeometry = [](const std::shared_ptr<const Geometry>& geom, bool *pIsConvexOut) -> std::shared_ptr<Polyhedron> 
@@ -55,10 +54,10 @@ std::shared_ptr<const Geometry> applyMinkowskiManifold(const Geometry::Geometrie
   std::vector<std::shared_ptr<const Geometry>> operands = {it->second, std::shared_ptr<const Geometry>()};
 
   auto getHullPoints = [&](const Polyhedron &poly) {
-    std::vector<Point> out;
+    std::vector<Hull_Point> out;
     out.reserve(poly.size_of_vertices());
     for (auto pi = poly.vertices_begin(); pi != poly.vertices_end(); ++pi) {
-      out.emplace_back(CGALUtils::vector_convert<Point>(pi->point()));
+      out.emplace_back(CGALUtils::vector_convert<Hull_Point>(pi->point()));
     }
     return out;
   };
@@ -86,10 +85,7 @@ std::shared_ptr<const Geometry> applyMinkowskiManifold(const Geometry::Geometrie
         } else {
           // The CGAL_Nef_polyhedron3 constructor can crash on bad polyhedron, so don't try
           if (!poly->is_valid()) throw 0;
-
-          // Nef_kernel decomposed_nef(*poly);
           CGAL_Nef_polyhedron3 decomposed_nef(*poly);
-
           CGAL::Timer t;
           t.start();
           CGAL::convex_decomposition_3(decomposed_nef);
@@ -115,7 +111,7 @@ std::shared_ptr<const Geometry> applyMinkowskiManifold(const Geometry::Geometrie
         CGAL::Timer t;
 
         t.start();
-        std::vector<Point> minkowski_points;
+        std::vector<Hull_Point> minkowski_points;
 
         auto np0 = points0.size();
         auto np1 = points1.size();
@@ -129,19 +125,19 @@ std::shared_ptr<const Geometry> applyMinkowskiManifold(const Geometry::Geometrie
         }
 
         if (minkowski_points.size() <= 3) {
-          // t.stop();
+          t.stop();
           return std::make_shared<const ManifoldGeometry>();
         }
 
         t.stop();
-        // PRINTDB("Minkowski: Point cloud creation (%d ⨉ %d -> %d) took %f ms", points0.size() % points1.size() % minkowski_points.size() % (t.time() * 1000));
+        PRINTDB("Minkowski: Point cloud creation (%d ⨉ %d -> %d) took %f ms", points0.size() % points1.size() % minkowski_points.size() % (t.time() * 1000));
         t.reset();
 
         t.start();
 
         auto hull = manifold::Manifold::Hull(minkowski_points);
         t.stop();
-        // PRINTDB("Minkowski: Computing convex hull took %f s", t.time());
+        PRINTDB("Minkowski: Computing convex hull took %f s", t.time());
         t.reset();
 
         return std::make_shared<ManifoldGeometry>(hull);
