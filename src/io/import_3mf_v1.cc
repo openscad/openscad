@@ -35,6 +35,7 @@
 #include "Feature.h"
 #include "RenderSettings.h"
 
+#include <cstdint>
 #include <memory>
 #include <string>
 #include <iomanip>
@@ -154,16 +155,8 @@ std::unique_ptr<PolySet> import_3mf_error(PLib3MFModel *model = nullptr, const s
   return PolySet::createEmpty();
 }
 
-std::string collect_mesh_objects(MeshObjectList& object_list, PLib3MFModelObjectResource *object, const Matrix4d& m, int level = 1)
+std::string collect_mesh_objects(MeshObjectList& object_list, PLib3MFModelObjectResource *object, const Matrix4d& m, const Location& loc, int level = 1)
 {
-  BOOL is_valid_object = false;
-  if (lib3mf_object_isvalidobject(object, &is_valid_object) != LIB3MF_OK) {
-    return "Could not check object validity";
-  }
-  if (!is_valid_object) {
-    return "Object is not valid";
-  }
-
   BOOL is_mesh_object = false;
   if (lib3mf_object_ismeshobject(object, &is_mesh_object) != LIB3MF_OK) {
     return "Could not check for mesh object type";
@@ -190,6 +183,14 @@ std::string collect_mesh_objects(MeshObjectList& object_list, PLib3MFModelObject
   char uuid[40] = {0, };
   if (lib3mf_object_getuuidutf8(object, &hasuuid, &uuid[0]) != LIB3MF_OK) {
     return "Could not read UUID of object";
+  }
+
+  BOOL is_valid_object = false;
+  if (lib3mf_object_isvalidobject(object, &is_valid_object) != LIB3MF_OK) {
+    return "Could not check object validity";
+  }
+  if (!is_valid_object) {
+    LOG(message_group::Warning, "Object '%1$s' with UUID '%2$s' is not valid, import() at line %3$d", name, uuid, loc.firstLine());
   }
 
   if (is_mesh_object) {
@@ -224,7 +225,7 @@ std::string collect_mesh_objects(MeshObjectList& object_list, PLib3MFModelObject
       if (has_transform) {
         PRINTDB("%scomponent transform matrix\n%s", boost::io::group(std::setw(2 * level), "") % cm);
       }
-      auto errmsg = collect_mesh_objects(object_list, componentobject, cm * m, level + 1);
+      auto errmsg = collect_mesh_objects(object_list, componentobject, cm * m, loc, level + 1);
       if (!errmsg.empty()) {
         return errmsg;
       }
@@ -296,7 +297,7 @@ Color4f get_triangle_color(PLib3MFModel *model, PLib3MFPropertyHandler *property
   return {};
 }
 
-std::string import_3mf_mesh(const std::string& filename, unsigned int mesh_idx, PLib3MFModel *model, std::unique_ptr<MeshObject>& mo, PolySetBuilder& builder)
+std::string import_3mf_mesh(const std::string& filename, unsigned int mesh_idx, PLib3MFModel *model, std::unique_ptr<MeshObject>& mo, std::unique_ptr<PolySet>& ps)
 {
   DWORD vertex_count = 0;
   if (lib3mf_meshobject_getvertexcount(mo->obj, &vertex_count) != LIB3MF_OK) {
@@ -317,37 +318,48 @@ std::string import_3mf_mesh(const std::string& filename, unsigned int mesh_idx, 
     return "Could not create property handler";
   }
 
-  std::vector<int32_t> color_indices; 
-  std::unordered_map<Color4f, int32_t> colors;
+  ps->vertices.reserve(vertex_count);
+  ps->indices.reserve(triangle_count);
+  ps->color_indices.reserve(triangle_count);
+
+  for (DWORD idx = 0; idx < vertex_count;++idx) {
+    MODELMESHVERTEX vertex;
+    if (lib3mf_meshobject_getvertex(mo->obj, idx, &vertex) != LIB3MF_OK) {
+      return "Could not read vertex from object";
+    }
+    const Vector4d v = mo->transform * Vector4d(vertex.m_fPosition[0], vertex.m_fPosition[1], vertex.m_fPosition[2], 1);
+    ps->vertices.push_back(v.head(3));
+  }
+
+  std::unordered_map<Color4f, int32_t> color_indices;
   for (DWORD idx = 0; idx < triangle_count; ++idx) {
     MODELMESHTRIANGLE triangle;
     if (lib3mf_meshobject_gettriangle(mo->obj, idx, &triangle) != LIB3MF_OK) {
       return "Could not read triangle from object";
     }
-
-    MODELMESHVERTEX vertex;
-    builder.beginPolygon(3);
+    ps->indices.emplace_back();
     for (DWORD vertex_idx : triangle.m_nIndices) {
-      if (lib3mf_meshobject_getvertex(mo->obj, vertex_idx, &vertex) != LIB3MF_OK) {
-        return "Could not read vertex from object";
-      }
-      const Vector4d v = mo->transform * Vector4d(vertex.m_fPosition[0], vertex.m_fPosition[1], vertex.m_fPosition[2], 1);
-      builder.addVertex(v.head(3));
+      ps->indices.back().push_back(vertex_idx);
     }
 
     const Color4f col = get_triangle_color(model, propertyhandler, idx);
     if (col.isValid()) {
-      const auto col_it = colors.find(col);
-      int32_t col_idx = 0;
-      if (col_it == colors.end()) {
-        col_idx = colors.size();
-        colors[col] = col_idx;
-        builder.addColor(col);
+      const auto it = color_indices.find(col);
+      int32_t cidx;
+      if (it == color_indices.end()) {
+        cidx = ps->colors.size();
+        ps->colors.push_back(col);
+        color_indices[col] = cidx;
       } else {
-        col_idx = (*col_it).second;
+        cidx = it->second;
       }
-      builder.addColorIndex(col_idx);
+      ps->color_indices.push_back(cidx);
+    } else {
+      ps->color_indices.push_back(-1);
     }
+  }
+  if (ps->colors.empty()) {
+    ps->color_indices.clear();
   }
 
   lib3mf_release(propertyhandler);
@@ -451,7 +463,6 @@ std::unique_ptr<Geometry> import_3mf(const std::string& filename, const Location
   }
 
   std::list<std::unique_ptr<PolySet>> meshes;
-  unsigned int mesh_idx = 0;
   while (true) {
     BOOL has_next = false;
     if (lib3mf_builditemiterator_movenext(builditem_it, &has_next) != LIB3MF_OK) {
@@ -500,24 +511,23 @@ std::unique_ptr<Geometry> import_3mf(const std::string& filename, const Location
     }
 
     MeshObjectList object_list;
-    std::string errmsg = collect_mesh_objects(object_list, object, m);
+    std::string errmsg = collect_mesh_objects(object_list, object, m, loc);
     if (!errmsg.empty()) {
-      return import_3mf_error(model, "Error collecting meshes", builditem_it);
+      return import_3mf_error(model, "Error collecting meshes: " + errmsg, builditem_it);
     }
 
     for (auto& mo : object_list) {
-      PolySetBuilder builder;
-      std::string errmsg = import_3mf_mesh(filename, mesh_idx, model, mo, builder);
+      auto ps = PolySet::createEmpty();
+      std::string errmsg = import_3mf_mesh(filename, meshes.size(), model, mo, ps);
       if (errmsg.empty()) {
-        if (builder.isEmpty()) {
+        if (ps->isEmpty()) {
           continue;
         }
       } else {
         return import_3mf_error(model, errmsg, builditem_it);
       }
 
-      meshes.push_back(builder.build());
-      mesh_idx++;
+      meshes.push_back(std::move(ps));
     }
   }
 
@@ -531,8 +541,9 @@ std::unique_ptr<Geometry> import_3mf(const std::string& filename, const Location
   } else {
     std::unique_ptr<PolySet> p;
     Geometry::Geometries children;
-    for (const auto& m : meshes) {
-      children.emplace_back(std::shared_ptr<AbstractNode>(), std::shared_ptr<const Geometry>(m.get()));
+    while (!meshes.empty()) {
+      children.emplace_back(std::shared_ptr<AbstractNode>(), std::shared_ptr<const Geometry>(std::move(meshes.front())));
+      meshes.pop_front();
     }
 #ifdef ENABLE_MANIFOLD
     if (RenderSettings::inst()->backend3D == RenderBackend3D::ManifoldBackend) {

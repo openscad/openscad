@@ -262,7 +262,15 @@ def post_process_3mf(filename):
     print('post processing 3MF file (extracting XML data from ZIP): ', filename)
     from zipfile import ZipFile
     xml_content = ZipFile(filename).read("3D/3dmodel.model")
-    xml_content = re.sub('UUID="[^"]*"', 'UUID="XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXX"', xml_content.decode('utf-8'))
+    xml_content = xml_content.decode('utf-8')
+    # Remove the UUIDs
+    xml_content = re.sub(r'UUID="[^"]*"', r'UUID="XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXX"', xml_content)
+    # Remove the timestampe in metadata
+    xml_content = re.sub(r'(<metadata[^>]*"CreationDate"[^>]*>)[0-9-]{10}T[0-9:]{8}Z(</metadata>)', r'\1XXXX-XX-XXTXXXXXXXXZ\2', xml_content)
+    # lib3mf does not allow setting the preserve="?" attribute for metadata
+    xml_content = re.sub(r'(<metadata[^>]*?)\s+preserve\s*=\s*"[^"]*"([^>]*>)', r'\1\2', xml_content)
+    # lib3mf v1 does not allow setting the alpha channel of base material display colors
+    xml_content = re.sub(r'(<base name="[^"]*" displaycolor="[^"]*).."', r'\1FF"', xml_content)
     # lib3mf v2 has an additional <model> attribute compared to v1
     sc = ' xmlns:sc="http://schemas.microsoft.com/3dmanufacturing/securecontent/2019/04"'
     xml_content = xml_content.replace(sc, '')

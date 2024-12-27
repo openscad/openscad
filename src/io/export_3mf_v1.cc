@@ -331,6 +331,15 @@ void export_3mf(const std::shared_ptr<const Geometry>& geom, std::ostream& outpu
     return;
   }
 
+  const std::array<std::array<std::string, 2>, 3> meta_data_list = {{
+    {{ "Title", exportInfo.title }},
+    {{ "Application", EXPORT_CREATOR }},
+    {{ "CreationDate", get_current_iso8601_date_time_utc() }}
+  }};
+  for (const auto& meta_data : meta_data_list) {
+    lib3mf_model_addmetadatautf8(model, meta_data[0].c_str(), meta_data[1].c_str());
+  }
+
   if (!append_3mf(geom, model, basematerial, 1)) {
     if (model) lib3mf_release(model);
     return;
