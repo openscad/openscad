@@ -331,7 +331,7 @@ std::string import_3mf_mesh(const std::string& filename, unsigned int mesh_idx, 
       if (lib3mf_meshobject_getvertex(mo->obj, vertex_idx, &vertex) != LIB3MF_OK) {
         return "Could not read vertex from object";
       }
-      const auto v = mo->transform * Vector4d(vertex.m_fPosition[0], vertex.m_fPosition[1], vertex.m_fPosition[2], 1);
+      const Vector4d v = mo->transform * Vector4d(vertex.m_fPosition[0], vertex.m_fPosition[1], vertex.m_fPosition[2], 1);
       builder.addVertex(v.head(3));
     }
 
