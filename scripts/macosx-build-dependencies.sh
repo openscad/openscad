@@ -62,7 +62,7 @@ PACKAGES=(
     "qscintilla 2.14.1"
     "onetbb 2021.12.0"
     "clipper2 1.4.0"
-    "manifold 3.0.0 patch"
+    "manifold 3.0.1"
 )
 DEPLOY_PACKAGES=(
     "sparkle 1.27.1"
@@ -887,7 +887,6 @@ build_manifold()
   fi
   tar xzf "manifold-$version.tar.gz"
   cd "manifold-$version"
-  patch -p1 < $OPENSCADDIR/patches/manifold-3.0.0.patch
 
   mkdir build
   cd build
