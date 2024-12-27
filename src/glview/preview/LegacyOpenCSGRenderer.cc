@@ -88,7 +88,7 @@ LegacyOpenCSGRenderer::LegacyOpenCSGRenderer(std::shared_ptr<CSGProducts> root_p
 {
 }
 
-void LegacyOpenCSGRenderer::draw(bool /*showfaces*/, bool showedges, const shaderinfo_t *shaderinfo) const
+void LegacyOpenCSGRenderer::draw(bool /*showfaces*/, bool showedges, const ShaderInfo *shaderinfo) const
 {
   if (!shaderinfo && showedges) shaderinfo = &getShader();
 
@@ -104,7 +104,7 @@ void LegacyOpenCSGRenderer::draw(bool /*showfaces*/, bool showedges, const shade
 }
 
 void LegacyOpenCSGRenderer::renderCSGProducts(const std::shared_ptr<CSGProducts>& products, bool showedges,
-                                        const Renderer::shaderinfo_t *shaderinfo,
+                                        const Renderer::ShaderInfo *shaderinfo,
                                         bool highlight_mode, bool background_mode) const
 {
 #ifdef ENABLE_OPENCSG
@@ -130,7 +130,7 @@ void LegacyOpenCSGRenderer::renderCSGProducts(const std::shared_ptr<CSGProducts>
     }
 
     if (shaderinfo && shaderinfo->progid) {
-      if (shaderinfo->type != EDGE_RENDERING || (shaderinfo->type == EDGE_RENDERING && showedges)) {
+      if (shaderinfo->type != ShaderType::EDGE_RENDERING || (shaderinfo->type ==ShaderType::EDGE_RENDERING && showedges)) {
         GL_CHECKD(glUseProgram(shaderinfo->progid));
       }
     }
@@ -138,7 +138,7 @@ void LegacyOpenCSGRenderer::renderCSGProducts(const std::shared_ptr<CSGProducts>
     for (const auto& csgobj : product.intersections) {
       if (!csgobj.leaf->polyset) continue;
 
-      if (shaderinfo && shaderinfo->type == Renderer::SELECT_RENDERING) {
+      if (shaderinfo && shaderinfo->type == Renderer::ShaderType::SELECT_RENDERING) {
         int identifier = csgobj.leaf->index;
         GL_CHECKD(glUniform3f(shaderinfo->data.select_rendering.identifier,
                               ((identifier >> 0) & 0xff) / 255.0f, ((identifier >> 8) & 0xff) / 255.0f,

@@ -43,7 +43,7 @@ LegacyThrownTogetherRenderer::LegacyThrownTogetherRenderer(std::shared_ptr<CSGPr
 {
 }
 
-void LegacyThrownTogetherRenderer::draw(bool /*showfaces*/, bool showedges, const Renderer::shaderinfo_t *shaderinfo) const
+void LegacyThrownTogetherRenderer::draw(bool /*showfaces*/, bool showedges, const Renderer::ShaderInfo *shaderinfo) const
 {
   PRINTD("draw()");
   if (!shaderinfo && showedges) {
@@ -70,7 +70,7 @@ void LegacyThrownTogetherRenderer::draw(bool /*showfaces*/, bool showedges, cons
 }
 
 void LegacyThrownTogetherRenderer::renderChainObject(const CSGChainObject& csgobj, bool showedges,
-                                               const Renderer::shaderinfo_t *shaderinfo,
+                                               const Renderer::ShaderInfo *shaderinfo,
                                                bool highlight_mode, bool background_mode,
                                                bool fberror, OpenSCADOperator type) const
 {
@@ -85,7 +85,7 @@ void LegacyThrownTogetherRenderer::renderChainObject(const CSGChainObject& csgob
   colormode = getColorMode(csgobj.flags, highlight_mode, background_mode, fberror, type);
   const Transform3d& m = csgobj.leaf->matrix;
 
-  if (shaderinfo && shaderinfo->type == Renderer::SELECT_RENDERING) {
+  if (shaderinfo && shaderinfo->type == Renderer::ShaderType::SELECT_RENDERING) {
     int identifier = csgobj.leaf->index;
     glUniform3f(shaderinfo->data.select_rendering.identifier, ((identifier >> 0) & 0xff) / 255.0f,
                 ((identifier >> 8) & 0xff) / 255.0f, ((identifier >> 16) & 0xff) / 255.0f);
@@ -105,7 +105,7 @@ void LegacyThrownTogetherRenderer::renderChainObject(const CSGChainObject& csgob
 }
 
 void LegacyThrownTogetherRenderer::renderCSGProducts(const std::shared_ptr<CSGProducts>& products, bool showedges,
-                                               const Renderer::shaderinfo_t *shaderinfo,
+                                               const Renderer::ShaderInfo *shaderinfo,
                                                bool highlight_mode, bool background_mode,
                                                bool fberror) const
 {

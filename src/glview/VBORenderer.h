@@ -26,7 +26,6 @@ class VBORenderer : public Renderer
 {
 public:
   VBORenderer();
-  void resize(int w, int h) override;
   virtual bool getShaderColor(Renderer::ColorMode colormode, const Color4f& col, Color4f& outcolor) const;
   virtual size_t getSurfaceBufferSize(const std::shared_ptr<CSGProducts>& products, bool unique_geometry = false) const;
   virtual size_t getSurfaceBufferSize(const CSGChainObject& csgobj, bool unique_geometry = false) const;
@@ -35,7 +34,7 @@ public:
   virtual size_t getEdgeBufferSize(const Polygon2d& polygon) const;
 
   virtual void create_surface(const PolySet& ps, VertexArray& vertex_array,
-                              csgmode_e csgmode, const Transform3d& m,
+                              RendererUtils::CSGMode csgmode, const Transform3d& m,
                               const Color4f& default_color, bool force_default_color = false) const;
 
   virtual void create_edges(const Polygon2d& polygon, VertexArray& vertex_array,
@@ -63,14 +62,14 @@ protected:
   void shader_attribs_disable() const;
 
   mutable std::unordered_map<std::pair<const PolySet *, const Transform3d *>, int,
-                             boost::hash<std::pair<const PolySet *, const Transform3d *>>> geomVisitMark;
+                             boost::hash<std::pair<const PolySet *, const Transform3d *>>> geom_visit_mark_;
 
 private:
   void add_shader_attributes(VertexArray& vertex_array,
                              size_t active_point_index = 0, size_t primitive_index = 0,
                              size_t shape_size = 0, bool outlines = false) const;
 
-  size_t shader_attributes_index{0};
+  size_t shader_attributes_index_{0};
   enum ShaderAttribIndex {
     BARYCENTRIC_ATTRIB
   };

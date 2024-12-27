@@ -18,8 +18,8 @@
 namespace {
 
 GLuint compileShader(const std::string& name, GLuint shader_type) {
-  auto shader_source = Renderer::loadShaderSource(name);
-  GLuint shader = glCreateShader(shader_type);
+  auto shader_source = RendererUtils::loadShaderSource(name);
+  const GLuint shader = glCreateShader(shader_type);
   auto *c_source = shader_source.c_str();
   glShaderSource(shader, 1, (const GLchar **)&c_source, nullptr);
   glCompileShader(shader);
@@ -37,11 +37,32 @@ GLuint compileShader(const std::string& name, GLuint shader_type) {
 
 }  // namespace
 
+namespace RendererUtils {
+
+CSGMode getCsgMode(const bool highlight_mode, const bool background_mode, const OpenSCADOperator type) {
+  int csgmode = highlight_mode ? CSGMODE_HIGHLIGHT : (background_mode ? CSGMODE_BACKGROUND : CSGMODE_NORMAL);
+  if (type == OpenSCADOperator::DIFFERENCE) csgmode |= CSGMODE_DIFFERENCE_FLAG;
+  return static_cast<CSGMode>(csgmode);
+}
+
+std::string loadShaderSource(const std::string& name) {
+  std::string shaderPath = (PlatformUtils::resourcePath("shaders") / name).string();
+  std::ostringstream buffer;
+  const std::ifstream f(shaderPath);
+  if (f.is_open()) {
+    buffer << f.rdbuf();
+  } else {
+    LOG(message_group::UI_Error, "Cannot open shader source file: '%1$s'", shaderPath);
+  }
+  return buffer.str();
+}
+
+}  // namespace RendererUtils
+
 Renderer::Renderer()
 {
   PRINTD("Renderer() start");
-
-  renderer_shader.progid = 0;
+  renderer_shader_.progid = 0;
 
   // Setup default colors
   // The main colors, MATERIAL and CUTOUT, come from this object's
@@ -51,12 +72,12 @@ Renderer::Renderer()
 
   // MATERIAL is set by this object's colorscheme
   // CUTOUT is set by this object's colorscheme
-  colormap[ColorMode::HIGHLIGHT] = {255, 81, 81, 128};
-  colormap[ColorMode::BACKGROUND] = {180, 180, 180, 128};
+  colormap_[ColorMode::HIGHLIGHT] = {255, 81, 81, 128};
+  colormap_[ColorMode::BACKGROUND] = {180, 180, 180, 128};
   // MATERIAL_EDGES is set by this object's colorscheme
   // CUTOUT_EDGES is set by this object's colorscheme
-  colormap[ColorMode::HIGHLIGHT_EDGES] = {255, 171, 86, 128};
-  colormap[ColorMode::BACKGROUND_EDGES] = {150, 150, 150, 128};
+  colormap_[ColorMode::HIGHLIGHT_EDGES] = {255, 171, 86, 128};
+  colormap_[ColorMode::BACKGROUND_EDGES] = {150, 150, 150, 128};
 
   Renderer::setColorScheme(ColorMap::inst()->defaultColorScheme());
 
@@ -65,7 +86,7 @@ Renderer::Renderer()
 }
 
 void Renderer::setupShader() {
-  renderer_shader.progid = 0;
+  renderer_shader_.progid = 0;
 
   auto fs = compileShader("Preview.vert", GL_VERTEX_SHADER);
   if (!fs) {
@@ -80,73 +101,49 @@ void Renderer::setupShader() {
     return;
   }
 
-
-  auto edgeshader_prog = glCreateProgram();
-  glAttachShader(edgeshader_prog, vs);
-  glAttachShader(edgeshader_prog, fs);
-  glLinkProgram(edgeshader_prog);
+  auto shader_prog = glCreateProgram();
+  glAttachShader(shader_prog, vs);
+  glAttachShader(shader_prog, fs);
+  glLinkProgram(shader_prog);
   GLint status;
-  glGetProgramiv(edgeshader_prog, GL_LINK_STATUS, &status);
+  glGetProgramiv(shader_prog, GL_LINK_STATUS, &status);
   if (!status) {
     int loglen;
     char logbuffer[1000];
-    glGetProgramInfoLog(edgeshader_prog, sizeof(logbuffer), &loglen, logbuffer);
+    glGetProgramInfoLog(shader_prog, sizeof(logbuffer), &loglen, logbuffer);
     PRINTDB("OpenGL Program Linker Error:\n%s", logbuffer);
     return;
   }
 
-  {
+  glValidateProgram(shader_prog);
+  glGetProgramiv(shader_prog, GL_LINK_STATUS, &status);
+  if (!status) {
     int loglen;
     char logbuffer[1000];
-    glValidateProgram(edgeshader_prog);
-    glGetProgramInfoLog(edgeshader_prog, sizeof(logbuffer), &loglen, logbuffer);
-    if (loglen > 0) {
-      PRINTDB("OpenGL Program Validation results:\n%s", logbuffer);
-    }
+    glGetProgramInfoLog(shader_prog, sizeof(logbuffer), &loglen, logbuffer);
+    PRINTDB("OpenGL Program Validation results:\n%s", logbuffer);
   }
 
-  renderer_shader.progid = edgeshader_prog;
-  renderer_shader.type = EDGE_RENDERING;
-  renderer_shader.data.csg_rendering.color_area = glGetUniformLocation(edgeshader_prog, "color1"); // 1
-  renderer_shader.data.csg_rendering.color_edge = glGetUniformLocation(edgeshader_prog, "color2"); // 2
-  renderer_shader.data.csg_rendering.barycentric = glGetAttribLocation(edgeshader_prog, "barycentric"); // 3
-}
-
-void Renderer::resize(int /*w*/, int /*h*/)
-{
+  renderer_shader_.progid = shader_prog;
+  renderer_shader_.type = ShaderType::EDGE_RENDERING;
+  renderer_shader_.data.csg_rendering.color_area = glGetUniformLocation(shader_prog, "color1"); // 1
+  renderer_shader_.data.csg_rendering.color_edge = glGetUniformLocation(shader_prog, "color2"); // 2
+  renderer_shader_.data.csg_rendering.barycentric = glGetAttribLocation(shader_prog, "barycentric"); // 3
 }
 
 bool Renderer::getColor(Renderer::ColorMode colormode, Color4f& col) const
 {
   if (colormode == ColorMode::NONE) return false;
-  if (colormap.count(colormode) > 0) {
-    col = colormap.at(colormode);
+  if (const auto it = colormap_.find(colormode); it != colormap_.end()) {
+    col = it->second;
     return true;
   }
   return false;
 }
 
-std::string Renderer::loadShaderSource(const std::string& name) {
-  std::string shaderPath = (PlatformUtils::resourcePath("shaders") / name).string();
-  std::ostringstream buffer;
-  std::ifstream f(shaderPath);
-  if (f.is_open()) {
-    buffer << f.rdbuf();
-  } else {
-    LOG(message_group::UI_Error, "Cannot open shader source file: '%1$s'", shaderPath);
-  }
-  return buffer.str();
-}
-
-Renderer::csgmode_e Renderer::get_csgmode(const bool highlight_mode, const bool background_mode, const OpenSCADOperator type) {
-  int csgmode = highlight_mode ? CSGMODE_HIGHLIGHT : (background_mode ? CSGMODE_BACKGROUND : CSGMODE_NORMAL);
-  if (type == OpenSCADOperator::DIFFERENCE) csgmode |= CSGMODE_DIFFERENCE_FLAG;
-  return csgmode_e(csgmode);
-}
-
-void Renderer::setColor(const float color[4], const shaderinfo_t *shaderinfo) const
+void Renderer::setColor(const float color[4], const ShaderInfo *shaderinfo) const
 {
-  if (shaderinfo && shaderinfo->type != EDGE_RENDERING) {
+  if (shaderinfo && shaderinfo->type != ShaderType::EDGE_RENDERING) {
     return;
   }
 
@@ -168,7 +165,7 @@ void Renderer::setColor(const float color[4], const shaderinfo_t *shaderinfo) co
 }
 
 // returns the color which has been set, which may differ from the color input parameter
-Color4f Renderer::setColor(ColorMode colormode, const float color[4], const shaderinfo_t *shaderinfo) const
+Color4f Renderer::setColor(ColorMode colormode, const float color[4], const ShaderInfo *shaderinfo) const
 {
   PRINTD("setColor b");
   Color4f basecol;
@@ -184,7 +181,7 @@ Color4f Renderer::setColor(ColorMode colormode, const float color[4], const shad
   return basecol;
 }
 
-void Renderer::setColor(ColorMode colormode, const shaderinfo_t *shaderinfo) const
+void Renderer::setColor(ColorMode colormode, const ShaderInfo *shaderinfo) const
 {
   PRINTD("setColor c");
   float c[4] = {-1, -1, -1, -1};
@@ -197,12 +194,12 @@ void Renderer::setColor(ColorMode colormode, const shaderinfo_t *shaderinfo) con
    same for CGAL & OpenCSG */
 void Renderer::setColorScheme(const ColorScheme& cs) {
   PRINTD("setColorScheme");
-  colormap[ColorMode::MATERIAL] = ColorMap::getColor(cs, RenderColor::OPENCSG_FACE_FRONT_COLOR);
-  colormap[ColorMode::CUTOUT] = ColorMap::getColor(cs, RenderColor::OPENCSG_FACE_BACK_COLOR);
-  colormap[ColorMode::MATERIAL_EDGES] = ColorMap::getColor(cs, RenderColor::CGAL_EDGE_FRONT_COLOR);
-  colormap[ColorMode::CUTOUT_EDGES] = ColorMap::getColor(cs, RenderColor::CGAL_EDGE_BACK_COLOR);
-  colormap[ColorMode::EMPTY_SPACE] = ColorMap::getColor(cs, RenderColor::BACKGROUND_COLOR);
-  this->colorscheme = &cs;
+  colormap_[ColorMode::MATERIAL] = ColorMap::getColor(cs, RenderColor::OPENCSG_FACE_FRONT_COLOR);
+  colormap_[ColorMode::CUTOUT] = ColorMap::getColor(cs, RenderColor::OPENCSG_FACE_BACK_COLOR);
+  colormap_[ColorMode::MATERIAL_EDGES] = ColorMap::getColor(cs, RenderColor::CGAL_EDGE_FRONT_COLOR);
+  colormap_[ColorMode::CUTOUT_EDGES] = ColorMap::getColor(cs, RenderColor::CGAL_EDGE_BACK_COLOR);
+  colormap_[ColorMode::EMPTY_SPACE] = ColorMap::getColor(cs, RenderColor::BACKGROUND_COLOR);
+  this->colorscheme_ = &cs;
 }
 
 
@@ -212,7 +209,7 @@ std::vector<SelectedObject> Renderer::findModelObject(Vector3d near_pt, Vector3d
 Renderer::Renderer() : colorscheme(nullptr) {}
 void Renderer::resize(int /*w*/, int /*h*/) {}
 bool Renderer::getColor(Renderer::ColorMode colormode, Color4f& col) const { return false; }
-std::string Renderer::loadShaderSource(const std::string& name) { return ""; }
+std::string RendererUtils::loadShaderSource(const std::string& name) { return ""; }
 void Renderer::setColor(const float color[4], const shaderinfo_t *shaderinfo) const {}
 Color4f Renderer::setColor(ColorMode colormode, const float color[4], const shaderinfo_t *shaderinfo) const { return {}; }
 void Renderer::setColor(ColorMode colormode, const shaderinfo_t *shaderinfo) const {}

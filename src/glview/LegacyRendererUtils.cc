@@ -10,11 +10,11 @@
 #include <cstddef>
 
 #ifdef ENABLE_OPENCSG
-static void draw_triangle(const Renderer::shaderinfo_t *shaderinfo, const Vector3d& p0, const Vector3d& p1, const Vector3d& p2,
+static void draw_triangle(const Renderer::ShaderInfo *shaderinfo, const Vector3d& p0, const Vector3d& p1, const Vector3d& p2,
                           bool e0, bool e1, bool e2, double z, bool mirror)
 {
-  Renderer::shader_type_t type =
-    (shaderinfo) ? shaderinfo->type : Renderer::NONE;
+  Renderer::ShaderType type =
+    (shaderinfo) ? shaderinfo->type : Renderer::ShaderType::NONE;
 
   // e0,e1,e2 are used to disable some edges from display.
   // Edges are numbered to correspond with the vertex opposite of them.
@@ -25,7 +25,7 @@ static void draw_triangle(const Renderer::shaderinfo_t *shaderinfo, const Vector
   double d2 = e2 ? 0.0 : 1.0;
 
   switch (type) {
-  case Renderer::EDGE_RENDERING:
+  case Renderer::ShaderType::EDGE_RENDERING:
     if (mirror) {
       glVertexAttrib3f(shaderinfo->data.csg_rendering.barycentric, 1.0, d1, d2);
       glVertex3f(p0[0], p0[1], p0[2] + z);
@@ -43,7 +43,7 @@ static void draw_triangle(const Renderer::shaderinfo_t *shaderinfo, const Vector
     }
     break;
   default:
-  case Renderer::SELECT_RENDERING:
+  case Renderer::ShaderType::SELECT_RENDERING:
     glVertex3d(p0[0], p0[1], p0[2] + z);
     if (!mirror) {
       glVertex3d(p1[0], p1[1], p1[2] + z);
@@ -64,7 +64,7 @@ static void draw_tri(const Vector3d& p0, const Vector3d& p1, const Vector3d& p2,
   if (mirror) glVertex3d(p1[0], p1[1], p1[2] + z);
 }
 
-static void gl_draw_triangle(const Renderer::shaderinfo_t *shaderinfo, const Vector3d& p0, const Vector3d& p1, const Vector3d& p2, bool e0, bool e1, bool e2, double z, bool mirrored)
+static void gl_draw_triangle(const Renderer::ShaderInfo *shaderinfo, const Vector3d& p0, const Vector3d& p1, const Vector3d& p2, bool e0, bool e1, bool e2, double z, bool mirrored)
 {
   double ax = p1[0] - p0[0], bx = p1[0] - p2[0];
   double ay = p1[1] - p0[1], by = p1[1] - p2[1];
@@ -84,7 +84,7 @@ static void gl_draw_triangle(const Renderer::shaderinfo_t *shaderinfo, const Vec
   }
 }
 
-void render_surface(const PolySet& ps, const Transform3d& m, const Renderer::shaderinfo_t *shaderinfo)
+void render_surface(const PolySet& ps, const Transform3d& m, const Renderer::ShaderInfo *shaderinfo)
 {
   PRINTD("render_surface");
   bool mirrored = m.matrix().determinant() < 0;

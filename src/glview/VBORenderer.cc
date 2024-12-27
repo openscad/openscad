@@ -42,11 +42,7 @@ VBORenderer::VBORenderer()
 {
 }
 
-void VBORenderer::resize(int w, int h)
-{
-  Renderer::resize(w, h);
-}
-
+// TODO: Move to Renderer?
 bool VBORenderer::getShaderColor(Renderer::ColorMode colormode, const Color4f& color, Color4f& outcolor) const
 {
   if ((colormode != ColorMode::BACKGROUND) && (colormode != ColorMode::HIGHLIGHT) && color.isValid()) {
@@ -77,7 +73,7 @@ bool VBORenderer::getShaderColor(Renderer::ColorMode colormode, const Color4f& c
 size_t VBORenderer::getSurfaceBufferSize(const std::shared_ptr<CSGProducts>& products, bool unique_geometry) const
 {
   size_t buffer_size = 0;
-  if (unique_geometry) this->geomVisitMark.clear();
+  if (unique_geometry) this->geom_visit_mark_.clear();
 
   for (const auto& product : products->products) {
     for (const auto& csgobj : product.intersections) {
@@ -93,7 +89,7 @@ size_t VBORenderer::getSurfaceBufferSize(const std::shared_ptr<CSGProducts>& pro
 size_t VBORenderer::getSurfaceBufferSize(const CSGChainObject& csgobj, bool unique_geometry) const
 {
   size_t buffer_size = 0;
-  if (unique_geometry && this->geomVisitMark[std::make_pair(csgobj.leaf->polyset.get(), &csgobj.leaf->matrix)]++ > 0) return 0;
+  if (unique_geometry && this->geom_visit_mark_[std::make_pair(csgobj.leaf->polyset.get(), &csgobj.leaf->matrix)]++ > 0) return 0;
 
   if (csgobj.leaf->polyset) {
     buffer_size += getSurfaceBufferSize(*csgobj.leaf->polyset);
@@ -140,9 +136,9 @@ void VBORenderer::add_shader_attributes(VertexArray& vertex_array,
                                         size_t active_point_index, size_t primitive_index,
                                         size_t shape_size, bool outlines) const
 {
-  if (!shader_attributes_index) return;
+  if (!shader_attributes_index_) return;
 
-  std::shared_ptr<VertexData> vertex_data = vertex_array.data();
+  const std::shared_ptr<VertexData> vertex_data = vertex_array.data();
 
   if (getShader().data.csg_rendering.barycentric) {
     // Get edge states
@@ -173,7 +169,7 @@ void VBORenderer::add_shader_attributes(VertexArray& vertex_array,
 
     barycentric_flags[active_point_index] = 1;
 
-    addAttributeValues(*(vertex_data->attributes()[shader_attributes_index + BARYCENTRIC_ATTRIB]), barycentric_flags[0], barycentric_flags[1], barycentric_flags[2], 0);
+    addAttributeValues(*(vertex_data->attributes()[shader_attributes_index_ + BARYCENTRIC_ATTRIB]), barycentric_flags[0], barycentric_flags[1], barycentric_flags[2], 0);
   }
 }
 
@@ -199,14 +195,14 @@ void VBORenderer::create_triangle(VertexArray& vertex_array, const Color4f& colo
                                   size_t primitive_index, size_t shape_size,
                                   bool outlines, bool mirror) const
 {
-  double ax = p1[0] - p0[0], bx = p1[0] - p2[0];
-  double ay = p1[1] - p0[1], by = p1[1] - p2[1];
-  double az = p1[2] - p0[2], bz = p1[2] - p2[2];
-  double nx = ay * bz - az * by;
-  double ny = az * bx - ax * bz;
-  double nz = ax * by - ay * bx;
-  double nl = sqrt(nx * nx + ny * ny + nz * nz);
-  Vector3d n = Vector3d(nx / nl, ny / nl, nz / nl);
+  const double ax = p1[0] - p0[0], bx = p1[0] - p2[0];
+  const double ay = p1[1] - p0[1], by = p1[1] - p2[1];
+  const double az = p1[2] - p0[2], bz = p1[2] - p2[2];
+  const double nx = ay * bz - az * by;
+  const double ny = az * bx - ax * bz;
+  const double nz = ax * by - ay * bx;
+  const double nl = sqrt(nx * nx + ny * ny + nz * nz);
+  const Vector3d n = Vector3d(nx / nl, ny / nl, nz / nl);
 
   if (!vertex_array.data()) return;
 
@@ -246,21 +242,21 @@ Vector3d uniqueMultiply(std::unordered_map<Vector3d, Vector3d>& vert_mult_map,
 // This will usually create a new VertexState and append it to the
 // vertex states in the given vertex_array
 void VBORenderer::create_surface(const PolySet& ps, VertexArray& vertex_array,
-                                 csgmode_e csgmode, const Transform3d& m,
+                                 RendererUtils::CSGMode csgmode, const Transform3d& m,
                                  const Color4f& default_color, bool force_default_color) const
 {
-  std::shared_ptr<VertexData> vertex_data = vertex_array.data();
+  const std::shared_ptr<VertexData> vertex_data = vertex_array.data();
 
   if (!vertex_data) {
     return;
   }
 
-  bool mirrored = m.matrix().determinant() < 0;
+  const bool mirrored = m.matrix().determinant() < 0;
   size_t triangle_count = 0;
 
   auto& vertex_states = vertex_array.states();
   std::unordered_map<Vector3d, Vector3d> vert_mult_map;
-  size_t last_size = vertex_array.verticesOffset();
+  const auto last_size = vertex_array.verticesOffset();
 
   size_t elements_offset = 0;
   if (vertex_array.useElements()) {
@@ -280,18 +276,18 @@ void VBORenderer::create_surface(const PolySet& ps, VertexArray& vertex_array,
       ps.colors[color_index].isValid() ? 
       ps.colors[color_index] : default_color;
     if (poly.size() == 3) {
-      Vector3d p0 = uniqueMultiply(vert_mult_map, ps.vertices[poly.at(0)], m);
-      Vector3d p1 = uniqueMultiply(vert_mult_map, ps.vertices[poly.at(1)], m);
-      Vector3d p2 = uniqueMultiply(vert_mult_map, ps.vertices[poly.at(2)], m);
+      const Vector3d p0 = uniqueMultiply(vert_mult_map, ps.vertices[poly.at(0)], m);
+      const Vector3d p1 = uniqueMultiply(vert_mult_map, ps.vertices[poly.at(1)], m);
+      const Vector3d p2 = uniqueMultiply(vert_mult_map, ps.vertices[poly.at(2)], m);
 
       create_triangle(vertex_array, color, p0, p1, p2,
                       0, poly.size(), false, mirrored);
       triangle_count++;
     } else if (poly.size() == 4) {
-      Vector3d p0 = uniqueMultiply(vert_mult_map, ps.vertices[poly.at(0)], m);
-      Vector3d p1 = uniqueMultiply(vert_mult_map, ps.vertices[poly.at(1)], m);
-      Vector3d p2 = uniqueMultiply(vert_mult_map, ps.vertices[poly.at(2)], m);
-      Vector3d p3 = uniqueMultiply(vert_mult_map, ps.vertices[poly.at(3)], m);
+      const Vector3d p0 = uniqueMultiply(vert_mult_map, ps.vertices[poly.at(0)], m);
+      const Vector3d p1 = uniqueMultiply(vert_mult_map, ps.vertices[poly.at(1)], m);
+      const Vector3d p2 = uniqueMultiply(vert_mult_map, ps.vertices[poly.at(2)], m);
+      const Vector3d p3 = uniqueMultiply(vert_mult_map, ps.vertices[poly.at(3)], m);
 
       create_triangle(vertex_array, color, p0, p1, p3,
                       0, poly.size(), false, mirrored);
@@ -305,9 +301,9 @@ void VBORenderer::create_surface(const PolySet& ps, VertexArray& vertex_array,
       }
       center /= poly.size();
       for (size_t i = 1; i <= poly.size(); i++) {
-        Vector3d p0 = uniqueMultiply(vert_mult_map, center, m);
-        Vector3d p1 = uniqueMultiply(vert_mult_map, ps.vertices[poly.at(i % poly.size())], m);
-        Vector3d p2 = uniqueMultiply(vert_mult_map, ps.vertices[poly.at(i - 1)], m);
+        const Vector3d p0 = uniqueMultiply(vert_mult_map, center, m);
+        const Vector3d p1 = uniqueMultiply(vert_mult_map, ps.vertices[poly.at(i % poly.size())], m);
+        const Vector3d p2 = uniqueMultiply(vert_mult_map, ps.vertices[poly.at(i - 1)], m);
 
         create_triangle(vertex_array, color, p0, p2, p1,
                         i - 1, poly.size(), false, mirrored);
@@ -330,7 +326,7 @@ void VBORenderer::create_edges(const Polygon2d& polygon,
                                const Transform3d& m,
                                const Color4f& color) const
 {
-  std::shared_ptr<VertexData> vertex_data = vertex_array.data();
+  const std::shared_ptr<VertexData> vertex_data = vertex_array.data();
 
   if (!vertex_data) return;
 
@@ -339,14 +335,14 @@ void VBORenderer::create_edges(const Polygon2d& polygon,
 
   // Render only outlines
   for (const Outline2d& o : polygon.outlines()) {
-    size_t last_size = vertex_array.verticesOffset();
+    const auto last_size = vertex_array.verticesOffset();
     size_t elements_offset = 0;
     if (vertex_array.useElements()) {
       elements_offset = vertex_array.elementsOffset();
       vertex_array.elementsMap().clear();
     }
     for (const Vector2d& v : o.vertices) {
-      Vector3d p0 = uniqueMultiply(vert_mult_map, Vector3d(v[0], v[1], 0.0), m);
+      const Vector3d p0 = uniqueMultiply(vert_mult_map, Vector3d(v[0], v[1], 0.0), m);
 
       create_vertex(vertex_array, color, {p0}, {}, 0, 0, o.vertices.size(), true, false);
     }
@@ -365,7 +361,7 @@ void VBORenderer::create_polygons(const PolySet& ps, VertexArray& vertex_array,
                                   const Transform3d& m, const Color4f& color) const
 {
   assert(ps.getDimension() == 2);
-  std::shared_ptr<VertexData> vertex_data = vertex_array.data();
+  const std::shared_ptr<VertexData> vertex_data = vertex_array.data();
 
   if (!vertex_data) return;
 
@@ -373,9 +369,9 @@ void VBORenderer::create_polygons(const PolySet& ps, VertexArray& vertex_array,
   std::unordered_map<Vector3d, Vector3d> vert_mult_map;
 
   PRINTD("create_polygons 2D");
-  bool mirrored = m.matrix().determinant() < 0;
+  const bool mirrored = m.matrix().determinant() < 0;
   size_t triangle_count = 0;
-  size_t last_size = vertex_array.verticesOffset();
+  const auto last_size = vertex_array.verticesOffset();
   size_t elements_offset = 0;
   if (vertex_array.useElements()) {
     elements_offset = vertex_array.elementsOffset();
@@ -384,18 +380,18 @@ void VBORenderer::create_polygons(const PolySet& ps, VertexArray& vertex_array,
 
   for (const auto& poly : ps.indices) {
     if (poly.size() == 3) {
-      Vector3d p0 = uniqueMultiply(vert_mult_map, ps.vertices[poly.at(0)], m);
-      Vector3d p1 = uniqueMultiply(vert_mult_map, ps.vertices[poly.at(1)], m);
-      Vector3d p2 = uniqueMultiply(vert_mult_map, ps.vertices[poly.at(2)], m);
+      const Vector3d p0 = uniqueMultiply(vert_mult_map, ps.vertices[poly.at(0)], m);
+      const Vector3d p1 = uniqueMultiply(vert_mult_map, ps.vertices[poly.at(1)], m);
+      const Vector3d p2 = uniqueMultiply(vert_mult_map, ps.vertices[poly.at(2)], m);
 
       create_triangle(vertex_array, color, p0, p1, p2,
                       0, poly.size(), false, mirrored);
       triangle_count++;
     } else if (poly.size() == 4) {
-      Vector3d p0 = uniqueMultiply(vert_mult_map, ps.vertices[poly.at(0)], m);
-      Vector3d p1 = uniqueMultiply(vert_mult_map, ps.vertices[poly.at(1)], m);
-      Vector3d p2 = uniqueMultiply(vert_mult_map, ps.vertices[poly.at(2)], m);
-      Vector3d p3 = uniqueMultiply(vert_mult_map, ps.vertices[poly.at(3)], m);
+      const Vector3d p0 = uniqueMultiply(vert_mult_map, ps.vertices[poly.at(0)], m);
+      const Vector3d p1 = uniqueMultiply(vert_mult_map, ps.vertices[poly.at(1)], m);
+      const Vector3d p2 = uniqueMultiply(vert_mult_map, ps.vertices[poly.at(2)], m);
+      const Vector3d p3 = uniqueMultiply(vert_mult_map, ps.vertices[poly.at(3)], m);
 
       create_triangle(vertex_array, color, p0, p1, p3,
                       0, poly.size(), false, mirrored);
@@ -412,9 +408,9 @@ void VBORenderer::create_polygons(const PolySet& ps, VertexArray& vertex_array,
       center[1] /= poly.size();
 
       for (size_t i = 1; i <= poly.size(); i++) {
-        Vector3d p0 = uniqueMultiply(vert_mult_map, center, m);
-        Vector3d p1 = uniqueMultiply(vert_mult_map, ps.vertices[poly.at(i % poly.size())], m);
-        Vector3d p2 = uniqueMultiply(vert_mult_map, ps.vertices[poly.at(i - 1)], m);
+        const Vector3d p0 = uniqueMultiply(vert_mult_map, center, m);
+        const Vector3d p1 = uniqueMultiply(vert_mult_map, ps.vertices[poly.at(i % poly.size())], m);
+        const Vector3d p2 = uniqueMultiply(vert_mult_map, ps.vertices[poly.at(i - 1)], m);
 
         create_triangle(vertex_array, color, p0, p2, p1,
                         i - 1, poly.size(), false, mirrored);
@@ -434,18 +430,18 @@ void VBORenderer::create_polygons(const PolySet& ps, VertexArray& vertex_array,
 
 void VBORenderer::add_shader_data(VertexArray& vertex_array)
 {
-  std::shared_ptr<VertexData> vertex_data = vertex_array.data();
-  shader_attributes_index = vertex_data->attributes().size();
+  const std::shared_ptr<VertexData> vertex_data = vertex_array.data();
+  shader_attributes_index_ = vertex_data->attributes().size();
   vertex_data->addAttributeData(std::make_shared<AttributeData<GLubyte, 4, GL_UNSIGNED_BYTE>>()); // barycentric
 }
 
 void VBORenderer::add_shader_pointers(VertexArray& vertex_array)
 {
-  std::shared_ptr<VertexData> vertex_data = vertex_array.data();
+  const std::shared_ptr<VertexData> vertex_data = vertex_array.data();
 
   if (!vertex_data) return;
 
-  size_t start_offset = vertex_array.verticesOffset();
+  const auto start_offset = vertex_array.verticesOffset();
 
   std::shared_ptr<VertexState> ss = std::make_shared<VBOShaderVertexState>(vertex_array.writeIndex(), 0,
                                                                            vertex_array.verticesVBO(),
@@ -457,10 +453,10 @@ void VBORenderer::add_shader_pointers(VertexArray& vertex_array)
 
   if (getShader().data.csg_rendering.barycentric) {
     index = getShader().data.csg_rendering.barycentric;
-    count = vertex_data->attributes()[shader_attributes_index + BARYCENTRIC_ATTRIB]->count();
-    type = vertex_data->attributes()[shader_attributes_index + BARYCENTRIC_ATTRIB]->glType();
+    count = vertex_data->attributes()[shader_attributes_index_ + BARYCENTRIC_ATTRIB]->count();
+    type = vertex_data->attributes()[shader_attributes_index_ + BARYCENTRIC_ATTRIB]->glType();
     stride = vertex_data->stride();
-    offset = start_offset + vertex_data->interleavedOffset(shader_attributes_index + BARYCENTRIC_ATTRIB);
+    offset = start_offset + vertex_data->interleavedOffset(shader_attributes_index_ + BARYCENTRIC_ATTRIB);
     ss->glBegin().emplace_back([index, count, type, stride, offset, ss_ptr = std::weak_ptr<VertexState>(ss)]() {
       auto ss = ss_ptr.lock();
       if (ss) {
@@ -478,7 +474,7 @@ void VBORenderer::add_shader_pointers(VertexArray& vertex_array)
 void VBORenderer::add_color(VertexArray& vertex_array, const Color4f& color)
 {
   add_shader_pointers(vertex_array);
-  shaderinfo_t shader_info = getShader();
+  const ShaderInfo shader_info = getShader();
   std::shared_ptr<VertexState> color_state = std::make_shared<VBOShaderVertexState>(0, 0, vertex_array.verticesVBO(), vertex_array.elementsVBO());
   color_state->glBegin().emplace_back([shader_info, color]() {
     GL_CHECKD(glUniform4f(shader_info.data.csg_rendering.color_area, color[0], color[1], color[2], color[3]));

@@ -46,8 +46,8 @@ void MouseSelector::init_shader() {
    * frag_idcolor - (uniform) 24 bit of the selected object's id encoded into R/G/B components as float values
    */
 
-  std::string vs_str = Renderer::loadShaderSource("MouseSelector.vert");
-  std::string fs_str = Renderer::loadShaderSource("MouseSelector.frag");
+  std::string vs_str = RendererUtils::loadShaderSource("MouseSelector.vert");
+  std::string fs_str = RendererUtils::loadShaderSource("MouseSelector.frag");
   const char *vs_source = vs_str.c_str();
   const char *fs_source = fs_str.c_str();
 
@@ -104,7 +104,7 @@ void MouseSelector::init_shader() {
   }
 
   this->shaderinfo.progid = selecthader_prog;
-  this->shaderinfo.type = Renderer::SELECT_RENDERING;
+  this->shaderinfo.type = Renderer::ShaderType::SELECT_RENDERING;
   GLint identifier = glGetUniformLocation(selecthader_prog, "frag_idcolor");
   if (identifier < 0) {
     fprintf(stderr, __FILE__ ": OpenGL symbol retrieval went wrong, id is %i\n\n", identifier);

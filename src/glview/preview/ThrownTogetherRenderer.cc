@@ -86,7 +86,7 @@ ThrownTogetherRenderer::~ThrownTogetherRenderer()
   }
 }
 
-void ThrownTogetherRenderer::prepare(bool /*showfaces*/, bool /*showedges*/, const Renderer::shaderinfo_t * /*shaderinfo*/)
+void ThrownTogetherRenderer::prepare(bool /*showfaces*/, bool /*showedges*/, const Renderer::ShaderInfo * /*shaderinfo*/)
 {
   PRINTD("Thrown prepare");
   if (vertex_states_.empty()) {
@@ -125,7 +125,7 @@ void ThrownTogetherRenderer::prepare(bool /*showfaces*/, bool /*showedges*/, con
 }
 
 
-void ThrownTogetherRenderer::draw(bool /*showfaces*/, bool showedges, const Renderer::shaderinfo_t *shaderinfo) const
+void ThrownTogetherRenderer::draw(bool /*showfaces*/, bool showedges, const Renderer::ShaderInfo *shaderinfo) const
 {
   PRINTD("draw()");
   if (!shaderinfo && showedges) {
@@ -133,14 +133,14 @@ void ThrownTogetherRenderer::draw(bool /*showfaces*/, bool showedges, const Rend
   }
   if (shaderinfo && shaderinfo->progid) {
     glUseProgram(shaderinfo->progid);
-    if (shaderinfo->type == EDGE_RENDERING && showedges) {
+    if (shaderinfo->type == ShaderType::EDGE_RENDERING && showedges) {
       shader_attribs_enable();
     }
   }
 
   renderCSGProducts(std::make_shared<CSGProducts>(), showedges, shaderinfo);
   if (shaderinfo && shaderinfo->progid) {
-    if (shaderinfo->type == EDGE_RENDERING && showedges) {
+    if (shaderinfo->type == ShaderType::EDGE_RENDERING && showedges) {
       shader_attribs_disable();
     }
     glUseProgram(0);
@@ -148,18 +148,18 @@ void ThrownTogetherRenderer::draw(bool /*showfaces*/, bool showedges, const Rend
 }
 
 void ThrownTogetherRenderer::renderCSGProducts(const std::shared_ptr<CSGProducts>& products, bool showedges,
-                                               const Renderer::shaderinfo_t *shaderinfo,
+                                               const Renderer::ShaderInfo *shaderinfo,
                                                bool highlight_mode, bool background_mode,
                                                bool fberror) const
 {
   PRINTD("Thrown renderCSGProducts");
   glDepthFunc(GL_LEQUAL);
-  this->geomVisitMark.clear();
+  this->geom_visit_mark_.clear();
 
   for (const auto& vs : vertex_states_) {
     if (vs) {
       if (const auto csg_vs = std::dynamic_pointer_cast<TTRVertexState>(vs)) {
-        if (shaderinfo && shaderinfo->type == Renderer::SELECT_RENDERING) {
+        if (shaderinfo && shaderinfo->type == Renderer::ShaderType::SELECT_RENDERING) {
           GL_TRACE("glUniform3f(%d, %f, %f, %f)",
                    shaderinfo->data.select_rendering.identifier %
                    (((csg_vs->csgObjectIndex() >> 0) & 0xff) / 255.0f) %
@@ -184,12 +184,12 @@ void ThrownTogetherRenderer::createChainObject(VertexArray& vertex_array,
                                                bool background_mode, OpenSCADOperator type)
 {
   if (!csgobj.leaf->polyset ||
-      this->geomVisitMark[std::make_pair(csgobj.leaf->polyset.get(), &csgobj.leaf->matrix)]++ > 0) {
+      this->geom_visit_mark_[std::make_pair(csgobj.leaf->polyset.get(), &csgobj.leaf->matrix)]++ > 0) {
     return;
   }
 
   const auto& leaf_color = csgobj.leaf->color;
-  const auto csgmode = get_csgmode(highlight_mode, background_mode, type);
+  const auto csgmode = RendererUtils::getCsgMode(highlight_mode, background_mode, type);
 
   vertex_array.writeSurface();
 
@@ -259,7 +259,7 @@ void ThrownTogetherRenderer::createCSGProducts(const CSGProducts& products, Vert
                                                bool highlight_mode, bool background_mode)
 {
   PRINTD("Thrown renderCSGProducts");
-  this->geomVisitMark.clear();
+  this->geom_visit_mark_.clear();
 
   for (const auto& product : products.products) {
     for (const auto& csgobj : product.intersections) {
