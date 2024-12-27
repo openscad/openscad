@@ -14,6 +14,12 @@
 #include <unordered_map>
 #include <boost/functional/hash.hpp>
 
+namespace VBOUtils {
+
+void shader_attribs_enable(const RendererUtils::ShaderInfo &shaderinfo);
+void shader_attribs_disable(const RendererUtils::ShaderInfo &shaderinfo);
+
+}  // namespace VBOUtils
 
 class VBOShaderVertexState : public VertexState
 {
@@ -58,8 +64,8 @@ public:
 
 protected:
   void add_shader_data(VertexArray& vertex_array);
-  void shader_attribs_enable() const;
-  void shader_attribs_disable() const;
+  void shader_attribs_enable(const RendererUtils::ShaderInfo&) const;
+  void shader_attribs_disable(const RendererUtils::ShaderInfo&) const;
 
   mutable std::unordered_map<std::pair<const PolySet *, const Transform3d *>, int,
                              boost::hash<std::pair<const PolySet *, const Transform3d *>>> geom_visit_mark_;
@@ -69,7 +75,6 @@ private:
                              size_t active_point_index = 0, size_t primitive_index = 0,
                              size_t shape_size = 0, bool outlines = false) const;
 
-  size_t shader_attributes_index_{0};
   enum ShaderAttribIndex {
     BARYCENTRIC_ATTRIB
   };

@@ -111,7 +111,7 @@ void CGALRenderer::createPolyhedrons() {
   PRINTD("createPolyhedrons");
   this->polyhedrons.clear();
   for (const auto &N : this->nefPolyhedrons) {
-    auto p = new CGAL_OGL_VBOPolyhedron(*this->colorscheme_);
+    auto p = new CGAL_OGL_VBOPolyhedron(*colorscheme_);
     CGAL::OGL::Nef3_Converter<CGAL_Nef_polyhedron3>::convert_to_OGLPolyhedron(
         *N->p3, p);
     // CGAL_NEF3_MARKED_FACET_COLOR <- CGAL_FACE_BACK_COLOR
@@ -233,7 +233,7 @@ void CGALRenderer::createPolySetStates() {
 }
 
 void CGALRenderer::prepare(bool /*showfaces*/, bool /*showedges*/,
-                           const ShaderInfo * /*shaderinfo*/) {
+                           const RendererUtils::ShaderInfo * /*shaderinfo*/) {
   PRINTD("prepare()");
   if (!vertex_states.size())
     createPolySetStates();
@@ -246,7 +246,7 @@ void CGALRenderer::prepare(bool /*showfaces*/, bool /*showedges*/,
 }
 
 void CGALRenderer::draw(bool showfaces, bool showedges,
-                        const ShaderInfo * /*shaderinfo*/) const {
+                        const RendererUtils::ShaderInfo * /*shaderinfo*/) const {
   PRINTD("draw()");
   // grab current state to restore after
   GLfloat current_point_size, current_line_width;

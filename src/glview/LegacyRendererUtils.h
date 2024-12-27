@@ -6,4 +6,4 @@
 #include "geometry/PolySet.h"
 #include "glview/Renderer.h"
 
-void render_surface(const PolySet& geom, const Transform3d& m, const Renderer::shaderinfo_t *shaderinfo = nullptr);
+void render_surface(const PolySet& geom, const Transform3d& m, const RendererUtils::ShaderInfo *shaderinfo = nullptr);

@@ -5,6 +5,7 @@
 #include "core/enums.h"
 #include "geometry/PolySet.h"
 #include "core/Selection.h"
+#include "glview/system-gl.h"
 
 #ifdef _MSC_VER // NULL
 #include <map>
@@ -28,45 +29,46 @@ enum CSGMode {
   CSGMODE_HIGHLIGHT_DIFFERENCE  = CSGMODE_HIGHLIGHT | CSGMODE_DIFFERENCE_FLAG
 };
 
+enum class ShaderType {
+  NONE,
+  EDGE_RENDERING,
+  SELECT_RENDERING,
+};
+
+// Shader attribute identifiers
+struct ShaderInfo {
+  int progid = 0;
+  ShaderType type;
+  union {
+    struct {
+      // Uniform location of polygon vs. wireframe color
+      int color_area;
+      int color_edge;
+      // Attrib location of the barycentric coordinates of the current vertex
+      int barycentric;
+    } color_rendering;
+    struct {
+      // Uniform location of ID color
+      int identifier;
+    } select_rendering;
+  } data;
+};
+
 CSGMode getCsgMode(const bool highlight_mode, const bool background_mode, const OpenSCADOperator type = OpenSCADOperator::UNION);
 std::string loadShaderSource(const std::string& name);
+GLuint compileShaderProgram(const std::string& vs_str, const std::string& fs_str);
 
 } // namespace RendererUtils
 
 class Renderer
 {
 public:
-  enum class ShaderType {
-    NONE,
-    CSG_RENDERING,
-    EDGE_RENDERING,
-    SELECT_RENDERING,
-  };
-
-  /// Shader attribute identifiers
-  struct ShaderInfo {
-    int progid = 0;
-    ShaderType type;
-    union {
-      struct {
-        int color_area;
-        int color_edge;
-        // barycentric coordinates of the current vertex
-        int barycentric;
-      } csg_rendering;
-      struct {
-        int identifier;
-      } select_rendering;
-    } data;
-  };
-
-
   Renderer();
   virtual ~Renderer() = default;
-  [[nodiscard]] const Renderer::ShaderInfo& getShader() const { return renderer_shader_; }
+  [[nodiscard]] const RendererUtils::ShaderInfo& getShader() const { return renderer_shader_; }
 
-  virtual void prepare(bool showfaces, bool showedges, const ShaderInfo *shaderinfo = nullptr) = 0;
-  virtual void draw(bool showfaces, bool showedges, const ShaderInfo *shaderinfo = nullptr) const = 0;
+  virtual void prepare(bool showfaces, bool showedges, const RendererUtils::ShaderInfo *shaderinfo = nullptr) = 0;
+  virtual void draw(bool showfaces, bool showedges, const RendererUtils::ShaderInfo *shaderinfo = nullptr) const = 0;
   [[nodiscard]] virtual BoundingBox getBoundingBox() const = 0;
 
 
@@ -86,9 +88,9 @@ public:
   };
 
   bool getColor(ColorMode colormode, Color4f& col) const;
-  virtual void setColor(const float color[4], const ShaderInfo *shaderinfo = nullptr) const;
-  virtual void setColor(ColorMode colormode, const ShaderInfo *shaderinfo = nullptr) const;
-  virtual Color4f setColor(ColorMode colormode, const float color[4], const ShaderInfo *shaderinfo = nullptr) const;
+  virtual void setColor(const float color[4], const RendererUtils::ShaderInfo *shaderinfo = nullptr) const;
+  virtual void setColor(ColorMode colormode, const RendererUtils::ShaderInfo *shaderinfo = nullptr) const;
+  virtual Color4f setColor(ColorMode colormode, const float color[4], const RendererUtils::ShaderInfo *shaderinfo = nullptr) const;
   virtual void setColorScheme(const ColorScheme& cs);
 
   virtual std::vector<SelectedObject> findModelObject(Vector3d near_pt, Vector3d far_pt, int mouse_x, int mouse_y, double tolerance);
@@ -99,5 +101,5 @@ protected:
   void setupShader();
 
 private:
-  ShaderInfo renderer_shader_;
+  RendererUtils::ShaderInfo renderer_shader_;  
 };

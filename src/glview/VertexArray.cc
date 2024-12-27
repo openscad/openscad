@@ -315,3 +315,11 @@ void VertexArray::allocateBuffers(size_t num_vertices) {
     GL_CHECKD(glBufferData(GL_ELEMENT_ARRAY_BUFFER, elements_size, nullptr, GL_STATIC_DRAW));
   }
 }
+
+void VertexArray::add_shader_data()
+{
+  const std::shared_ptr<VertexData> vertex_data = data();
+  shader_attributes_index_ = vertex_data->attributes().size();
+  vertex_data->addAttributeData(std::make_shared<AttributeData<GLubyte, 4, GL_UNSIGNED_BYTE>>()); // barycentric
+}
+

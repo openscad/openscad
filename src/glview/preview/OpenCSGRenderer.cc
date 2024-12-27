@@ -95,7 +95,7 @@ OpenCSGRenderer::OpenCSGRenderer(
       background_products_(std::move(background_products)) {}
 
 void OpenCSGRenderer::prepare(bool /*showfaces*/, bool /*showedges*/,
-                              const ShaderInfo *shaderinfo) {
+                              const RendererUtils::ShaderInfo *shaderinfo) {
   if (vbo_vertex_products_.empty()) {
     if (root_products_) {
       createCSGVBOProducts(*root_products_, shaderinfo, false, false);
@@ -110,7 +110,7 @@ void OpenCSGRenderer::prepare(bool /*showfaces*/, bool /*showedges*/,
 }
 
 void OpenCSGRenderer::draw(bool /*showfaces*/, bool showedges,
-                           const ShaderInfo *shaderinfo) const {
+                           const RendererUtils::ShaderInfo *shaderinfo) const {
 #ifdef ENABLE_OPENCSG
   if (!shaderinfo && showedges) shaderinfo = &getShader();
   for (const auto& product : vbo_vertex_products_) {
@@ -124,15 +124,15 @@ void OpenCSGRenderer::draw(bool /*showfaces*/, bool showedges,
       GL_TRACE("glUseProgram(%d)", shaderinfo->progid);
       GL_CHECKD(glUseProgram(shaderinfo->progid));
 
-      if (shaderinfo->type == ShaderType::EDGE_RENDERING && showedges) {
-	      shader_attribs_enable();
+      if (shaderinfo->type == RendererUtils::ShaderType::EDGE_RENDERING && showedges) {
+	      VBOUtils::shader_attribs_enable(*shaderinfo);
       }
     }
 
     for (const auto& vs : product->states()) {
       if (vs) {
       	if (const auto csg_vs = std::dynamic_pointer_cast<OpenCSGVertexState>(vs)) {
-	        if (shaderinfo && shaderinfo->type == ShaderType::SELECT_RENDERING) {
+	        if (shaderinfo && shaderinfo->type == RendererUtils::ShaderType::SELECT_RENDERING) {
 	          GL_TRACE("glUniform3f(%d, %f, %f, %f)", shaderinfo->data.select_rendering.identifier %
               (((csg_vs->csgObjectIndex() >> 0) & 0xff) / 255.0f) %
               (((csg_vs->csgObjectIndex() >> 8) & 0xff) / 255.0f) %
@@ -154,8 +154,8 @@ void OpenCSGRenderer::draw(bool /*showfaces*/, bool showedges,
       GL_TRACE0("glUseProgram(0)");
       GL_CHECKD(glUseProgram(0));
 
-      if (shaderinfo->type == ShaderType::EDGE_RENDERING && showedges) {
-	      shader_attribs_disable();
+      if (shaderinfo->type == RendererUtils::ShaderType::EDGE_RENDERING && showedges) {
+	      VBOUtils::shader_attribs_disable(*shaderinfo);
       }
     }
     GL_TRACE0("glDepthFunc(GL_LEQUAL)");
@@ -172,7 +172,7 @@ void OpenCSGRenderer::draw(bool /*showfaces*/, bool showedges,
 // Note: This function can be called multiple times for different products.
 // Each call will add to vbo_vertex_products_.
 void OpenCSGRenderer::createCSGVBOProducts(
-    const CSGProducts &products, const Renderer::ShaderInfo * /*shaderinfo*/,
+    const CSGProducts &products, const RendererUtils::ShaderInfo * /*shaderinfo*/,
     bool highlight_mode, bool background_mode) {
   // We need to manage buffers here since we don't have another suitable
   // container for managing the life cycle of VBOs. We're creating one VBO(+EBO)
@@ -209,7 +209,7 @@ void OpenCSGRenderer::createCSGVBOProducts(
     vertex_array.addSurfaceData();
     vertex_array.writeSurface();
     if (getShader().progid != 0) {
-      add_shader_data(vertex_array);
+      vertex_array.add_shader_data();
     } else {
       LOG("Warning: Shader not available");
     }

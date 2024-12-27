@@ -94,7 +94,7 @@ void LegacyCGALRenderer::createPolyhedrons()
   PRINTD("createPolyhedrons");
   this->polyhedrons.clear();
   for (const auto& N : this->nefPolyhedrons) {
-    auto p = new CGAL_OGL_Polyhedron(*this->colorscheme);
+    auto p = new CGAL_OGL_Polyhedron(*colorscheme_);
     CGAL::OGL::Nef3_Converter<CGAL_Nef_polyhedron3>::convert_to_OGLPolyhedron(*N->p3, p);
     // CGAL_NEF3_MARKED_FACET_COLOR <- CGAL_FACE_BACK_COLOR
     // CGAL_NEF3_UNMARKED_FACET_COLOR <- CGAL_FACE_FRONT_COLOR
@@ -110,22 +110,22 @@ void LegacyCGALRenderer::setColorScheme(const ColorScheme& cs)
 {
   PRINTD("setColorScheme");
   Renderer::setColorScheme(cs);
-  colormap[ColorMode::CGAL_FACE_2D_COLOR] = ColorMap::getColor(cs, RenderColor::CGAL_FACE_2D_COLOR);
-  colormap[ColorMode::CGAL_EDGE_2D_COLOR] = ColorMap::getColor(cs, RenderColor::CGAL_EDGE_2D_COLOR);
+  colormap_[ColorMode::CGAL_FACE_2D_COLOR] = ColorMap::getColor(cs, RenderColor::CGAL_FACE_2D_COLOR);
+  colormap_[ColorMode::CGAL_EDGE_2D_COLOR] = ColorMap::getColor(cs, RenderColor::CGAL_EDGE_2D_COLOR);
 #ifdef ENABLE_CGAL
   this->polyhedrons.clear(); // Mark as dirty
 #endif
   PRINTD("setColorScheme done");
 }
 
-void LegacyCGALRenderer::prepare(bool /*showfaces*/, bool /*showedges*/, const shaderinfo_t * /*shaderinfo*/)
+void LegacyCGALRenderer::prepare(bool /*showfaces*/, bool /*showedges*/, const RendererUtils::ShaderInfo * /*shaderinfo*/)
 {
 #ifdef ENABLE_CGAL
   if (!this->nefPolyhedrons.empty() && this->polyhedrons.empty()) createPolyhedrons();
 #endif
 }
 
-void LegacyCGALRenderer::draw(bool showfaces, bool showedges, const shaderinfo_t * /*shaderinfo*/) const
+void LegacyCGALRenderer::draw(bool showfaces, bool showedges, const RendererUtils::ShaderInfo * /*shaderinfo*/) const
 {
   PRINTD("draw()");
 

@@ -38,7 +38,7 @@ void MouseSelector::reset(GLView *view) {
 }
 
 /**
- * Initialize the used shaders and setup the shaderinfo_t struct
+ * Initialize the used shaders and setup the ShaderInfo struct
  */
 void MouseSelector::init_shader() {
   /*
@@ -46,66 +46,14 @@ void MouseSelector::init_shader() {
    * frag_idcolor - (uniform) 24 bit of the selected object's id encoded into R/G/B components as float values
    */
 
-  std::string vs_str = RendererUtils::loadShaderSource("MouseSelector.vert");
-  std::string fs_str = RendererUtils::loadShaderSource("MouseSelector.frag");
-  const char *vs_source = vs_str.c_str();
-  const char *fs_source = fs_str.c_str();
+  const std::string vs_str = RendererUtils::loadShaderSource("MouseSelector.vert");
+  const std::string fs_str = RendererUtils::loadShaderSource("MouseSelector.frag");
+  const GLuint selectshader_prog = RendererUtils::compileShaderProgram(vs_str, fs_str);
 
-  int shaderstatus;
 
-  // Compile the shaders
-  GL_CHECKD(auto vs = glCreateShader(GL_VERTEX_SHADER));
-  glShaderSource(vs, 1, (const GLchar **)&vs_source, nullptr);
-  glCompileShader(vs);
-  glGetShaderiv(vs, GL_COMPILE_STATUS, &shaderstatus);
-  if (shaderstatus != GL_TRUE) {
-    int loglen;
-    char logbuffer[1000];
-    glGetShaderInfoLog(vs, sizeof(logbuffer), &loglen, logbuffer);
-    fprintf(stderr, __FILE__ ": OpenGL vertex shader Error:\n%.*s\n\n", loglen, logbuffer);
-  }
-
-  GL_CHECKD(auto fs = glCreateShader(GL_FRAGMENT_SHADER));
-  glShaderSource(fs, 1, (const GLchar **)&fs_source, nullptr);
-  glCompileShader(fs);
-  glGetShaderiv(fs, GL_COMPILE_STATUS, &shaderstatus);
-  if (shaderstatus != GL_TRUE) {
-    int loglen;
-    char logbuffer[1000];
-    glGetShaderInfoLog(fs, sizeof(logbuffer), &loglen, logbuffer);
-    fprintf(stderr, __FILE__ ": OpenGL fragment shader Error:\n%.*s\n\n", loglen, logbuffer);
-  }
-
-  // Link
-  auto selecthader_prog = glCreateProgram();
-  glAttachShader(selecthader_prog, vs);
-  glAttachShader(selecthader_prog, fs);
-  GL_CHECKD(glLinkProgram(selecthader_prog));
-
-  GLint status;
-  glGetProgramiv(selecthader_prog, GL_LINK_STATUS, &status);
-  if (status == GL_FALSE) {
-    int loglen;
-    char logbuffer[1000];
-    glGetProgramInfoLog(selecthader_prog, sizeof(logbuffer), &loglen, logbuffer);
-    fprintf(stderr, __FILE__ ": OpenGL Program Linker Error:\n%.*s\n\n", loglen, logbuffer);
-  } else {
-    int loglen;
-    char logbuffer[1000];
-    glGetProgramInfoLog(selecthader_prog, sizeof(logbuffer), &loglen, logbuffer);
-    if (loglen > 0) {
-      fprintf(stderr, __FILE__ ": OpenGL Program Link OK:\n%.*s\n\n", loglen, logbuffer);
-    }
-    glValidateProgram(selecthader_prog);
-    glGetProgramInfoLog(selecthader_prog, sizeof(logbuffer), &loglen, logbuffer);
-    if (loglen > 0) {
-      fprintf(stderr, __FILE__ ": OpenGL Program Validation results:\n%.*s\n\n", loglen, logbuffer);
-    }
-  }
-
-  this->shaderinfo.progid = selecthader_prog;
-  this->shaderinfo.type = Renderer::ShaderType::SELECT_RENDERING;
-  GLint identifier = glGetUniformLocation(selecthader_prog, "frag_idcolor");
+  this->shaderinfo.progid = selectshader_prog;
+  this->shaderinfo.type = RendererUtils::ShaderType::SELECT_RENDERING;
+  const GLint identifier = glGetUniformLocation(selectshader_prog, "frag_idcolor");
   if (identifier < 0) {
     fprintf(stderr, __FILE__ ": OpenGL symbol retrieval went wrong, id is %i\n\n", identifier);
     this->shaderinfo.data.select_rendering.identifier = 0;
@@ -179,7 +127,7 @@ int MouseSelector::select(const Renderer *renderer, int x, int y) {
   GL_CHECKD(glReadPixels(x, y, 1, 1, GL_RGB, GL_UNSIGNED_BYTE, color));
   glDisable(GL_DEPTH_TEST);
 
-  int index = (uint32_t)color[0] | ((uint32_t)color[1] << 8) | ((uint32_t)color[2] << 16);
+  const int index = (uint32_t)color[0] | ((uint32_t)color[1] << 8) | ((uint32_t)color[2] << 16);
 
   // Switch the active framebuffer back to the default
   this->framebuffer->release();

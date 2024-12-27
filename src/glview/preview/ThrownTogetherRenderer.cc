@@ -86,7 +86,7 @@ ThrownTogetherRenderer::~ThrownTogetherRenderer()
   }
 }
 
-void ThrownTogetherRenderer::prepare(bool /*showfaces*/, bool /*showedges*/, const Renderer::ShaderInfo * /*shaderinfo*/)
+void ThrownTogetherRenderer::prepare(bool /*showfaces*/, bool /*showedges*/, const RendererUtils::ShaderInfo * /*shaderinfo*/)
 {
   PRINTD("Thrown prepare");
   if (vertex_states_.empty()) {
@@ -97,7 +97,7 @@ void ThrownTogetherRenderer::prepare(bool /*showfaces*/, bool /*showedges*/, con
     VertexArray vertex_array(std::make_unique<TTRVertexStateFactory>(), vertex_states_, vertices_vbo_, elements_vbo_);
     vertex_array.addSurfaceData();
     if (getShader().progid != 0) {
-      add_shader_data(vertex_array);
+      vertex_array.add_shader_data();
     } else {
       LOG("Warning: Shader not available");
     }
@@ -125,7 +125,7 @@ void ThrownTogetherRenderer::prepare(bool /*showfaces*/, bool /*showedges*/, con
 }
 
 
-void ThrownTogetherRenderer::draw(bool /*showfaces*/, bool showedges, const Renderer::ShaderInfo *shaderinfo) const
+void ThrownTogetherRenderer::draw(bool /*showfaces*/, bool showedges, const RendererUtils::ShaderInfo *shaderinfo) const
 {
   PRINTD("draw()");
   if (!shaderinfo && showedges) {
@@ -133,22 +133,22 @@ void ThrownTogetherRenderer::draw(bool /*showfaces*/, bool showedges, const Rend
   }
   if (shaderinfo && shaderinfo->progid) {
     glUseProgram(shaderinfo->progid);
-    if (shaderinfo->type == ShaderType::EDGE_RENDERING && showedges) {
-      shader_attribs_enable();
+    if (shaderinfo->type == RendererUtils::ShaderType::EDGE_RENDERING && showedges) {
+      VBOUtils::shader_attribs_enable(*shaderinfo);
     }
   }
 
   renderCSGProducts(std::make_shared<CSGProducts>(), showedges, shaderinfo);
   if (shaderinfo && shaderinfo->progid) {
-    if (shaderinfo->type == ShaderType::EDGE_RENDERING && showedges) {
-      shader_attribs_disable();
+    if (shaderinfo->type == RendererUtils::ShaderType::EDGE_RENDERING && showedges) {
+      VBOUtils::shader_attribs_disable(*shaderinfo);
     }
     glUseProgram(0);
   }
 }
 
 void ThrownTogetherRenderer::renderCSGProducts(const std::shared_ptr<CSGProducts>& products, bool showedges,
-                                               const Renderer::ShaderInfo *shaderinfo,
+                                               const RendererUtils::ShaderInfo *shaderinfo,
                                                bool highlight_mode, bool background_mode,
                                                bool fberror) const
 {
@@ -159,7 +159,7 @@ void ThrownTogetherRenderer::renderCSGProducts(const std::shared_ptr<CSGProducts
   for (const auto& vs : vertex_states_) {
     if (vs) {
       if (const auto csg_vs = std::dynamic_pointer_cast<TTRVertexState>(vs)) {
-        if (shaderinfo && shaderinfo->type == Renderer::ShaderType::SELECT_RENDERING) {
+        if (shaderinfo && shaderinfo->type == RendererUtils::ShaderType::SELECT_RENDERING) {
           GL_TRACE("glUniform3f(%d, %f, %f, %f)",
                    shaderinfo->data.select_rendering.identifier %
                    (((csg_vs->csgObjectIndex() >> 0) & 0xff) / 255.0f) %

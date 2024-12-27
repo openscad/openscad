@@ -47,7 +47,7 @@ public:
     OpenCSG::Primitive(operation, convexity), renderer(renderer) { }
   std::shared_ptr<const PolySet> polyset;
   Transform3d m;
-  Renderer::csgmode_e csgmode{Renderer::CSGMODE_NONE};
+  RendererUtils::CSGMode csgmode{RendererUtils::CSGMODE_NONE};
 
   // This is used by OpenCSG to render depth values
   void render() override {
@@ -73,7 +73,7 @@ std::unique_ptr<OpenCSGPrim> createCSGPrimitive(const CSGChainObject& csgobj, Op
     // Scale 2D negative objects 10% in the Z direction to avoid z fighting
     prim->m *= Eigen::Scaling(1.0, 1.0, 1.1);
   }
-  prim->csgmode = Renderer::get_csgmode(highlight_mode, background_mode, type);
+  prim->csgmode = RendererUtils::getCsgMode(highlight_mode, background_mode, type);
   return prim;
 }
 
@@ -88,7 +88,7 @@ LegacyOpenCSGRenderer::LegacyOpenCSGRenderer(std::shared_ptr<CSGProducts> root_p
 {
 }
 
-void LegacyOpenCSGRenderer::draw(bool /*showfaces*/, bool showedges, const ShaderInfo *shaderinfo) const
+void LegacyOpenCSGRenderer::draw(bool /*showfaces*/, bool showedges, const RendererUtils::ShaderInfo *shaderinfo) const
 {
   if (!shaderinfo && showedges) shaderinfo = &getShader();
 
@@ -104,7 +104,7 @@ void LegacyOpenCSGRenderer::draw(bool /*showfaces*/, bool showedges, const Shade
 }
 
 void LegacyOpenCSGRenderer::renderCSGProducts(const std::shared_ptr<CSGProducts>& products, bool showedges,
-                                        const Renderer::ShaderInfo *shaderinfo,
+                                        const RendererUtils::ShaderInfo *shaderinfo,
                                         bool highlight_mode, bool background_mode) const
 {
 #ifdef ENABLE_OPENCSG
@@ -130,7 +130,7 @@ void LegacyOpenCSGRenderer::renderCSGProducts(const std::shared_ptr<CSGProducts>
     }
 
     if (shaderinfo && shaderinfo->progid) {
-      if (shaderinfo->type != ShaderType::EDGE_RENDERING || (shaderinfo->type ==ShaderType::EDGE_RENDERING && showedges)) {
+      if (shaderinfo->type != RendererUtils::ShaderType::EDGE_RENDERING || (shaderinfo->type == RendererUtils::ShaderType::EDGE_RENDERING && showedges)) {
         GL_CHECKD(glUseProgram(shaderinfo->progid));
       }
     }
@@ -138,7 +138,7 @@ void LegacyOpenCSGRenderer::renderCSGProducts(const std::shared_ptr<CSGProducts>
     for (const auto& csgobj : product.intersections) {
       if (!csgobj.leaf->polyset) continue;
 
-      if (shaderinfo && shaderinfo->type == Renderer::ShaderType::SELECT_RENDERING) {
+      if (shaderinfo && shaderinfo->type == RendererUtils::ShaderType::SELECT_RENDERING) {
         int identifier = csgobj.leaf->index;
         GL_CHECKD(glUniform3f(shaderinfo->data.select_rendering.identifier,
                               ((identifier >> 0) & 0xff) / 255.0f, ((identifier >> 8) & 0xff) / 255.0f,
@@ -146,7 +146,7 @@ void LegacyOpenCSGRenderer::renderCSGProducts(const std::shared_ptr<CSGProducts>
       }
 
       const Color4f& c = csgobj.leaf->color;
-      csgmode_e csgmode = get_csgmode(highlight_mode, background_mode);
+      RendererUtils::CSGMode csgmode = RendererUtils::getCsgMode(highlight_mode, background_mode);
 
       ColorMode colormode = ColorMode::NONE;
       if (highlight_mode) {
@@ -180,7 +180,7 @@ void LegacyOpenCSGRenderer::renderCSGProducts(const std::shared_ptr<CSGProducts>
       if (!csgobj.leaf->polyset) continue;
 
       const Color4f& c = csgobj.leaf->color;
-      csgmode_e csgmode = get_csgmode(highlight_mode, background_mode, OpenSCADOperator::DIFFERENCE);
+      RendererUtils::CSGMode csgmode = RendererUtils::getCsgMode(highlight_mode, background_mode, OpenSCADOperator::DIFFERENCE);
 
       ColorMode colormode = ColorMode::NONE;
       if (highlight_mode) {

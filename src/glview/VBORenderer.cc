@@ -37,6 +37,22 @@
 #include <memory>
 #include <cstddef>
 
+namespace VBOUtils {
+
+void shader_attribs_enable(const RendererUtils::ShaderInfo &shaderinfo)
+{
+  GL_TRACE("glEnableVertexAttribArray(%d)", shaderinfo.data.color_rendering.barycentric);
+  GL_CHECKD(glEnableVertexAttribArray(shaderinfo.data.color_rendering.barycentric));
+}
+
+void shader_attribs_disable(const RendererUtils::ShaderInfo &shaderinfo)
+{
+  GL_TRACE("glDisableVertexAttribArray(%d)", shaderinfo.data.color_rendering.barycentric);
+  GL_CHECKD(glDisableVertexAttribArray(shaderinfo.data.color_rendering.barycentric));
+}
+
+}  // namespace VBOUtils
+
 VBORenderer::VBORenderer()
   : Renderer()
 {
@@ -136,11 +152,11 @@ void VBORenderer::add_shader_attributes(VertexArray& vertex_array,
                                         size_t active_point_index, size_t primitive_index,
                                         size_t shape_size, bool outlines) const
 {
-  if (!shader_attributes_index_) return;
+  if (!vertex_array.shader_attributes_index_) return;
 
   const std::shared_ptr<VertexData> vertex_data = vertex_array.data();
 
-  if (getShader().data.csg_rendering.barycentric) {
+  if (getShader().data.color_rendering.barycentric) {
     // Get edge states
     std::array<GLubyte, 3> barycentric_flags;
 
@@ -169,7 +185,7 @@ void VBORenderer::add_shader_attributes(VertexArray& vertex_array,
 
     barycentric_flags[active_point_index] = 1;
 
-    addAttributeValues(*(vertex_data->attributes()[shader_attributes_index_ + BARYCENTRIC_ATTRIB]), barycentric_flags[0], barycentric_flags[1], barycentric_flags[2], 0);
+    addAttributeValues(*(vertex_data->attributes()[vertex_array.shader_attributes_index_ + BARYCENTRIC_ATTRIB]), barycentric_flags[0], barycentric_flags[1], barycentric_flags[2], 0);
   }
 }
 
@@ -428,13 +444,6 @@ void VBORenderer::create_polygons(const PolySet& ps, VertexArray& vertex_array,
   vertex_array.addAttributePointers(last_size);
 }
 
-void VBORenderer::add_shader_data(VertexArray& vertex_array)
-{
-  const std::shared_ptr<VertexData> vertex_data = vertex_array.data();
-  shader_attributes_index_ = vertex_data->attributes().size();
-  vertex_data->addAttributeData(std::make_shared<AttributeData<GLubyte, 4, GL_UNSIGNED_BYTE>>()); // barycentric
-}
-
 void VBORenderer::add_shader_pointers(VertexArray& vertex_array)
 {
   const std::shared_ptr<VertexData> vertex_data = vertex_array.data();
@@ -451,12 +460,12 @@ void VBORenderer::add_shader_pointers(VertexArray& vertex_array)
   GLenum type = 0;
   size_t offset = 0;
 
-  if (getShader().data.csg_rendering.barycentric) {
-    index = getShader().data.csg_rendering.barycentric;
-    count = vertex_data->attributes()[shader_attributes_index_ + BARYCENTRIC_ATTRIB]->count();
-    type = vertex_data->attributes()[shader_attributes_index_ + BARYCENTRIC_ATTRIB]->glType();
+  if (getShader().data.color_rendering.barycentric) {
+    index = getShader().data.color_rendering.barycentric;
+    count = vertex_data->attributes()[vertex_array.shader_attributes_index_ + BARYCENTRIC_ATTRIB]->count();
+    type = vertex_data->attributes()[vertex_array.shader_attributes_index_ + BARYCENTRIC_ATTRIB]->glType();
     stride = vertex_data->stride();
-    offset = start_offset + vertex_data->interleavedOffset(shader_attributes_index_ + BARYCENTRIC_ATTRIB);
+    offset = start_offset + vertex_data->interleavedOffset(vertex_array.shader_attributes_index_ + BARYCENTRIC_ATTRIB);
     ss->glBegin().emplace_back([index, count, type, stride, offset, ss_ptr = std::weak_ptr<VertexState>(ss)]() {
       auto ss = ss_ptr.lock();
       if (ss) {
@@ -474,22 +483,11 @@ void VBORenderer::add_shader_pointers(VertexArray& vertex_array)
 void VBORenderer::add_color(VertexArray& vertex_array, const Color4f& color)
 {
   add_shader_pointers(vertex_array);
-  const ShaderInfo shader_info = getShader();
+  const RendererUtils::ShaderInfo shader_info = getShader();
   std::shared_ptr<VertexState> color_state = std::make_shared<VBOShaderVertexState>(0, 0, vertex_array.verticesVBO(), vertex_array.elementsVBO());
   color_state->glBegin().emplace_back([shader_info, color]() {
-    GL_CHECKD(glUniform4f(shader_info.data.csg_rendering.color_area, color[0], color[1], color[2], color[3]));
-    GL_CHECKD(glUniform4f(shader_info.data.csg_rendering.color_edge, (color[0] + 1) / 2, (color[1] + 1) / 2, (color[2] + 1) / 2, 1.0));
+    GL_CHECKD(glUniform4f(shader_info.data.color_rendering.color_area, color[0], color[1], color[2], color[3]));
+    GL_CHECKD(glUniform4f(shader_info.data.color_rendering.color_edge, (color[0] + 1) / 2, (color[1] + 1) / 2, (color[2] + 1) / 2, 1.0));
   });
   vertex_array.states().emplace_back(std::move(color_state));
-}
-
-void VBORenderer::shader_attribs_enable() const
-{
-  GL_TRACE("glEnableVertexAttribArray(%d)", getShader().data.csg_rendering.barycentric);
-  GL_CHECKD(glEnableVertexAttribArray(getShader().data.csg_rendering.barycentric));
-}
-void VBORenderer::shader_attribs_disable() const
-{
-  GL_TRACE("glDisableVertexAttribArray(%d)", getShader().data.csg_rendering.barycentric);
-  GL_CHECKD(glDisableVertexAttribArray(getShader().data.csg_rendering.barycentric));
 }

@@ -19,7 +19,7 @@ public:
 
   int select(const Renderer *renderer, int x, int y);
 
-  Renderer::ShaderInfo shaderinfo;
+  RendererUtils::ShaderInfo shaderinfo;
 
 private:
   void init_shader();

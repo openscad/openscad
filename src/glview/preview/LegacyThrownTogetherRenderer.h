@@ -17,16 +17,17 @@ public:
 			       std::shared_ptr<CSGProducts> highlight_products,
 			       std::shared_ptr<CSGProducts> background_products);
   ~LegacyThrownTogetherRenderer() override = default;
-  void draw(bool showfaces, bool showedges, const shaderinfo_t *shaderinfo = nullptr) const override;
+  void prepare(bool showfaces, bool showedges, const RendererUtils::ShaderInfo *shaderinfo = nullptr) override {}
+  void draw(bool showfaces, bool showedges, const RendererUtils::ShaderInfo *shaderinfo = nullptr) const override;
 
   BoundingBox getBoundingBox() const override;
 private:
   void renderCSGProducts(const std::shared_ptr<CSGProducts>& products, bool showedges = false,
-                         const Renderer::shaderinfo_t *shaderinfo = nullptr,
+                         const RendererUtils::ShaderInfo *shaderinfo = nullptr,
                          bool highlight_mode = false, bool background_mode = false,
                          bool fberror = false) const;
   void renderChainObject(const CSGChainObject& csgobj, bool showedges,
-                         const Renderer::shaderinfo_t *, bool highlight_mode,
+                         const RendererUtils::ShaderInfo *, bool highlight_mode,
                          bool background_mode, bool fberror, OpenSCADOperator type) const;
 
   Renderer::ColorMode getColorMode(const CSGNode::Flag& flags, bool highlight_mode,

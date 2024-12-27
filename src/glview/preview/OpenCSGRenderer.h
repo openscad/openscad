@@ -73,12 +73,12 @@ public:
       glDeleteBuffers(all_vbos_.size(), all_vbos_.data());
     }
   }
-  void prepare(bool showfaces, bool showedges, const ShaderInfo *shaderinfo = nullptr) override;
-  void draw(bool showfaces, bool showedges, const ShaderInfo *shaderinfo = nullptr) const override;
+  void prepare(bool showfaces, bool showedges, const RendererUtils::ShaderInfo *shaderinfo = nullptr) override;
+  void draw(bool showfaces, bool showedges, const RendererUtils::ShaderInfo *shaderinfo = nullptr) const override;
 
   BoundingBox getBoundingBox() const override;
 private:
-  void createCSGVBOProducts(const CSGProducts& products, const Renderer::ShaderInfo *shaderinfo, bool highlight_mode, bool background_mode);
+  void createCSGVBOProducts(const CSGProducts& products, const RendererUtils::ShaderInfo *shaderinfo, bool highlight_mode, bool background_mode);
 
   std::vector<std::unique_ptr<OpenCSGVBOProduct>> vbo_vertex_products_;
   std::vector<GLuint> all_vbos_;

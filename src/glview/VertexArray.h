@@ -330,7 +330,11 @@ public:
   // Return the internal unique vertex/element map
   inline ElementsMap& elementsMap() { return elements_map_; }
 
+  size_t shader_attributes_index_{0};
+  void add_shader_data();
+
 private:
+
   std::unique_ptr<VertexStateFactory> factory_;
   std::vector<std::shared_ptr<VertexState>>& states_;
   size_t write_index_{0};
@@ -353,4 +357,5 @@ private:
 
   VertexData elements_;
   ElementsMap elements_map_;
+
 };
