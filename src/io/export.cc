@@ -297,6 +297,12 @@ struct LexographicLess {
 
 } // namespace
 
+std::string get_current_iso8601_date_time_utc() {
+  auto now = std::chrono::system_clock::now();
+  auto time = std::chrono::system_clock::to_time_t(now);
+  return STR(std::put_time(gmtime(&time), "%FT%TZ"));
+}
+
 std::unique_ptr<PolySet> createSortedPolySet(const PolySet& ps)
 {
   auto out = std::make_unique<PolySet>(ps.getDimension(), ps.convexValue());

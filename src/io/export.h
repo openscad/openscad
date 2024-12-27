@@ -46,6 +46,8 @@ struct FileFormatInfo {
   std::string description;
 };
 
+constexpr inline auto EXPORT_CREATOR = "OpenSCAD (https://www.openscad.org/)";
+
 namespace fileformat {
 
 std::vector<FileFormat> all();
@@ -111,6 +113,7 @@ struct ExportPdfOptions {
 
 struct ExportInfo {
   FileFormat format;
+  std::string title;
   std::string sourceFilePath; // Full path to the OpenSCAD source file
   ExportPdfOptions *options;
   const Camera *camera;
@@ -172,6 +175,8 @@ struct ViewOptions {
 };
 
 class OffscreenView;
+
+std::string get_current_iso8601_date_time_utc();
 
 std::unique_ptr<OffscreenView> prepare_preview(Tree& tree, const ViewOptions& options, Camera& camera);
 bool export_png(const std::shared_ptr<const class Geometry>& root_geom, const ViewOptions& options, Camera& camera, std::ostream& output);

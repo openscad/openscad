@@ -2784,6 +2784,7 @@ void MainWindow::actionExport(FileFormat format, const char *type_name, const ch
 
   ExportInfo exportInfo = {
     .format = format,
+    .title = std::filesystem::path(activeEditor->filepath.toStdString()).filename().string(),
     .sourceFilePath = activeEditor->filepath.toStdString(),
     .camera = &qglview->cam,
     .defaultColor = { 0xf9, 0xd7, 0x2c, 255 }

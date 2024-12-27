@@ -292,6 +292,12 @@ void export_3mf(const std::shared_ptr<const Geometry>& geom, std::ostream& outpu
     .m_Blue = static_cast<Lib3MF_uint8>(255.0 *exportInfo.defaultColor.b()),
     .m_Alpha = 0xff
   });
+
+  const auto metadatagroup = model->GetMetaDataGroup();
+  metadatagroup->AddMetaData("", "Title", exportInfo.title, "xs:string", true);
+  metadatagroup->AddMetaData("", "Application", EXPORT_CREATOR, "xs:string", true);
+  metadatagroup->AddMetaData("", "CreationDate", get_current_iso8601_date_time_utc(), "xs:string", true);
+
   ExportContext ctx{wrapper, model, basematerialgroup, 1};
 
   if (!append_3mf(geom, ctx)) {

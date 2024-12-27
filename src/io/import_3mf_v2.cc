@@ -212,6 +212,47 @@ std::string import_3mf_mesh(const std::string& filename, unsigned int mesh_idx, 
   return "";
 }
 
+std::string read_metadata(const Lib3MF::PModel& model)
+{
+  const auto metadatagroup = model->GetMetaDataGroup();
+  const auto metadatacount = metadatagroup->GetMetaDataCount();
+
+  ModelMetadata mmd;
+  for (Lib3MF_uint32 idx = 0;idx < metadatacount;++idx) {
+    const auto metadata = metadatagroup->GetMetaData(idx);
+    const auto key = metadata->GetKey();
+    const auto value = metadata->GetValue();
+    PRINTDB("METADATA[%d]: %s = '%s'", idx % key % value);
+
+    const std::string& name = key;
+    if (name == "Title") {
+      mmd.title = value;
+    } else if (name == "Designer") {
+      mmd.designer = value;
+    } else if (name == "Description") {
+      mmd.description = value;
+    } else if (name == "Copyright") {
+      mmd.copyright = value;
+    } else if (name == "LicenseTerms") {
+      mmd.licenseterms = value;
+    } else if (name == "Rating") {
+      mmd.rating = value;
+    } else if (name == "CreationDate") {
+      mmd.creationdate = value;
+    } else if (name == "ModificationDate") {
+      mmd.modificationdate = value;
+    } else if (name == "Application") {
+      mmd.application = value;
+    }
+  }
+
+  if (!mmd.title.empty()) {
+    LOG("Reading 3MF with title '%1$s'", mmd.title);
+  }
+
+  return "";
+}
+
 } // namespace
 
 /*
@@ -291,6 +332,8 @@ std::unique_ptr<Geometry> import_3mf(const std::string& filename, const Location
     LOG(message_group::Warning, "Could not read file '%1$s', import() at line %2$d: %3$s", filename.c_str(), loc.firstLine(), e.what());
     return PolySet::createEmpty();
   }
+
+  read_metadata(model);
 
   try {
     Lib3MF::PBuildItemIterator builditem_it = model->GetBuildItems();

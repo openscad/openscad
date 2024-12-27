@@ -140,6 +140,7 @@ bool checkAndExport(const std::shared_ptr<const Geometry>& root_geom, unsigned d
   }
   ExportInfo exportInfo = {
     .format = format,
+    .title = std::filesystem::path(input_filename).filename().string(),
     .sourceFilePath = input_filename,
     .camera = camera,
     .defaultColor = { 0xf9, 0xd7, 0x2c, 255 }

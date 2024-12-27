@@ -398,7 +398,7 @@ std::string read_metadata(PLib3MFModel *model)
   }
 
   if (!mmd.title.empty()) {
-    LOG("Reading %1$s", mmd.title);
+    LOG("Reading 3MF with title '%1$s'", mmd.title);
   }
 
   return "";
