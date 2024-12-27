@@ -450,8 +450,7 @@ std::unique_ptr<Geometry> import_3mf(const std::string& filename, const Location
     return import_3mf_error(model, "Could not retrieve build items");
   }
 
-  std::unique_ptr<PolySet> first_mesh;
-  std::list<std::shared_ptr<PolySet>> meshes;
+  std::list<std::unique_ptr<PolySet>> meshes;
   unsigned int mesh_idx = 0;
   while (true) {
     BOOL has_next = false;
@@ -517,11 +516,7 @@ std::unique_ptr<Geometry> import_3mf(const std::string& filename, const Location
         return import_3mf_error(model, errmsg, builditem_it);
       }
 
-      if (first_mesh) {
-        meshes.push_back(builder.build());
-      } else {
-        first_mesh = builder.build();
-      }
+      meshes.push_back(builder.build());
       mesh_idx++;
     }
   }
@@ -529,16 +524,15 @@ std::unique_ptr<Geometry> import_3mf(const std::string& filename, const Location
   lib3mf_release(builditem_it);
   lib3mf_release(model);
 
-  if (!first_mesh) {
+  if (meshes.empty()) {
     return PolySet::createEmpty();
-  } else if (meshes.empty()) {
-    return first_mesh;
+  } else if (meshes.size() == 1) {
+    return std::move(meshes.front());
   } else {
     std::unique_ptr<PolySet> p;
     Geometry::Geometries children;
-    children.emplace_back(std::shared_ptr<AbstractNode>(), std::shared_ptr<const Geometry>(std::move(first_mesh)));
     for (const auto& m : meshes) {
-      children.emplace_back(std::shared_ptr<AbstractNode>(), std::shared_ptr<const Geometry>(m));
+      children.emplace_back(std::shared_ptr<AbstractNode>(), std::shared_ptr<const Geometry>(m.get()));
     }
 #ifdef ENABLE_MANIFOLD
     if (RenderSettings::inst()->backend3D == RenderBackend3D::ManifoldBackend) {
