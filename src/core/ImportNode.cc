@@ -92,6 +92,15 @@ static std::shared_ptr<AbstractNode> do_import(const ModuleInstantiation *inst, 
     else if (ext == ".amf") actualtype = ImportType::AMF;
     else if (ext == ".svg") actualtype = ImportType::SVG;
     else if (ext == ".obj") actualtype = ImportType::OBJ;
+#ifdef ENABLE_ASSIMP
+    else if (Feature::ExperimentalAssimp.is_enabled()) {
+      if (ext == ".glb" || ext == ".gltf") actualtype = ImportType::GLTF;
+      else if (ext == ".x3d") actualtype = ImportType::X3D;
+      else if (ext == ".dae") actualtype = ImportType::COLLADA;
+      else if (ext == ".stp") actualtype = ImportType::STP;
+      else if (ext == ".ply") actualtype = ImportType::PLY;
+    }
+#endif
   }
 
   auto node = std::make_shared<ImportNode>(inst, actualtype);
@@ -175,6 +184,31 @@ std::unique_ptr<const Geometry> ImportNode::createGeometry() const
 {
   std::unique_ptr<Geometry> g;
   auto loc = this->modinst->location();
+
+#ifdef ENABLE_ASSIMP
+  if (Feature::ExperimentalAssimp.is_enabled()) {
+    switch (this->type) {
+    case ImportType::STL:
+    case ImportType::X3D:
+    case ImportType::GLTF:
+    case ImportType::COLLADA: 
+    case ImportType::STP:
+    case ImportType::PLY:
+      g = import_assimp(this->filename, loc);
+      if (g) {
+        g->setConvexity(this->convexity);
+        return g;
+      }
+      break;
+    // TODO: import these formats w/ Assimp once it supports their colors:
+    // case ImportType::AMF:
+    // case ImportType::_3MF:
+    // case ImportType::OFF: 
+    default:
+      break;
+    }
+  }
+#endif
 
   switch (this->type) {
   case ImportType::STL: {

@@ -28,6 +28,8 @@
 #include "io/export.h"
 #include "geometry/PolySet.h"
 #include "geometry/PolySetUtils.h"
+#include "glview/ColorMap.h"
+#include "glview/RenderSettings.h"
 #include "utils/printutils.h"
 #ifdef ENABLE_MANIFOLD
 #include "geometry/manifold/ManifoldGeometry.h"
@@ -88,10 +90,48 @@ static bool append_polyset(std::shared_ptr<const PolySet> ps, Lib3MF::PWrapper& 
       return true;
     };
 
-    auto triangleFunc = [&](const IndexedFace& indices) -> bool {
+    auto colorsEnabled = RenderSettings::inst()->backend3D == RenderBackend3D::ManifoldBackend;
+    Lib3MF_uint32 matGroupResId = 0;
+    std::vector<Lib3MF_uint32> color_index_to_property_id;
+
+    if (colorsEnabled) {  
+      color_index_to_property_id.reserve(ps->colors.size());
+      auto materialGroup = model->AddBaseMaterialGroup();
+      matGroupResId = materialGroup->GetResourceID();
+
+      auto addColorProperty = [&](const Color4f& color) -> Lib3MF_uint32 {
+        return materialGroup->AddMaterial("", wrapper->FloatRGBAToColor(color[0], color[1], color[2], color[3]));
+      };
+
+      std::map<Color4f, Lib3MF_uint32> color_to_property_id;
+      for (size_t i = 0; i < ps->colors.size(); ++i) {
+        const auto & color = ps->colors[i];
+        auto it = color_to_property_id.find(color);
+        Lib3MF_uint32 id;
+        if (it == color_to_property_id.end()) {
+          id = addColorProperty(color);
+          color_to_property_id[color] = id;
+        } else {
+          id = it->second;
+        }
+        color_index_to_property_id.push_back(id);
+      }
+      if (ps->colors.size() > 0) {
+        auto colorScheme = ColorMap::inst()->findColorScheme(RenderSettings::inst()->colorscheme);
+        mesh->SetObjectLevelProperty(
+          matGroupResId,
+          addColorProperty(ColorMap::getColor(*colorScheme, RenderColor::CGAL_FACE_FRONT_COLOR)));
+      }
+    }
+    
+    auto triangleFunc = [&](const IndexedFace& indices, const int32_t color_index) -> bool {
       try {
         Lib3MF::sTriangle t{(Lib3MF_uint32)indices[0], (Lib3MF_uint32)indices[1], (Lib3MF_uint32)indices[2]};
         mesh->AddTriangle(t);
+        if (colorsEnabled && color_index >= 0 && color_index < (int)color_index_to_property_id.size()) {
+          auto propId = color_index_to_property_id[color_index];
+          mesh->SetTriangleProperties(mesh->GetTriangleCount() - 1, {matGroupResId, propId, propId, propId });
+        }
       } catch (Lib3MF::ELib3MFException& e) {
         export_3mf_error(e.what());
         return false;
@@ -111,8 +151,9 @@ static bool append_polyset(std::shared_ptr<const PolySet> ps, Lib3MF::PWrapper& 
       }
     }
 
-    for (const auto& poly : out_ps->indices) {
-      if (!triangleFunc(poly)) {
+    for (size_t i = 0, n = out_ps->indices.size(); i < n; ++i) {
+      auto color_index = i < out_ps->color_indices.size() ? out_ps->color_indices[i] : -1;
+      if (!triangleFunc(out_ps->indices[i], color_index)) {
         export_3mf_error("Can't add triangle to 3MF model.");
         return false;
       }

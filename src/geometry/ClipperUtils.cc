@@ -163,7 +163,11 @@ std::unique_ptr<Polygon2d> sanitize(const Polygon2d& poly)
   auto scale_bits = scaleBitsFromPrecision();
 
   auto paths = ClipperUtils::fromPolygon2d(poly, scale_bits);
-  return toPolygon2d(*sanitize(paths), scale_bits);
+  auto result = toPolygon2d(*sanitize(paths), scale_bits);
+  if (poly.getColor().isValid()) {
+    result->setColor(poly.getColor());
+  }
+  return result;
 }
 
 /*!
@@ -339,7 +343,11 @@ std::unique_ptr<Polygon2d> applyOffset(const Polygon2d& poly, double offset, Cli
   co.AddPaths(p, joinType, Clipper2Lib::EndType::Polygon);
   Clipper2Lib::PolyTree64 result;
   co.Execute(std::ldexp(offset, scale_bits), result);
-  return toPolygon2d(result, scale_bits);
+  auto finalResult = toPolygon2d(result, scale_bits);
+  if (poly.getColor().isValid()) {
+    finalResult->setColor(poly.getColor());
+  }
+  return finalResult;
 }
 
 std::unique_ptr<Polygon2d> applyProjection(const std::vector<std::shared_ptr<const Polygon2d>>& polygons)

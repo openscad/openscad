@@ -25,6 +25,7 @@
  */
 
 #include "geometry/PolySet.h"
+#include "geometry/PolySetBuilder.h"
 #include "geometry/PolySetUtils.h"
 #include "geometry/linalg.h"
 #include "utils/printutils.h"
@@ -163,4 +164,31 @@ void PolySet::quantizeVertices(std::vector<Vector3d> *pPointsOut)
       i++;
     }
   }
+}
+
+std::vector<std::pair<std::optional<const Color4f>, std::unique_ptr<PolySet>>> PolySet::splitByColor() const
+{
+  std::vector<PolySetBuilder> builders;
+  builders.reserve(colors.size() + 1);
+  for (int i = 0; i < colors.size() + 1; i++) {
+    builders.emplace_back(dim_);
+  }
+  
+  for (int i = 0; i < indices.size(); i++) {
+    int color_index = i < color_indices.size() ? color_indices[i] : -1;
+    auto & builder = builders[color_index < 0 ? builders.size() - 1 : color_index];
+    builder.beginPolygon(indices[i].size());
+    for (int j = 0; j < indices[i].size(); j++) {
+      builder.addVertex(vertices[indices[i][j]]);
+    }
+    builder.endPolygon();
+  }
+  std::vector<std::pair<std::optional<const Color4f>, std::unique_ptr<PolySet>>> result;
+  for (int i = 0; i < builders.size(); i++) {
+    if (!builders[i].empty()) {
+      result.emplace_back(i < colors.size() ? std::make_optional(colors[i]) : std::nullopt, builders[i].build());
+    }
+  }
+
+  return result;
 }

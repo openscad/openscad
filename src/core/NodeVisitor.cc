@@ -1,12 +1,23 @@
 #include "core/NodeVisitor.h"
+
+#include "core/CsgOpNode.h"
 #include "core/State.h"
 
 State NodeVisitor::nullstate(nullptr);
+
+bool isDifference(const AbstractNode& node)
+{
+  if (auto csgNode = dynamic_cast<const CsgOpNode*>(&node)) {
+    return csgNode->type == OpenSCADOperator::DIFFERENCE;
+  }
+  return false;
+}
 
 Response NodeVisitor::traverse(const AbstractNode& node, const State& state)
 {
   State newstate = state;
   newstate.setNumChildren(node.getChildren().size());
+  auto isDiff = isDifference(node);
 
   Response response = Response::ContinueTraversal;
   newstate.setPrefix(true);
@@ -16,7 +27,13 @@ Response NodeVisitor::traverse(const AbstractNode& node, const State& state)
   // Pruned traversals mean don't traverse children
   if (response == Response::ContinueTraversal) {
     newstate.setParent(node.shared_from_this());
+    auto isFirst = true;
     for (const auto& chnode : node.getChildren()) {
+      if (isFirst) {
+        isFirst = false;
+      } else if (isDiff) {
+        newstate.setSubtraction(true);
+      }
       response = this->traverse(*chnode, newstate);
       if (response == Response::AbortTraversal) return response; // Abort immediately
     }

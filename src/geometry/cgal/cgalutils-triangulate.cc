@@ -157,6 +157,9 @@ std::unique_ptr<PolySet> createTriangulatedPolySetFromPolygon2d(const Polygon2d&
         fit->vertex(2)->info().id});
     }
   }
+  if (polygon2d.getColor().isValid()) {
+    polyset->setColor(polygon2d.getColor());
+  }
   return polyset;
 }
 

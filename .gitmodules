@@ -16,3 +16,7 @@
 [submodule "Clipper2"]
 	path = submodules/Clipper2
 	url = https://github.com/AngusJohnson/Clipper2.git
+[submodule "assimp"]
+	path = submodules/assimp
+	url = https://github.com/ochafik/assimp
+	branch = gltf-magics

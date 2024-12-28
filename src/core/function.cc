@@ -34,7 +34,7 @@
 #include <cstddef>
 #include <utility>
 
-BuiltinFunction::BuiltinFunction(Value(*f)(const std::shared_ptr<const Context>&, const FunctionCall *), const Feature *feature) :
+BuiltinFunction::BuiltinFunction(const BuiltinFunction::evaluate_t& f, const Feature *feature) :
   evaluate(f),
   feature(feature)
 {}

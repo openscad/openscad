@@ -60,6 +60,7 @@ option(ENABLE_SPNAV "Enable support for libspnav input driver." ON)
 option(ENABLE_HIDAPI "Enable support for HIDAPI input driver." ON)
 option(ENABLE_CGAL "Enable CGAL." ON)
 option(ENABLE_MANIFOLD "Enable Manifold." ON)
+option(ENABLE_ASSIMP "Enable Assimp." ON)
 option(ALLOW_BUNDLED_HIDAPI "Allow usage of bundled HIDAPI library (Windows only)." OFF)
 option(ENABLE_PYTHON "Enable experimental Python Interpreter" OFF)
 option(BUILD_SHARED_LIBS "Build shared library" OFF)
@@ -451,11 +452,6 @@ if(ENABLE_CGAL)
   set(CMAKE_MODULE_PATH ${OPENSCAD_ORIGINAL_CMAKE_MODULE_PATH})
 endif(ENABLE_CGAL)
 
-find_package(LibZip REQUIRED QUIET)
-message(STATUS "libzip: ${LIBZIP_VERSION}")
-target_include_directories(OpenSCAD SYSTEM PRIVATE ${LIBZIP_INCLUDE_DIR_ZIP} ${LIBZIP_INCLUDE_DIR_ZIPCONF})
-target_link_libraries(OpenSCAD PRIVATE ${LIBZIP_LIBRARY})
-target_compile_definitions(OpenSCAD PRIVATE ENABLE_LIBZIP)
 
 find_package(Freetype 2.4.9 REQUIRED QUIET)
 message(STATUS "Freetype: ${FREETYPE_VERSION_STRING}")
@@ -881,6 +877,7 @@ set(CORE_SOURCES
   src/io/export_wrl.cc
   src/io/fileutils.cc
   src/io/import_amf.cc
+  src/io/import_stl.cc
   src/io/import_json.cc
   src/io/import_obj.cc
   src/io/import_off.cc
@@ -923,7 +920,12 @@ if(ENABLE_PYTHON)
 		    src/core/pyopenscad.cc )
 	target_compile_definitions(OpenSCAD PRIVATE ENABLE_PYTHON)
 endif()
-
+if (ENABLE_ASSIMP)
+  list(APPEND CORE_SOURCES
+    src/io/export_assimp.cc
+    src/io/import_assimp.cc
+  )
+endif()
 if(EXPERIMENTAL AND ENABLE_CGAL)
   list(APPEND CORE_SOURCES
   src/core/RoofNode.cc
@@ -1022,6 +1024,12 @@ if(ENABLE_MANIFOLD)
   if (USE_MANIFOLD_TRIANGULATOR)
     target_compile_definitions(OpenSCAD PRIVATE USE_MANIFOLD_TRIANGULATOR)
   endif()
+endif()
+
+if (ENABLE_ASSIMP)
+  add_subdirectory(submodules/assimp EXCLUDE_FROM_ALL)
+  target_compile_definitions(OpenSCAD PRIVATE ENABLE_ASSIMP)
+  target_link_libraries(OpenSCAD PRIVATE assimp)
 endif()
 
 #

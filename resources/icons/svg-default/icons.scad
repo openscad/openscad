@@ -22,6 +22,11 @@ icons = [
     ["export-wrl"],
     ["export-amf"],
     ["export-3mf"],
+    ["export-glb"],
+    ["export-x3d"],
+    ["export-dae"],
+    ["export-stp"],
+    ["export-ply"],
     ["export-dxf"],
     ["export-svg"],
     ["export-csg"],
@@ -80,6 +85,11 @@ icon(selected_icon) {
     export("WRL");
     export("AMF");
     export("3MF");
+    export("GLB");
+    export("X3D");
+    export("DAE");
+    export("STP");
+    export("PLY");
     export("DXF");
     export("SVG");
     export("CSG");

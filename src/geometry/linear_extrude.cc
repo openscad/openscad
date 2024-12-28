@@ -226,7 +226,10 @@ std::unique_ptr<PolySet> assemblePolySetForManifold(
 
   // LOG(PolySetUtils::polySetToPolyhedronSource(*final_polyset));
 
-  return final_polyset;
+  if (polyref.getColor().isValid()) {
+    final_polyset->setColor(polyref.getColor());
+  }
+  return final_polyset; 
 }
 
 std::unique_ptr<PolySet> assemblePolySetForCGAL(const Polygon2d& polyref,

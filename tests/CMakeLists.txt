@@ -362,6 +362,7 @@ function(add_cmdline_test TESTCMD_BASENAME)
 
     # add global experimental options here
     set(EXPERIMENTAL_OPTION "")
+    set(MANIFOLD_OPTION "")
 
     # # To give manifold some extra test coverage, enable manifold 
     # # for all tests except those marked as skipped.
@@ -746,6 +747,7 @@ list(APPEND COLOR_3D_TEST_FILES
   ${TEST_SCAD_DIR}/3D/features/color-tests3.scad
   ${TEST_SCAD_DIR}/3D/features/linear_extrude-parameter-tests.scad
   ${TEST_SCAD_DIR}/3D/features/resize-tests.scad
+  ${EXAMPLES_DIR}/Basics/CSG-modules.scad
 )
 
 # 2D tests

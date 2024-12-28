@@ -48,6 +48,8 @@ public:
 
   static std::unique_ptr<PolySet> createEmpty() { return std::make_unique<PolySet>(3); }
 
+  std::vector<std::pair<std::optional<const Color4f>, std::unique_ptr<PolySet>>> splitByColor() const;
+
 private:
   bool is_triangular_ = false;
   unsigned int dim_;

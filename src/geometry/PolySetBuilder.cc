@@ -108,16 +108,38 @@ void PolySetBuilder::appendPolygon(const std::vector<int>& inds)
   endPolygon();
 }
 
-void PolySetBuilder::appendPolygon(const std::vector<Vector3d>& polygon)
+void PolySetBuilder::appendPolygon(const std::vector<Vector3d>& polygon, const Color4f & color)
 {
   beginPolygon(polygon.size());
   for (const auto& v: polygon) addVertex(v);
   endPolygon();
+
+  if (color.isValid()) {
+    auto pair = color_map_.insert({color, colors_.size()});
+    if (pair.second) {
+      colors_.push_back(color);
+    }
+    int32_t color_index = pair.first->second;
+    auto numFaces = indices_.size();
+    color_indices_.resize(numFaces, -1);
+    color_indices_[numFaces - 1] = color_index;
+  }
 }
 
-void PolySetBuilder::beginPolygon(int nvertices) {
+void PolySetBuilder::beginPolygon(int nvertices, const Color4f& color) {
   endPolygon();
   current_polygon_.reserve(nvertices);
+
+  if (color.isValid()) {
+    auto pair = color_map_.insert({color, colors_.size()});
+    if (pair.second) {
+      colors_.push_back(color);
+    }
+    int32_t color_index = pair.first->second;
+    auto numFaces = indices_.size() + 1;
+    color_indices_.resize(numFaces, -1);
+    color_indices_[numFaces - 1] = color_index;
+  }
 }
 
 void PolySetBuilder::addVertex(int ind)

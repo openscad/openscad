@@ -29,6 +29,8 @@
 #include <memory>
 #include "io/export.h"
 #include "geometry/PolySet.h"
+#include "glview/ColorMap.h"
+#include "glview/RenderSettings.h"
 
 static void append_svg(const Polygon2d& poly, std::ostream& output)
 {
@@ -49,7 +51,19 @@ static void append_svg(const Polygon2d& poly, std::ostream& output)
     }
     output << " z\n";
   }
-  output << "\" stroke=\"black\" fill=\"lightgray\" stroke-width=\"0.5\"/>\n";
+
+  if (RenderSettings::inst()->backend3D == RenderBackend3D::ManifoldBackend) {
+    auto colorScheme = ColorMap::inst()->findColorScheme(RenderSettings::inst()->colorscheme);
+    const auto & polyColor = poly.getColor();
+    const auto color = polyColor.isValid() ? polyColor : ColorMap::getColor(*colorScheme, RenderColor::CGAL_FACE_FRONT_COLOR);
+    int r = (int)(color[0] * 255);
+    int g = (int)(color[1] * 255);
+    int b = (int)(color[2] * 255);
+    float a = color[3];
+    output << "\" stroke=\"none\" fill=\"rgba(" << r << "," << g << "," << b << "," << a << ")\"/>\n";
+  } else {
+    output << "\" stroke=\"black\" fill=\"lightgray\" stroke-width=\"0.5\"/>\n";
+  }
 
 }
 

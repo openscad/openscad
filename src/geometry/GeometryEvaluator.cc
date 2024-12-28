@@ -79,6 +79,12 @@ std::shared_ptr<const Geometry> GeometryEvaluator::evaluateGeometry(const Abstra
     smartCacheInsert(node, result);
   }
 
+  if (Feature::ExperimentalRenderModifiers.is_enabled() && !extra_geometries.empty()) {
+    Geometry::Geometries geoms(extra_geometries.begin(), extra_geometries.end());
+    geoms.emplace_back(nullptr, result);
+    result = std::make_shared<GeometryList>(geoms);
+  }
+
   // Convert engine-specific 3D geometry to PolySet if needed
   // Note: we don't store the converted into the cache as it would conflict with subsequent calls where allownef is true.
   if (!allownef) {
@@ -294,13 +300,20 @@ std::vector<std::shared_ptr<const Polygon2d>> GeometryEvaluator::collectChildren
         LOG(message_group::Warning, item.first->modinst->location(), this->tree.getDocumentPath(), "Ignoring 3D child object for 2D operation");
         children.push_back(nullptr); // replace 3D geometry with empty geometry
       } else {
-        if (chgeom->isEmpty()) {
-          children.push_back(nullptr);
-        } else {
-          const auto polygon2d = std::dynamic_pointer_cast<const Polygon2d>(chgeom);
-          assert(polygon2d);
-          children.push_back(polygon2d);
-        }
+        std::function<void(const std::shared_ptr<const Geometry>&)> collect = [&](const std::shared_ptr<const Geometry>& geom) {
+          if (geom->isEmpty()) {
+            children.push_back(nullptr);
+          } else if (auto geomlist = std::dynamic_pointer_cast<const GeometryList>(geom)) {
+            for (const auto& child : geomlist->getChildren()) {
+              collect(child.second);
+            }
+          } else {
+            const auto polygon2d = std::dynamic_pointer_cast<const Polygon2d>(geom);
+            assert(polygon2d);
+            children.push_back(polygon2d);
+          }
+        };
+        collect(chgeom);
       }
     } else {
       children.push_back(nullptr);
@@ -317,6 +330,11 @@ std::vector<std::shared_ptr<const Polygon2d>> GeometryEvaluator::collectChildren
 void GeometryEvaluator::smartCacheInsert(const AbstractNode& node,
                                          const std::shared_ptr<const Geometry>& geom)
 {
+  if (Feature::ExperimentalRenderModifiers.is_enabled() && (
+      node.modinst->isBackground() || (node.modinst->isHighlight()))) {
+    return;
+  }
+
   const std::string& key = this->tree.getIdString(node);
 
   if (CGALCache::acceptsGeometry(geom)) {
@@ -443,17 +461,50 @@ void GeometryEvaluator::addToParent(const State& state,
                                     const std::shared_ptr<const Geometry>& geom)
 {
   this->visitedchildren.erase(node.index());
-  if (state.parent()) {
-    this->visitedchildren[state.parent()->index()].push_back(std::make_pair(node.shared_from_this(), geom));
-  } else {
-    // Root node
-    this->root = geom;
-    assert(this->visitedchildren.empty());
+  auto doAdd = [&](const std::shared_ptr<const Geometry>& geom) {
+    if (state.parent()) {
+      this->visitedchildren[state.parent()->index()].push_back(std::make_pair(node.shared_from_this(), geom));
+    } else {
+      // Root node
+      this->root = geom;
+      assert(this->visitedchildren.empty());
+    }
+  };
+
+  if (Feature::ExperimentalRenderModifiers.is_enabled() && (
+      node.modinst->isBackground() || (node.modinst->isHighlight()))) {  
+    auto ps = std::make_shared<PolySet>(*PolySetUtils::getGeometryAsPolySet(geom));
+
+    if (node.modinst->isHighlight()) {
+      if (state.subtraction()) {
+        ps->setColor(Color4f(1.0f, 0.0f, 0.0f, 1.0f));
+        doAdd(std::make_shared<PolySet>(*ps));
+        
+        ps->setColor(Color4f(1.0f, 0.0f, 0.0f, 0.5f));
+        ps->transform(state.matrix());
+        extra_geometries.emplace_back(nullptr, ps);
+      } else {
+        ps->setColor(Color4f(1.0f, 0.0f, 0.0f, 0.5f));
+        doAdd(ps);
+      }
+    } else {
+      assert(node.modinst->isBackground());
+      ps->setColor(Color4f(0.5f, 0.5f, 0.5f, 0.5f));
+      ps->transform(state.matrix());
+      extra_geometries.emplace_back(nullptr, ps);
+    }
+    return;
   }
+
+  doAdd(geom);
 }
 
 Response GeometryEvaluator::visit(State& state, const ColorNode& node)
 {
+  if (RenderSettings::inst()->backend3D != RenderBackend3D::ManifoldBackend) {
+    return GeometryEvaluator::visit(state, (const AbstractNode&)node);
+  }
+    
   if (state.isPrefix() && isSmartCached(node)) return Response::PruneTraversal;
   if (state.isPostfix()) {
     std::shared_ptr<const Geometry> geom;
@@ -710,6 +761,9 @@ Response GeometryEvaluator::visit(State& state, const CsgOpNode& node)
  */
 Response GeometryEvaluator::visit(State& state, const TransformNode& node)
 {
+  if (state.isPrefix()) {
+    state.setMatrix(state.matrix() * node.matrix);
+  }
   if (state.isPrefix() && isSmartCached(node)) return Response::PruneTraversal;
   if (state.isPostfix()) {
     std::shared_ptr<const Geometry> geom;
@@ -767,19 +821,36 @@ Response GeometryEvaluator::visit(State& state, const LinearExtrudeNode& node)
   if (state.isPostfix()) {
     std::shared_ptr<const Geometry> geom;
     if (!isSmartCached(node)) {
-      std::shared_ptr<const Geometry> geometry;
-      if (!node.filename.empty()) {
-        DxfData dxf(node.fn, node.fs, node.fa, node.filename, node.layername, node.origin_x, node.origin_y, node.scale_x);
-
-        auto p2d = dxf.toPolygon2d();
-        if (p2d) geometry = ClipperUtils::sanitize(*p2d);
+      if (RenderSettings::inst()->backend3D == RenderBackend3D::ManifoldBackend) {
+        // Our 2D / Clipper operations don't preserve colors yet, so we
+        // extrude children *then* union them in 3D space.
+        auto children = collectChildren2D(node);
+        Geometry::Geometries extruded;
+        for (const auto& child : children) {
+          if (!child) {
+            LOG(message_group::Warning, "Ignoring empty child object for linear_extrude()");
+            continue;
+          }
+          extruded.emplace_back(nullptr, extrudePolygon(node, *child));
+        }
+        // TODO: Could preserve the solids by treating a GeometryList as a partitioned solid
+        // geom = std::make_shared<GeometryList>(extruded);
+        geom = ManifoldUtils::applyOperator3DManifold(extruded, OpenSCADOperator::UNION);
       } else {
-        geometry = applyToChildren2D(node, OpenSCADOperator::UNION);
-      }
-      if (geometry) {
-        const auto polygons = std::dynamic_pointer_cast<const Polygon2d>(geometry);
-        geom = extrudePolygon(node, *polygons);
-        assert(geom);
+        std::shared_ptr<const Geometry> geometry;
+        if (!node.filename.empty()) {
+          DxfData dxf(node.fn, node.fs, node.fa, node.filename, node.layername, node.origin_x, node.origin_y, node.scale_x);
+
+          auto p2d = dxf.toPolygon2d();
+          if (p2d) geometry = ClipperUtils::sanitize(*p2d);
+        } else {
+          geometry = applyToChildren2D(node, OpenSCADOperator::UNION);
+        }
+        if (geometry) {
+          const auto polygons = std::dynamic_pointer_cast<const Polygon2d>(geometry);
+          geom = extrudePolygon(node, *polygons);
+          assert(geom);
+        }
       }
     } else {
       geom = smartCacheGet(node, false);

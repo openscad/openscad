@@ -26,18 +26,20 @@
 
 #include <exception>
 #include <memory>
+#include <string>
+#include <vector>
 #include <Eigen/Core>
 #include <Eigen/Geometry>
 
-#include <string>
-#include <vector>
+#include "Feature.h"
+#include "core/AST.h"
 #include "io/import.h"
+#include "geometry/ClipperUtils.h"
 #include "geometry/Polygon2d.h"
+#include "glview/RenderSettings.h"
 #include "utils/printutils.h"
 #include "libsvg/libsvg.h"
 #include "libsvg/svgpage.h"
-#include "geometry/ClipperUtils.h"
-#include "core/AST.h"
 
 namespace {
 
@@ -87,7 +89,7 @@ double calc_alignment(const libsvg::align_t alignment, double page_mm, double sc
 } // namespace
 
 
-std::unique_ptr<Polygon2d> import_svg(double fn, double fs, double fa,
+std::unique_ptr<Geometry> import_svg(double fn, double fs, double fa,
 				      const std::string& filename,
 				      const boost::optional<std::string>& id, const boost::optional<std::string>& layer,
 				      const double dpi, const bool center, const Location& loc)
@@ -196,6 +198,9 @@ std::unique_ptr<Polygon2d> import_svg(double fn, double fs, double fa,
     for (const auto& shape_ptr : *shapes) {
       if (!shape_ptr->is_excluded()) {
         auto poly = std::make_shared<Polygon2d>();
+        if (RenderSettings::inst()->backend3D == RenderBackend3D::ManifoldBackend) {
+          poly->setColor(shape_ptr->get_fill_color());
+        }
         const auto& s = *shape_ptr;
         for (const auto& p : s.get_path_list()) {
           Outline2d outline;
@@ -211,7 +216,38 @@ std::unique_ptr<Polygon2d> import_svg(double fn, double fs, double fa,
       }
     }
     libsvg_free(shapes);
-    return ClipperUtils::apply(polygons, Clipper2Lib::ClipType::Union);
+
+    if (RenderSettings::inst()->backend3D == RenderBackend3D::ManifoldBackend) {
+      Geometry::Geometries geoms;
+      // Implement a crude painter's algorithm: make sure the last polygons are drawn on top by masking the others.
+      std::shared_ptr<const Polygon2d> mask;
+      for (int i = polygons.size() - 1; i >= 0; --i) {
+        auto& poly = polygons[i];
+        assert(poly);
+        std::shared_ptr<const Polygon2d> full_poly = ClipperUtils::apply({poly}, Clipper2Lib::ClipType::Union);
+        std::shared_ptr<const Polygon2d> result_poly;
+        if (!mask) {
+          mask = full_poly;
+          result_poly = full_poly;
+        } else {
+          auto masked_poly = ClipperUtils::apply({full_poly, mask}, Clipper2Lib::ClipType::Difference);
+          auto new_mask = ClipperUtils::apply({mask, full_poly}, Clipper2Lib::ClipType::Union);
+          mask = std::move(new_mask);
+          masked_poly->setColor(poly->getColor());
+          result_poly = std::move(masked_poly);
+        }
+        if (result_poly->area() > 0) {
+          geoms.emplace_back(nullptr, result_poly);
+        } else {
+          LOG(message_group::Warning, loc, "", "import_svg ignoring empty polygon");
+        }
+      }
+      for (const auto& poly : polygons) {
+      }
+      return std::make_unique<GeometryList>(geoms);
+    } else {
+      return ClipperUtils::apply(polygons, Clipper2Lib::ClipType::Union);
+    }
   } catch (const std::exception& e) {
     LOG(message_group::Error, "%1$s, import() at line %2$d", e.what(), loc.firstLine());
     return std::make_unique<Polygon2d>();

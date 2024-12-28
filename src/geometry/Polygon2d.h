@@ -42,6 +42,10 @@ public:
   void addOutline(Outline2d outline) { this->theoutlines.push_back(std::move(outline)); }
   [[nodiscard]] std::unique_ptr<PolySet> tessellate() const;
   [[nodiscard]] double area() const;
+  void setColor(const Color4f& c) override {
+    this->color = c;
+  }
+  [[nodiscard]] const Color4f& getColor() const { return this->color; }
 
   using Outlines2d = std::vector<Outline2d>;
   [[nodiscard]] const Outlines2d& outlines() const { return theoutlines; }
@@ -62,5 +66,6 @@ public:
   [[nodiscard]] bool is_convex() const;
 private:
   Outlines2d theoutlines;
+  Color4f color;
   bool sanitized{false};
 };
