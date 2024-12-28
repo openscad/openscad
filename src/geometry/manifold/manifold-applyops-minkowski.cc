@@ -38,14 +38,13 @@ std::shared_ptr<const Geometry> applyMinkowskiManifold(const Geometry::Geometrie
       CGALUtils::createPolyhedronFromPolySet(*ps, *poly);
       if (pIsConvexOut) *pIsConvexOut = ps->isConvex();
       return poly;
+    } else if (auto mani = dynamic_pointer_cast<const ManifoldGeometry>(geom)) {
+      auto poly = mani->toPolyhedron<Polyhedron>();
+      if (pIsConvexOut) *pIsConvexOut = CGALUtils::is_weakly_convex(*poly);
+      return poly;
     } else {
-      if (auto mani = dynamic_pointer_cast<const ManifoldGeometry>(geom)) {
-        auto poly = mani->toPolyhedron<Polyhedron>();
-        if (pIsConvexOut) *pIsConvexOut = CGALUtils::is_weakly_convex(*poly);
-        return poly;
-      } else throw 0;
+      throw 0;
     }
-    throw 0;
   };
   assert(children.size() >= 2);
   auto it = children.begin();
