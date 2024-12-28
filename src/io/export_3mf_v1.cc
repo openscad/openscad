@@ -75,9 +75,9 @@ void export_3mf_error(std::string msg, PLib3MFModel *& model)
   }
 }
 
-BYTE get_color_channel(Color4f col, int idx)
+BYTE get_color_channel(const Color4f& col, int idx)
 {
-  return std::clamp(static_cast<int>(255 * col[idx]), 0, 255);
+  return std::clamp(static_cast<int>(255.0 * col[idx]), 0, 255);
 }
 
 int count_mesh_objects(PLib3MFModel *& model) {

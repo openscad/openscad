@@ -87,6 +87,11 @@ void export_3mf_error(std::string msg)
   LOG(message_group::Export_Error, std::move(msg));
 }
 
+Lib3MF_uint8 get_color_channel(const Color4f& col, int idx)
+{
+  return std::clamp(static_cast<int>(255.0 * col[idx]), 0, 255);
+}
+
 int count_mesh_objects(const Lib3MF::PModel& model) {
     const auto mesh_object_it = model->GetMeshObjects();
     int count = 0;
@@ -135,10 +140,10 @@ static bool append_polyset(const std::shared_ptr<const PolySet> & ps, ExportCont
           Lib3MF_uint32 col_idx;
           if (col_it == ctx.colors.end()) {
             const Lib3MF::sColor materialcolor{
-              static_cast<Lib3MF_uint8>(256 * col.r()),
-              static_cast<Lib3MF_uint8>(256 * col.g()),
-              static_cast<Lib3MF_uint8>(256 * col.b()),
-              static_cast<Lib3MF_uint8>(256 * col.a())
+              .m_Red = get_color_channel(col, 0),
+              .m_Green = get_color_channel(col, 1),
+              .m_Blue = get_color_channel(col, 2),
+              .m_Alpha = get_color_channel(col, 3)
             };
             col_idx = ctx.basematerialgroup->AddMaterial("Color " + std::to_string(ctx.basematerialgroup->GetCount()), materialcolor);
             ctx.colors[col] = col_idx;
@@ -287,9 +292,9 @@ void export_3mf(const std::shared_ptr<const Geometry>& geom, std::ostream& outpu
 
   auto basematerialgroup = model->AddBaseMaterialGroup();
   basematerialgroup->AddMaterial("Default", {
-    .m_Red = static_cast<Lib3MF_uint8>(255.0 * exportInfo.defaultColor.r()),
-    .m_Green = static_cast<Lib3MF_uint8>(255.0 * exportInfo.defaultColor.g()),
-    .m_Blue = static_cast<Lib3MF_uint8>(255.0 *exportInfo.defaultColor.b()),
+    .m_Red = get_color_channel(exportInfo.defaultColor, 0),
+    .m_Green = get_color_channel(exportInfo.defaultColor, 1),
+    .m_Blue = get_color_channel(exportInfo.defaultColor, 2),
     .m_Alpha = 0xff
   });
 
