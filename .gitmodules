@@ -6,10 +6,13 @@
 	url = https://github.com/microsoft/mimalloc.git
 [submodule "submodules/manifold"]
 	path = submodules/manifold
-	url = https://github.com/elalish/manifold
+	url = https://github.com/elalish/manifold.git
 [submodule "sanitizers-cmake"]
 	path = submodules/sanitizers-cmake
 	url = https://github.com/arsenm/sanitizers-cmake.git
 [submodule "OpenCSG"]
 	path = submodules/OpenCSG
 	url = https://github.com/openscad/OpenCSG.git
+[submodule "Clipper2"]
+	path = submodules/Clipper2
+	url = https://github.com/AngusJohnson/Clipper2.git

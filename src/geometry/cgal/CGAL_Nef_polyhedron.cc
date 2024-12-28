@@ -1,13 +1,13 @@
-#include "cgal.h"
-#include "CGAL_Nef_polyhedron.h"
-#include "cgalutils.h"
-#include "printutils.h"
-#include "svg.h"
+#include "geometry/cgal/CGAL_Nef_polyhedron.h"
 
-CGAL_Nef_polyhedron::CGAL_Nef_polyhedron(const CGAL_Nef_polyhedron3 *p)
-{
-  if (p) p3.reset(p);
-}
+#include <memory>
+#include <cstddef>
+#include <string>
+
+#include "geometry/cgal/cgal.h"
+#include "geometry/cgal/cgalutils.h"
+#include "utils/printutils.h"
+#include "utils/svg.h"
 
 // Copy constructor only performs shallow copies, so all modifying functions
 // must reset p3 with a new CGAL_Nef_polyhedron3 object, to prevent cache corruption.
@@ -17,26 +17,31 @@ CGAL_Nef_polyhedron::CGAL_Nef_polyhedron(const CGAL_Nef_polyhedron& src) : Geome
   if (src.p3) this->p3 = src.p3;
 }
 
+std::unique_ptr<Geometry> CGAL_Nef_polyhedron::copy() const
+{
+  return std::make_unique<CGAL_Nef_polyhedron>(*this);
+}
+
 CGAL_Nef_polyhedron CGAL_Nef_polyhedron::operator+(const CGAL_Nef_polyhedron& other) const
 {
-  return {new CGAL_Nef_polyhedron3((*this->p3) + (*other.p3))};
+  return {std::make_shared<CGAL_Nef_polyhedron3>((*this->p3) + (*other.p3))};
 }
 
 CGAL_Nef_polyhedron& CGAL_Nef_polyhedron::operator+=(const CGAL_Nef_polyhedron& other)
 {
-  this->p3.reset(new CGAL_Nef_polyhedron3((*this->p3) + (*other.p3)));
+  this->p3 = std::make_shared<CGAL_Nef_polyhedron3>((*this->p3) + (*other.p3));
   return *this;
 }
 
 CGAL_Nef_polyhedron& CGAL_Nef_polyhedron::operator*=(const CGAL_Nef_polyhedron& other)
 {
-  this->p3.reset(new CGAL_Nef_polyhedron3((*this->p3) * (*other.p3)));
+  this->p3 = std::make_shared<CGAL_Nef_polyhedron3>((*this->p3) * (*other.p3));
   return *this;
 }
 
 CGAL_Nef_polyhedron& CGAL_Nef_polyhedron::operator-=(const CGAL_Nef_polyhedron& other)
 {
-  this->p3.reset(new CGAL_Nef_polyhedron3((*this->p3) - (*other.p3)));
+  this->p3 = std::make_shared<CGAL_Nef_polyhedron3>((*this->p3) - (*other.p3));
   return *this;
 }
 
@@ -49,7 +54,7 @@ CGAL_Nef_polyhedron& CGAL_Nef_polyhedron::minkowski(const CGAL_Nef_polyhedron& o
   // from https://doc.cgal.org/latest/Minkowski_sum_3/group__PkgMinkowskiSum3Ref.html
   CGAL_Nef_polyhedron3 op1(*this->p3);
   CGAL_Nef_polyhedron3 op2(*other.p3);
-  this->p3.reset(new CGAL_Nef_polyhedron3(CGAL::minkowski_sum_3(op1, op2)));
+  this->p3 = std::make_shared<CGAL_Nef_polyhedron3>(CGAL::minkowski_sum_3(op1, op2));
   return *this;
 }
 
@@ -104,9 +109,9 @@ void CGAL_Nef_polyhedron::transform(const Transform3d& matrix)
       LOG(message_group::Warning, "Scaling a 3D object with 0 - removing object");
       this->reset();
     } else {
-      auto N = new CGAL_Nef_polyhedron3(*this->p3);
+      auto N = std::make_shared<CGAL_Nef_polyhedron3>(*this->p3);
       CGALUtils::transform(*N, matrix);
-      this->p3.reset(N);
+      this->p3 = N;
     }
   }
 }

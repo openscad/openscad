@@ -25,9 +25,13 @@
 
 #pragma once
 
+#include <memory>
 #include <chrono>
-#include "Camera.h"
-#include "Geometry.h"
+#include <string>
+#include <vector>
+
+#include "glview/Camera.h"
+#include "geometry/Geometry.h"
 
 /**
  * An utility class to collect and print rendering statistics for the given
@@ -73,7 +77,7 @@ public:
   /**
    * Print all available statistic information.
    */
-  void printAll(const shared_ptr<const Geometry>& geom, const Camera& camera, const std::vector<std::string>& options = {}, const std::string& filename = {});
+  void printAll(const std::shared_ptr<const Geometry>& geom, const Camera& camera, const std::vector<std::string>& options = {}, const std::string& filename = {});
 
 private:
   std::chrono::steady_clock::time_point begin;

@@ -1,0 +1,20 @@
+multmatrix([[-0, 1, 0, 0], [-1, 0, 0, 0], [-0, 0, 1, 0], [0, 0, 0, 1]]) {
+	difference() {
+		color([1, 1, 0, 1]) {
+			render(convexity = 1) {
+				difference() {
+					color([1, 0, 0, 1]) {
+						sphere($fn = 0, $fa = 12, $fs = 2, r = 10);
+					}
+					color([0, 0, 1, 1]) {
+						cube(size = [10, 10, 10], center = false);
+					}
+				}
+			}
+		}
+		color([0, 0.501961, 0, 1]) {
+			cylinder($fn = 0, $fa = 12, $fs = 2, h = 20, r1 = 3, r2 = 3, center = true);
+		}
+	}
+}
+

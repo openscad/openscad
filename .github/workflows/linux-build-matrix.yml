@@ -1,0 +1,37 @@
+name: Linux Release Build
+
+on:
+  push:
+    branches:
+      - master
+  workflow_dispatch:
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ ubuntu-latest ]
+        headless: [ ON, OFF ]
+        enable_tests: [ ON, OFF ]
+        enable_manifold: [ ON, OFF ]
+
+    runs-on: ${{ matrix.os }}
+
+    name: ${{ matrix.os }}:HEADLESS=${{ matrix.headless }},ENABLE_TESTS=${{ matrix.enable_tests }},ENABLE_MANIFOLD=${{ matrix.enable_manifold }}
+
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        submodules: 'recursive'
+    - name: Install dependencies
+      run: sudo ./scripts/uni-get-dependencies.sh
+    - name: Run CMake
+      run: >
+        cmake -S . -B build -GNinja \
+          -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+          -DHEADLESS=${{ matrix.headless }} \
+          -DENABLE_MANIFOLD=${{ matrix.enable_manifold }} \
+          -DENABLE_TESTS=${{ matrix.enable_tests }}
+    - name: Build OpenSCAD
+      run: cmake --build build

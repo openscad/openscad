@@ -1,11 +1,11 @@
 #pragma once
 
 #include <stdexcept>
-#include <sstream>
 #include <utility>
-#include "AST.h"
-#include "printutils.h"
-#include "Identifier.h"
+#include <string>
+#include "core/AST.h"
+#include "core/Identifier.h"
+#include "utils/printutils.h"
 
 class EvaluationException : public std::runtime_error
 {

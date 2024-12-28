@@ -1,9 +1,11 @@
-#include "PlatformUtils.h"
+#include "platform/PlatformUtils.h"
 
+#include <ios>
+#include <string>
 #include <map>
 
-#include "printutils.h"
-#include "findversion.h"
+#include "utils/printutils.h"
+#include "utils/findversion.h"
 #ifndef _WIN32_WINNT
 #define _WIN32_WINNT 0x0501
 #endif
@@ -73,7 +75,7 @@ static const std::string getFolderPath(int nFolder)
 
   if (result == S_OK) {
     path = std::wstring(path.c_str() ); // strip extra nullptrs
-    // Use boost::filesystem to decide how to convert from wstring
+    // Use std::filesystem to decide how to convert from wstring
     // to string. Normally the path encoding is system local and
     // we don't want to force conversion to UTF-8.
     fs::path p(path);
@@ -115,6 +117,7 @@ unsigned long PlatformUtils::stackLimit()
   return STACK_LIMIT_DEFAULT;
 }
 
+// NOLINTNEXTLINE(modernize-use-using)
 typedef BOOL (WINAPI *LPFN_ISWOW64PROCESS)(HANDLE, PBOOL);
 
 // see http://msdn.microsoft.com/en-us/library/windows/desktop/ms684139%28v=vs.85%29.aspx
@@ -205,7 +208,6 @@ const std::string PlatformUtils::sysinfo(bool extended)
 
 #include <io.h>
 #include <cstdio>
-#include <fstream>
 
 #ifdef USE_MIMALLOC
 #include <mimalloc.h>
@@ -239,7 +241,6 @@ void PlatformUtils::ensureStdIO(void)
   }
 
 #ifdef USE_MIMALLOC
-  mi_register_output(&mi_output, NULL);
+  mi_register_output(&mi_output, nullptr);
 #endif
 }
-

@@ -1,13 +1,14 @@
-#include <iostream>
-#include <iomanip>
-#include <sstream>
+#include "glview/VertexArray.h"
+
+#include <cstring>
+#include <cassert>
+#include <array>
+#include <utility>
 #include <vector>
 #include <memory>
 #include <cstdio>
-#include <functional>
-#include "VertexArray.h"
 
-#include "printutils.h"
+#include "utils/printutils.h"
 
 void addAttributeValues(IAttributeData&) {}
 
@@ -30,14 +31,6 @@ void VertexData::remove(size_t count)
   }
 }
 
-void VertexData::append(const VertexData& data) {
-  size_t i = 0;
-  for (auto& a : attributes_) {
-    a->append(*(data.attributes_[i]));
-    i++;
-  }
-}
-
 void VertexArray::addSurfaceData()
 {
   std::shared_ptr<VertexData> vertex_data = std::make_shared<VertexData>();
@@ -57,28 +50,18 @@ void VertexArray::addEdgeData()
   addVertexData(vertex_data);
 }
 
-void VertexArray::append(const VertexArray& vertex_array)
-{
-  size_t i = 0;
-  for (auto& v : vertices_) {
-    v->append(*(vertex_array.vertices_[i]));
-    i++;
-  }
-}
-
 void VertexArray::createVertex(const std::array<Vector3d, 3>& points,
                                const std::array<Vector3d, 3>& normals,
                                const Color4f& color,
                                size_t active_point_index, size_t primitive_index,
-                               double z_offset, size_t shape_size,
-                               size_t shape_dimensions, bool outlines,
-                               bool mirror, const CreateVertexCallback& vertex_callback)
+                               size_t shape_size, bool outlines, bool mirror,
+                               const CreateVertexCallback& vertex_callback)
 {
-  if (vertex_callback)
-    vertex_callback(*this, points, normals, color, active_point_index,
-                    primitive_index, z_offset, shape_size,
-                    shape_dimensions, outlines, mirror);
-
+  if (vertex_callback) {
+    vertex_callback(*this, active_point_index,
+                    primitive_index, shape_size, outlines);
+  }
+  
   addAttributeValues(*(data()->positionData()), points[active_point_index][0], points[active_point_index][1], points[active_point_index][2]);
   if (data()->hasNormalData()) {
     addAttributeValues(*(data()->normalData()), normals[active_point_index][0], normals[active_point_index][1], normals[active_point_index][2]);
@@ -128,31 +111,7 @@ void VertexArray::createVertex(const std::array<Vector3d, 3>& points,
     }
 
     // append element data
-    if (!elements_size_ || Feature::ExperimentalVxORenderersPrealloc.is_enabled()) {
-      addAttributeValues(*elementsData(), entry.first->second);
-    } else {
-      if (elementsData()->sizeofAttribute() == sizeof(GLubyte)) {
-        auto index = (GLubyte)entry.first->second;
-        GL_TRACE("glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, %d, %d, %p)", elements_offset_ % elementsData()->sizeofAttribute() % (void *)&index);
-        GL_CHECKD(glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, elements_offset_,
-                                  elementsData()->sizeofAttribute(),
-                                  &index));
-      } else if (elementsData()->sizeofAttribute() == sizeof(GLushort)) {
-        auto index = (GLushort)entry.first->second;
-        GL_TRACE("glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, %d, %d, %p)", elements_offset_ % elementsData()->sizeofAttribute() % (void *)&index);
-        GL_CHECKD(glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, elements_offset_,
-                                  elementsData()->sizeofAttribute(),
-                                  &index));
-      } else if (elementsData()->sizeofAttribute() == sizeof(GLuint)) {
-        auto index = (GLuint)entry.first->second;
-        GL_TRACE("glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, %d, %d, %p)", elements_offset_ % elementsData()->sizeofAttribute() % (void *)&index);
-        GL_CHECKD(glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, elements_offset_,
-                                  elementsData()->sizeofAttribute(),
-                                  &index));
-      } else {
-        assert(false && "create_vertex invalid index attribute size");
-      }
-    }
+    addAttributeValues(*elementsData(), entry.first->second);
     elements_offset_ += elementsData()->sizeofAttribute();
   } else { // !useElements()
     if (!vertices_size_) {
@@ -234,10 +193,10 @@ void VertexArray::createInterleavedVBOs()
   }
 
   PRINTDB("useElements() = %d, elements_size_ = %d", useElements() % elements_size_);
-  if (useElements() && (!elements_size_ || Feature::ExperimentalVxORenderersPrealloc.is_enabled())) {
+  if (useElements()) {
     GL_TRACE("glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, %d)", elements_vbo_);
     GL_CHECKD(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elements_vbo_));
-    if (!Feature::ExperimentalVxORenderersPrealloc.is_enabled()) {
+    if (elements_size_ == 0) {
       GL_TRACE("glBufferData(GL_ELEMENT_ARRAY_BUFFER, %d, %p, GL_STATIC_DRAW)", elements_.sizeInBytes() % (void *)nullptr);
       GL_CHECKD(glBufferData(GL_ELEMENT_ARRAY_BUFFER, elements_.sizeInBytes(), nullptr, GL_STATIC_DRAW));
     }
@@ -257,7 +216,7 @@ void VertexArray::addAttributePointers(size_t start_offset)
   if (!this->data()) return;
 
   std::shared_ptr<VertexData> vertex_data = this->data();
-  std::shared_ptr<VertexState> vs = this->states().back();
+  std::shared_ptr<VertexState> vs = states_.back();
 
   GLsizei count = vertex_data->positionData()->count();
   GLenum type = vertex_data->positionData()->glType();
@@ -334,12 +293,10 @@ void VertexArray::addAttributePointers(size_t start_offset)
 void VertexArray::allocateBuffers(size_t num_vertices) {
   size_t vertices_size = num_vertices * stride();
   setVerticesSize(vertices_size);
-  GL_TRACE("glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, %d)", vertices_vbo_);
+  GL_TRACE("glBindBuffer(GL_ARRAY_BUFFER, %d)", vertices_vbo_);
   GL_CHECKD(glBindBuffer(GL_ARRAY_BUFFER, vertices_vbo_));
   GL_TRACE("glBufferData(GL_ARRAY_BUFFER, %d, %p, GL_STATIC_DRAW)", vertices_size % (void *)nullptr);
   GL_CHECKD(glBufferData(GL_ARRAY_BUFFER, vertices_size, nullptr, GL_STATIC_DRAW));
-
-
   if (Feature::ExperimentalVxORenderersIndexing.is_enabled()) {
     // Use smallest possible index data type
     if (num_vertices <= 0xff) {

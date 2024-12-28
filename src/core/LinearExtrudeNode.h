@@ -1,7 +1,10 @@
 #pragma once
 
-#include "node.h"
-#include "Value.h"
+#include <string>
+
+#include "core/node.h"
+#include "core/Value.h"
+#include "geometry/linalg.h"
 
 class LinearExtrudeNode : public AbstractPolyNode
 {
@@ -12,7 +15,7 @@ public:
   std::string toString() const override;
   std::string name() const override { return "linear_extrude"; }
 
-  double height = 100.0;
+  Vector3d height=Vector3d(0, 0, 100);
   double origin_x = 0.0, origin_y = 0.0;
   double fn = 0.0, fs = 0.0, fa = 0.0;
   double scale_x = 1.0, scale_y = 1.0;

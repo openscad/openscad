@@ -25,34 +25,59 @@
  *
  */
 
-#include "export.h"
+#include "io/export.h"
+#include "geometry/linalg.h"
+#include "Feature.h"
+#include "geometry/Reindexer.h"
+#include "geometry/PolySet.h"
+#include "geometry/PolySetUtils.h"
 
-#ifdef ENABLE_CGAL
+#include <ostream>
+#include <memory>
+#include <cstddef>
+#include <cstdint>
 
-#include "IndexedMesh.h"
-
-void export_off(const shared_ptr<const Geometry>& geom, std::ostream& output)
+uint8_t clamp_color_channel(float value)
 {
-  IndexedMesh mesh;
-  mesh.append_geometry(geom);
+  if (value < 0) return 0;
+  if (value > 1) return 255;
+  return (uint8_t)(value * 255);
+}
 
-  output << "OFF " << mesh.vertices.size() << " " << mesh.numfaces << " 0\n";
-  const auto& v = mesh.vertices.getArray();
-  size_t numverts = mesh.vertices.size();
+void export_off(const std::shared_ptr<const Geometry>& geom, std::ostream& output)
+{
+  auto ps = PolySetUtils::getGeometryAsPolySet(geom);
+  if (Feature::ExperimentalPredictibleOutput.is_enabled()) {
+    ps = createSortedPolySet(*ps);
+  }
+  const auto& v = ps->vertices;
+  size_t numverts = v.size();
+
+
+  output << "OFF " << numverts << " " << ps->indices.size() << " 0\n";
   for (size_t i = 0; i < numverts; ++i) {
     output << v[i][0] << " " << v[i][1] << " " << v[i][2] << " " << "\n";
   }
-  size_t cnt = 0;
-  for (size_t i = 0; i < mesh.numfaces; ++i) {
-    size_t nverts = 0;
-    while (mesh.indices[cnt++] != -1) nverts++;
+
+  auto has_color = !ps->color_indices.empty();
+  
+  for (size_t i = 0; i < ps->indices.size(); ++i) {
+    int nverts = ps->indices[i].size();
     output << nverts;
-    cnt -= nverts + 1;
-    for (size_t n = 0; n < nverts; ++n) output << " " << mesh.indices[cnt++];
+    for (size_t n = 0; n < nverts; ++n) output << " " << ps->indices[i][n];
+    if (has_color) {
+      auto color_index = ps->color_indices[i];
+      if (color_index >= 0) {
+        auto color = ps->colors[color_index];
+        auto r = clamp_color_channel(color[0]);
+        auto g = clamp_color_channel(color[1]);
+        auto b = clamp_color_channel(color[2]);
+        auto a = clamp_color_channel(color[3]);
+        output << " " << (int)r << " " << (int)g << " " << (int)b;
+        // Alpha channel is read by apps like MeshLab.
+        if (a != 255) output << " " << (int)a;
+      }
+    }
     output << "\n";
-    cnt++; // Skip the -1 marker
   }
-
 }
-
-#endif // ENABLE_CGAL

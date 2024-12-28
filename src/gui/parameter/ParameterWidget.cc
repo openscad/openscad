@@ -23,23 +23,35 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  */
+#include "gui/parameter/ParameterWidget.h"
+
+#include <QLayoutItem>
+#include <QString>
+#include <stdexcept>
+#include <cassert>
+#include <map>
+#include <set>
+#include <memory>
 #include <QWidget>
 
-#include "ParameterWidget.h"
 
-#include "GroupWidget.h"
-#include "ParameterSpinBox.h"
-#include "ParameterComboBox.h"
-#include "ParameterSlider.h"
-#include "ParameterCheckBox.h"
-#include "ParameterText.h"
-#include "ParameterVector.h"
+#include "gui/parameter/GroupWidget.h"
+#include "gui/parameter/ParameterSpinBox.h"
+#include "gui/parameter/ParameterComboBox.h"
+#include "gui/parameter/ParameterSlider.h"
+#include "gui/parameter/ParameterCheckBox.h"
+#include "gui/parameter/ParameterText.h"
+#include "gui/parameter/ParameterVector.h"
+#include "gui/Preferences.h"
 
-#include <boost/filesystem.hpp>
+#include <filesystem>
 
 #include <QInputDialog>
 #include <QMessageBox>
+#include <cstddef>
+#include <string>
 #include <utility>
+#include <vector>
 
 ParameterWidget::ParameterWidget(QWidget *parent) : QWidget(parent)
 {
@@ -58,6 +70,13 @@ ParameterWidget::ParameterWidget(QWidget *parent) : QWidget(parent)
   //connect(comboBoxPreset, SIGNAL(editTextChanged(const QString&)), this, SLOT(onSetNameChanged()));
   connect(addButton, SIGNAL(clicked()), this, SLOT(onSetAdd()));
   connect(deleteButton, SIGNAL(clicked()), this, SLOT(onSetDelete()));
+
+  QString fontfamily = Preferences::inst()->getValue("advanced/customizerFontFamily").toString();
+  uint fontsize = Preferences::inst()->getValue("advanced/customizerFontSize").toUInt();
+  setFontFamilySize(fontfamily, fontsize);
+
+  connect(Preferences::inst(), SIGNAL(customizerFontChanged(const QString&, uint)), this,
+    SLOT(setFontFamilySize(const QString&, uint)));
 }
 
 // Can only be called before the initial setParameters().
@@ -68,7 +87,7 @@ void ParameterWidget::readFile(const QString& scadFile)
   assert(widgets.empty());
 
   QString jsonFile = getJsonFile(scadFile);
-  if (!boost::filesystem::exists(jsonFile.toStdString()) || this->sets.readFile(jsonFile.toStdString())) {
+  if (!std::filesystem::exists(jsonFile.toStdString()) || this->sets.readFile(jsonFile.toStdString())) {
     this->invalidJsonFile = QString();
   } else {
     this->invalidJsonFile = jsonFile;
@@ -394,7 +413,7 @@ ParameterVirtualWidget *ParameterWidget::createParameterWidget(ParameterObject *
 
 QString ParameterWidget::getJsonFile(const QString& scadFile)
 {
-  boost::filesystem::path p = scadFile.toStdString();
+  std::filesystem::path p = scadFile.toStdString();
   return QString::fromStdString(p.replace_extension(".json").string());
 }
 
@@ -420,4 +439,9 @@ void ParameterWidget::cleanSets()
       }
     }
   }
+}
+
+void ParameterWidget::setFontFamilySize(const QString &fontFamily, uint fontSize)
+{
+  scrollArea->setStyleSheet(QString("font-family: \"%1\"; font-size: %2pt;").arg(fontFamily).arg(fontSize));
 }

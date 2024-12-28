@@ -61,7 +61,7 @@ opencsg_sysver()
   debug opencsg_sysver
   if [ ! -e $1/include/opencsg.h ]; then return; fi
   ocsgver=`grep -a "define  *OPENCSG_VERSION_STRING *[0-9x]*" $1/include/opencsg.h`
-  ocsgver=`echo $ocsgver | awk '{print $4}' | sed s/'"'//g | sed s/[^1-9.]//g`
+  ocsgver=`echo $ocsgver | awk '{print $4}' | sed s/'"'//g | sed s/[^0-9.]//g`
   opencsg_sysver_result=$ocsgver
 }
 
@@ -119,7 +119,7 @@ fontconfig_sysver()
   if [ ! -e $fcpath ]; then return; fi
   fcmajor=`grep "define *FC_MAJOR.*[0-9.]*" $fcpath | awk '{print $3}'`
   fcminor=`grep "define *FC_MINOR.*[0-9.]*" $fcpath | awk '{print $3}'`
-  fcrevison=`grep "define *FC_REVISION.*[0-9.]*" $fcpath | awk '{print $3}'`
+  fcrevision=`grep "define *FC_REVISION.*[0-9.]*" $fcpath | awk '{print $3}'`
   fontconfig_sysver_result="${fcmajor}.${fcminor}.${fcrevision}"
 }
 

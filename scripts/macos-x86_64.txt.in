@@ -12,7 +12,7 @@ c = 'cc'
 cpp = 'c++'
 objc = 'cc'
 strip = 'strip'
-pkgconfig = 'pkg-config'
+pkg-config = 'pkg-config'
 
 [built-in options]
 c_args = ['-arch', 'x86_64', '-mmacosx-version-min=@MAC_OSX_VERSION_MIN@', '-I@DEPLOYDIR@/include']

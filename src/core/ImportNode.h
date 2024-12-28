@@ -1,9 +1,11 @@
 #pragma once
 
+#include <memory>
+#include <string>
 #include <boost/optional.hpp>
 
-#include "node.h"
-#include "Value.h"
+#include "core/node.h"
+#include "core/Value.h"
 
 enum class ImportType {
   UNKNOWN,
@@ -37,5 +39,5 @@ public:
   double fn, fs, fa;
   double origin_x, origin_y, scale;
   double width, height;
-  const class Geometry *createGeometry() const override;
+  std::unique_ptr<const class Geometry> createGeometry() const override;
 };

@@ -1,0 +1,6 @@
+rotate_extrude(angle = 360, convexity = 2, $fn = 0, $fa = 12, $fs = 2) {
+	multmatrix([[0.707107, 0.707107, 0, 0], [-0.707107, 0.707107, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+		square(size = [10, 10], center = false);
+	}
+}
+

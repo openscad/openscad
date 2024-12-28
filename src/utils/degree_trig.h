@@ -27,7 +27,7 @@
 // Trigonometry function taking degrees, accurate for 30, 45, 60 and 90, etc.
 //
 #pragma once
-#include "linalg.h"
+#include "geometry/linalg.h"
 
 constexpr double M_SQRT3 = 1.73205080756887719318;    /* sqrt(3)   */
 constexpr double M_SQRT3_4 = 0.86602540378443859659;  /* sqrt(3/4) == sqrt(3)/2 */

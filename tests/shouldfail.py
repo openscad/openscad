@@ -59,7 +59,7 @@ sys.stdout.flush()
 try:
     result = subprocess.call(export_cmd)
 except (OSError) as err:
-    failquit("Error: %s \"%s\"" % (err.strerror, export_cmd))
+    failquit(f'Error: {err.strerror} "{export_cmd}"')
 
 if str(result) != str(args.retval):
     failquit('OpenSCAD failed with unexpected return value ' + str(result) + ' (should be ' + str(args.retval) + ')')

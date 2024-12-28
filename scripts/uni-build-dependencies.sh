@@ -28,6 +28,7 @@
 # - GLU (GL/glu.h)
 # - gcc
 # - Qt5
+# - m4
 #
 # If your system lacks qt5, build like this:
 #
@@ -194,7 +195,7 @@ build_bison()
   cd $BASEDIR/src
   rm -rf bison-$version
   if [ ! -f bison-$version.tar.gz ]; then
-    curl --insecure -O http://ftp.gnu.org/gnu/bison/bison-$version.tar.gz
+    curl -O https://ftp.gnu.org/gnu/bison/bison-$version.tar.gz
   fi
   tar zxf bison-$version.tar.gz
   cd bison-$version
@@ -226,7 +227,7 @@ build_cmake()
   cd $BASEDIR/src
   rm -rf cmake-$version
   if [ ! -f cmake-$version.tar.gz ]; then
-    curl --insecure -O http://www.cmake.org/files/v2.8/cmake-$version.tar.gz
+    curl -O https://cmake.org/files/v2.8/cmake-$version.tar.gz
   fi
   tar zxf cmake-$version.tar.gz
   cd cmake-$version
@@ -244,7 +245,7 @@ build_curl()
   cd $BASEDIR/src
   rm -rf curl-$version
   if [ ! -f curl-$version.tar.bz2 ]; then
-    wget http://curl.haxx.se/download/curl-$version.tar.bz2
+    wget https://curl.haxx.se/download/curl-$version.tar.bz2
   fi
   tar xjf curl-$version.tar.bz2
   cd curl-$version
@@ -288,7 +289,7 @@ build_mpfr()
   cd $BASEDIR/src
   rm -rf mpfr-$version
   if [ ! -f mpfr-$version.tar.bz2 ]; then
-    curl --insecure -O ftp.gnu.org/gnu/mpfr/mpfr-$version.tar.bz2
+    curl -O https://ftp.gnu.org/gnu/mpfr/mpfr-$version.tar.bz2
   fi
   tar xjf mpfr-$version.tar.bz2
   cd mpfr-$version
@@ -312,7 +313,7 @@ build_boost()
   cd $BASEDIR/src
   rm -rf boost_$bversion
   if [ ! -f boost_$bversion.tar.bz2 ]; then
-    curl --insecure -LO http://downloads.sourceforge.net/project/boost/boost/$version/boost_$bversion.tar.bz2
+    curl -LO https://downloads.sourceforge.net/project/boost/boost/$version/boost_$bversion.tar.bz2
   fi
   if [ ! $? -eq 0 ]; then
     echo download failed. 
@@ -702,7 +703,7 @@ build_libffi()
 #  cd "$BASEDIR"/src
 #  rm -rf "glib-$version"
 #  if [ ! -f "glib-$version.tar.xz" ]; then
-#    curl --insecure -LO "http://ftp.gnome.org/pub/gnome/sources/glib/$maj_min_version/glib-$version.tar.xz"
+#    curl -LO "https://ftp.gnome.org/pub/gnome/sources/glib/$maj_min_version/glib-$version.tar.xz"
 #  fi
 #  tar xJf "glib-$version.tar.xz"
 #  cd "glib-$version"
@@ -762,7 +763,7 @@ if [ ! "`command -v curl`" ]; then
 fi
 
 if [ ! "`command -v bison`" ]; then
-  build_bison 2.6.1
+  build_bison 3.8.2
 fi
 
 # NB! For cmake, also update the actual download URL in the function

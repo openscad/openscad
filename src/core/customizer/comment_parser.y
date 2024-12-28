@@ -3,9 +3,10 @@
 %{
     #include <sstream>
     #include <string>
-    #include "Expression.h"
-    #include "printutils.h"
-    #include "CommentParser.h"
+    #include <memory>
+    #include "core/Expression.h"
+    #include "utils/printutils.h"
+    #include "core/customizer/CommentParser.h"
     #ifdef _MSC_VER
     #define strdup _strdup
     #endif
@@ -14,7 +15,7 @@
     int comment_lexerlex(void);
     int comment_parserlex(void);
     extern void comment_scan_string ( const char *str );
-    shared_ptr<Expression> params;
+    std::shared_ptr<Expression> params;
 %}
 %union {
     char *text;
@@ -44,7 +45,7 @@ params:
     expr
         {
             $$ = $1;
-            params = shared_ptr<Expression>($$);
+            params = std::shared_ptr<Expression>($$);
         }
     ;
 
@@ -180,7 +181,7 @@ void yyerror(const char * /*msg*/) {
     params = NULL;
 }
 
-shared_ptr<Expression> CommentParser::parser(const char *text)
+std::shared_ptr<Expression> CommentParser::parser(const char *text)
 {
   comment_scan_string(text);
   int parserretval = comment_parserparse();

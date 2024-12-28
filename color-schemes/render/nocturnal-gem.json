@@ -1,0 +1,19 @@
+{
+    "name" : "Nocturnal Gem",
+    "index" : 1550,
+    "show-in-gui" : true,
+
+    "colors" : {
+        "background" :         "#0c0c0c",
+        "axes-color" :         "#a7a9b7",
+        "opencsg-face-front" : "#02daf7",
+        "opencsg-face-back" :  "#014da1",
+        "cgal-face-front" :    "#02daf7",
+        "cgal-face-back" :     "#014da1",
+        "cgal-face-2d" :       "#0498cf",
+        "cgal-edge-front" :    "#b8f3f7",
+        "cgal-edge-back" :     "#0fb7e8",
+        "cgal-edge-2d" :       "#b6f1eb",
+        "crosshair" :          "#8aa3da"
+    }
+}

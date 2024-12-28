@@ -1,4 +1,6 @@
-#!/bin/bash
+#!/usr/bin/env bash
+
+QT="$1"
 
 if [ -z $MSYSTEM ]; then
   MSYSTEM_DEFAULT=UCRT64
@@ -20,8 +22,15 @@ pacman --noconfirm --sync --needed pactoys libxml2
 #            name:p means MINGW_PACKAGE_PREFIX-only
 #            name:  disables any translation for name
 
+if [[ "$QT" == "qt6" ]]; then
+  QT_PACKAGES="qscintilla-qt6:p qt6-5compat:p qt6-multimedia:p qt6-svg:p"
+else
+  QT_PACKAGES="qscintilla:p qt5-multimedia:p qt5-svg:p"
+fi
+
 date "+### %Y-%m-%d %T install remaining packages"
 pacboy --noconfirm --sync --needed \
+    $QT_PACKAGES \
     git: \
     make: \
     bison: \
@@ -33,7 +42,6 @@ pacboy --noconfirm --sync --needed \
     cgal:p \
     eigen3:p \
     glew:p \
-    qscintilla:p \
     opencsg:p \
     lib3mf:p \
     libzip:p \
@@ -42,10 +50,10 @@ pacboy --noconfirm --sync --needed \
     cairo:p \
     ghostscript:p \
     imagemagick:p \
-    qt5-svg:p \
-    qt5-multimedia:p \
     tbb:p \
     python:p \
-    python-pip:p
+    python-pip:p \
+    python-numpy:p \
+    python-pillow:p
 
 date "+### %Y-%m-%d %T msys2-install-dependencies finished"

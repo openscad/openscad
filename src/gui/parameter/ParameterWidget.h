@@ -25,14 +25,19 @@
  */
 #pragma once
 
+#include <QString>
+#include <QWidget>
 #include <QTimer>
+#include <cstddef>
 #include <map>
+#include <string>
+#include <vector>
 
-#include "qtgettext.h" // IWYU pragma: keep
+#include "gui/qtgettext.h" // IWYU pragma: keep
 #include "ui_ParameterWidget.h"
-#include "ParameterObject.h"
-#include "ParameterSet.h"
-#include "ParameterVirtualWidget.h"
+#include "core/customizer/ParameterObject.h"
+#include "core/customizer/ParameterSet.h"
+#include "gui/parameter/ParameterVirtualWidget.h"
 
 class ParameterWidget : public QWidget, public Ui::ParameterWidget
 {
@@ -59,6 +64,7 @@ public:
 
 public slots:
   void setModified(bool modified = true);
+  void setFontFamilySize(const QString &fontfamily, uint fontsize);
 
 protected slots:
   void autoPreview(bool immediate = false);

@@ -35,7 +35,7 @@ get_qomo_deps()
 
 get_altlinux_deps()
 {
- for i in boost-devel boost-filesystem-devel gcc4.5 gcc4.5-c++ boost-program_options-devel \
+ for i in boost-devel gcc4.5 gcc4.5-c++ boost-program_options-devel \
   boost-thread-devel boost-system-devel boost-regex-devel eigen3 \
   libmpfr libgmp libgmp_cxx-devel qt5-devel libcgal-devel git-core tbb-devel \
   libglew-devel flex bison curl imagemagick gettext glib2-devel; do apt-get install $i; done
@@ -64,7 +64,7 @@ get_opensuse_deps()
   glib2-devel gettext freetype-devel harfbuzz-devel  \
   qscintilla-qt5-devel libqt5-qtbase-devel libQt5OpenGL-devel \
   xvfb-run libzip-devel libqt5-qtmultimedia-devel libqt5-qtsvg-devel \
-  double-conversion-devel libboost_filesystem-devel libboost_regex-devel \
+  double-conversion-devel libboost_regex-devel \
   libboost_program_options-devel tbb-devel
  # qscintilla-qt5-devel replaces libqscintilla_qt5-devel
  # but openscad compiles with both
@@ -99,39 +99,22 @@ get_mageia_deps()
 
 get_debian_deps()
 {
+ apt-get update
  apt-get -y install \
-  build-essential curl libffi-dev \
-  libxmu-dev cmake bison flex git-core libboost-all-dev \
-  libmpfr-dev libboost-dev libglew-dev libcairo2-dev \
-  libeigen3-dev libcgal-dev libopencsg-dev libgmp3-dev libgmp-dev \
-  imagemagick libfreetype6-dev libdouble-conversion-dev \
-  gtk-doc-tools libglib2.0-dev gettext xvfb pkg-config ragel libtbb-dev
- apt-get -y install libxi-dev libfontconfig-dev libzip-dev
+  build-essential bison flex git curl cmake ninja-build libffi-dev \
+  libboost-program-options-dev libboost-regex-dev libboost-system-dev \
+  libmpfr-dev libglew-dev libcairo2-dev libharfbuzz-dev \
+  libeigen3-dev libcgal-dev libopencsg-dev libgmp-dev \
+  imagemagick libfreetype6-dev libdouble-conversion-dev libxml2-dev \
+  gtk-doc-tools libglib2.0-dev gettext xvfb pkg-config ragel libtbb-dev \
+  libgl1-mesa-dev libxi-dev libxmu-dev libfontconfig-dev libzip-dev
+ get_qt5_deps_debian
 }
 
 get_qt5_deps_debian()
 {
-  # OpenSCAD requires Qt5
-  apt-get -y install qtbase5-dev libqt5scintilla2-dev libqt5opengl5-dev libqt5svg5-dev qtmultimedia5-dev libqt5multimedia5-plugins qt5-qmake
-  if [ ! "`command -v qmake`" ]; then
-    apt-get -y install qt5-default
-    echo "installed qt5-default to enable qmake"
-  elif [ ! "`qmake --version | grep qmake.version`" ]; then
-    apt-get -y install qt5-default
-    echo "installed qt5qt-default to enable qmake"
-  fi
-}
-
-get_debian_8_deps()
-{
-  apt-get -y install libharfbuzz-dev libxml2-dev
-  get_debian_deps
-  get_qt5_deps_debian
-}
-
-get_ubuntu_14_deps()
-{
-  get_debian_8_deps
+ apt-get -y install qtbase5-dev libqscintilla2-qt5-dev libqt5opengl5-dev \
+  libqt5svg5-dev qtmultimedia5-dev libqt5multimedia5-plugins qt5-qmake
 }
 
 get_arch_deps()
@@ -141,19 +124,6 @@ get_arch_deps()
 	qt5 qscintilla-qt5 cgal gmp mpfr boost opencsg \
 	glew eigen glib2 fontconfig freetype2 harfbuzz \
 	double-conversion imagemagick tbb
-}
-
-get_ubuntu_16_deps()
-{
-  apt-get -y install libxi-dev libxml2-dev libfontconfig1-dev
-  # https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=804539
-  apt-get -y install libcgal-qt5-dev
-  get_debian_8_deps
-}
-
-get_neon_deps()
-{
-  get_debian_8_deps
 }
 
 get_solus_deps()
@@ -174,30 +144,18 @@ unknown()
 }
 
 if [ -e /etc/issue ]; then
- if [ "`grep -i ubuntu.1[4-5] /etc/issue`" ]; then
-  get_ubuntu_14_deps
- elif [ "`grep -i ubuntu.1[6-9] /etc/issue`" ]; then
-  get_ubuntu_16_deps
- elif [ "`grep -i ubuntu.2[0-4] /etc/issue`" ]; then
-  get_ubuntu_16_deps
- elif [ "`grep -i ubuntu /etc/issue`" ]; then
+ if [ "`grep -i ubuntu /etc/issue`" ]; then
   get_debian_deps
  elif [ "`grep -i KDE.neon /etc/issue`" ]; then
-  get_neon_deps
- elif [ "`grep -i elementary.*freya /etc/issue`" ]; then
-  get_ubuntu_14_deps
+  get_debian_deps
  elif [ "`grep ID=.solus /etc/os-release`" ]; then
   get_solus_deps
  elif [ "`grep -i debian /etc/issue`" ]; then
-  get_debian_8_deps
+  get_debian_deps
  elif [ "`grep -i raspbian /etc/issue`" ]; then
   get_debian_deps
- elif [ "`grep -i linux.mint.2 /etc/issue`" ]; then
-  get_ubuntu_14_deps
- elif [ "`grep -i linux.mint.17 /etc/issue`" ]; then
-  get_ubuntu_14_deps
- elif [ "`grep -i linux.mint.1[89] /etc/issue`" ]; then
-  get_ubuntu_16_deps
+ elif [ "`grep -i linux.mint /etc/issue`" ]; then
+  get_debian_deps
  elif [ "`grep -i suse /etc/issue`" ]; then
   get_opensuse_deps
  elif [ "`grep -i fedora.release.2[2-9] /etc/issue`" ]; then
@@ -234,4 +192,3 @@ elif [ "`uname | grep -i netbsd`" ]; then
 else
  unknown
 fi
-

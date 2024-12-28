@@ -1,0 +1,37 @@
+# Some set of config values, then refined below
+BasedOnStyle: Google
+
+ColumnLimit: 105
+ContinuationIndentWidth: 2
+ConstructorInitializerIndentWidth: 2
+
+# public:, private: in classes: no indent
+AccessModifierOffset: -2
+
+# case on same level as switch
+IndentCaseLabels: false
+AllowShortCaseLabelsOnASingleLine: true
+AlignConsecutiveShortCaseStatements:
+  Enabled: true
+  AcrossEmptyLines: true
+  AcrossComments: true
+  AlignCaseColons: false
+
+# Always align pointer * and reference & to the right.
+DerivePointerAlignment: false
+PointerAlignment: Right
+ReferenceAlignment: Left
+
+# To be enabled later:
+#  *  once all misc-include-cleaner are addressed an no accidental inclusion
+#     order needed.
+#  * Some CGAL inclusion order has been figuured out.
+SortIncludes: false
+
+# Braces on newline in functions, classes and namespaces.
+BreakBeforeBraces: Custom
+BraceWrapping:
+  AfterClass: true
+  AfterFunction: true
+
+AllowShortIfStatementsOnASingleLine: AllIfsAndElse
