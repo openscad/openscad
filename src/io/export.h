@@ -117,7 +117,7 @@ struct ExportInfo {
   std::string sourceFilePath; // Full path to the OpenSCAD source file
   ExportPdfOptions *options;
   const Camera *camera;
-  Color4f defaultColor;
+  Color4f defaultColor; // CGAL_FACE_FRONT_COLOR, should later come from active color scheme
 };
 
 bool exportFileByName(const std::shared_ptr<const class Geometry>& root_geom, const std::string& filename, const ExportInfo& exportInfo);
