@@ -180,6 +180,10 @@ gmp_sysver()
 
 qt_sysver()
 {
+  if [ -d '/usr/lib/qtchooser' ]; then
+    . <(/usr/lib/qtchooser/qtchooser -print-env)
+    PATH=$PATH:$QTTOOLDIR
+  fi
   if [ "`command -v qtchooser`" ]; then
     qtver=`qtchooser -run-tool=qmake -qt=5 -v 2>&1`
     if [ $? -eq 0 ] ; then
