@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # Usage (in github root folder): ./scripts/github-release.sh <version>
 #

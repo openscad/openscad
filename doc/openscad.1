@@ -1,4 +1,4 @@
-.TH OPENSCAD 1 "2021.01"
+.TH OPENSCAD 1 "2023.10"
 .\" Please adjust this date whenever revising the manpage.
 .SH NAME
 openscad \- script file based graphical CAD environment
@@ -37,9 +37,12 @@ output file will be written, but the file will still be evaluated and all
 rendering process will still take place if the \fB\-\-render\fP option is
 given.)
 .TP
-\fB\--export-format
-Overrides format of exported scad file when using option \fB\-o\fP, arg can
-be any of its supported file extensions.
+\fB\--export-format=\fIformat
+Overrides format of exported scad file when using option \fB\-o\fP. \fIformat\fP
+can be any of its supported file extensions. For ascii stl export, specify
+\fBasciistl\fP, and for binary stl export, specify \fBbinstl\fP. Ascii export is
+the current stl default, but binary stl is planned as the future default so
+\fBasciistl\fP should be explicitly specified in scripts when needed.
 .TP
 \fB\-q
 Quiet mode (don't print anything except errors)
@@ -59,10 +62,10 @@ variable's value is an expression, so if this mechanism is used to assign
 strings, care has to be taken that the shell does not consume quotation marks.
 More than one \fB-D\fP option can be given.
 .TP
-.B \-p
+.B \-p [ \-\-p ] arg
 Customizer parameter file.
 .TP
-.B \-p
+.B \-P [ \-\-P ] arg
 Customizer parameter set.
 .TP
 .B \-v

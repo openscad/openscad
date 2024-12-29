@@ -27,6 +27,7 @@ icons = [
     ["export-csg"],
     ["export-pdf"],
     ["export-png"],
+    ["export-pov"],
     ["preview"],
     ["render"],
     ["send"],
@@ -67,6 +68,9 @@ icons = [
     ["vcr-control-pause"],
     ["vcr-control-step-forward"],
     ["vcr-control-end"],
+    ["measure-dist"],
+    ["measure-ang"],
+    ["edit-copy"],
 ];
 
 icon(selected_icon) {
@@ -81,6 +85,7 @@ icon(selected_icon) {
     export("CSG");
     export("PDF");
     export("PNG");
+    export("POV");
     preview();
     render_();
     send();
@@ -121,6 +126,9 @@ icon(selected_icon) {
     vcr_control_pause();
     vcr_control_step_forward();
     vcr_control_end();
+    measure_dist();
+    measure_ang();
+	edit_copy();
 }
 
 if (list_icons) {
@@ -214,6 +222,14 @@ module export_paper() {
         translate([-1, height - corner_size + 1]) square([corner_size, corner_size]);
     }
     export_paper_corner();
+}
+
+module text_paper() {
+	export_paper();
+	x = [30, 40, 40, 10, 50, 40];
+	for (y = [0:5])
+	  translate([15, 11 * y + 17])
+		square([x[y], 3]);
 }
 
 module export_paper_corner() {
@@ -733,3 +749,45 @@ module vcr_control_end(){
        translate([x, 0]) square([thick, 0.4 * width], center = true);
     }
 }
+
+module measure_dist(){
+    x =  0.75 * width /2;
+    a = width*0.2;
+    t = thin*0.1;
+    offset(rounding)
+    translate([width/2,height/2]){
+        for(mirr=[1,0,0]) mirror([mirr,0,0])  {
+            translate([x, 0]) square([t, 0.8 * width], center = true);
+        polygon([[x-t,-15],[x-a-t,a-15],[x-a-t,-a-15]]);
+        }
+       translate([0,-15])  square([2*x, thin], center = true);
+    }
+    translate([25,50])
+    resize([40, 40], true)
+    text("10", 40, font = export_font);
+
+}
+
+module measure_ang() {
+    x =  0.75 * width /2;
+    a = width*0.2;
+    offset(rounding)
+    translate([width/2,height/2]){
+        for(mirr=[1,0,0]) mirror([mirr,0,0])  {
+            translate([0, -x]) rotate([0,0,45]) square([thin, 0.8 * width/sqrt(2)]);
+        }
+    }
+    translate([width*0.5,width*0.6]) scale(0.7) curved_arrow();
+    translate([30,30])
+    resize([40, 40], true)
+    text("45", 40, font = export_font);
+}
+
+module edit_copy() {
+union() {
+	difference() {
+		translate([10, 30]) scale(0.7) text_paper();
+		translate([26, 5]) scale(0.7) paper();
+	}
+	translate([32, -1]) scale(0.7) text_paper();
+}}

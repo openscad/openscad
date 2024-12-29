@@ -28,7 +28,7 @@ std::string PlatformUtils::documentsPath()
 
 std::string PlatformUtils::userConfigPath()
 {
-  NSError *error;
+  NSError *error = nullptr;
   NSURL *appSupportDir = [[NSFileManager defaultManager] URLForDirectory:NSApplicationSupportDirectory inDomain:NSUserDomainMask appropriateForURL:nil create:YES error:&error];
   if (error) {
     return "";

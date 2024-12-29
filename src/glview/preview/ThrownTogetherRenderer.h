@@ -1,9 +1,13 @@
 #pragma once
 
-#include "Renderer.h"
-#include "CSGNode.h"
+#include <memory>
+#include <cstddef>
+#include <vector>
 
-#include "VBORenderer.h"
+#include "glview/Renderer.h"
+#include "core/CSGNode.h"
+
+#include "glview/VBORenderer.h"
 
 class CSGProducts;
 class CSGChainObject;
@@ -24,7 +28,7 @@ public:
   {}
 
   [[nodiscard]] size_t csgObjectIndex() const { return csg_object_index_; }
-  void csgObjectIndex(size_t csg_object_index) { csg_object_index_ = csg_object_index; }
+  void setCsgObjectIndex(size_t csg_object_index) { csg_object_index_ = csg_object_index; }
 
 private:
   size_t csg_object_index_;
@@ -45,22 +49,19 @@ public:
 class ThrownTogetherRenderer : public VBORenderer
 {
 public:
-  ThrownTogetherRenderer(shared_ptr<CSGProducts> root_products,
-                         shared_ptr<CSGProducts> highlight_products,
-                         shared_ptr<CSGProducts> background_products);
+  ThrownTogetherRenderer(std::shared_ptr<CSGProducts> root_products,
+                         std::shared_ptr<CSGProducts> highlight_products,
+                         std::shared_ptr<CSGProducts> background_products);
   ~ThrownTogetherRenderer() override;
   void prepare(bool showfaces, bool showedges, const shaderinfo_t *shaderinfo = nullptr) override;
   void draw(bool showfaces, bool showedges, const shaderinfo_t *shaderinfo = nullptr) const override;
 
   BoundingBox getBoundingBox() const override;
 private:
-  void renderCSGProducts(const shared_ptr<CSGProducts>& products, bool showedges = false,
+  void renderCSGProducts(const std::shared_ptr<CSGProducts>& products, bool showedges = false,
                          const Renderer::shaderinfo_t *shaderinfo = nullptr,
                          bool highlight_mode = false, bool background_mode = false,
                          bool fberror = false) const;
-  void renderChainObject(const CSGChainObject& csgobj, bool showedges,
-                         const Renderer::shaderinfo_t *, bool highlight_mode,
-                         bool background_mode, bool fberror, OpenSCADOperator type) const;
 
   void createCSGProducts(const CSGProducts& products, VertexArray& vertex_array,
                          bool highlight_mode, bool background_mode);
@@ -71,10 +72,10 @@ private:
   Renderer::ColorMode getColorMode(const CSGNode::Flag& flags, bool highlight_mode,
                                    bool background_mode, bool fberror, OpenSCADOperator type) const;
 
-  VertexStates vertex_states;
-  shared_ptr<CSGProducts> root_products;
-  shared_ptr<CSGProducts> highlight_products;
-  shared_ptr<CSGProducts> background_products;
+  std::vector<std::shared_ptr<VertexState>> vertex_states;
+  std::shared_ptr<CSGProducts> root_products;
+  std::shared_ptr<CSGProducts> highlight_products;
+  std::shared_ptr<CSGProducts> background_products;
   GLuint vertices_vbo{0};
   GLuint elements_vbo{0};
 };

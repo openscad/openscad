@@ -24,14 +24,18 @@
  *
  */
 
-#include "TransformNode.h"
-#include "ModuleInstantiation.h"
-#include "Children.h"
-#include "Builtins.h"
-#include "Value.h"
-#include "Parameters.h"
-#include "printutils.h"
-#include "degree_trig.h"
+#include "core/TransformNode.h"
+#include "core/ModuleInstantiation.h"
+#include "core/Children.h"
+#include "core/Builtins.h"
+#include "core/Value.h"
+#include "core/Parameters.h"
+#include "utils/printutils.h"
+#include "utils/degree_trig.h"
+#include <algorithm>
+#include <cmath>
+#include <memory>
+#include <cstddef>
 #include <sstream>
 #include <utility>
 #include <vector>

@@ -24,17 +24,15 @@
  *
  */
 
-#include "node.h"
+#include "geometry/GeometryUtils.h"
+#include "geometry/linalg.h"
+#include "core/node.h"
+
+#include <memory>
+#include <cstddef>
 #include <sstream>
-
-
-struct point2d {
-  double x, y;
-};
-
-struct point3d {
-  double x, y, z;
-};
+#include <string>
+#include <vector>
 
 class CubeNode : public LeafNode
 {
@@ -51,7 +49,7 @@ public:
     return stream.str();
   }
   std::string name() const override { return "cube"; }
-  const Geometry *createGeometry() const override;
+  std::unique_ptr<const Geometry> createGeometry() const override;
 
   double x = 1, y = 1, z = 1;
   bool center = false;
@@ -74,7 +72,7 @@ public:
     return stream.str();
   }
   std::string name() const override { return "sphere"; }
-  const Geometry *createGeometry() const override;
+  std::unique_ptr<const Geometry> createGeometry() const override;
 
   double fn, fs, fa;
   double r = 1;
@@ -100,7 +98,7 @@ public:
     return stream.str();
   }
   std::string name() const override { return "cylinder"; }
-  const Geometry *createGeometry() const override;
+  std::unique_ptr<const Geometry> createGeometry() const override;
 
   double fn, fs, fa;
   double r1 = 1, r2 = 1, h = 1;
@@ -114,10 +112,10 @@ public:
   PolyhedronNode (const ModuleInstantiation *mi) : LeafNode(mi) {}
   std::string toString() const override;
   std::string name() const override { return "polyhedron"; }
-  const Geometry *createGeometry() const override;
+  std::unique_ptr<const Geometry> createGeometry() const override;
 
-  std::vector<point3d> points;
-  std::vector<std::vector<size_t>> faces;
+  std::vector<Vector3d> points;
+  std::vector<IndexedFace> faces;
   int convexity = 1;
 };
 
@@ -136,7 +134,7 @@ public:
     return stream.str();
   }
   std::string name() const override { return "square"; }
-  const Geometry *createGeometry() const override;
+  std::unique_ptr<const Geometry> createGeometry() const override;
 
   double x = 1, y = 1;
   bool center = false;
@@ -159,7 +157,7 @@ public:
     return stream.str();
   }
   std::string name() const override { return "circle"; }
-  const Geometry *createGeometry() const override;
+  std::unique_ptr<const Geometry> createGeometry() const override;
 
   double fn, fs, fa;
   double r = 1;
@@ -172,10 +170,9 @@ public:
   PolygonNode (const ModuleInstantiation *mi) : LeafNode(mi) {}
   std::string toString() const override;
   std::string name() const override { return "polygon"; }
-  const Geometry *createGeometry() const override;
+  std::unique_ptr<const Geometry> createGeometry() const override;
 
-  std::vector<point2d> points;
+  std::vector<Vector2d> points;
   std::vector<std::vector<size_t>> paths;
   int convexity = 1;
 };
-

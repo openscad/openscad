@@ -1,12 +1,19 @@
-#include "ColorMap.h"
-#include "printutils.h"
-#include "PlatformUtils.h"
+#include "glview/ColorMap.h"
+#include "utils/printutils.h"
+#include "platform/PlatformUtils.h"
 
+#include <algorithm>
+#include <iomanip>
+#include <stdexcept>
+#include <list>
+#include <utility>
+#include <exception>
+#include <memory>
 #include <boost/property_tree/json_parser.hpp>
-#include <boost/filesystem.hpp>
+#include <filesystem>
 #include <cmath>
 
-namespace fs = boost::filesystem;
+namespace fs = std::filesystem;
 
 static const char *DEFAULT_COLOR_SCHEME_NAME = "Cornfield";
 
@@ -276,7 +283,7 @@ void ColorMap::enumerateColorSchemesInPath(colorscheme_set_t& result_set, const 
 
       auto *colorScheme = new RenderColorScheme(path);
       if (colorScheme->valid() && (findColorScheme(colorScheme->name()) == nullptr)) {
-        result_set.insert(colorscheme_set_t::value_type(colorScheme->index(), shared_ptr<RenderColorScheme>(colorScheme)));
+        result_set.insert(colorscheme_set_t::value_type(colorScheme->index(), std::shared_ptr<RenderColorScheme>(colorScheme)));
         PRINTDB("Found file '%s' with color scheme '%s' and index %d",
                 colorScheme->path() % colorScheme->name() % colorScheme->index());
       } else {
@@ -293,7 +300,7 @@ ColorMap::colorscheme_set_t ColorMap::enumerateColorSchemes()
 
   auto *defaultColorScheme = new RenderColorScheme();
   result_set.insert(colorscheme_set_t::value_type(defaultColorScheme->index(),
-                                                  shared_ptr<RenderColorScheme>(defaultColorScheme)));
+                                                  std::shared_ptr<RenderColorScheme>(defaultColorScheme)));
   enumerateColorSchemesInPath(result_set, PlatformUtils::resourceBasePath());
   enumerateColorSchemesInPath(result_set, PlatformUtils::userConfigPath());
 

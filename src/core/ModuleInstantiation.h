@@ -1,8 +1,10 @@
 #pragma once
 
-#include "AST.h"
-#include "LocalScope.h"
-#include <utility>
+#include "core/AST.h"
+#include "core/LocalScope.h"
+#include <ostream>
+#include <memory>
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -36,7 +38,7 @@ protected:
 class IfElseModuleInstantiation : public ModuleInstantiation
 {
 public:
-  IfElseModuleInstantiation(shared_ptr<class Expression> expr, const Location& loc) :
+  IfElseModuleInstantiation(std::shared_ptr<class Expression> expr, const Location& loc) :
     ModuleInstantiation("if", AssignmentList{assignment("", std::move(expr))}, loc) { }
 
   LocalScope *makeElseScope();

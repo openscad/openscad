@@ -1,13 +1,21 @@
 #pragma once
 
-#include "system-gl.h"
+#include "glview/system-gl.h"
+
+#include <QImage>
+#include <QMouseEvent>
+#include <QPoint>
+#include <QWheelEvent>
+#include <QWidget>
 #include <QtGlobal>
 #include <QOpenGLWidget>
 #include <QLabel>
+#include <string>
+#include <vector>
 
 #include <Eigen/Core>
 #include <Eigen/Geometry>
-#include "GLView.h"
+#include "glview/GLView.h"
 
 class QGLView : public QOpenGLWidget, public GLView
 {
@@ -36,6 +44,9 @@ public:
   bool save(const char *filename) const override;
   void resetView();
   void viewAll();
+  void selectPoint(int x, int y);
+  std::vector<SelectedObject> findObject(int x, int y);
+  int measure_state;
 
 public slots:
   void ZoomIn();
@@ -51,6 +62,7 @@ public:
   QLabel *statusLabel;
 
   void zoom(double v, bool relative);
+  void zoomFov(double v);
   void zoomCursor(int x, int y, int zoom);
   void rotate(double x, double y, double z, bool relative);
   void rotate2(double x, double y, double z);
@@ -87,9 +99,12 @@ private slots:
 signals:
   void cameraChanged();
   void resized();
-  void doSelectObject(QPoint screen_coordinate);
+  void doRightClick(QPoint screen_coordinate);
+  void doLeftClick(QPoint screen_coordinate);
 };
 
 /* These are defined in QLGView2.cc.  See the commentary there. */
+// Can't include <QOpenGLContext>, as it will clash with glew. Forward declare.
+class QOpenGLContext;
 QOpenGLContext *getGLContext();
 void setGLContext(QOpenGLContext *);

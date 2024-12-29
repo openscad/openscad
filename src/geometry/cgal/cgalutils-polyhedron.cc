@@ -1,13 +1,21 @@
 #ifdef ENABLE_CGAL
 
-#include "cgalutils.h"
-#include "PolySet.h"
-#include "printutils.h"
-#include "Grid.h"
+#include "geometry/cgal/cgalutils.h"
+#include "geometry/PolySet.h"
+#include "geometry/PolySetBuilder.h"
+#include "utils/printutils.h"
+#include "geometry/Grid.h"
 
+#include <algorithm>
+#include <iterator>
+#include <ostream>
+#include <memory>
 #include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
 
 #include <boost/range/adaptor/reversed.hpp>
+
+#include <cstddef>
+#include <vector>
 
 #undef GEN_SURFACE_DEBUG
 namespace /* anonymous */ {
@@ -46,11 +54,12 @@ public:
     std::vector<std::vector<size_t>> indices;
 
     // Align all vertices to grid and build vertex array in vertices
-    for (const auto& p : ps.polygons) {
+    for (const auto& p : ps.indices) {
       indices.emplace_back();
       indices.back().reserve(p.size());
-      for (auto v : boost::adaptors::reverse(p)) {
+      for (auto ind : boost::adaptors::reverse(p)) {
         // align v to the grid; the CGALPoint will receive the aligned vertex
+	Vector3d v=ps.vertices[ind];
         size_t idx = grid.align(v);
         if (idx == vertices.size()) {
           CGALPoint p(v[0], v[1], v[2]);
@@ -64,7 +73,7 @@ public:
     printf("polyhedron(faces=[");
     int pidx = 0;
 #endif
-    B.begin_surface(vertices.size(), ps.polygons.size());
+    B.begin_surface(vertices.size(), ps.indices.size());
     for (const auto& p : vertices) {
       B.add_vertex(p);
     }
@@ -114,12 +123,12 @@ public:
     std::vector<size_t> indices(3);
 
     // Estimating same # of vertices as polygons (very rough)
-    B.begin_surface(ps.polygons.size(), ps.polygons.size());
+    B.begin_surface(ps.indices.size(), ps.indices.size());
     int pidx = 0;
 #ifdef GEN_SURFACE_DEBUG
     printf("polyhedron(faces=[");
 #endif
-    for (const auto& p : ps.polygons) {
+    for (const auto& p : ps.indices) {
 #ifdef GEN_SURFACE_DEBUG
       if (pidx++ > 0) printf(",");
 #endif
@@ -256,7 +265,6 @@ void convertNefToPolyhedron(
 }
 
 template void convertNefToPolyhedron(const CGAL_Nef_polyhedron3& nef, CGAL_Polyhedron& polyhedron);
-template void convertNefToPolyhedron(const CGAL::Nef_polyhedron_3<CGAL_HybridKernel3>& nef, CGAL::Polyhedron_3<CGAL_HybridKernel3>& polyhedron);
 
 template <typename Polyhedron>
 bool createPolyhedronFromPolySet(const PolySet& ps, Polyhedron& p)
@@ -277,31 +285,32 @@ template bool createPolyhedronFromPolySet(const PolySet& ps, CGAL::Polyhedron_3<
 template bool createPolyhedronFromPolySet(const PolySet& ps, CGAL::Polyhedron_3<CGAL::Epeck>& p);
 
 template <typename Polyhedron>
-bool createPolySetFromPolyhedron(const Polyhedron& p, PolySet& ps)
+std::unique_ptr<PolySet> createPolySetFromPolyhedron(const Polyhedron& p)
 {
-  bool err = false;
   using Vertex = typename Polyhedron::Vertex;
   using FCI = typename Polyhedron::Facet_const_iterator;
   using HFCC = typename Polyhedron::Halfedge_around_facet_const_circulator;
 
+  PolySetBuilder builder(0, p.size_of_facets());
+
   for (FCI fi = p.facets_begin(); fi != p.facets_end(); ++fi) {
     HFCC hc = fi->facet_begin();
     HFCC hc_end = hc;
-    ps.append_poly();
+    builder.beginPolygon(fi->facet_degree());
     do {
       Vertex const& v = *((hc++)->vertex());
       double x = CGAL::to_double(v.point().x());
       double y = CGAL::to_double(v.point().y());
       double z = CGAL::to_double(v.point().z());
-      ps.append_vertex(x, y, z);
+      builder.addVertex(Vector3d(x, y, z));
     } while (hc != hc_end);
   }
-  return err;
+  return builder.build();
 }
 
-template bool createPolySetFromPolyhedron(const CGAL_Polyhedron& p, PolySet& ps);
-template bool createPolySetFromPolyhedron(const CGAL::Polyhedron_3<CGAL::Epick>& p, PolySet& ps);
-template bool createPolySetFromPolyhedron(const CGAL::Polyhedron_3<CGAL::Simple_cartesian<long>>& p, PolySet& ps);
+template std::unique_ptr<PolySet> createPolySetFromPolyhedron(const CGAL_Polyhedron& p);
+template std::unique_ptr<PolySet> createPolySetFromPolyhedron(const CGAL::Polyhedron_3<CGAL::Epick>& p);
+template std::unique_ptr<PolySet> createPolySetFromPolyhedron(const CGAL::Polyhedron_3<CGAL::Simple_cartesian<long>>& p);
 
 class Polyhedron_writer
 {
@@ -351,4 +360,3 @@ public:
 }  // namespace CGALUtils
 
 #endif /* ENABLE_CGAL */
-

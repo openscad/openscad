@@ -20,11 +20,7 @@ WARNING: Invalid entry in search vector at index 1, required number of values in
 ECHO: []
 WARNING: Invalid entry in search vector at index 1, required number of values in the entry: 1. Invalid entry: "string" in file search-tests.scad, line 76
 ECHO: []
-WARNING: search term not found: "a" in file search-tests.scad, line 79
 ECHO: [[]]
-WARNING: search term not found: "b" in file search-tests.scad, line 82
-WARNING: search term not found: "c" in file search-tests.scad, line 82
-WARNING: search term not found: "d" in file search-tests.scad, line 82
 ECHO: [[0], [], [], []]
 ECHO: [[], [], [], []]
 WARNING: Invalid entry in search vector at index 1, required number of values in the entry: 1. Invalid entry: undef in file search-tests.scad, line 87

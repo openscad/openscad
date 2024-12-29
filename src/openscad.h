@@ -26,14 +26,17 @@
 
 #pragma once
 
-#include <boost/filesystem.hpp>
-
-class SourceFile;
-
-extern bool parse(SourceFile *& file, const std::string& text, const std::string& filename, const std::string& mainFile, int debug);
-
 #include <string>
+#include <utility>
+
+#include <filesystem>
+
+extern bool parse(class SourceFile *& file, const std::string& text, const std::string& filename, const std::string& mainFile, int debug);
+
 extern std::string commandline_commands;
 
 // Custom argument parser
 std::pair<std::string, std::string> customSyntax(const std::string& s);
+
+void localization_init();
+void set_render_color_scheme(const std::string& color_scheme, const bool exit_if_not_found);

@@ -1,17 +1,25 @@
-#include "Assignment.h"
-#include "LocalScope.h"
-#include "ModuleInstantiation.h"
-#include "UserModule.h"
-#include "function.h"
+#include "core/LocalScope.h"
+
+#include <cassert>
+#include <ostream>
+#include <memory>
+#include <cstddef>
+#include <string>
+#include <vector>
+
+#include "core/Assignment.h"
+#include "core/ModuleInstantiation.h"
+#include "core/UserModule.h"
+#include "core/function.h"
 #include "core/node.h"
 
-void LocalScope::addModuleInst(const shared_ptr<ModuleInstantiation>& modinst)
+void LocalScope::addModuleInst(const std::shared_ptr<ModuleInstantiation>& modinst)
 {
   assert(modinst);
   this->moduleInstantiations.push_back(modinst);
 }
 
-void LocalScope::addModule(const shared_ptr<class UserModule>& module)
+void LocalScope::addModule(const std::shared_ptr<class UserModule>& module)
 {
   assert(module);
   auto it = this->modules.find(module->name);
@@ -20,7 +28,7 @@ void LocalScope::addModule(const shared_ptr<class UserModule>& module)
   this->astModules.emplace_back(module->name, module);
 }
 
-void LocalScope::addFunction(const shared_ptr<class UserFunction>& func)
+void LocalScope::addFunction(const std::shared_ptr<class UserFunction>& func)
 {
   assert(func);
   auto it = this->functions.find(func->name);
@@ -29,7 +37,7 @@ void LocalScope::addFunction(const shared_ptr<class UserFunction>& func)
   this->astFunctions.emplace_back(func->name, func);
 }
 
-void LocalScope::addAssignment(const shared_ptr<Assignment>& assignment)
+void LocalScope::addAssignment(const std::shared_ptr<Assignment>& assignment)
 {
   this->assignments.push_back(assignment);
 }

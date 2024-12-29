@@ -1,17 +1,18 @@
-#include "GeometryCache.h"
-#include "printutils.h"
-#include "Geometry.h"
+#include "geometry/GeometryCache.h"
+#include "utils/printutils.h"
+#include "geometry/Geometry.h"
 
-#ifdef DEBUG
-  #ifndef ENABLE_CGAL
-  #define ENABLE_CGAL
-  #endif
-  #include "CGAL_Nef_polyhedron.h"
+#include <memory>
+#include <cstddef>
+#include <string>
+
+#ifdef ENABLE_CGAL
+#include "geometry/cgal/CGAL_Nef_polyhedron.h"
 #endif
 
 GeometryCache *GeometryCache::inst = nullptr;
 
-shared_ptr<const Geometry> GeometryCache::get(const std::string& id) const
+std::shared_ptr<const Geometry> GeometryCache::get(const std::string& id) const
 {
   const auto& geom = this->cache[id]->geom;
 #ifdef DEBUG
@@ -20,10 +21,10 @@ shared_ptr<const Geometry> GeometryCache::get(const std::string& id) const
   return geom;
 }
 
-bool GeometryCache::insert(const std::string& id, const shared_ptr<const Geometry>& geom)
+bool GeometryCache::insert(const std::string& id, const std::shared_ptr<const Geometry>& geom)
 {
   auto inserted = this->cache.insert(id, new cache_entry(geom), geom ? geom->memsize() : 0);
-#ifdef DEBUG
+#if defined(ENABLE_CGAL) && defined(DEBUG)
   assert(!dynamic_cast<const CGAL_Nef_polyhedron *>(geom.get()));
   if (inserted) PRINTDB("Geometry Cache insert: %s (%d bytes)",
                         id.substr(0, 40) % (geom ? geom->memsize() : 0));
@@ -59,7 +60,7 @@ void GeometryCache::print()
   LOG("Geometry cache size in bytes: %1$d", this->cache.totalCost());
 }
 
-GeometryCache::cache_entry::cache_entry(const shared_ptr<const Geometry>& geom)
+GeometryCache::cache_entry::cache_entry(const std::shared_ptr<const Geometry>& geom)
   : geom(geom)
 {
   if (print_messages_stack.size() > 0) this->msg = print_messages_stack.back();

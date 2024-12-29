@@ -1,7 +1,7 @@
 // LetterBlock.scad - Basic usage of text() and linear_extrude()
 
 // Module instantiation
-LetterBlock("M");
+LetterBlock("Y");
 
 // Module definition.
 // size=30 defines an optional parameter with a default value.
@@ -14,7 +14,7 @@ module LetterBlock(letter, size=30) {
             linear_extrude(height=size, convexity=4)
                 text(letter, 
                      size=size*22/30,
-                     font="Bitstream Vera Sans",
+                     font="Liberation Sans:style=bold",
                      halign="center",
                      valign="center");
         }

@@ -1,4 +1,4 @@
-name: macos-tests
+name: macOS Experimental Tests
 
 on:
   push:
@@ -7,43 +7,58 @@ on:
   pull_request:
 
 jobs:
-  build:
-    runs-on: macos-latest
-    name: macos-latest
+  build_and_test:
+    strategy:
+      matrix:
+        os: [macos-13, macos-latest]
+        qt: [qt5, qt6]
+        exclude:
+          # macos-latest runs on arm64, which has a broken SW renderer
+          - os: macos-latest
+    runs-on:  ${{ matrix.os }}
+    name: ${{ matrix.os }} ${{ matrix.qt }}
     # If it's not done in 60 minutes, something is wrong.
     # Default is 6 hours, which is a bit long to wait.
     timeout-minutes: 60
     steps:
+    - name: Set Qt version
+      run: |
+        case ${{ matrix.qt }} in
+        qt5) echo "CMAKE_OPTIONS=-DUSE_QT6=0" >> $GITHUB_ENV ;;
+        esac
     - name: Checkout
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         submodules: 'recursive'
     - name: Set up Python
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v5
       with:
         python-version: 3.11
     - name: Install Homebrew packages
       env:
         HOMEBREW_NO_AUTO_UPDATE: 1
       run: |
-        ./scripts/macosx-build-homebrew.sh
+        export HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK=1
+        ./scripts/macosx-build-homebrew.sh ${{ matrix.qt }}
     - name: Build OpenSCAD
       run: |
         mkdir build
         cd build
-        cmake .. -DCMAKE_BUILD_TYPE=Release -DEXPERIMENTAL=ON -DSNAPSHOT=ON
+        cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_UNITY_BUILD=OFF -DEXPERIMENTAL=ON -DSNAPSHOT=ON $CMAKE_OPTIONS
         export NUMCPU=$(($(sysctl -n hw.ncpu) * 3 / 2))
         make -j$NUMCPU
     - name: Run Test Suite
+      # Disable pdf export test on macOS because Cairo >= 1.18 on Homebrew uses the
+      # Quartz backend which doesn't have the Liberation Sans font we use.
       run: |
         cd build
         export NUMCPU=$(($(sysctl -n hw.ncpu) * 3 / 2))
-        ctest -j$NUMCPU
+        ctest -j$NUMCPU -E pdfexporttest
     - name: Upload Test Result Report
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       if: ${{ always() }}
       with:
-        name: Test Result Report (MacOS)
+        name: Test Result Report (MacOS ${{ matrix.qt }})
         path: |
           build/Testing/Temporary/*_report.html
           build/Testing/Temporary/LastTest.log

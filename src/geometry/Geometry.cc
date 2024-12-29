@@ -1,10 +1,19 @@
-#include "Geometry.h"
-#include "printutils.h"
+#include "geometry/Geometry.h"
+#include "utils/printutils.h"
+#include <sstream>
+#include <memory>
 #include <boost/foreach.hpp>
+#include <cstddef>
+#include <string>
 #include <utility>
 
 GeometryList::GeometryList(Geometry::Geometries geometries) : children(std::move(geometries))
 {
+}
+
+std::unique_ptr<Geometry> GeometryList::copy() const
+{
+  return std::make_unique<GeometryList>(*this);
 }
 
 size_t GeometryList::memsize() const
@@ -58,7 +67,7 @@ bool GeometryList::isEmpty() const
 void flatten(const GeometryList& geomlist, GeometryList::Geometries& childlist)
 {
   for (const auto& item : geomlist.getChildren()) {
-    if (const auto chlist = dynamic_pointer_cast<const GeometryList>(item.second)) {
+    if (const auto chlist = std::dynamic_pointer_cast<const GeometryList>(item.second)) {
       flatten(*chlist, childlist);
     } else {
       childlist.push_back(item);

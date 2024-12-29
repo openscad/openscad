@@ -24,15 +24,20 @@
  *
  */
 
-#include "module.h"
-#include "ModuleInstantiation.h"
+#include <utility>
+#include <memory>
+#include <cstddef>
+#include <vector>
+
+#include "core/module.h"
+#include "core/ModuleInstantiation.h"
 #include "core/node.h"
-#include "Arguments.h"
-#include "Children.h"
-#include "Expression.h"
-#include "Builtins.h"
-#include "Parameters.h"
-#include "printutils.h"
+#include "core/Arguments.h"
+#include "core/Children.h"
+#include "core/Expression.h"
+#include "core/Builtins.h"
+#include "core/Parameters.h"
+#include "utils/printutils.h"
 #include <cstdint>
 
 static std::shared_ptr<AbstractNode> lazyUnionNode(const ModuleInstantiation *inst)

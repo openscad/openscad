@@ -1,12 +1,14 @@
 #pragma once
 
+#include <memory>
 #include <ostream>
+#include <string>
 #include <utility>
 #include <vector>
 #include <boost/optional.hpp>
 
-#include "Assignment.h"
-#include "Context.h"
+#include "core/Assignment.h"
+#include "core/Context.h"
 
 struct Argument {
   boost::optional<std::string> name;

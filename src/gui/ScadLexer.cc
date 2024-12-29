@@ -1,9 +1,16 @@
+#include "gui/ScadLexer.h"
+
+#include <QColor>
+#include <QObject>
+#include <QString>
+#include <QStringList>
+#include <iterator>
 #include <string>
+#include <vector>
+
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/split.hpp>
 
-
-#include "ScadLexer.h"
 
 #if !ENABLE_LEXERTL
 
@@ -397,7 +404,7 @@ QString ScadLexer2::description(int style) const
   case Comment:
     return "Comment";
   }
-  return {style};
+  return {QString::number(style)};
 }
 
 const char *ScadLexer2::language() const
