@@ -125,6 +125,7 @@ Follow the instructions for the platform you're compiling on below.
 
 For the test suite, additional requirements are:
 * Python3 (3.8 -> )
+* [Ghostscript (10.x ->)](https://www.ghostscript.com/index.html)
 
 ### Getting the source code
 
@@ -160,7 +161,7 @@ After building dependencies using one of the following options, follow the instr
 
         ./scripts/macosx-build-dependencies.sh
 
-1. **Homebrew** (assumes [Homebrew](https://brew.sh/) is already installed)
+2. **Homebrew** (assumes [Homebrew](https://brew.sh/) is already installed)
 
         ./scripts/macosx-build-homebrew.sh
 
