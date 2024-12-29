@@ -100,6 +100,10 @@ void TabManager::tabSwitched(int x)
       button->setVisible(idx == x);
     }
   }
+
+#ifdef ENABLE_PYTHON
+  par->recomputePythonActive();
+#endif
 }
 
 void TabManager::middleMouseClicked(int x)
@@ -174,7 +178,7 @@ void TabManager::createTab(const QString& filename)
 {
   assert(par != nullptr);
 
-  editor = new ScintillaEditor(tabWidget);
+  editor = new ScintillaEditor(tabWidget, *par);
   Preferences::create(editor->colorSchemes()); // needs to be done only once, however handled
   par->activeEditor = editor;
   editor->parameterWidget = new ParameterWidget(par->parameterDock);
@@ -486,6 +490,19 @@ void TabManager::setTabModified(EditorInterface *edt)
 void TabManager::openTabFile(const QString& filename)
 {
   par->setCurrentOutput();
+#ifdef ENABLE_PYTHON
+  if(boost::algorithm::ends_with(filename, ".py")) {
+    std::string templ="from openscad import *\n";	  
+    std::string libs = Settings::Settings::pythonNetworkImportList.value();
+    std::stringstream ss(libs);
+    std::string word;
+    while(std::getline(ss,word,'\n')){
+      if(word.size() == 0) continue;	    
+      templ += "nimport(\"" + word + "\")\n";
+    }
+    editor->setPlainText(QString::fromStdString(templ));
+  } else
+#endif  
   editor->setPlainText("");
 
   QFileInfo fileinfo(filename);
@@ -505,6 +522,7 @@ void TabManager::openTabFile(const QString& filename)
 
   if (opened) { // only try to parse if the file opened
     par->hideCurrentOutput(); // Initial parse for customizer, hide any errors to avoid duplication
+/*			      
     try {
       par->parseTopLevelDocument();
     } catch (const HardWarningException&) {
@@ -514,6 +532,7 @@ void TabManager::openTabFile(const QString& filename)
     } catch (...) {
       par->UnknownExceptionCleanup();
     }
+*/
     par->last_compiled_doc = ""; // undo the damage so F4 works
     par->clearCurrentOutput();
   }
@@ -704,13 +723,29 @@ bool TabManager::saveAs(EditorInterface *edt)
   assert(edt != nullptr);
 
   const auto dir = edt->filepath.isEmpty() ? _("Untitled.scad") : edt->filepath;
+#ifdef ENABLE_PYTHON
+  QString selectedFilter;
+  QString pythonFilter = _("Python OpenSCAD Designs (*.py)");
+  auto filename = QFileDialog::getSaveFileName(par, _("Save File"), dir, QString("%1;;%2").arg(_("OpenSCAD Designs (*.scad *.csg)"), pythonFilter), &selectedFilter);
+#else
   auto filename = QFileDialog::getSaveFileName(par, _("Save File"), dir, _("OpenSCAD Designs (*.scad)"));
+#endif
   if (filename.isEmpty()) {
     return false;
   }
 
   if (QFileInfo(filename).suffix().isEmpty()) {
+#ifdef ENABLE_PYTHON
+    // Check if the user selected the Python filter
+    if (selectedFilter == pythonFilter) {
+        filename.append(".py");
+    } else {
+        // For other cases, use .scad as the default extension
+        filename.append(".scad");
+    }
+#else
     filename.append(".scad");
+#endif
 
     // Manual overwrite check since Qt doesn't do it, when using the
     // defaultSuffix property
@@ -735,13 +770,29 @@ bool TabManager::saveACopy(EditorInterface *edt)
   assert(edt != nullptr);
 
   const auto dir = edt->filepath.isEmpty() ? _("Untitled.scad") : edt->filepath;
+#ifdef ENABLE_PYTHON
+  QString selectedFilter;
+  QString pythonFilter = _("Python OpenSCAD Designs (*.py)");
+  auto filename = QFileDialog::getSaveFileName(par, _("Save a Copy"), dir, QString("%1;;%2").arg(_("OpenSCAD Designs (*.scad *.csg)"), pythonFilter), &selectedFilter);
+#else
   auto filename = QFileDialog::getSaveFileName(par, _("Save a Copy"), dir, _("OpenSCAD Designs (*.scad)"));
+#endif
   if (filename.isEmpty()) {
     return false;
   }
 
   if (QFileInfo(filename).suffix().isEmpty()) {
+    #ifdef ENABLE_PYTHON
+    // Check if the user selected the Python filter
+    if (selectedFilter == pythonFilter) {
+        filename.append(".py");
+    } else {
+        // For other cases, use .scad as the default extension
+        filename.append(".scad");
+    }
+    #else
     filename.append(".scad");
+    #endif
   }
 
   return save(edt, filename);

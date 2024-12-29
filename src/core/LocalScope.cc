@@ -58,6 +58,36 @@ void LocalScope::print(std::ostream& stream, const std::string& indent, const bo
   }
 }
 
+void LocalScope::print_python(std::ostream& stream, std::ostream& stream_def, const std::string& indent, const bool inlined, const int context_mode) const
+// 0: array
+// 1: return array
+// 2: tuple
+{
+  std::ostringstream tmpstream;
+  for (const auto& f : this->astFunctions) {
+    f.second->print_python(tmpstream, stream_def,  indent);
+  }
+  for (const auto& m : this->astModules) {
+    m.second->print_python(tmpstream, stream_def, indent);
+  }
+  for (const auto& assignment : this->assignments) {
+    assignment->print_python(stream, stream_def, indent);
+  }
+  if(context_mode == 1) stream << indent << "return ";
+  if(this->moduleInstantiations.size() == 1) {
+    this->moduleInstantiations[0]->print_python(stream, stream_def, indent, inlined, context_mode);
+  } else {
+    if(context_mode != 2) stream << "[\n";	  
+    for (int i=0; i<this->moduleInstantiations.size();i++) {
+      if(i > 0) stream << ",\n";	    
+      this->moduleInstantiations[i]->print_python(stream, stream_def, indent+"  ", inlined, context_mode);
+    }
+    if(!inlined) stream << "\n";
+    if(context_mode != 2)  stream << indent << "]";	  
+  }    
+  stream_def << tmpstream.str();
+}
+
 std::shared_ptr<AbstractNode> LocalScope::instantiateModules(const std::shared_ptr<const Context>& context, const std::shared_ptr<AbstractNode> &target) const
 {
   for (const auto& modinst : this->moduleInstantiations) {

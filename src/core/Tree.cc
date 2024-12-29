@@ -53,8 +53,8 @@ const std::string Tree::getIdString(const AbstractNode& node) const
     nodecache.clear();
     NodeDumper dumper(nodecache, this->root_node, indent, idString);
     dumper.traverse(*this->root_node);
-    assert(nodecache.contains(*this->root_node) &&
-           "NodeDumper failed to create id cache");
+    if(!nodecache.contains(*this->root_node)) return "";
+    
   }
   return nodecache[node];
 }

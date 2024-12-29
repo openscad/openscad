@@ -85,6 +85,7 @@ static std::shared_ptr<AbstractNode> do_import(const ModuleInstantiation *inst, 
     std::string extraw = fs::path(filename).extension().generic_string();
     std::string ext = boost::algorithm::to_lower_copy(extraw);
     if (ext == ".stl") actualtype = ImportType::STL;
+    else if (ext == ".step") actualtype = ImportType::STEP;
     else if (ext == ".off") actualtype = ImportType::OFF;
     else if (ext == ".dxf") actualtype = ImportType::DXF;
     else if (ext == ".nef3") actualtype = ImportType::NEF3;
@@ -160,6 +161,9 @@ static std::shared_ptr<AbstractNode> builtin_import(const ModuleInstantiation *i
 static std::shared_ptr<AbstractNode> builtin_import_stl(const ModuleInstantiation *inst, Arguments arguments, const Children& children)
 { return do_import(inst, std::move(arguments), children, ImportType::STL); }
 
+static std::shared_ptr<AbstractNode> builtin_import_step(const ModuleInstantiation *inst, Arguments arguments, const Children& children)
+{ return do_import(inst, std::move(arguments), children, ImportType::STEP); }
+
 static std::shared_ptr<AbstractNode> builtin_import_off(const ModuleInstantiation *inst, Arguments arguments, const Children& children)
 { return do_import(inst, std::move(arguments), children, ImportType::OFF); }
 
@@ -179,6 +183,10 @@ std::unique_ptr<const Geometry> ImportNode::createGeometry() const
   switch (this->type) {
   case ImportType::STL: {
     g = import_stl(this->filename, loc);
+    break;
+  }
+  case ImportType::STEP: {
+    g = import_step(this->filename, loc);
     break;
   }
   case ImportType::AMF: {
@@ -256,6 +264,7 @@ std::string ImportNode::name() const
 void register_builtin_import()
 {
   Builtins::init("import_stl", new BuiltinModule(builtin_import_stl));
+  Builtins::init("import_step", new BuiltinModule(builtin_import_step));
   Builtins::init("import_off", new BuiltinModule(builtin_import_off));
   Builtins::init("import_dxf", new BuiltinModule(builtin_import_dxf));
 

@@ -176,6 +176,32 @@ std::chrono::milliseconds RenderStatistic::ms()
   return ms;
 }
 
+void print_area_volume(const PolySet &ps) {
+  double surface=0.0;
+  double volume=0.0;    
+  for(const auto &pol : ps.indices) {
+    int n = pol.size();
+    for(int i=0;i < n-2;i++ ) {
+    Vector3d p1=ps.vertices[pol[0]];
+    Vector3d p2=ps.vertices[pol[i+1]];
+    Vector3d p3=ps.vertices[pol[i+2]]; 
+    volume += 	+p1[0]*p2[1]*p3[2] // correct for concave
+      +p1[1]*p2[2]*p3[0]
+      +p1[2]*p2[0]*p3[1]
+      -p1[2]*p2[1]*p3[0]
+      -p1[0]*p2[2]*p3[1]
+      -p1[1]*p2[0]*p3[2];
+      surface += (p2-p1).cross(p2-p3).norm(); // incorrect surface for concave polys
+    }         
+  }
+    
+  volume /= 6.0;
+  surface /= 2.0;
+  LOG("Measurements:");
+  LOG("   Surface: %1$.2f", surface);
+  LOG("   Volume: %1$.2f", volume);
+}
+
 void RenderStatistic::printCacheStatistic()
 {
   LogVisitor visitor({});
@@ -255,6 +281,9 @@ void LogVisitor::visit(const PolySet& ps)
     LOG("   Facets:    %1$6d", ps.numFacets());
   }
   printBoundingBox3(ps.getBoundingBox());
+  if (is_enabled(RenderStatistic::VOLUME)) {
+    print_area_volume(ps);
+  }
 }
 
 #ifdef ENABLE_CGAL
@@ -289,6 +318,10 @@ void LogVisitor::visit(const ManifoldGeometry& mani_geom)
   LOG("   Vertices:   %1$6d", mani.NumVert());
   LOG("   Facets:     %1$6d", mani.NumTri());
   printBoundingBox3(mani_geom.getBoundingBox());
+  if (is_enabled(RenderStatistic::VOLUME) || true) {
+    std::shared_ptr<const PolySet> ps = mani_geom.toPolySet();
+    print_area_volume(*ps);
+  }
 }
 #endif // ENABLE_MANIFOLD
 

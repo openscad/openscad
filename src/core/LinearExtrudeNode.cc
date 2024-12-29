@@ -76,6 +76,10 @@ static std::shared_ptr<AbstractNode> builtin_linear_extrude(const ModuleInstanti
 {
   auto node = std::make_shared<LinearExtrudeNode>(inst);
 
+#ifdef ENABLE_PYTHON  
+  node->profile_func = NULL;
+  node->twist_func = NULL;
+#endif
   Parameters parameters = parse_parameters(std::move(arguments), inst->location());
   parameters.set_caller("linear_extrude");
 
@@ -204,6 +208,14 @@ std::string LinearExtrudeNode::toString() const
   if (this->convexity > 1) {
     stream << ", convexity = " << this->convexity;
   }
+#ifdef ENABLE_PYTHON  
+ if(this->profile_func != NULL) {
+    stream << ", profile = " << rand() ;
+ }
+ if(this->twist_func != NULL) {
+    stream << ", twist_func = " << rand() ;
+ }
+#endif  
   stream << ")";
   return stream.str();
 }

@@ -40,6 +40,7 @@ public:
   UserFunction(const char *name, AssignmentList& parameters, std::shared_ptr<Expression> expr, const Location& loc);
 
   void print(std::ostream& stream, const std::string& indent) const override;
+  void print_python(std::ostream& stream, std::ostream& stream_def, const std::string& indent) const override;
 };
 
 

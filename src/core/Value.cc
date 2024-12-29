@@ -210,6 +210,7 @@ Value Value::clone() const {
   case Type::NUMBER:    return std::get<double>(this->value);
   case Type::STRING:    return std::get<str_utf8_wrapper>(this->value).clone();
   case Type::RANGE:     return std::get<RangePtr>(this->value).clone();
+  case Type::PYTHONCLASS:return std::get<PythonClassPtr>(this->value).clone();
   case Type::VECTOR:    return std::get<VectorType>(this->value).clone();
   case Type::OBJECT:    return std::get<ObjectType>(this->value).clone();
   case Type::FUNCTION:  return std::get<FunctionPtr>(this->value).clone();
@@ -231,6 +232,7 @@ std::string Value::typeName(Type type)
   case Type::STRING:    return "string";
   case Type::VECTOR:    return "vector";
   case Type::RANGE:     return "range";
+  case Type::PYTHONCLASS:    return "pythonclass";
   case Type::OBJECT:    return "object";
   case Type::FUNCTION:  return "function";
   default: assert(false && "unknown Value variant type"); return "<unknown>";
@@ -250,6 +252,7 @@ std::string getTypeName(const str_utf8_wrapper&) { return "string"; }
 std::string getTypeName(const VectorType&) { return "vector"; }
 std::string getTypeName(const ObjectType&) { return "object"; }
 std::string getTypeName(const RangePtr&) { return "range"; }
+std::string getTypeName(const PythonClassPtr&) { return "pythonclass"; }
 std::string getTypeName(const FunctionPtr&) { return "function"; }
 
 bool Value::toBool() const
@@ -359,6 +362,7 @@ public:
 
   void operator()(const VectorType& v) const {
     if (StackCheck::inst().check()) {
+	    printf("rr\n");
       throw VectorEchoStringException::create();
     }
     stream << '[';
@@ -378,6 +382,10 @@ public:
   }
 
   void operator()(const RangePtr& v) const {
+    stream << *v;
+  }
+
+  void operator()(const PythonClassPtr& v) const {
     stream << *v;
   }
 
@@ -436,6 +444,10 @@ public:
   }
 
   std::string operator()(const RangePtr& v) const {
+    return STR(*v);
+  }
+
+  std::string operator()(const PythonClassPtr& v) const {
     return STR(*v);
   }
 
@@ -520,6 +532,11 @@ public:
     std::ostringstream stream;
     for (double d : *v) stream << Value(d).chrString();
     return stream.str();
+  }
+
+  std::string operator()(const PythonClassPtr& v) const
+  {
+    return "pythonclass";
   }
 };
 
@@ -674,6 +691,13 @@ bool Value::getVec3(double& x, double& y, double& z) const
   return (v[0].getDouble(x) && v[1].getDouble(y) && v[2].getDouble(z));
 }
 
+bool Value::getVec4(double& x, double& y, double& z, double &w) const
+{
+  if (this->type() != Type::VECTOR) return false;
+  const VectorType& v = this->toVector();
+  if (v.size() != 4) return false;
+  return (v[0].getDouble(x) && v[1].getDouble(y) && v[2].getDouble(z) && v[3].getDouble(w)  );
+}
 bool Value::getVec3(double& x, double& y, double& z, double defaultval) const
 {
   if (this->type() != Type::VECTOR) return false;
@@ -694,6 +718,12 @@ const RangeType& Value::toRange() const
   if (val) {
     return **val;
   } else return RangeType::EMPTY;
+}
+
+const PythonClassType& Value::toPythonClass() const
+{
+  const PythonClassPtr *val = std::get_if<PythonClassPtr>(&this->value);
+  return **val;
 }
 
 const FunctionType& Value::toFunction() const
@@ -1181,6 +1211,13 @@ std::ostream& operator<<(std::ostream& stream, const RangeType& r)
                 << DoubleConvert(r.begin_value(), buffer, builder, dc) << " : "
                 << DoubleConvert(r.step_value(), buffer, builder, dc) << " : "
                 << DoubleConvert(r.end_value(),   buffer, builder, dc) << "]";
+}
+
+std::ostream& operator<<(std::ostream& stream, const PythonClassType& r)
+{
+  return stream << "["
+                << "pythonclass" 
+		<< "]" ;
 }
 
 // called by clone()

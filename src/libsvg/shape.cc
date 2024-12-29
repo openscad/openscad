@@ -53,6 +53,7 @@
 #include "libsvg/use.h"
 
 #include "libsvg/transformation.h"
+#include "submodules/Clipper2/CPP/Clipper2Lib/include/clipper2/clipper.offset.h"
 #include "utils/degree_trig.h"
 #include "utils/calc.h"
 
@@ -324,7 +325,7 @@ void
 shape::draw_ellipse(path_t& path, double x, double y, double rx, double ry, void *context) {
   const auto *fValues = reinterpret_cast<const fnContext *>(context);
   double rmax = fmax(rx, ry);
-  unsigned long fn = Calc::get_fragments_from_r(rmax, fValues->fn, fValues->fs, fValues->fa);
+  unsigned long fn = Calc::get_fragments_from_r(rmax, 360.0, fValues->fn, fValues->fs, fValues->fa);
   if (fn < 40) fn = 40;   // preserve the old minimum value
   for (unsigned long idx = 1; idx <= fn; ++idx) {
     const double a = idx * 360.0 / fn;

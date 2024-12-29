@@ -21,6 +21,7 @@ public:
     : ASTNode(loc), name(std::move(name)), expr(std::move(expr)), locOfOverwrite(Location::NONE){ }
 
   void print(std::ostream& stream, const std::string& indent) const override;
+  void print_python(std::ostream& stream, std::ostream& stream_def, const std::string& indent) const override;
   const std::string& getName() const { return name; }
   const std::shared_ptr<Expression>& getExpr() const { return expr; }
   const AnnotationMap& getAnnotations() const { return annotations; }

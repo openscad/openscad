@@ -93,6 +93,11 @@ const std::string get_lib3mf_version() {
 std::unique_ptr<Geometry> import_3mf(const std::string& filename, const Location& loc)
 {
   Lib3MF::PWrapper wrapper;
+  std::string instance_name; 
+  AssignmentList inst_asslist;
+  ModuleInstantiation *instance = new ModuleInstantiation(instance_name,inst_asslist, Location::NONE);
+  auto node = std::make_shared<CsgOpNode>(instance,OpenSCADOperator::UNION);
+
 
   try {
     wrapper = Lib3MF::CWrapper::loadLibrary();
@@ -166,7 +171,7 @@ std::unique_ptr<Geometry> import_3mf(const std::string& filename, const Location
     for (auto& ps : meshes) {
       children.emplace_back(std::shared_ptr<const AbstractNode>(), std::shared_ptr<const PolySet>(std::move(ps)));
     }
-    if (auto ps = PolySetUtils::getGeometryAsPolySet(CGALUtils::applyUnion3D(children.begin(), children.end()))) {
+    if (auto ps = PolySetUtils::getGeometryAsPolySet(CGALUtils::applyUnion3D(*node, children.begin(), children.end()))) {
       // FIXME: unnecessary copy
       p = std::make_unique<PolySet>(*ps);
     } else {

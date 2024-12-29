@@ -133,9 +133,6 @@ void ParameterWidget::saveBackupFile(const QString& scadFile)
 
 void ParameterWidget::setParameters(const SourceFile *sourceFile, const std::string& source)
 {
-  if (this->source == source) {
-    return;
-  }
   this->source = source;
 
   this->parameters = ParameterObjects::fromSourceFile(sourceFile);

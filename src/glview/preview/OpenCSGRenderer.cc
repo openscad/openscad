@@ -179,6 +179,7 @@ void OpenCSGRenderer::createCSGVBOProducts(
     for (const auto &csgobj : product.intersections) {
       if (csgobj.leaf->polyset) {
         const Color4f &c = csgobj.leaf->color;
+        const int& ti = csgobj.leaf->textureind;
         csgmode_e csgmode = get_csgmode(highlight_mode, background_mode);
 
         ColorMode colormode = ColorMode::NONE;
@@ -265,6 +266,7 @@ void OpenCSGRenderer::createCSGVBOProducts(
     for (const auto &csgobj : product.subtractions) {
       if (csgobj.leaf->polyset) {
         const Color4f &c = csgobj.leaf->color;
+        const int& ti = csgobj.leaf->textureind;
         csgmode_e csgmode = get_csgmode(highlight_mode, background_mode,
                                         OpenSCADOperator::DIFFERENCE);
 
@@ -344,6 +346,7 @@ void OpenCSGRenderer::createCSGVBOProducts(
 void OpenCSGRenderer::renderCSGVBOProducts(
     bool showedges, const Renderer::shaderinfo_t *shaderinfo) const {
 #ifdef ENABLE_OPENCSG
+  if(shaderinfo) glUniform1f(shaderinfo->data.csg_rendering.texturefactor , 0.0);
   for (const auto &product : vbo_vertex_products_) {
     if (product->primitives().size() > 1) {
       GL_CHECKD(OpenCSG::render(product->primitives()));
@@ -358,6 +361,7 @@ void OpenCSGRenderer::renderCSGVBOProducts(
       if (shaderinfo->type == EDGE_RENDERING && showedges) {
         shader_attribs_enable();
       }
+      glUniform1f(shaderinfo->data.csg_rendering.texturefactor, 0.0);
     }
 
     for (const auto &vs : product->states()) {
@@ -376,6 +380,7 @@ void OpenCSGRenderer::renderCSGVBOProducts(
                 ((csg_vs->csgObjectIndex() >> 0) & 0xff) / 255.0f,
                 ((csg_vs->csgObjectIndex() >> 8) & 0xff) / 255.0f,
                 ((csg_vs->csgObjectIndex() >> 16) & 0xff) / 255.0f));
+            glUniform1f(shaderinfo->data.csg_rendering.texturefactor, 0.0);
           }
         }
         std::shared_ptr<VBOShaderVertexState> shader_vs =

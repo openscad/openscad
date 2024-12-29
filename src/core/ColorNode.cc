@@ -243,7 +243,7 @@ static std::shared_ptr<AbstractNode> builtin_color(const ModuleInstantiation *in
 {
   auto node = std::make_shared<ColorNode>(inst);
 
-  Parameters parameters = Parameters::parse(std::move(arguments), inst->location(), {"c", "alpha"});
+  Parameters parameters = Parameters::parse(std::move(arguments), inst->location(), {"c", "alpha", "texture"});
   if (parameters["c"].type() == Value::Type::VECTOR) {
     const auto& vec = parameters["c"].toVector();
     for (size_t i = 0; i < 4; ++i) {
@@ -271,13 +271,18 @@ static std::shared_ptr<AbstractNode> builtin_color(const ModuleInstantiation *in
   if (parameters["alpha"].type() == Value::Type::NUMBER) {
     node->color[3] = parameters["alpha"].toDouble();
   }
+  node->textureind=0; 
+  if (parameters["texture"].type() == Value::Type::NUMBER) {
+    node->textureind = (int) parameters["texture"].toDouble();
+    if(node->color[0] < 0) { node->color[0]=0.5; node->color[1]=0.5; node->color[2]=0.5; node->color[3]=1.0; }
+  }
 
   return children.instantiate(node);
 }
 
 std::string ColorNode::toString() const
 {
-  return STR("color([", this->color[0], ", ", this->color[1], ", ", this->color[2], ", ", this->color[3], "])");
+  return STR("color([", this->color[0], ", ", this->color[1], ", ", this->color[2], ", ", this->color[3], ", ",this->textureind, "])");
 }
 
 std::string ColorNode::name() const

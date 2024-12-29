@@ -73,6 +73,10 @@ std::unique_ptr<Geometry> import_3mf(const std::string& filename, const Location
 {
   DWORD interfaceVersionMajor, interfaceVersionMinor, interfaceVersionMicro;
   HRESULT result = lib3mf_getinterfaceversion(&interfaceVersionMajor, &interfaceVersionMinor, &interfaceVersionMicro);
+  std::string instance_name; 
+  AssignmentList inst_asslist;
+  ModuleInstantiation *instance = new ModuleInstantiation(instance_name,inst_asslist, Location::NONE);
+  auto node = std::make_shared<CsgOpNode>(instance,OpenSCADOperator::UNION);
   if (result != LIB3MF_OK) {
     LOG(message_group::Error, "Error reading 3MF library version");
     return PolySet::createEmpty();
@@ -185,7 +189,7 @@ std::unique_ptr<Geometry> import_3mf(const std::string& filename, const Location
     for (auto& meshe : meshes) {
       children.push_back(std::make_pair(std::shared_ptr<AbstractNode>(), std::shared_ptr<const Geometry>(meshe)));
     }
-    if (auto ps = PolySetUtils::getGeometryAsPolySet(CGALUtils::applyUnion3D(children.begin(), children.end()))) {
+    if (auto ps = PolySetUtils::getGeometryAsPolySet(CGALUtils::applyUnion3D(*node, children.begin(), children.end()))) {
       p = std::make_unique<PolySet>(*ps);
     } else {
       p = PolySet::createEmpty();

@@ -50,6 +50,7 @@ Q_IMPORT_PLUGIN(QSvgPlugin)
 
 class BuiltinContext;
 class CGALWorker;
+class CSGWorker;
 class CSGNode;
 class CSGProducts;
 class FontListDialog;
@@ -57,6 +58,7 @@ class LibraryInfoDialog;
 class Preferences;
 class ProgressWidget;
 class ThrownTogetherRenderer;
+class CSGTreeEvaluator;
 
 class MainWindow : public QMainWindow, public Ui::MainWindow, public InputEventHandler
 {
@@ -115,6 +117,9 @@ public:
   int compileWarnings;
 
   MainWindow(const QStringList& filenames);
+  std::string loadInitFile(void);
+  void customSetup(void);
+  void addMenuItem(const char *menuname, const char *itemname, const char *callback);
   ~MainWindow() override;
 
 private:
@@ -139,6 +144,7 @@ private slots:
   void onHoveredObjectInSelectionMenu();
   void measureFinished();
   void errorLogOutput(const Message& log_msg);
+  void addMenuItemCB(QString function);
 
 public:
   static void consoleOutput(const Message& msgObj, void *userdata);
@@ -151,15 +157,17 @@ public:
   void exceptionCleanup();
   void setLastFocus(QWidget *widget);
   void UnknownExceptionCleanup(std::string msg = "");
-
+ CSGTreeEvaluator *csgrenderer;
   bool isLightTheme();
+  void compileCSG();
+  void compileCSGThread();
+  void csgRenderFinished();
 
 private:
   void initActionIcon(QAction *action, const char *darkResource, const char *lightResource);
   void setRenderVariables(ContextHandle<BuiltinContext>& context);
   void updateCompileResult();
   void compile(bool reload, bool forcedone = false);
-  void compileCSG();
   bool checkEditorModified();
   QString dumpCSGTree(const std::shared_ptr<AbstractNode>& root);
 
@@ -184,6 +192,7 @@ public slots:
   void updateRecentFiles(const QString& FileSavedOrOpened);
   void updateRecentFileActions();
   void handleFileDrop(const QUrl& url);
+  void compileCSGDone();
 
 private slots:
   void actionOpen();
@@ -274,8 +283,14 @@ private slots:
   void cgalRender();
   void actionMeasureDistance();
   void actionMeasureAngle();
+  void actionFindHandle();
+  void actionShareDesignPublish();
+  void actionLoadShareDesignSelect();
+  void actionShareDesign();
+  void actionLoadShareDesign();
   void actionCheckValidity();
   void actionDisplayAST();
+  void actionDisplayPython();
   void actionDisplayCSGTree();
   void actionDisplayCSGProducts();
   bool canExport(unsigned int dim);
@@ -310,6 +325,7 @@ public:
 
   QList<double> getTranslation() const;
   QList<double> getRotation() const;
+  QSignalMapper *addmenu_mapper;
   std::unordered_map<FileFormat, QAction*>  export_map;
 
 public slots:
@@ -332,6 +348,7 @@ public slots:
   void processEvents();
   void jumpToLine(int, int);
   void openFileFromPath(const QString&, int);
+  void toolTipShow(QPoint,QString msg);
 
 #ifdef ENABLE_OPENCSG
   void viewModePreview();
@@ -373,6 +390,9 @@ public slots:
   void checkAutoReload();
   void waitAfterReload();
   void autoReloadSet(bool);
+#ifdef ENABLE_PYTHON
+  void recomputePythonActive();
+#endif
 
 private:
   bool network_progress_func(const double permille);
@@ -395,6 +415,7 @@ private:
   QTemporaryFile *tempFile{nullptr};
   ProgressWidget *progresswidget{nullptr};
   CGALWorker *cgalworker;
+  CSGWorker *csgworker;
   QMutex consolemutex;
   EditorInterface *renderedEditor; // stores pointer to editor which has been most recently rendered
   time_t includes_mtime{0}; // latest include mod time
@@ -412,6 +433,9 @@ private:
 signals:
   void highlightError(int);
   void unhighlightLastError();
+  #ifdef ENABLE_PYTHON
+  void pythonActiveChanged(bool pythonActive);
+  #endif
 };
 
 class GuiLocker

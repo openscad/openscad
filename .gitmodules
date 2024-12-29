@@ -7,6 +7,11 @@
 [submodule "submodules/manifold"]
 	path = submodules/manifold
 	url = https://github.com/elalish/manifold.git
+	ignore = dirty
+[submodule "submodules/libfive"]
+	path = submodules/libfive
+	url = https://github.com/libfive/libfive.git
+	ignore = dirty
 [submodule "sanitizers-cmake"]
 	path = submodules/sanitizers-cmake
 	url = https://github.com/arsenm/sanitizers-cmake.git

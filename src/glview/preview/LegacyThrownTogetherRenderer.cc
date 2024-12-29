@@ -90,17 +90,19 @@ void LegacyThrownTogetherRenderer::renderChainObject(const CSGChainObject& csgob
     glUniform3f(shaderinfo->data.select_rendering.identifier, ((identifier >> 0) & 0xff) / 255.0f,
                 ((identifier >> 8) & 0xff) / 255.0f, ((identifier >> 16) & 0xff) / 255.0f);
   } else {
-    setColor(colormode, c.data(), shaderinfo);
+    setColor(colormode, c.data(), 0, shaderinfo);
   }
   glPushMatrix();
-
-  Transform3d tmp = csgobj.leaf->matrix;
-  if (csgobj.leaf->polyset->getDimension() == 2 && type == OpenSCADOperator::DIFFERENCE) {
-    // Scale 2D negative objects 10% in the Z direction to avoid z fighting
-    tmp *= Eigen::Scaling(1.0, 1.0, 1.1);
+  glMultMatrixd(m.data());
+  render_surface(*csgobj.leaf->polyset, m, 0, shaderinfo);
+  // only use old render_edges if there is no shader progid
+  if (showedges && (shaderinfo && shaderinfo->progid == 0)) {
+    // FIXME? glColor4f((c[0]+1)/2, (c[1]+1)/2, (c[2]+1)/2, 1.0);
+    setColor(edge_colormode);
+//    render_edges(*csgobj.leaf->polyset, csgmode);
   }
-  glMultMatrixd(tmp.data());
-  render_surface(*csgobj.leaf->polyset, tmp, shaderinfo);
+  glMultMatrixd(m.data());
+  render_surface(*csgobj.leaf->polyset, m, 0, shaderinfo);
   glPopMatrix();
 }
 

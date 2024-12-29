@@ -42,3 +42,17 @@ std::string ASTNode::dump(const std::string& indent) const
   print(stream, indent);
   return stream.str();
 }
+std::string ASTNode::dump_python(const std::string& indent) const
+{
+  std::ostringstream result;
+  std::ostringstream stream;
+  std::ostringstream stream_def;
+  print_python(stream, stream_def,indent);
+
+  result << "from openscad import *\n\n";
+  result << stream_def.str() << "\n";
+  result << "show( ";
+  result << stream.str();
+  result << ")";
+  return result.str();
+}

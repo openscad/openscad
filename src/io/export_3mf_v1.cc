@@ -45,6 +45,22 @@ static uint32_t lib3mf_write_callback(const char *data, uint32_t bytes, std::ost
   return !(*stream);
 }
 
+void Export3mfInfo::writePropsFloat(void *pobj, const  char *name, float f) const
+{
+//	Lib3MF::PMeshObject  *obj = (Lib3MF::PMeshObject *) pobj;
+//	printf("Writing %s: %f\n",name, f);
+	//void SetObjectLevelProperty(const Lib3MF_uint32 nUniqueResourceID, const Lib3MF_uint32 nPropertyID);
+}
+void Export3mfInfo::writePropsLong(void *pobj, const  char *name, long l) const
+{
+//	printf("Writing %s: %d\n",name, l);
+}
+void Export3mfInfo::writePropsString(void *pobj, const  char *name, const char *val) const
+{
+//	printf("Writing %s: %s\n",name, val);
+}
+
+
 static uint32_t lib3mf_seek_callback(uint64_t pos, std::ostream *stream)
 {
   stream->seekp(pos);
@@ -175,7 +191,7 @@ static bool append_3mf(const std::shared_ptr<const Geometry>& geom, PLib3MFModel
     Saves the current 3D Geometry as 3MF to the given file.
     The file must be open.
  */
-void export_3mf(const std::shared_ptr<const Geometry>& geom, std::ostream& output)
+void export_3mf(const std::vector<struct Export3mfInfo> & infos, std::ostream& output) 
 {
   DWORD interfaceVersionMajor, interfaceVersionMinor, interfaceVersionMicro;
   HRESULT result = lib3mf_getinterfaceversion(&interfaceVersionMajor, &interfaceVersionMinor, &interfaceVersionMicro);
@@ -196,10 +212,12 @@ void export_3mf(const std::shared_ptr<const Geometry>& geom, std::ostream& outpu
     return;
   }
 
-  if (!append_3mf(geom, model)) {
-    if (model) lib3mf_release(model);
-    return;
-  }
+  for(auto &info : infos) {
+    if (!append_3mf(info.geom, model)) {
+      if (model) lib3mf_release(model);
+      return;
+    }
+  }  
 
   PLib3MFModelWriter *writer;
   if (lib3mf_model_querywriter(model, "3mf", &writer) != LIB3MF_OK) {

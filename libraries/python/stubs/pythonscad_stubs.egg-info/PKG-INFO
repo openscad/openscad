@@ -1,0 +1,19 @@
+Metadata-Version: 2.1
+Name: pythonscad_stubs
+Version: 0.0.1
+Summary: PythonSCAD - python enhanced OpenSCAD
+Author-email: Guenther Sohler <guenther.sohler@gmail.com>
+Project-URL: Homepage, http://pythonscad.org
+Project-URL: Issues, https://github.com/gsohler/openscad/issues
+Classifier: Programming Language :: Python :: 3
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: OS Independent
+Requires-Python: >=3.11
+Description-Content-Type: text/markdown
+License-File: LICENSE
+
+# PythonSCAD Type Stubs
+
+Type stubs for PythonSCAD providing editor support with autocomplete and type checking.
+
+## Installation

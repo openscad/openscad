@@ -71,10 +71,7 @@
 
 
 #ifdef ENABLE_PYTHON
-extern std::shared_ptr<AbstractNode> python_result_node;
-std::string evaluatePython(const std::string &code, double time);
-bool python_active = false;
-bool python_trusted = false;
+#include "python/python_public.h"
 #endif
 namespace po = boost::program_options;
 namespace fs = std::filesystem;
@@ -562,10 +559,14 @@ int cmdline(const CommandLine& cmd)
 	  }
   }
 
+  std::string text_py=text;
   if(python_active) {
-    auto fulltext_py = text;
-    auto error  = evaluatePython(fulltext_py, 0.0);
-    if(error.size() > 0) LOG(error.c_str());
+    if(cmd.animate.frames == 0) {
+      initPython(0.0);
+      auto error  = evaluatePython(text_py);
+      finishPython();
+      if(error.size() > 0) LOG(error.c_str());
+    }
     text ="\n";
   }
 #endif	  
@@ -582,7 +583,7 @@ int cmdline(const CommandLine& cmd)
   }
 
   // add parameter to AST
-  CommentParser::collectParameters(text.c_str(), root_file);
+  CommentParser::collectParameters(text.c_str(), root_file, '/');
   if (!cmd.parameterFile.empty() && !cmd.setName.empty()) {
     ParameterObjects parameters = ParameterObjects::fromSourceFile(root_file);
     ParameterSets sets;
@@ -617,6 +618,14 @@ int cmdline(const CommandLine& cmd)
       / cmd.animate.num_shards;
     for (unsigned frame = start_frame; frame < limit_frame; ++frame) {
       render_variables.time = frame * (1.0 / cmd.animate.frames);
+#ifdef ENABLE_PYTHON      
+    if(python_active) {
+      initPython(render_variables.time);
+      auto error  = evaluatePython(text_py);
+      if(error.size() > 0) LOG(error.c_str());
+      finishPython();
+    }
+#endif  
 
       std::ostringstream oss;
       oss << std::setw(5) << std::setfill('0') << frame;
@@ -781,6 +790,7 @@ int main(int argc, char **argv)
     ("x,x", po::value<std::string>(), "dxf_file deprecated, use -o")
 #ifdef ENABLE_PYTHON
   ("trust-python",  "Trust python")
+  ("ipython",  "Run ipython Interpreter")
 #endif
   ;
 
@@ -812,8 +822,12 @@ int main(int argc, char **argv)
   }
 #ifdef ENABLE_PYTHON
   if (vm.count("trust-python")) {
-    LOG("Python Engine enabled", OpenSCAD::debug);
+    LOG("Python Code globally trusted", OpenSCAD::debug);
     python_trusted = true;
+  }
+  if (vm.count("ipython")) {
+    LOG("Running ipython interpreter", OpenSCAD::debug);
+    python_runipython = true;
   }
 #endif
   if (vm.count("quiet")) {
@@ -967,6 +981,12 @@ int main(int argc, char **argv)
   }
 
   PRINTDB("Application location detected as %s", applicationPath);
+#ifdef ENABLE_PYTHON  
+  if(python_runipython) {
+    ipython();	  
+    exit(0);
+  }
+#endif  
 
   auto cmdlinemode = false;
   if (!output_files.empty()) { // cmd-line mode

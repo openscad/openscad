@@ -1,0 +1,9 @@
+LICENSE
+README.md
+pyproject.toml
+setup.py
+pythonscad_stubs.egg-info/PKG-INFO
+pythonscad_stubs.egg-info/SOURCES.txt
+pythonscad_stubs.egg-info/dependency_links.txt
+pythonscad_stubs.egg-info/not-zip-safe
+pythonscad_stubs.egg-info/top_level.txt

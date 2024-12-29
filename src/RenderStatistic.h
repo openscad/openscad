@@ -46,6 +46,7 @@ public:
   constexpr static auto GEOMETRY = "geometry";
   constexpr static auto BOUNDING_BOX = "bounding-box";
   constexpr static auto AREA = "area";
+  constexpr static auto VOLUME = "volume";
 
   /**
    * Construct a statistic printer for the given geometry with current

@@ -45,6 +45,7 @@ public:
   void setColorScheme(const ColorScheme& cs);
   void setColorScheme(const std::string& cs);
   void updateColorScheme();
+  void loadTextures(void);
 
   [[nodiscard]] bool showAxes() const { return this->showaxes; }
   void setShowAxes(bool enabled) { this->showaxes = enabled; }
@@ -76,7 +77,7 @@ public:
   GLdouble modelview[16];
   GLdouble projection[16];
   std::vector<SelectedObject> selected_obj;
-  std::vector<SelectedObject> shown_obj;
+  std::shared_ptr<SelectedObject> shown_obj;
 
 #ifdef ENABLE_OPENCSG
   bool is_opencsg_capable;
@@ -84,6 +85,7 @@ public:
   void enable_opencsg_shaders();
   virtual void display_opencsg_warning() = 0;
   int opencsg_id;
+  bool handle_mode;
 #endif
   void showObject(const SelectedObject &pt,const Vector3d &eyedir);
 private:

@@ -79,6 +79,8 @@ Containers &containers() {
     add_item(*containers, {FileFormat::CSG, "csg", "csg", "CSG"});
     add_item(*containers, {FileFormat::PARAM, "param", "param", "param"});
     add_item(*containers, {FileFormat::AST, "ast", "ast", "AST"});
+    add_item(*containers, {FileFormat::STEP, "step", "stp", "STEP"});
+    add_item(*containers, {FileFormat::STEP, "step", "step", "STEP"});
     add_item(*containers, {FileFormat::TERM, "term", "term", "term"});
     add_item(*containers, {FileFormat::ECHO, "echo", "echo", "echo"});
     add_item(*containers, {FileFormat::PNG, "png", "png", "PNG"});
@@ -174,7 +176,10 @@ return format == FileFormat::ASCII_STL ||
   format == FileFormat::AMF ||
   format == FileFormat::_3MF ||
   format == FileFormat::NEFDBG ||
+  format == FileFormat::PDF ||
+  format == FileFormat::PS ||
   format == FileFormat::NEF3 ||
+  format == FileFormat::STEP ||
   format == FileFormat::POV;
 }
 
@@ -208,7 +213,12 @@ void exportFile(const std::shared_ptr<const Geometry>& root_geom, std::ostream& 
     export_amf(root_geom, output);
     break;
   case FileFormat::_3MF:
-    export_3mf(root_geom, output);
+    {
+      Export3mfInfo info(root_geom,"OpenSCAD Model", nullptr);
+      std::vector<Export3mfInfo> infos;
+      infos.push_back(info);
+      export_3mf(infos, output);
+    }  
     break;
   case FileFormat::DXF:
     export_dxf(root_geom, output);
@@ -222,12 +232,18 @@ void exportFile(const std::shared_ptr<const Geometry>& root_geom, std::ostream& 
   case FileFormat::POV:
     export_pov(root_geom, output, exportInfo);
     break;
+  case FileFormat::STEP:
+    export_step(root_geom, output, exportInfo);
+    break;
 #ifdef ENABLE_CGAL
   case FileFormat::NEFDBG:
     export_nefdbg(root_geom, output);
     break;
   case FileFormat::NEF3:
     export_nef3(root_geom, output);
+    break;
+  case FileFormat::PS:
+    export_ps(root_geom, output);
     break;
 #endif
   default:

@@ -5,6 +5,7 @@
 #include "utils/printutils.h"
 #include "platform/PlatformUtils.h"
 #include "glview/system-gl.h"
+#include "core/TextureNode.h"
 
 #include <sstream>
 #include <Eigen/LU>
@@ -109,7 +110,14 @@ void Renderer::setupShader() {
   renderer_shader.type = EDGE_RENDERING;
   renderer_shader.data.csg_rendering.color_area = glGetUniformLocation(edgeshader_prog, "color1"); // 1
   renderer_shader.data.csg_rendering.color_edge = glGetUniformLocation(edgeshader_prog, "color2"); // 2
-  renderer_shader.data.csg_rendering.barycentric = glGetAttribLocation(edgeshader_prog, "barycentric"); // 3
+  renderer_shader.data.csg_rendering.tex1 = glGetUniformLocation(edgeshader_prog, "tex1"); //4 
+  renderer_shader.data.csg_rendering.texturefactor = glGetUniformLocation(edgeshader_prog, "textureFactor"); // 5
+  renderer_shader.data.csg_rendering.barycentric = glGetAttribLocation(edgeshader_prog, "barycentric"); // 6
+  if(textures.size() > 0) { // TODO prevent bug, segfault
+    glUniform1f(renderer_shader.data.csg_rendering.texturefactor , 0.0);
+    glUniform1i(renderer_shader.data.csg_rendering.tex1 , 0);
+  }
+
 }
 
 void Renderer::resize(int /*w*/, int /*h*/)
@@ -144,7 +152,7 @@ Renderer::csgmode_e Renderer::get_csgmode(const bool highlight_mode, const bool 
   return csgmode_e(csgmode);
 }
 
-void Renderer::setColor(const float color[4], const shaderinfo_t *shaderinfo) const
+void Renderer::setColor(const float color[4],const int &textureind, const shaderinfo_t *shaderinfo) const
 {
   if (shaderinfo && shaderinfo->type != EDGE_RENDERING) {
     return;
@@ -163,12 +171,18 @@ void Renderer::setColor(const float color[4], const shaderinfo_t *shaderinfo) co
   if (shaderinfo) {
     glUniform4f(shaderinfo->data.csg_rendering.color_area, c[0], c[1], c[2], c[3]);
     glUniform4f(shaderinfo->data.csg_rendering.color_edge, (c[0] + 1) / 2, (c[1] + 1) / 2, (c[2] + 1) / 2, 1.0);
+    if(textureind == 0){
+    	    glUniform1f(shaderinfo->data.csg_rendering.texturefactor, 0.0);
+    } else {
+            glBindTexture(GL_TEXTURE_2D, textureIDs[textureind-1]);
+    	    glUniform1f(shaderinfo->data.csg_rendering.texturefactor, 1.0);
+    }
   }
 #endif
 }
 
 // returns the color which has been set, which may differ from the color input parameter
-Color4f Renderer::setColor(ColorMode colormode, const float color[4], const shaderinfo_t *shaderinfo) const
+Color4f Renderer::setColor(ColorMode colormode, const float color[4], const int &textureind, const shaderinfo_t *shaderinfo) const
 {
   PRINTD("setColor b");
   Color4f basecol;
@@ -179,7 +193,7 @@ Color4f Renderer::setColor(ColorMode colormode, const float color[4], const shad
                  color[2] >= 0 ? color[2] : basecol[2],
                  color[3] >= 0 ? color[3] : basecol[3]};
     }
-    setColor(basecol.data(), shaderinfo);
+    setColor(basecol.data(), textureind, shaderinfo);
   }
   return basecol;
 }
@@ -188,7 +202,7 @@ void Renderer::setColor(ColorMode colormode, const shaderinfo_t *shaderinfo) con
 {
   PRINTD("setColor c");
   float c[4] = {-1, -1, -1, -1};
-  setColor(colormode, c, shaderinfo);
+  setColor(colormode, c, 0, shaderinfo);
 }
 
 /* fill this->colormap with matching entries from the colorscheme. note
@@ -206,7 +220,7 @@ void Renderer::setColorScheme(const ColorScheme& cs) {
 }
 
 
-std::vector<SelectedObject> Renderer::findModelObject(Vector3d near_pt, Vector3d far_pt, int mouse_x, int mouse_y, double tolerance) { return {}; }
+std::shared_ptr<SelectedObject> Renderer::findModelObject(Vector3d near_pt, Vector3d far_pt, int mouse_x, int mouse_y, double tolerance) { return nullptr; }
 #else //NULLGL
 
 Renderer::Renderer() : colorscheme(nullptr) {}
@@ -217,6 +231,6 @@ void Renderer::setColor(const float color[4], const shaderinfo_t *shaderinfo) co
 Color4f Renderer::setColor(ColorMode colormode, const float color[4], const shaderinfo_t *shaderinfo) const { return {}; }
 void Renderer::setColor(ColorMode colormode, const shaderinfo_t *shaderinfo) const {}
 void Renderer::setColorScheme(const ColorScheme& cs) {}
-std::vector<SelectedObject> Renderer::findModelObject(Vector3d near_pt, Vector3d far_pt, int mouse_x, int mouse_y, double tolerance) { return {}; }
+std::shared_ptr<SelectedObject> Renderer::findModelObject(Vector3d near_pt, Vector3d far_pt, int mouse_x, int mouse_y, double tolerance) { return nullptr; }
 
 #endif //NULLGL

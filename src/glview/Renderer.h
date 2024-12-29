@@ -34,6 +34,8 @@ public:
         int color_edge;
         // barycentric coordinates of the current vertex
         int barycentric;
+	int texturefactor;
+	int tex1;
       } csg_rendering;
       struct {
         int identifier;
@@ -79,12 +81,12 @@ public:
   };
 
   virtual bool getColor(ColorMode colormode, Color4f& col) const;
-  virtual void setColor(const float color[4], const shaderinfo_t *shaderinfo = nullptr) const;
+  virtual void setColor(const float color[4],const int &textureind, const shaderinfo_t *shaderinfo = nullptr) const;
   virtual void setColor(ColorMode colormode, const shaderinfo_t *shaderinfo = nullptr) const;
-  virtual Color4f setColor(ColorMode colormode, const float color[4], const shaderinfo_t *shaderinfo = nullptr) const;
+  virtual Color4f setColor(ColorMode colormode, const float color[4], const int &textureind, const shaderinfo_t *shaderinfo = nullptr) const;
   virtual void setColorScheme(const ColorScheme& cs);
 
-  virtual std::vector<SelectedObject> findModelObject(Vector3d near_pt, Vector3d far_pt, int mouse_x, int mouse_y, double tolerance);
+  virtual std::shared_ptr<SelectedObject> findModelObject(Vector3d near_pt, Vector3d far_pt, int mouse_x, int mouse_y, double tolerance);
 
   [[nodiscard]] static csgmode_e get_csgmode(const bool highlight_mode, const bool background_mode, const OpenSCADOperator type = OpenSCADOperator::UNION);
 protected:

@@ -4,11 +4,8 @@
 
 [![Visit our IRC channel](https://kiwiirc.com/buttons/irc.libera.chat/openscad.png)](https://kiwiirc.com/client/irc.libera.chat/#openscad)
 
-# What is PythonSCAD?
+# What is OpenSCAD?
 <p><a href="https://opencollective.com/openscad/donate"><img align="right" src="https://opencollective.com/openscad/donate/button@2x.png?color=white" width="200"/></a>
-
-PythonSCAD is a fork of OpenSCAD with additional ability to understand Python as 
-a native language
 
 OpenSCAD is a software for creating solid 3D CAD objects. It is free software and
 available for Linux/UNIX, MS Windows and macOS.</p>

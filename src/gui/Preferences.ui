@@ -2342,6 +2342,13 @@
                  </property>
                 </widget>
                </item>
+               <item>
+                <widget class="QCheckBox" name="checkBoxSummaryVolume">
+                 <property name="text">
+                  <string>Measurements: Volume</string>
+                 </property>
+                </widget>
+               </item>
               </layout>
              </widget>
             </item>
@@ -2489,6 +2496,42 @@
         </item>
        </layout>
       </widget>
+      <widget class="QWidget" name="pagePython">
+       <layout class="QGridLayout" name="gridLayout_13p">
+        <property name="leftMargin">
+         <number>0</number>
+        </property>
+        <property name="topMargin">
+         <number>0</number>
+        </property>
+        <property name="rightMargin">
+         <number>0</number>
+        </property>
+        <property name="bottomMargin">
+         <number>0</number>
+        </property>
+        <item row="0" column="0">
+         <widget class="QScrollArea" name="scrollArea_Python">
+          <property name="widgetResizable">
+           <bool>true</bool>
+          </property>
+         </widget>
+         <layout class="QGridLayout" name="gridLayout_p">
+          <item row="0" column="1">
+           <widget class="QLabel" name="labelNetworkImport">
+            <property name="text">
+             <string>Network Import List</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="2">
+           <widget class="QTextEdit" name="textEditPythonImportList">
+           </widget>
+          </item>
+         </layout>
+        </item>
+       </layout>
+      </widget>
       <widget class="QWidget" name="pageInputButton">
        <layout class="QGridLayout" name="gridLayout_14">
         <property name="leftMargin">
@@ -2559,6 +2602,7 @@
    <addaction name="prefsActionAdvanced"/>
    <addaction name="prefsActionInput"/>
    <addaction name="prefsActionInputButton"/>
+   <addaction name="prefsActionPython"/>
   </widget>
   <action name="prefsAction3DView">
    <property name="checkable">
@@ -2648,6 +2692,21 @@
    </property>
    <property name="text">
     <string>Buttons</string>
+   </property>
+  </action>
+  <action name="prefsActionPython">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="../../resources/common.qrc">
+     <normaloff>:/icons/prefsPython.png</normaloff>:/icons/prefsPython.png</iconset>
+   </property>
+   <property name="text">
+    <string>Python</string>
+   </property>
+   <property name="toolTip">
+    <string>Python Settings</string>
    </property>
   </action>
   <action name="prefsAction3DPrint">

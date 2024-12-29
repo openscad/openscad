@@ -5,6 +5,9 @@
 #include "core/node.h"
 #include "core/Value.h"
 #include "geometry/linalg.h"
+#ifdef ENABLE_PYTHON
+#include <src/python/python_public.h>
+#endif
 
 class LinearExtrudeNode : public AbstractPolyNode
 {
@@ -24,6 +27,10 @@ public:
   unsigned int slices = 1u, segments = 0u;
   bool has_twist = false, has_slices = false, has_segments = false;
   bool center = false;
+ #ifdef ENABLE_PYTHON
+  void *profile_func;
+  void *twist_func;
+ #endif  
 
   Filename filename;
   std::string layername;

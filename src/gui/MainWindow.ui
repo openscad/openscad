@@ -176,6 +176,7 @@
          <addaction name="viewActionResetView"/>
          <addaction name="designActionMeasureDist"/>
          <addaction name="designActionMeasureAngle"/>
+         <addaction name="designActionFindHandle"/>
          <addaction name="separator"/>
          <addaction name="viewActionRight"/>
          <addaction name="viewActionLeft"/>
@@ -233,6 +234,8 @@
      <addaction name="fileActionExportPOV"/>
      <addaction name="fileActionExportOFF"/>
      <addaction name="fileActionExportWRL"/>
+     <addaction name="fileActionExportFoldable"/>
+     <addaction name="fileActionExportSTP"/>
      <addaction name="fileActionExportAMF"/>
      <addaction name="fileActionExport3MF"/>
      <addaction name="fileActionExportDXF"/>
@@ -316,9 +319,13 @@
     <addaction name="designAction3DPrint"/>
     <addaction name="designActionMeasureDist"/>
     <addaction name="designActionMeasureAngle"/>
+    <addaction name="designActionFindHandle"/>
+    <addaction name="designShareDesign"/>
+    <addaction name="designLoadShareDesign"/>
     <addaction name="separator"/>
     <addaction name="designCheckValidity"/>
     <addaction name="designActionDisplayAST"/>
+    <addaction name="designActionDisplayPython"/>
     <addaction name="designActionDisplayCSGTree"/>
     <addaction name="designActionDisplayCSGProducts"/>
     <addaction name="separator"/>
@@ -1017,6 +1024,21 @@
     <string>A</string>
    </property>
   </action>
+  <action name="designActionFindHandle">
+   <property name="text">
+    <string>Find Handle</string>
+   </property>
+  </action>
+  <action name="designShareDesign">
+   <property name="text">
+    <string>&amp;Share Design</string>
+   </property>
+  </action>
+ <action name="designLoadShareDesign">
+   <property name="text">
+    <string>&amp;Load shared Design</string>
+   </property>
+  </action>
   <action name="designCheckValidity">
    <property name="text">
     <string>&amp;Check Validity</string>
@@ -1025,6 +1047,11 @@
   <action name="designActionDisplayAST">
    <property name="text">
     <string>Display A&amp;ST...</string>
+   </property>
+  </action>
+  <action name="designActionDisplayPython">
+   <property name="text">
+    <string>Display Python conversion</string>
    </property>
   </action>
   <action name="designActionDisplayCSGTree">
@@ -1068,6 +1095,16 @@
   <action name="fileActionExportWRL">
    <property name="text">
     <string>Export as &amp;WRL...</string>
+   </property>
+  </action>
+  <action name="fileActionExportFoldable">
+   <property name="text">
+    <string>Export as &amp;Foldable PS...</string>
+   </property>
+  </action>
+  <action name="fileActionExportSTP">
+   <property name="text">
+    <string>Export as &amp;Step...</string>
    </property>
   </action>
   <action name="viewActionPreview">

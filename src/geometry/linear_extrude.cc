@@ -153,6 +153,100 @@ Outline2d splitOutlineByFn(
   return o2;
 }
 
+Outline2d alterprofile(Outline2d profile,double scalex, double scaley, double origin_x, double origin_y,double offset_x, double offset_y, double rot)
+{
+	Outline2d result;
+	double ang=rot*3.14/180.0;
+	double c=cos(ang);
+	double s=sin(ang);
+	int n=profile.vertices.size();
+	for(int i=0;i<n;i++) {
+		double x=(profile.vertices[i][0]-origin_x)*scalex;
+		double y=(profile.vertices[i][1]-origin_y)*scaley;
+		double xr = (x*c - y*s)+origin_x + offset_x;
+		double yr = (y*c + x*s)+origin_y + offset_y;
+		result.vertices.push_back(Vector2d(xr,yr));
+	}
+	return result;
+}
+
+void  append_linear_vertex(PolySetBuilder &builder,const Outline2d *face, int index, Vector3d h)
+{
+	builder.addVertex(builder.vertexIndex(Vector3d(
+			face->vertices[index][0]+h[0],
+			face->vertices[index][1]+h[2],
+			h[2])));
+}
+void calculate_path_dirs(Vector3d prevpt, Vector3d curpt,Vector3d nextpt,Vector3d vec_x_last, Vector3d vec_y_last, Vector3d *vec_x, Vector3d *vec_y) {
+	Vector3d diff1,diff2;
+	diff1 = curpt - prevpt;
+	diff2 = nextpt - curpt;
+	double xfac=1.0,yfac=1.0,beta;
+
+	if(diff1.norm() > 0.001) diff1.normalize();
+	if(diff2.norm() > 0.001) diff2.normalize();
+	Vector3d diff=diff1+diff2;
+
+	if(diff.norm() < 0.001) {
+		printf("User Error!\n");
+		return ;
+	} 
+	if(vec_y_last.norm() < 0.001)  { // Needed in first step only
+		vec_y_last = diff2.cross(vec_x_last);
+		if(vec_y_last.norm() < 0.001) { vec_x_last[0]=1; vec_x_last[1]=0; vec_x_last[2]=0; vec_y_last = diff.cross(vec_x_last); }
+		if(vec_y_last.norm() < 0.001) { vec_x_last[0]=0; vec_x_last[1]=1; vec_x_last[2]=0; vec_y_last = diff.cross(vec_x_last); }
+		if(vec_y_last.norm() < 0.001) { vec_x_last[0]=0; vec_x_last[1]=0; vec_x_last[2]=1; vec_y_last = diff.cross(vec_x_last); }
+	} else {
+		// make vec_last normal to diff1
+		Vector3d xn= vec_y_last.cross(diff1).normalized();
+		Vector3d yn= diff1.cross(vec_x_last).normalized();
+
+		// now fix the angle between xn and yn
+		Vector3d vec_xy_ = (xn + yn).normalized();
+		Vector3d vec_xy = vec_xy_.cross(diff1).normalized();
+		vec_x_last = (vec_xy_ + vec_xy).normalized();
+		vec_y_last = diff1.cross(xn).normalized();
+	}
+
+	diff=(diff1+diff2).normalized();
+
+	*vec_y = diff.cross(vec_x_last);
+	if(vec_y->norm() < 0.001) { vec_x_last[0]=1; vec_x_last[1]=0; vec_x_last[2]=0; *vec_y = diff.cross(vec_x_last); }
+	if(vec_y->norm() < 0.001) { vec_x_last[0]=0; vec_x_last[1]=1; vec_x_last[2]=0; *vec_y = diff.cross(vec_x_last); }
+	if(vec_y->norm() < 0.001) { vec_x_last[0]=0; vec_x_last[1]=0; vec_x_last[2]=1; *vec_y = diff.cross(vec_x_last); }
+	vec_y->normalize(); 
+
+	*vec_x = vec_y_last.cross(diff);
+	if(vec_x->norm() < 0.001) { vec_y_last[0]=1; vec_y_last[1]=0; vec_y_last[2]=0; *vec_x = vec_y_last.cross(diff); }
+	if(vec_x->norm() < 0.001) { vec_y_last[0]=0; vec_y_last[1]=1; vec_y_last[2]=0; *vec_x = vec_y_last.cross(diff); }
+	if(vec_x->norm() < 0.001) { vec_y_last[0]=0; vec_y_last[1]=0; vec_y_last[2]=1; *vec_x = vec_y_last.cross(diff); }
+	vec_x->normalize(); 
+
+	if(diff1.norm() > 0.001 && diff2.norm() > 0.001) {
+		beta = (*vec_x).dot(diff1); 
+		xfac=sqrt(1-beta*beta);
+		beta = (*vec_y).dot(diff1);
+		yfac=sqrt(1-beta*beta);
+
+	}
+	(*vec_x) /= xfac;
+	(*vec_y) /= yfac;
+}
+
+std::vector<Vector3d> calculate_path_profile(Vector3d *vec_x, Vector3d *vec_y,Vector3d curpt, const std::vector<Vector2d> &profile) {
+
+	std::vector<Vector3d> result;
+	for(unsigned int i=0;i<profile.size();i++) {
+		result.push_back( Vector3d(
+			curpt[0]+(*vec_x)[0]*profile[i][0]+(*vec_y)[0]*profile[i][1],
+			curpt[1]+(*vec_x)[1]*profile[i][0]+(*vec_y)[1]*profile[i][1],
+			curpt[2]+(*vec_x)[2]*profile[i][0]+(*vec_y)[2]*profile[i][1]
+				));
+	}
+	return result;
+}
+
+
 // For each edge in original outline, find its max length over all slice transforms,
 // and divide into segments no longer than fs.
 Outline2d splitOutlineByFs(
@@ -404,6 +498,12 @@ size_t calc_num_slices(const LinearExtrudeNode& node, const Polygon2d& poly) {
    Input to extrude should be sanitized. This means non-intersecting, correct winding order
    etc., the input coming from a library like Clipper.
  */
+/*!
+   Input to extrude should be sanitized. This means non-intersecting, correct winding order
+   etc., the input coming from a library like Clipper.
+ */
+ // FIXME: What happens if the input Polygon isn't manifold, or has coincident vertices?
+
 std::unique_ptr<Geometry> extrudePolygon(const LinearExtrudeNode& node, const Polygon2d& poly)
 {
   assert(poly.isSanitized());
@@ -461,6 +561,14 @@ std::unique_ptr<Geometry> extrudePolygon(const LinearExtrudeNode& node, const Po
     is_segmented = true;
   }
 
+#ifdef ENABLE_PYTHON
+  if(node.profile_func != nullptr){
+    is_segmented = true;
+    seg_poly = python_getprofile(node.profile_func, node.fn, 0);
+    num_slices =  node.fn;	  
+  }
+#endif
+
   const Polygon2d& polyref = is_segmented ? seg_poly : poly;
 
   Vector3d h1 = Vector3d::Zero();
@@ -470,6 +578,7 @@ std::unique_ptr<Geometry> extrudePolygon(const LinearExtrudeNode& node, const Po
     h1 -= node.height / 2.0;
     h2 -= node.height / 2.0;
   }
+
 
   int slice_stride = 0;
   for (const auto& o : polyref.outlines()) {
@@ -485,14 +594,33 @@ std::unique_ptr<Geometry> extrudePolygon(const LinearExtrudeNode& node, const Po
   double full_rot = -node.twist;
   auto full_height = (h2 - h1);
   for (unsigned int slice_idx = 0; slice_idx <= num_slices; slice_idx++) {
-    Eigen::Affine2d trans(
-      Eigen::Scaling(Vector2d(1,1) - full_scale * slice_idx / num_slices) *
-      Eigen::Affine2d(rotate_degrees(full_rot * slice_idx / num_slices)));
+    double act_rot ;
+#ifdef ENABLE_PYTHON  
+    if(node.twist_func != NULL) {
+      act_rot = python_doublefunc(node.twist_func, (double)(slice_idx/num_slices));
+    }  else
+#endif
+    act_rot = full_rot * slice_idx / num_slices;
 
-    for (const auto& o : polyref.outlines()) {
+    Eigen::Affine2d trans(
+      Eigen::Scaling(Vector2d(1,1) - full_scale * slice_idx / num_slices) * 
+      Eigen::Affine2d(rotate_degrees(act_rot)));
+
+#ifdef ENABLE_PYTHON
+    if(node.profile_func != nullptr) {
+      auto o = python_getprofile(node.profile_func, node.fn, full_height[2]*slice_idx/num_slices);
+        for (const auto& v : o.vertices) {
+          auto tmp = trans * v;
+          vertices.emplace_back(Vector3d(tmp[0], tmp[1], 0.0) + h1 + full_height * slice_idx / num_slices);
+	}
+    } else 
+#endif
+{
+     for (const auto& o : polyref.outlines()) {
       for (const auto& v : o.vertices) {
         auto tmp = trans * v;
         vertices.emplace_back(Vector3d(tmp[0], tmp[1], 0.0) + h1 + full_height * slice_idx / num_slices);
+      }
       }
     }
   }
@@ -521,8 +649,6 @@ std::unique_ptr<Geometry> extrudePolygon(const LinearExtrudeNode& node, const Po
   }
   else
 #endif
-  return assemblePolySetForCGAL(polyref, vertices, indices,
-                                node.convexity, isConvex,
-                                node.scale_x, node.scale_y,
-                                h1, h2, node.twist);
+  return assemblePolySetForManifold(polyref, vertices, indices,
+                                      node.convexity, isConvex, slice_stride * num_slices);
 }

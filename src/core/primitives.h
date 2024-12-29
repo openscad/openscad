@@ -44,15 +44,26 @@ public:
     stream << "cube(size = ["
            << x << ", "
            << y << ", "
-           << z << "], center = "
-           << (center ? "true" : "false") << ")";
+           << z << "], center = " ;
+    if(center[0] == center[1] && center[1] == center[2])
+	    stream << ((center[0] == 0) ? "true" : "false");
+    else {
+      stream << "\"";	      
+      for(int i = 0; i<3;i++) {
+        if(center[i] < 0) stream << "-";
+        if(center[i] == 0) stream << "|";	      
+        if(center[i] > 0) stream << "+";	      
+      }	      
+      stream << "\"";	      
+    }
+    stream << ")";
     return stream.str();
   }
   std::string name() const override { return "cube"; }
   std::unique_ptr<const Geometry> createGeometry() const override;
 
   double x = 1, y = 1, z = 1;
-  bool center = false;
+  int center[3] = {1,1,1} ; // -1 means negative side, 0 means centered, 1 means positive side
 };
 
 
@@ -66,9 +77,14 @@ public:
     stream << "sphere"
            << "($fn = " << fn
            << ", $fa = " << fa
-           << ", $fs = " << fs
-           << ", r = " << r
-           << ")";
+           << ", $fs = " << fs ;
+#ifdef ENABLE_PYTHON
+    if(r_func != nullptr)
+        stream << ", r_func = " << rand() ;
+    else
+#endif
+    	stream << ", r = " << r ;
+    stream << ")";
     return stream.str();
   }
   std::string name() const override { return "sphere"; }
@@ -76,6 +92,9 @@ public:
 
   double fn, fs, fa;
   double r = 1;
+#ifdef ENABLE_PYTHON
+  void *r_func = nullptr;
+#endif
 };
 
 
@@ -93,6 +112,7 @@ public:
            << ", h = " << h
            << ", r1 = " << r1
            << ", r2 = " << r2
+           << ", angle = " << angle
            << ", center = " << (center ? "true" : "false")
            << ")";
     return stream.str();
@@ -102,6 +122,7 @@ public:
 
   double fn, fs, fa;
   double r1 = 1, r2 = 1, h = 1;
+  double angle=360;
   bool center = false;
 };
 
@@ -153,6 +174,7 @@ public:
            << ", $fa = " << fa
            << ", $fs = " << fs
            << ", r = " << r
+           << ", angle = " << angle
            << ")";
     return stream.str();
   }
@@ -161,6 +183,7 @@ public:
 
   double fn, fs, fa;
   double r = 1;
+  double angle=360;
 };
 
 
@@ -175,4 +198,17 @@ public:
   std::vector<Vector2d> points;
   std::vector<std::vector<size_t>> paths;
   int convexity = 1;
+};
+
+class SplineNode : public LeafNode
+{
+public:
+  SplineNode (const ModuleInstantiation *mi) : LeafNode(mi) {}
+  std::string toString() const override;
+  std::string name() const override { return "spline"; }
+  std::vector<Vector2d> draw_arc(int fn, const Vector2d &tang1, double l1, const Vector2d &tang2, double l2, const Vector2d &cornerpt) const;
+  std::unique_ptr<const Geometry> createGeometry() const override;
+
+  std::vector<Vector2d> points;
+  double fn, fa, fs;
 };

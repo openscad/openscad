@@ -88,6 +88,23 @@ jobs:
     resource_class: large
     steps:
       - checkout
+      - when:
+          condition:
+            equal: [ web, << parameters.wasm-type >> ]
+          steps:
+            - run:
+                name: Install Puppeteer
+                command: |
+                    apt-get update
+                    apt-get install -y \
+                        libatk1.0-0 libatk-bridge2.0-0 libdrm2 libxcomposite1 libxdamage1 \
+                        libxfixes3 libxrandr2 libgbm1 libxkbcommon0 libpango-1.0-0 libcairo2
+                    npm i -g n
+                    n latest
+                    export PATH="/usr/local/bin:$PATH"
+                    npm init -y
+                    npm i puppeteer
+                    npx puppeteer browsers install chrome
       - run:
           name: Install latest node.js
           command: |

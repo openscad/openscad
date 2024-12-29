@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>LoadShareDesignDialog</class>
+ <widget class="QDialog" name="ShareDesignDialog">
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
+    <widget class="QGroupBox" name="groupShareDesign">
+     <property name="title">
+      <string>Loading a shared Design from pythonscad.org</string>
+     </property>
+     <layout class="QVBoxLayout" name="verticalLayout1">
+
+      <item >
+       <widget class="QListWidget" name="list_design">
+       </widget>
+      </item>
+
+      <item>
+       <widget class="QPushButton" name="selectButton">
+        <property name="text">
+         <string>Select Design</string>
+        </property>
+       </widget>
+      </item>
+
+     </layout>
+    </widget>	
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+</ui>

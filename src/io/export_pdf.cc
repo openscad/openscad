@@ -15,6 +15,8 @@
 
 #include <cairo.h>
 #include <cairo-pdf.h>
+#include "PolySetUtils.h"
+#include "export_foldable.h"
 
 
 #define FONT "Liberation Sans"
@@ -28,12 +30,15 @@ const std::string get_cairo_version() {
   return OpenSCAD::get_version(CAIRO_VERSION_STRING, cairo_version_string());
 }
 
-void draw_text(const char *text, cairo_t *cr, double x, double y, double fontSize){
+void draw_text(const char *text, cairo_t *cr, double x, double y, double fontSize, double angle){
 
   cairo_select_font_face(cr, FONT, CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);
   cairo_set_font_size(cr, fontSize);
   cairo_move_to(cr, x, y);
+  cairo_save(cr);
+  cairo_rotate(cr, angle*G_PI/180.0);
   cairo_show_text(cr, text);
+  cairo_restore(cr);
 
 }
 
@@ -126,7 +131,7 @@ void draw_axes(cairo_t *cr, double left, double right, double bottom, double top
       cairo_stroke(cr);
       if (i % 2 == 0) {
             std::string num = std::to_string(i * 10);
-            draw_text(num.c_str(), cr, pts+1, bottom+offset-2, 6.);
+            draw_text(num.c_str(), cr, pts+1, bottom+offset-2, 6., 0.);
       }
   };
   	// compute Yrange in 10mm
@@ -139,7 +144,7 @@ void draw_axes(cairo_t *cr, double left, double right, double bottom, double top
       cairo_stroke(cr);
       if (i % 2 == 0) {
             std::string num = std::to_string(-i * 10);
-            draw_text(num.c_str(), cr, left-offset, pts - 3, 6.);
+            draw_text(num.c_str(), cr, left-offset, pts - 3, 6., 0.);
       }
   };
 }  
@@ -147,7 +152,9 @@ void draw_axes(cairo_t *cr, double left, double right, double bottom, double top
 
 
 // Draws a single 2D polygon.
-void draw_geom(const Polygon2d& poly, cairo_t *cr ){
+void draw_geom(const Polygon2d& poly, cairo_t *cr, double tcX, double tcY ){
+  cairo_save(cr);	
+  cairo_translate(cr, tcX, tcY);  // Center page on geometry; // TODO dies nicht fuer foldable
   for (const auto& o : poly.outlines()) {
     if (o.vertices.empty()) {
       continue;
@@ -166,19 +173,68 @@ void draw_geom(const Polygon2d& poly, cairo_t *cr ){
     cairo_line_to(cr, mm_to_points(p0.x()), mm_to_points(-p0.y()));
 
   }
+  cairo_restore(cr);	
 }
 
 
+void draw_geom(const std::shared_ptr<const PolySet> & ps, cairo_t *cr, double pdfX, double pdfY){
+  double factor=72.0/25.4;
+  plotSettingsS plot_s;
+  plot_s.lasche=10.0;
+  plot_s.rand=5.0;
+  plot_s.paperformat="A4";
+  plot_s.bestend=0; // TODO besser
+  if(strcmp(plot_s.paperformat, "A4") == 0) { plot_s.paperheight=298; plot_s.paperwidth=210; }
+  else {plot_s.paperheight=420; plot_s.paperwidth=298;}
+//  printf("%g -> %g\n",plot_s.paperheight, pdfY);
+//  printf("%g -> %g\n",plot_s.paperwidth, pdfX);
+  plot_s.paperheight=pdfY / factor;
+  plot_s.paperwidth=pdfX / factor;
+  std::vector<sheetS> sheets = fold_3d(ps, plot_s);
+
+  cairo_set_line_width(cr, 0.1);
+  // TODO use pdf settings
+//  output << "/Times-Roman findfont " << plot_s.lasche*2 << " scalefont setfont 0.1 setlinewidth\n";
+
+  int pages=0;
+  double dashes [] = {2.5, 2};
+  double solid [] = {2.5, 0};
+  for(auto &sheet : sheets)
+  {  
+    double xofs=(plot_s.paperwidth-sheet.max[0]+sheet.min[0])/2.0-sheet.min[0];
+    double yofs=(plot_s.paperheight-sheet.max[1]+sheet.min[1])/2.0-sheet.min[1];
+
+    cairo_set_source_rgba(cr, 0,0,0,1);
+    for(int i=0;i<sheet.lines.size();i++)
+    {
+      if(sheet.lines[i].dashed) cairo_set_dash(cr, dashes,2,0);
+      else cairo_set_dash(cr,solid, 2, 0);
+      cairo_move_to(cr, (xofs+sheet.lines[i].p1[0])*factor, (yofs+sheet.lines[i].p1[1])*factor);
+      cairo_line_to(cr, (xofs+sheet.lines[i].p2[0])*factor, (yofs+sheet.lines[i].p2[1])*factor);
+      cairo_stroke(cr);
+    }
+    for(int i=0;i<sheet.label.size();i++)
+    {
+       draw_text(sheet.label[i].text, cr,  (xofs+sheet.label[i].pt[0])*factor, (yofs+sheet.label[i].pt[1])*factor,sheet.label[i].size, sheet.label[i].rot ); // TODO fix  rot
+    }
+    char tmp[20];
+    snprintf(tmp,sizeof(tmp), "%s/%d","a.ps",pages+1);
+    draw_text(tmp, cr, 10,10, plot_s.lasche, 0.0); // TODO pos falsch
+    cairo_show_page(cr);
+    pages++;
+  }
+  return;
+}
 // Main entry:  draw geometry that consists of 2D polygons.  Walks the tree...
-void draw_geom(const std::shared_ptr<const Geometry>& geom, cairo_t *cr){
+void draw_geom(const std::shared_ptr<const Geometry>& geom, cairo_t *cr, double pdfX,double pdfY, double tcX, double tcY){
   if (const auto geomlist = std::dynamic_pointer_cast<const GeometryList>(geom)) { // iterate
     for (const auto& item : geomlist->getChildren()) {
-      draw_geom(item.second, cr);
+      draw_geom(item.second, cr, pdfX, pdfY, tcX, tcY);
     }
-  } else if (std::dynamic_pointer_cast<const PolySet>(geom)) {
-    assert(false && "Unsupported file format");
+  } else if (const auto poly = PolySetUtils::getGeometryAsPolySet(geom)) {
+    draw_geom(poly, cr, pdfX, pdfY);
   } else if (const auto poly = std::dynamic_pointer_cast<const Polygon2d>(geom)) { // geometry that can be drawn.
-    draw_geom(*poly, cr);
+    draw_geom(*poly, cr, tcX, tcY);
   } else {
     assert(false && "Export as PDF for this geometry type is not supported");
   }
@@ -268,23 +324,22 @@ if (exportInfo.options==nullptr) {
 
   cairo_t *cr = cairo_create(surface);
   // Note Y axis + is DOWN.  Drawings have to invert Y, but these translations account for that.
-  cairo_translate(cr, tcX, tcY);  // Center page on geometry;
 
   cairo_set_source_rgba(cr, 0., 0., 0., 1.0); // Set black line, opaque
   cairo_set_line_width(cr, 1);  // 1 point width.
-  draw_geom(geom, cr);
+  draw_geom(geom, cr, pdfX, pdfY, tcX, tcY);
   cairo_stroke(cr);
     
     // Set Annotations
       std::string about = "Scale is to calibrate actual printed dimension. Check both X and Y. Measure between tick 0 and last tick";
     cairo_set_source_rgba(cr, 0., 0., 0., 0.48);
     // Design Filename
-    if (exportPdfOptions->showDesignFilename) draw_text(exportInfo.sourceFilePath.c_str(), cr, Mlx, Mby, 10.);
+    if (exportPdfOptions->showDesignFilename) draw_text(exportInfo.sourceFilePath.c_str(), cr, Mlx, Mby, 10., 0.0);
     // Scale
     if (exportPdfOptions->showScale) {
     	draw_axes(cr, Mlx,Mrx,Mty,Mby);
     	// Scale Message
-    	if (exportPdfOptions->showScaleMsg) draw_text(about.c_str(), cr, Mlx+1, Mty-1, 5.);
+    	if (exportPdfOptions->showScaleMsg) draw_text(about.c_str(), cr, Mlx+1, Mty-1, 5., 0.);
     }
     // Grid
     if (exportPdfOptions->showGrid) draw_grid(cr, Mlx,Mrx,Mty,Mby, exportPdfOptions->gridSize);

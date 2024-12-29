@@ -14,6 +14,7 @@
 
 #include "core/FunctionType.h"
 #include "core/RangeType.h"
+#include "core/PythonClassType.h"
 #include "core/str_utf8_wrapper.h"
 #include "core/UndefType.h"
 
@@ -56,6 +57,7 @@ private:
 };
 
 using RangePtr = ValuePtr<RangeType>;
+using PythonClassPtr = ValuePtr<PythonClassType>;
 using FunctionPtr = ValuePtr<FunctionType>;
 
 /**
@@ -83,6 +85,7 @@ public:
     VECTOR,
     EMBEDDED_VECTOR,
     RANGE,
+    PYTHONCLASS,
     FUNCTION,
     OBJECT
   };
@@ -326,6 +329,7 @@ public:
   [[nodiscard]] VectorType& toVectorNonConst();
   [[nodiscard]] EmbeddedVectorType& toEmbeddedVectorNonConst();
   [[nodiscard]] const RangeType& toRange() const;
+  [[nodiscard]] const PythonClassType& toPythonClass() const;
   [[nodiscard]] const FunctionType& toFunction() const;
   [[nodiscard]] const ObjectType& toObject() const;
 
@@ -343,6 +347,7 @@ public:
   bool getVec2(double& x, double& y, bool ignoreInfinite = false) const;
   bool getVec3(double& x, double& y, double& z) const;
   bool getVec3(double& x, double& y, double& z, double defaultval) const;
+  bool getVec4(double& x, double& y, double& z, double &w) const;
 
   // Common Operators
   operator bool() const = delete;
@@ -370,7 +375,7 @@ public:
     return stream;
   }
 
-  using Variant = std::variant<UndefType, bool, double, str_utf8_wrapper, VectorType, EmbeddedVectorType, RangePtr, FunctionPtr, ObjectType>;
+  using Variant = std::variant<UndefType, bool, double, str_utf8_wrapper, VectorType, EmbeddedVectorType, RangePtr, PythonClassPtr, FunctionPtr, ObjectType>;
 
   static_assert(sizeof(Value::Variant) <= 24, "Memory size of Value too big");
   [[nodiscard]] const Variant& getVariant() const { return value; }

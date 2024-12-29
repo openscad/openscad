@@ -62,6 +62,19 @@ void Assignment::print(std::ostream& stream, const std::string& indent) const
   stream << indent << this->name << " = " << *this->expr << ";\n";
 }
 
+void Assignment::print_python(std::ostream& stream, std::ostream& stream_def, const std::string& indent) const
+{
+  if (this->hasAnnotations() && 0) {
+    const Annotation *group = this->annotation("Group");
+    if (group) group->print(stream, indent);
+    const Annotation *description = this->annotation("Description");
+    if (description) description->print(stream, indent);
+    const Annotation *parameter = this->annotation("Parameter");
+    if (parameter) parameter->print(stream, indent);
+  }
+  stream << indent << this->name << " = " << *this->expr << "\n";
+}
+
 std::ostream& operator<<(std::ostream& stream, const AssignmentList& assignments)
 {
   bool first = true;

@@ -53,6 +53,10 @@
 #include <QOpenGLContext>
 #endif
 #include "gui/OpenCSGWarningDialog.h"
+#ifdef ENABLE_PYTHON
+#include <python_public.h>
+#endif
+#include <math.h>
 
 #include <cstdio>
 #include <sstream>
@@ -181,7 +185,35 @@ void QGLView::paintGL()
   GLView::paintGL();
 
   if (statusLabel) {
-    auto status = QString("%1 (%2x%3)")
+    QString status;	  
+    if(this->shown_obj != nullptr) {
+      switch(this->shown_obj->type) {
+        case SelectionType::SELECTION_POINT:
+          if(shown_obj->pt.size() < 1) break;		
+          status = QString("Point (%1/%2/%3)").arg(shown_obj->pt[0][0]).arg(shown_obj->pt[0][1]).arg(shown_obj->pt[0][2]);
+          statusLabel->setText(status);
+	  break;
+        case SelectionType::SELECTION_SEGMENT:
+          if(shown_obj->pt.size() < 2) break;		
+          status = QString("Segment (%1/%2/%3) - (%4/%5/%6)")
+		  .arg(shown_obj->pt[0][0]).arg(shown_obj->pt[0][1]).arg(shown_obj->pt[0][2])
+		  .arg(shown_obj->pt[1][0]).arg(shown_obj->pt[1][1]).arg(shown_obj->pt[1][2]);
+          statusLabel->setText(status);
+	  break;
+        case SelectionType::SELECTION_FACE:
+          if(shown_obj->pt.size() < 3) break;		
+	  status=QString("Face selected\n");
+          statusLabel->setText(status);
+	  break;
+        case SelectionType::SELECTION_HANDLE:
+          break;
+        case SelectionType::SELECTION_INVALID:
+          break;
+
+      } 
+      return;
+    }
+    status = QString("%1 (%2x%3)")
       .arg(QString::fromStdString(cam.statusText()))
       .arg(size().rwidth())
       .arg(size().rheight());
@@ -295,9 +327,9 @@ void QGLView::mouseMoveEvent(QMouseEvent *event)
 {
   auto this_mouse = event->globalPos();
   if(measure_state != MEASURE_IDLE) {
-	QPoint pt = event->pos();
-  	this->shown_obj = findObject(pt.x(), pt.y());
-	update();
+    QPoint pt = event->pos();
+    this->shown_obj = findObject(pt.x(), pt.y());
+    update();
   }
   double dx = (this_mouse.x() - last_mouse.x()) * 0.7;
   double dy = (this_mouse.y() - last_mouse.y()) * 0.7;
@@ -529,7 +561,7 @@ void QGLView::rotate2(double x, double y, double z)
   emit cameraChanged();
 }
 
-std::vector<SelectedObject> QGLView::findObject(int mouse_x,int mouse_y)
+std::shared_ptr<SelectedObject> QGLView::findObject(int mouse_x, int mouse_y)
 {
   int viewport[4]={0,0,0,0};
   double posXF, posYF, posZF;
@@ -546,18 +578,47 @@ std::vector<SelectedObject> QGLView::findObject(int mouse_x,int mouse_y)
   Vector3d near_pt(posXN, posYN, posZN);
 
   Vector3d testpt(0,0,0);
+  double tolerance=cam.zoomValue()/300;
+#ifdef ENABLE_PYTHON  
+  if(handle_mode) {
+    SelectedObject result;
+    result.type = SelectionType::SELECTION_HANDLE;
+    double dist_near;
+    double dist_nearest=NAN;
+    std::string dist_name;
+    int found_ind=-1;
+    for(int i=0;i<python_result_handle.size();i++) 
+    {    
+      SelectedObject dist= calculateLinePointDistance(near_pt, far_pt, python_result_handle[i].pt[0], dist_near);
+      double dist_pt=(dist.pt[0]-dist.pt[1]).norm();
+      if(dist_pt < tolerance  ) {
+        if(isnan(dist_nearest) || dist_near < dist_nearest)
+        {
+          found_ind=i;		
+          dist_nearest=dist_near;
+	  dist_name=python_result_handle[i].name;
+        }	  
+      }
+    }
+    if(!isnan(dist_nearest)) {
+      result = python_result_handle[found_ind];
+      emit toolTipShow(QPoint(mouse_x, mouse_y),QString(python_result_handle[found_ind].name.c_str()));
+    }
+    return std::make_shared<SelectedObject>(result);
+  }
+#endif    
+
   std::vector<SelectedObject> result;
   auto renderer = this->getRenderer();
-  if(renderer == nullptr) return result;
-  result = renderer->findModelObject(near_pt, far_pt, mouse_x, mouse_y, cam.zoomValue()/300);
-  return result;
+  if(renderer == nullptr) return nullptr;
+  return renderer->findModelObject(near_pt, far_pt, mouse_x, mouse_y, cam.zoomValue()/300);
 }
 
 void QGLView::selectPoint(int mouse_x, int mouse_y)
 {
-  std::vector<SelectedObject>  obj= findObject(mouse_x, mouse_y);
-  if(obj.size() == 1) {
-    this->selected_obj.push_back(obj[0]);
+  std::shared_ptr<SelectedObject>  obj= findObject(mouse_x, mouse_y);
+  if(obj != nullptr) {
+    this->selected_obj.push_back(*obj);
     update();
   }
 }

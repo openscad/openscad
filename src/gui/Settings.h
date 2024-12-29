@@ -191,6 +191,7 @@ public:
   static SettingsEntryString octoPrintSlicerProfile;
   static SettingsEntryString octoPrintSlicerProfileDesc;
   static SettingsEntryString localSlicerExecutable;
+  static SettingsEntryString pythonNetworkImportList;
 
   static SettingsEntryBool manifoldEnabled;
   static SettingsEntryEnum renderBackend3D;
@@ -199,6 +200,7 @@ public:
 
   static SettingsEntryBool summaryCamera;
   static SettingsEntryBool summaryArea;
+  static SettingsEntryBool summaryVolume;
   static SettingsEntryBool summaryBoundingBox;
 
   static SettingsEntryBool inputEnableDriverHIDAPI;

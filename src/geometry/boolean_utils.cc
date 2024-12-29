@@ -107,6 +107,10 @@ std::unique_ptr<PolySet> applyHull(const Geometry::Geometries& children)
  */
 std::shared_ptr<const Geometry> applyMinkowski(const Geometry::Geometries& children)
 {
+  std::string instance_name; 
+  AssignmentList inst_asslist;
+  ModuleInstantiation *instance = new ModuleInstantiation(instance_name,inst_asslist, Location::NONE);
+  auto node = std::make_shared<CsgOpNode>(instance,OpenSCADOperator::UNION);
 #if ENABLE_MANIFOLD
   if (RenderSettings::inst()->backend3D == RenderBackend3D::ManifoldBackend) {
     return ManifoldUtils::applyMinkowskiManifold(children);
@@ -287,7 +291,8 @@ std::shared_ptr<const Geometry> applyMinkowski(const Geometry::Geometries& child
           fake_children.push_back(std::make_pair(std::shared_ptr<const AbstractNode>(),
                                                  partToGeom(part)));
         }
-        auto N = CGALUtils::applyUnion3D(fake_children.begin(), fake_children.end());
+
+        auto N = CGALUtils::applyUnion3D(*node, fake_children.begin(), fake_children.end());
         // FIXME: This should really never throw.
         // Assert once we figured out what went wrong with issue #1069?
         if (!N) throw 0;
@@ -308,7 +313,7 @@ std::shared_ptr<const Geometry> applyMinkowski(const Geometry::Geometries& child
     // If anything throws we simply fall back to Nef Minkowski
     PRINTD("Minkowski: Falling back to Nef Minkowski");
 
-    auto N = std::shared_ptr<const Geometry>(CGALUtils::applyOperator3D(children, OpenSCADOperator::MINKOWSKI));
+    auto N = std::shared_ptr<const Geometry>(CGALUtils::applyOperator3D(*node, children, OpenSCADOperator::MINKOWSKI));
     return N;
   }
 }

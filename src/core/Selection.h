@@ -29,12 +29,15 @@
 
 enum class SelectionType {
 	SELECTION_POINT, 
-	SELECTION_LINE
+	SELECTION_SEGMENT,
+	SELECTION_FACE,
+	SELECTION_HANDLE,
+	SELECTION_INVALID
 };
 
 struct SelectedObject {
 	SelectionType type;
-	Vector3d p1;
-	Vector3d p2;
+	std::vector<Vector3d> pt;
+	std::string name;
 };
 

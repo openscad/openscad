@@ -16,6 +16,7 @@
     <file>icons/prefs3DView.png</file>
     <file>icons/prefsEditor.png</file>
     <file>icons/prefsUpdate.png</file>
+    <file>icons/prefsPython.png</file>
 
     <file>icons/close.png</file>
     <file>icons/information-icons-error.png</file>
@@ -115,6 +116,8 @@
     <file>icons/svg-default/vcr-control-step-back-white.svg</file>
     <file>icons/svg-default/vcr-control-step-forward.svg</file>
     <file>icons/svg-default/vcr-control-step-forward-white.svg</file>
+    <file>icons/svg-default/find-handle.svg</file>
+    <file>icons/svg-default/find-handle-white.svg</file>
     <file>icons/svg-default/view-back.svg</file>
     <file>icons/svg-default/view-back-white.svg</file>
     <file>icons/svg-default/view-bottom.svg</file>

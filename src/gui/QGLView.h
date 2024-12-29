@@ -45,7 +45,7 @@ public:
   void resetView();
   void viewAll();
   void selectPoint(int x, int y);
-  std::vector<SelectedObject> findObject(int x, int y);
+  std::shared_ptr<SelectedObject> findObject(int x, int y);
   int measure_state;
 
 public slots:
@@ -101,6 +101,7 @@ signals:
   void resized();
   void doRightClick(QPoint screen_coordinate);
   void doLeftClick(QPoint screen_coordinate);
+  void toolTipShow(QPoint,QString msg);
 };
 
 /* These are defined in QLGView2.cc.  See the commentary there. */

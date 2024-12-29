@@ -54,7 +54,7 @@ public:
     if (polyset) {
       glPushMatrix();
       glMultMatrixd(m.data());
-      render_surface(*polyset, m);
+      render_surface(*polyset, m, 0);
       glPopMatrix();
     }
   }
@@ -131,7 +131,8 @@ void LegacyOpenCSGRenderer::renderCSGProducts(const std::shared_ptr<CSGProducts>
 
     if (shaderinfo && shaderinfo->progid) {
       if (shaderinfo->type != EDGE_RENDERING || (shaderinfo->type == EDGE_RENDERING && showedges)) {
-        GL_CHECKD(glUseProgram(shaderinfo->progid));
+        glUniform1f(shaderinfo->data.csg_rendering.texturefactor, 0.0);
+	GL_CHECKD(glUseProgram(shaderinfo->progid));
       }
     }
 
@@ -143,9 +144,11 @@ void LegacyOpenCSGRenderer::renderCSGProducts(const std::shared_ptr<CSGProducts>
         GL_CHECKD(glUniform3f(shaderinfo->data.select_rendering.identifier,
                               ((identifier >> 0) & 0xff) / 255.0f, ((identifier >> 8) & 0xff) / 255.0f,
                               ((identifier >> 16) & 0xff) / 255.0f));
+         glUniform1f(shaderinfo->data.csg_rendering.texturefactor, 0.0);
       }
 
       const Color4f& c = csgobj.leaf->color;
+        const int& ti = csgobj.leaf->textureind;
       csgmode_e csgmode = get_csgmode(highlight_mode, background_mode);
 
       ColorMode colormode = ColorMode::NONE;
@@ -160,17 +163,17 @@ void LegacyOpenCSGRenderer::renderCSGProducts(const std::shared_ptr<CSGProducts>
       glPushMatrix();
       glMultMatrixd(csgobj.leaf->matrix.data());
 
-      const Color4f color = setColor(colormode, c.data(), shaderinfo);
+      const Color4f color = setColor(colormode, c.data(), ti, shaderinfo);
       if (color[3] == 1.0f) {
         // object is opaque, draw normally
-        render_surface(*csgobj.leaf->polyset, csgobj.leaf->matrix, shaderinfo);
+        render_surface(*csgobj.leaf->polyset, csgobj.leaf->matrix, ti, shaderinfo);
       } else {
         // object is transparent, so draw rear faces first.  Issue #1496
         glEnable(GL_CULL_FACE);
         glCullFace(GL_FRONT);
-        render_surface(*csgobj.leaf->polyset, csgobj.leaf->matrix, shaderinfo);
+        render_surface(*csgobj.leaf->polyset, csgobj.leaf->matrix, ti, shaderinfo);
         glCullFace(GL_BACK);
-        render_surface(*csgobj.leaf->polyset, csgobj.leaf->matrix, shaderinfo);
+        render_surface(*csgobj.leaf->polyset, csgobj.leaf->matrix, ti, shaderinfo);
         glDisable(GL_CULL_FACE);
       }
 
@@ -180,6 +183,7 @@ void LegacyOpenCSGRenderer::renderCSGProducts(const std::shared_ptr<CSGProducts>
       if (!csgobj.leaf->polyset) continue;
 
       const Color4f& c = csgobj.leaf->color;
+        const int& ti = csgobj.leaf->textureind;
       csgmode_e csgmode = get_csgmode(highlight_mode, background_mode, OpenSCADOperator::DIFFERENCE);
 
       ColorMode colormode = ColorMode::NONE;
@@ -191,7 +195,7 @@ void LegacyOpenCSGRenderer::renderCSGProducts(const std::shared_ptr<CSGProducts>
         colormode = ColorMode::CUTOUT;
       }
 
-      (void) setColor(colormode, c.data(), shaderinfo);
+      (void) setColor(colormode, c.data(), ti, shaderinfo);
       glPushMatrix();
       Transform3d mat = csgobj.leaf->matrix;
       if (csgobj.leaf->polyset->getDimension() == 2) {
@@ -202,7 +206,7 @@ void LegacyOpenCSGRenderer::renderCSGProducts(const std::shared_ptr<CSGProducts>
       // negative objects should only render rear faces
       glEnable(GL_CULL_FACE);
       glCullFace(GL_FRONT);
-      render_surface(*csgobj.leaf->polyset, csgobj.leaf->matrix, shaderinfo);
+      render_surface(*csgobj.leaf->polyset, csgobj.leaf->matrix, ti, shaderinfo);
       glDisable(GL_CULL_FACE);
 
       glPopMatrix();

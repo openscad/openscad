@@ -11,10 +11,14 @@
 #include <memory>
 #include <cmath>
 #include <cstdio>
+#include "TextureNode.h"
 #include <string>
 
 #ifdef ENABLE_OPENCSG
 #include <opencsg.h>
+#endif
+#ifdef ENABLE_PYTHON
+#include <python_public.h>
 #endif
 
 GLView::GLView()
@@ -34,6 +38,7 @@ GLView::GLView()
   static int sId = 0;
   this->opencsg_id = sId++;
 #endif
+  this->handle_mode=false;
 }
 
 void GLView::setRenderer(std::shared_ptr<Renderer> r)
@@ -48,6 +53,7 @@ void GLView::setRenderer(std::shared_ptr<Renderer> r)
    to match the colorscheme of this GLView.*/
 void GLView::updateColorScheme()
 {
+  loadTextures();
   if (this->renderer) this->renderer->setColorScheme(*this->colorscheme);
 }
 
@@ -169,21 +175,34 @@ void GLView::paintGL()
   glLineWidth(2);
   glColor3d(1.0, 0.0, 0.0);
 
+  glColor3f(0,1,0);
+  Vector3d eyedir(this->modelview[2],this->modelview[6],this->modelview[10]);
+  if(shown_obj != nullptr)
+    showObject(*shown_obj,eyedir);
+#ifdef ENABLE_PYTHON 
+  if(this->handle_mode) {
+    glColor3f(0,0,1);
+    for (const SelectedObject sel: python_result_handle) {
+      showObject(sel,eyedir);
+    }
+  }  
+#endif  
+
   if (this->renderer) {
 #if defined(ENABLE_OPENCSG)
     // FIXME: This belongs in the OpenCSG renderer, but it doesn't know about this ID yet
     OpenCSG::setContext(this->opencsg_id);
 #endif
+    if(this->handle_mode) {
+      glEnable(GL_BLEND);
+      glBlendFunc(GL_DST_COLOR, GL_ONE_MINUS_DST_COLOR); 
+    }  
     this->renderer->prepare(showfaces, showedges);
     this->renderer->draw(showfaces, showedges);
+    if(this->handle_mode) glDisable(GL_BLEND);
   }
-  Vector3d eyedir(this->modelview[2],this->modelview[6],this->modelview[10]);
   glColor3f(1,0,0);
   for (const SelectedObject &obj:this->selected_obj) {
-    showObject(obj,eyedir);
-  }
-  glColor3f(0,1,0);
-  for (const SelectedObject &obj: this->shown_obj) {
     showObject(obj,eyedir);
   }
   glDisable(GL_LIGHTING);
@@ -273,6 +292,26 @@ void GLView::initializeGL()
 #ifdef ENABLE_OPENCSG
   enable_opencsg_shaders();
 #endif
+  glEnable(GL_TEXTURE_2D);
+  glGenTextures(TEXTURES_NUM, textureIDs); 
+}
+
+void GLView::loadTextures(void)
+{
+  int i;
+  int len=textures.size();
+  if(len >  TEXTURES_NUM) len=TEXTURES_NUM;
+  GLubyte textureBitmap[TEXTURE_SIZE*TEXTURE_SIZE*3];
+  //glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+  for(i=0;i<len;i++) {
+	  if(loadTexture(textureBitmap,textures[i].filepath.c_str())) continue;
+	  glBindTexture(GL_TEXTURE_2D, textureIDs[i]);
+	  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	  glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT); 
+	  glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, TEXTURE_SIZE, TEXTURE_SIZE, 0, GL_RGB, GL_UNSIGNED_BYTE, textureBitmap);
+  }
 }
 
 void GLView::showSmallaxes(const Color4f& col)
@@ -400,10 +439,15 @@ void GLView::showCrosshairs(const Color4f& col)
 
 void GLView::showObject(const SelectedObject &obj, const Vector3d &eyedir)
 {
-  auto vd = cam.zoomValue()/200.0;
+  auto dpi = this->getDPI();
+  auto vd = cam.zoomValue()/100.0;
   switch(obj.type) {
     case SelectionType::SELECTION_POINT:
+    case SelectionType::SELECTION_HANDLE:
     {
+      if(obj.pt.size() < 1) break;
+      Vector3d p1=obj.pt[0];
+
       double n=1/sqrt(3);
       // create an octaeder
       //x- x+ y- y+ z- z+
@@ -414,30 +458,64 @@ void GLView::showObject(const SelectedObject &obj, const Vector3d &eyedir)
 	for(int j=0;j<3;j++) {
 	  int code=sequence[i*3+j];
           switch(code) {
-		case 0: glVertex3d(obj.p1[0]-vd,obj.p1[1],obj.p1[2]); break;
-		case 1: glVertex3d(obj.p1[0]+vd,obj.p1[1],obj.p1[2]); break;
-		case 2: glVertex3d(obj.p1[0],obj.p1[1]-vd,obj.p1[2]); break;
-		case 3: glVertex3d(obj.p1[0],obj.p1[1]+vd,obj.p1[2]); break;
-		case 4: glVertex3d(obj.p1[0],obj.p1[1],obj.p1[2]-vd); break;
-		case 5: glVertex3d(obj.p1[0],obj.p1[1],obj.p1[2]+vd); break;
-          }
-	}
+		case 0: glVertex3d(p1[0]-vd,p1[1],p1[2]); break;
+		case 1: glVertex3d(p1[0]+vd,p1[1],p1[2]); break;
+		case 2: glVertex3d(p1[0],p1[1]-vd,p1[2]); break;
+		case 3: glVertex3d(p1[0],p1[1]+vd,p1[2]); break;
+		case 4: glVertex3d(p1[0],p1[1],p1[2]-vd); break;
+		case 5: glVertex3d(p1[0],p1[1],p1[2]+vd); break;
+          }		
+	}	
+      }	
+      glEnd();
+      if(obj.type != SelectionType::SELECTION_HANDLE) break;
+      glLineWidth(dpi);
+      glBegin(GL_LINES);
+      for(int i=0;i<3;i++) {
+        switch(i) {
+          case 0: glColor3d(1.0, 0.0, 0.0); break;
+          case 1: glColor3d(0.0, 1.0, 0.0); break;
+          case 2: glColor3d(0.0, 0.0, 1.0); break;
+        }
+        glVertex3d(obj.pt[0][0], obj.pt[0][1], obj.pt[0][2]); 
+        glVertex3d(obj.pt[0][0]+obj.pt[i+1][0]*5*dpi, obj.pt[0][1] + obj.pt[i+1][1]*5*dpi, obj.pt[0][2] + obj.pt[i+1][2]*5*dpi);
       }
       glEnd();
+
+
      }
-     break;
-   case SelectionType::SELECTION_LINE:
+     break;	
+   case SelectionType::SELECTION_SEGMENT:
      {
-	Vector3d diff=obj.p2-obj.p1;
+        if(obj.pt.size() < 2) break;
+	Vector3d p1=obj.pt[0];
+	Vector3d p2=obj.pt[1];
+	Vector3d diff=p2-p1;
 	Vector3d wdir=eyedir.cross(diff).normalized()*vd/2.0;
         glBegin(GL_QUADS);
-        glVertex3d(obj.p1[0]-wdir[0],obj.p1[1]-wdir[1],obj.p1[2]-wdir[2]);
-        glVertex3d(obj.p2[0]-wdir[0],obj.p2[1]-wdir[1],obj.p2[2]-wdir[2]);
-        glVertex3d(obj.p2[0]+wdir[0],obj.p2[1]+wdir[1],obj.p2[2]+wdir[2]);
-        glVertex3d(obj.p1[0]+wdir[0],obj.p1[1]+wdir[1],obj.p1[2]+wdir[2]);
+	glNormal3f(wdir[0], wdir[1], wdir[2]);
+        glVertex3d(p1[0]-wdir[0],p1[1]-wdir[1],p1[2]-wdir[2]);
+        glVertex3d(p2[0]-wdir[0],p2[1]-wdir[1],p2[2]-wdir[2]);
+        glVertex3d(p2[0]+wdir[0],p2[1]+wdir[1],p2[2]+wdir[2]);
+        glVertex3d(p1[0]+wdir[0],p1[1]+wdir[1],p1[2]+wdir[2]);
         glEnd();
+      }	
+      break;	
+   case SelectionType::SELECTION_FACE:
+      {
+        if(obj.pt.size() < 2) break;
+
+        Vector3d n=(obj.pt[1]-obj.pt[0]).cross(obj.pt[2]-obj.pt[0]).normalized();
+        glBegin(GL_TRIANGLES);
+	glNormal3f(n[0], n[1], n[2]);
+	for(const auto pt: obj.pt) {
+	  Vector3d px=pt+n*1e-3;
+          glVertex3d(px[0],px[1],px[2]);
+	} 
+	glEnd();
       }
-      break;
+    case SelectionType::SELECTION_INVALID:
+     break;
   }
 }
 

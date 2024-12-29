@@ -155,6 +155,7 @@ SettingsEntryEnum Settings::octoPrintFileFormat(
     fileformat::info(FileFormat::ASCII_STL).description);
 
 SettingsEntryString Settings::localSlicerExecutable("printing", "localSlicerExecutable", "");
+SettingsEntryString Settings::pythonNetworkImportList("python", "networkImportList", "");
 SettingsEntryEnum Settings::localSlicerFileFormat(
     "printing", "localSlicerFileFormat", createFileFormatItems(fileformat::all3D()),
     fileformat::info(FileFormat::ASCII_STL).description);
@@ -169,6 +170,7 @@ SettingsEntryEnum Settings::toolbarExport2D("advanced", "toolbarExport2D",
 
 SettingsEntryBool Settings::summaryCamera("summary", "camera", false);
 SettingsEntryBool Settings::summaryArea("summary", "measurementArea", false);
+SettingsEntryBool Settings::summaryVolume("summary", "measurementVolume", false);
 SettingsEntryBool Settings::summaryBoundingBox("summary", "boundingBox", false);
 
 SettingsEntryBool Settings::inputEnableDriverHIDAPI("input", "enableDriverHIDAPI", false);

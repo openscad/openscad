@@ -9,10 +9,77 @@
 #include <utility>
 #include <vector>
 #include <map>
+#include "GeometryUtils.h"
+#include <boost/functional/hash.hpp>
 
 class CGAL_Nef_polyhedron;
 class Polygon2d;
 class Tree;
+
+class EdgeKey
+{
+  public:
+  EdgeKey(){ this->ind1=-1; this->ind2=-1; }
+  EdgeKey(int i1, int i2);	  
+  int ind1, ind2 ;
+  int operator==(const EdgeKey ref)
+  {
+    if(this->ind1 == ref.ind1 && this->ind2 == ref.ind2) return 1;
+    return 0;
+  }
+};
+
+unsigned int hash_value(const EdgeKey& r);
+int operator==(const EdgeKey &t1, const EdgeKey &t2);
+
+struct EdgeVal {
+  int sel;
+  int facea, posa;  // face a with edge ind1 -> ind2, posa = index of ind1 within facea
+  int faceb, posb;  // face b with edge ind2 -> ind1, posb = index of ind2 within faceb
+  IndexedFace bez1;
+  IndexedFace bez2;
+  double angle;
+};
+
+// 3D Map stuff
+//
+#define BUCKET 8
+
+class Map3DTree
+{
+	public:
+		Map3DTree(void);
+		int ind[8]; // 8 octants, intially -1
+		Vector3d pts[BUCKET];
+		int ptsind[BUCKET];
+		int ptlen; 
+};
+
+class Map3D
+{
+	public:
+		Map3D(Vector3d min, Vector3d max);
+		void add(Vector3d pt, int ind);
+		void del(Vector3d pt);
+		int find(Vector3d pt, double r,std::vector<Vector3d> &result,std::vector<int> &resultind,int maxresult);
+		void dump_hier(int ind, int hier,float minx, float miny, float minz, float maxx, float maxy, float maxz);
+		void dump();
+	private:
+		void add_sub(int ind,Vector3d min, Vector3d max, Vector3d pt,int ptind, int disable_local_num);
+		void find_sub(int ind, double minx, double miny, double minz, double maxx, double maxy, double maxz,Vector3d pt, double r,std::vector<Vector3d> &result,std::vector<int> &resultind,int maxresult);
+		Vector3d min, max;
+		std::vector<Map3DTree> items;
+};
+
+
+int linsystem( Vector3d v1,Vector3d v2,Vector3d v3,Vector3d pt,Vector3d &res,double *detptr=NULL);
+int cut_face_face_face(Vector3d p1, Vector3d n1, Vector3d p2,Vector3d n2, Vector3d p3, Vector3d n3, Vector3d &res,double *detptr=NULL);
+int cut_face_line(Vector3d fp, Vector3d fn, Vector3d lp, Vector3d ld, Vector3d &res, double *detptr=NULL);
+bool pointInPolygon(const std::vector<Vector3d> &vert, const IndexedFace &bnd, int ptind);
+Vector4d calcTriangleNormal(const std::vector<Vector3d> &vertices,const IndexedFace &pol);
+std::vector<Vector4d> calcTriangleNormals(const std::vector<Vector3d> &vertices, const std::vector<IndexedFace> &indices);
+std::vector<IndexedFace> mergeTriangles(const std::vector<IndexedFace> polygons,const std::vector<Vector4d> normals,std::vector<Vector4d> &newNormals, std::vector<int> &faceParents, const std::vector<Vector3d> &vert);
+std::unordered_map<EdgeKey, EdgeVal, boost::hash<EdgeKey> > createEdgeDb(const std::vector<IndexedFace> &indices);
 
 // This evaluates a node tree into concrete geometry usign an underlying geometry engine
 // FIXME: Ideally, each engine should implement its own subtype. Instead we currently have
@@ -29,7 +96,11 @@ public:
   Response visit(State& state, const AbstractIntersectionNode& node) override;
   Response visit(State& state, const AbstractPolyNode& node) override;
   Response visit(State& state, const LinearExtrudeNode& node) override;
+  Response visit(State& state, const PathExtrudeNode& node) override;
   Response visit(State& state, const RotateExtrudeNode& node) override;
+  Response visit(State& state, const PullNode& node) override;
+  Response visit(State& state, const DebugNode& node) override;
+  Response visit(State& state, const WrapNode& node) override;
 #if defined(ENABLE_EXPERIMENTAL) && defined(ENABLE_CGAL)
   Response visit(State& state, const RoofNode& node) override;
 #endif

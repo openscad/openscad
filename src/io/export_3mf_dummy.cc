@@ -29,7 +29,24 @@
 #include "io/export.h"
 #include "utils/printutils.h"
 
-void export_3mf(const std::shared_ptr<const class Geometry>&, std::ostream&)
+void export_3mf(const std::vector<struct Export3mfInfo> & infos, std::ostream& output) 
 {
   LOG("Export to 3MF format was not enabled when building the application.");
 }
+
+void Export3mfInfo::writePropsFloat(void *pobj, const  char *name, float f) const
+{
+//	Lib3MF::PMeshObject  *obj = (Lib3MF::PMeshObject *) pobj;
+//	printf("Writing %s: %f\n",name, f);
+	//void SetObjectLevelProperty(const Lib3MF_uint32 nUniqueResourceID, const Lib3MF_uint32 nPropertyID);
+}
+void Export3mfInfo::writePropsLong(void *pobj, const  char *name, long l) const
+{
+//	printf("Writing %s: %d\n",name, l);
+}
+void Export3mfInfo::writePropsString(void *pobj, const  char *name, const char *val) const
+{
+//	printf("Writing %s: %s\n",name, val);
+}
+
+

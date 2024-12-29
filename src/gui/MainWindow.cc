@@ -23,6 +23,9 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  */
+#ifdef _WIN32
+#include "winsock2.h"
+#endif
 #include "gui/MainWindow.h"
 
 #include <QApplication>
@@ -80,6 +83,8 @@
 #include "gui/FontListDialog.h"
 #include "gui/LibraryInfoDialog.h"
 #include "gui/ScintillaEditor.h"
+#include <fileutils.h>
+#include <fstream>
 #ifdef ENABLE_OPENCSG
 #include "core/CSGTreeEvaluator.h"
 #include "glview/preview/OpenCSGRenderer.h"
@@ -131,6 +136,7 @@
 #include <QTemporaryFile>
 #include <QDockWidget>
 #include <QClipboard>
+#include <QToolTip>
 #include <QProcess>
 #include <memory>
 #include <string>
@@ -138,27 +144,71 @@
 #include <QSettings> //Include QSettings for direct operations on settings arrays
 #include "gui/QSettingsCached.h"
 
+#include <curl/curl.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 #ifdef ENABLE_PYTHON
-extern std::shared_ptr<AbstractNode> python_result_node;
-std::string evaluatePython(const std::string& code, double time);
-extern bool python_trusted;
-
-#include "cryptopp/sha.h"
-#include "cryptopp/filters.h"
-#include "cryptopp/base64.h"
+#include "python/python_public.h"
+#include "nettle/sha2.h"
+#include "nettle/base64.h"
 
 std::string SHA256HashString(std::string aString){
-  std::string digest;
-  CryptoPP::SHA256 hash;
+    uint8_t  digest[SHA256_DIGEST_SIZE];
+    sha256_ctx sha256_ctx;
 
-  CryptoPP::StringSource foo(aString, true,
-                             new CryptoPP::HashFilter(hash,
-                                                      new CryptoPP::Base64Encoder(
-                                                        new CryptoPP::StringSink(digest))));
+    sha256_init(&sha256_ctx);
+    sha256_update(&sha256_ctx, aString.length(), (uint8_t *) aString.c_str());
+    sha256_digest(&sha256_ctx, SHA256_DIGEST_SIZE, digest);
 
-  return digest;
+    base64_encode_ctx base64_ctx;
+    char digest_base64[BASE64_ENCODE_LENGTH(SHA256_DIGEST_SIZE)+1];
+    memset(digest_base64,0,sizeof(digest_base64));
+
+    base64_encode_init(&base64_ctx);
+    base64_encode_update(&base64_ctx, digest_base64, SHA256_DIGEST_SIZE, digest);
+    base64_encode_final(&base64_ctx, digest_base64);		    
+    return digest_base64;
 }
 
+#include <iostream>
+static size_t curl_download_write(void *ptr, size_t size, size_t nmemb, void *stream)
+{
+        
+  size_t written = fwrite(ptr, size, nmemb, (FILE *)stream);
+  return written;
+}
+	
+int curl_download(std::string url, std::string path)
+{
+    CURLcode status;
+    FILE *fh=fopen((path+"_").c_str(),"wb");
+    if(fh != nullptr) {
+      CURL *curl = curl_easy_init();
+      if(curl) {
+        curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
+        curl_easy_setopt(curl, CURLOPT_WRITEDATA, fh);
+        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, curl_download_write);
+        curl_easy_setopt(curl, CURLOPT_FORBID_REUSE, 1L);
+ 
+        status = curl_easy_perform(curl);
+        curl_easy_cleanup(curl);
+      }	
+      fclose(fh);
+      if(status == CURLE_OK) {
+	try {
+	  if(std::filesystem::exists(path)) std::filesystem::remove(path);
+          std::filesystem::rename(path+"_", path);	      
+	}catch(const std::exception& ex)
+        {
+	  std::cerr << ex.what() << std::endl;
+          LOG(message_group::Error, "Exception during installing file!");
+        }  
+      } else {
+        LOG(message_group::Error, "Could not download!");
+      }
+    }
+    return 0;
+}
 #endif // ifdef ENABLE_PYTHON
 
 #define ENABLE_3D_PRINTING
@@ -169,11 +219,13 @@ std::string SHA256HashString(std::string aString){
 
 #include <algorithm>
 #include <boost/version.hpp>
+#include <boost/regex.hpp>
 #include <sys/stat.h>
 
 #include "glview/cgal/CGALRenderer.h"
 #include "glview/cgal/LegacyCGALRenderer.h"
 #include "gui/CGALWorker.h"
+#include "gui/CSGWorker.h"
 
 #ifdef ENABLE_CGAL
 #include "geometry/cgal/cgal.h"
@@ -190,6 +242,8 @@ std::string SHA256HashString(std::string aString){
 
 #include "gui/PrintInitDialog.h"
 //#include "gui/ExportPdfDialog.h"
+#include "gui/LoadShareDesignDialog.h"
+#include "gui/ShareDesignDialog.h"
 #include "gui/input/InputDriverEvent.h"
 #include "gui/input/InputDriverManager.h"
 #include <cstdio>
@@ -266,9 +320,102 @@ void addExportActions(const MainWindow *mainWindow, QToolBar *toolbar, QAction *
 
 } // namespace
 
+void MainWindow::addMenuItemCB(QString callback)
+{
+#ifdef ENABLE_PYTHON  
+  const char *cbstr = callback.toStdString().c_str();
+  std::string content = loadInitFile();
+  if(content.size() == 0) return;
+  initPython(0.0);
+  evaluatePython(content);
+  evaluatePython(cbstr);
+  finishPython();
+#endif
+}
+
+#ifdef ENABLE_PYTHON
+void MainWindow::addMenuItem(const char * menuname, const char *itemname, const char *callback)
+{
+
+  // Find or create menu
+  QMenu *menu_found = nullptr;
+  foreach (QAction *menu, menubar->actions()) {
+        if (menu->menu()) {
+            const char *menutext = qUtf8Printable(menu->text());
+            if(strstr(menutext,menuname) != nullptr)
+		menu_found = (QMenu *) menu;
+        }
+    }
+
+  if(menu_found == nullptr) {
+  	menu_found = new QMenu(menubar);
+	menu_found->setObjectName(QString(menuname));
+	menu_found->setTitle(q_(menuname, nullptr));
+	menu_found->show();
+	menubar->addAction(menu_found->menuAction());
+//	menubar->addMenu(menu_found);
+  }
+
+  menu_found = menu_File;
+
+  // Create Menu Item
+  QAction *my_menu_item = new QAction(this);
+  my_menu_item->setObjectName(itemname);
+  my_menu_item->setText(q_(itemname, nullptr));
+  connect(my_menu_item, SIGNAL(triggered()), addmenu_mapper, SLOT(map()));
+  addmenu_mapper->setMapping(my_menu_item, callback);
+  menu_found->addAction(my_menu_item);
+
+//  menubar->show();
+}
+
+MainWindow *addmenuitem_this = nullptr;
+void  add_menuitem_trampoline(const char *menuname, const char *itemname, const char *callback)
+{
+  if(addmenuitem_this == nullptr) return;	
+  addmenuitem_this->addMenuItem(menuname, itemname, callback);
+}
+
+std::string MainWindow::loadInitFile(void) {
+  std::string path = lookup_file(".pythonscadrc", ".","");
+  if(path.size() == 0) return "";
+  std::ifstream fh(path);
+
+  // confirm file opening
+  if (!fh.is_open()) return "";
+  std::string line, content;
+  while (getline(fh, line)) {
+    content += line;
+    content += "\n";
+  }
+  return content;
+}
+
+void MainWindow::customSetup(void)
+{
+  // check if .pythonscadrc is available and readable
+  //
+  std::string content = loadInitFile();
+  if(content == "") return;
+
+  this->addmenu_mapper = new QSignalMapper(this);
+  connect (this->addmenu_mapper, SIGNAL(mapped(QString)), this, SLOT(addMenuItemCB(QString))) ;
+  initPython(0.0);
+  evaluatePython(content);
+  addmenuitem_this = this;
+  evaluatePython("setup()");
+  addmenuitem_this = nullptr;
+  finishPython();
+}
+
+#endif
+
 MainWindow::MainWindow(const QStringList& filenames)
 {
   setupUi(this);
+#ifdef ENABLE_PYTHON  
+  customSetup();
+#endif  
 
   consoleUpdater = new QTimer(this);
   consoleUpdater->setSingleShot(true);
@@ -313,6 +460,7 @@ MainWindow::MainWindow(const QStringList& filenames)
   const QString surfaceStatement = "surface(\"%1\");\n";
   const QString importFunction = "data = import(\"%1\");\n";
   knownFileExtensions["stl"] = importStatement;
+  knownFileExtensions["step"] = importStatement;
   knownFileExtensions["obj"] = importStatement;
   knownFileExtensions["3mf"] = importStatement;
   knownFileExtensions["off"] = importStatement;
@@ -331,6 +479,10 @@ MainWindow::MainWindow(const QStringList& filenames)
   root_file = nullptr;
   parsed_file = nullptr;
   absolute_root_node = nullptr;
+
+  this->csgworker = new CSGWorker(this);
+  connect(this->csgworker, SIGNAL(done(void)),
+          this, SLOT(compileCSGDone(void)));
 
   // Open Recent
   for (auto& recent : this->actionRecentFile) {
@@ -475,9 +627,13 @@ MainWindow::MainWindow(const QStringList& filenames)
   connect(this->designActionRender, SIGNAL(triggered()), this, SLOT(actionRender()));
   connect(this->designActionMeasureDist, SIGNAL(triggered()), this, SLOT(actionMeasureDistance()));
   connect(this->designActionMeasureAngle, SIGNAL(triggered()), this, SLOT(actionMeasureAngle()));
+  connect(this->designActionFindHandle, SIGNAL(triggered()), this, SLOT(actionFindHandle()));
   connect(this->designAction3DPrint, SIGNAL(triggered()), this, SLOT(action3DPrint()));
+  connect(this->designShareDesign, SIGNAL(triggered()), this, SLOT(actionShareDesign()));
+  connect(this->designLoadShareDesign, SIGNAL(triggered()), this, SLOT(actionLoadShareDesign()));
   connect(this->designCheckValidity, SIGNAL(triggered()), this, SLOT(actionCheckValidity()));
   connect(this->designActionDisplayAST, SIGNAL(triggered()), this, SLOT(actionDisplayAST()));
+  connect(this->designActionDisplayPython, SIGNAL(triggered()), this, SLOT(actionDisplayPython()));
   connect(this->designActionDisplayCSGTree, SIGNAL(triggered()), this, SLOT(actionDisplayCSGTree()));
   connect(this->designActionDisplayCSGProducts, SIGNAL(triggered()), this, SLOT(actionDisplayCSGProducts()));
 
@@ -488,6 +644,8 @@ MainWindow::MainWindow(const QStringList& filenames)
   export_map[FileFormat::OFF] =  this->fileActionExportOFF;
   export_map[FileFormat::WRL] =  this->fileActionExportWRL;
   export_map[FileFormat::POV] =  this->fileActionExportPOV;
+  export_map[FileFormat::PS] =  this->fileActionExportFoldable;
+  export_map[FileFormat::STEP] =  this->fileActionExportSTP;
   export_map[FileFormat::AMF] =  this->fileActionExportAMF;
   export_map[FileFormat::DXF] =  this->fileActionExportDXF;
   export_map[FileFormat::SVG] =  this->fileActionExportSVG;
@@ -499,7 +657,6 @@ MainWindow::MainWindow(const QStringList& filenames)
     connect(pair.second, SIGNAL(triggered()), this->exportformat_mapper, SLOT(map()));
     this->exportformat_mapper->setMapping(pair.second, int(pair.first));
   }
-
   connect(this->designActionFlushCaches, SIGNAL(triggered()), this, SLOT(actionFlushCaches()));
 
 #ifndef ENABLE_LIB3MF
@@ -580,6 +737,7 @@ MainWindow::MainWindow(const QStringList& filenames)
   connect(this->qglview, SIGNAL(resized()), viewportControlWidget, SLOT(viewResized()));
   connect(this->qglview, SIGNAL(doRightClick(QPoint)), this, SLOT(rightClick(QPoint)));
   connect(this->qglview, SIGNAL(doLeftClick(QPoint)), this, SLOT(leftClick(QPoint)));
+  connect(this->qglview, SIGNAL(toolTipShow(QPoint,QString)), this, SLOT(toolTipShow(QPoint,QString)));
 
   connect(Preferences::inst(), SIGNAL(requestRedraw()), this->qglview, SLOT(update()));
   connect(Preferences::inst(), SIGNAL(updateMouseCentricZoom(bool)), this->qglview, SLOT(setMouseCentricZoom(bool)));
@@ -645,6 +803,7 @@ MainWindow::MainWindow(const QStringList& filenames)
   initActionIcon(designActionPreview, ":/icons/svg-default/preview.svg", ":/icons/svg-default/preview-white.svg");
   initActionIcon(designActionMeasureDist, ":/icons/svg-default/measure-dist.svg", ":/icons/svg-default/measure-dist-white.svg");
   initActionIcon(designActionMeasureAngle, ":/icons/svg-default/measure-ang.svg", ":/icons/svg-default/measure-ang-white.svg");
+  initActionIcon(designActionFindHandle, ":/icons/svg-default/find-handle.svg", ":/icons/svg-default/find-handle-white.svg");
   initActionIcon(fileActionExportBinarySTL, ":/icons/svg-default/export-stl.svg", ":/icons/svg-default/export-stl-white.svg");
   initActionIcon(fileActionExportAsciiSTL, ":/icons/svg-default/export-stl.svg", ":/icons/svg-default/export-stl-white.svg");
   initActionIcon(fileActionExportAMF, ":/icons/svg-default/export-amf.svg", ":/icons/svg-default/export-amf-white.svg");
@@ -791,6 +950,12 @@ void MainWindow::openFileFromPath(const QString& path, int line)
     activeEditor->setFocus();
     activeEditor->setCursorPosition(line, 0);
   }
+}
+
+void MainWindow::toolTipShow(QPoint pt,QString msg)
+{
+  QPoint pos = QCursor::pos();
+  QToolTip::showText(pos,msg,this);
 }
 
 bool MainWindow::isLightTheme(){
@@ -1314,7 +1479,7 @@ void MainWindow::instantiateRoot()
         this->root_node = this->absolute_root_node;
       }
       if (nextLocation) {
-        LOG(message_group::NONE, *nextLocation, builtin_context->documentRoot(), "More than one Root Modifier (!)");
+//        LOG(message_group::NONE, *nextLocation, builtin_context->documentRoot(), "More than one Root Modifier (!)"); TODO activate
       }
 
       // FIXME: Consider giving away ownership of root_node to the Tree, or use reference counted pointers
@@ -1348,10 +1513,20 @@ void MainWindow::compileCSG()
     // Main CSG evaluation
     this->progresswidget = new ProgressWidget(this);
     connect(this->progresswidget, SIGNAL(requestShow()), this, SLOT(showProgress()));
+  } catch (const HardWarningException&) {
+    exceptionCleanup();
+  }
 
+  csgworker->start();
+  //compileCSGThread();
+  //compileCSGDone();
+}
+
+void MainWindow::compileCSGThread(void)
+{
     GeometryEvaluator geomevaluator(this->tree);
 #ifdef ENABLE_OPENCSG
-    CSGTreeEvaluator csgrenderer(this->tree, &geomevaluator);
+    this->csgrenderer = new CSGTreeEvaluator(this->tree, &geomevaluator);
 #endif
 
     if (!isClosing) progress_report_prep(this->root_node, report_func, this);
@@ -1359,7 +1534,7 @@ void MainWindow::compileCSG()
     try {
 #ifdef ENABLE_OPENCSG
       this->processEvents();
-      this->csgRoot = csgrenderer.buildCSGTree(*root_node);
+      this->csgRoot = this->csgrenderer->buildCSGTree(*root_node);
 #endif
       renderStatistic.printCacheStatistic();
       this->processEvents();
@@ -1368,6 +1543,13 @@ void MainWindow::compileCSG()
     } catch (const HardWarningException&) {
       LOG("CSG generation cancelled due to hardwarning being enabled.");
     }
+}
+void MainWindow::compileCSGDone()
+{
+#ifdef ENABLE_PYTHON
+  python_lock();	
+#endif
+  try{
     progress_report_fin();
     updateStatusBar(nullptr);
 
@@ -1389,7 +1571,7 @@ void MainWindow::compileCSG()
       }
     }
 
-    const std::vector<std::shared_ptr<CSGNode>>& highlight_terms = csgrenderer.getHighlightNodes();
+    const std::vector<std::shared_ptr<CSGNode>>& highlight_terms = this->csgrenderer->getHighlightNodes();
     if (highlight_terms.size() > 0) {
       LOG("Compiling highlights (%1$d CSG Trees)...", highlight_terms.size());
       this->processEvents();
@@ -1405,7 +1587,7 @@ void MainWindow::compileCSG()
       this->highlights_products.reset();
     }
 
-    const auto& background_terms = csgrenderer.getBackgroundNodes();
+    const auto& background_terms = this->csgrenderer->getBackgroundNodes();
     if (background_terms.size() > 0) {
       LOG("Compiling background (%1$d CSG Trees)...", background_terms.size());
       this->processEvents();
@@ -1457,6 +1639,8 @@ void MainWindow::compileCSG()
   } catch (const HardWarningException&) {
     exceptionCleanup();
   }
+  delete this->csgrenderer ;
+  csgRenderFinished();
 }
 
 void MainWindow::actionOpen()
@@ -1579,7 +1763,12 @@ void MainWindow::saveBackup()
   }
 
   if (!this->tempFile) {
-    this->tempFile = new QTemporaryFile(backupPath.append(basename + "-backup-XXXXXXXX.scad"));
+    QString suffix="scad";
+#ifdef ENABLE_PYTHON
+    this->recomputePythonActive();
+    if(this->python_active) suffix="py";
+#endif
+    this->tempFile = new QTemporaryFile(backupPath.append(basename + "-backup-XXXXXXXX." + suffix));
   }
 
   if ((!this->tempFile->isOpen()) && (!this->tempFile->open())) {
@@ -1899,6 +2088,10 @@ bool MainWindow::trust_python_file(const std::string& file,  const std::string& 
     this->trusted_edit_document_name = file;
     return true;
   }
+  if(content.rfind("from openscad import",0) == 0) { // 1st character already typed
+    this->trusted_edit_document_name=file;
+    return true;
+  }
 
   if (settings.contains(setting_key)) {
     QString str = settings.value(setting_key).toString();
@@ -1930,7 +2123,29 @@ bool MainWindow::trust_python_file(const std::string& file,  const std::string& 
   }
   return false;
 }
-#endif // ifdef ENABLE_PYTHON
+#endif
+
+#ifdef ENABLE_PYTHON
+void MainWindow::recomputePythonActive()
+{
+  auto fnameba = activeEditor->filepath.toLocal8Bit();
+  const char *fname = activeEditor->filepath.isEmpty() ? "" : fnameba;
+
+  bool oldPythonActive = this->python_active;
+  this->python_active = false;
+  if (fname != NULL) {
+    if(boost::algorithm::ends_with(fname, ".py")) {
+	    std::string content = std::string(this->last_compiled_doc.toUtf8().constData());
+      if ( trust_python_file(std::string(fname), content)) this->python_active = true;
+      else LOG(message_group::Warning, Location::NONE, "", "Python is not enabled");
+    }
+  }
+
+  if (oldPythonActive != this->python_active) {
+    emit this->pythonActiveChanged(this->python_active);
+  }
+}
+#endif
 
 void MainWindow::parseTopLevelDocument()
 {
@@ -1941,31 +2156,61 @@ void MainWindow::parseTopLevelDocument()
   auto fulltext =
     std::string(this->last_compiled_doc.toUtf8().constData()) +
     "\n\x03\n" + commandline_commands;
+  auto fulltext_py =
+      std::string(this->last_compiled_doc.toUtf8().constData());
 
   auto fnameba = activeEditor->filepath.toLocal8Bit();
   const char *fname = activeEditor->filepath.isEmpty() ? "" : fnameba;
   delete this->parsed_file;
 #ifdef ENABLE_PYTHON
-  this->python_active = false;
-  if (fname != NULL) {
-    if (boost::algorithm::ends_with(fname, ".py")) {
-      std::string content = std::string(this->last_compiled_doc.toUtf8().constData());
-      if (
-        Feature::ExperimentalPythonEngine.is_enabled()
-        && trust_python_file(std::string(fname), content)) this->python_active = true;
-      else LOG(message_group::Warning, Location::NONE, "", "Python is not enabled");
-    }
-  }
-
+  recomputePythonActive();
+  boost::regex ex_number( R"(^(\w+)\s*=\s*(-?[\d.]+))");
+  boost::regex ex_string( R"(^(\w+)\s*=\s*\"([^\"]*)\")");
   if (this->python_active) {
-    auto fulltext_py =
-      std::string(this->last_compiled_doc.toUtf8().constData());
 
-    auto error = evaluatePython(fulltext_py, this->animateWidget->getAnim_tval());
+    this->parsed_file = nullptr; // because the parse() call can throw and we don't want a stale pointer!
+    this->root_file = nullptr;  // ditto
+    fs::path parser_sourcefile = fs::path(fname).generic_string();				
+    this->root_file =new SourceFile(parser_sourcefile.parent_path().string(), parser_sourcefile.filename().string());
+    this->parsed_file = this->root_file;
+
+    initPython(this->animateWidget->getAnim_tval());
+    this->activeEditor->resetHighlighting();
+    this->activeEditor->parameterWidget->setEnabled(false);
+    do {
+      if (this->root_file == nullptr) break;
+      int pos=-1, pos1;	    
+      while(1)
+      {
+        pos1 =  fulltext_py.find("add_parameter",pos+1);	    
+	if(pos1 == -1) break;
+	pos=pos1;
+      }	      
+      if(pos == -1) break; // no paremter statements included
+      pos = fulltext_py.find("\n",pos);			   
+      if(pos == -1) break; // no paremter statements included
+      std::string par_text = fulltext_py.substr(0,pos);
+      //
+      //add parameters as annotation in AST
+      auto error = evaluatePython(par_text,true); // run dummy
+      this->root_file->scope.assignments=customizer_parameters;
+      CommentParser::collectParameters(fulltext_py, this->root_file, '#');  // add annotations
+      this->activeEditor->parameterWidget->setParameters(this->root_file, "\n"); // set widgets values
+      this->activeEditor->parameterWidget->applyParameters(this->root_file); // use widget values
+      this->activeEditor->parameterWidget->setEnabled(true);
+      this->activeEditor->setIndicator(this->root_file->indicatorData);
+    }
+    while(0);
+
+    customizer_parameters_finished = this->root_file->scope.assignments;
+    customizer_parameters.clear();
+    auto error = evaluatePython(fulltext_py); // add assignments 
     if (error.size() > 0) LOG(message_group::Error, Location::NONE, "", error.c_str());
-    fulltext = "\n";
-  }
+    finishPython();
+
+  } else // python not enabled
 #endif // ifdef ENABLE_PYTHON
+{
   this->parsed_file = nullptr; // because the parse() call can throw and we don't want a stale pointer!
   this->root_file = nullptr;  // ditto
   this->root_file = parse(this->parsed_file, fulltext, fname, fname, false) ? this->parsed_file : nullptr;
@@ -1973,7 +2218,7 @@ void MainWindow::parseTopLevelDocument()
   this->activeEditor->resetHighlighting();
   if (this->root_file != nullptr) {
     //add parameters as annotation in AST
-    CommentParser::collectParameters(fulltext, this->root_file);
+    CommentParser::collectParameters(fulltext, this->root_file, '/' );
     this->activeEditor->parameterWidget->setParameters(this->root_file, fulltext);
     this->activeEditor->parameterWidget->applyParameters(this->root_file);
     this->activeEditor->parameterWidget->setEnabled(true);
@@ -1981,6 +2226,7 @@ void MainWindow::parseTopLevelDocument()
   } else {
     this->activeEditor->parameterWidget->setEnabled(false);
   }
+}
 }
 
 void MainWindow::changeParameterWidget()
@@ -2037,17 +2283,6 @@ void MainWindow::csgReloadRender()
 {
   if (this->root_node) compileCSG();
 
-  // Go to non-CGAL view mode
-  if (viewActionThrownTogether->isChecked()) {
-    viewModeThrownTogether();
-  } else {
-#ifdef ENABLE_OPENCSG
-    viewModePreview();
-#else
-    viewModeThrownTogether();
-#endif
-  }
-  compileEnded();
 }
 
 void MainWindow::prepareCompile(const char *afterCompileSlot, bool procevents, bool preview)
@@ -2087,7 +2322,10 @@ void MainWindow::actionRenderPreview()
 void MainWindow::csgRender()
 {
   if (this->root_node) compileCSG();
+}
 
+void MainWindow::csgRenderFinished()
+{
   // Go to non-CGAL view mode
   if (viewActionThrownTogether->isChecked()) {
     viewModeThrownTogether();
@@ -2228,6 +2466,9 @@ void MainWindow::cgalRender()
 
 void MainWindow::actionRenderDone(const std::shared_ptr<const Geometry>& root_geom)
 {
+#ifdef ENABLE_PYTHON
+  python_lock();	
+#endif
   progress_report_fin();
   if (root_geom) {
     std::vector<std::string> options;
@@ -2282,12 +2523,26 @@ void MainWindow::actionMeasureAngle()
 {
   meas.startMeasureAngle();
 }
+void MainWindow::actionFindHandle()
+{
+  meas.startFindHandle();	
+  qglview->handle_mode=true;
+}
 
 void MainWindow::leftClick(QPoint mouse)
 {
   QString str = meas.statemachine(mouse);
-  if (str.size() > 0) {
+  if(!str.isEmpty()) {
     this->qglview->measure_state = MEASURE_IDLE;
+    if(str.startsWith("I:")) {
+      this->activeEditor->insert(QString(str.toStdString().c_str()+2));
+      this->qglview->selected_obj.clear();
+      this->qglview->shown_obj = nullptr;
+      this->qglview->update();
+      this->qglview->measure_state = MEASURE_IDLE;
+      this->qglview->handle_mode=false;
+      return;
+    }
     QMenu resultmenu(this);
     auto action = resultmenu.addAction(str);
     connect(action, SIGNAL(triggered()), this, SLOT(measureFinished()));
@@ -2349,7 +2604,8 @@ void MainWindow::rightClick(QPoint mouse)
       if (step->verbose_name().empty()) name = step->modinst->name();
 
       // Check if the path is contained in a library (using parsersettings.h)
-      fs::path libpath = get_library_for_path(location.filePath());
+      fs::path libpath;
+      if(!location.filePath().empty()) libpath = get_library_for_path(location.filePath());
       if (!libpath.empty()) {
         // Display the library (without making the window too wide!)
         ss << name << " (library "
@@ -2369,8 +2625,11 @@ void MainWindow::rightClick(QPoint mouse)
       // Prepare the action to be sent
       auto action = tracemenu.addAction(QString::fromStdString(ss.str()));
       if (editorDock->isVisible()) {
-        action->setProperty("id", step->idx);
-        connect(action, SIGNAL(hovered()), this, SLOT(onHoveredObjectInSelectionMenu()));
+        action->setProperty("file", QString::fromStdString(location.fileName()));
+        action->setProperty("line", location.firstLine());
+        action->setProperty("column", location.firstColumn());
+
+        connect(action, SIGNAL(triggered()), this, SLOT(measureFinished()));
       }
     }
 
@@ -2383,9 +2642,10 @@ void MainWindow::rightClick(QPoint mouse)
 void MainWindow::measureFinished()
 {
   this->qglview->selected_obj.clear();
-  this->qglview->shown_obj.clear();
+  this->qglview->shown_obj = nullptr;
   this->qglview->update();
   this->qglview->measure_state = MEASURE_IDLE;
+  this->qglview->handle_mode=false;
 }
 
 void MainWindow::clearAllSelectionIndicators()
@@ -2620,6 +2880,25 @@ void MainWindow::actionDisplayAST()
   clearCurrentOutput();
 }
 
+void MainWindow::actionDisplayPython()
+{
+  setCurrentOutput();
+  auto e = new QTextEdit(this);
+  e->setAttribute(Qt::WA_DeleteOnClose);
+  e->setWindowFlags(Qt::Window);
+  e->setTabStopDistance(tabStopWidth);
+  e->setWindowTitle("Python Dump");
+  e->setReadOnly(true);
+  if (root_file) {
+    e->setPlainText(QString::fromStdString(root_file->dump_python("")));
+  } else {
+    e->setPlainText("No Python to dump. Please try compiling first...");
+  }
+  e->resize(600, 400);
+  e->show();
+  clearCurrentOutput();
+}
+
 void MainWindow::actionDisplayCSGTree()
 {
   setCurrentOutput();
@@ -2660,6 +2939,193 @@ void MainWindow::actionDisplayCSGProducts()
   e->resize(600, 400);
   e->show();
   clearCurrentOutput();
+}
+
+void html_encode(std::string& data) {
+    std::string buffer;
+    buffer.reserve(data.size());
+    for(size_t pos = 0; pos != data.size(); ++pos) {
+        switch(data[pos]) {
+            case '\"': buffer.append("%22");        break;
+            case '<':  buffer.append("%3C");        break;
+            case '+':  buffer.append("%2b");        break;
+            case '>':  buffer.append("%3e");        break;
+            case ' ':  buffer.append("%20");        break;
+            case '&':  buffer.append("%26");        break;
+            case '\'': buffer.append("%27");        break;
+            case '%':  buffer.append("%%");         break;
+            default:   buffer.append(&data[pos], 1); break;
+        }
+    }
+    data.swap(buffer);
+}
+
+ShareDesignDialog *shareDesignDialog;
+void MainWindow::actionShareDesignPublish()
+{
+  QMessageBox::StandardButton disclaimer;
+  disclaimer = QMessageBox::question(this, "Disclaimer", "By Clicking Yes, you accept that:\n\
+\n\
+1) Your design will be public on pythonscad.org\n\
+2) it's on good purpose and not offending to anybody\n\
+3) you keep the copyright by your name \n\
+4) you accept that anybody can use it\n\
+5) no commerical use/adverisement\n\
+6) inapropriate content will be deleted without prior  notice\n\
+\n\
+\nProceed?", QMessageBox::Yes|QMessageBox::No);
+  if (disclaimer != QMessageBox::Yes) {
+    shareDesignDialog->close();
+    return;	  
+  }
+  int success=0;	
+  CURL *curl;
+  CURLcode res;
+  auto design = shareDesignDialog->getDesignName();
+  auto author = shareDesignDialog->getAuthorName();
+  std::string code=std::string(this->last_compiled_doc.toUtf8().constData());
+  html_encode(design);
+  html_encode(author);
+  html_encode(code);
+  std::string poststring="author=" + author +"&design=" + design + "&code="+code;
+
+  curl = curl_easy_init();
+  if(curl) {
+    curl_easy_setopt(curl, CURLOPT_URL, "https://pythonscad.org/share_design.php");
+//    curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE, poststring.size());
+    curl_easy_setopt(curl, CURLOPT_POSTFIELDS, poststring.c_str());
+    curl_easy_setopt(curl, CURLOPT_FORBID_REUSE, 1L);
+//    curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
+ 
+    res = curl_easy_perform(curl);
+    /* Check for errors */
+    if(res != CURLE_OK) {
+      fprintf(stderr, "curl_easy_perform() failed: %s\n",
+              curl_easy_strerror(res));
+    }
+    else success=1;
+    
+    /* always cleanup */
+    curl_easy_cleanup(curl);
+  }
+  shareDesignDialog->close();
+  if(success) 
+    QMessageBox::information(this,"Share Design","Design successfully submitted");  
+  else QMessageBox::information(this,"Share Design","Error during submission");  
+}
+
+void MainWindow::actionShareDesign()
+{
+  shareDesignDialog = new ShareDesignDialog();
+  connect(shareDesignDialog->publishButton, SIGNAL(clicked()), this, SLOT(actionShareDesignPublish()));
+
+  if (shareDesignDialog->exec() == QDialog::Rejected) {
+    return;
+  };
+}
+
+LoadShareDesignDialog *loadShareDesignDialog;
+std::string actionLoadSharedDesignData;
+
+size_t actionLoadSharedDesignDataFunc(void *ptr, size_t size, size_t nmemb, struct string *s)
+{
+  actionLoadSharedDesignData += std::string((char *)ptr, size*nmemb);
+  return size*nmemb;
+}
+
+std::vector<std::vector<std::string>> loadShareDesignDatabase;
+
+void MainWindow::actionLoadShareDesignSelect()
+{
+  CURL *curl;
+  CURLcode res;
+  int success=0;
+  int selected =loadShareDesignDialog->list_design->currentRow();
+  if(selected < 0 || selected >= loadShareDesignDatabase.size()) return;
+  std::string url = "https://pythonscad.org/shared_designs/"+loadShareDesignDatabase[selected][2];
+  curl = curl_easy_init();
+  if(curl) {
+    curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
+    curl_easy_setopt(curl, CURLOPT_FORBID_REUSE, 1L);
+    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, actionLoadSharedDesignDataFunc);
+ 
+    actionLoadSharedDesignData="";
+    res = curl_easy_perform(curl);
+    /* Check for errors */
+    if(res != CURLE_OK) {
+      fprintf(stderr, "curl_easy_perform() failed: %s\n",
+              curl_easy_strerror(res));
+    }
+    else success=1;
+    
+    /* always cleanup */
+    curl_easy_cleanup(curl);
+  }
+  this->activeEditor->setPlainText(QString(actionLoadSharedDesignData.c_str()));
+
+  loadShareDesignDialog->close();
+}
+
+void MainWindow::actionLoadShareDesign()
+{
+  CURL *curl;
+  CURLcode res;
+  int success=0;
+  curl = curl_easy_init();
+  if(curl) {
+    curl_easy_setopt(curl, CURLOPT_URL, "https://pythonscad.org/list_design.php");
+    curl_easy_setopt(curl, CURLOPT_FORBID_REUSE, 1L);
+    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, actionLoadSharedDesignDataFunc);
+ 
+    actionLoadSharedDesignData="";
+    res = curl_easy_perform(curl);
+    /* Check for errors */
+    if(res != CURLE_OK) {
+      fprintf(stderr, "curl_easy_perform() failed: %s\n",
+              curl_easy_strerror(res));
+    }
+    else success=1;
+    
+    /* always cleanup */
+    curl_easy_cleanup(curl);
+  }
+
+  loadShareDesignDialog = new LoadShareDesignDialog();
+  // now json_decode
+  std::string word;
+  std::vector<std::string> words;
+  loadShareDesignDatabase.clear();
+  int in_string=0;
+  int level=0;
+  for(int i=0;i<actionLoadSharedDesignData.size();i++){
+    switch(actionLoadSharedDesignData[i])
+    {	  
+      case '[': level++; break;
+      case ']': 
+        if(level == 2) {
+          loadShareDesignDatabase.push_back(words);
+	  if(words.size() > 0) loadShareDesignDialog->list_design->addItem(QString(words[0].c_str()));
+
+          words.clear();	  
+	}		
+        level--; break;		
+      case '\'':
+        if(in_string){
+         words.push_back(word);
+         word="";	 
+        }		
+        in_string=1-in_string;		
+        break;	      
+      default:
+        if(in_string)word += actionLoadSharedDesignData[i];	      
+	break;
+	    
+    }
+  }
+  connect(loadShareDesignDialog->selectButton, SIGNAL(clicked()), this, SLOT(actionLoadShareDesignSelect()));
+  if (loadShareDesignDialog->exec() == QDialog::Rejected) {
+    return;
+  };
 }
 
 void MainWindow::actionCheckValidity()
@@ -2727,7 +3193,7 @@ bool MainWindow::canExport(unsigned int dim)
     }
   }
 
-  if (this->root_geom->getDimension() != dim) {
+  if (this->root_geom->getDimension() != dim && dim != 0) {
     LOG(message_group::UI_Error, "Current top level object is not a %1$dD object.", dim);
     clearCurrentOutput();
     return false;
@@ -2840,7 +3306,7 @@ void MainWindow::actionExportFileFormat(int fmt)
   settings.setValue("exportPdfOpts/showGrid", exportPdfDialog->getShowGrid());
   settings.setValue("exportPdfOpts/gridSize", exportPdfDialog->getGridSize());
 
-  actionExport(FileFormat::PDF, "PDF", ".pdf", 2, &exportPdfOptions);
+actionExport(FileFormat::PDF, "PDF", ".pdf", 0, &exportPdfOptions);
 
 }
       break;
@@ -3668,6 +4134,9 @@ void MainWindow::quit()
 #ifdef Q_OS_MACOS
   CocoaUtils::endApplication();
 #endif
+  for(auto &temp: this->allTempFiles) {
+    temp->setAutoRemove(true);
+  }
 }
 
 void MainWindow::consoleOutput(const Message& msgObj, void *userdata)

@@ -257,6 +257,11 @@ std::unique_ptr<PolySet> AmfImporter::read(const std::string& filename)
   streamFile(filename.c_str());
   vertex_list.clear();
 
+  std::string instance_name; 
+  AssignmentList inst_asslist;
+  ModuleInstantiation *instance = new ModuleInstantiation(instance_name,inst_asslist, Location::NONE);
+  auto node = std::make_shared<CsgOpNode>(instance, OpenSCADOperator::UNION);
+
   if (polySets.empty()) {
     return PolySet::createEmpty();
   }
@@ -270,7 +275,7 @@ std::unique_ptr<PolySet> AmfImporter::read(const std::string& filename)
     }
 
 #ifdef ENABLE_CGAL
-    std::unique_ptr<const Geometry> geom = CGALUtils::applyUnion3D(children.begin(), children.end());
+    std::unique_ptr<const Geometry> geom = CGALUtils::applyUnion3D(*node, children.begin(), children.end());
     if (auto ps = PolySetUtils::getGeometryAsPolySet(std::move(geom))) {
       // FIXME: Unnecessary copy
       return std::make_unique<PolySet>(*ps);
@@ -347,7 +352,7 @@ xmlTextReaderPtr AmfImporterZIP::createXmlReader(const char *filepath)
 }
 
 std::unique_ptr<PolySet> import_amf(const std::string& filename, const Location& loc) {
-  LOG(message_group::Deprecated, "AMF import is deprecated. Please use 3MF instead.");
+  LOG(message_group::Deprecated, "AMF import is deprecated. Please use 3mf instead.");
   AmfImporterZIP importer(loc);
   return importer.read(filename);
 }
@@ -355,7 +360,7 @@ std::unique_ptr<PolySet> import_amf(const std::string& filename, const Location&
 #else
 
 std::unique_ptr<PolySet> import_amf(const std::string& filename, const Location& loc) {
-  LOG(message_group::Deprecated, "AMF import is deprecated. Please use 3MF instead.");
+  LOG(message_group::Deprecated, "AMF import is deprecated. Please use 3mf instead.");
   AmfImporter importer(loc);
   return importer.read(filename);
 }
