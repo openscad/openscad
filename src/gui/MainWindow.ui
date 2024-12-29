@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1118</width>
+    <width>1354</width>
     <height>636</height>
    </rect>
   </property>
@@ -174,6 +174,8 @@
          <addaction name="viewActionZoomIn"/>
          <addaction name="viewActionZoomOut"/>
          <addaction name="viewActionResetView"/>
+         <addaction name="designActionMeasureDist"/>
+         <addaction name="designActionMeasureAngle"/>
          <addaction name="separator"/>
          <addaction name="viewActionRight"/>
          <addaction name="viewActionLeft"/>
@@ -203,8 +205,8 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1118</width>
-     <height>22</height>
+     <width>1354</width>
+     <height>29</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu_File">
@@ -225,8 +227,10 @@
      <property name="title">
       <string>E&amp;xport</string>
      </property>
-     <addaction name="fileActionExportSTL"/>
+     <addaction name="fileActionExportAsciiSTL"/>
+     <addaction name="fileActionExportBinarySTL"/>
      <addaction name="fileActionExportOBJ"/>
+     <addaction name="fileActionExportPOV"/>
      <addaction name="fileActionExportOFF"/>
      <addaction name="fileActionExportWRL"/>
      <addaction name="fileActionExportAMF"/>
@@ -246,6 +250,7 @@
     <addaction name="separator"/>
     <addaction name="fileActionNewWindow"/>
     <addaction name="fileActionOpenWindow"/>
+    <addaction name="fileActionRevoke"/>
     <addaction name="fileActionClose"/>
     <addaction name="separator"/>
     <addaction name="fileActionSave"/>
@@ -309,6 +314,8 @@
     <addaction name="designActionPreview"/>
     <addaction name="designActionRender"/>
     <addaction name="designAction3DPrint"/>
+    <addaction name="designActionMeasureDist"/>
+    <addaction name="designActionMeasureAngle"/>
     <addaction name="separator"/>
     <addaction name="designCheckValidity"/>
     <addaction name="designActionDisplayAST"/>
@@ -371,6 +378,7 @@
     <addaction name="windowActionSelectEditor"/>
     <addaction name="windowActionSelectConsole"/>
     <addaction name="windowActionSelectErrorLog"/>
+    <addaction name="windowActionSelectFontList"/>
     <addaction name="windowActionSelectCustomizer"/>
     <addaction name="windowActionSelectAnimate"/>
     <addaction name="windowActionSelectViewportControl"/>
@@ -384,6 +392,7 @@
     <addaction name="windowActionHideCustomizer"/>
     <addaction name="windowActionHideAnimate"/>
     <addaction name="windowActionHideViewportControl"/>
+    <addaction name="windowActionHideFontList"/>
    </widget>
    <addaction name="menu_File"/>
    <addaction name="menu_Edit"/>
@@ -408,7 +417,7 @@
    <attribute name="toolBarBreak">
     <bool>false</bool>
    </attribute>
-       <widget class="QWidget" name="tabToolBarContents">
+   <widget class="QWidget" name="tabToolBarContents">
     <property name="sizePolicy">
      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
       <horstretch>0</horstretch>
@@ -650,8 +659,7 @@
       <number>0</number>
      </property>
      <item>
-      <widget class="Animate" name="animateWidget" native="true">
-      </widget>
+      <widget class="Animate" name="animateWidget" native="true"/>
      </item>
     </layout>
    </widget>
@@ -678,8 +686,7 @@
       <number>0</number>
      </property>
      <item>
-      <widget class="ViewportControl" name="viewportControlWidget" native="true">
-      </widget>
+      <widget class="ViewportControl" name="viewportControlWidget" native="true"/>
      </item>
     </layout>
    </widget>
@@ -714,6 +721,18 @@
         </size>
        </property>
       </widget>
+     </item>
+    </layout>
+   </widget>
+  </widget>
+  <widget class="Dock" name="fontListDock">
+   <attribute name="dockWidgetArea">
+    <number>8</number>
+   </attribute>
+   <widget class="QWidget" name="fontListDockContents">
+    <layout class="QVBoxLayout" name="verticalLayout_4">
+     <item>
+      <widget class="FontList" name="fontListWidget" native="true"/>
      </item>
     </layout>
    </widget>
@@ -982,6 +1001,22 @@
     <string>F8</string>
    </property>
   </action>
+  <action name="designActionMeasureDist">
+   <property name="text">
+    <string>Measure &amp;Distance</string>
+   </property>
+   <property name="shortcut">
+    <string>D</string>
+   </property>
+  </action>
+  <action name="designActionMeasureAngle">
+   <property name="text">
+    <string>Measure &amp;Angle</string>
+   </property>
+   <property name="shortcut">
+    <string>A</string>
+   </property>
+  </action>
   <action name="designCheckValidity">
    <property name="text">
     <string>&amp;Check Validity</string>
@@ -1002,17 +1037,27 @@
     <string>Display CSG Pr&amp;oducts...</string>
    </property>
   </action>
-  <action name="fileActionExportSTL">
+  <action name="fileActionExportBinarySTL">
    <property name="text">
-    <string>Export as &amp;STL...</string>
+    <string>Export as &amp;STL (binary)...</string>
    </property>
    <property name="shortcut">
     <string>F7</string>
    </property>
   </action>
+  <action name="fileActionExportAsciiSTL">
+   <property name="text">
+    <string>Export as &amp;STL (ascii)...</string>
+   </property>
+  </action>
   <action name="fileActionExportOBJ">
    <property name="text">
     <string>Export as &amp;OBJ...</string>
+   </property>
+  </action>
+  <action name="fileActionExportPOV">
+   <property name="text">
+    <string>Export as &amp;POV...</string>
    </property>
   </action>
   <action name="fileActionExportOFF">
@@ -1232,6 +1277,11 @@
   <action name="fileActionExportDXF">
    <property name="text">
     <string>Export as &amp;DXF...</string>
+   </property>
+  </action>
+  <action name="fileActionRevoke">
+   <property name="text">
+    <string>Revoke trusted python Files</string>
    </property>
   </action>
   <action name="fileActionClose">
@@ -1554,6 +1604,22 @@
     <string>Fold/Unfoll All</string>
    </property>
   </action>
+  <action name="windowActionHideFontList">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Hide Font List</string>
+   </property>
+  </action>
+  <action name="windowActionSelectFontList">
+   <property name="text">
+    <string>Font List</string>
+   </property>
+  </action>
  </widget>
  <customwidgets>
   <customwidget>
@@ -1566,12 +1632,6 @@
    <class>Dock</class>
    <extends>QDockWidget</extends>
    <header>gui/Dock.h</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
-   <class>ParameterWidget</class>
-   <extends>QWidget</extends>
-   <header>gui/parameter/ParameterWidget.h</header>
    <container>1</container>
   </customwidget>
   <customwidget>
@@ -1601,6 +1661,12 @@
    <class>ViewportControl</class>
    <extends>QWidget</extends>
    <header>gui/ViewportControl.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>FontList</class>
+   <extends>QWidget</extends>
+   <header>gui/FontList.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

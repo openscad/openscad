@@ -5,9 +5,9 @@ OpenSCAD runs as expected from release to release, and from platform to
 platform. To use this test suite you must also have the following 
 systems installed on your machine:
 
-   Python 3      http://www.python.org
-   CMake         http://www.cmake.org
-   ImageMagick   http://www.imagemagick.org
+   Python 3      https://www.python.org
+   CMake         https://www.cmake.org
+   ImageMagick   https://www.imagemagick.org
 
 To run the test suite, first click on the "OpenSCAD_Test_Console.py" file to
 run it. It should open a cmd.exe console in the tests-build folder. Type

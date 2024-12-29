@@ -1,0 +1,4 @@
+rotate_extrude(angle = 360, convexity = 2, $fn = 0, $fa = 12, $fs = 2) {
+	square(size = [10, 10], center = false);
+}
+

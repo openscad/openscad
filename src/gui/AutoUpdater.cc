@@ -1,4 +1,4 @@
-#include "AutoUpdater.h"
+#include "gui/AutoUpdater.h"
 #include <QAction>
 #include <QMenuBar>
 

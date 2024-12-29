@@ -17,26 +17,30 @@
 
  */
 
+#include <memory>
 #include <Eigen/Core>
 #include <Eigen/Geometry>
 #include <string>
-#include <iostream>
-#include "Camera.h"
-#include "ColorMap.h"
+#include <vector>
+#include "glview/Camera.h"
+#include "glview/ColorMap.h"
+#include "glview/system-gl.h"
+#include "core/Selection.h"
+#include "glview/Renderer.h"
 
 class GLView
 {
 public:
   GLView();
-  void setRenderer(class Renderer *r);
-  [[nodiscard]] Renderer *getRenderer() const { return this->renderer; }
+  void setRenderer(std::shared_ptr<Renderer> r);
+  [[nodiscard]] Renderer *getRenderer() const { return this->renderer.get(); }
 
   void initializeGL();
   void resizeGL(int w, int h);
   virtual void paintGL();
 
   void setCamera(const Camera& cam);
-  void setupCamera() const;
+  void setupCamera() ;
 
   void setColorScheme(const ColorScheme& cs);
   void setColorScheme(const std::string& cs);
@@ -59,7 +63,7 @@ public:
 
   virtual ~GLView() = default;
 
-  Renderer *renderer;
+  std::shared_ptr<Renderer> renderer;
   const ColorScheme *colorscheme;
   Camera cam;
   double far_far_away;
@@ -69,6 +73,10 @@ public:
   bool showedges;
   bool showcrosshairs;
   bool showscale;
+  GLdouble modelview[16];
+  GLdouble projection[16];
+  std::vector<SelectedObject> selected_obj;
+  std::vector<SelectedObject> shown_obj;
 
 #ifdef ENABLE_OPENCSG
   bool is_opencsg_capable;
@@ -77,6 +85,7 @@ public:
   virtual void display_opencsg_warning() = 0;
   int opencsg_id;
 #endif
+  void showObject(const SelectedObject &pt,const Vector3d &eyedir);
 private:
   void showCrosshairs(const Color4f& col);
   void showAxes(const Color4f& col);

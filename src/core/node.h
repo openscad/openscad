@@ -1,13 +1,17 @@
 #pragma once
 
+#include <ostream>
+#include <memory>
+#include <cstddef>
 #include <utility>
 #include <utility>
 #include <vector>
 #include <string>
 #include <deque>
-#include "BaseVisitable.h"
-#include "AST.h"
-#include "ModuleInstantiation.h"
+
+#include "core/BaseVisitable.h"
+#include "core/AST.h"
+#include "core/ModuleInstantiation.h"
 
 extern int progress_report_count;
 extern void (*progress_report_f)(const std::shared_ptr<const AbstractNode>&, void *, int);
@@ -41,10 +45,6 @@ public:
   /*| When a more specific name for user interaction shall be used, such as module names,
       the verbose name shall be overloaded. */
   virtual std::string verbose_name() const { return this->name(); }
-  /*! Should return a Geometry instance describing the node. Returns nullptr if smth.
-     goes wrong. This is only called by PolySetEvaluator, to make sure polysets
-     are inserted into the cache*/
-  virtual class Geometry *evaluate_geometry(class PolySetEvaluator *) const { return nullptr; }
 
   const std::vector<std::shared_ptr<AbstractNode>>& getChildren() const {
     return this->children;
@@ -134,7 +134,7 @@ class LeafNode : public AbstractPolyNode
 public:
   VISITABLE();
   LeafNode(const ModuleInstantiation *mi) : AbstractPolyNode(mi) { }
-  virtual const class Geometry *createGeometry() const = 0;
+  virtual std::unique_ptr<const class Geometry> createGeometry() const = 0;
 };
 
 std::ostream& operator<<(std::ostream& stream, const AbstractNode& node);

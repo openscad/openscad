@@ -24,8 +24,9 @@
  *
  */
 
+#include "gui/ExportPdfDialog.h"
+
 #include <QString>
-#include "ExportPdfDialog.h"
 
 ExportPdfDialog::ExportPdfDialog()
 {
@@ -112,7 +113,7 @@ ExportPdfDialog::ExportPdfDialog()
   bool ExportPdfDialog::getShowScaleMsg() {
   	return cbScaleUsg->isChecked();
   	}
-  bool ExportPdfDialog::getShowDsnFn() {
+  bool ExportPdfDialog::getShowDesignFilename() {
   	return cbDsnFn->isChecked();
   	}
   bool ExportPdfDialog::getShowGrid()  {
@@ -126,7 +127,7 @@ ExportPdfDialog::ExportPdfDialog()
  void  ExportPdfDialog::setShowScaleMsg(bool state) {
   	        cbScaleUsg->setChecked(state);
   }
- void  ExportPdfDialog::setShowDsnFn(bool state) {
+ void  ExportPdfDialog::setShowDesignFilename(bool state) {
   	        cbDsnFn->setChecked(state);
   }  
  void ExportPdfDialog::setShowGrid(bool state) {

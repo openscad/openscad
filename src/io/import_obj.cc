@@ -1,24 +1,26 @@
-#include "import.h"
-#include "PolySet.h"
+#include "io/import.h"
+#include "geometry/PolySet.h"
+#include "geometry/PolySetBuilder.h"
+#include <ios>
+#include <memory>
 #include <fstream>
+#include <string>
 #include <vector>
 #include <boost/regex.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/split.hpp>
 
-PolySet *import_obj(const std::string& filename, const Location& loc) {
-  std::unique_ptr<PolySet> p = std::make_unique<PolySet>(3);
+std::unique_ptr<PolySet> import_obj(const std::string& filename, const Location& loc) {
+  PolySetBuilder builder;
 
-  
   std::ifstream f(filename.c_str(), std::ios::in | std::ios::binary );
   if (!f.good()) {
     LOG(message_group::Warning,
         "Can't open import file '%1$s', import() at line %2$d",
         filename, loc.firstLine());
-    return p.release();
+    return PolySet::createEmpty();
   }
-  std::vector<Vector3d> pts;
   boost::regex ex_comment(R"(^\s*#)");
   boost::regex ex_v( R"(^\s*v\s+([^\s]+)\s+([^\s]+)\s+([^\s]+)\s*$)");
   boost::regex ex_f( R"(^\s*f\s+(.*)$)");
@@ -37,6 +39,7 @@ PolySet *import_obj(const std::string& filename, const Location& loc) {
     "OBJ File line %1$s, %2$s line '%3$s' importing file '%4$s'",
     lineno, errstr, line, filename);
   };
+  std::vector<int> vertex_map;
 
   while (!f.eof()) {
     lineno++;
@@ -48,26 +51,32 @@ PolySet *import_obj(const std::string& filename, const Location& loc) {
       continue;
     } else if (boost::regex_search(line, results, ex_v) && results.size() >= 4) {
       try {
-	Vector3d v;
+        Vector3d v;
         for (int i = 0; i < 3; i++) {
-          v[i]= boost::lexical_cast<double>(results[i + 1]); 
+          v[i]= boost::lexical_cast<double>(results[i + 1]);
         }
-        pts.push_back(v);
+        vertex_map.push_back(builder.vertexIndex(v));
       } catch (const boost::bad_lexical_cast& blc) {
         AsciiError("can't parse vertex");
-        return new PolySet(3);
+        return PolySet::createEmpty();
       }
     } else if (boost::regex_search(line, results, ex_f) && results.size() >= 2) {
-      std::string args=results[1];
       std::vector<std::string> words;
       boost::split(words, results[1], boost::is_any_of(" \t"));
-      p->append_poly(words.size());
+      builder.beginPolygon(words.size());
       for (const std::string& word : words) {
-	int ind=boost::lexical_cast<int>(word);
-        if(ind >= 1 && ind  <= pts.size())
-          p->append_vertex(pts[ind-1][0], pts[ind-1][1], pts[ind-1][2]);
-        else
-          LOG(message_group::Warning, "Index %1$d out of range in Line %2$d", filename, lineno);
+        std::vector<std::string> wordindex;
+        boost::split(wordindex, word, boost::is_any_of("/"));
+        if(wordindex.size() < 1)
+          LOG(message_group::Warning, "Invalid Face index in File %1$s in Line %2$d", filename, lineno);
+        else {
+          int ind=boost::lexical_cast<int>(wordindex[0]);
+          if(ind >= 1 && ind  <= vertex_map.size()) {
+            builder.addVertex(vertex_map[ind-1]);
+          } else {
+            LOG(message_group::Warning, "Index %1$d out of range in Line %2$d", filename, lineno);
+          }
+        }
       }
 
     } else if (boost::regex_search(line, results, ex_vt)) { // ignore texture coords
@@ -81,5 +90,5 @@ PolySet *import_obj(const std::string& filename, const Location& loc) {
       LOG(message_group::Warning, "Unrecognized Line  %1$s in line Line %2$d", line, lineno);
     }
   }
-  return p.release();
+  return builder.build();
 }

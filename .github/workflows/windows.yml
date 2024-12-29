@@ -1,4 +1,4 @@
-name: windows
+name: Windows(msys2) Experimental Tests
 
 on:
   push:
@@ -8,14 +8,17 @@ on:
 
 jobs:
   build:
+    strategy:
+      matrix:
+        qt: [ qt5, qt6 ]
     runs-on: windows-latest
-    name: windows-latest
+    name: windows-latest ${{ matrix.qt }}
     defaults:
       run:
         shell: msys2 {0}
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Setup MSYS2 Environment
         uses: msys2/setup-msys2@v2
         with:
@@ -24,9 +27,9 @@ jobs:
       - name: Install MSYS2 Dependencies
         run: |
           pwd
-          ./scripts/msys2-install-dependencies.sh
+          ./scripts/msys2-install-dependencies.sh ${{ matrix.qt }}
       - name: Install Mesa
-        uses: ssciwr/setup-mesa-dist-win@v1
+        uses: ssciwr/setup-mesa-dist-win@v2
         with:
           version: '22.1.7'
           build-type: 'release-mingw'
@@ -34,18 +37,18 @@ jobs:
         run: |
           git submodule update --init --recursive
           mkdir build && cd build
-          cmake .. -G"Ninja" -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_BUILD_TYPE=Release -DEXPERIMENTAL=ON -DSNAPSHOT=ON
-          cmake --build . -j2
+          cmake .. -G"Ninja" -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_BUILD_TYPE=Release -DEXPERIMENTAL=ON -DSNAPSHOT=ON -DUSE_QT6=${{ matrix.qt == 'qt6' && 'ON' || 'OFF' }}
+          cmake --build . -j4
           cmake --install . --prefix=.
       - name: Run Test Suite
         run: |
           cd build
-          ctest -j2
+          ctest -j4
       - name: Upload Test Result Report
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: ${{ always() }}
         with:
-          name: Test Result Report (Windows)
+          name: Test Result Report (Windows ${{ matrix.qt }})
           path: |
             build/Testing/Temporary/*_report.html
             build/Testing/Temporary/LastTest.log

@@ -25,7 +25,10 @@
  */
 #pragma once
 
-#include "InputDriver.h"
+#include "gui/input/InputDriver.h"
+
+#include <cstddef>
+#include <string>
 
 class JoystickInputDriver : public InputDriver
 {

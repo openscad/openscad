@@ -1,10 +1,13 @@
-#include "export.h"
-#include "PolySet.h"
-// #include "PolySetUtils.h"
-#include "printutils.h"
+#include "io/export.h"
+#include "geometry/PolySet.h"
+// #include "geometry/PolySetUtils.h"
+#include "utils/printutils.h"
 // #include "version.h"
-#include "version_helper.h"
+#include "utils/version_helper.h"
 
+#include <cassert>
+#include <ostream>
+#include <memory>
 #include <string>
 #include <cmath>
 
@@ -19,7 +22,7 @@
 
 #define MARGIN 30.
 
-// void export_pdf(const shared_ptr<const Geometry>& geom, std::ostream& output, const ExportInfo& exportInfo, const ExportPdfOptions  exportPdfOptions);
+// void export_pdf(const std::shared_ptr<const Geometry>& geom, std::ostream& output, const ExportInfo& exportInfo, const ExportPdfOptions  exportPdfOptions);
  
 const std::string get_cairo_version() {
   return OpenSCAD::get_version(CAIRO_VERSION_STRING, cairo_version_string());
@@ -51,7 +54,6 @@ void draw_grid(cairo_t *cr, double left, double right, double bottom, double top
   double lightLine=0.24;
   int major = (gridSize>10.? gridSize: int(10./gridSize));
 
-  double offset = mm_to_points(gridSize);
   double pts=0.;  // for iteration across page
   
   // bounds are margins in points.
@@ -96,7 +98,6 @@ void draw_grid(cairo_t *cr, double left, double right, double bottom, double top
 // New draw_axes (renamed from axis since it draws both).  
 void draw_axes(cairo_t *cr, double left, double right, double bottom, double top){
   double darkerLine=0.36;
-  double faintLine=0.24;
   double offset = mm_to_points(5.);
   double pts=0.;  // for iteration across page
   
@@ -169,14 +170,14 @@ void draw_geom(const Polygon2d& poly, cairo_t *cr ){
 
 
 // Main entry:  draw geometry that consists of 2D polygons.  Walks the tree...
-void draw_geom(const shared_ptr<const Geometry>& geom, cairo_t *cr){
-  if (const auto geomlist = dynamic_pointer_cast<const GeometryList>(geom)) { // iterate
+void draw_geom(const std::shared_ptr<const Geometry>& geom, cairo_t *cr){
+  if (const auto geomlist = std::dynamic_pointer_cast<const GeometryList>(geom)) { // iterate
     for (const auto& item : geomlist->getChildren()) {
       draw_geom(item.second, cr);
     }
-  } else if (dynamic_pointer_cast<const PolySet>(geom)) {  
+  } else if (std::dynamic_pointer_cast<const PolySet>(geom)) {
     assert(false && "Unsupported file format");
-  } else if (const auto poly = dynamic_pointer_cast<const Polygon2d>(geom)) { // geometry that can be drawn.
+  } else if (const auto poly = std::dynamic_pointer_cast<const Polygon2d>(geom)) { // geometry that can be drawn.
     draw_geom(*poly, cr);
   } else {
     assert(false && "Export as PDF for this geometry type is not supported");
@@ -191,7 +192,7 @@ static cairo_status_t export_pdf_write(void *closure, const unsigned char *data,
 }
 
 
-void export_pdf(const shared_ptr<const Geometry>& geom, std::ostream& output, const ExportInfo& exportInfo)
+void export_pdf(const std::shared_ptr<const Geometry>& geom, std::ostream& output, const ExportInfo& exportInfo)
 {
 // Extract the options.  This will change when options becomes a variant.
 ExportPdfOptions *exportPdfOptions;
@@ -257,8 +258,9 @@ if (exportInfo.options==nullptr) {
     return;
   }
 
+
 #if CAIRO_VERSION >= CAIRO_VERSION_ENCODE(1, 16, 0)
-  cairo_pdf_surface_set_metadata(surface, CAIRO_PDF_METADATA_TITLE, exportInfo.sourceFileName.c_str());
+  cairo_pdf_surface_set_metadata(surface, CAIRO_PDF_METADATA_TITLE, std::filesystem::path(exportInfo.sourceFilePath).filename().string().c_str());
   cairo_pdf_surface_set_metadata(surface, CAIRO_PDF_METADATA_CREATOR, "OpenSCAD (https://www.openscad.org/)");
   cairo_pdf_surface_set_metadata(surface, CAIRO_PDF_METADATA_CREATE_DATE, "");
   cairo_pdf_surface_set_metadata(surface, CAIRO_PDF_METADATA_MOD_DATE, "");
@@ -277,7 +279,7 @@ if (exportInfo.options==nullptr) {
       std::string about = "Scale is to calibrate actual printed dimension. Check both X and Y. Measure between tick 0 and last tick";
     cairo_set_source_rgba(cr, 0., 0., 0., 0.48);
     // Design Filename
-    if (exportPdfOptions->showDsgnFN) draw_text(exportInfo.sourceFilePath.c_str(), cr, Mlx, Mby, 10.);
+    if (exportPdfOptions->showDesignFilename) draw_text(exportInfo.sourceFilePath.c_str(), cr, Mlx, Mby, 10.);
     // Scale
     if (exportPdfOptions->showScale) {
     	draw_axes(cr, Mlx,Mrx,Mty,Mby);
@@ -299,7 +301,7 @@ const std::string get_cairo_version() {
   return cairo_version;
 }
 
-void export_pdf(const shared_ptr<const Geometry>&, std::ostream&, const ExportInfo&) {
+void export_pdf(const std::shared_ptr<const Geometry>&, std::ostream&, const ExportInfo&) {
 
   LOG(message_group::Error, "Export to PDF format was not enabled when building the application.");
 

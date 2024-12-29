@@ -24,7 +24,14 @@
  *
  */
 
-#include "node.h"
+#include <cstdint>
+#include <memory>
+#include <cstddef>
+#include <string>
+#include <vector>
+
+#include "core/node.h"
+#include "core/Value.h"
 
 struct img_data_t
 {
@@ -65,11 +72,10 @@ public:
   bool invert{false};
   int convexity{1};
 
-  const Geometry *createGeometry() const override;
+  std::unique_ptr<const Geometry> createGeometry() const override;
 private:
   void convert_image(img_data_t& data, std::vector<uint8_t>& img, unsigned int width, unsigned int height) const;
   bool is_png(std::vector<uint8_t>& img) const;
   img_data_t read_dat(std::string filename) const;
   img_data_t read_png_or_dat(std::string filename) const;
 };
-

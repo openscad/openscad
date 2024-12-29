@@ -23,21 +23,24 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  */
+#include "core/FreetypeRenderer.h"
+
+#include <algorithm>
+#include <limits>
+#include <cstdint>
+#include <memory>
 #include <cmath>
 #include <cstdio>
+#include <vector>
 
-#include <iostream>
-
-#include <glib.h>
 
 #include <fontconfig/fontconfig.h>
 
-#include "printutils.h"
+#include "utils/printutils.h"
 
 #include "FontCache.h"
-#include "DrawingCallback.h"
-#include "FreetypeRenderer.h"
-#include "calc.h"
+#include "core/DrawingCallback.h"
+#include "utils/calc.h"
 
 #include FT_OUTLINE_H
 // NOLINTNEXTLINE(bugprone-macro-parentheses)
@@ -338,16 +341,12 @@ FreetypeRenderer::ShapeResults::ShapeResults(
     // to the 0xf000 page (Private Use Area of Unicode). All other
     // values are untouched, so using the correct codepoint directly
     // (e.g. \uf021 for the spider in Webdings) still works.
-    const char *p = params.text.c_str();
-    if (g_utf8_validate(p, -1, nullptr)) {
-      char buf[8];
-      while (*p != 0) {
-        memset(buf, 0, 8);
-        gunichar c = g_utf8_get_char(p);
+    str_utf8_wrapper utf8_str{params.text};
+    if (utf8_str.utf8_validate()) {
+      for (auto ch : utf8_str) {
+        gunichar c = ch.get_utf8_char();
         c = (c < 0x0100) ? 0xf000 + c : c;
-        g_unichar_to_utf8(c, buf);
-        hb_buffer_add_utf8(hb_buf, buf, strlen(buf), 0, strlen(buf));
-        p = g_utf8_next_char(p);
+        hb_buffer_add_utf32(hb_buf, &c, 1, 0, 1);
       }
     } else {
       LOG(message_group::Warning, params.loc, params.documentPath,
@@ -547,7 +546,7 @@ FreetypeRenderer::TextMetrics::TextMetrics(
   ok = true;
 }
 
-std::vector<const Geometry *> FreetypeRenderer::render(const FreetypeRenderer::Params& params) const
+std::vector<std::shared_ptr<const Polygon2d>> FreetypeRenderer::render(const FreetypeRenderer::Params& params) const
 {
   ShapeResults sr(params);
 
@@ -570,5 +569,8 @@ std::vector<const Geometry *> FreetypeRenderer::render(const FreetypeRenderer::P
     callback.finish_glyph();
   }
 
+  // FIXME: The returned Polygon2d currently contains only outlines with the 'positive' flag set to true,
+  // and where the winding order determines if the outlines should be interpreted as polygons or holes.
+  // We have to rely on any downstream processing to be aware of the winding order, and ignore the 'positive' flag.
   return callback.get_result();
 }

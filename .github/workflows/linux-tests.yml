@@ -1,0 +1,54 @@
+name: Linux Experimental Tests
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ ubuntu-20.04, ubuntu-22.04, ubuntu-24.04 ]
+        qt: [ qt5, qt6 ]
+        exclude:
+          - os: ubuntu-20.04
+            # Qt 6 not packaged
+            qt: qt6
+          - os: ubuntu-22.04
+            # libqscintilla2-qt6-dev not packaged
+            qt: qt6
+
+    runs-on: ${{ matrix.os }}
+
+    name: ${{ matrix.os }} ${{ matrix.qt }}
+
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        submodules: 'recursive'
+    - name: Install dependencies
+      run: ./scripts/github-ci-linux-get-dependencies.sh ${{ matrix.qt }}
+    - uses: actions/setup-python@v5
+      with:
+        python-version: '3.x'
+    - name: Install gcovr
+      run: python -m pip install -U gcovr
+    - name: Build and test
+      run: ./scripts/github-ci.sh experimental enable_python ${{ matrix.qt == 'qt6' && 'qt6' || '' }} build test coverage
+    - name: Upload Test Result Report
+      uses: actions/upload-artifact@v4
+      if: ${{ always() }}
+      with:
+        name: Test Result Report (${{ matrix.os }} ${{ matrix.qt }})
+        path: |
+          b/Testing/Temporary/*_report.html
+          b/Testing/Temporary/LastTest.log
+    - name: Upload Code Coverage Report
+      uses: actions/upload-artifact@v4
+      with:
+        name: Code Coverage Report (${{ matrix.os }} ${{ matrix.qt }})
+        path: c/coverage*.html

@@ -24,31 +24,32 @@
  *
  */
 
-#include "function.h"
-#include "Arguments.h"
-#include "Expression.h"
-#include "Builtins.h"
-#include "printutils.h"
-#include "memory.h"
-#include "UserModule.h"
-#include "degree_trig.h"
-#include "FreetypeRenderer.h"
-#include "Parameters.h"
+#include "core/function.h"
+#include "core/Arguments.h"
+#include "core/Expression.h"
+#include "core/Builtins.h"
+#include "utils/printutils.h"
+#include "core/UserModule.h"
+#include "utils/degree_trig.h"
+#include "core/FreetypeRenderer.h"
+#include "core/Parameters.h"
 #include "io/import.h"
 #include "io/fileutils.h"
 
+#include <utility>
+#include <cstdint>
+#include <memory>
 #include <cmath>
 #include <sstream>
 #include <ctime>
 #include <limits>
 #include <algorithm>
 #include <random>
+#include <vector>
 
-#include "boost-utils.h"
-/*Unicode support for string lengths and array accesses*/
-#include <glib.h>
+#include "utils/boost-utils.h"
 // hash double
-#include "linalg.h"
+#include "geometry/linalg.h"
 
 #if defined __WIN32__ || defined _MSC_VER
 #include <process.h>
@@ -60,7 +61,14 @@ int process_id = getpid();
 #endif
 
 std::mt19937 deterministic_rng(std::time(nullptr) + process_id);
-#include <array>
+void initialize_rng() {
+  static uint64_t seed_val = 0;
+  seed_val ^= uint64_t(std::time(nullptr) + process_id);
+  deterministic_rng.seed(seed_val);
+  std::uniform_int_distribution<uint64_t> distributor(0);
+  seed_val ^= distributor(deterministic_rng);
+}
+
 
 static inline bool check_arguments(const char *function_name, const Arguments& arguments, const Location& loc, unsigned int expected_count, bool warn = true)
 {
@@ -401,8 +409,7 @@ Value builtin_ord(Arguments arguments, const Location& loc)
     return Value::undefined.clone();
   }
   const str_utf8_wrapper& arg_str = arguments[0]->toStrUtf8Wrapper();
-  const char *ptr = arg_str.c_str();
-  if (!g_utf8_validate(ptr, -1, nullptr)) {
+  if (!arg_str.utf8_validate()) {
     LOG(message_group::Warning, loc, arguments.documentRoot(), "ord() argument '%1$s' is not a valid utf8 string", arg_str.toString());
     return Value::undefined.clone();
   }
@@ -411,8 +418,7 @@ Value builtin_ord(Arguments arguments, const Location& loc)
     return Value::undefined.clone();
   }
 
-  const gunichar ch = g_utf8_get_char(ptr);
-  return {(double)ch};
+  return {(double)arg_str.get_utf8_char()};
 }
 
 Value builtin_concat(Arguments arguments, const Location& /*loc*/)
@@ -533,10 +539,10 @@ static VectorType search(
   for (size_t i = 0; i < findThisSize; ++i) {
     unsigned int matchCount = 0;
     VectorType resultvec(session);
-    const gchar *ptr_ft = g_utf8_offset_to_pointer(find.c_str(), i);
+    const auto ft = find[i];
     for (size_t j = 0; j < searchTableSize; ++j) {
-      const gchar *ptr_st = g_utf8_offset_to_pointer(table.c_str(), j);
-      if (ptr_ft && ptr_st && (g_utf8_get_char(ptr_ft) == g_utf8_get_char(ptr_st)) ) {
+      const auto st = table[j];
+      if (!ft.empty() && !st.empty() && ft.get_utf8_char() == st.get_utf8_char()) {
         matchCount++;
         if (num_returns_per_match == 1) {
           returnvec.emplace_back(double(j));
@@ -548,10 +554,6 @@ static VectorType search(
           break;
         }
       }
-    }
-    if (matchCount == 0) {
-      gchar utf8_of_cp[6] = ""; //A buffer for a single unicode character to be copied into
-      if (ptr_ft) g_utf8_strncpy(utf8_of_cp, ptr_ft, 1);
     }
     if (num_returns_per_match == 0 || num_returns_per_match > 1) {
       returnvec.emplace_back(std::move(resultvec));
@@ -575,15 +577,14 @@ static VectorType search(
   for (size_t i = 0; i < findThisSize; ++i) {
     unsigned int matchCount = 0;
     VectorType resultvec(session);
-    const gchar *ptr_ft = g_utf8_offset_to_pointer(find.c_str(), i);
+    const auto ft = find[i];
     for (size_t j = 0; j < searchTableSize; ++j) {
       const auto& entryVec = table[j].toVector();
       if (entryVec.size() <= index_col_num) {
         LOG(message_group::Warning, loc, session->documentRoot(), "Invalid entry in search vector at index %1$d, required number of values in the entry: %2$d. Invalid entry: %3$s", j, (index_col_num + 1), table[j].toEchoStringNoThrow());
         return {session};
       }
-      const gchar *ptr_st = g_utf8_offset_to_pointer(entryVec[index_col_num].toString().c_str(), 0);
-      if (ptr_ft && ptr_st && (g_utf8_get_char(ptr_ft) == g_utf8_get_char(ptr_st)) ) {
+      if (!ft.empty() && ft.get_utf8_char() == entryVec[index_col_num].toStrUtf8Wrapper().get_utf8_char()) {
         matchCount++;
         if (num_returns_per_match == 1) {
           returnvec.emplace_back(double(j));
@@ -595,11 +596,6 @@ static VectorType search(
           break;
         }
       }
-    }
-    if (matchCount == 0) {
-      gchar utf8_of_cp[6] = ""; //A buffer for a single unicode character to be copied into
-      if (ptr_ft) g_utf8_strncpy(utf8_of_cp, ptr_ft, 1);
-      LOG(message_group::Warning, loc, session->documentRoot(), "search term not found: \"%1$s\"", utf8_of_cp);
     }
     if (num_returns_per_match == 0 || num_returns_per_match > 1) {
       returnvec.emplace_back(std::move(resultvec));
@@ -881,7 +877,7 @@ Value builtin_is_undef(const std::shared_ptr<const Context>& context, const Func
     print_argCnt_warning("is_undef", call->arguments.size(), "1", call->location(), context->documentRoot());
     return Value::undefined.clone();
   }
-  if (auto lookup = dynamic_pointer_cast<Lookup>(call->arguments[0]->getExpr())) {
+  if (auto lookup = std::dynamic_pointer_cast<Lookup>(call->arguments[0]->getExpr())) {
     auto result = context->try_lookup_variable(lookup->get_name());
     return !result || result->isUndefined();
   } else {

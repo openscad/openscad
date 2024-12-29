@@ -1,12 +1,31 @@
-#include "GeometryUtils.h"
-#include "ext/libtess2/Include/tesselator.h"
-#include "printutils.h"
-#include "Reindexer.h"
-#include <unordered_map>
-#include <string>
-#include <cmath>
+#include "geometry/GeometryUtils.h"
 
+#include <algorithm>
+#include <cassert>
+#include <unordered_map>
+#include <list>
+#include <utility>
 #include <boost/functional/hash.hpp>
+#include <cstddef>
+#include <cmath>
+#include <memory>
+#include <string>
+#include <vector>
+
+#include "libtess2/Include/tesselator.h"
+#include "utils/printutils.h"
+#include "geometry/Reindexer.h"
+#include "glview/RenderSettings.h"
+#include "Feature.h"
+#include "geometry/PolySet.h"
+
+#ifdef ENABLE_CGAL
+#include "geometry/cgal/cgalutils.h"
+#endif
+
+#ifdef ENABLE_MANIFOLD
+#include "geometry/manifold/manifoldutils.h"
+#endif
 
 static void *stdAlloc(void *userData, unsigned int size) {
   TESS_NOTUSED(userData);
@@ -64,7 +83,7 @@ public:
 
   void add(const IndexedEdge& e) {
     this->edges[e]++;
-    PRINTDB("add: (%d,%d)", e.first % e.second);
+//    PRINTDB("add: (%d,%d)", e.first % e.second);
   }
 
   void remove(int start, int end) {
@@ -74,7 +93,7 @@ public:
   void remove(const IndexedEdge& e) {
     this->edges[e]--;
     if (this->edges[e] == 0) this->edges.erase(e);
-    PRINTDB("remove: (%d,%d)", e.first % e.second);
+//    PRINTDB("remove: (%d,%d)", e.first % e.second);
   }
 
   int count(int start, int end) {
@@ -92,10 +111,10 @@ public:
   size_t size() const { return this->edges.size(); }
 
   void print() const {
-    for (const auto& v : this->edges) {
-      const auto& e = v.first;
-      PRINTDB("     (%d,%d)%s", e.first % e.second % ((v.second > 1) ? std::to_string(v.second).c_str() : ""));
-    }
+//    for (const auto& v : this->edges) {
+//      const auto& e = v.first;
+//      PRINTDB("     (%d,%d)%s", e.first % e.second % ((v.second > 1) ? std::to_string(v.second).c_str() : ""));
+//    }
   }
 
   void remove_from_v2e(int vidx, int next, int prev) {
@@ -116,7 +135,7 @@ public:
     auto prev = v2e_reverse[vidx].front();
 
     IndexedTriangle t(prev, vidx, next);
-    PRINTDB("Clipping ear: %d %d %d", t[0] % t[1] % t[2]);
+//    PRINTDB("Clipping ear: %d %d %d", t[0] % t[1] % t[2]);
     triangles.push_back(t);
     // Remove the generated triangle from the original.
     // Add new boundary edges to the edge dict
@@ -288,7 +307,7 @@ bool GeometryUtils::tessellatePolygonWithHoles(const std::vector<Vector3f>& vert
       allindices.push_back(idx);
     }
     assert(face.size() >= 3);
-    PRINTDB("Contour: %d\n", face.size());
+//    PRINTDB("Contour: %d\n", face.size());
     tessAddContour(tess, 3, &contour.front(), sizeof(TESSreal) * 3, face.size());
     numContours++;
   }
@@ -333,10 +352,10 @@ bool GeometryUtils::tessellatePolygonWithHoles(const std::vector<Vector3f>& vert
         mappedtri[i] = allindices[vidx];
       }
     }
-    PRINTDB("%d (%d) %d (%d) %d (%d)",
-            elements[t * 3 + 0] % mappedtri[0] %
-            elements[t * 3 + 1] % mappedtri[1] %
-            elements[t * 3 + 2] % mappedtri[2]);
+    // PRINTDB("%d (%d) %d (%d) %d (%d)",
+    //         elements[t * 3 + 0] % mappedtri[0] %
+    //         elements[t * 3 + 1] % mappedtri[1] %
+    //         elements[t * 3 + 2] % mappedtri[2]);
     // FIXME: We ignore self-intersecting triangles rather than detecting and handling this
     if (!err) {
       vflags[tri[0]]++; // B)
@@ -361,7 +380,7 @@ bool GeometryUtils::tessellatePolygonWithHoles(const std::vector<Vector3f>& vert
       }
       if (reverse) {
         mappedtri.reverseInPlace();
-        PRINTDB("  reversed: %d %d %d", mappedtri[0] % mappedtri[1] % mappedtri[2]);
+//        PRINTDB("  reversed: %d %d %d", mappedtri[0] % mappedtri[1] % mappedtri[2]);
       }
 
       // Remove the generated triangle from the original.
@@ -391,7 +410,7 @@ bool GeometryUtils::tessellatePolygonWithHoles(const std::vector<Vector3f>& vert
       PRINTD("   Fanning left-out vertices");
       for (j = i; j < inputSize && !vflags[j]; ++j) {
         // Create triangle fan from vertex i-1 to the first existing vertex
-        PRINTDB("   (%d) (%d) (%d)\n", allindices[starti] % allindices[j] % allindices[((j + 1) % inputSize)]);
+//        PRINTDB("   (%d) (%d) (%d)\n", allindices[starti] % allindices[j] % allindices[((j + 1) % inputSize)]);
         tri[0] = allindices[starti];
         tri[1] = allindices[j];
         tri[2] = allindices[(j + 1) % inputSize];
@@ -497,4 +516,32 @@ Transform3d GeometryUtils::getResizeTransform(const BoundingBox &bbox, const Vec
     0, 0, 0, 1;
 
   return t;
+}
+
+// Return or force creation of backend-specific geometry.
+// Will prefer Manifold if multiple backends are enabled.
+// geom must be a 3D PolySet or the correct backend-specific geometry.
+std::shared_ptr<const Geometry> GeometryUtils::getBackendSpecificGeometry(const std::shared_ptr<const Geometry>& geom)
+{
+#if ENABLE_MANIFOLD
+  if (RenderSettings::inst()->backend3D == RenderBackend3D::ManifoldBackend) {
+    if (const auto ps = std::dynamic_pointer_cast<const PolySet>(geom)) {
+      return ManifoldUtils::createManifoldFromPolySet(*ps);
+    } else if (auto mani = std::dynamic_pointer_cast<const ManifoldGeometry>(geom)) {
+      return geom;
+    } else {
+      assert(false && "Unexpected geometry");
+    }
+  }
+#endif
+#if ENABLE_CGAL
+  if (auto ps = std::dynamic_pointer_cast<const PolySet>(geom)) {
+    return CGALUtils::createNefPolyhedronFromPolySet(*ps);
+  } else if (auto poly = std::dynamic_pointer_cast<const CGAL_Nef_polyhedron>(geom)) {
+    return geom;
+  } else {
+    assert(false && "Unexpected geometry");
+  }
+#endif
+  return nullptr;
 }

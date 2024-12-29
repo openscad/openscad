@@ -1,4 +1,12 @@
-#include "ParameterVirtualWidget.h"
+#include "gui/parameter/ParameterVirtualWidget.h"
+
+#include <QSizePolicy>
+#include <QWidget>
+#include <algorithm>
+#include <cmath>
+#include <cassert>
+#include <QRegularExpression>
+#include <vector>
 
 ParameterDescriptionWidget::ParameterDescriptionWidget(QWidget *parent) :
   QWidget(parent)
@@ -8,7 +16,7 @@ ParameterDescriptionWidget::ParameterDescriptionWidget(QWidget *parent) :
 
 void ParameterDescriptionWidget::setDescription(ParameterObject *parameter, DescriptionStyle descriptionStyle)
 {
-  labelParameter->setText(QString::fromStdString(parameter->name()).replace(QRegExp("([_]+)"), " "));
+  labelParameter->setText(QString::fromStdString(parameter->name()).replace(QRegularExpression("([_]+)"), " "));
   if (parameter->description().empty()) {
     labelDescription->hide();
     labelInline->setText("");

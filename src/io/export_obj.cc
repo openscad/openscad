@@ -25,40 +25,33 @@
  *
  */
 
-#include "export.h"
+#include <ostream>
+#include <memory>
+#include "io/export.h"
 
-#ifdef ENABLE_CGAL
+#include "geometry/PolySetUtils.h"
+#include "geometry/PolySet.h"
 
-#include "IndexedMesh.h"
-
-void export_obj(const shared_ptr<const Geometry>& geom, std::ostream& output)
+void export_obj(const std::shared_ptr<const Geometry>& geom, std::ostream& output)
 {
-  IndexedMesh mesh;
-  mesh.append_geometry(geom);
+  // FIXME: In lazy union mode, should we export multiple objects?
+  
+  std::shared_ptr<const PolySet> out = PolySetUtils::getGeometryAsPolySet(geom);
+  if (Feature::ExperimentalPredictibleOutput.is_enabled()) {
+    out = createSortedPolySet(*out);
+  }
 
   output << "# OpenSCAD obj exporter\n";
 
-  size_t numverts = mesh.vertices.size();
-  const auto& v = mesh.vertices.getArray();
-  for (size_t i = 0; i < numverts; ++i) {
-    output << "v " << v[i][0] << " " << v[i][1] << " " << v[i][2] << "\n";
+  for (const auto &v : out->vertices) {
+    output << "v " <<v[0] << " " << v[1] << " " << v[2] << "\n";
   }
 
-  size_t i = 0;
-  for (size_t j = 0; j < mesh.numfaces; ++j) {
-
+  for (const auto& poly : out->indices) {
     output << "f ";
-
-    while (true) {
-      auto index = mesh.indices[i++];
-      if (index < 0) {
-        break;
-      }
-      output << " " << (1 + index);
+    for (const auto idx : poly) {
+      output << " " << idx + 1;
     }
     output << "\n";
   }
-
 }
-
-#endif // ENABLE_CGAL

@@ -16,3 +16,8 @@ WARNING: linear_extrude(..., scale=nan) could not be converted in file linear_ex
 WARNING: linear_extrude(..., scale="") could not be converted in file linear_extrude-parameter-tests.scad, line 20
 WARNING: linear_extrude(..., scale=true) could not be converted in file linear_extrude-parameter-tests.scad, line 20
 WARNING: linear_extrude(..., scale=[1 : 1 : 3]) could not be converted in file linear_extrude-parameter-tests.scad, line 20
+ERROR: height when specified should be a double.
+ERROR: height when specified should be a double.
+ERROR: height when specified should be a double.
+ERROR: height when specified should be a double.
+ERROR: height when specified should be a double.
