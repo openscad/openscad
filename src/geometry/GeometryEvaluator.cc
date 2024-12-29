@@ -228,6 +228,7 @@ std::unique_ptr<Polygon2d> GeometryEvaluator::applyHull2D(const AbstractNode& no
         outline.vertices.emplace_back(p[0], p[1]);
       }
       geometry->addOutline(outline);
+      geometry->setSanitized(true);
     } catch (const CGAL::Failure_exception& e) {
       LOG(message_group::Warning, "GeometryEvaluator::applyHull2D() during CGAL::convex_hull_2(): %1$s", e.what());
     }

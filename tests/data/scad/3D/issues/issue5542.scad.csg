@@ -1,6 +1,0 @@
-linear_extrude(height = 10, $fn = 0, $fa = 12, $fs = 2) {
-	hull() {
-		square(size = [10, 10], center = false);
-	}
-}
-
