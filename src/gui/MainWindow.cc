@@ -404,9 +404,9 @@ MainWindow::MainWindow(const QStringList& filenames)
 
   this->exportformat_mapper = new QSignalMapper(this);
 #if QT_VERSION >= QT_VERSION_CHECK(5, 15, 0)
-  connect(this->exportformat_mapper, SIGNAL(mappedInt(int)), this, SLOT(actionExportFileFormat(int))) ;
+  connect(this->exportformat_mapper, &QSignalMapper::mappedInt, this, &MainWindow::actionExportFileFormat);
 #else
-  connect(this->exportformat_mapper, SIGNAL(mapped(int)), this, SLOT(actionExportFileFormat(int))) ;
+  connect(this->exportformat_mapper, &QSignalMapper::mapped, this, &MainWindow::actionExportFileFormat);
 #endif
 
   waitAfterReloadTimer = new QTimer(this);
