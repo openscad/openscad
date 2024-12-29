@@ -403,7 +403,11 @@ MainWindow::MainWindow(const QStringList& filenames)
   connect(autoReloadTimer, SIGNAL(timeout()), this, SLOT(checkAutoReload()));
 
   this->exportformat_mapper = new QSignalMapper(this);
+#if QT_VERSION >= QT_VERSION_CHECK(5, 15, 0)
   connect(this->exportformat_mapper, SIGNAL(mappedInt(int)), this, SLOT(actionExportFileFormat(int))) ;
+#else
+  connect(this->exportformat_mapper, SIGNAL(mapped(int)), this, SLOT(actionExportFileFormat(int))) ;
+#endif
 
   waitAfterReloadTimer = new QTimer(this);
   waitAfterReloadTimer->setSingleShot(true);
