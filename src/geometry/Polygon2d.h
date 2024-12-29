@@ -1,8 +1,12 @@
 #pragma once
 
+#include <utility>
+#include <memory>
+#include <cstddef>
+#include <string>
 #include <vector>
-#include "Geometry.h"
-#include "linalg.h"
+#include "geometry/Geometry.h"
+#include "geometry/linalg.h"
 #include <numeric>
 
 /*!
@@ -21,12 +25,13 @@ class Polygon2d : public Geometry
 public:
   VISITABLE_GEOMETRY();
   Polygon2d() = default;
+  Polygon2d(Outline2d outline);
   [[nodiscard]] size_t memsize() const override;
   [[nodiscard]] BoundingBox getBoundingBox() const override;
   [[nodiscard]] std::string dump() const override;
   [[nodiscard]] unsigned int getDimension() const override { return 2; }
   [[nodiscard]] bool isEmpty() const override;
-  [[nodiscard]] Geometry *copy() const override { return new Polygon2d(*this); }
+  [[nodiscard]] std::unique_ptr<Geometry> copy() const override;
   [[nodiscard]] size_t numFacets() const override {
     return std::accumulate(theoutlines.begin(), theoutlines.end(), 0,
                            [](size_t a, const Outline2d& b) {
@@ -35,7 +40,7 @@ public:
                            );
   }
   void addOutline(Outline2d outline) { this->theoutlines.push_back(std::move(outline)); }
-  [[nodiscard]] class PolySet *tessellate() const;
+  [[nodiscard]] std::unique_ptr<PolySet> tessellate() const;
   [[nodiscard]] double area() const;
 
   using Outlines2d = std::vector<Outline2d>;

@@ -26,13 +26,15 @@
 
 #pragma once
 
-#include <tuple>
+#include <utility>
+#include <string>
+#include <vector>
 
 #include <QFile>
 #include <QString>
 #include <QJsonDocument>
 
-#include "Network.h"
+#include "gui/Network.h"
 
 class OctoPrint
 {

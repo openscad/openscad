@@ -1,6 +1,14 @@
-#include "ErrorLog.h"
-#include "printutils.h"
-#include <boost/filesystem.hpp>
+#include "gui/ErrorLog.h"
+#include "utils/printutils.h"
+#include <QAbstractItemView>
+#include <QColor>
+#include <QList>
+#include <QResizeEvent>
+#include <QStandardItem>
+#include <QStandardItemModel>
+#include <QString>
+#include <QWidget>
+#include <filesystem>
 
 ErrorLog::ErrorLog(QWidget *parent) : QWidget(parent)
 {
@@ -31,7 +39,7 @@ void ErrorLog::initGUI()
 
 void ErrorLog::toErrorLog(const Message& log_msg)
 {
-  lastMessages.push_back(std::forward<const Message>(log_msg));
+  lastMessages.push_back(log_msg);
   QString currGroup = errorLogComboBox->currentText();
 
   //handle combobox
@@ -113,7 +121,7 @@ int ErrorLog::getLine(int row, int col)
   return logTable->model()->index(row, col).data().toInt();
 }
 
-void ErrorLog::on_errorLogComboBox_currentIndexChanged(const QString& group)
+void ErrorLog::on_errorLogComboBox_currentTextChanged(const QString& group)
 {
   errorLogModel->clear();
   initGUI();

@@ -20,7 +20,7 @@
 #endif
 
 #include <string>
-#include "printutils.h"
+#include "utils/printutils.h"
 
 namespace {
 
@@ -103,6 +103,7 @@ bool glCheckd(const char *stmt, const char *file, int line)
 
 #define GLint int
 #define GLuint unsigned int
+#define GLdouble unsigned int
 inline void glColor4fv(float *c) {}
 
 #endif // NULLGL

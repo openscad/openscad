@@ -2,11 +2,14 @@
 
 #include <string>
 #include <unordered_map>
-#include "module.h"
-#include "Assignment.h"
+#include <vector>
+#include "core/module.h"
+#include "core/Assignment.h"
 
 class AbstractModule;
 class BuiltinFunction;
+
+void initialize_rng();
 
 class Builtins
 {

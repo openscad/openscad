@@ -1,12 +1,31 @@
-#include "GeometryUtils.h"
-#include "ext/libtess2/Include/tesselator.h"
-#include "printutils.h"
-#include "Reindexer.h"
-#include <unordered_map>
-#include <string>
-#include <cmath>
+#include "geometry/GeometryUtils.h"
 
+#include <algorithm>
+#include <cassert>
+#include <unordered_map>
+#include <list>
+#include <utility>
 #include <boost/functional/hash.hpp>
+#include <cstddef>
+#include <cmath>
+#include <memory>
+#include <string>
+#include <vector>
+
+#include "libtess2/Include/tesselator.h"
+#include "utils/printutils.h"
+#include "geometry/Reindexer.h"
+#include "glview/RenderSettings.h"
+#include "Feature.h"
+#include "geometry/PolySet.h"
+
+#ifdef ENABLE_CGAL
+#include "geometry/cgal/cgalutils.h"
+#endif
+
+#ifdef ENABLE_MANIFOLD
+#include "geometry/manifold/manifoldutils.h"
+#endif
 
 static void *stdAlloc(void *userData, unsigned int size) {
   TESS_NOTUSED(userData);
@@ -92,10 +111,10 @@ public:
   size_t size() const { return this->edges.size(); }
 
   void print() const {
-    for (const auto& v : this->edges) {
-      const auto& e = v.first;
+//    for (const auto& v : this->edges) {
+//      const auto& e = v.first;
 //      PRINTDB("     (%d,%d)%s", e.first % e.second % ((v.second > 1) ? std::to_string(v.second).c_str() : ""));
-    }
+//    }
   }
 
   void remove_from_v2e(int vidx, int next, int prev) {
@@ -497,4 +516,32 @@ Transform3d GeometryUtils::getResizeTransform(const BoundingBox &bbox, const Vec
     0, 0, 0, 1;
 
   return t;
+}
+
+// Return or force creation of backend-specific geometry.
+// Will prefer Manifold if multiple backends are enabled.
+// geom must be a 3D PolySet or the correct backend-specific geometry.
+std::shared_ptr<const Geometry> GeometryUtils::getBackendSpecificGeometry(const std::shared_ptr<const Geometry>& geom)
+{
+#if ENABLE_MANIFOLD
+  if (RenderSettings::inst()->backend3D == RenderBackend3D::ManifoldBackend) {
+    if (const auto ps = std::dynamic_pointer_cast<const PolySet>(geom)) {
+      return ManifoldUtils::createManifoldFromPolySet(*ps);
+    } else if (auto mani = std::dynamic_pointer_cast<const ManifoldGeometry>(geom)) {
+      return geom;
+    } else {
+      assert(false && "Unexpected geometry");
+    }
+  }
+#endif
+#if ENABLE_CGAL
+  if (auto ps = std::dynamic_pointer_cast<const PolySet>(geom)) {
+    return CGALUtils::createNefPolyhedronFromPolySet(*ps);
+  } else if (auto poly = std::dynamic_pointer_cast<const CGAL_Nef_polyhedron>(geom)) {
+    return geom;
+  } else {
+    assert(false && "Unexpected geometry");
+  }
+#endif
+  return nullptr;
 }

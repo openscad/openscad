@@ -1,7 +1,13 @@
-#include "Builtins.h"
-#include "function.h"
-#include "module.h"
-#include "Expression.h"
+#include "core/Builtins.h"
+
+#include <unordered_map>
+#include <memory>
+#include <string>
+#include <vector>
+
+#include "core/function.h"
+#include "core/module.h"
+#include "core/Expression.h"
 
 std::unordered_map<std::string, const std::vector<std::string>> Builtins::keywordList;
 
@@ -56,7 +62,9 @@ extern void register_builtin_cgaladv();
 extern void register_builtin_offset();
 extern void register_builtin_dxf_linear_extrude();
 extern void register_builtin_dxf_rotate_extrude();
+#if defined(ENABLE_EXPERIMENTAL) && defined(ENABLE_CGAL)
 extern void register_builtin_roof();
+#endif
 extern void register_builtin_text();
 extern void initialize_builtin_dxf_dim();
 
@@ -85,7 +93,9 @@ void Builtins::initialize()
   register_builtin_offset();
   register_builtin_dxf_linear_extrude();
   register_builtin_dxf_rotate_extrude();
+#if defined(ENABLE_EXPERIMENTAL) && defined(ENABLE_CGAL)
   register_builtin_roof();
+#endif
   register_builtin_text();
 
   this->deprecations.emplace("dxf_linear_extrude", "linear_extrude()");
@@ -106,19 +116,19 @@ std::string Builtins::isDeprecated(const std::string& name) const
 
 Builtins::Builtins()
 {
-  this->assignments.emplace_back(new Assignment("$fn", make_shared<Literal>(0.0)) );
-  this->assignments.emplace_back(new Assignment("$fs", make_shared<Literal>(2.0)) );
-  this->assignments.emplace_back(new Assignment("$fa", make_shared<Literal>(12.0)) );
-  this->assignments.emplace_back(new Assignment("$t", make_shared<Literal>(0.0)) );
-  this->assignments.emplace_back(new Assignment("$preview", make_shared<Literal>()) ); //undef as should always be overwritten.
-  auto zeroVector = make_shared<Vector>(Location::NONE);
+  this->assignments.emplace_back(new Assignment("$fn", std::make_shared<Literal>(0.0)) );
+  this->assignments.emplace_back(new Assignment("$fs", std::make_shared<Literal>(2.0)) );
+  this->assignments.emplace_back(new Assignment("$fa", std::make_shared<Literal>(12.0)) );
+  this->assignments.emplace_back(new Assignment("$t", std::make_shared<Literal>(0.0)) );
+  this->assignments.emplace_back(new Assignment("$preview", std::make_shared<Literal>()) ); //undef as should always be overwritten.
+  auto zeroVector = std::make_shared<Vector>(Location::NONE);
   zeroVector->emplace_back(new Literal(0.0));
   zeroVector->emplace_back(new Literal(0.0));
   zeroVector->emplace_back(new Literal(0.0));
   this->assignments.emplace_back(new Assignment("$vpt", zeroVector) );
   this->assignments.emplace_back(new Assignment("$vpr", zeroVector) );
-  this->assignments.emplace_back(new Assignment("$vpd", make_shared<Literal>(500.0)) );
-  this->assignments.emplace_back(new Assignment("$vpf", make_shared<Literal>(22.5)) );
+  this->assignments.emplace_back(new Assignment("$vpd", std::make_shared<Literal>(500.0)) );
+  this->assignments.emplace_back(new Assignment("$vpf", std::make_shared<Literal>(22.5)) );
 }
 
 void Builtins::initKeywordList()

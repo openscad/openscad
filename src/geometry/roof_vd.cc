@@ -1,18 +1,22 @@
 // This file is a part of openscad. Everything implied is implied.
 // Author: Alexey Korepanov <kaikaikai@yandex.ru>
 
-// NOLINTNEXTLINE(bugprone-reserved-identifier)
-#define _USE_MATH_DEFINES
-#include <cmath>
+#include "geometry/roof_vd.h"
 
+#include <ostream>
+#include <cstdint>
+#include <memory>
+#include <cmath>
+#include <cstddef>
 #include <algorithm>
 #include <map>
 #include <boost/polygon/voronoi.hpp>
+#include <vector>
+#include "geometry/PolySetBuilder.h"
 
-#include "GeometryUtils.h"
-#include "ClipperUtils.h"
-#include "RoofNode.h"
-#include "roof_vd.h"
+#include "geometry/GeometryUtils.h"
+#include "geometry/ClipperUtils.h"
+#include "core/RoofNode.h"
 
 #define RAISE_ROOF_EXCEPTION(message) \
         throw RoofNode::roof_exception((boost::format("%s line %d: %s") % __FILE__ % __LINE__ % (message)).str());
@@ -329,25 +333,27 @@ Faces_2_plus_1 vd_inner_faces(const voronoi_diagram& vd,
   return ret;
 }
 
-PolySet *voronoi_diagram_roof(const Polygon2d& poly, double fa, double fs)
+std::unique_ptr<PolySet> voronoi_diagram_roof(const Polygon2d& poly, double fa, double fs)
 {
-  auto *hat = new PolySet(3);
+  PolySetBuilder hatbuilder = PolySetBuilder();
 
   try {
 
     // input data for voronoi diagram is 32 bit integers
-    int scale_pow2 = ClipperUtils::getScalePow2(poly.getBoundingBox(), 32);
-    double scale = std::ldexp(1.0, scale_pow2);
+    // FIXME: Why does this need to be 32 bits? The default we use elsewhere is 
+    // scaleBitsFromPrecision(DEFAULT_PRECISION) which is 10^8.
+    const int scale_bits = ClipperUtils::scaleBitsFromBounds(poly.getBoundingBox(), 32);
+    const double scale = std::ldexp(1.0, scale_bits);
 
-    ClipperLib::Paths paths = ClipperUtils::fromPolygon2d(poly, scale_pow2);
+    Clipper2Lib::Paths64 paths = ClipperUtils::fromPolygon2d(poly, scale_bits);
     // sanitize is important e.g. when after converting to 32 bit integers we have double points
-    ClipperLib::PolyTreeToPaths(ClipperUtils::sanitize(paths), paths);
+    paths = Clipper2Lib::PolyTreeToPaths64(*ClipperUtils::sanitize(paths));
     std::vector<Segment> segments;
 
     for (auto path : paths) {
       auto prev = path.back();
       for (auto p : path) {
-        segments.emplace_back(prev.X, prev.Y, p.X, p.Y);
+        segments.emplace_back(prev.x, prev.y, p.x, p.y);
         prev = p;
       }
     }
@@ -366,20 +372,20 @@ PolySet *voronoi_diagram_roof(const Polygon2d& poly, double fa, double fs)
       Outline2d outline;
       outline.vertices = face;
       face_poly.addOutline(outline);
-      PolySet *tess = face_poly.tessellate();
-      for (const std::vector<Vector3d>& triangle : tess->polygons) {
-        Polygon roof;
-        for (Vector3d tv : triangle) {
+      auto tess = face_poly.tessellate();
+      for (const IndexedFace& triangle : tess->indices) {
+        std::vector<int> roof;
+        for (int tvind : triangle) {
+          Vector3d tv=tess->vertices[tvind];
           Vector2d v;
           v << tv[0], tv[1];
           if (!(inner_faces.heights.find(v) != inner_faces.heights.end())) {
             RAISE_ROOF_EXCEPTION("Voronoi error");
           }
-          roof.push_back(Vector3d(v[0] / scale, v[1] / scale, inner_faces.heights[v] / scale));
+          roof.push_back(hatbuilder.vertexIndex(Vector3d(v[0] / scale, v[1] / scale, inner_faces.heights[v] / scale)));
         }
-        hat->append_poly(roof);
+        hatbuilder.appendPolygon(roof);
       }
-      delete tess;
     }
 
     // floor
@@ -390,28 +396,26 @@ PolySet *voronoi_diagram_roof(const Polygon2d& poly, double fa, double fs)
       for (const auto& path : paths) {
         Outline2d o;
         for (auto p : path) {
-          o.vertices.push_back({p.X / scale, p.Y / scale});
+          o.vertices.push_back({p.x / scale, p.y / scale});
         }
         poly_floor.addOutline(o);
       }
-      PolySet *tess = poly_floor.tessellate();
-      for (const std::vector<Vector3d>& triangle : tess->polygons) {
-        Polygon floor;
-        for (const Vector3d& tv : triangle) {
-          floor.push_back(tv);
+      auto tess = poly_floor.tessellate();
+      for (const IndexedFace & triangle : tess->indices) {
+        std::vector<int> floor;
+        for (const int  tv : triangle) {
+          floor.push_back(hatbuilder.vertexIndex(tess->vertices[tv]));
         }
         // floor has reverse orientation
         std::reverse(floor.begin(), floor.end());
-        hat->append_poly(floor);
+        hatbuilder.appendPolygon(floor);
       }
-      delete tess;
     }
   } catch (RoofNode::roof_exception& e) {
-    delete hat;
     throw;
   }
 
-  return hat;
+  return hatbuilder.build();
 }
 
 } // roof_vd

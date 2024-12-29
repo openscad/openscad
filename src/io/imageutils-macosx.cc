@@ -1,7 +1,8 @@
 #include <ApplicationServices/ApplicationServices.h>
 #include <iostream>
-#include "imageutils.h"
+#include "io/imageutils.h"
 #include <cassert>
+#include <cstddef>
 
 CGDataConsumerCallbacks dc_callbacks;
 
@@ -30,7 +31,7 @@ CGDataConsumerRef CGDataConsumerCreateWithOstream(std::ostream& output)
 
 bool write_png(std::ostream& output, unsigned char *pixels, int width, int height)
 {
-  size_t rowBytes = width * 4;
+  size_t rowBytes = static_cast<size_t>(width) * 4;
 //  CGColorSpaceRef colorSpace = CGColorSpaceCreateWithName(kCGColorSpaceGenericRGB);
   CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
   CGBitmapInfo bitmapInfo = kCGImageAlphaNoneSkipLast | kCGBitmapByteOrder32Big; // BGRA
@@ -101,6 +102,3 @@ bool write_png(std::ostream& output, unsigned char *pixels, int width, int heigh
   CGColorSpaceRelease(colorSpace);
   return true;
 }
-
-
-

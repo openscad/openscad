@@ -24,9 +24,14 @@
  *
  */
 
-#include "ContextFrame.h"
-#include "EvaluationSession.h"
-#include "printutils.h"
+#include "core/EvaluationSession.h"
+
+#include <cassert>
+#include <cstddef>
+#include <string>
+
+#include "core/ContextFrame.h"
+#include "utils/printutils.h"
 
 size_t EvaluationSession::push_frame(ContextFrame *frame)
 {

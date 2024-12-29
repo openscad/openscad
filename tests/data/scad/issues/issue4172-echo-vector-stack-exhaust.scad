@@ -5,7 +5,7 @@
 
 //As the implementation is recursive and adds multiple dimension per call,
 //it should run into stack exhaust trying to create the echo string
-//(and not into a stack exhaust due to recursive usermodul call).
+//(and not into a stack exhaust due to recursive usermodule call).
 
 rec();
 

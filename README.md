@@ -107,12 +107,12 @@ Follow the instructions for the platform you're compiling on below.
 
 * A C++ compiler supporting C++17
 * [cmake (3.5 ->)](https://cmake.org/)
-* [Qt (5.4 ->)](https://qt.io/)
+* [Qt (5.12 ->)](https://qt.io/)
 * [QScintilla2 (2.9 ->)](https://riverbankcomputing.com/software/qscintilla/)
 * [CGAL (5.4 ->)](https://www.cgal.org/)
  * [GMP (5.x)](https://gmplib.org/)
  * [MPFR (3.x)](https://www.mpfr.org/)
-* [boost (1.56 ->)](https://www.boost.org/)
+* [boost (1.61 ->)](https://www.boost.org/)
 * [OpenCSG (1.4.2 ->)](http://www.opencsg.org/)
 * [GLEW (1.5.4 ->)](http://glew.sourceforge.net/)
 * [Eigen (3.x)](https://eigen.tuxfamily.org/)
@@ -125,6 +125,9 @@ Follow the instructions for the platform you're compiling on below.
 * [Flex (2.5.35 -> )](http://flex.sourceforge.net/)
 * [pkg-config (0.26 -> )](https://www.freedesktop.org/wiki/Software/pkg-config/)
 * [double-conversion (2.0.1 -> )](https://github.com/google/double-conversion/)
+
+For the test suite, additional requirements are:
+* Python3 (3.8 -> )
 
 ### Getting the source code
 
@@ -144,7 +147,7 @@ To pull the various submodules (incl. the [MCAD library](https://github.com/open
 Prerequisites:
 
 * Xcode
-* automake, libtool, cmake, pkg-config, wget, meson (we recommend installing these using Homebrew)
+* automake, libtool, cmake, pkg-config, wget, meson, python-packaging (we recommend installing these using Homebrew)
 
 Install Dependencies:
 
@@ -233,11 +236,42 @@ installer:
 
 For a 32-bit Windows cross-build, replace 64 with 32 in the above instructions. 
 
+### Building for WebAssembly
+
+We support building OpenSCAD headless for WebAssembly w/ Emscripten, using a premade Docker image built in [openscad/openscad-wasm](https://github.com/openscad/openscad-wasm) (which also has usage examples)
+
+#### Browser
+
+The following command creates `build-web/openscad.wasm` & `build-web/openscad.js`:
+
+```bash
+./scripts/wasm-base-docker-run.sh emcmake cmake -B build-web -DCMAKE_BUILD_TYPE=Debug -DEXPERIMENTAL=1
+./scripts/wasm-base-docker-run.sh cmake --build build-web -j2
+```
+
+[openscad/openscad-playground](https://github.com/openscad/openscad-playground) uses this WASM build to provide a [Web UI](https://ochafik.com/openscad2/) with a subset of features of OpenSCAD.
+
+> [!NOTE]
+> With a debug build (`-DCMAKE_BUILD_TYPE=Debug`), you can set C++ breakpoints in Firefox and in Chrome (the latter [needs an extension](https://developer.chrome.com/docs/devtools/wasm)).
+
+#### Standalone node.js build
+
+The following command creates `build-node/openscad.js`, which is executable (requires `node`):
+
+```bash
+./scripts/wasm-base-docker-run.sh emcmake cmake -B build-node -DWASM_BUILD_TYPE=node -DCMAKE_BUILD_TYPE=Debug -DEXPERIMENTAL=1
+./scripts/wasm-base-docker-run.sh cmake --build build-node -j2
+build-node/openscad.js --help
+```
+
+> [!NOTE]
+> With a debug build (`-DCMAKE_BUILD_TYPE=Debug`), you can set C++ breakpoints in VSCode + Node ([needs an extension](https://code.visualstudio.com/docs/nodejs/nodejs-debugging#_debugging-webassembly)).
+
 ### Compilation
 
-First, run `mkdir build && cd build && cmake .. -DEXPERIMENTAL=1` to generate a Makefile.
+First, run `cmake -B build -DEXPERIMENTAL=1` to generate a Makefile in the `build` folder.
 
-Then run `make`. Finally, on Linux you might run `make install` as root.
+Then run `cmake --build build`. Finally, on Linux you might run `cmake --install build` as root.
 
 If you had problems compiling from source, raise a new issue in the
 [issue tracker on the github page](https://github.com/openscad/openscad/issues).
@@ -245,9 +279,9 @@ If you had problems compiling from source, raise a new issue in the
 This site and it's subpages can also be helpful:
 https://en.wikibooks.org/wiki/OpenSCAD_User_Manual/Building_OpenSCAD_from_Sources
 
-Once built, you can run tests with `ctest` from the build directory.
+Once built, you can run tests with `ctest` from the `build` directory.
 
-Note: Both `make` and `ctest` accepts a `-j N` argument for distributing the load over `N` parallel processes.
+Note: Both `cmake --build` and `ctest` accepts a `-j N` argument for distributing the load over `N` parallel processes.
 
 ### Running CI workflows locally
 

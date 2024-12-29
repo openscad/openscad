@@ -57,7 +57,7 @@ def latest_artifacts(builds):
 	result = []
 	pattern = re.compile('/OpenSCAD-')
 	for build in builds:
-		response = http.request('GET', circleci_base_url + '/{0}/artifacts'.format(build), headers={ 'Accept': 'application/json' })
+		response = http.request('GET', f'{circleci_base_url}/{build}/artifacts', headers={'Accept': 'application/json'})
 		data = json.loads(response.data.decode('UTF-8'))
 		urls = [ x["url"] for x in data if re.search(pattern, x["url"]) ]
 		result.extend(urls)

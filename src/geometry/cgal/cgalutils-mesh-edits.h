@@ -1,10 +1,15 @@
 // Portions of this file are Copyright 2021 Google LLC, and licensed under GPL2+. See COPYING.
 #pragma once
 
-#include <CGAL/Surface_mesh.h>
 #include <CGAL/Polygon_mesh_processing/triangulate_faces.h>
+#include <CGAL/Surface_mesh.h>
+#include <cstddef>
+#include <functional>
+#include <unordered_map>
 #include <unordered_set>
 #include <vector>
+
+#include "utils/printutils.h"
 
 namespace CGALUtils {
 

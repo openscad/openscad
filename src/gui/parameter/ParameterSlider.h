@@ -1,6 +1,7 @@
 #pragma once
 
-#include "ParameterVirtualWidget.h"
+#include "gui/parameter/ParameterVirtualWidget.h"
+#include <QWidget>
 #include "ui_ParameterSlider.h"
 
 class ParameterSlider : public ParameterVirtualWidget, Ui::ParameterSlider
