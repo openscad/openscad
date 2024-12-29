@@ -26,6 +26,7 @@ get_fedora_deps_dnf()
  dnf -y install libxml2-devel
  dnf -y install libffi-devel
  dnf -y install redhat-rpm-config
+ dnf -y install qtchooser
 }
 
 get_qomo_deps()
