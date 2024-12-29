@@ -885,6 +885,9 @@ list(APPEND SCADFILES_DIFFERENT_MANIFOLD_RENDER_EXPECTATIONS
 
   # Manifold can represent the very think slice
   ${TEST_SCAD_DIR}/3D/issues/issue1165.scad
+
+  # Non-manifold geometry
+  ${TEST_SCAD_DIR}/3D/issues/issue1089.scad
 )
 
 # Preview in CGAL and Manifold should be the same, except for objects with color
@@ -900,6 +903,9 @@ list(APPEND SCADFILES_DIFFERENT_MANIFOLD_PREVIEW_EXPECTATIONS
 
   # resize() in manifold mode preserves colors
   ${TEST_SCAD_DIR}/3D/features/resize-convexity-tests.scad
+
+  # Non-manifold geometry
+  ${TEST_SCAD_DIR}/3D/issues/issue1089.scad
 
   # TODO(kintel): Run bugs files
   # ${TEST_SCAD_DIR}/bugs/issue1000.scad
