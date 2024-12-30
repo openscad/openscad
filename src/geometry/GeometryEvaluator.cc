@@ -132,6 +132,11 @@ GeometryEvaluator::ResultObject GeometryEvaluator::applyToChildren3D(const Abstr
   if (children.empty()) return {};
 
   if (op == OpenSCADOperator::HULL) {
+#if ENABLE_MANIFOLD
+    if (RenderSettings::inst()->backend3D == RenderBackend3D::ManifoldBackend) {
+      return ResultObject::mutableResult(std::shared_ptr<Geometry>(ManifoldUtils::applyHullManifold(children)));
+    }
+#endif
     return ResultObject::mutableResult(std::shared_ptr<Geometry>(applyHull(children)));
   } else if (op == OpenSCADOperator::FILL) {
     for (const auto& item : children) {
