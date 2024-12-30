@@ -38,8 +38,10 @@ bool ExternalToolInterface::exportTemporaryFile(const std::shared_ptr<const Geom
 {
   const ExportInfo exportInfo = {
       .format = exportFormat_,
+      .title = sourceFileName.toStdString(),
       .sourceFilePath = sourceFileName.toStdString(),
       .camera = camera,
+      .defaultColor = { 0xf9, 0xd7, 0x2c, 255 } // Cornfield: CGAL_FACE_FRONT_COLOR
   };
 
   // FIXME: Remove original suffix first

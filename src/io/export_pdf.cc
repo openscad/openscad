@@ -260,9 +260,9 @@ if (exportInfo.options==nullptr) {
 
 
 #if CAIRO_VERSION >= CAIRO_VERSION_ENCODE(1, 16, 0)
-  cairo_pdf_surface_set_metadata(surface, CAIRO_PDF_METADATA_TITLE, std::filesystem::path(exportInfo.sourceFilePath).filename().string().c_str());
-  cairo_pdf_surface_set_metadata(surface, CAIRO_PDF_METADATA_CREATOR, "OpenSCAD (https://www.openscad.org/)");
-  cairo_pdf_surface_set_metadata(surface, CAIRO_PDF_METADATA_CREATE_DATE, "");
+  cairo_pdf_surface_set_metadata(surface, CAIRO_PDF_METADATA_TITLE, exportInfo.title.c_str());
+  cairo_pdf_surface_set_metadata(surface, CAIRO_PDF_METADATA_CREATOR, EXPORT_CREATOR);
+  cairo_pdf_surface_set_metadata(surface, CAIRO_PDF_METADATA_CREATE_DATE, get_current_iso8601_date_time_utc().c_str());
   cairo_pdf_surface_set_metadata(surface, CAIRO_PDF_METADATA_MOD_DATE, "");
 #endif
 

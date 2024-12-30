@@ -110,6 +110,8 @@ print('Running OpenSCAD #1:', file=sys.stderr)
 print(' '.join(export_cmd), file=sys.stderr)
 sys.stderr.flush()
 result = subprocess.call(export_cmd)
+stat = os.stat(exportfile)
+print(stat, file=sys.stderr)
 if result != 0:
     failquit('OpenSCAD #1 failed with return code ' + str(result))
 
@@ -135,6 +137,8 @@ fontenv = os.environ.copy()
 fontenv["OPENSCAD_FONT_PATH"] = fontdir
 sys.stderr.flush()
 result = subprocess.call(create_png_cmd, env = fontenv)
+stat = os.stat(pngfile)
+print(stat, file=sys.stderr)
 if result != 0:
     failquit('OpenSCAD #2 failed with return code ' + str(result))
 

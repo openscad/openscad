@@ -2786,7 +2786,13 @@ void MainWindow::actionExport(FileFormat format, const char *type_name, const ch
   }
   this->export_paths[suffix] = exportFilename;
 
-  ExportInfo exportInfo = {.format = format, .sourceFilePath = activeEditor->filepath.toStdString(), .camera = &qglview->cam};
+  ExportInfo exportInfo = {
+    .format = format,
+    .title = std::filesystem::path(activeEditor->filepath.toStdString()).filename().string(),
+    .sourceFilePath = activeEditor->filepath.toStdString(),
+    .camera = &qglview->cam,
+    .defaultColor = { 0xf9, 0xd7, 0x2c, 255 } // Cornfield: CGAL_FACE_FRONT_COLOR
+  };
   // Add options
   exportInfo.options = options;
 
