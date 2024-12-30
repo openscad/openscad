@@ -8,17 +8,24 @@
 #include "glview/RenderSettings.h"
 
 #ifndef NULLGL
-
 #include "glview/cgal/CGALRenderer.h"
-#ifdef USE_LEGACY_RENDERERS
-#include "glview/cgal/LegacyCGALRenderer.h"
-#endif
+#include "PolySetRenderer.h"
 
+#ifdef ENABLE_OPENCSG
+#include "glview/preview/OpenCSGRenderer.h"
+#include <opencsg.h>
+#endif  // ENABLE_OPENCSG
 
-static void setupCamera(Camera& cam, const BoundingBox& bbox)
+#include "glview/preview/ThrownTogetherRenderer.h"
+
+namespace {
+
+void setupCamera(Camera& cam, const BoundingBox& bbox)
 {
   if (cam.viewall) cam.viewAll(bbox);
 }
+
+}  // namespace
 
 bool export_png(const std::shared_ptr<const Geometry>& root_geom, const ViewOptions& options, Camera& camera, std::ostream& output)
 {
@@ -30,17 +37,20 @@ bool export_png(const std::shared_ptr<const Geometry>& root_geom, const ViewOpti
     fprintf(stderr, "Can't create OffscreenView: %s.\n", ex.what());
     return false;
   }
-  std::shared_ptr<Renderer> cgalRenderer;
-#ifdef USE_LEGACY_RENDERERS
-  cgalRenderer = std::make_shared<LegacyCGALRenderer>(root_geom);
-#else
-  cgalRenderer = std::make_shared<CGALRenderer>(root_geom);
-#endif
-  BoundingBox bbox = cgalRenderer->getBoundingBox();
+  std::shared_ptr<Renderer> geomRenderer;
+  // Choose PolySetRenderer for Manifold since we know that all
+  // geometries are convertible to PolySet.
+  // TODO: Also choose PolySetRenderer for single-node PolySet/Polygon2D roots?
+  if (RenderSettings::inst()->backend3D == RenderBackend3D::ManifoldBackend) {
+    geomRenderer = std::make_shared<PolySetRenderer>(root_geom);
+  } else {
+    geomRenderer = std::make_shared<CGALRenderer>(root_geom);
+  }
+  const BoundingBox bbox = geomRenderer->getBoundingBox();
   setupCamera(camera, bbox);
 
   glview->setCamera(camera);
-  glview->setRenderer(cgalRenderer);
+  glview->setRenderer(geomRenderer);
   glview->setColorScheme(RenderSettings::inst()->colorscheme);
   glview->setShowFaces(!options["wireframe"]);
   glview->setShowCrosshairs(options["crosshairs"]);
@@ -51,18 +61,6 @@ bool export_png(const std::shared_ptr<const Geometry>& root_geom, const ViewOpti
   glview->save(output);
   return true;
 }
-
-#ifdef ENABLE_OPENCSG
-#include "glview/preview/OpenCSGRenderer.h"
-#ifdef USE_LEGACY_RENDERERS
-#include "glview/preview/LegacyOpenCSGRenderer.h"
-#endif
-#include <opencsg.h>
-#endif
-#include "glview/preview/ThrownTogetherRenderer.h"
-#ifdef USE_LEGACY_RENDERERS
-#include "glview/preview/LegacyThrownTogetherRenderer.h"
-#endif
 
 std::unique_ptr<OffscreenView> prepare_preview(Tree& tree, const ViewOptions& options, Camera& camera)
 {
@@ -81,32 +79,22 @@ std::unique_ptr<OffscreenView> prepare_preview(Tree& tree, const ViewOptions& op
   std::shared_ptr<Renderer> renderer;
   if (options.previewer == Previewer::OPENCSG) {
 #ifdef ENABLE_OPENCSG
-#ifdef USE_LEGACY_RENDERERS
-    PRINTD("Initializing LegacyOpenCSGRenderer");
-    renderer = std::make_shared<LegacyOpenCSGRenderer>(csgInfo.root_products, csgInfo.highlights_products, csgInfo.background_products);
-#else
     PRINTD("Initializing OpenCSGRenderer");
     renderer = std::make_shared<OpenCSGRenderer>(csgInfo.root_products, csgInfo.highlights_products, csgInfo.background_products);
-#endif
 #else
     fprintf(stderr, "This openscad was built without OpenCSG support\n");
     return 0;
 #endif
   } else {
-#ifdef USE_LEGACY_RENDERERS
-    PRINTD("Initializing LegacyThrownTogetherRenderer");
-    renderer = std::make_shared<LegacyThrownTogetherRenderer>(csgInfo.root_products, csgInfo.highlights_products, csgInfo.background_products);
-#else
     PRINTD("Initializing ThrownTogetherRenderer");
     renderer = std::make_shared<ThrownTogetherRenderer>(csgInfo.root_products, csgInfo.highlights_products, csgInfo.background_products);
-#endif
   }
 
   glview->setRenderer(renderer);
 
 
 #ifdef ENABLE_OPENCSG
-  BoundingBox bbox = glview->getRenderer()->getBoundingBox();
+  const BoundingBox bbox = glview->getRenderer()->getBoundingBox();
   setupCamera(camera, bbox);
 
   glview->setCamera(camera);

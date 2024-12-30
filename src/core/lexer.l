@@ -98,15 +98,7 @@ extern YYLTYPE parserlloc;
         } \
     } 
 
-#ifdef DEBUG
-#define YY_USER_ACTION parserlloc.last_column += yyleng; \
-        PRINTDB("YY_USER_ACTION(): %3d, %3d - %3d, %3d | %3d: %s", \
-                parserlloc.first_line % parserlloc.first_column % \
-                parserlloc.last_line % parserlloc.last_column % \
-                yyleng % quoted_string(yytext));
-#else
 #define YY_USER_ACTION parserlloc.last_column += yyleng;
-#endif
 
 extern void parsererror(char const *s);
 void to_utf8(const char *, char *);

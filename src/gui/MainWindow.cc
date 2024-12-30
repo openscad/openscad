@@ -83,16 +83,10 @@
 #ifdef ENABLE_OPENCSG
 #include "core/CSGTreeEvaluator.h"
 #include "glview/preview/OpenCSGRenderer.h"
-#ifdef USE_LEGACY_RENDERERS
-#include "glview/preview/LegacyOpenCSGRenderer.h"
-#endif
 #include <opencsg.h>
 #endif
 #include "gui/ProgressWidget.h"
 #include "glview/preview/ThrownTogetherRenderer.h"
-#ifdef USE_LEGACY_RENDERERS
-#include "glview/preview/LegacyThrownTogetherRenderer.h"
-#endif
 #include "glview/preview/CSGTreeNormalizer.h"
 #include "gui/QGLView.h"
 #include "gui/MouseSelector.h"
@@ -172,7 +166,7 @@ std::string SHA256HashString(std::string aString){
 #include <sys/stat.h>
 
 #include "glview/cgal/CGALRenderer.h"
-#include "glview/cgal/LegacyCGALRenderer.h"
+#include "glview/PolySetRenderer.h"
 #include "gui/CGALWorker.h"
 
 #ifdef ENABLE_CGAL
@@ -1272,7 +1266,7 @@ void MainWindow::instantiateRoot()
   // Invalidate renderers before we kill the CSG tree
   this->qglview->setRenderer(nullptr);
 #ifdef ENABLE_OPENCSG
-  this->opencsgRenderer = nullptr;
+  this->previewRenderer = nullptr;
 #endif
   this->thrownTogetherRenderer = nullptr;
 
@@ -1435,26 +1429,14 @@ void MainWindow::compileCSG()
     else {
       LOG("Normalized tree has %1$d elements!",
           (this->root_products ? this->root_products->size() : 0));
-#ifdef USE_LEGACY_RENDERERS
-      this->opencsgRenderer = std::make_shared<LegacyOpenCSGRenderer>(this->root_products,
-                                                                      this->highlights_products,
-                                                                      this->background_products);
-#else
-      this->opencsgRenderer = std::make_shared<OpenCSGRenderer>(this->root_products,
+      this->previewRenderer = std::make_shared<OpenCSGRenderer>(this->root_products,
                                                                 this->highlights_products,
                                                                 this->background_products);
-#endif
     }
 #endif // ifdef ENABLE_OPENCSG
-#ifdef USE_LEGACY_RENDERERS
-    this->thrownTogetherRenderer = std::make_shared<LegacyThrownTogetherRenderer>(this->root_products,
-                                                                                  this->highlights_products,
-                                                                                  this->background_products);
-#else
     this->thrownTogetherRenderer = std::make_shared<ThrownTogetherRenderer>(this->root_products,
                                                                             this->highlights_products,
                                                                             this->background_products);
-#endif
     LOG("Compile and preview finished.");
     renderStatistic.printRenderingTime();
     this->processEvents();
@@ -2215,7 +2197,7 @@ void MainWindow::cgalRender()
   }
 
   this->qglview->setRenderer(nullptr);
-  this->cgalRenderer = nullptr;
+  this->geomRenderer = nullptr;
   this->root_geom.reset();
 
   LOG("Rendering Polygon Mesh using %1$s...",
@@ -2248,11 +2230,15 @@ void MainWindow::actionRenderDone(const std::shared_ptr<const Geometry>& root_ge
     LOG("Rendering finished.");
 
     this->root_geom = root_geom;
-#ifdef USE_LEGACY_RENDERERS
-    this->cgalRenderer = std::make_shared<LegacyCGALRenderer>(root_geom);
-#else
-    this->cgalRenderer = std::make_shared<CGALRenderer>(root_geom);
-#endif
+    // Choose PolySetRenderer for Manifold since we know that all
+    // geometries are convertible to PolySet.
+    // TODO: Also choose PolySetRenderer for single-node PolySet/Polygon2D roots?
+    if (RenderSettings::inst()->backend3D == RenderBackend3D::ManifoldBackend) {
+      this->geomRenderer = std::make_shared<PolySetRenderer>(root_geom);
+    } else {
+      this->geomRenderer = std::make_shared<CGALRenderer>(root_geom);
+    }
+
     // Go to CGAL view mode
     if (viewActionWireframe->isChecked()) viewModeWireframe();
     else viewModeSurface();
@@ -2957,7 +2943,7 @@ void MainWindow::viewModePreview()
   if (this->qglview->hasOpenCSGSupport()) {
     viewModeActionsUncheck();
     viewActionPreview->setChecked(true);
-    this->qglview->setRenderer(this->opencsgRenderer ? this->opencsgRenderer : this->thrownTogetherRenderer);
+    this->qglview->setRenderer(this->previewRenderer ? this->previewRenderer : this->thrownTogetherRenderer);
     this->qglview->updateColorScheme();
     this->qglview->update();
   } else {
@@ -2972,7 +2958,7 @@ void MainWindow::viewModeSurface()
   viewModeActionsUncheck();
   viewActionSurfaces->setChecked(true);
   this->qglview->setShowFaces(true);
-  this->qglview->setRenderer(this->cgalRenderer);
+  this->qglview->setRenderer(this->geomRenderer);
   this->qglview->updateColorScheme();
   this->qglview->update();
 }
@@ -2982,7 +2968,7 @@ void MainWindow::viewModeWireframe()
   viewModeActionsUncheck();
   viewActionWireframe->setChecked(true);
   this->qglview->setShowFaces(false);
-  this->qglview->setRenderer(this->cgalRenderer);
+  this->qglview->setRenderer(this->geomRenderer);
   this->qglview->updateColorScheme();
   this->qglview->update();
 }
