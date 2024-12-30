@@ -361,6 +361,7 @@ std::string import_3mf_mesh(const std::string& filename, unsigned int mesh_idx, 
   if (ps->colors.empty()) {
     ps->color_indices.clear();
   }
+  ps->setTriangular(true);
 
   lib3mf_release(propertyhandler);
   return "";
