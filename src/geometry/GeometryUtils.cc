@@ -292,7 +292,6 @@ bool GeometryUtils::tessellatePolygonWithHoles(const std::vector<Vector3f>& vert
 
   if (!(tess = tessNewTess(&ma))) return true;
 
-  int numContours = 0;
   std::vector<TESSreal> contour;
   // Since libtess2's indices is based on the running number of points added, we need to map back
   // to our indices. allindices does the mapping.
@@ -307,9 +306,7 @@ bool GeometryUtils::tessellatePolygonWithHoles(const std::vector<Vector3f>& vert
       allindices.push_back(idx);
     }
     assert(face.size() >= 3);
-//    PRINTDB("Contour: %d\n", face.size());
     tessAddContour(tess, 3, &contour.front(), sizeof(TESSreal) * 3, face.size());
-    numContours++;
   }
 
   if (!tessTesselate(tess, TESS_WINDING_ODD, TESS_CONSTRAINED_DELAUNAY_TRIANGLES, 3, 3, normalvec)) return false;

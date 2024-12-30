@@ -138,7 +138,13 @@ bool checkAndExport(const std::shared_ptr<const Geometry>& root_geom, unsigned d
     LOG("Current top level object is empty.");
     return false;
   }
-  ExportInfo exportInfo = {.format = format, .sourceFilePath = input_filename, .camera = camera};
+  ExportInfo exportInfo = {
+    .format = format,
+    .title = std::filesystem::path(input_filename).filename().string(),
+    .sourceFilePath = input_filename,
+    .camera = camera,
+    .defaultColor = { 0xf9, 0xd7, 0x2c, 255 } // Cornfield: CGAL_FACE_FRONT_COLOR
+  };
   if (is_stdout) {
     exportFileStdOut(root_geom, exportInfo);
   }

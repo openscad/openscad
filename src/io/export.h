@@ -13,6 +13,7 @@
 
 #include "core/Tree.h"
 #include "glview/Camera.h"
+#include "linalg.h"
 
 class PolySet;
 
@@ -44,6 +45,8 @@ struct FileFormatInfo {
   std::string suffix;
   std::string description;
 };
+
+constexpr inline auto EXPORT_CREATOR = "OpenSCAD (https://www.openscad.org/)";
 
 namespace fileformat {
 
@@ -110,9 +113,11 @@ struct ExportPdfOptions {
 
 struct ExportInfo {
   FileFormat format;
+  std::string title;
   std::string sourceFilePath; // Full path to the OpenSCAD source file
   ExportPdfOptions *options;
   const Camera *camera;
+  Color4f defaultColor; // CGAL_FACE_FRONT_COLOR, should later come from active color scheme
 };
 
 bool exportFileByName(const std::shared_ptr<const class Geometry>& root_geom, const std::string& filename, const ExportInfo& exportInfo);
@@ -120,7 +125,7 @@ bool exportFileStdOut(const std::shared_ptr<const class Geometry>& root_geom, co
 
 void export_stl(const std::shared_ptr<const Geometry>& geom, std::ostream& output,
                 bool binary = true);
-void export_3mf(const std::shared_ptr<const Geometry>& geom, std::ostream& output);
+void export_3mf(const std::shared_ptr<const Geometry>& geom, std::ostream& output, const ExportInfo& exportInfo);
 void export_obj(const std::shared_ptr<const Geometry>& geom, std::ostream& output);
 void export_off(const std::shared_ptr<const Geometry>& geom, std::ostream& output);
 void export_wrl(const std::shared_ptr<const Geometry>& geom, std::ostream& output);
@@ -170,6 +175,8 @@ struct ViewOptions {
 };
 
 class OffscreenView;
+
+std::string get_current_iso8601_date_time_utc();
 
 std::unique_ptr<OffscreenView> prepare_preview(Tree& tree, const ViewOptions& options, Camera& camera);
 bool export_png(const std::shared_ptr<const class Geometry>& root_geom, const ViewOptions& options, Camera& camera, std::ostream& output);

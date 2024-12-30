@@ -44,7 +44,7 @@ public slots:
   void on_colorSchemeChooser_itemSelectionChanged();
   void on_fontChooser_currentFontChanged(const QFont&);
   void on_fontSize_currentIndexChanged(int);
-  void on_syntaxHighlight_textActivated(const QString & s);
+  void on_syntaxHighlight_currentTextChanged(const QString&);
   void on_openCSGWarningBox_toggled(bool);
   void on_cgalCacheSizeMBEdit_textChanged(const QString&);
   void on_polysetCacheSizeMBEdit_textChanged(const QString&);

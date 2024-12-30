@@ -418,7 +418,7 @@ void Preferences::on_fontSize_currentIndexChanged(int index)
   emit fontChanged(getValue("editor/fontfamily").toString(), intsize);
 }
 
-void Preferences::on_syntaxHighlight_textActivated(const QString & s)
+void Preferences::on_syntaxHighlight_currentTextChanged(const QString& s)
 {
   QSettingsCached settings;
   settings.setValue("editor/syntaxhighlight", s);
@@ -1147,7 +1147,7 @@ void Preferences::create(const QStringList& colorSchemes)
 
   instance = new Preferences();
   instance->syntaxHighlight->clear();
-  instance->syntaxHighlight->addItems(colorSchemes);
+  BlockSignals<QComboBox *>(instance->syntaxHighlight)->addItems(colorSchemes);
   instance->colorSchemeChooser->clear();
   instance->colorSchemeChooser->addItems(renderColorSchemes);
   instance->init();

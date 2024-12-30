@@ -403,7 +403,11 @@ MainWindow::MainWindow(const QStringList& filenames)
   connect(autoReloadTimer, SIGNAL(timeout()), this, SLOT(checkAutoReload()));
 
   this->exportformat_mapper = new QSignalMapper(this);
-  connect(this->exportformat_mapper, SIGNAL(mappedInt(int)), this, SLOT(actionExportFileFormat(int))) ;
+#if QT_VERSION >= QT_VERSION_CHECK(5, 15, 0)
+  connect(this->exportformat_mapper, &QSignalMapper::mappedInt, this, &MainWindow::actionExportFileFormat);
+#else
+  connect(this->exportformat_mapper, static_cast<void (QSignalMapper::*)(int)>(&QSignalMapper::mapped), this, &MainWindow::actionExportFileFormat);
+#endif
 
   waitAfterReloadTimer = new QTimer(this);
   waitAfterReloadTimer->setSingleShot(true);
@@ -2782,7 +2786,13 @@ void MainWindow::actionExport(FileFormat format, const char *type_name, const ch
   }
   this->export_paths[suffix] = exportFilename;
 
-  ExportInfo exportInfo = {.format = format, .sourceFilePath = activeEditor->filepath.toStdString(), .camera = &qglview->cam};
+  ExportInfo exportInfo = {
+    .format = format,
+    .title = std::filesystem::path(activeEditor->filepath.toStdString()).filename().string(),
+    .sourceFilePath = activeEditor->filepath.toStdString(),
+    .camera = &qglview->cam,
+    .defaultColor = { 0xf9, 0xd7, 0x2c, 255 } // Cornfield: CGAL_FACE_FRONT_COLOR
+  };
   // Add options
   exportInfo.options = options;
 
