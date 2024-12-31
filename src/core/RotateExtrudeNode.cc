@@ -73,7 +73,7 @@ static std::shared_ptr<AbstractNode> builtin_rotate_extrude(const ModuleInstanti
   }
   node->scale = parameters["scale"].toDouble();
   node->angle = 360;
-  parameters["angle"].getFiniteDouble(node->angle);
+  node->angleSupplied = parameters["angle"].getFiniteDouble(node->angle);
 
   if (node->convexity <= 0) node->convexity = 2;
 
@@ -107,8 +107,10 @@ std::string RotateExtrudeNode::toString() const
            << "timestamp = " << fs_timestamp(path) << ", "
     ;
   }
+  if (this->angleSupplied) {
+    stream << "angle = " << this->angle << ", ";
+  }
   stream <<
-    "angle = " << this->angle << ", "
     "convexity = " << this->convexity << ", "
     "$fn = " << this->fn << ", $fa = " << this->fa << ", $fs = " << this->fs << ")";
 

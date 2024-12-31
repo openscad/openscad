@@ -851,8 +851,9 @@ static std::unique_ptr<Geometry> rotatePolygon(const RotateExtrudeNode& node, co
 
   fragments = (unsigned int)std::ceil(fmax(Calc::get_fragments_from_r(max_x - min_x, node.fn, node.fs, node.fa) * std::abs(node.angle) / 360, 1));
 
-  bool flip_faces = (min_x >= 0 && node.angle > 0 && node.angle != 360) || (min_x < 0 && (node.angle < 0 || node.angle == 360));
+  bool flip_faces = (min_x >= 0 && node.angle > 0 && node.angleSupplied) || (min_x < 0 && (node.angle < 0 || !node.angleSupplied));
 
+  // If not going all the way around, we have to create faces on each end.
   if (node.angle != 360) {
     auto ps_start = poly.tessellate(); // starting face
     Transform3d rot(angle_axis_degrees(90, Vector3d::UnitX()));
@@ -881,11 +882,11 @@ static std::unique_ptr<Geometry> rotatePolygon(const RotateExtrudeNode& node, co
     rings[0].resize(o.vertices.size());
     rings[1].resize(o.vertices.size());
 
-    fill_ring(rings[0], o, (node.angle == 360) ? -90 : 90, flip_faces); // first ring
+    fill_ring(rings[0], o, node.angleSupplied ? 90 : -90, flip_faces); // first ring
     for (unsigned int j = 0; j < fragments; ++j) {
       double a;
-      if (node.angle == 360) a = -90 + ((j + 1) % fragments) * 360.0 / fragments; // start on the -X axis, for legacy support
-      else a = 90 - (j + 1) * node.angle / fragments; // start on the X axis
+      if (node.angleSupplied) a = 90 - (j + 1) * node.angle / fragments; // start on the X axis
+      else a = -90 + ((j + 1) % fragments) * 360.0 / fragments; // start on the -X axis, for legacy support
       fill_ring(rings[(j + 1) % 2], o, a, flip_faces);
 
       for (size_t i = 0; i < o.vertices.size(); ++i) {

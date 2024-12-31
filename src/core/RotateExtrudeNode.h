@@ -21,6 +21,7 @@ public:
   int convexity;
   double fn, fs, fa;
   double origin_x, origin_y, scale, angle;
+  bool angleSupplied;
   Filename filename;
   std::string layername;
 };
