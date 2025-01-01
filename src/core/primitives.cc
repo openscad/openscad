@@ -24,24 +24,30 @@
  *
  */
 
-#include "primitives.h"
-#include "Builtins.h"
-#include "Children.h"
-#include "ModuleInstantiation.h"
-#include "Parameters.h"
-#include "PolySet.h"
-#include "Polygon2d.h"
-#include "calc.h"
+#include "core/primitives.h"
+#include "core/Builtins.h"
+#include "core/Children.h"
+#include "core/ModuleInstantiation.h"
+#include "core/Parameters.h"
+#include "geometry/PolySet.h"
+#include "geometry/Polygon2d.h"
+#include "utils/calc.h"
 #include "core/node.h"
-#include "degree_trig.h"
-#include "module.h"
-#include "printutils.h"
+#include "utils/degree_trig.h"
+#include "core/module.h"
+#include "utils/printutils.h"
+#include <algorithm>
+#include <utility>
 #include <boost/assign/std/vector.hpp>
 #include <cassert>
+#include <cstddef>
 #include <cmath>
 #include <iterator>
 #include <memory>
 #include <sstream>
+#include <string>
+#include <vector>
+
 using namespace boost::assign; // bring 'operator+=()' into scope
 
 #define F_MINIMUM 0.01
@@ -128,7 +134,6 @@ std::unique_ptr<const Geometry> CubeNode::createGeometry() const
     y2 = this->y;
     z2 = this->z;
   }
-  int dimension = 3;
   auto ps = std::make_unique<PolySet>(3, /*convex*/true);
   for (int i = 0; i < 8; i++) {
     ps->vertices.emplace_back(i & 1 ? x2 : x1, i & 2 ? y2 : y1,
@@ -279,7 +284,7 @@ std::unique_ptr<const Geometry> CylinderNode::createGeometry() const
 
   bool cone = (r2 == 0.0);
   bool inverted_cone = (r1 == 0.0);
-  
+
   auto polyset = std::make_unique<PolySet>(3, /*convex*/true);
   polyset->vertices.reserve((cone || inverted_cone) ? num_fragments + 1 : 2 * num_fragments);
 
@@ -506,12 +511,9 @@ static std::shared_ptr<AbstractNode> builtin_polyhedron(const ModuleInstantiatio
 
 std::unique_ptr<const Geometry> SquareNode::createGeometry() const
 {
-  auto p = std::make_unique<Polygon2d>();
-  if (
-    this->x <= 0 || !std::isfinite(this->x)
-    || this->y <= 0 || !std::isfinite(this->y)
-    ) {
-    return p;
+  if (this->x <= 0 || !std::isfinite(this->x) ||
+      this->y <= 0 || !std::isfinite(this->y)) {
+    return std::make_unique<Polygon2d>();
   }
 
   Vector2d v1(0, 0);
@@ -523,9 +525,7 @@ std::unique_ptr<const Geometry> SquareNode::createGeometry() const
 
   Outline2d o;
   o.vertices = {v1, {v2[0], v1[1]}, v2, {v1[0], v2[1]}};
-  p->addOutline(o);
-  p->setSanitized(true);
-  return p;
+  return std::make_unique<Polygon2d>(o);
 }
 
 static std::shared_ptr<AbstractNode> builtin_square(const ModuleInstantiation *inst, Arguments arguments, const Children& children)
@@ -658,6 +658,7 @@ std::unique_ptr<const Geometry> PolygonNode::createGeometry() const
     }
     p->addOutline(outline);
   } else {
+    bool positive = true; // First outline is positive
     for (const auto& path : this->paths) {
       Outline2d outline;
       for (const auto& index : path) {
@@ -665,7 +666,9 @@ std::unique_ptr<const Geometry> PolygonNode::createGeometry() const
         const auto& point = points[index];
         outline.vertices.push_back(point);
       }
+      outline.positive = positive;
       p->addOutline(outline);
+      positive = false; // Subsequent outlines are holes
     }
   }
   if (p->outlines().size() > 0) {

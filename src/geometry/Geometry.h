@@ -1,15 +1,16 @@
 #pragma once
 
+#include <cassert>
+#include <utility>
 #include <cstddef>
 #include <string>
 #include <list>
 #include <memory>
 
-#include "linalg.h"
+#include "geometry/linalg.h"
 
 class AbstractNode;
 class CGAL_Nef_polyhedron;
-class CGALHybridPolyhedron;
 class GeometryList;
 class GeometryVisitor;
 class Polygon2d;
@@ -63,7 +64,6 @@ public:
   virtual void visit(const Polygon2d& node) = 0;
 #ifdef ENABLE_CGAL
   virtual void visit(const CGAL_Nef_polyhedron& node) = 0;
-  virtual void visit(const CGALHybridPolyhedron& node) = 0;
 #endif
 #ifdef ENABLE_MANIFOLD
   virtual void visit(const ManifoldGeometry& node) = 0;

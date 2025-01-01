@@ -25,7 +25,7 @@
 #include <CGAL/Simple_cartesian.h>
 #include <CGAL/Nef_3/SNC_decorator.h>
 
-#include "system-gl.h"
+#include "glview/system-gl.h"
 #include <cstdlib>
 
 // Overridden in CGAL_renderer

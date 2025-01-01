@@ -24,21 +24,28 @@
  *
  */
 
-#include "PolySetBuilder.h"
-#include <PolySet.h>
-#include "Geometry.h"
+#include "geometry/PolySetBuilder.h"
+#include "geometry/PolySet.h"
+#include "geometry/Geometry.h"
 
 #ifdef ENABLE_CGAL
-#include "cgalutils.h"
-#include "CGAL_Nef_polyhedron.h"
-#include "CGALHybridPolyhedron.h"
+#include "geometry/cgal/cgalutils.h"
+#include "geometry/cgal/CGAL_Nef_polyhedron.h"
 #endif
 #ifdef ENABLE_MANIFOLD
-#include "ManifoldGeometry.h"
+#include "geometry/manifold/ManifoldGeometry.h"
 #endif
 
+#include <algorithm>
+#include <iterator>
+#include <cassert>
+#include <utility>
+#include <cstdint>
+#include <memory>
+#include <vector>
+
 PolySetBuilder::PolySetBuilder(int vertices_count, int indices_count, int dim, boost::tribool convex)
-  : convex_(convex), dim_(dim)
+  : dim_(dim), convex_(convex)
 {
   reserve(vertices_count, indices_count);
 }
@@ -52,12 +59,26 @@ void PolySetBuilder::setConvexity(int convexity){
   convexity_ = convexity;
 }
 
+void PolySetBuilder::addColor(const Color4f& color)
+{
+  colors_.push_back(color);
+}
+
+void PolySetBuilder::addColorIndex(const int32_t idx)
+{
+  color_indices_.push_back(idx);
+}
+
 int PolySetBuilder::numVertices() const {
   return vertices_.size();
 }
 
 int PolySetBuilder::numPolygons() const {
   return indices_.size();
+}
+
+bool PolySetBuilder::isEmpty() const {
+  return vertices_.size() == 0 && indices_.size() == 0;
 }
 
 int PolySetBuilder::vertexIndex(const Vector3d& pt)
@@ -81,9 +102,6 @@ void PolySetBuilder::appendGeometry(const std::shared_ptr<const Geometry>& geom)
     else {
       LOG(message_group::Error, "Nef->PolySet failed");
     }
-  } else if (const auto hybrid = std::dynamic_pointer_cast<const CGALHybridPolyhedron>(geom)) {
-    // TODO(ochafik): Implement appendGeometry(Surface_mesh) instead of converting to PolySet
-    appendPolySet(*hybrid->toPolySet());
 #endif // ifdef ENABLE_CGAL
 #ifdef ENABLE_MANIFOLD
   } else if (const auto mani = std::dynamic_pointer_cast<const ManifoldGeometry>(geom)) {
@@ -119,8 +137,7 @@ void PolySetBuilder::beginPolygon(int nvertices) {
 void PolySetBuilder::addVertex(int ind)
 {
   // Ignore consecutive duplicate indices
-  if (current_polygon_.empty() || 
-      ind != current_polygon_.back() && ind != current_polygon_.front()) {
+  if (current_polygon_.empty() || (ind != current_polygon_.back() && ind != current_polygon_.front())) {
     current_polygon_.push_back(ind);
   }
 }
@@ -130,12 +147,25 @@ void PolySetBuilder::addVertex(const Vector3d &v)
   addVertex(vertexIndex(v));
 }
 
-void PolySetBuilder::endPolygon() {
+void PolySetBuilder::endPolygon(const Color4f &color) {
   // FIXME: Should we check for self-touching polygons (non-consecutive duplicate indices)?
 
   // FIXME: Can we move? What would the state of current_polygon_ be after move?
   if (current_polygon_.size() >= 3) {
     indices_.push_back(current_polygon_);
+
+    if (color.isValid()) {
+      if (color_indices_.empty() && indices_.size() > 1) {
+        color_indices_.resize(indices_.size() - 1, -1);
+      }
+      auto it = std::find(colors_.begin(), colors_.end(), color);
+      if (it == colors_.end()) {
+        color_indices_.push_back(colors_.size());
+        colors_.push_back(color);
+      } else {
+        color_indices_.push_back(it - colors_.begin());
+      }
+    }
   }
   current_polygon_.clear();
 }
@@ -163,8 +193,7 @@ void PolySetBuilder::appendPolySet(const PolySet& ps)
         color_map[i] = it - colors_.begin();
       }
     }
-    for (int i = 0, n = ps.color_indices.size(); i < n; i++) {
-      const auto color_index = ps.color_indices[i];
+    for (auto color_index : ps.color_indices) {
       color_indices_.push_back(color_index < 0 ? -1 : color_map[color_index]);
     }
   } else if (!color_indices_.empty()) {

@@ -1,8 +1,8 @@
 #pragma once
 
-#include "BaseVisitable.h"
-#include "node.h"
-#include "State.h"
+#include "core/BaseVisitable.h"
+#include "core/node.h"
+#include "core/State.h"
 
 class State;
 

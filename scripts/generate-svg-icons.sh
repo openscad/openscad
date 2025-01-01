@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 ICONDIR=resources/icons/svg-default
 ICONSCAD="$ICONDIR"/icons.scad

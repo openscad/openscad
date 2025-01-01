@@ -1,13 +1,21 @@
 #pragma once
 
-#include "system-gl.h"
+#include "glview/system-gl.h"
+
+#include <QImage>
+#include <QMouseEvent>
+#include <QPoint>
+#include <QWheelEvent>
+#include <QWidget>
 #include <QtGlobal>
 #include <QOpenGLWidget>
 #include <QLabel>
+#include <string>
+#include <vector>
 
 #include <Eigen/Core>
 #include <Eigen/Geometry>
-#include "GLView.h"
+#include "glview/GLView.h"
 
 class QGLView : public QOpenGLWidget, public GLView
 {
@@ -96,5 +104,7 @@ signals:
 };
 
 /* These are defined in QLGView2.cc.  See the commentary there. */
+// Can't include <QOpenGLContext>, as it will clash with glew. Forward declare.
+class QOpenGLContext;
 QOpenGLContext *getGLContext();
 void setGLContext(QOpenGLContext *);

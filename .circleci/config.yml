@@ -79,6 +79,9 @@ jobs:
           path: /tmp/out
           destination: 64-bit
   openscad-wasm:
+    parameters:
+      wasm-type:
+        type: string
     working_directory: ~/workspace
     docker:
       - image: openscad/wasm-base:latest
@@ -86,7 +89,27 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Build OpenSCAD WASM
+          name: Install latest node.js
+          command: |
+              npm i -g n
+              n latest
+      - when:
+          condition:
+            equal: [ web, << parameters.wasm-type >> ]
+          steps:
+            - run:
+                name: Install Puppeteer
+                command: |
+                    apt-get update
+                    apt-get install -y \
+                        libatk1.0-0 libatk-bridge2.0-0 libdrm2 libxcomposite1 libxdamage1 \
+                        libxfixes3 libxrandr2 libgbm1 libxkbcommon0 libpango-1.0-0 libcairo2
+                    export PATH="/usr/local/bin:$PATH"
+                    npm init -y
+                    npm i puppeteer
+                    npx puppeteer browsers install chrome
+      - run:
+          name: Build OpenSCAD WASM (<< parameters.wasm-type >>)
           no_output_timeout: 18000
           command: |
               export OPENSCAD_COMMIT=$(git log -1 --pretty=format:%h)
@@ -97,12 +120,13 @@ jobs:
                   -DSNAPSHOT=ON \
                   -DEXPERIMENTAL=ON \
                   -DCMAKE_BUILD_TYPE=Release \
+                  -DWASM_BUILD_TYPE=<< parameters.wasm-type >> \
                   -DOPENSCAD_COMMIT="$OPENSCAD_COMMIT" \
                   -DOPENSCAD_VERSION="$OPENSCAD_VERSION"
               cd ../build
               make -j4 VERBOSE=1
               mkdir -p /tmp/out
-              zip -9r "/tmp/out/OpenSCAD-${OPENSCAD_VERSION}${SUFFIX}-WebAssembly.zip" openscad.*
+              zip -9r "/tmp/out/OpenSCAD-${OPENSCAD_VERSION}${SUFFIX}-WebAssembly-<< parameters.wasm-type >>.zip" openscad.*
               if [ -n "${CODE_SIGNING_KEY}" ]; then
                   cd /tmp/out
                   echo $CODE_SIGNING_DATA | base64 -d | gzip -d | gpg --import --allow-secret-key-import --pinentry-mode loopback --passphrase-file <(echo $CODE_SIGNING_PW)
@@ -112,6 +136,12 @@ jobs:
               else
                   echo "Skipping code signing."
               fi
+      - run:
+          name: Verify OpenSCAD WASM build
+          command: |
+              # node in the path (from emsdk) is too old to run the wasm build, use the one installed by n.
+              export PATH="/usr/local/bin:$PATH"
+              ./tests/wasm-check.sh << parameters.wasm-type >>
       - store_artifacts:
           path: /tmp/out
           destination: wasm
@@ -151,7 +181,7 @@ jobs:
             # Pick up our own Qt
             export PATH=$OPENSCAD_LIBRARIES/bin:$PATH
             # Build universal binaries and limit to 30 minutes
-            ./scripts/macosx-build-dependencies.sh -l 30 -x -a -d double_conversion eigen gmp mpfr glew gettext libffi freetype ragel harfbuzz libzip libxml2 libuuid fontconfig hidapi lib3mf pixman cairo glib2 boost cgal qt5 opencsg qscintilla sparkle onetbb
+            ./scripts/macosx-build-dependencies.sh -l 30 -x -a -d
       - run:
           name: Package Dependencies as an artifact
           command: |
@@ -168,16 +198,38 @@ jobs:
           name: Build OpenSCAD
           command: |
             export NUMCPU=$(($(sysctl -n hw.ncpu) * 3 / 2))
-            time ./scripts/release-common.sh snapshot
-            cd build
-            OPENSCAD_NAME=$(ls OpenSCAD-*.dmg)
-            shasum -a 256 "$OPENSCAD_NAME" > "$OPENSCAD_NAME".sha256
-            shasum -a 512 "$OPENSCAD_NAME" > "$OPENSCAD_NAME".sha512
-            cp -v "$OPENSCAD_NAME"* /tmp/out/
+            export VERSIONDATE=$(date "+%Y.%m.%d")
+            time ./scripts/release-common.sh -d $VERSIONDATE snapshot
+            echo "export VERSIONDATE=$VERSIONDATE" >> $BASH_ENV
       - run:
           name: Verify OpenSCAD binary
           command: |
             ./scripts/macosx-sanity-check.py build/OpenSCAD.app/Contents/MacOS/OpenSCAD
+      - run:
+          name: Sign and Notarize OpenSCAD binary
+          command: |
+            security -v create-keychain -p "" OpenSCAD.keychain
+            security -v list-keychains -s OpenSCAD.keychain
+            security -v unlock-keychain -p "" OpenSCAD.keychain
+            security -v set-keychain-settings -lt 7200 OpenSCAD.keychain
+            echo "$APPLE_CODE_SIGNING_KEY" | base64 -D -o OpenSCAD.p12
+            security -v import OpenSCAD.p12 -k OpenSCAD.keychain -f pkcs12 -P "$APPLE_CODE_SIGNING_PASSWORD" -T /usr/bin/codesign -T /usr/bin/security
+            security -v set-key-partition-list -S apple-tool:,apple: -s -k "" OpenSCAD.keychain
+            codesign --options=runtime --keychain OpenSCAD.keychain -s "Marius Kintel" --force --deep build/OpenSCAD.app
+
+            hdiutil create -volname "OpenSCAD" -srcfolder build/OpenSCAD.app -ov -format UDZO "OpenSCAD-$VERSIONDATE.dmg"  
+            codesign --keychain OpenSCAD.keychain -s "Marius Kintel" --force OpenSCAD-$VERSIONDATE.dmg
+
+            xcrun notarytool submit OpenSCAD-$VERSIONDATE.dmg --wait --apple-id $APPLE_NOTARIZATION_ACCOUNT --team-id $APPLE_NOTARIZATION_TEAM --password $APPLE_NOTARIZATION_PASSWORD
+            # TODO: If notarization fails, we could, download and dump the explanation here.
+            xcrun stapler staple OpenSCAD-$VERSIONDATE.dmg
+
+            security -v delete-keychain OpenSCAD.keychain
+            rm OpenSCAD.p12
+            cp -R OpenSCAD-$VERSIONDATE.dmg /tmp/out/
+            shasum -a 256 OpenSCAD-$VERSIONDATE.dmg > OpenSCAD-$VERSIONDATE.dmg.sha256
+            shasum -a 512 OpenSCAD-$VERSIONDATE.dmg > OpenSCAD-$VERSIONDATE.dmg.sha512
+            cp -v OpenSCAD-$VERSIONDATE.dmg* /tmp/out/
       - store_artifacts:
           path: /tmp/out
 workflows:
@@ -197,6 +249,15 @@ workflows:
                   only:
                       - master
       - openscad-wasm:
+          matrix:
+            parameters:
+              wasm-type: [web, node]
+          context: secret-context
+          filters:
+              branches:
+                  only:
+                      - master
+      - openscad-macos:
           context: secret-context
           filters:
               branches:
@@ -219,6 +280,9 @@ workflows:
                       - coverity_scan
                       - /^(?i:continuous)$/
       - openscad-wasm:
+          matrix:
+            parameters:
+              wasm-type: [web, node]
           filters:
               branches:
                   ignore:
@@ -226,6 +290,7 @@ workflows:
                       - coverity_scan
                       - /^(?i:continuous)$/
       - openscad-macos:
+          context: secret-context
           filters:
               branches:
                   only:
@@ -239,4 +304,5 @@ workflows:
                   only:
                       - master
     jobs:
-      - openscad-macos
+      - openscad-macos:
+          context: secret-context

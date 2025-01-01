@@ -24,7 +24,7 @@ jobs:
     - name: Set Qt version
       run: |
         case ${{ matrix.qt }} in
-        qt6) echo "CMAKE_OPTIONS=-DUSE_QT6=1" >> $GITHUB_ENV ;;
+        qt5) echo "CMAKE_OPTIONS=-DUSE_QT6=0" >> $GITHUB_ENV ;;
         esac
     - name: Checkout
       uses: actions/checkout@v4
@@ -44,7 +44,7 @@ jobs:
       run: |
         mkdir build
         cd build
-        cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_UNITY_BUILD=ON -DEXPERIMENTAL=ON -DSNAPSHOT=ON $CMAKE_OPTIONS
+        cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_UNITY_BUILD=OFF -DEXPERIMENTAL=ON -DSNAPSHOT=ON $CMAKE_OPTIONS
         export NUMCPU=$(($(sysctl -n hw.ncpu) * 3 / 2))
         make -j$NUMCPU
     - name: Run Test Suite

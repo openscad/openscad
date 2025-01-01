@@ -1,0 +1,411 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>FontListWidget</class>
+ <widget class="QWidget" name="FontListWidget">
+  <property name="enabled">
+   <bool>true</bool>
+  </property>
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>441</width>
+    <height>609</height>
+   </rect>
+  </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
+  </property>
+  <property name="windowTitle">
+   <string>Font List</string>
+  </property>
+  <property name="lineWidth" stdset="0">
+   <number>0</number>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <property name="spacing">
+    <number>10</number>
+   </property>
+   <property name="sizeConstraint">
+    <enum>QLayout::SetDefaultConstraint</enum>
+   </property>
+   <property name="leftMargin">
+    <number>10</number>
+   </property>
+   <property name="topMargin">
+    <number>10</number>
+   </property>
+   <property name="rightMargin">
+    <number>10</number>
+   </property>
+   <property name="bottomMargin">
+    <number>10</number>
+   </property>
+   <item>
+    <widget class="QScrollArea" name="scrollArea">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="MinimumExpanding" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="widgetResizable">
+      <bool>true</bool>
+     </property>
+     <widget class="QWidget" name="scrollAreaWidgetContents">
+      <property name="geometry">
+       <rect>
+        <x>0</x>
+        <y>0</y>
+        <width>419</width>
+        <height>587</height>
+       </rect>
+      </property>
+      <layout class="QVBoxLayout" name="verticalLayout_2">
+       <item>
+        <widget class="FontListTableView" name="tableView">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Preferred" vsizetype="MinimumExpanding">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="contextMenuPolicy">
+          <enum>Qt::CustomContextMenu</enum>
+         </property>
+         <property name="dragEnabled">
+          <bool>true</bool>
+         </property>
+         <property name="dragDropMode">
+          <enum>QAbstractItemView::DragOnly</enum>
+         </property>
+         <property name="verticalScrollMode">
+          <enum>QAbstractItemView::ScrollPerPixel</enum>
+         </property>
+         <property name="horizontalScrollMode">
+          <enum>QAbstractItemView::ScrollPerPixel</enum>
+         </property>
+         <attribute name="horizontalHeaderStretchLastSection">
+          <bool>true</bool>
+         </attribute>
+         <attribute name="verticalHeaderVisible">
+          <bool>false</bool>
+         </attribute>
+        </widget>
+       </item>
+       <item>
+        <widget class="QGroupBox" name="groupBoxFilter">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="title">
+          <string>Filter</string>
+         </property>
+         <layout class="QGridLayout" name="gridLayout">
+          <item row="1" column="3">
+           <widget class="QComboBox" name="comboBoxCharFilterType">
+            <item>
+             <property name="text">
+              <string>All</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Any</string>
+             </property>
+            </item>
+           </widget>
+          </item>
+          <item row="0" column="3">
+           <widget class="QComboBox" name="comboBoxSearchType">
+            <item>
+             <property name="text">
+              <string>Fixed</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Wildcard</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>RegExp</string>
+             </property>
+            </item>
+           </widget>
+          </item>
+          <item row="1" column="2">
+           <widget class="QLineEdit" name="lineEditChars">
+            <property name="clearButtonEnabled">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="2">
+           <widget class="QLineEdit" name="lineEditFontName">
+            <property name="clearButtonEnabled">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="0">
+           <widget class="QLabel" name="labelFontName">
+            <property name="text">
+             <string>Font name</string>
+            </property>
+            <property name="buddy">
+             <cstring>lineEditFontName</cstring>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="0">
+           <widget class="QLabel" name="labelSampleText">
+            <property name="text">
+             <string>Sample text</string>
+            </property>
+            <property name="buddy">
+             <cstring>lineEditSampleText</cstring>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="0">
+           <widget class="QLabel" name="labelChars">
+            <property name="text">
+             <string>Chars</string>
+            </property>
+            <property name="buddy">
+             <cstring>lineEditChars</cstring>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="2">
+           <widget class="QLineEdit" name="lineEditSampleText">
+            <property name="clearButtonEnabled">
+             <bool>false</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="3">
+           <widget class="QSpinBox" name="spinBoxFontSize">
+            <property name="alignment">
+             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+            </property>
+            <property name="minimum">
+             <number>1</number>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <widget class="QGroupBox" name="groupBoxSelection">
+         <property name="title">
+          <string>Selection</string>
+         </property>
+         <layout class="QGridLayout" name="gridLayout_2">
+          <item row="1" column="2">
+           <widget class="QLineEdit" name="lineEditFontPathSelected">
+            <property name="dragEnabled">
+             <bool>true</bool>
+            </property>
+            <property name="readOnly">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="0">
+           <widget class="QLabel" name="labelFontNameSelected">
+            <property name="text">
+             <string>Font name</string>
+            </property>
+            <property name="buddy">
+             <cstring>lineEditFontNameSelected</cstring>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="0">
+           <widget class="QLabel" name="labelFontPathSelected">
+            <property name="text">
+             <string>Font path</string>
+            </property>
+            <property name="buddy">
+             <cstring>lineEditFontPathSelected</cstring>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="2">
+           <widget class="QLineEdit" name="lineEditFontNameSelected">
+            <property name="dragEnabled">
+             <bool>true</bool>
+            </property>
+            <property name="readOnly">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="2">
+           <widget class="QLineEdit" name="lineEditFcStyleSelected">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="dragEnabled">
+             <bool>true</bool>
+            </property>
+            <property name="readOnly">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="0">
+           <widget class="QLabel" name="labelFcStyleSelected">
+            <property name="text">
+             <string>Style</string>
+            </property>
+            <property name="buddy">
+             <cstring>lineEditFcStyleSelected</cstring>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </widget>
+   </item>
+  </layout>
+  <action name="actionResetSampleText">
+   <property name="icon">
+    <iconset resource="../../resources/common.qrc">
+     <normaloff>:/icons/svg-default/undo.svg</normaloff>:/icons/svg-default/undo.svg</iconset>
+   </property>
+   <property name="text">
+    <string>ResetSampleText</string>
+   </property>
+  </action>
+  <action name="actionOpenFolder">
+   <property name="icon">
+    <iconset resource="../../resources/common.qrc">
+     <normaloff>:/icons/svg-default/open.svg</normaloff>:/icons/svg-default/open.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Open Font Folder</string>
+   </property>
+  </action>
+  <action name="actionCopyFolder">
+   <property name="icon">
+    <iconset resource="../../resources/common.qrc">
+     <normaloff>:/icons/svg-default/edit-copy.svg</normaloff>:/icons/svg-default/edit-copy.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Copy Font Folder</string>
+   </property>
+  </action>
+  <action name="actionCopyFullPath">
+   <property name="icon">
+    <iconset resource="../../resources/common.qrc">
+     <normaloff>:/icons/svg-default/edit-copy.svg</normaloff>:/icons/svg-default/edit-copy.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Copy Full Path to Font</string>
+   </property>
+  </action>
+  <action name="actionCopyStyle">
+   <property name="icon">
+    <iconset resource="../../resources/common.qrc">
+     <normaloff>:/icons/svg-default/edit-copy.svg</normaloff>:/icons/svg-default/edit-copy.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Copy Font Style</string>
+   </property>
+  </action>
+  <action name="actionCopyFontName">
+   <property name="icon">
+    <iconset resource="../../resources/common.qrc">
+     <normaloff>:/icons/svg-default/edit-copy.svg</normaloff>:/icons/svg-default/edit-copy.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Copy Font Name</string>
+   </property>
+  </action>
+  <action name="actionShowFontNameColumn">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Show Font Name</string>
+   </property>
+  </action>
+  <action name="actionShowStyledFontNameColumn">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Show Styled Font Name</string>
+   </property>
+  </action>
+  <action name="actionShowFontStyleColumn">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Show Font Style</string>
+   </property>
+  </action>
+  <action name="actionShowFontSampleColumn">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Show Sample Text</string>
+   </property>
+  </action>
+  <action name="actionShowFileNameColumn">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>ShowFileName</string>
+   </property>
+  </action>
+  <action name="actionShowFilePathColumn">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Show File Path</string>
+   </property>
+  </action>
+  <action name="actionResetColumns">
+   <property name="icon">
+    <iconset resource="../../resources/common.qrc">
+     <normaloff>:/icons/svg-default/undo.svg</normaloff>:/icons/svg-default/undo.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Reset Columns</string>
+   </property>
+  </action>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>FontListTableView</class>
+   <extends>QTableView</extends>
+   <header>gui/FontListTableView.h</header>
+  </customwidget>
+ </customwidgets>
+ <resources>
+  <include location="../../resources/common.qrc"/>
+ </resources>
+ <connections/>
+</ui>

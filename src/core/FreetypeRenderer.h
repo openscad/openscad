@@ -25,11 +25,12 @@
  */
 #pragma once
 
+#include <memory>
 #include <string>
 #include <vector>
 #include <ostream>
 
-#include "Parameters.h"
+#include "core/Parameters.h"
 #include <hb.h>
 #include <ft2build.h>
 #include FT_FREETYPE_H
@@ -156,7 +157,7 @@ public:
   FreetypeRenderer();
   virtual ~FreetypeRenderer() = default;
 
-  [[nodiscard]] std::vector<std::shared_ptr<const class Geometry>> render(const FreetypeRenderer::Params& params) const;
+  [[nodiscard]] std::vector<std::shared_ptr<const class Polygon2d>> render(const FreetypeRenderer::Params& params) const;
 private:
   const static double scale;
   FT_Outline_Funcs funcs;
@@ -191,16 +192,16 @@ public:
     // when rendering from Freetype, and have not yet been scaled
     // back up to the desired font size.
     std::vector<GlyphData> glyph_array;
-    double x_offset;
-    double y_offset;
-    double left;
-    double right;
-    double top;
-    double bottom;
-    double advance_x;
-    double advance_y;
-    double ascent;
-    double descent;
+    double x_offset{0.0};
+    double y_offset{0.0};
+    double left{0.0};
+    double right{0.0};
+    double top{0.0};
+    double bottom{0.0};
+    double advance_x{0.0};
+    double advance_y{0.0};
+    double ascent{0.0};
+    double descent{0.0};
     ShapeResults(const FreetypeRenderer::Params& params);
     virtual ~ShapeResults();
 private:

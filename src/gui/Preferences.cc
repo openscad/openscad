@@ -24,30 +24,47 @@
  *
  */
 
-#include "Preferences.h"
+#include "gui/Preferences.h"
 
+#include <QFont>
+#include <QFontComboBox>
+#include <QMainWindow>
+#include <QObject>
+#include <QSizePolicy>
+#include <QSpacerItem>
+#include <QString>
+#include <QStringList>
+#include <QWidget>
+#include <tuple>
+#include <cassert>
+#include <list>
 #include <QActionGroup>
 #include <QMessageBox>
 #include <QFontDatabase>
 #include <QKeyEvent>
+#include <QFileDialog>
 #include <QRegularExpression>
 #include <QRegularExpressionValidator>
 #include <QStatusBar>
 #include <QSettings>
 #include <QTextDocument>
 #include <boost/algorithm/string.hpp>
-#include "GeometryCache.h"
-#include "AutoUpdater.h"
+#include "geometry/GeometryCache.h"
+#include "gui/AutoUpdater.h"
 #include "Feature.h"
+#include "gui/Settings.h"
 #ifdef ENABLE_CGAL
-#include "CGALCache.h"
+#include "geometry/cgal/CGALCache.h"
 #endif
-#include "ColorMap.h"
-#include "RenderSettings.h"
-#include "QSettingsCached.h"
-#include "SettingsWriter.h"
-#include "OctoPrint.h"
-#include "IgnoreWheelWhenNotFocused.h"
+#include "glview/ColorMap.h"
+#include "glview/RenderSettings.h"
+#include "gui/QSettingsCached.h"
+#include "gui/SettingsWriter.h"
+#include "gui/OctoPrint.h"
+#include "gui/IgnoreWheelWhenNotFocused.h"
+#include "gui/PrintService.h"
+
+#include <string>
 
 Preferences *Preferences::instance = nullptr;
 
@@ -60,10 +77,9 @@ class SettingsReader : public Settings::SettingsVisitor
 
   void handle(Settings::SettingsEntry& entry) const override
   {
-    std::string key = entry.category() + "/" + entry.name();
-    if (settings.contains(QString::fromStdString(key))) {
-      std::string value = settings.value(QString::fromStdString(key)).toString().toStdString();
-      PRINTDB("SettingsReader R: %s = '%s'", key % value);
+    if (settings.contains(QString::fromStdString(entry.key()))) {
+      std::string value = settings.value(QString::fromStdString(entry.key())).toString().toStdString();
+      PRINTDB("SettingsReader R: %s = '%s'", entry.key() % value);
       entry.decode(value);
     }
   }
@@ -112,6 +128,7 @@ void Preferences::init() {
   this->defaultmap["advanced/forceGoldfeather"] = false;
   this->defaultmap["advanced/undockableWindows"] = false;
   this->defaultmap["advanced/reorderWindows"] = true;
+  this->defaultmap["advanced/renderBackend3D"] = QString::fromStdString(renderBackend3DToString(RenderSettings::inst()->backend3D));
   this->defaultmap["launcher/showOnStartup"] = true;
   this->defaultmap["advanced/localization"] = true;
   this->defaultmap["advanced/autoReloadRaise"] = false;
@@ -178,6 +195,8 @@ void Preferences::init() {
   this->lineEditStepSize->setValidator(validator1);
   this->traceDepthEdit->setValidator(uintValidator);
 
+  Settings::Settings::visit(SettingsReader());
+
   initComboBox(this->comboBoxIndentUsing, Settings::Settings::indentStyle);
   initComboBox(this->comboBoxLineWrap, Settings::Settings::lineWrap);
   initComboBox(this->comboBoxLineWrapIndentationStyle, Settings::Settings::lineWrapIndentationStyle);
@@ -192,17 +211,18 @@ void Preferences::init() {
 
   initComboBox(this->comboBoxOctoPrintFileFormat, Settings::Settings::octoPrintFileFormat);
   initComboBox(this->comboBoxOctoPrintAction, Settings::Settings::octoPrintAction);
+  initComboBox(this->comboBoxLocalSlicerFileFormat, Settings::Settings::localSlicerFileFormat);
+  initComboBox(this->comboBoxRenderBackend3D, Settings::Settings::renderBackend3D);
   initComboBox(this->comboBoxToolbarExport3D, Settings::Settings::toolbarExport3D);
   initComboBox(this->comboBoxToolbarExport2D, Settings::Settings::toolbarExport2D);
 
   installIgnoreWheelWhenNotFocused(this);
 
-  Settings::Settings::visit(SettingsReader());
-
   const QString slicer = QString::fromStdString(Settings::Settings::octoPrintSlicerEngine.value());
   const QString slicerDesc = QString::fromStdString(Settings::Settings::octoPrintSlicerEngineDesc.value());
   const QString profile = QString::fromStdString(Settings::Settings::octoPrintSlicerProfile.value());
   const QString profileDesc = QString::fromStdString(Settings::Settings::octoPrintSlicerProfileDesc.value());
+  BlockSignals<QLineEdit *>(this->lineEditLocalSlicer)->setText(QString::fromStdString(Settings::Settings::localSlicerExecutable.value()));
   this->comboBoxOctoPrintSlicingEngine->clear();
   this->comboBoxOctoPrintSlicingEngine->addItem(_("<Default>"), QVariant{""});
   if (!slicer.isEmpty()) {
@@ -337,6 +357,44 @@ void Preferences::setupFeaturesPage()
   gridLayoutExperimentalFeatures->addItem(new QSpacerItem(20, 0, QSizePolicy::Fixed, QSizePolicy::Fixed), 1, 0, 1, 1, Qt::AlignLeading);
 }
 
+void Preferences::setup3DPrintPage()
+{
+  const auto& currentPrintService = Settings::Settings::defaultPrintService.value();
+  const auto currentPrintServiceName =
+      QString::fromStdString(Settings::Settings::printServiceName.value());
+
+  instance->comboBoxDefaultPrintService->clear();
+  const std::unordered_map<std::string, QString> services = {
+      {"NONE", _("NONE")},
+      {"OCTOPRINT", _("OctoPrint")},
+      {"LOCALSLICER", _("Local Slicer")},
+  };
+
+  instance->comboBoxDefaultPrintService->addItem(services.at("NONE"),
+                                                 QStringList{"NONE", ""});
+  for (const auto &printServiceItem : PrintService::getPrintServices()) {
+    const auto &key = printServiceItem.first;
+    const auto &printService = printServiceItem.second;
+    const auto settingValue =
+        QStringList{"PRINT_SERVICE", QString::fromStdString(key)};
+    const auto displayName = QString(printService->getDisplayName());
+    instance->comboBoxDefaultPrintService->addItem(displayName, settingValue);
+    if (key == currentPrintServiceName.toStdString()) {
+      instance->comboBoxDefaultPrintService->setCurrentText(
+          QString(printService->getDisplayName()));
+    }
+  }
+  instance->comboBoxDefaultPrintService->addItem(services.at("OCTOPRINT"),
+                                                 QStringList{"OCTOPRINT", ""});
+  instance->comboBoxDefaultPrintService->addItem(services.at("LOCALSLICER"),
+                                                 QStringList{"LOCALSLICER", ""});
+
+  auto it = services.find(currentPrintService);
+  if (it != services.end()) {
+    instance->comboBoxDefaultPrintService->setCurrentText(it->second);
+  }
+}
+
 void Preferences::on_colorSchemeChooser_itemSelectionChanged()
 {
   QString scheme = this->colorSchemeChooser->currentItem()->text();
@@ -360,7 +418,7 @@ void Preferences::on_fontSize_currentIndexChanged(int index)
   emit fontChanged(getValue("editor/fontfamily").toString(), intsize);
 }
 
-void Preferences::on_syntaxHighlight_textActivated(const QString & s)
+void Preferences::on_syntaxHighlight_currentTextChanged(const QString& s)
 {
   QSettingsCached settings;
   settings.setValue("editor/syntaxhighlight", s);
@@ -714,10 +772,12 @@ void Preferences::on_enableRangeCheckBox_toggled(bool state)
   settings.setValue("advanced/enableParameterRangeCheck", state);
 }
 
-void Preferences::on_useAsciiSTLCheckBox_toggled(bool checked)
+void
+Preferences::on_comboBoxRenderBackend3D_activated(int val)
 {
-  Settings::Settings::exportUseAsciiSTL.setValue(checked);
-  writeSettings();
+  applyComboBox(this->comboBoxRenderBackend3D, val, Settings::Settings::renderBackend3D);
+  RenderSettings::inst()->backend3D =
+    renderBackend3DFromString(Settings::Settings::renderBackend3D.value());
 }
 
 void Preferences::on_comboBoxToolbarExport3D_activated(int val)
@@ -756,6 +816,14 @@ void Preferences::on_enableHidapiTraceCheckBox_toggled(bool checked)
   writeSettings();
 }
 
+void Preferences::on_comboBoxDefaultPrintService_activated(int)
+{
+  QStringList currentPrintServiceList = comboBoxDefaultPrintService->currentData().toStringList();
+  Settings::Settings::defaultPrintService.setValue(currentPrintServiceList[0].toStdString());
+  Settings::Settings::printServiceName.setValue(currentPrintServiceList[1].toStdString());
+  writeSettings();
+}
+
 void Preferences::on_comboBoxOctoPrintAction_activated(int val)
 {
   applyComboBox(comboBoxOctoPrintAction, val, Settings::Settings::octoPrintAction);
@@ -781,6 +849,29 @@ void Preferences::on_pushButtonOctoPrintApiKey_clicked()
 void Preferences::on_comboBoxOctoPrintFileFormat_activated(int val)
 {
   applyComboBox(this->comboBoxOctoPrintFileFormat, val, Settings::Settings::octoPrintFileFormat);
+}
+
+void Preferences::on_pushButtonSelectLocalSlicerPath_clicked()
+{
+  const QString fileName = QFileDialog::getOpenFileName(this, "Select application");
+  if (fileName.isEmpty()) {
+    return;
+  }
+
+  this->lineEditLocalSlicer->setText(fileName);
+  on_lineEditLocalSlicer_editingFinished();
+}
+
+void Preferences::on_comboBoxLocalSlicerFileFormat_activated(int val)
+{
+  applyComboBox(this->comboBoxLocalSlicerFileFormat, val, Settings::Settings::localSlicerFileFormat);
+  writeSettings();
+}
+
+void Preferences::on_lineEditLocalSlicer_editingFinished()
+{
+  Settings::Settings::localSlicerExecutable.setValue(this->lineEditLocalSlicer->text().toStdString());
+  writeSettings();
 }
 
 void Preferences::on_pushButtonOctoPrintCheckConnection_clicked()
@@ -974,7 +1065,6 @@ void Preferences::updateGUI()
   BlockSignals<QCheckBox *>(this->enableTraceUsermoduleParametersCheckBox)->setChecked(getValue("advanced/enableTraceUsermoduleParameters").toBool());
   BlockSignals<QCheckBox *>(this->enableParameterCheckBox)->setChecked(getValue("advanced/enableParameterCheck").toBool());
   BlockSignals<QCheckBox *>(this->enableRangeCheckBox)->setChecked(getValue("advanced/enableParameterRangeCheck").toBool());
-  BlockSignals<QCheckBox *>(this->useAsciiSTLCheckBox)->setChecked(Settings::Settings::exportUseAsciiSTL.value());
   updateComboBox(this->comboBoxToolbarExport3D, Settings::Settings::toolbarExport3D);
   updateComboBox(this->comboBoxToolbarExport2D, Settings::Settings::toolbarExport2D);
 
@@ -995,6 +1085,7 @@ void Preferences::updateGUI()
   this->lineEditCharacterThreshold->setEnabled(getValue("editor/enableAutocomplete").toBool());
   this->lineEditStepSize->setEnabled(getValue("editor/stepSize").toBool());
 
+  updateComboBox(this->comboBoxRenderBackend3D, Settings::Settings::renderBackend3D);
   updateComboBox(this->comboBoxLineWrap, Settings::Settings::lineWrap);
   updateComboBox(this->comboBoxLineWrapIndentationStyle, Settings::Settings::lineWrapIndentationStyle);
   updateComboBox(this->comboBoxLineWrapVisualizationStart, Settings::Settings::lineWrapVisualizationBegin);
@@ -1056,12 +1147,13 @@ void Preferences::create(const QStringList& colorSchemes)
 
   instance = new Preferences();
   instance->syntaxHighlight->clear();
-  instance->syntaxHighlight->addItems(colorSchemes);
+  BlockSignals<QComboBox *>(instance->syntaxHighlight)->addItems(colorSchemes);
   instance->colorSchemeChooser->clear();
   instance->colorSchemeChooser->addItems(renderColorSchemes);
   instance->init();
   instance->AxisConfig->init();
   instance->setupFeaturesPage();
+  instance->setup3DPrintPage();
   instance->updateGUI();
 }
 

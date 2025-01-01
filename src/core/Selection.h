@@ -25,7 +25,7 @@
  */
 
 #pragma once
-#include "linalg.h"
+#include "geometry/linalg.h"
 
 enum class SelectionType {
 	SELECTION_POINT, 

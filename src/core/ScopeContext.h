@@ -1,10 +1,13 @@
 #pragma once
 
 #include <memory>
-#include "Arguments.h"
-#include "Children.h"
-#include "Context.h"
-#include "SourceFile.h"
+#include <string>
+#include <vector>
+
+#include "core/Arguments.h"
+#include "core/Children.h"
+#include "core/Context.h"
+#include "core/SourceFile.h"
 
 class UserModule;
 

@@ -23,13 +23,22 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  */
-#include "InputDriverEvent.h"
-#include "InputDriverManager.h"
-#include "MainWindow.h"
+#include "gui/input/InputDriverManager.h"
+
+#include "gui/input/InputDriverEvent.h"
+#include "gui/MainWindow.h"
+#include <QList>
+#include <QString>
+#include <QTimer>
+#include <algorithm>
+#include <list>
+#include <sstream>
 #include <QAction>
 #include <QMenu>
 #include <QApplication>
 #include <QCoreApplication>
+#include <cstddef>
+#include <string>
 
 InputDriverManager *InputDriverManager::self = nullptr;
 

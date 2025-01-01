@@ -11,6 +11,7 @@
 #endif
 
 #if defined(ENABLE_CGAL)
+#include <cstddef>
 // gmp requires function signature with extra oldsize parameters for some reason.
 inline void *gmp_realloc(void *ptr, size_t /*oldsize*/, size_t newsize) { return mi_realloc(ptr, newsize); }
 inline void gmp_free(void *ptr, size_t /*oldsize*/) { mi_free(ptr); }

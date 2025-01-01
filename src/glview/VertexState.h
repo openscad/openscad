@@ -1,15 +1,19 @@
 #pragma once
 
+#include <memory>
+#include <cstddef>
 #include <functional>
 #include <vector>
 
-#include "system-gl.h"
+#include "glview/system-gl.h"
 
 #define GL_TRACE_ENABLE
 #ifdef GL_TRACE_ENABLE
+// NOLINTBEGIN(bugprone-macro-parentheses)
 #define GL_TRACE(fmt_, args) do { \
           if (OpenSCAD::debug != "") PRINTDB("%d : " fmt_, __LINE__ % args); \
 } while (0)
+// NOLINTEND(bugprone-macro-parentheses)
 #define GL_TRACE0(fmt_) do { \
           if (OpenSCAD::debug != "") PRINTDB("%d : " fmt_, __LINE__); \
 } while (0)

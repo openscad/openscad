@@ -24,12 +24,22 @@
  *
  */
 
-#include "export.h"
-#include "PolySet.h"
-#include "printutils.h"
-#include "Geometry.h"
+#include "io/export.h"
+#include "geometry/PolySet.h"
+#include "utils/printutils.h"
+#include "geometry/Geometry.h"
 
+#include <algorithm>
+#include <functional>
+#include <cassert>
+#include <map>
+#include <cstdint>
+#include <memory>
+#include <cstddef>
 #include <fstream>
+#include <vector>
+#include <filesystem>
+#include <iostream>
 
 #ifdef _WIN32
 #include <io.h>
@@ -39,7 +49,103 @@
 #define QUOTE(x__) # x__
 #define QUOTED(x__) QUOTE(x__)
 
-bool canPreview(const FileFormat format) {
+namespace {
+
+struct Containers {
+  std::unordered_map<std::string, FileFormatInfo> identifierToInfo;
+  std::map<FileFormat, FileFormatInfo> fileFormatToInfo;
+};
+
+void add_item(Containers& containers, const FileFormatInfo& info) {
+  containers.identifierToInfo[info.identifier] = info;
+  containers.fileFormatToInfo[info.format] = info;
+}
+
+Containers &containers() {
+  static std::unique_ptr<Containers> containers = [](){
+    auto containers = std::make_unique<Containers>();
+
+    add_item(*containers, {FileFormat::ASCII_STL, "asciistl", "stl", "STL (ascii)"});
+    add_item(*containers, {FileFormat::BINARY_STL, "binstl", "stl", "STL (binary)"});
+    add_item(*containers, {FileFormat::OBJ, "obj", "obj", "OBJ"});
+    add_item(*containers, {FileFormat::OFF, "off", "off", "OFF"});
+    add_item(*containers, {FileFormat::WRL, "wrl", "wrl", "VRML"});
+    add_item(*containers, {FileFormat::AMF, "amf", "amf", "AMF"});
+    add_item(*containers, {FileFormat::_3MF, "3mf", "3mf", "3MF"});
+    add_item(*containers, {FileFormat::DXF, "dxf", "dxf", "DXF"});
+    add_item(*containers, {FileFormat::SVG, "svg", "svg", "SVG"});
+    add_item(*containers, {FileFormat::NEFDBG, "nefdbg", "nefdbg", "nefdbg"});
+    add_item(*containers, {FileFormat::NEF3, "nef3", "nef3", "nef3"});
+    add_item(*containers, {FileFormat::CSG, "csg", "csg", "CSG"});
+    add_item(*containers, {FileFormat::PARAM, "param", "param", "param"});
+    add_item(*containers, {FileFormat::AST, "ast", "ast", "AST"});
+    add_item(*containers, {FileFormat::TERM, "term", "term", "term"});
+    add_item(*containers, {FileFormat::ECHO, "echo", "echo", "echo"});
+    add_item(*containers, {FileFormat::PNG, "png", "png", "PNG"});
+    add_item(*containers, {FileFormat::PDF, "pdf", "pdf", "PDF"});
+    add_item(*containers, {FileFormat::POV, "pov", "pov", "POV"});
+
+    // Alias
+    containers->identifierToInfo["stl"] = containers->identifierToInfo["asciistl"];  
+    return containers;
+  }();
+  return *containers;
+}
+
+}  // namespace
+
+namespace fileformat {
+
+std::vector<FileFormat> all()
+{
+  std::vector<FileFormat> allFileFormats;
+  for (const auto& item : containers().fileFormatToInfo) {
+    allFileFormats.push_back(item.first);
+  }
+  return allFileFormats;
+}
+
+std::vector<FileFormat> all2D()
+{
+  std::vector<FileFormat> all2DFormats;
+  for (const auto& item : containers().fileFormatToInfo) {
+    if (is2D(item.first)) {
+      all2DFormats.push_back(item.first);
+    }
+  }
+  return all2DFormats;
+}
+
+std::vector<FileFormat> all3D()
+{
+  std::vector<FileFormat> all3DFormats;
+  for (const auto& item : containers().fileFormatToInfo) {
+    if (is3D(item.first)) {
+      all3DFormats.push_back(item.first);
+    }
+  }
+  return all3DFormats;
+}
+
+const FileFormatInfo& info(FileFormat fileFormat)
+{
+  return containers().fileFormatToInfo[fileFormat];
+}
+
+bool fromIdentifier(const std::string& identifier, FileFormat& format)
+{
+  auto it = containers().identifierToInfo.find(identifier);
+  if (it == containers().identifierToInfo.end()) return false;
+  format = it->second.format;
+  return true;
+}
+
+const std::string& toSuffix(FileFormat format)
+{
+  return containers().fileFormatToInfo[format].suffix;
+}
+
+bool canPreview(FileFormat format) {
   return (format == FileFormat::AST ||
           format == FileFormat::CSG ||
           format == FileFormat::PARAM ||
@@ -48,31 +154,34 @@ bool canPreview(const FileFormat format) {
           format == FileFormat::PNG);
 }
 
-bool is3D(const FileFormat format) {
-return format == FileFormat::ASCIISTL ||
-  format == FileFormat::STL ||
+bool is3D(FileFormat format) {
+return format == FileFormat::ASCII_STL ||
+  format == FileFormat::BINARY_STL ||
   format == FileFormat::OBJ ||
   format == FileFormat::OFF ||
   format == FileFormat::WRL ||
   format == FileFormat::AMF ||
   format == FileFormat::_3MF ||
   format == FileFormat::NEFDBG ||
-  format == FileFormat::NEF3;
+  format == FileFormat::NEF3 ||
+  format == FileFormat::POV;
 }
 
-bool is2D(const FileFormat format) {
+bool is2D(FileFormat format) {
   return format == FileFormat::DXF ||
     format == FileFormat::SVG ||
     format == FileFormat::PDF;
 }
 
+}  // namespace FileFormat
+
 void exportFile(const std::shared_ptr<const Geometry>& root_geom, std::ostream& output, const ExportInfo& exportInfo)
 {
   switch (exportInfo.format) {
-  case FileFormat::ASCIISTL:
+  case FileFormat::ASCII_STL:
     export_stl(root_geom, output, false);
     break;
-  case FileFormat::STL:
+  case FileFormat::BINARY_STL:
     export_stl(root_geom, output, true);
     break;
   case FileFormat::OBJ:
@@ -88,7 +197,7 @@ void exportFile(const std::shared_ptr<const Geometry>& root_geom, std::ostream& 
     export_amf(root_geom, output);
     break;
   case FileFormat::_3MF:
-    export_3mf(root_geom, output);
+    export_3mf(root_geom, output, exportInfo);
     break;
   case FileFormat::DXF:
     export_dxf(root_geom, output);
@@ -98,6 +207,9 @@ void exportFile(const std::shared_ptr<const Geometry>& root_geom, std::ostream& 
     break;
   case FileFormat::PDF:
     export_pdf(root_geom, output, exportInfo);
+    break;
+  case FileFormat::POV:
+    export_pov(root_geom, output, exportInfo);
     break;
 #ifdef ENABLE_CGAL
   case FileFormat::NEFDBG:
@@ -112,7 +224,7 @@ void exportFile(const std::shared_ptr<const Geometry>& root_geom, std::ostream& 
   }
 }
 
-bool exportFileByNameStdout(const std::shared_ptr<const Geometry>& root_geom, const ExportInfo& exportInfo)
+bool exportFileStdOut(const std::shared_ptr<const Geometry>& root_geom, const ExportInfo& exportInfo)
 {
 #ifdef _WIN32
   _setmode(_fileno(stdout), _O_BINARY);
@@ -121,15 +233,16 @@ bool exportFileByNameStdout(const std::shared_ptr<const Geometry>& root_geom, co
   return true;
 }
 
-bool exportFileByNameStream(const std::shared_ptr<const Geometry>& root_geom, const ExportInfo& exportInfo)
+bool exportFileByName(const std::shared_ptr<const Geometry>& root_geom, const std::string& filename, const ExportInfo& exportInfo)
 {
   std::ios::openmode mode = std::ios::out | std::ios::trunc;
-  if (exportInfo.format == FileFormat::_3MF || exportInfo.format == FileFormat::STL || exportInfo.format == FileFormat::PDF) {
+  if (exportInfo.format == FileFormat::_3MF || exportInfo.format == FileFormat::BINARY_STL || exportInfo.format == FileFormat::PDF) {
     mode |= std::ios::binary;
   }
-  std::ofstream fstream(exportInfo.fileName, mode);
+  const std::filesystem::path path(filename);
+  std::ofstream fstream(path, mode);
   if (!fstream.is_open()) {
-    LOG(_("Can't open file \"%1$s\" for export"), exportInfo.displayName);
+    LOG(_("Can't open file \"%1$s\" for export"), filename);
     return false;
   } else {
     bool onerror = false;
@@ -145,18 +258,9 @@ bool exportFileByNameStream(const std::shared_ptr<const Geometry>& root_geom, co
       onerror = true;
     }
     if (onerror) {
-      LOG(message_group::Error, _("\"%1$s\" write error. (Disk full?)"), exportInfo.displayName);
+      LOG(message_group::Error, _("\"%1$s\" write error. (Disk full?)"), filename);
     }
     return !onerror;
-  }
-}
-
-bool exportFileByName(const std::shared_ptr<const Geometry>& root_geom, const ExportInfo& exportInfo)
-{
-  if (exportInfo.useStdOut) {
-    return exportFileByNameStdout(root_geom, exportInfo);
-  } else {
-    return exportFileByNameStream(root_geom, exportInfo);
   }
 }
 
@@ -168,8 +272,8 @@ double remove_negative_zero(double x) {
 
 Vector3d remove_negative_zero(const Vector3d& pt) {
   return {
-    remove_negative_zero(pt[0]), 
-    remove_negative_zero(pt[1]), 
+    remove_negative_zero(pt[0]),
+    remove_negative_zero(pt[1]),
     remove_negative_zero(pt[2]),
   };
 }
@@ -191,7 +295,13 @@ struct LexographicLess {
 };
 #endif
 
-} // namespace 
+} // namespace
+
+std::string get_current_iso8601_date_time_utc() {
+  auto now = std::chrono::system_clock::now();
+  auto time = std::chrono::system_clock::to_time_t(now);
+  return STR(std::put_time(gmtime(&time), "%FT%TZ"));
+}
 
 std::unique_ptr<PolySet> createSortedPolySet(const PolySet& ps)
 {

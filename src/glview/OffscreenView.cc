@@ -1,5 +1,7 @@
-#include "OffscreenView.h"
-#include "system-gl.h"
+#include "glview/OffscreenView.h"
+#include "glview/system-gl.h"
+#include <iostream>
+#include <cstdint>
 #include <cmath>
 #include <cstdio>
 #include <string>
@@ -8,11 +10,11 @@
 #include <fstream>
 #include <vector>
 
-#include "imageutils.h"
-#include "printutils.h"
-#include "OffscreenContextFactory.h"
+#include "io/imageutils.h"
+#include "utils/printutils.h"
+#include "glview/OffscreenContextFactory.h"
 #if defined(USE_GLEW) || defined(OPENCSG_GLEW)
-#include "glew-utils.h"
+#include "glview/glew-utils.h"
 #endif
 
 namespace {

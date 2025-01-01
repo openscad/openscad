@@ -1,8 +1,13 @@
 #pragma once
 
-#include "qtgettext.h"
+#include "gui/qtgettext.h"
 #include "ui_ErrorLog.h"
-#include "printutils.h"
+#include "utils/printutils.h"
+#include <QHash>
+#include <QModelIndex>
+#include <QResizeEvent>
+#include <QWidget>
+#include <list>
 #include <QStandardItemModel>
 
 enum errorLog_column {

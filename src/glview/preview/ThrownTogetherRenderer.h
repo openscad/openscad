@@ -1,9 +1,13 @@
 #pragma once
 
-#include "Renderer.h"
-#include "CSGNode.h"
+#include <memory>
+#include <cstddef>
+#include <vector>
 
-#include "VBORenderer.h"
+#include "glview/Renderer.h"
+#include "core/CSGNode.h"
+
+#include "glview/VBORenderer.h"
 
 class CSGProducts;
 class CSGChainObject;

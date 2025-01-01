@@ -1,19 +1,24 @@
-#include "PolySetUtils.h"
+#include "geometry/PolySetUtils.h"
 
+#include <cassert>
+#include <cstdint>
+#include <memory>
+#include <cstddef>
 #include <sstream>
+#include <vector>
+
 #include <boost/range/adaptor/reversed.hpp>
 
-#include "PolySet.h"
-#include "PolySetBuilder.h"
-#include "Polygon2d.h"
-#include "printutils.h"
-#include "GeometryUtils.h"
+#include "geometry/PolySet.h"
+#include "geometry/PolySetBuilder.h"
+#include "geometry/Polygon2d.h"
+#include "utils/printutils.h"
+#include "geometry/GeometryUtils.h"
 #ifdef ENABLE_CGAL
-#include "cgalutils.h"
-#include "CGALHybridPolyhedron.h"
+#include "geometry/cgal/cgalutils.h"
 #endif
 #ifdef ENABLE_MANIFOLD
-#include "ManifoldGeometry.h"
+#include "geometry/manifold/ManifoldGeometry.h"
 #endif
 
 namespace PolySetUtils {
@@ -28,7 +33,7 @@ std::unique_ptr<Polygon2d> project(const PolySet& ps) {
   for (const auto& p : ps.indices) {
     Outline2d outline;
     for (const auto& v : p) {
-      pt=ps.vertices[v];	    
+      pt=ps.vertices[v];
       outline.vertices.emplace_back(pt[0], pt[1]);
     }
     poly->addOutline(outline);
@@ -187,9 +192,6 @@ std::shared_ptr<const PolySet> getGeometryAsPolySet(const std::shared_ptr<const 
       LOG(message_group::Error, "Nef->PolySet failed.");
     }
     return PolySet::createEmpty();
-  }
-  if (auto hybrid = std::dynamic_pointer_cast<const CGALHybridPolyhedron>(geom)) {
-    return hybrid->toPolySet();
   }
 #endif
 #ifdef ENABLE_MANIFOLD

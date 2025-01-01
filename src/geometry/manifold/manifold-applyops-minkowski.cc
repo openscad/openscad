@@ -1,15 +1,22 @@
 // Portions of this file are Copyright 2023 Google LLC, and licensed under GPL2+. See COPYING.
 #ifdef ENABLE_MANIFOLD
 
-#include "cgal.h"
-#include "cgalutils.h"
+#include <iterator>
+#include <cassert>
+#include <list>
+#include <exception>
+#include <memory>
+#include <utility>
+#include <vector>
 #include <CGAL/convex_hull_3.h>
 
-#include "PolySet.h"
-#include "printutils.h"
-#include "manifoldutils.h"
-#include "ManifoldGeometry.h"
-#include "parallel.h"
+#include "geometry/cgal/cgal.h"
+#include "geometry/cgal/cgalutils.h"
+#include "geometry/PolySet.h"
+#include "utils/printutils.h"
+#include "geometry/manifold/manifoldutils.h"
+#include "geometry/manifold/ManifoldGeometry.h"
+#include "utils/parallel.h"
 
 namespace ManifoldUtils {
 
@@ -41,7 +48,7 @@ std::shared_ptr<const Geometry> applyMinkowskiManifold(const Geometry::Geometrie
     }
     throw 0;
   };
-  
+
   assert(children.size() >= 2);
   auto it = children.begin();
   CGAL::Timer t_tot;
@@ -104,7 +111,7 @@ std::shared_ptr<const Geometry> applyMinkowskiManifold(const Geometry::Geometrie
       });
 
       std::vector<Hull_kernel::Point_3> minkowski_points;
-      
+
       auto combineParts = [&](const Hull_Points &points0, const Hull_Points &points1) -> std::shared_ptr<const ManifoldGeometry> {
         CGAL::Timer t;
 
@@ -196,7 +203,7 @@ std::shared_ptr<const Geometry> applyMinkowskiManifold(const Geometry::Geometrie
                                                 part));
       }
       auto N = ManifoldUtils::applyOperator3DManifold(fake_children, OpenSCADOperator::UNION);
-        
+
       // FIXME: This should really never throw.
       // Assert once we figured out what went wrong with issue #1069?
       if (!N) throw 0;
@@ -204,6 +211,7 @@ std::shared_ptr<const Geometry> applyMinkowskiManifold(const Geometry::Geometrie
       PRINTDB("Minkowski: Union done: %f s", t.time());
       t.reset();
 
+      N->toOriginal();
       operands[0] = N;
     }
 

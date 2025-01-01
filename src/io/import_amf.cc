@@ -24,22 +24,26 @@
  *
  */
 
-#include "PolySet.h"
-#include "PolySetBuilder.h"
-#include "PolySetUtils.h"
-#include "printutils.h"
-#include "AST.h"
+#include "geometry/PolySet.h"
+#include "geometry/PolySetBuilder.h"
+#include "geometry/PolySetUtils.h"
+#include "utils/printutils.h"
+#include "core/AST.h"
 
 #ifdef ENABLE_CGAL
-#include "cgalutils.h"
+#include "geometry/cgal/cgalutils.h"
 #endif
 
+#include <utility>
+#include <memory>
 #include <sys/types.h>
+#include <cstddef>
 #include <map>
-#include <fstream>
 #include <cassert>
+#include <string>
+#include <vector>
 #include <libxml/xmlreader.h>
-#include <boost/filesystem.hpp>
+#include <filesystem>
 #include <boost/lexical_cast.hpp>
 
 static const std::string text_node("#text");
@@ -157,8 +161,8 @@ void AmfImporter::end_triangle(AmfImporter *importer, const xmlChar *)
   std::vector<Eigen::Vector3d>& v = importer->vertex_list;
 
   importer->builder->beginPolygon(3);
-  for(int i=0;i<3;i++) // TODO set vertex array first
-	  importer->builder->addVertex(Vector3d(v[idx[i]].x(), v[idx[i]].y(), v[idx[i]].z()));
+  for(auto i : idx) // TODO set vertex array first
+	  importer->builder->addVertex(Vector3d(v[i].x(), v[i].y(), v[i].z()));
 }
 
 void AmfImporter::processNode(xmlTextReaderPtr reader)
@@ -343,7 +347,7 @@ xmlTextReaderPtr AmfImporterZIP::createXmlReader(const char *filepath)
 }
 
 std::unique_ptr<PolySet> import_amf(const std::string& filename, const Location& loc) {
-  LOG(message_group::Deprecated, "AMF import is deprecated. Please use 3md instead.");
+  LOG(message_group::Deprecated, "AMF import is deprecated. Please use 3MF instead.");
   AmfImporterZIP importer(loc);
   return importer.read(filename);
 }
@@ -351,7 +355,7 @@ std::unique_ptr<PolySet> import_amf(const std::string& filename, const Location&
 #else
 
 std::unique_ptr<PolySet> import_amf(const std::string& filename, const Location& loc) {
-  LOG(message_group::Deprecated, "AMF import is deprecated. Please use 3md instead.");
+  LOG(message_group::Deprecated, "AMF import is deprecated. Please use 3MF instead.");
   AmfImporter importer(loc);
   return importer.read(filename);
 }

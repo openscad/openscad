@@ -1,9 +1,16 @@
+#include "gui/ScadLexer.h"
+
+#include <QColor>
+#include <QObject>
+#include <QString>
+#include <QStringList>
+#include <iterator>
 #include <string>
+#include <vector>
+
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/split.hpp>
 
-
-#include "ScadLexer.h"
 
 #if !ENABLE_LEXERTL
 

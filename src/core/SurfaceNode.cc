@@ -24,24 +24,34 @@
  *
  */
 
-#include "module.h"
-#include "ModuleInstantiation.h"
+#include "core/SurfaceNode.h"
+
+#include "core/module.h"
+#include "core/ModuleInstantiation.h"
 #include "core/node.h"
-#include "PolySet.h"
-#include "PolySetBuilder.h"
-#include "Builtins.h"
-#include "Children.h"
-#include "Parameters.h"
-#include "printutils.h"
+#include "geometry/PolySet.h"
+#include "geometry/PolySetBuilder.h"
+#include "core/Builtins.h"
+#include "core/Children.h"
+#include "core/Parameters.h"
+#include "utils/printutils.h"
 #include "io/fileutils.h"
 #include "handle_dep.h"
-#include "ext/lodepng/lodepng.h"
-#include "SurfaceNode.h"
+#include "lodepng/lodepng.h"
 
+#include <algorithm>
+#include <cstring>
+#include <new>
+#include <string>
+#include <utility>
+#include <memory>
 #include <cstdint>
+#include <cstddef>
 #include <sstream>
 #include <fstream>
+#include <vector>
 #include <unordered_map>
+
 #include <boost/functional/hash.hpp>
 #include <boost/tokenizer.hpp>
 #include <boost/lexical_cast.hpp>
@@ -49,8 +59,8 @@
 #include <boost/assign/std/vector.hpp>
 using namespace boost::assign; // bring 'operator+=()' into scope
 
-#include <boost/filesystem.hpp>
-namespace fs = boost::filesystem;
+#include <filesystem>
+namespace fs = std::filesystem;
 
 
 static std::shared_ptr<AbstractNode> builtin_surface(const ModuleInstantiation *inst, Arguments arguments, const Children& children)
@@ -329,7 +339,7 @@ std::string SurfaceNode::toString() const
   stream << this->name() << "(file = " << this->filename
          << ", center = " << (this->center ? "true" : "false")
          << ", invert = " << (this->invert ? "true" : "false")
-         << ", " "timestamp = " << (fs::exists(path) ? fs::last_write_time(path) : 0)
+         << ", " "timestamp = " << fs_timestamp(path)
          << ")";
 
   return stream.str();

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "system-gl.h"
+#include "glview/system-gl.h"
 #include <cstddef> // size_t
 
 struct fbo_t

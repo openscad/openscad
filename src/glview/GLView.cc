@@ -1,14 +1,17 @@
-#include "GLView.h"
-#include "system-gl.h"
-#include "ColorMap.h"
-#include "RenderSettings.h"
-#include "printutils.h"
-#include "Renderer.h"
-#include "degree_trig.h"
-#include "hershey.h"
+#include "glview/GLView.h"
+#include "glview/system-gl.h"
+#include "glview/ColorMap.h"
+#include "glview/RenderSettings.h"
+#include "utils/printutils.h"
+#include "glview/Renderer.h"
+#include "utils/degree_trig.h"
+#include "glview/hershey.h"
 
+#include <functional>
+#include <memory>
 #include <cmath>
 #include <cstdio>
+#include <string>
 
 #ifdef ENABLE_OPENCSG
 #include <opencsg.h>
@@ -180,7 +183,7 @@ void GLView::paintGL()
     showObject(obj,eyedir);
   }
   glColor3f(0,1,0);
-  for (const SelectedObject obj: this->shown_obj) {
+  for (const SelectedObject &obj: this->shown_obj) {
     showObject(obj,eyedir);
   }
   glDisable(GL_LIGHTING);
@@ -402,7 +405,7 @@ void GLView::showObject(const SelectedObject &obj, const Vector3d &eyedir)
     case SelectionType::SELECTION_POINT:
     {
       double n=1/sqrt(3);
-      // create an octaeder	   
+      // create an octaeder
       //x- x+ y- y+ z- z+
       int sequence[]={ 2, 0, 4, 1, 2, 4, 0, 3, 4, 3, 1, 4, 0, 2, 5, 2, 1, 5, 3, 0, 5, 1, 3, 5 };
       glBegin(GL_TRIANGLES);
@@ -417,12 +420,12 @@ void GLView::showObject(const SelectedObject &obj, const Vector3d &eyedir)
 		case 3: glVertex3d(obj.p1[0],obj.p1[1]+vd,obj.p1[2]); break;
 		case 4: glVertex3d(obj.p1[0],obj.p1[1],obj.p1[2]-vd); break;
 		case 5: glVertex3d(obj.p1[0],obj.p1[1],obj.p1[2]+vd); break;
-          }		
-	}	
-      }	
+          }
+	}
+      }
       glEnd();
      }
-     break;	
+     break;
    case SelectionType::SELECTION_LINE:
      {
 	Vector3d diff=obj.p2-obj.p1;
@@ -433,8 +436,8 @@ void GLView::showObject(const SelectedObject &obj, const Vector3d &eyedir)
         glVertex3d(obj.p2[0]+wdir[0],obj.p2[1]+wdir[1],obj.p2[2]+wdir[2]);
         glVertex3d(obj.p1[0]+wdir[0],obj.p1[1]+wdir[1],obj.p1[2]+wdir[2]);
         glEnd();
-      }	
-      break;	
+      }
+      break;
   }
 }
 
@@ -566,21 +569,25 @@ void GLView::decodeMarkerValue(double i, double l, int size_div_sm)
       glVertex3d(-y + (fh + bl), 0, x);  // z-label along z-axis; font below
     },
   };
+  bool needs_glend = false;
   for (const PlaneVertexDraw& axis_draw : axis_draw_planes) {
     // We get 'plot instructions', a sequence of vertices. Translate into gl ops
-    const auto plot_fun = [ = ](bool pen_down, float x, float y) {
+    const auto plot_fun = [&](bool pen_down, float x, float y) {
         if (!pen_down) { // Start a new line, coordinates just move not draw
-          glEnd();
+          if (needs_glend) glEnd();
           glBegin(GL_LINE_STRIP);
+          needs_glend = true;
         }
         axis_draw(x, y, font_size, baseline_offset);
       };
 
     hershey::DrawText(pos_number_str, i, 0,
                       hershey::TextAlign::kCenter, font_size, plot_fun);
-    glEnd();
+    if (needs_glend) glEnd();
+    needs_glend = false;
     hershey::DrawText(neg_number_str, -i - prefix_offset, 0,
                       hershey::TextAlign::kCenter, font_size, plot_fun);
-    glEnd();
+    if (needs_glend) glEnd();
+    needs_glend = false;
   }
 }

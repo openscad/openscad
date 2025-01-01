@@ -1,6 +1,8 @@
-#include "Value.h"
-#include "Expression.h"
-#include "FunctionType.h"
+#include "core/FunctionType.h"
+
+#include <ostream>
+#include "core/Value.h"
+#include "core/Expression.h"
 
 Value FunctionType::operator==(const FunctionType& other) const {
   return this == &other;
