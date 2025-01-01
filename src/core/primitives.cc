@@ -72,7 +72,7 @@ static void generate_circle(InsertIterator iter, double r, double z, int fragmen
  * @return radius value of type Value::Type::NUMBER or Value::Type::UNDEFINED if both
  *         variables are invalid or not set.
  */
-static Value lookup_radius(const Parameters& parameters, const ModuleInstantiation *inst, const std::string& diameter_var, const std::string& radius_var)
+static Value lookup_radius(const Parameters& parameters, const ModuleInstantiation *inst, const Identifier& diameter_var, const Identifier& radius_var)
 {
   const auto& d = parameters[diameter_var];
   const auto& r = parameters[radius_var];

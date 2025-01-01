@@ -65,7 +65,7 @@ void BoolParameter::apply(Assignment *assignment) const
 }
 
 StringParameter::StringParameter(
-  const std::string& name, const std::string& description, const std::string& group,
+  const Identifier& name, const std::string& description, const std::string& group,
   const std::string& defaultValue,
   boost::optional<size_t> maximumSize
   ) :
@@ -442,7 +442,7 @@ static NumericLimits parseNumericLimits(const Expression *parameter, const std::
 
 std::unique_ptr<ParameterObject> ParameterObject::fromAssignment(const Assignment *assignment)
 {
-  std::string name = assignment->getName();
+  auto &name = assignment->getName();
 
   const Expression *parameter = nullptr;
   const Annotation *parameterAnnotation = assignment->annotation("Parameter");
@@ -574,7 +574,7 @@ ParameterSet ParameterObjects::exportValues(const std::string& setName)
 
 void ParameterObjects::apply(SourceFile *sourceFile) const
 {
-  std::map<std::string, ParameterObject *> namedParameters;
+  std::map<Identifier, ParameterObject *> namedParameters;
   for (const auto& parameter : *this) {
     namedParameters[parameter->name()] = parameter.get();
   }

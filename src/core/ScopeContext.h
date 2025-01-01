@@ -7,6 +7,7 @@
 #include "core/Arguments.h"
 #include "core/Children.h"
 #include "core/Context.h"
+#include "core/Identifier.h"
 #include "core/SourceFile.h"
 
 class UserModule;
@@ -15,8 +16,8 @@ class ScopeContext : public Context
 {
 public:
   void init() override;
-  boost::optional<CallableFunction> lookup_local_function(const std::string& name, const Location& loc) const override;
-  boost::optional<InstantiableModule> lookup_local_module(const std::string& name, const Location& loc) const override;
+  boost::optional<CallableFunction> lookup_local_function(const Identifier& name, const Location& loc) const override;
+  boost::optional<InstantiableModule> lookup_local_module(const Identifier& name, const Location& loc) const override;
 
 protected:
   ScopeContext(const std::shared_ptr<const Context>& parent, const LocalScope *scope) :
@@ -51,8 +52,8 @@ private:
 class FileContext : public ScopeContext
 {
 public:
-  boost::optional<CallableFunction> lookup_local_function(const std::string& name, const Location& loc) const override;
-  boost::optional<InstantiableModule> lookup_local_module(const std::string& name, const Location& loc) const override;
+  boost::optional<CallableFunction> lookup_local_function(const Identifier& name, const Location& loc) const override;
+  boost::optional<InstantiableModule> lookup_local_module(const Identifier& name, const Location& loc) const override;
 
 protected:
   FileContext(const std::shared_ptr<const Context>& parent, const SourceFile *source_file) :

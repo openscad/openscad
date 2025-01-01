@@ -32,8 +32,8 @@ public:
   static Parameters parse(
     Arguments arguments,
     const Location& loc,
-    const std::vector<std::string>& required_parameters,
-    const std::vector<std::string>& optional_parameters = {}
+    const std::vector<Identifier>& required_parameters,
+    const std::vector<Identifier>& optional_parameters = {}
     );
   /*
    * Matches arguments with parameters.
@@ -47,19 +47,19 @@ public:
     const std::shared_ptr<const Context>& defining_context
     );
 
-  boost::optional<const Value&> lookup(const std::string& name) const;
+  boost::optional<const Value&> lookup(const Identifier& name) const;
 
   void set_caller(const std::string& caller);
-  const Value& get(const std::string& name) const;
-  double get(const std::string& name, double default_value) const;
-  const std::string& get(const std::string& name, const std::string& default_value) const;
+  const Value& get(const Identifier& name) const;
+  double get(const Identifier& name, double default_value) const;
+  const std::string& get(const Identifier& name, const std::string& default_value) const;
 
-  bool contains(const std::string& name) const { return bool(lookup(name)); }
-  const Value& operator[](const std::string& name) const { return get(name); }
-  bool valid(const std::string& name, Value::Type type);
-  bool valid_required(const std::string& name, Value::Type type);
-  bool validate_number(const std::string& name, double& out);
-  template <typename T> bool validate_integral(const std::string& name, T& out,
+  bool contains(const Identifier& name) const { return bool(lookup(name)); }
+  const Value& operator[](const Identifier& name) const { return get(name); }
+  bool valid(const Identifier& name, Value::Type type);
+  bool valid_required(const Identifier& name, Value::Type type);
+  bool validate_number(const Identifier& name, double& out);
+  template <typename T> bool validate_integral(const Identifier& name, T& out,
                                                T lo = std::numeric_limits<T>::min(),
                                                T hi = std::numeric_limits<T>::max());
 
@@ -72,14 +72,14 @@ private:
   Location loc;
   ContextFrame frame;
   ContextFrameHandle handle;
-  bool valid(const std::string& name, const Value& value, Value::Type type);
+  bool valid(const Identifier& name, const Value& value, Value::Type type);
   std::string caller = "";
 };
 
 // Silently clamp to the given range(defaults to numeric_limits)
 // as long as param is a finite number.
 template <typename T>
-bool Parameters::validate_integral(const std::string& name, T& out, T lo, T hi)
+bool Parameters::validate_integral(const Identifier& name, T& out, T lo, T hi)
 {
   double temp;
   if (validate_number(name, temp)) {
@@ -95,7 +95,7 @@ bool Parameters::validate_integral(const std::string& name, T& out, T lo, T hi)
   return false;
 }
 
-void print_argCnt_warning(const std::string& name, int found,
+void print_argCnt_warning(const Identifier& name, int found,
                           const std::string& expected, const Location& loc,
                           const std::string& documentRoot);
 void print_argConvert_positioned_warning(const std::string& calledName, const std::string& where,

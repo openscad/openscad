@@ -36,9 +36,9 @@ ContextFrame::ContextFrame(EvaluationSession *session) :
   evaluation_session(session)
 {}
 
-boost::optional<const Value&> ContextFrame::lookup_local_variable(const std::string& name) const
+boost::optional<const Value&> ContextFrame::lookup_local_variable(const Identifier& name) const
 {
-  if (is_config_variable(name)) {
+  if (name.is_config_variable()) {
     auto result = config_variables.find(name);
     if (result != config_variables.end()) {
       return result->second;
@@ -52,7 +52,7 @@ boost::optional<const Value&> ContextFrame::lookup_local_variable(const std::str
   return boost::none;
 }
 
-boost::optional<CallableFunction> ContextFrame::lookup_local_function(const std::string& name, const Location& /*loc*/) const
+boost::optional<CallableFunction> ContextFrame::lookup_local_function(const Identifier& name, const Location& /*loc*/) const
 {
   boost::optional<const Value&> value = lookup_local_variable(name);
   if (value && value->type() == Value::Type::FUNCTION) {
@@ -61,7 +61,7 @@ boost::optional<CallableFunction> ContextFrame::lookup_local_function(const std:
   return boost::none;
 }
 
-boost::optional<InstantiableModule> ContextFrame::lookup_local_module(const std::string& /*name*/, const Location& /*loc*/) const
+boost::optional<InstantiableModule> ContextFrame::lookup_local_module(const Identifier& /*name*/, const Location& /*loc*/) const
 {
   return boost::none;
 }
@@ -86,9 +86,9 @@ size_t ContextFrame::clear()
   return removed;
 }
 
-bool ContextFrame::set_variable(const std::string& name, Value&& value)
+bool ContextFrame::set_variable(const Identifier& name, Value&& value)
 {
-  if (is_config_variable(name)) {
+  if (name.is_config_variable()) {
     return config_variables.insert_or_assign(name, std::move(value)).second;
   } else {
     return lexical_variables.insert_or_assign(name, std::move(value)).second;
@@ -134,11 +134,6 @@ void ContextFrame::apply_variables(ContextFrame&& other)
 {
   apply_variables(std::move(other.lexical_variables));
   apply_variables(std::move(other.config_variables));
-}
-
-bool ContextFrame::is_config_variable(const std::string& name)
-{
-  return name[0] == '$' && name != "$children";
 }
 
 #ifdef DEBUG

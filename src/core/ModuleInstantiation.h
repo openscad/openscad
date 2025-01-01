@@ -7,6 +7,7 @@
 #include <string>
 #include <utility>
 #include <vector>
+#include "Identifier.h"
 
 using ModuleInstantiationList = std::vector<class ModuleInstantiation *>;
 
@@ -14,13 +15,13 @@ class ModuleInstantiation : public ASTNode
 {
 public:
   ModuleInstantiation(std::string name, AssignmentList args = AssignmentList(), const Location& loc = Location::NONE)
-    : ASTNode(loc), arguments(std::move(args)), modname(std::move(name)) { }
+    : ASTNode(loc), arguments(std::move(args)), modname(std::move(name), loc) { }
 
   virtual void print(std::ostream& stream, const std::string& indent, const bool inlined) const;
   void print(std::ostream& stream, const std::string& indent) const override { print(stream, indent, false); }
   std::shared_ptr<AbstractNode> evaluate(const std::shared_ptr<const Context>& context) const;
 
-  const std::string& name() const { return this->modname; }
+  const Identifier& name() const { return this->modname; }
   bool isBackground() const { return this->tag_background; }
   bool isHighlight() const { return this->tag_highlight; }
   bool isRoot() const { return this->tag_root; }
@@ -32,7 +33,7 @@ public:
   bool tag_highlight{false};
   bool tag_background{false};
 protected:
-  std::string modname;
+  Identifier modname;
 };
 
 class IfElseModuleInstantiation : public ModuleInstantiation
