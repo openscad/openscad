@@ -157,17 +157,6 @@ static std::shared_ptr<AbstractNode> do_import(const ModuleInstantiation *inst, 
 static std::shared_ptr<AbstractNode> builtin_import(const ModuleInstantiation *inst, Arguments arguments, const Children& children)
 { return do_import(inst, std::move(arguments), children, ImportType::UNKNOWN); }
 
-static std::shared_ptr<AbstractNode> builtin_import_stl(const ModuleInstantiation *inst, Arguments arguments, const Children& children)
-{ return do_import(inst, std::move(arguments), children, ImportType::STL); }
-
-static std::shared_ptr<AbstractNode> builtin_import_off(const ModuleInstantiation *inst, Arguments arguments, const Children& children)
-{ return do_import(inst, std::move(arguments), children, ImportType::OFF); }
-
-static std::shared_ptr<AbstractNode> builtin_import_dxf(const ModuleInstantiation *inst, Arguments arguments, const Children& children)
-{ return do_import(inst, std::move(arguments), children, ImportType::DXF); }
-
-
-
 /*!
    Will return an empty geometry if the import failed, but not nullptr
  */
@@ -255,10 +244,6 @@ std::string ImportNode::name() const
 
 void register_builtin_import()
 {
-  Builtins::init("import_stl", new BuiltinModule(builtin_import_stl));
-  Builtins::init("import_off", new BuiltinModule(builtin_import_off));
-  Builtins::init("import_dxf", new BuiltinModule(builtin_import_dxf));
-
   Builtins::init("import", new BuiltinModule(builtin_import),
   {
     "import(string, [number, [number]])",
