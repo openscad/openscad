@@ -85,6 +85,7 @@ static std::shared_ptr<AbstractNode> builtin_linear_extrude(const ModuleInstanti
 
   if (!parameters["file"].isUndefined() && parameters["file"].type() == Value::Type::STRING) {
     LOG(message_group::Deprecated, "Support for reading files in linear_extrude will be removed in future releases. Use a child import() instead.");
+    BuiltinModule::noChildren(inst, arguments, "when importing a file");
     auto filename = lookup_file(parameters["file"].toString(), inst->location().filePath().parent_path().string(), parameters.documentRoot());
     node->filename = filename;
     handle_dep(filename);
@@ -149,9 +150,6 @@ static std::shared_ptr<AbstractNode> builtin_linear_extrude(const ModuleInstanti
 
   if (node->filename.empty()) {
     children.instantiate(node);
-  } else if (!children.empty()) {
-    LOG(message_group::Warning, inst->location(), parameters.documentRoot(),
-        "module %1$s() does not support child modules when importing a file", inst->name());
   }
 
   return node;
