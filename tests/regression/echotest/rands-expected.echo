@@ -4,9 +4,9 @@ WARNING: rands() number of parameters does not match: expected 3 or 4, found 2 i
 WARNING: rands() number of parameters does not match: expected 3 or 4, found 2 in file rands.scad, line 25
 WARNING: rands() number of parameters does not match: expected 3 or 4, found 1 in file rands.scad, line 26
 WARNING: rands() number of parameters does not match: expected 3 or 4, found 0 in file rands.scad, line 27
-WARNING: Ignoring unknown variable 'v' in file rands.scad, line 28
-WARNING: Ignoring unknown variable 'v' in file rands.scad, line 28
-WARNING: Ignoring unknown variable 'v' in file rands.scad, line 28
+WARNING: Ignoring unknown variable "v" in file rands.scad, line 28
+WARNING: Ignoring unknown variable "v" in file rands.scad, line 28
+WARNING: Ignoring unknown variable "v" in file rands.scad, line 28
 WARNING: rands() parameter could not be converted: argument 0: expected number, found undefined (undef) in file rands.scad, line 28
 ECHO: "i hope rands() did not crash"
 ECHO: [1, 1, 1, 1]

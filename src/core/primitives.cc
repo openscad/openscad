@@ -81,7 +81,8 @@ static Value lookup_radius(const Parameters& parameters, const ModuleInstantiati
   if (d.type() == Value::Type::NUMBER) {
     if (r_defined) {
       LOG(message_group::Warning, inst->location(), parameters.documentRoot(),
-          "Ignoring radius variable '%1$s' as diameter '%2$s' is defined too.", radius_var, diameter_var);
+          "Ignoring radius variable %1$s as diameter %2$s is defined too.",
+          quoteVar(radius_var), quoteVar(diameter_var));
     }
     return d.toDouble() / 2.0;
   } else if (r_defined) {

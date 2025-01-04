@@ -191,7 +191,7 @@ static std::shared_ptr<AbstractNode> builtin_assign(const ModuleInstantiation *i
       LOG(message_group::Warning, inst->location(), context->documentRoot(), "Assignment without variable name %1$s", argument->toEchoStringNoThrow());
     } else {
       if (assignContext->lookup_local_variable(*argument.name)) {
-        LOG(message_group::Warning, inst->location(), context->documentRoot(), "Duplicate variable assignment %1$s = %2$s", *argument.name, argument->toEchoStringNoThrow());
+        LOG(message_group::Warning, inst->location(), context->documentRoot(), "Duplicate variable assignment %1$s = %2$s", quoteVar(*argument.name), argument->toEchoStringNoThrow());
       }
       assignContext->set_variable(*argument.name, std::move(argument.value));
     }

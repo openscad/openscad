@@ -3,24 +3,24 @@ WARNING: dxf_cross(..., origin=[inf, nan]) could not be converted in file errors
 WARNING: Can't open DXF file 'doesNotExist.dxf'! in file errors-warnings.scad, line 71
 WARNING: dxf_dim(..., origin=[1, 2, 3]) could not be converted in file errors-warnings.scad, line 76
 WARNING: Can't open DXF file 'doesNotExist.dxf'! in file errors-warnings.scad, line 76
-WARNING: variable notSupported not specified as parameter in file errors-warnings.scad, line 84
+WARNING: variable "notSupported" not specified as parameter in file errors-warnings.scad, line 84
 WARNING: dxf_cross(..., origin=[inf, 0]) could not be converted in file errors-warnings.scad, line 84
 WARNING: Can't find cross in 'dim-all.dxf', layer 'SCAD.Origin'! in file errors-warnings.scad, line 84
-WARNING: variable notSupported not specified as parameter in file errors-warnings.scad, line 90
+WARNING: variable "notSupported" not specified as parameter in file errors-warnings.scad, line 90
 WARNING: Can't find dimension 'TotalWidth' in 'dim-all.dxf', layer 'SCAD.Origin'! in file errors-warnings.scad, line 90
 ECHO: "include"
-WARNING: Ignoring unknown variable 'a' in file errors-warnings.scad, line 1
+WARNING: Ignoring unknown variable "a" in file errors-warnings.scad, line 1
 ECHO: undef
 ERROR: Unable to convert points[3] = [30] to a vec2 of numbers in file errors-warnings.scad, line 3
 ERROR: Unable to convert points[4] = [0] to a vec3 of numbers in file errors-warnings.scad, line 5
 WARNING: Unable to convert import(..., origin="string") parameter to vec2 in file errors-warnings.scad, line 15
 WARNING: Ignoring unknown module 'hello' in file errors-warnings.scad, line 17
-WARNING: Ignoring radius variable 'r' as diameter 'd' is defined too. in file errors-warnings.scad, line 21
-WARNING: Ignoring radius variable 'r1' as diameter 'd1' is defined too. in file errors-warnings.scad, line 22
+WARNING: Ignoring radius variable "r" as diameter "d" is defined too. in file errors-warnings.scad, line 21
+WARNING: Ignoring radius variable "r1" as diameter "d1" is defined too. in file errors-warnings.scad, line 22
 WARNING: Problem converting rotate(a=inf) parameter in file errors-warnings.scad, line 24
 WARNING: Problem converting rotate(a=[inf, inf]) parameter in file errors-warnings.scad, line 25
 WARNING: Problem converting rotate(a=nan) parameter in file errors-warnings.scad, line 26
-WARNING: variable rad not specified as parameter in file errors-warnings.scad, line 29
+WARNING: variable "rad" not specified as parameter in file errors-warnings.scad, line 29
 WARNING: Too many unnamed arguments supplied in file errors-warnings.scad, line 31
 WARNING: Cylinder parameters ambiguous in file errors-warnings.scad, line 33
 WARNING: Cylinder parameters ambiguous in file errors-warnings.scad, line 34
@@ -34,8 +34,8 @@ WARNING: $fs too small - clamping to 0.010000 in file errors-warnings.scad, line
 WARNING: $fa too small - clamping to 0.010000 in file errors-warnings.scad, line 47
 WARNING: $fs too small - clamping to 0.010000 in file errors-warnings.scad, line 54
 WARNING: $fa too small - clamping to 0.010000 in file errors-warnings.scad, line 55
-WARNING: argument center supplied more than once in file errors-warnings.scad, line 58
-WARNING: argument r supplied more than once in file errors-warnings.scad, line 59
+WARNING: argument "center" supplied more than once in file errors-warnings.scad, line 58
+WARNING: argument "r" supplied more than once in file errors-warnings.scad, line 59
 ECHO: 10
 ECHO: 15
 ECHO: 20
@@ -94,18 +94,18 @@ ECHO: "diff=", 0, ", i==5000"
 ECHO: "[0:1] difference from 1"
 ECHO: "diff=", 0, ", i==1"
 ECHO: "mainfile"
-WARNING: Ignoring unknown variable 'notDefinedVariable' in file errors-warnings-included.scad, line 5
+WARNING: Ignoring unknown variable "notDefinedVariable" in file errors-warnings-included.scad, line 5
 ECHO: undef
 ECHO: "use"
-WARNING: Ignoring unknown variable 'a' in file errors-warnings-use.scad, line 2
+WARNING: Ignoring unknown variable "a" in file errors-warnings-use.scad, line 2
 ECHO: undef
 ERROR: Unable to convert points[3] = [30] to a vec2 of numbers in file errors-warnings-use.scad, line 3
 WARNING: Ignoring unknown module 'unknown' in file sub2/useuse.scad, line 3
-WARNING: Ignoring unknown variable 'a' in file errors-warnings-use.scad, line 2
+WARNING: Ignoring unknown variable "a" in file errors-warnings-use.scad, line 2
 ECHO: undef
 ERROR: Unable to convert points[3] = [30] to a vec2 of numbers in file errors-warnings-use.scad, line 3
 WARNING: Ignoring unknown module 'unknownIncuse' in file sub2/incuse.scad, line 2
-WARNING: Ignoring unknown variable 'xyz' in file sub1/errors-warnings-incuse.scad, line 2
+WARNING: Ignoring unknown variable "xyz" in file sub1/errors-warnings-incuse.scad, line 2
 ECHO: undef
 WARNING: Ignoring unknown function 'test' in file sub1/errors-warnings-incuse.scad, line 3
 WARNING: Unable to convert $vpr="[1,2,3]" to a vec3 or vec2 of numbers

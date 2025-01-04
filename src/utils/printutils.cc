@@ -229,3 +229,9 @@ bool getGroupTextPlain(const enum message_group& group)
 {
   return group == message_group::NONE || group == message_group::Echo;
 }
+
+std::string
+quoteVar(const std::string& varname)
+{
+  return '"' + varname + '"';
+}
