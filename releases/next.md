@@ -101,6 +101,7 @@
 
 **Deprecations:**
 * OpenGL >= 2.1 is now required 
+* Removed support for dxf_linear_extrude(), dxf_rotate_extrude(), import_dxf(), import_stl() and import_off()
 * AMF import/export is deprecated
 
 **Misc:**
