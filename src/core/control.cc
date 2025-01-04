@@ -71,12 +71,10 @@ static std::shared_ptr<AbstractNode> builtin_child(const ModuleInstantiation *in
 {
   LOG(message_group::Deprecated, "child() will be removed in future releases. Use children() instead.");
 
-  if (!inst->scope.moduleInstantiations.empty()) {
-    LOG(message_group::Warning, inst->location(), context->documentRoot(),
-        "module %1$s() does not support child modules", inst->name());
-  }
-
   Arguments arguments{inst->arguments, context};
+
+  BuiltinModule::noChildren(inst, arguments);
+
   Parameters parameters = Parameters::parse(std::move(arguments), inst->location(), {}, std::vector<std::string>{"index"});
   const Children *children = context->user_module_children();
   if (!children) {
@@ -98,12 +96,10 @@ static std::shared_ptr<AbstractNode> builtin_child(const ModuleInstantiation *in
 
 static std::shared_ptr<AbstractNode> builtin_children(const ModuleInstantiation *inst, const std::shared_ptr<const Context>& context)
 {
-  if (!inst->scope.moduleInstantiations.empty()) {
-    LOG(message_group::Warning, inst->location(), context->documentRoot(),
-        "module %1$s() does not support child modules", inst->name());
-  }
-
   Arguments arguments{inst->arguments, context};
+
+  BuiltinModule::noChildren(inst, arguments);
+
   Parameters parameters = Parameters::parse(std::move(arguments), inst->location(), {}, std::vector<std::string>{"index"});
   const Children *children = context->user_module_children();
   if (!children) {

@@ -29,7 +29,9 @@ class BuiltinModule : public AbstractModule
 public:
   BuiltinModule(std::shared_ptr<AbstractNode>(*instantiate)(const ModuleInstantiation *, const std::shared_ptr<const Context>&), const Feature *feature = nullptr);
   BuiltinModule(std::shared_ptr<AbstractNode>(*instantiate)(const ModuleInstantiation *, Arguments, const Children&), const Feature *feature = nullptr);
+  BuiltinModule(std::shared_ptr<AbstractNode>(*instantiate)(const ModuleInstantiation *, Arguments), const Feature *feature = nullptr);
   std::shared_ptr<AbstractNode> instantiate(const std::shared_ptr<const Context>& defining_context, const ModuleInstantiation *inst, const std::shared_ptr<const Context>& context) const override;
+  static void noChildren(const ModuleInstantiation *, Arguments&, std::string auxmsg = {});
 
 private:
   std::function<std::shared_ptr<AbstractNode>(const ModuleInstantiation *, const std::shared_ptr<const Context>&)> do_instantiate;
