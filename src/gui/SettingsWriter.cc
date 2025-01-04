@@ -36,7 +36,8 @@ void SettingsWriter::handle(Settings::SettingsEntry& entry) const {
     settings.remove(QString::fromStdString(key));
     PRINTDB("SettingsWriter D: %s", key.c_str());
   } else {
-    settings.setValue(QString::fromStdString(key), QString::fromStdString(entry.encode()));
-    PRINTDB("SettingsWriter W: %s = '%s'", key.c_str() % entry.encode().c_str());
+    const auto encoded = entry.encode();
+    settings.setValue(QString::fromStdString(key), QString::fromStdString(encoded));
+    PRINTDB("SettingsWriter W: %s = '%s'", key.c_str() % encoded.c_str());
   }
 }

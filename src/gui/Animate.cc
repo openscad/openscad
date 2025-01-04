@@ -1,6 +1,5 @@
 #include "gui/Animate.h"
-#include "utils/printutils.h"
-#include "gui/MainWindow.h"
+
 #include <QAction>
 #include <QBoxLayout>
 #include <QIcon>
@@ -12,6 +11,10 @@
 #include <iostream>
 #include <filesystem>
 #include <QFormLayout>
+
+#include "utils/printutils.h"
+#include "gui/MainWindow.h"
+#include "openscad_gui.h"
 
 Animate::Animate(QWidget *parent) : QWidget(parent)
 {
@@ -48,8 +51,8 @@ void Animate::setMainWindow(MainWindow *mainWindow)
   this->mainWindow = mainWindow;
 
   //prepare actions for inputdriver
-  QIcon playIcon = isLightTheme() ? QIcon(":/icons/svg-default/animate.svg") : QIcon(":/icons/svg-default/animate-white.svg");
-  QIcon pauseIcon = isLightTheme() ? QIcon(":/icons/svg-default/animate_pause.svg") : QIcon(":/icons/svg-default/animate_pause-white.svg");
+  QIcon playIcon = OpenSCAD::isDarkMode() ? QIcon(":/icons/svg-default/animate-white.svg") : QIcon(":/icons/svg-default/animate.svg");
+  QIcon pauseIcon = OpenSCAD::isDarkMode() ? QIcon(":/icons/svg-default/animate_pause-white.svg") : QIcon(":/icons/svg-default/animate_pause.svg");
 
   createActionAndPrepareButton(
     playIcon, _("toggle pause/unpause"),
@@ -74,7 +77,7 @@ void Animate::createActionAndPrepareButton(const QIcon& icon, const QString& des
 
 void Animate::initVCR(){
   QString suffix("");
-  if (!isLightTheme()) {
+  if (OpenSCAD::isDarkMode()) {
     suffix = QString("-white");
   }
   static QIcon startIcon = QIcon(":/icons/svg-default/vcr-control-start" + suffix + ".svg");
@@ -99,17 +102,6 @@ void Animate::initVCR(){
   createActionAndPrepareButton(
     endIcon, _("Move to end (last frame)"),
     "end", pushButton_MoveToEnd);
-}
-
-bool Animate::isLightTheme()
-{
-  bool ret = true;
-  if (mainWindow) {
-    ret = mainWindow->isLightTheme();
-  } else {
-    std::cout << "Animate: You need to set the mainWindow before calling isLightTheme" << std::endl;
-  }
-  return ret;
 }
 
 void Animate::updatedAnimTval()
@@ -149,7 +141,7 @@ void Animate::updatedAnimFpsAndAnimSteps()
     animate_timer->start();
   }
 
-  QString redBackground = QString(isLightTheme() ? "background-color:#ffaaaa;" : "background-color:#502020;");
+  QString redBackground = QString(OpenSCAD::isDarkMode() ? "background-color:#502020;" : "background-color:#ffaaaa;");
 
   if (this->steps_ok || this->e_fsteps->text() == "") {
     this->e_fsteps->setStyleSheet("");
@@ -246,14 +238,14 @@ void Animate::updatePauseButtonIcon()
   static QIcon disabledLight(":/icons/svg-default/animate_disabled-white.svg");
 
   if (animate_timer->isActive()) {
-    pauseButton->setIcon(this->isLightTheme() ? pauseDark : pauseLight);
+    pauseButton->setIcon(OpenSCAD::isDarkMode() ? pauseLight : pauseDark);
     pauseButton->setToolTip(_("press to pause animation") );
   } else {
     if (this->fps_ok && this->steps_ok) {
-      pauseButton->setIcon(this->isLightTheme() ? runDark : runLight);
+      pauseButton->setIcon(OpenSCAD::isDarkMode() ? runLight : runDark);
       pauseButton->setToolTip(_("press to start animation") );
     } else {
-      pauseButton->setIcon(this->isLightTheme() ? disabledDark : disabledLight);
+      pauseButton->setIcon(OpenSCAD::isDarkMode() ? disabledLight : disabledDark);
       pauseButton->setToolTip(_("incorrect values") );
     }
   }

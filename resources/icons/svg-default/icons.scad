@@ -71,6 +71,11 @@ icons = [
     ["measure-dist"],
     ["measure-ang"],
     ["edit-copy"],
+    ["up"],
+    ["down"],
+    ["add"],
+    ["remove"],
+    ["parameter"],
 ];
 
 icon(selected_icon) {
@@ -129,6 +134,11 @@ icon(selected_icon) {
     measure_dist();
     measure_ang();
 	edit_copy();
+	up();
+	down();
+	add();
+	remove();
+	parameter();
 }
 
 if (list_icons) {
@@ -784,10 +794,67 @@ module measure_ang() {
 }
 
 module edit_copy() {
-union() {
-	difference() {
-		translate([10, 30]) scale(0.7) text_paper();
-		translate([26, 5]) scale(0.7) paper();
+	union() {
+		difference() {
+			translate([10, 30]) scale(0.7) text_paper();
+			translate([26, 5]) scale(0.7) paper();
+		}
+		translate([32, -1]) scale(0.7) text_paper();
 	}
-	translate([32, -1]) scale(0.7) text_paper();
-}}
+}
+
+module simple_arrow() {
+	polygon([
+		[         0,  height / 3],
+		[-width / 5, -height / 3],
+		[         0, -height / 4],
+		[ width / 5, -height / 3],
+	]);
+}
+
+module up() {
+    translate([width / 2, height / 2])
+		simple_arrow();
+}
+
+module down() {
+    translate([width / 2, height / 2])
+		rotate(180)
+			simple_arrow();
+}
+
+module add() {
+    translate([width / 2, height / 2]) {
+		square([0.8 * width, thick], center = true);
+		square([thick, 0.8 * width], center = true);
+	}
+}
+
+module remove() {
+    translate([width / 2, height / 2]) {
+		square([0.8 * width, thick], center = true);
+	}
+}
+
+module gear(r) {
+	difference() {
+		union() {
+			circle(r);
+			for (a = [0:3])
+				rotate(45 * a)
+					offset(thin) offset(-thin)
+						square([2.4 * r, r/2.0], center = true);
+		}
+		circle(r - 1.5 * thick);
+	}
+}
+
+module parameter() {
+    r = 0.35 * width;
+    translate([width / 2, height / 2]) {
+		difference() {
+			gear(r);
+			offset(-thin) gear(r);
+		}
+	}
+}

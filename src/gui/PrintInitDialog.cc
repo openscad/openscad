@@ -42,7 +42,7 @@ QString toString(print_service_t printServiceType) {
     return "PRINT_SERVICE";
   case print_service_t::OCTOPRINT:
     return "OCTOPRINT";
-  case print_service_t::LOCALSLICER:
+  case print_service_t::LOCAL_APPLICATION:
     return "LOCALSLICER";
   default:
     return "NONE";
@@ -55,7 +55,7 @@ print_service_t fromString(const QString &printServiceType) {
   } else if (printServiceType == "OCTOPRINT") {
     return print_service_t::OCTOPRINT;
   } else if (printServiceType == "LOCALSLICER") {
-    return print_service_t::LOCALSLICER;
+    return print_service_t::LOCAL_APPLICATION;
   } else
     return print_service_t::NONE;
 }
@@ -140,11 +140,11 @@ void PrintInitDialog::on_LocalSlicerButton_clicked() {
   this->textBrowser->setSource(QUrl{"qrc:/html/LocalSlicerInfo.html"});
 
   initComboBox(this->fileFormatComboBox,
-               Settings::Settings::localSlicerFileFormat);
+               Settings::Settings::localAppFileFormat);
   this->on_fileFormatComboBox_currentIndexChanged(
       this->fileFormatComboBox->currentIndex());
 
-  this->selectedPrintService = print_service_t::LOCALSLICER;
+  this->selectedPrintService = print_service_t::LOCAL_APPLICATION;
   this->selectedServiceName = "";
 
   this->fileFormatComboBox->setEnabled(true);
@@ -193,9 +193,9 @@ void PrintInitDialog::on_buttonBox_accepted() {
       settings.setValue(
           QString::fromStdString(Settings::Settings::octoPrintFileFormat.key()),
           fileFormatIdentifier);
-    case print_service_t::LOCALSLICER:
+    case print_service_t::LOCAL_APPLICATION:
       settings.setValue(QString::fromStdString(
-                            Settings::Settings::localSlicerFileFormat.key()),
+                            Settings::Settings::localAppFileFormat.key()),
                         fileFormatIdentifier);
     default:
       break;
@@ -227,7 +227,7 @@ int PrintInitDialog::exec() {
       fileFormatString =
           settings.value("printing/octoPrintFileFormat").toString();
       break;
-    case print_service_t::LOCALSLICER:
+    case print_service_t::LOCAL_APPLICATION:
       fileFormatString =
           settings.value("printing/localSlicerFileFormat").toString();
       break;

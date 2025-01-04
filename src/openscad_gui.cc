@@ -31,6 +31,9 @@
 #include <QFutureWatcher>
 #include <QtConcurrentRun>
 #include <QIcon>
+#include <QGuiApplication>
+#include <QPalette>
+#include <QStyleHints>
 
 #include "core/parsersettings.h"
 #include "FontCache.h"
@@ -68,6 +71,22 @@ extern std::string arg_colorscheme;
 
 #define STRINGIFY(x) #x
 #define TOSTRING(x) STRINGIFY(x)
+
+namespace OpenSCAD {
+
+bool isDarkMode() {
+#if QT_VERSION >= QT_VERSION_CHECK(6, 5, 0)
+  const auto scheme = QGuiApplication::styleHints()->colorScheme();
+  return scheme == Qt::ColorScheme::Dark;
+#else
+  const QPalette defaultPalette;
+  const auto text = defaultPalette.color(QPalette::WindowText);
+  const auto window = defaultPalette.color(QPalette::Window);
+  return text.lightness() > window.lightness();
+#endif // QT_VERSION
+}
+
+}
 
 namespace {
 

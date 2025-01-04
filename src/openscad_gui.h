@@ -31,5 +31,10 @@
 
 #include <filesystem>
 
+namespace OpenSCAD {
+
+bool isDarkMode();
+
+}
 
 int gui(std::vector<std::string>& inputFiles, const std::filesystem::path& original_path, int argc, char **argv);

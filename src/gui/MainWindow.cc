@@ -52,6 +52,7 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include "openscad_gui.h"
 
 #ifdef ENABLE_MANIFOLD
 #include "geometry/manifold/manifoldutils.h"
@@ -797,14 +798,9 @@ void MainWindow::openFileFromPath(const QString& path, int line)
   }
 }
 
-bool MainWindow::isLightTheme(){
-  int defaultcolor = viewerToolBar->palette().window().color().lightness();
-  return (defaultcolor > 165);
-}
-
 void MainWindow::initActionIcon(QAction *action, const char *darkResource, const char *lightResource)
 {
-  const char *resource = this->isLightTheme() ? darkResource : lightResource;
+  const char *resource = OpenSCAD::isDarkMode() ? lightResource : darkResource;
   action->setIcon(QIcon(resource));
 }
 
@@ -2132,7 +2128,7 @@ std::unique_ptr<ExternalToolInterface> createExternalToolService(
     case print_service_t::OCTOPRINT:
       return createOctoPrintService(fileFormat);
     break;
-    case print_service_t::LOCALSLICER:
+    case print_service_t::LOCAL_APPLICATION:
       return createLocalProgramService(fileFormat);
     break;
   }

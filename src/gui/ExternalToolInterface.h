@@ -47,6 +47,7 @@ public:
   FileFormat fileFormat() const { return exportFormat_; }
   virtual std::string getURL() const { return ""; };
 protected:
+  std::string sourceFilename_;
   FileFormat exportFormat_;
   std::string exportedFilename_;
 };

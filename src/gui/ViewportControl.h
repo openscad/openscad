@@ -49,7 +49,6 @@ signals:
   void openFile(const QString, int);
 
 private:
-  bool isLightTheme();
   void resizeToRatio();
   int maxH;
   int maxW;

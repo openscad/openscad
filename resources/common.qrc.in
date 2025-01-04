@@ -29,6 +29,8 @@
     <file>icons/stopbutton.png</file>
     <file>icons/background.png</file>
 
+    <file>icons/svg-default/add.svg</file>
+    <file>icons/svg-default/add-white.svg</file>
     <file>icons/svg-default/animate_disabled.svg</file>
     <file>icons/svg-default/animate_disabled-white.svg</file>
     <file>icons/svg-default/animate_pause.svg</file>
@@ -39,6 +41,8 @@
     <file>icons/svg-default/axes-white.svg</file>
     <file>icons/svg-default/crosshairs.svg</file>
     <file>icons/svg-default/crosshairs-white.svg</file>
+    <file>icons/svg-default/down.svg</file>
+    <file>icons/svg-default/down-white.svg</file>
     <file>icons/svg-default/edit-copy.svg</file>
     <file>icons/svg-default/edit-copy-white.svg</file>
     <file>icons/svg-default/export-3mf.svg</file>
@@ -53,12 +57,12 @@
     <file>icons/svg-default/export-obj-white.svg</file>
     <file>icons/svg-default/export-off.svg</file>
     <file>icons/svg-default/export-off-white.svg</file>
-    <file>icons/svg-default/export-pov.svg</file>
-    <file>icons/svg-default/export-pov-white.svg</file>
     <file>icons/svg-default/export-pdf.svg</file>
     <file>icons/svg-default/export-pdf-white.svg</file>
     <file>icons/svg-default/export-png.svg</file>
     <file>icons/svg-default/export-png-white.svg</file>
+    <file>icons/svg-default/export-pov.svg</file>
+    <file>icons/svg-default/export-pov-white.svg</file>
     <file>icons/svg-default/export-stl.svg</file>
     <file>icons/svg-default/export-stl-white.svg</file>
     <file>icons/svg-default/export-svg.svg</file>
@@ -77,12 +81,16 @@
     <file>icons/svg-default/open-white.svg</file>
     <file>icons/svg-default/orthogonal.svg</file>
     <file>icons/svg-default/orthogonal-white.svg</file>
+    <file>icons/svg-default/parameter.svg</file>
+    <file>icons/svg-default/parameter-white.svg</file>
     <file>icons/svg-default/perspective.svg</file>
     <file>icons/svg-default/perspective-white.svg</file>
     <file>icons/svg-default/preview.svg</file>
     <file>icons/svg-default/preview-white.svg</file>
     <file>icons/svg-default/redo.svg</file>
     <file>icons/svg-default/redo-white.svg</file>
+    <file>icons/svg-default/remove.svg</file>
+    <file>icons/svg-default/remove-white.svg</file>
     <file>icons/svg-default/render.svg</file>
     <file>icons/svg-default/render-white.svg</file>
     <file>icons/svg-default/reset-view.svg</file>
@@ -103,6 +111,8 @@
     <file>icons/svg-default/undo-white.svg</file>
     <file>icons/svg-default/unindent.svg</file>
     <file>icons/svg-default/unindent-white.svg</file>
+    <file>icons/svg-default/up.svg</file>
+    <file>icons/svg-default/up-white.svg</file>
     <file>icons/svg-default/vcr-control-end.svg</file>
     <file>icons/svg-default/vcr-control-end-white.svg</file>
     <file>icons/svg-default/vcr-control-pause.svg</file>

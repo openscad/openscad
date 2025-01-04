@@ -36,6 +36,9 @@ public:
   void apply_win() const;
   void updateGUI();
   void fireEditorConfigChanged() const;
+  template<typename item_type>
+  QListWidgetItem * createListItem(const item_type& type, const QString& text = "", bool editable = false);
+  void insertListItem(QListWidget *listBox, QListWidgetItem *listItem);
 
 public slots:
   void actionTriggered(class QAction *);
@@ -121,12 +124,25 @@ public slots:
   void on_comboBoxOctoPrintSlicingProfile_activated(int);
   void on_comboBoxOctoPrintAction_activated(int);
   void on_comboBoxOctoPrintFileFormat_activated(int);
-  void on_comboBoxLocalSlicerFileFormat_activated(int);
   void on_lineEditOctoPrintURL_editingFinished();
   void on_lineEditOctoPrintApiKey_editingFinished();
   void on_pushButtonOctoPrintApiKey_clicked();
-  void on_pushButtonSelectLocalSlicerPath_clicked();
-  void on_lineEditLocalSlicer_editingFinished();
+  void on_toolButtonSelectLocalAppPath_clicked();
+  void on_lineEditLocalAppExecutable_editingFinished();
+  void on_comboBoxLocalAppFileFormat_activated(int);
+  void on_toolButtonLocalAppParameterRemove_clicked();
+  void on_toolButtonLocalAppParameterAdd_clicked();
+  void on_toolButtonLocalAppParameterUp_clicked();
+  void on_toolButtonLocalAppParameterDown_clicked();
+  void on_toolButtonLocalAppParameterAddFile_clicked();
+  void on_listWidgetLocalAppParams_itemSelectionChanged();
+  void on_listWidgetLocalAppParams_itemChanged(QListWidgetItem *);
+  void on_actionLocalAppParameterFile_triggered();
+  void on_actionLocalAppParameterDir_triggered();
+  void on_actionLocalAppParameterExtension_triggered();
+  void on_actionLocalAppParameterSource_triggered();
+  void on_actionLocalAppParameterSourceDir_triggered();
+  void listWidgetLocalAppParamsModelDataChanged();
 
 signals:
   void requestRedraw() const;
@@ -166,6 +182,9 @@ private:
   void createFontSizeMenu(QComboBox *box, const QString &setting);
   void updateGUIFontFamily(QFontComboBox *fontSelector, const QString &setting);
   void updateGUIFontSize(QComboBox *fsSelector, const QString &setting);
+  void updateLocalAppParams();
+  void addLocalAppParameter(const Settings::LocalAppParameterType&);
+  void moveListBoxRow(QListWidget *listBox, int offset);
 
   /** Set value from combobox to settings */
   void applyComboBox(QComboBox *comboBox, int val, Settings::SettingsEntryEnum& entry);
