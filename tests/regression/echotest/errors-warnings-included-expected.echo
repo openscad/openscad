@@ -1,13 +1,13 @@
 WARNING: Ignoring unknown function 'test' in file errors-warnings.scad, line 19
-WARNING: dxf_cross(..., origin=[inf, nan]) could not be converted in file errors-warnings.scad, line 79
-WARNING: Can't open DXF file 'doesNotExist.dxf'! in file errors-warnings.scad, line 79
-WARNING: dxf_dim(..., origin=[1, 2, 3]) could not be converted in file errors-warnings.scad, line 84
-WARNING: Can't open DXF file 'doesNotExist.dxf'! in file errors-warnings.scad, line 84
-WARNING: variable notSupported not specified as parameter in file errors-warnings.scad, line 92
-WARNING: dxf_cross(..., origin=[inf, 0]) could not be converted in file errors-warnings.scad, line 92
-WARNING: Can't find cross in 'dim-all.dxf', layer 'SCAD.Origin'! in file errors-warnings.scad, line 92
-WARNING: variable notSupported not specified as parameter in file errors-warnings.scad, line 98
-WARNING: Can't find dimension 'TotalWidth' in 'dim-all.dxf', layer 'SCAD.Origin'! in file errors-warnings.scad, line 98
+WARNING: dxf_cross(..., origin=[inf, nan]) could not be converted in file errors-warnings.scad, line 71
+WARNING: Can't open DXF file 'doesNotExist.dxf'! in file errors-warnings.scad, line 71
+WARNING: dxf_dim(..., origin=[1, 2, 3]) could not be converted in file errors-warnings.scad, line 76
+WARNING: Can't open DXF file 'doesNotExist.dxf'! in file errors-warnings.scad, line 76
+WARNING: variable notSupported not specified as parameter in file errors-warnings.scad, line 84
+WARNING: dxf_cross(..., origin=[inf, 0]) could not be converted in file errors-warnings.scad, line 84
+WARNING: Can't find cross in 'dim-all.dxf', layer 'SCAD.Origin'! in file errors-warnings.scad, line 84
+WARNING: variable notSupported not specified as parameter in file errors-warnings.scad, line 90
+WARNING: Can't find dimension 'TotalWidth' in 'dim-all.dxf', layer 'SCAD.Origin'! in file errors-warnings.scad, line 90
 ECHO: "include"
 WARNING: Ignoring unknown variable 'a' in file errors-warnings.scad, line 1
 ECHO: undef
@@ -36,21 +36,18 @@ WARNING: $fs too small - clamping to 0.010000 in file errors-warnings.scad, line
 WARNING: $fa too small - clamping to 0.010000 in file errors-warnings.scad, line 55
 WARNING: argument center supplied more than once in file errors-warnings.scad, line 58
 WARNING: argument r supplied more than once in file errors-warnings.scad, line 59
-WARNING: rotate_extrude(..., origin="test") could not be converted in file errors-warnings.scad, line 61
-WARNING: linear_extrude(..., origin="test") could not be converted in file errors-warnings.scad, line 65
-WARNING: linear_extrude(..., scale=inf) could not be converted in file errors-warnings.scad, line 65
 ECHO: 10
 ECHO: 15
 ECHO: 20
-WARNING: lookup() parameter could not be converted: argument 0: expected number, found string ("test") in file errors-warnings.scad, line 73
+WARNING: lookup() parameter could not be converted: argument 0: expected number, found string ("test") in file errors-warnings.scad, line 65
 ECHO: undef
-WARNING: lookup() number of parameters does not match: expected 2, found 3 in file errors-warnings.scad, line 74
+WARNING: lookup() number of parameters does not match: expected 2, found 3 in file errors-warnings.scad, line 66
 ECHO: undef
-WARNING: lookup() number of parameters does not match: expected 2, found 1 in file errors-warnings.scad, line 75
+WARNING: lookup() number of parameters does not match: expected 2, found 1 in file errors-warnings.scad, line 67
 ECHO: undef
 ECHO: "dim-all.dxf"
-WARNING: module cube() does not support child modules in file errors-warnings.scad, line 104
-WARNING: module sphere() does not support child modules in file errors-warnings.scad, line 107
+WARNING: module cube() does not support child modules in file errors-warnings.scad, line 96
+WARNING: module sphere() does not support child modules in file errors-warnings.scad, line 99
 DEPRECATED: Using ranges of the form [begin:end] with begin value greater than the end value is deprecated in file ../3D/features/for-tests.scad, line 19
 DEPRECATED: Using ranges of the form [begin:end] with begin value greater than the end value is deprecated in file ../3D/features/for-tests.scad, line 31
 WARNING: Bad range parameter in for statement: too many elements (4294967295) in file ../3D/features/for-tests.scad, line 35

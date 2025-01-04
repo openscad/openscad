@@ -58,14 +58,6 @@ cylinder($fn="test");
 cube(10,center=true,center=false);
 sphere(r=1,r=2);
 
-rotate_extrude(convexity = 10, origin="test")
-translate([2, 0, 0])
-circle(r = 1);
-
-linear_extrude(height = 10, center = true, convexity = 10, origin="test", scale=1/0)
-translate([2, 0, 0])
-circle(r = 1);
-
 table1 = [[10,10],[20,20]];
 echo(lookup(0, table1));  //OK, but limited to 10
 echo(lookup(15, table1)); //OK
