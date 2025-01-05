@@ -17,6 +17,7 @@
 #include <QSettings>
 
 #include "gui/qtgettext.h" // IWYU pragma: keep
+#include "openscad_gui.h"
 #include "ui_Preferences.h"
 #include "gui/Settings.h"
 #include "gui/InitConfigurator.h"
@@ -36,9 +37,21 @@ public:
   void apply_win() const;
   void updateGUI();
   void fireEditorConfigChanged() const;
-  template<typename item_type>
-  QListWidgetItem * createListItem(const item_type& type, const QString& text = "", bool editable = false);
   void insertListItem(QListWidget *listBox, QListWidgetItem *listItem);
+
+  template<typename item_type>
+  QListWidgetItem * createListItem(const item_type& itemType, const QString& text = "", bool editable = false) {
+    const auto iconResource = QString(":/icons/svg-default/%1%2.svg").arg(QString::fromStdString(itemType.icon()), OpenSCAD::isDarkMode() ? "-white" : "");
+    std::string description = itemType.description();
+    const auto itemText = description.empty() ? text : QString::fromStdString(description);
+    const auto listItem = new QListWidgetItem(QIcon(iconResource), itemText,
+      nullptr,
+      static_cast<int>(QListWidgetItem::UserType) + static_cast<int>(itemType));
+    if (editable) {
+      listItem->setFlags(listItem->flags() | Qt::ItemIsEditable);
+    }
+    return listItem;
+  }
 
 public slots:
   void actionTriggered(class QAction *);

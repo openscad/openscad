@@ -56,7 +56,6 @@
 #include "gui/AutoUpdater.h"
 #include "Feature.h"
 #include "gui/Settings.h"
-#include "openscad_gui.h"
 #include "printutils.h"
 #ifdef ENABLE_CGAL
 #include "geometry/cgal/CGALCache.h"
@@ -920,20 +919,6 @@ void Preferences::on_toolButtonLocalAppParameterRemove_clicked()
     auto item = this->listWidgetLocalAppParams->takeItem(index.row());
     delete item;
   }
-}
-
-template<typename item_type>
-QListWidgetItem * Preferences::createListItem(const item_type& itemType, const QString& text, bool editable) {
-  const auto iconResource = QString(":/icons/svg-default/%1%2.svg").arg(QString::fromStdString(itemType.icon()), OpenSCAD::isDarkMode() ? "-white" : "");
-  std::string description = itemType.description();
-  const auto itemText = description.empty() ? text : QString::fromStdString(description);
-  const auto listItem = new QListWidgetItem(QIcon(iconResource), itemText,
-    nullptr,
-    static_cast<int>(QListWidgetItem::UserType) + static_cast<int>(itemType));
-  if (editable) {
-    listItem->setFlags(listItem->flags() | Qt::ItemIsEditable);
-  }
-  return listItem;
 }
 
 void Preferences::insertListItem(QListWidget *listBox, QListWidgetItem *listItem) {
