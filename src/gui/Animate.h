@@ -58,7 +58,7 @@ private:
   MainWindow *mainWindow;
 
   void updatePauseButtonIcon();
-  void initVCR();
+  void connectAction(QAction *, QPushButton *);
 
   double anim_tval;
   bool anim_dumping;
@@ -66,16 +66,17 @@ private:
   int anim_step;
   int anim_numsteps;
 
-  bool isLightTheme();
-
   bool fps_ok;
   bool t_ok;
   bool steps_ok;
 
   int initMinWidth;
 
+  QIcon iconRun;
+  QIcon iconPause;
+  QIcon iconDisabled;
   QList<QAction *> action_list;
-  void createActionAndPrepareButton(const QIcon& icon, const QString& description, const std::string& actionName, QPushButton *button);
+  QColor errorBlendColor{"red"};
 
 signals:
 

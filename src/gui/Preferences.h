@@ -41,10 +41,10 @@ public:
 
   template<typename item_type>
   QListWidgetItem * createListItem(const item_type& itemType, const QString& text = "", bool editable = false) {
-    const auto iconResource = QString(":/icons/svg-default/%1%2.svg").arg(QString::fromStdString(itemType.icon()), OpenSCAD::isDarkMode() ? "-white" : "");
+    const auto icon = QIcon::fromTheme(QString::fromStdString(itemType.icon()));
     std::string description = itemType.description();
     const auto itemText = description.empty() ? text : QString::fromStdString(description);
-    const auto listItem = new QListWidgetItem(QIcon(iconResource), itemText,
+    const auto listItem = new QListWidgetItem(icon, itemText,
       nullptr,
       static_cast<int>(QListWidgetItem::UserType) + static_cast<int>(itemType));
     if (editable) {

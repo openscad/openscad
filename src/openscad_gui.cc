@@ -31,7 +31,6 @@
 #include <QFileInfo>
 #include <QFutureWatcher>
 #include <QtConcurrentRun>
-#include <QIcon>
 #include <QGuiApplication>
 #include <QPalette>
 #include <QStyleHints>
@@ -73,7 +72,14 @@ extern std::string arg_colorscheme;
 #define STRINGIFY(x) #x
 #define TOSTRING(x) STRINGIFY(x)
 
-namespace OpenSCAD {
+namespace {
+
+// Check if running with light or dark theme. This should really just be used
+// to switch the icon theme globally.
+//
+// For applying a color change, e.g. highlighting the background of an input
+// field, see:
+// UIUtils::blendForBackgroundColorStyleSheet(const QColor& input, const QColor& blend)
 
 bool isDarkMode() {
 #if QT_VERSION >= QT_VERSION_CHECK(6, 5, 0)
@@ -154,7 +160,7 @@ int gui(std::vector<std::string>& inputFiles, const std::filesystem::path& origi
   OpenSCADApp app(argc, argv);
   // remove ugly frames in the QStatusBar when using additional widgets
   app.setStyleSheet("QStatusBar::item { border: 0px solid black; }");
-  QIcon::setThemeName(OpenSCAD::isDarkMode() ? "svg-default-dark" : "svg-default");
+  QIcon::setThemeName(isDarkMode() ? "chokusen-dark" : "chokusen");
 
   // set up groups for QSettings
   QCoreApplication::setOrganizationName("OpenSCAD");

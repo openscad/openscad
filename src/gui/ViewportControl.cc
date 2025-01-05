@@ -51,12 +51,18 @@ void ViewportControl::setMainWindow(MainWindow *mainWindow)
 
 QString ViewportControl::yellowHintBackground()
 {
-  return {OpenSCAD::isDarkMode() ? "background-color:#303006;" : "background-color:#ffffaa;"};
+  QPalette defaultPalette;
+  const auto bgColor = defaultPalette.base().color().toRgb();
+  QString styleSheet = UIUtils::blendForBackgroundColorStyleSheet(bgColor, warnBlendColor);
+  return styleSheet;
 }
 
 QString ViewportControl::redHintBackground()
 {
-  return {OpenSCAD::isDarkMode() ? "background-color:#502020;" : "background-color:#ffaaaa;"};
+  QPalette defaultPalette;
+  const auto bgColor = defaultPalette.base().color().toRgb();
+  QString styleSheet = UIUtils::blendForBackgroundColorStyleSheet(bgColor, errorBlendColor);
+  return styleSheet;
 }
 
 void ViewportControl::resizeEvent(QResizeEvent *event)

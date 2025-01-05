@@ -153,7 +153,6 @@ public:
   void UnknownExceptionCleanup(std::string msg = "");
 
 private:
-  void initActionIcon(QAction *action, const char *darkResource, const char *lightResource);
   void setRenderVariables(ContextHandle<BuiltinContext>& context);
   void updateCompileResult();
   void compile(bool reload, bool forcedone = false);

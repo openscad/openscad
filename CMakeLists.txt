@@ -1287,8 +1287,8 @@ if(HEADLESS)
 else()
   list(APPEND RESOURCE_FILES
     ${RESOURCE_DIR}/common.qrc
-    ${RESOURCE_DIR}/icons-svg-default.qrc
-    ${RESOURCE_DIR}/icons-svg-default-dark.qrc
+    ${RESOURCE_DIR}/icons-chokusen.qrc
+    ${RESOURCE_DIR}/icons-chokusen-dark.qrc
   )
   # GUI_UIS for .ui files to be indexed by Qt Creator despite AUTOUIC usage
   # GUI_HEADERS for .h files to be indexed by Qt Creator despite AUTOUIC usage
