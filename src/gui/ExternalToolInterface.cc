@@ -102,7 +102,7 @@ bool LocalProgramService::process(const std::string& displayName, std::function<
   }
 
 #ifdef Q_OS_MACOS
-  if (!process.startDetached("open", {"-a", slicer, QString::fromStdString(exportedFilename_)})) {
+  if (!process.startDetached("open", {"-a", application, QString::fromStdString(exportedFilename_)})) {
 #else
   QStringList args;
   const auto info = QFileInfo(QString::fromStdString(exportedFilename_));
