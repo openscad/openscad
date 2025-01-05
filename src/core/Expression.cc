@@ -701,6 +701,7 @@ void Let::doSequentialAssignment(const AssignmentList& assignments, const Locati
     if (assignment->getName().empty()) {
       LOG(message_group::Warning, location, targetContext->documentRoot(), "Assignment without variable name %1$s", value.toEchoStringNoThrow());
     } else if (seen.find(assignment->getName()) != seen.end()) {
+      // TODO Should maybe quote the entire assignment with a new quoteExpr() or quoteStmt().
       LOG(message_group::Warning, location, targetContext->documentRoot(), "Ignoring duplicate variable assignment %1$s = %2$s", quoteVar(assignment->getName()), value.toEchoStringNoThrow());
     } else {
       targetContext->set_variable(assignment->getName(), std::move(value));
