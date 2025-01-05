@@ -1734,8 +1734,7 @@
                     <string/>
                    </property>
                    <property name="icon">
-                    <iconset resource="../../resources/common.qrc">
-                     <normaloff>:/icons/svg-default/add.svg</normaloff>:/icons/svg-default/add.svg</iconset>
+                    <iconset theme="add"/>
                    </property>
                   </widget>
                  </item>
@@ -1767,8 +1766,7 @@
                     <string/>
                    </property>
                    <property name="icon">
-                    <iconset resource="../../resources/common.qrc">
-                     <normaloff>:/icons/svg-default/up.svg</normaloff>:/icons/svg-default/up.svg</iconset>
+                    <iconset theme="up"/>
                    </property>
                   </widget>
                  </item>
@@ -1787,8 +1785,7 @@
                     <string/>
                    </property>
                    <property name="icon">
-                    <iconset resource="../../resources/common.qrc">
-                     <normaloff>:/icons/svg-default/remove.svg</normaloff>:/icons/svg-default/remove.svg</iconset>
+                    <iconset theme="remove"/>
                    </property>
                   </widget>
                  </item>
@@ -1801,8 +1798,7 @@
                     <string/>
                    </property>
                    <property name="icon">
-                    <iconset resource="../../resources/common.qrc">
-                     <normaloff>:/icons/svg-default/down.svg</normaloff>:/icons/svg-default/down.svg</iconset>
+                    <iconset theme="down"/>
                    </property>
                   </widget>
                  </item>
@@ -2893,6 +2889,8 @@
  </customwidgets>
  <resources>
   <include location="../../resources/common.qrc"/>
+  <include location="../../resources/icons-svg-default.qrc"/>
+  <include location="../../resources/icons-svg-default-dark.qrc"/>
  </resources>
  <connections/>
 </ui>

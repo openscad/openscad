@@ -738,6 +738,9 @@
    </widget>
   </widget>
   <action name="fileActionNew">
+   <property name="icon">
+    <iconset theme="new"/>
+   </property>
    <property name="text">
     <string>&amp;New File</string>
    </property>
@@ -751,6 +754,9 @@
    </property>
   </action>
   <action name="fileActionOpen">
+   <property name="icon">
+    <iconset theme="open"/>
+   </property>
    <property name="text">
     <string>&amp;Open File</string>
    </property>
@@ -764,6 +770,9 @@
    </property>
   </action>
   <action name="fileActionSave">
+   <property name="icon">
+    <iconset theme="save"/>
+   </property>
    <property name="text">
     <string>&amp;Save</string>
    </property>
@@ -812,6 +821,9 @@
    <property name="enabled">
     <bool>false</bool>
    </property>
+   <property name="icon">
+    <iconset theme="undo"/>
+   </property>
    <property name="text">
     <string>&amp;Undo</string>
    </property>
@@ -823,6 +835,9 @@
    </property>
   </action>
   <action name="editActionRedo">
+   <property name="icon">
+    <iconset theme="redo"/>
+   </property>
    <property name="text">
     <string>&amp;Redo</string>
    </property>
@@ -875,6 +890,9 @@
    </property>
   </action>
   <action name="editActionIndent">
+   <property name="icon">
+    <iconset theme="indent"/>
+   </property>
    <property name="text">
     <string>&amp;Indent</string>
    </property>
@@ -978,6 +996,9 @@
    </property>
   </action>
   <action name="designActionPreview">
+   <property name="icon">
+    <iconset theme="preview"/>
+   </property>
    <property name="text">
     <string>&amp;Preview</string>
    </property>
@@ -986,6 +1007,9 @@
    </property>
   </action>
   <action name="designActionRender">
+   <property name="icon">
+    <iconset theme="render"/>
+   </property>
    <property name="text">
     <string>R&amp;ender</string>
    </property>
@@ -994,6 +1018,9 @@
    </property>
   </action>
   <action name="designAction3DPrint">
+   <property name="icon">
+    <iconset theme="send"/>
+   </property>
    <property name="text">
     <string>&amp;3D Print</string>
    </property>
@@ -1473,6 +1500,9 @@
    </property>
   </action>
   <action name="editActionUnindent">
+   <property name="icon">
+    <iconset theme="unindent"/>
+   </property>
    <property name="text">
     <string>U&amp;nindent</string>
    </property>
@@ -1672,6 +1702,8 @@
  </customwidgets>
  <resources>
   <include location="../../resources/common.qrc"/>
+  <include location="../../resources/icons-svg-default.qrc"/>
+  <include location="../../resources/icons-svg-default-dark.qrc"/>
  </resources>
  <connections/>
 </ui>

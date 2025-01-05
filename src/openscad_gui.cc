@@ -27,6 +27,7 @@
 #include "openscad_gui.h"
 
 #include <QDir>
+#include <QIcon>
 #include <QFileInfo>
 #include <QFutureWatcher>
 #include <QtConcurrentRun>
@@ -153,6 +154,7 @@ int gui(std::vector<std::string>& inputFiles, const std::filesystem::path& origi
   OpenSCADApp app(argc, argv);
   // remove ugly frames in the QStatusBar when using additional widgets
   app.setStyleSheet("QStatusBar::item { border: 0px solid black; }");
+  QIcon::setThemeName(OpenSCAD::isDarkMode() ? "svg-default-dark" : "svg-default");
 
   // set up groups for QSettings
   QCoreApplication::setOrganizationName("OpenSCAD");
