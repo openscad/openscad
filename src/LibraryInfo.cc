@@ -8,6 +8,7 @@
 #include "platform/PlatformUtils.h"
 #include "version.h"
 #include "Feature.h"
+#include <clipper2/clipper.version.h>
 
 #define STRINGIFY(x) #x
 #define TOSTRING(x) STRINGIFY(x)
@@ -139,6 +140,7 @@ std::string LibraryInfo::info()
     << "\nCGAL version, kernels: " << TOSTRING(CGAL_VERSION) << ", " << cgal_3d_kernel << ", " << cgal_2d_kernel << ", " << cgal_2d_kernelEx
 #endif
     << "\nOpenCSG version: " << OPENCSG_VERSION_STRING
+    << "\nClipper2 version: " << CLIPPER2_VERSION
     << "\nManifold version: " << MANIFOLD_VERSION_STRING
     << "\nQt version: " << qtVersion
 #ifndef OPENSCAD_NOGUI
