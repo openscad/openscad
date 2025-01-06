@@ -11,7 +11,7 @@ union();
 difference();
 intersection();
 linear_extrude(height = 100, $fn = 0, $fa = 12, $fs = 2);
-rotate_extrude(angle = 360, convexity = 2, $fn = 0, $fa = 12, $fs = 2);
+rotate_extrude(angle = 360, start = 180, convexity = 2, $fn = 0, $fa = 12, $fs = 2);
 import(file = "", origin = [0, 0], scale = 1, convexity = 1, $fn = 0, $fa = 12, $fs = 2, timestamp = 0);
 group();
 cube(size = [1, 1, 1], center = false);

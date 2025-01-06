@@ -1,4 +1,4 @@
-rotate_extrude(angle = 45, convexity = 2, $fn = 0, $fa = 15, $fs = 4) {
+rotate_extrude(angle = 45, start = 0, convexity = 2, $fn = 0, $fa = 15, $fs = 4) {
 	group() {
 		multmatrix([[1, 0, 0, 10], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 			difference() {
@@ -8,7 +8,7 @@ rotate_extrude(angle = 45, convexity = 2, $fn = 0, $fa = 15, $fs = 4) {
 		}
 	}
 }
-rotate_extrude(angle = 45, convexity = 2, $fn = 0, $fa = 15, $fs = 4) {
+rotate_extrude(angle = 45, start = 0, convexity = 2, $fn = 0, $fa = 15, $fs = 4) {
 	group() {
 		multmatrix([[1, 0, 0, -10], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 			difference() {
@@ -18,7 +18,7 @@ rotate_extrude(angle = 45, convexity = 2, $fn = 0, $fa = 15, $fs = 4) {
 		}
 	}
 }
-rotate_extrude(angle = -45, convexity = 2, $fn = 0, $fa = 15, $fs = 4) {
+rotate_extrude(angle = -45, start = 0, convexity = 2, $fn = 0, $fa = 15, $fs = 4) {
 	group() {
 		multmatrix([[1, 0, 0, 21], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 			difference() {
@@ -28,7 +28,7 @@ rotate_extrude(angle = -45, convexity = 2, $fn = 0, $fa = 15, $fs = 4) {
 		}
 	}
 }
-rotate_extrude(angle = -45, convexity = 2, $fn = 0, $fa = 15, $fs = 4) {
+rotate_extrude(angle = -45, start = 0, convexity = 2, $fn = 0, $fa = 15, $fs = 4) {
 	group() {
 		multmatrix([[1, 0, 0, -21], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 			difference() {
@@ -39,7 +39,7 @@ rotate_extrude(angle = -45, convexity = 2, $fn = 0, $fa = 15, $fs = 4) {
 	}
 }
 multmatrix([[0, -1, 0, 0], [1, 0, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-	rotate_extrude(angle = 5, convexity = 2, $fn = 0, $fa = 15, $fs = 4) {
+	rotate_extrude(angle = 5, start = 0, convexity = 2, $fn = 0, $fa = 15, $fs = 4) {
 		group() {
 			multmatrix([[1, 0, 0, 10], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 				difference() {
@@ -49,7 +49,7 @@ multmatrix([[0, -1, 0, 0], [1, 0, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 			}
 		}
 	}
-	rotate_extrude(angle = 5, convexity = 2, $fn = 0, $fa = 15, $fs = 4) {
+	rotate_extrude(angle = 5, start = 0, convexity = 2, $fn = 0, $fa = 15, $fs = 4) {
 		group() {
 			multmatrix([[1, 0, 0, -10], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 				difference() {
@@ -59,7 +59,7 @@ multmatrix([[0, -1, 0, 0], [1, 0, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 			}
 		}
 	}
-	rotate_extrude(angle = -5, convexity = 2, $fn = 0, $fa = 15, $fs = 4) {
+	rotate_extrude(angle = -5, start = 0, convexity = 2, $fn = 0, $fa = 15, $fs = 4) {
 		group() {
 			multmatrix([[1, 0, 0, 21], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 				difference() {
@@ -69,7 +69,7 @@ multmatrix([[0, -1, 0, 0], [1, 0, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 			}
 		}
 	}
-	rotate_extrude(angle = -5, convexity = 2, $fn = 0, $fa = 15, $fs = 4) {
+	rotate_extrude(angle = -5, start = 0, convexity = 2, $fn = 0, $fa = 15, $fs = 4) {
 		group() {
 			multmatrix([[1, 0, 0, -21], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 				difference() {
@@ -80,7 +80,7 @@ multmatrix([[0, -1, 0, 0], [1, 0, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 		}
 	}
 }
-rotate_extrude(angle = 0, convexity = 2, $fn = 0, $fa = 15, $fs = 4) {
+rotate_extrude(angle = 0, start = 0, convexity = 2, $fn = 0, $fa = 15, $fs = 4) {
 	group() {
 		multmatrix([[1, 0, 0, 5], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 			difference() {
@@ -91,7 +91,7 @@ rotate_extrude(angle = 0, convexity = 2, $fn = 0, $fa = 15, $fs = 4) {
 	}
 }
 multmatrix([[1, 0, 0, -40], [0, 1, 0, 40], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-	rotate_extrude(angle = 360, convexity = 2, $fn = 0, $fa = 15, $fs = 4) {
+	rotate_extrude(angle = 360, start = 180, convexity = 2, $fn = 0, $fa = 15, $fs = 4) {
 		group() {
 			multmatrix([[1, 0, 0, 5], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 				square(size = [5, 5], center = false);
@@ -100,7 +100,7 @@ multmatrix([[1, 0, 0, -40], [0, 1, 0, 40], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 	}
 }
 multmatrix([[1, 0, 0, 0], [0, 1, 0, 40], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-	rotate_extrude(angle = 360, convexity = 2, $fn = 0, $fa = 15, $fs = 4) {
+	rotate_extrude(angle = 360, start = 180, convexity = 2, $fn = 0, $fa = 15, $fs = 4) {
 		group() {
 			multmatrix([[1, 0, 0, 5], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 				square(size = [5, 5], center = false);
@@ -109,7 +109,7 @@ multmatrix([[1, 0, 0, 0], [0, 1, 0, 40], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 	}
 }
 multmatrix([[1, 0, 0, 40], [0, 1, 0, 40], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-	rotate_extrude(angle = 360, convexity = 2, $fn = 0, $fa = 15, $fs = 4) {
+	rotate_extrude(angle = 360, start = 180, convexity = 2, $fn = 0, $fa = 15, $fs = 4) {
 		group() {
 			multmatrix([[1, 0, 0, 5], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 				square(size = [5, 5], center = false);
@@ -118,7 +118,7 @@ multmatrix([[1, 0, 0, 40], [0, 1, 0, 40], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 	}
 }
 multmatrix([[1, 0, 0, -40], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-	rotate_extrude(angle = 360, convexity = 2, $fn = 0, $fa = 15, $fs = 4) {
+	rotate_extrude(angle = 360, start = 180, convexity = 2, $fn = 0, $fa = 15, $fs = 4) {
 		group() {
 			multmatrix([[1, 0, 0, 5], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 				square(size = [5, 5], center = false);
@@ -127,7 +127,7 @@ multmatrix([[1, 0, 0, -40], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 	}
 }
 multmatrix([[1, 0, 0, 40], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-	rotate_extrude(angle = 360, convexity = 2, $fn = 0, $fa = 15, $fs = 4) {
+	rotate_extrude(angle = 360, start = 0, convexity = 2, $fn = 0, $fa = 15, $fs = 4) {
 		group() {
 			multmatrix([[1, 0, 0, 5], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 				square(size = [5, 5], center = false);
@@ -136,7 +136,7 @@ multmatrix([[1, 0, 0, 40], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 	}
 }
 multmatrix([[1, 0, 0, -40], [0, 1, 0, -40], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-	rotate_extrude(angle = 360, convexity = 2, $fn = 0, $fa = 15, $fs = 4) {
+	rotate_extrude(angle = 360, start = 0, convexity = 2, $fn = 0, $fa = 15, $fs = 4) {
 		group() {
 			multmatrix([[1, 0, 0, 5], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 				square(size = [5, 5], center = false);
@@ -145,7 +145,7 @@ multmatrix([[1, 0, 0, -40], [0, 1, 0, -40], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 	}
 }
 multmatrix([[1, 0, 0, 0], [0, 1, 0, -40], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-	rotate_extrude(angle = 360, convexity = 2, $fn = 0, $fa = 15, $fs = 4) {
+	rotate_extrude(angle = 360, start = 0, convexity = 2, $fn = 0, $fa = 15, $fs = 4) {
 		group() {
 			multmatrix([[1, 0, 0, 5], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 				square(size = [5, 5], center = false);
@@ -154,7 +154,7 @@ multmatrix([[1, 0, 0, 0], [0, 1, 0, -40], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 	}
 }
 multmatrix([[1, 0, 0, 40], [0, 1, 0, -40], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-	rotate_extrude(angle = 360, convexity = 2, $fn = 0, $fa = 15, $fs = 4) {
+	rotate_extrude(angle = 360, start = 0, convexity = 2, $fn = 0, $fa = 15, $fs = 4) {
 		group() {
 			multmatrix([[1, 0, 0, 5], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 				square(size = [5, 5], center = false);
