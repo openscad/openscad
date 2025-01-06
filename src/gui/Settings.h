@@ -177,10 +177,10 @@ public:
     switch (value) {
       case string: return "chokusen-parameter";
       case file: return "chokusen-orthogonal";
-      case dir: return "chokusen-parameter";
+      case dir: return "chokusen-folder";
       case extension: return "chokusen-parameter";
-      case source: return "chokusen-parameter";
-      case sourcedir: return "chokusen-parameter";
+      case source: return "chokusen-file";
+      case sourcedir: return "chokusen-folder";
       default: return "*invalid*";
     }
   }

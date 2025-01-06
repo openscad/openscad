@@ -1302,8 +1302,8 @@
               <rect>
                <x>0</x>
                <y>0</y>
-               <width>98</width>
-               <height>26</height>
+               <width>100</width>
+               <height>30</height>
               </rect>
              </property>
              <layout class="QVBoxLayout" name="verticalLayout_10">
@@ -2876,7 +2876,7 @@
   </action>
   <action name="actionLocalAppParameterDir">
    <property name="icon">
-    <iconset theme="chokusen-parameter"/>
+    <iconset theme="chokusen-folder"/>
    </property>
    <property name="text">
     <string>Directory of the output file</string>
@@ -2892,7 +2892,7 @@
   </action>
   <action name="actionLocalAppParameterSource">
    <property name="icon">
-    <iconset theme="chokusen-parameter"/>
+    <iconset theme="chokusen-file"/>
    </property>
    <property name="text">
     <string>Full path to the main source file</string>
@@ -2900,7 +2900,7 @@
   </action>
   <action name="actionLocalAppParameterSourceDir">
    <property name="icon">
-    <iconset theme="chokusen-parameter"/>
+    <iconset theme="chokusen-folder"/>
    </property>
    <property name="text">
     <string>Directory of the main source file</string>
@@ -2908,7 +2908,7 @@
   </action>
   <action name="actionLocalAppParameterFile">
    <property name="icon">
-    <iconset theme="chokusen-parameter"/>
+    <iconset theme="chokusen-orthogonal"/>
    </property>
    <property name="text">
     <string>Full path to the output file</string>
