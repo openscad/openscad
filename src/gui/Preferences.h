@@ -140,8 +140,10 @@ public slots:
   void on_lineEditOctoPrintURL_editingFinished();
   void on_lineEditOctoPrintApiKey_editingFinished();
   void on_pushButtonOctoPrintApiKey_clicked();
-  void on_toolButtonSelectLocalAppPath_clicked();
   void on_lineEditLocalAppExecutable_editingFinished();
+  void on_toolButtonLocalAppSelectExecutable_clicked();
+  void on_lineEditLocalAppTempDir_editingFinished();
+  void on_toolButtonLocalAppSelectTempDir_clicked();
   void on_comboBoxLocalAppFileFormat_activated(int);
   void on_toolButtonLocalAppParameterRemove_clicked();
   void on_toolButtonLocalAppParameterAdd_clicked();

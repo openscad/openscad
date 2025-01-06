@@ -26,10 +26,11 @@
 
 #include "gui/ExternalToolInterface.h"
 
-#include <QtCore/qtemporaryfile.h>
-#include <qfileinfo.h>
-#include <qlist.h>
-#include <QtCore/QDir>
+#include <QDir>
+#include <QString>
+#include <QFileInfo>
+#include <QStringList>
+#include <QTemporaryFile>
 
 #include "Settings.h"
 #include "gui/OctoPrint.h"
@@ -48,7 +49,7 @@ bool ExternalToolInterface::exportTemporaryFile(const std::shared_ptr<const Geom
   };
 
   // FIXME: Remove original suffix first
-  QTemporaryFile exportFile{QDir::temp().filePath(
+  QTemporaryFile exportFile{getTempDir().filePath(
     QString("%1.XXXXXX.%2").
       arg(QString::fromStdString(exportInfo.sourceFilePath)).
       arg(QString::fromStdString(fileformat::toSuffix(exportFormat_))))};
@@ -87,6 +88,20 @@ bool OctoPrintService::process(const std::string& displayName, std::function<boo
     LOG(message_group::Error, "%1$s", e.getErrorMessage());
   }
   return true;
+}
+
+QDir LocalProgramService::getTempDir() const
+{
+  const auto& tempDirConfig = Settings::Settings::localAppTempDir.value();
+  if (tempDirConfig.empty()) {
+    return QDir::temp();
+  }
+  const auto tempDir = QDir{QString::fromStdString(tempDirConfig)};
+  if (!tempDir.exists()) {
+    LOG(message_group::Warning, "Configured temporary directory does not exist: '%1$s'", tempDirConfig);
+    return QDir::temp();
+  }
+  return tempDir;
 }
 
 bool LocalProgramService::process(const std::string& displayName, std::function<bool (double)> progress_cb) 

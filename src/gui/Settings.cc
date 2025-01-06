@@ -186,6 +186,7 @@ SettingsEntryEnum Settings::octoPrintFileFormat(
     fileformat::info(FileFormat::ASCII_STL).description);
 
 SettingsEntryString Settings::localAppExecutable("printing", "localAppExecutable", "");
+SettingsEntryString Settings::localAppTempDir("printing", "localAppTempDir", "");
 SettingsEntryEnum Settings::localAppFileFormat(
     "printing", "localAppFileFormat", createFileFormatItems(fileformat::all3D()),
     fileformat::info(FileFormat::ASCII_STL).description);

@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>841</width>
-    <height>853</height>
+    <height>843</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -1302,7 +1302,7 @@
               <rect>
                <x>0</x>
                <y>0</y>
-               <width>84</width>
+               <width>98</width>
                <height>26</height>
               </rect>
              </property>
@@ -1360,7 +1360,7 @@
              <x>0</x>
              <y>0</y>
              <width>821</width>
-             <height>763</height>
+             <height>753</height>
             </rect>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_9">
@@ -1671,7 +1671,7 @@
               <property name="alignment">
                <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
               </property>
-              <layout class="QGridLayout" name="gridLayout_72" columnstretch="0,0,1,0,0,0,0">
+              <layout class="QGridLayout" name="gridLayout_72" columnstretch="0,0,1,0,0">
                <property name="leftMargin">
                 <number>0</number>
                </property>
@@ -1688,31 +1688,8 @@
                  </property>
                 </widget>
                </item>
-               <item row="1" column="2">
-                <widget class="QListWidget" name="listWidgetLocalAppParams">
-                 <property name="selectionBehavior">
-                  <enum>QAbstractItemView::SelectRows</enum>
-                 </property>
-                 <property name="iconSize">
-                  <size>
-                   <width>16</width>
-                   <height>16</height>
-                  </size>
-                 </property>
-                </widget>
-               </item>
-               <item row="0" column="2">
-                <widget class="QLineEdit" name="lineEditLocalAppExecutable">
-                 <property name="placeholderText">
-                  <string notr="true">Local application path</string>
-                 </property>
-                 <property name="clearButtonEnabled">
-                  <bool>true</bool>
-                 </property>
-                </widget>
-               </item>
                <item row="1" column="4">
-                <layout class="QGridLayout" name="gridLayoutLocalAppParameter" columnstretch="1,0,0">
+                <layout class="QGridLayout" name="gridLayoutLocalAppParameter" columnstretch="1,0">
                  <property name="sizeConstraint">
                   <enum>QLayout::SetDefaultConstraint</enum>
                  </property>
@@ -1728,28 +1705,44 @@
                  <property name="bottomMargin">
                   <number>0</number>
                  </property>
+                 <item row="3" column="0" colspan="2">
+                  <widget class="QToolButton" name="toolButtonLocalAppParameterAddFile">
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+                     <horstretch>0</horstretch>
+                     <verstretch>0</verstretch>
+                    </sizepolicy>
+                   </property>
+                   <property name="text">
+                    <string>File</string>
+                   </property>
+                   <property name="popupMode">
+                    <enum>QToolButton::MenuButtonPopup</enum>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="2" column="0" colspan="2" alignment="Qt::AlignHCenter">
+                  <widget class="QToolButton" name="toolButtonLocalAppParameterDown">
+                   <property name="enabled">
+                    <bool>false</bool>
+                   </property>
+                   <property name="text">
+                    <string/>
+                   </property>
+                   <property name="icon">
+                    <iconset theme="chokusen-down"/>
+                   </property>
+                  </widget>
+                 </item>
                  <item row="1" column="0">
                   <widget class="QToolButton" name="toolButtonLocalAppParameterAdd">
                    <property name="text">
                     <string/>
                    </property>
                    <property name="icon">
-                    <iconset theme="add"/>
+                    <iconset theme="chokusen-add"/>
                    </property>
                   </widget>
-                 </item>
-                 <item row="4" column="1">
-                  <spacer name="verticalSpacerLocalAppParameter">
-                   <property name="orientation">
-                    <enum>Qt::Vertical</enum>
-                   </property>
-                   <property name="sizeHint" stdset="0">
-                    <size>
-                     <width>20</width>
-                     <height>40</height>
-                    </size>
-                   </property>
-                  </spacer>
                  </item>
                  <item row="0" column="0" colspan="2" alignment="Qt::AlignHCenter">
                   <widget class="QToolButton" name="toolButtonLocalAppParameterUp">
@@ -1766,7 +1759,7 @@
                     <string/>
                    </property>
                    <property name="icon">
-                    <iconset theme="up"/>
+                    <iconset theme="chokusen-up"/>
                    </property>
                   </widget>
                  </item>
@@ -1785,40 +1778,60 @@
                     <string/>
                    </property>
                    <property name="icon">
-                    <iconset theme="remove"/>
+                    <iconset theme="chokusen-remove"/>
                    </property>
                   </widget>
                  </item>
-                 <item row="2" column="0" colspan="2" alignment="Qt::AlignHCenter">
-                  <widget class="QToolButton" name="toolButtonLocalAppParameterDown">
-                   <property name="enabled">
-                    <bool>false</bool>
+                 <item row="4" column="0" colspan="2">
+                  <spacer name="verticalSpacerLocalAppParameter">
+                   <property name="orientation">
+                    <enum>Qt::Vertical</enum>
                    </property>
-                   <property name="text">
-                    <string/>
+                   <property name="sizeHint" stdset="0">
+                    <size>
+                     <width>20</width>
+                     <height>40</height>
+                    </size>
                    </property>
-                   <property name="icon">
-                    <iconset theme="down"/>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="3" column="0" colspan="2">
-                  <widget class="QToolButton" name="toolButtonLocalAppParameterAddFile">
-                   <property name="sizePolicy">
-                    <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-                     <horstretch>0</horstretch>
-                     <verstretch>0</verstretch>
-                    </sizepolicy>
-                   </property>
-                   <property name="text">
-                    <string>File</string>
-                   </property>
-                   <property name="popupMode">
-                    <enum>QToolButton::MenuButtonPopup</enum>
-                   </property>
-                  </widget>
+                  </spacer>
                  </item>
                 </layout>
+               </item>
+               <item row="1" column="2">
+                <widget class="QListWidget" name="listWidgetLocalAppParams">
+                 <property name="selectionBehavior">
+                  <enum>QAbstractItemView::SelectRows</enum>
+                 </property>
+                 <property name="iconSize">
+                  <size>
+                   <width>16</width>
+                   <height>16</height>
+                  </size>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="0">
+                <widget class="QLabel" name="labelLocalAppExecutable">
+                 <property name="text">
+                  <string>Executable</string>
+                 </property>
+                 <property name="alignment">
+                  <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                 </property>
+                 <property name="buddy">
+                  <cstring>lineEditLocalAppExecutable</cstring>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="4" alignment="Qt::AlignHCenter">
+                <widget class="QToolButton" name="toolButtonLocalAppSelectExecutable">
+                 <property name="text">
+                  <string>...</string>
+                 </property>
+                 <property name="arrowType">
+                  <enum>Qt::NoArrow</enum>
+                 </property>
+                </widget>
                </item>
                <item row="2" column="2">
                 <layout class="QHBoxLayout" name="horizontalLayoutLocalSlicerFileFormat">
@@ -1840,6 +1853,16 @@
                  </item>
                 </layout>
                </item>
+               <item row="0" column="2">
+                <widget class="QLineEdit" name="lineEditLocalAppExecutable">
+                 <property name="placeholderText">
+                  <string notr="true">Local application path</string>
+                 </property>
+                 <property name="clearButtonEnabled">
+                  <bool>true</bool>
+                 </property>
+                </widget>
+               </item>
                <item row="1" column="0">
                 <widget class="QLabel" name="labelLocalAppParameter">
                  <property name="text">
@@ -1853,26 +1876,30 @@
                  </property>
                 </widget>
                </item>
-               <item row="0" column="0">
-                <widget class="QLabel" name="labelLocalAppExecutable">
-                 <property name="text">
-                  <string>Executable</string>
+               <item row="3" column="2">
+                <widget class="QLineEdit" name="lineEditLocalAppTempDir">
+                 <property name="toolTip">
+                  <string>Directory for storing the exported file, leave empty to use the default system location.</string>
                  </property>
-                 <property name="alignment">
-                  <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                 <property name="placeholderText">
+                  <string/>
                  </property>
-                 <property name="buddy">
-                  <cstring>lineEditLocalAppExecutable</cstring>
+                 <property name="clearButtonEnabled">
+                  <bool>true</bool>
                  </property>
                 </widget>
                </item>
-               <item row="0" column="4" alignment="Qt::AlignHCenter">
-                <widget class="QToolButton" name="toolButtonSelectLocalAppPath">
+               <item row="3" column="0" alignment="Qt::AlignRight">
+                <widget class="QLabel" name="labelLocalAppTempDir">
+                 <property name="text">
+                  <string>Temp Dir</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="3" column="4" alignment="Qt::AlignHCenter">
+                <widget class="QToolButton" name="toolButtonLocalAppSelectTempDir">
                  <property name="text">
                   <string>...</string>
-                 </property>
-                 <property name="arrowType">
-                  <enum>Qt::NoArrow</enum>
                  </property>
                 </widget>
                </item>
@@ -2848,28 +2875,43 @@
    </property>
   </action>
   <action name="actionLocalAppParameterDir">
+   <property name="icon">
+    <iconset theme="chokusen-parameter"/>
+   </property>
    <property name="text">
-    <string>actionLocalAppParameterDir</string>
+    <string>Directory of the output file</string>
    </property>
   </action>
   <action name="actionLocalAppParameterExtension">
+   <property name="icon">
+    <iconset theme="chokusen-parameter"/>
+   </property>
    <property name="text">
-    <string>actionLocalAppParameterExtension</string>
+    <string>Extension of the output file without leading dot</string>
    </property>
   </action>
   <action name="actionLocalAppParameterSource">
+   <property name="icon">
+    <iconset theme="chokusen-parameter"/>
+   </property>
    <property name="text">
-    <string>actionLocalAppParameterSource</string>
+    <string>Full path to the main source file</string>
    </property>
   </action>
   <action name="actionLocalAppParameterSourceDir">
+   <property name="icon">
+    <iconset theme="chokusen-parameter"/>
+   </property>
    <property name="text">
-    <string>actionLocalAppParameterSourceDir</string>
+    <string>Directory of the main source file</string>
    </property>
   </action>
   <action name="actionLocalAppParameterFile">
+   <property name="icon">
+    <iconset theme="chokusen-parameter"/>
+   </property>
    <property name="text">
-    <string>actionLocalAppParameterFile</string>
+    <string>Full path to the output file</string>
    </property>
   </action>
  </widget>
@@ -2889,8 +2931,6 @@
  </customwidgets>
  <resources>
   <include location="../../resources/common.qrc"/>
-  <include location="../../resources/icons-svg-default.qrc"/>
-  <include location="../../resources/icons-svg-default-dark.qrc"/>
  </resources>
  <connections/>
 </ui>

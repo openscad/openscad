@@ -240,6 +240,7 @@ void Preferences::init() {
   const QString profile = QString::fromStdString(Settings::Settings::octoPrintSlicerProfile.value());
   const QString profileDesc = QString::fromStdString(Settings::Settings::octoPrintSlicerProfileDesc.value());
   BlockSignals<QLineEdit *>(this->lineEditLocalAppExecutable)->setText(QString::fromStdString(Settings::Settings::localAppExecutable.value()));
+  BlockSignals<QLineEdit *>(this->lineEditLocalAppTempDir)->setText(QString::fromStdString(Settings::Settings::localAppTempDir.value()));
   this->comboBoxOctoPrintSlicingEngine->clear();
   this->comboBoxOctoPrintSlicingEngine->addItem(_("<Default>"), QVariant{""});
   if (!slicer.isEmpty()) {
@@ -868,17 +869,6 @@ void Preferences::on_comboBoxOctoPrintFileFormat_activated(int val)
   applyComboBox(this->comboBoxOctoPrintFileFormat, val, Settings::Settings::octoPrintFileFormat);
 }
 
-void Preferences::on_toolButtonSelectLocalAppPath_clicked()
-{
-  const QString fileName = QFileDialog::getOpenFileName(this, "Select application");
-  if (fileName.isEmpty()) {
-    return;
-  }
-
-  this->lineEditLocalAppExecutable->setText(fileName);
-  on_lineEditLocalAppExecutable_editingFinished();
-}
-
 void Preferences::on_comboBoxLocalAppFileFormat_activated(int val)
 {
   applyComboBox(this->comboBoxLocalAppFileFormat, val, Settings::Settings::localAppFileFormat);
@@ -889,6 +879,34 @@ void Preferences::on_lineEditLocalAppExecutable_editingFinished()
 {
   Settings::Settings::localAppExecutable.setValue(this->lineEditLocalAppExecutable->text().toStdString());
   writeSettings();
+}
+
+void Preferences::on_toolButtonLocalAppSelectExecutable_clicked()
+{
+  const QString fileName = QFileDialog::getOpenFileName(this, "Select application");
+  if (fileName.isEmpty()) {
+    return;
+  }
+
+  this->lineEditLocalAppExecutable->setText(fileName);
+  on_lineEditLocalAppExecutable_editingFinished();
+}
+
+void Preferences::on_lineEditLocalAppTempDir_editingFinished()
+{
+  Settings::Settings::localAppTempDir.setValue(this->lineEditLocalAppTempDir->text().toStdString());
+  writeSettings();
+}
+
+void Preferences::on_toolButtonLocalAppSelectTempDir_clicked()
+{
+  const QString tempDir = QFileDialog::getExistingDirectory(this, "Select temporary directory");
+  if (tempDir.isEmpty()) {
+    return;
+  }
+
+  this->lineEditLocalAppTempDir->setText(tempDir);
+  on_lineEditLocalAppTempDir_editingFinished();
 }
 
 void Preferences::moveListBoxRow(QListWidget *listBox, int offset)

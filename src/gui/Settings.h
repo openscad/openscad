@@ -175,12 +175,12 @@ public:
 
   std::string icon() const {
     switch (value) {
-      case string: return "parameter";
-      case file: return "orthogonal";
-      case dir: return "parameter";
-      case extension: return "parameter";
-      case source: return "parameter";
-      case sourcedir: return "parameter";
+      case string: return "chokusen-parameter";
+      case file: return "chokusen-orthogonal";
+      case dir: return "chokusen-parameter";
+      case extension: return "chokusen-parameter";
+      case source: return "chokusen-parameter";
+      case sourcedir: return "chokusen-parameter";
       default: return "*invalid*";
     }
   }
@@ -288,6 +288,7 @@ public:
   static SettingsEntryString octoPrintSlicerProfileDesc;
 
   static SettingsEntryString localAppExecutable;
+  static SettingsEntryString localAppTempDir;
   static SettingsEntryList<LocalAppParameter> localAppParameterList;
   static SettingsEntryEnum localAppFileFormat;
 
