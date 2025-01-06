@@ -81,7 +81,8 @@ static Value lookup_radius(const Parameters& parameters, const ModuleInstantiati
   if (d.type() == Value::Type::NUMBER) {
     if (r_defined) {
       LOG(message_group::Warning, inst->location(), parameters.documentRoot(),
-          "Ignoring radius variable '%1$s' as diameter '%2$s' is defined too.", radius_var, diameter_var);
+          "Ignoring radius variable %1$s as diameter %2$s is defined too.",
+          quoteVar(radius_var), quoteVar(diameter_var));
     }
     return d.toDouble() / 2.0;
   } else if (r_defined) {
@@ -151,14 +152,9 @@ std::unique_ptr<const Geometry> CubeNode::createGeometry() const
   return ps;
 }
 
-static std::shared_ptr<AbstractNode> builtin_cube(const ModuleInstantiation *inst, Arguments arguments, const Children& children)
+static std::shared_ptr<AbstractNode> builtin_cube(const ModuleInstantiation *inst, Arguments arguments)
 {
   auto node = std::make_shared<CubeNode>(inst);
-
-  if (!children.empty()) {
-    LOG(message_group::Warning, inst->location(), arguments.documentRoot(),
-        "module %1$s() does not support child modules", node->name());
-  }
 
   Parameters parameters = Parameters::parse(std::move(arguments), inst->location(), {"size", "center"});
 
@@ -234,14 +230,9 @@ std::unique_ptr<const Geometry> SphereNode::createGeometry() const
   return polyset;
 }
 
-static std::shared_ptr<AbstractNode> builtin_sphere(const ModuleInstantiation *inst, Arguments arguments, const Children& children)
+static std::shared_ptr<AbstractNode> builtin_sphere(const ModuleInstantiation *inst, Arguments arguments)
 {
   auto node = std::make_shared<SphereNode>(inst);
-
-  if (!children.empty()) {
-    LOG(message_group::Warning, inst->location(), arguments.documentRoot(),
-        "module %1$s() does not support child modules", node->name());
-  }
 
   Parameters parameters = Parameters::parse(std::move(arguments), inst->location(), {"r"}, {"d"});
 
@@ -323,14 +314,9 @@ std::unique_ptr<const Geometry> CylinderNode::createGeometry() const
   return polyset;
 }
 
-static std::shared_ptr<AbstractNode> builtin_cylinder(const ModuleInstantiation *inst, Arguments arguments, const Children& children)
+static std::shared_ptr<AbstractNode> builtin_cylinder(const ModuleInstantiation *inst, Arguments arguments)
 {
   auto node = std::make_shared<CylinderNode>(inst);
-
-  if (!children.empty()) {
-    LOG(message_group::Warning, inst->location(), arguments.documentRoot(),
-        "module %1$s() does not support child modules", node->name());
-  }
 
   Parameters parameters = Parameters::parse(std::move(arguments), inst->location(), {"h", "r1", "r2", "center"}, {"r", "d", "d1", "d2"});
 
@@ -433,14 +419,9 @@ std::unique_ptr<const Geometry> PolyhedronNode::createGeometry() const
   return p;
 }
 
-static std::shared_ptr<AbstractNode> builtin_polyhedron(const ModuleInstantiation *inst, Arguments arguments, const Children& children)
+static std::shared_ptr<AbstractNode> builtin_polyhedron(const ModuleInstantiation *inst, Arguments arguments)
 {
   auto node = std::make_shared<PolyhedronNode>(inst);
-
-  if (!children.empty()) {
-    LOG(message_group::Warning, inst->location(), arguments.documentRoot(),
-        "module %1$s() does not support child modules", node->name());
-  }
 
   Parameters parameters = Parameters::parse(std::move(arguments), inst->location(), {"points", "faces", "convexity"}, {"triangles"});
 
@@ -528,14 +509,9 @@ std::unique_ptr<const Geometry> SquareNode::createGeometry() const
   return std::make_unique<Polygon2d>(o);
 }
 
-static std::shared_ptr<AbstractNode> builtin_square(const ModuleInstantiation *inst, Arguments arguments, const Children& children)
+static std::shared_ptr<AbstractNode> builtin_square(const ModuleInstantiation *inst, Arguments arguments)
 {
   auto node = std::make_shared<SquareNode>(inst);
-
-  if (!children.empty()) {
-    LOG(message_group::Warning, inst->location(), arguments.documentRoot(),
-        "module %1$s() does not support child modules", node->name());
-  }
 
   Parameters parameters = Parameters::parse(std::move(arguments), inst->location(), {"size", "center"});
 
@@ -579,14 +555,9 @@ std::unique_ptr<const Geometry> CircleNode::createGeometry() const
   return std::make_unique<Polygon2d>(o);
 }
 
-static std::shared_ptr<AbstractNode> builtin_circle(const ModuleInstantiation *inst, Arguments arguments, const Children& children)
+static std::shared_ptr<AbstractNode> builtin_circle(const ModuleInstantiation *inst, Arguments arguments)
 {
   auto node = std::make_shared<CircleNode>(inst);
-
-  if (!children.empty()) {
-    LOG(message_group::Warning, inst->location(), arguments.documentRoot(),
-        "module %1$s() does not support child modules", node->name());
-  }
 
   Parameters parameters = Parameters::parse(std::move(arguments), inst->location(), {"r"}, {"d"});
 
@@ -677,14 +648,9 @@ std::unique_ptr<const Geometry> PolygonNode::createGeometry() const
   return p;
 }
 
-static std::shared_ptr<AbstractNode> builtin_polygon(const ModuleInstantiation *inst, Arguments arguments, const Children& children)
+static std::shared_ptr<AbstractNode> builtin_polygon(const ModuleInstantiation *inst, Arguments arguments)
 {
   auto node = std::make_shared<PolygonNode>(inst);
-
-  if (!children.empty()) {
-    LOG(message_group::Warning, inst->location(), arguments.documentRoot(),
-        "module %1$s() does not support child modules", node->name());
-  }
 
   Parameters parameters = Parameters::parse(std::move(arguments), inst->location(), {"points", "paths", "convexity"});
 

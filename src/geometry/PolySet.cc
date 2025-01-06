@@ -136,22 +136,23 @@ void PolySet::resize(const Vector3d& newsize, const Eigen::Matrix<bool, 3, 1>& a
  */
 void PolySet::quantizeVertices(std::vector<Vector3d> *pPointsOut)
 {
+  const bool has_colors = !this->color_indices.empty();
   Grid3d<unsigned int> grid(GRID_FINE);
-  std::vector<unsigned int> indices; // Vertex indices in one polygon
+  std::vector<unsigned int> polygon_indices; // Vertex indices in one polygon
   for (size_t i=0; i < this->indices.size();) {
     IndexedFace& ind_f = this->indices[i];
-    indices.resize(ind_f.size());
+    polygon_indices.resize(ind_f.size());
     // Quantize all vertices. Build index list
     for (unsigned int i = 0; i < ind_f.size(); ++i) {
-      indices[i] = grid.align(this->vertices[ind_f[i]]);
+      polygon_indices[i] = grid.align(this->vertices[ind_f[i]]);
       if (pPointsOut && pPointsOut->size() < grid.db.size()) {
         pPointsOut->push_back(this->vertices[ind_f[i]]);
       }
     }
     // Remove consecutive duplicate vertices
     auto currp = ind_f.begin();
-    for (unsigned int i = 0; i < indices.size(); ++i) {
-      if (indices[i] != indices[(i + 1) % indices.size()]) {
+    for (unsigned int i = 0; i < polygon_indices.size(); ++i) {
+      if (polygon_indices[i] != polygon_indices[(i + 1) % polygon_indices.size()]) {
         (*currp++) = ind_f[i];
       }
     }
@@ -159,6 +160,7 @@ void PolySet::quantizeVertices(std::vector<Vector3d> *pPointsOut)
     if (ind_f.size() < 3) {
       PRINTD("Removing collapsed polygon due to quantizing");
       this->indices.erase(this->indices.begin()+i);
+      if (has_colors) this->color_indices.erase(this->color_indices.begin()+i);
     } else {
       i++;
     }

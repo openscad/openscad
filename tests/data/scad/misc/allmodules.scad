@@ -10,14 +10,9 @@ if(false) { cube(); } else { sphere(); }
 union();
 difference();
 intersection();
-dxf_linear_extrude();
 linear_extrude();
-dxf_rotate_extrude();
 rotate_extrude();
 import();
-import_stl();
-import_off();
-import_dxf();
 group();
 cube();
 sphere();

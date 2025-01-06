@@ -56,13 +56,8 @@ namespace fs = std::filesystem;
 using namespace boost::assign; // bring 'operator+=()' into scope
 
 
-static std::shared_ptr<AbstractNode> do_import(const ModuleInstantiation *inst, Arguments arguments, const Children& children, ImportType type)
+static std::shared_ptr<AbstractNode> do_import(const ModuleInstantiation *inst, Arguments arguments, ImportType type)
 {
-  if (!children.empty()) {
-    LOG(message_group::Warning, inst->location(), arguments.documentRoot(),
-        "module %1$s() does not support child modules", inst->name());
-  }
-
   Parameters parameters = Parameters::parse(std::move(arguments), inst->location(),
                                             {"file", "layer", "convexity", "origin", "scale"},
                                             {"width", "height", "filename", "layername", "center", "dpi", "id"}
@@ -154,19 +149,8 @@ static std::shared_ptr<AbstractNode> do_import(const ModuleInstantiation *inst, 
   return node;
 }
 
-static std::shared_ptr<AbstractNode> builtin_import(const ModuleInstantiation *inst, Arguments arguments, const Children& children)
-{ return do_import(inst, std::move(arguments), children, ImportType::UNKNOWN); }
-
-static std::shared_ptr<AbstractNode> builtin_import_stl(const ModuleInstantiation *inst, Arguments arguments, const Children& children)
-{ return do_import(inst, std::move(arguments), children, ImportType::STL); }
-
-static std::shared_ptr<AbstractNode> builtin_import_off(const ModuleInstantiation *inst, Arguments arguments, const Children& children)
-{ return do_import(inst, std::move(arguments), children, ImportType::OFF); }
-
-static std::shared_ptr<AbstractNode> builtin_import_dxf(const ModuleInstantiation *inst, Arguments arguments, const Children& children)
-{ return do_import(inst, std::move(arguments), children, ImportType::DXF); }
-
-
+static std::shared_ptr<AbstractNode> builtin_import(const ModuleInstantiation *inst, Arguments arguments)
+{ return do_import(inst, std::move(arguments), ImportType::UNKNOWN); }
 
 /*!
    Will return an empty geometry if the import failed, but not nullptr
@@ -255,10 +239,6 @@ std::string ImportNode::name() const
 
 void register_builtin_import()
 {
-  Builtins::init("import_stl", new BuiltinModule(builtin_import_stl));
-  Builtins::init("import_off", new BuiltinModule(builtin_import_off));
-  Builtins::init("import_dxf", new BuiltinModule(builtin_import_dxf));
-
   Builtins::init("import", new BuiltinModule(builtin_import),
   {
     "import(string, [number, [number]])",

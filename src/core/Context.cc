@@ -88,7 +88,7 @@ const Value& Context::lookup_variable(const std::string& name, const Location& l
 {
   boost::optional<const Value&> result = try_lookup_variable(name);
   if (!result) {
-    LOG(message_group::Warning, loc, documentRoot(), "Ignoring unknown variable '%1$s'", name);
+    LOG(message_group::Warning, loc, documentRoot(), "Ignoring unknown variable %1$s", quoteVar(name));
     return Value::undefined;
   }
   return *result;
