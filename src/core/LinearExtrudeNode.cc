@@ -52,7 +52,7 @@ std::shared_ptr<AbstractNode> builtin_linear_extrude(const ModuleInstantiation *
 
   Parameters parameters = Parameters::parse(std::move(arguments), inst->location(),
                                             {"height", "v", "scale", "center", "twist", "slices", "segments"},
-                                            {"convexity"});
+                                            {"convexity", "h"});
   parameters.set_caller("linear_extrude");
 
   node->fn = parameters["$fn"].toDouble();
@@ -60,29 +60,36 @@ std::shared_ptr<AbstractNode> builtin_linear_extrude(const ModuleInstantiation *
   node->fa = parameters["$fa"].toDouble();
 
   double height = 100.0;
-  Vector3d v(0,0,1);
 
   if (parameters["v"].isDefined()) {
-    if(!parameters["v"].getVec3(v[0], v[1], v[2])) {
-      v=Vector3d(0,0,1);
+    if(!parameters["v"].getVec3(node->height[0], node->height[1], node->height[2])) {
       LOG(message_group::Error, "v when specified should be a 3d vector.");
     }
-
-    if (parameters["height"].isDefined()) {
-      if(!parameters["height"].getFiniteDouble(height))
-        LOG(message_group::Error, "height when specified should be a double.");
-
-      v.normalize();	    
-      v = v * height;
-
-    } 
-    node->height = v;
-  } else if (parameters["height"].isDefined()) {
-    node->height[0]=0;
-    node->height[1]=0;
-    if(!parameters["height"].getFiniteDouble(node->height[2]))
-      LOG(message_group::Error, "height when specified should be a double.");
+    height = 1.0;
   }
+#if 0
+  if (parameters["height"].isDefined() && parameters["h"].isDefined()) {
+      LOG(message_group::Error, "Don't specify both %1$s and %2$s.",
+          quoteVar("height"), quoteVar("h"));
+  }
+  if (parameters["height"].isDefined() || parameters["h"].isDefined()) {
+    if(!parameters["height"].getFiniteDouble(height) && !parameters["h"].getFiniteDouble(height)) {
+      LOG(message_group::Error, "height when specified should be a number.");
+      height = 100.0;
+    }
+    node->height.normalize();
+  }
+#else
+  const Value& heightValue = parameters[{"height", "h"}];
+  if (heightValue.isDefined()) {
+    if (!heightValue.getFiniteDouble(height)) {
+        LOG(message_group::Error, "height when specified should be a number.");
+        height = 100.0;
+    }
+    node->height.normalize();
+  }
+#endif
+  node->height *= height;
 
   parameters["convexity"].getPositiveInt(node->convexity);
 

@@ -67,6 +67,30 @@ const Value& Parameters::get(const std::string& name) const
   return *value;
 }
 
+const Value& Parameters::get(const std::initializer_list<std::string> names) const
+{
+  std::string match;
+  for (std::string name: names) {
+    boost::optional<const Value&> value = lookup(name);
+    if (value && value->isDefined()) {
+      if (match.empty()) {
+        match = name;
+      } else {
+        LOG(message_group::Error, loc, documentRoot(),
+            "Specified both %1$s and %2$s", quoteVar(match), quoteVar(name));
+      }
+    }
+  }
+
+  for (std::string name : names) {
+    boost::optional<const Value&> value = lookup(name);
+    if (value && value->isDefined()) {
+      return *value;
+    }
+  }
+  return Value::undefined;
+}
+
 double Parameters::get(const std::string& name, double default_value) const
 {
   boost::optional<const Value&> value = lookup(name);
