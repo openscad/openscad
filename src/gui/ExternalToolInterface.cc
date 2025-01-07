@@ -116,9 +116,6 @@ bool LocalProgramService::process(const std::string& displayName, std::function<
     return false;
   }
 
-#ifdef Q_OS_MACOS
-  if (!process.startDetached("open", {"-a", application, QString::fromStdString(exportedFilename_)})) {
-#else
   QStringList args;
   const auto info = QFileInfo(QString::fromStdString(exportedFilename_));
   for (const auto& arg : Settings::Settings::localAppParameterList.items()) {
@@ -147,6 +144,9 @@ bool LocalProgramService::process(const std::string& displayName, std::function<
   }
   const auto argsStr = args.empty() ? "<none>" : "['" + args.join("', '").toStdString() + "']";
   PRINTDB("Running application '%s' with arguments: %s", application.toStdString() % argsStr);
+#ifdef Q_OS_MACOS
+  if (!process.startDetached("open", QStringList({"-a", application, "--args"}) + args)) {
+#else
   if (!process.startDetached(application, args)) {
 #endif
     LOG(message_group::Error, "Could not start Slicer '%1$s': %2$s", application.toStdString(), process.errorString().toStdString());
