@@ -1,7 +1,6 @@
 
 #include "gui/InitConfigurator.h"
-#include <qchar.h>
-#include <qlistwidget.h>
+#include <QListWidget>
 
 #include <QCheckBox>
 #include <QComboBox>
