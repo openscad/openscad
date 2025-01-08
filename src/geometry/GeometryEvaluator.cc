@@ -942,8 +942,10 @@ std::shared_ptr<const Geometry> GeometryEvaluator::projectionCut(const Projectio
 #ifdef ENABLE_MANIFOLD
     if (RenderSettings::inst()->backend3D == RenderBackend3D::ManifoldBackend) {
       auto manifold = ManifoldUtils::createManifoldFromGeometry(newgeom);
-      auto poly2d = manifold->slice();
-      return std::shared_ptr<const Polygon2d>(ClipperUtils::sanitize(poly2d));
+      if (manifold != nullptr) {
+        auto poly2d = manifold->slice();
+        return std::shared_ptr<const Polygon2d>(ClipperUtils::sanitize(poly2d));
+      }
     }
 #endif
 #ifdef ENABLE_CGAL
