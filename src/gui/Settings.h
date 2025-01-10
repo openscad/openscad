@@ -1,9 +1,11 @@
 #pragma once
 
 #include <cstddef>
+#include <cstdint>
 #include <string>
 #include <utility>
 #include <vector>
+#include <sstream>
 
 namespace Settings {
 
@@ -152,6 +154,99 @@ private:
   std::string _defaultValue;
 };
 
+class LocalAppParameterType
+{
+public:
+  enum Value : uint8_t
+  {
+    invalid,
+    string,
+    file,
+    dir,
+    extension,
+    source,
+    sourcedir
+  };
+
+  LocalAppParameterType() = default;
+  constexpr LocalAppParameterType(Value v) : value(v) { }
+  constexpr operator Value() const { return value; }
+  explicit operator bool() const = delete;
+
+  std::string icon() const {
+    switch (value) {
+      case string: return "chokusen-parameter";
+      case file: return "chokusen-orthogonal";
+      case dir: return "chokusen-folder";
+      case extension: return "chokusen-parameter";
+      case source: return "chokusen-file";
+      case sourcedir: return "chokusen-folder";
+      default: return "*invalid*";
+    }
+  }
+
+  std::string description() const {
+    switch (value) {
+      case string: return "";
+      case file: return "<full path to the output file>";
+      case dir: return "<directory of the output file>";
+      case extension: return "<extension of the output file without leading dot>";
+      case source: return "<full path to the main source file>";
+      case sourcedir: return "<directory of the main source file>";
+      default: return "*invalid*";
+    }
+  }
+
+private:
+  Value value;
+};
+
+struct LocalAppParameter {
+  LocalAppParameterType type;
+  std::string value;
+
+  LocalAppParameter() : type(LocalAppParameterType::string), value("") {}
+  LocalAppParameter(const LocalAppParameterType t, std::string v) : type(t), value(std::move(v)) {}
+  operator bool() const { return type != LocalAppParameterType::invalid; }
+};
+
+template<typename item_type>
+class SettingsEntryList : public SettingsEntry
+{
+public:
+  SettingsEntryList(const std::string& category, const std::string& name) :
+    SettingsEntry(category, name)
+  {
+  }
+
+  const std::vector<item_type>& items() const { return _items; }
+  void setItems(std::vector<item_type>& items) { _items = items; }
+  bool isDefault() const override { return _items.empty(); }
+  std::string encode() const override {
+    std::ostringstream oss;
+    for (const auto& item : _items) {
+      oss << item;
+    }
+    return oss.str();
+  }
+  void decode(const std::string& encoded) override {
+    std::vector<item_type> items;
+    std::stringstream ss;
+    ss << encoded;
+    while (ss.good()) {
+      item_type item;
+      ss >> item;
+      if (item) {
+        items.push_back(item);
+      }
+    }
+    setItems(items);
+  }
+
+private:
+  std::vector<item_type> _items;
+};
+
 class SettingsVisitor;
 
 class Settings
@@ -178,19 +273,24 @@ public:
   static SettingsEntryBool enableLineNumbers;
   static SettingsEntryBool enableNumberScrollWheel;
   static SettingsEntryEnum modifierNumberScrollWheel;
+
   static SettingsEntryString defaultPrintService;
   static SettingsEntryString printServiceName;
   static SettingsEntryString printServiceFileFormat;
+
   static SettingsEntryString octoPrintUrl;
   static SettingsEntryString octoPrintApiKey;
   static SettingsEntryEnum octoPrintFileFormat;
-  static SettingsEntryEnum localSlicerFileFormat;
   static SettingsEntryEnum octoPrintAction;
   static SettingsEntryString octoPrintSlicerEngine;
   static SettingsEntryString octoPrintSlicerEngineDesc;
   static SettingsEntryString octoPrintSlicerProfile;
   static SettingsEntryString octoPrintSlicerProfileDesc;
-  static SettingsEntryString localSlicerExecutable;
+
+  static SettingsEntryString localAppExecutable;
+  static SettingsEntryString localAppTempDir;
+  static SettingsEntryList<LocalAppParameter> localAppParameterList;
+  static SettingsEntryEnum localAppFileFormat;
 
   static SettingsEntryBool manifoldEnabled;
   static SettingsEntryEnum renderBackend3D;

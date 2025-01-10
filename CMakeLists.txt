@@ -1285,7 +1285,11 @@ set(RESOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/resources)
 if(HEADLESS)
   target_compile_definitions(OpenSCAD PRIVATE OPENSCAD_NOGUI)
 else()
-  list(APPEND RESOURCE_FILES ${RESOURCE_DIR}/common.qrc)
+  list(APPEND RESOURCE_FILES
+    ${RESOURCE_DIR}/common.qrc
+    ${RESOURCE_DIR}/icons-chokusen.qrc
+    ${RESOURCE_DIR}/icons-chokusen-dark.qrc
+  )
   # GUI_UIS for .ui files to be indexed by Qt Creator despite AUTOUIC usage
   # GUI_HEADERS for .h files to be indexed by Qt Creator despite AUTOUIC usage
   list(APPEND Sources ${GUI_SOURCES} ${GUI_HEADER_ONLY} ${GUI_UIS} ${GUI_HEADERS})

@@ -38,6 +38,7 @@
 #include <tuple>
 #include <cassert>
 #include <list>
+#include <QMenu>
 #include <QActionGroup>
 #include <QMessageBox>
 #include <QFontDatabase>
@@ -48,11 +49,14 @@
 #include <QStatusBar>
 #include <QSettings>
 #include <QTextDocument>
+#include <QListWidget>
+#include <QListWidgetItem>
 #include <boost/algorithm/string.hpp>
 #include "geometry/GeometryCache.h"
 #include "gui/AutoUpdater.h"
 #include "Feature.h"
 #include "gui/Settings.h"
+#include "printutils.h"
 #ifdef ENABLE_CGAL
 #include "geometry/cgal/CGALCache.h"
 #endif
@@ -195,6 +199,14 @@ void Preferences::init() {
   this->lineEditStepSize->setValidator(validator1);
   this->traceDepthEdit->setValidator(uintValidator);
 
+  auto menu = new QMenu();
+  menu->addAction(actionLocalAppParameterFile);
+  menu->addAction(actionLocalAppParameterDir);
+  menu->addAction(actionLocalAppParameterExtension);
+  menu->addAction(actionLocalAppParameterSource);
+  menu->addAction(actionLocalAppParameterSourceDir);
+  toolButtonLocalAppParameterAddFile->setMenu(menu);
+
   Settings::Settings::visit(SettingsReader());
 
   initComboBox(this->comboBoxIndentUsing, Settings::Settings::indentStyle);
@@ -211,10 +223,15 @@ void Preferences::init() {
 
   initComboBox(this->comboBoxOctoPrintFileFormat, Settings::Settings::octoPrintFileFormat);
   initComboBox(this->comboBoxOctoPrintAction, Settings::Settings::octoPrintAction);
-  initComboBox(this->comboBoxLocalSlicerFileFormat, Settings::Settings::localSlicerFileFormat);
+  initComboBox(this->comboBoxLocalAppFileFormat, Settings::Settings::localAppFileFormat);
   initComboBox(this->comboBoxRenderBackend3D, Settings::Settings::renderBackend3D);
   initComboBox(this->comboBoxToolbarExport3D, Settings::Settings::toolbarExport3D);
   initComboBox(this->comboBoxToolbarExport2D, Settings::Settings::toolbarExport2D);
+
+  initListBox(this->listWidgetLocalAppParams, Settings::Settings::localAppParameterList);
+  connect(this->listWidgetLocalAppParams->model(), &QAbstractItemModel::dataChanged, this, &Preferences::listWidgetLocalAppParamsModelDataChanged);
+  connect(this->listWidgetLocalAppParams->model(), &QAbstractItemModel::rowsInserted, this, &Preferences::listWidgetLocalAppParamsModelDataChanged);
+  connect(this->listWidgetLocalAppParams->model(), &QAbstractItemModel::rowsRemoved, this, &Preferences::listWidgetLocalAppParamsModelDataChanged);
 
   installIgnoreWheelWhenNotFocused(this);
 
@@ -222,7 +239,8 @@ void Preferences::init() {
   const QString slicerDesc = QString::fromStdString(Settings::Settings::octoPrintSlicerEngineDesc.value());
   const QString profile = QString::fromStdString(Settings::Settings::octoPrintSlicerProfile.value());
   const QString profileDesc = QString::fromStdString(Settings::Settings::octoPrintSlicerProfileDesc.value());
-  BlockSignals<QLineEdit *>(this->lineEditLocalSlicer)->setText(QString::fromStdString(Settings::Settings::localSlicerExecutable.value()));
+  BlockSignals<QLineEdit *>(this->lineEditLocalAppExecutable)->setText(QString::fromStdString(Settings::Settings::localAppExecutable.value()));
+  BlockSignals<QLineEdit *>(this->lineEditLocalAppTempDir)->setText(QString::fromStdString(Settings::Settings::localAppTempDir.value()));
   this->comboBoxOctoPrintSlicingEngine->clear();
   this->comboBoxOctoPrintSlicingEngine->addItem(_("<Default>"), QVariant{""});
   if (!slicer.isEmpty()) {
@@ -367,7 +385,7 @@ void Preferences::setup3DPrintPage()
   const std::unordered_map<std::string, QString> services = {
       {"NONE", _("NONE")},
       {"OCTOPRINT", _("OctoPrint")},
-      {"LOCALSLICER", _("Local Slicer")},
+      {"LOCALSLICER", _("Local Application")},
   };
 
   instance->comboBoxDefaultPrintService->addItem(services.at("NONE"),
@@ -851,27 +869,167 @@ void Preferences::on_comboBoxOctoPrintFileFormat_activated(int val)
   applyComboBox(this->comboBoxOctoPrintFileFormat, val, Settings::Settings::octoPrintFileFormat);
 }
 
-void Preferences::on_pushButtonSelectLocalSlicerPath_clicked()
+void Preferences::on_comboBoxLocalAppFileFormat_activated(int val)
+{
+  applyComboBox(this->comboBoxLocalAppFileFormat, val, Settings::Settings::localAppFileFormat);
+  writeSettings();
+}
+
+void Preferences::on_lineEditLocalAppExecutable_editingFinished()
+{
+  Settings::Settings::localAppExecutable.setValue(this->lineEditLocalAppExecutable->text().toStdString());
+  writeSettings();
+}
+
+void Preferences::on_toolButtonLocalAppSelectExecutable_clicked()
 {
   const QString fileName = QFileDialog::getOpenFileName(this, "Select application");
   if (fileName.isEmpty()) {
     return;
   }
 
-  this->lineEditLocalSlicer->setText(fileName);
-  on_lineEditLocalSlicer_editingFinished();
+  this->lineEditLocalAppExecutable->setText(fileName);
+  on_lineEditLocalAppExecutable_editingFinished();
 }
 
-void Preferences::on_comboBoxLocalSlicerFileFormat_activated(int val)
+void Preferences::on_lineEditLocalAppTempDir_editingFinished()
 {
-  applyComboBox(this->comboBoxLocalSlicerFileFormat, val, Settings::Settings::localSlicerFileFormat);
+  Settings::Settings::localAppTempDir.setValue(this->lineEditLocalAppTempDir->text().toStdString());
   writeSettings();
 }
 
-void Preferences::on_lineEditLocalSlicer_editingFinished()
+void Preferences::on_toolButtonLocalAppSelectTempDir_clicked()
 {
-  Settings::Settings::localSlicerExecutable.setValue(this->lineEditLocalSlicer->text().toStdString());
+  const QString tempDir = QFileDialog::getExistingDirectory(this, "Select temporary directory");
+  if (tempDir.isEmpty()) {
+    return;
+  }
+
+  this->lineEditLocalAppTempDir->setText(tempDir);
+  on_lineEditLocalAppTempDir_editingFinished();
+}
+
+void Preferences::moveListBoxRow(QListWidget *listBox, int offset)
+{
+  const auto& index = listBox->selectionModel()->currentIndex();
+  int newRow = index.row() + offset;
+  if (newRow >= 0 && newRow <= listBox->count()) {
+    auto item = listBox->takeItem(index.row());
+    listBox->insertItem(newRow, item);
+    listBox->setCurrentRow(newRow);
+  }
+}
+
+void Preferences::on_toolButtonLocalAppParameterUp_clicked()
+{
+  moveListBoxRow(this->listWidgetLocalAppParams, -1);
+}
+
+void Preferences::on_toolButtonLocalAppParameterDown_clicked()
+{
+  moveListBoxRow(this->listWidgetLocalAppParams, 1);
+}
+
+void Preferences::on_toolButtonLocalAppParameterRemove_clicked()
+{
+  const auto& index = this->listWidgetLocalAppParams->selectionModel()->currentIndex();
+  if (index.row() >= 0) {
+    auto item = this->listWidgetLocalAppParams->takeItem(index.row());
+    delete item;
+  }
+}
+
+void Preferences::insertListItem(QListWidget *listBox, QListWidgetItem *listItem) {
+  const auto hasSelection = listBox->selectionModel()->hasSelection();
+  const auto pos = hasSelection ? listBox->selectionModel()->currentIndex().row() + 1 : listBox->count();
+  listBox->insertItem(pos, listItem);
+  listBox->setCurrentRow(pos);
+  listBox->editItem(listItem);
+}
+
+void Preferences::on_toolButtonLocalAppParameterAdd_clicked()
+{
+  auto listItem = createListItem(Settings::LocalAppParameterType(Settings::LocalAppParameterType::string), "", true);
+  insertListItem(this->listWidgetLocalAppParams, listItem);
+}
+
+void Preferences::addLocalAppParameter(const Settings::LocalAppParameterType& type)
+{
+  auto listItem = createListItem(Settings::LocalAppParameterType(type));
+  insertListItem(this->listWidgetLocalAppParams, listItem);
+}
+
+void Preferences::on_toolButtonLocalAppParameterAddFile_clicked()
+{
+  addLocalAppParameter(Settings::LocalAppParameterType::file);
+}
+
+void Preferences::on_listWidgetLocalAppParams_itemSelectionChanged()
+{
+  const auto hasSelection = this->listWidgetLocalAppParams->selectionModel()->hasSelection();
+  const auto& index = this->listWidgetLocalAppParams->selectionModel()->currentIndex();
+  this->toolButtonLocalAppParameterRemove->setEnabled(hasSelection);
+  this->toolButtonLocalAppParameterUp->setEnabled(hasSelection && index.row() > 0);
+  this->toolButtonLocalAppParameterDown->setEnabled(hasSelection && index.row() < this->listWidgetLocalAppParams->count() - 1);
+}
+
+void Preferences::updateLocalAppParams()
+{
+  std::vector<Settings::LocalAppParameter> items;
+  for (int idx = 0;idx < this->listWidgetLocalAppParams->count();++idx) {
+    const auto item = this->listWidgetLocalAppParams->item(idx);
+    if (item->type() == static_cast<int>(QListWidgetItem::UserType) + static_cast<int>(Settings::LocalAppParameterType::string)) {
+      items.emplace_back(Settings::LocalAppParameterType::string, item->text().toStdString());
+    } else if (item->type() == static_cast<int>(QListWidgetItem::UserType) + static_cast<int>(Settings::LocalAppParameterType::file)) {
+      items.emplace_back(Settings::LocalAppParameterType::file, std::string{});
+    } else if (item->type() == static_cast<int>(QListWidgetItem::UserType) + static_cast<int>(Settings::LocalAppParameterType::dir)) {
+      items.emplace_back(Settings::LocalAppParameterType::dir, std::string{});
+    } else if (item->type() == static_cast<int>(QListWidgetItem::UserType) + static_cast<int>(Settings::LocalAppParameterType::extension)) {
+      items.emplace_back(Settings::LocalAppParameterType::extension, std::string{});
+    } else if (item->type() == static_cast<int>(QListWidgetItem::UserType) + static_cast<int>(Settings::LocalAppParameterType::source)) {
+      items.emplace_back(Settings::LocalAppParameterType::source, std::string{});
+    } else if (item->type() == static_cast<int>(QListWidgetItem::UserType) + static_cast<int>(Settings::LocalAppParameterType::sourcedir)) {
+      items.emplace_back(Settings::LocalAppParameterType::sourcedir, std::string{});
+    }
+  }
+  Settings::Settings::localAppParameterList.setItems(items);
   writeSettings();
+}
+
+void Preferences::on_listWidgetLocalAppParams_itemChanged(QListWidgetItem *) {
+  // called when parameter values are edited
+  updateLocalAppParams();
+}
+
+void Preferences::listWidgetLocalAppParamsModelDataChanged()
+{
+  // called when rows are added or removed 
+  updateLocalAppParams();
+}
+
+void Preferences::on_actionLocalAppParameterFile_triggered()
+{
+  addLocalAppParameter(Settings::LocalAppParameterType::file);
+}
+
+void Preferences::on_actionLocalAppParameterDir_triggered()
+{
+  addLocalAppParameter(Settings::LocalAppParameterType::dir);
+}
+
+void Preferences::on_actionLocalAppParameterExtension_triggered()
+{
+  addLocalAppParameter(Settings::LocalAppParameterType::extension);
+}
+
+void Preferences::on_actionLocalAppParameterSource_triggered()
+{
+  addLocalAppParameter(Settings::LocalAppParameterType::source);
+}
+
+void Preferences::on_actionLocalAppParameterSourceDir_triggered()
+{
+  addLocalAppParameter(Settings::LocalAppParameterType::sourcedir);
 }
 
 void Preferences::on_pushButtonOctoPrintCheckConnection_clicked()

@@ -17,6 +17,7 @@
 #include <QSettings>
 
 #include "gui/qtgettext.h" // IWYU pragma: keep
+#include "openscad_gui.h"
 #include "ui_Preferences.h"
 #include "gui/Settings.h"
 #include "gui/InitConfigurator.h"
@@ -36,6 +37,21 @@ public:
   void apply_win() const;
   void updateGUI();
   void fireEditorConfigChanged() const;
+  void insertListItem(QListWidget *listBox, QListWidgetItem *listItem);
+
+  template<typename item_type>
+  QListWidgetItem * createListItem(const item_type& itemType, const QString& text = "", bool editable = false) {
+    const auto icon = QIcon::fromTheme(QString::fromStdString(itemType.icon()));
+    std::string description = itemType.description();
+    const auto itemText = description.empty() ? text : QString::fromStdString(description);
+    const auto listItem = new QListWidgetItem(icon, itemText,
+      nullptr,
+      static_cast<int>(QListWidgetItem::UserType) + static_cast<int>(itemType));
+    if (editable) {
+      listItem->setFlags(listItem->flags() | Qt::ItemIsEditable);
+    }
+    return listItem;
+  }
 
 public slots:
   void actionTriggered(class QAction *);
@@ -121,12 +137,27 @@ public slots:
   void on_comboBoxOctoPrintSlicingProfile_activated(int);
   void on_comboBoxOctoPrintAction_activated(int);
   void on_comboBoxOctoPrintFileFormat_activated(int);
-  void on_comboBoxLocalSlicerFileFormat_activated(int);
   void on_lineEditOctoPrintURL_editingFinished();
   void on_lineEditOctoPrintApiKey_editingFinished();
   void on_pushButtonOctoPrintApiKey_clicked();
-  void on_pushButtonSelectLocalSlicerPath_clicked();
-  void on_lineEditLocalSlicer_editingFinished();
+  void on_lineEditLocalAppExecutable_editingFinished();
+  void on_toolButtonLocalAppSelectExecutable_clicked();
+  void on_lineEditLocalAppTempDir_editingFinished();
+  void on_toolButtonLocalAppSelectTempDir_clicked();
+  void on_comboBoxLocalAppFileFormat_activated(int);
+  void on_toolButtonLocalAppParameterRemove_clicked();
+  void on_toolButtonLocalAppParameterAdd_clicked();
+  void on_toolButtonLocalAppParameterUp_clicked();
+  void on_toolButtonLocalAppParameterDown_clicked();
+  void on_toolButtonLocalAppParameterAddFile_clicked();
+  void on_listWidgetLocalAppParams_itemSelectionChanged();
+  void on_listWidgetLocalAppParams_itemChanged(QListWidgetItem *);
+  void on_actionLocalAppParameterFile_triggered();
+  void on_actionLocalAppParameterDir_triggered();
+  void on_actionLocalAppParameterExtension_triggered();
+  void on_actionLocalAppParameterSource_triggered();
+  void on_actionLocalAppParameterSourceDir_triggered();
+  void listWidgetLocalAppParamsModelDataChanged();
 
 signals:
   void requestRedraw() const;
@@ -166,6 +197,9 @@ private:
   void createFontSizeMenu(QComboBox *box, const QString &setting);
   void updateGUIFontFamily(QFontComboBox *fontSelector, const QString &setting);
   void updateGUIFontSize(QComboBox *fsSelector, const QString &setting);
+  void updateLocalAppParams();
+  void addLocalAppParameter(const Settings::LocalAppParameterType&);
+  void moveListBoxRow(QListWidget *listBox, int offset);
 
   /** Set value from combobox to settings */
   void applyComboBox(QComboBox *comboBox, int val, Settings::SettingsEntryEnum& entry);

@@ -26,9 +26,13 @@
 
 #include "gui/ExternalToolInterface.h"
 
-#include <QtCore/qtemporaryfile.h>
-#include <QtCore/QDir>
+#include <QDir>
+#include <QString>
+#include <QFileInfo>
+#include <QStringList>
+#include <QTemporaryFile>
 
+#include "Settings.h"
 #include "gui/OctoPrint.h"
 #include "io/export.h"
 #include "geometry/Geometry.h"
@@ -45,7 +49,7 @@ bool ExternalToolInterface::exportTemporaryFile(const std::shared_ptr<const Geom
   };
 
   // FIXME: Remove original suffix first
-  QTemporaryFile exportFile{QDir::temp().filePath(
+  QTemporaryFile exportFile{getTempDir().filePath(
     QString("%1.XXXXXX.%2").
       arg(QString::fromStdString(exportInfo.sourceFilePath)).
       arg(QString::fromStdString(fileformat::toSuffix(exportFormat_))))};
@@ -60,7 +64,7 @@ bool ExternalToolInterface::exportTemporaryFile(const std::shared_ptr<const Geom
   }
   const QString exportFileName = exportFile.fileName();
 
-
+  sourceFilename_ = sourceFileName.toStdString();
   exportedFilename_ = exportFileName.toStdString();
   const bool ok = exportFileByName(rootGeometry, exportedFilename_, exportInfo);
   LOG("Exported temporary file %1$s", exportedFilename_);
@@ -86,18 +90,66 @@ bool OctoPrintService::process(const std::string& displayName, std::function<boo
   return true;
 }
 
+QDir LocalProgramService::getTempDir() const
+{
+  const auto& tempDirConfig = Settings::Settings::localAppTempDir.value();
+  if (tempDirConfig.empty()) {
+    return QDir::temp();
+  }
+  const auto tempDir = QDir{QString::fromStdString(tempDirConfig)};
+  if (!tempDir.exists()) {
+    LOG(message_group::Warning, "Configured temporary directory does not exist: '%1$s'", tempDirConfig);
+    return QDir::temp();
+  }
+  return tempDir;
+}
+
 bool LocalProgramService::process(const std::string& displayName, std::function<bool (double)> progress_cb) 
 {
   QProcess process;
   process.setProcessChannelMode(QProcess::MergedChannels);
 
-  const QString slicer = QString::fromStdString(Settings::Settings::localSlicerExecutable.value());
+  const QString application = QString::fromStdString(Settings::Settings::localAppExecutable.value());
+
+  if (application.trimmed().isEmpty()) {
+    LOG(message_group::Error, "No application configured, check Preferences -> 3D Print -> Local Application");
+    return false;
+  }
+
+  QStringList args;
+  const auto info = QFileInfo(QString::fromStdString(exportedFilename_));
+  for (const auto& arg : Settings::Settings::localAppParameterList.items()) {
+    switch (arg.type) {
+    case Settings::LocalAppParameterType::string:
+      args.append(QString::fromStdString(arg.value));
+      break;
+    case Settings::LocalAppParameterType::file:
+      args.append(QString::fromStdString(exportedFilename_));
+      break;
+    case Settings::LocalAppParameterType::dir:
+      args.append(info.absoluteDir().path());
+      break;
+    case Settings::LocalAppParameterType::extension:
+      args.append(info.suffix());
+      break;
+    case Settings::LocalAppParameterType::source:
+      args.append(QString::fromStdString(sourceFilename_));
+      break;
+    case Settings::LocalAppParameterType::sourcedir:
+      args.append(QFileInfo(QString::fromStdString(sourceFilename_)).absoluteDir().path());
+      break;
+    default:
+      break;
+    }
+  }
+  const auto argsStr = args.empty() ? "<none>" : "['" + args.join("', '").toStdString() + "']";
+  PRINTDB("Running application '%s' with arguments: %s", application.toStdString() % argsStr);
 #ifdef Q_OS_MACOS
-  if(!process.startDetached("open", {"-a", slicer, QString::fromStdString(exportedFilename_)})) {
-#else	  
-  if(!process.startDetached(slicer, {QString::fromStdString(exportedFilename_)})) {
+  if (!process.startDetached("open", QStringList({"-a", application, "--args"}) + args)) {
+#else
+  if (!process.startDetached(application, args)) {
 #endif
-    LOG(message_group::Error, "Could not start Slicer '%1$s': %2$s", slicer.toStdString(), process.errorString().toStdString());
+    LOG(message_group::Error, "Could not start Slicer '%1$s': %2$s", application.toStdString(), process.errorString().toStdString());
     const auto output = process.readAll();
     if (output.length() > 0) {
       LOG(message_group::Error, "Output: %1$s", output.toStdString());

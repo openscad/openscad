@@ -28,7 +28,8 @@
 
 #include <memory>
 
-#include <QtCore/qstring.h>
+#include <QDir>
+#include <QString>
 
 #include "gui/PrintService.h"
 #include "geometry/Geometry.h"
@@ -46,7 +47,9 @@ public:
 
   FileFormat fileFormat() const { return exportFormat_; }
   virtual std::string getURL() const { return ""; };
+  virtual QDir getTempDir() const { return QDir::temp(); };
 protected:
+  std::string sourceFilename_;
   FileFormat exportFormat_;
   std::string exportedFilename_;
 };
@@ -85,6 +88,7 @@ class LocalProgramService : public ExternalToolInterface
   public:
   LocalProgramService(FileFormat fileFormat) : ExternalToolInterface(fileFormat) {}
   bool process(const std::string& displayName, std::function<bool (double)>) override;
+  QDir getTempDir() const override;
 };
 
 std::unique_ptr<LocalProgramService> createLocalProgramService(FileFormat fileFormat);

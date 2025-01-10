@@ -235,3 +235,12 @@ void UIUtils::openOfflineCheatSheet()
     QDesktopServices::openUrl(QUrl(docPath));
   }
 }
+
+QString UIUtils::blendForBackgroundColorStyleSheet(const QColor& input, const QColor& blend, float transparency)
+{
+  const auto result = QColor(
+    255.0 * (transparency * blend.redF() + (1 - transparency) * input.redF()),
+    255.0 * (transparency * blend.greenF() + (1 - transparency) * input.greenF()),
+    255.0 * (transparency * blend.blueF() + (1 - transparency) * input.blueF()));
+  return QString("background-color:%1;").arg(result.toRgb().name());
+}

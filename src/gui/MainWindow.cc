@@ -52,6 +52,7 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include "openscad_gui.h"
 
 #ifdef ENABLE_MANIFOLD
 #include "geometry/manifold/manifoldutils.h"
@@ -623,53 +624,6 @@ MainWindow::MainWindow(const QStringList& filenames)
 
   Preferences *instance = Preferences::inst();
 
-  initActionIcon(fileActionNew, ":/icons/svg-default/new.svg", ":/icons/svg-default/new-white.svg");
-  initActionIcon(fileActionOpen, ":/icons/svg-default/open.svg", ":/icons/svg-default/open-white.svg");
-  initActionIcon(fileActionSave, ":/icons/svg-default/save.svg", ":/icons/svg-default/save-white.svg");
-  initActionIcon(editActionZoomTextIn, ":/icons/svg-default/zoom-text-in.svg", ":/icons/svg-default/zoom-text-in-white.svg");
-  initActionIcon(editActionZoomTextOut, ":/icons/svg-default/zoom-text-out.svg", ":/icons/svg-default/zoom-text-out-white.svg");
-  initActionIcon(designActionRender, ":/icons/svg-default/render.svg", ":/icons/svg-default/render-white.svg");
-  initActionIcon(designAction3DPrint, ":/icons/svg-default/send.svg", ":/icons/svg-default/send-white.svg");
-  initActionIcon(viewActionShowAxes, ":/icons/svg-default/axes.svg", ":/icons/svg-default/axes-white.svg");
-  initActionIcon(viewActionShowEdges, ":/icons/svg-default/show-edges.svg", ":/icons/svg-default/show-edges-white.svg");
-  initActionIcon(viewActionZoomIn, ":/icons/svg-default/zoom-in.svg", ":/icons/svg-default/zoom-in-white.svg");
-  initActionIcon(viewActionZoomOut, ":/icons/svg-default/zoom-out.svg", ":/icons/svg-default/zoom-out-white.svg");
-  initActionIcon(viewActionTop, ":/icons/svg-default/view-top.svg", ":/icons/svg-default/view-top-white.svg");
-  initActionIcon(viewActionBottom, ":/icons/svg-default/view-bottom.svg", ":/icons/svg-default/view-bottom-white.svg");
-  initActionIcon(viewActionLeft, ":/icons/svg-default/view-left.svg", ":/icons/svg-default/view-left-white.svg");
-  initActionIcon(viewActionRight, ":/icons/svg-default/view-right.svg", ":/icons/svg-default/view-right-white.svg");
-  initActionIcon(viewActionFront, ":/icons/svg-default/view-front.svg", ":/icons/svg-default/view-front-white.svg");
-  initActionIcon(viewActionBack, ":/icons/svg-default/view-back.svg", ":/icons/svg-default/view-back-white.svg");
-  initActionIcon(viewActionSurfaces, ":/icons/svg-default/surface.svg", ":/icons/svg-default/surface-white.svg");
-  initActionIcon(viewActionWireframe, ":/icons/svg-default/wireframe.svg", ":/icons/svg-default/wireframe-white.svg");
-  initActionIcon(viewActionShowCrosshairs, ":/icons/svg-default/crosshairs.svg", ":/icons/svg-default/crosshairs-white.svg");
-  initActionIcon(viewActionThrownTogether, ":/icons/svg-default/throwntogether.svg", ":/icons/svg-default/throwntogether-white.svg");
-  initActionIcon(viewActionPerspective, ":/icons/svg-default/perspective.svg", ":/icons/svg-default/perspective-white.svg");
-  initActionIcon(viewActionOrthogonal, ":/icons/svg-default/orthogonal.svg", ":/icons/svg-default/orthogonal-white.svg");
-  initActionIcon(designActionPreview, ":/icons/svg-default/preview.svg", ":/icons/svg-default/preview-white.svg");
-  initActionIcon(designActionMeasureDist, ":/icons/svg-default/measure-dist.svg", ":/icons/svg-default/measure-dist-white.svg");
-  initActionIcon(designActionMeasureAngle, ":/icons/svg-default/measure-ang.svg", ":/icons/svg-default/measure-ang-white.svg");
-  initActionIcon(fileActionExportBinarySTL, ":/icons/svg-default/export-stl.svg", ":/icons/svg-default/export-stl-white.svg");
-  initActionIcon(fileActionExportAsciiSTL, ":/icons/svg-default/export-stl.svg", ":/icons/svg-default/export-stl-white.svg");
-  initActionIcon(fileActionExportAMF, ":/icons/svg-default/export-amf.svg", ":/icons/svg-default/export-amf-white.svg");
-  initActionIcon(fileActionExport3MF, ":/icons/svg-default/export-3mf.svg", ":/icons/svg-default/export-3mf-white.svg");
-  initActionIcon(fileActionExportOBJ, ":/icons/svg-default/export-obj.svg", ":/icons/svg-default/export-obj-white.svg");
-  initActionIcon(fileActionExportOFF, ":/icons/svg-default/export-off.svg", ":/icons/svg-default/export-off-white.svg");
-  initActionIcon(fileActionExportWRL, ":/icons/svg-default/export-wrl.svg", ":/icons/svg-default/export-wrl-white.svg");
-  initActionIcon(fileActionExportPOV, ":/icons/svg-default/export-pov.svg", ":/icons/svg-default/export-pov-white.svg");
-  initActionIcon(fileActionExportDXF, ":/icons/svg-default/export-dxf.svg", ":/icons/svg-default/export-dxf-white.svg");
-  initActionIcon(fileActionExportSVG, ":/icons/svg-default/export-svg.svg", ":/icons/svg-default/export-svg-white.svg");
-  initActionIcon(fileActionExportCSG, ":/icons/svg-default/export-csg.svg", ":/icons/svg-default/export-csg-white.svg");
-  initActionIcon(fileActionExportPDF, ":/icons/svg-default/export-pdf.svg", ":/icons/svg-default/export-pdf-white.svg");
-  initActionIcon(fileActionExportImage, ":/icons/svg-default/export-png.svg", ":/icons/svg-default/export-png-white.svg");
-  initActionIcon(viewActionViewAll, ":/icons/svg-default/zoom-all.svg", ":/icons/svg-default/zoom-all-white.svg");
-  initActionIcon(editActionUndo, ":/icons/svg-default/undo.svg", ":/icons/svg-default/undo-white.svg");
-  initActionIcon(editActionRedo, ":/icons/svg-default/redo.svg", ":/icons/svg-default/redo-white.svg");
-  initActionIcon(editActionUnindent, ":/icons/svg-default/unindent.svg", ":/icons/svg-default/unindent-white.svg");
-  initActionIcon(editActionIndent, ":/icons/svg-default/indent.svg", ":/icons/svg-default/indent-white.svg");
-  initActionIcon(viewActionResetView, ":/icons/svg-default/reset-view.svg", ":/icons/svg-default/reset-view-white.svg");
-  initActionIcon(viewActionShowScaleProportional, ":/icons/svg-default/scalemarkers.svg", ":/icons/svg-default/scalemarkers-white.svg");
-
   InputDriverManager::instance()->registerActions(this->menuBar()->actions(), "", "");
   InputDriverManager::instance()->registerActions(this->animateWidget->actions(), "animation", "animate");
   instance->ButtonConfig->init();
@@ -795,17 +749,6 @@ void MainWindow::openFileFromPath(const QString& path, int line)
     activeEditor->setFocus();
     activeEditor->setCursorPosition(line, 0);
   }
-}
-
-bool MainWindow::isLightTheme(){
-  int defaultcolor = viewerToolBar->palette().window().color().lightness();
-  return (defaultcolor > 165);
-}
-
-void MainWindow::initActionIcon(QAction *action, const char *darkResource, const char *lightResource)
-{
-  const char *resource = this->isLightTheme() ? darkResource : lightResource;
-  action->setIcon(QIcon(resource));
 }
 
 void MainWindow::addKeyboardShortCut(const QList<QAction *>& actions)
@@ -2132,7 +2075,7 @@ std::unique_ptr<ExternalToolInterface> createExternalToolService(
     case print_service_t::OCTOPRINT:
       return createOctoPrintService(fileFormat);
     break;
-    case print_service_t::LOCALSLICER:
+    case print_service_t::LOCAL_APPLICATION:
       return createLocalProgramService(fileFormat);
     break;
   }

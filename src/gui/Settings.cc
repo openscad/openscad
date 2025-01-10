@@ -9,10 +9,16 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/range/adaptors.hpp>
 #include <cstddef>
+#include <cstdint>
+#include <istream>
 #include <iterator>
 #include <string>
 #include <utility>
 #include <vector>
+
+#include "json/json.hpp"
+
+using json = nlohmann::json;
 
 namespace Settings {
 
@@ -98,8 +104,6 @@ void SettingsEntryEnum::setValue(const std::string& value)
   }
 }
 
-
-
 static std::vector<SettingsEntryEnum::Item> axisValues() {
   std::vector<SettingsEntryEnum::Item> output;
   output.push_back({"None", _("None")});
@@ -113,6 +117,33 @@ static std::vector<SettingsEntryEnum::Item> axisValues() {
     output.push_back({userDataInv, textInv});
   }
   return output;
+}
+
+std::ostream& operator<<(std::ostream& stream, const LocalAppParameter& param)
+{
+  json data;
+  data["type"] = static_cast<int>(param.type);
+  if (!param.value.empty()) {
+    data["value"] = param.value;
+  }
+  stream << data.dump();
+  return stream;
+}
+
+std::istream& operator>>(std::istream& stream, LocalAppParameter& param)
+{
+  try {
+    json data;
+    stream >> data;
+    param.type = static_cast<LocalAppParameterType>(data["type"]);
+    if (data.contains("value")) {
+      param.value = data["value"];
+    }
+  } catch (const json::exception& e) {
+    param.type = LocalAppParameterType::invalid;
+    param.value = "";
+  }
+  return stream;
 }
 
 SettingsEntryBool Settings::showWarningsIn3dView("3dview", "showWarningsIn3dView", true);
@@ -154,10 +185,12 @@ SettingsEntryEnum Settings::octoPrintFileFormat(
     createFileFormatItems({FileFormat::ASCII_STL, FileFormat::BINARY_STL, FileFormat::_3MF, FileFormat::OFF}),
     fileformat::info(FileFormat::ASCII_STL).description);
 
-SettingsEntryString Settings::localSlicerExecutable("printing", "localSlicerExecutable", "");
-SettingsEntryEnum Settings::localSlicerFileFormat(
-    "printing", "localSlicerFileFormat", createFileFormatItems(fileformat::all3D()),
+SettingsEntryString Settings::localAppExecutable("printing", "localAppExecutable", "");
+SettingsEntryString Settings::localAppTempDir("printing", "localAppTempDir", "");
+SettingsEntryEnum Settings::localAppFileFormat(
+    "printing", "localAppFileFormat", createFileFormatItems(fileformat::all3D()),
     fileformat::info(FileFormat::ASCII_STL).description);
+SettingsEntryList<LocalAppParameter> Settings::localAppParameterList("printing", "localAppParameterList");
 
 SettingsEntryEnum Settings::renderBackend3D("advanced", "renderBackend3D", {{"CGAL", "CGAL (old/slow)"}, {"Manifold", "Manifold (new/fast)"}}, "CGAL");
 
