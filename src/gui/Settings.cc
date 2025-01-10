@@ -1,13 +1,7 @@
 #include "gui/Settings.h"
-#include "io/export.h"
-#include "glview/RenderSettings.h"
-#include "utils/printutils.h"
-#include "gui/input/InputEventMapper.h"
+
 #include <cassert>
 #include <array>
-#include <boost/algorithm/string.hpp>
-#include <boost/lexical_cast.hpp>
-#include <boost/range/adaptors.hpp>
 #include <cstddef>
 #include <cstdint>
 #include <istream>
@@ -15,6 +9,15 @@
 #include <string>
 #include <utility>
 #include <vector>
+#include <boost/algorithm/string.hpp>
+#include <boost/lexical_cast.hpp>
+#include <boost/range/adaptors.hpp>
+
+#include "PrintInitDialog.h"
+#include "io/export.h"
+#include "glview/RenderSettings.h"
+#include "utils/printutils.h"
+#include "gui/input/InputEventMapper.h"
 
 #include "json/json.hpp"
 
@@ -24,19 +27,34 @@ namespace Settings {
 
 namespace {
 
-std::vector<SettingsEntryEnum::Item> createFileFormatItems(std::vector<FileFormat> formats) {
-  std::vector<SettingsEntryEnum::Item> items;
+std::vector<SettingsEntry *> entries;
+
+std::vector<SettingsEntryEnum<std::string>::Item> createFileFormatItems(std::vector<FileFormat> formats) {
+  std::vector<SettingsEntryEnum<std::string>::Item> items;
   std::transform(formats.begin(), formats.end(), std::back_inserter(items),
                  [](const FileFormat& format){
     const FileFormatInfo &info = fileformat::info(format);
-    return SettingsEntryEnum::Item{info.identifier, info.description};
+    return SettingsEntryEnum<std::string>::Item{info.identifier, info.description};
     });
   return items;
 }
 
-}  // namespace
+std::vector<SettingsEntryEnum<std::string>::Item> axisValues() {
+  std::vector<SettingsEntryEnum<std::string>::Item> output;
+  output.push_back({"None", _("None")});
+  for (size_t i = 0; i < InputEventMapper::getMaxAxis(); ++i) {
+    const auto userData = (boost::format("+%d") % (i + 1)).str();
+    const auto text = (boost::format(_("Axis %d")) % i).str();
+    output.push_back({userData, text});
 
-static std::vector<SettingsEntry *> entries;
+    const auto userDataInv = (boost::format("-%d") % (i + 1)).str();
+    const auto textInv = (boost::format(_("Axis %d (inverted)")) % i).str();
+    output.push_back({userDataInv, textInv});
+  }
+  return output;
+}
+
+} // namespace
 
 void Settings::visit(const SettingsVisitor& visitor)
 {
@@ -94,30 +112,11 @@ void SettingsEntryDouble::decode(const std::string& encoded)
   } catch (const boost::bad_lexical_cast&) {}
 }
 
-void SettingsEntryEnum::setValue(const std::string& value)
-{
-  for (size_t i = 0; i < _items.size(); ++i) {
-    if (_items[i].value == value) {
-      _index = i;
-      return;
-    }
-  }
-}
+template<>
+std::string SettingsEntryEnum<std::string>::encode() const { return value(); }
 
-static std::vector<SettingsEntryEnum::Item> axisValues() {
-  std::vector<SettingsEntryEnum::Item> output;
-  output.push_back({"None", _("None")});
-  for (size_t i = 0; i < InputEventMapper::getMaxAxis(); ++i) {
-    const auto userData = (boost::format("+%d") % (i + 1)).str();
-    const auto text = (boost::format(_("Axis %d")) % i).str();
-    output.push_back({userData, text});
-
-    const auto userDataInv = (boost::format("-%d") % (i + 1)).str();
-    const auto textInv = (boost::format(_("Axis %d (inverted)")) % i).str();
-    output.push_back({userDataInv, textInv});
-  }
-  return output;
-}
+template<>
+void SettingsEntryEnum<std::string>::decode(const std::string& encoded) { setValue(encoded); }
 
 std::ostream& operator<<(std::ostream& stream, const LocalAppParameter& param)
 {
@@ -151,22 +150,22 @@ SettingsEntryBool Settings::mouseCentricZoom("3dview", "mouseCentricZoom", true)
 SettingsEntryBool Settings::mouseSwapButtons("3dview", "mouseSwapButtons", false);
 SettingsEntryInt Settings::indentationWidth("editor", "indentationWidth", 1, 16, 4);
 SettingsEntryInt Settings::tabWidth("editor", "tabWidth", 1, 16, 4);
-SettingsEntryEnum Settings::lineWrap("editor", "lineWrap", {{"None", _("None")}, {"Char", _("Wrap at character boundaries")}, {"Word", _("Wrap at word boundaries")}}, "Word");
-SettingsEntryEnum Settings::lineWrapIndentationStyle("editor", "lineWrapIndentationStyle", {{"Fixed", _("Fixed")}, {"Same", _("Same")}, {"Indented", _("Indented")}}, "Fixed");
+SettingsEntryEnum<std::string> Settings::lineWrap("editor", "lineWrap", {{"None", _("None")}, {"Char", _("Wrap at character boundaries")}, {"Word", _("Wrap at word boundaries")}}, "Word");
+SettingsEntryEnum<std::string> Settings::lineWrapIndentationStyle("editor", "lineWrapIndentationStyle", {{"Fixed", _("Fixed")}, {"Same", _("Same")}, {"Indented", _("Indented")}}, "Fixed");
 SettingsEntryInt Settings::lineWrapIndentation("editor", "lineWrapIndentation", 0, 999, 4);
-SettingsEntryEnum Settings::lineWrapVisualizationBegin("editor", "lineWrapVisualizationBegin", {{"None", _("None")}, {"Text", _("Text")}, {"Border", _("Border")}, {"Margin", _("Margin")}}, "None");
-SettingsEntryEnum Settings::lineWrapVisualizationEnd("editor", "lineWrapVisualizationEnd", {{"None", _("None")}, {"Text", _("Text")}, {"Border", _("Border")}, {"Margin", _("Margin")}}, "Border");
-SettingsEntryEnum Settings::showWhitespace("editor", "showWhitespaces", {{"Never", _("Never")}, {"Always", _("Always")}, {"AfterIndentation", _("After indentation")}}, "Never");
+SettingsEntryEnum<std::string> Settings::lineWrapVisualizationBegin("editor", "lineWrapVisualizationBegin", {{"None", _("None")}, {"Text", _("Text")}, {"Border", _("Border")}, {"Margin", _("Margin")}}, "None");
+SettingsEntryEnum<std::string> Settings::lineWrapVisualizationEnd("editor", "lineWrapVisualizationEnd", {{"None", _("None")}, {"Text", _("Text")}, {"Border", _("Border")}, {"Margin", _("Margin")}}, "Border");
+SettingsEntryEnum<std::string> Settings::showWhitespace("editor", "showWhitespaces", {{"Never", _("Never")}, {"Always", _("Always")}, {"AfterIndentation", _("After indentation")}}, "Never");
 SettingsEntryInt Settings::showWhitespaceSize("editor", "showWhitespacesSize", 1, 16, 2);
 SettingsEntryBool Settings::autoIndent("editor", "autoIndent", true);
 SettingsEntryBool Settings::backspaceUnindents("editor", "backspaceUnindents", false);
-SettingsEntryEnum Settings::indentStyle("editor", "indentStyle", {{"Spaces", _("Spaces")}, {"Tabs", _("Tabs")}}, "Spaces");
-SettingsEntryEnum Settings::tabKeyFunction("editor", "tabKeyFunction", {{"Indent", _("Indent")}, {"InsertTab", _("Insert Tab")}}, "Indent");
+SettingsEntryEnum<std::string> Settings::indentStyle("editor", "indentStyle", {{"Spaces", _("Spaces")}, {"Tabs", _("Tabs")}}, "Spaces");
+SettingsEntryEnum<std::string> Settings::tabKeyFunction("editor", "tabKeyFunction", {{"Indent", _("Indent")}, {"InsertTab", _("Insert Tab")}}, "Indent");
 SettingsEntryBool Settings::highlightCurrentLine("editor", "highlightCurrentLine", true);
 SettingsEntryBool Settings::enableBraceMatching("editor", "enableBraceMatching", true);
 SettingsEntryBool Settings::enableLineNumbers("editor", "enableLineNumbers", true);
 SettingsEntryBool Settings::enableNumberScrollWheel("editor", "enableNumberScrollWheel", true);
-SettingsEntryEnum Settings::modifierNumberScrollWheel("editor", "modifierNumberScrollWheel", {{"Alt", _("Alt")}, {"Left Mouse Button", _("Left Mouse Button")}, {"Either", _("Either")}}, "Alt");
+SettingsEntryEnum<std::string> Settings::modifierNumberScrollWheel("editor", "modifierNumberScrollWheel", {{"Alt", _("Alt")}, {"Left Mouse Button", _("Left Mouse Button")}, {"Either", _("Either")}}, "Alt");
 
 SettingsEntryString Settings::defaultPrintService("printing", "printService", "NONE");
 
@@ -175,30 +174,26 @@ SettingsEntryString Settings::printServiceFileFormat("printing", "printServiceFi
 
 SettingsEntryString Settings::octoPrintUrl("printing", "octoPrintUrl", "");
 SettingsEntryString Settings::octoPrintApiKey("printing", "octoPrintApiKey", "");
-SettingsEntryEnum Settings::octoPrintAction("printing", "octoPrintAction", {{"upload", _("Upload only")}, {"slice", _("Upload & Slice")}, {"select", _("Upload, Slice & Select for printing")}, {"print", _("Upload, Slice & Start printing")}}, "upload");
+SettingsEntryEnum<std::string> Settings::octoPrintAction("printing", "octoPrintAction", {{"upload", _("Upload only")}, {"slice", _("Upload & Slice")}, {"select", _("Upload, Slice & Select for printing")}, {"print", _("Upload, Slice & Start printing")}}, "upload");
 SettingsEntryString Settings::octoPrintSlicerEngine("printing", "octoPrintSlicerEngine", "");
 SettingsEntryString Settings::octoPrintSlicerEngineDesc("printing", "octoPrintSlicerEngineDesc", "");
 SettingsEntryString Settings::octoPrintSlicerProfile("printing", "octoPrintSlicerProfile", "");
 SettingsEntryString Settings::octoPrintSlicerProfileDesc("printing", "octoPrintSlicerProfileDesc", "");
-SettingsEntryEnum Settings::octoPrintFileFormat(
+SettingsEntryEnum<std::string> Settings::octoPrintFileFormat(
     "printing", "octoPrintFileFormat",
     createFileFormatItems({FileFormat::ASCII_STL, FileFormat::BINARY_STL, FileFormat::_3MF, FileFormat::OFF}),
     fileformat::info(FileFormat::ASCII_STL).description);
 
 SettingsEntryString Settings::localAppExecutable("printing", "localAppExecutable", "");
 SettingsEntryString Settings::localAppTempDir("printing", "localAppTempDir", "");
-SettingsEntryEnum Settings::localAppFileFormat(
+SettingsEntryEnum<std::string> Settings::localAppFileFormat(
     "printing", "localAppFileFormat", createFileFormatItems(fileformat::all3D()),
     fileformat::info(FileFormat::ASCII_STL).description);
 SettingsEntryList<LocalAppParameter> Settings::localAppParameterList("printing", "localAppParameterList");
 
-SettingsEntryEnum Settings::renderBackend3D("advanced", "renderBackend3D", {{"CGAL", "CGAL (old/slow)"}, {"Manifold", "Manifold (new/fast)"}}, "CGAL");
-
-SettingsEntryEnum Settings::toolbarExport3D("advanced", "toolbarExport3D",
-  createFileFormatItems(fileformat::all3D()), fileformat::info(FileFormat::ASCII_STL).description);
-
-SettingsEntryEnum Settings::toolbarExport2D("advanced", "toolbarExport2D",
-  createFileFormatItems(fileformat::all2D()), fileformat::info(FileFormat::DXF).description);
+SettingsEntryEnum<std::string> Settings::renderBackend3D("advanced", "renderBackend3D", {{"CGAL", "CGAL (old/slow)"}, {"Manifold", "Manifold (new/fast)"}}, "CGAL");
+SettingsEntryEnum<std::string> Settings::toolbarExport3D("advanced", "toolbarExport3D", createFileFormatItems(fileformat::all3D()), fileformat::info(FileFormat::ASCII_STL).description);
+SettingsEntryEnum<std::string> Settings::toolbarExport2D("advanced", "toolbarExport2D", createFileFormatItems(fileformat::all2D()), fileformat::info(FileFormat::DXF).description);
 
 SettingsEntryBool Settings::summaryCamera("summary", "camera", false);
 SettingsEntryBool Settings::summaryArea("summary", "measurementArea", false);
@@ -211,20 +206,20 @@ SettingsEntryBool Settings::inputEnableDriverJOYSTICK("input", "enableDriverJOYS
 SettingsEntryBool Settings::inputEnableDriverQGAMEPAD("input", "enableDriverQGAMEPAD", false);
 SettingsEntryBool Settings::inputEnableDriverDBUS("input", "enableDriverDBUS", false);
 
-SettingsEntryEnum Settings::inputTranslationX("input", "translationX", axisValues(), "+1");
-SettingsEntryEnum Settings::inputTranslationY("input", "translationY", axisValues(), "-2");
-SettingsEntryEnum Settings::inputTranslationZ("input", "translationZ", axisValues(), "-3");
-SettingsEntryEnum Settings::inputTranslationXVPRel("input", "translationXVPRel", axisValues(), "None");
-SettingsEntryEnum Settings::inputTranslationYVPRel("input", "translationYVPRel", axisValues(), "None");
-SettingsEntryEnum Settings::inputTranslationZVPRel("input", "translationZVPRel", axisValues(), "None");
-SettingsEntryEnum Settings::inputRotateX("input", "rotateX", axisValues(), "+4");
-SettingsEntryEnum Settings::inputRotateY("input", "rotateY", axisValues(), "-5");
-SettingsEntryEnum Settings::inputRotateZ("input", "rotateZ", axisValues(), "-6");
-SettingsEntryEnum Settings::inputRotateXVPRel("input", "rotateXVPRel", axisValues(), "None");
-SettingsEntryEnum Settings::inputRotateYVPRel("input", "rotateYVPRel", axisValues(), "None");
-SettingsEntryEnum Settings::inputRotateZVPRel("input", "rotateZVPRel", axisValues(), "None");
-SettingsEntryEnum Settings::inputZoom("input", "zoom", axisValues(), "None");
-SettingsEntryEnum Settings::inputZoom2("input", "zoom2", axisValues(), "None");
+SettingsEntryEnum<std::string> Settings::inputTranslationX("input", "translationX", axisValues(), "+1");
+SettingsEntryEnum<std::string> Settings::inputTranslationY("input", "translationY", axisValues(), "-2");
+SettingsEntryEnum<std::string> Settings::inputTranslationZ("input", "translationZ", axisValues(), "-3");
+SettingsEntryEnum<std::string> Settings::inputTranslationXVPRel("input", "translationXVPRel", axisValues(), "None");
+SettingsEntryEnum<std::string> Settings::inputTranslationYVPRel("input", "translationYVPRel", axisValues(), "None");
+SettingsEntryEnum<std::string> Settings::inputTranslationZVPRel("input", "translationZVPRel", axisValues(), "None");
+SettingsEntryEnum<std::string> Settings::inputRotateX("input", "rotateX", axisValues(), "+4");
+SettingsEntryEnum<std::string> Settings::inputRotateY("input", "rotateY", axisValues(), "-5");
+SettingsEntryEnum<std::string> Settings::inputRotateZ("input", "rotateZ", axisValues(), "-6");
+SettingsEntryEnum<std::string> Settings::inputRotateXVPRel("input", "rotateXVPRel", axisValues(), "None");
+SettingsEntryEnum<std::string> Settings::inputRotateYVPRel("input", "rotateYVPRel", axisValues(), "None");
+SettingsEntryEnum<std::string> Settings::inputRotateZVPRel("input", "rotateZVPRel", axisValues(), "None");
+SettingsEntryEnum<std::string> Settings::inputZoom("input", "zoom", axisValues(), "None");
+SettingsEntryEnum<std::string> Settings::inputZoom2("input", "zoom2", axisValues(), "None");
 
 SettingsEntryDouble Settings::inputTranslationGain("input", "translationGain", 0.01, 0.01, 9.99, 1.00);
 SettingsEntryDouble Settings::inputTranslationVPRelGain("input", "translationVPRelGain", 0.01, 0.01, 9.99, 1.00);
@@ -277,27 +272,42 @@ SettingsEntryDouble Settings::axisDeadzone8("input", "axisDeadzone8", 0.0, 0.01,
 
 SettingsEntryInt Settings::joystickNr("input", "joystickNr", 0, 9, 0);
 
-SettingsEntryBool Settings::exportPdfAlwaysShowDialog("export-pdf", "alwaysShowDialog", true);
+SettingsEntryBool Settings::exportPdfAlwaysShowDialog(SECTION_EXPORT_PDF, "alwaysShowDialog", true);
+SettingsEntryEnum<PaperSizes> Settings::exportPdfPaperSize(SECTION_EXPORT_PDF, "paperSize", {{PaperSizes::A6, _("A6 (105 x 148 mm)")}, {PaperSizes::A5, _("A5 (148 x 210 mm)")}, {PaperSizes::A4, _("A4 (210x297 mm)")}, {PaperSizes::A3, _("A3 (297x420 mm)")}, {PaperSizes::LETTER, _("Letter (8.5x11 in)")}, {PaperSizes::LEGAL, _("Legal (8.5x14 in)")}, {PaperSizes::TABLOID, _("Tabloid (11x17 in)")}}, PaperSizes::A4);
+SettingsEntryEnum<PaperOrientations> Settings::exportPdfOrientation(SECTION_EXPORT_PDF, "orientation", {{PaperOrientations::PORTRAIT, _("Portrait (Vertical)")}, {PaperOrientations::LANDSCAPE, _("Landscape (Horizontal)")}, {PaperOrientations::AUTO, _("Auto")}}, PaperOrientations::PORTRAIT);
+SettingsEntryBool Settings::exportPdfShowFilename(SECTION_EXPORT_PDF, "showFilename", true);
+SettingsEntryBool Settings::exportPdfShowScale(SECTION_EXPORT_PDF, "showScale", true);
+SettingsEntryBool Settings::exportPdfShowScaleMessage(SECTION_EXPORT_PDF, "showScaleMessage", true);
+SettingsEntryBool Settings::exportPdfShowGrid(SECTION_EXPORT_PDF, "showGrid", true);
+SettingsEntryDouble Settings::exportPdfGridSize(SECTION_EXPORT_PDF, "gridSize", 1.0, 1.0, 100.0, 10.0);
+SettingsEntryBool Settings::exportPdfAddMetaData(SECTION_EXPORT_PDF, "addMetaData", true);
+SettingsEntryBool Settings::exportPdfAddMetaDataAuthor(SECTION_EXPORT_PDF, "addMetaDataAuthor", false);
+SettingsEntryBool Settings::exportPdfAddMetaDataSubject(SECTION_EXPORT_PDF, "addMetaDataSubject", false);
+SettingsEntryBool Settings::exportPdfAddMetaDataKeywords(SECTION_EXPORT_PDF, "addMetaDataKeywords", false);
+SettingsEntryString Settings::exportPdfMetaDataTitle(SECTION_EXPORT_PDF, "metaDataTitle", "");
+SettingsEntryString Settings::exportPdfMetaDataAuthor(SECTION_EXPORT_PDF, "metaDataAuthor", "");
+SettingsEntryString Settings::exportPdfMetaDataSubject(SECTION_EXPORT_PDF, "metaDataSubject", "");
+SettingsEntryString Settings::exportPdfMetaDataKeywords(SECTION_EXPORT_PDF, "metaDataKeywords", "");
 
-SettingsEntryBool Settings::export3mfAlwaysShowDialog("export-3mf", "alwaysShowDialog", true);
-SettingsEntryEnum Settings::export3mfColorMode("export-3mf", "colors", {{"model", _("Use colors from model")}, {"none", _("No colors")}, {"selected-only", _("Use selected color only")}, {"selected-as-default", _("Use selected color as default")}}, "model");
+SettingsEntryBool Settings::export3mfAlwaysShowDialog(SECTION_EXPORT_3MF, "alwaysShowDialog", true);
+SettingsEntryEnum<std::string> Settings::export3mfColorMode(SECTION_EXPORT_3MF, "colors", {{"model", _("Use colors from model")}, {"none", _("No colors")}, {"selected-only", _("Use selected color only")}, {"selected-as-default", _("Use selected color as default")}}, "model");
 // https://github.com/3MFConsortium/spec_core/blob/master/3MF%20Core%20Specification.md: micron, millimeter, centimeter, inch, foot, and meter
-SettingsEntryEnum Settings::export3mfUnit("export-3mf", "unit", {{"micron", _("Micron")}, {"millimeter", _("Millimeter")}, {"centimeter", _("Centimeter")}, {"meter", _("Meter")}, {"inch", _("Inch")}, {"foot", _("Feet")}}, "millimeter");
-SettingsEntryString Settings::export3mfColor("export-3mf", "color", "#f9d72c"); // Cornfield: CGAL_FACE_FRONT_COLOR
-SettingsEntryEnum Settings::export3mfMaterialType("export-3mf", "material-type", {{"color", "Color"}, {"material", "Base Material"}}, "material");
-SettingsEntryInt Settings::export3mfDecimalPrecision("export-3mf", "decimal-precision", 1, 16, 6);
-SettingsEntryBool Settings::export3mfAddMetaData("export-3mf", "add-meta-data", true);
-SettingsEntryBool Settings::export3mfAddMetaDataDesigner("export-3mf", "add-meta-data-designer", false);
-SettingsEntryBool Settings::export3mfAddMetaDataDescription("export-3mf", "add-meta-data-description", false);
-SettingsEntryBool Settings::export3mfAddMetaDataCopyright("export-3mf", "add-meta-data-copyright", false);
-SettingsEntryBool Settings::export3mfAddMetaDataLicenseTerms("export-3mf", "add-meta-data-license-terms", false);
-SettingsEntryBool Settings::export3mfAddMetaDataRating("export-3mf", "add-meta-data-rating", false);
-SettingsEntryString Settings::export3mfMetaDataTitle("export-3mf", "meta-data-title", "");
-SettingsEntryString Settings::export3mfMetaDataDesigner("export-3mf", "meta-data-designer", "");
-SettingsEntryString Settings::export3mfMetaDataDescription("export-3mf", "meta-data-description", "");
-SettingsEntryString Settings::export3mfMetaDataCopyright("export-3mf", "meta-data-copyright", "");
-SettingsEntryString Settings::export3mfMetaDataLicenseTerms("export-3mf", "meta-data-license-terms", "");
-SettingsEntryString Settings::export3mfMetaDataRating("export-3mf", "meta-data-rating", "");
+SettingsEntryEnum<std::string> Settings::export3mfUnit(SECTION_EXPORT_3MF, "unit", {{"micron", _("Micron")}, {"millimeter", _("Millimeter")}, {"centimeter", _("Centimeter")}, {"meter", _("Meter")}, {"inch", _("Inch")}, {"foot", _("Feet")}}, "millimeter");
+SettingsEntryString Settings::export3mfColor(SECTION_EXPORT_3MF, "color", "#f9d72c"); // Cornfield: CGAL_FACE_FRONT_COLOR
+SettingsEntryEnum<std::string> Settings::export3mfMaterialType(SECTION_EXPORT_3MF, "materialType", {{"color", "Color"}, {"material", "Base Material"}}, "material");
+SettingsEntryInt Settings::export3mfDecimalPrecision(SECTION_EXPORT_3MF, "decimalPrecision", 1, 16, 6);
+SettingsEntryBool Settings::export3mfAddMetaData(SECTION_EXPORT_3MF, "addMetaData", true);
+SettingsEntryBool Settings::export3mfAddMetaDataDesigner(SECTION_EXPORT_3MF, "addMetaDataDesigner", false);
+SettingsEntryBool Settings::export3mfAddMetaDataDescription(SECTION_EXPORT_3MF, "addMetaDataDescription", false);
+SettingsEntryBool Settings::export3mfAddMetaDataCopyright(SECTION_EXPORT_3MF, "addMetaDataCopyright", false);
+SettingsEntryBool Settings::export3mfAddMetaDataLicenseTerms(SECTION_EXPORT_3MF, "addMetaDataLicenseTerms", false);
+SettingsEntryBool Settings::export3mfAddMetaDataRating(SECTION_EXPORT_3MF, "addMetaDataRating", false);
+SettingsEntryString Settings::export3mfMetaDataTitle(SECTION_EXPORT_3MF, "metaDataTitle", "");
+SettingsEntryString Settings::export3mfMetaDataDesigner(SECTION_EXPORT_3MF, "metaDataDesigner", "");
+SettingsEntryString Settings::export3mfMetaDataDescription(SECTION_EXPORT_3MF, "metaDataDescription", "");
+SettingsEntryString Settings::export3mfMetaDataCopyright(SECTION_EXPORT_3MF, "metaDataCopyright", "");
+SettingsEntryString Settings::export3mfMetaDataLicenseTerms(SECTION_EXPORT_3MF, "metaDataLicenseTerms", "");
+SettingsEntryString Settings::export3mfMetaDataRating(SECTION_EXPORT_3MF, "metaDataRating", "");
 
 SettingsEntryString& Settings::inputButton(size_t id)
 {

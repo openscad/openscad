@@ -27,7 +27,6 @@
 #pragma once
 
 #include <memory>
-#include <optional>
 #include <QDialog>
 
 #include "Settings.h"
@@ -48,7 +47,7 @@ public:
 
   int exec() override;
 
-  std::unique_ptr<const Export3mfOptions> getOptions() const {
+  std::shared_ptr<const Export3mfOptions> getOptions() const {
     return Export3mfOptions::fromSettings();
   }
 
@@ -56,12 +55,9 @@ private slots:
   void on_toolButtonColorsSelected_clicked();
   void on_toolButtonColorsSelectedReset_clicked();
   void on_toolButtonDecimalPrecisionReset_clicked();
-  void on_checkBoxAddMetaData_toggled(bool);
 
 private:
   void updateColor(const QColor& color);
-  void initMetaData(QCheckBox *, QLineEdit *, SEBool *, SEString&);
-  bool applyMetaData(const QCheckBox *, const QLineEdit *, SEBool *, SEString&);
 
   QColor color;
 };

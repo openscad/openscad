@@ -25,6 +25,8 @@
  */
 
 #include "gui/Export3mfDialog.h"
+#include <qapplication.h>
+#include <qcoreapplication.h>
 
 #include <QString>
 #include <QCheckBox>
@@ -33,6 +35,7 @@
 #include <QColorDialog>
 #include <QLineEdit>
 
+#include "export.h"
 #include "Settings.h"
 #include "UIUtils.h"
 #include "gui/SettingsWriter.h"
@@ -52,38 +55,13 @@ Export3mfDialog::Export3mfDialog()
 	this->spinBoxDecimalPrecision->setValue(S::export3mfDecimalPrecision.value());
 	initComboBox(this->comboBoxMaterialType, S::export3mfMaterialType);
 
-	checkBoxAddMetaData->setChecked(S::export3mfAddMetaData.value());
+	groupMetaData->setChecked(S::export3mfAddMetaData.value());
 	initMetaData(nullptr, this->lineEditMetaDataTitle, nullptr, S::export3mfMetaDataTitle);
 	initMetaData(this->checkBoxMetaDataDesigner, this->lineEditMetaDataDesigner, &S::export3mfAddMetaDataDesigner, S::export3mfMetaDataDesigner);
 	initMetaData(this->checkBoxMetaDataDescription, this->lineEditMetaDataDescription, &S::export3mfAddMetaDataDescription, S::export3mfMetaDataDescription);
 	initMetaData(this->checkBoxMetaDataCopyright, this->lineEditMetaDataCopyright, &S::export3mfAddMetaDataCopyright, S::export3mfMetaDataCopyright);
 	initMetaData(this->checkBoxMetaDataLicenseTerms, this->lineEditMetaDataLicenseTerms, &S::export3mfAddMetaDataLicenseTerms, S::export3mfMetaDataLicenseTerms);
 	initMetaData(this->checkBoxMetaDataRating, this->lineEditMetaDataRating, &S::export3mfAddMetaDataRating, S::export3mfMetaDataRating);
-}
-
-void Export3mfDialog::initMetaData(QCheckBox *checkBox, QLineEdit *lineEdit, SEBool *settingsEntryFlag, SEString& settingsEntry) {
-	if (!this->checkBoxAddMetaData->isChecked()) {
-		return;
-	}
-	lineEdit->setText(QString::fromStdString(settingsEntry.value()));
-	if (checkBox && settingsEntryFlag) {
-	    checkBox->setChecked(settingsEntryFlag->value());
-	}
-}
-
-bool Export3mfDialog::applyMetaData(const QCheckBox *checkBox, const QLineEdit *lineEdit, SEBool *settingsEntryFlag, SEString& settingsEntry) {
-	if (!this->checkBoxAddMetaData->isChecked()) {
-		return false;
-	}
-	if (checkBox && !checkBox->isChecked()) {
-		return false;
-	}
-	const auto value = lineEdit->text().trimmed().toStdString();
-	settingsEntry.setValue(value);
-	if (settingsEntryFlag) {
-		settingsEntryFlag->setValue(true);
-	}
-	return true;
 }
 
 void Export3mfDialog::updateColor(const QColor& color)
@@ -108,12 +86,7 @@ int Export3mfDialog::exec()
 	S::export3mfColor.setValue(this->color.toRgb().name().toStdString());
 	S::export3mfMaterialType.setIndex(this->comboBoxMaterialType->currentIndex());
 	S::export3mfDecimalPrecision.setValue(this->spinBoxDecimalPrecision->value());
-	S::export3mfAddMetaData.setValue(this->checkBoxAddMetaData->isChecked());
-	S::export3mfAddMetaDataDesigner.setValue(this->checkBoxMetaDataDesigner->isChecked());
-	S::export3mfAddMetaDataDescription.setValue(this->checkBoxMetaDataDescription->isChecked());
-	S::export3mfAddMetaDataCopyright.setValue(this->checkBoxMetaDataCopyright->isChecked());
-	S::export3mfAddMetaDataLicenseTerms.setValue(this->checkBoxMetaDataLicenseTerms->isChecked());
-	S::export3mfAddMetaDataRating.setValue(this->checkBoxMetaDataRating->isChecked());
+	S::export3mfAddMetaData.setValue(this->groupMetaData->isChecked());
 	applyMetaData(nullptr, this->lineEditMetaDataTitle, nullptr, S::export3mfMetaDataTitle);
 	applyMetaData(this->checkBoxMetaDataDesigner, this->lineEditMetaDataDesigner, &S::export3mfAddMetaDataDesigner, S::export3mfMetaDataDesigner);
 	applyMetaData(this->checkBoxMetaDataDescription, this->lineEditMetaDataDescription, &S::export3mfAddMetaDataDescription, S::export3mfMetaDataDescription);
@@ -139,13 +112,4 @@ void Export3mfDialog::on_toolButtonColorsSelectedReset_clicked()
 void Export3mfDialog::on_toolButtonDecimalPrecisionReset_clicked()
 {
 	this->spinBoxDecimalPrecision->setValue(S::export3mfDecimalPrecision.defaultValue());
-}
-
-void Export3mfDialog::on_checkBoxAddMetaData_toggled(bool checked)
-{
-	for (const auto& w : this->groupMetaData->findChildren<QWidget *>()) {
-		if (w != this->checkBoxAddMetaData) {
-			w->setEnabled(checked);
-		}
-	}
 }

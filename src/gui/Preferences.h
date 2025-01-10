@@ -15,6 +15,7 @@
 #include <QWidget>
 #include <QMainWindow>
 #include <QSettings>
+#include <string>
 
 #include "gui/qtgettext.h" // IWYU pragma: keep
 #include "openscad_gui.h"
@@ -206,7 +207,7 @@ private:
   void moveListBoxRow(QListWidget *listBox, int offset);
 
   /** Set value from combobox to settings */
-  void applyComboBox(QComboBox *comboBox, int val, Settings::SettingsEntryEnum& entry);
+  void applyComboBox(QComboBox *comboBox, int val, Settings::SettingsEntryEnum<std::string>& entry);
 
   QSettings::SettingsMap defaultmap;
   QHash<const QAction *, QWidget *> prefPages;

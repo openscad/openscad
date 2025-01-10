@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>701</width>
-    <height>740</height>
+    <height>730</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -46,10 +46,10 @@
         <x>0</x>
         <y>0</y>
         <width>669</width>
-        <height>743</height>
+        <height>672</height>
        </rect>
       </property>
-      <layout class="QGridLayout" name="gridLayout_4" rowstretch="0,0,1,0" columnstretch="1,1">
+      <layout class="QGridLayout" name="gridLayout_4" rowstretch="0,0,0,1" columnstretch="1,1">
        <property name="leftMargin">
         <number>0</number>
        </property>
@@ -62,19 +62,6 @@
        <property name="bottomMargin">
         <number>0</number>
        </property>
-       <item row="3" column="0">
-        <spacer name="verticalSpacer">
-         <property name="orientation">
-          <enum>Qt::Vertical</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>20</width>
-           <height>40</height>
-          </size>
-         </property>
-        </spacer>
-       </item>
        <item row="0" column="1">
         <widget class="QGroupBox" name="groupUnit">
          <property name="toolTip">
@@ -308,21 +295,23 @@
          <property name="title">
           <string>Meta data</string>
          </property>
+         <property name="checkable">
+          <bool>true</bool>
+         </property>
          <layout class="QVBoxLayout" name="verticalLayout_2">
           <item>
-           <widget class="QCheckBox" name="checkBoxAddMetaData">
-            <property name="text">
-             <string>Add meta data</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QLabel" name="label_3">
+           <widget class="QLabel" name="labelMetaData">
             <property name="text">
              <string>The fields Title, Application and CreationDate are always filled in the exported file when meta data is enabled.</string>
             </property>
+            <property name="textFormat">
+             <enum>Qt::PlainText</enum>
+            </property>
             <property name="wordWrap">
              <bool>true</bool>
+            </property>
+            <property name="textInteractionFlags">
+             <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByMouse</set>
             </property>
            </widget>
           </item>
@@ -337,7 +326,7 @@
             <item row="4" column="1">
              <widget class="QLineEdit" name="lineEditMetaDataCopyright">
               <property name="enabled">
-               <bool>false</bool>
+               <bool>true</bool>
               </property>
               <property name="toolTip">
                <string>A copyright associated with this document</string>
@@ -353,7 +342,7 @@
             <item row="1" column="1">
              <widget class="QLineEdit" name="lineEditMetaDataTitle">
               <property name="enabled">
-               <bool>false</bool>
+               <bool>true</bool>
               </property>
               <property name="placeholderText">
                <string>Title, leave empty to use the file name</string>
@@ -366,7 +355,7 @@
             <item row="3" column="1">
              <widget class="QLineEdit" name="lineEditMetaDataDescription">
               <property name="enabled">
-               <bool>false</bool>
+               <bool>true</bool>
               </property>
               <property name="placeholderText">
                <string>Description</string>
@@ -379,7 +368,7 @@
             <item row="2" column="1">
              <widget class="QLineEdit" name="lineEditMetaDataDesigner">
               <property name="enabled">
-               <bool>false</bool>
+               <bool>true</bool>
               </property>
               <property name="placeholderText">
                <string>Designer</string>
@@ -392,7 +381,7 @@
             <item row="5" column="1">
              <widget class="QLineEdit" name="lineEditMetaDataLicenseTerms">
               <property name="enabled">
-               <bool>false</bool>
+               <bool>true</bool>
               </property>
               <property name="placeholderText">
                <string>License terms</string>
@@ -405,7 +394,7 @@
             <item row="6" column="0">
              <widget class="QCheckBox" name="checkBoxMetaDataRating">
               <property name="enabled">
-               <bool>false</bool>
+               <bool>true</bool>
               </property>
               <property name="toolTip">
                <string>An industry rating associated with this document</string>
@@ -418,7 +407,7 @@
             <item row="4" column="0">
              <widget class="QCheckBox" name="checkBoxMetaDataCopyright">
               <property name="enabled">
-               <bool>false</bool>
+               <bool>true</bool>
               </property>
               <property name="text">
                <string/>
@@ -428,7 +417,7 @@
             <item row="2" column="0">
              <widget class="QCheckBox" name="checkBoxMetaDataDesigner">
               <property name="enabled">
-               <bool>false</bool>
+               <bool>true</bool>
               </property>
               <property name="toolTip">
                <string>A name for a designer of this document</string>
@@ -441,7 +430,7 @@
             <item row="6" column="1">
              <widget class="QLineEdit" name="lineEditMetaDataRating">
               <property name="enabled">
-               <bool>false</bool>
+               <bool>true</bool>
               </property>
               <property name="inputMask">
                <string/>
@@ -457,7 +446,7 @@
             <item row="5" column="0">
              <widget class="QCheckBox" name="checkBoxMetaDataLicenseTerms">
               <property name="enabled">
-               <bool>false</bool>
+               <bool>true</bool>
               </property>
               <property name="toolTip">
                <string>License information associated with this document</string>
@@ -470,7 +459,7 @@
             <item row="3" column="0">
              <widget class="QCheckBox" name="checkBoxMetaDataDescription">
               <property name="enabled">
-               <bool>false</bool>
+               <bool>true</bool>
               </property>
               <property name="toolTip">
                <string>A description of the document</string>
@@ -554,6 +543,19 @@
          </layout>
         </widget>
        </item>
+       <item row="3" column="0" colspan="2">
+        <spacer name="verticalSpacer">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>0</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
       </layout>
      </widget>
     </widget>
@@ -601,6 +603,39 @@
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>pushButtonOk</tabstop>
+  <tabstop>pushButtonCancel</tabstop>
+  <tabstop>scrollArea</tabstop>
+  <tabstop>radioButtonColorsModel</tabstop>
+  <tabstop>radioButtonColorsNone</tabstop>
+  <tabstop>radioButtonColorsUseForAll</tabstop>
+  <tabstop>radioButtonColorsUseAsDefault</tabstop>
+  <tabstop>toolButtonColorsSelectedReset</tabstop>
+  <tabstop>toolButtonColorsSelected</tabstop>
+  <tabstop>radioButtonUnitMicron</tabstop>
+  <tabstop>radioButtonUnitMillimeter</tabstop>
+  <tabstop>radioButtonUnitCentimeter</tabstop>
+  <tabstop>radioButtonUnitMeter</tabstop>
+  <tabstop>radioButtonUnitInch</tabstop>
+  <tabstop>radioButtonUnitFoot</tabstop>
+  <tabstop>comboBoxMaterialType</tabstop>
+  <tabstop>spinBoxDecimalPrecision</tabstop>
+  <tabstop>toolButtonDecimalPrecisionReset</tabstop>
+  <tabstop>groupMetaData</tabstop>
+  <tabstop>lineEditMetaDataTitle</tabstop>
+  <tabstop>checkBoxMetaDataDesigner</tabstop>
+  <tabstop>lineEditMetaDataDesigner</tabstop>
+  <tabstop>checkBoxMetaDataDescription</tabstop>
+  <tabstop>lineEditMetaDataDescription</tabstop>
+  <tabstop>checkBoxMetaDataCopyright</tabstop>
+  <tabstop>lineEditMetaDataCopyright</tabstop>
+  <tabstop>checkBoxMetaDataLicenseTerms</tabstop>
+  <tabstop>lineEditMetaDataLicenseTerms</tabstop>
+  <tabstop>checkBoxMetaDataRating</tabstop>
+  <tabstop>lineEditMetaDataRating</tabstop>
+  <tabstop>checkBoxAlwaysShowDialog</tabstop>
+ </tabstops>
  <resources/>
  <connections>
   <connection>

@@ -7,9 +7,17 @@
 #include <vector>
 #include <sstream>
 
+#include "io/export_enums.h"
+
 namespace Settings {
 
+// Property name in GUI designer for matching enum values
 constexpr inline auto PROPERTY_NAME = "_settings_value";
+// Additional value for enums that can map to an additional value (e.g. GridSize in PDF Export)
+constexpr inline auto PROPERTY_SELECTED_VALUE = "_selected_value";
+
+constexpr inline auto SECTION_EXPORT_PDF = "export-pdf";
+constexpr inline auto SECTION_EXPORT_3MF = "export-3mf";
 
 class SettingsEntry
 {
@@ -129,14 +137,15 @@ private:
   std::string _defaultValue;
 };
 
+template<typename enum_type>
 class SettingsEntryEnum : public SettingsEntry
 {
 public:
   struct Item {
-    std::string value;
+    enum_type value;
     std::string description;
   };
-  SettingsEntryEnum(const std::string& category, const std::string& name, std::vector<Item> items, std::string defaultValue) :
+  SettingsEntryEnum(const std::string& category, const std::string& name, std::vector<Item> items, enum_type defaultValue) :
     SettingsEntry(category, name),
     _items(std::move(items)),
     _defaultValue(std::move(defaultValue))
@@ -144,20 +153,20 @@ public:
     setValue(_defaultValue);
   }
 
-  const std::string& value() const { return _items[_index].value; }
+  const enum_type& value() const { return _items[_index].value; }
   size_t index() const { return _index; }
-  void setValue(const std::string& value);
+  void setValue(const enum_type& value);
   void setIndex(size_t index) { if (index < _items.size()) _index = index; }
   const std::vector<Item>& items() const { return _items; }
-  const std::string& defaultValue() const { return _defaultValue; }
+  const enum_type& defaultValue() const { return _defaultValue; }
   bool isDefault() const override { return value() == _defaultValue; }
-  std::string encode() const override { return value(); }
-  void decode(const std::string& encoded) override { setValue(encoded); }
+  std::string encode() const override;
+  void decode(const std::string& encoded) override;
 
 private:
   std::vector<Item> _items;
   size_t _index{0};
-  std::string _defaultValue;
+  enum_type _defaultValue;
 };
 
 class LocalAppParameterType
@@ -252,6 +261,22 @@ public:
 private:
   std::vector<item_type> _items;
 };
+template<typename enum_type>
+void SettingsEntryEnum<enum_type>::setValue(const enum_type& value)
+{
+  for (size_t i = 0; i < _items.size(); ++i) {
+    if (_items[i].value == value) {
+      _index = i;
+      return;
+    }
+  }
+}
+
+template<typename enum_type>
+std::string SettingsEntryEnum<enum_type>::encode() const { return std::to_string(static_cast<uint32_t>(value())); }
+
+template<typename enum_type>
+void SettingsEntryEnum<enum_type>::decode(const std::string& encoded) { setValue(static_cast<enum_type>(std::stoi(encoded))); }
 
 class SettingsVisitor;
 
@@ -263,22 +288,22 @@ public:
   static SettingsEntryBool mouseSwapButtons;
   static SettingsEntryInt indentationWidth;
   static SettingsEntryInt tabWidth;
-  static SettingsEntryEnum lineWrap;
-  static SettingsEntryEnum lineWrapIndentationStyle;
+  static SettingsEntryEnum<std::string> lineWrap;
+  static SettingsEntryEnum<std::string> lineWrapIndentationStyle;
   static SettingsEntryInt lineWrapIndentation;
-  static SettingsEntryEnum lineWrapVisualizationBegin;
-  static SettingsEntryEnum lineWrapVisualizationEnd;
-  static SettingsEntryEnum showWhitespace;
+  static SettingsEntryEnum<std::string> lineWrapVisualizationBegin;
+  static SettingsEntryEnum<std::string> lineWrapVisualizationEnd;
+  static SettingsEntryEnum<std::string> showWhitespace;
   static SettingsEntryInt showWhitespaceSize;
   static SettingsEntryBool autoIndent;
   static SettingsEntryBool backspaceUnindents;
-  static SettingsEntryEnum indentStyle;
-  static SettingsEntryEnum tabKeyFunction;
+  static SettingsEntryEnum<std::string> indentStyle;
+  static SettingsEntryEnum<std::string> tabKeyFunction;
   static SettingsEntryBool highlightCurrentLine;
   static SettingsEntryBool enableBraceMatching;
   static SettingsEntryBool enableLineNumbers;
   static SettingsEntryBool enableNumberScrollWheel;
-  static SettingsEntryEnum modifierNumberScrollWheel;
+  static SettingsEntryEnum<std::string> modifierNumberScrollWheel;
 
   static SettingsEntryString defaultPrintService;
   static SettingsEntryString printServiceName;
@@ -286,8 +311,8 @@ public:
 
   static SettingsEntryString octoPrintUrl;
   static SettingsEntryString octoPrintApiKey;
-  static SettingsEntryEnum octoPrintFileFormat;
-  static SettingsEntryEnum octoPrintAction;
+  static SettingsEntryEnum<std::string> octoPrintFileFormat;
+  static SettingsEntryEnum<std::string> octoPrintAction;
   static SettingsEntryString octoPrintSlicerEngine;
   static SettingsEntryString octoPrintSlicerEngineDesc;
   static SettingsEntryString octoPrintSlicerProfile;
@@ -296,12 +321,12 @@ public:
   static SettingsEntryString localAppExecutable;
   static SettingsEntryString localAppTempDir;
   static SettingsEntryList<LocalAppParameter> localAppParameterList;
-  static SettingsEntryEnum localAppFileFormat;
+  static SettingsEntryEnum<std::string> localAppFileFormat;
 
   static SettingsEntryBool manifoldEnabled;
-  static SettingsEntryEnum renderBackend3D;
-  static SettingsEntryEnum toolbarExport3D;
-  static SettingsEntryEnum toolbarExport2D;
+  static SettingsEntryEnum<std::string> renderBackend3D;
+  static SettingsEntryEnum<std::string> toolbarExport3D;
+  static SettingsEntryEnum<std::string> toolbarExport2D;
 
   static SettingsEntryBool summaryCamera;
   static SettingsEntryBool summaryArea;
@@ -314,20 +339,20 @@ public:
   static SettingsEntryBool inputEnableDriverQGAMEPAD;
   static SettingsEntryBool inputEnableDriverDBUS;
 
-  static SettingsEntryEnum inputTranslationX;
-  static SettingsEntryEnum inputTranslationY;
-  static SettingsEntryEnum inputTranslationZ;
-  static SettingsEntryEnum inputTranslationXVPRel;
-  static SettingsEntryEnum inputTranslationYVPRel;
-  static SettingsEntryEnum inputTranslationZVPRel;
-  static SettingsEntryEnum inputRotateX;
-  static SettingsEntryEnum inputRotateY;
-  static SettingsEntryEnum inputRotateZ;
-  static SettingsEntryEnum inputRotateXVPRel;
-  static SettingsEntryEnum inputRotateYVPRel;
-  static SettingsEntryEnum inputRotateZVPRel;
-  static SettingsEntryEnum inputZoom;
-  static SettingsEntryEnum inputZoom2;
+  static SettingsEntryEnum<std::string> inputTranslationX;
+  static SettingsEntryEnum<std::string> inputTranslationY;
+  static SettingsEntryEnum<std::string> inputTranslationZ;
+  static SettingsEntryEnum<std::string> inputTranslationXVPRel;
+  static SettingsEntryEnum<std::string> inputTranslationYVPRel;
+  static SettingsEntryEnum<std::string> inputTranslationZVPRel;
+  static SettingsEntryEnum<std::string> inputRotateX;
+  static SettingsEntryEnum<std::string> inputRotateY;
+  static SettingsEntryEnum<std::string> inputRotateZ;
+  static SettingsEntryEnum<std::string> inputRotateXVPRel;
+  static SettingsEntryEnum<std::string> inputRotateYVPRel;
+  static SettingsEntryEnum<std::string> inputRotateZVPRel;
+  static SettingsEntryEnum<std::string> inputZoom;
+  static SettingsEntryEnum<std::string> inputZoom2;
   static SettingsEntryDouble inputTranslationGain;
   static SettingsEntryDouble inputTranslationVPRelGain;
   static SettingsEntryDouble inputRotateGain;
@@ -378,12 +403,27 @@ public:
   static SettingsEntryInt joystickNr;
 
   static SettingsEntryBool exportPdfAlwaysShowDialog;
+  static SettingsEntryEnum<PaperSizes> exportPdfPaperSize;
+  static SettingsEntryEnum<PaperOrientations> exportPdfOrientation;
+  static SettingsEntryBool exportPdfShowFilename;
+  static SettingsEntryBool exportPdfShowScale;
+  static SettingsEntryBool exportPdfShowScaleMessage;
+  static SettingsEntryBool exportPdfShowGrid;
+  static SettingsEntryDouble exportPdfGridSize;
+  static SettingsEntryBool exportPdfAddMetaData;
+  static SettingsEntryBool exportPdfAddMetaDataAuthor;
+  static SettingsEntryBool exportPdfAddMetaDataSubject;
+  static SettingsEntryBool exportPdfAddMetaDataKeywords;
+  static SettingsEntryString exportPdfMetaDataTitle;
+  static SettingsEntryString exportPdfMetaDataAuthor;
+  static SettingsEntryString exportPdfMetaDataSubject;
+  static SettingsEntryString exportPdfMetaDataKeywords;
 
   static SettingsEntryBool export3mfAlwaysShowDialog;
-  static SettingsEntryEnum export3mfColorMode;
-  static SettingsEntryEnum export3mfUnit;
+  static SettingsEntryEnum<std::string> export3mfColorMode;
+  static SettingsEntryEnum<std::string> export3mfUnit;
   static SettingsEntryString export3mfColor;
-  static SettingsEntryEnum export3mfMaterialType;
+  static SettingsEntryEnum<std::string> export3mfMaterialType;
   static SettingsEntryInt export3mfDecimalPrecision;
   static SettingsEntryBool export3mfAddMetaData;
   static SettingsEntryBool export3mfAddMetaDataDesigner;

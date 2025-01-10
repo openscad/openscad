@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>841</width>
-    <height>843</height>
+    <width>643</width>
+    <height>636</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -146,7 +146,7 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>781</width>
+             <width>576</width>
              <height>953</height>
             </rect>
            </property>
@@ -1359,8 +1359,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>821</width>
-             <height>753</height>
+             <width>584</width>
+             <height>679</height>
             </rect>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_9">
@@ -1730,7 +1730,8 @@
                     <string/>
                    </property>
                    <property name="icon">
-                    <iconset theme="chokusen-down"/>
+                    <iconset theme="chokusen-down">
+                     <normaloff>.</normaloff>.</iconset>
                    </property>
                   </widget>
                  </item>
@@ -1740,7 +1741,8 @@
                     <string/>
                    </property>
                    <property name="icon">
-                    <iconset theme="chokusen-add"/>
+                    <iconset theme="chokusen-add">
+                     <normaloff>.</normaloff>.</iconset>
                    </property>
                   </widget>
                  </item>
@@ -1759,7 +1761,8 @@
                     <string/>
                    </property>
                    <property name="icon">
-                    <iconset theme="chokusen-up"/>
+                    <iconset theme="chokusen-up">
+                     <normaloff>.</normaloff>.</iconset>
                    </property>
                   </widget>
                  </item>
@@ -1778,7 +1781,8 @@
                     <string/>
                    </property>
                    <property name="icon">
-                    <iconset theme="chokusen-remove"/>
+                    <iconset theme="chokusen-remove">
+                     <normaloff>.</normaloff>.</iconset>
                    </property>
                   </widget>
                  </item>
@@ -1943,7 +1947,7 @@
              <x>0</x>
              <y>0</y>
              <width>587</width>
-             <height>1442</height>
+             <height>1436</height>
             </rect>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_12">
@@ -2689,8 +2693,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>795</width>
-             <height>660</height>
+             <width>98</width>
+             <height>28</height>
             </rect>
            </property>
           </widget>
@@ -2722,8 +2726,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>795</width>
-             <height>660</height>
+             <width>98</width>
+             <height>28</height>
             </rect>
            </property>
           </widget>
@@ -2748,7 +2752,7 @@
         <item>
          <widget class="QGroupBox" name="groupBox">
           <property name="title">
-           <string>GroupBox</string>
+           <string>Dialog visibility</string>
           </property>
           <layout class="QVBoxLayout" name="verticalLayout_19">
            <item>
@@ -2941,7 +2945,8 @@
   </action>
   <action name="actionLocalAppParameterDir">
    <property name="icon">
-    <iconset theme="chokusen-folder"/>
+    <iconset theme="chokusen-folder">
+     <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
     <string>Directory of the output file</string>
@@ -2949,7 +2954,8 @@
   </action>
   <action name="actionLocalAppParameterExtension">
    <property name="icon">
-    <iconset theme="chokusen-parameter"/>
+    <iconset theme="chokusen-parameter">
+     <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
     <string>Extension of the output file without leading dot</string>
@@ -2957,7 +2963,8 @@
   </action>
   <action name="actionLocalAppParameterSource">
    <property name="icon">
-    <iconset theme="chokusen-file"/>
+    <iconset theme="chokusen-file">
+     <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
     <string>Full path to the main source file</string>
@@ -2965,7 +2972,8 @@
   </action>
   <action name="actionLocalAppParameterSourceDir">
    <property name="icon">
-    <iconset theme="chokusen-folder"/>
+    <iconset theme="chokusen-folder">
+     <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
     <string>Directory of the main source file</string>
@@ -2973,7 +2981,8 @@
   </action>
   <action name="actionLocalAppParameterFile">
    <property name="icon">
-    <iconset theme="chokusen-orthogonal"/>
+    <iconset theme="chokusen-orthogonal">
+     <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
     <string>Full path to the output file</string>

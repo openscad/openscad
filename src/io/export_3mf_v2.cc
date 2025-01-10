@@ -1,6 +1,6 @@
 /*
  *  OpenSCAD (www.openscad.org)
- *  Copyright (C) 2009-2016 Clifford Wolf <clifford@clifford.at> and
+ *  Copyright (C) 2009-2025 Clifford Wolf <clifford@clifford.at> and
  *                          Marius Kintel <marius@kintel.net>
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -61,6 +61,7 @@ struct ExportContext {
   ExportColorMap colors;
   Color4f selectedColor;
   const ExportInfo& info;
+  const std::shared_ptr<const Export3mfOptions> options;
 };
 
 uint32_t lib3mf_write_callback(const char *data, uint32_t bytes, std::ostream *stream)
@@ -102,7 +103,7 @@ void handle_triangle_color(const std::shared_ptr<const PolySet>& ps, ExportConte
   if (!ctx.basematerialgroup && !ctx.colorgroup) {
     return;
   }
-  if (ctx.info.options3mf->colorMode == "selected-only") {
+  if (ctx.options->colorMode == "selected-only") {
     return;
   }
 
@@ -326,37 +327,39 @@ void export_3mf(const std::shared_ptr<const Geometry>& geom, std::ostream& outpu
     return;
   }
 
-  if (exportInfo.options3mf->unit == "micron") {
+  const auto& options3mf = exportInfo.options3mf ? exportInfo.options3mf : std::make_shared<Export3mfOptions>();
+
+  if (options3mf->unit == "micron") {
     model->SetUnit(Lib3MF::eModelUnit::MicroMeter);
-  } else if (exportInfo.options3mf->unit == "millimeter") {
+  } else if (options3mf->unit == "millimeter") {
     model->SetUnit(Lib3MF::eModelUnit::MilliMeter);
-  } else if (exportInfo.options3mf->unit == "centimeter") {
+  } else if (options3mf->unit == "centimeter") {
     model->SetUnit(Lib3MF::eModelUnit::CentiMeter);
-  } else if (exportInfo.options3mf->unit == "meter") {
+  } else if (options3mf->unit == "meter") {
     model->SetUnit(Lib3MF::eModelUnit::Meter);
-  } else if (exportInfo.options3mf->unit == "inch") {
+  } else if (options3mf->unit == "inch") {
     model->SetUnit(Lib3MF::eModelUnit::Inch);
-  } else if (exportInfo.options3mf->unit == "foot") {
+  } else if (options3mf->unit == "foot") {
     model->SetUnit(Lib3MF::eModelUnit::Foot);
   }
 
-  const auto settingsColor = OpenSCAD::parse_hex_color(exportInfo.options3mf->color);
+  const auto settingsColor = OpenSCAD::parse_hex_color(options3mf->color);
 
   Lib3MF::PColorGroup colorgroup;
   Lib3MF::PBaseMaterialGroup basematerialgroup;
-  if (exportInfo.options3mf->colorMode != "none") {
+  if (options3mf->colorMode != "none") {
     Color4f color;
-    if (exportInfo.options3mf->colorMode == "model") {
+    if (options3mf->colorMode == "model") {
       // use default color that ultimately should come from the color scheme
       color = exportInfo.defaultColor;
     } else {
       // use color selected in the export dialog and stored in settings (if valid)
       if (!settingsColor) {
-        LOG(message_group::Warning, "Default color in settings is invalid ('%1$s'), using default from model.", exportInfo.options3mf->color);
+        LOG(message_group::Warning, "Default color in settings is invalid ('%1$s'), using default from model.", options3mf->color);
       }
       color = settingsColor.value_or(exportInfo.defaultColor);
     }
-    if (exportInfo.options3mf->materialType == "material") {
+    if (options3mf->materialType == "material") {
       basematerialgroup = model->AddBaseMaterialGroup();
       basematerialgroup->AddMaterial("Default", {
         .m_Red = get_color_channel(color, 0),
@@ -364,7 +367,7 @@ void export_3mf(const std::shared_ptr<const Geometry>& geom, std::ostream& outpu
         .m_Blue = get_color_channel(color, 2),
         .m_Alpha = 0xff
       });
-    } else if (exportInfo.options3mf->materialType == "color") {
+    } else if (options3mf->materialType == "color") {
       colorgroup = model->AddColorGroup();
       colorgroup->AddColor({
         .m_Red = get_color_channel(color, 0),
@@ -375,16 +378,16 @@ void export_3mf(const std::shared_ptr<const Geometry>& geom, std::ostream& outpu
     }
   }
 
-  if (exportInfo.options3mf->addMetaData) {
+  if (options3mf->addMetaData) {
     auto metadatagroup = model->GetMetaDataGroup();
-    add_meta_data(metadatagroup, "Title", exportInfo.options3mf->metaDataTitle, exportInfo.title);
+    add_meta_data(metadatagroup, "Title", options3mf->metaDataTitle, exportInfo.title);
     add_meta_data(metadatagroup, "Application", EXPORT_CREATOR);
     add_meta_data(metadatagroup, "CreationDate", get_current_iso8601_date_time_utc());
-    add_meta_data(metadatagroup, "Designer", exportInfo.options3mf->metaDataDesigner);
-    add_meta_data(metadatagroup, "Description", exportInfo.options3mf->metaDataDescription);
-    add_meta_data(metadatagroup, "Copyright", exportInfo.options3mf->metaDataCopyright);
-    add_meta_data(metadatagroup, "LicenseTerms", exportInfo.options3mf->metaDataLicenseTerms);
-    add_meta_data(metadatagroup, "Rating", exportInfo.options3mf->metaDataRating);
+    add_meta_data(metadatagroup, "Designer", options3mf->metaDataDesigner);
+    add_meta_data(metadatagroup, "Description", options3mf->metaDataDescription);
+    add_meta_data(metadatagroup, "Copyright", options3mf->metaDataCopyright);
+    add_meta_data(metadatagroup, "LicenseTerms", options3mf->metaDataLicenseTerms);
+    add_meta_data(metadatagroup, "Rating", options3mf->metaDataRating);
   }
 
   ExportContext ctx{
@@ -395,6 +398,7 @@ void export_3mf(const std::shared_ptr<const Geometry>& geom, std::ostream& outpu
     .modelcount = 1,
     .selectedColor = settingsColor.value_or(exportInfo.defaultColor),
     .info = exportInfo,
+    .options = options3mf
   };
 
   if (!append_3mf(geom, ctx)) {
@@ -414,7 +418,7 @@ void export_3mf(const std::shared_ptr<const Geometry>& geom, std::ostream& outpu
   }
 
   try {
-    writer->SetDecimalPrecision(exportInfo.options3mf->decimalPrecision);
+    writer->SetDecimalPrecision(ctx.options->decimalPrecision);
   } catch (Lib3MF::ELib3MFException& e) {
     LOG(message_group::Export_Error, "Error setting decimal precision for export: %1$s", e.what());
   }
