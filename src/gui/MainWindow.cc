@@ -23,7 +23,22 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  */
+
 #include "gui/MainWindow.h"
+
+#include <deque>
+#include <cassert>
+#include <array>
+#include <functional>
+#include <exception>
+#include <sstream>
+#include <iostream>
+#include <memory>
+#include <string>
+#include <vector>
+#include <cstdio>
+#include <memory>
+#include <utility>
 
 #include <QApplication>
 #include <QDialog>
@@ -42,16 +57,7 @@
 #include <QTextEdit>
 #include <QToolBar>
 #include <QWidget>
-#include <deque>
-#include <cassert>
-#include <array>
-#include <functional>
-#include <exception>
-#include <sstream>
-#include <iostream>
-#include <memory>
-#include <string>
-#include <vector>
+
 #include "openscad_gui.h"
 
 #ifdef ENABLE_MANIFOLD
@@ -70,6 +76,7 @@
 #include "gui/Preferences.h"
 #include "utils/printutils.h"
 #include "core/node.h"
+#include "core/ColorUtil.h"
 #include "core/CSGNode.h"
 #include "core/Expression.h"
 #include "core/ScopeContext.h"
@@ -190,15 +197,11 @@ std::string SHA256HashString(std::string aString){
 #include "geometry/GeometryEvaluator.h"
 
 #include "gui/PrintInitDialog.h"
-//#include "gui/ExportPdfDialog.h"
+#include "gui/ExportPdfDialog.h"
+#include "gui/Export3mfDialog.h"
 #include "gui/input/InputDriverEvent.h"
 #include "gui/input/InputDriverManager.h"
-#include <cstdio>
-#include <memory>
 #include <QtNetwork>
-#include <utility>
-
-#include "gui/qt-obsolete.h" // IWYU pragma: keep
 
 static const int autoReloadPollingPeriodMS = 200;
 
@@ -237,8 +240,8 @@ QAction *findAction(const QList<QAction *>& actions, const std::string& name)
   return nullptr;
 }
 
-void fileExportedMessage(const char *format, const QString& filename) {
-  LOG("%1$s export finished: %2$s", format, filename.toUtf8().constData());
+void fileExportedMessage(const QString& format, const QString& filename) {
+  LOG("%1$s export finished: %2$s", format.toUtf8().constData(), filename.toUtf8().constData());
 }
 
 void removeExportActions(QToolBar *toolbar, QAction *action) {
@@ -2704,13 +2707,11 @@ bool MainWindow::canExport(unsigned int dim)
   return true;
 }
 
-void MainWindow::actionExport(FileFormat format, const char *type_name, const char *suffix, unsigned int dim) {
-  ExportPdfOptions *empty = nullptr;
-  actionExport(format, type_name, suffix, dim, empty);
-}
-
-void MainWindow::actionExport(FileFormat format, const char *type_name, const char *suffix, unsigned int dim, ExportPdfOptions *options)
+void MainWindow::actionExport(unsigned int dim, ExportInfo& exportInfo)
 {
+  const auto type_name = QString::fromStdString(exportInfo.info.description);
+  const auto suffix = QString::fromStdString(exportInfo.info.suffix);
+
   //Setting filename skips the file selection dialog and uses the path provided instead.
   if (GuiLocker::isLocked()) return;
   GuiLocker lock;
@@ -2729,16 +2730,6 @@ void MainWindow::actionExport(FileFormat format, const char *type_name, const ch
   }
   this->export_paths[suffix] = exportFilename;
 
-  ExportInfo exportInfo = {
-    .format = format,
-    .title = std::filesystem::path(activeEditor->filepath.toStdString()).filename().string(),
-    .sourceFilePath = activeEditor->filepath.toStdString(),
-    .camera = &qglview->cam,
-    .defaultColor = { 0xf9, 0xd7, 0x2c, 255 } // Cornfield: CGAL_FACE_FRONT_COLOR
-  };
-  // Add options
-  exportInfo.options = options;
-
   bool exportResult = exportFileByName(this->root_geom, exportFilename.toStdString(), exportInfo);
 
   if (exportResult) fileExportedMessage(type_name, exportFilename);
@@ -2747,55 +2738,35 @@ void MainWindow::actionExport(FileFormat format, const char *type_name, const ch
 
 void MainWindow::actionExportFileFormat(int fmt)
 {
-  const FileFormat format = static_cast<FileFormat>(fmt);
+  const auto format = static_cast<FileFormat>(fmt);
   const FileFormatInfo &info = fileformat::info(format);
-  const std::string suffix = "." + info.suffix;
+
+  ExportInfo exportInfo = createExportInfo(format, info, activeEditor->filepath.toStdString(), &qglview->cam);
+
   switch (format) {
     case FileFormat::PDF:
-{
+      {
+        auto exportPdfDialog = new ExportPdfDialog();
+        exportPdfDialog->deleteLater();
+        if (exportPdfDialog->exec() == QDialog::Rejected) {
+          return;
+        }
 
-  ExportPdfOptions exportPdfOptions;
-  QSettingsCached settings;
+        exportInfo.optionsPdf = exportPdfDialog->getOptions();
+        actionExport(2, exportInfo);
+      }
+      break;
+    case FileFormat::_3MF:
+      {
+        auto export3mfDialog = new Export3mfDialog();
+        export3mfDialog->deleteLater();
+        if (export3mfDialog->exec() == QDialog::Rejected) {
+          return;
+        }
 
-// Prepopulated with default values in export.h
-  auto exportPdfDialog = new ExportPdfDialog();
-
-// Get current settings or defaults
-//  modify the two enums (next two rows) to explicitly use default by lookup to string (see the later set methods).
-  exportPdfDialog->setPaperSize(sizeString2Enum(settings.value("exportPdfOpts/paperSize",
-                                                               QString::fromStdString(paperSizeStrings[static_cast<int>(exportPdfOptions.paperSize)])).toString())); // enum map
-  exportPdfDialog->setOrientation(orientationsString2Enum(settings.value("exportPdfOpts/orientation",
-                                                                         QString::fromStdString(paperOrientationsStrings[static_cast<int>(exportPdfOptions.Orientation)])).toString())); // enum map
-  exportPdfDialog->setShowDesignFilename(settings.value("exportPdfOpts/showDsgnFN", exportPdfOptions.showDesignFilename).toBool());
-  exportPdfDialog->setShowScale(settings.value("exportPdfOpts/showScale", exportPdfOptions.showScale).toBool());
-  exportPdfDialog->setShowScaleMsg(settings.value("exportPdfOpts/showScaleMsg", exportPdfOptions.showScaleMsg).toBool());
-  exportPdfDialog->setShowGrid(settings.value("exportPdfOpts/showGrid", exportPdfOptions.showGrid).toBool());
-  exportPdfDialog->setGridSize(settings.value("exportPdfOpts/gridSize", exportPdfOptions.gridSize).toDouble());
-
-
-  if (exportPdfDialog->exec() == QDialog::Rejected) {
-    return;
-  }
-
-  exportPdfOptions.paperSize = exportPdfDialog->getPaperSize();
-  exportPdfOptions.Orientation = exportPdfDialog->getOrientation();
-  exportPdfOptions.showDesignFilename = exportPdfDialog->getShowDesignFilename();
-  exportPdfOptions.showScale = exportPdfDialog->getShowScale();
-  exportPdfOptions.showScaleMsg = exportPdfDialog->getShowScaleMsg();
-  exportPdfOptions.showGrid = exportPdfDialog->getShowGrid();
-  exportPdfOptions.gridSize = exportPdfDialog->getGridSize();
-
-  settings.setValue("exportPdfOpts/paperSize", QString::fromStdString(paperSizeStrings[static_cast<int>(exportPdfDialog->getPaperSize())]));
-  settings.setValue("exportPdfOpts/orientation", QString::fromStdString(paperOrientationsStrings[static_cast<int>(exportPdfDialog->getOrientation())]));
-  settings.setValue("exportPdfOpts/showDsgnFN", exportPdfDialog->getShowDesignFilename());
-  settings.setValue("exportPdfOpts/showScale", exportPdfDialog->getShowScale());
-  settings.setValue("exportPdfOpts/showScaleMsg", exportPdfDialog->getShowScaleMsg());
-  settings.setValue("exportPdfOpts/showGrid", exportPdfDialog->getShowGrid());
-  settings.setValue("exportPdfOpts/gridSize", exportPdfDialog->getGridSize());
-
-  actionExport(FileFormat::PDF, "PDF", ".pdf", 2, &exportPdfOptions);
-
-}
+        exportInfo.options3mf = export3mfDialog->getOptions();
+        actionExport(3, exportInfo);
+      }
       break;
     case FileFormat::CSG:
 {
@@ -2806,7 +2777,7 @@ void MainWindow::actionExportFileFormat(int fmt)
     clearCurrentOutput();
     return;
   }
-  const auto suffix = ".csg";
+  const QString suffix = ".csg";
   auto csg_filename = QFileDialog::getSaveFileName(this,
                                                    _("Export CSG File"), exportPath(suffix), _("CSG Files (*.csg)"));
 
@@ -2831,7 +2802,7 @@ void MainWindow::actionExportFileFormat(int fmt)
 {
   // Grab first to make sure dialog box isn't part of the grabbed image
   qglview->grabFrame();
-  const auto suffix = ".png";
+  const QString suffix = ".png";
   auto img_filename = QFileDialog::getSaveFileName(this,
                                                    _("Export Image"), exportPath(suffix), _("PNG Files (*.png)"));
   if (!img_filename.isEmpty()) {
@@ -2848,7 +2819,7 @@ void MainWindow::actionExportFileFormat(int fmt)
 }
       break;
     default:
-      actionExport(info.format, info.description.c_str(), suffix.c_str(), fileformat::is3D(format) ? 3 : fileformat::is2D(format) ? 2 : 0);
+      actionExport(fileformat::is3D(format) ? 3 : fileformat::is2D(format) ? 2 : 0, exportInfo);
   }
 }
 
@@ -3692,7 +3663,7 @@ void MainWindow::processEvents()
   if (this->procevents) QApplication::processEvents();
 }
 
-QString MainWindow::exportPath(const char *suffix) {
+QString MainWindow::exportPath(const QString& suffix) {
   QString path;
   auto path_it = this->export_paths.find(suffix);
   if (path_it != export_paths.end()) {
@@ -3713,17 +3684,3 @@ void MainWindow::jumpToLine(int line, int col)
 {
   this->activeEditor->setCursorPosition(line, col);
 }
-
-paperSizes MainWindow::sizeString2Enum(const QString& current){
-   for(size_t i = 0; i < paperSizeStrings.size(); i++){
-       if (current.toStdString()==paperSizeStrings[i]) return static_cast<paperSizes>(i);
-   };
-   return paperSizes::A4;
-};
-
-paperOrientations MainWindow::orientationsString2Enum(const QString& current){
-   for(size_t i = 0; i < paperOrientationsStrings.size(); i++){
-       if (current.toStdString()==paperOrientationsStrings[i]) return static_cast<paperOrientations>(i);
-   };
-   return paperOrientations::PORTRAIT;
-};

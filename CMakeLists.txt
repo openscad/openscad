@@ -794,6 +794,7 @@ set(CORE_SOURCES
   src/core/CgalAdvNode.cc
   src/core/Children.cc
   src/core/ColorNode.cc
+  src/core/ColorUtil.cc
   src/core/Context.cc
   src/core/ContextFrame.cc
   src/core/ContextMemoryManager.cc
@@ -1092,6 +1093,7 @@ set(GUI_SOURCES
   src/gui/Editor.cc
   src/gui/ErrorLog.cc
   src/gui/EventFilter.h
+  src/gui/Export3mfDialog.cc
   src/gui/ExportPdfDialog.cc
   src/gui/FontListDialog.cc
   src/gui/FontListTableView.cc
@@ -1160,6 +1162,7 @@ set(GUI_HEADERS
     src/gui/Editor.h
     src/gui/ErrorLog.h
     src/gui/EventFilter.h
+    src/gui/Export3mfDialog.h
     src/gui/ExportPdfDialog.h
     src/gui/FontList.h
     src/gui/FontListDialog.h
@@ -1213,6 +1216,7 @@ set(GUI_UIS
     src/gui/Animate.ui
     src/gui/Console.ui
     src/gui/ErrorLog.ui
+    src/gui/Export3mfDialog.ui
     src/gui/ExportPdfDialog.ui
     src/gui/FontList.ui
     src/gui/FontListDialog.ui

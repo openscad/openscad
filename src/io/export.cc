@@ -25,9 +25,12 @@
  */
 
 #include "io/export.h"
+#include "ColorMap.h"
+#include "core/ColorUtil.h"
 #include "geometry/PolySet.h"
 #include "utils/printutils.h"
 #include "geometry/Geometry.h"
+#include "glview/RenderSettings.h"
 
 #include <algorithm>
 #include <functional>
@@ -37,6 +40,7 @@
 #include <memory>
 #include <cstddef>
 #include <fstream>
+#include <string>
 #include <vector>
 #include <filesystem>
 #include <iostream>
@@ -175,6 +179,20 @@ bool is2D(FileFormat format) {
 
 }  // namespace FileFormat
 
+ExportInfo createExportInfo(const FileFormat& format, const FileFormatInfo& info, const std::string& filepath, const Camera *camera)
+{
+  const auto colorScheme = ColorMap::inst()->findColorScheme(RenderSettings::inst()->colorscheme);
+  return ExportInfo{
+    .format = format,
+    .info = info,
+    .title = std::filesystem::path(filepath).filename().string(),
+    .sourceFilePath = filepath,
+    .camera = camera,
+    .defaultColor = ColorMap::getColor(*colorScheme, RenderColor::CGAL_FACE_FRONT_COLOR),
+    .colorScheme = colorScheme,
+  };
+}
+
 void exportFile(const std::shared_ptr<const Geometry>& root_geom, std::ostream& output, const ExportInfo& exportInfo)
 {
   switch (exportInfo.format) {
@@ -300,7 +318,7 @@ struct LexographicLess {
 std::string get_current_iso8601_date_time_utc() {
   auto now = std::chrono::system_clock::now();
   auto time = std::chrono::system_clock::to_time_t(now);
-  return STR(std::put_time(gmtime(&time), "%FT%TZ"));
+  return STR(std::put_time(gmtime(&time), "%Y-%m-%dT%H:%M:%SZ")); // %F/%T not fully supported everywhere
 }
 
 std::unique_ptr<PolySet> createSortedPolySet(const PolySet& ps)

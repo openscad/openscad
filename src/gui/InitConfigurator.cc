@@ -5,6 +5,7 @@
 #include <QCheckBox>
 #include <QComboBox>
 #include <QDoubleSpinBox>
+#include <QRadioButton>
 #include <QSpinBox>
 #include <QString>
 #include <QSettings>
@@ -90,5 +91,24 @@ void InitConfigurator::updateComboBox(const BlockSignals<QComboBox *>& comboBox,
     comboBox->setCurrentIndex(index);
   } else {
     comboBox->setCurrentIndex(0);
+  }
+}
+
+void InitConfigurator::initButtonGroup(const BlockSignals<QButtonGroup *>& buttonGroup, const Settings::SettingsEntryEnum& entry)
+{
+  for (const auto button : buttonGroup->buttons()) {
+    const auto settingsValue = button->property(Settings::PROPERTY_NAME).toString().toStdString();
+    if (settingsValue == entry.value()) {
+      button->setChecked(true);
+    }
+  }
+}
+
+void InitConfigurator::applyButtonGroup(const BlockSignals<QButtonGroup *>& buttonGroup, Settings::SettingsEntryEnum& entry)
+{
+  const auto button = buttonGroup->checkedButton();
+  if (button) {
+      const auto settingsValue = button->property(Settings::PROPERTY_NAME).toString().toStdString();
+      entry.setValue(settingsValue);
   }
 }

@@ -173,6 +173,7 @@ void Preferences::init() {
   addPrefPage(group, prefsActionInput, pageInput);
   addPrefPage(group, prefsActionInputButton, pageInputButton);
   addPrefPage(group, prefsActionAdvanced, pageAdvanced);
+  addPrefPage(group, prefsActionDialogs, pageDialogs);
 
   connect(group, SIGNAL(triggered(QAction*)), this, SLOT(actionTriggered(QAction*)));
 
@@ -251,6 +252,9 @@ void Preferences::init() {
   if (!profile.isEmpty()) {
     this->comboBoxOctoPrintSlicingProfile->addItem(profileDesc, QVariant{profile});
   }
+
+  this->checkBoxAlwaysShowExportPdfDialog->setChecked(Settings::Settings::exportPdfAlwaysShowDialog.value());
+  this->checkBoxAlwaysShowExport3mfDialog->setChecked(Settings::Settings::export3mfAlwaysShowDialog.value());
 
   emit editorConfigChanged();
 }
@@ -1112,6 +1116,18 @@ void Preferences::on_comboBoxOctoPrintSlicingProfile_activated(int val)
   const QString desc = text.isEmpty() ? QString{} : this->comboBoxOctoPrintSlicingProfile->itemText(val);
   Settings::Settings::octoPrintSlicerProfile.setValue(text.toStdString());
   Settings::Settings::octoPrintSlicerProfileDesc.setValue(desc.toStdString());
+  writeSettings();
+}
+
+void Preferences::on_checkBoxAlwaysShowExportPdfDialog_toggled(bool state)
+{
+  Settings::Settings::exportPdfAlwaysShowDialog.setValue(state);
+  writeSettings();
+}
+
+void Preferences::on_checkBoxAlwaysShowExport3mfDialog_toggled(bool state)
+{
+  Settings::Settings::export3mfAlwaysShowDialog.setValue(state);
   writeSettings();
 }
 

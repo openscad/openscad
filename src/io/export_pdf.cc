@@ -195,13 +195,13 @@ static cairo_status_t export_pdf_write(void *closure, const unsigned char *data,
 void export_pdf(const std::shared_ptr<const Geometry>& geom, std::ostream& output, const ExportInfo& exportInfo)
 {
 // Extract the options.  This will change when options becomes a variant.
-ExportPdfOptions *exportPdfOptions;
+const ExportPdfOptions *exportPdfOptions;
 ExportPdfOptions defaultPdfOptions;
 // could use short-circuit short-form, but will need to grow.
-if (exportInfo.options==nullptr) {
-	exportPdfOptions=&defaultPdfOptions;
+if (exportInfo.optionsPdf) {
+	exportPdfOptions=exportInfo.optionsPdf.get();
 } else {
-	exportPdfOptions=exportInfo.options;
+	exportPdfOptions=&defaultPdfOptions;
 };
 
   int pdfX,pdfY;  // selected paper size for export.

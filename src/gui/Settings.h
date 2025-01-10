@@ -9,6 +9,8 @@
 
 namespace Settings {
 
+constexpr inline auto PROPERTY_NAME = "_settings_value";
+
 class SettingsEntry
 {
 public:
@@ -40,6 +42,7 @@ public:
 
   bool value() const { return _value; }
   void setValue(bool value) { _value = value; }
+  bool defaultValue() const { return _defaultValue; }
   bool isDefault() const override { return _value == _defaultValue; }
   std::string encode() const override;
   void decode(const std::string& encoded) override;
@@ -64,6 +67,7 @@ public:
   void setValue(int value) { _value = value; }
   int minimum() const { return _minimum; }
   int maximum() const { return _maximum; }
+  int defaultValue() const { return _defaultValue; }
   bool isDefault() const override { return _value == _defaultValue; }
   std::string encode() const override;
   void decode(const std::string& encoded) override;
@@ -115,6 +119,7 @@ public:
 
   const std::string& value() const { return _value; }
   void setValue(const std::string& value) { _value = value; }
+  const std::string& defaultValue() const { return _defaultValue; }
   bool isDefault() const override { return _value == _defaultValue; }
   std::string encode() const override { return value(); }
   void decode(const std::string& encoded) override { setValue(encoded); }
@@ -144,6 +149,7 @@ public:
   void setValue(const std::string& value);
   void setIndex(size_t index) { if (index < _items.size()) _index = index; }
   const std::vector<Item>& items() const { return _items; }
+  const std::string& defaultValue() const { return _defaultValue; }
   bool isDefault() const override { return value() == _defaultValue; }
   std::string encode() const override { return value(); }
   void decode(const std::string& encoded) override { setValue(encoded); }
@@ -370,6 +376,27 @@ public:
   static SettingsEntryDouble axisDeadzone7;
   static SettingsEntryDouble axisDeadzone8;
   static SettingsEntryInt joystickNr;
+
+  static SettingsEntryBool exportPdfAlwaysShowDialog;
+
+  static SettingsEntryBool export3mfAlwaysShowDialog;
+  static SettingsEntryEnum export3mfColorMode;
+  static SettingsEntryEnum export3mfUnit;
+  static SettingsEntryString export3mfColor;
+  static SettingsEntryEnum export3mfMaterialType;
+  static SettingsEntryInt export3mfDecimalPrecision;
+  static SettingsEntryBool export3mfAddMetaData;
+  static SettingsEntryBool export3mfAddMetaDataDesigner;
+  static SettingsEntryBool export3mfAddMetaDataDescription;
+  static SettingsEntryBool export3mfAddMetaDataCopyright;
+  static SettingsEntryBool export3mfAddMetaDataLicenseTerms;
+  static SettingsEntryBool export3mfAddMetaDataRating;
+  static SettingsEntryString export3mfMetaDataTitle;
+  static SettingsEntryString export3mfMetaDataDesigner;
+  static SettingsEntryString export3mfMetaDataDescription;
+  static SettingsEntryString export3mfMetaDataCopyright;
+  static SettingsEntryString export3mfMetaDataLicenseTerms;
+  static SettingsEntryString export3mfMetaDataRating;
 
   static SettingsEntryString& inputButton(size_t id);
   static SettingsEntryDouble& axisTrim(size_t id);

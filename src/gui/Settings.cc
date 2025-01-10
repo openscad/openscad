@@ -277,6 +277,27 @@ SettingsEntryDouble Settings::axisDeadzone8("input", "axisDeadzone8", 0.0, 0.01,
 
 SettingsEntryInt Settings::joystickNr("input", "joystickNr", 0, 9, 0);
 
+SettingsEntryBool Settings::exportPdfAlwaysShowDialog("export-pdf", "alwaysShowDialog", true);
+
+SettingsEntryBool Settings::export3mfAlwaysShowDialog("export-3mf", "alwaysShowDialog", true);
+SettingsEntryEnum Settings::export3mfColorMode("export-3mf", "colors", {{"model", _("Use colors from model")}, {"none", _("No colors")}, {"selected-only", _("Use selected color only")}, {"selected-as-default", _("Use selected color as default")}}, "model");
+// https://github.com/3MFConsortium/spec_core/blob/master/3MF%20Core%20Specification.md: micron, millimeter, centimeter, inch, foot, and meter
+SettingsEntryEnum Settings::export3mfUnit("export-3mf", "unit", {{"micron", _("Micron")}, {"millimeter", _("Millimeter")}, {"centimeter", _("Centimeter")}, {"meter", _("Meter")}, {"inch", _("Inch")}, {"foot", _("Feet")}}, "millimeter");
+SettingsEntryString Settings::export3mfColor("export-3mf", "color", "#f9d72c"); // Cornfield: CGAL_FACE_FRONT_COLOR
+SettingsEntryEnum Settings::export3mfMaterialType("export-3mf", "material-type", {{"color", "Color"}, {"material", "Base Material"}}, "material");
+SettingsEntryInt Settings::export3mfDecimalPrecision("export-3mf", "decimal-precision", 1, 16, 6);
+SettingsEntryBool Settings::export3mfAddMetaData("export-3mf", "add-meta-data", true);
+SettingsEntryBool Settings::export3mfAddMetaDataDesigner("export-3mf", "add-meta-data-designer", false);
+SettingsEntryBool Settings::export3mfAddMetaDataDescription("export-3mf", "add-meta-data-description", false);
+SettingsEntryBool Settings::export3mfAddMetaDataCopyright("export-3mf", "add-meta-data-copyright", false);
+SettingsEntryBool Settings::export3mfAddMetaDataLicenseTerms("export-3mf", "add-meta-data-license-terms", false);
+SettingsEntryBool Settings::export3mfAddMetaDataRating("export-3mf", "add-meta-data-rating", false);
+SettingsEntryString Settings::export3mfMetaDataTitle("export-3mf", "meta-data-title", "");
+SettingsEntryString Settings::export3mfMetaDataDesigner("export-3mf", "meta-data-designer", "");
+SettingsEntryString Settings::export3mfMetaDataDescription("export-3mf", "meta-data-description", "");
+SettingsEntryString Settings::export3mfMetaDataCopyright("export-3mf", "meta-data-copyright", "");
+SettingsEntryString Settings::export3mfMetaDataLicenseTerms("export-3mf", "meta-data-license-terms", "");
+SettingsEntryString Settings::export3mfMetaDataRating("export-3mf", "meta-data-rating", "");
 
 SettingsEntryString& Settings::inputButton(size_t id)
 {

@@ -11,9 +11,13 @@
 #include <boost/range/algorithm.hpp>
 #include <boost/range/adaptor/map.hpp>
 
+#include "Settings.h"
 #include "core/Tree.h"
 #include "glview/Camera.h"
+#include "glview/ColorMap.h"
 #include "linalg.h"
+
+using S = Settings::Settings;
 
 class PolySet;
 
@@ -111,14 +115,52 @@ struct ExportPdfOptions {
     paperSizes paperSize = paperSizes::A4;
 };
 
+struct Export3mfOptions {
+  std::string colorMode = S::export3mfColorMode.defaultValue();
+  std::string unit = S::export3mfUnit.defaultValue();
+  std::string color = S::export3mfColor.defaultValue();
+  std::string materialType = S::export3mfMaterialType.defaultValue();
+  int decimalPrecision = S::export3mfDecimalPrecision.defaultValue();
+  bool addMetaData = S::export3mfAddMetaData.defaultValue();
+  std::string metaDataTitle;
+  std::string metaDataDesigner;
+  std::string metaDataDescription;
+  std::string metaDataCopyright;
+  std::string metaDataLicenseTerms;
+  std::string metaDataRating;
+
+  static const std::unique_ptr<const Export3mfOptions> fromSettings() {
+    return std::make_unique<const Export3mfOptions>(Export3mfOptions{
+      .colorMode = S::export3mfColorMode.value(),
+      .unit = S::export3mfUnit.value(),
+      .color = S::export3mfColor.value(),
+      .materialType = S::export3mfMaterialType.value(),
+      .decimalPrecision = S::export3mfDecimalPrecision.value(),
+      .addMetaData = S::export3mfAddMetaData.value(),
+      .metaDataTitle = S::export3mfMetaDataTitle.value(),
+      .metaDataDesigner = S::export3mfAddMetaDataDesigner.value() ? S::export3mfMetaDataDesigner.value() : "",
+      .metaDataDescription = S::export3mfAddMetaDataDescription.value() ? S::export3mfMetaDataDescription.value() : "",
+      .metaDataCopyright = S::export3mfAddMetaDataCopyright.value() ? S::export3mfMetaDataCopyright.value() : "",
+      .metaDataLicenseTerms = S::export3mfAddMetaDataLicenseTerms.value() ? S::export3mfMetaDataLicenseTerms.value() : "",
+      .metaDataRating = S::export3mfAddMetaDataRating.value() ? S::export3mfMetaDataRating.value() : "",
+    });
+  }
+};
+
 struct ExportInfo {
   FileFormat format;
+  FileFormatInfo info;
   std::string title;
   std::string sourceFilePath; // Full path to the OpenSCAD source file
-  ExportPdfOptions *options;
   const Camera *camera;
-  Color4f defaultColor; // CGAL_FACE_FRONT_COLOR, should later come from active color scheme
+  const Color4f defaultColor;
+  const ColorScheme *colorScheme;
+
+  std::unique_ptr<const ExportPdfOptions> optionsPdf;
+  std::unique_ptr<const Export3mfOptions> options3mf;
 };
+
+ExportInfo createExportInfo(const FileFormat& format, const FileFormatInfo& info, const std::string& filepath, const Camera *camera);
 
 bool exportFileByName(const std::shared_ptr<const class Geometry>& root_geom, const std::string& filename, const ExportInfo& exportInfo);
 bool exportFileStdOut(const std::shared_ptr<const class Geometry>& root_geom, const ExportInfo& exportInfo);

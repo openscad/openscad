@@ -26,8 +26,10 @@
 
 #pragma once
 
-#include "gui/qtgettext.h"
+#include <memory>
 #include <QDialog>
+
+#include "gui/qtgettext.h" // IWYU pragma: keep
 #include "io/export.h"
 #include "ui_ExportPdfDialog.h"
 
@@ -37,14 +39,16 @@ class ExportPdfDialog : public QDialog, public Ui::ExportPdfDialog
 
 public:
   ExportPdfDialog();
-  
-  double getGridSize();
-  paperSizes getPaperSize();
-  paperOrientations getOrientation();
-  bool getShowScale();
-  bool getShowScaleMsg();
-  bool getShowDesignFilename();
-  bool getShowGrid();
+
+  int exec() override;
+
+  double getGridSize() const;
+  paperSizes getPaperSize() const;
+  paperOrientations getOrientation() const;
+  bool getShowScale() const;
+  bool getShowScaleMsg() const;
+  bool getShowDesignFilename() const;
+  bool getShowGrid() const;
   
   void setShowScale(bool state);
   void setShowScaleMsg(bool state); 
@@ -54,7 +58,13 @@ public:
   void setPaperSize(paperSizes paper);  
   void setOrientation(paperOrientations orient);  
   void setGridSize(double value);
-  
+
+  std::unique_ptr<const ExportPdfOptions> getOptions() const {
+    return std::make_unique<const ExportPdfOptions>(this->options);
+  }
+
+private:
+  ExportPdfOptions options;
 };
 
 
