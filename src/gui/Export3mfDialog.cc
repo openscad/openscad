@@ -25,8 +25,6 @@
  */
 
 #include "gui/Export3mfDialog.h"
-#include <qapplication.h>
-#include <qcoreapplication.h>
 
 #include <QString>
 #include <QCheckBox>
@@ -43,6 +41,8 @@
 using S = Settings::Settings;
 using SEBool = Settings::SettingsEntryBool;
 using SEString = Settings::SettingsEntryString;
+
+extern const std::string get_lib3mf_version();
 
 Export3mfDialog::Export3mfDialog()
 {
@@ -62,6 +62,15 @@ Export3mfDialog::Export3mfDialog()
 	initMetaData(this->checkBoxMetaDataCopyright, this->lineEditMetaDataCopyright, &S::export3mfAddMetaDataCopyright, S::export3mfMetaDataCopyright);
 	initMetaData(this->checkBoxMetaDataLicenseTerms, this->lineEditMetaDataLicenseTerms, &S::export3mfAddMetaDataLicenseTerms, S::export3mfMetaDataLicenseTerms);
 	initMetaData(this->checkBoxMetaDataRating, this->lineEditMetaDataRating, &S::export3mfAddMetaDataRating, S::export3mfMetaDataRating);
+
+	const auto library_version = get_lib3mf_version();
+	if (library_version.compare(0, 2, "1.") == 0) {
+		this->spinBoxDecimalPrecision->setEnabled(false);
+		this->toolButtonDecimalPrecisionReset->setEnabled(false);
+		this->labelDecimalPrecision->setEnabled(false);
+		this->spinBoxDecimalPrecision->setToolTip(_("This OpenSCAD build uses lib3mf version 1. Setting the decimal precision for export needs version 2 or later."));
+		this->toolButtonDecimalPrecisionReset->setToolTip("");
+	}
 }
 
 void Export3mfDialog::updateColor(const QColor& color)

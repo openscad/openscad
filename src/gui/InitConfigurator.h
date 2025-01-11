@@ -1,6 +1,5 @@
 #pragma once
 
-#include <qgroupbox.h>
 #include <QSettings>
 #include <QObject>
 #include <QComboBox>

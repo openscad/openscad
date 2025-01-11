@@ -481,7 +481,7 @@
          </property>
          <layout class="QGridLayout" name="gridLayout_3">
           <item row="1" column="0">
-           <widget class="QLabel" name="label_2">
+           <widget class="QLabel" name="labelDecimalPrecision">
             <property name="text">
              <string>Decimal precision</string>
             </property>
@@ -491,7 +491,7 @@
            <widget class="QComboBox" name="comboBoxMaterialType"/>
           </item>
           <item row="0" column="0">
-           <widget class="QLabel" name="label">
+           <widget class="QLabel" name="labelExportColorsAs">
             <property name="text">
              <string>Export colors as</string>
             </property>
@@ -573,7 +573,7 @@
       </widget>
      </item>
      <item>
-      <spacer name="horizontalSpacer_2">
+      <spacer name="horizontalSpacerButtons">
        <property name="orientation">
         <enum>Qt::Horizontal</enum>
        </property>
