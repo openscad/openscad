@@ -204,6 +204,20 @@ static std::shared_ptr<AbstractNode> builtin_assign(const ModuleInstantiation *i
 static std::shared_ptr<AbstractNode> builtin_for(const ModuleInstantiation *inst, const std::shared_ptr<const Context>& context)
 {
   auto node = lazyUnionNode(inst);
+
+// Need to debug to look for the union=false/true...
+// Think given I added the string I should get it in context somehow?? TODO FIXME XXX
+//+			// special case: if user appends "union=false" then pass all child nodes
+//+			// of for() loop to the parent node as if they were declared there.
+//+			GroupNode *gr;
+//+			if (Feature::ExperimentalExtrude.is_enabled()
+//+				&& it_name == "union" && it_values->type() == Value::ValueType::BOOL
+//+				&& (gr = dynamic_cast<GroupNode*>(&node))
+//+			)
+//+				gr->impliedUnion = it_values->toBool();
+//+			else
+//+				c.set_variable(it_name, it_values);
+
   if (!inst->arguments.empty()) {
     LcFor::forEach(inst->arguments, inst->location(), context,
                    [inst, node] (const std::shared_ptr<const Context>& iterationContext) {
@@ -271,6 +285,9 @@ void register_builtin_control()
     "for([start : increment : end])",
     "for([start : end])",
     "for([vector])",
+    "for([start : increment : end],boolean)",
+    "for([start : end],boolean)",
+    "for([vector],boolean)",
   });
 
   Builtins::init("let", new BuiltinModule(builtin_let),

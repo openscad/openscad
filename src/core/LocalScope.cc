@@ -63,7 +63,17 @@ std::shared_ptr<AbstractNode> LocalScope::instantiateModules(const std::shared_p
   for (const auto& modinst : this->moduleInstantiations) {
     auto node = modinst->evaluate(context);
     if (node) {
-      target->children.push_back(node);
+      // GroupNode can pass its children through to parent without an implied union.
+      // This might later be handled by GeometryEvaluator, but for now just completely
+      // remove the GroupNode from the tree.
+      GroupNode *gr= dynamic_cast<GroupNode*>(node);
+      if (gr && !gr->impliedUnion) {
+        target->children.insert(target->children.end(), node->children.begin(), node->children.end());
+        node->children.clear();
+        delete node;
+      }
+      else
+        target->children.push_back(node);
     }
   }
   return target;
@@ -75,7 +85,17 @@ std::shared_ptr<AbstractNode> LocalScope::instantiateModules(const std::shared_p
     assert(index < this->moduleInstantiations.size());
     auto node = moduleInstantiations[index]->evaluate(context);
     if (node) {
-      target->children.push_back(node);
+      // GroupNode can pass its children through to parent without an implied union.
+      // This might later be handled by GeometryEvaluator, but for now just completely
+      // remove the GroupNode from the tree.
+      GroupNode *gr= dynamic_cast<GroupNode*>(node);
+      if (gr && !gr->impliedUnion) {
+        target->children.insert(target->children.end(), node->children.begin(), node->children.end());
+        node->children.clear();
+        delete node;
+      }
+      else
+        target->children.push_back(node);
     }
   }
   return target;

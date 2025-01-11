@@ -801,6 +801,7 @@ set(CORE_SOURCES
   src/core/DrawingCallback.cc
   src/core/EvaluationSession.cc
   src/core/Expression.cc
+  src/core/ExtrudeNode.cc
   src/core/FreetypeRenderer.cc
   src/core/FunctionType.cc
   src/core/GroupModule.cc
