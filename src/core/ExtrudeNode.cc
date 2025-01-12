@@ -70,7 +70,7 @@ std::string ExtrudeNode::toString() const
 
 void register_builtin_extrude()
 {
-  Builtins::init("extrude", new BuiltinModule(builtin_extrude),
+  Builtins::init("extrude", new BuiltinModule(builtin_extrude, &Feature::ExperimentalExtrude),
   {
     "extrude(convexity = 1)",
   });
