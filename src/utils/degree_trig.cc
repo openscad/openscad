@@ -23,15 +23,14 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  */
+#include "utils/degree_trig.h"
+
 //
 // Trigonometry function taking degrees, accurate for 30, 45, 60 and 90, etc.
 //
-// NOLINTNEXTLINE(bugprone-reserved-identifier)
-#define _USE_MATH_DEFINES
 #include <cmath>
 #include <limits>
 
-#include "degree_trig.h"
 
 static inline double rad2deg(double x)
 {

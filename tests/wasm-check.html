@@ -1,0 +1,38 @@
+<html>
+  <body>
+    <pre id="output"></pre>
+    <script type="module"> 
+      import OpenSCAD from "../../build/openscad.js";
+      
+      const instance = await OpenSCAD({ noInitialRun: true });
+      
+      instance.FS.mkdir("/fonts");
+      instance.FS.writeFile("/fonts/fonts.conf",
+        `<?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE fontconfig SYSTEM "urn:fontconfig:fonts.dtd">
+          <fontconfig>
+        </fontconfig>`);
+      instance.FS.writeFile("/fonts/LiberationSans-Regular.ttf",
+        new Uint8Array(await (await fetch("../fonts/Liberation-2.00.1/ttf/LiberationSans-Regular.ttf")).arrayBuffer()));
+
+      instance.FS.writeFile("lib.scad", `
+        test_text = "Hello";
+      `);
+      instance.FS.writeFile("input.scad", `
+        include <lib.scad>;
+        $fn=64;
+        difference() {
+            linear_extrude(height = 20, center=true)
+                text(test_text, size=10, halign="center", valign="center", font="Liberation Sans");
+            sphere(r=10);
+        }
+      `);
+      
+      const code = instance.callMain(['input.scad', "--backend=manifold", "-o", "out.stl"]);
+      if (code !== 0) throw new Error(`Exit code: ${code}`);
+
+      const output = document.getElementById("output");
+      output.innerText = instance.FS.readFile("out.stl", { encoding: "utf8" });
+    </script>
+  </body>
+</html>

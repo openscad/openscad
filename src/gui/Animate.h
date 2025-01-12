@@ -1,9 +1,17 @@
 #pragma once
 
-#include "qtgettext.h"
+#include <QAction>
+#include <QList>
+#include <QPushButton>
+#include <QResizeEvent>
+#include <QTimer>
+#include <QWidget>
+#include <string>
+
+#include "gui/qtgettext.h"
 #include "ui_Animate.h"
 #include <QIcon>
-#include "input/InputDriverEvent.h"
+#include "gui/input/InputDriverEvent.h"
 
 class MainWindow;
 
@@ -29,7 +37,6 @@ public:
 
   const QList<QAction *>& actions();
   double getAnim_tval();
-  QSize minimumSizeHint() const override;
 
 public slots:
   void animateUpdate();
@@ -40,8 +47,6 @@ public slots:
 
   void on_pushButton_MoveToBeginning_clicked();
   void on_pushButton_StepBack_clicked();
-  void on_pushButton_Resume_clicked();
-  void on_pushButton_Pause_clicked();
   void on_pushButton_StepForward_clicked();
   void on_pushButton_MoveToEnd_clicked();
 
@@ -53,7 +58,7 @@ private:
   MainWindow *mainWindow;
 
   void updatePauseButtonIcon();
-  void initVCR();
+  void connectAction(QAction *, QPushButton *);
 
   double anim_tval;
   bool anim_dumping;
@@ -61,14 +66,17 @@ private:
   int anim_step;
   int anim_numsteps;
 
-  bool isLightTheme();
-
   bool fps_ok;
   bool t_ok;
   bool steps_ok;
 
+  int initMinWidth;
+
+  QIcon iconRun;
+  QIcon iconPause;
+  QIcon iconDisabled;
   QList<QAction *> action_list;
-  void createActionAndPrepareButton(const QIcon& icon, const QString& description, const std::string& actionName, QPushButton *button);
+  QColor errorBlendColor{"red"};
 
 signals:
 

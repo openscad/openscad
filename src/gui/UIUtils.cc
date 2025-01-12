@@ -24,6 +24,12 @@
  *
  */
 
+#include "gui/UIUtils.h"
+
+#include <QString>
+#include <QStringList>
+#include <QWidget>
+#include <exception>
 #include <QDir>
 #include <QFileInfo>
 #include <QUrl>
@@ -31,12 +37,13 @@
 #include <QDesktopServices>
 
 #include "version.h"
-#include "UIUtils.h"
-#include "PlatformUtils.h"
-#include "QSettingsCached.h"
+#include "platform/PlatformUtils.h"
+#include "gui/QSettingsCached.h"
 
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
+
+#include <string>
 
 QFileInfo UIUtils::openFile(QWidget *parent)
 {
@@ -227,4 +234,13 @@ void UIUtils::openOfflineCheatSheet()
     QString docPath = QString::fromStdString(fullPath.string());
     QDesktopServices::openUrl(QUrl(docPath));
   }
+}
+
+QString UIUtils::blendForBackgroundColorStyleSheet(const QColor& input, const QColor& blend, float transparency)
+{
+  const auto result = QColor(
+    255.0 * (transparency * blend.redF() + (1 - transparency) * input.redF()),
+    255.0 * (transparency * blend.greenF() + (1 - transparency) * input.greenF()),
+    255.0 * (transparency * blend.blueF() + (1 - transparency) * input.blueF()));
+  return QString("background-color:%1;").arg(result.toRgb().name());
 }

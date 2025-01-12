@@ -14,7 +14,7 @@
 #
 # All the optional openscad args are passed on to OpenSCAD both in step 2 and 4.
 # Exception: In any --render arguments are passed, the first pass (step 2) will always
-# be run with --render=cgal while the second pass (step 4) will use the passed --render
+# be run with --render=force while the second pass (step 4) will use the passed --render
 # argument.
 #
 # This script should return 0 on success, not-0 on error.
@@ -25,7 +25,6 @@
 #
 # Authors: Torsten Paul, Don Bright, Marius Kintel
 
-from __future__ import print_function
 
 import sys, os, re, subprocess, argparse
 from validatestl import validateSTL
@@ -51,7 +50,7 @@ def createImport(inputfile, scadfile):
 #
 # Parse arguments
 #
-formats = ['csg', 'asciistl', 'binstl', 'stl', 'off', 'amf', '3mf', 'dxf', 'svg']
+formats = ['csg', 'asciistl', 'binstl', 'stl', 'off', 'amf', '3mf', 'obj', 'dxf', 'svg']
 parser = argparse.ArgumentParser()
 parser.add_argument('--openscad', required=False, default=os.environ["OPENSCAD_BINARY"],
     help='Specify OpenSCAD executable, default to env["OPENSCAD_BINARY"] if absent.')
@@ -99,9 +98,9 @@ if inputsuffix != '.scad' and inputsuffix != '.csg':
 
 #
 # First run: Just export the given filetype
-# For any --render arguments to --render=cgal
+# For any --render arguments to --render=force
 #
-tmpargs =  ['--render=cgal' if arg.startswith('--render') else arg for arg in remaining_args]
+tmpargs =  ['--render=force' if arg.startswith('--render') else arg for arg in remaining_args]
 
 if export_format is not None:
     tmpargs.extend(['--export-format', export_format])
@@ -111,6 +110,8 @@ print('Running OpenSCAD #1:', file=sys.stderr)
 print(' '.join(export_cmd), file=sys.stderr)
 sys.stderr.flush()
 result = subprocess.call(export_cmd)
+stat = os.stat(exportfile)
+print(stat, file=sys.stderr)
 if result != 0:
     failquit('OpenSCAD #1 failed with return code ' + str(result))
 
@@ -136,6 +137,8 @@ fontenv = os.environ.copy()
 fontenv["OPENSCAD_FONT_PATH"] = fontdir
 sys.stderr.flush()
 result = subprocess.call(create_png_cmd, env = fontenv)
+stat = os.stat(pngfile)
+print(stat, file=sys.stderr)
 if result != 0:
     failquit('OpenSCAD #2 failed with return code ' + str(result))
 

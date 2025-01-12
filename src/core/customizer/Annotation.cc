@@ -25,12 +25,16 @@
  */
 
 
-#include "Annotation.h"
+#include "core/customizer/Annotation.h"
 
+#include <ostream>
+#include <memory>
+#include <string>
 #include <utility>
-#include "Expression.h"
 
-Annotation::Annotation(std::string name, shared_ptr<Expression> expr)
+#include "core/Expression.h"
+
+Annotation::Annotation(std::string name, std::shared_ptr<Expression> expr)
   : name(std::move(name)), expr(std::move(expr))
 {
 }

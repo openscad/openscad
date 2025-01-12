@@ -1,16 +1,29 @@
-#include "ViewportControl.h"
-#include "printutils.h"
-#include "MainWindow.h"
-#include "QGLView.h"
-#include <boost/filesystem.hpp>
+#include "gui/ViewportControl.h"
+#include <QBoxLayout>
+#include <QGridLayout>
+#include <QLayoutItem>
+#include <QObject>
+#include <QResizeEvent>
+#include <QString>
+#include <QWidget>
+#include <iostream>
+#include <filesystem>
 #include <cfloat>
 #include <QDoubleSpinBox>
-#include <QDesktopWidget>
+
+#include "utils/printutils.h"
+#include "gui/MainWindow.h"
+#include "gui/QGLView.h"
+#include "openscad_gui.h"
 
 ViewportControl::ViewportControl(QWidget *parent) : QWidget(parent)
 {
   setupUi(this);
   initGUI();
+  const auto width = scrollAreaWidgetContents->minimumSizeHint().width();
+  const auto margins = layout()->contentsMargins();
+  const auto scrollMargins = scrollAreaWidgetContents->layout()->contentsMargins();
+  initMinWidth = width + margins.left() + margins.right() + scrollMargins.left() + scrollMargins.right();
 }
 
 void ViewportControl::initGUI()
@@ -36,29 +49,76 @@ void ViewportControl::setMainWindow(MainWindow *mainWindow)
   this->qglview = mainWindow->qglview;
 }
 
-bool ViewportControl::isLightTheme()
-{
-  bool ret = true;
-  if (mainWindow) {
-    ret = mainWindow->isLightTheme();
-  } else {
-    std::cout << "ViewportControl: You need to set the mainWindow before calling isLightTheme" << std::endl;
-  }
-  return ret;
-}
-
 QString ViewportControl::yellowHintBackground()
 {
-  return {isLightTheme() ? "background-color:#ffffaa;" : "background-color:#30306;"};
+  QPalette defaultPalette;
+  const auto bgColor = defaultPalette.base().color().toRgb();
+  QString styleSheet = UIUtils::blendForBackgroundColorStyleSheet(bgColor, warnBlendColor);
+  return styleSheet;
 }
 
 QString ViewportControl::redHintBackground()
 {
-  return {isLightTheme() ? "background-color:#ffaaaa;" : "background-color:#502020;"};
+  QPalette defaultPalette;
+  const auto bgColor = defaultPalette.base().color().toRgb();
+  QString styleSheet = UIUtils::blendForBackgroundColorStyleSheet(bgColor, errorBlendColor);
+  return styleSheet;
 }
 
 void ViewportControl::resizeEvent(QResizeEvent *event)
 {
+  auto layoutAspectRatio = dynamic_cast<QBoxLayout *>(groupBoxAspectRatio->layout());
+  auto gridLayout = dynamic_cast<QGridLayout *>(groupBoxAbsoluteCamera->layout());
+
+  QLayoutItem *child;
+  if (layoutAspectRatio && gridLayout) {
+    if (layoutAspectRatio->direction() == QBoxLayout::LeftToRight) {
+      if (event->size().width() < initMinWidth) {
+        layoutAspectRatio->setDirection(QBoxLayout::TopToBottom);
+        while ((child = gridLayout->takeAt(0)) != nullptr) {
+          delete child;
+        }
+        gridLayout->addWidget(labelTranslation , 0, 0, 1, 1);
+        gridLayout->addWidget(doubleSpinBox_tx , 1, 0, 1, 1);
+        gridLayout->addWidget(doubleSpinBox_ty , 2, 0, 1, 1);
+        gridLayout->addWidget(doubleSpinBox_tz , 3, 0, 1, 1);
+        gridLayout->addWidget(labelRotation    , 4, 0, 1, 1);
+        gridLayout->addWidget(doubleSpinBox_rx , 5, 0, 1, 1);
+        gridLayout->addWidget(doubleSpinBox_ry , 6, 0, 1, 1);
+        gridLayout->addWidget(doubleSpinBox_rz , 7, 0, 1, 1);
+        gridLayout->addWidget(labelDistance    , 8, 0, 1, 1);
+        gridLayout->addWidget(doubleSpinBox_d  , 9, 0, 1, 1);
+        gridLayout->addWidget(labelFOV         , 10, 0, 1, 1);
+        gridLayout->addWidget(doubleSpinBox_fov, 11, 0, 1, 1);
+        scrollAreaWidgetContents->layout()->invalidate();
+      }
+    } else {
+      if (event->size().width() > initMinWidth) {
+        layoutAspectRatio->setDirection(QBoxLayout::LeftToRight);
+        while ((child = gridLayout->takeAt(0)) != nullptr) {
+          delete child;
+        }
+        gridLayout->addWidget(labelTranslation, 0, 0, 1, 1);
+        gridLayout->addWidget(doubleSpinBox_tx, 0, 1, 1, 1);
+        gridLayout->addWidget(doubleSpinBox_ty, 0, 2, 1, 1);
+        gridLayout->addWidget(doubleSpinBox_tz, 0, 3, 1, 1);
+        gridLayout->addWidget(labelRotation, 1, 0, 1, 1);
+        gridLayout->addWidget(doubleSpinBox_rx, 1, 1, 1, 1);
+        gridLayout->addWidget(doubleSpinBox_ry, 1, 2, 1, 1);
+        gridLayout->addWidget(doubleSpinBox_rz, 1, 3, 1, 1);
+        gridLayout->addWidget(labelDistance, 2, 0, 1, 1);
+        gridLayout->addWidget(doubleSpinBox_d, 2, 1, 1, 1);
+        gridLayout->addWidget(labelFOV, 3, 0, 1, 1);
+        gridLayout->addWidget(doubleSpinBox_fov, 3, 1, 1, 1);
+        scrollAreaWidgetContents->layout()->invalidate();
+      } else {
+        const auto width = scrollAreaWidgetContents->minimumSizeHint().width();
+        if (scrollArea->minimumSize().width() != width) {
+          scrollArea->setMinimumSize(QSize(width,0));
+        }
+      }
+    }
+  }
   QWidget::resizeEvent(event);
 }
 

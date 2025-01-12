@@ -24,12 +24,25 @@
  *
  */
 
-#include "export.h"
+#include "io/export.h"
+
+#include "geometry/Geometry.h"
 
 #ifdef ENABLE_CGAL
-#include "cgal.h"
-#include "cgalutils.h"
-#include "CGAL_Nef_polyhedron.h"
+#include "geometry/cgal/cgal.h"
+#include "geometry/cgal/cgalutils.h"
+#include "geometry/cgal/CGAL_Nef_polyhedron.h"
+#endif
+
+#include <algorithm>
+#include <iterator>
+#include <cassert>
+#include <exception>
+#include <ostream>
+#include <memory>
+#include <cstddef>
+#include <string>
+#include <vector>
 
 #define QUOTE(x__) # x__
 #define QUOTED(x__) QUOTE(x__)
@@ -40,13 +53,15 @@ struct vertex_str {
     return x == rhs.x && y == rhs.y && z == rhs.z;
   }
 };
+using vertex_vec = std::vector<vertex_str>;
 
+#ifdef ENABLE_CGAL
 using Vertex = CGAL_Polyhedron::Vertex;
 using Point = Vertex::Point;
 using VCI = CGAL_Polyhedron::Vertex_const_iterator;
 using FCI = CGAL_Polyhedron::Facet_const_iterator;
 using HFCC = CGAL_Polyhedron::Halfedge_around_facet_const_circulator;
-using vertex_vec = std::vector<vertex_str>;
+#endif
 
 struct triangle {
   size_t vi1, vi2, vi3;
@@ -54,6 +69,7 @@ struct triangle {
 
 static int objectid;
 
+#ifdef ENABLE_CGAL
 static size_t add_vertex(std::vector<vertex_str>& vertices, const Point& p) {
   double x = CGAL::to_double(p.x());
   double y = CGAL::to_double(p.y());
@@ -130,20 +146,23 @@ static void append_amf(const CGAL_Nef_polyhedron& root_N, std::ostream& output)
     output << "   </volume>\r\n";
     output << "  </mesh>\r\n"
            << " </object>\r\n";
-  } catch (CGAL::Assertion_exception& e) {
+  } catch (std::exception& e) {
     LOG(message_group::Export_Error, "CGAL error in CGAL_Nef_polyhedron3::convert_to_polyhedron(): %1$s", e.what());
   }
 }
+#endif
 
-static void append_amf(const shared_ptr<const Geometry>& geom, std::ostream& output)
+static void append_amf(const std::shared_ptr<const Geometry>& geom, std::ostream& output)
 {
-  if (const auto geomlist = dynamic_pointer_cast<const GeometryList>(geom)) {
+  if (const auto geomlist = std::dynamic_pointer_cast<const GeometryList>(geom)) {
     for (const auto& item : geomlist->getChildren()) {
       append_amf(item.second, output);
     }
+#ifdef ENABLE_CGAL
   } else if (auto N = CGALUtils::getNefPolyhedronFromGeometry(geom)) {
     // FIXME: Implement this without creating a Nef polyhedron
     if (!N->isEmpty()) append_amf(*N, output);
+#endif
   } else if (geom->getDimension() != 3) { // NOLINT(bugprone-branch-clone)
     assert(false && "Unsupported file format");
   } else { // NOLINT(bugprone-branch-clone)
@@ -151,8 +170,9 @@ static void append_amf(const shared_ptr<const Geometry>& geom, std::ostream& out
   }
 }
 
-void export_amf(const shared_ptr<const Geometry>& geom, std::ostream& output)
+void export_amf(const std::shared_ptr<const Geometry>& geom, std::ostream& output)
 {
+  LOG(message_group::Deprecated, "AMF export is deprecated. Please use 3MF instead.");
   setlocale(LC_NUMERIC, "C"); // Ensure radix is . (not ,) in output
 
   output << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n"
@@ -169,5 +189,3 @@ void export_amf(const shared_ptr<const Geometry>& geom, std::ostream& output)
   output << "</amf>\r\n";
   setlocale(LC_NUMERIC, ""); // Set default locale
 }
-
-#endif // ENABLE_CGAL

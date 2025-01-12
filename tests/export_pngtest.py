@@ -14,7 +14,6 @@
 #
 # Authors: Torsten Paul, Don Bright, Marius Kintel
 
-from __future__ import print_function
 
 import sys, os, re, subprocess, argparse
 

@@ -8,6 +8,7 @@
 
 using Eigen::Vector2d;
 using Eigen::Vector3d;
+using Eigen::Vector4d;
 using Eigen::Vector3f;
 using Eigen::Vector3i;
 
@@ -49,9 +50,8 @@ BoundingBox operator*(const Transform3d& m, const BoundingBox& box);
 class Color4f : public Eigen::Matrix<float, 4, 1, Eigen::DontAlign>
 {
 public:
-  Color4f() = default;
   Color4f(int r, int g, int b, int a = 255) { setRgb(r, g, b, a); }
-  Color4f(float r, float g, float b, float a = 1.0f) : Eigen::Matrix<float, 4, 1, Eigen::DontAlign>(r, g, b, a) { }
+  Color4f(float r = -1.0f, float g = -1.0f, float b = -1.0f, float a = 1.0f) : Eigen::Matrix<float, 4, 1, Eigen::DontAlign>(r, g, b, a) { }
 
   void setRgb(int r, int g, int b, int a = 255) {
     *this << static_cast<float>(r) / 255.0f,
@@ -61,4 +61,16 @@ public:
   }
 
   [[nodiscard]] bool isValid() const { return this->minCoeff() >= 0.0f; }
+  [[nodiscard]] float r() const { return coeff(0); }
+  [[nodiscard]] float g() const { return coeff(1); }
+  [[nodiscard]] float b() const { return coeff(2); }
+  [[nodiscard]] float a() const { return coeff(3); }
+
+  bool operator<(const Color4f &b) const {
+    for (int i = 0; i < 4; i++) {
+      if ((*this)[i] < b[i]) return true;
+      if ((*this)[i] > b[i]) return false;
+    }
+    return false;
+  }
 };

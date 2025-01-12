@@ -24,15 +24,20 @@
  *
  */
 
-#include "qtgettext.h"
-#include "QGLView.h"
-#include "Preferences.h"
-#include "Renderer.h"
-#include "degree_trig.h"
+#include "gui/QGLView.h"
+
+#include "gui/qtgettext.h"
+#include "gui/Preferences.h"
+#include "glview/Renderer.h"
+#include "utils/degree_trig.h"
 #if defined(USE_GLEW) || defined(OPENCSG_GLEW)
-#include "glew-utils.h"
+#include "glview/glew-utils.h"
 #endif
 
+#include <QImage>
+#include <QOpenGLWidget>
+#include <QWidget>
+#include <iostream>
 #include <QApplication>
 #include <QWheelEvent>
 #include <QCheckBox>
@@ -47,16 +52,19 @@
 #ifdef USE_GLAD
 #include <QOpenGLContext>
 #endif
-#include "OpenCSGWarningDialog.h"
+#include "gui/OpenCSGWarningDialog.h"
 
 #include <cstdio>
 #include <sstream>
+#include <string>
+#include <vector>
 
 #ifdef ENABLE_OPENCSG
 #  include <opencsg.h>
 #endif
 
-#include "qt-obsolete.h"
+#include "gui/qt-obsolete.h"
+#include "gui/Measurement.h"
 
 QGLView::QGLView(QWidget *parent) : QOpenGLWidget(parent)
 {
@@ -286,13 +294,18 @@ void QGLView::normalizeAngle(GLdouble& angle)
 void QGLView::mouseMoveEvent(QMouseEvent *event)
 {
   auto this_mouse = event->globalPos();
+  if(measure_state != MEASURE_IDLE) {
+	QPoint pt = event->pos();
+  	this->shown_obj = findObject(pt.x(), pt.y());
+	update();
+  }
   double dx = (this_mouse.x() - last_mouse.x()) * 0.7;
   double dy = (this_mouse.y() - last_mouse.y()) * 0.7;
   if (mouse_drag_active) {
     mouse_drag_moved = true;
     auto button_compare = this->mouseSwapButtons?Qt::RightButton : Qt::LeftButton;
     if (event->buttons() & button_compare
-#ifdef Q_OS_MAC
+#ifdef Q_OS_MACOS
         && !(event->modifiers() & Qt::MetaModifier)
 #endif
         ) {
@@ -337,12 +350,17 @@ void QGLView::mouseReleaseEvent(QMouseEvent *event)
   mouse_drag_active = false;
   releaseMouse();
 
-  auto button_compare = this->mouseSwapButtons?Qt::LeftButton : Qt::RightButton;
-  if (!mouse_drag_moved
-      && (event->button() == button_compare)) {
-    QPoint point = event->pos();
-    //point.setY(this->height() - point.y());
-    emit doSelectObject(point);
+  auto button_right = this->mouseSwapButtons?Qt::LeftButton : Qt::RightButton;
+  auto button_left =  this->mouseSwapButtons?Qt::RightButton : Qt::LeftButton;
+  if (!mouse_drag_moved) {
+    if(event->button() == button_right) {
+      QPoint point = event->pos();
+      emit doRightClick(point);
+    }
+    if(event->button() == button_left) {
+      QPoint point = event->pos();
+      emit doLeftClick(point);
+    }
   }
   mouse_drag_moved = false;
 }
@@ -509,4 +527,37 @@ void QGLView::rotate2(double x, double y, double z)
 
   update();
   emit cameraChanged();
+}
+
+std::vector<SelectedObject> QGLView::findObject(int mouse_x,int mouse_y)
+{
+  int viewport[4]={0,0,0,0};
+  double posXF, posYF, posZF;
+  double posXN, posYN, posZN;
+  viewport[2]=size().rwidth();
+  viewport[3]=size().rheight();
+
+  GLdouble winX = mouse_x;
+  GLdouble winY = viewport[3] - mouse_y;
+
+  gluUnProject(winX, winY, 1, this->modelview, this->projection, viewport,&posXF, &posYF, &posZF);
+  gluUnProject(winX, winY, -1, this->modelview, this->projection, viewport,&posXN, &posYN, &posZN);
+  Vector3d far_pt(posXF, posYF, posZF);
+  Vector3d near_pt(posXN, posYN, posZN);
+
+  Vector3d testpt(0,0,0);
+  std::vector<SelectedObject> result;
+  auto renderer = this->getRenderer();
+  if(renderer == nullptr) return result;
+  result = renderer->findModelObject(near_pt, far_pt, mouse_x, mouse_y, cam.zoomValue()/300);
+  return result;
+}
+
+void QGLView::selectPoint(int mouse_x, int mouse_y)
+{
+  std::vector<SelectedObject>  obj= findObject(mouse_x, mouse_y);
+  if(obj.size() == 1) {
+    this->selected_obj.push_back(obj[0]);
+    update();
+  }
 }

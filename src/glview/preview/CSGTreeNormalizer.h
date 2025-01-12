@@ -1,23 +1,24 @@
 #pragma once
 
-#include "memory.h"
+#include <cstddef>
+#include <memory>
 
 class CSGTreeNormalizer
 {
 public:
   CSGTreeNormalizer(size_t limit) : limit(limit) {}
 
-  shared_ptr<class CSGNode> normalize(const shared_ptr<CSGNode>& term);
+  std::shared_ptr<class CSGNode> normalize(const std::shared_ptr<CSGNode>& term);
 
 private:
-  shared_ptr<CSGNode> normalizePass(shared_ptr<CSGNode> term);
-  bool match_and_replace(shared_ptr<class CSGNode>& term);
-  shared_ptr<CSGNode> collapse_null_terms(const shared_ptr<CSGNode>& term);
-  shared_ptr<CSGNode> cleanup_term(shared_ptr<CSGNode>& t);
-  [[nodiscard]] unsigned int count(const shared_ptr<CSGNode>& term) const;
+  std::shared_ptr<CSGNode> normalizePass(std::shared_ptr<CSGNode> term);
+  bool match_and_replace(std::shared_ptr<class CSGNode>& term);
+  std::shared_ptr<CSGNode> collapse_null_terms(const std::shared_ptr<CSGNode>& term);
+  std::shared_ptr<CSGNode> cleanup_term(std::shared_ptr<CSGNode>& t);
+  [[nodiscard]] unsigned int count(const std::shared_ptr<CSGNode>& term) const;
 
   bool aborted{false};
   size_t limit;
   size_t nodecount{0};
-  shared_ptr<class CSGNode> rootnode;
+  std::shared_ptr<class CSGNode> rootnode;
 };

@@ -1,6 +1,29 @@
-#include "Polygon2d.h"
-#include "printutils.h"
+#include "geometry/Polygon2d.h"
 
+#include <sstream>
+#include <utility>
+#include <cstddef>
+#include <string>
+#include <memory>
+
+#include "utils/printutils.h"
+#ifdef ENABLE_MANIFOLD
+#include "geometry/manifold/manifoldutils.h"
+#endif
+#include "geometry/cgal/cgalutils.h"
+#include "Feature.h"
+#include "geometry/PolySet.h"
+#include "glview/RenderSettings.h"
+
+
+Polygon2d::Polygon2d(Outline2d outline) : sanitized(true) {
+  addOutline(std::move(outline));
+}
+
+std::unique_ptr<Geometry> Polygon2d::copy() const
+{
+  return std::make_unique<Polygon2d>(*this);
+}
 
 BoundingBox Outline2d::getBoundingBox() const {
   BoundingBox bbox;
@@ -119,3 +142,46 @@ bool Polygon2d::is_convex() const
   return true;
 }
 
+double Polygon2d::area() const
+{
+  auto ps = tessellate();
+  if (ps == nullptr) {
+    return 0;
+  }
+
+  double area = 0.0;
+  for (const auto& poly : ps->indices) {
+    const auto& v1 = ps->vertices[poly[0]];
+    const auto& v2 = ps->vertices[poly[1]];
+    const auto& v3 = ps->vertices[poly[2]];
+    area += 0.5 * (
+      v1.x() * (v2.y() - v3.y())
+      + v2.x() * (v3.y() - v1.y())
+      + v3.x() * (v1.y() - v2.y()));
+  }
+  return area;
+}
+
+/*!
+   Triangulates this polygon2d and returns a 2D-in-3D PolySet.
+
+   This is used for various purposes:
+   * Geometry evaluation for roof, linear_extrude, rotate_extrude
+   * Rendering (both preview and render mode)
+   * Polygon area calculation
+   *
+   * One use-case is special: For geometry construction in Manifold mode, we require this function to
+   * guarantee that vertices and their order are untouched (apart from adding a zero 3rd dimension)
+   *
+ */
+std::unique_ptr<PolySet> Polygon2d::tessellate() const
+{
+  PRINTDB("Polygon2d::tessellate(): %d outlines", this->outlines().size());
+#if defined(ENABLE_MANIFOLD) && defined(USE_MANIFOLD_TRIANGULATOR)
+  if (RenderSettings::inst()->backend3D == RenderBackend3D::ManifoldBackend) {
+    return ManifoldUtils::createTriangulatedPolySetFromPolygon2d(*this);
+  }
+  else
+#endif
+  return CGALUtils::createTriangulatedPolySetFromPolygon2d(*this);
+}

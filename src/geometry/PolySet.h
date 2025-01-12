@@ -1,55 +1,56 @@
 #pragma once
 
-#include "Geometry.h"
-#include "linalg.h"
-#include "GeometryUtils.h"
-#include "Polygon2d.h"
-#include "boost-utils.h"
+#include "geometry/Geometry.h"
+#include "geometry/linalg.h"
+#include "geometry/GeometryUtils.h"
+#include "geometry/Polygon2d.h"
+#include "utils/boost-utils.h"
 
-#include <vector>
+#include <cstdint>
+#include <memory>
+#include <cstddef>
 #include <string>
+#include <vector>
+
+class PolySetBuilder;
 
 class PolySet : public Geometry
 {
+  friend class PolySetBuilder;	
 public:
   VISITABLE_GEOMETRY();
-  Polygons polygons;
+  PolygonIndices indices;
+  std::vector<Vector3d> vertices;
+  // Per polygon color, indexing the colors vector below. Can be empty, and -1 means no specific color.
+  std::vector<int32_t> color_indices; 
+  std::vector<Color4f> colors;
 
   PolySet(unsigned int dim, boost::tribool convex = unknown);
-  PolySet(Polygon2d origin);
-
-  const Polygon2d& getPolygon() const { return polygon; }
 
   size_t memsize() const override;
   BoundingBox getBoundingBox() const override;
   std::string dump() const override;
-  unsigned int getDimension() const override { return this->dim; }
-  bool isEmpty() const override { return polygons.size() == 0; }
-  Geometry *copy() const override { return new PolySet(*this); }
+  unsigned int getDimension() const override { return dim_; }
+  bool isEmpty() const override { return indices.empty(); }
+  std::unique_ptr<Geometry> copy() const override;
 
   void quantizeVertices(std::vector<Vector3d> *pPointsOut = nullptr);
-  size_t numFacets() const override { return polygons.size(); }
-  void reserve(size_t numFacets) { polygons.reserve(numFacets); }
-  void append_poly(size_t expected_vertex_count);
-  void append_poly(const Polygon& poly);
-  void append_vertex(double x, double y, double z = 0.0);
-  void append_vertex(const Vector3d& v);
-  void append_vertex(const Vector3f& v);
-  void insert_vertex(double x, double y, double z = 0.0);
-  void insert_vertex(const Vector3d& v);
-  void insert_vertex(const Vector3f& v);
-  void append(const PolySet& ps);
-
+  size_t numFacets() const override { return indices.size(); }
   void transform(const Transform3d& mat) override;
   void resize(const Vector3d& newsize, const Eigen::Matrix<bool, 3, 1>& autosize) override;
+  void setColor(const Color4f& c) override;
 
-  bool is_convex() const;
-  boost::tribool convexValue() const { return this->convex; }
+  bool isConvex() const;
+  boost::tribool convexValue() const { return convex_; }
+
+  bool isTriangular() const { return is_triangular_; }
+  void setTriangular(bool triangular) { is_triangular_ = triangular; }
+
+  static std::unique_ptr<PolySet> createEmpty() { return std::make_unique<PolySet>(3); }
 
 private:
-  Polygon2d polygon;
-  unsigned int dim;
-  mutable boost::tribool convex;
-  mutable BoundingBox bbox;
-  mutable bool dirty;
+  bool is_triangular_ = false;
+  unsigned int dim_;
+  mutable boost::tribool convex_;
+  mutable BoundingBox bbox_;
 };

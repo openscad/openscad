@@ -27,19 +27,13 @@
 #
 # 1. why is hash differing
 
-from __future__ import print_function
 
 import string, sys, re, os, hashlib, subprocess, time, platform, html, base64
 
+from urllib.error import URLError
+from urllib.request import urlopen
+from urllib.parse import urlencode
 
-try:
-    from urllib.error import URLError
-    from urllib.request import urlopen
-    from urllib.parse import urlencode
-except:
-    from urllib2 import URLError
-    from urllib2 import urlopen
-    from urllib import urlencode
 
 def tryread(filename):
     data = None
@@ -81,10 +75,10 @@ def read_gitinfo():
     # won't work if run from outside of branch.
     try:
         data = subprocess.Popen(['git', 'remote', '-v'], stdout=subprocess.PIPE).stdout.read().decode('utf-8')
-        origin = ezsearch('^origin *?(.*?)\(fetch.*?$', data)
-        upstream = ezsearch('^upstream *?(.*?)\(fetch.*?$', data)
+        origin = ezsearch(r'^origin *?(.*?)\(fetch.*?$', data)
+        upstream = ezsearch(r'^upstream *?(.*?)\(fetch.*?$', data)
         data = subprocess.Popen(['git', 'branch'], stdout=subprocess.PIPE).stdout.read().decode('utf-8')
-        branch = ezsearch('^\*(.*?)$', data)
+        branch = ezsearch(r'^\*(.*?)$', data)
         out = 'Git branch: ' + branch + ' from origin ' + origin + '\n'
         out += 'Git upstream: ' + upstream + '\n'
     except:
@@ -101,15 +95,15 @@ def read_sysinfo(filename):
         return sinfo, sysid
 
     data = data.decode('utf-8')
-    machine = ezsearch('Machine:(.*?)\n',data)
+    machine = ezsearch(r'Machine:(.*?)\n',data)
     machine = machine.replace(' ','-').replace('/','-')
 
-    osinfo = ezsearch('OS info:(.*?)\n',data)
+    osinfo = ezsearch(r'OS info:(.*?)\n',data)
     osplain = osinfo.split(' ')[0].strip().replace('/','-')
     if 'windows' in osinfo.lower():
         osplain = 'win'
 
-    renderer = ezsearch('GL Renderer:(.*?)\n',data)
+    renderer = ezsearch(r'GL Renderer:(.*?)\n',data)
     tmp = renderer.split(' ')
     tmp = "-".join(tmp[0:min(len(tmp),4)])
     tmp = tmp.split('/')[0]
@@ -157,14 +151,14 @@ class Test:
         return x
 
 def parsetest(teststring):
-    patterns = ["Test:(.*?)\n", # fullname
-        "Test time =(.*?) sec\n",
-        "Test time.*?Test (Passed)", # pass/fail
-        "Output:(.*?)<end of output>",
-        'Command:.*?-s" "(.*?)"', # type
-        "^ actual .*?:(.*?)\n",
-        "^ expected .*?:(.*?)\n",
-        'Command:.*?(tests/data.*?)"' # scadfile
+    patterns = [r'Test:(.*?)\n', # fullname
+        r'Test time =(.*?) sec\n',
+        r'Test time.*?Test (Passed)', # pass/fail
+        r'Output:(.*?)<end of output>',
+        r'Command:.*?-s" "(.*?)"', # type
+        r'^ actual .*?:(.*?)\n',
+        r'^ expected .*?:(.*?)\n',
+        r'Command:.*?(tests/data.*?)"' # scadfile
         ]
     hits = list(map(lambda pattern: ezsearch(pattern, teststring), patterns))
     test = Test(hits[0], hits[1], hits[2]=='Passed', hits[3], hits[4], hits[5],
@@ -178,9 +172,9 @@ def parsetest(teststring):
 
 def parselog(data):
     text = data.decode('utf-8', 'replace')
-    startdate = ezsearch('Start testing: (.*?)\n', text)
-    enddate = ezsearch('End testing: (.*?)\n', text)
-    pattern = '([0-9]*/[0-9]* Testing:.*?time elapsed.*?\n)'
+    startdate = ezsearch(r'Start testing: (.*?)\n', text)
+    enddate = ezsearch(r'End testing: (.*?)\n', text)
+    pattern = r'([0-9]*/[0-9]* Testing:.*?time elapsed.*?\n)'
     test_chunks = re.findall(pattern,text, re.S)
     tests = map( parsetest, test_chunks )
     tests = sorted(tests, key = lambda t: t.passed)
@@ -223,7 +217,7 @@ def findlogfile(builddir):
 
 # --- Templating ---
 
-class Templates(object):
+class Templates:
     html_template = '''<html>
     <head><title>Test run for {sysid}</title>
     <meta charset="utf-8" />
@@ -286,9 +280,9 @@ class Templates(object):
 
     image_template = '''<table>
     <tbody>
-    <tr><td colspan="2">{test_name}</td></tr>
-    <tr><td> Expected image </td><td> Actual image </td></tr>
-    <tr><td> {expected} </td><td> {actual} </td></tr>
+    <tr><td colspan="3">{test_name}</td></tr>
+    <tr><td> Expected image </td><td> Actual image </td><td> Failure mask </td></tr>
+    <tr><td> {expected} </td><td> {actual} </td><td> {mask} </td></tr>
     </tbody>
     </table>
 
@@ -344,7 +338,8 @@ def to_html(project_name, startdate, tests, enddate, sysinfo, sysid, imgcomparer
 
     templates = Templates()
     for test in report_tests:
-        if test.type in ('txt', 'ast', 'csg', 'term', 'echo', 'stl', '3mf', 'off', 'obj'):
+        # relative-output tests have no "type"
+        if test.type in ('txt', 'ast', 'csg', 'term', 'echo', 'stl', '3mf', 'off', 'obj', 'pov', ''):
             text_test_count += 1
             templates.add('text_template', 'text_tests',
                           test_name=test.fullname,
@@ -358,6 +353,14 @@ def to_html(project_name, startdate, tests, enddate, sysinfo, sysid, imgcomparer
             actual_img = png_encode64(test.actualfile,
                                   data=test.actualfile_data, alt=alttxt)
 
+            split = os.path.splitext(test.actualfile)
+            test.maskfile = f'{split[0]}_mask{split[1]}'
+            test.maskfile_data = tryread(test.maskfile)
+            if not os.path.exists(test.maskfile):
+                alttxt = 'mask missing for ' + test.fullname
+            mask_img = png_encode64(test.maskfile,
+                                  data=test.maskfile_data, alt=alttxt)
+
             if not os.path.exists(test.expectedfile):
                 alttxt = 'no img generated for ' + test.fullname
             expected_img = png_encode64(test.expectedfile,
@@ -367,9 +370,10 @@ def to_html(project_name, startdate, tests, enddate, sysinfo, sysid, imgcomparer
                           test_name=test.fullname,
                           test_log=test.fulltestlog,
                           actual=actual_img,
-                          expected=expected_img)
+                          expected=expected_img,
+                          mask=mask_img)
         else:
-            raise TypeError('Unknown test type %r' % test.type)
+            raise TypeError(f"Unknown test type '{test.type}' in test {test.fullname}")
 
     for mf in sorted(makefiles.keys()):
         mfname = mf.strip().lstrip(os.path.sep)
@@ -464,8 +468,8 @@ def main():
     if '--dryrun' in sys.argv:
         dry = True
 
-    suffix = ezsearch('--suffix=(.*?) ', ' '.join(sys.argv) + ' ')
-    builddir = ezsearch('--builddir=(.*?) ', ' '.join(sys.argv) + ' ')
+    suffix = ezsearch(r'--suffix=(.*?) ', ' '.join(sys.argv) + ' ')
+    builddir = ezsearch(r'--builddir=(.*?) ', ' '.join(sys.argv) + ' ')
     if not builddir or not os.path.exists(builddir):
         builddir = os.getcwd()
         print('warning: could not find --builddir, trying to use current dir:', builddir)

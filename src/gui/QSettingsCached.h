@@ -1,13 +1,12 @@
 #pragma once
 
+#include <QString>
+#include <QVariant>
 #include <QSettings>
-#include <map>
-#include <iostream>
 #include <memory>
 #include <mutex>
-#include <thread>
 
-#include "printutils.h"
+#include "utils/printutils.h"
 
 class QSettingsCached
 {

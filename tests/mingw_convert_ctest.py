@@ -136,7 +136,7 @@ def processfile(infilename, winconv):
     debug ('wrote backup of ',infilename,' to ',backup_filename)
 
     outfilename = infilename.replace('.cmake','.win.cmake')
-    fin=open(infilename,'r')
+    fin=open(infilename)
     lines=fin.readlines()
     fout=open(outfilename,'w')
     fout.write('#'+os.linesep)
@@ -194,7 +194,7 @@ def process_templates():
             if scadpath is not None:
                 print('Ovewriting ' + scadpath + ' based on ' + filename + ' using path ' + cmakebase)
                 fout = open(scadpath, 'w')
-                fin = open(templatepath + '\\' + filename, 'r')
+                fin = open(templatepath + '\\' + filename)
                 for line in fin.readlines():
                     line = line.replace("@CMAKE_CURRENT_SOURCE_DIR@", cmakebase)
                     fout.write(line)

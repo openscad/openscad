@@ -1,5 +1,5 @@
 /*
-** SGI FREE SOFTWARE LICENSE B (Version 2.0, Sept. 18, 2008) 
+** SGI FREE SOFTWARE LICENSE B (Version 2.0, Sept. 18, 2008)
 ** Copyright (C) [dates of first publication] Silicon Graphics, Inc.
 ** All Rights Reserved.
 **
@@ -9,10 +9,10 @@
 ** to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies
 ** of the Software, and to permit persons to whom the Software is furnished to do so,
 ** subject to the following conditions:
-** 
+**
 ** The above copyright notice including the dates of first publication and either this
 ** permission notice or a reference to http://oss.sgi.com/projects/FreeB/ shall be
-** included in all copies or substantial portions of the Software. 
+** included in all copies or substantial portions of the Software.
 **
 ** THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
 ** INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
@@ -20,7 +20,7 @@
 ** BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
 ** TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE
 ** OR OTHER DEALINGS IN THE SOFTWARE.
-** 
+**
 ** Except as contained in this notice, the name of Silicon Graphics, Inc. shall not
 ** be used in advertising or otherwise to promote the sale, use or other dealings in
 ** this Software without prior written authorization from Silicon Graphics, Inc.
@@ -196,7 +196,7 @@ double Interpolate( double a, double x, double b, double y)
 
 #endif
 
-#define Swap(a,b)	do { TESSvertex *t = a; a = b; b = t; } while(0)
+#define SwapVertex(a,b)	do { TESSvertex *t = a; a = b; b = t; } while(0)
 
 void tesedgeIntersect( TESSvertex *o1, TESSvertex *d1,
 					  TESSvertex *o2, TESSvertex *d2,
@@ -216,9 +216,9 @@ void tesedgeIntersect( TESSvertex *o1, TESSvertex *d1,
 	* using the TransLeq ordering to find the intersection t-value.
 	*/
 
-	if( ! VertLeq( o1, d1 )) { Swap( o1, d1 ); }
-	if( ! VertLeq( o2, d2 )) { Swap( o2, d2 ); }
-	if( ! VertLeq( o1, o2 )) { Swap( o1, o2 ); Swap( d1, d2 ); }
+	if( ! VertLeq( o1, d1 )) { SwapVertex( o1, d1 ); }
+	if( ! VertLeq( o2, d2 )) { SwapVertex( o2, d2 ); }
+	if( ! VertLeq( o1, o2 )) { SwapVertex( o1, o2 ); SwapVertex( d1, d2 ); }
 
 	if( ! VertLeq( o2, d1 )) {
 		/* Technically, no intersection -- do our best */
@@ -239,9 +239,9 @@ void tesedgeIntersect( TESSvertex *o1, TESSvertex *d1,
 
 	/* Now repeat the process for t */
 
-	if( ! TransLeq( o1, d1 )) { Swap( o1, d1 ); }
-	if( ! TransLeq( o2, d2 )) { Swap( o2, d2 ); }
-	if( ! TransLeq( o1, o2 )) { Swap( o1, o2 ); Swap( d1, d2 ); }
+	if( ! TransLeq( o1, d1 )) { SwapVertex( o1, d1 ); }
+	if( ! TransLeq( o2, d2 )) { SwapVertex( o2, d2 ); }
+	if( ! TransLeq( o1, o2 )) { SwapVertex( o1, o2 ); SwapVertex( d1, d2 ); }
 
 	if( ! TransLeq( o2, d1 )) {
 		/* Technically, no intersection -- do our best */

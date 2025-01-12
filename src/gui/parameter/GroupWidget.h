@@ -1,5 +1,6 @@
 #pragma once
 
+#include <QString>
 #include <QGridLayout>
 #include <QToolButton>
 #include <QVBoxLayout>

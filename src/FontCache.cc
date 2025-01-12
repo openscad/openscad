@@ -24,22 +24,26 @@
  *
  */
 
-#include <iostream>
+#include "FontCache.h"
 
-#include <boost/filesystem.hpp>
+#include <cstdint>
+#include <iostream>
+#include <vector>
+
+#include <filesystem>
 #include <boost/algorithm/string.hpp>
+#include <string>
 #include <utility>
 
-#include "FontCache.h"
-#include "PlatformUtils.h"
-#include "printutils.h"
-#include "version_helper.h"
+#include "platform/PlatformUtils.h"
+#include "utils/printutils.h"
+#include "utils/version_helper.h"
 
 extern std::vector<std::string> librarypath;
 
 std::vector<std::string> fontpath;
 
-namespace fs = boost::filesystem;
+namespace fs = std::filesystem;
 
 const std::string get_fontconfig_version()
 {
@@ -65,7 +69,8 @@ const std::string get_freetype_version()
   return FontCache::instance()->get_freetype_version();
 }
 
-FontInfo::FontInfo(std::string family, std::string style, std::string file) : family(std::move(family)), style(std::move(style)), file(std::move(file))
+FontInfo::FontInfo(std::string family, std::string style, std::string file, uint32_t hash)
+   : family(std::move(family)), style(std::move(style)), file(std::move(file)), hash(hash)
 {
 }
 
@@ -95,6 +100,11 @@ const std::string& FontInfo::get_file() const
   return file;
 }
 
+const uint32_t FontInfo::get_hash() const
+{
+  return hash;
+}
+
 FontCache *FontCache::self = nullptr;
 FontCache::InitHandlerFunc *FontCache::cb_handler = FontCache::defaultInitHandler;
 void *FontCache::cb_userdata = nullptr;
@@ -120,7 +130,8 @@ FontCache::FontCache()
   // For system installs and dev environments, we leave this alone
   fs::path fontdir(PlatformUtils::resourcePath("fonts"));
   if (fs::is_regular_file(fontdir / "fonts.conf")) {
-    PlatformUtils::setenv("FONTCONFIG_PATH", (fs::absolute(fontdir).generic_string()).c_str(), 0);
+    auto abspath = fontdir.empty() ? fs::current_path() : fs::absolute(fontdir);
+    PlatformUtils::setenv("FONTCONFIG_PATH", (abspath.generic_string()).c_str(), 0);
   }
 
   // Just load the configs. We'll build the fonts once all configs are loaded
@@ -133,8 +144,11 @@ FontCache::FontCache()
   // Add the built-in fonts & config
   fs::path builtinfontpath(PlatformUtils::resourcePath("fonts"));
   if (fs::is_directory(builtinfontpath)) {
+#ifndef __EMSCRIPTEN__
+    builtinfontpath = fs::canonical(builtinfontpath);
+#endif
     FcConfigParseAndLoad(this->config, reinterpret_cast<const FcChar8 *>(builtinfontpath.generic_string().c_str()), false);
-    add_font_dir(fs::canonical(builtinfontpath).generic_string());
+    add_font_dir(builtinfontpath.generic_string());
   }
 
   const char *home = getenv("HOME");
@@ -223,6 +237,34 @@ void FontCache::add_font_dir(const std::string& path)
   }
 }
 
+std::vector<uint32_t> FontCache::filter(const std::u32string& str) const
+{
+  FcObjectSet *object_set = FcObjectSetBuild(FC_FAMILY, FC_STYLE, FC_FILE, nullptr);
+  FcPattern *pattern = FcPatternCreate();
+  init_pattern(pattern);
+  FcCharSet *charSet = FcCharSetCreate();
+  for (char32_t a : str) {
+    FcCharSetAddChar(charSet, a);
+  }
+  FcValue charSetValue;
+  charSetValue.type = FcTypeCharSet;
+  charSetValue.u.c = charSet;
+  FcPatternAdd(pattern, FC_CHARSET, charSetValue, true);
+
+  FcFontSet *font_set = FcFontList(this->config, pattern, object_set);
+  FcObjectSetDestroy(object_set);
+  FcPatternDestroy(pattern);
+  FcCharSetDestroy(charSet);
+
+  std::vector<uint32_t> result;
+  result.reserve(font_set->nfont);
+  for (int a = 0;a < font_set->nfont;++a) {
+    result.push_back(FcPatternHash(font_set->fonts[a]));
+  }
+  FcFontSetDestroy(font_set);
+  return result;
+}
+
 FontInfoList *FontCache::list_fonts() const
 {
   FcObjectSet *object_set = FcObjectSetBuild(FC_FAMILY, FC_STYLE, FC_FILE, nullptr);
@@ -234,20 +276,22 @@ FontInfoList *FontCache::list_fonts() const
 
   auto *list = new FontInfoList();
   for (int a = 0; a < font_set->nfont; ++a) {
+    FcPattern *p = font_set->fonts[a];
+
     FcValue file_value;
-    FcPatternGet(font_set->fonts[a], FC_FILE, 0, &file_value);
+    FcPatternGet(p, FC_FILE, 0, &file_value);
 
     FcValue family_value;
-    FcPatternGet(font_set->fonts[a], FC_FAMILY, 0, &family_value);
+    FcPatternGet(p, FC_FAMILY, 0, &family_value);
 
     FcValue style_value;
-    FcPatternGet(font_set->fonts[a], FC_STYLE, 0, &style_value);
+    FcPatternGet(p, FC_STYLE, 0, &style_value);
 
     std::string family((const char *) family_value.u.s);
     std::string style((const char *) style_value.u.s);
     std::string file((const char *) file_value.u.s);
 
-    list->push_back(FontInfo(family, style, file));
+    list->push_back(FontInfo(family, style, file, FcPatternHash(p)));
   }
   FcFontSetDestroy(font_set);
 
@@ -324,9 +368,11 @@ FT_Face FontCache::find_face(const std::string& font) const
 
 void FontCache::init_pattern(FcPattern *pattern) const
 {
-  FcValue true_value;
-  true_value.type = FcTypeBool;
-  true_value.u.b = true;
+  assert(pattern);
+  const FcValue true_value = {
+    .type = FcTypeBool,
+    .u = {.b = true},
+  };
 
   FcPatternAdd(pattern, FC_OUTLINE, true_value, true);
   FcPatternAdd(pattern, FC_SCALABLE, true_value, true);
@@ -337,6 +383,10 @@ FT_Face FontCache::find_face_fontconfig(const std::string& font) const
   FcResult result;
 
   FcPattern *pattern = FcNameParse((unsigned char *)font.c_str());
+  if (!pattern) {
+    LOG(message_group::Font_Warning, "Could not parse font '%1$s'", font);
+    return nullptr;
+  }
   init_pattern(pattern);
 
   FcConfigSubstitute(this->config, pattern, FcMatchPattern);
@@ -376,7 +426,7 @@ FT_Face FontCache::find_face_fontconfig(const std::string& font) const
     if (!charmap_set) charmap_set = try_charmap(face, TT_PLATFORM_MACINTOSH, TT_MAC_ID_ROMAN);
     if (!charmap_set) charmap_set = try_charmap(face, TT_PLATFORM_ISO, TT_ISO_ID_8859_1);
     if (!charmap_set) charmap_set = try_charmap(face, TT_PLATFORM_ISO, TT_ISO_ID_7BIT_ASCII);
-    if (!charmap_set) LOG(message_group::Font_Warning, "Could not select a char map for font %1$s/%2$s'", face->family_name, face->style_name);
+    if (!charmap_set) LOG(message_group::Font_Warning, "Could not select a char map for font '%1$s/%2$s'", face->family_name, face->style_name);
   }
 
   return error ? nullptr : face;

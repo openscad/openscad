@@ -1,19 +1,20 @@
+#include <iterator>
+#include <ios>
 #include <mutex>
 #include <string>
 #include <fstream>
-#include <streambuf>
 #include <unistd.h>
 #include <sys/resource.h>
 #include <sys/utsname.h>
 
 #include <boost/regex.hpp>
 #include <boost/algorithm/string.hpp>
-#include <boost/filesystem.hpp>
+#include <filesystem>
 
 #include "version.h"
-#include "PlatformUtils.h"
+#include "platform/PlatformUtils.h"
 
-namespace fs = boost::filesystem;
+namespace fs = std::filesystem;
 
 static std::mutex user_agent_mutex;
 
@@ -122,6 +123,7 @@ std::string PlatformUtils::userConfigPath()
 
 unsigned long PlatformUtils::stackLimit()
 {
+#ifndef __EMSCRIPTEN__
   struct rlimit limit;
 
   int ret = getrlimit(RLIMIT_STACK, &limit);
@@ -139,6 +141,7 @@ unsigned long PlatformUtils::stackLimit()
       return limit.rlim_max - STACK_BUFFER_SIZE;
     }
   }
+#endif // __EMSCRIPTEN__
 
   return STACK_LIMIT_DEFAULT;
 }

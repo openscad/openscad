@@ -24,9 +24,14 @@
  *
  */
 
-#include "ContextFrame.h"
-#include "EvaluationSession.h"
-#include "printutils.h"
+#include "core/EvaluationSession.h"
+
+#include <cassert>
+#include <cstddef>
+#include <string>
+
+#include "core/ContextFrame.h"
+#include "utils/printutils.h"
 
 size_t EvaluationSession::push_frame(ContextFrame *frame)
 {
@@ -62,7 +67,7 @@ const Value& EvaluationSession::lookup_special_variable(const std::string& name,
 {
   boost::optional<const Value&> result = try_lookup_special_variable(name);
   if (!result) {
-    LOG(message_group::Warning, loc, documentRoot(), "Ignoring unknown variable '%1$s'", name);
+    LOG(message_group::Warning, loc, documentRoot(), "Ignoring unknown variable %1$s", quoteVar(name));
     return Value::undefined;
   }
   return *result;

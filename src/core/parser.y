@@ -36,20 +36,20 @@
 #include <unistd.h>
 #endif
 
-#include "SourceFile.h"
-#include "UserModule.h"
-#include "ModuleInstantiation.h"
-#include "Assignment.h"
-#include "Expression.h"
-#include "function.h"
-#include "printutils.h"
-#include "memory.h"
+#include "core/SourceFile.h"
+#include "core/UserModule.h"
+#include "core/ModuleInstantiation.h"
+#include "core/Assignment.h"
+#include "core/Expression.h"
+#include "core/function.h"
+#include "io/fileutils.h"
+#include "utils/printutils.h"
+#include <memory>
 #include <sstream>
 #include <stack>
-#include <boost/filesystem.hpp>
-#include "boost-utils.h"
+#include <filesystem>
 
-namespace fs = boost::filesystem;
+namespace fs = std::filesystem;
 
 #define YYMAXDEPTH 20000
 #define LOC(loc) Location(loc.first_line, loc.first_column, loc.last_line, loc.last_column, sourcefile())
@@ -184,7 +184,7 @@ statement
         | '{' inner_input '}'
         | module_instantiation
             {
-              if ($1) scope_stack.top()->addModuleInst(shared_ptr<ModuleInstantiation>($1));
+              if ($1) scope_stack.top()->addModuleInst(std::shared_ptr<ModuleInstantiation>($1));
             }
         | assignment
         | TOK_MODULE TOK_ID '(' parameters ')'
@@ -193,7 +193,7 @@ statement
               newmodule->parameters = *$4;
               auto top = scope_stack.top();
               scope_stack.push(&newmodule->body);
-              top->addModule(shared_ptr<UserModule>(newmodule));
+              top->addModule(std::shared_ptr<UserModule>(newmodule));
               free($2);
               delete $4;
             }
@@ -204,7 +204,7 @@ statement
         | TOK_FUNCTION TOK_ID '(' parameters ')' '=' expr ';'
             {
               scope_stack.top()->addFunction(
-                make_shared<UserFunction>($2, *$4, shared_ptr<Expression>($7), LOCD("function", @$))
+                std::make_shared<UserFunction>($2, *$4, std::shared_ptr<Expression>($7), LOCD("function", @$))
               );
               free($2);
               delete $4;
@@ -284,7 +284,7 @@ ifelse_statement
 if_statement
         : TOK_IF '(' expr ')'
             {
-                $<ifelse>$ = new IfElseModuleInstantiation(shared_ptr<Expression>($3), LOCD("if", @$));
+                $<ifelse>$ = new IfElseModuleInstantiation(std::shared_ptr<Expression>($3), LOCD("if", @$));
                 scope_stack.push(&$<ifelse>$->scope);
             }
           child_statement
@@ -305,7 +305,7 @@ child_statement
         | '{' child_statements '}'
         | module_instantiation
             {
-                if ($1) scope_stack.top()->addModuleInst(shared_ptr<ModuleInstantiation>($1));
+                if ($1) scope_stack.top()->addModuleInst(std::shared_ptr<ModuleInstantiation>($1));
             }
         ;
 
@@ -636,7 +636,7 @@ parameter
             }
         | TOK_ID '=' expr
             {
-              $$ = new Assignment($1, shared_ptr<Expression>($3), LOCD("assignment", @$));
+              $$ = new Assignment($1, std::shared_ptr<Expression>($3), LOCD("assignment", @$));
                 free($1);
             }
         ;
@@ -665,11 +665,11 @@ argument_list
 argument
         : expr
             {
-                $$ = new Assignment("", shared_ptr<Expression>($1), LOCD("argumentcall", @$));
+                $$ = new Assignment("", std::shared_ptr<Expression>($1), LOCD("argumentcall", @$));
             }
         | TOK_ID '=' expr
             {
-                $$ = new Assignment($1, shared_ptr<Expression>($3), LOCD("argumentcall", @$));
+                $$ = new Assignment($1, std::shared_ptr<Expression>($3), LOCD("argumentcall", @$));
                 free($1);
             }
         ;
@@ -697,24 +697,24 @@ static Location debug_location(const std::string& info, const YYLTYPE& loc)
 }
 #endif
 
-static void warn_reassignment(const Location& loc, const shared_ptr<Assignment>& assignment, const fs::path& path)
+static void warn_reassignment(const Location& loc, const std::shared_ptr<Assignment>& assignment, const fs::path& path)
 {
 	LOG(message_group::Warning,
 			loc,
 			path.parent_path().generic_string(),
 			"%1$s was assigned on line %2$i but was overwritten",
-			assignment->getName(),
+			quoteVar(assignment->getName()),
 			assignment->location().firstLine());
 
 }
 
-static void warn_reassignment(const Location& loc, const shared_ptr<Assignment>& assignment, const fs::path& path1, const fs::path& path2)
+static void warn_reassignment(const Location& loc, const std::shared_ptr<Assignment>& assignment, const fs::path& path1, const fs::path& path2)
 {
 	LOG(message_group::Warning,
 			loc,
 			path1.parent_path().generic_string(),
 			"%1$s was assigned on line %2$i of %3$s but was overwritten",
-			assignment->getName(),
+			quoteVar(assignment->getName()),
 			assignment->location().firstLine(),
 			path2);
 }
@@ -728,8 +728,8 @@ void handle_assignment(const std::string token, Expression *expr, const Location
 			auto prevFile = assignment->location().fileName();
 			auto currFile = loc.fileName();
 
-			const auto uncPathCurr = boostfs_uncomplete(currFile, mainFilePath.parent_path());
-			const auto uncPathPrev = boostfs_uncomplete(prevFile, mainFilePath.parent_path());
+			const auto uncPathCurr = fs_uncomplete(currFile, mainFilePath.parent_path());
+			const auto uncPathPrev = fs_uncomplete(prevFile, mainFilePath.parent_path());
 			if (fileEnded) {
 				//assignments via commandline
 			} else if (prevFile == mainFile && currFile == mainFile) {
@@ -745,14 +745,14 @@ void handle_assignment(const std::string token, Expression *expr, const Location
 				//assignment from the mainFile overwritten by an include
 				warn_reassignment(loc, assignment, mainFilePath, uncPathPrev);
 			}
-			assignment->setExpr(shared_ptr<Expression>(expr));
+			assignment->setExpr(std::shared_ptr<Expression>(expr));
 			assignment->setLocationOfOverwrite(loc);
 			found = true;
 			break;
 		}
 	}
 	if (!found) {
-		scope_stack.top()->addAssignment(assignment(token, shared_ptr<Expression>(expr), loc));
+		scope_stack.top()->addAssignment(assignment(token, std::shared_ptr<Expression>(expr), loc));
 	}
 }
 
@@ -760,11 +760,11 @@ bool parse(SourceFile *&file, const std::string& text, const std::string &filena
 {
   fs::path filepath;
   try {
-    filepath = fs::absolute(fs::path(filename));
-    mainFilePath = fs::absolute(fs::path(mainFile));
+    filepath = filename.empty() ? fs::current_path() : fs::absolute(fs::path{filename});
+    mainFilePath = mainFile.empty() ? fs::current_path() : fs::absolute(fs::path{mainFile});
   } catch (...) {
     // yyerror tries to print the file path, which throws again, and we can't do that
-	LOG(message_group::Error, "Parser error: file access denied");
+    LOG(message_group::Error, "Parser error: file access denied");
     return false;
   }
 

@@ -24,19 +24,21 @@
  *
  */
 
-#include "ThrownTogetherRenderer.h"
+#include "glview/preview/ThrownTogetherRenderer.h"
 
+#include <memory>
+#include <cstddef>
 #include <utility>
 #include "Feature.h"
-#include "PolySet.h"
-#include "printutils.h"
-#include "VertexStateManager.h"
+#include "geometry/PolySet.h"
+#include "core/enums.h"
+#include "utils/printutils.h"
 
-#include "system-gl.h"
+#include "glview/system-gl.h"
 
-ThrownTogetherRenderer::ThrownTogetherRenderer(shared_ptr<CSGProducts> root_products,
-                                               shared_ptr<CSGProducts> highlight_products,
-                                               shared_ptr<CSGProducts> background_products)
+ThrownTogetherRenderer::ThrownTogetherRenderer(std::shared_ptr<CSGProducts> root_products,
+                                               std::shared_ptr<CSGProducts> highlight_products,
+                                               std::shared_ptr<CSGProducts> background_products)
   : root_products(std::move(root_products)), highlight_products(std::move(highlight_products)), background_products(std::move(background_products))
 {
 }
@@ -54,44 +56,45 @@ ThrownTogetherRenderer::~ThrownTogetherRenderer()
 void ThrownTogetherRenderer::prepare(bool /*showfaces*/, bool /*showedges*/, const Renderer::shaderinfo_t * /*shaderinfo*/)
 {
   PRINTD("Thrown prepare");
-  if (Feature::ExperimentalVxORenderers.is_enabled() && !vertex_states.size()) {
-    VertexArray vertex_array(std::make_shared<TTRVertexStateFactory>(), vertex_states);
+  if (vertex_states.empty()) {
+    glGenBuffers(1, &vertices_vbo);
+    if (Feature::ExperimentalVxORenderersIndexing.is_enabled()) {
+      glGenBuffers(1, &elements_vbo);
+    }
+    VertexArray vertex_array(std::make_unique<TTRVertexStateFactory>(), vertex_states, vertices_vbo, elements_vbo);
     vertex_array.addSurfaceData();
-    add_shader_data(vertex_array);
+    if (getShader().progid != 0) {
+      add_shader_data(vertex_array);
+    } else {
+      LOG("Warning: Shader not available");
+    }
 
-    VertexStateManager vsm(*this, vertex_array);
-
-    
     size_t num_vertices = 0;
-    if (this->root_products) num_vertices += (getSurfaceBufferSize(this->root_products, false, false, true) * 2);
-    if (this->background_products) num_vertices += getSurfaceBufferSize(this->background_products, false, true, true);
-    if (this->highlight_products) num_vertices += getSurfaceBufferSize(this->highlight_products, true, false, true);
+    if (this->root_products) num_vertices += (getSurfaceBufferSize(this->root_products, true) * 2);
+    if (this->background_products) num_vertices += getSurfaceBufferSize(this->background_products, true);
+    if (this->highlight_products) num_vertices += getSurfaceBufferSize(this->highlight_products, true);
 
-    vsm.initializeSize(num_vertices);
+    vertex_array.allocateBuffers(num_vertices);
 
     if (this->root_products) createCSGProducts(*this->root_products, vertex_array, false, false);
     if (this->background_products) createCSGProducts(*this->background_products, vertex_array, false, true);
     if (this->highlight_products) createCSGProducts(*this->highlight_products, vertex_array, true, false);
 
-    if (Feature::ExperimentalVxORenderersDirect.is_enabled() || Feature::ExperimentalVxORenderersPrealloc.is_enabled()) {
-      if (Feature::ExperimentalVxORenderersIndexing.is_enabled()) {
-        GL_TRACE0("glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0)");
-        GL_CHECKD(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0));
-      }
-      GL_TRACE0("glBindBuffer(GL_ARRAY_BUFFER, 0)");
-      GL_CHECKD(glBindBuffer(GL_ARRAY_BUFFER, 0));
+    if (Feature::ExperimentalVxORenderersIndexing.is_enabled()) {
+      GL_TRACE0("glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0)");
+      GL_CHECKD(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0));
     }
+    GL_TRACE0("glBindBuffer(GL_ARRAY_BUFFER, 0)");
+    GL_CHECKD(glBindBuffer(GL_ARRAY_BUFFER, 0));
 
     vertex_array.createInterleavedVBOs();
-    vertices_vbo = vertex_array.verticesVBO();
-    elements_vbo = vertex_array.elementsVBO();
   }
 }
 
 
 void ThrownTogetherRenderer::draw(bool /*showfaces*/, bool showedges, const Renderer::shaderinfo_t *shaderinfo) const
 {
-  PRINTD("Thrown draw");
+  PRINTD("draw()");
   if (!shaderinfo && showedges) {
     shaderinfo = &getShader();
   }
@@ -102,63 +105,13 @@ void ThrownTogetherRenderer::draw(bool /*showfaces*/, bool showedges, const Rend
     }
   }
 
-  if (!Feature::ExperimentalVxORenderers.is_enabled()) {
-    if (this->root_products) {
-      glEnable(GL_CULL_FACE);
-      glCullFace(GL_BACK);
-      renderCSGProducts(this->root_products, showedges, shaderinfo, false, false, false);
-      glCullFace(GL_FRONT);
-      glColor3ub(255, 0, 255);
-      renderCSGProducts(this->root_products, showedges, shaderinfo, false, false, true);
-      glDisable(GL_CULL_FACE);
-    }
-    if (this->background_products) renderCSGProducts(this->background_products, showedges, shaderinfo, false, true, false);
-    if (this->highlight_products) renderCSGProducts(this->highlight_products, showedges, shaderinfo, true, false, false);
-  } else {
-    renderCSGProducts(std::make_shared<CSGProducts>(), showedges, shaderinfo);
-  }
+  renderCSGProducts(std::make_shared<CSGProducts>(), showedges, shaderinfo);
   if (shaderinfo && shaderinfo->progid) {
     if (shaderinfo->type == EDGE_RENDERING && showedges) {
       shader_attribs_disable();
     }
     glUseProgram(0);
   }
-}
-
-void ThrownTogetherRenderer::renderChainObject(const CSGChainObject& csgobj, bool showedges,
-                                               const Renderer::shaderinfo_t *shaderinfo,
-                                               bool highlight_mode, bool background_mode,
-                                               bool fberror, OpenSCADOperator type) const
-{
-  if (this->geomVisitMark[std::make_pair(csgobj.leaf->geom.get(), &csgobj.leaf->matrix)]++ > 0) return;
-  const auto *ps = dynamic_cast<const PolySet *>(csgobj.leaf->geom.get());
-  if (!ps) return;
-
-  const Color4f& c = csgobj.leaf->color;
-  csgmode_e csgmode = get_csgmode(highlight_mode, background_mode, type);
-  ColorMode colormode = ColorMode::NONE;
-  ColorMode edge_colormode = ColorMode::NONE;
-
-  colormode = getColorMode(csgobj.flags, highlight_mode, background_mode, fberror, type);
-  const Transform3d& m = csgobj.leaf->matrix;
-
-  if (shaderinfo && shaderinfo->type == Renderer::SELECT_RENDERING) {
-    int identifier = csgobj.leaf->index;
-    glUniform3f(shaderinfo->data.select_rendering.identifier, ((identifier >> 0) & 0xff) / 255.0f,
-                ((identifier >> 8) & 0xff) / 255.0f, ((identifier >> 16) & 0xff) / 255.0f);
-  } else {
-    setColor(colormode, c.data());
-  }
-  glPushMatrix();
-  glMultMatrixd(m.data());
-  render_surface(*ps, csgmode, m, shaderinfo);
-  // only use old render_edges if there is no shader progid
-  if (showedges && (shaderinfo && shaderinfo->progid == 0)) {
-    // FIXME? glColor4f((c[0]+1)/2, (c[1]+1)/2, (c[2]+1)/2, 1.0);
-    setColor(edge_colormode);
-    render_edges(*ps, csgmode);
-  }
-  glPopMatrix();
 }
 
 void ThrownTogetherRenderer::renderCSGProducts(const std::shared_ptr<CSGProducts>& products, bool showedges,
@@ -170,36 +123,25 @@ void ThrownTogetherRenderer::renderCSGProducts(const std::shared_ptr<CSGProducts
   glDepthFunc(GL_LEQUAL);
   this->geomVisitMark.clear();
 
-  if (!Feature::ExperimentalVxORenderers.is_enabled()) {
-    for (const auto& product : products->products) {
-      for (const auto& csgobj : product.intersections) {
-        renderChainObject(csgobj, showedges, shaderinfo, highlight_mode, background_mode, fberror, OpenSCADOperator::INTERSECTION);
-      }
-      for (const auto& csgobj : product.subtractions) {
-        renderChainObject(csgobj, showedges, shaderinfo, highlight_mode, background_mode, fberror, OpenSCADOperator::DIFFERENCE);
-      }
-    }
-  } else {
-    for (const auto& vs : vertex_states) {
-      if (vs) {
-        std::shared_ptr<TTRVertexState> csg_vs = std::dynamic_pointer_cast<TTRVertexState>(vs);
-        if (csg_vs) {
-          if (shaderinfo && shaderinfo->type == Renderer::SELECT_RENDERING) {
-            GL_TRACE("glUniform3f(%d, %f, %f, %f)",
-                     shaderinfo->data.select_rendering.identifier %
-                     (((csg_vs->csgObjectIndex() >> 0) & 0xff) / 255.0f) %
-                     (((csg_vs->csgObjectIndex() >> 8) & 0xff) / 255.0f) %
-                     (((csg_vs->csgObjectIndex() >> 16) & 0xff) / 255.0f));
-            GL_CHECKD(glUniform3f(shaderinfo->data.select_rendering.identifier,
-                                  ((csg_vs->csgObjectIndex() >> 0) & 0xff) / 255.0f,
-                                  ((csg_vs->csgObjectIndex() >> 8) & 0xff) / 255.0f,
-                                  ((csg_vs->csgObjectIndex() >> 16) & 0xff) / 255.0f));
-          }
+  for (const auto& vs : vertex_states) {
+    if (vs) {
+      std::shared_ptr<TTRVertexState> csg_vs = std::dynamic_pointer_cast<TTRVertexState>(vs);
+      if (csg_vs) {
+        if (shaderinfo && shaderinfo->type == Renderer::SELECT_RENDERING) {
+          GL_TRACE("glUniform3f(%d, %f, %f, %f)",
+                   shaderinfo->data.select_rendering.identifier %
+                   (((csg_vs->csgObjectIndex() >> 0) & 0xff) / 255.0f) %
+                   (((csg_vs->csgObjectIndex() >> 8) & 0xff) / 255.0f) %
+                   (((csg_vs->csgObjectIndex() >> 16) & 0xff) / 255.0f));
+          GL_CHECKD(glUniform3f(shaderinfo->data.select_rendering.identifier,
+                                ((csg_vs->csgObjectIndex() >> 0) & 0xff) / 255.0f,
+                                ((csg_vs->csgObjectIndex() >> 8) & 0xff) / 255.0f,
+                                ((csg_vs->csgObjectIndex() >> 16) & 0xff) / 255.0f));
         }
-        std::shared_ptr<VBOShaderVertexState> shader_vs = std::dynamic_pointer_cast<VBOShaderVertexState>(vs);
-        if (!shader_vs || (shader_vs && showedges)) {
-          vs->draw();
-        }
+      }
+      std::shared_ptr<VBOShaderVertexState> shader_vs = std::dynamic_pointer_cast<VBOShaderVertexState>(vs);
+      if (!shader_vs || (shader_vs && showedges)) {
+        vs->draw();
       }
     }
   }
@@ -209,11 +151,8 @@ void ThrownTogetherRenderer::createChainObject(VertexArray& vertex_array,
                                                const CSGChainObject& csgobj, bool highlight_mode,
                                                bool background_mode, OpenSCADOperator type)
 {
-  if (csgobj.leaf->geom) {
-    const auto *ps = dynamic_cast<const PolySet *>(csgobj.leaf->geom.get());
-    if (!ps) return;
-
-    if (this->geomVisitMark[std::make_pair(csgobj.leaf->geom.get(), &csgobj.leaf->matrix)]++ > 0) return;
+  if (csgobj.leaf->polyset) {
+    if (this->geomVisitMark[std::make_pair(csgobj.leaf->polyset.get(), &csgobj.leaf->matrix)]++ > 0) return;
 
     Color4f color;
     Color4f& leaf_color = csgobj.leaf->color;
@@ -221,24 +160,22 @@ void ThrownTogetherRenderer::createChainObject(VertexArray& vertex_array,
 
     vertex_array.writeSurface();
 
-    VertexStateManager vsm(*this, vertex_array); // Currently, choosing to create a new VSM instead of trying to reuse the one from ThrownTogetherRenderer::prepare
-
     if (highlight_mode || background_mode) {
       const ColorMode colormode = getColorMode(csgobj.flags, highlight_mode, background_mode, false, type);
       getShaderColor(colormode, leaf_color, color);
 
-      vsm.addColor(color);
+      add_color(vertex_array, color);
 
-      create_surface(*ps, vertex_array, csgmode, csgobj.leaf->matrix, color);
+      create_surface(*csgobj.leaf->polyset, vertex_array, csgmode, csgobj.leaf->matrix, color);
       std::shared_ptr<TTRVertexState> vs = std::dynamic_pointer_cast<TTRVertexState>(vertex_array.states().back());
       if (vs) {
-        vs->csgObjectIndex(csgobj.leaf->index);
+        vs->setCsgObjectIndex(csgobj.leaf->index);
       }
     } else { // root mode
       ColorMode colormode = getColorMode(csgobj.flags, highlight_mode, background_mode, false, type);
       getShaderColor(colormode, leaf_color, color);
 
-      vsm.addColor(color);
+      add_color(vertex_array, color);
 
       std::shared_ptr<VertexState> cull = std::make_shared<VertexState>();
       cull->glBegin().emplace_back([]() {
@@ -251,10 +188,15 @@ void ThrownTogetherRenderer::createChainObject(VertexArray& vertex_array,
       });
       vertex_states.emplace_back(std::move(cull));
 
-      create_surface(*ps, vertex_array, csgmode, csgobj.leaf->matrix, color);
+      Transform3d mat = csgobj.leaf->matrix;
+      if (csgobj.leaf->polyset->getDimension() == 2 && type == OpenSCADOperator::DIFFERENCE) {
+        // Scale 2D negative objects 10% in the Z direction to avoid z fighting
+        mat *= Eigen::Scaling(1.0, 1.0, 1.1);
+      }
+      create_surface(*csgobj.leaf->polyset, vertex_array, csgmode, mat, color);
       std::shared_ptr<TTRVertexState> vs = std::dynamic_pointer_cast<TTRVertexState>(vertex_array.states().back());
       if (vs) {
-        vs->csgObjectIndex(csgobj.leaf->index);
+        vs->setCsgObjectIndex(csgobj.leaf->index);
       }
 
       color[0] = 1.0; color[1] = 0.0; color[2] = 1.0; // override leaf color on front/back error
@@ -262,7 +204,7 @@ void ThrownTogetherRenderer::createChainObject(VertexArray& vertex_array,
       colormode = getColorMode(csgobj.flags, highlight_mode, background_mode, true, type);
       getShaderColor(colormode, leaf_color, color);
 
-      vsm.addColor(color);
+      add_color(vertex_array, color);
 
       cull = std::make_shared<VertexState>();
       cull->glBegin().emplace_back([]() {
@@ -271,10 +213,10 @@ void ThrownTogetherRenderer::createChainObject(VertexArray& vertex_array,
       });
       vertex_states.emplace_back(std::move(cull));
 
-      create_surface(*ps, vertex_array, csgmode, csgobj.leaf->matrix, color);
+      create_surface(*csgobj.leaf->polyset, vertex_array, csgmode, csgobj.leaf->matrix, color);
       vs = std::dynamic_pointer_cast<TTRVertexState>(vertex_array.states().back());
       if (vs) {
-        vs->csgObjectIndex(csgobj.leaf->index);
+        vs->setCsgObjectIndex(csgobj.leaf->index);
       }
 
       vertex_states.back()->glEnd().emplace_back([]() {

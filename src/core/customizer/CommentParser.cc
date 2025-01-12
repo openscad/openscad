@@ -1,6 +1,10 @@
-#include "CommentParser.h"
-#include "Expression.h"
-#include "Annotation.h"
+#include "core/customizer/CommentParser.h"
+
+#include <memory>
+#include <cstddef>
+
+#include "core/Expression.h"
+#include "core/customizer/Annotation.h"
 #include <string>
 #include <vector>
 #include <boost/range/adaptor/reversed.hpp>
@@ -283,7 +287,7 @@ void CommentParser::collectParameters(const std::string& fulltext, SourceFile *r
     auto *annotationList = new AnnotationList();
 
     // Extracting the parameter comment
-    shared_ptr<Expression> params;
+    std::shared_ptr<Expression> params;
     std::string comment = getComment(fulltext, firstLine);
     if (comment.length() > 0) { // don't parse what doesn't exist, so we don't get bogus errors from the parser
       // getting the node for parameter annotation
@@ -298,7 +302,7 @@ void CommentParser::collectParameters(const std::string& fulltext, SourceFile *r
     std::string descr = getDescription(fulltext, firstLine - 1);
     if (descr != "") {
       //creating node for description
-      shared_ptr<Expression> expr(new Literal(descr));
+      std::shared_ptr<Expression> expr(new Literal(descr));
       annotationList->push_back(Annotation("Description", expr));
     }
 
@@ -306,7 +310,7 @@ void CommentParser::collectParameters(const std::string& fulltext, SourceFile *r
     for (const auto& groupInfo :boost::adaptors::reverse(groupList)) {
       if (groupInfo.lineNo < firstLine) {
         //creating node for description
-        shared_ptr<Expression> expr(new Literal(groupInfo.commentString));
+        std::shared_ptr<Expression> expr(new Literal(groupInfo.commentString));
         annotationList->push_back(Annotation("Group", expr));
         break;
       }

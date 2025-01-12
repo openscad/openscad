@@ -1,0 +1,34 @@
+name: Linux Examples Tests
+
+on:
+  push:
+    branches:
+      - master
+  workflow_dispatch:
+
+jobs:
+  build_and_test:
+    strategy:
+      matrix:
+        experimental: [true, false]
+    runs-on: ubuntu-latest
+    name: Test examples - ${{ matrix.experimental && 'experimental' || 'non-experimental' }}
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        submodules: 'recursive'
+    - name: Install dependencies
+      run: ./scripts/github-ci-linux-get-dependencies.sh
+    - uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+    - name: Build and test
+      run: ./scripts/github-ci.sh ${{ matrix.experimental && 'experimental' || ''}} enable_python build test_examples test
+    - name: Upload Test Result Report
+      uses: actions/upload-artifact@v4
+      if: ${{ always() }}
+      with:
+        name: Test Result Report (Test examples ${{ matrix.experimental && 'experimental' || 'non-experimental' }})
+        path: |
+          b/Testing/Temporary/*_report.html
+          b/Testing/Temporary/LastTest.log

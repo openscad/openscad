@@ -23,15 +23,14 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  */
+#include "utils/calc.h"
 
-// NOLINTNEXTLINE(bugprone-reserved-identifier)
-#define _USE_MATH_DEFINES
 #include <cmath>
+
 #include <cassert>
 #include <algorithm>
-#include "calc.h"
-#include "Grid.h"
-#include "degree_trig.h"
+#include "geometry/Grid.h"
+#include "utils/degree_trig.h"
 
 // Linear interpolate.  Can replace with std::lerp in C++20
 double Calc::lerp(double a, double b, double t) {

@@ -14,7 +14,8 @@
  #endif
    //*/
 
-#include "ext/CGAL/CGAL_workaround_Mark_bounded_volumes.h" // This file must be included prior to CGAL/Nef_polyhedron_3.h
+#include "CGAL/CGAL_workaround_Mark_bounded_volumes.h" // This file must be included prior to CGAL/Nef_polyhedron_3.h
+#include <vector>
 #include <CGAL/Gmpq.h>
 #include <CGAL/Extended_cartesian.h>
 #include <CGAL/Nef_polyhedron_2.h>
@@ -63,13 +64,6 @@ using CGAL_Polygon_3 = std::vector<CGAL_Point_3>;
 // CGAL_Kernel2::Point. Hence the suffix 'e'
 using CGAL_Point_2e = CGAL_Nef_polyhedron2::Explorer::Point;
 using CGAL_Iso_rectangle_2e = CGAL::Iso_rectangle_2<CGAL::Simple_cartesian<NT2>>;
-
-#define FAST_CSG_KERNEL_IS_LAZY 1
-using CGAL_HybridKernel3 = CGAL::Epeck;
-
-using CGAL_HybridPoint = CGAL::Point_3<CGAL_HybridKernel3>;
-using CGAL_HybridNef = CGAL::Nef_polyhedron_3<CGAL_HybridKernel3>;
-using CGAL_HybridMesh = CGAL::Surface_mesh<CGAL_HybridPoint>;
 
 using CGAL_DoubleKernel = CGAL::Cartesian<double>;
 using CGAL_DoublePoint3 = CGAL_DoubleKernel::Point_3;

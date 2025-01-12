@@ -1,22 +1,21 @@
 #pragma once
 
+#include <iterator>
+#include <unordered_map>
 #include <utility>
 #include <vector>
 #include <string>
 #include <algorithm>
-#include <cstdint>
-#include <limits>
+#include <cstddef>
 #include <ostream>
 #include <memory>
 #include <type_traits>
 #include <variant>
 
-#include "FunctionType.h"
-#include "RangeType.h"
-#include "str_utf8_wrapper.h"
-#include "UndefType.h"
-
-#include "memory.h"
+#include "core/FunctionType.h"
+#include "core/RangeType.h"
+#include "core/str_utf8_wrapper.h"
+#include "core/UndefType.h"
 
 class tostring_visitor;
 class tostream_visitor;
@@ -130,7 +129,7 @@ protected:
     };
     using vec_t = VectorObject::vec_t;
 public:
-    shared_ptr<VectorObject> ptr;
+    std::shared_ptr<VectorObject> ptr;
 protected:
 
     // A Deleter is used on the shared_ptrs to avoid stack overflow in cases
@@ -143,7 +142,7 @@ protected:
     void flatten() const; // flatten replaces VectorObject::vec with a new vector
                           // where any embedded elements are copied directly into the top level vec,
                           // leaving only true elements for straightforward indexing by operator[].
-    explicit VectorType(const shared_ptr<VectorObject>& copy) : ptr(copy) { } // called by clone()
+    explicit VectorType(const std::shared_ptr<VectorObject>& copy) : ptr(copy) { } // called by clone()
 public:
     using size_type = VectorObject::size_type;
     static const VectorType EMPTY;
@@ -250,7 +249,7 @@ public:
   class EmbeddedVectorType : public VectorType
   {
 private:
-    explicit EmbeddedVectorType(const shared_ptr<VectorObject>& copy) : VectorType(copy) { } // called by clone()
+    explicit EmbeddedVectorType(const std::shared_ptr<VectorObject>& copy) : VectorType(copy) { } // called by clone()
 public:
     EmbeddedVectorType(class EvaluationSession *session) : VectorType(session) {}
     EmbeddedVectorType(const EmbeddedVectorType&) = delete;
@@ -272,10 +271,10 @@ protected:
     };
 
 private:
-    explicit ObjectType(const shared_ptr<ObjectObject>& copy);
+    explicit ObjectType(const std::shared_ptr<ObjectObject>& copy);
 
 public:
-    shared_ptr<ObjectObject> ptr;
+    std::shared_ptr<ObjectObject> ptr;
     ObjectType(class EvaluationSession *session);
     [[nodiscard]] ObjectType clone() const;
     [[nodiscard]] const Value& get(const std::string& key) const;

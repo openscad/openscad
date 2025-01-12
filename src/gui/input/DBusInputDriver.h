@@ -25,8 +25,11 @@
  */
 #pragma once
 
+#include <QList>
+#include <QString>
 #include <QStringList>
-#include "InputDriver.h"
+#include "gui/input/InputDriver.h"
+#include <string>
 
 class DBusInputDriver : public InputDriver
 {
