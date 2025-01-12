@@ -1,19 +1,22 @@
 // This file is a part of openscad. Everything implied is implied.
 // Author: Alexey Korepanov <kaikaikai@yandex.ru>
 
-// NOLINTNEXTLINE(bugprone-reserved-identifier)
-#define _USE_MATH_DEFINES
-#include <cmath>
+#include "geometry/roof_vd.h"
 
+#include <ostream>
+#include <cstdint>
+#include <memory>
+#include <cmath>
+#include <cstddef>
 #include <algorithm>
 #include <map>
 #include <boost/polygon/voronoi.hpp>
-#include <PolySetBuilder.h>
+#include <vector>
+#include "geometry/PolySetBuilder.h"
 
-#include "GeometryUtils.h"
-#include "ClipperUtils.h"
-#include "RoofNode.h"
-#include "roof_vd.h"
+#include "geometry/GeometryUtils.h"
+#include "geometry/ClipperUtils.h"
+#include "core/RoofNode.h"
 
 #define RAISE_ROOF_EXCEPTION(message) \
         throw RoofNode::roof_exception((boost::format("%s line %d: %s") % __FILE__ % __LINE__ % (message)).str());
@@ -337,18 +340,20 @@ std::unique_ptr<PolySet> voronoi_diagram_roof(const Polygon2d& poly, double fa, 
   try {
 
     // input data for voronoi diagram is 32 bit integers
-    int scale_pow2 = ClipperUtils::getScalePow2(poly.getBoundingBox(), 32);
-    double scale = std::ldexp(1.0, scale_pow2);
+    // FIXME: Why does this need to be 32 bits? The default we use elsewhere is 
+    // scaleBitsFromPrecision(DEFAULT_PRECISION) which is 10^8.
+    const int scale_bits = ClipperUtils::scaleBitsFromBounds(poly.getBoundingBox(), 32);
+    const double scale = std::ldexp(1.0, scale_bits);
 
-    ClipperLib::Paths paths = ClipperUtils::fromPolygon2d(poly, scale_pow2);
+    Clipper2Lib::Paths64 paths = ClipperUtils::fromPolygon2d(poly, scale_bits);
     // sanitize is important e.g. when after converting to 32 bit integers we have double points
-    ClipperLib::PolyTreeToPaths(ClipperUtils::sanitize(paths), paths);
+    paths = Clipper2Lib::PolyTreeToPaths64(*ClipperUtils::sanitize(paths));
     std::vector<Segment> segments;
 
     for (auto path : paths) {
       auto prev = path.back();
       for (auto p : path) {
-        segments.emplace_back(prev.X, prev.Y, p.X, p.Y);
+        segments.emplace_back(prev.x, prev.y, p.x, p.y);
         prev = p;
       }
     }
@@ -391,7 +396,7 @@ std::unique_ptr<PolySet> voronoi_diagram_roof(const Polygon2d& poly, double fa, 
       for (const auto& path : paths) {
         Outline2d o;
         for (auto p : path) {
-          o.vertices.push_back({p.X / scale, p.Y / scale});
+          o.vertices.push_back({p.x / scale, p.y / scale});
         }
         poly_floor.addOutline(o);
       }

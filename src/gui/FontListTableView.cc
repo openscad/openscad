@@ -23,12 +23,16 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  */
+#include "gui/FontListTableView.h"
+
+#include <QRect>
+#include <QString>
+#include <QWidget>
 #include <QDrag>
 #include <QPixmap>
 #include <QPainter>
 #include <QMimeData>
 #include <QTableView>
-#include "FontListTableView.h"
 
 FontListTableView::FontListTableView(QWidget *parent) : QTableView(parent)
 {

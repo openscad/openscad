@@ -24,16 +24,17 @@
  *
  */
 
-#include "LegacyThrownTogetherRenderer.h"
+#include "glview/preview/LegacyThrownTogetherRenderer.h"
 
+#include <memory>
 #include <utility>
 #include "Feature.h"
-#include "PolySet.h"
-#include "enums.h"
-#include "printutils.h"
-#include "LegacyRendererUtils.h"
+#include "geometry/PolySet.h"
+#include "core/enums.h"
+#include "utils/printutils.h"
+#include "glview/LegacyRendererUtils.h"
 
-#include "system-gl.h"
+#include "glview/system-gl.h"
 
 LegacyThrownTogetherRenderer::LegacyThrownTogetherRenderer(std::shared_ptr<CSGProducts> root_products,
                                                std::shared_ptr<CSGProducts> highlight_products,

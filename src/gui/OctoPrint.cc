@@ -24,12 +24,24 @@
  *
  */
 
-#include "Settings.h"
-#include "OctoPrint.h"
+#include "gui/OctoPrint.h"
 
+#include "gui/Settings.h"
+
+#include <QHttpMultiPart>
+#include <QHttpPart>
+#include <QIODevice>
+#include <QJsonDocument>
+#include <QNetworkAccessManager>
+#include <QNetworkReply>
+#include <QNetworkRequest>
+#include <QString>
+#include <string>
 #include <utility>
-#include "printutils.h"
-#include "PlatformUtils.h"
+#include <vector>
+
+#include "utils/printutils.h"
+#include "platform/PlatformUtils.h"
 
 const QString OctoPrint::url() const
 {

@@ -1,7 +1,9 @@
 #pragma once
 
-#include "qtgettext.h"
+#include "gui/qtgettext.h"
 #include "ui_ViewportControl.h"
+#include <QResizeEvent>
+#include <QWidget>
 #include <QStandardItemModel>
 #include <mutex>
 
@@ -42,13 +44,15 @@ private:
   std::mutex resizeMutex;
   QString yellowHintBackground();
   QString redHintBackground();
+  QColor warnBlendColor{"yellow"};
+  QColor errorBlendColor{"red"};
 
 signals:
   void openFile(const QString, int);
 
 private:
-  bool isLightTheme();
   void resizeToRatio();
   int maxH;
   int maxW;
+  int initMinWidth;
 };

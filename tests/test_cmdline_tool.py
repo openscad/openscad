@@ -125,7 +125,8 @@ def normalize_string(s):
 
     This also normalizes away import paths from 'file = ' arguments."""
 
-    s = re.sub(', timestamp = [0-9]+', '', s)
+    # timestamp can potentially be negative since stdlibc++ internally uses an epoch based in year 2174
+    s = re.sub(', timestamp = -?[0-9]+', '', s)
 
     """ Don't replace floats after implementing double-conversion library
     def floatrep(match):
@@ -137,9 +138,12 @@ def normalize_string(s):
         return "%.6g"%value
     s = re.sub('(-?[0-9]+(\\.[0-9]+)?(e[+-][0-9]+)?)', floatrep, s)
     """
+
+    """ Relative file paths are hopefully consistent across platforms now?
     def pathrep(match):
         return match.groups()[0] + match.groups()[2]
     s = re.sub('(file = ")([^"/]*/)*([^"]*")', pathrep, s)
+    """
 
     return s
 
@@ -258,7 +262,15 @@ def post_process_3mf(filename):
     print('post processing 3MF file (extracting XML data from ZIP): ', filename)
     from zipfile import ZipFile
     xml_content = ZipFile(filename).read("3D/3dmodel.model")
-    xml_content = re.sub('UUID="[^"]*"', 'UUID="XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXX"', xml_content.decode('utf-8'))
+    xml_content = xml_content.decode('utf-8')
+    # Remove the UUIDs
+    xml_content = re.sub(r'UUID="[^"]*"', r'UUID="XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXX"', xml_content)
+    # Remove the timestampe in metadata
+    xml_content = re.sub(r'(<metadata[^>]*"CreationDate"[^>]*>)[0-9-]{10}T[0-9:]{8}Z(</metadata>)', r'\1XXXX-XX-XXTXXXXXXXXZ\2', xml_content)
+    # lib3mf does not allow setting the preserve="?" attribute for metadata
+    xml_content = re.sub(r'(<metadata[^>]*?)\s+preserve\s*=\s*"[^"]*"([^>]*>)', r'\1\2', xml_content)
+    # lib3mf v1 does not allow setting the alpha channel of base material display colors
+    xml_content = re.sub(r'(<base name="[^"]*" displaycolor="[^"]*).."', r'\1FF"', xml_content)
     # lib3mf v2 has an additional <model> attribute compared to v1
     sc = ' xmlns:sc="http://schemas.microsoft.com/3dmanufacturing/securecontent/2019/04"'
     xml_content = xml_content.replace(sc, '')

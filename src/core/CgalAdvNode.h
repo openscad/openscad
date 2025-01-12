@@ -1,7 +1,9 @@
 #pragma once
 
-#include "node.h"
-#include "linalg.h"
+#include <string>
+
+#include "core/node.h"
+#include "geometry/linalg.h"
 
 enum class CgalAdvType {
   MINKOWSKI,

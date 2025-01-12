@@ -1,0 +1,45 @@
+# if defined(UNDER_CE)
+#  include <winbase.h>
+# else
+#  include <winver.h>
+# endif
+
+#include "winuser.h"
+1 RT_MANIFEST "scripts/winmanifest.xml"
+
+VS_VERSION_INFO VERSIONINFO
+	FILEVERSION ${CMAKE_PROJECT_VERSION_MAJOR},${CMAKE_PROJECT_VERSION_MINOR},${CMAKE_PROJECT_VERSION_PATCH},0
+	PRODUCTVERSION ${CMAKE_PROJECT_VERSION_MAJOR},${CMAKE_PROJECT_VERSION_MINOR},${CMAKE_PROJECT_VERSION_PATCH},0
+	FILEFLAGSMASK 0x3fL
+#ifdef _DEBUG
+	FILEFLAGS VS_FF_DEBUG
+#else
+	FILEFLAGS 0x0L
+#endif
+	FILEOS VOS_NT
+	FILETYPE VFT_APP
+	FILESUBTYPE 0x0L
+	BEGIN
+		BLOCK "StringFileInfo"
+		BEGIN
+			BLOCK "040904E4"
+			BEGIN
+				VALUE "CompanyName", "The OpenSCAD Project\0"
+				VALUE "FileDescription", "OpenSCAD Application\0"
+				VALUE "FileVersion", "${OPENSCAD_VERSION} ${OPENSCAD_COMMIT}\0"
+				VALUE "InternalName", "openscad\0"
+				VALUE "LegalCopyright", "Copyright (C) 2009-2024 The OpenSCAD Developers\0"
+				VALUE "OriginalFilename", "openscad.exe\0"
+				VALUE "ProductName", "${CPACK_PACKAGE_NAME}\0"
+				VALUE "ProductVersion", "${OPENSCAD_VERSION}\0"
+			END
+		END
+		BLOCK "VarFileInfo"
+		BEGIN
+			VALUE "Translation", 0x409, 1252
+		END
+	END
+/* End of Version info */
+
+IDI_ICON1   ICON    DISCARDABLE "resources/icons/openscad-nightly.ico"
+IDI_ICON2   ICON    DISCARDABLE "resources/icons/openscad_doc.ico"

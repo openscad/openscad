@@ -1,10 +1,13 @@
 #pragma once
 #include <QSettings>
 #include <QObject>
-#include "Settings.h"
+#include "gui/Settings.h"
 #include <QComboBox>
 #include <QSpinBox>
 #include <QCheckBox>
+#include <QListWidget>
+
+#include <string>
 
 template <class WidgetPtr>
 class BlockSignals
@@ -34,6 +37,8 @@ protected:
   void initUpdateDoubleSpinBox(QDoubleSpinBox *spinBox, const Settings::SettingsEntryDouble& entry);
   /** Initialize combobox list values from the settings range values */
   void initComboBox(QComboBox *comboBox, const Settings::SettingsEntryEnum& entry);
+  /** Initialize specialized list box */
+  void initListBox(QListWidget *listBox, const Settings::SettingsEntryList<Settings::LocalAppParameter>& list);
   /** Update combobox from current settings */
   void updateComboBox(const BlockSignals<QComboBox *>& comboBox, const Settings::SettingsEntryEnum& entry);
   /** Update combobox from current settings */

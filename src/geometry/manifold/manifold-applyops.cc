@@ -3,11 +3,12 @@
 
 #ifdef ENABLE_MANIFOLD
 
-#include "manifoldutils.h"
-#include "ManifoldGeometry.h"
-#include "node.h"
-#include "progress.h"
-#include "printutils.h"
+#include <memory>
+#include "geometry/manifold/manifoldutils.h"
+#include "geometry/manifold/ManifoldGeometry.h"
+#include "core/node.h"
+#include "core/progress.h"
+#include "utils/printutils.h"
 
 namespace ManifoldUtils {
 

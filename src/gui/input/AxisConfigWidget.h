@@ -1,9 +1,11 @@
 #pragma once
 
-#include "qtgettext.h"
-#include "Settings.h"
+#include "gui/qtgettext.h"
+#include <QComboBox>
+#include <QWidget>
+#include "gui/Settings.h"
 #include "ui_AxisConfigWidget.h"
-#include "InitConfigurator.h"
+#include "gui/InitConfigurator.h"
 
 class AxisConfigWidget : public QWidget, public Ui::Axis, public InitConfigurator
 {

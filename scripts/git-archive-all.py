@@ -443,7 +443,7 @@ if __name__ == '__main__':
         import re
 
         output_name = path.basename(output_file_path)
-        output_name = re.sub('(\.zip|\.tar|\.tgz|\.gz|\.bz2|\.tar\.gz|\.tar\.bz2)$', '', output_name) or "Archive"
+        output_name = re.sub(r'(\.zip|\.tar|\.tgz|\.gz|\.bz2|\.tar\.gz|\.tar\.bz2)$', '', output_name) or "Archive"
         options.prefix = path.join(output_name, '')
 
     try:

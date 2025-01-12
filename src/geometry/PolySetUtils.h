@@ -1,8 +1,9 @@
 #pragma once
 
+#include <string>
 #include <memory>
 
-#include "Geometry.h"
+#include "geometry/Geometry.h"
 
 class Polygon2d;
 class PolySet;
@@ -14,5 +15,7 @@ std::unique_ptr<PolySet> tessellate_faces(const PolySet& inps);
 bool is_approximately_convex(const PolySet& ps);
 
 std::shared_ptr<const PolySet> getGeometryAsPolySet(const std::shared_ptr<const class Geometry>&);
+
+std::string polySetToPolyhedronSource(const PolySet& ps);
 
 }

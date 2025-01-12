@@ -3,13 +3,14 @@
 
 #ifdef ENABLE_CGAL
 
-#include "cgal.h"
-#include "cgalutils.h"
-#include "PolySet.h"
-#include "printutils.h"
-#include "Polygon2d.h"
-#include "PolySetUtils.h"
+#include "geometry/cgal/cgal.h"
+#include "geometry/cgal/cgalutils.h"
+#include "geometry/PolySet.h"
+#include "utils/printutils.h"
+#include "geometry/Polygon2d.h"
+#include "geometry/PolySetUtils.h"
 
+#include <memory>
 #include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
 #include <CGAL/normal_vector_newell_3.h>
 #include <CGAL/Handle_hash_function.h>
@@ -19,10 +20,9 @@
 
 #include <CGAL/convex_hull_3.h>
 
-#include "svg.h"
+#include "utils/svg.h"
 
-#include <map>
-#include <queue>
+#include <vector>
 
 static void add_outline_to_poly(CGAL_Nef_polyhedron2::Explorer& explorer,
                                 CGAL_Nef_polyhedron2::Explorer::Halfedge_around_face_const_circulator circ,
@@ -194,7 +194,7 @@ std::unique_ptr<Polygon2d> project(const CGAL_Nef_polyhedron& N, bool cut)
         CGAL_Point_3 maxpt(inf,  inf,  eps);
         CGAL_Iso_cuboid_3 bigcuboid(minpt, maxpt);
         pts.reserve(8);
-for (int i = 0; i < 8; ++i) pts.push_back(bigcuboid.vertex(i));
+        for (int i = 0; i < 8; ++i) pts.push_back(bigcuboid.vertex(i));
         CGAL_Polyhedron bigbox;
         CGAL::convex_hull_3(pts.begin(), pts.end(), bigbox);
         CGAL_Nef_polyhedron3 nef_bigbox(bigbox);

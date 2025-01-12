@@ -1,7 +1,13 @@
-#include "Builtins.h"
-#include "function.h"
-#include "module.h"
-#include "Expression.h"
+#include "core/Builtins.h"
+
+#include <unordered_map>
+#include <memory>
+#include <string>
+#include <vector>
+
+#include "core/function.h"
+#include "core/module.h"
+#include "core/Expression.h"
 
 std::unordered_map<std::string, const std::vector<std::string>> Builtins::keywordList;
 
@@ -54,8 +60,8 @@ extern void register_builtin_import();
 extern void register_builtin_projection();
 extern void register_builtin_cgaladv();
 extern void register_builtin_offset();
-extern void register_builtin_dxf_linear_extrude();
-extern void register_builtin_dxf_rotate_extrude();
+extern void register_builtin_linear_extrude();
+extern void register_builtin_rotate_extrude();
 #if defined(ENABLE_EXPERIMENTAL) && defined(ENABLE_CGAL)
 extern void register_builtin_roof();
 #endif
@@ -85,18 +91,13 @@ void Builtins::initialize()
   register_builtin_projection();
   register_builtin_cgaladv();
   register_builtin_offset();
-  register_builtin_dxf_linear_extrude();
-  register_builtin_dxf_rotate_extrude();
+  register_builtin_linear_extrude();
+  register_builtin_rotate_extrude();
 #if defined(ENABLE_EXPERIMENTAL) && defined(ENABLE_CGAL)
   register_builtin_roof();
 #endif
   register_builtin_text();
 
-  this->deprecations.emplace("dxf_linear_extrude", "linear_extrude()");
-  this->deprecations.emplace("dxf_rotate_extrude", "rotate_extrude()");
-  this->deprecations.emplace("import_stl", "import()");
-  this->deprecations.emplace("import_dxf", "import()");
-  this->deprecations.emplace("import_off", "import()");
   this->deprecations.emplace("assign", "a regular assignment");
 }
 

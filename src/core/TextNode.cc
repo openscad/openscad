@@ -24,26 +24,26 @@
  *
  */
 
-#include "Children.h"
-#include "module.h"
-#include "ModuleInstantiation.h"
-#include "Parameters.h"
-#include "printutils.h"
-#include "Builtins.h"
+#include "core/TextNode.h"
 
-#include "TextNode.h"
-#include "FreetypeRenderer.h"
+#include <utility>
+#include <memory>
+#include <vector>
+
+#include "core/Children.h"
+#include "core/module.h"
+#include "core/ModuleInstantiation.h"
+#include "core/Parameters.h"
+#include "utils/printutils.h"
+#include "core/Builtins.h"
+
+#include "core/FreetypeRenderer.h"
 
 #include <boost/assign/std/vector.hpp>
 using namespace boost::assign; // bring 'operator+=()' into scope
 
-static std::shared_ptr<AbstractNode> builtin_text(const ModuleInstantiation *inst, Arguments arguments, const Children& children)
+static std::shared_ptr<AbstractNode> builtin_text(const ModuleInstantiation *inst, Arguments arguments)
 {
-  if (!children.empty()) {
-    LOG(message_group::Warning, inst->location(), arguments.documentRoot(),
-        "module %1$s() does not support child modules", inst->name());
-  }
-
   auto node = std::make_shared<TextNode>(inst);
 
   auto *session = arguments.session();
@@ -61,7 +61,7 @@ static std::shared_ptr<AbstractNode> builtin_text(const ModuleInstantiation *ins
   return node;
 }
 
-std::vector<std::shared_ptr<const Geometry>> TextNode::createGeometryList() const
+std::vector<std::shared_ptr<const Polygon2d>> TextNode::createPolygonList() const
 {
   FreetypeRenderer renderer;
   return renderer.render(this->get_params());

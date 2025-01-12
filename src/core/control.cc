@@ -24,15 +24,20 @@
  *
  */
 
-#include "module.h"
-#include "ModuleInstantiation.h"
+#include <utility>
+#include <memory>
+#include <cstddef>
+#include <vector>
+
+#include "core/module.h"
+#include "core/ModuleInstantiation.h"
 #include "core/node.h"
-#include "Arguments.h"
-#include "Children.h"
-#include "Expression.h"
-#include "Builtins.h"
-#include "Parameters.h"
-#include "printutils.h"
+#include "core/Arguments.h"
+#include "core/Children.h"
+#include "core/Expression.h"
+#include "core/Builtins.h"
+#include "core/Parameters.h"
+#include "utils/printutils.h"
 #include <cstdint>
 
 static std::shared_ptr<AbstractNode> lazyUnionNode(const ModuleInstantiation *inst)
@@ -66,12 +71,10 @@ static std::shared_ptr<AbstractNode> builtin_child(const ModuleInstantiation *in
 {
   LOG(message_group::Deprecated, "child() will be removed in future releases. Use children() instead.");
 
-  if (!inst->scope.moduleInstantiations.empty()) {
-    LOG(message_group::Warning, inst->location(), context->documentRoot(),
-        "module %1$s() does not support child modules", inst->name());
-  }
-
   Arguments arguments{inst->arguments, context};
+
+  BuiltinModule::noChildren(inst, arguments);
+
   Parameters parameters = Parameters::parse(std::move(arguments), inst->location(), {}, std::vector<std::string>{"index"});
   const Children *children = context->user_module_children();
   if (!children) {
@@ -93,12 +96,10 @@ static std::shared_ptr<AbstractNode> builtin_child(const ModuleInstantiation *in
 
 static std::shared_ptr<AbstractNode> builtin_children(const ModuleInstantiation *inst, const std::shared_ptr<const Context>& context)
 {
-  if (!inst->scope.moduleInstantiations.empty()) {
-    LOG(message_group::Warning, inst->location(), context->documentRoot(),
-        "module %1$s() does not support child modules", inst->name());
-  }
-
   Arguments arguments{inst->arguments, context};
+
+  BuiltinModule::noChildren(inst, arguments);
+
   Parameters parameters = Parameters::parse(std::move(arguments), inst->location(), {}, std::vector<std::string>{"index"});
   const Children *children = context->user_module_children();
   if (!children) {
@@ -190,7 +191,8 @@ static std::shared_ptr<AbstractNode> builtin_assign(const ModuleInstantiation *i
       LOG(message_group::Warning, inst->location(), context->documentRoot(), "Assignment without variable name %1$s", argument->toEchoStringNoThrow());
     } else {
       if (assignContext->lookup_local_variable(*argument.name)) {
-        LOG(message_group::Warning, inst->location(), context->documentRoot(), "Duplicate variable assignment %1$s = %2$s", *argument.name, argument->toEchoStringNoThrow());
+        // TODO Should maybe quote the entire assignment with a new quoteExpr() or quoteStmt().
+        LOG(message_group::Warning, inst->location(), context->documentRoot(), "Duplicate variable assignment %1$s = %2$s", quoteVar(*argument.name), argument->toEchoStringNoThrow());
       }
       assignContext->set_variable(*argument.name, std::move(argument.value));
     }

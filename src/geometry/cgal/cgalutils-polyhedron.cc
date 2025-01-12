@@ -1,14 +1,21 @@
 #ifdef ENABLE_CGAL
 
-#include "cgalutils.h"
-#include "PolySet.h"
-#include "PolySetBuilder.h"
-#include "printutils.h"
-#include "Grid.h"
+#include "geometry/cgal/cgalutils.h"
+#include "geometry/PolySet.h"
+#include "geometry/PolySetBuilder.h"
+#include "utils/printutils.h"
+#include "geometry/Grid.h"
 
+#include <algorithm>
+#include <iterator>
+#include <ostream>
+#include <memory>
 #include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
 
 #include <boost/range/adaptor/reversed.hpp>
+
+#include <cstddef>
+#include <vector>
 
 #undef GEN_SURFACE_DEBUG
 namespace /* anonymous */ {
@@ -258,7 +265,6 @@ void convertNefToPolyhedron(
 }
 
 template void convertNefToPolyhedron(const CGAL_Nef_polyhedron3& nef, CGAL_Polyhedron& polyhedron);
-template void convertNefToPolyhedron(const CGAL::Nef_polyhedron_3<CGAL_HybridKernel3>& nef, CGAL::Polyhedron_3<CGAL_HybridKernel3>& polyhedron);
 
 template <typename Polyhedron>
 bool createPolyhedronFromPolySet(const PolySet& ps, Polyhedron& p)
@@ -354,4 +360,3 @@ public:
 }  // namespace CGALUtils
 
 #endif /* ENABLE_CGAL */
-

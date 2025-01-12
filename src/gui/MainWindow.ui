@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1118</width>
+    <width>1354</width>
     <height>636</height>
    </rect>
   </property>
@@ -205,8 +205,8 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1118</width>
-     <height>22</height>
+     <width>1431</width>
+     <height>24</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu_File">
@@ -227,8 +227,10 @@
      <property name="title">
       <string>E&amp;xport</string>
      </property>
-     <addaction name="fileActionExportSTL"/>
+     <addaction name="fileActionExportAsciiSTL"/>
+     <addaction name="fileActionExportBinarySTL"/>
      <addaction name="fileActionExportOBJ"/>
+     <addaction name="fileActionExportPOV"/>
      <addaction name="fileActionExportOFF"/>
      <addaction name="fileActionExportWRL"/>
      <addaction name="fileActionExportAMF"/>
@@ -376,6 +378,7 @@
     <addaction name="windowActionSelectEditor"/>
     <addaction name="windowActionSelectConsole"/>
     <addaction name="windowActionSelectErrorLog"/>
+    <addaction name="windowActionSelectFontList"/>
     <addaction name="windowActionSelectCustomizer"/>
     <addaction name="windowActionSelectAnimate"/>
     <addaction name="windowActionSelectViewportControl"/>
@@ -389,6 +392,7 @@
     <addaction name="windowActionHideCustomizer"/>
     <addaction name="windowActionHideAnimate"/>
     <addaction name="windowActionHideViewportControl"/>
+    <addaction name="windowActionHideFontList"/>
    </widget>
    <addaction name="menu_File"/>
    <addaction name="menu_Edit"/>
@@ -413,7 +417,7 @@
    <attribute name="toolBarBreak">
     <bool>false</bool>
    </attribute>
-       <widget class="QWidget" name="tabToolBarContents">
+   <widget class="QWidget" name="tabToolBarContents">
     <property name="sizePolicy">
      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
       <horstretch>0</horstretch>
@@ -655,8 +659,7 @@
       <number>0</number>
      </property>
      <item>
-      <widget class="Animate" name="animateWidget" native="true">
-      </widget>
+      <widget class="Animate" name="animateWidget" native="true"/>
      </item>
     </layout>
    </widget>
@@ -683,8 +686,7 @@
       <number>0</number>
      </property>
      <item>
-      <widget class="ViewportControl" name="viewportControlWidget" native="true">
-      </widget>
+      <widget class="ViewportControl" name="viewportControlWidget" native="true"/>
      </item>
     </layout>
    </widget>
@@ -723,7 +725,23 @@
     </layout>
    </widget>
   </widget>
+  <widget class="Dock" name="fontListDock">
+   <attribute name="dockWidgetArea">
+    <number>8</number>
+   </attribute>
+   <widget class="QWidget" name="fontListDockContents">
+    <layout class="QVBoxLayout" name="verticalLayout_4">
+     <item>
+      <widget class="FontList" name="fontListWidget" native="true"/>
+     </item>
+    </layout>
+   </widget>
+  </widget>
   <action name="fileActionNew">
+   <property name="icon">
+    <iconset theme="chokusen-new">
+     <normaloff>.</normaloff>.</iconset>
+   </property>
    <property name="text">
     <string>&amp;New File</string>
    </property>
@@ -737,6 +755,10 @@
    </property>
   </action>
   <action name="fileActionOpen">
+   <property name="icon">
+    <iconset theme="chokusen-open">
+     <normaloff>.</normaloff>.</iconset>
+   </property>
    <property name="text">
     <string>&amp;Open File</string>
    </property>
@@ -750,6 +772,10 @@
    </property>
   </action>
   <action name="fileActionSave">
+   <property name="icon">
+    <iconset theme="chokusen-save">
+     <normaloff>.</normaloff>.</iconset>
+   </property>
    <property name="text">
     <string>&amp;Save</string>
    </property>
@@ -798,6 +824,10 @@
    <property name="enabled">
     <bool>false</bool>
    </property>
+   <property name="icon">
+    <iconset theme="chokusen-undo">
+     <normaloff>.</normaloff>.</iconset>
+   </property>
    <property name="text">
     <string>&amp;Undo</string>
    </property>
@@ -809,6 +839,10 @@
    </property>
   </action>
   <action name="editActionRedo">
+   <property name="icon">
+    <iconset theme="chokusen-redo">
+     <normaloff>.</normaloff>.</iconset>
+   </property>
    <property name="text">
     <string>&amp;Redo</string>
    </property>
@@ -861,6 +895,10 @@
    </property>
   </action>
   <action name="editActionIndent">
+   <property name="icon">
+    <iconset theme="chokusen-indent">
+     <normaloff>.</normaloff>.</iconset>
+   </property>
    <property name="text">
     <string>&amp;Indent</string>
    </property>
@@ -932,6 +970,10 @@
    </property>
   </action>
   <action name="editActionZoomTextIn">
+   <property name="icon">
+    <iconset theme="chokusen-zoom-text-in">
+     <normaloff>.</normaloff>.</iconset>
+   </property>
    <property name="text">
     <string>Increase Font &amp;Size</string>
    </property>
@@ -940,6 +982,10 @@
    </property>
   </action>
   <action name="editActionZoomTextOut">
+   <property name="icon">
+    <iconset theme="chokusen-zoom-text-out">
+     <normaloff>.</normaloff>.</iconset>
+   </property>
    <property name="text">
     <string>Decrease Font Si&amp;ze</string>
    </property>
@@ -964,6 +1010,10 @@
    </property>
   </action>
   <action name="designActionPreview">
+   <property name="icon">
+    <iconset theme="chokusen-preview">
+     <normaloff>.</normaloff>.</iconset>
+   </property>
    <property name="text">
     <string>&amp;Preview</string>
    </property>
@@ -972,6 +1022,10 @@
    </property>
   </action>
   <action name="designActionRender">
+   <property name="icon">
+    <iconset theme="chokusen-render">
+     <normaloff>.</normaloff>.</iconset>
+   </property>
    <property name="text">
     <string>R&amp;ender</string>
    </property>
@@ -980,6 +1034,10 @@
    </property>
   </action>
   <action name="designAction3DPrint">
+   <property name="icon">
+    <iconset theme="chokusen-send">
+     <normaloff>.</normaloff>.</iconset>
+   </property>
    <property name="text">
     <string>&amp;3D Print</string>
    </property>
@@ -988,19 +1046,25 @@
    </property>
   </action>
   <action name="designActionMeasureDist">
+   <property name="icon">
+    <iconset theme="chokusen-measure-distance"/>
+   </property>
    <property name="text">
     <string>Measure &amp;Distance</string>
    </property>
    <property name="shortcut">
-    <string>d</string>
+    <string>D</string>
    </property>
   </action>
   <action name="designActionMeasureAngle">
+   <property name="icon">
+    <iconset theme="chokusen-measure-angle"/>
+   </property>
    <property name="text">
     <string>Measure &amp;Angle</string>
    </property>
    <property name="shortcut">
-    <string>a</string>
+    <string>A</string>
    </property>
   </action>
   <action name="designCheckValidity">
@@ -1023,25 +1087,53 @@
     <string>Display CSG Pr&amp;oducts...</string>
    </property>
   </action>
-  <action name="fileActionExportSTL">
+  <action name="fileActionExportBinarySTL">
+   <property name="icon">
+    <iconset theme="chokusen-export-stl"/>
+   </property>
    <property name="text">
-    <string>Export as &amp;STL...</string>
+    <string>Export as &amp;STL (binary)...</string>
    </property>
    <property name="shortcut">
     <string>F7</string>
    </property>
   </action>
+  <action name="fileActionExportAsciiSTL">
+   <property name="icon">
+    <iconset theme="chokusen-export-stl"/>
+   </property>
+   <property name="text">
+    <string>Export as &amp;STL (ascii)...</string>
+   </property>
+  </action>
   <action name="fileActionExportOBJ">
+   <property name="icon">
+    <iconset theme="chokusen-export-obj"/>
+   </property>
    <property name="text">
     <string>Export as &amp;OBJ...</string>
    </property>
   </action>
+  <action name="fileActionExportPOV">
+   <property name="icon">
+    <iconset theme="chokusen-export-pov"/>
+   </property>
+   <property name="text">
+    <string>Export as &amp;POV...</string>
+   </property>
+  </action>
   <action name="fileActionExportOFF">
+   <property name="icon">
+    <iconset theme="chokusen-export-off"/>
+   </property>
    <property name="text">
     <string>Export as &amp;OFF...</string>
    </property>
   </action>
   <action name="fileActionExportWRL">
+   <property name="icon">
+    <iconset theme="chokusen-export-wrl"/>
+   </property>
    <property name="text">
     <string>Export as &amp;WRL...</string>
    </property>
@@ -1061,6 +1153,9 @@
    <property name="checkable">
     <bool>true</bool>
    </property>
+   <property name="icon">
+    <iconset theme="chokusen-surface"/>
+   </property>
    <property name="text">
     <string>Surfaces</string>
    </property>
@@ -1071,6 +1166,9 @@
   <action name="viewActionWireframe">
    <property name="checkable">
     <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset theme="chokusen-wireframe"/>
    </property>
    <property name="text">
     <string>Wireframe</string>
@@ -1083,6 +1181,9 @@
    <property name="checkable">
     <bool>true</bool>
    </property>
+   <property name="icon">
+    <iconset theme="chokusen-throwntogether"/>
+   </property>
    <property name="text">
     <string>Thrown Together</string>
    </property>
@@ -1093,6 +1194,10 @@
   <action name="viewActionShowEdges">
    <property name="checkable">
     <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset theme="chokusen-show-edges">
+     <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
     <string>Show Edges</string>
@@ -1105,6 +1210,10 @@
    <property name="checkable">
     <bool>true</bool>
    </property>
+   <property name="icon">
+    <iconset theme="chokusen-axes">
+     <normaloff>.</normaloff>.</iconset>
+   </property>
    <property name="text">
     <string>Show Axes</string>
    </property>
@@ -1115,6 +1224,9 @@
   <action name="viewActionShowCrosshairs">
    <property name="checkable">
     <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset theme="chokusen-crosshairs"/>
    </property>
    <property name="text">
     <string>Show Crosshairs</string>
@@ -1127,11 +1239,17 @@
    <property name="checkable">
     <bool>true</bool>
    </property>
+   <property name="icon">
+    <iconset theme="chokusen-scalemarkers"/>
+   </property>
    <property name="text">
     <string>Show Scale Markers</string>
    </property>
   </action>
   <action name="viewActionTop">
+   <property name="icon">
+    <iconset theme="chokusen-view-top"/>
+   </property>
    <property name="text">
     <string>&amp;Top</string>
    </property>
@@ -1140,6 +1258,9 @@
    </property>
   </action>
   <action name="viewActionBottom">
+   <property name="icon">
+    <iconset theme="chokusen-view-bottom"/>
+   </property>
    <property name="text">
     <string>&amp;Bottom</string>
    </property>
@@ -1148,6 +1269,9 @@
    </property>
   </action>
   <action name="viewActionLeft">
+   <property name="icon">
+    <iconset theme="chokusen-view-left"/>
+   </property>
    <property name="text">
     <string>&amp;Left</string>
    </property>
@@ -1156,6 +1280,9 @@
    </property>
   </action>
   <action name="viewActionRight">
+   <property name="icon">
+    <iconset theme="chokusen-view-right"/>
+   </property>
    <property name="text">
     <string>&amp;Right</string>
    </property>
@@ -1164,6 +1291,9 @@
    </property>
   </action>
   <action name="viewActionFront">
+   <property name="icon">
+    <iconset theme="chokusen-view-front"/>
+   </property>
    <property name="text">
     <string>&amp;Front</string>
    </property>
@@ -1172,6 +1302,9 @@
    </property>
   </action>
   <action name="viewActionBack">
+   <property name="icon">
+    <iconset theme="chokusen-view-back"/>
+   </property>
    <property name="text">
     <string>Bac&amp;k</string>
    </property>
@@ -1199,6 +1332,9 @@
    <property name="checkable">
     <bool>true</bool>
    </property>
+   <property name="icon">
+    <iconset theme="chokusen-perspective"/>
+   </property>
    <property name="text">
     <string>&amp;Perspective</string>
    </property>
@@ -1206,6 +1342,9 @@
   <action name="viewActionOrthogonal">
    <property name="checkable">
     <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset theme="chokusen-orthogonal"/>
    </property>
    <property name="text">
     <string>&amp;Orthogonal</string>
@@ -1251,6 +1390,9 @@
    </property>
   </action>
   <action name="fileActionExportDXF">
+   <property name="icon">
+    <iconset theme="chokusen-export-dxf"/>
+   </property>
    <property name="text">
     <string>Export as &amp;DXF...</string>
    </property>
@@ -1343,11 +1485,17 @@
    </property>
   </action>
   <action name="fileActionExportImage">
+   <property name="icon">
+    <iconset theme="chokusen-export-png"/>
+   </property>
    <property name="text">
     <string>Export as &amp;Image...</string>
    </property>
   </action>
   <action name="fileActionExportCSG">
+   <property name="icon">
+    <iconset theme="chokusen-export-csg"/>
+   </property>
    <property name="text">
     <string>Export as &amp;CSG...</string>
    </property>
@@ -1363,6 +1511,9 @@
    </property>
   </action>
   <action name="viewActionResetView">
+   <property name="icon">
+    <iconset theme="chokusen-reset-view"/>
+   </property>
    <property name="text">
     <string>Reset View</string>
    </property>
@@ -1373,21 +1524,34 @@
    </property>
   </action>
   <action name="fileActionExportSVG">
+   <property name="icon">
+    <iconset theme="chokusen-export-svg"/>
+   </property>
    <property name="text">
     <string>Export as S&amp;VG...</string>
    </property>
   </action>
   <action name="fileActionExportAMF">
+   <property name="icon">
+    <iconset theme="chokusen-export-amf"/>
+   </property>
    <property name="text">
     <string>Export as &amp;AMF...</string>
    </property>
   </action>
   <action name="fileActionExport3MF">
+   <property name="icon">
+    <iconset theme="chokusen-export-3mf"/>
+   </property>
    <property name="text">
     <string>Export as &amp;3MF...</string>
    </property>
   </action>
   <action name="viewActionZoomIn">
+   <property name="icon">
+    <iconset theme="chokusen-zoom-in">
+     <normaloff>.</normaloff>.</iconset>
+   </property>
    <property name="text">
     <string>Zoom In</string>
    </property>
@@ -1396,6 +1560,10 @@
    </property>
   </action>
   <action name="viewActionZoomOut">
+   <property name="icon">
+    <iconset theme="chokusen-zoom-out">
+     <normaloff>.</normaloff>.</iconset>
+   </property>
    <property name="text">
     <string>Zoom Out</string>
    </property>
@@ -1404,6 +1572,9 @@
    </property>
   </action>
   <action name="viewActionViewAll">
+   <property name="icon">
+    <iconset theme="chokusen-zoom-all"/>
+   </property>
    <property name="text">
     <string>View All</string>
    </property>
@@ -1449,6 +1620,10 @@
    </property>
   </action>
   <action name="editActionUnindent">
+   <property name="icon">
+    <iconset theme="chokusen-unindent">
+     <normaloff>.</normaloff>.</iconset>
+   </property>
    <property name="text">
     <string>U&amp;nindent</string>
    </property>
@@ -1473,6 +1648,9 @@
    </property>
   </action>
   <action name="fileActionExportPDF">
+   <property name="icon">
+    <iconset theme="chokusen-export-pdf"/>
+   </property>
    <property name="text">
     <string>Export as PDF...</string>
    </property>
@@ -1580,6 +1758,22 @@
     <string>Fold/Unfoll All</string>
    </property>
   </action>
+  <action name="windowActionHideFontList">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Hide Font List</string>
+   </property>
+  </action>
+  <action name="windowActionSelectFontList">
+   <property name="text">
+    <string>Font List</string>
+   </property>
+  </action>
  </widget>
  <customwidgets>
   <customwidget>
@@ -1592,12 +1786,6 @@
    <class>Dock</class>
    <extends>QDockWidget</extends>
    <header>gui/Dock.h</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
-   <class>ParameterWidget</class>
-   <extends>QWidget</extends>
-   <header>gui/parameter/ParameterWidget.h</header>
    <container>1</container>
   </customwidget>
   <customwidget>
@@ -1627,6 +1815,12 @@
    <class>ViewportControl</class>
    <extends>QWidget</extends>
    <header>gui/ViewportControl.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>FontList</class>
+   <extends>QWidget</extends>
+   <header>gui/FontList.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

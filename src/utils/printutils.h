@@ -1,12 +1,15 @@
 #pragma once
 
-#include <string>
-#include <list>
-#include <iostream>
-#include <boost/format.hpp>
 #include <boost/algorithm/string.hpp>
-#include <utility>
+#include <boost/format.hpp>
+#include <cstddef>
+#include <initializer_list>
+#include <iostream>
+#include <list>
 #include <sstream>
+#include <string>
+#include <tuple>
+#include <utility>
 
 #include <libintl.h>
 // Undefine some defines from libintl.h to presolve
@@ -19,7 +22,7 @@
 #endif
 
 #include <clocale>
-#include "AST.h"
+#include "core/AST.h"
 #include <set>
 
 // It seems standard practice to use underscore for gettext, even though it is reserved.
@@ -42,6 +45,8 @@ inline const char *_(const char *msgid, const char *msgctxt) {
   }
 }
 // NOLINTEND(bugprone-reserved-identifier)
+
+std::string quoteVar(const std::string& varname);
 
 enum class message_group {
   NONE, Error, Warning, UI_Warning, Font_Warning, Export_Warning, Export_Error, UI_Error, Parser_Error, Trace, Deprecated, Echo

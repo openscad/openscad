@@ -25,12 +25,15 @@
  */
 #pragma once
 
+#include <QString>
+#include <QWidget>
 #include <QStringList>
 #include <QFileInfoList>
-#include <boost/filesystem.hpp>
-namespace fs = boost::filesystem;
+#include <filesystem>
+namespace fs = std::filesystem;
 
 namespace UIUtils {
+
 static const int maxRecentFiles = 10;
 
 QFileInfo openFile(QWidget *parent = nullptr);
@@ -62,4 +65,7 @@ fs::path returnOfflineCheatSheetPath();
 bool hasOfflineCheatSheet();
 
 void openOfflineCheatSheet();
+
+QString blendForBackgroundColorStyleSheet(const QColor& input, const QColor& blend, float transparency = 0.2);
+
 } // namespace UIUtils

@@ -24,27 +24,31 @@
  *
  */
 
+#include "glview/cgal/LegacyCGALRenderer.h"
+
+#include <cassert>
+#include <limits>
+#include <memory>
+
 #ifdef _MSC_VER
 // Boost conflicts with MPFR under MSVC (google it)
 #include <mpfr.h>
 #endif
 
-#include "PolySet.h"
-#include "Polygon2d.h"
-#include "PolySetUtils.h"
-#include "printutils.h"
+#include "geometry/PolySet.h"
+#include "geometry/Polygon2d.h"
+#include "geometry/PolySetUtils.h"
+#include "utils/printutils.h"
 
-#include "LegacyCGALRenderer.h"
-#include "LegacyRendererUtils.h"
-#include "CGALRenderUtils.h"
-#ifdef ENABLE_CGAL
-#include "CGALHybridPolyhedron.h"
-#endif
+#include "glview/LegacyRendererUtils.h"
+#include "glview/cgal/CGALRenderUtils.h"
 #ifdef ENABLE_MANIFOLD
-#include "ManifoldGeometry.h"
+#include "geometry/manifold/ManifoldGeometry.h"
 #endif
 
-//#include "Preferences.h"
+#include <vector>
+
+//#include "gui/Preferences.h"
 
 LegacyCGALRenderer::LegacyCGALRenderer(const std::shared_ptr<const class Geometry>& geom)
 {
@@ -74,9 +78,6 @@ void LegacyCGALRenderer::addGeometry(const std::shared_ptr<const Geometry>& geom
     if (!new_N->isEmpty()) {
       this->nefPolyhedrons.push_back(new_N);
     }
-  } else if (const auto hybrid = std::dynamic_pointer_cast<const CGALHybridPolyhedron>(geom)) {
-    // TODO(ochafik): Implement rendering of CGAL_HybridMesh (CGAL::Surface_mesh) instead.
-    this->polysets.push_back(hybrid->toPolySet());
 #endif
 #ifdef ENABLE_MANIFOLD
   } else if (const auto mani = std::dynamic_pointer_cast<const ManifoldGeometry>(geom)) {
@@ -163,7 +164,7 @@ void LegacyCGALRenderer::draw(bool showfaces, bool showedges, const shaderinfo_t
         glVertex3d(v[0], v[1], 0);
       }
       glEnd();
-    }    
+    }
     glEnable(GL_LIGHTING);
 
     glEnable(GL_DEPTH_TEST);

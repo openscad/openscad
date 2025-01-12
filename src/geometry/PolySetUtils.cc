@@ -1,15 +1,24 @@
-#include "PolySetUtils.h"
-#include "PolySet.h"
-#include "PolySetBuilder.h"
-#include "Polygon2d.h"
-#include "printutils.h"
-#include "GeometryUtils.h"
+#include "geometry/PolySetUtils.h"
+
+#include <cassert>
+#include <cstdint>
+#include <memory>
+#include <cstddef>
+#include <sstream>
+#include <vector>
+
+#include <boost/range/adaptor/reversed.hpp>
+
+#include "geometry/PolySet.h"
+#include "geometry/PolySetBuilder.h"
+#include "geometry/Polygon2d.h"
+#include "utils/printutils.h"
+#include "geometry/GeometryUtils.h"
 #ifdef ENABLE_CGAL
-#include "cgalutils.h"
-#include "CGALHybridPolyhedron.h"
+#include "geometry/cgal/cgalutils.h"
 #endif
 #ifdef ENABLE_MANIFOLD
-#include "ManifoldGeometry.h"
+#include "geometry/manifold/ManifoldGeometry.h"
 #endif
 
 namespace PolySetUtils {
@@ -24,7 +33,7 @@ std::unique_ptr<Polygon2d> project(const PolySet& ps) {
   for (const auto& p : ps.indices) {
     Outline2d outline;
     for (const auto& v : p) {
-      pt=ps.vertices[v];	    
+      pt=ps.vertices[v];
       outline.vertices.emplace_back(pt[0], pt[1]);
     }
     poly->addOutline(outline);
@@ -61,6 +70,8 @@ std::unique_ptr<PolySet> tessellate_faces(const PolySet& polyset)
   if (polyset.isTriangular()) {
     result->vertices = polyset.vertices;
     result->indices = polyset.indices;
+    result->color_indices = polyset.color_indices;
+    result->colors = polyset.colors;
     return result;
   }
   result->vertices.reserve(polyset.vertices.size());
@@ -70,7 +81,15 @@ std::unique_ptr<PolySet> tessellate_faces(const PolySet& polyset)
   // best estimate without iterating all polygons, to reduce reallocations
   std::vector<IndexedFace> polygons;
   polygons.reserve(polyset.indices.size());
-  for (const auto& pgon : polyset.indices) {
+  std::vector<int32_t> polygon_color_indices;
+  auto has_colors = !polyset.color_indices.empty();
+  if (has_colors) {
+    assert(polyset.color_indices.size() == polyset.indices.size());
+    polygon_color_indices.reserve(polyset.color_indices.size());
+    result->colors = polyset.colors;
+  }
+  for (size_t i = 0, n = polyset.indices.size(); i < n; i++) {
+    const auto& pgon = polyset.indices[i];
     if (pgon.size() < 3) {
       degeneratePolygons++;
       continue;
@@ -87,6 +106,9 @@ std::unique_ptr<PolySet> tessellate_faces(const PolySet& polyset)
     if (currface.size() < 3) {
       polygons.pop_back();
       continue;
+    }
+    if (has_colors) {
+      polygon_color_indices.push_back(polyset.color_indices[i]);
     }
     for (const auto& ind : currface)
       used[ind] = true;
@@ -113,10 +135,13 @@ std::unique_ptr<PolySet> tessellate_faces(const PolySet& polyset)
   // we will reuse this memory instead of reallocating for each polygon
   std::vector<IndexedTriangle> triangles;
   std::vector<IndexedFace> facesBuffer(1);
-  for (const auto& face : polygons) {
+  for (size_t i = 0, n = polygons.size(); i < n; i++) {
+    const auto& face = polygons[i];
     if (face.size() == 3) {
       // trivial case - triangles cannot be concave or have holes
        result->indices.push_back({face[0],face[1],face[2]});
+       if (has_colors)
+         result->color_indices.push_back(polygon_color_indices[i]);
     }
     // Quads seem trivial, but can be concave, and can have degenerate cases.
     // So everything more complex than triangles goes into the general case.
@@ -127,6 +152,8 @@ std::unique_ptr<PolySet> tessellate_faces(const PolySet& polyset)
       if (!err) {
         for (const auto& t : triangles) {
           result->indices.push_back({t[0],t[1],t[2]});
+          if (has_colors)
+            result->color_indices.push_back(polygon_color_indices[i]);
         }
       }
     }
@@ -166,9 +193,6 @@ std::shared_ptr<const PolySet> getGeometryAsPolySet(const std::shared_ptr<const 
     }
     return PolySet::createEmpty();
   }
-  if (auto hybrid = std::dynamic_pointer_cast<const CGALHybridPolyhedron>(geom)) {
-    return hybrid->toPolySet();
-  }
 #endif
 #ifdef ENABLE_MANIFOLD
   if (auto mani = std::dynamic_pointer_cast<const ManifoldGeometry>(geom)) {
@@ -176,6 +200,29 @@ std::shared_ptr<const PolySet> getGeometryAsPolySet(const std::shared_ptr<const 
   }
 #endif
   return nullptr;
+}
+
+
+std::string polySetToPolyhedronSource(const PolySet& ps)
+{
+  std::stringstream sstr;
+  sstr << "polyhedron(\n";
+  sstr << "  points=[\n";
+  for (const auto& v : ps.vertices) {
+    sstr << "[" << v[0] << ", " << v[1] << ", " << v[2] << "],\n";
+  }
+  sstr << "  ],\n";
+  sstr << "  faces=[\n";
+  for (const auto& polygon : ps.indices) {
+    sstr << "[";
+    for (const auto idx : boost::adaptors::reverse(polygon)) {
+      sstr << idx << ",";
+    }
+    sstr << "],\n";
+  }
+  sstr << "  ],\n";
+  sstr << ");\n";
+  return sstr.str();
 }
 
 } // namespace PolySetUtils

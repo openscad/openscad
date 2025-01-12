@@ -26,12 +26,14 @@
 
 #pragma once
 
+#include <QTextCursor>
+#include <QWidget>
 #include <QPlainTextEdit>
 #include <QMouseEvent>
 #include <QString>
 #include <vector>
-#include "printutils.h"
-#include "qtgettext.h" // IWYU pragma: keep
+#include "utils/printutils.h"
+#include "gui/qtgettext.h" // IWYU pragma: keep
 #include "ui_Console.h"
 
 struct ConsoleMessageBlock {

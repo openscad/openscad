@@ -1,13 +1,33 @@
-#include "Animate.h"
-#include "printutils.h"
-#include "MainWindow.h"
-#include <boost/filesystem.hpp>
+#include "gui/Animate.h"
+
+#include <QAction>
+#include <QBoxLayout>
+#include <QIcon>
+#include <QList>
+#include <QPushButton>
+#include <QResizeEvent>
+#include <QTimer>
+#include <QWidget>
+#include <iostream>
+#include <filesystem>
 #include <QFormLayout>
+
+#include "utils/printutils.h"
+#include "gui/MainWindow.h"
+#include "gui/UIUtils.h"
+#include "openscad_gui.h"
 
 Animate::Animate(QWidget *parent) : QWidget(parent)
 {
   setupUi(this);
   initGUI();
+
+  const auto width = groupBoxParameter->minimumSizeHint().width();
+  const auto margins = layout()->contentsMargins();
+  const auto scrollMargins = scrollAreaWidgetContents->layout()->contentsMargins();
+  const auto parameterMargins = groupBoxParameter->layout()->contentsMargins();
+  initMinWidth = width + margins.left() + margins.right() + scrollMargins.left() + scrollMargins.right()
+  +parameterMargins.left() + parameterMargins.right();
 }
 
 void Animate::initGUI()
@@ -17,6 +37,10 @@ void Animate::initGUI()
   this->anim_tval = 0.0;
   this->anim_dumping = false;
   this->anim_dump_start_step = 0;
+
+  this->iconRun = QIcon::fromTheme("chokusen-animate-play");
+  this->iconPause = QIcon::fromTheme("chokusen-animate-pause");
+  this->iconDisabled = QIcon::fromTheme("chokusen-animate-disabled");
 
   animate_timer = new QTimer(this);
   connect(animate_timer, SIGNAL(timeout()), this, SLOT(incrementTVal()));
@@ -31,77 +55,18 @@ void Animate::setMainWindow(MainWindow *mainWindow)
 {
   this->mainWindow = mainWindow;
 
-  //prepare actions for inputdriver
-  QIcon playIcon = isLightTheme() ? QIcon(":/icons/svg-default/animate.svg") : QIcon(":/icons/svg-default/animate-white.svg");
-  QIcon pauseIcon = isLightTheme() ? QIcon(":/icons/svg-default/animate_pause.svg") : QIcon(":/icons/svg-default/animate_pause-white.svg");
-
-  createActionAndPrepareButton(
-    playIcon, _("toggle pause/unpause"),
-    "pauseUnpause", pauseButton
-    );
-
-  initVCR();
+  connectAction(this->actionAnimationPauseUnpause, pauseButton);
+  connectAction(this->actionAnimationStart, pushButton_MoveToBeginning);
+  connectAction(this->actionAnimationStepBack, pushButton_StepBack);
+  connectAction(this->actionAnimationStepForward, pushButton_StepForward);
+  connectAction(this->actionAnimationEnd, pushButton_MoveToEnd);
   updatePauseButtonIcon();
 }
 
-void Animate::createActionAndPrepareButton(const QIcon& icon, const QString& description, const std::string& actionName, QPushButton *button){
-  auto *action = new QAction(icon, description, this);
-  action->setObjectName(QString::fromStdString(actionName));
-
-  connect(action, SIGNAL(triggered()), button, SLOT(click()));
-  this->action_list.append(action);
-
-  button->setIcon(icon);
-  button->setToolTip(description);
-  button->setText("");
-}
-
-void Animate::initVCR(){
-  QString suffix("");
-  if (!isLightTheme()) {
-    suffix = QString("-white");
-  }
-  static QIcon startIcon = QIcon(":/icons/svg-default/vcr-control-start" + suffix + ".svg");
-  static QIcon stepBackIcon = QIcon(":/icons/svg-default/vcr-control-step-back" + suffix + ".svg");
-  static QIcon playIcon = QIcon(":/icons/svg-default/vcr-control-play" + suffix + ".svg");
-  static QIcon pauseIcon = QIcon(":/icons/svg-default/vcr-control-pause" + suffix + ".svg");
-  static QIcon stepFwrdIcon = QIcon(":/icons/svg-default/vcr-control-step-forward" + suffix + ".svg");
-  static QIcon endIcon = QIcon(":/icons/svg-default/vcr-control-end" + suffix + ".svg");
-
-  createActionAndPrepareButton(
-    startIcon, _("Move to beginning (first frame)"),
-    "start", pushButton_MoveToBeginning);
-
-  createActionAndPrepareButton(
-    stepBackIcon, _("step one frame back"),
-    "stepBack", pushButton_StepBack);
-
-  createActionAndPrepareButton(
-    playIcon, _("play animation"),
-    "play", pushButton_Resume);
-
-  createActionAndPrepareButton(
-    pauseIcon, _("pause animation"),
-    "pause", pushButton_Pause);
-
-  createActionAndPrepareButton(
-    stepFwrdIcon, _("step one frame forward"),
-    "stepFwrd", pushButton_StepForward);
-
-  createActionAndPrepareButton(
-    endIcon, _("Move to end (last frame)"),
-    "end", pushButton_MoveToEnd);
-}
-
-bool Animate::isLightTheme()
+void Animate::connectAction(QAction *action, QPushButton *button)
 {
-  bool ret = true;
-  if (mainWindow) {
-    ret = mainWindow->isLightTheme();
-  } else {
-    std::cout << "Animate: You need to set the mainWindow before calling isLightTheme" << std::endl;
-  }
-  return ret;
+  connect(action, &QAction::triggered, button, &QPushButton::click);
+  this->action_list.append(action);
 }
 
 void Animate::updatedAnimTval()
@@ -141,18 +106,20 @@ void Animate::updatedAnimFpsAndAnimSteps()
     animate_timer->start();
   }
 
-  QString redBackground = QString(isLightTheme() ? "background-color:#ffaaaa;" : "background-color:#502020;");
+  QPalette defaultPalette;
+  const auto bgColor = defaultPalette.base().color().toRgb();
+  QString redStyleSheet = UIUtils::blendForBackgroundColorStyleSheet(bgColor, errorBlendColor);
 
   if (this->steps_ok || this->e_fsteps->text() == "") {
     this->e_fsteps->setStyleSheet("");
   } else {
-    this->e_fsteps->setStyleSheet(redBackground);
+    this->e_fsteps->setStyleSheet(redStyleSheet);
   }
 
   if (this->fps_ok || this->e_fps->text() == "") {
     this->e_fps->setStyleSheet("");
   } else {
-    this->e_fps->setStyleSheet(redBackground);
+    this->e_fps->setStyleSheet(redStyleSheet);
   }
 
   updatePauseButtonIcon();
@@ -228,24 +195,15 @@ void Animate::on_pauseButton_pressed()
 
 void Animate::updatePauseButtonIcon()
 {
-  static QIcon runDark(":/icons/svg-default/animate.svg");
-  static QIcon runLight(":/icons/svg-default/animate-white.svg");
-
-  static QIcon pauseDark(":/icons/svg-default/animate_pause.svg");
-  static QIcon pauseLight(":/icons/svg-default/animate_pause-white.svg");
-
-  static QIcon disabledDark(":/icons/svg-default/animate_disabled.svg");
-  static QIcon disabledLight(":/icons/svg-default/animate_disabled-white.svg");
-
   if (animate_timer->isActive()) {
-    pauseButton->setIcon(this->isLightTheme() ? pauseDark : pauseLight);
+    pauseButton->setIcon(this->iconPause);
     pauseButton->setToolTip(_("press to pause animation") );
   } else {
     if (this->fps_ok && this->steps_ok) {
-      pauseButton->setIcon(this->isLightTheme() ? runDark : runLight);
+      pauseButton->setIcon(this->iconRun);
       pauseButton->setToolTip(_("press to start animation") );
     } else {
-      pauseButton->setIcon(this->isLightTheme() ? disabledDark : disabledLight);
+      pauseButton->setIcon(this->iconDisabled);
       pauseButton->setToolTip(_("incorrect values") );
     }
   }
@@ -289,66 +247,25 @@ int Animate::nextFrame(){
   return anim_step;
 }
 
-// Invalid minimumSizeHint means we accept any size.
-// This is not ideal, but QT does not seam to have an
-// elegant way to handle widgets that can adapt
-// to horizontal and vertical layout
-QSize Animate::minimumSizeHint() const {
-  return {-1, -1};
-}
-
 void Animate::resizeEvent(QResizeEvent *event)
 {
-  const QSize sizeEvent = size();
+  auto layoutParameters = dynamic_cast<QBoxLayout *>(groupBoxParameter->layout());
+  auto layoutButtons = dynamic_cast<QBoxLayout *>(groupBoxButtons->layout());
 
-  // QTDesigner does not make it obvious, but
-  // QBoxLayout can be switch from vertical to horizontal.
-  int iconSize = 16;
-  if (auto mainLayout = dynamic_cast<QBoxLayout *>(this->layout())) {
-    if (sizeEvent.height() > 140) {
-      mainLayout->setDirection(QBoxLayout::TopToBottom);
-      if (sizeEvent.height() > 250 && sizeEvent.width() > 200) {
-        mainLayout->setContentsMargins(10, 10, 10, 10);
-        mainLayout->setSpacing(10);
-        iconSize = 32;
-      } else {
-        mainLayout->setContentsMargins(0, 0, 0, 0);
-        mainLayout->setSpacing(0);
+  if (layoutParameters && layoutButtons) {
+    if (layoutParameters->direction() == QBoxLayout::LeftToRight) {
+      if (event->size().width() < initMinWidth) {
+        layoutParameters->setDirection(QBoxLayout::TopToBottom);
+        layoutButtons->setDirection(QBoxLayout::TopToBottom);
+        scrollAreaWidgetContents->layout()->invalidate();
       }
-      this->vcr_controls->show();
     } else {
-      mainLayout->setDirection(QBoxLayout::LeftToRight);
-
-      mainLayout->setContentsMargins(0, 0, 0, 0);
-      mainLayout->setSpacing(0);
-      if (sizeEvent.width() > 720) {
-        this->vcr_controls->show();
-      } else {
-        this->vcr_controls->hide();
+      if (event->size().width() > initMinWidth) {
+        layoutParameters->setDirection(QBoxLayout::LeftToRight);
+        layoutButtons->setDirection(QBoxLayout::LeftToRight);
+        scrollAreaWidgetContents->layout()->invalidate();
       }
     }
-  } else {
-    static bool warnOnce = true;
-    if (warnOnce) {
-      std::cout << "you should not see this message - "
-                << " if you work on the animate UI, you can consider removing this code"
-                << std::endl;
-      warnOnce = false;
-    }
-  }
-
-  auto qPushButtons = this->findChildren<QPushButton *>();
-  for (auto qPushButton : qPushButtons) {
-    qPushButton->setIconSize(QSize(iconSize, iconSize));
-  }
-
-  QFormLayout::RowWrapPolicy policy = QFormLayout::RowWrapPolicy::DontWrapRows;
-  if (sizeEvent.width() < 150) {
-    policy = QFormLayout::RowWrapPolicy::WrapAllRows;
-  }
-  auto qFormLayouts = this->findChildren<QFormLayout *>();
-  for (auto qFormLayout : qFormLayouts) {
-    qFormLayout->setRowWrapPolicy(policy);
   }
 
   QWidget::resizeEvent(event);
@@ -383,14 +300,6 @@ void Animate::on_pushButton_StepBack_clicked(){
   pauseAnimation();
   this->anim_step -= 1;
   this->updateTVal();
-}
-
-void Animate::on_pushButton_Resume_clicked(){
-  updatedAnimFpsAndAnimSteps();
-}
-
-void Animate::on_pushButton_Pause_clicked(){
-  pauseAnimation();
 }
 
 void Animate::on_pushButton_StepForward_clicked(){

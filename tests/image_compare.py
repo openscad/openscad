@@ -5,6 +5,7 @@ import numpy as np
 import os
 import sys
 
+PIXEL_TOLERANCE = 8
 
 def Compare3x3(img1, img2):
   '''Informally, this identifies image differences that are consistently
@@ -25,7 +26,7 @@ def Compare3x3(img1, img2):
 
   d = a1-a2
   # Truncate pixel-to-pixel differences less than 3 to 0.
-  d[np.abs(d)<3] = 0
+  d[np.abs(d)<PIXEL_TOLERANCE] = 0
 
   # Prepare a boolean mask of all 3x3 blocks that have all 9 pixels having
   # a non-zero difference with the same sign.  i.e., the whole block is

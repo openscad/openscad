@@ -1,12 +1,26 @@
 #pragma once
 
+#include <QAction>
+#include <QActionGroup>
+#include <QCloseEvent>
+#include <QComboBox>
+#include <QFont>
+#include <QFontComboBox>
+#include <QHash>
+#include <QKeyEvent>
+#include <QShowEvent>
+#include <QString>
+#include <QStringList>
+#include <QVariant>
+#include <QWidget>
 #include <QMainWindow>
 #include <QSettings>
 
-#include "qtgettext.h" // IWYU pragma: keep
+#include "gui/qtgettext.h" // IWYU pragma: keep
+#include "openscad_gui.h"
 #include "ui_Preferences.h"
-#include "Settings.h"
-#include "InitConfigurator.h"
+#include "gui/Settings.h"
+#include "gui/InitConfigurator.h"
 
 class Preferences : public QMainWindow, public Ui::Preferences, public InitConfigurator
 {
@@ -23,6 +37,21 @@ public:
   void apply_win() const;
   void updateGUI();
   void fireEditorConfigChanged() const;
+  void insertListItem(QListWidget *listBox, QListWidgetItem *listItem);
+
+  template<typename item_type>
+  QListWidgetItem * createListItem(const item_type& itemType, const QString& text = "", bool editable = false) {
+    const auto icon = QIcon::fromTheme(QString::fromStdString(itemType.icon()));
+    std::string description = itemType.description();
+    const auto itemText = description.empty() ? text : QString::fromStdString(description);
+    const auto listItem = new QListWidgetItem(icon, itemText,
+      nullptr,
+      static_cast<int>(QListWidgetItem::UserType) + static_cast<int>(itemType));
+    if (editable) {
+      listItem->setFlags(listItem->flags() | Qt::ItemIsEditable);
+    }
+    return listItem;
+  }
 
 public slots:
   void actionTriggered(class QAction *);
@@ -31,7 +60,7 @@ public slots:
   void on_colorSchemeChooser_itemSelectionChanged();
   void on_fontChooser_currentFontChanged(const QFont&);
   void on_fontSize_currentIndexChanged(int);
-  void on_syntaxHighlight_textActivated(const QString & s);
+  void on_syntaxHighlight_currentTextChanged(const QString&);
   void on_openCSGWarningBox_toggled(bool);
   void on_cgalCacheSizeMBEdit_textChanged(const QString&);
   void on_polysetCacheSizeMBEdit_textChanged(const QString&);
@@ -52,7 +81,7 @@ public slots:
   void on_enableTraceUsermoduleParametersCheckBox_toggled(bool);
   void on_enableParameterCheckBox_toggled(bool);
   void on_enableRangeCheckBox_toggled(bool);
-  void on_useAsciiSTLCheckBox_toggled(bool);
+  void on_comboBoxRenderBackend3D_activated(int);
   void on_comboBoxToolbarExport3D_activated(int);
   void on_comboBoxToolbarExport2D_activated(int);
   void on_checkBoxSummaryCamera_toggled(bool);
@@ -100,6 +129,7 @@ public slots:
   void on_checkBoxEnableLineNumbers_toggled(bool);
 
   // Print
+  void on_comboBoxDefaultPrintService_activated(int);
   void on_pushButtonOctoPrintCheckConnection_clicked();
   void on_pushButtonOctoPrintSlicingEngine_clicked();
   void on_comboBoxOctoPrintSlicingEngine_activated(int);
@@ -110,6 +140,24 @@ public slots:
   void on_lineEditOctoPrintURL_editingFinished();
   void on_lineEditOctoPrintApiKey_editingFinished();
   void on_pushButtonOctoPrintApiKey_clicked();
+  void on_lineEditLocalAppExecutable_editingFinished();
+  void on_toolButtonLocalAppSelectExecutable_clicked();
+  void on_lineEditLocalAppTempDir_editingFinished();
+  void on_toolButtonLocalAppSelectTempDir_clicked();
+  void on_comboBoxLocalAppFileFormat_activated(int);
+  void on_toolButtonLocalAppParameterRemove_clicked();
+  void on_toolButtonLocalAppParameterAdd_clicked();
+  void on_toolButtonLocalAppParameterUp_clicked();
+  void on_toolButtonLocalAppParameterDown_clicked();
+  void on_toolButtonLocalAppParameterAddFile_clicked();
+  void on_listWidgetLocalAppParams_itemSelectionChanged();
+  void on_listWidgetLocalAppParams_itemChanged(QListWidgetItem *);
+  void on_actionLocalAppParameterFile_triggered();
+  void on_actionLocalAppParameterDir_triggered();
+  void on_actionLocalAppParameterExtension_triggered();
+  void on_actionLocalAppParameterSource_triggered();
+  void on_actionLocalAppParameterSourceDir_triggered();
+  void listWidgetLocalAppParamsModelDataChanged();
 
 signals:
   void requestRedraw() const;
@@ -142,12 +190,16 @@ private:
   void closeEvent(QCloseEvent *e) override;
   void removeDefaultSettings();
   void setupFeaturesPage();
+  void setup3DPrintPage();
   void writeSettings();
   void hidePasswords();
   void addPrefPage(QActionGroup *group, QAction *action, QWidget *widget);
   void createFontSizeMenu(QComboBox *box, const QString &setting);
   void updateGUIFontFamily(QFontComboBox *fontSelector, const QString &setting);
   void updateGUIFontSize(QComboBox *fsSelector, const QString &setting);
+  void updateLocalAppParams();
+  void addLocalAppParameter(const Settings::LocalAppParameterType&);
+  void moveListBoxRow(QListWidget *listBox, int offset);
 
   /** Set value from combobox to settings */
   void applyComboBox(QComboBox *comboBox, int val, Settings::SettingsEntryEnum& entry);

@@ -1,22 +1,25 @@
 #include "LibraryInfo.h"
+#include <sstream>
 #include <glib.h>
+#include <string>
 #include <vector>
 
-#include "version_check.h"
-#include "PlatformUtils.h"
+#include "utils/version_check.h"
+#include "platform/PlatformUtils.h"
 #include "version.h"
 #include "Feature.h"
+#include <clipper2/clipper.version.h>
 
 #define STRINGIFY(x) #x
 #define TOSTRING(x) STRINGIFY(x)
 
 #ifndef OPENSCAD_NOGUI
 #include <Qsci/qsciglobal.h>
-#include "input/InputDriverManager.h"
+#include "gui/input/InputDriverManager.h"
 #endif
 
 #ifdef ENABLE_CGAL
-#include "cgal.h"
+#include "geometry/cgal/cgal.h"
 #include <boost/algorithm/string.hpp>
 #if defined(__GNUG__)
 #define GCC_INT_VERSION (__GNUC__ * 10000 + __GNUC_MINOR__ * 100)
@@ -40,6 +43,16 @@
 #endif
 #else
 #define OPENCSG_VERSION_STRING "<not enabled>"
+#endif
+
+#ifdef ENABLE_MANIFOLD
+#include <manifold/version.h>  // if it is new enough for us, it has version.h
+#define MANIFOLD_VERSION_STRING \
+  TOSTRING(MANIFOLD_VERSION_MAJOR) "." \
+  TOSTRING(MANIFOLD_VERSION_MINOR) "." \
+  TOSTRING(MANIFOLD_VERSION_PATCH)
+#else
+#define MANIFOLD_VERSION_STRING "<not enabled>"
 #endif
 
 extern std::vector<std::string> librarypath;
@@ -127,6 +140,8 @@ std::string LibraryInfo::info()
     << "\nCGAL version, kernels: " << TOSTRING(CGAL_VERSION) << ", " << cgal_3d_kernel << ", " << cgal_2d_kernel << ", " << cgal_2d_kernelEx
 #endif
     << "\nOpenCSG version: " << OPENCSG_VERSION_STRING
+    << "\nClipper2 version: " << CLIPPER2_VERSION
+    << "\nManifold version: " << MANIFOLD_VERSION_STRING
     << "\nQt version: " << qtVersion
 #ifndef OPENSCAD_NOGUI
     << "\nQScintilla version: " << QSCINTILLA_VERSION_STR

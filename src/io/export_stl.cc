@@ -24,20 +24,30 @@
  *
  */
 
-#include "export.h"
-#include "PolySet.h"
-#include "PolySetUtils.h"
-#include "double-conversion/double-conversion.h"
+#include "io/export.h"
+#include "geometry/PolySet.h"
+#include "geometry/PolySetUtils.h"
+#include <algorithm>
+#include <cassert>
+#include <array>
+#include <ios>
+#include <ostream>
+#include <cstdint>
+#include <memory>
+#include <double-conversion/double-conversion.h>
 #ifdef ENABLE_MANIFOLD
-#include "ManifoldGeometry.h"
+#include "geometry/manifold/ManifoldGeometry.h"
 #endif
 
 #ifdef ENABLE_CGAL
-#include "CGAL_Nef_polyhedron.h"
-#include "CGALHybridPolyhedron.h"
-#include "cgal.h"
-#include "cgalutils.h"
+#include "geometry/cgal/CGAL_Nef_polyhedron.h"
+#include "geometry/cgal/cgal.h"
+#include "geometry/cgal/cgalutils.h"
 #endif
+
+#include <cstddef>
+#include <string>
+#include <vector>
 
 namespace {
 /* Define values for double-conversion library. */
@@ -51,7 +61,7 @@ namespace {
 #define DC_MAX_LEADING_ZEROES (5)
 #define DC_MAX_TRAILING_ZEROES (0)
 
-std::string toString(const Vector3f& v)
+std::string toString(const Vector3d& v)
 {
   double_conversion::DoubleToStringConverter dc(
     DC_FLAGS, DC_INF, DC_NAN, DC_EXP,
@@ -61,18 +71,18 @@ std::string toString(const Vector3f& v)
   char buffer[DC_BUFFER_SIZE];
 
   double_conversion::StringBuilder builder(buffer, DC_BUFFER_SIZE);
-  dc.ToShortestSingle(v[0], &builder);
+  dc.ToShortest(v[0], &builder);
   builder.AddCharacter(' ');
-  dc.ToShortestSingle(v[1], &builder);
+  dc.ToShortest(v[1], &builder);
   builder.AddCharacter(' ');
-  dc.ToShortestSingle(v[2], &builder);
+  dc.ToShortest(v[2], &builder);
   builder.Finalize();
 
   return buffer;
 }
 
 int32_t flipEndianness(int32_t x) {
-  return 
+  return
     ((x << 24) & 0xff000000) | ((x >> 24) & 0xff) |
     ((x << 8) & 0xff0000) | ((x >> 8) & 0xff00);
 }
@@ -116,8 +126,7 @@ uint64_t append_stl(std::shared_ptr<const PolySet> polyset, std::ostream& output
   if (!binary) {
     vertexStrings.resize(ps->vertices.size());
     std::transform(ps->vertices.begin(), ps->vertices.end(), vertexStrings.begin(),
-      [](const auto& p) 
-     { return toString({static_cast<float>(p.x()), static_cast<float>(p.y()) , static_cast<float>(p.z()) }); });
+      [](const auto& p) { return toString(p); });
   }
 
   // Used for binary mode only
@@ -155,14 +164,13 @@ uint64_t append_stl(std::shared_ptr<const PolySet> polyset, std::ostream& output
       const auto &s1 = vertexStrings[t[1]];
       const auto &s2 = vertexStrings[t[2]];
 
-      // Since the points are different, the precision we use to 
-      // format them to string should guarantee the strings are 
+      // Since the points are different, the precision we use to
+      // format them to string should guarantee the strings are
       // different too.
       assert(s0 != s1 && s0 != s2 && s1 != s2);
-      
+
       output << "  facet normal ";
-      output << toString(
-        {static_cast<float>(normal.x()), static_cast<float>(normal.y()), static_cast<float>(normal.z()) }) << "\n";
+      output << toString(normal) << "\n";
       output << "    outer loop\n";
       output << "      vertex " << s0 << "\n";
       output << "      vertex " << s1 << "\n";
@@ -198,27 +206,6 @@ uint64_t append_stl(const CGAL_Nef_polyhedron& root_N, std::ostream& output,
   return triangle_count;
 }
 
-/*!
-   Saves the current 3D CGAL Nef polyhedron as STL to the given file.
-   The file must be open.
- */
-uint64_t append_stl(const CGALHybridPolyhedron& hybrid, std::ostream& output,
-                    bool binary)
-{
-  uint64_t triangle_count = 0;
-  if (!hybrid.isManifold()) {
-    LOG(message_group::Export_Warning, "Exported object may not be a valid 2-manifold and may need repair");
-  }
-
-  const auto ps = hybrid.toPolySet();
-  if (ps) {
-    triangle_count += append_stl(ps, output, binary);
-  } else {
-    LOG(message_group::Export_Error, "Nef->PolySet failed");
-  }
-
-  return triangle_count;
-}
 #endif  // ENABLE_CGAL
 
 #ifdef ENABLE_MANIFOLD
@@ -259,8 +246,6 @@ uint64_t append_stl(const std::shared_ptr<const Geometry>& geom, std::ostream& o
 #ifdef ENABLE_CGAL
   } else if (const auto N = std::dynamic_pointer_cast<const CGAL_Nef_polyhedron>(geom)) {
     triangle_count += append_stl(*N, output, binary);
-  } else if (const auto hybrid = std::dynamic_pointer_cast<const CGALHybridPolyhedron>(geom)) {
-    triangle_count += append_stl(*hybrid, output, binary);
 #endif
 #ifdef ENABLE_MANIFOLD
   } else if (const auto mani = std::dynamic_pointer_cast<const ManifoldGeometry>(geom)) {
@@ -282,29 +267,40 @@ void export_stl(const std::shared_ptr<const Geometry>& geom, std::ostream& outpu
 {
   // FIXME: In lazy union mode, should we export multiple solids?
   if (binary) {
+    std::ostringstream buffer; // Using a memory buffer
     char header[80] = "OpenSCAD Model\n";
-    output.write(header, sizeof(header));
-    char tmp_triangle_count[4] = {0, 0, 0, 0}; // We must fill this in below.
-    output.write(tmp_triangle_count, 4);
+    buffer.write(header, sizeof(header));
+    
+  // Placeholder for triangle count
+    uint32_t triangle_count = 0;
+    char tmp_triangle_count[4] = {0, 0, 0, 0};
+    buffer.write(tmp_triangle_count, 4);
+
+    // Writing triangles and counting them
+    triangle_count = append_stl(geom, buffer, binary);
+
+  if (triangle_count > 4294967295) {
+    LOG(message_group::Export_Error, "Triangle count exceeded 4294967295, so the STL file is not valid");
+    }
+
+  // Updating the triangle count in the buffer
+    char triangle_count_bytes[4] = {
+        static_cast<char>(triangle_count & 0xff),
+        static_cast<char>((triangle_count >> 8) & 0xff),
+        static_cast<char>((triangle_count >> 16) & 0xff),
+        static_cast<char>((triangle_count >> 24) & 0xff)};
+    buffer.seekp(80, std::ios_base::beg);
+    buffer.write(triangle_count_bytes, 4);
+    
+    // Flushing the buffer to the output stream
+    output << buffer.str();
+
   } else {
+    // ASCII mode: Write directly to the output stream
     setlocale(LC_NUMERIC, "C"); // Ensure radix is . (not ,) in output
     output << "solid OpenSCAD_Model\n";
-  }
-
-  uint64_t triangle_count = append_stl(geom, output, binary);
-
-  if (binary) {
-    // Fill in triangle count.
-    output.seekp(80, std::ios_base::beg);
-    output.put(triangle_count & 0xff);
-    output.put((triangle_count >> 8) & 0xff);
-    output.put((triangle_count >> 16) & 0xff);
-    output.put((triangle_count >> 24) & 0xff);
-    if (triangle_count > 4294967295) {
-      LOG(message_group::Export_Error, "Triangle count exceeded 4294967295, so the stl file is not valid");
-    }
-  } else {
+    uint64_t triangle_count = append_stl(geom, output, binary);
     output << "endsolid OpenSCAD_Model\n";
-    setlocale(LC_NUMERIC, ""); // Set default locale
+    setlocale(LC_NUMERIC, ""); // Restore default locale
   }
 }

@@ -1,4 +1,4 @@
-name: manual
+name: Manually Triggered Tests
 
 on:
   workflow_dispatch:
@@ -132,9 +132,7 @@ jobs:
       with:
         submodules: 'recursive'
     - name: Install dependencies
-      run: ./scripts/github-ci-linux-get-dependencies.sh kinetic
-    - name: Dependency fixup
-      run: sudo apt-get install gettext
+      run: ./scripts/github-ci-linux-get-dependencies.sh
     - uses: actions/setup-python@v5
       with:
         python-version: '3.11'

@@ -23,19 +23,24 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  */
+#include "core/FreetypeRenderer.h"
+
+#include <algorithm>
+#include <limits>
+#include <cstdint>
+#include <memory>
 #include <cmath>
 #include <cstdio>
+#include <vector>
 
-#include <iostream>
 
 #include <fontconfig/fontconfig.h>
 
-#include "printutils.h"
+#include "utils/printutils.h"
 
 #include "FontCache.h"
-#include "DrawingCallback.h"
-#include "FreetypeRenderer.h"
-#include "calc.h"
+#include "core/DrawingCallback.h"
+#include "utils/calc.h"
 
 #include FT_OUTLINE_H
 // NOLINTNEXTLINE(bugprone-macro-parentheses)
@@ -541,7 +546,7 @@ FreetypeRenderer::TextMetrics::TextMetrics(
   ok = true;
 }
 
-std::vector<std::shared_ptr<const Geometry>> FreetypeRenderer::render(const FreetypeRenderer::Params& params) const
+std::vector<std::shared_ptr<const Polygon2d>> FreetypeRenderer::render(const FreetypeRenderer::Params& params) const
 {
   ShapeResults sr(params);
 
@@ -564,5 +569,8 @@ std::vector<std::shared_ptr<const Geometry>> FreetypeRenderer::render(const Free
     callback.finish_glyph();
   }
 
+  // FIXME: The returned Polygon2d currently contains only outlines with the 'positive' flag set to true,
+  // and where the winding order determines if the outlines should be interpreted as polygons or holes.
+  // We have to rely on any downstream processing to be aware of the winding order, and ignore the 'positive' flag.
   return callback.get_result();
 }

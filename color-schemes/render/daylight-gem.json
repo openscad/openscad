@@ -1,0 +1,19 @@
+{
+    "name" : "Daylight Gem",
+    "index" : 1540,
+    "show-in-gui" : true,
+
+    "colors" : {
+        "background" :         "#f0f0f0",
+        "axes-color" :         "#373947",
+        "opencsg-face-front" : "#02daf7",
+        "opencsg-face-back" :  "#014da1",
+        "cgal-face-front" :    "#02daf7",
+        "cgal-face-back" :     "#014da1",
+        "cgal-face-2d" :       "#0498cf",
+        "cgal-edge-front" :    "#b8f3f7",
+        "cgal-edge-back" :     "#0fb7e8",
+        "cgal-edge-2d" :       "#b6f1eb",
+        "crosshair" :          "#5a73ba"
+    }
+}

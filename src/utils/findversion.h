@@ -19,7 +19,7 @@
 #include <windows.h>
 
 #define FV_EQUAL 0
-#define FV_LESS -1
+#define FV_LESS (-1)
 #define FV_GREAT 1
 #define FV_MIN_VALUE 0
 #define FV_MINOR_VERSION_MAX_VALUE 16
@@ -46,6 +46,7 @@ DWORDLONG eqFor(DWORD target)
     return VerSetConditionMask(0, target, VER_EQUAL);
 }
 
+// NOLINTBEGIN(bugprone-macro-parentheses)
 #define findPartTemplate(T)\
 BOOL findPart##T(T * part, DWORD partType, OSVERSIONINFOEX * ret, T a, T b) \
 { \
@@ -92,6 +93,7 @@ BOOL findPart##T(T * part, DWORD partType, OSVERSIONINFOEX * ret, T a, T b) \
 \
     return TRUE; \
 }
+// NOLINTEND(bugprone-macro-parentheses)
 
 findPartTemplate(DWORD)
 findPartTemplate(WORD)
