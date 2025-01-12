@@ -25,6 +25,7 @@
  */
 
 #include <unordered_map>
+#include "export_enums.h"
 #include "geometry/GeometryUtils.h"
 #include "io/export.h"
 #include "geometry/PolySet.h"
@@ -103,7 +104,7 @@ void handle_triangle_color(const std::shared_ptr<const PolySet>& ps, ExportConte
   if (!ctx.basematerialgroup && !ctx.colorgroup) {
     return;
   }
-  if (ctx.options->colorMode == "selected-only") {
+  if (ctx.options->colorMode == Export3mfColorMode::selected_only) {
     return;
   }
 
@@ -328,28 +329,34 @@ void export_3mf(const std::shared_ptr<const Geometry>& geom, std::ostream& outpu
   }
 
   const auto& options3mf = exportInfo.options3mf ? exportInfo.options3mf : std::make_shared<Export3mfOptions>();
-
-  if (options3mf->unit == "micron") {
+  switch (options3mf->unit) {
+  case Export3mfUnit::micron:
     model->SetUnit(Lib3MF::eModelUnit::MicroMeter);
-  } else if (options3mf->unit == "millimeter") {
-    model->SetUnit(Lib3MF::eModelUnit::MilliMeter);
-  } else if (options3mf->unit == "centimeter") {
+    break;
+  case Export3mfUnit::centimeter:
     model->SetUnit(Lib3MF::eModelUnit::CentiMeter);
-  } else if (options3mf->unit == "meter") {
+    break;
+  case Export3mfUnit::meter:
     model->SetUnit(Lib3MF::eModelUnit::Meter);
-  } else if (options3mf->unit == "inch") {
+    break;
+  case Export3mfUnit::inch:
     model->SetUnit(Lib3MF::eModelUnit::Inch);
-  } else if (options3mf->unit == "foot") {
+    break;
+  case Export3mfUnit::foot:
     model->SetUnit(Lib3MF::eModelUnit::Foot);
+    break;
+  default:
+    model->SetUnit(Lib3MF::eModelUnit::MilliMeter);
+    break;
   }
 
   const auto settingsColor = OpenSCAD::parse_hex_color(options3mf->color);
 
   Lib3MF::PColorGroup colorgroup;
   Lib3MF::PBaseMaterialGroup basematerialgroup;
-  if (options3mf->colorMode != "none") {
+  if (options3mf->colorMode != Export3mfColorMode::none) {
     Color4f color;
-    if (options3mf->colorMode == "model") {
+    if (options3mf->colorMode == Export3mfColorMode::model) {
       // use default color that ultimately should come from the color scheme
       color = exportInfo.defaultColor;
     } else {
@@ -359,7 +366,7 @@ void export_3mf(const std::shared_ptr<const Geometry>& geom, std::ostream& outpu
       }
       color = settingsColor.value_or(exportInfo.defaultColor);
     }
-    if (options3mf->materialType == "material") {
+    if (options3mf->materialType == Export3mfMaterialType::basematerial) {
       basematerialgroup = model->AddBaseMaterialGroup();
       basematerialgroup->AddMaterial("Default", {
         .m_Red = get_color_channel(color, 0),
@@ -367,7 +374,7 @@ void export_3mf(const std::shared_ptr<const Geometry>& geom, std::ostream& outpu
         .m_Blue = get_color_channel(color, 2),
         .m_Alpha = 0xff
       });
-    } else if (options3mf->materialType == "color") {
+    } else if (options3mf->materialType == Export3mfMaterialType::color) {
       colorgroup = model->AddColorGroup();
       colorgroup->AddColor({
         .m_Red = get_color_channel(color, 0),
