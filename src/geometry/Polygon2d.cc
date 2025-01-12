@@ -7,7 +7,7 @@
 #include <memory>
 
 #include "utils/printutils.h"
-#include "feature.h"
+#include "Feature.h"
 #ifdef ENABLE_MANIFOLD
 #include "geometry/manifold/manifoldutils.h"
 #endif
@@ -207,7 +207,8 @@ std::unique_ptr<PolySet> Polygon2d::tessellate(bool in3d) const
 #endif
     res = CGALUtils::createTriangulatedPolySetFromPolygon2d(*this, in3d);
   if (in3d)
-    polyset->transform(this->getTransform3d());
+    res->transform(this->getTransform3d());
+  return res;
 }
 
 void Polygon2d::transform3d(const Transform3d &mat)
@@ -223,7 +224,7 @@ void Polygon2d::transform3d(const Transform3d &mat)
       mat(1,0), mat(1,1), mat(1,3),
       mat(3,0), mat(3,1), mat(3,3);
     if (t.matrix().determinant() == 0) {
-      PRINT("WARNING: Scaling a 2D object with 0 - removing object");
+      LOG(message_group::Warning,"Scaling a 2D object with 0 - removing object");
       this->theoutlines.clear();
       trans3dState= Transform3dState::NONE;
       return;
@@ -238,7 +239,7 @@ void Polygon2d::transform3d(const Transform3d &mat)
   }
   else {
     if (mat.matrix().determinant() == 0) {
-      PRINT("WARNING: Scaling a 2D object with 0 - removing object");
+      LOG(message_group::Warning,"Scaling a 2D object with 0 - removing object");
       this->theoutlines.clear();
       trans3dState= Transform3dState::NONE;
       return;

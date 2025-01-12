@@ -1,7 +1,7 @@
 #pragma once
 
 #include "node.h"
-#include "value.h"
+#include "Value.h"
 
 class ExtrudeNode : public AbstractPolyNode
 {
@@ -13,5 +13,5 @@ public:
   std::string toString() const override;
   std::string name() const override { return "extrude"; }
 
-  int convexity;
+  unsigned int convexity;
 };

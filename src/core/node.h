@@ -114,6 +114,7 @@ public:
   std::string verbose_name() const override;
 private:
   const std::string _name;
+public: //TODO: getter/setter?
   // To maintain back-compat, GroupNode might perform an implied UNION of its children.
   bool _impliedUnion;
 };

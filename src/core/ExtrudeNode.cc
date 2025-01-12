@@ -24,16 +24,15 @@
  *
  */
 
-#include "extrudenode.h"
+#include "core/ExtrudeNode.h"
 
-#include "module.h"
-#include "ModuleInstantiation.h"
-#include "evalcontext.h"
-#include "printutils.h"
-#include "fileutils.h"
-#include "builtin.h"
-#include "calc.h"
-#include "polyset.h"
+#include "core/module.h"
+#include "core/ModuleInstantiation.h"
+#include "core/Children.h"
+#include "core/Parameters.h"
+#include "utils/printutils.h"
+#include "io/fileutils.h"
+#include "core/Builtins.h"
 #include "handle_dep.h"
 
 #include <cmath>
