@@ -213,7 +213,7 @@ static std::shared_ptr<AbstractNode> builtin_for(const ModuleInstantiation *inst
     && inst->arguments[1]->getName()=="union"
     && (gr = std::dynamic_pointer_cast<GroupNode>(node))
   )
-    gr->_impliedUnion = inst->arguments[1]->getExpr()->evaluate(context).toBool();
+    gr->setImpliedUnion(inst->arguments[1]->getExpr()->evaluate(context).toBool());
 
   if (!inst->arguments.empty()) {
     LcFor::forEach(inst->arguments, inst->location(), context,

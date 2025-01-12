@@ -67,7 +67,7 @@ std::shared_ptr<AbstractNode> LocalScope::instantiateModules(const std::shared_p
       // This might later be handled by GeometryEvaluator, but for now just completely
       // remove the GroupNode from the tree.
       std::shared_ptr<GroupNode> gr= std::dynamic_pointer_cast<GroupNode>(node);
-      if (gr && !gr->_impliedUnion) {
+      if (gr && !gr->getImpliedUnion()) {
         target->children.insert(target->children.end(), node->children.begin(), node->children.end());
         node->children.clear();
       }
@@ -88,7 +88,7 @@ std::shared_ptr<AbstractNode> LocalScope::instantiateModules(const std::shared_p
       // This might later be handled by GeometryEvaluator, but for now just completely
       // remove the GroupNode from the tree.
       std::shared_ptr<GroupNode> gr= std::dynamic_pointer_cast<GroupNode>(node);
-      if (gr && !gr->_impliedUnion) {
+      if (gr && !gr->getImpliedUnion()) {
         target->children.insert(target->children.end(), node->children.begin(), node->children.end());
         node->children.clear();
       }
