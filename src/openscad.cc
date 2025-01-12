@@ -29,7 +29,11 @@
 #include <chrono>
 #include <iomanip>
 #include <fstream>
+#include <string>
+#include <tuple>
+#include <unordered_map>
 #include "ColorUtil.h"
+#include "Context.h"
 
 #ifdef _WIN32
 #include <io.h>
@@ -128,8 +132,7 @@ bool useGUI()
 #endif // OPENSCAD_NOGUI
 
 bool checkAndExport(const std::shared_ptr<const Geometry>& root_geom, unsigned dimensions,
-                    FileFormat format, const bool is_stdout, const std::string& filename,
-		    const Camera *const camera, const std::string& input_filename)
+                    ExportInfo& exportInfo, const bool is_stdout, const std::string& filename)
 {
   if (root_geom->getDimension() != dimensions) {
     LOG("Current top level object is not a %1$dD object.", dimensions);
@@ -139,7 +142,6 @@ bool checkAndExport(const std::shared_ptr<const Geometry>& root_geom, unsigned d
     LOG("Current top level object is empty.");
     return false;
   }
-  ExportInfo exportInfo = createExportInfo(format, fileformat::info(format), input_filename, camera);
 
   if (is_stdout) {
     exportFileStdOut(root_geom, exportInfo);
@@ -261,6 +263,7 @@ struct CommandLine
   const ViewOptions& viewOptions;
   const Camera& camera;
   const boost::optional<FileFormat> export_format;
+  const CmdLineExportOptions& exportOptions;
   const AnimateArgs animate;
   const std::vector<std::string> summaryOptions;
   const std::string summaryFile;
@@ -482,7 +485,8 @@ int do_export(const CommandLine& cmd, const RenderVariables& render_variables, F
 
     const std::string input_filename = cmd.is_stdin ? "<stdin>" : cmd.filename;
     const int dim = fileformat::is3D(export_format) ? 3 : fileformat::is2D(export_format) ? 2 : 0;
-    if (dim > 0 && !checkAndExport(root_geom, dim, export_format, cmd.is_stdout, filename_str, &cmd.camera, input_filename)) {
+    ExportInfo exportInfo = createExportInfo(export_format, fileformat::info(export_format), input_filename, &cmd.camera, cmd.exportOptions);
+    if (dim > 0 && !checkAndExport(root_geom, dim, exportInfo, cmd.is_stdout, filename_str)) {
       return 1;
     }
 
@@ -689,6 +693,32 @@ bool flagConvert(const std::string& str){
   return false;
 }
 
+std::tuple<std::string, std::string> simple_split(const std::string& str, const char c)
+{
+  const auto idx = str.find_first_of(c);
+  if (idx == std::string::npos)
+    return {};
+  const auto first = str.substr(0, idx);
+  const auto second = str.substr(idx + 1);
+  return {first, second};
+}
+
+CmdLineExportOptions convert_export_options(const po::variables_map& vm)
+{
+  if (vm.count("O") == 0) {
+    return {};
+  }
+
+  CmdLineExportOptions map;
+  const auto& options = vm["O"].as<std::vector<std::string>>();
+  for (const auto& option : options) {
+    const auto [key, value] = simple_split(option, '=');
+    const auto [section, name] = simple_split(key, '/');
+    map[section][name] = value;
+  }
+  return map;
+}
+
 // OpenSCAD
 int main(int argc, char **argv)
 {
@@ -735,6 +765,7 @@ int main(int argc, char **argv)
   desc.add_options()
     ("export-format", po::value<std::string>(), "overrides format of exported scad file when using option '-o', arg can be any of its supported file extensions.  For ascii stl export, specify 'asciistl', and for binary stl export, specify 'binstl'.  Ascii export is the current stl default, but binary stl is planned as the future default so asciistl should be explicitly specified in scripts when needed.\n")
     ("o,o", po::value<std::vector<std::string>>(), "output specified file instead of running the GUI, the file extension specifies the type: stl, off, wrl, amf, 3mf, csg, dxf, svg, pdf, png, echo, ast, term, nef3, nefdbg (May be used multiple time for different exports). Use '-' for stdout\n")
+    ("O,O", po::value<std::vector<std::string>>(), "pass options to the file export using the format section/key=value, e.g export-pdf/paper-size=A3")
     ("D,D", po::value<std::vector<std::string>>(), "var=val -pre-define variables")
     ("p,p", po::value<std::string>(), "customizer parameter file")
     ("P,P", po::value<std::string>(), "customizer parameter set")
@@ -989,6 +1020,7 @@ int main(int argc, char **argv)
           const std::string input_file = is_stdin ? "<stdin>" : inputFiles[0];
           const bool is_stdout = filename == "-";
           const std::string output_file = is_stdout ? "<stdout>" : filename;
+          const auto export_options = convert_export_options(vm);
           const CommandLine cmd{
             is_stdin,
             input_file,
@@ -1000,6 +1032,7 @@ int main(int argc, char **argv)
             viewOptions,
             camera,
             export_format,
+            export_options,
             animate,
             vm.count("summary") ? vm["summary"].as<std::vector<std::string>>() : std::vector<std::string>{},
             vm.count("summary-file") ? vm["summary-file"].as<std::string>() : ""

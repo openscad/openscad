@@ -14,6 +14,7 @@
 #include <boost/range/adaptors.hpp>
 
 #include "PrintInitDialog.h"
+#include "export_enums.h"
 #include "io/export.h"
 #include "glview/RenderSettings.h"
 #include "utils/printutils.h"
@@ -27,7 +28,7 @@ namespace Settings {
 
 namespace {
 
-std::vector<SettingsEntry *> entries;
+std::vector<SettingsEntryBase *> entries;
 
 std::vector<SettingsEntryEnum<std::string>::Item> createFileFormatItems(std::vector<FileFormat> formats) {
   std::vector<SettingsEntryEnum<std::string>::Item> items;
@@ -58,12 +59,12 @@ std::vector<SettingsEntryEnum<std::string>::Item> axisValues() {
 
 void Settings::visit(const SettingsVisitor& visitor)
 {
-  for (SettingsEntry *entry : entries) {
+  for (SettingsEntryBase *entry : entries) {
     visitor.handle(*entry);
   }
 }
 
-SettingsEntry::SettingsEntry(std::string category, std::string name) :
+SettingsEntryBase::SettingsEntryBase(std::string category, std::string name) :
   _category(std::move(category)), _name(std::move(name))
 {
   entries.push_back(this);
@@ -74,17 +75,19 @@ std::string SettingsEntryBool::encode() const
   return _value ? "true" : "false";
 }
 
-void SettingsEntryBool::decode(const std::string& encoded)
+const bool SettingsEntryBool::decode(const std::string& encoded) const
 {
   std::string trimmed = boost::algorithm::trim_copy(encoded);
   if (trimmed == "true") {
-    _value = true;
+    return true;
   } else if (trimmed == "false") {
-    _value = false;
+    return false;
   } else {
     try {
-      _value = boost::lexical_cast<bool>(trimmed);
-    } catch (const boost::bad_lexical_cast&) {}
+      return boost::lexical_cast<bool>(trimmed);
+    } catch (const boost::bad_lexical_cast&) {
+      return defaultValue();
+    }
   }
 }
 
@@ -93,11 +96,13 @@ std::string SettingsEntryInt::encode() const
   return STR(_value);
 }
 
-void SettingsEntryInt::decode(const std::string& encoded)
+const int SettingsEntryInt::decode(const std::string& encoded) const
 {
   try {
-    _value = boost::lexical_cast<int>(boost::algorithm::trim_copy(encoded));
-  } catch (const boost::bad_lexical_cast&) {}
+    return boost::lexical_cast<int>(boost::algorithm::trim_copy(encoded));
+  } catch (const boost::bad_lexical_cast&) {
+    return defaultValue();
+  }
 }
 
 std::string SettingsEntryDouble::encode() const
@@ -105,18 +110,14 @@ std::string SettingsEntryDouble::encode() const
   return STR(_value);
 }
 
-void SettingsEntryDouble::decode(const std::string& encoded)
+const double SettingsEntryDouble::decode(const std::string& encoded) const
 {
   try {
-    _value = boost::lexical_cast<double>(boost::algorithm::trim_copy(encoded));
-  } catch (const boost::bad_lexical_cast&) {}
+    return boost::lexical_cast<double>(boost::algorithm::trim_copy(encoded));
+  } catch (const boost::bad_lexical_cast&) {
+    return defaultValue();
+  }
 }
-
-template<>
-std::string SettingsEntryEnum<std::string>::encode() const { return value(); }
-
-template<>
-void SettingsEntryEnum<std::string>::decode(const std::string& encoded) { setValue(encoded); }
 
 std::ostream& operator<<(std::ostream& stream, const LocalAppParameter& param)
 {
@@ -272,42 +273,68 @@ SettingsEntryDouble Settings::axisDeadzone8("input", "axisDeadzone8", 0.0, 0.01,
 
 SettingsEntryInt Settings::joystickNr("input", "joystickNr", 0, 9, 0);
 
-SettingsEntryBool Settings::exportPdfAlwaysShowDialog(SECTION_EXPORT_PDF, "alwaysShowDialog", true);
-SettingsEntryEnum<PaperSizes> Settings::exportPdfPaperSize(SECTION_EXPORT_PDF, "paperSize", {{PaperSizes::A6, _("A6 (105 x 148 mm)")}, {PaperSizes::A5, _("A5 (148 x 210 mm)")}, {PaperSizes::A4, _("A4 (210x297 mm)")}, {PaperSizes::A3, _("A3 (297x420 mm)")}, {PaperSizes::LETTER, _("Letter (8.5x11 in)")}, {PaperSizes::LEGAL, _("Legal (8.5x14 in)")}, {PaperSizes::TABLOID, _("Tabloid (11x17 in)")}}, PaperSizes::A4);
-SettingsEntryEnum<PaperOrientations> Settings::exportPdfOrientation(SECTION_EXPORT_PDF, "orientation", {{PaperOrientations::PORTRAIT, _("Portrait (Vertical)")}, {PaperOrientations::LANDSCAPE, _("Landscape (Horizontal)")}, {PaperOrientations::AUTO, _("Auto")}}, PaperOrientations::PORTRAIT);
-SettingsEntryBool Settings::exportPdfShowFilename(SECTION_EXPORT_PDF, "showFilename", true);
-SettingsEntryBool Settings::exportPdfShowScale(SECTION_EXPORT_PDF, "showScale", true);
-SettingsEntryBool Settings::exportPdfShowScaleMessage(SECTION_EXPORT_PDF, "showScaleMessage", true);
-SettingsEntryBool Settings::exportPdfShowGrid(SECTION_EXPORT_PDF, "showGrid", true);
-SettingsEntryDouble Settings::exportPdfGridSize(SECTION_EXPORT_PDF, "gridSize", 1.0, 1.0, 100.0, 10.0);
-SettingsEntryBool Settings::exportPdfAddMetaData(SECTION_EXPORT_PDF, "addMetaData", true);
-SettingsEntryBool Settings::exportPdfAddMetaDataAuthor(SECTION_EXPORT_PDF, "addMetaDataAuthor", false);
-SettingsEntryBool Settings::exportPdfAddMetaDataSubject(SECTION_EXPORT_PDF, "addMetaDataSubject", false);
-SettingsEntryBool Settings::exportPdfAddMetaDataKeywords(SECTION_EXPORT_PDF, "addMetaDataKeywords", false);
-SettingsEntryString Settings::exportPdfMetaDataTitle(SECTION_EXPORT_PDF, "metaDataTitle", "");
-SettingsEntryString Settings::exportPdfMetaDataAuthor(SECTION_EXPORT_PDF, "metaDataAuthor", "");
-SettingsEntryString Settings::exportPdfMetaDataSubject(SECTION_EXPORT_PDF, "metaDataSubject", "");
-SettingsEntryString Settings::exportPdfMetaDataKeywords(SECTION_EXPORT_PDF, "metaDataKeywords", "");
+SettingsEntryBool SettingsExportPdf::exportPdfAlwaysShowDialog(SECTION_EXPORT_PDF, "always-show-sialog", true);
+SettingsEntryEnum<ExportPdfPaperSize> SettingsExportPdf::exportPdfPaperSize(SECTION_EXPORT_PDF, "paper-size", {
+  {ExportPdfPaperSize::A6,      "a6",      _("A6 (105 x 148 mm)")},
+  {ExportPdfPaperSize::A5,      "a5",      _("A5 (148 x 210 mm)")},
+  {ExportPdfPaperSize::A4,      "a4",      _("A4 (210x297 mm)")},
+  {ExportPdfPaperSize::A3,      "a3",      _("A3 (297x420 mm)")},
+  {ExportPdfPaperSize::LETTER,  "letter",  _("Letter (8.5x11 in)")},
+  {ExportPdfPaperSize::LEGAL,   "legal",   _("Legal (8.5x14 in)")},
+  {ExportPdfPaperSize::TABLOID, "tabloid", _("Tabloid (11x17 in)")}
+}, ExportPdfPaperSize::A4);
+SettingsEntryEnum<ExportPdfPaperOrientation> SettingsExportPdf::exportPdfOrientation(SECTION_EXPORT_PDF, "orientation", {
+  {ExportPdfPaperOrientation::PORTRAIT,  "portrait",  _("Portrait (Vertical)")},
+  {ExportPdfPaperOrientation::LANDSCAPE, "landscape", _("Landscape (Horizontal)")},
+  {ExportPdfPaperOrientation::AUTO,      "auto",      _("Auto")}
+}, ExportPdfPaperOrientation::PORTRAIT);
+SettingsEntryBool SettingsExportPdf::exportPdfShowFilename(SECTION_EXPORT_PDF, "show-filename", true);
+SettingsEntryBool SettingsExportPdf::exportPdfShowScale(SECTION_EXPORT_PDF, "show-scale", true);
+SettingsEntryBool SettingsExportPdf::exportPdfShowScaleMessage(SECTION_EXPORT_PDF, "show-scale-message", true);
+SettingsEntryBool SettingsExportPdf::exportPdfShowGrid(SECTION_EXPORT_PDF, "show-grid", true);
+SettingsEntryDouble SettingsExportPdf::exportPdfGridSize(SECTION_EXPORT_PDF, "grid-size", 1.0, 1.0, 100.0, 10.0);
+SettingsEntryBool SettingsExportPdf::exportPdfAddMetaData(SECTION_EXPORT_PDF, "add-meta-data", true);
+SettingsEntryBool SettingsExportPdf::exportPdfAddMetaDataAuthor(SECTION_EXPORT_PDF, "add-meta-data-author", false);
+SettingsEntryBool SettingsExportPdf::exportPdfAddMetaDataSubject(SECTION_EXPORT_PDF, "add-meta-data-subject", false);
+SettingsEntryBool SettingsExportPdf::exportPdfAddMetaDataKeywords(SECTION_EXPORT_PDF, "add-meta-data-keywords", false);
+SettingsEntryString SettingsExportPdf::exportPdfMetaDataTitle(SECTION_EXPORT_PDF, "meta-data-title", "");
+SettingsEntryString SettingsExportPdf::exportPdfMetaDataAuthor(SECTION_EXPORT_PDF, "meta-data-author", "");
+SettingsEntryString SettingsExportPdf::exportPdfMetaDataSubject(SECTION_EXPORT_PDF, "meta-data-subject", "");
+SettingsEntryString SettingsExportPdf::exportPdfMetaDataKeywords(SECTION_EXPORT_PDF, "meta-data-keywords", "");
 
-SettingsEntryBool Settings::export3mfAlwaysShowDialog(SECTION_EXPORT_3MF, "alwaysShowDialog", true);
-SettingsEntryEnum<std::string> Settings::export3mfColorMode(SECTION_EXPORT_3MF, "colors", {{"model", _("Use colors from model")}, {"none", _("No colors")}, {"selected-only", _("Use selected color only")}, {"selected-as-default", _("Use selected color as default")}}, "model");
-// https://github.com/3MFConsortium/spec_core/blob/master/3MF%20Core%20Specification.md: micron, millimeter, centimeter, inch, foot, and meter
-SettingsEntryEnum<std::string> Settings::export3mfUnit(SECTION_EXPORT_3MF, "unit", {{"micron", _("Micron")}, {"millimeter", _("Millimeter")}, {"centimeter", _("Centimeter")}, {"meter", _("Meter")}, {"inch", _("Inch")}, {"foot", _("Feet")}}, "millimeter");
-SettingsEntryString Settings::export3mfColor(SECTION_EXPORT_3MF, "color", "#f9d72c"); // Cornfield: CGAL_FACE_FRONT_COLOR
-SettingsEntryEnum<std::string> Settings::export3mfMaterialType(SECTION_EXPORT_3MF, "materialType", {{"color", "Color"}, {"material", "Base Material"}}, "material");
-SettingsEntryInt Settings::export3mfDecimalPrecision(SECTION_EXPORT_3MF, "decimalPrecision", 1, 16, 6);
-SettingsEntryBool Settings::export3mfAddMetaData(SECTION_EXPORT_3MF, "addMetaData", true);
-SettingsEntryBool Settings::export3mfAddMetaDataDesigner(SECTION_EXPORT_3MF, "addMetaDataDesigner", false);
-SettingsEntryBool Settings::export3mfAddMetaDataDescription(SECTION_EXPORT_3MF, "addMetaDataDescription", false);
-SettingsEntryBool Settings::export3mfAddMetaDataCopyright(SECTION_EXPORT_3MF, "addMetaDataCopyright", false);
-SettingsEntryBool Settings::export3mfAddMetaDataLicenseTerms(SECTION_EXPORT_3MF, "addMetaDataLicenseTerms", false);
-SettingsEntryBool Settings::export3mfAddMetaDataRating(SECTION_EXPORT_3MF, "addMetaDataRating", false);
-SettingsEntryString Settings::export3mfMetaDataTitle(SECTION_EXPORT_3MF, "metaDataTitle", "");
-SettingsEntryString Settings::export3mfMetaDataDesigner(SECTION_EXPORT_3MF, "metaDataDesigner", "");
-SettingsEntryString Settings::export3mfMetaDataDescription(SECTION_EXPORT_3MF, "metaDataDescription", "");
-SettingsEntryString Settings::export3mfMetaDataCopyright(SECTION_EXPORT_3MF, "metaDataCopyright", "");
-SettingsEntryString Settings::export3mfMetaDataLicenseTerms(SECTION_EXPORT_3MF, "metaDataLicenseTerms", "");
-SettingsEntryString Settings::export3mfMetaDataRating(SECTION_EXPORT_3MF, "metaDataRating", "");
+SettingsEntryBool SettingsExport3mf::export3mfAlwaysShowDialog(SECTION_EXPORT_3MF, "always-show-dialog", true);
+SettingsEntryEnum<Export3mfColorMode> SettingsExport3mf::export3mfColorMode(SECTION_EXPORT_3MF, "color-mode", {
+  {Export3mfColorMode::model,               "model",               _("Use colors from model")},
+  {Export3mfColorMode::none,                "none",                _("No colors")},
+  {Export3mfColorMode::selected_only,       "selected-only",       _("Use selected color only")},
+  {Export3mfColorMode::selected_as_default, "selected-as-default", _("Use selected color as default")},
+}, Export3mfColorMode::model);
+SettingsEntryEnum<Export3mfUnit> SettingsExport3mf::export3mfUnit(SECTION_EXPORT_3MF, "unit", {
+  {Export3mfUnit::micron,     "micron",     _("Micron")},
+  {Export3mfUnit::millimeter, "millimeter", _("Millimeter")},
+  {Export3mfUnit::centimeter, "centimeter", _("Centimeter")},
+  {Export3mfUnit::meter,      "meter",      _("Meter")},
+  {Export3mfUnit::inch,       "inch",       _("Inch")},
+  {Export3mfUnit::foot,       "foot",       _("Feet")},
+}, Export3mfUnit::millimeter);
+SettingsEntryString SettingsExport3mf::export3mfColor(SECTION_EXPORT_3MF, "color", "#f9d72c"); // Cornfield: CGAL_FACE_FRONT_COLOR
+SettingsEntryEnum<Export3mfMaterialType> SettingsExport3mf::export3mfMaterialType(SECTION_EXPORT_3MF, "material-type", {
+  {Export3mfMaterialType::color,        "color",        _("Color")},
+  {Export3mfMaterialType::basematerial, "basematerial", _("Base Material")},
+}, Export3mfMaterialType::basematerial);
+SettingsEntryInt SettingsExport3mf::export3mfDecimalPrecision(SECTION_EXPORT_3MF, "decimal-precision", 1, 16, 6);
+SettingsEntryBool SettingsExport3mf::export3mfAddMetaData(SECTION_EXPORT_3MF, "add-meta-data", true);
+SettingsEntryBool SettingsExport3mf::export3mfAddMetaDataDesigner(SECTION_EXPORT_3MF, "add-meta-data-designer", false);
+SettingsEntryBool SettingsExport3mf::export3mfAddMetaDataDescription(SECTION_EXPORT_3MF, "add-meta-data-description", false);
+SettingsEntryBool SettingsExport3mf::export3mfAddMetaDataCopyright(SECTION_EXPORT_3MF, "add-meta-data-copyright", false);
+SettingsEntryBool SettingsExport3mf::export3mfAddMetaDataLicenseTerms(SECTION_EXPORT_3MF, "add-meta-data-license-terms", false);
+SettingsEntryBool SettingsExport3mf::export3mfAddMetaDataRating(SECTION_EXPORT_3MF, "add-meta-data-rating", false);
+SettingsEntryString SettingsExport3mf::export3mfMetaDataTitle(SECTION_EXPORT_3MF, "meta-data-title", "");
+SettingsEntryString SettingsExport3mf::export3mfMetaDataDesigner(SECTION_EXPORT_3MF, "meta-data-designer", "");
+SettingsEntryString SettingsExport3mf::export3mfMetaDataDescription(SECTION_EXPORT_3MF, "meta-data-description", "");
+SettingsEntryString SettingsExport3mf::export3mfMetaDataCopyright(SECTION_EXPORT_3MF, "meta-data-copyright", "");
+SettingsEntryString SettingsExport3mf::export3mfMetaDataLicenseTerms(SECTION_EXPORT_3MF, "meta-data-license-terms", "");
+SettingsEntryString SettingsExport3mf::export3mfMetaDataRating(SECTION_EXPORT_3MF, "meta-data-rating", "");
 
 SettingsEntryString& Settings::inputButton(size_t id)
 {

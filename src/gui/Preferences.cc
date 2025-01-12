@@ -79,12 +79,12 @@ class SettingsReader : public Settings::SettingsVisitor
 {
   QSettingsCached settings;
 
-  void handle(Settings::SettingsEntry& entry) const override
+  void handle(Settings::SettingsEntryBase& entry) const override
   {
     if (settings.contains(QString::fromStdString(entry.key()))) {
       std::string value = settings.value(QString::fromStdString(entry.key())).toString().toStdString();
       PRINTDB("SettingsReader R: %s = '%s'", entry.key() % value);
-      entry.decode(value);
+      entry.set(value);
     }
   }
 };
@@ -253,8 +253,8 @@ void Preferences::init() {
     this->comboBoxOctoPrintSlicingProfile->addItem(profileDesc, QVariant{profile});
   }
 
-  this->checkBoxAlwaysShowExportPdfDialog->setChecked(Settings::Settings::exportPdfAlwaysShowDialog.value());
-  this->checkBoxAlwaysShowExport3mfDialog->setChecked(Settings::Settings::export3mfAlwaysShowDialog.value());
+  this->checkBoxAlwaysShowExportPdfDialog->setChecked(Settings::SettingsExportPdf::exportPdfAlwaysShowDialog.value());
+  this->checkBoxAlwaysShowExport3mfDialog->setChecked(Settings::SettingsExport3mf::export3mfAlwaysShowDialog.value());
 
   emit editorConfigChanged();
 }
@@ -996,7 +996,7 @@ void Preferences::updateLocalAppParams()
       items.emplace_back(Settings::LocalAppParameterType::sourcedir, std::string{});
     }
   }
-  Settings::Settings::localAppParameterList.setItems(items);
+  Settings::Settings::localAppParameterList.setValue(items);
   writeSettings();
 }
 
@@ -1121,13 +1121,13 @@ void Preferences::on_comboBoxOctoPrintSlicingProfile_activated(int val)
 
 void Preferences::on_checkBoxAlwaysShowExportPdfDialog_toggled(bool state)
 {
-  Settings::Settings::exportPdfAlwaysShowDialog.setValue(state);
+  Settings::SettingsExportPdf::exportPdfAlwaysShowDialog.setValue(state);
   writeSettings();
 }
 
 void Preferences::on_checkBoxAlwaysShowExport3mfDialog_toggled(bool state)
 {
-  Settings::Settings::export3mfAlwaysShowDialog.setValue(state);
+  Settings::SettingsExport3mf::export3mfAlwaysShowDialog.setValue(state);
   writeSettings();
 }
 

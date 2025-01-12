@@ -2741,7 +2741,7 @@ void MainWindow::actionExportFileFormat(int fmt)
   const auto format = static_cast<FileFormat>(fmt);
   const FileFormatInfo &info = fileformat::info(format);
 
-  ExportInfo exportInfo = createExportInfo(format, info, activeEditor->filepath.toStdString(), &qglview->cam);
+  ExportInfo exportInfo = createExportInfo(format, info, activeEditor->filepath.toStdString(), &qglview->cam, {});
 
   switch (format) {
     case FileFormat::PDF:

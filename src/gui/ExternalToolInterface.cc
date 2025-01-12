@@ -40,12 +40,10 @@
 bool ExternalToolInterface::exportTemporaryFile(const std::shared_ptr<const Geometry>& rootGeometry, 
   const QString& sourceFileName, const Camera *const camera)
 {
-  const ExportInfo exportInfo = createExportInfo(exportFormat_, fileformat::info(exportFormat_), sourceFileName.toStdString(), camera);
-
   // FIXME: Remove original suffix first
   QTemporaryFile exportFile{getTempDir().filePath(
     QString("%1.XXXXXX.%2").
-      arg(QString::fromStdString(exportInfo.sourceFilePath)).
+      arg(QString::fromStdString(sourceFileName.toStdString())).
       arg(QString::fromStdString(fileformat::toSuffix(exportFormat_))))};
   // FIXME: When is it safe to remove the file?
   // * Octoprint: After uploading?
@@ -60,6 +58,7 @@ bool ExternalToolInterface::exportTemporaryFile(const std::shared_ptr<const Geom
 
   sourceFilename_ = sourceFileName.toStdString();
   exportedFilename_ = exportFileName.toStdString();
+  ExportInfo exportInfo = createExportInfo(exportFormat_, fileformat::info(exportFormat_), sourceFileName.toStdString(), camera, {});
   const bool ok = exportFileByName(rootGeometry, exportedFilename_, exportInfo);
   LOG("Exported temporary file %1$s", exportedFilename_);
   return ok;
@@ -112,7 +111,7 @@ bool LocalProgramService::process(const std::string& displayName, std::function<
 
   QStringList args;
   const auto info = QFileInfo(QString::fromStdString(exportedFilename_));
-  for (const auto& arg : Settings::Settings::localAppParameterList.items()) {
+  for (const auto& arg : Settings::Settings::localAppParameterList.value()) {
     switch (arg.type) {
     case Settings::LocalAppParameterType::string:
       args.append(QString::fromStdString(arg.value));

@@ -24,6 +24,7 @@
  *
  */
 
+#include "export_enums.h"
 #include "io/export.h"
 
 #include <cassert>
@@ -53,6 +54,8 @@
 
 #undef BOOL
 using namespace NMR;
+
+using S = Settings::SettingsExport3mf;
 
 namespace {
 
@@ -127,7 +130,7 @@ bool handle_triangle_color(PLib3MFPropertyHandler *propertyhandler, const std::u
   if (!ctx.basematerial && !ctx.usecolors) {
     return true;
   }
-  if (ctx.options->colorMode == "selected-only") {
+  if (ctx.options->colorMode == Export3mfColorMode::selected_only) {
     return true;
   }
 
@@ -378,19 +381,25 @@ void export_3mf(const std::shared_ptr<const Geometry>& geom, std::ostream& outpu
   }
 
   const auto& options3mf = exportInfo.options3mf ? exportInfo.options3mf : std::make_shared<Export3mfOptions>();
-
-  if (options3mf->unit == "micron") {
-    lib3mf_model_setunit(model, eModelUnit::MODELUNIT_MICROMETER);
-  } else if (options3mf->unit == "millimeter") {
-    lib3mf_model_setunit(model, eModelUnit::MODELUNIT_MILLIMETER);
-  } else if (options3mf->unit == "centimeter") {
-    lib3mf_model_setunit(model, eModelUnit::MODELUNIT_CENTIMETER);
-  } else if (options3mf->unit == "meter") {
-    lib3mf_model_setunit(model, eModelUnit::MODELUNIT_METER);
-  } else if (options3mf->unit == "inch") {
-    lib3mf_model_setunit(model, eModelUnit::MODELUNIT_INCH);
-  } else if (options3mf->unit == "foot") {
-    lib3mf_model_setunit(model, eModelUnit::MODELUNIT_FOOT);
+  switch (options3mf->unit) {
+    case Export3mfUnit::micron:
+      lib3mf_model_setunit(model, eModelUnit::MODELUNIT_MICROMETER);
+      break;
+    case Export3mfUnit::centimeter:
+      lib3mf_model_setunit(model, eModelUnit::MODELUNIT_CENTIMETER);
+      break;
+    case Export3mfUnit::meter:
+      lib3mf_model_setunit(model, eModelUnit::MODELUNIT_METER);
+      break;
+    case Export3mfUnit::inch:
+      lib3mf_model_setunit(model, eModelUnit::MODELUNIT_INCH);
+      break;
+    case Export3mfUnit::foot:
+      lib3mf_model_setunit(model, eModelUnit::MODELUNIT_FOOT);
+      break;
+    default:
+      lib3mf_model_setunit(model, eModelUnit::MODELUNIT_MILLIMETER);
+      break;
   }
 
   Color4f defaultColor;
@@ -400,8 +409,8 @@ void export_3mf(const std::shared_ptr<const Geometry>& geom, std::ostream& outpu
   bool usecolors = false;
   DWORD basematerialid = 0;
   PLib3MFModelBaseMaterial *basematerial = nullptr;
-  if (options3mf->colorMode != "none") {
-    if (options3mf->colorMode == "model") {
+  if (options3mf->colorMode != Export3mfColorMode::none) {
+    if (options3mf->colorMode == Export3mfColorMode::model) {
       // use default color that ultimately should come from the color scheme
       defaultColor = exportInfo.defaultColor;
     } else {
@@ -411,7 +420,7 @@ void export_3mf(const std::shared_ptr<const Geometry>& geom, std::ostream& outpu
       }
       defaultColor = settingsColor.value_or(exportInfo.defaultColor);
     }
-    if (options3mf->materialType == "material") {
+    if (options3mf->materialType == Export3mfMaterialType::basematerial) {
       if (lib3mf_model_addbasematerialgroup(model, &basematerial) != LIB3MF_OK) {
         export_3mf_error("Can't create base material group.", model);
         return;
@@ -428,7 +437,7 @@ void export_3mf(const std::shared_ptr<const Geometry>& geom, std::ostream& outpu
         export_3mf_error("Can't add default material color.", model);
         return;
       }
-    } else if (options3mf->materialType == "color") {
+    } else if (options3mf->materialType == Export3mfMaterialType::color) {
       usecolors = true;
     }
   }

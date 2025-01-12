@@ -33,7 +33,7 @@
 #include "Settings.h"
 #include "gui/SettingsWriter.h"
 
-using S = Settings::Settings;
+using S = Settings::SettingsExportPdf;
 
 ExportPdfDialog::ExportPdfDialog()
 {
@@ -80,7 +80,7 @@ int ExportPdfDialog::exec()
     applyMetaData(this->checkBoxMetaDataAuthor, this->lineEditMetaDataAuthor, &S::exportPdfAddMetaDataAuthor, S::exportPdfMetaDataAuthor);
     applyMetaData(this->checkBoxMetaDataSubject, this->lineEditMetaDataSubject, &S::exportPdfAddMetaDataSubject, S::exportPdfMetaDataSubject);
     applyMetaData(this->checkBoxMetaDataKeywords, this->lineEditMetaDataKeywords, &S::exportPdfAddMetaDataKeywords, S::exportPdfMetaDataKeywords);
-  	S::visit(SettingsWriter());
+    Settings::Settings::visit(SettingsWriter());
   }
 
   return result;

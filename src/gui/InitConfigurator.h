@@ -64,7 +64,7 @@ void InitConfigurator::initComboBox(QComboBox *comboBox, const Settings::Setting
 {
   comboBox->clear();
   for (const auto& item : entry.items()) {
-    comboBox->addItem(QString::fromStdString(item.description), QString::fromStdString(item.value));
+    comboBox->addItem(QString::fromStdString(item.description), QString::fromStdString(item.name));
   }
   updateComboBox(comboBox, entry);
 }
@@ -79,19 +79,8 @@ template<typename enum_type>
 void InitConfigurator::initButtonGroup(const BlockSignals<QButtonGroup *>& buttonGroup, const Settings::SettingsEntryEnum<enum_type>& entry)
 {
   for (const auto button : buttonGroup->buttons()) {
-    const auto settingsValue = button->property(Settings::PROPERTY_NAME).toUInt();
-    if (static_cast<uint32_t>(settingsValue) == static_cast<uint32_t>(entry.value())) {
-      button->setChecked(true);
-    }
-  }
-}
-
-template<>
-inline void InitConfigurator::initButtonGroup(const BlockSignals<QButtonGroup *>& buttonGroup, const Settings::SettingsEntryEnum<std::string>& entry)
-{
-  for (const auto button : buttonGroup->buttons()) {
     const auto settingsValue = button->property(Settings::PROPERTY_NAME).toString().toStdString();
-    if (settingsValue == entry.value()) {
+    if (settingsValue == entry.item().name) {
       button->setChecked(true);
     }
   }
@@ -102,17 +91,7 @@ void InitConfigurator::applyButtonGroup(const BlockSignals<QButtonGroup *>& butt
 {
   const auto button = buttonGroup->checkedButton();
   if (button) {
-      const auto settingsValue = button->property(Settings::PROPERTY_NAME).toUInt();
-      entry.setValue(static_cast<enum_type>(settingsValue));
-  }
-}
-
-template<>
-inline void InitConfigurator::applyButtonGroup(const BlockSignals<QButtonGroup *>& buttonGroup, Settings::SettingsEntryEnum<std::string>& entry)
-{
-  const auto button = buttonGroup->checkedButton();
-  if (button) {
       const auto settingsValue = button->property(Settings::PROPERTY_NAME).toString().toStdString();
-      entry.setValue(settingsValue);
+      entry.setValue(entry.decode(settingsValue));
   }
 }

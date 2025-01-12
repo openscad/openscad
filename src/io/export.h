@@ -19,7 +19,8 @@
 
 #include "io/export_enums.h"
 
-using S = Settings::Settings;
+using SPDF = Settings::SettingsExportPdf;
+using S3MF = Settings::SettingsExport3mf;
 
 class PolySet;
 
@@ -69,6 +70,8 @@ bool is2D(FileFormat format);
 
 }  // namespace FileFormat
 
+using CmdLineExportOptions = std::unordered_map<std::string, std::unordered_map<std::string, std::string>>;
+
 // include defaults to use without dialog or direction.
 // Defaults match values used prior to incorporation of options.
 struct ExportPdfOptions {
@@ -77,39 +80,62 @@ struct ExportPdfOptions {
     bool showGrid = false;
     double gridSize = 10.0;
     bool showDesignFilename = false;
-    PaperOrientations orientation = PaperOrientations::PORTRAIT;
-    PaperSizes paperSize = PaperSizes::A4;
-    bool addMetaData = S::exportPdfAddMetaData.defaultValue();
+    ExportPdfPaperOrientation orientation = ExportPdfPaperOrientation::PORTRAIT;
+    ExportPdfPaperSize paperSize = ExportPdfPaperSize::A4;
+    bool addMetaData = SPDF::exportPdfAddMetaData.defaultValue();
     std::string metaDataTitle;
     std::string metaDataAuthor;
     std::string metaDataSubject;
     std::string metaDataKeywords;
 
+  static std::shared_ptr<const ExportPdfOptions> withOptions(const CmdLineExportOptions& cmdLineOptions) {
+    ExportPdfOptions options;
+    if (cmdLineOptions.count(Settings::SECTION_EXPORT_PDF) > 0) {
+      //const auto& o = cmdLineOptions.at(Settings::SECTION_EXPORT_PDF);
+    }
+    return std::make_shared<const ExportPdfOptions>(options);
+  }
+
   static const std::shared_ptr<const ExportPdfOptions> fromSettings() {
     return std::make_shared<const ExportPdfOptions>(ExportPdfOptions{
-      .showScale = S::exportPdfShowScale.value(),
-      .showScaleMsg = S::exportPdfShowScaleMessage.value(),
-      .showGrid = S::exportPdfShowGrid.value(),
-      .gridSize = S::exportPdfGridSize.value(),
-      .showDesignFilename = S::exportPdfShowFilename.value(),
-      .orientation = S::exportPdfOrientation.value(),
-      .paperSize = S::exportPdfPaperSize.value(),
-      .addMetaData = S::exportPdfAddMetaData.value(),
-      .metaDataTitle = S::exportPdfMetaDataTitle.value(),
-      .metaDataAuthor = S::exportPdfAddMetaDataAuthor.value() ? S::exportPdfMetaDataAuthor.value() : "",
-      .metaDataSubject = S::exportPdfAddMetaDataSubject.value() ? S::exportPdfMetaDataSubject.value() : "",
-      .metaDataKeywords = S::exportPdfAddMetaDataKeywords.value() ? S::exportPdfMetaDataKeywords.value() : "",
+      .showScale = SPDF::exportPdfShowScale.value(),
+      .showScaleMsg = SPDF::exportPdfShowScaleMessage.value(),
+      .showGrid = SPDF::exportPdfShowGrid.value(),
+      .gridSize = SPDF::exportPdfGridSize.value(),
+      .showDesignFilename = SPDF::exportPdfShowFilename.value(),
+      .orientation = SPDF::exportPdfOrientation.value(),
+      .paperSize = SPDF::exportPdfPaperSize.value(),
+      .addMetaData = SPDF::exportPdfAddMetaData.value(),
+      .metaDataTitle = SPDF::exportPdfMetaDataTitle.value(),
+      .metaDataAuthor = SPDF::exportPdfAddMetaDataAuthor.value() ? SPDF::exportPdfMetaDataAuthor.value() : "",
+      .metaDataSubject = SPDF::exportPdfAddMetaDataSubject.value() ? SPDF::exportPdfMetaDataSubject.value() : "",
+      .metaDataKeywords = SPDF::exportPdfAddMetaDataKeywords.value() ? SPDF::exportPdfMetaDataKeywords.value() : "",
     });
   }
 };
 
+template<typename settings_entry_type>
+auto set_cmd_line_option(const CmdLineExportOptions& cmdLineOptions, const std::string& section, const settings_entry_type& se)
+{
+  if (cmdLineOptions.count(section) == 0) {
+    return se.defaultValue();
+  }
+
+  const auto& o = cmdLineOptions.at(Settings::SECTION_EXPORT_3MF);
+  if (o.count(se.name()) == 0) {
+    return se.defaultValue();
+  }
+
+  return se.decode(o.at(se.name()));
+}
+
 struct Export3mfOptions {
-  std::string colorMode = S::export3mfColorMode.defaultValue();
-  std::string unit = S::export3mfUnit.defaultValue();
-  std::string color = S::export3mfColor.defaultValue();
-  std::string materialType = S::export3mfMaterialType.defaultValue();
-  int decimalPrecision = S::export3mfDecimalPrecision.defaultValue();
-  bool addMetaData = S::export3mfAddMetaData.defaultValue();
+  Export3mfColorMode colorMode;
+  Export3mfUnit unit;
+  std::string color;
+  Export3mfMaterialType materialType;
+  int decimalPrecision;
+  bool addMetaData;
   std::string metaDataTitle;
   std::string metaDataDesigner;
   std::string metaDataDescription;
@@ -117,20 +143,37 @@ struct Export3mfOptions {
   std::string metaDataLicenseTerms;
   std::string metaDataRating;
 
+  static const std::shared_ptr<const Export3mfOptions> withOptions(const CmdLineExportOptions& cmdLineOptions) {
+    return std::make_shared<const Export3mfOptions>(Export3mfOptions{
+      .colorMode = set_cmd_line_option(cmdLineOptions, Settings::SECTION_EXPORT_3MF, Settings::SettingsExport3mf::export3mfColorMode),
+      .unit = set_cmd_line_option(cmdLineOptions, Settings::SECTION_EXPORT_3MF, Settings::SettingsExport3mf::export3mfUnit),
+      .color = set_cmd_line_option(cmdLineOptions, Settings::SECTION_EXPORT_3MF, Settings::SettingsExport3mf::export3mfColor),
+      .materialType = set_cmd_line_option(cmdLineOptions, Settings::SECTION_EXPORT_3MF, Settings::SettingsExport3mf::export3mfMaterialType),
+      .decimalPrecision = set_cmd_line_option(cmdLineOptions, Settings::SECTION_EXPORT_3MF, Settings::SettingsExport3mf::export3mfDecimalPrecision),
+      .addMetaData = set_cmd_line_option(cmdLineOptions, Settings::SECTION_EXPORT_3MF, Settings::SettingsExport3mf::export3mfAddMetaData),
+      .metaDataTitle = set_cmd_line_option(cmdLineOptions, Settings::SECTION_EXPORT_3MF, Settings::SettingsExport3mf::export3mfMetaDataTitle),
+      .metaDataDesigner = set_cmd_line_option(cmdLineOptions, Settings::SECTION_EXPORT_3MF, Settings::SettingsExport3mf::export3mfMetaDataDesigner),
+      .metaDataDescription = set_cmd_line_option(cmdLineOptions, Settings::SECTION_EXPORT_3MF, Settings::SettingsExport3mf::export3mfMetaDataDescription),
+      .metaDataCopyright = set_cmd_line_option(cmdLineOptions, Settings::SECTION_EXPORT_3MF, Settings::SettingsExport3mf::export3mfMetaDataCopyright),
+      .metaDataLicenseTerms = set_cmd_line_option(cmdLineOptions, Settings::SECTION_EXPORT_3MF, Settings::SettingsExport3mf::export3mfMetaDataLicenseTerms),
+      .metaDataRating = set_cmd_line_option(cmdLineOptions, Settings::SECTION_EXPORT_3MF, Settings::SettingsExport3mf::export3mfMetaDataRating),
+    });
+  }
+
   static const std::shared_ptr<const Export3mfOptions> fromSettings() {
     return std::make_shared<const Export3mfOptions>(Export3mfOptions{
-      .colorMode = S::export3mfColorMode.value(),
-      .unit = S::export3mfUnit.value(),
-      .color = S::export3mfColor.value(),
-      .materialType = S::export3mfMaterialType.value(),
-      .decimalPrecision = S::export3mfDecimalPrecision.value(),
-      .addMetaData = S::export3mfAddMetaData.value(),
-      .metaDataTitle = S::export3mfMetaDataTitle.value(),
-      .metaDataDesigner = S::export3mfAddMetaDataDesigner.value() ? S::export3mfMetaDataDesigner.value() : "",
-      .metaDataDescription = S::export3mfAddMetaDataDescription.value() ? S::export3mfMetaDataDescription.value() : "",
-      .metaDataCopyright = S::export3mfAddMetaDataCopyright.value() ? S::export3mfMetaDataCopyright.value() : "",
-      .metaDataLicenseTerms = S::export3mfAddMetaDataLicenseTerms.value() ? S::export3mfMetaDataLicenseTerms.value() : "",
-      .metaDataRating = S::export3mfAddMetaDataRating.value() ? S::export3mfMetaDataRating.value() : "",
+      .colorMode = S3MF::export3mfColorMode.value(),
+      .unit = S3MF::export3mfUnit.value(),
+      .color = S3MF::export3mfColor.value(),
+      .materialType = S3MF::export3mfMaterialType.value(),
+      .decimalPrecision = S3MF::export3mfDecimalPrecision.value(),
+      .addMetaData = S3MF::export3mfAddMetaData.value(),
+      .metaDataTitle = S3MF::export3mfMetaDataTitle.value(),
+      .metaDataDesigner = S3MF::export3mfAddMetaDataDesigner.value() ? S3MF::export3mfMetaDataDesigner.value() : "",
+      .metaDataDescription = S3MF::export3mfAddMetaDataDescription.value() ? S3MF::export3mfMetaDataDescription.value() : "",
+      .metaDataCopyright = S3MF::export3mfAddMetaDataCopyright.value() ? S3MF::export3mfMetaDataCopyright.value() : "",
+      .metaDataLicenseTerms = S3MF::export3mfAddMetaDataLicenseTerms.value() ? S3MF::export3mfMetaDataLicenseTerms.value() : "",
+      .metaDataRating = S3MF::export3mfAddMetaDataRating.value() ? S3MF::export3mfMetaDataRating.value() : "",
     });
   }
 };
@@ -148,7 +191,7 @@ struct ExportInfo {
   std::shared_ptr<const Export3mfOptions> options3mf;
 };
 
-ExportInfo createExportInfo(const FileFormat& format, const FileFormatInfo& info, const std::string& filepath, const Camera *camera);
+ExportInfo createExportInfo(const FileFormat& format, const FileFormatInfo& info, const std::string& filepath, const Camera *camera, const CmdLineExportOptions& cmdLineOptions);
 
 bool exportFileByName(const std::shared_ptr<const class Geometry>& root_geom, const std::string& filename, const ExportInfo& exportInfo);
 bool exportFileStdOut(const std::shared_ptr<const class Geometry>& root_geom, const ExportInfo& exportInfo);

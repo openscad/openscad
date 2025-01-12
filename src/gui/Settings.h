@@ -5,6 +5,7 @@
 #include <string>
 #include <utility>
 #include <vector>
+#include <array>
 #include <sstream>
 
 #include "io/export_enums.h"
@@ -19,7 +20,7 @@ constexpr inline auto PROPERTY_SELECTED_VALUE = "_selected_value";
 constexpr inline auto SECTION_EXPORT_PDF = "export-pdf";
 constexpr inline auto SECTION_EXPORT_3MF = "export-3mf";
 
-class SettingsEntry
+class SettingsEntryBase
 {
 public:
   const std::string& category() const { return _category; }
@@ -28,18 +29,31 @@ public:
 
   virtual bool isDefault() const = 0;
   virtual std::string encode() const = 0;
-  virtual void decode(const std::string& encoded) = 0;
+  virtual void set(const std::string& encoded) = 0;
 
 protected:
-  SettingsEntry(std::string category, std::string name);
-  virtual ~SettingsEntry() = default;
+  SettingsEntryBase(std::string category, std::string name);
+  virtual ~SettingsEntryBase() = default;
 
 private:
   std::string _category;
   std::string _name;
 };
 
-class SettingsEntryBool : public SettingsEntry
+template<typename entry_type>
+class SettingsEntry : public SettingsEntryBase
+{
+public:
+  using entry_type_t = entry_type;
+
+  virtual const entry_type decode(const std::string& encoded) const = 0;
+
+protected:
+  SettingsEntry(const std::string& category, const std::string& name) : SettingsEntryBase(category, name) {}
+  virtual ~SettingsEntry() = default;
+};
+
+class SettingsEntryBool : public SettingsEntry<bool>
 {
 public:
   SettingsEntryBool(const std::string& category, const std::string& name, bool defaultValue) :
@@ -53,14 +67,15 @@ public:
   bool defaultValue() const { return _defaultValue; }
   bool isDefault() const override { return _value == _defaultValue; }
   std::string encode() const override;
-  void decode(const std::string& encoded) override;
+  const bool decode(const std::string& encoded) const override;
+  void set(const std::string& encoded) override { setValue(decode(encoded)); };
 
 private:
   bool _value;
   bool _defaultValue;
 };
 
-class SettingsEntryInt : public SettingsEntry
+class SettingsEntryInt : public SettingsEntry<int>
 {
 public:
   SettingsEntryInt(const std::string& category, const std::string& name, int minimum, int maximum, int defaultValue) :
@@ -78,7 +93,8 @@ public:
   int defaultValue() const { return _defaultValue; }
   bool isDefault() const override { return _value == _defaultValue; }
   std::string encode() const override;
-  void decode(const std::string& encoded) override;
+  const int decode(const std::string& encoded) const override;
+  void set(const std::string& encoded) override { setValue(decode(encoded)); };
 
 private:
   int _value;
@@ -87,7 +103,7 @@ private:
   int _maximum;
 };
 
-class SettingsEntryDouble : public SettingsEntry
+class SettingsEntryDouble : public SettingsEntry<double>
 {
 public:
   SettingsEntryDouble(const std::string& category, const std::string& name, double minimum, double step, double maximum, double defaultValue) :
@@ -104,9 +120,11 @@ public:
   double minimum() const { return _minimum; }
   double step() const { return _step; }
   double maximum() const { return _maximum; }
+  int defaultValue() const { return _defaultValue; }
   bool isDefault() const override { return _value == _defaultValue; }
   std::string encode() const override;
-  void decode(const std::string& encoded) override;
+  const double decode(const std::string& encoded) const override;
+  void set(const std::string& encoded) override { setValue(decode(encoded)); };
 
 private:
   double _value;
@@ -116,7 +134,7 @@ private:
   double _maximum;
 };
 
-class SettingsEntryString : public SettingsEntry
+class SettingsEntryString : public SettingsEntry<std::string>
 {
 public:
   SettingsEntryString(const std::string& category, const std::string& name, const std::string& defaultValue) :
@@ -130,7 +148,8 @@ public:
   const std::string& defaultValue() const { return _defaultValue; }
   bool isDefault() const override { return _value == _defaultValue; }
   std::string encode() const override { return value(); }
-  void decode(const std::string& encoded) override { setValue(encoded); }
+  const std::string decode(const std::string& encoded) const override { return encoded; }
+  void set(const std::string& encoded) override { setValue(decode(encoded)); };
 
 private:
   std::string _value;
@@ -138,22 +157,24 @@ private:
 };
 
 template<typename enum_type>
-class SettingsEntryEnum : public SettingsEntry
+class SettingsEntryEnum : public SettingsEntry<enum_type>
 {
 public:
   struct Item {
     enum_type value;
+    std::string name;
     std::string description;
   };
   SettingsEntryEnum(const std::string& category, const std::string& name, std::vector<Item> items, enum_type defaultValue) :
-    SettingsEntry(category, name),
+    SettingsEntry<enum_type>(category, name),
     _items(std::move(items)),
     _defaultValue(std::move(defaultValue))
   {
     setValue(_defaultValue);
   }
 
-  const enum_type& value() const { return _items[_index].value; }
+  const Item& item() const { return _items[_index]; }
+  const enum_type& value() const { return item().value; }
   size_t index() const { return _index; }
   void setValue(const enum_type& value);
   void setIndex(size_t index) { if (index < _items.size()) _index = index; }
@@ -161,13 +182,44 @@ public:
   const enum_type& defaultValue() const { return _defaultValue; }
   bool isDefault() const override { return value() == _defaultValue; }
   std::string encode() const override;
-  void decode(const std::string& encoded) override;
+  const enum_type decode(const std::string& encoded) const override;
+  void set(const std::string& encoded) override { setValue(decode(encoded)); }
 
 private:
   std::vector<Item> _items;
   size_t _index{0};
   enum_type _defaultValue;
 };
+
+template<typename enum_type>
+void SettingsEntryEnum<enum_type>::setValue(const enum_type& value)
+{
+  for (size_t i = 0; i < _items.size(); ++i) {
+    if (_items[i].value == value) {
+      _index = i;
+      return;
+    }
+  }
+}
+
+template<typename enum_type>
+std::string SettingsEntryEnum<enum_type>::encode() const { return item().name; }
+
+template<typename enum_type>
+const enum_type SettingsEntryEnum<enum_type>::decode(const std::string& encoded) const {
+  for (const Item& item : items()) {
+    if (item.name == encoded) {
+      return item.value;
+    }
+  }
+  return defaultValue();
+}
+
+template<>
+inline std::string SettingsEntryEnum<std::string>::encode() const { return value(); }
+
+template<>
+inline const std::string SettingsEntryEnum<std::string>::decode(const std::string& encoded) const { return encoded; }
 
 class LocalAppParameterType
 {
@@ -226,16 +278,16 @@ struct LocalAppParameter {
 };
 
 template<typename item_type>
-class SettingsEntryList : public SettingsEntry
+class SettingsEntryList : public SettingsEntry<std::vector<item_type>>
 {
 public:
+  using list_type_t = std::vector<item_type>;
   SettingsEntryList(const std::string& category, const std::string& name) :
-    SettingsEntry(category, name)
+    SettingsEntry<std::vector<item_type>>(category, name)
   {
   }
-
-  const std::vector<item_type>& items() const { return _items; }
-  void setItems(std::vector<item_type>& items) { _items = items; }
+  const list_type_t& value() const { return _items; }
+  void setValue(const list_type_t& items) { _items = items; }
   bool isDefault() const override { return _items.empty(); }
   std::string encode() const override {
     std::ostringstream oss;
@@ -244,7 +296,7 @@ public:
     }
     return oss.str();
   }
-  void decode(const std::string& encoded) override {
+  const std::vector<item_type> decode(const std::string& encoded) const override {
     std::vector<item_type> items;
     std::stringstream ss;
     ss << encoded;
@@ -255,28 +307,13 @@ public:
         items.push_back(item);
       }
     }
-    setItems(items);
+    return items;
   }
+  void set(const std::string& encoded) override { setValue(decode(encoded)); };
 
 private:
-  std::vector<item_type> _items;
+  list_type_t _items;
 };
-template<typename enum_type>
-void SettingsEntryEnum<enum_type>::setValue(const enum_type& value)
-{
-  for (size_t i = 0; i < _items.size(); ++i) {
-    if (_items[i].value == value) {
-      _index = i;
-      return;
-    }
-  }
-}
-
-template<typename enum_type>
-std::string SettingsEntryEnum<enum_type>::encode() const { return std::to_string(static_cast<uint32_t>(value())); }
-
-template<typename enum_type>
-void SettingsEntryEnum<enum_type>::decode(const std::string& encoded) { setValue(static_cast<enum_type>(std::stoi(encoded))); }
 
 class SettingsVisitor;
 
@@ -402,9 +439,18 @@ public:
   static SettingsEntryDouble axisDeadzone8;
   static SettingsEntryInt joystickNr;
 
+  static SettingsEntryString& inputButton(size_t id);
+  static SettingsEntryDouble& axisTrim(size_t id);
+  static SettingsEntryDouble& axisDeadzone(size_t id);
+
+  static void visit(const SettingsVisitor& visitor);
+};
+
+class SettingsExportPdf {
+public:
   static SettingsEntryBool exportPdfAlwaysShowDialog;
-  static SettingsEntryEnum<PaperSizes> exportPdfPaperSize;
-  static SettingsEntryEnum<PaperOrientations> exportPdfOrientation;
+  static SettingsEntryEnum<ExportPdfPaperSize> exportPdfPaperSize;
+  static SettingsEntryEnum<ExportPdfPaperOrientation> exportPdfOrientation;
   static SettingsEntryBool exportPdfShowFilename;
   static SettingsEntryBool exportPdfShowScale;
   static SettingsEntryBool exportPdfShowScaleMessage;
@@ -419,11 +465,29 @@ public:
   static SettingsEntryString exportPdfMetaDataSubject;
   static SettingsEntryString exportPdfMetaDataKeywords;
 
+  static constexpr std::array<const SettingsEntryBase *, 12> cmdline{
+    &exportPdfPaperSize,
+    &exportPdfOrientation,
+    &exportPdfShowFilename,
+    &exportPdfShowScale,
+    &exportPdfShowScaleMessage,
+    &exportPdfShowGrid,
+    &exportPdfGridSize,
+    &exportPdfAddMetaData,
+    &exportPdfMetaDataTitle,
+    &exportPdfMetaDataAuthor,
+    &exportPdfMetaDataSubject,
+    &exportPdfMetaDataKeywords,
+  };
+};
+
+class SettingsExport3mf {
+public:
   static SettingsEntryBool export3mfAlwaysShowDialog;
-  static SettingsEntryEnum<std::string> export3mfColorMode;
-  static SettingsEntryEnum<std::string> export3mfUnit;
+  static SettingsEntryEnum<Export3mfColorMode> export3mfColorMode;
+  static SettingsEntryEnum<Export3mfUnit> export3mfUnit;
   static SettingsEntryString export3mfColor;
-  static SettingsEntryEnum<std::string> export3mfMaterialType;
+  static SettingsEntryEnum<Export3mfMaterialType> export3mfMaterialType;
   static SettingsEntryInt export3mfDecimalPrecision;
   static SettingsEntryBool export3mfAddMetaData;
   static SettingsEntryBool export3mfAddMetaDataDesigner;
@@ -438,11 +502,20 @@ public:
   static SettingsEntryString export3mfMetaDataLicenseTerms;
   static SettingsEntryString export3mfMetaDataRating;
 
-  static SettingsEntryString& inputButton(size_t id);
-  static SettingsEntryDouble& axisTrim(size_t id);
-  static SettingsEntryDouble& axisDeadzone(size_t id);
-
-  static void visit(const SettingsVisitor& visitor);
+  static constexpr std::array<const SettingsEntryBase *, 12> cmdline{
+    &export3mfColorMode,
+    &export3mfUnit,
+    &export3mfColor,
+    &export3mfMaterialType,
+    &export3mfDecimalPrecision,
+    &export3mfAddMetaData,
+    &export3mfMetaDataTitle,
+    &export3mfMetaDataDesigner,
+    &export3mfMetaDataDescription,
+    &export3mfMetaDataCopyright,
+    &export3mfMetaDataLicenseTerms,
+    &export3mfMetaDataRating,
+  };
 };
 
 class SettingsVisitor
@@ -451,7 +524,7 @@ public:
   SettingsVisitor() = default;
   virtual ~SettingsVisitor() = default;
 
-  virtual void handle(SettingsEntry& entry) const = 0;
+  virtual void handle(SettingsEntryBase& entry) const = 0;
 };
 
 } // namespace Settings

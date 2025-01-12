@@ -2,8 +2,7 @@
 
 #include <cstdint>
 
-// Paper Data used by ExportPDF
-enum class PaperSizes : std::uint8_t {
+enum class ExportPdfPaperSize : std::uint8_t {
   A6,
   A5,
   A4,
@@ -13,22 +12,31 @@ enum class PaperSizes : std::uint8_t {
   TABLOID,
 };
 
-// Dimensions in pts per PDF standard, used by ExportPDF
-// See also: https://www.prepressure.com/library/paper-size
-// rows map to paperSizes enums
-// columns are Width, Height
-const int paperDimensions[7][2] = {
-  {298,  420}, // A6
-  {420,  595}, // A5
-  {595,  842}, // A4
-  {842, 1190}, // A3
-  {612,  792}, // Letter
-  {612, 1008}, // Legal
-  {792, 1224}, // Tabloid
-};
-
-enum class PaperOrientations : std::uint8_t {
+enum class ExportPdfPaperOrientation : std::uint8_t {
   AUTO,
   PORTRAIT,
-  LANDSCAPE
+  LANDSCAPE,
+};
+
+enum class Export3mfColorMode : std::uint8_t {
+  model,
+  none,
+  selected_only,
+  selected_as_default,
+};
+
+// https://github.com/3MFConsortium/spec_core/blob/master/3MF%20Core%20Specification.md:
+// micron, millimeter, centimeter, inch, foot, and meter
+enum class Export3mfUnit : std::uint8_t {
+  micron,
+  millimeter,
+  centimeter,
+  meter,
+  inch,
+  foot,
+};
+
+enum class Export3mfMaterialType : std::uint8_t {
+  color,
+  basematerial,
 };

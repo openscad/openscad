@@ -38,7 +38,7 @@
 #include "UIUtils.h"
 #include "gui/SettingsWriter.h"
 
-using S = Settings::Settings;
+using S = Settings::SettingsExport3mf;
 using SEBool = Settings::SettingsEntryBool;
 using SEString = Settings::SettingsEntryString;
 
@@ -102,7 +102,7 @@ int Export3mfDialog::exec()
 	applyMetaData(this->checkBoxMetaDataCopyright, this->lineEditMetaDataCopyright, &S::export3mfAddMetaDataCopyright, S::export3mfMetaDataCopyright);
 	applyMetaData(this->checkBoxMetaDataLicenseTerms, this->lineEditMetaDataLicenseTerms, &S::export3mfAddMetaDataLicenseTerms, S::export3mfMetaDataLicenseTerms);
 	applyMetaData(this->checkBoxMetaDataRating, this->lineEditMetaDataRating, &S::export3mfAddMetaDataRating, S::export3mfMetaDataRating);
-	S::visit(SettingsWriter());
+	Settings::Settings::visit(SettingsWriter());
   }
 
   return result;

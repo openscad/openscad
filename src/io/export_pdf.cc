@@ -24,6 +24,20 @@ const std::string get_cairo_version() {
 
 namespace {
 
+// Dimensions in pts per PDF standard, used by ExportPDF
+// See also: https://www.prepressure.com/library/paper-size
+// rows map to paperSizes enums
+// columns are Width, Height
+const int paperDimensions[7][2] = {
+  {298,  420}, // A6
+  {420,  595}, // A5
+  {595,  842}, // A4
+  {842, 1190}, // A3
+  {612,  792}, // Letter
+  {612, 1008}, // Legal
+  {792, 1224}, // Tabloid
+};
+
 void draw_text(const char *text, cairo_t *cr, double x, double y, double fontSize)
 {
   cairo_select_font_face(cr, FONT, CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);
@@ -221,7 +235,7 @@ void export_pdf(const std::shared_ptr<const Geometry>& geom, std::ostream& outpu
   int centerY = mm_to_points(miny)+spanY/2;
   
   // Set orientation and paper size
-  if ((options->orientation==PaperOrientations::AUTO && spanX>spanY)||(options->orientation==PaperOrientations::LANDSCAPE)) {
+  if ((options->orientation==ExportPdfPaperOrientation::AUTO && spanX>spanY)||(options->orientation==ExportPdfPaperOrientation::LANDSCAPE)) {
   	pdfX = paperDimensions[static_cast<int>(options->paperSize)][1];
   	pdfY = paperDimensions[static_cast<int>(options->paperSize)][0];
   } else {

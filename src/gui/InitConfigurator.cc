@@ -47,7 +47,7 @@ void InitConfigurator::initListBox(QListWidget *listBox, const Settings::Setting
 {
   listBox->blockSignals(true);
   listBox->clear();
-  for (const auto& listitem : list.items()) {
+  for (const auto& listitem : list.value()) {
     if (listitem.type == Settings::LocalAppParameterType::string) {
       const auto item = Preferences::inst()->createListItem(Settings::LocalAppParameterType(Settings::LocalAppParameterType::string), QString::fromStdString(listitem.value));
       listBox->insertItem(listBox->count(), item);
