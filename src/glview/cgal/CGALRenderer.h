@@ -25,20 +25,20 @@ public:
 private:
   void addGeometry(const std::shared_ptr<const class Geometry>& geom);
 #ifdef ENABLE_CGAL
-  const std::vector<std::shared_ptr<class CGAL_OGL_Polyhedron>>& getPolyhedrons() const { return this->polyhedrons; }
+  const std::vector<std::shared_ptr<class CGAL_OGL_Polyhedron>>& getPolyhedrons() const { return this->polyhedrons_; }
   void createPolyhedrons();
 #endif
   void createPolySetStates();
-  bool last_render_state; // FIXME: this is temporary to make switching between renderers seamless.
+  bool last_render_state_; // FIXME: this is temporary to make switching between renderers seamless.
 
-  std::vector<std::shared_ptr<const class PolySet>> polysets;
-  std::vector<std::pair<std::shared_ptr<const Polygon2d>, std::shared_ptr<const PolySet>>> polygons;
+  std::vector<std::shared_ptr<const class PolySet>> polysets_;
+  std::vector<std::pair<std::shared_ptr<const Polygon2d>, std::shared_ptr<const PolySet>>> polygons_;
 #ifdef ENABLE_CGAL
-  std::vector<std::shared_ptr<class CGAL_OGL_Polyhedron>> polyhedrons;
-  std::vector<std::shared_ptr<const CGAL_Nef_polyhedron>> nefPolyhedrons;
+  std::vector<std::shared_ptr<class CGAL_OGL_Polyhedron>> polyhedrons_;
+  std::vector<std::shared_ptr<const CGAL_Nef_polyhedron>> nefPolyhedrons_;
 #endif
 
-  std::vector<std::shared_ptr<VertexState>> vertex_states;
-  GLuint polyset_vertices_vbo{0};
-  GLuint polyset_elements_vbo{0};
+  std::vector<std::shared_ptr<VertexState>> vertex_states_;
+  GLuint polyset_vertices_vbo_{0};
+  GLuint polyset_elements_vbo_{0};
 };
