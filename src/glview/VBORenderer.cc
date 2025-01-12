@@ -470,7 +470,7 @@ void VBORenderer::add_shader_pointers(VertexArray& vertex_array)
       auto ss = ss_ptr.lock();
       if (ss) {
         // NOLINTBEGIN(performance-no-int-to-ptr)
-        GL_TRACE("glVertexAttribPointer(%d, %d, %d, %p)", count % type % stride % (GLvoid *)(ss->drawOffset() + offset));
+        GL_TRACE("glVertexAttribPointer(%d, %d, %d, %d, %p)", index % count % type % stride % (GLvoid *)(ss->drawOffset() + offset));
         GL_CHECKD(glVertexAttribPointer(index, count, type, GL_FALSE, stride, (GLvoid *)(ss->drawOffset() + offset)));
         // NOLINTEND(performance-no-int-to-ptr)
       }
