@@ -1,9 +1,9 @@
 // Empty
-rotate_extrude();
+linear_extrude();
 // No children
-rotate_extrude() { }
+linear_extrude() { }
 // 3D child
-rotate_extrude() { cube(); }
+linear_extrude() { cube(); }
 
 linear_extrude(height=10) square([10,10]);
 translate([19,5,0]) linear_extrude(height=10, center=true) difference() {circle(5); circle(3);}
