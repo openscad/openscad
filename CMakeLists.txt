@@ -818,6 +818,7 @@ set(CORE_SOURCES
   src/core/RenderVariables.cc
   src/core/RotateExtrudeNode.cc
   src/core/ScopeContext.cc
+  src/core/Settings.cc
   src/core/SourceFile.cc
   src/core/SourceFileCache.cc
   src/core/StatCache.cc
@@ -1120,7 +1121,6 @@ set(GUI_SOURCES
   src/gui/ScadApi.cc
   src/gui/ScadLexer.cc
   src/gui/ScintillaEditor.cc
-  src/gui/Settings.cc
   src/gui/SettingsWriter.cc
   src/gui/TabManager.cc
   src/gui/TabWidget.cc
@@ -1188,7 +1188,6 @@ set(GUI_HEADERS
     src/gui/ScadApi.h
     src/gui/ScadLexer.h
     src/gui/ScintillaEditor.h
-    src/gui/Settings.h
     src/gui/SettingsWriter.h
     src/gui/TabManager.h
     src/gui/TabWidget.h

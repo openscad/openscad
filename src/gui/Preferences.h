@@ -20,7 +20,7 @@
 #include "gui/qtgettext.h" // IWYU pragma: keep
 #include "openscad_gui.h"
 #include "ui_Preferences.h"
-#include "gui/Settings.h"
+#include "core/Settings.h"
 #include "gui/InitConfigurator.h"
 
 class Preferences : public QMainWindow, public Ui::Preferences, public InitConfigurator

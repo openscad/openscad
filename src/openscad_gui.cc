@@ -43,7 +43,7 @@
 #include "gui/MainWindow.h"
 #include "gui/OpenSCADApp.h"
 #include "gui/QSettingsCached.h"
-#include "gui/Settings.h"
+#include "core/Settings.h"
 #include "openscad.h"
 #include "utils/printutils.h"
 

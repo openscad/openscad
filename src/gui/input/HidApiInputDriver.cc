@@ -43,7 +43,7 @@
 #include <iomanip>
 #include <string>
 
-#include "gui/Settings.h"
+#include "core/Settings.h"
 #include "platform/PlatformUtils.h"
 #include "gui/input/InputDriverEvent.h"
 #include "gui/input/InputDriverManager.h"

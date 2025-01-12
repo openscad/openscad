@@ -10,7 +10,7 @@
 #include <cstdint>
 #include <string>
 
-#include "gui/Settings.h"
+#include "core/Settings.h"
 
 template <class WidgetPtr>
 class BlockSignals

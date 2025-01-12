@@ -12,7 +12,7 @@
 #include <QLineEdit>
 #include <QGroupBox>
 
-#include "gui/Settings.h"
+#include "core/Settings.h"
 #include "gui/Preferences.h"
 
 #include <string>

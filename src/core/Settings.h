@@ -13,6 +13,12 @@
 
 namespace Settings {
 
+  // Note that those 2 values also relate to the currently
+  // static list of fields in the preferences GUI, so updating
+  // here needs a change in the UI definition!
+constexpr inline size_t max_axis = 9;
+constexpr inline size_t max_buttons = 24;
+
 // Property name in GUI designer for matching enum values
 constexpr inline auto PROPERTY_NAME = "_settings_value";
 // Additional value for enums that can map to an additional value (e.g. GridSize in PDF Export)
@@ -465,10 +471,6 @@ public:
   static SettingsEntryDouble axisDeadzone7;
   static SettingsEntryDouble axisDeadzone8;
   static SettingsEntryInt joystickNr;
-
-  static SettingsEntryString& inputButton(size_t id);
-  static SettingsEntryDouble& axisTrim(size_t id);
-  static SettingsEntryDouble& axisDeadzone(size_t id);
 
   static void visit(const SettingsVisitor& visitor);
 };

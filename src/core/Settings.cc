@@ -1,9 +1,7 @@
-#include "gui/Settings.h"
+#include "core/Settings.h"
 
 #include <cassert>
-#include <array>
 #include <cstddef>
-#include <cstdint>
 #include <istream>
 #include <iterator>
 #include <string>
@@ -13,12 +11,9 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/range/adaptors.hpp>
 
-#include "PrintInitDialog.h"
 #include "export_enums.h"
 #include "io/export.h"
-#include "glview/RenderSettings.h"
 #include "utils/printutils.h"
-#include "gui/input/InputEventMapper.h"
 
 #include "json/json.hpp"
 
@@ -43,7 +38,7 @@ std::vector<SettingsEntryEnum<std::string>::Item> createFileFormatItems(std::vec
 std::vector<SettingsEntryEnum<std::string>::Item> axisValues() {
   std::vector<SettingsEntryEnum<std::string>::Item> output;
   output.push_back({"None", _("None")});
-  for (size_t i = 0; i < InputEventMapper::getMaxAxis(); ++i) {
+  for (size_t i = 0; i < max_axis; ++i) {
     const auto userData = (boost::format("+%d") % (i + 1)).str();
     const auto text = (boost::format(_("Axis %d")) % i).str();
     output.push_back({userData, text});
@@ -335,41 +330,5 @@ SettingsEntryString SettingsExport3mf::export3mfMetaDataDescription(SECTION_EXPO
 SettingsEntryString SettingsExport3mf::export3mfMetaDataCopyright(SECTION_EXPORT_3MF, "meta-data-copyright", "");
 SettingsEntryString SettingsExport3mf::export3mfMetaDataLicenseTerms(SECTION_EXPORT_3MF, "meta-data-license-terms", "");
 SettingsEntryString SettingsExport3mf::export3mfMetaDataRating(SECTION_EXPORT_3MF, "meta-data-rating", "");
-
-SettingsEntryString& Settings::inputButton(size_t id)
-{
-  const std::array<SettingsEntryString *, InputDriver::max_buttons> entries {
-    &inputButton0,  &inputButton1,  &inputButton2,  &inputButton3,
-    &inputButton4,  &inputButton5,  &inputButton6,  &inputButton7,
-    &inputButton8,  &inputButton9,  &inputButton10, &inputButton11,
-    &inputButton12, &inputButton13, &inputButton14, &inputButton15,
-    &inputButton16, &inputButton17, &inputButton18, &inputButton19,
-    &inputButton20, &inputButton21, &inputButton22, &inputButton23
-  };
-  assert(id >= 0 && id < entries.size());
-  return *entries[id];
-}
-
-SettingsEntryDouble& Settings::axisTrim(size_t id)
-{
-  const std::array<SettingsEntryDouble *, InputDriver::max_axis> entries {
-    &axisTrim0, &axisTrim1, &axisTrim2,
-    &axisTrim3, &axisTrim4, &axisTrim5,
-    &axisTrim6, &axisTrim7, &axisTrim8
-  };
-  assert(id >= 0 && id < entries.size());
-  return *entries[id];
-}
-
-SettingsEntryDouble& Settings::axisDeadzone(size_t id)
-{
-  const std::array<SettingsEntryDouble *, InputDriver::max_axis> entries {
-    &axisDeadzone0, &axisDeadzone1, &axisDeadzone2,
-    &axisDeadzone3, &axisDeadzone4, &axisDeadzone5,
-    &axisDeadzone6, &axisDeadzone7, &axisDeadzone8
-  };
-  assert(id >= 0 && id < entries.size());
-  return *entries[id];
-}
 
 } // namespace Settings

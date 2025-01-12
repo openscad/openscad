@@ -4,7 +4,7 @@
 #include <QComboBox>
 #include <QWidget>
 #include <string>
-#include "gui/Settings.h"
+#include "core/Settings.h"
 #include "ui_AxisConfigWidget.h"
 #include "gui/InitConfigurator.h"
 

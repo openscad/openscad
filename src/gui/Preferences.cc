@@ -55,7 +55,7 @@
 #include "geometry/GeometryCache.h"
 #include "gui/AutoUpdater.h"
 #include "Feature.h"
-#include "gui/Settings.h"
+#include "core/Settings.h"
 #include "printutils.h"
 #ifdef ENABLE_CGAL
 #include "geometry/cgal/CGALCache.h"

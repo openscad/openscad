@@ -83,7 +83,7 @@
 #include "core/progress.h"
 #include "io/dxfdim.h"
 #include "io/fileutils.h"
-#include "gui/Settings.h"
+#include "core/Settings.h"
 #include "gui/AboutDialog.h"
 #include "gui/FontListDialog.h"
 #include "gui/LibraryInfoDialog.h"
