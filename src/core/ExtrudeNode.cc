@@ -65,6 +65,7 @@ std::string ExtrudeNode::toString() const
   stream << this->name() << "(";
   stream <<
     "convexity = " << this->convexity;
+  stream << ")";
   return stream.str();
 }
 
