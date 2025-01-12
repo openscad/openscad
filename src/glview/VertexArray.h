@@ -311,19 +311,11 @@ public:
   void addAttributePointers(size_t start_offset = 0);
 
   inline GLuint verticesVBO() const { return vertices_vbo_; }
-  inline size_t verticesSize() const { return vertices_size_; }
-  inline void setVerticesSize(size_t vertices_size) {
-    vertices_size_ = vertices_size;
-    interleaved_buffer_.resize(vertices_size_);
-  }
   inline size_t verticesOffset() const { return vertices_offset_; }
-  inline void setVerticesOffset(size_t offset) { vertices_offset_ = offset; }
 
   // Return whether this Vertex Array uses elements (indexed rendering)
   inline bool useElements() const { return elements_vbo_ != 0; }
   inline GLuint elementsVBO() const { return elements_vbo_; }
-  inline size_t elementsSize() const { return elements_size_; }
-  inline void setElementsSize(size_t elements_size) { elements_size_ = elements_size; }
   inline size_t elementsOffset() const { return elements_offset_; }
   inline void setElementsOffset(size_t offset) { elements_offset_ = offset; }
 
@@ -334,6 +326,7 @@ public:
   void addShaderData();
 
 private:
+  inline void setElementsSize(size_t elements_size) { elements_size_ = elements_size; }
 
   std::unique_ptr<VertexStateFactory> factory_;
   std::vector<std::shared_ptr<VertexState>>& states_;
@@ -345,8 +338,6 @@ private:
 
   // Vertex VBO
   GLuint vertices_vbo_;
-  // Allocated size of vertex VBO
-  size_t vertices_size_{0};
   size_t vertices_offset_{0};
 
   // Element VBO

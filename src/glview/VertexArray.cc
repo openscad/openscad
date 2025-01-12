@@ -54,7 +54,7 @@ void VertexArray::createVertex(const std::array<Vector3d, 3>& points,
                                const std::array<Vector3d, 3>& normals,
                                const Color4f& color,
                                size_t active_point_index, size_t primitive_index,
-                               size_t shape_size, bool outlines, bool mirror,
+                               size_t shape_size, bool outlines, bool /*mirror*/,
                                const CreateVertexCallback& vertex_callback)
 {
   if (vertex_callback) {
@@ -78,13 +78,8 @@ void VertexArray::createVertex(const std::array<Vector3d, 3>& points,
     entry.first = elements_map_.find(interleaved_vertex);
     if (entry.first == elements_map_.end()) {
       // append vertex data if this is a new element
-      if (vertices_size_) {
-        if (interleaved_buffer_.size()) {
-          memcpy(interleaved_buffer_.data() + vertices_offset_, interleaved_vertex.data(), interleaved_vertex.size());
-        } else {
-          GL_TRACE("glBufferSubData(GL_ARRAY_BUFFER, %d, %d, %p)", vertices_offset_ % interleaved_vertex.size() % interleaved_vertex.data());
-          GL_CHECKD(glBufferSubData(GL_ARRAY_BUFFER, vertices_offset_, interleaved_vertex.size(), interleaved_vertex.data()));
-        }
+      if (!interleaved_buffer_.empty()) {
+        memcpy(interleaved_buffer_.data() + vertices_offset_, interleaved_vertex.data(), interleaved_vertex.size());
         data()->clear();
       }
       vertices_offset_ += interleaved_vertex.size();
@@ -114,19 +109,13 @@ void VertexArray::createVertex(const std::array<Vector3d, 3>& points,
     addAttributeValues(*elementsData(), entry.first->second);
     elements_offset_ += elementsData()->sizeofAttribute();
   } else { // !useElements()
-    if (!vertices_size_) {
+    if (interleaved_buffer_.empty()) {
       vertices_offset_ = sizeInBytes();
     } else {
       std::vector<GLbyte> interleaved_vertex;
       interleaved_vertex.resize(data()->stride());
       data()->getLastVertex(interleaved_vertex);
-      if (interleaved_buffer_.size()) {
-        memcpy(interleaved_buffer_.data() + vertices_offset_, interleaved_vertex.data(), interleaved_vertex.size());
-      } else {
-	// This path is chosen in vertex-object-renderers-direct mode
-        GL_TRACE("B glBufferSubData(GL_ARRAY_BUFFER, %d, %d, %p)", vertices_offset_ % interleaved_vertex.size() % interleaved_vertex.data());
-        GL_CHECKD(glBufferSubData(GL_ARRAY_BUFFER, vertices_offset_, interleaved_vertex.size(), interleaved_vertex.data()));
-      }
+      memcpy(interleaved_buffer_.data() + vertices_offset_, interleaved_vertex.data(), interleaved_vertex.size());
       vertices_offset_ += interleaved_vertex.size();
       data()->clear();
     }
@@ -136,14 +125,13 @@ void VertexArray::createVertex(const std::array<Vector3d, 3>& points,
 void VertexArray::createInterleavedVBOs()
 {
   for (const auto& state : states_) {
-    size_t index = state->drawOffset();
-    state->setDrawOffset(this->indexOffset(index));
+    state->setDrawOffset(this->indexOffset(state->drawOffset()));
   }
 
   // If the upfront size was not known, the the buffer has to be built
   size_t total_size = this->sizeInBytes();
   // If VertexArray is not empty, and initial size is zero
-  if (!vertices_size_ && total_size) {
+  if (interleaved_buffer_.empty() && total_size) {
     GL_TRACE("glBindBuffer(GL_ARRAY_BUFFER, %d)", vertices_vbo_);
     GL_CHECKD(glBindBuffer(GL_ARRAY_BUFFER, vertices_vbo_));
     GL_TRACE("glBufferData(GL_ARRAY_BUFFER, %d, %p, GL_STATIC_DRAW)", total_size % (void *)nullptr);
@@ -183,7 +171,7 @@ void VertexArray::createInterleavedVBOs()
 
     GL_TRACE0("glBindBuffer(GL_ARRAY_BUFFER, 0)");
     GL_CHECKD(glBindBuffer(GL_ARRAY_BUFFER, 0));
-  } else if (vertices_size_ && interleaved_buffer_.size()) {
+  } else if (!interleaved_buffer_.empty()) {
     GL_TRACE("glBindBuffer(GL_ARRAY_BUFFER, %d)", vertices_vbo_);
     GL_CHECKD(glBindBuffer(GL_ARRAY_BUFFER, vertices_vbo_));
     GL_TRACE("glBufferData(GL_ARRAY_BUFFER, %d, %p, GL_STATIC_DRAW)", interleaved_buffer_.size() % (void *)interleaved_buffer_.data());
@@ -291,12 +279,12 @@ void VertexArray::addAttributePointers(size_t start_offset)
 // Allocates GPU memory for vertices (and elements if enabled)
 // for holding the given number of vertices.
 void VertexArray::allocateBuffers(size_t num_vertices) {
-  size_t vertices_size = num_vertices * stride();
-  setVerticesSize(vertices_size);
+  size_t vbo_buffer_size = num_vertices * stride();
+  interleaved_buffer_.resize(vbo_buffer_size);
   GL_TRACE("glBindBuffer(GL_ARRAY_BUFFER, %d)", vertices_vbo_);
   GL_CHECKD(glBindBuffer(GL_ARRAY_BUFFER, vertices_vbo_));
-  GL_TRACE("glBufferData(GL_ARRAY_BUFFER, %d, %p, GL_STATIC_DRAW)", vertices_size % (void *)nullptr);
-  GL_CHECKD(glBufferData(GL_ARRAY_BUFFER, vertices_size, nullptr, GL_STATIC_DRAW));
+  GL_TRACE("glBufferData(GL_ARRAY_BUFFER, %d, %p, GL_STATIC_DRAW)", vbo_buffer_size % (void *)nullptr);
+  GL_CHECKD(glBufferData(GL_ARRAY_BUFFER, vbo_buffer_size, nullptr, GL_STATIC_DRAW));
   if (Feature::ExperimentalVxORenderersIndexing.is_enabled()) {
     // Use smallest possible index data type
     if (num_vertices <= 0xff) {
@@ -307,6 +295,7 @@ void VertexArray::allocateBuffers(size_t num_vertices) {
       addElementsData(std::make_shared<AttributeData<GLuint, 1, GL_UNSIGNED_INT>>());
     }
     // FIXME: How do we know how much to allocate?
+    // FIXME: Should we preallocate so we don't have to make a bunch of glBufferSubData() calls?
     size_t elements_size = num_vertices * elements_.stride();
     setElementsSize(elements_size);
     GL_TRACE("glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, %d)", elements_vbo_);
