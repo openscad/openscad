@@ -97,7 +97,7 @@ void ThrownTogetherRenderer::prepare(bool /*showfaces*/, bool /*showedges*/, con
     VertexArray vertex_array(std::make_unique<TTRVertexStateFactory>(), vertex_states_, vertices_vbo_, elements_vbo_);
     vertex_array.addSurfaceData();
     if (getShader().progid != 0) {
-      vertex_array.add_shader_data();
+      vertex_array.addShaderData();
     } else {
       LOG("Warning: Shader not available");
     }

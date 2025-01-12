@@ -331,7 +331,7 @@ public:
   inline ElementsMap& elementsMap() { return elements_map_; }
 
   size_t shader_attributes_index_{0};
-  void add_shader_data();
+  void addShaderData();
 
 private:
 

@@ -316,7 +316,7 @@ void VertexArray::allocateBuffers(size_t num_vertices) {
   }
 }
 
-void VertexArray::add_shader_data()
+void VertexArray::addShaderData()
 {
   const std::shared_ptr<VertexData> vertex_data = data();
   shader_attributes_index_ = vertex_data->attributes().size();

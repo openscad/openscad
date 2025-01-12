@@ -209,7 +209,7 @@ void OpenCSGRenderer::createCSGVBOProducts(
     vertex_array.addSurfaceData();
     vertex_array.writeSurface();
     if (getShader().progid != 0) {
-      vertex_array.add_shader_data();
+      vertex_array.addShaderData();
     } else {
       LOG("Warning: Shader not available");
     }
