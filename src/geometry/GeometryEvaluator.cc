@@ -815,6 +815,16 @@ std::shared_ptr<const Geometry> extrudePolygonSequence(const ExtrudeNode &node, 
     LOG(message_group::Error, loc, docpath, "%1$s requires at least two slices",node.name());
     return nullptr;
   }
+
+  // Check for no null slices
+  for (i=0; i!=slices.size(); ++i)
+  {
+    if (slices[i]==nullptr)
+    {
+      LOG(message_group::Error, loc, docpath, "%1$s has a null slice at index %2$d", node.name(), i);
+      return nullptr;
+    }
+  }
   
   // Verify that every slice has the same number of contours with the same number of vetices
   for (i= 1; i < slices.size(); i++) {
