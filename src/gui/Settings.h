@@ -7,6 +7,7 @@
 #include <vector>
 #include <array>
 #include <sstream>
+#include <tuple>
 
 #include "io/export_enums.h"
 
@@ -30,6 +31,7 @@ public:
   virtual bool isDefault() const = 0;
   virtual std::string encode() const = 0;
   virtual void set(const std::string& encoded) = 0;
+  virtual const std::tuple<std::string, std::string> help() const = 0;
 
 protected:
   SettingsEntryBase(std::string category, std::string name);
@@ -69,6 +71,9 @@ public:
   std::string encode() const override;
   const bool decode(const std::string& encoded) const override;
   void set(const std::string& encoded) override { setValue(decode(encoded)); };
+  const std::tuple<std::string, std::string> help() const override {
+    return {"bool", defaultValue() ? "<true>/false" : "true/<false>"};
+  };
 
 private:
   bool _value;
@@ -95,6 +100,9 @@ public:
   std::string encode() const override;
   const int decode(const std::string& encoded) const override;
   void set(const std::string& encoded) override { setValue(decode(encoded)); };
+  const std::tuple<std::string, std::string> help() const override {
+    return {"int", std::to_string(_minimum) + " : <" + std::to_string(defaultValue()) + "> : " + std::to_string(maximum())};
+  };
 
 private:
   int _value;
@@ -120,11 +128,14 @@ public:
   double minimum() const { return _minimum; }
   double step() const { return _step; }
   double maximum() const { return _maximum; }
-  int defaultValue() const { return _defaultValue; }
+  double defaultValue() const { return _defaultValue; }
   bool isDefault() const override { return _value == _defaultValue; }
   std::string encode() const override;
   const double decode(const std::string& encoded) const override;
   void set(const std::string& encoded) override { setValue(decode(encoded)); };
+  const std::tuple<std::string, std::string> help() const override {
+    return {"double", std::to_string(_minimum) + " : <" + std::to_string(defaultValue()) + "> : " + std::to_string(maximum())};
+  };
 
 private:
   double _value;
@@ -150,6 +161,7 @@ public:
   std::string encode() const override { return value(); }
   const std::string decode(const std::string& encoded) const override { return encoded; }
   void set(const std::string& encoded) override { setValue(decode(encoded)); };
+  const std::tuple<std::string, std::string> help() const override { return {"string", "\"" + encode() + "\""}; };
 
 private:
   std::string _value;
@@ -184,6 +196,19 @@ public:
   std::string encode() const override;
   const enum_type decode(const std::string& encoded) const override;
   void set(const std::string& encoded) override { setValue(decode(encoded)); }
+  const std::tuple<std::string, std::string> help() const override {
+    std::string sep = "[";
+    std::string list = "";
+    for (const auto& item : items()) {
+      const auto def = item.value == defaultValue();
+      const auto p = def ? "<" : "";
+      const auto s = def ? ">" : "";
+      list += sep + p + item.name + s;
+      sep = ",";
+    }
+    list += "]";
+    return {"enum", list};
+  };
 
 private:
   std::vector<Item> _items;
@@ -310,6 +335,8 @@ public:
     return items;
   }
   void set(const std::string& encoded) override { setValue(decode(encoded)); };
+  const std::tuple<std::string, std::string> help() const override { return {"list", ""};
+  };
 
 private:
   list_type_t _items;

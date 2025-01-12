@@ -34,6 +34,7 @@
 #include <unordered_map>
 #include "ColorUtil.h"
 #include "Context.h"
+#include "Settings.h"
 
 #ifdef _WIN32
 #include <io.h>
@@ -81,6 +82,7 @@ std::string evaluatePython(const std::string &code, double time);
 bool python_active = false;
 bool python_trusted = false;
 #endif
+
 namespace po = boost::program_options;
 namespace fs = std::filesystem;
 
@@ -114,6 +116,9 @@ private:
 };
 
 namespace {
+
+#define STRINGIFY(x) #x
+#define TOSTRING(x) STRINGIFY(x)
 
 #ifndef OPENSCAD_NOGUI
 bool useGUI()
@@ -159,8 +164,27 @@ void help(const char *arg0, const po::options_description& desc, bool failure = 
   exit(failure ? 1 : 0);
 }
 
-#define STRINGIFY(x) #x
-#define TOSTRING(x) STRINGIFY(x)
+template<std::size_t size>
+void help_export(const std::array<const Settings::SettingsEntryBase *, size>& options) {
+  LOG("Section '%1$s':", options.at(0)->category());
+
+  for (const auto option : options) {
+    const auto [type, values] = option->help();
+    LOG("  - %1$s (%2$s): %3$s", option->name(), type, values);
+  }
+}
+
+void help_export()
+{
+  LOG("OpenSCAD version %1$s\n", TOSTRING(OPENSCAD_VERSION));
+  LOG("List of settings that can be given using the -O option using the");
+  LOG("format '<section>/<key>=value', e.g.:");
+  LOG("openscad -O export-pdf/paper-size=a6 -O export-pdf/show-grid=false\n");
+  help_export(Settings::SettingsExportPdf::cmdline);
+  help_export(Settings::SettingsExport3mf::cmdline);
+  exit(0);
+}
+
 void version()
 {
   LOG("OpenSCAD version %1$s", TOSTRING(OPENSCAD_VERSION));
@@ -765,7 +789,7 @@ int main(int argc, char **argv)
   desc.add_options()
     ("export-format", po::value<std::string>(), "overrides format of exported scad file when using option '-o', arg can be any of its supported file extensions.  For ascii stl export, specify 'asciistl', and for binary stl export, specify 'binstl'.  Ascii export is the current stl default, but binary stl is planned as the future default so asciistl should be explicitly specified in scripts when needed.\n")
     ("o,o", po::value<std::vector<std::string>>(), "output specified file instead of running the GUI, the file extension specifies the type: stl, off, wrl, amf, 3mf, csg, dxf, svg, pdf, png, echo, ast, term, nef3, nefdbg (May be used multiple time for different exports). Use '-' for stdout\n")
-    ("O,O", po::value<std::vector<std::string>>(), "pass options to the file export using the format section/key=value, e.g export-pdf/paper-size=A3")
+    ("O,O", po::value<std::vector<std::string>>(), "pass settings value to the file export using the format section/key=value, e.g export-pdf/paper-size=a3. Use --help-export to list all available settings.")
     ("D,D", po::value<std::vector<std::string>>(), "var=val -pre-define variables")
     ("p,p", po::value<std::string>(), "customizer parameter file")
     ("P,P", po::value<std::string>(), "customizer parameter set")
@@ -777,7 +801,8 @@ int main(int argc, char **argv)
   }) +
                                            "\n").c_str())
 #endif
-  ("help,h", "print this help message and exit")
+    ("help,h", "print this help message and exit")
+    ("help-export", "print list of export parameters and values that can be set via -O")
     ("version,v", "print the version")
     ("info", "print information about the build process\n")
 
@@ -877,6 +902,7 @@ int main(int argc, char **argv)
   }
 
   if (vm.count("help")) help(argv[0], desc);
+  if (vm.count("help-export")) help_export();
   if (vm.count("version")) version();
   if (vm.count("info")) arg_info = true;
   if (vm.count("backend")) {
