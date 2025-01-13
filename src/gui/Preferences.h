@@ -15,11 +15,12 @@
 #include <QWidget>
 #include <QMainWindow>
 #include <QSettings>
+#include <string>
 
 #include "gui/qtgettext.h" // IWYU pragma: keep
 #include "openscad_gui.h"
 #include "ui_Preferences.h"
-#include "gui/Settings.h"
+#include "core/Settings.h"
 #include "gui/InitConfigurator.h"
 
 class Preferences : public QMainWindow, public Ui::Preferences, public InitConfigurator
@@ -159,6 +160,10 @@ public slots:
   void on_actionLocalAppParameterSourceDir_triggered();
   void listWidgetLocalAppParamsModelDataChanged();
 
+  // Dialogs
+  void on_checkBoxAlwaysShowExportPdfDialog_toggled(bool);
+  void on_checkBoxAlwaysShowExport3mfDialog_toggled(bool);
+
 signals:
   void requestRedraw() const;
   void updateUndockMode(bool undockMode) const;
@@ -202,7 +207,7 @@ private:
   void moveListBoxRow(QListWidget *listBox, int offset);
 
   /** Set value from combobox to settings */
-  void applyComboBox(QComboBox *comboBox, int val, Settings::SettingsEntryEnum& entry);
+  void applyComboBox(QComboBox *comboBox, int val, Settings::SettingsEntryEnum<std::string>& entry);
 
   QSettings::SettingsMap defaultmap;
   QHash<const QAction *, QWidget *> prefPages;

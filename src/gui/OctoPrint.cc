@@ -26,7 +26,7 @@
 
 #include "gui/OctoPrint.h"
 
-#include "gui/Settings.h"
+#include "core/Settings.h"
 
 #include <QHttpMultiPart>
 #include <QHttpPart>

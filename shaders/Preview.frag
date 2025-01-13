@@ -1,4 +1,4 @@
-#version 110
+#version 120
 
 uniform vec4 color1, color2;
 varying vec3 vBC;

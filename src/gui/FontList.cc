@@ -1,5 +1,10 @@
 #include "gui/FontList.h"
 
+#include <array>
+#include <cstdint>
+#include <string>
+#include <vector>
+
 #include <QAbstractItemView>
 #include <QApplication>
 #include <QModelIndex>
@@ -11,12 +16,7 @@
 #include <QString>
 #include <QStyledItemDelegate>
 #include <QStyleOptionViewItem>
-#include <array>
-#include <cstdint>
-#include <qitemselectionmodel.h>
-#include <string>
-#include <vector>
-
+#include <QItemSelectionModel>
 #include <QClipboard>
 #include <QRegularExpression>
 #include <QFileInfo>

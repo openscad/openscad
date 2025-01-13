@@ -25,6 +25,7 @@
  */
 #pragma once
 
+#include "core/Settings.h"
 #include "gui/input/InputDriver.h"
 
 #include <cstddef>
@@ -44,10 +45,10 @@ public:
   std::string get_info() const override;
 
   size_t getButtonCount() const override {
-    return InputDriver::max_buttons;
+    return Settings::max_buttons;
   }
   size_t getAxisCount() const override {
-    return InputDriver::max_axis;
+    return Settings::max_axis;
   }
 
 private:

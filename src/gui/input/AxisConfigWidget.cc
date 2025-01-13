@@ -36,11 +36,12 @@
 #include <string>
 
 
-#include "gui/Settings.h"
+#include "core/Settings.h"
 #include "gui/input/InputDriverManager.h"
 #include "gui/SettingsWriter.h"
 #include "gui/IgnoreWheelWhenNotFocused.h"
 #include "gui/InitConfigurator.h"
+#include "input/InputEventMapper.h"
 
 AxisConfigWidget::AxisConfigWidget(QWidget *parent) : QWidget(parent)
 {
@@ -141,11 +142,11 @@ void AxisConfigWidget::init() {
   for (size_t i = 0; i < InputEventMapper::getMaxAxis(); ++i) {
     auto spinTrim = this->findChild<QDoubleSpinBox *>(QString("doubleSpinBoxTrim%1").arg(i));
     if (spinTrim) {
-      initUpdateDoubleSpinBox(spinTrim, Settings::Settings::axisTrim(i));
+      initUpdateDoubleSpinBox(spinTrim, InputEventMapper::axisTrimSettings(i));
     }
     auto spinDeadZone = this->findChild<QDoubleSpinBox *>(QString("doubleSpinBoxDeadzone%1").arg(i));
     if (spinDeadZone) {
-      initUpdateDoubleSpinBox(spinDeadZone, Settings::Settings::axisDeadzone(i));
+      initUpdateDoubleSpinBox(spinDeadZone, InputEventMapper::axisDeadzoneSettings(i));
     }
   }
 
@@ -422,7 +423,7 @@ void AxisConfigWidget::on_AxisTrim()
   for (size_t i = 0; i < InputEventMapper::getMaxAxis(); ++i) {
     auto spin = this->findChild<QDoubleSpinBox *>(QString("doubleSpinBoxTrim%1").arg(i));
     if (spin) {
-      spin->setValue(Settings::Settings::axisTrim(i).value());
+      spin->setValue(InputEventMapper::axisTrimSettings(i).value());
     }
   }
   emit inputCalibrationChanged();
@@ -435,7 +436,7 @@ void AxisConfigWidget::on_AxisTrimReset()
   for (size_t i = 0; i < InputEventMapper::getMaxAxis(); ++i) {
     auto spin = this->findChild<QDoubleSpinBox *>(QString("doubleSpinBoxTrim%1").arg(i));
     if (spin) {
-      Settings::Settings::axisTrim(i).setValue(0.00);
+      InputEventMapper::axisTrimSettings(i).setValue(0.00);
       spin->setValue(0.00);
     }
   }
@@ -499,7 +500,7 @@ void AxisConfigWidget::on_checkBoxDBus_toggled(bool val)
   }
 }
 
-void AxisConfigWidget::applyComboBox(QComboBox * /*comboBox*/, int val, Settings::SettingsEntryEnum& entry)
+void AxisConfigWidget::applyComboBox(QComboBox * /*comboBox*/, int val, Settings::SettingsEntryEnum<std::string>& entry)
 {
   entry.setIndex(val);
   writeSettings();

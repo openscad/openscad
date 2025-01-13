@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>841</width>
-    <height>843</height>
+    <width>643</width>
+    <height>636</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -27,7 +27,7 @@
     <item row="0" column="0">
      <widget class="QStackedWidget" name="stackedWidget">
       <property name="currentIndex">
-       <number>4</number>
+       <number>8</number>
       </property>
       <widget class="QWidget" name="page3DView">
        <layout class="QVBoxLayout" name="verticalLayout_4">
@@ -1359,8 +1359,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>821</width>
-             <height>753</height>
+             <width>584</width>
+             <height>679</height>
             </rect>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_9">
@@ -1730,7 +1730,8 @@
                     <string/>
                    </property>
                    <property name="icon">
-                    <iconset theme="chokusen-down"/>
+                    <iconset theme="chokusen-down">
+                     <normaloff>.</normaloff>.</iconset>
                    </property>
                   </widget>
                  </item>
@@ -1740,7 +1741,8 @@
                     <string/>
                    </property>
                    <property name="icon">
-                    <iconset theme="chokusen-add"/>
+                    <iconset theme="chokusen-add">
+                     <normaloff>.</normaloff>.</iconset>
                    </property>
                   </widget>
                  </item>
@@ -1759,7 +1761,8 @@
                     <string/>
                    </property>
                    <property name="icon">
-                    <iconset theme="chokusen-up"/>
+                    <iconset theme="chokusen-up">
+                     <normaloff>.</normaloff>.</iconset>
                    </property>
                   </widget>
                  </item>
@@ -1778,7 +1781,8 @@
                     <string/>
                    </property>
                    <property name="icon">
-                    <iconset theme="chokusen-remove"/>
+                    <iconset theme="chokusen-remove">
+                     <normaloff>.</normaloff>.</iconset>
                    </property>
                   </widget>
                  </item>
@@ -2731,6 +2735,58 @@
         </item>
        </layout>
       </widget>
+      <widget class="QWidget" name="pageDialogs">
+       <layout class="QVBoxLayout" name="verticalLayout_18">
+        <property name="leftMargin">
+         <number>0</number>
+        </property>
+        <property name="topMargin">
+         <number>0</number>
+        </property>
+        <property name="rightMargin">
+         <number>0</number>
+        </property>
+        <property name="bottomMargin">
+         <number>0</number>
+        </property>
+        <item>
+         <widget class="QGroupBox" name="groupBox">
+          <property name="title">
+           <string>Dialog visibility</string>
+          </property>
+          <layout class="QVBoxLayout" name="verticalLayout_19">
+           <item>
+            <widget class="QCheckBox" name="checkBoxAlwaysShowExportPdfDialog">
+             <property name="text">
+              <string>Always show PDF export dialog</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QCheckBox" name="checkBoxAlwaysShowExport3mfDialog">
+             <property name="text">
+              <string>Always show 3MF export dialog</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <spacer name="verticalSpacer">
+             <property name="orientation">
+              <enum>Qt::Vertical</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>20</width>
+               <height>40</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+          </layout>
+         </widget>
+        </item>
+       </layout>
+      </widget>
      </widget>
     </item>
    </layout>
@@ -2768,6 +2824,7 @@
    <addaction name="prefsActionAdvanced"/>
    <addaction name="prefsActionInput"/>
    <addaction name="prefsActionInputButton"/>
+   <addaction name="prefsActionDialogs"/>
   </widget>
   <action name="prefsAction3DView">
    <property name="checkable">
@@ -2874,9 +2931,22 @@
     <string>3D Printing Services</string>
    </property>
   </action>
+  <action name="prefsActionDialogs">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="../../resources/common.qrc">
+     <normaloff>:/icons/prefsDialogs.png</normaloff>:/icons/prefsDialogs.png</iconset>
+   </property>
+   <property name="text">
+    <string>Dialogs</string>
+   </property>
+  </action>
   <action name="actionLocalAppParameterDir">
    <property name="icon">
-    <iconset theme="chokusen-folder"/>
+    <iconset theme="chokusen-folder">
+     <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
     <string>Directory of the output file</string>
@@ -2884,7 +2954,8 @@
   </action>
   <action name="actionLocalAppParameterExtension">
    <property name="icon">
-    <iconset theme="chokusen-parameter"/>
+    <iconset theme="chokusen-parameter">
+     <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
     <string>Extension of the output file without leading dot</string>
@@ -2892,7 +2963,8 @@
   </action>
   <action name="actionLocalAppParameterSource">
    <property name="icon">
-    <iconset theme="chokusen-file"/>
+    <iconset theme="chokusen-file">
+     <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
     <string>Full path to the main source file</string>
@@ -2900,7 +2972,8 @@
   </action>
   <action name="actionLocalAppParameterSourceDir">
    <property name="icon">
-    <iconset theme="chokusen-folder"/>
+    <iconset theme="chokusen-folder">
+     <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
     <string>Directory of the main source file</string>
@@ -2908,7 +2981,8 @@
   </action>
   <action name="actionLocalAppParameterFile">
    <property name="icon">
-    <iconset theme="chokusen-orthogonal"/>
+    <iconset theme="chokusen-orthogonal">
+     <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
     <string>Full path to the output file</string>

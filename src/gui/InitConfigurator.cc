@@ -1,16 +1,19 @@
 
 #include "gui/InitConfigurator.h"
-#include <QListWidget>
 
+#include <QListWidget>
 #include <QCheckBox>
 #include <QComboBox>
 #include <QDoubleSpinBox>
+#include <QRadioButton>
 #include <QSpinBox>
 #include <QString>
 #include <QSettings>
-#include "Preferences.h"
-#include "gui/Settings.h"
-#include "printutils.h"
+#include <QLineEdit>
+#include <QGroupBox>
+
+#include "core/Settings.h"
+#include "gui/Preferences.h"
 
 #include <string>
 
@@ -40,20 +43,11 @@ void InitConfigurator::initUpdateDoubleSpinBox(QDoubleSpinBox *spinBox, const Se
   spinBox->blockSignals(false);
 }
 
-void InitConfigurator::initComboBox(QComboBox *comboBox, const Settings::SettingsEntryEnum& entry)
-{
-  comboBox->clear();
-  for (const auto& item : entry.items()) {
-    comboBox->addItem(QString::fromStdString(item.description), QString::fromStdString(item.value));
-  }
-  updateComboBox(comboBox, entry);
-}
-
 void InitConfigurator::initListBox(QListWidget *listBox, const Settings::SettingsEntryList<Settings::LocalAppParameter>& list)
 {
   listBox->blockSignals(true);
   listBox->clear();
-  for (const auto& listitem : list.items()) {
+  for (const auto& listitem : list.value()) {
     if (listitem.type == Settings::LocalAppParameterType::string) {
       const auto item = Preferences::inst()->createListItem(Settings::LocalAppParameterType(Settings::LocalAppParameterType::string), QString::fromStdString(listitem.value));
       listBox->insertItem(listBox->count(), item);
@@ -78,11 +72,6 @@ void InitConfigurator::initListBox(QListWidget *listBox, const Settings::Setting
   listBox->blockSignals(false);
 }
 
-void InitConfigurator::updateComboBox(const BlockSignals<QComboBox *>& comboBox, const Settings::SettingsEntryEnum& entry)
-{
-  comboBox->setCurrentIndex(entry.index());
-}
-
 void InitConfigurator::updateComboBox(const BlockSignals<QComboBox *>& comboBox, const std::string& value)
 {
   int index = comboBox->findData(QString::fromStdString(value));
@@ -91,4 +80,20 @@ void InitConfigurator::updateComboBox(const BlockSignals<QComboBox *>& comboBox,
   } else {
     comboBox->setCurrentIndex(0);
   }
+}
+
+void InitConfigurator::initMetaData(QCheckBox *checkBox, QLineEdit *lineEdit, Settings::SettingsEntryBool *settingsEntryFlag, Settings::SettingsEntryString& settingsEntry) {
+	lineEdit->setText(QString::fromStdString(settingsEntry.value()));
+	if (checkBox && settingsEntryFlag) {
+	    checkBox->setChecked(settingsEntryFlag->value());
+	}
+}
+
+void InitConfigurator::applyMetaData(const QCheckBox *checkBox, const QLineEdit *lineEdit, Settings::SettingsEntryBool *settingsEntryFlag, Settings::SettingsEntryString& settingsEntry) {
+	if (checkBox && settingsEntryFlag) {
+		settingsEntryFlag->setValue(checkBox->isChecked());
+	}
+	const auto value = lineEdit->text().trimmed().toStdString();
+	settingsEntry.setValue(value);
+	return;
 }

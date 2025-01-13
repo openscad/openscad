@@ -33,21 +33,21 @@ void VertexData::remove(size_t count)
 
 void VertexArray::addSurfaceData()
 {
-  std::shared_ptr<VertexData> vertex_data = std::make_shared<VertexData>();
+  auto vertex_data = std::make_shared<VertexData>();
   vertex_data->addPositionData(std::make_shared<AttributeData<GLfloat, 3, GL_FLOAT>>());
   vertex_data->addNormalData(std::make_shared<AttributeData<GLfloat, 3, GL_FLOAT>>());
   vertex_data->addColorData(std::make_shared<AttributeData<GLfloat, 4, GL_FLOAT>>());
   surface_index_ = vertices_.size();
-  addVertexData(vertex_data);
+  vertices_.emplace_back(std::move(vertex_data));
 }
 
 void VertexArray::addEdgeData()
 {
-  std::shared_ptr<VertexData> vertex_data = std::make_shared<VertexData>();
+  auto vertex_data = std::make_shared<VertexData>();
   vertex_data->addPositionData(std::make_shared<AttributeData<GLfloat, 3, GL_FLOAT>>());
   vertex_data->addColorData(std::make_shared<AttributeData<GLfloat, 4, GL_FLOAT>>());
   edge_index_ = vertices_.size();
-  addVertexData(vertex_data);
+  vertices_.emplace_back(std::move(vertex_data));
 }
 
 void VertexArray::createVertex(const std::array<Vector3d, 3>& points,
@@ -137,7 +137,7 @@ void VertexArray::createInterleavedVBOs()
 {
   for (const auto& state : states_) {
     size_t index = state->drawOffset();
-    state->drawOffset(this->indexOffset(index));
+    state->setDrawOffset(this->indexOffset(index));
   }
 
   // If the upfront size was not known, the the buffer has to be built
@@ -315,3 +315,11 @@ void VertexArray::allocateBuffers(size_t num_vertices) {
     GL_CHECKD(glBufferData(GL_ELEMENT_ARRAY_BUFFER, elements_size, nullptr, GL_STATIC_DRAW));
   }
 }
+
+void VertexArray::add_shader_data()
+{
+  const std::shared_ptr<VertexData> vertex_data = data();
+  shader_attributes_index_ = vertex_data->attributes().size();
+  vertex_data->addAttributeData(std::make_shared<AttributeData<GLubyte, 4, GL_UNSIGNED_BYTE>>()); // barycentric
+}
+
