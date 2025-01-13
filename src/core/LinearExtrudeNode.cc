@@ -67,19 +67,6 @@ std::shared_ptr<AbstractNode> builtin_linear_extrude(const ModuleInstantiation *
     }
     height = 1.0;
   }
-#if 0
-  if (parameters["height"].isDefined() && parameters["h"].isDefined()) {
-      LOG(message_group::Error, "Don't specify both %1$s and %2$s.",
-          quoteVar("height"), quoteVar("h"));
-  }
-  if (parameters["height"].isDefined() || parameters["h"].isDefined()) {
-    if(!parameters["height"].getFiniteDouble(height) && !parameters["h"].getFiniteDouble(height)) {
-      LOG(message_group::Error, "height when specified should be a number.");
-      height = 100.0;
-    }
-    node->height.normalize();
-  }
-#else
   const Value& heightValue = parameters[{"height", "h"}];
   if (heightValue.isDefined()) {
     if (!heightValue.getFiniteDouble(height)) {
@@ -88,7 +75,6 @@ std::shared_ptr<AbstractNode> builtin_linear_extrude(const ModuleInstantiation *
     }
     node->height.normalize();
   }
-#endif
   node->height *= height;
 
   parameters["convexity"].getPositiveInt(node->convexity);

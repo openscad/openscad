@@ -39,3 +39,5 @@ translate([0,-25,0]) linear_extrude(-1) square(10, center=true);
 // vector has negative z coordinate
 translate([0,-25,0]) linear_extrude(v=[10,10,-5]) square(10, center=true);
 
+// Specify both "height" and "h"
+translate([45,-15,0]) linear_extrude(height=8, h=4, v=[3, 2, 5]) square([10,10]);
