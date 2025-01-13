@@ -269,27 +269,37 @@ bool Value::toBool() const
   // NOLINTEND(bugprone-branch-clone)
 }
 
-uint32_t Value::toUint32() const
+// There is also convert_to_uint32, used for array indexes.
+// Perhaps the two should be unified so that they do the same thing.
+bool Value::getUint32(uint32_t&ret, Value& err) const
 {
   const double two32 = 4294967296.0;
+  const double two31 = 2147483648.0;
+
   double d = this->toDouble();
-  if (d < -two32 || d >= two32) {
-    return (0);
+  if (d < -two31 || d >= two32) {
+    err = Value::undef(STR("Value (", d, ") out of range for binary operation"));
+    return false;
   }
+
   if (d < 0) {
     d += two32;
   }
-  return (uint32_t)d;
+
+  ret = (uint32_t)floor(d);
+  return true;
 }
 
-int32_t Value::toInt32() const
+bool Value::getInt32(int32_t& ret, Value &err) const
 {
   const double two31 = 2147483648.0;
   double d = this->toDouble();
   if (d < -two31 || d >= two31) {
-    return (0);
+    err = Value::undef(STR("Value (", d, ") out of range for binary operation"));
+    return false;
   }
-  return (int32_t)d;
+  ret = (int32_t)floor(d);
+  return true;
 }
 
 double Value::toDouble() const
@@ -1119,8 +1129,12 @@ Value Value::operator%(const Value& v) const
 Value Value::operator<<(const Value& v) const
 {
   if (this->type() == Type::NUMBER && v.type() == Type::NUMBER) {
-    uint32_t lhs = this->toUint32();
-    int rhs = v.toInt32();
+    Value err;
+    uint32_t lhs;
+    int32_t rhs;
+    if (!this->getUint32(lhs, err) || !v.getInt32(rhs, err)) {
+      return err;
+    }
     if (rhs < 0) {
       return Value::undef(STR("negative shift"));
     }
@@ -1135,8 +1149,12 @@ Value Value::operator<<(const Value& v) const
 Value Value::operator>>(const Value& v) const
 {
   if (this->type() == Type::NUMBER && v.type() == Type::NUMBER) {
-    uint32_t lhs = this->toUint32();
-    int rhs = v.toInt32();
+    Value err;
+    uint32_t lhs;
+    int32_t rhs;
+    if (!this->getUint32(lhs, err) || !v.getInt32(rhs, err)) {
+      return err;
+    }
     if (rhs < 0) {
       return Value::undef(STR("negative shift"));
     }
@@ -1151,7 +1169,13 @@ Value Value::operator>>(const Value& v) const
 Value Value::operator&(const Value& v) const
 {
   if (this->type() == Type::NUMBER && v.type() == Type::NUMBER) {
-    return (double)(this->toUint32() & v.toUint32());
+    Value err;
+    uint32_t a;
+    uint32_t b;
+    if (!this->getUint32(a, err) || !v.getUint32(b, err)) {
+      return err;
+    }
+    return (double)(a & b);
   }
   return Value::undef(STR("undefined operation (", this->typeName(), " & ", v.typeName(), ")"));
 }
@@ -1159,7 +1183,13 @@ Value Value::operator&(const Value& v) const
 Value Value::operator|(const Value& v) const
 {
   if (this->type() == Type::NUMBER && v.type() == Type::NUMBER) {
-    return (double)(this->toUint32() | v.toUint32());
+    Value err;
+    uint32_t a;
+    uint32_t b;
+    if (!this->getUint32(a, err) || !v.getUint32(b, err)) {
+      return err;
+    }
+    return (double)(a | b);
   }
   return Value::undef(STR("undefined operation (", this->typeName(), " | ", v.typeName(), ")"));
 }
@@ -1183,7 +1213,12 @@ Value Value::operator-() const
 Value Value::operator~() const
 {
   if (this->type() == Type::NUMBER) {
-    return {(double)~this->toUint32()};
+    Value err;
+    uint32_t value;
+    if (!this->getUint32(value, err)) {
+      return err;
+    }
+    return {(double)~value};
   }
   return Value::undef(STR("undefined operation (~", this->typeName(), ")"));
 }

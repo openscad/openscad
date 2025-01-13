@@ -1,3 +1,7 @@
+// Constants
+assert(0x1ff == 511);
+assert(0xFFFFFFFF == 2^32-1);
+
 // Basic operations
 assert((12 & 5) == 4);
 assert((12 | 5) == 13);
@@ -62,23 +66,25 @@ assert((-1 | 0) == ~0);
 assert((-2^31) | 0 == 2^31);
 
 
-// Fractions (truncate)
+// Fractions (floor)
 assert((1.4 | 0) == 1);
 assert((1.6 | 0) == 1);
-assert((-1.4 & 3) == 3);
-assert((-1.6 & 3) == 3);
+assert((-1.4 & 3) == 2);
+assert((-1.6 & 3) == 2);
 
 
 // Limits
 assert((1 << 16 << 16) == 0);
 assert((1>>1) == 0);
-assert(((2^32 + 1) | 0) == 1);
-assert(((-2^32 - 1) | 0) == 2^32-1);
 
 
 // Undefined operations
 // Note that these generate warnings.
 echo("Expect warnings:");
+// Out-of-range values trigger a warning and are treated as undef.
+// Perhaps they should be ANDed into range.
+assert(is_undef(2^32 | 0));
+assert(is_undef((-2^31 - 1) | 0));
 assert(is_undef(1 << 32));
 assert(is_undef(1 << -1));
 assert(is_undef(1 >> 32));

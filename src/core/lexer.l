@@ -139,6 +139,9 @@ U3      [\xe0-\xef]
 U4      [\xf0-\xf4]
 UNICODE {U2}{U}|{U3}{U}{U}|{U4}{U}{U}{U}
 
+IDSTART [a-zA-Z_$]
+IDREST  [a-zA-Z0-9_]
+
 %%
 
 %{
@@ -261,6 +264,11 @@ use[ \t\r\n]*"<"        { BEGIN(cond_use); LOCATION_COUNT_LINES(parserlloc, yyte
 
 {UNICODE}+              { parser_error_pos -= strlen(yytext); return TOK_ERROR; }
 
+%{/*
+ Maybe there should be no limit on the length of a hex constant, or maybe over-limit
+ constants should get an explicit error.  If we just let them through here, strtoul()
+ will do something that we won't like.
+*/%}
 0x{H}{1,8}              {
                             parserlval.number = strtoul(lexertext + 2, NULL, 16);
                             return TOK_NUMBER;
@@ -273,7 +281,14 @@ use[ \t\r\n]*"<"        { BEGIN(cond_use); LOCATION_COUNT_LINES(parserlloc, yyte
                                 return TOK_NUMBER;
                             } catch (boost::bad_lexical_cast&) {}
                         }
-"$"?[a-zA-Z0-9_]+       { parserlval.text = strdup(yytext); return TOK_ID; }
+
+{IDSTART}{IDREST}*      { parserlval.text = strdup(yytext); return TOK_ID; }
+{D}{IDREST}*            {
+                            LOG(message_group::Deprecated, LOCATION(parserlloc), "",
+                                "Variable names starting with digits (%1$s)"
+                                " will be removed in future releases.", quoteVar(yytext));
+                            parserlval.text = strdup(yytext); return TOK_ID;
+                        }
 
 "<="                    return LE;
 ">="                    return GE;

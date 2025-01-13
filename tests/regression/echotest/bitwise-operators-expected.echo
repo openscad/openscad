@@ -1,17 +1,19 @@
 ECHO: "Expect two warnings:"
-WARNING: undefined operation (number | bool) in file bitwise-operators.scad, line 36
-WARNING: undefined operation (bool | number) in file bitwise-operators.scad, line 38
+WARNING: undefined operation (number | bool) in file bitwise-operators.scad, line 40
+WARNING: undefined operation (bool | number) in file bitwise-operators.scad, line 42
 ECHO: "Expect warnings:"
-WARNING: shift too large in file bitwise-operators.scad, line 82
-WARNING: negative shift in file bitwise-operators.scad, line 83
-WARNING: shift too large in file bitwise-operators.scad, line 84
-WARNING: negative shift in file bitwise-operators.scad, line 85
-WARNING: undefined operation (number | string) in file bitwise-operators.scad, line 86
-WARNING: undefined operation (string | number) in file bitwise-operators.scad, line 87
-WARNING: undefined operation (number & string) in file bitwise-operators.scad, line 88
-WARNING: undefined operation (string & number) in file bitwise-operators.scad, line 89
-WARNING: undefined operation (number << string) in file bitwise-operators.scad, line 90
-WARNING: undefined operation (string << number) in file bitwise-operators.scad, line 91
-WARNING: undefined operation (number >> string) in file bitwise-operators.scad, line 92
-WARNING: undefined operation (string >> number) in file bitwise-operators.scad, line 93
-WARNING: undefined operation (~string) in file bitwise-operators.scad, line 94
+WARNING: Value (4.29497e+09) out of range for binary operation in file bitwise-operators.scad, line 86
+WARNING: Value (-2.14748e+09) out of range for binary operation in file bitwise-operators.scad, line 87
+WARNING: shift too large in file bitwise-operators.scad, line 88
+WARNING: negative shift in file bitwise-operators.scad, line 89
+WARNING: shift too large in file bitwise-operators.scad, line 90
+WARNING: negative shift in file bitwise-operators.scad, line 91
+WARNING: undefined operation (number | string) in file bitwise-operators.scad, line 92
+WARNING: undefined operation (string | number) in file bitwise-operators.scad, line 93
+WARNING: undefined operation (number & string) in file bitwise-operators.scad, line 94
+WARNING: undefined operation (string & number) in file bitwise-operators.scad, line 95
+WARNING: undefined operation (number << string) in file bitwise-operators.scad, line 96
+WARNING: undefined operation (string << number) in file bitwise-operators.scad, line 97
+WARNING: undefined operation (number >> string) in file bitwise-operators.scad, line 98
+WARNING: undefined operation (string >> number) in file bitwise-operators.scad, line 99
+WARNING: undefined operation (~string) in file bitwise-operators.scad, line 100
