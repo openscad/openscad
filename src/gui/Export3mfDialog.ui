@@ -45,8 +45,8 @@
        <rect>
         <x>0</x>
         <y>0</y>
-        <width>669</width>
-        <height>672</height>
+        <width>683</width>
+        <height>669</height>
        </rect>
       </property>
       <layout class="QGridLayout" name="gridLayout_4" rowstretch="0,0,0,1" columnstretch="1,1">
@@ -206,22 +206,6 @@
               </property>
               <property name="_settings_value" stdset="0">
                <string>selected-only</string>
-              </property>
-              <attribute name="buttonGroup">
-               <string notr="true">buttonGroupColors</string>
-              </attribute>
-             </widget>
-            </item>
-            <item>
-             <widget class="QRadioButton" name="radioButtonColorsUseAsDefault">
-              <property name="toolTip">
-               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Determine best orientation based on maximum geometry dimension.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-              </property>
-              <property name="text">
-               <string>Use selected color as default</string>
-              </property>
-              <property name="_settings_value" stdset="0">
-               <string>selected-as-default</string>
               </property>
               <attribute name="buttonGroup">
                <string notr="true">buttonGroupColors</string>
@@ -610,7 +594,6 @@
   <tabstop>radioButtonColorsModel</tabstop>
   <tabstop>radioButtonColorsNone</tabstop>
   <tabstop>radioButtonColorsUseForAll</tabstop>
-  <tabstop>radioButtonColorsUseAsDefault</tabstop>
   <tabstop>toolButtonColorsSelectedReset</tabstop>
   <tabstop>toolButtonColorsSelected</tabstop>
   <tabstop>radioButtonUnitMicron</tabstop>
@@ -672,7 +655,7 @@
   </connection>
  </connections>
  <buttongroups>
-  <buttongroup name="buttonGroupColors"/>
   <buttongroup name="buttonGroupUnit"/>
+  <buttongroup name="buttonGroupColors"/>
  </buttongroups>
 </ui>

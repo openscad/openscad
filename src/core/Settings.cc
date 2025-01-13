@@ -302,7 +302,6 @@ SettingsEntryEnum<Export3mfColorMode> SettingsExport3mf::export3mfColorMode(SECT
   {Export3mfColorMode::model,               "model",               _("Use colors from model")},
   {Export3mfColorMode::none,                "none",                _("No colors")},
   {Export3mfColorMode::selected_only,       "selected-only",       _("Use selected color only")},
-  {Export3mfColorMode::selected_as_default, "selected-as-default", _("Use selected color as default")},
 }, Export3mfColorMode::model);
 SettingsEntryEnum<Export3mfUnit> SettingsExport3mf::export3mfUnit(SECTION_EXPORT_3MF, "unit", {
   {Export3mfUnit::micron,     "micron",     _("Micron")},

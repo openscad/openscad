@@ -22,7 +22,6 @@ enum class Export3mfColorMode : std::uint8_t {
   model,
   none,
   selected_only,
-  selected_as_default,
 };
 
 // https://github.com/3MFConsortium/spec_core/blob/master/3MF%20Core%20Specification.md:
