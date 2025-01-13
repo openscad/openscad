@@ -1,6 +1,6 @@
 /*
  *  OpenSCAD (www.openscad.org)
- *  Copyright (C) 2009-2011 Clifford Wolf <clifford@clifford.at> and
+ *  Copyright (C) 2009-2025 Clifford Wolf <clifford@clifford.at> and
  *                          Marius Kintel <marius@kintel.net>
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -23,12 +23,41 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  */
+
 #pragma once
 
-#include "core/Settings.h"
+#include <memory>
+#include <QDialog>
 
-class SettingsWriter : public Settings::SettingsVisitor
+#include "Settings.h"
+#include "gui/qtgettext.h" // IWYU pragma: keep
+#include "io/export.h"
+#include "ui_Export3mfDialog.h"
+#include "gui/InitConfigurator.h"
+
+using SEBool = Settings::SettingsEntryBool;
+using SEString = Settings::SettingsEntryString;
+
+class Export3mfDialog : public QDialog, public Ui::Export3mfDialog, public InitConfigurator
 {
+  Q_OBJECT;
+
 public:
-  void handle(Settings::SettingsEntryBase& entry) const override;
+  Export3mfDialog();
+
+  int exec() override;
+
+  std::shared_ptr<const Export3mfOptions> getOptions() const {
+    return Export3mfOptions::fromSettings();
+  }
+
+private slots:
+  void on_toolButtonColorsSelected_clicked();
+  void on_toolButtonColorsSelectedReset_clicked();
+  void on_toolButtonDecimalPrecisionReset_clicked();
+
+private:
+  void updateColor(const QColor& color);
+
+  QColor color;
 };
