@@ -832,7 +832,7 @@ std::shared_ptr<const Geometry> extrudePolygonSequence(const ExtrudeNode &node, 
     for (p = 0; match && p < slices[i]->untransformedOutlines().size(); p++)
       match = slices[i]->untransformedOutlines()[p].vertices.size() == slices[0]->untransformedOutlines()[p].vertices.size();
     if (!match) {
-      LOG(message_group::Error, loc, docpath, "Each extrusion slice must have exactly the same number of  of the same vertex count, %s\n"
+      LOG(message_group::Error, loc, docpath, "Each extrusion slice must have exactly the same vertex count,\n"
         "(note that polygon sanitization may remove duplicate vertices or co-linear points)");
       // Collect details to help debug
       std::stringstream desc_0, desc_i;
