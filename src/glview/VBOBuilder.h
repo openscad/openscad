@@ -221,23 +221,22 @@ private:
   size_t stride_{0};
 };
 
-
 // Combine vertex data with vertex states. Creates VBOs.
-class VertexArray
+class VBOBuilder
 {
 public:
-  using CreateVertexCallback = std::function<void (VertexArray& vertex_array,
+  using CreateVertexCallback = std::function<void (VBOBuilder& vertex_array,
                                                    size_t active_point_index, size_t primitive_index,
                                                    size_t shape_size, bool outlines)>;
 
 
-  VertexArray(std::unique_ptr<VertexStateFactory> factory, std::vector<std::shared_ptr<VertexState>>& states,
+  VBOBuilder(std::unique_ptr<VertexStateFactory> factory, std::vector<std::shared_ptr<VertexState>>& states,
               GLuint vertices_vbo, GLuint elements_vbo)
     : factory_(std::move(factory)), states_(states),
       vertices_vbo_(vertices_vbo), elements_vbo_(elements_vbo)
   {
   }
-  virtual ~VertexArray() = default;
+  virtual ~VBOBuilder() = default;
 
   // Add common surface data vertex layout PNC
   void addSurfaceData();
@@ -348,5 +347,4 @@ private:
 
   VertexData elements_;
   ElementsMap elements_map_;
-
 };

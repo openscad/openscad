@@ -148,7 +148,7 @@ void CGALRenderer::createPolySetStates() {
     glGenBuffers(1, &polyset_elements_vbo_);
   }
 
-  VertexArray vertex_array(std::make_unique<VertexStateFactory>(),
+  VBOBuilder vertex_array(std::make_unique<VertexStateFactory>(),
                            vertex_states_, polyset_vertices_vbo_,
                            polyset_elements_vbo_);
 

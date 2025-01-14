@@ -59,9 +59,9 @@ private:
                          bool highlight_mode = false, bool background_mode = false,
                          bool fberror = false) const;
 
-  void createCSGProducts(const CSGProducts& products, VertexArray& vertex_array,
+  void createCSGProducts(const CSGProducts& products, VBOBuilder& vertex_array,
                          bool highlight_mode, bool background_mode);
-  void createChainObject(VertexArray& vertex_array, const CSGChainObject& csgobj,
+  void createChainObject(VBOBuilder& vertex_array, const CSGChainObject& csgobj,
                          bool highlight_mode, bool background_mode,
                          OpenSCADOperator type);
 

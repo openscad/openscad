@@ -1,4 +1,4 @@
-#include "glview/VertexArray.h"
+#include "glview/VBOBuilder.h"
 
 #include <cstring>
 #include <cassert>
@@ -31,7 +31,7 @@ void VertexData::remove(size_t count)
   }
 }
 
-void VertexArray::addSurfaceData()
+void VBOBuilder::addSurfaceData()
 {
   auto vertex_data = std::make_shared<VertexData>();
   vertex_data->addPositionData(std::make_shared<AttributeData<GLfloat, 3, GL_FLOAT>>());
@@ -41,7 +41,7 @@ void VertexArray::addSurfaceData()
   vertices_.emplace_back(std::move(vertex_data));
 }
 
-void VertexArray::addEdgeData()
+void VBOBuilder::addEdgeData()
 {
   auto vertex_data = std::make_shared<VertexData>();
   vertex_data->addPositionData(std::make_shared<AttributeData<GLfloat, 3, GL_FLOAT>>());
@@ -50,7 +50,7 @@ void VertexArray::addEdgeData()
   vertices_.emplace_back(std::move(vertex_data));
 }
 
-void VertexArray::createVertex(const std::array<Vector3d, 3>& points,
+void VBOBuilder::createVertex(const std::array<Vector3d, 3>& points,
                                const std::array<Vector3d, 3>& normals,
                                const Color4f& color,
                                size_t active_point_index, size_t primitive_index,
@@ -122,7 +122,7 @@ void VertexArray::createVertex(const std::array<Vector3d, 3>& points,
   }
 }
 
-void VertexArray::createInterleavedVBOs()
+void VBOBuilder::createInterleavedVBOs()
 {
   for (const auto& state : states_) {
     state->setDrawOffset(this->indexOffset(state->drawOffset()));
@@ -199,7 +199,7 @@ void VertexArray::createInterleavedVBOs()
   }
 }
 
-void VertexArray::addAttributePointers(size_t start_offset)
+void VBOBuilder::addAttributePointers(size_t start_offset)
 {
   if (!this->data()) return;
 
@@ -278,7 +278,7 @@ void VertexArray::addAttributePointers(size_t start_offset)
 
 // Allocates GPU memory for vertices (and elements if enabled)
 // for holding the given number of vertices.
-void VertexArray::allocateBuffers(size_t num_vertices) {
+void VBOBuilder::allocateBuffers(size_t num_vertices) {
   size_t vbo_buffer_size = num_vertices * stride();
   interleaved_buffer_.resize(vbo_buffer_size);
   GL_TRACE("glBindBuffer(GL_ARRAY_BUFFER, %d)", vertices_vbo_);
@@ -305,7 +305,7 @@ void VertexArray::allocateBuffers(size_t num_vertices) {
   }
 }
 
-void VertexArray::addShaderData()
+void VBOBuilder::addShaderData()
 {
   const std::shared_ptr<VertexData> vertex_data = data();
   shader_attributes_index_ = vertex_data->attributes().size();
