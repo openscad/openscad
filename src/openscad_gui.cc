@@ -118,7 +118,7 @@ void dialogThreadFunc(FontCacheInitializer *initializer)
 void dialogInitHandler(FontCacheInitializer *initializer, void *)
 {
   QFutureWatcher<void> futureWatcher;
-  QObject::connect(&futureWatcher, SIGNAL(finished()), scadApp, SLOT(hideFontCacheDialog()));
+  QObject::connect(&futureWatcher,&QFutureWatcher<void>::finished, scadApp, &OpenSCADApp::hideFontCacheDialog);
 
   auto future = QtConcurrent::run([initializer] {
     return dialogThreadFunc(initializer);
@@ -238,8 +238,8 @@ int gui(std::vector<std::string>& inputFiles, const std::filesystem::path& origi
     inputFilesList.append(assemblePath(original_path, infile));
   }
   new MainWindow(inputFilesList);
-  app.connect(&app, SIGNAL(lastWindowClosed()), &app, SLOT(releaseQSettingsCached()));
-  app.connect(&app, SIGNAL(lastWindowClosed()), &app, SLOT(quit()));
+  app.connect(&app, &OpenSCADApp::lastWindowClosed, &app, &OpenSCADApp::releaseQSettingsCached);
+  app.connect(&app, &OpenSCADApp::lastWindowClosed, &app, &OpenSCADApp::quit);
 
 #ifdef ENABLE_HIDAPI
   if (Settings::Settings::inputEnableDriverHIDAPI.value()) {

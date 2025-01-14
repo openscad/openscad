@@ -40,7 +40,7 @@ FontListDialog::FontListDialog()
   model = nullptr;
   proxy = nullptr;
   setupUi(this);
-  connect(this->okButton, SIGNAL(clicked()), this, SLOT(accept()));
+  connect(this->okButton, &QPushButton::clicked, this, &FontListDialog::accept);
 }
 
 void FontListDialog::on_copyButton_clicked()
@@ -115,7 +115,7 @@ void FontListDialog::update_font_list()
   this->tableView->resizeColumnsToContents();
   this->tableView->setSortingEnabled(true);
 
-  connect(tableView->selectionModel(), SIGNAL(selectionChanged(const QItemSelection&,const QItemSelection&)), this, SLOT(selection_changed(const QItemSelection&,const QItemSelection&)));
+  connect(tableView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &FontListDialog::selection_changed);
 
   delete list;
 }

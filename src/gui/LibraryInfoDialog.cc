@@ -9,7 +9,7 @@
 LibraryInfoDialog::LibraryInfoDialog(const QString& rendererInfo)
 {
   setupUi(this);
-  connect(this->okButton, SIGNAL(clicked()), this, SLOT(accept()));
+  connect(this->okButton, &QPushButton::clicked, this, &LibraryInfoDialog::accept);
   update_library_info(rendererInfo);
 }
 
