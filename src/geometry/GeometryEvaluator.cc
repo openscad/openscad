@@ -947,8 +947,10 @@ std::shared_ptr<const Geometry> GeometryEvaluator::projectionCut(const Projectio
 #ifdef ENABLE_MANIFOLD
     if (RenderSettings::inst()->backend3D == RenderBackend3D::ManifoldBackend) {
       auto manifold = ManifoldUtils::createManifoldFromGeometry(newgeom);
-      auto poly2d = manifold->slice();
-      return std::shared_ptr<const Polygon2d>(ClipperUtils::sanitize(poly2d));
+      if (manifold != nullptr) {
+        auto poly2d = manifold->slice();
+        return std::shared_ptr<const Polygon2d>(ClipperUtils::sanitize(poly2d));
+      }
     }
 #endif
 #ifdef ENABLE_CGAL
@@ -972,8 +974,10 @@ std::shared_ptr<const Geometry> GeometryEvaluator::projectionNoCut(const Project
     const std::shared_ptr<const Geometry> newgeom = applyToChildren3D(node, OpenSCADOperator::UNION).constptr();
     if (newgeom) {
         auto manifold = ManifoldUtils::createManifoldFromGeometry(newgeom);
-        auto poly2d = manifold->project();
-        return std::shared_ptr<const Polygon2d>(ClipperUtils::sanitize(poly2d));
+        if (manifold != nullptr) {
+          auto poly2d = manifold->project();
+          return std::shared_ptr<const Polygon2d>(ClipperUtils::sanitize(poly2d));
+        }
     } else {
       return std::make_shared<Polygon2d>();
     }

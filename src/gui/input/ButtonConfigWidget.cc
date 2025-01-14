@@ -32,10 +32,11 @@
 #include <QString>
 #include <QWidget>
 #include <cstddef>
-#include "gui/Settings.h"
+#include "core/Settings.h"
 #include "gui/input/InputDriverManager.h"
 #include "gui/SettingsWriter.h"
 #include "gui/IgnoreWheelWhenNotFocused.h"
+#include "input/InputEventMapper.h"
 
 ButtonConfigWidget::ButtonConfigWidget(QWidget *parent) : QWidget(parent)
 {
@@ -54,7 +55,7 @@ void ButtonConfigWidget::init() {
   for (size_t i = 0; i < InputEventMapper::getMaxButtons(); ++i) {
     auto box = this->findChild<QComboBox *>(QString("comboBoxButton%1").arg(i));
     if (box) {
-      initActionComboBox(box, Settings::Settings::inputButton(i));
+      initActionComboBox(box, InputEventMapper::inputButtonSettings(i));
     }
   }
 

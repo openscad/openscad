@@ -14,32 +14,16 @@
 #include <cstddef>
 #include <vector>
 
-class CSGChainObject;
-class CSGProducts;
-class OpenCSGPrim;
-class OpenCSGVBOPrim;
-
 class OpenCSGVertexState : public VertexState
 {
 public:
-  OpenCSGVertexState()
-    : VertexState(), csg_object_index_(0)
-  {}
-  OpenCSGVertexState(GLenum draw_mode, GLsizei draw_size, GLenum draw_type,
-                     size_t draw_offset, size_t element_offset, GLuint vertices_vbo, GLuint elements_vbo)
-    : VertexState(draw_mode, draw_size, draw_type, draw_offset, element_offset, vertices_vbo, elements_vbo),
-    csg_object_index_(0)
-  {}
   OpenCSGVertexState(size_t csg_object_index = 0)
-    : VertexState(),
-    csg_object_index_(csg_object_index)
-  {}
+    : csg_object_index_(csg_object_index) {}
   OpenCSGVertexState(GLenum draw_mode, GLsizei draw_size, GLenum draw_type,
                      size_t draw_offset, size_t element_offset, GLuint vertices_vbo, GLuint elements_vbo,
-                     size_t csg_object_index)
+                     size_t csg_object_index = 0)
     : VertexState(draw_mode, draw_size, draw_type, draw_offset, element_offset, vertices_vbo, elements_vbo),
-    csg_object_index_(csg_object_index)
-  {}
+    csg_object_index_(csg_object_index) {}
 
   [[nodiscard]] size_t csgObjectIndex() const { return csg_object_index_; }
   void setCsgObjectIndex(size_t csg_object_index) { csg_object_index_ = csg_object_index; }
@@ -89,19 +73,13 @@ public:
       glDeleteBuffers(all_vbos_.size(), all_vbos_.data());
     }
   }
-  void prepare(bool showfaces, bool showedges, const shaderinfo_t *shaderinfo = nullptr) override;
-  void draw(bool showfaces, bool showedges, const shaderinfo_t *shaderinfo = nullptr) const override;
+  void prepare(bool showfaces, bool showedges, const RendererUtils::ShaderInfo *shaderinfo = nullptr) override;
+  void draw(bool showfaces, bool showedges, const RendererUtils::ShaderInfo *shaderinfo = nullptr) const override;
 
   BoundingBox getBoundingBox() const override;
 private:
-#ifdef ENABLE_OPENCSG
-  OpenCSGVBOPrim *createVBOPrimitive(const std::shared_ptr<OpenCSGVertexState>& vertex_state,
-                                     const OpenCSG::Operation operation, const unsigned int convexity) const;
-#endif // ENABLE_OPENCSG
-  void createCSGVBOProducts(const CSGProducts& products, const Renderer::shaderinfo_t *shaderinfo, bool highlight_mode, bool background_mode);
-  void renderCSGVBOProducts(bool showedges, const Renderer::shaderinfo_t *shaderinfo) const;
+  void createCSGVBOProducts(const CSGProducts& products, const RendererUtils::ShaderInfo *shaderinfo, bool highlight_mode, bool background_mode);
 
-private:
   std::vector<std::unique_ptr<OpenCSGVBOProduct>> vbo_vertex_products_;
   std::vector<GLuint> all_vbos_;
   std::shared_ptr<CSGProducts> root_products_;

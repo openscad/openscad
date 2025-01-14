@@ -27,7 +27,7 @@
 
 #include "gui/Preferences.h"
 #include "platform/PlatformUtils.h"
-#include "gui/Settings.h"
+#include "core/Settings.h"
 #include "gui/ScadLexer.h"
 
 #include <QWheelEvent>

@@ -41,8 +41,10 @@ icons = [
     ["indent"],
     ["unindent"],
     ["new"],
-    ["save"],
+    ["file"],
+    ["folder"],
     ["open"],
+    ["save"],
     ["reset-view"],
     ["view-right"],
     ["view-left"],
@@ -56,9 +58,9 @@ icons = [
     ["scalemarkers"],
     ["show-edges"],
     ["crosshairs"],
-    ["animate"],
-    ["animate_disabled"],
-    ["animate_pause"],
+    ["animate-play"],
+    ["animate-disabled"],
+    ["animate-pause"],
     ["surface"],
     ["wireframe"],
     ["throwntogether"],
@@ -68,9 +70,14 @@ icons = [
     ["vcr-control-pause"],
     ["vcr-control-step-forward"],
     ["vcr-control-end"],
-    ["measure-dist"],
-    ["measure-ang"],
+    ["measure-distance"],
+    ["measure-angle"],
     ["edit-copy"],
+    ["up"],
+    ["down"],
+    ["add"],
+    ["remove"],
+    ["parameter"],
 ];
 
 icon(selected_icon) {
@@ -99,8 +106,10 @@ icon(selected_icon) {
     indent();
     unindent();
     new();
-    save();
+	file();
+	folder();
     open();
+    save();
     reset_view();
     view_right();
     view_left();
@@ -129,6 +138,11 @@ icon(selected_icon) {
     measure_dist();
     measure_ang();
 	edit_copy();
+	up();
+	down();
+	add();
+	remove();
+	parameter();
 }
 
 if (list_icons) {
@@ -440,26 +454,64 @@ module new() {
     }
 }
 
+module file() {
+    u = height/32;
+    translate([10, 0]) {
+        export_paper();
+    }
+    translate([8,6]*u) square([16,1]*u);
+    translate([8,11]*u) square([16,1]*u);
+    translate([8,16]*u) square([16,1]*u);
+    translate([16,21]*u) square([8,1]*u);
+    translate([16,24]*u) square([8,1]*u);
+}
+
+module folder_backside() {
+    u = height/32;
+    w = rounding + thin;
+	square([24,28]*u-[w,w]);
+	translate([5.5,0]*u) square([22,22]*u-[w,w]);
+}
+
+module folder_outline() {
+    w = rounding + thin;
+    difference() {
+      translate([rounding, rounding])
+		offset(r=rounding)
+			folder_backside();
+      translate([rounding, rounding])
+		offset(r=rounding)
+			offset(-w)
+				folder_backside();
+    }
+}
+
+module folder_flap() {
+    u = height/32;
+	translate([rounding,rounding])
+		offset(r=rounding)
+			polygon([[3,0]*u, [26,0]*u, [30,15]*u, [7,15]*u]);
+}
+
+module folder() {
+	folder_outline();
+    folder_flap();
+}
+
 module open() {
     module small_paper() translate([4.5,5]*u) scale(0.77) export_paper();
-    module folder() {
-        square([20,22]*u-[w,w]);
-        translate([5.5,0]*u) square([20,19]*u-[w,w]);
-    }
-    module flap() translate([rounding,rounding]) offset(r=rounding) polygon([[3,0]*u, [24,0]*u, [30,12]*u, [9,12]*u]);
 
     u = height/32;
     w = rounding + thin;
     difference() {
-      translate([rounding, rounding]) offset(r=rounding) folder();
-      translate([rounding, rounding]) offset(r=rounding) offset(-w) folder();
-      offset(r=rounding) hull() small_paper();
+		folder_outline();
+		offset(r=rounding) hull() small_paper();
     }
     difference() {
       small_paper();
-      offset(r=rounding) flap();
+      offset(r=rounding) folder_flap();
     }
-    flap();
+    folder_flap();
 }
 
 module save() {
@@ -784,10 +836,67 @@ module measure_ang() {
 }
 
 module edit_copy() {
-union() {
-	difference() {
-		translate([10, 30]) scale(0.7) text_paper();
-		translate([26, 5]) scale(0.7) paper();
+	union() {
+		difference() {
+			translate([10, 30]) scale(0.7) text_paper();
+			translate([26, 5]) scale(0.7) paper();
+		}
+		translate([32, -1]) scale(0.7) text_paper();
 	}
-	translate([32, -1]) scale(0.7) text_paper();
-}}
+}
+
+module simple_arrow() {
+	polygon([
+		[         0,  height / 3],
+		[-width / 5, -height / 3],
+		[         0, -height / 4],
+		[ width / 5, -height / 3],
+	]);
+}
+
+module up() {
+    translate([width / 2, height / 2])
+		simple_arrow();
+}
+
+module down() {
+    translate([width / 2, height / 2])
+		rotate(180)
+			simple_arrow();
+}
+
+module add() {
+    translate([width / 2, height / 2]) {
+		square([0.8 * width, thick], center = true);
+		square([thick, 0.8 * width], center = true);
+	}
+}
+
+module remove() {
+    translate([width / 2, height / 2]) {
+		square([0.8 * width, thick], center = true);
+	}
+}
+
+module gear(r) {
+	difference() {
+		union() {
+			circle(r);
+			for (a = [0:3])
+				rotate(45 * a)
+					offset(thin) offset(-thin)
+						square([2.4 * r, r/2.0], center = true);
+		}
+		circle(r - 1.5 * thick);
+	}
+}
+
+module parameter() {
+    r = 0.35 * width;
+    translate([width / 2, height / 2]) {
+		difference() {
+			gear(r);
+			offset(-thin) gear(r);
+		}
+	}
+}
