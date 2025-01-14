@@ -926,31 +926,73 @@ std::shared_ptr<const Geometry> extrudePolygonSequence(const ExtrudeNode &node, 
     // cases either make one triangle or exclude the polygon entirely.
     for (p = 0; p < (*cur)->indices.size() && progression >= 0; p++) {
       size_t v0 = (*cur)->indices[p].size()-1;
+      Vector3d const & outer_cur0 = (*cur)->vertices[(*cur)->indices[p][v0]];
+      Vector3d const & outer_prev0 = (*prev)->vertices[(*prev)->indices[p][v0]];
       // previous vertex must be -Z of current plane
-      progression= -check_extrusion_progression((*cur)->vertices[(*cur)->indices[p][v0]], (*prev)->vertices[(*prev)->indices[p][v0]], cur_abc, cur_d, CLOSE_ENOUGH);
+      progression= -check_extrusion_progression(outer_cur0,outer_prev0, cur_abc, cur_d, CLOSE_ENOUGH);
       if (progression < 0) break;
       // next vertex must be +Z of previous plane
-      progression = check_extrusion_progression((*prev)->vertices[(*prev)->indices[p][v0]], (*cur)->vertices[(*cur)->indices[p][v0]], prev_abc, prev_d, CLOSE_ENOUGH);
+      progression = check_extrusion_progression(outer_prev0,outer_cur0, prev_abc, prev_d, CLOSE_ENOUGH);
       int v0_progression= progression;
       for (size_t v1 = 0; v1 < (*cur)->indices[p].size() && progression >= 0; v0 = v1, ++v1) {
+        Vector3d const & cur0 = (*cur)->vertices[(*cur)->indices[p][v0]];
+        Vector3d const & prev0 = (*prev)->vertices[(*prev)->indices[p][v0]];
+        Vector3d const & cur1 = (*cur)->vertices[(*cur)->indices[p][v1]];
+        Vector3d const & prev1 = (*prev)->vertices[(*prev)->indices[p][v1]];
+
         // previous vertex must be -Z of current plane
-        progression= -check_extrusion_progression((*cur)->vertices[(*cur)->indices[p][v1]], (*prev)->vertices[(*prev)->indices[p][v1]], cur_abc, cur_d, CLOSE_ENOUGH);
+        progression= -check_extrusion_progression(cur1,prev1, cur_abc, cur_d, CLOSE_ENOUGH);
         if (progression < 0) break;
         // next vertex must be +Z of previous plane
-        progression = check_extrusion_progression((*prev)->vertices[(*prev)->indices[p][v1]], (*cur)->vertices[(*cur)->indices[p][v1]], prev_abc, prev_d, CLOSE_ENOUGH);
+        progression = check_extrusion_progression(prev1,cur1, prev_abc, prev_d, CLOSE_ENOUGH);
         
-        if (v0_progression > 0) {
-          result.beginPolygon(3);
-          result.addVertex((*cur)->vertices[(*cur)->indices[p][v0]]);
-          result.addVertex((*prev)->vertices[(*prev)->indices[p][v0]]);
-          result.addVertex((*prev)->vertices[(*prev)->indices[p][v1]]);
-        }
-        if (progression > 0) {
-          result.beginPolygon(3);
-          result.addVertex((*prev)->vertices[(*prev)->indices[p][v1]]);
-          result.addVertex((*cur)->vertices[(*cur)->indices[p][v1]]);
-          result.addVertex((*cur)->vertices[(*cur)->indices[p][v0]]);
-        }
+	if (v0_progression > 0 && progression > 0)
+	{
+          // Like with linear_interpolate, triangulate on the shorter
+	  double d1 = std::abs((prev0-cur1).norm());
+	  double d2 = std::abs((prev1-cur0).norm());
+          bool splitfirst = d2<=d1; 
+
+	  if (splitfirst)
+	  {
+            result.beginPolygon(3);
+            result.addVertex(cur0);
+            result.addVertex(prev0);
+            result.addVertex(prev1);
+
+            result.beginPolygon(3);
+            result.addVertex(prev1);
+            result.addVertex(cur1);
+            result.addVertex(cur0);
+	  }
+	  else
+	  {
+            result.beginPolygon(3);
+            result.addVertex(cur1);
+            result.addVertex(cur0);
+            result.addVertex(prev0);
+
+            result.beginPolygon(3);
+            result.addVertex(prev0);
+            result.addVertex(prev1);
+            result.addVertex(cur1);
+	  }
+	}
+	else 
+	{
+          if (v0_progression > 0) {
+            result.beginPolygon(3);
+            result.addVertex(cur0);
+            result.addVertex(prev0);
+            result.addVertex(prev1);
+          }
+          if (progression > 0) {
+            result.beginPolygon(3);
+            result.addVertex(prev1);
+            result.addVertex(cur1);
+            result.addVertex(cur0);
+          }
+	}
         v0_progression = progression;
       }
     }
