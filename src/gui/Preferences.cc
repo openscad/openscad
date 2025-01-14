@@ -175,7 +175,7 @@ void Preferences::init() {
   addPrefPage(group, prefsActionAdvanced, pageAdvanced);
   addPrefPage(group, prefsActionDialogs, pageDialogs);
 
-  connect(group, SIGNAL(triggered(QAction*)), this, SLOT(actionTriggered(QAction*)));
+  connect(group, &QActionGroup::triggered, this, &Preferences::actionTriggered);
 
   prefsAction3DView->setChecked(true);
   this->actionTriggered(this->prefsAction3DView);
@@ -363,7 +363,7 @@ void Preferences::setupFeaturesPage()
     feature->enable(value);
     cb->setChecked(value);
     cb->setProperty(featurePropertyName, QVariant::fromValue<Feature *>(feature));
-    connect(cb, SIGNAL(toggled(bool)), this, SLOT(featuresCheckBoxToggled(bool)));
+    connect(cb, &QCheckBox::toggled, this, &Preferences::featuresCheckBoxToggled);
     gridLayoutExperimentalFeatures->addWidget(cb, row, 0, 1, 2, Qt::AlignLeading);
     row++;
 

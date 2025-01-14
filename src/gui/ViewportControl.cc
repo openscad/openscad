@@ -32,15 +32,15 @@ void ViewportControl::initGUI()
   for (auto spinDoubleBox : spinDoubleBoxes) {
     spinDoubleBox->setMinimum(-DBL_MAX);
     spinDoubleBox->setMaximum(+DBL_MAX);
-    connect(spinDoubleBox, SIGNAL(valueChanged(double)), this, SLOT(updateCamera()));
+    connect(spinDoubleBox, &QDoubleSpinBox::valueChanged, this, &ViewportControl::updateCamera);
   }
 
   spinBoxWidth->setMinimum(1);
   spinBoxHeight->setMinimum(1);
   spinBoxWidth->setMaximum(8192);
   spinBoxHeight->setMaximum(8192);
-  connect(spinBoxWidth, SIGNAL(valueChanged(int)), this, SLOT(requestResize()));
-  connect(spinBoxHeight, SIGNAL(valueChanged(int)), this, SLOT(requestResize()));
+  connect(spinBoxWidth, &QSpinBox::valueChanged, this, &ViewportControl::requestResize);
+  connect(spinBoxHeight, &QSpinBox::valueChanged, this, &ViewportControl::requestResize);
 }
 
 void ViewportControl::setMainWindow(MainWindow *mainWindow)

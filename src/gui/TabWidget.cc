@@ -11,9 +11,8 @@
 TabWidget::TabWidget(QWidget *parent) : QTabBar(parent)
 {
   stackWidget = new QStackedWidget(this);
-
-  connect(this, SIGNAL(currentChanged(int)), this, SLOT(handleCurrentChanged(int)));
-  connect(this, SIGNAL(tabMoved(int,int)), this, SLOT(handleTabMoved(int,int)));
+  connect(this, &QTabBar::currentChanged, this, &TabWidget::handleCurrentChanged);
+  connect(this, &QTabBar::tabMoved, this, &TabWidget::handleTabMoved);
 }
 
 QWidget *TabWidget::getContentWidget()
