@@ -108,6 +108,15 @@ Value BinaryOp::evaluate(const std::shared_ptr<const Context>& context) const
     return this->left->evaluate(context).toBool() && this->right->evaluate(context).toBool();
   case Op::LogicalOr:
     return this->left->evaluate(context).toBool() || this->right->evaluate(context).toBool();
+  case Op::IfUndef: {
+    if (auto lookup = dynamic_pointer_cast<Lookup>(this->left)) {
+      auto result = context->try_lookup_variable(lookup->get_name());
+      return (result && result->isDefined()) ? result->clone() : checkUndef(this->right->evaluate(context), context);
+    } else {
+      Value leftValue = this->left->evaluate(context);
+      return leftValue.isDefined() ? std::move(leftValue) : checkUndef(this->right->evaluate(context), context);
+    }
+  }
   case Op::Exponent:
     return checkUndef(this->left->evaluate(context) ^ this->right->evaluate(context), context);
   case Op::Multiply:
@@ -143,6 +152,7 @@ const char *BinaryOp::opString() const
   switch (this->op) {
   case Op::LogicalAnd:   return "&&";
   case Op::LogicalOr:    return "||";
+  case Op::IfUndef:      return "??";
   case Op::Exponent:     return "^";
   case Op::Multiply:     return "*";
   case Op::Divide:       return "/";
