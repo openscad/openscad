@@ -35,6 +35,7 @@
 #include <QNetworkRequest>
 #include <QStringList>
 
+#include "Settings.h"
 #include "export.h"
 #include "utils/printutils.h"
 
@@ -50,11 +51,13 @@ createPrintService(const QJsonObject &serviceObject) {
   return nullptr;
 }
 
-} // namespace
+PrintServices createPrintServices() {
+  PrintServices printServices;
 
-std::unordered_map<std::string, std::unique_ptr<PrintService>>
-createPrintServices() {
-  std::unordered_map<std::string, std::unique_ptr<PrintService>> printServices;
+  if (!Settings::Settings::enableRemotePrintServices.value()) {
+    return {};
+  }
+
   // TODO: Where to call this, will we need a mutex?
   try {
     auto networkRequest = NetworkRequest<void>{
@@ -83,17 +86,20 @@ createPrintServices() {
   } catch (const NetworkException &e) {
     LOG(message_group::Error, "%1$s", e.getErrorMessage());
   }
-  // TODO: Log if wanted
-  //    LOG("External print service available: %1$s (upload limit = %2$d MB)",
-  //    displayName.toStdString(), fileSizeLimitMB);
+  for (const auto& printService : printServices) {
+    const auto& name = printService.second->getDisplayName().toStdString();
+    const auto& limit = printService.second->getFileSizeLimitMB();
+    PRINTDB("External print service available: %1$s (upload limit = %2$d MB)", name % limit);
+    // TODO: Log if wanted
+  }
 
-  return std::move(printServices);
+  return printServices;
 }
 
-const std::unordered_map<std::string, std::unique_ptr<PrintService>> &
-PrintService::getPrintServices() {
-  const static std::unordered_map<std::string, std::unique_ptr<PrintService>>
-      printServices = createPrintServices();
+} // namespace
+
+const PrintServices& PrintService::getPrintServices() {
+  const static PrintServices printServices = createPrintServices();
   return printServices;
 }
 

@@ -110,7 +110,8 @@ PrintInitDialog::PrintInitDialog() {
     });
   }
 
-  if (PrintService::getPrintServices().empty()) {
+  const auto remoteServicesEnabled = Settings::Settings::enableRemotePrintServices.value();
+  if (remoteServicesEnabled && PrintService::getPrintServices().empty()) {
     LOG(message_group::UI_Warning, "No external print services found");
   }
 }

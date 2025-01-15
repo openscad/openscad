@@ -377,6 +377,7 @@ public:
   static SettingsEntryEnum<std::string> modifierNumberScrollWheel;
 
   static SettingsEntryString defaultPrintService;
+  static SettingsEntryBool enableRemotePrintServices;
   static SettingsEntryString printServiceName;
   static SettingsEntryString printServiceFileFormat;
 
