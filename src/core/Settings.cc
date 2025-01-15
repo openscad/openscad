@@ -30,22 +30,23 @@ std::vector<SettingsEntryEnum<std::string>::Item> createFileFormatItems(std::vec
   std::transform(formats.begin(), formats.end(), std::back_inserter(items),
                  [](const FileFormat& format){
     const FileFormatInfo &info = fileformat::info(format);
-    return SettingsEntryEnum<std::string>::Item{info.identifier, info.description};
+    return SettingsEntryEnum<std::string>::Item{info.identifier, info.identifier, info.description};
     });
   return items;
 }
 
 std::vector<SettingsEntryEnum<std::string>::Item> axisValues() {
   std::vector<SettingsEntryEnum<std::string>::Item> output;
-  output.push_back({"None", _("None")});
+  output.push_back({"None", "none", _("None")});
   for (size_t i = 0; i < max_axis; ++i) {
     const auto userData = (boost::format("+%d") % (i + 1)).str();
+    const auto name = (boost::format(_("axis-%d")) % i).str();
     const auto text = (boost::format(_("Axis %d")) % i).str();
-    output.push_back({userData, text});
-
+    output.push_back({userData, name, text});
     const auto userDataInv = (boost::format("-%d") % (i + 1)).str();
+    const auto nameInv = (boost::format(_("axis-inverted-%d")) % i).str();
     const auto textInv = (boost::format(_("Axis %d (inverted)")) % i).str();
-    output.push_back({userDataInv, textInv});
+    output.push_back({userDataInv, nameInv, textInv});
   }
   return output;
 }
@@ -146,22 +147,54 @@ SettingsEntryBool Settings::mouseCentricZoom("3dview", "mouseCentricZoom", true)
 SettingsEntryBool Settings::mouseSwapButtons("3dview", "mouseSwapButtons", false);
 SettingsEntryInt Settings::indentationWidth("editor", "indentationWidth", 1, 16, 4);
 SettingsEntryInt Settings::tabWidth("editor", "tabWidth", 1, 16, 4);
-SettingsEntryEnum<std::string> Settings::lineWrap("editor", "lineWrap", {{"None", _("None")}, {"Char", _("Wrap at character boundaries")}, {"Word", _("Wrap at word boundaries")}}, "Word");
-SettingsEntryEnum<std::string> Settings::lineWrapIndentationStyle("editor", "lineWrapIndentationStyle", {{"Fixed", _("Fixed")}, {"Same", _("Same")}, {"Indented", _("Indented")}}, "Fixed");
+SettingsEntryEnum<std::string> Settings::lineWrap("editor", "lineWrap", {
+  {"None", "none", _("None")},
+  {"Char", "char", _("Wrap at character boundaries")},
+  {"Word", "word", _("Wrap at word boundaries")}
+}, "Word");
+SettingsEntryEnum<std::string> Settings::lineWrapIndentationStyle("editor", "lineWrapIndentationStyle", {
+  {"Fixed",    "fixed",    _("Fixed")},
+  {"Same",     "same",     _("Same")},
+  {"Indented", "indented", _("Indented")}
+}, "Fixed");
 SettingsEntryInt Settings::lineWrapIndentation("editor", "lineWrapIndentation", 0, 999, 4);
-SettingsEntryEnum<std::string> Settings::lineWrapVisualizationBegin("editor", "lineWrapVisualizationBegin", {{"None", _("None")}, {"Text", _("Text")}, {"Border", _("Border")}, {"Margin", _("Margin")}}, "None");
-SettingsEntryEnum<std::string> Settings::lineWrapVisualizationEnd("editor", "lineWrapVisualizationEnd", {{"None", _("None")}, {"Text", _("Text")}, {"Border", _("Border")}, {"Margin", _("Margin")}}, "Border");
-SettingsEntryEnum<std::string> Settings::showWhitespace("editor", "showWhitespaces", {{"Never", _("Never")}, {"Always", _("Always")}, {"AfterIndentation", _("After indentation")}}, "Never");
+SettingsEntryEnum<std::string> Settings::lineWrapVisualizationBegin("editor", "lineWrapVisualizationBegin", {
+  {"None",   "none",   _("None")},
+  {"Text",   "text"  , _("Text")},
+  {"Border", "border", _("Border")},
+  {"Margin", "margin", _("Margin")}
+}, "None");
+SettingsEntryEnum<std::string> Settings::lineWrapVisualizationEnd("editor", "lineWrapVisualizationEnd", {
+  {"None",   "none",   _("None")},
+  {"Text",   "text",   _("Text")},
+  {"Border", "border", _("Border")},
+  {"Margin", "margin", _("Margin")}
+}, "Border");
+SettingsEntryEnum<std::string> Settings::showWhitespace("editor", "showWhitespaces", {
+  {"Never",            "never",        _("Never")},
+  {"Always",           "always",       _("Always")},
+  {"AfterIndentation", "after-indent", _("After indentation")}
+}, "Never");
 SettingsEntryInt Settings::showWhitespaceSize("editor", "showWhitespacesSize", 1, 16, 2);
 SettingsEntryBool Settings::autoIndent("editor", "autoIndent", true);
 SettingsEntryBool Settings::backspaceUnindents("editor", "backspaceUnindents", false);
-SettingsEntryEnum<std::string> Settings::indentStyle("editor", "indentStyle", {{"Spaces", _("Spaces")}, {"Tabs", _("Tabs")}}, "Spaces");
-SettingsEntryEnum<std::string> Settings::tabKeyFunction("editor", "tabKeyFunction", {{"Indent", _("Indent")}, {"InsertTab", _("Insert Tab")}}, "Indent");
+SettingsEntryEnum<std::string> Settings::indentStyle("editor", "indentStyle", {
+  {"Spaces", "spaces", _("Spaces")},
+  {"Tabs",   "tabs",   _("Tabs")}
+}, "spaces");
+SettingsEntryEnum<std::string> Settings::tabKeyFunction("editor", "tabKeyFunction", {
+  {"Indent",    "indent", _("Indent")},
+  {"InsertTab", "tab",    _("Insert Tab")}
+}, "Indent");
 SettingsEntryBool Settings::highlightCurrentLine("editor", "highlightCurrentLine", true);
 SettingsEntryBool Settings::enableBraceMatching("editor", "enableBraceMatching", true);
 SettingsEntryBool Settings::enableLineNumbers("editor", "enableLineNumbers", true);
 SettingsEntryBool Settings::enableNumberScrollWheel("editor", "enableNumberScrollWheel", true);
-SettingsEntryEnum<std::string> Settings::modifierNumberScrollWheel("editor", "modifierNumberScrollWheel", {{"Alt", _("Alt")}, {"Left Mouse Button", _("Left Mouse Button")}, {"Either", _("Either")}}, "Alt");
+SettingsEntryEnum<std::string> Settings::modifierNumberScrollWheel("editor", "modifierNumberScrollWheel", {
+  {"Alt",               "alt",               _("Alt")},
+  {"Left Mouse Button", "left-mouse-button", _("Left Mouse Button")},
+  {"Either",            "either",            _("Either")}
+}, "Alt");
 
 SettingsEntryString Settings::defaultPrintService("printing", "printService", "NONE");
 
@@ -170,7 +203,12 @@ SettingsEntryString Settings::printServiceFileFormat("printing", "printServiceFi
 
 SettingsEntryString Settings::octoPrintUrl("printing", "octoPrintUrl", "");
 SettingsEntryString Settings::octoPrintApiKey("printing", "octoPrintApiKey", "");
-SettingsEntryEnum<std::string> Settings::octoPrintAction("printing", "octoPrintAction", {{"upload", _("Upload only")}, {"slice", _("Upload & Slice")}, {"select", _("Upload, Slice & Select for printing")}, {"print", _("Upload, Slice & Start printing")}}, "upload");
+SettingsEntryEnum<std::string> Settings::octoPrintAction("printing", "octoPrintAction", {
+  {"upload", "upload", _("Upload only")},
+  {"slice",  "slice",  _("Upload & Slice")},
+  {"select", "select", _("Upload, Slice & Select for printing")},
+  {"print",  "print",  _("Upload, Slice & Start printing")}
+}, "upload");
 SettingsEntryString Settings::octoPrintSlicerEngine("printing", "octoPrintSlicerEngine", "");
 SettingsEntryString Settings::octoPrintSlicerEngineDesc("printing", "octoPrintSlicerEngineDesc", "");
 SettingsEntryString Settings::octoPrintSlicerProfile("printing", "octoPrintSlicerProfile", "");
@@ -187,7 +225,10 @@ SettingsEntryEnum<std::string> Settings::localAppFileFormat(
     fileformat::info(FileFormat::ASCII_STL).description);
 SettingsEntryList<LocalAppParameter> Settings::localAppParameterList("printing", "localAppParameterList");
 
-SettingsEntryEnum<std::string> Settings::renderBackend3D("advanced", "renderBackend3D", {{"CGAL", "CGAL (old/slow)"}, {"Manifold", "Manifold (new/fast)"}}, "CGAL");
+SettingsEntryEnum<std::string> Settings::renderBackend3D("advanced", "renderBackend3D", {
+  {"CGAL",     "cgal",     "CGAL (old/slow)"},
+  {"Manifold", "manifold", "Manifold (new/fast)"}
+}, "CGAL");
 SettingsEntryEnum<std::string> Settings::toolbarExport3D("advanced", "toolbarExport3D", createFileFormatItems(fileformat::all3D()), fileformat::info(FileFormat::ASCII_STL).description);
 SettingsEntryEnum<std::string> Settings::toolbarExport2D("advanced", "toolbarExport2D", createFileFormatItems(fileformat::all2D()), fileformat::info(FileFormat::DXF).description);
 
