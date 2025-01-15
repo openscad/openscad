@@ -179,6 +179,8 @@ class SettingsEntryEnum : public SettingsEntry<enum_type>
 {
 public:
   struct Item {
+    Item(enum_type value, std::string description) : value(value), description(std::move(description)) {}  
+    Item(enum_type value, std::string name, std::string description) : value(value), name(std::move(name)), description(std::move(description)) {}  
     enum_type value;
     std::string name;
     std::string description;
