@@ -115,7 +115,11 @@ void FontListDialog::update_font_list()
   this->tableView->resizeColumnsToContents();
   this->tableView->setSortingEnabled(true);
 
-  connect(tableView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &FontListDialog::selection_changed);
+  #if QT_VERSION >= QT_VERSION_CHECK(5, 15, 0)
+    connect(tableView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &FontListDialog::selection_changed);
+  #else
+    connect(tableView->selectionModel(), static_cast<void(QItemSelectionModel::*)(const QItemSelection &, const QItemSelection &)>(&QItemSelectionModel::selectionChanged), this, &FontListDialog::selection_changed);
+  #endif
 
   delete list;
 }

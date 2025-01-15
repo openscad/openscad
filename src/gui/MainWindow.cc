@@ -592,12 +592,28 @@ MainWindow::MainWindow(const QStringList& filenames)
   this->setColorScheme(cs);
 
   //find and replace panel
+  #if QT_VERSION >= QT_VERSION_CHECK(5, 15, 0)
   connect(this->findTypeComboBox, &QComboBox::currentIndexChanged, this, &MainWindow::selectFindType);
+  #else
+  connect(this->findTypeComboBox, static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, &MainWindow::selectFindType);
+  #endif
+
+  #if QT_VERSION >= QT_VERSION_CHECK(5, 15, 0)
   connect(this->findInputField, &QLineEdit::textChanged, this, &MainWindow::findString);
+  #else
+  connect(this->findInputField, static_cast<void(QLineEdit::*)(const QString &)>(&QLineEdit::textChanged), this, &MainWindow::findString);
+  #endif
+
   connect(this->findInputField, &QLineEdit::returnPressed, this->findNextButton, &QPushButton::animateClick);
   find_panel->installEventFilter(this);
   if (QApplication::clipboard()->supportsFindBuffer()) {
+    
+    #if QT_VERSION >= QT_VERSION_CHECK(5, 15, 0)
     connect(this->findInputField, &QLineEdit::textChanged, this, &MainWindow::updateFindBuffer);
+    #else
+    connect(this->findInputField, static_cast<void(QLineEdit::*)(const QString &)>(&QLineEdit::textChanged), this, &MainWindow::updateFindBuffer);
+    #endif
+
     connect(QApplication::clipboard(), &QClipboard::findBufferChanged, this, &MainWindow::findBufferChanged);
     // With Qt 4.8.6, there seems to be a bug that often gives an incorrect findbuffer content when
     // the app receives focus for the first time
@@ -2292,7 +2308,11 @@ void MainWindow::rightClick(QPoint mouse)
       auto action = tracemenu.addAction(QString::fromStdString(ss.str()));
       if (editorDock->isVisible()) {
         action->setProperty("id", step->idx);
+        #if QT_VERSION >= QT_VERSION_CHECK(5, 15, 0)
         connect(action, &QAction::hovered, this, &MainWindow::onHoveredObjectInSelectionMenu);
+        #else
+        connect(action, static_cast<void(QAction::*)()>(&QAction::hovered), this, &MainWindow::onHoveredObjectInSelectionMenu);
+        #endif
       }
     }
 

@@ -363,7 +363,13 @@ void Preferences::setupFeaturesPage()
     feature->enable(value);
     cb->setChecked(value);
     cb->setProperty(featurePropertyName, QVariant::fromValue<Feature *>(feature));
+
+    #if QT_VERSION >= QT_VERSION_CHECK(5, 15, 0)
     connect(cb, &QCheckBox::toggled, this, &Preferences::featuresCheckBoxToggled);
+    #else
+    connect(cb, static_cast<void(QCheckBox::*)(bool)>(&QCheckBox::toggled), this, &Preferences::featuresCheckBoxToggled);
+    #endif
+
     gridLayoutExperimentalFeatures->addWidget(cb, row, 0, 1, 2, Qt::AlignLeading);
     row++;
 
