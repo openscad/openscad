@@ -1,7 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <model xmlns="http://schemas.microsoft.com/3dmanufacturing/core/2015/02" unit="millimeter" xml:lang="en-US" xmlns:m="http://schemas.microsoft.com/3dmanufacturing/material/2015/02" xmlns:p="http://schemas.microsoft.com/3dmanufacturing/production/2015/06" xmlns:b="http://schemas.microsoft.com/3dmanufacturing/beamlattice/2017/02" xmlns:s="http://schemas.microsoft.com/3dmanufacturing/slice/2015/07">
+	<metadata name="Title">3mf-export.scad</metadata>
+	<metadata name="Application">OpenSCAD (https://www.openscad.org/)</metadata>
+	<metadata name="CreationDate">XXXX-XX-XXTXXXXXXXXZ</metadata>
 	<resources>
-		<object id="1" name="OpenSCAD Model" type="model" p:UUID="XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXX">
+		<basematerials id="1">
+			<base name="Default" displaycolor="#F9D72CFF" />
+		</basematerials>
+		<object id="2" name="OpenSCAD Model" type="model" p:UUID="XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXX" pid="1" pindex="0">
 			<mesh>
 				<vertices>
 					<vertex x="0" y="0" z="0" />
@@ -55,6 +61,6 @@
 		</object>
 	</resources>
 	<build p:UUID="XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXX">
-		<item objectid="1" p:UUID="XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXX" />
+		<item objectid="2" p:UUID="XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXX" />
 	</build>
 </model>

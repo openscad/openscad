@@ -1,16 +1,10 @@
 #pragma once
 
-#include "gui/Editor.h"
-#include "geometry/Geometry.h"
-#include "io/export.h"
-#include "gui/ExportPdfDialog.h"
-#include "gui/Measurement.h"
-#include "RenderStatistic.h"
-#include "gui/TabManager.h"
-#include "core/Tree.h"
-#include "gui/UIUtils.h"
-#include "gui/qtgettext.h" // IWYU pragma: keep
-#include "ui_MainWindow.h"
+#include <ctime>
+#include <unordered_map>
+#include <memory>
+#include <string>
+#include <vector>
 
 #include <QAction>
 #include <QCloseEvent>
@@ -29,11 +23,6 @@
 #include <QTimer>
 #include <QUrl>
 #include <QWidget>
-#include <ctime>
-#include <unordered_map>
-#include <memory>
-#include <string>
-#include <vector>
 #include <QMainWindow>
 #include <QElapsedTimer>
 #include <QIcon>
@@ -42,6 +31,18 @@
 #include <QSoundEffect>
 #include <QTime>
 #include <QSignalMapper>
+
+#include "gui/Editor.h"
+#include "geometry/Geometry.h"
+#include "io/export.h"
+#include "gui/Measurement.h"
+#include "RenderStatistic.h"
+#include "gui/TabManager.h"
+#include "core/Tree.h"
+#include "gui/UIUtils.h"
+#include "gui/qtgettext.h" // IWYU pragma: keep
+#include "gui/qt-obsolete.h" // IWYU pragma: keep
+#include "ui_MainWindow.h"
 
 #ifdef STATIC_QT_SVG_PLUGIN
 #include <QtPlugin>
@@ -152,10 +153,7 @@ public:
   void setLastFocus(QWidget *widget);
   void UnknownExceptionCleanup(std::string msg = "");
 
-  bool isLightTheme();
-
 private:
-  void initActionIcon(QAction *action, const char *darkResource, const char *lightResource);
   void setRenderVariables(ContextHandle<BuiltinContext>& context);
   void updateCompileResult();
   void compile(bool reload, bool forcedone = false);
@@ -279,8 +277,7 @@ private slots:
   void actionDisplayCSGTree();
   void actionDisplayCSGProducts();
   bool canExport(unsigned int dim);
-  void actionExport(FileFormat format, const char *type_name, const char *suffix, unsigned int dim);
-  void actionExport(FileFormat format, const char *type_name, const char *suffix, unsigned int dim, ExportPdfOptions *options);
+  void actionExport(unsigned int dim, ExportInfo& exportInfo);
   void actionExportFileFormat(int fmt);
   void actionCopyViewport();
   void actionFlushCaches();
@@ -399,12 +396,12 @@ private:
   EditorInterface *renderedEditor; // stores pointer to editor which has been most recently rendered
   time_t includes_mtime{0}; // latest include mod time
   time_t deps_mtime{0}; // latest dependency mod time
-  std::unordered_map<std::string, QString> export_paths; // for each file type, where it was exported to last
-  QString exportPath(const char *suffix); // look up the last export path and generate one if not found
+  std::unordered_map<QString, QString> export_paths; // for each file type, where it was exported to last
+  QString exportPath(const QString& suffix); // look up the last export path and generate one if not found
   int last_parser_error_pos{-1}; // last highlighted error position
   int tabCount = 0;
-  paperSizes sizeString2Enum(const QString& current);
-  paperOrientations orientationsString2Enum(const QString& current);
+  ExportPdfPaperSize sizeString2Enum(const QString& current);
+  ExportPdfPaperOrientation orientationsString2Enum(const QString& current);
 
   QSoundEffect *renderCompleteSoundEffect;
   std::vector<std::unique_ptr<QTemporaryFile>> allTempFiles;

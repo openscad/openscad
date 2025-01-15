@@ -1,5 +1,5 @@
 difference() {
-    rotate_extrude(convexity=2, $fn=8)
+    rotate_extrude(convexity=4, $fn=8)
     translate([5,0,0]) difference() {
         circle(r=2);
         circle(r=1);

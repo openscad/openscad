@@ -33,7 +33,7 @@
 
 #include "io/export.h"
 
-enum class print_service_t { NONE, PRINT_SERVICE, OCTOPRINT, LOCALSLICER };
+enum class print_service_t { NONE, PRINT_SERVICE, OCTOPRINT, LOCAL_APPLICATION };
 
 class PrintInitDialog : public QDialog, public Ui::PrintInitDialog, public InitConfigurator
 {

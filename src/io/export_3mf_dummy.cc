@@ -1,6 +1,6 @@
 /*
  *  OpenSCAD (www.openscad.org)
- *  Copyright (C) 2009-2016 Clifford Wolf <clifford@clifford.at> and
+ *  Copyright (C) 2009-2024 Clifford Wolf <clifford@clifford.at> and
  *                          Marius Kintel <marius@kintel.net>
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -29,7 +29,7 @@
 #include "io/export.h"
 #include "utils/printutils.h"
 
-void export_3mf(const std::shared_ptr<const class Geometry>&, std::ostream&)
+void export_3mf(const std::shared_ptr<const class Geometry>&, std::ostream&, const ExportInfo&)
 {
   LOG("Export to 3MF format was not enabled when building the application.");
 }

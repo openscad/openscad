@@ -55,7 +55,8 @@ object_script.openscad.Release
 /openscad
 /openscad-nightly
 /resources/*.rc
-/resources/*.qrc
+/resources/mac.qrc
+/resources/common.qrc
 /resources/icons/openscad.desktop
 /locale/*/*/*.mo
 /locale/*.mo

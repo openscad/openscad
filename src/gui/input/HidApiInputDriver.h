@@ -30,6 +30,7 @@
 #include <string>
 #include <hidapi.h>
 
+#include "core/Settings.h"
 #include "gui/input/InputDriver.h"
 
 class HidApiInputDriver : public InputDriver
@@ -54,10 +55,10 @@ public:
   void hidapi_decode_button(const unsigned char *buf, unsigned int len);
 
   size_t getButtonCount() const override {
-    return InputDriver::max_buttons;
+    return Settings::max_buttons;
   }
   size_t getAxisCount() const override {
-    return InputDriver::max_axis;
+    return Settings::max_axis;
   }
 
 private:

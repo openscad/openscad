@@ -1,4 +1,5 @@
 #include "geometry/ClipperUtils.h"
+#include "clipper2/clipper.h"
 #include "utils/printutils.h"
 
 #include <algorithm>
@@ -94,6 +95,13 @@ void fill_minkowski_insides(const Clipper2Lib::Paths64& a,
   }
 }
 
+void SimplifyPolyTree(const Clipper2Lib::PolyPath64& polytree, double epsilon, Clipper2Lib::PolyPath64& result) {
+  for (const auto& child : polytree) {
+    Clipper2Lib::PolyPath64 *newchild = result.AddChild(Clipper2Lib::SimplifyPath(child->Polygon(), epsilon));
+    SimplifyPolyTree(*child, epsilon, *newchild);
+  }
+}
+
 }  // namespace
 
 // Using 1 bit less precision than the maximum possible, to limit the chance
@@ -178,15 +186,14 @@ std::unique_ptr<Polygon2d> toPolygon2d(const Clipper2Lib::PolyTree64& polytree, 
   const double scale = std::ldexp(1.0, -scale_bits);
   auto processChildren = [scale, &result](auto&& processChildren, const Clipper2Lib::PolyPath64& node) -> void {
     Outline2d outline;
-    // Apparently, when using offset(), clipper gets the hole status wrong
-    //outline.positive = !node->IsHole();
-
+    // When using offset, clipper can get the hole status wrong.
+    // IsPositive() calculates the area of the polygon, and if it's negative, it's a hole.
     outline.positive = IsPositive(node.Polygon());
-    // TODO: Should we replace the missing CleanPolygons in Clipper2 and call it here?
 
-    // CleanPolygon can in some cases reduce the polygon down to no vertices
-    const auto &cleaned_path = node.Polygon();
+    constexpr double epsilon = 1.1415; // Epsilon taken from Clipper1's default epsilon.
+    const auto cleaned_path = Clipper2Lib::SimplifyPath(node.Polygon(), epsilon);
 
+    // SimplifyPath can potentially reduce the polygon down to no vertices
     if (cleaned_path.size() >= 3) {
       for (const auto& ip : cleaned_path) {
         outline.vertices.emplace_back(scale * ip.x, scale * ip.y);
@@ -335,7 +342,7 @@ std::unique_ptr<Polygon2d> applyOffset(const Polygon2d& poly, double offset, Cli
     isMiter ? miter_limit : 2.0,
     isRound ? std::ldexp(arc_tolerance, scale_bits) : 1.0
     );
-  auto p = ClipperUtils::fromPolygon2d(poly, scale_bits);
+  auto p = ClipperUtils::fromPolygon2d(poly, scale_bits); 
   co.AddPaths(p, joinType, Clipper2Lib::EndType::Polygon);
   Clipper2Lib::PolyTree64 result;
   co.Execute(std::ldexp(offset, scale_bits), result);

@@ -228,6 +228,7 @@ std::unique_ptr<Polygon2d> GeometryEvaluator::applyHull2D(const AbstractNode& no
         outline.vertices.emplace_back(p[0], p[1]);
       }
       geometry->addOutline(outline);
+      geometry->setSanitized(true);
     } catch (const CGAL::Failure_exception& e) {
       LOG(message_group::Warning, "GeometryEvaluator::applyHull2D() during CGAL::convex_hull_2(): %1$s", e.what());
     }
@@ -767,15 +768,7 @@ Response GeometryEvaluator::visit(State& state, const LinearExtrudeNode& node)
   if (state.isPostfix()) {
     std::shared_ptr<const Geometry> geom;
     if (!isSmartCached(node)) {
-      std::shared_ptr<const Geometry> geometry;
-      if (!node.filename.empty()) {
-        DxfData dxf(node.fn, node.fs, node.fa, node.filename, node.layername, node.origin_x, node.origin_y, node.scale_x);
-
-        auto p2d = dxf.toPolygon2d();
-        if (p2d) geometry = ClipperUtils::sanitize(*p2d);
-      } else {
-        geometry = applyToChildren2D(node, OpenSCADOperator::UNION);
-      }
+      const std::shared_ptr<const Geometry> geometry = applyToChildren2D(node, OpenSCADOperator::UNION);
       if (geometry) {
         const auto polygons = std::dynamic_pointer_cast<const Polygon2d>(geometry);
         geom = extrudePolygon(node, *polygons);
@@ -795,14 +788,14 @@ static void fill_ring(std::vector<Vector3d>& ring, const Outline2d& o, double a,
   if (flip) {
     unsigned int l = o.vertices.size() - 1;
     for (unsigned int i = 0; i < o.vertices.size(); ++i) {
-      ring[i][0] = o.vertices[l - i][0] * sin_degrees(a);
-      ring[i][1] = o.vertices[l - i][0] * cos_degrees(a);
+      ring[i][0] = o.vertices[l - i][0] * cos_degrees(a);
+      ring[i][1] = o.vertices[l - i][0] * sin_degrees(a);
       ring[i][2] = o.vertices[l - i][1];
     }
   } else {
     for (unsigned int i = 0; i < o.vertices.size(); ++i) {
-      ring[i][0] = o.vertices[i][0] * sin_degrees(a);
-      ring[i][1] = o.vertices[i][0] * cos_degrees(a);
+      ring[i][0] = o.vertices[i][0] * cos_degrees(a);
+      ring[i][1] = o.vertices[i][0] * sin_degrees(a);
       ring[i][2] = o.vertices[i][1];
     }
   }
@@ -850,12 +843,14 @@ static std::unique_ptr<Geometry> rotatePolygon(const RotateExtrudeNode& node, co
 
   fragments = (unsigned int)std::ceil(fmax(Calc::get_fragments_from_r(max_x - min_x, node.fn, node.fs, node.fa) * std::abs(node.angle) / 360, 1));
 
-  bool flip_faces = (min_x >= 0 && node.angle > 0 && node.angle != 360) || (min_x < 0 && (node.angle < 0 || node.angle == 360));
+  bool flip_faces = (min_x >= 0 && node.angle > 0) || (min_x < 0 && node.angle < 0);
 
+  // If not going all the way around, we have to create faces on each end.
   if (node.angle != 360) {
     auto ps_start = poly.tessellate(); // starting face
-    Transform3d rot(angle_axis_degrees(90, Vector3d::UnitX()));
-    ps_start->transform(rot);
+    Transform3d rotx(angle_axis_degrees(90, Vector3d::UnitX()));
+    Transform3d rotz1(angle_axis_degrees(node.start, Vector3d::UnitZ()));
+    ps_start->transform(rotz1 * rotx);
     // Flip vertex ordering
     if (!flip_faces) {
       for (auto& p : ps_start->indices) {
@@ -865,8 +860,8 @@ static std::unique_ptr<Geometry> rotatePolygon(const RotateExtrudeNode& node, co
     builder.appendPolySet(*ps_start);
 
     auto ps_end = poly.tessellate();
-    Transform3d rot2(angle_axis_degrees(node.angle, Vector3d::UnitZ()) * angle_axis_degrees(90, Vector3d::UnitX()));
-    ps_end->transform(rot2);
+    Transform3d rotz2(angle_axis_degrees(node.start + node.angle, Vector3d::UnitZ()));
+    ps_end->transform(rotz2 * rotx);
     if (flip_faces) {
       for (auto& p : ps_end->indices) {
         std::reverse(p.begin(), p.end());
@@ -880,11 +875,9 @@ static std::unique_ptr<Geometry> rotatePolygon(const RotateExtrudeNode& node, co
     rings[0].resize(o.vertices.size());
     rings[1].resize(o.vertices.size());
 
-    fill_ring(rings[0], o, (node.angle == 360) ? -90 : 90, flip_faces); // first ring
+    fill_ring(rings[0], o, node.start, flip_faces); // first ring
     for (unsigned int j = 0; j < fragments; ++j) {
-      double a;
-      if (node.angle == 360) a = -90 + ((j + 1) % fragments) * 360.0 / fragments; // start on the -X axis, for legacy support
-      else a = 90 - (j + 1) * node.angle / fragments; // start on the X axis
+      double a = node.start + (j + 1) * node.angle / fragments; // start on the X axis
       fill_ring(rings[(j + 1) % 2], o, a, flip_faces);
 
       for (size_t i = 0; i < o.vertices.size(); ++i) {
@@ -919,14 +912,7 @@ Response GeometryEvaluator::visit(State& state, const RotateExtrudeNode& node)
   if (state.isPostfix()) {
     std::shared_ptr<const Geometry> geom;
     if (!isSmartCached(node)) {
-      std::shared_ptr<const Polygon2d> geometry;
-      if (!node.filename.empty()) {
-        DxfData dxf(node.fn, node.fs, node.fa, node.filename, node.layername, node.origin_x, node.origin_y, node.scale);
-        auto p2d = dxf.toPolygon2d();
-        if (p2d) geometry = ClipperUtils::sanitize(*p2d);
-      } else {
-        geometry = applyToChildren2D(node, OpenSCADOperator::UNION);
-      }
+      const std::shared_ptr<const Polygon2d> geometry = applyToChildren2D(node, OpenSCADOperator::UNION);
       if (geometry) {
         geom = rotatePolygon(node, *geometry);
       }
@@ -956,8 +942,10 @@ std::shared_ptr<const Geometry> GeometryEvaluator::projectionCut(const Projectio
 #ifdef ENABLE_MANIFOLD
     if (RenderSettings::inst()->backend3D == RenderBackend3D::ManifoldBackend) {
       auto manifold = ManifoldUtils::createManifoldFromGeometry(newgeom);
-      auto poly2d = manifold->slice();
-      return std::shared_ptr<const Polygon2d>(ClipperUtils::sanitize(poly2d));
+      if (manifold != nullptr) {
+        auto poly2d = manifold->slice();
+        return std::shared_ptr<const Polygon2d>(ClipperUtils::sanitize(poly2d));
+      }
     }
 #endif
 #ifdef ENABLE_CGAL
@@ -981,8 +969,10 @@ std::shared_ptr<const Geometry> GeometryEvaluator::projectionNoCut(const Project
     const std::shared_ptr<const Geometry> newgeom = applyToChildren3D(node, OpenSCADOperator::UNION).constptr();
     if (newgeom) {
         auto manifold = ManifoldUtils::createManifoldFromGeometry(newgeom);
-        auto poly2d = manifold->project();
-        return std::shared_ptr<const Polygon2d>(ClipperUtils::sanitize(poly2d));
+        if (manifold != nullptr) {
+          auto poly2d = manifold->project();
+          return std::shared_ptr<const Polygon2d>(ClipperUtils::sanitize(poly2d));
+        }
     } else {
       return std::make_shared<Polygon2d>();
     }
