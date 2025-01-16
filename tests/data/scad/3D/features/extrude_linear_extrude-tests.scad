@@ -1,7 +1,7 @@
 // Approximate linear extrude using extrude so I can re-use those tests
 function scale_func(i,steps,scale) = 
     is_list(scale) 
-        ? (len(scale)==2 ? 1 : 1)
+        ? (len(scale)==2 ? scale[0]+(scale[1]-scale[0])*((i+0.0001)/steps) : 1)
         : 1+(scale-1)*((i+0.0001)/steps);
 
         
@@ -9,7 +9,7 @@ module linear_extrude_using_extrude(height=undef,center=false, twist=0, slices=2
 {
     height= max((height==undef ? norm(v) : height)* ((v[0]>=0 && v[1]>=0 && v[2]>=0)?1:0),0);
 
-    scale=is_list(scale) ? scale : (scale==undef ? 1.0 : max(scale,0));
+    scale=is_list(scale) ? scale : (scale==undef ? 1.0 : max(scale,0.0001));
 
     minh = center ? -height/2:0;       
 
