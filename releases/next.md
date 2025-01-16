@@ -9,6 +9,8 @@
 * New module: textmetrics() #3684
 * New module: fill() #4348
 * Added v= and segments= parameters to linear_extrude() #3770 #5080
+* a= is an alias for angle= in rotate_extrude()
+* h= is an alias for height= in linear_extrude()
 * Improved SVG import
   * Support $fn, $fs, $fa #3994
   * TODO: Just for SVG, how is this enforced? Added id= and layer= parameters to SVG import() #4042 #4378
