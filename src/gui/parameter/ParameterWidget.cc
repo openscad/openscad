@@ -65,18 +65,10 @@ ParameterWidget::ParameterWidget(QWidget *parent) : QWidget(parent)
   connect(checkBoxAutoPreview, &QCheckBox::toggled, [this]() {
     this->autoPreview(true);
   });
-  #if QT_VERSION >= QT_VERSION_CHECK(5, 15, 0)
-    connect(comboBoxDetails, &QComboBox::currentIndexChanged, this, &ParameterWidget::rebuildWidgets);
-  #else
-    connect(comboBoxDetails, static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, &ParameterWidget::rebuildWidgets);
-  #endif
+  connect(comboBoxDetails, &QComboBox::currentIndexChanged, this, &ParameterWidget::rebuildWidgets);
   //connect(comboBoxPreset, SIGNAL(editTextChanged(const QString&)), this, SLOT(onSetNameChanged()));
   
-  #if QT_VERSION >= QT_VERSION_CHECK(5, 15, 0)
   connect(comboBoxPreset, &QComboBox::activated, this, &ParameterWidget::onSetChanged);
-  #else
-  connect(comboBoxPreset, static_cast<void(QComboBox::*)(int)>(&QComboBox::activated), this, &ParameterWidget::onSetChanged);
-  #endif
 
   connect(addButton, &QPushButton::clicked, this, &ParameterWidget::onSetAdd);
   connect(deleteButton, &QPushButton::clicked, this, &ParameterWidget::onSetDelete);

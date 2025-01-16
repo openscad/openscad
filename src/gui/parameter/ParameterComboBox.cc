@@ -16,11 +16,7 @@ ParameterComboBox::ParameterComboBox(QWidget *parent, EnumParameter *parameter, 
   for (const auto& item : parameter->items) {
     comboBox->addItem(QString::fromStdString(item.key));
   }
-  #if QT_VERSION >= QT_VERSION_CHECK(5, 15, 0)
   connect(comboBox, &QComboBox::activated, this, &ParameterComboBox::onChanged);
-  #else
-  connect(comboBox, static_cast<void(QComboBox::*)(int)>(&QComboBox::activated), this, &ParameterComboBox::onChanged);
-  #endif
 
   ParameterComboBox::setValue();
 }

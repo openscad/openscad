@@ -64,33 +64,12 @@ LaunchingScreen::LaunchingScreen(QWidget *parent) : QDialog(parent)
   connect(this->pushButtonOpen, &QPushButton::clicked, this, &LaunchingScreen::openUserFile);
   connect(this->pushButtonHelp, &QPushButton::clicked, this, &LaunchingScreen::openUserManualURL);
   connect(this->recentList->selectionModel(), &QItemSelectionModel::currentRowChanged, this, &LaunchingScreen::enableRecentButton);
-
-  #if QT_VERSION >= QT_VERSION_CHECK(5, 15, 0)
   connect(this->recentList, &QListWidget::itemDoubleClicked, this, &LaunchingScreen::openRecent);
-  #else
-  connect(this->recentList, static_cast<void(QListWidget::*)(QListWidgetItem*)>(&QListWidget::itemDoubleClicked), this, &LaunchingScreen::openRecent);
-  #endif
-
-  #if QT_VERSION >= QT_VERSION_CHECK(5, 15, 0)
   connect(this->treeWidget, &QTreeWidget::currentItemChanged, this, &LaunchingScreen::enableExampleButton);
-  #else
-  connect(this->treeWidget, static_cast<void(QTreeWidget::*)(QTreeWidgetItem*, QTreeWidgetItem*)>(&QTreeWidget::currentItemChanged), this, &LaunchingScreen::enableExampleButton);
-  #endif
-  
-  #if QT_VERSION >= QT_VERSION_CHECK(5, 15, 0)
   connect(this->treeWidget, &QTreeWidget::itemDoubleClicked, this, &LaunchingScreen::openExample);
-  #else
-  connect(this->treeWidget, static_cast<void(QTreeWidget::*)(QTreeWidgetItem*)>(&QTreeWidget::itemDoubleClicked), this, &LaunchingScreen::openExample);
-  #endif
-
   connect(this->openRecentButton, &QPushButton::clicked, this, &LaunchingScreen::openRecent);
   connect(this->openExampleButton, &QPushButton::clicked, this, &LaunchingScreen::openExample);
-  #if QT_VERSION >= QT_VERSION_CHECK(5, 15, 0)
   connect(this->checkBox, &QCheckBox::toggled, this, &LaunchingScreen::checkboxState);
-  #else
-  connect(this->checkBox, static_cast<void(QCheckBox::*)(bool)>(&QCheckBox::toggled), this, &LaunchingScreen::checkboxState);
-  #endif
-
 }
 
 LaunchingScreen::~LaunchingScreen()

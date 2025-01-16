@@ -44,21 +44,10 @@ void Animate::initGUI()
 
   animate_timer = new QTimer(this);
   connect(animate_timer, &QTimer::timeout, this, &Animate::incrementTVal);
-
-  #if QT_VERSION >= QT_VERSION_CHECK(5, 15, 0)
   connect(this->e_tval, &QLineEdit::textChanged, this, &Animate::updatedAnimTval);
   connect(this->e_fps, &QLineEdit::textChanged, this, &Animate::updatedAnimFpsAndAnimSteps);
   connect(this->e_fsteps, &QLineEdit::textChanged, this, &Animate::updatedAnimFpsAndAnimSteps);
-  #else
-  connect(this->e_tval, static_cast<void(QLineEdit::*)(const QString &)>(&QLineEdit::textChanged), this, &Animate::updatedAnimTval);
-  connect(this->e_fps, static_cast<void(QLineEdit::*)(const QString &)>(&QLineEdit::textChanged), this, &Animate::updatedAnimFpsAndAnimSteps);
-  connect(this->e_fsteps, static_cast<void(QLineEdit::*)(const QString &)>(&QLineEdit::textChanged), this, &Animate::updatedAnimFpsAndAnimSteps);
-  #endif
-  #if QT_VERSION >= QT_VERSION_CHECK(5, 15, 0)
   connect(this->e_dump, &QCheckBox::toggled, this, &Animate::updatedAnimDump);
-  #else
-  connect(this->e_dump, static_cast<void(QCheckBox::*)(bool)>(&QCheckBox::toggled), this, &Animate::updatedAnimDump);
-  #endif
 }
 
 void Animate::setMainWindow(MainWindow *mainWindow)

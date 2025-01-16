@@ -51,11 +51,7 @@ Console::Console(QWidget *parent) : QPlainTextEdit(parent)
   setupUi(this);
   connect(this->actionClear, &QAction::triggered, this, &Console::actionClearConsole_triggered);
   connect(this->actionSaveAs, &QAction::triggered, this, &Console::actionSaveAs_triggered);
-  #if QT_VERSION >= QT_VERSION_CHECK(5, 15, 0)
-    connect(this, &Console::linkActivated, this, &Console::hyperlinkClicked);
-  #else
-    connect(this, static_cast<void(Console::*)(const QString &)>(&Console::linkActivated), this, &Console::hyperlinkClicked);
-  #endif
+  connect(this, &Console::linkActivated, this, &Console::hyperlinkClicked);
   this->setUndoRedoEnabled(false);
   this->appendCursor = this->textCursor();
 }

@@ -231,13 +231,7 @@ ScintillaEditor::ScintillaEditor(QWidget *parent) : EditorInterface(parent)
 #endif
 
   initMargin();
-
-  #if QT_VERSION >= QT_VERSION_CHECK(5, 15, 0)
   connect(qsci, &QsciScintilla::textChanged, this, &ScintillaEditor::contentsChanged);
-  #else
-  connect(qsci, static_cast<void(QsciScintilla::*)(void)>(&QsciScintilla::textChanged), this, &ScintillaEditor::contentsChanged);
-  #endif
-
   connect(qsci, &QsciScintilla::modificationChanged, this, &ScintillaEditor::fireModificationChanged);
   connect(qsci, &QsciScintilla::userListActivated, this, &ScintillaEditor::onUserListSelected);
   qsci->installEventFilter(this);
@@ -248,13 +242,8 @@ ScintillaEditor::ScintillaEditor(QWidget *parent) : EditorInterface(parent)
 
   qsci->indicatorDefine(QsciScintilla::ThinCompositionIndicator, hyperlinkIndicatorNumber);
   qsci->SendScintilla(QsciScintilla::SCI_INDICSETSTYLE, hyperlinkIndicatorNumber, QsciScintilla::INDIC_HIDDEN);
-  #if QT_VERSION >= QT_VERSION_CHECK(5, 15, 0)
-    connect(qsci, &QsciScintilla::indicatorClicked, this, &ScintillaEditor::onIndicatorClicked);
-    connect(qsci, &QsciScintilla::indicatorReleased, this, &ScintillaEditor::onIndicatorReleased);
-  #else
-    connect(qsci, static_cast<void(QsciScintilla::*)(int)>(&QsciScintilla::indicatorClicked), this, &ScintillaEditor::onIndicatorClicked);
-    connect(qsci, static_cast<void(QsciScintilla::*)(int)>(&QsciScintilla::indicatorReleased), this, &ScintillaEditor::onIndicatorReleased);
-  #endif
+  connect(qsci, &QsciScintilla::indicatorClicked, this, &ScintillaEditor::onIndicatorClicked);
+  connect(qsci, &QsciScintilla::indicatorReleased, this, &ScintillaEditor::onIndicatorReleased);
   
 #if QSCINTILLA_VERSION >= 0x020b00
   connect(qsci, &QsciScintilla::SCN_URIDROPPED, this, &ScintillaEditor::uriDropped);
@@ -798,11 +787,7 @@ void ScintillaEditor::initFont(const QString& fontName, uint size)
 
 void ScintillaEditor::initMargin()
 {
-  #if QT_VERSION >= QT_VERSION_CHECK(5, 15, 0)
   connect(qsci, &QsciScintilla::textChanged, this, &ScintillaEditor::onTextChanged);
-  #else
-  connect(qsci, static_cast<void(QsciScintilla::*)(void)>(&QsciScintilla::textChanged), this, &ScintillaEditor::onTextChanged);
-  #endif
 }
 
 void ScintillaEditor::onTextChanged()

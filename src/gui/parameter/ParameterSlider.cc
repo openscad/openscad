@@ -64,12 +64,10 @@ ParameterSlider::ParameterSlider(QWidget *parent, NumberParameter *parameter, De
 
   #if QT_VERSION >= QT_VERSION_CHECK(5, 15, 0)
     connect(doubleSpinBox, &QDoubleSpinBox::valueChanged, this, &ParameterSlider::onSpinBoxChanged);
-    connect(doubleSpinBox, &QDoubleSpinBox::editingFinished, this, &ParameterSlider::onSpinBoxEditingFinished);
   #else
     connect(doubleSpinBox, static_cast<void(QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged), this, &ParameterSlider::onSpinBoxChanged);
-    connect(doubleSpinBox, static_cast<void(QDoubleSpinBox::*)()>(&QDoubleSpinBox::editingFinished), this, &ParameterSlider::onSpinBoxEditingFinished);
   #endif
-
+  connect(doubleSpinBox, &QDoubleSpinBox::editingFinished, this, &ParameterSlider::onSpinBoxEditingFinished);
   ParameterSlider::setValue();
 }
 
