@@ -55,13 +55,7 @@ ParameterSlider::ParameterSlider(QWidget *parent, NumberParameter *parameter, De
   //connect(slider, SIGNAL(sliderPressed()), this, SLOT(onSliderPressed()));
   connect(slider, &QSlider::sliderReleased, this, &ParameterSlider::onSliderReleased);
   connect(slider, &QSlider::sliderMoved, this, &ParameterSlider::onSliderMoved);
-  
-  #if QT_VERSION >= QT_VERSION_CHECK(5, 15, 0)
   connect(slider, &QSlider::valueChanged, this, &ParameterSlider::onSliderChanged);
-  #else
-  connect(slider, static_cast<void(QSlider::*)(int)>(&QSlider::valueChanged), this, &ParameterSlider::onSliderChanged);
-  #endif
-
   #if QT_VERSION >= QT_VERSION_CHECK(5, 15, 0)
     connect(doubleSpinBox, &QDoubleSpinBox::valueChanged, this, &ParameterSlider::onSpinBoxChanged);
   #else
