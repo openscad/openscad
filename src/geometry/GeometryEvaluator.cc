@@ -951,7 +951,7 @@ std::shared_ptr<const Geometry> extrudePolygonSequence(const ExtrudeNode &node, 
           // Like with linear_interpolate, triangulate on the shorter
 	  double d1 = std::abs((prev0-cur1).norm());
 	  double d2 = std::abs((prev1-cur0).norm());
-          bool splitfirst = d2<=d1; 
+          bool splitfirst = (d1>=d2) || (std::abs(d2-d1)<1e-4); 
 
 	  if (splitfirst)
 	  {
