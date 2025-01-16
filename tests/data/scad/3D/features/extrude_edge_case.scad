@@ -70,6 +70,7 @@ extrude()
 }
 
 // Mirrored X
+/*
 translate([0,0,0])
 extrude()
 {
@@ -78,6 +79,11 @@ extrude()
     mirror([1,0,0])
     square(10);
 }
+
+This fails but in the same way as the existing linear extrude:
+linear_extrude(height=30,center=true, twist=180,slices=1,segments=2)
+square(10,center=true);
+*/
 
 // Mirrored Y
 translate([30,0,0])
