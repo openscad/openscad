@@ -44,7 +44,7 @@ static std::unique_ptr<PolySet> expand_poly2d_to_ccw3d(std::shared_ptr<const Pol
 }
 
 // Check for no null slices
-bool sanityCheckNoNullSlices(const ExtrudeNode &node, std::vector<std::shared_ptr<const Polygon2d>> const & slices, const Location &loc, std::string const & docpath)
+static bool sanityCheckNoNullSlices(const ExtrudeNode &node, std::vector<std::shared_ptr<const Polygon2d>> const & slices, const Location &loc, std::string const & docpath)
 {
   for (int i=0; i!=slices.size(); ++i)
   {
@@ -58,7 +58,7 @@ bool sanityCheckNoNullSlices(const ExtrudeNode &node, std::vector<std::shared_pt
 }
 
 // Check for matching contours and vertices
-bool sanityCheckContoursAndVertices(const ExtrudeNode &node, std::vector<std::shared_ptr<const Polygon2d>> const & slices, const Location &loc, std::string const & docpath)
+static bool sanityCheckContoursAndVertices(const ExtrudeNode &node, std::vector<std::shared_ptr<const Polygon2d>> const & slices, const Location &loc, std::string const & docpath)
 {
   for (int i= 1; i < slices.size(); i++) {
     bool match = slices[i]->untransformedOutlines().size() == slices[0]->untransformedOutlines().size();
@@ -77,6 +77,58 @@ bool sanityCheckContoursAndVertices(const ExtrudeNode &node, std::vector<std::sh
     }
   }
   return true;
+}
+
+// Build a quad with two triangles between each pair of adjacent vertices
+static void outputQuad(PolySetBuilder & builder, Vector3d const & prev0, Vector3d const & prev1, Vector3d const & cur0, Vector3d const & cur1, bool v0_progression, bool progression)
+{
+  if (v0_progression && progression)
+  {
+    // Like with linear_interpolate, triangulate on the shorter
+    double d1 = std::abs((prev0-cur1).norm());
+    double d2 = std::abs((prev1-cur0).norm());
+    bool splitfirst = (d1>=d2) || (std::abs(d2-d1)<1e-4); 
+  
+    if (splitfirst)
+    {
+      builder.beginPolygon(3);
+      builder.addVertex(cur0);
+      builder.addVertex(prev0);
+      builder.addVertex(prev1);
+  
+      builder.beginPolygon(3);
+      builder.addVertex(prev1);
+      builder.addVertex(cur1);
+      builder.addVertex(cur0);
+    }
+    else
+    {
+      builder.beginPolygon(3);
+      builder.addVertex(cur1);
+      builder.addVertex(cur0);
+      builder.addVertex(prev0);
+  
+      builder.beginPolygon(3);
+      builder.addVertex(prev0);
+      builder.addVertex(prev1);
+      builder.addVertex(cur1);
+    }
+  }
+  else 
+  {
+    if (v0_progression) {
+      builder.beginPolygon(3);
+      builder.addVertex(cur0);
+      builder.addVertex(prev0);
+      builder.addVertex(prev1);
+    }
+    if (progression) {
+      builder.beginPolygon(3);
+      builder.addVertex(prev1);
+      builder.addVertex(cur1);
+      builder.addVertex(cur0);
+    }
+  }
 }
 
 /*!
@@ -204,53 +256,7 @@ std::shared_ptr<const Geometry> extrudePolygonSequence(const ExtrudeNode &node, 
         // next vertex must be +Z of previous plane
         progression = check_extrusion_progression(prev1,cur1, prev_abc, prev_d, CLOSE_ENOUGH);
         
-	if (v0_progression > 0 && progression > 0)
-	{
-          // Like with linear_interpolate, triangulate on the shorter
-	  double d1 = std::abs((prev0-cur1).norm());
-	  double d2 = std::abs((prev1-cur0).norm());
-          bool splitfirst = (d1>=d2) || (std::abs(d2-d1)<1e-4); 
-
-	  if (splitfirst)
-	  {
-            result.beginPolygon(3);
-            result.addVertex(cur0);
-            result.addVertex(prev0);
-            result.addVertex(prev1);
-
-            result.beginPolygon(3);
-            result.addVertex(prev1);
-            result.addVertex(cur1);
-            result.addVertex(cur0);
-	  }
-	  else
-	  {
-            result.beginPolygon(3);
-            result.addVertex(cur1);
-            result.addVertex(cur0);
-            result.addVertex(prev0);
-
-            result.beginPolygon(3);
-            result.addVertex(prev0);
-            result.addVertex(prev1);
-            result.addVertex(cur1);
-	  }
-	}
-	else 
-	{
-          if (v0_progression > 0) {
-            result.beginPolygon(3);
-            result.addVertex(cur0);
-            result.addVertex(prev0);
-            result.addVertex(prev1);
-          }
-          if (progression > 0) {
-            result.beginPolygon(3);
-            result.addVertex(prev1);
-            result.addVertex(cur1);
-            result.addVertex(cur0);
-          }
-	}
+	outputQuad(result, prev0, prev1, cur0, cur1, v0_progression>0, progression>0);
         v0_progression = progression;
       }
     }
