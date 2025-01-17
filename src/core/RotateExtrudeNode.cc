@@ -48,7 +48,7 @@ std::shared_ptr<AbstractNode> builtin_rotate_extrude(const ModuleInstantiation *
   auto node = std::make_shared<RotateExtrudeNode>(inst);
 
   const Parameters parameters = Parameters::parse(std::move(arguments), inst->location(),
-                                            {"angle", "start"}, {"convexity"});
+                                            {"angle", "start"}, {"convexity", "a"});
 
   node->fn = parameters["$fn"].toDouble();
   node->fs = parameters["$fs"].toDouble();
@@ -58,7 +58,7 @@ std::shared_ptr<AbstractNode> builtin_rotate_extrude(const ModuleInstantiation *
   // If an angle is specified, use it, defaulting to starting at zero.
   // If no angle is specified, use 360 and default to starting at 180.
   // Regardless, if a start angle is specified, use it.
-  bool hasAngle = parameters["angle"].getFiniteDouble(node->angle);
+  bool hasAngle = parameters[{"angle","a"}].getFiniteDouble(node->angle);
   if (hasAngle) {
     node->start = 0;
     if ((node->angle <= -360) || (node->angle > 360)) node->angle = 360;
