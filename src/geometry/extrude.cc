@@ -43,6 +43,42 @@ static std::unique_ptr<PolySet> expand_poly2d_to_ccw3d(std::shared_ptr<const Pol
   return res;
 }
 
+// Check for no null slices
+bool sanityCheckNoNullSlices(const ExtrudeNode &node, std::vector<std::shared_ptr<const Polygon2d>> const & slices, const Location &loc, std::string const & docpath)
+{
+  for (int i=0; i!=slices.size(); ++i)
+  {
+    if (slices[i]==nullptr)
+    {
+      LOG(message_group::Error, loc, docpath, "%1$s has a null slice at index %2$d", node.name(), i);
+      return false;
+    }
+  }
+  return true;
+}
+
+// Check for matching contours and vertices
+bool sanityCheckContoursAndVertices(const ExtrudeNode &node, std::vector<std::shared_ptr<const Polygon2d>> const & slices, const Location &loc, std::string const & docpath)
+{
+  for (int i= 1; i < slices.size(); i++) {
+    bool match = slices[i]->untransformedOutlines().size() == slices[0]->untransformedOutlines().size();
+    for (int p = 0; match && p < slices[i]->untransformedOutlines().size(); p++)
+      match = slices[i]->untransformedOutlines()[p].vertices.size() == slices[0]->untransformedOutlines()[p].vertices.size();
+    if (!match) {
+      LOG(message_group::Error, loc, docpath, "Each extrusion slice must have exactly the same vertex count,\n"
+        "(note that polygon sanitization may remove duplicate vertices or co-linear points)");
+      // Collect details to help debug
+      std::stringstream desc_0, desc_i;
+      for (const auto &o : slices[0]->untransformedOutlines()) desc_0 << " " << o.vertices.size() << "vtx";
+      for (const auto &o : slices[i]->untransformedOutlines()) desc_i << " " << o.vertices.size() << "vtx";
+      LOG(message_group::Error, loc, docpath, " slice   0 - %1$2d outlines: %2$s", slices[0]->untransformedOutlines().size() , desc_0.str().c_str());
+      LOG(message_group::Error, loc, docpath, " slice %1$3d - %2$2d outlines: %3$s", i , slices[i]->untransformedOutlines().size() , desc_i.str().c_str());
+      return false;
+    }
+  }
+  return true;
+}
+
 /*!
   input: List of 2D objects arranged in 3D, each with identical outline count and vertex count
   output: 3D PolySet
@@ -59,32 +95,12 @@ std::shared_ptr<const Geometry> extrudePolygonSequence(const ExtrudeNode &node, 
   }
 
   // Check for no null slices
-  for (i=0; i!=slices.size(); ++i)
-  {
-    if (slices[i]==nullptr)
-    {
-      LOG(message_group::Error, loc, docpath, "%1$s has a null slice at index %2$d", node.name(), i);
-      return nullptr;
-    }
-  }
+  if (!sanityCheckNoNullSlices(node, slices, loc, docpath))
+    return nullptr;
   
-  // Verify that every slice has the same number of contours with the same number of vetices
-  for (i= 1; i < slices.size(); i++) {
-    bool match = slices[i]->untransformedOutlines().size() == slices[0]->untransformedOutlines().size();
-    for (p = 0; match && p < slices[i]->untransformedOutlines().size(); p++)
-      match = slices[i]->untransformedOutlines()[p].vertices.size() == slices[0]->untransformedOutlines()[p].vertices.size();
-    if (!match) {
-      LOG(message_group::Error, loc, docpath, "Each extrusion slice must have exactly the same vertex count,\n"
-        "(note that polygon sanitization may remove duplicate vertices or co-linear points)");
-      // Collect details to help debug
-      std::stringstream desc_0, desc_i;
-      for (const auto &o : slices[0]->untransformedOutlines()) desc_0 << " " << o.vertices.size() << "vtx";
-      for (const auto &o : slices[i]->untransformedOutlines()) desc_i << " " << o.vertices.size() << "vtx";
-      LOG(message_group::Error, loc, docpath, " slice   0 - %1$2d outlines: %2$s", slices[0]->untransformedOutlines().size() , desc_0.str().c_str());
-      LOG(message_group::Error, loc, docpath, " slice %1$3d - %2$2d outlines: %3$s", i , slices[i]->untransformedOutlines().size() , desc_i.str().c_str());
-      return nullptr;
-    }
-  }
+  // Verify that every slice has the same number of contours with the same number of vertices
+  if (!sanityCheckContoursAndVertices(node, slices, loc, docpath))
+    return nullptr;
 
   // Start extruding slices.  Come back to "end caps" at the end.
   int reversed= 0;
