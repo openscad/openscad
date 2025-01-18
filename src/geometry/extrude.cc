@@ -2,6 +2,7 @@
 
 #include "geometry/PolySet.h"
 #include "geometry/PolySetBuilder.h"
+#include "geometry/Polygon2d.h"
 
 /* Returns whether travel from p0 => p1 is a negative, zero, or positive distance
  * in the direction of the extusion, with respect to p0's plane.
@@ -79,11 +80,8 @@ static bool sanityCheckContoursAndVertices(const ExtrudeNode &node, std::vector<
   return true;
 }
 
-// Build a quad with two triangles between each pair of adjacent vertices
-static void outputQuad(PolySetBuilder & builder, Vector3d const & prev0, Vector3d const & prev1, Vector3d const & cur0, Vector3d const & cur1, bool v0_progression, bool progression)
+static void outputSingleQuad(PolySetBuilder & builder, Vector3d const & prev0, Vector3d const & prev1, Vector3d const & cur0, Vector3d const & cur1)
 {
-  if (v0_progression && progression)
-  {
     // Like with linear_interpolate, triangulate on the shorter
     double d1 = std::abs((prev0-cur1).norm());
     double d2 = std::abs((prev1-cur0).norm());
@@ -113,6 +111,14 @@ static void outputQuad(PolySetBuilder & builder, Vector3d const & prev0, Vector3
       builder.addVertex(prev1);
       builder.addVertex(cur1);
     }
+}
+
+// Build a quad with two triangles between each pair of adjacent vertices
+static void outputQuad(PolySetBuilder & builder, Vector3d const & prev0, Vector3d const & prev1, Vector3d const & cur0, Vector3d const & cur1, bool v0_progression, bool progression)
+{
+  if (v0_progression && progression)
+  {
+      outputSingleQuad(builder, prev0, prev1, cur0, cur1);
   }
   else 
   {
@@ -131,28 +137,73 @@ static void outputQuad(PolySetBuilder & builder, Vector3d const & prev0, Vector3
   }
 }
 
+// When there is not very planar it can be modelled better with more segments, allow this as an option
+// Done here rather than in outputSingleQuad since that would lead to T junctions
+static std::vector<std::shared_ptr<const Polygon2d>> interpolateVertices(std::vector<std::shared_ptr<const Polygon2d>> const & slicesin, bool has_segments, unsigned int segments)
+{
+  if (has_segments && segments>0)
+  {
+    double sides = 0;
+    for (auto outlinein : slicesin[0]->untransformedOutlines())
+      sides += outlinein.vertices.size();
+    unsigned int segments_per_side = std::ceil(double(segments)/sides);
+
+    std::vector<std::shared_ptr<const Polygon2d>> slicesadj;
+    for (auto slice: slicesin)
+    {
+      Polygon2d const & polyin = *slice;
+      auto polyadj = std::make_shared<Polygon2d>();
+      std::vector<Outline2d> const & outlinesin = polyin.untransformedOutlines();
+      for (auto outlinein : outlinesin)
+      {
+        Outline2d outlineadj;
+        for (int i=1;i!=outlinein.vertices.size(); ++i)
+        {
+          auto v0 = outlinein.vertices[i-1];
+          auto v1 = outlinein.vertices[i];
+          for (int i=0; i!=segments_per_side; ++i)
+          {
+            auto v0_adj = v0 + (i*(v1-v0))/segments_per_side;
+            outlineadj.vertices.push_back(v0_adj);
+          }
+        }
+        outlineadj.vertices.push_back(*outlinein.vertices.rbegin());
+
+        polyadj->addOutline(std::move(outlineadj));
+      }
+      polyadj->transform3d(polyin.getTransform3d());
+      slicesadj.push_back(polyadj);
+    }
+    return slicesadj;
+  }
+  return slicesin;
+}
+
 /*!
   input: List of 2D objects arranged in 3D, each with identical outline count and vertex count
   output: 3D PolySet
  */
-std::shared_ptr<const Geometry> extrudePolygonSequence(const ExtrudeNode &node, std::vector<std::shared_ptr<const Polygon2d>> slices, const Location &loc, std::string const & docpath)
+std::shared_ptr<const Geometry> extrudePolygonSequence(const ExtrudeNode &node, std::vector<std::shared_ptr<const Polygon2d>> slicesin, const Location &loc, std::string const & docpath)
 {
   size_t i, p, v;
   const double CLOSE_ENOUGH = 0.00000000000000001; // tolerance for identical coordinates
 
   // Verify there is something to work with
-  if (slices.size() < 2) {
+  if (slicesin.size() < 2) {
     LOG(message_group::Error, loc, docpath, "%1$s requires at least two slices",node.name());
     return nullptr;
   }
 
   // Check for no null slices
-  if (!sanityCheckNoNullSlices(node, slices, loc, docpath))
+  if (!sanityCheckNoNullSlices(node, slicesin, loc, docpath))
     return nullptr;
   
   // Verify that every slice has the same number of contours with the same number of vertices
-  if (!sanityCheckContoursAndVertices(node, slices, loc, docpath))
+  if (!sanityCheckContoursAndVertices(node, slicesin, loc, docpath))
     return nullptr;
+
+  // Add more vertices to slices, to segment more
+  auto slices = interpolateVertices(slicesin, node.has_segments, node.segments);
 
   // Start extruding slices.  Come back to "end caps" at the end.
   int reversed= 0;
@@ -210,8 +261,8 @@ std::shared_ptr<const Geometry> extrudePolygonSequence(const ExtrudeNode &node, 
       bool closed_loop = true;
       for (p = 0; closed_loop && p < (*cur)->indices.size(); p++) {
         for (v = 0; closed_loop && v < (*cur)->indices[p].size(); v++) {
-	  Vector3d const & tmp0_v = tmp0->vertices[tmp0->indices[p][v]];
-	  Vector3d const & cur_v = (*cur)->vertices[(*cur)->indices[p][v]];
+   Vector3d const & tmp0_v = tmp0->vertices[tmp0->indices[p][v]];
+   Vector3d const & cur_v = (*cur)->vertices[(*cur)->indices[p][v]];
           closed_loop = fabs(tmp0_v[0] - cur_v[0]) < CLOSE_ENOUGH
                      && fabs(tmp0_v[1] - cur_v[1]) < CLOSE_ENOUGH
                      && fabs(tmp0_v[2] - cur_v[2]) < CLOSE_ENOUGH;
@@ -256,7 +307,7 @@ std::shared_ptr<const Geometry> extrudePolygonSequence(const ExtrudeNode &node, 
         // next vertex must be +Z of previous plane
         progression = check_extrusion_progression(prev1,cur1, prev_abc, prev_d, CLOSE_ENOUGH);
         
-	outputQuad(result, prev0, prev1, cur0, cur1, v0_progression>0, progression>0);
+        outputQuad(result, prev0, prev1, cur0, cur1, v0_progression>0, progression>0);
         v0_progression = progression;
       }
     }

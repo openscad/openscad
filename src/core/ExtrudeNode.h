@@ -14,4 +14,6 @@ public:
   std::string name() const override { return "extrude"; }
 
   unsigned int convexity;
+  bool has_segments = false;
+  unsigned int segments = 0u;
 };

@@ -46,10 +46,13 @@ std::shared_ptr<AbstractNode> builtin_extrude(const ModuleInstantiation *inst, A
   auto node = std::make_shared<ExtrudeNode>(inst);
 
   Parameters parameters = Parameters::parse(std::move(arguments), inst->location(),
+                                            {"segments"},
                                             {"convexity"});
   parameters.set_caller("extrude");
 
   parameters["convexity"].getPositiveInt(node->convexity);
+
+  node->has_segments = parameters.validate_integral("segments", node->segments, 0u);
 
   children.instantiate(node);
 
@@ -63,8 +66,16 @@ std::string ExtrudeNode::toString() const
   std::ostringstream stream;
 
   stream << this->name() << "(";
-  stream <<
-    "convexity = " << this->convexity;
+  int paramNo = 0;
+  if (this->convexity > 1) {
+    stream << "convexity = " << this->convexity;
+    paramNo++;
+  }
+  if (this->has_segments) {
+    if (paramNo>0) stream << ", ";	  
+    stream << "segments = " << this->segments;
+    paramNo++;
+  }
   stream << ")";
   return stream.str();
 }
@@ -73,6 +84,6 @@ void register_builtin_extrude()
 {
   Builtins::init("extrude", new BuiltinModule(builtin_extrude, &Feature::ExperimentalExtrude),
   {
-    "extrude(convexity = 1)",
+    "extrude(convexity = 1, segments = 1)",
   });
 }
