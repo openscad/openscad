@@ -1,17 +1,17 @@
-extrude(convexity = 0);
-extrude(convexity = 0) {
+extrude();
+extrude() {
 	square(size = [1, 1], center = false);
 }
-extrude(convexity = 0) {
+extrude() {
 	multmatrix([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 		square(size = [1, 1], center = false);
 	}
 }
-extrude(convexity = 0) {
+extrude() {
 	square(size = [20, 20], center = false);
 	square(size = [10, 10], center = false);
 }
-extrude(convexity = 0) {
+extrude() {
 	multmatrix([[0.939693, 0, 0.34202, 0], [0, 1, 0, 0], [-0.34202, 0, 0.939693, 0], [0, 0, 0, 1]]) {
 		multmatrix([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 1], [0, 0, 0, 1]]) {
 			square(size = [10, 10], center = false);
@@ -19,19 +19,19 @@ extrude(convexity = 0) {
 	}
 	square(size = [10, 10], center = false);
 }
-extrude(convexity = 0) {
+extrude() {
 	circle($fn = 5, $fa = 12, $fs = 2, r = 1);
 	multmatrix([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 10], [0, 0, 0, 1]]) {
 		circle($fn = 3, $fa = 12, $fs = 2, r = 1);
 	}
 }
-extrude(convexity = 0) {
+extrude() {
 	circle($fn = 3, $fa = 12, $fs = 2, r = 1);
 	multmatrix([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 10], [0, 0, 0, 1]]) {
 		circle($fn = 5, $fa = 12, $fs = 2, r = 1);
 	}
 }
-extrude(convexity = 0) {
+extrude() {
 	circle($fn = 5, $fa = 12, $fs = 2, r = 1);
 	multmatrix([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 10], [0, 0, 0, 1]]) {
 		circle($fn = 5, $fa = 12, $fs = 2, r = 1);
@@ -43,7 +43,7 @@ extrude(convexity = 0) {
 		circle($fn = 6, $fa = 12, $fs = 2, r = 1);
 	}
 }
-extrude(convexity = 0) {
+extrude() {
 	square(size = [10, 10], center = false);
 	multmatrix([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 5], [0, 0, 0, 1]]) {
 		multmatrix([[1, -0, -0, 0], [-0, 1, -0, 0], [-0, -0, -1, 0], [0, 0, 0, 1]]) {
@@ -52,7 +52,7 @@ extrude(convexity = 0) {
 	}
 }
 multmatrix([[1, 0, 0, 30], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-	extrude(convexity = 0) {
+	extrude() {
 		square(size = [10, 10], center = false);
 		multmatrix([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 5], [0, 0, 0, 1]]) {
 			multmatrix([[1, -0, -0, 0], [-0, -1, -0, 0], [-0, -0, 1, 0], [0, 0, 0, 1]]) {
@@ -61,7 +61,7 @@ multmatrix([[1, 0, 0, 30], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 		}
 	}
 }
-extrude(convexity = 0) {
+extrude() {
 	square(size = [10, 10], center = false);
 	multmatrix([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 5], [0, 0, 0, 1]]) {
 		multmatrix([[0.333333, -0.666667, -0.666667, 0], [-0.666667, 0.333333, -0.666667, 0], [-0.666667, -0.666667, 0.333333, 0], [0, 0, 0, 1]]) {
@@ -71,7 +71,7 @@ extrude(convexity = 0) {
 }
 multmatrix([[1, 0, 0, 60], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 	multmatrix([[8, 0, 0, 0], [0, 8, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-		extrude(convexity = 0) {
+		extrude() {
 			polygon(points = [[0, 0], [0, 1], [1, 1], [1, 0]], paths = [[0, 1, 2, 3]], convexity = 1);
 			multmatrix([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 5], [0, 0, 0, 1]]) {
 				multmatrix([[0, -1, 0, 0], [1, 0, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
@@ -92,7 +92,7 @@ multmatrix([[1, 0, 0, 60], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 	}
 }
 multmatrix([[1, 0, 0, 0], [0, 1, 0, 30], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-	extrude(convexity = 0) {
+	extrude() {
 		multmatrix([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 			multmatrix([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 				multmatrix([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
