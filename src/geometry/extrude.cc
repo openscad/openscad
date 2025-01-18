@@ -157,17 +157,16 @@ static std::vector<std::shared_ptr<const Polygon2d>> interpolateVertices(std::ve
       for (auto outlinein : outlinesin)
       {
         Outline2d outlineadj;
-        for (int i=1;i!=outlinein.vertices.size(); ++i)
+        for (int i=1;i<=outlinein.vertices.size(); ++i)
         {
           auto v0 = outlinein.vertices[i-1];
-          auto v1 = outlinein.vertices[i];
+          auto v1 = outlinein.vertices[i!=outlinein.vertices.size() ? i : 0];
           for (int i=0; i!=segments_per_side; ++i)
           {
             auto v0_adj = v0 + (i*(v1-v0))/segments_per_side;
             outlineadj.vertices.push_back(v0_adj);
           }
         }
-        outlineadj.vertices.push_back(*outlinein.vertices.rbegin());
 
         polyadj->addOutline(std::move(outlineadj));
       }
