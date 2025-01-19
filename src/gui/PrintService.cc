@@ -39,7 +39,10 @@
 #include "export.h"
 #include "utils/printutils.h"
 
+using S = Settings::Settings;
+
 std::mutex PrintService::printServiceMutex;
+PrintServices PrintService::printServices;
 
 namespace {
 
@@ -53,12 +56,6 @@ createPrintService(const QJsonObject &serviceObject) {
 
 PrintServices createPrintServices() {
   PrintServices printServices;
-
-  if (!Settings::Settings::enableRemotePrintServices.value()) {
-    return {};
-  }
-
-  // TODO: Where to call this, will we need a mutex?
   try {
     auto networkRequest = NetworkRequest<void>{
         QUrl{"https://app.openscad.org/print-service.json"}, {200}, 30};
@@ -99,7 +96,18 @@ PrintServices createPrintServices() {
 } // namespace
 
 const PrintServices& PrintService::getPrintServices() {
-  const static PrintServices printServices = createPrintServices();
+  static PrintServices noPrintServices;
+
+  std::lock_guard<std::mutex> guard(printServiceMutex);
+
+  if (!S::enableRemotePrintServices.value()) {
+    return noPrintServices;
+  }
+
+  if (printServices.empty()) {
+    printServices = createPrintServices();
+  }
+
   return printServices;
 }
 

@@ -58,6 +58,7 @@
 #include <QToolBar>
 #include <QWidget>
 
+#include "OctoPrintApiKeyDialog.h"
 #include "openscad_gui.h"
 
 #ifdef ENABLE_MANIFOLD
@@ -2076,7 +2077,10 @@ void MainWindow::sendToExternalTool(ExternalToolInterface &externalToolService)
   activeFileName = activeFileName + QString::fromStdString("." + fileformat::toSuffix(externalToolService.fileFormat()));
 
   bool export_status = externalToolService.exportTemporaryFile(this->root_geom, activeFileName, &qglview->cam);
-  
+  if (!export_status) {
+    return;
+  }
+
   this->progresswidget = new ProgressWidget(this);
   connect(this->progresswidget, SIGNAL(requestShow()), this, SLOT(showProgress()));
 
@@ -2084,6 +2088,9 @@ void MainWindow::sendToExternalTool(ExternalToolInterface &externalToolService)
     return network_progress_func(permille);
   });
   updateStatusBar(nullptr);
+  if (!process_status) {
+    return;
+  }
 
   const auto url = externalToolService.getURL();
   if (!url.empty()) {

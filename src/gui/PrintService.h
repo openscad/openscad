@@ -70,4 +70,5 @@ private:
   std::vector<FileFormat> fileFormats;
 
   static std::mutex printServiceMutex;
+  static PrintServices printServices;
 };
