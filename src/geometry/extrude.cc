@@ -85,7 +85,7 @@ static void outputSingleQuad(PolySetBuilder & builder, Vector3d const & prev0, V
     // Like with linear_interpolate, triangulate on the shorter
     double d1 = std::abs((prev0-cur1).norm());
     double d2 = std::abs((prev1-cur0).norm());
-    bool splitfirst = (d1>=d2) || (std::abs(d2-d1)<1e-4); 
+    bool splitfirst = (d1>=d2) || (std::abs(d2-d1)<1e-4);
   
     if (splitfirst)
     {
@@ -135,6 +135,130 @@ static void outputQuad(PolySetBuilder & builder, Vector3d const & prev0, Vector3
       builder.addVertex(cur0);
     }
   }
+}
+
+// Attempt to align the vertices if we have a different number
+static std::vector<std::shared_ptr<const Polygon2d>> alignVertices(std::vector<std::shared_ptr<const Polygon2d>> const & slicesin)
+{
+  // Check contours match, if not we attempt nothing
+  for (int i= 1; i < slicesin.size(); i++)
+    if (slicesin[i]->untransformedOutlines().size() != slicesin[0]->untransformedOutlines().size())
+      return slicesin;
+
+  // Check slices match, if they do then we have nothing to do
+  bool match = true;
+  for (int i = 1; match && i < slicesin.size(); i++)
+  {
+    for (int p = 0; match && p < slicesin[i]->untransformedOutlines().size(); p++)
+    {
+      match = slicesin[i]->untransformedOutlines()[p].vertices.size() == slicesin[0]->untransformedOutlines()[p].vertices.size();
+      if (!match) break;
+    }
+  }
+
+  if (match) return slicesin;
+
+  std::vector<std::shared_ptr<Polygon2d>> slicesadj;
+  for (auto slice : slicesin)
+  {
+    Polygon2d const & polyin = *slice;
+    auto polyadj = std::make_shared<Polygon2d>();
+    slicesadj.push_back(polyadj);
+  }
+
+  // Calculate the distance round each contour and the fraction of each edge
+  int outlines_count = slicesin[0]->untransformedOutlines().size();
+  for (int o_i=0,o_end=outlines_count; o_i!=o_end; ++o_i)
+  {
+    std::set<double> all_distance_fractions;
+    std::vector<double> slice_distances;
+    for (int sl_i=0, sl_end=slicesin.size(); sl_i!=sl_end; ++sl_i)
+    {
+      auto & vertices = slicesin[sl_i]->untransformedOutlines()[o_i].vertices;
+      double total_distance = 0;
+      std::vector<double> dist;
+      dist.push_back(0);
+      for (int vl_i=0, vl_end=vertices.size(); vl_i!=vl_end; ++vl_i)
+      {
+        bool last = (vl_i+1)==vertices.size();
+	int vl_next_i = last ? 0 : (vl_i+1);
+        auto diff = vertices[vl_next_i] - vertices[vl_i];
+
+	double distance = sqrt(pow(diff[0],2) + pow(diff[1],2));
+        total_distance += distance;
+	if (!last)
+          dist.push_back(total_distance);
+      }
+      slice_distances.push_back(total_distance);
+      for (double distance_fraction : dist)
+      {
+        distance_fraction /= total_distance;
+        all_distance_fractions.insert(distance_fraction);
+      }
+    }
+
+    // Simplify fractions
+    std::set<double> all_distance_fractions_unadjusted = std::move(all_distance_fractions);
+    double distance_fraction_prev = -1;
+    for (double distance_fraction: all_distance_fractions_unadjusted)
+    {
+      double change = distance_fraction-distance_fraction_prev;
+      if (change>1e-4)
+      {
+        all_distance_fractions.insert(distance_fraction);
+	distance_fraction_prev = distance_fraction;
+      }
+    }
+
+    // Rewrite the contours interpolating with all_distance_fractions
+    for (int sl_i=0, sl_end=slicesin.size(); sl_i!=sl_end; ++sl_i)
+    {
+      Polygon2d const & polyin = *slicesin[sl_i];
+      Polygon2d & polyadj = *slicesadj[sl_i];
+
+      auto & vertices = polyin.untransformedOutlines()[o_i].vertices;
+
+      Outline2d outlineadj;
+
+      int vl_i = 0;
+      int vl_next_i = 1;
+      double distance=0;
+      auto diff = vertices[vl_next_i] - vertices[vl_i];
+      double distance_next = sqrt(pow(diff[0],2) + pow(diff[1],2));
+      for (double distance_fraction : all_distance_fractions)
+      {
+        double vertex_distance = distance_fraction * slice_distances[sl_i];
+        if (vertex_distance > distance_next) 
+	{
+          // Next point
+	  vl_i++;
+	  vl_next_i++;
+	  if (vl_next_i==vertices.size()) vl_next_i = 0;
+           auto diff = vertices[vl_next_i] - vertices[vl_i];
+	   distance = distance_next;
+	   distance_next += sqrt(pow(diff[0],2) + pow(diff[1],2));
+	}
+
+        auto v0 = vertices[vl_i];
+        auto v1 = vertices[vl_next_i];
+        auto v0_adj = v0 + ((vertex_distance-distance)*(v1-v0))/(distance_next-distance);
+        outlineadj.vertices.push_back(v0_adj);
+      }
+      polyadj.addOutline(std::move(outlineadj));
+    }
+  }
+
+  for (int sl_i=0, sl_end=slicesin.size(); sl_i!=sl_end; ++sl_i)
+  {
+    Polygon2d const & polyin = *slicesin[sl_i];
+    auto polyadj = slicesadj[sl_i];
+    polyadj->transform3d(polyin.getTransform3d());
+  }
+
+  std::vector<std::shared_ptr<const Polygon2d>> slicesadjconst; // TODO: why is this not possible?
+  for (auto slice : slicesadj)
+	  slicesadjconst.push_back(slice);
+  return slicesadjconst;
 }
 
 // When there is not very planar it can be modelled better with more segments, allow this as an option
@@ -196,6 +320,10 @@ std::shared_ptr<const Geometry> extrudePolygonSequence(const ExtrudeNode &node, 
   // Check for no null slices
   if (!sanityCheckNoNullSlices(node, slicesin, loc, docpath))
     return nullptr;
+
+  // If contours match but number of vertices differs, attempt to align
+  if (node.align)
+    slicesin = alignVertices(slicesin);
   
   // Verify that every slice has the same number of contours with the same number of vertices
   if (!sanityCheckContoursAndVertices(node, slicesin, loc, docpath))

@@ -19,19 +19,19 @@ extrude() {
 	}
 	square(size = [10, 10], center = false);
 }
-extrude() {
+extrude(align = false) {
 	circle($fn = 5, $fa = 12, $fs = 2, r = 1);
 	multmatrix([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 10], [0, 0, 0, 1]]) {
 		circle($fn = 3, $fa = 12, $fs = 2, r = 1);
 	}
 }
-extrude() {
+extrude(align = false) {
 	circle($fn = 3, $fa = 12, $fs = 2, r = 1);
 	multmatrix([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 10], [0, 0, 0, 1]]) {
 		circle($fn = 5, $fa = 12, $fs = 2, r = 1);
 	}
 }
-extrude() {
+extrude(align = false) {
 	circle($fn = 5, $fa = 12, $fs = 2, r = 1);
 	multmatrix([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 10], [0, 0, 0, 1]]) {
 		circle($fn = 5, $fa = 12, $fs = 2, r = 1);

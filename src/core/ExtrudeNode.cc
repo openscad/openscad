@@ -53,6 +53,11 @@ std::shared_ptr<AbstractNode> builtin_extrude(const ModuleInstantiation *inst, A
   parameters["convexity"].getPositiveInt(node->convexity);
 
   node->has_segments = parameters.validate_integral("segments", node->segments, 0u);
+  if (parameters["align"].type() == Value::Type::BOOL)
+  {
+    node->align = parameters["align"].toBool();
+    node->has_align = true;
+  }
 
   children.instantiate(node);
 
@@ -72,8 +77,13 @@ std::string ExtrudeNode::toString() const
     paramNo++;
   }
   if (this->has_segments) {
-    if (paramNo>0) stream << ", ";	  
+    if (paramNo>0) stream << ", ";
     stream << "segments = " << this->segments;
+    paramNo++;
+  }
+  if (this->has_align) {
+    if (paramNo>0) stream << ", ";
+    stream << "align = " << (this->align ? "true" : "false");
     paramNo++;
   }
   stream << ")";
@@ -84,6 +94,6 @@ void register_builtin_extrude()
 {
   Builtins::init("extrude", new BuiltinModule(builtin_extrude, &Feature::ExperimentalExtrude),
   {
-    "extrude(convexity = 1, segments = 1)",
+    "extrude(convexity = 1, segments = 0, align=true)",
   });
 }

@@ -33,7 +33,7 @@ extrude()
 }
 
 // Fewer points
-extrude()
+extrude(align=false)
 {
     circle($fn=5);
     translate([0,0,10])
@@ -41,7 +41,7 @@ extrude()
 }
 
 // More points
-extrude()
+extrude(align=false)
 {
     circle($fn=3);
     translate([0,0,10])
@@ -49,7 +49,7 @@ extrude()
 }
 
 // More points many slices
-extrude()
+extrude(align=false)
 {
     circle($fn=5);
     translate([0,0,10])
