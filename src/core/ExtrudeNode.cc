@@ -46,7 +46,7 @@ std::shared_ptr<AbstractNode> builtin_extrude(const ModuleInstantiation *inst, A
   auto node = std::make_shared<ExtrudeNode>(inst);
 
   Parameters parameters = Parameters::parse(std::move(arguments), inst->location(),
-                                            {"segments"},
+                                            {"segments","align"},
                                             {"convexity"});
   parameters.set_caller("extrude");
 
@@ -94,6 +94,6 @@ void register_builtin_extrude()
 {
   Builtins::init("extrude", new BuiltinModule(builtin_extrude, &Feature::ExperimentalExtrude),
   {
-    "extrude(convexity = 1, segments = 0, align=true)",
+    "extrude(convexity = 1, segments = 0, align = true)",
   });
 }
