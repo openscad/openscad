@@ -342,7 +342,17 @@ std::unique_ptr<Polygon2d> applyOffset(const Polygon2d& poly, double offset, Cli
     isMiter ? miter_limit : 2.0,
     isRound ? std::ldexp(arc_tolerance, scale_bits) : 1.0
     );
-  auto p = ClipperUtils::fromPolygon2d(poly, scale_bits); 
+  Clipper2Lib::Paths64 raw_path = ClipperUtils::fromPolygon2d(poly, scale_bits); 
+  auto scaled_offset = std::ldexp(offset, scale_bits);  
+
+  // Note: ClipperOffset is very sensitive to small line segments 
+  // It's recommended to simplify paths after offsetting, and in practice it's
+  // also necessary to simplify paths _before_ offsetting as the simplification epsilon 
+  // needs to be chosen relative to the offset value.
+  // Some docs here: https://www.angusj.com/clipper2/Docs/Units/Clipper/Functions/SimplifyPaths.htm
+  // See also comment in https://github.com/AngusJohnson/Clipper2/issues/934
+  Clipper2Lib::Paths64 p = Clipper2Lib::SimplifyPaths(raw_path, scaled_offset / 1000);
+
   co.AddPaths(p, joinType, Clipper2Lib::EndType::Polygon);
   Clipper2Lib::PolyTree64 result;
   co.Execute(std::ldexp(offset, scale_bits), result);
