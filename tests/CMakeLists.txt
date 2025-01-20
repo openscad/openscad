@@ -554,6 +554,13 @@ file(GLOB SCAD_SVG_FILES      ${TEST_SCAD_DIR}/svg/svg-spec/*.scad
 )
 
 file(GLOB FEATURES_3D_FILES   ${TEST_SCAD_DIR}/3D/features/*.scad)
+list(REMOVE_ITEM FEATURES_3D_FILES
+  ${TEST_SCAD_DIR}/3D/features/extrude_core.scad # -> EXPERIMENTAL_EXTRUDE_FILES
+  ${TEST_SCAD_DIR}/3D/features/extrude_edge_case.scad
+  ${TEST_SCAD_DIR}/3D/features/extrude_linear_extrude-tests.scad
+  ${TEST_SCAD_DIR}/3D/features/extrude_rotate_extrude-tests.scad
+  ${TEST_SCAD_DIR}/3D/features/extrude_segments-tests.scad
+)
 file(GLOB DEPRECATED_3D_FILES ${TEST_SCAD_DIR}/3D/deprecated/*.scad)
 file(GLOB ISSUES_3D_FILES     ${TEST_SCAD_DIR}/3D/issues/*.scad)
 file(GLOB SCAD_AMF_FILES           ${TEST_SCAD_DIR}/amf/*.scad)
@@ -1423,6 +1430,24 @@ add_cmdline_test(csgrendertest      EXPERIMENTAL SCRIPT ${EXPORT_IMPORT_PNGTEST_
 add_cmdline_test(rendertest         EXPERIMENTAL OPENSCAD SUFFIX png FILES ${EXPERIMENTAL_TEXTMETRICS_FILES} ARGS --render --enable=textmetrics)
 add_cmdline_test(dxfrendertest      EXPERIMENTAL SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png ARGS ${OPENSCAD_EXE_ARG} --format=DXF --render=force --enable=textmetrics EXPECTEDDIR rendertest FILES ${EXPERIMENTAL_TEXTMETRICS_FILES})
 add_cmdline_test(svgrendertest      EXPERIMENTAL SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png ARGS ${OPENSCAD_EXE_ARG} --format=SVG --render=force --enable=textmetrics EXPECTEDDIR rendertest FILES ${EXPERIMENTAL_TEXTMETRICS_FILES})
+
+#
+# --enable=extrude tests
+#
+list(APPEND EXPERIMENTAL_EXTRUDE_FILES
+${TEST_SCAD_DIR}/3D/features/extrude_core.scad
+${TEST_SCAD_DIR}/3D/features/extrude_edge_case.scad
+${TEST_SCAD_DIR}/3D/features/extrude_linear_extrude-tests.scad
+${TEST_SCAD_DIR}/3D/features/extrude_rotate_extrude-tests.scad
+${TEST_SCAD_DIR}/3D/features/extrude_segments-tests.scad
+)
+add_cmdline_test(dumptest            EXPERIMENTAL OPENSCAD SUFFIX csg FILES ${EXPERIMENTAL_EXTRUDE_FILES} ARGS --enable=extrude)
+add_cmdline_test(rendertest          EXPERIMENTAL OPENSCAD SUFFIX png FILES ${EXPERIMENTAL_EXTRUDE_FILES} ARGS --render --enable=extrude)
+add_cmdline_test(csgrendertest       EXPERIMENTAL SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png FILES ${EXPERIMENTAL_EXTRUDE_FILES} EXPECTEDDIR rendertest ARGS ${OPENSCAD_EXE_ARG} --format=csg --render --enable=extrude)
+add_cmdline_test(rendermanifoldtest  EXPERIMENTAL OPENSCAD SUFFIX png FILES ${EXPERIMENTAL_EXTRUDE_FILES} EXPECTEDDIR rendertest ARGS --render --enable=extrude --backend=manifold)
+add_cmdline_test(previewtest         EXPERIMENTAL OPENSCAD SUFFIX png FILES ${EXPERIMENTAL_EXTRUDE_FILES} ARGS --enable=extrude)
+add_cmdline_test(previewmanifoldtest EXPERIMENTAL OPENSCAD SUFFIX png FILES ${EXPERIMENTAL_EXTRUDE_FILES} ARGS --enable=extrude --backend=manifold)
+add_cmdline_test(throwntogethertest  EXPERIMENTAL OPENSCAD SUFFIX png FILES ${EXPERIMENTAL_EXTRUDE_FILES} ARGS --preview=throwntogether --enable=extrude)
 
 
 ############################

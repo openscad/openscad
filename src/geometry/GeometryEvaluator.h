@@ -28,6 +28,7 @@ public:
   Response visit(State& state, const ColorNode& node) override;
   Response visit(State& state, const AbstractIntersectionNode& node) override;
   Response visit(State& state, const AbstractPolyNode& node) override;
+  Response visit(State& state, const ExtrudeNode& node) override;
   Response visit(State& state, const LinearExtrudeNode& node) override;
   Response visit(State& state, const RotateExtrudeNode& node) override;
 #if defined(ENABLE_EXPERIMENTAL) && defined(ENABLE_CGAL)
