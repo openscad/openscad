@@ -1193,12 +1193,16 @@ bool ScintillaEditor::handleWheelEventNavigateNumber(QWheelEvent *wheelEvent)
   }
 
   if (modifier) {
-    if (wheelEvent->angleDelta().y() < 0) {
+    int delta = wheelEvent->angleDelta().y() != 0
+      ? wheelEvent->angleDelta().y()
+      : wheelEvent->angleDelta().x();
+
+    if (delta < 0) {
       if (modifyNumber(Qt::Key_Down)) {
         previewAfterUndo = true;
       }
     } else {
-      // wheelEvent->delta() > 0
+      // delta > 0
       if (modifyNumber(Qt::Key_Up)) {
         previewAfterUndo = true;
       }
