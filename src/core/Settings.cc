@@ -197,7 +197,7 @@ SettingsEntryEnum<std::string> Settings::modifierNumberScrollWheel("editor", "mo
 }, "Alt");
 
 SettingsEntryString Settings::defaultPrintService("printing", "printService", "NONE");
-
+SettingsEntryBool Settings::enableRemotePrintServices("printing", "enableRemotePrintServices", false);
 SettingsEntryString Settings::printServiceName("printing", "printServiceName", "");
 SettingsEntryString Settings::printServiceFileFormat("printing", "printServiceFileFormat", "stl");
 

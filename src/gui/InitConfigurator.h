@@ -30,6 +30,7 @@ private:
 class InitConfigurator
 {
 protected:
+  void writeSettings();
   /** Set checkbox status from the settings value */
   void initUpdateCheckBox(const BlockSignals<QCheckBox *>& checkBox, const Settings::SettingsEntryBool& entry);
   /** Initialize spinbox min/max values from the settings range values */
