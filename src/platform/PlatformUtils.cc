@@ -77,7 +77,10 @@ static std::string lookupResourcesPath()
   }
 
   // resourcedir defaults to applicationPath
-  std::string result = fs::canonical(resourcedir).generic_string();
+#ifndef __EMSCRIPTEN__
+  resourcedir = fs::canonical(resourcedir);
+#endif
+  std::string result = resourcedir.generic_string();
   PRINTDB("Using resource folder '%s'", result);
   return result;
 }
@@ -123,7 +126,9 @@ std::string PlatformUtils::userLibraryPath()
     if (pathstr == "") return "";
     path = fs::path(pathstr);
     if (!fs::exists(path)) return "";
+#ifndef __EMSCRIPTEN__
     path = fs::canonical(path);
+#endif
     // LOG(message_group::NONE,,"path size %1$i",fs::stringy(path).size());
     // LOG(message_group::NONE,,"lib path found: [%1$s]",path);
     if (path.empty()) return "";
@@ -146,7 +151,9 @@ std::string PlatformUtils::backupPath()
     if (pathstr == "") return "";
     path = fs::path(pathstr);
     if (!fs::exists(path)) return "";
+#ifndef __EMSCRIPTEN__
     path = fs::canonical(path);
+#endif
     if (path.empty()) return "";
     path /= OPENSCAD_FOLDER_NAME;
     path /= "backups";

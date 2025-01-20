@@ -41,7 +41,6 @@
 
 #ifdef ENABLE_CGAL
 #include "geometry/cgal/CGAL_Nef_polyhedron.h"
-#include "geometry/cgal/CGALHybridPolyhedron.h"
 #include "geometry/cgal/cgal.h"
 #include "geometry/cgal/cgalutils.h"
 #endif
@@ -207,27 +206,6 @@ uint64_t append_stl(const CGAL_Nef_polyhedron& root_N, std::ostream& output,
   return triangle_count;
 }
 
-/*!
-   Saves the current 3D CGAL Nef polyhedron as STL to the given file.
-   The file must be open.
- */
-uint64_t append_stl(const CGALHybridPolyhedron& hybrid, std::ostream& output,
-                    bool binary)
-{
-  uint64_t triangle_count = 0;
-  if (!hybrid.isManifold()) {
-    LOG(message_group::Export_Warning, "Exported object may not be a valid 2-manifold and may need repair");
-  }
-
-  const auto ps = hybrid.toPolySet();
-  if (ps) {
-    triangle_count += append_stl(ps, output, binary);
-  } else {
-    LOG(message_group::Export_Error, "Nef->PolySet failed");
-  }
-
-  return triangle_count;
-}
 #endif  // ENABLE_CGAL
 
 #ifdef ENABLE_MANIFOLD
@@ -268,8 +246,6 @@ uint64_t append_stl(const std::shared_ptr<const Geometry>& geom, std::ostream& o
 #ifdef ENABLE_CGAL
   } else if (const auto N = std::dynamic_pointer_cast<const CGAL_Nef_polyhedron>(geom)) {
     triangle_count += append_stl(*N, output, binary);
-  } else if (const auto hybrid = std::dynamic_pointer_cast<const CGALHybridPolyhedron>(geom)) {
-    triangle_count += append_stl(*hybrid, output, binary);
 #endif
 #ifdef ENABLE_MANIFOLD
   } else if (const auto mani = std::dynamic_pointer_cast<const ManifoldGeometry>(geom)) {

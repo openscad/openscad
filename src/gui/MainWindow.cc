@@ -23,7 +23,22 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  */
+
 #include "gui/MainWindow.h"
+
+#include <deque>
+#include <cassert>
+#include <array>
+#include <functional>
+#include <exception>
+#include <sstream>
+#include <iostream>
+#include <memory>
+#include <string>
+#include <vector>
+#include <cstdio>
+#include <memory>
+#include <utility>
 
 #include <QApplication>
 #include <QDialog>
@@ -36,21 +51,14 @@
 #include <QList>
 #include <QMetaObject>
 #include <QPoint>
+#include <QScreen>
 #include <QSoundEffect>
 #include <QStringList>
 #include <QTextEdit>
 #include <QToolBar>
 #include <QWidget>
-#include <deque>
-#include <cassert>
-#include <array>
-#include <functional>
-#include <exception>
-#include <sstream>
-#include <iostream>
-#include <memory>
-#include <string>
-#include <vector>
+
+#include "openscad_gui.h"
 
 #ifdef ENABLE_MANIFOLD
 #include "geometry/manifold/manifoldutils.h"
@@ -68,13 +76,14 @@
 #include "gui/Preferences.h"
 #include "utils/printutils.h"
 #include "core/node.h"
+#include "core/ColorUtil.h"
 #include "core/CSGNode.h"
 #include "core/Expression.h"
 #include "core/ScopeContext.h"
 #include "core/progress.h"
 #include "io/dxfdim.h"
 #include "io/fileutils.h"
-#include "gui/Settings.h"
+#include "core/Settings.h"
 #include "gui/AboutDialog.h"
 #include "gui/FontListDialog.h"
 #include "gui/LibraryInfoDialog.h"
@@ -82,16 +91,10 @@
 #ifdef ENABLE_OPENCSG
 #include "core/CSGTreeEvaluator.h"
 #include "glview/preview/OpenCSGRenderer.h"
-#ifdef USE_LEGACY_RENDERERS
-#include "glview/preview/LegacyOpenCSGRenderer.h"
-#endif
 #include <opencsg.h>
 #endif
 #include "gui/ProgressWidget.h"
 #include "glview/preview/ThrownTogetherRenderer.h"
-#ifdef USE_LEGACY_RENDERERS
-#include "glview/preview/LegacyThrownTogetherRenderer.h"
-#endif
 #include "glview/preview/CSGTreeNormalizer.h"
 #include "gui/QGLView.h"
 #include "gui/MouseSelector.h"
@@ -171,7 +174,6 @@ std::string SHA256HashString(std::string aString){
 #include <sys/stat.h>
 
 #include "glview/cgal/CGALRenderer.h"
-#include "glview/cgal/LegacyCGALRenderer.h"
 #include "gui/CGALWorker.h"
 
 #ifdef ENABLE_CGAL
@@ -179,7 +181,6 @@ std::string SHA256HashString(std::string aString){
 #include "geometry/cgal/cgalutils.h"
 #include "geometry/cgal/CGALCache.h"
 #include "geometry/cgal/CGAL_Nef_polyhedron.h"
-#include "geometry/cgal/CGALHybridPolyhedron.h"
 #endif // ENABLE_CGAL
 
 #ifdef ENABLE_MANIFOLD
@@ -189,15 +190,11 @@ std::string SHA256HashString(std::string aString){
 #include "geometry/GeometryEvaluator.h"
 
 #include "gui/PrintInitDialog.h"
-//#include "gui/ExportPdfDialog.h"
+#include "gui/ExportPdfDialog.h"
+#include "gui/Export3mfDialog.h"
 #include "gui/input/InputDriverEvent.h"
 #include "gui/input/InputDriverManager.h"
-#include <cstdio>
-#include <memory>
 #include <QtNetwork>
-#include <utility>
-
-#include "gui/qt-obsolete.h" // IWYU pragma: keep
 
 static const int autoReloadPollingPeriodMS = 200;
 
@@ -236,8 +233,8 @@ QAction *findAction(const QList<QAction *>& actions, const std::string& name)
   return nullptr;
 }
 
-void fileExportedMessage(const char *format, const QString& filename) {
-  LOG("%1$s export finished: %2$s", format, filename.toUtf8().constData());
+void fileExportedMessage(const QString& format, const QString& filename) {
+  LOG("%1$s export finished: %2$s", format.toUtf8().constData(), filename.toUtf8().constData());
 }
 
 void removeExportActions(QToolBar *toolbar, QAction *action) {
@@ -403,7 +400,11 @@ MainWindow::MainWindow(const QStringList& filenames)
   connect(autoReloadTimer, SIGNAL(timeout()), this, SLOT(checkAutoReload()));
 
   this->exportformat_mapper = new QSignalMapper(this);
-  connect(this->exportformat_mapper, SIGNAL(mappedInt(int)), this, SLOT(actionExportFileFormat(int))) ;
+#if QT_VERSION >= QT_VERSION_CHECK(5, 15, 0)
+  connect(this->exportformat_mapper, &QSignalMapper::mappedInt, this, &MainWindow::actionExportFileFormat);
+#else
+  connect(this->exportformat_mapper, static_cast<void (QSignalMapper::*)(int)>(&QSignalMapper::mapped), this, &MainWindow::actionExportFileFormat);
+#endif
 
   waitAfterReloadTimer = new QTimer(this);
   waitAfterReloadTimer->setSingleShot(true);
@@ -619,53 +620,6 @@ MainWindow::MainWindow(const QStringList& filenames)
 
   Preferences *instance = Preferences::inst();
 
-  initActionIcon(fileActionNew, ":/icons/svg-default/new.svg", ":/icons/svg-default/new-white.svg");
-  initActionIcon(fileActionOpen, ":/icons/svg-default/open.svg", ":/icons/svg-default/open-white.svg");
-  initActionIcon(fileActionSave, ":/icons/svg-default/save.svg", ":/icons/svg-default/save-white.svg");
-  initActionIcon(editActionZoomTextIn, ":/icons/svg-default/zoom-text-in.svg", ":/icons/svg-default/zoom-text-in-white.svg");
-  initActionIcon(editActionZoomTextOut, ":/icons/svg-default/zoom-text-out.svg", ":/icons/svg-default/zoom-text-out-white.svg");
-  initActionIcon(designActionRender, ":/icons/svg-default/render.svg", ":/icons/svg-default/render-white.svg");
-  initActionIcon(designAction3DPrint, ":/icons/svg-default/send.svg", ":/icons/svg-default/send-white.svg");
-  initActionIcon(viewActionShowAxes, ":/icons/svg-default/axes.svg", ":/icons/svg-default/axes-white.svg");
-  initActionIcon(viewActionShowEdges, ":/icons/svg-default/show-edges.svg", ":/icons/svg-default/show-edges-white.svg");
-  initActionIcon(viewActionZoomIn, ":/icons/svg-default/zoom-in.svg", ":/icons/svg-default/zoom-in-white.svg");
-  initActionIcon(viewActionZoomOut, ":/icons/svg-default/zoom-out.svg", ":/icons/svg-default/zoom-out-white.svg");
-  initActionIcon(viewActionTop, ":/icons/svg-default/view-top.svg", ":/icons/svg-default/view-top-white.svg");
-  initActionIcon(viewActionBottom, ":/icons/svg-default/view-bottom.svg", ":/icons/svg-default/view-bottom-white.svg");
-  initActionIcon(viewActionLeft, ":/icons/svg-default/view-left.svg", ":/icons/svg-default/view-left-white.svg");
-  initActionIcon(viewActionRight, ":/icons/svg-default/view-right.svg", ":/icons/svg-default/view-right-white.svg");
-  initActionIcon(viewActionFront, ":/icons/svg-default/view-front.svg", ":/icons/svg-default/view-front-white.svg");
-  initActionIcon(viewActionBack, ":/icons/svg-default/view-back.svg", ":/icons/svg-default/view-back-white.svg");
-  initActionIcon(viewActionSurfaces, ":/icons/svg-default/surface.svg", ":/icons/svg-default/surface-white.svg");
-  initActionIcon(viewActionWireframe, ":/icons/svg-default/wireframe.svg", ":/icons/svg-default/wireframe-white.svg");
-  initActionIcon(viewActionShowCrosshairs, ":/icons/svg-default/crosshairs.svg", ":/icons/svg-default/crosshairs-white.svg");
-  initActionIcon(viewActionThrownTogether, ":/icons/svg-default/throwntogether.svg", ":/icons/svg-default/throwntogether-white.svg");
-  initActionIcon(viewActionPerspective, ":/icons/svg-default/perspective.svg", ":/icons/svg-default/perspective-white.svg");
-  initActionIcon(viewActionOrthogonal, ":/icons/svg-default/orthogonal.svg", ":/icons/svg-default/orthogonal-white.svg");
-  initActionIcon(designActionPreview, ":/icons/svg-default/preview.svg", ":/icons/svg-default/preview-white.svg");
-  initActionIcon(designActionMeasureDist, ":/icons/svg-default/measure-dist.svg", ":/icons/svg-default/measure-dist-white.svg");
-  initActionIcon(designActionMeasureAngle, ":/icons/svg-default/measure-ang.svg", ":/icons/svg-default/measure-ang-white.svg");
-  initActionIcon(fileActionExportBinarySTL, ":/icons/svg-default/export-stl.svg", ":/icons/svg-default/export-stl-white.svg");
-  initActionIcon(fileActionExportAsciiSTL, ":/icons/svg-default/export-stl.svg", ":/icons/svg-default/export-stl-white.svg");
-  initActionIcon(fileActionExportAMF, ":/icons/svg-default/export-amf.svg", ":/icons/svg-default/export-amf-white.svg");
-  initActionIcon(fileActionExport3MF, ":/icons/svg-default/export-3mf.svg", ":/icons/svg-default/export-3mf-white.svg");
-  initActionIcon(fileActionExportOBJ, ":/icons/svg-default/export-obj.svg", ":/icons/svg-default/export-obj-white.svg");
-  initActionIcon(fileActionExportOFF, ":/icons/svg-default/export-off.svg", ":/icons/svg-default/export-off-white.svg");
-  initActionIcon(fileActionExportWRL, ":/icons/svg-default/export-wrl.svg", ":/icons/svg-default/export-wrl-white.svg");
-  initActionIcon(fileActionExportPOV, ":/icons/svg-default/export-pov.svg", ":/icons/svg-default/export-pov-white.svg");
-  initActionIcon(fileActionExportDXF, ":/icons/svg-default/export-dxf.svg", ":/icons/svg-default/export-dxf-white.svg");
-  initActionIcon(fileActionExportSVG, ":/icons/svg-default/export-svg.svg", ":/icons/svg-default/export-svg-white.svg");
-  initActionIcon(fileActionExportCSG, ":/icons/svg-default/export-csg.svg", ":/icons/svg-default/export-csg-white.svg");
-  initActionIcon(fileActionExportPDF, ":/icons/svg-default/export-pdf.svg", ":/icons/svg-default/export-pdf-white.svg");
-  initActionIcon(fileActionExportImage, ":/icons/svg-default/export-png.svg", ":/icons/svg-default/export-png-white.svg");
-  initActionIcon(viewActionViewAll, ":/icons/svg-default/zoom-all.svg", ":/icons/svg-default/zoom-all-white.svg");
-  initActionIcon(editActionUndo, ":/icons/svg-default/undo.svg", ":/icons/svg-default/undo-white.svg");
-  initActionIcon(editActionRedo, ":/icons/svg-default/redo.svg", ":/icons/svg-default/redo-white.svg");
-  initActionIcon(editActionUnindent, ":/icons/svg-default/unindent.svg", ":/icons/svg-default/unindent-white.svg");
-  initActionIcon(editActionIndent, ":/icons/svg-default/indent.svg", ":/icons/svg-default/indent-white.svg");
-  initActionIcon(viewActionResetView, ":/icons/svg-default/reset-view.svg", ":/icons/svg-default/reset-view-white.svg");
-  initActionIcon(viewActionShowScaleProportional, ":/icons/svg-default/scalemarkers.svg", ":/icons/svg-default/scalemarkers-white.svg");
-
   InputDriverManager::instance()->registerActions(this->menuBar()->actions(), "", "");
   InputDriverManager::instance()->registerActions(this->animateWidget->actions(), "animation", "animate");
   instance->ButtonConfig->init();
@@ -684,6 +638,15 @@ MainWindow::MainWindow(const QStringList& filenames)
   // make sure it looks nice..
   const auto windowState = settings.value("window/state", QByteArray()).toByteArray();
   restoreGeometry(settings.value("window/geometry", QByteArray()).toByteArray());
+#if QT_VERSION >= QT_VERSION_CHECK(5, 14, 0)
+  // Workaround for a Qt bug (possible QTBUG-46620, but it's still there in Qt-6.5.3)
+  // Blindly restoring a maximized window to a different screen resolution causes a crash
+  // on the next move/resize operation on macOS:
+  // https://github.com/openscad/openscad/issues/5486
+  if (isMaximized()) {
+    setGeometry(screen()->availableGeometry());
+  }
+#endif
   restoreState(windowState);
 
   if (windowState.size() == 0) {
@@ -782,17 +745,6 @@ void MainWindow::openFileFromPath(const QString& path, int line)
     activeEditor->setFocus();
     activeEditor->setCursorPosition(line, 0);
   }
-}
-
-bool MainWindow::isLightTheme(){
-  int defaultcolor = viewerToolBar->palette().window().color().lightness();
-  return (defaultcolor > 165);
-}
-
-void MainWindow::initActionIcon(QAction *action, const char *darkResource, const char *lightResource)
-{
-  const char *resource = this->isLightTheme() ? darkResource : lightResource;
-  action->setIcon(QIcon(resource));
 }
 
 void MainWindow::addKeyboardShortCut(const QList<QAction *>& actions)
@@ -1422,26 +1374,14 @@ void MainWindow::compileCSG()
     else {
       LOG("Normalized tree has %1$d elements!",
           (this->root_products ? this->root_products->size() : 0));
-#ifdef USE_LEGACY_RENDERERS
-      this->opencsgRenderer = std::make_shared<LegacyOpenCSGRenderer>(this->root_products,
-                                                                      this->highlights_products,
-                                                                      this->background_products);
-#else
       this->opencsgRenderer = std::make_shared<OpenCSGRenderer>(this->root_products,
                                                                 this->highlights_products,
                                                                 this->background_products);
-#endif
     }
 #endif // ifdef ENABLE_OPENCSG
-#ifdef USE_LEGACY_RENDERERS
-    this->thrownTogetherRenderer = std::make_shared<LegacyThrownTogetherRenderer>(this->root_products,
-                                                                                  this->highlights_products,
-                                                                                  this->background_products);
-#else
     this->thrownTogetherRenderer = std::make_shared<ThrownTogetherRenderer>(this->root_products,
                                                                             this->highlights_products,
                                                                             this->background_products);
-#endif
     LOG("Compile and preview finished.");
     renderStatistic.printRenderingTime();
     this->processEvents();
@@ -2119,7 +2059,7 @@ std::unique_ptr<ExternalToolInterface> createExternalToolService(
     case print_service_t::OCTOPRINT:
       return createOctoPrintService(fileFormat);
     break;
-    case print_service_t::LOCALSLICER:
+    case print_service_t::LOCAL_APPLICATION:
       return createLocalProgramService(fileFormat);
     break;
   }
@@ -2235,11 +2175,7 @@ void MainWindow::actionRenderDone(const std::shared_ptr<const Geometry>& root_ge
     LOG("Rendering finished.");
 
     this->root_geom = root_geom;
-#ifdef USE_LEGACY_RENDERERS
-    this->cgalRenderer = std::make_shared<LegacyCGALRenderer>(root_geom);
-#else
     this->cgalRenderer = std::make_shared<CGALRenderer>(root_geom);
-#endif
     // Go to CGAL view mode
     if (viewActionWireframe->isChecked()) viewModeWireframe();
     else viewModeSurface();
@@ -2675,8 +2611,6 @@ void MainWindow::actionCheckValidity()
 #ifdef ENABLE_CGAL 
  if (auto N = std::dynamic_pointer_cast<const CGAL_Nef_polyhedron>(this->root_geom)) {
     valid = N->p3 ? const_cast<CGAL_Nef_polyhedron3&>(*N->p3).is_valid() : false;
-  } else if (auto hybrid = std::dynamic_pointer_cast<const CGALHybridPolyhedron>(this->root_geom)) {
-    valid = hybrid->isValid();
   } else
 #endif
 #ifdef ENABLE_MANIFOLD
@@ -2750,13 +2684,11 @@ bool MainWindow::canExport(unsigned int dim)
   return true;
 }
 
-void MainWindow::actionExport(FileFormat format, const char *type_name, const char *suffix, unsigned int dim) {
-  ExportPdfOptions *empty = nullptr;
-  actionExport(format, type_name, suffix, dim, empty);
-}
-
-void MainWindow::actionExport(FileFormat format, const char *type_name, const char *suffix, unsigned int dim, ExportPdfOptions *options)
+void MainWindow::actionExport(unsigned int dim, ExportInfo& exportInfo)
 {
+  const auto type_name = QString::fromStdString(exportInfo.info.description);
+  const auto suffix = QString::fromStdString(exportInfo.info.suffix);
+
   //Setting filename skips the file selection dialog and uses the path provided instead.
   if (GuiLocker::isLocked()) return;
   GuiLocker lock;
@@ -2775,10 +2707,6 @@ void MainWindow::actionExport(FileFormat format, const char *type_name, const ch
   }
   this->export_paths[suffix] = exportFilename;
 
-  ExportInfo exportInfo = {.format = format, .sourceFilePath = activeEditor->filepath.toStdString(), .camera = &qglview->cam};
-  // Add options
-  exportInfo.options = options;
-
   bool exportResult = exportFileByName(this->root_geom, exportFilename.toStdString(), exportInfo);
 
   if (exportResult) fileExportedMessage(type_name, exportFilename);
@@ -2787,55 +2715,35 @@ void MainWindow::actionExport(FileFormat format, const char *type_name, const ch
 
 void MainWindow::actionExportFileFormat(int fmt)
 {
-  const FileFormat format = static_cast<FileFormat>(fmt);
+  const auto format = static_cast<FileFormat>(fmt);
   const FileFormatInfo &info = fileformat::info(format);
-  const std::string suffix = "." + info.suffix;
+
+  ExportInfo exportInfo = createExportInfo(format, info, activeEditor->filepath.toStdString(), &qglview->cam, {});
+
   switch (format) {
     case FileFormat::PDF:
-{
+      {
+        auto exportPdfDialog = new ExportPdfDialog();
+        exportPdfDialog->deleteLater();
+        if (exportPdfDialog->exec() == QDialog::Rejected) {
+          return;
+        }
 
-  ExportPdfOptions exportPdfOptions;
-  QSettingsCached settings;
+        exportInfo.optionsPdf = exportPdfDialog->getOptions();
+        actionExport(2, exportInfo);
+      }
+      break;
+    case FileFormat::_3MF:
+      {
+        auto export3mfDialog = new Export3mfDialog();
+        export3mfDialog->deleteLater();
+        if (export3mfDialog->exec() == QDialog::Rejected) {
+          return;
+        }
 
-// Prepopulated with default values in export.h
-  auto exportPdfDialog = new ExportPdfDialog();
-
-// Get current settings or defaults
-//  modify the two enums (next two rows) to explicitly use default by lookup to string (see the later set methods).
-  exportPdfDialog->setPaperSize(sizeString2Enum(settings.value("exportPdfOpts/paperSize",
-                                                               QString::fromStdString(paperSizeStrings[static_cast<int>(exportPdfOptions.paperSize)])).toString())); // enum map
-  exportPdfDialog->setOrientation(orientationsString2Enum(settings.value("exportPdfOpts/orientation",
-                                                                         QString::fromStdString(paperOrientationsStrings[static_cast<int>(exportPdfOptions.Orientation)])).toString())); // enum map
-  exportPdfDialog->setShowDesignFilename(settings.value("exportPdfOpts/showDsgnFN", exportPdfOptions.showDesignFilename).toBool());
-  exportPdfDialog->setShowScale(settings.value("exportPdfOpts/showScale", exportPdfOptions.showScale).toBool());
-  exportPdfDialog->setShowScaleMsg(settings.value("exportPdfOpts/showScaleMsg", exportPdfOptions.showScaleMsg).toBool());
-  exportPdfDialog->setShowGrid(settings.value("exportPdfOpts/showGrid", exportPdfOptions.showGrid).toBool());
-  exportPdfDialog->setGridSize(settings.value("exportPdfOpts/gridSize", exportPdfOptions.gridSize).toDouble());
-
-
-  if (exportPdfDialog->exec() == QDialog::Rejected) {
-    return;
-  }
-
-  exportPdfOptions.paperSize = exportPdfDialog->getPaperSize();
-  exportPdfOptions.Orientation = exportPdfDialog->getOrientation();
-  exportPdfOptions.showDesignFilename = exportPdfDialog->getShowDesignFilename();
-  exportPdfOptions.showScale = exportPdfDialog->getShowScale();
-  exportPdfOptions.showScaleMsg = exportPdfDialog->getShowScaleMsg();
-  exportPdfOptions.showGrid = exportPdfDialog->getShowGrid();
-  exportPdfOptions.gridSize = exportPdfDialog->getGridSize();
-
-  settings.setValue("exportPdfOpts/paperSize", QString::fromStdString(paperSizeStrings[static_cast<int>(exportPdfDialog->getPaperSize())]));
-  settings.setValue("exportPdfOpts/orientation", QString::fromStdString(paperOrientationsStrings[static_cast<int>(exportPdfDialog->getOrientation())]));
-  settings.setValue("exportPdfOpts/showDsgnFN", exportPdfDialog->getShowDesignFilename());
-  settings.setValue("exportPdfOpts/showScale", exportPdfDialog->getShowScale());
-  settings.setValue("exportPdfOpts/showScaleMsg", exportPdfDialog->getShowScaleMsg());
-  settings.setValue("exportPdfOpts/showGrid", exportPdfDialog->getShowGrid());
-  settings.setValue("exportPdfOpts/gridSize", exportPdfDialog->getGridSize());
-
-  actionExport(FileFormat::PDF, "PDF", ".pdf", 2, &exportPdfOptions);
-
-}
+        exportInfo.options3mf = export3mfDialog->getOptions();
+        actionExport(3, exportInfo);
+      }
       break;
     case FileFormat::CSG:
 {
@@ -2846,7 +2754,7 @@ void MainWindow::actionExportFileFormat(int fmt)
     clearCurrentOutput();
     return;
   }
-  const auto suffix = ".csg";
+  const QString suffix = "csg";
   auto csg_filename = QFileDialog::getSaveFileName(this,
                                                    _("Export CSG File"), exportPath(suffix), _("CSG Files (*.csg)"));
 
@@ -2871,7 +2779,7 @@ void MainWindow::actionExportFileFormat(int fmt)
 {
   // Grab first to make sure dialog box isn't part of the grabbed image
   qglview->grabFrame();
-  const auto suffix = ".png";
+  const QString suffix = "png";
   auto img_filename = QFileDialog::getSaveFileName(this,
                                                    _("Export Image"), exportPath(suffix), _("PNG Files (*.png)"));
   if (!img_filename.isEmpty()) {
@@ -2888,7 +2796,7 @@ void MainWindow::actionExportFileFormat(int fmt)
 }
       break;
     default:
-      actionExport(info.format, info.description.c_str(), suffix.c_str(), fileformat::is3D(format) ? 3 : fileformat::is2D(format) ? 2 : 0);
+      actionExport(fileformat::is3D(format) ? 3 : fileformat::is2D(format) ? 2 : 0, exportInfo);
   }
 }
 
@@ -3732,38 +3640,21 @@ void MainWindow::processEvents()
   if (this->procevents) QApplication::processEvents();
 }
 
-QString MainWindow::exportPath(const char *suffix) {
-  QString path;
-  auto path_it = this->export_paths.find(suffix);
+QString MainWindow::exportPath(const QString& suffix) {
+  const auto path_it = this->export_paths.find(suffix);
+  const auto basename = activeEditor->filepath.isEmpty() ? "Untitled" : QFileInfo(activeEditor->filepath).completeBaseName();
+  QString dir;
   if (path_it != export_paths.end()) {
-    path = QFileInfo(path_it->second).absolutePath() + QString("/");
-    if (activeEditor->filepath.isEmpty()) path += QString(_("Untitled")) + suffix;
-    else path += QFileInfo(activeEditor->filepath).completeBaseName() + suffix;
+    dir = QFileInfo(path_it->second).absolutePath();
+  } else if (activeEditor->filepath.isEmpty()) {
+    dir = QString::fromStdString(PlatformUtils::userDocumentsPath());
   } else {
-    if (activeEditor->filepath.isEmpty()) path = QString(PlatformUtils::userDocumentsPath().c_str()) + QString("/") + QString(_("Untitled")) + suffix;
-    else {
-      auto info = QFileInfo(activeEditor->filepath);
-      path = info.absolutePath() + QString("/") + info.completeBaseName() + suffix;
-    }
+    dir = QFileInfo(activeEditor->filepath).absolutePath();
   }
-  return path;
+  return QString("%1/%2.%3").arg(dir, basename, suffix);
 }
 
 void MainWindow::jumpToLine(int line, int col)
 {
   this->activeEditor->setCursorPosition(line, col);
 }
-
-paperSizes MainWindow::sizeString2Enum(const QString& current){
-   for(size_t i = 0; i < paperSizeStrings.size(); i++){
-       if (current.toStdString()==paperSizeStrings[i]) return static_cast<paperSizes>(i);
-   };
-   return paperSizes::A4;
-};
-
-paperOrientations MainWindow::orientationsString2Enum(const QString& current){
-   for(size_t i = 0; i < paperOrientationsStrings.size(); i++){
-       if (current.toStdString()==paperOrientationsStrings[i]) return static_cast<paperOrientations>(i);
-   };
-   return paperOrientations::PORTRAIT;
-};

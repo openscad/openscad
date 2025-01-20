@@ -59,17 +59,17 @@ void ScopeContext::init()
 {
   for (const auto& assignment : scope->assignments) {
     if (assignment->getExpr()->isLiteral() && lookup_local_variable(assignment->getName())) {
-      LOG(message_group::Warning, assignment->location(), this->documentRoot(), "Parameter %1$s is overwritten with a literal", assignment->getName());
+      LOG(message_group::Warning, assignment->location(), this->documentRoot(), "Parameter %1$s is overwritten with a literal", quoteVar(assignment->getName()));
     }
     try{
       set_variable(assignment->getName(), assignment->getExpr()->evaluate(get_shared_ptr()));
     } catch (EvaluationException& e) {
       if (e.traceDepth > 0) {
         if(assignment->locationOfOverwrite().isNone()){
-          LOG(message_group::Trace, assignment->location(), this->documentRoot(), "assignment to '%1$s'", assignment->getName());
+          LOG(message_group::Trace, assignment->location(), this->documentRoot(), "assignment to %1$s", quoteVar(assignment->getName()));
         } else {
-          LOG(message_group::Trace, assignment->location(), this->documentRoot(), "overwritten assignment to '%1$s' (this is where the assignment is evaluated)", assignment->getName());
-          LOG(message_group::Trace, assignment->locationOfOverwrite(), this->documentRoot(), "overwriting assignment to '%1$s'", assignment->getName());
+          LOG(message_group::Trace, assignment->location(), this->documentRoot(), "overwritten assignment to %1$s (this is where the assignment is evaluated)", quoteVar(assignment->getName()));
+          LOG(message_group::Trace, assignment->locationOfOverwrite(), this->documentRoot(), "overwriting assignment to %1$s", quoteVar(assignment->getName()));
         }
         e.traceDepth--;
       }

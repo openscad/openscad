@@ -79,6 +79,9 @@ jobs:
           path: /tmp/out
           destination: 64-bit
   openscad-wasm:
+    parameters:
+      wasm-type:
+        type: string
     working_directory: ~/workspace
     docker:
       - image: openscad/wasm-base:latest
@@ -86,7 +89,27 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Build OpenSCAD WASM
+          name: Install latest node.js
+          command: |
+              npm i -g n
+              n latest
+      - when:
+          condition:
+            equal: [ web, << parameters.wasm-type >> ]
+          steps:
+            - run:
+                name: Install Puppeteer
+                command: |
+                    apt-get update
+                    apt-get install -y \
+                        libatk1.0-0 libatk-bridge2.0-0 libdrm2 libxcomposite1 libxdamage1 \
+                        libxfixes3 libxrandr2 libgbm1 libxkbcommon0 libpango-1.0-0 libcairo2
+                    export PATH="/usr/local/bin:$PATH"
+                    npm init -y
+                    npm i puppeteer
+                    npx puppeteer browsers install chrome
+      - run:
+          name: Build OpenSCAD WASM (<< parameters.wasm-type >>)
           no_output_timeout: 18000
           command: |
               export OPENSCAD_COMMIT=$(git log -1 --pretty=format:%h)
@@ -97,12 +120,13 @@ jobs:
                   -DSNAPSHOT=ON \
                   -DEXPERIMENTAL=ON \
                   -DCMAKE_BUILD_TYPE=Release \
+                  -DWASM_BUILD_TYPE=<< parameters.wasm-type >> \
                   -DOPENSCAD_COMMIT="$OPENSCAD_COMMIT" \
                   -DOPENSCAD_VERSION="$OPENSCAD_VERSION"
               cd ../build
               make -j4 VERBOSE=1
               mkdir -p /tmp/out
-              zip -9r "/tmp/out/OpenSCAD-${OPENSCAD_VERSION}${SUFFIX}-WebAssembly.zip" openscad.*
+              zip -9r "/tmp/out/OpenSCAD-${OPENSCAD_VERSION}${SUFFIX}-WebAssembly-<< parameters.wasm-type >>.zip" openscad.*
               if [ -n "${CODE_SIGNING_KEY}" ]; then
                   cd /tmp/out
                   echo $CODE_SIGNING_DATA | base64 -d | gzip -d | gpg --import --allow-secret-key-import --pinentry-mode loopback --passphrase-file <(echo $CODE_SIGNING_PW)
@@ -112,6 +136,12 @@ jobs:
               else
                   echo "Skipping code signing."
               fi
+      - run:
+          name: Verify OpenSCAD WASM build
+          command: |
+              # node in the path (from emsdk) is too old to run the wasm build, use the one installed by n.
+              export PATH="/usr/local/bin:$PATH"
+              ./tests/wasm-check.sh << parameters.wasm-type >>
       - store_artifacts:
           path: /tmp/out
           destination: wasm
@@ -219,6 +249,9 @@ workflows:
                   only:
                       - master
       - openscad-wasm:
+          matrix:
+            parameters:
+              wasm-type: [web, node]
           context: secret-context
           filters:
               branches:
@@ -247,6 +280,9 @@ workflows:
                       - coverity_scan
                       - /^(?i:continuous)$/
       - openscad-wasm:
+          matrix:
+            parameters:
+              wasm-type: [web, node]
           filters:
               branches:
                   ignore:

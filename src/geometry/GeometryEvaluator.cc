@@ -38,7 +38,6 @@
 #include "geometry/boolean_utils.h"
 #ifdef ENABLE_CGAL
 #include "geometry/cgal/CGALCache.h"
-#include "geometry/cgal/CGALHybridPolyhedron.h"
 #include "geometry/cgal/cgalutils.h"
 #include <CGAL/convex_hull_2.h>
 #include <CGAL/Point_2.h>
@@ -63,7 +62,7 @@ GeometryEvaluator::GeometryEvaluator(const Tree& tree) : tree(tree) { }
    There are some guarantees on the returned geometry:
    * 2D and 3D geometry cannot be mixed; we will return either _only_ 2D or _only_ 3D geometries
    * PolySet geometries are always 3D. 2D Polysets are only created for special-purpose rendering operations downstream from here.
-   * Needs validation: Implementation-specific geometries shouldn't be mixed (Nef polyhedron, Manifold, CGAL Hybrid polyhedrons)
+   * Needs validation: Implementation-specific geometries shouldn't be mixed (Nef polyhedron, Manifold)
  */
 std::shared_ptr<const Geometry> GeometryEvaluator::evaluateGeometry(const AbstractNode& node,
                                                                bool allownef)
@@ -169,9 +168,6 @@ GeometryEvaluator::ResultObject GeometryEvaluator::applyToChildren3D(const Abstr
     }
 #endif
 #ifdef ENABLE_CGAL
-    else if (Feature::ExperimentalFastCsg.is_enabled()) {
-      return ResultObject::mutableResult(std::shared_ptr<Geometry>(CGALUtils::applyUnion3DHybrid(actualchildren.begin(), actualchildren.end())));
-    }
     return ResultObject::constResult(std::shared_ptr<const Geometry>(CGALUtils::applyUnion3D(actualchildren.begin(), actualchildren.end())));
 #else
     assert(false && "No boolean backend available");
@@ -186,10 +182,6 @@ GeometryEvaluator::ResultObject GeometryEvaluator::applyToChildren3D(const Abstr
     }
 #endif
 #ifdef ENABLE_CGAL
-    if (Feature::ExperimentalFastCsg.is_enabled()) {
-      // FIXME: It's annoying to have to disambiguate here:
-      return ResultObject::mutableResult(std::shared_ptr<Geometry>(CGALUtils::applyOperator3DHybrid(children, op)));
-    }
     return ResultObject::constResult(CGALUtils::applyOperator3D(children, op));
 #else
     assert(false && "No boolean backend available");
@@ -236,6 +228,7 @@ std::unique_ptr<Polygon2d> GeometryEvaluator::applyHull2D(const AbstractNode& no
         outline.vertices.emplace_back(p[0], p[1]);
       }
       geometry->addOutline(outline);
+      geometry->setSanitized(true);
     } catch (const CGAL::Failure_exception& e) {
       LOG(message_group::Warning, "GeometryEvaluator::applyHull2D() during CGAL::convex_hull_2(): %1$s", e.what());
     }
@@ -247,7 +240,8 @@ std::unique_ptr<Polygon2d> GeometryEvaluator::applyHull2D(const AbstractNode& no
 std::unique_ptr<Polygon2d> GeometryEvaluator::applyFill2D(const AbstractNode& node)
 {
   // Merge and sanitize input geometry
-  auto geometry_in = ClipperUtils::apply(collectChildren2D(node), ClipperLib::ctUnion);
+  auto geometry_in = ClipperUtils::apply(collectChildren2D(node), Clipper2Lib::ClipType::Union);
+  assert(geometry_in->isSanitized());
 
   std::vector<std::shared_ptr<const Polygon2d>> newchildren;
   // Keep only the 'positive' outlines, eg: the outside edges
@@ -258,7 +252,7 @@ std::unique_ptr<Polygon2d> GeometryEvaluator::applyFill2D(const AbstractNode& no
   }
 
   // Re-merge geometry in case of nested outlines
-  return ClipperUtils::apply(newchildren, ClipperLib::ctUnion);
+  return ClipperUtils::apply(newchildren, Clipper2Lib::ClipType::Union);
 }
 
 std::unique_ptr<Geometry> GeometryEvaluator::applyHull3D(const AbstractNode& node)
@@ -416,16 +410,16 @@ std::unique_ptr<Polygon2d> GeometryEvaluator::applyToChildren2D(const AbstractNo
     }
   }
 
-  ClipperLib::ClipType clipType;
+  Clipper2Lib::ClipType clipType;
   switch (op) {
   case OpenSCADOperator::UNION:
-    clipType = ClipperLib::ctUnion;
+    clipType = Clipper2Lib::ClipType::Union;
     break;
   case OpenSCADOperator::INTERSECTION:
-    clipType = ClipperLib::ctIntersection;
+    clipType = Clipper2Lib::ClipType::Intersection;
     break;
   case OpenSCADOperator::DIFFERENCE:
-    clipType = ClipperLib::ctDifference;
+    clipType = Clipper2Lib::ClipType::Difference;
     break;
   default:
     LOG(message_group::Error, "Unknown boolean operation %1$d", int(op));
@@ -671,14 +665,8 @@ Response GeometryEvaluator::visit(State& state, const TextNode& node)
   if (state.isPrefix()) {
     std::shared_ptr<const Geometry> geom;
     if (!isSmartCached(node)) {
-      auto geometrylist = node.createGeometryList();
-      std::vector<std::shared_ptr<const Polygon2d>> polygonlist;
-      for (const auto& geometry : geometrylist) {
-        const auto polygon = std::dynamic_pointer_cast<const Polygon2d>(geometry);
-        assert(polygon);
-        polygonlist.push_back(polygon);
-      }
-      geom = ClipperUtils::apply(polygonlist, ClipperLib::ctUnion);
+      auto polygonlist = node.createPolygonList();
+      geom = ClipperUtils::apply(polygonlist, Clipper2Lib::ClipType::Union);
     } else {
       geom = GeometryCache::instance()->get(this->tree.getIdString(node));
     }
@@ -780,15 +768,7 @@ Response GeometryEvaluator::visit(State& state, const LinearExtrudeNode& node)
   if (state.isPostfix()) {
     std::shared_ptr<const Geometry> geom;
     if (!isSmartCached(node)) {
-      std::shared_ptr<const Geometry> geometry;
-      if (!node.filename.empty()) {
-        DxfData dxf(node.fn, node.fs, node.fa, node.filename, node.layername, node.origin_x, node.origin_y, node.scale_x);
-
-        auto p2d = dxf.toPolygon2d();
-        if (p2d) geometry = ClipperUtils::sanitize(*p2d);
-      } else {
-        geometry = applyToChildren2D(node, OpenSCADOperator::UNION);
-      }
+      const std::shared_ptr<const Geometry> geometry = applyToChildren2D(node, OpenSCADOperator::UNION);
       if (geometry) {
         const auto polygons = std::dynamic_pointer_cast<const Polygon2d>(geometry);
         geom = extrudePolygon(node, *polygons);
@@ -808,14 +788,14 @@ static void fill_ring(std::vector<Vector3d>& ring, const Outline2d& o, double a,
   if (flip) {
     unsigned int l = o.vertices.size() - 1;
     for (unsigned int i = 0; i < o.vertices.size(); ++i) {
-      ring[i][0] = o.vertices[l - i][0] * sin_degrees(a);
-      ring[i][1] = o.vertices[l - i][0] * cos_degrees(a);
+      ring[i][0] = o.vertices[l - i][0] * cos_degrees(a);
+      ring[i][1] = o.vertices[l - i][0] * sin_degrees(a);
       ring[i][2] = o.vertices[l - i][1];
     }
   } else {
     for (unsigned int i = 0; i < o.vertices.size(); ++i) {
-      ring[i][0] = o.vertices[i][0] * sin_degrees(a);
-      ring[i][1] = o.vertices[i][0] * cos_degrees(a);
+      ring[i][0] = o.vertices[i][0] * cos_degrees(a);
+      ring[i][1] = o.vertices[i][0] * sin_degrees(a);
       ring[i][2] = o.vertices[i][1];
     }
   }
@@ -863,12 +843,14 @@ static std::unique_ptr<Geometry> rotatePolygon(const RotateExtrudeNode& node, co
 
   fragments = (unsigned int)std::ceil(fmax(Calc::get_fragments_from_r(max_x - min_x, node.fn, node.fs, node.fa) * std::abs(node.angle) / 360, 1));
 
-  bool flip_faces = (min_x >= 0 && node.angle > 0 && node.angle != 360) || (min_x < 0 && (node.angle < 0 || node.angle == 360));
+  bool flip_faces = (min_x >= 0 && node.angle > 0) || (min_x < 0 && node.angle < 0);
 
+  // If not going all the way around, we have to create faces on each end.
   if (node.angle != 360) {
     auto ps_start = poly.tessellate(); // starting face
-    Transform3d rot(angle_axis_degrees(90, Vector3d::UnitX()));
-    ps_start->transform(rot);
+    Transform3d rotx(angle_axis_degrees(90, Vector3d::UnitX()));
+    Transform3d rotz1(angle_axis_degrees(node.start, Vector3d::UnitZ()));
+    ps_start->transform(rotz1 * rotx);
     // Flip vertex ordering
     if (!flip_faces) {
       for (auto& p : ps_start->indices) {
@@ -878,8 +860,8 @@ static std::unique_ptr<Geometry> rotatePolygon(const RotateExtrudeNode& node, co
     builder.appendPolySet(*ps_start);
 
     auto ps_end = poly.tessellate();
-    Transform3d rot2(angle_axis_degrees(node.angle, Vector3d::UnitZ()) * angle_axis_degrees(90, Vector3d::UnitX()));
-    ps_end->transform(rot2);
+    Transform3d rotz2(angle_axis_degrees(node.start + node.angle, Vector3d::UnitZ()));
+    ps_end->transform(rotz2 * rotx);
     if (flip_faces) {
       for (auto& p : ps_end->indices) {
         std::reverse(p.begin(), p.end());
@@ -893,11 +875,9 @@ static std::unique_ptr<Geometry> rotatePolygon(const RotateExtrudeNode& node, co
     rings[0].resize(o.vertices.size());
     rings[1].resize(o.vertices.size());
 
-    fill_ring(rings[0], o, (node.angle == 360) ? -90 : 90, flip_faces); // first ring
+    fill_ring(rings[0], o, node.start, flip_faces); // first ring
     for (unsigned int j = 0; j < fragments; ++j) {
-      double a;
-      if (node.angle == 360) a = -90 + ((j + 1) % fragments) * 360.0 / fragments; // start on the -X axis, for legacy support
-      else a = 90 - (j + 1) * node.angle / fragments; // start on the X axis
+      double a = node.start + (j + 1) * node.angle / fragments; // start on the X axis
       fill_ring(rings[(j + 1) % 2], o, a, flip_faces);
 
       for (size_t i = 0; i < o.vertices.size(); ++i) {
@@ -932,14 +912,7 @@ Response GeometryEvaluator::visit(State& state, const RotateExtrudeNode& node)
   if (state.isPostfix()) {
     std::shared_ptr<const Geometry> geom;
     if (!isSmartCached(node)) {
-      std::shared_ptr<const Polygon2d> geometry;
-      if (!node.filename.empty()) {
-        DxfData dxf(node.fn, node.fs, node.fa, node.filename, node.layername, node.origin_x, node.origin_y, node.scale);
-        auto p2d = dxf.toPolygon2d();
-        if (p2d) geometry = ClipperUtils::sanitize(*p2d);
-      } else {
-        geometry = applyToChildren2D(node, OpenSCADOperator::UNION);
-      }
+      const std::shared_ptr<const Polygon2d> geometry = applyToChildren2D(node, OpenSCADOperator::UNION);
       if (geometry) {
         geom = rotatePolygon(node, *geometry);
       }
@@ -969,8 +942,10 @@ std::shared_ptr<const Geometry> GeometryEvaluator::projectionCut(const Projectio
 #ifdef ENABLE_MANIFOLD
     if (RenderSettings::inst()->backend3D == RenderBackend3D::ManifoldBackend) {
       auto manifold = ManifoldUtils::createManifoldFromGeometry(newgeom);
-      auto poly2d = manifold->slice();
-      return std::shared_ptr<const Polygon2d>(ClipperUtils::sanitize(poly2d));
+      if (manifold != nullptr) {
+        auto poly2d = manifold->slice();
+        return std::shared_ptr<const Polygon2d>(ClipperUtils::sanitize(poly2d));
+      }
     }
 #endif
 #ifdef ENABLE_CGAL
@@ -991,20 +966,20 @@ std::shared_ptr<const Geometry> GeometryEvaluator::projectionNoCut(const Project
 {
 #ifdef ENABLE_MANIFOLD
   if (RenderSettings::inst()->backend3D == RenderBackend3D::ManifoldBackend) {
-    std::shared_ptr<const Geometry> newgeom = applyToChildren3D(node, OpenSCADOperator::UNION).constptr();
+    const std::shared_ptr<const Geometry> newgeom = applyToChildren3D(node, OpenSCADOperator::UNION).constptr();
     if (newgeom) {
         auto manifold = ManifoldUtils::createManifoldFromGeometry(newgeom);
-        auto poly2d = manifold->project();
-        return std::shared_ptr<const Polygon2d>(ClipperUtils::sanitize(poly2d));
+        if (manifold != nullptr) {
+          auto poly2d = manifold->project();
+          return std::shared_ptr<const Polygon2d>(ClipperUtils::sanitize(poly2d));
+        }
     } else {
       return std::make_shared<Polygon2d>();
     }
   }
 #endif
 
-  std::shared_ptr<const Geometry> geom;
-  std::vector<std::unique_ptr<Polygon2d>> tmp_geom;
-  BoundingBox bounds;
+  std::vector<std::shared_ptr<const Polygon2d>> tmp_geom;
   for (const auto& [chnode, chgeom] : this->visitedchildren[node.index()]) {
     if (chnode->modinst->isBackground()) continue;
 
@@ -1014,32 +989,12 @@ std::shared_ptr<const Geometry> GeometryEvaluator::projectionNoCut(const Project
     // project chgeom -> polygon2d
     if (auto chPS = PolySetUtils::getGeometryAsPolySet(chgeom)) {
       if (auto poly = PolySetUtils::project(*chPS)) {
-        bounds.extend(poly->getBoundingBox());
-        tmp_geom.push_back(std::move(poly));
+        tmp_geom.push_back(std::shared_ptr(std::move(poly)));
       }
     }
   }
-  int pow2 = ClipperUtils::getScalePow2(bounds);
-
-  ClipperLib::Clipper sumclipper;
-  for (auto &poly : tmp_geom) {
-    ClipperLib::Paths result = ClipperUtils::fromPolygon2d(*poly, pow2);
-    // Using NonZero ensures that we don't create holes from polygons sharing
-    // edges since we're unioning a mesh
-    result = ClipperUtils::process(result, ClipperLib::ctUnion, ClipperLib::pftNonZero);
-    // Add correctly winded polygons to the main clipper
-    sumclipper.AddPaths(result, ClipperLib::ptSubject, true);
-  }
-
-  ClipperLib::PolyTree sumresult;
-  // This is key - without StrictlySimple, we tend to get self-intersecting results
-  sumclipper.StrictlySimple(true);
-  sumclipper.Execute(ClipperLib::ctUnion, sumresult, ClipperLib::pftNonZero, ClipperLib::pftNonZero);
-  if (sumresult.Total() > 0) {
-    geom = ClipperUtils::toPolygon2d(sumresult, pow2);
-  }
-
-  return geom;
+  auto projected = ClipperUtils::applyProjection(tmp_geom);
+  return std::shared_ptr(std::move(projected));
 }
 
 

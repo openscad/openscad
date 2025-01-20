@@ -703,7 +703,7 @@ static void warn_reassignment(const Location& loc, const std::shared_ptr<Assignm
 			loc,
 			path.parent_path().generic_string(),
 			"%1$s was assigned on line %2$i but was overwritten",
-			assignment->getName(),
+			quoteVar(assignment->getName()),
 			assignment->location().firstLine());
 
 }
@@ -714,7 +714,7 @@ static void warn_reassignment(const Location& loc, const std::shared_ptr<Assignm
 			loc,
 			path1.parent_path().generic_string(),
 			"%1$s was assigned on line %2$i of %3$s but was overwritten",
-			assignment->getName(),
+			quoteVar(assignment->getName()),
 			assignment->location().firstLine(),
 			path2);
 }

@@ -6,7 +6,6 @@
 #include "utils/printutils.h"
 #ifdef ENABLE_CGAL
 #include "geometry/cgal/cgalutils.h"
-#include "geometry/cgal/CGALHybridPolyhedron.h"
 #include <optional>
 #include <cassert>
 #include <map>
@@ -254,7 +253,7 @@ Polygon2d polygonsToPolygon2d(const manifold::Polygons& polygons) {
     }
     poly2d.addOutline(std::move(outline));
   }
-  return std::move(poly2d);
+  return poly2d;
 }
 
 std::unique_ptr<PolySet> createTriangulatedPolySetFromPolygon2d(const Polygon2d& polygon2d)

@@ -43,7 +43,6 @@
 
 #include "glview/cgal/CGALRenderUtils.h"
 #ifdef ENABLE_CGAL
-#include "geometry/cgal/CGALHybridPolyhedron.h"
 #include "glview/cgal/CGAL_OGL_VBOPolyhedron.h"
 #endif
 #ifdef ENABLE_MANIFOLD
@@ -87,11 +86,6 @@ void CGALRenderer::addGeometry(const std::shared_ptr<const Geometry> &geom) {
     if (!new_N->isEmpty()) {
       this->nefPolyhedrons.push_back(new_N);
     }
-  } else if (const auto hybrid =
-                 std::dynamic_pointer_cast<const CGALHybridPolyhedron>(geom)) {
-    // TODO(ochafik): Implement rendering of CGAL_HybridMesh
-    // (CGAL::Surface_mesh) instead.
-    this->polysets.push_back(hybrid->toPolySet());
 #endif
 #ifdef ENABLE_MANIFOLD
   } else if (const auto mani =
@@ -117,7 +111,7 @@ void CGALRenderer::createPolyhedrons() {
   PRINTD("createPolyhedrons");
   this->polyhedrons.clear();
   for (const auto &N : this->nefPolyhedrons) {
-    auto p = new CGAL_OGL_VBOPolyhedron(*this->colorscheme);
+    auto p = new CGAL_OGL_VBOPolyhedron(*colorscheme_);
     CGAL::OGL::Nef3_Converter<CGAL_Nef_polyhedron3>::convert_to_OGLPolyhedron(
         *N->p3, p);
     // CGAL_NEF3_MARKED_FACET_COLOR <- CGAL_FACE_BACK_COLOR
@@ -133,9 +127,9 @@ void CGALRenderer::createPolyhedrons() {
 void CGALRenderer::setColorScheme(const ColorScheme &cs) {
   PRINTD("setColorScheme");
   Renderer::setColorScheme(cs);
-  colormap[ColorMode::CGAL_FACE_2D_COLOR] =
+  colormap_[ColorMode::CGAL_FACE_2D_COLOR] =
       ColorMap::getColor(cs, RenderColor::CGAL_FACE_2D_COLOR);
-  colormap[ColorMode::CGAL_EDGE_2D_COLOR] =
+  colormap_[ColorMode::CGAL_EDGE_2D_COLOR] =
       ColorMap::getColor(cs, RenderColor::CGAL_EDGE_2D_COLOR);
 #ifdef ENABLE_CGAL
   this->polyhedrons.clear(); // Mark as dirty
@@ -181,7 +175,7 @@ void CGALRenderer::createPolySetStates() {
 
     // Create 3D polygons
     getColor(ColorMode::MATERIAL, color);
-    this->create_surface(*polyset, vertex_array, CSGMODE_NORMAL,
+    this->create_surface(*polyset, vertex_array, RendererUtils::CSGMODE_NORMAL,
                          Transform3d::Identity(), color);
   }
 
@@ -239,7 +233,7 @@ void CGALRenderer::createPolySetStates() {
 }
 
 void CGALRenderer::prepare(bool /*showfaces*/, bool /*showedges*/,
-                           const shaderinfo_t * /*shaderinfo*/) {
+                           const RendererUtils::ShaderInfo * /*shaderinfo*/) {
   PRINTD("prepare()");
   if (!vertex_states.size())
     createPolySetStates();
@@ -252,7 +246,7 @@ void CGALRenderer::prepare(bool /*showfaces*/, bool /*showedges*/,
 }
 
 void CGALRenderer::draw(bool showfaces, bool showedges,
-                        const shaderinfo_t * /*shaderinfo*/) const {
+                        const RendererUtils::ShaderInfo * /*shaderinfo*/) const {
   PRINTD("draw()");
   // grab current state to restore after
   GLfloat current_point_size, current_line_width;

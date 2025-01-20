@@ -35,6 +35,9 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/spirit/include/qi.hpp>
 
+#include <clipper2/clipper.offset.h>
+
+#include "ClipperUtils.h"
 #include "libsvg/circle.h"
 #include "libsvg/ellipse.h"
 #include "libsvg/line.h"
@@ -154,7 +157,7 @@ shape::get_stroke_width() const
   return stroke_width < 0.01 ? 1 : stroke_width;
 }
 
-ClipperLib::EndType
+Clipper2Lib::EndType
 shape::get_stroke_linecap() const
 {
   std::string cap;
@@ -165,16 +168,16 @@ shape::get_stroke_linecap() const
   }
 
   if (cap == "butt") {
-    return ClipperLib::etOpenButt;
+    return Clipper2Lib::EndType::Butt;
   } else if (cap == "round") {
-    return ClipperLib::etOpenRound;
+    return Clipper2Lib::EndType::Round;
   } else if (cap == "square") {
-    return ClipperLib::etOpenSquare;
+    return Clipper2Lib::EndType::Square;
   }
-  return ClipperLib::etOpenButt;
+  return Clipper2Lib::EndType::Butt;
 }
 
-ClipperLib::JoinType
+Clipper2Lib::JoinType
 shape::get_stroke_linejoin() const
 {
   std::string join;
@@ -184,13 +187,13 @@ shape::get_stroke_linejoin() const
     join = this->stroke_linejoin;
   }
   if (join == "bevel") {
-    return ClipperLib::jtSquare;
+    return Clipper2Lib::JoinType::Square;
   } else if (join == "round") {
-    return ClipperLib::jtRound;
+    return Clipper2Lib::JoinType::Round;
   } else if (join == "miter") {
-    return ClipperLib::jtMiter;
+    return Clipper2Lib::JoinType::Miter;
   }
-  return ClipperLib::jtMiter;
+  return Clipper2Lib::JoinType::Miter;
 }
 
 void
@@ -294,23 +297,26 @@ shape::apply_transform()
 }
 
 void
-shape::offset_path(path_list_t& path_list, path_t& path, double stroke_width, ClipperLib::EndType stroke_linecap) {
-  ClipperLib::Path line;
-  ClipperLib::Paths result;
+shape::offset_path(path_list_t& path_list, path_t& path, double stroke_width, Clipper2Lib::EndType stroke_linecap) {
+  const int scale_bits = ClipperUtils::scaleBitsFromPrecision();
+  const double scale = std::ldexp(1.0, scale_bits);
+
+  Clipper2Lib::Path64 line;
   for (const auto& v : path) {
-    line << ClipperLib::IntPoint(v.x() * 10000, v.y() * 10000);
+    line.emplace_back(v.x() * scale, v.y() * scale);
   }
 
-  ClipperLib::ClipperOffset co;
+  Clipper2Lib::ClipperOffset co;
   co.AddPath(line, get_stroke_linejoin(), stroke_linecap);
-  co.Execute(result, stroke_width * 5000.0);
+  Clipper2Lib::Paths64 result;
+  co.Execute(stroke_width * scale / 2, result);
 
   for (const auto& p : result) {
     path_list.push_back(path_t());
     for (const auto& point : p) {
-      path_list.back().push_back(Eigen::Vector3d(point.X / 10000.0, point.Y / 10000.0, 0));
+      path_list.back().push_back(Eigen::Vector3d(point.x / scale, point.y / scale, 0));
     }
-    path_list.back().push_back(Eigen::Vector3d(p[0].X / 10000.0, p[0].Y / 10000.0, 0));
+    path_list.back().push_back(Eigen::Vector3d(p[0].x / scale, p[0].y / scale, 0));
   }
 }
 

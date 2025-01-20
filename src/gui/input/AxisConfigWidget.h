@@ -3,7 +3,8 @@
 #include "gui/qtgettext.h"
 #include <QComboBox>
 #include <QWidget>
-#include "gui/Settings.h"
+#include <string>
+#include "core/Settings.h"
 #include "ui_AxisConfigWidget.h"
 #include "gui/InitConfigurator.h"
 
@@ -77,7 +78,7 @@ signals:
 
 private:
   /** Set value from combobox to settings */
-  void applyComboBox(QComboBox *comboBox, int val, Settings::SettingsEntryEnum& entry);
+  void applyComboBox(QComboBox *comboBox, int val, Settings::SettingsEntryEnum<std::string>& entry);
   void writeSettings();
 
   bool initialized = false;

@@ -29,6 +29,12 @@
 #include <chrono>
 #include <iomanip>
 #include <fstream>
+#include <string>
+#include <tuple>
+#include <unordered_map>
+#include "ColorUtil.h"
+#include "Context.h"
+#include "Settings.h"
 
 #ifdef _WIN32
 #include <io.h>
@@ -76,6 +82,7 @@ std::string evaluatePython(const std::string &code, double time);
 bool python_active = false;
 bool python_trusted = false;
 #endif
+
 namespace po = boost::program_options;
 namespace fs = std::filesystem;
 
@@ -110,6 +117,9 @@ private:
 
 namespace {
 
+#define STRINGIFY(x) #x
+#define TOSTRING(x) STRINGIFY(x)
+
 #ifndef OPENSCAD_NOGUI
 bool useGUI()
 {
@@ -127,8 +137,7 @@ bool useGUI()
 #endif // OPENSCAD_NOGUI
 
 bool checkAndExport(const std::shared_ptr<const Geometry>& root_geom, unsigned dimensions,
-                    FileFormat format, const bool is_stdout, const std::string& filename,
-		    const Camera *const camera, const std::string& input_filename)
+                    ExportInfo& exportInfo, const bool is_stdout, const std::string& filename)
 {
   if (root_geom->getDimension() != dimensions) {
     LOG("Current top level object is not a %1$dD object.", dimensions);
@@ -138,7 +147,7 @@ bool checkAndExport(const std::shared_ptr<const Geometry>& root_geom, unsigned d
     LOG("Current top level object is empty.");
     return false;
   }
-  ExportInfo exportInfo = {.format = format, .sourceFilePath = input_filename, .camera = camera};
+
   if (is_stdout) {
     exportFileStdOut(root_geom, exportInfo);
   }
@@ -155,8 +164,27 @@ void help(const char *arg0, const po::options_description& desc, bool failure = 
   exit(failure ? 1 : 0);
 }
 
-#define STRINGIFY(x) #x
-#define TOSTRING(x) STRINGIFY(x)
+template<std::size_t size>
+void help_export(const std::array<const Settings::SettingsEntryBase *, size>& options) {
+  LOG("Section '%1$s':", options.at(0)->category());
+
+  for (const auto option : options) {
+    const auto [type, values] = option->help();
+    LOG("  - %1$s (%2$s): %3$s", option->name(), type, values);
+  }
+}
+
+void help_export()
+{
+  LOG("OpenSCAD version %1$s\n", TOSTRING(OPENSCAD_VERSION));
+  LOG("List of settings that can be given using the -O option using the");
+  LOG("format '<section>/<key>=value', e.g.:");
+  LOG("openscad -O export-pdf/paper-size=a6 -O export-pdf/show-grid=false\n");
+  help_export(Settings::SettingsExportPdf::cmdline);
+  help_export(Settings::SettingsExport3mf::cmdline);
+  exit(0);
+}
+
 void version()
 {
   LOG("OpenSCAD version %1$s", TOSTRING(OPENSCAD_VERSION));
@@ -241,6 +269,58 @@ void localization_init() {
   }
 }
 
+struct AnimateArgs {
+  unsigned frames = 0;
+  unsigned num_shards = 1;
+  unsigned shard = 1;
+};
+
+struct CommandLine
+{
+  const bool is_stdin;
+  const std::string& filename;
+  const bool is_stdout;
+  std::string output_file;
+  const fs::path& original_path;
+  const std::string& parameterFile;
+  const std::string& setName;
+  const ViewOptions& viewOptions;
+  const Camera& camera;
+  const boost::optional<FileFormat> export_format;
+  const CmdLineExportOptions& exportOptions;
+  const AnimateArgs animate;
+  const std::vector<std::string> summaryOptions;
+  const std::string summaryFile;
+};
+
+AnimateArgs get_animate(const po::variables_map& vm) {
+  AnimateArgs animate;
+  if (vm.count("animate")) {
+    animate.frames = vm["animate"].as<unsigned>();
+  }
+  if (vm.count("animate_sharding")) {
+    std::vector<std::string> strs;
+    boost::split(strs, vm["animate_sharding"].as<std::string>(),
+                 boost::is_any_of("/"));
+    if (strs.size() != 2) {
+      LOG("--animate_sharding requires <shard>/<num_shards>");
+      exit(1);
+    }
+    try {
+      animate.shard = boost::lexical_cast<unsigned>(strs[0]);
+      animate.num_shards = boost::lexical_cast<unsigned>(strs[1]);
+    } catch (const boost::bad_lexical_cast&) {
+      LOG("--animate_sharding parameters need to be positive integers");
+      exit(1);
+    }
+    if (animate.shard > animate.num_shards || animate.shard == 0) {
+      LOG("--animate_sharding: shard needs to be in range <1..num_shards>");
+      exit(1);
+    }
+  }
+  return animate;
+}
+
 Camera get_camera(const po::variables_map& vm)
 {
   Camera camera;
@@ -309,23 +389,6 @@ Camera get_camera(const po::variables_map& vm)
 
   return camera;
 }
-
-struct CommandLine
-{
-  const bool is_stdin;
-  const std::string& filename;
-  const bool is_stdout;
-  std::string output_file;
-  const fs::path& original_path;
-  const std::string& parameterFile;
-  const std::string& setName;
-  const ViewOptions& viewOptions;
-  const Camera& camera;
-  const boost::optional<FileFormat> export_format;
-  unsigned animate_frames;
-  const std::vector<std::string> summaryOptions;
-  const std::string summaryFile;
-};
 
 int do_export(const CommandLine& cmd, const RenderVariables& render_variables, FileFormat export_format, SourceFile *root_file)
 {
@@ -446,7 +509,8 @@ int do_export(const CommandLine& cmd, const RenderVariables& render_variables, F
 
     const std::string input_filename = cmd.is_stdin ? "<stdin>" : cmd.filename;
     const int dim = fileformat::is3D(export_format) ? 3 : fileformat::is2D(export_format) ? 2 : 0;
-    if (dim > 0 && !checkAndExport(root_geom, dim, export_format, cmd.is_stdout, filename_str, &cmd.camera, input_filename)) {
+    ExportInfo exportInfo = createExportInfo(export_format, fileformat::info(export_format), input_filename, &cmd.camera, cmd.exportOptions);
+    if (dim > 0 && !checkAndExport(root_geom, dim, exportInfo, cmd.is_stdout, filename_str)) {
       return 1;
     }
 
@@ -572,13 +636,17 @@ int cmdline(const CommandLine& cmd)
     .camera = cmd.camera,
   };
 
-  if (cmd.animate_frames == 0) {
+  if (cmd.animate.frames == 0) {
     render_variables.time = 0;
     return do_export(cmd, render_variables, export_format, root_file);
   } else {
     // export the requested number of animated frames
-    for (unsigned frame = 0; frame < cmd.animate_frames; ++frame) {
-      render_variables.time = frame * (1.0 / cmd.animate_frames);
+    const unsigned start_frame = ((cmd.animate.shard - 1) * cmd.animate.frames)
+      / cmd.animate.num_shards;
+    const unsigned limit_frame = (cmd.animate.shard * cmd.animate.frames)
+      / cmd.animate.num_shards;
+    for (unsigned frame = start_frame; frame < limit_frame; ++frame) {
+      render_variables.time = frame * (1.0 / cmd.animate.frames);
 
       std::ostringstream oss;
       oss << std::setw(5) << std::setfill('0') << frame;
@@ -649,6 +717,32 @@ bool flagConvert(const std::string& str){
   return false;
 }
 
+std::tuple<std::string, std::string> simple_split(const std::string& str, const char c)
+{
+  const auto idx = str.find_first_of(c);
+  if (idx == std::string::npos)
+    return {};
+  const auto first = str.substr(0, idx);
+  const auto second = str.substr(idx + 1);
+  return {first, second};
+}
+
+CmdLineExportOptions convert_export_options(const po::variables_map& vm)
+{
+  if (vm.count("O") == 0) {
+    return {};
+  }
+
+  CmdLineExportOptions map;
+  const auto& options = vm["O"].as<std::vector<std::string>>();
+  for (const auto& option : options) {
+    const auto [key, value] = simple_split(option, '=');
+    const auto [section, name] = simple_split(key, '/');
+    map[section][name] = value;
+  }
+  return map;
+}
+
 // OpenSCAD
 int main(int argc, char **argv)
 {
@@ -670,7 +764,11 @@ int main(int argc, char **argv)
   PlatformUtils::ensureStdIO();
 #endif
 
+#ifndef __EMSCRIPTEN__
   const auto applicationPath = weakly_canonical(boost::dll::program_location()).parent_path().generic_string();
+#else
+  const auto applicationPath = boost::dll::fs::current_path();
+#endif
   PlatformUtils::registerApplicationPath(applicationPath);
 
 #ifdef ENABLE_CGAL
@@ -691,6 +789,7 @@ int main(int argc, char **argv)
   desc.add_options()
     ("export-format", po::value<std::string>(), "overrides format of exported scad file when using option '-o', arg can be any of its supported file extensions.  For ascii stl export, specify 'asciistl', and for binary stl export, specify 'binstl'.  Ascii export is the current stl default, but binary stl is planned as the future default so asciistl should be explicitly specified in scripts when needed.\n")
     ("o,o", po::value<std::vector<std::string>>(), "output specified file instead of running the GUI, the file extension specifies the type: stl, off, wrl, amf, 3mf, csg, dxf, svg, pdf, png, echo, ast, term, nef3, nefdbg (May be used multiple time for different exports). Use '-' for stdout\n")
+    ("O,O", po::value<std::vector<std::string>>(), "pass settings value to the file export using the format section/key=value, e.g export-pdf/paper-size=a3. Use --help-export to list all available settings.")
     ("D,D", po::value<std::vector<std::string>>(), "var=val -pre-define variables")
     ("p,p", po::value<std::string>(), "customizer parameter file")
     ("P,P", po::value<std::string>(), "customizer parameter set")
@@ -702,7 +801,8 @@ int main(int argc, char **argv)
   }) +
                                            "\n").c_str())
 #endif
-  ("help,h", "print this help message and exit")
+    ("help,h", "print this help message and exit")
+    ("help-export", "print list of export parameters and values that can be set via -O")
     ("version,v", "print the version")
     ("info", "print information about the build process\n")
 
@@ -714,6 +814,7 @@ int main(int argc, char **argv)
     ("render", po::value<std::string>()->implicit_value(""), "for full geometry evaluation when exporting png")
     ("preview", po::value<std::string>()->implicit_value(""), "[=throwntogether] -for ThrownTogether preview png")
     ("animate", po::value<unsigned>(), "export N animated frames")
+    ("animate_sharding", po::value<std::string>(), "Parameter <shard>/<num_shards> - Divide work into <num_shards> and only output frames for <shard>. E.g. 2/5 only outputs the second 1/5 of frames. Use to parallelize work on multiple cores or machines.")
     ("view", po::value<CommaSeparatedVector>(), ("=view options: " + boost::algorithm::join(viewOptions.names(), " | ")).c_str())
     ("projection", po::value<std::string>(), "=(o)rtho or (p)erspective when exporting png")
     ("csglimit", po::value<unsigned int>(), "=n -stop rendering at n CSG elements when exporting png")
@@ -801,6 +902,7 @@ int main(int argc, char **argv)
   }
 
   if (vm.count("help")) help(argv[0], desc);
+  if (vm.count("help-export")) help_export();
   if (vm.count("version")) version();
   if (vm.count("info")) arg_info = true;
   if (vm.count("backend")) {
@@ -908,14 +1010,10 @@ int main(int argc, char **argv)
     }
   }
 
-  unsigned animate_frames = 0;
-  if (vm.count("animate")) {
-    animate_frames = vm["animate"].as<unsigned>();
-  }
-
+  AnimateArgs animate = get_animate(vm);
   Camera camera = get_camera(vm);
 
-  if (animate_frames) {
+  if (animate.frames) {
     for (const auto& filename : output_files) {
       if (filename == "-") {
         LOG("Option --animate is not supported when exporting to stdout.");
@@ -948,6 +1046,7 @@ int main(int argc, char **argv)
           const std::string input_file = is_stdin ? "<stdin>" : inputFiles[0];
           const bool is_stdout = filename == "-";
           const std::string output_file = is_stdout ? "<stdout>" : filename;
+          const auto export_options = convert_export_options(vm);
           const CommandLine cmd{
             is_stdin,
             input_file,
@@ -959,7 +1058,8 @@ int main(int argc, char **argv)
             viewOptions,
             camera,
             export_format,
-            animate_frames,
+            export_options,
+            animate,
             vm.count("summary") ? vm["summary"].as<std::vector<std::string>>() : std::vector<std::string>{},
             vm.count("summary-file") ? vm["summary-file"].as<std::string>() : ""
           };

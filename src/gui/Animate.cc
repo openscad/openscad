@@ -1,6 +1,5 @@
 #include "gui/Animate.h"
-#include "utils/printutils.h"
-#include "gui/MainWindow.h"
+
 #include <QAction>
 #include <QBoxLayout>
 #include <QIcon>
@@ -12,6 +11,11 @@
 #include <iostream>
 #include <filesystem>
 #include <QFormLayout>
+
+#include "utils/printutils.h"
+#include "gui/MainWindow.h"
+#include "gui/UIUtils.h"
+#include "openscad_gui.h"
 
 Animate::Animate(QWidget *parent) : QWidget(parent)
 {
@@ -34,6 +38,10 @@ void Animate::initGUI()
   this->anim_dumping = false;
   this->anim_dump_start_step = 0;
 
+  this->iconRun = QIcon::fromTheme("chokusen-animate-play");
+  this->iconPause = QIcon::fromTheme("chokusen-animate-pause");
+  this->iconDisabled = QIcon::fromTheme("chokusen-animate-disabled");
+
   animate_timer = new QTimer(this);
   connect(animate_timer, SIGNAL(timeout()), this, SLOT(incrementTVal()));
 
@@ -47,69 +55,18 @@ void Animate::setMainWindow(MainWindow *mainWindow)
 {
   this->mainWindow = mainWindow;
 
-  //prepare actions for inputdriver
-  QIcon playIcon = isLightTheme() ? QIcon(":/icons/svg-default/animate.svg") : QIcon(":/icons/svg-default/animate-white.svg");
-  QIcon pauseIcon = isLightTheme() ? QIcon(":/icons/svg-default/animate_pause.svg") : QIcon(":/icons/svg-default/animate_pause-white.svg");
-
-  createActionAndPrepareButton(
-    playIcon, _("toggle pause/unpause"),
-    "pauseUnpause", pauseButton
-    );
-
-  initVCR();
+  connectAction(this->actionAnimationPauseUnpause, pauseButton);
+  connectAction(this->actionAnimationStart, pushButton_MoveToBeginning);
+  connectAction(this->actionAnimationStepBack, pushButton_StepBack);
+  connectAction(this->actionAnimationStepForward, pushButton_StepForward);
+  connectAction(this->actionAnimationEnd, pushButton_MoveToEnd);
   updatePauseButtonIcon();
 }
 
-void Animate::createActionAndPrepareButton(const QIcon& icon, const QString& description, const std::string& actionName, QPushButton *button){
-  auto *action = new QAction(icon, description, this);
-  action->setObjectName(QString::fromStdString(actionName));
-
-  connect(action, SIGNAL(triggered()), button, SLOT(click()));
-  this->action_list.append(action);
-
-  button->setIcon(icon);
-  button->setToolTip(description);
-  button->setText("");
-}
-
-void Animate::initVCR(){
-  QString suffix("");
-  if (!isLightTheme()) {
-    suffix = QString("-white");
-  }
-  static QIcon startIcon = QIcon(":/icons/svg-default/vcr-control-start" + suffix + ".svg");
-  static QIcon stepBackIcon = QIcon(":/icons/svg-default/vcr-control-step-back" + suffix + ".svg");
-  static QIcon playIcon = QIcon(":/icons/svg-default/vcr-control-play" + suffix + ".svg");
-  static QIcon pauseIcon = QIcon(":/icons/svg-default/vcr-control-pause" + suffix + ".svg");
-  static QIcon stepFwrdIcon = QIcon(":/icons/svg-default/vcr-control-step-forward" + suffix + ".svg");
-  static QIcon endIcon = QIcon(":/icons/svg-default/vcr-control-end" + suffix + ".svg");
-
-  createActionAndPrepareButton(
-    startIcon, _("Move to beginning (first frame)"),
-    "start", pushButton_MoveToBeginning);
-
-  createActionAndPrepareButton(
-    stepBackIcon, _("Step one frame back"),
-    "stepBack", pushButton_StepBack);
-
-  createActionAndPrepareButton(
-    stepFwrdIcon, _("Step one frame forward"),
-    "stepFwrd", pushButton_StepForward);
-
-  createActionAndPrepareButton(
-    endIcon, _("Move to end (last frame)"),
-    "end", pushButton_MoveToEnd);
-}
-
-bool Animate::isLightTheme()
+void Animate::connectAction(QAction *action, QPushButton *button)
 {
-  bool ret = true;
-  if (mainWindow) {
-    ret = mainWindow->isLightTheme();
-  } else {
-    std::cout << "Animate: You need to set the mainWindow before calling isLightTheme" << std::endl;
-  }
-  return ret;
+  connect(action, &QAction::triggered, button, &QPushButton::click);
+  this->action_list.append(action);
 }
 
 void Animate::updatedAnimTval()
@@ -149,18 +106,20 @@ void Animate::updatedAnimFpsAndAnimSteps()
     animate_timer->start();
   }
 
-  QString redBackground = QString(isLightTheme() ? "background-color:#ffaaaa;" : "background-color:#502020;");
+  QPalette defaultPalette;
+  const auto bgColor = defaultPalette.base().color().toRgb();
+  QString redStyleSheet = UIUtils::blendForBackgroundColorStyleSheet(bgColor, errorBlendColor);
 
   if (this->steps_ok || this->e_fsteps->text() == "") {
     this->e_fsteps->setStyleSheet("");
   } else {
-    this->e_fsteps->setStyleSheet(redBackground);
+    this->e_fsteps->setStyleSheet(redStyleSheet);
   }
 
   if (this->fps_ok || this->e_fps->text() == "") {
     this->e_fps->setStyleSheet("");
   } else {
-    this->e_fps->setStyleSheet(redBackground);
+    this->e_fps->setStyleSheet(redStyleSheet);
   }
 
   updatePauseButtonIcon();
@@ -236,24 +195,15 @@ void Animate::on_pauseButton_pressed()
 
 void Animate::updatePauseButtonIcon()
 {
-  static QIcon runDark(":/icons/svg-default/animate.svg");
-  static QIcon runLight(":/icons/svg-default/animate-white.svg");
-
-  static QIcon pauseDark(":/icons/svg-default/animate_pause.svg");
-  static QIcon pauseLight(":/icons/svg-default/animate_pause-white.svg");
-
-  static QIcon disabledDark(":/icons/svg-default/animate_disabled.svg");
-  static QIcon disabledLight(":/icons/svg-default/animate_disabled-white.svg");
-
   if (animate_timer->isActive()) {
-    pauseButton->setIcon(this->isLightTheme() ? pauseDark : pauseLight);
+    pauseButton->setIcon(this->iconPause);
     pauseButton->setToolTip(_("press to pause animation") );
   } else {
     if (this->fps_ok && this->steps_ok) {
-      pauseButton->setIcon(this->isLightTheme() ? runDark : runLight);
+      pauseButton->setIcon(this->iconRun);
       pauseButton->setToolTip(_("press to start animation") );
     } else {
-      pauseButton->setIcon(this->isLightTheme() ? disabledDark : disabledLight);
+      pauseButton->setIcon(this->iconDisabled);
       pauseButton->setToolTip(_("incorrect values") );
     }
   }

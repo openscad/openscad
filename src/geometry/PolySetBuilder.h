@@ -20,6 +20,7 @@ public:
   int vertexIndex(const Vector3d& coord);
   int numVertices() const;
   int numPolygons() const;
+  bool isEmpty() const;
 
   void appendPolySet(const PolySet &ps);
   void appendGeometry(const std::shared_ptr<const Geometry>& geom);
@@ -30,7 +31,10 @@ public:
   void addVertex(int ind);
   void addVertex(const Vector3d &v);
   // Calling this is optional; will be called automatically when adding a new polygon or building the PolySet
-  void endPolygon();
+  void endPolygon(const Color4f &color = {});
+
+  void addColor(const Color4f& color);
+  void addColorIndex(int idx); // should be paired with begin/endPolygon()
 
   std::unique_ptr<PolySet> build();
 private:

@@ -1,7 +1,7 @@
 multmatrix([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, -10], [0, 0, 0, 1]]) {
 	group() {
 		difference() {
-			rotate_extrude(angle = 360, convexity = 3, $fn = 0, $fa = 12, $fs = 2) {
+			rotate_extrude(angle = 360, start = 180, convexity = 3, $fn = 0, $fa = 12, $fs = 2) {
 				import(file = "example007.dxf", layer = "dorn", origin = [0, 0], scale = 1, convexity = 1, $fn = 0, $fa = 12, $fs = 2, timestamp = 1576020815);
 			}
 			group() {

@@ -30,6 +30,7 @@
 #include "core/Builtins.h"
 #include "core/Children.h"
 #include "core/Parameters.h"
+#include "core/ColorUtil.h"
 #include "utils/printutils.h"
 #include <algorithm>
 #include <utility>
@@ -200,45 +201,6 @@ std::unordered_map<std::string, Color4f> webcolors{
   {"transparent", {0, 0, 0, 0}}
 };
 
-// Parses hex colors according to: https://drafts.csswg.org/css-color/#typedef-hex-color.
-// If the input is invalid, returns boost::none.
-// Supports the following formats:
-// * "#rrggbb"
-// * "#rrggbbaa"
-// * "#rgb"
-// * "#rgba"
-boost::optional<Color4f> parse_hex_color(const std::string& hex) {
-  // validate size. short syntax uses one hex digit per color channel instead of 2.
-  const bool short_syntax = hex.size() == 4 || hex.size() == 5;
-  const bool long_syntax = hex.size() == 7 || hex.size() == 9;
-  if (!short_syntax && !long_syntax) return boost::none;
-
-  // validate
-  if (hex[0] != '#') return boost::none;
-  if (!std::all_of(std::begin(hex) + 1, std::end(hex),
-                   [](char c) {
-    return std::isxdigit(static_cast<unsigned char>(c));
-  })) {
-    return boost::none;
-  }
-
-  // number of characters per color channel
-  const int stride = short_syntax ? 1 : 2;
-  const float channel_max = short_syntax ? 15.0f : 255.0f;
-
-  Color4f rgba;
-  rgba[3] = 1.0; // default alpha to 100%
-
-  for (unsigned i = 0; i < (hex.size() - 1) / stride; ++i) {
-    const std::string chunk = hex.substr(1 + i * stride, stride);
-
-    // convert the hex character(s) from base 16 to base 10
-    rgba[i] = stoi(chunk, nullptr, 16) / channel_max;
-  }
-
-  return rgba;
-}
-
 static std::shared_ptr<AbstractNode> builtin_color(const ModuleInstantiation *inst, Arguments arguments, const Children& children)
 {
   auto node = std::make_shared<ColorNode>(inst);
@@ -259,7 +221,7 @@ static std::shared_ptr<AbstractNode> builtin_color(const ModuleInstantiation *in
       node->color = webcolors.at(colorname);
     } else {
       // Try parsing it as a hex color such as "#rrggbb".
-      const auto hexColor = parse_hex_color(colorname);
+      const auto hexColor = OpenSCAD::parse_hex_color(colorname);
       if (hexColor) {
         node->color = *hexColor;
       } else {

@@ -10,7 +10,6 @@
 
 #ifdef ENABLE_CGAL
 #include "geometry/cgal/cgal.h"
-#include "geometry/cgal/CGALHybridPolyhedron.h"
 #include "geometry/cgal/CGAL_Nef_polyhedron.h"
 #include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
 #include <CGAL/normal_vector_newell_3.h>
@@ -60,12 +59,6 @@ std::unique_ptr<PolySet> applyHull(const Geometry::Geometries& children)
           addPoint(CGALUtils::vector_convert<K::Point_3>(i->point()));
         }
       }
-    } else if (const auto *hybrid = dynamic_cast<const CGALHybridPolyhedron*>(chgeom.get())) {
-      addCapacity(hybrid->numVertices());
-      hybrid->foreachVertexUntilTrue([&](auto& p) {
-	addPoint(CGALUtils::vector_convert<K::Point_3>(p));
-          return false;
-        });
 #endif  // ENABLE_CGAL
 #ifdef ENABLE_MANIFOLD
     } else if (const auto *mani = dynamic_cast<const ManifoldGeometry*>(chgeom.get())) {
@@ -119,9 +112,6 @@ std::shared_ptr<const Geometry> applyMinkowski(const Geometry::Geometries& child
     return ManifoldUtils::applyMinkowskiManifold(children);
   }
 #endif  // ENABLE_MANIFOLD
-  if (Feature::ExperimentalFastCsg.is_enabled()) {
-    return CGALUtils::applyMinkowskiHybrid(children);
-  }
   CGAL::Timer t, t_tot;
   assert(children.size() >= 2);
   auto it = children.begin();

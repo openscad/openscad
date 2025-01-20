@@ -25,6 +25,7 @@
  */
 #pragma once
 
+#include <QColor>
 #include <QString>
 #include <QWidget>
 #include <QStringList>
@@ -33,6 +34,7 @@
 namespace fs = std::filesystem;
 
 namespace UIUtils {
+
 static const int maxRecentFiles = 10;
 
 QFileInfo openFile(QWidget *parent = nullptr);
@@ -64,4 +66,9 @@ fs::path returnOfflineCheatSheetPath();
 bool hasOfflineCheatSheet();
 
 void openOfflineCheatSheet();
+
+QString getBackgroundColorStyleSheet(const QColor &color);
+
+QString blendForBackgroundColorStyleSheet(const QColor& input, const QColor& blend, float transparency = 0.2);
+
 } // namespace UIUtils
