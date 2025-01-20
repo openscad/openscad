@@ -334,6 +334,8 @@ public:
   bool getFiniteDouble(double& v) const;
   bool getUnsignedInt(unsigned int& v) const;
   bool getPositiveInt(unsigned int& v) const;
+  bool getUint32(uint32_t& v, Value& err) const;
+  bool getInt32(int32_t& v, Value& err) const;
   [[nodiscard]] std::string toString() const;
   [[nodiscard]] std::string toEchoString() const;
   [[nodiscard]] std::string toEchoStringNoThrow() const; //use this for warnings
@@ -353,10 +355,15 @@ public:
   Value operator>=(const Value& v) const;
   Value operator>(const Value& v) const;
   Value operator-() const;
+  Value operator~() const;
   Value operator[](size_t idx) const;
   Value operator[](const Value& v) const;
   Value operator+(const Value& v) const;
   Value operator-(const Value& v) const;
+  Value operator<<(const Value& v) const;
+  Value operator>>(const Value& v) const;
+  Value operator&(const Value& v) const;
+  Value operator|(const Value& v) const;
   Value operator*(const Value& v) const;
   Value operator/(const Value& v) const;
   Value operator%(const Value& v) const;
