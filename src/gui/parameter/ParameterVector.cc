@@ -80,9 +80,13 @@ ParameterVector::ParameterVector(QWidget *parent, VectorParameter *parameter, De
     spinbox->setRange(minimum, maximum);
     spinbox->setSingleStep(step);
     spinbox->show();
-    connect(spinbox, SIGNAL(valueChanged(double)), this, SLOT(onChanged()));
-    connect(spinbox, SIGNAL(editingFinished()), this, SLOT(onEditingFinished()));
-  }
+    #if QT_VERSION >= QT_VERSION_CHECK(5, 15, 0)
+    connect(spinbox, &QDoubleSpinBox::valueChanged, this, &ParameterVector::onChanged);
+    #else
+    connect(spinbox, static_cast<void(QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged), this, &ParameterVector::onChanged);
+    #endif
+    connect(spinbox, &QDoubleSpinBox::editingFinished, this, &ParameterVector::onEditingFinished);
+}
 
   ParameterVector::setValue();
 }

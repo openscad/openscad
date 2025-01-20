@@ -11,7 +11,7 @@ ProgressWidget::ProgressWidget(QWidget *parent)
   this->wascanceled = false;
   this->starttime.start();
 
-  connect(this->stopButton, SIGNAL(clicked()), this, SLOT(cancel()));
+  connect(this->stopButton, &QPushButton::clicked, this, &ProgressWidget::cancel);
   QTimer::singleShot(1000, this, SIGNAL(requestShow()));
 }
 

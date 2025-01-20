@@ -85,10 +85,10 @@ void InputDriverManager::registerActions(const QList<QAction *>& actions, const 
 void InputDriverManager::init()
 {
   timer = new QTimer(this);
-  connect(QApplication::instance(), SIGNAL(focusChanged(QWidget*,QWidget*)), this, SLOT(onFocusChanged(QWidget*,QWidget*)));
+  connect(QApplication::instance(), &QApplication::focusChanged, this, &InputDriverManager::onFocusChanged);
 
   doOpen(true);
-  connect(timer, SIGNAL(timeout()), this, SLOT(onTimeout()));
+  connect(timer, &QTimer::timeout, this, &InputDriverManager::onTimeout);
   timer->start(10 * 1000);
 }
 

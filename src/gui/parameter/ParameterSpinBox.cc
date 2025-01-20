@@ -45,8 +45,12 @@ ParameterSpinBox::ParameterSpinBox(QWidget *parent, NumberParameter *parameter, 
   doubleSpinBox->setRange(minimum, maximum);
   doubleSpinBox->setSingleStep(step);
 
-  connect(doubleSpinBox, SIGNAL(valueChanged(double)), this, SLOT(onChanged(double)));
-  connect(doubleSpinBox, SIGNAL(editingFinished()), this, SLOT(onEditingFinished()));
+  #if QT_VERSION >= QT_VERSION_CHECK(5, 15, 0)
+  connect(doubleSpinBox, &QDoubleSpinBox::valueChanged, this, &ParameterSpinBox::onChanged);
+  #else
+  connect(doubleSpinBox, static_cast<void(QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged), this, &ParameterSpinBox::onChanged);
+  #endif
+  connect(doubleSpinBox, &QDoubleSpinBox::editingFinished, this, &ParameterSpinBox::onEditingFinished);
   ParameterSpinBox::setValue();
 }
 

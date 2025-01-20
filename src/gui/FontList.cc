@@ -461,8 +461,8 @@ void FontList::update_font_list()
   this->tableView->sortByColumn(COL_FONT_NAME, Qt::AscendingOrder);
   this->tableView->resizeColumnsToContents();
   this->tableView->setSortingEnabled(true);
-
   connect(tableView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &FontList::selection_changed);
+
 
   delete list;
 }
