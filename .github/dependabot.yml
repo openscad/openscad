@@ -7,6 +7,7 @@ updates:
     commit-message:
       prefix: "deps"
     open-pull-requests-limit: 10
+    target-branch: multiplatform
 
   - package-ecosystem: "github-actions"
     directory: "/"
