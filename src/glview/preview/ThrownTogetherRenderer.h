@@ -49,8 +49,8 @@ public:
                          std::shared_ptr<CSGProducts> highlight_products,
                          std::shared_ptr<CSGProducts> background_products);
   ~ThrownTogetherRenderer() override;
-  void prepare(bool showfaces, bool showedges, const RendererUtils::ShaderInfo *shaderinfo = nullptr) override;
-  void draw(bool showfaces, bool showedges, const RendererUtils::ShaderInfo *shaderinfo = nullptr) const override;
+  void prepare(bool showedges, const RendererUtils::ShaderInfo *shaderinfo = nullptr) override;
+  void draw(bool showedges, const RendererUtils::ShaderInfo *shaderinfo = nullptr) const override;
 
   BoundingBox getBoundingBox() const override;
 private:

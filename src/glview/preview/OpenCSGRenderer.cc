@@ -94,7 +94,7 @@ OpenCSGRenderer::OpenCSGRenderer(
       highlights_products_(std::move(highlights_products)),
       background_products_(std::move(background_products)) {}
 
-void OpenCSGRenderer::prepare(bool /*showfaces*/, bool /*showedges*/,
+void OpenCSGRenderer::prepare(bool /*showedges*/,
                               const RendererUtils::ShaderInfo */*shaderinfo*/) {
   if (vbo_vertex_products_.empty()) {
     if (root_products_) {
@@ -109,8 +109,7 @@ void OpenCSGRenderer::prepare(bool /*showfaces*/, bool /*showedges*/,
   }
 }
 
-void OpenCSGRenderer::draw(bool /*showfaces*/, bool showedges,
-                           const RendererUtils::ShaderInfo *shaderinfo) const {
+void OpenCSGRenderer::draw(bool showedges, const RendererUtils::ShaderInfo *shaderinfo) const {
 #ifdef ENABLE_OPENCSG
   if (!shaderinfo && showedges) shaderinfo = &getShader();
   for (const auto& product : vbo_vertex_products_) {

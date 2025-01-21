@@ -73,8 +73,8 @@ public:
       glDeleteBuffers(all_vbos_.size(), all_vbos_.data());
     }
   }
-  void prepare(bool showfaces, bool showedges, const RendererUtils::ShaderInfo *shaderinfo = nullptr) override;
-  void draw(bool showfaces, bool showedges, const RendererUtils::ShaderInfo *shaderinfo = nullptr) const override;
+  void prepare(bool showedges, const RendererUtils::ShaderInfo *shaderinfo = nullptr) override;
+  void draw(bool showedges, const RendererUtils::ShaderInfo *shaderinfo = nullptr) const override;
 
   BoundingBox getBoundingBox() const override;
 private:

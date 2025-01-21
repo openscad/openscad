@@ -86,7 +86,7 @@ ThrownTogetherRenderer::~ThrownTogetherRenderer()
   }
 }
 
-void ThrownTogetherRenderer::prepare(bool /*showfaces*/, bool /*showedges*/, const RendererUtils::ShaderInfo * /*shaderinfo*/)
+void ThrownTogetherRenderer::prepare(bool /*showedges*/, const RendererUtils::ShaderInfo * /*shaderinfo*/)
 {
   PRINTD("Thrown prepare");
   if (vertex_states_.empty()) {
@@ -125,7 +125,7 @@ void ThrownTogetherRenderer::prepare(bool /*showfaces*/, bool /*showedges*/, con
 }
 
 
-void ThrownTogetherRenderer::draw(bool /*showfaces*/, bool showedges, const RendererUtils::ShaderInfo *shaderinfo) const
+void ThrownTogetherRenderer::draw(bool showedges, const RendererUtils::ShaderInfo *shaderinfo) const
 {
   PRINTD("draw()");
   if (!shaderinfo && showedges) {

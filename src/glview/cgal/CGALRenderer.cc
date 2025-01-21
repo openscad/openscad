@@ -232,7 +232,7 @@ void CGALRenderer::createPolySetStates() {
   }
 }
 
-void CGALRenderer::prepare(bool /*showfaces*/, bool /*showedges*/,
+void CGALRenderer::prepare(bool /*showedges*/,
                            const RendererUtils::ShaderInfo * /*shaderinfo*/) {
   PRINTD("prepare()");
   if (!vertex_states_.size())
@@ -245,8 +245,7 @@ void CGALRenderer::prepare(bool /*showfaces*/, bool /*showedges*/,
   PRINTD("prepare() end");
 }
 
-void CGALRenderer::draw(bool showfaces, bool showedges,
-                        const RendererUtils::ShaderInfo * /*shaderinfo*/) const {
+void CGALRenderer::draw(bool showedges, const RendererUtils::ShaderInfo * /*shaderinfo*/) const {
   PRINTD("draw()");
   // grab current state to restore after
   GLfloat current_point_size, current_line_width;
@@ -277,7 +276,7 @@ void CGALRenderer::draw(bool showfaces, bool showedges,
 
 #ifdef ENABLE_CGAL
   for (const auto &p : this->getPolyhedrons()) {
-    p->draw(showfaces && showedges);
+    p->draw(showedges);
   }
 #endif
 
