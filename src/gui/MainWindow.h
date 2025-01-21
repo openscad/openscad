@@ -68,16 +68,16 @@ public:
 
   QTimer *consoleUpdater;
 
-  bool is_preview;
+  bool isPreview;
 
   QTimer *autoReloadTimer;
   QTimer *waitAfterReloadTimer;
   RenderStatistic renderStatistic;
 
-  SourceFile *root_file; // Result of parsing
-  SourceFile *parsed_file; // Last parse for include list
-  std::shared_ptr<AbstractNode> absolute_root_node; // Result of tree evaluation
-  std::shared_ptr<AbstractNode> root_node; // Root if the root modifier (!) is used
+  SourceFile *rootFile; // Result of parsing
+  SourceFile *parsedFile; // Last parse for include list
+  std::shared_ptr<AbstractNode> absoluteRootNode; // Result of tree evaluation
+  std::shared_ptr<AbstractNode> rootNode; // Root if the root modifier (!) is used
 #ifdef ENABLE_PYTHON
   bool python_active;
   std::string trusted_edit_document_name;
@@ -88,7 +88,7 @@ public:
   EditorInterface *activeEditor;
   TabManager *tabManager;
 
-  std::shared_ptr<const Geometry> root_geom;
+  std::shared_ptr<const Geometry> rootGeom;
   std::shared_ptr<Renderer> cgalRenderer;
 #ifdef ENABLE_OPENCSG
   std::shared_ptr<Renderer> opencsgRenderer;
@@ -96,7 +96,7 @@ public:
 #endif
   std::shared_ptr<Renderer> thrownTogetherRenderer;
 
-  QString last_compiled_doc;
+  QString lastCompiledDoc;
 
   QAction *actionRecentFile[UIUtils::maxRecentFiles];
   QMap<QString, QString> knownFileExtensions;
@@ -151,7 +151,7 @@ public:
   void parseTopLevelDocument();
   void exceptionCleanup();
   void setLastFocus(QWidget *widget);
-  void UnknownExceptionCleanup(std::string msg = "");
+  void unknownExceptionCleanup(std::string msg = "");
 
 private:
   void setRenderVariables(ContextHandle<BuiltinContext>& context);
@@ -167,15 +167,15 @@ private:
   void updateWindowSettings(bool console, bool editor, bool customizer, bool errorLog, bool editorToolbar, bool viewToolbar, bool animate, bool fontList, bool ViewportControlWidget);
   void saveBackup();
   void writeBackup(QFile *file);
-  void show_examples();
+  void showExamples();
   void setDockWidgetTitle(QDockWidget *dockWidget, QString prefix, bool topLevel);
   void addKeyboardShortCut(const QList<QAction *>& actions);
   void updateStatusBar(ProgressWidget *progressWidget);
   void activateWindow(int);
 
-  LibraryInfoDialog *library_info_dialog{nullptr};
-  FontListDialog *font_list_dialog{nullptr};
-  QSignalMapper *exportformat_mapper;
+  LibraryInfoDialog *libraryInfoDialog{nullptr};
+  FontListDialog *fontListDialog{nullptr};
+  QSignalMapper *exportFormatMapper;
 
 public slots:
   void updateExportActions();
@@ -227,17 +227,17 @@ private slots:
   void hideAnimate();
   void showFontList();
   void hideFontList();
-  void on_windowActionSelectEditor_triggered();
-  void on_windowActionSelectConsole_triggered();
-  void on_windowActionSelectCustomizer_triggered();
-  void on_windowActionSelectErrorLog_triggered();
-  void on_windowActionSelectAnimate_triggered();
-  void on_windowActionSelectFontList_triggered();
-  void on_windowActionSelectViewportControl_triggered();
-  void on_windowActionNextWindow_triggered();
-  void on_windowActionPreviousWindow_triggered();
-  void on_editActionInsertTemplate_triggered();
-  void on_editActionFoldAll_triggered();
+  void onWindowActionSelectEditorTriggered();
+  void onWindowActionSelectConsoleTriggered();
+  void onWindowActionSelectCustomizerTriggered();
+  void onWindowActionSelectErrorLogTriggered();
+  void onWindowActionSelectAnimateTriggered();
+  void onwindowActionSelectFontListTriggered();
+  void onWindowActionSelectViewportControlTriggered();
+  void onWindowActionNextWindowTriggered();
+  void onWindowActionPreviousWindowTriggered();
+  void onEditActionInsertTemplateTriggered();
+  void onEditActionFoldAllTriggered();
 
 public slots:
   void hideFind();
@@ -307,7 +307,7 @@ public:
 
   QList<double> getTranslation() const;
   QList<double> getRotation() const;
-  std::unordered_map<FileFormat, QAction*>  export_map;
+  std::unordered_map<FileFormat, QAction*>  exportMap;
 
 public slots:
   void actionReloadRenderPreview();
@@ -372,8 +372,8 @@ public slots:
   void autoReloadSet(bool);
 
 private:
-  bool network_progress_func(const double permille);
-  static void report_func(const std::shared_ptr<const AbstractNode>&, void *vp, int mark);
+  bool networkProgressFunc(const double permille);
+  static void reportFunc(const std::shared_ptr<const AbstractNode>&, void *vp, int mark);
   static bool undockMode;
   static bool reorderMode;
   static const int tabStopWidth;
@@ -382,10 +382,10 @@ private:
 
   std::shared_ptr<CSGNode> csgRoot; // Result of the CSGTreeEvaluator
   std::shared_ptr<CSGNode> normalizedRoot; // Normalized CSG tree
-  std::shared_ptr<CSGProducts> root_products;
-  std::shared_ptr<CSGProducts> highlights_products;
-  std::shared_ptr<CSGProducts> background_products;
-  int currently_selected_object {-1};
+  std::shared_ptr<CSGProducts> rootProducts;
+  std::shared_ptr<CSGProducts> highlightsProducts;
+  std::shared_ptr<CSGProducts> backgroundProducts;
+  int currentlySelectedObject {-1};
 
   char const *afterCompileSlot;
   bool procevents{false};
@@ -394,11 +394,11 @@ private:
   CGALWorker *cgalworker;
   QMutex consolemutex;
   EditorInterface *renderedEditor; // stores pointer to editor which has been most recently rendered
-  time_t includes_mtime{0}; // latest include mod time
-  time_t deps_mtime{0}; // latest dependency mod time
+  time_t includesTime{0}; // latest include mod time
+  time_t dependencyTime{0}; // latest dependency mod time
   std::unordered_map<QString, QString> export_paths; // for each file type, where it was exported to last
   QString exportPath(const QString& suffix); // look up the last export path and generate one if not found
-  int last_parser_error_pos{-1}; // last highlighted error position
+  int lastParserErrorPosition{-1}; // last highlighted error position
   int tabCount = 0;
   ExportPdfPaperSize sizeString2Enum(const QString& current);
   ExportPdfPaperOrientation orientationsString2Enum(const QString& current);

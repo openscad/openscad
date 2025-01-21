@@ -510,11 +510,11 @@ void TabManager::openTabFile(const QString& filename)
     } catch (const HardWarningException&) {
       par->exceptionCleanup();
     } catch (const std::exception& ex) {
-      par->UnknownExceptionCleanup(ex.what());
+      par->unknownExceptionCleanup(ex.what());
     } catch (...) {
-      par->UnknownExceptionCleanup();
+      par->unknownExceptionCleanup();
     }
-    par->last_compiled_doc = ""; // undo the damage so F4 works
+    par->lastCompiledDoc = ""; // undo the damage so F4 works
     par->clearCurrentOutput();
   }
 }

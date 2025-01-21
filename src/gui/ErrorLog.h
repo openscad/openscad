@@ -26,8 +26,8 @@ public:
   ErrorLog& operator=(ErrorLog&& source) = delete;
   ~ErrorLog() override = default;
   void initGUI();
-  void toErrorLog(const Message& log_msg);
-  void showtheErrorInGUI(const Message& log_msg);
+  void toErrorLog(const Message& logMsg);
+  void showtheErrorInGUI(const Message& logMsg);
   void clearModel();
   int getLine(int row, int col);
   QStandardItemModel *errorLogModel;
@@ -48,8 +48,8 @@ signals:
   void openFile(const QString, int);
 
 private slots:
-  void on_logTable_doubleClicked(const QModelIndex& index);
-  void on_errorLogComboBox_currentTextChanged(const QString& arg1);
-  void on_actionRowSelected_triggered(bool);
+  void onLogTableDoubleClicked(const QModelIndex& index);
+  void onErrorLogComboBoxCurrentTextChanged(const QString& arg1);
+  void onActionRowSelectedTriggered(bool);
   void onSectionResized(int, int, int);
 };
