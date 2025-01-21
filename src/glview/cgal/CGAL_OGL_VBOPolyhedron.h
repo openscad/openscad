@@ -30,7 +30,7 @@
 
 #include "glview/ColorMap.h"
 #include "glview/cgal/CGAL_OGL_Polyhedron.h"
-#include "glview/cgal/CGAL_OGL_VBO_helper.h"
+#include "glview/cgal/VBOPolyhedron.h"
 #include "utils/printutils.h"
 
 class CGAL_OGL_VBOPolyhedron : public VBOPolyhedron, public CGAL_OGL_Polyhedron

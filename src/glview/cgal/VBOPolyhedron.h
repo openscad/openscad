@@ -27,7 +27,7 @@
 #pragma once
 
 #include "glview/system-gl.h"
-#include "glview/VertexArray.h"
+#include "glview/VBOBuilder.h"
 #include "CGAL/OGL_helper.h"
 
 #include <cassert>
@@ -54,7 +54,7 @@ public:
   }
 
   using CGAL::OGL::Polyhedron::draw;
-  void draw(Vertex_iterator v, VertexArray& vertex_array) const {
+  void draw(Vertex_iterator v, VBOBuilder& vertex_array) const {
     PRINTD("draw(Vertex_iterator)");
 
     CGAL::Color c = getVertexColor(v);
@@ -64,7 +64,7 @@ public:
                               0, 0, 1);
   }
 
-  void draw(Edge_iterator e, VertexArray& vertex_array) const {
+  void draw(Edge_iterator e, VBOBuilder& vertex_array) const {
     PRINTD("draw(Edge_iterator)");
 
     Double_point p = e->source(), q = e->target();
@@ -90,7 +90,7 @@ public:
     size_t last_size;
     size_t draw_size;
     size_t elements_offset;
-    VertexArray& vertex_array;
+    VBOBuilder& vertex_array;
   };
 
   static inline void CGAL_GLU_TESS_CALLBACK beginCallback(GLenum which, GLvoid *user) {
@@ -167,7 +167,7 @@ public:
     }
   }
 
-  void draw(Halffacet_iterator f, VertexArray& vertex_array, bool is_back_facing) const {
+  void draw(Halffacet_iterator f, VBOBuilder& vertex_array, bool is_back_facing) const {
     PRINTD("draw(Halffacet_iterator)");
 
     GLUtesselator *tess_ = gluNewTess();
@@ -214,7 +214,7 @@ public:
       glGenBuffers(1, &points_edges_elements_vbo);
     }
 
-    VertexArray points_edges_array(std::make_unique<VertexStateFactory>(), points_edges_states, points_edges_vertices_vbo, points_edges_elements_vbo);
+    VBOBuilder points_edges_array(std::make_unique<VertexStateFactory>(), points_edges_states, points_edges_vertices_vbo, points_edges_elements_vbo);
 
     points_edges_array.addEdgeData();
     points_edges_array.writeEdge();
@@ -301,7 +301,7 @@ public:
     }
 
     // FIXME: We don't know the size of this VertexArray in advanced, so we have to deal with some fallback mechanism for filling in the data. This complicates code quite a bit
-    VertexArray halffacets_array(std::make_unique<VertexStateFactory>(), halffacets_states, halffacets_vertices_vbo, halffacets_elements_vbo);
+    VBOBuilder halffacets_array(std::make_unique<VertexStateFactory>(), halffacets_states, halffacets_vertices_vbo, halffacets_elements_vbo);
     halffacets_array.addSurfaceData();
     halffacets_array.writeSurface();
 

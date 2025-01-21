@@ -10,7 +10,7 @@
 #include <opencsg.h>
 #endif
 #include "core/CSGNode.h"
-#include "glview/VertexArray.h"
+#include "glview/VBOBuilder.h"
 #include <unordered_map>
 #include <boost/functional/hash.hpp>
 
@@ -39,31 +39,31 @@ public:
   virtual size_t getEdgeBufferSize(const PolySet& polyset) const;
   virtual size_t getEdgeBufferSize(const Polygon2d& polygon) const;
 
-  virtual void create_surface(const PolySet& ps, VertexArray& vertex_array,
+  virtual void create_surface(const PolySet& ps, VBOBuilder& vertex_array,
                               RendererUtils::CSGMode csgmode, const Transform3d& m,
                               const Color4f& default_color, bool force_default_color = false) const;
 
-  virtual void create_edges(const Polygon2d& polygon, VertexArray& vertex_array,
+  virtual void create_edges(const Polygon2d& polygon, VBOBuilder& vertex_array,
                             const Transform3d& m, const Color4f& color) const;
 
-  virtual void create_polygons(const PolySet& ps, VertexArray& vertex_array,
+  virtual void create_polygons(const PolySet& ps, VBOBuilder& vertex_array,
                                const Transform3d& m, const Color4f& color) const;
 
-  virtual void create_triangle(VertexArray& vertex_array, const Color4f& color,
+  virtual void create_triangle(VBOBuilder& vertex_array, const Color4f& color,
                                const Vector3d& p0, const Vector3d& p1, const Vector3d& p2,
                                size_t primitive_index = 0, size_t shape_size = 0,
                                bool outlines = false, bool mirror = false) const;
 
-  virtual void create_vertex(VertexArray& vertex_array, const Color4f& color,
+  virtual void create_vertex(VBOBuilder& vertex_array, const Color4f& color,
                              const std::array<Vector3d, 3>& points,
                              const std::array<Vector3d, 3>& normals,
                              size_t active_point_index = 0, size_t primitive_index = 0,
                              size_t shape_size = 0, bool outlines = false, bool mirror = false) const;
-  void add_shader_pointers(VertexArray& vertex_array); // This could stay protected, were it not for VertexStateManager
-  void add_color(VertexArray& vertex_array, const Color4f& color);
+  void add_shader_pointers(VBOBuilder& vertex_array); // This could stay protected, were it not for VertexStateManager
+  void add_color(VBOBuilder& vertex_array, const Color4f& color);
 
 protected:
-  void add_shader_data(VertexArray& vertex_array);
+  void add_shader_data(VBOBuilder& vertex_array);
   void shader_attribs_enable(const RendererUtils::ShaderInfo&) const;
   void shader_attribs_disable(const RendererUtils::ShaderInfo&) const;
 
@@ -71,7 +71,7 @@ protected:
                              boost::hash<std::pair<const PolySet *, const Transform3d *>>> geom_visit_mark_;
 
 private:
-  void add_shader_attributes(VertexArray& vertex_array,
+  void add_shader_attributes(VBOBuilder& vertex_array,
                              size_t active_point_index = 0, size_t primitive_index = 0,
                              size_t shape_size = 0, bool outlines = false) const;
 

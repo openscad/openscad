@@ -203,13 +203,13 @@ void OpenCSGRenderer::createCSGVBOProducts(
     std::vector<OpenCSG::Primitive *> primitives;
     std::unique_ptr<std::vector<std::shared_ptr<VertexState>>> vertex_states =
         std::make_unique<std::vector<std::shared_ptr<VertexState>>>();
-    VertexArray vertex_array(std::make_unique<OpenCSGVertexStateFactory>(),
+    VBOBuilder vertex_array(std::make_unique<OpenCSGVertexStateFactory>(),
                              *(vertex_states.get()), vertices_vbo,
                              elements_vbo);
     vertex_array.addSurfaceData();
     vertex_array.writeSurface();
     if (getShader().progid != 0) {
-      vertex_array.add_shader_data();
+      vertex_array.addShaderData();
     } else {
       LOG("Warning: Shader not available");
     }
