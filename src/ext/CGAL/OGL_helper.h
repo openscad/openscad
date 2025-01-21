@@ -41,9 +41,6 @@
 #define CGAL_NEF3_OGL_UNMARKED_BACK_FACET_COLOR 249,115,144
 */
 
-const bool cull_backfaces = false;
-const bool color_backfaces = false;
-
 #ifdef _WIN32
 #include <windows.h> // For the CALLBACK macro
 #define CGAL_GLU_TESS_CALLBACK CALLBACK
@@ -272,8 +269,7 @@ namespace OGL {
 
 
  enum { SNC_AXES};
- enum { SNC_BOUNDARY, SNC_SKELETON };
-
+ 
  class Polyhedron : public OGL_base_object {
  protected:
     std::list<DPoint>    vertices_;
@@ -285,7 +281,6 @@ namespace OGL {
 
     Bbox_3  bbox_;
 
-    int style;
     std::vector<bool> switches;
 
     typedef std::list<DPoint>::const_iterator   Vertex_iterator;
@@ -296,54 +291,9 @@ namespace OGL {
     Polyhedron() : bbox_(-1,-1,-1,1,1,1), switches(1) { 
       object_list_ = 0;
       init_ = false;
-      style = SNC_BOUNDARY;
       switches[SNC_AXES] = false; 
     }
 
-    /*
-    Polyhedron(const Polyhedron& P) :
-      object_list_(0),
-      init_(false),
-      bbox_(P.bbox_),
-      style(P.style),
-      switches(2) {
-      
-      switches[SNC_AXES] = P.switches[SNC_AXES]; 
-
-      Vertex_iterator v;
-      for(v=P.vertices_.begin();v!=P.vertices_.end();++v)
-	vertices_.push_back(*v);
-      Edge_iterator e;
-      for(e=P.edges_.begin();e!=P.edges_.end();++e)
-	edges_.push_back(*e);
-      Halffacet_iterator f;
-      for(f=P.halffacets_.begin();f!=P.halffacets_.end();++f)
-	halffacets_.push_back(*f);
-    }
-
-    Polyhedron& operator=(const Polyhedron& P) { 
-      if (object_list_) glDeleteLists(object_list_, 4);
-      object_list_ = 0;
-      init_ = false;
-      style = P.style;
-      switches[SNC_AXES] = P.switches[SNC_AXES]; 
-
-      Vertex_iterator v;
-      vertices_.clear();
-      for(v=P.vertices_.begin();v!=P.vertices_.end();++v)
-	vertices_.push_back(*v);
-      Edge_iterator e;
-      edges_.clear();
-      for(e=P.edges_.begin();e!=P.edges_.end();++e)
-	edges_.push_back(*e);
-      Halffacet_iterator f;
-      halffacets_.clear();
-      for(f=P.halffacets_.begin();f!=P.halffacets_.end();++f)
-	halffacets_.push_back(*f);
-      init();      
-      return *this;
-    }
-    */
     ~Polyhedron() 
     { if (object_list_) glDeleteLists(object_list_, 4); }
 
@@ -360,7 +310,6 @@ namespace OGL {
     }
     
     void set_style(int index) override {
-      style = index;
     }
 
     bool is_initialized() const { return init_; }
@@ -382,22 +331,6 @@ namespace OGL {
 
     virtual void draw(bool) const = 0;
 
-    void draw(Vertex_iterator v) const { 
-      PRINTD("draw( Vertex_iterator )");
-      //      CGAL_NEF_TRACEN("drawing vertex "<<*v);
-      CGAL::Color c = getVertexColor(v);
-      glPointSize(10);
-      //glPointSize(1);
-      glColor3ub(c.red(), c.green(), c.blue());
-      glBegin(GL_POINTS);
-      glVertex3d(v->x(),v->y(),v->z());
-#ifdef CGAL_NEF_EMPHASIZE_VERTEX
-      glColor3ub(255,0,0);
-      glVertex3d(CGAL_NEF_EMPHASIZE_VERTEX);
-#endif
-      glEnd();
-    }
-
     // Overridden in CGAL_renderer
     virtual CGAL::Color getEdgeColor(Edge_iterator e) const
     {
@@ -411,200 +344,13 @@ namespace OGL {
 	return c;
     }
 
-    void draw(Edge_iterator e) const { 
-      PRINTD("draw(Edge_iterator)");
-      //      CGAL_NEF_TRACEN("drawing edge "<<*e);
-      Double_point p = e->source(), q = e->target();
-      CGAL::Color c = getEdgeColor(e);
-      glLineWidth(5);
-      //glLineWidth(1);
-      glColor3ub(c.red(),c.green(),c.blue());
-      glBegin(GL_LINE_STRIP);
-      glVertex3d(p.x(), p.y(), p.z());
-      glVertex3d(q.x(), q.y(), q.z());
-      glEnd();
-    }
 
 
     // Overridden in CGAL_renderer
-    virtual CGAL::Color getFacetColor(Halffacet_iterator /*f*/, bool /*is_back_facing*/) const
-    {
-      PRINTD("getFacetColor");
-/*
-	(void)f;
-//	CGAL::Color cf(CGAL_NEF3_OGL_MARKED_FACET_COLOR),
-//	  ct(CGAL_NEF3_OGL_UNMARKED_FACET_COLOR); // more blue-ish
-//	CGAL::Color c = (f->mark() ? ct : cf);
-*/
-	CGAL::Color c(0,200,0);
-	return c;
-
-/*
-      if (is_back_facing) return !f->mark()
-          ? CGAL::Color(CGAL_NEF3_OGL_MARKED_BACK_FACET_COLOR)
-          : CGAL::Color(CGAL_NEF3_OGL_UNMARKED_BACK_FACET_COLOR);
-      else return !f->mark()
-          ? CGAL::Color(CGAL_NEF3_OGL_MARKED_FACET_COLOR)
-          : CGAL::Color(CGAL_NEF3_OGL_UNMARKED_FACET_COLOR);
-*/
+    virtual CGAL::Color getFacetColor(Halffacet_iterator /*f*/) const {
+      CGAL::Color c(0,200,0);
+      return c;
     }
-
-    void draw(Halffacet_iterator f, bool is_back_facing) const {
-      PRINTD("draw(Halffacet_iterator)");
-      //      CGAL_NEF_TRACEN("drawing facet "<<(f->debug(),""));
-      GLUtesselator* tess_ = gluNewTess();
-      gluTessCallback(tess_, GLenum(GLU_TESS_VERTEX_DATA),
-		      (GLvoid (CGAL_GLU_TESS_CALLBACK *)(CGAL_GLU_TESS_DOTS)) &vertexCallback);
-      gluTessCallback(tess_, GLenum(GLU_TESS_COMBINE),
-		      (GLvoid (CGAL_GLU_TESS_CALLBACK *)(CGAL_GLU_TESS_DOTS)) &combineCallback);
-      gluTessCallback(tess_, GLenum(GLU_TESS_BEGIN),
-		      (GLvoid (CGAL_GLU_TESS_CALLBACK *)(CGAL_GLU_TESS_DOTS)) &beginCallback);
-      gluTessCallback(tess_, GLenum(GLU_TESS_END),
-		      (GLvoid (CGAL_GLU_TESS_CALLBACK *)(CGAL_GLU_TESS_DOTS)) &endCallback);
-      gluTessCallback(tess_, GLenum(GLU_TESS_ERROR),
-		      (GLvoid (CGAL_GLU_TESS_CALLBACK *)(CGAL_GLU_TESS_DOTS)) &errorCallback);
-      gluTessProperty(tess_, GLenum(GLU_TESS_WINDING_RULE),
-		      GLU_TESS_WINDING_POSITIVE);
-
-      DFacet::Coord_const_iterator cit;
-      CGAL::Color c = getFacetColor(f,is_back_facing);
-      glColor3ub(c.red(),c.green(),c.blue());
-      gluTessBeginPolygon(tess_,f->normal());
-      //      CGAL_NEF_TRACEN(" ");
-      //      CGAL_NEF_TRACEN("Begin Polygon");
-      gluTessNormal(tess_,f->dx(),f->dy(),f->dz());
-      // forall facet cycles of f:
-      for(unsigned i = 0; i < f->number_of_facet_cycles(); ++i) {
-        gluTessBeginContour(tess_);
-	//	CGAL_NEF_TRACEN("  Begin Contour");
-	// put all vertices in facet cycle into contour:
-	for(cit = f->facet_cycle_begin(i); 
-	    cit != f->facet_cycle_end(i); ++cit) {
-	  gluTessVertex(tess_, *cit, *cit);
-	  //	  CGAL_NEF_TRACEN("    add Vertex");
-	}
-        gluTessEndContour(tess_);
-	//	CGAL_NEF_TRACEN("  End Contour");
-      }
-      gluTessEndPolygon(tess_);
-      //      CGAL_NEF_TRACEN("End Polygon");
-      gluDeleteTess(tess_);
-      combineCallback(NULL, NULL, NULL, NULL);
-    }
-
-    void construct_axes() const
-    { 
-      PRINTD("construct_axes");
-      glLineWidth(2.0);
-      // red x-axis
-      glColor3f(1.0,0.0,0.0);
-      glBegin(GL_LINES);
-      glVertex3f(0.0,0.0,0.0);
-      glVertex3f(5000.0,0.0,0.0);
-      glEnd();
-       // green y-axis 
-      glColor3f(0.0,1.0,0.0);
-      glBegin(GL_LINES);
-      glVertex3f(0.0,0.0,0.0);
-      glVertex3f(0.0,5000.0,0.0);
-      glEnd();
-      // blue z-axis and equator
-      glColor3f(0.0,0.0,1.0);
-      glBegin(GL_LINES);
-      glVertex3f(0.0,0.0,0.0);
-      glVertex3f(0.0,0.0,5000.0);
-      glEnd();
-      // six coordinate points in pink:
-      glPointSize(10);
-      glBegin(GL_POINTS);
-      glColor3f(1.0,0.0,0.0);
-      glVertex3d(5,0,0);
-      glColor3f(0.0,1.0,0.0);
-      glVertex3d(0,5,0);
-      glColor3f(0.0,0.0,1.0);
-      glVertex3d(0,0,5);
-      glEnd();
-    }
-
-
-    void fill_display_lists() {
-      PRINTD("fill_display_lists");
-      glNewList(object_list_, GL_COMPILE);
-      Vertex_iterator v;
-      for(v=vertices_.begin();v!=vertices_.end();++v) 
-	draw(v);
-      glEndList();     
-
-      glNewList(object_list_+1, GL_COMPILE);
-      Edge_iterator e;
-      for(e=edges_.begin();e!=edges_.end();++e)
-	draw(e);
-      glEndList();     
-
-      glNewList(object_list_+2, GL_COMPILE);
-
-      if (cull_backfaces || color_backfaces) {
-        glEnable(GL_CULL_FACE);
-        glCullFace(GL_BACK);
-	  }
-      for (int i = 0; i < (color_backfaces ? 2 : 1); i++) {
-        Halffacet_iterator f;
-        for(f=halffacets_.begin();f!=halffacets_.end();++f)
-          draw(f, i);
-		if (color_backfaces) glCullFace(GL_FRONT);
-	  }
-	  if (cull_backfaces || color_backfaces) {
-        glCullFace(GL_BACK);
-        glDisable(GL_CULL_FACE);
-	  }
-	  glEndList();
-
-      glNewList(object_list_+3, GL_COMPILE); // axes:
-      construct_axes();
-      glEndList();
-
-    }
-
-    void init() override { 
-      PRINTD("init()");
-      if (init_) return;
-      init_ = true;
-      switches[SNC_AXES] = false;
-      style = SNC_BOUNDARY;
-      object_list_ = glGenLists(4); 
-      CGAL_assertion(object_list_); 
-      fill_display_lists();
-      PRINTD("init() end");
-    }
-
-
-    void draw() const override
-    { 
-      PRINTD("draw()");
-      if (!is_initialized()) const_cast<Polyhedron&>(*this).init();
-      double l = (std::max)( (std::max)( bbox().xmax() - bbox().xmin(),
-					 bbox().ymax() - bbox().ymin()),
-			     bbox().zmax() - bbox().zmin());
-      if ( l < 1) // make sure that a single point doesn't screw up here
-          l = 1;
-      glScaled( 4.0/l, 4.0/l, 4.0/l);
-      glTranslated( -(bbox().xmax() + bbox().xmin()) / 2.0,
-                    -(bbox().ymax() + bbox().ymin()) / 2.0,
-                    -(bbox().zmax() + bbox().zmin()) / 2.0);
-      if (style == SNC_BOUNDARY) {
-	//glEnable(GL_LIGHTING); 
-	glCallList(object_list_+2); // facets
-	//glDisable(GL_LIGHTING);
-      }
-      // move edges and vertices a bit towards the view-point, 
-      // i.e., 1/100th of the unit vector in camera space
-      //      double f = l / 4.0 / 100.0;
-      //      glTranslated( z_vec[0] * f, z_vec[1] * f, z_vec[2] * f);
-      glCallList(object_list_+1); // edges
-      glCallList(object_list_);   // vertices
-      if (switches[SNC_AXES]) glCallList(object_list_+3); // axis
-      PRINTD("draw() end");
-   }
 
     void debug(std::ostream& os = std::cerr) const
     {

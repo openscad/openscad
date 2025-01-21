@@ -78,7 +78,7 @@ public:
 
   BoundingBox getBoundingBox() const override;
 private:
-  void createCSGVBOProducts(const CSGProducts& products, const RendererUtils::ShaderInfo *shaderinfo, bool highlight_mode, bool background_mode);
+  void createCSGVBOProducts(const CSGProducts& products, bool highlight_mode, bool background_mode);
 
   std::vector<std::unique_ptr<OpenCSGVBOProduct>> vbo_vertex_products_;
   std::vector<GLuint> all_vbos_;

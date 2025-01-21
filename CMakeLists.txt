@@ -1043,7 +1043,7 @@ else()
     src/glview/fbo.cc
     src/glview/Renderer.cc
     src/glview/system-gl.cc
-    src/glview/VertexArray.cc
+    src/glview/VBOBuilder.cc
     src/glview/VertexState.cc
     src/glview/VBORenderer.cc
     src/glview/GLView.cc
@@ -1051,6 +1051,7 @@ else()
     src/glview/OffscreenView.cc
     src/glview/cgal/CGALRenderer.cc
     src/glview/cgal/CGALRenderUtils.cc
+    src/glview/PolySetRenderer.cc
     src/glview/preview/OpenCSGRenderer.cc
     src/glview/preview/ThrownTogetherRenderer.cc
     src/io/export_png.cc
