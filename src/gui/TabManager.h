@@ -53,8 +53,6 @@ private slots:
   void tabSwitched(int);
   void closeTabRequested(int);
   void middleMouseClicked(int);
-
-private slots:
   void highlightError(int);
   void unhighlightLastError();
   void undo();
