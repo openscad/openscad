@@ -6,9 +6,7 @@
 
 #include "glview/VBORenderer.h"
 #ifdef ENABLE_CGAL
-#include "glview/cgal/CGAL_OGL_Polyhedron.h"
 #include "geometry/cgal/CGAL_Nef_polyhedron.h"
-#include "core/Selection.h"
 #endif
 
 class CGALRenderer : public VBORenderer
