@@ -15,8 +15,9 @@ ParameterText::ParameterText(QWidget *parent, StringParameter *parameter, Descri
     lineEdit->setMaxLength(*parameter->maximumSize);
   }
 
-  connect(lineEdit, SIGNAL(textEdited(const QString&)), this, SLOT(onEdit(const QString&)));
-  connect(lineEdit, SIGNAL(editingFinished()), this, SLOT(onEditingFinished()));
+  connect(lineEdit, &QLineEdit::textEdited, this, &ParameterText::onEdit);
+  connect(lineEdit, &QLineEdit::editingFinished, this, &ParameterText::onEditingFinished);
+
   ParameterText::setValue();
 }
 

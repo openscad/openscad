@@ -43,12 +43,11 @@ void Animate::initGUI()
   this->iconDisabled = QIcon::fromTheme("chokusen-animate-disabled");
 
   animate_timer = new QTimer(this);
-  connect(animate_timer, SIGNAL(timeout()), this, SLOT(incrementTVal()));
-
-  connect(this->e_tval, SIGNAL(textChanged(QString)), this, SLOT(updatedAnimTval()));
-  connect(this->e_fps, SIGNAL(textChanged(QString)), this, SLOT(updatedAnimFpsAndAnimSteps()));
-  connect(this->e_fsteps, SIGNAL(textChanged(QString)), this, SLOT(updatedAnimFpsAndAnimSteps()));
-  connect(this->e_dump, SIGNAL(toggled(bool)), this, SLOT(updatedAnimDump(bool)));
+  connect(animate_timer, &QTimer::timeout, this, &Animate::incrementTVal);
+  connect(this->e_tval, &QLineEdit::textChanged, this, &Animate::updatedAnimTval);
+  connect(this->e_fps, &QLineEdit::textChanged, this, &Animate::updatedAnimFpsAndAnimSteps);
+  connect(this->e_fsteps, &QLineEdit::textChanged, this, &Animate::updatedAnimFpsAndAnimSteps);
+  connect(this->e_dump, &QCheckBox::toggled, this, &Animate::updatedAnimDump);
 }
 
 void Animate::setMainWindow(MainWindow *mainWindow)

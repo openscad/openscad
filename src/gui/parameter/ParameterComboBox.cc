@@ -16,8 +16,8 @@ ParameterComboBox::ParameterComboBox(QWidget *parent, EnumParameter *parameter, 
   for (const auto& item : parameter->items) {
     comboBox->addItem(QString::fromStdString(item.key));
   }
+  connect(comboBox, &QComboBox::activated, this, &ParameterComboBox::onChanged);
 
-  connect(comboBox, SIGNAL(activated(int)), this, SLOT(onChanged(int)));
   ParameterComboBox::setValue();
 }
 

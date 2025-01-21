@@ -110,9 +110,9 @@ ResultType NetworkRequest<ResultType>::execute(const NetworkRequest::setup_func_
                               reply->abort();
                             }
                           }};
-  QObject::connect(&timer, SIGNAL(timeout()), &loop, SLOT(quit()));
-  QObject::connect(reply, SIGNAL(finished()), &loop, SLOT(quit()));
-  QObject::connect(reply, SIGNAL(uploadProgress(qint64,qint64)), &forwarder, SLOT(network_progress(qint64,qint64)));
+  QObject::connect(&timer, &QTimer::timeout, &loop, &QEventLoop::quit);
+  QObject::connect(reply, &QNetworkReply::finished, &loop, &QEventLoop::quit);
+  QObject::connect(reply, &QNetworkReply::uploadProgress, &forwarder, &NetworkSignal::network_progress);
   timer.setSingleShot(true);
   timer.start(timeout_seconds * 1000);
   loop.exec();
