@@ -25,7 +25,7 @@ public:
 private:
   void addGeometry(const std::shared_ptr<const class Geometry>& geom);
 #ifdef ENABLE_CGAL
-  const std::vector<std::shared_ptr<class CGAL_OGL_Polyhedron>>& getPolyhedrons() const { return this->polyhedrons_; }
+  const std::vector<std::shared_ptr<class VBOPolyhedron>>& getPolyhedrons() const { return this->polyhedrons_; }
   void createPolyhedrons();
 #endif
   void createPolySetStates();
@@ -34,7 +34,7 @@ private:
   std::vector<std::shared_ptr<const class PolySet>> polysets_;
   std::vector<std::pair<std::shared_ptr<const Polygon2d>, std::shared_ptr<const PolySet>>> polygons_;
 #ifdef ENABLE_CGAL
-  std::vector<std::shared_ptr<class CGAL_OGL_Polyhedron>> polyhedrons_;
+  std::vector<std::shared_ptr<class VBOPolyhedron>> polyhedrons_;
   std::vector<std::shared_ptr<const CGAL_Nef_polyhedron>> nefPolyhedrons_;
 #endif
 

@@ -26,6 +26,8 @@
 
 #pragma once
 
+#include "CGAL_OGL_Polyhedron.h"
+#include "ColorMap.h"
 #include "glview/system-gl.h"
 #include "glview/VBOBuilder.h"
 #include "CGAL/OGL_helper.h"
@@ -36,15 +38,13 @@
 #include <cstdlib>
 #include <vector>
 
-using namespace CGAL::OGL;
-
 // ----------------------------------------------------------------------------
 // OGL Drawable Polyhedron:
 // ----------------------------------------------------------------------------
-class VBOPolyhedron : public virtual Polyhedron
+class VBOPolyhedron : public CGAL_OGL_Polyhedron
 {
 public:
-  VBOPolyhedron() : Polyhedron() {}
+  VBOPolyhedron(const ColorScheme& cs) : CGAL_OGL_Polyhedron(cs) {}
   ~VBOPolyhedron() override
   {
     if (points_edges_vertices_vbo) glDeleteBuffers(1, &points_edges_vertices_vbo);
@@ -184,7 +184,7 @@ public:
     gluTessProperty(tess_, GLenum(GLU_TESS_WINDING_RULE),
                     GLU_TESS_WINDING_POSITIVE);
 
-    DFacet::Coord_const_iterator cit;
+    CGAL::OGL::DFacet::Coord_const_iterator cit;
     TessUserData tess_data = {
       0, f->normal(), getFacetColor(f, is_back_facing),
       0, 0, 0, 0, 0, vertex_array
@@ -366,6 +366,42 @@ public:
 
   void draw() const override {
     PRINTD("VBO draw()");
+    PRINTD("VBO draw() end");
+  }
+
+  void draw(bool showedges) const override {
+    PRINTDB("VBO draw(showedges = %d)", showedges);
+    // grab current state to restore after
+    GLfloat current_point_size, current_line_width;
+    GLboolean origVertexArrayState = glIsEnabled(GL_VERTEX_ARRAY);
+    GLboolean origNormalArrayState = glIsEnabled(GL_NORMAL_ARRAY);
+    GLboolean origColorArrayState = glIsEnabled(GL_COLOR_ARRAY);
+
+    GL_CHECKD(glGetFloatv(GL_POINT_SIZE, &current_point_size));
+    GL_CHECKD(glGetFloatv(GL_LINE_WIDTH, &current_line_width));
+
+    if (this->style == SNC_BOUNDARY) {
+      for (const auto& halffacet : this->halffacets_states) {
+        if (halffacet) halffacet->draw();
+      }
+    }
+
+    if (this->style != SNC_BOUNDARY || showedges) {
+      for (const auto& point_edge : this->points_edges_states) {
+        if (point_edge) point_edge->draw();
+      }
+    }
+
+    // restore states
+    GL_TRACE("glPointSize(%d)", current_point_size);
+    GL_CHECKD(glPointSize(current_point_size));
+    GL_TRACE("glLineWidth(%d)", current_line_width);
+    GL_CHECKD(glLineWidth(current_line_width));
+
+    if (!origVertexArrayState) glDisableClientState(GL_VERTEX_ARRAY);
+    if (!origNormalArrayState) glDisableClientState(GL_NORMAL_ARRAY);
+    if (!origColorArrayState) glDisableClientState(GL_COLOR_ARRAY);
+
     PRINTD("VBO draw() end");
   }
 
