@@ -277,7 +277,6 @@ void CGALRenderer::draw(bool showfaces, bool showedges,
 
 #ifdef ENABLE_CGAL
   for (const auto &p : this->getPolyhedrons()) {
-    p->set_style(SNC_BOUNDARY);
     p->draw(showfaces && showedges);
   }
 #endif
