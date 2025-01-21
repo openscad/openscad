@@ -152,7 +152,7 @@ void PolySetRenderer::createVertexStates()
     }
   } else if (!polygons_.empty()) {
     vbo_builder.addEdgeData();
-//    vbo_builder.addSurfaceData();
+    vbo_builder.addSurfaceData();
 
     size_t num_vertices = 0;
     for (const auto &[polygon, polyset] : this->polygons_) {
@@ -229,7 +229,7 @@ void PolySetRenderer::prepare(bool /*showfaces*/, bool /*showedges*/, const Rend
 void PolySetRenderer::draw(bool /*showfaces*/, bool showedges, const RendererUtils::ShaderInfo *shaderinfo) const
 {
   PRINTD("draw()");
-  if (!shaderinfo && showedges) shaderinfo = &getShader();
+//  if (!shaderinfo && showedges) shaderinfo = &getShader();
 
   // grab current state to restore after
   GLfloat current_point_size, current_line_width;
