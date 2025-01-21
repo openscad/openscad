@@ -1111,7 +1111,6 @@ set(GUI_SOURCES
   src/gui/ScintillaEditor.cc
   src/gui/SettingsWriter.cc
   src/gui/TabManager.cc
-  src/gui/TabWidget.cc
   src/gui/UIUtils.cc
   src/gui/WindowManager.cc
   src/gui/IgnoreWheelWhenNotFocused.cc
@@ -1178,7 +1177,6 @@ set(GUI_HEADERS
     src/gui/ScintillaEditor.h
     src/gui/SettingsWriter.h
     src/gui/TabManager.h
-    src/gui/TabWidget.h
     src/gui/UIUtils.h
     src/gui/ViewportControl.h
     src/gui/WindowManager.h
