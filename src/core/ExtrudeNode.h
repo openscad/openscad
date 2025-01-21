@@ -16,6 +16,8 @@ public:
   unsigned int convexity;
   bool has_segments = false;
   unsigned int segments = 0u;
-  bool has_align = false;
-  bool align = true;
+  bool has_interpolate = false;
+  bool interpolate = true;
+  bool has_align_angle = false;
+  unsigned int align_angle = 0; // x axis going counter-clockwise
 };

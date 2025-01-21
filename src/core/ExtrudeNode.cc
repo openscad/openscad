@@ -46,17 +46,19 @@ std::shared_ptr<AbstractNode> builtin_extrude(const ModuleInstantiation *inst, A
   auto node = std::make_shared<ExtrudeNode>(inst);
 
   Parameters parameters = Parameters::parse(std::move(arguments), inst->location(),
-                                            {"segments","align"},
+                                            {"segments","interpolate","align_angle"},
                                             {"convexity"});
   parameters.set_caller("extrude");
 
   parameters["convexity"].getPositiveInt(node->convexity);
 
+  node->has_align_angle = parameters["align_angle"].getPositiveInt(node->align_angle);
+
   node->has_segments = parameters.validate_integral("segments", node->segments, 0u);
-  if (parameters["align"].type() == Value::Type::BOOL)
+  if (parameters["interpolate"].type() == Value::Type::BOOL)
   {
-    node->align = parameters["align"].toBool();
-    node->has_align = true;
+    node->interpolate = parameters["interpolate"].toBool();
+    node->has_interpolate = true;
   }
 
   children.instantiate(node);
@@ -76,14 +78,19 @@ std::string ExtrudeNode::toString() const
     stream << "convexity = " << this->convexity;
     paramNo++;
   }
+  if (this->has_align_angle) {
+    if (paramNo>0) stream << ", ";
+    stream << "align_angle = " << align_angle;
+    paramNo++;
+  }
   if (this->has_segments) {
     if (paramNo>0) stream << ", ";
     stream << "segments = " << this->segments;
     paramNo++;
   }
-  if (this->has_align) {
+  if (this->has_interpolate) {
     if (paramNo>0) stream << ", ";
-    stream << "align = " << (this->align ? "true" : "false");
+    stream << "interpolate = " << (this->interpolate ? "true" : "false");
     paramNo++;
   }
   stream << ")";
@@ -94,6 +101,6 @@ void register_builtin_extrude()
 {
   Builtins::init("extrude", new BuiltinModule(builtin_extrude, &Feature::ExperimentalExtrude),
   {
-    "extrude(convexity = 1, segments = 0, align = true)",
+    R"(extrude(convexity = 1, align_angle = 0, segments = 0, interpolate = true))",
   });
 }
