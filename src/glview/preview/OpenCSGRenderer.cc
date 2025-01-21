@@ -95,16 +95,16 @@ OpenCSGRenderer::OpenCSGRenderer(
       background_products_(std::move(background_products)) {}
 
 void OpenCSGRenderer::prepare(bool /*showfaces*/, bool /*showedges*/,
-                              const RendererUtils::ShaderInfo *shaderinfo) {
+                              const RendererUtils::ShaderInfo */*shaderinfo*/) {
   if (vbo_vertex_products_.empty()) {
     if (root_products_) {
-      createCSGVBOProducts(*root_products_, shaderinfo, false, false);
+      createCSGVBOProducts(*root_products_, false, false);
     }
     if (background_products_) {
-      createCSGVBOProducts(*background_products_, shaderinfo, false, true);
+      createCSGVBOProducts(*background_products_, false, true);
     }
     if (highlights_products_) {
-      createCSGVBOProducts(*highlights_products_, shaderinfo, true, false);
+      createCSGVBOProducts(*highlights_products_, true, false);
     }
   }
 }
@@ -172,8 +172,7 @@ void OpenCSGRenderer::draw(bool /*showfaces*/, bool showedges,
 // Note: This function can be called multiple times for different products.
 // Each call will add to vbo_vertex_products_.
 void OpenCSGRenderer::createCSGVBOProducts(
-    const CSGProducts &products, const RendererUtils::ShaderInfo * /*shaderinfo*/,
-    bool highlight_mode, bool background_mode) {
+    const CSGProducts &products, bool highlight_mode, bool background_mode) {
   // We need to manage buffers here since we don't have another suitable
   // container for managing the life cycle of VBOs. We're creating one VBO(+EBO)
   // per product.
