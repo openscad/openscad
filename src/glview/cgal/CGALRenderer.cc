@@ -43,7 +43,7 @@
 
 #include "glview/cgal/CGALRenderUtils.h"
 #ifdef ENABLE_CGAL
-#include "glview/cgal/CGAL_OGL_VBOPolyhedron.h"
+#include "glview/cgal/VBOPolyhedron.h"
 #endif
 #ifdef ENABLE_MANIFOLD
 #include "geometry/manifold/ManifoldGeometry.h"
@@ -111,13 +111,13 @@ void CGALRenderer::createPolyhedrons() {
   PRINTD("createPolyhedrons");
   this->polyhedrons_.clear();
   for (const auto &N : this->nefPolyhedrons_) {
-    auto p = new CGAL_OGL_VBOPolyhedron(*colorscheme_);
+    auto p = std::make_shared<VBOPolyhedron>(*colorscheme_);
     CGAL::OGL::Nef3_Converter<CGAL_Nef_polyhedron3>::convert_to_OGLPolyhedron(
-        *N->p3, p);
+        *N->p3, p.get());
     // CGAL_NEF3_MARKED_FACET_COLOR <- CGAL_FACE_BACK_COLOR
     // CGAL_NEF3_UNMARKED_FACET_COLOR <- CGAL_FACE_FRONT_COLOR
     p->init();
-    this->polyhedrons_.push_back(std::shared_ptr<CGAL_OGL_Polyhedron>(p));
+    this->polyhedrons_.push_back(p);
   }
   PRINTD("createPolyhedrons() end");
 }
@@ -277,10 +277,7 @@ void CGALRenderer::draw(bool showfaces, bool showedges,
 
 #ifdef ENABLE_CGAL
   for (const auto &p : this->getPolyhedrons()) {
-    if (showfaces)
-      p->set_style(SNC_BOUNDARY);
-    else
-      p->set_style(SNC_SKELETON);
+    p->set_style(SNC_BOUNDARY);
     p->draw(showfaces && showedges);
   }
 #endif
