@@ -86,9 +86,8 @@ void TabManager::tabSwitched(int x)
   par->parameterDock->setWidget(editor->parameterWidget);
 
   par->editActionUndo->setEnabled(editor->canUndo());
-  par->changedTopLevelEditor(par->editorDock->isFloating());
-  par->changedTopLevelConsole(par->consoleDock->isFloating());
   par->parameterTopLevelChanged(par->parameterDock->isFloating());
+  par->changedTopLevelConsole(par->consoleDock->isFloating());
   par->setWindowTitle(tabWidget->tabText(x).replace("&&", "&"));
 
   // Hides all the closing button except the one on the currently focused editor
@@ -530,7 +529,6 @@ void TabManager::setTabName(const QString& filename, EditorInterface *edt)
     tabWidget->setTabToolTip(tabWidget->indexOf(edt), fileinfo.filePath());
     QDir::setCurrent(fileinfo.dir().absolutePath());
   }
-  par->editorTopLevelChanged(par->editorDock->isFloating());
   par->changedTopLevelConsole(par->consoleDock->isFloating());
   par->parameterTopLevelChanged(par->parameterDock->isFloating());
   par->setWindowTitle(fname);

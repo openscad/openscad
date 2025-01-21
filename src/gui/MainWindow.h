@@ -128,7 +128,6 @@ protected:
   void closeEvent(QCloseEvent *event) override;
 
 private slots:
-  void setTabToolBarVisible(int);
   void updateUndockMode(bool undockMode);
   void updateReorderMode(bool reorderMode);
   void setFont(const QString& family, uint size);
@@ -299,7 +298,6 @@ public:
   void onZoomEvent(InputEventZoom *event) override;
 
   void changedTopLevelConsole(bool);
-  void changedTopLevelEditor(bool);
   void changedTopLevelErrorLog(bool);
   void changedTopLevelAnimate(bool);
   void changedTopLevelFontList(bool);
@@ -319,7 +317,6 @@ public slots:
   void on_fontListDock_visibilityChanged(bool);
   void on_viewportControlDock_visibilityChanged(bool);
   void on_toolButtonCompileResultClose_clicked();
-  void editorTopLevelChanged(bool);
   void consoleTopLevelChanged(bool);
   void parameterTopLevelChanged(bool);
   void errorLogTopLevelChanged(bool);
