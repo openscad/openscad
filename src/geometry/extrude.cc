@@ -155,10 +155,10 @@ static void outputQuad(PolySetBuilder & builder, Vector3d const & prev0, Vector3
 
 struct AlignmentPoint 
 {
-	int vertex_index;
-	Vector2d intersect_point;
-	double distance_from_centre;
-	double distance_round_polygon {-1};
+  int vertex_index;
+  Vector2d intersect_point;
+  double distance_from_centre;
+  double distance_round_polygon {-1};
 };
 
 static double fix_angle(double angle)
@@ -180,14 +180,14 @@ static std::vector<std::vector<AlignmentPoint>> findAlignmentPoints(std::vector<
 
   int outlines_count = slicesin[0]->untransformedOutlines().size();
   for (auto & per_slice : alignmentPoints)
-    per_slice.resize(slicesin.size());	 
+    per_slice.resize(slicesin.size());
 
   for (int o_i=0,o_end=outlines_count; o_i!=o_end; ++o_i)
   {
     // Try to start from the further to one corner
     for (int s_i=0,s_end=slicesin.size(); s_i!=s_end; ++s_i)
     {
-      auto const & slice = slicesin[s_i];	    
+      auto const & slice = slicesin[s_i];   
       auto const & vertices = slice->untransformedOutlines()[o_i].vertices;
       BoundingBox bbox = slice->getBoundingBox();
       auto centre = bbox.center();
@@ -212,36 +212,36 @@ static std::vector<std::vector<AlignmentPoint>> findAlignmentPoints(std::vector<
       {
         auto vc = vertices[v_i]-centre2d;
         auto vp = vertices[v_prev_i]-centre2d;
-	auto centre2d_rebased = centre2d-centre2d;
+        auto centre2d_rebased = centre2d-centre2d;
         double angle = angles[v_i];
 
-	double angle_delta = fix_angle(angle-prev_angle);
+        double angle_delta = fix_angle(angle-prev_angle);
 
-	if (angle_delta<180)
-	{
-          if (angle>=align_angle and prev_angle<=align_angle)
+        if (
+          (angle_delta >= 0 && (angle>=align_angle and prev_angle<=align_angle)) || 
+          (angle_delta < 0 &&  (angle<=align_angle and prev_angle>=align_angle))
+	  )
+        {
+          auto line1 = Eigen::Hyperplane<double,2>::Through(vc,vp);
+          double align_angle_radians = double(align_angle)*2.0*M_PI/360;
+          double linelen = 1e6*(bbox.max()[0]-bbox.min()[0]);
+          Vector2d centre2dadj(centre2d_rebased[0]+linelen,centre2d_rebased[1]+tan(align_angle_radians)*linelen);
+          auto line2 = Eigen::Hyperplane<double,2>::Through(centre2d_rebased,centre2dadj);
+  
+          auto intersect_point = line1.intersection(line2);
+
+          // Distance
+          double distance_from_centre = sqrt(pow(intersect_point[1]-centre2d_rebased[1],2.0) + pow(intersect_point[0]-centre2d_rebased[0],2.0));
+  
+          if (distance_from_centre > point.distance_from_centre)
           {
-            auto line1 = Eigen::Hyperplane<double,2>::Through(vc,vp);
-  	    double align_angle_radians = double(align_angle)*2.0*M_PI/360;
-  	    double linelen = 1e6*(bbox.max()[0]-bbox.min()[0]);
-  	    Vector2d centre2dadj(centre2d_rebased[0]+linelen,centre2d_rebased[1]+tan(align_angle_radians)*linelen);
-            auto line2 = Eigen::Hyperplane<double,2>::Through(centre2d_rebased,centre2dadj);
-  
-            auto intersect_point = line1.intersection(line2);
-
-  	    // Distance
-  	    double distance_from_centre = sqrt(pow(intersect_point[1]-centre2d_rebased[1],2.0) + pow(intersect_point[0]-centre2d_rebased[0],2.0));
-  
-	    if (distance_from_centre > point.distance_from_centre)
-	    {
-	      point.distance_from_centre = distance_from_centre;
-              point.intersect_point = intersect_point + centre2d;
-	      point.vertex_index = v_prev_i;
-	    }
+            point.distance_from_centre = distance_from_centre;
+            point.intersect_point = intersect_point + centre2d;
+            point.vertex_index = v_prev_i;
           }
-	}
-	v_prev_i = v_i;
-	prev_angle = angle;
+        }
+        v_prev_i = v_i;
+        prev_angle = angle;
       }
 
       alignmentPoints[s_i][o_i] = std::move(point);
@@ -286,13 +286,13 @@ static std::vector<std::shared_ptr<const Polygon2d>> interpolateVertices(std::ve
 
         double distance = sqrt(pow(diff[0],2) + pow(diff[1],2));
 
-	if (vl_i==alignmentPoint.vertex_index)
-	{
+        if (vl_i==alignmentPoint.vertex_index)
+        {
           auto diff_align = alignmentPoint.intersect_point - vertices[vl_i];
           double distance_align = sqrt(pow(diff_align[0],2) + pow(diff_align[1],2));
-	  alignmentPoint.distance_round_polygon = total_distance + distance_align;
-	  dist.push_back(alignmentPoint.distance_round_polygon);
-	}
+          alignmentPoint.distance_round_polygon = total_distance + distance_align;
+          dist.push_back(alignmentPoint.distance_round_polygon);
+        }
 
         total_distance += distance;
         if (!last)
@@ -352,7 +352,7 @@ static std::vector<std::shared_ptr<const Polygon2d>> interpolateVertices(std::ve
           distance = distance_next;
           distance_next += sqrt(pow(diff[0],2) + pow(diff[1],2));
 
-	  if (vl_i==alignmentPoint.vertex_index)
+          if (vl_i==alignmentPoint.vertex_index)
             alignment_distance = alignmentPoint.distance_round_polygon;
         }
 
@@ -361,10 +361,10 @@ static std::vector<std::shared_ptr<const Polygon2d>> interpolateVertices(std::ve
         auto v0_adj = v0 + ((vertex_distance-distance)*(v1-v0))/(distance_next-distance);
         outlineadj.vertices.push_back(v0_adj);
 
-	if (std::abs(vertex_distance - alignment_distance)<1e-8)
-	{
-	  alignmentPoint.vertex_index = outlineadj.vertices.size()-1;
-	}
+        if (std::abs(vertex_distance - alignment_distance)<1e-8)
+        {
+          alignmentPoint.vertex_index = outlineadj.vertices.size()-1;
+        }
       }
       polyadj.addOutline(std::move(outlineadj));
     }
@@ -471,6 +471,54 @@ static std::vector<std::shared_ptr<const Polygon2d>> segmentVertices(std::vector
   return slicesin;
 }
 
+// Debug support
+static void dumpPolygons(std::string where, std::vector<std::shared_ptr<const Polygon2d>> slicesin)
+{
+  int sl_i = 0;	
+  for (auto const & slice: slicesin)
+  {
+    Polygon2d const & polygon = *slice;
+    auto const & outlines = polygon.untransformedOutlines();
+    int pth_i=0;
+    std::stringstream points;
+    std::stringstream paths;
+    bool first = true;
+    for (auto const & outline: outlines)
+    {
+      std::stringstream path;
+      for (auto const & vertex: outline.vertices)
+      {
+        points << ", [" << vertex[0] << "," << vertex[1] << "]";
+        path  << ", " << pth_i++;
+      }
+      path << "]";
+      if (!first)
+        paths << ", ";	      
+      first = false;
+      paths << "[" << path.str().substr(1);
+    }
+    std::stringstream polygonstr;
+    polygonstr << "polygon(points=[" << points.str().substr(1) << "] , paths=[" << paths.str() << "]);";
+    std::cerr << "# Slice " << sl_i << " of " << where << std::endl;
+    std::cerr << polygonstr.str() << std::endl;
+    sl_i++;
+  }
+}
+
+static void dumpAlignmentPoints(std::vector<std::vector<AlignmentPoint>> const & alignmentPoints, int align_angle)
+{
+  std::cerr << "Aligned to angle: " << align_angle << std::endl;	
+  for (int sl_i=0,sl_end=alignmentPoints.size(); sl_i!=sl_end; ++sl_i)
+  {
+    auto const & per_slice = alignmentPoints[sl_i];	  
+    for (int ol_i=0,ol_end=per_slice.size(); ol_i!=ol_end; ++ol_i)
+    {
+      auto const & alignmentPoint = per_slice[ol_i];	    
+      std::cerr << "Slice " << sl_i << " outline " << ol_i << " on vertex " << alignmentPoint.vertex_index << " point " << alignmentPoint.intersect_point[0] << "," << alignmentPoint.intersect_point[1] << " distance from centre " << alignmentPoint.distance_from_centre << std::endl;
+    }
+  }
+}
+
 /*!
   input: List of 2D objects arranged in 3D, each with identical outline count and vertex count
   output: 3D PolySet
@@ -495,10 +543,14 @@ std::shared_ptr<const Geometry> extrudePolygonSequence(const ExtrudeNode &node, 
     return nullptr;
 
   // If contours match but number of vertices differs, attempt to align
+  //dumpPolygons("input",slicesin);
   auto alignmentPoints = findAlignmentPoints(slicesin, node.align_angle);
+  //dumpAlignmentPoints(alignmentPoints,node.align_angle);
   if (node.interpolate)
     slicesin = interpolateVertices(slicesin, alignmentPoints);
+  //dumpPolygons("interpolate",slicesin);
   slicesin = spinPolygons(slicesin, alignmentPoints);
+  //dumpPolygons("spun",slicesin);
   
   // Verify that every slice has the same number of contours with the same number of vertices
   if (!sanityCheckContoursAndVertices(node, slicesin, loc, docpath))
