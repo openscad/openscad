@@ -197,8 +197,8 @@ static std::vector<std::vector<AlignmentPoint>> findAlignmentPoints(std::vector<
       {
         xmin = std::min(xmin,vertex[0]);
         xmax = std::max(xmax,vertex[0]);
-        ymin = std::min(xmin,vertex[1]);
-        ymax = std::max(xmax,vertex[1]);
+        ymin = std::min(ymin,vertex[1]);
+        ymax = std::max(ymax,vertex[1]);
       }
       Vector2d min_point(xmin,ymin);
       Vector2d max_point(xmax,ymax);
