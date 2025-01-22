@@ -330,11 +330,10 @@ public slots:
   void jumpToLine(int, int);
   void openFileFromPath(const QString&, int);
 
+  void viewModeRender();
 #ifdef ENABLE_OPENCSG
   void viewModePreview();
 #endif
-  void viewModeSurface();
-  void viewModeWireframe();
   void viewModeThrownTogether();
   void viewModeShowEdges();
   void viewModeShowAxes();

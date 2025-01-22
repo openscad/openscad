@@ -49,8 +49,8 @@ public:
                          std::shared_ptr<CSGProducts> highlight_products,
                          std::shared_ptr<CSGProducts> background_products);
   ~ThrownTogetherRenderer() override;
-  void prepare(bool showfaces, bool showedges, const RendererUtils::ShaderInfo *shaderinfo = nullptr) override;
-  void draw(bool showfaces, bool showedges, const RendererUtils::ShaderInfo *shaderinfo = nullptr) const override;
+  void prepare(bool showedges, const RendererUtils::ShaderInfo *shaderinfo = nullptr) override;
+  void draw(bool showedges, const RendererUtils::ShaderInfo *shaderinfo = nullptr) const override;
 
   BoundingBox getBoundingBox() const override;
 private:
@@ -59,9 +59,9 @@ private:
                          bool highlight_mode = false, bool background_mode = false,
                          bool fberror = false) const;
 
-  void createCSGProducts(const CSGProducts& products, VertexArray& vertex_array,
+  void createCSGProducts(const CSGProducts& products, VBOBuilder& vertex_array,
                          bool highlight_mode, bool background_mode);
-  void createChainObject(VertexArray& vertex_array, const CSGChainObject& csgobj,
+  void createChainObject(VBOBuilder& vertex_array, const CSGChainObject& csgobj,
                          bool highlight_mode, bool background_mode,
                          OpenSCADOperator type);
 

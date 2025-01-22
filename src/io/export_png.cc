@@ -38,7 +38,6 @@ bool export_png(const std::shared_ptr<const Geometry>& root_geom, const ViewOpti
   glview->setCamera(camera);
   glview->setRenderer(cgalRenderer);
   glview->setColorScheme(RenderSettings::inst()->colorscheme);
-  glview->setShowFaces(!options["wireframe"]);
   glview->setShowCrosshairs(options["crosshairs"]);
   glview->setShowAxes(options["axes"]);
   glview->setShowScaleProportional(options["scales"]);

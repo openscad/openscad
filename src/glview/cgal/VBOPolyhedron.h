@@ -26,9 +26,12 @@
 
 #pragma once
 
-#include "glview/system-gl.h"
-#include "glview/VertexArray.h"
 #include "CGAL/OGL_helper.h"
+
+#include "ColorMap.h"
+#include "glview/system-gl.h"
+#include "glview/VBOBuilder.h"
+#include "glview/ColorMap.h"
 
 #include <cassert>
 #include <utility>
@@ -36,25 +39,37 @@
 #include <cstdlib>
 #include <vector>
 
-using namespace CGAL::OGL;
-
-// ----------------------------------------------------------------------------
-// OGL Drawable Polyhedron:
-// ----------------------------------------------------------------------------
-class VBOPolyhedron : public virtual Polyhedron
+class VBOPolyhedron : public CGAL::OGL::Polyhedron
 {
 public:
-  VBOPolyhedron() : Polyhedron() {}
-  ~VBOPolyhedron() override
-  {
+  enum CGALColorIndex {
+    MARKED_VERTEX_COLOR = 0,
+    MARKED_EDGE_COLOR,
+    MARKED_FACET_COLOR,
+    UNMARKED_VERTEX_COLOR,
+    UNMARKED_EDGE_COLOR,
+    UNMARKED_FACET_COLOR,
+    NUM_COLORS
+  };
+
+  VBOPolyhedron(const ColorScheme& cs) {
+    // Set default colors.
+    setColor(CGALColorIndex::MARKED_VERTEX_COLOR, {0xb7, 0xe8, 0x5c});
+    setColor(CGALColorIndex::UNMARKED_VERTEX_COLOR, {0xff, 0xf6, 0x7c});
+    setColor(CGALColorIndex::MARKED_FACET_COLOR, ColorMap::getColor(cs, RenderColor::CGAL_FACE_BACK_COLOR));
+    setColor(CGALColorIndex::UNMARKED_FACET_COLOR, ColorMap::getColor(cs, RenderColor::CGAL_FACE_FRONT_COLOR));
+    setColor(CGALColorIndex::MARKED_EDGE_COLOR, ColorMap::getColor(cs, RenderColor::CGAL_EDGE_BACK_COLOR));
+    setColor(CGALColorIndex::UNMARKED_EDGE_COLOR, ColorMap::getColor(cs, RenderColor::CGAL_EDGE_FRONT_COLOR));
+  }
+
+  ~VBOPolyhedron() override {
     if (points_edges_vertices_vbo) glDeleteBuffers(1, &points_edges_vertices_vbo);
     if (points_edges_elements_vbo) glDeleteBuffers(1, &points_edges_elements_vbo);
     if (halffacets_vertices_vbo) glDeleteBuffers(1, &halffacets_vertices_vbo);
     if (halffacets_elements_vbo) glDeleteBuffers(1, &halffacets_elements_vbo);
   }
 
-  using CGAL::OGL::Polyhedron::draw;
-  void draw(Vertex_iterator v, VertexArray& vertex_array) const {
+  void draw(Vertex_iterator v, VBOBuilder& vertex_array) const {
     PRINTD("draw(Vertex_iterator)");
 
     CGAL::Color c = getVertexColor(v);
@@ -64,7 +79,7 @@ public:
                               0, 0, 1);
   }
 
-  void draw(Edge_iterator e, VertexArray& vertex_array) const {
+  void draw(Edge_iterator e, VBOBuilder& vertex_array) const {
     PRINTD("draw(Edge_iterator)");
 
     Double_point p = e->source(), q = e->target();
@@ -90,7 +105,7 @@ public:
     size_t last_size;
     size_t draw_size;
     size_t elements_offset;
-    VertexArray& vertex_array;
+    VBOBuilder& vertex_array;
   };
 
   static inline void CGAL_GLU_TESS_CALLBACK beginCallback(GLenum which, GLvoid *user) {
@@ -167,7 +182,7 @@ public:
     }
   }
 
-  void draw(Halffacet_iterator f, VertexArray& vertex_array, bool is_back_facing) const {
+  void draw(Halffacet_iterator f, VBOBuilder& vertex_array) const {
     PRINTD("draw(Halffacet_iterator)");
 
     GLUtesselator *tess_ = gluNewTess();
@@ -184,9 +199,9 @@ public:
     gluTessProperty(tess_, GLenum(GLU_TESS_WINDING_RULE),
                     GLU_TESS_WINDING_POSITIVE);
 
-    DFacet::Coord_const_iterator cit;
+    CGAL::OGL::DFacet::Coord_const_iterator cit;
     TessUserData tess_data = {
-      0, f->normal(), getFacetColor(f, is_back_facing),
+      0, f->normal(), getFacetColor(f),
       0, 0, 0, 0, 0, vertex_array
     };
 
@@ -214,7 +229,7 @@ public:
       glGenBuffers(1, &points_edges_elements_vbo);
     }
 
-    VertexArray points_edges_array(std::make_unique<VertexStateFactory>(), points_edges_states, points_edges_vertices_vbo, points_edges_elements_vbo);
+    VBOBuilder points_edges_array(std::make_unique<VertexStateFactory>(), points_edges_states, points_edges_vertices_vbo, points_edges_elements_vbo);
 
     points_edges_array.addEdgeData();
     points_edges_array.writeEdge();
@@ -301,7 +316,7 @@ public:
     }
 
     // FIXME: We don't know the size of this VertexArray in advanced, so we have to deal with some fallback mechanism for filling in the data. This complicates code quite a bit
-    VertexArray halffacets_array(std::make_unique<VertexStateFactory>(), halffacets_states, halffacets_vertices_vbo, halffacets_elements_vbo);
+    VBOBuilder halffacets_array(std::make_unique<VertexStateFactory>(), halffacets_states, halffacets_vertices_vbo, halffacets_elements_vbo);
     halffacets_array.addSurfaceData();
     halffacets_array.writeSurface();
 
@@ -314,45 +329,11 @@ public:
       GL_TRACE0("glLineWidth(5.0f)");
       GL_CHECKD(glLineWidth(5.0f));
     });
-    if (cull_backfaces || color_backfaces) {
-      settings->glBegin().emplace_back([]() {
-        GL_TRACE0("glEnable(GL_CULL_FACE)");
-        GL_CHECKD(glEnable(GL_CULL_FACE));
-      });
-      settings->glBegin().emplace_back([]() {
-        GL_TRACE0("glCullFace(GL_BACK)");
-        GL_CHECKD(glCullFace(GL_BACK));
-      });
-    }
     halffacets_states.emplace_back(std::move(settings));
 
-    for (int i = 0; i < (color_backfaces ? 2 : 1); i++) {
-
-      Halffacet_iterator f;
-      for (f = halffacets_.begin(); f != halffacets_.end(); ++f)
-        draw(f, halffacets_array, i);
-
-      if (color_backfaces) {
-        settings = std::make_shared<VertexState>();
-        settings->glBegin().emplace_back([]() {
-          GL_TRACE0("glCullFace(GL_FRONT)");
-          GL_CHECKD(glCullFace(GL_FRONT));
-        });
-        halffacets_states.emplace_back(std::move(settings));
-      }
-    }
-
-    if (cull_backfaces || color_backfaces) {
-      settings = std::make_shared<VertexState>();
-      settings->glBegin().emplace_back([]() {
-        GL_TRACE0("glCullFace(GL_BACK)");
-        GL_CHECKD(glCullFace(GL_BACK));
-      });
-      settings->glBegin().emplace_back([]() {
-        GL_TRACE0("glDisable(GL_CULL_FACE)");
-        GL_CHECKD(glDisable(GL_CULL_FACE));
-      });
-      halffacets_states.emplace_back(std::move(settings));
+    Halffacet_iterator f;
+    for (f = halffacets_.begin(); f != halffacets_.end(); ++f) {
+      draw(f, halffacets_array);
     }
 
     halffacets_array.createInterleavedVBOs();
@@ -369,7 +350,68 @@ public:
     PRINTD("VBO draw() end");
   }
 
+  void draw(bool showedges) const override {
+    PRINTDB("VBO draw(showedges = %d)", showedges);
+    // grab current state to restore after
+    GLfloat current_point_size, current_line_width;
+    GLboolean origVertexArrayState = glIsEnabled(GL_VERTEX_ARRAY);
+    GLboolean origNormalArrayState = glIsEnabled(GL_NORMAL_ARRAY);
+    GLboolean origColorArrayState = glIsEnabled(GL_COLOR_ARRAY);
+
+    GL_CHECKD(glGetFloatv(GL_POINT_SIZE, &current_point_size));
+    GL_CHECKD(glGetFloatv(GL_LINE_WIDTH, &current_line_width));
+
+    for (const auto& halffacet : this->halffacets_states) {
+      if (halffacet) halffacet->draw();
+    }
+
+    if (showedges) {
+      for (const auto& point_edge : this->points_edges_states) {
+        if (point_edge) point_edge->draw();
+      }
+    }
+
+    // restore states
+    GL_TRACE("glPointSize(%d)", current_point_size);
+    GL_CHECKD(glPointSize(current_point_size));
+    GL_TRACE("glLineWidth(%d)", current_line_width);
+    GL_CHECKD(glLineWidth(current_line_width));
+
+    if (!origVertexArrayState) glDisableClientState(GL_VERTEX_ARRAY);
+    if (!origNormalArrayState) glDisableClientState(GL_NORMAL_ARRAY);
+    if (!origColorArrayState) glDisableClientState(GL_COLOR_ARRAY);
+
+    PRINTD("VBO draw() end");
+  }
+
+
+  // overrides function in OGL_helper.h
+  [[nodiscard]] CGAL::Color getVertexColor(Vertex_iterator v) const override {
+    PRINTD("getVertexColor");
+    CGAL::Color c = v->mark() ? colors[CGALColorIndex::UNMARKED_VERTEX_COLOR] : colors[CGALColorIndex::MARKED_VERTEX_COLOR];
+    return c;
+  }
+
+  // overrides function in OGL_helper.h
+  [[nodiscard]] CGAL::Color getEdgeColor(Edge_iterator e) const override {
+    PRINTD("getEdgeColor");
+    CGAL::Color c = e->mark() ? colors[CGALColorIndex::UNMARKED_EDGE_COLOR] : colors[CGALColorIndex::MARKED_EDGE_COLOR];
+    return c;
+  }
+
+  // overrides function in OGL_helper.h
+  [[nodiscard]] CGAL::Color getFacetColor(Halffacet_iterator f) const override {
+    CGAL::Color c = f->mark() ? colors[CGALColorIndex::UNMARKED_FACET_COLOR] : colors[CGALColorIndex::MARKED_FACET_COLOR];
+    return c;
+  }
+
+  void setColor(CGALColorIndex color_index, const Color4f& c) {
+    PRINTDB("setColor %i %f %f %f", color_index % c[0] % c[1] % c[2]);
+    this->colors[color_index] = CGAL::Color(c[0] * 255, c[1] * 255, c[2] * 255);
+  }
+
 protected:
+  CGAL::Color colors[CGALColorIndex::NUM_COLORS];
   GLuint points_edges_vertices_vbo{0};
   GLuint points_edges_elements_vbo{0};
   GLuint halffacets_vertices_vbo{0};

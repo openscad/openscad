@@ -513,17 +513,17 @@ MainWindow::MainWindow(const QStringList& filenames)
 #endif
 
   // View menu
-#ifndef ENABLE_OPENCSG
-  this->viewActionPreview->setVisible(false);
-#else
-  connect(this->viewActionPreview, SIGNAL(triggered()), this, SLOT(viewModePreview()));
-  if (!this->qglview->hasOpenCSGSupport()) {
-    this->viewActionPreview->setEnabled(false);
+  this->viewActionThrownTogether->setEnabled(false);
+  this->viewActionPreview->setEnabled(false);
+  if (this->qglview->hasOpenCSGSupport()) {
+    this->viewActionPreview->setChecked(true);
+    this->viewActionThrownTogether->setChecked(false);
+  } else {
+    this->viewActionPreview->setChecked(false);
+    this->viewActionThrownTogether->setChecked(true);
   }
-#endif
 
-  connect(this->viewActionSurfaces, SIGNAL(triggered()), this, SLOT(viewModeSurface()));
-  connect(this->viewActionWireframe, SIGNAL(triggered()), this, SLOT(viewModeWireframe()));
+  connect(this->viewActionPreview, SIGNAL(triggered()), this, SLOT(viewModePreview()));
   connect(this->viewActionThrownTogether, SIGNAL(triggered()), this, SLOT(viewModeThrownTogether()));
   connect(this->viewActionShowEdges, SIGNAL(triggered()), this, SLOT(viewModeShowEdges()));
   connect(this->viewActionShowAxes, SIGNAL(triggered()), this, SLOT(viewModeShowAxes()));
@@ -2177,8 +2177,7 @@ void MainWindow::actionRenderDone(const std::shared_ptr<const Geometry>& root_ge
     this->root_geom = root_geom;
     this->cgalRenderer = std::make_shared<CGALRenderer>(root_geom);
     // Go to CGAL view mode
-    if (viewActionWireframe->isChecked()) viewModeWireframe();
-    else viewModeSurface();
+    viewModeRender();
     this->designActionMeasureDist->setEnabled(true);
     this->designActionMeasureAngle->setEnabled(true);
   } else {
@@ -2244,7 +2243,7 @@ void MainWindow::rightClick(QPoint mouse)
     return;
   }
 
-  this->qglview->renderer->prepare(true, false, &this->selector->shaderinfo);
+  this->qglview->renderer->prepare(false, &this->selector->shaderinfo);
 
   // Update the selector with the right image size
   this->selector->reset(this->qglview);
@@ -2832,12 +2831,19 @@ void MainWindow::actionFlushCaches()
 void MainWindow::viewModeActionsUncheck()
 {
   viewActionPreview->setChecked(false);
-  viewActionSurfaces->setChecked(false);
-  viewActionWireframe->setChecked(false);
   viewActionThrownTogether->setChecked(false);
 }
 
 #ifdef ENABLE_OPENCSG
+
+void MainWindow::viewModeRender()
+{
+  viewActionThrownTogether->setEnabled(false);
+  viewActionPreview->setEnabled(false);
+  this->qglview->setRenderer(this->cgalRenderer);
+  this->qglview->updateColorScheme();
+  this->qglview->update();
+}
 
 /*!
    Go to the OpenCSG view mode.
@@ -2845,9 +2851,11 @@ void MainWindow::viewModeActionsUncheck()
  */
 void MainWindow::viewModePreview()
 {
+  viewActionThrownTogether->setEnabled(true);
+  viewActionPreview->setEnabled(this->qglview->hasOpenCSGSupport());
   if (this->qglview->hasOpenCSGSupport()) {
-    viewModeActionsUncheck();
     viewActionPreview->setChecked(true);
+    viewActionThrownTogether->setChecked(false);
     this->qglview->setRenderer(this->opencsgRenderer ? this->opencsgRenderer : this->thrownTogetherRenderer);
     this->qglview->updateColorScheme();
     this->qglview->update();
@@ -2858,30 +2866,12 @@ void MainWindow::viewModePreview()
 
 #endif /* ENABLE_OPENCSG */
 
-void MainWindow::viewModeSurface()
-{
-  viewModeActionsUncheck();
-  viewActionSurfaces->setChecked(true);
-  this->qglview->setShowFaces(true);
-  this->qglview->setRenderer(this->cgalRenderer);
-  this->qglview->updateColorScheme();
-  this->qglview->update();
-}
-
-void MainWindow::viewModeWireframe()
-{
-  viewModeActionsUncheck();
-  viewActionWireframe->setChecked(true);
-  this->qglview->setShowFaces(false);
-  this->qglview->setRenderer(this->cgalRenderer);
-  this->qglview->updateColorScheme();
-  this->qglview->update();
-}
-
 void MainWindow::viewModeThrownTogether()
 {
-  viewModeActionsUncheck();
+  viewActionThrownTogether->setEnabled(true);
+  viewActionPreview->setEnabled(this->qglview->hasOpenCSGSupport());
   viewActionThrownTogether->setChecked(true);
+  viewActionPreview->setChecked(false);
   this->qglview->setRenderer(this->thrownTogetherRenderer);
   this->qglview->updateColorScheme();
   this->qglview->update();
