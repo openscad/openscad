@@ -94,23 +94,22 @@ OpenCSGRenderer::OpenCSGRenderer(
       highlights_products_(std::move(highlights_products)),
       background_products_(std::move(background_products)) {}
 
-void OpenCSGRenderer::prepare(bool /*showfaces*/, bool /*showedges*/,
-                              const RendererUtils::ShaderInfo *shaderinfo) {
+void OpenCSGRenderer::prepare(bool /*showedges*/,
+                              const RendererUtils::ShaderInfo */*shaderinfo*/) {
   if (vbo_vertex_products_.empty()) {
     if (root_products_) {
-      createCSGVBOProducts(*root_products_, shaderinfo, false, false);
+      createCSGVBOProducts(*root_products_, false, false);
     }
     if (background_products_) {
-      createCSGVBOProducts(*background_products_, shaderinfo, false, true);
+      createCSGVBOProducts(*background_products_, false, true);
     }
     if (highlights_products_) {
-      createCSGVBOProducts(*highlights_products_, shaderinfo, true, false);
+      createCSGVBOProducts(*highlights_products_, true, false);
     }
   }
 }
 
-void OpenCSGRenderer::draw(bool /*showfaces*/, bool showedges,
-                           const RendererUtils::ShaderInfo *shaderinfo) const {
+void OpenCSGRenderer::draw(bool showedges, const RendererUtils::ShaderInfo *shaderinfo) const {
 #ifdef ENABLE_OPENCSG
   if (!shaderinfo && showedges) shaderinfo = &getShader();
   for (const auto& product : vbo_vertex_products_) {
@@ -172,8 +171,7 @@ void OpenCSGRenderer::draw(bool /*showfaces*/, bool showedges,
 // Note: This function can be called multiple times for different products.
 // Each call will add to vbo_vertex_products_.
 void OpenCSGRenderer::createCSGVBOProducts(
-    const CSGProducts &products, const RendererUtils::ShaderInfo * /*shaderinfo*/,
-    bool highlight_mode, bool background_mode) {
+    const CSGProducts &products, bool highlight_mode, bool background_mode) {
   // We need to manage buffers here since we don't have another suitable
   // container for managing the life cycle of VBOs. We're creating one VBO(+EBO)
   // per product.
@@ -203,13 +201,13 @@ void OpenCSGRenderer::createCSGVBOProducts(
     std::vector<OpenCSG::Primitive *> primitives;
     std::unique_ptr<std::vector<std::shared_ptr<VertexState>>> vertex_states =
         std::make_unique<std::vector<std::shared_ptr<VertexState>>>();
-    VertexArray vertex_array(std::make_unique<OpenCSGVertexStateFactory>(),
+    VBOBuilder vertex_array(std::make_unique<OpenCSGVertexStateFactory>(),
                              *(vertex_states.get()), vertices_vbo,
                              elements_vbo);
     vertex_array.addSurfaceData();
     vertex_array.writeSurface();
     if (getShader().progid != 0) {
-      vertex_array.add_shader_data();
+      vertex_array.addShaderData();
     } else {
       LOG("Warning: Shader not available");
     }

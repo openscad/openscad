@@ -148,7 +148,7 @@ size_t VBORenderer::getEdgeBufferSize(const Polygon2d& polygon) const
   return buffer_size;
 }
 
-void VBORenderer::add_shader_attributes(VertexArray& vertex_array,
+void VBORenderer::add_shader_attributes(VBOBuilder& vertex_array,
                                         size_t active_point_index, size_t primitive_index,
                                         size_t shape_size, bool outlines) const
 {
@@ -189,7 +189,7 @@ void VBORenderer::add_shader_attributes(VertexArray& vertex_array,
   }
 }
 
-void VBORenderer::create_vertex(VertexArray& vertex_array, const Color4f& color,
+void VBORenderer::create_vertex(VBOBuilder& vertex_array, const Color4f& color,
                                 const std::array<Vector3d, 3>& points,
                                 const std::array<Vector3d, 3>& normals,
                                 size_t active_point_index, size_t primitive_index,
@@ -198,7 +198,7 @@ void VBORenderer::create_vertex(VertexArray& vertex_array, const Color4f& color,
 {
   vertex_array.createVertex(points, normals, color, active_point_index,
                             primitive_index, shape_size, outlines, mirror,
-                            [this](VertexArray& vertex_array,
+                            [this](VBOBuilder& vertex_array,
                                    size_t active_point_index, size_t primitive_index,
                                    size_t shape_size, bool outlines) -> void {
     this->add_shader_attributes(vertex_array, active_point_index, primitive_index,
@@ -206,7 +206,7 @@ void VBORenderer::create_vertex(VertexArray& vertex_array, const Color4f& color,
   });
 }
 
-void VBORenderer::create_triangle(VertexArray& vertex_array, const Color4f& color,
+void VBORenderer::create_triangle(VBOBuilder& vertex_array, const Color4f& color,
                                   const Vector3d& p0, const Vector3d& p1, const Vector3d& p2,
                                   size_t primitive_index, size_t shape_size,
                                   bool outlines, bool mirror) const
@@ -257,7 +257,7 @@ Vector3d uniqueMultiply(std::unordered_map<Vector3d, Vector3d>& vert_mult_map,
 // Creates a VBO "surface" from the PolySet.
 // This will usually create a new VertexState and append it to the
 // vertex states in the given vertex_array
-void VBORenderer::create_surface(const PolySet& ps, VertexArray& vertex_array,
+void VBORenderer::create_surface(const PolySet& ps, VBOBuilder& vertex_array,
                                  RendererUtils::CSGMode csgmode, const Transform3d& m,
                                  const Color4f& default_color, bool force_default_color) const
 {
@@ -338,7 +338,7 @@ void VBORenderer::create_surface(const PolySet& ps, VertexArray& vertex_array,
 }
 
 void VBORenderer::create_edges(const Polygon2d& polygon,
-                               VertexArray& vertex_array,
+                               VBOBuilder& vertex_array,
                                const Transform3d& m,
                                const Color4f& color) const
 {
@@ -373,7 +373,7 @@ void VBORenderer::create_edges(const Polygon2d& polygon,
   }
 }
 
-void VBORenderer::create_polygons(const PolySet& ps, VertexArray& vertex_array,
+void VBORenderer::create_polygons(const PolySet& ps, VBOBuilder& vertex_array,
                                   const Transform3d& m, const Color4f& color) const
 {
   assert(ps.getDimension() == 2);
@@ -444,7 +444,7 @@ void VBORenderer::create_polygons(const PolySet& ps, VertexArray& vertex_array,
   vertex_array.addAttributePointers(last_size);
 }
 
-void VBORenderer::add_shader_pointers(VertexArray& vertex_array)
+void VBORenderer::add_shader_pointers(VBOBuilder& vertex_array)
 {
   const std::shared_ptr<VertexData> vertex_data = vertex_array.data();
 
@@ -470,7 +470,7 @@ void VBORenderer::add_shader_pointers(VertexArray& vertex_array)
       auto ss = ss_ptr.lock();
       if (ss) {
         // NOLINTBEGIN(performance-no-int-to-ptr)
-        GL_TRACE("glVertexAttribPointer(%d, %d, %d, %p)", count % type % stride % (GLvoid *)(ss->drawOffset() + offset));
+        GL_TRACE("glVertexAttribPointer(%d, %d, %d, %d, %p)", index % count % type % stride % (GLvoid *)(ss->drawOffset() + offset));
         GL_CHECKD(glVertexAttribPointer(index, count, type, GL_FALSE, stride, (GLvoid *)(ss->drawOffset() + offset)));
         // NOLINTEND(performance-no-int-to-ptr)
       }
@@ -480,7 +480,7 @@ void VBORenderer::add_shader_pointers(VertexArray& vertex_array)
   vertex_array.states().emplace_back(std::move(ss));
 }
 
-void VBORenderer::add_color(VertexArray& vertex_array, const Color4f& color)
+void VBORenderer::add_color(VBOBuilder& vertex_array, const Color4f& color)
 {
   add_shader_pointers(vertex_array);
   const RendererUtils::ShaderInfo shader_info = getShader();

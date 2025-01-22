@@ -86,7 +86,7 @@ ThrownTogetherRenderer::~ThrownTogetherRenderer()
   }
 }
 
-void ThrownTogetherRenderer::prepare(bool /*showfaces*/, bool /*showedges*/, const RendererUtils::ShaderInfo * /*shaderinfo*/)
+void ThrownTogetherRenderer::prepare(bool /*showedges*/, const RendererUtils::ShaderInfo * /*shaderinfo*/)
 {
   PRINTD("Thrown prepare");
   if (vertex_states_.empty()) {
@@ -94,10 +94,10 @@ void ThrownTogetherRenderer::prepare(bool /*showfaces*/, bool /*showedges*/, con
     if (Feature::ExperimentalVxORenderersIndexing.is_enabled()) {
       glGenBuffers(1, &elements_vbo_);
     }
-    VertexArray vertex_array(std::make_unique<TTRVertexStateFactory>(), vertex_states_, vertices_vbo_, elements_vbo_);
+    VBOBuilder vertex_array(std::make_unique<TTRVertexStateFactory>(), vertex_states_, vertices_vbo_, elements_vbo_);
     vertex_array.addSurfaceData();
     if (getShader().progid != 0) {
-      vertex_array.add_shader_data();
+      vertex_array.addShaderData();
     } else {
       LOG("Warning: Shader not available");
     }
@@ -125,7 +125,7 @@ void ThrownTogetherRenderer::prepare(bool /*showfaces*/, bool /*showedges*/, con
 }
 
 
-void ThrownTogetherRenderer::draw(bool /*showfaces*/, bool showedges, const RendererUtils::ShaderInfo *shaderinfo) const
+void ThrownTogetherRenderer::draw(bool showedges, const RendererUtils::ShaderInfo *shaderinfo) const
 {
   PRINTD("draw()");
   if (!shaderinfo && showedges) {
@@ -179,7 +179,7 @@ void ThrownTogetherRenderer::renderCSGProducts(const std::shared_ptr<CSGProducts
   }
 }
 
-void ThrownTogetherRenderer::createChainObject(VertexArray& vertex_array,
+void ThrownTogetherRenderer::createChainObject(VBOBuilder& vertex_array,
                                                const CSGChainObject& csgobj, bool highlight_mode,
                                                bool background_mode, OpenSCADOperator type)
 {
@@ -255,7 +255,7 @@ void ThrownTogetherRenderer::createChainObject(VertexArray& vertex_array,
   }
 }
 
-void ThrownTogetherRenderer::createCSGProducts(const CSGProducts& products, VertexArray& vertex_array,
+void ThrownTogetherRenderer::createCSGProducts(const CSGProducts& products, VBOBuilder& vertex_array,
                                                bool highlight_mode, bool background_mode)
 {
   PRINTD("Thrown renderCSGProducts");

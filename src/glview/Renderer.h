@@ -67,8 +67,8 @@ public:
   virtual ~Renderer() = default;
   [[nodiscard]] const RendererUtils::ShaderInfo& getShader() const { return renderer_shader_; }
 
-  virtual void prepare(bool showfaces, bool showedges, const RendererUtils::ShaderInfo *shaderinfo = nullptr) = 0;
-  virtual void draw(bool showfaces, bool showedges, const RendererUtils::ShaderInfo *shaderinfo = nullptr) const = 0;
+  virtual void prepare(bool showedges, const RendererUtils::ShaderInfo *shaderinfo = nullptr) = 0;
+  virtual void draw(bool showedges, const RendererUtils::ShaderInfo *shaderinfo = nullptr) const = 0;
   [[nodiscard]] virtual BoundingBox getBoundingBox() const = 0;
 
 

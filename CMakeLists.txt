@@ -1045,7 +1045,7 @@ else()
     src/glview/fbo.cc
     src/glview/Renderer.cc
     src/glview/system-gl.cc
-    src/glview/VertexArray.cc
+    src/glview/VBOBuilder.cc
     src/glview/VertexState.cc
     src/glview/VBORenderer.cc
     src/glview/GLView.cc

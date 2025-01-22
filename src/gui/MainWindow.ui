@@ -329,8 +329,6 @@
      <string>&amp;View</string>
     </property>
     <addaction name="viewActionPreview"/>
-    <addaction name="viewActionSurfaces"/>
-    <addaction name="viewActionWireframe"/>
     <addaction name="viewActionThrownTogether"/>
     <addaction name="separator"/>
     <addaction name="viewActionShowEdges"/>
@@ -1142,39 +1140,14 @@
    <property name="checkable">
     <bool>true</bool>
    </property>
+   <property name="icon">
+    <iconset theme="chokusen-surface"/>
+   </property>
    <property name="text">
     <string>Preview</string>
    </property>
    <property name="shortcut">
     <string>F9</string>
-   </property>
-  </action>
-  <action name="viewActionSurfaces">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="icon">
-    <iconset theme="chokusen-surface"/>
-   </property>
-   <property name="text">
-    <string>Surfaces</string>
-   </property>
-   <property name="shortcut">
-    <string>F10</string>
-   </property>
-  </action>
-  <action name="viewActionWireframe">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="icon">
-    <iconset theme="chokusen-wireframe"/>
-   </property>
-   <property name="text">
-    <string>Wireframe</string>
-   </property>
-   <property name="shortcut">
-    <string>F11</string>
    </property>
   </action>
   <action name="viewActionThrownTogether">
