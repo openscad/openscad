@@ -180,7 +180,7 @@ static std::vector<std::vector<AlignmentPoint>> findAlignmentPoints(std::vector<
 
   int outlines_count = slicesin[0]->untransformedOutlines().size();
   for (auto & per_slice : alignmentPoints)
-    per_slice.resize(slicesin.size());
+    per_slice.resize(outlines_count);
 
   for (int o_i=0,o_end=outlines_count; o_i!=o_end; ++o_i)
   {
@@ -189,8 +189,21 @@ static std::vector<std::vector<AlignmentPoint>> findAlignmentPoints(std::vector<
     {
       auto const & slice = slicesin[s_i];   
       auto const & vertices = slice->untransformedOutlines()[o_i].vertices;
-      BoundingBox bbox = slice->getBoundingBox();
-      auto centre = bbox.center();
+      double xmin = std::numeric_limits<double>::infinity();
+      double xmax = -std::numeric_limits<double>::infinity();
+      double ymin = std::numeric_limits<double>::infinity();
+      double ymax = -std::numeric_limits<double>::infinity();
+      for (auto & vertex : vertices)
+      {
+        xmin = std::min(xmin,vertex[0]);
+        xmax = std::max(xmax,vertex[0]);
+        ymin = std::min(xmin,vertex[1]);
+        ymax = std::max(xmax,vertex[1]);
+      }
+      Vector2d min_point(xmin,ymin);
+      Vector2d max_point(xmax,ymax);
+      Vector2d centre((max_point+min_point)/2);
+      
       Vector2d centre2d(centre[0],centre[1]);
 
       // Find the vertex that is furthest in align_angle direction in the outer contour
@@ -224,7 +237,7 @@ static std::vector<std::vector<AlignmentPoint>> findAlignmentPoints(std::vector<
         {
           auto line1 = Eigen::Hyperplane<double,2>::Through(vc,vp);
           double align_angle_radians = double(align_angle)*2.0*M_PI/360;
-          double linelen = 1e6*(bbox.max()[0]-bbox.min()[0]);
+          double linelen = 1e6*(max_point[0]-min_point[0]);
           Vector2d centre2dadj(centre2d_rebased[0]+linelen,centre2d_rebased[1]+tan(align_angle_radians)*linelen);
           auto line2 = Eigen::Hyperplane<double,2>::Through(centre2d_rebased,centre2dadj);
   
@@ -232,12 +245,15 @@ static std::vector<std::vector<AlignmentPoint>> findAlignmentPoints(std::vector<
 
           // Distance
           double distance_from_centre = sqrt(pow(intersect_point[1]-centre2d_rebased[1],2.0) + pow(intersect_point[0]-centre2d_rebased[0],2.0));
-  
+
           if (distance_from_centre > point.distance_from_centre)
           {
             point.distance_from_centre = distance_from_centre;
             point.intersect_point = intersect_point + centre2d;
             point.vertex_index = v_prev_i;
+
+            auto relative_point = point.intersect_point-centre2d;
+            double angle = atan2(relative_point[1],relative_point[0])/(M_PI*2/360);
           }
         }
         v_prev_i = v_i;
