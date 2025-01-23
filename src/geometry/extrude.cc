@@ -172,10 +172,11 @@ static double fix_angle(double angle)
 // A set of polygon vertices can start from any location in its 2d definition.
 // e.g. for one polygon vertex 0 could be top right, another bottom left
 // Find the further point where a line projected from the centre at a specified angle hits the poly and use that to select a vertex
-static std::vector<std::vector<AlignmentPoint>> findAlignmentPoints(std::vector<std::shared_ptr<const Polygon2d>> const & slicesin, int align_angle)
+static std::vector<std::vector<AlignmentPoint>> findAlignmentPoints(std::vector<std::shared_ptr<const Polygon2d>> const & slicesin, bool has_align_angle, int align_angle)
 {
   std::vector<std::vector<AlignmentPoint>> alignmentPoints;
   alignmentPoints.resize(slicesin.size());
+
   align_angle = fix_angle(align_angle);
 
   int outlines_count = slicesin[0]->untransformedOutlines().size();
@@ -214,6 +215,11 @@ static std::vector<std::vector<AlignmentPoint>> findAlignmentPoints(std::vector<
         auto relative_vertex = vertex-centre2d;
         double angle = atan2(relative_vertex[1],relative_vertex[0])/(M_PI*2/360);
         angles.push_back(angle);
+      }
+      if (!has_align_angle)
+      {
+	      align_angle = fix_angle(*angles.begin());
+	      has_align_angle = true;
       }
 
       // Then we only care about the pairs which straddle the desired angle
@@ -566,7 +572,7 @@ std::shared_ptr<const Geometry> extrudePolygonSequence(const ExtrudeNode &node, 
 
   // If contours match but number of vertices differs, attempt to align
   //dumpPolygons("input",slicesin);
-  auto alignmentPoints = findAlignmentPoints(slicesin, node.align_angle);
+  auto alignmentPoints = findAlignmentPoints(slicesin, node.has_align_angle, node.align_angle);
   //dumpAlignmentPoints(alignmentPoints,node.align_angle);
   if (node.interpolate)
     slicesin = interpolateVertices(slicesin, alignmentPoints);
