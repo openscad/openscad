@@ -324,7 +324,7 @@ static std::vector<std::shared_ptr<const Polygon2d>> interpolateVertices(std::ve
 
     // Simplify fractions
     std::set<double> all_distance_fractions_unadjusted = std::move(all_distance_fractions);
-    double distance_fraction_prev = -1;
+    double distance_fraction_prev = *all_distance_fractions_unadjusted.rbegin()-1;
     for (double distance_fraction: all_distance_fractions_unadjusted)
     {
       double change = distance_fraction-distance_fraction_prev;
@@ -496,6 +496,7 @@ static void dumpPolygons(std::string where, std::vector<std::shared_ptr<const Po
     Polygon2d const & polygon = *slice;
     auto const & outlines = polygon.untransformedOutlines();
     int pth_i=0;
+    std::vector<int> path_lens;
     std::stringstream points;
     std::stringstream paths;
     bool first = true;
@@ -512,10 +513,17 @@ static void dumpPolygons(std::string where, std::vector<std::shared_ptr<const Po
         paths << ", ";	      
       first = false;
       paths << "[" << path.str().substr(1);
+      path_lens.push_back(pth_i);
     }
     std::stringstream polygonstr;
     polygonstr << "polygon(points=[" << points.str().substr(1) << "] , paths=[" << paths.str() << "]);";
-    std::cerr << "# Slice " << sl_i << " of " << where << std::endl;
+    std::cerr << "# Slice " << sl_i << " of " << where;
+    std::cerr << " has " << path_lens.size() << " contours with lengths [";
+    for (int p : path_lens)
+    {
+	    std::cerr << p << ",";
+    }
+    std::cerr << "]" << std::endl;
     std::cerr << polygonstr.str() << std::endl;
     sl_i++;
   }
@@ -574,6 +582,7 @@ std::shared_ptr<const Geometry> extrudePolygonSequence(const ExtrudeNode &node, 
 
   // Add more vertices to slices, to segment more
   auto slices = segmentVertices(slicesin, node.has_segments, node.segments);
+  //dumpPolygons("segments",slices);
 
   // Start extruding slices.  Come back to "end caps" at the end.
   int reversed= 0;
