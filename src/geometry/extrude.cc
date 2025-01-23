@@ -352,9 +352,9 @@ static std::vector<std::shared_ptr<const Polygon2d>> interpolateVertices(std::ve
       double distance=0;
       auto diff = vertices[vl_next_i] - vertices[vl_i];
       double distance_next = sqrt(pow(diff[0],2) + pow(diff[1],2));
-      double alignment_distance = -1.0;
-      if (vl_i==alignmentPoint.vertex_index)
-        alignment_distance = alignmentPoint.distance_round_polygon;
+      alignmentPoint.vertex_index = -1;
+      double alignment_point_distance = std::numeric_limits<double>::infinity();
+
       for (double distance_fraction : all_distance_fractions)
       {
         double vertex_distance = distance_fraction * slice_distances[sl_i];
@@ -367,9 +367,6 @@ static std::vector<std::shared_ptr<const Polygon2d>> interpolateVertices(std::ve
           auto diff = vertices[vl_next_i] - vertices[vl_i];
           distance = distance_next;
           distance_next += sqrt(pow(diff[0],2) + pow(diff[1],2));
-
-          if (vl_i==alignmentPoint.vertex_index)
-            alignment_distance = alignmentPoint.distance_round_polygon;
         }
 
         auto v0 = vertices[vl_i];
@@ -377,9 +374,10 @@ static std::vector<std::shared_ptr<const Polygon2d>> interpolateVertices(std::ve
         auto v0_adj = v0 + ((vertex_distance-distance)*(v1-v0))/(distance_next-distance);
         outlineadj.vertices.push_back(v0_adj);
 
-        if (std::abs(vertex_distance - alignment_distance)<1e-8)
+        if (std::abs(vertex_distance - alignmentPoint.distance_round_polygon)<alignment_point_distance)
         {
           alignmentPoint.vertex_index = outlineadj.vertices.size()-1;
+	  alignment_point_distance = std::abs(vertex_distance-alignmentPoint.distance_round_polygon);
         }
       }
       polyadj.addOutline(std::move(outlineadj));
