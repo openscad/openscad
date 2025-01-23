@@ -560,6 +560,7 @@ list(REMOVE_ITEM FEATURES_3D_FILES
   ${TEST_SCAD_DIR}/3D/features/extrude_linear_extrude-tests.scad
   ${TEST_SCAD_DIR}/3D/features/extrude_rotate_extrude-tests.scad
   ${TEST_SCAD_DIR}/3D/features/extrude_segments-tests.scad
+  ${TEST_SCAD_DIR}/3D/features/extrude_offset-tests.scad
 )
 file(GLOB DEPRECATED_3D_FILES ${TEST_SCAD_DIR}/3D/deprecated/*.scad)
 file(GLOB ISSUES_3D_FILES     ${TEST_SCAD_DIR}/3D/issues/*.scad)
@@ -1439,6 +1440,7 @@ ${TEST_SCAD_DIR}/3D/features/extrude_edge_case.scad
 ${TEST_SCAD_DIR}/3D/features/extrude_linear_extrude-tests.scad
 ${TEST_SCAD_DIR}/3D/features/extrude_rotate_extrude-tests.scad
 ${TEST_SCAD_DIR}/3D/features/extrude_segments-tests.scad
+${TEST_SCAD_DIR}/3D/features/extrude_offset-tests.scad
 )
 add_cmdline_test(dumptest            EXPERIMENTAL OPENSCAD SUFFIX csg FILES ${EXPERIMENTAL_EXTRUDE_FILES} ARGS --enable=extrude)
 add_cmdline_test(rendertest          EXPERIMENTAL OPENSCAD SUFFIX png FILES ${EXPERIMENTAL_EXTRUDE_FILES} ARGS --render --enable=extrude)
