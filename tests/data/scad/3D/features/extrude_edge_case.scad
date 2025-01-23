@@ -126,7 +126,7 @@ translate([0,30,0])
 extrude() for (i=[0:30:360],union=false)
 {
     translate([i/80,i/60,i/10])
-    rotate([i/8,i/3,0])
+    rotate([i/7,i/6,0])
     rotate([0,0,i/2])
     difference()
     {
