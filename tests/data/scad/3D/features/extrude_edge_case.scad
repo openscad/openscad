@@ -33,7 +33,7 @@ extrude()
 }
 
 // Fewer points
-extrude(align=false)
+extrude(interpolate=false)
 {
     circle($fn=5);
     translate([0,0,10])
@@ -41,7 +41,7 @@ extrude(align=false)
 }
 
 // More points
-extrude(align=false)
+extrude(interpolate=false)
 {
     circle($fn=3);
     translate([0,0,10])
@@ -49,7 +49,7 @@ extrude(align=false)
 }
 
 // More points many slices
-extrude(align=false)
+extrude(interpolate=false)
 {
     circle($fn=5);
     translate([0,0,10])
@@ -126,8 +126,8 @@ translate([0,30,0])
 extrude() for (i=[0:30:360],union=false)
 {
     translate([i/80,i/60,i/10])
-    rotate([i/8,i/5,0])
-    rotate([0,0,i])
+    rotate([i/8,i/3,0])
+    rotate([0,0,i/2])
     difference()
     {
         circle(5,$fn=30);
