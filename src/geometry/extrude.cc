@@ -292,6 +292,7 @@ static std::vector<std::shared_ptr<const Polygon2d>> interpolateVertices(std::ve
   {
     std::set<double> all_distance_fractions;
     std::vector<double> slice_distances;
+    double max_total_distance = 0;
     for (int sl_i=0, sl_end=slicesin.size(); sl_i!=sl_end; ++sl_i)
     {
       auto & alignmentPoint = alignmentPoints[sl_i][o_i];
@@ -321,6 +322,7 @@ static std::vector<std::shared_ptr<const Polygon2d>> interpolateVertices(std::ve
           dist.push_back(total_distance);
       }
       slice_distances.push_back(total_distance);
+      max_total_distance = std::max(max_total_distance,total_distance);
       for (double distance_fraction : dist)
       {
         distance_fraction /= total_distance;
@@ -334,6 +336,7 @@ static std::vector<std::shared_ptr<const Polygon2d>> interpolateVertices(std::ve
     for (double distance_fraction: all_distance_fractions_unadjusted)
     {
       double change = distance_fraction-distance_fraction_prev;
+      change *= max_total_distance;
       if (change>1e-4)
       {
         all_distance_fractions.insert(distance_fraction);
