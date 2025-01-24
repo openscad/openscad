@@ -147,17 +147,21 @@ Renderer::Renderer()
 }
 
 void Renderer::setupShader() {
-  renderer_shader_.progid = 0;
+  const GLuint shader_prog = RendererUtils::compileShaderProgram(
+    RendererUtils::loadShaderSource("Preview.vert"),
+    RendererUtils::loadShaderSource("Preview.frag"));
 
-  const std::string vs_str = RendererUtils::loadShaderSource("Preview.vert");
-  const std::string fs_str = RendererUtils::loadShaderSource("Preview.frag");
-  const GLuint shader_prog = RendererUtils::compileShaderProgram(vs_str, fs_str);
-
-  renderer_shader_.progid = shader_prog;
-  renderer_shader_.type = RendererUtils::ShaderType::EDGE_RENDERING;
-  renderer_shader_.data.color_rendering.color_area = glGetUniformLocation(shader_prog, "color1");
-  renderer_shader_.data.color_rendering.color_edge = glGetUniformLocation(shader_prog, "color2");
-  renderer_shader_.data.color_rendering.barycentric = glGetAttribLocation(shader_prog, "barycentric");
+  renderer_shader_ = {
+    .shader_program = shader_prog,
+    .type = RendererUtils::ShaderType::EDGE_RENDERING,
+    .uniforms = {
+      {"color_area", glGetUniformLocation(shader_prog, "color_area")},
+      {"color_edge", glGetUniformLocation(shader_prog, "color_edge")},
+    },
+    .attributes = {
+      {"barycentric", glGetAttribLocation(shader_prog, "barycentric")},
+    },
+  };
 }
 
 bool Renderer::getColor(Renderer::ColorMode colormode, Color4f& col) const
@@ -167,53 +171,6 @@ bool Renderer::getColor(Renderer::ColorMode colormode, Color4f& col) const
     return true;
   }
   return false;
-}
-
-void Renderer::setColor(const float color[4], const RendererUtils::ShaderInfo *shaderinfo) const
-{
-  if (shaderinfo && shaderinfo->type != RendererUtils::ShaderType::EDGE_RENDERING) {
-    return;
-  }
-
-  PRINTD("setColor a");
-  Color4f col;
-  getColor(ColorMode::MATERIAL, col);
-  float c[4] = {color[0], color[1], color[2], color[3]};
-  if (c[0] < 0) c[0] = col[0];
-  if (c[1] < 0) c[1] = col[1];
-  if (c[2] < 0) c[2] = col[2];
-  if (c[3] < 0) c[3] = col[3];
-  glColor4fv(c);
-#ifdef ENABLE_OPENCSG
-  if (shaderinfo) {
-    glUniform4f(shaderinfo->data.color_rendering.color_area, c[0], c[1], c[2], c[3]);
-    glUniform4f(shaderinfo->data.color_rendering.color_edge, (c[0] + 1) / 2, (c[1] + 1) / 2, (c[2] + 1) / 2, 1.0);
-  }
-#endif
-}
-
-// returns the color which has been set, which may differ from the color input parameter
-Color4f Renderer::setColor(ColorMode colormode, const float color[4], const RendererUtils::ShaderInfo *shaderinfo) const
-{
-  PRINTD("setColor b");
-  Color4f basecol;
-  if (getColor(colormode, basecol)) {
-    if (colormode == ColorMode::BACKGROUND || colormode != ColorMode::HIGHLIGHT) {
-      basecol = {color[0] >= 0 ? color[0] : basecol[0],
-                 color[1] >= 0 ? color[1] : basecol[1],
-                 color[2] >= 0 ? color[2] : basecol[2],
-                 color[3] >= 0 ? color[3] : basecol[3]};
-    }
-    setColor(basecol.data(), shaderinfo);
-  }
-  return basecol;
-}
-
-void Renderer::setColor(ColorMode colormode, const RendererUtils::ShaderInfo *shaderinfo) const
-{
-  PRINTD("setColor c");
-  float c[4] = {-1, -1, -1, -1};
-  setColor(colormode, c, shaderinfo);
 }
 
 /* fill colormap_ with matching entries from the colorscheme. note
@@ -237,9 +194,6 @@ std::vector<SelectedObject> Renderer::findModelObject(Vector3d near_pt, Vector3d
 Renderer::Renderer() : colorscheme_(nullptr) {}
 bool Renderer::getColor(Renderer::ColorMode colormode, Color4f& col) const { return false; }
 std::string RendererUtils::loadShaderSource(const std::string& name) { return ""; }
-void Renderer::setColor(const float color[4], const RendererUtils::ShaderInfo *shaderinfo) const {}
-Color4f Renderer::setColor(ColorMode colormode, const float color[4], const RendererUtils::ShaderInfo *shaderinfo) const { return {}; }
-void Renderer::setColor(ColorMode colormode, const RendererUtils::ShaderInfo *shaderinfo) const {}
 void Renderer::setColorScheme(const ColorScheme& cs) {}
 std::vector<SelectedObject> Renderer::findModelObject(Vector3d near_pt, Vector3d far_pt, int mouse_x, int mouse_y, double tolerance) { return {}; }
 

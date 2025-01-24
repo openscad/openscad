@@ -37,21 +37,10 @@ enum class ShaderType {
 
 // Shader attribute identifiers
 struct ShaderInfo {
-  int progid = 0;
+  GLuint shader_program;
   ShaderType type;
-  union {
-    struct {
-      // Uniform location of polygon vs. wireframe color
-      int color_area;
-      int color_edge;
-      // Attrib location of the barycentric coordinates of the current vertex
-      int barycentric;
-    } color_rendering;
-    struct {
-      // Uniform location of ID color
-      int identifier;
-    } select_rendering;
-  } data;
+  std::unordered_map<std::string, int> uniforms;
+  std::unordered_map<std::string, int> attributes;
 };
 
 CSGMode getCsgMode(const bool highlight_mode, const bool background_mode, const OpenSCADOperator type = OpenSCADOperator::UNION);
@@ -67,8 +56,8 @@ public:
   virtual ~Renderer() = default;
   [[nodiscard]] const RendererUtils::ShaderInfo& getShader() const { return renderer_shader_; }
 
-  virtual void prepare(bool showedges, const RendererUtils::ShaderInfo *shaderinfo = nullptr) = 0;
-  virtual void draw(bool showedges, const RendererUtils::ShaderInfo *shaderinfo = nullptr) const = 0;
+  virtual void prepare(bool showedges, const RendererUtils::ShaderInfo *shaderinfo) = 0;
+  virtual void draw(bool showedges, const RendererUtils::ShaderInfo *shaderinfo) const = 0;
   [[nodiscard]] virtual BoundingBox getBoundingBox() const = 0;
 
 
@@ -88,9 +77,6 @@ public:
   };
 
   bool getColor(ColorMode colormode, Color4f& col) const;
-  virtual void setColor(const float color[4], const RendererUtils::ShaderInfo *shaderinfo = nullptr) const;
-  virtual void setColor(ColorMode colormode, const RendererUtils::ShaderInfo *shaderinfo = nullptr) const;
-  virtual Color4f setColor(ColorMode colormode, const float color[4], const RendererUtils::ShaderInfo *shaderinfo = nullptr) const;
   virtual void setColorScheme(const ColorScheme& cs);
 
   virtual std::vector<SelectedObject> findModelObject(Vector3d near_pt, Vector3d far_pt, int mouse_x, int mouse_y, double tolerance);

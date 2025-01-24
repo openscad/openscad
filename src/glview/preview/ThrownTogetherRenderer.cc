@@ -96,7 +96,7 @@ void ThrownTogetherRenderer::prepare(bool /*showedges*/, const RendererUtils::Sh
     }
     VBOBuilder vertex_array(std::make_unique<TTRVertexStateFactory>(), vertex_states_, vertices_vbo_, elements_vbo_);
     vertex_array.addSurfaceData();
-    if (getShader().progid != 0) {
+    if (getShader().shader_program != 0) {
       vertex_array.addShaderData();
     } else {
       LOG("Warning: Shader not available");
@@ -127,19 +127,17 @@ void ThrownTogetherRenderer::prepare(bool /*showedges*/, const RendererUtils::Sh
 
 void ThrownTogetherRenderer::draw(bool showedges, const RendererUtils::ShaderInfo *shaderinfo) const
 {
-  PRINTD("draw()");
-  if (!shaderinfo && showedges) {
-    shaderinfo = &getShader();
-  }
-  if (shaderinfo && shaderinfo->progid) {
-    glUseProgram(shaderinfo->progid);
+  if (!shaderinfo && showedges) shaderinfo = &getShader();
+  if (shaderinfo) {
+    glUseProgram(shaderinfo->shader_program);
     if (shaderinfo->type == RendererUtils::ShaderType::EDGE_RENDERING && showedges) {
       VBOUtils::shader_attribs_enable(*shaderinfo);
     }
   }
 
   renderCSGProducts(std::make_shared<CSGProducts>(), showedges, shaderinfo);
-  if (shaderinfo && shaderinfo->progid) {
+  
+  if (shaderinfo) {
     if (shaderinfo->type == RendererUtils::ShaderType::EDGE_RENDERING && showedges) {
       VBOUtils::shader_attribs_disable(*shaderinfo);
     }
@@ -161,11 +159,11 @@ void ThrownTogetherRenderer::renderCSGProducts(const std::shared_ptr<CSGProducts
       if (const auto csg_vs = std::dynamic_pointer_cast<TTRVertexState>(vs)) {
         if (shaderinfo && shaderinfo->type == RendererUtils::ShaderType::SELECT_RENDERING) {
           GL_TRACE("glUniform3f(%d, %f, %f, %f)",
-                   shaderinfo->data.select_rendering.identifier %
+                   shaderinfo->uniforms.at("frag_idcolor") %
                    (((csg_vs->csgObjectIndex() >> 0) & 0xff) / 255.0f) %
                    (((csg_vs->csgObjectIndex() >> 8) & 0xff) / 255.0f) %
                    (((csg_vs->csgObjectIndex() >> 16) & 0xff) / 255.0f));
-          GL_CHECKD(glUniform3f(shaderinfo->data.select_rendering.identifier,
+          GL_CHECKD(glUniform3f(shaderinfo->uniforms.at("frag_idcolor"),
                                 ((csg_vs->csgObjectIndex() >> 0) & 0xff) / 255.0f,
                                 ((csg_vs->csgObjectIndex() >> 8) & 0xff) / 255.0f,
                                 ((csg_vs->csgObjectIndex() >> 16) & 0xff) / 255.0f));

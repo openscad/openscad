@@ -119,9 +119,9 @@ void OpenCSGRenderer::draw(bool showedges, const RendererUtils::ShaderInfo *shad
       GL_CHECKD(glDepthFunc(GL_EQUAL));
     }
 
-    if (shaderinfo && shaderinfo->progid) {
-      GL_TRACE("glUseProgram(%d)", shaderinfo->progid);
-      GL_CHECKD(glUseProgram(shaderinfo->progid));
+    if (shaderinfo) {
+      GL_TRACE("glUseProgram(%d)", shaderinfo->shader_program);
+      GL_CHECKD(glUseProgram(shaderinfo->shader_program));
 
       if (shaderinfo->type == RendererUtils::ShaderType::EDGE_RENDERING && showedges) {
 	      VBOUtils::shader_attribs_enable(*shaderinfo);
@@ -132,11 +132,11 @@ void OpenCSGRenderer::draw(bool showedges, const RendererUtils::ShaderInfo *shad
       if (vs) {
       	if (const auto csg_vs = std::dynamic_pointer_cast<OpenCSGVertexState>(vs)) {
 	        if (shaderinfo && shaderinfo->type == RendererUtils::ShaderType::SELECT_RENDERING) {
-	          GL_TRACE("glUniform3f(%d, %f, %f, %f)", shaderinfo->data.select_rendering.identifier %
+	          GL_TRACE("glUniform3f(%d, %f, %f, %f)", shaderinfo->uniforms.at("frag_idcolor") %
               (((csg_vs->csgObjectIndex() >> 0) & 0xff) / 255.0f) %
               (((csg_vs->csgObjectIndex() >> 8) & 0xff) / 255.0f) %
               (((csg_vs->csgObjectIndex() >> 16) & 0xff) / 255.0f));
-            GL_CHECKD(glUniform3f(shaderinfo->data.select_rendering.identifier,
+            GL_CHECKD(glUniform3f(shaderinfo->uniforms.at("frag_idcolor"),
                 ((csg_vs->csgObjectIndex() >> 0) & 0xff) / 255.0f,
                 ((csg_vs->csgObjectIndex() >> 8) & 0xff) / 255.0f,
                 ((csg_vs->csgObjectIndex() >> 16) & 0xff) / 255.0f));
@@ -149,7 +149,7 @@ void OpenCSGRenderer::draw(bool showedges, const RendererUtils::ShaderInfo *shad
       }
     }
 
-    if (shaderinfo && shaderinfo->progid) {
+    if (shaderinfo) {
       GL_TRACE0("glUseProgram(0)");
       GL_CHECKD(glUseProgram(0));
 
@@ -206,7 +206,7 @@ void OpenCSGRenderer::createCSGVBOProducts(
                              elements_vbo);
     vertex_array.addSurfaceData();
     vertex_array.writeSurface();
-    if (getShader().progid != 0) {
+    if (getShader().shader_program != 0) {
       vertex_array.addShaderData();
     } else {
       LOG("Warning: Shader not available");
