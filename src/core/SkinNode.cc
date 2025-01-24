@@ -24,7 +24,7 @@
  *
  */
 
-#include "core/ExtrudeNode.h"
+#include "core/SkinNode.h"
 
 #include "core/module.h"
 #include "core/ModuleInstantiation.h"
@@ -41,14 +41,14 @@
 using namespace boost::assign; // bring 'operator+=()' into scope
 
 namespace {
-std::shared_ptr<AbstractNode> builtin_extrude(const ModuleInstantiation *inst, Arguments arguments, const Children& children)
+std::shared_ptr<AbstractNode> builtin_skin(const ModuleInstantiation *inst, Arguments arguments, const Children& children)
 {
-  auto node = std::make_shared<ExtrudeNode>(inst);
+  auto node = std::make_shared<SkinNode>(inst);
 
   Parameters parameters = Parameters::parse(std::move(arguments), inst->location(),
                                             {"segments","interpolate","align_angle"},
                                             {"convexity"});
-  parameters.set_caller("extrude");
+  parameters.set_caller("skin");
 
   parameters["convexity"].getPositiveInt(node->convexity);
 
@@ -68,7 +68,7 @@ std::shared_ptr<AbstractNode> builtin_extrude(const ModuleInstantiation *inst, A
 
 } // namespace
 
-std::string ExtrudeNode::toString() const
+std::string SkinNode::toString() const
 {
   std::ostringstream stream;
 
@@ -97,10 +97,10 @@ std::string ExtrudeNode::toString() const
   return stream.str();
 }
 
-void register_builtin_extrude()
+void register_builtin_skin()
 {
-  Builtins::init("extrude", new BuiltinModule(builtin_extrude, &Feature::ExperimentalExtrude),
+  Builtins::init("skin", new BuiltinModule(builtin_skin, &Feature::ExperimentalSkin),
   {
-    R"(extrude(convexity = 1, align_angle = 0, segments = 0, interpolate = true))",
+    R"(skin(convexity = 1, align_angle = 0, segments = 0, interpolate = true))",
   });
 }

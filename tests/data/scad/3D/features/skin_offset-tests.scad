@@ -1,4 +1,4 @@
-extrude(segments=20)
+skin(segments=20)
 {
     offset(r=2)
     square(10,center=true);
@@ -16,7 +16,7 @@ module square_manual(sz)
 }
 
 translate([30,0,0])
-extrude(segments=20)
+skin(segments=20)
 {
     square_manual(10);
     translate([0,0,50])
@@ -34,7 +34,7 @@ module square_offset(sz)
 }
 
 translate([60,0,0])
-extrude(segments=20, interpolate = false)
+skin(segments=20, interpolate = false)
 {
     square_offset(10);
     translate([0,0,50])
@@ -43,7 +43,7 @@ extrude(segments=20, interpolate = false)
 
 
 translate([90,0,0])
-extrude(segments=20)
+skin(segments=20)
 {
     square(10);
     translate([0,0,50])
@@ -61,7 +61,7 @@ module circle_offset(sz)
 }
 
 translate([120,0,0])
-extrude(segments=20)
+skin(segments=20)
 {
     square_offset(10);
     translate([0,0,50])

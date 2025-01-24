@@ -208,7 +208,7 @@ static std::shared_ptr<AbstractNode> builtin_for(const ModuleInstantiation *inst
   // special case: if user appends "union=false" then pass all child nodes
   // of for() loop to the parent node as if they were declared there.
   std::shared_ptr<GroupNode> gr;
-  if (Feature::ExperimentalExtrude.is_enabled()
+  if (Feature::ExperimentalSkin.is_enabled()
     && inst->arguments.size()>=2 
     && inst->arguments[1]->getName()=="union"
     && (gr = std::dynamic_pointer_cast<GroupNode>(node))

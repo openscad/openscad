@@ -1,4 +1,4 @@
-#include "geometry/extrude.h"
+#include "geometry/skin.h"
 
 #include "geometry/PolySet.h"
 #include "geometry/PolySetBuilder.h"
@@ -45,7 +45,7 @@ static std::unique_ptr<PolySet> expand_poly2d_to_ccw3d(std::shared_ptr<const Pol
 }
 
 // Check for no null slices
-static bool sanityCheckNoNullSlices(const ExtrudeNode &node, std::vector<std::shared_ptr<const Polygon2d>> const & slices, const Location &loc, std::string const & docpath)
+static bool sanityCheckNoNullSlices(const SkinNode &node, std::vector<std::shared_ptr<const Polygon2d>> const & slices, const Location &loc, std::string const & docpath)
 {
   for (int i=0; i!=slices.size(); ++i)
   {
@@ -59,7 +59,7 @@ static bool sanityCheckNoNullSlices(const ExtrudeNode &node, std::vector<std::sh
 }
 
 // Check for matching contours
-static bool sanityCheckContours(const ExtrudeNode &node, std::vector<std::shared_ptr<const Polygon2d>> const & slices, const Location &loc, std::string const & docpath)
+static bool sanityCheckContours(const SkinNode &node, std::vector<std::shared_ptr<const Polygon2d>> const & slices, const Location &loc, std::string const & docpath)
 {
   for (int i= 1; i < slices.size(); i++) {
     bool match = slices[i]->untransformedOutlines().size() == slices[0]->untransformedOutlines().size();
@@ -75,7 +75,7 @@ static bool sanityCheckContours(const ExtrudeNode &node, std::vector<std::shared
 }
 
 // Check for matching contours and vertices
-static bool sanityCheckContoursAndVertices(const ExtrudeNode &node, std::vector<std::shared_ptr<const Polygon2d>> const & slices, const Location &loc, std::string const & docpath)
+static bool sanityCheckContoursAndVertices(const SkinNode &node, std::vector<std::shared_ptr<const Polygon2d>> const & slices, const Location &loc, std::string const & docpath)
 {
   for (int i= 1; i < slices.size(); i++) {
     bool match = slices[i]->untransformedOutlines().size() == slices[0]->untransformedOutlines().size();
@@ -554,7 +554,7 @@ static void dumpAlignmentPoints(std::vector<std::vector<AlignmentPoint>> const &
   input: List of 2D objects arranged in 3D, each with identical outline count and vertex count
   output: 3D PolySet
  */
-std::shared_ptr<const Geometry> extrudePolygonSequence(const ExtrudeNode &node, std::vector<std::shared_ptr<const Polygon2d>> slicesin, const Location &loc, std::string const & docpath)
+std::shared_ptr<const Geometry> skinPolygonSequence(const SkinNode &node, std::vector<std::shared_ptr<const Polygon2d>> slicesin, const Location &loc, std::string const & docpath)
 {
   size_t i, p, v;
   const double CLOSE_ENOUGH = 0.00000000000000001; // tolerance for identical coordinates

@@ -1,5 +1,5 @@
 module zigzag() {
-    extrude() {
+    skin() {
         square(1);
         translate([.5,0,1]) square(1);
         translate([-.5,0,2]) square(1);
@@ -8,7 +8,7 @@ module zigzag() {
 }
 
 module horn() {
-    extrude() for (i=[1:1:740] ,union=false)
+    skin() for (i=[1:1:740] ,union=false)
     {
         $fn = 20;
         rotate(i, [1,0,0])
@@ -18,7 +18,7 @@ module horn() {
 }
 
 module arch() {
-    extrude ()
+    skin()
     for (x=[-2:.05:2.01],union=false)
     {
             $fn = 36;

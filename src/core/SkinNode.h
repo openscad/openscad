@@ -3,15 +3,15 @@
 #include "node.h"
 #include "Value.h"
 
-class ExtrudeNode : public AbstractPolyNode
+class SkinNode : public AbstractPolyNode
 {
 public:
   VISITABLE();
-  ExtrudeNode(const ModuleInstantiation *mi) : AbstractPolyNode(mi) {
+  SkinNode(const ModuleInstantiation *mi) : AbstractPolyNode(mi) {
     convexity = 0;
   }
   std::string toString() const override;
-  std::string name() const override { return "extrude"; }
+  std::string name() const override { return "skin"; }
 
   unsigned int convexity;
   bool has_segments = false;

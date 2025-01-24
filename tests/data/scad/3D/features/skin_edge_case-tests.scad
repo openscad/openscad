@@ -1,30 +1,30 @@
 // No Children
-extrude() 
+skin() 
 {
 }
 
 // One child
-extrude()
+skin()
 {
     square();
 }
 
 // One child from for loop
-extrude() for (i=[0:0],union=false)
+skin() for (i=[0:0],union=false)
 {
     translate([0,0,i])
     square();
 }
 
 // Overlapping
-extrude()
+skin()
 {
     square(20);
     square(10);
 }
 
 // Intersecting
-extrude()
+skin()
 {
     rotate([0,20,0])
     translate([0,0,1])
@@ -33,7 +33,7 @@ extrude()
 }
 
 // Fewer points
-extrude(interpolate=false)
+skin(interpolate=false)
 {
     circle($fn=5);
     translate([0,0,10])
@@ -41,7 +41,7 @@ extrude(interpolate=false)
 }
 
 // More points
-extrude(interpolate=false)
+skin(interpolate=false)
 {
     circle($fn=3);
     translate([0,0,10])
@@ -49,7 +49,7 @@ extrude(interpolate=false)
 }
 
 // More points many slices
-extrude(interpolate=false)
+skin(interpolate=false)
 {
     circle($fn=5);
     translate([0,0,10])
@@ -61,7 +61,7 @@ extrude(interpolate=false)
 }
 
 // Mirrored Z
-extrude()
+skin()
 {
     square(10);
     translate([0,0,5])
@@ -72,7 +72,7 @@ extrude()
 // Mirrored X
 /*
 translate([0,0,0])
-extrude()
+skin()
 {
     square(10);
     translate([0,0,5])
@@ -87,7 +87,7 @@ square(10,center=true);
 
 // Mirrored Y
 translate([30,0,0])
-extrude()
+skin()
 {
     square(10);
     translate([0,0,5])
@@ -96,7 +96,7 @@ extrude()
 }
 
 // Mirrored XYY
-extrude()
+skin()
 {
     square(10);
     translate([0,0,5])
@@ -107,7 +107,7 @@ extrude()
 // Spin it round
 translate([60,0,0])
 scale([8,8,1])
-extrude()
+skin()
 {
     polygon([[0,0],[0,1],[1,1],[1,0]],[[0,1,2,3]]);    
     translate([0,0,5])
@@ -123,7 +123,7 @@ extrude()
 
 // Exercise it with a fine rotating circle, with a hole in the middle
 translate([0,30,0])
-extrude() for (i=[0:30:360],union=false)
+skin() for (i=[0:30:360],union=false)
 {
     translate([i/80,i/60,i/10])
     rotate([i/7,i/6,0])
@@ -138,7 +138,7 @@ extrude() for (i=[0:30:360],union=false)
 // Difference between two extruded hoops, with holes in
 module donut()
 {
-extrude(convexity=6) 
+skin(convexity=6) 
 for (i=[0:20:360],union=false)
 {
     rotate([0,0,i])

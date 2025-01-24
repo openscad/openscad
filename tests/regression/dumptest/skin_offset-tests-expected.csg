@@ -1,4 +1,4 @@
-extrude(segments = 20) {
+skin(segments = 20) {
 	offset(r = 2, $fn = 0, $fa = 12, $fs = 2) {
 		square(size = [10, 10], center = true);
 	}
@@ -7,7 +7,7 @@ extrude(segments = 20) {
 	}
 }
 multmatrix([[1, 0, 0, 30], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-	extrude(segments = 20) {
+	skin(segments = 20) {
 		group() {
 			difference() {
 				square(size = [10, 10], center = true);
@@ -25,7 +25,7 @@ multmatrix([[1, 0, 0, 30], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 	}
 }
 multmatrix([[1, 0, 0, 60], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-	extrude(segments = 20, interpolate = false) {
+	skin(segments = 20, interpolate = false) {
 		group() {
 			difference() {
 				square(size = [10, 10], center = true);
@@ -47,7 +47,7 @@ multmatrix([[1, 0, 0, 60], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 	}
 }
 multmatrix([[1, 0, 0, 90], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-	extrude(segments = 20) {
+	skin(segments = 20) {
 		square(size = [10, 10], center = false);
 		multmatrix([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 50], [0, 0, 0, 1]]) {
 			circle($fn = 0, $fa = 12, $fs = 2, r = 10);
@@ -55,7 +55,7 @@ multmatrix([[1, 0, 0, 90], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 	}
 }
 multmatrix([[1, 0, 0, 120], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-	extrude(segments = 20) {
+	skin(segments = 20) {
 		group() {
 			difference() {
 				square(size = [10, 10], center = true);

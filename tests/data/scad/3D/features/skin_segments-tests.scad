@@ -1,4 +1,4 @@
-extrude()
+skin()
 {
     square(10);
     rotate([0,0,90])
@@ -7,7 +7,7 @@ extrude()
 }
 
 translate([20,0,0])
-extrude(segments=8)
+skin(segments=8)
 {
     square(10);
     rotate([0,0,90])
@@ -16,7 +16,7 @@ extrude(segments=8)
 }
 
 translate([40,0,0])
-extrude(segments=32)
+skin(segments=32)
 {
     square(10);
     rotate([0,0,90])
