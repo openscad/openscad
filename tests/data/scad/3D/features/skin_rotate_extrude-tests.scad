@@ -10,7 +10,7 @@ module rotate_extrude_using_skin(angle=360,start=0,convexity=0,$fn=0)
     //translate((minh/norm(v))*v)
     slices = $fn==0 ? 32: $fn<3 ? 3 : $fn;
     
-    skin(convexity=convexity) for (i=[0:1:slices],union=false)   
+    skin(convexity=convexity) for (i=[0:min(slices,ceil(slices/16)):slices],union=false)   
     {
         rotate([0,0,start+angle*(i/slices)])
         rotate([90,0,0])
