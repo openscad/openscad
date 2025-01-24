@@ -210,7 +210,7 @@ static std::vector<std::vector<AlignmentPoint>> findAlignmentPoints(std::vector<
       // Find the vertex that is furthest in align_angle direction in the outer contour
       // Start by computing the angle of each vertex
       std::vector<double> angles;
-      for (auto & vertex : vertices)
+      for (auto const & vertex : vertices)
       {
         auto relative_vertex = vertex-centre2d;
         double angle = atan2(relative_vertex[1],relative_vertex[0])/(M_PI*2/360);
@@ -278,7 +278,7 @@ static std::vector<std::vector<AlignmentPoint>> findAlignmentPoints(std::vector<
 static std::vector<std::shared_ptr<const Polygon2d>> interpolateVertices(std::vector<std::shared_ptr<const Polygon2d>> const & slicesin, std::vector<std::vector<AlignmentPoint>> & alignmentPoints)
 {
   std::vector<std::shared_ptr<Polygon2d>> slicesadj;
-  for (auto slice : slicesin)
+  for (auto const & slice : slicesin)
   {
     Polygon2d const & polyin = *slice;
     auto polyadj = std::make_shared<Polygon2d>();
@@ -378,8 +378,8 @@ static std::vector<std::shared_ptr<const Polygon2d>> interpolateVertices(std::ve
           distance_next += sqrt(pow(diff[0],2) + pow(diff[1],2));
         }
 
-        auto v0 = vertices[vl_i];
-        auto v1 = vertices[vl_next_i];
+        auto const & v0 = vertices[vl_i];
+        auto const & v1 = vertices[vl_next_i];
         auto v0_adj = v0 + ((vertex_distance-distance)*(v1-v0))/(distance_next-distance);
         outlineadj.vertices.push_back(v0_adj);
 
@@ -401,7 +401,7 @@ static std::vector<std::shared_ptr<const Polygon2d>> interpolateVertices(std::ve
   }
 
   std::vector<std::shared_ptr<const Polygon2d>> slicesadjconst; // TODO: why is this not possible?
-  for (auto slice : slicesadj)
+  for (auto const & slice : slicesadj)
     slicesadjconst.push_back(slice);
   return slicesadjconst;
 }
@@ -410,7 +410,7 @@ static std::vector<std::shared_ptr<const Polygon2d>> interpolateVertices(std::ve
 static std::vector<std::shared_ptr<const Polygon2d>> spinPolygons(std::vector<std::shared_ptr<const Polygon2d>> const & slicesin, std::vector<std::vector<AlignmentPoint>> & alignmentPoints)
 {
   std::vector<std::shared_ptr<Polygon2d>> slicesadj;
-  for (auto slice : slicesin)
+  for (auto const & slice : slicesin)
   {
     Polygon2d const & polyin = *slice;
     auto polyadj = std::make_shared<Polygon2d>();
@@ -425,9 +425,9 @@ static std::vector<std::shared_ptr<const Polygon2d>> spinPolygons(std::vector<st
       Polygon2d const & polyin = *slicesin[sl_i];
       Polygon2d & polyadj = *slicesadj[sl_i];
 
-      auto & alignmentPoint = alignmentPoints[sl_i][o_i];
+      auto const & alignmentPoint = alignmentPoints[sl_i][o_i];
 
-      auto & vertices = polyin.untransformedOutlines()[o_i].vertices;
+      auto const & vertices = polyin.untransformedOutlines()[o_i].vertices;
       Outline2d outlineadj;
       
       for (int vl_i=0, vl_end=vertices.size(); vl_i!=vl_end; ++vl_i)
@@ -448,7 +448,7 @@ static std::vector<std::shared_ptr<const Polygon2d>> spinPolygons(std::vector<st
   }
 
   std::vector<std::shared_ptr<const Polygon2d>> slicesadjconst; // TODO: why is this not possible?
-  for (auto slice : slicesadj)
+  for (auto const & slice : slicesadj)
     slicesadjconst.push_back(slice);
   return slicesadjconst;
 }
@@ -460,23 +460,23 @@ static std::vector<std::shared_ptr<const Polygon2d>> segmentVertices(std::vector
   if (has_segments && segments>0)
   {
     double sides = 0;
-    for (auto outlinein : slicesin[0]->untransformedOutlines())
+    for (auto const & outlinein : slicesin[0]->untransformedOutlines())
       sides += outlinein.vertices.size();
     unsigned int segments_per_side = std::ceil(double(segments)/sides);
 
     std::vector<std::shared_ptr<const Polygon2d>> slicesadj;
-    for (auto slice: slicesin)
+    for (auto const & slice: slicesin)
     {
       Polygon2d const & polyin = *slice;
       auto polyadj = std::make_shared<Polygon2d>();
       std::vector<Outline2d> const & outlinesin = polyin.untransformedOutlines();
-      for (auto outlinein : outlinesin)
+      for (auto const & outlinein : outlinesin)
       {
         Outline2d outlineadj;
         for (int i=1;i<=outlinein.vertices.size(); ++i)
         {
-          auto v0 = outlinein.vertices[i-1];
-          auto v1 = outlinein.vertices[i!=outlinein.vertices.size() ? i : 0];
+          auto const & v0 = outlinein.vertices[i-1];
+          auto const & v1 = outlinein.vertices[i!=outlinein.vertices.size() ? i : 0];
           for (int i=0; i!=segments_per_side; ++i)
           {
             auto v0_adj = v0 + (i*(v1-v0))/segments_per_side;
