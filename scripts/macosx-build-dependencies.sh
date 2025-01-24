@@ -58,10 +58,10 @@ PACKAGES=(
     # Using Qt6 going forward, leaving Qt5 config just in case
     # "qt5 5.15.16"
     "qt6 6.5.3"
-    "opencsg 1.6.0"
+    "opencsg 1.7.0"
     "qscintilla 2.14.1"
     "onetbb 2021.12.0"
-    "clipper2 1.4.0"
+    "clipper2 1.5.0"
     "manifold 3.0.1"
 )
 DEPLOY_PACKAGES=(
