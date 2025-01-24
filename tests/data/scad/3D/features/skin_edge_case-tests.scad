@@ -123,7 +123,7 @@ skin()
 
 // Exercise it with a fine rotating circle, with a hole in the middle
 translate([0,30,0])
-skin() for (i=[0:30:360],union=false)
+skin() for (i=[0:60:360],union=false)
 {
     translate([i/80,i/60,i/10])
     rotate([i/7,i/6,0])
@@ -139,15 +139,15 @@ skin() for (i=[0:30:360],union=false)
 module donut()
 {
 skin(convexity=6) 
-for (i=[0:20:360],union=false)
+for (i=[0:30:360],union=false)
 {
     rotate([0,0,i])
     translate([10,0,0])
     rotate([90,0,0])
     difference()
     {
-        circle(5,$fn=30);
-        circle(4,$fn=20);
+        circle(5,$fn=15);
+        circle(4,$fn=10);
     }
 }
 }
@@ -172,9 +172,19 @@ union()
     donut();
 }
 translate([0,-10,0])
-cube([20,20,100]);
+cube([20,20,40]);
 }
 
+// Single triangle case for when edges match
+translate([100,30,0])
+skin(segments=0)
+{
+translate([-10,0,10])
+square(10,center=false);
+rotate([0,-90,0])
+square(10,center=false);
+square(10,center=false);
+}
 
 
 
