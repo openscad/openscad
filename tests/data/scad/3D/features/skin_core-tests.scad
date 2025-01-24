@@ -8,7 +8,7 @@ module zigzag() {
 }
 
 module horn() {
-    skin() for (i=[1:1:740] ,union=false)
+    skin() for (i=[1:8:740] ,union=false)
     {
         $fn = 20;
         rotate(i, [1,0,0])
@@ -19,7 +19,7 @@ module horn() {
 
 module arch() {
     skin()
-    for (x=[-2:.05:2.01],union=false)
+    for (x=[-2:.15:2.01],union=false)
     {
             $fn = 36;
             z = x*x;
@@ -35,9 +35,12 @@ module arch() {
     }
 }
 
+
 zigzag();
+
 translate([3,0,0])
 horn();
+
 translate([15,0,0])
 arch();
 
