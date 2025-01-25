@@ -237,7 +237,14 @@ public:
       vertices_vbo_(vertices_vbo), elements_vbo_(elements_vbo)
   {
   }
-  virtual ~VBOBuilder() = default;
+  virtual ~VBOBuilder() {
+    if (Feature::ExperimentalVxORenderersIndexing.is_enabled()) {
+      GL_TRACE0("glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0)");
+      GL_CHECKD(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0));
+    }
+    GL_TRACE0("glBindBuffer(GL_ARRAY_BUFFER, 0)");
+    GL_CHECKD(glBindBuffer(GL_ARRAY_BUFFER, 0));
+  };
 
   // Add common surface data vertex layout PNC
   void addSurfaceData();

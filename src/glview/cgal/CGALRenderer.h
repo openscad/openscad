@@ -19,6 +19,15 @@ public:
       GL_CHECKD(glGenBuffers(1, &elements_vbo_));
     }
   }
+  VertexStateContainer(const VertexStateContainer& o) = delete;
+  VertexStateContainer(VertexStateContainer&& o) noexcept {
+    vertices_vbo_ = o.vertices_vbo_;
+    elements_vbo_ = o.elements_vbo_;
+    vertex_states_ = std::move(o.vertex_states_);
+    o.vertices_vbo_ = 0;
+    o.elements_vbo_ = 0;
+  }
+  
   ~VertexStateContainer() {
     if (vertices_vbo_) {
       GL_TRACE("glDeleteBuffers(1, %p)", &vertices_vbo_);
@@ -54,6 +63,8 @@ private:
 #endif
   void createPolySetStates();
   void createPolygonStates();
+  void createPolygonSurfaceStates();
+  void createPolygonEdgeStates();
   bool last_render_state_; // FIXME: this is temporary to make switching between renderers seamless.
 
   std::vector<std::shared_ptr<const class PolySet>> polysets_;

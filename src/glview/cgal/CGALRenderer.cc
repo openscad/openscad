@@ -158,17 +158,48 @@ void CGALRenderer::createPolySetStates() {
     vertex_array.create_surface(*polyset, Transform3d::Identity(), color, false);
   }
 
-  if (Feature::ExperimentalVxORenderersIndexing.is_enabled()) {
-    GL_TRACE0("glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0)");
-    GL_CHECKD(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0));
-  }
-  GL_TRACE0("glBindBuffer(GL_ARRAY_BUFFER, 0)");
-  GL_CHECKD(glBindBuffer(GL_ARRAY_BUFFER, 0));
-
   vertex_array.createInterleavedVBOs();
 }
 
 void CGALRenderer::createPolygonStates() {
+  createPolygonSurfaceStates();
+  createPolygonEdgeStates();
+}
+
+void CGALRenderer::createPolygonSurfaceStates() {
+  vertex_state_containers_.emplace_back();
+  VertexStateContainer &vertex_state_container = vertex_state_containers_.back();
+
+  VBOBuilder vertex_array(std::make_unique<VertexStateFactory>(),
+                           vertex_state_container.vertex_states_,
+                           vertex_state_container.vertices_vbo_,
+                           vertex_state_container.elements_vbo_);
+  vertex_array.addSurfaceData();
+
+  size_t num_vertices = 0;
+  for (const auto &[_, polyset] : this->polygons_) {
+    num_vertices += calcNumVertices(*polyset);
+  }
+
+  vertex_array.allocateBuffers(num_vertices);
+
+  std::shared_ptr<VertexState> init_state = std::make_shared<VertexState>();
+  init_state->glBegin().emplace_back([]() {
+    GL_TRACE0("glDisable(GL_LIGHTING)");
+    GL_CHECKD(glDisable(GL_LIGHTING));
+  });
+  vertex_state_container.vertex_states_.emplace_back(std::move(init_state));
+
+  for (const auto &[polygon, polyset] : this->polygons_) {
+    Color4f color;
+    getColor(ColorMode::CGAL_FACE_2D_COLOR, color);
+    this->create_polygons(*polyset, vertex_array, Transform3d::Identity(), color);
+  }
+
+  vertex_array.createInterleavedVBOs();
+}
+
+void CGALRenderer::createPolygonEdgeStates() {
   PRINTD("createPolygonStates()");
 
   vertex_state_containers_.emplace_back();
@@ -180,63 +211,36 @@ void CGALRenderer::createPolygonStates() {
                            vertex_state_container.elements_vbo_);
 
   vertex_array.addEdgeData();
-  vertex_array.addSurfaceData();
 
   size_t num_vertices = 0;
-  for (const auto &[polygon, polyset] : this->polygons_) {
-    num_vertices += calcNumVertices(*polyset);
+  for (const auto &[polygon, _] : this->polygons_) {
     num_vertices += calcNumEdgeVertices(*polygon);
   }
 
   vertex_array.allocateBuffers(num_vertices);
 
-  for (const auto &[polygon, polyset] : this->polygons_) {
+  std::shared_ptr<VertexState> edge_state = std::make_shared<VertexState>();
+  edge_state->glBegin().emplace_back([]() {
+    GL_TRACE0("glDisable(GL_DEPTH_TEST)");
+    GL_CHECKD(glDisable(GL_DEPTH_TEST));
+    GL_TRACE0("glLineWidth(2)");
+    GL_CHECKD(glLineWidth(2));
+  });
+  vertex_state_container.vertex_states_.emplace_back(std::move(edge_state));
+
+  for (const auto &[polygon, _] : this->polygons_) {
     Color4f color;
-
-    PRINTD("2d polygons");
-    vertex_array.writeEdge();
-
-    std::shared_ptr<VertexState> init_state = std::make_shared<VertexState>();
-    init_state->glEnd().emplace_back([]() {
-      GL_TRACE0("glDisable(GL_LIGHTING)");
-      GL_CHECKD(glDisable(GL_LIGHTING));
-    });
-    vertex_state_container.vertex_states_.emplace_back(std::move(init_state));
-
-    // Create 2D polygons
-    getColor(ColorMode::CGAL_FACE_2D_COLOR, color);
-    this->create_polygons(*polyset, vertex_array, Transform3d::Identity(),
-                          color);
-
-    std::shared_ptr<VertexState> edge_state = std::make_shared<VertexState>();
-    edge_state->glBegin().emplace_back([]() {
-      GL_TRACE0("glDisable(GL_DEPTH_TEST)");
-      GL_CHECKD(glDisable(GL_DEPTH_TEST));
-    });
-    edge_state->glBegin().emplace_back([]() {
-      GL_TRACE0("glLineWidth(2)");
-      GL_CHECKD(glLineWidth(2));
-    });
-    vertex_state_container.vertex_states_.emplace_back(std::move(edge_state));
-
-    // Create 2D edges
     getColor(ColorMode::CGAL_EDGE_2D_COLOR, color);
+    vertex_array.writeEdge();
     this->create_edges(*polygon, vertex_array, Transform3d::Identity(), color);
-
-    std::shared_ptr<VertexState> end_state = std::make_shared<VertexState>();
-    end_state->glBegin().emplace_back([]() {
-      GL_TRACE0("glEnable(GL_DEPTH_TEST)");
-      GL_CHECKD(glEnable(GL_DEPTH_TEST));
-    });
-    vertex_state_container.vertex_states_.emplace_back(std::move(end_state));
   }
-
-  if (Feature::ExperimentalVxORenderersIndexing.is_enabled()) {
-    GL_TRACE0("glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0)");
-    GL_CHECKD(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0));
-  }
-  GL_TRACE0("glBindBuffer(GL_ARRAY_BUFFER, 0)");
-  GL_CHECKD(glBindBuffer(GL_ARRAY_BUFFER, 0));
+  
+  std::shared_ptr<VertexState> end_state = std::make_shared<VertexState>();
+  end_state->glBegin().emplace_back([]() {
+    GL_TRACE0("glEnable(GL_DEPTH_TEST)");
+    GL_CHECKD(glEnable(GL_DEPTH_TEST));
+  });
+  vertex_state_container.vertex_states_.emplace_back(std::move(end_state));
 
   vertex_array.createInterleavedVBOs();
 }
