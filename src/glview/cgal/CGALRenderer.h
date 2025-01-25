@@ -12,17 +12,21 @@
 class VertexStateContainer {
 public:
   VertexStateContainer() {
-    glGenBuffers(1, &vertices_vbo_);
+    GL_TRACE("glGenBuffers(1, %p)", &vertices_vbo_);
+    GL_CHECKD(glGenBuffers(1, &vertices_vbo_));
     if (Feature::ExperimentalVxORenderersIndexing.is_enabled()) {
-      glGenBuffers(1, &elements_vbo_);
+      GL_TRACE("glGenBuffers(1, %p)", &elements_vbo_);
+      GL_CHECKD(glGenBuffers(1, &elements_vbo_));
     }
   }
   ~VertexStateContainer() {
     if (vertices_vbo_) {
-      glDeleteBuffers(1, &vertices_vbo_);
+      GL_TRACE("glDeleteBuffers(1, %p)", &vertices_vbo_);
+      GL_CHECKD(glDeleteBuffers(1, &vertices_vbo_));
     }
     if (elements_vbo_) {
-      glDeleteBuffers(1, &elements_vbo_);
+      GL_TRACE("glDeleteBuffers(1, %p)", &elements_vbo_);
+      GL_CHECKD(glDeleteBuffers(1, &elements_vbo_));
     }
   }
 
