@@ -356,7 +356,7 @@ void ScintillaEditor::setupAutoComplete(const bool forceOff)
   const bool enable = configValue && !forceOff;
 
   if (enable) {
-    qsci->setAutoCompletionSource(QsciScintilla::AcsAPIs);
+    qsci->setAutoCompletionSource(QsciScintilla::AcsAll);
     qsci->setAutoCompletionFillupsEnabled(false);
     qsci->setAutoCompletionFillups("(");
     qsci->setCallTipsVisible(10);
