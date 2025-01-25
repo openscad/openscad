@@ -215,12 +215,12 @@ void OpenCSGRenderer::createCSGVBOProducts(
     size_t num_vertices = 0;
     for (const auto &csgobj : product.intersections) {
       if (csgobj.leaf->polyset) {
-        num_vertices += getSurfaceBufferSize(csgobj);
+        num_vertices += calcNumVertices(csgobj);
       }
     }
     for (const auto &csgobj : product.subtractions) {
       if (csgobj.leaf->polyset) {
-        num_vertices += getSurfaceBufferSize(csgobj);
+        num_vertices += calcNumVertices(csgobj);
       }
     }
 
@@ -256,7 +256,7 @@ void OpenCSGRenderer::createCSGVBOProducts(
 
         if (color[3] == 1.0f) {
           // object is opaque, draw normally
-          vertex_array.create_surface(*csgobj.leaf->polyset, csgmode,
+          vertex_array.create_surface(*csgobj.leaf->polyset, 
                          csgobj.leaf->matrix, last_color, enable_barycentric, override_color);
           const auto surface = std::dynamic_pointer_cast<OpenCSGVertexState>(
             vertex_states->back());
@@ -275,7 +275,7 @@ void OpenCSGRenderer::createCSGVBOProducts(
           });
           vertex_states->emplace_back(std::move(cull));
 
-          vertex_array.create_surface(*csgobj.leaf->polyset, csgmode,
+          vertex_array.create_surface(*csgobj.leaf->polyset, 
                          csgobj.leaf->matrix, last_color, enable_barycentric, override_color);
           std::shared_ptr<OpenCSGVertexState> surface =
               std::dynamic_pointer_cast<OpenCSGVertexState>(
@@ -352,7 +352,7 @@ void OpenCSGRenderer::createCSGVBOProducts(
           // Scale 2D negative objects 10% in the Z direction to avoid z fighting
           tmp *= Eigen::Scaling(1.0, 1.0, 1.1);
         }
-        vertex_array.create_surface(*csgobj.leaf->polyset, csgmode, tmp,
+        vertex_array.create_surface(*csgobj.leaf->polyset, tmp,
                        last_color, enable_barycentric, override_color);
         const auto surface = std::dynamic_pointer_cast<OpenCSGVertexState>(
           vertex_states->back());

@@ -86,7 +86,7 @@ bool VBORenderer::getShaderColor(Renderer::ColorMode colormode, const Color4f& c
   return false;
 }
 
-size_t VBORenderer::getSurfaceBufferSize(const std::shared_ptr<CSGProducts>& products,
+size_t VBORenderer::calcNumVertices(const std::shared_ptr<CSGProducts>& products,
                                          bool unique_geometry) const
 {
   size_t buffer_size = 0;
@@ -94,16 +94,16 @@ size_t VBORenderer::getSurfaceBufferSize(const std::shared_ptr<CSGProducts>& pro
 
   for (const auto& product : products->products) {
     for (const auto& csgobj : product.intersections) {
-      buffer_size += getSurfaceBufferSize(csgobj);
+      buffer_size += calcNumVertices(csgobj);
     }
     for (const auto& csgobj : product.subtractions) {
-      buffer_size += getSurfaceBufferSize(csgobj);
+      buffer_size += calcNumVertices(csgobj);
     }
   }
   return buffer_size;
 }
 
-size_t VBORenderer::getSurfaceBufferSize(const CSGChainObject& csgobj, bool unique_geometry) const
+size_t VBORenderer::calcNumVertices(const CSGChainObject& csgobj, bool unique_geometry) const
 {
   size_t buffer_size = 0;
   if (unique_geometry &&
@@ -111,12 +111,12 @@ size_t VBORenderer::getSurfaceBufferSize(const CSGChainObject& csgobj, bool uniq
     return 0;
 
   if (csgobj.leaf->polyset) {
-    buffer_size += getSurfaceBufferSize(*csgobj.leaf->polyset);
+    buffer_size += calcNumVertices(*csgobj.leaf->polyset);
   }
   return buffer_size;
 }
 
-size_t VBORenderer::getSurfaceBufferSize(const PolySet& polyset) const
+size_t VBORenderer::calcNumVertices(const PolySet& polyset) const
 {
   size_t buffer_size = 0;
   for (const auto& poly : polyset.indices) {
@@ -126,13 +126,14 @@ size_t VBORenderer::getSurfaceBufferSize(const PolySet& polyset) const
       buffer_size += 2;
     } else {
       // poly.size() because we'll render a triangle fan from the centroid
+      // FIXME: Are we still using this code path?
       buffer_size += poly.size();
     }
   }
   return buffer_size * 3;
 }
 
-size_t VBORenderer::getEdgeBufferSize(const PolySet& polyset) const
+size_t VBORenderer::calcNumEdgeVertices(const PolySet& polyset) const
 {
   size_t buffer_size = 0;
   for (const auto& polygon : polyset.indices) {
@@ -141,7 +142,7 @@ size_t VBORenderer::getEdgeBufferSize(const PolySet& polyset) const
   return buffer_size;
 }
 
-size_t VBORenderer::getEdgeBufferSize(const Polygon2d& polygon) const
+size_t VBORenderer::calcNumEdgeVertices(const Polygon2d& polygon) const
 {
   size_t buffer_size = 0;
   // Render only outlines

@@ -152,34 +152,56 @@ void CGALRenderer::createPolySetStates() {
                            vertex_states_, polyset_vertices_vbo_,
                            polyset_elements_vbo_);
 
+  vertex_array.addSurfaceData(); // position, normal, color
+
+  size_t num_vertices = 0;
+  for (const auto &polyset : this->polysets_) {
+    num_vertices += calcNumVertices(*polyset);
+  }
+  vertex_array.allocateBuffers(num_vertices);
+
+  for (const auto &polyset : this->polysets_) {
+    Color4f color;
+    getColor(ColorMode::MATERIAL, color);
+    vertex_array.writeSurface();
+    vertex_array.create_surface(*polyset, Transform3d::Identity(), color, false);
+  }
+
+  if (Feature::ExperimentalVxORenderersIndexing.is_enabled()) {
+    GL_TRACE0("glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0)");
+    GL_CHECKD(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0));
+  }
+  GL_TRACE0("glBindBuffer(GL_ARRAY_BUFFER, 0)");
+  GL_CHECKD(glBindBuffer(GL_ARRAY_BUFFER, 0));
+
+  vertex_array.createInterleavedVBOs();
+}
+
+void CGALRenderer::createPolygonStates() {
+  PRINTD("createPolygonStates()");
+
+  vertex_states_.clear();
+
+  glGenBuffers(1, &polyset_vertices_vbo_);
+  if (Feature::ExperimentalVxORenderersIndexing.is_enabled()) {
+    glGenBuffers(1, &polyset_elements_vbo_);
+  }
+
+  // TODO: Split polygons + lines into separate VBOs
+  VBOBuilder vertex_array(std::make_unique<VertexStateFactory>(),
+                           vertex_states_, polyset_vertices_vbo_,
+                           polyset_elements_vbo_);
+
   vertex_array.addEdgeData();
   vertex_array.addSurfaceData();
 
   size_t num_vertices = 0;
-  for (const auto &polyset : this->polysets_) {
-    num_vertices += getSurfaceBufferSize(*polyset);
-    num_vertices += getEdgeBufferSize(*polyset);
-  }
   for (const auto &[polygon, polyset] : this->polygons_) {
-    num_vertices += getSurfaceBufferSize(*polyset);
-    num_vertices += getEdgeBufferSize(*polygon);
+    num_vertices += calcNumVertices(*polyset);
+    num_vertices += calcNumEdgeVertices(*polygon);
   }
 
   vertex_array.allocateBuffers(num_vertices);
-  bool enable_barycentric = vertex_array.shader_attributes_index_ && 
-    getShader().attributes.at("barycentric");
-
-  for (const auto &polyset : this->polysets_) {
-    Color4f color;
-
-    PRINTD("3d polysets");
-    vertex_array.writeSurface();
-
-    // Create 3D polygons
-    getColor(ColorMode::MATERIAL, color);
-    vertex_array.create_surface(*polyset, RendererUtils::CSGMODE_NORMAL,
-                         Transform3d::Identity(), color, enable_barycentric);
-  }
 
   for (const auto &[polygon, polyset] : this->polygons_) {
     Color4f color;
@@ -222,23 +244,28 @@ void CGALRenderer::createPolySetStates() {
     vertex_states_.emplace_back(std::move(end_state));
   }
 
-  if (!this->polysets_.empty() || !this->polygons_.empty()) {
-    if (Feature::ExperimentalVxORenderersIndexing.is_enabled()) {
-      GL_TRACE0("glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0)");
-      GL_CHECKD(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0));
-    }
-    GL_TRACE0("glBindBuffer(GL_ARRAY_BUFFER, 0)");
-    GL_CHECKD(glBindBuffer(GL_ARRAY_BUFFER, 0));
-
-    vertex_array.createInterleavedVBOs();
+  if (Feature::ExperimentalVxORenderersIndexing.is_enabled()) {
+    GL_TRACE0("glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0)");
+    GL_CHECKD(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0));
   }
+  GL_TRACE0("glBindBuffer(GL_ARRAY_BUFFER, 0)");
+  GL_CHECKD(glBindBuffer(GL_ARRAY_BUFFER, 0));
+
+  vertex_array.createInterleavedVBOs();
 }
 
 void CGALRenderer::prepare(bool /*showedges*/,
                            const RendererUtils::ShaderInfo * /*shaderinfo*/) {
   PRINTD("prepare()");
   if (!vertex_states_.size())
+  if (!this->polysets_.empty() && !this->polygons_.empty()) {
+    LOG(message_group::Error, "CGALRenderer::prepare() called with both polysets and polygons");
+  } else if (!this->polysets_.empty()) {
     createPolySetStates();
+  } else if (!this->polygons_.empty()) {
+    createPolygonStates();
+  }
+
 #ifdef ENABLE_CGAL
   if (!this->nefPolyhedrons_.empty() && this->polyhedrons_.empty())
     createPolyhedrons();

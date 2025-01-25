@@ -27,6 +27,7 @@ private:
   void createPolyhedrons();
 #endif
   void createPolySetStates();
+  void createPolygonStates();
   bool last_render_state_; // FIXME: this is temporary to make switching between renderers seamless.
 
   std::vector<std::shared_ptr<const class PolySet>> polysets_;

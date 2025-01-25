@@ -33,11 +33,11 @@ class VBORenderer : public Renderer
 public:
   VBORenderer();
   virtual bool getShaderColor(Renderer::ColorMode colormode, const Color4f& col, Color4f& outcolor) const;
-  virtual size_t getSurfaceBufferSize(const std::shared_ptr<CSGProducts>& products, bool unique_geometry = false) const;
-  virtual size_t getSurfaceBufferSize(const CSGChainObject& csgobj, bool unique_geometry = false) const;
-  virtual size_t getSurfaceBufferSize(const PolySet& polyset) const;
-  virtual size_t getEdgeBufferSize(const PolySet& polyset) const;
-  virtual size_t getEdgeBufferSize(const Polygon2d& polygon) const;
+  virtual size_t calcNumVertices(const std::shared_ptr<CSGProducts>& products, bool unique_geometry = false) const;
+  virtual size_t calcNumVertices(const CSGChainObject& csgobj, bool unique_geometry = false) const;
+  virtual size_t calcNumVertices(const PolySet& polyset) const;
+  virtual size_t calcNumEdgeVertices(const PolySet& polyset) const;
+  virtual size_t calcNumEdgeVertices(const Polygon2d& polygon) const;
 
   virtual void create_edges(const Polygon2d& polygon, VBOBuilder& vertex_array,
                             const Transform3d& m, const Color4f& color) const;

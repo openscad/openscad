@@ -103,9 +103,9 @@ void ThrownTogetherRenderer::prepare(bool /*showedges*/, const RendererUtils::Sh
     }
 
     size_t num_vertices = 0;
-    if (this->root_products_) num_vertices += (getSurfaceBufferSize(this->root_products_, true) * 2);
-    if (this->background_products_) num_vertices += getSurfaceBufferSize(this->background_products_, true);
-    if (this->highlight_products_) num_vertices += getSurfaceBufferSize(this->highlight_products_, true);
+    if (this->root_products_) num_vertices += (calcNumVertices(this->root_products_, true) * 2);
+    if (this->background_products_) num_vertices += calcNumVertices(this->background_products_, true);
+    if (this->highlight_products_) num_vertices += calcNumVertices(this->highlight_products_, true);
 
     vertex_array.allocateBuffers(num_vertices);
 
@@ -201,7 +201,7 @@ void ThrownTogetherRenderer::createChainObject(VBOBuilder& vertex_array,
 
     add_color(vertex_array, color);
 
-    vertex_array.create_surface(*csgobj.leaf->polyset, csgmode, csgobj.leaf->matrix, color, enable_barycentric);
+    vertex_array.create_surface(*csgobj.leaf->polyset, csgobj.leaf->matrix, color, enable_barycentric);
     if (const auto vs = std::dynamic_pointer_cast<TTRVertexState>(vertex_array.states().back())) {
       vs->setCsgObjectIndex(csgobj.leaf->index);
     }
@@ -225,7 +225,7 @@ void ThrownTogetherRenderer::createChainObject(VBOBuilder& vertex_array,
       // Scale 2D negative objects 10% in the Z direction to avoid z fighting
       mat *= Eigen::Scaling(1.0, 1.0, 1.1);
     }
-    vertex_array.create_surface(*csgobj.leaf->polyset, csgmode, mat, color, enable_barycentric);
+    vertex_array.create_surface(*csgobj.leaf->polyset, mat, color, enable_barycentric);
     if (auto vs = std::dynamic_pointer_cast<TTRVertexState>(vertex_array.states().back())) {
       vs->setCsgObjectIndex(csgobj.leaf->index);
     }
@@ -244,7 +244,7 @@ void ThrownTogetherRenderer::createChainObject(VBOBuilder& vertex_array,
     });
     vertex_states_.emplace_back(std::move(cull));
 
-    vertex_array.create_surface(*csgobj.leaf->polyset, csgmode, csgobj.leaf->matrix, color, enable_barycentric);
+    vertex_array.create_surface(*csgobj.leaf->polyset, csgobj.leaf->matrix, color, enable_barycentric);
     if (auto vs = std::dynamic_pointer_cast<TTRVertexState>(vertex_array.states().back())) {
       vs->setCsgObjectIndex(csgobj.leaf->index);
     }

@@ -329,8 +329,7 @@ public:
   void create_triangle(const Color4f& color, const Vector3d& p0,
                        const Vector3d& p1, const Vector3d& p2, size_t primitive_index,
                        size_t shape_size, bool outlines, bool enable_barycentric, bool mirror);
-  void create_surface(const PolySet& ps, 
-                      RendererUtils::CSGMode csgmode, const Transform3d& m,
+  void create_surface(const PolySet& ps, const Transform3d& m,
                       const Color4f& default_color, bool enable_barycentric, bool force_default_color=false);
 
 private:
