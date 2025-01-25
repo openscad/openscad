@@ -166,6 +166,8 @@ void CGALRenderer::createPolySetStates() {
   }
 
   vertex_array.allocateBuffers(num_vertices);
+  bool enable_barycentric = vertex_array.shader_attributes_index_ && 
+    getShader().attributes.at("barycentric");
 
   for (const auto &polyset : this->polysets_) {
     Color4f color;
@@ -175,8 +177,8 @@ void CGALRenderer::createPolySetStates() {
 
     // Create 3D polygons
     getColor(ColorMode::MATERIAL, color);
-    this->create_surface(*polyset, vertex_array, RendererUtils::CSGMODE_NORMAL,
-                         Transform3d::Identity(), color);
+    vertex_array.create_surface(*polyset, RendererUtils::CSGMODE_NORMAL,
+                         Transform3d::Identity(), color, enable_barycentric);
   }
 
   for (const auto &[polygon, polyset] : this->polygons_) {

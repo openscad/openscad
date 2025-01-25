@@ -191,6 +191,9 @@ void ThrownTogetherRenderer::createChainObject(VBOBuilder& vertex_array,
 
   vertex_array.writeSurface();
 
+  bool enable_barycentric = vertex_array.shader_attributes_index_ && 
+    getShader().attributes.at("barycentric");
+
   Color4f color;
   if (highlight_mode || background_mode) {
     const ColorMode colormode = getColorMode(csgobj.flags, highlight_mode, background_mode, false, type);
@@ -198,7 +201,7 @@ void ThrownTogetherRenderer::createChainObject(VBOBuilder& vertex_array,
 
     add_color(vertex_array, color);
 
-    create_surface(*csgobj.leaf->polyset, vertex_array, csgmode, csgobj.leaf->matrix, color);
+    vertex_array.create_surface(*csgobj.leaf->polyset, csgmode, csgobj.leaf->matrix, color, enable_barycentric);
     if (const auto vs = std::dynamic_pointer_cast<TTRVertexState>(vertex_array.states().back())) {
       vs->setCsgObjectIndex(csgobj.leaf->index);
     }
@@ -222,7 +225,7 @@ void ThrownTogetherRenderer::createChainObject(VBOBuilder& vertex_array,
       // Scale 2D negative objects 10% in the Z direction to avoid z fighting
       mat *= Eigen::Scaling(1.0, 1.0, 1.1);
     }
-    create_surface(*csgobj.leaf->polyset, vertex_array, csgmode, mat, color);
+    vertex_array.create_surface(*csgobj.leaf->polyset, csgmode, mat, color, enable_barycentric);
     if (auto vs = std::dynamic_pointer_cast<TTRVertexState>(vertex_array.states().back())) {
       vs->setCsgObjectIndex(csgobj.leaf->index);
     }
@@ -241,7 +244,7 @@ void ThrownTogetherRenderer::createChainObject(VBOBuilder& vertex_array,
     });
     vertex_states_.emplace_back(std::move(cull));
 
-    create_surface(*csgobj.leaf->polyset, vertex_array, csgmode, csgobj.leaf->matrix, color);
+    vertex_array.create_surface(*csgobj.leaf->polyset, csgmode, csgobj.leaf->matrix, color, enable_barycentric);
     if (auto vs = std::dynamic_pointer_cast<TTRVertexState>(vertex_array.states().back())) {
       vs->setCsgObjectIndex(csgobj.leaf->index);
     }

@@ -226,6 +226,9 @@ void OpenCSGRenderer::createCSGVBOProducts(
 
     vertex_array.allocateBuffers(num_vertices);
 
+    bool enable_barycentric = vertex_array.shader_attributes_index_ && 
+      getShader().attributes.at("barycentric");
+
     for (const auto &csgobj : product.intersections) {
       if (csgobj.leaf->polyset) {
         const Color4f &c = csgobj.leaf->color;
@@ -253,8 +256,8 @@ void OpenCSGRenderer::createCSGVBOProducts(
 
         if (color[3] == 1.0f) {
           // object is opaque, draw normally
-          create_surface(*csgobj.leaf->polyset, vertex_array, csgmode,
-                         csgobj.leaf->matrix, last_color, override_color);
+          vertex_array.create_surface(*csgobj.leaf->polyset, csgmode,
+                         csgobj.leaf->matrix, last_color, enable_barycentric, override_color);
           const auto surface = std::dynamic_pointer_cast<OpenCSGVertexState>(
             vertex_states->back());
           if (surface != nullptr) {
@@ -272,8 +275,8 @@ void OpenCSGRenderer::createCSGVBOProducts(
           });
           vertex_states->emplace_back(std::move(cull));
 
-          create_surface(*csgobj.leaf->polyset, vertex_array, csgmode,
-                         csgobj.leaf->matrix, last_color, override_color);
+          vertex_array.create_surface(*csgobj.leaf->polyset, csgmode,
+                         csgobj.leaf->matrix, last_color, enable_barycentric, override_color);
           std::shared_ptr<OpenCSGVertexState> surface =
               std::dynamic_pointer_cast<OpenCSGVertexState>(
                   vertex_states->back());
@@ -349,8 +352,8 @@ void OpenCSGRenderer::createCSGVBOProducts(
           // Scale 2D negative objects 10% in the Z direction to avoid z fighting
           tmp *= Eigen::Scaling(1.0, 1.0, 1.1);
         }
-        create_surface(*csgobj.leaf->polyset, vertex_array, csgmode, tmp,
-                       last_color, override_color);
+        vertex_array.create_surface(*csgobj.leaf->polyset, csgmode, tmp,
+                       last_color, enable_barycentric, override_color);
         const auto surface = std::dynamic_pointer_cast<OpenCSGVertexState>(
           vertex_states->back());
         if (surface != nullptr) {

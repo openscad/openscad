@@ -9,11 +9,17 @@
 #include <utility>
 #include <vector>
 
+#include "geometry/PolySet.h"
+#include "glview/Renderer.h"
 #include "glview/system-gl.h"
 #include "utils/printutils.h"
 #include "geometry/linalg.h"
 #include "Feature.h"
 #include "glview/VertexState.h"
+
+enum ShaderAttribIndex {
+  BARYCENTRIC_ATTRIB
+};
 
 // Hash function for opengl vertex data.
 template <typename T>
@@ -225,11 +231,6 @@ private:
 class VBOBuilder
 {
 public:
-  using CreateVertexCallback = std::function<void (VBOBuilder& vertex_array,
-                                                   size_t active_point_index, size_t primitive_index,
-                                                   size_t shape_size, bool outlines)>;
-
-
   VBOBuilder(std::unique_ptr<VertexStateFactory> factory, std::vector<std::shared_ptr<VertexState>>& states,
               GLuint vertices_vbo, GLuint elements_vbo)
     : factory_(std::move(factory)), states_(states),
@@ -258,8 +259,7 @@ public:
                     const Color4f& color,
                     size_t active_point_index = 0, size_t primitive_index = 0,
                     size_t shape_size = 0,
-                    bool outlines = false, bool mirror = false,
-                    const CreateVertexCallback& vertex_callback = nullptr);
+                    bool outlines = false, bool mirror = false);
 
   // Return reference to the VertexStates
   inline std::vector<std::shared_ptr<VertexState>>& states() { return states_; }
@@ -323,6 +323,15 @@ public:
 
   size_t shader_attributes_index_{0};
   void addShaderData();
+
+  void add_barycentric_attribute(size_t active_point_index,
+                                 size_t primitive_index, size_t shape_size, bool outlines);
+  void create_triangle(const Color4f& color, const Vector3d& p0,
+                       const Vector3d& p1, const Vector3d& p2, size_t primitive_index,
+                       size_t shape_size, bool outlines, bool enable_barycentric, bool mirror);
+  void create_surface(const PolySet& ps, 
+                      RendererUtils::CSGMode csgmode, const Transform3d& m,
+                      const Color4f& default_color, bool enable_barycentric, bool force_default_color=false);
 
 private:
   inline void setElementsSize(size_t elements_size) { elements_size_ = elements_size; }
