@@ -9,6 +9,28 @@
 #include "geometry/cgal/CGAL_Nef_polyhedron.h"
 #endif
 
+class VertexStateContainer {
+public:
+  VertexStateContainer() {
+    glGenBuffers(1, &vertices_vbo_);
+    if (Feature::ExperimentalVxORenderersIndexing.is_enabled()) {
+      glGenBuffers(1, &elements_vbo_);
+    }
+  }
+  ~VertexStateContainer() {
+    if (vertices_vbo_) {
+      glDeleteBuffers(1, &vertices_vbo_);
+    }
+    if (elements_vbo_) {
+      glDeleteBuffers(1, &elements_vbo_);
+    }
+  }
+
+  std::vector<std::shared_ptr<VertexState>> vertex_states_;
+  GLuint vertices_vbo_;
+  GLuint elements_vbo_ = 0;
+};
+
 class CGALRenderer : public VBORenderer
 {
 public:
@@ -37,7 +59,5 @@ private:
   std::vector<std::shared_ptr<const CGAL_Nef_polyhedron>> nefPolyhedrons_;
 #endif
 
-  std::vector<std::shared_ptr<VertexState>> vertex_states_;
-  GLuint polyset_vertices_vbo_{0};
-  GLuint polyset_elements_vbo_{0};
+  std::vector<VertexStateContainer> vertex_state_containers_;
 };

@@ -98,12 +98,6 @@ void CGALRenderer::addGeometry(const std::shared_ptr<const Geometry> &geom) {
 }
 
 CGALRenderer::~CGALRenderer() {
-  if (polyset_vertices_vbo_) {
-    glDeleteBuffers(1, &polyset_vertices_vbo_);
-  }
-  if (polyset_elements_vbo_) {
-    glDeleteBuffers(1, &polyset_elements_vbo_);
-  }
 }
 
 #ifdef ENABLE_CGAL
@@ -134,23 +128,20 @@ void CGALRenderer::setColorScheme(const ColorScheme &cs) {
 #ifdef ENABLE_CGAL
   this->polyhedrons_.clear(); // Mark as dirty
 #endif
-  this->vertex_states_.clear(); // Mark as dirty
+  vertex_state_containers_.clear(); // Mark as dirty
   PRINTD("setColorScheme done");
 }
 
 void CGALRenderer::createPolySetStates() {
   PRINTD("createPolySetStates() polyset");
 
-  vertex_states_.clear();
-
-  glGenBuffers(1, &polyset_vertices_vbo_);
-  if (Feature::ExperimentalVxORenderersIndexing.is_enabled()) {
-    glGenBuffers(1, &polyset_elements_vbo_);
-  }
+  vertex_state_containers_.emplace_back();
+  VertexStateContainer &vertex_state_container = vertex_state_containers_.back();
 
   VBOBuilder vertex_array(std::make_unique<VertexStateFactory>(),
-                           vertex_states_, polyset_vertices_vbo_,
-                           polyset_elements_vbo_);
+                           vertex_state_container.vertex_states_,
+                           vertex_state_container.vertices_vbo_,
+                           vertex_state_container.elements_vbo_);
 
   vertex_array.addSurfaceData(); // position, normal, color
 
@@ -180,17 +171,13 @@ void CGALRenderer::createPolySetStates() {
 void CGALRenderer::createPolygonStates() {
   PRINTD("createPolygonStates()");
 
-  vertex_states_.clear();
+  vertex_state_containers_.emplace_back();
+  VertexStateContainer &vertex_state_container = vertex_state_containers_.back();
 
-  glGenBuffers(1, &polyset_vertices_vbo_);
-  if (Feature::ExperimentalVxORenderersIndexing.is_enabled()) {
-    glGenBuffers(1, &polyset_elements_vbo_);
-  }
-
-  // TODO: Split polygons + lines into separate VBOs
   VBOBuilder vertex_array(std::make_unique<VertexStateFactory>(),
-                           vertex_states_, polyset_vertices_vbo_,
-                           polyset_elements_vbo_);
+                           vertex_state_container.vertex_states_,
+                           vertex_state_container.vertices_vbo_,
+                           vertex_state_container.elements_vbo_);
 
   vertex_array.addEdgeData();
   vertex_array.addSurfaceData();
@@ -214,7 +201,7 @@ void CGALRenderer::createPolygonStates() {
       GL_TRACE0("glDisable(GL_LIGHTING)");
       GL_CHECKD(glDisable(GL_LIGHTING));
     });
-    vertex_states_.emplace_back(std::move(init_state));
+    vertex_state_container.vertex_states_.emplace_back(std::move(init_state));
 
     // Create 2D polygons
     getColor(ColorMode::CGAL_FACE_2D_COLOR, color);
@@ -230,7 +217,7 @@ void CGALRenderer::createPolygonStates() {
       GL_TRACE0("glLineWidth(2)");
       GL_CHECKD(glLineWidth(2));
     });
-    vertex_states_.emplace_back(std::move(edge_state));
+    vertex_state_container.vertex_states_.emplace_back(std::move(edge_state));
 
     // Create 2D edges
     getColor(ColorMode::CGAL_EDGE_2D_COLOR, color);
@@ -241,7 +228,7 @@ void CGALRenderer::createPolygonStates() {
       GL_TRACE0("glEnable(GL_DEPTH_TEST)");
       GL_CHECKD(glEnable(GL_DEPTH_TEST));
     });
-    vertex_states_.emplace_back(std::move(end_state));
+    vertex_state_container.vertex_states_.emplace_back(std::move(end_state));
   }
 
   if (Feature::ExperimentalVxORenderersIndexing.is_enabled()) {
@@ -257,13 +244,14 @@ void CGALRenderer::createPolygonStates() {
 void CGALRenderer::prepare(bool /*showedges*/,
                            const RendererUtils::ShaderInfo * /*shaderinfo*/) {
   PRINTD("prepare()");
-  if (!vertex_states_.size())
-  if (!this->polysets_.empty() && !this->polygons_.empty()) {
-    LOG(message_group::Error, "CGALRenderer::prepare() called with both polysets and polygons");
-  } else if (!this->polysets_.empty()) {
-    createPolySetStates();
-  } else if (!this->polygons_.empty()) {
-    createPolygonStates();
+  if (!vertex_state_containers_.size()) {
+    if (!this->polysets_.empty() && !this->polygons_.empty()) {
+      LOG(message_group::Error, "CGALRenderer::prepare() called with both polysets and polygons");
+    } else if (!this->polysets_.empty()) {
+      createPolySetStates();
+    } else if (!this->polygons_.empty()) {
+      createPolygonStates();
+    }
   }
 
 #ifdef ENABLE_CGAL
@@ -285,9 +273,11 @@ void CGALRenderer::draw(bool showedges, const RendererUtils::ShaderInfo * /*shad
   GL_CHECKD(glGetFloatv(GL_POINT_SIZE, &current_point_size));
   GL_CHECKD(glGetFloatv(GL_LINE_WIDTH, &current_line_width));
 
-  for (const auto &vertex_state : vertex_states_) {
-    if (vertex_state)
-      vertex_state->draw();
+  for (const auto &container : vertex_state_containers_) {
+    for (const auto &vertex_state : container.vertex_states_) {
+      if (vertex_state)
+        vertex_state->draw();
+    }
   }
 
   // restore states
