@@ -322,8 +322,11 @@ void VBORenderer::add_color(VBOBuilder& vertex_array, const Color4f& color)
   std::shared_ptr<VertexState> color_state =
     std::make_shared<VBOShaderVertexState>(0, 0, vertex_array.verticesVBO(), vertex_array.elementsVBO());
   color_state->glBegin().emplace_back([shader_info, color]() {
+    GL_TRACE("glUniform4f(%d, %.2f, %.2f, %.2f, %.2f)", shader_info.uniforms.at("color_area") % color[0] % color[1] % color[2] % color[3]);
     GL_CHECKD(
       glUniform4f(shader_info.uniforms.at("color_area"), color[0], color[1], color[2], color[3]));
+    GL_TRACE("glUniform4f(%d, %.2f, %.2f, %.2f, %.2f)", shader_info.uniforms.at("color_edge") % ((color[0] + 1) / 2) % ((color[1] + 1) / 2) %
+                          ((color[2] + 1) / 2) % 1.0);
     GL_CHECKD(glUniform4f(shader_info.uniforms.at("color_edge"), (color[0] + 1) / 2, (color[1] + 1) / 2,
                           (color[2] + 1) / 2, 1.0));
   });
