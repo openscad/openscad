@@ -142,26 +142,7 @@ Renderer::Renderer()
 
   Renderer::setColorScheme(ColorMap::inst()->defaultColorScheme());
 
-  setupShader();
   PRINTD("Renderer() end");
-}
-
-void Renderer::setupShader() {
-  const GLuint shader_prog = RendererUtils::compileShaderProgram(
-    RendererUtils::loadShaderSource("Preview.vert"),
-    RendererUtils::loadShaderSource("Preview.frag"));
-
-  renderer_shader_ = {
-    .shader_program = shader_prog,
-    .type = RendererUtils::ShaderType::EDGE_RENDERING,
-    .uniforms = {
-      {"color_area", glGetUniformLocation(shader_prog, "color_area")},
-      {"color_edge", glGetUniformLocation(shader_prog, "color_edge")},
-    },
-    .attributes = {
-      {"barycentric", glGetAttribLocation(shader_prog, "barycentric")},
-    },
-  };
 }
 
 bool Renderer::getColor(Renderer::ColorMode colormode, Color4f& col) const

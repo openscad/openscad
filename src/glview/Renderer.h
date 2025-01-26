@@ -84,7 +84,4 @@ protected:
   std::map<ColorMode, Color4f> colormap_;
   const ColorScheme *colorscheme_{nullptr};
   void setupShader();
-
-private:
-  RendererUtils::ShaderInfo renderer_shader_;  
 };

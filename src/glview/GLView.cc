@@ -35,6 +35,25 @@ GLView::GLView()
 #endif
 }
 
+void GLView::setupShader() {
+  const GLuint shader_prog = RendererUtils::compileShaderProgram(
+    RendererUtils::loadShaderSource("Preview.vert"),
+    RendererUtils::loadShaderSource("Preview.frag"));
+
+  edge_shader = {
+    .shader_program = shader_prog,
+    .type = RendererUtils::ShaderType::EDGE_RENDERING,
+    .uniforms = {
+      {"color_area", glGetUniformLocation(shader_prog, "color_area")},
+      {"color_edge", glGetUniformLocation(shader_prog, "color_edge")},
+    },
+    .attributes = {
+      {"barycentric", glGetAttribLocation(shader_prog, "barycentric")},
+    },
+  };
+}
+
+
 void GLView::setRenderer(std::shared_ptr<Renderer> r)
 {
   this->renderer = r;
@@ -71,6 +90,9 @@ void GLView::resizeGL(int w, int h)
   cam.pixel_height = h;
   glViewport(0, 0, w, h);
   aspectratio = 1.0 * w / h;
+
+  // FIXME: Only run once, not every time the window is resized
+  setupShader();
 }
 
 void GLView::setCamera(const Camera& cam)
@@ -167,8 +189,8 @@ void GLView::paintGL()
     // FIXME: This belongs in the OpenCSG renderer, but it doesn't know about this ID yet
     OpenCSG::setContext(this->opencsg_id);
 #endif
-    this->renderer->prepare(showedges, nullptr);
-    this->renderer->draw(showedges, nullptr);
+    this->renderer->prepare(showedges, showedges ? &edge_shader : nullptr);
+    this->renderer->draw(showedges, showedges ? &edge_shader : nullptr);
   }
   Vector3d eyedir(this->modelview[2],this->modelview[6],this->modelview[10]);
   glColor3f(1,0,0);
