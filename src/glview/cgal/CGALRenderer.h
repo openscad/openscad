@@ -9,41 +9,6 @@
 #include "geometry/cgal/CGAL_Nef_polyhedron.h"
 #endif
 
-class VertexStateContainer {
-public:
-  VertexStateContainer() {
-    GL_TRACE("glGenBuffers(1, %p)", &vertices_vbo_);
-    GL_CHECKD(glGenBuffers(1, &vertices_vbo_));
-    if (Feature::ExperimentalVxORenderersIndexing.is_enabled()) {
-      GL_TRACE("glGenBuffers(1, %p)", &elements_vbo_);
-      GL_CHECKD(glGenBuffers(1, &elements_vbo_));
-    }
-  }
-  VertexStateContainer(const VertexStateContainer& o) = delete;
-  VertexStateContainer(VertexStateContainer&& o) noexcept {
-    vertices_vbo_ = o.vertices_vbo_;
-    elements_vbo_ = o.elements_vbo_;
-    vertex_states_ = std::move(o.vertex_states_);
-    o.vertices_vbo_ = 0;
-    o.elements_vbo_ = 0;
-  }
-  
-  ~VertexStateContainer() {
-    if (vertices_vbo_) {
-      GL_TRACE("glDeleteBuffers(1, %p)", &vertices_vbo_);
-      GL_CHECKD(glDeleteBuffers(1, &vertices_vbo_));
-    }
-    if (elements_vbo_) {
-      GL_TRACE("glDeleteBuffers(1, %p)", &elements_vbo_);
-      GL_CHECKD(glDeleteBuffers(1, &elements_vbo_));
-    }
-  }
-
-  std::vector<std::shared_ptr<VertexState>> vertex_states_;
-  GLuint vertices_vbo_;
-  GLuint elements_vbo_ = 0;
-};
-
 class CGALRenderer : public VBORenderer
 {
 public:

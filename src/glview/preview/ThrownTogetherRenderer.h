@@ -4,6 +4,7 @@
 #include <cstddef>
 #include <vector>
 
+#include "VertexState.h"
 #include "glview/Renderer.h"
 #include "core/CSGNode.h"
 
@@ -59,16 +60,14 @@ private:
                          bool highlight_mode = false, bool background_mode = false,
                          bool fberror = false) const;
 
-  void createCSGProducts(const CSGProducts& products, VBOBuilder& vertex_array,
+  void createCSGProducts(const CSGProducts& products, VertexStateContainer& container, VBOBuilder& vertex_array,
                          bool highlight_mode, bool background_mode);
-  void createChainObject(VBOBuilder& vertex_array, const CSGChainObject& csgobj,
+  void createChainObject(VertexStateContainer& container, VBOBuilder& vertex_array, const CSGChainObject& csgobj,
                          bool highlight_mode, bool background_mode,
                          OpenSCADOperator type);
 
-  std::vector<std::shared_ptr<VertexState>> vertex_states_;
   std::shared_ptr<CSGProducts> root_products_;
   std::shared_ptr<CSGProducts> highlight_products_;
   std::shared_ptr<CSGProducts> background_products_;
-  GLuint vertices_vbo_{0};
-  GLuint elements_vbo_{0};
+  std::vector<VertexStateContainer> vertex_state_containers_;
 };
