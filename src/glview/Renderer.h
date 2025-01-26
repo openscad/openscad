@@ -54,7 +54,6 @@ class Renderer
 public:
   Renderer();
   virtual ~Renderer() = default;
-  [[nodiscard]] const RendererUtils::ShaderInfo& getShader() const { return renderer_shader_; }
 
   virtual void prepare(bool showedges, const RendererUtils::ShaderInfo *shaderinfo) = 0;
   virtual void draw(bool showedges, const RendererUtils::ShaderInfo *shaderinfo) const = 0;

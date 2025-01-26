@@ -74,7 +74,7 @@ public:
 
   BoundingBox getBoundingBox() const override;
 private:
-  void createCSGVBOProducts(const CSGProducts& products, bool highlight_mode, bool background_mode);
+  void createCSGVBOProducts(const CSGProducts& products, bool highlight_mode, bool background_mode, const RendererUtils::ShaderInfo *shaderinfo);
 
   std::vector<std::unique_ptr<OpenCSGVBOProduct>> vertex_state_containers_;
   std::shared_ptr<CSGProducts> root_products_;

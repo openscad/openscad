@@ -61,10 +61,9 @@ private:
                          bool fberror = false) const;
 
   void createCSGProducts(const CSGProducts& products, VertexStateContainer& container, VBOBuilder& vertex_array,
-                         bool highlight_mode, bool background_mode);
+                         bool highlight_mode, bool background_mode, const RendererUtils::ShaderInfo *shaderinfo);
   void createChainObject(VertexStateContainer& container, VBOBuilder& vertex_array, const CSGChainObject& csgobj,
-                         bool highlight_mode, bool background_mode,
-                         OpenSCADOperator type);
+                         bool highlight_mode, bool background_mode, OpenSCADOperator type, const RendererUtils::ShaderInfo *shaderinfo);
 
   std::shared_ptr<CSGProducts> root_products_;
   std::shared_ptr<CSGProducts> highlight_products_;

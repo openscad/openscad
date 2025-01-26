@@ -45,8 +45,8 @@ public:
   virtual void create_polygons(const PolySet& ps, VBOBuilder& vertex_array,
                                const Transform3d& m, const Color4f& color) const;
 
-  void add_shader_pointers(VBOBuilder& vertex_array); // This could stay protected, were it not for VertexStateManager
-  void add_color(VBOBuilder& vertex_array, const Color4f& color);
+  void add_shader_pointers(VBOBuilder& vertex_array, const RendererUtils::ShaderInfo *shaderinfo); // This could stay protected, were it not for VertexStateManager
+  void add_color(VBOBuilder& vertex_array, const Color4f& color, const RendererUtils::ShaderInfo *shaderinfo);
 
 protected:
   void add_shader_data(VBOBuilder& vertex_array);

@@ -25,6 +25,7 @@
  */
 
 #include "glview/preview/OpenCSGRenderer.h"
+#include "Renderer.h"
 #include "VertexState.h"
 #include "geometry/linalg.h"
 #include "glview/system-gl.h"
@@ -94,24 +95,23 @@ OpenCSGRenderer::OpenCSGRenderer(
       highlights_products_(std::move(highlights_products)),
       background_products_(std::move(background_products)) {}
 
-void OpenCSGRenderer::prepare(bool /*showedges*/,
-                              const RendererUtils::ShaderInfo */*shaderinfo*/) {
+void OpenCSGRenderer::prepare(bool showedges,
+                              const RendererUtils::ShaderInfo *shaderinfo) {
   if (vertex_state_containers_.empty()) {
     if (root_products_) {
-      createCSGVBOProducts(*root_products_, false, false);
+      createCSGVBOProducts(*root_products_, false, false, shaderinfo);
     }
     if (background_products_) {
-      createCSGVBOProducts(*background_products_, false, true);
+      createCSGVBOProducts(*background_products_, false, true, shaderinfo);
     }
     if (highlights_products_) {
-      createCSGVBOProducts(*highlights_products_, true, false);
+      createCSGVBOProducts(*highlights_products_, true, false, shaderinfo);
     }
   }
 }
 
 void OpenCSGRenderer::draw(bool showedges, const RendererUtils::ShaderInfo *shaderinfo) const {
 #ifdef ENABLE_OPENCSG
-  if (!shaderinfo && showedges) shaderinfo = &getShader();
   for (const auto& product : vertex_state_containers_) {
     if (product->primitives().size() > 1) {
       GL_CHECKD(OpenCSG::render(product->primitives()));
@@ -171,8 +171,9 @@ void OpenCSGRenderer::draw(bool showedges, const RendererUtils::ShaderInfo *shad
 // Note: This function can be called multiple times for different products.
 // Each call will add to vbo_vertex_products_.
 void OpenCSGRenderer::createCSGVBOProducts(
-    const CSGProducts &products, bool highlight_mode, bool background_mode) {
+    const CSGProducts &products, bool highlight_mode, bool background_mode, const RendererUtils::ShaderInfo *shaderinfo) {
 #ifdef ENABLE_OPENCSG
+  bool enable_barycentric = shaderinfo && shaderinfo->attributes.at("barycentric");
   for (const auto& product : products.products) {
     std::unique_ptr<OpenCSGVBOProduct> vertex_state_container = std::make_unique<OpenCSGVBOProduct>();
  
@@ -184,7 +185,7 @@ void OpenCSGRenderer::createCSGVBOProducts(
                              vertex_state_container->elements_vbo_);
     vertex_array.addSurfaceData();
     vertex_array.writeSurface();
-    if (getShader().shader_program != 0) {
+    if (enable_barycentric) {
       vertex_array.addShaderData();
     } else {
       LOG("Warning: Shader not available");
@@ -203,9 +204,6 @@ void OpenCSGRenderer::createCSGVBOProducts(
     }
 
     vertex_array.allocateBuffers(num_vertices);
-
-    bool enable_barycentric = vertex_array.shader_attributes_index_ && 
-      getShader().attributes.at("barycentric");
 
     for (const auto &csgobj : product.intersections) {
       if (csgobj.leaf->polyset) {
@@ -230,7 +228,7 @@ void OpenCSGRenderer::createCSGVBOProducts(
           last_color = color;
         }
 
-        add_color(vertex_array, last_color);
+        add_color(vertex_array, last_color, shaderinfo);
 
         if (color[3] == 1.0f) {
           // object is opaque, draw normally
@@ -312,7 +310,7 @@ void OpenCSGRenderer::createCSGVBOProducts(
           last_color = color;
         }
 
-        add_color(vertex_array, last_color);
+        add_color(vertex_array, last_color, shaderinfo);
 
         // negative objects should only render rear faces
         std::shared_ptr<VertexState> cull = std::make_shared<VertexState>();

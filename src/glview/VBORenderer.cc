@@ -188,11 +188,6 @@ void VBORenderer::create_edges(const Polygon2d& polygon,
     }
     for (const Vector2d& v : o.vertices) {
       const Vector3d p0 = uniqueMultiply(vert_mult_map, Vector3d(v[0], v[1], 0.0), m);
-
-      if (vertex_array.shader_attributes_index_ && 
-         getShader().attributes.at("barycentric")) {
-        vertex_array.add_barycentric_attribute(0, 0, o.vertices.size(), true);
-      }
       vertex_array.createVertex({p0}, {}, color, 0, 0, o.vertices.size(), true, false);
     }
 
@@ -226,16 +221,13 @@ void VBORenderer::create_polygons(const PolySet& ps, VBOBuilder& vertex_array, c
     vertex_array.elementsMap().clear();
   }
 
-  bool enable_barycentric = vertex_array.shader_attributes_index_ && 
-    getShader().attributes.at("barycentric");
-
   for (const auto& poly : ps.indices) {
     if (poly.size() == 3) {
       const Vector3d p0 = uniqueMultiply(vert_mult_map, ps.vertices[poly.at(0)], m);
       const Vector3d p1 = uniqueMultiply(vert_mult_map, ps.vertices[poly.at(1)], m);
       const Vector3d p2 = uniqueMultiply(vert_mult_map, ps.vertices[poly.at(2)], m);
 
-      vertex_array.create_triangle(color, p0, p1, p2, 0, poly.size(), false, enable_barycentric, mirrored);
+      vertex_array.create_triangle(color, p0, p1, p2, 0, poly.size(), false, false, mirrored);
       triangle_count++;
     } else if (poly.size() == 4) {
       const Vector3d p0 = uniqueMultiply(vert_mult_map, ps.vertices[poly.at(0)], m);
@@ -243,8 +235,8 @@ void VBORenderer::create_polygons(const PolySet& ps, VBOBuilder& vertex_array, c
       const Vector3d p2 = uniqueMultiply(vert_mult_map, ps.vertices[poly.at(2)], m);
       const Vector3d p3 = uniqueMultiply(vert_mult_map, ps.vertices[poly.at(3)], m);
 
-      vertex_array.create_triangle(color, p0, p1, p3, 0, poly.size(), false, enable_barycentric, mirrored);
-      vertex_array.create_triangle(color, p2, p3, p1, 1, poly.size(), false, enable_barycentric, mirrored);
+      vertex_array.create_triangle(color, p0, p1, p3, 0, poly.size(), false, false, mirrored);
+      vertex_array.create_triangle(color, p2, p3, p1, 1, poly.size(), false, false, mirrored);
       triangle_count += 2;
     } else {
       Vector3d center = Vector3d::Zero();
@@ -260,7 +252,7 @@ void VBORenderer::create_polygons(const PolySet& ps, VBOBuilder& vertex_array, c
         const Vector3d p1 = uniqueMultiply(vert_mult_map, ps.vertices[poly.at(i % poly.size())], m);
         const Vector3d p2 = uniqueMultiply(vert_mult_map, ps.vertices[poly.at(i - 1)], m);
 
-        vertex_array.create_triangle(color, p0, p2, p1, i - 1, poly.size(), false, enable_barycentric, mirrored);
+        vertex_array.create_triangle(color, p0, p2, p1, i - 1, poly.size(), false, false, mirrored);
         triangle_count++;
       }
     }
@@ -274,7 +266,7 @@ void VBORenderer::create_polygons(const PolySet& ps, VBOBuilder& vertex_array, c
   vertex_array.addAttributePointers(last_size);
 }
 
-void VBORenderer::add_shader_pointers(VBOBuilder& vertex_array)
+void VBORenderer::add_shader_pointers(VBOBuilder& vertex_array, const RendererUtils::ShaderInfo *shaderinfo)
 {
   const std::shared_ptr<VertexData> vertex_data = vertex_array.data();
 
@@ -284,13 +276,12 @@ void VBORenderer::add_shader_pointers(VBOBuilder& vertex_array)
 
   std::shared_ptr<VertexState> ss = std::make_shared<VBOShaderVertexState>(
     vertex_array.writeIndex(), 0, vertex_array.verticesVBO(), vertex_array.elementsVBO());
-  GLuint index = 0;
   GLsizei count = 0, stride = 0;
   GLenum type = 0;
   size_t offset = 0;
+  GLuint index = shaderinfo->attributes.at("barycentric");
 
-  if (getShader().attributes.at("barycentric")) {
-    index = getShader().attributes.at("barycentric");
+  if (index > 0) {
     count =
       vertex_data->attributes()[vertex_array.shader_attributes_index_ + BARYCENTRIC_ATTRIB]->count();
     type =
@@ -315,19 +306,21 @@ void VBORenderer::add_shader_pointers(VBOBuilder& vertex_array)
   vertex_array.states().emplace_back(std::move(ss));
 }
 
-void VBORenderer::add_color(VBOBuilder& vertex_array, const Color4f& color)
+// This will set the `color_area` and `color_edge` shader uniforms.
+// ..meaning it will only be applicable to shaders using those uniforms, i.e. the edge shader
+void VBORenderer::add_color(VBOBuilder& vertex_array, const Color4f& color, const RendererUtils::ShaderInfo *shaderinfo)
 {
-  add_shader_pointers(vertex_array);
-  const RendererUtils::ShaderInfo& shader_info = getShader();
+  if (!shaderinfo) return;
+  add_shader_pointers(vertex_array, shaderinfo);
   std::shared_ptr<VertexState> color_state =
     std::make_shared<VBOShaderVertexState>(0, 0, vertex_array.verticesVBO(), vertex_array.elementsVBO());
-  color_state->glBegin().emplace_back([shader_info, color]() {
-    GL_TRACE("glUniform4f(%d, %.2f, %.2f, %.2f, %.2f)", shader_info.uniforms.at("color_area") % color[0] % color[1] % color[2] % color[3]);
+  color_state->glBegin().emplace_back([shaderinfo, color]() {
+    GL_TRACE("glUniform4f(%d, %.2f, %.2f, %.2f, %.2f)", shaderinfo->uniforms.at("color_area") % color[0] % color[1] % color[2] % color[3]);
     GL_CHECKD(
-      glUniform4f(shader_info.uniforms.at("color_area"), color[0], color[1], color[2], color[3]));
-    GL_TRACE("glUniform4f(%d, %.2f, %.2f, %.2f, %.2f)", shader_info.uniforms.at("color_edge") % ((color[0] + 1) / 2) % ((color[1] + 1) / 2) %
+      glUniform4f(shaderinfo->uniforms.at("color_area"), color[0], color[1], color[2], color[3]));
+    GL_TRACE("glUniform4f(%d, %.2f, %.2f, %.2f, %.2f)", shaderinfo->uniforms.at("color_edge") % ((color[0] + 1) / 2) % ((color[1] + 1) / 2) %
                           ((color[2] + 1) / 2) % 1.0);
-    GL_CHECKD(glUniform4f(shader_info.uniforms.at("color_edge"), (color[0] + 1) / 2, (color[1] + 1) / 2,
+    GL_CHECKD(glUniform4f(shaderinfo->uniforms.at("color_edge"), (color[0] + 1) / 2, (color[1] + 1) / 2,
                           (color[2] + 1) / 2, 1.0));
   });
   vertex_array.states().emplace_back(std::move(color_state));
