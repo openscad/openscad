@@ -39,7 +39,7 @@
 
 namespace VBOUtils {
 
-void shader_attribs_enable(const RendererUtils::ShaderInfo& shaderinfo)
+void shader_attribs_enable(const ShaderUtils::ShaderInfo& shaderinfo)
 {
   for (const auto& [name, location] : shaderinfo.attributes) {
     GL_TRACE("glEnableVertexAttribArray(%d)", location);
@@ -47,7 +47,7 @@ void shader_attribs_enable(const RendererUtils::ShaderInfo& shaderinfo)
   }
 }
 
-void shader_attribs_disable(const RendererUtils::ShaderInfo& shaderinfo)
+void shader_attribs_disable(const ShaderUtils::ShaderInfo& shaderinfo)
 {
   for (const auto& [name, location] : shaderinfo.attributes) {
     GL_TRACE("glEnableVertexAttribArray(%d)", location);
@@ -266,7 +266,7 @@ void VBORenderer::create_polygons(const PolySet& ps, VBOBuilder& vertex_array, c
   vertex_array.addAttributePointers(last_size);
 }
 
-void VBORenderer::add_shader_pointers(VBOBuilder& vertex_array, const RendererUtils::ShaderInfo *shaderinfo)
+void VBORenderer::add_shader_pointers(VBOBuilder& vertex_array, const ShaderUtils::ShaderInfo *shaderinfo)
 {
   const std::shared_ptr<VertexData> vertex_data = vertex_array.data();
 
@@ -308,7 +308,7 @@ void VBORenderer::add_shader_pointers(VBOBuilder& vertex_array, const RendererUt
 
 // This will set the `color_area` and `color_edge` shader uniforms.
 // ..meaning it will only be applicable to shaders using those uniforms, i.e. the edge shader
-void VBORenderer::add_color(VBOBuilder& vertex_array, const Color4f& color, const RendererUtils::ShaderInfo *shaderinfo)
+void VBORenderer::add_color(VBOBuilder& vertex_array, const Color4f& color, const ShaderUtils::ShaderInfo *shaderinfo)
 {
   if (!shaderinfo) return;
   add_shader_pointers(vertex_array, shaderinfo);

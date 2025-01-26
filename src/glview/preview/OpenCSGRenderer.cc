@@ -96,7 +96,7 @@ OpenCSGRenderer::OpenCSGRenderer(
       background_products_(std::move(background_products)) {}
 
 void OpenCSGRenderer::prepare(bool showedges,
-                              const RendererUtils::ShaderInfo *shaderinfo) {
+                              const ShaderUtils::ShaderInfo *shaderinfo) {
   if (vertex_state_containers_.empty()) {
     if (root_products_) {
       createCSGVBOProducts(*root_products_, false, false, shaderinfo);
@@ -110,7 +110,7 @@ void OpenCSGRenderer::prepare(bool showedges,
   }
 }
 
-void OpenCSGRenderer::draw(bool showedges, const RendererUtils::ShaderInfo *shaderinfo) const {
+void OpenCSGRenderer::draw(bool showedges, const ShaderUtils::ShaderInfo *shaderinfo) const {
 #ifdef ENABLE_OPENCSG
   for (const auto& product : vertex_state_containers_) {
     if (product->primitives().size() > 1) {
@@ -120,10 +120,10 @@ void OpenCSGRenderer::draw(bool showedges, const RendererUtils::ShaderInfo *shad
     }
 
     if (shaderinfo) {
-      GL_TRACE("glUseProgram(%d)", shaderinfo->shader_program);
-      GL_CHECKD(glUseProgram(shaderinfo->shader_program));
+      GL_TRACE("glUseProgram(%d)", shaderinfo->resource.shader_program);
+      GL_CHECKD(glUseProgram(shaderinfo->resource.shader_program));
 
-      if (shaderinfo->type == RendererUtils::ShaderType::EDGE_RENDERING && showedges) {
+      if (shaderinfo->type == ShaderUtils::ShaderType::EDGE_RENDERING && showedges) {
 	      VBOUtils::shader_attribs_enable(*shaderinfo);
       }
     }
@@ -131,7 +131,7 @@ void OpenCSGRenderer::draw(bool showedges, const RendererUtils::ShaderInfo *shad
     for (const auto& vs : product->states()) {
       if (vs) {
       	if (const auto csg_vs = std::dynamic_pointer_cast<OpenCSGVertexState>(vs)) {
-	        if (shaderinfo && shaderinfo->type == RendererUtils::ShaderType::SELECT_RENDERING) {
+	        if (shaderinfo && shaderinfo->type == ShaderUtils::ShaderType::SELECT_RENDERING) {
 	          GL_TRACE("glUniform3f(%d, %f, %f, %f)", shaderinfo->uniforms.at("frag_idcolor") %
               (((csg_vs->csgObjectIndex() >> 0) & 0xff) / 255.0f) %
               (((csg_vs->csgObjectIndex() >> 8) & 0xff) / 255.0f) %
@@ -153,7 +153,7 @@ void OpenCSGRenderer::draw(bool showedges, const RendererUtils::ShaderInfo *shad
       GL_TRACE0("glUseProgram(0)");
       GL_CHECKD(glUseProgram(0));
 
-      if (shaderinfo->type == RendererUtils::ShaderType::EDGE_RENDERING && showedges) {
+      if (shaderinfo->type == ShaderUtils::ShaderType::EDGE_RENDERING && showedges) {
 	      VBOUtils::shader_attribs_disable(*shaderinfo);
       }
     }
@@ -171,7 +171,7 @@ void OpenCSGRenderer::draw(bool showedges, const RendererUtils::ShaderInfo *shad
 // Note: This function can be called multiple times for different products.
 // Each call will add to vbo_vertex_products_.
 void OpenCSGRenderer::createCSGVBOProducts(
-    const CSGProducts &products, bool highlight_mode, bool background_mode, const RendererUtils::ShaderInfo *shaderinfo) {
+    const CSGProducts &products, bool highlight_mode, bool background_mode, const ShaderUtils::ShaderInfo *shaderinfo) {
 #ifdef ENABLE_OPENCSG
   bool enable_barycentric = shaderinfo && shaderinfo->attributes.at("barycentric");
   for (const auto& product : products.products) {

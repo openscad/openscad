@@ -71,6 +71,11 @@ QGLView::QGLView(QWidget *parent) : QOpenGLWidget(parent)
   init();
 }
 
+QGLView::~QGLView()
+{
+  makeCurrent();
+}
+
 void QGLView::init()
 {
   resetView();

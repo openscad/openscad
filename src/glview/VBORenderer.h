@@ -16,8 +16,8 @@
 
 namespace VBOUtils {
 
-void shader_attribs_enable(const RendererUtils::ShaderInfo &shaderinfo);
-void shader_attribs_disable(const RendererUtils::ShaderInfo &shaderinfo);
+void shader_attribs_enable(const ShaderUtils::ShaderInfo &shaderinfo);
+void shader_attribs_disable(const ShaderUtils::ShaderInfo &shaderinfo);
 
 }  // namespace VBOUtils
 
@@ -45,13 +45,13 @@ public:
   virtual void create_polygons(const PolySet& ps, VBOBuilder& vertex_array,
                                const Transform3d& m, const Color4f& color) const;
 
-  void add_shader_pointers(VBOBuilder& vertex_array, const RendererUtils::ShaderInfo *shaderinfo); // This could stay protected, were it not for VertexStateManager
-  void add_color(VBOBuilder& vertex_array, const Color4f& color, const RendererUtils::ShaderInfo *shaderinfo);
+  void add_shader_pointers(VBOBuilder& vertex_array, const ShaderUtils::ShaderInfo *shaderinfo); // This could stay protected, were it not for VertexStateManager
+  void add_color(VBOBuilder& vertex_array, const Color4f& color, const ShaderUtils::ShaderInfo *shaderinfo);
 
 protected:
   void add_shader_data(VBOBuilder& vertex_array);
-  void shader_attribs_enable(const RendererUtils::ShaderInfo&) const;
-  void shader_attribs_disable(const RendererUtils::ShaderInfo&) const;
+  void shader_attribs_enable(const ShaderUtils::ShaderInfo&) const;
+  void shader_attribs_disable(const ShaderUtils::ShaderInfo&) const;
 
   mutable std::unordered_map<std::pair<const PolySet *, const Transform3d *>, int,
                              boost::hash<std::pair<const PolySet *, const Transform3d *>>> geom_visit_mark_;

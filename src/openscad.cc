@@ -62,6 +62,8 @@
 #include "core/parsersettings.h"
 #include "core/RenderVariables.h"
 #include "geometry/GeometryEvaluator.h"
+#include "geometry/GeometryUtils.h"
+#include "geometry/PolySet.h"
 #include "glview/ColorMap.h"
 #include "glview/OffscreenView.h"
 #include "glview/RenderSettings.h"

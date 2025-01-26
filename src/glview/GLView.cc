@@ -35,24 +35,39 @@ GLView::GLView()
 #endif
 }
 
+GLView::~GLView()
+{
+  teardownShader();
+}
+
 void GLView::setupShader() {
-  const GLuint shader_prog = RendererUtils::compileShaderProgram(
-    RendererUtils::loadShaderSource("Preview.vert"),
-    RendererUtils::loadShaderSource("Preview.frag"));
+  auto resource = ShaderUtils::compileShaderProgram(ShaderUtils::loadShaderSource("Preview.vert"),
+                                                      ShaderUtils::loadShaderSource("Preview.frag"));
 
   edge_shader = {
-    .shader_program = shader_prog,
-    .type = RendererUtils::ShaderType::EDGE_RENDERING,
+    .resource = resource,
+    .type = ShaderUtils::ShaderType::EDGE_RENDERING,
     .uniforms = {
-      {"color_area", glGetUniformLocation(shader_prog, "color_area")},
-      {"color_edge", glGetUniformLocation(shader_prog, "color_edge")},
+      {"color_area", glGetUniformLocation(resource.shader_program, "color_area")},
+      {"color_edge", glGetUniformLocation(resource.shader_program, "color_edge")},
     },
     .attributes = {
-      {"barycentric", glGetAttribLocation(shader_prog, "barycentric")},
+      {"barycentric", glGetAttribLocation(resource.shader_program, "barycentric")},
     },
   };
 }
 
+void GLView::teardownShader() {
+  if (edge_shader.resource.shader_program) {
+    glDeleteProgram(edge_shader.resource.shader_program);
+  }
+  if (edge_shader.resource.vertex_shader) {
+    glDeleteShader(edge_shader.resource.vertex_shader);
+  }
+  if (edge_shader.resource.fragment_shader) {
+    glDeleteShader(edge_shader.resource.fragment_shader);
+  }
+}
 
 void GLView::setRenderer(std::shared_ptr<Renderer> r)
 {

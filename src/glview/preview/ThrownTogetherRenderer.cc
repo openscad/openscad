@@ -81,7 +81,7 @@ ThrownTogetherRenderer::~ThrownTogetherRenderer()
 {
 }
 
-void ThrownTogetherRenderer::prepare(bool /*showedges*/, const RendererUtils::ShaderInfo *shaderinfo)
+void ThrownTogetherRenderer::prepare(bool /*showedges*/, const ShaderUtils::ShaderInfo *shaderinfo)
 {
   PRINTD("Thrown prepare");
   if (vertex_state_containers_.empty()) {
@@ -116,11 +116,11 @@ void ThrownTogetherRenderer::prepare(bool /*showedges*/, const RendererUtils::Sh
 }
 
 
-void ThrownTogetherRenderer::draw(bool showedges, const RendererUtils::ShaderInfo *shaderinfo) const
+void ThrownTogetherRenderer::draw(bool showedges, const ShaderUtils::ShaderInfo *shaderinfo) const
 {
   if (shaderinfo) {
-    glUseProgram(shaderinfo->shader_program);
-    if (shaderinfo->type == RendererUtils::ShaderType::EDGE_RENDERING && showedges) {
+    glUseProgram(shaderinfo->resource.shader_program);
+    if (shaderinfo->type == ShaderUtils::ShaderType::EDGE_RENDERING && showedges) {
       VBOUtils::shader_attribs_enable(*shaderinfo);
     }
   }
@@ -128,7 +128,7 @@ void ThrownTogetherRenderer::draw(bool showedges, const RendererUtils::ShaderInf
   renderCSGProducts(std::make_shared<CSGProducts>(), showedges, shaderinfo);
   
   if (shaderinfo) {
-    if (shaderinfo->type == RendererUtils::ShaderType::EDGE_RENDERING && showedges) {
+    if (shaderinfo->type == ShaderUtils::ShaderType::EDGE_RENDERING && showedges) {
       VBOUtils::shader_attribs_disable(*shaderinfo);
     }
     glUseProgram(0);
@@ -136,7 +136,7 @@ void ThrownTogetherRenderer::draw(bool showedges, const RendererUtils::ShaderInf
 }
 
 void ThrownTogetherRenderer::renderCSGProducts(const std::shared_ptr<CSGProducts>& products, bool showedges,
-                                               const RendererUtils::ShaderInfo *shaderinfo,
+                                               const ShaderUtils::ShaderInfo *shaderinfo,
                                                bool highlight_mode, bool background_mode,
                                                bool fberror) const
 {
@@ -147,7 +147,7 @@ void ThrownTogetherRenderer::renderCSGProducts(const std::shared_ptr<CSGProducts
     for (const auto& vs : container.vertex_states_) {
       if (vs) {
         if (const auto csg_vs = std::dynamic_pointer_cast<TTRVertexState>(vs)) {
-          if (shaderinfo && shaderinfo->type == RendererUtils::ShaderType::SELECT_RENDERING) {
+          if (shaderinfo && shaderinfo->type == ShaderUtils::ShaderType::SELECT_RENDERING) {
             GL_TRACE("glUniform3f(%d, %f, %f, %f)",
                     shaderinfo->uniforms.at("frag_idcolor") %
                     (((csg_vs->csgObjectIndex() >> 0) & 0xff) / 255.0f) %
@@ -170,7 +170,7 @@ void ThrownTogetherRenderer::renderCSGProducts(const std::shared_ptr<CSGProducts
 
 void ThrownTogetherRenderer::createChainObject(VertexStateContainer& container, VBOBuilder& vertex_array,
                                                const CSGChainObject& csgobj, bool highlight_mode,
-                                               bool background_mode, OpenSCADOperator type, const RendererUtils::ShaderInfo *shaderinfo)
+                                               bool background_mode, OpenSCADOperator type, const ShaderUtils::ShaderInfo *shaderinfo)
 {
   if (!csgobj.leaf->polyset ||
       this->geom_visit_mark_[std::make_pair(csgobj.leaf->polyset.get(), &csgobj.leaf->matrix)]++ > 0) {
@@ -247,7 +247,7 @@ void ThrownTogetherRenderer::createChainObject(VertexStateContainer& container, 
 }
 
 void ThrownTogetherRenderer::createCSGProducts(const CSGProducts& products, VertexStateContainer& container, VBOBuilder& vertex_array,
-                                               bool highlight_mode, bool background_mode, const RendererUtils::ShaderInfo *shaderinfo)
+                                               bool highlight_mode, bool background_mode, const ShaderUtils::ShaderInfo *shaderinfo)
 {
   PRINTD("Thrown renderCSGProducts");
   this->geom_visit_mark_.clear();

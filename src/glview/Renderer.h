@@ -1,18 +1,16 @@
 #pragma once
 
 #include "geometry/linalg.h"
+#include "glview/ShaderUtils.h"
 #include "glview/ColorMap.h"
 #include "core/enums.h"
-#include "geometry/PolySet.h"
 #include "core/Selection.h"
-#include "glview/system-gl.h"
 
 #ifdef _MSC_VER // NULL
 #include <map>
 #include <cstdlib>
 #endif
 
-#include <string>
 #include <vector>
 
 namespace RendererUtils {
@@ -29,23 +27,7 @@ enum CSGMode {
   CSGMODE_HIGHLIGHT_DIFFERENCE  = CSGMODE_HIGHLIGHT | CSGMODE_DIFFERENCE_FLAG
 };
 
-enum class ShaderType {
-  NONE,
-  EDGE_RENDERING,
-  SELECT_RENDERING,
-};
-
-// Shader attribute identifiers
-struct ShaderInfo {
-  GLuint shader_program;
-  ShaderType type;
-  std::unordered_map<std::string, int> uniforms;
-  std::unordered_map<std::string, int> attributes;
-};
-
 CSGMode getCsgMode(const bool highlight_mode, const bool background_mode, const OpenSCADOperator type = OpenSCADOperator::UNION);
-std::string loadShaderSource(const std::string& name);
-GLuint compileShaderProgram(const std::string& vs_str, const std::string& fs_str);
 
 } // namespace RendererUtils
 
@@ -55,8 +37,8 @@ public:
   Renderer();
   virtual ~Renderer() = default;
 
-  virtual void prepare(bool showedges, const RendererUtils::ShaderInfo *shaderinfo) = 0;
-  virtual void draw(bool showedges, const RendererUtils::ShaderInfo *shaderinfo) const = 0;
+  virtual void prepare(bool showedges, const ShaderUtils::ShaderInfo *shaderinfo) = 0;
+  virtual void draw(bool showedges, const ShaderUtils::ShaderInfo *shaderinfo) const = 0;
   [[nodiscard]] virtual BoundingBox getBoundingBox() const = 0;
 
 

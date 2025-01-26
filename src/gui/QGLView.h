@@ -28,6 +28,7 @@ class QGLView : public QOpenGLWidget, public GLView
 
 public:
   QGLView(QWidget *parent = nullptr);
+  ~QGLView() override;
 #ifdef ENABLE_OPENCSG
   bool hasOpenCSGSupport() { return this->is_opencsg_capable; }
 #endif

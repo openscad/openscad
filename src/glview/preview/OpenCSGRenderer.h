@@ -69,12 +69,12 @@ public:
                   std::shared_ptr<CSGProducts> highlights_products,
                   std::shared_ptr<CSGProducts> background_products);
   ~OpenCSGRenderer() override = default;
-  void prepare(bool showedges, const RendererUtils::ShaderInfo *shaderinfo = nullptr) override;
-  void draw(bool showedges, const RendererUtils::ShaderInfo *shaderinfo = nullptr) const override;
+  void prepare(bool showedges, const ShaderUtils::ShaderInfo *shaderinfo = nullptr) override;
+  void draw(bool showedges, const ShaderUtils::ShaderInfo *shaderinfo = nullptr) const override;
 
   BoundingBox getBoundingBox() const override;
 private:
-  void createCSGVBOProducts(const CSGProducts& products, bool highlight_mode, bool background_mode, const RendererUtils::ShaderInfo *shaderinfo);
+  void createCSGVBOProducts(const CSGProducts& products, bool highlight_mode, bool background_mode, const ShaderUtils::ShaderInfo *shaderinfo);
 
   std::vector<std::unique_ptr<OpenCSGVBOProduct>> vertex_state_containers_;
   std::shared_ptr<CSGProducts> root_products_;

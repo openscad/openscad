@@ -246,7 +246,7 @@ void CGALRenderer::createPolygonEdgeStates() {
 }
 
 void CGALRenderer::prepare(bool /*showedges*/,
-                           const RendererUtils::ShaderInfo * /*shaderinfo*/) {
+                           const ShaderUtils::ShaderInfo * /*shaderinfo*/) {
   PRINTD("prepare()");
   if (!vertex_state_containers_.size()) {
     if (!this->polysets_.empty() && !this->polygons_.empty()) {
@@ -266,7 +266,7 @@ void CGALRenderer::prepare(bool /*showedges*/,
   PRINTD("prepare() end");
 }
 
-void CGALRenderer::draw(bool showedges, const RendererUtils::ShaderInfo * /*shaderinfo*/) const {
+void CGALRenderer::draw(bool showedges, const ShaderUtils::ShaderInfo * /*shaderinfo*/) const {
   PRINTD("draw()");
   // grab current state to restore after
   GLfloat current_point_size, current_line_width;
