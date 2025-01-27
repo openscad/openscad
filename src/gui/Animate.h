@@ -31,12 +31,12 @@ public:
   bool dumpPictures();
   int nextFrame();
 
-  QTimer *animate_timer;
+  QTimer *animateTimer;
 
   void setMainWindow(MainWindow *mainWindow);
 
   const QList<QAction *>& actions();
-  double getAnim_tval();
+  double getAnimTval();
 
 public slots:
   void animateUpdate();
@@ -60,14 +60,14 @@ private:
   void updatePauseButtonIcon();
   void connectAction(QAction *, QPushButton *);
 
-  double anim_tval;
-  bool anim_dumping;
-  int anim_dump_start_step;
-  int anim_step;
-  int anim_numsteps;
+  double animTVal;
+  bool animDumping;
+  int animDumpStartStep;
+  int animStep;
+  int animNumSteps;
 
-  bool fps_ok;
-  bool t_ok;
+  bool fpsOK;
+  bool tOK;
   bool steps_ok;
 
   int initMinWidth;
@@ -75,7 +75,7 @@ private:
   QIcon iconRun;
   QIcon iconPause;
   QIcon iconDisabled;
-  QList<QAction *> action_list;
+  QList<QAction *> actionList;
   QColor errorBlendColor{"red"};
 
 signals:

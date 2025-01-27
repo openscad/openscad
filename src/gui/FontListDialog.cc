@@ -72,7 +72,7 @@ void FontListDialog::selection_changed(const QItemSelection& current, const QIte
   tableView->setDragText(selection);
 }
 
-void FontListDialog::update_font_list()
+void FontListDialog::updateFontList()
 {
   copyButton->setEnabled(false);
 
