@@ -61,7 +61,7 @@ PACKAGES=(
     "opencsg 1.7.0"
     "qscintilla 2.14.1"
     "onetbb 2021.12.0"
-    "clipper2 1.5.0"
+    "clipper2 1.5.2"
     "manifold 3.0.1"
 )
 DEPLOY_PACKAGES=(
