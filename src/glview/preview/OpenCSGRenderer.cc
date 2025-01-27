@@ -181,8 +181,8 @@ void OpenCSGRenderer::createCSGVBOProducts(
     std::vector<OpenCSG::Primitive *>& primitives = vertex_state_container->primitives();
     auto& vertex_states = vertex_state_container->states();
     VBOBuilder vertex_array(std::make_unique<OpenCSGVertexStateFactory>(),
-                             vertex_states, vertex_state_container->vertices_vbo_,
-                             vertex_state_container->elements_vbo_);
+                             vertex_states, vertex_state_container->verticesVBO(),
+                             vertex_state_container->elementsVBO());
     vertex_array.addSurfaceData();
     vertex_array.writeSurface();
     if (enable_barycentric) {

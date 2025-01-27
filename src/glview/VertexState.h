@@ -129,8 +129,13 @@ public:
     }
   }
 
+  GLuint verticesVBO() const { return vertices_vbo_; }
+  GLuint elementsVBO() const { return elements_vbo_; }
+  
   // TODO: Make private
   std::vector<std::shared_ptr<VertexState>> vertex_states_;
+
+private:
   GLuint vertices_vbo_;
   GLuint elements_vbo_ = 0;
 };
