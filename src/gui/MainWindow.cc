@@ -1890,9 +1890,9 @@ void MainWindow::parseTopLevelDocument()
 
   if (this->python_active) {
     auto fulltext_py =
-      std::string(this->last_compiled_doc.toUtf8().constData());
+      std::string(this->lastCompiledDoc.toUtf8().constData());
 
-    auto error = evaluatePython(fulltext_py, this->animateWidget->getAnim_tval());
+    auto error = evaluatePython(fulltext_py, this->animateWidget->getAnimTval());
     if (error.size() > 0) LOG(message_group::Error, Location::NONE, "", error.c_str());
     fulltext = "\n";
   }
