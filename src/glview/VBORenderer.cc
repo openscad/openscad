@@ -167,58 +167,58 @@ Vector3d uniqueMultiply(std::unordered_map<Vector3d, Vector3d>& vert_mult_map, c
 }
 
 void VBORenderer::create_edges(const Polygon2d& polygon,
-                               VBOBuilder& vertex_array,
+                               VBOBuilder& vbo_builder,
                                const Transform3d& m,
                                const Color4f& color) const
 {
-  const std::shared_ptr<VertexData> vertex_data = vertex_array.data();
+  const std::shared_ptr<VertexData> vertex_data = vbo_builder.data();
 
   if (!vertex_data) return;
 
-  auto& vertex_states = vertex_array.states();
+  auto& vertex_states = vbo_builder.states();
   std::unordered_map<Vector3d, Vector3d> vert_mult_map;
 
   // Render only outlines
   for (const Outline2d& o : polygon.outlines()) {
-    const auto last_size = vertex_array.verticesOffset();
+    const auto last_size = vbo_builder.verticesOffset();
     size_t elements_offset = 0;
-    if (vertex_array.useElements()) {
-      elements_offset = vertex_array.elementsOffset();
-      vertex_array.elementsMap().clear();
+    if (vbo_builder.useElements()) {
+      elements_offset = vbo_builder.elementsOffset();
+      vbo_builder.elementsMap().clear();
     }
     for (const Vector2d& v : o.vertices) {
       const Vector3d p0 = uniqueMultiply(vert_mult_map, Vector3d(v[0], v[1], 0.0), m);
-      vertex_array.createVertex({p0}, {}, color, 0, 0, o.vertices.size(), true, false);
+      vbo_builder.createVertex({p0}, {}, color, 0, 0, o.vertices.size(), true, false);
     }
 
     GLenum elements_type = 0;
-    if (vertex_array.useElements()) elements_type = vertex_array.elementsData()->glType();
-    std::shared_ptr<VertexState> line_loop = vertex_array.createVertexState(
-      GL_LINE_LOOP, o.vertices.size(), elements_type, vertex_array.writeIndex(), elements_offset);
+    if (vbo_builder.useElements()) elements_type = vbo_builder.elementsData()->glType();
+    std::shared_ptr<VertexState> line_loop = vbo_builder.createVertexState(
+      GL_LINE_LOOP, o.vertices.size(), elements_type, vbo_builder.writeIndex(), elements_offset);
     vertex_states.emplace_back(std::move(line_loop));
-    vertex_array.addAttributePointers(last_size);
+    vbo_builder.addAttributePointers(last_size);
   }
 }
 
-void VBORenderer::create_polygons(const PolySet& ps, VBOBuilder& vertex_array, const Transform3d& m,
+void VBORenderer::create_polygons(const PolySet& ps, VBOBuilder& vbo_builder, const Transform3d& m,
                                   const Color4f& color) const
 {
   assert(ps.getDimension() == 2);
-  const std::shared_ptr<VertexData> vertex_data = vertex_array.data();
+  const std::shared_ptr<VertexData> vertex_data = vbo_builder.data();
 
   if (!vertex_data) return;
 
-  auto& vertex_states = vertex_array.states();
+  auto& vertex_states = vbo_builder.states();
   std::unordered_map<Vector3d, Vector3d> vert_mult_map;
 
   PRINTD("create_polygons 2D");
   const bool mirrored = m.matrix().determinant() < 0;
   size_t triangle_count = 0;
-  const auto last_size = vertex_array.verticesOffset();
+  const auto last_size = vbo_builder.verticesOffset();
   size_t elements_offset = 0;
-  if (vertex_array.useElements()) {
-    elements_offset = vertex_array.elementsOffset();
-    vertex_array.elementsMap().clear();
+  if (vbo_builder.useElements()) {
+    elements_offset = vbo_builder.elementsOffset();
+    vbo_builder.elementsMap().clear();
   }
 
   for (const auto& poly : ps.indices) {
@@ -227,7 +227,7 @@ void VBORenderer::create_polygons(const PolySet& ps, VBOBuilder& vertex_array, c
       const Vector3d p1 = uniqueMultiply(vert_mult_map, ps.vertices[poly.at(1)], m);
       const Vector3d p2 = uniqueMultiply(vert_mult_map, ps.vertices[poly.at(2)], m);
 
-      vertex_array.create_triangle(color, p0, p1, p2, 0, poly.size(), false, false, mirrored);
+      vbo_builder.create_triangle(color, p0, p1, p2, 0, poly.size(), false, false, mirrored);
       triangle_count++;
     } else if (poly.size() == 4) {
       const Vector3d p0 = uniqueMultiply(vert_mult_map, ps.vertices[poly.at(0)], m);
@@ -235,8 +235,8 @@ void VBORenderer::create_polygons(const PolySet& ps, VBOBuilder& vertex_array, c
       const Vector3d p2 = uniqueMultiply(vert_mult_map, ps.vertices[poly.at(2)], m);
       const Vector3d p3 = uniqueMultiply(vert_mult_map, ps.vertices[poly.at(3)], m);
 
-      vertex_array.create_triangle(color, p0, p1, p3, 0, poly.size(), false, false, mirrored);
-      vertex_array.create_triangle(color, p2, p3, p1, 1, poly.size(), false, false, mirrored);
+      vbo_builder.create_triangle(color, p0, p1, p3, 0, poly.size(), false, false, mirrored);
+      vbo_builder.create_triangle(color, p2, p3, p1, 1, poly.size(), false, false, mirrored);
       triangle_count += 2;
     } else {
       Vector3d center = Vector3d::Zero();
@@ -252,30 +252,30 @@ void VBORenderer::create_polygons(const PolySet& ps, VBOBuilder& vertex_array, c
         const Vector3d p1 = uniqueMultiply(vert_mult_map, ps.vertices[poly.at(i % poly.size())], m);
         const Vector3d p2 = uniqueMultiply(vert_mult_map, ps.vertices[poly.at(i - 1)], m);
 
-        vertex_array.create_triangle(color, p0, p2, p1, i - 1, poly.size(), false, false, mirrored);
+        vbo_builder.create_triangle(color, p0, p2, p1, i - 1, poly.size(), false, false, mirrored);
         triangle_count++;
       }
     }
   }
 
   GLenum elements_type = 0;
-  if (vertex_array.useElements()) elements_type = vertex_array.elementsData()->glType();
-  std::shared_ptr<VertexState> vs = vertex_array.createVertexState(
-    GL_TRIANGLES, triangle_count * 3, elements_type, vertex_array.writeIndex(), elements_offset);
+  if (vbo_builder.useElements()) elements_type = vbo_builder.elementsData()->glType();
+  std::shared_ptr<VertexState> vs = vbo_builder.createVertexState(
+    GL_TRIANGLES, triangle_count * 3, elements_type, vbo_builder.writeIndex(), elements_offset);
   vertex_states.emplace_back(std::move(vs));
-  vertex_array.addAttributePointers(last_size);
+  vbo_builder.addAttributePointers(last_size);
 }
 
-void VBORenderer::add_shader_pointers(VBOBuilder& vertex_array, const ShaderUtils::ShaderInfo *shaderinfo)
+void VBORenderer::add_shader_pointers(VBOBuilder& vbo_builder, const ShaderUtils::ShaderInfo *shaderinfo)
 {
-  const std::shared_ptr<VertexData> vertex_data = vertex_array.data();
+  const std::shared_ptr<VertexData> vertex_data = vbo_builder.data();
 
   if (!vertex_data) return;
 
-  const auto start_offset = vertex_array.verticesOffset();
+  const auto start_offset = vbo_builder.verticesOffset();
 
   std::shared_ptr<VertexState> ss = std::make_shared<VBOShaderVertexState>(
-    vertex_array.writeIndex(), 0, vertex_array.verticesVBO(), vertex_array.elementsVBO());
+    vbo_builder.writeIndex(), 0, vbo_builder.verticesVBO(), vbo_builder.elementsVBO());
   GLsizei count = 0, stride = 0;
   GLenum type = 0;
   size_t offset = 0;
@@ -283,12 +283,12 @@ void VBORenderer::add_shader_pointers(VBOBuilder& vertex_array, const ShaderUtil
 
   if (index > 0) {
     count =
-      vertex_data->attributes()[vertex_array.shader_attributes_index_ + BARYCENTRIC_ATTRIB]->count();
+      vertex_data->attributes()[vbo_builder.shader_attributes_index_ + BARYCENTRIC_ATTRIB]->count();
     type =
-      vertex_data->attributes()[vertex_array.shader_attributes_index_ + BARYCENTRIC_ATTRIB]->glType();
+      vertex_data->attributes()[vbo_builder.shader_attributes_index_ + BARYCENTRIC_ATTRIB]->glType();
     stride = vertex_data->stride();
     offset = start_offset +
-             vertex_data->interleavedOffset(vertex_array.shader_attributes_index_ + BARYCENTRIC_ATTRIB);
+             vertex_data->interleavedOffset(vbo_builder.shader_attributes_index_ + BARYCENTRIC_ATTRIB);
     ss->glBegin().emplace_back(
       [index, count, type, stride, offset, ss_ptr = std::weak_ptr<VertexState>(ss)]() {
         auto ss = ss_ptr.lock();
@@ -303,17 +303,17 @@ void VBORenderer::add_shader_pointers(VBOBuilder& vertex_array, const ShaderUtil
       });
   }
 
-  vertex_array.states().emplace_back(std::move(ss));
+  vbo_builder.states().emplace_back(std::move(ss));
 }
 
 // This will set the `color_area` and `color_edge` shader uniforms.
 // ..meaning it will only be applicable to shaders using those uniforms, i.e. the edge shader
-void VBORenderer::add_color(VBOBuilder& vertex_array, const Color4f& color, const ShaderUtils::ShaderInfo *shaderinfo)
+void VBORenderer::add_color(VBOBuilder& vbo_builder, const Color4f& color, const ShaderUtils::ShaderInfo *shaderinfo)
 {
   if (!shaderinfo) return;
-  add_shader_pointers(vertex_array, shaderinfo);
+  add_shader_pointers(vbo_builder, shaderinfo);
   std::shared_ptr<VertexState> color_state =
-    std::make_shared<VBOShaderVertexState>(0, 0, vertex_array.verticesVBO(), vertex_array.elementsVBO());
+    std::make_shared<VBOShaderVertexState>(0, 0, vbo_builder.verticesVBO(), vbo_builder.elementsVBO());
   color_state->glBegin().emplace_back([shaderinfo, color]() {
     GL_TRACE("glUniform4f(%d, %.2f, %.2f, %.2f, %.2f)", shaderinfo->uniforms.at("color_area") % color[0] % color[1] % color[2] % color[3]);
     GL_CHECKD(
@@ -323,5 +323,5 @@ void VBORenderer::add_color(VBOBuilder& vertex_array, const Color4f& color, cons
     GL_CHECKD(glUniform4f(shaderinfo->uniforms.at("color_edge"), (color[0] + 1) / 2, (color[1] + 1) / 2,
                           (color[2] + 1) / 2, 1.0));
   });
-  vertex_array.states().emplace_back(std::move(color_state));
+  vbo_builder.states().emplace_back(std::move(color_state));
 }

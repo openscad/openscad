@@ -1,6 +1,4 @@
 #include "glview/Renderer.h"
-#include "geometry/PolySet.h"
-#include "geometry/Polygon2d.h"
 #include "glview/ColorMap.h"
 #include "utils/printutils.h"
 #include "platform/PlatformUtils.h"

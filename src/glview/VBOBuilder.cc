@@ -409,8 +409,8 @@ void VBOBuilder::create_triangle(const Color4f& color, const Vector3d& p0,
 }
 
 // Creates a VBO "surface" from the PolySet.
-// This will usually create a new VertexState and append it to the
-// vertex states in the given vertex_array
+// This will usually create a new VertexState and append it to our
+// vertex states
 void VBOBuilder::create_surface(const PolySet& ps, const Transform3d& m,
                                  const Color4f& default_color, bool enable_barycentric, bool force_default_color)
 {

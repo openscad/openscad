@@ -180,13 +180,13 @@ void OpenCSGRenderer::createCSGVBOProducts(
     Color4f last_color;
     std::vector<OpenCSG::Primitive *>& primitives = vertex_state_container->primitives();
     auto& vertex_states = vertex_state_container->states();
-    VBOBuilder vertex_array(std::make_unique<OpenCSGVertexStateFactory>(),
+    VBOBuilder vbo_builder(std::make_unique<OpenCSGVertexStateFactory>(),
                              vertex_states, vertex_state_container->verticesVBO(),
                              vertex_state_container->elementsVBO());
-    vertex_array.addSurfaceData();
-    vertex_array.writeSurface();
+    vbo_builder.addSurfaceData();
+    vbo_builder.writeSurface();
     if (enable_barycentric) {
-      vertex_array.addShaderData();
+      vbo_builder.addShaderData();
     } else {
       LOG("Warning: Shader not available");
     }
@@ -203,7 +203,7 @@ void OpenCSGRenderer::createCSGVBOProducts(
       }
     }
 
-    vertex_array.allocateBuffers(num_vertices);
+    vbo_builder.allocateBuffers(num_vertices);
 
     for (const auto &csgobj : product.intersections) {
       if (csgobj.leaf->polyset) {
@@ -228,11 +228,11 @@ void OpenCSGRenderer::createCSGVBOProducts(
           last_color = color;
         }
 
-        add_color(vertex_array, last_color, shaderinfo);
+        add_color(vbo_builder, last_color, shaderinfo);
 
         if (color[3] == 1.0f) {
           // object is opaque, draw normally
-          vertex_array.create_surface(*csgobj.leaf->polyset, 
+          vbo_builder.create_surface(*csgobj.leaf->polyset, 
                          csgobj.leaf->matrix, last_color, enable_barycentric, override_color);
           const auto surface = std::dynamic_pointer_cast<OpenCSGVertexState>(
             vertex_states.back());
@@ -251,7 +251,7 @@ void OpenCSGRenderer::createCSGVBOProducts(
           });
           vertex_states.emplace_back(std::move(cull));
 
-          vertex_array.create_surface(*csgobj.leaf->polyset, 
+          vbo_builder.create_surface(*csgobj.leaf->polyset, 
                          csgobj.leaf->matrix, last_color, enable_barycentric, override_color);
           std::shared_ptr<OpenCSGVertexState> surface =
               std::dynamic_pointer_cast<OpenCSGVertexState>(
@@ -310,7 +310,7 @@ void OpenCSGRenderer::createCSGVBOProducts(
           last_color = color;
         }
 
-        add_color(vertex_array, last_color, shaderinfo);
+        add_color(vbo_builder, last_color, shaderinfo);
 
         // negative objects should only render rear faces
         std::shared_ptr<VertexState> cull = std::make_shared<VertexState>();
@@ -328,7 +328,7 @@ void OpenCSGRenderer::createCSGVBOProducts(
           // Scale 2D negative objects 10% in the Z direction to avoid z fighting
           tmp *= Eigen::Scaling(1.0, 1.0, 1.1);
         }
-        vertex_array.create_surface(*csgobj.leaf->polyset, tmp,
+        vbo_builder.create_surface(*csgobj.leaf->polyset, tmp,
                        last_color, enable_barycentric, override_color);
         const auto surface = std::dynamic_pointer_cast<OpenCSGVertexState>(
           vertex_states.back());
@@ -357,7 +357,7 @@ void OpenCSGRenderer::createCSGVBOProducts(
     GL_TRACE0("glBindBuffer(GL_ARRAY_BUFFER, 0)");
     GL_CHECKD(glBindBuffer(GL_ARRAY_BUFFER, 0));
 
-    vertex_array.createInterleavedVBOs();
+    vbo_builder.createInterleavedVBOs();
     vertex_state_containers_.push_back(std::move(vertex_state_container));
 
   }

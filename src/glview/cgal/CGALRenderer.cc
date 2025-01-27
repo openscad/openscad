@@ -138,27 +138,27 @@ void CGALRenderer::createPolySetStates() {
   vertex_state_containers_.emplace_back();
   VertexStateContainer &vertex_state_container = vertex_state_containers_.back();
 
-  VBOBuilder vertex_array(std::make_unique<VertexStateFactory>(),
+  VBOBuilder vbo_builder(std::make_unique<VertexStateFactory>(),
                            vertex_state_container.vertex_states_,
                            vertex_state_container.verticesVBO(),
                            vertex_state_container.elementsVBO());
 
-  vertex_array.addSurfaceData(); // position, normal, color
+  vbo_builder.addSurfaceData(); // position, normal, color
 
   size_t num_vertices = 0;
   for (const auto &polyset : this->polysets_) {
     num_vertices += calcNumVertices(*polyset);
   }
-  vertex_array.allocateBuffers(num_vertices);
+  vbo_builder.allocateBuffers(num_vertices);
 
   for (const auto &polyset : this->polysets_) {
     Color4f color;
     getColor(ColorMode::MATERIAL, color);
-    vertex_array.writeSurface();
-    vertex_array.create_surface(*polyset, Transform3d::Identity(), color, false);
+    vbo_builder.writeSurface();
+    vbo_builder.create_surface(*polyset, Transform3d::Identity(), color, false);
   }
 
-  vertex_array.createInterleavedVBOs();
+  vbo_builder.createInterleavedVBOs();
 }
 
 void CGALRenderer::createPolygonStates() {
@@ -170,18 +170,18 @@ void CGALRenderer::createPolygonSurfaceStates() {
   vertex_state_containers_.emplace_back();
   VertexStateContainer &vertex_state_container = vertex_state_containers_.back();
 
-  VBOBuilder vertex_array(std::make_unique<VertexStateFactory>(),
+  VBOBuilder vbo_builder(std::make_unique<VertexStateFactory>(),
                            vertex_state_container.vertex_states_,
                            vertex_state_container.verticesVBO(),
                            vertex_state_container.elementsVBO());
-  vertex_array.addSurfaceData();
+  vbo_builder.addSurfaceData();
 
   size_t num_vertices = 0;
   for (const auto &[_, polyset] : this->polygons_) {
     num_vertices += calcNumVertices(*polyset);
   }
 
-  vertex_array.allocateBuffers(num_vertices);
+  vbo_builder.allocateBuffers(num_vertices);
 
   std::shared_ptr<VertexState> init_state = std::make_shared<VertexState>();
   init_state->glBegin().emplace_back([]() {
@@ -193,10 +193,10 @@ void CGALRenderer::createPolygonSurfaceStates() {
   for (const auto &[polygon, polyset] : this->polygons_) {
     Color4f color;
     getColor(ColorMode::CGAL_FACE_2D_COLOR, color);
-    this->create_polygons(*polyset, vertex_array, Transform3d::Identity(), color);
+    this->create_polygons(*polyset, vbo_builder, Transform3d::Identity(), color);
   }
 
-  vertex_array.createInterleavedVBOs();
+  vbo_builder.createInterleavedVBOs();
 }
 
 void CGALRenderer::createPolygonEdgeStates() {
@@ -205,19 +205,19 @@ void CGALRenderer::createPolygonEdgeStates() {
   vertex_state_containers_.emplace_back();
   VertexStateContainer &vertex_state_container = vertex_state_containers_.back();
 
-  VBOBuilder vertex_array(std::make_unique<VertexStateFactory>(),
+  VBOBuilder vbo_builder(std::make_unique<VertexStateFactory>(),
                            vertex_state_container.vertex_states_,
                            vertex_state_container.verticesVBO(),
                            vertex_state_container.elementsVBO());
 
-  vertex_array.addEdgeData();
+  vbo_builder.addEdgeData();
 
   size_t num_vertices = 0;
   for (const auto &[polygon, _] : this->polygons_) {
     num_vertices += calcNumEdgeVertices(*polygon);
   }
 
-  vertex_array.allocateBuffers(num_vertices);
+  vbo_builder.allocateBuffers(num_vertices);
 
   std::shared_ptr<VertexState> edge_state = std::make_shared<VertexState>();
   edge_state->glBegin().emplace_back([]() {
@@ -231,8 +231,8 @@ void CGALRenderer::createPolygonEdgeStates() {
   for (const auto &[polygon, _] : this->polygons_) {
     Color4f color;
     getColor(ColorMode::CGAL_EDGE_2D_COLOR, color);
-    vertex_array.writeEdge();
-    this->create_edges(*polygon, vertex_array, Transform3d::Identity(), color);
+    vbo_builder.writeEdge();
+    this->create_edges(*polygon, vbo_builder, Transform3d::Identity(), color);
   }
   
   std::shared_ptr<VertexState> end_state = std::make_shared<VertexState>();
@@ -242,7 +242,7 @@ void CGALRenderer::createPolygonEdgeStates() {
   });
   vertex_state_container.vertex_states_.emplace_back(std::move(end_state));
 
-  vertex_array.createInterleavedVBOs();
+  vbo_builder.createInterleavedVBOs();
 }
 
 void CGALRenderer::prepare(bool /*showedges*/,

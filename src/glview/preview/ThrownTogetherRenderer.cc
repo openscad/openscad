@@ -88,14 +88,14 @@ void ThrownTogetherRenderer::prepare(bool /*showedges*/, const ShaderUtils::Shad
     vertex_state_containers_.emplace_back();
     VertexStateContainer &vertex_state_container = vertex_state_containers_.back();
 
-    VBOBuilder vertex_array(std::make_unique<TTRVertexStateFactory>(), 
+    VBOBuilder vbo_builder(std::make_unique<TTRVertexStateFactory>(), 
                             vertex_state_container.vertex_states_, 
                             vertex_state_container.verticesVBO(), 
                             vertex_state_container.elementsVBO());
-    vertex_array.addSurfaceData();
+    vbo_builder.addSurfaceData();
     bool enable_barycentric = shaderinfo && shaderinfo->attributes.at("barycentric");
     if (enable_barycentric) {
-      vertex_array.addShaderData();
+      vbo_builder.addShaderData();
     } else {
       LOG("Warning: Shader not available");
     }
@@ -105,13 +105,13 @@ void ThrownTogetherRenderer::prepare(bool /*showedges*/, const ShaderUtils::Shad
     if (this->background_products_) num_vertices += calcNumVertices(this->background_products_, true);
     if (this->highlight_products_) num_vertices += calcNumVertices(this->highlight_products_, true);
 
-    vertex_array.allocateBuffers(num_vertices);
+    vbo_builder.allocateBuffers(num_vertices);
 
-    if (this->root_products_) createCSGProducts(*this->root_products_, vertex_state_container, vertex_array, false, false, shaderinfo);
-    if (this->background_products_) createCSGProducts(*this->background_products_, vertex_state_container, vertex_array, false, true, shaderinfo);
-    if (this->highlight_products_) createCSGProducts(*this->highlight_products_, vertex_state_container, vertex_array, true, false, shaderinfo);
+    if (this->root_products_) createCSGProducts(*this->root_products_, vertex_state_container, vbo_builder, false, false, shaderinfo);
+    if (this->background_products_) createCSGProducts(*this->background_products_, vertex_state_container, vbo_builder, false, true, shaderinfo);
+    if (this->highlight_products_) createCSGProducts(*this->highlight_products_, vertex_state_container, vbo_builder, true, false, shaderinfo);
 
-    vertex_array.createInterleavedVBOs();
+    vbo_builder.createInterleavedVBOs();
   }
 }
 
@@ -168,7 +168,7 @@ void ThrownTogetherRenderer::renderCSGProducts(const std::shared_ptr<CSGProducts
   }
 }
 
-void ThrownTogetherRenderer::createChainObject(VertexStateContainer& container, VBOBuilder& vertex_array,
+void ThrownTogetherRenderer::createChainObject(VertexStateContainer& container, VBOBuilder& vbo_builder,
                                                const CSGChainObject& csgobj, bool highlight_mode,
                                                bool background_mode, OpenSCADOperator type, const ShaderUtils::ShaderInfo *shaderinfo)
 {
@@ -182,24 +182,24 @@ void ThrownTogetherRenderer::createChainObject(VertexStateContainer& container, 
   const auto& leaf_color = csgobj.leaf->color;
   const auto csgmode = RendererUtils::getCsgMode(highlight_mode, background_mode, type);
 
-  vertex_array.writeSurface();
+  vbo_builder.writeSurface();
 
   Color4f color;
   if (highlight_mode || background_mode) {
     const ColorMode colormode = getColorMode(csgobj.flags, highlight_mode, background_mode, false, type);
     getShaderColor(colormode, leaf_color, color);
 
-    add_color(vertex_array, color, shaderinfo);
+    add_color(vbo_builder, color, shaderinfo);
 
-    vertex_array.create_surface(*csgobj.leaf->polyset, csgobj.leaf->matrix, color, enable_barycentric);
-    if (const auto vs = std::dynamic_pointer_cast<TTRVertexState>(vertex_array.states().back())) {
+    vbo_builder.create_surface(*csgobj.leaf->polyset, csgobj.leaf->matrix, color, enable_barycentric);
+    if (const auto vs = std::dynamic_pointer_cast<TTRVertexState>(vbo_builder.states().back())) {
       vs->setCsgObjectIndex(csgobj.leaf->index);
     }
   } else { // root mode
     ColorMode colormode = getColorMode(csgobj.flags, highlight_mode, background_mode, false, type);
     getShaderColor(colormode, leaf_color, color);
 
-    add_color(vertex_array, color, shaderinfo);
+    add_color(vbo_builder, color, shaderinfo);
 
     auto cull = std::make_shared<VertexState>();
     cull->glBegin().emplace_back([]() {
@@ -215,8 +215,8 @@ void ThrownTogetherRenderer::createChainObject(VertexStateContainer& container, 
       // Scale 2D negative objects 10% in the Z direction to avoid z fighting
       mat *= Eigen::Scaling(1.0, 1.0, 1.1);
     }
-    vertex_array.create_surface(*csgobj.leaf->polyset, mat, color, enable_barycentric);
-    if (auto vs = std::dynamic_pointer_cast<TTRVertexState>(vertex_array.states().back())) {
+    vbo_builder.create_surface(*csgobj.leaf->polyset, mat, color, enable_barycentric);
+    if (auto vs = std::dynamic_pointer_cast<TTRVertexState>(vbo_builder.states().back())) {
       vs->setCsgObjectIndex(csgobj.leaf->index);
     }
 
@@ -225,7 +225,7 @@ void ThrownTogetherRenderer::createChainObject(VertexStateContainer& container, 
     colormode = getColorMode(csgobj.flags, highlight_mode, background_mode, true, type);
     getShaderColor(colormode, leaf_color, color);
 
-    add_color(vertex_array, color, shaderinfo);
+    add_color(vbo_builder, color, shaderinfo);
 
     cull = std::make_shared<VertexState>();
     cull->glBegin().emplace_back([]() {
@@ -234,8 +234,8 @@ void ThrownTogetherRenderer::createChainObject(VertexStateContainer& container, 
     });
     container.vertex_states_.emplace_back(std::move(cull));
 
-    vertex_array.create_surface(*csgobj.leaf->polyset, csgobj.leaf->matrix, color, enable_barycentric);
-    if (auto vs = std::dynamic_pointer_cast<TTRVertexState>(vertex_array.states().back())) {
+    vbo_builder.create_surface(*csgobj.leaf->polyset, csgobj.leaf->matrix, color, enable_barycentric);
+    if (auto vs = std::dynamic_pointer_cast<TTRVertexState>(vbo_builder.states().back())) {
       vs->setCsgObjectIndex(csgobj.leaf->index);
     }
 
@@ -246,7 +246,7 @@ void ThrownTogetherRenderer::createChainObject(VertexStateContainer& container, 
   }
 }
 
-void ThrownTogetherRenderer::createCSGProducts(const CSGProducts& products, VertexStateContainer& container, VBOBuilder& vertex_array,
+void ThrownTogetherRenderer::createCSGProducts(const CSGProducts& products, VertexStateContainer& container, VBOBuilder& vbo_builder,
                                                bool highlight_mode, bool background_mode, const ShaderUtils::ShaderInfo *shaderinfo)
 {
   PRINTD("Thrown renderCSGProducts");
@@ -254,10 +254,10 @@ void ThrownTogetherRenderer::createCSGProducts(const CSGProducts& products, Vert
 
   for (const auto& product : products.products) {
     for (const auto& csgobj : product.intersections) {
-      createChainObject(container, vertex_array, csgobj, highlight_mode, background_mode, OpenSCADOperator::INTERSECTION, shaderinfo);
+      createChainObject(container, vbo_builder, csgobj, highlight_mode, background_mode, OpenSCADOperator::INTERSECTION, shaderinfo);
     }
     for (const auto& csgobj : product.subtractions) {
-      createChainObject(container, vertex_array, csgobj, highlight_mode, background_mode, OpenSCADOperator::DIFFERENCE, shaderinfo);
+      createChainObject(container, vbo_builder, csgobj, highlight_mode, background_mode, OpenSCADOperator::DIFFERENCE, shaderinfo);
     }
   }
 }

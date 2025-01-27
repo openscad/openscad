@@ -69,28 +69,28 @@ public:
     if (halffacets_elements_vbo) glDeleteBuffers(1, &halffacets_elements_vbo);
   }
 
-  void draw(Vertex_iterator v, VBOBuilder& vertex_array) const {
+  void draw(Vertex_iterator v, VBOBuilder& vbo_builder) const {
     PRINTD("draw(Vertex_iterator)");
 
     CGAL::Color c = getVertexColor(v);
-    vertex_array.createVertex({Vector3d(v->x(), v->y(), v->z())},
+    vbo_builder.createVertex({Vector3d(v->x(), v->y(), v->z())},
                               {},
                               Color4f(c.red(), c.green(), c.blue()),
                               0, 0, 1);
   }
 
-  void draw(Edge_iterator e, VBOBuilder& vertex_array) const {
+  void draw(Edge_iterator e, VBOBuilder& vbo_builder) const {
     PRINTD("draw(Edge_iterator)");
 
     Double_point p = e->source(), q = e->target();
     CGAL::Color c = getEdgeColor(e);
     Color4f color(c.red(), c.green(), c.blue());
 
-    vertex_array.createVertex({Vector3d(p.x(), p.y(), p.z())},
+    vbo_builder.createVertex({Vector3d(p.x(), p.y(), p.z())},
                               {},
                               color,
                               0, 0, true);
-    vertex_array.createVertex({Vector3d(q.x(), q.y(), q.z())},
+    vbo_builder.createVertex({Vector3d(q.x(), q.y(), q.z())},
                               {},
                               color,
                               0, 1, true);
@@ -105,7 +105,7 @@ public:
     size_t last_size;
     size_t draw_size;
     size_t elements_offset;
-    VBOBuilder& vertex_array;
+    VBOBuilder& vbo_builder;
   };
 
   static inline void CGAL_GLU_TESS_CALLBACK beginCallback(GLenum which, GLvoid *user) {
@@ -114,13 +114,13 @@ public:
     tess->which = which;
     tess->draw_size = 0;
 
-    tess->last_size = tess->vertex_array.data()->sizeInBytes();
+    tess->last_size = tess->vbo_builder.data()->sizeInBytes();
     tess->elements_offset = 0;
-    if (tess->vertex_array.useElements()) {
-      tess->elements_offset = tess->vertex_array.elements().sizeInBytes();
+    if (tess->vbo_builder.useElements()) {
+      tess->elements_offset = tess->vbo_builder.elements().sizeInBytes();
       // this can vary size if polyset provides triangles
-      tess->vertex_array.addElementsData(std::make_shared<AttributeData<GLuint, 1, GL_UNSIGNED_INT>>());
-      tess->vertex_array.elementsMap().clear();
+      tess->vbo_builder.addElementsData(std::make_shared<AttributeData<GLuint, 1, GL_UNSIGNED_INT>>());
+      tess->vbo_builder.elementsMap().clear();
     }
   }
 
@@ -128,12 +128,12 @@ public:
     auto *tess(static_cast<TessUserData *>(user));
 
     GLenum elements_type = 0;
-    if (tess->vertex_array.useElements()) elements_type = tess->vertex_array.elementsData()->glType();
-    std::shared_ptr<VertexState> vs = tess->vertex_array.createVertexState(
+    if (tess->vbo_builder.useElements()) elements_type = tess->vbo_builder.elementsData()->glType();
+    std::shared_ptr<VertexState> vs = tess->vbo_builder.createVertexState(
       tess->which, tess->draw_size, elements_type,
-      tess->vertex_array.writeIndex(), tess->elements_offset);
-    tess->vertex_array.states().emplace_back(std::move(vs));
-    tess->vertex_array.addAttributePointers(tess->last_size);
+      tess->vbo_builder.writeIndex(), tess->elements_offset);
+    tess->vbo_builder.states().emplace_back(std::move(vs));
+    tess->vbo_builder.addAttributePointers(tess->last_size);
     tess->primitive_index++;
   }
 
@@ -164,7 +164,7 @@ public:
     }
 
 
-    tess->vertex_array.createVertex({Vector3d(vertex)},
+    tess->vbo_builder.createVertex({Vector3d(vertex)},
                                     {Vector3d(tess->normal)},
                                     Color4f(tess->color.red(), tess->color.green(), tess->color.blue()),
                                     0, 0, shape_size);
@@ -182,7 +182,7 @@ public:
     }
   }
 
-  void draw(Halffacet_iterator f, VBOBuilder& vertex_array) const {
+  void draw(Halffacet_iterator f, VBOBuilder& vbo_builder) const {
     PRINTD("draw(Halffacet_iterator)");
 
     GLUtesselator *tess_ = gluNewTess();
@@ -202,7 +202,7 @@ public:
     CGAL::OGL::DFacet::Coord_const_iterator cit;
     TessUserData tess_data = {
       0, f->normal(), getFacetColor(f),
-      0, 0, 0, 0, 0, vertex_array
+      0, 0, 0, 0, 0, vbo_builder
     };
 
     gluTessBeginPolygon(tess_, &tess_data);
