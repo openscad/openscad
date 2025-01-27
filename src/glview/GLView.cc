@@ -41,8 +41,8 @@ GLView::~GLView()
 }
 
 void GLView::setupShader() {
-  auto resource = ShaderUtils::compileShaderProgram(ShaderUtils::loadShaderSource("Preview.vert"),
-                                                      ShaderUtils::loadShaderSource("Preview.frag"));
+  auto resource = ShaderUtils::compileShaderProgram(ShaderUtils::loadShaderSource("ViewEdges.vert"),
+                                                      ShaderUtils::loadShaderSource("ViewEdges.frag"));
 
   edge_shader = {
     .resource = resource,
