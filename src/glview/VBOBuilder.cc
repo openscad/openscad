@@ -481,3 +481,102 @@ void VBOBuilder::create_surface(const PolySet& ps, const Transform3d& m,
   vertex_state_container_.states().emplace_back(std::move(vertex_state));
   addAttributePointers(last_size);
 }
+
+void VBOBuilder::create_edges(const Polygon2d& polygon,
+                               const Transform3d& m,
+                               const Color4f& color)
+{
+  const std::shared_ptr<VertexData> vertex_data = data();
+
+  if (!vertex_data) return;
+
+  auto& vertex_states = states();
+  std::unordered_map<Vector3d, Vector3d> vert_mult_map;
+
+  // Render only outlines
+  for (const Outline2d& o : polygon.outlines()) {
+    const auto last_size = verticesOffset();
+    size_t elements_offset = 0;
+    if (useElements()) {
+      elements_offset = elementsOffset();
+      elementsMap().clear();
+    }
+    for (const Vector2d& v : o.vertices) {
+      const Vector3d p0 = uniqueMultiply(vert_mult_map, Vector3d(v[0], v[1], 0.0), m);
+      createVertex({p0}, {}, color, 0, 0, o.vertices.size(), true, false);
+    }
+
+    GLenum elements_type = 0;
+    if (useElements()) elements_type = elementsData()->glType();
+    std::shared_ptr<VertexState> line_loop = createVertexState(
+      GL_LINE_LOOP, o.vertices.size(), elements_type, writeIndex(), elements_offset);
+    vertex_states.emplace_back(std::move(line_loop));
+    addAttributePointers(last_size);
+  }
+}
+
+void VBOBuilder::create_polygons(const PolySet& ps, const Transform3d& m, const Color4f& color)
+{
+  assert(ps.getDimension() == 2);
+  const std::shared_ptr<VertexData> vertex_data = data();
+
+  if (!vertex_data) return;
+
+  auto& vertex_states = states();
+  std::unordered_map<Vector3d, Vector3d> vert_mult_map;
+
+  PRINTD("create_polygons 2D");
+  const bool mirrored = m.matrix().determinant() < 0;
+  size_t triangle_count = 0;
+  const auto last_size = verticesOffset();
+  size_t elements_offset = 0;
+  if (useElements()) {
+    elements_offset = elementsOffset();
+    elementsMap().clear();
+  }
+
+  for (const auto& poly : ps.indices) {
+    if (poly.size() == 3) {
+      const Vector3d p0 = uniqueMultiply(vert_mult_map, ps.vertices[poly.at(0)], m);
+      const Vector3d p1 = uniqueMultiply(vert_mult_map, ps.vertices[poly.at(1)], m);
+      const Vector3d p2 = uniqueMultiply(vert_mult_map, ps.vertices[poly.at(2)], m);
+
+      create_triangle(color, p0, p1, p2, 0, poly.size(), false, false, mirrored);
+      triangle_count++;
+    } else if (poly.size() == 4) {
+      const Vector3d p0 = uniqueMultiply(vert_mult_map, ps.vertices[poly.at(0)], m);
+      const Vector3d p1 = uniqueMultiply(vert_mult_map, ps.vertices[poly.at(1)], m);
+      const Vector3d p2 = uniqueMultiply(vert_mult_map, ps.vertices[poly.at(2)], m);
+      const Vector3d p3 = uniqueMultiply(vert_mult_map, ps.vertices[poly.at(3)], m);
+
+      create_triangle(color, p0, p1, p3, 0, poly.size(), false, false, mirrored);
+      create_triangle(color, p2, p3, p1, 1, poly.size(), false, false, mirrored);
+      triangle_count += 2;
+    } else {
+      Vector3d center = Vector3d::Zero();
+      for (const auto& point : poly) {
+        center[0] += ps.vertices[point][0];
+        center[1] += ps.vertices[point][1];
+      }
+      center[0] /= poly.size();
+      center[1] /= poly.size();
+
+      for (size_t i = 1; i <= poly.size(); i++) {
+        const Vector3d p0 = uniqueMultiply(vert_mult_map, center, m);
+        const Vector3d p1 = uniqueMultiply(vert_mult_map, ps.vertices[poly.at(i % poly.size())], m);
+        const Vector3d p2 = uniqueMultiply(vert_mult_map, ps.vertices[poly.at(i - 1)], m);
+
+        create_triangle(color, p0, p2, p1, i - 1, poly.size(), false, false, mirrored);
+        triangle_count++;
+      }
+    }
+  }
+
+  GLenum elements_type = 0;
+  if (useElements()) elements_type = elementsData()->glType();
+  std::shared_ptr<VertexState> vs = createVertexState(
+    GL_TRIANGLES, triangle_count * 3, elements_type, writeIndex(), elements_offset);
+  vertex_states.emplace_back(std::move(vs));
+  addAttributePointers(last_size);
+}
+

@@ -184,7 +184,7 @@ void CGALRenderer::createPolygonSurfaceStates() {
   for (const auto &[polygon, polyset] : this->polygons_) {
     Color4f color;
     getColor(ColorMode::CGAL_FACE_2D_COLOR, color);
-    this->create_polygons(*polyset, vbo_builder, Transform3d::Identity(), color);
+    vbo_builder.create_polygons(*polyset, Transform3d::Identity(), color);
   }
 
   vbo_builder.createInterleavedVBOs();
@@ -218,7 +218,7 @@ void CGALRenderer::createPolygonEdgeStates() {
     Color4f color;
     getColor(ColorMode::CGAL_EDGE_2D_COLOR, color);
     vbo_builder.writeEdge();
-    this->create_edges(*polygon, vbo_builder, Transform3d::Identity(), color);
+    vbo_builder.create_edges(*polygon, Transform3d::Identity(), color);
   }
   
   std::shared_ptr<VertexState> end_state = std::make_shared<VertexState>();

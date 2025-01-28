@@ -39,12 +39,6 @@ public:
   virtual size_t calcNumEdgeVertices(const PolySet& polyset) const;
   virtual size_t calcNumEdgeVertices(const Polygon2d& polygon) const;
 
-  virtual void create_edges(const Polygon2d& polygon, VBOBuilder& vbo_builder,
-                            const Transform3d& m, const Color4f& color) const;
-
-  virtual void create_polygons(const PolySet& ps, VBOBuilder& vbo_builder,
-                               const Transform3d& m, const Color4f& color) const;
-
   void add_shader_pointers(VBOBuilder& vbo_builder, const ShaderUtils::ShaderInfo *shaderinfo); // This could stay protected, were it not for VertexStateManager
   void add_color(VBOBuilder& vbo_builder, const Color4f& color, const ShaderUtils::ShaderInfo *shaderinfo);
 

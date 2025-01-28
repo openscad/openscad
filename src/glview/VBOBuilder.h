@@ -338,6 +338,8 @@ public:
                        size_t shape_size, bool outlines, bool enable_barycentric, bool mirror);
   void create_surface(const PolySet& ps, const Transform3d& m,
                       const Color4f& default_color, bool enable_barycentric, bool force_default_color=false);
+  void create_edges(const Polygon2d& polygon, const Transform3d& m, const Color4f& color);
+  void create_polygons(const PolySet& ps, const Transform3d& m, const Color4f& color);
 
 private:
   inline void setElementsSize(size_t elements_size) { elements_size_ = elements_size; }
