@@ -32,6 +32,11 @@ class GLView
 {
 public:
   GLView();
+  virtual ~GLView();
+
+  void setupShader();
+  void teardownShader();
+
   void setRenderer(std::shared_ptr<Renderer> r);
   [[nodiscard]] Renderer *getRenderer() const { return this->renderer.get(); }
 
@@ -59,8 +64,7 @@ public:
   [[nodiscard]] virtual std::string getRendererInfo() const = 0;
   virtual float getDPI() { return 1.0f; }
 
-  virtual ~GLView() = default;
-
+  std::unique_ptr<ShaderUtils::ShaderInfo> edge_shader;
   std::shared_ptr<Renderer> renderer;
   const ColorScheme *colorscheme;
   Camera cam;

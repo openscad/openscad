@@ -1,17 +1,8 @@
-#include "glview/Renderer.h"
-#include "glview/ColorMap.h"
-#include "utils/printutils.h"
-#include "platform/PlatformUtils.h"
-#include "glview/system-gl.h"
+#include "glview/ShaderUtils.h"
 
-#include <sstream>
-#include <Eigen/LU>
 #include <fstream>
-#include <string>
-#include <vector>
 
-#ifndef NULLGL
-
+#include "platform/PlatformUtils.h"
 
 namespace {
 
@@ -35,13 +26,7 @@ GLuint compileShader(const std::string& name, GLuint shader_type) {
 
 }  // namespace
 
-namespace RendererUtils {
-
-CSGMode getCsgMode(const bool highlight_mode, const bool background_mode, const OpenSCADOperator type) {
-  int csgmode = highlight_mode ? CSGMODE_HIGHLIGHT : (background_mode ? CSGMODE_BACKGROUND : CSGMODE_NORMAL);
-  if (type == OpenSCADOperator::DIFFERENCE) csgmode |= CSGMODE_DIFFERENCE_FLAG;
-  return static_cast<CSGMode>(csgmode);
-}
+namespace ShaderUtils {
 
 std::string loadShaderSource(const std::string& name) {
   std::string shaderPath = (PlatformUtils::resourcePath("shaders") / name).string();
@@ -55,7 +40,7 @@ std::string loadShaderSource(const std::string& name) {
   return buffer.str();
 }
 
-ShaderUtils::ShaderResource compileShaderProgram(const std::string& vs_str, const std::string& fs_str) {
+ShaderResource compileShaderProgram(const std::string& vs_str, const std::string& fs_str) {
   int shaderstatus;
   const char *vs_source = vs_str.c_str();
   const char *fs_source = fs_str.c_str();
@@ -121,63 +106,4 @@ ShaderUtils::ShaderResource compileShaderProgram(const std::string& vs_str, cons
   };
 }
 
-}  // namespace RendererUtils
-
-Renderer::Renderer()
-{
-  PRINTD("Renderer() start");
-
-  // Setup default colors
-  // The main colors, MATERIAL and CUTOUT, come from this object's
-  // colorscheme. Colorschemes don't currently hold information
-  // for Highlight/Background colors
-  // but it wouldn't be too hard to make them do so.
-
-  // MATERIAL is set by this object's colorscheme
-  // CUTOUT is set by this object's colorscheme
-  colormap_[ColorMode::HIGHLIGHT] = {255, 81, 81, 128};
-  colormap_[ColorMode::BACKGROUND] = {180, 180, 180, 128};
-  // MATERIAL_EDGES is set by this object's colorscheme
-  // CUTOUT_EDGES is set by this object's colorscheme
-  colormap_[ColorMode::HIGHLIGHT_EDGES] = {255, 171, 86, 128};
-  colormap_[ColorMode::BACKGROUND_EDGES] = {150, 150, 150, 128};
-
-  Renderer::setColorScheme(ColorMap::inst()->defaultColorScheme());
-
-  PRINTD("Renderer() end");
-}
-
-bool Renderer::getColor(Renderer::ColorMode colormode, Color4f& col) const
-{
-  if (const auto it = colormap_.find(colormode); it != colormap_.end()) {
-    col = it->second;
-    return true;
-  }
-  return false;
-}
-
-/* fill colormap_ with matching entries from the colorscheme. note
-   this does not change Highlight or Background colors as they are not
-   represented in the colorscheme (yet). Also edgecolors are currently the
-   same for CGAL & OpenCSG */
-void Renderer::setColorScheme(const ColorScheme& cs) {
-  PRINTD("setColorScheme");
-  colormap_[ColorMode::MATERIAL] = ColorMap::getColor(cs, RenderColor::OPENCSG_FACE_FRONT_COLOR);
-  colormap_[ColorMode::CUTOUT] = ColorMap::getColor(cs, RenderColor::OPENCSG_FACE_BACK_COLOR);
-  colormap_[ColorMode::MATERIAL_EDGES] = ColorMap::getColor(cs, RenderColor::CGAL_EDGE_FRONT_COLOR);
-  colormap_[ColorMode::CUTOUT_EDGES] = ColorMap::getColor(cs, RenderColor::CGAL_EDGE_BACK_COLOR);
-  colormap_[ColorMode::EMPTY_SPACE] = ColorMap::getColor(cs, RenderColor::BACKGROUND_COLOR);
-  colorscheme_ = &cs;
-}
-
-
-std::vector<SelectedObject> Renderer::findModelObject(Vector3d near_pt, Vector3d far_pt, int mouse_x, int mouse_y, double tolerance) { return {}; }
-#else //NULLGL
-
-Renderer::Renderer() : colorscheme_(nullptr) {}
-bool Renderer::getColor(Renderer::ColorMode colormode, Color4f& col) const { return false; }
-std::string ShaderUtils::loadShaderSource(const std::string& name) { return ""; }
-void Renderer::setColorScheme(const ColorScheme& cs) {}
-std::vector<SelectedObject> Renderer::findModelObject(Vector3d near_pt, Vector3d far_pt, int mouse_x, int mouse_y, double tolerance) { return {}; }
-
-#endif //NULLGL
+}  // namespace ShaderUtils

@@ -6,6 +6,7 @@
 #include <vector>
 
 #include "glview/system-gl.h"
+#include "Feature.h"
 
 #define GL_TRACE_ENABLE
 #ifdef GL_TRACE_ENABLE
@@ -96,4 +97,47 @@ public:
   [[nodiscard]] virtual std::shared_ptr<VertexState> createVertexState(GLenum draw_mode, size_t draw_size, GLenum draw_type, size_t draw_offset, size_t element_offset, GLuint vertices_vbo, GLuint elements_vbo) const {
     return std::make_shared<VertexState>(draw_mode, draw_size, draw_type, draw_offset, element_offset, vertices_vbo, elements_vbo);
   }
+};
+
+class VertexStateContainer {
+public:
+  VertexStateContainer() {
+    GL_TRACE("glGenBuffers(1, %p)", &vertices_vbo_);
+    GL_CHECKD(glGenBuffers(1, &vertices_vbo_));
+    if (Feature::ExperimentalVxORenderersIndexing.is_enabled()) {
+      GL_TRACE("glGenBuffers(1, %p)", &elements_vbo_);
+      GL_CHECKD(glGenBuffers(1, &elements_vbo_));
+    }
+  }
+  VertexStateContainer(const VertexStateContainer& o) = delete;
+  VertexStateContainer(VertexStateContainer&& o) noexcept {
+    vertices_vbo_ = o.vertices_vbo_;
+    elements_vbo_ = o.elements_vbo_;
+    vertex_states_ = std::move(o.vertex_states_);
+    o.vertices_vbo_ = 0;
+    o.elements_vbo_ = 0;
+  }
+  
+  virtual ~VertexStateContainer() {
+    if (vertices_vbo_) {
+      GL_TRACE("glDeleteBuffers(1, %p)", &vertices_vbo_);
+      GL_CHECKD(glDeleteBuffers(1, &vertices_vbo_));
+    }
+    if (elements_vbo_) {
+      GL_TRACE("glDeleteBuffers(1, %p)", &elements_vbo_);
+      GL_CHECKD(glDeleteBuffers(1, &elements_vbo_));
+    }
+  }
+
+  GLuint verticesVBO() const { return vertices_vbo_; }
+  GLuint elementsVBO() const { return elements_vbo_; }
+  
+  std::vector<std::shared_ptr<VertexState>>& states() { return vertex_states_; }
+  const std::vector<std::shared_ptr<VertexState>>& states() const { return vertex_states_; }
+
+private:
+  GLuint vertices_vbo_;
+  GLuint elements_vbo_ = 0;
+
+  std::vector<std::shared_ptr<VertexState>> vertex_states_;
 };

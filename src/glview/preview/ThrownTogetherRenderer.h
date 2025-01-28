@@ -4,6 +4,7 @@
 #include <cstddef>
 #include <vector>
 
+#include "VertexState.h"
 #include "glview/Renderer.h"
 #include "core/CSGNode.h"
 
@@ -49,26 +50,23 @@ public:
                          std::shared_ptr<CSGProducts> highlight_products,
                          std::shared_ptr<CSGProducts> background_products);
   ~ThrownTogetherRenderer() override;
-  void prepare(bool showedges, const RendererUtils::ShaderInfo *shaderinfo = nullptr) override;
-  void draw(bool showedges, const RendererUtils::ShaderInfo *shaderinfo = nullptr) const override;
+  void prepare(bool showedges, const ShaderUtils::ShaderInfo *shaderinfo = nullptr) override;
+  void draw(bool showedges, const ShaderUtils::ShaderInfo *shaderinfo = nullptr) const override;
 
   BoundingBox getBoundingBox() const override;
 private:
   void renderCSGProducts(const std::shared_ptr<CSGProducts>& products, bool showedges = false,
-                         const RendererUtils::ShaderInfo *shaderinfo = nullptr,
+                         const ShaderUtils::ShaderInfo *shaderinfo = nullptr,
                          bool highlight_mode = false, bool background_mode = false,
                          bool fberror = false) const;
 
-  void createCSGProducts(const CSGProducts& products, VBOBuilder& vertex_array,
-                         bool highlight_mode, bool background_mode);
-  void createChainObject(VBOBuilder& vertex_array, const CSGChainObject& csgobj,
-                         bool highlight_mode, bool background_mode,
-                         OpenSCADOperator type);
+  void createCSGProducts(const CSGProducts& products, VertexStateContainer& container, VBOBuilder& vbo_builder,
+                         bool highlight_mode, bool background_mode, const ShaderUtils::ShaderInfo *shaderinfo);
+  void createChainObject(VertexStateContainer& container, VBOBuilder& vbo_builder, const CSGChainObject& csgobj,
+                         bool highlight_mode, bool background_mode, OpenSCADOperator type, const ShaderUtils::ShaderInfo *shaderinfo);
 
-  std::vector<std::shared_ptr<VertexState>> vertex_states_;
   std::shared_ptr<CSGProducts> root_products_;
   std::shared_ptr<CSGProducts> highlight_products_;
   std::shared_ptr<CSGProducts> background_products_;
-  GLuint vertices_vbo_{0};
-  GLuint elements_vbo_{0};
+  std::vector<VertexStateContainer> vertex_state_containers_;
 };

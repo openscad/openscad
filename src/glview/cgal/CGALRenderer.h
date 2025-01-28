@@ -14,8 +14,8 @@ class CGALRenderer : public VBORenderer
 public:
   CGALRenderer(const std::shared_ptr<const class Geometry>& geom);
   ~CGALRenderer() override;
-  void prepare(bool showedges, const RendererUtils::ShaderInfo *shaderinfo = nullptr) override;
-  void draw(bool showedges, const RendererUtils::ShaderInfo *shaderinfo = nullptr) const override;
+  void prepare(bool showedges, const ShaderUtils::ShaderInfo *shaderinfo = nullptr) override;
+  void draw(bool showedges, const ShaderUtils::ShaderInfo *shaderinfo = nullptr) const override;
   void setColorScheme(const ColorScheme& cs) override;
   BoundingBox getBoundingBox() const override;
   std::vector<SelectedObject> findModelObject(Vector3d near_pt, Vector3d far_pt, int mouse_x, int mouse_y, double tolerance) override;
@@ -27,6 +27,9 @@ private:
   void createPolyhedrons();
 #endif
   void createPolySetStates();
+  void createPolygonStates();
+  void createPolygonSurfaceStates();
+  void createPolygonEdgeStates();
   bool last_render_state_; // FIXME: this is temporary to make switching between renderers seamless.
 
   std::vector<std::shared_ptr<const class PolySet>> polysets_;
@@ -36,7 +39,5 @@ private:
   std::vector<std::shared_ptr<const CGAL_Nef_polyhedron>> nefPolyhedrons_;
 #endif
 
-  std::vector<std::shared_ptr<VertexState>> vertex_states_;
-  GLuint polyset_vertices_vbo_{0};
-  GLuint polyset_elements_vbo_{0};
+  std::vector<VertexStateContainer> vertex_state_containers_;
 };

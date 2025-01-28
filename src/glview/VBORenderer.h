@@ -16,8 +16,8 @@
 
 namespace VBOUtils {
 
-void shader_attribs_enable(const RendererUtils::ShaderInfo &shaderinfo);
-void shader_attribs_disable(const RendererUtils::ShaderInfo &shaderinfo);
+void shader_attribs_enable(const ShaderUtils::ShaderInfo &shaderinfo);
+void shader_attribs_disable(const ShaderUtils::ShaderInfo &shaderinfo);
 
 }  // namespace VBOUtils
 
@@ -33,49 +33,22 @@ class VBORenderer : public Renderer
 public:
   VBORenderer();
   virtual bool getShaderColor(Renderer::ColorMode colormode, const Color4f& col, Color4f& outcolor) const;
-  virtual size_t getSurfaceBufferSize(const std::shared_ptr<CSGProducts>& products, bool unique_geometry = false) const;
-  virtual size_t getSurfaceBufferSize(const CSGChainObject& csgobj, bool unique_geometry = false) const;
-  virtual size_t getSurfaceBufferSize(const PolySet& polyset) const;
-  virtual size_t getEdgeBufferSize(const PolySet& polyset) const;
-  virtual size_t getEdgeBufferSize(const Polygon2d& polygon) const;
+  virtual size_t calcNumVertices(const std::shared_ptr<CSGProducts>& products, bool unique_geometry = false) const;
+  virtual size_t calcNumVertices(const CSGChainObject& csgobj, bool unique_geometry = false) const;
+  virtual size_t calcNumVertices(const PolySet& polyset) const;
+  virtual size_t calcNumEdgeVertices(const PolySet& polyset) const;
+  virtual size_t calcNumEdgeVertices(const Polygon2d& polygon) const;
 
-  virtual void create_surface(const PolySet& ps, VBOBuilder& vertex_array,
-                              RendererUtils::CSGMode csgmode, const Transform3d& m,
-                              const Color4f& default_color, bool force_default_color = false) const;
-
-  virtual void create_edges(const Polygon2d& polygon, VBOBuilder& vertex_array,
-                            const Transform3d& m, const Color4f& color) const;
-
-  virtual void create_polygons(const PolySet& ps, VBOBuilder& vertex_array,
-                               const Transform3d& m, const Color4f& color) const;
-
-  virtual void create_triangle(VBOBuilder& vertex_array, const Color4f& color,
-                               const Vector3d& p0, const Vector3d& p1, const Vector3d& p2,
-                               size_t primitive_index = 0, size_t shape_size = 0,
-                               bool outlines = false, bool mirror = false) const;
-
-  virtual void create_vertex(VBOBuilder& vertex_array, const Color4f& color,
-                             const std::array<Vector3d, 3>& points,
-                             const std::array<Vector3d, 3>& normals,
-                             size_t active_point_index = 0, size_t primitive_index = 0,
-                             size_t shape_size = 0, bool outlines = false, bool mirror = false) const;
-  void add_shader_pointers(VBOBuilder& vertex_array); // This could stay protected, were it not for VertexStateManager
-  void add_color(VBOBuilder& vertex_array, const Color4f& color);
+  void add_shader_pointers(VBOBuilder& vbo_builder, const ShaderUtils::ShaderInfo *shaderinfo); // This could stay protected, were it not for VertexStateManager
+  void add_color(VBOBuilder& vbo_builder, const Color4f& color, const ShaderUtils::ShaderInfo *shaderinfo);
 
 protected:
-  void add_shader_data(VBOBuilder& vertex_array);
-  void shader_attribs_enable(const RendererUtils::ShaderInfo&) const;
-  void shader_attribs_disable(const RendererUtils::ShaderInfo&) const;
+  void add_shader_data(VBOBuilder& vbo_builder);
+  void shader_attribs_enable(const ShaderUtils::ShaderInfo&) const;
+  void shader_attribs_disable(const ShaderUtils::ShaderInfo&) const;
 
   mutable std::unordered_map<std::pair<const PolySet *, const Transform3d *>, int,
                              boost::hash<std::pair<const PolySet *, const Transform3d *>>> geom_visit_mark_;
 
 private:
-  void add_shader_attributes(VBOBuilder& vertex_array,
-                             size_t active_point_index = 0, size_t primitive_index = 0,
-                             size_t shape_size = 0, bool outlines = false) const;
-
-  enum ShaderAttribIndex {
-    BARYCENTRIC_ATTRIB
-  };
 };
