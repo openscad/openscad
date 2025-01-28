@@ -178,7 +178,7 @@ void TabManager::createTab(const QString& filename)
   Preferences::create(editor->colorSchemes()); // needs to be done only once, however handled
   par->activeEditor = editor;
   editor->parameterWidget = new ParameterWidget(par->parameterDock);
-  connect(editor->parameterWidget, SIGNAL(parametersChanged()), par, SLOT(actionRenderPreview()));
+  connect(editor->parameterWidget, SIGNAL(parametersChanged()), par, SLOT(actionUpdateView()));
   par->parameterDock->setWidget(editor->parameterWidget);
 
   // clearing default mapping of keyboard shortcut for font size

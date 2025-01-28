@@ -80,7 +80,7 @@ void Animate::updatedAnimTval()
   }
 
   this->anim_tval = t;
-  emit mainWindow->actionRenderPreview();
+  emit mainWindow->actionUpdateView();
 
   updatePauseButtonIcon();
 }

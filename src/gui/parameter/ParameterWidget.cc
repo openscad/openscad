@@ -58,13 +58,11 @@ ParameterWidget::ParameterWidget(QWidget *parent) : QWidget(parent)
   setupUi(this);
   scrollAreaWidgetContents->layout()->setAlignment(Qt::AlignTop);
 
-  autoPreviewTimer.setInterval(1000);
-  autoPreviewTimer.setSingleShot(true);
+  autoReloadTimer.setInterval(1000);
+  autoReloadTimer.setSingleShot(true);
 
-  connect(&autoPreviewTimer, SIGNAL(timeout()), this, SLOT(emitParametersChanged()));
-  connect(checkBoxAutoPreview, &QCheckBox::toggled, [this]() {
-    this->autoPreview(true);
-  });
+  connect(&autoReloadTimer, SIGNAL(timeout()), this, SLOT(emitParametersChanged()));
+  connect(checkBoxAutoReload, &QCheckBox::toggled, [this]() { this->autoReload(true); });
   connect(comboBoxDetails, SIGNAL(currentIndexChanged(int)), this, SLOT(rebuildWidgets()));
   connect(comboBoxPreset, SIGNAL(activated(int)), this, SLOT(onSetChanged(int)));
   //connect(comboBoxPreset, SIGNAL(editTextChanged(const QString&)), this, SLOT(onSetNameChanged()));
@@ -179,14 +177,14 @@ void ParameterWidget::emitParametersChanged() {
   emit parametersChanged();
 }
 
-void ParameterWidget::autoPreview(bool immediate)
+void ParameterWidget::autoReload(bool immediate)
 {
-  autoPreviewTimer.stop();
-  if (checkBoxAutoPreview->isChecked()) {
+  autoReloadTimer.stop();
+  if (checkBoxAutoReload->isChecked()) {
     if (immediate) {
       emitParametersChanged();
     } else {
-      autoPreviewTimer.start();
+      autoReloadTimer.start();
     }
   }
 }
@@ -194,7 +192,7 @@ void ParameterWidget::autoPreview(bool immediate)
 void ParameterWidget::onSetChanged(int index)
 {
   loadSet(index);
-  autoPreview(true);
+  autoReload(true);
 }
 
 void ParameterWidget::onSetNameChanged()
@@ -239,7 +237,7 @@ void ParameterWidget::onSetDelete()
   comboBoxPreset->removeItem(index);
   sets.erase(sets.begin() + (index - 1));
   setModified();
-  autoPreview(true);
+  autoReload(true);
 }
 
 void ParameterWidget::parameterModified(bool immediate)
@@ -276,7 +274,7 @@ void ParameterWidget::parameterModified(bool immediate)
   }
 
   setModified();
-  autoPreview(immediate);
+  autoReload(immediate);
 }
 
 void ParameterWidget::loadSet(size_t index)

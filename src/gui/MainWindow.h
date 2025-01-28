@@ -128,6 +128,7 @@ protected:
   void closeEvent(QCloseEvent *event) override;
 
 private slots:
+  void autoPrepareCompile();
   void setTabToolBarVisible(int);
   void updateUndockMode(bool undockMode);
   void updateReorderMode(bool reorderMode);
@@ -261,8 +262,11 @@ protected:
   bool eventFilter(QObject *obj, QEvent *event) override;
 
 public slots:
+  void actionUpdateView();
   void actionRenderPreview();
+
 private slots:
+  void actionReloadView();
   void csgRender();
   void csgReloadRender();
   void action3DPrint();
@@ -310,7 +314,7 @@ public:
   std::unordered_map<FileFormat, QAction*>  export_map;
 
 public slots:
-  void actionReloadRenderPreview();
+  void actionReloadAndView();
   void on_editorDock_visibilityChanged(bool);
   void on_consoleDock_visibilityChanged(bool);
   void on_parameterDock_visibilityChanged(bool);
@@ -369,6 +373,7 @@ public slots:
   void checkAutoReload();
   void waitAfterReload();
   void autoReloadSet(bool);
+  void autoReloadSetRenderMode(bool);
 
 private:
   bool network_progress_func(const double permille);
@@ -404,6 +409,7 @@ private:
 
   QSoundEffect *renderCompleteSoundEffect;
   std::vector<std::unique_ptr<QTemporaryFile>> allTempFiles;
+  QActionGroup *reloadAndViewGroup;
 
 signals:
   void highlightError(int);

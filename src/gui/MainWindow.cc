@@ -111,6 +111,7 @@
 #include "gui/TabManager.h"
 #include "gui/ExternalToolInterface.h"
 
+#include <QActionGroup>
 #include <QMenu>
 #include <QTime>
 #include <QMenuBar>
@@ -306,6 +307,12 @@ MainWindow::MainWindow(const QStringList& filenames)
   renderCompleteSoundEffect = new QSoundEffect();
   renderCompleteSoundEffect->setSource(QUrl("qrc:/sounds/complete.wav"));
 
+  this->reloadAndViewGroup = new QActionGroup(this);
+  this->reloadAndViewGroup->addAction(this->ReloadAndViewPreview);
+  this->reloadAndViewGroup->addAction(this->ReloadAndViewRender);
+  this->ReloadAndViewPreview->setChecked(true);
+  this->reloadAndViewGroup->setExclusive(true);
+
   const QString importStatement = "import(\"%1\");\n";
   const QString surfaceStatement = "surface(\"%1\");\n";
   const QString importFunction = "data = import(\"%1\");\n";
@@ -470,8 +477,10 @@ MainWindow::MainWindow(const QStringList& filenames)
   connect(this->editActionUseSelectionForFind, SIGNAL(triggered()), this, SLOT(useSelectionForFind()));
 
   // Design menu
-  connect(this->designActionAutoReload, SIGNAL(toggled(bool)), this, SLOT(autoReloadSet(bool)));
-  connect(this->designActionReloadAndPreview, SIGNAL(triggered()), this, SLOT(actionReloadRenderPreview()));
+  connect(this->ReloadAndViewRender, SIGNAL(toggled(bool)), this, SLOT(autoReloadSetRenderMode(!bool)));
+  connect(this->ReloadAndViewPreview, SIGNAL(toggled(bool)), this, SLOT(autoReloadSetRenderMode(bool)));
+  connect(this->designActionAutoReloadAndView, SIGNAL(toggled(bool)), this, SLOT(autoReloadSet(bool)));
+  connect(this->designActionReloadAndView, SIGNAL(triggered()), this, SLOT(actionReloadAndView()));
   connect(this->designActionPreview, SIGNAL(triggered()), this, SLOT(actionRenderPreview()));
   connect(this->designActionRender, SIGNAL(triggered()), this, SLOT(actionRender()));
   connect(this->designActionMeasureDist, SIGNAL(triggered()), this, SLOT(actionMeasureDistance()));
@@ -882,8 +891,11 @@ void MainWindow::loadDesignSettings()
 {
   QSettingsCached settings;
   if (settings.value("design/autoReload", false).toBool()) {
-    designActionAutoReload->setChecked(true);
+    designActionAutoReloadAndView->setChecked(true);
   }
+  const auto reloadAndViewPreview = settings.value("design/reloadAndViewPreview", true).toBool();
+  ReloadAndViewPreview->setChecked(reloadAndViewPreview);
+  ReloadAndViewRender->setChecked(!reloadAndViewPreview);
   auto polySetCacheSizeMB = Preferences::inst()->getValue("advanced/polysetCacheSizeMB").toUInt();
   GeometryCache::instance()->setMaxSizeMB(polySetCacheSizeMB);
   auto cgalCacheSizeMB = Preferences::inst()->getValue("advanced/cgalCacheSizeMB").toUInt();
@@ -1201,7 +1213,7 @@ void MainWindow::compileEnded()
 {
   clearCurrentOutput();
   GuiLocker::unlock();
-  if (designActionAutoReload->isChecked()) autoReloadTimer->start();
+  if (designActionAutoReloadAndView->isChecked()) autoReloadTimer->start();
 }
 
 void MainWindow::instantiateRoot()
@@ -1290,7 +1302,7 @@ void MainWindow::compileCSG()
 
     // Main CSG evaluation
     this->progresswidget = new ProgressWidget(this);
-    connect(this->progresswidget, SIGNAL(requestShow()), this, SLOT(showProgress()));
+    // connect(this->progresswidget, SIGNAL(requestShow()), this, SLOT(showProgress()));
 
     GeometryEvaluator geomevaluator(this->tree);
 #ifdef ENABLE_OPENCSG
@@ -1559,6 +1571,12 @@ void MainWindow::actionShowLibraryFolder()
   auto url = QString::fromStdString(path);
   LOG("Opening file browser for %1$s", url.toStdString());
   QDesktopServices::openUrl(QUrl::fromLocalFile(url));
+}
+
+void MainWindow::actionReloadAndView()
+{
+  actionReload();
+  actionUpdateView();
 }
 
 void MainWindow::actionReload()
@@ -1922,19 +1940,25 @@ void MainWindow::changeParameterWidget()
 void MainWindow::checkAutoReload()
 {
   if (!activeEditor->filepath.isEmpty()) {
-    actionReloadRenderPreview();
+    actionReloadView();
   }
 }
 
 void MainWindow::autoReloadSet(bool on)
 {
   QSettingsCached settings;
-  settings.setValue("design/autoReload", designActionAutoReload->isChecked());
+  settings.setValue("design/autoReload", designActionAutoReloadAndView->isChecked());
   if (on) {
     autoReloadTimer->start(autoReloadPollingPeriodMS);
   } else {
     autoReloadTimer->stop();
   }
+}
+
+void MainWindow::autoReloadSetRenderMode(bool on)
+{
+  QSettingsCached settings;
+  settings.setValue("design/reloadAndViewPreview", on);
 }
 
 bool MainWindow::checkEditorModified()
@@ -1951,17 +1975,18 @@ bool MainWindow::checkEditorModified()
   return true;
 }
 
-void MainWindow::actionReloadRenderPreview()
+void MainWindow::actionUpdateView()
 {
-  if (GuiLocker::isLocked()) return;
-  GuiLocker::lock();
-  autoReloadTimer->stop();
-  setCurrentOutput();
+  autoPrepareCompile();
+  const auto reloadFileFromDisk = false;
+  compile(reloadFileFromDisk);
+}
 
-  this->afterCompileSlot = "csgReloadRender";
-  this->procevents = true;
-  this->is_preview = true;
-  compile(true);
+void MainWindow::actionReloadView()
+{
+  autoPrepareCompile();
+  const auto reloadFileFromDisk = true;
+  compile(reloadFileFromDisk);
 }
 
 void MainWindow::csgReloadRender()
@@ -1979,6 +2004,18 @@ void MainWindow::csgReloadRender()
 #endif
   }
   compileEnded();
+}
+
+void MainWindow::autoPrepareCompile()
+{
+  if (GuiLocker::isLocked()) return;
+  GuiLocker::lock();
+  const bool ReloadAndViewPreview = this->ReloadAndViewPreview->isChecked();
+  autoReloadTimer->stop();
+  setCurrentOutput();
+  this->afterCompileSlot = ReloadAndViewPreview ? "csgRender" : "cgalRender";
+  this->procevents = false;
+  this->is_preview = ReloadAndViewPreview;
 }
 
 void MainWindow::prepareCompile(const char *afterCompileSlot, bool procevents, bool preview)
@@ -2149,7 +2186,7 @@ void MainWindow::cgalRender()
       renderBackend3DToString(RenderSettings::inst()->backend3D).c_str());
 
   this->progresswidget = new ProgressWidget(this);
-  connect(this->progresswidget, SIGNAL(requestShow()), this, SLOT(showProgress()));
+  // connect(this->progresswidget, SIGNAL(requestShow()), this, SLOT(showProgress()));
 
   if (!isClosing) progress_report_prep(this->root_node, report_func, this);
   else return;
@@ -2512,7 +2549,7 @@ void MainWindow::exceptionCleanup(){
   LOG("Execution aborted");
   LOG(" ");
   GuiLocker::unlock();
-  if (designActionAutoReload->isChecked()) autoReloadTimer->start();
+  if (designActionAutoReloadAndView->isChecked()) autoReloadTimer->start();
 }
 
 void MainWindow::UnknownExceptionCleanup(std::string msg){
@@ -2524,7 +2561,7 @@ void MainWindow::UnknownExceptionCleanup(std::string msg){
   }
   LOG(" ");
   GuiLocker::unlock();
-  if (designActionAutoReload->isChecked()) autoReloadTimer->start();
+  if (designActionAutoReloadAndView->isChecked()) autoReloadTimer->start();
 }
 
 void MainWindow::actionDisplayAST()
