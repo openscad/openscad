@@ -320,7 +320,7 @@ void VBOBuilder::allocateBuffers(size_t num_vertices) {
   }
 }
 
-// FIXME: This specifically adds barycentric vertex attributes
+// FIXME: This specifically adds barycentric vertex attributes, so document/rename accordingly
 void VBOBuilder::addShaderData()
 {
   const std::shared_ptr<VertexData> vertex_data = data();
