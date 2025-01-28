@@ -140,6 +140,8 @@ private slots:
   void onHoveredObjectInSelectionMenu();
   void measureFinished();
   void errorLogOutput(const Message& log_msg);
+  void onNavigationOpenContextMenu();
+  void onNavigationTriggerContextMenuEntry();
 
 public:
   static void consoleOutput(const Message& msgObj, void *userdata);
@@ -227,7 +229,7 @@ private slots:
   void hideAnimate();
   void showFontList();
   void hideFontList();
-  void on_windowActionSelectEditor_triggered();
+  void onwindowActionSelectEditor();
   void on_windowActionSelectConsole_triggered();
   void on_windowActionSelectCustomizer_triggered();
   void on_windowActionSelectErrorLog_triggered();
@@ -402,6 +404,7 @@ private:
   ExportPdfPaperSize sizeString2Enum(const QString& current);
   ExportPdfPaperOrientation orientationsString2Enum(const QString& current);
 
+  QMenu* navigationMenu{nullptr};
   QSoundEffect *renderCompleteSoundEffect;
   std::vector<std::unique_ptr<QTemporaryFile>> allTempFiles;
 

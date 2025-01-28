@@ -285,6 +285,16 @@ MainWindow::MainWindow(const QStringList& filenames)
   this->addAction(editActionInsertTemplate);
   this->addAction(editActionFoldAll);
 
+  std::vector<std::tuple<Dock*,QString>> docks = {
+      std::make_tuple(editorDock, QString(_("Editor"))),
+      std::make_tuple(consoleDock, QString(_("Console"))),
+      std::make_tuple(parameterDock, QString(_("Customizer"))),
+      std::make_tuple(errorLogDock, QString(_("Error-Log"))),
+      std::make_tuple(animateDock, QString(_("Animate"))),
+      std::make_tuple(fontListDock, QString(_("Font Lists"))),
+      std::make_tuple(viewportControlDock, QString(_("Viewport-Control")))
+  };
+
   this->editorDock->setConfigKey("view/hideEditor");
   this->editorDock->setAction(this->windowActionHideEditor);
   this->consoleDock->setConfigKey("view/hideConsole");
@@ -545,6 +555,12 @@ MainWindow::MainWindow(const QStringList& filenames)
   connect(this->viewActionZoomOut, SIGNAL(triggered()), qglview, SLOT(ZoomOut()));
   connect(this->viewActionHideEditorToolBar, SIGNAL(triggered()), this, SLOT(hideEditorToolbar()));
   connect(this->viewActionHide3DViewToolBar, SIGNAL(triggered()), this, SLOT(hide3DViewToolbar()));
+
+  for(auto& [dock, title] : docks){
+      dock->setWindowTitle(title);
+      menuWindow->addAction(dock->toggleViewAction());
+  }
+
   connect(this->windowActionHideEditor, SIGNAL(triggered()), this, SLOT(hideEditor()));
   connect(this->windowActionHideConsole, SIGNAL(triggered()), this, SLOT(hideConsole()));
   connect(this->windowActionHideCustomizer, SIGNAL(triggered()), this, SLOT(hideParameters()));
@@ -691,6 +707,20 @@ MainWindow::MainWindow(const QStringList& filenames)
 
   updateWindowSettings(hideConsole, hideEditor, hideCustomizer, hideErrorLog, hideEditorToolbar, hide3DViewToolbar, hideAnimate, hideFontList, hideViewportControl);
 
+  // Connect the menu "Windows/Navigation" to slot that process it by opening in a pop menu
+  // the navigationMenu.
+  connect(windowActionJumpTo, &QAction::triggered, this, &MainWindow::onNavigationOpenContextMenu);
+
+  // Create the popup menu to navigate between the docks by keyboard.
+  navigationMenu = new QMenu();
+  for(auto& [dock, title] : docks)
+  {
+      auto action2 = navigationMenu->addAction(title);
+      action2->setProperty("id", QVariant::fromValue(dock));
+      connect(action2, &QAction::triggered, this, &MainWindow::onNavigationTriggerContextMenuEntry);
+  }
+  windowActionJumpTo->setMenu(navigationMenu);
+
   connect(this->editorDock, SIGNAL(topLevelChanged(bool)), this, SLOT(editorTopLevelChanged(bool)));
   connect(this->consoleDock, SIGNAL(topLevelChanged(bool)), this, SLOT(consoleTopLevelChanged(bool)));
   connect(this->parameterDock, SIGNAL(topLevelChanged(bool)), this, SLOT(parameterTopLevelChanged(bool)));
@@ -724,6 +754,29 @@ MainWindow::MainWindow(const QStringList& filenames)
 
   this->selector = std::make_unique<MouseSelector>(this->qglview);
   activeEditor->setFocus();
+}
+
+void MainWindow::onNavigationOpenContextMenu() {
+    navigationMenu->exec(QCursor::pos());
+}
+
+void MainWindow::onNavigationTriggerContextMenuEntry(){
+    auto *action = qobject_cast<QAction *>(sender());
+    if (!action || !action->property("id").isValid())
+        return;
+
+    Dock* dock = action->property("id").value<Dock*>();
+
+    dock->show();
+    dock->setFocus();
+
+    // Forward the focus on the content of the tabmanager.
+    // Maybe it is possible to make that in a cleaner way, the non use of
+    // QTabWidget make is hard
+    if(dock == editorDock)
+    {
+        tabManager->setFocus();
+    }
 }
 
 void MainWindow::updateExportActions() {
@@ -3090,6 +3143,7 @@ void MainWindow::consoleTopLevelChanged(bool topLevel)
 void MainWindow::parameterTopLevelChanged(bool topLevel)
 {
   setDockWidgetTitle(parameterDock, QString(_("Customizer")), topLevel);
+
 }
 
 void MainWindow::changedTopLevelErrorLog(bool topLevel)
@@ -3208,22 +3262,8 @@ void MainWindow::showEditor()
 
 void MainWindow::hideEditor()
 {
-  auto e = (ScintillaEditor *) this->activeEditor;
-  if (windowActionHideEditor->isChecked()) {
-    // Workaround manually disabling interactions with editor by setting it
-    // to read-only when not being shown.  This is an upstream bug from Qt
-    // (tracking ticket: https://bugreports.qt.io/browse/QTBUG-82939) and
-    // may eventually get resolved at which point this bit and the stuff in
-    // the else should be removed. Currently known to affect 5.14.1 and 5.15.0
-    e->qsci->setReadOnly(true);
-    e->setupAutoComplete(true);
-    editorDock->close();
-  } else {
-    e->qsci->setReadOnly(false);
-    e->setupAutoComplete(false);
-    editorDock->show();
-  }
 }
+
 
 void MainWindow::showConsole()
 {
@@ -3332,8 +3372,9 @@ void MainWindow::hideParameters()
   }
 }
 
-void MainWindow::on_windowActionSelectEditor_triggered()
+void MainWindow::onwindowActionSelectEditor()
 {
+  std::cout << "YO LO SHOW EDITOR ! " << std::endl;
   showEditor();
 }
 
@@ -3390,7 +3431,7 @@ void MainWindow::on_editActionFoldAll_triggered()
 void MainWindow::activateWindow(int offset)
 {
   const std::array<DockFocus, 7> docks = {{
-    { editorDock, &MainWindow::on_windowActionSelectEditor_triggered },
+                                              { editorDock, &MainWindow::onwindowActionSelectEditor },
     { consoleDock, &MainWindow::on_windowActionSelectConsole_triggered },
     { errorLogDock, &MainWindow::on_windowActionSelectErrorLog_triggered },
     { parameterDock, &MainWindow::on_windowActionSelectCustomizer_triggered },
