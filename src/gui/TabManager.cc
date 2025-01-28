@@ -65,12 +65,6 @@ TabManager::TabManager(MainWindow *o, const QString& filename)
   connect(par->editActionJumpToNextError, SIGNAL(triggered()), this, SLOT(jumpToNextError()));
 }
 
-QWidget *TabManager::getTabHeader()
-{
-  assert(tabWidget != nullptr);
-  return tabWidget;
-}
-
 QWidget *TabManager::getTabContent()
 {
   assert(tabWidget != nullptr);
