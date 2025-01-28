@@ -1880,7 +1880,7 @@ void MainWindow::parseTopLevelDocument()
   this->python_active = false;
   if (fname != NULL) {
     if (boost::algorithm::ends_with(fname, ".py")) {
-      std::string content = std::string(this->last_compiled_doc.toUtf8().constData());
+      std::string content = std::string(this->lastCompiledDoc.toUtf8().constData());
       if (
         Feature::ExperimentalPythonEngine.is_enabled()
         && trust_python_file(std::string(fname), content)) this->python_active = true;
