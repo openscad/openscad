@@ -28,9 +28,9 @@ std::shared_ptr<const Geometry> CGALCache::get(const std::string& id) const
 
 bool CGALCache::acceptsGeometry(const std::shared_ptr<const Geometry>& geom) {
   return
-    std::dynamic_pointer_cast<const CGAL_Nef_polyhedron>(geom)
+    std::dynamic_pointer_cast<const CGAL_Nef_polyhedron>(geom) != nullptr
 #ifdef ENABLE_MANIFOLD
-    || std::dynamic_pointer_cast<const ManifoldGeometry>(geom)
+    || std::dynamic_pointer_cast<const ManifoldGeometry>(geom) != nullptr
 #endif
     ;
 }
