@@ -84,14 +84,10 @@ ThrownTogetherRenderer::~ThrownTogetherRenderer()
 void ThrownTogetherRenderer::prepare(bool /*showedges*/, const ShaderUtils::ShaderInfo *shaderinfo)
 {
   PRINTD("Thrown prepare");
-  if (vertex_state_containers_.empty()) {
-    vertex_state_containers_.emplace_back();
-    VertexStateContainer &vertex_state_container = vertex_state_containers_.back();
+  if (vertex_state_containers_.empty()) {   
+    VertexStateContainer &vertex_state_container = vertex_state_containers_.emplace_back();
 
-    VBOBuilder vbo_builder(std::make_unique<TTRVertexStateFactory>(), 
-                            vertex_state_container.vertex_states_, 
-                            vertex_state_container.verticesVBO(), 
-                            vertex_state_container.elementsVBO());
+    VBOBuilder vbo_builder(std::make_unique<TTRVertexStateFactory>(), vertex_state_container);
     vbo_builder.addSurfaceData();
     bool enable_barycentric = shaderinfo && shaderinfo->attributes.at("barycentric");
     if (enable_barycentric) {
@@ -144,7 +140,7 @@ void ThrownTogetherRenderer::renderCSGProducts(const std::shared_ptr<CSGProducts
   glDepthFunc(GL_LEQUAL);
   this->geom_visit_mark_.clear();
   for (const auto& container : vertex_state_containers_) {
-    for (const auto& vs : container.vertex_states_) {
+    for (const auto& vs : container.states()) {
       if (vs) {
         if (const auto csg_vs = std::dynamic_pointer_cast<TTRVertexState>(vs)) {
           if (shaderinfo && shaderinfo->type == ShaderUtils::ShaderType::SELECT_RENDERING) {
@@ -208,7 +204,7 @@ void ThrownTogetherRenderer::createChainObject(VertexStateContainer& container, 
       GL_TRACE0("glCullFace(GL_BACK)");
       GL_CHECKD(glCullFace(GL_BACK));
     });
-    container.vertex_states_.emplace_back(std::move(cull));
+    container.states().emplace_back(std::move(cull));
 
     Transform3d mat = csgobj.leaf->matrix;
     if (csgobj.leaf->polyset->getDimension() == 2 && type == OpenSCADOperator::DIFFERENCE) {
@@ -232,14 +228,14 @@ void ThrownTogetherRenderer::createChainObject(VertexStateContainer& container, 
       GL_TRACE0("glCullFace(GL_FRONT)");
       GL_CHECKD(glCullFace(GL_FRONT));
     });
-    container.vertex_states_.emplace_back(std::move(cull));
+    container.states().emplace_back(std::move(cull));
 
     vbo_builder.create_surface(*csgobj.leaf->polyset, csgobj.leaf->matrix, color, enable_barycentric);
     if (auto vs = std::dynamic_pointer_cast<TTRVertexState>(vbo_builder.states().back())) {
       vs->setCsgObjectIndex(csgobj.leaf->index);
     }
 
-    container.vertex_states_.back()->glEnd().emplace_back([]() {
+    container.states().back()->glEnd().emplace_back([]() {
       GL_TRACE0("glDisable(GL_CULL_FACE)");
       GL_CHECKD(glDisable(GL_CULL_FACE));
     });

@@ -180,9 +180,7 @@ void OpenCSGRenderer::createCSGVBOProducts(
     Color4f last_color;
     std::vector<OpenCSG::Primitive *>& primitives = vertex_state_container->primitives();
     auto& vertex_states = vertex_state_container->states();
-    VBOBuilder vbo_builder(std::make_unique<OpenCSGVertexStateFactory>(),
-                             vertex_states, vertex_state_container->verticesVBO(),
-                             vertex_state_container->elementsVBO());
+    VBOBuilder vbo_builder(std::make_unique<OpenCSGVertexStateFactory>(), *vertex_state_container.get());
     vbo_builder.addSurfaceData();
     vbo_builder.writeSurface();
     if (enable_barycentric) {

@@ -223,10 +223,7 @@ public:
 
     points_edges_container_ = std::make_unique<VertexStateContainer>();
 
-    VBOBuilder points_edges_builder(std::make_unique<VertexStateFactory>(), 
-                                  points_edges_container_->vertex_states_, 
-                                  points_edges_container_->verticesVBO(), 
-                                  points_edges_container_->elementsVBO());
+    VBOBuilder points_edges_builder(std::make_unique<VertexStateFactory>(), *points_edges_container_.get());
 
     points_edges_builder.addEdgeData();
     points_edges_builder.writeEdge();
@@ -252,7 +249,7 @@ public:
       GL_TRACE0("glPointSize(10.0f)");
       GL_CHECKD(glPointSize(10.0f));
     });
-    points_edges_container_->vertex_states_.emplace_back(std::move(settings));
+    points_edges_container_->states().emplace_back(std::move(settings));
 
     for (v = vertices_.begin(); v != vertices_.end(); ++v)
       draw(v, points_edges_builder);
@@ -262,7 +259,7 @@ public:
     std::shared_ptr<VertexState> vs = points_edges_builder.createVertexState(
       GL_POINTS, vertices_.size(), elements_type,
       points_edges_builder.writeIndex(), elements_offset);
-    points_edges_container_->vertex_states_.emplace_back(std::move(vs));
+    points_edges_container_->states().emplace_back(std::move(vs));
     points_edges_builder.addAttributePointers(last_size);
 
     // Edges
@@ -283,7 +280,7 @@ public:
       GL_TRACE0("glLineWidth(5.0f)");
       GL_CHECKD(glLineWidth(5.0f));
     });
-    points_edges_container_->vertex_states_.emplace_back(std::move(settings));
+    points_edges_container_->states().emplace_back(std::move(settings));
 
     for (e = edges_.begin(); e != edges_.end(); ++e)
       draw(e, points_edges_builder);
@@ -294,7 +291,7 @@ public:
     vs = points_edges_builder.createVertexState(
       GL_LINES, edges_.size() * 2, elements_type,
       points_edges_builder.writeIndex(), elements_offset);
-    points_edges_container_->vertex_states_.emplace_back(std::move(vs));
+    points_edges_container_->states().emplace_back(std::move(vs));
     points_edges_builder.addAttributePointers(last_size);
 
     points_edges_builder.createInterleavedVBOs();
@@ -303,10 +300,7 @@ public:
     halffacets_container_ = std::make_unique<VertexStateContainer>();
 
     // FIXME: We don't know the size of this VertexArray in advanced, so we have to deal with some fallback mechanism for filling in the data. This complicates code quite a bit
-    VBOBuilder halffacets_builder(std::make_unique<VertexStateFactory>(),
-                                  halffacets_container_->vertex_states_, 
-                                  halffacets_container_->verticesVBO(), 
-                                  halffacets_container_->elementsVBO());
+    VBOBuilder halffacets_builder(std::make_unique<VertexStateFactory>(), *halffacets_container_.get());
     halffacets_builder.addSurfaceData();
     halffacets_builder.writeSurface();
 
@@ -319,7 +313,7 @@ public:
       GL_TRACE0("glLineWidth(5.0f)");
       GL_CHECKD(glLineWidth(5.0f));
     });
-    halffacets_container_->vertex_states_.emplace_back(std::move(settings));
+    halffacets_container_->states().emplace_back(std::move(settings));
 
     Halffacet_iterator f;
     for (f = halffacets_.begin(); f != halffacets_.end(); ++f) {
@@ -351,12 +345,12 @@ public:
     GL_CHECKD(glGetFloatv(GL_POINT_SIZE, &current_point_size));
     GL_CHECKD(glGetFloatv(GL_LINE_WIDTH, &current_line_width));
 
-    for (const auto& halffacet : halffacets_container_->vertex_states_) {
+    for (const auto& halffacet : halffacets_container_->states()) {
       if (halffacet) halffacet->draw();
     }
 
     if (showedges) {
-      for (const auto& point_edge : points_edges_container_->vertex_states_) {
+      for (const auto& point_edge : points_edges_container_->states()) {
         if (point_edge) point_edge->draw();
       }
     }

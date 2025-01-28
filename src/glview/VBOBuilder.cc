@@ -139,7 +139,7 @@ void VBOBuilder::createVertex(const std::array<Vector3d, 3>& points,
 
 void VBOBuilder::createInterleavedVBOs()
 {
-  for (const auto& state : states_) {
+  for (const auto& state : vertex_state_container_.states()) {
     state->setDrawOffset(this->indexOffset(state->drawOffset()));
   }
 
@@ -147,8 +147,8 @@ void VBOBuilder::createInterleavedVBOs()
   size_t total_size = this->sizeInBytes();
   // If VertexArray is not empty, and initial size is zero
   if (interleaved_buffer_.empty() && total_size) {
-    GL_TRACE("glBindBuffer(GL_ARRAY_BUFFER, %d)", vertices_vbo_);
-    GL_CHECKD(glBindBuffer(GL_ARRAY_BUFFER, vertices_vbo_));
+    GL_TRACE("glBindBuffer(GL_ARRAY_BUFFER, %d)", vertex_state_container_.verticesVBO());
+    GL_CHECKD(glBindBuffer(GL_ARRAY_BUFFER, vertex_state_container_.verticesVBO()));
     GL_TRACE("glBufferData(GL_ARRAY_BUFFER, %d, %p, GL_STATIC_DRAW)", total_size % (void *)nullptr);
     GL_CHECKD(glBufferData(GL_ARRAY_BUFFER, total_size, nullptr, GL_STATIC_DRAW));
 
@@ -187,8 +187,8 @@ void VBOBuilder::createInterleavedVBOs()
     GL_TRACE0("glBindBuffer(GL_ARRAY_BUFFER, 0)");
     GL_CHECKD(glBindBuffer(GL_ARRAY_BUFFER, 0));
   } else if (!interleaved_buffer_.empty()) {
-    GL_TRACE("glBindBuffer(GL_ARRAY_BUFFER, %d)", vertices_vbo_);
-    GL_CHECKD(glBindBuffer(GL_ARRAY_BUFFER, vertices_vbo_));
+    GL_TRACE("glBindBuffer(GL_ARRAY_BUFFER, %d)", vertex_state_container_.verticesVBO());
+    GL_CHECKD(glBindBuffer(GL_ARRAY_BUFFER, vertex_state_container_.verticesVBO()));
     GL_TRACE("glBufferData(GL_ARRAY_BUFFER, %d, %p, GL_STATIC_DRAW)", interleaved_buffer_.size() % (void *)interleaved_buffer_.data());
     GL_CHECKD(glBufferData(GL_ARRAY_BUFFER, interleaved_buffer_.size(), interleaved_buffer_.data(), GL_STATIC_DRAW));
     GL_TRACE0("glBindBuffer(GL_ARRAY_BUFFER, 0)");
@@ -197,8 +197,8 @@ void VBOBuilder::createInterleavedVBOs()
 
   PRINTDB("useElements() = %d, elements_size_ = %d", useElements() % elements_size_);
   if (useElements()) {
-    GL_TRACE("glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, %d)", elements_vbo_);
-    GL_CHECKD(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elements_vbo_));
+    GL_TRACE("glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, %d)", vertex_state_container_.elementsVBO());
+    GL_CHECKD(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vertex_state_container_.elementsVBO()));
     if (elements_size_ == 0) {
       GL_TRACE("glBufferData(GL_ELEMENT_ARRAY_BUFFER, %d, %p, GL_STATIC_DRAW)", elements_.sizeInBytes() % (void *)nullptr);
       GL_CHECKD(glBufferData(GL_ELEMENT_ARRAY_BUFFER, elements_.sizeInBytes(), nullptr, GL_STATIC_DRAW));
@@ -219,7 +219,7 @@ void VBOBuilder::addAttributePointers(size_t start_offset)
   if (!this->data()) return;
 
   std::shared_ptr<VertexData> vertex_data = this->data();
-  std::shared_ptr<VertexState> vs = states_.back();
+  std::shared_ptr<VertexState> vertex_state = vertex_state_container_.states().back();
 
   GLsizei count = vertex_data->positionData()->count();
   GLenum type = vertex_data->positionData()->glType();
@@ -227,11 +227,11 @@ void VBOBuilder::addAttributePointers(size_t start_offset)
   size_t offset = start_offset + vertex_data->interleavedOffset(vertex_data->positionIndex());
   // Note: Some code, like OpenCSGRenderer::createVBOPrimitive() relies on this order of
   // glBegin/glEnd functions for unlit/uncolored vertex rendering.
-  vs->glBegin().emplace_back([]() {
+  vertex_state->glBegin().emplace_back([]() {
     GL_TRACE0("glEnableClientState(GL_VERTEX_ARRAY)");
     GL_CHECKD(glEnableClientState(GL_VERTEX_ARRAY));
   });
-  vs->glBegin().emplace_back([count, type, stride, offset, vs_ptr = std::weak_ptr<VertexState>(vs)]() {
+  vertex_state->glBegin().emplace_back([count, type, stride, offset, vs_ptr = std::weak_ptr<VertexState>(vertex_state)]() {
     auto vs = vs_ptr.lock();
     if (vs) {
       // NOLINTBEGIN(performance-no-int-to-ptr)
@@ -241,7 +241,7 @@ void VBOBuilder::addAttributePointers(size_t start_offset)
       // NOLINTEND(performance-no-int-to-ptr)
     }
   });
-  vs->glEnd().emplace_back([]() {
+  vertex_state->glEnd().emplace_back([]() {
     GL_TRACE0("glDisableClientState(GL_VERTEX_ARRAY)");
     GL_CHECKD(glDisableClientState(GL_VERTEX_ARRAY));
   });
@@ -249,11 +249,11 @@ void VBOBuilder::addAttributePointers(size_t start_offset)
   if (vertex_data->hasNormalData()) {
     type = vertex_data->normalData()->glType();
     size_t offset = start_offset + vertex_data->interleavedOffset(vertex_data->normalIndex());
-    vs->glBegin().emplace_back([]() {
+    vertex_state->glBegin().emplace_back([]() {
       GL_TRACE0("glEnableClientState(GL_NORMAL_ARRAY)");
       GL_CHECKD(glEnableClientState(GL_NORMAL_ARRAY));
     });
-    vs->glBegin().emplace_back([type, stride, offset, vs_ptr = std::weak_ptr<VertexState>(vs)]() {
+    vertex_state->glBegin().emplace_back([type, stride, offset, vs_ptr = std::weak_ptr<VertexState>(vertex_state)]() {
       auto vs = vs_ptr.lock();
       if (vs) {
         // NOLINTBEGIN(performance-no-int-to-ptr)
@@ -262,7 +262,7 @@ void VBOBuilder::addAttributePointers(size_t start_offset)
         // NOLINTEND(performance-no-int-to-ptr)
       }
     });
-    vs->glEnd().emplace_back([]() {
+    vertex_state->glEnd().emplace_back([]() {
       GL_TRACE0("glDisableClientState(GL_NORMAL_ARRAY)");
       GL_CHECKD(glDisableClientState(GL_NORMAL_ARRAY));
     });
@@ -271,11 +271,11 @@ void VBOBuilder::addAttributePointers(size_t start_offset)
     count = vertex_data->colorData()->count();
     type = vertex_data->colorData()->glType();
     size_t offset = start_offset + vertex_data->interleavedOffset(vertex_data->colorIndex());
-    vs->glBegin().emplace_back([]() {
+    vertex_state->glBegin().emplace_back([]() {
       GL_TRACE0("glEnableClientState(GL_COLOR_ARRAY)");
       GL_CHECKD(glEnableClientState(GL_COLOR_ARRAY));
     });
-    vs->glBegin().emplace_back([count, type, stride, offset, vs_ptr = std::weak_ptr<VertexState>(vs)]() {
+    vertex_state->glBegin().emplace_back([count, type, stride, offset, vs_ptr = std::weak_ptr<VertexState>(vertex_state)]() {
       auto vs = vs_ptr.lock();
       if (vs) {
         // NOLINTBEGIN(performance-no-int-to-ptr)
@@ -284,7 +284,7 @@ void VBOBuilder::addAttributePointers(size_t start_offset)
         // NOLINTEND(performance-no-int-to-ptr)
       }
     });
-    vs->glEnd().emplace_back([]() {
+    vertex_state->glEnd().emplace_back([]() {
       GL_TRACE0("glDisableClientState(GL_COLOR_ARRAY)");
       GL_CHECKD(glDisableClientState(GL_COLOR_ARRAY));
     });
@@ -296,8 +296,8 @@ void VBOBuilder::addAttributePointers(size_t start_offset)
 void VBOBuilder::allocateBuffers(size_t num_vertices) {
   size_t vbo_buffer_size = num_vertices * stride();
   interleaved_buffer_.resize(vbo_buffer_size);
-  GL_TRACE("glBindBuffer(GL_ARRAY_BUFFER, %d)", vertices_vbo_);
-  GL_CHECKD(glBindBuffer(GL_ARRAY_BUFFER, vertices_vbo_));
+  GL_TRACE("glBindBuffer(GL_ARRAY_BUFFER, %d)", vertex_state_container_.verticesVBO());
+  GL_CHECKD(glBindBuffer(GL_ARRAY_BUFFER, vertex_state_container_.verticesVBO()));
   GL_TRACE("glBufferData(GL_ARRAY_BUFFER, %d, %p, GL_STATIC_DRAW)", vbo_buffer_size % (void *)nullptr);
   GL_CHECKD(glBufferData(GL_ARRAY_BUFFER, vbo_buffer_size, nullptr, GL_STATIC_DRAW));
   if (Feature::ExperimentalVxORenderersIndexing.is_enabled()) {
@@ -313,8 +313,8 @@ void VBOBuilder::allocateBuffers(size_t num_vertices) {
     // FIXME: Should we preallocate so we don't have to make a bunch of glBufferSubData() calls?
     size_t elements_size = num_vertices * elements_.stride();
     setElementsSize(elements_size);
-    GL_TRACE("glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, %d)", elements_vbo_);
-    GL_CHECKD(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elements_vbo_));
+    GL_TRACE("glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, %d)", vertex_state_container_.elementsVBO());
+    GL_CHECKD(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vertex_state_container_.elementsVBO()));
     GL_TRACE("glBufferData(GL_ELEMENT_ARRAY_BUFFER, %d, %p, GL_STATIC_DRAW)", elements_size % (void *)nullptr);
     GL_CHECKD(glBufferData(GL_ELEMENT_ARRAY_BUFFER, elements_size, nullptr, GL_STATIC_DRAW));
   }
@@ -423,7 +423,6 @@ void VBOBuilder::create_surface(const PolySet& ps, const Transform3d& m,
   const bool mirrored = m.matrix().determinant() < 0;
   size_t triangle_count = 0;
 
-  auto& vertex_states = states();
   std::unordered_map<Vector3d, Vector3d> vert_mult_map;
   const auto last_size = verticesOffset();
 
@@ -477,8 +476,8 @@ void VBOBuilder::create_surface(const PolySet& ps, const Transform3d& m,
 
   GLenum elements_type = 0;
   if (useElements()) elements_type = elementsData()->glType();
-  std::shared_ptr<VertexState> vs = createVertexState(
+  std::shared_ptr<VertexState> vertex_state = createVertexState(
     GL_TRIANGLES, triangle_count * 3, elements_type, writeIndex(), elements_offset);
-  vertex_states.emplace_back(std::move(vs));
+  vertex_state_container_.states().emplace_back(std::move(vertex_state));
   addAttributePointers(last_size);
 }

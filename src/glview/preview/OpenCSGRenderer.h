@@ -53,7 +53,6 @@ public:
   virtual ~OpenCSGVBOProduct() = default;
 
   [[nodiscard]] std::vector<OpenCSG::Primitive *>& primitives() { return primitives_; }
-  [[nodiscard]] std::vector<std::shared_ptr<VertexState>>& states() { return vertex_states_; }
 
 private:
   // primitives_ is used to create the OpenCSG depth buffer (unlit rendering).

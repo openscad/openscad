@@ -135,13 +135,9 @@ void CGALRenderer::setColorScheme(const ColorScheme &cs) {
 void CGALRenderer::createPolySetStates() {
   PRINTD("createPolySetStates() polyset");
 
-  vertex_state_containers_.emplace_back();
-  VertexStateContainer &vertex_state_container = vertex_state_containers_.back();
-
-  VBOBuilder vbo_builder(std::make_unique<VertexStateFactory>(),
-                           vertex_state_container.vertex_states_,
-                           vertex_state_container.verticesVBO(),
-                           vertex_state_container.elementsVBO());
+  VertexStateContainer &vertex_state_container = vertex_state_containers_.emplace_back();
+  
+  VBOBuilder vbo_builder(std::make_unique<VertexStateFactory>(), vertex_state_container);
 
   vbo_builder.addSurfaceData(); // position, normal, color
 
@@ -167,13 +163,8 @@ void CGALRenderer::createPolygonStates() {
 }
 
 void CGALRenderer::createPolygonSurfaceStates() {
-  vertex_state_containers_.emplace_back();
-  VertexStateContainer &vertex_state_container = vertex_state_containers_.back();
-
-  VBOBuilder vbo_builder(std::make_unique<VertexStateFactory>(),
-                           vertex_state_container.vertex_states_,
-                           vertex_state_container.verticesVBO(),
-                           vertex_state_container.elementsVBO());
+  VertexStateContainer &vertex_state_container = vertex_state_containers_.emplace_back();
+  VBOBuilder vbo_builder(std::make_unique<VertexStateFactory>(), vertex_state_container);
   vbo_builder.addSurfaceData();
 
   size_t num_vertices = 0;
@@ -188,7 +179,7 @@ void CGALRenderer::createPolygonSurfaceStates() {
     GL_TRACE0("glDisable(GL_LIGHTING)");
     GL_CHECKD(glDisable(GL_LIGHTING));
   });
-  vertex_state_container.vertex_states_.emplace_back(std::move(init_state));
+  vertex_state_container.states().emplace_back(std::move(init_state));
 
   for (const auto &[polygon, polyset] : this->polygons_) {
     Color4f color;
@@ -202,13 +193,8 @@ void CGALRenderer::createPolygonSurfaceStates() {
 void CGALRenderer::createPolygonEdgeStates() {
   PRINTD("createPolygonStates()");
 
-  vertex_state_containers_.emplace_back();
-  VertexStateContainer &vertex_state_container = vertex_state_containers_.back();
-
-  VBOBuilder vbo_builder(std::make_unique<VertexStateFactory>(),
-                           vertex_state_container.vertex_states_,
-                           vertex_state_container.verticesVBO(),
-                           vertex_state_container.elementsVBO());
+  VertexStateContainer &vertex_state_container = vertex_state_containers_.emplace_back();
+  VBOBuilder vbo_builder(std::make_unique<VertexStateFactory>(), vertex_state_container);
 
   vbo_builder.addEdgeData();
 
@@ -226,7 +212,7 @@ void CGALRenderer::createPolygonEdgeStates() {
     GL_TRACE0("glLineWidth(2)");
     GL_CHECKD(glLineWidth(2));
   });
-  vertex_state_container.vertex_states_.emplace_back(std::move(edge_state));
+  vertex_state_container.states().emplace_back(std::move(edge_state));
 
   for (const auto &[polygon, _] : this->polygons_) {
     Color4f color;
@@ -240,7 +226,7 @@ void CGALRenderer::createPolygonEdgeStates() {
     GL_TRACE0("glEnable(GL_DEPTH_TEST)");
     GL_CHECKD(glEnable(GL_DEPTH_TEST));
   });
-  vertex_state_container.vertex_states_.emplace_back(std::move(end_state));
+  vertex_state_container.states().emplace_back(std::move(end_state));
 
   vbo_builder.createInterleavedVBOs();
 }
@@ -278,7 +264,7 @@ void CGALRenderer::draw(bool showedges, const ShaderUtils::ShaderInfo * /*shader
   GL_CHECKD(glGetFloatv(GL_LINE_WIDTH, &current_line_width));
 
   for (const auto &container : vertex_state_containers_) {
-    for (const auto &vertex_state : container.vertex_states_) {
+    for (const auto &vertex_state : container.states()) {
       if (vertex_state)
         vertex_state->draw();
     }
