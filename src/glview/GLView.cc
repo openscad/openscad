@@ -35,6 +35,42 @@ GLView::GLView()
 #endif
 }
 
+GLView::~GLView()
+{
+  teardownShader();
+}
+
+void GLView::setupShader() {
+  if (edge_shader) return;
+
+  auto resource = ShaderUtils::compileShaderProgram(ShaderUtils::loadShaderSource("ViewEdges.vert"),
+                                                    ShaderUtils::loadShaderSource("ViewEdges.frag"));
+
+  edge_shader = std::make_unique<ShaderUtils::ShaderInfo>(ShaderUtils::ShaderInfo{
+    .resource = resource,
+    .type = ShaderUtils::ShaderType::EDGE_RENDERING,
+    .uniforms = {
+      {"color_area", glGetUniformLocation(resource.shader_program, "color_area")},
+      {"color_edge", glGetUniformLocation(resource.shader_program, "color_edge")},
+    },
+    .attributes = {
+      {"barycentric", glGetAttribLocation(resource.shader_program, "barycentric")},
+    },
+  });
+}
+
+void GLView::teardownShader() {
+  if (edge_shader->resource.shader_program) {
+    glDeleteProgram(edge_shader->resource.shader_program);
+  }
+  if (edge_shader->resource.vertex_shader) {
+    glDeleteShader(edge_shader->resource.vertex_shader);
+  }
+  if (edge_shader->resource.fragment_shader) {
+    glDeleteShader(edge_shader->resource.fragment_shader);
+  }
+}
+
 void GLView::setRenderer(std::shared_ptr<Renderer> r)
 {
   this->renderer = r;
@@ -71,6 +107,9 @@ void GLView::resizeGL(int w, int h)
   cam.pixel_height = h;
   glViewport(0, 0, w, h);
   aspectratio = 1.0 * w / h;
+
+  // FIXME: Only run once, not every time the window is resized
+  setupShader();
 }
 
 void GLView::setCamera(const Camera& cam)
@@ -167,8 +206,8 @@ void GLView::paintGL()
     // FIXME: This belongs in the OpenCSG renderer, but it doesn't know about this ID yet
     OpenCSG::setContext(this->opencsg_id);
 #endif
-    this->renderer->prepare(showedges);
-    this->renderer->draw(showedges);
+    this->renderer->prepare(showedges, edge_shader.get());
+    this->renderer->draw(showedges, edge_shader.get());
   }
   Vector3d eyedir(this->modelview[2],this->modelview[6],this->modelview[10]);
   glColor3f(1,0,0);

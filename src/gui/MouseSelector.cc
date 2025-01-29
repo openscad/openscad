@@ -46,19 +46,22 @@ void MouseSelector::init_shader() {
    * frag_idcolor - (uniform) 24 bit of the selected object's id encoded into R/G/B components as float values
    */
 
-  const std::string vs_str = RendererUtils::loadShaderSource("MouseSelector.vert");
-  const std::string fs_str = RendererUtils::loadShaderSource("MouseSelector.frag");
-  const GLuint selectshader_prog = RendererUtils::compileShaderProgram(vs_str, fs_str);
+  const std::string vs_str = ShaderUtils::loadShaderSource("MouseSelector.vert");
+  const std::string fs_str = ShaderUtils::loadShaderSource("MouseSelector.frag");
+  const auto selectshader = ShaderUtils::compileShaderProgram(vs_str, fs_str);
 
+  this->shaderinfo.resource = selectshader;
+  this->shaderinfo.type = ShaderUtils::ShaderType::SELECT_RENDERING;
+  this->shaderinfo.uniforms = {
+    {"frag_idcolor", glGetUniformLocation(selectshader.shader_program, "frag_idcolor")},
+  };
 
-  this->shaderinfo.progid = selectshader_prog;
-  this->shaderinfo.type = RendererUtils::ShaderType::SELECT_RENDERING;
-  const GLint identifier = glGetUniformLocation(selectshader_prog, "frag_idcolor");
-  if (identifier < 0) {
-    fprintf(stderr, __FILE__ ": OpenGL symbol retrieval went wrong, id is %i\n\n", identifier);
-    this->shaderinfo.data.select_rendering.identifier = 0;
+  const GLint frag_idcolor = glGetUniformLocation(selectshader.shader_program, "frag_idcolor");
+  if (frag_idcolor < 0) {
+    fprintf(stderr, __FILE__ ": OpenGL symbol retrieval went wrong, id is %i\n\n", frag_idcolor);
+    this->shaderinfo.uniforms["frag_idcolor"] = 0;
   } else {
-    this->shaderinfo.data.select_rendering.identifier = identifier;
+    this->shaderinfo.uniforms["frag_idcolor"] = frag_idcolor;
   }
 }
 

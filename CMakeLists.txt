@@ -1044,6 +1044,7 @@ else()
     src/glview/OpenGLContext.cc
     src/glview/fbo.cc
     src/glview/Renderer.cc
+    src/glview/ShaderUtils.cc
     src/glview/system-gl.cc
     src/glview/VBOBuilder.cc
     src/glview/VertexState.cc

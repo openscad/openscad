@@ -29,6 +29,7 @@
 #include "CGAL/OGL_helper.h"
 
 #include "ColorMap.h"
+#include "VertexState.h"
 #include "glview/system-gl.h"
 #include "glview/VBOBuilder.h"
 #include "glview/ColorMap.h"
@@ -63,34 +64,30 @@ public:
   }
 
   ~VBOPolyhedron() override {
-    if (points_edges_vertices_vbo) glDeleteBuffers(1, &points_edges_vertices_vbo);
-    if (points_edges_elements_vbo) glDeleteBuffers(1, &points_edges_elements_vbo);
-    if (halffacets_vertices_vbo) glDeleteBuffers(1, &halffacets_vertices_vbo);
-    if (halffacets_elements_vbo) glDeleteBuffers(1, &halffacets_elements_vbo);
   }
 
-  void draw(Vertex_iterator v, VBOBuilder& vertex_array) const {
+  void draw(Vertex_iterator v, VBOBuilder& vbo_builder) const {
     PRINTD("draw(Vertex_iterator)");
 
     CGAL::Color c = getVertexColor(v);
-    vertex_array.createVertex({Vector3d(v->x(), v->y(), v->z())},
+    vbo_builder.createVertex({Vector3d(v->x(), v->y(), v->z())},
                               {},
                               Color4f(c.red(), c.green(), c.blue()),
                               0, 0, 1);
   }
 
-  void draw(Edge_iterator e, VBOBuilder& vertex_array) const {
+  void draw(Edge_iterator e, VBOBuilder& vbo_builder) const {
     PRINTD("draw(Edge_iterator)");
 
     Double_point p = e->source(), q = e->target();
     CGAL::Color c = getEdgeColor(e);
     Color4f color(c.red(), c.green(), c.blue());
 
-    vertex_array.createVertex({Vector3d(p.x(), p.y(), p.z())},
+    vbo_builder.createVertex({Vector3d(p.x(), p.y(), p.z())},
                               {},
                               color,
                               0, 0, true);
-    vertex_array.createVertex({Vector3d(q.x(), q.y(), q.z())},
+    vbo_builder.createVertex({Vector3d(q.x(), q.y(), q.z())},
                               {},
                               color,
                               0, 1, true);
@@ -105,7 +102,7 @@ public:
     size_t last_size;
     size_t draw_size;
     size_t elements_offset;
-    VBOBuilder& vertex_array;
+    VBOBuilder& vbo_builder;
   };
 
   static inline void CGAL_GLU_TESS_CALLBACK beginCallback(GLenum which, GLvoid *user) {
@@ -114,13 +111,13 @@ public:
     tess->which = which;
     tess->draw_size = 0;
 
-    tess->last_size = tess->vertex_array.data()->sizeInBytes();
+    tess->last_size = tess->vbo_builder.data()->sizeInBytes();
     tess->elements_offset = 0;
-    if (tess->vertex_array.useElements()) {
-      tess->elements_offset = tess->vertex_array.elements().sizeInBytes();
+    if (tess->vbo_builder.useElements()) {
+      tess->elements_offset = tess->vbo_builder.elements().sizeInBytes();
       // this can vary size if polyset provides triangles
-      tess->vertex_array.addElementsData(std::make_shared<AttributeData<GLuint, 1, GL_UNSIGNED_INT>>());
-      tess->vertex_array.elementsMap().clear();
+      tess->vbo_builder.addElementsData(std::make_shared<AttributeData<GLuint, 1, GL_UNSIGNED_INT>>());
+      tess->vbo_builder.elementsMap().clear();
     }
   }
 
@@ -128,12 +125,12 @@ public:
     auto *tess(static_cast<TessUserData *>(user));
 
     GLenum elements_type = 0;
-    if (tess->vertex_array.useElements()) elements_type = tess->vertex_array.elementsData()->glType();
-    std::shared_ptr<VertexState> vs = tess->vertex_array.createVertexState(
+    if (tess->vbo_builder.useElements()) elements_type = tess->vbo_builder.elementsData()->glType();
+    std::shared_ptr<VertexState> vs = tess->vbo_builder.createVertexState(
       tess->which, tess->draw_size, elements_type,
-      tess->vertex_array.writeIndex(), tess->elements_offset);
-    tess->vertex_array.states().emplace_back(std::move(vs));
-    tess->vertex_array.addAttributePointers(tess->last_size);
+      tess->vbo_builder.writeIndex(), tess->elements_offset);
+    tess->vbo_builder.states().emplace_back(std::move(vs));
+    tess->vbo_builder.addAttributePointers(tess->last_size);
     tess->primitive_index++;
   }
 
@@ -164,7 +161,7 @@ public:
     }
 
 
-    tess->vertex_array.createVertex({Vector3d(vertex)},
+    tess->vbo_builder.createVertex({Vector3d(vertex)},
                                     {Vector3d(tess->normal)},
                                     Color4f(tess->color.red(), tess->color.green(), tess->color.blue()),
                                     0, 0, shape_size);
@@ -182,7 +179,7 @@ public:
     }
   }
 
-  void draw(Halffacet_iterator f, VBOBuilder& vertex_array) const {
+  void draw(Halffacet_iterator f, VBOBuilder& vbo_builder) const {
     PRINTD("draw(Halffacet_iterator)");
 
     GLUtesselator *tess_ = gluNewTess();
@@ -202,7 +199,7 @@ public:
     CGAL::OGL::DFacet::Coord_const_iterator cit;
     TessUserData tess_data = {
       0, f->normal(), getFacetColor(f),
-      0, 0, 0, 0, 0, vertex_array
+      0, 0, 0, 0, 0, vbo_builder
     };
 
     gluTessBeginPolygon(tess_, &tess_data);
@@ -224,26 +221,23 @@ public:
   void create_polyhedron() {
     PRINTD("create_polyhedron");
 
-    glGenBuffers(1, &points_edges_vertices_vbo);
-    if (Feature::ExperimentalVxORenderersIndexing.is_enabled()) {
-      glGenBuffers(1, &points_edges_elements_vbo);
-    }
+    points_edges_container_ = std::make_unique<VertexStateContainer>();
 
-    VBOBuilder points_edges_array(std::make_unique<VertexStateFactory>(), points_edges_states, points_edges_vertices_vbo, points_edges_elements_vbo);
+    VBOBuilder points_edges_builder(std::make_unique<VertexStateFactory>(), *points_edges_container_.get());
 
-    points_edges_array.addEdgeData();
-    points_edges_array.writeEdge();
+    points_edges_builder.addEdgeData();
+    points_edges_builder.writeEdge();
     size_t last_size = 0;
     size_t elements_offset = 0;
 
     size_t num_vertices = vertices_.size() + edges_.size() * 2, elements_size = 0;
-    points_edges_array.allocateBuffers(num_vertices);
+    points_edges_builder.allocateBuffers(num_vertices);
 
     // Points
     Vertex_iterator v;
-    if (points_edges_array.useElements()) {
-      elements_offset = points_edges_array.elementsOffset();
-      points_edges_array.elementsMap().clear();
+    if (points_edges_builder.useElements()) {
+      elements_offset = points_edges_builder.elementsOffset();
+      points_edges_builder.elementsMap().clear();
     }
 
     std::shared_ptr<VertexState> settings = std::make_shared<VertexState>();
@@ -255,26 +249,26 @@ public:
       GL_TRACE0("glPointSize(10.0f)");
       GL_CHECKD(glPointSize(10.0f));
     });
-    points_edges_states.emplace_back(std::move(settings));
+    points_edges_container_->states().emplace_back(std::move(settings));
 
     for (v = vertices_.begin(); v != vertices_.end(); ++v)
-      draw(v, points_edges_array);
+      draw(v, points_edges_builder);
 
     GLenum elements_type = 0;
-    if (points_edges_array.useElements()) elements_type = points_edges_array.elementsData()->glType();
-    std::shared_ptr<VertexState> vs = points_edges_array.createVertexState(
+    if (points_edges_builder.useElements()) elements_type = points_edges_builder.elementsData()->glType();
+    std::shared_ptr<VertexState> vs = points_edges_builder.createVertexState(
       GL_POINTS, vertices_.size(), elements_type,
-      points_edges_array.writeIndex(), elements_offset);
-    points_edges_states.emplace_back(std::move(vs));
-    points_edges_array.addAttributePointers(last_size);
+      points_edges_builder.writeIndex(), elements_offset);
+    points_edges_container_->states().emplace_back(std::move(vs));
+    points_edges_builder.addAttributePointers(last_size);
 
     // Edges
     Edge_iterator e;
-    last_size = points_edges_array.verticesOffset();
+    last_size = points_edges_builder.verticesOffset();
     elements_offset = 0;
-    if (points_edges_array.useElements()) {
-      elements_offset = points_edges_array.elementsOffset();
-      points_edges_array.elementsMap().clear();
+    if (points_edges_builder.useElements()) {
+      elements_offset = points_edges_builder.elementsOffset();
+      points_edges_builder.elementsMap().clear();
     }
 
     settings = std::make_shared<VertexState>();
@@ -286,39 +280,29 @@ public:
       GL_TRACE0("glLineWidth(5.0f)");
       GL_CHECKD(glLineWidth(5.0f));
     });
-    points_edges_states.emplace_back(std::move(settings));
+    points_edges_container_->states().emplace_back(std::move(settings));
 
     for (e = edges_.begin(); e != edges_.end(); ++e)
-      draw(e, points_edges_array);
+      draw(e, points_edges_builder);
 
 
     elements_type = 0;
-    if (points_edges_array.useElements()) elements_type = points_edges_array.elementsData()->glType();
-    vs = points_edges_array.createVertexState(
+    if (points_edges_builder.useElements()) elements_type = points_edges_builder.elementsData()->glType();
+    vs = points_edges_builder.createVertexState(
       GL_LINES, edges_.size() * 2, elements_type,
-      points_edges_array.writeIndex(), elements_offset);
-    points_edges_states.emplace_back(std::move(vs));
-    points_edges_array.addAttributePointers(last_size);
+      points_edges_builder.writeIndex(), elements_offset);
+    points_edges_container_->states().emplace_back(std::move(vs));
+    points_edges_builder.addAttributePointers(last_size);
 
-    if (Feature::ExperimentalVxORenderersIndexing.is_enabled()) {
-      GL_TRACE0("glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0)");
-      GL_CHECKD(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0));
-    }
-    GL_TRACE0("glBindBuffer(GL_ARRAY_BUFFER, 0)");
-    GL_CHECKD(glBindBuffer(GL_ARRAY_BUFFER, 0));
-
-    points_edges_array.createInterleavedVBOs();
+    points_edges_builder.createInterleavedVBOs();
 
     // Halffacets
-    glGenBuffers(1, &halffacets_vertices_vbo);
-    if (Feature::ExperimentalVxORenderersIndexing.is_enabled()) {
-      glGenBuffers(1, &halffacets_elements_vbo);
-    }
+    halffacets_container_ = std::make_unique<VertexStateContainer>();
 
     // FIXME: We don't know the size of this VertexArray in advanced, so we have to deal with some fallback mechanism for filling in the data. This complicates code quite a bit
-    VBOBuilder halffacets_array(std::make_unique<VertexStateFactory>(), halffacets_states, halffacets_vertices_vbo, halffacets_elements_vbo);
-    halffacets_array.addSurfaceData();
-    halffacets_array.writeSurface();
+    VBOBuilder halffacets_builder(std::make_unique<VertexStateFactory>(), *halffacets_container_.get());
+    halffacets_builder.addSurfaceData();
+    halffacets_builder.writeSurface();
 
     settings = std::make_shared<VertexState>();
     settings->glBegin().emplace_back([]() {
@@ -329,14 +313,14 @@ public:
       GL_TRACE0("glLineWidth(5.0f)");
       GL_CHECKD(glLineWidth(5.0f));
     });
-    halffacets_states.emplace_back(std::move(settings));
+    halffacets_container_->states().emplace_back(std::move(settings));
 
     Halffacet_iterator f;
     for (f = halffacets_.begin(); f != halffacets_.end(); ++f) {
-      draw(f, halffacets_array);
+      draw(f, halffacets_builder);
     }
 
-    halffacets_array.createInterleavedVBOs();
+    halffacets_builder.createInterleavedVBOs();
   }
 
   void init() override {
@@ -361,12 +345,12 @@ public:
     GL_CHECKD(glGetFloatv(GL_POINT_SIZE, &current_point_size));
     GL_CHECKD(glGetFloatv(GL_LINE_WIDTH, &current_line_width));
 
-    for (const auto& halffacet : this->halffacets_states) {
+    for (const auto& halffacet : halffacets_container_->states()) {
       if (halffacet) halffacet->draw();
     }
 
     if (showedges) {
-      for (const auto& point_edge : this->points_edges_states) {
+      for (const auto& point_edge : points_edges_container_->states()) {
         if (point_edge) point_edge->draw();
       }
     }
@@ -412,10 +396,6 @@ public:
 
 protected:
   CGAL::Color colors[CGALColorIndex::NUM_COLORS];
-  GLuint points_edges_vertices_vbo{0};
-  GLuint points_edges_elements_vbo{0};
-  GLuint halffacets_vertices_vbo{0};
-  GLuint halffacets_elements_vbo{0};
-  std::vector<std::shared_ptr<VertexState>> points_edges_states;
-  std::vector<std::shared_ptr<VertexState>> halffacets_states;
+  std::unique_ptr<VertexStateContainer> points_edges_container_;
+  std::unique_ptr<VertexStateContainer> halffacets_container_;
 }; // Polyhedron

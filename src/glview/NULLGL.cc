@@ -8,6 +8,7 @@
 #include <vector>
 
 GLView::GLView() {}
+GLView::~GLView() {}
 void GLView::setRenderer(std::shared_ptr<Renderer>) {}
 void GLView::initializeGL() {}
 void GLView::resizeGL(int w, int h) {}
