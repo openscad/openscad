@@ -92,8 +92,6 @@ void ThrownTogetherRenderer::prepare(bool /*showedges*/, const ShaderUtils::Shad
     bool enable_barycentric = shaderinfo && shaderinfo->attributes.at("barycentric");
     if (enable_barycentric) {
       vbo_builder.addShaderData();
-    } else {
-      LOG("Warning: Shader not available");
     }
 
     size_t num_vertices = 0;
@@ -114,7 +112,7 @@ void ThrownTogetherRenderer::prepare(bool /*showedges*/, const ShaderUtils::Shad
 
 void ThrownTogetherRenderer::draw(bool showedges, const ShaderUtils::ShaderInfo *shaderinfo) const
 {
-  if (shaderinfo) {
+  if (showedges && shaderinfo) {
     glUseProgram(shaderinfo->resource.shader_program);
     if (shaderinfo->type == ShaderUtils::ShaderType::EDGE_RENDERING && showedges) {
       VBOUtils::shader_attribs_enable(*shaderinfo);
@@ -123,7 +121,7 @@ void ThrownTogetherRenderer::draw(bool showedges, const ShaderUtils::ShaderInfo 
 
   renderCSGProducts(std::make_shared<CSGProducts>(), showedges, shaderinfo);
   
-  if (shaderinfo) {
+  if (showedges && shaderinfo) {
     if (shaderinfo->type == ShaderUtils::ShaderType::EDGE_RENDERING && showedges) {
       VBOUtils::shader_attribs_disable(*shaderinfo);
     }
