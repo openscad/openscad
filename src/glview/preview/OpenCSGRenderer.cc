@@ -119,7 +119,7 @@ void OpenCSGRenderer::draw(bool showedges, const ShaderUtils::ShaderInfo *shader
       GL_CHECKD(glDepthFunc(GL_EQUAL));
     }
 
-    if (shaderinfo) {
+    if (showedges && shaderinfo) {
       GL_TRACE("glUseProgram(%d)", shaderinfo->resource.shader_program);
       GL_CHECKD(glUseProgram(shaderinfo->resource.shader_program));
 
@@ -149,7 +149,7 @@ void OpenCSGRenderer::draw(bool showedges, const ShaderUtils::ShaderInfo *shader
       }
     }
 
-    if (shaderinfo) {
+    if (showedges && shaderinfo) {
       GL_TRACE0("glUseProgram(0)");
       GL_CHECKD(glUseProgram(0));
 
@@ -185,8 +185,6 @@ void OpenCSGRenderer::createCSGVBOProducts(
     vbo_builder.writeSurface();
     if (enable_barycentric) {
       vbo_builder.addShaderData();
-    } else {
-      LOG("Warning: Shader not available");
     }
 
     size_t num_vertices = 0;
