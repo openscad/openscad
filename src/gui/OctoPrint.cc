@@ -26,8 +26,6 @@
 
 #include "gui/OctoPrint.h"
 
-#include "core/Settings.h"
-
 #include <QHttpMultiPart>
 #include <QHttpPart>
 #include <QIODevice>
@@ -40,6 +38,7 @@
 #include <utility>
 #include <vector>
 
+#include "core/Settings.h"
 #include "utils/printutils.h"
 #include "platform/PlatformUtils.h"
 
@@ -114,6 +113,53 @@ const std::pair<const QString, const QString> OctoPrint::getVersion() const
   const auto server_version = obj.value("server").toString();
   const auto result = std::make_pair(api_version, server_version);
   return result;
+}
+
+const QString OctoPrint::requestApiKey() const
+{
+  QJsonObject jsonInput;
+  jsonInput.insert("app", QString{"OpenSCAD"});
+
+  auto networkRequest = NetworkRequest<QString>{QUrl{url() + "/../plugin/appkeys/request"}, { 201 }, 30};
+  return networkRequest.execute(
+    [&](QNetworkRequest& request) {
+      request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
+    },
+    [&](QNetworkAccessManager& nam, QNetworkRequest& request) {
+      return nam.post(request, QJsonDocument(jsonInput).toJson());
+    },
+    [](QNetworkReply *reply) -> QString {
+      const auto doc = QJsonDocument::fromJson(reply->readAll());
+      PRINTDB("Response: %s", QString{doc.toJson()}.toStdString());
+      const auto obj = doc.object();
+      const auto token = obj.value("app_token").toString();
+      return token;
+    }
+  );
+}
+
+const std::pair<int, QString> OctoPrint::pollApiKeyApproval(const QString& token) const
+{
+  auto networkRequest = NetworkRequest<std::pair<int, QString>>{QUrl{url() + "/../plugin/appkeys/request/" + token}, { 200, 202, 404 }, 30};
+  return networkRequest.execute(
+    [&](QNetworkRequest& request) {
+      request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
+    },
+    [&](QNetworkAccessManager& nam, QNetworkRequest& request) {
+      return nam.get(request);
+    },
+    [](QNetworkReply *reply) -> std::pair<int, QString> {
+      const auto code = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
+      PRINTDB("Response Code: %d", code);
+      const auto obj = QJsonDocument::fromJson(reply->readAll()).object();
+      return std::make_pair(code, obj.value("api_key").toString());
+    },
+    [](QNetworkReply *reply) -> std::pair<int, QString> {
+      const auto code = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
+      PRINTDB("Response (Error) Code: %d", code);
+      return std::make_pair(code, "");
+    }
+  );
 }
 
 const QString OctoPrint::upload(const QString& exportFileName, const QString& fileName, const network_progress_func_t& progress_func) const {
