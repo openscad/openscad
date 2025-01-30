@@ -109,53 +109,44 @@ void ThrownTogetherRenderer::prepare(const ShaderUtils::ShaderInfo *shaderinfo)
 
 void ThrownTogetherRenderer::draw(bool showedges, const ShaderUtils::ShaderInfo *shaderinfo) const
 {
-  if (showedges && shaderinfo) {
-    glUseProgram(shaderinfo->resource.shader_program);
-    if (shaderinfo->type == ShaderUtils::ShaderType::EDGE_RENDERING && showedges) {
-      VBOUtils::shader_attribs_enable(*shaderinfo);
-    }
+  // Only use shader if select rendering or showedges
+  bool enable_shader = shaderinfo && (
+    shaderinfo->type == ShaderUtils::ShaderType::EDGE_RENDERING && showedges || 
+    shaderinfo->type == ShaderUtils::ShaderType::SELECT_RENDERING);
+  if (enable_shader) {
+    GL_TRACE("glUseProgram(%d)", shaderinfo->resource.shader_program);
+    GL_CHECKD(glUseProgram(shaderinfo->resource.shader_program));
+    VBOUtils::shader_attribs_enable(*shaderinfo);   
   }
 
-  renderCSGProducts(std::make_shared<CSGProducts>(), showedges, shaderinfo);
-  
-  if (showedges && shaderinfo) {
-    if (shaderinfo->type == ShaderUtils::ShaderType::EDGE_RENDERING && showedges) {
-      VBOUtils::shader_attribs_disable(*shaderinfo);
-    }
-    glUseProgram(0);
-  }
-}
-
-void ThrownTogetherRenderer::renderCSGProducts(const std::shared_ptr<CSGProducts>& products, bool showedges,
-                                               const ShaderUtils::ShaderInfo *shaderinfo,
-                                               bool highlight_mode, bool background_mode,
-                                               bool fberror) const
-{
-  PRINTD("Thrown renderCSGProducts");
-  glDepthFunc(GL_LEQUAL);
-  this->geom_visit_mark_.clear();
+  GL_TRACE0("glDepthFunc(GL_LEQUAL)");
+  GL_CHECKD(glDepthFunc(GL_LEQUAL));
   for (const auto& container : vertex_state_containers_) {
     for (const auto& vertex_state : container.states()) {
-      if (vertex_state) {
+      // Specify ID color if we're using select rendering
+      if (shaderinfo && shaderinfo->type == ShaderUtils::ShaderType::SELECT_RENDERING) {
         if (const auto ttr_vs = std::dynamic_pointer_cast<TTRVertexState>(vertex_state)) {
-          if (shaderinfo && shaderinfo->type == ShaderUtils::ShaderType::SELECT_RENDERING) {
-            GL_TRACE("glUniform3f(%d, %f, %f, %f)",
-                    shaderinfo->uniforms.at("frag_idcolor") %
-                    (((ttr_vs->csgObjectIndex() >> 0) & 0xff) / 255.0f) %
-                    (((ttr_vs->csgObjectIndex() >> 8) & 0xff) / 255.0f) %
-                    (((ttr_vs->csgObjectIndex() >> 16) & 0xff) / 255.0f));
-            GL_CHECKD(glUniform3f(shaderinfo->uniforms.at("frag_idcolor"),
-                                  ((ttr_vs->csgObjectIndex() >> 0) & 0xff) / 255.0f,
-                                  ((ttr_vs->csgObjectIndex() >> 8) & 0xff) / 255.0f,
-                                  ((ttr_vs->csgObjectIndex() >> 16) & 0xff) / 255.0f));
-          }
-        }
-        const auto shader_vs = std::dynamic_pointer_cast<VBOShaderVertexState>(vertex_state);
-        if (!shader_vs || (shader_vs && showedges)) {
-          vertex_state->draw();
+          GL_TRACE("glUniform3f(%d, %f, %f, %f)",
+                  shaderinfo->uniforms.at("frag_idcolor") %
+                  (((ttr_vs->csgObjectIndex() >> 0) & 0xff) / 255.0f) %
+                  (((ttr_vs->csgObjectIndex() >> 8) & 0xff) / 255.0f) %
+                  (((ttr_vs->csgObjectIndex() >> 16) & 0xff) / 255.0f));
+          GL_CHECKD(glUniform3f(shaderinfo->uniforms.at("frag_idcolor"),
+                                ((ttr_vs->csgObjectIndex() >> 0) & 0xff) / 255.0f,
+                                ((ttr_vs->csgObjectIndex() >> 8) & 0xff) / 255.0f,
+                                ((ttr_vs->csgObjectIndex() >> 16) & 0xff) / 255.0f));
         }
       }
+      const auto shader_vs = std::dynamic_pointer_cast<VBOShaderVertexState>(vertex_state);
+      if (!shader_vs || (shader_vs && showedges)) {
+        vertex_state->draw();
+      }
     }
+  }
+  
+  if (enable_shader) {
+    VBOUtils::shader_attribs_disable(*shaderinfo);
+    glUseProgram(0);
   }
 }
 
