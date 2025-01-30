@@ -22,8 +22,8 @@ public:
   ShaderUtils::ShaderInfo shaderinfo;
 
 private:
-  void init_shader();
-  void setup_framebuffer(const GLView *view);
+  void initShader();
+  void setupFramebuffer(const GLView *view);
 
   std::unique_ptr<QOpenGLFramebufferObject> framebuffer;
 

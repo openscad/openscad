@@ -24,7 +24,7 @@ MouseSelector::MouseSelector(GLView *view) {
   if (view && !view->has_shaders) {
     return;
   }
-  this->init_shader();
+  this->initShader();
 
   if (view) this->reset(view);
 }
@@ -34,13 +34,13 @@ MouseSelector::MouseSelector(GLView *view) {
  */
 void MouseSelector::reset(GLView *view) {
   this->view = view;
-  this->setup_framebuffer(view);
+  this->setupFramebuffer(view);
 }
 
 /**
  * Initialize the used shaders and setup the ShaderInfo struct
  */
-void MouseSelector::init_shader() {
+void MouseSelector::initShader() {
   /*
      Attributes:
    * frag_idcolor - (uniform) 24 bit of the selected object's id encoded into R/G/B components as float values
@@ -68,7 +68,7 @@ void MouseSelector::init_shader() {
 /**
  * Resize or create the framebuffer
  */
-void MouseSelector::setup_framebuffer(const GLView *view) {
+void MouseSelector::setupFramebuffer(const GLView *view) {
   if (!this->framebuffer ||
       static_cast<unsigned int>(this->framebuffer->width()) != view->cam.pixel_width ||
       static_cast<unsigned int>(this->framebuffer->height()) != view->cam.pixel_height) {
