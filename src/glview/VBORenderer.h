@@ -34,7 +34,6 @@ class VBORenderer : public Renderer
 {
 public:
   VBORenderer();
-  virtual bool getShaderColor(Renderer::ColorMode colormode, const Color4f& col, Color4f& outcolor) const;
   virtual size_t calcNumVertices(const std::shared_ptr<CSGProducts>& products, bool unique_geometry = false) const;
   virtual size_t calcNumVertices(const CSGChainObject& csgobj, bool unique_geometry = false) const;
   virtual size_t calcNumVertices(const PolySet& polyset) const;

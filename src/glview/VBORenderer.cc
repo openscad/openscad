@@ -61,33 +61,6 @@ void shader_attribs_disable(const ShaderUtils::ShaderInfo& shaderinfo)
 
 VBORenderer::VBORenderer() : Renderer() {}
 
-// TODO: Move to Renderer?
-bool VBORenderer::getShaderColor(Renderer::ColorMode colormode, const Color4f& color,
-                                 Color4f& outcolor) const
-{
-  if ((colormode != ColorMode::BACKGROUND) && (colormode != ColorMode::HIGHLIGHT) && color.isValid()) {
-    outcolor = color;
-    return true;
-  }
-  Color4f basecol;
-  if (Renderer::getColor(colormode, basecol)) {
-    if (colormode == ColorMode::BACKGROUND || colormode != ColorMode::HIGHLIGHT) {
-      basecol = Color4f(color[0] >= 0 ? color[0] : basecol[0], color[1] >= 0 ? color[1] : basecol[1],
-                        color[2] >= 0 ? color[2] : basecol[2], color[3] >= 0 ? color[3] : basecol[3]);
-    }
-    Color4f col;
-    Renderer::getColor(ColorMode::MATERIAL, col);
-    outcolor = basecol;
-    if (outcolor[0] < 0) outcolor[0] = col[0];
-    if (outcolor[1] < 0) outcolor[1] = col[1];
-    if (outcolor[2] < 0) outcolor[2] = col[2];
-    if (outcolor[3] < 0) outcolor[3] = col[3];
-    return true;
-  }
-
-  return false;
-}
-
 size_t VBORenderer::calcNumVertices(const std::shared_ptr<CSGProducts>& products,
                                          bool unique_geometry) const
 {
