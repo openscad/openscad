@@ -81,7 +81,7 @@ ThrownTogetherRenderer::~ThrownTogetherRenderer()
 {
 }
 
-void ThrownTogetherRenderer::prepare(bool /*showedges*/, const ShaderUtils::ShaderInfo *shaderinfo)
+void ThrownTogetherRenderer::prepare(const ShaderUtils::ShaderInfo *shaderinfo)
 {
   PRINTD("Thrown prepare");
   if (vertex_state_containers_.empty()) {   
@@ -138,24 +138,24 @@ void ThrownTogetherRenderer::renderCSGProducts(const std::shared_ptr<CSGProducts
   glDepthFunc(GL_LEQUAL);
   this->geom_visit_mark_.clear();
   for (const auto& container : vertex_state_containers_) {
-    for (const auto& vs : container.states()) {
-      if (vs) {
-        if (const auto csg_vs = std::dynamic_pointer_cast<TTRVertexState>(vs)) {
+    for (const auto& vertex_state : container.states()) {
+      if (vertex_state) {
+        if (const auto ttr_vs = std::dynamic_pointer_cast<TTRVertexState>(vertex_state)) {
           if (shaderinfo && shaderinfo->type == ShaderUtils::ShaderType::SELECT_RENDERING) {
             GL_TRACE("glUniform3f(%d, %f, %f, %f)",
                     shaderinfo->uniforms.at("frag_idcolor") %
-                    (((csg_vs->csgObjectIndex() >> 0) & 0xff) / 255.0f) %
-                    (((csg_vs->csgObjectIndex() >> 8) & 0xff) / 255.0f) %
-                    (((csg_vs->csgObjectIndex() >> 16) & 0xff) / 255.0f));
+                    (((ttr_vs->csgObjectIndex() >> 0) & 0xff) / 255.0f) %
+                    (((ttr_vs->csgObjectIndex() >> 8) & 0xff) / 255.0f) %
+                    (((ttr_vs->csgObjectIndex() >> 16) & 0xff) / 255.0f));
             GL_CHECKD(glUniform3f(shaderinfo->uniforms.at("frag_idcolor"),
-                                  ((csg_vs->csgObjectIndex() >> 0) & 0xff) / 255.0f,
-                                  ((csg_vs->csgObjectIndex() >> 8) & 0xff) / 255.0f,
-                                  ((csg_vs->csgObjectIndex() >> 16) & 0xff) / 255.0f));
+                                  ((ttr_vs->csgObjectIndex() >> 0) & 0xff) / 255.0f,
+                                  ((ttr_vs->csgObjectIndex() >> 8) & 0xff) / 255.0f,
+                                  ((ttr_vs->csgObjectIndex() >> 16) & 0xff) / 255.0f));
           }
         }
-        const auto shader_vs = std::dynamic_pointer_cast<VBOShaderVertexState>(vs);
+        const auto shader_vs = std::dynamic_pointer_cast<VBOShaderVertexState>(vertex_state);
         if (!shader_vs || (shader_vs && showedges)) {
-          vs->draw();
+          vertex_state->draw();
         }
       }
     }
@@ -186,8 +186,8 @@ void ThrownTogetherRenderer::createChainObject(VertexStateContainer& container, 
     add_color(vbo_builder, color, shaderinfo);
 
     vbo_builder.create_surface(*csgobj.leaf->polyset, csgobj.leaf->matrix, color, enable_barycentric);
-    if (const auto vs = std::dynamic_pointer_cast<TTRVertexState>(vbo_builder.states().back())) {
-      vs->setCsgObjectIndex(csgobj.leaf->index);
+    if (const auto ttr_vs = std::dynamic_pointer_cast<TTRVertexState>(vbo_builder.states().back())) {
+      ttr_vs->setCsgObjectIndex(csgobj.leaf->index);
     }
   } else { // root mode
     ColorMode colormode = getColorMode(csgobj.flags, highlight_mode, background_mode, false, type);
@@ -210,8 +210,8 @@ void ThrownTogetherRenderer::createChainObject(VertexStateContainer& container, 
       mat *= Eigen::Scaling(1.0, 1.0, 1.1);
     }
     vbo_builder.create_surface(*csgobj.leaf->polyset, mat, color, enable_barycentric);
-    if (auto vs = std::dynamic_pointer_cast<TTRVertexState>(vbo_builder.states().back())) {
-      vs->setCsgObjectIndex(csgobj.leaf->index);
+    if (auto ttr_vs = std::dynamic_pointer_cast<TTRVertexState>(vbo_builder.states().back())) {
+      ttr_vs->setCsgObjectIndex(csgobj.leaf->index);
     }
 
     color[0] = 1.0; color[1] = 0.0; color[2] = 1.0; // override leaf color on front/back error
@@ -229,8 +229,8 @@ void ThrownTogetherRenderer::createChainObject(VertexStateContainer& container, 
     container.states().emplace_back(std::move(cull));
 
     vbo_builder.create_surface(*csgobj.leaf->polyset, csgobj.leaf->matrix, color, enable_barycentric);
-    if (auto vs = std::dynamic_pointer_cast<TTRVertexState>(vbo_builder.states().back())) {
-      vs->setCsgObjectIndex(csgobj.leaf->index);
+    if (auto ttr_vs = std::dynamic_pointer_cast<TTRVertexState>(vbo_builder.states().back())) {
+      ttr_vs->setCsgObjectIndex(csgobj.leaf->index);
     }
 
     container.states().back()->glEnd().emplace_back([]() {

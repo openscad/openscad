@@ -2235,7 +2235,7 @@ void MainWindow::rightClick(QPoint mouse)
     return;
   }
 
-  this->qglview->renderer->prepare(false, &this->selector->shaderinfo);
+  this->qglview->renderer->prepare(&this->selector->shaderinfo);
 
   // Update the selector with the right image size
   this->selector->reset(this->qglview);
