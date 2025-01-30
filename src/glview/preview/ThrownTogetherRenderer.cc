@@ -89,10 +89,7 @@ void ThrownTogetherRenderer::prepare(const ShaderUtils::ShaderInfo *shaderinfo)
 
     VBOBuilder vbo_builder(std::make_unique<TTRVertexStateFactory>(), vertex_state_container);
     vbo_builder.addSurfaceData();
-    bool enable_barycentric = shaderinfo && shaderinfo->attributes.at("barycentric");
-    if (enable_barycentric) {
-      vbo_builder.addShaderData();
-    }
+    vbo_builder.addShaderData(); // Always enable barycentric coordinates
 
     size_t num_vertices = 0;
     if (this->root_products_) num_vertices += (calcNumVertices(this->root_products_, true) * 2);
@@ -171,7 +168,7 @@ void ThrownTogetherRenderer::createChainObject(VertexStateContainer& container, 
     return;
   }
 
-  bool enable_barycentric = shaderinfo && shaderinfo->attributes.at("barycentric");
+  bool enable_barycentric = true;
 
   const auto& leaf_color = csgobj.leaf->color;
   const auto csgmode = RendererUtils::getCsgMode(highlight_mode, background_mode, type);

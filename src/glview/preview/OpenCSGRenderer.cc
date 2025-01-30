@@ -172,7 +172,7 @@ void OpenCSGRenderer::draw(bool showedges, const ShaderUtils::ShaderInfo *shader
 void OpenCSGRenderer::createCSGVBOProducts(
     const CSGProducts &products, bool highlight_mode, bool background_mode, const ShaderUtils::ShaderInfo *shaderinfo) {
 #ifdef ENABLE_OPENCSG
-  bool enable_barycentric = shaderinfo && shaderinfo->attributes.at("barycentric");
+  bool enable_barycentric = true;
   for (const auto& product : products.products) {
     std::unique_ptr<OpenCSGVBOProduct> vertex_state_container = std::make_unique<OpenCSGVBOProduct>();
  
@@ -182,9 +182,7 @@ void OpenCSGRenderer::createCSGVBOProducts(
     VBOBuilder vbo_builder(std::make_unique<OpenCSGVertexStateFactory>(), *vertex_state_container.get());
     vbo_builder.addSurfaceData();
     vbo_builder.writeSurface();
-    if (enable_barycentric) {
-      vbo_builder.addShaderData();
-    }
+    vbo_builder.addShaderData(); // Always enable barycentric coordinates
 
     size_t num_vertices = 0;
     for (const auto &csgobj : product.intersections) {
