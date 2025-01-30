@@ -287,6 +287,8 @@ MainWindow::MainWindow(const QStringList& filenames)
 
   this->editorDock->setConfigKey("view/hideEditor");
   this->editorDock->setAction(this->windowActionHideEditor);
+  this->editorDock->setWindowTitle("Editor");
+
   this->consoleDock->setConfigKey("view/hideConsole");
   this->consoleDock->setAction(this->windowActionHideConsole);
   this->parameterDock->setConfigKey("view/hideCustomizer");
@@ -341,9 +343,6 @@ MainWindow::MainWindow(const QStringList& filenames)
   // Preferences initialization happens on first tab creation, and depends on colorschemes from editor.
   // Any code dependent on Preferences must come after the TabManager instantiation
   tabManager = new TabManager(this, filenames.isEmpty() ? QString() : filenames[0]);
-  connect(tabManager, SIGNAL(tabCountChanged(int)), this, SLOT(setTabToolBarVisible(int)));
-  this->setTabToolBarVisible(tabManager->count());
-  tabToolBarContents->layout()->addWidget(tabManager->getTabHeader());
   editorDockContents->layout()->addWidget(tabManager->getTabContent());
 
   connect(Preferences::inst(), SIGNAL(consoleFontChanged(const QString&,uint)), this->console, SLOT(setFont(const QString&,uint)));
@@ -691,7 +690,6 @@ MainWindow::MainWindow(const QStringList& filenames)
 
   updateWindowSettings(hideConsole, hideEditor, hideCustomizer, hideErrorLog, hideEditorToolbar, hide3DViewToolbar, hideAnimate, hideFontList, hideViewportControl);
 
-  connect(this->editorDock, SIGNAL(topLevelChanged(bool)), this, SLOT(editorTopLevelChanged(bool)));
   connect(this->consoleDock, SIGNAL(topLevelChanged(bool)), this, SLOT(consoleTopLevelChanged(bool)));
   connect(this->parameterDock, SIGNAL(topLevelChanged(bool)), this, SLOT(parameterTopLevelChanged(bool)));
   connect(this->errorLogDock, SIGNAL(topLevelChanged(bool)), this, SLOT(errorLogTopLevelChanged(bool)));
@@ -1015,12 +1013,6 @@ void MainWindow::updateRecentFiles(const QString& FileSavedOrOpened)
       mainWin->updateRecentFileActions();
     }
   }
-}
-
-void MainWindow::setTabToolBarVisible(int count)
-{
-  tabCount = count;
-  tabToolBar->setVisible((tabCount > 1) && editorDock->isVisible());
 }
 
 /*!
@@ -3018,8 +3010,6 @@ void MainWindow::viewAll()
 
 void MainWindow::on_editorDock_visibilityChanged(bool)
 {
-  changedTopLevelEditor(editorDock->isFloating());
-  tabToolBar->setVisible((tabCount > 1) && editorDock->isVisible());
   updateExportActions();
 }
 
@@ -3051,24 +3041,6 @@ void MainWindow::on_fontListDock_visibilityChanged(bool)
 void MainWindow::on_viewportControlDock_visibilityChanged(bool)
 {
   viewportControlTopLevelChanged(viewportControlDock->isFloating());
-}
-
-void MainWindow::changedTopLevelEditor(bool topLevel)
-{
-  setDockWidgetTitle(editorDock, QString(_("Editor")), topLevel);
-}
-
-void MainWindow::editorTopLevelChanged(bool topLevel)
-{
-  setDockWidgetTitle(editorDock, QString(_("Editor")), topLevel);
-  if (topLevel) {
-    this->removeToolBar(tabToolBar);
-    ((QVBoxLayout *)editorDockContents->layout())->insertWidget(0, tabToolBar);
-  } else {
-    editorDockContents->layout()->removeWidget(tabToolBar);
-    this->addToolBar(tabToolBar);
-  }
-  tabToolBar->setVisible((tabCount > 1) && editorDock->isVisible());
 }
 
 void MainWindow::changedTopLevelConsole(bool topLevel)
