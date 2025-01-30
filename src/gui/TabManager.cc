@@ -498,7 +498,7 @@ void TabManager::openTabFile(const QString& filename)
     } catch (...) {
       par->UnknownExceptionCleanup();
     }
-    par->last_compiled_doc = ""; // undo the damage so F4 works
+    par->lastCompiledDoc = ""; // undo the damage so F4 works
     par->clearCurrentOutput();
   }
 }
