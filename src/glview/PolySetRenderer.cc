@@ -116,7 +116,8 @@ void PolySetRenderer::createPolySetStates(const ShaderUtils::ShaderInfo *shaderi
 
   for (const auto &polyset : this->polysets_) {
     Color4f color;
-    getColor(ColorMode::MATERIAL, color);
+    if (!polyset->colors.empty()) color = polyset->colors[0];
+    getShaderColor(ColorMode::MATERIAL, color, color);
     add_color(vbo_builder, color, shaderinfo);
 
     vbo_builder.writeSurface();
@@ -152,7 +153,7 @@ void PolySetRenderer::createPolygonSurfaceStates() {
 
   for (const auto &[polygon, polyset] : this->polygons_) {
     Color4f color;
-    getColor(ColorMode::CGAL_FACE_2D_COLOR, color);
+    getColorSchemeColor(ColorMode::CGAL_FACE_2D_COLOR, color);
     vbo_builder.create_polygons(*polyset, Transform3d::Identity(), color);
   }
 
@@ -185,7 +186,7 @@ void PolySetRenderer::createPolygonEdgeStates() {
 
   for (const auto &[polygon, _] : this->polygons_) {
     Color4f color;
-    getColor(ColorMode::CGAL_EDGE_2D_COLOR, color);
+    getColorSchemeColor(ColorMode::CGAL_EDGE_2D_COLOR, color);
     vbo_builder.writeEdge();
     vbo_builder.create_edges(*polygon, Transform3d::Identity(), color);
   }

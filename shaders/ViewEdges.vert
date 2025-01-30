@@ -5,6 +5,7 @@ attribute vec3 barycentric; // barycentric form of vertex coord
 
 varying vec3 vBC;           // varying barycentric coords
 varying float shading;      // multiplied by color_ares. color_edge is without lighting
+varying vec4 color;         // per-vertex colors
 
 void main(void) {
   gl_Position = gl_ModelViewProjectionMatrix * gl_Vertex;
@@ -13,4 +14,5 @@ void main(void) {
   normal = normalize(gl_NormalMatrix * gl_Normal);
   lightDir = normalize(vec3(gl_LightSource[0].position));
   shading = 0.2 + abs(dot(normal, lightDir));
+  color = gl_Color;
 }
