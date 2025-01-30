@@ -128,9 +128,9 @@ void OpenCSGRenderer::draw(bool showedges, const ShaderUtils::ShaderInfo *shader
       }
     }
 
-    for (const auto& vs : product->states()) {
-      if (vs) {
-      	if (const auto csg_vs = std::dynamic_pointer_cast<OpenCSGVertexState>(vs)) {
+    for (const auto& vertex_state : product->states()) {
+      if (vertex_state) {
+      	if (const auto csg_vs = std::dynamic_pointer_cast<OpenCSGVertexState>(vertex_state)) {
 	        if (shaderinfo && shaderinfo->type == ShaderUtils::ShaderType::SELECT_RENDERING) {
 	          GL_TRACE("glUniform3f(%d, %f, %f, %f)", shaderinfo->uniforms.at("frag_idcolor") %
               (((csg_vs->csgObjectIndex() >> 0) & 0xff) / 255.0f) %
@@ -142,9 +142,9 @@ void OpenCSGRenderer::draw(bool showedges, const ShaderUtils::ShaderInfo *shader
                 ((csg_vs->csgObjectIndex() >> 16) & 0xff) / 255.0f));
           }
         }
-        const auto shader_vs = std::dynamic_pointer_cast<VBOShaderVertexState>(vs);
+        const auto shader_vs = std::dynamic_pointer_cast<VBOShaderVertexState>(vertex_state);
         if (!shader_vs || (showedges && shader_vs)) {
-          vs->draw();
+          vertex_state->draw();
         }
       }
     }
@@ -230,12 +230,11 @@ void OpenCSGRenderer::createCSGVBOProducts(
           // object is opaque, draw normally
           vbo_builder.create_surface(*csgobj.leaf->polyset, 
                          csgobj.leaf->matrix, last_color, enable_barycentric, override_color);
-          const auto surface = std::dynamic_pointer_cast<OpenCSGVertexState>(
-            vertex_states.back());
-          if (surface != nullptr) {
-            surface->setCsgObjectIndex(csgobj.leaf->index);
+          if (const auto csg_vs = std::dynamic_pointer_cast<OpenCSGVertexState>(
+            vertex_states.back())) {
+            csg_vs->setCsgObjectIndex(csgobj.leaf->index);
             primitives.emplace_back(
-                createVBOPrimitive(surface, OpenCSG::Intersection,
+                createVBOPrimitive(csg_vs, OpenCSG::Intersection,
                                    csgobj.leaf->polyset->getConvexity()));
           }
         } else {
@@ -249,15 +248,12 @@ void OpenCSGRenderer::createCSGVBOProducts(
 
           vbo_builder.create_surface(*csgobj.leaf->polyset, 
                          csgobj.leaf->matrix, last_color, enable_barycentric, override_color);
-          std::shared_ptr<OpenCSGVertexState> surface =
-              std::dynamic_pointer_cast<OpenCSGVertexState>(
-                  vertex_states.back());
-
-          if (surface != nullptr) {
-            surface->setCsgObjectIndex(csgobj.leaf->index);
+          if (const auto csg_vs = std::dynamic_pointer_cast<OpenCSGVertexState>(
+                  vertex_states.back())) {
+            csg_vs->setCsgObjectIndex(csgobj.leaf->index);
 
             primitives.emplace_back(
-                createVBOPrimitive(surface, OpenCSG::Intersection,
+                createVBOPrimitive(csg_vs, OpenCSG::Intersection,
                                    csgobj.leaf->polyset->getConvexity()));
 
             cull = std::make_shared<VertexState>();
@@ -267,7 +263,7 @@ void OpenCSGRenderer::createCSGVBOProducts(
             });
             vertex_states.emplace_back(std::move(cull));
 
-            vertex_states.emplace_back(surface);
+            vertex_states.emplace_back(csg_vs);
 
             cull = std::make_shared<VertexState>();
             cull->glEnd().emplace_back([]() {
@@ -326,12 +322,11 @@ void OpenCSGRenderer::createCSGVBOProducts(
         }
         vbo_builder.create_surface(*csgobj.leaf->polyset, tmp,
                        last_color, enable_barycentric, override_color);
-        const auto surface = std::dynamic_pointer_cast<OpenCSGVertexState>(
-          vertex_states.back());
-        if (surface != nullptr) {
-          surface->setCsgObjectIndex(csgobj.leaf->index);
+        if (const auto csg_vs = std::dynamic_pointer_cast<OpenCSGVertexState>(
+          vertex_states.back())) {
+          csg_vs->setCsgObjectIndex(csgobj.leaf->index);
           primitives.emplace_back(
-              createVBOPrimitive(surface, OpenCSG::Subtraction,
+              createVBOPrimitive(csg_vs, OpenCSG::Subtraction,
                                  csgobj.leaf->polyset->getConvexity()));
         } else {
           assert(false && "Subtraction surface state was nullptr");
