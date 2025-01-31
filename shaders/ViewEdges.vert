@@ -4,7 +4,7 @@ attribute vec3 barycentric; // barycentric form of vertex coord
                             // either [1,0,0], [0,1,0] or [0,0,1] under normal circumstances (no edges disabled)
 
 varying vec3 vBC;           // varying barycentric coords
-varying float shading;      // multiplied by color_ares. color_edge is without lighting
+varying float shading;      // Will be multiplied by color in fragment shader
 varying vec4 color;         // per-vertex colors
 
 void main(void) {

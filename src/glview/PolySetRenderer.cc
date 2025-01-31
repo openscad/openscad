@@ -118,7 +118,7 @@ void PolySetRenderer::createPolySetStates(const ShaderUtils::ShaderInfo *shaderi
     Color4f color;
     if (!polyset->colors.empty()) color = polyset->colors[0];
     getShaderColor(ColorMode::MATERIAL, color, color);
-    add_color(vbo_builder, color, shaderinfo);
+    add_shader_pointers(vbo_builder, shaderinfo);
 
     vbo_builder.writeSurface();
     vbo_builder.create_surface(*polyset, Transform3d::Identity(), color, enable_barycentric, false);
