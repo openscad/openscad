@@ -37,7 +37,7 @@ public:
   Renderer();
   virtual ~Renderer() = default;
 
-  virtual void prepare(bool showedges, const ShaderUtils::ShaderInfo *shaderinfo) = 0;
+  virtual void prepare(const ShaderUtils::ShaderInfo *shaderinfo) = 0;
   virtual void draw(bool showedges, const ShaderUtils::ShaderInfo *shaderinfo) const = 0;
   [[nodiscard]] virtual BoundingBox getBoundingBox() const = 0;
 

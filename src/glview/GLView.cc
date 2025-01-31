@@ -206,7 +206,7 @@ void GLView::paintGL()
     // FIXME: This belongs in the OpenCSG renderer, but it doesn't know about this ID yet
     OpenCSG::setContext(this->opencsg_id);
 #endif
-    this->renderer->prepare(showedges, edge_shader.get());
+    this->renderer->prepare(edge_shader.get());
     this->renderer->draw(showedges, edge_shader.get());
   }
   Vector3d eyedir(this->modelview[2],this->modelview[6],this->modelview[10]);
