@@ -74,7 +74,7 @@ void MouseSelector::setupFramebuffer(const GLView *view) {
       static_cast<unsigned int>(this->framebuffer->height()) != view->cam.pixel_height) {
     this->framebuffer = std::make_unique<QOpenGLFramebufferObject>(
       view->cam.pixel_width,
-      view->cam.pixel_width,
+      view->cam.pixel_height,
       QOpenGLFramebufferObject::Depth);
     this->framebuffer->release();
   }
@@ -82,10 +82,10 @@ void MouseSelector::setupFramebuffer(const GLView *view) {
 
 /**
  * Setup the shaders, Projection and Model matrix and call the given renderer.
- * The renderer has to make sure, that the colors are defined accordingly, or
- * the selection won't work.
+ * The renderer has to support rendering with ID colors (using the shader we provide),
+ * otherwise the selection won't work.
  *
- * returns 0 if no object was found
+ * returns index of picked node (AbstractNode::idx) or 0 if no object was found.
  */
 int MouseSelector::select(const Renderer *renderer, int x, int y) {
   // x/y is originated topleft, so turn y around
