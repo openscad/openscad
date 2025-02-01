@@ -231,8 +231,7 @@ void CGALRenderer::createPolygonEdgeStates() {
   vbo_builder.createInterleavedVBOs();
 }
 
-void CGALRenderer::prepare(bool /*showedges*/,
-                           const ShaderUtils::ShaderInfo * /*shaderinfo*/) {
+void CGALRenderer::prepare(const ShaderUtils::ShaderInfo * /*shaderinfo*/) {
   PRINTD("prepare()");
   if (!vertex_state_containers_.size()) {
     if (!this->polysets_.empty() && !this->polygons_.empty()) {

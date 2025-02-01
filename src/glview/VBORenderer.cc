@@ -165,9 +165,9 @@ void VBORenderer::add_shader_pointers(VBOBuilder& vbo_builder, const ShaderUtils
   GLsizei count = 0, stride = 0;
   GLenum type = 0;
   size_t offset = 0;
-  GLuint index = shaderinfo->attributes.at("barycentric");
 
-  if (index > 0) {
+  GLuint attribute_index = shaderinfo->attributes.at("barycentric");
+  if (attribute_index > 0) {
     count =
       vertex_data->attributes()[vbo_builder.shader_attributes_index_ + BARYCENTRIC_ATTRIB]->count();
     type =
@@ -176,13 +176,13 @@ void VBORenderer::add_shader_pointers(VBOBuilder& vbo_builder, const ShaderUtils
     offset = start_offset +
              vertex_data->interleavedOffset(vbo_builder.shader_attributes_index_ + BARYCENTRIC_ATTRIB);
     ss->glBegin().emplace_back(
-      [index, count, type, stride, offset, ss_ptr = std::weak_ptr<VertexState>(ss)]() {
+      [attribute_index, count, type, stride, offset, ss_ptr = std::weak_ptr<VertexState>(ss)]() {
         auto ss = ss_ptr.lock();
         if (ss) {
           // NOLINTBEGIN(performance-no-int-to-ptr)
-          GL_TRACE("glVertexAttribPointer(%d, %d, %d, %d, %p)",
-                   index % count % type % stride % (GLvoid *)(ss->drawOffset() + offset));
-          GL_CHECKD(glVertexAttribPointer(index, count, type, GL_FALSE, stride,
+          GL_TRACE("glVertexAttribPointer(%d, %d, %d, GL_FALSE, %d, %p)",
+                   attribute_index % count % type % stride % (GLvoid *)(ss->drawOffset() + offset));
+          GL_CHECKD(glVertexAttribPointer(attribute_index, count, type, GL_FALSE, stride,
                                           (GLvoid *)(ss->drawOffset() + offset)));
           // NOLINTEND(performance-no-int-to-ptr)
         }

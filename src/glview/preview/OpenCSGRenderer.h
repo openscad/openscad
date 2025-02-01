@@ -68,7 +68,7 @@ public:
                   std::shared_ptr<CSGProducts> highlights_products,
                   std::shared_ptr<CSGProducts> background_products);
   ~OpenCSGRenderer() override = default;
-  void prepare(bool showedges, const ShaderUtils::ShaderInfo *shaderinfo = nullptr) override;
+  void prepare(const ShaderUtils::ShaderInfo *shaderinfo = nullptr) override;
   void draw(bool showedges, const ShaderUtils::ShaderInfo *shaderinfo = nullptr) const override;
 
   BoundingBox getBoundingBox() const override;
