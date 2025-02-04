@@ -3361,7 +3361,6 @@ void MainWindow::hideParameters()
 
 void MainWindow::onwindowActionSelectEditor()
 {
-  std::cout << "YO LO SHOW EDITOR ! " << std::endl;
   showEditor();
 }
 
