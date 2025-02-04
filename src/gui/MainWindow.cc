@@ -2922,42 +2922,49 @@ void MainWindow::editorContentChanged()
 void MainWindow::viewAngleTop()
 {
   qglview->cam.object_rot << 90, 0, 0;
+  qglview->cam.object_trans << 0, 0, 0;
   this->qglview->update();
 }
 
 void MainWindow::viewAngleBottom()
 {
   qglview->cam.object_rot << 270, 0, 0;
+  qglview->cam.object_trans << 0, 0, 0;
   this->qglview->update();
 }
 
 void MainWindow::viewAngleLeft()
 {
   qglview->cam.object_rot << 0, 0, 90;
+  qglview->cam.object_trans << 0, 0, 0;
   this->qglview->update();
 }
 
 void MainWindow::viewAngleRight()
 {
   qglview->cam.object_rot << 0, 0, 270;
+  qglview->cam.object_trans << 0, 0, 0;
   this->qglview->update();
 }
 
 void MainWindow::viewAngleFront()
 {
   qglview->cam.object_rot << 0, 0, 0;
+  qglview->cam.object_trans << 0, 0, 0;
   this->qglview->update();
 }
 
 void MainWindow::viewAngleBack()
 {
   qglview->cam.object_rot << 0, 0, 180;
+  qglview->cam.object_trans << 0, 0, 0;
   this->qglview->update();
 }
 
 void MainWindow::viewAngleDiagonal()
 {
   qglview->cam.object_rot << 35, 0, -25;
+  qglview->cam.object_trans << 0, 0, 0;
   this->qglview->update();
 }
 
