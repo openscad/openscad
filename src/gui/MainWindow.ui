@@ -1685,10 +1685,16 @@
    <property name="text">
     <string>&amp;Next Window</string>
    </property>
+   <property name="shortcut">
+    <string>Ctrl+K</string>
+   </property>
   </action>
   <action name="windowActionPreviousWindow">
    <property name="text">
     <string>&amp;Previous Window</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+H</string>
    </property>
   </action>
   <action name="editActionInsertTemplate">

@@ -32,6 +32,7 @@
 #include <QTime>
 #include <QSignalMapper>
 
+#include "RubberBandManager.h"
 #include "gui/Editor.h"
 #include "geometry/Geometry.h"
 #include "io/export.h"
@@ -119,6 +120,7 @@ public:
   ~MainWindow() override;
 
 private:
+  RubberBandManager rubberBandManager;
   volatile bool isClosing = false;
   void consoleOutputRaw(const QString& msg);
   void clearAllSelectionIndicators();
@@ -140,6 +142,8 @@ private slots:
   void measureFinished();
   void errorLogOutput(const Message& log_msg);
   void onNavigationOpenContextMenu();
+  void onNavigationCloseContextMenu();
+  void onNavigationHoveredContextMenuEntry();
   void onNavigationTriggerContextMenuEntry();
 
 public:

@@ -215,7 +215,7 @@ QElapsedTimer *MainWindow::progressThrottle = new QElapsedTimer();
 namespace {
 
 struct DockFocus {
-  QWidget *widget;
+  Dock *widget;
   std::function<void(MainWindow *)> focus;
 };
 
@@ -263,7 +263,8 @@ void addExportActions(const MainWindow *mainWindow, QToolBar *toolbar, QAction *
 
 } // namespace
 
-MainWindow::MainWindow(const QStringList& filenames)
+MainWindow::MainWindow(const QStringList& filenames) :
+    rubberBandManager(this)
 {
   setupUi(this);
 
@@ -717,7 +718,10 @@ MainWindow::MainWindow(const QStringList& filenames)
       auto action2 = navigationMenu->addAction(title);
       action2->setProperty("id", QVariant::fromValue(dock));
       connect(action2, &QAction::triggered, this, &MainWindow::onNavigationTriggerContextMenuEntry);
+      connect(action2, &QAction::hovered, this, &MainWindow::onNavigationHoveredContextMenuEntry);
   }
+  connect(navigationMenu, &QMenu::aboutToHide, this, &MainWindow::onNavigationCloseContextMenu);
+
   windowActionJumpTo->setMenu(navigationMenu);
 
   connect(this->consoleDock, SIGNAL(topLevelChanged(bool)), this, SLOT(consoleTopLevelChanged(bool)));
@@ -758,6 +762,10 @@ void MainWindow::onNavigationOpenContextMenu() {
     navigationMenu->exec(QCursor::pos());
 }
 
+void MainWindow::onNavigationCloseContextMenu() {
+  rubberBandManager.hide();
+}
+
 void MainWindow::onNavigationTriggerContextMenuEntry(){
     auto *action = qobject_cast<QAction *>(sender());
     if (!action || !action->property("id").isValid())
@@ -775,6 +783,14 @@ void MainWindow::onNavigationTriggerContextMenuEntry(){
     {
         tabManager->setFocus();
     }
+}
+
+void MainWindow::onNavigationHoveredContextMenuEntry(){
+  auto *action = qobject_cast<QAction *>(sender());
+  if (!action || !action->property("id").isValid()) return;
+
+  Dock *dock = action->property("id").value<Dock *>();
+  rubberBandManager.emphasize(dock);
 }
 
 void MainWindow::updateExportActions() {
@@ -3436,6 +3452,7 @@ void MainWindow::activateWindow(int offset)
           const auto& dock = docks.at(target);
           if (dock.widget->isVisible()) {
             dock.focus(this);
+            rubberBandManager.emphasize(dock.widget);
             return;
           }
         }
