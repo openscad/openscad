@@ -249,11 +249,11 @@ void removeExportActions(QToolBar *toolbar, QAction *action) {
 }
 
 void addExportActions(const MainWindow *mainWindow, QToolBar *toolbar, QAction *action) {
-  for (const std::string &identifier : {Settings::Settings::toolbarExport3D.value(), 
+  for (const std::string& identifier : {Settings::Settings::toolbarExport3D.value(),
                                         Settings::Settings::toolbarExport2D.value()}) {
     FileFormat format;
     fileformat::fromIdentifier(identifier, format);
-    const auto it=mainWindow->exportMap.find(format);
+    const auto it = mainWindow->exportMap.find(format);
     // FIXME: Allow turning off the toolbar entry?
     if (it != mainWindow->exportMap.end()) {
       toolbar->insertAction(action, it->second);
@@ -492,23 +492,23 @@ MainWindow::MainWindow(const QStringList& filenames) :
   connect(this->designActionDisplayCSGTree, SIGNAL(triggered()), this, SLOT(actionDisplayCSGTree()));
   connect(this->designActionDisplayCSGProducts, SIGNAL(triggered()), this, SLOT(actionDisplayCSGProducts()));
 
-  exportMap[FileFormat::BINARY_STL] =this->fileActionExportBinarySTL;
-  exportMap[FileFormat::ASCII_STL] =this->fileActionExportAsciiSTL;
+  exportMap[FileFormat::BINARY_STL] = this->fileActionExportBinarySTL;
+  exportMap[FileFormat::ASCII_STL] = this->fileActionExportAsciiSTL;
   exportMap[FileFormat::_3MF] = this->fileActionExport3MF;
-  exportMap[FileFormat::OBJ] =  this->fileActionExportOBJ;
-  exportMap[FileFormat::OFF] =  this->fileActionExportOFF;
-  exportMap[FileFormat::WRL] =  this->fileActionExportWRL;
-  exportMap[FileFormat::POV] =  this->fileActionExportPOV;
-  exportMap[FileFormat::AMF] =  this->fileActionExportAMF;
-  exportMap[FileFormat::DXF] =  this->fileActionExportDXF;
-  exportMap[FileFormat::SVG] =  this->fileActionExportSVG;
-  exportMap[FileFormat::PDF] =  this->fileActionExportPDF;
-  exportMap[FileFormat::CSG] =  this->fileActionExportCSG;
-  exportMap[FileFormat::PNG] =  this->fileActionExportImage;
+  exportMap[FileFormat::OBJ] = this->fileActionExportOBJ;
+  exportMap[FileFormat::OFF] = this->fileActionExportOFF;
+  exportMap[FileFormat::WRL] = this->fileActionExportWRL;
+  exportMap[FileFormat::POV] = this->fileActionExportPOV;
+  exportMap[FileFormat::AMF] = this->fileActionExportAMF;
+  exportMap[FileFormat::DXF] = this->fileActionExportDXF;
+  exportMap[FileFormat::SVG] = this->fileActionExportSVG;
+  exportMap[FileFormat::PDF] = this->fileActionExportPDF;
+  exportMap[FileFormat::CSG] = this->fileActionExportCSG;
+  exportMap[FileFormat::PNG] = this->fileActionExportImage;
 
-  for (auto &pair : exportMap) {
-      connect(pair.second, SIGNAL(triggered()), this->exportFormatMapper, SLOT(map()));
-      this->exportFormatMapper->setMapping(pair.second, int(pair.first));
+  for (auto& pair : exportMap) {
+    connect(pair.second, SIGNAL(triggered()), this->exportFormatMapper, SLOT(map()));
+    this->exportFormatMapper->setMapping(pair.second, int(pair.first));
   }
 
   connect(this->designActionFlushCaches, SIGNAL(triggered()), this, SLOT(actionFlushCaches()));
@@ -1024,7 +1024,7 @@ MainWindow::~MainWindow()
 {
   // If root_file is not null then it will be the same as parsed_file,
   // so no need to delete it.
-    delete parsedFile;
+  delete parsedFile;
   scadApp->windowManager.remove(this);
   if (scadApp->windowManager.getWindows().size() == 0) {
     // Quit application even in case some other windows like
@@ -1127,7 +1127,7 @@ void MainWindow::compile(bool reload, bool forcedone)
     }
 
     if (this->parsedFile) {
-        auto mtime = this->parsedFile->includesChanged();
+      auto mtime = this->parsedFile->includesChanged();
       if (mtime > this->includesMTime) {
         this->includesMTime = mtime;
         shouldcompiletoplevel = true;
@@ -1148,7 +1148,7 @@ void MainWindow::compile(bool reload, bool forcedone)
     }
 
     if (didcompile && parser_error_pos != lastParserErrorPos) {
-        if (lastParserErrorPos >= 0) emit unhighlightLastError();
+      if (lastParserErrorPos >= 0) emit unhighlightLastError();
       if (parser_error_pos >= 0) emit highlightError(parser_error_pos);
       lastParserErrorPos = parser_error_pos;
     }
@@ -1156,7 +1156,7 @@ void MainWindow::compile(bool reload, bool forcedone)
     if (this->rootFile) {
       auto mtime = this->rootFile->handleDependencies();
       if (mtime > this->depsMTime) {
-          this->depsMTime = mtime;
+        this->depsMTime = mtime;
         LOG("Used file cache size: %1$d files", SourceFileCache::instance()->size());
         didcompile = true;
       }
@@ -1281,9 +1281,9 @@ void MainWindow::instantiateRoot()
 
   this->csgRoot.reset();
   this->normalizedRoot.reset();
-    this->rootProduct.reset();
+  this->rootProduct.reset();
 
-    this->rootNode.reset();
+  this->rootNode.reset();
   this->tree.setRoot(nullptr);
 
   std::filesystem::path doc(activeEditor->filepath.toStdString());
@@ -1315,7 +1315,7 @@ void MainWindow::instantiateRoot()
       // Do we have an explicit root node (! modifier)?
       const Location *nextLocation = nullptr;
       if (!(this->rootNode = find_root_tag(this->absoluteRootNode, &nextLocation))) {
-          this->rootNode = this->absoluteRootNode;
+        this->rootNode = this->absoluteRootNode;
       }
       if (nextLocation) {
         LOG(message_group::NONE, *nextLocation, builtin_context->documentRoot(), "More than one Root Modifier (!)");
@@ -1345,7 +1345,7 @@ void MainWindow::compileCSG()
 {
   OpenSCAD::hardwarnings = Preferences::inst()->getValue("advanced/enableHardwarnings").toBool();
   try{
-      assert(this->rootNode);
+    assert(this->rootNode);
     LOG("Compiling design (CSG Products generation)...");
     this->processEvents();
 
@@ -1363,7 +1363,7 @@ void MainWindow::compileCSG()
     try {
 #ifdef ENABLE_OPENCSG
       this->processEvents();
-        this->csgRoot = csgrenderer.buildCSGTree(*rootNode);
+      this->csgRoot = csgrenderer.buildCSGTree(*rootNode);
 #endif
       renderStatistic.printCacheStatistic();
       this->processEvents();
@@ -1384,10 +1384,10 @@ void MainWindow::compileCSG()
     if (this->csgRoot) {
       this->normalizedRoot = normalizer.normalize(this->csgRoot);
       if (this->normalizedRoot) {
-          this->rootProduct.reset(new CSGProducts());
-          this->rootProduct->import(this->normalizedRoot);
+        this->rootProduct.reset(new CSGProducts());
+        this->rootProduct->import(this->normalizedRoot);
       } else {
-          this->rootProduct.reset();
+        this->rootProduct.reset();
         LOG(message_group::Warning, "CSG normalization resulted in an empty tree");
         this->processEvents();
       }
@@ -1418,17 +1418,17 @@ void MainWindow::compileCSG()
       for (const auto& background_term : background_terms) {
         auto nterm = normalizer.normalize(background_term);
         if (nterm) {
-            this->backgroundProducts->import(nterm);
+          this->backgroundProducts->import(nterm);
         }
       }
     } else {
-        this->backgroundProducts.reset();
+      this->backgroundProducts.reset();
     }
 
     if (this->rootProduct &&
         (this->rootProduct->size() >
          Preferences::inst()->getValue("advanced/openCSGLimit").toUInt())) {
-        LOG(message_group::UI_Warning, "Normalized tree has %1$d elements!", this->rootProduct->size());
+      LOG(message_group::UI_Warning, "Normalized tree has %1$d elements!", this->rootProduct->size());
       LOG(message_group::UI_Warning, "OpenCSG rendering has been disabled.");
     }
 #ifdef ENABLE_OPENCSG
@@ -1836,8 +1836,8 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event)
 void MainWindow::setRenderVariables(ContextHandle<BuiltinContext>& context)
 {
   RenderVariables r = {
-      .preview = this->isPreview,
-      .time = this->animateWidget->getAnimTval(),
+    .preview = this->isPreview,
+    .time = this->animateWidget->getAnimTval(),
     .camera = qglview->cam,
   };
   r.applyToContext(context);
@@ -1931,7 +1931,7 @@ void MainWindow::parseTopLevelDocument()
   this->lastCompiledDoc = activeEditor->toPlainText();
 
   auto fulltext =
-          std::string(this->lastCompiledDoc.toUtf8().constData()) +
+    std::string(this->lastCompiledDoc.toUtf8().constData()) +
     "\n\x03\n" + commandline_commands;
 
   auto fnameba = activeEditor->filepath.toLocal8Bit();
@@ -2027,7 +2027,7 @@ void MainWindow::actionReloadRenderPreview()
 
 void MainWindow::csgReloadRender()
 {
-    if (this->rootNode) compileCSG();
+  if (this->rootNode) compileCSG();
 
   // Go to non-CGAL view mode
   if (viewActionThrownTogether->isChecked()) {
@@ -2078,7 +2078,7 @@ void MainWindow::actionRenderPreview()
 
 void MainWindow::csgRender()
 {
-    if (this->rootNode) compileCSG();
+  if (this->rootNode) compileCSG();
 
   // Go to non-CGAL view mode
   if (viewActionThrownTogether->isChecked()) {
@@ -2105,39 +2105,39 @@ std::unique_ptr<ExternalToolInterface> createExternalToolService(
   print_service_t serviceType, const QString& serviceName, FileFormat fileFormat)
 {
   switch (serviceType) {
-    case print_service_t::NONE:
+  case print_service_t::NONE:
     // TODO: Print warning
     return nullptr;
     break;
-    case print_service_t::PRINT_SERVICE: {
-      if (const auto printService = PrintService::getPrintService(serviceName.toStdString())) {
-        return createExternalPrintService(printService, fileFormat);
-      }
-      LOG("Unknown print service \"%1$s\"", serviceName.toStdString());
-      return nullptr;
-      break;
+  case print_service_t::PRINT_SERVICE: {
+    if (const auto printService = PrintService::getPrintService(serviceName.toStdString())) {
+      return createExternalPrintService(printService, fileFormat);
     }
-    case print_service_t::OCTOPRINT:
-      return createOctoPrintService(fileFormat);
+    LOG("Unknown print service \"%1$s\"", serviceName.toStdString());
+    return nullptr;
     break;
-    case print_service_t::LOCAL_APPLICATION:
-      return createLocalProgramService(fileFormat);
+  }
+  case print_service_t::OCTOPRINT:
+    return createOctoPrintService(fileFormat);
+    break;
+  case print_service_t::LOCAL_APPLICATION:
+    return createLocalProgramService(fileFormat);
     break;
   }
   return {};
 }
 
-void MainWindow::sendToExternalTool(ExternalToolInterface &externalToolService)
+void MainWindow::sendToExternalTool(ExternalToolInterface& externalToolService)
 {
   const QFileInfo activeFile(activeEditor->filepath);
   QString activeFileName = activeFile.fileName();
   if (activeFileName.isEmpty()) activeFileName = "Untitled.scad";
   // TODO: Replace suffix to match exported file format?
-  
+
   activeFileName = activeFileName + QString::fromStdString("." + fileformat::toSuffix(externalToolService.fileFormat()));
 
   bool export_status = externalToolService.exportTemporaryFile(rootGeom, activeFileName, &qglview->cam);
-  
+
   this->progresswidget = new ProgressWidget(this);
   connect(this->progresswidget, SIGNAL(requestShow()), this, SLOT(showProgress()));
 
@@ -2197,7 +2197,7 @@ void MainWindow::actionRender()
 
 void MainWindow::cgalRender()
 {
-    if (!this->rootFile || !this->rootNode) {
+  if (!this->rootFile || !this->rootNode) {
     compileEnded();
     return;
   }
@@ -2398,7 +2398,7 @@ void getCodeLocation(const AbstractNode *self, int currentLevel,  int includeLev
     if (*firstLine < 0 || *firstLine > location.firstLine()) {
       *firstLine = location.firstLine();
       *firstColumn = location.firstColumn();
-    } else if (*firstLine == location.firstLine() && *firstColumn > location.firstColumn())   {
+    } else if (*firstLine == location.firstLine() && *firstColumn > location.firstColumn()) {
       *firstColumn = location.firstColumn();
     }
 
@@ -2409,13 +2409,13 @@ void getCodeLocation(const AbstractNode *self, int currentLevel,  int includeLev
       if (*firstLine < 0 || *firstLine > location.firstLine()) {
         *firstLine = location.firstLine();
         *firstColumn = location.firstColumn();
-      } else if (*firstLine == location.firstLine() && *firstColumn > location.firstColumn())   {
+      } else if (*firstLine == location.firstLine() && *firstColumn > location.firstColumn()) {
         *firstColumn = location.firstColumn();
       }
       if (*lastLine < 0 || *lastLine < location.lastLine()) {
         *lastLine = location.lastLine();
         *lastColumn = location.lastColumn();
-      } else if (*lastLine == location.lastLine() && *lastColumn < location.lastColumn())   {
+      } else if (*lastLine == location.lastLine() && *lastColumn < location.lastColumn()) {
         *lastColumn = location.lastColumn();
       }
     }
@@ -2617,7 +2617,7 @@ void MainWindow::actionDisplayCSGTree()
   e->setWindowTitle("CSG Tree Dump");
   e->setReadOnly(true);
   if (this->rootNode) {
-      e->setPlainText(QString::fromStdString(this->tree.getString(*this->rootNode, "  ")));
+    e->setPlainText(QString::fromStdString(this->tree.getString(*this->rootNode, "  ")));
   } else {
     e->setPlainText("No CSG to dump. Please try compiling first...");
   }
@@ -2668,8 +2668,8 @@ void MainWindow::actionCheckValidity()
   }
 
   bool valid = true;
-#ifdef ENABLE_CGAL 
- if (auto N = std::dynamic_pointer_cast<const CGAL_Nef_polyhedron>(rootGeom)) {
+#ifdef ENABLE_CGAL
+  if (auto N = std::dynamic_pointer_cast<const CGAL_Nef_polyhedron>(rootGeom)) {
     valid = N->p3 ? const_cast<CGAL_Nef_polyhedron3&>(*N->p3).is_valid() : false;
   } else
 #endif
@@ -2736,8 +2736,8 @@ bool MainWindow::canExport(unsigned int dim)
   auto manifold = dynamic_cast<const ManifoldGeometry *>(rootGeom.get());
   if (manifold && !manifold->isValid() ) {
     LOG(message_group::UI_Warning, "Object may not be a valid manifold and may need repair! "
-      "Error message: %1$s. See https://en.wikibooks.org/wiki/OpenSCAD_User_Manual/STL_Import_and_Export",
-      ManifoldUtils::statusToString(manifold->getManifold().Status()));
+        "Error message: %1$s. See https://en.wikibooks.org/wiki/OpenSCAD_User_Manual/STL_Import_and_Export",
+        ManifoldUtils::statusToString(manifold->getManifold().Status()));
   }
 #endif
 
@@ -2776,87 +2776,87 @@ void MainWindow::actionExport(unsigned int dim, ExportInfo& exportInfo)
 void MainWindow::actionExportFileFormat(int fmt)
 {
   const auto format = static_cast<FileFormat>(fmt);
-  const FileFormatInfo &info = fileformat::info(format);
+  const FileFormatInfo& info = fileformat::info(format);
 
   ExportInfo exportInfo = createExportInfo(format, info, activeEditor->filepath.toStdString(), &qglview->cam, {});
 
   switch (format) {
-    case FileFormat::PDF:
-      {
-        auto exportPdfDialog = new ExportPdfDialog();
-        exportPdfDialog->deleteLater();
-        if (exportPdfDialog->exec() == QDialog::Rejected) {
-          return;
-        }
+  case FileFormat::PDF:
+  {
+    auto exportPdfDialog = new ExportPdfDialog();
+    exportPdfDialog->deleteLater();
+    if (exportPdfDialog->exec() == QDialog::Rejected) {
+      return;
+    }
 
-        exportInfo.optionsPdf = exportPdfDialog->getOptions();
-        actionExport(2, exportInfo);
-      }
-      break;
-    case FileFormat::_3MF:
-      {
-        auto export3mfDialog = new Export3mfDialog();
-        export3mfDialog->deleteLater();
-        if (export3mfDialog->exec() == QDialog::Rejected) {
-          return;
-        }
-
-        exportInfo.options3mf = export3mfDialog->getOptions();
-        actionExport(3, exportInfo);
-      }
-      break;
-    case FileFormat::CSG:
-{
-  setCurrentOutput();
-
-  if (!this->rootNode) {
-    LOG(message_group::Error, "Nothing to export. Please try compiling first.");
-    clearCurrentOutput();
-    return;
+    exportInfo.optionsPdf = exportPdfDialog->getOptions();
+    actionExport(2, exportInfo);
   }
-  const QString suffix = "csg";
-  auto csg_filename = QFileDialog::getSaveFileName(this,
-                                                   _("Export CSG File"), exportPath(suffix), _("CSG Files (*.csg)"));
+  break;
+  case FileFormat::_3MF:
+  {
+    auto export3mfDialog = new Export3mfDialog();
+    export3mfDialog->deleteLater();
+    if (export3mfDialog->exec() == QDialog::Rejected) {
+      return;
+    }
 
-  if (csg_filename.isEmpty()) {
-    clearCurrentOutput();
-    return;
+    exportInfo.options3mf = export3mfDialog->getOptions();
+    actionExport(3, exportInfo);
   }
+  break;
+  case FileFormat::CSG:
+  {
+    setCurrentOutput();
 
-  std::ofstream fstream(csg_filename.toLocal8Bit());
-  if (!fstream.is_open()) {
-    LOG("Can't open file \"%1$s\" for export", csg_filename.toLocal8Bit().constData());
-  } else {
-      fstream << this->tree.getString(*this->rootNode, "\t") << "\n";
-    fstream.close();
-    fileExportedMessage("CSG", csg_filename);
-    this->exportPaths[suffix] = csg_filename;
-  }
-
-  clearCurrentOutput();
-}      break;
-    case FileFormat::PNG:
-{
-  // Grab first to make sure dialog box isn't part of the grabbed image
-  qglview->grabFrame();
-  const QString suffix = "png";
-  auto img_filename = QFileDialog::getSaveFileName(this,
-                                                   _("Export Image"), exportPath(suffix), _("PNG Files (*.png)"));
-  if (!img_filename.isEmpty()) {
-    bool saveResult = qglview->save(img_filename.toLocal8Bit().constData());
-    if (saveResult) {
-        this->exportPaths[suffix] = img_filename;
-      setCurrentOutput();
-      fileExportedMessage("PNG", img_filename);
+    if (!this->rootNode) {
+      LOG(message_group::Error, "Nothing to export. Please try compiling first.");
       clearCurrentOutput();
+      return;
+    }
+    const QString suffix = "csg";
+    auto csg_filename = QFileDialog::getSaveFileName(this,
+                                                     _("Export CSG File"), exportPath(suffix), _("CSG Files (*.csg)"));
+
+    if (csg_filename.isEmpty()) {
+      clearCurrentOutput();
+      return;
+    }
+
+    std::ofstream fstream(csg_filename.toLocal8Bit());
+    if (!fstream.is_open()) {
+      LOG("Can't open file \"%1$s\" for export", csg_filename.toLocal8Bit().constData());
     } else {
-      LOG("Can't open file \"%1$s\" for export image", img_filename.toLocal8Bit().constData());
+      fstream << this->tree.getString(*this->rootNode, "\t") << "\n";
+      fstream.close();
+      fileExportedMessage("CSG", csg_filename);
+      this->exportPaths[suffix] = csg_filename;
+    }
+
+    clearCurrentOutput();
+  }      break;
+  case FileFormat::PNG:
+  {
+    // Grab first to make sure dialog box isn't part of the grabbed image
+    qglview->grabFrame();
+    const QString suffix = "png";
+    auto img_filename = QFileDialog::getSaveFileName(this,
+                                                     _("Export Image"), exportPath(suffix), _("PNG Files (*.png)"));
+    if (!img_filename.isEmpty()) {
+      bool saveResult = qglview->save(img_filename.toLocal8Bit().constData());
+      if (saveResult) {
+        this->exportPaths[suffix] = img_filename;
+        setCurrentOutput();
+        fileExportedMessage("PNG", img_filename);
+        clearCurrentOutput();
+      } else {
+        LOG("Can't open file \"%1$s\" for export image", img_filename.toLocal8Bit().constData());
+      }
     }
   }
-}
-      break;
-    default:
-      actionExport(fileformat::is3D(format) ? 3 : fileformat::is2D(format) ? 2 : 0, exportInfo);
+  break;
+  default:
+    actionExport(fileformat::is3D(format) ? 3 : fileformat::is2D(format) ? 2 : 0, exportInfo);
   }
 }
 
@@ -3527,22 +3527,22 @@ void MainWindow::helpOfflineCheatSheet()
 
 void MainWindow::helpLibrary()
 {
-    if (!this->libraryInfoDialog) {
+  if (!this->libraryInfoDialog) {
     QString rendererInfo(qglview->getRendererInfo().c_str());
     auto dialog = new LibraryInfoDialog(rendererInfo);
     this->libraryInfoDialog = dialog;
   }
-    this->libraryInfoDialog->show();
+  this->libraryInfoDialog->show();
 }
 
 void MainWindow::helpFontInfo()
 {
-    if (!this->fontListDialog) {
+  if (!this->fontListDialog) {
     auto dialog = new FontListDialog();
     this->fontListDialog = dialog;
   }
-    this->fontListDialog->updateFontList();
-    this->fontListDialog->show();
+  this->fontListDialog->updateFontList();
+  this->fontListDialog->show();
 }
 
 void MainWindow::closeEvent(QCloseEvent *event)
@@ -3675,7 +3675,7 @@ void MainWindow::processEvents()
 }
 
 QString MainWindow::exportPath(const QString& suffix) {
-    const auto path_it = this->exportPaths.find(suffix);
+  const auto path_it = this->exportPaths.find(suffix);
   const auto basename = activeEditor->filepath.isEmpty() ? "Untitled" : QFileInfo(activeEditor->filepath).completeBaseName();
   QString dir;
   if (path_it != exportPaths.end()) {
