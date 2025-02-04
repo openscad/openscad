@@ -199,7 +199,7 @@ std::string SHA256HashString(std::string aString){
 static const int autoReloadPollingPeriodMS = 200;
 
 // Global application state
-unsigned int GuiLocker::gui_locked = 0;
+unsigned int GuiLocker::guiLocked = 0;
 
 static char copyrighttext[] =
   "<p>Copyright (C) 2009-2024 The OpenSCAD Developers</p>"
@@ -253,9 +253,9 @@ void addExportActions(const MainWindow *mainWindow, QToolBar *toolbar, QAction *
                                         Settings::Settings::toolbarExport2D.value()}) {
     FileFormat format;
     fileformat::fromIdentifier(identifier, format);
-    const auto it=mainWindow->export_map.find(format);
+    const auto it=mainWindow->exportMap.find(format);
     // FIXME: Allow turning off the toolbar entry?
-    if (it != mainWindow->export_map.end()) {
+    if (it != mainWindow->exportMap.end()) {
       toolbar->insertAction(action, it->second);
     }
   }
@@ -297,6 +297,8 @@ MainWindow::MainWindow(const QStringList& filenames)
 
   this->editorDock->setConfigKey("view/hideEditor");
   this->editorDock->setAction(this->windowActionHideEditor);
+  this->editorDock->setWindowTitle("Editor");
+
   this->consoleDock->setConfigKey("view/hideConsole");
   this->consoleDock->setAction(this->windowActionHideConsole);
   this->parameterDock->setConfigKey("view/hideCustomizer");
@@ -335,9 +337,9 @@ MainWindow::MainWindow(const QStringList& filenames)
 #endif
   knownFileExtensions["csg"] = "";
 
-  root_file = nullptr;
-  parsed_file = nullptr;
-  absolute_root_node = nullptr;
+  rootFile = nullptr;
+  parsedFile = nullptr;
+  absoluteRootNode = nullptr;
 
   // Open Recent
   for (auto& recent : this->actionRecentFile) {
@@ -351,9 +353,6 @@ MainWindow::MainWindow(const QStringList& filenames)
   // Preferences initialization happens on first tab creation, and depends on colorschemes from editor.
   // Any code dependent on Preferences must come after the TabManager instantiation
   tabManager = new TabManager(this, filenames.isEmpty() ? QString() : filenames[0]);
-  connect(tabManager, SIGNAL(tabCountChanged(int)), this, SLOT(setTabToolBarVisible(int)));
-  this->setTabToolBarVisible(tabManager->count());
-  tabToolBarContents->layout()->addWidget(tabManager->getTabHeader());
   editorDockContents->layout()->addWidget(tabManager->getTabContent());
 
   connect(Preferences::inst(), SIGNAL(consoleFontChanged(const QString&,uint)), this->console, SLOT(setFont(const QString&,uint)));
@@ -391,7 +390,7 @@ MainWindow::MainWindow(const QStringList& filenames)
   connect(this->cgalworker, SIGNAL(done(std::shared_ptr<const Geometry>)),
           this, SLOT(actionRenderDone(std::shared_ptr<const Geometry>)));
 
-  root_node = nullptr;
+  rootNode = nullptr;
 
   this->qglview->statusLabel = new QLabel(this);
   this->qglview->statusLabel->setMinimumWidth(100);
@@ -409,11 +408,11 @@ MainWindow::MainWindow(const QStringList& filenames)
   autoReloadTimer->setInterval(autoReloadPollingPeriodMS);
   connect(autoReloadTimer, SIGNAL(timeout()), this, SLOT(checkAutoReload()));
 
-  this->exportformat_mapper = new QSignalMapper(this);
+  this->exportFormatMapper = new QSignalMapper(this);
 #if QT_VERSION >= QT_VERSION_CHECK(5, 15, 0)
-  connect(this->exportformat_mapper, &QSignalMapper::mappedInt, this, &MainWindow::actionExportFileFormat);
+  connect(this->exportFormatMapper, &QSignalMapper::mappedInt, this, &MainWindow::actionExportFileFormat);
 #else
-  connect(this->exportformat_mapper, static_cast<void (QSignalMapper::*)(int)>(&QSignalMapper::mapped), this, &MainWindow::actionExportFileFormat);
+  connect(this->exportFormatMapper, static_cast<void (QSignalMapper::*)(int)>(&QSignalMapper::mapped), this, &MainWindow::actionExportFileFormat);
 #endif
 
   waitAfterReloadTimer = new QTimer(this);
@@ -492,23 +491,23 @@ MainWindow::MainWindow(const QStringList& filenames)
   connect(this->designActionDisplayCSGTree, SIGNAL(triggered()), this, SLOT(actionDisplayCSGTree()));
   connect(this->designActionDisplayCSGProducts, SIGNAL(triggered()), this, SLOT(actionDisplayCSGProducts()));
 
-  export_map[FileFormat::BINARY_STL] =this->fileActionExportBinarySTL;
-  export_map[FileFormat::ASCII_STL] =this->fileActionExportAsciiSTL;
-  export_map[FileFormat::_3MF] = this->fileActionExport3MF;
-  export_map[FileFormat::OBJ] =  this->fileActionExportOBJ;
-  export_map[FileFormat::OFF] =  this->fileActionExportOFF;
-  export_map[FileFormat::WRL] =  this->fileActionExportWRL;
-  export_map[FileFormat::POV] =  this->fileActionExportPOV;
-  export_map[FileFormat::AMF] =  this->fileActionExportAMF;
-  export_map[FileFormat::DXF] =  this->fileActionExportDXF;
-  export_map[FileFormat::SVG] =  this->fileActionExportSVG;
-  export_map[FileFormat::PDF] =  this->fileActionExportPDF;
-  export_map[FileFormat::CSG] =  this->fileActionExportCSG;
-  export_map[FileFormat::PNG] =  this->fileActionExportImage;
+  exportMap[FileFormat::BINARY_STL] =this->fileActionExportBinarySTL;
+  exportMap[FileFormat::ASCII_STL] =this->fileActionExportAsciiSTL;
+  exportMap[FileFormat::_3MF] = this->fileActionExport3MF;
+  exportMap[FileFormat::OBJ] =  this->fileActionExportOBJ;
+  exportMap[FileFormat::OFF] =  this->fileActionExportOFF;
+  exportMap[FileFormat::WRL] =  this->fileActionExportWRL;
+  exportMap[FileFormat::POV] =  this->fileActionExportPOV;
+  exportMap[FileFormat::AMF] =  this->fileActionExportAMF;
+  exportMap[FileFormat::DXF] =  this->fileActionExportDXF;
+  exportMap[FileFormat::SVG] =  this->fileActionExportSVG;
+  exportMap[FileFormat::PDF] =  this->fileActionExportPDF;
+  exportMap[FileFormat::CSG] =  this->fileActionExportCSG;
+  exportMap[FileFormat::PNG] =  this->fileActionExportImage;
 
-  for (auto &pair : export_map) {
-    connect(pair.second, SIGNAL(triggered()), this->exportformat_mapper, SLOT(map()));
-    this->exportformat_mapper->setMapping(pair.second, int(pair.first));
+  for (auto &pair : exportMap) {
+      connect(pair.second, SIGNAL(triggered()), this->exportFormatMapper, SLOT(map()));
+      this->exportFormatMapper->setMapping(pair.second, int(pair.first));
   }
 
   connect(this->designActionFlushCaches, SIGNAL(triggered()), this, SLOT(actionFlushCaches()));
@@ -1010,7 +1009,7 @@ MainWindow::~MainWindow()
 {
   // If root_file is not null then it will be the same as parsed_file,
   // so no need to delete it.
-  delete parsed_file;
+    delete parsedFile;
   scadApp->windowManager.remove(this);
   if (scadApp->windowManager.getWindows().size() == 0) {
     // Quit application even in case some other windows like
@@ -1070,12 +1069,6 @@ void MainWindow::updateRecentFiles(const QString& FileSavedOrOpened)
   }
 }
 
-void MainWindow::setTabToolBarVisible(int count)
-{
-  tabCount = count;
-  tabToolBar->setVisible((tabCount > 1) && editorDock->isVisible());
-}
-
 /*!
    compiles the design. Calls compileDone() if anything was compiled
  */
@@ -1110,7 +1103,7 @@ void MainWindow::compile(bool reload, bool forcedone)
       // if we haven't yet compiled the current text.
       else {
         auto current_doc = activeEditor->toPlainText();
-        if (current_doc.size() && last_compiled_doc.size() == 0) {
+        if (current_doc.size() && lastCompiledDoc.size() == 0) {
           shouldcompiletoplevel = true;
         }
       }
@@ -1118,10 +1111,10 @@ void MainWindow::compile(bool reload, bool forcedone)
       shouldcompiletoplevel = true;
     }
 
-    if (this->parsed_file) {
-      auto mtime = this->parsed_file->includesChanged();
-      if (mtime > this->includes_mtime) {
-        this->includes_mtime = mtime;
+    if (this->parsedFile) {
+        auto mtime = this->parsedFile->includesChanged();
+      if (mtime > this->includesMTime) {
+        this->includesMTime = mtime;
         shouldcompiletoplevel = true;
       }
     }
@@ -1139,16 +1132,16 @@ void MainWindow::compile(bool reload, bool forcedone)
       didcompile = true;
     }
 
-    if (didcompile && parser_error_pos != last_parser_error_pos) {
-      if (last_parser_error_pos >= 0) emit unhighlightLastError();
+    if (didcompile && parser_error_pos != lastParserErrorPos) {
+        if (lastParserErrorPos >= 0) emit unhighlightLastError();
       if (parser_error_pos >= 0) emit highlightError(parser_error_pos);
-      last_parser_error_pos = parser_error_pos;
+      lastParserErrorPos = parser_error_pos;
     }
 
-    if (this->root_file) {
-      auto mtime = this->root_file->handleDependencies();
-      if (mtime > this->deps_mtime) {
-        this->deps_mtime = mtime;
+    if (this->rootFile) {
+      auto mtime = this->rootFile->handleDependencies();
+      if (mtime > this->depsMTime) {
+          this->depsMTime = mtime;
         LOG("Used file cache size: %1$d files", SourceFileCache::instance()->size());
         didcompile = true;
       }
@@ -1158,8 +1151,8 @@ void MainWindow::compile(bool reload, bool forcedone)
     if (would_have_thrown()) throw HardWarningException("");
     // If we're auto-reloading, listen for a cascade of changes by starting a timer
     // if something changed _and_ there are any external dependencies
-    if (reload && didcompile && this->root_file) {
-      if (this->root_file->hasIncludes() || this->root_file->usesLibraries()) {
+    if (reload && didcompile && this->rootFile) {
+      if (this->rootFile->hasIncludes() || this->rootFile->usesLibraries()) {
         this->waitAfterReloadTimer->start();
         this->procevents = false;
         return;
@@ -1179,9 +1172,9 @@ void MainWindow::compile(bool reload, bool forcedone)
 void MainWindow::waitAfterReload()
 {
   no_exceptions_for_warnings();
-  auto mtime = this->root_file->handleDependencies();
+  auto mtime = this->rootFile->handleDependencies();
   auto stop = would_have_thrown();
-  if (mtime > this->deps_mtime) this->deps_mtime = mtime;
+  if (mtime > this->depsMTime) this->depsMTime = mtime;
   else if (!stop) {
     compile(true, true); // In case file itself or top-level includes changed during dependency updates
     return;
@@ -1269,19 +1262,19 @@ void MainWindow::instantiateRoot()
   this->thrownTogetherRenderer = nullptr;
 
   // Remove previous CSG tree
-  this->absolute_root_node.reset();
+  this->absoluteRootNode.reset();
 
   this->csgRoot.reset();
   this->normalizedRoot.reset();
-  this->root_products.reset();
+    this->rootProduct.reset();
 
-  this->root_node.reset();
+    this->rootNode.reset();
   this->tree.setRoot(nullptr);
 
   std::filesystem::path doc(activeEditor->filepath.toStdString());
   this->tree.setDocumentPath(doc.parent_path().string());
 
-  if (this->root_file) {
+  if (this->rootFile) {
     // Evaluate CSG tree
     LOG("Compiling design (CSG Tree generation)...");
     this->processEvents();
@@ -1294,31 +1287,31 @@ void MainWindow::instantiateRoot()
 
     std::shared_ptr<const FileContext> file_context;
 #ifdef ENABLE_PYTHON
-    if (python_result_node != NULL && this->python_active) this->absolute_root_node = python_result_node;
+    if (python_result_node != NULL && this->python_active) this->absoluteRootNode = python_result_node;
     else
 #endif
-    this->absolute_root_node = this->root_file->instantiate(*builtin_context, &file_context);
+    this->absoluteRootNode = this->rootFile->instantiate(*builtin_context, &file_context);
     if (file_context) {
       this->qglview->cam.updateView(file_context, false);
       viewportControlWidget->cameraChanged();
     }
 
-    if (this->absolute_root_node) {
+    if (this->absoluteRootNode) {
       // Do we have an explicit root node (! modifier)?
       const Location *nextLocation = nullptr;
-      if (!(this->root_node = find_root_tag(this->absolute_root_node, &nextLocation))) {
-        this->root_node = this->absolute_root_node;
+      if (!(this->rootNode = find_root_tag(this->absoluteRootNode, &nextLocation))) {
+          this->rootNode = this->absoluteRootNode;
       }
       if (nextLocation) {
         LOG(message_group::NONE, *nextLocation, builtin_context->documentRoot(), "More than one Root Modifier (!)");
       }
 
       // FIXME: Consider giving away ownership of root_node to the Tree, or use reference counted pointers
-      this->tree.setRoot(this->root_node);
+      this->tree.setRoot(this->rootNode);
     }
   }
 
-  if (!this->root_node) {
+  if (!this->rootNode) {
     if (parser_error_pos < 0) {
       LOG(message_group::Error, "Compilation failed! (no top level object found)");
     } else {
@@ -1337,7 +1330,7 @@ void MainWindow::compileCSG()
 {
   OpenSCAD::hardwarnings = Preferences::inst()->getValue("advanced/enableHardwarnings").toBool();
   try{
-    assert(this->root_node);
+      assert(this->rootNode);
     LOG("Compiling design (CSG Products generation)...");
     this->processEvents();
 
@@ -1350,12 +1343,12 @@ void MainWindow::compileCSG()
     CSGTreeEvaluator csgrenderer(this->tree, &geomevaluator);
 #endif
 
-    if (!isClosing) progress_report_prep(this->root_node, report_func, this);
+    if (!isClosing) progress_report_prep(this->rootNode, report_func, this);
     else return;
     try {
 #ifdef ENABLE_OPENCSG
       this->processEvents();
-      this->csgRoot = csgrenderer.buildCSGTree(*root_node);
+        this->csgRoot = csgrenderer.buildCSGTree(*rootNode);
 #endif
       renderStatistic.printCacheStatistic();
       this->processEvents();
@@ -1376,10 +1369,10 @@ void MainWindow::compileCSG()
     if (this->csgRoot) {
       this->normalizedRoot = normalizer.normalize(this->csgRoot);
       if (this->normalizedRoot) {
-        this->root_products.reset(new CSGProducts());
-        this->root_products->import(this->normalizedRoot);
+          this->rootProduct.reset(new CSGProducts());
+          this->rootProduct->import(this->normalizedRoot);
       } else {
-        this->root_products.reset();
+          this->rootProduct.reset();
         LOG(message_group::Warning, "CSG normalization resulted in an empty tree");
         this->processEvents();
       }
@@ -1390,15 +1383,15 @@ void MainWindow::compileCSG()
       LOG("Compiling highlights (%1$d CSG Trees)...", highlight_terms.size());
       this->processEvents();
 
-      this->highlights_products.reset(new CSGProducts());
+      this->highlightsProducts.reset(new CSGProducts());
       for (const auto& highlight_term : highlight_terms) {
         auto nterm = normalizer.normalize(highlight_term);
         if (nterm) {
-          this->highlights_products->import(nterm);
+          this->highlightsProducts->import(nterm);
         }
       }
     } else {
-      this->highlights_products.reset();
+      this->highlightsProducts.reset();
     }
 
     const auto& background_terms = csgrenderer.getBackgroundNodes();
@@ -1406,35 +1399,35 @@ void MainWindow::compileCSG()
       LOG("Compiling background (%1$d CSG Trees)...", background_terms.size());
       this->processEvents();
 
-      this->background_products.reset(new CSGProducts());
+      this->backgroundProducts.reset(new CSGProducts());
       for (const auto& background_term : background_terms) {
         auto nterm = normalizer.normalize(background_term);
         if (nterm) {
-          this->background_products->import(nterm);
+            this->backgroundProducts->import(nterm);
         }
       }
     } else {
-      this->background_products.reset();
+        this->backgroundProducts.reset();
     }
 
-    if (this->root_products &&
-        (this->root_products->size() >
+    if (this->rootProduct &&
+        (this->rootProduct->size() >
          Preferences::inst()->getValue("advanced/openCSGLimit").toUInt())) {
-      LOG(message_group::UI_Warning, "Normalized tree has %1$d elements!", this->root_products->size());
+        LOG(message_group::UI_Warning, "Normalized tree has %1$d elements!", this->rootProduct->size());
       LOG(message_group::UI_Warning, "OpenCSG rendering has been disabled.");
     }
 #ifdef ENABLE_OPENCSG
     else {
       LOG("Normalized tree has %1$d elements!",
-          (this->root_products ? this->root_products->size() : 0));
-      this->opencsgRenderer = std::make_shared<OpenCSGRenderer>(this->root_products,
-                                                                this->highlights_products,
-                                                                this->background_products);
+          (this->rootProduct ? this->rootProduct->size() : 0));
+      this->opencsgRenderer = std::make_shared<OpenCSGRenderer>(this->rootProduct,
+                                                                this->highlightsProducts,
+                                                                this->backgroundProducts);
     }
 #endif // ifdef ENABLE_OPENCSG
-    this->thrownTogetherRenderer = std::make_shared<ThrownTogetherRenderer>(this->root_products,
-                                                                            this->highlights_products,
-                                                                            this->background_products);
+    this->thrownTogetherRenderer = std::make_shared<ThrownTogetherRenderer>(this->rootProduct,
+                                                                            this->highlightsProducts,
+                                                                            this->backgroundProducts);
     LOG("Compile and preview finished.");
     renderStatistic.printRenderingTime();
     this->processEvents();
@@ -1828,8 +1821,8 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event)
 void MainWindow::setRenderVariables(ContextHandle<BuiltinContext>& context)
 {
   RenderVariables r = {
-    .preview = this->is_preview,
-    .time = this->animateWidget->getAnim_tval(),
+      .preview = this->isPreview,
+      .time = this->animateWidget->getAnimTval(),
     .camera = qglview->cam,
   };
   r.applyToContext(context);
@@ -1920,20 +1913,20 @@ void MainWindow::parseTopLevelDocument()
 {
   resetSuppressedMessages();
 
-  this->last_compiled_doc = activeEditor->toPlainText();
+  this->lastCompiledDoc = activeEditor->toPlainText();
 
   auto fulltext =
-    std::string(this->last_compiled_doc.toUtf8().constData()) +
+          std::string(this->lastCompiledDoc.toUtf8().constData()) +
     "\n\x03\n" + commandline_commands;
 
   auto fnameba = activeEditor->filepath.toLocal8Bit();
   const char *fname = activeEditor->filepath.isEmpty() ? "" : fnameba;
-  delete this->parsed_file;
+  delete this->parsedFile;
 #ifdef ENABLE_PYTHON
   this->python_active = false;
   if (fname != NULL) {
     if (boost::algorithm::ends_with(fname, ".py")) {
-      std::string content = std::string(this->last_compiled_doc.toUtf8().constData());
+      std::string content = std::string(this->lastCompiledDoc.toUtf8().constData());
       if (
         Feature::ExperimentalPythonEngine.is_enabled()
         && trust_python_file(std::string(fname), content)) this->python_active = true;
@@ -1943,25 +1936,25 @@ void MainWindow::parseTopLevelDocument()
 
   if (this->python_active) {
     auto fulltext_py =
-      std::string(this->last_compiled_doc.toUtf8().constData());
+      std::string(this->lastCompiledDoc.toUtf8().constData());
 
-    auto error = evaluatePython(fulltext_py, this->animateWidget->getAnim_tval());
+    auto error = evaluatePython(fulltext_py, this->animateWidget->getAnimTval());
     if (error.size() > 0) LOG(message_group::Error, Location::NONE, "", error.c_str());
     fulltext = "\n";
   }
 #endif // ifdef ENABLE_PYTHON
-  this->parsed_file = nullptr; // because the parse() call can throw and we don't want a stale pointer!
-  this->root_file = nullptr;  // ditto
-  this->root_file = parse(this->parsed_file, fulltext, fname, fname, false) ? this->parsed_file : nullptr;
+  this->parsedFile = nullptr; // because the parse() call can throw and we don't want a stale pointer!
+  this->rootFile = nullptr;  // ditto
+  this->rootFile = parse(this->parsedFile, fulltext, fname, fname, false) ? this->parsedFile : nullptr;
 
   this->activeEditor->resetHighlighting();
-  if (this->root_file != nullptr) {
+  if (this->rootFile != nullptr) {
     //add parameters as annotation in AST
-    CommentParser::collectParameters(fulltext, this->root_file);
-    this->activeEditor->parameterWidget->setParameters(this->root_file, fulltext);
-    this->activeEditor->parameterWidget->applyParameters(this->root_file);
+    CommentParser::collectParameters(fulltext, this->rootFile);
+    this->activeEditor->parameterWidget->setParameters(this->rootFile, fulltext);
+    this->activeEditor->parameterWidget->applyParameters(this->rootFile);
     this->activeEditor->parameterWidget->setEnabled(true);
-    this->activeEditor->setIndicator(this->root_file->indicatorData);
+    this->activeEditor->setIndicator(this->rootFile->indicatorData);
   } else {
     this->activeEditor->parameterWidget->setEnabled(false);
   }
@@ -2013,13 +2006,13 @@ void MainWindow::actionReloadRenderPreview()
 
   this->afterCompileSlot = "csgReloadRender";
   this->procevents = true;
-  this->is_preview = true;
+  this->isPreview = true;
   compile(true);
 }
 
 void MainWindow::csgReloadRender()
 {
-  if (this->root_node) compileCSG();
+    if (this->rootNode) compileCSG();
 
   // Go to non-CGAL view mode
   if (viewActionThrownTogether->isChecked()) {
@@ -2043,7 +2036,7 @@ void MainWindow::prepareCompile(const char *afterCompileSlot, bool procevents, b
   this->processEvents();
   this->afterCompileSlot = afterCompileSlot;
   this->procevents = procevents;
-  this->is_preview = preview;
+  this->isPreview = preview;
 }
 
 void MainWindow::actionRenderPreview()
@@ -2070,7 +2063,7 @@ void MainWindow::actionRenderPreview()
 
 void MainWindow::csgRender()
 {
-  if (this->root_node) compileCSG();
+    if (this->rootNode) compileCSG();
 
   // Go to non-CGAL view mode
   if (viewActionThrownTogether->isChecked()) {
@@ -2128,7 +2121,7 @@ void MainWindow::sendToExternalTool(ExternalToolInterface &externalToolService)
   
   activeFileName = activeFileName + QString::fromStdString("." + fileformat::toSuffix(externalToolService.fileFormat()));
 
-  bool export_status = externalToolService.exportTemporaryFile(this->root_geom, activeFileName, &qglview->cam);
+  bool export_status = externalToolService.exportTemporaryFile(rootGeom, activeFileName, &qglview->cam);
   
   this->progresswidget = new ProgressWidget(this);
   connect(this->progresswidget, SIGNAL(requestShow()), this, SLOT(showProgress()));
@@ -2189,14 +2182,14 @@ void MainWindow::actionRender()
 
 void MainWindow::cgalRender()
 {
-  if (!this->root_file || !this->root_node) {
+    if (!this->rootFile || !this->rootNode) {
     compileEnded();
     return;
   }
 
   this->qglview->setRenderer(nullptr);
   this->cgalRenderer = nullptr;
-  this->root_geom.reset();
+  rootGeom.reset();
 
   LOG("Rendering Polygon Mesh using %1$s...",
       renderBackend3DToString(RenderSettings::inst()->backend3D).c_str());
@@ -2204,7 +2197,7 @@ void MainWindow::cgalRender()
   this->progresswidget = new ProgressWidget(this);
   connect(this->progresswidget, SIGNAL(requestShow()), this, SLOT(showProgress()));
 
-  if (!isClosing) progress_report_prep(this->root_node, report_func, this);
+  if (!isClosing) progress_report_prep(this->rootNode, report_func, this);
   else return;
 
   this->cgalworker->start(this->tree);
@@ -2227,7 +2220,7 @@ void MainWindow::actionRenderDone(const std::shared_ptr<const Geometry>& root_ge
     renderStatistic.printAll(root_geom, qglview->cam, options);
     LOG("Rendering finished.");
 
-    this->root_geom = root_geom;
+    rootGeom = root_geom;
     this->cgalRenderer = std::make_shared<CGALRenderer>(root_geom);
     // Go to CGAL view mode
     viewModeRender();
@@ -2292,11 +2285,11 @@ void MainWindow::rightClick(QPoint mouse)
   }
 
   // Nothing to select
-  if (!this->root_products) {
+  if (!this->rootProduct) {
     return;
   }
 
-  this->qglview->renderer->prepare(false, &this->selector->shaderinfo);
+  this->qglview->renderer->prepare(&this->selector->shaderinfo);
 
   // Update the selector with the right image size
   this->selector->reset(this->qglview);
@@ -2304,7 +2297,7 @@ void MainWindow::rightClick(QPoint mouse)
   // Select the object at mouse coordinates
   int index = this->selector->select(this->qglview->getRenderer(), mouse.x(), mouse.y());
   std::deque<std::shared_ptr<const AbstractNode>> path;
-  std::shared_ptr<const AbstractNode> result = this->root_node->getNodeByID(index, path);
+  std::shared_ptr<const AbstractNode> result = this->rootNode->getNodeByID(index, path);
 
   if (result) {
     // Create context menu with the backtrace
@@ -2430,7 +2423,7 @@ void getCodeLocation(const AbstractNode *self, int currentLevel,  int includeLev
 void MainWindow::setSelectionIndicatorStatus(int nodeIndex, EditorSelectionIndicatorStatus status)
 {
   std::deque<std::shared_ptr<const AbstractNode>> stack;
-  this->root_node->getNodeByID(nodeIndex, stack);
+  this->rootNode->getNodeByID(nodeIndex, stack);
 
   int level = 1;
 
@@ -2471,14 +2464,14 @@ void MainWindow::setSelectionIndicatorStatus(int nodeIndex, EditorSelectionIndic
 
 void MainWindow::setSelection(int index)
 {
-  if (currently_selected_object == index) return;
+  if (currentlySelectedObject == index) return;
 
   std::deque<std::shared_ptr<const AbstractNode>> path;
-  std::shared_ptr<const AbstractNode> selected_node = root_node->getNodeByID(index, path);
+  std::shared_ptr<const AbstractNode> selected_node = rootNode->getNodeByID(index, path);
 
   if (!selected_node) return;
 
-  currently_selected_object = index;
+  currentlySelectedObject = index;
 
   auto location = selected_node->modinst->location();
   auto file = location.fileName();
@@ -2495,18 +2488,18 @@ void MainWindow::setSelection(int index)
   clearAllSelectionIndicators();
 
   std::vector<std::shared_ptr<const AbstractNode>> nodesSameModule{};
-  findNodesWithSameMod(root_node, selected_node, nodesSameModule);
+  findNodesWithSameMod(rootNode, selected_node, nodesSameModule);
 
   // highlight in the text editor all the text fragment of the hierarchy of object with same mode.
   for (const auto& element : nodesSameModule) {
-    if (element->index() != currently_selected_object) {
+    if (element->index() != currentlySelectedObject) {
       setSelectionIndicatorStatus(element->index(), EditorSelectionIndicatorStatus::IMPACTED);
     }
   }
 
   // highlight in the text editor only the fragment correponding to the selected stack.
   // this step must be done after all the impacted element have been marked.
-  setSelectionIndicatorStatus(currently_selected_object, EditorSelectionIndicatorStatus::SELECTED);
+  setSelectionIndicatorStatus(currentlySelectedObject, EditorSelectionIndicatorStatus::SELECTED);
 
   activeEditor->setCursorPosition(line - 1, column - 1);
 }
@@ -2589,8 +2582,8 @@ void MainWindow::actionDisplayAST()
   e->setTabStopDistance(tabStopWidth);
   e->setWindowTitle("AST Dump");
   e->setReadOnly(true);
-  if (root_file) {
-    e->setPlainText(QString::fromStdString(root_file->dump("")));
+  if (rootFile) {
+    e->setPlainText(QString::fromStdString(rootFile->dump("")));
   } else {
     e->setPlainText("No AST to dump. Please try compiling first...");
   }
@@ -2608,8 +2601,8 @@ void MainWindow::actionDisplayCSGTree()
   e->setTabStopDistance(tabStopWidth);
   e->setWindowTitle("CSG Tree Dump");
   e->setReadOnly(true);
-  if (this->root_node) {
-    e->setPlainText(QString::fromStdString(this->tree.getString(*this->root_node, "  ")));
+  if (this->rootNode) {
+      e->setPlainText(QString::fromStdString(this->tree.getString(*this->rootNode, "  ")));
   } else {
     e->setPlainText("No CSG to dump. Please try compiling first...");
   }
@@ -2632,9 +2625,9 @@ void MainWindow::actionDisplayCSGProducts()
 
                   .arg(QString::fromStdString(this->csgRoot ? this->csgRoot->dump() : NA),
                        QString::fromStdString(this->normalizedRoot ? this->normalizedRoot->dump() : NA),
-                       QString::fromStdString(this->root_products ? this->root_products->dump() : NA),
-                       QString::fromStdString(this->highlights_products ? this->highlights_products->dump() : NA),
-                       QString::fromStdString(this->background_products ? this->background_products->dump() : NA)));
+                       QString::fromStdString(this->rootProduct ? this->rootProduct->dump() : NA),
+                       QString::fromStdString(this->highlightsProducts ? this->highlightsProducts->dump() : NA),
+                       QString::fromStdString(this->backgroundProducts ? this->backgroundProducts->dump() : NA)));
 
   e->resize(600, 400);
   e->show();
@@ -2647,13 +2640,13 @@ void MainWindow::actionCheckValidity()
   GuiLocker lock;
   setCurrentOutput();
 
-  if (!this->root_geom) {
+  if (!rootGeom) {
     LOG("Nothing to validate! Try building first (press F6).");
     clearCurrentOutput();
     return;
   }
 
-  if (this->root_geom->getDimension() != 3) {
+  if (rootGeom->getDimension() != 3) {
     LOG("Current top level object is not a 3D object.");
     clearCurrentOutput();
     return;
@@ -2661,12 +2654,12 @@ void MainWindow::actionCheckValidity()
 
   bool valid = true;
 #ifdef ENABLE_CGAL 
- if (auto N = std::dynamic_pointer_cast<const CGAL_Nef_polyhedron>(this->root_geom)) {
+ if (auto N = std::dynamic_pointer_cast<const CGAL_Nef_polyhedron>(rootGeom)) {
     valid = N->p3 ? const_cast<CGAL_Nef_polyhedron3&>(*N->p3).is_valid() : false;
   } else
 #endif
 #ifdef ENABLE_MANIFOLD
-  if (auto mani = std::dynamic_pointer_cast<const ManifoldGeometry>(this->root_geom)) {
+  if (auto mani = std::dynamic_pointer_cast<const ManifoldGeometry>(rootGeom)) {
     valid = mani->isValid();
   }
 #endif
@@ -2678,7 +2671,7 @@ void MainWindow::actionCheckValidity()
 //Separated into it's own function for re-use.
 bool MainWindow::canExport(unsigned int dim)
 {
-  if (!this->root_geom) {
+  if (!rootGeom) {
     LOG(message_group::Error, "Nothing to export! Try rendering first (press F6)");
     clearCurrentOutput();
     return false;
@@ -2706,26 +2699,26 @@ bool MainWindow::canExport(unsigned int dim)
     }
   }
 
-  if (this->root_geom->getDimension() != dim) {
+  if (rootGeom->getDimension() != dim) {
     LOG(message_group::UI_Error, "Current top level object is not a %1$dD object.", dim);
     clearCurrentOutput();
     return false;
   }
 
-  if (this->root_geom->isEmpty()) {
+  if (rootGeom->isEmpty()) {
     LOG(message_group::UI_Error, "Current top level object is empty.");
     clearCurrentOutput();
     return false;
   }
 
 #ifdef ENABLE_CGAL
-  auto N = dynamic_cast<const CGAL_Nef_polyhedron *>(this->root_geom.get());
+  auto N = dynamic_cast<const CGAL_Nef_polyhedron *>(rootGeom.get());
   if (N && !N->p3->is_simple()) {
     LOG(message_group::UI_Warning, "Object may not be a valid 2-manifold and may need repair! See https://en.wikibooks.org/wiki/OpenSCAD_User_Manual/STL_Import_and_Export");
   }
 #endif
 #ifdef ENABLE_MANIFOLD
-  auto manifold = dynamic_cast<const ManifoldGeometry *>(this->root_geom.get());
+  auto manifold = dynamic_cast<const ManifoldGeometry *>(rootGeom.get());
   if (manifold && !manifold->isValid() ) {
     LOG(message_group::UI_Warning, "Object may not be a valid manifold and may need repair! "
       "Error message: %1$s. See https://en.wikibooks.org/wiki/OpenSCAD_User_Manual/STL_Import_and_Export",
@@ -2757,9 +2750,9 @@ void MainWindow::actionExport(unsigned int dim, ExportInfo& exportInfo)
     clearCurrentOutput();
     return;
   }
-  this->export_paths[suffix] = exportFilename;
+  this->exportPaths[suffix] = exportFilename;
 
-  bool exportResult = exportFileByName(this->root_geom, exportFilename.toStdString(), exportInfo);
+  bool exportResult = exportFileByName(rootGeom, exportFilename.toStdString(), exportInfo);
 
   if (exportResult) fileExportedMessage(type_name, exportFilename);
   clearCurrentOutput();
@@ -2801,7 +2794,7 @@ void MainWindow::actionExportFileFormat(int fmt)
 {
   setCurrentOutput();
 
-  if (!this->root_node) {
+  if (!this->rootNode) {
     LOG(message_group::Error, "Nothing to export. Please try compiling first.");
     clearCurrentOutput();
     return;
@@ -2819,10 +2812,10 @@ void MainWindow::actionExportFileFormat(int fmt)
   if (!fstream.is_open()) {
     LOG("Can't open file \"%1$s\" for export", csg_filename.toLocal8Bit().constData());
   } else {
-    fstream << this->tree.getString(*this->root_node, "\t") << "\n";
+      fstream << this->tree.getString(*this->rootNode, "\t") << "\n";
     fstream.close();
     fileExportedMessage("CSG", csg_filename);
-    this->export_paths[suffix] = csg_filename;
+    this->exportPaths[suffix] = csg_filename;
   }
 
   clearCurrentOutput();
@@ -2837,7 +2830,7 @@ void MainWindow::actionExportFileFormat(int fmt)
   if (!img_filename.isEmpty()) {
     bool saveResult = qglview->save(img_filename.toLocal8Bit().constData());
     if (saveResult) {
-      this->export_paths[suffix] = img_filename;
+        this->exportPaths[suffix] = img_filename;
       setCurrentOutput();
       fileExportedMessage("PNG", img_filename);
       clearCurrentOutput();
@@ -2972,7 +2965,7 @@ bool MainWindow::isEmpty()
 void MainWindow::editorContentChanged()
 {
   auto current_doc = activeEditor->toPlainText();
-  if (current_doc != last_compiled_doc) {
+  if (current_doc != lastCompiledDoc) {
     animateWidget->editorContentChanged();
 
     // removes the live selection feedbacks in both the 3d view and editor.
@@ -3071,8 +3064,6 @@ void MainWindow::viewAll()
 
 void MainWindow::on_editorDock_visibilityChanged(bool)
 {
-  changedTopLevelEditor(editorDock->isFloating());
-  tabToolBar->setVisible((tabCount > 1) && editorDock->isVisible());
   updateExportActions();
 }
 
@@ -3104,24 +3095,6 @@ void MainWindow::on_fontListDock_visibilityChanged(bool)
 void MainWindow::on_viewportControlDock_visibilityChanged(bool)
 {
   viewportControlTopLevelChanged(viewportControlDock->isFloating());
-}
-
-void MainWindow::changedTopLevelEditor(bool topLevel)
-{
-  setDockWidgetTitle(editorDock, QString(_("Editor")), topLevel);
-}
-
-void MainWindow::editorTopLevelChanged(bool topLevel)
-{
-  setDockWidgetTitle(editorDock, QString(_("Editor")), topLevel);
-  if (topLevel) {
-    this->removeToolBar(tabToolBar);
-    ((QVBoxLayout *)editorDockContents->layout())->insertWidget(0, tabToolBar);
-  } else {
-    editorDockContents->layout()->removeWidget(tabToolBar);
-    this->addToolBar(tabToolBar);
-  }
-  tabToolBar->setVisible((tabCount > 1) && editorDock->isVisible());
 }
 
 void MainWindow::changedTopLevelConsole(bool topLevel)
@@ -3524,22 +3497,22 @@ void MainWindow::helpOfflineCheatSheet()
 
 void MainWindow::helpLibrary()
 {
-  if (!this->library_info_dialog) {
+    if (!this->libraryInfoDialog) {
     QString rendererInfo(qglview->getRendererInfo().c_str());
     auto dialog = new LibraryInfoDialog(rendererInfo);
-    this->library_info_dialog = dialog;
+    this->libraryInfoDialog = dialog;
   }
-  this->library_info_dialog->show();
+    this->libraryInfoDialog->show();
 }
 
 void MainWindow::helpFontInfo()
 {
-  if (!this->font_list_dialog) {
+    if (!this->fontListDialog) {
     auto dialog = new FontListDialog();
-    this->font_list_dialog = dialog;
+    this->fontListDialog = dialog;
   }
-  this->font_list_dialog->update_font_list();
-  this->font_list_dialog->show();
+    this->fontListDialog->updateFontList();
+    this->fontListDialog->show();
 }
 
 void MainWindow::closeEvent(QCloseEvent *event)
@@ -3672,10 +3645,10 @@ void MainWindow::processEvents()
 }
 
 QString MainWindow::exportPath(const QString& suffix) {
-  const auto path_it = this->export_paths.find(suffix);
+    const auto path_it = this->exportPaths.find(suffix);
   const auto basename = activeEditor->filepath.isEmpty() ? "Untitled" : QFileInfo(activeEditor->filepath).completeBaseName();
   QString dir;
-  if (path_it != export_paths.end()) {
+  if (path_it != exportPaths.end()) {
     dir = QFileInfo(path_it->second).absolutePath();
   } else if (activeEditor->filepath.isEmpty()) {
     dir = QString::fromStdString(PlatformUtils::userDocumentsPath());
