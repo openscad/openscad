@@ -91,22 +91,6 @@ void TabManager::tabSwitched(int x)
       button->setVisible(idx == x);
     }
   }
-
-  // Disable the non visible editors... because it seems there is a bug.
-  for(auto& editor : editorList)
-  {
-      auto sce = (ScintillaEditor *) editor;
-      // Workaround manually disabling interactions with editor by setting it
-      // to read-only when not being shown.  This is an upstream bug from Qt
-      // (tracking ticket: https://bugreports.qt.io/browse/QTBUG-82939) and
-      // may eventually get resolved at which point this bit and the stuff in
-      // the else should be removed. Currently known to affect 5.14.1 and 5.15.0
-      sce->qsci->setReadOnly(true);
-      sce->setupAutoComplete(true);
-  }
-  auto sceditor = (ScintillaEditor *) editor;
-  sceditor->qsci->setReadOnly(false);
-  sceditor->setupAutoComplete(false);
 }
 
 void TabManager::closeTabRequested(int x)

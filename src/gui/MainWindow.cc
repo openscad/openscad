@@ -720,7 +720,6 @@ MainWindow::MainWindow(const QStringList& filenames)
   }
   windowActionJumpTo->setMenu(navigationMenu);
 
-  connect(this->editorDock, SIGNAL(topLevelChanged(bool)), this, SLOT(editorTopLevelChanged(bool)));
   connect(this->consoleDock, SIGNAL(topLevelChanged(bool)), this, SLOT(consoleTopLevelChanged(bool)));
   connect(this->parameterDock, SIGNAL(topLevelChanged(bool)), this, SLOT(parameterTopLevelChanged(bool)));
   connect(this->errorLogDock, SIGNAL(topLevelChanged(bool)), this, SLOT(errorLogTopLevelChanged(bool)));
@@ -3235,6 +3234,21 @@ void MainWindow::showEditor()
 
 void MainWindow::hideEditor()
 {
+    auto e = (ScintillaEditor *) this->activeEditor;
+    if (windowActionHideEditor->isChecked()) {
+        // Workaround manually disabling interactions with editor by setting it
+        // to read-only when not being shown.  This is an upstream bug from Qt
+        // (tracking ticket: https://bugreports.qt.io/browse/QTBUG-82939) and
+        // may eventually get resolved at which point this bit and the stuff in
+        // the else should be removed. Currently known to affect 5.14.1 and 5.15.0
+        e->qsci->setReadOnly(true);
+        e->setupAutoComplete(true);
+        editorDock->close();
+    } else {
+        e->qsci->setReadOnly(false);
+        e->setupAutoComplete(false);
+        editorDock->show();
+    }
 }
 
 
