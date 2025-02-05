@@ -12,6 +12,16 @@
     "projection.scad",
     "hull.scad"
   ],
+  "Python": [
+    "simple.py",
+    "csg.py",
+    "transformations.py",
+    "handles.py",
+    "mesh.py",
+    "path_extrude.py",
+    "offset.py",
+    "sdf.py"
+  ],
   "Functions": [
     "echo.scad",
     "functions.scad",

@@ -1,0 +1,17 @@
+https://en.wikibooks.org/wiki/OpenSCAD_User_Manual/Cross-compiling_for_Windows_on_Linux_or_Mac_OS_Xhttps://en.wikibooks.org/wiki/OpenSCAD_User_Manual/Cross-compiling_for_Windows_on_Linux_or_Mac_OS_X
+
+git clone https://github.com/openscad/openscad.git
+cd openscad
+jegliche cache files loeschen!
+source ./scripts/setenv-mingw-xbuild.sh 64
+./scripts/mingw-x-build-dependencies.sh 64
+ln -s /home/gsohler/openscad_deps/mxe/usr/x86_64-w64-mingw32.static.posix/lib/pkgconfig/intel-tbb.pc /home/gsohler/openscad_deps/mxe/usr/x86_64-w64-mingw32.static.posix/lib/pkgconfig/tbb.pc
+
+./scripts/release-common.sh mingw64
+sudo cp -a mingw64.static.posix/OpenSCAD-2023.09.03-x86-64-Installer.exe /install
+
+https://mirror.msys2.org/mingw/mingw64/mingw-w64-x86_64-python-3.11.5-2-any.pkg.tar.zst
+
+https://www.python.org/ftp/python/3.11.5/python-3.11.5-amd64.exe
+dll file als libpython.3.11.dll umbenennen und neben openscad stellen
+
