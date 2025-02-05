@@ -1,9 +1,9 @@
 #include "gui/MouseSelector.h"
 
 #include "glview/system-gl.h"
+#include "glview/fbo.h"
 
 #include <cstdint>
-#include <QOpenGLFramebufferObject>
 #include <string>
 #include <memory>
 /**
@@ -70,13 +70,11 @@ void MouseSelector::initShader() {
  */
 void MouseSelector::setupFramebuffer(const GLView *view) {
   if (!this->framebuffer ||
-      static_cast<unsigned int>(this->framebuffer->width()) != view->cam.pixel_width ||
-      static_cast<unsigned int>(this->framebuffer->height()) != view->cam.pixel_height) {
-    this->framebuffer = std::make_unique<QOpenGLFramebufferObject>(
+      this->framebuffer->width() != view->cam.pixel_width ||
+      this->framebuffer->height() != view->cam.pixel_height) {
+    this->framebuffer = createFBO(
       view->cam.pixel_width,
-      view->cam.pixel_height,
-      QOpenGLFramebufferObject::Depth);
-    this->framebuffer->release();
+      view->cam.pixel_height);
   }
 }
 
@@ -133,7 +131,7 @@ int MouseSelector::select(const Renderer *renderer, int x, int y) {
   const int index = (uint32_t)color[0] | ((uint32_t)color[1] << 8) | ((uint32_t)color[2] << 16);
 
   // Switch the active framebuffer back to the default
-  this->framebuffer->release();
+  this->framebuffer->unbind();
 
   return index;
 }
