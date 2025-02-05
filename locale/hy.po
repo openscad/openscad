@@ -951,10 +951,6 @@ msgstr "Հարթություններ"
 msgid "F10"
 msgstr "F10"
 
-#: build/OpenSCAD_autogen/include/ui_MainWindow.h:1075
-msgid "Wireframe"
-msgstr "Սխեմատիկ տեսքը"
-
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:1077
 msgid "F11"
 msgstr "F11"

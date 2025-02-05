@@ -6,7 +6,6 @@
 #include "utils/printutils.h"
 #ifdef ENABLE_CGAL
 #include "geometry/cgal/cgalutils.h"
-#include <optional>
 #include <cassert>
 #include <map>
 #include <set>
@@ -22,6 +21,7 @@
 #include <manifold/polygon.h>
 
 #include <cstddef>
+#include <optional>
 #include <vector>
 
 using Error = manifold::Manifold::Error;

@@ -34,7 +34,6 @@ option(EXPERIMENTAL "Enable Experimental Features" OFF)
 option(USE_MANIFOLD_TRIANGULATOR "Use Manifold's triangulator instead of CGAL's" ON)
 option(USE_BUILTIN_MANIFOLD "Use manifold from submodule" ON)
 option(USE_BUILTIN_CLIPPER2 "Use Clipper2 from submodule" ON)
-option(USE_LEGACY_RENDERERS "Use legacy (non-VBO) OpenGL renderers" OFF)
 option(SNAPSHOT "Create dev snapshot, uses nightly icons" OFF)
 option(HEADLESS "Build without GUI frontend" OFF)
 if(APPLE)
@@ -213,9 +212,6 @@ if(EXPERIMENTAL)
 endif()
 if(IDPREFIX)
   target_compile_definitions(OpenSCAD PRIVATE IDPREFIX)
-endif()
-if(USE_LEGACY_RENDERERS)
-  target_compile_definitions(OpenSCAD PRIVATE USE_LEGACY_RENDERERS)
 endif()
 
 if (NOT "${SUFFIX}" STREQUAL "")
@@ -794,6 +790,7 @@ set(CORE_SOURCES
   src/core/CgalAdvNode.cc
   src/core/Children.cc
   src/core/ColorNode.cc
+  src/core/ColorUtil.cc
   src/core/Context.cc
   src/core/ContextFrame.cc
   src/core/ContextMemoryManager.cc
@@ -817,6 +814,7 @@ set(CORE_SOURCES
   src/core/RenderVariables.cc
   src/core/RotateExtrudeNode.cc
   src/core/ScopeContext.cc
+  src/core/Settings.cc
   src/core/SourceFile.cc
   src/core/SourceFileCache.cc
   src/core/StatCache.cc
@@ -1040,20 +1038,13 @@ if(NULLGL)
     src/io/export_png.cc
     src/io/imageutils.cc)
 else()
-  if(USE_LEGACY_RENDERERS)
-    set(LEGACY_RENDERER_SOURCES
-      src/glview/cgal/LegacyCGALRenderer.cc
-      src/glview/preview/LegacyOpenCSGRenderer.cc
-      src/glview/preview/LegacyThrownTogetherRenderer.cc
-      src/glview/LegacyRendererUtils.cc
-    )
-  endif()
   set(OFFSCREEN_SOURCES
     src/glview/OpenGLContext.cc
     src/glview/fbo.cc
     src/glview/Renderer.cc
+    src/glview/ShaderUtils.cc
     src/glview/system-gl.cc
-    src/glview/VertexArray.cc
+    src/glview/VBOBuilder.cc
     src/glview/VertexState.cc
     src/glview/VBORenderer.cc
     src/glview/GLView.cc
@@ -1065,7 +1056,6 @@ else()
     src/glview/preview/ThrownTogetherRenderer.cc
     src/io/export_png.cc
     src/io/imageutils.cc
-    ${LEGACY_RENDERER_SOURCES}
     ${GLEW_SOURCES})
 endif()
 
@@ -1092,6 +1082,7 @@ set(GUI_SOURCES
   src/gui/Editor.cc
   src/gui/ErrorLog.cc
   src/gui/EventFilter.h
+  src/gui/Export3mfDialog.cc
   src/gui/ExportPdfDialog.cc
   src/gui/FontListDialog.cc
   src/gui/FontListTableView.cc
@@ -1118,10 +1109,8 @@ set(GUI_SOURCES
   src/gui/ScadApi.cc
   src/gui/ScadLexer.cc
   src/gui/ScintillaEditor.cc
-  src/gui/Settings.cc
   src/gui/SettingsWriter.cc
   src/gui/TabManager.cc
-  src/gui/TabWidget.cc
   src/gui/UIUtils.cc
   src/gui/WindowManager.cc
   src/gui/IgnoreWheelWhenNotFocused.cc
@@ -1160,6 +1149,7 @@ set(GUI_HEADERS
     src/gui/Editor.h
     src/gui/ErrorLog.h
     src/gui/EventFilter.h
+    src/gui/Export3mfDialog.h
     src/gui/ExportPdfDialog.h
     src/gui/FontList.h
     src/gui/FontListDialog.h
@@ -1185,10 +1175,8 @@ set(GUI_HEADERS
     src/gui/ScadApi.h
     src/gui/ScadLexer.h
     src/gui/ScintillaEditor.h
-    src/gui/Settings.h
     src/gui/SettingsWriter.h
     src/gui/TabManager.h
-    src/gui/TabWidget.h
     src/gui/UIUtils.h
     src/gui/ViewportControl.h
     src/gui/WindowManager.h
@@ -1213,6 +1201,7 @@ set(GUI_UIS
     src/gui/Animate.ui
     src/gui/Console.ui
     src/gui/ErrorLog.ui
+    src/gui/Export3mfDialog.ui
     src/gui/ExportPdfDialog.ui
     src/gui/FontList.ui
     src/gui/FontListDialog.ui

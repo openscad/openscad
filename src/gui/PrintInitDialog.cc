@@ -32,7 +32,7 @@
 #include "export.h"
 #include "gui/PrintService.h"
 #include "gui/QSettingsCached.h"
-#include "gui/Settings.h"
+#include "core/Settings.h"
 
 namespace {
 

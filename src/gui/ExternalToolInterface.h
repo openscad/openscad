@@ -33,7 +33,7 @@
 
 #include "gui/PrintService.h"
 #include "geometry/Geometry.h"
-#include "gui/Settings.h"
+#include "core/Settings.h"
 #include "io/export.h"
 
 class ExternalToolInterface

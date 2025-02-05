@@ -9,11 +9,17 @@
 #include <utility>
 #include <vector>
 
+#include "geometry/PolySet.h"
+#include "glview/Renderer.h"
 #include "glview/system-gl.h"
 #include "utils/printutils.h"
 #include "geometry/linalg.h"
 #include "Feature.h"
 #include "glview/VertexState.h"
+
+enum ShaderAttribIndex {
+  BARYCENTRIC_ATTRIB
+};
 
 // Hash function for opengl vertex data.
 template <typename T>
@@ -128,7 +134,7 @@ public:
   void addAttributeData(std::shared_ptr<IAttributeData> data)
   {
     stride_ += data->sizeofAttribute();
-    attributes_.emplace_back(std::move(data));
+    attributes_.emplace_back(data);
   }
 
   // Add position attribute data to vertex vector
@@ -136,24 +142,21 @@ public:
   {
     position_index_ = attributes_.size();
     stride_ += data->sizeofAttribute();
-    attributes_.emplace_back(std::move(data));
-    position_data_ = std::shared_ptr<IAttributeData>(attributes_.back());
+    position_data_ = attributes_.emplace_back(std::move(data));
   }
   // Add normal attribute data to vertex vector
   void addNormalData(std::shared_ptr<IAttributeData> data)
   {
     normal_index_ = attributes_.size();
     stride_ += data->sizeofAttribute();
-    attributes_.emplace_back(std::move(data));
-    normal_data_ = std::shared_ptr<IAttributeData>(attributes_.back());
+    normal_data_ = attributes_.emplace_back(std::move(data));
   }
   // Add color attribute data to vertex vector
   void addColorData(std::shared_ptr<IAttributeData> data)
   {
     color_index_ = attributes_.size();
     stride_ += data->sizeofAttribute();
-    attributes_.emplace_back(std::move(data));
-    color_data_ = std::shared_ptr<IAttributeData>(attributes_.back());
+    color_data_ = attributes_.emplace_back(std::move(data));
   }
 
   void clear() { for (auto& a : attributes_) a->clear(); }
@@ -224,26 +227,24 @@ private:
   size_t stride_{0};
 };
 
-
 // Combine vertex data with vertex states. Creates VBOs.
-class VertexArray
+class VBOBuilder
 {
 public:
-  using CreateVertexCallback = std::function<void (VertexArray& vertex_array,
-                                                   size_t active_point_index, size_t primitive_index,
-                                                   size_t shape_size, bool outlines)>;
-
-
-  VertexArray(std::unique_ptr<VertexStateFactory> factory, std::vector<std::shared_ptr<VertexState>>& states,
-              GLuint vertices_vbo, GLuint elements_vbo)
-    : factory_(std::move(factory)), states_(states),
-      vertices_vbo_(vertices_vbo), elements_vbo_(elements_vbo)
+  VBOBuilder(std::unique_ptr<VertexStateFactory> factory, VertexStateContainer& vertex_state_container)
+    : factory_(std::move(factory)), vertex_state_container_(vertex_state_container)
   {
   }
-  virtual ~VertexArray() = default;
 
-  // Add generic VertexData to VertexArray
-  void addVertexData(std::shared_ptr<VertexData> data) { vertices_.emplace_back(std::move(data)); }
+  virtual ~VBOBuilder() {
+    if (Feature::ExperimentalVxORenderersIndexing.is_enabled()) {
+      GL_TRACE0("glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0)");
+      GL_CHECKD(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0));
+    }
+    GL_TRACE0("glBindBuffer(GL_ARRAY_BUFFER, 0)");
+    GL_CHECKD(glBindBuffer(GL_ARRAY_BUFFER, 0));
+  };
+
   // Add common surface data vertex layout PNC
   void addSurfaceData();
   // Add common edge data vertex layout PC
@@ -264,19 +265,12 @@ public:
                     const Color4f& color,
                     size_t active_point_index = 0, size_t primitive_index = 0,
                     size_t shape_size = 0,
-                    bool outlines = false, bool mirror = false,
-                    const CreateVertexCallback& vertex_callback = nullptr);
+                    bool outlines = false, bool mirror = false);
 
   // Return reference to the VertexStates
-  inline std::vector<std::shared_ptr<VertexState>>& states() { return states_; }
+  inline std::vector<std::shared_ptr<VertexState>>& states() { return vertex_state_container_.states(); }
   // Return reference to VertexData at current internal write index
   inline std::shared_ptr<VertexData> data() { return vertices_[write_index_]; }
-  // Return reference to VertexData at custom external write index
-  inline std::shared_ptr<VertexData> data(size_t write_index) { return vertices_[write_index]; }
-  // Return reference to surface VertexData if it exists
-  inline std::shared_ptr<VertexData> surfaceData() { return vertices_[surface_index_]; }
-  // Return reference to edge VertexData if it exists
-  inline std::shared_ptr<VertexData> edgeData() { return vertices_[edge_index_]; }
   // Return reference to elements
   inline VertexData& elements() { return elements_; }
   // Return reference to elements data if it exists
@@ -287,8 +281,6 @@ public:
   inline size_t sizeInBytes() const { size_t size = 0; for (const auto& data : vertices_) size += data->sizeInBytes(); return size; }
   // Return the current internal write index
   inline size_t writeIndex() const { return write_index_; }
-  // Set the internal write index
-  inline void writeIndex(size_t index) { if (index < vertices_.size()) write_index_ = index; }
   // Set the internal write index to the surface index
   inline void writeSurface() { write_index_ = surface_index_; }
   // Set the internal write index to the edge index
@@ -312,7 +304,8 @@ public:
 
   // Use VertexStateFactory to create a new VertexState object
   std::shared_ptr<VertexState> createVertexState(GLenum draw_mode, size_t draw_size, GLenum draw_type, size_t draw_offset, size_t element_offset) const {
-    return factory_->createVertexState(draw_mode, draw_size, draw_type, draw_offset, element_offset, vertices_vbo_, elements_vbo_);
+    return factory_->createVertexState(draw_mode, draw_size, draw_type, draw_offset, element_offset, 
+                                       vertex_state_container_.verticesVBO(), vertex_state_container_.elementsVBO());
   }
 
   void allocateBuffers(size_t num_vertices);
@@ -323,29 +316,36 @@ public:
   // Method adds begin/end states that enable and point to the VertexData in the array
   void addAttributePointers(size_t start_offset = 0);
 
-  inline GLuint verticesVBO() const { return vertices_vbo_; }
-  inline size_t verticesSize() const { return vertices_size_; }
-  inline void setVerticesSize(size_t vertices_size) {
-    vertices_size_ = vertices_size;
-    interleaved_buffer_.resize(vertices_size_);
-  }
+  inline GLuint verticesVBO() const { return vertex_state_container_.verticesVBO(); }
   inline size_t verticesOffset() const { return vertices_offset_; }
-  inline void setVerticesOffset(size_t offset) { vertices_offset_ = offset; }
 
   // Return whether this Vertex Array uses elements (indexed rendering)
-  inline bool useElements() const { return elements_vbo_ != 0; }
-  inline GLuint elementsVBO() const { return elements_vbo_; }
-  inline size_t elementsSize() const { return elements_size_; }
-  inline void setElementsSize(size_t elements_size) { elements_size_ = elements_size; }
+  inline bool useElements() const { return vertex_state_container_.elementsVBO() != 0; }
+  inline GLuint elementsVBO() const { return vertex_state_container_.elementsVBO(); }
   inline size_t elementsOffset() const { return elements_offset_; }
   inline void setElementsOffset(size_t offset) { elements_offset_ = offset; }
 
   // Return the internal unique vertex/element map
   inline ElementsMap& elementsMap() { return elements_map_; }
 
+  size_t shader_attributes_index_{0};
+  void addShaderData();
+
+  void add_barycentric_attribute(size_t active_point_index,
+                                 size_t primitive_index, size_t shape_size, bool outlines);
+  void create_triangle(const Color4f& color, const Vector3d& p0,
+                       const Vector3d& p1, const Vector3d& p2, size_t primitive_index,
+                       size_t shape_size, bool outlines, bool enable_barycentric, bool mirror);
+  void create_surface(const PolySet& ps, const Transform3d& m,
+                      const Color4f& default_color, bool enable_barycentric, bool force_default_color=false);
+  void create_edges(const Polygon2d& polygon, const Transform3d& m, const Color4f& color);
+  void create_polygons(const PolySet& ps, const Transform3d& m, const Color4f& color);
+
 private:
+  inline void setElementsSize(size_t elements_size) { elements_size_ = elements_size; }
+
   std::unique_ptr<VertexStateFactory> factory_;
-  std::vector<std::shared_ptr<VertexState>>& states_;
+  VertexStateContainer& vertex_state_container_;
   size_t write_index_{0};
   size_t surface_index_{0};
   size_t edge_index_{0};
@@ -353,13 +353,9 @@ private:
   std::vector<GLbyte> interleaved_buffer_;
 
   // Vertex VBO
-  GLuint vertices_vbo_;
-  // Allocated size of vertex VBO
-  size_t vertices_size_{0};
   size_t vertices_offset_{0};
 
   // Element VBO
-  GLuint elements_vbo_;
   // Allocated size of vertex VBO
   size_t elements_size_{0};
   size_t elements_offset_{0};
