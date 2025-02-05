@@ -10,7 +10,7 @@ class FBO
 public:
   FBO(int width, int height, bool useEXT);
   ~FBO() { destroy(); };
-  bool isComplete() { return this->complete_; }
+  bool isComplete() const { return this->complete_; }
   bool resize(size_t width, size_t height);
   GLuint bind();
   void unbind();
