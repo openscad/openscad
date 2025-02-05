@@ -1,4 +1,4 @@
-// Constants
+// Hex constants - digits, lower case, upper case.
 assert(0x1ff == 511);
 assert(0xFFFFFFFF == 2^32-1);
 

@@ -256,22 +256,41 @@ use[ \t\r\n]*"<"        { BEGIN(cond_use); LOCATION_COUNT_LINES(parserlloc, yyte
 
 {UNICODE}+              { parser_error_pos -= strlen(yytext); return TOK_ERROR; }
 
-%{/*
- Maybe there should be no limit on the length of a hex constant, or maybe over-limit
- constants should get an explicit error.  If we just let them through here, strtoul()
- will do something that we won't like.
-*/%}
-0x{H}{1,8}              {
-                            parserlval.number = strtoul(lexertext + 2, NULL, 16);
+0x{H}+                  {
+                            errno = 0;  // strtoxxx have crummy error semantics
+                            unsigned long long ull = strtoull(yytext + 2, NULL, 16);
+                            parserlval.number = ull;
+                            if (errno != 0) {
+                                LOG(message_group::Warning, LOCATION(parserlloc), "",
+                                    "Hexadecimal constant \"%1$s\" too large", yytext);
+                            } else if ((unsigned long long)parserlval.number != ull) {
+                                LOG(message_group::Warning, LOCATION(parserlloc), "",
+                                    "Integer \"%1$s\" cannot be represented precisely",
+                                    yytext);
+                            }
                             return TOK_NUMBER;
                         }
-{D}+{E}? |
+{D}+{E} |
 {D}*\.{D}+{E}? |
 {D}+\.{D}*{E}?          {
                             try {
                                 parserlval.number = boost::lexical_cast<double>(yytext);
                                 return TOK_NUMBER;
                             } catch (boost::bad_lexical_cast&) {}
+                        }
+{D}+                    {
+                            errno = 0;  // strtoxxx have crummy error semantics
+                            unsigned long long ull = strtoull(yytext, NULL, 10);
+                            parserlval.number = ull;
+                            if (errno != 0 || (unsigned long long)parserlval.number != ull) {
+                                LOG(message_group::Warning, LOCATION(parserlloc), "",
+                                    "Integer \"%1$s\" cannot be represented precisely",
+                                    yytext);
+                                try {
+                                    parserlval.number = boost::lexical_cast<double>(yytext);
+                                } catch (boost::bad_lexical_cast&) {}
+                            }
+                            return TOK_NUMBER;
                         }
 
 {IDSTART}{IDREST}*      { parserlval.text = strdup(yytext); return TOK_ID; }
