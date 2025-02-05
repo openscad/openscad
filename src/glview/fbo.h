@@ -1,22 +1,28 @@
 #pragma once
 
-#include "glview/system-gl.h"
-#include <cstddef> // size_t
+#include <cstddef>
+#include <memory>
 
-struct fbo_t
+#include "system-gl.h"
+#include "OpenGLContext.h"
+
+class FBO
 {
-  GLuint fbo_id;
-  GLuint old_fbo_id;
+  bool useEXT;
+  GLuint fbo_id = 0;
+  GLuint old_fbo_id = 0;
+  GLuint renderbuf_id = 0;
+  GLuint depthbuf_id = 0;
+  bool complete = false;
 
-  GLuint renderbuf_id;
-  GLuint depthbuf_id;
+public:
+  FBO(int width, int height, bool useEXT);
+  ~FBO() { destroy(); };
+  bool isComplete() { return this->complete; }
+  bool resize(size_t width, size_t height);
+  GLuint bind();
+  void unbind();
+  void destroy();
 };
 
-fbo_t *fbo_new();
-bool fbo_init(fbo_t *fbo, size_t width, size_t height);
-bool fbo_resize(fbo_t *fbo, size_t width, size_t height);
-void fbo_delete(fbo_t *fbo);
-GLuint fbo_bind(fbo_t *fbo);
-void fbo_unbind(fbo_t *fbo);
-
-bool REPORTGLERROR(const char *task);
+std::unique_ptr<FBO> createFBO(int width, int height);
