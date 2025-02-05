@@ -1007,11 +1007,7 @@
     <string>F8</string>
    </property>
   </action>
-<<<<<<< HEAD
   <action name="designActionMeasureDistance">
-=======
-  <action name="designActionMeasureDist">
->>>>>>> upstream/master
    <property name="icon">
     <iconset theme="chokusen-measure-distance">
      <normaloff>.</normaloff>.</iconset>

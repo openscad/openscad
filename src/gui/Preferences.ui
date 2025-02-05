@@ -2877,10 +2877,7 @@
    <addaction name="prefsActionAdvanced"/>
    <addaction name="prefsActionInput"/>
    <addaction name="prefsActionInputButton"/>
-<<<<<<< HEAD
    <addaction name="prefsActionPython"/>
-=======
->>>>>>> upstream/master
    <addaction name="prefsActionDialogs"/>
   </widget>
   <action name="prefsAction3DView">
