@@ -25,7 +25,7 @@
 namespace {
 
 // Returns true on OK, false on error
-bool glCheck(const char *stmt, const char *file, int line)
+[[maybe_unused]] bool glCheck(const char *stmt, const char *file, int line)
 {
   if (const auto err = glGetError(); err != GL_NO_ERROR) {
     LOG(message_group::Error, Location::NONE, "",
@@ -37,7 +37,7 @@ bool glCheck(const char *stmt, const char *file, int line)
 }
 
 // Returns true on OK, false on error
-bool glCheckd(const char *stmt, const char *file, int line)
+[[maybe_unused]] bool glCheckd(const char *stmt, const char *file, int line)
 {
   if (const auto err = glGetError(); err != GL_NO_ERROR) {
     PRINTDB("OpenGL error: %s (0x%04x) in %s:%d\n"

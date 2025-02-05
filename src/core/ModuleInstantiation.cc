@@ -59,16 +59,6 @@ void ModuleInstantiation::print_python(std::ostream& stream, std::ostream& strea
     n++;
   }
   stream << ")" ;
-//  if (scope.numElements() == 0) {
-//    stream << ");\n";
-//  } else if (scope.numElements() == 1) {
-//    stream << ") ";
-//    scope.print_python(stream, indent, true);
-//  } else {
-//    stream << ") {\n";
-//    scope.print_python(stream, indent + "\t", false);
-//    stream << indent << "}\n";
-//  }
 }
 
 void IfElseModuleInstantiation::print(std::ostream& stream, const std::string& indent, const bool inlined) const
@@ -129,6 +119,7 @@ std::shared_ptr<AbstractNode> ModuleInstantiation::evaluate(const std::shared_pt
     std::shared_ptr<AbstractNode> result=nullptr;
     std::string error;
 #ifdef ENABLE_PYTHON
+    int modulefound;
     result = python_modulefunc(this, context,error);
     if(!error.empty() && result == nullptr) {
       LOG(message_group::Warning, loc, context->documentRoot(), "Python:: '%1$s'", error);
@@ -143,7 +134,6 @@ std::shared_ptr<AbstractNode> ModuleInstantiation::evaluate(const std::shared_pt
     auto node = module->module->instantiate(module->defining_context, this, context);
     return node;
   } catch (EvaluationException& e) {
-  printf("throw1\n");
     if (e.traceDepth > 0) {
       print_trace(this, context);
       e.traceDepth--;

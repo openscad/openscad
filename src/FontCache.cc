@@ -368,9 +368,11 @@ FT_Face FontCache::find_face(const std::string& font) const
 
 void FontCache::init_pattern(FcPattern *pattern) const
 {
-  FcValue true_value;
-  true_value.type = FcTypeBool;
-  true_value.u.b = true;
+  assert(pattern);
+  const FcValue true_value = {
+    .type = FcTypeBool,
+    .u = {.b = true},
+  };
 
   FcPatternAdd(pattern, FC_OUTLINE, true_value, true);
   FcPatternAdd(pattern, FC_SCALABLE, true_value, true);
@@ -381,6 +383,10 @@ FT_Face FontCache::find_face_fontconfig(const std::string& font) const
   FcResult result;
 
   FcPattern *pattern = FcNameParse((unsigned char *)font.c_str());
+  if (!pattern) {
+    LOG(message_group::Font_Warning, "Could not parse font '%1$s'", font);
+    return nullptr;
+  }
   init_pattern(pattern);
 
   FcConfigSubstitute(this->config, pattern, FcMatchPattern);
@@ -420,7 +426,7 @@ FT_Face FontCache::find_face_fontconfig(const std::string& font) const
     if (!charmap_set) charmap_set = try_charmap(face, TT_PLATFORM_MACINTOSH, TT_MAC_ID_ROMAN);
     if (!charmap_set) charmap_set = try_charmap(face, TT_PLATFORM_ISO, TT_ISO_ID_8859_1);
     if (!charmap_set) charmap_set = try_charmap(face, TT_PLATFORM_ISO, TT_ISO_ID_7BIT_ASCII);
-    if (!charmap_set) LOG(message_group::Font_Warning, "Could not select a char map for font %1$s/%2$s'", face->family_name, face->style_name);
+    if (!charmap_set) LOG(message_group::Font_Warning, "Could not select a char map for font '%1$s/%2$s'", face->family_name, face->style_name);
   }
 
   return error ? nullptr : face;

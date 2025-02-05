@@ -1,16 +1,10 @@
 #pragma once
 
-#include "gui/Editor.h"
-#include "geometry/Geometry.h"
-#include "io/export.h"
-#include "gui/ExportPdfDialog.h"
-#include "gui/Measurement.h"
-#include "RenderStatistic.h"
-#include "gui/TabManager.h"
-#include "core/Tree.h"
-#include "gui/UIUtils.h"
-#include "gui/qtgettext.h" // IWYU pragma: keep
-#include "ui_MainWindow.h"
+#include <ctime>
+#include <unordered_map>
+#include <memory>
+#include <string>
+#include <vector>
 
 #include <QAction>
 #include <QCloseEvent>
@@ -29,11 +23,6 @@
 #include <QTimer>
 #include <QUrl>
 #include <QWidget>
-#include <ctime>
-#include <unordered_map>
-#include <memory>
-#include <string>
-#include <vector>
 #include <QMainWindow>
 #include <QElapsedTimer>
 #include <QIcon>
@@ -42,6 +31,18 @@
 #include <QSoundEffect>
 #include <QTime>
 #include <QSignalMapper>
+
+#include "gui/Editor.h"
+#include "geometry/Geometry.h"
+#include "io/export.h"
+#include "gui/Measurement.h"
+#include "RenderStatistic.h"
+#include "gui/TabManager.h"
+#include "core/Tree.h"
+#include "gui/UIUtils.h"
+#include "gui/qtgettext.h" // IWYU pragma: keep
+#include "gui/qt-obsolete.h" // IWYU pragma: keep
+#include "ui_MainWindow.h"
 
 #ifdef STATIC_QT_SVG_PLUGIN
 #include <QtPlugin>
@@ -69,16 +70,16 @@ public:
 
   QTimer *consoleUpdater;
 
-  bool is_preview;
+  bool isPreview;
 
   QTimer *autoReloadTimer;
   QTimer *waitAfterReloadTimer;
   RenderStatistic renderStatistic;
 
-  SourceFile *root_file; // Result of parsing
-  SourceFile *parsed_file; // Last parse for include list
-  std::shared_ptr<AbstractNode> absolute_root_node; // Result of tree evaluation
-  std::shared_ptr<AbstractNode> root_node; // Root if the root modifier (!) is used
+  SourceFile *rootFile; // Result of parsing
+  SourceFile *parsedFile; // Last parse for include list
+  std::shared_ptr<AbstractNode> absoluteRootNode; // Result of tree evaluation
+  std::shared_ptr<AbstractNode> rootNode; // Root if the root modifier (!) is used
 #ifdef ENABLE_PYTHON
   bool python_active;
   std::string trusted_edit_document_name;
@@ -89,7 +90,7 @@ public:
   EditorInterface *activeEditor;
   TabManager *tabManager;
 
-  std::shared_ptr<const Geometry> root_geom;
+  std::shared_ptr<const Geometry> rootGeom;
   std::shared_ptr<Renderer> cgalRenderer;
 #ifdef ENABLE_OPENCSG
   std::shared_ptr<Renderer> opencsgRenderer;
@@ -97,7 +98,7 @@ public:
 #endif
   std::shared_ptr<Renderer> thrownTogetherRenderer;
 
-  QString last_compiled_doc;
+  QString lastCompiledDoc;
 
   QAction *actionRecentFile[UIUtils::maxRecentFiles];
   QMap<QString, QString> knownFileExtensions;
@@ -132,7 +133,6 @@ protected:
   void closeEvent(QCloseEvent *event) override;
 
 private slots:
-  void setTabToolBarVisible(int);
   void updateUndockMode(bool undockMode);
   void updateReorderMode(bool reorderMode);
   void setFont(const QString& family, uint size);
@@ -164,7 +164,6 @@ public:
   void csgRenderFinished();
 
 private:
-  void initActionIcon(QAction *action, const char *darkResource, const char *lightResource);
   void setRenderVariables(ContextHandle<BuiltinContext>& context);
   void updateCompileResult();
   void compile(bool reload, bool forcedone = false);
@@ -183,9 +182,9 @@ private:
   void updateStatusBar(ProgressWidget *progressWidget);
   void activateWindow(int);
 
-  LibraryInfoDialog *library_info_dialog{nullptr};
-  FontListDialog *font_list_dialog{nullptr};
-  QSignalMapper *exportformat_mapper;
+  LibraryInfoDialog *libraryInfoDialog{nullptr};
+  FontListDialog *fontListDialog{nullptr};
+  QSignalMapper *exportFormatMapper;
 
 public slots:
   void updateExportActions();
@@ -277,7 +276,7 @@ private slots:
   void csgRender();
   void csgReloadRender();
   void action3DPrint();
-  void sendToExternalTool(class ExternalToolInterface &externalToolService);
+  void sendToExternalTool(class ExternalToolInterface& externalToolService);
   void actionRender();
   void actionRenderDone(const std::shared_ptr<const Geometry>&);
   void cgalRender();
@@ -294,8 +293,7 @@ private slots:
   void actionDisplayCSGTree();
   void actionDisplayCSGProducts();
   bool canExport(unsigned int dim);
-  void actionExport(FileFormat format, const char *type_name, const char *suffix, unsigned int dim);
-  void actionExport(FileFormat format, const char *type_name, const char *suffix, unsigned int dim, ExportPdfOptions *options);
+  void actionExport(unsigned int dim, ExportInfo& exportInfo);
   void actionExportFileFormat(int fmt);
   void actionCopyViewport();
   void actionFlushCaches();
@@ -317,7 +315,6 @@ public:
   void onZoomEvent(InputEventZoom *event) override;
 
   void changedTopLevelConsole(bool);
-  void changedTopLevelEditor(bool);
   void changedTopLevelErrorLog(bool);
   void changedTopLevelAnimate(bool);
   void changedTopLevelFontList(bool);
@@ -326,7 +323,7 @@ public:
   QList<double> getTranslation() const;
   QList<double> getRotation() const;
   QSignalMapper *addmenu_mapper;
-  std::unordered_map<FileFormat, QAction*>  export_map;
+  std::unordered_map<FileFormat, QAction *> exportMap;
 
 public slots:
   void actionReloadRenderPreview();
@@ -338,7 +335,6 @@ public slots:
   void on_fontListDock_visibilityChanged(bool);
   void on_viewportControlDock_visibilityChanged(bool);
   void on_toolButtonCompileResultClose_clicked();
-  void editorTopLevelChanged(bool);
   void consoleTopLevelChanged(bool);
   void parameterTopLevelChanged(bool);
   void errorLogTopLevelChanged(bool);
@@ -350,11 +346,10 @@ public slots:
   void openFileFromPath(const QString&, int);
   void toolTipShow(QPoint,QString msg);
 
+  void viewModeRender();
 #ifdef ENABLE_OPENCSG
   void viewModePreview();
 #endif
-  void viewModeSurface();
-  void viewModeWireframe();
   void viewModeThrownTogether();
   void viewModeShowEdges();
   void viewModeShowAxes();
@@ -405,10 +400,10 @@ private:
 
   std::shared_ptr<CSGNode> csgRoot; // Result of the CSGTreeEvaluator
   std::shared_ptr<CSGNode> normalizedRoot; // Normalized CSG tree
-  std::shared_ptr<CSGProducts> root_products;
-  std::shared_ptr<CSGProducts> highlights_products;
-  std::shared_ptr<CSGProducts> background_products;
-  int currently_selected_object {-1};
+  std::shared_ptr<CSGProducts> rootProduct;
+  std::shared_ptr<CSGProducts> highlightsProducts;
+  std::shared_ptr<CSGProducts> backgroundProducts;
+  int currentlySelectedObject {-1};
 
   char const *afterCompileSlot;
   bool procevents{false};
@@ -418,14 +413,14 @@ private:
   CSGWorker *csgworker;
   QMutex consolemutex;
   EditorInterface *renderedEditor; // stores pointer to editor which has been most recently rendered
-  time_t includes_mtime{0}; // latest include mod time
-  time_t deps_mtime{0}; // latest dependency mod time
-  std::unordered_map<std::string, QString> export_paths; // for each file type, where it was exported to last
-  QString exportPath(const char *suffix); // look up the last export path and generate one if not found
-  int last_parser_error_pos{-1}; // last highlighted error position
+  time_t includesMTime{0}; // latest include mod time
+  time_t depsMTime{0}; // latest dependency mod time
+  std::unordered_map<QString, QString> exportPaths; // for each file type, where it was exported to last
+  QString exportPath(const QString& suffix); // look up the last export path and generate one if not found
+  int lastParserErrorPos{-1}; // last highlighted error position
   int tabCount = 0;
-  paperSizes sizeString2Enum(const QString& current);
-  paperOrientations orientationsString2Enum(const QString& current);
+  ExportPdfPaperSize sizeString2Enum(const QString& current);
+  ExportPdfPaperOrientation orientationsString2Enum(const QString& current);
 
   QSoundEffect *renderCompleteSoundEffect;
   std::vector<std::unique_ptr<QTemporaryFile>> allTempFiles;
@@ -447,14 +442,14 @@ public:
   ~GuiLocker() {
     GuiLocker::unlock();
   }
-  static bool isLocked() { return gui_locked > 0; }
+  static bool isLocked() { return guiLocked > 0; }
   static void lock() {
-    gui_locked++;
+    guiLocked++;
   }
   static void unlock() {
-    gui_locked--;
+    guiLocked--;
   }
 
 private:
-  static unsigned int gui_locked;
+  static unsigned int guiLocked;
 };

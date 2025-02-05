@@ -34,7 +34,6 @@ option(EXPERIMENTAL "Enable Experimental Features" OFF)
 option(USE_MANIFOLD_TRIANGULATOR "Use Manifold's triangulator instead of CGAL's" ON)
 option(USE_BUILTIN_MANIFOLD "Use manifold from submodule" ON)
 option(USE_BUILTIN_CLIPPER2 "Use Clipper2 from submodule" ON)
-option(USE_LEGACY_RENDERERS "Use legacy (non-VBO) OpenGL renderers" OFF)
 option(SNAPSHOT "Create dev snapshot, uses nightly icons" OFF)
 option(HEADLESS "Build without GUI frontend" OFF)
 if(APPLE)
@@ -86,7 +85,7 @@ set(CMAKE_OSX_DEPLOYMENT_TARGET ${DEPLOYMENT_TARGET} CACHE STRING "Minimum OS X 
 project(OpenSCAD
   VERSION ${PROJECT_VERSION}
   DESCRIPTION "The Programmer's Solid 3D CAD Modeler"
-  HOMEPAGE_URL "https://openscad.org/"
+  HOMEPAGE_URL "https://pythonscad.org/"
   LANGUAGES C CXX
 )
 
@@ -216,9 +215,6 @@ if(EXPERIMENTAL)
 endif()
 if(IDPREFIX)
   target_compile_definitions(OpenSCAD PRIVATE IDPREFIX)
-endif()
-if(USE_LEGACY_RENDERERS)
-  target_compile_definitions(OpenSCAD PRIVATE USE_LEGACY_RENDERERS)
 endif()
 
 if (NOT "${SUFFIX}" STREQUAL "")
@@ -511,34 +507,24 @@ if(ENABLE_PYTHON)
   if(WIN32) 
     #MINGW environment	  
     SET(PYTHON_MINGW_DEVPATH "${CMAKE_CURRENT_SOURCE_DIR}/python_mingw")
-    SET(PYTHON_MINGW_PACKAGEFOLDER "https://mirror.msys2.org/mingw/mingw64")
-    SET(PYTHON_MINGW_PACKAGEFILE "mingw-w64-x86_64-python-3.11.5-2-any.pkg.tar.zst")
-    SET(PYTHON_MINGW_PACKAGETAR "mingw-w64-x86_64-python-3.11.5-2-any.pkg.tar")
+    SET(CALLSTACK "ucrt")
+    #	SET(CALLSTACK "mingw")
+    #	SET(CALLSTACK "clang")
+    SET(PYTHON_MINGW_PACKAGEFOLDER "https://mirror.msys2.org/mingw/${CALLSTACK}64")
+    SET(PYTHON_MINGW_PACKAGETAR "mingw-w64-${CALLSTACK}-x86_64-python-3.11.5-2-any.pkg.tar")   
+    SET(PYTHON_MINGW_PACKAGEZST "${PYTHON_MINGW_PACKAGETAR}.zst")
     SET(PYTHON_MINGW_VERSION "python3.11")
-    SET(PYTHON_MINGW_ARCHIVE "${PYTHON_MINGW_DEVPATH}/mingw64/lib/lib${PYTHON_MINGW_VERSION}.dll.a")
+    SET(PYTHON_MINGW_ARCHIVE "${PYTHON_MINGW_DEVPATH}/${CALLSTACK}64/lib/lib${PYTHON_MINGW_VERSION}.dll.a")
     add_custom_command(
       WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-      COMMAND rm -rf python_mingw && mkdir python_mingw && cd python_mingw && wget ${PYTHON_MINGW_PACKAGEFOLDER}/${PYTHON_MINGW_PACKAGEFILE} && unzstd ${PYTHON_MINGW_PACKAGEFILE} && tar -xf ${PYTHON_MINGW_PACKAGETAR}
+      COMMAND rm -rf python_mingw && mkdir python_mingw && cd python_mingw && wget ${PYTHON_MINGW_PACKAGEFOLDER}/${PYTHON_MINGW_PACKAGEZST} && unzstd ${PYTHON_MINGW_PACKAGEZST} && tar -xf ${PYTHON_MINGW_PACKAGETAR} &&  ${CMAKE_CURRENT_SOURCE_DIR}/scripts/libpython_patch.sh
       OUTPUT ${PYTHON_MINGW_ARCHIVE}
     )
     add_custom_target(tgt_python_mingw DEPENDS ${PYTHON_MINGW_ARCHIVE})
 
-    # Python embeddable Package
-    SET(PYTHON_EMBEDDABLE_DEVPATH "${CMAKE_CURRENT_SOURCE_DIR}/bin")
-    SET(PYTHON_EMBEDDABLE_PACKAGEFILE "python-3.11.5-embed-amd64.zip")
-    SET(PYTHON_EMBEDDABLE_URL "http://www.python.org/ftp/python/3.11.5")
-    SET(PYTHON_EMBEDDABLE_DLL "${PYTHON_EMBEDDABLE_DEVPATH}/python311.dll")
-    add_custom_command(
-      WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-      COMMAND rm -rf bin && mkdir bin && cd bin && wget ${PYTHON_EMBEDDABLE_URL}/${PYTHON_EMBEDDABLE_PACKAGEFILE} && unzip ${PYTHON_EMBEDDABLE_PACKAGEFILE}
-      OUTPUT ${PYTHON_EMBEDDABLE_DLL}
-    )
-    add_custom_target(tgt_python_embed DEPENDS ${PYTHON_EMBEDDABLE_DLL})
-
-    add_dependencies(OpenSCADPy tgt_python_embed)
     add_dependencies(OpenSCADPy tgt_python_mingw)
 
-    target_include_directories(OpenSCADPy SYSTEM PRIVATE "${PYTHON_MINGW_DEVPATH}/mingw64/include/${PYTHON_MINGW_VERSION}")
+    target_include_directories(OpenSCADPy SYSTEM PRIVATE "${PYTHON_MINGW_DEVPATH}/${CALLSTACK}64/include/${PYTHON_MINGW_VERSION}")
     target_link_libraries(OpenSCADPy PRIVATE "${PYTHON_MINGW_ARCHIVE}")
     target_include_directories(OpenSCADPy SYSTEM PRIVATE ${HARFBUZZ_INCLUDE_DIRS})
     target_include_directories(OpenSCADPy SYSTEM PRIVATE ${FREETYPE_INCLUDE_DIRS})
@@ -960,6 +946,7 @@ set(CORE_SOURCES
   src/core/PullNode.cc
   src/core/WrapNode.cc
   src/core/TextureNode.cc
+  src/core/ColorUtil.cc
   src/core/Context.cc
   src/core/ContextFrame.cc
   src/core/ContextMemoryManager.cc
@@ -988,6 +975,7 @@ set(CORE_SOURCES
   src/core/RenderVariables.cc
   src/core/RotateExtrudeNode.cc
   src/core/ScopeContext.cc
+  src/core/Settings.cc
   src/core/SourceFile.cc
   src/core/SourceFileCache.cc
   src/core/StatCache.cc
@@ -1143,6 +1131,9 @@ if(USE_BUILTIN_CLIPPER2)
   set(CLIPPER2_TESTS OFF)
   add_subdirectory("submodules/Clipper2/CPP" EXCLUDE_FROM_ALL)
   set(Clipper2_FOUND "YES")
+  if(NOT TARGET Clipper2::Clipper2)
+    add_library(Clipper2::Clipper2 ALIAS Clipper2)
+  endif()
   message(STATUS "Clipper2 submodule")
 else()
   find_package(Clipper2 REQUIRED QUIET)
@@ -1160,7 +1151,7 @@ if(ENABLE_MANIFOLD)
     find_package(TBB QUIET)
     if (NOT TBB_FOUND AND PKG_CONFIG_FOUND)
       pkg_check_modules(TBB tbb REQUIRED)
-      add_library(TBB::tbb UNKNOWN IMPORTED)
+      # add_library(TBB::tbb UNKNOWN IMPORTED)
       set_target_properties(TBB::tbb
         PROPERTIES INTERFACE_INCLUDE_DIRECTORIES "${TBB_INCLUDE_DIRS}")
       set_target_properties(TBB::tbb
@@ -1211,20 +1202,13 @@ if(NULLGL)
     src/io/export_png.cc
     src/io/imageutils.cc)
 else()
-  if(USE_LEGACY_RENDERERS)
-    set(LEGACY_RENDERER_SOURCES
-      src/glview/cgal/LegacyCGALRenderer.cc
-      src/glview/preview/LegacyOpenCSGRenderer.cc
-      src/glview/preview/LegacyThrownTogetherRenderer.cc
-      src/glview/LegacyRendererUtils.cc
-    )
-  endif()
   set(OFFSCREEN_SOURCES
     src/glview/OpenGLContext.cc
     src/glview/fbo.cc
     src/glview/Renderer.cc
+    src/glview/ShaderUtils.cc
     src/glview/system-gl.cc
-    src/glview/VertexArray.cc
+    src/glview/VBOBuilder.cc
     src/glview/VertexState.cc
     src/glview/VBORenderer.cc
     src/glview/GLView.cc
@@ -1236,7 +1220,6 @@ else()
     src/glview/preview/ThrownTogetherRenderer.cc
     src/io/export_png.cc
     src/io/imageutils.cc
-    ${LEGACY_RENDERER_SOURCES}
     ${GLEW_SOURCES})
 endif()
 
@@ -1264,6 +1247,7 @@ set(GUI_SOURCES
   src/gui/Editor.cc
   src/gui/ErrorLog.cc
   src/gui/EventFilter.h
+  src/gui/Export3mfDialog.cc
   src/gui/ExportPdfDialog.cc
   src/gui/LoadShareDesignDialog.cc
   src/gui/ShareDesignDialog.cc
@@ -1292,10 +1276,8 @@ set(GUI_SOURCES
   src/gui/ScadApi.cc
   src/gui/ScadLexer.cc
   src/gui/ScintillaEditor.cc
-  src/gui/Settings.cc
   src/gui/SettingsWriter.cc
   src/gui/TabManager.cc
-  src/gui/TabWidget.cc
   src/gui/UIUtils.cc
   src/gui/WindowManager.cc
   src/gui/IgnoreWheelWhenNotFocused.cc
@@ -1336,6 +1318,7 @@ set(GUI_HEADERS
     src/gui/EventFilter.h
     src/gui/LoadShareDesignDialog.h
     src/gui/ShareDesignDialog.h
+    src/gui/Export3mfDialog.h
     src/gui/ExportPdfDialog.h
     src/gui/FontList.h
     src/gui/FontListDialog.h
@@ -1361,10 +1344,8 @@ set(GUI_HEADERS
     src/gui/ScadApi.h
     src/gui/ScadLexer.h
     src/gui/ScintillaEditor.h
-    src/gui/Settings.h
     src/gui/SettingsWriter.h
     src/gui/TabManager.h
-    src/gui/TabWidget.h
     src/gui/UIUtils.h
     src/gui/ViewportControl.h
     src/gui/WindowManager.h
@@ -1389,6 +1370,7 @@ set(GUI_UIS
     src/gui/Animate.ui
     src/gui/Console.ui
     src/gui/ErrorLog.ui
+    src/gui/Export3mfDialog.ui
     src/gui/ExportPdfDialog.ui
     src/gui/ShareDesignDialog.ui
     src/gui/LoadShareDesignDialog.ui
@@ -1463,7 +1445,11 @@ set(RESOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/resources)
 if(HEADLESS)
   target_compile_definitions(OpenSCAD PRIVATE OPENSCAD_NOGUI)
 else()
-  list(APPEND RESOURCE_FILES ${RESOURCE_DIR}/common.qrc)
+  list(APPEND RESOURCE_FILES
+    ${RESOURCE_DIR}/common.qrc
+    ${RESOURCE_DIR}/icons-chokusen.qrc
+    ${RESOURCE_DIR}/icons-chokusen-dark.qrc
+  )
   # GUI_UIS for .ui files to be indexed by Qt Creator despite AUTOUIC usage
   # GUI_HEADERS for .h files to be indexed by Qt Creator despite AUTOUIC usage
   list(APPEND Sources ${GUI_SOURCES} ${GUI_HEADER_ONLY} ${GUI_UIS} ${GUI_HEADERS})
@@ -1564,22 +1550,20 @@ endif()
 
 if(NOT APPLE OR APPLE_UNIX)
   set_target_properties(OpenSCAD PROPERTIES OUTPUT_NAME openscad${SUFFIX_WITH_DASH})
+  install(TARGETS OpenSCAD RUNTIME DESTINATION "${OPENSCAD_BINDIR}")
   if(WIN32)
     if(ENABLE_PYTHON)
-      install(DIRECTORY ${CMAKE_SOURCE_DIR}/bin DESTINATION "." )
-      install(FILES ${CMAKE_SOURCE_DIR}/bin/python311.dll DESTINATION "bin" RENAME "libpython3.11.dll")
+      install(FILES ${CMAKE_SOURCE_DIR}/python311.dll DESTINATION "." )
     endif()  
-    install(TARGETS OpenSCAD RUNTIME DESTINATION "bin")
     if(USE_MIMALLOC AND MI_LINK_SHARED)
       if(CMAKE_SIZEOF_VOID_P EQUAL 8)
-        install(FILES ${CMAKE_SOURCE_DIR}/submodules/mimalloc/bin/mimalloc-redirect.dll DESTINATION "bin")
+        install(FILES ${CMAKE_SOURCE_DIR}/submodules/mimalloc/bin/mimalloc-redirect.dll DESTINATION ".")
       elseif(CMAKE_SIZEOF_VOID_P EQUAL 4)
-        install(FILES ${CMAKE_SOURCE_DIR}/submodules/mimalloc/bin/mimalloc-redirect32.dll DESTINATION "bin")
+        install(FILES ${CMAKE_SOURCE_DIR}/submodules/mimalloc/bin/mimalloc-redirect32.dll DESTINATION ".")
       endif()
-      install(FILES ${CMAKE_BINARY_DIR}/submodules/mimalloc/mimalloc.dll DESTINATION "bin")
+      install(FILES ${CMAKE_BINARY_DIR}/submodules/mimalloc/mimalloc.dll DESTINATION ".")
     endif()
   else()
-    install(TARGETS OpenSCAD RUNTIME DESTINATION "${OPENSCAD_BINDIR}")
     install(FILES ${CMAKE_CURRENT_LIST_DIR}/doc/openscad.1 DESTINATION ${CMAKE_INSTALL_MANDIR}/man1 RENAME openscad${SUFFIX_WITH_DASH}.1)
     install(FILES ${CMAKE_CURRENT_LIST_DIR}/openscad.appdata.xml DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/metainfo RENAME org.openscad.OpenSCAD${SUFFIX_WITH_DASH}.appdata.xml)
     if(ENABLE_LIBFIVE)
@@ -1609,14 +1593,15 @@ endif()
 # Packaging: CPACK_* settings should be configured before `include(CPack)`
 include(InstallRequiredSystemLibraries)
 set(CPACK_PACKAGE_NAME "PythonSCAD")
-set(CPACK_PACKAGE_VENDOR "The OpenSCAD Developers")
+set(CPACK_PACKAGE_VENDOR "The OpenSCAD and PythonSCAD Developers")
 set(CPACK_PACKAGE_VERSION "${OPENSCAD_VERSION}")
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "The Programmer's Solid 3D CAD Modeler")
+
 
 if(MXECROSS)
   set(CPACK_GENERATOR ZIP;NSIS)
   set(CPACK_SYSTEM_NAME ${PACKAGE_ARCH})
-  set(CPACK_PACKAGE_EXECUTABLES "bin\\openscad;${CPACK_PACKAGE_NAME}${SNAPSHOT_NAME_SUFFIX}")
+  set(CPACK_PACKAGE_EXECUTABLES "openscad;${CPACK_PACKAGE_NAME}${SNAPSHOT_NAME_SUFFIX}")
   set(CPACK_PACKAGE_INSTALL_DIRECTORY "${CPACK_PACKAGE_NAME}${SNAPSHOT_NAME_SUFFIX}")
   set(CPACK_PACKAGE_INSTALL_REGISTRY_KEY "${CPACK_PACKAGE_NAME}${SNAPSHOT_NAME_SUFFIX}")
   if("${CMAKE_VERSION}" VERSION_GREATER_EQUAL "3.22")
@@ -1635,9 +1620,21 @@ if(MXECROSS)
     !include \\\"${CMAKE_BINARY_DIR}/nsis-extra-uninstall-commands.nsh\\\"\
   ")
   set (CPACK_NSIS_MODIFY_PATH "ON")
-  set(CPACK_NSIS_CREATE_ICONS_EXTRA
-	  "CreateShortCut '$INSTDIR\\\\OpenSCAD.lnk'   '$INSTDIR\\\\bin\\\\OpenSCAD.exe' '' "
-  )
+  else()
+  set(CPACK_GENERATOR RPM)
+  set(CPACK_RPM_COMPONENT_INSTALL OFF)
+  set(CPACK_RPM_PACKAGE_SUMMARY "The Programmer's Solid 3D CAD Modeler")
+  set(CPACK_RPM_FILE_NAME "pythonscad-${OPENSCAD_YEAR}${OPENSCAD_MONTH}${OPENSCAD_DAY}.x86_64.rpm")
+  set(CPACK_RPM_PACKAGE_ARCHITECTURE "x86_64")
+  set(CPACK_RPM_PACKAGE_RELEASE 1)
+  set(CPACK_RPM_PACKAGE_RELEASE_DIST "Release")
+  set(CPACK_RPM_PACKAGE_LICENSE "GPL")
+  set(CPACK_RPM_PACKAGE_GROUP  "PythonSCAD designers")
+  set(CPACK_RPM_PACKAGE_VENDOR "PythonSCAD designers")
+  set(CPACK_RPM_PACKAGE_DESCRIPTION "PythonSCAD RPM Package")
+  execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink "./openscad" "pythonscad")
+  install(FILES ${CMAKE_CURRENT_BINARY_DIR}/pythonscad DESTINATION "." COMPONENT libraries)
+
 endif()
 set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/COPYING")
 # None of config time variables are available for CPACK_PROJECT_CONFIG_FILE, so we configure it now with values.

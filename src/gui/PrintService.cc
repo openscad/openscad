@@ -56,6 +56,7 @@ std::unordered_map<std::string, std::unique_ptr<PrintService>>
 createPrintServices() {
   std::unordered_map<std::string, std::unique_ptr<PrintService>> printServices;
   // TODO: Where to call this, will we need a mutex?
+  printf("++\n");
   try {
     auto networkRequest = NetworkRequest<void>{
         QUrl{"https://app.openscad.org/print-service.json"}, {200}, 30};
@@ -83,6 +84,7 @@ createPrintServices() {
   } catch (const NetworkException &e) {
     LOG(message_group::Error, "%1$s", e.getErrorMessage());
   }
+  printf("--\n");
   // TODO: Log if wanted
   //    LOG("External print service available: %1$s (upload limit = %2$d MB)",
   //    displayName.toStdString(), fileSizeLimitMB);

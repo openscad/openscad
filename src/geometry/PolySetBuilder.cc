@@ -45,7 +45,7 @@
 #include <vector>
 
 PolySetBuilder::PolySetBuilder(int vertices_count, int indices_count, int dim, boost::tribool convex)
-  : convex_(convex), dim_(dim)
+  : dim_(dim), convex_(convex)
 {
   reserve(vertices_count, indices_count);
 }
@@ -59,12 +59,26 @@ void PolySetBuilder::setConvexity(int convexity){
   convexity_ = convexity;
 }
 
+void PolySetBuilder::addColor(const Color4f& color)
+{
+  colors_.push_back(color);
+}
+
+void PolySetBuilder::addColorIndex(const int32_t idx)
+{
+  color_indices_.push_back(idx);
+}
+
 int PolySetBuilder::numVertices() const {
   return vertices_.size();
 }
 
 int PolySetBuilder::numPolygons() const {
   return indices_.size();
+}
+
+bool PolySetBuilder::isEmpty() const {
+  return vertices_.size() == 0 && indices_.size() == 0;
 }
 
 int PolySetBuilder::vertexIndex(const Vector3d& pt)
@@ -123,8 +137,7 @@ void PolySetBuilder::beginPolygon(int nvertices) {
 void PolySetBuilder::addVertex(int ind)
 {
   // Ignore consecutive duplicate indices
-  if (current_polygon_.empty() ||
-      ind != current_polygon_.back() && ind != current_polygon_.front()) {
+  if (current_polygon_.empty() || (ind != current_polygon_.back() && ind != current_polygon_.front())) {
     current_polygon_.push_back(ind);
   }
 }
@@ -134,12 +147,25 @@ void PolySetBuilder::addVertex(const Vector3d &v)
   addVertex(vertexIndex(v));
 }
 
-void PolySetBuilder::endPolygon() {
+void PolySetBuilder::endPolygon(const Color4f &color) {
   // FIXME: Should we check for self-touching polygons (non-consecutive duplicate indices)?
 
   // FIXME: Can we move? What would the state of current_polygon_ be after move?
   if (current_polygon_.size() >= 3) {
     indices_.push_back(current_polygon_);
+
+    if (color.isValid()) {
+      if (color_indices_.empty() && indices_.size() > 1) {
+        color_indices_.resize(indices_.size() - 1, -1);
+      }
+      auto it = std::find(colors_.begin(), colors_.end(), color);
+      if (it == colors_.end()) {
+        color_indices_.push_back(colors_.size());
+        colors_.push_back(color);
+      } else {
+        color_indices_.push_back(it - colors_.begin());
+      }
+    }
   }
   current_polygon_.clear();
 }

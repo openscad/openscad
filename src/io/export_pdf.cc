@@ -1,8 +1,6 @@
 #include "io/export.h"
 #include "geometry/PolySet.h"
-// #include "geometry/PolySetUtils.h"
 #include "utils/printutils.h"
-// #include "version.h"
 #include "utils/version_helper.h"
 
 #include <cassert>
@@ -18,20 +16,32 @@
 #include "PolySetUtils.h"
 #include "export_foldable.h"
 
+constexpr inline auto FONT = "Liberation Sans";
+constexpr double MARGIN = 30.0;
+constexpr double PTS_IN_MM = 2.834645656693;
 
-#define FONT "Liberation Sans"
-
-
-#define MARGIN 30.
-
-// void export_pdf(const std::shared_ptr<const Geometry>& geom, std::ostream& output, const ExportInfo& exportInfo, const ExportPdfOptions  exportPdfOptions);
- 
 const std::string get_cairo_version() {
   return OpenSCAD::get_version(CAIRO_VERSION_STRING, cairo_version_string());
 }
 
-void draw_text(const char *text, cairo_t *cr, double x, double y, double fontSize, double angle){
+namespace {
 
+// Dimensions in pts per PDF standard, used by ExportPDF
+// See also: https://www.prepressure.com/library/paper-size
+// rows map to paperSizes enums
+// columns are Width, Height
+const int paperDimensions[7][2] = {
+  {298,  420}, // A6
+  {420,  595}, // A5
+  {595,  842}, // A4
+  {842, 1190}, // A3
+  {612,  792}, // Letter
+  {612, 1008}, // Legal
+  {792, 1224}, // Tabloid
+};
+
+void draw_text(const char *text, cairo_t *cr, double x, double y, double fontSize, double angle)
+{
   cairo_select_font_face(cr, FONT, CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);
   cairo_set_font_size(cr, fontSize);
   cairo_move_to(cr, x, y);
@@ -42,18 +52,18 @@ void draw_text(const char *text, cairo_t *cr, double x, double y, double fontSiz
 
 }
 
-#define PTS_IN_MM 2.834645656693;
-
-double mm_to_points(double mm){
+double mm_to_points(double mm)
+{
   return mm * PTS_IN_MM;
 }
 
-double points_to_mm(double pts){
+double points_to_mm(double pts)
+{
   return pts / PTS_IN_MM;
 }
 
-void draw_grid(cairo_t *cr, double left, double right, double bottom, double top, double gridSize ){
-  // gridSize>1.
+void draw_grid(cairo_t *cr, double left, double right, double bottom, double top, double gridSize )
+{
   if (gridSize<1.) gridSize=2.;
   double darkerLine=0.36;
   double lightLine=0.24;
@@ -148,8 +158,6 @@ void draw_axes(cairo_t *cr, double left, double right, double bottom, double top
       }
   };
 }  
-  
-
 
 // Draws a single 2D polygon.
 void draw_geom(const Polygon2d& poly, cairo_t *cr, double tcX, double tcY ){
@@ -240,27 +248,37 @@ void draw_geom(const std::shared_ptr<const Geometry>& geom, cairo_t *cr, double 
   }
 }
 
-static cairo_status_t export_pdf_write(void *closure, const unsigned char *data, unsigned int length)
+cairo_status_t export_pdf_write(void *closure, const unsigned char *data, unsigned int length)
 {
   std::ostream *stream = static_cast<std::ostream *>(closure);
   stream->write(reinterpret_cast<const char *>(data), length);
   return !(*stream) ? CAIRO_STATUS_WRITE_ERROR : CAIRO_STATUS_SUCCESS;
 }
 
+void add_meta_data(cairo_surface_t *surface, const cairo_pdf_metadata_t metadata, const std::string& value, const std::string& value2 = "") {
+  const std::string v = value.empty() ? value2 : value;
+  if (v.empty()) {
+    return;
+  }
+
+  cairo_pdf_surface_set_metadata(surface, metadata, v.c_str());
+}
+
+} // namespace
 
 void export_pdf(const std::shared_ptr<const Geometry>& geom, std::ostream& output, const ExportInfo& exportInfo)
 {
-// Extract the options.  This will change when options becomes a variant.
-ExportPdfOptions *exportPdfOptions;
-ExportPdfOptions defaultPdfOptions;
-// could use short-circuit short-form, but will need to grow.
-if (exportInfo.options==nullptr) {
-	exportPdfOptions=&defaultPdfOptions;
-} else {
-	exportPdfOptions=exportInfo.options;
-};
+  // Extract the options.  This will change when options becomes a variant.
+  const ExportPdfOptions *options;
+  ExportPdfOptions defaultPdfOptions;
+  // could use short-circuit short-form, but will need to grow.
+  if (exportInfo.optionsPdf) {
+    options = exportInfo.optionsPdf.get();
+  } else {
+    options = &defaultPdfOptions;
+  };
 
-  int pdfX,pdfY;  // selected paper size for export.
+  int pdfX, pdfY;  // selected paper size for export.
   // Fit geometry to page
   // Get dims in mm.
   BoundingBox bbox = geom->getBoundingBox();
@@ -273,17 +291,14 @@ if (exportInfo.options==nullptr) {
   int spanY = mm_to_points(maxy-miny);
   int centerX = mm_to_points(minx)+spanX/2;
   int centerY = mm_to_points(miny)+spanY/2;
-  // Temporary Log
-//  LOG(message_group::Export_Warning, "min( %1$6d , %2$6d ), max( %3$6d , %4$6d )", minx, miny, maxx, maxy);
-//  LOG(message_group::Export_Warning, "span( %1$6d , %2$6d ), center ( %3$6d , %4$6d )", spanX, spanY,  centerX, centerY);
   
   // Set orientation and paper size
-  if ((exportPdfOptions->Orientation==paperOrientations::AUTO && spanX>spanY)||(exportPdfOptions->Orientation==paperOrientations::LANDSCAPE)) {
-  	pdfX=paperDimensions[static_cast<int>(exportPdfOptions->paperSize)][1];
-  	pdfY=paperDimensions[static_cast<int>(exportPdfOptions->paperSize)][0];
+  if ((options->orientation==ExportPdfPaperOrientation::AUTO && spanX>spanY)||(options->orientation==ExportPdfPaperOrientation::LANDSCAPE)) {
+  	pdfX = paperDimensions[static_cast<int>(options->paperSize)][1];
+  	pdfY = paperDimensions[static_cast<int>(options->paperSize)][0];
   } else {
-    	pdfX=paperDimensions[static_cast<int>(exportPdfOptions->paperSize)][0];
-    	pdfY=paperDimensions[static_cast<int>(exportPdfOptions->paperSize)][1];
+    pdfX = paperDimensions[static_cast<int>(options->paperSize)][0];
+    pdfY = paperDimensions[static_cast<int>(options->paperSize)][1];
   }; 
   
   // Does it fit? (in points)	
@@ -291,7 +306,6 @@ if (exportInfo.options==nullptr) {
   if (!inpaper) {
     LOG(message_group::Export_Warning, "Geometry is too large to fit into selected size.");
   }
-  //      LOG(message_group::Export_Warning, "pdfX, pdfY %1$6d %2$6d ", pdfX, pdfY);
         
   //  Center on page.  Still in points.
   // Note Cairo inverts the Y axis, with zero at the top, positive going down.
@@ -303,9 +317,6 @@ if (exportInfo.options==nullptr) {
   double Mrx=centerX+pdfX/2-MARGIN;  // Right margin, X axis
   double Mty=-(centerY-pdfY/2+MARGIN);  // INVERTED Top margin, Y axis
   double Mby=-(centerY+pdfY/2-MARGIN);  // INVERTED Bottom margin, Y axis
-    // Temporary Log
-    // LOG(message_group::Export_Warning, "tcX, tcY %1$6d , %2$6d", tcX, tcY);
-    // LOG(message_group::Export_Warning, "Mlx, Mry %1$6d %2$6d Mtx, Mty %3$6d %4$6d", Mlx, Mrx, Mty, Mby);
   
   // Initialize Cairo Surface and PDF
   cairo_surface_t *surface = cairo_pdf_surface_create_for_stream(export_pdf_write, &output, pdfX, pdfY);
@@ -314,12 +325,16 @@ if (exportInfo.options==nullptr) {
     return;
   }
 
-
 #if CAIRO_VERSION >= CAIRO_VERSION_ENCODE(1, 16, 0)
-  cairo_pdf_surface_set_metadata(surface, CAIRO_PDF_METADATA_TITLE, std::filesystem::path(exportInfo.sourceFilePath).filename().string().c_str());
-  cairo_pdf_surface_set_metadata(surface, CAIRO_PDF_METADATA_CREATOR, "OpenSCAD (https://www.openscad.org/)");
-  cairo_pdf_surface_set_metadata(surface, CAIRO_PDF_METADATA_CREATE_DATE, "");
-  cairo_pdf_surface_set_metadata(surface, CAIRO_PDF_METADATA_MOD_DATE, "");
+  if (options->addMetaData) {
+    add_meta_data(surface, CAIRO_PDF_METADATA_TITLE, options->metaDataTitle, exportInfo.title);
+    add_meta_data(surface, CAIRO_PDF_METADATA_CREATOR, EXPORT_CREATOR);
+    add_meta_data(surface, CAIRO_PDF_METADATA_CREATE_DATE, get_current_iso8601_date_time_utc());
+    add_meta_data(surface, CAIRO_PDF_METADATA_MOD_DATE, "");
+    add_meta_data(surface, CAIRO_PDF_METADATA_AUTHOR, options->metaDataAuthor);
+    add_meta_data(surface, CAIRO_PDF_METADATA_SUBJECT, options->metaDataSubject);
+    add_meta_data(surface, CAIRO_PDF_METADATA_KEYWORDS, options->metaDataKeywords);
+  }
 #endif
 
   cairo_t *cr = cairo_create(surface);
@@ -334,32 +349,33 @@ if (exportInfo.options==nullptr) {
       std::string about = "Scale is to calibrate actual printed dimension. Check both X and Y. Measure between tick 0 and last tick";
     cairo_set_source_rgba(cr, 0., 0., 0., 0.48);
     // Design Filename
-    if (exportPdfOptions->showDesignFilename) draw_text(exportInfo.sourceFilePath.c_str(), cr, Mlx, Mby, 10., 0.0);
+    if (options->showDesignFilename)          draw_text(exportInfo.sourceFilePath.c_str(), cr, Mlx, Mby, 10., 0.0);
     // Scale
-    if (exportPdfOptions->showScale) {
+    if (options->showScale) {
     	draw_axes(cr, Mlx,Mrx,Mty,Mby);
     	// Scale Message
-    	if (exportPdfOptions->showScaleMsg) draw_text(about.c_str(), cr, Mlx+1, Mty-1, 5., 0.);
+    	if (options->showScaleMsg) draw_text(about.c_str(), cr, Mlx+1, Mty-1, 5., 0.);
     }
     // Grid
-    if (exportPdfOptions->showGrid) draw_grid(cr, Mlx,Mrx,Mty,Mby, exportPdfOptions->gridSize);
+    if (options->showGrid) draw_grid(cr, Mlx,Mrx,Mty,Mby, options->gridSize);
 
   cairo_show_page(cr);
   cairo_surface_destroy(surface);
   cairo_destroy(cr);
 
 }
+
 #else //ENABLE_CAIRO
 
-const std::string get_cairo_version() {
+const std::string get_cairo_version()
+{
   const std::string cairo_version = "(not enabled)";
   return cairo_version;
 }
 
-void export_pdf(const std::shared_ptr<const Geometry>&, std::ostream&, const ExportInfo&) {
-
+void export_pdf(const std::shared_ptr<const Geometry>&, std::ostream&, const ExportInfo&)
+{
   LOG(message_group::Error, "Export to PDF format was not enabled when building the application.");
-
 }
 
 #endif //ENABLE_CAIRO

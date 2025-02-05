@@ -66,10 +66,6 @@ boost::optional<InstantiableModule> ContextFrame::lookup_local_module(const std:
   return boost::none;
 }
 
-std::vector<std::string> ContextFrame::list_local_modules(void) const
-{
-  return {};
-}
 std::vector<const Value *> ContextFrame::list_embedded_values() const
 {
   std::vector<const Value *> output;

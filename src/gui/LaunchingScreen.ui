@@ -17,7 +17,7 @@
    </size>
   </property>
   <property name="windowTitle">
-   <string>Welcome to OpenSCAD</string>
+   <string>Welcome to Open(Python)SCAD</string>
   </property>
   <property name="windowIcon">
    <iconset resource="../../resources/common.qrc">
@@ -70,6 +70,37 @@ QPushButton:pressed {
            </property>
            <property name="text">
             <string>New</string>
+           </property>
+           <property name="default">
+            <bool>true</bool>
+           </property>
+           <property name="flat">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="pushButtonNewPython">
+           <property name="styleSheet">
+            <string notr="true">QPushButton {
+    margin: 0;
+    padding: 4px;
+    color: white;
+    background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #82dd97, stop: 1 #2a833f);
+    border-radius: 2px;
+}
+QPushButton:hover {
+    background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #92eda7, stop: 1 #3a934f);
+}
+QPushButton:disabled {
+    background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #dfdfdf, stop: 1 #aeaeae);
+}
+QPushButton:pressed {
+    background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #2a833f, stop: 1 #82dd97);
+}</string>
+           </property>
+           <property name="text">
+            <string>Python</string>
            </property>
            <property name="default">
             <bool>true</bool>
@@ -326,7 +357,7 @@ QPushButton:pressed {
        </property>
        <property name="text">
         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;
-&lt;p style=&quot;font-family: 'Open Sans', 'Droid Sans', 'sans-serif'; font-weight: bold; padding-bottom: 0; margin-bottom: 0; font-size: 22pt;&quot;&gt;&lt;span style=&quot;color: green;&quot;&gt;Open&lt;/span&gt;SCAD&lt;/p&gt;
+&lt;p style=&quot;font-family: 'Open Sans', 'Droid Sans', 'sans-serif'; font-weight: bold; padding-bottom: 0; margin-bottom: 0; font-size: 22pt;&quot;&gt;&lt;span style=&quot;color: green;&quot;&gt;Open&lt;/span&gt;&lt;span style=&quot;color: blue;&quot;&gt;(Python)&lt;/span&gt;SCAD&lt;/p&gt;
 &lt;p style=&quot;font-family: 'Open Sans', 'Droid Sans', 'sans-serif'; font-weight: normal; font-size: 14pt; padding-top: 0; margin-top: 0; margin-left: 2em;&quot;&gt;The Programmers Solid 3D CAD Modeller&lt;/p&gt;
 &lt;/body&gt;&lt;/html&gt;
 

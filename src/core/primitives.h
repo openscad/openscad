@@ -66,6 +66,7 @@ public:
   int center[3] = {1,1,1} ; // -1 means negative side, 0 means centered, 1 means positive side
 };
 
+std::unique_ptr<const Geometry> sphereCreateFuncGeometry(void *funcptr, double fs, int n);
 
 class SphereNode : public LeafNode
 {

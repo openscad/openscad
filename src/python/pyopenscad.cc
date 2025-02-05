@@ -47,6 +47,7 @@ AssignmentList customizer_parameters;
 AssignmentList customizer_parameters_finished;
 bool pythonDryRun=false;
 std::shared_ptr<AbstractNode> python_result_node = nullptr; /* global result veriable containing the python created result */
+PyObject *python_result_obj = nullptr;
 std::vector<SelectedObject> python_result_handle;
 bool python_active;  /* if python is actually used during evaluation */
 bool python_trusted; /* global Python trust flag */
@@ -685,7 +686,9 @@ void initPython(double time)
       if(key_str == nullptr) continue;
       if (std::find(std::begin(pythonInventory), std::end(pythonInventory), key_str) == std::end(pythonInventory))
       {
-        PyDict_DelItemString(maindict, key_str);
+        if(strlen(key_str) < 4 || strncmp(key_str,"stat",4) != 0){	      
+          PyDict_DelItemString(maindict, key_str);
+	}  
       }
       // bug in  PyDict_GetItemString, thus iterating
       if(strcmp(key_str,"sys") == 0) {
@@ -716,6 +719,16 @@ void initPython(double time)
 	      if(strstr(modreprstr,"(built-in)") != nullptr) continue;
 	      if(strstr(modreprstr,"/encodings/") != nullptr) continue;
 	      if(strstr(modreprstr,"_frozen_") != nullptr) continue;
+	      if(strstr(modreprstr,"site-packages") != nullptr) continue;
+	      if(strstr(modreprstr,"usr/lib") != nullptr) continue;
+
+//  PyObject *mod_dict = PyModule_GetDict(value2);
+//  PyObject *loader = PyDict_GetItemString(mod_dict,"__loader__");
+//  PyObject *loaderrepr = PyObject_Repr(loader);
+//  PyObject* loaderreprobj = PyUnicode_AsEncodedString(loaderrepr, "utf-8", "~");
+//  const char *loaderreprstr = PyBytes_AS_STRING(loaderreprobj);
+//  if(strstr(loaderreprstr, "ExtensionFileLoader") != nullptr) continue; // dont delete extension files
+
               PyDict_DelItem(value1, key2);
 
 	    }
@@ -1061,24 +1074,14 @@ error:
 
 
 static void
-pymain_repl(PyConfig *config, int *exitcode)
+pymain_repl(int *exitcode)
 {
-//    if (!config->inspect && _Py_GetEnv(config->use_environment, "PYTHONINSPECT")) {
-//        pymain_set_inspect(config, 1);
-//    }
-
-//    if (!(config->inspect && stdin_is_interactive(config) && config_run_code(config))) {
-//        return;
-//    }
-
-//    pymain_set_inspect(config, 0);
     if (pymain_run_interactive_hook(exitcode)) {
         return;
     }
     PyCompilerFlags cf = _PyCompilerFlags_INIT;
 
     int res = PyRun_AnyFileFlags(stdin, "<stdin>", &cf);
-//    *exitcode = (res != 0);
 }
 
 
@@ -1087,76 +1090,8 @@ pymain_run_python(int *exitcode)
 {
     PyObject *main_importer_path = NULL;
     PyInterpreterState *interp = PyInterpreterState_Get();
-    /* pymain_run_stdin() modify the config */
-    PyConfig *config = (PyConfig*)_PyInterpreterState_GetConfig(interp);
 
-//    if (_PyStatus_EXCEPTION(_PyPathConfig_UpdateGlobal(config))) {
-//        goto error;
-//    }
-
-//    if (config->run_filename != NULL) {
-//        if (pymain_get_importer(config->run_filename, &main_importer_path,
-//                                exitcode)) {
-//            return;
-//        }
-//    }
-    // import readline and rlcompleter before script dir is added to sys.path
-//    pymain_import_readline(config);
-
-//    PyObject *path0 = NULL;
-//    if (main_importer_path != NULL) {
-//        path0 = Py_NewRef(main_importer_path);
-//    }
-//    else if (!config->safe_path) {
-//        int res = _PyPathConfig_ComputeSysPath0(&config->argv, &path0);
-//        if (res < 0) {
-//            goto error;
-//        }
-//        else if (res == 0) {
-//            Py_CLEAR(path0);
-//        }
-//    }
-//    if (path0 != NULL) {
-//        wchar_t *wstr = PyUnicode_AsWideCharString(path0, NULL);
-//        if (wstr == NULL) {
-//            Py_DECREF(path0);
-//            goto error;
-//        }
-//        config->sys_path_0 = _PyMem_RawWcsdup(wstr);
-//        PyMem_Free(wstr);
-//        if (config->sys_path_0 == NULL) {
-//            Py_DECREF(path0);
-//            goto error;
-//        }
-//        int res = pymain_sys_path_add_path0(interp, path0);
-//        Py_DECREF(path0);
-//        if (res < 0) {
-//            goto error;
-//        }
-//    }
-//
-//    pymain_header(config);
-//
-//    _PyInterpreterState_SetRunningMain(interp);
-//    assert(!PyErr_Occurred());
-//
-//    if (config->run_command) {
-//        *exitcode = pymain_run_command(config->run_command);
-//    }
-//    else if (config->run_module) {
-//        *exitcode = pymain_run_module(config->run_module, 1);
-//    }
-//    else if (main_importer_path != NULL) {
-//        *exitcode = pymain_run_module(L"__main__", 0);
-//    }
-//    else if (config->run_filename != NULL) {
-//        *exitcode = pymain_run_file(config);
-//    }
-//    else {
-//        *exitcode = pymain_run_stdin(config);
-//    }
-
-    pymain_repl(config, exitcode);
+    pymain_repl(exitcode);
     goto done;
 
 error:

@@ -30,6 +30,7 @@ private slots:
   void enableRecentButton(const QModelIndex& current, const QModelIndex& previous);
   void enableExampleButton(QTreeWidgetItem *current, QTreeWidgetItem *previous);
   void openUserFile();
+  void openPython();
   void openRecent();
   void openExample();
   void openUserManualURL() const;

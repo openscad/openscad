@@ -25,9 +25,13 @@
  */
 
 #include "io/export.h"
+#include "ColorMap.h"
+#include "core/ColorUtil.h"
+#include "export_enums.h"
 #include "geometry/PolySet.h"
 #include "utils/printutils.h"
 #include "geometry/Geometry.h"
+#include "glview/RenderSettings.h"
 
 #include <algorithm>
 #include <functional>
@@ -37,6 +41,7 @@
 #include <memory>
 #include <cstddef>
 #include <fstream>
+#include <string>
 #include <vector>
 #include <filesystem>
 #include <iostream>
@@ -88,21 +93,10 @@ Containers &containers() {
     add_item(*containers, {FileFormat::POV, "pov", "pov", "POV"});
 
     // Alias
-    containers->identifierToInfo["stl"] = containers->identifierToInfo["asciistl"];
-  
-    return std::move(containers);
+    containers->identifierToInfo["stl"] = containers->identifierToInfo["asciistl"];  
+    return containers;
   }();
   return *containers;
-}
-
-std::unordered_map<std::string, FileFormatInfo> &identifierToInfo() {
-  static auto identifierToInfo = std::make_unique<std::unordered_map<std::string, FileFormatInfo>>();
-  return *identifierToInfo;
-}
-
-std::unordered_map<FileFormat, FileFormatInfo> &fileFormatToInfo() {
-  static auto fileFormatToInfo = std::make_unique<std::unordered_map<FileFormat, FileFormatInfo>>();
-  return *fileFormatToInfo;
 }
 
 }  // namespace
@@ -191,6 +185,28 @@ bool is2D(FileFormat format) {
 
 }  // namespace FileFormat
 
+ExportInfo createExportInfo(const FileFormat& format, const FileFormatInfo& info, const std::string& filepath, const Camera *camera, const CmdLineExportOptions& cmdLineOptions)
+{
+  const auto colorScheme = ColorMap::inst()->findColorScheme(RenderSettings::inst()->colorscheme);
+  auto exportInfo = ExportInfo{
+    .format = format,
+    .info = info,
+    .title = std::filesystem::path(filepath).filename().string(),
+    .sourceFilePath = filepath,
+    .camera = camera,
+    .defaultColor = ColorMap::getColor(*colorScheme, RenderColor::CGAL_FACE_FRONT_COLOR),
+    .colorScheme = colorScheme,
+  };
+
+  if (format == FileFormat::_3MF) {
+    exportInfo.options3mf = Export3mfOptions::withOptions(cmdLineOptions);
+  } else if (format == FileFormat::PDF) {
+    exportInfo.optionsPdf = ExportPdfOptions::withOptions(cmdLineOptions);
+  }
+
+  return exportInfo;
+}
+
 void exportFile(const std::shared_ptr<const Geometry>& root_geom, std::ostream& output, const ExportInfo& exportInfo)
 {
   switch (exportInfo.format) {
@@ -214,10 +230,10 @@ void exportFile(const std::shared_ptr<const Geometry>& root_geom, std::ostream& 
     break;
   case FileFormat::_3MF:
     {
-      Export3mfInfo info(root_geom,"OpenSCAD Model", nullptr);
-      std::vector<Export3mfInfo> infos;
+      Export3mfPartInfo info(root_geom,"OpenSCAD Model", nullptr);
+      std::vector<Export3mfPartInfo> infos;
       infos.push_back(info);
-      export_3mf(infos, output);
+      export_3mf(infos, output,exportInfo); 
     }  
     break;
   case FileFormat::DXF:
@@ -323,6 +339,12 @@ struct LexographicLess {
 #endif
 
 } // namespace
+
+std::string get_current_iso8601_date_time_utc() {
+  auto now = std::chrono::system_clock::now();
+  auto time = std::chrono::system_clock::to_time_t(now);
+  return STR(std::put_time(gmtime(&time), "%Y-%m-%dT%H:%M:%SZ")); // %F/%T not fully supported everywhere
+}
 
 std::unique_ptr<PolySet> createSortedPolySet(const PolySet& ps)
 {

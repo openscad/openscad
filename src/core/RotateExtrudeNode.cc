@@ -41,10 +41,9 @@
 #include <boost/assign/std/vector.hpp>
 using namespace boost::assign; // bring 'operator+=()' into scope
 
-#include <filesystem>
-namespace fs = std::filesystem;
+namespace {
 
-static std::shared_ptr<AbstractNode> builtin_rotate_extrude(const ModuleInstantiation *inst, Arguments arguments, const Children& children)
+std::shared_ptr<AbstractNode> builtin_rotate_extrude(const ModuleInstantiation *inst, Arguments arguments, const Children& children)
 {
   auto node = std::make_shared<RotateExtrudeNode>(inst);
 #ifdef ENABLE_PYTHON  
@@ -52,37 +51,33 @@ static std::shared_ptr<AbstractNode> builtin_rotate_extrude(const ModuleInstanti
   node->twist_func = NULL;
 #endif
 
-  Parameters parameters = Parameters::parse(std::move(arguments), inst->location(),
-                                            {"file", "layer", "origin", "scale"},
-                                            {"convexity", "angle","v", "method" }
-                                            );
+  const Parameters parameters = Parameters::parse(std::move(arguments), inst->location(),
+                                            {"angle", "start", "origin","scale"}, {"convexity","v", "a", "method" });
 
   node->fn = parameters["$fn"].toDouble();
   node->fs = parameters["$fs"].toDouble();
   node->fa = parameters["$fa"].toDouble();
 
-  if (!parameters["file"].isUndefined()) {
-    LOG(message_group::Deprecated, "Support for reading files in rotate_extrude will be removed in future releases. Use a child import() instead.");
-    auto filename = lookup_file(parameters["file"].toString(), inst->location().filePath().parent_path().string(), parameters.documentRoot());
-    node->filename = filename;
-    handle_dep(filename);
-  }
-
-  node->layername = parameters["layer"].isUndefined() ? "" : parameters["layer"].toString();
   node->convexity = static_cast<int>(parameters["convexity"].toDouble());
-  bool originOk = parameters["origin"].getVec2(node->origin_x, node->origin_y);
-  originOk &= std::isfinite(node->origin_x) && std::isfinite(node->origin_y);
-  if (parameters["origin"].isDefined() && !originOk) {
-    LOG(message_group::Warning, inst->location(), parameters.documentRoot(), "rotate_extrude(..., origin=%1$s) could not be converted", parameters["origin"].toEchoStringNoThrow());
+  // If an angle is specified, use it, defaulting to starting at zero.
+  // If no angle is specified, use 360 and default to starting at 180.
+  // Regardless, if a start angle is specified, use it.
+  bool hasAngle = parameters[{"angle","a"}].getFiniteDouble(node->angle);
+  if (hasAngle) {
+    node->start = 0;
+    if ((node->angle <= -360) || (node->angle > 360)) node->angle = 360;
+  } else {
+    node->angle = 360;
+    node->start = 180;
   }
-  node->scale = parameters["scale"].toDouble();
-  node->angle = 360;
-  parameters["angle"].getFiniteDouble(node->angle);
+  bool hasStart = parameters["start"].getFiniteDouble(node->start);
+  if (!hasAngle && !hasStart && (int)node->fn % 2 != 0) {
+    LOG(message_group::Deprecated, "In future releases, rotational extrusion without \"angle\" will start at zero, the +X axis.  Set start=180 to explicitly start on the -X axis.");
+  }
 
   if (node->convexity <= 0) node->convexity = 2;
 
   if (node->scale <= 0) node->scale = 1;
-
 
   Vector3d v(0,0,0);
 
@@ -99,7 +94,7 @@ static std::shared_ptr<AbstractNode> builtin_rotate_extrude(const ModuleInstanti
     // method can only be one of...
     if (node->method != "centered" && node->method != "linear") {
       LOG(message_group::Warning, inst->location(), parameters.documentRoot(),
-          "Unknown roof method '" + node->method + "'. Using 'centered'.");
+          "Unknown rotate_extrude method '" + node->method + "'. Using 'centered'.");
       node->method = "centered";
     }
   }
@@ -107,38 +102,25 @@ static std::shared_ptr<AbstractNode> builtin_rotate_extrude(const ModuleInstanti
   if (node->angle > 360 && v.norm() == 0) node->angle = 360;
 
   node->v=v;
-
-  if (node->filename.empty()) {
-    children.instantiate(node);
-  } else if (!children.empty()) {
-    LOG(message_group::Warning, inst->location(), parameters.documentRoot(),
-        "module %1$s() does not support child modules when importing a file", inst->name());
-  }
-
+  children.instantiate(node);
 
   return node;
 }
+
+}  // namespace
 
 std::string RotateExtrudeNode::toString() const
 {
   std::ostringstream stream;
 
-  stream << this->name() << "(";
-  if (!this->filename.empty()) { // Ignore deprecated parameters if empty
-    fs::path path((std::string)this->filename);
-    stream <<
-      "file = " << this->filename << ", "
-      "layer = " << QuotedString(this->layername) << ", "
+  stream << this->name() << "("
       "origin = [" << std::dec << this->origin_x << ", " << this->origin_y << "], "
       "offset = [" << std::dec << this->offset_x << ", " << this->offset_y << "], "
       "scale = " << this->scale << ", "
-           << "timestamp = " << fs_timestamp(path) << ", "
-    ;
-  }
-  stream <<
     "angle = " << this->angle << ", "
     "method = \"" << this->method << "\", "
     "v = [ " << this->v[0] <<  ", " << this->v[1] << ", " << this->v[2] << "], "
+    "start = " << this->start << ", "
     "convexity = " << this->convexity << ", ";
 #ifdef ENABLE_PYTHON  
  if(this->profile_func != NULL) {
@@ -148,15 +130,16 @@ std::string RotateExtrudeNode::toString() const
     stream << ", twist_func = " << rand() ;
  }
 #endif  
-    stream << "$fn = " << this->fn << ", $fa = " << this->fa << ", $fs = " << this->fs << ")";
+    stream <<
+    "$fn = " << this->fn << ", "
+    "$fa = " << this->fa << ", "
+    "$fs = " << this->fs << ")";
 
   return stream.str();
 }
 
-void register_builtin_dxf_rotate_extrude()
+void register_builtin_rotate_extrude()
 {
-  Builtins::init("dxf_rotate_extrude", new BuiltinModule(builtin_rotate_extrude));
-
   Builtins::init("rotate_extrude", new BuiltinModule(builtin_rotate_extrude),
   {
     "rotate_extrude(angle = 360, convexity = 2)",

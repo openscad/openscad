@@ -15,10 +15,12 @@
 #include <QWidget>
 #include <QMainWindow>
 #include <QSettings>
+#include <string>
 
 #include "gui/qtgettext.h" // IWYU pragma: keep
+#include "openscad_gui.h"
 #include "ui_Preferences.h"
-#include "gui/Settings.h"
+#include "core/Settings.h"
 #include "gui/InitConfigurator.h"
 
 class Preferences : public QMainWindow, public Ui::Preferences, public InitConfigurator
@@ -36,6 +38,21 @@ public:
   void apply_win() const;
   void updateGUI();
   void fireEditorConfigChanged() const;
+  void insertListItem(QListWidget *listBox, QListWidgetItem *listItem);
+
+  template<typename item_type>
+  QListWidgetItem * createListItem(const item_type& itemType, const QString& text = "", bool editable = false) {
+    const auto icon = QIcon::fromTheme(QString::fromStdString(itemType.icon()));
+    std::string description = itemType.description();
+    const auto itemText = description.empty() ? text : QString::fromStdString(description);
+    const auto listItem = new QListWidgetItem(icon, itemText,
+      nullptr,
+      static_cast<int>(QListWidgetItem::UserType) + static_cast<int>(itemType));
+    if (editable) {
+      listItem->setFlags(listItem->flags() | Qt::ItemIsEditable);
+    }
+    return listItem;
+  }
 
 public slots:
   void actionTriggered(class QAction *);
@@ -44,13 +61,14 @@ public slots:
   void on_colorSchemeChooser_itemSelectionChanged();
   void on_fontChooser_currentFontChanged(const QFont&);
   void on_fontSize_currentIndexChanged(int);
-  void on_syntaxHighlight_textActivated(const QString & s);
+  void on_syntaxHighlight_currentTextChanged(const QString&);
   void on_openCSGWarningBox_toggled(bool);
   void on_cgalCacheSizeMBEdit_textChanged(const QString&);
   void on_polysetCacheSizeMBEdit_textChanged(const QString&);
   void on_opencsgLimitEdit_textChanged(const QString&);
   void on_forceGoldfeatherBox_toggled(bool);
   void on_mouseWheelZoomBox_toggled(bool);
+  void on_checkBoxUseGvim_toggled(bool);
   void on_localizationCheckBox_toggled(bool);
   void on_autoReloadRaiseCheckBox_toggled(bool);
   void on_updateCheckBox_toggled(bool);
@@ -122,13 +140,32 @@ public slots:
   void on_comboBoxOctoPrintSlicingProfile_activated(int);
   void on_comboBoxOctoPrintAction_activated(int);
   void on_comboBoxOctoPrintFileFormat_activated(int);
-  void on_comboBoxLocalSlicerFileFormat_activated(int);
   void on_lineEditOctoPrintURL_editingFinished();
   void on_lineEditOctoPrintApiKey_editingFinished();
   void on_pushButtonOctoPrintApiKey_clicked();
-  void on_pushButtonSelectLocalSlicerPath_clicked();
-  void on_lineEditLocalSlicer_editingFinished();
   void on_textEditPythonImportList_textChanged();
+  void on_lineEditLocalAppExecutable_editingFinished();
+  void on_toolButtonLocalAppSelectExecutable_clicked();
+  void on_lineEditLocalAppTempDir_editingFinished();
+  void on_toolButtonLocalAppSelectTempDir_clicked();
+  void on_comboBoxLocalAppFileFormat_activated(int);
+  void on_toolButtonLocalAppParameterRemove_clicked();
+  void on_toolButtonLocalAppParameterAdd_clicked();
+  void on_toolButtonLocalAppParameterUp_clicked();
+  void on_toolButtonLocalAppParameterDown_clicked();
+  void on_toolButtonLocalAppParameterAddFile_clicked();
+  void on_listWidgetLocalAppParams_itemSelectionChanged();
+  void on_listWidgetLocalAppParams_itemChanged(QListWidgetItem *);
+  void on_actionLocalAppParameterFile_triggered();
+  void on_actionLocalAppParameterDir_triggered();
+  void on_actionLocalAppParameterExtension_triggered();
+  void on_actionLocalAppParameterSource_triggered();
+  void on_actionLocalAppParameterSourceDir_triggered();
+  void listWidgetLocalAppParamsModelDataChanged();
+
+  // Dialogs
+  void on_checkBoxAlwaysShowExportPdfDialog_toggled(bool);
+  void on_checkBoxAlwaysShowExport3mfDialog_toggled(bool);
 
 signals:
   void requestRedraw() const;
@@ -168,9 +205,12 @@ private:
   void createFontSizeMenu(QComboBox *box, const QString &setting);
   void updateGUIFontFamily(QFontComboBox *fontSelector, const QString &setting);
   void updateGUIFontSize(QComboBox *fsSelector, const QString &setting);
+  void updateLocalAppParams();
+  void addLocalAppParameter(const Settings::LocalAppParameterType&);
+  void moveListBoxRow(QListWidget *listBox, int offset);
 
   /** Set value from combobox to settings */
-  void applyComboBox(QComboBox *comboBox, int val, Settings::SettingsEntryEnum& entry);
+  void applyComboBox(QComboBox *comboBox, int val, Settings::SettingsEntryEnum<std::string>& entry);
 
   QSettings::SettingsMap defaultmap;
   QHash<const QAction *, QWidget *> prefPages;

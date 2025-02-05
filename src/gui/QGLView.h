@@ -20,7 +20,6 @@
 class QGLView : public QOpenGLWidget, public GLView
 {
   Q_OBJECT
-  Q_PROPERTY(bool showFaces READ showFaces WRITE setShowFaces);
   Q_PROPERTY(bool showEdges READ showEdges WRITE setShowEdges);
   Q_PROPERTY(bool showAxes READ showAxes WRITE setShowAxes);
   Q_PROPERTY(bool showCrosshairs READ showCrosshairs WRITE setShowCrosshairs);
@@ -29,6 +28,7 @@ class QGLView : public QOpenGLWidget, public GLView
 
 public:
   QGLView(QWidget *parent = nullptr);
+  ~QGLView() override;
 #ifdef ENABLE_OPENCSG
   bool hasOpenCSGSupport() { return this->is_opencsg_capable; }
 #endif

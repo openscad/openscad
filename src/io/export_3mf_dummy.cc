@@ -1,6 +1,6 @@
 /*
  *  OpenSCAD (www.openscad.org)
- *  Copyright (C) 2009-2016 Clifford Wolf <clifford@clifford.at> and
+ *  Copyright (C) 2009-2024 Clifford Wolf <clifford@clifford.at> and
  *                          Marius Kintel <marius@kintel.net>
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -29,24 +29,27 @@
 #include "io/export.h"
 #include "utils/printutils.h"
 
-void export_3mf(const std::vector<struct Export3mfInfo> & infos, std::ostream& output) 
+void export_3mf(const std::vector<struct Export3mfInfo> & infos, std::ostream& output,  const ExportInfo&) 
 {
   LOG("Export to 3MF format was not enabled when building the application.");
 }
 
-void Export3mfInfo::writePropsFloat(void *pobj, const  char *name, float f) const
+void Export3mfPartInfo::writePropsFloat(void *pobj, const  char *name, float f) const
 {
 //	Lib3MF::PMeshObject  *obj = (Lib3MF::PMeshObject *) pobj;
 //	printf("Writing %s: %f\n",name, f);
 	//void SetObjectLevelProperty(const Lib3MF_uint32 nUniqueResourceID, const Lib3MF_uint32 nPropertyID);
 }
-void Export3mfInfo::writePropsLong(void *pobj, const  char *name, long l) const
+void Export3mfPartInfo::writePropsLong(void *pobj, const  char *name, long l) const
 {
 //	printf("Writing %s: %d\n",name, l);
 }
-void Export3mfInfo::writePropsString(void *pobj, const  char *name, const char *val) const
+void Export3mfPartInfo::writePropsString(void *pobj, const  char *name, const char *val) const
 {
 //	printf("Writing %s: %s\n",name, val);
+}
+
+void export_3mf(const std::vector<struct Export3mfPartInfo> & infos, std::ostream& output, const ExportInfo& exportInfo) {
 }
 
 

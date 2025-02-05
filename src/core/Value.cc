@@ -362,7 +362,6 @@ public:
 
   void operator()(const VectorType& v) const {
     if (StackCheck::inst().check()) {
-	    printf("rr\n");
       throw VectorEchoStringException::create();
     }
     stream << '[';

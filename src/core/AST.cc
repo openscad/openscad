@@ -42,6 +42,7 @@ std::string ASTNode::dump(const std::string& indent) const
   print(stream, indent);
   return stream.str();
 }
+
 std::string ASTNode::dump_python(const std::string& indent) const
 {
   std::ostringstream result;

@@ -11,8 +11,16 @@
 #include <boost/range/algorithm.hpp>
 #include <boost/range/adaptor/map.hpp>
 
+#include "Settings.h"
 #include "core/Tree.h"
 #include "glview/Camera.h"
+#include "glview/ColorMap.h"
+#include "linalg.h"
+
+#include "io/export_enums.h"
+
+using SPDF = Settings::SettingsExportPdf;
+using S3MF = Settings::SettingsExport3mf;
 
 class PolySet;
 
@@ -47,6 +55,8 @@ struct FileFormatInfo {
   std::string description;
 };
 
+constexpr inline auto EXPORT_CREATOR = "OpenSCAD (https://www.openscad.org/)";
+
 namespace fileformat {
 
 std::vector<FileFormat> all();
@@ -62,41 +72,7 @@ bool is2D(FileFormat format);
 
 }  // namespace FileFormat
 
-// Paper Data used by ExportPDF
-enum class paperSizes {
- A4,A3,LETTER,LEGAL,TABLOID
-};
-// Note:  the enum could be moved to GUI, which would pass the dimensions.
-
-// for gui, but declared here to keep it aligned with the enum.
-// can't use Qt mechanism in the IO code.
-// needs to match number of sizes
-const std::array<std::string,5> paperSizeStrings{
-"A4","A3","Letter","Legal","Tabloid"
-};
-
-
-// Dimensions in pts per PDF standard, used by ExportPDF
-// rows map to paperSizes enums
-// columns are Width, Height
-const int paperDimensions[5][2]={
-{595,842},
-{842,1190},
-{612,792},
-{612,1008},
-{792,1224}
-};
-
-enum class paperOrientations {
-PORTRAIT,LANDSCAPE,AUTO
-};
-
-// for gui, but declared here to keep it aligned with the enum.
-// can't use Qt mechanism in the IO code.
-// needs to match number of orientations
-const std::array<std::string,3> paperOrientationsStrings{
-"Portrait","Landscape","Auto"
-};
+using CmdLineExportOptions = std::unordered_map<std::string, std::unordered_map<std::string, std::string>>;
 
 // include defaults to use without dialog or direction.
 // Defaults match values used prior to incorporation of options.
@@ -106,23 +82,123 @@ struct ExportPdfOptions {
     bool showGrid = false;
     double gridSize = 10.0;
     bool showDesignFilename = false;
-    paperOrientations Orientation = paperOrientations::PORTRAIT;
-    paperSizes paperSize = paperSizes::A4;
+    ExportPdfPaperOrientation orientation = ExportPdfPaperOrientation::PORTRAIT;
+    ExportPdfPaperSize paperSize = ExportPdfPaperSize::A4;
+    bool addMetaData = SPDF::exportPdfAddMetaData.defaultValue();
+    std::string metaDataTitle;
+    std::string metaDataAuthor;
+    std::string metaDataSubject;
+    std::string metaDataKeywords;
+
+  static std::shared_ptr<const ExportPdfOptions> withOptions(const CmdLineExportOptions& cmdLineOptions) {
+    ExportPdfOptions options;
+    if (cmdLineOptions.count(Settings::SECTION_EXPORT_PDF) > 0) {
+      //const auto& o = cmdLineOptions.at(Settings::SECTION_EXPORT_PDF);
+    }
+    return std::make_shared<const ExportPdfOptions>(options);
+  }
+
+  static const std::shared_ptr<const ExportPdfOptions> fromSettings() {
+    return std::make_shared<const ExportPdfOptions>(ExportPdfOptions{
+      .showScale = SPDF::exportPdfShowScale.value(),
+      .showScaleMsg = SPDF::exportPdfShowScaleMessage.value(),
+      .showGrid = SPDF::exportPdfShowGrid.value(),
+      .gridSize = SPDF::exportPdfGridSize.value(),
+      .showDesignFilename = SPDF::exportPdfShowFilename.value(),
+      .orientation = SPDF::exportPdfOrientation.value(),
+      .paperSize = SPDF::exportPdfPaperSize.value(),
+      .addMetaData = SPDF::exportPdfAddMetaData.value(),
+      .metaDataTitle = SPDF::exportPdfMetaDataTitle.value(),
+      .metaDataAuthor = SPDF::exportPdfAddMetaDataAuthor.value() ? SPDF::exportPdfMetaDataAuthor.value() : "",
+      .metaDataSubject = SPDF::exportPdfAddMetaDataSubject.value() ? SPDF::exportPdfMetaDataSubject.value() : "",
+      .metaDataKeywords = SPDF::exportPdfAddMetaDataKeywords.value() ? SPDF::exportPdfMetaDataKeywords.value() : "",
+    });
+  }
+};
+
+template<typename settings_entry_type>
+auto set_cmd_line_option(const CmdLineExportOptions& cmdLineOptions, const std::string& section, const settings_entry_type& se)
+{
+  if (cmdLineOptions.count(section) == 0) {
+    return se.defaultValue();
+  }
+
+  const auto& o = cmdLineOptions.at(Settings::SECTION_EXPORT_3MF);
+  if (o.count(se.name()) == 0) {
+    return se.defaultValue();
+  }
+
+  return se.decode(o.at(se.name()));
+}
+
+struct Export3mfOptions {
+  Export3mfColorMode colorMode;
+  Export3mfUnit unit;
+  std::string color;
+  Export3mfMaterialType materialType;
+  int decimalPrecision;
+  bool addMetaData;
+  std::string metaDataTitle;
+  std::string metaDataDesigner;
+  std::string metaDataDescription;
+  std::string metaDataCopyright;
+  std::string metaDataLicenseTerms;
+  std::string metaDataRating;
+
+  static const std::shared_ptr<const Export3mfOptions> withOptions(const CmdLineExportOptions& cmdLineOptions) {
+    return std::make_shared<const Export3mfOptions>(Export3mfOptions{
+      .colorMode = set_cmd_line_option(cmdLineOptions, Settings::SECTION_EXPORT_3MF, Settings::SettingsExport3mf::export3mfColorMode),
+      .unit = set_cmd_line_option(cmdLineOptions, Settings::SECTION_EXPORT_3MF, Settings::SettingsExport3mf::export3mfUnit),
+      .color = set_cmd_line_option(cmdLineOptions, Settings::SECTION_EXPORT_3MF, Settings::SettingsExport3mf::export3mfColor),
+      .materialType = set_cmd_line_option(cmdLineOptions, Settings::SECTION_EXPORT_3MF, Settings::SettingsExport3mf::export3mfMaterialType),
+      .decimalPrecision = set_cmd_line_option(cmdLineOptions, Settings::SECTION_EXPORT_3MF, Settings::SettingsExport3mf::export3mfDecimalPrecision),
+      .addMetaData = set_cmd_line_option(cmdLineOptions, Settings::SECTION_EXPORT_3MF, Settings::SettingsExport3mf::export3mfAddMetaData),
+      .metaDataTitle = set_cmd_line_option(cmdLineOptions, Settings::SECTION_EXPORT_3MF, Settings::SettingsExport3mf::export3mfMetaDataTitle),
+      .metaDataDesigner = set_cmd_line_option(cmdLineOptions, Settings::SECTION_EXPORT_3MF, Settings::SettingsExport3mf::export3mfMetaDataDesigner),
+      .metaDataDescription = set_cmd_line_option(cmdLineOptions, Settings::SECTION_EXPORT_3MF, Settings::SettingsExport3mf::export3mfMetaDataDescription),
+      .metaDataCopyright = set_cmd_line_option(cmdLineOptions, Settings::SECTION_EXPORT_3MF, Settings::SettingsExport3mf::export3mfMetaDataCopyright),
+      .metaDataLicenseTerms = set_cmd_line_option(cmdLineOptions, Settings::SECTION_EXPORT_3MF, Settings::SettingsExport3mf::export3mfMetaDataLicenseTerms),
+      .metaDataRating = set_cmd_line_option(cmdLineOptions, Settings::SECTION_EXPORT_3MF, Settings::SettingsExport3mf::export3mfMetaDataRating),
+    });
+  }
+
+  static const std::shared_ptr<const Export3mfOptions> fromSettings() {
+    return std::make_shared<const Export3mfOptions>(Export3mfOptions{
+      .colorMode = S3MF::export3mfColorMode.value(),
+      .unit = S3MF::export3mfUnit.value(),
+      .color = S3MF::export3mfColor.value(),
+      .materialType = S3MF::export3mfMaterialType.value(),
+      .decimalPrecision = S3MF::export3mfDecimalPrecision.value(),
+      .addMetaData = S3MF::export3mfAddMetaData.value(),
+      .metaDataTitle = S3MF::export3mfMetaDataTitle.value(),
+      .metaDataDesigner = S3MF::export3mfAddMetaDataDesigner.value() ? S3MF::export3mfMetaDataDesigner.value() : "",
+      .metaDataDescription = S3MF::export3mfAddMetaDataDescription.value() ? S3MF::export3mfMetaDataDescription.value() : "",
+      .metaDataCopyright = S3MF::export3mfAddMetaDataCopyright.value() ? S3MF::export3mfMetaDataCopyright.value() : "",
+      .metaDataLicenseTerms = S3MF::export3mfAddMetaDataLicenseTerms.value() ? S3MF::export3mfMetaDataLicenseTerms.value() : "",
+      .metaDataRating = S3MF::export3mfAddMetaDataRating.value() ? S3MF::export3mfMetaDataRating.value() : "",
+    });
+  }
 };
 
 struct ExportInfo {
   FileFormat format;
+  FileFormatInfo info;
+  std::string title;
   std::string sourceFilePath; // Full path to the OpenSCAD source file
-  ExportPdfOptions *options;
   const Camera *camera;
+  const Color4f defaultColor;
+  const ColorScheme *colorScheme;
+
+  std::shared_ptr<const ExportPdfOptions> optionsPdf;
+  std::shared_ptr<const Export3mfOptions> options3mf;
 };
 
-class Export3mfInfo{
+class Export3mfPartInfo{
   public:
   std::shared_ptr<const Geometry>  geom;
   std::string name;
   void *props;
-  Export3mfInfo(std::shared_ptr<const Geometry>  geom, std::string name, void *props) {
+  Export3mfPartInfo(std::shared_ptr<const Geometry>  geom, std::string name, void *props) {
     this->geom=geom;
     this->name=name;
     this->props=props;	  
@@ -132,13 +208,14 @@ class Export3mfInfo{
   void writePropsLong(void *obj, const  char *name, long l) const;
   void writePropsString(void *obj, const  char *name, const char *val) const;
 };
+ExportInfo createExportInfo(const FileFormat& format, const FileFormatInfo& info, const std::string& filepath, const Camera *camera, const CmdLineExportOptions& cmdLineOptions);
 
 bool exportFileByName(const std::shared_ptr<const class Geometry>& root_geom, const std::string& filename, const ExportInfo& exportInfo);
 bool exportFileStdOut(const std::shared_ptr<const class Geometry>& root_geom, const ExportInfo& exportInfo);
 
 void export_stl(const std::shared_ptr<const Geometry>& geom, std::ostream& output,
                 bool binary = true);
-void export_3mf(const std::vector<Export3mfInfo> & exportInfo, std::ostream& output);
+void export_3mf(const std::vector<struct Export3mfPartInfo> & infos, std::ostream& output, const ExportInfo& exportInfo);
 void export_obj(const std::shared_ptr<const Geometry>& geom, std::ostream& output);
 void export_off(const std::shared_ptr<const Geometry>& geom, std::ostream& output);
 void export_wrl(const std::shared_ptr<const Geometry>& geom, std::ostream& output);
@@ -169,7 +246,6 @@ struct ViewOptions {
     {"axes", false},
     {"scales", false},
     {"edges", false},
-    {"wireframe", false},
     {"crosshairs", false},
   };
 
@@ -190,6 +266,8 @@ struct ViewOptions {
 };
 
 class OffscreenView;
+
+std::string get_current_iso8601_date_time_utc();
 
 std::unique_ptr<OffscreenView> prepare_preview(Tree& tree, const ViewOptions& options, Camera& camera);
 bool export_png(const std::shared_ptr<const class Geometry>& root_geom, const ViewOptions& options, Camera& camera, std::ostream& output);

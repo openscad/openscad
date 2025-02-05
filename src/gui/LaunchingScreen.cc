@@ -61,6 +61,7 @@ LaunchingScreen::LaunchingScreen(QWidget *parent) : QDialog(parent)
   }
 
   connect(this->pushButtonNew, SIGNAL(clicked()), this, SLOT(accept()));
+  connect(this->pushButtonNewPython, SIGNAL(clicked()), this, SLOT(openPython()));
   connect(this->pushButtonOpen, SIGNAL(clicked()), this, SLOT(openUserFile()));
   connect(this->pushButtonHelp, SIGNAL(clicked()), this, SLOT(openUserManualURL()));
   connect(this->recentList->selectionModel(), SIGNAL(currentRowChanged(const QModelIndex&,const QModelIndex&)), this, SLOT(enableRecentButton(const QModelIndex&,const QModelIndex&)));
@@ -142,6 +143,12 @@ void LaunchingScreen::openUserFile()
     this->files.append(fileInfo.canonicalFilePath());
     accept();
   }
+}
+
+void LaunchingScreen::openPython()
+{
+  this->files.append("Untitled.py");
+  accept();
 }
 
 void LaunchingScreen::checkboxState(bool state) const

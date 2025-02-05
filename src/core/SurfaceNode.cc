@@ -63,13 +63,8 @@ using namespace boost::assign; // bring 'operator+=()' into scope
 namespace fs = std::filesystem;
 
 
-static std::shared_ptr<AbstractNode> builtin_surface(const ModuleInstantiation *inst, Arguments arguments, const Children& children)
+static std::shared_ptr<AbstractNode> builtin_surface(const ModuleInstantiation *inst, Arguments arguments)
 {
-  if (!children.empty()) {
-    LOG(message_group::Warning, inst->location(), arguments.documentRoot(),
-        "module %1$s() does not support child modules", inst->name());
-  }
-
   auto node = std::make_shared<SurfaceNode>(inst);
 
   Parameters parameters = Parameters::parse(std::move(arguments), inst->location(), {"file", "center", "convexity"}, {"invert"});

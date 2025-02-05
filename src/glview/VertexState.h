@@ -6,6 +6,7 @@
 #include <vector>
 
 #include "glview/system-gl.h"
+#include "Feature.h"
 
 #define GL_TRACE_ENABLE
 #ifdef GL_TRACE_ENABLE
@@ -41,35 +42,35 @@ public:
   // Return the OpenGL mode for glDrawArrays/glDrawElements call
   [[nodiscard]] inline GLenum drawMode() const { return draw_mode_; }
   // Set the OpenGL mode for glDrawArrays/glDrawElements call
-  inline void drawMode(GLenum draw_mode) { draw_mode_ = draw_mode; }
+  inline void setDrawMode(GLenum draw_mode) { draw_mode_ = draw_mode; }
   // Return the number of vertices for glDrawArrays/glDrawElements call
   [[nodiscard]] inline GLsizei drawSize() const { return draw_size_; }
   // Set the number of vertices for glDrawArrays/glDrawElements call
-  inline void drawSize(GLsizei draw_size) { draw_size_ = draw_size; }
+  inline void setDrawSize(GLsizei draw_size) { draw_size_ = draw_size; }
   // Return the OpenGL type for glDrawElements call
   [[nodiscard]] inline GLenum drawType() const { return draw_type_; }
   // Set the OpenGL type for glDrawElements call
-  inline void drawType(GLenum draw_type) { draw_type_ = draw_type; }
+  inline void setDrawType(GLenum draw_type) { draw_type_ = draw_type; }
   // Return the VBO offset for glDrawArrays call
   [[nodiscard]] inline size_t drawOffset() const { return draw_offset_; }
   // Set the VBO offset for glDrawArrays call
-  inline void drawOffset(size_t draw_offset) { draw_offset_ = draw_offset; }
+  inline void setDrawOffset(size_t draw_offset) { draw_offset_ = draw_offset; }
   // Return the Element VBO offset for glDrawElements call
   [[nodiscard]] inline size_t elementOffset() const { return element_offset_; }
   // Set the Element VBO offset for glDrawElements call
-  inline void elementOffset(size_t element_offset) { element_offset_ = element_offset; }
+  inline void setElementOffset(size_t element_offset) { element_offset_ = element_offset; }
 
   // Wrap glDrawArrays/glDrawElements call and use gl_begin/gl_end state information
-  virtual void draw(bool bind_buffers = true) const;
+  virtual void draw() const;
 
   // Mimic VAO state functionality. Lambda functions used to hold OpenGL state calls.
   inline std::vector<std::function<void()>>& glBegin() { return gl_begin_; }
   inline std::vector<std::function<void()>>& glEnd() { return gl_end_; }
 
   [[nodiscard]] inline GLuint verticesVBO() const { return vertices_vbo_; }
-  inline void verticesVBO(GLuint vbo) { vertices_vbo_ = vbo; }
+  inline void setVerticesVBO(GLuint vbo) { vertices_vbo_ = vbo; }
   [[nodiscard]] inline GLuint elementsVBO() const { return elements_vbo_; }
-  inline void elementsVBO(GLuint vbo) { elements_vbo_ = vbo; }
+  inline void setElementsVBO(GLuint vbo) { elements_vbo_ = vbo; }
 
 private:
   GLenum draw_mode_;
@@ -96,4 +97,47 @@ public:
   [[nodiscard]] virtual std::shared_ptr<VertexState> createVertexState(GLenum draw_mode, size_t draw_size, GLenum draw_type, size_t draw_offset, size_t element_offset, GLuint vertices_vbo, GLuint elements_vbo) const {
     return std::make_shared<VertexState>(draw_mode, draw_size, draw_type, draw_offset, element_offset, vertices_vbo, elements_vbo);
   }
+};
+
+class VertexStateContainer {
+public:
+  VertexStateContainer() {
+    GL_TRACE("glGenBuffers(1, %p)", &vertices_vbo_);
+    GL_CHECKD(glGenBuffers(1, &vertices_vbo_));
+    if (Feature::ExperimentalVxORenderersIndexing.is_enabled()) {
+      GL_TRACE("glGenBuffers(1, %p)", &elements_vbo_);
+      GL_CHECKD(glGenBuffers(1, &elements_vbo_));
+    }
+  }
+  VertexStateContainer(const VertexStateContainer& o) = delete;
+  VertexStateContainer(VertexStateContainer&& o) noexcept {
+    vertices_vbo_ = o.vertices_vbo_;
+    elements_vbo_ = o.elements_vbo_;
+    vertex_states_ = std::move(o.vertex_states_);
+    o.vertices_vbo_ = 0;
+    o.elements_vbo_ = 0;
+  }
+  
+  virtual ~VertexStateContainer() {
+    if (vertices_vbo_) {
+      GL_TRACE("glDeleteBuffers(1, %p)", &vertices_vbo_);
+      GL_CHECKD(glDeleteBuffers(1, &vertices_vbo_));
+    }
+    if (elements_vbo_) {
+      GL_TRACE("glDeleteBuffers(1, %p)", &elements_vbo_);
+      GL_CHECKD(glDeleteBuffers(1, &elements_vbo_));
+    }
+  }
+
+  GLuint verticesVBO() const { return vertices_vbo_; }
+  GLuint elementsVBO() const { return elements_vbo_; }
+  
+  std::vector<std::shared_ptr<VertexState>>& states() { return vertex_states_; }
+  const std::vector<std::shared_ptr<VertexState>>& states() const { return vertex_states_; }
+
+private:
+  GLuint vertices_vbo_;
+  GLuint elements_vbo_ = 0;
+
+  std::vector<std::shared_ptr<VertexState>> vertex_states_;
 };

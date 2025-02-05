@@ -75,6 +75,12 @@ QGLView::QGLView(QWidget *parent) : QOpenGLWidget(parent)
   init();
 }
 
+QGLView::~QGLView()
+{
+  // Just to make sure we can call GL functions in the supertype destructor
+  makeCurrent();
+}
+
 void QGLView::init()
 {
   resetView();

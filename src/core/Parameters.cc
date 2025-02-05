@@ -67,6 +67,27 @@ const Value& Parameters::get(const std::string& name) const
   return *value;
 }
 
+const Value& Parameters::get(const std::initializer_list<std::string> names) const
+{
+  std::string matchName;
+  boost::optional<const Value&> matchValue;
+
+  for (std::string name: names) {
+    boost::optional<const Value&> value = lookup(name);
+    if (value && value->isDefined()) {
+      if (!matchValue) {
+        matchName = name;
+        matchValue = value;
+      } else {
+        LOG(message_group::Warning, loc, documentRoot(),
+            "Specified both %1$s and %2$s", quoteVar(matchName), quoteVar(name));
+      }
+    }
+  }
+
+  return matchValue ? *matchValue : Value::undefined;
+}
+
 double Parameters::get(const std::string& name, double default_value) const
 {
   boost::optional<const Value&> value = lookup(name);
@@ -90,12 +111,14 @@ bool Parameters::valid(const std::string& name, const Value& value,
   return false;
 }
 
+// Note:  unused, doesn't really work right because in some cases where the parameter
+// is not supplied, lookup() returns an existing Value with a value of undef.
 bool Parameters::valid_required(const std::string& name, Value::Type type)
 {
   boost::optional<const Value&> value = lookup(name);
   if (!value) {
     LOG(message_group::Warning, loc, documentRoot(),
-        "%1$s: missing argument \"%2$s\"", caller, name);
+        "%1$s: missing argument %2$s", caller, quoteVar(name));
     return false;
   }
   return valid(name, *value, type);
@@ -154,9 +177,9 @@ static ContextFrame parse_without_defaults(
     if (argument.name) {
       name = *argument.name;
       if (named_arguments.count(name)) {
-        LOG(message_group::Warning, loc, arguments.documentRoot(), "argument %1$s supplied more than once", name);
+        LOG(message_group::Warning, loc, arguments.documentRoot(), "argument %1$s supplied more than once", quoteVar(name));
       } else if (output.lookup_local_variable(name)) {
-        LOG(message_group::Warning, loc, arguments.documentRoot(), "argument %1$s overrides positional argument", name);
+        LOG(message_group::Warning, loc, arguments.documentRoot(), "argument %1$s overrides positional argument", quoteVar(name));
       } else if (warn_for_unexpected_arguments && !ContextFrame::is_config_variable(name)) {
         bool found = false;
         for (const auto& parameter : required_parameters) {
@@ -172,7 +195,7 @@ static ContextFrame parse_without_defaults(
           }
         }
         if (!found) {
-          LOG(message_group::Warning, loc, arguments.documentRoot(), "variable %1$s not specified as parameter", name);
+          LOG(message_group::Warning, loc, arguments.documentRoot(), "variable %1$s not specified as parameter", quoteVar(name));
         }
       }
       named_arguments.insert(name);

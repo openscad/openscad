@@ -31,6 +31,9 @@
 
 #include "geometry/PolySetUtils.h"
 #include "geometry/PolySet.h"
+#ifdef ENABLE_PYTHON
+#include "python/python_public.h"
+#endif
 
 void export_obj(const std::shared_ptr<const Geometry>& geom, std::ostream& output)
 {
@@ -42,6 +45,10 @@ void export_obj(const std::shared_ptr<const Geometry>& geom, std::ostream& outpu
   }
 
   output << "# OpenSCAD obj exporter\n";
+
+#ifdef ENABLE_PYTHON
+  python_export_obj_att(output);
+#endif  
 
   for (const auto &v : out->vertices) {
     output << "v " <<v[0] << " " << v[1] << " " << v[2] << "\n";

@@ -17,7 +17,6 @@ objects
 object_script.openscad.Debug
 object_script.openscad.Release
 .gdbinit
-.qmake.stash
 .tags*
 **/#*#
 /.dir-locals.el
@@ -55,7 +54,8 @@ object_script.openscad.Release
 /openscad
 /openscad-nightly
 /resources/*.rc
-/resources/*.qrc
+/resources/mac.qrc
+/resources/common.qrc
 /resources/icons/openscad.desktop
 /locale/*/*/*.mo
 /locale/*.mo

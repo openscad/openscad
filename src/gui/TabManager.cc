@@ -21,7 +21,6 @@
 #include <Qsci/qscicommandset.h>
 
 #include "gui/Editor.h"
-#include "gui/TabWidget.h"
 #include "gui/ScintillaEditor.h"
 #include "gui/Preferences.h"
 #include "gui/MainWindow.h"
@@ -32,22 +31,19 @@ TabManager::TabManager(MainWindow *o, const QString& filename)
 {
   par = o;
 
-  tabWidget = new TabWidget();
-  tabWidget->setAutoHide(true);
-  tabWidget->setExpanding(false);
+  tabWidget = new QTabWidget();
   tabWidget->setTabsClosable(true);
   tabWidget->setMovable(true);
   tabWidget->setContextMenuPolicy(Qt::CustomContextMenu);
-  connect(tabWidget, SIGNAL(currentTabChanged(int)), this, SLOT(tabSwitched(int)));
-  connect(tabWidget, SIGNAL(tabCloseRequested(int)), this, SLOT(closeTabRequested(int)));
-  connect(tabWidget, SIGNAL(tabCountChanged(int)), this, SIGNAL(tabCountChanged(int)));
-  connect(tabWidget, SIGNAL(middleMouseClicked(int)), this, SLOT(middleMouseClicked(int)));
-  connect(tabWidget, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(showTabHeaderContextMenu(const QPoint&)));
+
+  connect(tabWidget, &QTabWidget::currentChanged, this, &TabManager::tabSwitched);
+  connect(tabWidget, &QTabWidget::tabCloseRequested, this, &TabManager::closeTabRequested);
+  connect(tabWidget, &QTabWidget::customContextMenuRequested, this, &TabManager::showTabHeaderContextMenu);
 
   createTab(filename);
 
-  connect(tabWidget, SIGNAL(currentTabChanged(int)), this, SLOT(stopAnimation()));
-  connect(tabWidget, SIGNAL(currentTabChanged(int)), this, SLOT(updateFindState()));
+  connect(tabWidget, &QTabWidget::currentChanged, this, &TabManager::stopAnimation);
+  connect(tabWidget, &QTabWidget::currentChanged, this, &TabManager::updateFindState);
 
   connect(par, SIGNAL(highlightError(int)), this, SLOT(highlightError(int)));
   connect(par, SIGNAL(unhighlightLastError()), this, SLOT(unhighlightLastError()));
@@ -69,33 +65,33 @@ TabManager::TabManager(MainWindow *o, const QString& filename)
   connect(par->editActionJumpToNextError, SIGNAL(triggered()), this, SLOT(jumpToNextError()));
 }
 
-QWidget *TabManager::getTabHeader()
+QWidget *TabManager::getTabContent()
 {
   assert(tabWidget != nullptr);
   return tabWidget;
 }
 
-QWidget *TabManager::getTabContent()
-{
-  assert(tabWidget != nullptr);
-  return tabWidget->getContentWidget();
-}
-
 void TabManager::tabSwitched(int x)
 {
   assert(tabWidget != nullptr);
+
   editor = (EditorInterface *)tabWidget->widget(x);
   par->activeEditor = editor;
   par->parameterDock->setWidget(editor->parameterWidget);
 
   par->editActionUndo->setEnabled(editor->canUndo());
-  par->changedTopLevelEditor(par->editorDock->isFloating());
-  par->changedTopLevelConsole(par->consoleDock->isFloating());
   par->parameterTopLevelChanged(par->parameterDock->isFloating());
+  par->changedTopLevelConsole(par->consoleDock->isFloating());
   par->setWindowTitle(tabWidget->tabText(x).replace("&&", "&"));
-
+  if(use_gvim) {
+// **MCH*
+   std::string str= tabWidget->tabToolTip(x).toUtf8().constData();
+   QString editorcmd="gvim --remote-send '<esc>:sb "+ QString::fromStdString(str)+"<cr>'";
+   system(editorcmd.toUtf8().constData());
+// **MCH*
+ }
   for (int idx = 0; idx < tabWidget->count(); ++idx) {
-    QWidget *button = tabWidget->tabButton(idx, QTabBar::RightSide);
+    QWidget *button = tabWidget->tabBar()->tabButton(idx, QTabBar::RightSide);
     if (button) {
       button->setVisible(idx == x);
     }
@@ -106,27 +102,29 @@ void TabManager::tabSwitched(int x)
 #endif
 }
 
-void TabManager::middleMouseClicked(int x)
-{
-  if (x < 0) {
-    createTab("");
-  } else {
-    closeTabRequested(x);
-  }
-}
-
 void TabManager::closeTabRequested(int x)
 {
   assert(tabWidget != nullptr);
   if (!maybeSave(x)) return;
 
   auto *temp = (EditorInterface *)tabWidget->widget(x);
+  if(use_gvim) {
+// **MCH**
+ 	std::string str= tabWidget->tabToolTip(x).toUtf8().constData();
+	QString editorcmd="gvim --remote-send '<esc>:sb "+ QString::fromStdString(str)+"<cr>:q!<cr>'";
+	system(editorcmd.toUtf8().constData());
+	std::cout << x;
+// **MCH**
+  }
+  if(x>=0 || !use_gvim) { // **MCH**
   editorList.remove(temp);
   tabWidget->removeTab(x);
-  tabWidget->fireTabCountChanged();
+
+  emit tabCountChanged(editorList.size());
 
   delete temp->parameterWidget;
   delete temp;
+}	//** MCH **
 }
 
 void TabManager::closeCurrentTab()
@@ -135,7 +133,10 @@ void TabManager::closeCurrentTab()
 
   /* Close tab or close the current window if only one tab is open. */
   if (tabWidget->count() > 1) this->closeTabRequested(tabWidget->currentIndex());
-  else par->close();
+  else {
+	 par->close();
+	 if(use_gvim) this->closeTabRequested(tabWidget->currentIndex());	// ** MCH **
+  }
 }
 
 void TabManager::nextTab()
@@ -152,7 +153,7 @@ void TabManager::prevTab()
 
 void TabManager::actionNew()
 {
-  if (par->windowActionHideEditor->isChecked()) par->windowActionHideEditor->trigger(); //if editor hidden, make it visible
+  if (par->windowActionHideEditor->isChecked()) par->windowActionHideEditor->trigger();   //if editor hidden, make it visible
   createTab("");
 }
 
@@ -160,9 +161,14 @@ void TabManager::open(const QString& filename)
 {
   assert(!filename.isEmpty());
 
+  if(use_gvim) {
+    QString editorcmd="gvim --remote-tab-silent ";
+    editorcmd += filename.toUtf8();
+    system(editorcmd.toUtf8().constData());
+  }
   for (auto edt: editorList) {
     if (filename == edt->filepath) {
-      tabWidget->setCurrentWidget(tabWidget->indexOf(edt));
+      tabWidget->setCurrentWidget(edt);
       return;
     }
   }
@@ -179,7 +185,8 @@ void TabManager::createTab(const QString& filename)
   assert(par != nullptr);
 
   editor = new ScintillaEditor(tabWidget, *par);
-  Preferences::create(editor->colorSchemes()); // needs to be done only once, however handled
+  Preferences::create(editor->colorSchemes());   // needs to be done only once, however handled
+  this->use_gvim = Preferences::inst()->getValue("editor/usegvim").toBool();
   par->activeEditor = editor;
   editor->parameterWidget = new ParameterWidget(par->parameterDock);
   connect(editor->parameterWidget, SIGNAL(parametersChanged()), par, SLOT(actionRenderPreview()));
@@ -195,7 +202,9 @@ void TabManager::createTab(const QString& filename)
   connect(editor, SIGNAL(uriDropped(const QUrl&)), par, SLOT(handleFileDrop(const QUrl&)));
   connect(editor, SIGNAL(previewRequest()), par, SLOT(actionRenderPreview()));
   connect(editor, SIGNAL(showContextMenuEvent(const QPoint&)), this, SLOT(showContextMenuEvent(const QPoint&)));
-  connect(editor, &EditorInterface::focusIn, this, [=]() { par->setLastFocus(editor); });
+  connect(editor, &EditorInterface::focusIn, this, [ = ]() {
+    par->setLastFocus(editor);
+  });
 
   connect(Preferences::inst(), SIGNAL(editorConfigChanged()), editor, SLOT(applySettings()));
   connect(Preferences::inst(), SIGNAL(autocompleteChanged(bool)), editor, SLOT(onAutocompleteChanged(bool)));
@@ -225,7 +234,7 @@ void TabManager::createTab(const QString& filename)
 
   int idx = tabWidget->addTab(editor, _("Untitled.scad"));
   if (!editorList.isEmpty()) {
-    tabWidget->setCurrentWidget(idx); // to prevent emitting of currentTabChanged signal twice for first tab
+    tabWidget->setCurrentWidget(editor);     // to prevent emitting of currentTabChanged signal twice for first tab
   }
 
   editorList.insert(editor);
@@ -234,6 +243,8 @@ void TabManager::createTab(const QString& filename)
   } else {
     setTabName("");
   }
+  emit tabCountChanged(editorList.size());
+
   par->updateRecentFileActions();
 }
 
@@ -404,11 +415,10 @@ void TabManager::showContextMenuEvent(const QPoint& pos)
 
 void TabManager::showTabHeaderContextMenu(const QPoint& pos)
 {
-  int idx = tabWidget->tabAt(pos);
-  if (idx < 0) {
-    return;
-  }
+  int idx = tabWidget->tabBar()->tabAt(pos);
+  if (idx < 0) return;
 
+  QMenu menu;
   auto *edt = (EditorInterface *)tabWidget->widget(idx);
 
   auto *copyFileNameAction = new QAction(tabWidget);
@@ -426,7 +436,7 @@ void TabManager::showTabHeaderContextMenu(const QPoint& pos)
   auto *openFolderAction = new QAction(tabWidget);
   openFolderAction->setData(idx);
   openFolderAction->setEnabled(!edt->filepath.isEmpty());
-  openFolderAction->setText(_("Open folder"));
+  openFolderAction->setText(_("Open Folder"));
   connect(openFolderAction, SIGNAL(triggered()), SLOT(openFolder()));
 
   auto *closeAction = new QAction(tabWidget);
@@ -434,7 +444,6 @@ void TabManager::showTabHeaderContextMenu(const QPoint& pos)
   closeAction->setText(_("Close Tab"));
   connect(closeAction, SIGNAL(triggered()), SLOT(closeTab()));
 
-  QMenu menu;
   menu.addAction(copyFileNameAction);
   menu.addAction(copyFilePathAction);
   menu.addSeparator();
@@ -442,14 +451,13 @@ void TabManager::showTabHeaderContextMenu(const QPoint& pos)
   menu.addSeparator();
   menu.addAction(closeAction);
 
-  int x1, y1, x2, y2;
-  tabWidget->tabRect(idx).getCoords(&x1, &y1, &x2, &y2);
-  menu.exec(tabWidget->mapToGlobal(QPoint(x1, y2)));
+  QPoint globalCursorPos = QCursor::pos();
+  menu.exec(globalCursorPos);
 }
 
 void TabManager::setContentRenderState() //since last render
 {
-  editor->contentsRendered = false; //since last render
+  editor->contentsRendered = false;   //since last render
   editor->parameterWidget->setEnabled(false);
 }
 
@@ -517,6 +525,11 @@ void TabManager::openTabFile(const QString& filename)
     setTabName(nullptr);
     editor->setPlainText(cmd.arg(filename));
   }
+  if(use_gvim) {
+    QString editorcmd="gvim --remote-tab-silent "+filename.toUtf8();
+    system(editorcmd.toUtf8().constData());
+//**MCH**
+  }
   par->fileChangedOnDisk(); // force cached autoReloadId to update
   bool opened = refreshDocument();
 
@@ -533,7 +546,7 @@ void TabManager::openTabFile(const QString& filename)
       par->UnknownExceptionCleanup();
     }
 */
-    par->last_compiled_doc = ""; // undo the damage so F4 works
+    par->lastCompiledDoc = ""; // undo the damage so F4 works
     par->clearCurrentOutput();
   }
 }
@@ -558,7 +571,6 @@ void TabManager::setTabName(const QString& filename, EditorInterface *edt)
     tabWidget->setTabToolTip(tabWidget->indexOf(edt), fileinfo.filePath());
     QDir::setCurrent(fileinfo.dir().absolutePath());
   }
-  par->editorTopLevelChanged(par->editorDock->isFloating());
   par->changedTopLevelConsole(par->consoleDock->isFloating());
   par->parameterTopLevelChanged(par->parameterDock->isFloating());
   par->setWindowTitle(fname);
@@ -582,7 +594,7 @@ bool TabManager::refreshDocument()
       LOG("Loaded design '%1$s'.", editor->filepath.toLocal8Bit().constData());
       if (editor->toPlainText() != text) {
         editor->setPlainText(text);
-        setContentRenderState(); // since last render
+        setContentRenderState();         // since last render
       }
       file_opened = true;
     }

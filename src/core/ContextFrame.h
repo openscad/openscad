@@ -19,7 +19,6 @@ public:
   virtual boost::optional<const Value&> lookup_local_variable(const std::string& name) const;
   virtual boost::optional<CallableFunction> lookup_local_function(const std::string& name, const Location& loc) const;
   virtual boost::optional<InstantiableModule> lookup_local_module(const std::string& name, const Location& loc) const;
-  virtual std::vector<std::string> list_local_modules(void) const;
 
   virtual std::vector<const Value *> list_embedded_values() const;
   virtual size_t clear();

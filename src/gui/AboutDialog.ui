@@ -17,7 +17,7 @@
    </sizepolicy>
   </property>
   <property name="windowTitle">
-   <string>About OpenSCAD</string>
+   <string>About Open(Python)SCAD</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
    <property name="margin">
@@ -63,7 +63,7 @@
       <widget class="QLabel" name="titleLabel">
        <property name="text">
         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;
-&lt;p style=&quot;font-family: 'Open Sans', 'Droid Sans', 'sans-serif'; font-weight: bold; padding-bottom: 0; margin-bottom: 0; font-size: 22pt;&quot;&gt;&lt;span style=&quot;color: green;&quot;&gt;Open&lt;/span&gt;SCAD&lt;/p&gt;
+&lt;p style=&quot;font-family: 'Open Sans', 'Droid Sans', 'sans-serif'; font-weight: bold; padding-bottom: 0; margin-bottom: 0; font-size: 22pt;&quot;&gt;&lt;span style=&quot;color: green;&quot;&gt;Open&lt;/span&gt;&lt;span style=&quot;color: blue;&quot;&gt;(Python)&lt;/span&gt;SCAD&lt;/p&gt;
 &lt;p style=&quot;font-family: 'Open Sans', 'Droid Sans', 'sans-serif'; font-weight: normal; font-size: 14pt; padding-top: 0; margin-top: 0; margin-left: 2em;&quot;&gt;The Programmers Solid 3D CAD Modeller&lt;/p&gt;
 &lt;/body&gt;&lt;/html&gt;
 

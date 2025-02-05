@@ -9,6 +9,7 @@ extern bool python_trusted;
 extern bool python_runipython;
 extern AssignmentList customizer_parameters;
 extern AssignmentList customizer_parameters_finished;
+void python_export_obj_att(std::ostream& output);
 
 void initPython(double time);
 
