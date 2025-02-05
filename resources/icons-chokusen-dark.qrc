@@ -26,7 +26,10 @@
     <file>icons/chokusen-dark/svg/chokusen-indent.svg</file>
     <file>icons/chokusen-dark/svg/chokusen-measure-angle.svg</file>
     <file>icons/chokusen-dark/svg/chokusen-measure-distance.svg</file>
+<<<<<<< HEAD
     <file>icons/chokusen-dark/svg/chokusen-find-handle.svg</file>
+=======
+>>>>>>> upstream/master
     <file>icons/chokusen-dark/svg/chokusen-new.svg</file>
     <file>icons/chokusen-dark/svg/chokusen-open.svg</file>
     <file>icons/chokusen-dark/svg/chokusen-orthogonal.svg</file>

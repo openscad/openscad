@@ -703,7 +703,6 @@ list(APPEND RENDERTEST_3D_FILES
   ${TEST_SCAD_DIR}/misc/localfiles_dir/localfiles-compatibility-test.scad
   ${TEST_SCAD_DIR}/misc/rotate-empty-bbox.scad
   ${TEST_SCAD_DIR}/misc/empty-shape-tests.scad
-  ${TEST_SCAD_DIR}/misc/null-polygons.scad
   ${TEST_SCAD_DIR}/misc/internal-cavity.scad
   ${TEST_SCAD_DIR}/misc/internal-cavity-polyhedron.scad
   ${TEST_SCAD_DIR}/misc/bad-stl-pcbvicebar.scad
@@ -728,6 +727,7 @@ list(APPEND PREVIEW_ONLY_FILES
   ${TEST_SCAD_DIR}/3D/features/highlight-and-background-modifier.scad
   ${TEST_SCAD_DIR}/3D/features/highlight-modifier2.scad
   ${TEST_SCAD_DIR}/3D/features/background-modifier2.scad
+  ${TEST_SCAD_DIR}/2D/issues/issue5574.scad
 )
 
 list(REMOVE_ITEM RENDERTEST_FILES 
@@ -737,6 +737,8 @@ list(REMOVE_ITEM RENDERTEST_FILES
   ${TEST_SCAD_DIR}/3D/features/color-names-tests.scad
   ${TEST_SCAD_DIR}/3D/features/hex-colors-tests.scad
 )
+
+list(APPEND RENDERFORCETEST_FILES ${TEST_SCAD_DIR}/3D/issues/issue5548.scad)
 
 set(PRUNE_TEST ${TEST_SCAD_DIR}/misc/intersection-prune-test.scad)
 list(APPEND PREVIEWTEST_FILES ${STL_IMPORT_FILES} ${RENDERTEST_FILES} ${PRUNE_TEST} ${PREVIEW_ONLY_FILES})
@@ -991,6 +993,7 @@ set_test_config(Examples FILES ${EXAMPLE_2D_FILES} PREFIXES dxfrendertest)
 # o echotest: Just record console output
 # o dumptest: Export .csg
 # o rendertest: Export to PNG using --render
+# o renderforcetest: Export to PNG using --render=force
 # o rendermanifoldtest: Export to PNG using --render with --backend=manifold
 # o previewtest: Export to PNG using OpenCSG
 # o previewmanifoldtest: Export to PNG in preview mode with --backend=manifold
@@ -1050,6 +1053,7 @@ add_cmdline_test(previewtest        OPENSCAD FILES ${PREVIEWTEST_FILES} SUFFIX p
 add_cmdline_test(throwntogethertest OPENSCAD SUFFIX png FILES ${THROWNTOGETHERTEST_FILES} ARGS --preview=throwntogether)
 
 # Other PNG tests
+add_cmdline_test(renderforcetest     OPENSCAD FILES ${RENDERFORCETEST_FILES} SUFFIX png ARGS --render=force)
 add_cmdline_test(renderstdiotest     OPENSCAD SUFFIX png FILES ${RENDERSTDIOTEST_FILES} STDIO EXPECTEDDIR rendertest ARGS --export-format png --render)
 add_cmdline_test(csgrendertest       SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png FILES ${RENDERTEST_FILES} EXPECTEDDIR rendertest ARGS ${OPENSCAD_EXE_ARG} --format=csg --render)
 if (ENABLE_MANIFOLD)
@@ -1110,7 +1114,6 @@ ${TEST_SCAD_DIR}/3D/issues/issue1221.scad
 ${TEST_SCAD_DIR}/3D/issues/issue1225.scad
 ${TEST_SCAD_DIR}/3D/issues/issue1258.scad
 ${TEST_SCAD_DIR}/3D/issues/issue2259.scad
-${TEST_SCAD_DIR}/misc/null-polygons.scad
 ${TEST_SCAD_DIR}/misc/bad-stl-pcbvicebar.scad
 ${TEST_SCAD_DIR}/misc/bad-stl-tardis.scad
 ${TEST_SCAD_DIR}/misc/bad-stl-wing.scad
@@ -1349,7 +1352,6 @@ add_cmdline_test(openscad-viewoptions-axes              OPENSCAD FILES ${VIEW_OP
 add_cmdline_test(openscad-viewoptions-axes-scales       OPENSCAD FILES ${VIEW_OPTIONS_TEST} SUFFIX png ARGS ${IMGSIZE} --camera=80,14,19,0,0,0 --viewall --view axes,scales)
 add_cmdline_test(openscad-viewoptions-edges             OPENSCAD FILES ${VIEW_OPTIONS_TEST} SUFFIX png ARGS ${IMGSIZE} --camera=80,14,19,0,0,0 --viewall --view edges)
 add_cmdline_test(openscad-viewoptions-axes-scales-edges OPENSCAD FILES ${VIEW_OPTIONS_TEST} SUFFIX png ARGS ${IMGSIZE} --camera=80,14,19,0,0,0 --viewall --view axes,scales,edges)
-add_cmdline_test(openscad-viewoptions-wireframe         OPENSCAD FILES ${VIEW_OPTIONS_TEST} SUFFIX png ARGS ${IMGSIZE} --camera=80,14,19,0,0,0 --viewall --render --view wireframe)
 add_cmdline_test(openscad-viewoptions-crosshairs        OPENSCAD FILES ${VIEW_OPTIONS_TEST} SUFFIX png ARGS ${IMGSIZE} --camera=80,14,19,0,0,0 --viewall --render --view crosshairs)
 
 #
@@ -1647,8 +1649,6 @@ list(APPEND NEF3_BROKEN_TESTS
 if(APPLE)
   set_tests_properties(
     ${NEF3_BROKEN_TESTS}
-    # On macOS, GL_POINTS are sometimes circular even though GL_POINT_SMOOTH is disabled
-    openscad-viewoptions-wireframe_view-options-tests
     PROPERTIES DISABLED TRUE
   )
 elseif(UNIX)

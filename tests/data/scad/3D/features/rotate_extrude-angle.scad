@@ -13,10 +13,15 @@ module face2() {
 }
 
 // test negative partial angles and geometries on -X side
-rotate_extrude(angle=45) face(10);
+// Also:
+// - First positional parameter is angle
+// - Explicitly specify angle
+// - "a" is an alias for "angle"
+// - If both "angle" and "a" are specified, there's a warning and "angle" wins.
+rotate_extrude(45) face(10);
 rotate_extrude(angle=45) face(-10);
-rotate_extrude(angle=-45) face(21);
-rotate_extrude(angle=-45) face(-21);
+rotate_extrude(a=-45) face(21);
+rotate_extrude(angle=-45, a=10) face(-21);
 
 // test small angles, angle < $fa, render a single segment
 rotate([0,0,90]) {

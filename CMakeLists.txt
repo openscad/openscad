@@ -943,9 +943,12 @@ set(CORE_SOURCES
   src/core/CgalAdvNode.cc
   src/core/Children.cc
   src/core/ColorNode.cc
+<<<<<<< HEAD
   src/core/PullNode.cc
   src/core/WrapNode.cc
   src/core/TextureNode.cc
+=======
+>>>>>>> upstream/master
   src/core/ColorUtil.cc
   src/core/Context.cc
   src/core/ContextFrame.cc
@@ -1316,8 +1319,11 @@ set(GUI_HEADERS
     src/gui/Editor.h
     src/gui/ErrorLog.h
     src/gui/EventFilter.h
+<<<<<<< HEAD
     src/gui/LoadShareDesignDialog.h
     src/gui/ShareDesignDialog.h
+=======
+>>>>>>> upstream/master
     src/gui/Export3mfDialog.h
     src/gui/ExportPdfDialog.h
     src/gui/FontList.h
