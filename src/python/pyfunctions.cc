@@ -2055,7 +2055,7 @@ PyObject *python_oo_color(PyObject *obj, PyObject *args, PyObject *kwargs)
 
 typedef std::vector<int> intList;
 
-PyObject *python_mesh_core(PyObject *obj)
+PyObject *python_mesh_core(PyObject *obj, bool tessellate)
 {
   PyObject *dummydict;
   std::shared_ptr<AbstractNode> child = PyOpenSCADObjectToNodeMulti(obj, &dummydict);
@@ -2070,6 +2070,9 @@ PyObject *python_mesh_core(PyObject *obj)
 
 
   if(ps != nullptr){
+    if(tessellate == true) {
+      ps = PolySetUtils::tessellate_faces(*ps);
+    }
   // Now create Python Point array
     PyObject *ptarr = PyList_New(ps->vertices.size());  
     for(unsigned int i=0;i<ps->vertices.size();i++) {
@@ -2119,23 +2122,25 @@ PyObject *python_mesh_core(PyObject *obj)
 
 PyObject *python_mesh(PyObject *self, PyObject *args, PyObject *kwargs)
 {
-  char *kwlist[] = {"obj", NULL};
+  char *kwlist[] = {"obj", "triangulate", NULL};
   PyObject *obj = NULL;
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O", kwlist, &obj)) {
+  PyObject *tess = NULL;
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O|O", kwlist, &obj, &tess)) {
     PyErr_SetString(PyExc_TypeError, "error during parsing\n");
     return NULL;
   }
-  return python_mesh_core(obj);
+  return python_mesh_core(obj, tess == Py_True);
 }
 
 PyObject *python_oo_mesh(PyObject *obj, PyObject *args, PyObject *kwargs)
 {
-  char *kwlist[] = { NULL};
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "", kwlist)) {
+  char *kwlist[] = { "triangulate", NULL};
+  PyObject *tess = NULL;
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|O", kwlist, &tess)) {
     PyErr_SetString(PyExc_TypeError, "error during parsing\n");
     return NULL;
   }
-  return python_mesh_core(obj);
+  return python_mesh_core(obj, tess == Py_True);
 }
 
 PyObject *python_oversample_core(PyObject *obj, int n, PyObject *round)
