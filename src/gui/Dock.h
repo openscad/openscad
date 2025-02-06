@@ -14,10 +14,19 @@ public:
   void setAction(QAction *action);
   void disableSettingsUpdate();
 
+  void setName(const QString& name_);
+  [[nodiscard]] QString getName() const;
+
+  void setNameSuffix(const QString& namesuffix_);
+  void updateTitle();
+
 public slots:
   void setVisible(bool visible) override;
+  void onTopLevelStatusChanged(bool);
 
 private:
+  QString name;
+  QString namesuffix;
   QString configKey;
   QAction *action{nullptr};
   bool updateSettings{true};
