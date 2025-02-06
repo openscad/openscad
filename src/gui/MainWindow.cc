@@ -580,6 +580,7 @@ MainWindow::MainWindow(const QStringList& filenames) :
   // Create the docks and connect corresponding action
   for(auto& [dock, title] : docks){
       dock->setName(title);
+      dock->setFocusPolicy(Qt::FocusPolicy::StrongFocus);
       menuWindow->addAction(dock->toggleViewAction());
   }
 
@@ -3303,12 +3304,12 @@ void MainWindow::on_windowActionSelectCustomizer_triggered()
 
 void MainWindow::on_windowActionNextWindow_triggered()
 {
-  activateWindow(1);
+    activateWindow(1);
 }
 
 void MainWindow::on_windowActionPreviousWindow_triggered()
 {
-  activateWindow(-1);
+    activateWindow(-1);
 }
 
 void MainWindow::on_editActionInsertTemplate_triggered()
@@ -3354,32 +3355,53 @@ void MainWindow::onTabManagerEditorChanged(EditorInterface* neweditor)
 
 void MainWindow::activateWindow(int offset)
 {
-  const std::array<DockFocus, 7> docks = {{
-    { editorDock, &MainWindow::onwindowActionSelectEditor },
-    { consoleDock, &MainWindow::on_windowActionSelectConsole_triggered },
-    { errorLogDock, &MainWindow::on_windowActionSelectErrorLog_triggered },
-    { parameterDock, &MainWindow::on_windowActionSelectCustomizer_triggered },
-    { fontListDock, &MainWindow::on_windowActionSelectFontList_triggered },
-    { animateDock, &MainWindow::on_windowActionSelectAnimate_triggered },
-    { viewportControlDock, &MainWindow::on_windowActionSelectViewportControl_triggered },
+  const std::array<Dock*, 7> docks = {{
+    editorDock,
+    consoleDock,
+    errorLogDock,
+    parameterDock,
+    fontListDock,
+    animateDock,
+    viewportControlDock,
   }};
 
-  const int cnt = docks.size();
-  const auto focusWidget = QApplication::focusWidget();
-  for (auto widget = focusWidget; widget != nullptr; widget = widget->parentWidget()) {
-    for (int idx = 0; idx < cnt; ++idx) {
-      if (widget == docks.at(idx).widget) {
-        for (int o = 1; o < cnt; ++o) {
-          const int target = (cnt + idx + o * offset) % cnt;
-          const auto& dock = docks.at(target);
-          if (dock.widget->isVisible()) {
-            dock.focus(this);
-            rubberBandManager.emphasize(dock.widget);
-            return;
-          }
-        }
-      }
+  const unsigned int dockCount = docks.size();
+
+  int focusedDockIndice = -1;
+
+  // search among the docks the dock that is having the focus. Several cases have to be taken into account
+  // If the dock is a top level windows and it is the active window we select it.
+  for (unsigned int index = 0; index < dockCount; ++index) {
+    if (docks[index]->isTopLevel() && docks[index]->isActiveWindow()) {
+        focusedDockIndice = index;
+    }else if (docks[index]->hasFocus()) {
+        focusedDockIndice = index;
+        break;
     }
+  }
+
+  if(focusedDockIndice < 0){
+      focusedDockIndice = 0;
+  }
+
+  for (int o = 1; o < dockCount; ++o) {
+      // starting from dockCount + focusedDockIndice move left or right (o*offset)
+      // to find the first visible one. dockCount is there so there is no situation in which
+      // (-1) % dockCount
+      const int target = (dockCount + focusedDockIndice + o * offset) % dockCount;
+      const auto& dock = docks.at(target);
+
+      if (dock->isVisible()) {
+          // We always need to activate the window.
+          if(dock->isTopLevel())
+              dock->activateWindow();
+          else
+              QMainWindow::activateWindow();
+          dock->raise();
+          dock->setFocus();
+          rubberBandManager.emphasize(dock);
+          return;
+      }
   }
 }
 

@@ -24,6 +24,8 @@ void RubberBandManager::hide(){
 }
 
 void RubberBandManager::emphasize(Dock *dock){
+  parent()->removeEventFilter(this);
+  dock->installEventFilter(this);
   rubberBand.setParent(dock);
   rubberBand.setGeometry(dock->widget()->geometry());
   rubberBand.show();
