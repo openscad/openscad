@@ -146,6 +146,10 @@ private slots:
   void onNavigationHoveredContextMenuEntry();
   void onNavigationTriggerContextMenuEntry();
 
+  // implement the different actions needed when
+  // the tab manager editor is changed.
+  void onTabManagerEditorChanged(EditorInterface*);
+
 public:
   static void consoleOutput(const Message& msgObj, void *userdata);
   static void errorLogOutput(const Message& log_msg, void *userdata);
@@ -159,6 +163,8 @@ public:
   void UnknownExceptionCleanup(std::string msg = "");
 
 private:
+  [[nodiscard]] QString getCurrentFileName() const;
+
   void setRenderVariables(ContextHandle<BuiltinContext>& context);
   void updateCompileResult();
   void compile(bool reload, bool forcedone = false);
@@ -173,7 +179,6 @@ private:
   void saveBackup();
   void writeBackup(QFile *file);
   void show_examples();
-  void setDockWidgetTitle(QDockWidget *dockWidget, QString prefix, bool topLevel);
   void addKeyboardShortCut(const QList<QAction *>& actions);
   void updateStatusBar(ProgressWidget *progressWidget);
   void activateWindow(int);
@@ -303,12 +308,6 @@ public:
   void onActionEvent(InputEventAction *event) override;
   void onZoomEvent(InputEventZoom *event) override;
 
-  void changedTopLevelConsole(bool);
-  void changedTopLevelErrorLog(bool);
-  void changedTopLevelAnimate(bool);
-  void changedTopLevelFontList(bool);
-  void changedTopLevelViewportControl(bool);
-
   QList<double> getTranslation() const;
   QList<double> getRotation() const;
   std::unordered_map<FileFormat, QAction *> exportMap;
@@ -316,19 +315,7 @@ public:
 public slots:
   void actionReloadRenderPreview();
   void on_editorDock_visibilityChanged(bool);
-  void on_consoleDock_visibilityChanged(bool);
-  void on_parameterDock_visibilityChanged(bool);
-  void on_errorLogDock_visibilityChanged(bool);
-  void on_animateDock_visibilityChanged(bool);
-  void on_fontListDock_visibilityChanged(bool);
-  void on_viewportControlDock_visibilityChanged(bool);
   void on_toolButtonCompileResultClose_clicked();
-  void consoleTopLevelChanged(bool);
-  void parameterTopLevelChanged(bool);
-  void errorLogTopLevelChanged(bool);
-  void animateTopLevelChanged(bool);
-  void fontListTopLevelChanged(bool);
-  void viewportControlTopLevelChanged(bool);
   void processEvents();
   void jumpToLine(int, int);
   void openFileFromPath(const QString&, int);

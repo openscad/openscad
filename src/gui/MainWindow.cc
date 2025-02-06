@@ -356,6 +356,27 @@ MainWindow::MainWindow(const QStringList& filenames) :
   tabManager = new TabManager(this, filenames.isEmpty() ? QString() : filenames[0]);
   editorDockContents->layout()->addWidget(tabManager->getTabContent());
 
+  connect(this, SIGNAL(highlightError(int)), tabManager, SLOT(highlightError(int)));
+  connect(this, SIGNAL(unhighlightLastError()), tabManager, SLOT(unhighlightLastError()));
+
+  connect(this->editActionUndo, SIGNAL(triggered()), tabManager, SLOT(undo()));
+  connect(this->editActionRedo, SIGNAL(triggered()), tabManager, SLOT(redo()));
+  connect(this->editActionRedo_2, SIGNAL(triggered()), tabManager, SLOT(redo()));
+  connect(this->editActionCut, SIGNAL(triggered()), tabManager, SLOT(cut()));
+  connect(this->editActionPaste, SIGNAL(triggered()), tabManager, SLOT(paste()));
+
+  connect(this->editActionIndent, SIGNAL(triggered()), tabManager, SLOT(indentSelection()));
+  connect(this->editActionUnindent, SIGNAL(triggered()), tabManager, SLOT(unindentSelection()));
+  connect(this->editActionComment, SIGNAL(triggered()), tabManager, SLOT(commentSelection()));
+  connect(this->editActionUncomment, SIGNAL(triggered()), tabManager, SLOT(uncommentSelection()));
+
+  connect(this->editActionToggleBookmark, SIGNAL(triggered()), tabManager, SLOT(toggleBookmark()));
+  connect(this->editActionNextBookmark, SIGNAL(triggered()), tabManager, SLOT(nextBookmark()));
+  connect(this->editActionPrevBookmark, SIGNAL(triggered()), tabManager, SLOT(prevBookmark()));
+  connect(this->editActionJumpToNextError, SIGNAL(triggered()), tabManager, SLOT(jumpToNextError()));
+
+  connect(tabManager, &TabManager::currentEditorChanged, this, &MainWindow::onTabManagerEditorChanged);
+
   connect(Preferences::inst(), SIGNAL(consoleFontChanged(const QString&,uint)), this->console, SLOT(setFont(const QString&,uint)));
 
   const QString version = QString("<b>OpenSCAD %1</b>").arg(QString::fromStdString(openscad_versionnumber));
@@ -556,8 +577,9 @@ MainWindow::MainWindow(const QStringList& filenames) :
   connect(this->viewActionHideEditorToolBar, SIGNAL(triggered()), this, SLOT(hideEditorToolbar()));
   connect(this->viewActionHide3DViewToolBar, SIGNAL(triggered()), this, SLOT(hide3DViewToolbar()));
 
+  // Create the docks and connect corresponding action
   for(auto& [dock, title] : docks){
-      dock->setWindowTitle(title);
+      dock->setName(title);
       menuWindow->addAction(dock->toggleViewAction());
   }
 
@@ -706,7 +728,6 @@ MainWindow::MainWindow(const QStringList& filenames) :
   }
 
   updateWindowSettings(hideConsole, hideEditor, hideCustomizer, hideErrorLog, hideEditorToolbar, hide3DViewToolbar, hideAnimate, hideFontList, hideViewportControl);
-
   // Connect the menu "Windows/Navigation" to slot that process it by opening in a pop menu
   // the navigationMenu.
   connect(windowActionJumpTo, &QAction::triggered, this, &MainWindow::onNavigationOpenContextMenu);
@@ -723,13 +744,6 @@ MainWindow::MainWindow(const QStringList& filenames) :
   connect(navigationMenu, &QMenu::aboutToHide, this, &MainWindow::onNavigationCloseContextMenu);
 
   windowActionJumpTo->setMenu(navigationMenu);
-
-  connect(this->consoleDock, SIGNAL(topLevelChanged(bool)), this, SLOT(consoleTopLevelChanged(bool)));
-  connect(this->parameterDock, SIGNAL(topLevelChanged(bool)), this, SLOT(parameterTopLevelChanged(bool)));
-  connect(this->errorLogDock, SIGNAL(topLevelChanged(bool)), this, SLOT(errorLogTopLevelChanged(bool)));
-  connect(this->animateDock, SIGNAL(topLevelChanged(bool)), this, SLOT(animateTopLevelChanged(bool)));
-  connect(this->fontListDock, SIGNAL(topLevelChanged(bool)), this, SLOT(fontListTopLevelChanged(bool)));
-  connect(this->viewportControlDock, SIGNAL(topLevelChanged(bool)), this, SLOT(viewportControlTopLevelChanged(bool)));
 
   connect(this->activeEditor, SIGNAL(escapePressed()), this, SLOT(measureFinished()));
   // display this window and check for OpenGL 2.0 (OpenCSG) support
@@ -756,6 +770,7 @@ MainWindow::MainWindow(const QStringList& filenames) :
 
   this->selector = std::make_unique<MouseSelector>(this->qglview);
   activeEditor->setFocus();
+  onTabManagerEditorChanged(activeEditor);
 }
 
 void MainWindow::onNavigationOpenContextMenu() {
@@ -772,15 +787,13 @@ void MainWindow::onNavigationTriggerContextMenuEntry(){
         return;
 
     Dock* dock = action->property("id").value<Dock*>();
+    assert(dock!=nullptr);
 
     dock->show();
     dock->setFocus();
 
-    // Forward the focus on the content of the tabmanager.
-    // Maybe it is possible to make that in a cleaner way, the non use of
-    // QTabWidget make is hard
-    if(dock == editorDock)
-    {
+    // Forward the focus on the content of the tabmanager
+    if(dock == editorDock){
         tabManager->setFocus();
     }
 }
@@ -790,6 +803,8 @@ void MainWindow::onNavigationHoveredContextMenuEntry(){
   if (!action || !action->property("id").isValid()) return;
 
   Dock *dock = action->property("id").value<Dock *>();
+  assert(dock!=nullptr);
+
   rubberBandManager.emphasize(dock);
 }
 
@@ -3082,129 +3097,6 @@ void MainWindow::on_editorDock_visibilityChanged(bool)
   updateExportActions();
 }
 
-void MainWindow::on_consoleDock_visibilityChanged(bool)
-{
-  changedTopLevelConsole(consoleDock->isFloating());
-}
-
-void MainWindow::on_parameterDock_visibilityChanged(bool)
-{
-  parameterTopLevelChanged(parameterDock->isFloating());
-}
-
-void MainWindow::on_errorLogDock_visibilityChanged(bool)
-{
-  errorLogTopLevelChanged(errorLogDock->isFloating());
-}
-
-void MainWindow::on_animateDock_visibilityChanged(bool)
-{
-  animateTopLevelChanged(animateDock->isFloating());
-}
-
-void MainWindow::on_fontListDock_visibilityChanged(bool)
-{
-  fontListTopLevelChanged(fontListDock->isFloating());
-}
-
-void MainWindow::on_viewportControlDock_visibilityChanged(bool)
-{
-  viewportControlTopLevelChanged(viewportControlDock->isFloating());
-}
-
-void MainWindow::changedTopLevelConsole(bool topLevel)
-{
-  setDockWidgetTitle(consoleDock, QString(_("Console")), topLevel);
-}
-
-void MainWindow::consoleTopLevelChanged(bool topLevel)
-{
-  setDockWidgetTitle(consoleDock, QString(_("Console")), topLevel);
-
-  Qt::WindowFlags flags = (consoleDock->windowFlags() & ~Qt::WindowType_Mask) | Qt::Window;
-  if (topLevel) {
-    consoleDock->setWindowFlags(flags);
-    consoleDock->show();
-  }
-}
-
-void MainWindow::parameterTopLevelChanged(bool topLevel)
-{
-  setDockWidgetTitle(parameterDock, QString(_("Customizer")), topLevel);
-
-}
-
-void MainWindow::changedTopLevelErrorLog(bool topLevel)
-{
-  setDockWidgetTitle(errorLogDock, QString(_("Error-Log")), topLevel);
-}
-
-void MainWindow::errorLogTopLevelChanged(bool topLevel)
-{
-  setDockWidgetTitle(errorLogDock, QString(_("Error-Log")), topLevel);
-
-  Qt::WindowFlags flags = (errorLogDock->windowFlags() & ~Qt::WindowType_Mask) | Qt::Window;
-  if (topLevel) {
-    errorLogDock->setWindowFlags(flags);
-    errorLogDock->show();
-  }
-}
-
-void MainWindow::changedTopLevelAnimate(bool topLevel)
-{
-  setDockWidgetTitle(animateDock, QString(_("Animate")), topLevel);
-}
-
-void MainWindow::animateTopLevelChanged(bool topLevel)
-{
-  setDockWidgetTitle(animateDock, QString(_("Animate")), topLevel);
-
-  Qt::WindowFlags flags = (animateDock->windowFlags() & ~Qt::WindowType_Mask) | Qt::Window;
-  if (topLevel) {
-    animateDock->setWindowFlags(flags);
-    animateDock->show();
-  }
-}
-
-void MainWindow::changedTopLevelFontList(bool topLevel)
-{
-  setDockWidgetTitle(fontListDock, QString(_("Font List")), topLevel);
-}
-
-void MainWindow::fontListTopLevelChanged(bool topLevel)
-{
-  setDockWidgetTitle(fontListDock, QString(_("Font List")), topLevel);
-
-  Qt::WindowFlags flags = (fontListDock->windowFlags() & ~Qt::WindowType_Mask) | Qt::Window;
-  if (topLevel) {
-    fontListDock->setWindowFlags(flags);
-    fontListDock->show();
-  }
-}
-
-void MainWindow::viewportControlTopLevelChanged(bool topLevel)
-{
-  setDockWidgetTitle(viewportControlDock, QString(_("Viewport-Control")), topLevel);
-
-  Qt::WindowFlags flags = (viewportControlDock->windowFlags() & ~Qt::WindowType_Mask) | Qt::Window;
-  if (topLevel) {
-    viewportControlDock->setWindowFlags(flags);
-    viewportControlDock->show();
-  }
-}
-
-void MainWindow::setDockWidgetTitle(QDockWidget *dockWidget, QString prefix, bool topLevel)
-{
-  QString title(std::move(prefix));
-  if (topLevel) {
-    const QFileInfo fileInfo(activeEditor->filepath);
-    QString fname = _("Untitled.scad");
-    if (!fileInfo.fileName().isEmpty()) fname = fileInfo.fileName();
-    title += " (" + fname.replace("&", "&&") + ")";
-  }
-  dockWidget->setWindowTitle(title);
-}
-
 void MainWindow::hideEditorToolbar()
 {
   QSettingsCached settings;
@@ -3266,7 +3158,6 @@ void MainWindow::hideEditor()
         editorDock->show();
     }
 }
-
 
 void MainWindow::showConsole()
 {
@@ -3430,10 +3321,41 @@ void MainWindow::on_editActionFoldAll_triggered()
   activeEditor->foldUnfold();
 }
 
+QString MainWindow::getCurrentFileName() const
+{
+    if(activeEditor == nullptr)
+        return QString("");
+
+    const QFileInfo fileInfo(activeEditor->filepath);
+    QString fname = _("Untitled.scad");
+    if (!fileInfo.fileName().isEmpty()) fname = fileInfo.fileName();
+    return fname.replace("&", "&&");
+}
+
+void MainWindow::onTabManagerEditorChanged(EditorInterface* neweditor)
+{
+    activeEditor = neweditor;
+
+    if(neweditor == nullptr)
+        return;
+
+    parameterDock->setWidget(neweditor->parameterWidget);
+    editActionUndo->setEnabled(neweditor->canUndo());
+
+    QString name = getCurrentFileName();
+    setWindowTitle(name);
+
+    consoleDock->setNameSuffix(name);
+    errorLogDock->setNameSuffix(name);
+    animateDock->setNameSuffix(name);
+    fontListDock->setNameSuffix(name);
+    viewportControlDock->setNameSuffix(name);
+}
+
 void MainWindow::activateWindow(int offset)
 {
   const std::array<DockFocus, 7> docks = {{
-                                              { editorDock, &MainWindow::onwindowActionSelectEditor },
+    { editorDock, &MainWindow::onwindowActionSelectEditor },
     { consoleDock, &MainWindow::on_windowActionSelectConsole_triggered },
     { errorLogDock, &MainWindow::on_windowActionSelectErrorLog_triggered },
     { parameterDock, &MainWindow::on_windowActionSelectCustomizer_triggered },
