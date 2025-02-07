@@ -121,6 +121,7 @@ void CSGTreeEvaluator::applyToChildren(State& state, const AbstractNode& node, O
       case OpenSCADOperator::HULL:
       case OpenSCADOperator::FILL:
       case OpenSCADOperator::RESIZE:
+      case OpenSCADOperator::OFFSET:
         break;
       }
       t1 = t;

@@ -314,7 +314,7 @@ module_id
         : TOK_ID  { $$ = $1; }
         | TOK_ID '.' TOK_ID  {
 		char tmp[100];
-                sprintf(tmp,"(%s.%s)",$1,$3);
+                snprintf(tmp,sizeof(tmp), "(%s.%s)",$1,$3);
                 $$ = strdup(tmp); }
         | TOK_FOR { $$ = strdup("for"); }
         | TOK_LET { $$ = strdup("let"); }

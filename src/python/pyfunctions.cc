@@ -3735,7 +3735,11 @@ PyObject *do_import_python(PyObject *self, PyObject *args, PyObject *kwargs, Imp
 #ifdef _WIN32
   std::string cur_dir = ".";
 #else 
+#ifdef __APPLE__
+    std::string cur_dir = ".";
+#else
   std::string cur_dir = get_current_dir_name();
+#endif
 #endif  
   filename = lookup_file(v == NULL ? "" : v, cur_dir, instance->location().filePath().parent_path().string());
   if (!filename.empty()) handle_dep(filename);
