@@ -23,7 +23,7 @@ public:
 
 private:
   void initShader();
-  void setupFramebuffer(const GLView *view);
+  void setupFramebuffer(int width, int height);
 
   std::unique_ptr<FBO> framebuffer;
 

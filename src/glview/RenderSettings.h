@@ -20,8 +20,6 @@ public:
 
   RenderBackend3D backend3D;
   unsigned int openCSGTermLimit;
-  unsigned int img_width;
-  unsigned int img_height;
   double far_gl_clip_limit;
   std::string colorscheme;
 private:
