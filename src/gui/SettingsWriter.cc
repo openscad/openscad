@@ -24,7 +24,7 @@
  *
  */
 #include "gui/SettingsWriter.h"
-#include "Settings.h"
+#include "core/Settings.h"
 #include "gui/QSettingsCached.h"
 
 #include <QString>

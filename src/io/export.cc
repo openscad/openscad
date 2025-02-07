@@ -25,7 +25,7 @@
  */
 
 #include "io/export.h"
-#include "ColorMap.h"
+#include "glview/ColorMap.h"
 #include "core/ColorUtil.h"
 #include "export_enums.h"
 #include "geometry/PolySet.h"

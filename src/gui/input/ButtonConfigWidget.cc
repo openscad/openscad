@@ -36,7 +36,7 @@
 #include "gui/input/InputDriverManager.h"
 #include "gui/SettingsWriter.h"
 #include "gui/IgnoreWheelWhenNotFocused.h"
-#include "input/InputEventMapper.h"
+#include "gui/input/InputEventMapper.h"
 
 ButtonConfigWidget::ButtonConfigWidget(QWidget *parent) : QWidget(parent)
 {

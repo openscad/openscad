@@ -3,7 +3,7 @@
 #include <string>
 #include <optional>
 
-#include "linalg.h"
+#include "geometry/linalg.h"
 
 template<> struct std::hash<Color4f> {
     std::size_t operator()(Color4f const& c) const noexcept {

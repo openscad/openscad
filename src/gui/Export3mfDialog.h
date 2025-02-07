@@ -29,7 +29,7 @@
 #include <memory>
 #include <QDialog>
 
-#include "Settings.h"
+#include "core/Settings.h"
 #include "gui/qtgettext.h" // IWYU pragma: keep
 #include "io/export.h"
 #include "ui_Export3mfDialog.h"

@@ -56,7 +56,7 @@
 #include "gui/AutoUpdater.h"
 #include "Feature.h"
 #include "core/Settings.h"
-#include "printutils.h"
+#include "utils/printutils.h"
 #ifdef ENABLE_CGAL
 #include "geometry/cgal/CGALCache.h"
 #endif
