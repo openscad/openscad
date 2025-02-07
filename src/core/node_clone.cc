@@ -41,6 +41,7 @@
 #include "ColorNode.h"
 #include "RoofNode.h"
 #include "RenderNode.h"
+#include "SkinNode.h"
 #include "SurfaceNode.h"
 #include "TextNode.h"
 #include "OffsetNode.h"
@@ -82,6 +83,7 @@ NodeCloneFunc(CsgOpNode)
 NodeCloneFunc(CgalAdvNode)
 NodeCloneFunc(RoofNode)
 NodeCloneFunc(RenderNode)
+NodeCloneFunc(SkinNode)
 NodeCloneFunc(SurfaceNode)
 NodeCloneFunc(TextNode)
 NodeCloneFunc(OffsetNode)
@@ -114,6 +116,7 @@ std::shared_ptr<AbstractNode> AbstractNode::clone(void)
 	NodeCloneUse(CgalAdvNode)
 	NodeCloneUse(RoofNode)
 	NodeCloneUse(RenderNode)
+	NodeCloneUse(SkinNode)
 	NodeCloneUse(SurfaceNode)
 	NodeCloneUse(TextNode)
 	NodeCloneUse(OffsetNode)
