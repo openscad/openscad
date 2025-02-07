@@ -32,7 +32,9 @@ std::vector<uint8_t> OpenGLContext::getFramebuffer() const { return {}; }
 
 #include "glview/fbo.h"
 
-fbo_t *fbo_new() { return nullptr; }
-void fbo_unbind(fbo_t *fbo) {}
-void fbo_delete(fbo_t *fbo) {}
-bool fbo_init(fbo_t *fbo, size_t width, size_t height) { return false; }
+FBO::FBO(int, int, bool ) {}
+bool FBO::resize(size_t, size_t) { return false; }
+GLuint FBO::bind() { return 0; }
+void FBO::unbind() {}
+void FBO::destroy() {}
+std::unique_ptr<FBO> createFBO(int, int) {return nullptr;}
