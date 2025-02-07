@@ -1669,10 +1669,10 @@ void MainWindow::writeBackup(QFile *file)
 void MainWindow::saveBackup()
 {
   auto path = PlatformUtils::backupPath();
-//  if ((!fs::exists(path)) && (!PlatformUtils::createBackupPath())) {
-//    LOG(message_group::UI_Warning, "Cannot create backup path: %1$s", path);
-//    return;
-//  }
+  if ((!fs::exists(path)) && (!PlatformUtils::createBackupPath())) {
+    LOG(message_group::UI_Warning, "Cannot create backup path: %1$s", path);
+    return;
+  }
 
   auto backupPath = QString::fromLocal8Bit(path.c_str());
   if (!backupPath.endsWith("/")) backupPath.append("/");

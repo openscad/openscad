@@ -757,7 +757,7 @@ void initPython(double time)
 #else
     char sepchar = ':';
     stream << PlatformUtils::applicationPath() << "/../libraries/python";
-  #ifdef Q___APPLE__
+  #ifdef __APPLE__
     stream << sepchar + PlatformUtils::applicationPath() << "/../Frameworks/python" <<  PY_MAJOR_VERSION  <<  "."  <<  PY_MINOR_VERSION ; // where script puts it
     stream << sepchar + PlatformUtils::applicationPath() << "/../Frameworks/python" <<  PY_MAJOR_VERSION  <<  "."  <<  PY_MINOR_VERSION << "/site-packages"; // where script puts it
   #else
