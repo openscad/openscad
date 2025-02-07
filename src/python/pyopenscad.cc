@@ -757,7 +757,10 @@ void initPython(double time)
 #else
     char sepchar = ':';
     stream << PlatformUtils::applicationPath() << "/../libraries/python";
-    stream << sepchar + PlatformUtils::applicationPath() << "/../lib/python"  <<  PY_MAJOR_VERSION  <<  "."  <<  PY_MINOR_VERSION ; // find it where linuxdeply put it
+//    stream << sepchar + PlatformUtils::applicationPath() << "/../lib/python"  <<  PY_MAJOR_VERSION  <<  "."  <<  PY_MINOR_VERSION ; // find it where linuxdeply put it
+    stream << sepchar + PlatformUtils::applicationPath() << "/../Frameworks/python" <<  PY_MAJOR_VERSION  <<  "."  <<  PY_MINOR_VERSION ; // where script puts it
+    stream << sepchar + PlatformUtils::applicationPath() << "/../Frameworks/python" <<  PY_MAJOR_VERSION  <<  "."  <<  PY_MINOR_VERSION << "/site-packages"; // where script puts it
+
 #endif   
     stream << sepchar << PlatformUtils::userLibraryPath() << sepchar << ".";
     PyConfig_SetBytesString(&config, &config.pythonpath_env, stream.str().c_str());

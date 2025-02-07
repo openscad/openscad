@@ -1568,9 +1568,9 @@ void MainWindow::actionOpen()
 {
   auto fileInfoList = UIUtils::openFiles(this);
   for (auto& i : fileInfoList) {
-    if (!i.exists()) {
-      return;
-    }
+//    if (!i.exists()) {
+//      return;
+//    }
     tabManager->open(i.filePath());
   }
 }
@@ -1584,9 +1584,9 @@ void MainWindow::actionOpenWindow()
 {
   auto fileInfoList = UIUtils::openFiles(this);
   for (auto& i : fileInfoList) {
-    if (!i.exists()) {
-      return;
-    }
+//    if (!i.exists()) {
+//      return;
+//    }
     new MainWindow(QStringList(i.filePath()));
   }
 }
@@ -1669,10 +1669,10 @@ void MainWindow::writeBackup(QFile *file)
 void MainWindow::saveBackup()
 {
   auto path = PlatformUtils::backupPath();
-  if ((!fs::exists(path)) && (!PlatformUtils::createBackupPath())) {
-    LOG(message_group::UI_Warning, "Cannot create backup path: %1$s", path);
-    return;
-  }
+//  if ((!fs::exists(path)) && (!PlatformUtils::createBackupPath())) {
+//    LOG(message_group::UI_Warning, "Cannot create backup path: %1$s", path);
+//    return;
+//  }
 
   auto backupPath = QString::fromLocal8Bit(path.c_str());
   if (!backupPath.endsWith("/")) backupPath.append("/");

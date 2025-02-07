@@ -1,24 +1,28 @@
-# Try to find Nettle include and library directories.
+# Find the native Nettle includes, library, and flags
 #
-# After successful discovery, this will set for inclusion where needed:
-# NETTLE_INCLUDE_DIRS - containing the nettle headers
-# NETTLE_LIBRARIES - containing the nettle library
+#  NETTLE_INCLUDE_DIR - where to find nettle.h, etc.
+#  NETTLE_LIBRARIES   - List of libraries when using Nettle.
+#  NETTLE_FOUND       - True if Nettle found.
 
-find_package(PkgConfig REQUIRED QUIET)
+IF (NETTLE_INCLUDE_DIR)
+  # Already in cache, be silent
+  SET(NETTLE_FIND_QUIETLY TRUE)
+ENDIF (NETTLE_INCLUDE_DIR)
 
-pkg_check_modules(PC_NETTLE nettle>=0.1) 
+FIND_PATH(NETTLE_INCLUDE_DIR nettle/nettle-meta.h)
 
-find_path(Nettle_INCLUDE_DIRS NAMES nettle/sha2.h
-	HINTS ${PC_NETTLE_INCLUDE_DIRS} ${PC_NETTLE_INCLUDEDIR}
-)
+SET(NETTLE_NAMES nettle)
+FIND_LIBRARY(NETTLE_LIBRARY NAMES ${NETTLE_NAMES} )
 
-find_library(Nettle_LIBRARIES NAMES nettle
-	HINTS ${PC_NETTLE_LIBRARY_DIRS} ${PC_NETTLE_LIBDIR}
-)
+# handle the QUIETLY and REQUIRED arguments and set NETTLE_FOUND to TRUE if
+# all listed variables are TRUE
+INCLUDE(FindPackageHandleStandardArgs)
+FIND_PACKAGE_HANDLE_STANDARD_ARGS(NETTLE DEFAULT_MSG NETTLE_LIBRARY NETTLE_INCLUDE_DIR)
 
-set(Nettle_VERSION ${PC_NETTLE_VERSION})
-set(Nettle_LIBRARIES ${PC_NETTLE_LIBRARIES})
-set(Nettle_INCLUDE_DIRS ${PC_NETTLE_INCLUDE_DIRS})
+IF(NETTLE_FOUND)
+	SET(NETTLE_LIBRARIES ${NETTLE_LIBRARY})
+ELSE(NETTLE_FOUND)
+	SET(NETTLE_LIBRARIES )
+ENDIF(NETTLE_FOUND)
 
-include(FindPackageHandleStandardArgs)
-find_package_handle_standard_args(Nettle DEFAULT_MSG Nettle_INCLUDE_DIRS Nettle_LIBRARIES)
+MARK_AS_ADVANCED(NETTLE_LIBRARY NETTLE_INCLUDE_DIR)

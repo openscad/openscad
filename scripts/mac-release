@@ -1,0 +1,7 @@
+#! /bin/sh
+pwd
+VERSIONDATE=`date "+%Y.%m.%d"`
+#/usr/libexec/PlistBuddy -c "Set :CFBundleVersion $VERSIONDATE" OpenSCAD.app/Contents/Info.plist
+rm OpenSCAD.dmg
+/usr/local/Qt-6.7.2/bin/macdeployqt ./OpenSCAD.app -codesign=- -dmg -no-strip
+
