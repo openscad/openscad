@@ -138,11 +138,11 @@ void LaunchingScreen::checkOpen(const QVariant& data, bool forceShowEditor)
 void LaunchingScreen::openUserFile()
 {
   QFileInfo fileInfo = UIUtils::openFile(this);
-//  if (fileInfo.exists()) {
+  if (fileInfo.exists()) {
     this->forceShowEditor = false;
     this->files.append(fileInfo.canonicalFilePath());
     accept();
-//  }
+  }
 }
 
 void LaunchingScreen::openPython()

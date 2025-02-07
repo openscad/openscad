@@ -39,8 +39,8 @@ void export_step(const std::shared_ptr<const Geometry>& geom, std::ostream& outp
 	auto ps = PolySetUtils::getGeometryAsPolySet(geom);
 	if(ps == nullptr) return;
 
-	printf("export curves: %d\n",ps->curves.size());
-	printf("export surfaces: %d\n",ps->surfaces.size());
+	printf("export curves: %zu\n",ps->curves.size());
+	printf("export surfaces: %zu\n",ps->surfaces.size());
 	for(auto curve : ps->curves) {
 		curve->display(ps->vertices);
 	}

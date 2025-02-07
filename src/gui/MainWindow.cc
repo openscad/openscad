@@ -1568,9 +1568,9 @@ void MainWindow::actionOpen()
 {
   auto fileInfoList = UIUtils::openFiles(this);
   for (auto& i : fileInfoList) {
-//    if (!i.exists()) {
-//      return;
-//    }
+    if (!i.exists()) {
+      return;
+    }
     tabManager->open(i.filePath());
   }
 }
@@ -1584,9 +1584,9 @@ void MainWindow::actionOpenWindow()
 {
   auto fileInfoList = UIUtils::openFiles(this);
   for (auto& i : fileInfoList) {
-//    if (!i.exists()) {
-//      return;
-//    }
+    if (!i.exists()) {
+      return;
+    }
     new MainWindow(QStringList(i.filePath()));
   }
 }

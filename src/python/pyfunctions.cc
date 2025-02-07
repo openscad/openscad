@@ -3383,6 +3383,7 @@ PyObject *python_texture(PyObject *self, PyObject *args, PyObject *kwargs)
   textures.push_back(txt);
   return Py_None;
 }
+
 PyObject *python_textmetrics(PyObject *self, PyObject *args, PyObject *kwargs)
 {
   DECLARE_INSTANCE
@@ -3734,11 +3735,11 @@ PyObject *do_import_python(PyObject *self, PyObject *args, PyObject *kwargs, Imp
 #ifdef _WIN32
   std::string cur_dir = ".";
 #else 
-//  #ifdef Q_OS_MACOS
+#ifdef __APPLE__
     std::string cur_dir = ".";
-//  #else
-//    std::string cur_dir = get_current_dir_name();
-//  #endif
+#else
+  std::string cur_dir = get_current_dir_name();
+#endif
 #endif  
   filename = lookup_file(v == NULL ? "" : v, cur_dir, instance->location().filePath().parent_path().string());
   if (!filename.empty()) handle_dep(filename);

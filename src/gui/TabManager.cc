@@ -384,9 +384,9 @@ void TabManager::openFolder()
 {
   applyAction(QObject::sender(), [](int, EditorInterface *edt){
     auto dir = QFileInfo(edt->filepath).dir();
-//    if (dir.exists()) {
-//      QDesktopServices::openUrl(QUrl::fromLocalFile(dir.absolutePath()));
-//    }
+    if (dir.exists()) {
+      QDesktopServices::openUrl(QUrl::fromLocalFile(dir.absolutePath()));
+    }
   });
 }
 
@@ -762,12 +762,12 @@ bool TabManager::saveAs(EditorInterface *edt)
     // Manual overwrite check since Qt doesn't do it, when using the
     // defaultSuffix property
     const QFileInfo info(filename);
-//    if (info.exists()) {
-//      const auto text = QString(_("%1 already exists.\nDo you want to replace it?")).arg(info.fileName());
-//      if (QMessageBox::warning(par, par->windowTitle(), text, QMessageBox::Yes | QMessageBox::No, QMessageBox::No) != QMessageBox::Yes) {
-//        return false;
-//      }
-//    }
+    if (info.exists()) {
+      const auto text = QString(_("%1 already exists.\nDo you want to replace it?")).arg(info.fileName());
+      if (QMessageBox::warning(par, par->windowTitle(), text, QMessageBox::Yes | QMessageBox::No, QMessageBox::No) != QMessageBox::Yes) {
+        return false;
+      }
+    }
   }
 
   bool saveOk = save(edt, filename);
