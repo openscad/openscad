@@ -24,5 +24,5 @@ namespace ManifoldUtils {
   std::shared_ptr<const Geometry> applyMinkowskiManifold(const Geometry::Geometries& children);
 #endif
 
-  std::unique_ptr<PolySet> createTriangulatedPolySetFromPolygon2d(const Polygon2d& polygon2d);
+  std::unique_ptr<PolySet> createTriangulatedPolySetFromPolygon2d(const Polygon2d& polygon2d, bool in3d);
 };
