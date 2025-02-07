@@ -22,8 +22,9 @@ public:
   OffscreenView(uint32_t width, uint32_t height);
   ~OffscreenView() override;
   bool save(std::ostream& output) const;
+  // TODO: Do we need to worry about deletion order?
   std::shared_ptr<OpenGLContext> ctx;
-  fbo_t *fbo;
+  std::unique_ptr<FBO> fbo;
 
   // overrides
   bool save(const char *filename) const override;
