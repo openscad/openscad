@@ -277,10 +277,9 @@ double Value::toInteger() const
   return floor(this->toDouble());
 }
 
-bool Value::getInt64(int64_t& ret, Value &err) const
+int64_t Value::toInt64() const
 {
-  ret = this->toInteger();
-  return true;
+  return this->toInteger();
 }
 
 double Value::toDouble() const
@@ -1110,12 +1109,8 @@ Value Value::operator%(const Value& v) const
 Value Value::operator<<(const Value& v) const
 {
   if (this->type() == Type::NUMBER && v.type() == Type::NUMBER) {
-    Value err;
-    int64_t lhs;
-    int64_t rhs;
-    if (!this->getInt64(lhs, err) || !v.getInt64(rhs, err)) {
-      return err;
-    }
+    int64_t lhs = this->toInt64();
+    int64_t rhs = v.toInt64();
     if (rhs < 0) {
       return Value::undef(STR("negative shift"));
     }
@@ -1130,12 +1125,8 @@ Value Value::operator<<(const Value& v) const
 Value Value::operator>>(const Value& v) const
 {
   if (this->type() == Type::NUMBER && v.type() == Type::NUMBER) {
-    Value err;
-    int64_t lhs;
-    int64_t rhs;
-    if (!this->getInt64(lhs, err) || !v.getInt64(rhs, err)) {
-      return err;
-    }
+    int64_t lhs = this->toInt64();
+    int64_t rhs = v.toInt64();
     if (rhs < 0) {
       return Value::undef(STR("negative shift"));
     }
@@ -1150,13 +1141,7 @@ Value Value::operator>>(const Value& v) const
 Value Value::operator&(const Value& v) const
 {
   if (this->type() == Type::NUMBER && v.type() == Type::NUMBER) {
-    Value err;
-    int64_t a;
-    int64_t b;
-    if (!this->getInt64(a, err) || !v.getInt64(b, err)) {
-      return err;
-    }
-    return (double)(a & b);
+    return (double)(this->toInt64() & v.toInt64());
   }
   return Value::undef(STR("undefined operation (", this->typeName(), " & ", v.typeName(), ")"));
 }
@@ -1164,13 +1149,7 @@ Value Value::operator&(const Value& v) const
 Value Value::operator|(const Value& v) const
 {
   if (this->type() == Type::NUMBER && v.type() == Type::NUMBER) {
-    Value err;
-    int64_t a;
-    int64_t b;
-    if (!this->getInt64(a, err) || !v.getInt64(b, err)) {
-      return err;
-    }
-    return (double)(a | b);
+    return (double)(this->toInt64() | v.toInt64());
   }
   return Value::undef(STR("undefined operation (", this->typeName(), " | ", v.typeName(), ")"));
 }
@@ -1194,12 +1173,7 @@ Value Value::operator-() const
 Value Value::operator~() const
 {
   if (this->type() == Type::NUMBER) {
-    Value err;
-    int64_t a;
-    if (!this->getInt64(a, err)) {
-      return err;
-    }
-    return (double)~a;
+    return (double)~this->toInt64();
   }
   return Value::undef(STR("undefined operation (~", this->typeName(), ")"));
 }

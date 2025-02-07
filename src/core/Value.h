@@ -321,6 +321,7 @@ public:
   [[nodiscard]] bool toBool() const;
   [[nodiscard]] double toDouble() const;
   [[nodiscard]] double toInteger() const;
+  [[nodiscard]] int64_t toInt64() const;
   [[nodiscard]] const str_utf8_wrapper& toStrUtf8Wrapper() const;
   [[nodiscard]] const VectorType& toVector() const;
   [[nodiscard]] const EmbeddedVectorType& toEmbeddedVector() const;
@@ -335,7 +336,6 @@ public:
   bool getFiniteDouble(double& v) const;
   bool getUnsignedInt(unsigned int& v) const;
   bool getPositiveInt(unsigned int& v) const;
-  bool getInt64(int64_t& v, Value& err) const;
   [[nodiscard]] std::string toString() const;
   [[nodiscard]] std::string toEchoString() const;
   [[nodiscard]] std::string toEchoStringNoThrow() const; //use this for warnings
