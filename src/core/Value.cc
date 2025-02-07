@@ -269,36 +269,17 @@ bool Value::toBool() const
   // NOLINTEND(bugprone-branch-clone)
 }
 
-// There is also convert_to_uint32, used for array indexes.
-// Perhaps the two should be unified so that they do the same thing.
-bool Value::getUint32(uint32_t&ret, Value& err) const
+// Convert the value to a double with an integer value, for use in bitwise operations.
+// Since there are several possible ways to do this (floor, ceil, round) this function
+// centralizes the choice for consistency.
+double Value::toInteger() const
 {
-  const double two32 = 4294967296.0;
-  const double two31 = 2147483648.0;
-
-  double d = this->toDouble();
-  if (d < -two31 || d >= two32) {
-    err = Value::undef(STR("Value (", d, ") out of range for binary operation"));
-    return false;
-  }
-
-  if (d < 0) {
-    d += two32;
-  }
-
-  ret = (uint32_t)floor(d);
-  return true;
+  return floor(this->toDouble());
 }
 
-bool Value::getInt32(int32_t& ret, Value &err) const
+bool Value::getInt64(int64_t& ret, Value &err) const
 {
-  const double two31 = 2147483648.0;
-  double d = this->toDouble();
-  if (d < -two31 || d >= two31) {
-    err = Value::undef(STR("Value (", d, ") out of range for binary operation"));
-    return false;
-  }
-  ret = (int32_t)floor(d);
+  ret = this->toInteger();
   return true;
 }
 
@@ -1130,15 +1111,15 @@ Value Value::operator<<(const Value& v) const
 {
   if (this->type() == Type::NUMBER && v.type() == Type::NUMBER) {
     Value err;
-    uint32_t lhs;
-    int32_t rhs;
-    if (!this->getUint32(lhs, err) || !v.getInt32(rhs, err)) {
+    int64_t lhs;
+    int64_t rhs;
+    if (!this->getInt64(lhs, err) || !v.getInt64(rhs, err)) {
       return err;
     }
     if (rhs < 0) {
       return Value::undef(STR("negative shift"));
     }
-    if (rhs >= 32) {
+    if (rhs >= 64) {
       return Value::undef(STR("shift too large"));
     }
     return (double)(lhs << rhs);
@@ -1150,15 +1131,15 @@ Value Value::operator>>(const Value& v) const
 {
   if (this->type() == Type::NUMBER && v.type() == Type::NUMBER) {
     Value err;
-    uint32_t lhs;
-    int32_t rhs;
-    if (!this->getUint32(lhs, err) || !v.getInt32(rhs, err)) {
+    int64_t lhs;
+    int64_t rhs;
+    if (!this->getInt64(lhs, err) || !v.getInt64(rhs, err)) {
       return err;
     }
     if (rhs < 0) {
       return Value::undef(STR("negative shift"));
     }
-    if (rhs >= 32) {
+    if (rhs >= 64) {
       return Value::undef(STR("shift too large"));
     }
     return (double)(lhs >> rhs);
@@ -1170,9 +1151,9 @@ Value Value::operator&(const Value& v) const
 {
   if (this->type() == Type::NUMBER && v.type() == Type::NUMBER) {
     Value err;
-    uint32_t a;
-    uint32_t b;
-    if (!this->getUint32(a, err) || !v.getUint32(b, err)) {
+    int64_t a;
+    int64_t b;
+    if (!this->getInt64(a, err) || !v.getInt64(b, err)) {
       return err;
     }
     return (double)(a & b);
@@ -1184,9 +1165,9 @@ Value Value::operator|(const Value& v) const
 {
   if (this->type() == Type::NUMBER && v.type() == Type::NUMBER) {
     Value err;
-    uint32_t a;
-    uint32_t b;
-    if (!this->getUint32(a, err) || !v.getUint32(b, err)) {
+    int64_t a;
+    int64_t b;
+    if (!this->getInt64(a, err) || !v.getInt64(b, err)) {
       return err;
     }
     return (double)(a | b);
@@ -1214,11 +1195,11 @@ Value Value::operator~() const
 {
   if (this->type() == Type::NUMBER) {
     Value err;
-    uint32_t value;
-    if (!this->getUint32(value, err)) {
+    int64_t a;
+    if (!this->getInt64(a, err)) {
       return err;
     }
-    return {(double)~value};
+    return (double)~a;
   }
   return Value::undef(STR("undefined operation (~", this->typeName(), ")"));
 }

@@ -1,19 +1,22 @@
+WARNING: Hexadecimal constant "0x10000000000000000" too large in file ../../tests/data/scad/functions/bitwise-operators.scad, line 106
+WARNING: Integer "0x1000000000000001" cannot be represented precisely in file ../../tests/data/scad/functions/bitwise-operators.scad, line 108
+WARNING: Integer "1152921504606846977" cannot be represented precisely in file ../../tests/data/scad/functions/bitwise-operators.scad, line 109
+WARNING: Integer "0xffffffffffffffff" cannot be represented precisely in file ../../tests/data/scad/functions/bitwise-operators.scad, line 112
+WARNING: Integer "18446744073709551615" cannot be represented precisely in file ../../tests/data/scad/functions/bitwise-operators.scad, line 112
 ECHO: "Expect two warnings:"
-WARNING: undefined operation (number | bool) in file bitwise-operators.scad, line 40
-WARNING: undefined operation (bool | number) in file bitwise-operators.scad, line 42
+WARNING: undefined operation (number | bool) in file bitwise-operators.scad, line 42
+WARNING: undefined operation (bool | number) in file bitwise-operators.scad, line 44
 ECHO: "Expect warnings:"
-WARNING: Value (4.29497e+09) out of range for binary operation in file bitwise-operators.scad, line 86
-WARNING: Value (-2.14748e+09) out of range for binary operation in file bitwise-operators.scad, line 87
-WARNING: shift too large in file bitwise-operators.scad, line 88
-WARNING: negative shift in file bitwise-operators.scad, line 89
-WARNING: shift too large in file bitwise-operators.scad, line 90
-WARNING: negative shift in file bitwise-operators.scad, line 91
-WARNING: undefined operation (number | string) in file bitwise-operators.scad, line 92
-WARNING: undefined operation (string | number) in file bitwise-operators.scad, line 93
-WARNING: undefined operation (number & string) in file bitwise-operators.scad, line 94
-WARNING: undefined operation (string & number) in file bitwise-operators.scad, line 95
-WARNING: undefined operation (number << string) in file bitwise-operators.scad, line 96
-WARNING: undefined operation (string << number) in file bitwise-operators.scad, line 97
-WARNING: undefined operation (number >> string) in file bitwise-operators.scad, line 98
-WARNING: undefined operation (string >> number) in file bitwise-operators.scad, line 99
-WARNING: undefined operation (~string) in file bitwise-operators.scad, line 100
+WARNING: shift too large in file bitwise-operators.scad, line 91
+WARNING: negative shift in file bitwise-operators.scad, line 92
+WARNING: shift too large in file bitwise-operators.scad, line 93
+WARNING: negative shift in file bitwise-operators.scad, line 94
+WARNING: undefined operation (number | string) in file bitwise-operators.scad, line 95
+WARNING: undefined operation (string | number) in file bitwise-operators.scad, line 96
+WARNING: undefined operation (number & string) in file bitwise-operators.scad, line 97
+WARNING: undefined operation (string & number) in file bitwise-operators.scad, line 98
+WARNING: undefined operation (number << string) in file bitwise-operators.scad, line 99
+WARNING: undefined operation (string << number) in file bitwise-operators.scad, line 100
+WARNING: undefined operation (number >> string) in file bitwise-operators.scad, line 101
+WARNING: undefined operation (string >> number) in file bitwise-operators.scad, line 102
+WARNING: undefined operation (~string) in file bitwise-operators.scad, line 103
