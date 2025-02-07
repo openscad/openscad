@@ -204,6 +204,17 @@ static std::shared_ptr<AbstractNode> builtin_assign(const ModuleInstantiation *i
 static std::shared_ptr<AbstractNode> builtin_for(const ModuleInstantiation *inst, const std::shared_ptr<const Context>& context)
 {
   auto node = lazyUnionNode(inst);
+
+  // special case: if user appends "union=false" then pass all child nodes
+  // of for() loop to the parent node as if they were declared there.
+  std::shared_ptr<GroupNode> gr;
+  if (Feature::ExperimentalSkin.is_enabled()
+    && inst->arguments.size()>=2 
+    && inst->arguments[1]->getName()=="union"
+    && (gr = std::dynamic_pointer_cast<GroupNode>(node))
+  )
+    gr->setImpliedUnion(inst->arguments[1]->getExpr()->evaluate(context).toBool());
+
   if (!inst->arguments.empty()) {
     LcFor::forEach(inst->arguments, inst->location(), context,
                    [inst, node] (const std::shared_ptr<const Context>& iterationContext) {
@@ -271,6 +282,9 @@ void register_builtin_control()
     "for([start : increment : end])",
     "for([start : end])",
     "for([vector])",
+    "for([start : increment : end],boolean)",
+    "for([start : end],boolean)",
+    "for([vector],boolean)",
   });
 
   Builtins::init("let", new BuiltinModule(builtin_let),

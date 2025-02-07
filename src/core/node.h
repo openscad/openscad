@@ -119,8 +119,13 @@ public:
   GroupNode(const ModuleInstantiation *mi, std::string name = "") : AbstractNode(mi), _name(std::move(name)) { }
   std::string name() const override;
   std::string verbose_name() const override;
+
+  void setImpliedUnion(bool val) {_impliedUnion = val;};
+  bool getImpliedUnion() {return _impliedUnion; }
 private:
   const std::string _name;
+  // To maintain back-compat, GroupNode might perform an implied UNION of its children.
+  bool _impliedUnion {true};
 };
 
 /*!
