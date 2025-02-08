@@ -26,6 +26,7 @@
 
 #include "openscad.h"
 
+#include <memory>
 #include <utility>
 #include <vector>
 #include <chrono>

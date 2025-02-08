@@ -26,6 +26,7 @@
 
 #include "gui/ExternalToolInterface.h"
 
+#include <memory>
 #include <QDir>
 #include <QString>
 #include <QFileInfo>
