@@ -37,7 +37,7 @@
 
 #include <clipper2/clipper.offset.h>
 
-#include "ClipperUtils.h"
+#include "geometry/ClipperUtils.h"
 #include "libsvg/circle.h"
 #include "libsvg/ellipse.h"
 #include "libsvg/line.h"

@@ -90,7 +90,7 @@
 #include "gui/FontListDialog.h"
 #include "gui/LibraryInfoDialog.h"
 #include "gui/ScintillaEditor.h"
-#include <fileutils.h>
+#include <src/io/fileutils.h>
 #include <fstream>
 #ifdef ENABLE_OPENCSG
 #include "core/CSGTreeEvaluator.h"

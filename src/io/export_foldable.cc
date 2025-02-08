@@ -25,17 +25,17 @@
 
 #include "export.h"
 
-#include "PolySet.h"
-#include "cgalutils.h"
-#include "PolySetUtils.h"
+#include "src/geometry/PolySet.h"
+#include "src/geometry/cgal/cgalutils.h"
+#include "src/geometry/PolySetUtils.h"
 #include <unordered_map>
-#include "boost-utils.h"
-#include <hash.h>
+#include "src/utils/boost-utils.h"
+#include <src/utils/hash.h>
 #include <cairo.h>
 #include <cairo-pdf.h>
 
 #include "export_foldable.h"
-#include "GeometryEvaluator.h"
+#include "src/geometry/GeometryEvaluator.h"
 
 
 Vector2d pointrecht(Vector2d x)

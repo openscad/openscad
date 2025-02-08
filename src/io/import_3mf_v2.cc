@@ -31,7 +31,7 @@
 #include "utils/printutils.h"
 #include "utils/version_helper.h"
 #include "core/AST.h"
-#include "RenderSettings.h"
+#include "glview/RenderSettings.h"
 
 #include <cstdint>
 #include <unordered_map>

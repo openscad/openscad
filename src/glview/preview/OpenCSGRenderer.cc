@@ -25,8 +25,8 @@
  */
 
 #include "glview/preview/OpenCSGRenderer.h"
-#include "Renderer.h"
-#include "VertexState.h"
+#include "glview/Renderer.h"
+#include "glview/VertexState.h"
 #include "geometry/linalg.h"
 #include "glview/system-gl.h"
 

@@ -32,9 +32,9 @@
 #include <string>
 #include <tuple>
 #include <unordered_map>
-#include "ColorUtil.h"
-#include "Context.h"
-#include "Settings.h"
+#include "core/ColorUtil.h"
+#include "core/Context.h"
+#include "core/Settings.h"
 
 #ifdef _WIN32
 #include <io.h>
@@ -75,7 +75,7 @@
 #include "platform/PlatformUtils.h"
 #include "RenderStatistic.h"
 #include "utils/StackCheck.h"
-#include "printutils.h"
+#include "utils/printutils.h"
 
 
 #ifdef ENABLE_PYTHON

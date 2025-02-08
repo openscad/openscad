@@ -28,17 +28,17 @@
 #include "Arguments.h"
 #include "Expression.h"
 #include "Builtins.h"
-#include "printutils.h"
+#include "src/utils/printutils.h"
 #include "memory.h"
 #include "UserModule.h"
-#include "degree_trig.h"
+#include "src/utils/degree_trig.h"
 #include "FreetypeRenderer.h"
 #include "Parameters.h"
 #include "io/import.h"
 #include "io/fileutils.h"
 #include "jpeglib.h"
 #include "TextureNode.h"
-#include "PlatformUtils.h"
+#include "src/platform/PlatformUtils.h"
 
 struct my_error_mgr {
 	struct jpeg_error_mgr pub;

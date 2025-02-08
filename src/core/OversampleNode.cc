@@ -29,20 +29,20 @@
 #include "ModuleInstantiation.h"
 #include "Children.h"
 #include "Parameters.h"
-#include "printutils.h"
+#include "src/utils/printutils.h"
 #include "io/fileutils.h"
 #include "Builtins.h"
 #include "handle_dep.h"
-#include "PolySetBuilder.h"
+#include "src/geometry/PolySetBuilder.h"
 
 #include <cmath>
 #include <sstream>
 
-#include <PolySetUtils.h>
-#include <Tree.h>
-#include <GeometryEvaluator.h>
+#include <src/geometry/PolySetUtils.h>
+#include <src/core/Tree.h>
+#include <src/geometry/GeometryEvaluator.h>
 #include <boost/functional/hash.hpp>
-#include <hash.h>
+#include <src/utils/hash.h>
 typedef std::vector<int> intList;
 
 double roundCoord(double c) {

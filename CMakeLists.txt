@@ -716,24 +716,6 @@ target_include_directories(OpenSCAD PRIVATE
   "src/ext"
   "src/ext/lexertl/include"
   "src/ext/libtess2/Include"
-
-  # All the following should go away, not needed anymore after
-  # PR #5312. Left here for now in case there are on-going PRs that
-  # rely on these. Should be removed soon.
-  "src/core"
-  "src/core/customizer"
-  "src/ext/json"
-  "src/ext"
-  "src/geometry"
-  "src/geometry/cgal"
-  "src/geometry/manifold"
-  "src/glview"
-  "src/glview/preview"
-  "src/glview/cgal"
-  "src/gui"
-  "src/io"
-  "src/platform"
-  "src/utils"
 )
 
 FLEX_TARGET(openscad_lexer src/core/lexer.l ${OPENSCAD_LIB_OUTPUT_DIR}/lexer.cxx DEFINES_FILE ${OPENSCAD_LIB_OUTPUT_DIR}/lexer.hxx COMPILE_FLAGS ${WINCOMPAT})

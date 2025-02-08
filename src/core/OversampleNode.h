@@ -2,8 +2,8 @@
 
 #include "node.h"
 #include "Value.h"
-#include <linalg.h>
-#include "PolySet.h"
+#include <src/geometry/linalg.h>
+#include "src/geometry/PolySet.h"
 
 class OversampleNode : public LeafNode
 {

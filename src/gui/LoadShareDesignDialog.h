@@ -27,7 +27,6 @@
 #pragma once
 
 #include "qtgettext.h"
-#include "export.h"
 #include "ui_LoadShareDesignDialog.h"
 
 class LoadShareDesignDialog : public QDialog, public Ui::LoadShareDesignDialog

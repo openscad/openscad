@@ -24,8 +24,8 @@
  *
  */
 
-#include "linalg.h"
-#include "GeometryUtils.h"
+#include "src/geometry/linalg.h"
+#include "src/geometry/GeometryUtils.h"
 #include "primitives.h"
 #include "TransformNode.h"
 #include "RotateExtrudeNode.h"

@@ -43,8 +43,8 @@
 #include <algorithm>
 #include "utils/boost-utils.h"
 #include "geometry/boolean_utils.h"
-#include <hash.h>
-#include <Selection.h>
+#include <src/utils/hash.h>
+#include <src/core/Selection.h>
 #ifdef ENABLE_CGAL
 #include "geometry/cgal/CGALCache.h"
 #include "geometry/cgal/cgalutils.h"

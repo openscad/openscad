@@ -1,7 +1,7 @@
 #pragma once
 
 #include "node.h"
-#include "Geometry.h"
+#include "src/geometry/Geometry.h"
 
 class DebugNode : public AbstractPolyNode
 {

@@ -32,9 +32,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.*/
 #include <algorithm>
 #include <sstream>
 #include <math.h>
-#include "GeometryUtils.h"
-#include <Curve.h>
-#include <Surface.h>
+#include "src/geometry/GeometryUtils.h"
+#include <src/geometry/Curve.h>
+#include <src/geometry/Surface.h>
 
 class StepKernel
 {

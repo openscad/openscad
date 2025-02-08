@@ -13,7 +13,7 @@
 
 #include <cairo.h>
 #include <cairo-pdf.h>
-#include "PolySetUtils.h"
+#include "src/geometry/PolySetUtils.h"
 #include "export_foldable.h"
 
 constexpr inline auto FONT = "Liberation Sans";

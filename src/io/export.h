@@ -11,11 +11,11 @@
 #include <boost/range/algorithm.hpp>
 #include <boost/range/adaptor/map.hpp>
 
-#include "Settings.h"
+#include "core/Settings.h"
 #include "core/Tree.h"
 #include "glview/Camera.h"
 #include "glview/ColorMap.h"
-#include "linalg.h"
+#include "geometry/linalg.h"
 
 #include "io/export_enums.h"
 

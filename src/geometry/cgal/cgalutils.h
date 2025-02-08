@@ -10,7 +10,7 @@
 #include <vector>
 
 #include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
-#include "CsgOpNode.h"
+#include "core/CsgOpNode.h"
 
 using K = CGAL::Epick;
 using Vertex3K = CGAL::Point_3<K>;

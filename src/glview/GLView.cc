@@ -11,7 +11,7 @@
 #include <memory>
 #include <cmath>
 #include <cstdio>
-#include "TextureNode.h"
+#include "src/core/TextureNode.h"
 #include <string>
 
 #ifdef ENABLE_OPENCSG

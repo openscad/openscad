@@ -2,7 +2,7 @@
 
 #include "node.h"
 //#include "Value.h"
-#include "Geometry.h"
+#include "src/geometry/Geometry.h"
 
 class WrapNode : public AbstractPolyNode
 {

@@ -25,14 +25,14 @@
 
 #include "export.h"
 #include "StepKernel.h"
-#include "PolySet.h"
-#include "cgalutils.h"
-#include "PolySetUtils.h"
+#include "src/geometry/PolySet.h"
+#include "src/geometry/cgal/cgalutils.h"
+#include "src/geometry/PolySetUtils.h"
 #include <unordered_map>
-#include "boost-utils.h"
-#include <hash.h>
-#include <PolySetUtils.h>
-#include <GeometryEvaluator.h>
+#include "src/utils/boost-utils.h"
+#include <src/utils/hash.h>
+#include <src/geometry/PolySetUtils.h>
+#include <src/geometry/GeometryEvaluator.h>
 
 void export_step(const std::shared_ptr<const Geometry>& geom, std::ostream& output, const ExportInfo& exportInfo)
 {

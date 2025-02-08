@@ -4,16 +4,16 @@
 #include <boost/logic/tribool.hpp>
 
 #include "GeometryUtils.h"
-#include "RotateExtrudeNode.h"
+#include "src/core/RotateExtrudeNode.h"
 #include "PolySet.h"
 #include "PolySetBuilder.h"
 #include "PolySetUtils.h"
-#include "calc.h"
-#include "degree_trig.h"
+#include "src/utils/calc.h"
+#include "src/utils/degree_trig.h"
 #include "Feature.h"
 #include <cmath>
 
-#include "manifoldutils.h"
+#include "src/geometry/manifold/manifoldutils.h"
 
 Outline2d alterprofile(Outline2d profile,double scalex, double scaley, double
 		origin_x, double origin_y,double offset_x, double offset_y,

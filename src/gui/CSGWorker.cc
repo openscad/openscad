@@ -1,11 +1,11 @@
 #include "CSGWorker.h"
 #include <QThread>
 
-#include "Tree.h"
-#include "GeometryEvaluator.h"
-#include "progress.h"
-#include "printutils.h"
-#include "exceptions.h"
+#include "src/core/Tree.h"
+#include "src/geometry/GeometryEvaluator.h"
+#include "src/core/progress.h"
+#include "src/utils/printutils.h"
+#include "src/utils/exceptions.h"
 
 #ifdef ENABLE_PYTHON
 #include "python/python_public.h"
