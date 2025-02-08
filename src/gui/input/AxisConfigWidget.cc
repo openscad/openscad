@@ -41,7 +41,7 @@
 #include "gui/SettingsWriter.h"
 #include "gui/IgnoreWheelWhenNotFocused.h"
 #include "gui/InitConfigurator.h"
-#include "input/InputEventMapper.h"
+#include "gui/input/InputEventMapper.h"
 
 AxisConfigWidget::AxisConfigWidget(QWidget *parent) : QWidget(parent)
 {

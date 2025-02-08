@@ -28,8 +28,8 @@
 
 #include "CGAL/OGL_helper.h"
 
-#include "ColorMap.h"
-#include "VertexState.h"
+#include "glview/ColorMap.h"
+#include "glview/VertexState.h"
 #include "glview/system-gl.h"
 #include "glview/VBOBuilder.h"
 #include "glview/ColorMap.h"

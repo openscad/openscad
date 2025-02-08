@@ -29,8 +29,8 @@
 #include <QString>
 #include <QDialog>
 
-#include "export.h"
-#include "Settings.h"
+#include "io/export.h"
+#include "core/Settings.h"
 #include "gui/SettingsWriter.h"
 
 using S = Settings::SettingsExportPdf;

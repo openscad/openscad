@@ -36,7 +36,7 @@
 #include <Common/Platform/NMR_WinTypes.h>
 #include <Model/COM/NMR_DLLInterfaces.h>
 
-#include "ColorUtil.h"
+#include "core/ColorUtil.h"
 #include "geometry/GeometryUtils.h"
 #include "geometry/PolySet.h"
 #include "geometry/PolySetUtils.h"
