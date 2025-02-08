@@ -26,6 +26,7 @@
 
 #include "gui/PrintService.h"
 
+#include <mutex>
 #include <utility>
 #include <unordered_map>
 #include <memory>
