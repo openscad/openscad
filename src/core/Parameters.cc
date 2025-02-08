@@ -72,7 +72,7 @@ const Value& Parameters::get(const std::initializer_list<std::string> names) con
   std::string matchName;
   boost::optional<const Value&> matchValue;
 
-  for (std::string name: names) {
+  for (const std::string& name: names) {
     boost::optional<const Value&> value = lookup(name);
     if (value && value->isDefined()) {
       if (!matchValue) {
