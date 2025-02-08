@@ -32,7 +32,7 @@ jobs:
     - name: Retrieve cached results
       uses: actions/cache@v4
       with:
-        path: /root/.cache/clang-tidy
+        path: /home/runner/.cache/clang-tidy
         key: clang-tidy
 
     - name: Run ClangTidy
