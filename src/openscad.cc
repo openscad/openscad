@@ -26,6 +26,7 @@
 
 #include "openscad.h"
 
+#include <ostream>
 #include <sstream>
 #include <array>
 #include <memory>
