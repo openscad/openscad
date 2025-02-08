@@ -2676,7 +2676,7 @@ PyObject *python_skin(PyObject *self, PyObject *args, PyObject *kwargs)
 	      node->has_interpolate=true;
 	      node->interpolate=tmp;
       } else {
-          PyErr_SetString(PyExc_TypeError, "Unkown parameter name in CSG.");
+          PyErr_SetString(PyExc_TypeError, "Unkown parameter name in skin.");
 	  return nullptr;
       }
 
