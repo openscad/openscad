@@ -52,6 +52,7 @@ extern bool parse(SourceFile *& file, const std::string& text, const std::string
 #include "OversampleNode.h"
 #include "DebugNode.h"
 #include "FilletNode.h"
+#include "SkinNode.h"
 #include "CgalAdvNode.h"
 #include "CsgOpNode.h"
 #include "ColorNode.h"
@@ -2639,6 +2640,73 @@ PyObject *python_path_extrude(PyObject *self, PyObject *args, PyObject *kwargs)
   return path_extrude_core(obj, path, xdir, convexity, origin, scale, twist, closed, allow_intersect, fn, fa, fs);
 }
 
+PyObject *python_skin(PyObject *self, PyObject *args, PyObject *kwargs)
+{
+  DECLARE_INSTANCE
+  int i;
+
+  auto node = std::make_shared<SkinNode>(instance);
+  PyObject *obj;
+  PyObject *child_dict = nullptr;	  
+  PyObject *dummy_dict = nullptr;	  
+  std::shared_ptr<AbstractNode> child;
+  if(kwargs != nullptr) {
+    PyObject *key, *value;
+    Py_ssize_t pos = 0;
+    while (PyDict_Next(kwargs, &pos, &key, &value)) {
+      PyObject* value1 = PyUnicode_AsEncodedString(key, "utf-8", "~");
+      const char *value_str =  PyBytes_AS_STRING(value1);
+      double tmp;
+      if(value_str == nullptr) {
+          PyErr_SetString(PyExc_TypeError, "Unkown parameter name in CSG.");
+	  return nullptr;
+      } else if(strcmp(value_str,"convexity") == 0) {
+	      python_numberval(value,&tmp);
+	      node->convexity=(int) tmp;
+      } else if(strcmp(value_str,"align_angle") == 0) {
+	      python_numberval(value,&tmp);
+	      node->align_angle=tmp;
+	      node->has_align_angle=true;
+      } else if(strcmp(value_str,"segments") == 0) {
+	      python_numberval(value,&tmp);
+	      node->has_segments=true;
+	      node->segments=(int)tmp;
+      } else if(strcmp(value_str,"interpolate") == 0) {
+	      python_numberval(value,&tmp);
+	      node->has_interpolate=true;
+	      node->interpolate=tmp;
+      } else {
+          PyErr_SetString(PyExc_TypeError, "Unkown parameter name in CSG.");
+	  return nullptr;
+      }
+
+    }	    
+  }
+  for (i = 0; i < PyTuple_Size(args);i++) {
+    obj = PyTuple_GetItem(args, i);
+    if(i == 0) child = PyOpenSCADObjectToNodeMulti(obj, &child_dict);
+    else child = PyOpenSCADObjectToNodeMulti(obj, &dummy_dict);
+    if(child != NULL) {
+      node->children.push_back(child);
+    } else {
+        PyErr_SetString(PyExc_TypeError, "Error during skin. arguments must be solids or arrays.");
+	return nullptr;
+    }
+  }
+
+  PyObject *pyresult =PyOpenSCADObjectFromNode(&PyOpenSCADType, node);
+  if(child_dict != nullptr ) {
+    PyObject *key, *value;
+    Py_ssize_t pos = 0;
+     while(PyDict_Next(child_dict, &pos, &key, &value)) {
+       PyDict_SetItem(((PyOpenSCADObject *) pyresult)->dict, key, value);
+    }
+  }
+  return pyresult;
+}
+
+
+
 PyObject *python_oo_path_extrude(PyObject *obj, PyObject *args, PyObject *kwargs)
 {
   int convexity=1;
@@ -4149,6 +4217,7 @@ PyMethodDef PyOpenSCADFunctions[] = {
   {"linear_extrude", (PyCFunction) python_linear_extrude, METH_VARARGS | METH_KEYWORDS, "Linear_extrude Object."},
   {"rotate_extrude", (PyCFunction) python_rotate_extrude, METH_VARARGS | METH_KEYWORDS, "Rotate_extrude Object."},
   {"path_extrude", (PyCFunction) python_path_extrude, METH_VARARGS | METH_KEYWORDS, "Path_extrude Object."},
+  {"skin", (PyCFunction) python_skin, METH_VARARGS | METH_KEYWORDS, "Path_extrude Object."},
 
   {"union", (PyCFunction) python_union, METH_VARARGS | METH_KEYWORDS, "Union Object."},
   {"difference", (PyCFunction) python_difference, METH_VARARGS | METH_KEYWORDS, "Difference Object."},
