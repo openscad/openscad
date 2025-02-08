@@ -1,7 +1,7 @@
 #pragma once
 
-#include <filesystem>
 #include <QStringList>
+#include <filesystem>
 #include <map>
 #include <functional>
 #include <memory>
