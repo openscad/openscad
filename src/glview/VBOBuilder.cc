@@ -494,7 +494,7 @@ void VBOBuilder::create_edges(const Polygon2d& polygon,
   std::unordered_map<Vector3d, Vector3d> vert_mult_map;
 
   // Render only outlines
-  for (const Outline2d& o : polygon.outlines()) {
+  for (const Outline2d& o : polygon.untransformedOutlines()) {
     const auto last_size = verticesOffset();
     size_t elements_offset = 0;
     if (useElements()) {
