@@ -1,5 +1,6 @@
 #pragma once
 
+#include <string>
 #include "glview/system-gl.h"
 
 namespace ShaderUtils {

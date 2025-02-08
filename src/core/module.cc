@@ -26,6 +26,7 @@
 
 #include "core/module.h"
 
+#include <string>
 #include <memory>
 #include "core/Arguments.h"
 #include "core/Children.h"
