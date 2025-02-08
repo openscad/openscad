@@ -35,7 +35,7 @@
 #include <QNetworkRequest>
 #include <QStringList>
 
-#include "export.h"
+#include "io/export.h"
 #include "utils/printutils.h"
 
 std::mutex PrintService::printServiceMutex;

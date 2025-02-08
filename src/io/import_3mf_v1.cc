@@ -28,12 +28,12 @@
 #include "geometry/PolySetBuilder.h"
 #include "geometry/PolySetUtils.h"
 #include "geometry/Geometry.h"
-#include "linalg.h"
+#include "geometry/linalg.h"
 #include "utils/printutils.h"
 #include "utils/version_helper.h"
 #include "core/AST.h"
 #include "Feature.h"
-#include "RenderSettings.h"
+#include "glview/RenderSettings.h"
 
 #include <cstdint>
 #include <memory>

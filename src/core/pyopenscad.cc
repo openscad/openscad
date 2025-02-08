@@ -26,7 +26,7 @@
 
 #include <string>
 #include <memory>
-#include <node.h>
+#include "core/node.h"
 
 std::shared_ptr<AbstractNode> python_result_node; 
 

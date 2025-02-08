@@ -29,7 +29,7 @@
 #include <QDialog>
 #include <QString>
 
-#include "export.h"
+#include "io/export.h"
 #include "gui/PrintService.h"
 #include "gui/QSettingsCached.h"
 #include "core/Settings.h"

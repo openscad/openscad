@@ -32,7 +32,7 @@
 #include <QStringList>
 #include <QTemporaryFile>
 
-#include "Settings.h"
+#include "core/Settings.h"
 #include "gui/OctoPrint.h"
 #include "io/export.h"
 #include "geometry/Geometry.h"
