@@ -157,8 +157,6 @@ if [ -e /etc/issue ]; then
   get_debian_deps
  elif [ "`grep -i linux.mint /etc/issue`" ]; then
   get_debian_deps
- elif [ "`grep -i pop\!_os /etc/issue`" ]; then
-  get_debian_deps
  elif [ "`grep -i suse /etc/issue`" ]; then
   get_opensuse_deps
  elif [ "`grep -i fedora.release.2[2-9] /etc/issue`" ]; then
@@ -184,6 +182,12 @@ if [ -e /etc/issue ]; then
  elif [ "`command -v rpm`" ]; then
   if [ "`rpm -qa | grep altlinux`" ]; then
    get_altlinux_deps
+  fi
+ elif [ -e /etc/os-release -o -e /usr/lib/os-release ]; then
+  test -e /etc/os-release && os_release="/etc/os-release" || os_release="/usr/lib/os-release"
+  . "${os_release}"
+  if [ "${ID:-linux}" = "debian" ] || [ "${ID_LIKE#*debian*}" != "${ID_LIKE}" ]; then
+   get_debian_deps
   fi
  else
   unknown
