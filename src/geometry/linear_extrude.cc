@@ -616,10 +616,12 @@ std::unique_ptr<Geometry> extrudePolygon(const LinearExtrudeNode& node, const Po
     } else 
 #endif
 {
+     Transform3d tr = 	polyref.getTransform3d();
      for (const auto& o : polyref.outlines()) {
       for (const auto& v : o.vertices) {
         auto tmp = trans * v;
-        vertices.emplace_back(Vector3d(tmp[0], tmp[1], 0.0) + h1 + full_height * slice_idx / num_slices);
+	Vector3d tmp1 = tr*Vector3d(tmp[0], tmp[1], 0.0);
+        vertices.emplace_back(tmp1 + h1 + full_height * slice_idx / num_slices);
       }
       }
     }
