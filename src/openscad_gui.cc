@@ -26,6 +26,7 @@
 
 #include "openscad_gui.h"
 
+#include <filesystem>
 #include <string>
 #include <vector>
 #include <QDir>
