@@ -10,6 +10,7 @@ extern bool python_runipython;
 extern AssignmentList customizer_parameters;
 extern AssignmentList customizer_parameters_finished;
 void python_export_obj_att(std::ostream& output);
+std::string python_version(void);
 
 void initPython(double time);
 

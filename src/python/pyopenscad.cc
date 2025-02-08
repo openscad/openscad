@@ -161,6 +161,12 @@ std::shared_ptr<AbstractNode> PyOpenSCADObjectToNode(PyObject *obj, PyObject **d
   return result;
 }
 
+std::string python_version(void)
+{
+  std::ostringstream stream;
+  stream << "Python" <<  PY_MAJOR_VERSION  <<  "."  <<  PY_MINOR_VERSION  << "." << PY_MICRO_VERSION ;
+  return stream.str();
+}
 
 /*
  * same as  python_more_obj but always returns only one AbstractNode by creating an UNION operation

@@ -3449,7 +3449,7 @@ PyObject *python_textmetrics(PyObject *self, PyObject *args, PyObject *kwargs)
   return (PyObject *)dict;
 }
 
-PyObject *python_version(PyObject *self, PyObject *args, PyObject *kwargs)
+PyObject *python_osversion(PyObject *self, PyObject *args, PyObject *kwargs)
 {
 
   char *kwlist[] = {NULL};
@@ -3471,7 +3471,7 @@ PyObject *python_version(PyObject *self, PyObject *args, PyObject *kwargs)
 }
 
 
-PyObject *python_version_num(PyObject *self, PyObject *args, PyObject *kwargs)
+PyObject *python_osversion_num(PyObject *self, PyObject *args, PyObject *kwargs)
 {
 
   char *kwlist[] = {NULL};
@@ -4176,8 +4176,8 @@ PyMethodDef PyOpenSCADFunctions[] = {
   {"nimport", (PyCFunction) python_nimport, METH_VARARGS | METH_KEYWORDS, "Import Networked Object."},
   {"osuse", (PyCFunction) python_osuse, METH_VARARGS | METH_KEYWORDS, "Use OpenSCAD Library."},
   {"osinclude", (PyCFunction) python_osinclude, METH_VARARGS | METH_KEYWORDS, "Include OpenSCAD Library."},
-  {"version", (PyCFunction) python_version, METH_VARARGS | METH_KEYWORDS, "Output openscad Version."},
-  {"version_num", (PyCFunction) python_version_num, METH_VARARGS | METH_KEYWORDS, "Output openscad Version."},
+  {"version", (PyCFunction) python_osversion, METH_VARARGS | METH_KEYWORDS, "Output openscad Version."},
+  {"version_num", (PyCFunction) python_osversion_num, METH_VARARGS | METH_KEYWORDS, "Output openscad Version."},
   {"add_parameter", (PyCFunction) python_add_parameter, METH_VARARGS | METH_KEYWORDS, "Add Parameter for Customizer."},
   {"scad", (PyCFunction) python_scad, METH_VARARGS | METH_KEYWORDS, "Source OpenSCAD code."},
   {"align", (PyCFunction) python_align, METH_VARARGS | METH_KEYWORDS, "Align Object to another."},
