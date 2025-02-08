@@ -26,6 +26,7 @@
 
 #include "gui/PrintInitDialog.h"
 
+#include <vector>
 #include <QDialog>
 #include <QString>
 
