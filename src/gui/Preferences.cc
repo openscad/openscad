@@ -26,6 +26,7 @@
 
 #include "gui/Preferences.h"
 
+#include <unordered_map>
 #include <vector>
 #include <QFont>
 #include <QFontComboBox>
