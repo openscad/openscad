@@ -89,9 +89,9 @@ public:
   TabManager *tabManager;
 
   std::shared_ptr<const Geometry> rootGeom;
-  std::shared_ptr<Renderer> cgalRenderer;
+  std::shared_ptr<Renderer> geomRenderer;
 #ifdef ENABLE_OPENCSG
-  std::shared_ptr<Renderer> opencsgRenderer;
+  std::shared_ptr<Renderer> previewRenderer;
   std::unique_ptr<class MouseSelector> selector;
 #endif
   std::shared_ptr<Renderer> thrownTogetherRenderer;
