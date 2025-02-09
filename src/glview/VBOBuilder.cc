@@ -9,6 +9,7 @@
 #include <memory>
 #include <cstdio>
 
+#include "geometry/Polygon2d.h"
 #include "utils/printutils.h"
 #include "utils/hash.h"  // IWYU pragma: keep
 

@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "geometry/PolySet.h"
+#include "geometry/Polygon2d.h"
 #include "glview/Renderer.h"
 #include "glview/system-gl.h"
 #include "utils/printutils.h"
