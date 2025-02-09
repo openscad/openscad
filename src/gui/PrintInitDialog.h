@@ -26,6 +26,7 @@
 
 #pragma once
 
+#include <vector>
 #include <QDialog>
 #include "gui/InitConfigurator.h"
 #include "gui/qtgettext.h"

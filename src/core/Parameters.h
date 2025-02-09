@@ -1,5 +1,6 @@
 #pragma once
 
+#include <initializer_list>
 #include <limits>
 #include <memory>
 #include <string>

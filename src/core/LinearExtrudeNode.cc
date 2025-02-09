@@ -43,7 +43,6 @@
 using namespace boost::assign; // bring 'operator+=()' into scope
 
 #include <filesystem>
-namespace fs = std::filesystem;
 
 namespace {
 std::shared_ptr<AbstractNode> builtin_linear_extrude(const ModuleInstantiation *inst, Arguments arguments, const Children& children)

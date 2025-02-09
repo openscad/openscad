@@ -28,6 +28,7 @@
 #endif
 #include "gui/MainWindow.h"
 
+#include <filesystem>
 #include <deque>
 #include <cassert>
 #include <array>

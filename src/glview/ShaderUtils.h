@@ -1,5 +1,7 @@
 #pragma once
 
+#include <unordered_map>
+#include <string>
 #include "glview/system-gl.h"
 
 namespace ShaderUtils {

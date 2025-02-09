@@ -33,6 +33,7 @@
 #include "geometry/Geometry.h"
 #include "glview/RenderSettings.h"
 
+#include <unordered_map>
 #include <algorithm>
 #include <functional>
 #include <cassert>
