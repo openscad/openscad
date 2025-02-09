@@ -34,10 +34,12 @@ std::string documentsPath();
  *
  * @return the path for saving user documents
  */
+std::string userPath(const std::string& name);
 std::string userDocumentsPath();
 std::string resourceBasePath();
 fs::path resourcePath(const std::string& resource);
 std::string userLibraryPath();
+std::string userExamplesPath();
 
 /**
  * Base path where user configuration can be read and written to. On

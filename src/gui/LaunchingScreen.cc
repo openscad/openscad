@@ -48,8 +48,11 @@ LaunchingScreen::LaunchingScreen(QWidget *parent) : QDialog(parent)
   }
 
   for (const auto& category : UIUtils::exampleCategories()) {
-    auto examples = UIUtils::exampleFiles(category);
-    auto categoryItem = new QTreeWidgetItem(QStringList(gettext(category.toStdString().c_str())));
+    auto examples = UIUtils::exampleFiles(category.name);
+    auto categoryItem = new QTreeWidgetItem(QStringList(gettext(category.name.toStdString().c_str())));
+    if (!category.tooltip.trimmed().isEmpty()) {
+      categoryItem->setToolTip(0, gettext(category.tooltip.toStdString().c_str()));
+    }
 
     for (const auto& example : examples) {
       auto exampleItem = new QTreeWidgetItem(QStringList(example.fileName()));
