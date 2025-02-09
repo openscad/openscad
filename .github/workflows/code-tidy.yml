@@ -41,3 +41,26 @@ jobs:
         # Since we're not 'clean' yet, or with 'true' to not fail CI, but
         # at least the output will provide a report
         scripts/run-clang-tidy-cached.cc || true
+
+    - name: Show difference to base
+      run: |
+        BASE_DIR=/home/runner/.cache/clang-tidy/for-hash
+        PR_BASE_SHA=$BASE_DIR/${{ github.event.pull_request.base.sha }}
+        if [ -r ${PR_BASE_SHA}.summary ]; then
+           # TODO: this might still need refinement once submitted
+           join -j2 -a1 \
+             <(sort -k2 OpenSCAD_clang-tidy.summary) \
+             <(sort -k2 ${PR_BASE_SHA}.summary) \
+             | awk '{ delta=($2 - $3); \
+                      if (delta != 0) printf("%30s %+5d\n", $1, delta); }'
+        fi
+
+    - name: Remember for git sha
+      # Only remember when we're pushing
+      if: ${{github.event_name == 'push' && (github.ref == 'refs/heads/master')}}
+      run: |
+        # TODO: that accumulates, maybe clean old ones every now and then.
+        BASE_DIR=/home/runner/.cache/clang-tidy/for-hash
+        mkdir -p ${BASE_DIR}
+        cp OpenSCAD_clang-tidy.out ${BASE_DIR}/${{ github.sha }}.out
+        cp OpenSCAD_clang-tidy.summary ${BASE_DIR}/${{ github.sha }}.summary
