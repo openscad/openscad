@@ -182,7 +182,7 @@ void HidApiInputDriver::hidapi_decode_button(const unsigned char *buf, unsigned 
     const uint16_t current = buf[1] | buf[2] << 8;
 
     const std::bitset<16> bits_curr{current};
-    const std::bitset<16> bits_last{buttons};
+    const std::bitset<16> bits_last{buttons};  // NOLINT
 
     for (int i = 0; i < 16; ++i) {
       if (bits_curr.test(i) != bits_last.test(i)) {
