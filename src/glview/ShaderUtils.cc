@@ -1,5 +1,7 @@
 #include "glview/ShaderUtils.h"
 
+#include <sstream>
+#include <string>
 #include <fstream>
 
 #include "platform/PlatformUtils.h"

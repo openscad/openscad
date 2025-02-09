@@ -1,3 +1,4 @@
+#include <string>
 #include "core/ColorUtil.h"
 
 namespace OpenSCAD {

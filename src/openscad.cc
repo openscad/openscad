@@ -26,6 +26,12 @@
 
 #include "openscad.h"
 
+#include <ostream>
+#include <sstream>
+#include <array>
+#include <memory>
+#include <utility>
+#include <vector>
 #include <chrono>
 #include <iomanip>
 #include <fstream>

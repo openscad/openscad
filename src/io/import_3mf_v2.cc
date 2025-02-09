@@ -33,6 +33,7 @@
 #include "core/AST.h"
 #include "glview/RenderSettings.h"
 
+#include <string>
 #include <cstdint>
 #include <unordered_map>
 #include <utility>
