@@ -38,10 +38,16 @@ jobs:
     - name: Retrieve cached results
       uses: actions/cache@v4
       with:
+        # TODO: maybe cache based on time in push but based on some PR
+        # identifier in pull requests ?
         path: /home/runner/.cache/clang-tidy
         key: clang-tidy-${{ steps.cache_timestamp.outputs.time }}
         restore-keys: clang-tidy-
 
+    # TODO: each distinct file will store a new file (output of clang-tidy)
+    # in this directory; also clang-tidy version and content of its config
+    # While small, this will accumulate, so cleaning every now and then might
+    # be good.
     - name: Run ClangTidy
       run: |
         ln -s build/compile_commands.json .
