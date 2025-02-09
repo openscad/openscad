@@ -961,8 +961,11 @@ MainWindow::~MainWindow()
   if (scadApp->windowManager.getWindows().size() == 0) {
     // Quit application even in case some other windows like
     // Preferences are still open.
-    this->quit();
+    QApplication::instance()->quit();
   }
+#ifdef Q_OS_MACOS
+  CocoaUtils::endApplication();
+#endif
 }
 
 void MainWindow::showProgress()
@@ -3525,13 +3528,7 @@ void MainWindow::setFont(const QString& family, uint size)
 
 void MainWindow::quit()
 {
-  QCloseEvent ev;
-  QApplication::sendEvent(QApplication::instance(), &ev);
-  if (ev.isAccepted()) QApplication::instance()->quit();
-  // FIXME: Cancel any CGAL calculations
-#ifdef Q_OS_MACOS
-  CocoaUtils::endApplication();
-#endif
+  QMainWindow::close();
 }
 
 void MainWindow::consoleOutput(const Message& msgObj, void *userdata)
