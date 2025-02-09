@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "core/Arguments.h"
+#include "core/AST.h"
 #include "core/Children.h"
 #include "core/Context.h"
 #include "core/SourceFile.h"

@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "core/Arguments.h"
+#include "core/AST.h"
 #include "core/ContextFrame.h"
 
 /*

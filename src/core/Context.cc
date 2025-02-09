@@ -32,6 +32,7 @@
 #include <string>
 #include <vector>
 
+#include "core/AST.h"
 #include "core/function.h"
 #include "utils/printutils.h"
 
