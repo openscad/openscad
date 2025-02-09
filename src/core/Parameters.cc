@@ -36,6 +36,7 @@
 #include <utility>
 #include <vector>
 
+#include "core/AST.h"
 #include "core/Expression.h"
 
 Parameters::Parameters(ContextFrame&& frame, Location loc) :

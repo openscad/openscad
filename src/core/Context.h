@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "core/ContextFrame.h"
+#include "core/AST.h"
 #include "core/ContextMemoryManager.h"
 
 /**

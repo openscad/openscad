@@ -1,5 +1,6 @@
 #include "core/customizer/ParameterObject.h"
 
+#include "core/AST.h"
 #include "core/customizer/Annotation.h"
 #include "core/Assignment.h"
 #include "core/Expression.h"
