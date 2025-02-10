@@ -38,6 +38,7 @@
 #include <string>
 #include <tuple>
 #include <unordered_map>
+#include "geometry/Geometry.h"
 #include "core/AST.h"
 #include "core/ColorUtil.h"
 #include "core/Context.h"

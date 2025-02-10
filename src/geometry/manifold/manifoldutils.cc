@@ -1,5 +1,6 @@
 // Portions of this file are Copyright 2023 Google LLC, and licensed under GPL2+. See COPYING.
 #include "geometry/manifold/manifoldutils.h"
+#include "geometry/Geometry.h"
 #include "geometry/linalg.h"
 #include "geometry/manifold/ManifoldGeometry.h"
 #include "geometry/PolySetBuilder.h"

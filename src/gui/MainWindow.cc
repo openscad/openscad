@@ -59,6 +59,7 @@
 #include <QToolBar>
 #include <QWidget>
 
+#include "geometry/Geometry.h"
 #include "core/AST.h"
 #include "openscad_gui.h"
 

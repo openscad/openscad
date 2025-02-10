@@ -26,6 +26,7 @@
 
 #include <unordered_map>
 #include "export_enums.h"
+#include "geometry/Geometry.h"
 #include "geometry/GeometryUtils.h"
 #include "io/export.h"
 #include "geometry/PolySet.h"
