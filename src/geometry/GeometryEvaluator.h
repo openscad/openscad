@@ -97,6 +97,7 @@ public:
   Response visit(State& state, const AbstractIntersectionNode& node) override;
   Response visit(State& state, const AbstractPolyNode& node) override;
   Response visit(State& state, const SkinNode& node) override;
+  Response visit(State& state, const ConcatNode& node) override;
   Response visit(State& state, const LinearExtrudeNode& node) override;
   Response visit(State& state, const PathExtrudeNode& node) override;
   Response visit(State& state, const RotateExtrudeNode& node) override;

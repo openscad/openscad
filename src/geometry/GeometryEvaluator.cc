@@ -9,6 +9,7 @@
 #include "core/OffsetNode.h"
 #include "core/TransformNode.h"
 #include "core/SkinNode.h"
+#include "core/ConcatNode.h"
 #include "core/LinearExtrudeNode.h"
 #include "core/PathExtrudeNode.h"
 #include "core/RoofNode.h"
@@ -2295,7 +2296,41 @@ Response GeometryEvaluator::visit(State &state, const SkinNode &node)
   }
   return Response::ContinueTraversal;
 }
+/*!
+  input: List of 2D objects arranged in 3D, each with identical outline count and vertex count
+  output: 3D PolySet
+ */
 
+Response GeometryEvaluator::visit(State& state, const ConcatNode& node)
+{
+  if (state.isPrefix() && isSmartCached(node)) return Response::PruneTraversal;
+  if (state.isPostfix()) {
+    std::shared_ptr<const Geometry> geom;
+    if (!isSmartCached(node)) {
+  	Geometry::Geometries children = collectChildren3D(node);
+        PolySetBuilder builder(0,0,3,true);
+	for(const auto &child : children) {
+          const auto ps = std::dynamic_pointer_cast<const PolySet>(child.second);
+	  if(ps == nullptr) {
+            LOG(message_group::Error, "Concat only works for PolySet Data");
+            continue;			    
+	  }
+	  for(const auto &face:ps->indices) {
+            builder.beginPolygon(face.size());		  
+            for(int ind: face) {
+	      builder.addVertex(ps->vertices[ind]);
+	    }		    
+	  }
+	}
+	geom = builder.build();
+    } else {
+      geom = smartCacheGet(node, false);
+    }
+    addToParent(state, node, geom);
+    node.progress_report();
+  }
+  return Response::ContinueTraversal;
+}
 
 /*!
    input: List of 2D objects

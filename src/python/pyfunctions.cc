@@ -53,6 +53,7 @@ extern bool parse(SourceFile *& file, const std::string& text, const std::string
 #include "DebugNode.h"
 #include "FilletNode.h"
 #include "SkinNode.h"
+#include "ConcatNode.h"
 #include "CgalAdvNode.h"
 #include "CsgOpNode.h"
 #include "ColorNode.h"
@@ -2640,6 +2641,39 @@ PyObject *python_path_extrude(PyObject *self, PyObject *args, PyObject *kwargs)
   return path_extrude_core(obj, path, xdir, convexity, origin, scale, twist, closed, allow_intersect, fn, fa, fs);
 }
 
+PyObject *python_concat(PyObject *self, PyObject *args, PyObject *kwargs)
+{
+  DECLARE_INSTANCE
+  int i;
+
+  auto node = std::make_shared<ConcatNode>(instance);
+  PyObject *obj;
+  PyObject *child_dict = nullptr;	  
+  PyObject *dummy_dict = nullptr;	  
+  std::shared_ptr<AbstractNode> child;
+  for (i = 0; i < PyTuple_Size(args);i++) {
+    obj = PyTuple_GetItem(args, i);
+    if(i == 0) child = PyOpenSCADObjectToNodeMulti(obj, &child_dict);
+    else child = PyOpenSCADObjectToNodeMulti(obj, &dummy_dict);
+    if(child != NULL) {
+      node->children.push_back(child);
+    } else {
+        PyErr_SetString(PyExc_TypeError, "Error during concat. arguments must be solids");
+	return nullptr;
+    }
+  }
+
+  PyObject *pyresult =PyOpenSCADObjectFromNode(&PyOpenSCADType, node);
+  if(child_dict != nullptr ) {
+    PyObject *key, *value;
+    Py_ssize_t pos = 0;
+     while(PyDict_Next(child_dict, &pos, &key, &value)) {
+       PyDict_SetItem(((PyOpenSCADObject *) pyresult)->dict, key, value);
+    }
+  }
+  return pyresult;
+}
+
 PyObject *python_skin(PyObject *self, PyObject *args, PyObject *kwargs)
 {
   DECLARE_INSTANCE
@@ -4226,6 +4260,7 @@ PyMethodDef PyOpenSCADFunctions[] = {
   {"minkowski", (PyCFunction) python_minkowski, METH_VARARGS | METH_KEYWORDS, "Minkowski Object."},
   {"fill", (PyCFunction) python_fill, METH_VARARGS | METH_KEYWORDS, "Fill Object."},
   {"resize", (PyCFunction) python_resize, METH_VARARGS | METH_KEYWORDS, "Resize Object."},
+  {"concat", (PyCFunction) python_concat, METH_VARARGS | METH_KEYWORDS, "Concatenate Object."},
 
   {"highlight", (PyCFunction) python_highlight, METH_VARARGS | METH_KEYWORDS, "Highlight Object."},
   {"background", (PyCFunction) python_background, METH_VARARGS | METH_KEYWORDS, "Background Object."},
