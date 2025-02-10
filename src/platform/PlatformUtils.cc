@@ -1,5 +1,6 @@
 #include "platform/PlatformUtils.h"
 
+#include <filesystem>
 #include <stdexcept>
 #include <cstdint>
 #include <cstdlib>

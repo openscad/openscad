@@ -36,6 +36,8 @@
 #include <mpfr.h>
 #endif
 
+#include "geometry/Geometry.h"
+#include "geometry/linalg.h"
 #include "Feature.h"
 #include "geometry/PolySet.h"
 #include "geometry/PolySetUtils.h"

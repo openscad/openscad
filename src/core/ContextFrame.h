@@ -6,6 +6,7 @@
 #include <vector>
 
 #include "core/EvaluationSession.h"
+#include "core/AST.h"
 #include "core/ValueMap.h"
 
 class ContextFrame

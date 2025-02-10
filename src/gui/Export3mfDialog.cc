@@ -26,6 +26,7 @@
 
 #include "gui/Export3mfDialog.h"
 
+#include <string>
 #include <QString>
 #include <QCheckBox>
 #include <QColor>

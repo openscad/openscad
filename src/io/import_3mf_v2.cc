@@ -25,6 +25,7 @@
  */
 
 #include "geometry/PolySet.h"
+#include "geometry/linalg.h"
 #include "geometry/PolySetBuilder.h"
 #include "geometry/PolySetUtils.h"
 #include "geometry/Geometry.h"
@@ -33,6 +34,7 @@
 #include "core/AST.h"
 #include "glview/RenderSettings.h"
 
+#include <string>
 #include <cstdint>
 #include <unordered_map>
 #include <utility>

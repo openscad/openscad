@@ -1,4 +1,5 @@
 #include "io/import.h"
+#include "geometry/linalg.h"
 #include "Feature.h"
 #include "geometry/PolySet.h"
 #include "utils/printutils.h"

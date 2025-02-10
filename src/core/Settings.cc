@@ -1,5 +1,6 @@
 #include "core/Settings.h"
 
+#include <ostream>
 #include <cassert>
 #include <cstddef>
 #include <istream>

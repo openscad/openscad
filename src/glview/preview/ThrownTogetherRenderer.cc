@@ -29,6 +29,7 @@
 #include <memory>
 #include <cstddef>
 #include <utility>
+#include "geometry/linalg.h"
 #include "Feature.h"
 #include "glview/VertexState.h"
 #include "geometry/PolySet.h"

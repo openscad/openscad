@@ -1,5 +1,7 @@
 #pragma once
 
+#include <unordered_map>
+#include <filesystem>
 #include <iterator>
 #include <map>
 #include <iostream>
@@ -12,6 +14,7 @@
 #include <boost/range/adaptor/map.hpp>
 
 #include "core/Settings.h"
+#include "geometry/Geometry.h"
 #include "core/Tree.h"
 #include "glview/Camera.h"
 #include "glview/ColorMap.h"

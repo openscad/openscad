@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "glview/VertexState.h"
+#include "geometry/linalg.h"
 #include "glview/Renderer.h"
 #include "core/CSGNode.h"
 

@@ -5,6 +5,7 @@
 #include <string>
 #include <vector>
 
+#include "core/AST.h"
 #include "core/function.h"
 #include "core/module.h"
 #include "core/Expression.h"

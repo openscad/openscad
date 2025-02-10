@@ -25,6 +25,7 @@
  */
 
 #include "io/export.h"
+#include "geometry/linalg.h"
 #include "glview/ColorMap.h"
 #include "core/ColorUtil.h"
 #include "export_enums.h"
@@ -33,6 +34,7 @@
 #include "geometry/Geometry.h"
 #include "glview/RenderSettings.h"
 
+#include <unordered_map>
 #include <algorithm>
 #include <functional>
 #include <cassert>

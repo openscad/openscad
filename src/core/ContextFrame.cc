@@ -24,6 +24,7 @@
  *
  */
 
+#include "core/AST.h"
 #include "core/ContextFrame.h"
 
 #include <utility>

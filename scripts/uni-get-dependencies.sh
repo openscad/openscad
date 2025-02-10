@@ -183,6 +183,12 @@ if [ -e /etc/issue ]; then
   if [ "`rpm -qa | grep altlinux`" ]; then
    get_altlinux_deps
   fi
+ elif [ -e /etc/os-release -o -e /usr/lib/os-release ]; then
+  test -e /etc/os-release && os_release="/etc/os-release" || os_release="/usr/lib/os-release"
+  . "${os_release}"
+  if [ "${ID:-linux}" = "debian" ] || [ "${ID_LIKE#*debian*}" != "${ID_LIKE}" ]; then
+   get_debian_deps
+  fi
  else
   unknown
  fi

@@ -3,6 +3,7 @@
 
 #include "geometry/roof_ss.h"
 
+#include <vector>
 #include <clipper2/clipper.engine.h>
 #include <iterator>
 #include <functional>
@@ -20,6 +21,8 @@
 #include <algorithm>
 #include <map>
 
+#include "geometry/linalg.h"
+#include "geometry/Polygon2d.h"
 #include "geometry/GeometryUtils.h"
 #include "geometry/ClipperUtils.h"
 #include "core/RoofNode.h"

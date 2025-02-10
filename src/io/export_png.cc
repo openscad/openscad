@@ -1,4 +1,6 @@
 #include "io/export.h"
+#include "geometry/Geometry.h"
+#include "geometry/linalg.h"
 #include "utils/printutils.h"
 #include "glview/OffscreenView.h"
 #include "glview/CsgInfo.h"

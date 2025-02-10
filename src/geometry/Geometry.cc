@@ -1,4 +1,5 @@
 #include "geometry/Geometry.h"
+#include "geometry/linalg.h"
 #include "utils/printutils.h"
 #include <sstream>
 #include <memory>
