@@ -25,6 +25,7 @@
  */
 
 #include "export_enums.h"
+#include "geometry/Geometry.h"
 #include "geometry/linalg.h"
 #include "io/export.h"
 

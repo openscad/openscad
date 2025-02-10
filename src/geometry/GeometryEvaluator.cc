@@ -1,4 +1,5 @@
 #include "geometry/GeometryEvaluator.h"
+#include "geometry/Geometry.h"
 #include "geometry/linalg.h"
 #include "core/Tree.h"
 #include "geometry/GeometryCache.h"

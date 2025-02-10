@@ -27,6 +27,7 @@
 #include <memory>
 #include <ostream>
 #include "io/export.h"
+#include "geometry/Geometry.h"
 #include "utils/printutils.h"
 
 void export_3mf(const std::vector<struct Export3mfInfo> & infos, std::ostream& output,  const ExportInfo&) 
