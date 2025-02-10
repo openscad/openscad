@@ -15,6 +15,7 @@ public:
 
   static const Feature ExperimentalRoof;
   static const Feature ExperimentalInputDriverDBus;
+  static const Feature ExperimentalSkin;
   static const Feature ExperimentalLazyUnion;
   static const Feature ExperimentalVxORenderersIndexing;
   static const Feature ExperimentalTextMetricsFunctions;
