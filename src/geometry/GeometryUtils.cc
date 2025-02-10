@@ -12,6 +12,7 @@
 #include <string>
 #include <vector>
 
+#include "geometry/Geometry.h"
 #include "geometry/linalg.h"
 #include "libtess2/Include/tesselator.h"
 #include "utils/printutils.h"

@@ -25,6 +25,7 @@
  */
 
 #include "core/primitives.h"
+#include "geometry/Geometry.h"
 #include "geometry/linalg.h"
 #include "core/Builtins.h"
 #include "core/Children.h"
