@@ -25,6 +25,7 @@
  */
 
 #include "glview/VBORenderer.h"
+#include "geometry/Polygon2d.h"
 #include "geometry/PolySet.h"
 #include "core/CSGNode.h"
 #include "utils/printutils.h"
