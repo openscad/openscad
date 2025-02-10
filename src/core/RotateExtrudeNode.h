@@ -3,6 +3,7 @@
 #include <string>
 
 #include "core/node.h"
+#include "core/ModuleInstantiation.h"
 #include "core/Value.h"
 
 class RotateExtrudeNode : public AbstractPolyNode

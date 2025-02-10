@@ -7,6 +7,7 @@
 #include <string>
 #include <utility>
 
+#include "core/ModuleInstantiation.h"
 #include "core/node.h"
 
 class RoofNode : public AbstractPolyNode
