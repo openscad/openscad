@@ -24,7 +24,7 @@ MouseSelector::MouseSelector(GLView *view) {
   if (view && !view->has_shaders) {
     return;
   }
-  this->init_shader();
+  this->initShader();
 
   if (view) this->reset(view);
 }
@@ -34,44 +34,47 @@ MouseSelector::MouseSelector(GLView *view) {
  */
 void MouseSelector::reset(GLView *view) {
   this->view = view;
-  this->setup_framebuffer(view);
+  this->setupFramebuffer(view);
 }
 
 /**
  * Initialize the used shaders and setup the ShaderInfo struct
  */
-void MouseSelector::init_shader() {
+void MouseSelector::initShader() {
   /*
      Attributes:
    * frag_idcolor - (uniform) 24 bit of the selected object's id encoded into R/G/B components as float values
    */
 
-  const std::string vs_str = RendererUtils::loadShaderSource("MouseSelector.vert");
-  const std::string fs_str = RendererUtils::loadShaderSource("MouseSelector.frag");
-  const GLuint selectshader_prog = RendererUtils::compileShaderProgram(vs_str, fs_str);
+  const std::string vs_str = ShaderUtils::loadShaderSource("MouseSelector.vert");
+  const std::string fs_str = ShaderUtils::loadShaderSource("MouseSelector.frag");
+  const auto selectshader = ShaderUtils::compileShaderProgram(vs_str, fs_str);
 
+  this->shaderinfo.resource = selectshader;
+  this->shaderinfo.type = ShaderUtils::ShaderType::SELECT_RENDERING;
+  this->shaderinfo.uniforms = {
+    {"frag_idcolor", glGetUniformLocation(selectshader.shader_program, "frag_idcolor")},
+  };
 
-  this->shaderinfo.progid = selectshader_prog;
-  this->shaderinfo.type = RendererUtils::ShaderType::SELECT_RENDERING;
-  const GLint identifier = glGetUniformLocation(selectshader_prog, "frag_idcolor");
-  if (identifier < 0) {
-    fprintf(stderr, __FILE__ ": OpenGL symbol retrieval went wrong, id is %i\n\n", identifier);
-    this->shaderinfo.data.select_rendering.identifier = 0;
+  const GLint frag_idcolor = glGetUniformLocation(selectshader.shader_program, "frag_idcolor");
+  if (frag_idcolor < 0) {
+    fprintf(stderr, __FILE__ ": OpenGL symbol retrieval went wrong, id is %i\n\n", frag_idcolor);
+    this->shaderinfo.uniforms["frag_idcolor"] = 0;
   } else {
-    this->shaderinfo.data.select_rendering.identifier = identifier;
+    this->shaderinfo.uniforms["frag_idcolor"] = frag_idcolor;
   }
 }
 
 /**
  * Resize or create the framebuffer
  */
-void MouseSelector::setup_framebuffer(const GLView *view) {
+void MouseSelector::setupFramebuffer(const GLView *view) {
   if (!this->framebuffer ||
       static_cast<unsigned int>(this->framebuffer->width()) != view->cam.pixel_width ||
       static_cast<unsigned int>(this->framebuffer->height()) != view->cam.pixel_height) {
     this->framebuffer = std::make_unique<QOpenGLFramebufferObject>(
       view->cam.pixel_width,
-      view->cam.pixel_width,
+      view->cam.pixel_height,
       QOpenGLFramebufferObject::Depth);
     this->framebuffer->release();
   }
@@ -79,10 +82,10 @@ void MouseSelector::setup_framebuffer(const GLView *view) {
 
 /**
  * Setup the shaders, Projection and Model matrix and call the given renderer.
- * The renderer has to make sure, that the colors are defined accordingly, or
- * the selection won't work.
+ * The renderer has to support rendering with ID colors (using the shader we provide),
+ * otherwise the selection won't work.
  *
- * returns 0 if no object was found
+ * returns index of picked node (AbstractNode::idx) or 0 if no object was found.
  */
 int MouseSelector::select(const Renderer *renderer, int x, int y) {
   // x/y is originated topleft, so turn y around
@@ -116,7 +119,7 @@ int MouseSelector::select(const Renderer *renderer, int x, int y) {
   glEnable(GL_DEPTH_TEST);
 
   // call the renderer with the selector shader
-  GL_CHECKD(renderer->draw(true, false, &this->shaderinfo));
+  GL_CHECKD(renderer->draw(false, &this->shaderinfo));
 
   // Not strictly necessary, but a nop if not required.
   glFlush();

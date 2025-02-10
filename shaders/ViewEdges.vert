@@ -4,7 +4,7 @@ attribute vec3 barycentric; // barycentric form of vertex coord
                             // either [1,0,0], [0,1,0] or [0,0,1] under normal circumstances (no edges disabled)
 
 varying vec3 vBC;           // varying barycentric coords
-varying float shading;      // multiplied by color1. color2 is without lighting
+varying float shading;      // multiplied by color_ares. color_edge is without lighting
 
 void main(void) {
   gl_Position = gl_ModelViewProjectionMatrix * gl_Vertex;

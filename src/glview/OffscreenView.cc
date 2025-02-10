@@ -13,6 +13,7 @@
 #include "io/imageutils.h"
 #include "utils/printutils.h"
 #include "glview/OffscreenContextFactory.h"
+#include "glview/fbo.h"
 #if defined(USE_GLEW) || defined(OPENCSG_GLEW)
 #include "glview/glew-utils.h"
 #endif
@@ -87,8 +88,8 @@ OffscreenView::OffscreenView(uint32_t width, uint32_t height)
 
   PRINTD(gl_dump());
 
-  this->fbo = fbo_new();
-  if (!fbo_init(this->fbo, width, height)) {
+  this->fbo = createFBO(width, height);
+  if (!fbo) {
     throw OffscreenViewException("Unable to create FBO");
   }
   GLView::initializeGL();
@@ -97,8 +98,7 @@ OffscreenView::OffscreenView(uint32_t width, uint32_t height)
 
 OffscreenView::~OffscreenView()
 {
-  fbo_unbind(this->fbo);
-  fbo_delete(this->fbo);
+  fbo.reset();
 }
 
 #ifdef ENABLE_OPENCSG

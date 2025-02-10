@@ -1,4 +1,6 @@
 #include "io/import.h"
+#include "geometry/linalg.h"
+#include "core/AST.h"
 #include "geometry/PolySet.h"
 #include "geometry/PolySetBuilder.h"
 #include <ios>

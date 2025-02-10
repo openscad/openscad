@@ -30,6 +30,7 @@
 #include <vector>
 #include <ostream>
 
+#include "core/AST.h"
 #include "core/Parameters.h"
 #include <hb.h>
 #include <ft2build.h>

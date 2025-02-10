@@ -25,6 +25,7 @@
  */
 
 #include "core/node.h"
+#include "core/AST.h"
 #include "core/ModuleInstantiation.h"
 #include "core/progress.h"
 

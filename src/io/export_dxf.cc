@@ -29,6 +29,8 @@
 #include <ostream>
 #include <memory>
 #include "io/export.h"
+#include "geometry/linalg.h"
+#include "geometry/Polygon2d.h"
 #include "geometry/PolySet.h"
 
 /*!

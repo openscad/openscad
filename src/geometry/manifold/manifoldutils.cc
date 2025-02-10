@@ -1,12 +1,12 @@
 // Portions of this file are Copyright 2023 Google LLC, and licensed under GPL2+. See COPYING.
 #include "geometry/manifold/manifoldutils.h"
+#include "geometry/linalg.h"
 #include "geometry/manifold/ManifoldGeometry.h"
 #include "geometry/PolySetBuilder.h"
 #include "Feature.h"
 #include "utils/printutils.h"
 #ifdef ENABLE_CGAL
 #include "geometry/cgal/cgalutils.h"
-#include <optional>
 #include <cassert>
 #include <map>
 #include <set>
@@ -22,6 +22,7 @@
 #include <manifold/polygon.h>
 
 #include <cstddef>
+#include <optional>
 #include <vector>
 
 using Error = manifold::Manifold::Error;

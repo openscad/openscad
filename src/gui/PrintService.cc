@@ -26,6 +26,9 @@
 
 #include "gui/PrintService.h"
 
+#include <mutex>
+#include <utility>
+#include <unordered_map>
 #include <memory>
 #include <string>
 
@@ -35,7 +38,7 @@
 #include <QNetworkRequest>
 #include <QStringList>
 
-#include "export.h"
+#include "io/export.h"
 #include "utils/printutils.h"
 
 std::mutex PrintService::printServiceMutex;

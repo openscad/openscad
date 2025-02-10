@@ -97,8 +97,7 @@ fi
 case $OS in
     MACOSX)
         . ./scripts/setenv-macos.sh
-        # Note: Need built-in Clipper since the latest Clipper release (1.4.0) is too old
-        CMAKE_CONFIG="$CMAKE_CONFIG -DUSE_BUILTIN_CLIPPER2=ON -DUSE_BUILTIN_MANIFOLD=OFF -DCMAKE_OSX_ARCHITECTURES=x86_64;arm64"
+        CMAKE_CONFIG="$CMAKE_CONFIG -DUSE_BUILTIN_CLIPPER2=OFF -DUSE_BUILTIN_MANIFOLD=OFF -DCMAKE_OSX_ARCHITECTURES=x86_64;arm64"
     ;;
     LINUX)
         TARGET=

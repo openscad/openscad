@@ -1,5 +1,6 @@
 #include "core/Settings.h"
 
+#include <ostream>
 #include <cassert>
 #include <cstddef>
 #include <istream>
@@ -11,7 +12,7 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/range/adaptors.hpp>
 
-#include "export_enums.h"
+#include "io/export_enums.h"
 #include "io/export.h"
 #include "utils/printutils.h"
 

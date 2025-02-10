@@ -26,13 +26,15 @@
 
 #include "gui/ExternalToolInterface.h"
 
+#include <functional>
+#include <memory>
 #include <QDir>
 #include <QString>
 #include <QFileInfo>
 #include <QStringList>
 #include <QTemporaryFile>
 
-#include "Settings.h"
+#include "core/Settings.h"
 #include "gui/OctoPrint.h"
 #include "io/export.h"
 #include "geometry/Geometry.h"

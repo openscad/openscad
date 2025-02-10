@@ -25,8 +25,10 @@
  */
 
 #include "io/export.h"
+#include "geometry/linalg.h"
 #include "geometry/PolySet.h"
 #include "geometry/PolySetUtils.h"
+#include <sstream>
 #include <algorithm>
 #include <cassert>
 #include <array>

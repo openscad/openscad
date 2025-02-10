@@ -26,6 +26,7 @@
 
 #include "gui/UIUtils.h"
 
+#include <filesystem>
 #include <QString>
 #include <QStringList>
 #include <QWidget>
