@@ -30,6 +30,7 @@
 #include <memory>
 #include <cmath>
 
+#include "geometry/linalg.h"
 #include "geometry/Grid.h"
 #include "utils/printutils.h"
 #include "utils/calc.h"

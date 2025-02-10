@@ -1,4 +1,5 @@
 #include "glview/Camera.h"
+#include "geometry/linalg.h"
 #include "glview/RenderSettings.h"
 #include "utils/printutils.h"
 #include "utils/degree_trig.h"

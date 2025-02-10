@@ -1,6 +1,7 @@
 #pragma once
 
 #include "clipper2/clipper.h"
+#include "geometry/linalg.h"
 #include "geometry/Polygon2d.h"
 
 #include <memory>

@@ -25,6 +25,7 @@
  */
 
 #include "core/TransformNode.h"
+#include "geometry/linalg.h"
 #include "core/ModuleInstantiation.h"
 #include "core/Children.h"
 #include "core/Builtins.h"

@@ -25,6 +25,7 @@
  */
 
 #include "io/export.h"
+#include "geometry/linalg.h"
 #include "glview/ColorMap.h"
 #include "core/ColorUtil.h"
 #include "export_enums.h"
