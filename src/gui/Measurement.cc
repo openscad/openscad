@@ -24,6 +24,7 @@
  *
  */
 
+#include "geometry/linalg.h"
 #include "gui/Measurement.h"
 
 #include <QPoint>

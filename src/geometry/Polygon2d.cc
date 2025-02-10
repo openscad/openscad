@@ -6,6 +6,7 @@
 #include <string>
 #include <memory>
 
+#include "geometry/linalg.h"
 #include "utils/printutils.h"
 #include "Feature.h"
 #ifdef ENABLE_MANIFOLD

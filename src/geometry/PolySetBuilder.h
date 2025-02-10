@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "geometry/Reindexer.h"
+#include "geometry/linalg.h"
 #include "geometry/Polygon2d.h"
 #include "utils/boost-utils.h"
 #include "geometry/GeometryUtils.h"

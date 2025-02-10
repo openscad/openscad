@@ -61,6 +61,7 @@
 #include <QToolBar>
 #include <QWidget>
 
+#include "core/AST.h"
 #include "openscad_gui.h"
 
 #ifdef ENABLE_MANIFOLD

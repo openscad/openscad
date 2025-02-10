@@ -12,6 +12,7 @@
 
 #include <boost/logic/tribool.hpp>
 
+#include "geometry/linalg.h"
 #include "geometry/GeometryUtils.h"
 #include "glview/RenderSettings.h"
 #include "core/LinearExtrudeNode.h"

@@ -1,4 +1,5 @@
 #include "core/CSGTreeEvaluator.h"
+#include "geometry/linalg.h"
 #include "core/State.h"
 #include "core/CsgOpNode.h"
 #include "core/ModuleInstantiation.h"

@@ -25,6 +25,7 @@
  */
 
 #include "geometry/PolySetBuilder.h"
+#include "geometry/linalg.h"
 #include "geometry/PolySet.h"
 #include "geometry/Geometry.h"
 

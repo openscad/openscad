@@ -30,6 +30,7 @@
 #include <memory>
 #include <vector>
 
+#include "core/AST.h"
 #include "core/ModuleInstantiation.h"
 #include "core/node.h"
 #include "utils/exceptions.h"
