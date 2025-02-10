@@ -1,6 +1,7 @@
 #ifdef ENABLE_CGAL
 
 #include "geometry/cgal/cgalutils.h"
+#include "geometry/linalg.h"
 #include "geometry/PolySet.h"
 #include "geometry/PolySetBuilder.h"
 #include "utils/printutils.h"

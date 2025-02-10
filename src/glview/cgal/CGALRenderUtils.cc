@@ -1,3 +1,4 @@
+#include "geometry/linalg.h"
 #include "glview/cgal/CGALRenderUtils.h"
 
 #include <algorithm>

@@ -21,6 +21,7 @@
 #include <algorithm>
 #include <map>
 
+#include "geometry/linalg.h"
 #include "geometry/Polygon2d.h"
 #include "geometry/GeometryUtils.h"
 #include "geometry/ClipperUtils.h"

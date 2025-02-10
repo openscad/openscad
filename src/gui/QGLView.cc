@@ -26,6 +26,7 @@
 
 #include "gui/QGLView.h"
 
+#include "geometry/linalg.h"
 #include "gui/qtgettext.h"
 #include "gui/Preferences.h"
 #include "glview/Renderer.h"

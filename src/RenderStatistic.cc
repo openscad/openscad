@@ -33,6 +33,7 @@
 #include <iostream>
 #include <memory>
 #include <fstream>
+#include "geometry/linalg.h"
 #include "json/json.hpp"
 #include <string>
 #include <vector>

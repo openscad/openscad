@@ -4,6 +4,7 @@
 #include <cstddef>
 #include <string>
 
+#include "geometry/linalg.h"
 #include "geometry/cgal/cgal.h"
 #include "geometry/cgal/cgalutils.h"
 #include "utils/printutils.h"

@@ -20,6 +20,7 @@ void GLView::showCrosshairs(const Color4f& col) {}
 void GLView::setColorScheme(const ColorScheme& cs){assert(false && "not implemented");}
 void GLView::setColorScheme(const std::string& cs) {assert(false && "not implemented");}
 
+#include "geometry/linalg.h"
 #include "glview/system-gl.h"
 
 double gl_version() { return -1; }
