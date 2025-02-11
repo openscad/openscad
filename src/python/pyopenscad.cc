@@ -331,7 +331,6 @@ int python_vectorval(PyObject *vec, int minval, int maxval, double *x, double *y
 std::vector<Vector3d> python_vectors(PyObject *vec, int mindim, int maxdim) 
 {
   std::vector<Vector3d> results;	
-  Vector3d result;	
   if (PyList_Check(vec)) {
     // check if its a valid vec<Vector3d>
     int valid=1;
@@ -341,6 +340,7 @@ std::vector<Vector3d> python_vectors(PyObject *vec, int mindim, int maxdim)
     }	    
     if(valid) {
       for(int j=0;valid && j<PyList_Size(vec);j++) {
+        Vector3d result(0,0,0);	
         PyObject *item = PyList_GetItem(vec,j);
         if(PyList_Size(item) >= mindim && PyList_Size(item) <= maxdim) {	  
           for(int i=0;i<PyList_Size(item);i++) {
@@ -353,6 +353,7 @@ std::vector<Vector3d> python_vectors(PyObject *vec, int mindim, int maxdim)
       }	
       return results;
     }
+    Vector3d result(0,0,0);	
     if(PyList_Size(vec) >= mindim && PyList_Size(vec) <= maxdim) {	  
       for(int i=0;i<PyList_Size(vec);i++) {
         if (PyList_Size(vec) > i) {
@@ -362,6 +363,7 @@ std::vector<Vector3d> python_vectors(PyObject *vec, int mindim, int maxdim)
     }  
     results.push_back(result);
   }
+  Vector3d result(0,0,0);	
   if (!python_numberval(vec, &result[0])) {
     result[1] = result[0];
     result[2] = result[1];

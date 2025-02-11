@@ -58,7 +58,7 @@ static std::shared_ptr<AbstractNode> builtin_intersection(const ModuleInstantiat
 std::string CsgOpNode::toString() const
 {
   std::ostringstream stream;	
-  stream << this->name() << "(r=" << this->r << "fn = " << this->fn << ")";
+  stream << this->name() << "( r = " << this->r << " , fn = " << this->fn << " )";
   return stream.str();
 }
 

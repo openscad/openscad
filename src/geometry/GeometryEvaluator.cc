@@ -2302,6 +2302,12 @@ Response GeometryEvaluator::visit(State &state, const SkinNode &node)
   output: 3D PolySet
  */
 
+double concat_round(double x)
+{
+  if(x > 0) return  ((int)(x*1000+0.5))/1000.0;
+  if(x < 0) return -((int)(-x*1000+0.5))/1000.0;
+  return 0;
+}
 Response GeometryEvaluator::visit(State& state, const ConcatNode& node)
 {
   if (state.isPrefix() && isSmartCached(node)) return Response::PruneTraversal;
@@ -2319,7 +2325,11 @@ Response GeometryEvaluator::visit(State& state, const ConcatNode& node)
 	  for(const auto &face:ps->indices) {
             builder.beginPolygon(face.size());		  
             for(int ind: face) {
-	      builder.addVertex(ps->vertices[ind]);
+              Vector3d pt=ps->vertices[ind];		    
+	      pt[0]=concat_round(pt[0]);
+	      pt[1]=concat_round(pt[1]);
+	      pt[2]=concat_round(pt[2]);
+	      builder.addVertex(pt);
 	    }		    
 	  }
 	}

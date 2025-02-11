@@ -2332,10 +2332,10 @@ PyObject *rotate_extrude_core(PyObject *obj,  int convexity, double scale, doubl
     node->offset_y = PyFloat_AsDouble(PyList_GetItem(offset, 1));
   }
   double dummy;
-  Vector3d v;
+  Vector3d v(0,0,0);
   if(vp != nullptr && !python_vectorval(vp,3, 3, &v[0],&v[1],&v[2],&dummy )){
-    node->v = v;	  
   }
+  node->v = v;	  
   if(method != nullptr) node->method=method; else node->method = "centered";
 
   if (node->convexity <= 0) node->convexity = 2;
