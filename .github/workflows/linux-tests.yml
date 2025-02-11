@@ -12,12 +12,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ ubuntu-20.04, ubuntu-22.04, ubuntu-24.04 ]
+        os: [ ubuntu-22.04, ubuntu-24.04 ]
         qt: [ qt5, qt6 ]
         exclude:
-          - os: ubuntu-20.04
-            # Qt 6 not packaged
-            qt: qt6
           - os: ubuntu-22.04
             # libqscintilla2-qt6-dev not packaged
             qt: qt6
