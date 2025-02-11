@@ -25,6 +25,7 @@
  */
 
 #include "geometry/GeometryUtils.h"
+#include "core/ModuleInstantiation.h"
 #include "geometry/Geometry.h"
 #include "geometry/linalg.h"
 #include "core/node.h"

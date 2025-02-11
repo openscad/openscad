@@ -5,6 +5,7 @@
 #include <boost/optional.hpp>
 
 #include "core/node.h"
+#include "core/ModuleInstantiation.h"
 #include "core/Value.h"
 
 enum class ImportType {
