@@ -2704,25 +2704,23 @@ void MainWindow::actionExportFileFormat(int fmt)
   switch (format) {
   case FileFormat::PDF:
   {
-    auto exportPdfDialog = new ExportPdfDialog();
-    exportPdfDialog->deleteLater();
-    if (exportPdfDialog->exec() == QDialog::Rejected) {
+    ExportPdfDialog exportPdfDialog;
+    if (exportPdfDialog.exec() == QDialog::Rejected) {
       return;
     }
 
-    exportInfo.optionsPdf = exportPdfDialog->getOptions();
+    exportInfo.optionsPdf = exportPdfDialog.getOptions();
     actionExport(2, exportInfo);
   }
   break;
   case FileFormat::_3MF:
   {
-    auto export3mfDialog = new Export3mfDialog();
-    export3mfDialog->deleteLater();
-    if (export3mfDialog->exec() == QDialog::Rejected) {
+    Export3mfDialog export3mfDialog;
+    if (export3mfDialog.exec() == QDialog::Rejected) {
       return;
     }
 
-    exportInfo.options3mf = export3mfDialog->getOptions();
+    exportInfo.options3mf = export3mfDialog.getOptions();
     actionExport(3, exportInfo);
   }
   break;

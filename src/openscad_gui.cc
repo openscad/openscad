@@ -217,13 +217,12 @@ int gui(std::vector<std::string>& inputFiles, const std::filesystem::path& origi
 
   auto showOnStartup = settings.value("launcher/showOnStartup");
   if (noInputFiles && (showOnStartup.isNull() || showOnStartup.toBool())) {
-    auto launcher = new LaunchingScreen();
-    auto dialogResult = launcher->exec();
-    if (dialogResult == QDialog::Accepted) {
-      if (launcher->isForceShowEditor()) {
+    LaunchingScreen launcher;
+    if (launcher.exec() == QDialog::Accepted) {
+      if (launcher.isForceShowEditor()) {
         settings.setValue("view/hideEditor", false);
       }
-      auto files = launcher->selectedFiles();
+      QStringList files = launcher.selectedFiles();
       // If nothing is selected in the launching screen, leave
       // the "" dummy in inputFiles to open an empty MainWindow.
       if (!files.empty()) {
@@ -232,7 +231,6 @@ int gui(std::vector<std::string>& inputFiles, const std::filesystem::path& origi
           inputFiles.push_back(f.toStdString());
         }
       }
-      delete launcher;
     } else {
       return 0;
     }
