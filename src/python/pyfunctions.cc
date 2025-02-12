@@ -1414,8 +1414,8 @@ PyObject *python_multmatrix_sub(PyObject *pyobj, PyObject *pymat, int div)
   DECLARE_INSTANCE
   auto node = std::make_shared<TransformNode>(instance, "multmatrix");
   std::shared_ptr<AbstractNode> child;
-  PyObject *dummydict;
-  child = PyOpenSCADObjectToNodeMulti(pyobj, &dummydict);
+  PyObject *child_dict;
+  child = PyOpenSCADObjectToNodeMulti(pyobj, &child_dict);
   node->setPyName(child->getPyName());
   if (child == NULL) {
     PyErr_SetString(PyExc_TypeError, "Invalid type for Object in multmatrix");
@@ -1426,7 +1426,19 @@ PyObject *python_multmatrix_sub(PyObject *pyobj, PyObject *pymat, int div)
   if(div) node->matrix = mat.inverse();
   else node->matrix = mat;
   node->children.push_back(child);
-  return PyOpenSCADObjectFromNode(&PyOpenSCADType, node);
+  PyObject *pyresult = PyOpenSCADObjectFromNode(&PyOpenSCADType, node);
+  if(child_dict != nullptr ) { 
+    PyObject *key, *value;
+    Py_ssize_t pos = 0;
+    while(PyDict_Next(child_dict, &pos, &key, &value)) {
+      Matrix4d raw;
+      if(python_tomatrix(value, raw)) return nullptr;
+      PyObject *value1 = python_frommatrix(node->matrix * raw );
+      if(value1 != nullptr) PyDict_SetItem(((PyOpenSCADObject *) pyresult)->dict,key, value1);
+      else PyDict_SetItem(((PyOpenSCADObject *) pyresult)->dict,key, value);
+    }
+  }
+  return pyresult;
 
 }
 
@@ -3011,9 +3023,9 @@ PyObject *python_nb_sub_vec3(PyObject *arg1, PyObject *arg2, int mode) // 0: tra
 {
   DECLARE_INSTANCE
   std::shared_ptr<AbstractNode> child;
-  PyObject *dummydict;	  
+  PyObject *child_dict;	  
 
-  child = PyOpenSCADObjectToNodeMulti(arg1, &dummydict);
+  child = PyOpenSCADObjectToNodeMulti(arg1, &child_dict);
   std::vector<Vector3d> vecs;
   if(mode == 3) {
     if(!PyList_Check(arg2)) {
@@ -3065,7 +3077,19 @@ PyObject *python_nb_sub_vec3(PyObject *arg1, PyObject *arg2, int mode) // 0: tra
       node->children.push_back(child);
       nodes.push_back(node);
     }  
-    if(nodes.size() == 1) return PyOpenSCADObjectFromNode(&PyOpenSCADType, nodes[0]);
+    if(nodes.size() == 1) {
+      PyObject *pyresult = PyOpenSCADObjectFromNode(&PyOpenSCADType, nodes[0]);
+      if(child_dict != nullptr ) { 
+        PyObject *key, *value;
+        Py_ssize_t pos = 0;
+         while(PyDict_Next(child_dict, &pos, &key, &value)) {
+           PyObject *value1 = python_matrix_trans(value,vecs[0]);
+           if(value1 != nullptr) PyDict_SetItem(((PyOpenSCADObject *) pyresult)->dict,key, value1);
+           else PyDict_SetItem(((PyOpenSCADObject *) pyresult)->dict,key, value);
+        }
+      }
+      return pyresult;
+    }
     else {
       auto node = std::make_shared<CsgOpNode>(instance, OpenSCADOperator::UNION);
       DECLARE_INSTANCE
