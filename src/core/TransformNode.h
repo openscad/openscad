@@ -3,6 +3,7 @@
 #include <string>
 
 #include "core/node.h"
+#include "core/ModuleInstantiation.h"
 #include "geometry/linalg.h"
 
 class TransformNode : public AbstractNode
