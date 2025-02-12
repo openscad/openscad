@@ -3009,7 +3009,7 @@ PyObject *python_nb_sub(PyObject *arg1, PyObject *arg2, OpenSCADOperator mode)
           std::string handle_name=name+"_"+key_str;
           PyObject *key_mod = PyUnicode_FromStringAndSize(handle_name.c_str(),strlen(handle_name.c_str()));
           PyDict_SetItem(((PyOpenSCADObject *) pyresult)->dict,key_mod, value);
-	} else {
+	} else if(i == 0) {
           PyDict_SetItem(((PyOpenSCADObject *) pyresult)->dict,key, value);
 	}
 
