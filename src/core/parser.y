@@ -766,6 +766,9 @@ bool parse(SourceFile *&file, const std::string& text, const std::string &filena
   try {
     filepath = filename.empty() ? fs::current_path() : fs::absolute(fs::path{filename});
     mainFilePath = mainFile.empty() ? fs::current_path() : fs::absolute(fs::path{mainFile});
+  } catch (const std::filesystem::filesystem_error& fs_err) {
+    LOG(message_group::Error, "Parser error: file system error: %1$s", fs_err.what());
+    return false;
   } catch (...) {
     // yyerror tries to print the file path, which throws again, and we can't do that
     LOG(message_group::Error, "Parser error: file access denied");
