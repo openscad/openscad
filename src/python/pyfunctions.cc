@@ -1952,14 +1952,26 @@ PyObject *python_oo_sitonto(PyObject *obj, PyObject *args, PyObject *kwargs)
 }
 
 
-PyObject *python__getitem__(PyObject *dict, PyObject *key)
+PyObject *python__getitem__(PyObject *obj, PyObject *key)
 {
-  PyOpenSCADObject *self = (PyOpenSCADObject *) dict;
+  PyOpenSCADObject *self = (PyOpenSCADObject *) obj;
   if (self->dict == nullptr) {
     return nullptr;
   }
   PyObject *result = PyDict_GetItem(self->dict, key);
-  if (result == NULL) result = Py_None;
+  if (result == NULL){
+    PyObject *dummy_dict;
+    std::shared_ptr<AbstractNode> node = PyOpenSCADObjectToNodeMulti(obj, &dummy_dict);
+    PyObject* keyname = PyUnicode_AsEncodedString(key, "utf-8", "~");
+    std::string keystr = PyBytes_AS_STRING(keyname);
+    result = Py_None;
+    if(keystr == "matrix") {
+  	std::shared_ptr<const TransformNode> trans = std::dynamic_pointer_cast<const TransformNode>(node);
+	if(trans != nullptr) {
+          result = python_frommatrix(trans->matrix.matrix());
+	}
+    }
+  }
   else Py_INCREF(result);
   return result;
 }
@@ -2155,6 +2167,101 @@ PyObject *python_oo_mesh(PyObject *obj, PyObject *args, PyObject *kwargs)
     return NULL;
   }
   return python_mesh_core(obj, tess == Py_True);
+}
+
+PyObject *python_faces_core(PyObject *obj, bool tessellate)
+{
+  PyObject *dummydict;
+  std::shared_ptr<AbstractNode> child = PyOpenSCADObjectToNodeMulti(obj, &dummydict);
+  if (child == NULL) {
+    PyErr_SetString(PyExc_TypeError, "Invalid type for  Object in faces \n");
+    return NULL;
+  }
+
+  Tree tree(child, "");
+  GeometryEvaluator geomevaluator(tree);
+  std::shared_ptr<const Geometry> geom = geomevaluator.evaluateGeometry(*tree.root(), true);
+  std::shared_ptr<const PolySet> ps = PolySetUtils::getGeometryAsPolySet(geom);
+
+
+  if(ps != nullptr){
+    if(tessellate == true) {
+      ps = PolySetUtils::tessellate_faces(*ps);
+    }
+
+    PyObject *pyth_faces = PyList_New(ps->indices.size());
+
+    for (int j=0;j<ps->indices.size();j++) {
+      auto &face = ps->indices[j];	    
+      if(face.size() < 3) continue;	    
+      Vector3d zdir=calcTriangleNormal(ps->vertices,face).head<3>().normalized();
+      // calc center of face
+      Vector3d ptmin, ptmax;
+      for(int i=0;i<face.size();i++) {
+        Vector3d pt = ps->vertices[face[i]];
+	for(int k=0;k<3;k++) {
+	  if(i == 0 || pt[k] < ptmin[k]) ptmin[k]=pt[k];
+	  if(i == 0 || pt[k] > ptmax[k]) ptmax[k]=pt[k];
+	}  
+      }
+      Vector3d pt=Vector3d((ptmin[0]+ptmax[0])/2.0, (ptmin[1]+ptmax[1])/2.0,(ptmin[2]+ptmax[2])/2.0);
+      Vector3d xdir = (ps->vertices[face[1]]-ps->vertices[face[0]]).normalized();
+      Vector3d ydir = xdir.cross(zdir);
+
+      Matrix4d mat;
+      mat <<  xdir[0], ydir[0], zdir[0], pt[0],
+              xdir[1], ydir[1], zdir[1], pt[1],
+              xdir[2], ydir[2], zdir[2], pt[2],
+              0      , 0      , 0      , 1;
+
+      Matrix4d invmat = mat.inverse();       	    
+      
+      DECLARE_INSTANCE
+      auto poly = std::make_shared<PolygonNode>(instance);
+      for(int i=0;i<face.size();i++) {
+        Vector3d pt = ps->vertices[face[i]];
+        Vector4d pt4(pt[0], pt[1], pt[2], 1);
+        pt4 = invmat * pt4 ;
+        poly->points.push_back(pt4.head<2>());
+      }
+      {
+        DECLARE_INSTANCE
+        auto mult = std::make_shared<TransformNode>(instance,"multmatrix");
+	mult->matrix = mat;
+	mult->children.push_back(poly);
+
+        PyObject *pyth_face = PyOpenSCADObjectFromNode(&PyOpenSCADType, mult);
+        PyList_SetItem(pyth_faces, j, pyth_face);
+      }
+
+    }
+    return  pyth_faces;
+// do the magic here
+  }  
+  return Py_None;
+}
+
+PyObject *python_faces(PyObject *self, PyObject *args, PyObject *kwargs)
+{
+  char *kwlist[] = {"obj", "triangulate", NULL};
+  PyObject *obj = NULL;
+  PyObject *tess = NULL;
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O|O", kwlist, &obj, &tess)) {
+    PyErr_SetString(PyExc_TypeError, "error during parsing\n");
+    return NULL;
+  }
+  return python_faces_core(obj, tess == Py_True);
+}
+
+PyObject *python_oo_faces(PyObject *obj, PyObject *args, PyObject *kwargs)
+{
+  char *kwlist[] = { "triangulate", NULL};
+  PyObject *tess = NULL;
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|O", kwlist, &tess)) {
+    PyErr_SetString(PyExc_TypeError, "error during parsing\n");
+    return NULL;
+  }
+  return python_faces_core(obj, tess == Py_True);
 }
 
 PyObject *python_oversample_core(PyObject *obj, int n, PyObject *round)
@@ -4298,6 +4405,7 @@ PyMethodDef PyOpenSCADFunctions[] = {
   {"surface", (PyCFunction) python_surface, METH_VARARGS | METH_KEYWORDS, "Surface Object."},
   {"texture", (PyCFunction) python_texture, METH_VARARGS | METH_KEYWORDS, "Include a texture."},
   {"mesh", (PyCFunction) python_mesh, METH_VARARGS | METH_KEYWORDS, "exports mesh."},
+  {"faces", (PyCFunction) python_faces, METH_VARARGS | METH_KEYWORDS, "exports a list of faces."},
   {"oversample", (PyCFunction) python_oversample, METH_VARARGS | METH_KEYWORDS, "oversample."},
   {"debug", (PyCFunction) python_debug, METH_VARARGS | METH_KEYWORDS, "debug a face."},
   {"fillet", (PyCFunction) python_fillet, METH_VARARGS | METH_KEYWORDS, "fillet."},
@@ -4360,6 +4468,7 @@ PyMethodDef PyOpenSCADMethods[] = {
   OO_METHOD_ENTRY(resize,"Resize Object")	
 
   OO_METHOD_ENTRY(mesh, "Mesh Object")	
+  OO_METHOD_ENTRY(faces, "Create Faces list")	
   OO_METHOD_ENTRY(oversample,"Oversample Object")	
   OO_METHOD_ENTRY(debug,"Debug Object Faces")	
   OO_METHOD_ENTRY(fillet,"Fillet Object")	
