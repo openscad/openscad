@@ -3033,6 +3033,10 @@ PyObject *python_nb_sub_vec3(PyObject *arg1, PyObject *arg2, int mode) // 0: tra
       return NULL;
     }
     int n=PyList_Size(arg2);
+    if(PyList_Size(arg2) > 3) {
+      PyErr_SetString(PyExc_TypeError, "explode arg list can have maximal 3 directions");
+      return NULL;
+    }
     double dmy;
     std::vector<float> vals[3];
     for(int i=0;i<3;i++) vals[i].push_back(0.0);
