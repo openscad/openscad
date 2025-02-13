@@ -573,19 +573,11 @@ std::unique_ptr<Geometry> extrudePolygon(const LinearExtrudeNode& node, const Po
 
   const Polygon2d& polyref = is_segmented ? seg_poly : poly;
 
-  Vector3d xdir(1,0,0);
-  Vector3d ydir(0,1,0);
   Vector3d height(0,0,1);
-  Vector3d off(0,0,0);
-  if(fabs(node.height[0]) > 1e-3 || fabs(node.height[1]) > 1e-3) { // TODO has_x
-	  height = node.height;
-  }
+  if(node.has_heightvector) height = node.height;
   else {
     auto mat = polyref.getTransform3d();
-    xdir = Vector3d(mat(0,0), mat(1,0), mat(2,0));		  
-    ydir = Vector3d(mat(0,1), mat(1,1), mat(2,1));		  
-    height = Vector3d(mat(0,2), mat(1,2), mat(2,2)).normalized()*node.height.norm();		  
-    off  = Vector3d(mat(0,3), mat(1,3), mat(2,3));		  
+    height = Vector3d(mat(0,2), mat(1,2), mat(2,2)).normalized()*node.height[2];		  
    }
 
   Vector3d h1 = Vector3d::Zero();
@@ -633,10 +625,12 @@ std::unique_ptr<Geometry> extrudePolygon(const LinearExtrudeNode& node, const Po
     } else 
 #endif
 {
+     Transform3d tr = 	polyref.getTransform3d();
      for (const auto& o : polyref.untransformedOutlines()) {
       for (const auto& v : o.vertices) {
         auto tmp = trans * v;
-        vertices.emplace_back(xdir*tmp[0]+ydir*tmp[1]+off + full_height * slice_idx / num_slices);
+	Vector3d tmp1 = tr*Vector3d(tmp[0], tmp[1], 0.0);
+        vertices.emplace_back(tmp1 + h1 + full_height * slice_idx / num_slices);
       }
       }
     }

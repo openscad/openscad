@@ -26,7 +26,7 @@ public:
   double twist = 0.0;
   unsigned int convexity = 1u;
   unsigned int slices = 1u, segments = 0u;
-  bool has_twist = false, has_slices = false, has_segments = false;
+  bool has_twist = false, has_slices = false, has_segments = false, has_heightvector=false;
   bool center = false;
  #ifdef ENABLE_PYTHON
   void *profile_func;

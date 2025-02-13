@@ -69,6 +69,7 @@ std::shared_ptr<AbstractNode> builtin_linear_extrude(const ModuleInstantiation *
       LOG(message_group::Error, "v when specified should be a 3d vector.");
     }
     height = 1.0;
+    node->has_heightvector=true;
   }
   const Value& heightValue = parameters[{"height", "h"}];
   if (heightValue.isDefined()) {

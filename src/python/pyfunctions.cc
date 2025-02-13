@@ -2547,6 +2547,7 @@ PyObject *linear_extrude_core(PyObject *obj, PyObject *height, int convexity, Py
     node->height = height_vec;
   } else if(!python_vectorval(height, 3, 3, &height_vec[0], &height_vec[1], &height_vec[2], &dummy)) {
     node->height = height_vec;
+    node->has_heightvector=true;
   }
 
   node->convexity = convexity;
