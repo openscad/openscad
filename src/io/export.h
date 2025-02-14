@@ -79,7 +79,7 @@ using CmdLineExportOptions = std::unordered_map<std::string, std::unordered_map<
 // Defaults match values used prior to incorporation of options.
 struct ExportPdfOptions {
     bool showScale = true;
-    bool showScaleMsg = true;
+    bool showScaleMsg = false;
     bool showGrid = false;
     double gridSize = 10.0;
     bool showDesignFilename = false;
