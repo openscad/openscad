@@ -94,6 +94,7 @@ public:
   [[nodiscard]] std::string dump() const override;
   std::string label;
   std::shared_ptr<const PolySet> polyset;
+  bool is_2d=false;
   Transform3d matrix;
   Color4f color;
   int textureind;
