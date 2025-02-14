@@ -362,9 +362,17 @@ void Preferences::setupFeaturesPage()
     cb->setFont(bold_font);
     // synchronize Qt settings with the feature settings
     bool value = getValue(featurekey).toBool();
-    feature->enable(value);
     cb->setChecked(value);
-    cb->setProperty(featurePropertyName, QVariant::fromValue<Feature *>(feature));
+
+    if( feature->is_enabled() ) {
+      // only if not already set from command-line (cannot disable from command-line)
+      cb->setChecked(feature->is_enabled());
+    } else {
+      // feature setting if not overridden follows QT preference
+      feature->enable(value);
+      cb->setProperty(featurePropertyName, QVariant::fromValue<Feature *>(feature));
+    }
+
     connect(cb, SIGNAL(toggled(bool)), this, SLOT(featuresCheckBoxToggled(bool)));
     gridLayoutExperimentalFeatures->addWidget(cb, row, 0, 1, 2, Qt::AlignLeading);
     row++;
