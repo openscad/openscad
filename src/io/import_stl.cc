@@ -70,7 +70,7 @@ static void read_stl_facet(std::ifstream& f, stl_facet& facet) {
 #endif
 }
 
-std::unique_ptr<PolySet> import_stl(const std::string& filename, const Location& loc) {
+std::unique_ptr<PolySet> import_stl(const std::string& filename, const Location& loc, const bool center) {
   // Open file and position at the end
   std::ifstream f(filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
   if (!f.good()) {
@@ -200,5 +200,21 @@ std::unique_ptr<PolySet> import_stl(const std::string& filename, const Location&
         "STL format not recognized in '%1$s'.", filename);
     return PolySet::createEmpty();
   }
-  return builder.build();
+
+  auto g = builder.build();
+
+  if (center) {
+    auto bbox = g->getBoundingBox();
+    auto center = bbox.center();
+    auto mat = Eigen::Affine3d::Identity();
+    auto translate = mat.translation();
+
+    translate.x() = -center.x();
+    translate.y() = -center.y();
+    translate.z() = -center.z();
+
+    g->transform(mat);
+  }
+
+  return g;
 }

@@ -717,6 +717,8 @@ list(APPEND STL_IMPORT_FILES
   ${TEST_SCAD_DIR}/stl/stl-import-invalidvertex.scad
   ${TEST_SCAD_DIR}/stl/stl-import-toomanyvertices.scad
   ${TEST_SCAD_DIR}/stl/stl-import-unparseable.scad
+  # result will not be empty
+  ${TEST_SCAD_DIR}/stl/stl-import-centered.scad
 )
 
 list(GET RENDERTEST_2D_FILES 0 1 2 RENDERSTDIOTEST_FILES)

@@ -163,7 +163,7 @@ std::unique_ptr<const Geometry> ImportNode::createGeometry() const
 
   switch (this->type) {
   case ImportType::STL: {
-    g = import_stl(this->filename, loc);
+    g = import_stl(this->filename, loc, this->center);
     break;
   }
   case ImportType::AMF: {
