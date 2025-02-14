@@ -77,8 +77,3 @@ void OpenSCADApp::hideFontCacheDialog()
   assert(this->fontCacheDialog);
   this->fontCacheDialog->reset();
 }
-
-
-void OpenSCADApp::releaseQSettingsCached() {
-  QSettingsCached{}.release();
-}
