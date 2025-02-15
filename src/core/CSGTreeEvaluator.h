@@ -6,6 +6,8 @@
 #include <cstddef>
 #include "core/NodeVisitor.h"
 #include <memory>
+#include "core/ModuleInstantiation.h"
+#include "geometry/Geometry.h"
 #include "core/CSGNode.h"
 
 class CSGNode;

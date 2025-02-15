@@ -1,11 +1,13 @@
 #pragma once
 
+#include <initializer_list>
 #include <limits>
 #include <memory>
 #include <string>
 #include <vector>
 
 #include "core/Arguments.h"
+#include "core/AST.h"
 #include "core/ContextFrame.h"
 
 /*

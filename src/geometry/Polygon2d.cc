@@ -6,6 +6,8 @@
 #include <string>
 #include <memory>
 
+#include "geometry/Geometry.h"
+#include "geometry/linalg.h"
 #include "utils/printutils.h"
 #ifdef ENABLE_MANIFOLD
 #include "geometry/manifold/manifoldutils.h"

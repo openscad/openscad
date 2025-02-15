@@ -4,7 +4,8 @@
 #include <cstddef>
 #include <vector>
 
-#include "VertexState.h"
+#include "glview/VertexState.h"
+#include "geometry/linalg.h"
 #include "glview/Renderer.h"
 #include "core/CSGNode.h"
 

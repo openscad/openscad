@@ -1,6 +1,7 @@
 #pragma once
 
-#include "VertexState.h"
+#include "glview/VertexState.h"
+#include "geometry/linalg.h"
 #include "glview/Renderer.h"
 #include "glview/system-gl.h"
 #include <memory>

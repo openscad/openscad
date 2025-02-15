@@ -1,4 +1,5 @@
 #include "core/AST.h"
+#include <filesystem>
 #include <ostream>
 #include <memory>
 #include <sstream>

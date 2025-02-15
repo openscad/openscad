@@ -1,6 +1,7 @@
 #pragma once
 
 #include "core/node.h"
+#include "core/ModuleInstantiation.h"
 #include "clipper2/clipper.h"
 
 #include <string>

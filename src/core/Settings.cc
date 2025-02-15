@@ -1,5 +1,6 @@
 #include "core/Settings.h"
 
+#include <ostream>
 #include <cassert>
 #include <cstddef>
 #include <istream>
@@ -11,7 +12,7 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/range/adaptors.hpp>
 
-#include "export_enums.h"
+#include "io/export_enums.h"
 #include "io/export.h"
 #include "utils/printutils.h"
 
@@ -309,7 +310,7 @@ SettingsEntryDouble Settings::axisDeadzone8("input", "axisDeadzone8", 0.0, 0.01,
 
 SettingsEntryInt Settings::joystickNr("input", "joystickNr", 0, 9, 0);
 
-SettingsEntryBool SettingsExportPdf::exportPdfAlwaysShowDialog(SECTION_EXPORT_PDF, "always-show-sialog", true);
+SettingsEntryBool SettingsExportPdf::exportPdfAlwaysShowDialog(SECTION_EXPORT_PDF, "always-show-dialog", true);
 SettingsEntryEnum<ExportPdfPaperSize> SettingsExportPdf::exportPdfPaperSize(SECTION_EXPORT_PDF, "paper-size", {
   {ExportPdfPaperSize::A6,      "a6",      _("A6 (105 x 148 mm)")},
   {ExportPdfPaperSize::A5,      "a5",      _("A5 (148 x 210 mm)")},

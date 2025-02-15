@@ -26,6 +26,7 @@
 
 #include "gui/MainWindow.h"
 
+#include <filesystem>
 #include <deque>
 #include <cassert>
 #include <array>
@@ -58,6 +59,8 @@
 #include <QToolBar>
 #include <QWidget>
 
+#include "geometry/Geometry.h"
+#include "core/AST.h"
 #include "openscad_gui.h"
 
 #ifdef ENABLE_MANIFOLD

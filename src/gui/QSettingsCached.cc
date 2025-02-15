@@ -1,5 +1,6 @@
 #include "gui/QSettingsCached.h"
 
+#include <mutex>
 #include <QSettings>
 #include <memory>
 

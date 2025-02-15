@@ -1,5 +1,6 @@
 #include "gui/Animate.h"
 
+#include <string>
 #include <QAction>
 #include <QBoxLayout>
 #include <QIcon>

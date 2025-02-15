@@ -29,6 +29,7 @@
 #include "gui/Preferences.h"
 #include "gui/input/AxisConfigWidget.h"
 #include "gui/input/ButtonConfigWidget.h"
+#include <array>
 #include <QMetaObject>
 #include <QTimer>
 #include <cstddef>

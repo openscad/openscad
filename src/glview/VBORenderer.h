@@ -5,6 +5,8 @@
 #include <memory>
 #include <cstddef>
 #include "glview/Renderer.h"
+#include "geometry/linalg.h"
+#include "geometry/Polygon2d.h"
 #include "glview/system-gl.h"
 #ifdef ENABLE_OPENCSG
 #include <opencsg.h>

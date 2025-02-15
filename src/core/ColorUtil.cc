@@ -1,3 +1,5 @@
+#include <string>
+#include "geometry/linalg.h"
 #include "core/ColorUtil.h"
 
 namespace OpenSCAD {

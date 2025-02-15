@@ -1,6 +1,9 @@
 #pragma once
 
 #include "geometry/cgal/cgal.h"
+#include "geometry/Geometry.h"
+#include "geometry/linalg.h"
+#include "geometry/Polygon2d.h"
 #include "geometry/PolySet.h"
 #include "geometry/cgal/CGAL_Nef_polyhedron.h"
 #include "core/enums.h"

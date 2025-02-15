@@ -26,11 +26,12 @@
 
 #include <unordered_map>
 #include "export_enums.h"
+#include "geometry/Geometry.h"
 #include "geometry/GeometryUtils.h"
 #include "io/export.h"
 #include "geometry/PolySet.h"
 #include "geometry/PolySetUtils.h"
-#include "linalg.h"
+#include "geometry/linalg.h"
 #include "core/ColorUtil.h"
 #include "utils/printutils.h"
 #ifdef ENABLE_CGAL

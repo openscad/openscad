@@ -1,6 +1,7 @@
 #pragma once
 
 #include <QStringList>
+#include <filesystem>
 #include <map>
 #include <functional>
 #include <memory>

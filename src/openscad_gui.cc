@@ -26,6 +26,10 @@
 
 #include "openscad_gui.h"
 
+#include <memory>
+#include <filesystem>
+#include <string>
+#include <vector>
 #include <QDir>
 #include <QIcon>
 #include <QFileInfo>
@@ -87,8 +91,8 @@ bool isDarkMode() {
   return scheme == Qt::ColorScheme::Dark;
 #else
   const QPalette defaultPalette;
-  const auto text = defaultPalette.color(QPalette::WindowText);
-  const auto window = defaultPalette.color(QPalette::Window);
+  const auto& text = defaultPalette.color(QPalette::WindowText);
+  const auto& window = defaultPalette.color(QPalette::Window);
   return text.lightness() > window.lightness();
 #endif // QT_VERSION
 }

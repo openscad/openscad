@@ -26,6 +26,7 @@
  */
 
 #include "io/export.h"
+#include "geometry/Geometry.h"
 #include "geometry/linalg.h"
 #include "Feature.h"
 #include "geometry/Reindexer.h"
