@@ -84,12 +84,17 @@ void CSGTreeEvaluator::applyToChildren(State& state, const AbstractNode& node, O
         this->backgroundNodes.push_back(t1);
       } else {
         auto t1l = std::dynamic_pointer_cast<CSGLeaf>(t1);
-        auto t2l = std::dynamic_pointer_cast<CSGLeaf>(t2);
-	if(t1l != nullptr && t2l != nullptr && t1l->is_2d && t2l->is_2d ) {
-          // for 2D shapes, orentation is automatically adapted		
+	if(t1l != nullptr && t1l->is_2d) {
 	  Transform3d &m1 = t1l->matrix;
-	  Transform3d &m2 = t2l->matrix;
-	  m2 = m2*m1;
+	  for(int i=0;i<4;i++) {
+		  for(int j=0;j<4;j++) {
+			  printf("%g ",m1(i,j));
+		  }
+	  printf("\n");
+	  }
+	  printf("\n");
+
+	  t2->applyMatrix(m1);
 	}
         t = CSGOperation::createCSGNode(op, t1, t2);
       }
@@ -210,15 +215,16 @@ std::shared_ptr<const PolySet> polygon2dToPolySet(const Polygon2d &p2d) {
   }
 
   // Create sides
+  Transform3d tr= p2d.getTransform3d();
   for (const auto& o : p2d.untransformedOutlines()) {
     for (size_t i = 0; i < o.vertices.size(); ++i) {
       const Vector2d &prev = o.vertices[i];
       const Vector2d &curr = o.vertices[(i+1)%o.vertices.size()];
       builder.appendPolygon({
-        Vector3d(prev[0], prev[1], -0.5),
-        Vector3d(curr[0], curr[1], -0.5),
-        Vector3d(curr[0], curr[1], 0.5),
-        Vector3d(prev[0], prev[1], 0.5),
+        tr*Vector3d(prev[0], prev[1], -0.5),
+        tr*Vector3d(curr[0], curr[1], -0.5),
+        tr*Vector3d(curr[0], curr[1], 0.5),
+        tr*Vector3d(prev[0], prev[1], 0.5),
       });
     }
   }

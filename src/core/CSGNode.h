@@ -23,6 +23,7 @@ public:
   virtual ~CSGNode() = default;
   [[nodiscard]] virtual std::string dump() const = 0;
   [[nodiscard]] virtual bool isEmptySet() const { return false; }
+  virtual void applyMatrix(const Transform3d &mat)  = 0;
 
   [[nodiscard]] const BoundingBox& getBoundingBox() const { return this->bbox; }
   [[nodiscard]] unsigned int getFlags() const { return this->flags; }
@@ -49,6 +50,7 @@ public:
   CSGOperation() = default;
   void initBoundingBox() override;
   [[nodiscard]] std::string dump() const override;
+  virtual void applyMatrix(const Transform3d &mat) override;
 
   std::shared_ptr<CSGNode>& left() { return this->children[0]; }
   std::shared_ptr<CSGNode>& right() { return this->children[1]; }
@@ -90,6 +92,7 @@ public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
   CSGLeaf(const std::shared_ptr<const PolySet>& ps, Transform3d matrix, Color4f color, int textureind, std::string label, const int index);
   void initBoundingBox() override;
+  virtual void applyMatrix(const Transform3d &mat) override;
   [[nodiscard]] bool isEmptySet() const override;
   [[nodiscard]] std::string dump() const override;
   std::string label;

@@ -1663,7 +1663,6 @@ std::unique_ptr<Polygon2d> GeometryEvaluator::applyToChildren2D(const AbstractNo
         double n = Calc::get_fragments_from_r(std::abs(offNode->delta), 360.0, offNode->fn, offNode->fs, offNode->fa);
         double arc_tolerance = std::abs(offNode->delta) * (1 - cos_degrees(180 / n));
         auto r1 = ClipperUtils::applyOffset(*pol, offNode->delta, offNode->join_type, offNode->miter_limit, arc_tolerance);
-        printf("f %d\n",r1->hasTransform3d());		
 	return r1;
   }
   return pol;
