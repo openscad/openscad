@@ -43,6 +43,7 @@
 #include "FontCache.h"
 #include "geometry/Geometry.h"
 #include "gui/AppleEvents.h"
+#include "platform/CocoaUtils.h"
 #include "gui/LaunchingScreen.h"
 #include "gui/MainWindow.h"
 #include "gui/OpenSCADApp.h"
@@ -242,8 +243,12 @@ int gui(std::vector<std::string>& inputFiles, const std::filesystem::path& origi
     inputFilesList.append(assemblePath(original_path, infile));
   }
   new MainWindow(inputFilesList);
-  app.connect(&app, SIGNAL(lastWindowClosed()), &app, SLOT(releaseQSettingsCached()));
-  app.connect(&app, SIGNAL(lastWindowClosed()), &app, SLOT(quit()));
+  QObject::connect(&app, &QCoreApplication::aboutToQuit, [](){
+    QSettingsCached{}.release();
+#ifdef Q_OS_MACOS
+    CocoaUtils::endApplication();
+#endif
+  });
 
 #ifdef ENABLE_HIDAPI
   if (Settings::Settings::inputEnableDriverHIDAPI.value()) {
@@ -283,8 +288,5 @@ int gui(std::vector<std::string>& inputFiles, const std::filesystem::path& origi
 #endif
 
   InputDriverManager::instance()->init();
-  int rc = app.exec();
-  const auto& windows = scadApp->windowManager.getWindows();
-  while (!windows.empty()) delete *windows.begin();
-  return rc;
+  return app.exec();
 }

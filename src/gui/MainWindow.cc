@@ -584,7 +584,7 @@ MainWindow::MainWindow(const QStringList& filenames)
   connect(this->fileActionReload, SIGNAL(triggered()), this, SLOT(actionReload()));
   connect(this->fileActionRevoke, SIGNAL(triggered()), this, SLOT(actionRevokeTrustedFiles()));
   connect(this->fileActionClose, SIGNAL(triggered()), tabManager, SLOT(closeCurrentTab()));
-  connect(this->fileActionQuit, SIGNAL(triggered()), this, SLOT(quit()));
+  connect(this->fileActionQuit, SIGNAL(triggered()), scadApp, SLOT(quit()), Qt::QueuedConnection);
   connect(this->fileShowLibraryFolder, SIGNAL(triggered()), this, SLOT(actionShowLibraryFolder()));
 #ifndef __APPLE__
   auto shortcuts = this->fileActionSave->shortcuts();
@@ -1123,10 +1123,10 @@ MainWindow::~MainWindow()
   // so no need to delete it.
   delete parsedFile;
   scadApp->windowManager.remove(this);
-  if (scadApp->windowManager.getWindows().size() == 0) {
+  if (scadApp->windowManager.getWindows().empty()) {
     // Quit application even in case some other windows like
     // Preferences are still open.
-    this->quit();
+    scadApp->quit(); 
   }
 }
 
@@ -3993,20 +3993,6 @@ void MainWindow::setFont(const QString& family, uint size)
   if (size > 0) font.setPointSize(size);
   font.setStyleHint(QFont::TypeWriter);
   activeEditor->setFont(font);
-}
-
-void MainWindow::quit()
-{
-  QCloseEvent ev;
-  QApplication::sendEvent(QApplication::instance(), &ev);
-  if (ev.isAccepted()) QApplication::instance()->quit();
-  // FIXME: Cancel any CGAL calculations
-#ifdef Q_OS_MACOS
-  CocoaUtils::endApplication();
-#endif
-  for(auto &temp: this->allTempFiles) {
-    temp->setAutoRemove(true);
-  }
 }
 
 void MainWindow::consoleOutput(const Message& msgObj, void *userdata)
