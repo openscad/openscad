@@ -362,7 +362,6 @@ public slots:
   void helpOfflineCheatSheet();
   void helpLibrary();
   void helpFontInfo();
-  void quit();
   void checkAutoReload();
   void waitAfterReload();
   void autoReloadSet(bool);

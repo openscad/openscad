@@ -22,7 +22,6 @@ public:
 public slots:
   void showFontCacheDialog();
   void hideFontCacheDialog();
-  void releaseQSettingsCached();
 
 public:
   WindowManager windowManager;
