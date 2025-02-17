@@ -41,7 +41,6 @@ public:
   virtual size_t calcNumEdgeVertices(const Polygon2d& polygon) const;
 
   void add_shader_pointers(VBOBuilder& vbo_builder, const ShaderUtils::ShaderInfo *shaderinfo); // This could stay protected, were it not for VertexStateManager
-  void add_color(VBOBuilder& vbo_builder, const Color4f& color, const ShaderUtils::ShaderInfo *shaderinfo);
 
 protected:
   void add_shader_data(VBOBuilder& vbo_builder);
