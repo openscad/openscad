@@ -167,7 +167,7 @@ void VBORenderer::add_shader_pointers(VBOBuilder& vbo_builder, const ShaderUtils
   vbo_builder.states().emplace_back(std::move(ss));
 }
 
-// This will set the `color_area` and `color_edge` shader uniforms.
+// This will set the `color_edge` shader uniform.
 // ..meaning it will only be applicable to shaders using those uniforms, i.e. the edge shader
 void VBORenderer::add_color(VBOBuilder& vbo_builder, const Color4f& color, const ShaderUtils::ShaderInfo *shaderinfo)
 {
@@ -176,9 +176,6 @@ void VBORenderer::add_color(VBOBuilder& vbo_builder, const Color4f& color, const
   std::shared_ptr<VertexState> color_state =
     std::make_shared<VBOShaderVertexState>(0, 0, vbo_builder.verticesVBO(), vbo_builder.elementsVBO());
   color_state->glBegin().emplace_back([shaderinfo, color]() {
-    GL_TRACE("glUniform4f(%d, %.2f, %.2f, %.2f, %.2f)", shaderinfo->uniforms.at("color_area") % color[0] % color[1] % color[2] % color[3]);
-    GL_CHECKD(
-      glUniform4f(shaderinfo->uniforms.at("color_area"), color[0], color[1], color[2], color[3]));
     GL_TRACE("glUniform4f(%d, %.2f, %.2f, %.2f, %.2f)", shaderinfo->uniforms.at("color_edge") % ((color[0] + 1) / 2) % ((color[1] + 1) / 2) %
                           ((color[2] + 1) / 2) % 1.0);
     GL_CHECKD(glUniform4f(shaderinfo->uniforms.at("color_edge"), (color[0] + 1) / 2, (color[1] + 1) / 2,
