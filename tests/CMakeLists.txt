@@ -1516,6 +1516,7 @@ set_tests_properties(
   # OpenCSG z fighting https://github.com/openscad/openscad/issues/4595
   openscad-viewoptions-edges_view-options-tests
   openscad-viewoptions-axes-scales-edges_view-options-tests
+  openscad-manifold-viewoptions-edges_view-options-tests
   previewtest_surface_image
   throwntogethertest_surface_image
 
