@@ -1,27 +1,29 @@
 #pragma once
 
-#include "geometry/cgal/cgal.h"
 #include "geometry/Geometry.h"
 #include "geometry/linalg.h"
 #include "geometry/Polygon2d.h"
 #include "geometry/PolySet.h"
-#include "geometry/cgal/CGAL_Nef_polyhedron.h"
 #include "core/enums.h"
 
 #include <memory>
 #include <cstddef>
 #include <vector>
 
-#include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
 #include "core/CsgOpNode.h"
-
+#ifdef ENABLE_CGAL
+#include "geometry/cgal/cgal.h"
+#include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
+#include "geometry/cgal/CGAL_Nef_polyhedron.h"
 using K = CGAL::Epick;
 using Vertex3K = CGAL::Point_3<K>;
 using PolygonK = std::vector<Vertex3K>;
 using PolyholeK = std::vector<PolygonK>;
+#endif
 
 namespace CGALUtils {
 
+#ifdef ENABLE_CGAL
 template <typename Result, typename V>
 Result vector_convert(V const& v) {
   return Result(CGAL::to_double(v[0]), CGAL::to_double(v[1]), CGAL::to_double(v[2]));
@@ -122,7 +124,7 @@ bool corefineAndComputeDifference(TriangleMesh& lhs, TriangleMesh& rhs, Triangle
 
 template <typename K>
 void convertNefPolyhedronToTriangleMesh(const CGAL::Nef_polyhedron_3<K>& nef, CGAL::Surface_mesh<CGAL::Point_3<K>>& mesh);
-
+#endif
 std::unique_ptr<PolySet> createTriangulatedPolySetFromPolygon2d(const Polygon2d& polygon2d, bool in3d);
 
 } // namespace CGALUtils

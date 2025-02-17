@@ -129,7 +129,6 @@ int loadTexture(unsigned char *textureptr, const char *path)
 static std::shared_ptr<AbstractNode> builtin_texture(const ModuleInstantiation *inst, Arguments arguments, const Children& children)
 {
   Location loc = Location::NONE;
-  auto session = arguments.session();
   const Parameters parameters = Parameters::parse(std::move(arguments), loc, {}, {"file","uv" });
   std::string raw_filename = parameters.get("file", "");
   std::string file = lookup_file(raw_filename, loc.filePath().parent_path().string(), parameters.documentRoot());

@@ -478,7 +478,7 @@ PyObject *python_fromopenscad(const Value &val)
 	{
 	  const VectorType& vec = val.toVector();
   	  PyObject *result=PyList_New(vec.size());
-	  for(int j=0;j<vec.size();j++)
+	  for(size_t j=0;j<vec.size();j++)
 		PyList_SetItem(result,j,python_fromopenscad(vec[j]));
 	  return result;
 	}
@@ -831,7 +831,6 @@ std::string evaluatePython(const std::string & code, bool dry_run)
   std::string error;
   python_result_node = nullptr;
   python_result_handle.clear();
-  PyObject *pyExcType = nullptr;
   PyObjectUniquePtr pyExcValue (nullptr, PyObjectDeleter);
   PyObjectUniquePtr pyExcTraceback (nullptr, PyObjectDeleter);
   /* special python code to catch errors from stdout and stderr and make them available in OpenSCAD console */
@@ -1094,7 +1093,7 @@ pymain_repl(int *exitcode)
     }
     PyCompilerFlags cf = _PyCompilerFlags_INIT;
 
-    int res = PyRun_AnyFileFlags(stdin, "<stdin>", &cf);
+    PyRun_AnyFileFlags(stdin, "<stdin>", &cf);
 }
 
 
@@ -1102,7 +1101,7 @@ static void
 pymain_run_python(int *exitcode)
 {
     PyObject *main_importer_path = NULL;
-    PyInterpreterState *interp = PyInterpreterState_Get();
+//    PyInterpreterState *interp = PyInterpreterState_Get();
 
     pymain_repl(exitcode);
     goto done;

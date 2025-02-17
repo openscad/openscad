@@ -29,7 +29,7 @@ std::string DebugNode::toString() const
   {
     std::ostringstream stream;
     stream << "debugnode( faces = ";
-    for(int i=0;i<faces.size();i++) {
+    for(size_t i=0;i<faces.size();i++) {
       stream << faces[i] ;
       stream << " ";
     }

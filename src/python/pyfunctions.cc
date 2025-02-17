@@ -860,13 +860,12 @@ PyObject *python_polygon(PyObject *self, PyObject *args, PyObject *kwargs)
 PyObject *python_spline(PyObject *self, PyObject *args, PyObject *kwargs)
 {
   DECLARE_INSTANCE
-  unsigned int i, j, pointIndex;
+  unsigned int i;
   auto node = std::make_shared<SplineNode>(instance);
 
   char *kwlist[] = {"points", "fn", "fa", "fs", NULL};
   PyObject *points = NULL;
   double fn=0, fa=0, fs=0;
-  int convexity = 2;
 
   PyObject *element;
   Vector2d point;
@@ -2191,13 +2190,13 @@ PyObject *python_faces_core(PyObject *obj, bool tessellate)
 
     PyObject *pyth_faces = PyList_New(ps->indices.size());
 
-    for (int j=0;j<ps->indices.size();j++) {
+    for (size_t j=0;j<ps->indices.size();j++) {
       auto &face = ps->indices[j];	    
       if(face.size() < 3) continue;	    
       Vector3d zdir=calcTriangleNormal(ps->vertices,face).head<3>().normalized();
       // calc center of face
       Vector3d ptmin, ptmax;
-      for(int i=0;i<face.size();i++) {
+      for(size_t i=0;i<face.size();i++) {
         Vector3d pt = ps->vertices[face[i]];
 	for(int k=0;k<3;k++) {
 	  if(i == 0 || pt[k] < ptmin[k]) ptmin[k]=pt[k];
@@ -2218,7 +2217,7 @@ PyObject *python_faces_core(PyObject *obj, bool tessellate)
       
       DECLARE_INSTANCE
       auto poly = std::make_shared<PolygonNode>(instance);
-      for(int i=0;i<face.size();i++) {
+      for(size_t i=0;i<face.size();i++) {
         Vector3d pt = ps->vertices[face[i]];
         Vector4d pt4(pt[0], pt[1], pt[2], 1);
         pt4 = invmat * pt4 ;
@@ -3181,7 +3180,7 @@ PyObject *python_nb_sub_vec3(PyObject *arg1, PyObject *arg2, int mode) // 0: tra
       return NULL;
     }
     std::vector<std::shared_ptr<TransformNode>> nodes;
-    for(int j=0;j<vecs.size();j++) {
+    for(size_t j=0;j<vecs.size();j++) {
       auto node = std::make_shared<TransformNode>(instance, "transform");
       if(mode == 0 || mode == 3) node->matrix.translate(vecs[j]);
       if(mode == 1) node->matrix.scale(vecs[j]);

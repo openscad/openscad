@@ -93,10 +93,10 @@ std::unique_ptr<const Geometry> OversampleNode::createGeometry() const
     std::vector<intList>  pointToFaceInds; //  mapping pt_ind -> list of polygon inds which use it
     std::vector<intList>  pointToFacePoss; //  mapping pt_ind -> list of polygon inds which use it
     intList emptyList;
-    for(int i=0;i<ps_tess->indices.size();i++) {
+    for(size_t i=0;i<ps_tess->indices.size();i++) {
       auto pol = ps_tess->indices[i];
       intList polygon;
-      for(int j=0;j<pol.size(); j++) {
+      for(size_t j=0;j<pol.size(); j++) {
         int ptind=0;
         Vector3d  pt=ps_tess->vertices[pol[j]];
         pt[0]=roundCoord(pt[0]);
@@ -116,9 +116,9 @@ std::unique_ptr<const Geometry> OversampleNode::createGeometry() const
       polygons.push_back(polygon);
     }
     // for each vertex, calculate the dir
-    for(int i=0;i<pointList.size();i++) {
+    for(size_t i=0;i<pointList.size();i++) {
       Vector3d dir(0,0,0);
-      for(int j=0;j<pointToFaceInds[i].size();j++) {
+      for(size_t j=0;j<pointToFaceInds[i].size();j++) {
         int polind=pointToFaceInds[i][j];
         int polptind=pointToFacePoss[i][j];
         int n=polygons[polind].size();
@@ -137,7 +137,7 @@ std::unique_ptr<const Geometry> OversampleNode::createGeometry() const
 
   }
   PolySetBuilder builder_ov(0,0,3,true);
-  for(int i=0;i<ps_tess->indices.size();i++)
+  for(size_t i=0;i<ps_tess->indices.size();i++)
   {
     auto &pol = ps_tess->indices[i];
     Vector3d p1=ps_tess->vertices[pol[0]];
@@ -193,8 +193,8 @@ std::unique_ptr<const Geometry> OversampleNode::createGeometry() const
 
   }
   auto ps_ov = builder_ov.build();
-  for(int i=0;i<ps_ov->indices.size();i++) {
-    for(int j=0;j<ps_ov->indices[i].size();j++)
+  for(size_t i=0;i<ps_ov->indices.size();i++) {
+    for(size_t j=0;j<ps_ov->indices[i].size();j++)
     {
        Vector3d  pt=ps_ov->vertices[ps_ov->indices[i][j]];	    
        if(weldMap.count(pt) > 0) {

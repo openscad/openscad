@@ -55,7 +55,7 @@ struct SearchReplace {
 typedef std::vector<int> intList;
 
 bool list_included(const std::vector<int> &list,int needle) {
-  for(int i=0;i<list.size();i++){
+  for(size_t i=0;i<list.size();i++){
     if(list[i] == needle) return true;
   }	  
   return false;
@@ -78,7 +78,7 @@ int point_in_polyhedron(const PolySet & ps, const Vector3d &pt)
   int cuts=0;
   Vector3d vc(1,0,0);
   Vector3d res;
-  for(int i=0;i<ps.indices.size();i++) {
+  for(size_t i=0;i<ps.indices.size();i++) {
     const IndexedFace &f=ps.indices[i];	  
     Vector3d va=ps.vertices[f[1]]-ps.vertices[f[0]];
     Vector3d vb=ps.vertices[f[2]]-ps.vertices[f[0]];
@@ -130,7 +130,6 @@ void bezier_patch(PolySetBuilder &builder, Vector3d center, Vector3d dir[3], int
   //
 //  N = floor(N/2)*2 + 1;
   Vector3d pt;
-  double s1 = 1.0 / (N-1);
   std::vector<Vector3d> points_xz;
   std::vector<Vector3d> points_yz;
   for(int i=0;i<N;i++) {
@@ -141,7 +140,6 @@ void bezier_patch(PolySetBuilder &builder, Vector3d center, Vector3d dir[3], int
  
   std::vector<int> points; 
   for(int i=0;i<N;i++){
-    double t1=(double)i/(double)(N-1);
     if(i == N-1) {
       pt = zdir+2*(concave_1+concave_2)*(xdir+ydir);
       pt = mat * pt;
@@ -193,12 +191,12 @@ std::unique_ptr<const Geometry> createFilletInt(std::shared_ptr<const PolySet> p
   // Create vertex2face db
   std::vector<intList> polinds, polposs;
   intList empty;
-  for(int i=0;i<ps->vertices.size();i++) {
+  for(size_t i=0;i<ps->vertices.size();i++) {
     polinds.push_back(empty);	  
     polposs.push_back(empty);	  
   }
-  for(int i=0;i<merged.size();i++) {
-    for(int j=0;j<merged[i].size();j++) {
+  for(size_t i=0;i<merged.size();i++) {
+    for(size_t j=0;j<merged[i].size();j++) {
       int ind=merged[i][j];	    
       polinds[ind].push_back(i);
       polposs[ind].push_back(j);
@@ -211,7 +209,7 @@ std::unique_ptr<const Geometry> createFilletInt(std::shared_ptr<const PolySet> p
 
   // which rounded edges in a corner coner_rounds[vert]=[other_verts]
   std::vector<std::vector<int>> corner_rounds ; 
-  for(int i=0;i<ps->vertices.size();i++) corner_rounds.push_back(empty);				  
+  for(size_t i=0;i<ps->vertices.size();i++) corner_rounds.push_back(empty);				  
 
   std::vector<SearchReplace> sp;
   
@@ -239,7 +237,7 @@ std::unique_ptr<const Geometry> createFilletInt(std::shared_ptr<const PolySet> p
   // start builder with existing vertices to have VertexIndex available
   //
   PolySetBuilder builder;
-  for(int i=0;i<ps->vertices.size();i++) {
+  for(size_t i=0;i<ps->vertices.size();i++) {
     builder.vertexIndex(ps->vertices[i]); // allocate all vertices in the right order
   }
 
@@ -417,9 +415,8 @@ std::unique_ptr<const Geometry> createFilletInt(std::shared_ptr<const PolySet> p
 
       // stirnseite 1
       if(corner_rounds[e.first.ind1].size() == 1) {
-        for(int i=0;i<polinds[e.first.ind1].size();i++) { 
+        for(size_t i=0;i<polinds[e.first.ind1].size();i++) { 
           int faceid=polinds[e.first.ind1][i];
-          int facepos=polinds[e.first.ind1][i];
           if(faceid == e.second.facea) continue;       
           if(faceid == e.second.faceb) continue;       
 	  s.pol=faceid; // stirnseite1
@@ -432,9 +429,8 @@ std::unique_ptr<const Geometry> createFilletInt(std::shared_ptr<const PolySet> p
       
       //stirnseite2
       if(corner_rounds[e.first.ind2].size() == 1) {
-        for(int i=0;i<polinds[e.first.ind2].size();i++) {
+        for(size_t i=0;i<polinds[e.first.ind2].size();i++) {
           int faceid=polinds[e.first.ind2][i];
-          int facepos=polinds[e.first.ind2][i];
           if(faceid == e.second.facea) continue;       
           if(faceid == e.second.faceb) continue;       
 	  s.pol=faceid; // stirnseite2
@@ -457,17 +453,17 @@ std::unique_ptr<const Geometry> createFilletInt(std::shared_ptr<const PolySet> p
 //  } 
   // copy modified faces
   std::vector<IndexedFace> newfaces;
-  for(int i=0;i<merged.size();i++)  {
+  for(size_t i=0;i<merged.size();i++)  {
     const IndexedFace &face = merged[i];
     IndexedFace newface;
-    for(int j=0;j<face.size();j++) {
+    for(size_t j=0;j<face.size();j++) {
       int ind=face[j];	    
       newface.push_back(ind);
     }      
     int fn=newface.size();
     // does newface need any mods ?
-    for(int j=0;j<sp.size();j++){ // TODO effektiver, sp sortiren und 0 groesser machen
-      if(sp[j].pol == i) {
+    for(size_t j=0;j<sp.size();j++){ // TODO effektiver, sp sortiren und 0 groesser machen
+      if((size_t) sp[j].pol == i) {
         int needle=sp[j].search;
 	for(int k=0;k<fn;k++) { // all possible shifts
           if(newface[k] == needle) {
@@ -492,13 +488,13 @@ std::unique_ptr<const Geometry> createFilletInt(std::shared_ptr<const PolySet> p
   for(const auto &v: vertices)
     verticesFloat.push_back(v.cast<float>());	  
 
-  for(int i=0;i<newfaces.size();i++) {
+  for(size_t i=0;i<newfaces.size();i++) {
     // tessellate first with holes // search all holes
     if(faceParents[i]  != -1) continue;
     std::vector<IndexedFace> faces;
     faces.push_back(newfaces[i]);
-    for(int j=0;j<newfaces.size();j++) 
-      if(faceParents[j] == i) faces.push_back(newfaces[j]);
+    for(size_t j=0;j<newfaces.size();j++) 
+      if((size_t) faceParents[j] == i) faces.push_back(newfaces[j]);
 //    if(faces.size() >1 ) continue;
     std::vector<IndexedTriangle> triangles;
     Vector3f norm(newnormals[i][0],newnormals[i][1],newnormals[i][2]);
@@ -519,18 +515,12 @@ std::unique_ptr<const Geometry> createFilletInt(std::shared_ptr<const PolySet> p
   }
   // add missing 3 corner patches
   //
-  for(int i=0;i<ps->vertices.size();i++) {
+  for(size_t i=0;i<ps->vertices.size();i++) {
     if(corner_rounds[i].size() > 3) {
-      printf("corner %d not possible\n",i);	    
+      printf("corner %ld not possible\n",i);	    
     }
     else if(corner_rounds[i].size() == 3) {
       // now get the right ordering of corner_rounds[i]
-      for(int j=0;j<3;j++) {
-   	      
-	IndexedFace &face =merged[polinds[i][j]];
-	int pos=polposs[i][j];
-	int len=face.size();
-      }
       IndexedFace face[3];
       Vector3d facenorm[3];
       for(int j=0;j<3;j++) {
@@ -609,13 +599,13 @@ std::unique_ptr<const Geometry> FilletNode::createGeometry() const
     std::shared_ptr<const PolySet> sel = childToPolySet(this->children[1]);
     if(sel != nullptr) {
       auto sel_tess=PolySetUtils::tessellate_faces(*sel);
-      for(int i=0;i<ps->vertices.size();i++) {
+      for(size_t i=0;i<ps->vertices.size();i++) {
         corner_selected.push_back(point_in_polyhedron(*sel_tess, ps->vertices[i]));
       }
     }
 
   } else {
-      for(int i=0;i<ps->vertices.size();i++) 
+      for(size_t i=0;i<ps->vertices.size();i++) 
         corner_selected.push_back(true);	      
   }
   return createFilletInt(ps, corner_selected, this->r, this->fn, this->minang);

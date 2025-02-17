@@ -48,8 +48,9 @@
 #include "geometry/boolean_utils.h"
 #include <src/utils/hash.h>
 #include <src/core/Selection.h>
-#ifdef ENABLE_CGAL
 #include "geometry/cgal/CGALCache.h"
+#include <unordered_set>
+#ifdef ENABLE_CGAL
 #include "geometry/cgal/cgalutils.h"
 #include <CGAL/convex_hull_2.h>
 #include <CGAL/Point_2.h>
@@ -1282,7 +1283,7 @@ std::unique_ptr<const Geometry> addFillets(std::shared_ptr<const Geometry> resul
 
   for(const auto child: children) {
     std::shared_ptr<const PolySet> ps = PolySetUtils::getGeometryAsPolySet(child.second);
-    for(const Vector3d pt : ps->vertices) {
+    for(const Vector3d &pt : ps->vertices) {
       points.erase(createFilletRound(pt));
     }
   }
@@ -1378,7 +1379,9 @@ GeometryEvaluator::ResultObject GeometryEvaluator::applyToChildren3D(const Abstr
         geom ={actualchildren.front().second};
         break;
       default:
+#ifdef ENABLE_CGAL	
         geom = {CGALUtils::applyUnion3D(*node1, actualchildren.begin(), actualchildren.end())};
+#endif	
 	break;
     }
  
@@ -2534,7 +2537,7 @@ static std::unique_ptr<PolySet> wrapObject(const WrapNode& node, const PolySet *
     // find leftmost point		 
     int n=p.size();
     int minind=0;
-    for(int j=1;j<p.size();j++) {
+    for(size_t j=1;j<p.size();j++) {
       if(ps->vertices[p[j]][0] < ps->vertices[p[minind]][0])
       minind=j;		
     }
@@ -2578,13 +2581,13 @@ static std::unique_ptr<PolySet> wrapObject(const WrapNode& node, const PolySet *
 									      
       double ang, rad;
 
-      for(int j=0;j<curslice.size();j++) {
+      for(size_t j=0;j<curslice.size();j++) {
         auto &pt = curslice[j];
         ang=pt[0]/node.r;
         rad = node.r-pt[1];
         pt=Vector3d(rad*cos(ang),rad*sin(ang),pt[2]);
       }
-      for(int j=0;j<curslice.size()-2;j++) {
+      for(size_t j=0;j<curslice.size()-2;j++) {
         builder.beginPolygon(curslice.size());	  
         builder.addVertex(curslice[0]);	    
         builder.addVertex(curslice[j+1]);	    
@@ -2635,7 +2638,7 @@ static std::unique_ptr<PolySet> debugObject(const DebugNode& node, const PolySet
   Color4f debug_color = Color4f(255,0,0,255);
   int colorind = psx->colors.size();
   psx->colors.push_back(debug_color);    
-  for(int i=0;i<node.faces.size();i++) {
+  for(size_t i=0;i<node.faces.size();i++) {
    int ind=node.faces[i];
    psx->color_indices[ind] = colorind;
   }

@@ -181,7 +181,7 @@ std::shared_ptr<PolySet> ManifoldGeometry::toPolySet() const {
     }
 
     auto colorIndex = getColorIndex(id);
-    for (int i = start; i < end; i += 3) {
+    for (size_t i = start; i < end; i += 3) {
       ps->indices.push_back({
           static_cast<int>(mesh.triVerts[i]),
           static_cast<int>(mesh.triVerts[i + 1]),
