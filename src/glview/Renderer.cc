@@ -207,7 +207,8 @@ std::vector<SelectedObject> Renderer::findModelObject(Vector3d near_pt, Vector3d
 #else //NULLGL
 
 Renderer::Renderer() : colorscheme_(nullptr) {}
-bool Renderer::getColor(Renderer::ColorMode colormode, Color4f& col) const { return false; }
+bool Renderer::getColorSchemeColor(Renderer::ColorMode colormode, Color4f& outcolor) const {return false; }
+bool Renderer::getShaderColor(Renderer::ColorMode colormode, const Color4f& object_color, Color4f& outcolor) const { return false; }
 std::string ShaderUtils::loadShaderSource(const std::string& name) { return ""; }
 void Renderer::setColorScheme(const ColorScheme& cs) {}
 std::vector<SelectedObject> Renderer::findModelObject(Vector3d near_pt, Vector3d far_pt, int mouse_x, int mouse_y, double tolerance) { return {}; }
