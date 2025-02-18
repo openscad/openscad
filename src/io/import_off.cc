@@ -96,7 +96,6 @@ std::unique_ptr<PolySet> import_off(const std::string& filename, const Location&
     return PolySet::createEmpty();
   }
 
-  bool got_magic = false;
   // defaults
   bool has_normals = false;
   bool has_color = false;
@@ -110,7 +109,6 @@ std::unique_ptr<PolySet> import_off(const std::string& filename, const Location&
   }
 
   if (boost::regex_search(line, results, ex_magic) > 0) {
-    got_magic = true;
     // Remove the matched part, we might have numbers next.
     line = line.erase(0, results[0].length());
     has_normals = results[3].matched;
