@@ -51,8 +51,6 @@ void GLView::setupShader() {
     .resource = resource,
     .type = ShaderUtils::ShaderType::EDGE_RENDERING,
     .uniforms = {
-      {"color_area", glGetUniformLocation(resource.shader_program, "color_area")},
-      {"color_edge", glGetUniformLocation(resource.shader_program, "color_edge")},
     },
     .attributes = {
       {"barycentric", glGetAttribLocation(resource.shader_program, "barycentric")},
