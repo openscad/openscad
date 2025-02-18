@@ -1040,7 +1040,6 @@ pymain_init(void)
 //    }
 //    status = 0; // PyStatus_Ok;
 
-done:
     PyConfig_Clear(&config);
     return status;
 }
@@ -1107,7 +1106,6 @@ pymain_run_python(int *exitcode)
     pymain_repl(exitcode);
     goto done;
 
-error:
 //    *exitcode = pymain_exit_err_print();
 
 done:

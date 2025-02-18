@@ -57,11 +57,11 @@ StepKernel::EdgeCurve* StepKernel::create_line_edge_curve(StepKernel::Vertex * v
 
 void StepKernel::build_tri_body(std::vector<Vector3d> vertices, std::vector<IndexedFace> faces,const  std::vector<std::shared_ptr<Curve>> &curves, const std::vector<std::shared_ptr<Surface>> surfaces,  double tol)
 {
-	auto point = new Point(entities, Vector3d(0.0, 0.0, 0.0));
-	auto dir_1 = new Direction(entities, Vector3d(0.0, 0.0, 1.0));
-	auto dir_2 = new Direction(entities, Vector3d(1.0, 0.0, 0.0));
+//	auto point = new Point(entities, Vector3d(0.0, 0.0, 0.0));
+//	auto dir_1 = new Direction(entities, Vector3d(0.0, 0.0, 1.0));
+//	auto dir_2 = new Direction(entities, Vector3d(1.0, 0.0, 0.0));
 
-	auto base_axis = new Axis2Placement(entities, dir_1, dir_2, point);
+//	auto base_axis = new Axis2Placement(entities, dir_1, dir_2, point);
 	std::vector<Face*> sfaces;
 	std::map<std::tuple<double, double, double, double, double, double>, EdgeCurve*> edge_map;
 
@@ -69,11 +69,11 @@ void StepKernel::build_tri_body(std::vector<Vector3d> vertices, std::vector<Inde
 	std::vector<int> vert2curve;
 	for(size_t i=0;i<vertices.size();i++){
 		Vector3d pt=vertices[i];
-	        printf("%d (%g/%g/%g)",i, pt[0], pt[1], pt[2]);		  
+	        printf("%ld (%g/%g/%g)",i, pt[0], pt[1], pt[2]);		  
 		int found=-1;
 		for(size_t j=0;j<curves.size();j++) {
                 	if(curves[j]->pointMember(vertices, pt)) {
-				printf("(%d)",j);
+				printf("(%ld)",j);
 				found=j;
 			}
 		}
@@ -85,12 +85,12 @@ void StepKernel::build_tri_body(std::vector<Vector3d> vertices, std::vector<Inde
 	for(size_t i=0;i<faces.size();i++) {
           auto &face = faces[i];		
           printf("Face %ld ",i);		
-          for(int j=0;j< surfaces.size();j++) {
+          for(size_t j=0;j< surfaces.size();j++) {
            int valid=1;		  
-	   for(int k=0;valid && k<face.size();k++) {
+	   for(size_t k=0;valid && k<face.size();k++) {
              if(!surfaces[j]->pointMember(vertices, vertices[face[k]])) valid=0;
 	   }
-	   if(valid) printf("(%d) ",j);
+	   if(valid) printf("(%ld) ",j);
 	  }
 
 	  printf("\n");
@@ -202,7 +202,7 @@ std::string StepKernel::read_line(std::ifstream &stp_file, bool skip_all_space)
 	bool in_squote=false;
 	bool in_dquote=false;
 	bool in_comment=false;
-	char old_char;
+	char old_char='\0';
 	while (stp_file)
 	{
 		char get_char = ' ';

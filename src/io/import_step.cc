@@ -18,7 +18,7 @@ bool GeometryUtils::tessellatePolygonWithHoles(const std::vector<Vector3f>& vert
 void import_shell(PolySetBuilder &builder, StepKernel &sk, StepKernel::Shell *shell)
 {
   if(shell == nullptr) return; // Shell , CLOSED_SHELL
-  for(int i=0;i<shell->faces.size();i++) {
+  for(size_t i=0;i<shell->faces.size();i++) {
     StepKernel::Face *face = shell->faces[i]; // Face, ADVANCED_FACE
     if(face == nullptr) continue;
     StepKernel::Plane *plane = dynamic_cast<StepKernel::Plane *>(face->surface);
@@ -27,14 +27,14 @@ void import_shell(PolySetBuilder &builder, StepKernel &sk, StepKernel::Shell *sh
 
     std::vector<IndexedFace> faceLoopInd;
     std::vector<Vector3d> vertices;
-    for(int j=0;j<face->faceBounds.size();j++) {
+    for(size_t j=0;j<face->faceBounds.size();j++) {
       StepKernel::FaceBound *bound = face->faceBounds[j]; //FaceBound, FACE_OUTER_BOUND
       std::vector<IndexedFace> stubs;
       if(bound == nullptr) continue;
       StepKernel::EdgeLoop *loop = bound->edgeLoop; 
       std::vector<int> arc_ends;
       std::vector<int> line_ends;
-      for(int k=0;k<loop->faces.size();k++) {
+      for(size_t k=0;k<loop->faces.size();k++) {
         StepKernel::OrientedEdge *edge=loop->faces[k];
         if(edge == nullptr) continue;
         StepKernel::EdgeCurve *edgecurv = edge->edge; 
@@ -70,7 +70,6 @@ void import_shell(PolySetBuilder &builder, StepKernel &sk, StepKernel::Shell *sh
 
 	  if(linsystem( xdir, ydir, zdir, pt2->pt - axis->point->pt,res)) continue;
 	  double endang=atan2(res[1], res[0]);
-	  int closed = (startang == endang)?1:0;
 
 	  if(endang <= startang) endang += 2*M_PI;
 //	  printf("startang=%g endang=%g\n",startang, endang);
@@ -129,10 +128,10 @@ void import_shell(PolySetBuilder &builder, StepKernel &sk, StepKernel::Shell *sh
       bool done=true;
       while(stubs.size() > 0 && done) {
        done=false;
-       for(int i=0;i<stubs.size();i++)
+       for(size_t i=0;i<stubs.size();i++)
        {
          if(stubs[i][0] == conn) {
-           for(int j=1;j<stubs[i].size();j++) {
+           for(size_t j=1;j<stubs[i].size();j++) {
              combined.push_back(stubs[i][j]);		     
            }		   
            stubs.erase(stubs.begin()+i);
@@ -155,7 +154,7 @@ void import_shell(PolySetBuilder &builder, StepKernel &sk, StepKernel::Shell *sh
       	printf("Warning: Cannot detect full loop for facebound %d\n",bound->id);
       }
       int remove_begin=0;
-      for(int i=0;i+1<line_ends.size();i+=2){
+      for(size_t i=0;i+1<line_ends.size();i+=2){
 	     if(combined[0] == line_ends[i] && combined[1] == line_ends[i+1]) remove_begin=1;
 	     if(combined[1] == line_ends[i] && combined[0] == line_ends[i+1]) remove_begin=1;
       }

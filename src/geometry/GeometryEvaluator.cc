@@ -1230,8 +1230,7 @@ std::shared_ptr<const Geometry> offset3D(const std::shared_ptr<const PolySet> &p
 	dist_min=dist;
       }
     }
-    size_t inner_ind_start = inner_ind;
-    size_t combined_ind_start = combined_ind;
+    int inner_ind_start = inner_ind;
     do {
       double dist1 = (vertices[inner[(inner_ind+inner_n-1)%inner_n]] - vertices[combined[combined_ind]]).norm(); // prog inner
       double dist2 = (vertices[inner[inner_ind]] - vertices[combined[(combined_ind+1)%combined_n]]).norm(); // prog combined
@@ -1289,7 +1288,7 @@ std::unique_ptr<const Geometry> addFillets(std::shared_ptr<const Geometry> resul
   }
 
   std::vector<bool> corner_selected;
-  for(int i=0;i<psr->vertices.size();i++) corner_selected.push_back(points.count(createFilletRound(psr->vertices[i]))>0?true:false);
+  for(size_t i=0;i<psr->vertices.size();i++) corner_selected.push_back(points.count(createFilletRound(psr->vertices[i]))>0?true:false);
 
   return  createFilletInt(psr,corner_selected, r, fn,30.0);
 

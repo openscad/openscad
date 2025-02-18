@@ -380,7 +380,7 @@ std::vector<sheetS> fold_3d(std::shared_ptr<const PolySet> ps, const plotSetting
   std::vector<int> faceParents;
   std::vector<IndexedFace> faces = mergeTriangles(ps->indices, normals,newNormals, faceParents, ps->vertices);
   unsigned int i,j,k;
-  int  glue,num,cont,success,drawn,other;
+  int  glue,num=0,cont,success,drawn,other;
   int facesdone=0,facestodo;
 //  for(int i=0;i<faces.size();i++)
 //  {
@@ -420,7 +420,7 @@ std::vector<sheetS> fold_3d(std::shared_ptr<const PolySet> ps, const plotSetting
 
       // TODO stupid workaround
       int oppface=-1;
-      int opppos;
+      int opppos=0;
       for(unsigned int k=0;oppface == -1 && k<faces.size();k++)
       {
         IndexedFace &face1=faces[k];

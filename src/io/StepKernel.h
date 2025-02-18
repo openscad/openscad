@@ -334,7 +334,7 @@ public:
 		{
 			// #17 = ADVANCED_FACE('', (#18), #32, .T.);
 			stream_in << "#" << id << " = EDGE_LOOP('" << label << "', (";
-			for (int i = 0; i < faces.size(); i++)
+			for (size_t i = 0; i < faces.size(); i++)
 			{
 				stream_in << "#" << faces[i]->id;
 				if (i != faces.size() - 1)
@@ -417,7 +417,7 @@ public:
 		virtual void serialize(std::ostream& stream_in)
 		{
 			stream_in << "#" << id << " = ADVANCED_FACE('" << label << "', (";
-			for (int i = 0; i < faceBounds.size(); i++)
+			for (size_t i = 0; i < faceBounds.size(); i++)
 			{
 				stream_in << "#" << faceBounds[i]->id;
 				if (i != faceBounds.size() - 1)
