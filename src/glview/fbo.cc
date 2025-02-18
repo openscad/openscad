@@ -61,7 +61,7 @@ std::unique_ptr<FBO> createFBO(int width, int height) {
   }
 }
 
-FBO::FBO(int width, int height, bool useEXT) : use_ext_(useEXT) {
+FBO::FBO(int width, int height, bool useEXT) : width_(width), height_(height), use_ext_(useEXT) {
   // Generate and bind FBO
   GL_CHECKD(glGenFramebuffers(1, &this->fbo_id_));
   this->bind();
@@ -111,6 +111,9 @@ bool FBO::resize(size_t width, size_t height)
     GL_CHECKD(glBindRenderbuffer(GL_RENDERBUFFER, this->depthbuf_id_));
   }
   GL_CHECKD(glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, width, height));
+
+  width_ = width;
+  height_ = height;
 
   return true;
 }

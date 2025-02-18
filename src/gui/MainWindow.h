@@ -92,7 +92,6 @@ public:
   std::shared_ptr<Renderer> cgalRenderer;
 #ifdef ENABLE_OPENCSG
   std::shared_ptr<Renderer> opencsgRenderer;
-  std::unique_ptr<class MouseSelector> selector;
 #endif
   std::shared_ptr<Renderer> thrownTogetherRenderer;
 

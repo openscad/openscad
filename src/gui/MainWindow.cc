@@ -100,7 +100,6 @@
 #include "glview/preview/ThrownTogetherRenderer.h"
 #include "glview/preview/CSGTreeNormalizer.h"
 #include "gui/QGLView.h"
-#include "gui/MouseSelector.h"
 #ifdef Q_OS_MACOS
 #include "platform/CocoaUtils.h"
 #endif
@@ -723,7 +722,6 @@ MainWindow::MainWindow(const QStringList& filenames)
 
   updateExportActions();
 
-  this->selector = std::make_unique<MouseSelector>(this->qglview);
   activeEditor->setFocus();
 }
 
@@ -2221,30 +2219,19 @@ void MainWindow::leftClick(QPoint mouse)
  * Use the generated ID and try to find it within the list of products
  * And finally move the cursor to the beginning of the selected object in the editor
  */
-void MainWindow::rightClick(QPoint mouse)
+void MainWindow::rightClick(QPoint position)
 {
   // selecting without a renderer?!
   if (!this->qglview->renderer) {
     return;
   }
-
-  // selecting without select object?!
-  if (!this->selector) {
-    return;
-  }
-
   // Nothing to select
   if (!this->rootProduct) {
     return;
   }
 
-  this->qglview->renderer->prepare(&this->selector->shaderinfo);
-
-  // Update the selector with the right image size
-  this->selector->reset(this->qglview);
-
   // Select the object at mouse coordinates
-  int index = this->selector->select(this->qglview->getRenderer(), mouse.x(), mouse.y());
+  int index = this->qglview->pickObject(position);
   std::deque<std::shared_ptr<const AbstractNode>> path;
   std::shared_ptr<const AbstractNode> result = this->rootNode->getNodeByID(index, path);
 
@@ -2295,7 +2282,7 @@ void MainWindow::rightClick(QPoint mouse)
       }
     }
 
-    tracemenu.exec(this->qglview->mapToGlobal(mouse));
+    tracemenu.exec(this->qglview->mapToGlobal(position));
   } else {
     clearAllSelectionIndicators();
   }
@@ -2717,25 +2704,23 @@ void MainWindow::actionExportFileFormat(int fmt)
   switch (format) {
   case FileFormat::PDF:
   {
-    auto exportPdfDialog = new ExportPdfDialog();
-    exportPdfDialog->deleteLater();
-    if (exportPdfDialog->exec() == QDialog::Rejected) {
+    ExportPdfDialog exportPdfDialog;
+    if (exportPdfDialog.exec() == QDialog::Rejected) {
       return;
     }
 
-    exportInfo.optionsPdf = exportPdfDialog->getOptions();
+    exportInfo.optionsPdf = exportPdfDialog.getOptions();
     actionExport(2, exportInfo);
   }
   break;
   case FileFormat::_3MF:
   {
-    auto export3mfDialog = new Export3mfDialog();
-    export3mfDialog->deleteLater();
-    if (export3mfDialog->exec() == QDialog::Rejected) {
+    Export3mfDialog export3mfDialog;
+    if (export3mfDialog.exec() == QDialog::Rejected) {
       return;
     }
 
-    exportInfo.options3mf = export3mfDialog->getOptions();
+    exportInfo.options3mf = export3mfDialog.getOptions();
     actionExport(3, exportInfo);
   }
   break;
