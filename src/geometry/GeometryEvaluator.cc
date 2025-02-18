@@ -895,21 +895,21 @@ std::shared_ptr<const Geometry> offset3D(const std::shared_ptr<const PolySet> &p
 
   intList empty;
   std::vector<std::vector<int>> corner_rounds ;
-  for(int i=0;i<ps->vertices.size();i++) corner_rounds.push_back(empty);
+  for(size_t i=0;i<ps->vertices.size();i++) corner_rounds.push_back(empty);
   std::vector<Vector3f> verticesFloat;
   for(const auto &v: ps->vertices)
     verticesFloat.push_back(v.cast<float>());
  
   std::vector<Vector4d>  faceNormals;
   // process all faces and bulid a prisma on top of it
-  for(int a=0;a<indicesNew.size();a++) {
+  for(size_t a=0;a<indicesNew.size();a++) {
     Vector4d  faceNormal=calcTriangleNormal(ps->vertices, indicesNew[a]);
     faceNormals.push_back(faceNormal);
     if(faceParents[a] != -1) continue;	  // its a hole
 
     std::vector<IndexedFace> face_set;
     face_set.push_back(indicesNew[a]);
-    for(int b=0;b<faceParents.size();b++)
+    for(size_t b=0;b<faceParents.size();b++)
       if(faceParents[b] == a)
         face_set.push_back(indicesNew[b]);
 
@@ -1037,12 +1037,12 @@ std::shared_ptr<const Geometry> offset3D(const std::shared_ptr<const PolySet> &p
     }
     // end wall
     builder.beginPolygon(n+1);
-    for(int i=0;i<end_inds.size();i++)
+    for(size_t i=0;i<end_inds.size();i++)
       builder.addVertex(end_inds[i]);
     builder.addVertex(endpt);
 
     // top rounding
-    for(int i=0;i<n-1;i++) {
+    for(size_t i=0;i<n-1;i++) {
       builder.appendPolygon({start_inds[i],start_inds[i+1],  end_inds[i+1], end_inds[i]});
     }
    
@@ -1095,10 +1095,10 @@ std::shared_ptr<const Geometry> offset3D(const std::shared_ptr<const PolySet> &p
     bool done=true;
     while(stubs.size() > 0 && done) {
       done=false;
-      for(int i=0;i<stubs.size();i++)
+      for(size_t i=0;i<stubs.size();i++)
       {
         if(stubs[i][0] == conn) {
-          for(int j=1;j<stubs[i].size();j++) {
+          for(size_t j=1;j<stubs[i].size();j++) {
             combined.push_back(stubs[i][j]);                
           }                
           stubs.erase(stubs.begin()+i);
@@ -1135,7 +1135,7 @@ std::shared_ptr<const Geometry> offset3D(const std::shared_ptr<const PolySet> &p
 
     cxt.invmat = mat.inverse();
 
-    for(int i=0;i<combined.size();i++) {
+    for(size_t i=0;i<combined.size();i++) {
       Vector3d pt=vertices[combined[i]];    
       Vector2d pt2=(cxt.invmat*Vector4d(pt[0], pt[1], pt[2],1)).head<2>();
       if(i == 0 || pt2[0] < cxt.minx) cxt.minx=pt2[0];
@@ -1208,7 +1208,7 @@ std::shared_ptr<const Geometry> offset3D(const std::shared_ptr<const PolySet> &p
     // assume biggest one is main
     assert(triangles_merged.size() > 0);
     int bigind=0;
-    for(int i=1;i<triangles_merged.size();i++)
+    for(size_t i=1;i<triangles_merged.size();i++)
       if(triangles_merged[i].size() > triangles_merged[bigind].size())
         bigind=i;	      
     auto inner = triangles_merged[bigind];

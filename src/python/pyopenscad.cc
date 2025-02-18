@@ -34,7 +34,7 @@
 #include "PlatformUtils.h"
 
 // #define HAVE_PYTHON_YIELD
-static PyObject *PyInit_openscad(void);
+extern "C" PyObject *PyInit_openscad(void);
 
 // https://docs.python.org/3.10/extending/newtypes.html
 
@@ -982,7 +982,7 @@ static PyModuleDef OpenSCADModule = {
   NULL, NULL, NULL, NULL
 };
 
-PyObject *PyInit_openscad(void)
+extern "C" PyObject *PyInit_openscad(void)
 {
   return PyModule_Create(&OpenSCADModule);
 }

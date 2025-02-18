@@ -20,7 +20,19 @@ def main():
               "../geometry/skin.cc",
               "../geometry/linear_extrude.cc",
               "../geometry/cgal/CGALCache.cc",
+              "../geometry/cgal/cgalutils.cc",
+              "../geometry/cgal/cgalutils-kernel.cc",
+              "../geometry/cgal/cgalutils-applyops.cc",
+              "../geometry/cgal/cgalutils-mesh.cc",
               "../geometry/cgal/cgalutils-triangulate.cc",
+              "../geometry/cgal/cgalutils-tess.cc",
+              "../geometry/cgal/cgalutils-orient.cc",
+              "../geometry/cgal/cgalutils-mesh.cc",
+              "../geometry/cgal/CGAL_Nef_polyhedron.cc",
+              "../geometry/cgal/cgalutils-polyhedron.cc",
+              "../geometry/cgal/cgalutils-convex.cc",
+              "../geometry/cgal/cgalutils-project.cc",
+              "../geometry/cgal/cgalutils-closed.cc",
               "../geometry/Geometry.cc",
               "../geometry/GeometryCache.cc",
               "../geometry/GeometryUtils.cc",
@@ -35,6 +47,7 @@ def main():
               "../geometry/manifold/ManifoldGeometry.cc",
               "../geometry/manifold/manifold-applyops.cc",
               "../geometry/manifold/manifoldutils.cc",
+              "../geometry/manifold/manifold-applyops-minkowski.cc",
               "../geometry/boolean_utils.cc",
               "../ext/libtess2/Source/bucketalloc.c",
               "../ext/libtess2/Source/sweep.c",
@@ -50,6 +63,7 @@ def main():
               "../utils/printutils.cc",
               "../utils/degree_trig.cc",
               "../utils/hash.cc",
+              "../utils/svg.cc",
               "../utils/calc.cc",
               "../core/FreetypeRenderer.cc",
               "../core/DrawingCallback.cc",
@@ -191,9 +205,11 @@ def main():
                   "xml2",
                   "fontconfig",
                   "double-conversion",
-                  "gmp"
+                  "gmp",
+                  "mpfr"
                 ],define_macros=[
                   ("ENABLE_PYTHON","1"),
+                  ("ENABLE_CGAL","1"),
                   ("ENABLE_MANIFOLD","1"),
                   ("ENABLE_PIP","1"),
                   ("MANIFOLD_PAR","-1"),
@@ -201,7 +217,6 @@ def main():
                   ("OPENSCAD_MONTH","2"),
                   ("STACKSIZE","524288")
                 ],undef_macros=[
-                  ("ENABLE_CGAL")
                 ], extra_link_args=[
                         "-l", "glib-2.0" 
                 ],  extra_compile_args=[

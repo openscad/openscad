@@ -66,7 +66,7 @@ static void fill_ring(std::vector<Vector3d>& ring, const std::vector<Vector2d> &
    Currently, we generate a lot of zero-area triangles
 
  */
-std::unique_ptr<Geometry> rotatePolygonSub(const RotateExtrudeNode& node, const Polygon2d& poly, int fragments, int fragstart, int fragend, bool flip_faces)
+std::unique_ptr<Geometry> rotatePolygonSub(const RotateExtrudeNode& node, const Polygon2d& poly, int fragments, size_t fragstart, size_t fragend, bool flip_faces)
 {
 
   PolySetBuilder builder;
@@ -263,7 +263,7 @@ std::shared_ptr<Geometry> rotatePolygon(const RotateExtrudeNode& node, const Pol
   if(safe) return rotatePolygonSub(node, poly, fragments, 0, fragments, flip_faces);	
 
   // now create a fragment splitting plan
-  int splits=ceil(node.angle/300.0);
+  size_t splits=ceil(node.angle/300.0);
   int fragstart=0,fragend;
   std::shared_ptr<ManifoldGeometry> result = nullptr;
 
