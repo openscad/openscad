@@ -982,7 +982,7 @@ static PyModuleDef OpenSCADModule = {
   NULL, NULL, NULL, NULL
 };
 
-static PyObject *PyInit_openscad(void)
+PyObject *PyInit_openscad(void)
 {
   return PyModule_Create(&OpenSCADModule);
 }
@@ -992,7 +992,8 @@ PyMODINIT_FUNC PyInit_PyOpenSCAD(void)
   PyObject *m;
 
   if (PyType_Ready(&PyOpenSCADType) < 0) return NULL;
-  m = PyModule_Create(&OpenSCADModule);
+  
+  m =PyInit_openscad();
   if (m == NULL) return NULL;
 
   Py_INCREF(&PyOpenSCADType);

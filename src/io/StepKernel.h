@@ -476,7 +476,7 @@ public:
 			else
 				stream_in << "#" << id << " = CLOSED_SHELL('" << label << "',(";
 
-			for (int i = 0; i < faces.size(); i++)
+			for (size_t i = 0; i < faces.size(); i++)
 			{
 				stream_in << "#" << faces[i]->id;
 				if (i != faces.size() - 1)
@@ -518,7 +518,7 @@ public:
 		virtual void serialize(std::ostream& stream_in)
 		{
 			stream_in << "#" << id << " = SHELL_BASED_SURFACE_MODEL('" << label << "', (";
-			for (int i = 0; i < shells.size(); i++)
+			for (size_t i = 0; i < shells.size(); i++)
 			{
 				stream_in << "#" << shells[i]->id;
 				if(i != shells.size()-1)

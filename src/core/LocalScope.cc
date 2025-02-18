@@ -78,7 +78,7 @@ void LocalScope::print_python(std::ostream& stream, std::ostream& stream_def, co
     this->moduleInstantiations[0]->print_python(stream, stream_def, indent, inlined, context_mode);
   } else {
     if(context_mode != 2) stream << "[\n";	  
-    for (int i=0; i<this->moduleInstantiations.size();i++) {
+    for (size_t i=0; i<this->moduleInstantiations.size();i++) {
       if(i > 0) stream << ",\n";	    
       this->moduleInstantiations[i]->print_python(stream, stream_def, indent+"  ", inlined, context_mode);
     }

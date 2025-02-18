@@ -140,7 +140,6 @@ std::shared_ptr<AbstractNode> AbstractNode::clone(void)
 
 void  AbstractNode::dump_counts(int indent,int use_cnt){
   int i=0;
-  auto modinst = this->modinst;
   for(i=0;i<indent;i++) printf(" ");
 
   printf("%s use =%d mi=%p ",this->name().c_str(), use_cnt, this->modinst);

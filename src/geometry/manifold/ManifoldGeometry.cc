@@ -289,8 +289,8 @@ std::shared_ptr<ManifoldGeometry> minkowskiOp(const ManifoldGeometry& lhs, const
     LOG(message_group::Warning,
         "Nef minkowski hard-crashed");
   }
-  return {};
 #endif
+  return {};
 }
 
 ManifoldGeometry ManifoldGeometry::operator+(const ManifoldGeometry& other) const {

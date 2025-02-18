@@ -1223,15 +1223,15 @@ std::shared_ptr<const Geometry> offset3D(const std::shared_ptr<const PolySet> &p
     int inner_n = inner.size();
 
     double dist_min;
-    for(int i=0;i<inner.size();i++) {
+    for(size_t i=0;i<inner.size();i++) {
       double dist = (vertices[inner[i]] - vertices[combined[combined_ind]]).norm();
       if(inner_ind == -1  || dist < dist_min) {
         inner_ind=i;	      
 	dist_min=dist;
       }
     }
-    int inner_ind_start = inner_ind;
-    int combined_ind_start = combined_ind;
+    size_t inner_ind_start = inner_ind;
+    size_t combined_ind_start = combined_ind;
     do {
       double dist1 = (vertices[inner[(inner_ind+inner_n-1)%inner_n]] - vertices[combined[combined_ind]]).norm(); // prog inner
       double dist2 = (vertices[inner[inner_ind]] - vertices[combined[(combined_ind+1)%combined_n]]).norm(); // prog combined
@@ -1277,11 +1277,11 @@ std::unique_ptr<const Geometry> addFillets(std::shared_ptr<const Geometry> resul
   std::unordered_set<Vector3d> points;
   Vector3d pt;
   std::shared_ptr<const PolySet> psr = PolySetUtils::getGeometryAsPolySet(result);
-  for(const Vector3d pt : psr->vertices){
+  for(const Vector3d &pt : psr->vertices){
     points.insert(createFilletRound(pt));
   }
 
-  for(const auto child: children) {
+  for(const auto &child: children) {
     std::shared_ptr<const PolySet> ps = PolySetUtils::getGeometryAsPolySet(child.second);
     for(const Vector3d &pt : ps->vertices) {
       points.erase(createFilletRound(pt));

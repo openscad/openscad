@@ -129,7 +129,7 @@ int Calc::get_conical_helix_slices(double r_sqr, double height, double twist, do
      B = E - t            B = E - t
    */
   double rads = twist * M_DEG2RAD;
-  double angle_end;
+  double angle_end=0;
   if (scale > 1) {
     angle_end = rads * scale / (scale - 1);
   } else if (scale < 1) {

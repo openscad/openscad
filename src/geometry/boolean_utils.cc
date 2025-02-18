@@ -319,9 +319,9 @@ std::shared_ptr<const Geometry> applyMinkowski(const Geometry::Geometries& child
   }
 }
 #else  // ENABLE_CGAL
-bool applyHull(const Geometry::Geometries& children, PolySet& result)
+std::unique_ptr<PolySet> applyHull(const Geometry::Geometries& children)
 {
-  return false;
+  return nullptr; // std::make_unique<PolySet>();
 }
 
 std::shared_ptr<const Geometry> applyMinkowski(const Geometry::Geometries& children)

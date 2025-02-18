@@ -227,7 +227,6 @@ std::unique_ptr<PolySet> import_off(const std::string& filename, const Location&
     }
   }
 
-  auto logged_color_warning = false;
 
   while (!f.eof() && (face++ < faces_count)) {
     if (!getline_clean("reading faces: end of file")) {
@@ -243,7 +242,7 @@ std::unique_ptr<PolySet> import_off(const std::string& filename, const Location&
     std::map<Color4f, int32_t> color_indices;
     try {
       unsigned long face_size=boost::lexical_cast<unsigned long>(words[0]);
-      unsigned long i;
+      size_t i;
       if (words.size() - 1 < face_size) {
         AsciiError("can't parse face: missing indices");
         return PolySet::createEmpty();

@@ -119,7 +119,7 @@ std::unique_ptr<Geometry> rotatePolygonSub(const RotateExtrudeNode& node, const 
             builder.appendPolygon(ring);
           }
 	}
-  	for (unsigned int i = fragstart + 1; i <= fragend; i++) {
+  	for (size_t i = fragstart + 1; i <= fragend; i++) {
 		cur_ang=i*node.angle/fragments;
 
 		if(node.twist_func != NULL) {
@@ -202,7 +202,7 @@ std::unique_ptr<Geometry> rotatePolygonSub(const RotateExtrudeNode& node, const 
 
     fill_ring(rings[fragstart % 2 ], o.vertices, a, dv,fact,  xmid, flip_faces); // first ring
 
-    for (unsigned int j = fragstart; j < fragend; ++j) {
+    for (size_t j = fragstart; j < fragend; ++j) {
       dv = node.v*(j+1)/fragments;
       if (node.angle == 360 && node.v.norm() == 0) a = 180 - ((j + 1) % fragments) * 360.0 / fragments; // start on the -X axis, for legacy support
       else a = (j + 1) * node.angle / fragments; // start on the X axis
@@ -267,7 +267,7 @@ std::shared_ptr<Geometry> rotatePolygon(const RotateExtrudeNode& node, const Pol
   int fragstart=0,fragend;
   std::shared_ptr<ManifoldGeometry> result = nullptr;
 
-  for(int i=0;i<splits;i++) {
+  for(size_t i=0;i<splits;i++) {
     fragend=fragstart+(fragments/splits)+1;    	 
     if(fragend > fragments) fragend=fragments;
     std::unique_ptr<Geometry> part_u =rotatePolygonSub(node, poly, fragments, fragstart, fragend, flip_faces);	

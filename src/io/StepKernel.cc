@@ -67,11 +67,11 @@ void StepKernel::build_tri_body(std::vector<Vector3d> vertices, std::vector<Inde
 
 	// check for all points it they sit on an arc// TODO move place to be mor efficient
 	std::vector<int> vert2curve;
-	for(int i=0;i<vertices.size();i++){
+	for(size_t i=0;i<vertices.size();i++){
 		Vector3d pt=vertices[i];
 	        printf("%d (%g/%g/%g)",i, pt[0], pt[1], pt[2]);		  
 		int found=-1;
-		for(int j=0;j<curves.size();j++) {
+		for(size_t j=0;j<curves.size();j++) {
                 	if(curves[j]->pointMember(vertices, pt)) {
 				printf("(%d)",j);
 				found=j;
@@ -82,9 +82,9 @@ void StepKernel::build_tri_body(std::vector<Vector3d> vertices, std::vector<Inde
 	}
 
 	// check all faces, if they are part of a special surface curve
-	for(int i=0;i<faces.size();i++) {
+	for(size_t i=0;i<faces.size();i++) {
           auto &face = faces[i];		
-          printf("Face %d ",i);		
+          printf("Face %ld ",i);		
           for(int j=0;j< surfaces.size();j++) {
            int valid=1;		  
 	   for(int k=0;valid && k<face.size();k++) {
@@ -107,8 +107,6 @@ void StepKernel::build_tri_body(std::vector<Vector3d> vertices, std::vector<Inde
 		Vector3d d0=(p1-p0).normalized();
 		Vector3d d1=(p2-p0).normalized();
 		Vector3d d2=d0.cross(d1).normalized();
-		double dist2 = sqrt(d2[0] * d2[0] + d2[1] * d2[1] + d2[2] * d2[2]);
-		Vector3d d1_cor=d0.cross(d2).normalized();
 
 		int merged_edge_cnt;
 
@@ -160,8 +158,8 @@ void StepKernel::build_tri_body(std::vector<Vector3d> vertices, std::vector<Inde
 	auto open_shell = new Shell(entities, sfaces);
 	std::vector<Shell*> shells;
 	shells.push_back(open_shell);
-	auto shell_model = new ShellModel(entities, shells);
-	auto manifold_shape = new ManifoldShape(entities, base_axis, shell_model);
+//	auto shell_model = new ShellModel(entities, shells);
+//	auto manifold_shape = new ManifoldShape(entities, base_axis, shell_model);
 }
 
 StepKernel::EdgeCurve *StepKernel::get_line_from_map(
@@ -275,7 +273,7 @@ void StepKernel::read_step(std::string file_name)
 		if (cur_str.size() > 0 && cur_str[0] == '#' && cur_str.find('='))
 		{
 			auto equal_pos = cur_str.find('=');
-			auto paren_pos = cur_str.find('(');
+//			auto paren_pos = cur_str.find('(');
 			auto id_str = cur_str.substr(1, equal_pos - 1);
 			id = std::atoi(id_str.c_str());
 			auto func_start = cur_str.find_first_not_of("\t ", equal_pos+1);
@@ -411,7 +409,7 @@ void StepKernel::read_step(std::string file_name)
 //		std::cout << cur_str << "\n";
 	}
 	// processes all the arguments
-	for (int i = 0; i < ents.size(); i++)
+	for (size_t i = 0; i < ents.size(); i++)
 	{
 		ents[i]->parse_args(ent_map,args[i]);
 	}

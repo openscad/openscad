@@ -175,7 +175,7 @@ void import_shell(PolySetBuilder &builder, StepKernel &sk, StepKernel::Shell *sh
 	if(arc_ends.size() != 4) break;
 
 	std::vector<int> pos;
-	for(int i=0;i<combined.size();i++) {
+	for(size_t i=0;i<combined.size();i++) {
 		if(combined[i] == arc_ends[0]) pos.push_back(i);
 		else if(combined[i] == arc_ends[1]) pos.push_back(i);
 		else if(combined[i] == arc_ends[2]) pos.push_back(i);
@@ -207,7 +207,7 @@ void import_shell(PolySetBuilder &builder, StepKernel &sk, StepKernel::Shell *sh
 
     if(n == 1) {
       builder.beginPolygon(faceLoopInd[0].size());
-      for(int i=0;i<faceLoopInd[0].size();i++) builder.addVertex(faceLoopInd[0][i]);			
+      for(size_t i=0;i<faceLoopInd[0].size();i++) builder.addVertex(faceLoopInd[0][i]);			
     } else {
       std::vector<IndexedTriangle> triangles;
       if(sys == nullptr) continue;
