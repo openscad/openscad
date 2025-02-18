@@ -151,7 +151,7 @@ void CGALRenderer::createPolySetStates() {
 
   for (const auto &polyset : this->polysets_) {
     Color4f color;
-    getColor(ColorMode::MATERIAL, color);
+    getColorSchemeColor(ColorMode::MATERIAL, color);
     vbo_builder.writeSurface();
     vbo_builder.create_surface(*polyset, Transform3d::Identity(), color, false);
   }
@@ -185,7 +185,7 @@ void CGALRenderer::createPolygonSurfaceStates() {
 
   for (const auto &[polygon, polyset] : this->polygons_) {
     Color4f color;
-    getColor(ColorMode::CGAL_FACE_2D_COLOR, color);
+    getColorSchemeColor(ColorMode::CGAL_FACE_2D_COLOR, color);
     vbo_builder.create_polygons(*polyset, Transform3d::Identity(), color);
   }
 
@@ -218,7 +218,7 @@ void CGALRenderer::createPolygonEdgeStates() {
 
   for (const auto &[polygon, _] : this->polygons_) {
     Color4f color;
-    getColor(ColorMode::CGAL_EDGE_2D_COLOR, color);
+    getColorSchemeColor(ColorMode::CGAL_EDGE_2D_COLOR, color);
     vbo_builder.writeEdge();
     vbo_builder.create_edges(*polygon, polygon->getTransform3d(), color);
   }

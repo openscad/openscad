@@ -149,14 +149,45 @@ Renderer::Renderer()
   PRINTD("Renderer() end");
 }
 
-bool Renderer::getColor(Renderer::ColorMode colormode, Color4f& col) const
+bool Renderer::getColorSchemeColor(Renderer::ColorMode colormode, Color4f& outcolor) const
 {
   if (const auto it = colormap_.find(colormode); it != colormap_.end()) {
-    col = it->second;
+    outcolor = it->second;
     return true;
   }
   return false;
 }
+
+bool Renderer::getShaderColor(Renderer::ColorMode colormode, const Color4f& object_color,
+                              Color4f& outcolor) const
+{
+  // If an object was colored, use that color, except when using the highlight/background operator
+  if ((colormode != ColorMode::BACKGROUND) && (colormode != ColorMode::HIGHLIGHT) && object_color.isValid()) {
+    outcolor = object_color;
+    return true;
+  }
+
+  Color4f basecol;
+  if (Renderer::getColorSchemeColor(colormode, basecol)) {
+    // In highlight/background mode, pull unset colors from the basecol
+    if (colormode == ColorMode::BACKGROUND || colormode != ColorMode::HIGHLIGHT) {
+      basecol = Color4f(object_color[0] >= 0 ? object_color[0] : basecol[0], object_color[1] >= 0 ? object_color[1] : basecol[1],
+                        object_color[2] >= 0 ? object_color[2] : basecol[2], object_color[3] >= 0 ? object_color[3] : basecol[3]);
+    }
+    Color4f col;
+    Renderer::getColorSchemeColor(ColorMode::MATERIAL, col);
+    outcolor = basecol;
+    if (outcolor[0] < 0) outcolor[0] = col[0];
+    if (outcolor[1] < 0) outcolor[1] = col[1];
+    if (outcolor[2] < 0) outcolor[2] = col[2];
+    if (outcolor[3] < 0) outcolor[3] = col[3];
+    return true;
+  }
+
+  return false;
+}
+
+
 
 /* fill colormap_ with matching entries from the colorscheme. note
    this does not change Highlight or Background colors as they are not
@@ -177,7 +208,8 @@ std::shared_ptr<SelectedObject> Renderer::findModelObject(Vector3d near_pt, Vect
 #else //NULLGL
 
 Renderer::Renderer() : colorscheme_(nullptr) {}
-bool Renderer::getColor(Renderer::ColorMode colormode, Color4f& col) const { return false; }
+bool Renderer::getColorSchemeColor(Renderer::ColorMode colormode, Color4f& outcolor) const {return false; }
+bool Renderer::getShaderColor(Renderer::ColorMode colormode, const Color4f& object_color, Color4f& outcolor) const { return false; }
 std::string ShaderUtils::loadShaderSource(const std::string& name) { return ""; }
 void Renderer::setColorScheme(const ColorScheme& cs) {}
 std::shared_ptr<SelectedObject> Renderer::findModelObject(Vector3d near_pt, Vector3d far_pt, int mouse_x, int mouse_y, double tolerance) { return nullptr; }

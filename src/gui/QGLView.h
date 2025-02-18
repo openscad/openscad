@@ -1,6 +1,7 @@
 #pragma once
 
 #include "glview/system-gl.h"
+#include "gui/MouseSelector.h"
 
 #include <QImage>
 #include <QMouseEvent>
@@ -48,6 +49,8 @@ public:
   std::shared_ptr<SelectedObject> findObject(int x, int y);
   int measure_state;
 
+  int pickObject(QPoint position);
+
 public slots:
   void ZoomIn();
   void ZoomOut();
@@ -92,6 +95,7 @@ private:
 
 #ifdef ENABLE_OPENCSG
   void display_opencsg_warning() override;
+  std::unique_ptr<MouseSelector> selector;
 private slots:
   void display_opencsg_warning_dialog();
 #endif

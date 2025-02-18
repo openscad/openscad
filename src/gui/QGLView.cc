@@ -78,6 +78,7 @@ QGLView::QGLView(QWidget *parent) : QOpenGLWidget(parent)
 
 QGLView::~QGLView()
 {
+  std::cout << "QGLView::~QGLView()" << std::endl;
   // Just to make sure we can call GL functions in the supertype destructor
   makeCurrent();
 }
@@ -110,7 +111,7 @@ void QGLView::initializeGL()
 {
 #if defined(USE_GLEW) || defined(OPENCSG_GLEW)
   // Since OpenCSG requires glew, we need to initialize it.
-  // ..in a separate compilation unit to avoid duplicate symbols with GLAD.
+  // ..in a separate compilation unit to avoid duplicate symbols with x.
   initializeGlew();
 #endif
 #ifdef USE_GLAD
@@ -125,6 +126,8 @@ void QGLView::initializeGL()
   PRINTDB("GLAD: Loaded OpenGL %d.%d", GLAD_VERSION_MAJOR(version) % GLAD_VERSION_MINOR(version));
 #endif // ifdef USE_GLAD
   GLView::initializeGL();
+
+  this->selector = std::make_unique<MouseSelector>(this);
 }
 
 std::string QGLView::getRendererInfo() const
@@ -628,4 +631,17 @@ void QGLView::selectPoint(int mouse_x, int mouse_y)
     this->selected_obj.push_back(*obj);
     update();
   }
+}
+
+int QGLView::pickObject(QPoint position)
+{
+  if (!isValid()) return -1;
+
+// FIXME: If renderer isn't prepared, we cannot call this 
+//  renderer->prepare(&this->selector->shaderinfo);
+
+  // Update the selector with the right image size
+  this->selector->reset(this);
+
+  return this->selector->select(this->getRenderer(), position.x(), position.y());
 }

@@ -172,7 +172,7 @@ void ThrownTogetherRenderer::createChainObject(VertexStateContainer& container, 
     const ColorMode colormode = getColorMode(csgobj.flags, highlight_mode, background_mode, false, type);
     getShaderColor(colormode, leaf_color, color);
 
-    add_color(vbo_builder, color, shaderinfo);
+    add_shader_pointers(vbo_builder, shaderinfo);
 
     vbo_builder.create_surface(*csgobj.leaf->polyset, csgobj.leaf->matrix, color, enable_barycentric);
     if (const auto ttr_vs = std::dynamic_pointer_cast<TTRVertexState>(vbo_builder.states().back())) {
@@ -182,7 +182,7 @@ void ThrownTogetherRenderer::createChainObject(VertexStateContainer& container, 
     ColorMode colormode = getColorMode(csgobj.flags, highlight_mode, background_mode, false, type);
     getShaderColor(colormode, leaf_color, color);
 
-    add_color(vbo_builder, color, shaderinfo);
+    add_shader_pointers(vbo_builder, shaderinfo);
 
     auto cull = std::make_shared<VertexState>();
     cull->glBegin().emplace_back([]() {
@@ -208,7 +208,7 @@ void ThrownTogetherRenderer::createChainObject(VertexStateContainer& container, 
     colormode = getColorMode(csgobj.flags, highlight_mode, background_mode, true, type);
     getShaderColor(colormode, leaf_color, color);
 
-    add_color(vbo_builder, color, shaderinfo);
+    add_shader_pointers(vbo_builder, shaderinfo);
 
     cull = std::make_shared<VertexState>();
     cull->glBegin().emplace_back([]() {

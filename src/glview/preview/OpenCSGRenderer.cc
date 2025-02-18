@@ -220,7 +220,7 @@ void OpenCSGRenderer::createCSGVBOProducts(
           last_color = color;
         }
 
-        add_color(vbo_builder, last_color, shaderinfo);
+        add_shader_pointers(vbo_builder, shaderinfo);
 
         if (color[3] == 1.0f) {
           // object is opaque, draw normally
@@ -299,7 +299,7 @@ void OpenCSGRenderer::createCSGVBOProducts(
           last_color = color;
         }
 
-        add_color(vbo_builder, last_color, shaderinfo);
+        add_shader_pointers(vbo_builder, shaderinfo);
 
         // negative objects should only render rear faces
         std::shared_ptr<VertexState> cull = std::make_shared<VertexState>();
