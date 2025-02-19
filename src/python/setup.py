@@ -1,9 +1,9 @@
 from distutils.core import setup, Extension
 
 def main():
-    setup(name="openscad",
-          version="1.0.0",
-          description="openscad interface for pythonscad",
+    setup(name="pythonscad",
+          version="0.5.0",
+          description="python interface to openscad",
           author="Guenther Sohler",
           author_email="guenther.sohler@gmail.com",
           ext_modules=[Extension("openscad", [

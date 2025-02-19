@@ -102,6 +102,7 @@ PyObject *PyOpenSCADObjectFromNode(PyTypeObject *type, const std::shared_ptr<Abs
   PyOpenSCADObject *self;
   self = (PyOpenSCADObject *)  type->tp_alloc(type, 0);
   if (self != nullptr) {
+    Py_XINCREF(self);
     self->node = node;
     return (PyObject *)self;
   }
@@ -379,28 +380,40 @@ std::vector<Vector3d> python_vectors(PyObject *vec, int mindim, int maxdim)
 void get_fnas(double& fn, double& fa, double& fs) {
   PyObject *mainModule = PyImport_AddModule("__main__");
   if (mainModule == nullptr) return;
-  PyObjectUniquePtr varFn(PyObject_GetAttrString(mainModule, "fn"),PyObjectDeleter);
-  PyObjectUniquePtr varFa(PyObject_GetAttrString(mainModule, "fa"),PyObjectDeleter);
+  fn=0;
+  fa=12;
+  fs=2;
+
+  if(PyObject_HasAttrString(mainModule,"fn")) {
+    PyObjectUniquePtr varFn(PyObject_GetAttrString(mainModule, "fn"),PyObjectDeleter);
+    if (varFn.get() != nullptr){
+      fn = PyFloat_AsDouble(varFn.get());
+    }
+  }  
+
+  if(PyObject_HasAttrString(mainModule,"fa")) {
+    PyObjectUniquePtr varFa(PyObject_GetAttrString(mainModule, "fa"),PyObjectDeleter);
+    if (varFa.get() != nullptr){
+      fa = PyFloat_AsDouble(varFa.get());
+    }
+  }
+
   PyObjectUniquePtr varFs(PyObject_GetAttrString(mainModule, "fs"),PyObjectDeleter);
-  if (varFn.get() != nullptr){
-    fn = PyFloat_AsDouble(varFn.get());
-  }
-  if (varFa.get() != nullptr){
-    fa = PyFloat_AsDouble(varFa.get());
-  }
-  if (varFs.get() != nullptr){
-    fs = PyFloat_AsDouble(varFs.get());
-  }
+  if(PyObject_HasAttrString(mainModule,"fn")) {
+    if (varFs.get() != nullptr){
+      fs = PyFloat_AsDouble(varFs.get());
+    }
+  }  
 }
 
 /*
  * Type specific init function. nothing special here
  */
 
-static int PyOpenSCADInit(PyOpenSCADObject *self, PyObject *arfs, PyObject *kwds)
+static int PyOpenSCADInit(PyOpenSCADObject *self, PyObject *args, PyObject *kwds)
 {
   (void)self;
-  (void)arfs;
+  (void)args;
   (void)kwds;
   return 0;
 }
@@ -799,7 +812,7 @@ void initPython(double time)
 
   }
   std::ostringstream stream;
-  stream << "fa=12.0\nfn=0.0\nfs=2.0\nt=" << time << "\nphi=" << 2*G_PI*time;
+  stream << "t=" << time << "\nphi=" << 2*G_PI*time;
   PyRun_String(stream.str().c_str(), Py_file_input, pythonInitDict.get(), pythonInitDict.get());
   customizer_parameters_finished = customizer_parameters;
   customizer_parameters.clear();
@@ -873,7 +886,9 @@ sys.stdout = stdout_bak\n\
 sys.stderr = stderr_bak\n\
 ";
 
+#ifndef ENABLE_PIP  
     PyRun_SimpleString(python_init_code);
+#endif    
 #ifdef HAVE_PYTHON_YIELD
     for(auto obj : python_orphan_objs) {
         Py_DECREF(obj);
@@ -884,6 +899,7 @@ sys.stderr = stderr_bak\n\
     result.reset(PyRun_String(code.c_str(), Py_file_input, pythonInitDict.get(), pythonInitDict.get())); /* actual code is run here */
 
 
+#ifndef ENABLE_PIP
     if(result  == nullptr) {
       PyErr_Print();
       error = ""; 
@@ -907,6 +923,7 @@ sys.stderr = stderr_bak\n\
       }
     }
     PyRun_SimpleString(python_exit_code);
+#endif    
     return error;
 }
 /*

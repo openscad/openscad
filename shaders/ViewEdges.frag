@@ -1,11 +1,7 @@
 #version 120
 
-<<<<<<< HEAD
-uniform vec4 color_area, color_edge;
 uniform float textureFactor;
-=======
 varying vec4 color;
->>>>>>> upstream/master
 varying vec3 vBC;
 uniform sampler2D tex1;
 varying float shading;
