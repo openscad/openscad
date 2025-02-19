@@ -1,20 +1,20 @@
 from distutils.core import setup, Extension
 
 def main():
-    setup(name="pythonscad",
-          version="0.5.0",
-          description="python interface to openscad",
-          author="Guenther Sohler",
-          author_email="guenther.sohler@gmail.com",
-          ext_modules=[Extension("openscad", [
-              "pyfunctions.cc",
-              "pydata.cc",
-              "pyopenscad.cc",
-              "pip_fixer.cc",
+    root =  [
               "../Feature.cc",
               "../FontCache.cc",
               "../version.cc",
-              "../handle_dep.cc",
+              "../handle_dep.cc" 
+            ]
+
+    python =[
+              "pyfunctions.cc",
+              "pydata.cc",
+              "pyopenscad.cc",
+              "pip_fixer.cc"
+            ] 
+    geometry = [
               "../geometry/GeometryEvaluator.cc",
               "../geometry/rotextrude.cc",
               "../geometry/skin.cc",
@@ -48,55 +48,17 @@ def main():
               "../geometry/manifold/manifold-applyops.cc",
               "../geometry/manifold/manifoldutils.cc",
               "../geometry/manifold/manifold-applyops-minkowski.cc",
-              "../geometry/boolean_utils.cc",
+              "../geometry/boolean_utils.cc" ]
+    ext= [
               "../ext/libtess2/Source/bucketalloc.c",
               "../ext/libtess2/Source/sweep.c",
               "../ext/libtess2/Source/mesh.c",
               "../ext/libtess2/Source/dict.c",
               "../ext/libtess2/Source/tess.c",
               "../ext/libtess2/Source/geom.c",
-              "../ext/libtess2/Source/priorityq.c",
-              "../ext/lodepng/lodepng.cpp",
-              "../glview/Camera.cc",
-              "../glview/ColorMap.cc",
-              "../glview/RenderSettings.cc",
-              "../utils/printutils.cc",
-              "../utils/degree_trig.cc",
-              "../utils/hash.cc",
-              "../utils/svg.cc",
-              "../utils/calc.cc",
-              "../core/FreetypeRenderer.cc",
-              "../core/DrawingCallback.cc",
-              "../core/customizer/Annotation.cc",
-              "../core/FunctionType.cc",
-              "../core/node.cc",
-              "../core/node_clone.cc",
-              "../core/progress.cc",
-              "../core/parsersettings.cc",
-              "../core/Value.cc",
-              "../core/Assignment.cc",
-              "../core/Arguments.cc",
-              "../core/EvaluationSession.cc",
-              "../core/ModuleInstantiation.cc",
-              "../core/Children.cc",
+              "../ext/libtess2/Source/priorityq.c" ]
+    nodes = [
               "../core/primitives.cc",
-              "../core/AST.cc",
-              "../core/Expression.cc",
-              "../core/ContextFrame.cc",
-              "../core/ScopeContext.cc",
-              "../core/LocalScope.cc",
-              "../core/Context.cc",
-              "../core/ContextMemoryManager.cc",
-              "../core/BuiltinContext.cc",
-              "../core/Builtins.cc",
-              "../core/builtin_functions.cc",
-              "../core/UserModule.cc",
-              "../core/module.cc",
-              "../core/function.cc",
-              "../core/SourceFile.cc",
-              "../core/Parameters.cc",
-              "../core/SourceFileCache.cc",
-              "../core/NodeVisitor.cc",
               "../core/CgalAdvNode.cc",
               "../core/FilletNode.cc",
               "../core/ProjectionNode.cc",
@@ -119,19 +81,56 @@ def main():
               "../core/WrapNode.cc",
               "../core/DebugNode.cc",
               "../core/PathExtrudeNode.cc",
-              "../core/SkinNode.cc",
-              "../core/Settings.cc",
+              "../core/GroupModule.cc",
+              "../core/SkinNode.cc"
+            ]
+    context = [
+              "../core/ContextFrame.cc",
+              "../core/ScopeContext.cc",
+              "../core/LocalScope.cc",
+              "../core/Context.cc",
+              "../core/ContextMemoryManager.cc",
+              "../core/BuiltinContext.cc",
+              "../core/EvaluationSession.cc",
+              "../core/Parameters.cc",
+              "../core/SourceFileCache.cc",
+            ]
+    arith = [
+              "../core/FunctionType.cc",
               "../core/UndefType.cc",
+              "../core/Value.cc",
+              "../core/Assignment.cc",
+              "../core/Arguments.cc",
+              "../core/Expression.cc",
+              "../core/SourceFile.cc",
+            ]
+    language = [
+              "../core/ModuleInstantiation.cc",
+              "../core/UserModule.cc",
+              "../core/module.cc",
+              "../core/Children.cc",
+              "../core/AST.cc",
+              "../core/Builtins.cc",
+              "../core/builtin_functions.cc",
+              "../core/control.cc" ,
+              "../core/function.cc"
+            ]
+    core = [
+              "../core/FreetypeRenderer.cc",
+              "../core/DrawingCallback.cc",
+              "../core/customizer/Annotation.cc",
+              "../core/node.cc",
+              "../core/node_clone.cc",
+              "../core/progress.cc",
+              "../core/parsersettings.cc",
+              "../core/NodeVisitor.cc",
+              "../core/Settings.cc",
               "../core/Tree.cc",
               "../core/ColorUtil.cc",
               "../core/NodeDumper.cc",
               "../core/StatCache.cc",
-              "../core/GroupModule.cc",
-              "../core/control.cc",
-              "../io/export.cc",
-              "../io/export_3mf_dummy.cc",
-              "../io/export_obj.cc",
-              "../io/DxfData.cc",
+              ]  + language + arith + context + nodes
+    io_export = [
               "../io/export_stl.cc",
               "../io/export_dxf.cc",
               "../io/export_off.cc",
@@ -143,9 +142,10 @@ def main():
               "../io/export_amf.cc",
               "../io/export_nef.cc",
               "../io/export_pdf.cc",
-              "../io/export_step.cc",
-              "../io/fileutils.cc",
-              "../io/StepKernel.cc",
+              "../io/export_obj.cc",
+              "../io/export_step.cc"
+            ]
+    io_import = [            
               "../io/import_json.cc",
               "../io/import_obj.cc",
               "../io/import_step.cc",
@@ -153,10 +153,14 @@ def main():
               "../io/import_amf.cc",
               "../io/import_nef.cc",
               "../io/import_off.cc",
-              "../io/import_stl.cc",
-              "../io/dxfdim.cc",
-              "../platform/PlatformUtils.cc",
-              "../platform/PlatformUtils-posix.cc",
+              "../io/import_stl.cc" ]
+    io = [              
+              "../io/export.cc",
+              "../io/DxfData.cc",
+              "../io/fileutils.cc",
+              "../io/StepKernel.cc",
+              "../io/dxfdim.cc" ] + io_export + io_import
+    manifold = [
               "../../submodules/manifold/src/manifold.cpp",
               "../../submodules/manifold/src/quickhull.cpp",
               "../../submodules/manifold/src/boolean_result.cpp",
@@ -172,15 +176,35 @@ def main():
               "../../submodules/manifold/src/sort.cpp",
               "../../submodules/manifold/src/sdf.cpp",
               "../../submodules/manifold/src/polygon.cpp",
-              "../../submodules/manifold/src/impl.cpp",
+              "../../submodules/manifold/src/impl.cpp" ]
+    clipper = [
               "../../submodules/Clipper2/CPP/Clipper2Lib/src/clipper.engine.cpp",
               "../../submodules/Clipper2/CPP/Clipper2Lib/src/clipper.offset.cpp",
-              "../../submodules/Clipper2/CPP/Clipper2Lib/src/clipper.rectclip.cpp",
-
+              "../../submodules/Clipper2/CPP/Clipper2Lib/src/clipper.rectclip.cpp" ]
+    utils = [
+              "../utils/printutils.cc",
+              "../utils/degree_trig.cc",
+              "../utils/hash.cc",
+              "../utils/svg.cc",
+              "../utils/calc.cc" ]
+    platform = [
+              "../platform/PlatformUtils.cc",
+              "../platform/PlatformUtils-posix.cc"
+            ]
+    glview = [
+              "../glview/Camera.cc",
+              "../glview/ColorMap.cc",
+              "../glview/RenderSettings.cc" ]
+    lex_yacc = [
               "../../build/objects/parser.cxx",
               "../../build/objects/lexer.cxx"
+              ]
+    lodepng = [ "../ext/lodepng/lodepng.cpp" ]
 
-              ],include_dirs=[
+    pythonscad_ext = Extension("openscad"
+        , sources = python + geometry + ext + io + core +  manifold + 
+        clipper + utils + platform  + glview + lex_yacc + lodepng
+        ,include_dirs = [
                   "../..",
                   "../../src",
                   "../../src/core",
@@ -220,8 +244,20 @@ def main():
                 ], extra_link_args=[
                         "-l", "glib-2.0" 
                 ],  extra_compile_args=[
-                ]
-)])
+                ])
+
+    setup(name="pythonscad",
+          version="2025.02",
+          description="Python interface to openscad",
+          url="https://pythonscad.org",
+          author="Guenther Sohler",
+          author_email="guenther.sohler@gmail.com",
+          license="MIT",
+          classifiers=[
+            "Programming Language :: Python :: 3",
+            "Programming Language :: Python :: 3.11" ],
+          ext_modules=[ pythonscad_ext ]
+          )
 
 if __name__ == "__main__":
     main()
