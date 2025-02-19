@@ -7,7 +7,9 @@
 
 #include "geometry/Geometry.h"
 #include "utils/printutils.h"
+#ifdef ENABLE_CGAL
 #include "geometry/cgal/CGAL_Nef_polyhedron.h"
+#endif
 #ifdef ENABLE_MANIFOLD
 #include "geometry/manifold/ManifoldGeometry.h"
 #endif
@@ -28,8 +30,10 @@ std::shared_ptr<const Geometry> CGALCache::get(const std::string& id) const
 }
 
 bool CGALCache::acceptsGeometry(const std::shared_ptr<const Geometry>& geom) {
-  return
-    std::dynamic_pointer_cast<const CGAL_Nef_polyhedron>(geom) != nullptr
+  return 0 
+#ifdef ENABLE_CGAL	  
+    || std::dynamic_pointer_cast<const CGAL_Nef_polyhedron>(geom) != nullptr
+#endif    
 #ifdef ENABLE_MANIFOLD
     || std::dynamic_pointer_cast<const ManifoldGeometry>(geom) != nullptr
 #endif
