@@ -15,7 +15,7 @@ B=${0%%.cc}; [ "$B" -nt "$0" ] || c++ -std=c++17 -o"$B" "$0" && exec "$B" "$@";
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// Location: https://github.com/hzeller/dev-tools (2024-09-19)
+// Location: https://github.com/hzeller/dev-tools (2024-12-23)
 
 // Script to run clang-tidy on files in a bazel project while caching the
 // results as clang-tidy can be pretty slow. The clang-tidy output messages
@@ -28,8 +28,10 @@ B=${0%%.cc}; [ "$B" -nt "$0" ] || c++ -std=c++17 -o"$B" "$0" && exec "$B" "$@";
 //   run-clang-tidy-cached.cc --checks="-*,modernize-use-override" --fix
 //
 // Note: useful environment variables to configure are
-//  CLANG_TIDY = binary to run; default would just be clang-tidy.
-//  CACHE_DIR  = where to put the cached content; default ~/.cache
+//  CLANG_TIDY         = binary to run; default would just be clang-tidy.
+//  CLANG_TIDY_CONFIG  = override configuration file in kConfig.clang_tidy_file
+//  CACHE_DIR          = where to put the cached content; default ~/.cache
+//  CLANG_TIDY_JOBS    = Number of tasks to run in parallel.
 
 // This file shall be c++17 self-contained; not using any re2 or absl niceties.
 #include <unistd.h>
@@ -45,6 +47,7 @@ B=${0%%.cc}; [ "$B" -nt "$0" ] || c++ -std=c++17 -o"$B" "$0" && exec "$B" "$@";
 #include <filesystem>
 #include <fstream>
 #include <functional>
+#include <initializer_list>
 #include <iostream>
 #include <list>
 #include <map>
@@ -54,6 +57,7 @@ B=${0%%.cc}; [ "$B" -nt "$0" ] || c++ -std=c++17 -o"$B" "$0" && exec "$B" "$@";
 #include <string_view>
 #include <system_error>
 #include <thread>
+#include <unordered_set>
 #include <utility>
 #include <vector>
 
@@ -107,6 +111,10 @@ struct ConfigValues {
   // Usually good to keep on, but it can result in situations in which a header
   // that is included by a lot of other files results in lots of reprocessing.
   bool revisit_if_any_include_changes = true;
+
+  // Clang tidy configuration: clang tidy files with checks. This can be
+  // overriden with environment variable CLANG_TIDY_CONFIG
+  std::string_view clang_tidy_file = ".clang-tidy";
 };
 
 // --------------[ Project-specific configuration ]--------------
@@ -118,26 +126,26 @@ static constexpr ConfigValues kConfig = {
 };
 // --------------------------------------------------------------
 
+// More clang-tidy config.
+static constexpr std::string_view kExtraArgs[] = {
+    "-Wno-unknown-pragmas", "-Wno-unknown-warning-option"};
+
+// All the extensions we consider
+inline bool IsOneOf(std::string_view s,
+                    std::initializer_list<std::string_view> options) {
+  return std::any_of(options.begin(), options.end(),
+                     [s](std::string_view value) { return value == s; });
+}
+
 // Files that look like relevant include files.
-inline bool IsIncludeExtension(const std::string &extension) {
-  for (const std::string_view e : {".h", ".hpp", ".hxx", ".inl"}) {
-    if (extension == e) return true;
-  }
-  return false;
+inline bool IsIncludeExtension(std::string_view extension) {
+  return IsOneOf(extension, {".h", ".hpp", ".hxx", ".inl"});
 }
 
 // Filter for source files to be considered.
-inline bool ConsiderExtension(const std::string &extension) {
-  for (const std::string_view e : {".cc", ".cpp", ".cxx"}) {
-    if (extension == e) return true;
-  }
-  return IsIncludeExtension(extension);
+inline bool ConsiderExtension(const std::string_view ext) {
+  return IsOneOf(ext, {".cc", ".cpp", ".cxx"}) || IsIncludeExtension(ext);
 }
-
-// Configuration of clang-tidy itself.
-static constexpr std::string_view kClangConfigFile = ".clang-tidy";
-static constexpr std::string_view kExtraArgs[] = {
-    "-Wno-unknown-pragmas", "-Wno-unknown-warning-option"};
 
 namespace {
 
@@ -150,7 +158,9 @@ using filepath_contenthash_t = std::pair<fs::path, hash_t>;
 // Some helpers
 std::string GetContent(FILE *f) {
   std::string result;
-  if (!f) return result;  // ¯\_(ツ)_/¯ best effort.
+  if (!f) {
+    return result;  // ¯\_(ツ)_/¯ best effort.
+  }
   char buf[4096];
   while (const size_t r = fread(buf, 1, sizeof(buf), f)) {
     result.append(buf, r);
@@ -167,6 +177,15 @@ std::string GetContent(const fs::path &f) {
     return {};  // ¯\_(ツ)_/¯ best effort.
   }
   return GetContent(file_to_read);
+}
+
+std::string_view EnvWithFallback(const char *var, std::string_view fallback) {
+  const char *value = getenv(var);
+  return value ? value : fallback;
+}
+
+std::string_view GetClangTidyConfig() {
+  return EnvWithFallback("CLANG_TIDY_CONFIG", kConfig.clang_tidy_file);
 }
 
 std::string GetCommandOutput(const std::string &prog) {
@@ -205,14 +224,16 @@ class ContentAddressedStore {
   bool NeedsRefresh(const filepath_contenthash_t &c,
                     file_time min_freshness) const {
     const fs::path content_hash_file = PathFor(c);
-    if (!fs::exists(content_hash_file)) return true;
+    if (!fs::exists(content_hash_file)) {
+      return true;
+    }
 
     // If file exists but is broken (i.e. has a non-zero size with messages),
     // consider recreating if if older than compilation db.
     const bool timestamp_trigger =
-      kConfig.revisit_brokenfiles_if_build_config_newer &&
-      (fs::file_size(content_hash_file) > 0 &&
-       fs::last_write_time(content_hash_file) < min_freshness);
+        kConfig.revisit_brokenfiles_if_build_config_newer &&
+        (fs::file_size(content_hash_file) > 0 &&
+         fs::last_write_time(content_hash_file) < min_freshness);
     return timestamp_trigger;
   }
 
@@ -223,7 +244,7 @@ class ContentAddressedStore {
 class ClangTidyRunner {
  public:
   ClangTidyRunner(const std::string &cache_prefix, int argc, char **argv)
-      : clang_tidy_(getenv("CLANG_TIDY") ?: "clang-tidy"),
+      : clang_tidy_(EnvWithFallback("CLANG_TIDY", "clang-tidy")),
         clang_tidy_args_(AssembleArgs(argc, argv)) {
     project_cache_dir_ = AssembleProjectCacheDir(cache_prefix);
   }
@@ -234,20 +255,31 @@ class ClangTidyRunner {
   // Empties work_queue.
   void RunClangTidyOn(ContentAddressedStore &output_store,
                       std::list<filepath_contenthash_t> *work_queue) {
-    if (work_queue->empty()) return;
-    const int kJobs = std::thread::hardware_concurrency();
-    std::cerr << work_queue->size() << " files to process...";
+    if (work_queue->empty()) {
+      return;
+    }
+    const char *jobs_env_str = getenv("CLANG_TIDY_JOBS");
+    const int jobs_env_num = jobs_env_str ? atoi(jobs_env_str) : -1;
+    const int kJobs = (jobs_env_num > 0 ? jobs_env_num
+                                        : std::thread::hardware_concurrency());
+    std::cerr << work_queue->size() << " files to process (w/ " << kJobs
+              << " jobs)...";
 
     const bool print_progress = isatty(STDERR_FILENO);
-    if (!print_progress) std::cerr << "\n";
+    if (!print_progress) {
+      std::cerr << "\n";
+    }
 
+    const std::string uniquifier = "." + std::to_string(getpid());
     std::mutex queue_access_lock;
     auto clang_tidy_runner = [&]() {
       for (;;) {
         filepath_contenthash_t work;
         {
           const std::lock_guard<std::mutex> lock(queue_access_lock);
-          if (work_queue->empty()) return;
+          if (work_queue->empty()) {
+            return;
+          }
           if (print_progress) {
             fprintf(stderr, "%5d\b\b\b\b\b", (int)(work_queue->size()));
           }
@@ -255,7 +287,7 @@ class ClangTidyRunner {
           work_queue->pop_front();
         }
         const fs::path final_out = output_store.PathFor(work);
-        const std::string tmp_out = final_out.string() + ".tmp";
+        const std::string tmp_out = final_out.string() + uniquifier + ".tmp";
         // Putting the file to clang-tidy early in the command line so that
         // it is easy to find with `ps` or `top`.
         const std::string command = clang_tidy_ + " '" + work.first.string() +
@@ -266,6 +298,8 @@ class ClangTidyRunner {
         // NOLINTBEGIN
         if (WIFSIGNALED(r) &&
             (WTERMSIG(r) == SIGINT || WTERMSIG(r) == SIGQUIT)) {
+          std::error_code ignored_error;
+          fs::remove(tmp_out, ignored_error);
           break;  // got Ctrl-C
         }
         // NOLINTEND
@@ -279,7 +313,9 @@ class ClangTidyRunner {
     for (auto i = 0; i < kJobs; ++i) {
       workers.emplace_back(clang_tidy_runner);  // NOLINT
     }
-    for (auto &t : workers) t.join();
+    for (auto &t : workers) {
+      t.join();
+    }
     if (print_progress) {
       fprintf(stderr, "     \n");  // Clean out progress counter.
     }
@@ -287,16 +323,22 @@ class ClangTidyRunner {
 
  private:
   static fs::path GetCacheBaseDir() {
-    if (const char *from_env = getenv("CACHE_DIR")) return fs::path{from_env};
-    if (const char *home = getenv("HOME")) {
-      if (auto cdir = fs::path(home) / ".cache/"; fs::exists(cdir)) return cdir;
+    if (const char *from_env = getenv("CACHE_DIR")) {
+      return fs::path{from_env};
     }
-    return fs::path{getenv("TMPDIR") ?: "/tmp"};
+    if (const char *home = getenv("HOME")) {
+      if (auto cdir = fs::path(home) / ".cache/"; fs::exists(cdir)) {
+        return cdir;
+      }
+    }
+    return fs::path{EnvWithFallback("TMPDIR", "/tmp")};
   }
 
   static std::string AssembleArgs(int argc, char **argv) {
     std::string result = " --quiet";
-    result.append(" '--config-file=").append(kClangConfigFile).append("'");
+    result.append(" '--config-file=")
+      .append(GetClangTidyConfig())
+        .append("'");
     for (const std::string_view arg : kExtraArgs) {
       result.append(" --extra-arg='").append(arg).append("'");
     }
@@ -317,13 +359,14 @@ class ClangTidyRunner {
     }
     std::smatch version_match;
     const std::string major_version =
-      std::regex_search(version, version_match, std::regex{"version ([0-9]+)"})
-        ? version_match[1].str()
-        : "UNKNOWN";
+        std::regex_search(version, version_match,
+                          std::regex{"version ([0-9]+)"})
+            ? version_match[1].str()
+            : "UNKNOWN";
 
     // Make sure directory filename depends on .clang-tidy content.
     hash_t cache_unique_id = hashContent(version + clang_tidy_args_);
-    cache_unique_id ^= hashContent(GetContent(kClangConfigFile));
+    cache_unique_id ^= hashContent(GetContent(GetClangTidyConfig()));
     return cache_dir / fs::path(cache_prefix + "v" + major_version + "_" +
                                 ToHex(cache_unique_id, 8));
   }
@@ -344,7 +387,7 @@ class ClangTidyRunner {
       }
       canonicalize_expr += fs::current_path().string() + "/";  // $(pwd)/
       canonicalize_expr +=
-        ")?(\\./)?";  // Some start with, or have a trailing ./
+          ")?(\\./)?";  // Some start with, or have a trailing ./
       return std::regex{canonicalize_expr};
     }();
 
@@ -361,7 +404,7 @@ class ClangTidyRunner {
 class FileGatherer {
  public:
   FileGatherer(ContentAddressedStore &store, std::string_view search_dir)
-    : store_(store), root_dir_(search_dir.empty() ? "." : search_dir) {}
+      : store_(store), root_dir_(search_dir.empty() ? "." : search_dir) {}
 
   // Find all the files we're interested in, and assemble a list of
   // paths that need refreshing.
@@ -385,13 +428,13 @@ class FileGatherer {
         continue;
       }
       const auto extension = p.extension();
-      if (ConsiderExtension(extension)) {
+      if (ConsiderExtension(extension.string())) {
         files_of_interest_.emplace_back(p, 0);  // <- hash to be filled later.
       }
       // Remember content hash of header, so that we can make changed headers
       // influence the hash of a file including this.
       if (kConfig.revisit_if_any_include_changes &&
-          IsIncludeExtension(extension)) {
+          IsIncludeExtension(extension.string())) {
         // Since the files might be included sloppily without prefix path,
         // just keep track of the basename (but since there might be collisions,
         // accomodate all of them by xor-ing the hashes).
@@ -441,15 +484,21 @@ class FileGatherer {
     const fs::path tidy_outfile = cache_dir / ("tidy.out-" + suffix);
     const fs::path tidy_summary = cache_dir / ("tidy-summary.out-" + suffix);
 
-    // Assemble the separate outputs into a single file. Tally up per-check
-    const std::regex check_re("(\\[[a-zA-Z.-]+\\])\n");
+    // Assemble the separate outputs into a single file. Tally up per-check.
+    // The names have at least one dash in them.
+    const std::regex check_re("(?:^|\n).*(\\[[a-zA-Z.]+-[a-zA-Z.-]+\\])\n");
     std::map<std::string, int> checks_seen;
+    std::unordered_set<std::string> line_already_seen;  // de-dup
     std::ofstream tidy_collect(tidy_outfile);
     for (const filepath_contenthash_t &f : files_of_interest_) {
-      const auto tidy = store_.GetContentFor(f);
-      if (!tidy.empty()) tidy_collect << f.first.string() << ":\n" << tidy;
+      const std::string tidy = store_.GetContentFor(f);
+      if (!tidy.empty()) {
+        tidy_collect << f.first.string() << ":\n" << tidy;
+      }
       for (ReIt it(tidy.begin(), tidy.end(), check_re); it != ReIt(); ++it) {
-        checks_seen[(*it)[1].str()]++;
+        if (line_already_seen.insert((*it)[0]).second) {
+          checks_seen[(*it)[1].str()]++;
+        }
       }
     }
     tidy_collect.close();
@@ -496,8 +545,8 @@ class FileGatherer {
 
 int main(int argc, char *argv[]) {
   // Test that key files exist and remember their last change.
-  if (!fs::exists(kClangConfigFile)) {
-    std::cerr << "Need a " << kClangConfigFile << " config file.\n";
+  if (!fs::exists(GetClangTidyConfig())) {
+    std::cerr << "Need a " << GetClangTidyConfig() << " config file.\n";
     return EXIT_FAILURE;
   }
 
@@ -509,10 +558,13 @@ int main(int argc, char *argv[]) {
     return EXIT_FAILURE;
   }
 
-  const auto compdb_ts = fs::last_write_time("compile_commands.json", ec);
+  auto compdb_ts = fs::last_write_time("compile_commands.json", ec);
   if (ec.value() != 0) {
-    std::cerr << "No compilation db compile_commands.json found; "
-              << "create that first. For cmake projects, often simply\n"
+    compdb_ts = fs::last_write_time("compile_flags.txt", ec);
+  }
+  if (ec.value() != 0) {
+    std::cerr << "No compilation db compile_commands.json or compile_flags.txt "
+              << "found; create that first. For cmake projects, often simply\n"
               << "\tln -s build/compile_commands.json .\n";
     return EXIT_FAILURE;
   }
@@ -537,7 +589,7 @@ int main(int argc, char *argv[]) {
   const std::string detailed_report = cache_prefix + "clang-tidy.out";
   const std::string summary = cache_prefix + "clang-tidy.summary";
   const size_t tidy_count = cc_file_gatherer.CreateReport(
-    runner.project_cache_dir(), detailed_report, summary);
+      runner.project_cache_dir(), detailed_report, summary);
 
   return tidy_count == 0 ? EXIT_SUCCESS : EXIT_FAILURE;
 }

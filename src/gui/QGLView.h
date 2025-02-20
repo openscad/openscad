@@ -1,6 +1,7 @@
 #pragma once
 
 #include "glview/system-gl.h"
+#include "gui/MouseSelector.h"
 
 #include <QImage>
 #include <QMouseEvent>
@@ -20,7 +21,6 @@
 class QGLView : public QOpenGLWidget, public GLView
 {
   Q_OBJECT
-  Q_PROPERTY(bool showFaces READ showFaces WRITE setShowFaces);
   Q_PROPERTY(bool showEdges READ showEdges WRITE setShowEdges);
   Q_PROPERTY(bool showAxes READ showAxes WRITE setShowAxes);
   Q_PROPERTY(bool showCrosshairs READ showCrosshairs WRITE setShowCrosshairs);
@@ -29,6 +29,7 @@ class QGLView : public QOpenGLWidget, public GLView
 
 public:
   QGLView(QWidget *parent = nullptr);
+  ~QGLView() override;
 #ifdef ENABLE_OPENCSG
   bool hasOpenCSGSupport() { return this->is_opencsg_capable; }
 #endif
@@ -47,6 +48,8 @@ public:
   void selectPoint(int x, int y);
   std::vector<SelectedObject> findObject(int x, int y);
   int measure_state;
+
+  int pickObject(QPoint position);
 
 public slots:
   void ZoomIn();
@@ -92,6 +95,7 @@ private:
 
 #ifdef ENABLE_OPENCSG
   void display_opencsg_warning() override;
+  std::unique_ptr<MouseSelector> selector;
 private slots:
   void display_opencsg_warning_dialog();
 #endif

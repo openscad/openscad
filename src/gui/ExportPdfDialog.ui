@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>798</width>
-    <height>680</height>
+    <height>583</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -30,8 +30,8 @@
        <rect>
         <x>0</x>
         <y>0</y>
-        <width>778</width>
-        <height>617</height>
+        <width>764</width>
+        <height>593</height>
        </rect>
       </property>
       <layout class="QGridLayout" name="gridLayout" columnstretch="1,1">
@@ -45,105 +45,101 @@
          </property>
          <layout class="QVBoxLayout" name="verticalLayout_3">
           <item>
-           <layout class="QVBoxLayout" name="vLayoutSize">
-            <item>
-             <widget class="QRadioButton" name="radioButtonA6">
-              <property name="text">
-               <string>A6 (105 x 148 mm)</string>
-              </property>
-              <property name="_settings_value" stdset="0">
-               <UInt>0</UInt>
-              </property>
-              <attribute name="buttonGroup">
-               <string notr="true">buttonGroupPaperSize</string>
-              </attribute>
-             </widget>
-            </item>
-            <item>
-             <widget class="QRadioButton" name="radioButtonA5">
-              <property name="text">
-               <string>A5 (148 x 210 mm)</string>
-              </property>
-              <property name="_settings_value" stdset="0">
-               <UInt>1</UInt>
-              </property>
-              <attribute name="buttonGroup">
-               <string notr="true">buttonGroupPaperSize</string>
-              </attribute>
-             </widget>
-            </item>
-            <item>
-             <widget class="QRadioButton" name="radioButtonA4">
-              <property name="text">
-               <string>A4 (210x297 mm)</string>
-              </property>
-              <property name="checked">
-               <bool>true</bool>
-              </property>
-              <property name="_settings_value" stdset="0">
-               <UInt>2</UInt>
-              </property>
-              <attribute name="buttonGroup">
-               <string notr="true">buttonGroupPaperSize</string>
-              </attribute>
-             </widget>
-            </item>
-            <item>
-             <widget class="QRadioButton" name="radioButtonA3">
-              <property name="text">
-               <string>A3 (297x420 mm)</string>
-              </property>
-              <property name="_settings_value" stdset="0">
-               <UInt>3</UInt>
-              </property>
-              <attribute name="buttonGroup">
-               <string notr="true">buttonGroupPaperSize</string>
-              </attribute>
-             </widget>
-            </item>
-            <item>
-             <widget class="QRadioButton" name="radioButtonLetter">
-              <property name="text">
-               <string>Letter (8.5x11 in)</string>
-              </property>
-              <property name="_settings_value" stdset="0">
-               <UInt>4</UInt>
-              </property>
-              <attribute name="buttonGroup">
-               <string notr="true">buttonGroupPaperSize</string>
-              </attribute>
-             </widget>
-            </item>
-            <item>
-             <widget class="QRadioButton" name="radioButtonLegal">
-              <property name="text">
-               <string>Legal (8.5x14 in)</string>
-              </property>
-              <property name="_settings_value" stdset="0">
-               <UInt>5</UInt>
-              </property>
-              <attribute name="buttonGroup">
-               <string notr="true">buttonGroupPaperSize</string>
-              </attribute>
-             </widget>
-            </item>
-            <item>
-             <widget class="QRadioButton" name="radioButtonTabloid">
-              <property name="text">
-               <string>Tabloid (11x17 in)</string>
-              </property>
-              <property name="Tabloid" stdset="0">
-               <string/>
-              </property>
-              <property name="_settings_value" stdset="0">
-               <UInt>6</UInt>
-              </property>
-              <attribute name="buttonGroup">
-               <string notr="true">buttonGroupPaperSize</string>
-              </attribute>
-             </widget>
-            </item>
-           </layout>
+           <widget class="QRadioButton" name="radioButtonA6">
+            <property name="text">
+             <string>A6 (105 x 148 mm)</string>
+            </property>
+            <property name="_settings_value" stdset="0">
+             <string>a6</string>
+            </property>
+            <attribute name="buttonGroup">
+             <string notr="true">buttonGroupPaperSize</string>
+            </attribute>
+           </widget>
+          </item>
+          <item>
+           <widget class="QRadioButton" name="radioButtonA5">
+            <property name="text">
+             <string>A5 (148 x 210 mm)</string>
+            </property>
+            <property name="_settings_value" stdset="0">
+             <string>a5</string>
+            </property>
+            <attribute name="buttonGroup">
+             <string notr="true">buttonGroupPaperSize</string>
+            </attribute>
+           </widget>
+          </item>
+          <item>
+           <widget class="QRadioButton" name="radioButtonA4">
+            <property name="text">
+             <string>A4 (210x297 mm)</string>
+            </property>
+            <property name="checked">
+             <bool>true</bool>
+            </property>
+            <property name="_settings_value" stdset="0">
+             <string>a4</string>
+            </property>
+            <attribute name="buttonGroup">
+             <string notr="true">buttonGroupPaperSize</string>
+            </attribute>
+           </widget>
+          </item>
+          <item>
+           <widget class="QRadioButton" name="radioButtonA3">
+            <property name="text">
+             <string>A3 (297x420 mm)</string>
+            </property>
+            <property name="_settings_value" stdset="0">
+             <string>a3</string>
+            </property>
+            <attribute name="buttonGroup">
+             <string notr="true">buttonGroupPaperSize</string>
+            </attribute>
+           </widget>
+          </item>
+          <item>
+           <widget class="QRadioButton" name="radioButtonLetter">
+            <property name="text">
+             <string>Letter (8.5x11 in)</string>
+            </property>
+            <property name="_settings_value" stdset="0">
+             <string>letter</string>
+            </property>
+            <attribute name="buttonGroup">
+             <string notr="true">buttonGroupPaperSize</string>
+            </attribute>
+           </widget>
+          </item>
+          <item>
+           <widget class="QRadioButton" name="radioButtonLegal">
+            <property name="text">
+             <string>Legal (8.5x14 in)</string>
+            </property>
+            <property name="_settings_value" stdset="0">
+             <string>legal</string>
+            </property>
+            <attribute name="buttonGroup">
+             <string notr="true">buttonGroupPaperSize</string>
+            </attribute>
+           </widget>
+          </item>
+          <item>
+           <widget class="QRadioButton" name="radioButtonTabloid">
+            <property name="text">
+             <string>Tabloid (11x17 in)</string>
+            </property>
+            <property name="Tabloid" stdset="0">
+             <string/>
+            </property>
+            <property name="_settings_value" stdset="0">
+             <string>tabloid</string>
+            </property>
+            <attribute name="buttonGroup">
+             <string notr="true">buttonGroupPaperSize</string>
+            </attribute>
+           </widget>
           </item>
           <item>
            <spacer name="verticalSpacer">
@@ -297,53 +293,49 @@
          </property>
          <layout class="QVBoxLayout" name="verticalLayout_4">
           <item>
-           <layout class="QVBoxLayout" name="vLayoutOrient">
-            <item>
-             <widget class="QRadioButton" name="rbOPort">
-              <property name="text">
-               <string>Portrait (Vertical)</string>
-              </property>
-              <property name="checked">
-               <bool>true</bool>
-              </property>
-              <property name="_settings_value" stdset="0">
-               <UInt>1</UInt>
-              </property>
-              <attribute name="buttonGroup">
-               <string notr="true">buttonGroupOrientation</string>
-              </attribute>
-             </widget>
-            </item>
-            <item>
-             <widget class="QRadioButton" name="rbOLand">
-              <property name="text">
-               <string>Landscape (Horizontal)</string>
-              </property>
-              <property name="_settings_value" stdset="0">
-               <UInt>2</UInt>
-              </property>
-              <attribute name="buttonGroup">
-               <string notr="true">buttonGroupOrientation</string>
-              </attribute>
-             </widget>
-            </item>
-            <item>
-             <widget class="QRadioButton" name="rbOAuto">
-              <property name="toolTip">
-               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Determine best orientation based on maximum geometry dimension.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-              </property>
-              <property name="text">
-               <string>Auto</string>
-              </property>
-              <property name="_settings_value" stdset="0">
-               <UInt>0</UInt>
-              </property>
-              <attribute name="buttonGroup">
-               <string notr="true">buttonGroupOrientation</string>
-              </attribute>
-             </widget>
-            </item>
-           </layout>
+           <widget class="QRadioButton" name="radioButtonOrientationPortrait">
+            <property name="text">
+             <string>Portrait (Vertical)</string>
+            </property>
+            <property name="checked">
+             <bool>true</bool>
+            </property>
+            <property name="portrait" stdset="0">
+             <string/>
+            </property>
+            <attribute name="buttonGroup">
+             <string notr="true">buttonGroupOrientation</string>
+            </attribute>
+           </widget>
+          </item>
+          <item>
+           <widget class="QRadioButton" name="radioButtonOrientationLandscape">
+            <property name="text">
+             <string>Landscape (Horizontal)</string>
+            </property>
+            <property name="_settings_value" stdset="0">
+             <string>landscape</string>
+            </property>
+            <attribute name="buttonGroup">
+             <string notr="true">buttonGroupOrientation</string>
+            </attribute>
+           </widget>
+          </item>
+          <item>
+           <widget class="QRadioButton" name="radioButtonOrientationAuto">
+            <property name="toolTip">
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Determine best orientation based on maximum geometry dimension.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            </property>
+            <property name="text">
+             <string>Auto</string>
+            </property>
+            <property name="_settings_value" stdset="0">
+             <string>auto</string>
+            </property>
+            <attribute name="buttonGroup">
+             <string notr="true">buttonGroupOrientation</string>
+            </attribute>
+           </widget>
           </item>
          </layout>
         </widget>
@@ -355,167 +347,146 @@
          </property>
          <layout class="QVBoxLayout" name="verticalLayout_2">
           <item>
-           <layout class="QVBoxLayout" name="vLayoutAnnot">
-            <item>
-             <widget class="QCheckBox" name="checkBoxShowFilename">
-              <property name="toolTip">
-               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Include design filename on page.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-              </property>
-              <property name="text">
-               <string>Show Design Filename</string>
-              </property>
-              <property name="checked">
-               <bool>true</bool>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QGroupBox" name="groupScale">
-              <property name="toolTip">
-               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Include rulers on page to confirm 1:1 printing scale.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-              </property>
-              <property name="title">
-               <string>Show Scale</string>
-              </property>
-              <property name="checkable">
-               <bool>true</bool>
-              </property>
-              <layout class="QVBoxLayout" name="verticalLayout_6">
-               <property name="topMargin">
-                <number>0</number>
+           <widget class="QCheckBox" name="checkBoxShowFilename">
+            <property name="toolTip">
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Include design filename on page.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            </property>
+            <property name="text">
+             <string>Show Design Filename</string>
+            </property>
+            <property name="checked">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QGroupBox" name="groupScale">
+            <property name="toolTip">
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Include rulers on page to confirm 1:1 printing scale.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            </property>
+            <property name="title">
+             <string>Show Scale</string>
+            </property>
+            <property name="checkable">
+             <bool>true</bool>
+            </property>
+            <layout class="QVBoxLayout" name="verticalLayout_6">
+             <property name="topMargin">
+              <number>9</number>
+             </property>
+             <property name="bottomMargin">
+              <number>6</number>
+             </property>
+             <item>
+              <widget class="QGroupBox" name="groupGrid">
+               <property name="toolTip">
+                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Include a grid of the selected size on the page.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                </property>
-               <property name="bottomMargin">
-                <number>6</number>
+               <property name="title">
+                <string>Show Grid</string>
                </property>
-               <item>
-                <widget class="QCheckBox" name="checkBoxShowScaleMessage">
-                 <property name="enabled">
-                  <bool>true</bool>
-                 </property>
-                 <property name="toolTip">
-                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Include text describing usage of scale.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                 </property>
-                 <property name="text">
-                  <string>Show Scale Usage</string>
-                 </property>
-                 <property name="checked">
-                  <bool>true</bool>
-                 </property>
-                </widget>
-               </item>
-              </layout>
-             </widget>
-            </item>
-            <item>
-             <widget class="QGroupBox" name="groupGrid">
-              <property name="toolTip">
-               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Include a grid of the selected size on the page.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-              </property>
-              <property name="title">
-               <string>Show Grid</string>
-              </property>
-              <property name="checkable">
-               <bool>true</bool>
-              </property>
-              <property name="checked">
-               <bool>false</bool>
-              </property>
-              <layout class="QVBoxLayout" name="verticalLayout_5">
-               <property name="topMargin">
-                <number>0</number>
+               <property name="checkable">
+                <bool>true</bool>
                </property>
-               <property name="bottomMargin">
-                <number>6</number>
+               <property name="checked">
+                <bool>false</bool>
                </property>
-               <item>
-                <layout class="QHBoxLayout" name="hLayoutGrid">
-                 <item>
-                  <widget class="QRadioButton" name="rbGs_2mm">
-                   <property name="text">
-                    <string>2mm</string>
-                   </property>
-                   <property name="_selected_value" stdset="0">
-                    <double>2.000000000000000</double>
-                   </property>
-                   <attribute name="buttonGroup">
-                    <string notr="true">buttonGroupGridSize</string>
-                   </attribute>
-                  </widget>
-                 </item>
-                 <item>
-                  <widget class="QRadioButton" name="rbGs_2r5mm">
-                   <property name="text">
-                    <string>2.5mm</string>
-                   </property>
-                   <property name="_selected_value" stdset="0">
-                    <double>2.500000000000000</double>
-                   </property>
-                   <attribute name="buttonGroup">
-                    <string notr="true">buttonGroupGridSize</string>
-                   </attribute>
-                  </widget>
-                 </item>
-                 <item>
-                  <widget class="QRadioButton" name="rbGs_4mm">
-                   <property name="text">
-                    <string>4mm</string>
-                   </property>
-                   <property name="_selected_value" stdset="0">
-                    <double>4.000000000000000</double>
-                   </property>
-                   <attribute name="buttonGroup">
-                    <string notr="true">buttonGroupGridSize</string>
-                   </attribute>
-                  </widget>
-                 </item>
-                 <item>
-                  <widget class="QRadioButton" name="rbGs_5mm">
-                   <property name="text">
-                    <string>5mm</string>
-                   </property>
-                   <property name="checked">
-                    <bool>true</bool>
-                   </property>
-                   <property name="_selected_value" stdset="0">
-                    <double>5.000000000000000</double>
-                   </property>
-                   <attribute name="buttonGroup">
-                    <string notr="true">buttonGroupGridSize</string>
-                   </attribute>
-                  </widget>
-                 </item>
-                 <item>
-                  <widget class="QRadioButton" name="rbGs_10mm">
-                   <property name="text">
-                    <string>10mm</string>
-                   </property>
-                   <property name="_selected_value" stdset="0">
-                    <double>10.000000000000000</double>
-                   </property>
-                   <attribute name="buttonGroup">
-                    <string notr="true">buttonGroupGridSize</string>
-                   </attribute>
-                  </widget>
-                 </item>
-                 <item>
-                  <spacer name="horizontalSpacer">
-                   <property name="orientation">
-                    <enum>Qt::Horizontal</enum>
-                   </property>
-                   <property name="sizeHint" stdset="0">
-                    <size>
-                     <width>40</width>
-                     <height>20</height>
-                    </size>
-                   </property>
-                  </spacer>
-                 </item>
-                </layout>
-               </item>
-              </layout>
-             </widget>
-            </item>
-           </layout>
+               <layout class="QHBoxLayout" name="horizontalLayout">
+                <property name="topMargin">
+                 <number>9</number>
+                </property>
+                <property name="bottomMargin">
+                 <number>6</number>
+                </property>
+                <item>
+                 <widget class="QRadioButton" name="rbGs_2mm">
+                  <property name="text">
+                   <string>2mm</string>
+                  </property>
+                  <property name="_selected_value" stdset="0">
+                   <double>2.000000000000000</double>
+                  </property>
+                  <attribute name="buttonGroup">
+                   <string notr="true">buttonGroupGridSize</string>
+                  </attribute>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QRadioButton" name="rbGs_2r5mm">
+                  <property name="text">
+                   <string>2.5mm</string>
+                  </property>
+                  <property name="_selected_value" stdset="0">
+                   <double>2.500000000000000</double>
+                  </property>
+                  <attribute name="buttonGroup">
+                   <string notr="true">buttonGroupGridSize</string>
+                  </attribute>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QRadioButton" name="rbGs_4mm">
+                  <property name="text">
+                   <string>4mm</string>
+                  </property>
+                  <property name="_selected_value" stdset="0">
+                   <double>4.000000000000000</double>
+                  </property>
+                  <attribute name="buttonGroup">
+                   <string notr="true">buttonGroupGridSize</string>
+                  </attribute>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QRadioButton" name="rbGs_5mm">
+                  <property name="text">
+                   <string>5mm</string>
+                  </property>
+                  <property name="checked">
+                   <bool>true</bool>
+                  </property>
+                  <property name="_selected_value" stdset="0">
+                   <double>5.000000000000000</double>
+                  </property>
+                  <attribute name="buttonGroup">
+                   <string notr="true">buttonGroupGridSize</string>
+                  </attribute>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QRadioButton" name="rbGs_10mm">
+                  <property name="text">
+                   <string>10mm</string>
+                  </property>
+                  <property name="_selected_value" stdset="0">
+                   <double>10.000000000000000</double>
+                  </property>
+                  <attribute name="buttonGroup">
+                   <string notr="true">buttonGroupGridSize</string>
+                  </attribute>
+                 </widget>
+                </item>
+               </layout>
+              </widget>
+             </item>
+             <item>
+              <widget class="QCheckBox" name="checkBoxShowScaleMessage">
+               <property name="enabled">
+                <bool>true</bool>
+               </property>
+               <property name="toolTip">
+                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Include text describing usage of scale.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+               </property>
+               <property name="text">
+                <string>Show Scale Usage</string>
+               </property>
+               <property name="checked">
+                <bool>true</bool>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </widget>
           </item>
          </layout>
         </widget>
@@ -582,7 +553,6 @@
  </widget>
  <tabstops>
   <tabstop>pushButtonOk</tabstop>
-  <tabstop>pushButtonCancel</tabstop>
   <tabstop>scrollArea</tabstop>
   <tabstop>radioButtonA6</tabstop>
   <tabstop>radioButtonA5</tabstop>
@@ -591,18 +561,18 @@
   <tabstop>radioButtonLetter</tabstop>
   <tabstop>radioButtonLegal</tabstop>
   <tabstop>radioButtonTabloid</tabstop>
-  <tabstop>rbOPort</tabstop>
-  <tabstop>rbOLand</tabstop>
-  <tabstop>rbOAuto</tabstop>
+  <tabstop>radioButtonOrientationPortrait</tabstop>
+  <tabstop>radioButtonOrientationLandscape</tabstop>
+  <tabstop>radioButtonOrientationAuto</tabstop>
   <tabstop>checkBoxShowFilename</tabstop>
   <tabstop>groupScale</tabstop>
-  <tabstop>checkBoxShowScaleMessage</tabstop>
   <tabstop>groupGrid</tabstop>
   <tabstop>rbGs_2mm</tabstop>
   <tabstop>rbGs_2r5mm</tabstop>
   <tabstop>rbGs_4mm</tabstop>
   <tabstop>rbGs_5mm</tabstop>
   <tabstop>rbGs_10mm</tabstop>
+  <tabstop>checkBoxShowScaleMessage</tabstop>
   <tabstop>groupMetaData</tabstop>
   <tabstop>lineEditMetaDataTitle</tabstop>
   <tabstop>checkBoxMetaDataAuthor</tabstop>
@@ -612,6 +582,7 @@
   <tabstop>checkBoxMetaDataKeywords</tabstop>
   <tabstop>lineEditMetaDataKeywords</tabstop>
   <tabstop>checkBoxAlwaysShowDialog</tabstop>
+  <tabstop>pushButtonCancel</tabstop>
  </tabstops>
  <resources/>
  <connections>
@@ -649,8 +620,8 @@
   </connection>
  </connections>
  <buttongroups>
-  <buttongroup name="buttonGroupPaperSize"/>
   <buttongroup name="buttonGroupOrientation"/>
+  <buttongroup name="buttonGroupPaperSize"/>
   <buttongroup name="buttonGroupGridSize"/>
  </buttongroups>
 </ui>

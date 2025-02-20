@@ -27,6 +27,7 @@
 #include <memory>
 #include <string>
 #include "io/import.h"
+#include "core/AST.h"
 #include "utils/printutils.h"
 #include "geometry/PolySet.h"
 

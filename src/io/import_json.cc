@@ -30,6 +30,7 @@
 #include <string>
 #include "json/json.hpp"
 
+#include "core/AST.h"
 #include "core/Value.h"
 #include "utils/printutils.h"
 #include "core/EvaluationSession.h"

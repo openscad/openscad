@@ -26,15 +26,23 @@
 
 #include "openscad.h"
 
+#include <ostream>
+#include <sstream>
+#include <array>
+#include <memory>
+#include <utility>
+#include <vector>
 #include <chrono>
 #include <iomanip>
 #include <fstream>
 #include <string>
 #include <tuple>
 #include <unordered_map>
-#include "ColorUtil.h"
-#include "Context.h"
-#include "Settings.h"
+#include "geometry/Geometry.h"
+#include "core/AST.h"
+#include "core/ColorUtil.h"
+#include "core/Context.h"
+#include "core/Settings.h"
 
 #ifdef _WIN32
 #include <io.h>
@@ -62,6 +70,8 @@
 #include "core/parsersettings.h"
 #include "core/RenderVariables.h"
 #include "geometry/GeometryEvaluator.h"
+#include "geometry/GeometryUtils.h"
+#include "geometry/PolySet.h"
 #include "glview/ColorMap.h"
 #include "glview/OffscreenView.h"
 #include "glview/RenderSettings.h"
@@ -73,7 +83,7 @@
 #include "platform/PlatformUtils.h"
 #include "RenderStatistic.h"
 #include "utils/StackCheck.h"
-#include "printutils.h"
+#include "utils/printutils.h"
 
 
 #ifdef ENABLE_PYTHON
@@ -367,8 +377,6 @@ Camera get_camera(const po::variables_map& vm)
     }
   }
 
-  auto w = RenderSettings::inst()->img_width;
-  auto h = RenderSettings::inst()->img_height;
   if (vm.count("imgsize")) {
     std::vector<std::string> strs;
     boost::split(strs, vm["imgsize"].as<std::string>(), boost::is_any_of(","));
@@ -377,15 +385,15 @@ Camera get_camera(const po::variables_map& vm)
       exit(1);
     } else {
       try {
-        w = boost::lexical_cast<int>(strs[0]);
-        h = boost::lexical_cast<int>(strs[1]);
+        int w = boost::lexical_cast<int>(strs[0]);
+        int h = boost::lexical_cast<int>(strs[1]);
+        camera.pixel_width = w;
+        camera.pixel_height = h;
       } catch (boost::bad_lexical_cast&) {
         LOG("Need 2 numbers for imgsize");
       }
     }
   }
-  camera.pixel_width = w;
-  camera.pixel_height = h;
 
   return camera;
 }

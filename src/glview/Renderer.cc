@@ -1,6 +1,5 @@
 #include "glview/Renderer.h"
-#include "geometry/PolySet.h"
-#include "geometry/Polygon2d.h"
+#include "geometry/linalg.h"
 #include "glview/ColorMap.h"
 #include "utils/printutils.h"
 #include "platform/PlatformUtils.h"
@@ -18,7 +17,7 @@
 namespace {
 
 GLuint compileShader(const std::string& name, GLuint shader_type) {
-  auto shader_source = RendererUtils::loadShaderSource(name);
+  auto shader_source = ShaderUtils::loadShaderSource(name);
   const GLuint shader = glCreateShader(shader_type);
   auto *c_source = shader_source.c_str();
   glShaderSource(shader, 1, (const GLchar **)&c_source, nullptr);
@@ -57,41 +56,41 @@ std::string loadShaderSource(const std::string& name) {
   return buffer.str();
 }
 
-GLuint compileShaderProgram(const std::string& vs_str, const std::string& fs_str) {
+ShaderUtils::ShaderResource compileShaderProgram(const std::string& vs_str, const std::string& fs_str) {
   int shaderstatus;
   const char *vs_source = vs_str.c_str();
   const char *fs_source = fs_str.c_str();
   // Compile the shaders
-  GL_CHECKD(auto vs = glCreateShader(GL_VERTEX_SHADER));
-  glShaderSource(vs, 1, (const GLchar **)&vs_source, nullptr);
-  glCompileShader(vs);
-  glGetShaderiv(vs, GL_COMPILE_STATUS, &shaderstatus);
+  GL_CHECKD(auto vertex_shader = glCreateShader(GL_VERTEX_SHADER));
+  glShaderSource(vertex_shader, 1, (const GLchar **)&vs_source, nullptr);
+  glCompileShader(vertex_shader);
+  glGetShaderiv(vertex_shader, GL_COMPILE_STATUS, &shaderstatus);
   if (shaderstatus != GL_TRUE) {
     int loglen;
     char logbuffer[1000];
-    glGetShaderInfoLog(vs, sizeof(logbuffer), &loglen, logbuffer);
+    glGetShaderInfoLog(vertex_shader, sizeof(logbuffer), &loglen, logbuffer);
     // FIXME: Use OpenCAD log to error instead of stderr
     fprintf(stderr, __FILE__ ": OpenGL vertex shader Error:\n%.*s\n\n", loglen, logbuffer);
-    return 0;
+    return {};
   }
 
-  GL_CHECKD(auto fs = glCreateShader(GL_FRAGMENT_SHADER));
-  glShaderSource(fs, 1, (const GLchar **)&fs_source, nullptr);
-  glCompileShader(fs);
-  glGetShaderiv(fs, GL_COMPILE_STATUS, &shaderstatus);
+  GL_CHECKD(auto fragment_shader = glCreateShader(GL_FRAGMENT_SHADER));
+  glShaderSource(fragment_shader, 1, (const GLchar **)&fs_source, nullptr);
+  glCompileShader(fragment_shader);
+  glGetShaderiv(fragment_shader, GL_COMPILE_STATUS, &shaderstatus);
   if (shaderstatus != GL_TRUE) {
     int loglen;
     char logbuffer[1000];
-    glGetShaderInfoLog(fs, sizeof(logbuffer), &loglen, logbuffer);
+    glGetShaderInfoLog(fragment_shader, sizeof(logbuffer), &loglen, logbuffer);
     // FIXME: Use OpenCAD log to error instead of stderr
     fprintf(stderr, __FILE__ ": OpenGL fragment shader Error:\n%.*s\n\n", loglen, logbuffer);
-    return 0;
+    return {};
   }
 
   // Link
   auto shader_prog = glCreateProgram();
-  glAttachShader(shader_prog, vs);
-  glAttachShader(shader_prog, fs);
+  glAttachShader(shader_prog, vertex_shader);
+  glAttachShader(shader_prog, fragment_shader);
   GL_CHECKD(glLinkProgram(shader_prog));
 
   GLint status;
@@ -102,7 +101,7 @@ GLuint compileShaderProgram(const std::string& vs_str, const std::string& fs_str
     glGetProgramInfoLog(shader_prog, sizeof(logbuffer), &loglen, logbuffer);
     // FIXME: Use OpenCAD log to error instead of stderr
     fprintf(stderr, __FILE__ ": OpenGL Program Linker Error:\n%.*s\n\n", loglen, logbuffer);
-    return 0;
+    return {};
   } else {
     glValidateProgram(shader_prog);
     glGetProgramiv(shader_prog, GL_VALIDATE_STATUS, &status);
@@ -112,11 +111,15 @@ GLuint compileShaderProgram(const std::string& vs_str, const std::string& fs_str
       glGetProgramInfoLog(shader_prog, sizeof(logbuffer), &loglen, logbuffer);
       // FIXME: Use OpenCAD log to error instead of stderr
       fprintf(stderr, __FILE__ ": OpenGL Program Validation results:\n%.*s\n\n", loglen, logbuffer);
-      return 0;
+      return {};
     }
   }
 
-  return shader_prog;
+  return {
+    .shader_program = shader_prog,
+    .vertex_shader = vertex_shader,
+    .fragment_shader = fragment_shader,
+  };
 }
 
 }  // namespace RendererUtils
@@ -142,79 +145,48 @@ Renderer::Renderer()
 
   Renderer::setColorScheme(ColorMap::inst()->defaultColorScheme());
 
-  setupShader();
   PRINTD("Renderer() end");
 }
 
-void Renderer::setupShader() {
-  renderer_shader_.progid = 0;
-
-  const std::string vs_str = RendererUtils::loadShaderSource("Preview.vert");
-  const std::string fs_str = RendererUtils::loadShaderSource("Preview.frag");
-  const GLuint shader_prog = RendererUtils::compileShaderProgram(vs_str, fs_str);
-
-  renderer_shader_.progid = shader_prog;
-  renderer_shader_.type = RendererUtils::ShaderType::EDGE_RENDERING;
-  renderer_shader_.data.color_rendering.color_area = glGetUniformLocation(shader_prog, "color1");
-  renderer_shader_.data.color_rendering.color_edge = glGetUniformLocation(shader_prog, "color2");
-  renderer_shader_.data.color_rendering.barycentric = glGetAttribLocation(shader_prog, "barycentric");
-}
-
-bool Renderer::getColor(Renderer::ColorMode colormode, Color4f& col) const
+bool Renderer::getColorSchemeColor(Renderer::ColorMode colormode, Color4f& outcolor) const
 {
   if (const auto it = colormap_.find(colormode); it != colormap_.end()) {
-    col = it->second;
+    outcolor = it->second;
     return true;
   }
   return false;
 }
 
-void Renderer::setColor(const float color[4], const RendererUtils::ShaderInfo *shaderinfo) const
+bool Renderer::getShaderColor(Renderer::ColorMode colormode, const Color4f& object_color,
+                              Color4f& outcolor) const
 {
-  if (shaderinfo && shaderinfo->type != RendererUtils::ShaderType::EDGE_RENDERING) {
-    return;
+  // If an object was colored, use that color, except when using the highlight/background operator
+  if ((colormode != ColorMode::BACKGROUND) && (colormode != ColorMode::HIGHLIGHT) && object_color.isValid()) {
+    outcolor = object_color;
+    return true;
   }
 
-  PRINTD("setColor a");
-  Color4f col;
-  getColor(ColorMode::MATERIAL, col);
-  float c[4] = {color[0], color[1], color[2], color[3]};
-  if (c[0] < 0) c[0] = col[0];
-  if (c[1] < 0) c[1] = col[1];
-  if (c[2] < 0) c[2] = col[2];
-  if (c[3] < 0) c[3] = col[3];
-  glColor4fv(c);
-#ifdef ENABLE_OPENCSG
-  if (shaderinfo) {
-    glUniform4f(shaderinfo->data.color_rendering.color_area, c[0], c[1], c[2], c[3]);
-    glUniform4f(shaderinfo->data.color_rendering.color_edge, (c[0] + 1) / 2, (c[1] + 1) / 2, (c[2] + 1) / 2, 1.0);
-  }
-#endif
-}
-
-// returns the color which has been set, which may differ from the color input parameter
-Color4f Renderer::setColor(ColorMode colormode, const float color[4], const RendererUtils::ShaderInfo *shaderinfo) const
-{
-  PRINTD("setColor b");
   Color4f basecol;
-  if (getColor(colormode, basecol)) {
+  if (Renderer::getColorSchemeColor(colormode, basecol)) {
+    // In highlight/background mode, pull unset colors from the basecol
     if (colormode == ColorMode::BACKGROUND || colormode != ColorMode::HIGHLIGHT) {
-      basecol = {color[0] >= 0 ? color[0] : basecol[0],
-                 color[1] >= 0 ? color[1] : basecol[1],
-                 color[2] >= 0 ? color[2] : basecol[2],
-                 color[3] >= 0 ? color[3] : basecol[3]};
+      basecol = Color4f(object_color[0] >= 0 ? object_color[0] : basecol[0], object_color[1] >= 0 ? object_color[1] : basecol[1],
+                        object_color[2] >= 0 ? object_color[2] : basecol[2], object_color[3] >= 0 ? object_color[3] : basecol[3]);
     }
-    setColor(basecol.data(), shaderinfo);
+    Color4f col;
+    Renderer::getColorSchemeColor(ColorMode::MATERIAL, col);
+    outcolor = basecol;
+    if (outcolor[0] < 0) outcolor[0] = col[0];
+    if (outcolor[1] < 0) outcolor[1] = col[1];
+    if (outcolor[2] < 0) outcolor[2] = col[2];
+    if (outcolor[3] < 0) outcolor[3] = col[3];
+    return true;
   }
-  return basecol;
+
+  return false;
 }
 
-void Renderer::setColor(ColorMode colormode, const RendererUtils::ShaderInfo *shaderinfo) const
-{
-  PRINTD("setColor c");
-  float c[4] = {-1, -1, -1, -1};
-  setColor(colormode, c, shaderinfo);
-}
+
 
 /* fill colormap_ with matching entries from the colorscheme. note
    this does not change Highlight or Background colors as they are not
@@ -235,11 +207,9 @@ std::vector<SelectedObject> Renderer::findModelObject(Vector3d near_pt, Vector3d
 #else //NULLGL
 
 Renderer::Renderer() : colorscheme_(nullptr) {}
-bool Renderer::getColor(Renderer::ColorMode colormode, Color4f& col) const { return false; }
-std::string RendererUtils::loadShaderSource(const std::string& name) { return ""; }
-void Renderer::setColor(const float color[4], const RendererUtils::ShaderInfo *shaderinfo) const {}
-Color4f Renderer::setColor(ColorMode colormode, const float color[4], const RendererUtils::ShaderInfo *shaderinfo) const { return {}; }
-void Renderer::setColor(ColorMode colormode, const RendererUtils::ShaderInfo *shaderinfo) const {}
+bool Renderer::getColorSchemeColor(Renderer::ColorMode colormode, Color4f& outcolor) const {return false; }
+bool Renderer::getShaderColor(Renderer::ColorMode colormode, const Color4f& object_color, Color4f& outcolor) const { return false; }
+std::string ShaderUtils::loadShaderSource(const std::string& name) { return ""; }
 void Renderer::setColorScheme(const ColorScheme& cs) {}
 std::vector<SelectedObject> Renderer::findModelObject(Vector3d near_pt, Vector3d far_pt, int mouse_x, int mouse_y, double tolerance) { return {}; }
 

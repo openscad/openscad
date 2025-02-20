@@ -1,4 +1,7 @@
 #include "io/export.h"
+#include "geometry/Geometry.h"
+#include "geometry/linalg.h"
+#include "geometry/Polygon2d.h"
 #include "geometry/PolySet.h"
 #include "utils/printutils.h"
 #include "utils/version_helper.h"

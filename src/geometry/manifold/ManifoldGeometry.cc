@@ -1,5 +1,7 @@
 // Portions of this file are Copyright 2023 Google LLC, and licensed under GPL2+. See COPYING.
 #include "geometry/manifold/ManifoldGeometry.h"
+#include "geometry/Geometry.h"
+#include "geometry/linalg.h"
 #include "geometry/Polygon2d.h"
 #include <map>
 #include <set>
@@ -179,7 +181,7 @@ std::shared_ptr<PolySet> ManifoldGeometry::toPolySet() const {
     }
 
     auto colorIndex = getColorIndex(id);
-    for (int i = start; i < end; i += 3) {
+    for (size_t i = start; i < end; i += 3) {
       ps->indices.push_back({
           static_cast<int>(mesh.triVerts[i]),
           static_cast<int>(mesh.triVerts[i + 1]),
@@ -287,8 +289,8 @@ std::shared_ptr<ManifoldGeometry> minkowskiOp(const ManifoldGeometry& lhs, const
     LOG(message_group::Warning,
         "Nef minkowski hard-crashed");
   }
-  return {};
 #endif
+  return {};
 }
 
 ManifoldGeometry ManifoldGeometry::operator+(const ManifoldGeometry& other) const {

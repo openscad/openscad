@@ -1,4 +1,5 @@
 #include "glview/GLView.h"
+#include "geometry/linalg.h"
 #include "glview/system-gl.h"
 #include "glview/ColorMap.h"
 #include "glview/RenderSettings.h"
@@ -21,7 +22,6 @@ GLView::GLView()
 {
   aspectratio = 1;
   showedges = false;
-  showfaces = true;
   showaxes = false;
   showcrosshairs = false;
   showscale = false;
@@ -34,6 +34,40 @@ GLView::GLView()
   static int sId = 0;
   this->opencsg_id = sId++;
 #endif
+}
+
+GLView::~GLView()
+{
+  teardownShader();
+}
+
+void GLView::setupShader() {
+  if (edge_shader) return;
+
+  auto resource = ShaderUtils::compileShaderProgram(ShaderUtils::loadShaderSource("ViewEdges.vert"),
+                                                    ShaderUtils::loadShaderSource("ViewEdges.frag"));
+
+  edge_shader = std::make_unique<ShaderUtils::ShaderInfo>(ShaderUtils::ShaderInfo{
+    .resource = resource,
+    .type = ShaderUtils::ShaderType::EDGE_RENDERING,
+    .uniforms = {
+    },
+    .attributes = {
+      {"barycentric", glGetAttribLocation(resource.shader_program, "barycentric")},
+    },
+  });
+}
+
+void GLView::teardownShader() {
+  if (edge_shader->resource.shader_program) {
+    glDeleteProgram(edge_shader->resource.shader_program);
+  }
+  if (edge_shader->resource.vertex_shader) {
+    glDeleteShader(edge_shader->resource.vertex_shader);
+  }
+  if (edge_shader->resource.fragment_shader) {
+    glDeleteShader(edge_shader->resource.fragment_shader);
+  }
 }
 
 void GLView::setRenderer(std::shared_ptr<Renderer> r)
@@ -72,6 +106,9 @@ void GLView::resizeGL(int w, int h)
   cam.pixel_height = h;
   glViewport(0, 0, w, h);
   aspectratio = 1.0 * w / h;
+
+  // FIXME: Only run once, not every time the window is resized
+  setupShader();
 }
 
 void GLView::setCamera(const Camera& cam)
@@ -168,8 +205,8 @@ void GLView::paintGL()
     // FIXME: This belongs in the OpenCSG renderer, but it doesn't know about this ID yet
     OpenCSG::setContext(this->opencsg_id);
 #endif
-    this->renderer->prepare(showfaces, showedges);
-    this->renderer->draw(showfaces, showedges);
+    this->renderer->prepare(edge_shader.get());
+    this->renderer->draw(showedges, edge_shader.get());
   }
   Vector3d eyedir(this->modelview[2],this->modelview[6],this->modelview[10]);
   glColor3f(1,0,0);
@@ -182,6 +219,24 @@ void GLView::paintGL()
   }
   glDisable(GL_LIGHTING);
   if (showaxes) GLView::showSmallaxes(axescolor);
+
+  // Workaround for inconsistent QT behavior related to handling custom OpenGL widgets that
+  // leave non opaque alpha values in final output.
+  // On wayland that can cause window to become transparent or blurry trail effect in the
+  // parts that contain partially transparent objects.
+  //
+  // At the end of rendering clear alpha value, so that it doesn't matter how rest of the
+  // compositing stack at QT and desktop level would interpret transparent pixels.
+  //
+  // Solves https://github.com/openscad/openscad/issues/3689.
+  //
+  // Originally developed by @karliss for FreeCAD (https://github.com/FreeCAD/FreeCAD/pull/19499).
+  GLboolean mask[4];
+  glGetBooleanv(GL_COLOR_WRITEMASK, mask);
+  glColorMask(false, false, false, true);
+  glClearColor(0, 0, 0, 1);
+  glClear(GL_COLOR_BUFFER_BIT);
+  glColorMask(mask[0], mask[1], mask[2], mask[3]);
 }
 
 #ifdef ENABLE_OPENCSG

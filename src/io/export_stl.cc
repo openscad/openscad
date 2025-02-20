@@ -25,8 +25,11 @@
  */
 
 #include "io/export.h"
+#include "geometry/Geometry.h"
+#include "geometry/linalg.h"
 #include "geometry/PolySet.h"
 #include "geometry/PolySetUtils.h"
+#include <sstream>
 #include <algorithm>
 #include <cassert>
 #include <array>
@@ -299,7 +302,7 @@ void export_stl(const std::shared_ptr<const Geometry>& geom, std::ostream& outpu
     // ASCII mode: Write directly to the output stream
     setlocale(LC_NUMERIC, "C"); // Ensure radix is . (not ,) in output
     output << "solid OpenSCAD_Model\n";
-    uint64_t triangle_count = append_stl(geom, output, binary);
+    append_stl(geom, output, binary);
     output << "endsolid OpenSCAD_Model\n";
     setlocale(LC_NUMERIC, ""); // Restore default locale
   }

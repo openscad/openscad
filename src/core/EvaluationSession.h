@@ -7,6 +7,7 @@
 #include <boost/optional.hpp>
 
 #include "core/ContextMemoryManager.h"
+#include "core/AST.h"
 #include "core/function.h"
 #include "core/module.h"
 #include "core/Value.h"

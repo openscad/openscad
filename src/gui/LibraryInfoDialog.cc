@@ -10,10 +10,10 @@ LibraryInfoDialog::LibraryInfoDialog(const QString& rendererInfo)
 {
   setupUi(this);
   connect(this->okButton, SIGNAL(clicked()), this, SLOT(accept()));
-  update_library_info(rendererInfo);
+  updateLibraryInfo(rendererInfo);
 }
 
-void LibraryInfoDialog::update_library_info(const QString& rendererInfo)
+void LibraryInfoDialog::updateLibraryInfo(const QString& rendererInfo)
 {
   //Get library infos
   QString info(LibraryInfo::info().c_str());

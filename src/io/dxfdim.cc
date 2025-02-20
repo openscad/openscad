@@ -25,6 +25,7 @@
  */
 
 #include "io/dxfdim.h"
+#include "core/AST.h"
 #include "core/Value.h"
 #include "core/function.h"
 #include "io/DxfData.h"

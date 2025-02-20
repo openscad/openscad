@@ -25,6 +25,7 @@
  */
 
 #include "geometry/PolySetBuilder.h"
+#include "geometry/linalg.h"
 #include "geometry/PolySet.h"
 #include "geometry/Geometry.h"
 
@@ -182,7 +183,7 @@ void PolySetBuilder::appendPolySet(const PolySet& ps)
 
     auto nColors = ps.colors.size();
     std::vector<uint32_t> color_map(nColors);
-    for (int i = 0; i < nColors; i++) {
+    for (size_t i = 0; i < nColors; i++) {
       const auto& color = ps.colors[i];
       // Find index of color in colors_, or add it if it doesn't exist
       auto it = std::find(colors_.begin(), colors_.end(), color);

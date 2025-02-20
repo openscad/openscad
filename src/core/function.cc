@@ -26,6 +26,7 @@
 
 #include "core/function.h"
 
+#include "core/AST.h"
 #include "core/Arguments.h"
 #include "core/Expression.h"
 

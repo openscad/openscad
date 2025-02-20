@@ -5,6 +5,8 @@
 
 #include <memory>
 #include "geometry/manifold/manifoldutils.h"
+#include "geometry/Geometry.h"
+#include "core/AST.h"
 #include "geometry/manifold/ManifoldGeometry.h"
 #include "core/node.h"
 #include "core/progress.h"
