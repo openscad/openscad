@@ -1,0 +1,267 @@
+from distutils.core import setup, Extension
+
+def main():
+    root =  [
+              "src/Feature.cc",
+              "src/FontCache.cc",
+              "src/version.cc",
+              "src/handle_dep.cc" 
+            ]
+
+    python =[
+              "src/python/pyfunctions.cc",
+              "src/python/pydata.cc",
+              "src/python/pyopenscad.cc",
+              "src/python/pip_fixer.cc"
+            ] 
+    geometry = [
+              "src/geometry/GeometryEvaluator.cc",
+              "src/geometry/rotextrude.cc",
+              "src/geometry/skin.cc",
+              "src/geometry/linear_extrude.cc",
+              "src/geometry/cgal/CGALCache.cc",
+              "src/geometry/cgal/cgalutils.cc",
+              "src/geometry/cgal/cgalutils-kernel.cc",
+              "src/geometry/cgal/cgalutils-applyops.cc",
+              "src/geometry/cgal/cgalutils-mesh.cc",
+              "src/geometry/cgal/cgalutils-triangulate.cc",
+              "src/geometry/cgal/cgalutils-tess.cc",
+              "src/geometry/cgal/cgalutils-orient.cc",
+              "src/geometry/cgal/cgalutils-mesh.cc",
+              "src/geometry/cgal/CGAL_Nef_polyhedron.cc",
+              "src/geometry/cgal/cgalutils-polyhedron.cc",
+              "src/geometry/cgal/cgalutils-convex.cc",
+              "src/geometry/cgal/cgalutils-project.cc",
+              "src/geometry/cgal/cgalutils-closed.cc",
+              "src/geometry/Geometry.cc",
+              "src/geometry/GeometryCache.cc",
+              "src/geometry/GeometryUtils.cc",
+              "src/geometry/Polygon2d.cc",
+              "src/geometry/PolySet.cc",
+              "src/geometry/PolySetBuilder.cc",
+              "src/geometry/PolySetUtils.cc",
+              "src/geometry/Surface.cc",
+              "src/geometry/Curve.cc",
+              "src/geometry/ClipperUtils.cc",
+              "src/geometry/linalg.cc",
+              "src/geometry/manifold/ManifoldGeometry.cc",
+              "src/geometry/manifold/manifold-applyops.cc",
+              "src/geometry/manifold/manifoldutils.cc",
+              "src/geometry/manifold/manifold-applyops-minkowski.cc",
+              "src/geometry/boolean_utils.cc" ]
+    ext= [
+              "src/ext/libtess2/Source/bucketalloc.c",
+              "src/ext/libtess2/Source/sweep.c",
+              "src/ext/libtess2/Source/mesh.c",
+              "src/ext/libtess2/Source/dict.c",
+              "src/ext/libtess2/Source/tess.c",
+              "src/ext/libtess2/Source/geom.c",
+              "src/ext/libtess2/Source/priorityq.c" ]
+    nodes = [
+              "src/core/primitives.cc",
+              "src/core/CgalAdvNode.cc",
+              "src/core/FilletNode.cc",
+              "src/core/ProjectionNode.cc",
+              "src/core/SurfaceNode.cc",
+              "src/core/ColorNode.cc",
+              "src/core/ImportNode.cc",
+              "src/core/PullNode.cc",
+              "src/core/TextNode.cc",
+              "src/core/ConcatNode.cc",
+              "src/core/LinearExtrudeNode.cc",
+              "src/core/RotateExtrudeNode.cc",
+              "src/core/RenderNode.cc",
+              "src/core/TextureNode.cc",
+              "src/core/CSGNode.cc",
+              "src/core/OffsetNode.cc",
+              "src/core/RoofNode.cc",
+              "src/core/TransformNode.cc",
+              "src/core/CsgOpNode.cc",
+              "src/core/OversampleNode.cc",
+              "src/core/WrapNode.cc",
+              "src/core/DebugNode.cc",
+              "src/core/PathExtrudeNode.cc",
+              "src/core/GroupModule.cc",
+              "src/core/SkinNode.cc"
+            ]
+    context = [
+              "src/core/ContextFrame.cc",
+              "src/core/ScopeContext.cc",
+              "src/core/LocalScope.cc",
+              "src/core/Context.cc",
+              "src/core/ContextMemoryManager.cc",
+              "src/core/BuiltinContext.cc",
+              "src/core/EvaluationSession.cc",
+              "src/core/Parameters.cc",
+              "src/core/SourceFileCache.cc",
+            ]
+    arith = [
+              "src/core/FunctionType.cc",
+              "src/core/UndefType.cc",
+              "src/core/Value.cc",
+              "src/core/Assignment.cc",
+              "src/core/Arguments.cc",
+              "src/core/Expression.cc",
+              "src/core/SourceFile.cc",
+            ]
+    language = [
+              "src/core/ModuleInstantiation.cc",
+              "src/core/UserModule.cc",
+              "src/core/module.cc",
+              "src/core/Children.cc",
+              "src/core/AST.cc",
+              "src/core/Builtins.cc",
+              "src/core/builtin_functions.cc",
+              "src/core/control.cc" ,
+              "src/core/function.cc"
+            ]
+    core = [
+              "src/core/FreetypeRenderer.cc",
+              "src/core/DrawingCallback.cc",
+              "src/core/customizer/Annotation.cc",
+              "src/core/node.cc",
+              "src/core/node_clone.cc",
+              "src/core/progress.cc",
+              "src/core/parsersettings.cc",
+              "src/core/NodeVisitor.cc",
+              "src/core/Settings.cc",
+              "src/core/Tree.cc",
+              "src/core/ColorUtil.cc",
+              "src/core/NodeDumper.cc",
+              "src/core/StatCache.cc",
+              ]  + language + arith + context + nodes
+    io_export = [
+              "src/io/export_stl.cc",
+              "src/io/export_dxf.cc",
+              "src/io/export_off.cc",
+              "src/io/export_pov.cc",
+              "src/io/export_svg.cc",
+              "src/io/export_foldable.cc",
+              "src/io/export_ps.cc",
+              "src/io/export_wrl.cc",
+              "src/io/export_amf.cc",
+              "src/io/export_nef.cc",
+              "src/io/export_pdf.cc",
+              "src/io/export_obj.cc",
+              "src/io/export_step.cc"
+            ]
+    io_import = [            
+              "src/io/import_json.cc",
+              "src/io/import_obj.cc",
+              "src/io/import_step.cc",
+              "src/io/import_3mf_dummy.cc",
+              "src/io/import_amf.cc",
+              "src/io/import_nef.cc",
+              "src/io/import_off.cc",
+              "src/io/import_stl.cc" ]
+    io = [              
+              "src/io/export.cc",
+              "src/io/DxfData.cc",
+              "src/io/fileutils.cc",
+              "src/io/StepKernel.cc",
+              "src/io/dxfdim.cc" ] + io_export + io_import
+    manifold = [
+              "submodules/manifold/src/manifold.cpp",
+              "submodules/manifold/src/quickhull.cpp",
+              "submodules/manifold/src/boolean_result.cpp",
+              "submodules/manifold/src/cross_section/cross_section.cpp",
+              "submodules/manifold/src/constructors.cpp",
+              "submodules/manifold/src/smoothing.cpp",
+              "submodules/manifold/src/subdivision.cpp",
+              "submodules/manifold/src/properties.cpp",
+              "submodules/manifold/src/face_op.cpp",
+              "submodules/manifold/src/boolean3.cpp",
+              "submodules/manifold/src/edge_op.cpp",
+              "submodules/manifold/src/csg_tree.cpp",
+              "submodules/manifold/src/sort.cpp",
+              "submodules/manifold/src/sdf.cpp",
+              "submodules/manifold/src/polygon.cpp",
+              "submodules/manifold/src/impl.cpp" ]
+    clipper = [
+              "submodules/Clipper2/CPP/Clipper2Lib/src/clipper.engine.cpp",
+              "submodules/Clipper2/CPP/Clipper2Lib/src/clipper.offset.cpp",
+              "submodules/Clipper2/CPP/Clipper2Lib/src/clipper.rectclip.cpp" ]
+    utils = [
+              "src/utils/printutils.cc",
+              "src/utils/degree_trig.cc",
+              "src/utils/hash.cc",
+              "src/utils/svg.cc",
+              "src/utils/calc.cc" ]
+    platform = [
+              "src/platform/PlatformUtils.cc",
+              "src/platform/PlatformUtils-posix.cc"
+            ]
+    glview = [
+              "src/glview/Camera.cc",
+              "src/glview/ColorMap.cc",
+              "src/glview/RenderSettings.cc" ]
+    lex_yacc = [
+              "build/objects/parser.cxx",
+              "build/objects/lexer.cxx"
+              ]
+    lodepng = [ "src/ext/lodepng/lodepng.cpp" ]
+
+    pythonscad_ext = Extension("openscad"
+        , sources = python + geometry + ext + io + core +  manifold + 
+        clipper + utils + platform  + glview + lex_yacc + lodepng
+        ,include_dirs = [
+                  ".",
+                  "src",
+                  "src/core",
+                  "src/ext",
+                  "src/geometry",
+                  "src/io",
+                  "src/utils",
+                  "src/platform",
+                  "src/ext/libtess2/Include",
+                  "submodules/Clipper2/CPP/Clipper2Lib/include",
+                  "submodules/manifold/include",
+                  "/usr/include/eigen3",
+                  "/usr/include/harfbuzz",
+                  "/usr/include/libxml2",
+                  "/usr/include/freetype2",
+                  "/usr/include/glib-2.0",
+                  "/usr/include/cairo",
+                  "/usr/lib64/glib-2.0/include"
+                ],libraries=[
+                  "freetype",
+                  "jpeg",
+                  "xml2",
+                  "fontconfig",
+                  "double-conversion",
+                  "gmp",
+                  "mpfr"
+                ],define_macros=[
+                  ("ENABLE_PYTHON","1"),
+                  ("ENABLE_CGAL","1"),
+                  ("ENABLE_MANIFOLD","1"),
+                  ("ENABLE_PIP","1"),
+                  ("MANIFOLD_PAR","-1"),
+                  ("OPENSCAD_YEAR","2025"),
+                  ("OPENSCAD_MONTH","2"),
+                  ("STACKSIZE","524288")
+                ],undef_macros=[
+                ], extra_link_args=[
+                        "-l", "glib-2.0" 
+                ],  extra_compile_args=[
+                ])
+
+    setup(name="pythonscad",
+          version="2025.2",
+          description="Python interface to openscad",
+          url="https://pythonscad.org",
+          author="Guenther Sohler",
+          author_email="guenther.sohler@gmail.com",
+          license="MIT",
+          classifiers=[
+            "Programming Language :: Python :: 3",
+            "Programming Language :: Python :: 3.11" ],
+          ext_modules=[ pythonscad_ext ]
+          )
+
+if __name__ == "__main__":
+    main()
+
+
+'''
+'''
