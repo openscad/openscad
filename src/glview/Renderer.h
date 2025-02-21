@@ -57,7 +57,8 @@ public:
     EMPTY_SPACE
   };
 
-  bool getColor(ColorMode colormode, Color4f& col) const;
+  bool getColorSchemeColor(ColorMode colormode, Color4f& outcolor) const;
+  bool getShaderColor(Renderer::ColorMode colormode, const Color4f& object_color, Color4f& outcolor) const;
   virtual void setColorScheme(const ColorScheme& cs);
 
   virtual std::vector<SelectedObject> findModelObject(Vector3d near_pt, Vector3d far_pt, int mouse_x, int mouse_y, double tolerance);

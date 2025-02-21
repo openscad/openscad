@@ -377,8 +377,6 @@ Camera get_camera(const po::variables_map& vm)
     }
   }
 
-  auto w = RenderSettings::inst()->img_width;
-  auto h = RenderSettings::inst()->img_height;
   if (vm.count("imgsize")) {
     std::vector<std::string> strs;
     boost::split(strs, vm["imgsize"].as<std::string>(), boost::is_any_of(","));
@@ -387,15 +385,15 @@ Camera get_camera(const po::variables_map& vm)
       exit(1);
     } else {
       try {
-        w = boost::lexical_cast<int>(strs[0]);
-        h = boost::lexical_cast<int>(strs[1]);
+        int w = boost::lexical_cast<int>(strs[0]);
+        int h = boost::lexical_cast<int>(strs[1]);
+        camera.pixel_width = w;
+        camera.pixel_height = h;
       } catch (boost::bad_lexical_cast&) {
         LOG("Need 2 numbers for imgsize");
       }
     }
   }
-  camera.pixel_width = w;
-  camera.pixel_height = h;
 
   return camera;
 }

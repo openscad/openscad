@@ -100,7 +100,6 @@
 #include "glview/preview/ThrownTogetherRenderer.h"
 #include "glview/preview/CSGTreeNormalizer.h"
 #include "gui/QGLView.h"
-#include "gui/MouseSelector.h"
 #ifdef Q_OS_MACOS
 #include "platform/CocoaUtils.h"
 #endif
@@ -465,7 +464,7 @@ MainWindow::MainWindow(const QStringList& filenames) :
   connect(this->fileActionReload, SIGNAL(triggered()), this, SLOT(actionReload()));
   connect(this->fileActionRevoke, SIGNAL(triggered()), this, SLOT(actionRevokeTrustedFiles()));
   connect(this->fileActionClose, SIGNAL(triggered()), tabManager, SLOT(closeCurrentTab()));
-  connect(this->fileActionQuit, SIGNAL(triggered()), this, SLOT(quit()));
+  connect(this->fileActionQuit, SIGNAL(triggered()), scadApp, SLOT(quit()), Qt::QueuedConnection);
   connect(this->fileShowLibraryFolder, SIGNAL(triggered()), this, SLOT(actionShowLibraryFolder()));
 #ifndef __APPLE__
   auto shortcuts = this->fileActionSave->shortcuts();
@@ -772,7 +771,6 @@ MainWindow::MainWindow(const QStringList& filenames) :
 
   updateExportActions();
 
-  this->selector = std::make_unique<MouseSelector>(this->qglview);
   activeEditor->setFocus();
   onTabManagerEditorChanged(activeEditor);
 }
@@ -1045,10 +1043,10 @@ MainWindow::~MainWindow()
   // so no need to delete it.
   delete parsedFile;
   scadApp->windowManager.remove(this);
-  if (scadApp->windowManager.getWindows().size() == 0) {
+  if (scadApp->windowManager.getWindows().empty()) {
     // Quit application even in case some other windows like
     // Preferences are still open.
-    this->quit();
+    scadApp->quit(); 
   }
 }
 
@@ -2306,30 +2304,19 @@ void MainWindow::leftClick(QPoint mouse)
  * Use the generated ID and try to find it within the list of products
  * And finally move the cursor to the beginning of the selected object in the editor
  */
-void MainWindow::rightClick(QPoint mouse)
+void MainWindow::rightClick(QPoint position)
 {
   // selecting without a renderer?!
   if (!this->qglview->renderer) {
     return;
   }
-
-  // selecting without select object?!
-  if (!this->selector) {
-    return;
-  }
-
   // Nothing to select
   if (!this->rootProduct) {
     return;
   }
 
-  this->qglview->renderer->prepare(&this->selector->shaderinfo);
-
-  // Update the selector with the right image size
-  this->selector->reset(this->qglview);
-
   // Select the object at mouse coordinates
-  int index = this->selector->select(this->qglview->getRenderer(), mouse.x(), mouse.y());
+  int index = this->qglview->pickObject(position);
   std::deque<std::shared_ptr<const AbstractNode>> path;
   std::shared_ptr<const AbstractNode> result = this->rootNode->getNodeByID(index, path);
 
@@ -2380,7 +2367,7 @@ void MainWindow::rightClick(QPoint mouse)
       }
     }
 
-    tracemenu.exec(this->qglview->mapToGlobal(mouse));
+    tracemenu.exec(this->qglview->mapToGlobal(position));
   } else {
     clearAllSelectionIndicators();
   }
@@ -2802,25 +2789,23 @@ void MainWindow::actionExportFileFormat(int fmt)
   switch (format) {
   case FileFormat::PDF:
   {
-    auto exportPdfDialog = new ExportPdfDialog();
-    exportPdfDialog->deleteLater();
-    if (exportPdfDialog->exec() == QDialog::Rejected) {
+    ExportPdfDialog exportPdfDialog;
+    if (exportPdfDialog.exec() == QDialog::Rejected) {
       return;
     }
 
-    exportInfo.optionsPdf = exportPdfDialog->getOptions();
+    exportInfo.optionsPdf = exportPdfDialog.getOptions();
     actionExport(2, exportInfo);
   }
   break;
   case FileFormat::_3MF:
   {
-    auto export3mfDialog = new Export3mfDialog();
-    export3mfDialog->deleteLater();
-    if (export3mfDialog->exec() == QDialog::Rejected) {
+    Export3mfDialog export3mfDialog;
+    if (export3mfDialog.exec() == QDialog::Rejected) {
       return;
     }
 
-    exportInfo.options3mf = export3mfDialog->getOptions();
+    exportInfo.options3mf = export3mfDialog.getOptions();
     actionExport(3, exportInfo);
   }
   break;
@@ -3539,17 +3524,6 @@ void MainWindow::setFont(const QString& family, uint size)
   if (size > 0) font.setPointSize(size);
   font.setStyleHint(QFont::TypeWriter);
   activeEditor->setFont(font);
-}
-
-void MainWindow::quit()
-{
-  QCloseEvent ev;
-  QApplication::sendEvent(QApplication::instance(), &ev);
-  if (ev.isAccepted()) QApplication::instance()->quit();
-  // FIXME: Cancel any CGAL calculations
-#ifdef Q_OS_MACOS
-  CocoaUtils::endApplication();
-#endif
 }
 
 void MainWindow::consoleOutput(const Message& msgObj, void *userdata)

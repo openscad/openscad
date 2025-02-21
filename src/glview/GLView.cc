@@ -51,8 +51,6 @@ void GLView::setupShader() {
     .resource = resource,
     .type = ShaderUtils::ShaderType::EDGE_RENDERING,
     .uniforms = {
-      {"color_area", glGetUniformLocation(resource.shader_program, "color_area")},
-      {"color_edge", glGetUniformLocation(resource.shader_program, "color_edge")},
     },
     .attributes = {
       {"barycentric", glGetAttribLocation(resource.shader_program, "barycentric")},
@@ -221,6 +219,24 @@ void GLView::paintGL()
   }
   glDisable(GL_LIGHTING);
   if (showaxes) GLView::showSmallaxes(axescolor);
+
+  // Workaround for inconsistent QT behavior related to handling custom OpenGL widgets that
+  // leave non opaque alpha values in final output.
+  // On wayland that can cause window to become transparent or blurry trail effect in the
+  // parts that contain partially transparent objects.
+  //
+  // At the end of rendering clear alpha value, so that it doesn't matter how rest of the
+  // compositing stack at QT and desktop level would interpret transparent pixels.
+  //
+  // Solves https://github.com/openscad/openscad/issues/3689.
+  //
+  // Originally developed by @karliss for FreeCAD (https://github.com/FreeCAD/FreeCAD/pull/19499).
+  GLboolean mask[4];
+  glGetBooleanv(GL_COLOR_WRITEMASK, mask);
+  glColorMask(false, false, false, true);
+  glClearColor(0, 0, 0, 1);
+  glClear(GL_COLOR_BUFFER_BIT);
+  glColorMask(mask[0], mask[1], mask[2], mask[3]);
 }
 
 #ifdef ENABLE_OPENCSG

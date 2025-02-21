@@ -34,7 +34,6 @@ class VBORenderer : public Renderer
 {
 public:
   VBORenderer();
-  virtual bool getShaderColor(Renderer::ColorMode colormode, const Color4f& col, Color4f& outcolor) const;
   virtual size_t calcNumVertices(const std::shared_ptr<CSGProducts>& products, bool unique_geometry = false) const;
   virtual size_t calcNumVertices(const CSGChainObject& csgobj, bool unique_geometry = false) const;
   virtual size_t calcNumVertices(const PolySet& polyset) const;
@@ -42,7 +41,6 @@ public:
   virtual size_t calcNumEdgeVertices(const Polygon2d& polygon) const;
 
   void add_shader_pointers(VBOBuilder& vbo_builder, const ShaderUtils::ShaderInfo *shaderinfo); // This could stay protected, were it not for VertexStateManager
-  void add_color(VBOBuilder& vbo_builder, const Color4f& color, const ShaderUtils::ShaderInfo *shaderinfo);
 
 protected:
   void add_shader_data(VBOBuilder& vbo_builder);
