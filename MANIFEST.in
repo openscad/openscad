@@ -1,0 +1,15 @@
+include ./src/*.h
+include ./src/platform/*.h
+include ./src/python/*.h
+include ./src/io/*.h
+include ./src/libsvg/*.h
+include ./src/core/*.h
+include ./src/core/*.hxx
+include ./src/core/customizer/*.h
+include ./src/utils/*.h
+include ./src/glview/*.h
+recursive-include ./src/ext/ *.h *.hpp
+recursive-include ./src/geometry/ *.h
+recursive-include ./src/gui/ *.h
+recursive-include ./submodules/ *.h
+

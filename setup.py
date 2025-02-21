@@ -202,7 +202,7 @@ def main():
     lodepng = [ "src/ext/lodepng/lodepng.cpp" ]
 
     pythonscad_ext = Extension("openscad"
-        , sources = python + geometry + ext + io + core +  manifold + 
+        , sources = root + python + geometry + ext + io + core +  manifold + 
         clipper + utils + platform  + glview + lex_yacc + lodepng
         ,include_dirs = [
                   ".",
@@ -235,6 +235,7 @@ def main():
                   ("ENABLE_PYTHON","1"),
                   ("ENABLE_CGAL","1"),
                   ("ENABLE_MANIFOLD","1"),
+                  ("EXPERIMENTAL","1"),
                   ("ENABLE_PIP","1"),
                   ("MANIFOLD_PAR","-1"),
                   ("OPENSCAD_YEAR","2025"),
