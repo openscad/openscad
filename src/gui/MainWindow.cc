@@ -143,9 +143,7 @@
 #include "gui/QSettingsCached.h"
 
 #ifdef ENABLE_PYTHON
-extern std::shared_ptr<AbstractNode> python_result_node;
-std::string evaluatePython(const std::string& code, double time);
-extern bool python_trusted;
+#include "python/python_public.h"
 
 #include "cryptopp/sha.h"
 #include "cryptopp/filters.h"
@@ -1885,7 +1883,8 @@ void MainWindow::parseTopLevelDocument()
     auto fulltext_py =
       std::string(this->lastCompiledDoc.toUtf8().constData());
 
-    auto error = evaluatePython(fulltext_py, this->animateWidget->getAnimTval());
+    initPython(this->animateWidget->getAnimTval());
+    auto error = evaluatePython(fulltext_py, false);
     if (error.size() > 0) LOG(message_group::Error, Location::NONE, "", error.c_str());
     fulltext = "\n";
   }
