@@ -266,7 +266,7 @@ void addExportActions(const MainWindow *mainWindow, QToolBar *toolbar, QAction *
 } // namespace
 
 MainWindow::MainWindow(const QStringList& filenames) :
-    rubberBandManager(this)
+  rubberBandManager(this)
 {
   setupUi(this);
 
@@ -274,28 +274,20 @@ MainWindow::MainWindow(const QStringList& filenames) :
   consoleUpdater->setSingleShot(true);
   connect(consoleUpdater, SIGNAL(timeout()), this->console, SLOT(update()));
 
-  editorDockTitleWidget = new QWidget();
-  consoleDockTitleWidget = new QWidget();
-  parameterDockTitleWidget = new QWidget();
-  errorLogDockTitleWidget = new QWidget();
-  animateDockTitleWidget = new QWidget();
-  fontListDockTitleWidget = new QWidget();
-  viewportControlTitleWidget = new QWidget();
-
   this->animateWidget->setMainWindow(this);
   this->viewportControlWidget->setMainWindow(this);
   // actions not included in menu
   this->addAction(editActionInsertTemplate);
   this->addAction(editActionFoldAll);
 
-  std::vector<std::tuple<Dock*,QString>> docks = {
-      std::make_tuple(editorDock, QString(_("Editor"))),
-      std::make_tuple(consoleDock, QString(_("Console"))),
-      std::make_tuple(parameterDock, QString(_("Customizer"))),
-      std::make_tuple(errorLogDock, QString(_("Error-Log"))),
-      std::make_tuple(animateDock, QString(_("Animate"))),
-      std::make_tuple(fontListDock, QString(_("Font Lists"))),
-      std::make_tuple(viewportControlDock, QString(_("Viewport-Control")))
+  docks = {
+    {editorDock, QString(_("Editor"))},
+    {consoleDock, QString(_("Console"))},
+    {parameterDock, QString(_("Customizer"))},
+    {errorLogDock, QString(_("Error-Log"))},
+    {animateDock, QString(_("Animate"))},
+    {fontListDock, QString(_("Font Lists"))},
+    {viewportControlDock, QString(_("Viewport-Control"))}
   };
 
   this->editorDock->setConfigKey("view/hideEditor");
@@ -580,10 +572,10 @@ MainWindow::MainWindow(const QStringList& filenames) :
   connect(this->viewActionHide3DViewToolBar, SIGNAL(triggered()), this, SLOT(hide3DViewToolbar()));
 
   // Create the docks and connect corresponding action
-  for(auto& [dock, title] : docks){
-      dock->setName(title);
-      dock->setFocusPolicy(Qt::FocusPolicy::StrongFocus);
-      menuWindow->addAction(dock->toggleViewAction());
+  for (auto& [dock, title] : docks) {
+    dock->setName(title);
+    dock->setFocusPolicy(Qt::FocusPolicy::StrongFocus);
+    menuWindow->addAction(dock->toggleViewAction());
   }
 
   connect(this->windowActionHideEditor, SIGNAL(triggered()), this, SLOT(hideEditor()));
@@ -737,12 +729,11 @@ MainWindow::MainWindow(const QStringList& filenames) :
 
   // Create the popup menu to navigate between the docks by keyboard.
   navigationMenu = new QMenu();
-  for(auto& [dock, title] : docks)
-  {
-      auto action2 = navigationMenu->addAction(title);
-      action2->setProperty("id", QVariant::fromValue(dock));
-      connect(action2, &QAction::triggered, this, &MainWindow::onNavigationTriggerContextMenuEntry);
-      connect(action2, &QAction::hovered, this, &MainWindow::onNavigationHoveredContextMenuEntry);
+  for (auto& [dock, title] : docks) {
+    auto action2 = navigationMenu->addAction(title);
+    action2->setProperty("id", QVariant::fromValue(dock));
+    connect(action2, &QAction::triggered, this, &MainWindow::onNavigationTriggerContextMenuEntry);
+    connect(action2, &QAction::hovered, this, &MainWindow::onNavigationHoveredContextMenuEntry);
   }
   connect(navigationMenu, &QMenu::aboutToHide, this, &MainWindow::onNavigationCloseContextMenu);
 
@@ -776,7 +767,7 @@ MainWindow::MainWindow(const QStringList& filenames) :
 }
 
 void MainWindow::onNavigationOpenContextMenu() {
-    navigationMenu->exec(QCursor::pos());
+  navigationMenu->exec(QCursor::pos());
 }
 
 void MainWindow::onNavigationCloseContextMenu() {
@@ -784,20 +775,19 @@ void MainWindow::onNavigationCloseContextMenu() {
 }
 
 void MainWindow::onNavigationTriggerContextMenuEntry(){
-    auto *action = qobject_cast<QAction *>(sender());
-    if (!action || !action->property("id").isValid())
-        return;
+  auto *action = qobject_cast<QAction *>(sender());
+  if (!action || !action->property("id").isValid()) return;
 
-    Dock* dock = action->property("id").value<Dock*>();
-    assert(dock!=nullptr);
+  Dock *dock = action->property("id").value<Dock *>();
+  assert(dock != nullptr);
 
-    dock->show();
-    dock->setFocus();
+  dock->show();
+  dock->setFocus();
 
-    // Forward the focus on the content of the tabmanager
-    if(dock == editorDock){
-        tabManager->setFocus();
-    }
+  // Forward the focus on the content of the tabmanager
+  if (dock == editorDock) {
+    tabManager->setFocus();
+  }
 }
 
 void MainWindow::onNavigationHoveredContextMenuEntry(){
@@ -805,7 +795,7 @@ void MainWindow::onNavigationHoveredContextMenuEntry(){
   if (!action || !action->property("id").isValid()) return;
 
   Dock *dock = action->property("id").value<Dock *>();
-  assert(dock!=nullptr);
+  assert(dock != nullptr);
 
   rubberBandManager.emphasize(dock);
 }
@@ -1028,13 +1018,9 @@ void MainWindow::updateUndockMode(bool undockMode)
 void MainWindow::updateReorderMode(bool reorderMode)
 {
   MainWindow::reorderMode = reorderMode;
-  editorDock->setTitleBarWidget(reorderMode ? nullptr : editorDockTitleWidget);
-  consoleDock->setTitleBarWidget(reorderMode ? nullptr : consoleDockTitleWidget);
-  parameterDock->setTitleBarWidget(reorderMode ? nullptr : parameterDockTitleWidget);
-  errorLogDock->setTitleBarWidget(reorderMode ? nullptr : errorLogDockTitleWidget);
-  animateDock->setTitleBarWidget(reorderMode ? nullptr : animateDockTitleWidget);
-  fontListDock->setTitleBarWidget(reorderMode ? nullptr : fontListDockTitleWidget);
-  viewportControlDock->setTitleBarWidget(reorderMode ? nullptr : viewportControlWidget);
+  for (auto& [dock, name] : docks) {
+    dock->setTitleBarVisibility(!reorderMode);
+  }
 }
 
 MainWindow::~MainWindow()
@@ -1046,7 +1032,7 @@ MainWindow::~MainWindow()
   if (scadApp->windowManager.getWindows().empty()) {
     // Quit application even in case some other windows like
     // Preferences are still open.
-    scadApp->quit(); 
+    scadApp->quit();
   }
 }
 
@@ -3131,21 +3117,21 @@ void MainWindow::showEditor()
 
 void MainWindow::hideEditor()
 {
-    auto e = (ScintillaEditor *) this->activeEditor;
-    if (windowActionHideEditor->isChecked()) {
-        // Workaround manually disabling interactions with editor by setting it
-        // to read-only when not being shown.  This is an upstream bug from Qt
-        // (tracking ticket: https://bugreports.qt.io/browse/QTBUG-82939) and
-        // may eventually get resolved at which point this bit and the stuff in
-        // the else should be removed. Currently known to affect 5.14.1 and 5.15.0
-        e->qsci->setReadOnly(true);
-        e->setupAutoComplete(true);
-        editorDock->close();
-    } else {
-        e->qsci->setReadOnly(false);
-        e->setupAutoComplete(false);
-        editorDock->show();
-    }
+  auto e = (ScintillaEditor *) this->activeEditor;
+  if (windowActionHideEditor->isChecked()) {
+    // Workaround manually disabling interactions with editor by setting it
+    // to read-only when not being shown.  This is an upstream bug from Qt
+    // (tracking ticket: https://bugreports.qt.io/browse/QTBUG-82939) and
+    // may eventually get resolved at which point this bit and the stuff in
+    // the else should be removed. Currently known to affect 5.14.1 and 5.15.0
+    e->qsci->setReadOnly(true);
+    e->setupAutoComplete(true);
+    editorDock->close();
+  } else {
+    e->qsci->setReadOnly(false);
+    e->setupAutoComplete(false);
+    editorDock->show();
+  }
 }
 
 void MainWindow::showConsole()
@@ -3292,12 +3278,12 @@ void MainWindow::on_windowActionSelectCustomizer_triggered()
 
 void MainWindow::on_windowActionNextWindow_triggered()
 {
-    activateWindow(1);
+  activateWindow(1);
 }
 
 void MainWindow::on_windowActionPreviousWindow_triggered()
 {
-    activateWindow(-1);
+  activateWindow(-1);
 }
 
 void MainWindow::on_editActionInsertTemplate_triggered()
@@ -3312,47 +3298,35 @@ void MainWindow::on_editActionFoldAll_triggered()
 
 QString MainWindow::getCurrentFileName() const
 {
-    if(activeEditor == nullptr)
-        return QString("");
+  if (activeEditor == nullptr) return QString("");
 
-    const QFileInfo fileInfo(activeEditor->filepath);
-    QString fname = _("Untitled.scad");
-    if (!fileInfo.fileName().isEmpty()) fname = fileInfo.fileName();
-    return fname.replace("&", "&&");
+  const QFileInfo fileInfo(activeEditor->filepath);
+  QString fname = _("Untitled.scad");
+  if (!fileInfo.fileName().isEmpty()) fname = fileInfo.fileName();
+  return fname.replace("&", "&&");
 }
 
-void MainWindow::onTabManagerEditorChanged(EditorInterface* neweditor)
+void MainWindow::onTabManagerEditorChanged(EditorInterface *neweditor)
 {
-    activeEditor = neweditor;
+  activeEditor = neweditor;
 
-    if(neweditor == nullptr)
-        return;
+  if (neweditor == nullptr) return;
 
-    parameterDock->setWidget(neweditor->parameterWidget);
-    editActionUndo->setEnabled(neweditor->canUndo());
+  parameterDock->setWidget(neweditor->parameterWidget);
+  editActionUndo->setEnabled(neweditor->canUndo());
 
-    QString name = getCurrentFileName();
-    setWindowTitle(name);
+  QString name = getCurrentFileName();
+  setWindowTitle(name);
 
-    consoleDock->setNameSuffix(name);
-    errorLogDock->setNameSuffix(name);
-    animateDock->setNameSuffix(name);
-    fontListDock->setNameSuffix(name);
-    viewportControlDock->setNameSuffix(name);
+  consoleDock->setNameSuffix(name);
+  errorLogDock->setNameSuffix(name);
+  animateDock->setNameSuffix(name);
+  fontListDock->setNameSuffix(name);
+  viewportControlDock->setNameSuffix(name);
 }
 
 void MainWindow::activateWindow(int offset)
 {
-  const std::array<Dock*, 7> docks = {{
-    editorDock,
-    consoleDock,
-    errorLogDock,
-    parameterDock,
-    fontListDock,
-    animateDock,
-    viewportControlDock,
-  }};
-
   const unsigned int dockCount = docks.size();
 
   int focusedDockIndice = -1;
@@ -3360,36 +3334,35 @@ void MainWindow::activateWindow(int offset)
   // search among the docks the dock that is having the focus. Several cases have to be taken into account
   // If the dock is a top level windows and it is the active window we select it.
   for (unsigned int index = 0; index < dockCount; ++index) {
-    if (docks[index]->isTopLevel() && docks[index]->isActiveWindow()) {
-        focusedDockIndice = index;
-    }else if (docks[index]->hasFocus()) {
-        focusedDockIndice = index;
-        break;
+    auto dock = std::get<0>(docks[index]);
+    if (dock->isTopLevel() && dock->isActiveWindow()) {
+      focusedDockIndice = index;
+    } else if (dock->hasFocus())  {
+      focusedDockIndice = index;
+      break;
     }
   }
 
-  if(focusedDockIndice < 0){
-      focusedDockIndice = 0;
+  if (focusedDockIndice < 0) {
+    focusedDockIndice = 0;
   }
 
   for (int o = 1; o < dockCount; ++o) {
-      // starting from dockCount + focusedDockIndice move left or right (o*offset)
-      // to find the first visible one. dockCount is there so there is no situation in which
-      // (-1) % dockCount
-      const int target = (dockCount + focusedDockIndice + o * offset) % dockCount;
-      const auto& dock = docks.at(target);
+    // starting from dockCount + focusedDockIndice move left or right (o*offset)
+    // to find the first visible one. dockCount is there so there is no situation in which
+    // (-1) % dockCount
+    const int target = (dockCount + focusedDockIndice + o * offset) % dockCount;
+    const auto& dock = std::get<0>(docks.at(target));
 
-      if (dock->isVisible()) {
-          // We always need to activate the window.
-          if(dock->isTopLevel())
-              dock->activateWindow();
-          else
-              QMainWindow::activateWindow();
-          dock->raise();
-          dock->setFocus();
-          rubberBandManager.emphasize(dock);
-          return;
-      }
+    if (dock->isVisible()) {
+      // We always need to activate the window.
+      if (dock->isTopLevel()) dock->activateWindow();
+      else QMainWindow::activateWindow();
+      dock->raise();
+      dock->setFocus();
+      rubberBandManager.emphasize(dock);
+      return;
+    }
   }
 }
 

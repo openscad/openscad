@@ -102,13 +102,6 @@ public:
   QMap<QString, QString> knownFileExtensions;
 
   QLabel *versionLabel;
-  QWidget *editorDockTitleWidget;
-  QWidget *consoleDockTitleWidget;
-  QWidget *parameterDockTitleWidget;
-  QWidget *errorLogDockTitleWidget;
-  QWidget *animateDockTitleWidget;
-  QWidget *viewportControlTitleWidget;
-  QWidget *fontListDockTitleWidget;
 
   Measurement meas;
 
@@ -120,6 +113,9 @@ public:
 
 private:
   RubberBandManager rubberBandManager;
+
+  std::vector<std::tuple<Dock *, QString>> docks;
+
   volatile bool isClosing = false;
   void consoleOutputRaw(const QString& msg);
   void clearAllSelectionIndicators();
@@ -147,7 +143,7 @@ private slots:
 
   // implement the different actions needed when
   // the tab manager editor is changed.
-  void onTabManagerEditorChanged(EditorInterface*);
+  void onTabManagerEditorChanged(EditorInterface *);
 
 public:
   static void consoleOutput(const Message& msgObj, void *userdata);
@@ -390,7 +386,7 @@ private:
   ExportPdfPaperSize sizeString2Enum(const QString& current);
   ExportPdfPaperOrientation orientationsString2Enum(const QString& current);
 
-  QMenu* navigationMenu{nullptr};
+  QMenu *navigationMenu{nullptr};
   QSoundEffect *renderCompleteSoundEffect;
   std::vector<std::unique_ptr<QTemporaryFile>> allTempFiles;
 

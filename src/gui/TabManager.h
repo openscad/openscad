@@ -39,7 +39,7 @@ signals:
   // emitted when the currently displayed editor is changed and a new one is one focus.
   // the passed parameter can be nullptr, when the editor changed because of closing of the last
   // opened on.
-  void currentEditorChanged(EditorInterface* editor);
+  void currentEditorChanged(EditorInterface *editor);
   void tabCountChanged(int);
 
 private:
