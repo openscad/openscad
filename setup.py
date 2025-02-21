@@ -196,8 +196,8 @@ def main():
               "src/glview/ColorMap.cc",
               "src/glview/RenderSettings.cc" ]
     lex_yacc = [
-              "build/objects/parser.cxx",
-              "build/objects/lexer.cxx"
+              "src/core/parser.cc",
+              "src/core/lexer.cc"
               ]
     lodepng = [ "src/ext/lodepng/lodepng.cpp" ]
 
@@ -247,7 +247,7 @@ def main():
                 ])
 
     setup(name="pythonscad",
-          version="2025.2",
+          version="2025.2.2",
           description="Python interface to openscad",
           url="https://pythonscad.org",
           author="Guenther Sohler",
