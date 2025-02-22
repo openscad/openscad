@@ -397,7 +397,7 @@ PyTypeObject PyOpenSCADType = {
     0,                         			/* tp_setattr */
     0,                         			/* tp_as_async */
     0,		               			/* tp_repr */
-    0,		        			/* tp_as_number */
+    &PyOpenSCADNumbers,        			/* tp_as_number */
     0,                         			/* tp_as_sequence */
     0,		        			/* tp_as_mapping */
     0,                         			/* tp_hash  */

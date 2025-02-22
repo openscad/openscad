@@ -34,8 +34,10 @@ extern std::shared_ptr<AbstractNode> python_result_node;
 extern std::string trusted_edit_document_name;
 extern std::string untrusted_edit_document_name;
 std::vector<Vector3d> python_vectors(PyObject *vec, int mindim, int maxdim);
+int python_numberval(PyObject *number, double *result);
 std::shared_ptr<AbstractNode> PyOpenSCADObjectToNode(PyObject *object);
 std::shared_ptr<AbstractNode> PyOpenSCADObjectToNodeMulti(PyObject *object);
+extern PyNumberMethods PyOpenSCADNumbers;
 extern PyMethodDef PyOpenSCADFunctions[];
 extern PyMethodDef PyOpenSCADMethods[];
 
