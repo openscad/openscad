@@ -36,6 +36,7 @@
 #include <QUrl>
 #include <QFileDialog>
 #include <QDesktopServices>
+#include <QRegularExpression>
 
 #include "version.h"
 #include "platform/PlatformUtils.h"
@@ -46,43 +47,49 @@
 
 #include <string>
 
-QFileInfo UIUtils::openFile(QWidget *parent)
+namespace {
+
+QString fileOpenFilter(const QString& pattern, QStringList extensions)
+{
+    if (extensions.isEmpty()) {
+        extensions << "scad" << "csg";
+#ifdef ENABLE_PYTHON
+        extensions << "py";
+#endif
+    }
+    extensions.replaceInStrings(QRegularExpression("^"), "*.");
+    return pattern.arg(extensions.join(" "));
+}
+
+}
+
+QFileInfo UIUtils::openFile(QWidget *parent, QStringList extensions)
 {
   QSettingsCached settings;
-  QString last_dirname = settings.value("lastOpenDirName").toString();
-#ifdef ENABLE_PYTHON
-  QString new_filename = QFileDialog::getOpenFileName(parent, "Open File",
-                                                      last_dirname, "OpenSCAD Designs (*.scad *.csg);;Python OpenSCAD Designs (*.py)");
-#else
-  QString new_filename = QFileDialog::getOpenFileName(parent, "Open File",
-                                                      last_dirname, "OpenSCAD Designs (*.scad *.csg)");
-#endif
+  const auto last_dirname = settings.value("lastOpenDirName").toString();
+  const auto filter = fileOpenFilter("OpenSCAD Designs (%1)", std::move(extensions));
+  const auto filename = QFileDialog::getOpenFileName(parent, "Open File",
+                                                     last_dirname, filter);
 
-  if (new_filename.isEmpty()) {
+  if (filename.isEmpty()) {
     return {};
   }
 
-  QFileInfo fileInfo(new_filename);
-  QDir last_dir = fileInfo.dir();
-  last_dirname = last_dir.path();
-  settings.setValue("lastOpenDirName", last_dirname);
+  QFileInfo fileInfo(filename);
+  settings.setValue("lastOpenDirName", fileInfo.dir().path());
   return fileInfo;
 }
 
-QFileInfoList UIUtils::openFiles(QWidget *parent)
+QFileInfoList UIUtils::openFiles(QWidget *parent, QStringList extensions)
 {
   QSettingsCached settings;
-  QString last_dirname = settings.value("lastOpenDirName").toString();
-#ifdef ENABLE_PYTHON
-  QStringList new_filenames = QFileDialog::getOpenFileNames(parent, "Open File",
-                                                            last_dirname, "OpenSCAD Designs (*.scad *.csg);;Python OpenSCAD Designs (*.py)");
-#else
-  QStringList new_filenames = QFileDialog::getOpenFileNames(parent, "Open File",
-                                                            last_dirname, "OpenSCAD Designs (*.scad *.csg)");
-#endif
+  const auto last_dirname = settings.value("lastOpenDirName").toString();
+  const auto filter = fileOpenFilter("OpenSCAD Designs (%1)", std::move(extensions));
+  const auto filenames = QFileDialog::getOpenFileNames(parent, "Open File",
+                                                       last_dirname, filter);
 
   QFileInfoList fileInfoList;
-  for (const QString& filename: new_filenames) {
+  for (const QString& filename: filenames) {
     if (filename.isEmpty()) {
       continue;
     }
@@ -90,9 +97,8 @@ QFileInfoList UIUtils::openFiles(QWidget *parent)
   }
 
   if (!fileInfoList.isEmpty()) {
-    QDir last_dir = fileInfoList[fileInfoList.size() - 1].dir(); // last_dir is set to directory of last chosen valid file
-    last_dirname = last_dir.path();
-    settings.setValue("lastOpenDirName", last_dirname);
+    // last_dir is set to directory of last chosen valid file
+    settings.setValue("lastOpenDirName", fileInfoList.back().dir().path());
   }
 
   return fileInfoList;

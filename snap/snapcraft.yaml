@@ -72,15 +72,23 @@ parts:
     build-snaps: [cmake]
     plugin: cmake
     override-build: |
-        CC=clang CXX=clang++ cmake ${SNAPCRAFT_PART_SRC} \
+        export CC="clang"
+        export CXX="clang++"
+        export OPENSCAD_VERSION="$(date +%Y.%m.%d).snap"
+        cmake ${SNAPCRAFT_PART_SRC} \
             -G 'Unix Makefiles' \
             -DCMAKE_PREFIX_PATH="${SNAPCRAFT_STAGE}/usr" \
+            -DOPENSCAD_VERSION="${OPENSCAD_VERSION}" \
             -DCMAKE_INSTALL_PREFIX=/usr \
             -DCMAKE_BUILD_TYPE=Release \
-            -DSUFFIX=nightly \
+            -DUSE_BUILTIN_OPENCSG=ON \
+            -DMANIFOLD_PYBIND=OFF \
+            -DMANIFOLD_TEST=OFF \
+            -DENABLE_PYTHON=ON \
+            -DENABLE_TESTS=OFF \
             -DEXPERIMENTAL=ON \
-            -DSNAPSHOT=ON \
-            -DUSE_BUILTIN_OPENCSG=ON
+            -DSUFFIX=nightly \
+            -DSNAPSHOT=ON
         cmake --build .
         cmake --install . --prefix "${SNAPCRAFT_PART_INSTALL}/usr"
     after: [ desktop-qt5, cgal, lib3mf2 ]
@@ -101,12 +109,13 @@ parts:
     - libgmp-dev
     - libmpfr-dev
     - libcairo2-dev
-    - python3
     - libboost-dev
     - libboost-regex-dev
     - libboost-system-dev
     - libboost-program-options-dev
     - libdouble-conversion-dev
+    - python3-dev
+    - nettle-dev
     - chrpath
     - gettext
     - pkg-config
@@ -116,7 +125,7 @@ parts:
     - libgl-dev
     - libxml2-dev
     - libharfbuzz-dev
-    - libfreetype6-dev
+    - libfreetype-dev
     - libfontconfig1-dev
     - libqscintilla2-qt5-dev
     stage-packages:
@@ -148,6 +157,7 @@ parts:
     - libzip4t64
     - libtbb12
     - libatomic1
+    - libpython3.12t64
 
   # https://github.com/ubuntu/snapcraft-desktop-helpers/blob/master/snapcraft.yaml
   desktop-qt5:

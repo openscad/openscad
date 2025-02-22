@@ -25,19 +25,19 @@
  */
 #include <Python.h>
 #include "pyopenscad.h"
-<<<<<<< HEAD
 #include "CsgOpNode.h"
 #include "Value.h"
 #include "Expression.h"
 #include "PlatformUtils.h"
 #include <Context.h>
 #include <Selection.h>
-#include "PlatformUtils.h"
+#include "src/platform/PlatformUtils.h"
 
 // #define HAVE_PYTHON_YIELD
 extern "C" PyObject *PyInit_openscad(void);
 
-// https://docs.python.org/3.10/extending/newtypes.html
+bool python_active;
+bool python_trusted;
 
 void PyObjectDeleter (PyObject *pObject) { Py_XDECREF(pObject); };
 
@@ -50,8 +50,6 @@ bool pythonDryRun=false;
 std::shared_ptr<AbstractNode> python_result_node = nullptr; /* global result veriable containing the python created result */
 PyObject *python_result_obj = nullptr;
 std::vector<SelectedObject> python_result_handle;
-bool python_active;  /* if python is actually used during evaluation */
-bool python_trusted; /* global Python trust flag */
 bool python_runipython = false;
 bool pythonMainModuleInitialized = false;
 bool pythonRuntimeInitialized = false;
@@ -65,30 +63,12 @@ std::shared_ptr<const FileContext> osinclude_context = nullptr;
 void PyOpenSCADObject_dealloc(PyOpenSCADObject *self)
 {
   Py_XDECREF(self->dict);
-=======
-#include "src/platform/PlatformUtils.h"
-
-extern "C" PyObject *PyInit_openscad(void);
-
-bool python_active;
-bool python_trusted;
-PyObject *pythonInitDict;
-PyObject *pythonMainModule;
-bool pythonDryRun=false;
-std::shared_ptr<AbstractNode> python_result_node = nullptr; /* global result veriable containing the python created result */
-PyObject *python_result_obj = nullptr;
-bool pythonMainModuleInitialized = false;
-
-void PyOpenSCADObject_dealloc(PyOpenSCADObject *self)
-{
->>>>>>> upstream/master
   Py_TYPE(self)->tp_free((PyObject *)self);
 }
 
 PyObject *PyOpenSCADObject_alloc(PyTypeObject *cls, Py_ssize_t nitems)
 {
   PyObject *self = PyType_GenericAlloc(cls, nitems);
-<<<<<<< HEAD
   ((PyOpenSCADObject *)self)->dict = PyDict_New();
   PyObject *origin=PyList_New(4);
   for(int i=0;i<4;i++) {
@@ -100,8 +80,6 @@ PyObject *PyOpenSCADObject_alloc(PyTypeObject *cls, Py_ssize_t nitems)
   }
   PyDict_SetItemString(((PyOpenSCADObject *)self)->dict,"origin",origin);
   Py_XDECREF(origin);
-=======
->>>>>>> upstream/master
   return self;
 }
 
@@ -129,7 +107,6 @@ PyObject *PyOpenSCADObjectFromNode(PyTypeObject *type, const std::shared_ptr<Abs
   }
   return nullptr;
 }
-<<<<<<< HEAD
 
 //PyGILState_STATE gstate=PyGILState_LOCKED;
 PyThreadState *tstate=nullptr;
@@ -181,11 +158,6 @@ std::shared_ptr<AbstractNode> PyOpenSCADObjectToNode(PyObject *obj, PyObject **d
     result = result->clone();
   }
   *dict =  ((PyOpenSCADObject *) obj)->dict;
-=======
-std::shared_ptr<AbstractNode> PyOpenSCADObjectToNode(PyObject *obj)
-{
-  std::shared_ptr<AbstractNode> result = ((PyOpenSCADObject *) obj)->node;
->>>>>>> upstream/master
   return result;
 }
 
@@ -197,7 +169,6 @@ std::string python_version(void)
 }
 
 /*
-<<<<<<< HEAD
  * same as  python_more_obj but always returns only one AbstractNode by creating an UNION operation
  */
 
@@ -287,8 +258,6 @@ void python_retrieve_pyname(const std::shared_ptr<AbstractNode> &node)
   node->setPyName(name);
 }
 /*
-=======
->>>>>>> upstream/master
  * converts a python obejct into an integer by all means
  */
 
@@ -309,7 +278,6 @@ int python_numberval(PyObject *number, double *result)
   return 1;
 }
 
-<<<<<<< HEAD
 std::vector<int>  python_intlistval(PyObject *list)
 {
   std::vector<int> result;	
@@ -327,8 +295,6 @@ std::vector<int>  python_intlistval(PyObject *list)
   }
   return result;
 }
-=======
->>>>>>> upstream/master
 /*
  * Tries to extract an 3D vector out of a python list
  */
@@ -362,7 +328,6 @@ int python_vectorval(PyObject *vec, int minval, int maxval, double *x, double *y
   return 1;
 }
 
-<<<<<<< HEAD
 std::vector<Vector3d> python_vectors(PyObject *vec, int mindim, int maxdim) 
 {
   std::vector<Vector3d> results;	
@@ -407,13 +372,10 @@ std::vector<Vector3d> python_vectors(PyObject *vec, int mindim, int maxdim)
   return results; // Error
 }
 
-=======
->>>>>>> upstream/master
 /*
  * Helper function to extract actual values for fn, fa and fs
  */
 
-<<<<<<< HEAD
 void get_fnas(double& fn, double& fa, double& fs) {
   PyObject *mainModule = PyImport_AddModule("__main__");
   if (mainModule == nullptr) return;
@@ -447,8 +409,6 @@ void get_fnas(double& fn, double& fa, double& fs) {
  * Type specific init function. nothing special here
  */
 
-=======
->>>>>>> upstream/master
 static int PyOpenSCADInit(PyOpenSCADObject *self, PyObject *args, PyObject *kwds)
 {
   (void)self;
@@ -456,7 +416,6 @@ static int PyOpenSCADInit(PyOpenSCADObject *self, PyObject *args, PyObject *kwds
   (void)kwds;
   return 0;
 }
-<<<<<<< HEAD
 Outline2d python_getprofile(void *v_cbfunc, int fn, double arg)
 {
 	PyObject *cbfunc = (PyObject *) v_cbfunc;
@@ -541,9 +500,6 @@ PyObject *python_fromopenscad(const Value &val)
     }
     return Py_None;
 }
-=======
-
->>>>>>> upstream/master
 void python_catch_error(std::string &errorstr)
 {
     PyObject *pyExcType;
@@ -554,15 +510,9 @@ void python_catch_error(std::string &errorstr)
     if(pyExcType != nullptr) Py_XDECREF(pyExcType);
 
     if(pyExcValue != nullptr){
-<<<<<<< HEAD
       PyObjectUniquePtr str_exc_value( PyObject_Repr(pyExcValue), PyObjectDeleter);
       PyObjectUniquePtr pyExcValueStr( PyUnicode_AsEncodedString(str_exc_value.get(), "utf-8", "~"), PyObjectDeleter);
       char *suberror = PyBytes_AS_STRING(pyExcValueStr.get());
-=======
-      PyObject *str_exc_value =  PyObject_Repr(pyExcValue);
-      PyObject *pyExcValueStr =  PyUnicode_AsEncodedString(str_exc_value, "utf-8", "~");
-      char *suberror = PyBytes_AS_STRING(pyExcValueStr);
->>>>>>> upstream/master
       if(suberror != nullptr) errorstr +=  suberror;
       Py_XDECREF(pyExcValue);
     }
@@ -575,7 +525,6 @@ void python_catch_error(std::string &errorstr)
     }
 }
 
-<<<<<<< HEAD
 PyObject *python_callfunction(const std::shared_ptr<const Context> &cxt , const std::string &name, const std::vector<std::shared_ptr<Assignment> > &op_args, std::string &errorstr)
 {
   PyObject *pFunc = nullptr;
@@ -744,14 +693,11 @@ void openscad_object_callback(PyObject *obj) {
 	}
 }
 #endif
-=======
->>>>>>> upstream/master
 void initPython(double time)
 {
   if(pythonInitDict) { /* If already initialized, undo to reinitialize after */
     PyObject *key, *value;
     Py_ssize_t pos = 0;
-<<<<<<< HEAD
     PyObject *maindict = PyModule_GetDict(pythonMainModule.get());
     while (PyDict_Next(maindict, &pos, &key, &value)) {
       PyObjectUniquePtr key_(PyUnicode_AsEncodedString(key, "utf-8", "~"), PyObjectDeleter);
@@ -809,14 +755,6 @@ void initPython(double time)
           }
         }
       }
-=======
-    PyObject *maindict = PyModule_GetDict(pythonMainModule);
-    while (PyDict_Next(maindict, &pos, &key, &value)) {
-      PyObject *key_ = PyUnicode_AsEncodedString(key, "utf-8", "~");
-      if(key_ == nullptr) continue;
-      const char *key_str =  PyBytes_AS_STRING(key_);
-      if(key_str == nullptr) continue;
->>>>>>> upstream/master
     }
   } else {
     PyPreConfig preconfig;
@@ -824,15 +762,11 @@ void initPython(double time)
     Py_PreInitialize(&preconfig);
 //    PyEval_InitThreads(); // https://stackoverflow.com/questions/47167251/pygilstate-ensure-causing-deadlock
 
-<<<<<<< HEAD
 #ifdef HAVE_PYTHON_YIELD
     set_object_callback(openscad_object_callback);
 #endif
     PyImport_AppendInittab("openscad", &PyInit_openscad);
     PyImport_AppendInittab("libfive", &PyInit_data);
-=======
-    PyImport_AppendInittab("openscad", &PyInit_openscad);
->>>>>>> upstream/master
     PyConfig config;
     PyConfig_InitPythonConfig(&config);
     std::string libdir;
@@ -859,7 +793,6 @@ void initPython(double time)
     }
     PyConfig_Clear(&config);
 
-<<<<<<< HEAD
     pythonMainModule.reset(PyImport_AddModule("__main__"));
     pythonMainModuleInitialized = pythonMainModule != nullptr;
     pythonInitDict.reset(PyModule_GetDict(pythonMainModule.get()));
@@ -882,22 +815,10 @@ void initPython(double time)
   PyRun_String(stream.str().c_str(), Py_file_input, pythonInitDict.get(), pythonInitDict.get());
   customizer_parameters_finished = customizer_parameters;
   customizer_parameters.clear();
-=======
-    pythonMainModule = PyImport_AddModule("__main__");
-    pythonMainModuleInitialized = pythonMainModule != nullptr;
-    pythonInitDict = PyModule_GetDict(pythonMainModule);
-    PyInit_PyOpenSCAD();
-    PyRun_String("from builtins import *\n", Py_file_input, pythonInitDict, pythonInitDict);
-  }
-  std::ostringstream stream;
-  stream << "t=" << time;
-  PyRun_String(stream.str().c_str(), Py_file_input, pythonInitDict, pythonInitDict);
->>>>>>> upstream/master
 }
 
 void finishPython(void)
 {
-<<<<<<< HEAD
 #ifdef HAVE_PYTHON_YIELD
       set_object_callback(NULL);
       if(python_result_node == nullptr) {
@@ -915,15 +836,12 @@ void finishPython(void)
         } 
       }
 #endif
-=======
->>>>>>> upstream/master
 }
 
 std::string evaluatePython(const std::string & code, bool dry_run)
 {
   std::string error;
   python_result_node = nullptr;
-<<<<<<< HEAD
   python_result_handle.clear();
   PyObjectUniquePtr pyExcValue (nullptr, PyObjectDeleter);
   PyObjectUniquePtr pyExcTraceback (nullptr, PyObjectDeleter);
@@ -932,11 +850,6 @@ std::string evaluatePython(const std::string & code, bool dry_run)
     delete mi; // best time to delete it
   }
   modinsts_list.clear();
-=======
-  PyObject *pyExcValue;
-  PyObject *pyExcTraceback;
-  /* special python code to catch errors from stdout and stderr and make them available in OpenSCAD console */
->>>>>>> upstream/master
   pythonDryRun=dry_run;
   if(!pythonMainModuleInitialized)
 	  return "Python not initialized";
@@ -972,7 +885,6 @@ sys.stdout = stdout_bak\n\
 sys.stderr = stderr_bak\n\
 ";
 
-<<<<<<< HEAD
 #ifndef ENABLE_PIP  
     PyRun_SimpleString(python_init_code);
 #endif    
@@ -987,13 +899,6 @@ sys.stderr = stderr_bak\n\
 
 
 #ifndef ENABLE_PIP
-=======
-    PyRun_SimpleString(python_init_code);
-    PyObject *result;
-    result = PyRun_String(code.c_str(), Py_file_input, pythonInitDict, pythonInitDict); /* actual code is run here */
-
-
->>>>>>> upstream/master
     if(result  == nullptr) {
       PyErr_Print();
       error = ""; 
@@ -1001,7 +906,6 @@ sys.stderr = stderr_bak\n\
     } 
     for(int i=0;i<2;i++)
     {
-<<<<<<< HEAD
       PyObjectUniquePtr catcher(nullptr, PyObjectDeleter);
       catcher.reset( PyObject_GetAttrString(pythonMainModule.get(), i==1?"catcher_err":"catcher_out"));
       if(catcher == nullptr) continue;
@@ -1011,17 +915,6 @@ sys.stderr = stderr_bak\n\
       PyObjectUniquePtr command_output_value(nullptr,  PyObjectDeleter);
       command_output_value.reset(PyUnicode_AsEncodedString(command_output.get(), "utf-8", "~"));
       const char *command_output_bytes =  PyBytes_AS_STRING(command_output_value.get());
-=======
-      PyObject *catcher;
-      catcher = PyObject_GetAttrString(pythonMainModule, i==1?"catcher_err":"catcher_out");
-      if(catcher == nullptr) continue;
-      PyObject *command_output;
-      command_output = PyObject_GetAttrString(catcher, "data");
-
-      PyObject *command_output_value;
-      command_output_value = PyUnicode_AsEncodedString(command_output, "utf-8", "~");
-      const char *command_output_bytes =  PyBytes_AS_STRING(command_output_value);
->>>>>>> upstream/master
       if(command_output_bytes != nullptr && *command_output_bytes != '\0')
       {
         if(i ==1) error += command_output_bytes; /* output to console */
@@ -1029,10 +922,7 @@ sys.stderr = stderr_bak\n\
       }
     }
     PyRun_SimpleString(python_exit_code);
-<<<<<<< HEAD
 #endif    
-=======
->>>>>>> upstream/master
     return error;
 }
 /*
@@ -1040,7 +930,6 @@ sys.stderr = stderr_bak\n\
  */
 
 
-<<<<<<< HEAD
 int python__setitem__(PyObject *dict, PyObject *key, PyObject *v);
 PyObject *python__getitem__(PyObject *dict, PyObject *key);
 
@@ -1056,8 +945,6 @@ int python__setattro__(PyObject *dict, PyObject *key, PyObject *v)
 	return python__setitem__(dict, key, v);
 }
 
-=======
->>>>>>> upstream/master
 
 PyTypeObject PyOpenSCADType = {
     PyVarObject_HEAD_INIT(nullptr, 0)
@@ -1069,7 +956,6 @@ PyTypeObject PyOpenSCADType = {
     0,                         			/* tp_getattr */
     0,                         			/* tp_setattr */
     0,                         			/* tp_as_async */
-<<<<<<< HEAD
     python_str,               			/* tp_repr */
     &PyOpenSCADNumbers,        			/* tp_as_number */
     0,                         			/* tp_as_sequence */
@@ -1079,17 +965,6 @@ PyTypeObject PyOpenSCADType = {
     python_str,                			/* tp_str */
     python__getattro__,      			/* tp_getattro */
     python__setattro__,  			/* tp_setattro */
-=======
-    0,		               			/* tp_repr */
-    0,		        			/* tp_as_number */
-    0,                         			/* tp_as_sequence */
-    0,		        			/* tp_as_mapping */
-    0,                         			/* tp_hash  */
-    0,                         			/* tp_call */
-    0,	                			/* tp_str */
-    0,			     			/* tp_getattro */
-    0,			  			/* tp_setattro */
->>>>>>> upstream/master
     0,                         			/* tp_as_buffer */
     Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,	/* tp_flags */
     "PyOpenSCAD Object",          		/* tp_doc */
@@ -1099,11 +974,7 @@ PyTypeObject PyOpenSCADType = {
     0,                         			/* tp_weaklistoffset */
     0,                         			/* tp_iter */
     0,                         			/* tp_iternext */
-<<<<<<< HEAD
     PyOpenSCADMethods,             		/* tp_methods */
-=======
-    0,			             		/* tp_methods */
->>>>>>> upstream/master
     0,             				/* tp_members */
     0,                         			/* tp_getset */
     0,                         			/* tp_base */
@@ -1145,7 +1016,6 @@ PyMODINIT_FUNC PyInit_PyOpenSCAD(void)
   PyModule_AddObject(m, "openscad", (PyObject *)&PyOpenSCADType);
   return m;
 }
-<<<<<<< HEAD
 
 // ----------------------------------------------
 // IPython Interpreter side
@@ -1303,5 +1173,3 @@ void ipython(void) {
     Py_RunMain();
 }
 
-=======
->>>>>>> upstream/master

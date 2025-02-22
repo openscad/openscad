@@ -1606,15 +1606,14 @@ PyObject *python_oo_wrap(PyObject *obj, PyObject *args, PyObject *kwargs)
   return python_wrap_core(obj, r, fn, fa, fs);
 }
 
-PyObject *python_output_core(PyObject *obj)
+PyObject *python_show_core(PyObject *obj)
 {
   PyObject *child_dict;
   std::shared_ptr<AbstractNode> child = PyOpenSCADObjectToNodeMulti(obj, &child_dict);
   if (child == NULL) {
-    PyErr_SetString(PyExc_TypeError, "Invalid type for Object in output");
+    PyErr_SetString(PyExc_TypeError, "Invalid type for Object in show");
     return NULL;
   }
-  // TODO fix or clean tag_highlight here
   PyObject *key, *value;
   Py_ssize_t pos = 0;
   python_result_node = child;
@@ -1645,7 +1644,7 @@ PyObject *python_output_core(PyObject *obj)
   return Py_None;
 }
 
-PyObject *python_output(PyObject *self, PyObject *args, PyObject *kwargs)
+PyObject *python_show(PyObject *self, PyObject *args, PyObject *kwargs)
 {
   PyObject *obj = NULL;
   char *kwlist[] = {"obj", NULL};
@@ -1655,10 +1654,10 @@ PyObject *python_output(PyObject *self, PyObject *args, PyObject *kwargs)
     PyErr_SetString(PyExc_TypeError, "Error during parsing output(object)");
     return NULL;
   }
-  return python_output_core(obj);
+  return python_show_core(obj);
 }
 
-PyObject *python_oo_output(PyObject *obj, PyObject *args, PyObject *kwargs)
+PyObject *python_oo_show(PyObject *obj, PyObject *args, PyObject *kwargs)
 {
   char *kwlist[] = {NULL};
   if (!PyArg_ParseTupleAndKeywords(args, kwargs, "", kwlist
@@ -1666,11 +1665,18 @@ PyObject *python_oo_output(PyObject *obj, PyObject *args, PyObject *kwargs)
     PyErr_SetString(PyExc_TypeError, "Error during parsing output(object)");
     return NULL;
   }
-  return python_output_core(obj);
+  return python_show_core(obj);
 }
 
-PyObject *python_oo_show(PyObject *obj, PyObject *args, PyObject *kwargs){
-  return python_oo_output(obj, args, kwargs);	
+PyObject *python_output(PyObject *obj, PyObject *args, PyObject *kwargs){
+  LOG(message_group::Deprecated, "output is deprecated, please use show() instead");
+  return python_show(obj, args, kwargs);	
+  
+}
+
+PyObject *python_oo_output(PyObject *obj, PyObject *args, PyObject *kwargs){
+  LOG(message_group::Deprecated, "output is deprecated, please use show() instead");
+  return python_oo_show(obj, args, kwargs);	
 }
 
 
@@ -4380,7 +4386,7 @@ PyMethodDef PyOpenSCADFunctions[] = {
   {"wrap", (PyCFunction) python_wrap, METH_VARARGS | METH_KEYWORDS, "Wrap Object around cylidner."},
   {"color", (PyCFunction) python_color, METH_VARARGS | METH_KEYWORDS, "Color Object."},
   {"output", (PyCFunction) python_output, METH_VARARGS | METH_KEYWORDS, "Output the result."},
-  {"show", (PyCFunction) python_output, METH_VARARGS | METH_KEYWORDS, "Output the result."},
+  {"show", (PyCFunction) python_show, METH_VARARGS | METH_KEYWORDS, Show the result."},
   {"export", (PyCFunction) python_export, METH_VARARGS | METH_KEYWORDS, "Export the result."},
   {"find_face", (PyCFunction) python_find_face, METH_VARARGS | METH_KEYWORDS, "find_face."},
   {"sitonto", (PyCFunction) python_sitonto, METH_VARARGS | METH_KEYWORDS, "sitonto"},
