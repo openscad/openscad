@@ -2,7 +2,7 @@
 
 #include "glview/GLView.h"
 #include "glview/Renderer.h"
-#include <QOpenGLFramebufferObject>
+#include "glview/fbo.h"
 
 #include <memory>
 
@@ -23,9 +23,9 @@ public:
 
 private:
   void initShader();
-  void setupFramebuffer(const GLView *view);
+  void setupFramebuffer(int width, int height);
 
-  std::unique_ptr<QOpenGLFramebufferObject> framebuffer;
+  std::unique_ptr<FBO> framebuffer;
 
   GLView *view;
 };

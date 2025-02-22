@@ -92,7 +92,6 @@ public:
   std::shared_ptr<Renderer> cgalRenderer;
 #ifdef ENABLE_OPENCSG
   std::shared_ptr<Renderer> opencsgRenderer;
-  std::unique_ptr<class MouseSelector> selector;
 #endif
   std::shared_ptr<Renderer> thrownTogetherRenderer;
 
@@ -362,7 +361,6 @@ public slots:
   void helpOfflineCheatSheet();
   void helpLibrary();
   void helpFontInfo();
-  void quit();
   void checkAutoReload();
   void waitAfterReload();
   void autoReloadSet(bool);

@@ -30,6 +30,9 @@
 #include "geometry/PolySetUtils.h"
 #include "utils/printutils.h"
 #include "core/AST.h"
+#include "core/Assignment.h"
+#include "core/ModuleInstantiation.h"
+#include "core/CsgOpNode.h"
 
 #ifdef ENABLE_CGAL
 #include "geometry/cgal/cgalutils.h"
