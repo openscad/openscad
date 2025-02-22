@@ -25,14 +25,18 @@
  */
 #include <Python.h>
 #include "pyopenscad.h"
+#include "src/core/CsgOpNode.h"
 #include "src/platform/PlatformUtils.h"
 
 extern "C" PyObject *PyInit_openscad(void);
 
 bool python_active;
 bool python_trusted;
-PyObject *pythonInitDict;
-PyObject *pythonMainModule;
+
+void PyObjectDeleter (PyObject *pObject) { Py_XDECREF(pObject); };
+
+PyObjectUniquePtr pythonInitDict(nullptr, PyObjectDeleter) ;
+PyObjectUniquePtr pythonMainModule(nullptr, PyObjectDeleter) ;
 bool pythonDryRun=false;
 std::shared_ptr<AbstractNode> python_result_node = nullptr; /* global result veriable containing the python created result */
 PyObject *python_result_obj = nullptr;
@@ -87,8 +91,31 @@ std::string python_version(void)
 }
 
 /*
- * converts a python obejct into an integer by all means
+ * same as  python_more_obj but always returns only one AbstractNode by creating an UNION operation
  */
+
+std::shared_ptr<AbstractNode> PyOpenSCADObjectToNodeMulti(PyObject *objs)
+{
+  std::shared_ptr<AbstractNode> result;
+  if (Py_TYPE(objs) == &PyOpenSCADType) {
+    result = ((PyOpenSCADObject *) objs)->node;
+  } else if (PyList_Check(objs)) {
+    DECLARE_INSTANCE
+    auto node = std::make_shared<CsgOpNode>(instance, OpenSCADOperator::UNION);
+
+    int n = PyList_Size(objs);
+    for (int i = 0; i < n; i++) {
+      PyObject *obj = PyList_GetItem(objs, i);
+      if(Py_TYPE(obj) ==  &PyOpenSCADType) {
+        std::shared_ptr<AbstractNode> child = PyOpenSCADObjectToNode(obj);
+        node->children.push_back(child);
+      } else return nullptr;
+    }
+    result=node;
+  } else result=nullptr;
+  return result;
+}
+
 
 int python_numberval(PyObject *number, double *result)
 {
@@ -140,6 +167,50 @@ int python_vectorval(PyObject *vec, int minval, int maxval, double *x, double *y
   return 1;
 }
 
+std::vector<Vector3d> python_vectors(PyObject *vec, int mindim, int maxdim) 
+{
+  std::vector<Vector3d> results;	
+  if (PyList_Check(vec)) {
+    // check if its a valid vec<Vector3d>
+    int valid=1;
+    for(int i=0;valid && i<PyList_Size(vec);i++) {
+      PyObject *item = PyList_GetItem(vec,i);
+      if(!PyList_Check(item)) valid=0;
+    }	    
+    if(valid) {
+      for(int j=0;valid && j<PyList_Size(vec);j++) {
+        Vector3d result(0,0,0);	
+        PyObject *item = PyList_GetItem(vec,j);
+        if(PyList_Size(item) >= mindim && PyList_Size(item) <= maxdim) {	  
+          for(int i=0;i<PyList_Size(item);i++) {
+            if (PyList_Size(item) > i) {
+              if (python_numberval(PyList_GetItem(item, i), &result[i])) return results; // Error
+            }
+          }	
+        }  
+	results.push_back(result);
+      }	
+      return results;
+    }
+    Vector3d result(0,0,0);	
+    if(PyList_Size(vec) >= mindim && PyList_Size(vec) <= maxdim) {	  
+      for(int i=0;i<PyList_Size(vec);i++) {
+        if (PyList_Size(vec) > i) {
+          if (python_numberval(PyList_GetItem(vec, i), &result[i])) return results; // Error
+        }
+      }	
+    }  
+    results.push_back(result);
+  }
+  Vector3d result(0,0,0);	
+  if (!python_numberval(vec, &result[0])) {
+    result[1] = result[0];
+    result[2] = result[1];
+    results.push_back(result);
+  }
+  return results; // Error
+}
+
 /*
  * Helper function to extract actual values for fn, fa and fs
  */
@@ -162,9 +233,9 @@ void python_catch_error(std::string &errorstr)
     if(pyExcType != nullptr) Py_XDECREF(pyExcType);
 
     if(pyExcValue != nullptr){
-      PyObject *str_exc_value =  PyObject_Repr(pyExcValue);
-      PyObject *pyExcValueStr =  PyUnicode_AsEncodedString(str_exc_value, "utf-8", "~");
-      char *suberror = PyBytes_AS_STRING(pyExcValueStr);
+      PyObjectUniquePtr str_exc_value( PyObject_Repr(pyExcValue), PyObjectDeleter);
+      PyObjectUniquePtr pyExcValueStr( PyUnicode_AsEncodedString(str_exc_value.get(), "utf-8", "~"), PyObjectDeleter);
+      char *suberror = PyBytes_AS_STRING(pyExcValueStr.get());
       if(suberror != nullptr) errorstr +=  suberror;
       Py_XDECREF(pyExcValue);
     }
@@ -182,11 +253,11 @@ void initPython(double time)
   if(pythonInitDict) { /* If already initialized, undo to reinitialize after */
     PyObject *key, *value;
     Py_ssize_t pos = 0;
-    PyObject *maindict = PyModule_GetDict(pythonMainModule);
+    PyObject *maindict = PyModule_GetDict(pythonMainModule.get());
     while (PyDict_Next(maindict, &pos, &key, &value)) {
-      PyObject *key_ = PyUnicode_AsEncodedString(key, "utf-8", "~");
+      PyObjectUniquePtr key_(PyUnicode_AsEncodedString(key, "utf-8", "~"), PyObjectDeleter);
       if(key_ == nullptr) continue;
-      const char *key_str =  PyBytes_AS_STRING(key_);
+      const char *key_str =  PyBytes_AS_STRING(key_.get());
       if(key_str == nullptr) continue;
     }
   } else {
@@ -222,15 +293,15 @@ void initPython(double time)
     }
     PyConfig_Clear(&config);
 
-    pythonMainModule = PyImport_AddModule("__main__");
+    pythonMainModule.reset(PyImport_AddModule("__main__"));
     pythonMainModuleInitialized = pythonMainModule != nullptr;
-    pythonInitDict = PyModule_GetDict(pythonMainModule);
+    pythonInitDict.reset(PyModule_GetDict(pythonMainModule.get()));
     PyInit_PyOpenSCAD();
-    PyRun_String("from builtins import *\n", Py_file_input, pythonInitDict, pythonInitDict);
+    PyRun_String("from builtins import *\n", Py_file_input, pythonInitDict.get(), pythonInitDict.get());
   }
   std::ostringstream stream;
   stream << "t=" << time;
-  PyRun_String(stream.str().c_str(), Py_file_input, pythonInitDict, pythonInitDict);
+  PyRun_String(stream.str().c_str(), Py_file_input, pythonInitDict.get(), pythonInitDict.get());
 }
 
 void finishPython(void)
@@ -241,8 +312,8 @@ std::string evaluatePython(const std::string & code, bool dry_run)
 {
   std::string error;
   python_result_node = nullptr;
-  PyObject *pyExcValue;
-  PyObject *pyExcTraceback;
+  PyObjectUniquePtr pyExcValue (nullptr, PyObjectDeleter);
+  PyObjectUniquePtr pyExcTraceback (nullptr, PyObjectDeleter);
   /* special python code to catch errors from stdout and stderr and make them available in OpenSCAD console */
   pythonDryRun=dry_run;
   if(!pythonMainModuleInitialized)
@@ -280,8 +351,8 @@ sys.stderr = stderr_bak\n\
 ";
 
     PyRun_SimpleString(python_init_code);
-    PyObject *result;
-    result = PyRun_String(code.c_str(), Py_file_input, pythonInitDict, pythonInitDict); /* actual code is run here */
+    PyObjectUniquePtr result(nullptr, PyObjectDeleter);
+    result.reset(PyRun_String(code.c_str(), Py_file_input, pythonInitDict.get(), pythonInitDict.get())); /* actual code is run here */
 
 
     if(result  == nullptr) {
@@ -291,15 +362,15 @@ sys.stderr = stderr_bak\n\
     } 
     for(int i=0;i<2;i++)
     {
-      PyObject *catcher;
-      catcher = PyObject_GetAttrString(pythonMainModule, i==1?"catcher_err":"catcher_out");
+      PyObjectUniquePtr catcher(nullptr, PyObjectDeleter);
+      catcher.reset( PyObject_GetAttrString(pythonMainModule.get(), i==1?"catcher_err":"catcher_out"));
       if(catcher == nullptr) continue;
-      PyObject *command_output;
-      command_output = PyObject_GetAttrString(catcher, "data");
+      PyObjectUniquePtr command_output(nullptr, PyObjectDeleter);
+      command_output.reset(PyObject_GetAttrString(catcher.get(), "data"));
 
-      PyObject *command_output_value;
-      command_output_value = PyUnicode_AsEncodedString(command_output, "utf-8", "~");
-      const char *command_output_bytes =  PyBytes_AS_STRING(command_output_value);
+      PyObjectUniquePtr command_output_value(nullptr,  PyObjectDeleter);
+      command_output_value.reset(PyUnicode_AsEncodedString(command_output.get(), "utf-8", "~"));
+      const char *command_output_bytes =  PyBytes_AS_STRING(command_output_value.get());
       if(command_output_bytes != nullptr && *command_output_bytes != '\0')
       {
         if(i ==1) error += command_output_bytes; /* output to console */
@@ -343,7 +414,7 @@ PyTypeObject PyOpenSCADType = {
     0,                         			/* tp_weaklistoffset */
     0,                         			/* tp_iter */
     0,                         			/* tp_iternext */
-    0,			             		/* tp_methods */
+    PyOpenSCADMethods,             		/* tp_methods */
     0,             				/* tp_members */
     0,                         			/* tp_getset */
     0,                         			/* tp_base */
