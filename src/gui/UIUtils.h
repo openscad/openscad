@@ -37,9 +37,9 @@ namespace UIUtils {
 
 static const int maxRecentFiles = 10;
 
-QFileInfo openFile(QWidget *parent = nullptr);
+QFileInfo openFile(QWidget *parent = nullptr, QStringList extensions = {});
 
-QFileInfoList openFiles(QWidget *parent = nullptr);
+QFileInfoList openFiles(QWidget *parent = nullptr, QStringList extensions = {});
 
 QStringList recentFiles();
 
