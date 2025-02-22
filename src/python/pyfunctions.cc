@@ -31,7 +31,7 @@
 #include "export.h"
 #include "GeometryUtils.h"
 #include <Python.h>
-#include <src/python/pyopenscad.h>
+#include "src/python/pyopenscad.h"
 #include "SourceFile.h"
 #include "BuiltinContext.h"
 #include <PolySetBuilder.h>
@@ -42,7 +42,7 @@ extern bool parse(SourceFile *& file, const std::string& text, const std::string
 #include "src/python/FrepNode.h"
 #endif
 #include "GeometryUtils.h"
-#include "primitives.h"
+#include "src/core/primitives.h"
 #include "TransformNode.h"
 #include "RotateExtrudeNode.h"
 #include "LinearExtrudeNode.h"

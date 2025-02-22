@@ -137,6 +137,7 @@ def main():
               "src/io/export_pov.cc",
               "src/io/export_svg.cc",
               "src/io/export_foldable.cc",
+              "src/io/export_3mf_dummy.cc",
               "src/io/export_ps.cc",
               "src/io/export_wrl.cc",
               "src/io/export_amf.cc",

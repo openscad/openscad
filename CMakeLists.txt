@@ -481,6 +481,7 @@ if(NOT Python_FOUND  AND NOT WIN32)
   endif()
 endif()
 if(ENABLE_PYTHON)
+<<<<<<< HEAD
   SET(PYTHON_SOURCES
     src/python/pyopenscad.cc
     src/python/pydata.cc 
@@ -617,6 +618,20 @@ if(MXECROSS)
 else()	
   target_link_directories(OpenSCAD PRIVATE "/usr/lib64")
   target_link_libraries(OpenSCAD PRIVATE "libcurl.so")
+=======
+  find_package(Python REQUIRED COMPONENTS Interpreter Development)
+  find_package(Nettle 3.4)
+  if(NOT Nettle_FOUND)
+    message(WARNING "Nettle not found, disabling python support.")
+    set(ENABLE_PYTHON OFF CACHE BOOL "" FORCE)
+  else()
+    message(STATUS "Python enabled, using Nettle ${Nettle_VERSION}")
+    target_include_directories(OpenSCAD PRIVATE ${Python_INCLUDE_DIRS})
+    target_link_libraries(OpenSCAD PRIVATE ${Python_LIBRARIES})
+    target_include_directories(OpenSCAD PRIVATE ${Nettle_INCLUDE_DIRS})
+    target_link_libraries(OpenSCAD PRIVATE ${Nettle_LIBRARIES})
+  endif()
+>>>>>>> upstream/master
 endif()
 
 if(ENABLE_HIDAPI)
@@ -1073,6 +1088,15 @@ set(CORE_SOURCES
   ${BISON_openscad_parser_OUTPUTS}
   ${FLEX_comment_lexer_OUTPUTS}
   ${BISON_comment_parser_OUTPUTS})
+<<<<<<< HEAD
+=======
+if(ENABLE_PYTHON)
+	list(APPEND CORE_SOURCES
+		    src/python/pyopenscad.cc 
+		    src/python/pyfunctions.cc )
+	target_compile_definitions(OpenSCAD PRIVATE ENABLE_PYTHON)
+endif()
+>>>>>>> upstream/master
 
 if(EXPERIMENTAL AND ENABLE_CGAL)
   list(APPEND CORE_SOURCES

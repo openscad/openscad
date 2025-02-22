@@ -1,5 +1,6 @@
 #pragma once
 #include "src/core/node.h"
+<<<<<<< HEAD
 #include "src/core/function.h"
 #include "src/geometry/Polygon2d.h"
 #include <src/core/Selection.h>
@@ -36,3 +37,15 @@ extern bool pythonRuntimeInitialized;
 extern bool pythonDryRun;
 extern std::shared_ptr<AbstractNode> python_result_node;
 extern std::vector<SelectedObject> python_result_handle;
+=======
+
+extern bool python_active;
+extern bool python_trusted;
+std::string python_version(void);
+
+void initPython(double time);
+std::string evaluatePython(const std::string &code, bool dry_run=0);
+void finishPython();
+
+extern std::shared_ptr<AbstractNode> python_result_node;
+>>>>>>> upstream/master
