@@ -4386,7 +4386,7 @@ PyMethodDef PyOpenSCADFunctions[] = {
   {"wrap", (PyCFunction) python_wrap, METH_VARARGS | METH_KEYWORDS, "Wrap Object around cylidner."},
   {"color", (PyCFunction) python_color, METH_VARARGS | METH_KEYWORDS, "Color Object."},
   {"output", (PyCFunction) python_output, METH_VARARGS | METH_KEYWORDS, "Output the result."},
-  {"show", (PyCFunction) python_show, METH_VARARGS | METH_KEYWORDS, Show the result."},
+  {"show", (PyCFunction) python_show, METH_VARARGS | METH_KEYWORDS, "Show the result."},
   {"export", (PyCFunction) python_export, METH_VARARGS | METH_KEYWORDS, "Export the result."},
   {"find_face", (PyCFunction) python_find_face, METH_VARARGS | METH_KEYWORDS, "find_face."},
   {"sitonto", (PyCFunction) python_sitonto, METH_VARARGS | METH_KEYWORDS, "sitonto"},

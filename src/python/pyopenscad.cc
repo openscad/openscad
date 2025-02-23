@@ -36,8 +36,7 @@
 // #define HAVE_PYTHON_YIELD
 extern "C" PyObject *PyInit_openscad(void);
 
-bool python_active;
-bool python_trusted;
+// https://docs.python.org/3.10/extending/newtypes.html
 
 void PyObjectDeleter (PyObject *pObject) { Py_XDECREF(pObject); };
 
@@ -50,6 +49,8 @@ bool pythonDryRun=false;
 std::shared_ptr<AbstractNode> python_result_node = nullptr; /* global result veriable containing the python created result */
 PyObject *python_result_obj = nullptr;
 std::vector<SelectedObject> python_result_handle;
+bool python_active;  /* if python is actually used during evaluation */
+bool python_trusted; /* global Python trust flag */
 bool python_runipython = false;
 bool pythonMainModuleInitialized = false;
 bool pythonRuntimeInitialized = false;
