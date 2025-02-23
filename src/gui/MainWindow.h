@@ -32,6 +32,7 @@
 #include <QTime>
 #include <QSignalMapper>
 
+#include "RubberBandManager.h"
 #include "gui/Editor.h"
 #include "geometry/Geometry.h"
 #include "io/export.h"
@@ -101,13 +102,6 @@ public:
   QMap<QString, QString> knownFileExtensions;
 
   QLabel *versionLabel;
-  QWidget *editorDockTitleWidget;
-  QWidget *consoleDockTitleWidget;
-  QWidget *parameterDockTitleWidget;
-  QWidget *errorLogDockTitleWidget;
-  QWidget *animateDockTitleWidget;
-  QWidget *viewportControlTitleWidget;
-  QWidget *fontListDockTitleWidget;
 
   Measurement meas;
 
@@ -118,6 +112,10 @@ public:
   ~MainWindow() override;
 
 private:
+  RubberBandManager rubberBandManager;
+
+  std::vector<std::tuple<Dock *, QString>> docks;
+
   volatile bool isClosing = false;
   void consoleOutputRaw(const QString& msg);
   void clearAllSelectionIndicators();
@@ -138,6 +136,14 @@ private slots:
   void onHoveredObjectInSelectionMenu();
   void measureFinished();
   void errorLogOutput(const Message& log_msg);
+  void onNavigationOpenContextMenu();
+  void onNavigationCloseContextMenu();
+  void onNavigationHoveredContextMenuEntry();
+  void onNavigationTriggerContextMenuEntry();
+
+  // implement the different actions needed when
+  // the tab manager editor is changed.
+  void onTabManagerEditorChanged(EditorInterface *);
 
 public:
   static void consoleOutput(const Message& msgObj, void *userdata);
@@ -152,6 +158,8 @@ public:
   void UnknownExceptionCleanup(std::string msg = "");
 
 private:
+  [[nodiscard]] QString getCurrentFileName() const;
+
   void setRenderVariables(ContextHandle<BuiltinContext>& context);
   void updateCompileResult();
   void compile(bool reload, bool forcedone = false);
@@ -166,7 +174,6 @@ private:
   void saveBackup();
   void writeBackup(QFile *file);
   void show_examples();
-  void setDockWidgetTitle(QDockWidget *dockWidget, QString prefix, bool topLevel);
   void addKeyboardShortCut(const QList<QAction *>& actions);
   void updateStatusBar(ProgressWidget *progressWidget);
   void activateWindow(int);
@@ -225,7 +232,7 @@ private slots:
   void hideAnimate();
   void showFontList();
   void hideFontList();
-  void on_windowActionSelectEditor_triggered();
+  void onwindowActionSelectEditor();
   void on_windowActionSelectConsole_triggered();
   void on_windowActionSelectCustomizer_triggered();
   void on_windowActionSelectErrorLog_triggered();
@@ -296,12 +303,6 @@ public:
   void onActionEvent(InputEventAction *event) override;
   void onZoomEvent(InputEventZoom *event) override;
 
-  void changedTopLevelConsole(bool);
-  void changedTopLevelErrorLog(bool);
-  void changedTopLevelAnimate(bool);
-  void changedTopLevelFontList(bool);
-  void changedTopLevelViewportControl(bool);
-
   QList<double> getTranslation() const;
   QList<double> getRotation() const;
   std::unordered_map<FileFormat, QAction *> exportMap;
@@ -309,19 +310,7 @@ public:
 public slots:
   void actionReloadRenderPreview();
   void on_editorDock_visibilityChanged(bool);
-  void on_consoleDock_visibilityChanged(bool);
-  void on_parameterDock_visibilityChanged(bool);
-  void on_errorLogDock_visibilityChanged(bool);
-  void on_animateDock_visibilityChanged(bool);
-  void on_fontListDock_visibilityChanged(bool);
-  void on_viewportControlDock_visibilityChanged(bool);
   void on_toolButtonCompileResultClose_clicked();
-  void consoleTopLevelChanged(bool);
-  void parameterTopLevelChanged(bool);
-  void errorLogTopLevelChanged(bool);
-  void animateTopLevelChanged(bool);
-  void fontListTopLevelChanged(bool);
-  void viewportControlTopLevelChanged(bool);
   void processEvents();
   void jumpToLine(int, int);
   void openFileFromPath(const QString&, int);
@@ -397,6 +386,7 @@ private:
   ExportPdfPaperSize sizeString2Enum(const QString& current);
   ExportPdfPaperOrientation orientationsString2Enum(const QString& current);
 
+  QMenu *navigationMenu{nullptr};
   QSoundEffect *renderCompleteSoundEffect;
   std::vector<std::unique_ptr<QTemporaryFile>> allTempFiles;
 
