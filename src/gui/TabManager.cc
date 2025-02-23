@@ -470,6 +470,11 @@ void TabManager::setTabModified(EditorInterface *edt)
 void TabManager::openTabFile(const QString& filename)
 {
   par->setCurrentOutput();
+#ifdef ENABLE_PYTHON
+  if(boost::algorithm::ends_with(filename, ".py")) {
+    std::string templ="from openscad import *\n";	  
+  } else
+#endif  
   editor->setPlainText("");
 
   QFileInfo fileinfo(filename);

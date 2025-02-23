@@ -77,9 +77,23 @@ PyObject *PyOpenSCADObjectFromNode(PyTypeObject *type, const std::shared_ptr<Abs
   }
   return nullptr;
 }
+
+PyThreadState *tstate=nullptr;
+
+void python_lock(void){
+  if(tstate != nullptr && pythonInitDict != nullptr) PyEval_RestoreThread(tstate);
+}
+
+void python_unlock(void) {
+  if(pythonInitDict != nullptr)	tstate = PyEval_SaveThread();
+}
+
 std::shared_ptr<AbstractNode> PyOpenSCADObjectToNode(PyObject *obj)
 {
   std::shared_ptr<AbstractNode> result = ((PyOpenSCADObject *) obj)->node;
+  if(result.use_count() > 2) {
+    result = result->clone();
+  }
   return result;
 }
 
@@ -99,6 +113,9 @@ std::shared_ptr<AbstractNode> PyOpenSCADObjectToNodeMulti(PyObject *objs)
   std::shared_ptr<AbstractNode> result;
   if (Py_TYPE(objs) == &PyOpenSCADType) {
     result = ((PyOpenSCADObject *) objs)->node;
+    if(result.use_count() > 2) {
+	    result = result->clone();
+    }
   } else if (PyList_Check(objs)) {
     DECLARE_INSTANCE
     auto node = std::make_shared<CsgOpNode>(instance, OpenSCADOperator::UNION);
@@ -213,6 +230,39 @@ std::vector<Vector3d> python_vectors(PyObject *vec, int mindim, int maxdim)
 
 /*
  * Helper function to extract actual values for fn, fa and fs
+ */
+
+void get_fnas(double& fn, double& fa, double& fs) {
+  PyObject *mainModule = PyImport_AddModule("__main__");
+  if (mainModule == nullptr) return;
+  fn=0;
+  fa=12;
+  fs=2;
+
+  if(PyObject_HasAttrString(mainModule,"fn")) {
+    PyObjectUniquePtr varFn(PyObject_GetAttrString(mainModule, "fn"),PyObjectDeleter);
+    if (varFn.get() != nullptr){
+      fn = PyFloat_AsDouble(varFn.get());
+    }
+  }  
+
+  if(PyObject_HasAttrString(mainModule,"fa")) {
+    PyObjectUniquePtr varFa(PyObject_GetAttrString(mainModule, "fa"),PyObjectDeleter);
+    if (varFa.get() != nullptr){
+      fa = PyFloat_AsDouble(varFa.get());
+    }
+  }
+
+  PyObjectUniquePtr varFs(PyObject_GetAttrString(mainModule, "fs"),PyObjectDeleter);
+  if(PyObject_HasAttrString(mainModule,"fn")) {
+    if (varFs.get() != nullptr){
+      fs = PyFloat_AsDouble(varFs.get());
+    }
+  }  
+}
+
+/*
+ * Type specific init function. nothing special here
  */
 
 static int PyOpenSCADInit(PyOpenSCADObject *self, PyObject *args, PyObject *kwds)
