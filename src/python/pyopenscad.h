@@ -17,6 +17,7 @@
 typedef struct {
   PyObject_HEAD
   std::shared_ptr<AbstractNode> node;
+  PyObject *dict;
   /* Type-specific fields go here. */
 } PyOpenSCADObject;
 
@@ -31,14 +32,17 @@ std::shared_ptr<AbstractNode> PyOpenSCADObjectToNode(PyObject *object);
 
 extern PyTypeObject PyOpenSCADType;
 extern std::shared_ptr<AbstractNode> python_result_node;
+std::shared_ptr<AbstractNode> PyOpenSCADObjectToNode(PyObject *object, PyObject **dict );
+std::shared_ptr<AbstractNode> PyOpenSCADObjectToNodeMulti(PyObject *object, PyObject **dict);
 extern std::string trusted_edit_document_name;
 extern std::string untrusted_edit_document_name;
 std::vector<Vector3d> python_vectors(PyObject *vec, int mindim, int maxdim);
 int python_numberval(PyObject *number, double *result);
 void get_fnas(double& fn, double& fa, double& fs);
-std::shared_ptr<AbstractNode> PyOpenSCADObjectToNode(PyObject *object);
-std::shared_ptr<AbstractNode> PyOpenSCADObjectToNodeMulti(PyObject *object);
+PyObject *python_str(PyObject *self);
+
 extern PyNumberMethods PyOpenSCADNumbers;
+extern PyMappingMethods PyOpenSCADMapping;
 extern PyMethodDef PyOpenSCADFunctions[];
 extern PyMethodDef PyOpenSCADMethods[];
 
