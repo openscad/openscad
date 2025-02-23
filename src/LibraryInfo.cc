@@ -29,6 +29,9 @@
 #endif // GCC_INT_VERSION
 #endif // GNUG
 #endif // ENABLE_CGAL
+#ifdef ENABLE_PYTHON
+#include "src/python/python_public.h"
+#endif
 
 #ifdef ENABLE_LIBZIP
 #include <zip.h>
@@ -139,6 +142,9 @@ std::string LibraryInfo::info()
 #ifdef ENABLE_CGAL
     << "\nCGAL version, kernels: " << TOSTRING(CGAL_VERSION) << ", " << cgal_3d_kernel << ", " << cgal_2d_kernel << ", " << cgal_2d_kernelEx
 #endif
+#ifdef ENABLE_PYTHON
+    << "\nPython Version: " << python_version()
+#endif    
     << "\nOpenCSG version: " << OPENCSG_VERSION_STRING
     << "\nClipper2 version: " << CLIPPER2_VERSION
     << "\nManifold version: " << MANIFOLD_VERSION_STRING
