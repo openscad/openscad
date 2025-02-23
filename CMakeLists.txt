@@ -465,12 +465,17 @@ target_link_libraries(OpenSCAD PRIVATE ${LIBXML2_LIBRARIES})
 
 if(ENABLE_PYTHON)
   find_package(Python REQUIRED COMPONENTS Interpreter Development)
-  find_package(CryptoPP REQUIRED)
-  message(STATUS "Python enabled, using Crypto++ ${PC_CRYPTOPP_VERSION}")
-  target_include_directories(OpenSCAD PRIVATE ${Python_INCLUDE_DIRS})
-  target_include_directories(OpenSCAD PRIVATE ${CRYPTOPP_INCLUDE_DIRS})
-  target_link_libraries(OpenSCAD PRIVATE ${Python_LIBRARIES})
-  target_link_libraries(OpenSCAD PRIVATE ${CRYPTOPP_LIBRARIES})
+  find_package(Nettle 3.4)
+  if(NOT Nettle_FOUND)
+    message(WARNING "Nettle not found, disabling python support.")
+    set(ENABLE_PYTHON OFF CACHE BOOL "" FORCE)
+  else()
+    message(STATUS "Python enabled, using Nettle ${Nettle_VERSION}")
+    target_include_directories(OpenSCAD PRIVATE ${Python_INCLUDE_DIRS})
+    target_link_libraries(OpenSCAD PRIVATE ${Python_LIBRARIES})
+    target_include_directories(OpenSCAD PRIVATE ${Nettle_INCLUDE_DIRS})
+    target_link_libraries(OpenSCAD PRIVATE ${Nettle_LIBRARIES})
+  endif()
 endif()
 
 if(ENABLE_HIDAPI)
@@ -902,7 +907,8 @@ set(CORE_SOURCES
   ${BISON_comment_parser_OUTPUTS})
 if(ENABLE_PYTHON)
 	list(APPEND CORE_SOURCES
-		    src/core/pyopenscad.cc )
+		    src/python/pyopenscad.cc 
+		    src/python/pyfunctions.cc )
 	target_compile_definitions(OpenSCAD PRIVATE ENABLE_PYTHON)
 endif()
 
