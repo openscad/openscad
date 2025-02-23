@@ -791,6 +791,7 @@ set(CORE_SOURCES
   src/core/ImportNode.cc
   src/core/LinearExtrudeNode.cc
   src/core/LocalScope.cc
+  src/core/node_clone.cc
   src/core/ModuleInstantiation.cc
   src/core/NodeDumper.cc
   src/core/NodeVisitor.cc

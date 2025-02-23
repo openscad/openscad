@@ -35,6 +35,7 @@ extern std::string trusted_edit_document_name;
 extern std::string untrusted_edit_document_name;
 std::vector<Vector3d> python_vectors(PyObject *vec, int mindim, int maxdim);
 int python_numberval(PyObject *number, double *result);
+void get_fnas(double& fn, double& fa, double& fs);
 std::shared_ptr<AbstractNode> PyOpenSCADObjectToNode(PyObject *object);
 std::shared_ptr<AbstractNode> PyOpenSCADObjectToNodeMulti(PyObject *object);
 extern PyNumberMethods PyOpenSCADNumbers;

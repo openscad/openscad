@@ -1505,7 +1505,11 @@ void MainWindow::saveBackup()
   }
 
   if (!this->tempFile) {
-    this->tempFile = new QTemporaryFile(backupPath.append(basename + "-backup-XXXXXXXX.scad"));
+    QString suffix="scad";
+#ifdef ENABLE_PYTHON
+    if(this->python_active) suffix="py";
+#endif
+    this->tempFile = new QTemporaryFile(backupPath.append(basename + "-backup-XXXXXXXX." + suffix));
   }
 
   if ((!this->tempFile->isOpen()) && (!this->tempFile->open())) {
@@ -1823,6 +1827,10 @@ bool MainWindow::trust_python_file(const std::string& file,  const std::string& 
 
   if (content.size() <= 1) { // 1st character already typed
     this->trusted_edit_document_name = file;
+    return true;
+  }
+  if(content.rfind("from openscad import",0) == 0) { // 1st character already typed
+    this->trusted_edit_document_name=file;
     return true;
   }
 
@@ -2155,6 +2163,9 @@ void MainWindow::cgalRender()
 
 void MainWindow::actionRenderDone(const std::shared_ptr<const Geometry>& root_geom)
 {
+#ifdef ENABLE_PYTHON
+  python_lock();	
+#endif
   progress_report_fin();
   if (root_geom) {
     std::vector<std::string> options;
