@@ -379,24 +379,11 @@
     <property name="title">
      <string>&amp;Window</string>
     </property>
-    <addaction name="windowActionSelectEditor"/>
-    <addaction name="windowActionSelectConsole"/>
-    <addaction name="windowActionSelectErrorLog"/>
-    <addaction name="windowActionSelectFontList"/>
-    <addaction name="windowActionSelectCustomizer"/>
-    <addaction name="windowActionSelectAnimate"/>
-    <addaction name="windowActionSelectViewportControl"/>
     <addaction name="separator"/>
     <addaction name="windowActionNextWindow"/>
     <addaction name="windowActionPreviousWindow"/>
     <addaction name="separator"/>
-    <addaction name="windowActionHideEditor"/>
-    <addaction name="windowActionHideConsole"/>
-    <addaction name="windowActionHideErrorLog"/>
-    <addaction name="windowActionHideCustomizer"/>
-    <addaction name="windowActionHideAnimate"/>
-    <addaction name="windowActionHideViewportControl"/>
-    <addaction name="windowActionHideFontList"/>
+    <addaction name="windowActionJumpTo"/>
    </widget>
    <addaction name="menu_File"/>
    <addaction name="menu_Edit"/>
@@ -1738,10 +1725,16 @@
    <property name="text">
     <string>&amp;Next Window</string>
    </property>
+   <property name="shortcut">
+    <string>Ctrl+K</string>
+   </property>
   </action>
   <action name="windowActionPreviousWindow">
    <property name="text">
     <string>&amp;Previous Window</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+H</string>
    </property>
   </action>
   <action name="editActionInsertTemplate">
@@ -1771,6 +1764,14 @@
   <action name="windowActionSelectFontList">
    <property name="text">
     <string>Font List</string>
+   </property>
+  </action>
+  <action name="windowActionJumpTo">
+   <property name="text">
+    <string>Jump To ...</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+J</string>
    </property>
   </action>
  </widget>
