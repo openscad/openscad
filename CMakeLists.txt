@@ -470,11 +470,32 @@ if(ENABLE_PYTHON)
     message(WARNING "Nettle not found, disabling python support.")
     set(ENABLE_PYTHON OFF CACHE BOOL "" FORCE)
   else()
-    message(STATUS "Python enabled, using Nettle ${Nettle_VERSION}")
-    target_include_directories(OpenSCAD PRIVATE ${Python_INCLUDE_DIRS})
-    target_link_libraries(OpenSCAD PRIVATE ${Python_LIBRARIES})
+    SET(PYTHON_SOURCES
+      src/python/pyopenscad.cc 
+      src/python/pyfunctions.cc
+    )
+
+    add_library(OpenSCADPy ${PYTHON_SOURCES} )
+    message(STATUS "Python ${PYTHON_VERSION} enabled, using Nettle ${Nettle_VERSION}")
+    target_compile_definitions(OpenSCAD PRIVATE ENABLE_PYTHON)
+    target_compile_definitions(OpenSCADPy PRIVATE ENABLE_PYTHON)
+
+    target_include_directories(OpenSCADPy PRIVATE ${Python_INCLUDE_DIRS})
+    target_link_libraries(OpenSCADPy PRIVATE ${Python_LIBRARIES})
+    target_include_directories(OpenSCADPy PRIVATE
+      "src"
+    )
+    target_include_directories(OpenSCADPy SYSTEM PRIVATE ${GLIB2_INCLUDE_DIRS})
+    target_link_libraries(OpenSCADPy PRIVATE Eigen3::Eigen)
+    target_compile_definitions(OpenSCADPy PRIVATE "STACKSIZE=${STACKSIZE}")
+    target_compile_definitions(OpenSCADPy PRIVATE EIGEN_DONT_ALIGN)
+    set_property(TARGET OpenSCADPy PROPERTY CXX_STANDARD 17)
+    set_property(TARGET OpenSCADPy PROPERTY CXX_EXTENSIONS OFF)
+    set_property(TARGET OpenSCADPy PROPERTY CXX_STANDARD_REQUIRED ON)
+
     target_include_directories(OpenSCAD PRIVATE ${Nettle_INCLUDE_DIRS})
     target_link_libraries(OpenSCAD PRIVATE ${Nettle_LIBRARIES})
+    target_link_libraries(OpenSCAD PRIVATE OpenSCADPy)
   endif()
 endif()
 
@@ -904,12 +925,6 @@ set(CORE_SOURCES
   ${BISON_openscad_parser_OUTPUTS}
   ${FLEX_comment_lexer_OUTPUTS}
   ${BISON_comment_parser_OUTPUTS})
-if(ENABLE_PYTHON)
-	list(APPEND CORE_SOURCES
-		    src/python/pyopenscad.cc 
-		    src/python/pyfunctions.cc )
-	target_compile_definitions(OpenSCAD PRIVATE ENABLE_PYTHON)
-endif()
 
 if(EXPERIMENTAL AND ENABLE_CGAL)
   list(APPEND CORE_SOURCES
