@@ -26,26 +26,33 @@
 
 #include "FontCache.h"
 
+#include <cassert>
+#include <cstdlib>
 #include <cstdint>
-#include <iostream>
-#include <vector>
-
+#include <ctime>
 #include <filesystem>
-#include <boost/algorithm/string.hpp>
+#include <iostream>
 #include <string>
 #include <utility>
+#include <vector>
+
+#include <boost/algorithm/string.hpp>
+#include <hb.h>
+#include <fontconfig/fontconfig.h>
+#include <freetype/fttypes.h>
+#include <freetype/freetype.h>
+#include <freetype/ttnameid.h>
 
 #include "platform/PlatformUtils.h"
 #include "utils/printutils.h"
 #include "utils/version_helper.h"
 
 extern std::vector<std::string> librarypath;
-
 std::vector<std::string> fontpath;
 
 namespace fs = std::filesystem;
 
-const std::string get_fontconfig_version()
+std::string get_fontconfig_version()
 {
   const unsigned int version = FcGetVersion();
 
@@ -54,7 +61,7 @@ const std::string get_fontconfig_version()
   return OpenSCAD::get_version_string(header_version, runtime_version);
 }
 
-const std::string get_harfbuzz_version()
+std::string get_harfbuzz_version()
 {
   unsigned int major, minor, micro;
   hb_version(&major, &minor, &micro);
@@ -64,7 +71,7 @@ const std::string get_harfbuzz_version()
   return OpenSCAD::get_version_string(header_version, runtime_version);
 }
 
-const std::string get_freetype_version()
+std::string get_freetype_version()
 {
   return FontCache::instance()->get_freetype_version();
 }
@@ -128,7 +135,7 @@ FontCache::FontCache()
   // If we've got a bundled fonts.conf, initialize fontconfig with our own config
   // by overriding the built-in fontconfig path.
   // For system installs and dev environments, we leave this alone
-  fs::path fontdir(PlatformUtils::resourcePath("fonts"));
+  const fs::path fontdir(PlatformUtils::resourcePath("fonts"));
   if (fs::is_regular_file(fontdir / "fonts.conf")) {
     auto abspath = fontdir.empty() ? fs::current_path() : fs::absolute(fontdir);
     PlatformUtils::setenv("FONTCONFIG_PATH", (abspath.generic_string()).c_str(), 0);
@@ -167,7 +174,7 @@ FontCache::FontCache()
     for (string_split_iterator it = boost::make_split_iterator(paths, boost::first_finder(sep, boost::is_iequal())); it != string_split_iterator(); ++it) {
       const fs::path p(boost::copy_range<std::string>(*it));
       if (fs::exists(p) && fs::is_directory(p)) {
-        std::string path = fs::absolute(p).string();
+        const std::string path = fs::absolute(p).string();
         add_font_dir(path);
       }
     }
@@ -243,7 +250,7 @@ std::vector<uint32_t> FontCache::filter(const std::u32string& str) const
   FcPattern *pattern = FcPatternCreate();
   init_pattern(pattern);
   FcCharSet *charSet = FcCharSetCreate();
-  for (char32_t a : str) {
+  for (const char32_t a : str) {
     FcCharSetAddChar(charSet, a);
   }
   FcValue charSetValue;
@@ -287,11 +294,11 @@ FontInfoList *FontCache::list_fonts() const
     FcValue style_value;
     FcPatternGet(p, FC_STYLE, 0, &style_value);
 
-    std::string family((const char *) family_value.u.s);
-    std::string style((const char *) style_value.u.s);
-    std::string file((const char *) file_value.u.s);
+    const std::string family((const char *) family_value.u.s);
+    const std::string style((const char *) style_value.u.s);
+    const std::string file((const char *) file_value.u.s);
 
-    list->push_back(FontInfo(family, style, file, FcPatternHash(p)));
+    list->emplace_back(family, style, file, FcPatternHash(p));
   }
   FcFontSetDestroy(font_set);
 
@@ -405,7 +412,7 @@ FT_Face FontCache::find_face_fontconfig(const std::string& font) const
   }
 
   FT_Face face;
-  FT_Error error = FT_New_Face(this->library, (const char *) file_value.u.s, font_index.u.i, &face);
+  const FT_Error error = FT_New_Face(this->library, (const char *) file_value.u.s, font_index.u.i, &face);
 
   FcPatternDestroy(pattern);
   FcPatternDestroy(match);
@@ -460,7 +467,7 @@ bool FontCache::is_windows_symbol_font(const FT_Face& face) const
   }
 
   FT_UInt gindex;
-  FT_ULong charcode = FT_Get_First_Char(face, &gindex);
+  const FT_ULong charcode = FT_Get_First_Char(face, &gindex);
   if ((gindex == 0) || (charcode < 0xf000)) {
     return false;
   }
