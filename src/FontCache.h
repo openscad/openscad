@@ -33,13 +33,9 @@
 #include <utility>
 #include <vector>
 
-#include <freetype/freetype.h>
-
-// #include <ft2build.h>
-// #include FT_FREETYPE_H
-// #include FT_TRUETYPE_IDS_H
+#include <ft2build.h>
+#include FT_FREETYPE_H
 #include <fontconfig/fontconfig.h>
-// #include <hb-ft.h>
 
 std::string get_fontconfig_version();
 std::string get_harfbuzz_version();

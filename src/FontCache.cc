@@ -39,9 +39,10 @@
 #include <boost/algorithm/string.hpp>
 #include <hb.h>
 #include <fontconfig/fontconfig.h>
-#include <freetype/fttypes.h>
-#include <freetype/freetype.h>
-#include <freetype/ttnameid.h>
+#include <ft2build.h>
+#include FT_FREETYPE_H
+#include FT_TYPES_H
+#include FT_TRUETYPE_IDS_H
 
 #include "platform/PlatformUtils.h"
 #include "utils/printutils.h"
