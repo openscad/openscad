@@ -6,7 +6,7 @@
 #include <vector>
 
 #include <clipper2/clipper.version.h>
-#include <eigen/src/Core/util/Macros.h>
+#include <Eigen/Core>
 #include <glib.h>
 
 
