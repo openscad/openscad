@@ -36,33 +36,14 @@ TabManager::TabManager(MainWindow *o, const QString& filename)
   tabWidget->setMovable(true);
   tabWidget->setContextMenuPolicy(Qt::CustomContextMenu);
 
-  connect(tabWidget, &QTabWidget::currentChanged, this, &TabManager::tabSwitched);
   connect(tabWidget, &QTabWidget::tabCloseRequested, this, &TabManager::closeTabRequested);
   connect(tabWidget, &QTabWidget::customContextMenuRequested, this, &TabManager::showTabHeaderContextMenu);
 
-  createTab(filename);
-
   connect(tabWidget, &QTabWidget::currentChanged, this, &TabManager::stopAnimation);
   connect(tabWidget, &QTabWidget::currentChanged, this, &TabManager::updateFindState);
+  connect(tabWidget, &QTabWidget::currentChanged, this, &TabManager::tabSwitched);
 
-  connect(par, SIGNAL(highlightError(int)), this, SLOT(highlightError(int)));
-  connect(par, SIGNAL(unhighlightLastError()), this, SLOT(unhighlightLastError()));
-
-  connect(par->editActionUndo, SIGNAL(triggered()), this, SLOT(undo()));
-  connect(par->editActionRedo, SIGNAL(triggered()), this, SLOT(redo()));
-  connect(par->editActionRedo_2, SIGNAL(triggered()), this, SLOT(redo()));
-  connect(par->editActionCut, SIGNAL(triggered()), this, SLOT(cut()));
-  connect(par->editActionPaste, SIGNAL(triggered()), this, SLOT(paste()));
-
-  connect(par->editActionIndent, SIGNAL(triggered()), this, SLOT(indentSelection()));
-  connect(par->editActionUnindent, SIGNAL(triggered()), this, SLOT(unindentSelection()));
-  connect(par->editActionComment, SIGNAL(triggered()), this, SLOT(commentSelection()));
-  connect(par->editActionUncomment, SIGNAL(triggered()), this, SLOT(uncommentSelection()));
-
-  connect(par->editActionToggleBookmark, SIGNAL(triggered()), this, SLOT(toggleBookmark()));
-  connect(par->editActionNextBookmark, SIGNAL(triggered()), this, SLOT(nextBookmark()));
-  connect(par->editActionPrevBookmark, SIGNAL(triggered()), this, SLOT(prevBookmark()));
-  connect(par->editActionJumpToNextError, SIGNAL(triggered()), this, SLOT(jumpToNextError()));
+  createTab(filename);
 }
 
 QWidget *TabManager::getTabContent()
@@ -76,13 +57,6 @@ void TabManager::tabSwitched(int x)
   assert(tabWidget != nullptr);
 
   editor = (EditorInterface *)tabWidget->widget(x);
-  par->activeEditor = editor;
-  par->parameterDock->setWidget(editor->parameterWidget);
-
-  par->editActionUndo->setEnabled(editor->canUndo());
-  par->parameterTopLevelChanged(par->parameterDock->isFloating());
-  par->changedTopLevelConsole(par->consoleDock->isFloating());
-  par->setWindowTitle(tabWidget->tabText(x).replace("&&", "&"));
 
   // Hides all the closing button except the one on the currently focused editor
   for (int idx = 0; idx < tabWidget->count(); ++idx) {
@@ -91,6 +65,8 @@ void TabManager::tabSwitched(int x)
       button->setVisible(idx == x);
     }
   }
+
+  emit currentEditorChanged(editor);
 }
 
 void TabManager::closeTabRequested(int x)
@@ -103,6 +79,7 @@ void TabManager::closeTabRequested(int x)
   tabWidget->removeTab(x);
 
   emit tabCountChanged(editorList.size());
+  emit currentEditorChanged((EditorInterface *)tabWidget->currentWidget());
 
   delete temp->parameterWidget;
   delete temp;
@@ -216,7 +193,7 @@ void TabManager::createTab(const QString& filename)
     setTabName("");
   }
   emit tabCountChanged(editorList.size());
-
+  emit currentEditorChanged(editor);
   par->updateRecentFileActions();
 }
 
@@ -528,9 +505,8 @@ void TabManager::setTabName(const QString& filename, EditorInterface *edt)
     tabWidget->setTabToolTip(tabWidget->indexOf(edt), fileinfo.filePath());
     QDir::setCurrent(fileinfo.dir().absolutePath());
   }
-  par->changedTopLevelConsole(par->consoleDock->isFloating());
-  par->parameterTopLevelChanged(par->parameterDock->isFloating());
-  par->setWindowTitle(fname);
+
+  emit currentEditorChanged(editor);
 }
 
 bool TabManager::refreshDocument()

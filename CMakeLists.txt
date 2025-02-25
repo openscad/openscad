@@ -1091,6 +1091,7 @@ set(GUI_SOURCES
   src/gui/PrintService.cc
   src/gui/ExternalToolInterface.cc
   src/gui/ProgressWidget.cc
+  src/gui/RubberBandManager.cc
   src/gui/QGLView.cc
   src/gui/QGLView2.cc
   src/gui/QSettingsCached.cc
@@ -1158,6 +1159,7 @@ set(GUI_HEADERS
     src/gui/PrintInitDialog.h
     src/gui/PrintService.h
     src/gui/ProgressWidget.h
+    src/gui/RubberBandManager.h
     src/gui/QGLView.h
     src/gui/QSettingsCached.h
     src/gui/QWordSearchField.h
