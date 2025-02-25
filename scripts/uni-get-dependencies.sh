@@ -1,3 +1,5 @@
+#!/bin/sh
+
 # auto-install dependency packages using the systems package manager.
 # after running this, run ./script/check-dependencies.sh. see README.md
 #
