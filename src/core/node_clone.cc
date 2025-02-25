@@ -66,7 +66,6 @@ NodeCloneFunc(RotateExtrudeNode)
 NodeCloneFunc(LinearExtrudeNode)
 NodeCloneFunc(CsgOpNode)
 NodeCloneFunc(CgalAdvNode)
-NodeCloneFunc(RoofNode)
 NodeCloneFunc(RenderNode)
 NodeCloneFunc(SurfaceNode)
 NodeCloneFunc(TextNode)
@@ -74,6 +73,9 @@ NodeCloneFunc(OffsetNode)
 NodeCloneFunc(ProjectionNode)
 NodeCloneFunc(GroupNode)
 NodeCloneFunc(ImportNode)
+#if defined(ENABLE_EXPERIMENTAL) && defined(ENABLE_CGAL)
+NodeCloneFunc(RoofNode)
+#endif
 
 std::shared_ptr<AbstractNode> AbstractNode::clone(void)
 {
@@ -91,7 +93,6 @@ std::shared_ptr<AbstractNode> AbstractNode::clone(void)
 	NodeCloneUse(LinearExtrudeNode)
 	NodeCloneUse(CsgOpNode)
 	NodeCloneUse(CgalAdvNode)
-	NodeCloneUse(RoofNode)
 	NodeCloneUse(RenderNode)
 	NodeCloneUse(SurfaceNode)
 	NodeCloneUse(TextNode)
@@ -99,6 +100,9 @@ std::shared_ptr<AbstractNode> AbstractNode::clone(void)
 	NodeCloneUse(ProjectionNode)
 	NodeCloneUse(GroupNode)
 	NodeCloneUse(ImportNode)
+#if defined(ENABLE_EXPERIMENTAL) && defined(ENABLE_CGAL)
+	NodeCloneUse(RoofNode)
+#endif
 	if(clone != nullptr) {
 		clone->idx = idx_counter++;
 		clone->children.clear();
