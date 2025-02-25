@@ -31,6 +31,7 @@
 #include <QSoundEffect>
 #include <QTime>
 #include <QSignalMapper>
+#include <QShortcut>
 
 #include "RubberBandManager.h"
 #include "gui/Editor.h"
@@ -99,6 +100,8 @@ public:
   QString lastCompiledDoc;
 
   QAction *actionRecentFile[UIUtils::maxRecentFiles];
+  QShortcut *shortcutNextWindow{nullptr};
+  QShortcut *shortcutPreviousWindow{nullptr};
   QMap<QString, QString> knownFileExtensions;
 
   QLabel *versionLabel;
@@ -176,7 +179,9 @@ private:
   void show_examples();
   void addKeyboardShortCut(const QList<QAction *>& actions);
   void updateStatusBar(ProgressWidget *progressWidget);
-  void activateWindow(int);
+  void activateDock(Dock *);
+  Dock *findVisibleDockToActivate(int offset) const;
+  Dock *getNextDockFromSender(QObject *sender);
 
   LibraryInfoDialog *libraryInfoDialog{nullptr};
   FontListDialog *fontListDialog{nullptr};
@@ -233,14 +238,15 @@ private slots:
   void showFontList();
   void hideFontList();
   void onwindowActionSelectEditor();
+  void onWindowActionNextPrevHovered();
+  void onWindowActionNextPrevTriggered();
+  void onWindowShortcutNextPrevActivated();
   void on_windowActionSelectConsole_triggered();
   void on_windowActionSelectCustomizer_triggered();
   void on_windowActionSelectErrorLog_triggered();
   void on_windowActionSelectAnimate_triggered();
   void on_windowActionSelectFontList_triggered();
   void on_windowActionSelectViewportControl_triggered();
-  void on_windowActionNextWindow_triggered();
-  void on_windowActionPreviousWindow_triggered();
   void on_editActionInsertTemplate_triggered();
   void on_editActionFoldAll_triggered();
 
