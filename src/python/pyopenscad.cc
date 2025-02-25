@@ -27,8 +27,8 @@
 #include <filesystem>
 
 #include "pyopenscad.h"
-#include "src/core/CsgOpNode.h"
-#include "src/platform/PlatformUtils.h"
+#include "core/CsgOpNode.h"
+#include "platform/PlatformUtils.h"
 
 namespace fs = std::filesystem;
 

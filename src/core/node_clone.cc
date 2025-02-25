@@ -24,22 +24,22 @@
  *
  */
 
-#include "src/geometry/linalg.h"
-#include "src/geometry/GeometryUtils.h"
-#include "src/core/primitives.h"
-#include "src/core/TransformNode.h"
-#include "src/core/RotateExtrudeNode.h"
-#include "src/core/LinearExtrudeNode.h"
-#include "src/core/CgalAdvNode.h"
-#include "src/core/CsgOpNode.h"
-#include "src/core/ColorNode.h"
-#include "src/core/RoofNode.h"
-#include "src/core/RenderNode.h"
-#include "src/core/SurfaceNode.h"
-#include "src/core/TextNode.h"
-#include "src/core/OffsetNode.h"
-#include "src/core/ProjectionNode.h"
-#include "src/core/ImportNode.h"
+#include "geometry/linalg.h"
+#include "geometry/GeometryUtils.h"
+#include "core/primitives.h"
+#include "core/TransformNode.h"
+#include "core/RotateExtrudeNode.h"
+#include "core/LinearExtrudeNode.h"
+#include "core/CgalAdvNode.h"
+#include "core/CsgOpNode.h"
+#include "core/ColorNode.h"
+#include "core/RoofNode.h"
+#include "core/RenderNode.h"
+#include "core/SurfaceNode.h"
+#include "core/TextNode.h"
+#include "core/OffsetNode.h"
+#include "core/ProjectionNode.h"
+#include "core/ImportNode.h"
 
 std::vector<ModuleInstantiation *> modinsts_list;
 
