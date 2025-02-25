@@ -24,9 +24,13 @@
  *
  */
 #include <Python.h>
+#include <filesystem>
+
 #include "pyopenscad.h"
-#include "src/core/CsgOpNode.h"
-#include "src/platform/PlatformUtils.h"
+#include "core/CsgOpNode.h"
+#include "platform/PlatformUtils.h"
+
+namespace fs = std::filesystem;
 
 extern "C" PyObject *PyInit_openscad(void);
 
@@ -44,12 +48,14 @@ bool pythonMainModuleInitialized = false;
 
 void PyOpenSCADObject_dealloc(PyOpenSCADObject *self)
 {
+  Py_XDECREF(self->dict);
   Py_TYPE(self)->tp_free((PyObject *)self);
 }
 
 PyObject *PyOpenSCADObject_alloc(PyTypeObject *cls, Py_ssize_t nitems)
 {
   PyObject *self = PyType_GenericAlloc(cls, nitems);
+  ((PyOpenSCADObject *)self)->dict = PyDict_New();
   return self;
 }
 
@@ -87,13 +93,17 @@ void python_lock(void){
 void python_unlock(void) {
   if(pythonInitDict != nullptr)	tstate = PyEval_SaveThread();
 }
+/*
+ *  extracts Absrtract Node from PyOpenSCAD Object
+ */
 
-std::shared_ptr<AbstractNode> PyOpenSCADObjectToNode(PyObject *obj)
+std::shared_ptr<AbstractNode> PyOpenSCADObjectToNode(PyObject *obj, PyObject **dict)
 {
   std::shared_ptr<AbstractNode> result = ((PyOpenSCADObject *) obj)->node;
   if(result.use_count() > 2) {
     result = result->clone();
   }
+  *dict =  ((PyOpenSCADObject *) obj)->dict;
   return result;
 }
 
@@ -108,7 +118,7 @@ std::string python_version(void)
  * same as  python_more_obj but always returns only one AbstractNode by creating an UNION operation
  */
 
-std::shared_ptr<AbstractNode> PyOpenSCADObjectToNodeMulti(PyObject *objs)
+std::shared_ptr<AbstractNode> PyOpenSCADObjectToNodeMulti(PyObject *objs,PyObject **dict)
 {
   std::shared_ptr<AbstractNode> result;
   if (Py_TYPE(objs) == &PyOpenSCADType) {
@@ -116,6 +126,7 @@ std::shared_ptr<AbstractNode> PyOpenSCADObjectToNodeMulti(PyObject *objs)
     if(result.use_count() > 2) {
 	    result = result->clone();
     }
+    *dict =  ((PyOpenSCADObject *) objs)->dict;
   } else if (PyList_Check(objs)) {
     DECLARE_INSTANCE
     auto node = std::make_shared<CsgOpNode>(instance, OpenSCADOperator::UNION);
@@ -124,7 +135,7 @@ std::shared_ptr<AbstractNode> PyOpenSCADObjectToNodeMulti(PyObject *objs)
     for (int i = 0; i < n; i++) {
       PyObject *obj = PyList_GetItem(objs, i);
       if(Py_TYPE(obj) ==  &PyOpenSCADType) {
-        std::shared_ptr<AbstractNode> child = PyOpenSCADObjectToNode(obj);
+        std::shared_ptr<AbstractNode> child = PyOpenSCADObjectToNode(obj,dict);
         node->children.push_back(child);
       } else return nullptr;
     }
@@ -319,22 +330,34 @@ void initPython(double time)
     PyImport_AppendInittab("openscad", &PyInit_openscad);
     PyConfig config;
     PyConfig_InitPythonConfig(&config);
-    std::string libdir;
+
+    std::string sep = "";
     std::ostringstream stream;
 #ifdef _WIN32
-    char sepchar = ';';
+    char sepchar = ':';
+    sep = sepchar;
     stream << PlatformUtils::applicationPath() << "\\..\\libraries\\python";
 #else
     char sepchar = ':';
-    stream << PlatformUtils::applicationPath() << "/../libraries/python";
-  #ifdef __APPLE__
-    stream << sepchar + PlatformUtils::applicationPath() << "/../Frameworks/python" <<  PY_MAJOR_VERSION  <<  "."  <<  PY_MINOR_VERSION ; // where script puts it
-    stream << sepchar + PlatformUtils::applicationPath() << "/../Frameworks/python" <<  PY_MAJOR_VERSION  <<  "."  <<  PY_MINOR_VERSION << "/site-packages"; // where script puts it
-  #else
-    stream << sepchar + PlatformUtils::applicationPath() << "/../lib/python"  <<  PY_MAJOR_VERSION  <<  "."  <<  PY_MINOR_VERSION ; // find it where linuxdeply put it
-  #endif
-#endif   
-    stream << sepchar << PlatformUtils::userLibraryPath() << sepchar << ".";
+    const auto pythonXY = "python" + std::to_string(PY_MAJOR_VERSION) + "." + std::to_string(PY_MINOR_VERSION);
+    const std::array<std::string, 5> paths = {
+        "../libraries/python",
+        "../lib/" + pythonXY,
+        "../python/lib/" + pythonXY,
+        "../Frameworks/" + pythonXY,
+        "../Frameworks/" + pythonXY + "/site-packages",
+    };
+    for (const auto& path : paths) {
+        const auto p = fs::path(PlatformUtils::applicationPath() + fs::path::preferred_separator + path);
+        if (fs::is_directory(p)) {
+            stream << sep << fs::absolute(p).generic_string();
+            sep = sepchar;
+        }
+    }
+#endif
+    stream << sep << PlatformUtils::userLibraryPath();
+    stream << sepchar << ".";
+
     PyConfig_SetBytesString(&config, &config.pythonpath_env, stream.str().c_str());
     PyStatus status = Py_InitializeFromConfig(&config);
     if (PyStatus_Exception(status)) {
@@ -435,6 +458,21 @@ sys.stderr = stderr_bak\n\
  */
 
 
+int python__setitem__(PyObject *dict, PyObject *key, PyObject *v);
+PyObject *python__getitem__(PyObject *dict, PyObject *key);
+
+PyObject *python__getattro__(PyObject *dict, PyObject *key)
+{
+	PyObject *result=python__getitem__(dict,key);
+	if(result == Py_None || result == nullptr)  result = PyObject_GenericGetAttr(dict,key);
+	return result;
+}
+
+int python__setattro__(PyObject *dict, PyObject *key, PyObject *v)
+{
+	return python__setitem__(dict, key, v);
+}
+
 
 PyTypeObject PyOpenSCADType = {
     PyVarObject_HEAD_INIT(nullptr, 0)
@@ -446,15 +484,15 @@ PyTypeObject PyOpenSCADType = {
     0,                         			/* tp_getattr */
     0,                         			/* tp_setattr */
     0,                         			/* tp_as_async */
-    0,		               			/* tp_repr */
+    python_str,               			/* tp_repr */
     &PyOpenSCADNumbers,        			/* tp_as_number */
     0,                         			/* tp_as_sequence */
-    0,		        			/* tp_as_mapping */
+    &PyOpenSCADMapping,        			/* tp_as_mapping */
     0,                         			/* tp_hash  */
     0,                         			/* tp_call */
-    0,	                			/* tp_str */
-    0,			     			/* tp_getattro */
-    0,			  			/* tp_setattro */
+    python_str,                			/* tp_str */
+    python__getattro__,      			/* tp_getattro */
+    python__setattro__,  			/* tp_setattro */
     0,                         			/* tp_as_buffer */
     Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,	/* tp_flags */
     "PyOpenSCAD Object",          		/* tp_doc */
