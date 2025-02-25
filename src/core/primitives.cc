@@ -52,7 +52,7 @@
 
 using namespace boost::assign; // bring 'operator+=()' into scope
 
-#define F_MINIMUM 0.01
+#define F_MINIMUM 0.001
 
 template <class InsertIterator>
 static void generate_circle(InsertIterator iter, double r, double z, int fragments) {
