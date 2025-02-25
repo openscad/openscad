@@ -1,27 +1,27 @@
-Checks: '
-  -*,
-  boost-*,
-    -boost-use-ranges,
-  bugprone-*,
-    -bugprone-easily-swappable-parameters,
-    -bugprone-exception-escape,
-    -bugprone-narrowing-conversions,
-    -bugprone-assignment-in-if-condition,
-  clang-analyzer-*,
-    -clang-analyzer-cplusplus.NewDelete,
-    -clang-analyzer-cplusplus.NewDeleteLeaks,
-  misc-*,
-    -misc-definitions-in-headers,
-    -misc-no-recursion,
-    -misc-non-private-member-variables-in-classes,
-  modernize-*,
-    -modernize-avoid-c-arrays,
-    -modernize-use-nodiscard,
-    -modernize-use-trailing-return-type,
-  performance-*,
-    -performance-avoid-endl
-'
-WarningsAsErrors: ''
+Checks:
+  - '-*'
+  - 'boost-*'
+  - '-boost-use-ranges'
+  - 'bugprone-*'
+  - '-bugprone-easily-swappable-parameters'
+  - '-bugprone-exception-escape'
+  - '-bugprone-narrowing-conversions'
+  - '-bugprone-assignment-in-if-condition'
+  - 'clang-analyzer-*'
+  - '-clang-analyzer-cplusplus.NewDelete'
+  - '-clang-analyzer-cplusplus.NewDeleteLeaks'
+  - 'misc-*'
+  - '-misc-definitions-in-headers'
+  - '-misc-no-recursion'
+  - '-misc-non-private-member-variables-in-classes'
+  - 'modernize-*'
+  - '-modernize-avoid-c-arrays'
+  - '-modernize-use-nodiscard'
+  - '-modernize-use-trailing-return-type'
+  - 'performance-*'
+  - '-performance-avoid-endl'
 
 CheckOptions:
-  - { key: misc-include-cleaner.IgnoreHeaders, value: 'boost/.*;fontconfig/.*;glib.h' }
+  misc-include-cleaner.IgnoreHeaders: 'boost/.*;fontconfig/.*;glib.h'
+
+WarningsAsErrors: ''
