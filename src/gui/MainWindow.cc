@@ -219,7 +219,7 @@ QElapsedTimer *MainWindow::progressThrottle = new QElapsedTimer();
 namespace {
 
 struct DockFocus {
-  QWidget *widget;
+  Dock *widget;
   std::function<void(MainWindow *)> focus;
 };
 
@@ -267,7 +267,8 @@ void addExportActions(const MainWindow *mainWindow, QToolBar *toolbar, QAction *
 
 } // namespace
 
-MainWindow::MainWindow(const QStringList& filenames)
+MainWindow::MainWindow(const QStringList& filenames) :
+  rubberBandManager(this)
 {
   setupUi(this);
 
@@ -275,19 +276,21 @@ MainWindow::MainWindow(const QStringList& filenames)
   consoleUpdater->setSingleShot(true);
   connect(consoleUpdater, SIGNAL(timeout()), this->console, SLOT(update()));
 
-  editorDockTitleWidget = new QWidget();
-  consoleDockTitleWidget = new QWidget();
-  parameterDockTitleWidget = new QWidget();
-  errorLogDockTitleWidget = new QWidget();
-  animateDockTitleWidget = new QWidget();
-  fontListDockTitleWidget = new QWidget();
-  viewportControlTitleWidget = new QWidget();
-
   this->animateWidget->setMainWindow(this);
   this->viewportControlWidget->setMainWindow(this);
   // actions not included in menu
   this->addAction(editActionInsertTemplate);
   this->addAction(editActionFoldAll);
+
+  docks = {
+    {editorDock, QString(_("Editor"))},
+    {consoleDock, QString(_("Console"))},
+    {parameterDock, QString(_("Customizer"))},
+    {errorLogDock, QString(_("Error-Log"))},
+    {animateDock, QString(_("Animate"))},
+    {fontListDock, QString(_("Font Lists"))},
+    {viewportControlDock, QString(_("Viewport-Control"))}
+  };
 
   this->editorDock->setConfigKey("view/hideEditor");
   this->editorDock->setAction(this->windowActionHideEditor);
@@ -348,6 +351,27 @@ MainWindow::MainWindow(const QStringList& filenames)
   // Any code dependent on Preferences must come after the TabManager instantiation
   tabManager = new TabManager(this, filenames.isEmpty() ? QString() : filenames[0]);
   editorDockContents->layout()->addWidget(tabManager->getTabContent());
+
+  connect(this, SIGNAL(highlightError(int)), tabManager, SLOT(highlightError(int)));
+  connect(this, SIGNAL(unhighlightLastError()), tabManager, SLOT(unhighlightLastError()));
+
+  connect(this->editActionUndo, SIGNAL(triggered()), tabManager, SLOT(undo()));
+  connect(this->editActionRedo, SIGNAL(triggered()), tabManager, SLOT(redo()));
+  connect(this->editActionRedo_2, SIGNAL(triggered()), tabManager, SLOT(redo()));
+  connect(this->editActionCut, SIGNAL(triggered()), tabManager, SLOT(cut()));
+  connect(this->editActionPaste, SIGNAL(triggered()), tabManager, SLOT(paste()));
+
+  connect(this->editActionIndent, SIGNAL(triggered()), tabManager, SLOT(indentSelection()));
+  connect(this->editActionUnindent, SIGNAL(triggered()), tabManager, SLOT(unindentSelection()));
+  connect(this->editActionComment, SIGNAL(triggered()), tabManager, SLOT(commentSelection()));
+  connect(this->editActionUncomment, SIGNAL(triggered()), tabManager, SLOT(uncommentSelection()));
+
+  connect(this->editActionToggleBookmark, SIGNAL(triggered()), tabManager, SLOT(toggleBookmark()));
+  connect(this->editActionNextBookmark, SIGNAL(triggered()), tabManager, SLOT(nextBookmark()));
+  connect(this->editActionPrevBookmark, SIGNAL(triggered()), tabManager, SLOT(prevBookmark()));
+  connect(this->editActionJumpToNextError, SIGNAL(triggered()), tabManager, SLOT(jumpToNextError()));
+
+  connect(tabManager, &TabManager::currentEditorChanged, this, &MainWindow::onTabManagerEditorChanged);
 
   connect(Preferences::inst(), SIGNAL(consoleFontChanged(const QString&,uint)), this->console, SLOT(setFont(const QString&,uint)));
 
@@ -548,6 +572,14 @@ MainWindow::MainWindow(const QStringList& filenames)
   connect(this->viewActionZoomOut, SIGNAL(triggered()), qglview, SLOT(ZoomOut()));
   connect(this->viewActionHideEditorToolBar, SIGNAL(triggered()), this, SLOT(hideEditorToolbar()));
   connect(this->viewActionHide3DViewToolBar, SIGNAL(triggered()), this, SLOT(hide3DViewToolbar()));
+
+  // Create the docks and connect corresponding action
+  for (auto& [dock, title] : docks) {
+    dock->setName(title);
+    dock->setFocusPolicy(Qt::FocusPolicy::StrongFocus);
+    menuWindow->addAction(dock->toggleViewAction());
+  }
+
   connect(this->windowActionHideEditor, SIGNAL(triggered()), this, SLOT(hideEditor()));
   connect(this->windowActionHideConsole, SIGNAL(triggered()), this, SLOT(hideConsole()));
   connect(this->windowActionHideCustomizer, SIGNAL(triggered()), this, SLOT(hideParameters()));
@@ -693,13 +725,21 @@ MainWindow::MainWindow(const QStringList& filenames)
   }
 
   updateWindowSettings(hideConsole, hideEditor, hideCustomizer, hideErrorLog, hideEditorToolbar, hide3DViewToolbar, hideAnimate, hideFontList, hideViewportControl);
+  // Connect the menu "Windows/Navigation" to slot that process it by opening in a pop menu
+  // the navigationMenu.
+  connect(windowActionJumpTo, &QAction::triggered, this, &MainWindow::onNavigationOpenContextMenu);
 
-  connect(this->consoleDock, SIGNAL(topLevelChanged(bool)), this, SLOT(consoleTopLevelChanged(bool)));
-  connect(this->parameterDock, SIGNAL(topLevelChanged(bool)), this, SLOT(parameterTopLevelChanged(bool)));
-  connect(this->errorLogDock, SIGNAL(topLevelChanged(bool)), this, SLOT(errorLogTopLevelChanged(bool)));
-  connect(this->animateDock, SIGNAL(topLevelChanged(bool)), this, SLOT(animateTopLevelChanged(bool)));
-  connect(this->fontListDock, SIGNAL(topLevelChanged(bool)), this, SLOT(fontListTopLevelChanged(bool)));
-  connect(this->viewportControlDock, SIGNAL(topLevelChanged(bool)), this, SLOT(viewportControlTopLevelChanged(bool)));
+  // Create the popup menu to navigate between the docks by keyboard.
+  navigationMenu = new QMenu();
+  for (auto& [dock, title] : docks) {
+    auto action2 = navigationMenu->addAction(title);
+    action2->setProperty("id", QVariant::fromValue(dock));
+    connect(action2, &QAction::triggered, this, &MainWindow::onNavigationTriggerContextMenuEntry);
+    connect(action2, &QAction::hovered, this, &MainWindow::onNavigationHoveredContextMenuEntry);
+  }
+  connect(navigationMenu, &QMenu::aboutToHide, this, &MainWindow::onNavigationCloseContextMenu);
+
+  windowActionJumpTo->setMenu(navigationMenu);
 
   connect(this->activeEditor, SIGNAL(escapePressed()), this, SLOT(measureFinished()));
   // display this window and check for OpenGL 2.0 (OpenCSG) support
@@ -725,6 +765,41 @@ MainWindow::MainWindow(const QStringList& filenames)
   updateExportActions();
 
   activeEditor->setFocus();
+  onTabManagerEditorChanged(activeEditor);
+}
+
+void MainWindow::onNavigationOpenContextMenu() {
+  navigationMenu->exec(QCursor::pos());
+}
+
+void MainWindow::onNavigationCloseContextMenu() {
+  rubberBandManager.hide();
+}
+
+void MainWindow::onNavigationTriggerContextMenuEntry(){
+  auto *action = qobject_cast<QAction *>(sender());
+  if (!action || !action->property("id").isValid()) return;
+
+  Dock *dock = action->property("id").value<Dock *>();
+  assert(dock != nullptr);
+
+  dock->show();
+  dock->setFocus();
+
+  // Forward the focus on the content of the tabmanager
+  if (dock == editorDock) {
+    tabManager->setFocus();
+  }
+}
+
+void MainWindow::onNavigationHoveredContextMenuEntry(){
+  auto *action = qobject_cast<QAction *>(sender());
+  if (!action || !action->property("id").isValid()) return;
+
+  Dock *dock = action->property("id").value<Dock *>();
+  assert(dock != nullptr);
+
+  rubberBandManager.emphasize(dock);
 }
 
 void MainWindow::updateExportActions() {
@@ -945,13 +1020,9 @@ void MainWindow::updateUndockMode(bool undockMode)
 void MainWindow::updateReorderMode(bool reorderMode)
 {
   MainWindow::reorderMode = reorderMode;
-  editorDock->setTitleBarWidget(reorderMode ? nullptr : editorDockTitleWidget);
-  consoleDock->setTitleBarWidget(reorderMode ? nullptr : consoleDockTitleWidget);
-  parameterDock->setTitleBarWidget(reorderMode ? nullptr : parameterDockTitleWidget);
-  errorLogDock->setTitleBarWidget(reorderMode ? nullptr : errorLogDockTitleWidget);
-  animateDock->setTitleBarWidget(reorderMode ? nullptr : animateDockTitleWidget);
-  fontListDock->setTitleBarWidget(reorderMode ? nullptr : fontListDockTitleWidget);
-  viewportControlDock->setTitleBarWidget(reorderMode ? nullptr : viewportControlWidget);
+  for (auto& [dock, name] : docks) {
+    dock->setTitleBarVisibility(!reorderMode);
+  }
 }
 
 MainWindow::~MainWindow()
@@ -963,7 +1034,7 @@ MainWindow::~MainWindow()
   if (scadApp->windowManager.getWindows().empty()) {
     // Quit application even in case some other windows like
     // Preferences are still open.
-    scadApp->quit(); 
+    scadApp->quit();
   }
 }
 
@@ -1505,7 +1576,11 @@ void MainWindow::saveBackup()
   }
 
   if (!this->tempFile) {
-    this->tempFile = new QTemporaryFile(backupPath.append(basename + "-backup-XXXXXXXX.scad"));
+    QString suffix="scad";
+#ifdef ENABLE_PYTHON
+    if(this->python_active) suffix="py";
+#endif
+    this->tempFile = new QTemporaryFile(backupPath.append(basename + "-backup-XXXXXXXX." + suffix));
   }
 
   if ((!this->tempFile->isOpen()) && (!this->tempFile->open())) {
@@ -1823,6 +1898,10 @@ bool MainWindow::trust_python_file(const std::string& file,  const std::string& 
 
   if (content.size() <= 1) { // 1st character already typed
     this->trusted_edit_document_name = file;
+    return true;
+  }
+  if(content.rfind("from openscad import",0) == 0) { // 1st character already typed
+    this->trusted_edit_document_name=file;
     return true;
   }
 
@@ -2155,6 +2234,9 @@ void MainWindow::cgalRender()
 
 void MainWindow::actionRenderDone(const std::shared_ptr<const Geometry>& root_geom)
 {
+#ifdef ENABLE_PYTHON
+  python_lock();	
+#endif
   progress_report_fin();
   if (root_geom) {
     std::vector<std::string> options;
@@ -3004,128 +3086,6 @@ void MainWindow::on_editorDock_visibilityChanged(bool)
   updateExportActions();
 }
 
-void MainWindow::on_consoleDock_visibilityChanged(bool)
-{
-  changedTopLevelConsole(consoleDock->isFloating());
-}
-
-void MainWindow::on_parameterDock_visibilityChanged(bool)
-{
-  parameterTopLevelChanged(parameterDock->isFloating());
-}
-
-void MainWindow::on_errorLogDock_visibilityChanged(bool)
-{
-  errorLogTopLevelChanged(errorLogDock->isFloating());
-}
-
-void MainWindow::on_animateDock_visibilityChanged(bool)
-{
-  animateTopLevelChanged(animateDock->isFloating());
-}
-
-void MainWindow::on_fontListDock_visibilityChanged(bool)
-{
-  fontListTopLevelChanged(fontListDock->isFloating());
-}
-
-void MainWindow::on_viewportControlDock_visibilityChanged(bool)
-{
-  viewportControlTopLevelChanged(viewportControlDock->isFloating());
-}
-
-void MainWindow::changedTopLevelConsole(bool topLevel)
-{
-  setDockWidgetTitle(consoleDock, QString(_("Console")), topLevel);
-}
-
-void MainWindow::consoleTopLevelChanged(bool topLevel)
-{
-  setDockWidgetTitle(consoleDock, QString(_("Console")), topLevel);
-
-  Qt::WindowFlags flags = (consoleDock->windowFlags() & ~Qt::WindowType_Mask) | Qt::Window;
-  if (topLevel) {
-    consoleDock->setWindowFlags(flags);
-    consoleDock->show();
-  }
-}
-
-void MainWindow::parameterTopLevelChanged(bool topLevel)
-{
-  setDockWidgetTitle(parameterDock, QString(_("Customizer")), topLevel);
-}
-
-void MainWindow::changedTopLevelErrorLog(bool topLevel)
-{
-  setDockWidgetTitle(errorLogDock, QString(_("Error-Log")), topLevel);
-}
-
-void MainWindow::errorLogTopLevelChanged(bool topLevel)
-{
-  setDockWidgetTitle(errorLogDock, QString(_("Error-Log")), topLevel);
-
-  Qt::WindowFlags flags = (errorLogDock->windowFlags() & ~Qt::WindowType_Mask) | Qt::Window;
-  if (topLevel) {
-    errorLogDock->setWindowFlags(flags);
-    errorLogDock->show();
-  }
-}
-
-void MainWindow::changedTopLevelAnimate(bool topLevel)
-{
-  setDockWidgetTitle(animateDock, QString(_("Animate")), topLevel);
-}
-
-void MainWindow::animateTopLevelChanged(bool topLevel)
-{
-  setDockWidgetTitle(animateDock, QString(_("Animate")), topLevel);
-
-  Qt::WindowFlags flags = (animateDock->windowFlags() & ~Qt::WindowType_Mask) | Qt::Window;
-  if (topLevel) {
-    animateDock->setWindowFlags(flags);
-    animateDock->show();
-  }
-}
-
-void MainWindow::changedTopLevelFontList(bool topLevel)
-{
-  setDockWidgetTitle(fontListDock, QString(_("Font List")), topLevel);
-}
-
-void MainWindow::fontListTopLevelChanged(bool topLevel)
-{
-  setDockWidgetTitle(fontListDock, QString(_("Font List")), topLevel);
-
-  Qt::WindowFlags flags = (fontListDock->windowFlags() & ~Qt::WindowType_Mask) | Qt::Window;
-  if (topLevel) {
-    fontListDock->setWindowFlags(flags);
-    fontListDock->show();
-  }
-}
-
-void MainWindow::viewportControlTopLevelChanged(bool topLevel)
-{
-  setDockWidgetTitle(viewportControlDock, QString(_("Viewport-Control")), topLevel);
-
-  Qt::WindowFlags flags = (viewportControlDock->windowFlags() & ~Qt::WindowType_Mask) | Qt::Window;
-  if (topLevel) {
-    viewportControlDock->setWindowFlags(flags);
-    viewportControlDock->show();
-  }
-}
-
-void MainWindow::setDockWidgetTitle(QDockWidget *dockWidget, QString prefix, bool topLevel)
-{
-  QString title(std::move(prefix));
-  if (topLevel) {
-    const QFileInfo fileInfo(activeEditor->filepath);
-    QString fname = _("Untitled.scad");
-    if (!fileInfo.fileName().isEmpty()) fname = fileInfo.fileName();
-    title += " (" + fname.replace("&", "&&") + ")";
-  }
-  dockWidget->setWindowTitle(title);
-}
-
 void MainWindow::hideEditorToolbar()
 {
   QSettingsCached settings;
@@ -3295,7 +3255,7 @@ void MainWindow::hideParameters()
   }
 }
 
-void MainWindow::on_windowActionSelectEditor_triggered()
+void MainWindow::onwindowActionSelectEditor()
 {
   showEditor();
 }
@@ -3350,32 +3310,72 @@ void MainWindow::on_editActionFoldAll_triggered()
   activeEditor->foldUnfold();
 }
 
+QString MainWindow::getCurrentFileName() const
+{
+  if (activeEditor == nullptr) return QString("");
+
+  const QFileInfo fileInfo(activeEditor->filepath);
+  QString fname = _("Untitled.scad");
+  if (!fileInfo.fileName().isEmpty()) fname = fileInfo.fileName();
+  return fname.replace("&", "&&");
+}
+
+void MainWindow::onTabManagerEditorChanged(EditorInterface *neweditor)
+{
+  activeEditor = neweditor;
+
+  if (neweditor == nullptr) return;
+
+  parameterDock->setWidget(neweditor->parameterWidget);
+  editActionUndo->setEnabled(neweditor->canUndo());
+
+  QString name = getCurrentFileName();
+  setWindowTitle(name);
+
+  consoleDock->setNameSuffix(name);
+  errorLogDock->setNameSuffix(name);
+  animateDock->setNameSuffix(name);
+  fontListDock->setNameSuffix(name);
+  viewportControlDock->setNameSuffix(name);
+}
+
 void MainWindow::activateWindow(int offset)
 {
-  const std::array<DockFocus, 7> docks = {{
-    { editorDock, &MainWindow::on_windowActionSelectEditor_triggered },
-    { consoleDock, &MainWindow::on_windowActionSelectConsole_triggered },
-    { errorLogDock, &MainWindow::on_windowActionSelectErrorLog_triggered },
-    { parameterDock, &MainWindow::on_windowActionSelectCustomizer_triggered },
-    { fontListDock, &MainWindow::on_windowActionSelectFontList_triggered },
-    { animateDock, &MainWindow::on_windowActionSelectAnimate_triggered },
-    { viewportControlDock, &MainWindow::on_windowActionSelectViewportControl_triggered },
-  }};
+  const unsigned int dockCount = docks.size();
 
-  const int cnt = docks.size();
-  const auto focusWidget = QApplication::focusWidget();
-  for (auto widget = focusWidget; widget != nullptr; widget = widget->parentWidget()) {
-    for (int idx = 0; idx < cnt; ++idx) {
-      if (widget == docks.at(idx).widget) {
-        for (int o = 1; o < cnt; ++o) {
-          const int target = (cnt + idx + o * offset) % cnt;
-          const auto& dock = docks.at(target);
-          if (dock.widget->isVisible()) {
-            dock.focus(this);
-            return;
-          }
-        }
-      }
+  int focusedDockIndice = -1;
+
+  // search among the docks the dock that is having the focus. Several cases have to be taken into account
+  // If the dock is a top level windows and it is the active window we select it.
+  for (unsigned int index = 0; index < dockCount; ++index) {
+    auto dock = std::get<0>(docks[index]);
+    if (dock->isTopLevel() && dock->isActiveWindow()) {
+      focusedDockIndice = index;
+    } else if (dock->hasFocus())  {
+      focusedDockIndice = index;
+      break;
+    }
+  }
+
+  if (focusedDockIndice < 0) {
+    focusedDockIndice = 0;
+  }
+
+  for (int o = 1; o < dockCount; ++o) {
+    // starting from dockCount + focusedDockIndice move left or right (o*offset)
+    // to find the first visible one. dockCount is there so there is no situation in which
+    // (-1) % dockCount
+    const int target = (dockCount + focusedDockIndice + o * offset) % dockCount;
+    const auto& dock = std::get<0>(docks.at(target));
+
+    if (dock->isVisible()) {
+      // We always need to activate the window.
+      if (dock->isTopLevel()) dock->activateWindow();
+      else QMainWindow::activateWindow();
+      dock->raise();
+      dock->setFocus();
+      rubberBandManager.emphasize(dock);
+      return;
     }
   }
 }

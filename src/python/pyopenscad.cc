@@ -24,9 +24,13 @@
  *
  */
 #include <Python.h>
+#include <filesystem>
+
 #include "pyopenscad.h"
-#include "src/core/CsgOpNode.h"
-#include "src/platform/PlatformUtils.h"
+#include "core/CsgOpNode.h"
+#include "platform/PlatformUtils.h"
+
+namespace fs = std::filesystem;
 
 extern "C" PyObject *PyInit_openscad(void);
 
@@ -77,9 +81,23 @@ PyObject *PyOpenSCADObjectFromNode(PyTypeObject *type, const std::shared_ptr<Abs
   }
   return nullptr;
 }
+
+PyThreadState *tstate=nullptr;
+
+void python_lock(void){
+  if(tstate != nullptr && pythonInitDict != nullptr) PyEval_RestoreThread(tstate);
+}
+
+void python_unlock(void) {
+  if(pythonInitDict != nullptr)	tstate = PyEval_SaveThread();
+}
+
 std::shared_ptr<AbstractNode> PyOpenSCADObjectToNode(PyObject *obj)
 {
   std::shared_ptr<AbstractNode> result = ((PyOpenSCADObject *) obj)->node;
+  if(result.use_count() > 2) {
+    result = result->clone();
+  }
   return result;
 }
 
@@ -99,6 +117,9 @@ std::shared_ptr<AbstractNode> PyOpenSCADObjectToNodeMulti(PyObject *objs)
   std::shared_ptr<AbstractNode> result;
   if (Py_TYPE(objs) == &PyOpenSCADType) {
     result = ((PyOpenSCADObject *) objs)->node;
+    if(result.use_count() > 2) {
+	    result = result->clone();
+    }
   } else if (PyList_Check(objs)) {
     DECLARE_INSTANCE
     auto node = std::make_shared<CsgOpNode>(instance, OpenSCADOperator::UNION);
@@ -215,6 +236,39 @@ std::vector<Vector3d> python_vectors(PyObject *vec, int mindim, int maxdim)
  * Helper function to extract actual values for fn, fa and fs
  */
 
+void get_fnas(double& fn, double& fa, double& fs) {
+  PyObject *mainModule = PyImport_AddModule("__main__");
+  if (mainModule == nullptr) return;
+  fn=0;
+  fa=12;
+  fs=2;
+
+  if(PyObject_HasAttrString(mainModule,"fn")) {
+    PyObjectUniquePtr varFn(PyObject_GetAttrString(mainModule, "fn"),PyObjectDeleter);
+    if (varFn.get() != nullptr){
+      fn = PyFloat_AsDouble(varFn.get());
+    }
+  }  
+
+  if(PyObject_HasAttrString(mainModule,"fa")) {
+    PyObjectUniquePtr varFa(PyObject_GetAttrString(mainModule, "fa"),PyObjectDeleter);
+    if (varFa.get() != nullptr){
+      fa = PyFloat_AsDouble(varFa.get());
+    }
+  }
+
+  PyObjectUniquePtr varFs(PyObject_GetAttrString(mainModule, "fs"),PyObjectDeleter);
+  if(PyObject_HasAttrString(mainModule,"fn")) {
+    if (varFs.get() != nullptr){
+      fs = PyFloat_AsDouble(varFs.get());
+    }
+  }  
+}
+
+/*
+ * Type specific init function. nothing special here
+ */
+
 static int PyOpenSCADInit(PyOpenSCADObject *self, PyObject *args, PyObject *kwds)
 {
   (void)self;
@@ -269,22 +323,34 @@ void initPython(double time)
     PyImport_AppendInittab("openscad", &PyInit_openscad);
     PyConfig config;
     PyConfig_InitPythonConfig(&config);
-    std::string libdir;
+
+    std::string sep = "";
     std::ostringstream stream;
 #ifdef _WIN32
-    char sepchar = ';';
+    char sepchar = ':';
+    sep = sepchar;
     stream << PlatformUtils::applicationPath() << "\\..\\libraries\\python";
 #else
     char sepchar = ':';
-    stream << PlatformUtils::applicationPath() << "/../libraries/python";
-  #ifdef __APPLE__
-    stream << sepchar + PlatformUtils::applicationPath() << "/../Frameworks/python" <<  PY_MAJOR_VERSION  <<  "."  <<  PY_MINOR_VERSION ; // where script puts it
-    stream << sepchar + PlatformUtils::applicationPath() << "/../Frameworks/python" <<  PY_MAJOR_VERSION  <<  "."  <<  PY_MINOR_VERSION << "/site-packages"; // where script puts it
-  #else
-    stream << sepchar + PlatformUtils::applicationPath() << "/../lib/python"  <<  PY_MAJOR_VERSION  <<  "."  <<  PY_MINOR_VERSION ; // find it where linuxdeply put it
-  #endif
-#endif   
-    stream << sepchar << PlatformUtils::userLibraryPath() << sepchar << ".";
+    const auto pythonXY = "python" + std::to_string(PY_MAJOR_VERSION) + "." + std::to_string(PY_MINOR_VERSION);
+    const std::array<std::string, 5> paths = {
+        "../libraries/python",
+        "../lib/" + pythonXY,
+        "../python/lib/" + pythonXY,
+        "../Frameworks/" + pythonXY,
+        "../Frameworks/" + pythonXY + "/site-packages",
+    };
+    for (const auto& path : paths) {
+        const auto p = fs::path(PlatformUtils::applicationPath() + fs::path::preferred_separator + path);
+        if (fs::is_directory(p)) {
+            stream << sep << fs::absolute(p).generic_string();
+            sep = sepchar;
+        }
+    }
+#endif
+    stream << sep << PlatformUtils::userLibraryPath();
+    stream << sepchar << ".";
+
     PyConfig_SetBytesString(&config, &config.pythonpath_env, stream.str().c_str());
     PyStatus status = Py_InitializeFromConfig(&config);
     if (PyStatus_Exception(status)) {
