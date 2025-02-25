@@ -25,15 +25,15 @@
  */
 
 #include <Python.h>
-#include "src/python/pyopenscad.h"
-#include "src/core/CsgOpNode.h"
-#include "src/core/ColorNode.h"
-#include "src/core/ColorUtil.h"
-#include "src/core/TransformNode.h"
-#include "src/core/RotateExtrudeNode.h"
-#include "src/utils/degree_trig.h"
+#include "python/pyopenscad.h"
+#include "core/primitives.h"
+#include "core/CsgOpNode.h"
+#include "core/ColorNode.h"
+#include "core/ColorUtil.h"
+#include "core/TransformNode.h"
+#include "core/RotateExtrudeNode.h"
+#include "utils/degree_trig.h"
 
-#include "src/core/primitives.h"
 extern std::unordered_map<std::string, Color4f> webcolors;
 
 PyObject *python_cube(PyObject *self, PyObject *args, PyObject *kwargs)
