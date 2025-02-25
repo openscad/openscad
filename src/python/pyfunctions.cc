@@ -31,7 +31,7 @@
 #include "export.h"
 #include "GeometryUtils.h"
 #include <Python.h>
-#include "src/python/pyopenscad.h"
+#include "python/pyopenscad.h"
 #include "SourceFile.h"
 #include "BuiltinContext.h"
 #include <PolySetBuilder.h>
@@ -71,7 +71,6 @@ extern bool parse(SourceFile *& file, const std::string& text, const std::string
 #include "ImportNode.h"
 #include <Tree.h>
 #include <GeometryEvaluator.h>
-
 #include "degree_trig.h"
 #include "printutils.h"
 #include "io/fileutils.h"

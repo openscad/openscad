@@ -1,8 +1,8 @@
 #pragma once
-#include "src/core/node.h"
-#include "src/core/function.h"
-#include "src/geometry/Polygon2d.h"
-#include <src/core/Selection.h>
+#include "core/node.h"
+#include "core/function.h"
+#include "geometry/Polygon2d.h"
+#include <core/Selection.h>
 
 extern bool python_active;
 extern bool python_trusted;

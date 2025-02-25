@@ -24,18 +24,23 @@
  *
  */
 #include <Python.h>
+#include <filesystem>
+
 #include "pyopenscad.h"
-#include "CsgOpNode.h"
+#include "core/CsgOpNode.h"
 #include "Value.h"
 #include "Expression.h"
 #include "PlatformUtils.h"
 #include <Context.h>
 #include <Selection.h>
-#include "src/platform/PlatformUtils.h"
+#include "platform/PlatformUtils.h"
+namespace fs = std::filesystem;
 
 // #define HAVE_PYTHON_YIELD
 extern "C" PyObject *PyInit_openscad(void);
 
+bool python_active;
+bool python_trusted;
 // https://docs.python.org/3.10/extending/newtypes.html
 
 void PyObjectDeleter (PyObject *pObject) { Py_XDECREF(pObject); };
@@ -49,8 +54,6 @@ bool pythonDryRun=false;
 std::shared_ptr<AbstractNode> python_result_node = nullptr; /* global result veriable containing the python created result */
 PyObject *python_result_obj = nullptr;
 std::vector<SelectedObject> python_result_handle;
-bool python_active;  /* if python is actually used during evaluation */
-bool python_trusted; /* global Python trust flag */
 bool python_runipython = false;
 bool pythonMainModuleInitialized = false;
 bool pythonRuntimeInitialized = false;
@@ -770,22 +773,34 @@ void initPython(double time)
     PyImport_AppendInittab("libfive", &PyInit_data);
     PyConfig config;
     PyConfig_InitPythonConfig(&config);
-    std::string libdir;
+
+    std::string sep = "";
     std::ostringstream stream;
 #ifdef _WIN32
-    char sepchar = ';';
+    char sepchar = ':';
+    sep = sepchar;
     stream << PlatformUtils::applicationPath() << "\\..\\libraries\\python";
 #else
     char sepchar = ':';
-    stream << PlatformUtils::applicationPath() << "/../libraries/python";
-  #ifdef __APPLE__
-    stream << sepchar + PlatformUtils::applicationPath() << "/../Frameworks/python" <<  PY_MAJOR_VERSION  <<  "."  <<  PY_MINOR_VERSION ; // where script puts it
-    stream << sepchar + PlatformUtils::applicationPath() << "/../Frameworks/python" <<  PY_MAJOR_VERSION  <<  "."  <<  PY_MINOR_VERSION << "/site-packages"; // where script puts it
-  #else
-    stream << sepchar + PlatformUtils::applicationPath() << "/../lib/python"  <<  PY_MAJOR_VERSION  <<  "."  <<  PY_MINOR_VERSION ; // find it where linuxdeply put it
-  #endif
-#endif   
-    stream << sepchar << PlatformUtils::userLibraryPath() << sepchar << ".";
+    const auto pythonXY = "python" + std::to_string(PY_MAJOR_VERSION) + "." + std::to_string(PY_MINOR_VERSION);
+    const std::array<std::string, 5> paths = {
+        "../libraries/python",
+        "../lib/" + pythonXY,
+        "../python/lib/" + pythonXY,
+        "../Frameworks/" + pythonXY,
+        "../Frameworks/" + pythonXY + "/site-packages",
+    };
+    for (const auto& path : paths) {
+        const auto p = fs::path(PlatformUtils::applicationPath() + fs::path::preferred_separator + path);
+        if (fs::is_directory(p)) {
+            stream << sep << fs::absolute(p).generic_string();
+            sep = sepchar;
+        }
+    }
+#endif
+    stream << sep << PlatformUtils::userLibraryPath();
+    stream << sepchar << ".";
+
     PyConfig_SetBytesString(&config, &config.pythonpath_env, stream.str().c_str());
     PyStatus status = Py_InitializeFromConfig(&config);
     if (PyStatus_Exception(status)) {

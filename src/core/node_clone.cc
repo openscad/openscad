@@ -24,31 +24,31 @@
  *
  */
 
-#include "src/geometry/linalg.h"
-#include "src/geometry/GeometryUtils.h"
-#include "src/core/primitives.h"
-#include "src/core/TransformNode.h"
-#include "src/core/RotateExtrudeNode.h"
-#include "src/core/LinearExtrudeNode.h"
-#include "src/core/PathExtrudeNode.h"
-#include "src/core/PullNode.h"
-#include "src/core/DebugNode.h"
-#include "src/core/WrapNode.h"
-#include "src/core/OversampleNode.h"
-#include "src/core/FilletNode.h"
-#include "src/core/CgalAdvNode.h"
-#include "src/core/CsgOpNode.h"
-#include "src/core/ColorNode.h"
-#include "src/core/RoofNode.h"
-#include "src/core/RenderNode.h"
-#include "src/core/SkinNode.h"
-#include "src/core/ConcatNode.h"
-#include "src/core/SurfaceNode.h"
-#include "src/core/TextNode.h"
-#include "src/core/OffsetNode.h"
-#include "src/core/TextureNode.h"
-#include "src/core/ProjectionNode.h"
-#include "src/core/ImportNode.h"
+#include "geometry/linalg.h"
+#include "geometry/GeometryUtils.h"
+#include "core/primitives.h"
+#include "core/TransformNode.h"
+#include "core/RotateExtrudeNode.h"
+#include "core/LinearExtrudeNode.h"
+#include "core/PathExtrudeNode.h"
+#include "core/PullNode.h"
+#include "core/DebugNode.h"
+#include "core/WrapNode.h"
+#include "core/OversampleNode.h"
+#include "core/FilletNode.h"
+#include "core/CgalAdvNode.h"
+#include "core/CsgOpNode.h"
+#include "core/ColorNode.h"
+#include "core/RoofNode.h"
+#include "core/RenderNode.h"
+#include "core/SkinNode.h"
+#include "core/ConcatNode.h"
+#include "core/SurfaceNode.h"
+#include "core/TextNode.h"
+#include "core/OffsetNode.h"
+#include "core/TextureNode.h"
+#include "core/ProjectionNode.h"
+#include "core/ImportNode.h"
 
 std::vector<ModuleInstantiation *> modinsts_list;
 
@@ -82,7 +82,6 @@ NodeCloneFunc(LinearExtrudeNode)
 NodeCloneFunc(PathExtrudeNode)
 NodeCloneFunc(CsgOpNode)
 NodeCloneFunc(CgalAdvNode)
-NodeCloneFunc(RoofNode)
 NodeCloneFunc(RenderNode)
 NodeCloneFunc(SkinNode)
 NodeCloneFunc(ConcatNode)
@@ -92,6 +91,9 @@ NodeCloneFunc(OffsetNode)
 NodeCloneFunc(ProjectionNode)
 NodeCloneFunc(GroupNode)
 NodeCloneFunc(ImportNode)
+#if defined(ENABLE_EXPERIMENTAL) && defined(ENABLE_CGAL)
+NodeCloneFunc(RoofNode)
+#endif
 
 std::shared_ptr<AbstractNode> AbstractNode::clone(void)
 {
@@ -116,7 +118,6 @@ std::shared_ptr<AbstractNode> AbstractNode::clone(void)
 	NodeCloneUse(PathExtrudeNode)
 	NodeCloneUse(CsgOpNode)
 	NodeCloneUse(CgalAdvNode)
-	NodeCloneUse(RoofNode)
 	NodeCloneUse(RenderNode)
 	NodeCloneUse(SkinNode)
 	NodeCloneUse(ConcatNode)
@@ -126,6 +127,9 @@ std::shared_ptr<AbstractNode> AbstractNode::clone(void)
 	NodeCloneUse(ProjectionNode)
 	NodeCloneUse(GroupNode)
 	NodeCloneUse(ImportNode)
+#if defined(ENABLE_EXPERIMENTAL) && defined(ENABLE_CGAL)
+	NodeCloneUse(RoofNode)
+#endif
 	if(clone != nullptr) {
 		clone->idx = idx_counter++;
 		clone->children.clear();
