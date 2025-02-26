@@ -565,6 +565,8 @@ file(GLOB_RECURSE EXAMPLE_FILES    ${EXAMPLES_DIR}/*.scad)
 list(REMOVE_ITEM EXAMPLE_FILES
   ${EXAMPLES_DIR}/Basics/roof.scad # -> EXPERIMENTAL_ROOF_FILES
 )
+list(APPEND CGALPNGTEST_PYTHON_FILES  ${TEST_PYTHON_DIR}/language/primitives.py )
+list(APPEND ECHO_PYTHON_FILES         ${TEST_PYTHON_DIR}/language/abuse.py )
 
 list(APPEND EXAMPLE_3D_FILES ${EXAMPLE_FILES})
 # Remove 2D files from 3D examples
@@ -1064,6 +1066,8 @@ add_cmdline_test(rendermanifoldtest-different  OPENSCAD SUFFIX png FILES ${SCADF
 add_cmdline_test(previewmanifoldtest           OPENSCAD SUFFIX png FILES ${PREVIEWMANIFOLDTEST_FILES} EXPECTEDDIR previewtest ARGS --backend=manifold)
 add_cmdline_test(previewmanifoldtest-different OPENSCAD SUFFIX png FILES ${SCADFILES_DIFFERENT_MANIFOLD_PREVIEW_EXPECTATIONS} ARGS --backend=manifold)
 endif()
+add_cmdline_test(cgalpngtest_python  OPENSCAD FILES ${CGALPNGTEST_PYTHON_FILES} SUFFIX png  ARGS --trust-python --render)
+add_cmdline_test(echotest_python     OPENSCAD FILES ${ECHO_PYTHON_FILES}        SUFFIX echo ARGS --trust-python )
 
 set(VIEWBOX_TEST "${TEST_SCAD_DIR}/svg/extruded/viewbox-test.scad")
 foreach(TEST ${SVG_VIEWBOX_TESTS})
@@ -1657,6 +1661,13 @@ list(APPEND NEF3_BROKEN_TESTS
 if(APPLE)
   set_tests_properties(
     ${NEF3_BROKEN_TESTS}
+    # Python not enabled for MAC yet
+    cgalpngtest_python_primitives
+    echotest_python_abuse
+    # issue3158 test failing on macos, see: https://github.com/openscad/openscad/issues/4509
+    opencsgtest_issue3158
+    # On macOS, GL_POINTS are sometimes circular even though GL_POINT_SMOOTH is disabled
+    openscad-viewoptions-wireframe_view-options-tests
     PROPERTIES DISABLED TRUE
   )
 elseif(UNIX)
@@ -1671,6 +1682,9 @@ elseif(WIN32 OR MXECROSS)
     # requires `gs` tool
     pdfexporttest_centered
     pdfexporttest_simple-pdf
+    # Python not enabled in windows yet
+    cgalpngtest_python_primitives
+    echotest_python_abuse
     PROPERTIES DISABLED TRUE
   )
 endif()
