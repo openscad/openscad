@@ -3295,7 +3295,7 @@ void MainWindow::hideParameters()
   }
 }
 
-void MainWindow::onwindowActionSelectEditor()
+void MainWindow::onWindowActionSelectEditor()
 {
   showEditor();
 }

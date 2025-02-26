@@ -237,7 +237,7 @@ private slots:
   void hideAnimate();
   void showFontList();
   void hideFontList();
-  void onwindowActionSelectEditor();
+  void onWindowActionSelectEditor();
   void onWindowActionNextPrevHovered();
   void onWindowActionNextPrevTriggered();
   void onWindowShortcutNextPrevActivated();
