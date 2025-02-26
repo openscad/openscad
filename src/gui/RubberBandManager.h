@@ -18,9 +18,10 @@ public:
 
   void hide();
   void emphasize(Dock *w);
-
+  bool isEmphasized(Dock *w);
+  bool isVisible();
 
 private:
-  bool eventFilter(QObject *obj, QEvent *event) final override;
   QRubberBand rubberBand;
+  Dock* emphasizedDock;
 };

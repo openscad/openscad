@@ -126,6 +126,9 @@ void python_unlock(void) {
   if(pythonInitDict != nullptr)	tstate = PyEval_SaveThread();
 //#endif  
 }
+/*
+ *  extracts Absrtract Node from PyOpenSCAD Object
+ */
 
 /*
  *  parses either a PyOpenSCAD Object or an List of PyOpenScad Object and adds it to the list of supplied children, returns 1 on success

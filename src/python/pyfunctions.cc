@@ -3306,7 +3306,6 @@ PyObject *python_minkowski(PyObject *self, PyObject *args, PyObject *kwargs)
 }
 
 
-
 PyObject *python_hull(PyObject *self, PyObject *args, PyObject *kwargs)
 {
   return python_csg_adv_sub(self, args, kwargs, CgalAdvType::HULL);

@@ -7,26 +7,25 @@ RubberBandManager::RubberBandManager(MainWindow *w) :
   rubberBand(QRubberBand::Rectangle)
 {
   setParent(w);
-  w->installEventFilter(this);
-}
-bool RubberBandManager::eventFilter(QObject *obj, QEvent *event) {
-  if (event->type() == QEvent::KeyRelease) {
-    auto keyEvent = static_cast<QKeyEvent *>(event);
-    if (keyEvent->key() == Qt::Key_Control && rubberBand.isVisible()) {
-      hide();
-    }
-  }
-  return false;
+  emphasizedDock = nullptr;
 }
 
 void RubberBandManager::hide(){
   rubberBand.hide();
+  emphasizedDock = nullptr;
+}
+
+bool RubberBandManager::isEmphasized(Dock* dock){
+  return rubberBand.isVisible() && emphasizedDock == dock;
+}
+
+bool RubberBandManager::isVisible(){
+  return rubberBand.isVisible();
 }
 
 void RubberBandManager::emphasize(Dock *dock){
-  parent()->removeEventFilter(this);
-  dock->installEventFilter(this);
   rubberBand.setParent(dock);
   rubberBand.setGeometry(dock->widget()->geometry());
   rubberBand.show();
+  emphasizedDock = dock;
 }
