@@ -32,46 +32,46 @@
 #include "GeometryUtils.h"
 #include <Python.h>
 #include "python/pyopenscad.h"
+#include "core/primitives.h"
+#include "core/CsgOpNode.h"
+#include "core/ColorNode.h"
+#include "core/ColorUtil.h"
 #include "SourceFile.h"
 #include "BuiltinContext.h"
 #include <PolySetBuilder.h>
 extern bool parse(SourceFile *& file, const std::string& text, const std::string& filename, const std::string& mainFile, int debug);
 
-#include <src/python/pydata.h>
+#include <python/pydata.h>
 #ifdef ENABLE_LIBFIVE
-#include "src/python/FrepNode.h"
+#include "python/FrepNode.h"
 #endif
 #include "GeometryUtils.h"
-#include "src/core/TransformNode.h"
-#include "src/core/RotateExtrudeNode.h"
-#include "LinearExtrudeNode.h"
-#include "PathExtrudeNode.h"
-#include "PullNode.h"
-#include "WrapNode.h"
-#include "OversampleNode.h"
-#include "DebugNode.h"
-#include "FilletNode.h"
-#include "SkinNode.h"
-#include "ConcatNode.h"
-#include "CgalAdvNode.h"
-#include "src/core/CsgOpNode.h"
-#include "src/core/ColorNode.h"
-#include "src/core/primitives.h"
-#include "ColorUtil.h"
+#include "core/TransformNode.h"
+#include "core/LinearExtrudeNode.h"
+#include "core/RotateExtrudeNode.h"
+#include "core/PathExtrudeNode.h"
+#include "core/PullNode.h"
+#include "core/WrapNode.h"
+#include "core/OversampleNode.h"
+#include "core/DebugNode.h"
+#include "core/FilletNode.h"
+#include "core/SkinNode.h"
+#include "core/ConcatNode.h"
+#include "core/CgalAdvNode.h"
 #include "Expression.h"
-#include "RoofNode.h"
-#include "RenderNode.h"
-#include "SurfaceNode.h"
-#include "TextNode.h"
-#include "OffsetNode.h"
-#include "TextureNode.h"
+#include "core/RoofNode.h"
+#include "core/RenderNode.h"
+#include "core/SurfaceNode.h"
+#include "core/TextNode.h"
+#include "core/OffsetNode.h"
+#include "core/TextureNode.h"
 #include <hash.h>
 #include <PolySetUtils.h>
-#include "ProjectionNode.h"
-#include "ImportNode.h"
+#include "core/ProjectionNode.h"
+#include "core/ImportNode.h"
 #include <Tree.h>
 #include <GeometryEvaluator.h>
-#include "degree_trig.h"
+#include "utils/degree_trig.h"
 #include "printutils.h"
 #include "io/fileutils.h"
 #include "handle_dep.h"
@@ -3306,6 +3306,7 @@ PyObject *python_minkowski(PyObject *self, PyObject *args, PyObject *kwargs)
 }
 
 
+
 PyObject *python_hull(PyObject *self, PyObject *args, PyObject *kwargs)
 {
   return python_csg_adv_sub(self, args, kwargs, CgalAdvType::HULL);
@@ -4439,8 +4440,8 @@ PyMethodDef PyOpenSCADFunctions[] = {
   {#name, (PyCFunction) python_oo_##name, METH_VARARGS | METH_KEYWORDS, desc},
 
 PyMethodDef PyOpenSCADMethods[] = {
-
-  OO_METHOD_ENTRY(translate,"Move Object")	
+  OO_METHOD_ENTRY(translate,"Move Object")
+  OO_METHOD_ENTRY(rotate,"Rotate Object")	
   OO_METHOD_ENTRY(right,"Right Object")	
   OO_METHOD_ENTRY(left,"Left Object")	
   OO_METHOD_ENTRY(back,"Back Object")	
@@ -4450,9 +4451,8 @@ PyMethodDef PyOpenSCADMethods[] = {
 
   OO_METHOD_ENTRY(union,"Union Object")	
   OO_METHOD_ENTRY(difference,"Difference Object")	
-  OO_METHOD_ENTRY(intersection,"Intersection Object")	
+  OO_METHOD_ENTRY(intersection,"Intersection Object")
 
-  OO_METHOD_ENTRY(rotate,"Rotate Object")	
   OO_METHOD_ENTRY(rotx,"Rotx Object")	
   OO_METHOD_ENTRY(roty,"Roty Object")	
   OO_METHOD_ENTRY(rotz,"Rotz Object")	
@@ -4464,8 +4464,6 @@ PyMethodDef PyOpenSCADMethods[] = {
   OO_METHOD_ENTRY(offset,"Offset Object")	
   OO_METHOD_ENTRY(roof,"Roof Object")	
   OO_METHOD_ENTRY(color,"Color Object")	
-  OO_METHOD_ENTRY(output,"Output Object")	
-  OO_METHOD_ENTRY(show,"Output Object")	
   OO_METHOD_ENTRY(export,"Export Object")	
   OO_METHOD_ENTRY(find_face,"Find Face")	
   OO_METHOD_ENTRY(sitonto,"Sit onto")	
@@ -4473,7 +4471,6 @@ PyMethodDef PyOpenSCADMethods[] = {
   OO_METHOD_ENTRY(linear_extrude,"Linear_extrude Object")	
   OO_METHOD_ENTRY(rotate_extrude,"Rotate_extrude Object")	
   OO_METHOD_ENTRY(path_extrude,"Path_extrude Object")
-
   OO_METHOD_ENTRY(resize,"Resize Object")	
 
   OO_METHOD_ENTRY(mesh, "Mesh Object")	
@@ -4486,12 +4483,11 @@ PyMethodDef PyOpenSCADMethods[] = {
   OO_METHOD_ENTRY(highlight,"Highlight Object")	
   OO_METHOD_ENTRY(background,"Background Object")	
   OO_METHOD_ENTRY(only,"Only Object")	
-
+  OO_METHOD_ENTRY(show,"Show Object")	
   OO_METHOD_ENTRY(projection,"Projection Object")	
   OO_METHOD_ENTRY(pull,"Pull Obejct apart")	
   OO_METHOD_ENTRY(wrap,"Wrap Object around Cylinder")	
   OO_METHOD_ENTRY(render,"Render Object")	
-
   {NULL, NULL, 0, NULL}
 };
 
