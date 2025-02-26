@@ -23,7 +23,7 @@ public:
   void updateTitle();
 
 public slots:
-  void setVisible(bool visible) override;
+  void onVisibilityChanged(bool visible);
   void onTopLevelStatusChanged(bool);
 
 private:
