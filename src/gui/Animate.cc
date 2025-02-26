@@ -139,7 +139,7 @@ void Animate::incrementTVal()
 {
     if (this->animNumSteps == 0) return;
 
-  if (mainWindow->windowActionHideCustomizer->isVisible()) {
+  if (mainWindow->parameterDock->isVisible()) {
     if (mainWindow->activeEditor->parameterWidget->childHasFocus()) return;
   }
 

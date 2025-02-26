@@ -108,7 +108,7 @@ void TabManager::prevTab()
 
 void TabManager::actionNew()
 {
-  if (par->windowActionHideEditor->isChecked()) par->windowActionHideEditor->trigger();   //if editor hidden, make it visible
+  if (!par->editorDock->isVisible()) par->editorDock->setVisible(true);   //if editor hidden, make it visible
   createTab("");
 }
 

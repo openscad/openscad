@@ -294,21 +294,12 @@ MainWindow::MainWindow(const QStringList& filenames) :
   };
 
   this->editorDock->setConfigKey("view/hideEditor");
-  this->editorDock->setAction(this->windowActionHideEditor);
-  this->editorDock->setWindowTitle("Editor");
-
   this->consoleDock->setConfigKey("view/hideConsole");
-  this->consoleDock->setAction(this->windowActionHideConsole);
   this->parameterDock->setConfigKey("view/hideCustomizer");
-  this->parameterDock->setAction(this->windowActionHideCustomizer);
   this->errorLogDock->setConfigKey("view/hideErrorLog");
-  this->errorLogDock->setAction(this->windowActionHideErrorLog);
   this->animateDock->setConfigKey("view/hideAnimate");
-  this->animateDock->setAction(this->windowActionHideAnimate);
   this->fontListDock->setConfigKey("view/hideFontList");
-  this->fontListDock->setAction(this->windowActionHideFontList);
   this->viewportControlDock->setConfigKey("view/hideViewportControl");
-  this->viewportControlDock->setAction(this->windowActionHideViewportControl);
 
   this->versionLabel = nullptr; // must be initialized before calling updateStatusBar()
   updateStatusBar(nullptr);
@@ -3277,7 +3268,6 @@ void MainWindow::hideViewportControl()
   }
 }
 
-
 void MainWindow::showParameters()
 {
   windowActionHideCustomizer->setChecked(false);
@@ -3293,11 +3283,6 @@ void MainWindow::hideParameters()
   } else {
     parameterDock->show();
   }
-}
-
-void MainWindow::onWindowActionSelectEditor()
-{
-  showEditor();
 }
 
 void MainWindow::on_windowActionSelectConsole_triggered()

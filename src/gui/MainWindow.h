@@ -237,7 +237,6 @@ private slots:
   void hideAnimate();
   void showFontList();
   void hideFontList();
-  void onWindowActionSelectEditor();
 
   // Handle the Next/Prev dock menu action when the is hovered, currently this activate the rubberband
   void onWindowActionNextPrevHovered();
