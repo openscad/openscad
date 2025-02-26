@@ -238,9 +238,18 @@ private slots:
   void showFontList();
   void hideFontList();
   void onWindowActionSelectEditor();
+
+  // Handle the Next/Prev dock menu action when the is hovered, currently this activate the rubberband
   void onWindowActionNextPrevHovered();
+
+  // Handle the Next/Prev dock menu action when the is validatee, currently switch to the targetted dock
+  // and remove the rubberband
   void onWindowActionNextPrevTriggered();
+
+  // Handle the Next/Prev shortcut, currently switch to the targetted dock
+  // and adds the rubberband, the rubbreband is removed on shortcut key release.
   void onWindowShortcutNextPrevActivated();
+
   void on_windowActionSelectConsole_triggered();
   void on_windowActionSelectCustomizer_triggered();
   void on_windowActionSelectErrorLog_triggered();
