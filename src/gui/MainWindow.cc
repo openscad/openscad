@@ -148,21 +148,21 @@
 #include "nettle/base64.h"
 
 std::string SHA256HashString(std::string aString){
-    uint8_t  digest[SHA256_DIGEST_SIZE];
-    sha256_ctx sha256_ctx;
+  uint8_t digest[SHA256_DIGEST_SIZE];
+  sha256_ctx sha256_ctx;
 
-    sha256_init(&sha256_ctx);
-    sha256_update(&sha256_ctx, aString.length(), (uint8_t *) aString.c_str());
-    sha256_digest(&sha256_ctx, SHA256_DIGEST_SIZE, digest);
+  sha256_init(&sha256_ctx);
+  sha256_update(&sha256_ctx, aString.length(), (uint8_t *) aString.c_str());
+  sha256_digest(&sha256_ctx, SHA256_DIGEST_SIZE, digest);
 
-    base64_encode_ctx base64_ctx;
-    char digest_base64[BASE64_ENCODE_LENGTH(SHA256_DIGEST_SIZE)+1];
-    memset(digest_base64,0,sizeof(digest_base64));
+  base64_encode_ctx base64_ctx;
+  char digest_base64[BASE64_ENCODE_LENGTH(SHA256_DIGEST_SIZE) + 1];
+  memset(digest_base64, 0, sizeof(digest_base64));
 
-    base64_encode_init(&base64_ctx);
-    base64_encode_update(&base64_ctx, digest_base64, SHA256_DIGEST_SIZE, digest);
-    base64_encode_final(&base64_ctx, digest_base64);		    
-    return digest_base64;
+  base64_encode_init(&base64_ctx);
+  base64_encode_update(&base64_ctx, digest_base64, SHA256_DIGEST_SIZE, digest);
+  base64_encode_final(&base64_ctx, digest_base64);
+  return digest_base64;
 }
 
 #endif // ifdef ENABLE_PYTHON
@@ -270,6 +270,7 @@ void addExportActions(const MainWindow *mainWindow, QToolBar *toolbar, QAction *
 MainWindow::MainWindow(const QStringList& filenames) :
   rubberBandManager(this)
 {
+  installEventFilter(this);
   setupUi(this);
 
   consoleUpdater = new QTimer(this);
@@ -577,6 +578,11 @@ MainWindow::MainWindow(const QStringList& filenames) :
   for (auto& [dock, title] : docks) {
     dock->setName(title);
     dock->setFocusPolicy(Qt::FocusPolicy::StrongFocus);
+
+    // It is neede to have the event filter installed in each dock so that the events are
+    // correctly processed when the dock are floating (is in a different window that the mainwindow)
+    dock->installEventFilter(this);
+
     menuWindow->addAction(dock->toggleViewAction());
   }
 
@@ -725,6 +731,7 @@ MainWindow::MainWindow(const QStringList& filenames) :
   }
 
   updateWindowSettings(hideConsole, hideEditor, hideCustomizer, hideErrorLog, hideEditorToolbar, hide3DViewToolbar, hideAnimate, hideFontList, hideViewportControl);
+
   // Connect the menu "Windows/Navigation" to slot that process it by opening in a pop menu
   // the navigationMenu.
   connect(windowActionJumpTo, &QAction::triggered, this, &MainWindow::onNavigationOpenContextMenu);
@@ -738,8 +745,25 @@ MainWindow::MainWindow(const QStringList& filenames) :
     connect(action2, &QAction::hovered, this, &MainWindow::onNavigationHoveredContextMenuEntry);
   }
   connect(navigationMenu, &QMenu::aboutToHide, this, &MainWindow::onNavigationCloseContextMenu);
-
+  connect(menuWindow, &QMenu::aboutToHide, this, &MainWindow::onNavigationCloseContextMenu);
   windowActionJumpTo->setMenu(navigationMenu);
+
+  // connect the signal of next/prev windowAction and the dedicated slot
+  // hovering is connected to rubberband activation while triggering is for actual
+  // activation of the corresponding dock.
+  std::vector<QAction *> actions = {windowActionNextWindow, windowActionPreviousWindow};
+  for (auto& action : actions) {
+      connect(action, &QAction::hovered, this, &MainWindow::onWindowActionNextPrevHovered);
+    connect(action, &QAction::triggered, this, &MainWindow::onWindowActionNextPrevTriggered);
+  }
+
+  // Adds shortcut for the prev/next window switching
+  shortcutNextWindow = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_K), this);
+  QObject::connect(shortcutNextWindow,    &QShortcut::activated,
+                   this,        &MainWindow::onWindowShortcutNextPrevActivated);
+  shortcutPreviousWindow = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_H), this);
+  QObject::connect(shortcutPreviousWindow,    &QShortcut::activated,
+                   this,        &MainWindow::onWindowShortcutNextPrevActivated);
 
   connect(this->activeEditor, SIGNAL(escapePressed()), this, SLOT(measureFinished()));
   // display this window and check for OpenGL 2.0 (OpenCSG) support
@@ -783,6 +807,7 @@ void MainWindow::onNavigationTriggerContextMenuEntry(){
   Dock *dock = action->property("id").value<Dock *>();
   assert(dock != nullptr);
 
+  dock->raise();
   dock->show();
   dock->setFocus();
 
@@ -799,6 +824,11 @@ void MainWindow::onNavigationHoveredContextMenuEntry(){
   Dock *dock = action->property("id").value<Dock *>();
   assert(dock != nullptr);
 
+  // Hover signal is emitted at each mouse move, to avoid excessive
+  // load we only raise/emphasize if it is not yet done.
+  if(rubberBandManager.isEmphasized(dock)) return;
+
+  dock->raise();
   rubberBandManager.emphasize(dock);
 }
 
@@ -1576,9 +1606,9 @@ void MainWindow::saveBackup()
   }
 
   if (!this->tempFile) {
-    QString suffix="scad";
+    QString suffix = "scad";
 #ifdef ENABLE_PYTHON
-    if(this->python_active) suffix="py";
+    if (this->python_active) suffix = "py";
 #endif
     this->tempFile = new QTemporaryFile(backupPath.append(basename + "-backup-XXXXXXXX." + suffix));
   }
@@ -1829,6 +1859,15 @@ bool MainWindow::event(QEvent *event) {
 
 bool MainWindow::eventFilter(QObject *obj, QEvent *event)
 {
+  if (rubberBandManager.isVisible()) {
+    if (event->type() == QEvent::KeyRelease) {
+      auto keyEvent = static_cast<QKeyEvent *>(event);
+      if (keyEvent->key() == Qt::Key_Control) {
+        rubberBandManager.hide();
+      }
+    }
+  }
+
   if (obj == find_panel) {
     if (event->type() == QEvent::KeyPress) {
       auto keyEvent = static_cast<QKeyEvent *>(event);
@@ -1839,6 +1878,7 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event)
     }
     return false;
   }
+
   return QMainWindow::eventFilter(obj, event);
 }
 
@@ -1900,8 +1940,8 @@ bool MainWindow::trust_python_file(const std::string& file,  const std::string& 
     this->trusted_edit_document_name = file;
     return true;
   }
-  if(content.rfind("from openscad import",0) == 0) { // 1st character already typed
-    this->trusted_edit_document_name=file;
+  if (content.rfind("from openscad import", 0) == 0) { // 1st character already typed
+    this->trusted_edit_document_name = file;
     return true;
   }
 
@@ -2235,7 +2275,7 @@ void MainWindow::cgalRender()
 void MainWindow::actionRenderDone(const std::shared_ptr<const Geometry>& root_geom)
 {
 #ifdef ENABLE_PYTHON
-  python_lock();	
+  python_lock();
 #endif
   progress_report_fin();
   if (root_geom) {
@@ -3290,14 +3330,47 @@ void MainWindow::on_windowActionSelectCustomizer_triggered()
   showParameters();
 }
 
-void MainWindow::on_windowActionNextWindow_triggered()
+// Use the sender's to detect if we are moving forward/backward in docks
+// and search for the next dock to "activate" or "emphasize"
+// If no dock can be found, returns the first one.
+Dock *MainWindow::getNextDockFromSender(QObject *sender)
 {
-  activateWindow(1);
+  int direction = 0;
+
+  auto *action = qobject_cast<QAction *>(sender);
+  if (action != nullptr) {
+    direction = (action == windowActionNextWindow) ? 1 : -1;
+  } else {
+    auto *shortcut = qobject_cast<QShortcut *>(sender);
+    direction = (shortcut == shortcutNextWindow) ? 1 : -1;
+  }
+
+  return findVisibleDockToActivate(direction);
 }
 
-void MainWindow::on_windowActionPreviousWindow_triggered()
+void MainWindow::onWindowActionNextPrevHovered()
 {
-  activateWindow(-1);
+  auto dock = getNextDockFromSender(sender());
+
+  // Hover signal is emitted at each mouse move, to avoid excessive
+  // load we only raise/emphasize if it is not yet done.
+  if(rubberBandManager.isEmphasized(dock)) return;
+
+  dock->raise();
+  rubberBandManager.emphasize(dock);
+}
+
+void MainWindow::onWindowActionNextPrevTriggered()
+{
+  auto dock = getNextDockFromSender(sender());
+  activateDock(dock);
+}
+
+void MainWindow::onWindowShortcutNextPrevActivated()
+{
+  auto dock = getNextDockFromSender(sender());
+  activateDock(dock);
+  rubberBandManager.emphasize(dock);
 }
 
 void MainWindow::on_editActionInsertTemplate_triggered()
@@ -3339,21 +3412,22 @@ void MainWindow::onTabManagerEditorChanged(EditorInterface *neweditor)
   viewportControlDock->setNameSuffix(name);
 }
 
-void MainWindow::activateWindow(int offset)
+Dock *MainWindow::findVisibleDockToActivate(int offset) const
 {
   const unsigned int dockCount = docks.size();
 
   int focusedDockIndice = -1;
 
-  // search among the docks the dock that is having the focus. Several cases have to be taken into account
-  // If the dock is a top level windows and it is the active window we select it.
-  for (unsigned int index = 0; index < dockCount; ++index) {
-    auto dock = std::get<0>(docks[index]);
-    if (dock->isTopLevel() && dock->isActiveWindow()) {
-      focusedDockIndice = index;
-    } else if (dock->hasFocus())  {
-      focusedDockIndice = index;
-      break;
+  // search among the docks the one that is having the focus. This is done by
+  // traversing the widget hierarchy from the focused widget up to the docks that
+  // contains it.
+  const auto focusWidget = QApplication::focusWidget();
+  for (auto widget = focusWidget; widget != nullptr; widget = widget->parentWidget()) {
+    for (unsigned int index = 0; index < dockCount; ++index) {
+      auto dock = std::get<0>(docks[index]);
+      if (dock == focusWidget) {
+        focusedDockIndice = index;
+      }
     }
   }
 
@@ -3361,6 +3435,7 @@ void MainWindow::activateWindow(int offset)
     focusedDockIndice = 0;
   }
 
+  const auto& dock = std::get<0>(docks.at(focusedDockIndice));
   for (int o = 1; o < dockCount; ++o) {
     // starting from dockCount + focusedDockIndice move left or right (o*offset)
     // to find the first visible one. dockCount is there so there is no situation in which
@@ -3369,15 +3444,22 @@ void MainWindow::activateWindow(int offset)
     const auto& dock = std::get<0>(docks.at(target));
 
     if (dock->isVisible()) {
-      // We always need to activate the window.
-      if (dock->isTopLevel()) dock->activateWindow();
-      else QMainWindow::activateWindow();
-      dock->raise();
-      dock->setFocus();
-      rubberBandManager.emphasize(dock);
-      return;
+      return dock;
     }
   }
+  return nullptr;
+}
+
+void MainWindow::activateDock(Dock *dock)
+{
+  if (dock == nullptr) return;
+
+  // We always need to activate the window.
+  if (dock->isTopLevel()) dock->activateWindow();
+  else QMainWindow::activateWindow();
+
+  dock->raise();
+  dock->setFocus();
 }
 
 void MainWindow::dragEnterEvent(QDragEnterEvent *event)
