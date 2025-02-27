@@ -1,5 +1,5 @@
 #pragma once
-#include "src/core/node.h"
+#include "core/node.h"
 
 extern bool python_active;
 extern bool python_trusted;

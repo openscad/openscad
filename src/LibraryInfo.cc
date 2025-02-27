@@ -29,7 +29,7 @@
 #endif // GNUG
 #endif // ENABLE_CGAL
 #ifdef ENABLE_PYTHON
-#include "src/python/python_public.h"
+#include "python/python_public.h"
 #endif
 
 #ifdef ENABLE_LIBZIP
