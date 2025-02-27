@@ -1108,18 +1108,19 @@ PyObject *python_rotate_core(PyObject *obj, PyObject *val_a, PyObject *val_v)
 {
   Vector3d vec3(0,0,0);
   double angle;
-  if (PyList_Check(val_a) && val_v == nullptr) {
+  if (val_a != nullptr && PyList_Check(val_a) && val_v == nullptr) {
     if(PyList_Size(val_a) >= 1) vec3[0]= PyFloat_AsDouble(PyList_GetItem(val_a, 0));
     if(PyList_Size(val_a) >= 2) vec3[1]= PyFloat_AsDouble(PyList_GetItem(val_a, 1));
     if(PyList_Size(val_a) >= 3) vec3[2]= PyFloat_AsDouble(PyList_GetItem(val_a, 2));
     return python_rotate_sub(obj, vec3, NAN);
-  } else if (!python_numberval(val_a,&angle) && PyList_Check(val_v) && PyList_Size(val_v) == 3) {
+  } else if (val_a != nullptr && val_v != nullptr && !python_numberval(val_a,&angle) && PyList_Check(val_v) && PyList_Size(val_v) == 3) {
     vec3[0]= PyFloat_AsDouble(PyList_GetItem(val_v, 0));
     vec3[1]= PyFloat_AsDouble(PyList_GetItem(val_v, 1));
     vec3[2]= PyFloat_AsDouble(PyList_GetItem(val_v, 2));
     return python_rotate_sub(obj, vec3, angle);
   }
-  return obj;
+  PyErr_SetString(PyExc_TypeError, "Invalid arguments to rotate()");
+  return nullptr;
 }
 
 PyObject *python_rotate(PyObject *self, PyObject *args, PyObject *kwargs)

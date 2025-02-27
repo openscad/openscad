@@ -942,14 +942,6 @@
     <string>Ctrl+-</string>
    </property>
   </action>
-  <action name="windowActionHideEditor">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>Hide Editor</string>
-   </property>
-  </action>
   <action name="designActionReloadAndPreview">
    <property name="text">
     <string>&amp;Reload and Preview</string>
@@ -1327,14 +1319,6 @@
     <string>&amp;Orthogonal</string>
    </property>
   </action>
-  <action name="windowActionHideConsole">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>Hide Console</string>
-   </property>
-  </action>
   <action name="helpActionAbout">
    <property name="enabled">
     <bool>true</bool>
@@ -1621,17 +1605,6 @@
     <string>&amp;Cheat Sheet</string>
    </property>
   </action>
-  <action name="windowActionHideCustomizer">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="checked">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>Hide Customizer</string>
-   </property>
-  </action>
   <action name="fileActionExportPDF">
    <property name="icon">
     <iconset theme="chokusen-export-pdf">
@@ -1647,78 +1620,6 @@
    </property>
    <property name="text">
     <string>Hide 3D View toolbar</string>
-   </property>
-  </action>
-  <action name="windowActionHideErrorLog">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="checked">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>Hide Error Log</string>
-   </property>
-   <property name="toolTip">
-    <string>Hide ErrorLog</string>
-   </property>
-  </action>
-  <action name="windowActionHideAnimate">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="checked">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>Hide Animation Toolbar/Window</string>
-   </property>
-   <property name="toolTip">
-    <string>Hide Animation Toolbar/Window</string>
-   </property>
-  </action>
-  <action name="windowActionHideViewportControl">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="checked">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>Hide Viewport-Control</string>
-   </property>
-   <property name="toolTip">
-    <string>Hide Viewport-Control</string>
-   </property>
-  </action>
-  <action name="windowActionSelectEditor">
-   <property name="text">
-    <string>&amp;Editor</string>
-   </property>
-  </action>
-  <action name="windowActionSelectConsole">
-   <property name="text">
-    <string>&amp;Console</string>
-   </property>
-  </action>
-  <action name="windowActionSelectCustomizer">
-   <property name="text">
-    <string>C&amp;ustomizer</string>
-   </property>
-  </action>
-  <action name="windowActionSelectErrorLog">
-   <property name="text">
-    <string>Error &amp;Log</string>
-   </property>
-  </action>
-  <action name="windowActionSelectAnimate">
-   <property name="text">
-    <string>&amp;Animate</string>
-   </property>
-  </action>
-  <action name="windowActionSelectViewportControl">
-   <property name="text">
-    <string>Viewport-Control</string>
    </property>
   </action>
   <action name="windowActionNextWindow">
@@ -1742,22 +1643,6 @@
   <action name="editActionFoldAll">
    <property name="text">
     <string>Fold/Unfoll All</string>
-   </property>
-  </action>
-  <action name="windowActionHideFontList">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="checked">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>Hide Font List</string>
-   </property>
-  </action>
-  <action name="windowActionSelectFontList">
-   <property name="text">
-    <string>Font List</string>
    </property>
   </action>
   <action name="windowActionJumpTo">
