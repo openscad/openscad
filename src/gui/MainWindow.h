@@ -223,30 +223,26 @@ private slots:
   void hideEditorToolbar();
   void hide3DViewToolbar();
   void showLink(const QString&);
-  void showEditor();
-  void hideEditor();
-  void showConsole();
-  void hideConsole();
-  void showErrorLog();
-  void hideErrorLog();
-  void showViewportControl();
-  void hideViewportControl();
-  void showParameters();
-  void hideParameters();
-  void showAnimate();
-  void hideAnimate();
-  void showFontList();
-  void hideFontList();
-  void onwindowActionSelectEditor();
+
+  // Handle the Next/Prev dock menu action when the is hovered, currently this activate the rubberband
   void onWindowActionNextPrevHovered();
+
+  // Handle the Next/Prev dock menu action when the is validatee, currently switch to the targetted dock
+  // and remove the rubberband
   void onWindowActionNextPrevTriggered();
+
+  // Handle the Next/Prev shortcut, currently switch to the targetted dock
+  // and adds the rubberband, the rubbreband is removed on shortcut key release.
   void onWindowShortcutNextPrevActivated();
-  void on_windowActionSelectConsole_triggered();
-  void on_windowActionSelectCustomizer_triggered();
-  void on_windowActionSelectErrorLog_triggered();
-  void on_windowActionSelectAnimate_triggered();
-  void on_windowActionSelectFontList_triggered();
-  void on_windowActionSelectViewportControl_triggered();
+
+  void onEditorDockVisibilityChanged(bool isVisible);
+  void onConsoleDockVisibilityChanged(bool isVisible);
+  void onErrorLogDockVisibilityChanged(bool isVisible);
+  void onAnimateDockVisibilityChanged(bool isVisible);
+  void onFontListDockVisibilityChanged(bool isVisible);
+  void onViewportControlDockVisibilityChanged(bool isVisible);
+  void onParametersDockVisibilityChanged(bool isVisible);
+
   void on_editActionInsertTemplate_triggered();
   void on_editActionFoldAll_triggered();
 
@@ -315,7 +311,6 @@ public:
 
 public slots:
   void actionReloadRenderPreview();
-  void on_editorDock_visibilityChanged(bool);
   void on_toolButtonCompileResultClose_clicked();
   void processEvents();
   void jumpToLine(int, int);
