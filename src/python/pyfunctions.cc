@@ -1275,7 +1275,7 @@ PyObject *python_linear_extrude(PyObject *self, PyObject *args, PyObject *kwargs
   if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O|OiOOOiiOddd", kwlist, 
                                    &obj, &height, &convexity, &origin, &scale, &center, &slices, &segments, &twist, &fn, &fs, &fs))
    {
-    PyErr_SetString(PyExc_TypeError,"error during parsing\n");
+    PyErr_SetString(PyExc_TypeError,"error during parsing linear_extrude ");
     return NULL;
   }
 
@@ -1964,6 +1964,45 @@ PyObject *python_textmetrics(PyObject *self, PyObject *args, PyObject *kwargs)
   return (PyObject *)dict;
 }
 
+PyObject *python_osversion(PyObject *self, PyObject *args, PyObject *kwargs)
+{
+
+  char *kwlist[] = {NULL};
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "", kwlist)) {
+    PyErr_SetString(PyExc_TypeError, "Error during parsing version()");
+    return NULL;
+  }
+
+  PyObject *version = PyList_New(3);
+  PyList_SetItem(version, 0, PyFloat_FromDouble(OPENSCAD_YEAR));
+  PyList_SetItem(version, 1, PyFloat_FromDouble(OPENSCAD_MONTH));
+#ifdef OPENSCAD_DAY
+  PyList_SetItem(version, 2, PyFloat_FromDouble(OPENSCAD_DAY));
+#else
+  PyList_SetItem(version, 2, PyFloat_FromDouble(0));
+#endif
+
+  return version;
+}
+
+
+PyObject *python_osversion_num(PyObject *self, PyObject *args, PyObject *kwargs)
+{
+
+  char *kwlist[] = {NULL};
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "", kwlist)) {
+    PyErr_SetString(PyExc_TypeError, "Error during parsing version_num()");
+    return NULL;
+  }
+
+  double version = OPENSCAD_YEAR * 10000 + OPENSCAD_MONTH * 100;
+#ifdef OPENSCAD_DAY
+  version += OPENSCAD_DAY;
+#endif
+  return PyFloat_FromDouble(version);
+}
+
+
 PyObject *python_offset_core(PyObject *obj,double r, double delta, PyObject *chamfer, double fn, double fa, double fs)
 {
   DECLARE_INSTANCE
@@ -2109,6 +2148,101 @@ PyObject *python_group(PyObject *self, PyObject *args, PyObject *kwargs)
   return PyOpenSCADObjectFromNode(&PyOpenSCADType, node);
 }
 
+PyObject *do_import_python(PyObject *self, PyObject *args, PyObject *kwargs, ImportType type)
+{
+  DECLARE_INSTANCE
+  char *kwlist[] = {"file", "layer", "convexity", "origin", "scale", "width", "height", "filename", "center", "dpi", "id", NULL};
+  double fn = NAN, fa = NAN, fs = NAN;
+
+  std::string filename;
+  const char *v = NULL, *layer = NULL,  *id = NULL;
+  PyObject *center = NULL;
+  int convexity = 2;
+  double scale = 1.0, width = 1, height = 1, dpi = 1.0;
+  PyObject *origin = NULL;
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "s|slO!dddsfOddd", kwlist,
+                                   &v,
+                                   &layer,
+                                   &convexity,
+                                   &PyList_Type, origin,
+                                   &scale,
+                                   &width, &height,
+                                   &center, &dpi, &id,
+                                   &fn, &fa, &fs
+
+                                   )) {
+    PyErr_SetString(PyExc_TypeError, "Error during parsing osimport(filename)");
+    return NULL;
+  }
+
+#ifdef _WIN32
+  std::string cur_dir = ".";
+#else 
+#ifdef __APPLE__
+    std::string cur_dir = ".";
+#else
+  std::string cur_dir = get_current_dir_name();
+#endif
+#endif  
+  filename = lookup_file(v == NULL ? "" : v, cur_dir, instance->location().filePath().parent_path().string());
+  if (!filename.empty()) handle_dep(filename);
+  ImportType actualtype = type;
+  if (actualtype == ImportType::UNKNOWN) {
+    std::string extraw = fs::path(filename).extension().generic_string();
+    std::string ext = boost::algorithm::to_lower_copy(extraw);
+    if (ext == ".stl") actualtype = ImportType::STL;
+    else if (ext == ".off") actualtype = ImportType::OFF;
+    else if (ext == ".dxf") actualtype = ImportType::DXF;
+    else if (ext == ".nef3") actualtype = ImportType::NEF3;
+    else if (ext == ".3mf") actualtype = ImportType::_3MF;
+    else if (ext == ".amf") actualtype = ImportType::AMF;
+    else if (ext == ".svg") actualtype = ImportType::SVG;
+  }
+
+  auto node = std::make_shared<ImportNode>(instance, actualtype);
+
+  get_fnas(node->fn, node->fa, node->fs);
+  if (!isnan(fn)) node->fn = fn;
+  if (!isnan(fa)) node->fa = fa;
+  if (!isnan(fs)) node->fs = fs;
+
+  node->filename = filename;
+
+  if (layer != NULL) node->layer = layer;
+  if (id != NULL) node->id = id;
+  node->convexity = convexity;
+  if (node->convexity <= 0) node->convexity = 1;
+
+
+  if (origin != NULL && PyList_Check(origin) && PyList_Size(origin) == 2) {
+    node->origin_x = PyFloat_AsDouble(PyList_GetItem(origin, 0));
+    node->origin_y = PyFloat_AsDouble(PyList_GetItem(origin, 1));
+  }
+
+  node->center = 0;
+  if (center == Py_True) node->center = 1;
+
+  node->scale = scale;
+  if (node->scale <= 0) node->scale = 1;
+
+  node->dpi = ImportNode::SVG_DEFAULT_DPI;
+  double val = dpi;
+  if (val < 0.001) {
+    PyErr_SetString(PyExc_TypeError, "Invalid dpi value giving");
+    return NULL;
+  } else {
+    node->dpi = val;
+  }
+
+  node->width = width;
+  node->height = height;
+  return PyOpenSCADObjectFromNode(&PyOpenSCADType, node);
+}
+
+
+PyObject *python_import(PyObject *self, PyObject *args, PyObject *kwargs) {
+  return do_import_python(self, args, kwargs, ImportType::UNKNOWN);
+}
 
 PyObject *python_str(PyObject *self) {
   std::ostringstream stream;
@@ -2157,6 +2291,9 @@ PyMethodDef PyOpenSCADFunctions[] = {
   {"surface", (PyCFunction) python_surface, METH_VARARGS | METH_KEYWORDS, "Surface Object."},
   {"mesh", (PyCFunction) python_mesh, METH_VARARGS | METH_KEYWORDS, "exports mesh."},
   {"render", (PyCFunction) python_render, METH_VARARGS | METH_KEYWORDS, "Render Object."},
+  {"osimport", (PyCFunction) python_import, METH_VARARGS | METH_KEYWORDS, "Import Object."},
+  {"version", (PyCFunction) python_osversion, METH_VARARGS | METH_KEYWORDS, "Output openscad Version."},
+  {"version_num", (PyCFunction) python_osversion_num, METH_VARARGS | METH_KEYWORDS, "Output openscad Version."},
   {NULL, NULL, 0, NULL}
 };
 
