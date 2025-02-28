@@ -57,6 +57,15 @@ PyObject *PyOpenSCADObject_alloc(PyTypeObject *cls, Py_ssize_t nitems)
 {
   PyObject *self = PyType_GenericAlloc(cls, nitems);
   ((PyOpenSCADObject *)self)->dict = PyDict_New();
+  PyObject *origin=PyList_New(4);
+  for(int i=0;i<4;i++) {
+  	PyObject *row=PyList_New(4);
+	for(int j=0;j<4;j++)
+		PyList_SetItem(row,j,PyFloat_FromDouble(i==j?1.0:0.0));
+	PyList_SetItem(origin,i,row);
+  }
+  PyDict_SetItemString(((PyOpenSCADObject *)self)->dict,"origin",origin);
+  Py_XDECREF(origin);
   return self;
 }
 

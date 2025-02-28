@@ -507,8 +507,28 @@ PyObject *python_frommatrix(const Matrix4d &mat) {
   return pyo;
 }
 
+
+PyObject *python_matrix_scale(PyObject *mat, Vector3d scalevec)
+{
+  Transform3d matrix=Transform3d::Identity();
+  matrix.scale(scalevec);
+  Matrix4d raw;
+  if(python_tomatrix(mat, raw)) return nullptr;
+  Vector3d n;
+  for(int i=0;i<3;i++) {
+    n =Vector3d(raw(0,i),raw(1,i),raw(2,i)); // TODO fix
+    n = matrix * n;
+    for(int j=0;j<3;j++) raw(j,i) = n[j];
+  }  
+  return python_frommatrix(raw);
+}
+
+
 PyObject *python_scale_sub(PyObject *obj, Vector3d scalevec)
 {
+  PyObject *mat = python_matrix_scale(obj, scalevec);
+  if(mat != nullptr) return mat;
+
   DECLARE_INSTANCE
   std::shared_ptr<AbstractNode> child;
   auto node = std::make_shared<TransformNode>(instance, "scale");
@@ -525,7 +545,9 @@ PyObject *python_scale_sub(PyObject *obj, Vector3d scalevec)
     PyObject *key, *value;
     Py_ssize_t pos = 0;
      while(PyDict_Next(child_dict, &pos, &key, &value)) {
-       PyDict_SetItem(((PyOpenSCADObject *) pyresult)->dict,key, value);
+       PyObject *value1 = python_matrix_scale(value,scalevec);
+       if(value1 != nullptr) PyDict_SetItem(((PyOpenSCADObject *) pyresult)->dict,key, value1);
+       else PyDict_SetItem(((PyOpenSCADObject *) pyresult)->dict,key, value);
     }
   }
   return pyresult;
@@ -578,6 +600,21 @@ PyObject *python_oo_scale(PyObject *obj, PyObject *args, PyObject *kwargs)
   }
   return python_scale_core(obj,val_v);
 }
+PyObject *python_matrix_rot(PyObject *mat, Matrix3d rotvec)
+{
+  Transform3d matrix=Transform3d::Identity();
+  matrix.rotate(rotvec);
+  Matrix4d raw;
+  if(python_tomatrix(mat, raw)) return nullptr;
+  Vector3d n;
+  for(int i=0;i<4;i++) {
+    n =Vector3d(raw(0,i),raw(1,i),raw(2,i));
+    n = matrix * n;
+    for(int j=0;j<3;j++) raw(j,i) = n[j];
+  }  
+  return python_frommatrix(raw);
+}
+
 
 PyObject *python_rotate_sub(PyObject *obj, Vector3d vec3, double angle)
 {
@@ -608,6 +645,8 @@ PyObject *python_rotate_sub(PyObject *obj, Vector3d vec3, double angle)
   } else {
     M = angle_axis_degrees(angle, vec3);
   }
+  PyObject *mat = python_matrix_rot(obj, M);
+  if(mat != nullptr) return mat;
 
   DECLARE_INSTANCE
   auto node = std::make_shared<TransformNode>(instance, "rotate");
@@ -626,7 +665,9 @@ PyObject *python_rotate_sub(PyObject *obj, Vector3d vec3, double angle)
     PyObject *key, *value;
     Py_ssize_t pos = 0;
      while(PyDict_Next(child_dict, &pos, &key, &value)) {
-       PyDict_SetItem(((PyOpenSCADObject *) pyresult)->dict,key, value);
+       PyObject *value1 = python_matrix_rot(value,M);
+       if(value1 != nullptr) PyDict_SetItem(((PyOpenSCADObject *) pyresult)->dict,key, value1);
+       else PyDict_SetItem(((PyOpenSCADObject *) pyresult)->dict,key, value);
     }
   }
   return pyresult;
@@ -676,8 +717,26 @@ PyObject *python_oo_rotate(PyObject *obj, PyObject *args, PyObject *kwargs)
   return python_rotate_core(obj, val_a, val_v);
 }
 
+
+PyObject *python_matrix_mirror(PyObject *mat, Matrix4d m)
+{
+  Matrix4d raw;
+  if(python_tomatrix(mat, raw)) return nullptr;
+  Vector4d n;
+  for(int i=0;i<3;i++) {
+    n =Vector4d(raw(0,i),raw(1,i),raw(2,i),0);
+    n = m * n;
+    for(int j=0;j<3;j++) raw(j,i) = n[j];
+  }  
+  return python_frommatrix(raw);
+}
+
+
 PyObject *python_mirror_sub(PyObject *obj, Matrix4d &m)
 {
+  PyObject *mat = python_matrix_mirror(obj,m);
+  if(mat != nullptr) return mat;
+
   DECLARE_INSTANCE
   auto node = std::make_shared<TransformNode>(instance, "mirror");
   node->matrix = m;
@@ -693,7 +752,9 @@ PyObject *python_mirror_sub(PyObject *obj, Matrix4d &m)
     PyObject *key, *value;
     Py_ssize_t pos = 0;
      while(PyDict_Next(child_dict, &pos, &key, &value)) {
-       PyDict_SetItem(((PyOpenSCADObject *) pyresult)->dict,key, value);
+       PyObject *value1 = python_matrix_mirror(value,m);
+       if(value1 != nullptr) PyDict_SetItem(((PyOpenSCADObject *) pyresult)->dict,key, value1);
+       else PyDict_SetItem(((PyOpenSCADObject *) pyresult)->dict,key, value);
     }
   }
   return pyresult;
@@ -753,6 +814,14 @@ PyObject *python_oo_mirror(PyObject *obj, PyObject *args, PyObject *kwargs)
   return python_mirror_core(obj, val_v);
 }
 
+PyObject *python_matrix_trans(PyObject *mat, Vector3d transvec)
+{
+  Matrix4d raw;
+  if(python_tomatrix(mat, raw)) return nullptr;
+  for(int i=0;i<3;i++) raw(i,3) += transvec[i];
+  return python_frommatrix(raw);
+}
+
 PyObject *python_nb_sub_vec3(PyObject *arg1, PyObject *arg2, int mode);
 PyObject *python_translate_core(PyObject *obj, PyObject *v) 
 {
@@ -793,6 +862,12 @@ PyObject *python_multmatrix_sub(PyObject *pyobj, PyObject *pymat, int div)
     PyErr_SetString(PyExc_TypeError, "Matrix vector should be 4x4 array");
     return NULL;
   }
+
+  Matrix4d objmat;
+  if(!python_tomatrix(pyobj, objmat)){
+    objmat = mat * objmat;
+    return python_frommatrix(objmat);
+  } 
 
   DECLARE_INSTANCE
   auto node = std::make_shared<TransformNode>(instance, "multmatrix");
@@ -952,7 +1027,7 @@ PyObject *python_color_core(PyObject *obj, PyObject *color, double alpha)
 {
   PyObject *child_dict;
   std::shared_ptr<AbstractNode> child;
-  child = PyOpenSCADObjectToNodeMulti(obj,&child_dict);
+  child = PyOpenSCADObjectToNodeMulti(obj, &child_dict);
   if (child == NULL) {
     PyErr_SetString(PyExc_TypeError, "Invalid type for Object in color");
     return NULL;
@@ -977,7 +1052,6 @@ PyObject *python_color_core(PyObject *obj, PyObject *color, double alpha)
       if (hexColor) {
         node->color = *hexColor;
       } else {
-	printf("Error created\n");
         PyErr_SetString(PyExc_TypeError, "Cannot parse color");
         return NULL;
       }
@@ -1311,13 +1385,13 @@ PyObject *python_csg_sub(PyObject *self, PyObject *args, PyObject *kwargs, OpenS
 
   auto node = std::make_shared<CsgOpNode>(instance, mode);
   PyObject *obj;
-  PyObject *child_dict = nullptr;	  
-  PyObject *dummy_dict = nullptr;	  
+  std::vector<PyObject *>child_dict;
   std::shared_ptr<AbstractNode> child;
   for (i = 0; i < PyTuple_Size(args);i++) {
     obj = PyTuple_GetItem(args, i);
-    if(i == 0) child = PyOpenSCADObjectToNodeMulti(obj, &child_dict);
-    else child = PyOpenSCADObjectToNodeMulti(obj, &dummy_dict);
+    PyObject *dict = nullptr;	  
+    if(i == 0) child = PyOpenSCADObjectToNodeMulti(obj, &dict);
+    child_dict.push_back(dict);
     if(child != NULL) {
       node->children.push_back(child);
     } else {
@@ -1348,10 +1422,14 @@ PyObject *python_csg_sub(PyObject *self, PyObject *args, PyObject *kwargs, OpenS
   }
 
   PyObject *pyresult =PyOpenSCADObjectFromNode(&PyOpenSCADType, node);
-  if(child_dict != nullptr ) {
+  for(int i=child_dict.size()-1;i>=0; i--) // merge from back  to give 1st child most priority
+  {
+    auto &dict = child_dict[i];	  
     PyObject *key, *value;
     Py_ssize_t pos = 0;
-     while(PyDict_Next(child_dict, &pos, &key, &value)) {
+     while(PyDict_Next(dict, &pos, &key, &value)) {
+       PyObject* value1 = PyUnicode_AsEncodedString(key, "utf-8", "~");
+       const char *value_str =  PyBytes_AS_STRING(value1);
        PyDict_SetItem(((PyOpenSCADObject *) pyresult)->dict, key, value);
     }
   }
@@ -1464,6 +1542,15 @@ PyObject *python_nb_sub(PyObject *arg1, PyObject *arg2, OpenSCADOperator mode)
   node->children.push_back(child[0]);
   node->children.push_back(child[1]);
   PyObject *pyresult = PyOpenSCADObjectFromNode(&PyOpenSCADType, node);
+  for(int i=1;i>=0;i--) {
+    if(child_dict[i] != nullptr) {
+      PyObject *key, *value;
+      Py_ssize_t pos = 0;
+      while(PyDict_Next(child_dict[i], &pos, &key, &value)) {
+        PyDict_SetItem(((PyOpenSCADObject *) pyresult)->dict,key, value);
+      }
+    }
+  }  
   return pyresult;
 }
 
@@ -1478,7 +1565,12 @@ PyObject *python_nb_sub_vec3(PyObject *arg1, PyObject *arg2, int mode) // 0: tra
 		
   vecs = python_vectors(arg2,2,3);
 
-    if (vecs.size() > 0) {
+  if(mode == 0 && vecs.size() == 1) {
+    PyObject *mat = python_matrix_trans(arg1,vecs[0]);
+    if(mat != nullptr) return mat;
+  }
+
+  if (vecs.size() > 0) {
     if (child == NULL) {
       PyErr_SetString(PyExc_TypeError, "invalid argument left to operator");
       return NULL;
@@ -1498,7 +1590,9 @@ PyObject *python_nb_sub_vec3(PyObject *arg1, PyObject *arg2, int mode) // 0: tra
         PyObject *key, *value;
         Py_ssize_t pos = 0;
          while(PyDict_Next(child_dict, &pos, &key, &value)) {
-           PyDict_SetItem(((PyOpenSCADObject *) pyresult)->dict,key, value);
+           PyObject *value1 = python_matrix_trans(value,vecs[0]);
+           if(value1 != nullptr) PyDict_SetItem(((PyOpenSCADObject *) pyresult)->dict,key, value1);
+           else PyDict_SetItem(((PyOpenSCADObject *) pyresult)->dict,key, value);
         }
       }
       return pyresult;
@@ -2109,6 +2203,75 @@ PyObject *python_group(PyObject *self, PyObject *args, PyObject *kwargs)
   return PyOpenSCADObjectFromNode(&PyOpenSCADType, node);
 }
 
+PyObject *python_align_core(PyObject *obj, PyObject *pyrefmat, PyObject *pydstmat)
+{
+  if(obj->ob_type != &PyOpenSCADType) {
+    PyErr_SetString(PyExc_TypeError, "Must specify Object as 1st parameter");
+    return nullptr;
+  }
+  PyObject *child_dict=nullptr;	  
+  std::shared_ptr<AbstractNode> dstnode = PyOpenSCADObjectToNode(obj, &child_dict);
+  if(dstnode == nullptr) {
+    PyErr_SetString(PyExc_TypeError, "Invalid align object");
+    return Py_None;
+  }
+  DECLARE_INSTANCE
+  auto multmatnode = std::make_shared<TransformNode>(instance, "align");
+  multmatnode->children.push_back(dstnode);
+  Matrix4d mat;
+  Matrix4d MT=Matrix4d::Identity();
+
+  if(!python_tomatrix(pyrefmat, mat)) MT = MT * mat;	  
+  if(!python_tomatrix(pydstmat, mat)) MT = MT * mat.inverse();	  
+
+  multmatnode -> matrix = MT ;
+
+  PyObject *pyresult =PyOpenSCADObjectFromNode(&PyOpenSCADType, multmatnode);
+  if(child_dict != nullptr) {
+    PyObject *key, *value;
+    Py_ssize_t pos = 0;
+     while(PyDict_Next(child_dict, &pos, &key, &value)) {
+       if(!python_tomatrix(value, mat)){
+         mat = MT * mat;
+         PyDict_SetItem(((PyOpenSCADObject *) pyresult)->dict,key, python_frommatrix(mat));
+       } else PyDict_SetItem(((PyOpenSCADObject *) pyresult)->dict,key, value);
+    }
+  }
+  return pyresult;
+}
+
+PyObject *python_align(PyObject *self, PyObject *args, PyObject *kwargs)
+{
+  char *kwlist[] = {"obj","refmat","objmat",NULL};
+  PyObject *obj=NULL;
+  PyObject *pyrefmat=NULL;
+  PyObject *pyobjmat=NULL;
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "OO|O", kwlist,
+                                   &obj, 
+				   &pyrefmat,
+				   &pyobjmat
+                                   )) {
+    PyErr_SetString(PyExc_TypeError, "Error during align");
+    return NULL;
+  }
+  return python_align_core(obj, pyrefmat, pyobjmat);
+}
+
+PyObject *python_oo_align(PyObject *obj, PyObject *args, PyObject *kwargs)
+{
+  char *kwlist[] = {"refmat","objmat",NULL};
+  PyObject *pyrefmat=NULL;
+  PyObject *pyobjmat=NULL;
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O|O", kwlist,
+				   &pyrefmat,
+				   &pyobjmat
+                                   )) {
+    PyErr_SetString(PyExc_TypeError, "Error during align");
+    return NULL;
+  }
+  return python_align_core(obj, pyrefmat, pyobjmat);
+}
+
 
 PyObject *python_str(PyObject *self) {
   std::ostringstream stream;
@@ -2157,6 +2320,7 @@ PyMethodDef PyOpenSCADFunctions[] = {
   {"surface", (PyCFunction) python_surface, METH_VARARGS | METH_KEYWORDS, "Surface Object."},
   {"mesh", (PyCFunction) python_mesh, METH_VARARGS | METH_KEYWORDS, "exports mesh."},
   {"render", (PyCFunction) python_render, METH_VARARGS | METH_KEYWORDS, "Render Object."},
+  {"align", (PyCFunction) python_align, METH_VARARGS | METH_KEYWORDS, "Align Object to another."},
   {NULL, NULL, 0, NULL}
 };
 
@@ -2184,6 +2348,7 @@ PyMethodDef PyOpenSCADMethods[] = {
   OO_METHOD_ENTRY(resize,"Resize Object")	
 
   OO_METHOD_ENTRY(mesh, "Mesh Object")	
+  OO_METHOD_ENTRY(align,"Align Object to another")	
 
   OO_METHOD_ENTRY(show,"Show Object")	
   OO_METHOD_ENTRY(projection,"Projection Object")	
