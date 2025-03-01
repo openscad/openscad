@@ -48,7 +48,7 @@ void export_nefdbg(const std::shared_ptr<const Geometry>& geom, std::ostream& ou
 void export_nef3(const std::shared_ptr<const Geometry>& geom, std::ostream& output)
 {
   if (auto N = CGALUtils::getNefPolyhedronFromGeometry(geom)) {
-    output << const_cast<CGAL_Nef_polyhedron3&>(*N->p3); // CGAL why?
+    output << const_cast<CGAL_Nef_polyhedron3&>(*N->p3); // NOLINT(clang-analyzer-cplusplus.NewDeleteLeaks)
   } else {
     LOG("Not a CGALNefPoly. Add some CSG ops?");
   }

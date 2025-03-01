@@ -66,11 +66,12 @@ extern bool parse(SourceFile *& file, const std::string& text, const std::string
 #include "core/OffsetNode.h"
 #include "core/TextureNode.h"
 #include <hash.h>
-#include <PolySetUtils.h>
+#include "geometry/PolySetUtils.h"
 #include "core/ProjectionNode.h"
 #include "core/ImportNode.h"
-#include <Tree.h>
-#include <GeometryEvaluator.h>
+#include "core/Tree.h"
+#include "geometry/PolySet.h"
+#include "geometry/GeometryEvaluator.h"
 #include "utils/degree_trig.h"
 #include "printutils.h"
 #include "io/fileutils.h"
@@ -726,7 +727,6 @@ PyObject *python_square(PyObject *self, PyObject *args, PyObject *kwargs)
   python_retrieve_pyname(node);
   return PyOpenSCADObjectFromNode(&PyOpenSCADType, node);
 }
-
 PyObject *python_circle(PyObject *self, PyObject *args, PyObject *kwargs)
 {
   DECLARE_INSTANCE
@@ -777,8 +777,6 @@ PyObject *python_circle(PyObject *self, PyObject *args, PyObject *kwargs)
   python_retrieve_pyname(node);
   return PyOpenSCADObjectFromNode(&PyOpenSCADType, node);
 }
-
-
 PyObject *python_polygon(PyObject *self, PyObject *args, PyObject *kwargs)
 {
   DECLARE_INSTANCE
@@ -1005,6 +1003,7 @@ PyObject *python_scale_core(PyObject *obj, PyObject *val_v)
 }
 
 
+
 PyObject *python_scale(PyObject *self, PyObject *args, PyObject *kwargs)
 {
   char *kwlist[] = {"obj", "v", NULL};
@@ -1151,8 +1150,6 @@ PyObject *python_oo_rotate(PyObject *obj, PyObject *args, PyObject *kwargs)
 
 PyObject *python_matrix_mirror(PyObject *mat, Matrix4d m)
 {
-//  Transform3d matrix=Transform3d::Identity();
-//  matrix.rotate(rotvec);
   Matrix4d raw;
   if(python_tomatrix(mat, raw)) return nullptr;
   Vector4d n;
@@ -1247,7 +1244,6 @@ PyObject *python_oo_mirror(PyObject *obj, PyObject *args, PyObject *kwargs)
   }
   return python_mirror_core(obj, val_v);
 }
-
 
 PyObject *python_matrix_trans(PyObject *mat, Vector3d transvec)
 {
@@ -3068,7 +3064,6 @@ PyObject *python_oo_csg_sub(PyObject *self, PyObject *args, PyObject *kwargs, Op
   return pyresult;
 }
 
-
 PyObject *python_oo_union(PyObject *self, PyObject *args, PyObject *kwargs)
 {
   return python_oo_csg_sub(self, args, kwargs, OpenSCADOperator::UNION);
@@ -3110,7 +3105,7 @@ PyObject *python_nb_sub(PyObject *arg1, PyObject *arg2, OpenSCADOperator mode)
   node->children.push_back(child[1]);
   python_retrieve_pyname(node);
   PyObject *pyresult = PyOpenSCADObjectFromNode(&PyOpenSCADType, node);
-  for(int i=0;i<2;i++) {
+  for(int i=1;i>=0;i--) {
     if(child_dict[i] != nullptr) {
       std::string name=child[i]->getPyName();
       PyObject *key, *value;
@@ -3305,6 +3300,7 @@ PyObject *python_minkowski(PyObject *self, PyObject *args, PyObject *kwargs)
 
   return PyOpenSCADObjectFromNode(&PyOpenSCADType, node);
 }
+
 
 
 PyObject *python_hull(PyObject *self, PyObject *args, PyObject *kwargs)
