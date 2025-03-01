@@ -30,31 +30,40 @@
 #include <limits>
 #include <utility>
 #include <memory>
+#include <cstddef>
+#include <vector>
+#include <cmath>
 
 #ifdef _MSC_VER
 // Boost conflicts with MPFR under MSVC (google it)
 #include <mpfr.h>
 #endif
 
+#include "core/Selection.h"
+#include "geometry/cgal/cgal.h"
 #include "geometry/Geometry.h"
+#include "geometry/GeometryUtils.h"
 #include "geometry/linalg.h"
-#include "Feature.h"
 #include "geometry/PolySet.h"
 #include "geometry/PolySetUtils.h"
+#include "glview/cgal/CGALRenderUtils.h"
+#include "glview/ColorMap.h"
+#include "glview/Renderer.h"
+#include "glview/ShaderUtils.h"
+#include "glview/system-gl.h"
+#include "glview/VBOBuilder.h"
+#include "glview/VertexState.h"
 #include "utils/printutils.h"
 
-#include "glview/cgal/CGALRenderUtils.h"
 #ifdef ENABLE_CGAL
+#include <CGAL/Bbox_3.h>
+#include "CGAL/OGL_helper.h"
 #include "glview/cgal/VBOPolyhedron.h"
 #endif
 #ifdef ENABLE_MANIFOLD
 #include "geometry/manifold/ManifoldGeometry.h"
 #endif
 
-#include <cstddef>
-#include <vector>
-
-// #include "gui/Preferences.h"
 
 CGALRenderer::CGALRenderer(const std::shared_ptr<const class Geometry> &geom) {
   this->addGeometry(geom);
@@ -257,9 +266,9 @@ void CGALRenderer::draw(bool showedges, const ShaderUtils::ShaderInfo * /*shader
   PRINTD("draw()");
   // grab current state to restore after
   GLfloat current_point_size, current_line_width;
-  GLboolean origVertexArrayState = glIsEnabled(GL_VERTEX_ARRAY);
-  GLboolean origNormalArrayState = glIsEnabled(GL_NORMAL_ARRAY);
-  GLboolean origColorArrayState = glIsEnabled(GL_COLOR_ARRAY);
+  const GLboolean origVertexArrayState = glIsEnabled(GL_VERTEX_ARRAY);
+  const GLboolean origNormalArrayState = glIsEnabled(GL_NORMAL_ARRAY);
+  const GLboolean origColorArrayState = glIsEnabled(GL_COLOR_ARRAY);
 
   GL_CHECKD(glGetFloatv(GL_POINT_SIZE, &current_point_size));
   GL_CHECKD(glGetFloatv(GL_LINE_WIDTH, &current_line_width));
@@ -298,7 +307,7 @@ BoundingBox CGALRenderer::getBoundingBox() const {
 
 #ifdef ENABLE_CGAL
   for (const auto &p : this->getPolyhedrons()) {
-    CGAL::Bbox_3 cgalbbox = p->bbox();
+    const CGAL::Bbox_3 cgalbbox = p->bbox();
     bbox.extend(BoundingBox(
         Vector3d(cgalbbox.xmin(), cgalbbox.ymin(), cgalbbox.zmin()),
         Vector3d(cgalbbox.xmax(), cgalbbox.ymax(), cgalbbox.zmax())));
@@ -314,8 +323,8 @@ BoundingBox CGALRenderer::getBoundingBox() const {
 }
 
 std::vector<SelectedObject>
-CGALRenderer::findModelObject(Vector3d near_pt, Vector3d far_pt, int mouse_x,
-                              int mouse_y, double tolerance) {
+CGALRenderer::findModelObject(Vector3d near_pt, Vector3d far_pt, int /*mouse_x*/,
+                              int /*mouse_y*/, double tolerance) {
   double dist_near;
   double dist_nearest = std::numeric_limits<double>::max();
   Vector3d pt1_nearest;
@@ -337,7 +346,7 @@ CGALRenderer::findModelObject(Vector3d near_pt, Vector3d far_pt, int mouse_x,
     find_nearest_point(ps->vertices);
   }
   if (dist_nearest < std::numeric_limits<double>::max()) {
-    SelectedObject obj = {
+    const SelectedObject obj = {
       .type = SelectionType::SELECTION_POINT,
       .p1 = pt1_nearest
     };
@@ -347,10 +356,10 @@ CGALRenderer::findModelObject(Vector3d near_pt, Vector3d far_pt, int mouse_x,
   const auto find_nearest_line = [&](const std::vector<Vector3d> &vertices, const PolygonIndices& indices) {
     for (const auto &poly : indices) {
       for (int i = 0; i < poly.size(); i++) {
-        int ind1 = poly[i];
-        int ind2 = poly[(i + 1) % poly.size()];
+        const int ind1 = poly[i];
+        const int ind2 = poly[(i + 1) % poly.size()];
         double dist_lat;
-        double dist_norm = fabs(calculateLineLineDistance(
+        const double dist_norm = std::fabs(calculateLineLineDistance(
             vertices[ind1], vertices[ind2], near_pt, far_pt, dist_lat));
         if (dist_lat >= 0 && dist_lat <= 1 && dist_norm < tolerance) {
           dist_nearest = dist_lat;
@@ -367,7 +376,7 @@ CGALRenderer::findModelObject(Vector3d near_pt, Vector3d far_pt, int mouse_x,
     find_nearest_line(ps->vertices, ps->indices);
   }
   if (dist_nearest < std::numeric_limits<double>::max()) {
-    SelectedObject obj = {
+    const SelectedObject obj = {
       .type = SelectionType::SELECTION_LINE,
       .p1 = pt1_nearest,
       .p2 = pt2_nearest,
