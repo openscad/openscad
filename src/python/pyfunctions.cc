@@ -1399,6 +1399,10 @@ PyObject *python_multmatrix_sub(PyObject *pyobj, PyObject *pymat, int div)
     PyErr_SetString(PyExc_TypeError, "Matrix vector should be 4x4 array");
     return NULL;
   }
+  if(div){
+    auto tmp =  mat.inverse().eval();
+    mat=tmp;
+  }
 
   Matrix4d objmat;
   if(!python_tomatrix(pyobj, objmat)){
@@ -1416,10 +1420,8 @@ PyObject *python_multmatrix_sub(PyObject *pyobj, PyObject *pymat, int div)
     PyErr_SetString(PyExc_TypeError, "Invalid type for Object in multmatrix");
     return NULL;
   }
- 
 
-  if(div) node->matrix = mat.inverse();
-  else node->matrix = mat;
+  node->matrix = mat;
   node->children.push_back(child);
   PyObject *pyresult = PyOpenSCADObjectFromNode(&PyOpenSCADType, node);
   if(child_dict != nullptr ) { 
