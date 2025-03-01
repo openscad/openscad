@@ -1591,9 +1591,10 @@ void MainWindow::saveBackup()
   }
 
   if (!this->tempFile) {
-    const QString suffix = "scad";
 #ifdef ENABLE_PYTHON
-    if (this->python_active) suffix = "py";
+    const QString suffix = this->python_active ? "py" : "scad";
+#else
+    const QString suffix = "scad";
 #endif
     this->tempFile = new QTemporaryFile(backupPath.append(basename + "-backup-XXXXXXXX." + suffix));
   }
