@@ -1358,8 +1358,9 @@ set(VIEW_OPTIONS_EDGES_TEST
   ${VIEW_OPTIONS_TEST}
   ${TEST_SCAD_DIR}/3D/features/render-preserve-colors.scad
 )
-add_cmdline_test(openscad-viewoptions-edges             OPENSCAD FILES ${VIEW_OPTIONS_EDGES_TEST} SUFFIX png ARGS ${IMGSIZE} --camera=80,14,19,0,0,0 --viewall --view edges)
-add_cmdline_test(openscad-manifold-viewoptions-edges    OPENSCAD FILES ${VIEW_OPTIONS_EDGES_TEST} SUFFIX png ARGS ${IMGSIZE} --camera=80,14,19,0,0,0 --viewall --view edges --backend=manifold)
+add_cmdline_test(openscad-viewoptions-edges                 OPENSCAD FILES ${VIEW_OPTIONS_EDGES_TEST} SUFFIX png ARGS ${IMGSIZE} --camera=80,14,19,0,0,0 --viewall --view edges)
+add_cmdline_test(openscad-manifold-viewoptions-edges        OPENSCAD FILES ${VIEW_OPTIONS_EDGES_TEST} SUFFIX png ARGS ${IMGSIZE} --camera=80,14,19,0,0,0 --viewall --view edges --backend=manifold)
+add_cmdline_test(openscad-render-manifold-viewoptions-edges OPENSCAD FILES ${VIEW_OPTIONS_EDGES_TEST} SUFFIX png ARGS ${IMGSIZE} --camera=80,14,19,0,0,0 --viewall --view edges --render --backend=manifold)
 
 #
 # Colorscheme tests
