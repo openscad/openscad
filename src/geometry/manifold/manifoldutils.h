@@ -19,9 +19,10 @@ namespace ManifoldUtils {
 
   Polygon2d polygonsToPolygon2d(const manifold::Polygons& polygons);
 
-#ifdef ENABLE_CGAL
+#ifdef ENABLE_MANIFOLD
   // FIXME: This shouldn't return const, but it does due to internal implementation details.
   std::shared_ptr<const Geometry> applyMinkowskiManifold(const Geometry::Geometries& children);
+  std::unique_ptr<Geometry> applyHullManifold(const Geometry::Geometries& children);
 #endif
 
   std::unique_ptr<PolySet> createTriangulatedPolySetFromPolygon2d(const Polygon2d& polygon2d);
