@@ -1,13 +1,18 @@
 #include "io/export.h"
-#include "geometry/Geometry.h"
-#include "geometry/linalg.h"
-#include "utils/printutils.h"
-#include "glview/OffscreenView.h"
-#include "glview/CsgInfo.h"
+
 #include <ostream>
 #include <cstdio>
 #include <memory>
+
+#include "core/Tree.h"
+#include "geometry/Geometry.h"
+#include "geometry/linalg.h"
+#include "glview/Camera.h"
+#include "glview/CsgInfo.h"
+#include "glview/OffscreenView.h"
+#include "glview/Renderer.h"
 #include "glview/RenderSettings.h"
+#include "utils/printutils.h"
 
 #ifndef NULLGL
 
