@@ -320,6 +320,8 @@ public:
   // Conversion to std::variant "BoundedType"s. const ref where appropriate.
   [[nodiscard]] bool toBool() const;
   [[nodiscard]] double toDouble() const;
+  [[nodiscard]] double toInteger() const;
+  [[nodiscard]] int64_t toInt64() const;
   [[nodiscard]] const str_utf8_wrapper& toStrUtf8Wrapper() const;
   [[nodiscard]] const VectorType& toVector() const;
   [[nodiscard]] const EmbeddedVectorType& toEmbeddedVector() const;
@@ -353,10 +355,15 @@ public:
   Value operator>=(const Value& v) const;
   Value operator>(const Value& v) const;
   Value operator-() const;
+  Value operator~() const;
   Value operator[](size_t idx) const;
   Value operator[](const Value& v) const;
   Value operator+(const Value& v) const;
   Value operator-(const Value& v) const;
+  Value operator<<(const Value& v) const;
+  Value operator>>(const Value& v) const;
+  Value operator&(const Value& v) const;
+  Value operator|(const Value& v) const;
   Value operator*(const Value& v) const;
   Value operator/(const Value& v) const;
   Value operator%(const Value& v) const;
