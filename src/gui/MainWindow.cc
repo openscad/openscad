@@ -1638,22 +1638,51 @@ void MainWindow::actionPythonRevokeTrustedFiles()
 
 void MainWindow::actionPythonCreateVenv()
 {
-  const QString venvDir = QFileDialog::getExistingDirectory(this, "Create Virtual Environment");
-  if (venvDir.isEmpty()) {
+#ifdef ENABLE_PYTHON
+  const QString selectedDir = QFileDialog::getExistingDirectory(this, "Create Virtual Environment");
+  if (selectedDir.isEmpty()) {
     return;
   }
-  int result = pythonRunModule("", "venv", { venvDir.toStdString() });
+
+  const QDir venvDir{selectedDir};
+  if (!venvDir.exists()) {
+    // Should not happen, but just in case double check...
+    QMessageBox::critical(this, _("Create Virtual Environment"),
+        "Directory does not exist. Can't create virtual environment.",
+        QMessageBox::Ok);
+    return;
+  }
+
+  if (!venvDir.isEmpty()) {
+    QMessageBox::critical(this, _("Create Virtual Environment"),
+        "Directory is not empty. Can't create virtual environment.",
+        QMessageBox::Ok);
+    return;
+  }
+
+  const auto& path = venvDir.absolutePath().toStdString();
+  LOG("Creating Python virtual environment in '%1$s'...", path);
+  int result = pythonRunModule("", "venv", { path });
+
   if (result == 0) {
-    Settings::SettingsPython::pythonVirtualEnv.setValue(venvDir.toStdString());
+    Settings::SettingsPython::pythonVirtualEnv.setValue(path);
     Settings::Settings::visit(SettingsWriter());
+    LOG("Python virtual environment creation successfull.");
     QMessageBox::information(this, _("Create Virtual Environment"),
         "Virtual environment created, please restart OpenSCAD to activate.",
         QMessageBox::Ok);
+  } else {
+    LOG("Python virtual environment creation failed.");
+    QMessageBox::critical(this, _("Create Virtual Environment"),
+        "Virtual environment creation failed.",
+        QMessageBox::Ok);
   }
+#endif
 }
 
 void MainWindow::actionPythonSelectVenv()
 {
+#ifdef ENABLE_PYTHON
   const QString venvDir = QFileDialog::getExistingDirectory(this, "Select Virtual Environment");
   if (venvDir.isEmpty()) {
     return;
@@ -1666,6 +1695,7 @@ void MainWindow::actionPythonSelectVenv()
         "Virtual environment selected, please restart OpenSCAD to activate.",
         QMessageBox::Ok);
   }
+#endif
 }
 
 void MainWindow::actionSaveACopy()
@@ -2037,10 +2067,10 @@ void MainWindow::parseTopLevelDocument()
     initPython(binDir, this->animateWidget->getAnimTval());
 
     if (venv.empty()) {
-        LOG("Running %1$s", python_version());
+        LOG("Running %1$s without venv.", python_version());
     } else {
         const auto& v = Settings::SettingsPython::pythonVirtualEnv.value();
-        LOG("Running %1$s in venv '%2$s'", python_version(), v);
+        LOG("Running %1$s in venv '%2$s'.", python_version(), v);
     }
     auto error = evaluatePython(fulltext_py, false);
     if (error.size() > 0) LOG(message_group::Error, Location::NONE, "", error.c_str());
