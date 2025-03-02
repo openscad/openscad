@@ -130,8 +130,12 @@ int pythonRunModule(const std::string& appPath, const std::string& module,
   }
 
   status = Py_InitializeFromConfig(&config);
+  if (PyStatus_Exception(status)) {
+    goto done;
+  }
 
-  Py_RunMain();
+  return Py_RunMain();
+
 done:
   PyConfig_Clear(&config);
   return status.exitcode;

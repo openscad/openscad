@@ -917,6 +917,16 @@ int main(int argc, char **argv)
     LOG("Python Engine enabled", OpenSCAD::debug);
     python_trusted = true;
   }
+
+  const auto pymod = "python-module";
+  if (vm.count(pymod)) {
+      PRINTDB("Running Python Module %s", pymod);
+      std::vector<std::string> args;
+      if (vm.count("input-file")) {
+          args = vm["input-file"].as<std::vector<std::string>>();
+      }
+      return pythonRunModule(applicationPath, vm[pymod].as<std::string>(), args);
+  }
 #endif
   if (vm.count("quiet")) {
     OpenSCAD::quiet = true;
@@ -1062,14 +1072,6 @@ int main(int argc, char **argv)
   }
 
   PRINTDB("Application location detected as %s", applicationPath);
-
-  const auto pymod = "python-module";
-  if (vm.count(pymod)) {
-      PRINTDB("Running Python Module %s", pymod);
-      return pythonRunModule(applicationPath,
-                             vm[pymod].as<std::string>(),
-                             inputFiles);
-  }
 
   auto cmdlinemode = false;
   if (!output_files.empty()) { // cmd-line mode
