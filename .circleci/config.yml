@@ -72,6 +72,7 @@ jobs:
               export PATH=/appimage/usr/bin:"$PATH"
               export EXTRA_QT_PLUGINS=svg
               LINUXDEPLOY_OUTPUT_VERSION="${OPENSCAD_VERSION}${SUFFIX}" linuxdeploy --plugin python --plugin qt --output appimage --appdir AppDir
+              ( cd AppDir/usr/bin && ln -s openscad openscad-python )
               mkdir -p /tmp/out
               cp -iv OpenSCAD-*.AppImage /tmp/out
               if [ -n "${CODE_SIGNING_KEY}" ]; then
