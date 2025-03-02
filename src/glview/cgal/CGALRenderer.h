@@ -8,6 +8,10 @@
 #include "geometry/Geometry.h"
 #include "geometry/linalg.h"
 #include "geometry/Polygon2d.h"
+#include "glview/ShaderUtils.h"
+#include "glview/ColorMap.h"
+#include "core/Selection.h"
+#include "glview/VertexState.h"
 #ifdef ENABLE_CGAL
 #include "geometry/cgal/CGAL_Nef_polyhedron.h"
 #endif
