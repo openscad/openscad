@@ -1,9 +1,18 @@
 #pragma once
 
 #include <memory>
+#include <utility>
+#include <vector>
 
-#include "glview/VBORenderer.h"
 #include "core/Selection.h"
+#include "geometry/Geometry.h"
+#include "geometry/linalg.h"
+#include "geometry/Polygon2d.h"
+#include "geometry/PolySet.h"
+#include "glview/ColorMap.h"
+#include "glview/ShaderUtils.h"
+#include "glview/VertexState.h"
+#include "glview/VBORenderer.h"
 
 class PolySetRenderer : public VBORenderer
 {
@@ -14,7 +23,7 @@ public:
   void draw(bool showedges, const ShaderUtils::ShaderInfo *shaderinfo) const override;
   void setColorScheme(const ColorScheme& cs) override;
   BoundingBox getBoundingBox() const override;
-  std::vector<SelectedObject> findModelObject(Vector3d near_pt, Vector3d far_pt, int mouse_x, int mouse_y, double tolerance) override;
+  std::vector<SelectedObject> findModelObject(const Vector3d& near_pt, const Vector3d& far_pt, int mouse_x, int mouse_y, double tolerance) override;
 
 private:
   void addGeometry(const std::shared_ptr<const class Geometry>& geom);

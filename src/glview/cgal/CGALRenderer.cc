@@ -27,26 +27,21 @@
 #include "glview/cgal/CGALRenderer.h"
 
 #include <cassert>
-#include <limits>
 #include <utility>
 #include <memory>
 #include <cstddef>
 #include <vector>
-#include <cmath>
 
 #ifdef _MSC_VER
 // Boost conflicts with MPFR under MSVC (google it)
 #include <mpfr.h>
 #endif
 
-#include "core/Selection.h"
 #include "geometry/cgal/cgal.h"
 #include "geometry/Geometry.h"
-#include "geometry/GeometryUtils.h"
 #include "geometry/linalg.h"
 #include "geometry/PolySet.h"
 #include "geometry/PolySetUtils.h"
-#include "glview/cgal/CGALRenderUtils.h"
 #include "glview/ColorMap.h"
 #include "glview/Renderer.h"
 #include "glview/ShaderUtils.h"

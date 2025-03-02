@@ -117,6 +117,7 @@
 #include "gui/CGALWorker.h"
 #include "gui/Editor.h"
 #include "gui/Dock.h"
+#include "gui/Measurement.h"
 #include "gui/Export3mfDialog.h"
 #include "gui/ExportPdfDialog.h"
 #include "gui/ExternalToolInterface.h"

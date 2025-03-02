@@ -24,23 +24,37 @@
  *
  */
 
- #include "PolySetRenderer.h"
+#include "PolySetRenderer.h"
  
- 
+#include <cassert>
+#include <cmath>
+#include <cstddef>
+#include <utility>
+#include <memory>
+#include <vector>
 #ifdef _MSC_VER
 // Boost conflicts with MPFR under MSVC (google it)
 #include <mpfr.h>
 #endif
 
-#include "glview/ShaderUtils.h"
+#include "glview/system-gl.h"
+#include "core/Selection.h"
+#include "geometry/cgal/cgalutils.h"
+#include "geometry/Geometry.h"
+#include "geometry/linalg.h"
 #include "geometry/PolySet.h"
 #include "geometry/PolySetUtils.h"
+#include "glview/ColorMap.h"
+#include "glview/cgal/CGALRenderUtils.h"
+#include "glview/VBORenderer.h"
+#include "glview/Renderer.h"
+#include "glview/ShaderUtils.h"
+#include "glview/VBOBuilder.h"
+#include "glview/VertexState.h"
 #include "utils/printutils.h"
 
-#include "glview/cgal/CGALRenderUtils.h"
 #ifdef ENABLE_CGAL
 #include "geometry/cgal/CGAL_Nef_polyhedron.h"
-#include "geometry/cgal/cgalutils.h"
 #endif
 #ifdef ENABLE_MANIFOLD
 #include "geometry/manifold/ManifoldGeometry.h"
@@ -83,7 +97,8 @@ void PolySetRenderer::addGeometry(const std::shared_ptr<const Geometry>& geom)
     }
 #endif
   } else {
-    LOG("Unsupported geom '%1$s' in PolySetRenderer", typeid(*geom.get()).name());
+    const auto& geom_ref = *geom.get();
+    LOG("Unsupported geom '%1$s' in PolySetRenderer", typeid(geom_ref).name());
     assert(false && "Unsupported geom in PolySetRenderer");
   }
 }
@@ -107,7 +122,7 @@ void PolySetRenderer::createPolySetStates(const ShaderUtils::ShaderInfo *shaderi
 
   vbo_builder.addSurfaceData(); // position, normal, color
   vbo_builder.addShaderData();
-  bool enable_barycentric = true;
+  const bool enable_barycentric = true;
 
   size_t num_vertices = 0;
   for (const auto &polyset : this->polysets_) {
@@ -226,7 +241,7 @@ void PolySetRenderer::draw(bool showedges, const ShaderUtils::ShaderInfo *shader
 void PolySetRenderer::drawPolySets(bool showedges, const ShaderUtils::ShaderInfo *shaderinfo) const
 {
   // Only use shader if select rendering or showedges
-  bool enable_shader = shaderinfo && (
+  const bool enable_shader = shaderinfo && (
     shaderinfo->type == ShaderUtils::ShaderType::EDGE_RENDERING && showedges || 
     shaderinfo->type == ShaderUtils::ShaderType::SELECT_RENDERING);
   if (enable_shader) {
@@ -291,7 +306,7 @@ BoundingBox PolySetRenderer::getBoundingBox() const
   return bbox;
 }
 
-std::vector<SelectedObject> PolySetRenderer::findModelObject(Vector3d near_pt, Vector3d far_pt, int mouse_x, int mouse_y, double tolerance) {
+std::vector<SelectedObject> PolySetRenderer::findModelObject(const Vector3d& near_pt, const Vector3d& far_pt, int /*mouse_x*/, int /*mouse_y*/, double tolerance) {
   std::vector<SelectedObject> results;
   double dist_near;
   double dist_nearest = NAN;
@@ -323,7 +338,7 @@ std::vector<SelectedObject> PolySetRenderer::findModelObject(Vector3d near_pt, V
         const int ind1 = pol[i];
         const int ind2 = pol[(i+1)%n];
         double dist_lat;
-        const double dist_norm = fabs(calculateLineLineDistance(ps->vertices[ind1], ps->vertices[ind2], near_pt, far_pt,dist_lat));
+        const double dist_norm = std::fabs(calculateLineLineDistance(ps->vertices[ind1], ps->vertices[ind2], near_pt, far_pt,dist_lat));
         if (dist_lat >= 0 && dist_lat <= 1 && dist_norm < tolerance) {
           dist_nearest = dist_lat;
           pt1_nearest = ps->vertices[ind1];
