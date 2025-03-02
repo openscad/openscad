@@ -45,10 +45,11 @@ bool export_png(const std::shared_ptr<const Geometry>& root_geom, const ViewOpti
     return false;
   }
   std::shared_ptr<Renderer> geomRenderer;
-  // Choose PolySetRenderer for Manifold since we know that all
-  // geometries are convertible to PolySet.
-  // TODO: Also choose PolySetRenderer for single-node PolySet/Polygon2D roots?
-  if (RenderSettings::inst()->backend3D == RenderBackend3D::ManifoldBackend) {
+  // Choose PolySetRenderer for PolySet and Polygon2d, and for Manifold since we 
+  // know that all geometries are convertible to PolySet.
+  if (RenderSettings::inst()->backend3D == RenderBackend3D::ManifoldBackend ||
+      std::dynamic_pointer_cast<const PolySet>(root_geom) ||
+      std::dynamic_pointer_cast<const Polygon2d>(root_geom)){
     geomRenderer = std::make_shared<PolySetRenderer>(root_geom);
   } else {
     geomRenderer = std::make_shared<CGALRenderer>(root_geom);
