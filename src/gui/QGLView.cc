@@ -149,7 +149,7 @@ std::string QGLView::getRendererInfo() const
 void QGLView::display_opencsg_warning()
 {
   if (Preferences::inst()->getValue("advanced/opencsg_show_warning").toBool()) {
-    QTimer::singleShot(0, this, SLOT(display_opencsg_warning_dialog()));
+    QTimer::singleShot(0, this, &QGLView::display_opencsg_warning_dialog);
   }
 }
 
