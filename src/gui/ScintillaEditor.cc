@@ -132,7 +132,7 @@ const boost::property_tree::ptree& EditorColorScheme::propertyTree() const
   return pt;
 }
 
-ScintillaEditor::ScintillaEditor(QWidget *parent) : EditorInterface(parent)
+ScintillaEditor::ScintillaEditor(QWidget *parent, MainWindow &mainWindow) : EditorInterface(parent), mainWindow(mainWindow)
 {
   api = nullptr;
   lexer = nullptr;
@@ -937,12 +937,18 @@ void ScintillaEditor::unindentSelection()
 
 void ScintillaEditor::commentSelection()
 {
+  auto commentString = "//";
+  #ifdef ENABLE_PYTHON
+  if (mainWindow.python_active) {
+    commentString = "#";
+  }
+  #endif
   auto hasSelection = qsci->hasSelectedText();
 
   int lineFrom, lineTo;
   getRange(&lineFrom, &lineTo);
   for (int line = lineFrom; line <= lineTo; ++line) {
-    qsci->insertAt("//", line, 0);
+    qsci->insertAt(commentString, line, 0);
   }
 
   if (hasSelection) {
@@ -952,14 +958,25 @@ void ScintillaEditor::commentSelection()
 
 void ScintillaEditor::uncommentSelection()
 {
+  auto commentString = "//";
+  #ifdef ENABLE_PYTHON
+  if (mainWindow.python_active) {
+    commentString = "#";
+  }
+  #endif
   auto hasSelection = qsci->hasSelectedText();
 
   int lineFrom, lineTo;
   getRange(&lineFrom, &lineTo);
   for (int line = lineFrom; line <= lineTo; ++line) {
     QString lineText = qsci->text(line);
-    if (lineText.startsWith("//")) {
-      qsci->setSelection(line, 0, line, 2);
+    if (lineText.startsWith(commentString)) {
+      qsci->setSelection(line, 0, line, strlen(commentString));
+      qsci->removeSelectedText();
+    }
+    // Handles the case where there's a comment without space
+    else if (commentString == "# " && lineText.startsWith("#")) {
+      qsci->setSelection(line, 0, line, 1);
       qsci->removeSelectedText();
     }
   }

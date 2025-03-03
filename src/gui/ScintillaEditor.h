@@ -20,6 +20,7 @@
 #include <Qsci/qsciscintilla.h>
 
 #include "gui/Editor.h"
+#include "gui/MainWindow.h"
 #include "gui/ScadApi.h"
 
 // don't need the full definition, because it confuses Qt
@@ -55,7 +56,7 @@ class ScintillaEditor : public EditorInterface
   using colorscheme_set_t = std::multimap<int, std::shared_ptr<EditorColorScheme>, std::less<>>;
 
 public:
-  ScintillaEditor(QWidget *parent);
+  ScintillaEditor(QWidget *parent, MainWindow &mainWindow);
   QsciScintilla *qsci;
   QString toPlainText() override;
   void initMargin();
@@ -187,4 +188,5 @@ private:
   QStringList userList;
   QMap<QString, ScadTemplate> templateMap;
   static const QString cursorPlaceHolder;
+  MainWindow &mainWindow;
 };

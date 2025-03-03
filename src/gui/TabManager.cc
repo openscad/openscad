@@ -134,7 +134,7 @@ void TabManager::createTab(const QString& filename)
 {
   assert(par != nullptr);
 
-  editor = new ScintillaEditor(tabWidget);
+  editor = new ScintillaEditor(tabWidget, *par);
   Preferences::create(editor->colorSchemes());   // needs to be done only once, however handled
   par->activeEditor = editor;
   editor->parameterWidget = new ParameterWidget(par->parameterDock);
