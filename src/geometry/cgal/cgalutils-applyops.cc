@@ -46,9 +46,9 @@ Geometry::Geometries::iterator chbegin, Geometry::Geometries::iterator chend)
     // stable sort for priority_queue by facets, then progress mark
     bool operator()(const QueueConstItem& lhs, const QueueConstItem& rhs) const
     {
-      size_t l = lhs.first->p3->number_of_facets();
-      size_t r = rhs.first->p3->number_of_facets();
-      return (l > r) || (l == r && lhs.second > rhs.second);
+      size_t lhs_size = lhs.first->p3->number_of_facets();
+      size_t rhs_size = rhs.first->p3->number_of_facets();
+      return (lhs_size > rhs_size) || (lhs_size == rhs_size && lhs.second > rhs.second);
     }
   };
   std::priority_queue<QueueConstItem, std::vector<QueueConstItem>, QueueItemGreater> q;

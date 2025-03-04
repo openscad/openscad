@@ -1,56 +1,64 @@
 #include "geometry/GeometryEvaluator.h"
-#include "geometry/Geometry.h"
-#include "geometry/linalg.h"
-#include "core/Tree.h"
-#include "geometry/GeometryCache.h"
-#include "geometry/Polygon2d.h"
-#include "core/ModuleInstantiation.h"
-#include "core/State.h"
-#include "core/ColorNode.h"
-#include "core/OffsetNode.h"
-#include "core/TransformNode.h"
-#include "core/LinearExtrudeNode.h"
-#include "core/RoofNode.h"
-#include "geometry/roof_ss.h"
-#include "geometry/roof_vd.h"
-#include "core/RotateExtrudeNode.h"
+
+#include <algorithm>
+#include <cassert>
+#include <cmath>
+#include <cstddef>
+#include <iterator>
+#include <list>
+#include <memory>
+#include <utility>
+#include <vector>
+
+#include <clipper2/clipper.engine.h>
+#ifdef ENABLE_CGAL
+#include <CGAL/Cartesian.h>
+#include <CGAL/convex_hull_2.h>
+#include <CGAL/exceptions.h>
+#include <CGAL/Point_2.h>
+#endif
+
 #include "core/CgalAdvNode.h"
-#include "core/ProjectionNode.h"
+#include "core/ColorNode.h"
 #include "core/CsgOpNode.h"
-#include "core/TextNode.h"
+#include "core/enums.h"
+#include "core/LinearExtrudeNode.h"
+#include "core/ModuleInstantiation.h"
+#include "core/node.h"
+#include "core/OffsetNode.h"
+#include "core/ProjectionNode.h"
 #include "core/RenderNode.h"
+#include "core/RoofNode.h"
+#include "core/RotateExtrudeNode.h"
+#include "core/State.h"
+#include "core/TextNode.h"
+#include "core/TransformNode.h"
+#include "core/Tree.h"
+#include "geometry/boolean_utils.h"
 #include "geometry/ClipperUtils.h"
-#include "geometry/PolySetUtils.h"
+#include "geometry/Geometry.h"
+#include "geometry/GeometryCache.h"
+#include "geometry/linalg.h"
+#include "geometry/linear_extrude.h"
+#include "geometry/Polygon2d.h"
 #include "geometry/PolySet.h"
 #include "geometry/PolySetBuilder.h"
-#include "utils/calc.h"
-#include "utils/printutils.h"
-#include "utils/calc.h"
-#include "io/DxfData.h"
+#include "geometry/PolySetUtils.h"
+#include "geometry/roof_ss.h"
+#include "geometry/roof_vd.h"
 #include "glview/RenderSettings.h"
+#include "utils/calc.h"
+#include "utils/calc.h"
 #include "utils/degree_trig.h"
-#include <cmath>
-#include <iterator>
-#include <cassert>
-#include <list>
-#include <utility>
-#include <memory>
-#include <algorithm>
-#include "utils/boost-utils.h"
-#include "geometry/boolean_utils.h"
+#include "utils/printutils.h"
 #ifdef ENABLE_CGAL
 #include "geometry/cgal/CGALCache.h"
 #include "geometry/cgal/cgalutils.h"
-#include <CGAL/convex_hull_2.h>
-#include <CGAL/Point_2.h>
 #endif
 #ifdef ENABLE_MANIFOLD
 #include "geometry/manifold/manifoldutils.h"
 #endif
-#include "geometry/linear_extrude.h"
 
-#include <cstddef>
-#include <vector>
 
 class Geometry;
 class Polygon2d;
@@ -90,7 +98,7 @@ std::shared_ptr<const Geometry> GeometryEvaluator::evaluateGeometry(const Abstra
       if (!ps->isEmpty() && !ps->isTriangular()) {
         // Since is_convex() doesn't handle non-planar faces, we need to tessellate
         // also in the indeterminate state so we cannot just use a boolean comparison. See #1061
-        bool convex = bool(ps->convexValue()); // bool is true only if tribool is true, (not indeterminate and not false)
+        const bool convex = bool(ps->convexValue()); // bool is true only if tribool is true, (not indeterminate and not false)
         if (!convex) {
           ps = PolySetUtils::tessellate_faces(*ps);
         }
@@ -259,7 +267,7 @@ std::unique_ptr<Polygon2d> GeometryEvaluator::applyFill2D(const AbstractNode& no
 
 std::unique_ptr<Geometry> GeometryEvaluator::applyHull3D(const AbstractNode& node)
 {
-  Geometry::Geometries children = collectChildren3D(node);
+  const auto children = collectChildren3D(node);
 
   auto P = PolySet::createEmpty();
   return applyHull(children);
@@ -375,7 +383,7 @@ Geometry::Geometries GeometryEvaluator::collectChildren3D(const AbstractNode& no
 
     if (chgeom && chgeom->getDimension() == 2) {
       LOG(message_group::Warning, item.first->modinst->location(), this->tree.getDocumentPath(), "Ignoring 2D child object for 3D operation");
-      children.push_back(std::make_pair(item.first, nullptr)); // replace 2D geometry with empty geometry
+      children.emplace_back(item.first, nullptr); // replace 2D geometry with empty geometry
     } else {
       // Add children if geometry is 3D OR null/empty
       children.push_back(item);
@@ -447,7 +455,7 @@ void GeometryEvaluator::addToParent(const State& state,
 {
   this->visitedchildren.erase(node.index());
   if (state.parent()) {
-    this->visitedchildren[state.parent()->index()].push_back(std::make_pair(node.shared_from_this(), geom));
+    this->visitedchildren[state.parent()->index()].emplace_back(node.shared_from_this(), geom);
   } else {
     // Root node
     this->root = geom;
@@ -594,8 +602,8 @@ Response GeometryEvaluator::visit(State& state, const OffsetNode& node)
       if (const auto polygon = applyToChildren2D(node, OpenSCADOperator::UNION)) {
         // ClipperLib documentation: The formula for the number of steps in a full
         // circular arc is ... Pi / acos(1 - arc_tolerance / abs(delta))
-        double n = Calc::get_fragments_from_r(std::abs(node.delta), node.fn, node.fs, node.fa);
-        double arc_tolerance = std::abs(node.delta) * (1 - cos_degrees(180 / n));
+        const double n = Calc::get_fragments_from_r(std::abs(node.delta), node.fn, node.fs, node.fa);
+        const double arc_tolerance = std::abs(node.delta) * (1 - cos_degrees(180 / n));
         geom = ClipperUtils::applyOffset(*polygon, node.delta, node.join_type, node.miter_limit, arc_tolerance);
         assert(geom);
       }
@@ -788,14 +796,14 @@ Response GeometryEvaluator::visit(State& state, const LinearExtrudeNode& node)
 static void fill_ring(std::vector<Vector3d>& ring, const Outline2d& o, double a, bool flip)
 {
   if (flip) {
-    unsigned int l = o.vertices.size() - 1;
-    for (unsigned int i = 0; i < o.vertices.size(); ++i) {
-      ring[i][0] = o.vertices[l - i][0] * cos_degrees(a);
-      ring[i][1] = o.vertices[l - i][0] * sin_degrees(a);
-      ring[i][2] = o.vertices[l - i][1];
+    const auto numverts = o.vertices.size() - 1;
+    for (auto i = 0; i < o.vertices.size(); ++i) {
+      ring[i][0] = o.vertices[numverts - i][0] * cos_degrees(a);
+      ring[i][1] = o.vertices[numverts - i][0] * sin_degrees(a);
+      ring[i][2] = o.vertices[numverts - i][1];
     }
   } else {
-    for (unsigned int i = 0; i < o.vertices.size(); ++i) {
+    for (auto i = 0; i < o.vertices.size(); ++i) {
       ring[i][0] = o.vertices[i][0] * cos_degrees(a);
       ring[i][1] = o.vertices[i][0] * sin_degrees(a);
       ring[i][2] = o.vertices[i][1];
@@ -850,8 +858,8 @@ static std::unique_ptr<Geometry> rotatePolygon(const RotateExtrudeNode& node, co
   // If not going all the way around, we have to create faces on each end.
   if (node.angle != 360) {
     auto ps_start = poly.tessellate(); // starting face
-    Transform3d rotx(angle_axis_degrees(90, Vector3d::UnitX()));
-    Transform3d rotz1(angle_axis_degrees(node.start, Vector3d::UnitZ()));
+    const Transform3d rotx(angle_axis_degrees(90, Vector3d::UnitX()));
+    const Transform3d rotz1(angle_axis_degrees(node.start, Vector3d::UnitZ()));
     ps_start->transform(rotz1 * rotx);
     // Flip vertex ordering
     if (!flip_faces) {
@@ -862,7 +870,7 @@ static std::unique_ptr<Geometry> rotatePolygon(const RotateExtrudeNode& node, co
     builder.appendPolySet(*ps_start);
 
     auto ps_end = poly.tessellate();
-    Transform3d rotz2(angle_axis_degrees(node.start + node.angle, Vector3d::UnitZ()));
+    const Transform3d rotz2(angle_axis_degrees(node.start + node.angle, Vector3d::UnitZ()));
     ps_end->transform(rotz2 * rotx);
     if (flip_faces) {
       for (auto& p : ps_end->indices) {
@@ -879,7 +887,7 @@ static std::unique_ptr<Geometry> rotatePolygon(const RotateExtrudeNode& node, co
 
     fill_ring(rings[0], o, node.start, flip_faces); // first ring
     for (unsigned int j = 0; j < fragments; ++j) {
-      double a = node.start + (j + 1) * node.angle / fragments; // start on the X axis
+      const double a = node.start + (j + 1) * node.angle / fragments; // start on the X axis
       fill_ring(rings[(j + 1) % 2], o, a, flip_faces);
 
       for (size_t i = 0; i < o.vertices.size(); ++i) {
@@ -939,7 +947,7 @@ Response GeometryEvaluator::visit(State& /*state*/, const AbstractPolyNode& /*no
 std::shared_ptr<const Geometry> GeometryEvaluator::projectionCut(const ProjectionNode& node)
 {
   std::shared_ptr<const Geometry> geom;
-  std::shared_ptr<const Geometry> newgeom = applyToChildren3D(node, OpenSCADOperator::UNION).constptr();
+  const std::shared_ptr<const Geometry> newgeom = applyToChildren3D(node, OpenSCADOperator::UNION).constptr();
   if (newgeom) {
 #ifdef ENABLE_MANIFOLD
     if (RenderSettings::inst()->backend3D == RenderBackend3D::ManifoldBackend) {

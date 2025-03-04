@@ -30,7 +30,7 @@ std::shared_ptr<const Geometry> CGALCache::get(const std::string& id) const
 }
 
 bool CGALCache::acceptsGeometry(const std::shared_ptr<const Geometry>& geom) {
-  return 0 
+  return false 
 #ifdef ENABLE_CGAL	  
     || std::dynamic_pointer_cast<const CGAL_Nef_polyhedron>(geom) != nullptr
 #endif    
