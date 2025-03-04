@@ -26,17 +26,22 @@
 
 #include "glview/preview/ThrownTogetherRenderer.h"
 
-#include <memory>
 #include <cstddef>
+#include <memory>
 #include <utility>
-#include "geometry/linalg.h"
-#include "Feature.h"
-#include "glview/VertexState.h"
-#include "geometry/PolySet.h"
-#include "core/enums.h"
-#include "utils/printutils.h"
 
+#include <Eigen/Geometry>
+
+#include "core/enums.h"
+#include "geometry/linalg.h"
 #include "glview/system-gl.h"
+#include "glview/VertexState.h"
+#include "glview/Renderer.h"
+#include "utils/printutils.h"
+#include "core/CSGNode.h"
+#include "glview/ShaderUtils.h"
+#include "glview/VBOBuilder.h"
+#include "glview/VBORenderer.h"
 
 namespace {
 
@@ -78,10 +83,6 @@ ThrownTogetherRenderer::ThrownTogetherRenderer(std::shared_ptr<CSGProducts> root
 {
 }
 
-ThrownTogetherRenderer::~ThrownTogetherRenderer()
-{
-}
-
 void ThrownTogetherRenderer::prepare(const ShaderUtils::ShaderInfo *shaderinfo)
 {
   PRINTD("Thrown prepare");
@@ -111,7 +112,7 @@ void ThrownTogetherRenderer::prepare(const ShaderUtils::ShaderInfo *shaderinfo)
 void ThrownTogetherRenderer::draw(bool showedges, const ShaderUtils::ShaderInfo *shaderinfo) const
 {
   // Only use shader if select rendering or showedges
-  bool enable_shader = shaderinfo && (
+  const bool enable_shader = shaderinfo && (
     shaderinfo->type == ShaderUtils::ShaderType::EDGE_RENDERING && showedges || 
     shaderinfo->type == ShaderUtils::ShaderType::SELECT_RENDERING);
   if (enable_shader) {
@@ -160,10 +161,9 @@ void ThrownTogetherRenderer::createChainObject(VertexStateContainer& container, 
     return;
   }
 
-  bool enable_barycentric = true;
+  const bool enable_barycentric = true;
 
   const auto& leaf_color = csgobj.leaf->color;
-  const auto csgmode = RendererUtils::getCsgMode(highlight_mode, background_mode, type);
 
   vbo_builder.writeSurface();
 
