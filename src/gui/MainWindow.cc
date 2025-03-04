@@ -26,10 +26,10 @@
 
 #include "gui/MainWindow.h"
 
+#include <cstring>
 #include <filesystem>
 #include <deque>
 #include <cassert>
-#include <array>
 #include <functional>
 #include <exception>
 #include <sstream>
@@ -40,107 +40,124 @@
 #include <cstdio>
 #include <memory>
 #include <utility>
+#include <memory>
+#include <string>
+#include <fstream>
+#include <algorithm>
+#include <sys/stat.h>
 
+#include <boost/version.hpp>
 #include <QApplication>
+#include <QClipboard>
+#include <QDesktopServices>
 #include <QDialog>
+#include <QDockWidget>
+#include <QDropEvent>
 #include <QElapsedTimer>
 #include <QEvent>
+#include <QFileDialog>
+#include <QFileInfo>
 #include <QFont>
 #include <QFontMetrics>
+#include <QHBoxLayout>
 #include <QIcon>
 #include <QKeySequence>
+#include <QLabel>
 #include <QList>
+#include <QMenu>
+#include <QMenuBar>
+#include <QMessageBox>
 #include <QMetaObject>
+#include <QMimeData>
+#include <QMutexLocker>
 #include <QPoint>
+#include <QProcess>
+#include <QProgressDialog>
 #include <QScreen>
+#include <QSettings> //Include QSettings for direct operations on settings arrays
 #include <QSoundEffect>
+#include <QSplitter>
+#include <QStatusBar>
 #include <QStringList>
+#include <QTemporaryFile>
 #include <QTextEdit>
+#include <QTextStream>
+#include <QTime>
+#include <QTimer>
 #include <QToolBar>
+#include <QUrl>
+#include <QVBoxLayout>
 #include <QWidget>
 
-#include "geometry/Geometry.h"
 #include "core/AST.h"
-#include "openscad_gui.h"
+#include "core/BuiltinContext.h"
+#include "core/Builtins.h"
+#include "core/CSGNode.h"
+#include "core/Context.h"
+#include "core/customizer/CommentParser.h"
+#include "core/EvaluationSession.h"
+#include "core/Expression.h"
+#include "core/node.h"
+#include "core/parsersettings.h"
+#include "core/progress.h"
+#include "core/RenderVariables.h"
+#include "core/ScopeContext.h"
+#include "core/Settings.h"
+#include "core/SourceFileCache.h"
+#include "geometry/Geometry.h"
+#include "geometry/GeometryCache.h"
+#include "geometry/GeometryEvaluator.h"
+#include "glview/cgal/CGALRenderer.h"
+#include "glview/preview/CSGTreeNormalizer.h"
+#include "glview/preview/ThrownTogetherRenderer.h"
+#include "glview/RenderSettings.h"
+#include "gui/AboutDialog.h"
+#include "gui/CGALWorker.h"
+#include "gui/Editor.h"
+#include "gui/Dock.h"
+#include "gui/Export3mfDialog.h"
+#include "gui/ExportPdfDialog.h"
+#include "gui/ExternalToolInterface.h"
+#include "gui/FontListDialog.h"
+#include "gui/input/InputDriverEvent.h"
+#include "gui/input/InputDriverManager.h"
+#include "gui/LibraryInfoDialog.h"
+#include "gui/OpenSCADApp.h"
+#include "gui/Preferences.h"
+#include "gui/PrintInitDialog.h"
+#include "gui/ProgressWidget.h"
+#include "gui/QGLView.h"
+#include "gui/QSettingsCached.h"
+#include "gui/QWordSearchField.h"
+#include "gui/ScintillaEditor.h"
+#include "gui/TabManager.h"
+#include "gui/UIUtils.h"
+#include "io/dxfdim.h"
+#include "io/export.h"
+#include "io/fileutils.h"
+#include "openscad.h"
+#include "platform/PlatformUtils.h"
+#include "utils/exceptions.h"
+#include "utils/printutils.h"
+#include "version.h"
 
+#ifdef ENABLE_CGAL
+#include "geometry/cgal/cgal.h"
+#include "geometry/cgal/CGALCache.h"
+#include "geometry/cgal/CGAL_Nef_polyhedron.h"
+#endif // ENABLE_CGAL
 #ifdef ENABLE_MANIFOLD
 #include "geometry/manifold/manifoldutils.h"
-#endif
-#include "core/Builtins.h"
-#include "core/BuiltinContext.h"
-#include "core/customizer/CommentParser.h"
-#include "core/RenderVariables.h"
-#include "openscad.h"
-#include "geometry/GeometryCache.h"
-#include "core/SourceFileCache.h"
-#include "gui/OpenSCADApp.h"
-#include "core/parsersettings.h"
-#include "glview/RenderSettings.h"
-#include "gui/Preferences.h"
-#include "utils/printutils.h"
-#include "core/node.h"
-#include "core/ColorUtil.h"
-#include "core/CSGNode.h"
-#include "core/Expression.h"
-#include "core/ScopeContext.h"
-#include "core/progress.h"
-#include "io/dxfdim.h"
-#include "io/fileutils.h"
-#include "core/Settings.h"
-#include "gui/AboutDialog.h"
-#include "gui/FontListDialog.h"
-#include "gui/LibraryInfoDialog.h"
-#include "gui/ScintillaEditor.h"
+#include "geometry/manifold/ManifoldGeometry.h"
+#endif // ENABLE_MANIFOLD
 #ifdef ENABLE_OPENCSG
 #include "core/CSGTreeEvaluator.h"
 #include "glview/preview/OpenCSGRenderer.h"
 #include <opencsg.h>
 #endif
-#include "gui/ProgressWidget.h"
-#include "glview/preview/ThrownTogetherRenderer.h"
-#include "glview/preview/CSGTreeNormalizer.h"
-#include "gui/QGLView.h"
-#ifdef Q_OS_MACOS
-#include "platform/CocoaUtils.h"
-#endif
-#ifdef Q_OS_WIN
-#include <QScreen>
-#endif
-#include "platform/PlatformUtils.h"
 #ifdef OPENSCAD_UPDATER
 #include "gui/AutoUpdater.h"
 #endif
-#include "gui/TabManager.h"
-#include "gui/ExternalToolInterface.h"
-
-#include <QMenu>
-#include <QTime>
-#include <QMenuBar>
-#include <QSplitter>
-#include <QFileDialog>
-#include <QHBoxLayout>
-#include <QVBoxLayout>
-#include <QLabel>
-#include <QFileInfo>
-#include <QTextStream>
-#include <QStatusBar>
-#include <QDropEvent>
-#include <QMimeData>
-#include <QUrl>
-#include <QTimer>
-#include <QMessageBox>
-#include <QDesktopServices>
-#include <QProgressDialog>
-#include <QMutexLocker>
-#include <QTemporaryFile>
-#include <QDockWidget>
-#include <QClipboard>
-#include <QProcess>
-#include <memory>
-#include <string>
-#include "gui/QWordSearchField.h"
-#include <QSettings> //Include QSettings for direct operations on settings arrays
-#include "gui/QSettingsCached.h"
 
 #ifdef ENABLE_PYTHON
 #include "python/python_public.h"
@@ -167,56 +184,26 @@ std::string SHA256HashString(std::string aString){
 
 #endif // ifdef ENABLE_PYTHON
 
-#define ENABLE_3D_PRINTING
-#include "gui/OctoPrint.h"
 #include "gui/PrintService.h"
 
-#include <fstream>
-
-#include <algorithm>
-#include <boost/version.hpp>
-#include <sys/stat.h>
-
-#include "glview/cgal/CGALRenderer.h"
-#include "gui/CGALWorker.h"
-
-#ifdef ENABLE_CGAL
-#include "geometry/cgal/cgal.h"
-#include "geometry/cgal/cgalutils.h"
-#include "geometry/cgal/CGALCache.h"
-#include "geometry/cgal/CGAL_Nef_polyhedron.h"
-#endif // ENABLE_CGAL
-
-#ifdef ENABLE_MANIFOLD
-#include "geometry/manifold/ManifoldGeometry.h"
-#endif // ENABLE_MANIFOLD
-
-#include "geometry/GeometryEvaluator.h"
-
-#include "gui/PrintInitDialog.h"
-#include "gui/ExportPdfDialog.h"
-#include "gui/Export3mfDialog.h"
-#include "gui/input/InputDriverEvent.h"
-#include "gui/input/InputDriverManager.h"
-#include <QtNetwork>
-
-static const int autoReloadPollingPeriodMS = 200;
 
 // Global application state
 unsigned int GuiLocker::guiLocked = 0;
 
-static char copyrighttext[] =
-  "<p>Copyright (C) 2009-2024 The OpenSCAD Developers</p>"
-  "<p>This program is free software; you can redistribute it and/or modify "
-  "it under the terms of the GNU General Public License as published by "
-  "the Free Software Foundation; either version 2 of the License, or "
-  "(at your option) any later version.<p>";
 bool MainWindow::undockMode = false;
 bool MainWindow::reorderMode = false;
 const int MainWindow::tabStopWidth = 15;
 QElapsedTimer *MainWindow::progressThrottle = new QElapsedTimer();
 
 namespace {
+
+const int autoReloadPollingPeriodMS = 200;
+const char copyrighttext[] =
+  "<p>Copyright (C) 2009-2024 The OpenSCAD Developers</p>"
+  "<p>This program is free software; you can redistribute it and/or modify "
+  "it under the terms of the GNU General Public License as published by "
+  "the Free Software Foundation; either version 2 of the License, or "
+  "(at your option) any later version.<p>";
 
 struct DockFocus {
   Dock *widget;
@@ -406,7 +393,7 @@ MainWindow::MainWindow(const QStringList& filenames) :
   this->qglview->statusLabel->setMinimumWidth(100);
   statusBar()->addWidget(this->qglview->statusLabel);
 
-  QSettingsCached settings;
+  const QSettingsCached settings;
   this->qglview->setMouseCentricZoom(Settings::Settings::mouseCentricZoom.value());
   this->qglview->setMouseSwapButtons(Settings::Settings::mouseSwapButtons.value());
   this->meas.setView(qglview);
@@ -526,10 +513,8 @@ MainWindow::MainWindow(const QStringList& filenames) :
   this->fileActionExport3MF->setVisible(false);
 #endif
 
-#ifndef ENABLE_3D_PRINTING
   this->designAction3DPrint->setVisible(false);
   this->designAction3DPrint->setEnabled(false);
-#endif
 
   // View menu
   this->viewActionThrownTogether->setEnabled(false);
@@ -617,7 +602,7 @@ MainWindow::MainWindow(const QStringList& filenames) :
 
   Preferences::inst()->apply_win();   // not sure if to be commented, checked must not be commented(done some changes in apply())
 
-  QString cs = Preferences::inst()->getValue("3dview/colorscheme").toString();
+  const QString cs = Preferences::inst()->getValue("3dview/colorscheme").toString();
   this->setColorScheme(cs);
 
   //find and replace panel
@@ -649,15 +634,15 @@ MainWindow::MainWindow(const QStringList& filenames) :
   instance->ButtonConfig->init();
 
   // fetch window states to be restored after restoreState() call
-  bool isConsoldDockVisible = !settings.value("view/hideConsole").toBool();
-  bool isEditorDockVisible = !settings.value("view/hideEditor").toBool();
+  const bool isConsoldDockVisible = !settings.value("view/hideConsole").toBool();
+  const bool isEditorDockVisible = !settings.value("view/hideEditor").toBool();
   bool isCustomizerDockVisible = !settings.value("view/hideCustomizer").toBool();
-  bool isErrorLogVisible = !settings.value("view/hideErrorLog").toBool();
-  bool isAnimateDockVisible = !settings.value("view/hideAnimate").toBool();
-  bool isFontListDockVisible = !settings.value("view/hideFontList").toBool();
+  const bool isErrorLogVisible = !settings.value("view/hideErrorLog").toBool();
+  const bool isAnimateDockVisible = !settings.value("view/hideAnimate").toBool();
+  const bool isFontListDockVisible = !settings.value("view/hideFontList").toBool();
   bool isViewportControlVisible = !settings.value("view/hideViewportControl").toBool();
-  bool isEditorToolbarVisible = !settings.value("view/hideEditorToolbar").toBool();
-  bool is3DViewToolbarVisible = !settings.value("view/hide3DViewToolbar").toBool();
+  const bool isEditorToolbarVisible = !settings.value("view/hideEditorToolbar").toBool();
+  const bool is3DViewToolbarVisible = !settings.value("view/hide3DViewToolbar").toBool();
 
   // make sure it looks nice..
   const auto windowState = settings.value("window/state", QByteArray()).toByteArray();
@@ -734,7 +719,7 @@ MainWindow::MainWindow(const QStringList& filenames) :
   // connect the signal of next/prev windowAction and the dedicated slot
   // hovering is connected to rubberband activation while triggering is for actual
   // activation of the corresponding dock.
-  std::vector<QAction *> actions = {windowActionNextWindow, windowActionPreviousWindow};
+  const std::vector<QAction *> actions = {windowActionNextWindow, windowActionPreviousWindow};
   for (auto& action : actions) {
     connect(action, &QAction::hovered, this, &MainWindow::onWindowActionNextPrevHovered);
     connect(action, &QAction::triggered, this, &MainWindow::onWindowActionNextPrevTriggered);
@@ -911,7 +896,7 @@ void MainWindow::onButtonChanged(InputEventButtonChanged *)
 
 void MainWindow::onTranslateEvent(InputEventTranslate *event)
 {
-  double zoomFactor = 0.001 * qglview->cam.zoomValue();
+  const double zoomFactor = 0.001 * qglview->cam.zoomValue();
 
   if (event->viewPortRelative) {
     qglview->translate(event->x, event->y, event->z, event->relative, true);
@@ -932,7 +917,7 @@ void MainWindow::onRotate2Event(InputEventRotate2 *event)
 
 void MainWindow::onActionEvent(InputEventAction *event)
 {
-  std::string actionName = event->action;
+  const std::string actionName = event->action;
   if (actionName.find("::") == std::string::npos) {
     QAction *action = findAction(this->menuBar()->actions(), actionName);
     if (action) {
@@ -941,8 +926,8 @@ void MainWindow::onActionEvent(InputEventAction *event)
       viewTogglePerspective();
     }
   } else {
-    std::string target = actionName.substr(0, actionName.find("::"));
-    if ("animate" == target) {
+    const std::string target = actionName.substr(0, actionName.find("::"));
+    if (target == "animate") {
       this->animateWidget->onActionEvent(event);
     } else {
       std::cout << "unknown onActionEvent target: " << actionName << std::endl;
@@ -956,7 +941,7 @@ void MainWindow::onZoomEvent(InputEventZoom *event)
 }
 
 void MainWindow::loadViewSettings(){
-  QSettingsCached settings;
+  const QSettingsCached settings;
 
   if (settings.value("view/showEdges").toBool()) {
     viewActionShowEdges->setChecked(true);
@@ -986,7 +971,7 @@ void MainWindow::loadViewSettings(){
 
 void MainWindow::loadDesignSettings()
 {
-  QSettingsCached settings;
+  const QSettingsCached settings;
   if (settings.value("design/autoReload", false).toBool()) {
     designActionAutoReload->setChecked(true);
   }
@@ -1253,7 +1238,7 @@ void MainWindow::updateCompileResult()
     if (activeEditor->filepath.isEmpty()) {
       msg = QString(_("Compile error."));
     } else {
-      QFileInfo fileInfo(activeEditor->filepath);
+      const QFileInfo fileInfo(activeEditor->filepath);
       msg = QString(_("Error while compiling '%1'.")).arg(fileInfo.fileName());
     }
     toolButtonCompileResultIcon->setIcon(QIcon(QString::fromUtf8(":/icons/information-icons-error.png")));
@@ -1262,9 +1247,9 @@ void MainWindow::updateCompileResult()
     msg = QString(fmt).arg(compileWarnings);
     toolButtonCompileResultIcon->setIcon(QIcon(QString::fromUtf8(":/icons/information-icons-warning.png")));
   }
-  QFontMetrics fm(labelCompileResultMessage->font());
-  int sizeIcon = std::max(12, std::min(32, fm.height()));
-  int sizeClose = std::max(10, std::min(32, fm.height()) - 4);
+  const QFontMetrics fm(labelCompileResultMessage->font());
+  const int sizeIcon = std::max(12, std::min(32, fm.height()));
+  const int sizeClose = std::max(10, std::min(32, fm.height()) - 4);
   toolButtonCompileResultIcon->setIconSize(QSize(sizeIcon, sizeIcon));
   toolButtonCompileResultClose->setIconSize(QSize(sizeClose, sizeClose));
 
@@ -1321,7 +1306,7 @@ void MainWindow::instantiateRoot()
   this->rootNode.reset();
   this->tree.setRoot(nullptr);
 
-  std::filesystem::path doc(activeEditor->filepath.toStdString());
+  const std::filesystem::path doc(activeEditor->filepath.toStdString());
   this->tree.setDocumentPath(doc.parent_path().string());
 
   if (this->rootFile) {
@@ -1413,13 +1398,13 @@ void MainWindow::compileCSG()
     LOG("Compiling design (CSG Products normalization)...");
     this->processEvents();
 
-    size_t normalizelimit = 2ul * Preferences::inst()->getValue("advanced/openCSGLimit").toUInt();
+    const size_t normalizelimit = 2ul * Preferences::inst()->getValue("advanced/openCSGLimit").toUInt();
     CSGTreeNormalizer normalizer(normalizelimit);
 
     if (this->csgRoot) {
       this->normalizedRoot = normalizer.normalize(this->csgRoot);
       if (this->normalizedRoot) {
-        this->rootProduct.reset(new CSGProducts());
+        this->rootProduct = std::make_shared<CSGProducts>();
         this->rootProduct->import(this->normalizedRoot);
       } else {
         this->rootProduct.reset();
@@ -1433,7 +1418,7 @@ void MainWindow::compileCSG()
       LOG("Compiling highlights (%1$d CSG Trees)...", highlight_terms.size());
       this->processEvents();
 
-      this->highlightsProducts.reset(new CSGProducts());
+      this->highlightsProducts = std::make_shared<CSGProducts>();
       for (const auto& highlight_term : highlight_terms) {
         auto nterm = normalizer.normalize(highlight_term);
         if (nterm) {
@@ -1449,7 +1434,7 @@ void MainWindow::compileCSG()
       LOG("Compiling background (%1$d CSG Trees)...", background_terms.size());
       this->processEvents();
 
-      this->backgroundProducts.reset(new CSGProducts());
+      this->backgroundProducts = std::make_shared<CSGProducts>();
       for (const auto& background_term : background_terms) {
         auto nterm = normalizer.normalize(background_term);
         if (nterm) {
@@ -1522,7 +1507,7 @@ void MainWindow::actionOpenRecent()
 void MainWindow::clearRecentFiles()
 {
   QSettingsCached settings;   // already set up properly via main.cpp
-  QStringList files;
+  const QStringList files;
   settings.setValue("recentFileList", files);
 
   updateRecentFileActions();
@@ -1606,9 +1591,10 @@ void MainWindow::saveBackup()
   }
 
   if (!this->tempFile) {
-    QString suffix = "scad";
 #ifdef ENABLE_PYTHON
-    if (this->python_active) suffix = "py";
+    const QString suffix = this->python_active ? "py" : "scad";
+#else
+    const QString suffix = "scad";
 #endif
     this->tempFile = new QTemporaryFile(backupPath.append(basename + "-backup-XXXXXXXX." + suffix));
   }
@@ -1884,7 +1870,7 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event)
 
 void MainWindow::setRenderVariables(ContextHandle<BuiltinContext>& context)
 {
-  RenderVariables r = {
+  const RenderVariables r = {
     .preview = this->isPreview,
     .time = this->animateWidget->getAnimTval(),
     .camera = qglview->cam,
@@ -1901,7 +1887,7 @@ bool MainWindow::fileChangedOnDisk()
   if (!activeEditor->filepath.isEmpty()) {
     struct stat st;
     memset(&st, 0, sizeof(struct stat));
-    bool valid = (stat(activeEditor->filepath.toLocal8Bit(), &st) == 0);
+    const bool valid = (stat(activeEditor->filepath.toLocal8Bit(), &st) == 0);
     // If file isn't there, just return and use current editor text
     if (!valid) return false;
 
@@ -2146,16 +2132,16 @@ void MainWindow::csgRender()
   }
 
   if (animateWidget->dumpPictures() ) {
-    int steps = animateWidget->nextFrame();
-    QImage img = this->qglview->grabFrame();
-    QString filename = QString("frame%1.png").arg(steps, 5, 10, QChar('0'));
+    const int steps = animateWidget->nextFrame();
+    const QImage img = this->qglview->grabFrame();
+    const QString filename = QString("frame%1.png").arg(steps, 5, 10, QChar('0'));
     img.save(filename, "PNG");
   }
 
   compileEnded();
 }
 
-std::unique_ptr<ExternalToolInterface> createExternalToolService(
+static std::unique_ptr<ExternalToolInterface> createExternalToolService(
   print_service_t serviceType, const QString& serviceName, FileFormat fileFormat)
 {
   switch (serviceType) {
@@ -2190,12 +2176,12 @@ void MainWindow::sendToExternalTool(ExternalToolInterface& externalToolService)
 
   activeFileName = activeFileName + QString::fromStdString("." + fileformat::toSuffix(externalToolService.fileFormat()));
 
-  bool export_status = externalToolService.exportTemporaryFile(rootGeom, activeFileName, &qglview->cam);
+  const bool export_status = externalToolService.exportTemporaryFile(rootGeom, activeFileName, &qglview->cam);
 
   this->progresswidget = new ProgressWidget(this);
   connect(this->progresswidget, SIGNAL(requestShow()), this, SLOT(showProgress()));
 
-  bool process_status = externalToolService.process(activeFileName.toStdString(), [this](double permille) {
+  const bool process_status = externalToolService.process(activeFileName.toStdString(), [this](double permille) {
     return network_progress_func(permille);
   });
   updateStatusBar(nullptr);
@@ -2208,9 +2194,8 @@ void MainWindow::sendToExternalTool(ExternalToolInterface& externalToolService)
 
 void MainWindow::action3DPrint()
 {
-#ifdef ENABLE_3D_PRINTING
   if (GuiLocker::isLocked()) return;
-  GuiLocker lock;
+  const GuiLocker lock;
 
   setCurrentOutput();
 
@@ -2237,7 +2222,6 @@ void MainWindow::action3DPrint()
     }
     sendToExternalTool(*externalToolService);
   }
-#endif // ifdef ENABLE_3D_PRINTING
 }
 
 void MainWindow::actionRender()
@@ -2329,7 +2313,7 @@ void MainWindow::actionMeasureAngle()
 
 void MainWindow::leftClick(QPoint mouse)
 {
-  QString str = meas.statemachine(mouse);
+  const QString str = meas.statemachine(mouse);
   if (str.size() > 0) {
     this->qglview->measure_state = MEASURE_IDLE;
     QMenu resultmenu(this);
@@ -2356,9 +2340,9 @@ void MainWindow::rightClick(QPoint position)
   }
 
   // Select the object at mouse coordinates
-  int index = this->qglview->pickObject(position);
+  const int index = this->qglview->pickObject(position);
   std::deque<std::shared_ptr<const AbstractNode>> path;
-  std::shared_ptr<const AbstractNode> result = this->rootNode->getNodeByID(index, path);
+  const std::shared_ptr<const AbstractNode> result = this->rootNode->getNodeByID(index, path);
 
   if (result) {
     // Create context menu with the backtrace
@@ -2374,7 +2358,7 @@ void MainWindow::rightClick(QPoint position)
       ss.str("");
 
       // Remove the "module" prefix if any as it induce confusion between the module declaration and instanciation
-      int first_position = (step->verbose_name().find("module") == std::string::npos)? 0 : 7;
+      const int first_position = (step->verbose_name().find("module") == std::string::npos)? 0 : 7;
       std::string name = step->verbose_name().substr(first_position);
 
       // It happens that the verbose_name is empty (eg: in for loops), when this happens instead of letting
@@ -2382,7 +2366,7 @@ void MainWindow::rightClick(QPoint position)
       if (step->verbose_name().empty()) name = step->modinst->name();
 
       // Check if the path is contained in a library (using parsersettings.h)
-      fs::path libpath = get_library_for_path(location.filePath());
+      const fs::path libpath = get_library_for_path(location.filePath());
       if (!libpath.empty()) {
         // Display the library (without making the window too wide!)
         ss << name << " (library "
@@ -2426,8 +2410,8 @@ void MainWindow::clearAllSelectionIndicators()
   this->activeEditor->clearAllSelectionIndicators();
 }
 
-void findNodesWithSameMod(std::shared_ptr<const AbstractNode> tree,
-                          std::shared_ptr<const AbstractNode> node_mod,
+static void findNodesWithSameMod(const std::shared_ptr<const AbstractNode>& tree,
+                          const std::shared_ptr<const AbstractNode>& node_mod,
                           std::vector<std::shared_ptr<const AbstractNode>>& nodes){
   if (node_mod->modinst == tree->modinst) {
     nodes.push_back(tree);
@@ -2437,7 +2421,7 @@ void findNodesWithSameMod(std::shared_ptr<const AbstractNode> tree,
   }
 }
 
-void getCodeLocation(const AbstractNode *self, int currentLevel,  int includeLevel, int *firstLine, int *firstColumn, int *lastLine, int *lastColumn, int nestedModuleDepth)
+static void getCodeLocation(const AbstractNode *self, int currentLevel,  int includeLevel, int *firstLine, int *firstColumn, int *lastLine, int *lastColumn, int nestedModuleDepth)
 {
   auto location = self->modinst->location();
   if (currentLevel >= includeLevel && nestedModuleDepth == 0) {
@@ -2528,7 +2512,7 @@ void MainWindow::setSelection(int index)
   if (currentlySelectedObject == index) return;
 
   std::deque<std::shared_ptr<const AbstractNode>> path;
-  std::shared_ptr<const AbstractNode> selected_node = rootNode->getNodeByID(index, path);
+  const std::shared_ptr<const AbstractNode> selected_node = rootNode->getNodeByID(index, path);
 
   if (!selected_node) return;
 
@@ -2674,7 +2658,7 @@ void MainWindow::actionDisplayCSGTree()
 
 void MainWindow::actionDisplayCSGProducts()
 {
-  std::string NA("N/A");
+  const std::string NA("N/A");
   setCurrentOutput();
   auto e = new QTextEdit(this);
   e->setAttribute(Qt::WA_DeleteOnClose);
@@ -2698,7 +2682,7 @@ void MainWindow::actionDisplayCSGProducts()
 void MainWindow::actionCheckValidity()
 {
   if (GuiLocker::isLocked()) return;
-  GuiLocker lock;
+  const GuiLocker lock;
   setCurrentOutput();
 
   if (!rootGeom) {
@@ -2797,7 +2781,7 @@ void MainWindow::actionExport(unsigned int dim, ExportInfo& exportInfo)
 
   //Setting filename skips the file selection dialog and uses the path provided instead.
   if (GuiLocker::isLocked()) return;
-  GuiLocker lock;
+  const GuiLocker lock;
 
   setCurrentOutput();
 
@@ -2813,7 +2797,7 @@ void MainWindow::actionExport(unsigned int dim, ExportInfo& exportInfo)
   }
   this->exportPaths[suffix] = exportFilename;
 
-  bool exportResult = exportFileByName(rootGeom, exportFilename.toStdString(), exportInfo);
+  const bool exportResult = exportFileByName(rootGeom, exportFilename.toStdString(), exportInfo);
 
   if (exportResult) fileExportedMessage(type_name, exportFilename);
   clearCurrentOutput();
@@ -2887,7 +2871,7 @@ void MainWindow::actionExportFileFormat(int fmt)
     auto img_filename = QFileDialog::getSaveFileName(this,
                                                      _("Export Image"), exportPath(suffix), _("PNG Files (*.png)"));
     if (!img_filename.isEmpty()) {
-      bool saveResult = qglview->save(img_filename.toLocal8Bit().constData());
+      const bool saveResult = qglview->save(img_filename.toLocal8Bit().constData());
       if (saveResult) {
         this->exportPaths[suffix] = img_filename;
         setCurrentOutput();
@@ -2992,7 +2976,7 @@ void MainWindow::viewModeShowEdges()
 
 void MainWindow::viewModeShowAxes()
 {
-  bool showaxes = viewActionShowAxes->isChecked();
+  const bool showaxes = viewActionShowAxes->isChecked();
   QSettingsCached settings;
   settings.setValue("view/showAxes", showaxes);
   this->viewActionShowScaleProportional->setEnabled(showaxes);
@@ -3102,7 +3086,7 @@ void MainWindow::viewOrthogonal()
 
 void MainWindow::viewTogglePerspective()
 {
-  QSettingsCached settings;
+  const QSettingsCached settings;
   if (settings.value("view/orthogonalProjection").toBool()) {
     viewPerspective();
   } else {
@@ -3124,7 +3108,7 @@ void MainWindow::viewAll()
 void MainWindow::hideEditorToolbar()
 {
   QSettingsCached settings;
-  bool shouldHide = viewActionHideEditorToolBar->isChecked();
+  const bool shouldHide = viewActionHideEditorToolBar->isChecked();
   settings.setValue("view/hideEditorToolbar", shouldHide);
 
   if (shouldHide) {
@@ -3137,7 +3121,7 @@ void MainWindow::hideEditorToolbar()
 void MainWindow::hide3DViewToolbar()
 {
   QSettingsCached settings;
-  bool shouldHide = viewActionHide3DViewToolBar->isChecked();
+  const bool shouldHide = viewActionHide3DViewToolBar->isChecked();
   settings.setValue("view/hide3DViewToolbar", shouldHide);
 
   if (shouldHide) {
@@ -3293,7 +3277,7 @@ void MainWindow::on_editActionFoldAll_triggered()
 
 QString MainWindow::getCurrentFileName() const
 {
-  if (activeEditor == nullptr) return QString("");
+  if (activeEditor == nullptr) return {};
 
   const QFileInfo fileInfo(activeEditor->filepath);
   QString fname = _("Untitled.scad");
@@ -3310,7 +3294,7 @@ void MainWindow::onTabManagerEditorChanged(EditorInterface *neweditor)
   parameterDock->setWidget(neweditor->parameterWidget);
   editActionUndo->setEnabled(neweditor->canUndo());
 
-  QString name = getCurrentFileName();
+  const QString name = getCurrentFileName();
   setWindowTitle(name);
 
   consoleDock->setNameSuffix(name);
@@ -3437,7 +3421,7 @@ void MainWindow::helpOfflineCheatSheet()
 void MainWindow::helpLibrary()
 {
   if (!this->libraryInfoDialog) {
-    QString rendererInfo(qglview->getRendererInfo().c_str());
+    const QString rendererInfo(qglview->getRendererInfo().c_str());
     auto dialog = new LibraryInfoDialog(rendererInfo);
     this->libraryInfoDialog = dialog;
   }
