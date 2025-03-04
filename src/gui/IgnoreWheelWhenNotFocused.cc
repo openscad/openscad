@@ -32,8 +32,7 @@ void installIgnoreWheelWhenNotFocused(QWidget *parent){
     spinDoubleBox->setFocusPolicy(Qt::StrongFocus);
   }
 
-  // clang generates a bogus warning that ignoreWheelWhenNotFocused may be leaked
-}
+}  // NOLINT(clang-analyzer-cplusplus.NewDeleteLeaks): False positive
 
 IgnoreWheelWhenNotFocused::IgnoreWheelWhenNotFocused(QWidget *parent) : QObject(parent)
 {

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <ctime>
+#include <tuple>
 #include <unordered_map>
 #include <memory>
 #include <string>
@@ -31,19 +32,10 @@
 #include <QSoundEffect>
 #include <QTime>
 #include <QSignalMapper>
-
-#include "gui/Editor.h"
-#include "geometry/Geometry.h"
-#include "io/export.h"
-#include "gui/Measurement.h"
-#include "RenderStatistic.h"
-#include "gui/TabManager.h"
-#include "core/Tree.h"
-#include "gui/UIUtils.h"
-#include "gui/qtgettext.h" // IWYU pragma: keep
-#include "gui/qt-obsolete.h" // IWYU pragma: keep
-#include "ui_MainWindow.h"
-
+#include <QShortcut>
+#include "core/Context.h"
+#include "glview/Renderer.h"
+#include "core/SourceFile.h"
 #ifdef STATIC_QT_SVG_PLUGIN
 #include <QtPlugin>
 Q_IMPORT_PLUGIN(QSvgPlugin)
@@ -58,6 +50,23 @@ class LibraryInfoDialog;
 class Preferences;
 class ProgressWidget;
 class ThrownTogetherRenderer;
+
+#include "core/Tree.h"
+#include "geometry/Geometry.h"
+#include "gui/Editor.h"
+#include "gui/input/InputDriverEvent.h"
+#include "gui/Measurement.h"
+#include "gui/qt-obsolete.h" // IWYU pragma: keep
+#include "gui/qtgettext.h" // IWYU pragma: keep
+#include "gui/RubberBandManager.h"
+#include "gui/TabManager.h"
+#include "gui/UIUtils.h"
+#include "io/export_enums.h"
+#include "io/export.h"
+#include "io/export.h"
+#include "RenderStatistic.h"
+#include "ui_MainWindow.h"
+#include "utils/printutils.h"
 
 class MainWindow : public QMainWindow, public Ui::MainWindow, public InputEventHandler
 {
@@ -98,16 +107,11 @@ public:
   QString lastCompiledDoc;
 
   QAction *actionRecentFile[UIUtils::maxRecentFiles];
+  QShortcut *shortcutNextWindow{nullptr};
+  QShortcut *shortcutPreviousWindow{nullptr};
   QMap<QString, QString> knownFileExtensions;
 
   QLabel *versionLabel;
-  QWidget *editorDockTitleWidget;
-  QWidget *consoleDockTitleWidget;
-  QWidget *parameterDockTitleWidget;
-  QWidget *errorLogDockTitleWidget;
-  QWidget *animateDockTitleWidget;
-  QWidget *viewportControlTitleWidget;
-  QWidget *fontListDockTitleWidget;
 
   Measurement meas;
 
@@ -118,6 +122,10 @@ public:
   ~MainWindow() override;
 
 private:
+  RubberBandManager rubberBandManager;
+
+  std::vector<std::tuple<Dock *, QString>> docks;
+
   volatile bool isClosing = false;
   void consoleOutputRaw(const QString& msg);
   void clearAllSelectionIndicators();
@@ -138,6 +146,14 @@ private slots:
   void onHoveredObjectInSelectionMenu();
   void measureFinished();
   void errorLogOutput(const Message& log_msg);
+  void onNavigationOpenContextMenu();
+  void onNavigationCloseContextMenu();
+  void onNavigationHoveredContextMenuEntry();
+  void onNavigationTriggerContextMenuEntry();
+
+  // implement the different actions needed when
+  // the tab manager editor is changed.
+  void onTabManagerEditorChanged(EditorInterface *);
 
 public:
   static void consoleOutput(const Message& msgObj, void *userdata);
@@ -152,6 +168,8 @@ public:
   void UnknownExceptionCleanup(std::string msg = "");
 
 private:
+  [[nodiscard]] QString getCurrentFileName() const;
+
   void setRenderVariables(ContextHandle<BuiltinContext>& context);
   void updateCompileResult();
   void compile(bool reload, bool forcedone = false);
@@ -166,10 +184,11 @@ private:
   void saveBackup();
   void writeBackup(QFile *file);
   void show_examples();
-  void setDockWidgetTitle(QDockWidget *dockWidget, QString prefix, bool topLevel);
   void addKeyboardShortCut(const QList<QAction *>& actions);
   void updateStatusBar(ProgressWidget *progressWidget);
-  void activateWindow(int);
+  void activateDock(Dock *);
+  Dock *findVisibleDockToActivate(int offset) const;
+  Dock *getNextDockFromSender(QObject *sender);
 
   LibraryInfoDialog *libraryInfoDialog{nullptr};
   FontListDialog *fontListDialog{nullptr};
@@ -211,29 +230,26 @@ private slots:
   void hideEditorToolbar();
   void hide3DViewToolbar();
   void showLink(const QString&);
-  void showEditor();
-  void hideEditor();
-  void showConsole();
-  void hideConsole();
-  void showErrorLog();
-  void hideErrorLog();
-  void showViewportControl();
-  void hideViewportControl();
-  void showParameters();
-  void hideParameters();
-  void showAnimate();
-  void hideAnimate();
-  void showFontList();
-  void hideFontList();
-  void on_windowActionSelectEditor_triggered();
-  void on_windowActionSelectConsole_triggered();
-  void on_windowActionSelectCustomizer_triggered();
-  void on_windowActionSelectErrorLog_triggered();
-  void on_windowActionSelectAnimate_triggered();
-  void on_windowActionSelectFontList_triggered();
-  void on_windowActionSelectViewportControl_triggered();
-  void on_windowActionNextWindow_triggered();
-  void on_windowActionPreviousWindow_triggered();
+
+  // Handle the Next/Prev dock menu action when the is hovered, currently this activate the rubberband
+  void onWindowActionNextPrevHovered();
+
+  // Handle the Next/Prev dock menu action when the is validatee, currently switch to the targetted dock
+  // and remove the rubberband
+  void onWindowActionNextPrevTriggered();
+
+  // Handle the Next/Prev shortcut, currently switch to the targetted dock
+  // and adds the rubberband, the rubbreband is removed on shortcut key release.
+  void onWindowShortcutNextPrevActivated();
+
+  void onEditorDockVisibilityChanged(bool isVisible);
+  void onConsoleDockVisibilityChanged(bool isVisible);
+  void onErrorLogDockVisibilityChanged(bool isVisible);
+  void onAnimateDockVisibilityChanged(bool isVisible);
+  void onFontListDockVisibilityChanged(bool isVisible);
+  void onViewportControlDockVisibilityChanged(bool isVisible);
+  void onParametersDockVisibilityChanged(bool isVisible);
+
   void on_editActionInsertTemplate_triggered();
   void on_editActionFoldAll_triggered();
 
@@ -296,32 +312,13 @@ public:
   void onActionEvent(InputEventAction *event) override;
   void onZoomEvent(InputEventZoom *event) override;
 
-  void changedTopLevelConsole(bool);
-  void changedTopLevelErrorLog(bool);
-  void changedTopLevelAnimate(bool);
-  void changedTopLevelFontList(bool);
-  void changedTopLevelViewportControl(bool);
-
   QList<double> getTranslation() const;
   QList<double> getRotation() const;
   std::unordered_map<FileFormat, QAction *> exportMap;
 
 public slots:
   void actionReloadRenderPreview();
-  void on_editorDock_visibilityChanged(bool);
-  void on_consoleDock_visibilityChanged(bool);
-  void on_parameterDock_visibilityChanged(bool);
-  void on_errorLogDock_visibilityChanged(bool);
-  void on_animateDock_visibilityChanged(bool);
-  void on_fontListDock_visibilityChanged(bool);
-  void on_viewportControlDock_visibilityChanged(bool);
   void on_toolButtonCompileResultClose_clicked();
-  void consoleTopLevelChanged(bool);
-  void parameterTopLevelChanged(bool);
-  void errorLogTopLevelChanged(bool);
-  void animateTopLevelChanged(bool);
-  void fontListTopLevelChanged(bool);
-  void viewportControlTopLevelChanged(bool);
   void processEvents();
   void jumpToLine(int, int);
   void openFileFromPath(const QString&, int);
@@ -397,6 +394,7 @@ private:
   ExportPdfPaperSize sizeString2Enum(const QString& current);
   ExportPdfPaperOrientation orientationsString2Enum(const QString& current);
 
+  QMenu *navigationMenu{nullptr};
   QSoundEffect *renderCompleteSoundEffect;
   std::vector<std::unique_ptr<QTemporaryFile>> allTempFiles;
 

@@ -24,9 +24,13 @@
  *
  */
 #include <Python.h>
+#include <filesystem>
+
 #include "pyopenscad.h"
-#include "src/core/CsgOpNode.h"
-#include "src/platform/PlatformUtils.h"
+#include "core/CsgOpNode.h"
+#include "platform/PlatformUtils.h"
+
+namespace fs = std::filesystem;
 
 extern "C" PyObject *PyInit_openscad(void);
 
@@ -37,6 +41,7 @@ void PyObjectDeleter (PyObject *pObject) { Py_XDECREF(pObject); };
 
 PyObjectUniquePtr pythonInitDict(nullptr, PyObjectDeleter) ;
 PyObjectUniquePtr pythonMainModule(nullptr, PyObjectDeleter) ;
+std::list<std::string> pythonInventory;
 bool pythonDryRun=false;
 std::shared_ptr<AbstractNode> python_result_node = nullptr; /* global result veriable containing the python created result */
 PyObject *python_result_obj = nullptr;
@@ -44,12 +49,14 @@ bool pythonMainModuleInitialized = false;
 
 void PyOpenSCADObject_dealloc(PyOpenSCADObject *self)
 {
+  Py_XDECREF(self->dict);
   Py_TYPE(self)->tp_free((PyObject *)self);
 }
 
 PyObject *PyOpenSCADObject_alloc(PyTypeObject *cls, Py_ssize_t nitems)
 {
   PyObject *self = PyType_GenericAlloc(cls, nitems);
+  ((PyOpenSCADObject *)self)->dict = PyDict_New();
   return self;
 }
 
@@ -87,13 +94,17 @@ void python_lock(void){
 void python_unlock(void) {
   if(pythonInitDict != nullptr)	tstate = PyEval_SaveThread();
 }
+/*
+ *  extracts Absrtract Node from PyOpenSCAD Object
+ */
 
-std::shared_ptr<AbstractNode> PyOpenSCADObjectToNode(PyObject *obj)
+std::shared_ptr<AbstractNode> PyOpenSCADObjectToNode(PyObject *obj, PyObject **dict)
 {
   std::shared_ptr<AbstractNode> result = ((PyOpenSCADObject *) obj)->node;
   if(result.use_count() > 2) {
     result = result->clone();
   }
+  *dict =  ((PyOpenSCADObject *) obj)->dict;
   return result;
 }
 
@@ -108,7 +119,7 @@ std::string python_version(void)
  * same as  python_more_obj but always returns only one AbstractNode by creating an UNION operation
  */
 
-std::shared_ptr<AbstractNode> PyOpenSCADObjectToNodeMulti(PyObject *objs)
+std::shared_ptr<AbstractNode> PyOpenSCADObjectToNodeMulti(PyObject *objs,PyObject **dict)
 {
   std::shared_ptr<AbstractNode> result;
   if (Py_TYPE(objs) == &PyOpenSCADType) {
@@ -116,6 +127,7 @@ std::shared_ptr<AbstractNode> PyOpenSCADObjectToNodeMulti(PyObject *objs)
     if(result.use_count() > 2) {
 	    result = result->clone();
     }
+    *dict =  ((PyOpenSCADObject *) objs)->dict;
   } else if (PyList_Check(objs)) {
     DECLARE_INSTANCE
     auto node = std::make_shared<CsgOpNode>(instance, OpenSCADOperator::UNION);
@@ -124,7 +136,7 @@ std::shared_ptr<AbstractNode> PyOpenSCADObjectToNodeMulti(PyObject *objs)
     for (int i = 0; i < n; i++) {
       PyObject *obj = PyList_GetItem(objs, i);
       if(Py_TYPE(obj) ==  &PyOpenSCADType) {
-        std::shared_ptr<AbstractNode> child = PyOpenSCADObjectToNode(obj);
+        std::shared_ptr<AbstractNode> child = PyOpenSCADObjectToNode(obj,dict);
         node->children.push_back(child);
       } else return nullptr;
     }
@@ -254,7 +266,7 @@ void get_fnas(double& fn, double& fa, double& fs) {
   }
 
   PyObjectUniquePtr varFs(PyObject_GetAttrString(mainModule, "fs"),PyObjectDeleter);
-  if(PyObject_HasAttrString(mainModule,"fn")) {
+  if(PyObject_HasAttrString(mainModule,"fs")) {
     if (varFs.get() != nullptr){
       fs = PyFloat_AsDouble(varFs.get());
     }
@@ -309,6 +321,50 @@ void initPython(double time)
       if(key_ == nullptr) continue;
       const char *key_str =  PyBytes_AS_STRING(key_.get());
       if(key_str == nullptr) continue;
+      if (std::find(std::begin(pythonInventory), std::end(pythonInventory), key_str) == std::end(pythonInventory))
+      {
+        if(strlen(key_str) < 4 || strncmp(key_str,"stat",4) != 0){	      
+          PyDict_DelItemString(maindict, key_str);
+	}  
+      }
+      // bug in  PyDict_GetItemString, thus iterating
+      if(strcmp(key_str,"sys") == 0) {
+        PyObject *sysdict = PyModule_GetDict(value);
+	if(sysdict == nullptr) continue;
+	// get builtin_module_names
+        PyObject *key1, *value1;
+        Py_ssize_t pos1 = 0;
+        while (PyDict_Next(sysdict, &pos1, &key1, &value1)) {
+          PyObjectUniquePtr key1_(PyUnicode_AsEncodedString(key1, "utf-8", "~"), PyObjectDeleter);
+          if(key1_ == nullptr) continue;
+          const char *key1_str =  PyBytes_AS_STRING(key1_.get());
+          if(strcmp(key1_str,"modules") == 0) {
+            PyObject *key2, *value2;
+            Py_ssize_t pos2 = 0;
+            while (PyDict_Next(value1, &pos2, &key2, &value2)) {
+              PyObjectUniquePtr key2_(PyUnicode_AsEncodedString(key2, "utf-8", "~"), PyObjectDeleter);
+              if(key2_ == nullptr) continue;
+              const char *key2_str =  PyBytes_AS_STRING(key2_.get());
+	      if(key2_str == nullptr) continue;
+	      if(!PyModule_Check(value2)) continue;
+
+	      PyObject *modrepr = PyObject_Repr(value2);
+	      PyObject* modreprobj = PyUnicode_AsEncodedString(modrepr, "utf-8", "~");
+              const char *modreprstr = PyBytes_AS_STRING(modreprobj);
+	      if(modreprstr == nullptr) continue;
+	      if(strstr(modreprstr,"(frozen)") != nullptr) continue;
+	      if(strstr(modreprstr,"(built-in)") != nullptr) continue;
+	      if(strstr(modreprstr,"/encodings/") != nullptr) continue;
+	      if(strstr(modreprstr,"_frozen_") != nullptr) continue;
+	      if(strstr(modreprstr,"site-packages") != nullptr) continue;
+	      if(strstr(modreprstr,"usr/lib") != nullptr) continue;
+
+              PyDict_DelItem(value1, key2);
+
+	    }
+          }
+        }
+      }
     }
   } else {
     PyPreConfig preconfig;
@@ -319,22 +375,34 @@ void initPython(double time)
     PyImport_AppendInittab("openscad", &PyInit_openscad);
     PyConfig config;
     PyConfig_InitPythonConfig(&config);
-    std::string libdir;
+
+    std::string sep = "";
     std::ostringstream stream;
 #ifdef _WIN32
-    char sepchar = ';';
+    char sepchar = ':';
+    sep = sepchar;
     stream << PlatformUtils::applicationPath() << "\\..\\libraries\\python";
 #else
     char sepchar = ':';
-    stream << PlatformUtils::applicationPath() << "/../libraries/python";
-  #ifdef __APPLE__
-    stream << sepchar + PlatformUtils::applicationPath() << "/../Frameworks/python" <<  PY_MAJOR_VERSION  <<  "."  <<  PY_MINOR_VERSION ; // where script puts it
-    stream << sepchar + PlatformUtils::applicationPath() << "/../Frameworks/python" <<  PY_MAJOR_VERSION  <<  "."  <<  PY_MINOR_VERSION << "/site-packages"; // where script puts it
-  #else
-    stream << sepchar + PlatformUtils::applicationPath() << "/../lib/python"  <<  PY_MAJOR_VERSION  <<  "."  <<  PY_MINOR_VERSION ; // find it where linuxdeply put it
-  #endif
-#endif   
-    stream << sepchar << PlatformUtils::userLibraryPath() << sepchar << ".";
+    const auto pythonXY = "python" + std::to_string(PY_MAJOR_VERSION) + "." + std::to_string(PY_MINOR_VERSION);
+    const std::array<std::string, 5> paths = {
+        "../libraries/python",
+        "../lib/" + pythonXY,
+        "../python/lib/" + pythonXY,
+        "../Frameworks/" + pythonXY,
+        "../Frameworks/" + pythonXY + "/site-packages",
+    };
+    for (const auto& path : paths) {
+        const auto p = fs::path(PlatformUtils::applicationPath() + fs::path::preferred_separator + path);
+        if (fs::is_directory(p)) {
+            stream << sep << fs::absolute(p).generic_string();
+            sep = sepchar;
+        }
+    }
+#endif
+    stream << sep << PlatformUtils::userLibraryPath();
+    stream << sepchar << ".";
+
     PyConfig_SetBytesString(&config, &config.pythonpath_env, stream.str().c_str());
     PyStatus status = Py_InitializeFromConfig(&config);
     if (PyStatus_Exception(status)) {
@@ -348,6 +416,15 @@ void initPython(double time)
     pythonInitDict.reset(PyModule_GetDict(pythonMainModule.get()));
     PyInit_PyOpenSCAD();
     PyRun_String("from builtins import *\n", Py_file_input, pythonInitDict.get(), pythonInitDict.get());
+    PyObject *key, *value;
+    Py_ssize_t pos = 0;
+    PyObject *maindict = PyModule_GetDict(pythonMainModule.get());
+    while (PyDict_Next(maindict, &pos, &key, &value)) {
+      PyObjectUniquePtr key1(PyUnicode_AsEncodedString(key, "utf-8", "~"), PyObjectDeleter);
+      const char *key_str =  PyBytes_AsString(key1.get());
+      if(key_str != NULL) pythonInventory.push_back(key_str);
+    }
+
   }
   std::ostringstream stream;
   stream << "t=" << time;
@@ -435,6 +512,21 @@ sys.stderr = stderr_bak\n\
  */
 
 
+int python__setitem__(PyObject *dict, PyObject *key, PyObject *v);
+PyObject *python__getitem__(PyObject *dict, PyObject *key);
+
+PyObject *python__getattro__(PyObject *dict, PyObject *key)
+{
+	PyObject *result=python__getitem__(dict,key);
+	if(result == Py_None || result == nullptr)  result = PyObject_GenericGetAttr(dict,key);
+	return result;
+}
+
+int python__setattro__(PyObject *dict, PyObject *key, PyObject *v)
+{
+	return python__setitem__(dict, key, v);
+}
+
 
 PyTypeObject PyOpenSCADType = {
     PyVarObject_HEAD_INIT(nullptr, 0)
@@ -446,15 +538,15 @@ PyTypeObject PyOpenSCADType = {
     0,                         			/* tp_getattr */
     0,                         			/* tp_setattr */
     0,                         			/* tp_as_async */
-    0,		               			/* tp_repr */
+    python_str,               			/* tp_repr */
     &PyOpenSCADNumbers,        			/* tp_as_number */
     0,                         			/* tp_as_sequence */
-    0,		        			/* tp_as_mapping */
+    &PyOpenSCADMapping,        			/* tp_as_mapping */
     0,                         			/* tp_hash  */
     0,                         			/* tp_call */
-    0,	                			/* tp_str */
-    0,			     			/* tp_getattro */
-    0,			  			/* tp_setattro */
+    python_str,                			/* tp_str */
+    python__getattro__,      			/* tp_getattro */
+    python__setattro__,  			/* tp_setattro */
     0,                         			/* tp_as_buffer */
     Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,	/* tp_flags */
     "PyOpenSCAD Object",          		/* tp_doc */
