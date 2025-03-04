@@ -20,9 +20,7 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/format.hpp>
 
-#include "utils/printutils.h"
-
-double gl_version()
+static double gl_version()
 {
   std::string tmp((const char *)glGetString(GL_VERSION));
   std::vector<std::string> strs;
