@@ -174,6 +174,7 @@ void Preferences::init() {
 #endif
   addPrefPage(group, prefsActionInput, pageInput);
   addPrefPage(group, prefsActionInputButton, pageInputButton);
+  addPrefPage(group, prefsActionMouse, pageMouse);
   addPrefPage(group, prefsActionAdvanced, pageAdvanced);
   addPrefPage(group, prefsActionDialogs, pageDialogs);
 
@@ -1038,6 +1039,12 @@ void Preferences::on_actionLocalAppParameterSourceDir_triggered()
   addLocalAppParameter(Settings::LocalAppParameterType::sourcedir);
 }
 
+void Preferences::on_comboBoxMouseStyle_activated(int) {
+  QString mouseStyleStr = comboBoxMouseStyle->currentText();
+  Settings::Settings::mouseStyle.setValue(mouseStyleStr.toStdString());
+  writeSettings();
+}
+
 void Preferences::on_pushButtonOctoPrintCheckConnection_clicked()
 {
   OctoPrint octoPrint;
@@ -1331,6 +1338,10 @@ void Preferences::create(const QStringList& colorSchemes)
   instance->setupFeaturesPage();
   instance->setup3DPrintPage();
   instance->updateGUI();
+
+  instance->comboBoxMouseStyle->clear();
+  instance->comboBoxMouseStyle->addItem("OpenSCAD", QString("OpenSCAD"));
+  instance->comboBoxMouseStyle->addItem("Blender", QString("Blender"));
 }
 
 Preferences *Preferences::inst() {

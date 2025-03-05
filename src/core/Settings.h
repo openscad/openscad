@@ -380,6 +380,8 @@ public:
   static SettingsEntryString printServiceName;
   static SettingsEntryString printServiceFileFormat;
 
+  static SettingsEntryString mouseStyle;
+
   static SettingsEntryString octoPrintUrl;
   static SettingsEntryString octoPrintApiKey;
   static SettingsEntryEnum<std::string> octoPrintFileFormat;
