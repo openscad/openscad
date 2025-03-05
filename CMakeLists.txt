@@ -785,6 +785,7 @@ set(CORE_SOURCES
   src/core/DrawingCallback.cc
   src/core/EvaluationSession.cc
   src/core/Expression.cc
+  src/core/SkinNode.cc
   src/core/FreetypeRenderer.cc
   src/core/FunctionType.cc
   src/core/GroupModule.cc
@@ -843,6 +844,7 @@ set(CORE_SOURCES
   src/geometry/PolySetUtils.cc
   src/geometry/Polygon2d.cc
   src/geometry/boolean_utils.cc
+  src/geometry/skin.cc
   src/geometry/linalg.cc
   src/geometry/linear_extrude.cc
   src/glview/Camera.cc
