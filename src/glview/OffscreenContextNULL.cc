@@ -7,10 +7,13 @@
 #include <memory>
 #include <string>
 
+#include "glview/OffscreenContext.h"
+
 class OffscreenContextNULL : public OffscreenContext {
 public:
   OffscreenContextNULL() : OffscreenContext(0, 0) {}
-  ~OffscreenContextNULL() {}
+  ~OffscreenContextNULL() override = default;
+  
   std::string getInfo() const override {
     return "GL context creator: NULLGL";
   }
