@@ -160,8 +160,6 @@ public slots:
   void on_actionLocalAppParameterSourceDir_triggered();
   void listWidgetLocalAppParamsModelDataChanged();
 
-  void on_comboBoxMouseStyle_activated(int);
-
   // Dialogs
   void on_checkBoxAlwaysShowExportPdfDialog_toggled(bool);
   void on_checkBoxAlwaysShowExport3mfDialog_toggled(bool);

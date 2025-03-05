@@ -455,6 +455,16 @@ public:
   static SettingsEntryString inputButton21;
   static SettingsEntryString inputButton22;
   static SettingsEntryString inputButton23;
+  static SettingsEntryString inputMousePreset;
+  static SettingsEntryString inputMouseLeftClick;
+  static SettingsEntryString inputMouseMiddleClick;
+  static SettingsEntryString inputMouseRightClick;
+  static SettingsEntryString inputMouseShiftLeftClick;
+  static SettingsEntryString inputMouseShiftMiddleClick;
+  static SettingsEntryString inputMouseShiftRightClick;
+  static SettingsEntryString inputMouseCtrlLeftClick;
+  static SettingsEntryString inputMouseCtrlMiddleClick;
+  static SettingsEntryString inputMouseCtrlRightClick;
   static SettingsEntryDouble axisTrim0;
   static SettingsEntryDouble axisTrim1;
   static SettingsEntryDouble axisTrim2;

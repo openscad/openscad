@@ -632,6 +632,7 @@ MainWindow::MainWindow(const QStringList& filenames) :
   InputDriverManager::instance()->registerActions(this->menuBar()->actions(), "", "");
   InputDriverManager::instance()->registerActions(this->animateWidget->actions(), "animation", "animate");
   instance->ButtonConfig->init();
+  instance->MouseConfig->init();
 
   // fetch window states to be restored after restoreState() call
   const bool isConsoldDockVisible = !settings.value("view/hideConsole").toBool();

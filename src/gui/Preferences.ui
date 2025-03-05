@@ -146,8 +146,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>576</width>
-             <height>953</height>
+             <width>666</width>
+             <height>927</height>
             </rect>
            </property>
            <layout class="QGridLayout" name="gridLayout_5">
@@ -1274,7 +1274,6 @@
            <widget class="QLabel" name="labelFeatures">
             <property name="font">
              <font>
-              <weight>75</weight>
               <bold>true</bold>
              </font>
             </property>
@@ -1360,7 +1359,7 @@
              <x>0</x>
              <y>0</y>
              <width>584</width>
-             <height>679</height>
+             <height>663</height>
             </rect>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_9">
@@ -1947,7 +1946,7 @@
              <x>0</x>
              <y>0</y>
              <width>587</width>
-             <height>1436</height>
+             <height>1397</height>
             </rect>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_12">
@@ -2726,8 +2725,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>98</width>
-             <height>28</height>
+             <width>623</width>
+             <height>547</height>
             </rect>
            </property>
           </widget>
@@ -2736,70 +2735,28 @@
        </layout>
       </widget>
       <widget class="QWidget" name="pageMouse">
-       <widget class="QWidget" name="verticalLayoutWidget">
+       <widget class="QScrollArea" name="scrollArea_Mouse">
         <property name="geometry">
          <rect>
-          <x>-1</x>
-          <y>-1</y>
-          <width>631</width>
-          <height>551</height>
+          <x>0</x>
+          <y>0</y>
+          <width>625</width>
+          <height>549</height>
          </rect>
         </property>
-        <layout class="QVBoxLayout" name="verticalLayoutMouse" stretch="0,0">
-         <item>
-          <layout class="QHBoxLayout" name="horizontalLayoutMouse">
-           <item>
-            <spacer name="horizontalSpacer_40">
-             <property name="orientation">
-              <enum>Qt::Horizontal</enum>
-             </property>
-             <property name="sizeHint" stdset="0">
-              <size>
-               <width>40</width>
-               <height>20</height>
-              </size>
-             </property>
-            </spacer>
-           </item>
-           <item alignment="Qt::AlignLeft">
-            <widget class="QLabel" name="labelMouseStyle">
-             <property name="text">
-              <string>Mouse Style</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QComboBox" name="comboBoxMouseStyle"/>
-           </item>
-           <item>
-            <spacer name="horizontalSpacer_42">
-             <property name="orientation">
-              <enum>Qt::Horizontal</enum>
-             </property>
-             <property name="sizeHint" stdset="0">
-              <size>
-               <width>40</width>
-               <height>20</height>
-              </size>
-             </property>
-            </spacer>
-           </item>
-          </layout>
-         </item>
-         <item>
-          <spacer name="verticalSpacer_3">
-           <property name="orientation">
-            <enum>Qt::Vertical</enum>
-           </property>
-           <property name="sizeHint" stdset="0">
-            <size>
-             <width>20</width>
-             <height>40</height>
-            </size>
-           </property>
-          </spacer>
-         </item>
-        </layout>
+        <property name="widgetResizable">
+         <bool>true</bool>
+        </property>
+        <widget class="MouseConfigWidget" name="MouseConfig">
+         <property name="geometry">
+          <rect>
+           <x>0</x>
+           <y>0</y>
+           <width>623</width>
+           <height>547</height>
+          </rect>
+         </property>
+        </widget>
        </widget>
       </widget>
       <widget class="QWidget" name="pageDialogs">
@@ -3080,6 +3037,12 @@
    <class>ButtonConfigWidget</class>
    <extends>QWidget</extends>
    <header>gui/input/ButtonConfigWidget.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>MouseConfigWidget</class>
+   <extends>QWidget</extends>
+   <header>gui/input/MouseConfigWidget.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>
