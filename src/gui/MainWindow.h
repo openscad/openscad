@@ -209,7 +209,9 @@ private slots:
   void clearRecentFiles();
   void actionSave();
   void actionSaveAs();
-  void actionRevokeTrustedFiles();
+  void actionPythonRevokeTrustedFiles();
+  void actionPythonCreateVenv();
+  void actionPythonSelectVenv();
   void actionSaveACopy();
   void actionReload();
   void actionShowLibraryFolder();
