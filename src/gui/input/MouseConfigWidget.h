@@ -1,4 +1,5 @@
 #pragma once
+// FIXME - copyright
 
 #include "gui/qtgettext.h"
 #include <QComboBox>
@@ -31,6 +32,8 @@ signals:
   void inputMappingChanged() const;
 
 private:
+  /** Update all other combo boxes to match values for the preset **/
+  void updateToPresets(const std::string& presetName);
   /** Initialize combobox list values from the settings range values */
   void initActionComboBox(QComboBox *comboBox, const Settings::SettingsEntryString& entry);
   /** Update combobox from current settings */
@@ -44,4 +47,12 @@ private:
   const QString DisabledStyleString = QString("color: gray");
 
   bool initialized = false;
+
+  // Mouse view preset names and settings
+  std::map<std::string, std::map<std::string, std::string>> mouseViewPresets = {
+    {"OpenSCAD", {
+      {"Left-click", ""}
+    }},
+
+  };
 };

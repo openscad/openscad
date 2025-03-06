@@ -1151,6 +1151,7 @@ set(GUI_HEADERS
     src/gui/LibraryInfoDialog.h
     src/gui/MainWindow.h
     src/gui/MouseSelector.h
+    src/gui/input/MouseConfig.h
     src/gui/Network.h
     src/gui/NetworkSignal.h
     src/gui/OctoPrint.h

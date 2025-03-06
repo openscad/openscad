@@ -74,6 +74,11 @@ void MouseConfigWidget::init() {
   initialized = true;
 }
 
+void MouseConfigWidget::updateToPresets(const std::string& presetName)
+{
+
+}
+
 void MouseConfigWidget::on_comboBoxPreset_activated(int val)
 {
   applyComboBox(comboBoxPreset, val, Settings::Settings::inputMousePreset);
@@ -83,6 +88,8 @@ void MouseConfigWidget::on_comboBoxPreset_activated(int val)
 void MouseConfigWidget::on_comboBoxLeftClick_activated(int val)
 {
   applyComboBox(comboBoxLeftClick, val, Settings::Settings::inputMouseLeftClick);
+  // FIXME - is this still the appropriate SIGNAL to emit? Do a grep to see how it's used so far,
+  //  and in particular what it triggers.
   emit inputMappingChanged();
 }
 

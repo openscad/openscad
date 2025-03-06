@@ -380,7 +380,8 @@ public:
   static SettingsEntryString printServiceName;
   static SettingsEntryString printServiceFileFormat;
 
-  static SettingsEntryString mouseStyle;
+  static SettingsEntryString mouseConfigPreset;
+  static SettingsEntryString mouseConfigLeftClick;
 
   static SettingsEntryString octoPrintUrl;
   static SettingsEntryString octoPrintApiKey;
