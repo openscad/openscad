@@ -25,13 +25,14 @@
  */
 
 #include "gui/input/MouseConfigWidget.h"
+#include "gui/input/MouseConfig.h"
 
 #include <QChar>
 #include <QComboBox>
 #include <QLabel>
 #include <QString>
 #include <QWidget>
-#include <cstddef>
+#include <map>
 #include "core/Settings.h"
 #include "gui/input/InputDriverManager.h"
 #include "gui/SettingsWriter.h"
@@ -52,11 +53,12 @@ void MouseConfigWidget::updateMouseState(int nr, bool pressed) const {
 }
 
 void MouseConfigWidget::init() {
-  // Init the preset box (special case)
+  // Init the preset box, ensure that ordering is respected.
   comboBoxPreset->clear();
-  comboBoxPreset->addItem(QString::fromStdString("OpenSCAD"));
-  comboBoxPreset->addItem(QString::fromStdString("Blender"));
-  comboBoxPreset->addItem(QString::fromStdString("Custom"));
+  for (int i=0; i < MouseConfig::NUM_PRESETS; i++) {
+    comboBoxPreset->addItem(QString::fromStdString(
+      MouseConfig::presetNames.at(static_cast<MouseConfig::Preset>(i))));
+  }
   comboBoxPreset->setCurrentIndex(0);
 
   initActionComboBox(comboBoxLeftClick, Settings::Settings::inputMouseLeftClick);
@@ -68,16 +70,36 @@ void MouseConfigWidget::init() {
   initActionComboBox(comboBoxCtrlLeftClick, Settings::Settings::inputMouseCtrlLeftClick);
   initActionComboBox(comboBoxCtrlMiddleClick, Settings::Settings::inputMouseCtrlMiddleClick);
   initActionComboBox(comboBoxCtrlRightClick, Settings::Settings::inputMouseCtrlRightClick);
+  updateAllToPreset(static_cast<MouseConfig::Preset>(0));
 
   installIgnoreWheelWhenNotFocused(this);
 
   initialized = true;
 }
 
-void MouseConfigWidget::updateToPresets(const std::string& presetName)
+void MouseConfigWidget::updateAllToPreset(MouseConfig::Preset preset)
 {
-
+  updateOneToPreset(preset, comboBoxLeftClick, MouseConfig::LEFT_CLICK);
+  updateOneToPreset(preset, comboBoxMiddleClick, MouseConfig::MIDDLE_CLICK);
+  updateOneToPreset(preset, comboBoxRightClick, MouseConfig::RIGHT_CLICK);
+  updateOneToPreset(preset, comboBoxShiftLeftClick, MouseConfig::SHIFT_LEFT_CLICK);
+  updateOneToPreset(preset, comboBoxShiftMiddleClick, MouseConfig::SHIFT_MIDDLE_CLICK);
+  updateOneToPreset(preset, comboBoxShiftRightClick, MouseConfig::SHIFT_RIGHT_CLICK);
+  updateOneToPreset(preset, comboBoxCtrlLeftClick, MouseConfig::CTRL_LEFT_CLICK);
+  updateOneToPreset(preset, comboBoxCtrlMiddleClick, MouseConfig::CTRL_MIDDLE_CLICK);
+  updateOneToPreset(preset, comboBoxCtrlRightClick, MouseConfig::CTRL_RIGHT_CLICK);
 }
+
+void MouseConfigWidget::updateOneToPreset(MouseConfig::Preset preset,
+                                          QComboBox *comboBox,
+                                          MouseConfig::MouseAction mouseAction)
+{
+  auto presetMapping = MouseConfig::presetSettings.at(preset);
+  if (presetMapping.count(mouseAction) > 0) {
+    comboBox->setCurrentIndex(presetMapping.at(mouseAction));
+  }
+}
+
 
 void MouseConfigWidget::on_comboBoxPreset_activated(int val)
 {
@@ -155,19 +177,9 @@ void MouseConfigWidget::writeSettings()
 void MouseConfigWidget::initActionComboBox(QComboBox *comboBox, const Settings::SettingsEntryString& entry)
 {
   comboBox->clear();
-
-  // FIXME - does commenting out this actually cause any issues?
-  // // Create an empty icon, so that all comboboxes have the same alignment
-  // QPixmap map = QPixmap(16, 16);
-  // map.fill(Qt::transparent);
-  // const QIcon emptyIcon = QIcon(map);
-
-  // FIXME - these are just a placeholder to test the GUI
-  // I need to add non-geodesic rotation.
-  // Should also add zoom.
-  // FIXME - I should really have some central register of "viewport movements".
-  comboBox->addItem(QString::fromStdString("None"));
-  comboBox->addItem(QString::fromStdString("Rotate"));
-  comboBox->addItem(QString::fromStdString("Pan"));
-  comboBox->setCurrentIndex(0);
+  for (int i=0; i < MouseConfig::NUM_VIEW_ACTIONS; i++) {
+    auto view_action = static_cast<MouseConfig::ViewAction>(i);
+    comboBox->addItem(QString::fromStdString(MouseConfig::viewActionNames.at(view_action)));
+  }
+  // Note that we don't set the current index on initialization - that will be done by another call.
 }

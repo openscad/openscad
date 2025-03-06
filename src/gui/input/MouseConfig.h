@@ -11,6 +11,7 @@ namespace MouseConfig {
     OPEN_SCAD,
     BLENDER,
     CUSTOM,
+    NUM_PRESETS
   };
 
   enum MouseAction
@@ -24,15 +25,18 @@ namespace MouseConfig {
     CTRL_LEFT_CLICK,
     CTRL_MIDDLE_CLICK,
     CTRL_RIGHT_CLICK,
+    NUM_MOUSE_ACTIONS
   };
 
   enum ViewAction
   {
+    NONE,
     PAN_LR_UD,
     PAN_FORE_BACK,
     ZOOM,
     ROTATE_ALT_AZ,
     ROTATE_PITCH_ROLL,
+    NUM_VIEW_ACTIONS
   };
 
   inline static std::map<Preset, std::map<MouseAction, ViewAction>> presetSettings = {
@@ -68,6 +72,7 @@ namespace MouseConfig {
   };
 
   static std::map<ViewAction, std::string> viewActionNames = {
+    {NONE, "None"},
     {PAN_LR_UD, "Pan left/right & up/down"},
     {PAN_FORE_BACK, "Pan forward / backward"},
     {ZOOM, "Zoom"},
@@ -76,6 +81,11 @@ namespace MouseConfig {
   };
 
   static std::map<ViewAction, std::array<float, 14>> viewActionArrays = {
+    {NONE, std::array<float, 14>{
+      0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f,  // Rotation
+      0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f,  // Translation
+      0.0f, 0.0f,  // Zoom
+    }},
     {PAN_LR_UD, std::array<float, 14>{
       0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f,  // Rotation
       1.0f, 0.0f, 0.0f, 0.0f, 0.0f, -1.0f,  // Translation

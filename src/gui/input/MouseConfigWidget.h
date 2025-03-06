@@ -5,6 +5,7 @@
 #include <QComboBox>
 #include <QWidget>
 #include "ui_MouseConfigWidget.h"
+#include "gui/input/MouseConfig.h"
 #include "core/Settings.h"
 
 class MouseConfigWidget : public QWidget, public Ui::Mouse
@@ -33,7 +34,9 @@ signals:
 
 private:
   /** Update all other combo boxes to match values for the preset **/
-  void updateToPresets(const std::string& presetName);
+  void updateAllToPreset(MouseConfig::Preset preset);
+  void updateOneToPreset(MouseConfig::Preset preset, QComboBox *comboBox,
+    MouseConfig::MouseAction mouseAction);
   /** Initialize combobox list values from the settings range values */
   void initActionComboBox(QComboBox *comboBox, const Settings::SettingsEntryString& entry);
   /** Update combobox from current settings */
