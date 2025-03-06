@@ -60,19 +60,19 @@ LaunchingScreen::LaunchingScreen(QWidget *parent) : QDialog(parent)
     this->treeWidget->addTopLevelItem(categoryItem);
   }
 
-  connect(this->pushButtonNew, SIGNAL(clicked()), this, SLOT(accept()));
-  connect(this->pushButtonNewPython, SIGNAL(clicked()), this, SLOT(openPython()));
-  connect(this->pushButtonOpen, SIGNAL(clicked()), this, SLOT(openUserFile()));
-  connect(this->pushButtonHelp, SIGNAL(clicked()), this, SLOT(openUserManualURL()));
-  connect(this->recentList->selectionModel(), SIGNAL(currentRowChanged(const QModelIndex&,const QModelIndex&)), this, SLOT(enableRecentButton(const QModelIndex&,const QModelIndex&)));
+  connect(this->pushButtonNew, &QPushButton::clicked, this, &LaunchingScreen::accept);
+  connect(this->pushButtonNewPython, &QPushButton::clicked, this, &LaunchingScreen::openPython);
+  connect(this->pushButtonOpen, &QPushButton::clicked, this, &LaunchingScreen::openUserFile);
+  connect(this->pushButtonHelp, &QPushButton::clicked, this, &LaunchingScreen::openUserManualURL);
+  connect(this->recentList->selectionModel(), &QItemSelectionModel::currentRowChanged, this, &LaunchingScreen::enableRecentButton);
 
-  connect(this->recentList, SIGNAL(itemDoubleClicked(QListWidgetItem*)), this, SLOT(openRecent()));
-  connect(this->treeWidget, SIGNAL(currentItemChanged(QTreeWidgetItem*,QTreeWidgetItem*)), this, SLOT(enableExampleButton(QTreeWidgetItem*,QTreeWidgetItem*)));
+  connect(this->recentList, &QListWidget::itemDoubleClicked, this, &LaunchingScreen::openRecent);
+  connect(this->treeWidget, &QTreeWidget::currentItemChanged, this, &LaunchingScreen::enableExampleButton);
 
-  connect(this->treeWidget, SIGNAL(itemDoubleClicked(QTreeWidgetItem*,int)), this, SLOT(openExample()));
-  connect(this->openRecentButton, SIGNAL(clicked()), this, SLOT(openRecent()));
-  connect(this->openExampleButton, SIGNAL(clicked()), this, SLOT(openExample()));
-  connect(this->checkBox, SIGNAL(toggled(bool)), this, SLOT(checkboxState(bool)));
+  connect(this->treeWidget, &QTreeWidget::itemDoubleClicked, this, &LaunchingScreen::openExample);
+  connect(this->openRecentButton, &QPushButton::clicked, this, &LaunchingScreen::openRecent);
+  connect(this->openExampleButton, &QPushButton::clicked, this, &LaunchingScreen::openExample);
+  connect(this->checkBox, &QCheckBox::toggled, this, &LaunchingScreen::checkboxState);
 }
 
 LaunchingScreen::~LaunchingScreen()
