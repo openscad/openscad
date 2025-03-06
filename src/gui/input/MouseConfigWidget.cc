@@ -61,16 +61,33 @@ void MouseConfigWidget::init() {
   }
   comboBoxPreset->setCurrentIndex(0);
 
-  initActionComboBox(comboBoxLeftClick, Settings::Settings::inputMouseLeftClick);
-  initActionComboBox(comboBoxMiddleClick, Settings::Settings::inputMouseMiddleClick);
-  initActionComboBox(comboBoxRightClick, Settings::Settings::inputMouseRightClick);
-  initActionComboBox(comboBoxShiftLeftClick, Settings::Settings::inputMouseShiftLeftClick);
-  initActionComboBox(comboBoxShiftMiddleClick, Settings::Settings::inputMouseShiftMiddleClick);
-  initActionComboBox(comboBoxShiftRightClick, Settings::Settings::inputMouseShiftRightClick);
-  initActionComboBox(comboBoxCtrlLeftClick, Settings::Settings::inputMouseCtrlLeftClick);
-  initActionComboBox(comboBoxCtrlMiddleClick, Settings::Settings::inputMouseCtrlMiddleClick);
-  initActionComboBox(comboBoxCtrlRightClick, Settings::Settings::inputMouseCtrlRightClick);
+  // Populate the maps
+  actionToComboBox.clear();
+  actionToComboBox.insert({MouseConfig::LEFT_CLICK, comboBoxLeftClick});
+  actionToComboBox.insert({MouseConfig::MIDDLE_CLICK, comboBoxMiddleClick});
+  actionToComboBox.insert({MouseConfig::RIGHT_CLICK, comboBoxRightClick});
+  actionToComboBox.insert({MouseConfig::SHIFT_LEFT_CLICK, comboBoxShiftLeftClick});
+  actionToComboBox.insert({MouseConfig::SHIFT_MIDDLE_CLICK, comboBoxShiftMiddleClick});
+  actionToComboBox.insert({MouseConfig::SHIFT_RIGHT_CLICK, comboBoxShiftRightClick});
+  actionToComboBox.insert({MouseConfig::CTRL_LEFT_CLICK, comboBoxCtrlLeftClick});
+  actionToComboBox.insert({MouseConfig::CTRL_MIDDLE_CLICK, comboBoxCtrlMiddleClick});
+  actionToComboBox.insert({MouseConfig::CTRL_RIGHT_CLICK, comboBoxCtrlRightClick});
+  actionToSetting.clear();
+  actionToSetting.insert({MouseConfig::LEFT_CLICK, Settings::Settings::inputMouseLeftClick});
+  actionToSetting.insert({MouseConfig::MIDDLE_CLICK, Settings::Settings::inputMouseMiddleClick});
+  actionToSetting.insert({MouseConfig::RIGHT_CLICK, Settings::Settings::inputMouseRightClick});
+  actionToSetting.insert({MouseConfig::SHIFT_LEFT_CLICK, Settings::Settings::inputMouseShiftLeftClick});
+  actionToSetting.insert({MouseConfig::SHIFT_MIDDLE_CLICK, Settings::Settings::inputMouseShiftMiddleClick});
+  actionToSetting.insert({MouseConfig::SHIFT_RIGHT_CLICK, Settings::Settings::inputMouseShiftRightClick});
+  actionToSetting.insert({MouseConfig::CTRL_LEFT_CLICK, Settings::Settings::inputMouseCtrlLeftClick});
+  actionToSetting.insert({MouseConfig::CTRL_MIDDLE_CLICK, Settings::Settings::inputMouseCtrlMiddleClick});
+  actionToSetting.insert({MouseConfig::CTRL_RIGHT_CLICK, Settings::Settings::inputMouseCtrlRightClick});
+
+  for (int i=0; i < MouseConfig::NUM_MOUSE_ACTIONS; i++) {
+    initActionComboBox(actionToComboBox.at(static_cast<MouseConfig::MouseAction>(i)));
+  }
   updateAllToPreset(static_cast<MouseConfig::Preset>(0));
+  disableBoxes(true);
 
   installIgnoreWheelWhenNotFocused(this);
 
@@ -79,31 +96,40 @@ void MouseConfigWidget::init() {
 
 void MouseConfigWidget::updateAllToPreset(MouseConfig::Preset preset)
 {
-  updateOneToPreset(preset, comboBoxLeftClick, MouseConfig::LEFT_CLICK);
-  updateOneToPreset(preset, comboBoxMiddleClick, MouseConfig::MIDDLE_CLICK);
-  updateOneToPreset(preset, comboBoxRightClick, MouseConfig::RIGHT_CLICK);
-  updateOneToPreset(preset, comboBoxShiftLeftClick, MouseConfig::SHIFT_LEFT_CLICK);
-  updateOneToPreset(preset, comboBoxShiftMiddleClick, MouseConfig::SHIFT_MIDDLE_CLICK);
-  updateOneToPreset(preset, comboBoxShiftRightClick, MouseConfig::SHIFT_RIGHT_CLICK);
-  updateOneToPreset(preset, comboBoxCtrlLeftClick, MouseConfig::CTRL_LEFT_CLICK);
-  updateOneToPreset(preset, comboBoxCtrlMiddleClick, MouseConfig::CTRL_MIDDLE_CLICK);
-  updateOneToPreset(preset, comboBoxCtrlRightClick, MouseConfig::CTRL_RIGHT_CLICK);
-}
-
-void MouseConfigWidget::updateOneToPreset(MouseConfig::Preset preset,
-                                          QComboBox *comboBox,
-                                          MouseConfig::MouseAction mouseAction)
-{
   auto presetMapping = MouseConfig::presetSettings.at(preset);
-  if (presetMapping.count(mouseAction) > 0) {
-    comboBox->setCurrentIndex(presetMapping.at(mouseAction));
+  for (int i=0; i < MouseConfig::NUM_MOUSE_ACTIONS; i++) {
+    auto mouseAction = static_cast<MouseConfig::MouseAction>(i);
+    auto comboBox = actionToComboBox.at(mouseAction);
+    if (presetMapping.count(mouseAction) > 0) {
+      comboBox->setCurrentIndex(presetMapping.at(mouseAction));
+    } else {
+      comboBox->setCurrentIndex(MouseConfig::NONE);
+    }
   }
 }
 
+void MouseConfigWidget::disableBoxes(bool disable)
+{
+  for (int i=0; i < MouseConfig::NUM_MOUSE_ACTIONS; i++) {
+    auto comboBox = actionToComboBox.at(static_cast<MouseConfig::MouseAction>(i));
+    comboBox->setDisabled(disable);
+  }
+}
 
 void MouseConfigWidget::on_comboBoxPreset_activated(int val)
 {
-  applyComboBox(comboBoxPreset, val, Settings::Settings::inputMousePreset);
+  auto preset = static_cast<MouseConfig::Preset>(val);
+
+  if (preset == MouseConfig::CUSTOM) {
+    disableBoxes(false);
+  } else {
+    // Update values of other fields to preset
+    updateAllToPreset(preset);
+    // Preset should render all fields non-editable
+    disableBoxes(true);
+  }
+
+  //applyComboBox(comboBoxPreset, val, Settings::Settings::inputMousePreset);
   emit inputMappingChanged();
 }
 
@@ -163,9 +189,10 @@ void MouseConfigWidget::on_comboBoxCtrlRightClick_activated(int val)
   emit inputMappingChanged();
 }
 
-void MouseConfigWidget::applyComboBox(QComboBox *comboBox, int val, Settings::SettingsEntryString& entry)
+void MouseConfigWidget::applyComboBox(QComboBox *comboBox, int val, Settings::SettingsEntryInt& entry)
 {
-  entry.setValue(comboBox->itemData(val).toString().toStdString());
+  auto viewAction = static_cast<MouseConfig::ViewAction>(val);
+  entry.setValue(viewAction);
   writeSettings();
 }
 
@@ -174,7 +201,7 @@ void MouseConfigWidget::writeSettings()
   Settings::Settings::visit(SettingsWriter());
 }
 
-void MouseConfigWidget::initActionComboBox(QComboBox *comboBox, const Settings::SettingsEntryString& entry)
+void MouseConfigWidget::initActionComboBox(QComboBox *comboBox)
 {
   comboBox->clear();
   for (int i=0; i < MouseConfig::NUM_VIEW_ACTIONS; i++) {

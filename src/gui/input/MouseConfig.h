@@ -80,13 +80,14 @@ namespace MouseConfig {
     {ROTATE_PITCH_ROLL, "Rotate in pitch/roll"},
   };
 
-  static std::map<ViewAction, std::array<float, 14>> viewActionArrays = {
-    {NONE, std::array<float, 14>{
+  const static int ACTION_DIMENSION = 14;
+  static std::map<ViewAction, std::array<float, ACTION_DIMENSION>> viewActionArrays = {
+    {NONE, {
       0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f,  // Rotation
       0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f,  // Translation
       0.0f, 0.0f,  // Zoom
     }},
-    {PAN_LR_UD, std::array<float, 14>{
+    {PAN_LR_UD, {
       0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f,  // Rotation
       1.0f, 0.0f, 0.0f, 0.0f, 0.0f, -1.0f,  // Translation
       0.0f, 0.0f,  // Zoom

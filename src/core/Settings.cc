@@ -1,5 +1,7 @@
 #include "core/Settings.h"
 
+#include "gui/input/MouseConfig.h"
+
 #include <ostream>
 #include <cassert>
 #include <cstddef>
@@ -293,15 +295,15 @@ SettingsEntryString Settings::inputButton21("input", "button21", "");
 SettingsEntryString Settings::inputButton22("input", "button22", "");
 SettingsEntryString Settings::inputButton23("input", "button23", "");
 SettingsEntryString Settings::inputMousePreset("inputMouse", "preset", "OpenSCAD");
-SettingsEntryString Settings::inputMouseLeftClick("inputMouse", "leftClick", "");
-SettingsEntryString Settings::inputMouseMiddleClick("inputMouse", "middleClick", "");
-SettingsEntryString Settings::inputMouseRightClick("inputMouse", "rightClick", "");
-SettingsEntryString Settings::inputMouseShiftLeftClick("inputMouse", "shiftLeftClick", "");
-SettingsEntryString Settings::inputMouseShiftMiddleClick("inputMouse", "shiftMiddleClick", "");
-SettingsEntryString Settings::inputMouseShiftRightClick("inputMouse", "shiftRightClick", "");
-SettingsEntryString Settings::inputMouseCtrlLeftClick("inputMouse", "ctrlLeftClick", "");
-SettingsEntryString Settings::inputMouseCtrlMiddleClick("inputMouse", "ctrlMiddleClick", "");
-SettingsEntryString Settings::inputMouseCtrlRightClick("inputMouse", "ctrlRightClick", "");
+SettingsEntryInt Settings::inputMouseLeftClick("inputMouse", "leftClick", 0, MouseConfig::ViewAction::NUM_VIEW_ACTIONS, 0);
+SettingsEntryInt Settings::inputMouseMiddleClick("inputMouse", "middleClick", 0, MouseConfig::ViewAction::NUM_VIEW_ACTIONS, 0);
+SettingsEntryInt Settings::inputMouseRightClick("inputMouse", "rightClick", 0, MouseConfig::ViewAction::NUM_VIEW_ACTIONS, 0);
+SettingsEntryInt Settings::inputMouseShiftLeftClick("inputMouse", "shiftLeftClick", 0, MouseConfig::ViewAction::NUM_VIEW_ACTIONS, 0);
+SettingsEntryInt Settings::inputMouseShiftMiddleClick("inputMouse", "shiftMiddleClick", 0, MouseConfig::ViewAction::NUM_VIEW_ACTIONS, 0);
+SettingsEntryInt Settings::inputMouseShiftRightClick("inputMouse", "shiftRightClick", 0, MouseConfig::ViewAction::NUM_VIEW_ACTIONS, 0);
+SettingsEntryInt Settings::inputMouseCtrlLeftClick("inputMouse", "ctrlLeftClick", 0, MouseConfig::ViewAction::NUM_VIEW_ACTIONS, 0);
+SettingsEntryInt Settings::inputMouseCtrlMiddleClick("inputMouse", "ctrlMiddleClick", 0, MouseConfig::ViewAction::NUM_VIEW_ACTIONS, 0);
+SettingsEntryInt Settings::inputMouseCtrlRightClick("inputMouse", "ctrlRightClick", 0, MouseConfig::ViewAction::NUM_VIEW_ACTIONS, 0);
 SettingsEntryDouble Settings::axisTrim0("input", "axisTrim0", -1.0, 0.01, 1.0, 0.0);
 SettingsEntryDouble Settings::axisTrim1("input", "axisTrim1", -1.0, 0.01, 1.0, 0.0);
 SettingsEntryDouble Settings::axisTrim2("input", "axisTrim2", -1.0, 0.01, 1.0, 0.0);

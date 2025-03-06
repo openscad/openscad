@@ -1,5 +1,7 @@
 #pragma once
 
+#include "gui/input/MouseConfig.h"
+
 #include <cstddef>
 #include <cstdint>
 #include <string>
@@ -457,15 +459,15 @@ public:
   static SettingsEntryString inputButton22;
   static SettingsEntryString inputButton23;
   static SettingsEntryString inputMousePreset;
-  static SettingsEntryString inputMouseLeftClick;
-  static SettingsEntryString inputMouseMiddleClick;
-  static SettingsEntryString inputMouseRightClick;
-  static SettingsEntryString inputMouseShiftLeftClick;
-  static SettingsEntryString inputMouseShiftMiddleClick;
-  static SettingsEntryString inputMouseShiftRightClick;
-  static SettingsEntryString inputMouseCtrlLeftClick;
-  static SettingsEntryString inputMouseCtrlMiddleClick;
-  static SettingsEntryString inputMouseCtrlRightClick;
+  static SettingsEntryInt inputMouseLeftClick;
+  static SettingsEntryInt inputMouseMiddleClick;
+  static SettingsEntryInt inputMouseRightClick;
+  static SettingsEntryInt inputMouseShiftLeftClick;
+  static SettingsEntryInt inputMouseShiftMiddleClick;
+  static SettingsEntryInt inputMouseShiftRightClick;
+  static SettingsEntryInt inputMouseCtrlLeftClick;
+  static SettingsEntryInt inputMouseCtrlMiddleClick;
+  static SettingsEntryInt inputMouseCtrlRightClick;
   static SettingsEntryDouble axisTrim0;
   static SettingsEntryDouble axisTrim1;
   static SettingsEntryDouble axisTrim2;
