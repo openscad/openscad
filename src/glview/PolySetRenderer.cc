@@ -51,7 +51,6 @@
 #include "glview/ShaderUtils.h"
 #include "glview/VBOBuilder.h"
 #include "glview/VertexState.h"
-#include "utils/printutils.h"
 
 #ifdef ENABLE_CGAL
 #include "geometry/cgal/CGAL_Nef_polyhedron.h"
@@ -106,17 +105,13 @@ void PolySetRenderer::addGeometry(const std::shared_ptr<const Geometry>& geom)
 // Overridden from Renderer
 void PolySetRenderer::setColorScheme(const ColorScheme& cs)
 {
-  PRINTD("setColorScheme");
   Renderer::setColorScheme(cs);
   colormap_[ColorMode::CGAL_FACE_2D_COLOR] = ColorMap::getColor(cs, RenderColor::CGAL_FACE_2D_COLOR);
   colormap_[ColorMode::CGAL_EDGE_2D_COLOR] = ColorMap::getColor(cs, RenderColor::CGAL_EDGE_2D_COLOR);
-  PRINTD("setColorScheme done");
 }
 
 
 void PolySetRenderer::createPolySetStates(const ShaderUtils::ShaderInfo *shaderinfo) {
-  PRINTD("createPolySetStates() polyset");
-
   VertexStateContainer &vertex_state_container = polyset_vertex_state_containers_.emplace_back();
   VBOBuilder vbo_builder(std::make_unique<VertexStateFactory>(), vertex_state_container);
 
@@ -177,8 +172,6 @@ void PolySetRenderer::createPolygonSurfaceStates() {
 }
 
 void PolySetRenderer::createPolygonEdgeStates() {
-  PRINTD("createPolygonStates()");
-
   VertexStateContainer &vertex_state_container = polygon_vertex_state_containers_.emplace_back();
   VBOBuilder vbo_builder(std::make_unique<VertexStateFactory>(), vertex_state_container);
 
