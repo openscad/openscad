@@ -2277,9 +2277,8 @@ void MainWindow::actionRenderDone(const std::shared_ptr<const Geometry>& root_ge
     LOG("Rendering finished.");
 
     this->rootGeom = root_geom;
-    // Choose PolySetRenderer for Manifold since we know that all
-    // geometries are convertible to PolySet.
-    // TODO: Also choose PolySetRenderer for single-node PolySet/Polygon2D roots?
+    // Choose PolySetRenderer for PolySet and Polygon2d, and for Manifold since we 
+    // know that all geometries are convertible to PolySet.
     if (RenderSettings::inst()->backend3D == RenderBackend3D::ManifoldBackend ||
         std::dynamic_pointer_cast<const PolySet>(this->rootGeom) ||
         std::dynamic_pointer_cast<const Polygon2d>(this->rootGeom)) {

@@ -31,11 +31,13 @@ private:
   const std::vector<std::shared_ptr<class VBOPolyhedron>>& getPolyhedrons() const { return this->polyhedrons_; }
   void createPolyhedrons();
 #endif
+
+  // FIXME: PolySet and Polygon2d features are only needed for the lazy-union feature,
+  // when a GeometryList may contain a mixture of CGAL and Polygon2d/PolySet geometries.
   void createPolySetStates();
   void createPolygonStates();
   void createPolygonSurfaceStates();
   void createPolygonEdgeStates();
-  bool last_render_state_; // FIXME: this is temporary to make switching between renderers seamless.
 
   std::vector<std::shared_ptr<const class PolySet>> polysets_;
   std::vector<std::pair<std::shared_ptr<const Polygon2d>, std::shared_ptr<const PolySet>>> polygons_;
