@@ -87,6 +87,35 @@ void QGLView::init()
   this->statusLabel = nullptr;
 
   setMouseTracking(true);
+
+  // FIXME - this is just hardcoding values to check that code in mouseDrag works, remove it later.
+  // First zero all the array elements by default
+  for (int i=0; i < this->numMouseActions; i++) {
+    mouseActions[i] = 0.0;
+  }
+  // Left-click rotates
+  mouseActions[1] = 1.0;
+  mouseActions[4] = 1.0;
+  // Ctrl-Left does the same
+  mouseActions[2*14 + 1] = 1.0;
+  mouseActions[2*14 + 4] = 1.0;
+  // Shift-left does pitch-and-roll
+  mouseActions[1*14 + 1] = 1.0;
+  mouseActions[1*14 + 2] = 1.0;
+  // Right-click pans in xz
+  mouseActions[6*14 + 6 + 0] = 1.0;
+  mouseActions[6*14 + 6 + 5] = -1.0;
+  // Ctrl-Right does the same
+  mouseActions[8*14 + 6 + 0] = 1.0;
+  mouseActions[8*14 + 6 + 5] = -1.0;
+  // Shift-Right zooms
+  mouseActions[7*14 + 6 + 6 + 1] = -1.0;
+  // Middle-click pans in y
+  mouseActions[3*14 + 6 + 3] = -1.0;
+  // Ctrl-Middle does the same
+  mouseActions[5*14 + 6 + 3] = -1.0;
+  // Shift-Middle zooms
+  mouseActions[4*14 + 6 + 6 + 1] = -1.0;
 }
 
 void QGLView::resetView()
@@ -313,46 +342,114 @@ void QGLView::mouseMoveEvent(QMouseEvent *event)
   double dy = (this_mouse.y() - last_mouse.y()) * 0.7;
   if (mouse_drag_active) {
     mouse_drag_moved = true;
-    auto button_compare = this->mouseSwapButtons?Qt::RightButton : Qt::LeftButton;
-    if (event->buttons() & button_compare
-#ifdef Q_OS_MACOS
-        && !(event->modifiers() & Qt::MetaModifier)
-#endif
-        ) {
-      // Left button rotates in xz, Shift-left rotates in xy
-      // On Mac, Ctrl-Left is handled as right button on other platforms
-      if ((QApplication::keyboardModifiers() & Qt::ShiftModifier) != 0) {
-        rotate(dy, dx, 0.0, true);
+
+    bool multipleButtonsPressed = false;
+    int buttonIndex = -1;
+    if (event->buttons() & Qt::LeftButton) {
+      buttonIndex = 0;
+    }
+    if (event->buttons() & Qt::MiddleButton) {
+      if (buttonIndex != -1) {
+        multipleButtonsPressed = true;
       } else {
-        rotate(dy, 0.0, dx, true);
+        buttonIndex = 1;
+      }
+    }
+    if (event->buttons() & Qt::RightButton) {
+      if (buttonIndex != -1) {
+        multipleButtonsPressed = true;
+      } else {
+        buttonIndex = 2;
+      }
+    }
+    bool multipleModifiersPressed = false;
+    int modifierIndex = 0;
+    if (QApplication::keyboardModifiers() & Qt::ShiftModifier) {
+      modifierIndex = 1;
+    }
+    if (QApplication::keyboardModifiers() & Qt::ControlModifier) {
+      if (modifierIndex != 0) {
+        multipleModifiersPressed = true;
+      }
+      modifierIndex = 2;
+    }
+
+    if (buttonIndex != -1 && !multipleButtonsPressed && !multipleModifiersPressed) {
+      float *selectedMouseActions =
+        &this->mouseActions[(numMouseActions/3)*buttonIndex + (numMouseActions/9)*modifierIndex];
+
+      // Rotation angles from mouse movement
+      // First 6 elements to selectedMouseActions are interpreted as a row-major 3x2 matrix, which is
+      // right-multiplied by (dx, dy)^T to produce the rotation angle increments.
+      double rx = selectedMouseActions[0]*dx + selectedMouseActions[1]*dy;
+      double ry = selectedMouseActions[2]*dx + selectedMouseActions[3]*dy;
+      double rz = selectedMouseActions[4]*dx + selectedMouseActions[5]*dy;
+      if (!(rx==0.0 && ry==0.0 && rz==0.0)) {
+        rotate(rx, ry, rz, true);
+        normalizeAngle(cam.object_rot.x());
+        normalizeAngle(cam.object_rot.y());
+        normalizeAngle(cam.object_rot.z());
       }
 
-      normalizeAngle(cam.object_rot.x());
-      normalizeAngle(cam.object_rot.y());
-      normalizeAngle(cam.object_rot.z());
-    } else {
-      // Right button pans in the xz plane
-      // Middle button pans in the xy plane
-      // Shift-right and Shift-middle zooms
-      if ((QApplication::keyboardModifiers() & Qt::ShiftModifier) != 0) {
-        zoom(-12.0 * dy, true);
-      } else {
-        double mx = +(dx) * 3.0 * cam.zoomValue() / QWidget::width();
-        double mz = -(dy) * 3.0 * cam.zoomValue() / QWidget::height();
-        double my = 0;
-        if (event->buttons() & Qt::MiddleButton) {
-          my = mz;
-          mz = 0;
-          // actually lock the x-position
-          // (turns out to be easier to use than xy panning)
-          mx = 0;
-        }
-
-        translate(mx, my, mz, true);
+      // Panning from mouse movement
+      // Elements 6..12 of selectedMouseActions are interpreted as another row-major 3x2 matrix, which is
+      // right-multiplied by (dx, dy)^T, and then scaled by the zoom, to produce the translation increments.
+      double mx = selectedMouseActions[6 + 0]*(dx / QWidget::width()) + selectedMouseActions[6 + 1]*(dy / QWidget::height());
+      double my = selectedMouseActions[6 + 2]*(dx / QWidget::width()) + selectedMouseActions[6 + 3]*(dy / QWidget::height());
+      double mz = selectedMouseActions[6 + 4]*(dx / QWidget::width()) + selectedMouseActions[6 + 5]*(dy / QWidget::height());
+      if (!(mx==0.0 && my == 0.0 && mz==0.0)) {
+        mx *= 3.0*cam.zoomValue();
+        my *= 3.0*cam.zoomValue();
+        mz *= 3.0*cam.zoomValue();
       }
+      translate(mx, my, mz, true);
+
+      // Zoom from mouse movement
+      // Final 2 elements of selectedMouseActions are interpreted as a 2-dimensional vector. The inner product of
+      // this is taken with (dx, dy)^T to produce the zoom increment.
+      double dZoom = selectedMouseActions[12] * dx + selectedMouseActions[13] * dy;
+      if (dZoom != 0.0) {
+        dZoom *= 12.0;
+        zoom(dZoom, true);
+      }
+
     }
   }
   last_mouse = this_mouse;
+
+  // FIXME - dead code, remove later. Just keeping it around for reference.
+    //   // Left button rotates in xz, Shift-left rotates in xy
+    //   // On Mac, Ctrl-Left is handled as right button on other platforms
+    //   if ((QApplication::keyboardModifiers() & Qt::ShiftModifier) != 0) {
+    //     rotate(dy, dx, 0.0, true);
+    //   } else {
+    //     rotate(dy, 0.0, dx, true);
+    //   }
+    //
+    //   normalizeAngle(cam.object_rot.x());
+    //   normalizeAngle(cam.object_rot.y());
+    //   normalizeAngle(cam.object_rot.z());
+    // } else {
+    //   // Right button pans in the xz plane
+    //   // Middle button pans in the xy plane
+    //   // Shift-right and Shift-middle zooms
+    //   if ((QApplication::keyboardModifiers() & Qt::ShiftModifier) != 0) {
+    //     zoom(-12.0 * dy, true);
+    //   } else {
+    //     double mx = +(dx) * 3.0 * cam.zoomValue() / QWidget::width();
+    //     double mz = -(dy) * 3.0 * cam.zoomValue() / QWidget::height();
+    //     double my = 0;
+    //     if (event->buttons() & Qt::MiddleButton) {
+    //       my = mz;
+    //       mz = 0;
+    //       // actually lock the x-position
+    //       // (turns out to be easier to use than xy panning)
+    //       mx = 0;
+    //     }
+    //
+    //     translate(mx, my, mz, true);
+    //   }
+    // }
 }
 
 void QGLView::mouseReleaseEvent(QMouseEvent *event)

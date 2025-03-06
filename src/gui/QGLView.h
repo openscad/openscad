@@ -60,6 +60,11 @@ public slots:
   void setMouseSwapButtons(bool var){
     this->mouseSwapButtons = var;
   }
+  void setMouseActions(float var[]) {
+    for (int i=0; i < numMouseActions; i++) {
+      this->mouseActions[i] = var[i];
+    }
+  }
 
 public:
   QLabel *statusLabel;
@@ -78,6 +83,9 @@ private:
   bool mouse_drag_moved = true;
   bool mouseCentricZoom = true;
   bool mouseSwapButtons = false;
+  // Information held in numMouseActions is a 3x2 rotation matrix, a 3x2 translation matrix, and a zoom 2-vector.
+  static constexpr int numMouseActions = (6+6+2)*3*3;
+  float mouseActions[numMouseActions];
   QPoint last_mouse;
   QImage frame; // Used by grabFrame() and save()
 
