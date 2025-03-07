@@ -37,7 +37,7 @@
 #include "gui/input/InputDriverManager.h"
 #include "gui/SettingsWriter.h"
 #include "gui/IgnoreWheelWhenNotFocused.h"
-#include "gui/input/InputEventMapper.h"
+#include "gui/Preferences.h"
 
 MouseConfigWidget::MouseConfigWidget(QWidget *parent) : QWidget(parent)
 {
@@ -130,63 +130,61 @@ void MouseConfigWidget::on_comboBoxPreset_activated(int val)
   }
 
   //applyComboBox(comboBoxPreset, val, Settings::Settings::inputMousePreset);
-  emit inputMappingChanged();
+  emit updateMouseActions();
 }
 
 void MouseConfigWidget::on_comboBoxLeftClick_activated(int val)
 {
   applyComboBox(comboBoxLeftClick, val, Settings::Settings::inputMouseLeftClick);
-  // FIXME - is this still the appropriate SIGNAL to emit? Do a grep to see how it's used so far,
-  //  and in particular what it triggers.
-  emit inputMappingChanged();
+  emit updateMouseActions();
 }
 
 void MouseConfigWidget::on_comboBoxMiddleClick_activated(int val)
 {
   applyComboBox(comboBoxMiddleClick, val, Settings::Settings::inputMouseMiddleClick);
-  emit inputMappingChanged();
+  emit updateMouseActions();
 }
 
 void MouseConfigWidget::on_comboBoxRightClick_activated(int val)
 {
   applyComboBox(comboBoxRightClick, val, Settings::Settings::inputMouseRightClick);
-  emit inputMappingChanged();
+  emit updateMouseActions();
 }
 
 void MouseConfigWidget::on_comboBoxShiftLeftClick_activated(int val)
 {
   applyComboBox(comboBoxShiftLeftClick, val, Settings::Settings::inputMouseShiftLeftClick);
-  emit inputMappingChanged();
+  emit updateMouseActions();
 }
 
 void MouseConfigWidget::on_comboBoxShiftMiddleClick_activated(int val)
 {
   applyComboBox(comboBoxShiftMiddleClick, val, Settings::Settings::inputMouseShiftMiddleClick);
-  emit inputMappingChanged();
+  emit updateMouseActions();
 }
 
 void MouseConfigWidget::on_comboBoxShiftRightClick_activated(int val)
 {
   applyComboBox(comboBoxShiftRightClick, val, Settings::Settings::inputMouseShiftRightClick);
-  emit inputMappingChanged();
+  emit updateMouseActions();
 }
 
 void MouseConfigWidget::on_comboBoxCtrlLeftClick_activated(int val)
 {
   applyComboBox(comboBoxCtrlLeftClick, val, Settings::Settings::inputMouseCtrlLeftClick);
-  emit inputMappingChanged();
+  emit updateMouseActions();
 }
 
 void MouseConfigWidget::on_comboBoxCtrlMiddleClick_activated(int val)
 {
   applyComboBox(comboBoxCtrlMiddleClick, val, Settings::Settings::inputMouseCtrlMiddleClick);
-  emit inputMappingChanged();
+  emit updateMouseActions();
 }
 
 void MouseConfigWidget::on_comboBoxCtrlRightClick_activated(int val)
 {
   applyComboBox(comboBoxCtrlRightClick, val, Settings::Settings::inputMouseCtrlRightClick);
-  emit inputMappingChanged();
+  emit updateMouseActions();
 }
 
 void MouseConfigWidget::applyComboBox(QComboBox *comboBox, int val, Settings::SettingsEntryInt& entry)

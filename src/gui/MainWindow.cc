@@ -396,6 +396,7 @@ MainWindow::MainWindow(const QStringList& filenames) :
   const QSettingsCached settings;
   this->qglview->setMouseCentricZoom(Settings::Settings::mouseCentricZoom.value());
   this->qglview->setMouseSwapButtons(Settings::Settings::mouseSwapButtons.value());
+  this->setAllMouseViewActions();
   this->meas.setView(qglview);
   this->designActionMeasureDist->setEnabled(false);
   this->designActionMeasureAngle->setEnabled(false);
@@ -594,6 +595,7 @@ MainWindow::MainWindow(const QStringList& filenames) :
   connect(Preferences::inst(), SIGNAL(requestRedraw()), this->qglview, SLOT(update()));
   connect(Preferences::inst(), SIGNAL(updateMouseCentricZoom(bool)), this->qglview, SLOT(setMouseCentricZoom(bool)));
   connect(Preferences::inst(), SIGNAL(updateMouseSwapButtons(bool)), this->qglview, SLOT(setMouseSwapButtons(bool)));
+  connect(Preferences::inst()->MouseConfig, SIGNAL(updateMouseActions()), this, SLOT(setAllMouseViewActions()));
   connect(Preferences::inst(), SIGNAL(updateReorderMode(bool)), this, SLOT(updateReorderMode(bool)));
   connect(Preferences::inst(), SIGNAL(updateUndockMode(bool)), this, SLOT(updateUndockMode(bool)));
   connect(Preferences::inst(), SIGNAL(openCSGSettingsChanged()), this, SLOT(openCSGSettingsChanged()));
@@ -775,6 +777,31 @@ MainWindow::MainWindow(const QStringList& filenames) :
 
   activeEditor->setFocus();
   onTabManagerEditorChanged(activeEditor);
+}
+
+void MainWindow::setAllMouseViewActions()
+{
+  // Set the mouse actions to those held in the settings.
+  this->qglview->setMouseActions(MouseConfig::MouseAction::LEFT_CLICK,
+    MouseConfig::viewActionArrays.at(static_cast<MouseConfig::ViewAction>(Settings::Settings::inputMouseLeftClick.value())));
+  this->qglview->setMouseActions(MouseConfig::MouseAction::MIDDLE_CLICK,
+    MouseConfig::viewActionArrays.at(static_cast<MouseConfig::ViewAction>(Settings::Settings::inputMouseMiddleClick.value())));
+  this->qglview->setMouseActions(MouseConfig::MouseAction::RIGHT_CLICK,
+    MouseConfig::viewActionArrays.at(static_cast<MouseConfig::ViewAction>(Settings::Settings::inputMouseRightClick.value())));
+  this->qglview->setMouseActions(MouseConfig::MouseAction::SHIFT_LEFT_CLICK,
+    MouseConfig::viewActionArrays.at(static_cast<MouseConfig::ViewAction>(Settings::Settings::inputMouseShiftLeftClick.value())));
+  this->qglview->setMouseActions(MouseConfig::MouseAction::SHIFT_MIDDLE_CLICK,
+    MouseConfig::viewActionArrays.at(static_cast<MouseConfig::ViewAction>(Settings::Settings::inputMouseShiftMiddleClick.value())));
+  this->qglview->setMouseActions(MouseConfig::MouseAction::SHIFT_RIGHT_CLICK,
+    MouseConfig::viewActionArrays.at(static_cast<MouseConfig::ViewAction>(Settings::Settings::inputMouseShiftRightClick.value())));
+  this->qglview->setMouseActions(MouseConfig::MouseAction::CTRL_LEFT_CLICK,
+    MouseConfig::viewActionArrays.at(static_cast<MouseConfig::ViewAction>(Settings::Settings::inputMouseCtrlLeftClick.value())));
+  this->qglview->setMouseActions(MouseConfig::MouseAction::CTRL_MIDDLE_CLICK,
+    MouseConfig::viewActionArrays.at(static_cast<MouseConfig::ViewAction>(Settings::Settings::inputMouseCtrlMiddleClick.value())));
+  this->qglview->setMouseActions(MouseConfig::MouseAction::CTRL_RIGHT_CLICK,
+    MouseConfig::viewActionArrays.at(static_cast<MouseConfig::ViewAction>(Settings::Settings::inputMouseCtrlRightClick.value())));
+
+
 }
 
 void MainWindow::onNavigationOpenContextMenu() {

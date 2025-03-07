@@ -30,7 +30,7 @@ public slots:
   void on_comboBoxCtrlRightClick_activated(int val);
 
 signals:
-  void inputMappingChanged() const;
+  void updateMouseActions() const;
 
 private:
   /** Update all other combo boxes to match values for the preset **/
