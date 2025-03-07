@@ -83,7 +83,10 @@ void MouseConfigWidget::init() {
   actionToSetting.insert({MouseConfig::CTRL_RIGHT_CLICK, &Settings::Settings::inputMouseCtrlRightClick});
 
   for (int i=0; i < MouseConfig::NUM_MOUSE_ACTIONS; i++) {
-    initActionComboBox(actionToComboBox.at(static_cast<MouseConfig::MouseAction>(i)));
+    auto mouseAction = static_cast<MouseConfig::MouseAction>(i);
+    initActionComboBox(
+      actionToComboBox.at(mouseAction),
+      *actionToSetting.at(mouseAction));
   }
 
   auto preset = static_cast<MouseConfig::Preset>(Settings::Settings::inputMousePreset.value());
@@ -208,12 +211,13 @@ void MouseConfigWidget::writeSettings()
   Settings::Settings::visit(SettingsWriter());
 }
 
-void MouseConfigWidget::initActionComboBox(QComboBox *comboBox)
+void MouseConfigWidget::initActionComboBox(QComboBox *comboBox, Settings::SettingsEntryInt &entry)
 {
   comboBox->clear();
   for (int i=0; i < MouseConfig::NUM_VIEW_ACTIONS; i++) {
     auto view_action = static_cast<MouseConfig::ViewAction>(i);
     comboBox->addItem(QString::fromStdString(MouseConfig::viewActionNames.at(view_action)));
   }
+  comboBox->setCurrentIndex(entry.value());
   // Note that we don't set the current index on initialization - that will be done by another call.
 }

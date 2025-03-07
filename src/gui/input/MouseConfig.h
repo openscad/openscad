@@ -10,6 +10,7 @@ namespace MouseConfig {
   {
     OPEN_SCAD,
     BLENDER,
+    FUSION,
     CUSTOM,
     NUM_PRESETS
   };
@@ -57,11 +58,18 @@ namespace MouseConfig {
       {SHIFT_MIDDLE_CLICK, PAN_LR_UD},
       {CTRL_MIDDLE_CLICK, ZOOM},
     }},
+    {FUSION, {
+      {MIDDLE_CLICK, PAN_LR_UD},
+      {SHIFT_MIDDLE_CLICK, ROTATE_ALT_AZ},
+      {CTRL_MIDDLE_CLICK, PAN_LR_UD},
+    }
+    },
   };
 
   static std::map<Preset, std::string> presetNames = {
     {OPEN_SCAD, "OpenSCAD"},
     {BLENDER, "Blender"},
+    {FUSION, "Fusion"},
     {CUSTOM, "Custom"},
   };
 

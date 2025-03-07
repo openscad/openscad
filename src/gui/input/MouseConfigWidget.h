@@ -37,7 +37,7 @@ private:
   void updateAllToPreset(MouseConfig::Preset preset);
   void disableBoxes(bool disable);
   /** Initialize combobox list values from the settings range values */
-  void initActionComboBox(QComboBox *comboBox);
+  void initActionComboBox(QComboBox *comboBox, Settings::SettingsEntryInt& entry);
   /** Update combobox from current settings */
   void updateComboBox(QComboBox *comboBox, const Settings::SettingsEntryString& entry);
   /** Set value from combobox to settings */
