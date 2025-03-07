@@ -61,7 +61,11 @@ LaunchingScreen::LaunchingScreen(QWidget *parent) : QDialog(parent)
   }
 
   connect(this->pushButtonNew, &QPushButton::clicked, this, &LaunchingScreen::accept);
+#ifdef ENABLE_PYTHON  
   connect(this->pushButtonNewPython, &QPushButton::clicked, this, &LaunchingScreen::openPython);
+#else
+  this->pushButtonNewPython->hide();
+#endif  
   connect(this->pushButtonOpen, &QPushButton::clicked, this, &LaunchingScreen::openUserFile);
   connect(this->pushButtonHelp, &QPushButton::clicked, this, &LaunchingScreen::openUserManualURL);
   connect(this->recentList->selectionModel(), &QItemSelectionModel::currentRowChanged, this, &LaunchingScreen::enableRecentButton);
