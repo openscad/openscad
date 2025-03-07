@@ -12,7 +12,7 @@
 	url = https://github.com/arsenm/sanitizers-cmake.git
 [submodule "OpenCSG"]
 	path = submodules/OpenCSG
-	url = https://github.com/openscad/OpenCSG.git
+	url = https://github.com/floriankirsch/OpenCSG.git
 [submodule "Clipper2"]
 	path = submodules/Clipper2
 	url = https://github.com/AngusJohnson/Clipper2.git

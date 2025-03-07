@@ -88,6 +88,8 @@ std::unique_ptr<OffscreenView> prepare_preview(Tree& tree, const ViewOptions& op
 #ifdef ENABLE_OPENCSG
     PRINTD("Initializing OpenCSGRenderer");
     renderer = std::make_shared<OpenCSGRenderer>(csgInfo.root_products, csgInfo.highlights_products, csgInfo.background_products);
+    // TODO(kintel): Forcing Goldfeather for testing. Remove or turn into an option.
+    OpenCSG::setOption(OpenCSG::AlgorithmSetting, OpenCSG::Goldfeather);
 #else
     fprintf(stderr, "This openscad was built without OpenCSG support\n");
     return 0;
