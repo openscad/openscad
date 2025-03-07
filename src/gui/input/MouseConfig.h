@@ -42,14 +42,20 @@ namespace MouseConfig {
   inline static std::map<Preset, std::map<MouseAction, ViewAction>> presetSettings = {
     {OPEN_SCAD, {
       {LEFT_CLICK, ROTATE_ALT_AZ},
+      {CTRL_LEFT_CLICK, ROTATE_ALT_AZ},
+      {SHIFT_LEFT_CLICK, ROTATE_PITCH_ROLL},
       {MIDDLE_CLICK, PAN_FORE_BACK},
+      {CTRL_MIDDLE_CLICK, PAN_FORE_BACK},
       {RIGHT_CLICK, PAN_LR_UD},
-      // FIXME - need to fill in the rest of the settings here.
+      {CTRL_RIGHT_CLICK, PAN_LR_UD},
+      {SHIFT_MIDDLE_CLICK, ZOOM},
+      {SHIFT_RIGHT_CLICK, ZOOM},
     }},
     {BLENDER, {
-      // FIXME - this is probably not the behaviour of Blender, I just need something to test
-      {LEFT_CLICK, PAN_LR_UD},
-      {RIGHT_CLICK, ROTATE_ALT_AZ},
+      {MIDDLE_CLICK, ROTATE_ALT_AZ},  // Technically slightly different - Blender always
+                                             // seems to rotate around the z-axis. But very close.
+      {SHIFT_MIDDLE_CLICK, PAN_LR_UD},
+      {CTRL_MIDDLE_CLICK, ZOOM},
     }},
   };
 
