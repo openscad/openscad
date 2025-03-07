@@ -49,6 +49,7 @@ signals:
   void modificationChanged(EditorInterface *);
   void showContextMenuEvent(const QPoint& pos);
   void focusIn();
+  void escapePressed();
 
 public slots:
   virtual void zoomIn() = 0;
