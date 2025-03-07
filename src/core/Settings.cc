@@ -294,7 +294,7 @@ SettingsEntryString Settings::inputButton20("input", "button20", "");
 SettingsEntryString Settings::inputButton21("input", "button21", "");
 SettingsEntryString Settings::inputButton22("input", "button22", "");
 SettingsEntryString Settings::inputButton23("input", "button23", "");
-SettingsEntryString Settings::inputMousePreset("inputMouse", "preset", "OpenSCAD");
+SettingsEntryInt Settings::inputMousePreset("inputMouse", "preset", 0, MouseConfig::Preset::NUM_PRESETS, 0);
 SettingsEntryInt Settings::inputMouseLeftClick("inputMouse", "leftClick", 0, MouseConfig::ViewAction::NUM_VIEW_ACTIONS, 0);
 SettingsEntryInt Settings::inputMouseMiddleClick("inputMouse", "middleClick", 0, MouseConfig::ViewAction::NUM_VIEW_ACTIONS, 0);
 SettingsEntryInt Settings::inputMouseRightClick("inputMouse", "rightClick", 0, MouseConfig::ViewAction::NUM_VIEW_ACTIONS, 0);

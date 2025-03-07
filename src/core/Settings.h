@@ -458,7 +458,7 @@ public:
   static SettingsEntryString inputButton21;
   static SettingsEntryString inputButton22;
   static SettingsEntryString inputButton23;
-  static SettingsEntryString inputMousePreset;
+  static SettingsEntryInt inputMousePreset;
   static SettingsEntryInt inputMouseLeftClick;
   static SettingsEntryInt inputMouseMiddleClick;
   static SettingsEntryInt inputMouseRightClick;

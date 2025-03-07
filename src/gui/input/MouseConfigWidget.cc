@@ -59,7 +59,6 @@ void MouseConfigWidget::init() {
     comboBoxPreset->addItem(QString::fromStdString(
       MouseConfig::presetNames.at(static_cast<MouseConfig::Preset>(i))));
   }
-  comboBoxPreset->setCurrentIndex(0);
 
   // Populate the maps
   actionToComboBox.clear();
@@ -73,20 +72,25 @@ void MouseConfigWidget::init() {
   actionToComboBox.insert({MouseConfig::CTRL_MIDDLE_CLICK, comboBoxCtrlMiddleClick});
   actionToComboBox.insert({MouseConfig::CTRL_RIGHT_CLICK, comboBoxCtrlRightClick});
   actionToSetting.clear();
-  actionToSetting.insert({MouseConfig::LEFT_CLICK, Settings::Settings::inputMouseLeftClick});
-  actionToSetting.insert({MouseConfig::MIDDLE_CLICK, Settings::Settings::inputMouseMiddleClick});
-  actionToSetting.insert({MouseConfig::RIGHT_CLICK, Settings::Settings::inputMouseRightClick});
-  actionToSetting.insert({MouseConfig::SHIFT_LEFT_CLICK, Settings::Settings::inputMouseShiftLeftClick});
-  actionToSetting.insert({MouseConfig::SHIFT_MIDDLE_CLICK, Settings::Settings::inputMouseShiftMiddleClick});
-  actionToSetting.insert({MouseConfig::SHIFT_RIGHT_CLICK, Settings::Settings::inputMouseShiftRightClick});
-  actionToSetting.insert({MouseConfig::CTRL_LEFT_CLICK, Settings::Settings::inputMouseCtrlLeftClick});
-  actionToSetting.insert({MouseConfig::CTRL_MIDDLE_CLICK, Settings::Settings::inputMouseCtrlMiddleClick});
-  actionToSetting.insert({MouseConfig::CTRL_RIGHT_CLICK, Settings::Settings::inputMouseCtrlRightClick});
+  actionToSetting.insert({MouseConfig::LEFT_CLICK, &Settings::Settings::inputMouseLeftClick});
+  actionToSetting.insert({MouseConfig::MIDDLE_CLICK, &Settings::Settings::inputMouseMiddleClick});
+  actionToSetting.insert({MouseConfig::RIGHT_CLICK, &Settings::Settings::inputMouseRightClick});
+  actionToSetting.insert({MouseConfig::SHIFT_LEFT_CLICK, &Settings::Settings::inputMouseShiftLeftClick});
+  actionToSetting.insert({MouseConfig::SHIFT_MIDDLE_CLICK, &Settings::Settings::inputMouseShiftMiddleClick});
+  actionToSetting.insert({MouseConfig::SHIFT_RIGHT_CLICK, &Settings::Settings::inputMouseShiftRightClick});
+  actionToSetting.insert({MouseConfig::CTRL_LEFT_CLICK, &Settings::Settings::inputMouseCtrlLeftClick});
+  actionToSetting.insert({MouseConfig::CTRL_MIDDLE_CLICK, &Settings::Settings::inputMouseCtrlMiddleClick});
+  actionToSetting.insert({MouseConfig::CTRL_RIGHT_CLICK, &Settings::Settings::inputMouseCtrlRightClick});
 
   for (int i=0; i < MouseConfig::NUM_MOUSE_ACTIONS; i++) {
     initActionComboBox(actionToComboBox.at(static_cast<MouseConfig::MouseAction>(i)));
   }
-  updateAllToPreset(static_cast<MouseConfig::Preset>(0));
+
+  auto preset = static_cast<MouseConfig::Preset>(Settings::Settings::inputMousePreset.value());
+  comboBoxPreset->setCurrentIndex(preset);
+  if (preset != MouseConfig::CUSTOM) {
+    updateAllToPreset(preset);
+  }
   disableBoxes(true);
 
   installIgnoreWheelWhenNotFocused(this);
@@ -100,11 +104,14 @@ void MouseConfigWidget::updateAllToPreset(MouseConfig::Preset preset)
   for (int i=0; i < MouseConfig::NUM_MOUSE_ACTIONS; i++) {
     auto mouseAction = static_cast<MouseConfig::MouseAction>(i);
     auto comboBox = actionToComboBox.at(mouseAction);
+    MouseConfig::ViewAction viewAction;
     if (presetMapping.count(mouseAction) > 0) {
-      comboBox->setCurrentIndex(presetMapping.at(mouseAction));
+      viewAction = presetMapping.at(mouseAction);
     } else {
-      comboBox->setCurrentIndex(MouseConfig::NONE);
+      viewAction = MouseConfig::NONE;
     }
+    comboBox->setCurrentIndex(viewAction);
+    actionToSetting.at(mouseAction)->setValue(viewAction);
   }
 }
 
@@ -118,6 +125,7 @@ void MouseConfigWidget::disableBoxes(bool disable)
 
 void MouseConfigWidget::on_comboBoxPreset_activated(int val)
 {
+  Settings::Settings::inputMousePreset.setValue(val);
   auto preset = static_cast<MouseConfig::Preset>(val);
 
   if (preset == MouseConfig::CUSTOM) {
@@ -130,6 +138,7 @@ void MouseConfigWidget::on_comboBoxPreset_activated(int val)
   }
 
   //applyComboBox(comboBoxPreset, val, Settings::Settings::inputMousePreset);
+  writeSettings();
   emit updateMouseActions();
 }
 
