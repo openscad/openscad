@@ -34,7 +34,7 @@ void ErrorLog::initGUI()
   logTable->addAction(actionRowSelected);
   //last column will stretch itself
 
-  connect(logTable->horizontalHeader(), SIGNAL(sectionResized(int,int,int)), this, SLOT(onSectionResized(int,int,int)));
+  connect(logTable->horizontalHeader(), &QHeaderView::sectionResized, this, &ErrorLog::onSectionResized);
 }
 
 void ErrorLog::toErrorLog(const Message& logMsg)

@@ -61,7 +61,7 @@ public:
   bool getShaderColor(Renderer::ColorMode colormode, const Color4f& object_color, Color4f& outcolor) const;
   virtual void setColorScheme(const ColorScheme& cs);
 
-  virtual std::vector<SelectedObject> findModelObject(Vector3d near_pt, Vector3d far_pt, int mouse_x, int mouse_y, double tolerance);
+  virtual std::vector<SelectedObject> findModelObject(const Vector3d& near_pt, const Vector3d& far_pt, int mouse_x, int mouse_y, double tolerance);
 
 protected:
   std::map<ColorMode, Color4f> colormap_;

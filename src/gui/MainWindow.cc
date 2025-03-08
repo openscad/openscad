@@ -75,6 +75,7 @@
 #include <QProgressDialog>
 #include <QScreen>
 #include <QSettings> //Include QSettings for direct operations on settings arrays
+#include <QSignalMapper>
 #include <QSoundEffect>
 #include <QSplitter>
 #include <QStatusBar>
@@ -107,6 +108,7 @@
 #include "geometry/Geometry.h"
 #include "geometry/GeometryCache.h"
 #include "geometry/GeometryEvaluator.h"
+#include "glview/PolySetRenderer.h"
 #include "glview/cgal/CGALRenderer.h"
 #include "glview/preview/CSGTreeNormalizer.h"
 #include "glview/preview/ThrownTogetherRenderer.h"
@@ -115,6 +117,7 @@
 #include "gui/CGALWorker.h"
 #include "gui/Editor.h"
 #include "gui/Dock.h"
+#include "gui/Measurement.h"
 #include "gui/Export3mfDialog.h"
 #include "gui/ExportPdfDialog.h"
 #include "gui/ExternalToolInterface.h"
@@ -262,7 +265,7 @@ MainWindow::MainWindow(const QStringList& filenames) :
 
   consoleUpdater = new QTimer(this);
   consoleUpdater->setSingleShot(true);
-  connect(consoleUpdater, SIGNAL(timeout()), this->console, SLOT(update()));
+  connect(consoleUpdater, &QTimer::timeout, this->console, &Console::update);
 
   this->animateWidget->setMainWindow(this);
   this->viewportControlWidget->setMainWindow(this);
@@ -322,8 +325,7 @@ MainWindow::MainWindow(const QStringList& filenames) :
     recent = new QAction(this);
     recent->setVisible(false);
     this->menuOpenRecent->addAction(recent);
-    connect(recent, SIGNAL(triggered()),
-            this, SLOT(actionOpenRecent()));
+    connect(recent, &QAction::triggered, this, &MainWindow::actionOpenRecent);
   }
 
   // Preferences initialization happens on first tab creation, and depends on colorschemes from editor.
@@ -331,28 +333,28 @@ MainWindow::MainWindow(const QStringList& filenames) :
   tabManager = new TabManager(this, filenames.isEmpty() ? QString() : filenames[0]);
   editorDockContents->layout()->addWidget(tabManager->getTabContent());
 
-  connect(this, SIGNAL(highlightError(int)), tabManager, SLOT(highlightError(int)));
-  connect(this, SIGNAL(unhighlightLastError()), tabManager, SLOT(unhighlightLastError()));
+  connect(this, &MainWindow::highlightError, tabManager, &TabManager::highlightError);
+  connect(this, &MainWindow::unhighlightLastError, tabManager, &TabManager::unhighlightLastError);
 
-  connect(this->editActionUndo, SIGNAL(triggered()), tabManager, SLOT(undo()));
-  connect(this->editActionRedo, SIGNAL(triggered()), tabManager, SLOT(redo()));
-  connect(this->editActionRedo_2, SIGNAL(triggered()), tabManager, SLOT(redo()));
-  connect(this->editActionCut, SIGNAL(triggered()), tabManager, SLOT(cut()));
-  connect(this->editActionPaste, SIGNAL(triggered()), tabManager, SLOT(paste()));
+  connect(this->editActionUndo, &QAction::triggered, tabManager, &TabManager::undo);
+  connect(this->editActionRedo, &QAction::triggered, tabManager, &TabManager::redo);
+  connect(this->editActionRedo_2, &QAction::triggered, tabManager, &TabManager::redo);
+  connect(this->editActionCut, &QAction::triggered, tabManager, &TabManager::cut);
+  connect(this->editActionPaste, &QAction::triggered, tabManager, &TabManager::paste);
 
-  connect(this->editActionIndent, SIGNAL(triggered()), tabManager, SLOT(indentSelection()));
-  connect(this->editActionUnindent, SIGNAL(triggered()), tabManager, SLOT(unindentSelection()));
-  connect(this->editActionComment, SIGNAL(triggered()), tabManager, SLOT(commentSelection()));
-  connect(this->editActionUncomment, SIGNAL(triggered()), tabManager, SLOT(uncommentSelection()));
+  connect(this->editActionIndent, &QAction::triggered, tabManager, &TabManager::indentSelection);
+  connect(this->editActionUnindent, &QAction::triggered, tabManager, &TabManager::unindentSelection);
+  connect(this->editActionComment, &QAction::triggered, tabManager, &TabManager::commentSelection);
+  connect(this->editActionUncomment, &QAction::triggered, tabManager, &TabManager::uncommentSelection);
 
-  connect(this->editActionToggleBookmark, SIGNAL(triggered()), tabManager, SLOT(toggleBookmark()));
-  connect(this->editActionNextBookmark, SIGNAL(triggered()), tabManager, SLOT(nextBookmark()));
-  connect(this->editActionPrevBookmark, SIGNAL(triggered()), tabManager, SLOT(prevBookmark()));
-  connect(this->editActionJumpToNextError, SIGNAL(triggered()), tabManager, SLOT(jumpToNextError()));
+  connect(this->editActionToggleBookmark, &QAction::triggered, tabManager, &TabManager::toggleBookmark);
+  connect(this->editActionNextBookmark, &QAction::triggered, tabManager, &TabManager::nextBookmark);
+  connect(this->editActionPrevBookmark, &QAction::triggered, tabManager, &TabManager::prevBookmark);
+  connect(this->editActionJumpToNextError, &QAction::triggered, tabManager, &TabManager::jumpToNextError);
 
   connect(tabManager, &TabManager::currentEditorChanged, this, &MainWindow::onTabManagerEditorChanged);
 
-  connect(Preferences::inst(), SIGNAL(consoleFontChanged(const QString&,uint)), this->console, SLOT(setFont(const QString&,uint)));
+  connect(Preferences::inst(), &Preferences::consoleFontChanged, this->console, &Console::setFont);
 
   const QString version = QString("<b>OpenSCAD %1</b>").arg(QString::fromStdString(openscad_versionnumber));
   const QString weblink = "<a href=\"https://www.openscad.org/\">https://www.openscad.org/</a><br>";
@@ -366,13 +368,13 @@ MainWindow::MainWindow(const QStringList& filenames) :
   consoleOutputRaw(copyrighttext);
   this->consoleUpdater->start(0);   // Show "Loaded Design" message from TabManager
 
-  connect(this->errorLogWidget, SIGNAL(openFile(QString,int)), this, SLOT(openFileFromPath(QString,int)));
-  connect(this->console, SIGNAL(openFile(QString,int)), this, SLOT(openFileFromPath(QString,int)));
+  connect(this->errorLogWidget, &ErrorLog::openFile, this, &MainWindow::openFileFromPath);
+  connect(this->console, &Console::openFile, this, &MainWindow::openFileFromPath);
 
-  connect(Preferences::inst()->ButtonConfig, SIGNAL(inputMappingChanged()), InputDriverManager::instance(), SLOT(onInputMappingUpdated()), Qt::UniqueConnection);
-  connect(Preferences::inst()->AxisConfig, SIGNAL(inputMappingChanged()), InputDriverManager::instance(), SLOT(onInputMappingUpdated()), Qt::UniqueConnection);
-  connect(Preferences::inst()->AxisConfig, SIGNAL(inputCalibrationChanged()), InputDriverManager::instance(), SLOT(onInputCalibrationUpdated()), Qt::UniqueConnection);
-  connect(Preferences::inst()->AxisConfig, SIGNAL(inputGainChanged()), InputDriverManager::instance(), SLOT(onInputGainUpdated()), Qt::UniqueConnection);
+  connect(Preferences::inst()->ButtonConfig, &ButtonConfigWidget::inputMappingChanged, InputDriverManager::instance(), &InputDriverManager::onInputMappingUpdated, Qt::UniqueConnection);
+  connect(Preferences::inst()->AxisConfig, &AxisConfigWidget::inputMappingChanged, InputDriverManager::instance(), &InputDriverManager::onInputMappingUpdated, Qt::UniqueConnection);
+  connect(Preferences::inst()->AxisConfig, &AxisConfigWidget::inputCalibrationChanged, InputDriverManager::instance(), &InputDriverManager::onInputCalibrationUpdated, Qt::UniqueConnection);
+  connect(Preferences::inst()->AxisConfig, &AxisConfigWidget::inputGainChanged, InputDriverManager::instance(), &InputDriverManager::onInputGainUpdated, Qt::UniqueConnection);
 
   setCorner(Qt::TopLeftCorner, Qt::LeftDockWidgetArea);
   setCorner(Qt::TopRightCorner, Qt::RightDockWidgetArea);
@@ -384,8 +386,7 @@ MainWindow::MainWindow(const QStringList& filenames) :
   scadApp->windowManager.add(this);
 
   this->cgalworker = new CGALWorker();
-  connect(this->cgalworker, SIGNAL(done(std::shared_ptr<const Geometry>)),
-          this, SLOT(actionRenderDone(std::shared_ptr<const Geometry>)));
+  connect(this->cgalworker, &CGALWorker::done, this, &MainWindow::actionRenderDone);
 
   rootNode = nullptr;
 
@@ -403,7 +404,7 @@ MainWindow::MainWindow(const QStringList& filenames) :
   autoReloadTimer = new QTimer(this);
   autoReloadTimer->setSingleShot(false);
   autoReloadTimer->setInterval(autoReloadPollingPeriodMS);
-  connect(autoReloadTimer, SIGNAL(timeout()), this, SLOT(checkAutoReload()));
+  connect(autoReloadTimer, &QTimer::timeout, this, &MainWindow::checkAutoReload);
 
   this->exportFormatMapper = new QSignalMapper(this);
 #if QT_VERSION >= QT_VERSION_CHECK(5, 15, 0)
@@ -415,30 +416,30 @@ MainWindow::MainWindow(const QStringList& filenames) :
   waitAfterReloadTimer = new QTimer(this);
   waitAfterReloadTimer->setSingleShot(true);
   waitAfterReloadTimer->setInterval(autoReloadPollingPeriodMS);
-  connect(waitAfterReloadTimer, SIGNAL(timeout()), this, SLOT(waitAfterReload()));
-  connect(Preferences::inst(), SIGNAL(ExperimentalChanged()), this, SLOT(changeParameterWidget()));
+  connect(waitAfterReloadTimer, &QTimer::timeout, this, &MainWindow::waitAfterReload);
+  connect(Preferences::inst(), &Preferences::ExperimentalChanged, this, &MainWindow::changeParameterWidget);
 
   progressThrottle->start();
 
   this->hideFind();
   frameCompileResult->hide();
   this->labelCompileResultMessage->setOpenExternalLinks(false);
-  connect(this->labelCompileResultMessage, SIGNAL(linkActivated(QString)), SLOT(showLink(QString)));
+  connect(this->labelCompileResultMessage, &QLabel::linkActivated, this, &MainWindow::showLink);
 
   // File menu
-  connect(this->fileActionNewWindow, SIGNAL(triggered()), this, SLOT(actionNewWindow()));
-  connect(this->fileActionNew, SIGNAL(triggered()), tabManager, SLOT(actionNew()));
-  connect(this->fileActionOpenWindow, SIGNAL(triggered()), this, SLOT(actionOpenWindow()));
-  connect(this->fileActionOpen, SIGNAL(triggered()), this, SLOT(actionOpen()));
-  connect(this->fileActionSave, SIGNAL(triggered()), this, SLOT(actionSave()));
-  connect(this->fileActionSaveAs, SIGNAL(triggered()), this, SLOT(actionSaveAs()));
-  connect(this->fileActionSaveACopy, SIGNAL(triggered()), this, SLOT(actionSaveACopy()));
-  connect(this->fileActionSaveAll, SIGNAL(triggered()), tabManager, SLOT(saveAll()));
-  connect(this->fileActionReload, SIGNAL(triggered()), this, SLOT(actionReload()));
-  connect(this->fileActionRevoke, SIGNAL(triggered()), this, SLOT(actionRevokeTrustedFiles()));
-  connect(this->fileActionClose, SIGNAL(triggered()), tabManager, SLOT(closeCurrentTab()));
-  connect(this->fileActionQuit, SIGNAL(triggered()), scadApp, SLOT(quit()), Qt::QueuedConnection);
-  connect(this->fileShowLibraryFolder, SIGNAL(triggered()), this, SLOT(actionShowLibraryFolder()));
+  connect(this->fileActionNewWindow, &QAction::triggered, this, &MainWindow::actionNewWindow);
+  connect(this->fileActionNew, &QAction::triggered, tabManager, &TabManager::actionNew);
+  connect(this->fileActionOpenWindow, &QAction::triggered, this,&MainWindow::actionOpenWindow);
+  connect(this->fileActionOpen, &QAction::triggered, this, &MainWindow::actionOpen);
+  connect(this->fileActionSave, &QAction::triggered, this, &MainWindow::actionSave);
+  connect(this->fileActionSaveAs, &QAction::triggered, this, &MainWindow::actionSaveAs);
+  connect(this->fileActionSaveACopy, &QAction::triggered, this, &MainWindow::actionSaveACopy);
+  connect(this->fileActionSaveAll, &QAction::triggered, tabManager, &TabManager::saveAll);
+  connect(this->fileActionReload, &QAction::triggered, this, &MainWindow::actionReload);
+  connect(this->fileActionRevoke, &QAction::triggered, this, &MainWindow::actionRevokeTrustedFiles);
+  connect(this->fileActionClose, &QAction::triggered, tabManager, &TabManager::closeCurrentTab);
+  connect(this->fileActionQuit, &QAction::triggered, scadApp, &OpenSCADApp::quit, Qt::QueuedConnection);
+  connect(this->fileShowLibraryFolder, &QAction::triggered, this, &MainWindow::actionShowLibraryFolder);
 #ifndef __APPLE__
   auto shortcuts = this->fileActionSave->shortcuts();
   this->fileActionSave->setShortcuts(shortcuts);
@@ -449,44 +450,43 @@ MainWindow::MainWindow(const QStringList& filenames) :
 
   this->menuOpenRecent->addSeparator();
   this->menuOpenRecent->addAction(this->fileActionClearRecent);
-  connect(this->fileActionClearRecent, SIGNAL(triggered()),
-          this, SLOT(clearRecentFiles()));
+  connect(this->fileActionClearRecent, &QAction::triggered, this, &MainWindow::clearRecentFiles);
 
   show_examples();
 
-  connect(this->editActionNextTab, SIGNAL(triggered()), tabManager, SLOT(nextTab()));
-  connect(this->editActionPrevTab, SIGNAL(triggered()), tabManager, SLOT(prevTab()));
+  connect(this->editActionNextTab, &QAction::triggered, tabManager, &TabManager::nextTab);
+  connect(this->editActionPrevTab, &QAction::triggered, tabManager, &TabManager::prevTab);
 
-  connect(this->editActionCopy, SIGNAL(triggered()), this, SLOT(copyText()));
-  connect(this->editActionCopyViewport, SIGNAL(triggered()), this, SLOT(actionCopyViewport()));
-  connect(this->editActionConvertTabsToSpaces, SIGNAL(triggered()), this, SLOT(convertTabsToSpaces()));
-  connect(this->editActionCopyVPT, SIGNAL(triggered()), this, SLOT(copyViewportTranslation()));
-  connect(this->editActionCopyVPR, SIGNAL(triggered()), this, SLOT(copyViewportRotation()));
-  connect(this->editActionCopyVPD, SIGNAL(triggered()), this, SLOT(copyViewportDistance()));
-  connect(this->editActionCopyVPF, SIGNAL(triggered()), this, SLOT(copyViewportFov()));
-  connect(this->editActionPreferences, SIGNAL(triggered()), this, SLOT(preferences()));
+  connect(this->editActionCopy, &QAction::triggered, this, &MainWindow::copyText);
+  connect(this->editActionCopyViewport, &QAction::triggered, this, &MainWindow::actionCopyViewport);
+  connect(this->editActionConvertTabsToSpaces, &QAction::triggered, this, &MainWindow::convertTabsToSpaces);
+  connect(this->editActionCopyVPT, &QAction::triggered, this, &MainWindow::copyViewportTranslation);
+  connect(this->editActionCopyVPR, &QAction::triggered, this, &MainWindow::copyViewportRotation);
+  connect(this->editActionCopyVPD, &QAction::triggered, this, &MainWindow::copyViewportDistance);
+  connect(this->editActionCopyVPF, &QAction::triggered, this, &MainWindow::copyViewportFov);
+  connect(this->editActionPreferences, &QAction::triggered, this, &MainWindow::preferences);
   // Edit->Find
-  connect(this->editActionFind, SIGNAL(triggered()), this, SLOT(showFind()));
-  connect(this->editActionFindAndReplace, SIGNAL(triggered()), this, SLOT(showFindAndReplace()));
+  connect(this->editActionFind, &QAction::triggered, this, &MainWindow::showFind);
+  connect(this->editActionFindAndReplace, &QAction::triggered, this, &MainWindow::showFindAndReplace);
 #ifdef Q_OS_WIN
   this->editActionFindAndReplace->setShortcut(QKeySequence(Qt::CTRL, Qt::SHIFT, Qt::Key_F));
 #endif
-  connect(this->editActionFindNext, SIGNAL(triggered()), this, SLOT(findNext()));
-  connect(this->editActionFindPrevious, SIGNAL(triggered()), this, SLOT(findPrev()));
-  connect(this->editActionUseSelectionForFind, SIGNAL(triggered()), this, SLOT(useSelectionForFind()));
+  connect(this->editActionFindNext, &QAction::triggered, this, &MainWindow::findNext);
+  connect(this->editActionFindPrevious, &QAction::triggered, this, &MainWindow::findPrev);
+  connect(this->editActionUseSelectionForFind, &QAction::triggered, this, &MainWindow::useSelectionForFind);
 
   // Design menu
-  connect(this->designActionAutoReload, SIGNAL(toggled(bool)), this, SLOT(autoReloadSet(bool)));
-  connect(this->designActionReloadAndPreview, SIGNAL(triggered()), this, SLOT(actionReloadRenderPreview()));
-  connect(this->designActionPreview, SIGNAL(triggered()), this, SLOT(actionRenderPreview()));
-  connect(this->designActionRender, SIGNAL(triggered()), this, SLOT(actionRender()));
-  connect(this->designActionMeasureDist, SIGNAL(triggered()), this, SLOT(actionMeasureDistance()));
-  connect(this->designActionMeasureAngle, SIGNAL(triggered()), this, SLOT(actionMeasureAngle()));
-  connect(this->designAction3DPrint, SIGNAL(triggered()), this, SLOT(action3DPrint()));
-  connect(this->designCheckValidity, SIGNAL(triggered()), this, SLOT(actionCheckValidity()));
-  connect(this->designActionDisplayAST, SIGNAL(triggered()), this, SLOT(actionDisplayAST()));
-  connect(this->designActionDisplayCSGTree, SIGNAL(triggered()), this, SLOT(actionDisplayCSGTree()));
-  connect(this->designActionDisplayCSGProducts, SIGNAL(triggered()), this, SLOT(actionDisplayCSGProducts()));
+  connect(this->designActionAutoReload, &QAction::toggled, this, &MainWindow::autoReloadSet);
+  connect(this->designActionReloadAndPreview, &QAction::triggered, this, &MainWindow::actionReloadRenderPreview);
+  connect(this->designActionPreview, &QAction::triggered, this, &MainWindow::actionRenderPreview);
+  connect(this->designActionRender, &QAction::triggered, this, &MainWindow::actionRender);
+  connect(this->designActionMeasureDist, &QAction::triggered, this, &MainWindow::actionMeasureDistance);
+  connect(this->designActionMeasureAngle, &QAction::triggered, this, &MainWindow::actionMeasureAngle);
+  connect(this->designAction3DPrint, &QAction::triggered, this, &MainWindow::action3DPrint);
+  connect(this->designCheckValidity, &QAction::triggered, this, &MainWindow::actionCheckValidity);
+  connect(this->designActionDisplayAST, &QAction::triggered, this, &MainWindow::actionDisplayAST);
+  connect(this->designActionDisplayCSGTree, &QAction::triggered, this, &MainWindow::actionDisplayCSGTree);
+  connect(this->designActionDisplayCSGProducts, &QAction::triggered, this, &MainWindow::actionDisplayCSGProducts);
 
   exportMap[FileFormat::BINARY_STL] = this->fileActionExportBinarySTL;
   exportMap[FileFormat::ASCII_STL] = this->fileActionExportAsciiSTL;
@@ -502,12 +502,12 @@ MainWindow::MainWindow(const QStringList& filenames) :
   exportMap[FileFormat::CSG] = this->fileActionExportCSG;
   exportMap[FileFormat::PNG] = this->fileActionExportImage;
 
-  for (auto& pair : exportMap) {
-    connect(pair.second, SIGNAL(triggered()), this->exportFormatMapper, SLOT(map()));
-    this->exportFormatMapper->setMapping(pair.second, int(pair.first));
+  for (auto& [format, action] : exportMap) {
+    connect(action, &QAction::triggered, this->exportFormatMapper, QOverload<>::of(&QSignalMapper::map));
+    this->exportFormatMapper->setMapping(action, int(format));
   }
 
-  connect(this->designActionFlushCaches, SIGNAL(triggered()), this, SLOT(actionFlushCaches()));
+  connect(this->designActionFlushCaches, &QAction::triggered, this, &MainWindow::actionFlushCaches);
 
 #ifndef ENABLE_LIB3MF
   this->fileActionExport3MF->setVisible(false);
@@ -527,28 +527,28 @@ MainWindow::MainWindow(const QStringList& filenames) :
     this->viewActionThrownTogether->setChecked(true);
   }
 
-  connect(this->viewActionPreview, SIGNAL(triggered()), this, SLOT(viewModePreview()));
-  connect(this->viewActionThrownTogether, SIGNAL(triggered()), this, SLOT(viewModeThrownTogether()));
-  connect(this->viewActionShowEdges, SIGNAL(triggered()), this, SLOT(viewModeShowEdges()));
-  connect(this->viewActionShowAxes, SIGNAL(triggered()), this, SLOT(viewModeShowAxes()));
-  connect(this->viewActionShowCrosshairs, SIGNAL(triggered()), this, SLOT(viewModeShowCrosshairs()));
-  connect(this->viewActionShowScaleProportional, SIGNAL(triggered()), this, SLOT(viewModeShowScaleProportional()));
-  connect(this->viewActionTop, SIGNAL(triggered()), this, SLOT(viewAngleTop()));
-  connect(this->viewActionBottom, SIGNAL(triggered()), this, SLOT(viewAngleBottom()));
-  connect(this->viewActionLeft, SIGNAL(triggered()), this, SLOT(viewAngleLeft()));
-  connect(this->viewActionRight, SIGNAL(triggered()), this, SLOT(viewAngleRight()));
-  connect(this->viewActionFront, SIGNAL(triggered()), this, SLOT(viewAngleFront()));
-  connect(this->viewActionBack, SIGNAL(triggered()), this, SLOT(viewAngleBack()));
-  connect(this->viewActionDiagonal, SIGNAL(triggered()), this, SLOT(viewAngleDiagonal()));
-  connect(this->viewActionCenter, SIGNAL(triggered()), this, SLOT(viewCenter()));
-  connect(this->viewActionResetView, SIGNAL(triggered()), this, SLOT(viewResetView()));
-  connect(this->viewActionViewAll, SIGNAL(triggered()), this, SLOT(viewAll()));
-  connect(this->viewActionPerspective, SIGNAL(triggered()), this, SLOT(viewPerspective()));
-  connect(this->viewActionOrthogonal, SIGNAL(triggered()), this, SLOT(viewOrthogonal()));
-  connect(this->viewActionZoomIn, SIGNAL(triggered()), qglview, SLOT(ZoomIn()));
-  connect(this->viewActionZoomOut, SIGNAL(triggered()), qglview, SLOT(ZoomOut()));
-  connect(this->viewActionHideEditorToolBar, SIGNAL(triggered()), this, SLOT(hideEditorToolbar()));
-  connect(this->viewActionHide3DViewToolBar, SIGNAL(triggered()), this, SLOT(hide3DViewToolbar()));
+  connect(this->viewActionPreview, &QAction::triggered, this, &MainWindow::viewModePreview);
+  connect(this->viewActionThrownTogether, &QAction::triggered, this, &MainWindow::viewModeThrownTogether);
+  connect(this->viewActionShowEdges, &QAction::triggered, this, &MainWindow::viewModeShowEdges);
+  connect(this->viewActionShowAxes, &QAction::triggered, this, &MainWindow::viewModeShowAxes);
+  connect(this->viewActionShowCrosshairs, &QAction::triggered, this, &MainWindow::viewModeShowCrosshairs);
+  connect(this->viewActionShowScaleProportional, &QAction::triggered, this, &MainWindow::viewModeShowScaleProportional);
+  connect(this->viewActionTop, &QAction::triggered, this, &MainWindow::viewAngleTop);
+  connect(this->viewActionBottom, &QAction::triggered, this, &MainWindow::viewAngleBottom);
+  connect(this->viewActionLeft, &QAction::triggered, this, &MainWindow::viewAngleLeft);
+  connect(this->viewActionRight, &QAction::triggered, this, &MainWindow::viewAngleRight);
+  connect(this->viewActionFront, &QAction::triggered, this, &MainWindow::viewAngleFront);
+  connect(this->viewActionBack, &QAction::triggered, this, &MainWindow::viewAngleBack);
+  connect(this->viewActionDiagonal, &QAction::triggered, this, &MainWindow::viewAngleDiagonal);
+  connect(this->viewActionCenter, &QAction::triggered, this, &MainWindow::viewCenter);
+  connect(this->viewActionResetView, &QAction::triggered, this, &MainWindow::viewResetView);
+  connect(this->viewActionViewAll, &QAction::triggered, this, &MainWindow::viewAll);
+  connect(this->viewActionPerspective, &QAction::triggered, this, &MainWindow::viewPerspective);
+  connect(this->viewActionOrthogonal, &QAction::triggered, this, &MainWindow::viewOrthogonal);
+  connect(this->viewActionZoomIn, &QAction::triggered, qglview, &QGLView::ZoomIn);
+  connect(this->viewActionZoomOut, &QAction::triggered, qglview, &QGLView::ZoomOut);
+  connect(this->viewActionHideEditorToolBar, &QAction::triggered, this, &MainWindow::hideEditorToolbar);
+  connect(this->viewActionHide3DViewToolBar, &QAction::triggered, this, &MainWindow::hide3DViewToolbar);
 
   // Create the docks and connect corresponding action
   for (auto& [dock, title] : docks) {
@@ -563,21 +563,21 @@ MainWindow::MainWindow(const QStringList& filenames) :
   }
 
   // Help menu
-  connect(this->helpActionAbout, SIGNAL(triggered()), this, SLOT(helpAbout()));
-  connect(this->helpActionHomepage, SIGNAL(triggered()), this, SLOT(helpHomepage()));
-  connect(this->helpActionManual, SIGNAL(triggered()), this, SLOT(helpManual()));
-  connect(this->helpActionCheatSheet, SIGNAL(triggered()), this, SLOT(helpCheatSheet()));
-  connect(this->helpActionLibraryInfo, SIGNAL(triggered()), this, SLOT(helpLibrary()));
-  connect(this->helpActionFontInfo, SIGNAL(triggered()), this, SLOT(helpFontInfo()));
+  connect(this->helpActionAbout, &QAction::triggered, this, &MainWindow::helpAbout);
+  connect(this->helpActionHomepage, &QAction::triggered, this, &MainWindow::helpHomepage);
+  connect(this->helpActionManual, &QAction::triggered, this, &MainWindow::helpManual);
+  connect(this->helpActionCheatSheet, &QAction::triggered, this, &MainWindow::helpCheatSheet);
+  connect(this->helpActionLibraryInfo, &QAction::triggered, this, &MainWindow::helpLibrary);
+  connect(this->helpActionFontInfo, &QAction::triggered, this, &MainWindow::helpFontInfo);
 
   // Checks if the Documentation has been downloaded and hides the Action otherwise
   if (UIUtils::hasOfflineUserManual()) {
-    connect(this->helpActionOfflineManual, SIGNAL(triggered()), this, SLOT(helpOfflineManual()));
+    connect(this->helpActionOfflineManual, &QAction::triggered, this, &MainWindow::helpOfflineManual);
   } else {
     this->helpActionOfflineManual->setVisible(false);
   }
   if (UIUtils::hasOfflineCheatSheet()) {
-    connect(this->helpActionOfflineCheatSheet, SIGNAL(triggered()), this, SLOT(helpOfflineCheatSheet()));
+    connect(this->helpActionOfflineCheatSheet, &QAction::triggered, this, &MainWindow::helpOfflineCheatSheet);
   } else {
     this->helpActionOfflineCheatSheet->setVisible(false);
   }
@@ -585,20 +585,20 @@ MainWindow::MainWindow(const QStringList& filenames) :
   this->menuBar()->addMenu(AutoUpdater::updater()->updateMenu);
 #endif
 
-  connect(this->qglview, SIGNAL(cameraChanged()), animateWidget, SLOT(cameraChanged()));
-  connect(this->qglview, SIGNAL(cameraChanged()), viewportControlWidget, SLOT(cameraChanged()));
-  connect(this->qglview, SIGNAL(resized()), viewportControlWidget, SLOT(viewResized()));
-  connect(this->qglview, SIGNAL(doRightClick(QPoint)), this, SLOT(rightClick(QPoint)));
-  connect(this->qglview, SIGNAL(doLeftClick(QPoint)), this, SLOT(leftClick(QPoint)));
+  connect(this->qglview, &QGLView::cameraChanged, animateWidget, &Animate::cameraChanged);
+  connect(this->qglview, &QGLView::cameraChanged, viewportControlWidget, &ViewportControl::cameraChanged);
+  connect(this->qglview, &QGLView::resized, viewportControlWidget, &ViewportControl::viewResized);
+  connect(this->qglview, &QGLView::doRightClick, this, &MainWindow::rightClick);
+  connect(this->qglview, &QGLView::doLeftClick, this, &MainWindow::leftClick);
 
-  connect(Preferences::inst(), SIGNAL(requestRedraw()), this->qglview, SLOT(update()));
-  connect(Preferences::inst(), SIGNAL(updateMouseCentricZoom(bool)), this->qglview, SLOT(setMouseCentricZoom(bool)));
-  connect(Preferences::inst(), SIGNAL(updateMouseSwapButtons(bool)), this->qglview, SLOT(setMouseSwapButtons(bool)));
-  connect(Preferences::inst(), SIGNAL(updateReorderMode(bool)), this, SLOT(updateReorderMode(bool)));
-  connect(Preferences::inst(), SIGNAL(updateUndockMode(bool)), this, SLOT(updateUndockMode(bool)));
-  connect(Preferences::inst(), SIGNAL(openCSGSettingsChanged()), this, SLOT(openCSGSettingsChanged()));
-  connect(Preferences::inst(), SIGNAL(colorSchemeChanged(const QString&)), this, SLOT(setColorScheme(const QString&)));
-  connect(Preferences::inst(), SIGNAL(toolbarExportChanged()), this, SLOT(updateExportActions()));
+  connect(Preferences::inst(), &Preferences::requestRedraw, this->qglview, QOverload<>::of(&QGLView::update));
+  connect(Preferences::inst(), &Preferences::updateMouseCentricZoom, this->qglview, &QGLView::setMouseCentricZoom);
+  connect(Preferences::inst(), &Preferences::updateMouseSwapButtons, this->qglview, &QGLView::setMouseSwapButtons);
+  connect(Preferences::inst(), &Preferences::updateReorderMode, this, &MainWindow::updateReorderMode);
+  connect(Preferences::inst(), &Preferences::updateUndockMode, this, &MainWindow::updateUndockMode);
+  connect(Preferences::inst(), &Preferences::openCSGSettingsChanged, this, &MainWindow::openCSGSettingsChanged);
+  connect(Preferences::inst(), &Preferences::colorSchemeChanged, this, &MainWindow::setColorScheme);
+  connect(Preferences::inst(), &Preferences::toolbarExportChanged, this, &MainWindow::updateExportActions);
 
   Preferences::inst()->apply_win();   // not sure if to be commented, checked must not be commented(done some changes in apply())
 
@@ -606,24 +606,24 @@ MainWindow::MainWindow(const QStringList& filenames) :
   this->setColorScheme(cs);
 
   //find and replace panel
-  connect(this->findTypeComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(selectFindType(int)));
-  connect(this->findInputField, SIGNAL(textChanged(QString)), this, SLOT(findString(QString)));
-  connect(this->findInputField, SIGNAL(returnPressed()), this->findNextButton, SLOT(animateClick()));
+  connect(this->findTypeComboBox, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &MainWindow::selectFindType);
+  connect(this->findInputField, &QWordSearchField::textChanged, this, &MainWindow::findString);
+  connect(this->findInputField, &QWordSearchField::returnPressed, this->findNextButton, [this]{this->findNextButton->animateClick();});
   find_panel->installEventFilter(this);
   if (QApplication::clipboard()->supportsFindBuffer()) {
-    connect(this->findInputField, SIGNAL(textChanged(QString)), this, SLOT(updateFindBuffer(QString)));
-    connect(QApplication::clipboard(), SIGNAL(findBufferChanged()), this, SLOT(findBufferChanged()));
+    connect(this->findInputField, &QWordSearchField::textChanged, this, &MainWindow::updateFindBuffer);
+    connect(QApplication::clipboard(), &QClipboard::findBufferChanged, this, &MainWindow::findBufferChanged);
     // With Qt 4.8.6, there seems to be a bug that often gives an incorrect findbuffer content when
     // the app receives focus for the first time
     this->findInputField->setText(QApplication::clipboard()->text(QClipboard::FindBuffer));
   }
 
-  connect(this->findPrevButton, SIGNAL(clicked()), this, SLOT(findPrev()));
-  connect(this->findNextButton, SIGNAL(clicked()), this, SLOT(findNext()));
-  connect(this->cancelButton, SIGNAL(clicked()), this, SLOT(hideFind()));
-  connect(this->replaceButton, SIGNAL(clicked()), this, SLOT(replace()));
-  connect(this->replaceAllButton, SIGNAL(clicked()), this, SLOT(replaceAll()));
-  connect(this->replaceInputField, SIGNAL(returnPressed()), this->replaceButton, SLOT(animateClick()));
+  connect(this->findPrevButton, &QPushButton::clicked, this, &MainWindow::findPrev);
+  connect(this->findNextButton, &QPushButton::clicked, this, &MainWindow::findNext);
+  connect(this->cancelButton, &QPushButton::clicked, this, &MainWindow::hideFind);
+  connect(this->replaceButton, &QPushButton::clicked, this, &MainWindow::replace);
+  connect(this->replaceAllButton, &QPushButton::clicked, this, &MainWindow::replaceAll);
+  connect(this->replaceInputField, &QLineEdit::returnPressed, this->replaceButton, [this]{this->replaceButton->animateClick();});
   addKeyboardShortCut(this->viewerToolBar->actions());
   addKeyboardShortCut(this->editortoolbar->actions());
 
@@ -749,7 +749,7 @@ MainWindow::MainWindow(const QStringList& filenames) :
   QObject::connect(parameterDock,  &Dock::visibilityChanged,
                    this,        &MainWindow::onParametersDockVisibilityChanged);
 
-  connect(this->activeEditor, SIGNAL(escapePressed()), this, SLOT(measureFinished()));
+  connect(this->activeEditor, &EditorInterface::escapePressed, this, &MainWindow::measureFinished);
   // display this window and check for OpenGL 2.0 (OpenCSG) support
   viewModeThrownTogether();
   show();
@@ -1292,7 +1292,7 @@ void MainWindow::instantiateRoot()
   // Invalidate renderers before we kill the CSG tree
   this->qglview->setRenderer(nullptr);
 #ifdef ENABLE_OPENCSG
-  this->opencsgRenderer = nullptr;
+  this->previewRenderer = nullptr;
 #endif
   this->thrownTogetherRenderer = nullptr;
 
@@ -1371,7 +1371,7 @@ void MainWindow::compileCSG()
 
     // Main CSG evaluation
     this->progresswidget = new ProgressWidget(this);
-    connect(this->progresswidget, SIGNAL(requestShow()), this, SLOT(showProgress()));
+    connect(this->progresswidget, &ProgressWidget::requestShow, this, &MainWindow::showProgress);
 
     GeometryEvaluator geomevaluator(this->tree);
 #ifdef ENABLE_OPENCSG
@@ -1455,7 +1455,7 @@ void MainWindow::compileCSG()
     else {
       LOG("Normalized tree has %1$d elements!",
           (this->rootProduct ? this->rootProduct->size() : 0));
-      this->opencsgRenderer = std::make_shared<OpenCSGRenderer>(this->rootProduct,
+      this->previewRenderer = std::make_shared<OpenCSGRenderer>(this->rootProduct,
                                                                 this->highlightsProducts,
                                                                 this->backgroundProducts);
     }
@@ -1537,7 +1537,7 @@ void MainWindow::show_examples()
 
     for (const auto& ex : examples) {
       auto openAct = new QAction(ex.fileName().replace("&", "&&"), this);
-      connect(openAct, SIGNAL(triggered()), this, SLOT(actionOpenExample()));
+      connect(openAct, &QAction::triggered, this, &MainWindow::actionOpenExample);
       menu->addAction(openAct);
       openAct->setData(ex.canonicalFilePath());
       found_example = true;
@@ -2112,7 +2112,7 @@ void MainWindow::actionRenderPreview()
     // if the action was called when the gui was locked, we must request it one more time
     // however, it's not possible to call it directly NOR make the loop
     // it must be called from the mainloop
-    QTimer::singleShot(0, this, SLOT(actionRenderPreview()));
+    QTimer::singleShot(0, this, &MainWindow::actionRenderPreview);
   }
 }
 
@@ -2179,7 +2179,7 @@ void MainWindow::sendToExternalTool(ExternalToolInterface& externalToolService)
   const bool export_status = externalToolService.exportTemporaryFile(rootGeom, activeFileName, &qglview->cam);
 
   this->progresswidget = new ProgressWidget(this);
-  connect(this->progresswidget, SIGNAL(requestShow()), this, SLOT(showProgress()));
+  connect(this->progresswidget, &ProgressWidget::requestShow, this, &MainWindow::showProgress);
 
   const bool process_status = externalToolService.process(activeFileName.toStdString(), [this](double permille) {
     return network_progress_func(permille);
@@ -2241,14 +2241,14 @@ void MainWindow::cgalRender()
   }
 
   this->qglview->setRenderer(nullptr);
-  this->cgalRenderer = nullptr;
+  this->geomRenderer = nullptr;
   rootGeom.reset();
 
   LOG("Rendering Polygon Mesh using %1$s...",
       renderBackend3DToString(RenderSettings::inst()->backend3D).c_str());
 
   this->progresswidget = new ProgressWidget(this);
-  connect(this->progresswidget, SIGNAL(requestShow()), this, SLOT(showProgress()));
+  connect(this->progresswidget, &ProgressWidget::requestShow, this, &MainWindow::showProgress);
 
   if (!isClosing) progress_report_prep(this->rootNode, report_func, this);
   else return;
@@ -2276,8 +2276,17 @@ void MainWindow::actionRenderDone(const std::shared_ptr<const Geometry>& root_ge
     renderStatistic.printAll(root_geom, qglview->cam, options);
     LOG("Rendering finished.");
 
-    rootGeom = root_geom;
-    this->cgalRenderer = std::make_shared<CGALRenderer>(root_geom);
+    this->rootGeom = root_geom;
+    // Choose PolySetRenderer for PolySet and Polygon2d, and for Manifold since we 
+    // know that all geometries are convertible to PolySet.
+    if (RenderSettings::inst()->backend3D == RenderBackend3D::ManifoldBackend ||
+        std::dynamic_pointer_cast<const PolySet>(this->rootGeom) ||
+        std::dynamic_pointer_cast<const Polygon2d>(this->rootGeom)) {
+      this->geomRenderer = std::make_shared<PolySetRenderer>(this->rootGeom);
+    } else {
+      this->geomRenderer = std::make_shared<CGALRenderer>(this->rootGeom);
+    }
+
     // Go to CGAL view mode
     viewModeRender();
     this->designActionMeasureDist->setEnabled(true);
@@ -2318,7 +2327,7 @@ void MainWindow::leftClick(QPoint mouse)
     this->qglview->measure_state = MEASURE_IDLE;
     QMenu resultmenu(this);
     auto action = resultmenu.addAction(str);
-    connect(action, SIGNAL(triggered()), this, SLOT(measureFinished()));
+    connect(action, &QAction::triggered, this, &MainWindow::measureFinished);
     resultmenu.exec(qglview->mapToGlobal(mouse));
   }
 }
@@ -2387,7 +2396,7 @@ void MainWindow::rightClick(QPoint position)
       auto action = tracemenu.addAction(QString::fromStdString(ss.str()));
       if (editorDock->isVisible()) {
         action->setProperty("id", step->idx);
-        connect(action, SIGNAL(hovered()), this, SLOT(onHoveredObjectInSelectionMenu()));
+        connect(action, &QAction::hovered, this, &MainWindow::onHoveredObjectInSelectionMenu);
       }
     }
 
@@ -2929,7 +2938,7 @@ void MainWindow::viewModeRender()
 {
   viewActionThrownTogether->setEnabled(false);
   viewActionPreview->setEnabled(false);
-  this->qglview->setRenderer(this->cgalRenderer);
+  this->qglview->setRenderer(this->geomRenderer);
   this->qglview->updateColorScheme();
   this->qglview->update();
 }
@@ -2945,7 +2954,7 @@ void MainWindow::viewModePreview()
   if (this->qglview->hasOpenCSGSupport()) {
     viewActionPreview->setChecked(true);
     viewActionThrownTogether->setChecked(false);
-    this->qglview->setRenderer(this->opencsgRenderer ? this->opencsgRenderer : this->thrownTogetherRenderer);
+    this->qglview->setRenderer(this->previewRenderer ? this->previewRenderer : this->thrownTogetherRenderer);
     this->qglview->updateColorScheme();
     this->qglview->update();
   } else {
