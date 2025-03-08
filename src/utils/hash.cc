@@ -1,9 +1,11 @@
-#include "geometry/linalg.h"
 #include "utils/hash.h"
-#include <cstdint>
-#include <boost/functional/hash.hpp>
 
 #include <cstddef>
+#include <cstdint>
+
+#include <boost/functional/hash.hpp>
+
+#include "geometry/linalg.h"
 
 namespace std {
 std::size_t hash<Vector3f>::operator()(const Vector3f& s) const {
