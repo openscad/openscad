@@ -27,12 +27,10 @@
 #include "glview/cgal/CGALRenderer.h"
 
 #include <cassert>
-#include <limits>
 #include <utility>
 #include <memory>
 #include <cstddef>
 #include <vector>
-#include <cmath>
 
 #ifdef _MSC_VER
 // Boost conflicts with MPFR under MSVC (google it)
@@ -43,11 +41,9 @@
 #include "core/Selection.h"
 #include "geometry/cgal/cgal.h"
 #include "geometry/Geometry.h"
-#include "geometry/GeometryUtils.h"
 #include "geometry/linalg.h"
 #include "geometry/PolySet.h"
 #include "geometry/PolySetUtils.h"
-#include "glview/cgal/CGALRenderUtils.h"
 #include "glview/ColorMap.h"
 #include "glview/Renderer.h"
 #include "glview/ShaderUtils.h"
@@ -81,7 +77,7 @@ void CGALRenderer::addGeometry(const std::shared_ptr<const Geometry> &geom) {
     for (const auto &item : geomlist->getChildren()) {
       this->addGeometry(item.second);
     }
-  } else if (const auto ps = std::dynamic_pointer_cast<const PolySet>(geom)) {
+} else if (const auto ps = std::dynamic_pointer_cast<const PolySet>(geom)) {
     assert(ps->getDimension() == 3);
     // We need to tessellate here, in case the generated PolySet contains
     // concave polygons See
@@ -265,7 +261,7 @@ void CGALRenderer::prepare(const ShaderUtils::ShaderInfo * /*shaderinfo*/) {
 
 void CGALRenderer::draw(bool showedges, const ShaderUtils::ShaderInfo * /*shaderinfo*/) const {
   PRINTD("draw()");
-  // grab current state to restore after
+// grab current state to restore after
   GLfloat current_point_size, current_line_width;
   const GLboolean origVertexArrayState = glIsEnabled(GL_VERTEX_ARRAY);
   const GLboolean origNormalArrayState = glIsEnabled(GL_NORMAL_ARRAY);
@@ -321,114 +317,4 @@ BoundingBox CGALRenderer::getBoundingBox() const {
     bbox.extend(polygon->getBoundingBox());
   }
   return bbox;
-}
-
-std::shared_ptr<SelectedObject>
-CGALRenderer::findModelObject(Vector3d near_pt, Vector3d far_pt, int /*mouse_x*/,
-                              int /*mouse_y*/, double tolerance) {
-  double dist_near;
-  double dist_nearest = std::numeric_limits<double>::max();
-  Vector3d pt1_nearest;
-  Vector3d pt2_nearest;
-  Vector3d pt3_nearest;
-  std::vector<Vector3d> pts_nearest;
-  const auto find_nearest_point = [&](const std::vector<Vector3d> &vertices){
-    for (const Vector3d &pt : vertices) {
-      SelectedObject ruler = calculateLinePointDistance(near_pt, far_pt, pt, dist_near);
-      double dist_pt = (ruler.pt[0]-ruler.pt[1]).norm();
-      if (dist_pt < tolerance && dist_near < dist_nearest) {
-        dist_nearest = dist_near;
-        pt1_nearest = pt;
-      }
-    }
-  };
-  for (const std::shared_ptr<const PolySet> &ps : this->polysets_) {
-    find_nearest_point(ps->vertices);
-  }
-  for (const auto &[polygon, ps] : this->polygons_) {
-    find_nearest_point(ps->vertices);
-  }
-  if (dist_nearest < std::numeric_limits<double>::max()) {
-    SelectedObject obj = {
-      .type = SelectionType::SELECTION_POINT,
-    };
-    obj.pt.push_back(pt1_nearest);
-
-    return std::make_shared<SelectedObject>(obj);
-  }
-
-  const auto find_nearest_line = [&](const std::vector<Vector3d> &vertices, const PolygonIndices& indices) {
-    for (const auto &poly : indices) {
-      for (int i = 0; i < poly.size(); i++) {
-        int ind1 = poly[i];
-        int ind2 = poly[(i + 1) % poly.size()];
-        double dist_lat;
-        double dist_norm = fabs(calculateLineLineDistance(
-            vertices[ind1], vertices[ind2], near_pt, far_pt, dist_lat)); // TODO naehcstgelegene line
-        if (dist_lat >= 0 && dist_lat <= 1 && dist_norm < tolerance) {
-          dist_nearest = dist_lat;
-          pt1_nearest = vertices[ind1];
-          pt2_nearest = vertices[ind2];
-        }
-      }
-    }
-  };
-  for (const std::shared_ptr<const PolySet> &ps : this->polysets_) {
-    find_nearest_line(ps->vertices, ps->indices);
-  }
-  for (const auto &[polygon, ps] : this->polygons_) {
-    find_nearest_line(ps->vertices, ps->indices);
-  }
-  if (dist_nearest < std::numeric_limits<double>::max()) {
-    SelectedObject obj = {
-      .type = SelectionType::SELECTION_SEGMENT,
-    };
-    obj.pt.push_back(pt1_nearest);
-    obj.pt.push_back(pt2_nearest);
-    return std::make_shared<SelectedObject>(obj);
-  }
-
-  const auto find_nearest_face = [&](const std::vector<Vector3d> &vertices, const PolygonIndices& indices) {
-    Vector3d v1 = near_pt - far_pt;
-    for (const auto &poly : indices) {
-      if(poly.size() < 3) continue;
-      // assume polygon is convex
-      for (int i = 0; i < poly.size()-2; i++) {
-        int ind1 = poly[0];
-        int ind2 = poly[i+1];
-        int ind3 = poly[i+2];
-	Vector3d v2=vertices[ind2] - vertices[ind1];
-	Vector3d v3=vertices[ind3] - vertices[ind1];
-	Vector3d total = far_pt - vertices[ind1];
-
-	Vector3d res;
-	if(linsystem(v1, v2, v3, total, res)) continue;
-        if(res[0] > 0) continue;
-        if(res[1] < 0 || res[2] < 0) continue;
-        if(res[1] + res[2] > 1) continue;	
-	double dist = res[0];
-	if(dist < dist_nearest) {
-	  dist_nearest = dist;
-	  pts_nearest.clear();
-	  for(const auto ind: poly)
-  	    pts_nearest.push_back(vertices[ind]);
-	}  
-      }
-    }
-  };
-
-  for (const std::shared_ptr<const PolySet> &ps : this->polysets_) {
-    find_nearest_face(ps->vertices, ps->indices);
-  }
-  for (const auto &[polygon, ps] : this->polygons_) {
-    find_nearest_face(ps->vertices, ps->indices);
-  }
-  if (dist_nearest < std::numeric_limits<double>::max()) {
-    SelectedObject obj = {
-      .type = SelectionType::SELECTION_FACE,
-    };
-    obj.pt=pts_nearest;
-    return std::make_shared<SelectedObject>(obj);
-  }
-  return nullptr;
 }
