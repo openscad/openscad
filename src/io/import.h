@@ -2,6 +2,7 @@
 
 #include <memory>
 #include <string>
+
 #include <boost/optional.hpp>
 
 #include "core/AST.h"

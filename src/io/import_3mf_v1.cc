@@ -23,6 +23,17 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  */
+#include "io/import.h"
+
+#include <cstddef>
+#include <functional>
+#include <cstdint>
+#include <memory>
+#include <string>
+#include <iomanip>
+#include <algorithm>
+ 
+#include <Model/COM/NMR_DLLInterfaces.h>
 
 #include "geometry/PolySet.h"
 #include "geometry/PolySetBuilder.h"
@@ -32,17 +43,15 @@
 #include "utils/printutils.h"
 #include "utils/version_helper.h"
 #include "core/AST.h"
-#include "Feature.h"
 #include "glview/RenderSettings.h"
 
-#include <cstdint>
-#include <memory>
-#include <string>
-#include <iomanip>
-#include <algorithm>
-#include <unordered_map>
+#ifdef ENABLE_CGAL
+#include "geometry/cgal/cgalutils.h"
+#endif
+#ifdef ENABLE_MANIFOLD
+#include "geometry/manifold/manifoldutils.h"
+#endif
 
-#include <Model/COM/NMR_DLLInterfaces.h>
 #undef BOOL
 using namespace NMR;
 
@@ -51,7 +60,7 @@ using namespace NMR;
  * both Qt and lib3mf headers due to some conflicting definitions of
  * windows types when compiling with MinGW.
  */
-const std::string get_lib3mf_version() {
+static std::string get_lib3mf_version() {
   DWORD major, minor, micro;
   NMR::lib3mf_getinterfaceversion(&major, &minor, &micro);
 
@@ -59,13 +68,6 @@ const std::string get_lib3mf_version() {
   const OpenSCAD::library_version_number runtime_version{major, minor, micro};
   return OpenSCAD::get_version_string(header_version, runtime_version);
 }
-
-#ifdef ENABLE_CGAL
-#include "geometry/cgal/cgalutils.h"
-#endif
-#ifdef ENABLE_MANIFOLD
-#include "geometry/manifold/manifoldutils.h"
-#endif
 
 template<> struct std::hash<Color4f> {
     std::size_t operator()(Color4f const& c) const noexcept {
@@ -169,18 +171,18 @@ std::string collect_mesh_objects(MeshObjectList& object_list, PLib3MFModelObject
   if (lib3mf_object_gettype(object, &objecttype) != LIB3MF_OK) {
     return "Could not read object type";
   }
-  char number[4096] = {0, };
+  const const char number[4096] = {0, };
   ULONG numberlen;
   if (lib3mf_object_getpartnumberutf8(object, &number[0], sizeof(number), &numberlen) != LIB3MF_OK) {
     return "Could not read part number of object";
   }
-  char name[4096] = {0, };
+  const char name[4096] = {0, };
   ULONG namelen;
   if (lib3mf_object_getnameutf8(object, &name[0], sizeof(name), &namelen) != LIB3MF_OK) {
     return "Could not read name of object";
   }
-  BOOL hasuuid = false;
-  char uuid[40] = {0, };
+  const BOOL hasuuid = false;
+  const char uuid[40] = {0, };
   if (lib3mf_object_getuuidutf8(object, &hasuuid, &uuid[0]) != LIB3MF_OK) {
     return "Could not read UUID of object";
   }
