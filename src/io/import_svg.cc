@@ -200,8 +200,8 @@ std::unique_ptr<Polygon2d> import_svg(double fn, double fs, double fa,
         for (const auto& p : s.get_path_list()) {
           Outline2d outline;
           for (const auto& v : p) {
-            double x = scale.x() * (-viewbox.x() + v.x()) - cx;
-            double y = scale.y() * (-viewbox.y() - v.y()) + cy;
+            double x = scale.x() * v.x() - cx;
+            double y = scale.y() * -v.y() + cy;
             outline.vertices.push_back(Vector2d(x, y));
             outline.positive = true;
           }
