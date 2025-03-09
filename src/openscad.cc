@@ -834,7 +834,7 @@ int main(int argc, char **argv)
   ViewOptions viewOptions{};
   po::options_description desc("Allowed options");
   desc.add_options()
-    ("export-format", po::value<std::string>(), "overrides format of exported scad file when using option '-o', arg can be any of its supported file extensions.  For ascii stl export, specify 'asciistl', and for binary stl export, specify 'binstl'.  Ascii export is the current stl default, but binary stl is planned as the future default so asciistl should be explicitly specified in scripts when needed.\n")
+    ("export-format", po::value<std::string>(), "overrides format of exported scad file when using option '-o', arg can be any of its supported file extensions.  For ASCII stl export, specify 'asciistl', and for binary stl export, specify 'binstl'.  ASCII export is the current stl default, but binary stl is planned as the future default so asciistl should be explicitly specified in scripts when needed.\n")
     ("o,o", po::value<std::vector<std::string>>(), "output specified file instead of running the GUI. The file extension specifies the type: stl, off, wrl, amf, 3mf, csg, dxf, svg, pdf, png, echo, ast, term, nef3, nefdbg, param, pov. May be used multiple times for different exports. Use '-' for stdout.\n")
     ("O,O", po::value<std::vector<std::string>>(), "pass settings value to the file export using the format section/key=value, e.g export-pdf/paper-size=a3. Use --help-export to list all available settings.")
     ("D,D", po::value<std::vector<std::string>>(), "var=val -pre-define variables")
@@ -882,8 +882,6 @@ int main(int argc, char **argv)
     ("check-parameters", po::value<std::string>(), "=true/false, configure the parameter check for user modules and functions")
     ("check-parameter-ranges", po::value<std::string>(), "=true/false, configure the parameter range check for builtin modules")
     ("debug", po::value<std::string>(), "special debug info - specify 'all' or a set of source file names")
-    ("s,s", po::value<std::string>(), "stl_file deprecated, use -o")
-    ("x,x", po::value<std::string>(), "dxf_file deprecated, use -o")
 #ifdef ENABLE_PYTHON
   ("trust-python",  "Trust python")
   ("ipython",  "Run ipython Interpreter")
@@ -991,14 +989,6 @@ int main(int argc, char **argv)
 
   if (vm.count("o")) {
     output_files = vm["o"].as<std::vector<std::string>>();
-  }
-  if (vm.count("s")) {
-    LOG(message_group::Deprecated, "The -s option is deprecated. Use -o instead.\n");
-    output_files.push_back(vm["s"].as<std::string>());
-  }
-  if (vm.count("x")) {
-    LOG(message_group::Deprecated, "The -x option is deprecated. Use -o instead.\n");
-    output_files.push_back(vm["x"].as<std::string>());
   }
   if (vm.count("d")) {
     if (deps_output_file) help(argv[0], desc, true);
