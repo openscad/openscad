@@ -329,7 +329,7 @@ const std::string get_lib3mf_version() {
 #include "geometry/manifold/manifoldutils.h"
 #endif
 
-std::unique_ptr<Geometry> import_3mf(const std::string& filename, const Location& loc)
+std::unique_ptr<PolySet> import_3mf(const std::string& filename, const Location& loc)
 {
   Lib3MF::PWrapper wrapper;
 
