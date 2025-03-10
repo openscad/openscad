@@ -717,7 +717,14 @@ list(APPEND STL_IMPORT_FILES
   ${TEST_SCAD_DIR}/stl/stl-import-invalidvertex.scad
   ${TEST_SCAD_DIR}/stl/stl-import-toomanyvertices.scad
   ${TEST_SCAD_DIR}/stl/stl-import-unparseable.scad
+  # result will not be empty
+  ${TEST_SCAD_DIR}/stl/stl-import-centered.scad
+  ${TEST_SCAD_DIR}/stl/stl-import-not-centered.scad
 )
+
+list(APPEND OBJ_IMPORT_FILES ${TEST_SCAD_DIR}/obj/obj-import-centered.scad)
+list(APPEND 3MF_IMPORT_FILES ${TEST_SCAD_DIR}/3mf/3mf-import-centered.scad)
+list(APPEND OFF_IMPORT_FILES ${TEST_SCAD_DIR}/off/off-import-centered.scad)
 
 list(GET RENDERTEST_2D_FILES 0 1 2 RENDERSTDIOTEST_FILES)
 list(APPEND RENDERTEST_FILES ${RENDERTEST_2D_FILES} ${RENDERTEST_3D_FILES} ${BUGS_FILES} ${BUGS_2D_FILES})
@@ -741,7 +748,7 @@ list(REMOVE_ITEM RENDERTEST_FILES
 list(APPEND RENDERFORCETEST_FILES ${TEST_SCAD_DIR}/3D/issues/issue5548.scad)
 
 set(PRUNE_TEST ${TEST_SCAD_DIR}/misc/intersection-prune-test.scad)
-list(APPEND PREVIEWTEST_FILES ${STL_IMPORT_FILES} ${RENDERTEST_FILES} ${PRUNE_TEST} ${PREVIEW_ONLY_FILES})
+list(APPEND PREVIEWTEST_FILES ${3MF_IMPORT_FILES} ${OBJ_IMPORT_FILES} ${OFF_IMPORT_FILES} ${STL_IMPORT_FILES} ${RENDERTEST_FILES} ${PRUNE_TEST} ${PREVIEW_ONLY_FILES})
 list(APPEND THROWNTOGETHERTEST_FILES ${RENDERTEST_FILES} ${PRUNE_TEST} ${PREVIEW_ONLY_FILES})
 
 list(APPEND COLOR_3D_TEST_FILES
