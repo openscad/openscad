@@ -586,7 +586,7 @@ int cmdline(const CommandLine& cmd)
 
   if(python_active) {
     auto fulltext_py = text;
-    initPython(0.0);
+    initPython(PlatformUtils::applicationPath(), 0.0);
     auto error  = evaluatePython(fulltext_py, false);
     if(error.size() > 0) LOG(error.c_str());
     text ="\n";
@@ -807,6 +807,15 @@ int main(int argc, char **argv)
 #endif
   PlatformUtils::registerApplicationPath(applicationPath);
 
+#ifdef ENABLE_PYTHON
+  // The original name as called, not resolving links and so on. This will
+  // just forward everything to the python main.
+  const auto applicationName = fs::path(argv[0]).filename().generic_string();
+  if (applicationName == "openscad-python") {
+      return pythonRunArgs(argc, argv);
+  }
+#endif
+
 #ifdef ENABLE_CGAL
   // Always throw exceptions from CGAL, so we can catch instead of crashing on bad geometry.
   CGAL::set_error_behaviour(CGAL::THROW_EXCEPTION);
@@ -873,6 +882,7 @@ int main(int argc, char **argv)
     ("debug", po::value<std::string>(), "special debug info - specify 'all' or a set of source file names")
 #ifdef ENABLE_PYTHON
   ("trust-python",  "Trust python")
+  ("python-module", po::value<std::string>(), "=module Call pip python module")
 #endif
   ;
 
@@ -1052,6 +1062,14 @@ int main(int argc, char **argv)
   }
 
   PRINTDB("Application location detected as %s", applicationPath);
+
+  const auto pymod = "python-module";
+  if (vm.count(pymod)) {
+      PRINTDB("Running Python Module %s", pymod);
+      return pythonRunModule(applicationPath,
+                             vm[pymod].as<std::string>(),
+                             inputFiles);
+  }
 
   auto cmdlinemode = false;
   if (!output_files.empty()) { // cmd-line mode

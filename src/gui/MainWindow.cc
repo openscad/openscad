@@ -132,6 +132,7 @@
 #include "gui/QGLView.h"
 #include "gui/QSettingsCached.h"
 #include "gui/QWordSearchField.h"
+#include "gui/SettingsWriter.h"
 #include "gui/ScintillaEditor.h"
 #include "gui/TabManager.h"
 #include "gui/UIUtils.h"
@@ -436,10 +437,18 @@ MainWindow::MainWindow(const QStringList& filenames) :
   connect(this->fileActionSaveACopy, &QAction::triggered, this, &MainWindow::actionSaveACopy);
   connect(this->fileActionSaveAll, &QAction::triggered, tabManager, &TabManager::saveAll);
   connect(this->fileActionReload, &QAction::triggered, this, &MainWindow::actionReload);
-  connect(this->fileActionRevoke, &QAction::triggered, this, &MainWindow::actionRevokeTrustedFiles);
   connect(this->fileActionClose, &QAction::triggered, tabManager, &TabManager::closeCurrentTab);
   connect(this->fileActionQuit, &QAction::triggered, scadApp, &OpenSCADApp::quit, Qt::QueuedConnection);
   connect(this->fileShowLibraryFolder, &QAction::triggered, this, &MainWindow::actionShowLibraryFolder);
+
+#ifdef ENABLE_PYTHON
+  connect(this->fileActionPythonRevoke, &QAction::triggered, this, &MainWindow::actionPythonRevokeTrustedFiles);
+  connect(this->fileActionPythonCreateVenv, &QAction::triggered, this, &MainWindow::actionPythonCreateVenv);
+  connect(this->fileActionPythonSelectVenv, &QAction::triggered, this, &MainWindow::actionPythonSelectVenv);
+#else
+  this->menuPython->setVisible(false);
+#endif
+
 #ifndef __APPLE__
   auto shortcuts = this->fileActionSave->shortcuts();
   this->fileActionSave->setShortcuts(shortcuts);
@@ -1616,7 +1625,7 @@ void MainWindow::actionSaveAs()
   tabManager->saveAs(activeEditor);
 }
 
-void MainWindow::actionRevokeTrustedFiles()
+void MainWindow::actionPythonRevokeTrustedFiles()
 {
   QSettingsCached settings;
 #ifdef ENABLE_PYTHON
@@ -1625,7 +1634,38 @@ void MainWindow::actionRevokeTrustedFiles()
 #endif
   settings.remove("python_hash");
   QMessageBox::information(this, _("Trusted Files"), "All trusted python files revoked", QMessageBox::Ok);
+}
 
+void MainWindow::actionPythonCreateVenv()
+{
+  const QString venvDir = QFileDialog::getExistingDirectory(this, "Create Virtual Environment");
+  if (venvDir.isEmpty()) {
+    return;
+  }
+  int result = pythonRunModule("", "venv", { venvDir.toStdString() });
+  if (result == 0) {
+    Settings::SettingsPython::pythonVirtualEnv.setValue(venvDir.toStdString());
+    Settings::Settings::visit(SettingsWriter());
+    QMessageBox::information(this, _("Create Virtual Environment"),
+        "Virtual environment created, please restart OpenSCAD to activate.",
+        QMessageBox::Ok);
+  }
+}
+
+void MainWindow::actionPythonSelectVenv()
+{
+  const QString venvDir = QFileDialog::getExistingDirectory(this, "Select Virtual Environment");
+  if (venvDir.isEmpty()) {
+    return;
+  }
+  const QFileInfo fileInfo{QDir{venvDir}, "pyvenv.cfg"};
+  if (fileInfo.exists()) {
+    Settings::SettingsPython::pythonVirtualEnv.setValue(venvDir.toStdString());
+    Settings::Settings::visit(SettingsWriter());
+    QMessageBox::information(this, _("Select Virtual Environment"),
+        "Virtual environment selected, please restart OpenSCAD to activate.",
+        QMessageBox::Ok);
+  }
 }
 
 void MainWindow::actionSaveACopy()
@@ -1992,7 +2032,16 @@ void MainWindow::parseTopLevelDocument()
     auto fulltext_py =
       std::string(this->lastCompiledDoc.toUtf8().constData());
 
-    initPython(this->animateWidget->getAnimTval());
+    const auto& venv = venvBinDirFromSettings();
+    const auto& binDir = venv.empty() ? PlatformUtils::applicationPath() : venv;
+    initPython(binDir, this->animateWidget->getAnimTval());
+
+    if (venv.empty()) {
+        LOG("Running %1$s", python_version());
+    } else {
+        const auto& v = Settings::SettingsPython::pythonVirtualEnv.value();
+        LOG("Running %1$s in venv '%2$s'", python_version(), v);
+    }
     auto error = evaluatePython(fulltext_py, false);
     if (error.size() > 0) LOG(message_group::Error, Location::NONE, "", error.c_str());
     fulltext = "\n";

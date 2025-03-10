@@ -360,7 +360,6 @@ PyObject *python_circle(PyObject *self, PyObject *args, PyObject *kwargs)
   char *kwlist[] = {"r", "d", "fn", "fa", "fs", NULL};
   double r = NAN;
   double d = NAN;
-  double angle = NAN;
   double fn = NAN, fa = NAN, fs = NAN;
 
   double vr = 1;
@@ -888,8 +887,6 @@ PyObject *python_show_core(PyObject *obj)
     PyErr_SetString(PyExc_TypeError, "Invalid type for Object in show");
     return NULL;
   }
-  PyObject *key, *value;
-  Py_ssize_t pos = 0;
   python_result_node = child;
   return Py_None;
 }
@@ -1688,6 +1685,7 @@ PyObject *python_oo_resize(PyObject *obj, PyObject *args, PyObject *kwargs)
   return python_resize_core(obj, newsize, autosize, convexity);
 }  
 
+#if defined(ENABLE_EXPERIMENTAL) && defined(ENABLE_CGAL)
 PyObject *python_roof_core(PyObject *obj, const char *method, int convexity,double fn,double  fa,double fs)
 {	
   DECLARE_INSTANCE
@@ -1765,6 +1763,7 @@ PyObject *python_oo_roof(PyObject *obj, PyObject *args, PyObject *kwargs)
   }
   return python_roof_core(obj, method, convexity, fn, fa, fs);
 }
+#endif
 
 PyObject *python_render_core(PyObject *obj, int convexity)
 {
