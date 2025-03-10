@@ -27,6 +27,7 @@
 
 #include <string>
 #include <vector>
+#include <cstdlib>
 #include <filesystem>
 
 #include "core/Settings.h"
@@ -73,6 +74,42 @@ fail:
     return status.exitcode;
   }
   Py_ExitStatusException(status);
+}
+
+int pythonCreateVenv(const std::string& path)
+{
+  int result = pythonRunModule("", "venv", { path });
+  if (result != 0) {
+    return result;
+  }
+
+  // The created VENV points to the temporary mount point of the
+  // AppImage, e.g. /tmp/.mount_OpenSCCpPaio - that is obviously
+  // no good for any later runs.
+  // To fix that, we point the link to the magic /proc/self/exe
+  // so it can always just call itself as the python interpreter.
+  const char *appdirenv = getenv("APPDIR");
+  if (getenv("APPIMAGE") != nullptr && appdirenv != nullptr) {
+    // Assume we are running as AppImage
+    const std::string appdir = appdirenv;
+    const auto vbin = fs::path{path} / "bin" / "openscad-python";
+    if (fs::exists(vbin) && fs::is_symlink(vbin)) {
+      const auto lbin = fs::read_symlink(vbin).generic_string();
+      if (lbin.rfind(appdir, 0) == 0) {
+        std::error_code ec;
+        fs::remove(vbin, ec);
+        if (ec.value() > 0) {
+          return ec.value();
+        }
+        fs::create_symlink("/proc/self/exe", vbin, ec);
+        if (ec.value() > 0) {
+          return ec.value();
+        }
+      }
+    }
+  }
+
+  return 0;
 }
 
 int pythonRunModule(const std::string& appPath, const std::string& module,

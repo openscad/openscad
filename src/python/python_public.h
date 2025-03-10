@@ -14,5 +14,6 @@ void python_unlock(void);
 extern std::shared_ptr<AbstractNode> python_result_node;
 
 int pythonRunArgs(int argc, char **argv);
+int pythonCreateVenv(const std::string& path);
 int pythonRunModule(const std::string& appPath, const std::string& module, const std::vector<std::string>& args);
 std::string venvBinDirFromSettings();

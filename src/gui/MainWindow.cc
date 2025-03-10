@@ -1662,7 +1662,7 @@ void MainWindow::actionPythonCreateVenv()
 
   const auto& path = venvDir.absolutePath().toStdString();
   LOG("Creating Python virtual environment in '%1$s'...", path);
-  int result = pythonRunModule("", "venv", { path });
+  int result = pythonCreateVenv(path);
 
   if (result == 0) {
     Settings::SettingsPython::pythonVirtualEnv.setValue(path);
