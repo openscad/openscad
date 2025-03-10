@@ -22,7 +22,7 @@ typedef struct {
 } PyOpenSCADObject;
 
 void PyObjectDeleter (PyObject *pObject);
-using PyObjectUniquePtr = std::unique_ptr<PyObject, const decltype(PyObjectDeleter)&>;
+using PyObjectUniquePtr = std::unique_ptr<PyObject, decltype(PyObjectDeleter)&>;
 
 PyMODINIT_FUNC PyInit_PyOpenSCAD(void);
 int python_vectorval(PyObject *vec, int minarg, int maxarg, double *x, double *y, double *z, double *w=NULL);
