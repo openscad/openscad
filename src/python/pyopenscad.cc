@@ -171,7 +171,7 @@ std::shared_ptr<AbstractNode> PyOpenSCADObjectToNode(PyObject *obj, PyObject **d
 std::string python_version(void)
 {
   std::ostringstream stream;
-  stream << "Python" <<  PY_MAJOR_VERSION  <<  "."  <<  PY_MINOR_VERSION  << "." << PY_MICRO_VERSION ;
+  stream << "Python " <<  PY_MAJOR_VERSION  <<  "."  <<  PY_MINOR_VERSION  << "." << PY_MICRO_VERSION ;
   return stream.str();
 }
 
@@ -427,7 +427,7 @@ Outline2d python_getprofile(void *v_cbfunc, int fn, double arg)
 {
 	PyObject *cbfunc = (PyObject *) v_cbfunc;
 	Outline2d result;
-	if(pythonInitDict == NULL)  initPython(0.0);
+	if(pythonInitDict == NULL)  initPython(PlatformUtils::applicationPath(),0.0);
 	PyObject* args = PyTuple_Pack(1,PyFloat_FromDouble(arg));
 	PyObject* polygon = PyObject_CallObject(cbfunc, args);
         Py_XDECREF(args);
@@ -700,8 +700,10 @@ void openscad_object_callback(PyObject *obj) {
 	}
 }
 #endif
-void initPython(double time)
+void initPython(const std::string& binDir, double time)
 {
+  const auto name = "openscad-python";
+  const auto exe = binDir + "/" + name;
   if(pythonInitDict) { /* If already initialized, undo to reinitialize after */
     PyObject *key, *value;
     Py_ssize_t pos = 0;
@@ -803,8 +805,10 @@ void initPython(double time)
 #endif
     stream << sep << PlatformUtils::userLibraryPath();
     stream << sepchar << ".";
+    
+    PyConfig_SetBytesString(&config, &config.program_name, name);
+    PyConfig_SetBytesString(&config, &config.executable, exe.c_str());
 
-    PyConfig_SetBytesString(&config, &config.pythonpath_env, stream.str().c_str());
     PyStatus status = Py_InitializeFromConfig(&config);
     if (PyStatus_Exception(status)) {
       LOG( message_group::Error, "Python not found. Is it installed ?");
@@ -881,6 +885,8 @@ class InputCatcher:\n\
       return self.data\n\
    def readline(self):\n\
       return self.data\n\
+   def isatty(self):\n\
+      return False\n\
 class OutputCatcher:\n\
    def __init__(self):\n\
       self.data = ''\n\
@@ -1178,7 +1184,7 @@ void ipython(void) {
         .wchar_argv = NULL};
 */
 //    PyStatus status = pymain_init();
-    initPython(0.0);
+    initPython(PlatformUtils::applicationPath(),0.0);
 /*    
     if (_PyStatus_IS_EXIT(status)) {
         pymain_free();

@@ -24,6 +24,7 @@ constexpr inline auto PROPERTY_NAME = "_settings_value";
 // Additional value for enums that can map to an additional value (e.g. GridSize in PDF Export)
 constexpr inline auto PROPERTY_SELECTED_VALUE = "_selected_value";
 
+constexpr inline auto SECTION_PYTHON = "python";
 constexpr inline auto SECTION_EXPORT_PDF = "export-pdf";
 constexpr inline auto SECTION_EXPORT_3MF = "export-3mf";
 
@@ -476,6 +477,12 @@ public:
   static SettingsEntryInt joystickNr;
 
   static void visit(const SettingsVisitor& visitor);
+};
+
+class SettingsPython {
+public:
+  static SettingsEntryString pythonTrustedFiles;
+  static SettingsEntryString pythonVirtualEnv;
 };
 
 class SettingsExportPdf {

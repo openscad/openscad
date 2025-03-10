@@ -85,6 +85,7 @@
             </property>
             <property name="font">
              <font>
+              <weight>75</weight>
               <bold>true</bold>
              </font>
             </property>
@@ -206,7 +207,7 @@
      <x>0</x>
      <y>0</y>
      <width>1354</width>
-     <height>22</height>
+     <height>24</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu_File">
@@ -244,6 +245,15 @@
      <addaction name="separator"/>
      <addaction name="fileActionExportImage"/>
     </widget>
+    <widget class="QMenu" name="menuPython">
+     <property name="title">
+      <string>Python</string>
+     </property>
+     <addaction name="fileActionPythonRevoke"/>
+     <addaction name="separator"/>
+     <addaction name="fileActionPythonSelectVenv"/>
+     <addaction name="fileActionPythonCreateVenv"/>
+    </widget>
     <addaction name="fileActionNew"/>
     <addaction name="fileActionOpen"/>
     <addaction name="menuOpenRecent"/>
@@ -252,7 +262,6 @@
     <addaction name="separator"/>
     <addaction name="fileActionNewWindow"/>
     <addaction name="fileActionOpenWindow"/>
-    <addaction name="fileActionRevoke"/>
     <addaction name="fileActionClose"/>
     <addaction name="separator"/>
     <addaction name="fileActionSave"/>
@@ -261,6 +270,8 @@
     <addaction name="fileActionSaveAll"/>
     <addaction name="separator"/>
     <addaction name="menuExport"/>
+    <addaction name="separator"/>
+    <addaction name="menuPython"/>
     <addaction name="separator"/>
     <addaction name="fileShowLibraryFolder"/>
     <addaction name="separator"/>
@@ -1359,9 +1370,12 @@
     <string>Export as &amp;DXF...</string>
    </property>
   </action>
-  <action name="fileActionRevoke">
+  <action name="fileActionPythonRevoke">
    <property name="text">
-    <string>Revoke trusted python Files</string>
+    <string>Revoke Trusted Python Files</string>
+   </property>
+   <property name="toolTip">
+    <string>Revoke Trusted Python Files</string>
    </property>
   </action>
   <action name="fileActionClose">
@@ -1651,6 +1665,16 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+J</string>
+   </property>
+  </action>
+  <action name="fileActionPythonCreateVenv">
+   <property name="text">
+    <string>Create Virtual Environment</string>
+   </property>
+  </action>
+  <action name="fileActionPythonSelectVenv">
+   <property name="text">
+    <string>Select Virtual Environment</string>
    </property>
   </action>
  </widget>

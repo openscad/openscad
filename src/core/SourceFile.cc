@@ -32,6 +32,7 @@
 #include "core/ScopeContext.h"
 #include "core/parsersettings.h"
 #include "core/StatCache.h"
+#include "platform/PlatformUtils.h"
 #include <algorithm>
 #include <ctime>
 #include <ostream>
@@ -93,7 +94,10 @@ void SourceFile::registerUse(const std::string& path, const Location& loc)
       if(trusted) {
         std::filesystem::path fs_path(path); 
         std::string cmd = "import sys\nsys.path.append('"+fs_path.parent_path().string()+"')\nimport "+fs_path.stem().string();
-        if(!pythonRuntimeInitialized) initPython(0.0);
+        const auto& venv = venvBinDirFromSettings();
+        const auto& binDir = venv.empty() ? PlatformUtils::applicationPath() : venv;
+
+        if(!pythonRuntimeInitialized) initPython(binDir, 0.0);
         std::string error=evaluatePython(cmd); 
         if (error.size() > 0) LOG(message_group::Error, Location::NONE, "", error.c_str());
       } else LOG(message_group::Error, "File not trusted '%1$s'", path);

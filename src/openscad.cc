@@ -587,7 +587,7 @@ int cmdline(const CommandLine& cmd)
   std::string text_py=text;
   if(python_active) {
     if(cmd.animate.frames == 0) {
-      initPython(0.0);
+      initPython(PlatformUtils::applicationPath(),0.0);
       auto error  = evaluatePython(text_py);
       finishPython();
       if(error.size() > 0) LOG(error.c_str());
@@ -645,7 +645,7 @@ int cmdline(const CommandLine& cmd)
       render_variables.time = frame * (1.0 / cmd.animate.frames);
 #ifdef ENABLE_PYTHON      
     if(python_active) {
-      initPython(render_variables.time);
+      initPython(PlatformUtils::applicationPath(),render_variables.time);
       auto error  = evaluatePython(text_py);
       if(error.size() > 0) LOG(error.c_str());
       finishPython();
@@ -818,6 +818,15 @@ int main(int argc, char **argv)
 #endif
   PlatformUtils::registerApplicationPath(applicationPath);
 
+#ifdef ENABLE_PYTHON
+  // The original name as called, not resolving links and so on. This will
+  // just forward everything to the python main.
+  const auto applicationName = fs::path(argv[0]).filename().generic_string();
+  if (applicationName == "openscad-python") {
+      return pythonRunArgs(argc, argv);
+  }
+#endif
+
 #ifdef ENABLE_CGAL
   // Always throw exceptions from CGAL, so we can catch instead of crashing on bad geometry.
   CGAL::set_error_behaviour(CGAL::THROW_EXCEPTION);
@@ -885,6 +894,7 @@ int main(int argc, char **argv)
 #ifdef ENABLE_PYTHON
   ("trust-python",  "Trust python")
   ("ipython",  "Run ipython Interpreter")
+  ("python-module", po::value<std::string>(), "=module Call pip python module")
 #endif
   ;
 
@@ -922,6 +932,15 @@ int main(int argc, char **argv)
   if (vm.count("ipython")) {
     LOG("Running ipython interpreter", OpenSCAD::debug);
     python_runipython = true;
+  }
+  const auto pymod = "python-module";
+  if (vm.count(pymod)) {
+      PRINTDB("Running Python Module %s", pymod);
+      std::vector<std::string> args;
+      if (vm.count("input-file")) {
+          args = vm["input-file"].as<std::vector<std::string>>();
+      }
+      return pythonRunModule(applicationPath, vm[pymod].as<std::string>(), args);
   }
 #endif
   if (vm.count("quiet")) {

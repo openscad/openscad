@@ -3396,6 +3396,7 @@ PyObject *python_oo_resize(PyObject *obj, PyObject *args, PyObject *kwargs)
   return python_resize_core(obj, newsize, autosize, convexity);
 }  
 
+#if defined(ENABLE_EXPERIMENTAL) && defined(ENABLE_CGAL)
 PyObject *python_roof_core(PyObject *obj, const char *method, int convexity,double fn,double  fa,double fs)
 {	
   DECLARE_INSTANCE
@@ -3473,6 +3474,7 @@ PyObject *python_oo_roof(PyObject *obj, PyObject *args, PyObject *kwargs)
   }
   return python_roof_core(obj, method, convexity, fn, fa, fs);
 }
+#endif
 
 PyObject *python_render_core(PyObject *obj, int convexity)
 {
@@ -4379,7 +4381,9 @@ PyMethodDef PyOpenSCADFunctions[] = {
   {"multmatrix", (PyCFunction) python_multmatrix, METH_VARARGS | METH_KEYWORDS, "Multmatrix Object."},
   {"divmatrix", (PyCFunction) python_divmatrix, METH_VARARGS | METH_KEYWORDS, "Divmatrix Object."},
   {"offset", (PyCFunction) python_offset, METH_VARARGS | METH_KEYWORDS, "Offset Object."},
+#if defined(ENABLE_EXPERIMENTAL) && defined(ENABLE_CGAL)
   {"roof", (PyCFunction) python_roof, METH_VARARGS | METH_KEYWORDS, "Roof Object."},
+#endif
   {"pull", (PyCFunction) python_pull, METH_VARARGS | METH_KEYWORDS, "Pull apart Object."},
   {"wrap", (PyCFunction) python_wrap, METH_VARARGS | METH_KEYWORDS, "Wrap Object around cylidner."},
   {"color", (PyCFunction) python_color, METH_VARARGS | METH_KEYWORDS, "Color Object."},
@@ -4460,7 +4464,9 @@ PyMethodDef PyOpenSCADMethods[] = {
   OO_METHOD_ENTRY(multmatrix,"Multmatrix Object")	
   OO_METHOD_ENTRY(divmatrix,"Divmatrix Object")	
   OO_METHOD_ENTRY(offset,"Offset Object")	
+#if defined(ENABLE_EXPERIMENTAL) && defined(ENABLE_CGAL)
   OO_METHOD_ENTRY(roof,"Roof Object")	
+#endif
   OO_METHOD_ENTRY(color,"Color Object")	
   OO_METHOD_ENTRY(export,"Export Object")	
   OO_METHOD_ENTRY(find_face,"Find Face")	
