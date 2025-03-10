@@ -1522,10 +1522,7 @@ set_tests_properties(
   rendertest_empty-shape-tests
   csgrendertest_issue1258
 
-  # OpenCSG z fighting https://github.com/openscad/openscad/issues/4595
-  openscad-viewoptions-edges_view-options-tests
-  openscad-viewoptions-axes-scales-edges_view-options-tests
-  openscad-manifold-viewoptions-edges_view-options-tests
+  # OpenCSG z fighting
   previewtest_surface_image
   throwntogethertest_surface_image
 
@@ -1611,7 +1608,7 @@ set_tests_properties(
   rendermanifoldtest_issue2841b
   previewmanifoldtest_issue2841b
 
-  # OpenCSG z fighting https://github.com/openscad/openscad/issues/4595
+  # OpenCSG z fighting
   previewmanifoldtest_surface_image
 
   # https://github.com/openscad/openscad/issues/5158

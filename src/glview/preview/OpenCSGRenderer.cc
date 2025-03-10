@@ -26,6 +26,7 @@
 
 #include "glview/preview/OpenCSGRenderer.h"
 #include "glview/Renderer.h"
+#include "glview/ShaderUtils.h"
 #include "glview/VertexState.h"
 #include "geometry/linalg.h"
 #include "glview/system-gl.h"
@@ -93,7 +94,9 @@ OpenCSGRenderer::OpenCSGRenderer(
     std::shared_ptr<CSGProducts> background_products)
     : root_products_(std::move(root_products)),
       highlights_products_(std::move(highlights_products)),
-      background_products_(std::move(background_products)) {}
+      background_products_(std::move(background_products)) {
+  opencsg_vertex_shader_code_ = ShaderUtils::loadShaderSource("OpenCSG.vert");
+}
 
 void OpenCSGRenderer::prepare(const ShaderUtils::ShaderInfo *shaderinfo) {
   if (vertex_state_containers_.empty()) {
@@ -118,6 +121,12 @@ void OpenCSGRenderer::draw(bool showedges, const ShaderUtils::ShaderInfo *shader
 
   for (const auto& product : vertex_state_containers_) {
     if (product->primitives().size() > 1) {
+#if OPENCSG_VERSION >= 0x0180
+      if (enable_shader)
+          OpenCSG::setVertexShader(opencsg_vertex_shader_code_);
+      else
+          OpenCSG::setVertexShader({});
+#endif
       GL_CHECKD(OpenCSG::render(product->primitives()));
       GL_TRACE0("glDepthFunc(GL_EQUAL)");
       GL_CHECKD(glDepthFunc(GL_EQUAL));
