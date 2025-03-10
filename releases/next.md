@@ -16,6 +16,7 @@
 * rotate_exteude()
   * a= is an alias for angle=
 * import()
+  * Added center= parameter 
   * Added support for .json #3891
   * Improved SVG import
     * Support $fn, $fs, $fa #3994
