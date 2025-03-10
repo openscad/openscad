@@ -2372,6 +2372,7 @@ static std::unique_ptr<ExternalToolInterface> createExternalToolService(
     // TODO: Print warning
     return nullptr;
     break;
+#if 0
   case print_service_t::PRINT_SERVICE: {
     if (const auto printService = PrintService::getPrintService(serviceName.toStdString())) {
       return createExternalPrintService(printService, fileFormat);
@@ -2380,6 +2381,7 @@ static std::unique_ptr<ExternalToolInterface> createExternalToolService(
     return nullptr;
     break;
   }
+#endif
   case print_service_t::OCTOPRINT:
     return createOctoPrintService(fileFormat);
     break;
