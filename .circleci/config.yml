@@ -69,12 +69,12 @@ jobs:
               make -j4
               make install DESTDIR=../AppDir
               cd ..
+              ( cd AppDir/usr/bin && ln -s openscad openscad-python )
               export PATH=/appimage/usr/bin:"$PATH"
               export EXTRA_QT_PLUGINS=svg
               export PYTHON_VERSION=$(python3 -c "import sys; v=sys.version_info; print(f'{v.major}.{v.minor}.{v.micro}')")
               export LINUXDEPLOY_OUTPUT_VERSION="${OPENSCAD_VERSION}${SUFFIX}"
               linuxdeploy --plugin python --plugin qt --output appimage --appdir AppDir
-              ( cd AppDir/usr/bin && ln -s openscad openscad-python )
               mkdir -p /tmp/out
               cp -iv OpenSCAD-*.AppImage /tmp/out
               if [ -n "${CODE_SIGNING_KEY}" ]; then
