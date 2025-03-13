@@ -107,6 +107,7 @@ if (true) { a = 0x10000000000000000; }
 // Expect loss-of-precision warnings.
 if (true) { a = 0x1000000000000001; }
 if (true) { a = 1152921504606846977; }
-// Max hex constant.
 // Expect loss-of-precision warnings, but they should convert to the same imprecise number.
-assert(0xffffffffffffffff == 18446744073709551615);
+// arm64 somehow manages to convert 2^64-1 to double and back without losing anything, so
+// this uses a value that's less close to the seemingly-magic all-ones value.
+assert(0xfffffffffffffff0 == 18446744073709551600);
