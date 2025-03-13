@@ -20,7 +20,7 @@
 
 
 Barcode1d::Barcode1d(Edge1d edge) : sanitized(true) {
-  addOutline(std::move(edge));
+  addEdge(std::move(edge));
 }
 
 std::unique_ptr<Geometry> Barcode1d::copy() const
@@ -30,10 +30,9 @@ std::unique_ptr<Geometry> Barcode1d::copy() const
 
 BoundingBox Edge1d::getBoundingBox() const {
   BoundingBox bbox;
+  bbox.extend(Vector3d(begin, 0, 0));
+  bbox.extend(Vector3d(end, 0, 0));
   // Note: this uses ->edge, and so automatically gets trans3d applied
-  for (const auto& v : this->vertices) {
-    bbox.extend(Vector3d(v[0], v[1], 0));
-  }
   return bbox;
 }
 
@@ -56,10 +55,10 @@ size_t Barcode1d::memsize() const
 {
   size_t mem = 0;
   for (const auto &o : this->theedges) {
-    mem += o.vertices.size() * sizeof(Vector2d) + sizeof(Edge1d);
+    mem += 2*sizeof(double);
   }
   for (const auto &o : this->trans3dOutlines) {
-    mem += o.vertices.size() * sizeof(Vector2d) + sizeof(Edge1d);
+    mem += 2*sizeof(double);
   }
   mem += sizeof(Barcode1d);
   return mem;
@@ -79,9 +78,7 @@ std::string Barcode1d::dump() const
   std::ostringstream out;
   for (const auto& o : this->theedges) {
     out << "contour:\n";
-    for (const auto& v : o.vertices) {
-      out << "  " << v.transpose();
-    }
+      out << "  " << o.begin << " " << o.end;
     out << "\n";
   }
   if (trans3dState != Transform3dState::NONE) {
@@ -115,11 +112,13 @@ void Barcode1d::transform(const Transform2d& mat)
     return;
   }
   if (trans3dState != Transform3dState::NONE) mergeTrans3d();
+  /*
   for (auto& o : this->theedges) {
     for (auto& v : o.vertices) {
       v = mat * v;
     }
   }
+  */
 }
 
 void Barcode1d::resize(const Vector2d& newsize, const Eigen::Matrix<bool, 2, 1>& autosize)
@@ -151,17 +150,6 @@ bool Barcode1d::is_convex() const
 {
   if (theedges.size() > 1) return false;
   if (theedges.empty()) return true;
-
-  auto const& pts = theedges[0].vertices;
-  int N = pts.size();
-
-  // Check for a right turn. This assumes the polygon is simple.
-  for (int i = 0; i < N; ++i) {
-    const auto& d1 = pts[(i + 1) % N] - pts[i];
-    const auto& d2 = pts[(i + 2) % N] - pts[(i + 1) % N];
-    double zcross = d1[0] * d2[1] - d1[1] * d2[0];
-    if (zcross < 0) return false;
-  }
   return true;
 }
 
@@ -239,9 +227,9 @@ void Barcode1d::transform3d(const Transform3d &mat)
     // A 2D transformation may flip the winding order of a polygon.
     // If that happens with a sanitized polygon, we need to reverse
     // the winding order for it to be correct.
-    if (Feature::ExperimentalSkin.is_enabled() && sanitized && t.matrix().determinant() < 0)
-      for (auto &o : this->theedges)
-        std::reverse(o.vertices.begin(), o.vertices.end());
+//    if (Feature::ExperimentalSkin.is_enabled() && sanitized && t.matrix().determinant() < 0)
+//      for (auto &o : this->theedges)
+//        std::reverse(o.vertices.begin(), o.vertices.end());
   }
   else {
     if (mat.matrix().determinant() == 0) {
@@ -290,14 +278,17 @@ void Barcode1d::applyTrans3dToOutlines(Barcode1d::Edges1d &edges) const {
     trans3d(1,0), trans3d(1,1), trans3d(1,3),
     trans3d(3,0), trans3d(3,1), trans3d(3,3);
   for (auto &o : edges) {
-    for (auto &v : o.vertices) {
-      v = t * v;
-    }
+    o.begin = trans3d(0,0) * o.begin;	  
+    o.end = trans3d(0,0) * o.end;	  
   }
   // A 2D transformation may flip the winding order of a polygon.
   // If that happens with a sanitized polygon, we need to reverse
   // the winding order for it to be correct.
   if (Feature::ExperimentalSkin.is_enabled() && sanitized && t.matrix().determinant() < 0)
     for (auto &o : edges)
-      std::reverse(o.vertices.begin(), o.vertices.end());
+    {
+	    double tmp=o.begin;
+	    o.begin=o.end;
+	    o.end=tmp;
+    }
 }

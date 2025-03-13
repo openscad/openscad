@@ -4,6 +4,7 @@
 #include "core/Tree.h"
 #include "geometry/GeometryCache.h"
 #include "geometry/Polygon2d.h"
+#include "geometry/Barcode1d.h"
 #include "core/ModuleInstantiation.h"
 #include "core/State.h"
 #include "core/ColorNode.h"
@@ -2357,14 +2358,24 @@ Response GeometryEvaluator::visit(State& state, const LinearExtrudeNode& node)
 {
   if (state.isPrefix() && isSmartCached(node)) return Response::PruneTraversal;
   if (state.isPostfix()) {
-    std::shared_ptr<const Geometry> geom;
+    std::shared_ptr<const Geometry> geom = nullptr;
     if (!isSmartCached(node)) {
-      const std::shared_ptr<const Geometry> geometry = applyToChildren2D(node, OpenSCADOperator::UNION);
-      if (geometry) {
-        const auto polygons = std::dynamic_pointer_cast<const Polygon2d>(geometry);
-        geom = extrudePolygon(node, *polygons);
-        assert(geom);
+      std::shared_ptr<const Geometry>  geometry=nullptr;
+      printf("aa\n");
+      for (const auto& item : this->visitedchildren[node.index()]) {
+        geometry = item.second;
+        printf("bb %p\n",geometry);
+        std::shared_ptr<const Barcode1d> barcode = std::dynamic_pointer_cast<const Barcode1d>(geometry); 
+	if(barcode != nullptr) geom = extrudeBarcode(node, *barcode);
       }
+      if(geom == nullptr){
+        const std::shared_ptr<const Geometry> geometry = applyToChildren2D(node, OpenSCADOperator::UNION);
+        if (geometry) {
+          const auto polygons = std::dynamic_pointer_cast<const Polygon2d>(geometry);
+          geom = extrudePolygon(node, *polygons);
+          assert(geom);
+        }
+      }	
     } else {
       geom = smartCacheGet(node, false);
     }
@@ -2384,7 +2395,6 @@ Response GeometryEvaluator::visit(State& state, const PathExtrudeNode& node)
       if (geometry) {
         const auto polygons = std::dynamic_pointer_cast<const Polygon2d>(geometry);
         auto extruded = extrudePolygon(node, *polygons);
-//	printf("extrude = %p\n",extruded);
         assert(extruded);
         geom = std::move(extruded);
       }

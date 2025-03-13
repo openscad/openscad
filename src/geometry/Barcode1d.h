@@ -15,7 +15,8 @@
  */
 struct Edge1d {
   Edge1d() = default;
-  VectorOfVector2d vertices;
+  Edge1d(double begin, double end){this->begin=begin; this->end-end; } 
+  double begin, end;
   bool positive{true};
   [[nodiscard]] BoundingBox getBoundingBox() const;
 };
@@ -33,14 +34,8 @@ public:
   [[nodiscard]] unsigned int getDimension() const override { return 2; }
   [[nodiscard]] bool isEmpty() const override;
   [[nodiscard]] std::unique_ptr<Geometry> copy() const override;
-  [[nodiscard]] size_t numFacets() const override {
-    return std::accumulate(theedges.begin(), theedges.end(), 0,
-                           [](size_t a, const Edge1d& b) {
-      return a + b.vertices.size();
-    }
-                           );
-  }
-  void addOutline(const Edge1d &edge) {
+  [[nodiscard]] size_t numFacets() const override { return 1; }
+  void addEdge(const Edge1d &edge) {
     if (trans3dState != Transform3dState::NONE) mergeTrans3d();
     this->theedges.push_back(edge);
   }

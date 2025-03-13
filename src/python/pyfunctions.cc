@@ -91,6 +91,35 @@ extern bool parse(SourceFile *& file, const std::string& text, const std::string
 // CSS Color Module Level 4 - Editor’s Draft, 29 May 2015
 extern std::unordered_map<std::string, Color4f> webcolors;
 
+PyObject *python_edge(PyObject *self, PyObject *args, PyObject *kwargs)
+{
+  DECLARE_INSTANCE
+  auto node = std::make_shared<EdgeNode>(instance);
+
+  char *kwlist[] = {"size", "center", NULL};
+  double size = 1;
+
+  PyObject *center = NULL;
+
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|dO", kwlist,
+                                   &size,
+                                   &center)){
+    PyErr_SetString(PyExc_TypeError, "Error during parsing cube(size)");
+    return NULL;
+  }	  
+
+  if(size < 0)  {
+      PyErr_SetString(PyExc_TypeError, "Edge Length must be positive");
+      return NULL;
+  }
+  node->size=size;
+  if (center == Py_False || center == NULL ) ;
+  else if (center == Py_True){
+    node->center = true;
+  }
+  return PyOpenSCADObjectFromNode(&PyOpenSCADType, node);
+}
+
 PyObject *python_cube(PyObject *self, PyObject *args, PyObject *kwargs)
 {
   DECLARE_INSTANCE
@@ -2170,6 +2199,93 @@ PyObject *python_oo_mesh(PyObject *obj, PyObject *args, PyObject *kwargs)
     return NULL;
   }
   return python_mesh_core(obj, tess == Py_True);
+}
+
+PyObject *python_edges_core(PyObject *obj)
+{
+  PyObject *dummydict;
+  std::shared_ptr<AbstractNode> child = PyOpenSCADObjectToNodeMulti(obj, &dummydict);
+  if (child == NULL) {
+    PyErr_SetString(PyExc_TypeError, "Invalid type for  Object in faces \n");
+    return NULL;
+  }
+
+  Tree tree(child, "");
+  GeometryEvaluator geomevaluator(tree);
+  std::shared_ptr<const Geometry> geom = geomevaluator.evaluateGeometry(*tree.root(), true);
+  const std::shared_ptr<const Polygon2d> poly = std::dynamic_pointer_cast<const Polygon2d>(geom);
+  if(poly == nullptr) return Py_None;
+  int edgenum=0;
+  Vector3d zdir(0,0,0);
+  Transform3d trans = poly->getTransform3d();
+  for(auto ol: poly->outlines()) {
+    int n=ol.vertices.size();
+    for(int i=0;i<n;i++)
+    {
+      Vector3d p1=trans*Vector3d(ol.vertices[i][0], ol.vertices[i][1],0);
+      Vector3d p2=trans*Vector3d(ol.vertices[(i+1)%n][0], ol.vertices[(i+1)%n][1],0);
+      Vector3d p3=trans*Vector3d(ol.vertices[(i+2)%n][0], ol.vertices[(i+2)%n][1],0);
+      zdir += (p2-p1).cross(p3-p2);
+    }
+    edgenum += n;
+  }
+  zdir.normalize();
+  PyObject *pyth_edges = PyList_New(edgenum);
+  int ind=0;
+
+  for(auto ol: poly->outlines()) {
+    int n= ol.vertices.size();
+    for(int i=0;i<n;i++) {
+      Vector3d p1=trans*Vector3d(ol.vertices[i][0], ol.vertices[i][1],0);
+      Vector3d p2=trans*Vector3d(ol.vertices[(i+1)%n][0], ol.vertices[(i+1)%n][1],0);
+      Vector3d pt=(p1+p2)/2.0;
+      Vector3d xdir=(p2-p1).normalized();
+      Vector3d ydir=zdir.cross(xdir).normalized();
+
+      Matrix4d mat;
+      mat <<  xdir[0], ydir[0], zdir[0], pt[0],
+              xdir[1], ydir[1], zdir[1], pt[1],
+              xdir[2], ydir[2], zdir[2], pt[2],
+              0      , 0      , 0      , 1;
+
+      DECLARE_INSTANCE
+      auto edge = std::make_shared<EdgeNode>(instance);
+      edge->size=(p2-p1).norm();
+      edge->center=true;
+      {
+        DECLARE_INSTANCE
+        auto mult = std::make_shared<TransformNode>(instance,"multmatrix");
+	mult->matrix = mat;
+	mult->children.push_back(edge);
+
+        PyObject *pyth_edge = PyOpenSCADObjectFromNode(&PyOpenSCADType, mult);
+        PyList_SetItem(pyth_edges, ind++, pyth_edge);
+      }
+
+    }
+  }  
+  return  pyth_edges;
+}
+
+PyObject *python_edges(PyObject *self, PyObject *args, PyObject *kwargs)
+{
+  char *kwlist[] = {"obj", NULL};
+  PyObject *obj = NULL;
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O", kwlist, &obj)) {
+    PyErr_SetString(PyExc_TypeError, "error during parsing\n");
+    return NULL;
+  }
+  return python_edges_core(obj);
+}
+
+PyObject *python_oo_edges(PyObject *obj, PyObject *args, PyObject *kwargs)
+{
+  char *kwlist[] = { NULL};
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "", kwlist)) {
+    PyErr_SetString(PyExc_TypeError, "error during parsing\n");
+    return NULL;
+  }
+  return python_edges_core(obj);
 }
 
 PyObject *python_faces_core(PyObject *obj, bool tessellate)
@@ -4349,6 +4465,7 @@ PyObject *python_model(PyObject *self, PyObject *args, PyObject *kwargs, int mod
 }
 
 PyMethodDef PyOpenSCADFunctions[] = {
+  {"edge", (PyCFunction) python_edge, METH_VARARGS | METH_KEYWORDS, "Create Edge."},
   {"square", (PyCFunction) python_square, METH_VARARGS | METH_KEYWORDS, "Create Square."},
   {"circle", (PyCFunction) python_circle, METH_VARARGS | METH_KEYWORDS, "Create Circle."},
   {"polygon", (PyCFunction) python_polygon, METH_VARARGS | METH_KEYWORDS, "Create Polygon."},
@@ -4416,6 +4533,7 @@ PyMethodDef PyOpenSCADFunctions[] = {
   {"texture", (PyCFunction) python_texture, METH_VARARGS | METH_KEYWORDS, "Include a texture."},
   {"mesh", (PyCFunction) python_mesh, METH_VARARGS | METH_KEYWORDS, "exports mesh."},
   {"faces", (PyCFunction) python_faces, METH_VARARGS | METH_KEYWORDS, "exports a list of faces."},
+  {"edges", (PyCFunction) python_edges, METH_VARARGS | METH_KEYWORDS, "exports a list of edges from a face."},
   {"oversample", (PyCFunction) python_oversample, METH_VARARGS | METH_KEYWORDS, "oversample."},
   {"debug", (PyCFunction) python_debug, METH_VARARGS | METH_KEYWORDS, "debug a face."},
   {"fillet", (PyCFunction) python_fillet, METH_VARARGS | METH_KEYWORDS, "fillet."},
@@ -4479,6 +4597,7 @@ PyMethodDef PyOpenSCADMethods[] = {
 
   OO_METHOD_ENTRY(mesh, "Mesh Object")	
   OO_METHOD_ENTRY(faces, "Create Faces list")	
+  OO_METHOD_ENTRY(edges, "Create Edges list")	
   OO_METHOD_ENTRY(oversample,"Oversample Object")	
   OO_METHOD_ENTRY(debug,"Debug Object Faces")	
   OO_METHOD_ENTRY(fillet,"Fillet Object")	

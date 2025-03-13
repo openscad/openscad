@@ -33,6 +33,7 @@
 #include "core/Parameters.h"
 #include "geometry/PolySet.h"
 #include "geometry/Polygon2d.h"
+#include "geometry/Barcode1d.h"
 #include "utils/calc.h"
 #include "core/node.h"
 #include "utils/degree_trig.h"
@@ -507,6 +508,20 @@ static std::shared_ptr<AbstractNode> builtin_polyhedron(const ModuleInstantiatio
   return node;
 }
 
+
+std::unique_ptr<const Geometry> EdgeNode::createGeometry() const
+{
+  if (this->size <= 0 ) return std::make_unique<Polygon2d>();
+
+  double beg=0;
+  double end=size;
+  if(center) { beg -= size/2; end -= size/2; }
+
+  Barcode1d b;
+  Edge1d e(beg,end);
+  b.addEdge(e);
+  return std::make_unique<Barcode1d>(b);
+}
 
 std::unique_ptr<const Geometry> SquareNode::createGeometry() const
 {

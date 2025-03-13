@@ -144,6 +144,25 @@ public:
 };
 
 
+class EdgeNode : public LeafNode
+{
+public:
+  EdgeNode(const ModuleInstantiation *mi) : LeafNode(mi) {}
+  std::string toString() const override
+  {
+    std::ostringstream stream;
+    stream << "edge(size = "
+           << size << ", center = "
+           << (center ? "true" : "false") << ")";
+    return stream.str();
+  }
+  std::string name() const override { return "edge"; }
+  std::unique_ptr<const Geometry> createGeometry() const override;
+
+  double size=1;
+  bool center = false;
+};
+
 class SquareNode : public LeafNode
 {
 public:

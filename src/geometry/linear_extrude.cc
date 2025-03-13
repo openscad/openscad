@@ -663,3 +663,10 @@ std::unique_ptr<Geometry> extrudePolygon(const LinearExtrudeNode& node, const Po
   return assemblePolySetForManifold(polyref, vertices, indices,
                                       node.convexity, isConvex, slice_stride * num_slices);
 }
+
+std::unique_ptr<Geometry> extrudeBarcode(const LinearExtrudeNode& node, const Barcode1d & batcode)
+{
+	printf("Extrude barcode\n");
+	return nullptr;
+}
+
