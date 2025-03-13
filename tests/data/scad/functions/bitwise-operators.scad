@@ -68,11 +68,11 @@ assert((-1 | 0) == ~0);
 assert((-2^31) | 0 == -2^31);
 
 
-// Fractions (floor)
+// Fractions (trunc)
 assert((1.4 | 0) == 1);
 assert((1.6 | 0) == 1);
-assert((-1.4 & 3) == 2);
-assert((-1.6 & 3) == 2);
+assert((-1.4 & 3) == 3);
+assert((-1.6 & 3) == 3);
 
 
 // Limits
