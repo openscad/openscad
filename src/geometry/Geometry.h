@@ -14,6 +14,7 @@ class CGAL_Nef_polyhedron;
 class GeometryList;
 class GeometryVisitor;
 class Polygon2d;
+class Barcode1d;
 class PolySet;
 #ifdef ENABLE_MANIFOLD
 class ManifoldGeometry;
@@ -62,6 +63,7 @@ public:
   virtual void visit(const GeometryList& node) = 0;
   virtual void visit(const PolySet& node) = 0;
   virtual void visit(const Polygon2d& node) = 0;
+  virtual void visit(const Barcode1d& node) = 0;
 #ifdef ENABLE_CGAL
   virtual void visit(const CGAL_Nef_polyhedron& node) = 0;
 #endif

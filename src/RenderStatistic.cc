@@ -44,6 +44,7 @@
 #include "geometry/GeometryCache.h"
 #include "geometry/linalg.h"
 #include "geometry/Polygon2d.h"
+#include "geometry/Barcode1d.h"
 #include "geometry/PolySet.h"
 #include "glview/Camera.h"
 #include "utils/printutils.h"
@@ -85,6 +86,7 @@ struct LogVisitor : public StatisticVisitor
   void visit(const GeometryList& node) override;
   void visit(const PolySet& node) override;
   void visit(const Polygon2d& node) override;
+  void visit(const Barcode1d& node) override;
 #ifdef ENABLE_CGAL
   void visit(const CGAL_Nef_polyhedron& node) override;
 #endif // ENABLE_CGAL
@@ -109,6 +111,7 @@ struct StreamVisitor : public StatisticVisitor
   void visit(const GeometryList& node) override;
   void visit(const PolySet& node) override;
   void visit(const Polygon2d& node) override;
+  void visit(const Barcode1d& node) override;
 #ifdef ENABLE_CGAL
   void visit(const CGAL_Nef_polyhedron& node) override;
 #endif // ENABLE_CGAL
@@ -263,6 +266,25 @@ void LogVisitor::visit(const Polygon2d& poly)
   }
 }
 
+void LogVisitor::visit(const Barcode1d& poly)
+{
+	/*
+  LOG("Top level object is a 2D object:");
+  LOG("   Contours:   %1$6d", poly.outlines().size());
+  if (is_enabled(RenderStatistic::BOUNDING_BOX)) {
+    const auto& bb = poly.getBoundingBox();
+    LOG("Bounding box:");
+    LOG("   Min:  %1$.2f, %2$.2f", bb.min().x(), bb.min().y());
+    LOG("   Max:  %1$.2f, %2$.2f", bb.max().x(), bb.max().y());
+    LOG("   Size: %1$.2f, %2$.2f", bb.max().x() - bb.min().x(), bb.max().y() - bb.min().y());
+  }
+  if (is_enabled(RenderStatistic::AREA)) {
+    LOG("Measurements:");
+    LOG("   Area: %1$.2f", poly.area());
+  }
+  */
+}
+
 void LogVisitor::printBoundingBox3(const BoundingBox& bb)
 {
   if (is_enabled(RenderStatistic::BOUNDING_BOX)) {
@@ -378,6 +400,22 @@ void StreamVisitor::visit(const Polygon2d& poly)
     }
     json["geometry"] = geometryJson;
   }
+}
+
+void StreamVisitor::visit(const Barcode1d& poly)
+{
+	/*
+  if (is_enabled(RenderStatistic::GEOMETRY)) {
+    nlohmann::json geometryJson;
+    geometryJson["dimensions"] = 2;
+    geometryJson["convex"] = poly.is_convex();
+    geometryJson["contours"] = poly.outlines().size();
+    if (is_enabled(RenderStatistic::BOUNDING_BOX)) {
+      geometryJson["bounding_box"] = getBoundingBox2d(poly);
+    }
+    json["geometry"] = geometryJson;
+  }
+  */
 }
 
 void StreamVisitor::visit(const PolySet& ps)

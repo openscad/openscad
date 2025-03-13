@@ -999,6 +999,7 @@ set(CORE_SOURCES
   src/geometry/PolySetUtils.cc
   src/geometry/rotextrude.cc
   src/geometry/Polygon2d.cc
+  src/geometry/Barcode1d.cc
   src/geometry/boolean_utils.cc
   src/geometry/skin.cc
   src/geometry/linalg.cc
