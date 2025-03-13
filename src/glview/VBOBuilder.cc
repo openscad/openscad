@@ -1,5 +1,6 @@
 #include "glview/VBOBuilder.h"
 
+#include <unordered_map>
 #include <cstring>
 #include <cassert>
 #include <array>
@@ -8,6 +9,8 @@
 #include <memory>
 #include <cstdio>
 
+#include "geometry/linalg.h"
+#include "geometry/Polygon2d.h"
 #include "utils/printutils.h"
 #include "utils/hash.h"  // IWYU pragma: keep
 

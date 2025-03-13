@@ -26,6 +26,8 @@
 
 #include "gui/Preferences.h"
 
+#include <unordered_map>
+#include <vector>
 #include <QFont>
 #include <QFontComboBox>
 #include <QMainWindow>
@@ -56,7 +58,7 @@
 #include "gui/AutoUpdater.h"
 #include "Feature.h"
 #include "core/Settings.h"
-#include "printutils.h"
+#include "utils/printutils.h"
 #ifdef ENABLE_CGAL
 #include "geometry/cgal/CGALCache.h"
 #endif
@@ -175,7 +177,7 @@ void Preferences::init() {
   addPrefPage(group, prefsActionAdvanced, pageAdvanced);
   addPrefPage(group, prefsActionDialogs, pageDialogs);
 
-  connect(group, SIGNAL(triggered(QAction*)), this, SLOT(actionTriggered(QAction*)));
+  connect(group, &QActionGroup::triggered, this, &Preferences::actionTriggered);
 
   prefsAction3DView->setChecked(true);
   this->actionTriggered(this->prefsAction3DView);
@@ -363,7 +365,7 @@ void Preferences::setupFeaturesPage()
     feature->enable(value);
     cb->setChecked(value);
     cb->setProperty(featurePropertyName, QVariant::fromValue<Feature *>(feature));
-    connect(cb, SIGNAL(toggled(bool)), this, SLOT(featuresCheckBoxToggled(bool)));
+    connect(cb, &QCheckBox::toggled, this, &Preferences::featuresCheckBoxToggled);
     gridLayoutExperimentalFeatures->addWidget(cb, row, 0, 1, 2, Qt::AlignLeading);
     row++;
 

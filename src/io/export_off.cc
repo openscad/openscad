@@ -26,6 +26,7 @@
  */
 
 #include "io/export.h"
+#include "geometry/Geometry.h"
 #include "geometry/linalg.h"
 #include "Feature.h"
 #include "geometry/Reindexer.h"
@@ -62,7 +63,7 @@ void export_off(const std::shared_ptr<const Geometry>& geom, std::ostream& outpu
   auto has_color = !ps->color_indices.empty();
   
   for (size_t i = 0; i < ps->indices.size(); ++i) {
-    int nverts = ps->indices[i].size();
+    size_t nverts = ps->indices[i].size();
     output << nverts;
     for (size_t n = 0; n < nverts; ++n) output << " " << ps->indices[i][n];
     if (has_color) {

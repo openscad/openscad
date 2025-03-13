@@ -25,28 +25,30 @@
  */
 
 #include "openscad_gui.h"
+#include <memory>
+#include <filesystem>
+#include <string>
+#include <vector>
 
+#include <QtGlobal>
+#include <Qt>
+#include <QDialog>
 #include <QDir>
-#include <QIcon>
 #include <QFileInfo>
 #include <QFutureWatcher>
-#include <QtConcurrentRun>
 #include <QGuiApplication>
+#include <QIcon>
+#include <QObject>
 #include <QPalette>
 #include <QStyleHints>
+#include <QStringList>
+#include <QtConcurrentRun>
 
 #include "core/parsersettings.h"
+#include "core/Settings.h"
 #include "FontCache.h"
 #include "geometry/Geometry.h"
 #include "gui/AppleEvents.h"
-#include "gui/LaunchingScreen.h"
-#include "gui/MainWindow.h"
-#include "gui/OpenSCADApp.h"
-#include "gui/QSettingsCached.h"
-#include "core/Settings.h"
-#include "openscad.h"
-#include "utils/printutils.h"
-
 #include "gui/input/InputDriverManager.h"
 #ifdef ENABLE_HIDAPI
 #include "gui/input/HidApiInputDriver.h"
@@ -63,6 +65,13 @@
 #ifdef ENABLE_QGAMEPAD
 #include "gui/input/QGamepadInputDriver.h"
 #endif
+#include "gui/LaunchingScreen.h"
+#include "gui/MainWindow.h"
+#include "gui/OpenSCADApp.h"
+#include "gui/QSettingsCached.h"
+#include "openscad.h"
+#include "platform/CocoaUtils.h"
+#include "utils/printutils.h"
 
 Q_DECLARE_METATYPE(Message);
 Q_DECLARE_METATYPE(std::shared_ptr<const Geometry>);
@@ -87,8 +96,8 @@ bool isDarkMode() {
   return scheme == Qt::ColorScheme::Dark;
 #else
   const QPalette defaultPalette;
-  const auto text = defaultPalette.color(QPalette::WindowText);
-  const auto window = defaultPalette.color(QPalette::Window);
+  const auto& text = defaultPalette.color(QPalette::WindowText);
+  const auto& window = defaultPalette.color(QPalette::Window);
   return text.lightness() > window.lightness();
 #endif // QT_VERSION
 }
@@ -104,11 +113,10 @@ QString assemblePath(const std::filesystem::path& absoluteBaseDir,
   auto qsDir = QString::fromLocal8Bit(absoluteBaseDir.generic_string().c_str());
   auto qsFile = QString::fromLocal8Bit(fileName.c_str());
   // if qsfile is absolute, dir is ignored. (see documentation of QFileInfo)
-  QFileInfo fileInfo(qsDir, qsFile);
+  const QFileInfo fileInfo(qsDir, qsFile);
   return fileInfo.absoluteFilePath();
 }
 
-}  // namespace
 
 void dialogThreadFunc(FontCacheInitializer *initializer)
 {
@@ -118,7 +126,7 @@ void dialogThreadFunc(FontCacheInitializer *initializer)
 void dialogInitHandler(FontCacheInitializer *initializer, void *)
 {
   QFutureWatcher<void> futureWatcher;
-  QObject::connect(&futureWatcher, SIGNAL(finished()), scadApp, SLOT(hideFontCacheDialog()));
+  QObject::connect(&futureWatcher, &QFutureWatcher<void>::finished, scadApp, &OpenSCADApp::hideFontCacheDialog);
 
   auto future = QtConcurrent::run([initializer] {
     return dialogThreadFunc(initializer);
@@ -148,6 +156,8 @@ void registerDefaultIcon(QString applicationFilePath) {
 #else
 void registerDefaultIcon(const QString&) { }
 #endif
+
+}  // namespace
 
 #ifdef OPENSCAD_SUFFIX
 #define DESKTOP_FILENAME "openscad" OPENSCAD_SUFFIX
@@ -212,13 +222,12 @@ int gui(std::vector<std::string>& inputFiles, const std::filesystem::path& origi
 
   auto showOnStartup = settings.value("launcher/showOnStartup");
   if (noInputFiles && (showOnStartup.isNull() || showOnStartup.toBool())) {
-    auto launcher = new LaunchingScreen();
-    auto dialogResult = launcher->exec();
-    if (dialogResult == QDialog::Accepted) {
-      if (launcher->isForceShowEditor()) {
+    LaunchingScreen launcher;
+    if (launcher.exec() == QDialog::Accepted) {
+      if (launcher.isForceShowEditor()) {
         settings.setValue("view/hideEditor", false);
       }
-      auto files = launcher->selectedFiles();
+      const QStringList files = launcher.selectedFiles();
       // If nothing is selected in the launching screen, leave
       // the "" dummy in inputFiles to open an empty MainWindow.
       if (!files.empty()) {
@@ -227,7 +236,6 @@ int gui(std::vector<std::string>& inputFiles, const std::filesystem::path& origi
           inputFiles.push_back(f.toStdString());
         }
       }
-      delete launcher;
     } else {
       return 0;
     }
@@ -238,8 +246,12 @@ int gui(std::vector<std::string>& inputFiles, const std::filesystem::path& origi
     inputFilesList.append(assemblePath(original_path, infile));
   }
   new MainWindow(inputFilesList);
-  app.connect(&app, SIGNAL(lastWindowClosed()), &app, SLOT(releaseQSettingsCached()));
-  app.connect(&app, SIGNAL(lastWindowClosed()), &app, SLOT(quit()));
+  QObject::connect(&app, &QCoreApplication::aboutToQuit, [](){
+    QSettingsCached{}.release();
+#ifdef Q_OS_MACOS
+    CocoaUtils::endApplication();
+#endif
+  });
 
 #ifdef ENABLE_HIDAPI
   if (Settings::Settings::inputEnableDriverHIDAPI.value()) {
@@ -279,8 +291,5 @@ int gui(std::vector<std::string>& inputFiles, const std::filesystem::path& origi
 #endif
 
   InputDriverManager::instance()->init();
-  int rc = app.exec();
-  const auto& windows = scadApp->windowManager.getWindows();
-  while (!windows.empty()) delete *windows.begin();
-  return rc;
+  return app.exec();
 }

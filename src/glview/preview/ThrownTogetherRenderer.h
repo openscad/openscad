@@ -1,14 +1,17 @@
 #pragma once
 
-#include <memory>
 #include <cstddef>
+#include <memory>
 #include <vector>
 
-#include "VertexState.h"
-#include "glview/Renderer.h"
 #include "core/CSGNode.h"
-
+#include "core/enums.h"
+#include "geometry/linalg.h"
+#include "glview/system-gl.h"
 #include "glview/VBORenderer.h"
+#include "glview/VertexState.h"
+#include "glview/ShaderUtils.h"
+#include "glview/VBOBuilder.h"
 
 class CSGProducts;
 class CSGChainObject;
@@ -49,7 +52,7 @@ public:
   ThrownTogetherRenderer(std::shared_ptr<CSGProducts> root_products,
                          std::shared_ptr<CSGProducts> highlight_products,
                          std::shared_ptr<CSGProducts> background_products);
-  ~ThrownTogetherRenderer() override;
+  ~ThrownTogetherRenderer() override = default;
   void prepare(const ShaderUtils::ShaderInfo *shaderinfo = nullptr) override;
   void draw(bool showedges, const ShaderUtils::ShaderInfo *shaderinfo = nullptr) const override;
 

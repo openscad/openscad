@@ -25,23 +25,21 @@
  */
 #pragma once
 
-#include <utility>
 #include <cstdint>
+#include <ctime>
 #include <map>
 #include <string>
-
-#include <ctime>
+#include <string>
+#include <utility>
+#include <vector>
 
 #include <ft2build.h>
 #include FT_FREETYPE_H
-#include FT_TRUETYPE_IDS_H
-
-#include <vector>
-#include <string>
 #include <fontconfig/fontconfig.h>
 
-#include <hb.h>
-#include <hb-ft.h>
+std::string get_fontconfig_version();
+std::string get_harfbuzz_version();
+std::string get_freetype_version();
 
 class FontInfo
 {

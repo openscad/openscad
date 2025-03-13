@@ -1,4 +1,6 @@
 #include "io/import.h"
+#include "geometry/linalg.h"
+#include "core/AST.h"
 #include "geometry/PolySet.h"
 #include "geometry/PolySetBuilder.h"
 #include <ios>
@@ -70,7 +72,7 @@ std::unique_ptr<PolySet> import_obj(const std::string& filename, const Location&
         if(wordindex.size() < 1)
           LOG(message_group::Warning, "Invalid Face index in File %1$s in Line %2$d", filename, lineno);
         else {
-          int ind=boost::lexical_cast<int>(wordindex[0]);
+          size_t ind=boost::lexical_cast<int>(wordindex[0]);
           if(ind >= 1 && ind  <= vertex_map.size()) {
             builder.addVertex(vertex_map[ind-1]);
           } else {

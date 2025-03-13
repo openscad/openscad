@@ -25,14 +25,16 @@
  */
 
 #include "geometry/PolySet.h"
+#include "geometry/linalg.h"
 #include "geometry/PolySetBuilder.h"
 #include "geometry/PolySetUtils.h"
 #include "geometry/Geometry.h"
 #include "utils/printutils.h"
 #include "utils/version_helper.h"
 #include "core/AST.h"
-#include "RenderSettings.h"
+#include "glview/RenderSettings.h"
 
+#include <string>
 #include <cstdint>
 #include <unordered_map>
 #include <utility>
@@ -327,7 +329,7 @@ const std::string get_lib3mf_version() {
 #include "geometry/manifold/manifoldutils.h"
 #endif
 
-std::unique_ptr<Geometry> import_3mf(const std::string& filename, const Location& loc)
+std::unique_ptr<PolySet> import_3mf(const std::string& filename, const Location& loc)
 {
   Lib3MF::PWrapper wrapper;
 

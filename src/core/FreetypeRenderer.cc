@@ -35,7 +35,9 @@
 
 
 #include <fontconfig/fontconfig.h>
+#include <hb-ft.h>
 
+#include "geometry/linalg.h"
 #include "utils/printutils.h"
 
 #include "FontCache.h"

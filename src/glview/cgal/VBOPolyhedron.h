@@ -26,19 +26,21 @@
 
 #pragma once
 
-#include "CGAL/OGL_helper.h"
-
-#include "ColorMap.h"
-#include "VertexState.h"
-#include "glview/system-gl.h"
-#include "glview/VBOBuilder.h"
-#include "glview/ColorMap.h"
-
 #include <cassert>
 #include <utility>
 #include <memory>
 #include <cstdlib>
 #include <vector>
+
+#include <CGAL/IO/Color.h>
+
+#include "CGAL/OGL_helper.h"
+#include "glview/ColorMap.h"
+#include "glview/VertexState.h"
+#include "glview/system-gl.h"
+#include "glview/VBOBuilder.h"
+#include "glview/ColorMap.h"
+#include "utils/printutils.h"
 
 class VBOPolyhedron : public CGAL::OGL::Polyhedron
 {
@@ -63,8 +65,7 @@ public:
     setColor(CGALColorIndex::UNMARKED_EDGE_COLOR, ColorMap::getColor(cs, RenderColor::CGAL_EDGE_FRONT_COLOR));
   }
 
-  ~VBOPolyhedron() override {
-  }
+  ~VBOPolyhedron() override = default;
 
   void draw(Vertex_iterator v, VBOBuilder& vbo_builder) const {
     PRINTD("draw(Vertex_iterator)");
@@ -79,9 +80,9 @@ public:
   void draw(Edge_iterator e, VBOBuilder& vbo_builder) const {
     PRINTD("draw(Edge_iterator)");
 
-    Double_point p = e->source(), q = e->target();
-    CGAL::Color c = getEdgeColor(e);
-    Color4f color(c.red(), c.green(), c.blue());
+    const Double_point p = e->source(), q = e->target();
+    const CGAL::Color c = getEdgeColor(e);
+    const Color4f color(c.red(), c.green(), c.blue());
 
     vbo_builder.createVertex({Vector3d(p.x(), p.y(), p.z())},
                               {},
@@ -230,7 +231,7 @@ public:
     size_t last_size = 0;
     size_t elements_offset = 0;
 
-    size_t num_vertices = vertices_.size() + edges_.size() * 2, elements_size = 0;
+    const size_t num_vertices = vertices_.size() + edges_.size() * 2, elements_size = 0;
     points_edges_builder.allocateBuffers(num_vertices);
 
     // Points
@@ -338,9 +339,9 @@ public:
     PRINTDB("VBO draw(showedges = %d)", showedges);
     // grab current state to restore after
     GLfloat current_point_size, current_line_width;
-    GLboolean origVertexArrayState = glIsEnabled(GL_VERTEX_ARRAY);
-    GLboolean origNormalArrayState = glIsEnabled(GL_NORMAL_ARRAY);
-    GLboolean origColorArrayState = glIsEnabled(GL_COLOR_ARRAY);
+    const GLboolean origVertexArrayState = glIsEnabled(GL_VERTEX_ARRAY);
+    const GLboolean origNormalArrayState = glIsEnabled(GL_NORMAL_ARRAY);
+    const GLboolean origColorArrayState = glIsEnabled(GL_COLOR_ARRAY);
 
     GL_CHECKD(glGetFloatv(GL_POINT_SIZE, &current_point_size));
     GL_CHECKD(glGetFloatv(GL_LINE_WIDTH, &current_line_width));

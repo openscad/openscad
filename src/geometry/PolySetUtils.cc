@@ -9,6 +9,8 @@
 
 #include <boost/range/adaptor/reversed.hpp>
 
+#include "geometry/Geometry.h"
+#include "geometry/linalg.h"
 #include "geometry/PolySet.h"
 #include "geometry/PolySetBuilder.h"
 #include "geometry/Polygon2d.h"

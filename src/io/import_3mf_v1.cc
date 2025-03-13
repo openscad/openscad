@@ -28,12 +28,12 @@
 #include "geometry/PolySetBuilder.h"
 #include "geometry/PolySetUtils.h"
 #include "geometry/Geometry.h"
-#include "linalg.h"
+#include "geometry/linalg.h"
 #include "utils/printutils.h"
 #include "utils/version_helper.h"
 #include "core/AST.h"
 #include "Feature.h"
-#include "RenderSettings.h"
+#include "glview/RenderSettings.h"
 
 #include <cstdint>
 #include <memory>
@@ -419,7 +419,7 @@ std::string read_metadata(PLib3MFModel *model)
 
 } // namespace
 
-std::unique_ptr<Geometry> import_3mf(const std::string& filename, const Location& loc)
+std::unique_ptr<PolySet> import_3mf(const std::string& filename, const Location& loc)
 {
   DWORD interfaceVersionMajor, interfaceVersionMinor, interfaceVersionMicro;
   HRESULT result = lib3mf_getinterfaceversion(&interfaceVersionMajor, &interfaceVersionMinor, &interfaceVersionMicro);

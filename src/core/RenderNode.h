@@ -1,5 +1,6 @@
 #pragma once
 
+#include "core/ModuleInstantiation.h"
 #include "core/node.h"
 #include <string>
 

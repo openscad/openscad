@@ -1,4 +1,5 @@
 #include "glview/Camera.h"
+#include "geometry/linalg.h"
 #include "glview/RenderSettings.h"
 #include "utils/printutils.h"
 #include "utils/degree_trig.h"
@@ -7,8 +8,14 @@
 #include <memory>
 #include <vector>
 
-static const double DEFAULT_DISTANCE = 140.0;
-static const double DEFAULT_FOV = 22.5;
+namespace {
+
+constexpr double DEFAULT_DISTANCE = 140.0;
+constexpr double DEFAULT_FOV = 22.5;
+constexpr int DEFAULT_WIDTH = 512;
+constexpr int DEFAULT_HEIGHT = 512;
+
+}  // namespace
 
 Camera::Camera() : fov(DEFAULT_FOV)
 {
@@ -17,8 +24,8 @@ Camera::Camera() : fov(DEFAULT_FOV)
   // gimbal cam values
   resetView();
 
-  pixel_width = RenderSettings::inst()->img_width;
-  pixel_height = RenderSettings::inst()->img_height;
+  pixel_width = DEFAULT_WIDTH;
+  pixel_height = DEFAULT_HEIGHT;
   locked = false;
 }
 

@@ -30,6 +30,7 @@
 #include <cstddef>
 #include <string>
 
+#include "core/AST.h"
 #include "core/ContextFrame.h"
 #include "utils/printutils.h"
 

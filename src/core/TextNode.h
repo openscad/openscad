@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "core/node.h"
+#include "core/ModuleInstantiation.h"
 #include "core/FreetypeRenderer.h"
 #include "geometry/Polygon2d.h"
 

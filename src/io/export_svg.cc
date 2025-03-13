@@ -28,6 +28,9 @@
 #include <ostream>
 #include <memory>
 #include "io/export.h"
+#include "geometry/Geometry.h"
+#include "geometry/linalg.h"
+#include "geometry/Polygon2d.h"
 #include "geometry/PolySet.h"
 
 static void append_svg(const Polygon2d& poly, std::ostream& output)

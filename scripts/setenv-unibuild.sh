@@ -1,3 +1,5 @@
+#!/bin/sh
+
 # setup environment variables for building OpenSCAD against custom built
 # dependency libraries. works on Linux/BSD.
 #
@@ -147,4 +149,3 @@ if [ -e $DEPLOYDIR/include/Qt ]; then
 fi
 
 clean_note
-

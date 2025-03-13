@@ -52,13 +52,13 @@ ParameterSlider::ParameterSlider(QWidget *parent, NumberParameter *parameter, De
   doubleSpinBox->setRange(this->minimum, maximumValue);
   doubleSpinBox->setSingleStep(this->step);
 
-  //connect(slider, SIGNAL(sliderPressed()), this, SLOT(onSliderPressed()));
-  connect(slider, SIGNAL(sliderReleased()), this, SLOT(onSliderReleased()));
-  connect(slider, SIGNAL(sliderMoved(int)), this, SLOT(onSliderMoved(int)));
-  connect(slider, SIGNAL(valueChanged(int)), this, SLOT(onSliderChanged(int)));
+  //connect(slider, &QSlider::sliderPressed, this, &ParameterSlider::onSliderPressed);
+  connect(slider, &QSlider::sliderReleased, this, &ParameterSlider::onSliderReleased);
+  connect(slider, &QSlider::sliderMoved, this, &ParameterSlider::onSliderMoved);
+  connect(slider, &QSlider::valueChanged, this, &ParameterSlider::onSliderChanged);
 
-  connect(doubleSpinBox, SIGNAL(valueChanged(double)), this, SLOT(onSpinBoxChanged(double)));
-  connect(doubleSpinBox, SIGNAL(editingFinished()), this, SLOT(onSpinBoxEditingFinished()));
+  connect(doubleSpinBox, QOverload<double>::of(&QDoubleSpinBox::valueChanged), this, &ParameterSlider::onSpinBoxChanged);
+  connect(doubleSpinBox, &QDoubleSpinBox::editingFinished, this, &ParameterSlider::onSpinBoxEditingFinished);
 
   ParameterSlider::setValue();
 }

@@ -36,6 +36,10 @@ public:
   static constexpr const int FIND_REPLACE_VISIBLE = 2;
 
 signals:
+  // emitted when the currently displayed editor is changed and a new one is one focus.
+  // the passed parameter can be nullptr, when the editor changed because of closing of the last
+  // opened on.
+  void currentEditorChanged(EditorInterface *editor);
   void tabCountChanged(int);
 
 private:
@@ -50,21 +54,7 @@ private:
 private slots:
   void tabSwitched(int);
   void closeTabRequested(int);
-  void highlightError(int);
-  void unhighlightLastError();
-  void undo();
-  void redo();
-  void cut();
-  void paste();
-  void indentSelection();
-  void unindentSelection();
-  void commentSelection();
-  void uncommentSelection();
   void updateActionUndoState();
-  void toggleBookmark();
-  void nextBookmark();
-  void prevBookmark();
-  void jumpToNextError();
   void copyFileName();
   void copyFilePath();
   void openFolder();
@@ -88,4 +78,18 @@ public slots:
   void nextTab();
   void prevTab();
   void setFocus();
+  void highlightError(int);
+  void unhighlightLastError();
+  void undo();
+  void redo();
+  void cut();
+  void paste();
+  void indentSelection();
+  void unindentSelection();
+  void commentSelection();
+  void uncommentSelection();
+  void toggleBookmark();
+  void nextBookmark();
+  void prevBookmark();
+  void jumpToNextError();
 };

@@ -9,6 +9,7 @@
 #include <memory>
 #include <boost/logic/tribool.hpp>
 #include "core/Assignment.h"
+#include "core/AST.h"
 #include "core/function.h"
 #include "core/Value.h"
 

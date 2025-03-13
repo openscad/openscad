@@ -25,6 +25,7 @@
  */
 
 #include "core/ColorNode.h"
+#include "geometry/linalg.h"
 #include "core/module.h"
 #include "core/ModuleInstantiation.h"
 #include "core/Builtins.h"

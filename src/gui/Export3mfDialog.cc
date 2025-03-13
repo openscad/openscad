@@ -26,6 +26,7 @@
 
 #include "gui/Export3mfDialog.h"
 
+#include <string>
 #include <QString>
 #include <QCheckBox>
 #include <QColor>
@@ -33,9 +34,9 @@
 #include <QColorDialog>
 #include <QLineEdit>
 
-#include "export.h"
-#include "Settings.h"
-#include "UIUtils.h"
+#include "io/export.h"
+#include "core/Settings.h"
+#include "gui/UIUtils.h"
 #include "gui/SettingsWriter.h"
 
 using S = Settings::SettingsExport3mf;

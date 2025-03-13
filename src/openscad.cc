@@ -26,44 +26,75 @@
 
 #include "openscad.h"
 
-#include <chrono>
-#include <iomanip>
-#include <fstream>
-#include <string>
-#include <tuple>
-#include <unordered_map>
-#include "ColorUtil.h"
-#include "Context.h"
-#include "Settings.h"
-
 #ifdef _WIN32
 #include <io.h>
 #include <fcntl.h>
 #endif
-
-#include <boost/algorithm/string.hpp>
-#include <boost/algorithm/string/split.hpp>
-#include <boost/bind/bind.hpp>
-#include <boost/range/adaptor/transformed.hpp>
-#include <boost/program_options.hpp>
+#include <array>
+#include <clocale>
+#include <cstddef>
+#include <cstdlib>
+#include <exception>
 #include <filesystem>
-#include <boost/optional.hpp>
-#include <boost/dll.hpp>
+#include <fstream>
+#include <iomanip>
+#include <ios>
+#include <iostream>
+#include <istream>
+#include <iterator>
+#include <libintl.h>
+#include <map>
+#include <memory>
+#include <ostream>
+#include <sstream>
+#include <stdexcept>
+#include <string>
+#include <tuple>
+#include <unordered_map>
+#include <utility>
+#include <vector>
 
+#include <boost/algorithm/string/case_conv.hpp>
+#include <boost/algorithm/string/classification.hpp>
+#include <boost/algorithm/string/join.hpp>
+#include <boost/algorithm/string/predicate.hpp>
+#include <boost/algorithm/string/split.hpp>
+#include <boost/dll/runtime_symbol_info.hpp>
+#include <boost/lexical_cast.hpp>
+#include <boost/lexical_cast/bad_lexical_cast.hpp>
+#include <boost/optional/optional.hpp>
+#include <boost/program_options/options_description.hpp>
+#include <boost/program_options/parsers.hpp>
+#include <boost/program_options/positional_options.hpp>
+#include <boost/program_options/value_semantic.hpp>
+#include <boost/program_options/variables_map.hpp>
+#include <boost/range/adaptor/transformed.hpp>
+#include <boost/range/iterator_range_core.hpp>
 #ifdef ENABLE_CGAL
 #include <CGAL/assertions.h>
+#include <CGAL/assertions_behaviour.h>
 #endif
 
+#include "core/AST.h"
+#include "core/BuiltinContext.h"
 #include "core/Builtins.h"
+#include "core/Context.h"
 #include "core/CSGTreeEvaluator.h"
 #include "core/customizer/CommentParser.h"
 #include "core/customizer/ParameterObject.h"
 #include "core/customizer/ParameterSet.h"
+#include "core/EvaluationSession.h"
+#include "core/node.h"
 #include "core/parsersettings.h"
 #include "core/RenderVariables.h"
+#include "core/ScopeContext.h"
+#include "core/Settings.h"
+#include "Feature.h"
+#include "geometry/Geometry.h"
 #include "geometry/GeometryEvaluator.h"
 #include "geometry/GeometryUtils.h"
 #include "geometry/PolySet.h"
+#include "glview/Camera.h"
 #include "glview/ColorMap.h"
 #include "glview/OffscreenView.h"
 #include "glview/RenderSettings.h"
@@ -74,23 +105,25 @@
 #include "openscad_mimalloc.h"
 #include "platform/PlatformUtils.h"
 #include "RenderStatistic.h"
+#include "utils/exceptions.h"
+#include "utils/printutils.h"
 #include "utils/StackCheck.h"
-#include "printutils.h"
-
 
 #ifdef ENABLE_PYTHON
-extern std::shared_ptr<AbstractNode> python_result_node;
-std::string evaluatePython(const std::string &code, double time);
-bool python_active = false;
-bool python_trusted = false;
+#include "python/python_public.h"
 #endif
 
 namespace po = boost::program_options;
 namespace fs = std::filesystem;
 
 std::string commandline_commands;
-static bool arg_info = false;
 std::string arg_colorscheme;
+
+namespace {
+
+bool arg_info = false;
+
+}  // namespace
 
 class Echostream
 {
@@ -115,6 +148,30 @@ public:
 private:
   std::ofstream fstream;
   std::ostream& stream;
+};
+
+struct AnimateArgs {
+  unsigned frames = 0;
+  unsigned num_shards = 1;
+  unsigned shard = 1;
+};
+
+struct CommandLine
+{
+  const bool is_stdin;
+  const std::string& filename;
+  const bool is_stdout;
+  std::string output_file;
+  const fs::path& original_path;
+  const std::string& parameterFile;
+  const std::string& setName;
+  const ViewOptions& viewOptions;
+  const Camera& camera;
+  const boost::optional<FileFormat> export_format;
+  const CmdLineExportOptions& exportOptions;
+  const AnimateArgs animate;
+  const std::vector<std::string> summaryOptions;
+  const std::string summaryFile;
 };
 
 namespace {
@@ -198,7 +255,7 @@ int info()
   std::cout << LibraryInfo::info() << "\n\n";
 
   try {
-    OffscreenView glview(512, 512);
+    OffscreenView const glview(512, 512);
     std::cout << glview.getRendererInfo() << "\n";
   } catch (const OffscreenViewException &ex) {
     LOG("Can't create OpenGL OffscreenView: %1$s. Exiting.\n", ex.what());
@@ -209,7 +266,7 @@ int info()
 }
 
 template <typename F>
-bool with_output(const bool is_stdout, const std::string& filename, F f, std::ios::openmode mode = std::ios::out)
+bool with_output(const bool is_stdout, const std::string& filename, const F& f, std::ios::openmode mode = std::ios::out)
 {
   if (is_stdout) {
 #ifdef _WIN32
@@ -229,71 +286,6 @@ bool with_output(const bool is_stdout, const std::string& filename, F f, std::io
     return true;
   }
 }
-
-} // namespace
-
-void set_render_color_scheme(const std::string& color_scheme, const bool exit_if_not_found)
-{
-  if (color_scheme.empty()) {
-    return;
-  }
-
-  if (ColorMap::inst()->findColorScheme(color_scheme)) {
-    RenderSettings::inst()->colorscheme = color_scheme;
-    return;
-  }
-
-  if (exit_if_not_found) {
-    LOG((boost::algorithm::join(ColorMap::inst()->colorSchemeNames(), "\n")));
-
-    exit(1);
-  } else {
-    LOG("Unknown color scheme '%1$s', using default '%2$s'.", arg_colorscheme, ColorMap::inst()->defaultColorSchemeName());
-  }
-}
-
-/**
- * Initialize gettext. This must be called after the application path was
- * determined so we can lookup the resource path for the language translation
- * files.
- */
-void localization_init() {
-  fs::path po_dir(PlatformUtils::resourcePath("locale"));
-  const std::string& locale_path(po_dir.string());
-
-  if (fs::is_directory(locale_path)) {
-    setlocale(LC_ALL, "");
-    bindtextdomain("openscad", locale_path.c_str());
-    bind_textdomain_codeset("openscad", "UTF-8");
-    textdomain("openscad");
-  } else {
-    LOG("Could not initialize localization (application path is '%1$s').", PlatformUtils::applicationPath());
-  }
-}
-
-struct AnimateArgs {
-  unsigned frames = 0;
-  unsigned num_shards = 1;
-  unsigned shard = 1;
-};
-
-struct CommandLine
-{
-  const bool is_stdin;
-  const std::string& filename;
-  const bool is_stdout;
-  std::string output_file;
-  const fs::path& original_path;
-  const std::string& parameterFile;
-  const std::string& setName;
-  const ViewOptions& viewOptions;
-  const Camera& camera;
-  const boost::optional<FileFormat> export_format;
-  const CmdLineExportOptions& exportOptions;
-  const AnimateArgs animate;
-  const std::vector<std::string> summaryOptions;
-  const std::string summaryFile;
-};
 
 AnimateArgs get_animate(const po::variables_map& vm) {
   AnimateArgs animate;
@@ -369,8 +361,6 @@ Camera get_camera(const po::variables_map& vm)
     }
   }
 
-  auto w = RenderSettings::inst()->img_width;
-  auto h = RenderSettings::inst()->img_height;
   if (vm.count("imgsize")) {
     std::vector<std::string> strs;
     boost::split(strs, vm["imgsize"].as<std::string>(), boost::is_any_of(","));
@@ -379,15 +369,15 @@ Camera get_camera(const po::variables_map& vm)
       exit(1);
     } else {
       try {
-        w = boost::lexical_cast<int>(strs[0]);
-        h = boost::lexical_cast<int>(strs[1]);
+        int const w = boost::lexical_cast<int>(strs[0]);
+        int const h = boost::lexical_cast<int>(strs[1]);
+        camera.pixel_width = w;
+        camera.pixel_height = h;
       } catch (boost::bad_lexical_cast&) {
         LOG("Need 2 numbers for imgsize");
       }
     }
   }
-  camera.pixel_width = w;
-  camera.pixel_height = h;
 
   return camera;
 }
@@ -518,7 +508,7 @@ int do_export(const CommandLine& cmd, const RenderVariables& render_variables, F
 
     if (export_format == FileFormat::PNG) {
       bool success = true;
-      bool wrote = with_output(cmd.is_stdout, filename_str, [&success, &root_geom, &cmd, &camera, &glview](std::ostream& stream) {
+      bool const wrote = with_output(cmd.is_stdout, filename_str, [&success, &root_geom, &cmd, &camera, &glview](std::ostream& stream) {
         if (cmd.viewOptions.renderer == RenderType::BACKEND_SPECIFIC || cmd.viewOptions.renderer == RenderType::GEOMETRY) {
           success = export_png(root_geom, cmd.viewOptions, camera, stream);
         } else {
@@ -596,7 +586,8 @@ int cmdline(const CommandLine& cmd)
 
   if(python_active) {
     auto fulltext_py = text;
-    auto error  = evaluatePython(fulltext_py, 0.0);
+    initPython(PlatformUtils::applicationPath(), 0.0);
+    auto error  = evaluatePython(fulltext_py, false);
     if(error.size() > 0) LOG(error.c_str());
     text ="\n";
   }
@@ -658,14 +649,14 @@ int cmdline(const CommandLine& cmd)
       frame_file.replace_extension();
       frame_file += oss.str();
       frame_file.replace_extension(extension);
-      std::string frame_str = frame_file.generic_string();
+      std::string const frame_str = frame_file.generic_string();
 
       LOG("Exporting %1$s...", cmd.filename);
 
       CommandLine frame_cmd = cmd;
       frame_cmd.output_file = frame_str;
 
-      int r = do_export(frame_cmd, render_variables, export_format, root_file);
+      int const r = do_export(frame_cmd, render_variables, export_format, root_file);
       if (r != 0) {
         return r;
       }
@@ -674,6 +665,92 @@ int cmdline(const CommandLine& cmd)
     return 0;
   }
 }
+
+template <class Seq, typename ToString>
+static std::string str_join(const Seq& seq, const std::string& sep, const ToString& toString)
+{
+  return boost::algorithm::join(boost::adaptors::transform(seq, toString), sep);
+}
+
+static bool flagConvert(const std::string& str){
+  if (str == "1" || boost::iequals(str, "on") || boost::iequals(str, "true")) {
+    return true;
+  }
+  if (str == "0" || boost::iequals(str, "off") || boost::iequals(str, "false")) {
+    return false;
+  }
+  throw std::runtime_error("");
+  return false;
+}
+
+static std::tuple<std::string, std::string> simple_split(const std::string& str, const char c)
+{
+  const auto idx = str.find_first_of(c);
+  if (idx == std::string::npos)
+    return {};
+  const auto first = str.substr(0, idx);
+  const auto second = str.substr(idx + 1);
+  return {first, second};
+}
+
+static CmdLineExportOptions convert_export_options(const po::variables_map& vm)
+{
+  if (vm.count("O") == 0) {
+    return {};
+  }
+
+  CmdLineExportOptions map;
+  const auto& options = vm["O"].as<std::vector<std::string>>();
+  for (const auto& option : options) {
+    const auto [key, value] = simple_split(option, '=');
+    const auto [section, name] = simple_split(key, '/');
+    map[section][name] = value;
+  }
+  return map;
+}
+
+} // namespace
+
+void set_render_color_scheme(const std::string& color_scheme, const bool exit_if_not_found)
+{
+  if (color_scheme.empty()) {
+    return;
+  }
+
+  if (ColorMap::inst()->findColorScheme(color_scheme)) {
+    RenderSettings::inst()->colorscheme = color_scheme;
+    return;
+  }
+
+  if (exit_if_not_found) {
+    LOG((boost::algorithm::join(ColorMap::inst()->colorSchemeNames(), "\n")));
+
+    exit(1);
+  } else {
+    LOG("Unknown color scheme '%1$s', using default '%2$s'.", arg_colorscheme, ColorMap::inst()->defaultColorSchemeName());
+  }
+}
+
+/**
+ * Initialize gettext. This must be called after the application path was
+ * determined so we can lookup the resource path for the language translation
+ * files.
+ */
+void localization_init() {
+  fs::path const po_dir(PlatformUtils::resourcePath("locale"));
+  const std::string& locale_path(po_dir.string());
+
+  if (fs::is_directory(locale_path)) {
+    setlocale(LC_ALL, "");
+    bindtextdomain("openscad", locale_path.c_str());
+    bind_textdomain_codeset("openscad", "UTF-8");
+    textdomain("openscad");
+  } else {
+    LOG("Could not initialize localization (application path is '%1$s').", PlatformUtils::applicationPath());
+  }
+}
+
+
 
 #ifdef Q_OS_MACOS
 std::pair<std::string, std::string> customSyntax(const std::string& s)
@@ -701,49 +778,6 @@ struct CommaSeparatedVector
     return in;
   }
 };
-
-template <class Seq, typename ToString>
-std::string str_join(const Seq& seq, const std::string& sep, const ToString& toString)
-{
-  return boost::algorithm::join(boost::adaptors::transform(seq, toString), sep);
-}
-
-bool flagConvert(const std::string& str){
-  if (str == "1" || boost::iequals(str, "on") || boost::iequals(str, "true")) {
-    return true;
-  }
-  if (str == "0" || boost::iequals(str, "off") || boost::iequals(str, "false")) {
-    return false;
-  }
-  throw std::runtime_error("");
-  return false;
-}
-
-std::tuple<std::string, std::string> simple_split(const std::string& str, const char c)
-{
-  const auto idx = str.find_first_of(c);
-  if (idx == std::string::npos)
-    return {};
-  const auto first = str.substr(0, idx);
-  const auto second = str.substr(idx + 1);
-  return {first, second};
-}
-
-CmdLineExportOptions convert_export_options(const po::variables_map& vm)
-{
-  if (vm.count("O") == 0) {
-    return {};
-  }
-
-  CmdLineExportOptions map;
-  const auto& options = vm["O"].as<std::vector<std::string>>();
-  for (const auto& option : options) {
-    const auto [key, value] = simple_split(option, '=');
-    const auto [section, name] = simple_split(key, '/');
-    map[section][name] = value;
-  }
-  return map;
-}
 
 // OpenSCAD
 int main(int argc, char **argv)
@@ -773,6 +807,15 @@ int main(int argc, char **argv)
 #endif
   PlatformUtils::registerApplicationPath(applicationPath);
 
+#ifdef ENABLE_PYTHON
+  // The original name as called, not resolving links and so on. This will
+  // just forward everything to the python main.
+  const auto applicationName = fs::path(argv[0]).filename().generic_string();
+  if (applicationName == "openscad-python") {
+      return pythonRunArgs(argc, argv);
+  }
+#endif
+
 #ifdef ENABLE_CGAL
   // Always throw exceptions from CGAL, so we can catch instead of crashing on bad geometry.
   CGAL::set_error_behaviour(CGAL::THROW_EXCEPTION);
@@ -789,8 +832,8 @@ int main(int argc, char **argv)
   ViewOptions viewOptions{};
   po::options_description desc("Allowed options");
   desc.add_options()
-    ("export-format", po::value<std::string>(), "overrides format of exported scad file when using option '-o', arg can be any of its supported file extensions.  For ascii stl export, specify 'asciistl', and for binary stl export, specify 'binstl'.  Ascii export is the current stl default, but binary stl is planned as the future default so asciistl should be explicitly specified in scripts when needed.\n")
-    ("o,o", po::value<std::vector<std::string>>(), "output specified file instead of running the GUI, the file extension specifies the type: stl, off, wrl, amf, 3mf, csg, dxf, svg, pdf, png, echo, ast, term, nef3, nefdbg (May be used multiple time for different exports). Use '-' for stdout\n")
+    ("export-format", po::value<std::string>(), "overrides format of exported scad file when using option '-o', arg can be any of its supported file extensions.  For ASCII stl export, specify 'asciistl', and for binary stl export, specify 'binstl'.  ASCII export is the current stl default, but binary stl is planned as the future default so asciistl should be explicitly specified in scripts when needed.\n")
+    ("o,o", po::value<std::vector<std::string>>(), "output specified file instead of running the GUI. The file extension specifies the type: stl, off, wrl, amf, 3mf, csg, dxf, svg, pdf, png, echo, ast, term, nef3, nefdbg, param, pov. May be used multiple times for different exports. Use '-' for stdout.\n")
     ("O,O", po::value<std::vector<std::string>>(), "pass settings value to the file export using the format section/key=value, e.g export-pdf/paper-size=a3. Use --help-export to list all available settings.")
     ("D,D", po::value<std::vector<std::string>>(), "var=val -pre-define variables")
     ("p,p", po::value<std::string>(), "customizer parameter file")
@@ -837,10 +880,9 @@ int main(int argc, char **argv)
     ("check-parameters", po::value<std::string>(), "=true/false, configure the parameter check for user modules and functions")
     ("check-parameter-ranges", po::value<std::string>(), "=true/false, configure the parameter range check for builtin modules")
     ("debug", po::value<std::string>(), "special debug info - specify 'all' or a set of source file names")
-    ("s,s", po::value<std::string>(), "stl_file deprecated, use -o")
-    ("x,x", po::value<std::string>(), "dxf_file deprecated, use -o")
 #ifdef ENABLE_PYTHON
   ("trust-python",  "Trust python")
+  ("python-module", po::value<std::string>(), "=module Call pip python module")
 #endif
   ;
 
@@ -874,6 +916,16 @@ int main(int argc, char **argv)
   if (vm.count("trust-python")) {
     LOG("Python Engine enabled", OpenSCAD::debug);
     python_trusted = true;
+  }
+
+  const auto pymod = "python-module";
+  if (vm.count(pymod)) {
+      PRINTDB("Running Python Module %s", pymod);
+      std::vector<std::string> args;
+      if (vm.count("input-file")) {
+          args = vm["input-file"].as<std::vector<std::string>>();
+      }
+      return pythonRunModule(applicationPath, vm[pymod].as<std::string>(), args);
   }
 #endif
   if (vm.count("quiet")) {
@@ -942,14 +994,6 @@ int main(int argc, char **argv)
   if (vm.count("o")) {
     output_files = vm["o"].as<std::vector<std::string>>();
   }
-  if (vm.count("s")) {
-    LOG(message_group::Deprecated, "The -s option is deprecated. Use -o instead.\n");
-    output_files.push_back(vm["s"].as<std::string>());
-  }
-  if (vm.count("x")) {
-    LOG(message_group::Deprecated, "The -x option is deprecated. Use -o instead.\n");
-    output_files.push_back(vm["x"].as<std::string>());
-  }
   if (vm.count("d")) {
     if (deps_output_file) help(argv[0], desc, true);
     deps_output_file = vm["d"].as<std::string>().c_str();
@@ -1012,8 +1056,8 @@ int main(int argc, char **argv)
     }
   }
 
-  AnimateArgs animate = get_animate(vm);
-  Camera camera = get_camera(vm);
+  AnimateArgs const animate = get_animate(vm);
+  const Camera camera = get_camera(vm);
 
   if (animate.frames) {
     for (const auto& filename : output_files) {
@@ -1073,10 +1117,9 @@ int main(int argc, char **argv)
     }
 
     if (deps_output_file) {
-      std::string deps_out(deps_output_file);
+      std::string const deps_out(deps_output_file);
       const std::vector<std::string>& geom_out(output_files);
-      int result = write_deps(deps_out, geom_out);
-      if (!result) {
+      if (!write_deps(deps_out, geom_out)) {
         LOG("Error writing deps");
         return 1;
       }

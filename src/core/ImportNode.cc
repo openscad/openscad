@@ -26,6 +26,7 @@
 
 #include "core/ImportNode.h"
 
+#include "geometry/Geometry.h"
 #include "io/import.h"
 
 #include "core/module.h"
@@ -152,6 +153,35 @@ static std::shared_ptr<AbstractNode> do_import(const ModuleInstantiation *inst, 
 static std::shared_ptr<AbstractNode> builtin_import(const ModuleInstantiation *inst, Arguments arguments)
 { return do_import(inst, std::move(arguments), ImportType::UNKNOWN); }
 
+template<typename T>
+static std::unique_ptr<T> optionally_center(std::unique_ptr<T> g, bool center) {
+  if (center) {
+    auto bbox = g->getBoundingBox();
+    auto center = bbox.center();
+
+    if constexpr (std::is_same_v<T, Polygon2d>) {
+      auto mat = Transform2d::Identity();
+      auto translate = mat.translation();
+
+      translate.x() = -center.x();
+      translate.y() = -center.y();
+
+      g->transform(mat);
+    } else {
+      auto mat = Transform3d::Identity();
+      auto translate = mat.translation();
+
+      translate.x() = -center.x();
+      translate.y() = -center.y();
+      translate.z() = -center.z();
+
+      g->transform(mat);
+    }
+  }
+
+  return g;
+}
+
 /*!
    Will return an empty geometry if the import failed, but not nullptr
  */
@@ -162,23 +192,23 @@ std::unique_ptr<const Geometry> ImportNode::createGeometry() const
 
   switch (this->type) {
   case ImportType::STL: {
-    g = import_stl(this->filename, loc);
+    g = optionally_center(import_stl(this->filename, loc), this->center);
     break;
   }
   case ImportType::AMF: {
-    g = import_amf(this->filename, loc);
+    g = optionally_center(import_amf(this->filename, loc), this->center);
     break;
   }
   case ImportType::_3MF: {
-    g = import_3mf(this->filename, loc);
+    g = optionally_center(import_3mf(this->filename, loc), this->center);
     break;
   }
   case ImportType::OFF: {
-    g = import_off(this->filename, loc);
+    g = optionally_center(import_off(this->filename, loc), this->center);
     break;
   }
   case ImportType::OBJ: {
-    g = import_obj(this->filename, loc);
+    g = optionally_center(import_obj(this->filename, loc), this->center);
     break;
   }
   case ImportType::SVG: {
@@ -187,7 +217,7 @@ std::unique_ptr<const Geometry> ImportNode::createGeometry() const
   }
   case ImportType::DXF: {
     DxfData dd(this->fn, this->fs, this->fa, this->filename, this->layer.value_or(""), this->origin_x, this->origin_y, this->scale);
-    g = dd.toPolygon2d();
+    g = optionally_center(dd.toPolygon2d(), this->center);
     break;
   }
 #ifdef ENABLE_CGAL
@@ -220,10 +250,10 @@ std::string ImportNode::toString() const
   }
   stream << ", origin = [" << std::dec << this->origin_x << ", " << this->origin_y << "]";
   if (this->type == ImportType::SVG) {
-    stream << ", center = " << (this->center ? "true" : "false")
-           << ", dpi = " << this->dpi;
+    stream << ", dpi = " << this->dpi;
   }
   stream << ", scale = " << this->scale
+         << ", center = " << (this->center ? "true" : "false")
          << ", convexity = " << this->convexity
          << ", $fn = " << this->fn << ", $fa = " << this->fa << ", $fs = " << this->fs
          << ", timestamp = " << fs_timestamp(path)

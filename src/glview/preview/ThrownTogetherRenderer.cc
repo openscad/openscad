@@ -26,16 +26,22 @@
 
 #include "glview/preview/ThrownTogetherRenderer.h"
 
-#include <memory>
 #include <cstddef>
+#include <memory>
 #include <utility>
-#include "Feature.h"
-#include "VertexState.h"
-#include "geometry/PolySet.h"
-#include "core/enums.h"
-#include "utils/printutils.h"
 
+#include <Eigen/Geometry>
+
+#include "core/enums.h"
+#include "geometry/linalg.h"
 #include "glview/system-gl.h"
+#include "glview/VertexState.h"
+#include "glview/Renderer.h"
+#include "utils/printutils.h"
+#include "core/CSGNode.h"
+#include "glview/ShaderUtils.h"
+#include "glview/VBOBuilder.h"
+#include "glview/VBORenderer.h"
 
 namespace {
 
@@ -77,10 +83,6 @@ ThrownTogetherRenderer::ThrownTogetherRenderer(std::shared_ptr<CSGProducts> root
 {
 }
 
-ThrownTogetherRenderer::~ThrownTogetherRenderer()
-{
-}
-
 void ThrownTogetherRenderer::prepare(const ShaderUtils::ShaderInfo *shaderinfo)
 {
   PRINTD("Thrown prepare");
@@ -110,7 +112,7 @@ void ThrownTogetherRenderer::prepare(const ShaderUtils::ShaderInfo *shaderinfo)
 void ThrownTogetherRenderer::draw(bool showedges, const ShaderUtils::ShaderInfo *shaderinfo) const
 {
   // Only use shader if select rendering or showedges
-  bool enable_shader = shaderinfo && (
+  const bool enable_shader = shaderinfo && (
     shaderinfo->type == ShaderUtils::ShaderType::EDGE_RENDERING && showedges || 
     shaderinfo->type == ShaderUtils::ShaderType::SELECT_RENDERING);
   if (enable_shader) {
@@ -159,10 +161,9 @@ void ThrownTogetherRenderer::createChainObject(VertexStateContainer& container, 
     return;
   }
 
-  bool enable_barycentric = true;
+  const bool enable_barycentric = true;
 
   const auto& leaf_color = csgobj.leaf->color;
-  const auto csgmode = RendererUtils::getCsgMode(highlight_mode, background_mode, type);
 
   vbo_builder.writeSurface();
 
@@ -171,7 +172,7 @@ void ThrownTogetherRenderer::createChainObject(VertexStateContainer& container, 
     const ColorMode colormode = getColorMode(csgobj.flags, highlight_mode, background_mode, false, type);
     getShaderColor(colormode, leaf_color, color);
 
-    add_color(vbo_builder, color, shaderinfo);
+    add_shader_pointers(vbo_builder, shaderinfo);
 
     vbo_builder.create_surface(*csgobj.leaf->polyset, csgobj.leaf->matrix, color, enable_barycentric);
     if (const auto ttr_vs = std::dynamic_pointer_cast<TTRVertexState>(vbo_builder.states().back())) {
@@ -181,7 +182,7 @@ void ThrownTogetherRenderer::createChainObject(VertexStateContainer& container, 
     ColorMode colormode = getColorMode(csgobj.flags, highlight_mode, background_mode, false, type);
     getShaderColor(colormode, leaf_color, color);
 
-    add_color(vbo_builder, color, shaderinfo);
+    add_shader_pointers(vbo_builder, shaderinfo);
 
     auto cull = std::make_shared<VertexState>();
     cull->glBegin().emplace_back([]() {
@@ -207,7 +208,7 @@ void ThrownTogetherRenderer::createChainObject(VertexStateContainer& container, 
     colormode = getColorMode(csgobj.flags, highlight_mode, background_mode, true, type);
     getShaderColor(colormode, leaf_color, color);
 
-    add_color(vbo_builder, color, shaderinfo);
+    add_shader_pointers(vbo_builder, shaderinfo);
 
     cull = std::make_shared<VertexState>();
     cull->glBegin().emplace_back([]() {

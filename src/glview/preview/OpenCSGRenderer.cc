@@ -25,8 +25,9 @@
  */
 
 #include "glview/preview/OpenCSGRenderer.h"
-#include "Renderer.h"
-#include "VertexState.h"
+#include "glview/Renderer.h"
+#include "glview/ShaderUtils.h"
+#include "glview/VertexState.h"
 #include "geometry/linalg.h"
 #include "glview/system-gl.h"
 
@@ -93,7 +94,9 @@ OpenCSGRenderer::OpenCSGRenderer(
     std::shared_ptr<CSGProducts> background_products)
     : root_products_(std::move(root_products)),
       highlights_products_(std::move(highlights_products)),
-      background_products_(std::move(background_products)) {}
+      background_products_(std::move(background_products)) {
+  opencsg_vertex_shader_code_ = ShaderUtils::loadShaderSource("OpenCSG.vert");
+}
 
 void OpenCSGRenderer::prepare(const ShaderUtils::ShaderInfo *shaderinfo) {
   if (vertex_state_containers_.empty()) {
@@ -118,6 +121,12 @@ void OpenCSGRenderer::draw(bool showedges, const ShaderUtils::ShaderInfo *shader
 
   for (const auto& product : vertex_state_containers_) {
     if (product->primitives().size() > 1) {
+#if OPENCSG_VERSION >= 0x0180
+      if (enable_shader)
+          OpenCSG::setVertexShader(opencsg_vertex_shader_code_);
+      else
+          OpenCSG::setVertexShader({});
+#endif
       GL_CHECKD(OpenCSG::render(product->primitives()));
       GL_TRACE0("glDepthFunc(GL_EQUAL)");
       GL_CHECKD(glDepthFunc(GL_EQUAL));
@@ -219,7 +228,7 @@ void OpenCSGRenderer::createCSGVBOProducts(
           last_color = color;
         }
 
-        add_color(vbo_builder, last_color, shaderinfo);
+        add_shader_pointers(vbo_builder, shaderinfo);
 
         if (color[3] == 1.0f) {
           // object is opaque, draw normally
@@ -297,7 +306,7 @@ void OpenCSGRenderer::createCSGVBOProducts(
           last_color = color;
         }
 
-        add_color(vbo_builder, last_color, shaderinfo);
+        add_shader_pointers(vbo_builder, shaderinfo);
 
         // negative objects should only render rear faces
         std::shared_ptr<VertexState> cull = std::make_shared<VertexState>();

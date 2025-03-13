@@ -1,3 +1,4 @@
+#include "geometry/linalg.h"
 #include "utils/hash.h"
 #include <cstdint>
 #include <boost/functional/hash.hpp>

@@ -465,12 +465,17 @@ target_link_libraries(OpenSCAD PRIVATE ${LIBXML2_LIBRARIES})
 
 if(ENABLE_PYTHON)
   find_package(Python REQUIRED COMPONENTS Interpreter Development)
-  find_package(CryptoPP REQUIRED)
-  message(STATUS "Python enabled, using Crypto++ ${PC_CRYPTOPP_VERSION}")
-  target_include_directories(OpenSCAD PRIVATE ${Python_INCLUDE_DIRS})
-  target_include_directories(OpenSCAD PRIVATE ${CRYPTOPP_INCLUDE_DIRS})
-  target_link_libraries(OpenSCAD PRIVATE ${Python_LIBRARIES})
-  target_link_libraries(OpenSCAD PRIVATE ${CRYPTOPP_LIBRARIES})
+  find_package(Nettle 3.4)
+  if(NOT Nettle_FOUND)
+    message(WARNING "Nettle not found, disabling python support.")
+    set(ENABLE_PYTHON OFF CACHE BOOL "" FORCE)
+  else()
+    message(STATUS "Python ${Python_VERSION} enabled, using Nettle ${Nettle_VERSION}")
+    target_include_directories(OpenSCAD PRIVATE ${Python_INCLUDE_DIRS})
+    target_link_libraries(OpenSCAD PRIVATE ${Python_LIBRARIES})
+    target_include_directories(OpenSCAD PRIVATE ${Nettle_INCLUDE_DIRS})
+    target_link_libraries(OpenSCAD PRIVATE ${Nettle_LIBRARIES})
+  endif()
 endif()
 
 if(ENABLE_HIDAPI)
@@ -560,24 +565,6 @@ target_include_directories(OpenSCAD PRIVATE
   "src/ext"
   "src/ext/lexertl/include"
   "src/ext/libtess2/Include"
-
-  # All the following should go away, not needed anymore after
-  # PR #5312. Left here for now in case there are on-going PRs that
-  # rely on these. Should be removed soon.
-  "src/core"
-  "src/core/customizer"
-  "src/ext/json"
-  "src/ext"
-  "src/geometry"
-  "src/geometry/cgal"
-  "src/geometry/manifold"
-  "src/glview"
-  "src/glview/preview"
-  "src/glview/cgal"
-  "src/gui"
-  "src/io"
-  "src/platform"
-  "src/utils"
 )
 
 FLEX_TARGET(openscad_lexer src/core/lexer.l ${OPENSCAD_LIB_OUTPUT_DIR}/lexer.cxx DEFINES_FILE ${OPENSCAD_LIB_OUTPUT_DIR}/lexer.hxx COMPILE_FLAGS ${WINCOMPAT})
@@ -804,6 +791,7 @@ set(CORE_SOURCES
   src/core/ImportNode.cc
   src/core/LinearExtrudeNode.cc
   src/core/LocalScope.cc
+  src/core/node_clone.cc
   src/core/ModuleInstantiation.cc
   src/core/NodeDumper.cc
   src/core/NodeVisitor.cc
@@ -918,7 +906,9 @@ set(CORE_SOURCES
   ${BISON_comment_parser_OUTPUTS})
 if(ENABLE_PYTHON)
 	list(APPEND CORE_SOURCES
-		    src/core/pyopenscad.cc )
+		    src/python/pymod.cc
+		    src/python/pyopenscad.cc 
+		    src/python/pyfunctions.cc )
 	target_compile_definitions(OpenSCAD PRIVATE ENABLE_PYTHON)
 endif()
 
@@ -1052,6 +1042,7 @@ else()
     src/glview/OffscreenView.cc
     src/glview/cgal/CGALRenderer.cc
     src/glview/cgal/CGALRenderUtils.cc
+    src/glview/PolySetRenderer.cc
     src/glview/preview/OpenCSGRenderer.cc
     src/glview/preview/ThrownTogetherRenderer.cc
     src/io/export_png.cc
@@ -1102,6 +1093,7 @@ set(GUI_SOURCES
   src/gui/PrintService.cc
   src/gui/ExternalToolInterface.cc
   src/gui/ProgressWidget.cc
+  src/gui/RubberBandManager.cc
   src/gui/QGLView.cc
   src/gui/QGLView2.cc
   src/gui/QSettingsCached.cc
@@ -1169,6 +1161,7 @@ set(GUI_HEADERS
     src/gui/PrintInitDialog.h
     src/gui/PrintService.h
     src/gui/ProgressWidget.h
+    src/gui/RubberBandManager.h
     src/gui/QGLView.h
     src/gui/QSettingsCached.h
     src/gui/QWordSearchField.h
