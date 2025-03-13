@@ -271,11 +271,11 @@ bool Value::toBool() const
 }
 
 // Convert the value to a double with an integer value, for use in bitwise operations.
-// Since there are several possible ways to do this (floor, ceil, round) this function
+// Since there are several possible ways to do this (floor, ceil, round, trunc) this function
 // centralizes the choice for consistency.
 double Value::toInteger() const
 {
-  return floor(this->toDouble());
+  return trunc(this->toDouble());
 }
 
 int64_t Value::toInt64() const
