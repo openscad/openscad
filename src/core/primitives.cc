@@ -508,7 +508,6 @@ static std::shared_ptr<AbstractNode> builtin_polyhedron(const ModuleInstantiatio
   return node;
 }
 
-
 std::unique_ptr<const Geometry> EdgeNode::createGeometry() const
 {
   if (this->size <= 0 ) return std::make_unique<Polygon2d>();

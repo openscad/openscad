@@ -57,7 +57,7 @@ size_t Barcode1d::memsize() const
   for (const auto &o : this->theedges) {
     mem += 2*sizeof(double);
   }
-  for (const auto &o : this->trans3dOutlines) {
+  for (const auto &o : this->trans3dEdges) {
     mem += 2*sizeof(double);
   }
   mem += sizeof(Barcode1d);
@@ -112,13 +112,10 @@ void Barcode1d::transform(const Transform2d& mat)
     return;
   }
   if (trans3dState != Transform3dState::NONE) mergeTrans3d();
-  /*
   for (auto& o : this->theedges) {
-    for (auto& v : o.vertices) {
-      v = mat * v;
-    }
+    o.begin = mat(0,0)*o.begin;
+    o.end = mat(0,0)*o.end;
   }
-  */
 }
 
 void Barcode1d::resize(const Vector2d& newsize, const Eigen::Matrix<bool, 2, 1>& autosize)
@@ -148,32 +145,12 @@ void Barcode1d::resize(const Vector2d& newsize, const Eigen::Matrix<bool, 2, 1>&
 
 bool Barcode1d::is_convex() const
 {
-  if (theedges.size() > 1) return false;
-  if (theedges.empty()) return true;
   return true;
 }
 
 double Barcode1d::area() const
 {
-	/*
-  auto ps = tessellate();
-  if (ps == nullptr) {
-    return 0;
-  }
-
-  double area = 0.0;
-  for (const auto& poly : ps->indices) {
-    const auto& v1 = ps->vertices[poly[0]];
-    const auto& v2 = ps->vertices[poly[1]];
-    const auto& v3 = ps->vertices[poly[2]];
-    area += 0.5 * (
-      v1.x() * (v2.y() - v3.y())
-      + v2.x() * (v3.y() - v1.y())
-      + v3.x() * (v1.y() - v2.y()));
-  }
-  return area;
-  */
-	return 0;
+  return 0;
 }
 
 /*!
@@ -188,23 +165,6 @@ double Barcode1d::area() const
    * guarantee that vertices and their order are untouched (apart from adding a zero 3rd dimension)
    *
  */
-/*
-std::unique_ptr<PolySet> Barcode1d::tessellate(bool in3d) const
-{
-  PRINTDB("Barcode1d::tessellate(): %d edges", this->edges().size());
-  std::unique_ptr<PolySet> res;
-#if defined(ENABLE_MANIFOLD) && defined(USE_MANIFOLD_TRIANGULATOR)
-  if (RenderSettings::inst()->backend3D == RenderBackend3D::ManifoldBackend) {
-    res = ManifoldUtils::createTriangulatedPolySetFromPolygon2d(*this, in3d);
-  }
-  else
-#endif
-    res = CGALUtils::createTriangulatedPolySetFromPolygon2d(*this, in3d);
-  if (in3d)
-    res->transform(this->getTransform3d());
-  return res;
-}
-*/
 void Barcode1d::transform3d(const Transform3d &mat)
 {
   // Check whether it can be a 2d transform, and avoid the 3d overhead
@@ -248,30 +208,30 @@ void Barcode1d::transform3d(const Transform3d &mat)
 // If there is no Transform3d, this returns the edges vector.
 // If there is a Transform3dState::CACHED Transform3d, this uses the cache.
 // Else it creates and returns the cache
-const Barcode1d::Edges1d &Barcode1d::transformedOutlines() const {
+const Barcode1d::Edges1d &Barcode1d::transformedEdges() const {
   if (trans3dState == Transform3dState::NONE) return theedges;
   /*
   if (trans3dState != Transform3dState::CACHED) {
     // Need to remove const from the cache object.  It maintains proper const semantics to the public API though.
-    Barcode1d::Outlines2d &cache= const_cast<Barcode1d::Outlines2d&>(trans3dOutlines);
+    Barcode1d::Edges2d &cache= const_cast<Barcode1d::Edges2d&>(trans3dEdges);
     cache= theedges;
-    applyTrans3dToOutlines(cache);
+    applyTrans3dToEdges(cache);
 // TODO    const_cast<Barcode1d*>(this)->trans3dState= Transform3dState::CACHED;
   }
   */
-  return trans3dOutlines;
+  return trans3dEdges;
 }
 // This flattens the 3D transform into the 2D transform that it would have been
 // originally.
 void Barcode1d::mergeTrans3d() {
   if (trans3dState == Transform3dState::CACHED)
-    theedges.swap(trans3dOutlines);
+    theedges.swap(trans3dEdges);
   else if (trans3dState == Transform3dState::PENDING)
-    applyTrans3dToOutlines(theedges);
-  trans3dOutlines.clear();
+    applyTrans3dToEdges(theedges);
+  trans3dEdges.clear();
   trans3dState= Transform3dState::NONE;
 }
-void Barcode1d::applyTrans3dToOutlines(Barcode1d::Edges1d &edges) const {
+void Barcode1d::applyTrans3dToEdges(Barcode1d::Edges1d &edges) const {
   Transform2d t;
   t.matrix() <<
     trans3d(0,0), trans3d(0,1), trans3d(0,3),

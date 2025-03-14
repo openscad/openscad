@@ -18,6 +18,7 @@
 #include "glview/RenderSettings.h"
 #include "core/LinearExtrudeNode.h"
 #include "geometry/PolySet.h"
+#include "geometry/Barcode1d.h"
 #include "geometry/PolySetBuilder.h"
 #include "geometry/PolySetUtils.h"
 #include "utils/calc.h"
@@ -664,9 +665,21 @@ std::unique_ptr<Geometry> extrudePolygon(const LinearExtrudeNode& node, const Po
                                       node.convexity, isConvex, slice_stride * num_slices);
 }
 
-std::unique_ptr<Geometry> extrudeBarcode(const LinearExtrudeNode& node, const Barcode1d & batcode)
+std::unique_ptr<Geometry> extrudeBarcode(const LinearExtrudeNode& node, const Barcode1d & barcode)
 {
-	printf("Extrude barcode\n");
-	return nullptr;
+	Polygon2d p;
+	for(auto e : barcode.untransformedEdges()) {
+		Vector2d v1(e.begin,0);
+		Vector2d v2(e.begin,node.height[2]);
+		Vector2d v3(e.end,node.height[2]);
+		Vector2d v4(e.end,0);
+
+		Outline2d o;
+		o.vertices= {v1,v2,v3,v4};
+		p.addOutline(o);
+	}
+	p.transform3d(barcode.getTransform3d());
+	p.setSanitized(true);
+	return std::make_unique<Polygon2d>(p);
 }
 

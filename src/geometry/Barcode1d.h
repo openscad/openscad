@@ -31,7 +31,7 @@ public:
   [[nodiscard]] size_t memsize() const override;
   [[nodiscard]] BoundingBox getBoundingBox() const override;
   [[nodiscard]] std::string dump() const override;
-  [[nodiscard]] unsigned int getDimension() const override { return 2; }
+  [[nodiscard]] unsigned int getDimension() const override { return 1; }
   [[nodiscard]] bool isEmpty() const override;
   [[nodiscard]] std::unique_ptr<Geometry> copy() const override;
   [[nodiscard]] size_t numFacets() const override { return 1; }
@@ -47,9 +47,9 @@ public:
   //// It would be better to fix the class relationships, so that Barcode1d does
   //// not inherit an unused 3d transform function.
   //// But that will likely require significant refactoring.
-  const Edges1d &edges() const { return trans3dState == Transform3dState::NONE? theedges : transformedOutlines(); }
-  const Edges1d &untransformedOutlines() const { return theedges; }
-  const Edges1d &transformedOutlines() const;
+  const Edges1d &edges() const { return trans3dState == Transform3dState::NONE? theedges : transformedEdges(); }
+  const Edges1d &untransformedEdges() const { return theedges; }
+  const Edges1d &transformedEdges() const;
   using Geometry::transform;
 
   void transform(const Transform2d& mat);
@@ -74,7 +74,7 @@ private:
   bool sanitized{false};
   Transform3dState trans3dState{Transform3dState::NONE};
   Transform3d trans3d;
-  Edges1d trans3dOutlines;
+  Edges1d trans3dEdges;
   void mergeTrans3d();
-  void applyTrans3dToOutlines(Barcode1d::Edges1d &edges) const;
+  void applyTrans3dToEdges(Barcode1d::Edges1d &edges) const;
 };

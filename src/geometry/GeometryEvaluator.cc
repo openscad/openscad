@@ -770,9 +770,12 @@ GeometryEvaluator::ResultObject GeometryEvaluator::applyToChildren(const Abstrac
   for (const auto& item : this->visitedchildren[node.index()]) {
     if (!isValidDim(item, dim)) break;
   }
-  if (dim == 2) return ResultObject::mutableResult(std::shared_ptr<Geometry>(applyToChildren2D(node, op)));
-  else if (dim == 3) return applyToChildren3D(node, op);
-  return {};
+  switch(dim) {
+    case 1: return ResultObject::mutableResult(std::shared_ptr<Geometry>(applyToChildren1D(node, op)));
+    case 2: return ResultObject::mutableResult(std::shared_ptr<Geometry>(applyToChildren2D(node, op)));
+    case 3:  return applyToChildren3D(node, op);
+    default: return {};
+  }	     
 }
 
 int cut_face_face_face(Vector3d p1, Vector3d n1, Vector3d p2,Vector3d n2, Vector3d p3, Vector3d n3, Vector3d &res,double *detptr)
@@ -1504,6 +1507,44 @@ std::unique_ptr<Polygon2d> GeometryEvaluator::applyMinkowski2D(const AbstractNod
    Returns a list of Polygon2d children of the given node.
    May return empty Polygon2d object, but not nullptr objects
  */
+std::vector<std::shared_ptr<const Barcode1d>> GeometryEvaluator::collectChildren1D(const AbstractNode& node)
+{
+  std::vector<std::shared_ptr<const Barcode1d>> children;
+  for (const auto& item : this->visitedchildren[node.index()]) {
+    auto& chnode = item.first;
+    auto& chgeom = item.second;
+    if (chnode->modinst->isBackground()) continue;
+
+    // NB! We insert into the cache here to ensure that all children of
+    // a node is a valid object. If we inserted as we created them, the
+    // cache could have been modified before we reach this point due to a large
+    // sibling object.
+    smartCacheInsert(*chnode, chgeom);
+
+    if (chgeom) {
+      if (chgeom->getDimension() != 1) {
+        LOG(message_group::Warning, item.first->modinst->location(), this->tree.getDocumentPath(), "Ignoring other child object for 1D operation");
+        children.push_back(nullptr); // replace 3D geometry with empty geometry
+      } else {
+        if (chgeom->isEmpty()) {
+          children.push_back(nullptr);
+        } else {
+          const auto barcode1d = std::dynamic_pointer_cast<const Barcode1d>(chgeom);
+          assert(barcode1d);
+          children.push_back(barcode1d);
+        }
+      }
+    } else {
+      children.push_back(nullptr);
+    }
+  }
+  return children;
+}
+
+/*!
+   Returns a list of Polygon2d children of the given node.
+   May return empty Polygon2d object, but not nullptr objects
+ */
 std::vector<std::shared_ptr<const Polygon2d>> GeometryEvaluator::collectChildren2D(const AbstractNode& node)
 {
   std::vector<std::shared_ptr<const Polygon2d>> children;
@@ -1669,6 +1710,19 @@ std::unique_ptr<Polygon2d> GeometryEvaluator::applyToChildren2D(const AbstractNo
 	return r1;
   }
   return pol;
+}
+
+std::unique_ptr<Barcode1d> GeometryEvaluator::applyToChildren1D(const AbstractNode& node, OpenSCADOperator op)
+{
+  node.progress_report();
+  std::vector<std::shared_ptr<const Barcode1d> > children = collectChildren1D(node);
+
+  if (children.empty()) {
+    return nullptr;
+  }
+
+  auto result = std::make_unique<Barcode1d>(*children[0]);
+  return result;
 }
 
 /*!
@@ -2356,26 +2410,22 @@ Response GeometryEvaluator::visit(State& state, const ConcatNode& node)
  */
 Response GeometryEvaluator::visit(State& state, const LinearExtrudeNode& node)
 {
+  // TODO linear_extrude here
   if (state.isPrefix() && isSmartCached(node)) return Response::PruneTraversal;
   if (state.isPostfix()) {
-    std::shared_ptr<const Geometry> geom = nullptr;
+    std::shared_ptr<const Geometry> geom;
     if (!isSmartCached(node)) {
-      std::shared_ptr<const Geometry>  geometry=nullptr;
-      printf("aa\n");
-      for (const auto& item : this->visitedchildren[node.index()]) {
-        geometry = item.second;
-        printf("bb %p\n",geometry);
-        std::shared_ptr<const Barcode1d> barcode = std::dynamic_pointer_cast<const Barcode1d>(geometry); 
-	if(barcode != nullptr) geom = extrudeBarcode(node, *barcode);
+      ResultObject res = applyToChildren(node, OpenSCADOperator::UNION);
+      const std::shared_ptr<const Geometry> geometry = res.constptr();
+      if (geometry) {
+        const auto polygons = std::dynamic_pointer_cast<const Polygon2d>(geometry);
+        const auto barcode1d = std::dynamic_pointer_cast<const Barcode1d>(geometry);
+
+	if(polygons != nullptr) geom = extrudePolygon(node, *polygons);
+	if(barcode1d != nullptr) geom = extrudeBarcode(node, *barcode1d);
+
+        assert(geom);
       }
-      if(geom == nullptr){
-        const std::shared_ptr<const Geometry> geometry = applyToChildren2D(node, OpenSCADOperator::UNION);
-        if (geometry) {
-          const auto polygons = std::dynamic_pointer_cast<const Polygon2d>(geometry);
-          geom = extrudePolygon(node, *polygons);
-          assert(geom);
-        }
-      }	
     } else {
       geom = smartCacheGet(node, false);
     }
@@ -2395,6 +2445,7 @@ Response GeometryEvaluator::visit(State& state, const PathExtrudeNode& node)
       if (geometry) {
         const auto polygons = std::dynamic_pointer_cast<const Polygon2d>(geometry);
         auto extruded = extrudePolygon(node, *polygons);
+//	printf("extrude = %p\n",extruded);
         assert(extruded);
         geom = std::move(extruded);
       }

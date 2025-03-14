@@ -84,7 +84,6 @@ void CSGTreeEvaluator::applyToChildren(State& state, const AbstractNode& node, O
         this->backgroundNodes.push_back(t1);
       } else {
         auto t1l = std::dynamic_pointer_cast<CSGLeaf>(t1);
-	if(t1l != nullptr) printf("is leaf\n"); else printf("not lead\n");
 	if(t1l != nullptr && t1l->is_2d) {
 	  Transform3d &m1 = t1l->matrix;
 	  for(int i=0;i<4;i++) {
