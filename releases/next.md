@@ -6,16 +6,19 @@
 
 **Language Features**
 
+* Hex constants using 0x prefix #4833
+* Bitwise and shift operators: ~, |, &, <<, >> #4833
 * New modules:
   * textmetrics() #3684
   * fontmetrics() #3684
   * fill() #4348
 * linear_extrude()
   * Added v= and segments= parameters #3770 #5080
-  * h= is an alias for height=
-* rotate_exteude()
-  * a= is an alias for angle=
-  * When specifying an angle, rotation starts on the positive X axis #5553
+  * h= is an alias for height= #5572
+* rotate_extrude()
+  * Added start= to specify start angle #5553
+  * a= is an alias for angle= #5572
+  * When specifying an angle, rotation starts on angle= instead of angle=180 #5553
 * import()
   * Added center= parameter 
   * Added support for .json import #3891
@@ -113,6 +116,7 @@
 * Removed support for OpenGL < 2.1
 * Removed support for dxf_linear_extrude(), dxf_rotate_extrude(), import_dxf(), import_stl() and import_off()
 * Removed deprecated -s and -x cmd-line options #5733
+* Variable names starting with a digit is deprecated (but still allowed for the time being, except when conflicting with hex constants) #4833
 
 **Misc:**
 

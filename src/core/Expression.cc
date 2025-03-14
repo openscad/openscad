@@ -73,6 +73,7 @@ Value UnaryOp::evaluate(const std::shared_ptr<const Context>& context) const
   switch (this->op) {
   case (Op::Not):    return !this->expr->evaluate(context).toBool();
   case (Op::Negate): return checkUndef(-this->expr->evaluate(context), context);
+  case (Op::BinaryNot): return checkUndef(~this->expr->evaluate(context), context);
   default:
     assert(false && "Non-existent unary operator!");
     throw EvaluationException("Non-existent unary operator!");
@@ -84,6 +85,7 @@ const char *UnaryOp::opString() const
   switch (this->op) {
   case Op::Not:    return "!";
   case Op::Negate: return "-";
+  case Op::BinaryNot: return "~";
   default:
     assert(false && "Non-existent unary operator!");
     throw EvaluationException("Non-existent unary operator!");
@@ -129,6 +131,14 @@ Value BinaryOp::evaluate(const std::shared_ptr<const Context>& context) const
     return checkUndef(this->left->evaluate(context) + this->right->evaluate(context), context);
   case Op::Minus:
     return checkUndef(this->left->evaluate(context) - this->right->evaluate(context), context);
+  case Op::ShiftLeft:
+    return checkUndef(this->left->evaluate(context) << this->right->evaluate(context), context);
+  case Op::ShiftRight:
+    return checkUndef(this->left->evaluate(context) >> this->right->evaluate(context), context);
+  case Op::BinaryAnd:
+    return checkUndef(this->left->evaluate(context) & this->right->evaluate(context), context);
+  case Op::BinaryOr:
+    return checkUndef(this->left->evaluate(context) | this->right->evaluate(context), context);
   case Op::Less:
     return checkUndef(this->left->evaluate(context) < this->right->evaluate(context), context);
   case Op::LessEqual:
@@ -164,6 +174,10 @@ const char *BinaryOp::opString() const
   case Op::GreaterEqual: return ">=";
   case Op::Equal:        return "==";
   case Op::NotEqual:     return "!=";
+  case Op::BinaryOr:     return "|";
+  case Op::BinaryAnd:     return "&";
+  case Op::ShiftLeft:     return "<<";
+  case Op::ShiftRight:     return ">>";
   default:
     assert(false && "Non-existent binary operator!");
     throw EvaluationException("Non-existent binary operator!");
