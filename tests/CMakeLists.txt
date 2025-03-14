@@ -1022,6 +1022,7 @@ add_cmdline_test(astdumptest OPENSCAD SUFFIX ast FILES
   ${TEST_SCAD_DIR}/functions/assert-expression-fail2-test.scad
   ${TEST_SCAD_DIR}/functions/assert-expression-fail3-test.scad
   ${TEST_SCAD_DIR}/functions/assert-expression-tests.scad
+  ${TEST_SCAD_DIR}/functions/bitwise-operators.scad
   ${TEST_SCAD_DIR}/functions/echo-expression-tests.scad
   ${TEST_SCAD_DIR}/functions/expression-precedence-tests.scad
   ${TEST_SCAD_DIR}/functions/let-test-single.scad

@@ -6,6 +6,8 @@
 
 **Language Features**
 
+* Hex constants using 0x prefix #4833
+* Bitwise and shift operators: ~, |, &, <<, >> #4833
 * New modules:
   * textmetrics() #3684
   * fontmetrics() #3684
@@ -114,6 +116,7 @@
 * Removed support for OpenGL < 2.1
 * Removed support for dxf_linear_extrude(), dxf_rotate_extrude(), import_dxf(), import_stl() and import_off()
 * Removed deprecated -s and -x cmd-line options #5733
+* Variable names starting with a digit is deprecated (but still allowed for the time being, except when conflicting with hex constants) #4833
 
 **Misc:**
 

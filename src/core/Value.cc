@@ -270,6 +270,19 @@ bool Value::toBool() const
   // NOLINTEND(bugprone-branch-clone)
 }
 
+// Convert the value to a double with an integer value, for use in bitwise operations.
+// Since there are several possible ways to do this (floor, ceil, round, trunc) this function
+// centralizes the choice for consistency.
+double Value::toInteger() const
+{
+  return trunc(this->toDouble());
+}
+
+int64_t Value::toInt64() const
+{
+  return this->toInteger();
+}
+
 double Value::toDouble() const
 {
   const double *d = std::get_if<double>(&this->value);
@@ -1094,6 +1107,55 @@ Value Value::operator%(const Value& v) const
   return Value::undef(STR("undefined operation (", this->typeName(), " % ", v.typeName(), ")"));
 }
 
+Value Value::operator<<(const Value& v) const
+{
+  if (this->type() == Type::NUMBER && v.type() == Type::NUMBER) {
+    int64_t lhs = this->toInt64();
+    int64_t rhs = v.toInt64();
+    if (rhs < 0) {
+      return Value::undef(STR("negative shift"));
+    }
+    if (rhs >= 64) {
+      return Value::undef(STR("shift too large"));
+    }
+    return (double)(lhs << rhs);
+  }
+  return Value::undef(STR("undefined operation (", this->typeName(), " << ", v.typeName(), ")"));
+}
+
+Value Value::operator>>(const Value& v) const
+{
+  if (this->type() == Type::NUMBER && v.type() == Type::NUMBER) {
+    int64_t lhs = this->toInt64();
+    int64_t rhs = v.toInt64();
+    if (rhs < 0) {
+      return Value::undef(STR("negative shift"));
+    }
+    if (rhs >= 64) {
+      return Value::undef(STR("shift too large"));
+    }
+    return (double)(lhs >> rhs);
+  }
+  return Value::undef(STR("undefined operation (", this->typeName(), " >> ", v.typeName(), ")"));
+}
+
+Value Value::operator&(const Value& v) const
+{
+  if (this->type() == Type::NUMBER && v.type() == Type::NUMBER) {
+    return (double)(this->toInt64() & v.toInt64());
+  }
+  return Value::undef(STR("undefined operation (", this->typeName(), " & ", v.typeName(), ")"));
+}
+
+Value Value::operator|(const Value& v) const
+{
+  if (this->type() == Type::NUMBER && v.type() == Type::NUMBER) {
+    return (double)(this->toInt64() | v.toInt64());
+  }
+  return Value::undef(STR("undefined operation (", this->typeName(), " | ", v.typeName(), ")"));
+}
+
+
 Value Value::operator-() const
 {
   if (this->type() == Type::NUMBER) {
@@ -1107,6 +1169,14 @@ Value Value::operator-() const
     return std::move(dstv);
   }
   return Value::undef(STR("undefined operation (-", this->typeName(), ")"));
+}
+
+Value Value::operator~() const
+{
+  if (this->type() == Type::NUMBER) {
+    return (double)~this->toInt64();
+  }
+  return Value::undef(STR("undefined operation (~", this->typeName(), ")"));
 }
 
 Value Value::operator^(const Value& v) const
