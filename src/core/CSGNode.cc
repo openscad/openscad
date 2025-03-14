@@ -97,8 +97,6 @@ std::shared_ptr<CSGNode> CSGOperation::createCSGNode(OpenSCADOperator type, std:
   // http://www.cc.gatech.edu/~turk/my_papers/pxpl_csg.pdf
   const auto& leftbox = left->getBoundingBox();
   const auto& rightbox = right->getBoundingBox();
-  printf("left is %g/%g/%g %g/%g/%g\n",leftbox.min()[0],leftbox.min()[1],leftbox.min()[2],leftbox.max()[0],leftbox.max()[1],leftbox.max()[2]);
-  printf("right is %g/%g/%g %g/%g/%g\n",rightbox.min()[0],rightbox.min()[1],rightbox.min()[2],rightbox.max()[0],rightbox.max()[1],rightbox.max()[2]);
   Vector3d newmin, newmax;
   if (type == OpenSCADOperator::INTERSECTION) {
     newmin = leftbox.min().array().cwiseMax(rightbox.min().array() );
@@ -111,9 +109,7 @@ std::shared_ptr<CSGNode> CSGOperation::createCSGNode(OpenSCADOperator type, std:
     newmin = leftbox.min().array().cwiseMax(rightbox.min().array() );
     newmax = leftbox.max().array().cwiseMin(rightbox.max().array() );
     BoundingBox newbox(newmin, newmax);
-    printf("danger\n");
     if (newbox.isNull()) {
-	    printf("prune\n");
       return left; // Prune the negative component
     }
   }
@@ -137,7 +133,6 @@ CSGOperation::CSGOperation(OpenSCADOperator type, const std::shared_ptr<CSGNode>
 }
 
 void CSGOperation::applyMatrix(const Transform3d &mat) {
-  printf("oper matrix\n");
 //  left()->applyMatrix(mat);	
 //  right()->applyMatrix(mat);	
 //  this->initBoundingBox();
@@ -180,7 +175,6 @@ std::string CSGLeaf::dump() const
 }
 
 void CSGLeaf::applyMatrix(const Transform3d &mat) {
-  printf("leaf matrix\n");	
   if(this->is_2d) {
     this->matrix = mat * this->matrix;
     this->initBoundingBox();
