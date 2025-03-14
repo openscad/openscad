@@ -12,10 +12,11 @@
   * fill() #4348
 * linear_extrude()
   * Added v= and segments= parameters #3770 #5080
-  * h= is an alias for height=
-* rotate_exteude()
-  * a= is an alias for angle=
-  * When specifying an angle, rotation starts on the positive X axis #5553
+  * h= is an alias for height= #5572
+* rotate_extrude()
+  * Added start= to specify start angle #5553
+  * a= is an alias for angle= #5572
+  * When specifying an angle, rotation starts on angle= instead of angle=180 #5553
 * import()
   * Added center= parameter 
   * Added support for .json import #3891
