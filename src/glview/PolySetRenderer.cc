@@ -78,7 +78,7 @@ void PolySetRenderer::addGeometry(const std::shared_ptr<const Geometry>& geom)
     this->polysets_.push_back(PolySetUtils::tessellate_faces(*ps));
   } else if (const auto poly = std::dynamic_pointer_cast<const Polygon2d>(geom)) {
     this->polygons_.emplace_back(
-        poly, std::shared_ptr<const PolySet>(poly->tessellate()));
+        poly, std::shared_ptr<const PolySet>(poly->tessellate(true)));
 #ifdef ENABLE_MANIFOLD
   } else if (const auto mani = std::dynamic_pointer_cast<const ManifoldGeometry>(geom)) {
     this->polysets_.push_back(mani->toPolySet());
@@ -197,7 +197,7 @@ void PolySetRenderer::createPolygonEdgeStates() {
     Color4f color;
     getColorSchemeColor(ColorMode::CGAL_EDGE_2D_COLOR, color);
     vbo_builder.writeEdge();
-    vbo_builder.create_edges(*polygon, Transform3d::Identity(), color);
+    vbo_builder.create_edges(*polygon, polygon->getTransform3d(), color);
   }
   
   std::shared_ptr<VertexState> end_state = std::make_shared<VertexState>();
