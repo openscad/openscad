@@ -1,11 +1,11 @@
 #pragma once
 
-#include <boost/algorithm/string.hpp>
-#include <boost/format.hpp>
 #include <cstddef>
+#include <clocale>
 #include <initializer_list>
 #include <iostream>
 #include <list>
+#include <set>
 #include <sstream>
 #include <string>
 #include <tuple>
@@ -21,9 +21,10 @@
 #undef vsnprintf
 #endif
 
-#include <clocale>
+#include <boost/algorithm/string.hpp>
+#include <boost/format.hpp>
+
 #include "core/AST.h"
-#include <set>
 
 // It seems standard practice to use underscore for gettext, even though it is reserved.
 // Not wanting to risk breaking translations by changing every usage of this,
