@@ -24,20 +24,25 @@
  *
  */
 
+#include "io/import.h"
+ 
 #include <exception>
 #include <memory>
-#include <Eigen/Core>
-#include <Eigen/Geometry>
-
 #include <string>
 #include <vector>
-#include "io/import.h"
+
+#include <Eigen/Core>
+#include <Eigen/Geometry>
+#include <clipper2/clipper.h>
+
+#include "core/AST.h"
+#include "geometry/ClipperUtils.h"
 #include "geometry/Polygon2d.h"
-#include "utils/printutils.h"
 #include "libsvg/libsvg.h"
 #include "libsvg/svgpage.h"
-#include "geometry/ClipperUtils.h"
-#include "core/AST.h"
+#include "libsvg/shape.h"
+#include "libsvg/util.h"
+#include "utils/printutils.h"
 
 namespace {
 
@@ -154,8 +159,8 @@ std::unique_ptr<Polygon2d> import_svg(double fn, double fs, double fa,
         height_mm = to_mm(h, page->get_viewbox().height, viewbox_valid, dpi);
 
         if (viewbox_valid) {
-          double px = w.unit == libsvg::unit_t::PERCENT ? w.number / 100.0 : 1.0;
-          double py = h.unit == libsvg::unit_t::PERCENT ? h.number / 100.0 : 1.0;
+          const double px = w.unit == libsvg::unit_t::PERCENT ? w.number / 100.0 : 1.0;
+          const double py = h.unit == libsvg::unit_t::PERCENT ? h.number / 100.0 : 1.0;
           viewbox << px * page->get_viewbox().x, py *page->get_viewbox().y;
 
           scale << width_mm / page->get_viewbox().width,
@@ -189,8 +194,8 @@ std::unique_ptr<Polygon2d> import_svg(double fn, double fs, double fa,
         }
       }
     }
-    double cx = center ? bbox.center().x() : -align.x();
-    double cy = center ? bbox.center().y() : height_mm - align.y();
+    const double cx = center ? bbox.center().x() : -align.x();
+    const double cy = center ? bbox.center().y() : height_mm - align.y();
 
     std::vector<std::shared_ptr<const Polygon2d>> polygons;
     for (const auto& shape_ptr : *shapes) {
@@ -200,9 +205,9 @@ std::unique_ptr<Polygon2d> import_svg(double fn, double fs, double fa,
         for (const auto& p : s.get_path_list()) {
           Outline2d outline;
           for (const auto& v : p) {
-            double x = scale.x() * (-viewbox.x() + v.x()) - cx;
-            double y = scale.y() * (-viewbox.y() - v.y()) + cy;
-            outline.vertices.push_back(Vector2d(x, y));
+            const double x = scale.x() * (-viewbox.x() + v.x()) - cx;
+            const double y = scale.y() * (-viewbox.y() - v.y()) + cy;
+            outline.vertices.emplace_back(x, y);
             outline.positive = true;
           }
           poly->addOutline(outline);

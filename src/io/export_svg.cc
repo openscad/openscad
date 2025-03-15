@@ -23,11 +23,14 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  */
+#include "io/export.h"
 
 #include <cassert>
-#include <ostream>
+#include <clocale>
+#include <cmath>
 #include <memory>
-#include "io/export.h"
+#include <ostream>
+
 #include "geometry/Geometry.h"
 #include "geometry/linalg.h"
 #include "geometry/Polygon2d.h"
@@ -76,12 +79,12 @@ void export_svg(const std::shared_ptr<const Geometry>& geom, std::ostream& outpu
   setlocale(LC_NUMERIC, "C"); // Ensure radix is . (not ,) in output
 
   BoundingBox bbox = geom->getBoundingBox();
-  int minx = (int)floor(bbox.min().x());
-  int miny = (int)floor(-bbox.max().y());
-  int maxx = (int)ceil(bbox.max().x());
-  int maxy = (int)ceil(-bbox.min().y());
-  int width = maxx - minx;
-  int height = maxy - miny;
+  const int minx = (int)floor(bbox.min().x());
+  const int miny = (int)floor(-bbox.max().y());
+  const int maxx = (int)ceil(bbox.max().x());
+  const int maxy = (int)ceil(-bbox.min().y());
+  const int width = maxx - minx;
+  const int height = maxy - miny;
 
   output
     << "<?xml version=\"1.0\" standalone=\"no\"?>\n"

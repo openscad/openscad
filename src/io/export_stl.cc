@@ -25,32 +25,35 @@
  */
 
 #include "io/export.h"
+
+#include <algorithm>
+#include <array>
+#include <cassert>
+#include <clocale>
+#include <cstddef>
+#include <cstdint>
+#include <ios>
+#include <memory>
+#include <ostream>
+#include <sstream>
+#include <string>
+#include <vector>
+
+#include <double-conversion/double-conversion.h>
+
 #include "geometry/Geometry.h"
 #include "geometry/linalg.h"
 #include "geometry/PolySet.h"
 #include "geometry/PolySetUtils.h"
-#include <sstream>
-#include <algorithm>
-#include <cassert>
-#include <array>
-#include <ios>
-#include <ostream>
-#include <cstdint>
-#include <memory>
-#include <double-conversion/double-conversion.h>
+#include "utils/printutils.h"
+
 #ifdef ENABLE_MANIFOLD
 #include "geometry/manifold/ManifoldGeometry.h"
 #endif
-
 #ifdef ENABLE_CGAL
 #include "geometry/cgal/CGAL_Nef_polyhedron.h"
-#include "geometry/cgal/cgal.h"
 #include "geometry/cgal/cgalutils.h"
 #endif
-
-#include <cstddef>
-#include <string>
-#include <vector>
 
 namespace {
 /* Define values for double-conversion library. */
@@ -66,7 +69,7 @@ namespace {
 
 std::string toString(const Vector3d& v)
 {
-  double_conversion::DoubleToStringConverter dc(
+  const double_conversion::DoubleToStringConverter dc(
     DC_FLAGS, DC_INF, DC_NAN, DC_EXP,
     DC_DECIMAL_LOW_EXP, DC_DECIMAL_HIGH_EXP, DC_MAX_LEADING_ZEROES, DC_MAX_TRAILING_ZEROES
   );
@@ -92,8 +95,8 @@ int32_t flipEndianness(int32_t x) {
 
 template <size_t N>
 void write_floats(std::ostream& output, const std::array<float, N>& data) {
-  static uint16_t test = 0x0001;
-  static bool isLittleEndian = *reinterpret_cast<char *>(&test) == 1;
+  static constexpr uint16_t test = 0x0001;
+  static const bool isLittleEndian = *reinterpret_cast<const char *>(&test) == 1;
 
   if (isLittleEndian) {
     output.write(reinterpret_cast<char *>(const_cast<float *>(&data[0])), N * sizeof(float));
@@ -110,7 +113,7 @@ void write_floats(std::ostream& output, const std::array<float, N>& data) {
 }
 
 
-uint64_t append_stl(std::shared_ptr<const PolySet> polyset, std::ostream& output, bool binary)
+uint64_t append_stl(const std::shared_ptr<const PolySet>& polyset, std::ostream& output, bool binary)
 {
   static_assert(sizeof(float) == 4, "Need 32 bit float");
 
@@ -200,7 +203,7 @@ uint64_t append_stl(const CGAL_Nef_polyhedron& root_N, std::ostream& output,
     LOG(message_group::Export_Warning, "Exported object may not be a valid 2-manifold and may need repair");
   }
 
-  if (std::shared_ptr<PolySet> ps = CGALUtils::createPolySetFromNefPolyhedron3(*(root_N.p3))) {
+  if (const std::shared_ptr<PolySet> ps = CGALUtils::createPolySetFromNefPolyhedron3(*(root_N.p3))) {
     triangle_count += append_stl(ps, output, binary);
   } else {
     LOG(message_group::Export_Error, "Nef->PolySet failed");

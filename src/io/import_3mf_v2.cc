@@ -23,25 +23,28 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  */
+#include "io/import.h"
 
-#include "geometry/PolySet.h"
-#include "geometry/linalg.h"
-#include "geometry/PolySetBuilder.h"
-#include "geometry/PolySetUtils.h"
-#include "geometry/Geometry.h"
-#include "utils/printutils.h"
-#include "utils/version_helper.h"
-#include "core/AST.h"
-#include "glview/RenderSettings.h"
-
-#include <string>
+#include <algorithm>
 #include <cstdint>
+#include <memory>
+#include <string>
 #include <unordered_map>
 #include <utility>
-#include <memory>
 #include <vector>
-#include <algorithm>
+
 #include <lib3mf_implicit.hpp>
+ 
+#include "core/AST.h"
+#include "geometry/Geometry.h"
+#include "geometry/linalg.h"
+#include "geometry/PolySet.h"
+#include "geometry/PolySetBuilder.h"
+#include "geometry/PolySetUtils.h"
+#include "glview/RenderSettings.h"
+#include "utils/printutils.h"
+#include "utils/version_helper.h"
+#include "io/lib3mf_utils.h"
 
 template<> struct std::hash<Color4f> {
     std::size_t operator()(Color4f const& c) const noexcept {
@@ -98,7 +101,7 @@ Matrix4d get_matrix(Lib3MF::sTransform &transform)
     return tm;
 }
 
-std::string collect_mesh_objects(const Lib3MF::PModel model, MeshObjectList& object_list, const Lib3MF::PObject object, const Matrix4d& m, const Location& loc, int level = 1)
+std::string collect_mesh_objects(const Lib3MF::PModel& model, MeshObjectList& object_list, const Lib3MF::PObject& object, const Matrix4d& m, const Location& loc, int level = 1)
 {
   const bool is_mesh_object = object->IsMeshObject();
   const bool is_components_object = object->IsComponentsObject();
@@ -301,12 +304,7 @@ std::string read_metadata(const Lib3MF::PModel& model)
 
 } // namespace
 
-/*
- * Provided here for reference in LibraryInfo.cc which can't include
- * both Qt and lib3mf headers due to some conflicting definitions of
- * windows types when compiling with MinGW.
- */
-const std::string get_lib3mf_version() {
+std::string get_lib3mf_version() {
   Lib3MF_uint32 interfaceVersionMajor, interfaceVersionMinor, interfaceVersionMicro;
   Lib3MF::PWrapper wrapper;
 

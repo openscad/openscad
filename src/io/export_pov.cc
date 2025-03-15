@@ -97,14 +97,14 @@ void export_pov(const std::shared_ptr<const Geometry>& geom, std::ostream& outpu
   auto & max_y = bbox.max().y();
   auto & max_z = bbox.max().z();
 
-  double dx = max_x - min_x;
-  double dy = max_y - min_y;
-  double dz = max_z - min_z;
+  const double dx = max_x - min_x;
+  const double dy = max_y - min_y;
+  const double dz = max_z - min_z;
 
   constexpr double move_away_factor = 2.;
-  std::vector<double> lx { min_x - dx * move_away_factor, bbox.center().x(), max_x + dx * move_away_factor };
-  std::vector<double> ly { min_y - dy * move_away_factor, bbox.center().y(), max_y + dy * move_away_factor };
-  std::vector<double> lz { min_z - dz * move_away_factor, bbox.center().z(), max_z + dz * move_away_factor };
+  const std::vector<double> lx { min_x - dx * move_away_factor, bbox.center().x(), max_x + dx * move_away_factor };
+  const std::vector<double> ly { min_y - dy * move_away_factor, bbox.center().y(), max_y + dy * move_away_factor };
+  const std::vector<double> lz { min_z - dz * move_away_factor, bbox.center().z(), max_z + dz * move_away_factor };
 
   constexpr float brightness = 0.2;  // 1.0 is way too bright
 

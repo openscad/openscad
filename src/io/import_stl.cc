@@ -1,20 +1,22 @@
 #include "io/import.h"
+
+#include <array>
+#include <cstddef>
+#include <cstdint>
+#include <fstream>
+#include <ios>
+#include <memory>
+#include <string>
+
+#include <boost/algorithm/string.hpp>
+#include <boost/lexical_cast.hpp>
+#include <boost/predef.h>
+#include <boost/regex.hpp>
+
+#include "core/AST.h"
 #include "geometry/PolySet.h"
 #include "geometry/PolySetBuilder.h"
 #include "utils/printutils.h"
-#include "core/AST.h"
-
-#include <array>
-#include <ios>
-#include <cstdint>
-#include <memory>
-#include <cstddef>
-#include <fstream>
-#include <string>
-#include <boost/predef.h>
-#include <boost/regex.hpp>
-#include <boost/lexical_cast.hpp>
-#include <boost/algorithm/string.hpp>
 
 #if !defined(BOOST_ENDIAN_BIG_BYTE_AVAILABLE) && !defined(BOOST_ENDIAN_LITTLE_BYTE_AVAILABLE)
 #error Byte order undefined or unknown. Currently only BOOST_ENDIAN_BIG_BYTE and BOOST_ENDIAN_LITTLE_BYTE are supported.
@@ -81,16 +83,16 @@ std::unique_ptr<PolySet> import_stl(const std::string& filename, const Location&
   }
 
   uint32_t facenum = 0;
-  boost::regex ex_sfe(R"(^\s*solid|^\s*facet|^\s*endfacet)");
-  boost::regex ex_outer("^\\s*outer loop$");
-  boost::regex ex_loopend("^\\s*endloop$");
-  boost::regex ex_vertex("^\\s*vertex");
-  boost::regex ex_vertices(
+  const boost::regex ex_sfe(R"(^\s*solid|^\s*facet|^\s*endfacet)");
+  const boost::regex ex_outer("^\\s*outer loop$");
+  const boost::regex ex_loopend("^\\s*endloop$");
+  const boost::regex ex_vertex("^\\s*vertex");
+  const boost::regex ex_vertices(
     R"(^\s*vertex\s+([^\s]+)\s+([^\s]+)\s+([^\s]+)\s*$)");
-  boost::regex ex_endsolid("^\\s*endsolid");
+  const boost::regex ex_endsolid("^\\s*endsolid");
 
   bool binary = false;
-  std::streampos file_size = f.tellg();
+  const std::streampos file_size = f.tellg();
   f.seekg(80);
   if (f.good() && !f.eof()) {
     f.read((char *)&facenum, sizeof(uint32_t));

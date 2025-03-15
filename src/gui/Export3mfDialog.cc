@@ -35,6 +35,7 @@
 #include <QLineEdit>
 
 #include "io/export.h"
+#include "io/lib3mf_utils.h"
 #include "core/Settings.h"
 #include "gui/UIUtils.h"
 #include "gui/SettingsWriter.h"
@@ -42,8 +43,6 @@
 using S = Settings::SettingsExport3mf;
 using SEBool = Settings::SettingsEntryBool;
 using SEString = Settings::SettingsEntryString;
-
-extern const std::string get_lib3mf_version();
 
 Export3mfDialog::Export3mfDialog()
 {
