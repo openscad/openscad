@@ -171,7 +171,7 @@ std::string collect_mesh_objects(MeshObjectList& object_list, PLib3MFModelObject
   if (lib3mf_object_gettype(object, &objecttype) != LIB3MF_OK) {
     return "Could not read object type";
   }
-  const const char number[4096] = {0, };
+  const char number[4096] = {0, };
   ULONG numberlen;
   if (lib3mf_object_getpartnumberutf8(object, &number[0], sizeof(number), &numberlen) != LIB3MF_OK) {
     return "Could not read part number of object";
