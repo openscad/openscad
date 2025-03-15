@@ -44,6 +44,7 @@
 #include "utils/version_helper.h"
 #include "core/AST.h"
 #include "glview/RenderSettings.h"
+#include "io/lib3mf_utils.h"
 
 #ifdef ENABLE_CGAL
 #include "geometry/cgal/cgalutils.h"
@@ -55,12 +56,7 @@
 #undef BOOL
 using namespace NMR;
 
-/*
- * Provided here for reference in LibraryInfo.cc which can't include
- * both Qt and lib3mf headers due to some conflicting definitions of
- * windows types when compiling with MinGW.
- */
-static std::string get_lib3mf_version() {
+std::string get_lib3mf_version() {
   DWORD major, minor, micro;
   NMR::lib3mf_getinterfaceversion(&major, &minor, &micro);
 

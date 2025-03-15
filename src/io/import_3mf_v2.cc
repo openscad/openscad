@@ -44,6 +44,7 @@
 #include "glview/RenderSettings.h"
 #include "utils/printutils.h"
 #include "utils/version_helper.h"
+#include "io/lib3mf_utils.h"
 
 template<> struct std::hash<Color4f> {
     std::size_t operator()(Color4f const& c) const noexcept {
@@ -303,12 +304,7 @@ std::string read_metadata(const Lib3MF::PModel& model)
 
 } // namespace
 
-/*
- * Provided here for reference in LibraryInfo.cc which can't include
- * both Qt and lib3mf headers due to some conflicting definitions of
- * windows types when compiling with MinGW.
- */
-const std::string get_lib3mf_version() {
+std::string get_lib3mf_version() {
   Lib3MF_uint32 interfaceVersionMajor, interfaceVersionMinor, interfaceVersionMicro;
   Lib3MF::PWrapper wrapper;
 
