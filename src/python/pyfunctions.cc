@@ -2218,14 +2218,14 @@ PyObject *python_edges_core(PyObject *obj)
   int edgenum=0;
   Vector3d zdir(0,0,0);
   Transform3d trans = poly->getTransform3d();
-  for(auto ol: poly->outlines()) {
+  for(auto ol: poly->untransformedOutlines()) {
     int n=ol.vertices.size();
     for(int i=0;i<n;i++)
     {
       Vector3d p1=trans*Vector3d(ol.vertices[i][0], ol.vertices[i][1],0);
       Vector3d p2=trans*Vector3d(ol.vertices[(i+1)%n][0], ol.vertices[(i+1)%n][1],0);
       Vector3d p3=trans*Vector3d(ol.vertices[(i+2)%n][0], ol.vertices[(i+2)%n][1],0);
-      zdir += (p2-p1).cross(p3-p2);
+      zdir += (p2-p1).cross(p2-p3);
     }
     edgenum += n;
   }
@@ -2233,7 +2233,7 @@ PyObject *python_edges_core(PyObject *obj)
   PyObject *pyth_edges = PyList_New(edgenum);
   int ind=0;
 
-  for(auto ol: poly->outlines()) {
+  for(auto ol: poly->untransformedOutlines()) {
     int n= ol.vertices.size();
     for(int i=0;i<n;i++) {
       Vector3d p1=trans*Vector3d(ol.vertices[i][0], ol.vertices[i][1],0);

@@ -15,7 +15,7 @@
  */
 struct Edge1d {
   Edge1d() = default;
-  Edge1d(double begin, double end){this->begin=begin; this->end-end; } 
+  Edge1d(double begin, double end){this->begin=begin; this->end=end; } 
   double begin, end;
   bool positive{true};
   [[nodiscard]] BoundingBox getBoundingBox() const;

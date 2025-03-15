@@ -514,11 +514,11 @@ std::unique_ptr<const Geometry> EdgeNode::createGeometry() const
 
   double beg=0;
   double end=size;
-  if(center) { beg -= size/2; end -= size/2; }
+  if(center) { beg = -size/2; end = size/2; }
+  else { beg=0; end=size; }
 
-  Barcode1d b;
   Edge1d e(beg,end);
-  b.addEdge(e);
+  Barcode1d b(e);
   return std::make_unique<Barcode1d>(b);
 }
 
