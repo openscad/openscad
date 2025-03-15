@@ -1,17 +1,17 @@
-#include "rotextrude.h"
+#include "rotate_extrude.h"
 
 #include <queue>
 #include <boost/logic/tribool.hpp>
+#include <cmath>
 
 #include "GeometryUtils.h"
-#include "src/core/RotateExtrudeNode.h"
+#include "core/RotateExtrudeNode.h"
 #include "PolySet.h"
-#include "PolySetBuilder.h"
-#include "PolySetUtils.h"
-#include "src/utils/calc.h"
-#include "src/utils/degree_trig.h"
+#include "geometry/PolySetBuilder.h"
+#include "geometry/PolySetUtils.h"
+#include "utils/calc.h"
+#include "utils/degree_trig.h"
 #include "Feature.h"
-#include <cmath>
 
 #include "src/geometry/manifold/manifoldutils.h"
 
@@ -29,8 +29,7 @@ void  append_rotary_vertex(PolySetBuilder &builder,const Outline2d *face, int in
 }
 
 
-
-static void fill_ring(std::vector<Vector3d>& ring, const std::vector<Vector2d> & vertices, double a, Vector3d dv, double fact, double xmid,bool flip)
+void fill_ring(std::vector<Vector3d>& ring, const std::vector<Vector2d> & vertices, double a, Vector3d dv, double fact, double xmid,bool flip)
 {
   unsigned int l = vertices.size() - 1;
   for (unsigned int i = 0; i < vertices.size(); ++i) {

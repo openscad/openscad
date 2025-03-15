@@ -21,7 +21,6 @@
 #include "core/PullNode.h"
 #include "core/DebugNode.h"
 #include "core/WrapNode.h"
-#include "geometry/rotextrude.h"
 #include "core/CgalAdvNode.h"
 #include "core/ProjectionNode.h"
 #include "core/CsgOpNode.h"
@@ -35,17 +34,13 @@
 #include "utils/calc.h"
 #include "utils/printutils.h"
 #include "utils/calc.h"
-#include "io/DxfData.h"
 #include "glview/RenderSettings.h"
 #include "utils/degree_trig.h"
-#include <cmath>
 #include <iterator>
 #include <cassert>
 #include <list>
 #include <utility>
 #include <memory>
-#include <algorithm>
-#include "utils/boost-utils.h"
 #include "geometry/boolean_utils.h"
 #include <src/utils/hash.h>
 #include <src/core/Selection.h>
@@ -60,6 +55,7 @@
 #include "geometry/manifold/manifoldutils.h"
 #endif
 #include "geometry/linear_extrude.h"
+#include "geometry/rotate_extrude.h"
 #include "geometry/skin.h"
 
 

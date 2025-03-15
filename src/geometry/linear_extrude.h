@@ -1,6 +1,7 @@
 #pragma once
 
 #include <memory>
+
 #include "geometry/Polygon2d.h"
 #include "geometry/Geometry.h"
 #include "core/LinearExtrudeNode.h"
