@@ -171,18 +171,18 @@ std::string collect_mesh_objects(MeshObjectList& object_list, PLib3MFModelObject
   if (lib3mf_object_gettype(object, &objecttype) != LIB3MF_OK) {
     return "Could not read object type";
   }
-  const char number[4096] = {0, };
+  char number[4096] = {0, };
   ULONG numberlen;
   if (lib3mf_object_getpartnumberutf8(object, &number[0], sizeof(number), &numberlen) != LIB3MF_OK) {
     return "Could not read part number of object";
   }
-  const char name[4096] = {0, };
+  char name[4096] = {0, };
   ULONG namelen;
   if (lib3mf_object_getnameutf8(object, &name[0], sizeof(name), &namelen) != LIB3MF_OK) {
     return "Could not read name of object";
   }
-  const BOOL hasuuid = false;
-  const char uuid[40] = {0, };
+  BOOL hasuuid = false;
+  char uuid[40] = {0, };
   if (lib3mf_object_getuuidutf8(object, &hasuuid, &uuid[0]) != LIB3MF_OK) {
     return "Could not read UUID of object";
   }
