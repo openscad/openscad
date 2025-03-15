@@ -1,8 +1,10 @@
 #pragma once
 
-#include "geometry/cgal/cgal.h"
-#include <boost/algorithm/string.hpp>
 #include <string>
+
+#include <boost/algorithm/string.hpp>
+
+#include "geometry/cgal/cgal.h"
 
 namespace OpenSCAD {
 

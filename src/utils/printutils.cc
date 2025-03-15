@@ -1,25 +1,25 @@
 #include "utils/printutils.h"
-#include <exception>
+
 #include <cassert>
-#include <set>
-#include <list>
-#include <iostream>
-#include <string>
 #include <cstdio>
+#include <exception>
+#include <filesystem>
+#include <iostream>
+#include <list>
+#include <set>
+#include <string>
+
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/predicate.hpp>
 #include <boost/circular_buffer.hpp>
-#include <filesystem>
-#include "utils/exceptions.h"
 
+#include "utils/exceptions.h"
 
 namespace fs = std::filesystem;
 
 std::set<std::string> printedDeprecations;
 std::list<std::string> print_messages_stack;
-std::list<struct Message> log_messages_stack;
 OutputHandlerFunc *outputhandler = nullptr;
-OutputHandlerFunc2 *outputhandler2 = nullptr;
 void *outputhandler_data = nullptr;
 std::string OpenSCAD::debug("");
 bool OpenSCAD::quiet = false;
@@ -29,15 +29,18 @@ bool OpenSCAD::traceUsermoduleParameters = true;
 bool OpenSCAD::parameterCheck = true;
 bool OpenSCAD::rangeCheck = false;
 
+namespace {
+
+std::list<struct Message> log_messages_stack;
+OutputHandlerFunc2 *outputhandler2 = nullptr;
 boost::circular_buffer<std::string> lastmessages(5);
 boost::circular_buffer<struct Message> lastlogmessages(5);
 
 int count = 0;
-
-namespace {
 bool no_throw;
 bool deferred;
-}
+
+}  // namespace
 
 void set_output_handler(OutputHandlerFunc *newhandler, OutputHandlerFunc2 *newhandler2, void *userdata)
 {
@@ -67,7 +70,7 @@ void print_messages_push()
 
 void print_messages_pop()
 {
-  std::string msg = print_messages_stack.back();
+  const std::string msg = print_messages_stack.back();
   print_messages_stack.pop_back();
   if (print_messages_stack.size() > 0 && !msg.empty()) {
     if (!print_messages_stack.back().empty()) {
@@ -132,14 +135,14 @@ void PRINTDEBUG(const std::string& filename, const std::string& msg)
 {
   // see printutils.h for usage instructions
   if (OpenSCAD::debug == "") return;
-  std::string shortfname = fs::path(filename).stem().generic_string();
+  const std::string shortfname = fs::path(filename).stem().generic_string();
   std::string lowshortfname(shortfname);
   boost::algorithm::to_lower(lowshortfname);
   std::string lowdebug(OpenSCAD::debug);
   boost::algorithm::to_lower(lowdebug);
   if (OpenSCAD::debug == "all" ||
       lowdebug.find(lowshortfname) != std::string::npos) {
-    Message msgObj{shortfname + ": " + msg, message_group::NONE, Location::NONE, ""};
+    const Message msgObj{shortfname + ": " + msg, message_group::NONE, Location::NONE, ""};
     PRINT_NOCACHE(msgObj);
   }
 }

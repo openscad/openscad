@@ -1,8 +1,11 @@
 #pragma once
 
-#include "geometry/linalg.h"
-#include <cstdint>
 #include <cstddef>
+#include <functional>
+
+#include <Eigen/Core>
+
+#include "geometry/linalg.h"
 
 using Vector3l = Eigen::Matrix<int64_t, 3, 1>;
 

@@ -1,12 +1,15 @@
 #ifdef ENABLE_CGAL
 #include "utils/svg.h"
-#include "geometry/cgal/cgalutils.h"
+
 #include <ostream>
 #include <sstream>
-#include <boost/algorithm/string.hpp>
-#include <boost/lexical_cast.hpp>
 #include <string>
 #include <vector>
+
+#include <boost/algorithm/string.hpp>
+#include <boost/lexical_cast.hpp>
+
+#include "geometry/cgal/cgalutils.h"
 
 namespace OpenSCAD {
 
