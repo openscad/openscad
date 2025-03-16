@@ -470,7 +470,7 @@ if(ENABLE_PYTHON)
     message(WARNING "Nettle not found, disabling python support.")
     set(ENABLE_PYTHON OFF CACHE BOOL "" FORCE)
   else()
-    message(STATUS "Python enabled, using Nettle ${Nettle_VERSION}")
+    message(STATUS "Python ${Python_VERSION} enabled, using Nettle ${Nettle_VERSION}")
     target_include_directories(OpenSCAD PRIVATE ${Python_INCLUDE_DIRS})
     target_link_libraries(OpenSCAD PRIVATE ${Python_LIBRARIES})
     target_include_directories(OpenSCAD PRIVATE ${Nettle_INCLUDE_DIRS})
@@ -847,6 +847,7 @@ set(CORE_SOURCES
   src/geometry/skin.cc
   src/geometry/linalg.cc
   src/geometry/linear_extrude.cc
+  src/geometry/rotate_extrude.cc
   src/glview/Camera.cc
   src/glview/ColorMap.cc
   src/glview/OffscreenContextFactory.cc
@@ -908,6 +909,7 @@ set(CORE_SOURCES
   ${BISON_comment_parser_OUTPUTS})
 if(ENABLE_PYTHON)
 	list(APPEND CORE_SOURCES
+		    src/python/pymod.cc
 		    src/python/pyopenscad.cc 
 		    src/python/pyfunctions.cc )
 	target_compile_definitions(OpenSCAD PRIVATE ENABLE_PYTHON)
@@ -1043,6 +1045,7 @@ else()
     src/glview/OffscreenView.cc
     src/glview/cgal/CGALRenderer.cc
     src/glview/cgal/CGALRenderUtils.cc
+    src/glview/PolySetRenderer.cc
     src/glview/preview/OpenCSGRenderer.cc
     src/glview/preview/ThrownTogetherRenderer.cc
     src/io/export_png.cc

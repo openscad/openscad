@@ -1,16 +1,20 @@
 #include "io/export.h"
-#include "geometry/Geometry.h"
-#include "geometry/linalg.h"
-#include "geometry/Polygon2d.h"
-#include "geometry/PolySet.h"
-#include "utils/printutils.h"
-#include "utils/version_helper.h"
 
 #include <cassert>
 #include <ostream>
 #include <memory>
 #include <string>
 #include <cmath>
+
+#include <Eigen/Core>
+
+#include "geometry/Geometry.h"
+#include "geometry/linalg.h"
+#include "geometry/Polygon2d.h"
+#include "geometry/PolySet.h"
+#include "io/export_enums.h"
+#include "utils/printutils.h"
+#include "utils/version_helper.h"
 
 #ifdef ENABLE_CAIRO
 
@@ -21,7 +25,7 @@ constexpr inline auto FONT = "Liberation Sans";
 constexpr double MARGIN = 30.0;
 constexpr double PTS_IN_MM = 2.834645656693;
 
-const std::string get_cairo_version() {
+std::string get_cairo_version() {
   return OpenSCAD::get_version(CAIRO_VERSION_STRING, cairo_version_string());
 }
 
@@ -62,16 +66,16 @@ double points_to_mm(double pts)
 void draw_grid(cairo_t *cr, double left, double right, double bottom, double top, double gridSize )
 {
   if (gridSize<1.) gridSize=2.;
-  double darkerLine=0.36;
-  double lightLine=0.24;
-  int major = (gridSize>10.? gridSize: int(10./gridSize));
+  const double darkerLine=0.36;
+  const double lightLine=0.24;
+  const int major = (gridSize>10.? gridSize: int(10./gridSize));
 
   double pts=0.;  // for iteration across page
   
   // bounds are margins in points.
   // compute Xrange in units of gridSize
-  int Xstart=ceil(points_to_mm(left)/gridSize);
-  int Xstop=floor(points_to_mm(right)/gridSize);
+  const int Xstart=ceil(points_to_mm(left)/gridSize);
+  const int Xstop=floor(points_to_mm(right)/gridSize);
   // draw Horizontal lines
    for (int i = Xstart; i < Xstop+1; i++) {
       if (i%major)  { 
@@ -88,8 +92,8 @@ void draw_grid(cairo_t *cr, double left, double right, double bottom, double top
       cairo_stroke(cr);
   };
   // compute Yrange in units of gridSize
-  int Ystart=ceil(points_to_mm(top)/gridSize);
-  int Ystop=floor(points_to_mm(bottom)/gridSize);
+  const int Ystart=ceil(points_to_mm(top)/gridSize);
+  const int Ystop=floor(points_to_mm(bottom)/gridSize);
   // draw vertical lines
    for (int i = Ystart; i < Ystop+1; i++) {
          if (i%major)  { 
@@ -109,50 +113,50 @@ void draw_grid(cairo_t *cr, double left, double right, double bottom, double top
 
 // New draw_axes (renamed from axis since it draws both).  
 void draw_axes(cairo_t *cr, double left, double right, double bottom, double top){
-  double darkerLine=0.36;
-  double offset = mm_to_points(5.);
+  const double darkerLine=0.36;
+  const double offset = mm_to_points(5.);
   double pts=0.;  // for iteration across page
   
-       	cairo_set_line_width(cr, darkerLine);
+  cairo_set_line_width(cr, darkerLine);
 	cairo_set_source_rgba(cr, 0., 0., 0., 0.6);
   
   // Axes proper
   // Left axis
-     cairo_move_to(cr, left, top);
-     cairo_line_to(cr, left, bottom);
-     cairo_stroke(cr);
+  cairo_move_to(cr, left, top);
+  cairo_line_to(cr, left, bottom);
+  cairo_stroke(cr);
   // Bottom axis
-     cairo_move_to(cr, left, bottom);
-     cairo_line_to(cr, right, bottom);
-     cairo_stroke(cr);
+  cairo_move_to(cr, left, bottom);
+  cairo_line_to(cr, right, bottom);
+  cairo_stroke(cr);
   
   // tics and labels
   // bounds are margins in points.
-  	// compute Xrange in 10mm
-  int Xstart=ceil(points_to_mm(left)/10.);
-  int Xstop=floor(points_to_mm(right)/10.);
-   for (int i = Xstart; i < Xstop+1; i++) {
-      pts=mm_to_points(i*10.);
-      cairo_move_to(cr, pts, bottom);
-      cairo_line_to(cr, pts, bottom + offset);
-      cairo_stroke(cr);
-      if (i % 2 == 0) {
-            std::string num = std::to_string(i * 10);
-            draw_text(num.c_str(), cr, pts+1, bottom+offset-2, 6.);
-      }
+  // compute Xrange in 10mm
+  const int Xstart=ceil(points_to_mm(left)/10.);
+  const int Xstop=floor(points_to_mm(right)/10.);
+  for (int i = Xstart; i < Xstop+1; i++) {
+    pts=mm_to_points(i*10.);
+    cairo_move_to(cr, pts, bottom);
+    cairo_line_to(cr, pts, bottom + offset);
+    cairo_stroke(cr);
+    if (i % 2 == 0) {
+      const std::string num = std::to_string(i * 10);
+      draw_text(num.c_str(), cr, pts+1, bottom+offset-2, 6.);
+    }
   };
-  	// compute Yrange in 10mm
-  int Ystart=ceil(points_to_mm(top)/10.);
-  int Ystop=floor(points_to_mm(bottom)/10.);
-   for (int i = Ystart; i < Ystop+1; i++) {
-      pts=mm_to_points(i*10.);
-      cairo_move_to(cr, left, pts);
-      cairo_line_to(cr, left-offset, pts);
-      cairo_stroke(cr);
-      if (i % 2 == 0) {
-            std::string num = std::to_string(-i * 10);
-            draw_text(num.c_str(), cr, left-offset, pts - 3, 6.);
-      }
+  // compute Yrange in 10mm
+  const int Ystart=ceil(points_to_mm(top)/10.);
+  const int Ystop=floor(points_to_mm(bottom)/10.);
+  for (int i = Ystart; i < Ystop+1; i++) {
+    pts=mm_to_points(i*10.);
+    cairo_move_to(cr, left, pts);
+    cairo_line_to(cr, left-offset, pts);
+    cairo_stroke(cr);
+    if (i % 2 == 0) {
+      const std::string num = std::to_string(-i * 10);
+      draw_text(num.c_str(), cr, left-offset, pts - 3, 6.);
+    }
   };
 }  
 
@@ -195,7 +199,7 @@ void draw_geom(const std::shared_ptr<const Geometry>& geom, cairo_t *cr){
 
 cairo_status_t export_pdf_write(void *closure, const unsigned char *data, unsigned int length)
 {
-  std::ostream *stream = static_cast<std::ostream *>(closure);
+  auto *stream = static_cast<std::ostream *>(closure);
   stream->write(reinterpret_cast<const char *>(data), length);
   return !(*stream) ? CAIRO_STATUS_WRITE_ERROR : CAIRO_STATUS_SUCCESS;
 }
@@ -215,7 +219,7 @@ void export_pdf(const std::shared_ptr<const Geometry>& geom, std::ostream& outpu
 {
   // Extract the options.  This will change when options becomes a variant.
   const ExportPdfOptions *options;
-  ExportPdfOptions defaultPdfOptions;
+  const ExportPdfOptions defaultPdfOptions;
   // could use short-circuit short-form, but will need to grow.
   if (exportInfo.optionsPdf) {
     options = exportInfo.optionsPdf.get();
@@ -227,15 +231,15 @@ void export_pdf(const std::shared_ptr<const Geometry>& geom, std::ostream& outpu
   // Fit geometry to page
   // Get dims in mm.
   BoundingBox bbox = geom->getBoundingBox();
-  int minx = (int)floor(bbox.min().x());
-  int maxy = (int)floor(bbox.max().y());
-  int maxx = (int)ceil(bbox.max().x());
-  int miny = (int)ceil(bbox.min().y());
+  const int minx = (int)floor(bbox.min().x());
+  const int maxy = (int)floor(bbox.max().y());
+  const int maxx = (int)ceil(bbox.max().x());
+  const int miny = (int)ceil(bbox.min().y());
   // compute page attributes in points
-  int spanX = mm_to_points(maxx-minx);
-  int spanY = mm_to_points(maxy-miny);
-  int centerX = mm_to_points(minx)+spanX/2;
-  int centerY = mm_to_points(miny)+spanY/2;
+  const int spanX = mm_to_points(maxx-minx);
+  const int spanY = mm_to_points(maxy-miny);
+  const int centerX = mm_to_points(minx)+spanX/2;
+  const int centerY = mm_to_points(miny)+spanY/2;
   
   // Set orientation and paper size
   if ((options->orientation==ExportPdfPaperOrientation::AUTO && spanX>spanY)||(options->orientation==ExportPdfPaperOrientation::LANDSCAPE)) {
@@ -247,7 +251,7 @@ void export_pdf(const std::shared_ptr<const Geometry>& geom, std::ostream& outpu
   }; 
   
   // Does it fit? (in points)	
-  bool inpaper = (spanX<=pdfX-MARGIN)&&(spanY<=pdfY-MARGIN);
+  const bool inpaper = (spanX<=pdfX-MARGIN)&&(spanY<=pdfY-MARGIN);
   if (!inpaper) {
     LOG(message_group::Export_Warning, "Geometry is too large to fit into selected size.");
   }
@@ -255,13 +259,13 @@ void export_pdf(const std::shared_ptr<const Geometry>& geom, std::ostream& outpu
   //  Center on page.  Still in points.
   // Note Cairo inverts the Y axis, with zero at the top, positive going down.
   // Compute translation and auxiliary numbers in lieu of transform matrices.
-  double tcX=pdfX/2-centerX;
-  double tcY=(pdfY/2+centerY); // Note Geometry Y will still need to be inverted.
+  const double tcX=pdfX/2-centerX;
+  const double tcY=(pdfY/2+centerY); // Note Geometry Y will still need to be inverted.
   // Shifted exact margins
-  double Mlx=centerX-pdfX/2+MARGIN;  // Left margin, X axis
-  double Mrx=centerX+pdfX/2-MARGIN;  // Right margin, X axis
-  double Mty=-(centerY-pdfY/2+MARGIN);  // INVERTED Top margin, Y axis
-  double Mby=-(centerY+pdfY/2-MARGIN);  // INVERTED Bottom margin, Y axis
+  const double Mlx=centerX-pdfX/2+MARGIN;  // Left margin, X axis
+  const double Mrx=centerX+pdfX/2-MARGIN;  // Right margin, X axis
+  const double Mty=-(centerY-pdfY/2+MARGIN);  // INVERTED Top margin, Y axis
+  const double Mby=-(centerY+pdfY/2-MARGIN);  // INVERTED Bottom margin, Y axis
   
   // Initialize Cairo Surface and PDF
   cairo_surface_t *surface = cairo_pdf_surface_create_for_stream(export_pdf_write, &output, pdfX, pdfY);
@@ -292,7 +296,7 @@ void export_pdf(const std::shared_ptr<const Geometry>& geom, std::ostream& outpu
   cairo_stroke(cr);
     
     // Set Annotations
-      std::string about = "Scale is to calibrate actual printed dimension. Check both X and Y. Measure between tick 0 and last tick";
+    const std::string about = "Scale is to calibrate actual printed dimension. Check both X and Y. Measure between tick 0 and last tick";
     cairo_set_source_rgba(cr, 0., 0., 0., 0.48);
     // Design Filename
     if (options->showDesignFilename) draw_text(exportInfo.sourceFilePath.c_str(), cr, Mlx, Mby, 10.);

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <ctime>
+#include <tuple>
 #include <unordered_map>
 #include <memory>
 #include <string>
@@ -32,20 +33,9 @@
 #include <QTime>
 #include <QSignalMapper>
 #include <QShortcut>
-
-#include "RubberBandManager.h"
-#include "gui/Editor.h"
-#include "geometry/Geometry.h"
-#include "io/export.h"
-#include "gui/Measurement.h"
-#include "RenderStatistic.h"
-#include "gui/TabManager.h"
-#include "core/Tree.h"
-#include "gui/UIUtils.h"
-#include "gui/qtgettext.h" // IWYU pragma: keep
-#include "gui/qt-obsolete.h" // IWYU pragma: keep
-#include "ui_MainWindow.h"
-
+#include "core/Context.h"
+#include "glview/Renderer.h"
+#include "core/SourceFile.h"
 #ifdef STATIC_QT_SVG_PLUGIN
 #include <QtPlugin>
 Q_IMPORT_PLUGIN(QSvgPlugin)
@@ -60,6 +50,23 @@ class LibraryInfoDialog;
 class Preferences;
 class ProgressWidget;
 class ThrownTogetherRenderer;
+
+#include "core/Tree.h"
+#include "geometry/Geometry.h"
+#include "gui/Editor.h"
+#include "gui/input/InputDriverEvent.h"
+#include "gui/Measurement.h"
+#include "gui/qt-obsolete.h" // IWYU pragma: keep
+#include "gui/qtgettext.h" // IWYU pragma: keep
+#include "gui/RubberBandManager.h"
+#include "gui/TabManager.h"
+#include "gui/UIUtils.h"
+#include "io/export_enums.h"
+#include "io/export.h"
+#include "io/export.h"
+#include "RenderStatistic.h"
+#include "ui_MainWindow.h"
+#include "utils/printutils.h"
 
 class MainWindow : public QMainWindow, public Ui::MainWindow, public InputEventHandler
 {
@@ -91,9 +98,9 @@ public:
   TabManager *tabManager;
 
   std::shared_ptr<const Geometry> rootGeom;
-  std::shared_ptr<Renderer> cgalRenderer;
+  std::shared_ptr<Renderer> geomRenderer;
 #ifdef ENABLE_OPENCSG
-  std::shared_ptr<Renderer> opencsgRenderer;
+  std::shared_ptr<Renderer> previewRenderer;
 #endif
   std::shared_ptr<Renderer> thrownTogetherRenderer;
 
@@ -202,7 +209,9 @@ private slots:
   void clearRecentFiles();
   void actionSave();
   void actionSaveAs();
-  void actionRevokeTrustedFiles();
+  void actionPythonRevokeTrustedFiles();
+  void actionPythonCreateVenv();
+  void actionPythonSelectVenv();
   void actionSaveACopy();
   void actionReload();
   void actionShowLibraryFolder();

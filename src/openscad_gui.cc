@@ -126,7 +126,7 @@ void dialogThreadFunc(FontCacheInitializer *initializer)
 void dialogInitHandler(FontCacheInitializer *initializer, void *)
 {
   QFutureWatcher<void> futureWatcher;
-  QObject::connect(&futureWatcher, SIGNAL(finished()), scadApp, SLOT(hideFontCacheDialog()));
+  QObject::connect(&futureWatcher, &QFutureWatcher<void>::finished, scadApp, &OpenSCADApp::hideFontCacheDialog);
 
   auto future = QtConcurrent::run([initializer] {
     return dialogThreadFunc(initializer);

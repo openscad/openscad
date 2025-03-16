@@ -13,6 +13,7 @@
 #include "glview/VBORenderer.h"
 
 #include <cstddef>
+#include <string>
 #include <vector>
 
 class OpenCSGVertexState : public VertexState
@@ -80,4 +81,5 @@ private:
   std::shared_ptr<CSGProducts> root_products_;
   std::shared_ptr<CSGProducts> highlights_products_;
   std::shared_ptr<CSGProducts> background_products_;
+  std::string opencsg_vertex_shader_code_;
 };
