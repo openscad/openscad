@@ -26,19 +26,18 @@
  */
 
 #include "io/export.h"
-#include "geometry/Geometry.h"
-#include "geometry/linalg.h"
-#include "Feature.h"
-#include "geometry/Reindexer.h"
-#include "geometry/PolySet.h"
-#include "geometry/PolySetUtils.h"
 
 #include <ostream>
 #include <memory>
 #include <cstddef>
 #include <cstdint>
 
-uint8_t clamp_color_channel(float value)
+#include "Feature.h"
+#include "geometry/Geometry.h"
+#include "geometry/PolySet.h"
+#include "geometry/PolySetUtils.h"
+
+static uint8_t clamp_color_channel(float value)
 {
   if (value < 0) return 0;
   if (value > 1) return 255;
@@ -52,7 +51,7 @@ void export_off(const std::shared_ptr<const Geometry>& geom, std::ostream& outpu
     ps = createSortedPolySet(*ps);
   }
   const auto& v = ps->vertices;
-  size_t numverts = v.size();
+  const size_t numverts = v.size();
 
 
   output << "OFF " << numverts << " " << ps->indices.size() << " 0\n";
@@ -63,7 +62,7 @@ void export_off(const std::shared_ptr<const Geometry>& geom, std::ostream& outpu
   auto has_color = !ps->color_indices.empty();
   
   for (size_t i = 0; i < ps->indices.size(); ++i) {
-    size_t nverts = ps->indices[i].size();
+    const size_t nverts = ps->indices[i].size();
     output << nverts;
     for (size_t n = 0; n < nverts; ++n) output << " " << ps->indices[i][n];
     if (has_color) {

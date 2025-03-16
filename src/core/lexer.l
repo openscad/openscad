@@ -131,6 +131,9 @@ U3      [\xe0-\xef]
 U4      [\xf0-\xf4]
 UNICODE {U2}{U}|{U3}{U}{U}|{U4}{U}{U}{U}
 
+IDSTART [a-zA-Z_$]
+IDREST  [a-zA-Z0-9_]
+
 %%
 
 %{
@@ -253,7 +256,21 @@ use[ \t\r\n]*"<"        { BEGIN(cond_use); LOCATION_COUNT_LINES(parserlloc, yyte
 
 {UNICODE}+              { parser_error_pos -= strlen(yytext); return TOK_ERROR; }
 
-{D}+{E}? |
+0x{H}+                  {
+                            errno = 0;  // strtoxxx have crummy error semantics
+                            unsigned long long ull = strtoull(yytext + 2, NULL, 16);
+                            parserlval.number = ull;
+                            if (errno != 0) {
+                                LOG(message_group::Warning, LOCATION(parserlloc), "",
+                                    "Hexadecimal constant \"%1$s\" too large", yytext);
+                            } else if ((unsigned long long)parserlval.number != ull) {
+                                LOG(message_group::Warning, LOCATION(parserlloc), "",
+                                    "Integer \"%1$s\" cannot be represented precisely",
+                                    yytext);
+                            }
+                            return TOK_NUMBER;
+                        }
+{D}+{E} |
 {D}*\.{D}+{E}? |
 {D}+\.{D}*{E}?          {
                             try {
@@ -261,7 +278,28 @@ use[ \t\r\n]*"<"        { BEGIN(cond_use); LOCATION_COUNT_LINES(parserlloc, yyte
                                 return TOK_NUMBER;
                             } catch (boost::bad_lexical_cast&) {}
                         }
-"$"?[a-zA-Z0-9_]+       { parserlval.text = strdup(yytext); return TOK_ID; }
+{D}+                    {
+                            errno = 0;  // strtoxxx have crummy error semantics
+                            unsigned long long ull = strtoull(yytext, NULL, 10);
+                            parserlval.number = ull;
+                            if (errno != 0 || (unsigned long long)parserlval.number != ull) {
+                                LOG(message_group::Warning, LOCATION(parserlloc), "",
+                                    "Integer \"%1$s\" cannot be represented precisely",
+                                    yytext);
+                                try {
+                                    parserlval.number = boost::lexical_cast<double>(yytext);
+                                } catch (boost::bad_lexical_cast&) {}
+                            }
+                            return TOK_NUMBER;
+                        }
+
+{IDSTART}{IDREST}*      { parserlval.text = strdup(yytext); return TOK_ID; }
+{D}{IDREST}*            {
+                            LOG(message_group::Deprecated, LOCATION(parserlloc), "",
+                                "Variable names starting with digits (%1$s)"
+                                " will be removed in future releases.", quoteVar(yytext));
+                            parserlval.text = strdup(yytext); return TOK_ID;
+                        }
 
 "<="                    return LE;
 ">="                    return GE;
@@ -269,6 +307,8 @@ use[ \t\r\n]*"<"        { BEGIN(cond_use); LOCATION_COUNT_LINES(parserlloc, yyte
 "!="                    return NEQ;
 "&&"                    return AND;
 "||"                    return OR;
+"<<"                    return LSH;
+">>"                    return RSH;
 
 .                       { return yytext[0]; }
 

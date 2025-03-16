@@ -25,33 +25,30 @@
  */
 
 #include "openscad_gui.h"
-
 #include <memory>
 #include <filesystem>
 #include <string>
 #include <vector>
+
+#include <QtGlobal>
+#include <Qt>
+#include <QDialog>
 #include <QDir>
-#include <QIcon>
 #include <QFileInfo>
 #include <QFutureWatcher>
-#include <QtConcurrentRun>
 #include <QGuiApplication>
+#include <QIcon>
+#include <QObject>
 #include <QPalette>
 #include <QStyleHints>
+#include <QStringList>
+#include <QtConcurrentRun>
 
 #include "core/parsersettings.h"
+#include "core/Settings.h"
 #include "FontCache.h"
 #include "geometry/Geometry.h"
 #include "gui/AppleEvents.h"
-#include "platform/CocoaUtils.h"
-#include "gui/LaunchingScreen.h"
-#include "gui/MainWindow.h"
-#include "gui/OpenSCADApp.h"
-#include "gui/QSettingsCached.h"
-#include "core/Settings.h"
-#include "openscad.h"
-#include "utils/printutils.h"
-
 #include "gui/input/InputDriverManager.h"
 #ifdef ENABLE_HIDAPI
 #include "gui/input/HidApiInputDriver.h"
@@ -68,6 +65,13 @@
 #ifdef ENABLE_QGAMEPAD
 #include "gui/input/QGamepadInputDriver.h"
 #endif
+#include "gui/LaunchingScreen.h"
+#include "gui/MainWindow.h"
+#include "gui/OpenSCADApp.h"
+#include "gui/QSettingsCached.h"
+#include "openscad.h"
+#include "platform/CocoaUtils.h"
+#include "utils/printutils.h"
 
 Q_DECLARE_METATYPE(Message);
 Q_DECLARE_METATYPE(std::shared_ptr<const Geometry>);
@@ -109,11 +113,10 @@ QString assemblePath(const std::filesystem::path& absoluteBaseDir,
   auto qsDir = QString::fromLocal8Bit(absoluteBaseDir.generic_string().c_str());
   auto qsFile = QString::fromLocal8Bit(fileName.c_str());
   // if qsfile is absolute, dir is ignored. (see documentation of QFileInfo)
-  QFileInfo fileInfo(qsDir, qsFile);
+  const QFileInfo fileInfo(qsDir, qsFile);
   return fileInfo.absoluteFilePath();
 }
 
-}  // namespace
 
 void dialogThreadFunc(FontCacheInitializer *initializer)
 {
@@ -123,7 +126,7 @@ void dialogThreadFunc(FontCacheInitializer *initializer)
 void dialogInitHandler(FontCacheInitializer *initializer, void *)
 {
   QFutureWatcher<void> futureWatcher;
-  QObject::connect(&futureWatcher, SIGNAL(finished()), scadApp, SLOT(hideFontCacheDialog()));
+  QObject::connect(&futureWatcher, &QFutureWatcher<void>::finished, scadApp, &OpenSCADApp::hideFontCacheDialog);
 
   auto future = QtConcurrent::run([initializer] {
     return dialogThreadFunc(initializer);
@@ -153,6 +156,8 @@ void registerDefaultIcon(QString applicationFilePath) {
 #else
 void registerDefaultIcon(const QString&) { }
 #endif
+
+}  // namespace
 
 #ifdef OPENSCAD_SUFFIX
 #define DESKTOP_FILENAME "openscad" OPENSCAD_SUFFIX
@@ -222,7 +227,7 @@ int gui(std::vector<std::string>& inputFiles, const std::filesystem::path& origi
       if (launcher.isForceShowEditor()) {
         settings.setValue("view/hideEditor", false);
       }
-      QStringList files = launcher.selectedFiles();
+      const QStringList files = launcher.selectedFiles();
       // If nothing is selected in the launching screen, leave
       // the "" dummy in inputFiles to open an empty MainWindow.
       if (!files.empty()) {

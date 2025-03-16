@@ -14,7 +14,7 @@
 #endif
 
 #ifdef __APPLE__
- #include <OpenGL/glu.h>
+ #include <OpenGL/glu.h>  // IWYU pragma: export
 #else
  #include <GL/glu.h>
 #endif

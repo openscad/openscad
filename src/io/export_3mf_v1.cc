@@ -24,22 +24,22 @@
  *
  */
 
-#include "export_enums.h"
-#include "geometry/Geometry.h"
-#include "geometry/linalg.h"
 #include "io/export.h"
-
+ 
+#include <algorithm>
 #include <cassert>
-#include <ostream>
 #include <cstdint>
 #include <memory>
+#include <ostream>
 #include <string>
-#include <algorithm>
+
 #include <Common/Platform/NMR_WinTypes.h>
 #include <Model/COM/NMR_DLLInterfaces.h>
 
 #include "core/ColorUtil.h"
-#include "geometry/GeometryUtils.h"
+#include "export_enums.h"
+#include "geometry/Geometry.h"
+#include "geometry/linalg.h"
 #include "geometry/PolySet.h"
 #include "geometry/PolySetUtils.h"
 #include "utils/printutils.h"
@@ -49,7 +49,6 @@
 #endif
 
 #ifdef ENABLE_CGAL
-#include "geometry/cgal/cgal.h"
 #include "geometry/cgal/cgalutils.h"
 #include "geometry/cgal/CGAL_Nef_polyhedron.h"
 #endif
