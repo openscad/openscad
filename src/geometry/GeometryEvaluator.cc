@@ -2015,23 +2015,7 @@ Response GeometryEvaluator::visit(State& state, const TransformNode& node)
               assert(barcode);
 
               geom = barcode;
-              if (Feature::ExperimentalSkin.is_enabled())
-                barcode->transform3d(node.matrix);
-              else {
-                Transform2d mat2;
-                mat2.matrix() <<
-                  node.matrix(0, 0), node.matrix(0, 1), node.matrix(0, 3),
-                  node.matrix(1, 0), node.matrix(1, 1), node.matrix(1, 3),
-                  node.matrix(3, 0), node.matrix(3, 1), node.matrix(3, 3);
-                barcode->transform(mat2);
-              // FIXME: We lose the transform if we copied a const geometry above. Probably similar issue in multiple places
-              // A 2D transformation may flip the winding order of a polygon.
-              // If that happens with a sanitized polygon, we need to reverse
-              // the winding order for it to be correct.
-//                if (polygons->isSanitized() && mat2.matrix().determinant() <= 0) {
-//                  geom = ClipperUtils::sanitize(*polygons);
-//                }
-              }
+              barcode->transform3d(node.matrix);
             } 
             break;
            case 2:{
@@ -2039,23 +2023,7 @@ Response GeometryEvaluator::visit(State& state, const TransformNode& node)
               assert(polygons);
 
               geom = polygons;
-              if (Feature::ExperimentalSkin.is_enabled())
-                polygons->transform3d(node.matrix);
-              else {
-                Transform2d mat2;
-                mat2.matrix() <<
-                  node.matrix(0, 0), node.matrix(0, 1), node.matrix(0, 3),
-                  node.matrix(1, 0), node.matrix(1, 1), node.matrix(1, 3),
-                  node.matrix(3, 0), node.matrix(3, 1), node.matrix(3, 3);
-                polygons->transform(mat2);
-              // FIXME: We lose the transform if we copied a const geometry above. Probably similar issue in multiple places
-              // A 2D transformation may flip the winding order of a polygon.
-              // If that happens with a sanitized polygon, we need to reverse
-              // the winding order for it to be correct.
-                if (polygons->isSanitized() && mat2.matrix().determinant() <= 0) {
-                  geom = ClipperUtils::sanitize(*polygons);
-                }
-              }
+              polygons->transform3d(node.matrix);
             } 
             break;
           case 3:{

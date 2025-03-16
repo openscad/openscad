@@ -187,7 +187,7 @@ void Barcode1d::transform3d(const Transform3d &mat)
     // A 2D transformation may flip the winding order of a polygon.
     // If that happens with a sanitized polygon, we need to reverse
     // the winding order for it to be correct.
-//    if (Feature::ExperimentalSkin.is_enabled() && sanitized && t.matrix().determinant() < 0)
+//    if (sanitized && t.matrix().determinant() < 0)
 //      for (auto &o : this->theedges)
 //        std::reverse(o.vertices.begin(), o.vertices.end());
   }
@@ -244,7 +244,7 @@ void Barcode1d::applyTrans3dToEdges(Barcode1d::Edges1d &edges) const {
   // A 2D transformation may flip the winding order of a polygon.
   // If that happens with a sanitized polygon, we need to reverse
   // the winding order for it to be correct.
-  if (Feature::ExperimentalSkin.is_enabled() && sanitized && t.matrix().determinant() < 0)
+  if (sanitized && t.matrix().determinant() < 0)
     for (auto &o : edges)
     {
 	    double tmp=o.begin;
