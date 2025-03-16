@@ -69,7 +69,6 @@ jobs:
               make -j4
               make install DESTDIR=../AppDir
               cd ..
-              ( cd AppDir/usr/bin && ln -s openscad openscad-python )
               export PATH=/appimage/usr/bin:"$PATH"
               export EXTRA_QT_PLUGINS=svg
               export PYTHON_VERSION=$(python3 -c "import sys; v=sys.version_info; print(f'{v.major}.{v.minor}.{v.micro}')")
