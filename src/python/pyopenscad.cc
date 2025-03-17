@@ -41,6 +41,7 @@ extern "C" PyObject *PyInit_openscad(void);
 
 bool python_active;
 bool python_trusted;
+std::string python_scriptpath;
 // https://docs.python.org/3.10/extending/newtypes.html
 
 void PyObjectDeleter (PyObject *pObject) { Py_XDECREF(pObject); };
@@ -63,6 +64,10 @@ std::vector<std::string> mapping_code;
 std::vector<int> mapping_level;
 std::shared_ptr<const FileContext> osinclude_context = nullptr;
 
+void python_setscriptpath(const std::string &scriptpath)
+{
+	python_scriptpath = scriptpath;	
+}
 
 void PyOpenSCADObject_dealloc(PyOpenSCADObject *self)
 {
@@ -1176,25 +1181,56 @@ Py_RunMain(void)
 
 
 void ipython(void) {
-/*	
-    _PyArgv args = {
-        .argc = argc,
-        .use_bytes_argv = 1,
-        .bytes_argv = argv,
-        .wchar_argv = NULL};
-*/
-//    PyStatus status = pymain_init();
     initPython(PlatformUtils::applicationPath(),0.0);
-/*    
-    if (_PyStatus_IS_EXIT(status)) {
-        pymain_free();
-        return status.exitcode;
-    }
-    if (_PyStatus_EXCEPTION(status)) {
-        pymain_exit_error(status);
-    }
-
-*/
     Py_RunMain();
+    return ;
 }
+// -------------------------
 
+#ifdef ENABLE_JUPYTER
+void python_startjupyter(void)
+{
+  const char *python_init_code="\
+import sys\n\
+class OutputCatcher:\n\
+   def __init__(self):\n\
+      self.data = ''\n\
+   def write(self, stuff):\n\
+      self.data = self.data + stuff\n\
+   def flush(self):\n\
+      pass\n\
+catcher_out = OutputCatcher()\n\
+catcher_err = OutputCatcher()\n\
+stdout_bak=sys.stdout\n\
+stderr_bak=sys.stderr\n\
+sys.stdout = catcher_out\n\
+sys.stderr = catcher_err\n\
+";
+    initPython(0.0);
+    PyRun_SimpleString(python_init_code);
+
+    auto logger = xeus::make_console_logger(xeus::xlogger::msg_type,
+                                            xeus::make_file_logger(xeus::xlogger::full, "my_log_file.log"));
+    try{	
+	xeus::xconfiguration config = xeus::load_configuration(python_jupyterconfig);
+	std::unique_ptr<xeus::xcontext> context = xeus::make_zmq_context();
+	
+	// Create interpreter instance
+	using interpreter_ptr = std::unique_ptr<openscad_jupyter::interpreter>;
+	interpreter_ptr interpreter = interpreter_ptr(new openscad_jupyter::interpreter());
+		
+	// Create kernel instance and start it
+	xeus::xkernel kernel(config,
+                         xeus::get_user_name(),
+                         std::move(context),
+                         std::move(interpreter),
+                         xeus::make_xserver_shell_main,
+			 xeus::make_in_memory_history_manager(),
+			 std::move(logger));
+	
+	kernel.start();
+    } catch(std::exception &e) {
+	printf("Exception %s during startup of jupyter\n",e.what());	    
+    }
+}
+#endif

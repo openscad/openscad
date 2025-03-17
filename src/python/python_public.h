@@ -15,6 +15,7 @@ std::string python_version(void);
 void initPython(const std::string& binDir, double time);
 std::string evaluatePython(const std::string &code, bool dry_run=false);
 void finishPython();
+void python_setscriptpath(const std::string &scriptpath);
 void python_lock(void);
 void python_unlock(void);
 void ipython(void);

@@ -588,6 +588,7 @@ int cmdline(const CommandLine& cmd)
   if(python_active) {
     if(cmd.animate.frames == 0) {
       initPython(PlatformUtils::applicationPath(),0.0);
+      python_setscriptpath(cmd.filename);
       auto error  = evaluatePython(text_py);
       finishPython();
       if(error.size() > 0) LOG(error.c_str());

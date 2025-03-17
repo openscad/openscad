@@ -4464,6 +4464,17 @@ PyObject *python_model(PyObject *self, PyObject *args, PyObject *kwargs, int mod
   return PyOpenSCADObjectFromNode(&PyOpenSCADType, python_result_node);
 }
 
+PyObject *python_modelpath(PyObject *self, PyObject *args, PyObject *kwargs, int mode)
+{
+  char *kwlist[] = {NULL};
+
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "", kwlist)) {
+    PyErr_SetString(PyExc_TypeError, "Error during parsing model");
+    return NULL;
+  }
+  return PyUnicode_FromString(python_scriptpath.c_str());
+}
+
 PyMethodDef PyOpenSCADFunctions[] = {
   {"edge", (PyCFunction) python_edge, METH_VARARGS | METH_KEYWORDS, "Create Edge."},
   {"square", (PyCFunction) python_square, METH_VARARGS | METH_KEYWORDS, "Create Square."},
@@ -4553,6 +4564,7 @@ PyMethodDef PyOpenSCADFunctions[] = {
   {"add_menuitem", (PyCFunction) python_add_menuitem, METH_VARARGS | METH_KEYWORDS, "Add Menuitem to the the openscad window."},
 #endif  
   {"model", (PyCFunction) python_model, METH_VARARGS | METH_KEYWORDS, "Yield Model"},
+  {"modelpath", (PyCFunction) python_modelpath, METH_VARARGS | METH_KEYWORDS, "Returns absolute Path to script"},
   {NULL, NULL, 0, NULL}
 };
 

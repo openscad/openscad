@@ -2268,6 +2268,7 @@ void MainWindow::parseTopLevelDocument()
     const auto& venv = venvBinDirFromSettings();
     const auto& binDir = venv.empty() ? PlatformUtils::applicationPath() : venv;
     initPython(binDir, this->animateWidget->getAnimTval());
+    python_setscriptpath(fnameba.constData());
     this->activeEditor->resetHighlighting();
     this->activeEditor->parameterWidget->setEnabled(false);
     do {

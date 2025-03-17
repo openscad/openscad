@@ -34,6 +34,7 @@ extern PyObject *python_result_obj;
 extern std::vector<SelectedObject> python_result_handle;
 
 extern bool python_active;
+extern std::string python_scriptpath;
 extern std::string trusted_edit_document_name;
 extern std::string untrusted_edit_document_name;
 bool trust_python_file(const std::string &file, const std::string &content);
