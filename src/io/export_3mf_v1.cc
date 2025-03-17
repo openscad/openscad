@@ -24,15 +24,13 @@
  *
  */
 
-#include "export_enums.h"
-#include "geometry/Geometry.h"
-#include "geometry/linalg.h"
 #include "io/export.h"
-
+ 
+#include <algorithm>
 #include <cassert>
-#include <ostream>
 #include <cstdint>
 #include <memory>
+#include <ostream>
 #include <string>
 #include <algorithm>
 
@@ -62,7 +60,9 @@ static uint32_t lib3mf_seek_callback_my(uint64_t pos, std::ostream *stream)
 #include <Model/COM/NMR_DLLInterfaces.h>
 
 #include "core/ColorUtil.h"
-#include "geometry/GeometryUtils.h"
+#include "export_enums.h"
+#include "geometry/Geometry.h"
+#include "geometry/linalg.h"
 #include "geometry/PolySet.h"
 #include "geometry/PolySetUtils.h"
 #include "utils/printutils.h"
@@ -72,7 +72,6 @@ static uint32_t lib3mf_seek_callback_my(uint64_t pos, std::ostream *stream)
 #endif
 
 #ifdef ENABLE_CGAL
-#include "geometry/cgal/cgal.h"
 #include "geometry/cgal/cgalutils.h"
 #include "geometry/cgal/CGAL_Nef_polyhedron.h"
 #endif

@@ -30,8 +30,9 @@
 #include "core/AST.h"
 #include "utils/printutils.h"
 #include "geometry/PolySet.h"
+#include "io/lib3mf_utils.h"
 
-const std::string get_lib3mf_version() {
+std::string get_lib3mf_version() {
   return "(not enabled)";
 }
 

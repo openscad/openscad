@@ -1,33 +1,37 @@
 #include "io/import.h"
-#include "geometry/linalg.h"
-#include "Feature.h"
-#include "geometry/PolySet.h"
-#include "utils/printutils.h"
-#include "core/AST.h"
-#include <system_error>
-#include <map>
-#include <ios>
-#include <cstdint>
-#include <memory>
+
 #include <charconv>
 #include <cstddef>
+#include <cstdint>
+#include <cstdio>
 #include <fstream>
+#include <locale>
+#include <ios>
+#include <sstream>
+#include <map>
+#include <memory>
 #include <string>
 #include <vector>
-#include <boost/regex.hpp>
-#include <boost/lexical_cast.hpp>
+
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/split.hpp>
+#include <boost/lexical_cast.hpp>
+#include <boost/regex.hpp>
+
+#include "core/AST.h"
+#include "geometry/linalg.h"
+#include "geometry/PolySet.h"
+#include "utils/printutils.h"
 
 // References:
 // http://www.geomview.org/docs/html/OFF.html
 
 std::unique_ptr<PolySet> import_off(const std::string& filename, const Location& loc)
 {
-  boost::regex ex_magic(R"(^(ST)?(C)?(N)?(4)?(n)?OFF( BINARY)? *)");
+  const boost::regex ex_magic(R"(^(ST)?(C)?(N)?(4)?(n)?OFF( BINARY)? *)");
   // XXX: are ST C N always in order?
-  boost::regex ex_cr(R"(\r$)");
-  boost::regex ex_comment(R"(\s*#.*$)");
+  const boost::regex ex_cr(R"(\r$)");
+  const boost::regex ex_comment(R"(\s*#.*$)");
   boost::smatch results;
 
   std::ifstream f(filename.c_str(), std::ios::in | std::ios::binary);
@@ -239,13 +243,13 @@ std::unique_ptr<PolySet> import_off(const std::string& filename, const Location&
 
     std::map<Color4f, int32_t> color_indices;
     try {
-      unsigned long face_size=boost::lexical_cast<unsigned long>(words[0]);
+      const unsigned long face_size=boost::lexical_cast<unsigned long>(words[0]);
       size_t i;
       if (words.size() - 1 < face_size) {
         AsciiError("can't parse face: missing indices");
         return PolySet::createEmpty();
       }
-      size_t face_idx = ps->indices.size();
+      const size_t face_idx = ps->indices.size();
       ps->indices.emplace_back().reserve(face_size);
       //PRINTDB("Index[%d] [%d] = { ", face % n);
       for (i = 0; i < face_size; i++) {
@@ -261,11 +265,11 @@ std::unique_ptr<PolySet> import_off(const std::string& filename, const Location&
       if (words.size() >= face_size + 4) {
         i = face_size + 1;
         // handle optional color info (r g b [a])
-        int r=getcolor(words[i++]);
-        int g=getcolor(words[i++]);
-        int b=getcolor(words[i++]);
-        int a=i < words.size() ? getcolor(words[i++]) : 255;
-        Color4f color(r, g, b, a);
+        const int r=getcolor(words[i++]);
+        const int g=getcolor(words[i++]);
+        const int b=getcolor(words[i++]);
+        const int a=i < words.size() ? getcolor(words[i++]) : 255;
+        const Color4f color(r, g, b, a);
 
         auto iter_pair = color_indices.insert_or_assign(color, ps->colors.size());
         if (iter_pair.second) ps->colors.push_back(color); // inserted

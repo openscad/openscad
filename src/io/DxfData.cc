@@ -26,34 +26,31 @@
 
 #include "io/DxfData.h"
 
-#include <stdexcept>
-#include <memory>
+#include <algorithm>
 #include <cmath>
-
-#include "geometry/linalg.h"
-#include "geometry/Grid.h"
-#include "utils/printutils.h"
-#include "utils/calc.h"
-
-#include <cassert>
 #include <cstddef>
+#include <filesystem>
 #include <fstream>
+#include <map>
+#include <memory>
+#include <sstream>
+#include <stdexcept>
+#include <string>
 #include <unordered_map>
 #include <vector>
-#include <boost/lexical_cast.hpp>
+
 #include <boost/algorithm/string.hpp>
-#include <filesystem>
-#include <algorithm>
-#include <sstream>
-#include <string>
-#include <map>
+#include <boost/lexical_cast.hpp>
 
 #include "core/Value.h"
+#include "geometry/Grid.h"
+#include "geometry/linalg.h"
 #include "geometry/Polygon2d.h"
 #include "io/fileutils.h"
-#include "utils/printutils.h"
+#include "utils/calc.h"
 #include "utils/degree_trig.h"
-
+#include "utils/printutils.h"
+#include "utils/printutils.h"
 
 namespace fs = std::filesystem;
 
@@ -186,7 +183,7 @@ DxfData::DxfData(double fn, double fs, double fa,
         } else if (mode == "LWPOLYLINE") {
           // assert(xverts.size() == yverts.size());
           // Get maximum to enforce managed exception if xverts.size() != yverts.size()
-          int numverts = std::max(xverts.size(), yverts.size());
+          const int numverts = std::max(xverts.size(), yverts.size());
           for (int i = 1; i < numverts; ++i) {
             ADD_LINE(xverts.at(i - 1), yverts.at(i - 1), xverts.at(i % numverts), yverts.at(i % numverts));
           }
@@ -195,11 +192,11 @@ DxfData::DxfData(double fn, double fs, double fa,
             ADD_LINE(xverts.at(numverts - 1), yverts.at(numverts - 1), xverts.at(0), yverts.at(0));
           }
         } else if (mode == "CIRCLE") {
-          int n = Calc::get_fragments_from_r(radius, 360.0, fn, fs, fa);
+          const int n = Calc::get_fragments_from_r(radius, 360.0, fn, fs, fa);
           Vector2d center(xverts.at(0), yverts.at(0));
           for (int i = 0; i < n; ++i) {
-            double a1 = (360.0 * i) / n;
-            double a2 = (360.0 * (i + 1)) / n;
+            const double a1 = (360.0 * i) / n;
+            const double a2 = (360.0 * (i + 1)) / n;
             ADD_LINE(cos_degrees(a1) * radius + center[0], sin_degrees(a1) * radius + center[1],
                      cos_degrees(a2) * radius + center[0], sin_degrees(a2) * radius + center[1]);
           }
@@ -209,11 +206,11 @@ DxfData::DxfData(double fn, double fs, double fa,
           while (arc_start_angle > arc_stop_angle) {
             arc_stop_angle += 360.0;
           }
-          double arc_angle = arc_stop_angle - arc_start_angle;
+          const double arc_angle = arc_stop_angle - arc_start_angle;
           n = static_cast<int>(ceil(n * arc_angle / 360));
           for (int i = 0; i < n; ++i) {
-            double a1 = arc_start_angle + arc_angle * i / n;
-            double a2 = arc_start_angle + arc_angle * (i + 1) / n;
+            const double a1 = arc_start_angle + arc_angle * i / n;
+            const double a2 = arc_start_angle + arc_angle * (i + 1) / n;
             ADD_LINE(cos_degrees(a1) * radius + center[0], sin_degrees(a1) * radius + center[1],
                      cos_degrees(a2) * radius + center[0], sin_degrees(a2) * radius + center[1]);
           }
@@ -225,12 +222,12 @@ DxfData::DxfData(double fn, double fs, double fa,
 //				Vector2d ce(xverts[1], yverts[1]);
           Vector2d ce(xverts.at(1), yverts.at(1));
 //				double r_major = ce.length();
-          double r_major = sqrt(ce[0] * ce[0] + ce[1] * ce[1]);
+          const double r_major = sqrt(ce[0] * ce[0] + ce[1] * ce[1]);
 //				double rot_angle = ce.angle();
           double rot_angle;
           {
 //					double dot = ce.dot(Vector2d(1.0, 0.0));
-            double dot = ce[0];
+            const double dot = ce[0];
             double cosval = dot / r_major;
             if (cosval > 1.0) cosval = 1.0;
             if (cosval < -1.0) cosval = -1.0;
@@ -239,14 +236,14 @@ DxfData::DxfData(double fn, double fs, double fa,
           }
 
           // the ratio stored in 'radius; due to the parser code not checking entity type
-          double r_minor = r_major * radius;
-          double sweep_angle = ellipse_stop_angle - ellipse_start_angle;
+          const double r_minor = r_major * radius;
+          const double sweep_angle = ellipse_stop_angle - ellipse_start_angle;
           int n = Calc::get_fragments_from_r(r_major, 360.0, fn, fs, fa);
           n = static_cast<int>(ceil(n * sweep_angle / (2 * M_PI)));
 //				Vector2d p1;
           Vector2d p1{0.0, 0.0};
           for (int i = 0; i <= n; ++i) {
-            double a = (ellipse_start_angle + sweep_angle * i / n);
+            const double a = (ellipse_start_angle + sweep_angle * i / n);
 //					Vector2d p2(cos(a)*r_major, sin(a)*r_minor);
             Vector2d p2(cos(a) * r_major, sin(a) * r_minor);
 //					p2.rotate(rot_angle);
@@ -266,17 +263,17 @@ DxfData::DxfData(double fn, double fs, double fa,
         } else if (mode == "INSERT") {
           // scale is stored in ellipse_start|stop_angle, rotation in arc_start_angle;
           // due to the parser code not checking entity type
-          int n = blockdata[iddata].size();
+          const int n = blockdata[iddata].size();
           for (int i = 0; i < n; ++i) {
-            double a = arc_start_angle;
-            double lx1 = this->points[blockdata[iddata][i].idx[0]][0] * ellipse_start_angle;
-            double ly1 = this->points[blockdata[iddata][i].idx[0]][1] * ellipse_stop_angle;
-            double lx2 = this->points[blockdata[iddata][i].idx[1]][0] * ellipse_start_angle;
-            double ly2 = this->points[blockdata[iddata][i].idx[1]][1] * ellipse_stop_angle;
-            double px1 = (cos_degrees(a) * lx1 - sin_degrees(a) * ly1) * scale + xverts.at(0);
-            double py1 = (sin_degrees(a) * lx1 + cos_degrees(a) * ly1) * scale + yverts.at(0);
-            double px2 = (cos_degrees(a) * lx2 - sin_degrees(a) * ly2) * scale + xverts.at(0);
-            double py2 = (sin_degrees(a) * lx2 + cos_degrees(a) * ly2) * scale + yverts.at(0);
+            const double a = arc_start_angle;
+            const double lx1 = this->points[blockdata[iddata][i].idx[0]][0] * ellipse_start_angle;
+            const double ly1 = this->points[blockdata[iddata][i].idx[0]][1] * ellipse_stop_angle;
+            const double lx2 = this->points[blockdata[iddata][i].idx[1]][0] * ellipse_start_angle;
+            const double ly2 = this->points[blockdata[iddata][i].idx[1]][1] * ellipse_stop_angle;
+            const double px1 = (cos_degrees(a) * lx1 - sin_degrees(a) * ly1) * scale + xverts.at(0);
+            const double py1 = (sin_degrees(a) * lx1 + cos_degrees(a) * ly1) * scale + yverts.at(0);
+            const double px2 = (cos_degrees(a) * lx2 - sin_degrees(a) * ly2) * scale + xverts.at(0);
+            const double py2 = (sin_degrees(a) * lx2 + cos_degrees(a) * ly2) * scale + yverts.at(0);
             ADD_LINE(px1, py1, px2, py2);
           }
         } else if (mode == "DIMENSION" &&
@@ -405,10 +402,10 @@ DxfData::DxfData(double fn, double fs, double fa,
     int current_line, current_point;
 
     for (const auto& l : enabled_lines) {
-      int idx = l.second;
+      const int idx = l.second;
       for (int j = 0; j < 2; ++j) {
         auto lv = grid.data(this->points[lines[idx].idx[j]][0], this->points[lines[idx].idx[j]][1]);
-        for (int k : lv) {
+        for (const int k : lv) {
           if (k < 0 || static_cast<unsigned int>(k) >= lines.size()) {
             LOG(message_group::Warning,
                 "Bad DXF line index in %1$s.", QuotedString(fs_uncomplete(filename, fs::current_path()).generic_string()));
@@ -437,7 +434,7 @@ create_open_path:
       lines[current_line].disabled = true;
       enabled_lines.erase(current_line);
       auto lv = grid.data(ref_point[0], ref_point[1]);
-      for (int k : lv) {
+      for (const int k : lv) {
         if (k < 0 || static_cast<unsigned int>(k) >= lines.size()) {
           LOG(message_group::Warning,
               "Bad DXF line index in %1$s.", QuotedString(fs_uncomplete(filename, fs::current_path()).generic_string()));
@@ -478,7 +475,7 @@ found_next_line_in_open_path:;
       lines[current_line].disabled = true;
       enabled_lines.erase(current_line);
       auto lv = grid.data(ref_point[0], ref_point[1]);
-      for (int k : lv) {
+      for (const int k : lv) {
         if (k < 0 || static_cast<unsigned int>(k) >= lines.size()) {
           LOG(message_group::Warning,
               "Bad DXF line index in %1$s.", QuotedString(fs_uncomplete(filename, fs::current_path()).generic_string()));
@@ -535,13 +532,13 @@ void DxfData::fixup_path_direction()
       }
     }
     // rotate points if the path is in non-standard rotation
-    size_t b = min_x_point;
-    size_t a = b == 0 ? path.indices.size() - 2 : b - 1;
-    size_t c = b == path.indices.size() - 1 ? 1 : b + 1;
-    double ax = this->points[path.indices[a]][0] - this->points[path.indices[b]][0];
-    double ay = this->points[path.indices[a]][1] - this->points[path.indices[b]][1];
-    double cx = this->points[path.indices[c]][0] - this->points[path.indices[b]][0];
-    double cy = this->points[path.indices[c]][1] - this->points[path.indices[b]][1];
+    const size_t b = min_x_point;
+    const size_t a = b == 0 ? path.indices.size() - 2 : b - 1;
+    const size_t c = b == path.indices.size() - 1 ? 1 : b + 1;
+    const double ax = this->points[path.indices[a]][0] - this->points[path.indices[b]][0];
+    const double ay = this->points[path.indices[a]][1] - this->points[path.indices[b]][1];
+    const double cx = this->points[path.indices[c]][0] - this->points[path.indices[b]][0];
+    const double cy = this->points[path.indices[c]][1] - this->points[path.indices[b]][1];
 #if 0
     printf("Rotate check:\n");
     printf("  a/b/c indices = %d %d %d\n", a, b, c);

@@ -25,33 +25,38 @@
  */
 
 #include "io/export.h"
-#include "geometry/linalg.h"
-#include "glview/ColorMap.h"
-#include "core/ColorUtil.h"
-#include "export_enums.h"
-#include "geometry/PolySet.h"
-#include "utils/printutils.h"
-#include "geometry/Geometry.h"
-#include "glview/RenderSettings.h"
 
-#include <unordered_map>
 #include <algorithm>
-#include <functional>
 #include <cassert>
-#include <map>
-#include <cstdint>
-#include <memory>
+#include <chrono>
 #include <cstddef>
-#include <fstream>
-#include <string>
-#include <vector>
+#include <cstdint>
+#include <ctime>
 #include <filesystem>
+#include <fstream>
+#include <functional>
+#include <iomanip>
 #include <iostream>
+#include <map>
+#include <memory>
+#include <string>
+#include <unordered_map>
+#include <vector>
 
 #ifdef _WIN32
 #include <io.h>
 #include <fcntl.h>
 #endif
+
+#include "geometry/Geometry.h"
+#include "geometry/GeometryUtils.h"
+#include "geometry/linalg.h"
+#include "geometry/PolySet.h"
+#include "glview/Camera.h"
+#include "glview/ColorMap.h"
+#include "glview/RenderSettings.h"
+#include "utils/printutils.h"
+
 
 #define QUOTE(x__) # x__
 #define QUOTED(x__) QUOTE(x__)
@@ -209,7 +214,7 @@ ExportInfo createExportInfo(const FileFormat& format, const FileFormatInfo& info
   return exportInfo;
 }
 
-void exportFile(const std::shared_ptr<const Geometry>& root_geom, std::ostream& output, const ExportInfo& exportInfo)
+static void exportFile(const std::shared_ptr<const Geometry>& root_geom, std::ostream& output, const ExportInfo& exportInfo)
 {
   switch (exportInfo.format) {
   case FileFormat::ASCII_STL:

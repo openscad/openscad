@@ -24,16 +24,29 @@
  *
  */
 
+#include "io/export.h"
+ 
+#include <algorithm>
+#include <cstddef>
+#include <cassert>
+#include <cstdint>
+#include <memory>
+#include <ostream>
+#include <string>
 #include <unordered_map>
+#include <utility>
+
+#include <lib3mf_implicit.hpp>
+
+#include "core/ColorUtil.h"
 #include "export_enums.h"
 #include "geometry/Geometry.h"
 #include "geometry/GeometryUtils.h"
-#include "io/export.h"
+#include "geometry/linalg.h"
 #include "geometry/PolySet.h"
 #include "geometry/PolySetUtils.h"
-#include "geometry/linalg.h"
-#include "core/ColorUtil.h"
 #include "utils/printutils.h"
+
 #ifdef ENABLE_CGAL
 #include "geometry/cgal/cgalutils.h"
 #include "geometry/cgal/CGAL_Nef_polyhedron.h"
@@ -41,14 +54,6 @@
 #ifdef ENABLE_MANIFOLD
 #include "geometry/manifold/ManifoldGeometry.h"
 #endif
-
-#include <cassert>
-#include <ostream>
-#include <utility>
-#include <cstdint>
-#include <memory>
-#include <string>
-#include <lib3mf_implicit.hpp>
 
 using ExportColorMap = std::unordered_map<Color4f, Lib3MF_uint32>;
 
@@ -189,7 +194,7 @@ bool append_polyset(const std::shared_ptr<const PolySet>& ps,  const Export3mfPa
     auto vertexFunc = [&](const Vector3d& coords) -> bool {
       const auto f = coords.cast<float>();
       try {
-        Lib3MF::sPosition v{f[0], f[1], f[2]};
+        const Lib3MF::sPosition v{f[0], f[1], f[2]};
         mesh->AddVertex(v);
       } catch (Lib3MF::ELib3MFException& e) {
         export_3mf_error(e.what());
@@ -234,7 +239,6 @@ bool append_polyset(const std::shared_ptr<const PolySet>& ps,  const Export3mfPa
       }
     }
 
-    Lib3MF::PBuildItem builditem;
     try {
       auto builditem = ctx.model->AddBuildItem(mesh.get(), ctx.wrapper->GetIdentityTransform());
       if (!partname.empty()) {
