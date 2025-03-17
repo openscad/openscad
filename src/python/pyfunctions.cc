@@ -2225,7 +2225,7 @@ PyObject *python_edges_core(PyObject *obj)
       Vector3d p1=trans*Vector3d(ol.vertices[i][0], ol.vertices[i][1],0);
       Vector3d p2=trans*Vector3d(ol.vertices[(i+1)%n][0], ol.vertices[(i+1)%n][1],0);
       Vector3d p3=trans*Vector3d(ol.vertices[(i+2)%n][0], ol.vertices[(i+2)%n][1],0);
-      zdir += (p2-p1).cross(p2-p3);
+      zdir += (p1-p2).cross(p2-p3);
     }
     edgenum += n;
   }
@@ -2240,7 +2240,7 @@ PyObject *python_edges_core(PyObject *obj)
       Vector3d p2=trans*Vector3d(ol.vertices[(i+1)%n][0], ol.vertices[(i+1)%n][1],0);
       Vector3d pt=(p1+p2)/2.0;
       Vector3d xdir=(p2-p1).normalized();
-      Vector3d ydir=zdir.cross(xdir).normalized();
+      Vector3d ydir=xdir.cross(zdir).normalized();
 
       Matrix4d mat;
       mat <<  xdir[0], ydir[0], zdir[0], pt[0],
@@ -2325,7 +2325,7 @@ PyObject *python_faces_core(PyObject *obj, bool tessellate)
       }
       Vector3d pt=Vector3d((ptmin[0]+ptmax[0])/2.0, (ptmin[1]+ptmax[1])/2.0,(ptmin[2]+ptmax[2])/2.0);
       Vector3d xdir = (ps->vertices[face[1]]-ps->vertices[face[0]]).normalized();
-      Vector3d ydir = xdir.cross(zdir);
+      Vector3d ydir = zdir.cross(xdir);
 
       Matrix4d mat;
       mat <<  xdir[0], ydir[0], zdir[0], pt[0],
