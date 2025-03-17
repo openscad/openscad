@@ -1,17 +1,22 @@
 #include "io/import.h"
-#include "geometry/linalg.h"
-#include "core/AST.h"
-#include "geometry/PolySet.h"
-#include "geometry/PolySetBuilder.h"
+
+#include <cstddef>
+#include <fstream>
 #include <ios>
 #include <memory>
-#include <fstream>
 #include <string>
 #include <vector>
-#include <boost/regex.hpp>
-#include <boost/lexical_cast.hpp>
+
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/split.hpp>
+#include <boost/lexical_cast.hpp>
+#include <boost/regex.hpp>
+
+#include "core/AST.h"
+#include "geometry/linalg.h"
+#include "geometry/PolySet.h"
+#include "geometry/PolySetBuilder.h"
+#include "utils/printutils.h"
 
 std::unique_ptr<PolySet> import_obj(const std::string& filename, const Location& loc) {
   PolySetBuilder builder;
@@ -23,16 +28,16 @@ std::unique_ptr<PolySet> import_obj(const std::string& filename, const Location&
         filename, loc.firstLine());
     return PolySet::createEmpty();
   }
-  boost::regex ex_comment(R"(^\s*#)");
-  boost::regex ex_v( R"(^\s*v\s+([^\s]+)\s+([^\s]+)\s+([^\s]+)\s*$)");
-  boost::regex ex_f( R"(^\s*f\s+(.*)$)");
-  boost::regex ex_vt( R"(^\s*vt)");
-  boost::regex ex_vn( R"(^\s*vn)");
-  boost::regex ex_mtllib( R"(^\s*mtllib)");
-  boost::regex ex_usemtl( R"(^\s*usemtl)");
-  boost::regex ex_o( R"(^\s*o)");
-  boost::regex ex_s( R"(^\s*s)");
-  boost::regex ex_g( R"(^\s*g)");
+  const boost::regex ex_comment(R"(^\s*#)");
+  const boost::regex ex_v( R"(^\s*v\s+([^\s]+)\s+([^\s]+)\s+([^\s]+)\s*$)");
+  const boost::regex ex_f( R"(^\s*f\s+(.*)$)");
+  const boost::regex ex_vt( R"(^\s*vt)");
+  const boost::regex ex_vn( R"(^\s*vn)");
+  const boost::regex ex_mtllib( R"(^\s*mtllib)");
+  const boost::regex ex_usemtl( R"(^\s*usemtl)");
+  const boost::regex ex_o( R"(^\s*o)");
+  const boost::regex ex_s( R"(^\s*s)");
+  const boost::regex ex_g( R"(^\s*g)");
   int lineno = 1;
   std::string line;
 
@@ -72,7 +77,7 @@ std::unique_ptr<PolySet> import_obj(const std::string& filename, const Location&
         if(wordindex.size() < 1)
           LOG(message_group::Warning, "Invalid Face index in File %1$s in Line %2$d", filename, lineno);
         else {
-          size_t ind=boost::lexical_cast<int>(wordindex[0]);
+          const size_t ind=boost::lexical_cast<int>(wordindex[0]);
           if(ind >= 1 && ind  <= vertex_map.size()) {
             builder.addVertex(vertex_map[ind-1]);
           } else {

@@ -496,6 +496,7 @@ if(ENABLE_PYTHON)
     target_include_directories(OpenSCAD PRIVATE ${Nettle_INCLUDE_DIRS})
     target_link_libraries(OpenSCAD PRIVATE ${Nettle_LIBRARIES})
     target_link_libraries(OpenSCAD PRIVATE OpenSCADPy)
+    add_custom_target(OpenSCADPython ALL COMMAND ${CMAKE_COMMAND} -E create_symlink openscad${SUFFIX_WITH_DASH} "openscad-python")
   endif()
 endif()
 
@@ -866,6 +867,7 @@ set(CORE_SOURCES
   src/geometry/boolean_utils.cc
   src/geometry/linalg.cc
   src/geometry/linear_extrude.cc
+  src/geometry/rotate_extrude.cc
   src/glview/Camera.cc
   src/glview/ColorMap.cc
   src/glview/OffscreenContextFactory.cc
@@ -1056,6 +1058,7 @@ else()
     src/glview/OffscreenView.cc
     src/glview/cgal/CGALRenderer.cc
     src/glview/cgal/CGALRenderUtils.cc
+    src/glview/PolySetRenderer.cc
     src/glview/preview/OpenCSGRenderer.cc
     src/glview/preview/ThrownTogetherRenderer.cc
     src/io/export_png.cc
@@ -1386,6 +1389,9 @@ endif()
 if(NOT APPLE OR APPLE_UNIX)
   set_target_properties(OpenSCAD PROPERTIES OUTPUT_NAME openscad${SUFFIX_WITH_DASH})
   install(TARGETS OpenSCAD RUNTIME DESTINATION "${OPENSCAD_BINDIR}")
+  if(ENABLE_PYTHON)
+    install(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/openscad-python DESTINATION "${OPENSCAD_BINDIR}")
+  endif()
   if(WIN32)
     if(USE_MIMALLOC AND MI_LINK_SHARED)
       if(CMAKE_SIZEOF_VOID_P EQUAL 8)

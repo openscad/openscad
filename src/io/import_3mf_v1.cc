@@ -23,6 +23,17 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  */
+#include "io/import.h"
+
+#include <cstddef>
+#include <functional>
+#include <cstdint>
+#include <memory>
+#include <string>
+#include <iomanip>
+#include <algorithm>
+ 
+#include <Model/COM/NMR_DLLInterfaces.h>
 
 #include "geometry/PolySet.h"
 #include "geometry/PolySetBuilder.h"
@@ -32,33 +43,8 @@
 #include "utils/printutils.h"
 #include "utils/version_helper.h"
 #include "core/AST.h"
-#include "Feature.h"
 #include "glview/RenderSettings.h"
-
-#include <cstdint>
-#include <memory>
-#include <string>
-#include <iomanip>
-#include <algorithm>
-#include <unordered_map>
-
-#include <Model/COM/NMR_DLLInterfaces.h>
-#undef BOOL
-using namespace NMR;
-
-/*
- * Provided here for reference in LibraryInfo.cc which can't include
- * both Qt and lib3mf headers due to some conflicting definitions of
- * windows types when compiling with MinGW.
- */
-const std::string get_lib3mf_version() {
-  DWORD major, minor, micro;
-  NMR::lib3mf_getinterfaceversion(&major, &minor, &micro);
-
-  const OpenSCAD::library_version_number header_version{NMR_APIVERSION_INTERFACE_MAJOR, NMR_APIVERSION_INTERFACE_MINOR, NMR_APIVERSION_INTERFACE_MICRO};
-  const OpenSCAD::library_version_number runtime_version{major, minor, micro};
-  return OpenSCAD::get_version_string(header_version, runtime_version);
-}
+#include "io/lib3mf_utils.h"
 
 #ifdef ENABLE_CGAL
 #include "geometry/cgal/cgalutils.h"
@@ -66,6 +52,18 @@ const std::string get_lib3mf_version() {
 #ifdef ENABLE_MANIFOLD
 #include "geometry/manifold/manifoldutils.h"
 #endif
+
+#undef BOOL
+using namespace NMR;
+
+std::string get_lib3mf_version() {
+  DWORD major, minor, micro;
+  NMR::lib3mf_getinterfaceversion(&major, &minor, &micro);
+
+  const OpenSCAD::library_version_number header_version{NMR_APIVERSION_INTERFACE_MAJOR, NMR_APIVERSION_INTERFACE_MINOR, NMR_APIVERSION_INTERFACE_MICRO};
+  const OpenSCAD::library_version_number runtime_version{major, minor, micro};
+  return OpenSCAD::get_version_string(header_version, runtime_version);
+}
 
 template<> struct std::hash<Color4f> {
     std::size_t operator()(Color4f const& c) const noexcept {
@@ -419,7 +417,7 @@ std::string read_metadata(PLib3MFModel *model)
 
 } // namespace
 
-std::unique_ptr<Geometry> import_3mf(const std::string& filename, const Location& loc)
+std::unique_ptr<PolySet> import_3mf(const std::string& filename, const Location& loc)
 {
   DWORD interfaceVersionMajor, interfaceVersionMinor, interfaceVersionMicro;
   HRESULT result = lib3mf_getinterfaceversion(&interfaceVersionMajor, &interfaceVersionMinor, &interfaceVersionMicro);

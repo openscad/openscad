@@ -1,19 +1,21 @@
-#include <ApplicationServices/ApplicationServices.h>
-#include <iostream>
 #include "io/imageutils.h"
+
+#include <iostream>
 #include <cassert>
 #include <cstddef>
 
-CGDataConsumerCallbacks dc_callbacks;
+#include <ApplicationServices/ApplicationServices.h>
 
-size_t write_bytes_to_ostream(void *info, const void *buffer, size_t count)
+static CGDataConsumerCallbacks dc_callbacks;
+
+static size_t write_bytes_to_ostream(void *info, const void *buffer, size_t count)
 {
   assert(info && buffer);
-  std::ostream *output = (std::ostream *)info;
-  size_t startpos = output->tellp();
+  auto *output = (std::ostream *)info;
+  const size_t startpos = output->tellp();
   size_t endpos = startpos;
   try {
-    output->write( (const char *)buffer, count);
+    output->write((const char *)buffer, count);
     endpos = output->tellp();
   } catch (const std::ios_base::failure& e) {
     std::cerr << "Error writing to ostream:" << e.what() << "\n";
@@ -21,7 +23,7 @@ size_t write_bytes_to_ostream(void *info, const void *buffer, size_t count)
   return (endpos - startpos);
 }
 
-CGDataConsumerRef CGDataConsumerCreateWithOstream(std::ostream& output)
+static CGDataConsumerRef CGDataConsumerCreateWithOstream(std::ostream& output)
 {
   dc_callbacks.putBytes = write_bytes_to_ostream;
   dc_callbacks.releaseConsumer = nullptr; // ostream closed by caller of write_png
@@ -31,11 +33,11 @@ CGDataConsumerRef CGDataConsumerCreateWithOstream(std::ostream& output)
 
 bool write_png(std::ostream& output, unsigned char *pixels, int width, int height)
 {
-  size_t rowBytes = static_cast<size_t>(width) * 4;
+  const size_t rowBytes = static_cast<size_t>(width) * 4;
 //  CGColorSpaceRef colorSpace = CGColorSpaceCreateWithName(kCGColorSpaceGenericRGB);
   CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
-  CGBitmapInfo bitmapInfo = kCGImageAlphaNoneSkipLast | kCGBitmapByteOrder32Big; // BGRA
-  int bitsPerComponent = 8;
+  const CGBitmapInfo bitmapInfo = kCGImageAlphaNoneSkipLast | kCGBitmapByteOrder32Big; // BGRA
+  const int bitsPerComponent = 8;
   CGContextRef contextRef = CGBitmapContextCreate(pixels, width, height,
                                                   bitsPerComponent, rowBytes,
                                                   colorSpace, bitmapInfo);
@@ -66,7 +68,7 @@ bool write_png(std::ostream& output, unsigned char *pixels, int width, int heigh
      CGDataConsumerRef dataconsumer = CGDataConsumerCreateWithURL(fileURL);
    */
 
-  CFIndex fileImageIndex = 1;
+  const CFIndex fileImageIndex = 1;
   CFMutableDictionaryRef fileDict = nullptr;
   CFStringRef fileUTType = kUTTypePNG;
   // Create an image destination opaque reference for authoring an image file
@@ -83,7 +85,7 @@ bool write_png(std::ostream& output, unsigned char *pixels, int width, int heigh
     return false;
   }
 
-  CFIndex capacity = 1;
+  const CFIndex capacity = 1;
   CFMutableDictionaryRef imageProps =
     CFDictionaryCreateMutable(kCFAllocatorDefault,
                               capacity,

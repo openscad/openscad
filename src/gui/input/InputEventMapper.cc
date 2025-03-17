@@ -62,7 +62,7 @@ InputEventMapper::InputEventMapper()
   zoomGain = 1.00;
 
   timer = new QTimer(this);
-  connect(timer, SIGNAL(timeout()), this, SLOT(onTimer()));
+  connect(timer, &QTimer::timeout, this, &InputEventMapper::onTimer);
   timer->start(30);
 
   onInputMappingUpdated();

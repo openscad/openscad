@@ -10,7 +10,6 @@
 #include "geometry/Polygon2d.h"
 #include "glview/ShaderUtils.h"
 #include "glview/ColorMap.h"
-#include "core/Selection.h"
 #include "glview/VertexState.h"
 #ifdef ENABLE_CGAL
 #include "geometry/cgal/CGAL_Nef_polyhedron.h"
@@ -25,7 +24,6 @@ public:
   void draw(bool showedges, const ShaderUtils::ShaderInfo *shaderinfo = nullptr) const override;
   void setColorScheme(const ColorScheme& cs) override;
   BoundingBox getBoundingBox() const override;
-  std::vector<SelectedObject> findModelObject(Vector3d near_pt, Vector3d far_pt, int mouse_x, int mouse_y, double tolerance) override;
 
 private:
   void addGeometry(const std::shared_ptr<const class Geometry>& geom);
@@ -33,11 +31,13 @@ private:
   const std::vector<std::shared_ptr<class VBOPolyhedron>>& getPolyhedrons() const { return this->polyhedrons_; }
   void createPolyhedrons();
 #endif
+
+  // FIXME: PolySet and Polygon2d features are only needed for the lazy-union feature,
+  // when a GeometryList may contain a mixture of CGAL and Polygon2d/PolySet geometries.
   void createPolySetStates();
   void createPolygonStates();
   void createPolygonSurfaceStates();
   void createPolygonEdgeStates();
-  bool last_render_state_; // FIXME: this is temporary to make switching between renderers seamless.
 
   std::vector<std::shared_ptr<const class PolySet>> polysets_;
   std::vector<std::pair<std::shared_ptr<const Polygon2d>, std::shared_ptr<const PolySet>>> polygons_;

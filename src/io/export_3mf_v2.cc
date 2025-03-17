@@ -24,16 +24,29 @@
  *
  */
 
+#include "io/export.h"
+ 
+#include <algorithm>
+#include <cstddef>
+#include <cassert>
+#include <cstdint>
+#include <memory>
+#include <ostream>
+#include <string>
 #include <unordered_map>
+#include <utility>
+
+#include <lib3mf_implicit.hpp>
+
+#include "core/ColorUtil.h"
 #include "export_enums.h"
 #include "geometry/Geometry.h"
 #include "geometry/GeometryUtils.h"
-#include "io/export.h"
+#include "geometry/linalg.h"
 #include "geometry/PolySet.h"
 #include "geometry/PolySetUtils.h"
-#include "geometry/linalg.h"
-#include "core/ColorUtil.h"
 #include "utils/printutils.h"
+
 #ifdef ENABLE_CGAL
 #include "geometry/cgal/cgalutils.h"
 #include "geometry/cgal/CGAL_Nef_polyhedron.h"
@@ -41,14 +54,6 @@
 #ifdef ENABLE_MANIFOLD
 #include "geometry/manifold/ManifoldGeometry.h"
 #endif
-
-#include <cassert>
-#include <ostream>
-#include <utility>
-#include <cstdint>
-#include <memory>
-#include <string>
-#include <lib3mf_implicit.hpp>
 
 using ExportColorMap = std::unordered_map<Color4f, Lib3MF_uint32>;
 
@@ -158,7 +163,7 @@ bool append_polyset(const std::shared_ptr<const PolySet>& ps, ExportContext& ctx
     auto mesh = ctx.model->AddMeshObject();
     if (!mesh) return false;
 
-    int mesh_count = count_mesh_objects(ctx.model);
+    const int mesh_count = count_mesh_objects(ctx.model);
     const auto modelname = ctx.modelcount == 1 ? "OpenSCAD Model" : "OpenSCAD Model " + std::to_string(mesh_count);
     const auto partname = ctx.modelcount == 1 ? "" : "Part " + std::to_string(mesh_count);
     mesh->SetName(modelname);
@@ -171,7 +176,7 @@ bool append_polyset(const std::shared_ptr<const PolySet>& ps, ExportContext& ctx
     auto vertexFunc = [&](const Vector3d& coords) -> bool {
       const auto f = coords.cast<float>();
       try {
-        Lib3MF::sPosition v{f[0], f[1], f[2]};
+        const Lib3MF::sPosition v{f[0], f[1], f[2]};
         mesh->AddVertex(v);
       } catch (Lib3MF::ELib3MFException& e) {
         export_3mf_error(e.what());
@@ -216,7 +221,6 @@ bool append_polyset(const std::shared_ptr<const PolySet>& ps, ExportContext& ctx
       }
     }
 
-    Lib3MF::PBuildItem builditem;
     try {
       auto builditem = ctx.model->AddBuildItem(mesh.get(), ctx.wrapper->GetIdentityTransform());
       if (!partname.empty()) {
@@ -244,7 +248,7 @@ bool append_nef(const CGAL_Nef_polyhedron& root_N, ExportContext& ctx)
     LOG(message_group::Export_Warning, "Exported object may not be a valid 2-manifold and may need repair");
   }
 
-  if (std::shared_ptr<PolySet> ps = CGALUtils::createPolySetFromNefPolyhedron3(*root_N.p3)) {
+  if (const std::shared_ptr<const PolySet> ps = CGALUtils::createPolySetFromNefPolyhedron3(*root_N.p3)) {
     return append_polyset(ps, ctx);
   }
   export_3mf_error("Error converting NEF Polyhedron.");
