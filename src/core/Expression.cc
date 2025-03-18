@@ -234,6 +234,13 @@ Range::Range(Expression *begin, Expression *step, Expression *end, const Locatio
 {
 }
 
+/**
+ * This is separated because PRINT uses quite a lot of stack space and
+ * the method using it, evaluate(), is called often when recursive functions
+ * are evaluated.
+ * noinline is required, as we here specifically optimize for stack usage
+ * during normal operating, not runtime during error handling.
+ */
 static void NOINLINE print_range_err(const std::string& begin, const std::string& step, const Location& loc, const std::shared_ptr<const Context>& context){
   LOG(message_group::Warning, loc, context->documentRoot(), "begin %1$s than the end, but step %2$s", begin, step);
 }
