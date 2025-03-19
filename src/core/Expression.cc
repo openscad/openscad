@@ -235,52 +235,39 @@ Range::Range(Expression *begin, Expression *step, Expression *end, const Locatio
 }
 
 /**
- * This is separated because both PRINT_DEPRECATION and PRINT use
- * quite a lot of stack space and the method using it evaluate()
- * is called often when recursive functions are evaluated.
+ * This is separated because PRINT uses quite a lot of stack space and
+ * the method using it, evaluate(), is called often when recursive functions
+ * are evaluated.
  * noinline is required, as we here specifically optimize for stack usage
  * during normal operating, not runtime during error handling.
  */
-static void NOINLINE print_range_depr(const Location& loc, const std::shared_ptr<const Context>& context){
-  LOG(message_group::Deprecated, loc, context->documentRoot(), "Using ranges of the form [begin:end] with begin value greater than the end value is deprecated");
-}
-
 static void NOINLINE print_range_err(const std::string& begin, const std::string& step, const Location& loc, const std::shared_ptr<const Context>& context){
   LOG(message_group::Warning, loc, context->documentRoot(), "begin %1$s than the end, but step %2$s", begin, step);
 }
 
 Value Range::evaluate(const std::shared_ptr<const Context>& context) const
 {
-  Value beginValue = this->begin->evaluate(context);
-  if (beginValue.type() == Value::Type::NUMBER) {
-    Value endValue = this->end->evaluate(context);
-    if (endValue.type() == Value::Type::NUMBER) {
-      double begin_val = beginValue.toDouble();
-      double end_val = endValue.toDouble();
+  double begin_val;
+  double end_val;
+  if (!this->begin->evaluate(context).getDouble(begin_val)
+    || !this->end->evaluate(context).getDouble(end_val)) {
+    return Value::undefined.clone();
+  }
 
-      if (!this->step) {
-        if (end_val < begin_val) {
-          std::swap(begin_val, end_val);
-          print_range_depr(loc, context);
-        }
-        return RangeType(begin_val, end_val);
-      } else {
-        Value stepValue = this->step->evaluate(context);
-        if (stepValue.type() == Value::Type::NUMBER) {
-          double step_val = stepValue.toDouble();
-          if (this->isLiteral()) {
-            if ((step_val > 0) && (end_val < begin_val)) {
-              print_range_err("is greater", "is positive", loc, context);
-            } else if ((step_val < 0) && (end_val > begin_val)) {
-              print_range_err("is smaller", "is negative", loc, context);
-            }
-          }
-          return RangeType(begin_val, step_val, end_val);
-        }
-      }
+  double step_val = 1.0;
+  if (this->step) {
+    if (!this->step->evaluate(context).getDouble(step_val)) {
+      return Value::undefined.clone();
     }
   }
-  return Value::undefined.clone();
+  if (this->isLiteral()) {
+    if ((step_val > 0) && (end_val < begin_val)) {
+      print_range_err("is greater", "is positive", loc, context);
+    } else if ((step_val < 0) && (end_val > begin_val)) {
+      print_range_err("is smaller", "is negative", loc, context);
+    }
+  }
+  return RangeType(begin_val, step_val, end_val);
 }
 
 void Range::print(std::ostream& stream, const std::string&) const
