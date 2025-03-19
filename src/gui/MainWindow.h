@@ -129,7 +129,7 @@ private:
   volatile bool isClosing = false;
   void consoleOutputRaw(const QString& msg);
   void clearAllSelectionIndicators();
-  void setSelectionIndicatorStatus(int nodeIndex, EditorSelectionIndicatorStatus status);
+  void setSelectionIndicatorStatus(EditorInterface *editor, int nodeIndex, EditorSelectionIndicatorStatus status);
 
 protected:
   void closeEvent(QCloseEvent *event) override;
@@ -154,6 +154,10 @@ private slots:
   // implement the different actions needed when
   // the tab manager editor is changed.
   void onTabManagerEditorChanged(EditorInterface *);
+
+  // implement the different actions needed when
+  // the tab manager editor is about to close one of the tab
+  void onTabManagerAboutToCloseEditor(EditorInterface *);
 
 public:
   static void consoleOutput(const Message& msgObj, void *userdata);

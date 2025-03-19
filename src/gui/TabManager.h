@@ -40,6 +40,7 @@ signals:
   // the passed parameter can be nullptr, when the editor changed because of closing of the last
   // opened on.
   void currentEditorChanged(EditorInterface *editor);
+  void editorAboutToClose(EditorInterface *editor);
   void tabCountChanged(int);
 
 private:

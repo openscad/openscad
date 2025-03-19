@@ -91,15 +91,17 @@ void TabManager::closeTabRequested(int x)
   assert(tabWidget != nullptr);
   if (!maybeSave(x)) return;
 
-  auto *temp = (EditorInterface *)tabWidget->widget(x);
-  editorList.remove(temp);
+  auto *closingEditor = (EditorInterface *)tabWidget->widget(x);
+  emit editorAboutToClose(closingEditor);
+
+  editorList.remove(closingEditor);
   tabWidget->removeTab(x);
 
   emit tabCountChanged(editorList.size());
   emit currentEditorChanged((EditorInterface *)tabWidget->currentWidget());
 
-  delete temp->parameterWidget;
-  delete temp;
+  delete closingEditor->parameterWidget;
+  delete closingEditor;
 }
 
 void TabManager::closeCurrentTab()

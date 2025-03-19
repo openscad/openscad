@@ -353,6 +353,7 @@ MainWindow::MainWindow(const QStringList& filenames) :
   connect(this->editActionPrevBookmark, &QAction::triggered, tabManager, &TabManager::prevBookmark);
   connect(this->editActionJumpToNextError, &QAction::triggered, tabManager, &TabManager::jumpToNextError);
 
+  connect(tabManager, &TabManager::editorAboutToClose, this, &MainWindow::onTabManagerAboutToCloseEditor);
   connect(tabManager, &TabManager::currentEditorChanged, this, &MainWindow::onTabManagerEditorChanged);
 
   connect(Preferences::inst(), &Preferences::consoleFontChanged, this->console, &Console::setFont);
@@ -2419,6 +2420,7 @@ void MainWindow::rightClick(QPoint position)
   if (!this->qglview->renderer) {
     return;
   }
+
   // Nothing to select
   if (!this->rootProduct) {
     return;
@@ -2457,15 +2459,9 @@ void MainWindow::rightClick(QPoint position)
         ss << name << " (library "
            << location.fileName().substr(libpath.string().length() + 1) << ":"
            << location.firstLine() << ")";
-      } else if (activeEditor->filepath.toStdString() == location.fileName()) {
-        // removes the "module" prefix if any as it makes it not clear if it is module declaration or call.
-        ss << name << " (" << location.filePath().filename().string() << ":"
-           << location.firstLine() << ")";
       } else {
-        auto relative_filename = fs_uncomplete(location.filePath(), fs::path(activeEditor->filepath.toStdString()).parent_path())
-          .generic_string();
-        // Set the displayed name relative to the active editor window
-        ss << name << " (" << relative_filename << ":" << location.firstLine() << ")";
+        auto relativeFilename = location.filePath().filename() ;
+        ss << name << " (" << relativeFilename << ":" << location.firstLine() << ")";
       }
 
       // Prepare the action to be sent
@@ -2476,9 +2472,12 @@ void MainWindow::rightClick(QPoint position)
       }
     }
 
+    clearAllSelectionIndicators();
     tracemenu.exec(this->qglview->mapToGlobal(position));
   } else {
-    clearAllSelectionIndicators();
+      std::cout << "EDITORS " << renderedEditor << " vs " << activeEditor << std::endl;
+
+      clearAllSelectionIndicators();
   }
 }
 
@@ -2550,7 +2549,7 @@ static void getCodeLocation(const AbstractNode *self, int currentLevel,  int inc
   }
 }
 
-void MainWindow::setSelectionIndicatorStatus(int nodeIndex, EditorSelectionIndicatorStatus status)
+void MainWindow::setSelectionIndicatorStatus(EditorInterface *editor, int nodeIndex, EditorSelectionIndicatorStatus status)
 {
   std::deque<std::shared_ptr<const AbstractNode>> stack;
   this->rootNode->getNodeByID(nodeIndex, stack);
@@ -2564,7 +2563,7 @@ void MainWindow::setSelectionIndicatorStatus(int nodeIndex, EditorSelectionIndic
     const auto& node = stack[i];
 
     auto& location = node->modinst->location();
-    if (location.filePath().compare(activeEditor->filepath.toStdString()) != 0) {
+    if (location.filePath().compare(editor->filepath.toStdString()) != 0) {
       std::cout << "--->>> Line of code in a different file -- PATH -- " << location.fileName() << std::endl;
       node->modinst->print(std::cout, "");
       level++;
@@ -2572,7 +2571,7 @@ void MainWindow::setSelectionIndicatorStatus(int nodeIndex, EditorSelectionIndic
     }
 
     if (node->verbose_name().rfind("module", 0) == 0 || node->modinst->name() == "children") {
-      this->activeEditor->setSelectionIndicatorStatus(
+      editor->setSelectionIndicatorStatus(
         status, level,
         location.firstLine() - 1, location.firstColumn() - 1, location.lastLine() - 1, location.lastColumn() - 1);
       level++;
@@ -2589,7 +2588,7 @@ void MainWindow::setSelectionIndicatorStatus(int nodeIndex, EditorSelectionIndic
   // Update the location returned by location to cover the whole section.
   getCodeLocation(node.get(), 0, 0, &line, &column, &lastLine, &lastColumn, 0);
 
-  this->activeEditor->setSelectionIndicatorStatus(status, 0, line - 1, column - 1, lastLine - 1, lastColumn - 1);
+  editor->setSelectionIndicatorStatus(status, 0, line - 1, column - 1, lastLine - 1, lastColumn - 1);
 }
 
 void MainWindow::setSelection(int index)
@@ -2614,24 +2613,49 @@ void MainWindow::setSelection(int index)
     tabManager->open(QString::fromStdString(file));
   }
 
+  EditorInterface* editor = nullptr;
+  // tabManager->getEditorForFile(location.fileName());
+  for(auto seditor : tabManager->editorList)
+  {
+    auto editorPathName = seditor->filepath.toStdString();
+    auto locationPathName = location.filePath().generic_string();
+    std::cout << "CURRENT FILES: " << editorPathName << " vs " << locationPathName << std::endl;
+    if(editorPathName == locationPathName)
+    {
+        editor = seditor;
+    }
+  }
+
+  if(editor==nullptr)
+  {
+    std::cout << "INVALID RENDERED EDITOR MODE 1 " << std::endl;
+    return;
+  }
+
   // removes all previsly configure selection indicators.
-  clearAllSelectionIndicators();
+  editor->clearAllSelectionIndicators();
+  editor->show();
+  std::cout << "A " << std::endl;
 
   std::vector<std::shared_ptr<const AbstractNode>> nodesSameModule{};
   findNodesWithSameMod(rootNode, selected_node, nodesSameModule);
+  std::cout << "B " << std::endl;
 
   // highlight in the text editor all the text fragment of the hierarchy of object with same mode.
   for (const auto& element : nodesSameModule) {
     if (element->index() != currentlySelectedObject) {
-      setSelectionIndicatorStatus(element->index(), EditorSelectionIndicatorStatus::IMPACTED);
+      setSelectionIndicatorStatus(editor, element->index(), EditorSelectionIndicatorStatus::IMPACTED);
     }
   }
+  std::cout << "C " << std::endl;
 
   // highlight in the text editor only the fragment correponding to the selected stack.
   // this step must be done after all the impacted element have been marked.
-  setSelectionIndicatorStatus(currentlySelectedObject, EditorSelectionIndicatorStatus::SELECTED);
+  setSelectionIndicatorStatus(editor, currentlySelectedObject, EditorSelectionIndicatorStatus::SELECTED);
 
-  activeEditor->setCursorPosition(line - 1, column - 1);
+  editor->setCursorPosition(line - 1, column - 1);
+  std::cout << "D " << std::endl;
+
 }
 
 /**
@@ -3370,8 +3394,39 @@ QString MainWindow::getCurrentFileName() const
   return fname.replace("&", "&&");
 }
 
+void MainWindow::onTabManagerAboutToCloseEditor(EditorInterface *closingEditor)
+{
+    std::cout << "ABOUT TO CLOSE AND EDITOR" << std::endl;
+    std::cout << "closing" << closingEditor->filepath().toStdString() << std::endl;
+    std::cout << "closing" << renderedEditor->filepath().toStdString() << std::endl;
+
+    if(closingEditor == renderedEditor)
+    {
+        std::cout << "CLOSE RENDERED" << std::endl;
+        renderedEditor = nullptr;
+
+        // Invalidate renderers before we kill the CSG tree
+        this->qglview->setRenderer(nullptr);
+      #ifdef ENABLE_OPENCSG
+        this->previewRenderer = nullptr;
+      #endif
+        this->thrownTogetherRenderer = nullptr;
+
+        // Remove previous CSG tree
+        this->absoluteRootNode.reset();
+
+        this->csgRoot.reset();
+        this->normalizedRoot.reset();
+        this->rootProduct.reset();
+
+        this->rootNode.reset();
+        this->tree.setRoot(nullptr);
+    }
+}
+
 void MainWindow::onTabManagerEditorChanged(EditorInterface *neweditor)
 {
+
   activeEditor = neweditor;
 
   if (neweditor == nullptr) return;
