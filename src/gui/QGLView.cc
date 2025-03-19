@@ -194,25 +194,34 @@ void QGLView::paintGL()
 {
   GLView::paintGL();
 
+  Vector3d p1, p2, p3, norm;
   if (statusLabel) {
     QString status;	  
     if(this->shown_obj != nullptr) {
       switch(this->shown_obj->type) {
         case SelectionType::SELECTION_POINT:
           if(shown_obj->pt.size() < 1) break;		
-          status = QString("Point (%1/%2/%3)").arg(shown_obj->pt[0][0]).arg(shown_obj->pt[0][1]).arg(shown_obj->pt[0][2]);
+	  p1=shown_obj->pt[0];
+          status = QString("Point (%1/%2/%3)").arg(p1[0]).arg(p1[1]).arg(p1[2]);
           statusLabel->setText(status);
 	  break;
         case SelectionType::SELECTION_SEGMENT:
           if(shown_obj->pt.size() < 2) break;		
-          status = QString("Segment (%1/%2/%3) - (%4/%5/%6)")
-		  .arg(shown_obj->pt[0][0]).arg(shown_obj->pt[0][1]).arg(shown_obj->pt[0][2])
-		  .arg(shown_obj->pt[1][0]).arg(shown_obj->pt[1][1]).arg(shown_obj->pt[1][2]);
+	  p1=shown_obj->pt[0];
+	  p2=shown_obj->pt[1];
+          status = QString("Segment (%1/%2/%3) - (%4/%5/%6) delta (%7/%8/%9)")
+		  .arg(p1[0]).arg(p1[1]).arg(p1[2])
+		  .arg(p2[0]).arg(p2[1]).arg(p2[2])
+		  .arg(p2[0]-p1[0]).arg(p2[1]-p1[1]).arg(p2[2]-p1[2]);
           statusLabel->setText(status);
 	  break;
         case SelectionType::SELECTION_FACE:
           if(shown_obj->pt.size() < 3) break;		
-	  status=QString("Face selected\n");
+	  p1=shown_obj->pt[0];
+	  p2=shown_obj->pt[1];
+	  p3=shown_obj->pt[2];
+	  norm=(p2-p1).cross(p3-p2).normalized();
+	  status=QString("Face norm=(%1/%2/%3)").arg(norm[0]).arg(norm[1]).arg(norm[2]);
           statusLabel->setText(status);
 	  break;
         case SelectionType::SELECTION_HANDLE:
