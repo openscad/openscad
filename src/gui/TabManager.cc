@@ -47,7 +47,8 @@ TabManager::TabManager(MainWindow *o, const QString& filename)
 
   // Disable the closing button for the first tabbar
   QWidget *button = tabWidget->tabBar()->tabButton(0, QTabBar::RightSide);
-  button->setVisible(false);
+  if(button)
+      button->setVisible(false);
 }
 
 QWidget *TabManager::getTabContent()
