@@ -1992,16 +1992,16 @@ PyObject *python__getitem__(PyObject *obj, PyObject *key)
   }
   PyObject *result = PyDict_GetItem(self->dict, key);
   if (result == NULL){
-    PyObject *dummy_dict;
-    std::shared_ptr<AbstractNode> node = PyOpenSCADObjectToNodeMulti(obj, &dummy_dict);
     PyObject* keyname = PyUnicode_AsEncodedString(key, "utf-8", "~");
     std::string keystr = PyBytes_AS_STRING(keyname);
     result = Py_None;
     if(keystr == "matrix") {
-  	std::shared_ptr<const TransformNode> trans = std::dynamic_pointer_cast<const TransformNode>(node);
-	if(trans != nullptr) {
-          result = python_frommatrix(trans->matrix.matrix());
-	}
+      PyObject *dummy_dict;
+      std::shared_ptr<AbstractNode> node = PyOpenSCADObjectToNode(obj, &dummy_dict);
+      std::shared_ptr<const TransformNode> trans = std::dynamic_pointer_cast<const TransformNode>(node);
+      Matrix4d matrix=Matrix4d::Identity();
+      if(trans != nullptr) matrix = trans->matrix.matrix();		
+      result = python_frommatrix(matrix);
     }
   }
   else Py_INCREF(result);
