@@ -44,6 +44,10 @@ TabManager::TabManager(MainWindow *o, const QString& filename)
   connect(tabWidget, &QTabWidget::currentChanged, this, &TabManager::tabSwitched);
 
   createTab(filename);
+
+  // Disable the closing button for the first tabbar
+  QWidget *button = tabWidget->tabBar()->tabButton(0, QTabBar::RightSide);
+  button->setVisible(false);
 }
 
 QWidget *TabManager::getTabContent()
@@ -58,11 +62,12 @@ void TabManager::tabSwitched(int x)
 
   editor = (EditorInterface *)tabWidget->widget(x);
 
+  auto numberOfOpenTabs = tabWidget->count();
   // Hides all the closing button except the one on the currently focused editor
-  for (int idx = 0; idx < tabWidget->count(); ++idx) {
+  for (int idx = 0; idx < numberOfOpenTabs; ++idx) {
     QWidget *button = tabWidget->tabBar()->tabButton(idx, QTabBar::RightSide);
     if (button) {
-      button->setVisible(idx == x);
+      button->setVisible(idx == x && numberOfOpenTabs > 1);
     }
   }
 
@@ -391,6 +396,9 @@ void TabManager::showTabHeaderContextMenu(const QPoint& pos)
   closeAction->setData(idx);
   closeAction->setText(_("Close Tab"));
   connect(closeAction, &QAction::triggered, this, &TabManager::closeTab);
+
+  // Don't allow to close the last tab.
+  if (tabWidget->count() <= 1) closeAction->setDisabled(true);
 
   menu.addAction(copyFileNameAction);
   menu.addAction(copyFilePathAction);
