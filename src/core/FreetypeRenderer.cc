@@ -261,7 +261,7 @@ void FreetypeRenderer::Params::detect_properties()
   set_segments(text_segments);
 }
 
-FT_Face FreetypeRenderer::Params::get_font_face() const
+const FontFace * FreetypeRenderer::Params::get_font_face() const
 {
   FontCache *cache = FontCache::instance();
   if (!cache->is_init_ok()) {
@@ -270,14 +270,14 @@ FT_Face FreetypeRenderer::Params::get_font_face() const
     return nullptr;
   }
 
-  FT_Face face = cache->get_font(font);
+  const FontFace *face = cache->get_font(font);
   if (face == nullptr) {
     LOG(message_group::Warning, loc, documentPath,
         "Can't get font %1$s", font);
     return nullptr;
   }
 
-  FT_Error error = FT_Set_Char_Size(face, 0, scale, 100, 100);
+  FT_Error error = FT_Set_Char_Size(face->face_, 0, scale, 100, 100);
   if (error) {
     LOG(message_group::Warning, loc, documentPath,
         "Can't set font size for font %1$s", font);
@@ -323,18 +323,18 @@ void FreetypeRenderer::Params::set(Parameters& parameters)
 FreetypeRenderer::ShapeResults::ShapeResults(
   const FreetypeRenderer::Params& params)
 {
-  FT_Face face = params.get_font_face();
+  const FontFace * face = params.get_font_face();
   if (face == nullptr) {
     return;
   }
 
-  hb_ft_font = hb_ft_font_create(face, nullptr);
+  hb_ft_font = hb_ft_font_create(face->face_, nullptr);
 
   hb_buf = hb_buffer_create();
   hb_buffer_set_direction(hb_buf, hb_direction_from_string(params.direction.c_str(), -1));
   hb_buffer_set_script(hb_buf, hb_script_from_string(params.script.c_str(), -1));
   hb_buffer_set_language(hb_buf, hb_language_from_string(params.language.c_str(), -1));
-  if (FontCache::instance()->is_windows_symbol_font(face)) {
+  if (FontCache::instance()->is_windows_symbol_font(face->face_)) {
     // Special handling for symbol fonts like Webdings.
     // see http://www.microsoft.com/typography/otspec/recom.htm
     //
@@ -358,7 +358,19 @@ FreetypeRenderer::ShapeResults::ShapeResults(
   } else {
     hb_buffer_add_utf8(hb_buf, params.text.c_str(), strlen(params.text.c_str()), 0, strlen(params.text.c_str()));
   }
-  hb_shape(hb_ft_font, hb_buf, nullptr, 0);
+
+  std::vector<hb_feature_t> features;
+  features.reserve(face->features_.size());
+  std::transform(begin(face->features_), end(face->features_), std::back_inserter(features), [](const std::string &s) {
+    hb_feature_t f;
+    hb_feature_from_string(s.c_str(), s.size(), &f);
+    return f;
+  });
+  std::vector<hb_feature_t *> features_ptr;
+  features.reserve(features.size());
+  std::transform(begin(features), end(features), std::back_inserter(features_ptr), [](hb_feature_t &f) { return &f; });
+
+  hb_shape(hb_ft_font, hb_buf, features_ptr.data()[0], features_ptr.size());
 
   unsigned int glyph_count;
   hb_glyph_info_t *glyph_info = hb_buffer_get_glyph_infos(hb_buf, &glyph_count);
@@ -368,7 +380,7 @@ FreetypeRenderer::ShapeResults::ShapeResults(
   for (unsigned int idx = 0; idx < glyph_count; ++idx) {
     FT_Error error;
     FT_UInt glyph_index = glyph_info[idx].codepoint;
-    error = FT_Load_Glyph(face, glyph_index, FT_LOAD_DEFAULT);
+    error = FT_Load_Glyph(face->face_, glyph_index, FT_LOAD_DEFAULT);
     if (error) {
       LOG(message_group::Warning, params.loc, params.documentPath,
           "Could not load glyph %1$u"
@@ -378,7 +390,7 @@ FreetypeRenderer::ShapeResults::ShapeResults(
     }
 
     FT_Glyph glyph;
-    error = FT_Get_Glyph(face->glyph, &glyph);
+    error = FT_Get_Glyph(face->face_->glyph, &glyph);
     if (error) {
       LOG(message_group::Warning, params.loc, params.documentPath,
           "Could not get glyph %1$u"
@@ -475,31 +487,31 @@ FreetypeRenderer::FontMetrics::FontMetrics(
 {
   ok = false;
 
-  FT_Face face = params.get_font_face();
+  const FontFace * face = params.get_font_face();
   if (face == nullptr) {
     return;
   }
 
   // scale is the width of an em in 26.6 fractional points
   // @ 100dpi = 100/72 pixels per point
-  const FT_Size_Metrics *size_metrics = &face->size->metrics;
+  const FT_Size_Metrics *size_metrics = &face->face_->size->metrics;
   nominal_ascent =
-    FT_MulFix(face->ascender, size_metrics->y_scale) / scale
+    FT_MulFix(face->face_->ascender, size_metrics->y_scale) / scale
     * params.size;
   nominal_descent =
-    FT_MulFix(face->descender, size_metrics->y_scale) / scale
+    FT_MulFix(face->face_->descender, size_metrics->y_scale) / scale
     * params.size;
   max_ascent =
-    FT_MulFix(face->bbox.yMax, size_metrics->y_scale) / scale
+    FT_MulFix(face->face_->bbox.yMax, size_metrics->y_scale) / scale
     * params.size;
   max_descent =
-    FT_MulFix(face->bbox.yMin, size_metrics->y_scale) / scale
+    FT_MulFix(face->face_->bbox.yMin, size_metrics->y_scale) / scale
     * params.size;
   interline =
-    FT_MulFix(face->height, size_metrics->y_scale) / scale
+    FT_MulFix(face->face_->height, size_metrics->y_scale) / scale
     * params.size;
-  family_name = face->family_name;
-  style_name = face->style_name;
+  family_name = face->face_->family_name;
+  style_name = face->face_->style_name;
 
   ok = true;
 }

@@ -75,6 +75,14 @@ private:
   FcConfig *config;
 };
 
+struct FontFace
+{
+  FT_Face face_;
+  std::vector<std::string> features_;
+
+  FontFace(FT_Face face) : face_(face) { }
+};
+
 class FontCache
 {
 public:
@@ -85,7 +93,7 @@ public:
   virtual ~FontCache() = default;
 
   [[nodiscard]] bool is_init_ok() const;
-  FT_Face get_font(const std::string& font);
+  const FontFace * get_font(const std::string& font);
   [[nodiscard]] bool is_windows_symbol_font(const FT_Face& face) const;
   void register_font_file(const std::string& path);
   void clear();
@@ -99,7 +107,7 @@ public:
   static void registerProgressHandler(InitHandlerFunc *handler, void *userdata = nullptr);
 
 private:
-  using cache_entry_t = std::pair<FT_Face, std::time_t>;
+  using cache_entry_t = std::pair<const FontFace *, std::time_t>;
   using cache_t = std::map<std::string, cache_entry_t>;
 
   static FontCache *self;
@@ -119,8 +127,8 @@ private:
   void add_font_dir(const std::string& path);
   void init_pattern(FcPattern *pattern) const;
 
-  [[nodiscard]] FT_Face find_face(const std::string& font) const;
-  [[nodiscard]] FT_Face find_face_fontconfig(const std::string& font) const;
+  [[nodiscard]] const FontFace * find_face(const std::string& font) const;
+  [[nodiscard]] const FontFace * find_face_fontconfig(const std::string& font) const;
   bool try_charmap(FT_Face face, int platform_id, int encoding_id) const;
 };
 
