@@ -46,9 +46,22 @@ TabManager::TabManager(MainWindow *o, const QString& filename)
   createTab(filename);
 
   // Disable the closing button for the first tabbar
-  QWidget *button = tabWidget->tabBar()->tabButton(0, QTabBar::RightSide);
-  if(button)
-      button->setVisible(false);
+  setTabsCloseButtonVisibility(0, false);
+}
+
+QTabBar::ButtonPosition TabManager::getClosingButtonPosition()
+{
+  auto bar = tabWidget->tabBar();
+  return (QTabBar::ButtonPosition)bar->style()->styleHint(QStyle::SH_TabBar_CloseButtonPosition, nullptr, bar);
+}
+
+void TabManager::setTabsCloseButtonVisibility(int indice, bool isVisible)
+{
+    // Depending on the system the closing button can be on the right or left side
+    // of the tab header.
+    auto button = tabWidget->tabBar()->tabButton(indice, getClosingButtonPosition());
+    if(button)
+        button->setVisible(isVisible);
 }
 
 QWidget *TabManager::getTabContent()
@@ -66,10 +79,8 @@ void TabManager::tabSwitched(int x)
   auto numberOfOpenTabs = tabWidget->count();
   // Hides all the closing button except the one on the currently focused editor
   for (int idx = 0; idx < numberOfOpenTabs; ++idx) {
-    QWidget *button = tabWidget->tabBar()->tabButton(idx, QTabBar::RightSide);
-    if (button) {
-      button->setVisible(idx == x && numberOfOpenTabs > 1);
-    }
+    bool isVisible = idx == x && numberOfOpenTabs > 1;
+    setTabsCloseButtonVisibility(idx, isVisible);
   }
 
   emit currentEditorChanged(editor);
