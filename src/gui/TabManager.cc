@@ -44,6 +44,24 @@ TabManager::TabManager(MainWindow *o, const QString& filename)
   connect(tabWidget, &QTabWidget::currentChanged, this, &TabManager::tabSwitched);
 
   createTab(filename);
+
+  // Disable the closing button for the first tabbar
+  setTabsCloseButtonVisibility(0, false);
+}
+
+QTabBar::ButtonPosition TabManager::getClosingButtonPosition()
+{
+  auto bar = tabWidget->tabBar();
+  return (QTabBar::ButtonPosition)bar->style()->styleHint(QStyle::SH_TabBar_CloseButtonPosition, nullptr, bar);
+}
+
+void TabManager::setTabsCloseButtonVisibility(int indice, bool isVisible)
+{
+    // Depending on the system the closing button can be on the right or left side
+    // of the tab header.
+    auto button = tabWidget->tabBar()->tabButton(indice, getClosingButtonPosition());
+    if(button)
+        button->setVisible(isVisible);
 }
 
 QWidget *TabManager::getTabContent()
@@ -70,12 +88,11 @@ void TabManager::tabSwitched(int x)
 // **MCH*
  }
 
+  auto numberOfOpenTabs = tabWidget->count();
   // Hides all the closing button except the one on the currently focused editor
-  for (int idx = 0; idx < tabWidget->count(); ++idx) {
-    QWidget *button = tabWidget->tabBar()->tabButton(idx, QTabBar::RightSide);
-    if (button) {
-      button->setVisible(idx == x);
-    }
+  for (int idx = 0; idx < numberOfOpenTabs; ++idx) {
+    bool isVisible = idx == x && numberOfOpenTabs > 1;
+    setTabsCloseButtonVisibility(idx, isVisible);
   }
 
 #ifdef ENABLE_PYTHON
@@ -425,6 +442,9 @@ void TabManager::showTabHeaderContextMenu(const QPoint& pos)
   closeAction->setData(idx);
   closeAction->setText(_("Close Tab"));
   connect(closeAction, &QAction::triggered, this, &TabManager::closeTab);
+
+  // Don't allow to close the last tab.
+  if (tabWidget->count() <= 1) closeAction->setDisabled(true);
 
   menu.addAction(copyFileNameAction);
   menu.addAction(copyFilePathAction);
