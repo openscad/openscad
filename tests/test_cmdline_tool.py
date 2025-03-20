@@ -34,8 +34,8 @@ import platform
 import string
 import difflib
 
-#_debug_tcct = True
-_debug_tcct = False
+_debug_tcct = True
+#_debug_tcct = False
 
 # Path from the build/tests to the tests source dir
 build_to_test_sources = "../../tests"
