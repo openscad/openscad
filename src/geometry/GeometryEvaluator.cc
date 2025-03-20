@@ -447,6 +447,15 @@ void GeometryEvaluator::addToParent(const State& state,
   } else {
     // Root node
     this->root = geom;
+
+    // Dummy call to Manifold to force CSG evaluation.
+    // This is important to force Manifold to throw exceptions from somewhere where we can catch them and
+    // display appropriate error messages to users.
+    if (auto manifold_root = std::dynamic_pointer_cast<const ManifoldGeometry>(this->root)) {
+      manifold_root->getManifold().IsEmpty();
+    }
+
+
     assert(this->visitedchildren.empty());
   }
 }
