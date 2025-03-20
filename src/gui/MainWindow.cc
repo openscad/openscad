@@ -522,9 +522,6 @@ MainWindow::MainWindow(const QStringList& filenames) :
   this->fileActionExport3MF->setVisible(false);
 #endif
 
-  this->designAction3DPrint->setVisible(false);
-  this->designAction3DPrint->setEnabled(false);
-
   // View menu
   this->viewActionThrownTogether->setEnabled(false);
   this->viewActionPreview->setEnabled(false);
