@@ -2382,6 +2382,7 @@ void MainWindow::actionRenderDone(const std::shared_ptr<const Geometry>& root_ge
     renderCompleteSoundEffect->play();
   }
 
+  std::cout << " SETTING A NEW RENDERED EDITOR  " << std::endl;
   renderedEditor = activeEditor;
   activeEditor->contentsRendered = true;
   compileEnded();
@@ -3397,8 +3398,8 @@ QString MainWindow::getCurrentFileName() const
 void MainWindow::onTabManagerAboutToCloseEditor(EditorInterface *closingEditor)
 {
     std::cout << "ABOUT TO CLOSE AND EDITOR" << std::endl;
-    std::cout << "closing" << closingEditor->filepath().toStdString() << std::endl;
-    std::cout << "closing" << renderedEditor->filepath().toStdString() << std::endl;
+    std::cout << "closing" << closingEditor->filepath.toStdString() << std::endl;
+    std::cout << "closing" << renderedEditor->filepath.toStdString() << std::endl;
 
     if(closingEditor == renderedEditor)
     {
