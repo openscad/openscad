@@ -16,7 +16,7 @@ def main():
             ] 
     geometry = [
               "src/geometry/GeometryEvaluator.cc",
-              "src/geometry/rotextrude.cc",
+              "src/geometry/rotate_extrude.cc",
               "src/geometry/skin.cc",
               "src/geometry/linear_extrude.cc",
               "src/geometry/cgal/CGALCache.cc",
@@ -37,6 +37,7 @@ def main():
               "src/geometry/GeometryCache.cc",
               "src/geometry/GeometryUtils.cc",
               "src/geometry/Polygon2d.cc",
+              "src/geometry/Barcode1d.cc",
               "src/geometry/PolySet.cc",
               "src/geometry/PolySetBuilder.cc",
               "src/geometry/PolySetUtils.cc",
@@ -194,6 +195,7 @@ def main():
             ]
     glview = [
               "src/glview/Camera.cc",
+              "src/glview/PolySetRenderer.cc",
               "src/glview/ColorMap.cc",
               "src/glview/RenderSettings.cc" ]
     lex_yacc = [

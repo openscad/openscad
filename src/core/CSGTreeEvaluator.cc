@@ -86,14 +86,6 @@ void CSGTreeEvaluator::applyToChildren(State& state, const AbstractNode& node, O
         auto t1l = std::dynamic_pointer_cast<CSGLeaf>(t1);
 	if(t1l != nullptr && t1l->is_2d) {
 	  Transform3d &m1 = t1l->matrix;
-	  for(int i=0;i<4;i++) {
-		  for(int j=0;j<4;j++) {
-			  printf("%g ",m1(i,j));
-		  }
-	  printf("\n");
-	  }
-	  printf("\n");
-
 	  t2->applyMatrix(m1);
 	}
         t = CSGOperation::createCSGNode(op, t1, t2);
