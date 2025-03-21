@@ -1,13 +1,16 @@
 #include "rotate_extrude.h"
 
 #include <algorithm>
+#include <cassert>
 #include <cstddef>
 #include <cmath>
 #include <iterator>
 #include <memory>
+#include <utility>
 #include <vector>
 
 #include "core/RotateExtrudeNode.h"
+#include "geometry/GeometryUtils.h"
 #include "geometry/Geometry.h"
 #include "geometry/PolySetBuilder.h"
 #include "geometry/PolySetUtils.h"
@@ -18,7 +21,7 @@
 #include "utils/degree_trig.h"
 #include "utils/printutils.h"
 
-std::unique_ptr<PolySet> assemblePolySetForManifold(const Polygon2d& polyref,
+static std::unique_ptr<PolySet> assemblePolySetForManifold(const Polygon2d& polyref,
                                                     std::vector<Vector3d>& vertices,
                                                     PolygonIndices& indices, bool closed, int convexity,
                                                     int index_offset, bool flip_faces)
@@ -110,7 +113,7 @@ std::unique_ptr<Geometry> rotatePolygon(const RotateExtrudeNode& node, const Pol
   for (const auto& o : poly.outlines()) {
     slice_stride += o.vertices.size();
   }
-  int num_vertices = slice_stride * num_rings;
+  const int num_vertices = slice_stride * num_rings;
   std::vector<Vector3d> vertices;
   vertices.reserve(num_vertices);
   PolygonIndices indices;
@@ -128,13 +131,14 @@ std::unique_ptr<Geometry> rotatePolygon(const RotateExtrudeNode& node, const Pol
 
   // Calculate all indices
   for (unsigned int slice_idx = 1; slice_idx <= num_sections; slice_idx++) {
-    int prev_slice = (slice_idx - 1) * slice_stride;
-    int curr_slice = slice_idx * slice_stride;
+    const int prev_slice = (slice_idx - 1) * slice_stride;
+    const int curr_slice = slice_idx * slice_stride;
     int curr_outline = 0;
-    for (const auto& o : poly.outlines()) {
-      for (int i = 1; i <= o.vertices.size(); ++i) {
-        int curr_idx = curr_outline + (i % o.vertices.size());
-        int prev_idx = curr_outline + i - 1;
+    for (const auto& outline : poly.outlines()) {
+      assert(outline.vertices.size() > 2);
+      for (int i = 1; i <= outline.vertices.size(); ++i) {
+        const int curr_idx = curr_outline + (i % outline.vertices.size());
+        const int prev_idx = curr_outline + i - 1;
         if (flip_faces) {
           indices.push_back({
             (prev_slice + prev_idx) % num_vertices,
@@ -159,7 +163,7 @@ std::unique_ptr<Geometry> rotatePolygon(const RotateExtrudeNode& node, const Pol
           });
         }
       }
-      curr_outline += o.vertices.size();
+      curr_outline += outline.vertices.size();
     }
   }
 
