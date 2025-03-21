@@ -6,4 +6,4 @@
 #include "geometry/Geometry.h"
 #include "geometry/Polygon2d.h"
 
-std::shared_ptr<Geometry> rotatePolygon(const RotateExtrudeNode& node, const Polygon2d& poly);
+std::unique_ptr<Geometry> rotatePolygon(const RotateExtrudeNode& node, const Polygon2d& poly);

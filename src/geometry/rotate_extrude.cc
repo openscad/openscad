@@ -1,19 +1,67 @@
 #include "rotate_extrude.h"
 
+#include <algorithm>
+#include <cassert>
+#include <cstddef>
 #include <queue>
 #include <boost/logic/tribool.hpp>
 #include <cmath>
+#include <iterator>
+#include <memory>
+#include <utility>
+#include <vector>
 
 #include "GeometryUtils.h"
 #include "core/RotateExtrudeNode.h"
-#include "PolySet.h"
+#include "geometry/GeometryUtils.h"
+#include "geometry/Geometry.h"
 #include "geometry/PolySetBuilder.h"
 #include "geometry/PolySetUtils.h"
+#include "geometry/Polygon2d.h"
+#include "geometry/linalg.h"
+#include "geometry/PolySet.h"
 #include "utils/calc.h"
 #include "utils/degree_trig.h"
-#include "Feature.h"
-
+#include "utils/printutils.h"
 #include "src/geometry/manifold/manifoldutils.h"
+
+static std::unique_ptr<PolySet> assemblePolySetForManifold(const Polygon2d& polyref,
+                                                    std::vector<Vector3d>& vertices,
+                                                    PolygonIndices& indices, bool closed, int convexity,
+                                                    int index_offset, bool flip_faces)
+{
+  auto final_polyset = std::make_unique<PolySet>(3, false);
+  final_polyset->setTriangular(true);
+  final_polyset->setConvexity(convexity);
+  final_polyset->vertices = std::move(vertices);
+  final_polyset->indices = std::move(indices);
+
+  if (!closed) {
+    // Create top and bottom face.
+    auto ps_bottom = polyref.tessellate();  // bottom
+    // Flip vertex ordering for bottom polygon unless flip_faces is true
+    if (!flip_faces) {
+      for (auto& p : ps_bottom->indices) {
+        std::reverse(p.begin(), p.end());
+      }
+    }
+    std::copy(ps_bottom->indices.begin(), ps_bottom->indices.end(),
+              std::back_inserter(final_polyset->indices));
+
+    for (auto& p : ps_bottom->indices) {
+      std::reverse(p.begin(), p.end());
+      for (auto& i : p) {
+        i += index_offset;
+      }
+    }
+    std::copy(ps_bottom->indices.begin(), ps_bottom->indices.end(),
+      std::back_inserter(final_polyset->indices));
+  }
+
+//  LOG(PolySetUtils::polySetToPolyhedronSource(*final_polyset));
+
+  return final_polyset;
+}
 
 Outline2d alterprofile(Outline2d profile,double scalex, double scaley, double
 		origin_x, double origin_y,double offset_x, double offset_y,
@@ -63,15 +111,12 @@ void fill_ring(std::vector<Vector3d>& ring, const std::vector<Vector2d> & vertic
     collapse to one vertex. Any quad using this ring will be collapsed to a triangle.
 
    Currently, we generate a lot of zero-area triangles
-
  */
 std::unique_ptr<Geometry> rotatePolygonSub(const RotateExtrudeNode& node, const Polygon2d& poly, int fragments, size_t fragstart, size_t fragend, bool flip_faces)
 {
 
   PolySetBuilder builder;
   builder.setConvexity(node.convexity);
-
-
 
   double fact=(node.v[2]/node.angle)*(180.0/G_PI);
 
@@ -223,27 +268,73 @@ std::unique_ptr<Geometry> rotatePolygonSub(const RotateExtrudeNode& node, const 
   }
   }
   return builder.build();
+/*
+
+  // Calculate all indices
+  for (unsigned int slice_idx = 1; slice_idx <= num_sections; slice_idx++) {
+    const int prev_slice = (slice_idx - 1) * slice_stride;
+    const int curr_slice = slice_idx * slice_stride;
+    int curr_outline = 0;
+    for (const auto& outline : poly.outlines()) {
+      assert(outline.vertices.size() > 2);
+      for (int i = 1; i <= outline.vertices.size(); ++i) {
+        const int curr_idx = curr_outline + (i % outline.vertices.size());
+        const int prev_idx = curr_outline + i - 1;
+        if (flip_faces) {
+          indices.push_back({
+            (prev_slice + prev_idx) % num_vertices,
+            (curr_slice + curr_idx) % num_vertices,
+            (prev_slice + curr_idx) % num_vertices,
+          });
+          indices.push_back({
+            (curr_slice + curr_idx) % num_vertices,
+            (prev_slice + prev_idx) % num_vertices,
+            (curr_slice + prev_idx) % num_vertices,
+          });  
+        } else {
+          indices.push_back({
+            (prev_slice + curr_idx) % num_vertices,
+            (curr_slice + curr_idx) % num_vertices,
+            (prev_slice + prev_idx) % num_vertices,
+          });
+          indices.push_back({
+            (curr_slice + prev_idx) % num_vertices,
+            (prev_slice + prev_idx) % num_vertices,
+            (curr_slice + curr_idx) % num_vertices,
+          });
+        }
+      }
+      curr_outline += outline.vertices.size();
+    }
+  }
+
+  // TODO(kintel): Without Manifold, we don't have such tessellator available which guarantees to not modify vertices, so we technically may end up with 
+  // broken end caps if we build OpenSCAD without ENABLE_MANIFOLD. Should be fixed, but it's low priority and it's not 
+  // trivial to come up with a test case for this.
+return assemblePolySetForManifold(poly, vertices, indices, closed, node.convexity,
+                                    slice_stride * num_sections, flip_faces);
+*/
 }
 
-std::shared_ptr<Geometry> rotatePolygon(const RotateExtrudeNode& node, const Polygon2d& poly){
-
+std::unique_ptr<Geometry> rotatePolygon(const RotateExtrudeNode& node, const Polygon2d& poly)
+{
   if (node.angle == 0) return nullptr;
+
   double min_x = 0;
   double max_x = 0;
-  double min_y = 0;
-  double max_y = 0;
   unsigned int fragments = 0;
   for (const auto& o : poly.outlines()) {
     for (const auto& v : o.vertices) {
       min_x = fmin(min_x, v[0]);
       max_x = fmax(max_x, v[0]);
-      min_y = fmin(min_y, v[1]);
-      max_y = fmax(max_y, v[1]);
     }
   }
 
-  if (max_x > 0 && min_x < 0){
-    LOG(message_group::Error, "all points for rotate_extrude() must have the same X coordinate sign (range is %1$.2f -> %2$.2f)", min_x, max_x);
+  if (max_x > 0 && min_x < 0) {
+    LOG(
+      message_group::Error,
+      "all points for rotate_extrude() must have the same X coordinate sign (range is %1$.2f -> %2$.2f)",
+      min_x, max_x);
     return nullptr;
   }
   fragments = (unsigned int)std::ceil(fmax(Calc::get_fragments_from_r(max_x - min_x, node.angle, node.fn, node.fs, node.fa) * std::abs(node.angle) / 360, 1));
@@ -255,7 +346,7 @@ std::shared_ptr<Geometry> rotatePolygon(const RotateExtrudeNode& node, const Pol
   {
     if(node.angle < 300) break;	  
     if(node.v.norm() == 0) break;
-    if(node.v[2]/(node.angle/360.0)  >  (max_y-min_y) * 1.5) break;
+    if(node.v[2]/(node.angle/360.0)  >  (max_x-min_x) * 1.5) break;
     safe=false;
 
   } while(false);
@@ -264,7 +355,7 @@ std::shared_ptr<Geometry> rotatePolygon(const RotateExtrudeNode& node, const Pol
   // now create a fragment splitting plan
   size_t splits=ceil(node.angle/300.0);
   int fragstart=0,fragend;
-  std::shared_ptr<ManifoldGeometry> result = nullptr;
+  std::unique_ptr<ManifoldGeometry> result = nullptr;
 
   for(size_t i=0;i<splits;i++) {
     fragend=fragstart+(fragments/splits)+1;    	 
@@ -272,12 +363,10 @@ std::shared_ptr<Geometry> rotatePolygon(const RotateExtrudeNode& node, const Pol
     std::unique_ptr<Geometry> part_u =rotatePolygonSub(node, poly, fragments, fragstart, fragend, flip_faces);	
     std::shared_ptr<Geometry> part_s = std::move(part_u);
     std::shared_ptr<const ManifoldGeometry>term = ManifoldUtils::createManifoldFromGeometry(part_s);
-    if(result == nullptr) result = std::make_shared<ManifoldGeometry>(*term);
+    if(result == nullptr) result = std::make_unique<ManifoldGeometry>(*term);
       else *result = *result + *term;	
     fragstart=fragend-1;
   }
   return  result; 
 }
-
-
 
