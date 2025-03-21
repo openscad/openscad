@@ -18,18 +18,6 @@
 #include "utils/degree_trig.h"
 #include "utils/printutils.h"
 
-namespace {
-
-template <class Iter>
-void fill_ring(Iter ring, const Outline2d& outline, double angle)
-{
-  for (const auto& v : outline.vertices) {
-    ring = Vector3d(v[0] * cos_degrees(angle), v[0] * sin_degrees(angle), v[1]);
-  }
-}
-
-}  // namespace
-
 std::unique_ptr<PolySet> assemblePolySetForManifold(const Polygon2d& polyref,
                                                     std::vector<Vector3d>& vertices,
                                                     PolygonIndices& indices, bool closed, int convexity,
@@ -84,14 +72,10 @@ std::unique_ptr<PolySet> assemblePolySetForManifold(const Polygon2d& polyref,
     collapse to one vertex. Any quad using this ring will be collapsed to a triangle.
 
    Currently, we generate a lot of zero-area triangles
-
  */
 std::unique_ptr<Geometry> rotatePolygon(const RotateExtrudeNode& node, const Polygon2d& poly)
 {
   if (node.angle == 0) return nullptr;
-
-  //  PolySetBuilder builder;
-  //  builder.setConvexity(node.convexity);
 
   double min_x = 0;
   double max_x = 0;
@@ -121,31 +105,6 @@ std::unique_ptr<Geometry> rotatePolygon(const RotateExtrudeNode& node, const Pol
 
   const bool flip_faces = (min_x >= 0 && node.angle > 0) || (min_x < 0 && node.angle < 0);
 
-  //  // If not going all the way around, we have to create faces on each end.
-  //  if (!closed) {
-  //    const auto ps_start = poly.tessellate(); // starting face
-  //    const Transform3d rotx(angle_axis_degrees(90, Vector3d::UnitX()));
-  //    const Transform3d rotz1(angle_axis_degrees(node.start, Vector3d::UnitZ()));
-  //    ps_start->transform(rotz1 * rotx);
-  //    // Flip vertex ordering
-  //    if (!flip_faces) {
-  //      for (auto& p : ps_start->indices) {
-  //        std::reverse(p.begin(), p.end());
-  //      }
-  //    }
-  //    builder.appendPolySet(*ps_start);
-
-  //    auto ps_end = poly.tessellate();
-  //    const Transform3d rotz2(angle_axis_degrees(node.start + node.angle, Vector3d::UnitZ()));
-  //    ps_end->transform(rotz2 * rotx);
-  //    if (flip_faces) {
-  //      for (auto& p : ps_end->indices) {
-  //        std::reverse(p.begin(), p.end());
-  //      }
-  //    }
-  //    builder.appendPolySet(*ps_end);
-  //  }
-
   // slice_stride is the number of vertices in a single ring
   size_t slice_stride = 0;
   for (const auto& o : poly.outlines()) {
@@ -161,7 +120,9 @@ std::unique_ptr<Geometry> rotatePolygon(const RotateExtrudeNode& node, const Pol
   for (unsigned int j = 0; j < num_rings; ++j) {
     for (const auto& outline : poly.outlines()) {
       const double angle = node.start + j * node.angle / num_sections;  // start on the X axis
-      fill_ring(std::back_inserter(vertices), outline, angle);
+      for (const auto& v : outline.vertices) {
+        vertices.emplace_back(v[0] * cos_degrees(angle), v[0] * sin_degrees(angle), v[1]);
+      }
     }
   }
 
@@ -202,34 +163,10 @@ std::unique_ptr<Geometry> rotatePolygon(const RotateExtrudeNode& node, const Pol
     }
   }
 
-  return assemblePolySetForManifold(poly, vertices, indices, closed, node.convexity,
+  // TODO(kintel): Without Manifold, we don't have such tessellator available which guarantees to not modify vertices, so we technically may end up with 
+  // broken end caps if we build OpenSCAD without ENABLE_MANIFOLD. Should be fixed, but it's low priority and it's not 
+  // trivial to come up with a test case for this.
+return assemblePolySetForManifold(poly, vertices, indices, closed, node.convexity,
                                     slice_stride * num_sections, flip_faces);
 
-  //  for (const auto& o : poly.outlines()) {
-  //    std::vector<Vector3d> rings[2];
-  //    rings[0].reserve(o.vertices.size());
-  //    rings[1].reserve(o.vertices.size());
-
-  //    fill_ring(std::back_inserter(rings[0]), o, node.start, flip_faces); // first ring
-  //    for (unsigned int j = 0; j < num_sections; ++j) {
-  //      const double a = node.start + (j + 1) * node.angle / num_sections; // start on the X axis
-  //      fill_ring(std::back_inserter(rings[(j + 1) % 2]), o, a, flip_faces);
-
-  //      for (size_t i = 0; i < o.vertices.size(); ++i) {
-  //        builder.appendPolygon({
-  //                rings[j % 2][(i + 1) % o.vertices.size()],
-  //                rings[(j + 1) % 2][(i + 1) % o.vertices.size()],
-  //                rings[j % 2][i]
-  //        });
-
-  //        builder.appendPolygon({
-  //                rings[(j + 1) % 2][(i + 1) % o.vertices.size()],
-  //                rings[(j + 1) % 2][i],
-  //                rings[j % 2][i]
-  //        });
-  //      }
-  //    }
-  //  }
-
-  //  return builder.build();
 }
