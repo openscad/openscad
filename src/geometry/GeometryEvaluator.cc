@@ -2417,7 +2417,7 @@ Response GeometryEvaluator::visit(State& state, const LinearExtrudeNode& node)
 	if(polygons != nullptr) geom = extrudePolygon(node, *polygons);
 	if(barcode1d != nullptr) geom = extrudeBarcode(node, *barcode1d);
 
-        assert(geom);
+        if(geom == nullptr) geom = {};
       }
     } else {
       geom = smartCacheGet(node, false);

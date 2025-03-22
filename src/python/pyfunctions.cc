@@ -3640,7 +3640,17 @@ PyObject *python_surface_core(const char *file, PyObject *center, PyObject *inve
   auto node = std::make_shared<SurfaceNode>(instance);
 
   std::string fileval = file == NULL ? "" : file;
-  std::string filename = lookup_file(fileval, instance->location().filePath().parent_path().string(), "");
+
+#ifdef _WIN32
+  std::string cur_dir = ".";
+#else 
+#ifdef __APPLE__
+    std::string cur_dir = ".";
+#else
+  std::string cur_dir = get_current_dir_name();
+#endif
+#endif  
+  std::string filename = lookup_file(fileval,  cur_dir, instance->location().filePath().parent_path().string());
   node->filename = filename;
   handle_dep(fs::path(filename).generic_string());
 

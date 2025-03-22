@@ -59,7 +59,6 @@ std::unordered_map<std::string, std::unique_ptr<PrintService>>
 createPrintServices() {
   std::unordered_map<std::string, std::unique_ptr<PrintService>> printServices;
   // TODO: Where to call this, will we need a mutex?
-  printf("++\n");
 #if 0
   try {
     auto networkRequest = NetworkRequest<void>{
@@ -89,7 +88,6 @@ createPrintServices() {
     LOG(message_group::Error, "%1$s", e.getErrorMessage());
   }
 #endif
-  printf("--\n");
   // TODO: Log if wanted
   //    LOG("External print service available: %1$s (upload limit = %2$d MB)",
   //    displayName.toStdString(), fileSizeLimitMB);
