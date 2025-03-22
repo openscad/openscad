@@ -247,7 +247,7 @@ std::shared_ptr<ManifoldGeometry> createManifoldFromPolySet(const PolySet& ps)
 
     auto geom = createManifoldFromSurfaceMesh(m);
     // TODO: preserve color if polyset is fully monochrome, or maybe pass colors around in surface mesh?
-    return geom ? geom : std::make_shared<ManifoldGeometry>();
+    return geom;
   } catch (const std::exception& e) {
     LOG(message_group::Error, "[manifold] CGAL error: %1$s", e.what());
   }
