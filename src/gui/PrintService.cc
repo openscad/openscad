@@ -39,9 +39,13 @@
 #include <QStringList>
 
 #include "io/export.h"
+#include "core/Settings.h"
 #include "utils/printutils.h"
 
+using S = Settings::Settings;
+
 std::mutex PrintService::printServiceMutex;
+PrintServices PrintService::printServices;
 
 namespace {
 
@@ -53,12 +57,8 @@ createPrintService(const QJsonObject &serviceObject) {
   return nullptr;
 }
 
-} // namespace
-
-std::unordered_map<std::string, std::unique_ptr<PrintService>>
-createPrintServices() {
-  std::unordered_map<std::string, std::unique_ptr<PrintService>> printServices;
-  // TODO: Where to call this, will we need a mutex?
+PrintServices createPrintServices() {
+  PrintServices printServices;
   try {
     auto networkRequest = NetworkRequest<void>{
         QUrl{"https://app.openscad.org/print-service.json"}, {200}, 30};
@@ -86,17 +86,31 @@ createPrintServices() {
   } catch (const NetworkException &e) {
     LOG(message_group::Error, "%1$s", e.getErrorMessage());
   }
-  // TODO: Log if wanted
-  //    LOG("External print service available: %1$s (upload limit = %2$d MB)",
-  //    displayName.toStdString(), fileSizeLimitMB);
+  for (const auto& printService : printServices) {
+    const auto& name = printService.second->getDisplayName().toStdString();
+    const auto& limit = printService.second->getFileSizeLimitMB();
+    PRINTDB("External print service available: %1$s (upload limit = %2$d MB)", name % limit);
+    // TODO: Log if wanted
+  }
 
-  return std::move(printServices);
+  return printServices;
 }
 
-const std::unordered_map<std::string, std::unique_ptr<PrintService>> &
-PrintService::getPrintServices() {
-  const static std::unordered_map<std::string, std::unique_ptr<PrintService>>
-      printServices = createPrintServices();
+} // namespace
+
+const PrintServices& PrintService::getPrintServices() {
+  static PrintServices noPrintServices;
+
+  std::lock_guard<std::mutex> guard(printServiceMutex);
+
+  if (!S::enableRemotePrintServices.value()) {
+    return noPrintServices;
+  }
+
+  if (printServices.empty()) {
+    printServices = createPrintServices();
+  }
+
   return printServices;
 }
 

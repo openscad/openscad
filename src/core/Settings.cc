@@ -198,9 +198,12 @@ SettingsEntryEnum<std::string> Settings::modifierNumberScrollWheel("editor", "mo
 }, "Alt");
 
 SettingsEntryString Settings::defaultPrintService("printing", "printService", "NONE");
-
+SettingsEntryBool Settings::enableRemotePrintServices("printing", "enableRemotePrintServices", false);
+SettingsEntryBool Settings::printServiceAlwaysShowDialog("printing", "always-show-dialog", false);
 SettingsEntryString Settings::printServiceName("printing", "printServiceName", "");
-SettingsEntryString Settings::printServiceFileFormat("printing", "printServiceFileFormat", "stl");
+SettingsEntryEnum<std::string> Settings::printServiceFileFormat(
+    "printing", "printServiceFileFormat", createFileFormatItems(fileformat::all3D()),
+    fileformat::info(FileFormat::ASCII_STL).description);
 
 SettingsEntryString Settings::octoPrintUrl("printing", "octoPrintUrl", "");
 SettingsEntryString Settings::octoPrintApiKey("printing", "octoPrintApiKey", "");
