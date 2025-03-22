@@ -261,7 +261,7 @@ void FreetypeRenderer::Params::detect_properties()
   set_segments(text_segments);
 }
 
-const FontFace * FreetypeRenderer::Params::get_font_face() const
+const FontFacePtr FreetypeRenderer::Params::get_font_face() const
 {
   FontCache *cache = FontCache::instance();
   if (!cache->is_init_ok()) {
@@ -270,10 +270,9 @@ const FontFace * FreetypeRenderer::Params::get_font_face() const
     return nullptr;
   }
 
-  const FontFace *face = cache->get_font(font);
-  if (face == nullptr) {
-    LOG(message_group::Warning, loc, documentPath,
-        "Can't get font %1$s", font);
+  const FontFacePtr face = cache->get_font(font);
+  if (!face) {
+    LOG(message_group::Warning, loc, documentPath,"Can't get font %1$s", font);
     return nullptr;
   }
 
@@ -323,8 +322,8 @@ void FreetypeRenderer::Params::set(Parameters& parameters)
 FreetypeRenderer::ShapeResults::ShapeResults(
   const FreetypeRenderer::Params& params)
 {
-  const FontFace * face = params.get_font_face();
-  if (face == nullptr) {
+  const FontFacePtr face = params.get_font_face();
+  if (!face) {
     return;
   }
 
@@ -487,8 +486,8 @@ FreetypeRenderer::FontMetrics::FontMetrics(
 {
   ok = false;
 
-  const FontFace * face = params.get_font_face();
-  if (face == nullptr) {
+  const FontFacePtr face = params.get_font_face();
+  if (!face) {
     return;
   }
 

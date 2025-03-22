@@ -286,18 +286,24 @@ FontInfoList *FontCache::list_fonts() const
   for (int a = 0; a < font_set->nfont; ++a) {
     FcPattern *p = font_set->fonts[a];
 
-    FcValue file_value;
-    FcPatternGet(p, FC_FILE, 0, &file_value);
+    FcChar8 *file_value;
+    if (FcPatternGetString(p, FC_FILE, 0, &file_value) != FcResultMatch) {
+        continue;
+    }
 
-    FcValue family_value;
-    FcPatternGet(p, FC_FAMILY, 0, &family_value);
+    FcChar8 *family_value;
+    if (FcPatternGetString(p, FC_FAMILY, 0, &family_value) != FcResultMatch) {
+        continue;
+    }
 
-    FcValue style_value;
-    FcPatternGet(p, FC_STYLE, 0, &style_value);
+    FcChar8 *style_value;
+    if (FcPatternGetString(p, FC_STYLE, 0, &style_value) != FcResultMatch) {
+        continue;
+    }
 
-    const std::string family((const char *) family_value.u.s);
-    const std::string style((const char *) style_value.u.s);
-    const std::string file((const char *) file_value.u.s);
+    const std::string family((const char *) family_value);
+    const std::string style((const char *) style_value);
+    const std::string file((const char *) file_value);
 
     list->emplace_back(family, style, file, FcPatternHash(p));
   }
@@ -337,15 +343,13 @@ void FontCache::check_cleanup()
       pos = it;
     }
   }
-  const FontFace *face = (*pos).second.first;
+  FontFacePtr face = (*pos).second.first;
   this->cache.erase(pos);
-  FT_Done_Face(face->face_);
-  delete face;
 }
 
-const FontFace * FontCache::get_font(const std::string& font)
+FontFacePtr FontCache::get_font(const std::string& font)
 {
-  const FontFace *face;
+  FontFacePtr face;
   auto it = this->cache.find(font);
   if (it == this->cache.end()) {
     face = find_face(font);
@@ -360,14 +364,14 @@ const FontFace * FontCache::get_font(const std::string& font)
   return face;
 }
 
-const FontFace * FontCache::find_face(const std::string& font) const
+FontFacePtr FontCache::find_face(const std::string& font) const
 {
   std::string trimmed(font);
   boost::algorithm::trim(trimmed);
 
   const std::string lookup = trimmed.empty() ? DEFAULT_FONT : trimmed;
   PRINTDB("font = \"%s\", lookup = \"%s\"", font % lookup);
-  const FontFace *face = find_face_fontconfig(lookup);
+  FontFacePtr face = find_face_fontconfig(lookup);
   if (face) {
     PRINTDB("result = \"%s\", style = \"%s\"", face->face_->family_name % face->face_->style_name);
   } else {
@@ -388,7 +392,7 @@ void FontCache::init_pattern(FcPattern *pattern) const
   FcPatternAdd(pattern, FC_SCALABLE, true_value, true);
 }
 
-const FontFace * FontCache::find_face_fontconfig(const std::string& font) const
+FontFacePtr FontCache::find_face_fontconfig(const std::string& font) const
 {
   FcResult result;
 
@@ -404,25 +408,25 @@ const FontFace * FontCache::find_face_fontconfig(const std::string& font) const
 
   FcPattern *match = FcFontMatch(this->config, pattern, &result);
 
-  FcValue file_value;
-  if (FcPatternGet(match, FC_FILE, 0, &file_value) != FcResultMatch) {
+  FcChar8 *file_value;
+  if (FcPatternGetString(match, FC_FILE, 0, &file_value) != FcResultMatch) {
     return nullptr;
   }
 
-  FcValue font_index;
-  if (FcPatternGet(match, FC_INDEX, 0, &font_index) != FcResultMatch) {
+  int font_index;
+  if (FcPatternGetInteger(match, FC_INDEX, 0, &font_index) != FcResultMatch) {
     return nullptr;
   }
 
-  FcValue font_features;
+  FcChar8 *font_features;
   std::string font_features_str;
-  if (FcPatternGet(match, FC_FONT_FEATURES, 0, &font_features) == FcResultMatch) {
-      font_features_str = (const char *)(font_features.u.s);
+  if (FcPatternGetString(match, FC_FONT_FEATURES, 0, &font_features) == FcResultMatch) {
+      font_features_str = (const char *)(font_features);
       PRINTDB("Found font features: '%s'", font_features_str);
   }
 
   FT_Face ftFace;
-  const FT_Error error = FT_New_Face(this->library, (const char *) file_value.u.s, font_index.u.i, &ftFace);
+  const FT_Error error = FT_New_Face(this->library, (const char *)file_value, font_index, &ftFace);
 
   FcPatternDestroy(pattern);
   FcPatternDestroy(match);
@@ -431,8 +435,9 @@ const FontFace * FontCache::find_face_fontconfig(const std::string& font) const
     return nullptr;
   }
 
-  FontFace *face = new FontFace(ftFace);
-  boost::split(face->features_, font_features_str, boost::is_any_of(";"));
+  std::vector<std::string> features;
+  boost::split(features, font_features_str, boost::is_any_of(";"));
+  FontFacePtr face = std::make_shared<const FontFace>(ftFace, features);
 
   for (int a = 0; a < face->face_->num_charmaps; ++a) {
     FT_CharMap charmap = face->face_->charmaps[a];
@@ -443,21 +448,22 @@ const FontFace * FontCache::find_face_fontconfig(const std::string& font) const
     PRINTDB("Successfully selected unicode charmap: %s/%s", face->face_->family_name % face->face_->style_name);
   } else {
     bool charmap_set = false;
-    if (!charmap_set) charmap_set = try_charmap(face->face_, TT_PLATFORM_MICROSOFT, TT_MS_ID_UNICODE_CS);
-    if (!charmap_set) charmap_set = try_charmap(face->face_, TT_PLATFORM_ISO, TT_ISO_ID_10646);
-    if (!charmap_set) charmap_set = try_charmap(face->face_, TT_PLATFORM_APPLE_UNICODE, -1);
-    if (!charmap_set) charmap_set = try_charmap(face->face_, TT_PLATFORM_MICROSOFT, TT_MS_ID_SYMBOL_CS);
-    if (!charmap_set) charmap_set = try_charmap(face->face_, TT_PLATFORM_MACINTOSH, TT_MAC_ID_ROMAN);
-    if (!charmap_set) charmap_set = try_charmap(face->face_, TT_PLATFORM_ISO, TT_ISO_ID_8859_1);
-    if (!charmap_set) charmap_set = try_charmap(face->face_, TT_PLATFORM_ISO, TT_ISO_ID_7BIT_ASCII);
+    if (!charmap_set) charmap_set = try_charmap(face, TT_PLATFORM_MICROSOFT, TT_MS_ID_UNICODE_CS);
+    if (!charmap_set) charmap_set = try_charmap(face, TT_PLATFORM_ISO, TT_ISO_ID_10646);
+    if (!charmap_set) charmap_set = try_charmap(face, TT_PLATFORM_APPLE_UNICODE, -1);
+    if (!charmap_set) charmap_set = try_charmap(face, TT_PLATFORM_MICROSOFT, TT_MS_ID_SYMBOL_CS);
+    if (!charmap_set) charmap_set = try_charmap(face, TT_PLATFORM_MACINTOSH, TT_MAC_ID_ROMAN);
+    if (!charmap_set) charmap_set = try_charmap(face, TT_PLATFORM_ISO, TT_ISO_ID_8859_1);
+    if (!charmap_set) charmap_set = try_charmap(face, TT_PLATFORM_ISO, TT_ISO_ID_7BIT_ASCII);
     if (!charmap_set) LOG(message_group::Font_Warning, "Could not select a char map for font '%1$s/%2$s'", face->face_->family_name, face->face_->style_name);
   }
 
   return face;
 }
 
-bool FontCache::try_charmap(FT_Face face, int platform_id, int encoding_id) const
+bool FontCache::try_charmap(const FontFacePtr& face_ptr, int platform_id, int encoding_id) const
 {
+  FT_Face face = face_ptr->face_;
   for (int idx = 0; idx < face->num_charmaps; ++idx) {
     FT_CharMap charmap = face->charmaps[idx];
     if ((charmap->platform_id == platform_id) && ((encoding_id < 0) || (charmap->encoding_id == encoding_id))) {

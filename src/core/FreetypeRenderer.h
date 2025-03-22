@@ -90,7 +90,7 @@ public:
       this->documentPath = path;
     }
     void set(Parameters& parameters);
-    [[nodiscard]] const FontFace * get_font_face() const;
+    [[nodiscard]] const FontFacePtr get_font_face() const;
     void detect_properties();
     friend std::ostream& operator<<(std::ostream& stream, const FreetypeRenderer::Params& params) {
       return stream

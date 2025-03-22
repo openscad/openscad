@@ -32,6 +32,7 @@
 #include <string>
 #include <utility>
 #include <vector>
+#include <memory>
 
 #include <ft2build.h>
 #include FT_FREETYPE_H
@@ -80,20 +81,28 @@ struct FontFace
   FT_Face face_;
   std::vector<std::string> features_;
 
-  FontFace(FT_Face face) : face_(face) { }
+  FontFace(FT_Face face, std::vector<std::string> features)
+    : face_(face), features_(std::move(features)) {
+  }
+
+  virtual ~FontFace() {
+    FT_Done_Face(face_);
+  }
 };
+
+using FontFacePtr = std::shared_ptr<const FontFace>;
 
 class FontCache
 {
 public:
   const static std::string DEFAULT_FONT;
-  const static unsigned int MAX_NR_OF_CACHE_ENTRIES = 3;
+  const static unsigned int MAX_NR_OF_CACHE_ENTRIES = 5;
 
   FontCache();
   virtual ~FontCache() = default;
 
   [[nodiscard]] bool is_init_ok() const;
-  const FontFace * get_font(const std::string& font);
+  FontFacePtr get_font(const std::string& font);
   [[nodiscard]] bool is_windows_symbol_font(const FT_Face& face) const;
   void register_font_file(const std::string& path);
   void clear();
@@ -107,7 +116,7 @@ public:
   static void registerProgressHandler(InitHandlerFunc *handler, void *userdata = nullptr);
 
 private:
-  using cache_entry_t = std::pair<const FontFace *, std::time_t>;
+  using cache_entry_t = std::pair<FontFacePtr, std::time_t>;
   using cache_t = std::map<std::string, cache_entry_t>;
 
   static FontCache *self;
@@ -127,8 +136,8 @@ private:
   void add_font_dir(const std::string& path);
   void init_pattern(FcPattern *pattern) const;
 
-  [[nodiscard]] const FontFace * find_face(const std::string& font) const;
-  [[nodiscard]] const FontFace * find_face_fontconfig(const std::string& font) const;
-  bool try_charmap(FT_Face face, int platform_id, int encoding_id) const;
+  [[nodiscard]] FontFacePtr find_face(const std::string& font) const;
+  [[nodiscard]] FontFacePtr find_face_fontconfig(const std::string& font) const;
+  bool try_charmap(const FontFacePtr& face_ptr, int platform_id, int encoding_id) const;
 };
 
