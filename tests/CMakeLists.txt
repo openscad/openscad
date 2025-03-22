@@ -938,9 +938,9 @@ list(REMOVE_ITEM PREVIEWMANIFOLDTEST_FILES
 
 list(APPEND MANIFOLDHARDWARNING_FILES
   ${TEST_SCAD_DIR}/3D/features/polyhedron-soup.scad
-  ${TEST_SCAD_DIR}/3D/issues/issue5135b.scad
   ${TEST_SCAD_DIR}/3D/issues/issue5741.scad
   ${TEST_SCAD_DIR}/3D/issues/issue5555.scad
+  ${TEST_SCAD_DIR}/3D/issues/issue5555b.scad
 )
 
 ##############################
