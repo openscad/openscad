@@ -149,6 +149,25 @@ std::shared_ptr<ManifoldGeometry> createManifoldFromTriangularPolySet(const Poly
   mesh.runIndex.push_back(mesh.triVerts.size());
 
   auto mani = manifold::Manifold(mesh);
+
+  if (mani.Status() != Error::NoError) {
+    PRINTD("Manifold creation initially failed");
+    bool merged = mesh.Merge();
+    mani = manifold::Manifold(mesh);
+    if (mani.Status() == Error::NoError && merged) {
+      PRINTD("..succeeded after merge");
+    }
+    else if (mani.Status() != Error::NoError && merged) {
+      PRINTD("..still failing after merge");
+    }
+    else if (mani.Status() != Error::NoError && !merged) {
+      PRINTD("..unable to merge");
+    }
+    else if (mani.Status() == Error::NoError && !merged) {
+      PRINTD("..unable to merge, but somehow succeeded anyway?");
+    }
+  }
+
   return std::make_shared<ManifoldGeometry>(mani, originalIDs, originalIDToColor);
 }
 
@@ -228,7 +247,7 @@ std::shared_ptr<ManifoldGeometry> createManifoldFromPolySet(const PolySet& ps)
 
     auto geom = createManifoldFromSurfaceMesh(m);
     // TODO: preserve color if polyset is fully monochrome, or maybe pass colors around in surface mesh?
-    return geom;
+    return geom ? geom : std::make_shared<ManifoldGeometry>();
   } catch (const std::exception& e) {
     LOG(message_group::Error, "[manifold] CGAL error: %1$s", e.what());
   }
