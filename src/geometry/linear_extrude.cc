@@ -155,24 +155,6 @@ Outline2d splitOutlineByFn(
   assert(o2.vertices.size() <= fn);
   return o2;
 }
-
-Outline2d alterprofile(Outline2d profile,double scalex, double scaley, double origin_x, double origin_y,double offset_x, double offset_y, double rot)
-{
-	Outline2d result;
-	double ang=rot*3.14/180.0;
-	double c=cos(ang);
-	double s=sin(ang);
-	int n=profile.vertices.size();
-	for(int i=0;i<n;i++) {
-		double x=(profile.vertices[i][0]-origin_x)*scalex;
-		double y=(profile.vertices[i][1]-origin_y)*scaley;
-		double xr = (x*c - y*s)+origin_x + offset_x;
-		double yr = (y*c + x*s)+origin_y + offset_y;
-		result.vertices.push_back(Vector2d(xr,yr));
-	}
-	return result;
-}
-
 void  append_linear_vertex(PolySetBuilder &builder,const Outline2d *face, int index, Vector3d h)
 {
 	builder.addVertex(builder.vertexIndex(Vector3d(

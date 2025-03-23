@@ -2044,20 +2044,19 @@ Response GeometryEvaluator::visit(State& state, const TransformNode& node)
   return Response::ContinueTraversal;
 }
 
-Outline2d alterprofile(Outline2d profile,double scalex, double scaley, double origin_x, double origin_y,double offset_x, double offset_y, double rot)
-
+VectorOfVector2d alterprofile(VectorOfVector2d vertices,double scalex, double scaley, double origin_x, double origin_y,double offset_x, double offset_y, double rot)
 {
-	Outline2d result;
+	VectorOfVector2d result;
 	double ang=rot*3.14/180.0;
 	double c=cos(ang);
 	double s=sin(ang);
-	int n=profile.vertices.size();
+	int n=vertices.size();
 	for(int i=0;i<n;i++) {
-		double x=(profile.vertices[i][0]-origin_x)*scalex;
-		double y=(profile.vertices[i][1]-origin_y)*scaley;
+		double x=(vertices[i][0]-origin_x)*scalex;
+		double y=(vertices[i][1]-origin_y)*scaley;
 		double xr = (x*c - y*s)+origin_x + offset_x;
 		double yr = (y*c + x*s)+origin_y + offset_y;
-		result.vertices.push_back(Vector2d(xr,yr));
+		result.push_back(Vector2d(xr,yr));
 	}
 	return result;
 }
@@ -2254,11 +2253,11 @@ static std::unique_ptr<Geometry> extrudePolygon(const PathExtrudeNode& node, con
 	if(node.profile_func != NULL)
 	{
 		Outline2d tmpx=python_getprofile(node.profile_func, node.fn, length_os[i%m]);
-        	profilemod = alterprofile(tmpx,cur_scalex,cur_scaley,node.origin_x, node.origin_y,0, 0, cur_twist);
+        	profilemod.vertices = alterprofile(tmpx.vertices,cur_scalex,cur_scaley,node.origin_x, node.origin_y,0, 0, cur_twist);
 	}
 	else
 	#endif  
-        profilemod = alterprofile(profile2d,cur_scalex,cur_scaley,node.origin_x, node.origin_y,0, 0, cur_twist);
+        profilemod.vertices = alterprofile(profile2d.vertices,cur_scalex,cur_scaley,node.origin_x, node.origin_y,0, 0, cur_twist);
 
 	unsigned int n=profilemod.vertices.size();
 	curPt = path_os[i%m];

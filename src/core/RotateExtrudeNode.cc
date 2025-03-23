@@ -128,8 +128,10 @@ std::string RotateExtrudeNode::toString() const
  }
  if(this->twist_func != NULL) {
     stream << ", twist_func = " << rand() ;
- }
+ } else
 #endif  
+    stream << "twist = " << this->twist << ", ";
+
     stream <<
     "$fn = " << this->fn << ", "
     "$fa = " << this->fa << ", "

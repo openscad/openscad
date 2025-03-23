@@ -3,15 +3,12 @@
 #include <algorithm>
 #include <cassert>
 #include <cstddef>
-#include <queue>
-#include <boost/logic/tribool.hpp>
 #include <cmath>
 #include <iterator>
 #include <memory>
 #include <utility>
 #include <vector>
 
-#include "GeometryUtils.h"
 #include "core/RotateExtrudeNode.h"
 #include "geometry/GeometryUtils.h"
 #include "geometry/Geometry.h"
@@ -63,38 +60,6 @@ static std::unique_ptr<PolySet> assemblePolySetForManifold(const Polygon2d& poly
   return final_polyset;
 }
 
-Outline2d alterprofile(Outline2d profile,double scalex, double scaley, double
-		origin_x, double origin_y,double offset_x, double offset_y,
-		double rot);
-
-void  append_rotary_vertex(PolySetBuilder &builder,const Outline2d *face, int index, double ang)
-{
-	double a=ang*G_PI / 180.0;
-	builder.addVertex(builder.vertexIndex(Vector3d(
-			face->vertices[index][0]*cos(a),
-			face->vertices[index][0]*sin(a),
-			face->vertices[index][1])));
-}
-
-
-void fill_ring(std::vector<Vector3d>& ring, const std::vector<Vector2d> & vertices, double a, Vector3d dv, double fact, double xmid,bool flip)
-{
-  unsigned int l = vertices.size() - 1;
-  for (unsigned int i = 0; i < vertices.size(); ++i) {
-    unsigned int j = flip?l - i : i;	  
-    //
-    // cos(atan(x))=1/sqrt(1+x*x)
-    // sin(atan(x))=x/sqrt(1+x*x)
-    double tan_pitch= fact/(std::isnan(xmid)?vertices[j][0]:xmid);
-    double cf=1/sqrt(1+tan_pitch*tan_pitch);
-    double sf=cf*tan_pitch;
-    Vector3d centripedal=Vector3d( cos_degrees(a), sin_degrees(a) ,0);
-    Vector3d progress=Vector3d(-sin_degrees(a)*cf, cos_degrees(a)*cf, sf);
-    Vector3d upwards=centripedal.cross(progress);
-    ring[i] =  centripedal * vertices[j][0] + upwards * vertices[j][1] + dv;
-  }
-}
-
 /*!
    Input to extrude should be clean. This means non-intersecting, correct winding order
    etc., the input coming from a library like Clipper.
@@ -112,163 +77,92 @@ void fill_ring(std::vector<Vector3d>& ring, const std::vector<Vector2d> & vertic
 
    Currently, we generate a lot of zero-area triangles
  */
+VectorOfVector2d alterprofile(VectorOfVector2d vertices,double scalex, double scaley, double origin_x, double origin_y,double offset_x, double offset_y, double rot);
+
 std::unique_ptr<Geometry> rotatePolygonSub(const RotateExtrudeNode& node, const Polygon2d& poly, int fragments, size_t fragstart, size_t fragend, bool flip_faces)
 {
-
-  PolySetBuilder builder;
-  builder.setConvexity(node.convexity);
-
   double fact=(node.v[2]/node.angle)*(180.0/G_PI);
 
+  // # of sections. For closed rotations, # vertices is thus fragments*outline_size. For open
+  // rotations # vertices is (fragments+1)*outline_size.
+  const auto num_sections = fragend - fragstart;
+  const bool closed = node.angle == 360 && node.v.norm() == 0;
+  // # of rings of vertices
+  const int num_rings = num_sections + (closed ? 0 : 1);
 
+  // slice_stride is the number of vertices in a single ring
+  size_t slice_stride = 0;
+  int num_vertices = 0;
 #ifdef ENABLE_PYTHON  
   if(node.profile_func != NULL)
   {
-	fragments=node.fn; // TODO fix
-	Outline2d lastFace;
-	Outline2d curFace;
-	double last_ang=0, cur_ang=0;
-	double last_twist=0.0, cur_twist=0.0;
-
-        if(node.twist_func != NULL) {
-          last_twist = python_doublefunc(node.twist_func, 0);
-        } else last_twist=0;
-	
-
-	lastFace = alterprofile(python_getprofile(node.profile_func, node.fn, 0),1.0, 1.0,node.origin_x, node.origin_y, node.offset_x, node.offset_y, last_twist);
-	if(node.angle != 360 || node.v.norm() > 0) {
-    	  auto ps = poly.tessellate(); // starting face
-          double xmid=NAN;
-          if(node.method == "centered") {
-            double xmin, xmax;
-            xmin=xmax=ps->vertices[0][0];
-            for(const auto &v : ps->vertices) {
-              if(v[0] < xmin) xmin=v[0];	    
-              if(v[0] > xmax) xmax=v[0];	    
-            }
-            xmid=(xmin+xmax)/2;
-          } 
-
-          std::vector<Vector3d> ring;
-          ring.resize(3);
-          for (auto& p : ps->indices) {
-            std::vector<Vector2d> vertices;
-            for(int j=0;j<3;j++)
-            vertices.push_back(ps->vertices[p[j]].head<2>());
-
-            fill_ring(ring , vertices, node.angle*fragstart/fragments, node.v*fragstart/fragments, fact, xmid, !flip_faces); // close start
-            builder.appendPolygon(ring);
-
-            fill_ring(ring, vertices, node.angle*fragend/fragments   , node.v*fragend/fragments  , fact, xmid, flip_faces); // close end
-            builder.appendPolygon(ring);
-          }
-	}
-  	for (size_t i = fragstart + 1; i <= fragend; i++) {
-		cur_ang=i*node.angle/fragments;
-
-		if(node.twist_func != NULL) {
-		  cur_twist = python_doublefunc(node.twist_func, i/(double) fragments);
-		} else
-		cur_twist=i*node.twist /fragments;
-
-		curFace = alterprofile(python_getprofile(node.profile_func, node.fn, cur_ang), 1.0, 1.0 , node.origin_x, node.origin_y, node.offset_x, node.offset_y , cur_twist);
-
-		if(lastFace.vertices.size() == curFace.vertices.size()) {
-			unsigned int n=lastFace.vertices.size();
-			for(unsigned int j=0;j<n;j++) {
-				builder.beginPolygon(3);
-				append_rotary_vertex(builder,&lastFace,(j+0)%n, last_ang);
-				append_rotary_vertex(builder,&lastFace,(j+1)%n, last_ang);
-				append_rotary_vertex(builder,&curFace,(j+1)%n, cur_ang);
-				builder.beginPolygon(3);
-				append_rotary_vertex(builder,&lastFace,(j+0)%n, last_ang);
-				append_rotary_vertex(builder,&curFace,(j+1)%n, cur_ang);
-				append_rotary_vertex(builder,&curFace,(j+0)%n, cur_ang);
-			}
-		}
-
-		lastFace = curFace;
-		last_ang = cur_ang;
-		last_twist = cur_twist;
-	}
-       }
+    Outline2d outl = python_getprofile(node.profile_func, node.fn, 0);
+      slice_stride += outl.vertices.size();
+  }
   else
 #endif
   {	  
-  if (node.angle != 360 || node.v.norm() > 0) {
-    auto ps = poly.tessellate(); // starting face
-    double xmid=NAN;
-    if(node.method == "centered") {
-      double xmin, xmax;
-      xmin=xmax=ps->vertices[0][0];
-      for(const auto &v : ps->vertices) {
-        if(v[0] < xmin) xmin=v[0];	    
-        if(v[0] > xmax) xmax=v[0];	    
-      }
-      xmid=(xmin+xmax)/2;
-    }  
-
-    std::vector<Vector3d> ring;
-    ring.resize(3);
-    for (auto& p : ps->indices) {
-      std::vector<Vector2d> vertices;
-      for(int j=0;j<3;j++)
-        vertices.push_back(ps->vertices[p[j]].head<2>());
-
-      fill_ring(ring , vertices, node.angle*fragstart/fragments, node.v*fragstart/fragments, fact, xmid, !flip_faces); // close start
-      builder.appendPolygon(ring);
-
-      fill_ring(ring, vertices, node.angle*fragend/fragments   , node.v*fragend/fragments  , fact, xmid, flip_faces); // close end
-      builder.appendPolygon(ring);
+    for (const auto& o : poly.outlines()) {
+      slice_stride += o.vertices.size();
     }
   }
+  num_vertices = slice_stride * num_rings;
 
-  for (const auto& o : poly.outlines()) {
-    std::vector<Vector3d> rings[2];
-    rings[0].resize(o.vertices.size());
-    rings[1].resize(o.vertices.size());
+  std::vector<Vector3d> vertices;
+  vertices.reserve(num_vertices);
+  PolygonIndices indices;
+  indices.reserve(slice_stride * num_rings * 2);  // sides + endcaps if needed
 
-    double xmid=NAN;
+  for (unsigned int j = fragstart; j <= fragend; ++j) {
+    Vector3d dv = node.v*j/fragments;
 
-    if(node.method == "centered") {
-      double xmin, xmax;
-      xmin=xmax=o.vertices[0][0];
-      for(const auto &v : o.vertices) {
-        if(v[0] < xmin) xmin=v[0];	    
-        if(v[0] > xmax) xmax=v[0];	    
+    for (const auto& outline : poly.outlines()) {
+      const double angle = node.start + j * node.angle / fragments;  // start on the X axis
+      std::vector<Vector2d> vertices2d;
+      double cur_twist=0;
+#ifdef ENABLE_PYTHON
+      if(node.profile_func != NULL)
+      {
+        fragments=node.fn;
+        Outline2d lastFace;
+        Outline2d curFace;
+        Outline2d outl = python_getprofile(node.profile_func, node.fn, j/(double) fragments);
+	vertices2d = outl.vertices;
       }
-      xmid=(xmin+xmax)/2;
-    }  
-    Vector3d dv = node.v*fragstart/fragments;
-    double a;
-    if (node.angle == 360 && node.v.norm() == 0) a=180;
-     else a = fragstart * node.angle / fragments;
+#endif
+      else vertices2d = outline.vertices;
+#ifdef ENABLE_PYTHON	      
+      if(node.twist_func != NULL) cur_twist = python_doublefunc(node.twist_func, 0); 
+      else
+#endif
+      cur_twist=node.twist *j/ fragments;
+      vertices2d = alterprofile(vertices2d, 1.0, 1.0,node.origin_x, node.origin_y, node.offset_x, node.offset_y, cur_twist);
+      double xmid=NAN;
+      if(node.method == "centered") {
+        double xmin, xmax;
+        xmin=xmax=vertices2d[0][0];
+        for(const auto &v : vertices2d) {
+          if(v[0] < xmin) xmin=v[0];	    
+          if(v[0] > xmax) xmax=v[0];	    
+        }
+        xmid=(xmin+xmax)/2;
+      } 
 
-    fill_ring(rings[fragstart % 2 ], o.vertices, a, dv,fact,  xmid, flip_faces); // first ring
-
-    for (size_t j = fragstart; j < fragend; ++j) {
-      dv = node.v*(j+1)/fragments;
-      if (node.angle == 360 && node.v.norm() == 0) a = 180 - ((j + 1) % fragments) * 360.0 / fragments; // start on the -X axis, for legacy support
-      else a = (j + 1) * node.angle / fragments; // start on the X axis
-      fill_ring(rings[(j + 1) % 2], o.vertices, a, dv, fact, xmid, flip_faces);
-      for (size_t i = 0; i < o.vertices.size(); ++i) {
-        builder.appendPolygon({
-                rings[j % 2][(i + 1) % o.vertices.size()],
-                rings[(j + 1) % 2][(i + 1) % o.vertices.size()],
-                rings[j % 2][i]
-        });                
-
-        builder.appendPolygon({
-                rings[(j + 1) % 2][(i + 1) % o.vertices.size()],
-                rings[(j + 1) % 2][i],
-                rings[j % 2][i]
-        });
-      }
-    }
-  }
-  }
-  return builder.build();
-/*
+      for (const auto& v : vertices2d) {
+        double tan_pitch= fact/(std::isnan(xmid)?v[0]:xmid);
+        //
+        // cos(atan(x))=1/sqrt(1+x*x)
+        // sin(atan(x))=x/sqrt(1+x*x)
+        double cf=1/sqrt(1+tan_pitch*tan_pitch);
+        double sf=cf*tan_pitch;
+        Vector3d centripedal=Vector3d( cos_degrees(angle), sin_degrees(angle) ,0);
+        Vector3d progress=Vector3d(-sin_degrees(angle)*cf, cos_degrees(angle)*cf, sf);
+        Vector3d upwards=centripedal.cross(progress);
+        Vector3d res =  centripedal * v[0] + upwards * v[1] + dv;
+        vertices.emplace_back(res);
+      } // vertices
+    } // outlines
+  } // fragments/rings
 
   // Calculate all indices
   for (unsigned int slice_idx = 1; slice_idx <= num_sections; slice_idx++) {
@@ -313,7 +207,6 @@ std::unique_ptr<Geometry> rotatePolygonSub(const RotateExtrudeNode& node, const 
   // trivial to come up with a test case for this.
 return assemblePolySetForManifold(poly, vertices, indices, closed, node.convexity,
                                     slice_stride * num_sections, flip_faces);
-*/
 }
 
 std::unique_ptr<Geometry> rotatePolygon(const RotateExtrudeNode& node, const Polygon2d& poly)

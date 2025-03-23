@@ -82,6 +82,7 @@ std::vector<Vector4d> calcTriangleNormals(const std::vector<Vector3d> &vertices,
 std::vector<IndexedFace> mergeTriangles(const std::vector<IndexedFace> polygons,const std::vector<Vector4d> normals,std::vector<Vector4d> &newNormals, std::vector<int> &faceParents, const std::vector<Vector3d> &vert);
 std::unordered_map<EdgeKey, EdgeVal, boost::hash<EdgeKey> > createEdgeDb(const std::vector<IndexedFace> &indices);
 
+VectorOfVector2d alterprofile(VectorOfVector2d vertices,double scalex, double scaley, double origin_x, double origin_y,double offset_x, double offset_y, double rot);
 // This evaluates a node tree into concrete geometry usign an underlying geometry engine
 // FIXME: Ideally, each engine should implement its own subtype. Instead we currently have
 // multiple embedded engines with varoius methods of selecting the right one.
