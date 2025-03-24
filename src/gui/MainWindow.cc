@@ -1145,7 +1145,7 @@ void MainWindow::compile(bool reload, bool forcedone)
       // if we haven't yet compiled the current text.
       else {
         auto current_doc = activeEditor->toPlainText();
-        if (current_doc.size() && lastCompiledDoc.size() == 0) {
+        if (current_doc.size() != lastCompiledDoc.size()) {
           shouldcompiletoplevel = true;
         }
       }
@@ -1160,6 +1160,7 @@ void MainWindow::compile(bool reload, bool forcedone)
         shouldcompiletoplevel = true;
       }
     }
+
     // Parsing and dependency handling must run to completion even with stop on errors to prevent auto
     // reload picking up where it left off, thwarting the stop, so we turn off exceptions in PRINT.
     no_exceptions_for_warnings();
@@ -1315,6 +1316,8 @@ void MainWindow::instantiateRoot()
 
   const std::filesystem::path doc(activeEditor->filepath.toStdString());
   this->tree.setDocumentPath(doc.parent_path().string());
+
+  renderedEditor = activeEditor;
 
   if (this->rootFile) {
     // Evaluate CSG tree
@@ -2131,6 +2134,7 @@ bool MainWindow::checkEditorModified()
 
 void MainWindow::actionReloadRenderPreview()
 {
+  std::cout << "MAINWINDOW: actionReloadRender" << std::endl;
   if (GuiLocker::isLocked()) return;
   GuiLocker::lock();
   autoReloadTimer->stop();
@@ -2173,10 +2177,20 @@ void MainWindow::prepareCompile(const char *afterCompileSlot, bool procevents, b
 
 void MainWindow::actionRenderPreview()
 {
-  static bool preview_requested;
+  std::cout << "MAINWINDOW: actionRenderPreview" << std::endl;
 
+  static bool preview_requested;
   preview_requested = true;
-  if (GuiLocker::isLocked()) return;
+
+  if (GuiLocker::isLocked())
+  {
+      // if the action was called when the gui was locked, we must request it one more time
+      // however, it's not possible to call it directly NOR make the loop
+      // it must be called from the mainloop
+      QTimer::singleShot(0, this, &MainWindow::actionRenderPreview);
+      return;
+  }
+
   GuiLocker::lock();
   preview_requested = false;
 
@@ -2185,12 +2199,6 @@ void MainWindow::actionRenderPreview()
 
   prepareCompile("csgRender", !animateDock->isVisible(), true);
   compile(false, false);
-  if (preview_requested) {
-    // if the action was called when the gui was locked, we must request it one more time
-    // however, it's not possible to call it directly NOR make the loop
-    // it must be called from the mainloop
-    QTimer::singleShot(0, this, &MainWindow::actionRenderPreview);
-  }
 }
 
 void MainWindow::csgRender()
@@ -2382,7 +2390,6 @@ void MainWindow::actionRenderDone(const std::shared_ptr<const Geometry>& root_ge
     renderCompleteSoundEffect->play();
   }
 
-  std::cout << " SETTING A NEW RENDERED EDITOR  " << std::endl;
   renderedEditor = activeEditor;
   activeEditor->contentsRendered = true;
   compileEnded();
@@ -2476,8 +2483,6 @@ void MainWindow::rightClick(QPoint position)
     clearAllSelectionIndicators();
     tracemenu.exec(this->qglview->mapToGlobal(position));
   } else {
-      std::cout << "EDITORS " << renderedEditor << " vs " << activeEditor << std::endl;
-
       clearAllSelectionIndicators();
   }
 }
@@ -2620,7 +2625,6 @@ void MainWindow::setSelection(int index)
   {
     auto editorPathName = seditor->filepath.toStdString();
     auto locationPathName = location.filePath().generic_string();
-    std::cout << "CURRENT FILES: " << editorPathName << " vs " << locationPathName << std::endl;
     if(editorPathName == locationPathName)
     {
         editor = seditor;
@@ -2629,18 +2633,15 @@ void MainWindow::setSelection(int index)
 
   if(editor==nullptr)
   {
-    std::cout << "INVALID RENDERED EDITOR MODE 1 " << std::endl;
     return;
   }
 
   // removes all previsly configure selection indicators.
   editor->clearAllSelectionIndicators();
   editor->show();
-  std::cout << "A " << std::endl;
 
   std::vector<std::shared_ptr<const AbstractNode>> nodesSameModule{};
   findNodesWithSameMod(rootNode, selected_node, nodesSameModule);
-  std::cout << "B " << std::endl;
 
   // highlight in the text editor all the text fragment of the hierarchy of object with same mode.
   for (const auto& element : nodesSameModule) {
@@ -2648,15 +2649,12 @@ void MainWindow::setSelection(int index)
       setSelectionIndicatorStatus(editor, element->index(), EditorSelectionIndicatorStatus::IMPACTED);
     }
   }
-  std::cout << "C " << std::endl;
 
   // highlight in the text editor only the fragment correponding to the selected stack.
   // this step must be done after all the impacted element have been marked.
   setSelectionIndicatorStatus(editor, currentlySelectedObject, EditorSelectionIndicatorStatus::SELECTED);
 
   editor->setCursorPosition(line - 1, column - 1);
-  std::cout << "D " << std::endl;
-
 }
 
 /**
@@ -3117,6 +3115,9 @@ bool MainWindow::isEmpty()
 
 void MainWindow::editorContentChanged()
 {
+  // this slot is called when the content of the active editor changed.
+  // it rely on the activeEditor member to pick the new data.
+
   auto current_doc = activeEditor->toPlainText();
   if (current_doc != lastCompiledDoc) {
     animateWidget->editorContentChanged();
@@ -3397,20 +3398,16 @@ QString MainWindow::getCurrentFileName() const
 
 void MainWindow::onTabManagerAboutToCloseEditor(EditorInterface *closingEditor)
 {
-    std::cout << "ABOUT TO CLOSE AND EDITOR" << std::endl;
-    std::cout << "closing" << closingEditor->filepath.toStdString() << std::endl;
-    std::cout << "closing" << renderedEditor->filepath.toStdString() << std::endl;
-
     if(closingEditor == renderedEditor)
     {
-        std::cout << "CLOSE RENDERED" << std::endl;
+        std::cout << "Mainwindow: cLOSING RENDERED" << std::endl;
         renderedEditor = nullptr;
 
         // Invalidate renderers before we kill the CSG tree
-        this->qglview->setRenderer(nullptr);
-      #ifdef ENABLE_OPENCSG
+       this->qglview->setRenderer(nullptr);
+       #ifdef ENABLE_OPENCSG
         this->previewRenderer = nullptr;
-      #endif
+       #endif
         this->thrownTogetherRenderer = nullptr;
 
         // Remove previous CSG tree
@@ -3422,18 +3419,18 @@ void MainWindow::onTabManagerAboutToCloseEditor(EditorInterface *closingEditor)
 
         this->rootNode.reset();
         this->tree.setRoot(nullptr);
+        this->qglview->update();
     }
 }
 
-void MainWindow::onTabManagerEditorChanged(EditorInterface *neweditor)
+void MainWindow::onTabManagerEditorChanged(EditorInterface *newEditor)
 {
+  activeEditor = newEditor;
 
-  activeEditor = neweditor;
+  if (newEditor == nullptr) return;
 
-  if (neweditor == nullptr) return;
-
-  parameterDock->setWidget(neweditor->parameterWidget);
-  editActionUndo->setEnabled(neweditor->canUndo());
+  parameterDock->setWidget(newEditor->parameterWidget);
+  editActionUndo->setEnabled(newEditor->canUndo());
 
   const QString name = getCurrentFileName();
   setWindowTitle(name);
@@ -3443,6 +3440,12 @@ void MainWindow::onTabManagerEditorChanged(EditorInterface *neweditor)
   animateDock->setNameSuffix(name);
   fontListDock->setNameSuffix(name);
   viewportControlDock->setNameSuffix(name);
+
+  // When renderedEditor is null,
+  if(renderedEditor == nullptr){
+      std::cout << "Let's set this editor as active one: " << activeEditor->filepath.toStdString() << std::endl;
+      actionRenderPreview();
+  }
 }
 
 Dock *MainWindow::findVisibleDockToActivate(int offset) const
