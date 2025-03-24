@@ -976,7 +976,7 @@ set_test_config(Bugs FILES ${BUGS_FILES} PREFIXES
   stlrendertest stlrendermanifoldtest
   stlrenderforcetest stlrendermanifoldforcetest
   binstlrenderforcetest binstlrendermanifoldforcetest
-  offrendertest)
+  offrendertest renderforcemanifoldtest)
 
 # Re-enable "fixed by manifold" bugs for Manifold
 set_test_config(Bugs FILES
@@ -1087,6 +1087,7 @@ add_cmdline_test(rendermanifoldtest            OPENSCAD SUFFIX png FILES ${RENDE
 add_cmdline_test(rendermanifoldtest-different  OPENSCAD SUFFIX png FILES ${SCADFILES_DIFFERENT_MANIFOLD_RENDER_EXPECTATIONS} ARGS --render --backend=manifold)
 add_cmdline_test(previewmanifoldtest           OPENSCAD SUFFIX png FILES ${PREVIEWMANIFOLDTEST_FILES} EXPECTEDDIR previewtest ARGS --backend=manifold)
 add_cmdline_test(previewmanifoldtest-different OPENSCAD SUFFIX png FILES ${SCADFILES_DIFFERENT_MANIFOLD_PREVIEW_EXPECTATIONS} ARGS --backend=manifold)
+add_cmdline_test(renderforcemanifoldtest       OPENSCAD SUFFIX png FILES ${TEST_SCAD_DIR}/Bugs/import-single-triangle.scad ARGS --render=force --backend=manifold)
 # This tests that no warnings are issued when using Manifold for converting or processing geometry
 add_cmdline_test(renderforcemanifoldtest-hardwarnings OPENSCAD SUFFIX png FILES ${MANIFOLDHARDWARNING_FILES} EXPECTEDDIR rendertest ARGS --render=force --backend=manifold --hardwarnings)
 endif()
