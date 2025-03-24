@@ -2428,7 +2428,6 @@ void MainWindow::rightClick(QPoint position)
   if (!this->qglview->renderer) {
     return;
   }
-
   // Nothing to select
   if (!this->rootProduct) {
     return;
@@ -2437,16 +2436,13 @@ void MainWindow::rightClick(QPoint position)
   // Select the object at mouse coordinates
   const int index = this->qglview->pickObject(position);
   std::deque<std::shared_ptr<const AbstractNode>> path;
-
   const std::shared_ptr<const AbstractNode> result = this->rootNode->getNodeByID(index, path);
 
   if (result) {
-
     // Create context menu with the backtrace
     QMenu tracemenu(this);
     std::stringstream ss;
     for (auto& step : path) {
-
       // Skip certain node types
       if (step->name() == "root") {
         continue;
@@ -3396,6 +3392,8 @@ QString MainWindow::getCurrentFileName() const
 
 void MainWindow::onTabManagerAboutToCloseEditor(EditorInterface *closingEditor)
 {
+  // This slots is in charge of closing properly the preview when the
+  // associated editor is about to close.
   if (closingEditor == renderedEditor) {
     renderedEditor = nullptr;
 
