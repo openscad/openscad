@@ -2478,6 +2478,10 @@ void MainWindow::rightClick(QPoint position)
       }
     }
     clearAllSelectionIndicators();
+
+    // Before starting the
+    GuiLocker::lock();
+    connect(&tracemenu, &QMenu::aboutToHide, [](){ GuiLocker::unlock(); });
     tracemenu.exec(this->qglview->mapToGlobal(position));
   } else {
     clearAllSelectionIndicators();
