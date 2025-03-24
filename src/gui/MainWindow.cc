@@ -431,7 +431,7 @@ MainWindow::MainWindow(const QStringList& filenames) :
   // File menu
   connect(this->fileActionNewWindow, &QAction::triggered, this, &MainWindow::actionNewWindow);
   connect(this->fileActionNew, &QAction::triggered, tabManager, &TabManager::actionNew);
-  connect(this->fileActionOpenWindow, &QAction::triggered, this,&MainWindow::actionOpenWindow);
+  connect(this->fileActionOpenWindow, &QAction::triggered, this, &MainWindow::actionOpenWindow);
   connect(this->fileActionOpen, &QAction::triggered, this, &MainWindow::actionOpen);
   connect(this->fileActionSave, &QAction::triggered, this, &MainWindow::actionSave);
   connect(this->fileActionSaveAs, &QAction::triggered, this, &MainWindow::actionSaveAs);
@@ -615,7 +615,9 @@ MainWindow::MainWindow(const QStringList& filenames) :
   //find and replace panel
   connect(this->findTypeComboBox, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &MainWindow::selectFindType);
   connect(this->findInputField, &QWordSearchField::textChanged, this, &MainWindow::findString);
-  connect(this->findInputField, &QWordSearchField::returnPressed, this->findNextButton, [this]{this->findNextButton->animateClick();});
+  connect(this->findInputField, &QWordSearchField::returnPressed, this->findNextButton, [this] {
+    this->findNextButton->animateClick();
+  });
   find_panel->installEventFilter(this);
   if (QApplication::clipboard()->supportsFindBuffer()) {
     connect(this->findInputField, &QWordSearchField::textChanged, this, &MainWindow::updateFindBuffer);
@@ -630,7 +632,9 @@ MainWindow::MainWindow(const QStringList& filenames) :
   connect(this->cancelButton, &QPushButton::clicked, this, &MainWindow::hideFind);
   connect(this->replaceButton, &QPushButton::clicked, this, &MainWindow::replace);
   connect(this->replaceAllButton, &QPushButton::clicked, this, &MainWindow::replaceAll);
-  connect(this->replaceInputField, &QLineEdit::returnPressed, this->replaceButton, [this]{this->replaceButton->animateClick();});
+  connect(this->replaceInputField, &QLineEdit::returnPressed, this->replaceButton, [this] {
+    this->replaceButton->animateClick();
+  });
   addKeyboardShortCut(this->viewerToolBar->actions());
   addKeyboardShortCut(this->editortoolbar->actions());
 
@@ -1649,15 +1653,15 @@ void MainWindow::actionPythonCreateVenv()
   if (!venvDir.exists()) {
     // Should not happen, but just in case double check...
     QMessageBox::critical(this, _("Create Virtual Environment"),
-        "Directory does not exist. Can't create virtual environment.",
-        QMessageBox::Ok);
+                          "Directory does not exist. Can't create virtual environment.",
+                          QMessageBox::Ok);
     return;
   }
 
   if (!venvDir.isEmpty()) {
     QMessageBox::critical(this, _("Create Virtual Environment"),
-        "Directory is not empty. Can't create virtual environment.",
-        QMessageBox::Ok);
+                          "Directory is not empty. Can't create virtual environment.",
+                          QMessageBox::Ok);
     return;
   }
 
@@ -1670,15 +1674,15 @@ void MainWindow::actionPythonCreateVenv()
     Settings::Settings::visit(SettingsWriter());
     LOG("Python virtual environment creation successfull.");
     QMessageBox::information(this, _("Create Virtual Environment"),
-        "Virtual environment created, please restart OpenSCAD to activate.",
-        QMessageBox::Ok);
+                             "Virtual environment created, please restart OpenSCAD to activate.",
+                             QMessageBox::Ok);
   } else {
     LOG("Python virtual environment creation failed.");
     QMessageBox::critical(this, _("Create Virtual Environment"),
-        "Virtual environment creation failed.",
-        QMessageBox::Ok);
+                          "Virtual environment creation failed.",
+                          QMessageBox::Ok);
   }
-#endif
+#endif // ifdef ENABLE_PYTHON
 }
 
 void MainWindow::actionPythonSelectVenv()
@@ -1693,10 +1697,10 @@ void MainWindow::actionPythonSelectVenv()
     Settings::SettingsPython::pythonVirtualEnv.setValue(venvDir.toStdString());
     Settings::Settings::visit(SettingsWriter());
     QMessageBox::information(this, _("Select Virtual Environment"),
-        "Virtual environment selected, please restart OpenSCAD to activate.",
-        QMessageBox::Ok);
+                             "Virtual environment selected, please restart OpenSCAD to activate.",
+                             QMessageBox::Ok);
   }
-#endif
+#endif // ifdef ENABLE_PYTHON
 }
 
 void MainWindow::actionSaveACopy()
@@ -2068,10 +2072,10 @@ void MainWindow::parseTopLevelDocument()
     initPython(binDir, this->animateWidget->getAnimTval());
 
     if (venv.empty()) {
-        LOG("Running %1$s without venv.", python_version());
+      LOG("Running %1$s without venv.", python_version());
     } else {
-        const auto& v = Settings::SettingsPython::pythonVirtualEnv.value();
-        LOG("Running %1$s in venv '%2$s'.", python_version(), v);
+      const auto& v = Settings::SettingsPython::pythonVirtualEnv.value();
+      LOG("Running %1$s in venv '%2$s'.", python_version(), v);
     }
     auto error = evaluatePython(fulltext_py, false);
     if (error.size() > 0) LOG(message_group::Error, Location::NONE, "", error.c_str());
@@ -2134,7 +2138,6 @@ bool MainWindow::checkEditorModified()
 
 void MainWindow::actionReloadRenderPreview()
 {
-  std::cout << "MAINWINDOW: actionReloadRender" << std::endl;
   if (GuiLocker::isLocked()) return;
   GuiLocker::lock();
   autoReloadTimer->stop();
@@ -2177,18 +2180,15 @@ void MainWindow::prepareCompile(const char *afterCompileSlot, bool procevents, b
 
 void MainWindow::actionRenderPreview()
 {
-  std::cout << "MAINWINDOW: actionRenderPreview" << std::endl;
-
   static bool preview_requested;
   preview_requested = true;
 
-  if (GuiLocker::isLocked())
-  {
-      // if the action was called when the gui was locked, we must request it one more time
-      // however, it's not possible to call it directly NOR make the loop
-      // it must be called from the mainloop
-      QTimer::singleShot(0, this, &MainWindow::actionRenderPreview);
-      return;
+  if (GuiLocker::isLocked()) {
+    // if the action was called when the gui was locked, we must request it one more time
+    // however, it's not possible to call it directly NOR make the loop
+    // it must be called from the mainloop
+    QTimer::singleShot(0, this, &MainWindow::actionRenderPreview);
+    return;
   }
 
   GuiLocker::lock();
@@ -2362,7 +2362,7 @@ void MainWindow::actionRenderDone(const std::shared_ptr<const Geometry>& root_ge
     LOG("Rendering finished.");
 
     this->rootGeom = root_geom;
-    // Choose PolySetRenderer for PolySet and Polygon2d, and for Manifold since we 
+    // Choose PolySetRenderer for PolySet and Polygon2d, and for Manifold since we
     // know that all geometries are convertible to PolySet.
     if (RenderSettings::inst()->backend3D == RenderBackend3D::ManifoldBackend ||
         std::dynamic_pointer_cast<const PolySet>(this->rootGeom) ||
@@ -2437,18 +2437,20 @@ void MainWindow::rightClick(QPoint position)
   // Select the object at mouse coordinates
   const int index = this->qglview->pickObject(position);
   std::deque<std::shared_ptr<const AbstractNode>> path;
+
   const std::shared_ptr<const AbstractNode> result = this->rootNode->getNodeByID(index, path);
 
   if (result) {
+
     // Create context menu with the backtrace
     QMenu tracemenu(this);
     std::stringstream ss;
     for (auto& step : path) {
+
       // Skip certain node types
       if (step->name() == "root") {
         continue;
       }
-
       auto location = step->modinst->location();
       ss.str("");
 
@@ -2468,7 +2470,7 @@ void MainWindow::rightClick(QPoint position)
            << location.fileName().substr(libpath.string().length() + 1) << ":"
            << location.firstLine() << ")";
       } else {
-        auto relativeFilename = location.filePath().filename() ;
+        auto relativeFilename = location.filePath().filename();
         ss << name << " (" << relativeFilename << ":" << location.firstLine() << ")";
       }
 
@@ -2479,11 +2481,10 @@ void MainWindow::rightClick(QPoint position)
         connect(action, &QAction::hovered, this, &MainWindow::onHoveredObjectInSelectionMenu);
       }
     }
-
     clearAllSelectionIndicators();
     tracemenu.exec(this->qglview->mapToGlobal(position));
   } else {
-      clearAllSelectionIndicators();
+    clearAllSelectionIndicators();
   }
 }
 
@@ -2501,8 +2502,8 @@ void MainWindow::clearAllSelectionIndicators()
 }
 
 static void findNodesWithSameMod(const std::shared_ptr<const AbstractNode>& tree,
-                          const std::shared_ptr<const AbstractNode>& node_mod,
-                          std::vector<std::shared_ptr<const AbstractNode>>& nodes){
+                                 const std::shared_ptr<const AbstractNode>& node_mod,
+                                 std::vector<std::shared_ptr<const AbstractNode>>& nodes){
   if (node_mod->modinst == tree->modinst) {
     nodes.push_back(tree);
   }
@@ -2619,20 +2620,17 @@ void MainWindow::setSelection(int index)
     tabManager->open(QString::fromStdString(file));
   }
 
-  EditorInterface* editor = nullptr;
+  EditorInterface *editor = nullptr;
   // tabManager->getEditorForFile(location.fileName());
-  for(auto seditor : tabManager->editorList)
-  {
+  for (auto seditor : tabManager->editorList) {
     auto editorPathName = seditor->filepath.toStdString();
     auto locationPathName = location.filePath().generic_string();
-    if(editorPathName == locationPathName)
-    {
-        editor = seditor;
+    if (editorPathName == locationPathName) {
+      editor = seditor;
     }
   }
 
-  if(editor==nullptr)
-  {
+  if (editor == nullptr) {
     return;
   }
 
@@ -3398,29 +3396,27 @@ QString MainWindow::getCurrentFileName() const
 
 void MainWindow::onTabManagerAboutToCloseEditor(EditorInterface *closingEditor)
 {
-    if(closingEditor == renderedEditor)
-    {
-        std::cout << "Mainwindow: cLOSING RENDERED" << std::endl;
-        renderedEditor = nullptr;
+  if (closingEditor == renderedEditor) {
+    renderedEditor = nullptr;
 
-        // Invalidate renderers before we kill the CSG tree
-       this->qglview->setRenderer(nullptr);
+    // Invalidate renderers before we kill the CSG tree
+    this->qglview->setRenderer(nullptr);
        #ifdef ENABLE_OPENCSG
-        this->previewRenderer = nullptr;
+    this->previewRenderer = nullptr;
        #endif
-        this->thrownTogetherRenderer = nullptr;
+    this->thrownTogetherRenderer = nullptr;
 
-        // Remove previous CSG tree
-        this->absoluteRootNode.reset();
+    // Remove previous CSG tree
+    this->absoluteRootNode.reset();
 
-        this->csgRoot.reset();
-        this->normalizedRoot.reset();
-        this->rootProduct.reset();
+    this->csgRoot.reset();
+    this->normalizedRoot.reset();
+    this->rootProduct.reset();
 
-        this->rootNode.reset();
-        this->tree.setRoot(nullptr);
-        this->qglview->update();
-    }
+    this->rootNode.reset();
+    this->tree.setRoot(nullptr);
+    this->qglview->update();
+  }
 }
 
 void MainWindow::onTabManagerEditorChanged(EditorInterface *newEditor)
@@ -3441,10 +3437,9 @@ void MainWindow::onTabManagerEditorChanged(EditorInterface *newEditor)
   fontListDock->setNameSuffix(name);
   viewportControlDock->setNameSuffix(name);
 
-  // When renderedEditor is null,
-  if(renderedEditor == nullptr){
-      std::cout << "Let's set this editor as active one: " << activeEditor->filepath.toStdString() << std::endl;
-      actionRenderPreview();
+  // If there is no renderedEditor we request for a new preview.
+  if (renderedEditor == nullptr) {
+    actionRenderPreview();
   }
 }
 

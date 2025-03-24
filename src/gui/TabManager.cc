@@ -57,11 +57,10 @@ QTabBar::ButtonPosition TabManager::getClosingButtonPosition()
 
 void TabManager::setTabsCloseButtonVisibility(int indice, bool isVisible)
 {
-    // Depending on the system the closing button can be on the right or left side
-    // of the tab header.
-    auto button = tabWidget->tabBar()->tabButton(indice, getClosingButtonPosition());
-    if(button)
-        button->setVisible(isVisible);
+  // Depending on the system the closing button can be on the right or left side
+  // of the tab header.
+  auto button = tabWidget->tabBar()->tabButton(indice, getClosingButtonPosition());
+  if (button) button->setVisible(isVisible);
 }
 
 QWidget *TabManager::getTabContent()
@@ -467,7 +466,6 @@ void TabManager::setTabModified(EditorInterface *edt)
 
 void TabManager::openTabFile(const QString& filename)
 {
-  par->setCurrentOutput();
 #ifdef ENABLE_PYTHON
   if (boost::algorithm::ends_with(filename, ".py")) {
     std::string templ = "from openscad import *\n";
@@ -487,23 +485,7 @@ void TabManager::openTabFile(const QString& filename)
     setTabName(nullptr);
     editor->setPlainText(cmd.arg(filename));
   }
-  par->fileChangedOnDisk();   // force cached autoReloadId to update
-  bool opened = refreshDocument();
-
-  if (opened) {   // only try to parse if the file opened
-    par->hideCurrentOutput();     // Initial parse for customizer, hide any errors to avoid duplication
-    try {
-      par->parseTopLevelDocument();
-    } catch (const HardWarningException&) {
-      par->exceptionCleanup();
-    } catch (const std::exception& ex) {
-      par->UnknownExceptionCleanup(ex.what());
-    } catch (...) {
-      par->UnknownExceptionCleanup();
-    }
-    par->lastCompiledDoc = ""; // undo the damage so F4 works
-    par->clearCurrentOutput();
-  }
+  refreshDocument();
 }
 
 void TabManager::setTabName(const QString& filename, EditorInterface *edt)
@@ -533,7 +515,6 @@ void TabManager::setTabName(const QString& filename, EditorInterface *edt)
 bool TabManager::refreshDocument()
 {
   bool file_opened = false;
-  par->setCurrentOutput();
   if (!editor->filepath.isEmpty()) {
     QFile file(editor->filepath);
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
@@ -553,7 +534,6 @@ bool TabManager::refreshDocument()
       file_opened = true;
     }
   }
-  par->setCurrentOutput();
   return file_opened;
 }
 
