@@ -376,7 +376,7 @@ private:
   std::shared_ptr<CSGNode> csgRoot; // Result of the CSGTreeEvaluator
   std::shared_ptr<CSGNode> normalizedRoot; // Normalized CSG tree
   std::shared_ptr<CSGProducts> rootProduct;
-  std::shared_ptr<CSGProducts> highlightsProducts;
+  std::shared_ptr<CSGProducts> compileTimeHighlightedProducts;
   std::shared_ptr<CSGProducts> backgroundProducts;
   int currentlySelectedObject {-1};
 

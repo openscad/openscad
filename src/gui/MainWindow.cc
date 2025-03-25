@@ -1424,15 +1424,15 @@ void MainWindow::compileCSG()
       LOG("Compiling highlights (%1$d CSG Trees)...", highlight_terms.size());
       this->processEvents();
 
-      this->highlightsProducts = std::make_shared<CSGProducts>();
+      this->compileTimeHighlightedProducts = std::make_shared<CSGProducts>();
       for (const auto& highlight_term : highlight_terms) {
         auto nterm = normalizer.normalize(highlight_term);
         if (nterm) {
-          this->highlightsProducts->import(nterm);
+            this->compileTimeHighlightedProducts->import(nterm);
         }
       }
     } else {
-      this->highlightsProducts.reset();
+        this->compileTimeHighlightedProducts.reset();
     }
 
     const auto& background_terms = csgrenderer.getBackgroundNodes();
@@ -1461,13 +1461,14 @@ void MainWindow::compileCSG()
     else {
       LOG("Normalized tree has %1$d elements!",
           (this->rootProduct ? this->rootProduct->size() : 0));
-      this->previewRenderer = std::make_shared<OpenCSGRenderer>(this->rootProduct,
-                                                                this->highlightsProducts,
+       auto openCSGRenderer = std::make_shared<OpenCSGRenderer>(this->rootProduct,
                                                                 this->backgroundProducts);
+       openCSGRenderer->setHighlights(this->compileTimeHighlightedProducts);
+       this->previewRenderer = openCSGRenderer;
     }
 #endif // ifdef ENABLE_OPENCSG
     this->thrownTogetherRenderer = std::make_shared<ThrownTogetherRenderer>(this->rootProduct,
-                                                                            this->highlightsProducts,
+                                                                            this->compileTimeHighlightedProducts,
                                                                             this->backgroundProducts);
     LOG("Compile and preview finished.");
     renderStatistic.printRenderingTime();
@@ -2756,7 +2757,7 @@ void MainWindow::actionDisplayCSGProducts()
                   .arg(QString::fromStdString(this->csgRoot ? this->csgRoot->dump() : NA),
                        QString::fromStdString(this->normalizedRoot ? this->normalizedRoot->dump() : NA),
                        QString::fromStdString(this->rootProduct ? this->rootProduct->dump() : NA),
-                       QString::fromStdString(this->highlightsProducts ? this->highlightsProducts->dump() : NA),
+                       QString::fromStdString(this->compileTimeHighlightedProducts ? this->compileTimeHighlightedProducts->dump() : NA),
                        QString::fromStdString(this->backgroundProducts ? this->backgroundProducts->dump() : NA)));
 
   e->resize(600, 400);

@@ -90,12 +90,41 @@ OpenCSGVBOPrim *createVBOPrimitive(
 
 OpenCSGRenderer::OpenCSGRenderer(
     std::shared_ptr<CSGProducts> root_products,
-    std::shared_ptr<CSGProducts> highlights_products,
     std::shared_ptr<CSGProducts> background_products)
     : root_products_(std::move(root_products)),
-      highlights_products_(std::move(highlights_products)),
       background_products_(std::move(background_products)) {
   opencsg_vertex_shader_code_ = ShaderUtils::loadShaderSource("OpenCSG.vert");
+}
+
+void OpenCSGRenderer::setHighlights(std::shared_ptr<CSGProducts> highLightedProducts)
+{
+    highLightingMode.clear();
+
+    if(!highLightedProducts)
+        return;
+
+    highlights_products_ = highLightedProducts;
+
+    for (auto i = 0; i < highlights_products_->products.size(); ++i) {
+        const auto &product = highlights_products_->products[i];
+
+        auto setHighlightsMode = [&](std::vector<CSGChainObject> csgobjects){
+            for (const auto &csgobj : csgobjects) {
+                if (csgobj.leaf->polyset) {
+                    if (csgobj.flags == CSGNode::Flag::FLAG_HIGHLIGHT_SELECTED) {
+                        highLightingMode[csgobj.leaf->index] = ColorMode::HIGHLIGHT_SELECTED;
+                    } else if (csgobj.flags == CSGNode::Flag::FLAG_HIGHLIGHT_IMPACTED) {
+                        highLightingMode[csgobj.leaf->index] = ColorMode::HIGHLIGHT_IMPACTED;
+                    } else if(csgobj.flags == CSGNode::Flag::FLAG_HIGHLIGHT) {
+                        highLightingMode[csgobj.leaf->index] = ColorMode::HIGHLIGHT;
+                    }
+                }
+            }
+        };
+
+        setHighlightsMode(product.intersections);
+        setHighlightsMode(product.subtractions);
+    }
 }
 
 void OpenCSGRenderer::prepare(const ShaderUtils::ShaderInfo *shaderinfo) {
