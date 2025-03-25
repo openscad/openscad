@@ -137,9 +137,9 @@ Renderer::Renderer()
   // MATERIAL is set by this object's colorscheme
   // CUTOUT is set by this object's colorscheme
   colormap_[ColorMode::HIGHLIGHT] = {255, 81, 81, 128};
-  colormap_[ColorMode::HIGHLIGHT_SELECTED] =   {174, 255, 170, 128};
-  colormap_[ColorMode::HIGHLIGHT_IMPACTED] = {255, 170, 214, 128};
-  colormap_[ColorMode::HIGHLIGHT_BACKGROUND] = {180, 180, 180, 128};
+  colormap_[ColorMode::HIGHLIGHT_SELECTED] =   {174, 255, 170, 170};
+  colormap_[ColorMode::HIGHLIGHT_IMPACTED] = {255, 170, 214, 170};
+  colormap_[ColorMode::HIGHLIGHT_BACKGROUND] = {180, 180, 180, 170};
   colormap_[ColorMode::BACKGROUND] = {180, 180, 180, 128};
   // MATERIAL_EDGES is set by this object's colorscheme
   // CUTOUT_EDGES is set by this object's colorscheme
