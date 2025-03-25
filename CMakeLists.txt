@@ -1077,6 +1077,7 @@ set(GUI_SOURCES
   src/gui/EventFilter.h
   src/gui/Export3mfDialog.cc
   src/gui/ExportPdfDialog.cc
+  src/gui/OctoPrintApiKeyDialog.cc
   src/gui/FontListDialog.cc
   src/gui/FontListTableView.cc
   src/gui/InitConfigurator.cc
@@ -1145,6 +1146,7 @@ set(GUI_HEADERS
     src/gui/EventFilter.h
     src/gui/Export3mfDialog.h
     src/gui/ExportPdfDialog.h
+    src/gui/OctoPrintApiKeyDialog.h
     src/gui/FontList.h
     src/gui/FontListDialog.h
     src/gui/FontListTableView.h
@@ -1198,6 +1200,7 @@ set(GUI_UIS
     src/gui/ErrorLog.ui
     src/gui/Export3mfDialog.ui
     src/gui/ExportPdfDialog.ui
+    src/gui/OctoPrintApiKeyDialog.ui
     src/gui/FontList.ui
     src/gui/FontListDialog.ui
     src/gui/LaunchingScreen.ui

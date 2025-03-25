@@ -6,6 +6,8 @@
     <file>icons/chokusen-dark/svg/chokusen-animate-pause.svg</file>
     <file>icons/chokusen-dark/svg/chokusen-animate-play.svg</file>
     <file>icons/chokusen-dark/svg/chokusen-axes.svg</file>
+    <file>icons/chokusen-dark/svg/chokusen-circle-checkmark.svg</file>
+    <file>icons/chokusen-dark/svg/chokusen-circle-error.svg</file>
     <file>icons/chokusen-dark/svg/chokusen-crosshairs.svg</file>
     <file>icons/chokusen-dark/svg/chokusen-down.svg</file>
     <file>icons/chokusen-dark/svg/chokusen-edit-copy.svg</file>
@@ -24,6 +26,7 @@
     <file>icons/chokusen-dark/svg/chokusen-file.svg</file>
     <file>icons/chokusen-dark/svg/chokusen-folder.svg</file>
     <file>icons/chokusen-dark/svg/chokusen-indent.svg</file>
+    <file>icons/chokusen-dark/svg/chokusen-loading.svg</file>
     <file>icons/chokusen-dark/svg/chokusen-measure-angle.svg</file>
     <file>icons/chokusen-dark/svg/chokusen-measure-distance.svg</file>
     <file>icons/chokusen-dark/svg/chokusen-new.svg</file>
