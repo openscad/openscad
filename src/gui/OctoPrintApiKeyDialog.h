@@ -1,6 +1,6 @@
 /*
  *  OpenSCAD (www.openscad.org)
- *  Copyright (C) 2009-2019 Clifford Wolf <clifford@clifford.at> and
+ *  Copyright (C) 2009-2025 Clifford Wolf <clifford@clifford.at> and
  *                          Marius Kintel <marius@kintel.net>
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -26,32 +26,42 @@
 
 #pragma once
 
-#include <utility>
-#include <string>
-#include <vector>
-
-#include <QFile>
+#include <QIcon>
+#include <QTimer>
+#include <QDialog>
 #include <QString>
-#include <QJsonDocument>
 
-#include "gui/Network.h"
+#include "gui/qtgettext.h" // IWYU pragma: keep
+#include "ui_OctoPrintApiKeyDialog.h"
 
-class OctoPrint
+class OctoPrintApiKeyDialog : public QDialog, public Ui::OctoPrintApiKeyDialog
 {
-public:
-  OctoPrint() = default;
-  virtual ~OctoPrint() = default;
+  Q_OBJECT;
 
-  const QString url() const;
-  const std::string apiKey() const;
-  const std::pair<const QString, const QString> getVersion() const;
-  const QString requestApiKey() const;
-  const std::pair<int, QString> pollApiKeyApproval(const QString& token) const;
-  const std::vector<std::pair<const QString, const QString>> getSlicers() const;
-  const std::vector<std::pair<const QString, const QString>> getProfiles(const QString& slicer) const;
-  const QString upload(const QString& exportFileName, const QString& fileName, const network_progress_func_t& progress_func) const;
-  void slice(const QString& fileUrl, const QString& slicer, const QString& profile, const bool select, const bool print) const;
+public:
+  OctoPrintApiKeyDialog();
+
+  int exec() override;
+  const QString& getApiKey() const { return apiKey; }
+
+private slots:
+  void timeout();
+  void animationUpdate();
+  void on_pushButtonRetry_clicked();
+  void on_pushButtonOk_clicked();
+  void on_pushButtonCancel_clicked();
 
 private:
-  const QJsonDocument getJsonData(const QString& endpoint) const;
+  void startRequest();
+  void paintIcon(const QIcon& icon, const qreal rotation = 0.0);
+
+  QString token;
+  QString apiKey;
+
+  QTimer networkTimer;
+  QTimer animationTimer;
+
+  QIcon iconOk;
+  QIcon iconError;
+	QIcon iconWaiting;
 };

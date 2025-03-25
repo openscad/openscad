@@ -32,6 +32,7 @@
 #include <QFontComboBox>
 #include <QMainWindow>
 #include <QObject>
+#include <QDialog>
 #include <QSizePolicy>
 #include <QSpacerItem>
 #include <QString>
@@ -54,6 +55,7 @@
 #include <QListWidget>
 #include <QListWidgetItem>
 #include <boost/algorithm/string.hpp>
+#include "OctoPrintApiKeyDialog.h"
 #include "geometry/GeometryCache.h"
 #include "gui/AutoUpdater.h"
 #include "Feature.h"
@@ -71,6 +73,8 @@
 #include "gui/PrintService.h"
 
 #include <string>
+
+using S = Settings::Settings;
 
 Preferences *Preferences::instance = nullptr;
 
@@ -258,9 +262,6 @@ void Preferences::init() {
     this->comboBoxOctoPrintSlicingProfile->addItem(profileDesc, QVariant{profile});
   }
 
-  this->checkBoxAlwaysShowExportPdfDialog->setChecked(Settings::SettingsExportPdf::exportPdfAlwaysShowDialog.value());
-  this->checkBoxAlwaysShowExport3mfDialog->setChecked(Settings::SettingsExport3mf::export3mfAlwaysShowDialog.value());
-
   emit editorConfigChanged();
 }
 
@@ -268,6 +269,13 @@ Preferences::~Preferences()
 {
   removeDefaultSettings();
   instance = nullptr;
+}
+
+void Preferences::update()
+{
+  this->checkBoxAlwaysShowExportPdfDialog->setChecked(Settings::SettingsExportPdf::exportPdfAlwaysShowDialog.value());
+  this->checkBoxAlwaysShowExport3mfDialog->setChecked(Settings::SettingsExport3mf::export3mfAlwaysShowDialog.value());
+  this->checkBoxAlwaysShowPrintServiceDialog->setChecked(Settings::Settings::printServiceAlwaysShowDialog.value());
 }
 
 /**
@@ -387,14 +395,13 @@ void Preferences::setupFeaturesPage()
 void Preferences::setup3DPrintPage()
 {
   const auto& currentPrintService = Settings::Settings::defaultPrintService.value();
-  const auto currentPrintServiceName =
-      QString::fromStdString(Settings::Settings::printServiceName.value());
-
+  const auto currentPrintServiceName = QString::fromStdString(Settings::Settings::printServiceName.value());
+  instance->checkBoxEnableRemotePrintServices->setChecked(Settings::Settings::enableRemotePrintServices.value());
   instance->comboBoxDefaultPrintService->clear();
   const std::unordered_map<std::string, QString> services = {
       {"NONE", _("NONE")},
       {"OCTOPRINT", _("OctoPrint")},
-      {"LOCALSLICER", _("Local Application")},
+      {"LOCAL_APPLICATION", _("Local Application")},
   };
 
   instance->comboBoxDefaultPrintService->addItem(services.at("NONE"),
@@ -402,8 +409,7 @@ void Preferences::setup3DPrintPage()
   for (const auto &printServiceItem : PrintService::getPrintServices()) {
     const auto &key = printServiceItem.first;
     const auto &printService = printServiceItem.second;
-    const auto settingValue =
-        QStringList{"PRINT_SERVICE", QString::fromStdString(key)};
+    const auto settingValue = QStringList{"PRINT_SERVICE", QString::fromStdString(key)};
     const auto displayName = QString(printService->getDisplayName());
     instance->comboBoxDefaultPrintService->addItem(displayName, settingValue);
     if (key == currentPrintServiceName.toStdString()) {
@@ -413,8 +419,8 @@ void Preferences::setup3DPrintPage()
   }
   instance->comboBoxDefaultPrintService->addItem(services.at("OCTOPRINT"),
                                                  QStringList{"OCTOPRINT", ""});
-  instance->comboBoxDefaultPrintService->addItem(services.at("LOCALSLICER"),
-                                                 QStringList{"LOCALSLICER", ""});
+  instance->comboBoxDefaultPrintService->addItem(services.at("LOCAL_APPLICATION"),
+                                                 QStringList{"LOCAL_APPLICATION", ""});
 
   auto it = services.find(currentPrintService);
   if (it != services.end()) {
@@ -855,6 +861,12 @@ void Preferences::on_enableHidapiTraceCheckBox_toggled(bool checked)
   writeSettings();
 }
 
+void Preferences::on_checkBoxEnableRemotePrintServices_toggled(bool checked)
+{
+  S::enableRemotePrintServices.setValue(checked);
+  writeSettings();
+}
+
 void Preferences::on_comboBoxDefaultPrintService_activated(int)
 {
   QStringList currentPrintServiceList = comboBoxDefaultPrintService->currentData().toStringList();
@@ -883,6 +895,17 @@ void Preferences::on_lineEditOctoPrintApiKey_editingFinished()
 void Preferences::on_pushButtonOctoPrintApiKey_clicked()
 {
   this->lineEditOctoPrintApiKey->setEchoMode(this->pushButtonOctoPrintApiKey->isChecked() ? QLineEdit::EchoMode::Normal : QLineEdit::EchoMode::PasswordEchoOnEdit);
+}
+
+void Preferences::on_pushButtonOctoPrintRequestApiKey_clicked()
+{
+  OctoPrintApiKeyDialog dialog;
+  if (dialog.exec() == QDialog::Accepted) {
+    const auto& apiKey = dialog.getApiKey();
+    this->lineEditOctoPrintApiKey->setText(apiKey);
+    S::octoPrintApiKey.setValue(apiKey.toStdString());
+    writeSettings();
+  }
 }
 
 void Preferences::on_comboBoxOctoPrintFileFormat_activated(int val)
@@ -1151,6 +1174,12 @@ void Preferences::on_checkBoxAlwaysShowExportPdfDialog_toggled(bool state)
 void Preferences::on_checkBoxAlwaysShowExport3mfDialog_toggled(bool state)
 {
   Settings::SettingsExport3mf::export3mfAlwaysShowDialog.setValue(state);
+  writeSettings();
+}
+
+void Preferences::on_checkBoxAlwaysShowPrintServiceDialog_toggled(bool state)
+{
+  Settings::Settings::printServiceAlwaysShowDialog.setValue(state);
   writeSettings();
 }
 

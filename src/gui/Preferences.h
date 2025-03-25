@@ -35,6 +35,7 @@ public:
 
   QVariant getValue(const QString& key) const;
   void init();
+  void update();
   void apply_win() const;
   void updateGUI();
   void fireEditorConfigChanged() const;
@@ -132,6 +133,7 @@ public slots:
   void on_checkBoxEnableLineNumbers_toggled(bool);
 
   // Print
+  void on_checkBoxEnableRemotePrintServices_toggled(bool);
   void on_comboBoxDefaultPrintService_activated(int);
   void on_pushButtonOctoPrintCheckConnection_clicked();
   void on_pushButtonOctoPrintSlicingEngine_clicked();
@@ -144,6 +146,7 @@ public slots:
   void on_lineEditOctoPrintApiKey_editingFinished();
   void on_pushButtonOctoPrintApiKey_clicked();
   void on_textEditPythonImportList_textChanged();
+  void on_pushButtonOctoPrintRequestApiKey_clicked();
   void on_lineEditLocalAppExecutable_editingFinished();
   void on_toolButtonLocalAppSelectExecutable_clicked();
   void on_lineEditLocalAppTempDir_editingFinished();
@@ -166,6 +169,7 @@ public slots:
   // Dialogs
   void on_checkBoxAlwaysShowExportPdfDialog_toggled(bool);
   void on_checkBoxAlwaysShowExport3mfDialog_toggled(bool);
+  void on_checkBoxAlwaysShowPrintServiceDialog_toggled(bool);
 
 signals:
   void requestRedraw() const;

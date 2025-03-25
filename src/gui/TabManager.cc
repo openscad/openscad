@@ -231,7 +231,7 @@ void TabManager::createTab(const QString& filename)
 
   connect(scintillaEditor, &ScintillaEditor::hyperlinkIndicatorClicked, this, &TabManager::onHyperlinkIndicatorClicked);
 
-  int idx = tabWidget->addTab(editor, _("Untitled.scad"));
+  tabWidget->addTab(editor, _("Untitled.scad"));
   if (!editorList.isEmpty()) {
     tabWidget->setCurrentWidget(editor);     // to prevent emitting of currentTabChanged signal twice for first tab
   }

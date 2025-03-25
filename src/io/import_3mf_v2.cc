@@ -398,7 +398,7 @@ std::unique_ptr<PolySet> import_3mf(const std::string& filename, const Location&
       const auto partnumber = builditem->GetPartNumber();
       bool hasuuid = false;
       const auto uuid = builditem->GetUUID(hasuuid);
-      Lib3MF::sTransform transform{ .m_Fields = {{ 1, 0, 0 }, { 0, 1, 0 }, { 0, 0, 1 }, { 0, 0, 1 } } };
+      Lib3MF::sTransform transform{ .m_Fields = {{ 1, 0, 0 }, { 0, 1, 0 }, { 0, 0, 1 }, { 0, 0, 0 } } };
       if (builditem->HasObjectTransform()) {
         transform = builditem->GetObjectTransform();
       }

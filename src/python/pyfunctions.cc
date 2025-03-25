@@ -2049,7 +2049,6 @@ PyObject *python_color_core(PyObject *obj, PyObject *color, double alpha, int te
       if (hexColor) {
         node->color = *hexColor;
       } else {
-	printf("Error created\n");
         PyErr_SetString(PyExc_TypeError, "Cannot parse color");
         return NULL;
       }
@@ -3012,8 +3011,7 @@ PyObject *python_csg_sub(PyObject *self, PyObject *args, PyObject *kwargs, OpenS
   node->r=0;
   node->fn=1;
   PyObject *obj;
-  PyObject *child_dict = nullptr;	  
-  PyObject *dummy_dict = nullptr;	  
+  std::vector<PyObject *>child_dict;
   std::shared_ptr<AbstractNode> child;
   if(kwargs != nullptr) {
     PyObject *key, *value;
@@ -3039,8 +3037,9 @@ PyObject *python_csg_sub(PyObject *self, PyObject *args, PyObject *kwargs, OpenS
   }
   for (i = 0; i < PyTuple_Size(args);i++) {
     obj = PyTuple_GetItem(args, i);
-    if(i == 0) child = PyOpenSCADObjectToNodeMulti(obj, &child_dict);
-    else child = PyOpenSCADObjectToNodeMulti(obj, &dummy_dict);
+    PyObject *dict = nullptr;	  
+    if(i == 0) child = PyOpenSCADObjectToNodeMulti(obj, &dict);
+    child_dict.push_back(dict);
     if(child != NULL) {
       node->children.push_back(child);
     } else {
@@ -3073,10 +3072,14 @@ PyObject *python_csg_sub(PyObject *self, PyObject *args, PyObject *kwargs, OpenS
   }
 
   PyObject *pyresult =PyOpenSCADObjectFromNode(&PyOpenSCADType, node);
-  if(child_dict != nullptr ) {
+  for(int i=child_dict.size()-1;i>=0; i--) // merge from back  to give 1st child most priority
+  {
+    auto &dict = child_dict[i];	  
     PyObject *key, *value;
     Py_ssize_t pos = 0;
-     while(PyDict_Next(child_dict, &pos, &key, &value)) {
+     while(PyDict_Next(dict, &pos, &key, &value)) {
+       PyObject* value1 = PyUnicode_AsEncodedString(key, "utf-8", "~");
+       const char *value_str =  PyBytes_AS_STRING(value1);
        PyDict_SetItem(((PyOpenSCADObject *) pyresult)->dict, key, value);
     }
   }
