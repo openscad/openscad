@@ -2467,11 +2467,17 @@ void MainWindow::rightClick(QPoint position)
         ss << name << " (library "
            << location.fileName().substr(libpath.string().length() + 1) << ":"
            << location.firstLine() << ")";
+      } else if (activeEditor->filepath.toStdString() == location.fileName()) {
+        // removes the "module" prefix if any as it makes it not clear if it is module declaration or call.
+        ss << name << " (" << location.filePath().filename().string() << ":"
+           << location.firstLine() << ")";
       } else {
-        auto relativeFilename = location.filePath().filename();
-        ss << name << " (" << relativeFilename << ":" << location.firstLine() << ")";
-      }
+        auto relative_filename = fs_uncomplete(location.filePath(), fs::path(activeEditor->filepath.toStdString()).parent_path())
+          .generic_string();
 
+        // Set the displayed name relative to the active editor window
+        ss << name << " (" << relative_filename << ":" << location.firstLine() << ")";
+      }
       // Prepare the action to be sent
       auto action = tracemenu.addAction(QString::fromStdString(ss.str()));
       if (editorDock->isVisible()) {
@@ -2483,7 +2489,9 @@ void MainWindow::rightClick(QPoint position)
 
     // Before starting the
     GuiLocker::lock();
-    connect(&tracemenu, &QMenu::aboutToHide, [](){ GuiLocker::unlock(); });
+    connect(&tracemenu, &QMenu::aboutToHide, [](){
+      GuiLocker::unlock();
+    });
     tracemenu.exec(this->qglview->mapToGlobal(position));
   } else {
     clearAllSelectionIndicators();
