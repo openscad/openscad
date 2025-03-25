@@ -2183,13 +2183,7 @@ void MainWindow::actionRenderPreview()
   static bool preview_requested;
   preview_requested = true;
 
-  if (GuiLocker::isLocked()) {
-    // if the action was called when the gui was locked, we must request it one more time
-    // however, it's not possible to call it directly NOR make the loop
-    // it must be called from the mainloop
-    QTimer::singleShot(0, this, &MainWindow::actionRenderPreview);
-    return;
-  }
+  if (GuiLocker::isLocked()) return;
 
   GuiLocker::lock();
   preview_requested = false;
@@ -2199,6 +2193,14 @@ void MainWindow::actionRenderPreview()
 
   prepareCompile("csgRender", !animateDock->isVisible(), true);
   compile(false, false);
+
+  if (preview_requested) {
+    // if the action was called when the gui was locked, we must request it one more time
+    // however, it's not possible to call it directly NOR make the loop
+    // it must be called from the mainloop
+    QTimer::singleShot(0, this, &MainWindow::actionRenderPreview);
+    return;
+  }
 }
 
 void MainWindow::csgRender()
