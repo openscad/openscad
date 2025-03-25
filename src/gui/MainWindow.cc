@@ -256,6 +256,32 @@ void addExportActions(const MainWindow *mainWindow, QToolBar *toolbar, QAction *
   }
 }
 
+std::unique_ptr<ExternalToolInterface> createExternalToolService(
+  print_service_t serviceType, const QString& serviceName, FileFormat fileFormat)
+{
+  switch (serviceType) {
+  case print_service_t::NONE:
+    // TODO: Print warning
+    return nullptr;
+    break;
+  case print_service_t::PRINT_SERVICE: {
+    if (const auto printService = PrintService::getPrintService(serviceName.toStdString())) {
+      return createExternalPrintService(printService, fileFormat);
+    }
+    LOG("Unknown print service \"%1$s\"", serviceName.toStdString());
+    return nullptr;
+    break;
+  }
+  case print_service_t::OCTOPRINT:
+    return createOctoPrintService(fileFormat);
+    break;
+  case print_service_t::LOCAL_APPLICATION:
+    return createLocalProgramService(fileFormat);
+    break;
+  }
+  return {};
+}
+
 } // namespace
 
 MainWindow::MainWindow(const QStringList& filenames) :
@@ -2228,32 +2254,6 @@ void MainWindow::csgRender()
   compileEnded();
 }
 
-static std::unique_ptr<ExternalToolInterface> createExternalToolService(
-  print_service_t serviceType, const QString& serviceName, FileFormat fileFormat)
-{
-  switch (serviceType) {
-  case print_service_t::NONE:
-    // TODO: Print warning
-    return nullptr;
-    break;
-  case print_service_t::PRINT_SERVICE: {
-    if (const auto printService = PrintService::getPrintService(serviceName.toStdString())) {
-      return createExternalPrintService(printService, fileFormat);
-    }
-    LOG("Unknown print service \"%1$s\"", serviceName.toStdString());
-    return nullptr;
-    break;
-  }
-  case print_service_t::OCTOPRINT:
-    return createOctoPrintService(fileFormat);
-    break;
-  case print_service_t::LOCAL_APPLICATION:
-    return createLocalProgramService(fileFormat);
-    break;
-  }
-  return {};
-}
-
 void MainWindow::sendToExternalTool(ExternalToolInterface& externalToolService)
 {
   const QFileInfo activeFile(activeEditor->filepath);
@@ -2264,6 +2264,9 @@ void MainWindow::sendToExternalTool(ExternalToolInterface& externalToolService)
   activeFileName = activeFileName + QString::fromStdString("." + fileformat::toSuffix(externalToolService.fileFormat()));
 
   const bool export_status = externalToolService.exportTemporaryFile(rootGeom, activeFileName, &qglview->cam);
+  if (!export_status) {
+    return;
+  }
 
   this->progresswidget = new ProgressWidget(this);
   connect(this->progresswidget, &ProgressWidget::requestShow, this, &MainWindow::showProgress);
@@ -2272,6 +2275,9 @@ void MainWindow::sendToExternalTool(ExternalToolInterface& externalToolService)
     return network_progress_func(permille);
   });
   updateStatusBar(nullptr);
+  if (!process_status) {
+    return;
+  }
 
   const auto url = externalToolService.getURL();
   if (!url.empty()) {
@@ -2299,7 +2305,6 @@ void MainWindow::action3DPrint()
     const FileFormat fileFormat = printInitDialog.getFileFormat();
 
     LOG("Selected File format: %1$s", fileformat::info(fileFormat).description);
-
 
     Preferences::Preferences::inst()->updateGUI();
     const auto externalToolService = createExternalToolService(serviceType, serviceName, fileFormat);
@@ -3477,7 +3482,6 @@ Dock *MainWindow::findVisibleDockToActivate(int offset) const
     focusedDockIndice = 0;
   }
 
-  const auto& dock = std::get<0>(docks.at(focusedDockIndice));
   for (int o = 1; o < dockCount; ++o) {
     // starting from dockCount + focusedDockIndice move left or right (o*offset)
     // to find the first visible one. dockCount is there so there is no situation in which
@@ -3615,6 +3619,7 @@ void MainWindow::closeEvent(QCloseEvent *event)
 
 void MainWindow::preferences()
 {
+  Preferences::inst()->update();
   Preferences::inst()->show();
   Preferences::inst()->activateWindow();
   Preferences::inst()->raise();

@@ -378,8 +378,10 @@ public:
   static SettingsEntryEnum<std::string> modifierNumberScrollWheel;
 
   static SettingsEntryString defaultPrintService;
+  static SettingsEntryBool enableRemotePrintServices;
+  static SettingsEntryBool printServiceAlwaysShowDialog;
   static SettingsEntryString printServiceName;
-  static SettingsEntryString printServiceFileFormat;
+  static SettingsEntryEnum<std::string> printServiceFileFormat;
 
   static SettingsEntryString octoPrintUrl;
   static SettingsEntryString octoPrintApiKey;
