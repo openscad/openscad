@@ -2631,7 +2631,6 @@ void MainWindow::setSelection(int index)
   }
 
   EditorInterface *editor = nullptr;
-  // tabManager->getEditorForFile(location.fileName());
   for (auto seditor : tabManager->editorList) {
     auto editorPathName = seditor->filepath.toStdString();
     auto locationPathName = location.filePath().generic_string();
