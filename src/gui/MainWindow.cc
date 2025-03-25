@@ -1367,7 +1367,7 @@ void MainWindow::instantiateRoot()
    Generates CSG tree for OpenCSG evaluation.
    Assumes that the design has been parsed and evaluated (this->root_node is set)
  */
-void MainWindow::compileCSG()
+void MainWindow::compileCSG(std::shared_ptr<const AbstractNode> selectedNode)
 {
   OpenSCAD::hardwarnings = Preferences::inst()->getValue("advanced/enableHardwarnings").toBool();
   try{
@@ -1381,7 +1381,7 @@ void MainWindow::compileCSG()
 
     GeometryEvaluator geomevaluator(this->tree);
 #ifdef ENABLE_OPENCSG
-    CSGTreeEvaluator csgrenderer(this->tree, &geomevaluator);
+    CSGTreeEvaluator csgrenderer(this->tree, selectedNode, &geomevaluator);
 #endif
 
     if (!isClosing) progress_report_prep(this->rootNode, report_func, this);
@@ -2479,8 +2479,44 @@ void MainWindow::rightClick(QPoint position)
 
     tracemenu.exec(this->qglview->mapToGlobal(position));
   } else {
+    setSelectedObjectPreview(nullptr);
     clearAllSelectionIndicators();
   }
+}
+
+void MainWindow::setSelectedObjectPreview(std::shared_ptr<const AbstractNode> newSelectedNode)
+{
+    if(selectedNode == newSelectedNode)
+        return;
+
+    selectedNode = newSelectedNode;
+    std::vector<std::shared_ptr<CSGNode>> highlight_terms;
+    CSGTreeEvaluator::selectAndHighlightCSGTree(selectedNode,
+                                                *rootNode.get(),
+                                                csgRoot, highlight_terms);
+
+    if (highlight_terms.size() > 0) {
+      size_t normalizelimit = 2ul * Preferences::inst()->getValue("advanced/openCSGLimit").toUInt();
+      CSGTreeNormalizer normalizer(normalizelimit);
+      this->highlightsProducts.reset(new CSGProducts());
+      for (const auto& highlight_term : highlight_terms) {
+        auto nterm = normalizer.normalize(highlight_term);
+        if (nterm) {
+          this->highlightsProducts->import(nterm);
+        }
+      }
+    } else {
+      this->highlightsProducts = this->compileTimeHighlightedProducts;
+    }
+
+    auto rdr = dynamic_cast<OpenCSGRenderer*>(this->previewRenderer.get());
+    if(rdr)
+        rdr->setHighlights(this->highlightsProducts);
+
+    viewModePreview();
+
+    // request the update of the 3D view to take into account the change of selection.
+    this->qglview->update();
 }
 
 void MainWindow::measureFinished()
@@ -2631,8 +2667,7 @@ void MainWindow::setSelection(int index)
   // highlight in the text editor only the fragment correponding to the selected stack.
   // this step must be done after all the impacted element have been marked.
   setSelectionIndicatorStatus(currentlySelectedObject, EditorSelectionIndicatorStatus::SELECTED);
-
-  activeEditor->setCursorPosition(line - 1, column - 1);
+  setSelectedObjectPreview(selected_node);
 }
 
 /**

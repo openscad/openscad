@@ -93,7 +93,7 @@ OpenCSGRenderer::OpenCSGRenderer(
     std::shared_ptr<CSGProducts> background_products)
     : root_products_(std::move(root_products)),
       background_products_(std::move(background_products)) {
-  opencsg_vertex_shader_code_ = ShaderUtils::loadShaderSource("OpenCSG.vert");
+    setupShader();
 }
 
 void OpenCSGRenderer::setHighlights(std::shared_ptr<CSGProducts> highLightedProducts)
@@ -110,6 +110,7 @@ void OpenCSGRenderer::setHighlights(std::shared_ptr<CSGProducts> highLightedProd
 
         auto setHighlightsMode = [&](std::vector<CSGChainObject> csgobjects){
             for (const auto &csgobj : csgobjects) {
+                std::cout << "ADDING AN OBJECT FOR " << csgobj.leaf->index << std::endl;
                 if (csgobj.leaf->polyset) {
                     if (csgobj.flags == CSGNode::Flag::FLAG_HIGHLIGHT_SELECTED) {
                         highLightingMode[csgobj.leaf->index] = ColorMode::HIGHLIGHT_SELECTED;
@@ -135,13 +136,93 @@ void OpenCSGRenderer::prepare(const ShaderUtils::ShaderInfo *shaderinfo) {
     if (background_products_) {
       createCSGVBOProducts(*background_products_, false, true, shaderinfo);
     }
-    if (highlights_products_) {
-      createCSGVBOProducts(*highlights_products_, true, false, shaderinfo);
-    }
   }
 }
 
-void OpenCSGRenderer::draw(bool showedges, const ShaderUtils::ShaderInfo *shaderinfo) const {
+void OpenCSGRenderer::draw(bool showEdges, const ShaderUtils::ShaderInfo *shaderInfo) const {
+    drawProducts(showEdges, shaderInfo);
+
+    if (!highlights_products_)
+            return;
+
+    drawHighlightedProducts(showEdges, shaderInfo);
+}
+
+void getColorFromIndex(const int idx, Color4f& c)
+{
+    c.setRgb( (idx >> 0) & 0xff,
+              (idx >> 8) & 0xff,
+              (idx >> 16) & 0xff);
+}
+
+void OpenCSGRenderer::drawHighlightedProducts(bool showEdges, const ShaderUtils::ShaderInfo *shaderinfo) const
+{
+#ifdef ENABLE_OPENCSG
+    // we are clicking, so we must override color with the color id.
+    bool isSelecting = shaderinfo->type == ShaderUtils::ShaderType::SELECT_RENDERING;
+
+    // Configure opengl so we render over the existing content.
+    glEnable(GL_POLYGON_OFFSET_FILL);
+    glPolygonOffset(-0.01, 0.0);
+
+    const ShaderUtils::ShaderInfo* cshader = shader.get();
+    if(isSelecting)
+        cshader = shaderinfo;
+
+    GL_CHECKD(glUseProgram(cshader->resource.shader_program));
+    VBOUtils::shader_attribs_enable(*cshader);
+    for (const auto& product : vertex_state_containers_) {
+
+        for (const auto& vertex_state : product->states()) {
+            std::shared_ptr<OpenCSGVertexState> csg_vertex_state =
+                                   std::dynamic_pointer_cast<OpenCSGVertexState>(vertex_state);
+
+            if(csg_vertex_state==nullptr)
+                continue;
+
+            // Skip the rendering is the object is not highlighted.
+            if(highLightingMode.find(csg_vertex_state->csgObjectIndex()) == highLightingMode.end())
+                continue;
+
+            auto colormode = highLightingMode.at(csg_vertex_state->csgObjectIndex());
+            Color4f highlightcolor {1.0f,0.0,1.0,1.0};
+            std::string name = "color";
+            if(isSelecting){
+                name = "frag_idcolor";
+                getColorFromIndex(csg_vertex_state->csgObjectIndex(), highlightcolor);
+            }else{
+                getColorSchemeColor(colormode, highlightcolor);
+            }
+
+            csg_vertex_state->glBegin().emplace_back([cshader, &name, &highlightcolor]() {
+                GL_CHECKD(glUseProgram(cshader->resource.shader_program));
+                if(name=="frag_idcolor"){
+                    GL_CHECKD(glUniform3f(cshader->uniforms.at(name),
+                                      highlightcolor.r(),
+                                      highlightcolor.g(), highlightcolor.b()));
+                }
+                else{
+                    GL_CHECKD(glUniform4f(cshader->uniforms.at(name),
+                                      highlightcolor.r(),
+                                      highlightcolor.g(), highlightcolor.b(), highlightcolor.a()));
+                }
+            });
+
+            vertex_state->draw();
+            csg_vertex_state->glBegin().pop_back();
+        }
+
+    }
+    GL_TRACE0("glUseProgram(0)");
+    GL_CHECKD(glUseProgram(0));
+    VBOUtils::shader_attribs_disable(*cshader);
+
+    GL_TRACE0("glDepthFunc(GL_LEQUAL)");
+    glDisable(GL_POLYGON_OFFSET_FILL);
+#endif // ENABLE_OPENCSG
+}
+
+void OpenCSGRenderer::drawProducts(bool showedges, const ShaderUtils::ShaderInfo *shaderinfo) const {
 #ifdef ENABLE_OPENCSG
   // Only use shader if select rendering or showedges
   bool enable_shader = shaderinfo && (

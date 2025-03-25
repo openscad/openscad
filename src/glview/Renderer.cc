@@ -160,6 +160,22 @@ bool Renderer::getColorSchemeColor(Renderer::ColorMode colormode, Color4f& outco
   return false;
 }
 
+void Renderer::setupShader()
+{
+    auto resource = ShaderUtils::compileShaderProgram(ShaderUtils::loadShaderSource("OpenCSG.vert"),
+                                                      ShaderUtils::loadShaderSource("OpenCSG.frag"));
+
+    shader = std::make_unique<ShaderUtils::ShaderInfo>(ShaderUtils::ShaderInfo{
+      .resource = resource,
+      .type = ShaderUtils::ShaderType::EDGE_RENDERING,
+      .uniforms = {
+        {"color", glGetUniformLocation(resource.shader_program, "color")},
+      },
+      .attributes = {
+      },
+    });
+}
+
 bool Renderer::getShaderColor(Renderer::ColorMode colormode, const Color4f& object_color,
                               Color4f& outcolor) const
 {

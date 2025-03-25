@@ -165,7 +165,20 @@ bool CSGLeaf::isEmptySet() const
 
 std::string CSGLeaf::dump() const
 {
-  return this->label;
+    std::string color = "";
+    std::string black = "\e[0;0m";
+
+    if(isSelected())
+    {
+        if(isImpacted())
+            color = "\e[4;32m";
+        else
+            color = "\e[0;32m";
+    }
+    else if(isImpacted()){
+        color = "\e[4;33m";
+    }
+    return color + this->label + black;
 }
 
 // Recursive traversal can cause stack overflow with very large loops of child nodes,
@@ -223,7 +236,21 @@ std::string CSGOperation::dump() const
     }
 
   } while (!callstack.empty());
-  return out.str();
+  std::string color = "";
+  std::string black = "\e[0;0m";
+
+  if(isSelected())
+  {
+      if(isImpacted())
+          color = "\e[4;32m";
+      else
+          color = "\e[0;32m";
+  }
+  else if(isImpacted()){
+      color = "\e[4;33m";
+  }
+
+  return color + out.str() + black;
 }
 
 void CSGProducts::import(std::shared_ptr<CSGNode> csgnode, OpenSCADOperator type, CSGNode::Flag flags)
@@ -248,6 +275,8 @@ void CSGProducts::import(std::shared_ptr<CSGNode> csgnode, OpenSCADOperator type
       } else if (type == OpenSCADOperator::INTERSECTION) {
         this->currentlist = &this->currentproduct->intersections;
       }
+      if(leaf->isSelected()) newflags = CSGNode::FLAG_HIGHLIGHT_SELECTED;
+      else if (leaf->isImpacted()) newflags = CSGNode::FLAG_HIGHLIGHT_IMPACTED;
       this->currentlist->emplace_back(leaf, newflags);
     } else if (auto op = std::dynamic_pointer_cast<CSGOperation>(csgnode)) {
       assert(op->left() && op->right());

@@ -81,6 +81,9 @@ public:
 private:
   void createCSGVBOProducts(const CSGProducts& products, bool highlight_mode, bool background_mode, const ShaderUtils::ShaderInfo *shaderinfo);
 
+  void drawProducts(bool showEdges, const ShaderUtils::ShaderInfo *shaderInfo) const;
+  void drawHighlightedProducts(bool showedges, const ShaderUtils::ShaderInfo *shaderinfo) const;
+
   std::vector<std::unique_ptr<OpenCSGVBOProduct>> vertex_state_containers_;
   std::shared_ptr<CSGProducts> root_products_;
   std::shared_ptr<CSGProducts> highlights_products_;
@@ -90,4 +93,5 @@ private:
   std::map<size_t, ColorMode> highLightingMode;
 
   std::string opencsg_vertex_shader_code_;
+  std::string opencsg_fragment_shader_code_;
 };
