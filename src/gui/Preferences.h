@@ -23,15 +23,13 @@
 #include "core/Settings.h"
 #include "gui/InitConfigurator.h"
 
+class GlobalPreferences;
 class Preferences : public QMainWindow, public Ui::Preferences, public InitConfigurator
 {
   Q_OBJECT;
 
 public:
   ~Preferences() override;
-
-  static void create(const QStringList& colorSchemes);
-  static Preferences *inst();
 
   QVariant getValue(const QString& key) const;
   void init();
@@ -40,6 +38,7 @@ public:
   void updateGUI();
   void fireEditorConfigChanged() const;
   void insertListItem(QListWidget *listBox, QListWidgetItem *listItem);
+  void addColorSchemes(const QStringList& colorSchemes);
 
   template<typename item_type>
   QListWidgetItem * createListItem(const item_type& itemType, const QString& text = "", bool editable = false) {
@@ -193,7 +192,8 @@ private slots:
   void on_checkBoxEnableNumberScrollWheel_toggled(bool checked);
 
 private:
-  Preferences(QWidget *parent = nullptr);
+  friend GlobalPreferences;
+  Preferences(const char *propertyName, QWidget *parent = nullptr);
   void keyPressEvent(QKeyEvent *e) override;
   void showEvent(QShowEvent *e) override;
   void closeEvent(QCloseEvent *e) override;
@@ -216,6 +216,14 @@ private:
   QSettings::SettingsMap defaultmap;
   QHash<const QAction *, QWidget *> prefPages;
 
-  static Preferences *instance;
-  static const char *featurePropertyName;
+  const char* featurePropertyName=nullptr;
+};
+
+class GlobalPreferences
+{
+public:
+    static Preferences* inst();
+private:
+    static Preferences *instance;
+    static const char *featurePropertyName;
 };
