@@ -209,9 +209,9 @@ void TabManager::createTab(const QString& filename)
   } else {
     setTabName("");
   }
+  emit editorCreated(editor);
   emit tabCountChanged(editorList.size());
   emit currentEditorChanged(editor);
-  par->updateRecentFileActions();
 }
 
 size_t TabManager::count()

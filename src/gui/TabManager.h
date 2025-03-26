@@ -41,6 +41,9 @@ signals:
   // opened on.
   void currentEditorChanged(EditorInterface *editor);
   void editorAboutToClose(EditorInterface *editor);
+
+  // emitted when the a new editor is created, either from file or with an empty content.
+  void editorCreated(EditorInterface *editor);
   void tabCountChanged(int);
 
 private:

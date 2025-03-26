@@ -163,6 +163,10 @@ private slots:
   // the tab manager editor is about to close one of the tab
   void onTabManagerAboutToCloseEditor(EditorInterface *);
 
+  // implement the different actions needed when
+  // the tab manager has just created a new file (possibly with a content)
+  void onTabManagerEditorCreated(EditorInterface *createdEditor);
+
 public:
   static void consoleOutput(const Message& msgObj, void *userdata);
   static void errorLogOutput(const Message& log_msg, void *userdata);
@@ -170,7 +174,7 @@ public:
   static void noOutputErrorLog(const Message&, void *) {} // /dev/null
 
   bool fileChangedOnDisk();
-  void parseTopLevelDocument();
+  void parseTopLevelDocument(EditorInterface* editor);
   void exceptionCleanup();
   void setLastFocus(QWidget *widget);
   void UnknownExceptionCleanup(std::string msg = "");

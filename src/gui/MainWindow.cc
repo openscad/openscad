@@ -381,6 +381,7 @@ MainWindow::MainWindow(const QStringList& filenames) :
 
   connect(tabManager, &TabManager::editorAboutToClose, this, &MainWindow::onTabManagerAboutToCloseEditor);
   connect(tabManager, &TabManager::currentEditorChanged, this, &MainWindow::onTabManagerEditorChanged);
+  connect(tabManager, &TabManager::editorCreated, this, &MainWindow::onTabManagerEditorCreated);
 
   connect(Preferences::inst(), &Preferences::consoleFontChanged, this->console, &Console::setFont);
 
@@ -811,6 +812,9 @@ MainWindow::MainWindow(const QStringList& filenames) :
 
   activeEditor->setFocus();
   onTabManagerEditorChanged(activeEditor);
+
+  // fills the content of the Recents Files menu.
+  updateRecentFileActions();
 }
 
 void MainWindow::onNavigationOpenContextMenu() {
@@ -1201,7 +1205,7 @@ void MainWindow::compile(bool reload, bool forcedone)
         this->console->actionClearConsole_triggered();
       }
       if (activeEditor->isContentModified()) saveBackup();
-      parseTopLevelDocument();
+      parseTopLevelDocument(activeEditor);
       didcompile = true;
     }
 
@@ -1553,6 +1557,8 @@ void MainWindow::clearRecentFiles()
   updateRecentFileActions();
 }
 
+// Updates the content of the recent files menu entries
+// by iterating over the recently opened files.
 void MainWindow::updateRecentFileActions()
 {
   auto files = UIUtils::recentFiles();
@@ -2064,18 +2070,18 @@ bool MainWindow::trust_python_file(const std::string& file,  const std::string& 
 }
 #endif // ifdef ENABLE_PYTHON
 
-void MainWindow::parseTopLevelDocument()
+void MainWindow::parseTopLevelDocument(EditorInterface *editor)
 {
   resetSuppressedMessages();
 
-  this->lastCompiledDoc = activeEditor->toPlainText();
+  this->lastCompiledDoc = editor->toPlainText();
 
   auto fulltext =
     std::string(this->lastCompiledDoc.toUtf8().constData()) +
     "\n\x03\n" + commandline_commands;
 
-  auto fnameba = activeEditor->filepath.toLocal8Bit();
-  const char *fname = activeEditor->filepath.isEmpty() ? "" : fnameba;
+  auto fnameba = editor->filepath.toLocal8Bit();
+  const char *fname = editor->filepath.isEmpty() ? "" : fnameba;
   delete this->parsedFile;
 #ifdef ENABLE_PYTHON
   this->python_active = false;
@@ -2112,16 +2118,16 @@ void MainWindow::parseTopLevelDocument()
   this->rootFile = nullptr;    // ditto
   this->rootFile = parse(this->parsedFile, fulltext, fname, fname, false) ? this->parsedFile : nullptr;
 
-  this->activeEditor->resetHighlighting();
+  editor->resetHighlighting();
   if (this->rootFile != nullptr) {
     //add parameters as annotation in AST
     CommentParser::collectParameters(fulltext, this->rootFile);
-    this->activeEditor->parameterWidget->setParameters(this->rootFile, fulltext);
-    this->activeEditor->parameterWidget->applyParameters(this->rootFile);
-    this->activeEditor->parameterWidget->setEnabled(true);
-    this->activeEditor->setIndicator(this->rootFile->indicatorData);
+    editor->parameterWidget->setParameters(this->rootFile, fulltext);
+    editor->parameterWidget->applyParameters(this->rootFile);
+    editor->parameterWidget->setEnabled(true);
+    editor->setIndicator(this->rootFile->indicatorData);
   } else {
-    this->activeEditor->parameterWidget->setEnabled(false);
+    editor->parameterWidget->setEnabled(false);
   }
 }
 
@@ -3426,6 +3432,25 @@ void MainWindow::onTabManagerAboutToCloseEditor(EditorInterface *closingEditor)
     this->tree.setRoot(nullptr);
     this->qglview->update();
   }
+}
+
+void MainWindow::onTabManagerEditorCreated(EditorInterface *createdEditor)
+{    
+    try {
+        // when a new editor is created, it is important to compile the initial geometry
+        // so the customizer panels are ok.
+        parseTopLevelDocument(createdEditor);
+    } catch (const HardWarningException&) {
+        exceptionCleanup();
+    } catch (const std::exception& ex) {
+        UnknownExceptionCleanup(ex.what());
+    } catch (...) {
+        UnknownExceptionCleanup();
+    }
+
+    // updates the content of the Recents Files menu to integrate the one possibly
+    // associated with the created editor.
+    updateRecentFileActions();
 }
 
 void MainWindow::onTabManagerEditorChanged(EditorInterface *newEditor)
