@@ -123,9 +123,9 @@ static void set_fragments(const Parameters& parameters, const ModuleInstantiatio
 
 std::unique_ptr<const Geometry> CubeNode::createGeometry() const
 {
-  if (this->x <= 0 || !std::isfinite(this->x)
-    || this->y <= 0 || !std::isfinite(this->y)
-    || this->z <= 0 || !std::isfinite(this->z)
+  if (this->dim[0] <= 0 || !std::isfinite(this->dim[0])
+    || this->dim[1] <= 0 || !std::isfinite(this->dim[1])
+    || this->dim[2] <= 0 || !std::isfinite(this->dim[2])
     ) {
     return PolySet::createEmpty();
   }
@@ -133,9 +133,9 @@ std::unique_ptr<const Geometry> CubeNode::createGeometry() const
   double coord1[3], coord2[3], size;
   for(int i=0;i<3;i++) {
     switch(i) {
-      case 0: size=this->x; break;
-      case 1: size=this->y; break;
-      case 2: size=this->z; break;
+      case 0: size=this->dim[0]; break;
+      case 1: size=this->dim[1]; break;
+      case 2: size=this->dim[2]; break;
     }	    
     if (this->center[i] > 0) {
      coord1[i] = 0;
@@ -167,10 +167,12 @@ std::unique_ptr<const Geometry> CubeNode::createGeometry() const
 
 void CubeNode::dragPoint(const Vector3d &pt, const Vector3d &newpt)
 {
-	printf("Cube %g/%g/%g \n",newpt[0], newpt[1], newpt[2]);
-	this->x=newpt[0];
-	this->y=newpt[1];
-	this->z=newpt[2];
+  if (dim_[0] == 0) {dim_[0] = dim[0]; dim_[1]=dim[1]; dim_[2] = dim[2];}
+  for(int i=0;i<3; i++)	{
+    if(dragflags & (1<<i)){
+      if(center[i] == 1  && fabs(pt[i]-dim_[i]) < 1e-3 ) this->dim[i] = newpt[i];
+    }
+  }
 }
 
 static std::shared_ptr<AbstractNode> builtin_cube(const ModuleInstantiation *inst, Arguments arguments)
@@ -182,15 +184,15 @@ static std::shared_ptr<AbstractNode> builtin_cube(const ModuleInstantiation *ins
   const auto& size = parameters["size"];
   if (size.isDefined()) {
     bool converted = false;
-    converted |= size.getDouble(node->x);
-    converted |= size.getDouble(node->y);
-    converted |= size.getDouble(node->z);
-    converted |= size.getVec3(node->x, node->y, node->z);
+    converted |= size.getDouble(node->dim[0]);
+    converted |= size.getDouble(node->dim[1]);
+    converted |= size.getDouble(node->dim[2]);
+    converted |= size.getVec3(node->dim[0], node->dim[1], node->dim[2]);
     if (!converted) {
       LOG(message_group::Warning, inst->location(), parameters.documentRoot(), "Unable to convert cube(size=%1$s, ...) parameter to a number or a vec3 of numbers", size.toEchoStringNoThrow());
     } else if (OpenSCAD::rangeCheck) {
-      bool ok = (node->x > 0) && (node->y > 0) && (node->z > 0);
-      ok &= std::isfinite(node->x) && std::isfinite(node->y) && std::isfinite(node->z);
+      bool ok = (node->dim[0] > 0) && (node->dim[1] > 0) && (node->dim[2] > 0);
+      ok &= std::isfinite(node->dim[0]) && std::isfinite(node->dim[1]) && std::isfinite(node->dim[2]);
       if (!ok) {
         LOG(message_group::Warning, inst->location(), parameters.documentRoot(), "cube(size=%1$s, ...)", size.toEchoStringNoThrow());
       }

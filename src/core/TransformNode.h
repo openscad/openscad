@@ -5,6 +5,7 @@
 #include "core/node.h"
 #include "core/ModuleInstantiation.h"
 #include "geometry/linalg.h"
+#include "geometry/PolySet.h"
 
 class TransformNode : public AbstractNode
 {
@@ -16,6 +17,10 @@ public:
   std::string name() const override;
   std::string verbose_name() const override;
   Transform3d matrix;
+  virtual void dragPoint(const Vector3d &pt, const Vector3d &delta) override;
+  std::vector<std::shared_ptr<const PolySet>> polys_;
+  Transform3d matrix_;
+  int dragflags=0;
 
 private:
   const std::string _name;

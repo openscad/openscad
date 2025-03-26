@@ -123,7 +123,6 @@ PyObject *python_edge(PyObject *self, PyObject *args, PyObject *kwargs)
 PyObject *python_cube(PyObject *self, PyObject *args, PyObject *kwargs)
 {
   DECLARE_INSTANCE
-	  printf("python cube\n");
   auto node = std::make_shared<CubeNode>(instance);
 
   char *kwlist[] = {"size", "center", NULL};
@@ -140,12 +139,13 @@ PyObject *python_cube(PyObject *self, PyObject *args, PyObject *kwargs)
   }	  
 
   if (size != NULL) {
-    if (python_vectorval(size, 3, 3, &(node->x), &(node->y), &(node->z))) {
+    int flags=0;	  
+    if (python_vectorval(size, 3, 3, &(node->dim[0]), &(node->dim[1]), &(node->dim[2]), nullptr, &(node->dragflags))) {
       PyErr_SetString(PyExc_TypeError, "Invalid Cube dimensions");
       return NULL;
     }
   }
-  if(node->x <= 0 || node->y <= 0 || node ->z <= 0) {
+  if(node->dim[0] <= 0 || node->dim[1] <= 0 || node ->dim[2] <= 0) {
       PyErr_SetString(PyExc_TypeError, "Cube Dimensions must be positive");
       return NULL;
   }
@@ -1075,7 +1075,7 @@ PyObject *python_matrix_rot(PyObject *mat, Matrix3d rotvec)
 }
 
 
-PyObject *python_rotate_sub(PyObject *obj, Vector3d vec3, double angle)
+PyObject *python_rotate_sub(PyObject *obj, Vector3d vec3, double angle, int dragflags)
 {
   Matrix3d M;
   if(isnan(angle)) {	
@@ -1109,6 +1109,7 @@ PyObject *python_rotate_sub(PyObject *obj, Vector3d vec3, double angle)
 
   DECLARE_INSTANCE
   auto node = std::make_shared<TransformNode>(instance, "rotate");
+  node->dragflags = dragflags;
 
   PyObject *child_dict;
   std::shared_ptr<AbstractNode> child = PyOpenSCADObjectToNodeMulti(obj, &child_dict);
@@ -1137,16 +1138,15 @@ PyObject *python_rotate_core(PyObject *obj, PyObject *val_a, PyObject *val_v)
 {
   Vector3d vec3(0,0,0);
   double angle;
+  int dragflags=0;
   if (val_a != nullptr && PyList_Check(val_a) && val_v == nullptr) {
-    if(PyList_Size(val_a) >= 1) vec3[0]= PyFloat_AsDouble(PyList_GetItem(val_a, 0));
-    if(PyList_Size(val_a) >= 2) vec3[1]= PyFloat_AsDouble(PyList_GetItem(val_a, 1));
-    if(PyList_Size(val_a) >= 3) vec3[2]= PyFloat_AsDouble(PyList_GetItem(val_a, 2));
-    return python_rotate_sub(obj, vec3, NAN);
+    python_vectorval(val_a, 1, 3, &(vec3[0]), &(vec3[1]), &(vec3[2]), nullptr, &dragflags);
+    return python_rotate_sub(obj, vec3, NAN, dragflags);
   } else if (val_a != nullptr && val_v != nullptr && !python_numberval(val_a,&angle) && PyList_Check(val_v) && PyList_Size(val_v) == 3) {
     vec3[0]= PyFloat_AsDouble(PyList_GetItem(val_v, 0));
     vec3[1]= PyFloat_AsDouble(PyList_GetItem(val_v, 1));
     vec3[2]= PyFloat_AsDouble(PyList_GetItem(val_v, 2));
-    return python_rotate_sub(obj, vec3, angle);
+    return python_rotate_sub(obj, vec3, angle, dragflags);
   }
   PyErr_SetString(PyExc_TypeError, "Invalid arguments to rotate()");
   return nullptr;
@@ -1368,7 +1368,7 @@ PyObject *python_dir_sub_core(PyObject *obj, double arg, int mode)
       case 7: rot = Vector3d(0,arg,0); break;
       case 8: rot = Vector3d(0,0,arg); break;
     }		       
-    return python_rotate_sub(obj, rot, NAN);
+    return python_rotate_sub(obj, rot, NAN, 0);
   }
 }
 

@@ -48,9 +48,9 @@ std::shared_ptr<AbstractNode> python_modulefunc(const ModuleInstantiation *modul
 std::vector<int> python_intlistval(PyObject *list);
 
 Value python_functionfunc(const FunctionCall *call,const std::shared_ptr<const Context> &context, int &error);
-int python_vectorval(PyObject *vec, int minarg, int maxarg, double *x, double *y, double *z, double *w=NULL);
+int python_vectorval(PyObject *vec, int minarg, int maxarg, double *x, double *y, double *z, double *w=NULL, int *flags = nullptr);
 std::vector<Vector3d> python_vectors(PyObject *vec, int mindim, int maxdim);
-int python_numberval(PyObject *number, double *result);
+int python_numberval(PyObject *number, double *result,int *flags = nullptr, int flagor=0);
 void get_fnas(double& fn, double& fa, double& fs);
 void python_retrieve_pyname(const std::shared_ptr<AbstractNode> &node);
 void python_build_hashmap(const std::shared_ptr<AbstractNode> &node, int level);

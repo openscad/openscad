@@ -44,9 +44,9 @@ public:
   {
     std::ostringstream stream;
     stream << "cube(size = ["
-           << x << ", "
-           << y << ", "
-           << z << "], center = " ;
+           << dim[0] << ", "
+           << dim[1] << ", "
+           << dim[2] << "], center = " ;
     if(center[0] == center[1] && center[1] == center[2])
 	    stream << ((center[0] == 0) ? "true" : "false");
     else {
@@ -65,7 +65,9 @@ public:
   std::unique_ptr<const Geometry> createGeometry() const override;
   virtual void dragPoint(const Vector3d &pt, const Vector3d &delta) override;
 
-  double x = 1, y = 1, z = 1;
+  double dim[3]= {1,1,1};
+  int dragflags=0;
+  double dim_[3]={0,0,0};
   int center[3] = {1,1,1} ; // -1 means negative side, 0 means centered, 1 means positive side
 };
 

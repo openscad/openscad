@@ -26,6 +26,9 @@
 
 #include "core/TransformNode.h"
 #include "geometry/linalg.h"
+#include "geometry/Geometry.h"
+#include "geometry/PolySet.h"
+#include "geometry/PolySetUtils.h"
 #include "core/ModuleInstantiation.h"
 #include "core/Children.h"
 #include "core/Builtins.h"
@@ -252,6 +255,64 @@ TransformNode::TransformNode(const ModuleInstantiation *mi, std::string verbose_
   matrix(Transform3d::Identity()),
   _name(std::move(verbose_name))
 {
+}
+
+void TransformNode::dragPoint(const Vector3d &pt, const Vector3d &newpt)
+{
+  if(polys_.size() == 0) matrix_ = matrix;
+  Transform3d invmat = matrix_.inverse();		
+  Vector3d pt_tran = invmat * pt;
+  Vector3d newpt_tran = invmat * newpt;
+
+  if(_name == "rotate") {
+    for(int i=0;i<children.size() && dragflags;i++) {
+      auto &child = children[i];	    
+      child->dragPoint(pt_tran, newpt_tran);
+      if(dragflags&4) 
+      {
+	std::shared_ptr<const PolySet> ps;
+	if(polys_.size() > i) {
+          ps=polys_[i];
+        } else {
+          std::shared_ptr<LeafNode>  leaf_child=nullptr;
+	  std::unique_ptr<const Geometry> geom = nullptr;
+	  std::shared_ptr<const Geometry> geom_s = nullptr;
+	  if(child != nullptr) leaf_child = std::dynamic_pointer_cast<LeafNode>(child);
+	  if(leaf_child != nullptr) geom = leaf_child->createGeometry();
+	  if(geom != nullptr) geom_s = std::move(geom);
+          ps = PolySetUtils::getGeometryAsPolySet(geom_s);
+	  polys_.push_back(ps);
+	}  
+	if(ps == nullptr) continue;
+	for(const auto &v:ps->vertices){ // TODO more rotations
+          if((v-pt_tran).norm() < 1e-3) {
+	    double sx=0, sy=0, sz=0;
+	    double cx=1, cy=1, cz=1;
+
+            double newang= atan2(newpt_tran[1], newpt_tran[0]);		  
+	    cz=cos(newang);
+	    sz=sin(newang);
+
+            Matrix3d M;
+            M << cy * cz,  cz *sx *sy - cx * sz,   cx *cz *sy + sx * sz,
+                  cy *sz,  cx *cz + sx * sy * sz,  -cz * sx + cx * sy * sz,
+                  -sy,       cy *sx,                  cx *cy;
+	    matrix=matrix_;
+            matrix.rotate(M);
+	    break;
+	  }		  
+	}
+      }
+    }	    
+  }	  
+/*	
+  if (dim_[0] == 0) {dim_[0] = dim[0]; dim_[1]=dim[1]; dim_[2] = dim[2];}
+  for(int i=0;i<3; i++)	{
+    if(dragflags & (1<<i)){
+      if(center[i] == 1  && fabs(pt[i]-dim_[i]) < 1e-3 ) this->dim[i] = newpt[i];
+    }
+  }
+  */
 }
 
 std::string TransformNode::name() const
