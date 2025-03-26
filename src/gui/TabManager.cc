@@ -153,7 +153,6 @@ void TabManager::createTab(const QString& filename)
 
   auto scintillaEditor = new ScintillaEditor(tabWidget);
   editor = scintillaEditor;
-  Preferences::create(editor->colorSchemes());   // needs to be done only once, however handled
   par->activeEditor = editor;
   editor->parameterWidget = new ParameterWidget(par->parameterDock);
   connect(editor->parameterWidget, &ParameterWidget::parametersChanged, par, &MainWindow::actionRenderPreview);
@@ -173,9 +172,9 @@ void TabManager::createTab(const QString& filename)
     par->setLastFocus(editor);
   });
 
-  connect(Preferences::inst(), &Preferences::editorConfigChanged, scintillaEditor, &ScintillaEditor::applySettings);
-  connect(Preferences::inst(), &Preferences::autocompleteChanged, scintillaEditor, &ScintillaEditor::onAutocompleteChanged);
-  connect(Preferences::inst(), &Preferences::characterThresholdChanged, scintillaEditor, &ScintillaEditor::onCharacterThresholdChanged);
+  connect(GlobalPreferences::inst(), &Preferences::editorConfigChanged, scintillaEditor, &ScintillaEditor::applySettings);
+  connect(GlobalPreferences::inst(), &Preferences::autocompleteChanged, scintillaEditor, &ScintillaEditor::onAutocompleteChanged);
+  connect(GlobalPreferences::inst(), &Preferences::characterThresholdChanged, scintillaEditor, &ScintillaEditor::onCharacterThresholdChanged);
   scintillaEditor->applySettings();
   editor->addTemplate();
 
@@ -190,10 +189,10 @@ void TabManager::createTab(const QString& filename)
     setTabModified(editor);
   });
 
-  connect(Preferences::inst(), &Preferences::fontChanged, editor, &EditorInterface::initFont);
-  connect(Preferences::inst(), &Preferences::syntaxHighlightChanged, editor, &EditorInterface::setHighlightScheme);
-  editor->initFont(Preferences::inst()->getValue("editor/fontfamily").toString(), Preferences::inst()->getValue("editor/fontsize").toUInt());
-  editor->setHighlightScheme(Preferences::inst()->getValue("editor/syntaxhighlight").toString());
+  connect(GlobalPreferences::inst(), &Preferences::fontChanged, editor, &EditorInterface::initFont);
+  connect(GlobalPreferences::inst(), &Preferences::syntaxHighlightChanged, editor, &EditorInterface::setHighlightScheme);
+  editor->initFont(GlobalPreferences::inst()->getValue("editor/fontfamily").toString(), GlobalPreferences::inst()->getValue("editor/fontsize").toUInt());
+  editor->setHighlightScheme(GlobalPreferences::inst()->getValue("editor/syntaxhighlight").toString());
 
   connect(scintillaEditor, &ScintillaEditor::hyperlinkIndicatorClicked, this, &TabManager::onHyperlinkIndicatorClicked);
 
