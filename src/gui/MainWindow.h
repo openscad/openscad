@@ -143,7 +143,11 @@ private slots:
   void openCSGSettingsChanged();
   void consoleOutput(const Message& msgObj);
   void setSelection(int index);
+
+  // implements the actions to be done when the selection menu is closing
+  // the seclection menu is the one that show up when right click on the geometry in the 3d view.
   void onHoveredObjectInSelectionMenu();
+
   void measureFinished();
   void errorLogOutput(const Message& log_msg);
   void onNavigationOpenContextMenu();

@@ -2472,12 +2472,12 @@ void MainWindow::rightClick(QPoint position)
         ss << name << " (library "
            << location.fileName().substr(libpath.string().length() + 1) << ":"
            << location.firstLine() << ")";
-      } else if (activeEditor->filepath.toStdString() == location.fileName()) {
+      } else if (renderedEditor->filepath.toStdString() == location.fileName()) {
         // removes the "module" prefix if any as it makes it not clear if it is module declaration or call.
         ss << name << " (" << location.filePath().filename().string() << ":"
            << location.firstLine() << ")";
       } else {
-        auto relative_filename = fs_uncomplete(location.filePath(), fs::path(activeEditor->filepath.toStdString()).parent_path())
+        auto relative_filename = fs_uncomplete(location.filePath(), fs::path(renderedEditor->filepath.toStdString()).parent_path())
           .generic_string();
 
         // Set the displayed name relative to the active editor window
@@ -2490,12 +2490,18 @@ void MainWindow::rightClick(QPoint position)
         connect(action, &QAction::hovered, this, &MainWindow::onHoveredObjectInSelectionMenu);
       }
     }
-    clearAllSelectionIndicators();
 
-    // Before starting the
+    // Before starting we need to lock the GUI to avoid interferance with reload/update
+    // triggered by other part of the application (eg: changing the renderedEditor)
     GuiLocker::lock();
-    connect(&tracemenu, &QMenu::aboutToHide, [](){
-      GuiLocker::unlock();
+
+    // Execute this lambda function when the selection menu is closing.
+    connect(&tracemenu, &QMenu::aboutToHide, [this](){
+        // remove the visual hints in the editor
+        renderedEditor->clearAllSelectionIndicators();
+        // unlock the GUI so the other part of the interface can now be updated.
+        // (eg: changing the renderedEditor)
+        GuiLocker::unlock();
     });
     tracemenu.exec(this->qglview->mapToGlobal(position));
   } else {
@@ -2586,8 +2592,6 @@ void MainWindow::setSelectionIndicatorStatus(EditorInterface *editor, int nodeIn
 
     auto& location = node->modinst->location();
     if (location.filePath().compare(editor->filepath.toStdString()) != 0) {
-      std::cout << "--->>> Line of code in a different file -- PATH -- " << location.fileName() << std::endl;
-      node->modinst->print(std::cout, "");
       level++;
       continue;
     }
@@ -2615,6 +2619,7 @@ void MainWindow::setSelectionIndicatorStatus(EditorInterface *editor, int nodeIn
 
 void MainWindow::setSelection(int index)
 {
+  assert(renderedEditor!=nullptr);
   if (currentlySelectedObject == index) return;
 
   std::deque<std::shared_ptr<const AbstractNode>> path;
@@ -2635,22 +2640,9 @@ void MainWindow::setSelection(int index)
     tabManager->open(QString::fromStdString(file));
   }
 
-  EditorInterface *editor = nullptr;
-  for (auto seditor : tabManager->editorList) {
-    auto editorPathName = seditor->filepath.toStdString();
-    auto locationPathName = location.filePath().generic_string();
-    if (editorPathName == locationPathName) {
-      editor = seditor;
-    }
-  }
-
-  if (editor == nullptr) {
-    return;
-  }
-
   // removes all previsly configure selection indicators.
-  editor->clearAllSelectionIndicators();
-  editor->show();
+  renderedEditor->clearAllSelectionIndicators();
+  renderedEditor->show();
 
   std::vector<std::shared_ptr<const AbstractNode>> nodesSameModule{};
   findNodesWithSameMod(rootNode, selected_node, nodesSameModule);
@@ -2658,15 +2650,15 @@ void MainWindow::setSelection(int index)
   // highlight in the text editor all the text fragment of the hierarchy of object with same mode.
   for (const auto& element : nodesSameModule) {
     if (element->index() != currentlySelectedObject) {
-      setSelectionIndicatorStatus(editor, element->index(), EditorSelectionIndicatorStatus::IMPACTED);
+      setSelectionIndicatorStatus(renderedEditor, element->index(), EditorSelectionIndicatorStatus::IMPACTED);
     }
   }
 
   // highlight in the text editor only the fragment correponding to the selected stack.
   // this step must be done after all the impacted element have been marked.
-  setSelectionIndicatorStatus(editor, currentlySelectedObject, EditorSelectionIndicatorStatus::SELECTED);
+  setSelectionIndicatorStatus(renderedEditor, currentlySelectedObject, EditorSelectionIndicatorStatus::SELECTED);
 
-  editor->setCursorPosition(line - 1, column - 1);
+  renderedEditor->setCursorPosition(line - 1, column - 1);
 }
 
 /**
@@ -2674,6 +2666,7 @@ void MainWindow::setSelection(int index)
  */
 void MainWindow::onHoveredObjectInSelectionMenu()
 {
+  assert(renderedEditor!=nullptr);
   auto *action = qobject_cast<QAction *>(sender());
   if (!action || !action->property("id").isValid()) {
     return;

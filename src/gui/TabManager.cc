@@ -90,7 +90,9 @@ void TabManager::closeTabRequested(int x)
   assert(tabWidget != nullptr);
   if (!maybeSave(x)) return;
 
-  auto *closingEditor = (EditorInterface *)tabWidget->widget(x);
+  auto *closingEditor = qobject_cast<EditorInterface*>(tabWidget->widget(x));
+  assert(closingEditor != nullptr);
+
   emit editorAboutToClose(closingEditor);
 
   editorList.remove(closingEditor);
