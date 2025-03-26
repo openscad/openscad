@@ -174,7 +174,7 @@ public:
   static void noOutputErrorLog(const Message&, void *) {} // /dev/null
 
   bool fileChangedOnDisk();
-  void parseTopLevelDocument(EditorInterface* editor);
+  void parseTopLevelDocument(EditorInterface *editor);
   void exceptionCleanup();
   void setLastFocus(QWidget *widget);
   void UnknownExceptionCleanup(std::string msg = "");

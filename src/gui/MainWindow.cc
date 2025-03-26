@@ -2503,11 +2503,11 @@ void MainWindow::rightClick(QPoint position)
 
     // Execute this lambda function when the selection menu is closing.
     connect(&tracemenu, &QMenu::aboutToHide, [this](){
-        // remove the visual hints in the editor
-        renderedEditor->clearAllSelectionIndicators();
-        // unlock the GUI so the other part of the interface can now be updated.
-        // (eg: changing the renderedEditor)
-        GuiLocker::unlock();
+      // remove the visual hints in the editor
+      renderedEditor->clearAllSelectionIndicators();
+      // unlock the GUI so the other part of the interface can now be updated.
+      // (eg: changing the renderedEditor)
+      GuiLocker::unlock();
     });
     tracemenu.exec(this->qglview->mapToGlobal(position));
   } else {
@@ -2625,7 +2625,7 @@ void MainWindow::setSelectionIndicatorStatus(EditorInterface *editor, int nodeIn
 
 void MainWindow::setSelection(int index)
 {
-  assert(renderedEditor!=nullptr);
+  assert(renderedEditor != nullptr);
   if (currentlySelectedObject == index) return;
 
   std::deque<std::shared_ptr<const AbstractNode>> path;
@@ -2672,7 +2672,7 @@ void MainWindow::setSelection(int index)
  */
 void MainWindow::onHoveredObjectInSelectionMenu()
 {
-  assert(renderedEditor!=nullptr);
+  assert(renderedEditor != nullptr);
   auto *action = qobject_cast<QAction *>(sender());
   if (!action || !action->property("id").isValid()) {
     return;
@@ -3435,22 +3435,22 @@ void MainWindow::onTabManagerAboutToCloseEditor(EditorInterface *closingEditor)
 }
 
 void MainWindow::onTabManagerEditorCreated(EditorInterface *createdEditor)
-{    
-    try {
-        // when a new editor is created, it is important to compile the initial geometry
-        // so the customizer panels are ok.
-        parseTopLevelDocument(createdEditor);
-    } catch (const HardWarningException&) {
-        exceptionCleanup();
-    } catch (const std::exception& ex) {
-        UnknownExceptionCleanup(ex.what());
-    } catch (...) {
-        UnknownExceptionCleanup();
-    }
+{
+  try {
+    // when a new editor is created, it is important to compile the initial geometry
+    // so the customizer panels are ok.
+    parseTopLevelDocument(createdEditor);
+  } catch (const HardWarningException&) {
+    exceptionCleanup();
+  } catch (const std::exception& ex) {
+    UnknownExceptionCleanup(ex.what());
+  } catch (...) {
+    UnknownExceptionCleanup();
+  }
 
-    // updates the content of the Recents Files menu to integrate the one possibly
-    // associated with the created editor.
-    updateRecentFileActions();
+  // updates the content of the Recents Files menu to integrate the one possibly
+  // associated with the created editor.
+  updateRecentFileActions();
 }
 
 void MainWindow::onTabManagerEditorChanged(EditorInterface *newEditor)
