@@ -78,6 +78,8 @@ private:
   bool mouse_drag_moved = true;
   bool mouseCentricZoom = true;
   bool mouseSwapButtons = false;
+  std::shared_ptr<SelectedObject> mouseDraggedSel = nullptr;
+  QPoint mouseDraggedPoint;
   QPoint last_mouse;
   QImage frame; // Used by grabFrame() and save()
 
@@ -106,6 +108,7 @@ signals:
   void doRightClick(QPoint screen_coordinate);
   void doLeftClick(QPoint screen_coordinate);
   void toolTipShow(QPoint,QString msg);
+  void dragPoint(Vector3d pt, Vector3d delta);
 };
 
 /* These are defined in QLGView2.cc.  See the commentary there. */

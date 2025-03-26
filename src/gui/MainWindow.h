@@ -343,6 +343,7 @@ public slots:
   void jumpToLine(int, int);
   void openFileFromPath(const QString&, int);
   void toolTipShow(QPoint,QString msg);
+  void dragPoint(Vector3d pt, Vector3d delta);
 
   void viewModeRender();
 #ifdef ENABLE_OPENCSG

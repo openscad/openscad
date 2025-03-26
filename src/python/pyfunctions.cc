@@ -104,7 +104,7 @@ PyObject *python_edge(PyObject *self, PyObject *args, PyObject *kwargs)
   if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|dO", kwlist,
                                    &size,
                                    &center)){
-    PyErr_SetString(PyExc_TypeError, "Error during parsing cube(size)");
+    PyErr_SetString(PyExc_TypeError, "Error during parsing edge(size)");
     return NULL;
   }	  
 
@@ -123,6 +123,7 @@ PyObject *python_edge(PyObject *self, PyObject *args, PyObject *kwargs)
 PyObject *python_cube(PyObject *self, PyObject *args, PyObject *kwargs)
 {
   DECLARE_INSTANCE
+	  printf("python cube\n");
   auto node = std::make_shared<CubeNode>(instance);
 
   char *kwlist[] = {"size", "center", NULL};

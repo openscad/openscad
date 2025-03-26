@@ -286,6 +286,12 @@ int python_numberval(PyObject *number, double *result)
     *result = PyLong_AsLong(number);
     return 0;
   }
+  if (PyUnicode_Check(number)) {
+    PyObjectUniquePtr str( PyUnicode_AsEncodedString(number, "utf-8", "~"), PyObjectDeleter);
+    char *str1 = PyBytes_AS_STRING(str.get());
+    sscanf(str1,"%lf",result);
+    return 0;
+  }
   return 1;
 }
 

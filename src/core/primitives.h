@@ -63,6 +63,7 @@ public:
   }
   std::string name() const override { return "cube"; }
   std::unique_ptr<const Geometry> createGeometry() const override;
+  virtual void dragPoint(const Vector3d &pt, const Vector3d &delta) override;
 
   double x = 1, y = 1, z = 1;
   int center[3] = {1,1,1} ; // -1 means negative side, 0 means centered, 1 means positive side

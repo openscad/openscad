@@ -781,6 +781,7 @@ MainWindow::MainWindow(const QStringList& filenames) :
   connect(this->qglview, &QGLView::doRightClick, this, &MainWindow::rightClick);
   connect(this->qglview, &QGLView::doLeftClick, this, &MainWindow::leftClick);
   connect(this->qglview, &QGLView::toolTipShow, this, &MainWindow::toolTipShow);
+  connect(this->qglview, &QGLView::dragPoint, this, &MainWindow::dragPoint);
 
   connect(Preferences::inst(), &Preferences::requestRedraw, this->qglview, QOverload<>::of(&QGLView::update));
   connect(Preferences::inst(), &Preferences::updateMouseCentricZoom, this->qglview, &QGLView::setMouseCentricZoom);
@@ -1032,6 +1033,24 @@ void MainWindow::toolTipShow(QPoint pt,QString msg)
 {
   QPoint pos = QCursor::pos();
   QToolTip::showText(pos,msg,this);
+}
+
+void MainWindow::dragPoint(Vector3d pt, Vector3d delta)
+{
+  if(this->rootNode == nullptr) return;
+  this->rootNode->dragPoint(pt,delta);	  
+  static bool preview_requested;
+
+  preview_requested = true;
+  if (GuiLocker::isLocked()) return;
+  GuiLocker::lock();
+  preview_requested = false;
+
+  this->designActionMeasureDistance->setEnabled(false);
+  this->designActionMeasureAngle->setEnabled(false);
+
+  prepareCompile("csgRender", !animateDock->isVisible(), true);
+  compileDone(true);
 }
 
 void MainWindow::addKeyboardShortCut(const QList<QAction *>& actions)

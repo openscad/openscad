@@ -165,6 +165,14 @@ std::unique_ptr<const Geometry> CubeNode::createGeometry() const
   return ps;
 }
 
+void CubeNode::dragPoint(const Vector3d &pt, const Vector3d &newpt)
+{
+	printf("Cube %g/%g/%g \n",newpt[0], newpt[1], newpt[2]);
+	this->x=newpt[0];
+	this->y=newpt[1];
+	this->z=newpt[2];
+}
+
 static std::shared_ptr<AbstractNode> builtin_cube(const ModuleInstantiation *inst, Arguments arguments)
 {
   auto node = std::make_shared<CubeNode>(inst);

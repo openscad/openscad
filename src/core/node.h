@@ -11,6 +11,7 @@
 #include "core/BaseVisitable.h"
 #include "core/AST.h"
 #include "core/ModuleInstantiation.h"
+#include <Eigen/StdVector>
 
 extern int progress_report_count;
 extern void (*progress_report_f)(const std::shared_ptr<const AbstractNode>&, void *, int);
@@ -19,7 +20,7 @@ extern std::vector<ModuleInstantiation *> modinsts_list;
 
 void progress_report_prep(const std::shared_ptr<AbstractNode>& root, void (*f)(const std::shared_ptr<const AbstractNode>& node, void *vp, int mark), void *vp);
 void progress_report_fin();
-
+using Eigen::Vector3d;
 /*!
 
    The node tree is the result of evaluation of a module instantiation
@@ -73,6 +74,7 @@ public:
   void setPyName(const std::string &name);
   std::string  getPyName(void);
 #endif  
+  virtual void dragPoint(const Vector3d &pt, const Vector3d &delta) {printf("drag Point on AbstractNode\n"); }
 };
 
 class AbstractIntersectionNode : public AbstractNode

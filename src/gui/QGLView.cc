@@ -91,6 +91,7 @@ void QGLView::init()
   this->statusLabel = nullptr;
 
   setMouseTracking(true);
+  mouseDraggedSel = nullptr;
 }
 
 void QGLView::resetView()
@@ -248,6 +249,7 @@ void QGLView::mousePressEvent(QMouseEvent *event)
 
   mouse_drag_active = true;
   last_mouse = event->globalPos();
+  mouseDraggedPoint = event->pos();
 }
 
 /*
@@ -345,8 +347,8 @@ void QGLView::normalizeAngle(GLdouble& angle)
 void QGLView::mouseMoveEvent(QMouseEvent *event)
 {
   auto this_mouse = event->globalPos();
+  QPoint pt = event->pos();
   if(measure_state != MEASURE_IDLE) {
-    QPoint pt = event->pos();
     this->shown_obj = findObject(pt.x(), pt.y());
     update();
   }
@@ -362,8 +364,29 @@ void QGLView::mouseMoveEvent(QMouseEvent *event)
         ) {
       // Left button rotates in xz, Shift-left rotates in xy
       // On Mac, Ctrl-Left is handled as right button on other platforms
-      if ((QApplication::keyboardModifiers() & Qt::ShiftModifier) != 0) {
-        rotate(dy, dx, 0.0, true);
+      if ((QApplication::keyboardModifiers() & Qt::ControlModifier) != 0) {
+	int drag_x=event->x() - mouseDraggedPoint.x();	      
+	int drag_y=mouseDraggedPoint.y() - event->y();	      
+
+
+        if(mouseDraggedSel == nullptr){
+          mouseDraggedSel = findObject(pt.x(), pt.y()); 
+          if(mouseDraggedSel != nullptr && mouseDraggedSel->type !=  SelectionType::SELECTION_POINT )
+            mouseDraggedSel = nullptr;				
+	}
+	if(mouseDraggedSel != nullptr){
+          int viewport[4]={0,0,0,0};
+          viewport[2]=size().rwidth();
+          viewport[3]=size().rheight();
+	  GLdouble viewcoord[3];
+          gluProject(mouseDraggedSel->pt[0][0],mouseDraggedSel->pt[0][1],mouseDraggedSel->pt[0][2], this->modelview, this->projection, viewport,&viewcoord[0], &viewcoord[1], &viewcoord[2]);
+
+	  Vector3d newpos;
+          gluUnProject(viewcoord[0]+drag_x, viewcoord[1]+drag_y, viewcoord[2], this->modelview, this->projection, viewport,&newpos[0], &newpos[1], &newpos[2]);
+	  emit dragPoint(mouseDraggedSel->pt[0], newpos/* -mouseDraggedSel->pt[0]*/);
+	}
+      }else
+      if ((QApplication::keyboardModifiers() & Qt::ShiftModifier) != 0) { rotate(dy, dx, 0.0, true);
       } else {
         rotate(dy, 0.0, dx, true);
       }
@@ -399,6 +422,7 @@ void QGLView::mouseMoveEvent(QMouseEvent *event)
 void QGLView::mouseReleaseEvent(QMouseEvent *event)
 {
   mouse_drag_active = false;
+  mouseDraggedSel = nullptr;
   releaseMouse();
 
   auto button_right = this->mouseSwapButtons?Qt::LeftButton : Qt::RightButton;
