@@ -74,6 +74,9 @@
 
 #include <string>
 
+
+static const char* featurePropertyName="FeatureProperty";
+
 using S = Settings::Settings;
 
 Q_DECLARE_METATYPE(Feature *);
@@ -92,10 +95,8 @@ class SettingsReader : public Settings::SettingsVisitor
   }
 };
 
-Preferences::Preferences(const char* propertyName, QWidget *parent) : QMainWindow(parent)
+Preferences::Preferences(QWidget *parent) : QMainWindow(parent)
 {
-  featurePropertyName = propertyName;
-
   setupUi(this);
 
   std::list<std::string> names = ColorMap::inst()->colorSchemeNames(true);
@@ -1402,7 +1403,7 @@ Preferences* GlobalPreferences::inst()
 {
     static Preferences* instance {nullptr};
     if(instance==nullptr){
-        instance = new Preferences("FeatureProperty");
+        instance = new Preferences();
     }
     return instance;
 };

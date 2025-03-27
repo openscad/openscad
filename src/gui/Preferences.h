@@ -198,7 +198,7 @@ private slots:
 
 private:
   friend GlobalPreferences;
-  Preferences(const char *propertyName, QWidget *parent = nullptr);
+  Preferences(QWidget *parent = nullptr);
   void keyPressEvent(QKeyEvent *e) override;
   void showEvent(QShowEvent *e) override;
   void closeEvent(QCloseEvent *e) override;
@@ -220,8 +220,6 @@ private:
 
   QSettings::SettingsMap defaultmap;
   QHash<const QAction *, QWidget *> prefPages;
-
-  const char* featurePropertyName=nullptr;
 };
 
 class GlobalPreferences
