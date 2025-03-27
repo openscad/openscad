@@ -12,6 +12,7 @@
 #include "core/AST.h"
 #include "core/ModuleInstantiation.h"
 #include <Eigen/StdVector>
+#include "geometry/Geometry.h"
 
 extern int progress_report_count;
 extern void (*progress_report_f)(const std::shared_ptr<const AbstractNode>&, void *, int);
@@ -74,7 +75,7 @@ public:
   void setPyName(const std::string &name);
   std::string  getPyName(void);
 #endif  
-  virtual void dragPoint(const Vector3d &pt, const Vector3d &delta) {printf("drag Point on AbstractNode\n"); }
+  virtual std::shared_ptr<const Geometry> dragPoint(const Vector3d &pt, const Vector3d &delta) {printf("drag Point on AbstractNode\n"); return nullptr; }
 };
 
 class AbstractIntersectionNode : public AbstractNode

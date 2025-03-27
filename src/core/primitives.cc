@@ -165,7 +165,7 @@ std::unique_ptr<const Geometry> CubeNode::createGeometry() const
   return ps;
 }
 
-void CubeNode::dragPoint(const Vector3d &pt, const Vector3d &newpt)
+std::shared_ptr<const Geometry> CubeNode::dragPoint(const Vector3d &pt, const Vector3d &newpt)
 {
   if (dim_[0] == 0) {dim_[0] = dim[0]; dim_[1]=dim[1]; dim_[2] = dim[2];}
   for(int i=0;i<3; i++)	{
@@ -173,6 +173,7 @@ void CubeNode::dragPoint(const Vector3d &pt, const Vector3d &newpt)
       if(center[i] == 1  && fabs(pt[i]-dim_[i]) < 1e-3 ) this->dim[i] = newpt[i];
     }
   }
+  return std::shared_ptr<const Geometry>(std::move(createGeometry()));
 }
 
 static std::shared_ptr<AbstractNode> builtin_cube(const ModuleInstantiation *inst, Arguments arguments)
@@ -341,6 +342,11 @@ std::unique_ptr<const Geometry> CylinderNode::createGeometry() const
   }
 
   return polyset;
+}
+
+std::shared_ptr<const Geometry> CylinderNode::dragPoint(const Vector3d &pt, const Vector3d &newpt)
+{
+  return std::shared_ptr<const Geometry>(std::move(createGeometry()));
 }
 
 static std::shared_ptr<AbstractNode> builtin_cylinder(const ModuleInstantiation *inst, Arguments arguments)

@@ -257,20 +257,24 @@ TransformNode::TransformNode(const ModuleInstantiation *mi, std::string verbose_
 {
 }
 
-void TransformNode::dragPoint(const Vector3d &pt, const Vector3d &newpt)
+std::shared_ptr<const Geometry> TransformNode::dragPoint(const Vector3d &pt, const Vector3d &newpt)
 {
   if(polys_.size() == 0) matrix_ = matrix;
   Transform3d invmat = matrix_.inverse();		
   Vector3d pt_tran = invmat * pt;
   Vector3d newpt_tran = invmat * newpt;
+  std::shared_ptr<PolySet> result_geom = nullptr;
 
-  if(_name == "rotate") {
-    for(int i=0;i<children.size() && dragflags;i++) {
-      auto &child = children[i];	    
-      child->dragPoint(pt_tran, newpt_tran);
+  for(int i=0;i<children.size();i++) {
+    auto &child = children[i];	    
+    printf("in node %s\n",_name.c_str());
+    std::shared_ptr<const Geometry> child_geom = child->dragPoint(pt_tran, newpt_tran);
+    std::shared_ptr<const PolySet> ps = nullptr;
+    ps = std::dynamic_pointer_cast<const PolySet>(child_geom);
+    if(_name == "rotate" && dragflags) {
       if(dragflags&4) 
       {
-	std::shared_ptr<const PolySet> ps;
+
 	if(polys_.size() > i) {
           ps=polys_[i];
         } else {
@@ -278,11 +282,16 @@ void TransformNode::dragPoint(const Vector3d &pt, const Vector3d &newpt)
 	  std::unique_ptr<const Geometry> geom = nullptr;
 	  std::shared_ptr<const Geometry> geom_s = nullptr;
 	  if(child != nullptr) leaf_child = std::dynamic_pointer_cast<LeafNode>(child);
-	  if(leaf_child != nullptr) geom = leaf_child->createGeometry();
-	  if(geom != nullptr) geom_s = std::move(geom);
-          ps = PolySetUtils::getGeometryAsPolySet(geom_s);
+	  if(leaf_child != nullptr){
+		  geom = leaf_child->createGeometry();
+		  if(geom != nullptr) geom_s = std::move(geom);
+        	  ps = PolySetUtils::getGeometryAsPolySet(geom_s);
+	  }
 	  polys_.push_back(ps);
 	}  
+// TODO above not used
+	ps = std::dynamic_pointer_cast<const PolySet>(child_geom);
+
 	if(ps == nullptr) continue;
 	for(const auto &v:ps->vertices){ // TODO more rotations
           if((v-pt_tran).norm() < 1e-3) {
@@ -304,15 +313,11 @@ void TransformNode::dragPoint(const Vector3d &pt, const Vector3d &newpt)
 	}
       }
     }	    
+    result_geom = std::make_shared<PolySet>(3);
+    result_geom->vertices = ps->vertices;
+    result_geom->transform(matrix_);
   }	  
-/*	
-  if (dim_[0] == 0) {dim_[0] = dim[0]; dim_[1]=dim[1]; dim_[2] = dim[2];}
-  for(int i=0;i<3; i++)	{
-    if(dragflags & (1<<i)){
-      if(center[i] == 1  && fabs(pt[i]-dim_[i]) < 1e-3 ) this->dim[i] = newpt[i];
-    }
-  }
-  */
+  return result_geom;
 }
 
 std::string TransformNode::name() const

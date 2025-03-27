@@ -63,7 +63,7 @@ public:
   }
   std::string name() const override { return "cube"; }
   std::unique_ptr<const Geometry> createGeometry() const override;
-  virtual void dragPoint(const Vector3d &pt, const Vector3d &delta) override;
+  virtual std::shared_ptr<const Geometry> dragPoint(const Vector3d &pt, const Vector3d &delta) override;
 
   double dim[3]= {1,1,1};
   int dragflags=0;
@@ -125,6 +125,7 @@ public:
   }
   std::string name() const override { return "cylinder"; }
   std::unique_ptr<const Geometry> createGeometry() const override;
+  virtual std::shared_ptr<const Geometry> dragPoint(const Vector3d &pt, const Vector3d &delta) override;
 
   double fn, fs, fa;
   double r1 = 1, r2 = 1, h = 1;
