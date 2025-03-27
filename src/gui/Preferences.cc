@@ -76,8 +76,6 @@
 
 using S = Settings::Settings;
 
-Preferences *GlobalPreferences::instance = nullptr;
-
 Q_DECLARE_METATYPE(Feature *);
 
 class SettingsReader : public Settings::SettingsVisitor
@@ -1353,9 +1351,16 @@ void Preferences::apply_win() const
   emit openCSGSettingsChanged();
 }
 
-void Preferences::addColorSchemes(const QStringList& colorSchemes)
+bool Preferences::hasHighlightingColorScheme() const
 {
-    BlockSignals<QComboBox *>(syntaxHighlight)->addItems(colorSchemes);
+    return BlockSignals<QComboBox *>(syntaxHighlight)->count() != 0;
+}
+
+void Preferences::setHighlightingColorSchemes(const QStringList& colorSchemes)
+{
+    auto combobox = BlockSignals<QComboBox *>(syntaxHighlight);
+    combobox->clear();
+    combobox->addItems(colorSchemes);
 }
 
 void Preferences::createFontSizeMenu(QComboBox *boxarg, const QString &setting)
@@ -1395,6 +1400,7 @@ void Preferences::updateGUIFontSize(QComboBox *fsSelector, const QString &settin
 
 Preferences* GlobalPreferences::inst()
 {
+    static Preferences* instance {nullptr};
     if(instance==nullptr){
         instance = new Preferences("FeatureProperty");
     }

@@ -38,7 +38,12 @@ public:
   void updateGUI();
   void fireEditorConfigChanged() const;
   void insertListItem(QListWidget *listBox, QListWidgetItem *listItem);
-  void addColorSchemes(const QStringList& colorSchemes);
+
+  // Returns true if there is an higlightling color scheme configured.
+  bool hasHighlightingColorScheme() const;
+
+  // Set a new colorScheme.
+  void setHighlightingColorSchemes(const QStringList& colorSchemes);
 
   template<typename item_type>
   QListWidgetItem * createListItem(const item_type& itemType, const QString& text = "", bool editable = false) {
@@ -223,7 +228,4 @@ class GlobalPreferences
 {
 public:
     static Preferences* inst();
-private:
-    static Preferences *instance;
-    static const char *featurePropertyName;
 };

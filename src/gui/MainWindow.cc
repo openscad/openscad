@@ -805,7 +805,12 @@ MainWindow::MainWindow(const QStringList& filenames) :
   updateExportActions();
 
   activeEditor->setFocus();
-  GlobalPreferences::inst()->addColorSchemes(activeEditor->colorSchemes());   // needs to be done only once, however handled
+
+  // Configure the highlighting color scheme from the active editor one.
+  // This is done only one time at creation of the first MainWindow instance
+  auto preferences = GlobalPreferences::inst();
+  if(!preferences->hasHighlightingColorScheme())
+    preferences->setHighlightingColorSchemes(activeEditor->colorSchemes());
 
   onTabManagerEditorChanged(activeEditor);
 }
