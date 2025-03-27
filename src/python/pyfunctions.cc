@@ -1283,7 +1283,7 @@ PyObject *python_matrix_trans(PyObject *mat, Vector3d transvec)
   return python_frommatrix(raw);
 }
 
-PyObject *python_translate_sub(PyObject *obj, Vector3d translatevec)
+PyObject *python_translate_sub(PyObject *obj, Vector3d translatevec, int dragflags)
 {
   PyObject *child_dict;
   PyObject *mat = python_matrix_trans(obj,translatevec);
@@ -1294,6 +1294,7 @@ PyObject *python_translate_sub(PyObject *obj, Vector3d translatevec)
   std::shared_ptr<AbstractNode> child;
   child = PyOpenSCADObjectToNodeMulti(obj, &child_dict);
   node->setPyName(child->getPyName());
+  node->dragflags=dragflags;
   if (child == NULL) {
     PyErr_SetString(PyExc_TypeError, "Invalid type for Object in translate");
     return NULL;
@@ -1358,7 +1359,7 @@ PyObject *python_dir_sub_core(PyObject *obj, double arg, int mode)
       case 4: trans=Vector3d(0,0,-arg); break;
       case 5: trans=Vector3d(0,0,arg); break;
     }
-    return python_translate_sub(obj, trans);
+    return python_translate_sub(obj, trans,0);
   }
   else 
   {
@@ -3257,6 +3258,7 @@ PyObject *python_nb_sub_vec3(PyObject *arg1, PyObject *arg2, int mode) // 0: tra
 
   child = PyOpenSCADObjectToNodeMulti(arg1, &child_dict);
   std::vector<Vector3d> vecs;
+  int dragflags=0;
   if(mode == 3) {
     if(!PyList_Check(arg2)) {
       PyErr_SetString(PyExc_TypeError, "explode arg must be a list");
@@ -3272,8 +3274,8 @@ PyObject *python_nb_sub_vec3(PyObject *arg1, PyObject *arg2, int mode) // 0: tra
     for(int i=0;i<3;i++) vals[i].push_back(0.0);
     for(int i=0;i<n;i++) {
       vals[i].clear();	    
-      auto *item =PyList_GetItem(arg2,i);	    
-      if (!python_numberval(item, &dmy)) vals[i].push_back(dmy);
+      auto *item =PyList_GetItem(arg2,i);	    // TODO fix here
+      if (!python_numberval(item, &dmy,&dragflags,1<<i)) vals[i].push_back(dmy);
       else if(PyList_Check(item)) {
         int m = PyList_Size(item);	      
 	for(int j=0;j<m;j++) {
@@ -3290,7 +3292,7 @@ PyObject *python_nb_sub_vec3(PyObject *arg1, PyObject *arg2, int mode) // 0: tra
       for(auto y : vals[1])
         for(auto x : vals[0])
           vecs.push_back(Vector3d(x,y,z));		
-  } else vecs = python_vectors(arg2,2,3);
+  } else vecs = python_vectors(arg2,2,3, &dragflags);
 
   if(mode == 0 && vecs.size() == 1) {
     PyObject *mat = python_matrix_trans(arg1,vecs[0]);
@@ -3304,14 +3306,27 @@ PyObject *python_nb_sub_vec3(PyObject *arg1, PyObject *arg2, int mode) // 0: tra
     }
     std::vector<std::shared_ptr<TransformNode>> nodes;
     for(size_t j=0;j<vecs.size();j++) {
-      auto node = std::make_shared<TransformNode>(instance, "transform");
-      if(mode == 0 || mode == 3) node->matrix.translate(vecs[j]);
-      if(mode == 1) node->matrix.scale(vecs[j]);
-      if(mode == 2) node->matrix.translate(-vecs[j]);
+      std::shared_ptr<TransformNode> node;
+      switch(mode) {
+        case 0:
+        case 3:		
+          node = std::make_shared<TransformNode>(instance, "translate");
+          node->matrix.translate(vecs[j]);
+	  break;
+        case 1:
+          node = std::make_shared<TransformNode>(instance, "scale");
+          node->matrix.scale(vecs[j]);
+          break;	  
+        case 2:
+          node = std::make_shared<TransformNode>(instance, "translate");
+          node->matrix.translate(-vecs[j]);
+          break;	  
+      }
       node->children.push_back(child);
       nodes.push_back(node);
     }  
     if(nodes.size() == 1) {
+      nodes[0]->dragflags = dragflags;	    
       PyObject *pyresult = PyOpenSCADObjectFromNode(&PyOpenSCADType, nodes[0]);
       if(child_dict != nullptr ) { 
         PyObject *key, *value;

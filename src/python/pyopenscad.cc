@@ -347,7 +347,7 @@ int python_vectorval(PyObject *vec, int minval, int maxval, double *x, double *y
   return 1;
 }
 
-std::vector<Vector3d> python_vectors(PyObject *vec, int mindim, int maxdim) 
+std::vector<Vector3d> python_vectors(PyObject *vec, int mindim, int maxdim, int *dragflags) 
 {
   std::vector<Vector3d> results;	
   if (PyList_Check(vec)) {
@@ -376,7 +376,7 @@ std::vector<Vector3d> python_vectors(PyObject *vec, int mindim, int maxdim)
     if(PyList_Size(vec) >= mindim && PyList_Size(vec) <= maxdim) {	  
       for(int i=0;i<PyList_Size(vec);i++) {
         if (PyList_Size(vec) > i) {
-          if (python_numberval(PyList_GetItem(vec, i), &result[i])) return results; // Error
+          if (python_numberval(PyList_GetItem(vec, i), &result[i],dragflags, 1<<i)) return results; // Error
         }
       }	
     }  

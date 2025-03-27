@@ -18,7 +18,6 @@ public:
   std::string verbose_name() const override;
   Transform3d matrix;
   virtual std::shared_ptr<const Geometry> dragPoint(const Vector3d &pt, const Vector3d &delta) override;
-  std::vector<std::shared_ptr<const PolySet>> polys_;
   Transform3d matrix_;
   int dragflags=0;
 
