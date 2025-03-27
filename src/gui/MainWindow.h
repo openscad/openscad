@@ -163,9 +163,9 @@ private slots:
   // the tab manager editor is about to close one of the tab
   void onTabManagerAboutToCloseEditor(EditorInterface *);
 
-  // implement the different actions needed when
-  // the tab manager has just created a new file (possibly with a content)
-  void onTabManagerEditorCreated(EditorInterface *createdEditor);
+  // implement the different actions needed when an editor
+  // has its content replaced (because of load)
+  void onTabManagerEditorContentReloaded(EditorInterface *reloadedEditor);
 
 public:
   static void consoleOutput(const Message& msgObj, void *userdata);

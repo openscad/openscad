@@ -381,7 +381,7 @@ MainWindow::MainWindow(const QStringList& filenames) :
 
   connect(tabManager, &TabManager::editorAboutToClose, this, &MainWindow::onTabManagerAboutToCloseEditor);
   connect(tabManager, &TabManager::currentEditorChanged, this, &MainWindow::onTabManagerEditorChanged);
-  connect(tabManager, &TabManager::editorCreated, this, &MainWindow::onTabManagerEditorCreated);
+  connect(tabManager, &TabManager::editorContentReloaded, this, &MainWindow::onTabManagerEditorContentReloaded);
 
   connect(Preferences::inst(), &Preferences::consoleFontChanged, this->console, &Console::setFont);
 
@@ -3434,12 +3434,12 @@ void MainWindow::onTabManagerAboutToCloseEditor(EditorInterface *closingEditor)
   }
 }
 
-void MainWindow::onTabManagerEditorCreated(EditorInterface *createdEditor)
+void MainWindow::onTabManagerEditorContentReloaded(EditorInterface *reloadedEditor)
 {
   try {
     // when a new editor is created, it is important to compile the initial geometry
     // so the customizer panels are ok.
-    parseTopLevelDocument(createdEditor);
+    parseTopLevelDocument(reloadedEditor);
   } catch (const HardWarningException&) {
     exceptionCleanup();
   } catch (const std::exception& ex) {
@@ -3449,7 +3449,8 @@ void MainWindow::onTabManagerEditorCreated(EditorInterface *createdEditor)
   }
 
   // updates the content of the Recents Files menu to integrate the one possibly
-  // associated with the created editor.
+  // associated with the created editor. The reason is that an editor can be created
+  // or updated without a file associated with it.
   updateRecentFileActions();
 }
 
