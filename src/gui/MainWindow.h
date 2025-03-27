@@ -174,7 +174,12 @@ public:
   static void noOutputErrorLog(const Message&, void *) {} // /dev/null
 
   bool fileChangedOnDisk();
-  void parseTopLevelDocument(EditorInterface *editor);
+
+  // Parse the document contained in the editor, update the editors's parameters and returns a SourceFile object
+  // if parsing suceeded. Nullptr otherwise.
+  SourceFile* parseDocument(EditorInterface *editor);
+
+  void parseTopLevelDocument();
   void exceptionCleanup();
   void setLastFocus(QWidget *widget);
   void UnknownExceptionCleanup(std::string msg = "");
