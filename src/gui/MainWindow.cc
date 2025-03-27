@@ -2136,59 +2136,9 @@ void MainWindow::parseTopLevelDocument()
 
   this->lastCompiledDoc = activeEditor->toPlainText();
 
-  auto fulltext =
-    std::string(this->lastCompiledDoc.toUtf8().constData()) +
-    "\n\x03\n" + commandline_commands;
-
-  auto fnameba = activeEditor->filepath.toLocal8Bit();
-  const char *fname = activeEditor->filepath.isEmpty() ? "" : fnameba;
-  delete this->parsedFile;
-#ifdef ENABLE_PYTHON
-  this->python_active = false;
-  if (fname != NULL) {
-    if (boost::algorithm::ends_with(fname, ".py")) {
-      std::string content = std::string(this->lastCompiledDoc.toUtf8().constData());
-      if (
-        Feature::ExperimentalPythonEngine.is_enabled()
-        && trust_python_file(std::string(fname), content)) this->python_active = true;
-      else LOG(message_group::Warning, Location::NONE, "", "Python is not enabled");
-    }
-  }
-
-  if (this->python_active) {
-    auto fulltext_py =
-      std::string(this->lastCompiledDoc.toUtf8().constData());
-
-    const auto& venv = venvBinDirFromSettings();
-    const auto& binDir = venv.empty() ? PlatformUtils::applicationPath() : venv;
-    initPython(binDir, this->animateWidget->getAnimTval());
-
-    if (venv.empty()) {
-      LOG("Running %1$s without venv.", python_version());
-    } else {
-      const auto& v = Settings::SettingsPython::pythonVirtualEnv.value();
-      LOG("Running %1$s in venv '%2$s'.", python_version(), v);
-    }
-    auto error = evaluatePython(fulltext_py, false);
-    if (error.size() > 0) LOG(message_group::Error, Location::NONE, "", error.c_str());
-    fulltext = "\n";
-  }
-#endif // ifdef ENABLE_PYTHON
-  this->parsedFile = nullptr;   // because the parse() call can throw and we don't want a stale pointer!
-  this->rootFile = nullptr;    // ditto
-  this->rootFile = parse(this->parsedFile, fulltext, fname, fname, false) ? this->parsedFile : nullptr;
-
   activeEditor->resetHighlighting();
-  if (this->rootFile != nullptr) {
-    //add parameters as annotation in AST
-    CommentParser::collectParameters(fulltext, this->rootFile);
-    activeEditor->parameterWidget->setParameters(this->rootFile, fulltext);
-    activeEditor->parameterWidget->applyParameters(this->rootFile);
-    activeEditor->parameterWidget->setEnabled(true);
-    activeEditor->setIndicator(this->rootFile->indicatorData);
-  } else {
-    activeEditor->parameterWidget->setEnabled(false);
-  }
+  this->rootFile = parseDocument(activeEditor);
+  this->parsedFile = this->rootFile;
 }
 
 void MainWindow::changeParameterWidget()
