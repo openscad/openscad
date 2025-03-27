@@ -2071,7 +2071,7 @@ bool MainWindow::trust_python_file(const std::string& file,  const std::string& 
 #endif // ifdef ENABLE_PYTHON
 
 
-SourceFile* MainWindow::parseDocument(EditorInterface *editor)
+SourceFile *MainWindow::parseDocument(EditorInterface *editor)
 {
   resetSuppressedMessages();
 
@@ -2112,7 +2112,7 @@ SourceFile* MainWindow::parseDocument(EditorInterface *editor)
   }
 #endif // ifdef ENABLE_PYTHON
 
-  SourceFile* sourceFile;
+  SourceFile *sourceFile;
   sourceFile = parse(sourceFile, fulltext, fname, fname, false) ? sourceFile : nullptr;
 
   editor->resetHighlighting();
@@ -2447,6 +2447,7 @@ void MainWindow::leftClick(QPoint mouse)
  */
 void MainWindow::rightClick(QPoint position)
 {
+  std::cout << "RIGHT CLICK " << std::endl;
   // selecting without a renderer?!
   if (!this->qglview->renderer) {
     return;

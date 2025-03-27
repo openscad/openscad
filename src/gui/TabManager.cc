@@ -188,7 +188,7 @@ void TabManager::createTab(const QString& filename)
   connect(editor, &EditorInterface::contentsChanged, this, &TabManager::setContentRenderState);
   connect(editor, &EditorInterface::modificationChanged, this, &TabManager::onTabModified);
   connect(editor->parameterWidget, &ParameterWidget::modificationChanged, [editor = this->editor, this] {
-      onTabModified(editor);
+    onTabModified(editor);
   });
 
   connect(Preferences::inst(), &Preferences::fontChanged, editor, &EditorInterface::initFont);
@@ -200,13 +200,13 @@ void TabManager::createTab(const QString& filename)
 
   // Fill the editor with the content of the file
   if (filename.isEmpty()) {
-      editor->filepath = "";
-  }else{
-      openTabFile(filename);
+    editor->filepath = "";
+  } else {
+    openTabFile(filename);
   }
 
   // Get the name of the tab in editor
-  auto [fname,fpath] = getEditorTabNameWithModifier(editor);
+  auto [fname, fpath] = getEditorTabNameWithModifier(editor);
   tabWidget->addTab(editor, fname);
   if (!editorList.isEmpty()) {
     tabWidget->setCurrentWidget(editor);     // to prevent emitting of currentTabChanged signal twice for first tab
@@ -449,7 +449,7 @@ void TabManager::updateFindState()
 void TabManager::onTabModified(EditorInterface *edt)
 {
   // Get the name of the editor and its filepath with the status modifier
-    auto [fname,fpath] = getEditorTabNameWithModifier(edt);
+  auto [fname, fpath] = getEditorTabNameWithModifier(edt);
 
   // and set the tab bar widget.
   setEditorTabName(fname, fpath, edt);
@@ -489,13 +489,12 @@ std::tuple<QString, QString> TabManager::getEditorTabName(EditorInterface *edt)
   QString fname = edt->filepath;
   QString fpath = edt->filepath;
   QFileInfo fileinfo(edt->filepath);
-  if(!edt->filepath.isEmpty())
-  {
-     fname = fileinfo.fileName().replace("&", "&&");
-     fpath = fileinfo.filePath();
-  }else{
-     fname = "Untitled.scad";
-     fpath = "Untitled.scad";
+  if (!edt->filepath.isEmpty()) {
+    fname = fileinfo.fileName().replace("&", "&&");
+    fpath = fileinfo.filePath();
+  } else {
+    fname = "Untitled.scad";
+    fpath = "Untitled.scad";
   }
   return {fname, fpath};
 }
@@ -506,10 +505,9 @@ std::tuple<QString, QString> TabManager::getEditorTabNameWithModifier(EditorInte
 
   // Add the "modification" star if it was changed.
   bool isDirty = edt->isContentModified()
-                 || edt->parameterWidget->isModified();
+    || edt->parameterWidget->isModified();
 
-  if (isDirty)
-    fname += "*";
+  if (isDirty) fname += "*";
 
   return {fname, fpath};
 }
@@ -701,7 +699,7 @@ bool TabManager::saveAs(EditorInterface *edt)
 
   bool saveOk = save(edt, filename);
   if (saveOk) {
-      auto [fname, fpath] = getEditorTabNameWithModifier(edt);
+    auto [fname, fpath] = getEditorTabNameWithModifier(edt);
     setEditorTabName(fname, fpath, edt);
   }
   return saveOk;

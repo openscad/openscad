@@ -177,7 +177,7 @@ public:
 
   // Parse the document contained in the editor, update the editors's parameters and returns a SourceFile object
   // if parsing suceeded. Nullptr otherwise.
-  SourceFile* parseDocument(EditorInterface *editor);
+  SourceFile *parseDocument(EditorInterface *editor);
 
   void parseTopLevelDocument();
   void exceptionCleanup();
