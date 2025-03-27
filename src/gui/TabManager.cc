@@ -204,17 +204,15 @@ void TabManager::createTab(const QString& filename)
   } else {
     openTabFile(filename);
   }
+  editorList.insert(editor);
 
   // Get the name of the tab in editor
   auto [fname, fpath] = getEditorTabNameWithModifier(editor);
   tabWidget->addTab(editor, fname);
-  if (!editorList.isEmpty()) {
-    tabWidget->setCurrentWidget(editor);     // to prevent emitting of currentTabChanged signal twice for first tab
+  if (tabWidget->currentWidget() != editor) {
+    tabWidget->setCurrentWidget(editor);
   }
-  editorList.insert(editor);
-
   emit tabCountChanged(editorList.size());
-  emit currentEditorChanged(editor);
 }
 
 size_t TabManager::count()
