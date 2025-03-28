@@ -373,6 +373,7 @@ void QGLView::mouseMoveEvent(QMouseEvent *event)
           mouseDraggedSel = findObject(pt.x(), pt.y()); 
           if(mouseDraggedSel != nullptr && mouseDraggedSel->type !=  SelectionType::SELECTION_POINT )
             mouseDraggedSel = nullptr;				
+
 	}
 	if(mouseDraggedSel != nullptr){
           int viewport[4]={0,0,0,0};
@@ -383,7 +384,8 @@ void QGLView::mouseMoveEvent(QMouseEvent *event)
 
 	  Vector3d newpos;
           gluUnProject(viewcoord[0]+drag_x, viewcoord[1]+drag_y, viewcoord[2], this->modelview, this->projection, viewport,&newpos[0], &newpos[1], &newpos[2]);
-	  emit dragPoint(mouseDraggedSel->pt[0], newpos/* -mouseDraggedSel->pt[0]*/);
+    	  //this->shown_obj = mouseDraggedSel; /TODO die aktuell neue position,selber vertex-index
+	  emit dragPoint(mouseDraggedSel->pt[0], newpos);
 	}
       }else
       if ((QApplication::keyboardModifiers() & Qt::ShiftModifier) != 0) { rotate(dy, dx, 0.0, true);

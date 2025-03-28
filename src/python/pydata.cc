@@ -134,7 +134,7 @@ std::vector<libfive::Tree *> PyDataObjectToTree(PyObject *obj)
 }
 
 #endif
-static int PyDataInit(PyDataObject *self, PyObject *arfs, PyObject *kwds)
+static int PyDataInit(PyDataObject *self, PyObject *args, PyObject *kwds)
 {
   return 0;
 }

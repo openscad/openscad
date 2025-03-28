@@ -1037,19 +1037,22 @@ void MainWindow::toolTipShow(QPoint pt,QString msg)
 
 void MainWindow::dragPoint(Vector3d pt, Vector3d delta)
 {
+  DragResult result;
   if(this->rootNode == nullptr) return;
-  this->rootNode->dragPoint(pt,delta);	  
-  static bool preview_requested;
+  result.anchor[0]= NAN;
+  this->rootNode->dragPoint(pt,delta, result);	  
+  if(!isnan(result.anchor[0])) {
+    SelectedObject obj = {
+      .type = SelectionType::SELECTION_POINT,
+    };
+    obj.pt.push_back(result.anchor);
+    qglview->shown_obj =std::make_shared<SelectedObject>(obj); 
+  }
 
-  preview_requested = true;
   if (GuiLocker::isLocked()) return;
   GuiLocker::lock();
-  preview_requested = false;
 
-  this->designActionMeasureDistance->setEnabled(false);
-  this->designActionMeasureAngle->setEnabled(false);
-
-  prepareCompile("csgRender", !animateDock->isVisible(), true);
+//  prepareCompile("csgRender", !animateDock->isVisible(), true);
   compileDone(true);
 }
 
@@ -2635,6 +2638,7 @@ void MainWindow::actionRenderDone(const std::shared_ptr<const Geometry>& root_ge
 
   renderedEditor = activeEditor;
   activeEditor->contentsRendered = true;
+  this->qglview->shown_obj = nullptr;
   compileEnded();
 }
 

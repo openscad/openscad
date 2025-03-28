@@ -257,7 +257,7 @@ TransformNode::TransformNode(const ModuleInstantiation *mi, std::string verbose_
 {
 }
 
-std::shared_ptr<const Geometry> TransformNode::dragPoint(const Vector3d &pt, const Vector3d &newpt)
+std::shared_ptr<const Geometry> TransformNode::dragPoint(const Vector3d &pt, const Vector3d &newpt, DragResult &result)
 {
   if(!(dragflags&0x80)) {matrix_ = matrix; dragflags |= 0x80; }
   Transform3d invmat = matrix_.inverse();		
@@ -268,7 +268,11 @@ std::shared_ptr<const Geometry> TransformNode::dragPoint(const Vector3d &pt, con
   result_geom = std::make_shared<PolySet>(3);
   for(int i=0;i<children.size();i++) {
     auto &child = children[i];	    
-    std::shared_ptr<const Geometry> child_geom = child->dragPoint(pt_tran, newpt_tran);
+    int fresh = std::isnan(result.anchor[0]);
+    std::shared_ptr<const Geometry> child_geom = child->dragPoint(pt_tran, newpt_tran, result);
+    if(fresh && !std::isnan(result.anchor[0])){
+	result.anchor= matrix * result.anchor;	    
+    }
     std::shared_ptr<const PolySet> ps = nullptr;
     ps = std::dynamic_pointer_cast<const PolySet>(child_geom);
     if(ps == nullptr) continue;
@@ -310,6 +314,7 @@ std::shared_ptr<const Geometry> TransformNode::dragPoint(const Vector3d &pt, con
         -sy,       cy *sx,                  cx *cy;
         matrix=matrix_;
         matrix.rotate(M);
+	result.anchor =matrix *pt_tran;
       }
     }	    
     if(_name == "translate") {
@@ -322,6 +327,7 @@ std::shared_ptr<const Geometry> TransformNode::dragPoint(const Vector3d &pt, con
 		  
         matrix=matrix_;
         matrix.translate(tranvect); 
+	result.anchor =matrix *pt_tran;
       }
     }	    
     result_geom->vertices = ps->vertices; // TODO concatenate vertices

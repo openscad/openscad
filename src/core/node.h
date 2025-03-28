@@ -22,6 +22,11 @@ extern std::vector<ModuleInstantiation *> modinsts_list;
 void progress_report_prep(const std::shared_ptr<AbstractNode>& root, void (*f)(const std::shared_ptr<const AbstractNode>& node, void *vp, int mark), void *vp);
 void progress_report_fin();
 using Eigen::Vector3d;
+class DragResult {
+  public:
+  Vector3d anchor;	
+  std::string modname;
+};
 /*!
 
    The node tree is the result of evaluation of a module instantiation
@@ -75,7 +80,7 @@ public:
   void setPyName(const std::string &name);
   std::string  getPyName(void);
 #endif  
-  virtual std::shared_ptr<const Geometry> dragPoint(const Vector3d &pt, const Vector3d &delta) {printf("drag Point on AbstractNode\n"); return nullptr; }
+  virtual std::shared_ptr<const Geometry> dragPoint(const Vector3d &pt, const Vector3d &delta,DragResult &result) {printf("drag Point on AbstractNode\n"); return nullptr; }
 };
 
 class AbstractIntersectionNode : public AbstractNode

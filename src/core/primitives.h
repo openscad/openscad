@@ -63,10 +63,10 @@ public:
   }
   std::string name() const override { return "cube"; }
   std::unique_ptr<const Geometry> createGeometry() const override;
-  virtual std::shared_ptr<const Geometry> dragPoint(const Vector3d &pt, const Vector3d &delta) override;
+  virtual std::shared_ptr<const Geometry> dragPoint(const Vector3d &pt, const Vector3d &delta, DragResult &result) override;
 
   double dim[3]= {1,1,1};
-  int dragflags=0;
+  int dragflags=0; // X, Y, Z
   double dim_[3]={0,0,0};
   int center[3] = {1,1,1} ; // -1 means negative side, 0 means centered, 1 means positive side
 };
@@ -95,12 +95,14 @@ public:
   }
   std::string name() const override { return "sphere"; }
   std::unique_ptr<const Geometry> createGeometry() const override;
+  virtual std::shared_ptr<const Geometry> dragPoint(const Vector3d &pt, const Vector3d &delta, DragResult &result) override;
 
   double fn, fs, fa;
   double r = 1;
 #ifdef ENABLE_PYTHON
   void *r_func = nullptr;
 #endif
+  int dragflags = 0 ; // r
 };
 
 
@@ -125,12 +127,13 @@ public:
   }
   std::string name() const override { return "cylinder"; }
   std::unique_ptr<const Geometry> createGeometry() const override;
-  virtual std::shared_ptr<const Geometry> dragPoint(const Vector3d &pt, const Vector3d &delta) override;
+  virtual std::shared_ptr<const Geometry> dragPoint(const Vector3d &pt, const Vector3d &delta, DragResult &result) override;
 
   double fn, fs, fa;
   double r1 = 1, r2 = 1, h = 1;
   double angle=360;
   bool center = false;
+  int dragflags = 0 ; // r, h
 };
 
 

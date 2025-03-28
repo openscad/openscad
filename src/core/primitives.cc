@@ -165,12 +165,17 @@ std::unique_ptr<const Geometry> CubeNode::createGeometry() const
   return ps;
 }
 
-std::shared_ptr<const Geometry> CubeNode::dragPoint(const Vector3d &pt, const Vector3d &newpt)
+std::shared_ptr<const Geometry> CubeNode::dragPoint(const Vector3d &pt, const Vector3d &newpt, DragResult &result)
 {
+  printf("pt %g/%g/%g newpt %g/%g/%g\n",pt[0],pt[1], pt[2], newpt[0], newpt[1], newpt[2]);	
   if (dim_[0] == 0) {dim_[0] = dim[0]; dim_[1]=dim[1]; dim_[2] = dim[2];}
   for(int i=0;i<3; i++)	{
     if(dragflags & (1<<i)){
       if(center[i] == 1  && fabs(pt[i]-dim_[i]) < 1e-3 ) this->dim[i] = newpt[i];
+    }
+    if(dragflags) {
+      if(dragflags& (1<<i) && pt[i] != 0 ) result.anchor[i]=newpt[i]; else result.anchor[i]=pt[i];
+      result.modname="cube";
     }
   }
   return std::shared_ptr<const Geometry>(std::move(createGeometry()));
@@ -259,6 +264,15 @@ std::unique_ptr<const Geometry> SphereNode::createGeometry() const
   return polyset;
 }
 
+std::shared_ptr<const Geometry> SphereNode::dragPoint(const Vector3d &pt, const Vector3d &newpt, DragResult &result)
+{
+  if(dragflags & 1) {
+  	r=newpt.norm();
+  }  
+  return std::shared_ptr<const Geometry>(std::move(createGeometry()));
+}
+
+
 static std::shared_ptr<AbstractNode> builtin_sphere(const ModuleInstantiation *inst, Arguments arguments)
 {
   auto node = std::make_shared<SphereNode>(inst);
@@ -344,8 +358,17 @@ std::unique_ptr<const Geometry> CylinderNode::createGeometry() const
   return polyset;
 }
 
-std::shared_ptr<const Geometry> CylinderNode::dragPoint(const Vector3d &pt, const Vector3d &newpt)
+std::shared_ptr<const Geometry> CylinderNode::dragPoint(const Vector3d &pt, const Vector3d &newpt, DragResult &result)
 {
+  Vector3d x_ = newpt;	
+  if(dragflags & 2) {
+  	h=x_[2];
+  }  
+  x_[2]=0;
+  if(dragflags & 1) {
+  	r1=x_.norm();
+  	r2=x_.norm();
+  }  
   return std::shared_ptr<const Geometry>(std::move(createGeometry()));
 }
 

@@ -451,7 +451,7 @@ PyObject *python_sphere(PyObject *self, PyObject *args, PyObject *kwargs)
     return NULL;
   } 
   if(rp != nullptr) {
-    if(python_numberval(rp, &r))
+    if(python_numberval(rp, &r, &(node->dragflags), 1))
     if(rp->ob_type == &PyFunction_Type) node->r_func = rp;
   }
   if (!isnan(r)) {
@@ -490,8 +490,8 @@ PyObject *python_cylinder(PyObject *self, PyObject *args, PyObject *kwargs)
   auto node = std::make_shared<CylinderNode>(instance);
 
   char *kwlist[] = {"h", "r1", "r2", "center",  "r", "d", "d1", "d2", "angle", "fn", "fa", "fs", NULL};
-  double h = NAN;
-  double r = NAN;
+  PyObject *h_ = nullptr;
+  PyObject *r_ = nullptr;
   double r1 = NAN;
   double r2 = NAN;
   double d = NAN;
@@ -505,10 +505,15 @@ PyObject *python_cylinder(PyObject *self, PyObject *args, PyObject *kwargs)
   double vr1 = 1, vr2 = 1, vh = 1;
 
 
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|dddOdddddddd", kwlist, &h, &r1, &r2, &center, &r, &d, &d1, &d2, &angle,  &fn, &fa, &fs)) {
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|OddOOddddddd", kwlist, &h_, &r1, &r2, &center, &r_, &d, &d1, &d2, &angle,  &fn, &fa, &fs)) {
     PyErr_SetString(PyExc_TypeError, "Error during parsing cylinder(h,r|r1+r2|d1+d2)");
     return NULL;
   }
+  double r = NAN;
+  double h = NAN;
+
+  python_numberval(r_, &r, &(node->dragflags), 1);
+  python_numberval(h_, &h, &(node->dragflags), 2);
 
   if(h <= 0) {
     PyErr_SetString(PyExc_TypeError, "Cylinder height must be positive");
