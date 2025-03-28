@@ -2518,50 +2518,6 @@ static void findNodesWithSameMod(const std::shared_ptr<const AbstractNode>& tree
   }
 }
 
-static void getCodeLocation(const AbstractNode *self, int currentLevel,  int includeLevel, int *firstLine, int *firstColumn, int *lastLine, int *lastColumn, int nestedModuleDepth)
-{
-  auto location = self->modinst->location();
-  if (currentLevel >= includeLevel && nestedModuleDepth == 0) {
-    if (*firstLine < 0 || *firstLine > location.firstLine()) {
-      *firstLine = location.firstLine();
-      *firstColumn = location.firstColumn();
-    } else if (*firstLine == location.firstLine() && *firstColumn > location.firstColumn()) {
-      *firstColumn = location.firstColumn();
-    }
-
-    if (*lastLine < 0 || *lastLine < location.lastLine()) {
-      *lastLine = location.lastLine();
-      *lastColumn = location.lastColumn();
-    } else {
-      if (*firstLine < 0 || *firstLine > location.firstLine()) {
-        *firstLine = location.firstLine();
-        *firstColumn = location.firstColumn();
-      } else if (*firstLine == location.firstLine() && *firstColumn > location.firstColumn()) {
-        *firstColumn = location.firstColumn();
-      }
-      if (*lastLine < 0 || *lastLine < location.lastLine()) {
-        *lastLine = location.lastLine();
-        *lastColumn = location.lastColumn();
-      } else if (*lastLine == location.lastLine() && *lastColumn < location.lastColumn()) {
-        *lastColumn = location.lastColumn();
-      }
-    }
-  }
-
-  if (self->verbose_name().rfind("module", 0) == 0) {
-    nestedModuleDepth++;
-  }
-  if (self->modinst->name() == "children") {
-    nestedModuleDepth--;
-  }
-
-  if (nestedModuleDepth >= 0) {
-    for (const auto& node : self->children) {
-      getCodeLocation(node.get(), currentLevel + 1, includeLevel, firstLine,  firstColumn, lastLine, lastColumn, nestedModuleDepth);
-    }
-  }
-}
-
 void MainWindow::setSelectionIndicatorStatus(int nodeIndex, EditorSelectionIndicatorStatus status)
 {
   std::deque<std::shared_ptr<const AbstractNode>> stack;
@@ -2599,7 +2555,7 @@ void MainWindow::setSelectionIndicatorStatus(int nodeIndex, EditorSelectionIndic
   auto lastColumn = location.lastColumn();
 
   // Update the location returned by location to cover the whole section.
-  getCodeLocation(node.get(), 0, 0, &line, &column, &lastLine, &lastColumn, 0);
+  node->getCodeLocation(0, 0, &line, &column, &lastLine, &lastColumn, 0);
 
   this->activeEditor->setSelectionIndicatorStatus(status, 0, line - 1, column - 1, lastLine - 1, lastColumn - 1);
 }
