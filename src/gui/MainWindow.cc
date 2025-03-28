@@ -782,6 +782,7 @@ MainWindow::MainWindow(const QStringList& filenames) :
   connect(this->qglview, &QGLView::doLeftClick, this, &MainWindow::leftClick);
   connect(this->qglview, &QGLView::toolTipShow, this, &MainWindow::toolTipShow);
   connect(this->qglview, &QGLView::dragPoint, this, &MainWindow::dragPoint);
+  connect(this->qglview, &QGLView::dragPointEnd, this, &MainWindow::dragPointEnd);
 
   connect(Preferences::inst(), &Preferences::requestRedraw, this->qglview, QOverload<>::of(&QGLView::update));
   connect(Preferences::inst(), &Preferences::updateMouseCentricZoom, this->qglview, &QGLView::setMouseCentricZoom);
@@ -1035,25 +1036,147 @@ void MainWindow::toolTipShow(QPoint pt,QString msg)
   QToolTip::showText(pos,msg,this);
 }
 
-void MainWindow::dragPoint(Vector3d pt, Vector3d delta)
+void MainWindow::dragPoint(Vector3d pt, Vector3d newpt)
 {
-  DragResult result;
   if(this->rootNode == nullptr) return;
-  result.anchor[0]= NAN;
-  this->rootNode->dragPoint(pt,delta, result);	  
-  if(!isnan(result.anchor[0])) {
+  dragResult.anchor[0]= NAN;
+  this->rootNode->dragPoint(pt,newpt, dragResult);	  
+  if(!isnan(dragResult.anchor[0])) {
     SelectedObject obj = {
       .type = SelectionType::SELECTION_POINT,
     };
-    obj.pt.push_back(result.anchor);
+    obj.pt.push_back(dragResult.anchor);
     qglview->shown_obj =std::make_shared<SelectedObject>(obj); 
   }
 
   if (GuiLocker::isLocked()) return;
   GuiLocker::lock();
-
-//  prepareCompile("csgRender", !animateDock->isVisible(), true);
   compileDone(true);
+}
+
+void MainWindow::dragPointEnd(Vector3d pt)
+{
+  std::string sourcecode = std::string(	this->lastCompiledDoc.toUtf8().constData());
+  const char *sourcecode_c = this->lastCompiledDoc.toUtf8().constData();
+  const char *ptr = sourcecode_c;
+
+  // search all occurences of function
+  while(ptr != nullptr) {
+    const char *funcstart = strstr(ptr,dragResult.modname.c_str());
+    if(funcstart != nullptr) {
+      
+      ptr=funcstart+dragResult.modname.size();
+      int par=0;
+      int par_present=0;
+      std::vector<const char *> arg_bounds;
+      std::vector<char> stack;
+      do
+      {
+        switch(*ptr) { // TODO improve " '
+	  case '(': stack.push_back('(');
+		    par_present=1;
+		    if(stack.size() == 1) arg_bounds.push_back(ptr+1);
+		    break;	
+	  case '[': stack.push_back('[');
+		    par_present=1;
+		    if(stack.size() == 1) arg_bounds.push_back(ptr+1);
+		    break;	
+	  case ',': if(stack.size() == 1) {
+			arg_bounds.push_back(ptr);			    
+			arg_bounds.push_back(ptr+1);			    
+		    }		    
+		    break;
+	  case ')': if(stack.size() > 0 && stack[stack.size()-1] == '(') {
+		    	if(stack.size() == 1) arg_bounds.push_back(ptr);
+			stack.pop_back();
+		    }
+		    break;
+	  case ']': if(stack.size() > 0 && stack[stack.size()-1] == '[') {
+		    	if(stack.size() == 1) arg_bounds.push_back(ptr);
+			stack.pop_back();
+		    }
+		    break;
+          case '\0': return; // premature end of code		    
+	}		
+        ptr++;	      
+      } while (stack.size() > 0 || !par_present);
+      // extract all arguments
+      std::vector<std::string> args; 
+      for(int i=0;i<arg_bounds.size();i+=2) {
+        std::string arg=sourcecode.substr(arg_bounds[i]-sourcecode_c, arg_bounds[i+1]-arg_bounds[i]);
+	args.push_back(arg);
+      }
+
+      // go thorugh all mods now
+      bool valid=true; // check that all mods are ok
+      for(auto &mod : dragResult.mods) {
+        // search for named parameter
+	const char *parstart, *parend;
+	int parindex=-1;
+        for(int i=0;i<args.size();i++) {
+          const char *arg_c = args[i].c_str();		
+          const char *tmp =strchr(arg_c,'=');
+	  if(tmp != nullptr && strncmp(arg_c, mod.name.c_str(), tmp-arg_c) == 0) {
+            parindex=i;
+	    parstart=arg_bounds[2*parindex]+mod.name.size();
+	    parend=arg_bounds[2*parindex+1];
+	  }
+	}	
+	if(parindex == -1){
+	  parindex = mod.index;
+	  parstart=arg_bounds[2*parindex];
+	  parend=arg_bounds[2*parindex+1];
+	}
+	if(mod.arrinfo.size() > 0) {
+	  std::vector<int> arrstack;
+          const char *arrptr = parstart;
+	  const char *arrstart = nullptr, *arrend = nullptr;
+          do
+          {
+	    if( arrstack == mod.arrinfo){
+              if(arrstart == nullptr) arrstart = arrptr;
+              arrend = arrptr;	      
+	    }
+            switch(*arrptr) {
+    	      case '[': arrstack.push_back(0);
+		    break;	
+	      case ',': if(arrstack.size() > 0) {
+                      arrstack[arrstack.size()-1]++;				
+		    }		    
+		    break;
+	      case ']': if(arrstack.size() > 0) {
+			arrstack.pop_back();
+		    }
+		    break;
+              case '\0': return; // premature end of code		    
+	    }		
+            arrptr++;	      
+          } while (arrptr < parend);
+	  if(arrstart == nullptr) {
+            printf("Arr index not found!\n");
+	    valid = false;
+            continue;
+	  }
+	  parstart = arrstart;
+	  parend = arrend;
+	} // arrinfo
+	if(*parstart == '\"' && parend[-1] == '\"') {
+          // valid parameter		
+          std::string arg=sourcecode.substr(parstart-sourcecode_c, parend-parstart);
+	  // created patched sourcecode
+          std::stringstream ss;
+	  std::string newval = boost::lexical_cast<std::string>(mod.value);
+	  ss << sourcecode.substr(0, parstart-sourcecode_c) 
+		  <<  "\"" << newval << "\"" << sourcecode.substr(parend-sourcecode_c);
+	  std::string sourcecode_mod = ss.str();
+          // cruel problems when trying to udpate more than one paramter at once	  
+          activeEditor->setText(QString(sourcecode_mod.c_str()));
+	  return;
+
+	} else valid=false;
+      } // all mnods
+    } else ptr=nullptr; // no more function name
+  }  
 }
 
 void MainWindow::addKeyboardShortCut(const QList<QAction *>& actions)

@@ -289,6 +289,8 @@ std::shared_ptr<const Geometry> TransformNode::dragPoint(const Vector3d &pt, con
     if(_name == "rotate") {
       if(dragflags && found) 
       {
+        result.modname="rotate";
+        result.mods.clear();	
         double sx=0, sy=0, sz=0;
         double cx=1, cy=1, cz=1;
 
@@ -296,17 +298,17 @@ std::shared_ptr<const Geometry> TransformNode::dragPoint(const Vector3d &pt, con
           double newang= atan2(newpt_tran[2], newpt_tran[1]);		  
           cx=cos(newang);
           sx=sin(newang);
-        }  
+	}
         if(dragflags & 2) {
           double newang= atan2(newpt_tran[2], newpt_tran[0]);		  
           cy=cos(newang);
           sy=sin(newang);
-        }  
+	}
         if(dragflags & 4) {
           double newang= atan2(newpt_tran[1], newpt_tran[0]);		  
           cz=cos(newang);
           sz=sin(newang);
-        }  
+	}
 	        
         Matrix3d M;
         M << cy * cz,  cz *sx *sy - cx * sz,   cx *cz *sy + sx * sz,
@@ -315,6 +317,33 @@ std::shared_ptr<const Geometry> TransformNode::dragPoint(const Vector3d &pt, con
         matrix=matrix_;
         matrix.rotate(M);
 	result.anchor =matrix *pt_tran;
+        if(dragflags & 1) {
+	  DragMod mod;
+	  mod.index=0;
+	  mod.name="angle";
+	  mod.arrinfo.push_back(0);
+          double newang= atan2(matrix(2,0),matrix(1,0));		  
+	  mod.value=newang*180/M_PI;
+	  result.mods.push_back(mod);
+        }  
+        if(dragflags & 2) {
+	  DragMod mod;
+	  mod.index=0;
+	  mod.name="angle";
+	  mod.arrinfo.push_back(1);
+          double newang= atan2(matrix(2,0),matrix(0,0));		  
+	  mod.value=newang*180/M_PI;
+	  result.mods.push_back(mod);
+        }  
+        if(dragflags & 4) {
+	  DragMod mod;
+	  mod.index=0;
+	  mod.name="angle";
+	  mod.arrinfo.push_back(2);
+          double newang= atan2(matrix(1,0),matrix(0,0));		  
+	  mod.value=newang*180/M_PI;
+	  result.mods.push_back(mod);
+        }  
       }
     }	    
     if(_name == "translate") {

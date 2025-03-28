@@ -384,7 +384,6 @@ void QGLView::mouseMoveEvent(QMouseEvent *event)
 
 	  Vector3d newpos;
           gluUnProject(viewcoord[0]+drag_x, viewcoord[1]+drag_y, viewcoord[2], this->modelview, this->projection, viewport,&newpos[0], &newpos[1], &newpos[2]);
-    	  //this->shown_obj = mouseDraggedSel; /TODO die aktuell neue position,selber vertex-index
 	  emit dragPoint(mouseDraggedSel->pt[0], newpos);
 	}
       }else
@@ -424,8 +423,12 @@ void QGLView::mouseMoveEvent(QMouseEvent *event)
 void QGLView::mouseReleaseEvent(QMouseEvent *event)
 {
   mouse_drag_active = false;
-  mouseDraggedSel = nullptr;
   releaseMouse();
+  if(mouseDraggedSel != nullptr) {
+    shown_obj = nullptr;
+    emit dragPointEnd(mouseDraggedSel->pt[0]);
+  }
+  mouseDraggedSel = nullptr;
 
   auto button_right = this->mouseSwapButtons?Qt::LeftButton : Qt::RightButton;
   auto button_left =  this->mouseSwapButtons?Qt::RightButton : Qt::LeftButton;

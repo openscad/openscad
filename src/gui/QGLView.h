@@ -108,7 +108,8 @@ signals:
   void doRightClick(QPoint screen_coordinate);
   void doLeftClick(QPoint screen_coordinate);
   void toolTipShow(QPoint,QString msg);
-  void dragPoint(Vector3d pt, Vector3d delta);
+  void dragPoint(Vector3d pt, Vector3d newpt);
+  void dragPointEnd(Vector3d pt);
 };
 
 /* These are defined in QLGView2.cc.  See the commentary there. */

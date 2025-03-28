@@ -167,16 +167,25 @@ std::unique_ptr<const Geometry> CubeNode::createGeometry() const
 
 std::shared_ptr<const Geometry> CubeNode::dragPoint(const Vector3d &pt, const Vector3d &newpt, DragResult &result)
 {
-  printf("pt %g/%g/%g newpt %g/%g/%g\n",pt[0],pt[1], pt[2], newpt[0], newpt[1], newpt[2]);	
   if (dim_[0] == 0) {dim_[0] = dim[0]; dim_[1]=dim[1]; dim_[2] = dim[2];}
+  if(dragflags) {
+    result.modname="cube";
+    result.mods.clear();    
+  }
   for(int i=0;i<3; i++)	{
     if(dragflags & (1<<i)){
-      if(center[i] == 1  && fabs(pt[i]-dim_[i]) < 1e-3 ) this->dim[i] = newpt[i];
+      if(center[i] == 1  && fabs(pt[i]-dim_[i]) < 1e-3 ){
+        this->dim[i] = newpt[i];
+	DragMod mod;
+	mod.index=0;
+	mod.name="size";
+	mod.arrinfo.push_back(i);
+	mod.value=newpt[i];
+	result.mods.push_back(mod);
+
+     }	
     }
-    if(dragflags) {
-      if(dragflags& (1<<i) && pt[i] != 0 ) result.anchor[i]=newpt[i]; else result.anchor[i]=pt[i];
-      result.modname="cube";
-    }
+    if(dragflags& (1<<i) && pt[i] != 0 ) result.anchor[i]=newpt[i]; else result.anchor[i]=pt[i];
   }
   return std::shared_ptr<const Geometry>(std::move(createGeometry()));
 }

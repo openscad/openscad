@@ -343,7 +343,8 @@ public slots:
   void jumpToLine(int, int);
   void openFileFromPath(const QString&, int);
   void toolTipShow(QPoint,QString msg);
-  void dragPoint(Vector3d pt, Vector3d delta);
+  void dragPoint(Vector3d pt, Vector3d newpt);
+  void dragPointEnd(Vector3d pt);
 
   void viewModeRender();
 #ifdef ENABLE_OPENCSG
@@ -410,6 +411,7 @@ private:
   CGALWorker *cgalworker;
   CSGWorker *csgworker;
   QMutex consolemutex;
+  DragResult dragResult;
   EditorInterface *renderedEditor; // stores pointer to editor which has been most recently rendered
   time_t includesMTime{0}; // latest include mod time
   time_t depsMTime{0}; // latest dependency mod time

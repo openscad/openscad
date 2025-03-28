@@ -22,10 +22,20 @@ extern std::vector<ModuleInstantiation *> modinsts_list;
 void progress_report_prep(const std::shared_ptr<AbstractNode>& root, void (*f)(const std::shared_ptr<const AbstractNode>& node, void *vp, int mark), void *vp);
 void progress_report_fin();
 using Eigen::Vector3d;
+class DragMod
+{
+  public:	
+  std::string name;
+  int index;
+  std::vector<int> arrinfo;
+  double value;  
+};
+
 class DragResult {
   public:
   Vector3d anchor;	
   std::string modname;
+  std::vector<DragMod> mods;
 };
 /*!
 
