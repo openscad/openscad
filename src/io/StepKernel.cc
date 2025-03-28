@@ -69,31 +69,31 @@ void StepKernel::build_tri_body(std::vector<Vector3d> vertices, std::vector<Inde
 	std::vector<int> vert2curve;
 	for(size_t i=0;i<vertices.size();i++){
 		Vector3d pt=vertices[i];
-	        printf("%ld (%g/%g/%g)",i, pt[0], pt[1], pt[2]);		  
+//	        printf("%ld (%g/%g/%g)",i, pt[0], pt[1], pt[2]);		  
 		int found=-1;
 		for(size_t j=0;j<curves.size();j++) {
                 	if(curves[j]->pointMember(vertices, pt)) {
-				printf("(%ld)",j);
+//				printf("(%ld)",j);
 				found=j;
 			}
 		}
-		printf("\n");
+//		printf("\n");
 		vert2curve.push_back(found);
 	}
 
 	// check all faces, if they are part of a special surface curve
 	for(size_t i=0;i<faces.size();i++) {
           auto &face = faces[i];		
-          printf("Face %ld ",i);		
+//          printf("Face %ld ",i);		
           for(size_t j=0;j< surfaces.size();j++) {
            int valid=1;		  
 	   for(size_t k=0;valid && k<face.size();k++) {
              if(!surfaces[j]->pointMember(vertices, vertices[face[k]])) valid=0;
 	   }
-	   if(valid) printf("(%ld) ",j);
+//	   if(valid) printf("(%ld) ",j);
 	  }
 
-	  printf("\n");
+//	  printf("\n");
 	}
 
 
