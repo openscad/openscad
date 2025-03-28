@@ -236,7 +236,7 @@ void OpenCSGRenderer::createCSGVBOProducts(
                          csgobj.leaf->matrix, last_color, enable_barycentric, override_color);
           if (const auto csg_vs = std::dynamic_pointer_cast<OpenCSGVertexState>(
             vertex_states.back())) {
-            csg_vs->setCsgObjectIndex(csgobj.leaf->index);
+            csg_vs->setCsgObjectIndex(0xffff0000); // Blue
             primitives.emplace_back(
                 createVBOPrimitive(csg_vs, OpenCSG::Intersection,
                                    csgobj.leaf->polyset->getConvexity()));
@@ -254,7 +254,7 @@ void OpenCSGRenderer::createCSGVBOProducts(
                          csgobj.leaf->matrix, last_color, enable_barycentric, override_color);
           if (const auto csg_vs = std::dynamic_pointer_cast<OpenCSGVertexState>(
                   vertex_states.back())) {
-            csg_vs->setCsgObjectIndex(csgobj.leaf->index);
+            csg_vs->setCsgObjectIndex(0xff0000ff); // Green
 
             primitives.emplace_back(
                 createVBOPrimitive(csg_vs, OpenCSG::Intersection,
@@ -328,7 +328,7 @@ void OpenCSGRenderer::createCSGVBOProducts(
                        last_color, enable_barycentric, override_color);
         if (const auto csg_vs = std::dynamic_pointer_cast<OpenCSGVertexState>(
           vertex_states.back())) {
-          csg_vs->setCsgObjectIndex(csgobj.leaf->index);
+          csg_vs->setCsgObjectIndex(0xffffffff); // White
           primitives.emplace_back(
               createVBOPrimitive(csg_vs, OpenCSG::Subtraction,
                                  csgobj.leaf->polyset->getConvexity()));

@@ -11,6 +11,7 @@ public:
   FBO(int width, int height, bool useEXT);
   ~FBO() { destroy(); };
 
+  GLuint id() const { return fbo_id_; }
   int width() const { return this->width_; }  
   int height() const { return this->height_; }
   bool isComplete() const { return this->complete_; }

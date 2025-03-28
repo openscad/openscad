@@ -2,6 +2,7 @@
 
 #include "glview/system-gl.h"
 #include "glview/fbo.h"
+#include "io/imageutils.h"
 
 #include <cstdint>
 #include <string>
@@ -85,8 +86,11 @@ int MouseSelector::select(const Renderer *renderer, int x, int y) {
 
   // TODO: Ideally, we should make the above configurable and reduce duplicate render code in this function.
 
-  if (x > static_cast<int>(this->view->cam.pixel_width) || x < 0 ||
-      y > static_cast<int>(this->view->cam.pixel_height) || y < 0) {
+  auto width = this->view->cam.pixel_width;
+  auto height = this->view->cam.pixel_height;
+
+  if (x > static_cast<int>(width) || x < 0 ||
+      y > static_cast<int>(height) || y < 0) {
     return -1;
   }
 
@@ -100,7 +104,7 @@ int MouseSelector::select(const Renderer *renderer, int x, int y) {
   glClearColor(0, 0, 0, 1.0);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
-  glViewport(0, 0, this->view->cam.pixel_width, this->view->cam.pixel_height);
+  glViewport(0, 0, width, height);
   this->view->setupCamera();
   glTranslated(this->view->cam.object_trans.x(),
                this->view->cam.object_trans.y(),
@@ -119,10 +123,17 @@ int MouseSelector::select(const Renderer *renderer, int x, int y) {
   glFlush();
   glFinish();
 
+  const size_t samplesPerPixel = 4; // R, G, B and A
+  std::vector<uint8_t> buffer(samplesPerPixel * width * height);
+  GL_CHECK(glReadPixels(0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, buffer.data()));
+  std::vector<uint8_t> flippedBuffer(samplesPerPixel * height * width);
+  flip_image(buffer.data(), flippedBuffer.data(), samplesPerPixel, width, height);
+  write_png("/tmp/idcolors.png", flippedBuffer.data(), width, height);
+
   // Grab the color from the framebuffer and convert it back to an identifier
   GLubyte color[3] = { 0 };
   // Qt position is originated top-left, so flip y to get GL coordinates.
-  GL_CHECKD(glReadPixels(x, this->view->cam.pixel_height - y, 1, 1, GL_RGB, GL_UNSIGNED_BYTE, color));
+  GL_CHECKD(glReadPixels(x, height - y, 1, 1, GL_RGB, GL_UNSIGNED_BYTE, color));
   glDisable(GL_DEPTH_TEST);
 
   const int index = (uint32_t)color[0] | ((uint32_t)color[1] << 8) | ((uint32_t)color[2] << 16);
