@@ -23,15 +23,13 @@
 #include "core/Settings.h"
 #include "gui/InitConfigurator.h"
 
+class GlobalPreferences;
 class Preferences : public QMainWindow, public Ui::Preferences, public InitConfigurator
 {
   Q_OBJECT;
 
 public:
   ~Preferences() override;
-
-  static void create(const QStringList& colorSchemes);
-  static Preferences *inst();
 
   QVariant getValue(const QString& key) const;
   void init();
@@ -40,6 +38,12 @@ public:
   void updateGUI();
   void fireEditorConfigChanged() const;
   void insertListItem(QListWidget *listBox, QListWidgetItem *listItem);
+
+  // Returns true if there is an higlightling color scheme configured.
+  bool hasHighlightingColorScheme() const;
+
+  // Set a new colorScheme.
+  void setHighlightingColorSchemes(const QStringList& colorSchemes);
 
   template<typename item_type>
   QListWidgetItem * createListItem(const item_type& itemType, const QString& text = "", bool editable = false) {
@@ -193,6 +197,7 @@ private slots:
   void on_checkBoxEnableNumberScrollWheel_toggled(bool checked);
 
 private:
+  friend GlobalPreferences;
   Preferences(QWidget *parent = nullptr);
   void keyPressEvent(QKeyEvent *e) override;
   void showEvent(QShowEvent *e) override;
@@ -215,7 +220,10 @@ private:
 
   QSettings::SettingsMap defaultmap;
   QHash<const QAction *, QWidget *> prefPages;
+};
 
-  static Preferences *instance;
-  static const char *featurePropertyName;
+class GlobalPreferences
+{
+public:
+    static Preferences* inst();
 };
