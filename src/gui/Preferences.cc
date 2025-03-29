@@ -1401,6 +1401,8 @@ void Preferences::updateGUIFontSize(QComboBox *fsSelector, const QString &settin
 
 Preferences* GlobalPreferences::inst()
 {
-    static auto* instance = new Preferences();
-    return instance;
+    {
+        static auto* instance = new Preferences();
+        return instance;
+    }
 };

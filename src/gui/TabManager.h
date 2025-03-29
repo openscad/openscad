@@ -14,7 +14,7 @@ class TabManager : public QObject
   Q_OBJECT
 
 public:
-  TabManager(MainWindow *o, const QString& filename);
+  TabManager(MainWindow *o);
   QWidget *getTabContent();
   EditorInterface *editor;
   QSet<EditorInterface *> editorList;
@@ -53,6 +53,10 @@ private:
   void setTabsCloseButtonVisibility(int tabIndice, bool isVisible);
 
   QTabBar::ButtonPosition getClosingButtonPosition();
+
+  // Internal function to factorize the building of menu actions.
+  template<class Function>
+  QAction* buildMenuAction(const QString& actionText, int idx, bool isEnabled, Function onTriggeredFunction);
 
 private slots:
   void tabSwitched(int);

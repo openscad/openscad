@@ -27,7 +27,7 @@
 
 #include <cstddef>
 
-TabManager::TabManager(MainWindow *o, const QString& filename)
+TabManager::TabManager(MainWindow *o)
 {
   par = o;
 
@@ -43,10 +43,10 @@ TabManager::TabManager(MainWindow *o, const QString& filename)
   connect(tabWidget, &QTabWidget::currentChanged, this, &TabManager::updateFindState);
   connect(tabWidget, &QTabWidget::currentChanged, this, &TabManager::tabSwitched);
 
-  createTab(filename);
+  //createTab(filename);
 
   // Disable the closing button for the first tabbar
-  setTabsCloseButtonVisibility(0, false);
+  //setTabsCloseButtonVisibility(0, false);
 }
 
 QTabBar::ButtonPosition TabManager::getClosingButtonPosition()
@@ -153,7 +153,6 @@ void TabManager::createTab(const QString& filename)
 
   auto scintillaEditor = new ScintillaEditor(tabWidget);
   editor = scintillaEditor;
-  par->activeEditor = editor;
   editor->parameterWidget = new ParameterWidget(par->parameterDock);
   connect(editor->parameterWidget, &ParameterWidget::parametersChanged, par, &MainWindow::actionRenderPreview);
   par->parameterDock->setWidget(editor->parameterWidget);
@@ -207,6 +206,9 @@ void TabManager::createTab(const QString& filename)
   } else {
     setTabName("");
   }
+  int index = tabWidget->indexOf(editor);
+  setTabsCloseButtonVisibility(index, false);
+
   emit tabCountChanged(editorList.size());
   emit currentEditorChanged(editor);
   par->updateRecentFileActions();
@@ -377,6 +379,18 @@ void TabManager::showContextMenuEvent(const QPoint& pos)
   delete menu;
 }
 
+template<class Function>
+QAction* TabManager::buildMenuAction(const QString& actionText, int idx,
+                 bool isEnabled, Function onTriggeredFunction)
+{
+    auto* action = new QAction(tabWidget);
+    action->setData(idx);
+    action->setEnabled(isEnabled);
+    action->setText(actionText);
+    connect(action, &QAction::triggered, this, onTriggeredFunction);
+    return action;
+}
+
 void TabManager::showTabHeaderContextMenu(const QPoint& pos)
 {
   int idx = tabWidget->tabBar()->tabAt(pos);
@@ -384,32 +398,16 @@ void TabManager::showTabHeaderContextMenu(const QPoint& pos)
 
   QMenu menu;
   auto *edt = (EditorInterface *)tabWidget->widget(idx);
+  bool isEnabled = !edt->filepath.isEmpty();
 
-  auto *copyFileNameAction = new QAction(tabWidget);
-  copyFileNameAction->setData(idx);
-  copyFileNameAction->setEnabled(!edt->filepath.isEmpty());
-  copyFileNameAction->setText(_("Copy file name"));
-  connect(copyFileNameAction, &QAction::triggered, this, &TabManager::copyFileName);
-
-  auto *copyFilePathAction = new QAction(tabWidget);
-  copyFilePathAction->setData(idx);
-  copyFilePathAction->setEnabled(!edt->filepath.isEmpty());
-  copyFilePathAction->setText(_("Copy full path"));
-  connect(copyFilePathAction, &QAction::triggered, this, &TabManager::copyFilePath);
-
-  auto *openFolderAction = new QAction(tabWidget);
-  openFolderAction->setData(idx);
-  openFolderAction->setEnabled(!edt->filepath.isEmpty());
-  openFolderAction->setText(_("Open Folder"));
-  connect(openFolderAction, &QAction::triggered, this, &TabManager::openFolder);
-
-  auto *closeAction = new QAction(tabWidget);
-  closeAction->setData(idx);
-  closeAction->setText(_("Close Tab"));
-  connect(closeAction, &QAction::triggered, this, &TabManager::closeTab);
+  auto copyFileNameAction = buildMenuAction(_("Copy file name"), idx, isEnabled, &TabManager::copyFileName);
+  auto copyFilePathAction = buildMenuAction(_("Copy full path"), idx, isEnabled, &TabManager::copyFilePath);
+  auto openFolderAction = buildMenuAction(_("Open Folder"), idx, isEnabled, &TabManager::openFolder);
+  auto closeAction = buildMenuAction(_("Close Tab"), idx, isEnabled, &TabManager::openFolder);
 
   // Don't allow to close the last tab.
-  if (tabWidget->count() <= 1) closeAction->setDisabled(true);
+  if (tabWidget->count() <= 1)
+      closeAction->setDisabled(true);
 
   menu.addAction(copyFileNameAction);
   menu.addAction(copyFilePathAction);
