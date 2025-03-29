@@ -13,7 +13,6 @@
 #include <QGroupBox>
 
 #include "core/Settings.h"
-#include "gui/Preferences.h"
 #include "gui/SettingsWriter.h"
 
 #include <string>
@@ -55,22 +54,22 @@ void InitConfigurator::initListBox(QListWidget *listBox, const Settings::Setting
   listBox->clear();
   for (const auto& listitem : list.value()) {
     if (listitem.type == Settings::LocalAppParameterType::string) {
-      const auto item = Preferences::inst()->createListItem(Settings::LocalAppParameterType(Settings::LocalAppParameterType::string), QString::fromStdString(listitem.value));
+      const auto item = createListItem(Settings::LocalAppParameterType(Settings::LocalAppParameterType::string), QString::fromStdString(listitem.value));
       listBox->insertItem(listBox->count(), item);
     } else if (listitem.type == Settings::LocalAppParameterType::file) {
-      const auto item = Preferences::inst()->createListItem(Settings::LocalAppParameterType(Settings::LocalAppParameterType::file));
+      const auto item = createListItem(Settings::LocalAppParameterType(Settings::LocalAppParameterType::file));
       listBox->insertItem(listBox->count(), item);
     } else if (listitem.type == Settings::LocalAppParameterType::dir) {
-      const auto item = Preferences::inst()->createListItem(Settings::LocalAppParameterType(Settings::LocalAppParameterType::dir));
+      const auto item = createListItem(Settings::LocalAppParameterType(Settings::LocalAppParameterType::dir));
       listBox->insertItem(listBox->count(), item);
     } else if (listitem.type == Settings::LocalAppParameterType::extension) {
-      const auto item = Preferences::inst()->createListItem(Settings::LocalAppParameterType(Settings::LocalAppParameterType::extension));
+      const auto item = createListItem(Settings::LocalAppParameterType(Settings::LocalAppParameterType::extension));
       listBox->insertItem(listBox->count(), item);
     } else if (listitem.type == Settings::LocalAppParameterType::source) {
-      const auto item = Preferences::inst()->createListItem(Settings::LocalAppParameterType(Settings::LocalAppParameterType::source));
+      const auto item = createListItem(Settings::LocalAppParameterType(Settings::LocalAppParameterType::source));
       listBox->insertItem(listBox->count(), item);
     } else if (listitem.type == Settings::LocalAppParameterType::sourcedir) {
-      const auto item = Preferences::inst()->createListItem(Settings::LocalAppParameterType(Settings::LocalAppParameterType::sourcedir));
+      const auto item = createListItem(Settings::LocalAppParameterType(Settings::LocalAppParameterType::sourcedir));
       listBox->insertItem(listBox->count(), item);
     }
   }
