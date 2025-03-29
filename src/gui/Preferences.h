@@ -45,20 +45,6 @@ public:
   // Set a new colorScheme.
   void setHighlightingColorSchemes(const QStringList& colorSchemes);
 
-  template<typename item_type>
-  QListWidgetItem * createListItem(const item_type& itemType, const QString& text = "", bool editable = false) {
-    const auto icon = QIcon::fromTheme(QString::fromStdString(itemType.icon()));
-    std::string description = itemType.description();
-    const auto itemText = description.empty() ? text : QString::fromStdString(description);
-    const auto listItem = new QListWidgetItem(icon, itemText,
-      nullptr,
-      static_cast<int>(QListWidgetItem::UserType) + static_cast<int>(itemType));
-    if (editable) {
-      listItem->setFlags(listItem->flags() | Qt::ItemIsEditable);
-    }
-    return listItem;
-  }
-
 public slots:
   void actionTriggered(class QAction *);
   void featuresCheckBoxToggled(bool);
