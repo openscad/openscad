@@ -16,7 +16,6 @@ class TabManager : public QObject
 public:
   TabManager(MainWindow *o);
   QWidget *getTabContent();
-  EditorInterface *editor;
   QSet<EditorInterface *> editorList;
 
   void createTab(const QString& filename);
@@ -29,6 +28,7 @@ public:
   bool saveACopy(EditorInterface *edt);
   void open(const QString& filename);
   size_t count();
+  EditorInterface* editor() const;
 
 public:
   static constexpr const int FIND_HIDDEN = 0;
@@ -51,6 +51,7 @@ private:
   void saveError(const QIODevice& file, const std::string& msg, const QString& filepath);
   void applyAction(QObject *object, const std::function<void(int, EditorInterface *)>& func);
   void setTabsCloseButtonVisibility(int tabIndice, bool isVisible);
+  void setCloseButtonForAllTabsExcept(int indice);
 
   QTabBar::ButtonPosition getClosingButtonPosition();
 

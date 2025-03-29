@@ -287,8 +287,8 @@ std::unique_ptr<ExternalToolInterface> createExternalToolService(
 EditorInterface* MainWindow::activeEditor() const
 {
     assert(tabManager != nullptr);
-    assert(tabManager->editor != nullptr);
-    return tabManager->editor;
+    assert(tabManager->editor() != nullptr);
+    return tabManager->editor();
 }
 
 MainWindow::MainWindow(const QStringList& filenames) :
