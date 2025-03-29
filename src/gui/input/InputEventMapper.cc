@@ -176,11 +176,11 @@ void InputEventMapper::onTimer()
   for (size_t i = 0; i < getMaxButtons(); ++i) {
     if (button_state[i] != button_state_last[i]) {
       button_state_last[i] = button_state[i];
-      Preferences::inst()->ButtonConfig->updateButtonState(i, button_state[i]);
+      GlobalPreferences::inst()->ButtonConfig->updateButtonState(i, button_state[i]);
     }
   }
   for (size_t i = 0; i < getMaxAxis(); ++i) {
-    Preferences::inst()->AxisConfig->AxesChanged(i, axisRawValue[i] + axisTrimValue[i]);
+    GlobalPreferences::inst()->AxisConfig->AxesChanged(i, axisRawValue[i] + axisTrimValue[i]);
   }
 
   if (!generated_any_events) {

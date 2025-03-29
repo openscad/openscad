@@ -533,13 +533,13 @@ MainWindow::MainWindow(const QStringList& filenames) :
 
   connect(tabManager, &TabManager::currentEditorChanged, this, &MainWindow::onTabManagerEditorChanged);
 
-  connect(Preferences::inst(), &Preferences::consoleFontChanged, this->console, &Console::setFont);
+  connect(GlobalPreferences::inst(), &Preferences::consoleFontChanged, this->console, &Console::setFont);
 
   const QString version = QString("<b>OpenSCAD %1</b>").arg(QString::fromStdString(openscad_versionnumber));
   const QString weblink = "<a href=\"https://www.openscad.org/\">https://www.openscad.org/</a><br>";
   this->console->setFont(
-    Preferences::inst()->getValue("advanced/consoleFontFamily").toString(),
-    Preferences::inst()->getValue("advanced/consoleFontSize").toUInt()
+    GlobalPreferences::inst()->getValue("advanced/consoleFontFamily").toString(),
+    GlobalPreferences::inst()->getValue("advanced/consoleFontSize").toUInt()
     );
 
   consoleOutputRaw(version);
@@ -550,10 +550,10 @@ MainWindow::MainWindow(const QStringList& filenames) :
   connect(this->errorLogWidget, &ErrorLog::openFile, this, &MainWindow::openFileFromPath);
   connect(this->console, &Console::openFile, this, &MainWindow::openFileFromPath);
 
-  connect(Preferences::inst()->ButtonConfig, &ButtonConfigWidget::inputMappingChanged, InputDriverManager::instance(), &InputDriverManager::onInputMappingUpdated, Qt::UniqueConnection);
-  connect(Preferences::inst()->AxisConfig, &AxisConfigWidget::inputMappingChanged, InputDriverManager::instance(), &InputDriverManager::onInputMappingUpdated, Qt::UniqueConnection);
-  connect(Preferences::inst()->AxisConfig, &AxisConfigWidget::inputCalibrationChanged, InputDriverManager::instance(), &InputDriverManager::onInputCalibrationUpdated, Qt::UniqueConnection);
-  connect(Preferences::inst()->AxisConfig, &AxisConfigWidget::inputGainChanged, InputDriverManager::instance(), &InputDriverManager::onInputGainUpdated, Qt::UniqueConnection);
+  connect(GlobalPreferences::inst()->ButtonConfig, &ButtonConfigWidget::inputMappingChanged, InputDriverManager::instance(), &InputDriverManager::onInputMappingUpdated, Qt::UniqueConnection);
+  connect(GlobalPreferences::inst()->AxisConfig, &AxisConfigWidget::inputMappingChanged, InputDriverManager::instance(), &InputDriverManager::onInputMappingUpdated, Qt::UniqueConnection);
+  connect(GlobalPreferences::inst()->AxisConfig, &AxisConfigWidget::inputCalibrationChanged, InputDriverManager::instance(), &InputDriverManager::onInputCalibrationUpdated, Qt::UniqueConnection);
+  connect(GlobalPreferences::inst()->AxisConfig, &AxisConfigWidget::inputGainChanged, InputDriverManager::instance(), &InputDriverManager::onInputGainUpdated, Qt::UniqueConnection);
 
   setCorner(Qt::TopLeftCorner, Qt::LeftDockWidgetArea);
   setCorner(Qt::TopRightCorner, Qt::RightDockWidgetArea);
@@ -596,7 +596,7 @@ MainWindow::MainWindow(const QStringList& filenames) :
   waitAfterReloadTimer->setSingleShot(true);
   waitAfterReloadTimer->setInterval(autoReloadPollingPeriodMS);
   connect(waitAfterReloadTimer, &QTimer::timeout, this, &MainWindow::waitAfterReload);
-  connect(Preferences::inst(), &Preferences::ExperimentalChanged, this, &MainWindow::changeParameterWidget);
+  connect(GlobalPreferences::inst(), &Preferences::ExperimentalChanged, this, &MainWindow::changeParameterWidget);
 
   progressThrottle->start();
 
@@ -784,18 +784,18 @@ MainWindow::MainWindow(const QStringList& filenames) :
   connect(this->qglview, &QGLView::dragPoint, this, &MainWindow::dragPoint);
   connect(this->qglview, &QGLView::dragPointEnd, this, &MainWindow::dragPointEnd);
 
-  connect(Preferences::inst(), &Preferences::requestRedraw, this->qglview, QOverload<>::of(&QGLView::update));
-  connect(Preferences::inst(), &Preferences::updateMouseCentricZoom, this->qglview, &QGLView::setMouseCentricZoom);
-  connect(Preferences::inst(), &Preferences::updateMouseSwapButtons, this->qglview, &QGLView::setMouseSwapButtons);
-  connect(Preferences::inst(), &Preferences::updateReorderMode, this, &MainWindow::updateReorderMode);
-  connect(Preferences::inst(), &Preferences::updateUndockMode, this, &MainWindow::updateUndockMode);
-  connect(Preferences::inst(), &Preferences::openCSGSettingsChanged, this, &MainWindow::openCSGSettingsChanged);
-  connect(Preferences::inst(), &Preferences::colorSchemeChanged, this, &MainWindow::setColorScheme);
-  connect(Preferences::inst(), &Preferences::toolbarExportChanged, this, &MainWindow::updateExportActions);
+  connect(GlobalPreferences::inst(), &Preferences::requestRedraw, this->qglview, QOverload<>::of(&QGLView::update));
+  connect(GlobalPreferences::inst(), &Preferences::updateMouseCentricZoom, this->qglview, &QGLView::setMouseCentricZoom);
+  connect(GlobalPreferences::inst(), &Preferences::updateMouseSwapButtons, this->qglview, &QGLView::setMouseSwapButtons);
+  connect(GlobalPreferences::inst(), &Preferences::updateReorderMode, this, &MainWindow::updateReorderMode);
+  connect(GlobalPreferences::inst(), &Preferences::updateUndockMode, this, &MainWindow::updateUndockMode);
+  connect(GlobalPreferences::inst(), &Preferences::openCSGSettingsChanged, this, &MainWindow::openCSGSettingsChanged);
+  connect(GlobalPreferences::inst(), &Preferences::colorSchemeChanged, this, &MainWindow::setColorScheme);
+  connect(GlobalPreferences::inst(), &Preferences::toolbarExportChanged, this, &MainWindow::updateExportActions);
 
-  Preferences::inst()->apply_win();   // not sure if to be commented, checked must not be commented(done some changes in apply())
+  GlobalPreferences::inst()->apply_win();   // not sure if to be commented, checked must not be commented(done some changes in apply())
 
-  const QString cs = Preferences::inst()->getValue("3dview/colorscheme").toString();
+  const QString cs = GlobalPreferences::inst()->getValue("3dview/colorscheme").toString();
   this->setColorScheme(cs);
 
   //find and replace panel
@@ -820,7 +820,7 @@ MainWindow::MainWindow(const QStringList& filenames) :
   addKeyboardShortCut(this->viewerToolBar->actions());
   addKeyboardShortCut(this->editortoolbar->actions());
 
-  Preferences *instance = Preferences::inst();
+  Preferences *instance = GlobalPreferences::inst();
 
   InputDriverManager::instance()->registerActions(this->menuBar()->actions(), "", "");
   InputDriverManager::instance()->registerActions(this->animateWidget->actions(), "animation", "animate");
@@ -966,6 +966,13 @@ MainWindow::MainWindow(const QStringList& filenames) :
   updateExportActions();
 
   activeEditor->setFocus();
+
+  // Configure the highlighting color scheme from the active editor one.
+  // This is done only one time at creation of the first MainWindow instance
+  auto preferences = GlobalPreferences::inst();
+  if(!preferences->hasHighlightingColorScheme())
+    preferences->setHighlightingColorSchemes(activeEditor->colorSchemes());
+
   onTabManagerEditorChanged(activeEditor);
 }
 
@@ -1307,8 +1314,8 @@ void MainWindow::loadViewSettings(){
     viewPerspective();
   }
 
-  updateUndockMode(Preferences::inst()->getValue("advanced/undockableWindows").toBool());
-  updateReorderMode(Preferences::inst()->getValue("advanced/reorderWindows").toBool());
+  updateUndockMode(GlobalPreferences::inst()->getValue("advanced/undockableWindows").toBool());
+  updateReorderMode(GlobalPreferences::inst()->getValue("advanced/reorderWindows").toBool());
 }
 
 void MainWindow::loadDesignSettings()
@@ -1317,11 +1324,11 @@ void MainWindow::loadDesignSettings()
   if (settings.value("design/autoReload", false).toBool()) {
     designActionAutoReload->setChecked(true);
   }
-  auto polySetCacheSizeMB = Preferences::inst()->getValue("advanced/polysetCacheSizeMB").toUInt();
+  auto polySetCacheSizeMB = GlobalPreferences::inst()->getValue("advanced/polysetCacheSizeMB").toUInt();
   GeometryCache::instance()->setMaxSizeMB(polySetCacheSizeMB);
-  auto cgalCacheSizeMB = Preferences::inst()->getValue("advanced/cgalCacheSizeMB").toUInt();
+  auto cgalCacheSizeMB = GlobalPreferences::inst()->getValue("advanced/cgalCacheSizeMB").toUInt();
   CGALCache::instance()->setMaxSizeMB(cgalCacheSizeMB);
-  auto backend3D = Preferences::inst()->getValue("advanced/renderBackend3D").toString().toStdString();
+  auto backend3D = GlobalPreferences::inst()->getValue("advanced/renderBackend3D").toString().toStdString();
   RenderSettings::inst()->backend3D = renderBackend3DFromString(backend3D);
 }
 
@@ -1451,11 +1458,11 @@ void MainWindow::updateRecentFiles(const QString& FileSavedOrOpened)
  */
 void MainWindow::compile(bool reload, bool forcedone)
 {
-  OpenSCAD::hardwarnings = Preferences::inst()->getValue("advanced/enableHardwarnings").toBool();
-  OpenSCAD::traceDepth = Preferences::inst()->getValue("advanced/traceDepth").toUInt();
-  OpenSCAD::traceUsermoduleParameters = Preferences::inst()->getValue("advanced/enableTraceUsermoduleParameters").toBool();
-  OpenSCAD::parameterCheck = Preferences::inst()->getValue("advanced/enableParameterCheck").toBool();
-  OpenSCAD::rangeCheck = Preferences::inst()->getValue("advanced/enableParameterRangeCheck").toBool();
+  OpenSCAD::hardwarnings = GlobalPreferences::inst()->getValue("advanced/enableHardwarnings").toBool();
+  OpenSCAD::traceDepth = GlobalPreferences::inst()->getValue("advanced/traceDepth").toUInt();
+  OpenSCAD::traceUsermoduleParameters = GlobalPreferences::inst()->getValue("advanced/enableTraceUsermoduleParameters").toBool();
+  OpenSCAD::parameterCheck = GlobalPreferences::inst()->getValue("advanced/enableParameterCheck").toBool();
+  OpenSCAD::rangeCheck = GlobalPreferences::inst()->getValue("advanced/enableParameterRangeCheck").toBool();
 
   try{
     bool shouldcompiletoplevel = false;
@@ -1471,7 +1478,7 @@ void MainWindow::compile(bool reload, bool forcedone)
       // Refresh files if it has changed on disk
       if (fileChangedOnDisk() && checkEditorModified()) {
         shouldcompiletoplevel = tabManager->refreshDocument();         // don't compile if we couldn't open the file
-        if (shouldcompiletoplevel && Preferences::inst()->getValue("advanced/autoReloadRaise").toBool()) {
+        if (shouldcompiletoplevel && GlobalPreferences::inst()->getValue("advanced/autoReloadRaise").toBool()) {
           // reloading the 'same' document brings the 'old' one to front.
           this->raise();
         }
@@ -1501,7 +1508,7 @@ void MainWindow::compile(bool reload, bool forcedone)
     if (shouldcompiletoplevel) {
       initialize_rng();
       this->errorLogWidget->clearModel();
-      if (Preferences::inst()->getValue("advanced/consoleAutoClear").toBool()) {
+      if (GlobalPreferences::inst()->getValue("advanced/consoleAutoClear").toBool()) {
         this->console->actionClearConsole_triggered();
       }
       if (activeEditor->isContentModified()) saveBackup();
@@ -1602,7 +1609,7 @@ void MainWindow::updateCompileResult()
 
 void MainWindow::compileDone(bool didchange)
 {
-  OpenSCAD::hardwarnings = Preferences::inst()->getValue("advanced/enableHardwarnings").toBool();
+  OpenSCAD::hardwarnings = GlobalPreferences::inst()->getValue("advanced/enableHardwarnings").toBool();
   try{
     const char *callslot;
     if (didchange) {
@@ -1705,7 +1712,7 @@ void MainWindow::instantiateRoot()
  */
 void MainWindow::compileCSG()
 {
-  OpenSCAD::hardwarnings = Preferences::inst()->getValue("advanced/enableHardwarnings").toBool();
+  OpenSCAD::hardwarnings = GlobalPreferences::inst()->getValue("advanced/enableHardwarnings").toBool();
   try{
     assert(this->rootNode);
     LOG("Compiling design (CSG Products generation)...");
@@ -1757,7 +1764,7 @@ void MainWindow::compileCSGDone()
     LOG("Compiling design (CSG Products normalization)...");
     this->processEvents();
 
-    const size_t normalizelimit = 2ul * Preferences::inst()->getValue("advanced/openCSGLimit").toUInt();
+    const size_t normalizelimit = 2ul * GlobalPreferences::inst()->getValue("advanced/openCSGLimit").toUInt();
     CSGTreeNormalizer normalizer(normalizelimit);
 
     if (this->csgRoot) {
@@ -1806,7 +1813,7 @@ void MainWindow::compileCSGDone()
 
     if (this->rootProduct &&
         (this->rootProduct->size() >
-         Preferences::inst()->getValue("advanced/openCSGLimit").toUInt())) {
+         GlobalPreferences::inst()->getValue("advanced/openCSGLimit").toUInt())) {
       LOG(message_group::UI_Warning, "Normalized tree has %1$d elements!", this->rootProduct->size());
       LOG(message_group::UI_Warning, "OpenCSG rendering has been disabled.");
     }
@@ -2668,7 +2675,7 @@ void MainWindow::action3DPrint()
 
     LOG("Selected File format: %1$s", fileformat::info(fileFormat).description);
 
-    Preferences::Preferences::inst()->updateGUI();
+    GlobalPreferences::inst()->updateGUI();
     const auto externalToolService = createExternalToolService(serviceType, serviceName, fileFormat);
     if (!externalToolService) {
       LOG("Error: Unable to create service: %1$d %2$s %3$d", static_cast<int>(serviceType), serviceName.toStdString(), static_cast<int>(fileFormat));
@@ -2753,8 +2760,8 @@ void MainWindow::actionRenderDone(const std::shared_ptr<const Geometry>& root_ge
 
   updateStatusBar(nullptr);
 
-  const bool renderSoundEnabled = Preferences::inst()->getValue("advanced/enableSoundNotification").toBool();
-  const uint soundThreshold = Preferences::inst()->getValue("advanced/timeThresholdOnRenderCompleteSound").toUInt();
+  const bool renderSoundEnabled = GlobalPreferences::inst()->getValue("advanced/enableSoundNotification").toBool();
+  const uint soundThreshold = GlobalPreferences::inst()->getValue("advanced/timeThresholdOnRenderCompleteSound").toUInt();
   if (renderSoundEnabled && soundThreshold <= renderStatistic.ms().count() / 1000) {
     renderCompleteSoundEffect->play();
   }
@@ -2903,50 +2910,6 @@ static void findNodesWithSameMod(const std::shared_ptr<const AbstractNode>& tree
   }
 }
 
-static void getCodeLocation(const AbstractNode *self, int currentLevel,  int includeLevel, int *firstLine, int *firstColumn, int *lastLine, int *lastColumn, int nestedModuleDepth)
-{
-  auto location = self->modinst->location();
-  if (currentLevel >= includeLevel && nestedModuleDepth == 0) {
-    if (*firstLine < 0 || *firstLine > location.firstLine()) {
-      *firstLine = location.firstLine();
-      *firstColumn = location.firstColumn();
-    } else if (*firstLine == location.firstLine() && *firstColumn > location.firstColumn()) {
-      *firstColumn = location.firstColumn();
-    }
-
-    if (*lastLine < 0 || *lastLine < location.lastLine()) {
-      *lastLine = location.lastLine();
-      *lastColumn = location.lastColumn();
-    } else {
-      if (*firstLine < 0 || *firstLine > location.firstLine()) {
-        *firstLine = location.firstLine();
-        *firstColumn = location.firstColumn();
-      } else if (*firstLine == location.firstLine() && *firstColumn > location.firstColumn()) {
-        *firstColumn = location.firstColumn();
-      }
-      if (*lastLine < 0 || *lastLine < location.lastLine()) {
-        *lastLine = location.lastLine();
-        *lastColumn = location.lastColumn();
-      } else if (*lastLine == location.lastLine() && *lastColumn < location.lastColumn()) {
-        *lastColumn = location.lastColumn();
-      }
-    }
-  }
-
-  if (self->verbose_name().rfind("module", 0) == 0) {
-    nestedModuleDepth++;
-  }
-  if (self->modinst->name() == "children") {
-    nestedModuleDepth--;
-  }
-
-  if (nestedModuleDepth >= 0) {
-    for (const auto& node : self->children) {
-      getCodeLocation(node.get(), currentLevel + 1, includeLevel, firstLine,  firstColumn, lastLine, lastColumn, nestedModuleDepth);
-    }
-  }
-}
-
 void MainWindow::setSelectionIndicatorStatus(int nodeIndex, EditorSelectionIndicatorStatus status)
 {
   std::deque<std::shared_ptr<const AbstractNode>> stack;
@@ -2984,7 +2947,7 @@ void MainWindow::setSelectionIndicatorStatus(int nodeIndex, EditorSelectionIndic
   auto lastColumn = location.lastColumn();
 
   // Update the location returned by location to cover the whole section.
-  getCodeLocation(node.get(), 0, 0, &line, &column, &lastLine, &lastColumn, 0);
+  node->getCodeLocation(0, 0, &line, &column, &lastLine, &lastColumn, 0);
 
   this->activeEditor->setSelectionIndicatorStatus(status, 0, line - 1, column - 1, lastLine - 1, lastColumn - 1);
 }
@@ -4158,10 +4121,10 @@ void MainWindow::closeEvent(QCloseEvent *event)
 
 void MainWindow::preferences()
 {
-  Preferences::inst()->update();
-  Preferences::inst()->show();
-  Preferences::inst()->activateWindow();
-  Preferences::inst()->raise();
+  GlobalPreferences::inst()->update();
+  GlobalPreferences::inst()->show();
+  GlobalPreferences::inst()->activateWindow();
+  GlobalPreferences::inst()->raise();
 }
 
 void MainWindow::setColorScheme(const QString& scheme)
@@ -4240,7 +4203,7 @@ void MainWindow::clearCurrentOutput()
 void MainWindow::openCSGSettingsChanged()
 {
 #ifdef ENABLE_OPENCSG
-  OpenCSG::setOption(OpenCSG::AlgorithmSetting, Preferences::inst()->getValue("advanced/forceGoldfeather").toBool() ?
+  OpenCSG::setOption(OpenCSG::AlgorithmSetting, GlobalPreferences::inst()->getValue("advanced/forceGoldfeather").toBool() ?
                      OpenCSG::Goldfeather : OpenCSG::Automatic);
 #endif
 }

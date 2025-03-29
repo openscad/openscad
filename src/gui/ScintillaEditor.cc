@@ -356,7 +356,7 @@ void ScintillaEditor::setupAutoComplete(const bool forceOff)
     qsci->SendScintilla(QsciScintilla::SCI_CALLTIPCANCEL);
   }
 
-  const bool configValue = Preferences::inst()->getValue("editor/enableAutocomplete").toBool();
+  const bool configValue = GlobalPreferences::inst()->getValue("editor/enableAutocomplete").toBool();
   const bool enable = configValue && !forceOff;
 
   if (enable) {
@@ -371,7 +371,7 @@ void ScintillaEditor::setupAutoComplete(const bool forceOff)
     qsci->setCallTipsStyle(QsciScintilla::CallTipsNone);
   }
 
-  int val = Preferences::inst()->getValue("editor/characterThreshold").toInt();
+  int val = GlobalPreferences::inst()->getValue("editor/characterThreshold").toInt();
   qsci->setAutoCompletionThreshold(val <= 0 ? 1 : val);
 }
 
@@ -1352,7 +1352,7 @@ bool ScintillaEditor::modifyNumber(int key)
   auto number = (dotpos < 0)?nr.toLongLong():(nr.left(dotpos) + nr.mid(dotpos + 1)).toLongLong();
   auto tail = nr.length() - curpos;
   auto exponent = tail - ((dotpos >= curpos)?1:0);
-  long long int step = Preferences::inst()->getValue("editor/stepSize").toInt();
+  long long int step = GlobalPreferences::inst()->getValue("editor/stepSize").toInt();
   for (int i = exponent; i > 0; i--) step *= 10;
 
   switch (key) {
@@ -1523,7 +1523,7 @@ void ScintillaEditor::onPythonActiveChanged(bool pythonActive) {
     }
     this->qsci->update();
     // This is needed otherwise the sidebar with line numbers has the wrong size and bg color
-    this->setHighlightScheme(Preferences::inst()->getValue("editor/syntaxhighlight").toString());
+//    this->setHighlightScheme(Preferences::inst()->getValue("editor/syntaxhighlight").toString());
 }
 #endif
 
