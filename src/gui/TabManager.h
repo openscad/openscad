@@ -14,9 +14,8 @@ class TabManager : public QObject
   Q_OBJECT
 
 public:
-  TabManager(MainWindow *o, const QString& filename);
+  TabManager(MainWindow *o);
   QWidget *getTabContent();
-  EditorInterface *editor;
   QSet<EditorInterface *> editorList;
 
   void createTab(const QString& filename);
@@ -29,6 +28,7 @@ public:
   bool saveACopy(EditorInterface *edt);
   void open(const QString& filename);
   size_t count();
+  EditorInterface* editor() const;
 
 public:
   static constexpr const int FIND_HIDDEN = 0;
@@ -51,8 +51,13 @@ private:
   void saveError(const QIODevice& file, const std::string& msg, const QString& filepath);
   void applyAction(QObject *object, const std::function<void(int, EditorInterface *)>& func);
   void setTabsCloseButtonVisibility(int tabIndice, bool isVisible);
+  void setCloseButtonForAllTabsExcept(int indice);
 
   QTabBar::ButtonPosition getClosingButtonPosition();
+
+  // Internal function to factorize the building of menu actions.
+  template<class Function>
+  QAction* buildMenuAction(const QString& actionText, int idx, bool isEnabled, Function onTriggeredFunction);
 
 private slots:
   void tabSwitched(int);
