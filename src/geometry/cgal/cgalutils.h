@@ -125,6 +125,6 @@ bool corefineAndComputeDifference(TriangleMesh& lhs, TriangleMesh& rhs, Triangle
 template <typename K>
 void convertNefPolyhedronToTriangleMesh(const CGAL::Nef_polyhedron_3<K>& nef, CGAL::Surface_mesh<CGAL::Point_3<K>>& mesh);
 #endif
-std::unique_ptr<PolySet> createTriangulatedPolySetFromPolygon2d(const Polygon2d& polygon2d);
+std::unique_ptr<PolySet> createTriangulatedPolySetFromPolygon2d(const Polygon2d& polygon2d, bool in3d);
 
 } // namespace CGALUtils
