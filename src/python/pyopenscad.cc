@@ -286,7 +286,7 @@ int python_numberval(PyObject *number, double *result, int *flags, int flagor)
     *result = PyLong_AsLong(number);
     return 0;
   }
-  if (PyUnicode_Check(number)) {
+  if (PyUnicode_Check(number) && flags != nullptr) {
     PyObjectUniquePtr str( PyUnicode_AsEncodedString(number, "utf-8", "~"), PyObjectDeleter);
     char *str1 = PyBytes_AS_STRING(str.get());
     sscanf(str1,"%lf",result);
@@ -319,7 +319,6 @@ std::vector<int>  python_intlistval(PyObject *list)
 
 int python_vectorval(PyObject *vec, int minval, int maxval, double *x, double *y, double *z, double *w, int *flags)
 {
-  if(w != NULL ) *w = 0;
   if(flags != nullptr) *flags = 0;
   if (PyList_Check(vec)) {
     if(PyList_Size(vec) < minval || PyList_Size(vec) > maxval) return 1;
@@ -338,7 +337,7 @@ int python_vectorval(PyObject *vec, int minval, int maxval, double *x, double *y
     }
     return 0;
   }
-  if (!python_numberval(vec, x, flags, 15)) {
+  if (!python_numberval(vec, x)) {
     *y = *x;
     *z = *x;
     if(w != NULL) *w = *x;
