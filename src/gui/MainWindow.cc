@@ -2507,17 +2507,6 @@ void MainWindow::clearAllSelectionIndicators()
   this->activeEditor->clearAllSelectionIndicators();
 }
 
-static void findNodesWithSameMod(const std::shared_ptr<const AbstractNode>& tree,
-                          const std::shared_ptr<const AbstractNode>& node_mod,
-                          std::vector<std::shared_ptr<const AbstractNode>>& nodes){
-  if (node_mod->modinst == tree->modinst) {
-    nodes.push_back(tree);
-  }
-  for (const auto& step : tree->children) {
-    findNodesWithSameMod(step, node_mod, nodes);
-  }
-}
-
 void MainWindow::setSelectionIndicatorStatus(int nodeIndex, EditorSelectionIndicatorStatus status)
 {
   std::deque<std::shared_ptr<const AbstractNode>> stack;
@@ -2586,7 +2575,7 @@ void MainWindow::setSelection(int index)
   clearAllSelectionIndicators();
 
   std::vector<std::shared_ptr<const AbstractNode>> nodesSameModule{};
-  findNodesWithSameMod(rootNode, selected_node, nodesSameModule);
+  rootNode->findNodesWithSameMod(selected_node, nodesSameModule);
 
   // highlight in the text editor all the text fragment of the hierarchy of object with same mode.
   for (const auto& element : nodesSameModule) {
