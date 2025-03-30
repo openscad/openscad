@@ -120,6 +120,22 @@ PyObject *python_edge(PyObject *self, PyObject *args, PyObject *kwargs)
   return PyOpenSCADObjectFromNode(&PyOpenSCADType, node);
 }
 
+PyObject *python_marked(PyObject *self, PyObject *args, PyObject *kwargs)
+{
+  DECLARE_INSTANCE
+  auto node = std::make_shared<EdgeNode>(instance);
+
+  char *kwlist[] = {"value", NULL};
+  double value = 0.0;
+
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "d", kwlist,
+                                   &value)){
+    PyErr_SetString(PyExc_TypeError, "Error during parsing marked(value)");
+    return NULL;
+  }	  
+  return PyDataObjectFromValue(&PyDataType, value);
+}
+
 PyObject *python_cube(PyObject *self, PyObject *args, PyObject *kwargs)
 {
   DECLARE_INSTANCE
@@ -4705,6 +4721,7 @@ PyMethodDef PyOpenSCADFunctions[] = {
 #endif  
   {"model", (PyCFunction) python_model, METH_VARARGS | METH_KEYWORDS, "Yield Model"},
   {"modelpath", (PyCFunction) python_modelpath, METH_VARARGS | METH_KEYWORDS, "Returns absolute Path to script"},
+  {"marked", (PyCFunction) python_marked, METH_VARARGS | METH_KEYWORDS, "Create a marked value."},
   {NULL, NULL, 0, NULL}
 };
 

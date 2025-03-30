@@ -11,7 +11,8 @@
 
 #define DATA_TYPE_UNKNOWN -1
 #define DATA_TYPE_LIBFIVE 0
-#define DATA_TYPE_SCADMODULE 0
+#define DATA_TYPE_SCADMODULE 1
+#define DATA_TYPE_MARKEDVALUE 2
 
 typedef struct {
   PyObject_HEAD
@@ -31,5 +32,8 @@ std::vector<libfive::Tree *> PyDataObjectToTree(PyObject *object);
 
 PyObject *PyDataObjectFromModule(PyTypeObject *type, std::string modulepath, std::string modulename);
 void PyDataObjectToModule(PyObject *obj, std::string &modulepath, std::string &modulename);
+
+PyObject *PyDataObjectFromValue(PyTypeObject *type, double value);
+double PyDataObjectToValue(PyObject *obj);
 
 

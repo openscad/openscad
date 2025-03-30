@@ -70,6 +70,34 @@ void PyDataObjectToModule(PyObject *obj, std::string &modulepath, std::string &m
   }
 }
 
+PyObject *PyDataObjectFromValue(PyTypeObject *type, double value)
+{
+  PyDataObject *res;
+  double *ptr = (double *) malloc(sizeof(value)); // TODO memory leak
+  *ptr = value;
+  res = (PyDataObject *)  type->tp_alloc(type, 0);
+  if (res != NULL) {
+    res->data_type = DATA_TYPE_MARKEDVALUE;
+    res->data = (void *) ptr;
+    Py_XINCREF(res);
+    return (PyObject *)res;
+  }
+  return Py_None;
+}
+
+double PyDataObjectToValue(PyObject *obj)
+{
+  if(obj != NULL && obj->ob_type == &PyDataType) {
+    PyDataObject * dataobj = (PyDataObject *) obj;
+    if(dataobj->data_type == DATA_TYPE_MARKEDVALUE) {
+    	   
+     double *val = (double *) dataobj->data;
+     return *val;
+    }
+  }
+  return 0;
+}
+
 
 #ifdef ENABLE_LIBFIVE
 
@@ -102,6 +130,25 @@ PyObject *PyDataObjectFromTree(PyTypeObject *type, const std::vector<libfive::Tr
   }	  
 
   return Py_None;
+}
+
+
+PyObject *python_data_str(PyObject *self) {
+  std::ostringstream stream;
+  PyObject *dummydict;    
+  PyDataObject *data = (PyDataObject *) self;
+  switch(data->data_type) {
+   case DATA_TYPE_LIBFIVE:
+     stream << "Libfive Tree";	   
+     break;
+   case DATA_TYPE_SCADMODULE:
+     stream << "SCAD Class Module";	   
+     break;
+   case DATA_TYPE_MARKEDVALUE:
+     stream << "Marked Value (" << PyDataObjectToValue(self) << ")";	   
+     break;
+  }
+  return PyUnicode_FromStringAndSize(stream.str().c_str(),stream.str().size());
 }
 
 std::vector<libfive::Tree *> PyDataObjectToTree(PyObject *obj)
@@ -494,7 +541,7 @@ PyTypeObject PyDataType = {
     0,		        			/* tp_as_mapping */
     0,                         			/* tp_hash  */
     PyDataObject_call,         			/* tp_call */
-    0,                         			/* tp_str */
+    python_data_str,           			/* tp_str */
     0,                         			/* tp_getattro */
     0,                         			/* tp_setattro */
     0,                         			/* tp_as_buffer */

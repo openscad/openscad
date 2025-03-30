@@ -27,6 +27,7 @@
 #include <filesystem>
 
 #include "pyopenscad.h"
+#include "pydata.h"
 #include "core/CsgOpNode.h"
 #include "Value.h"
 #include "Expression.h"
@@ -285,6 +286,11 @@ int python_numberval(PyObject *number, double *result, int *flags, int flagor)
   if (PyLong_Check(number)) {
     *result = PyLong_AsLong(number);
     return 0;
+  }
+  if( number->ob_type == &PyDataType  && flags != nullptr) {
+    *flags |= flagor;
+     *result = PyDataObjectToValue(number);    
+     return 0;
   }
   if (PyUnicode_Check(number) && flags != nullptr) {
     PyObjectUniquePtr str( PyUnicode_AsEncodedString(number, "utf-8", "~"), PyObjectDeleter);
