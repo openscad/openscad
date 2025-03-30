@@ -2207,6 +2207,111 @@ PyObject *python_oo_mesh(PyObject *obj, PyObject *args, PyObject *kwargs)
   return python_mesh_core(obj, tess == Py_True);
 }
 
+PyObject *python_separate_core(PyObject *obj)
+{
+  PyObject *dummydict;
+  std::shared_ptr<AbstractNode> child = PyOpenSCADObjectToNodeMulti(obj, &dummydict);
+  if (child == NULL) {
+    PyErr_SetString(PyExc_TypeError, "Invalid type for  Object in separate \n");
+    return NULL;
+  }
+  Tree tree(child, "");
+  GeometryEvaluator geomevaluator(tree);
+  std::shared_ptr<const Geometry> geom = geomevaluator.evaluateGeometry(*tree.root(), true);
+  std::shared_ptr<const PolySet> ps = PolySetUtils::getGeometryAsPolySet(geom);
+
+  if(ps != nullptr){
+    // setup databases	  
+    intList empty_list;
+    std::vector<intList> pt2tri;	  
+
+    std::vector<int> vert_db;
+    for(int i=0;i<ps->vertices.size();i++){
+      vert_db.push_back(-1);
+      pt2tri.push_back(empty_list);
+    }
+
+    std::vector<int> tri_db;
+    for(int i=0;i<ps->indices.size();i++) {
+      tri_db.push_back(-1);
+      for(auto ind: ps->indices[i])
+        pt2tri[ind].push_back(i);	      
+    }
+
+    // now sort for objects
+    int obj_num=0;
+    for(int i=0;i<vert_db.size();i++) {
+      if(vert_db[i] != -1) continue;
+      std::vector<int> vert_todo;
+      vert_todo.push_back(i);
+      while(vert_todo.size() > 0)
+      {
+        int vert_ind=vert_todo[vert_todo.size()-1];	      
+	vert_todo.pop_back();
+	if(vert_db[vert_ind] != -1) continue;
+        vert_db[vert_ind]= obj_num;
+	for(int tri_ind : pt2tri[vert_ind]) {
+          if(tri_db[tri_ind] != -1) continue;
+	  tri_db[tri_ind]= obj_num;
+          for(int vert1_ind: ps->indices[tri_ind]) {
+            if(vert_db[vert1_ind] != -1) continue;		  
+	    vert_todo.push_back(vert1_ind);
+	  }	  
+	}
+      }
+      obj_num++;      
+    }
+
+    PyObject *objects = PyList_New(obj_num);  
+    for(int i=0;i<obj_num;i++) {
+      // create a polyhedron for each	    
+      DECLARE_INSTANCE
+      auto node = std::make_shared<PolyhedronNode>(instance);
+      node->convexity=2;
+      std::vector<int> vert_map;
+      for(int j=0;j<ps->vertices.size();j++) {
+        if(vert_db[j] == i) {
+          vert_map.push_back(node->points.size());
+          node->points.push_back(ps->vertices[j]);		
+	} else vert_map.push_back(-1);
+      }
+      for(int j=0;j<ps->indices.size();j++) {
+        if(tri_db[j] == i) {
+          IndexedFace face_map;				
+          for(auto ind: ps->indices[j]) {
+            face_map.push_back(vert_map[ind]);
+	  }		  
+	  node->faces.push_back(face_map);
+	}		
+      }
+      PyList_SetItem(objects, i, PyOpenSCADObjectFromNode(&PyOpenSCADType, node));
+    }
+    return objects;
+  }  
+  return Py_None;
+}
+
+PyObject *python_separate(PyObject *self, PyObject *args, PyObject *kwargs)
+{
+  char *kwlist[] = {"obj", NULL};
+  PyObject *obj = NULL;
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O", kwlist, &obj)) {
+    PyErr_SetString(PyExc_TypeError, "error during parsing\n");
+    return NULL;
+  }
+  return python_separate_core(obj);
+}
+
+PyObject *python_oo_separate(PyObject *obj, PyObject *args, PyObject *kwargs)
+{
+  char *kwlist[] = { NULL};
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "", kwlist)) {
+    PyErr_SetString(PyExc_TypeError, "error during parsing\n");
+    return NULL;
+  }
+  return python_separate_core(obj);
+}
+
 PyObject *python_edges_core(PyObject *obj)
 {
   PyObject *dummydict;
@@ -4551,6 +4656,7 @@ PyMethodDef PyOpenSCADFunctions[] = {
   {"color", (PyCFunction) python_color, METH_VARARGS | METH_KEYWORDS, "Color Object."},
   {"output", (PyCFunction) python_output, METH_VARARGS | METH_KEYWORDS, "Output the result."},
   {"show", (PyCFunction) python_show, METH_VARARGS | METH_KEYWORDS, "Show the result."},
+  {"separate", (PyCFunction) python_separate, METH_VARARGS | METH_KEYWORDS, "Split into separate parts."},
   {"export", (PyCFunction) python_export, METH_VARARGS | METH_KEYWORDS, "Export the result."},
   {"find_face", (PyCFunction) python_find_face, METH_VARARGS | METH_KEYWORDS, "find_face."},
   {"sitonto", (PyCFunction) python_sitonto, METH_VARARGS | METH_KEYWORDS, "sitonto"},
@@ -4632,6 +4738,7 @@ PyMethodDef PyOpenSCADMethods[] = {
   OO_METHOD_ENTRY(roof,"Roof Object")	
 #endif
   OO_METHOD_ENTRY(color,"Color Object")	
+  OO_METHOD_ENTRY(separate,"Split into separate Objects")	
   OO_METHOD_ENTRY(export,"Export Object")	
   OO_METHOD_ENTRY(find_face,"Find Face")	
   OO_METHOD_ENTRY(sitonto,"Sit onto")	
