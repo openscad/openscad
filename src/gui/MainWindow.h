@@ -166,6 +166,7 @@ public:
   void exceptionCleanup();
   void setLastFocus(QWidget *widget);
   void UnknownExceptionCleanup(std::string msg = "");
+  void showFind(bool doFindAndReplace);
 
 private:
   [[nodiscard]] QString getCurrentFileName() const;
@@ -261,11 +262,11 @@ private slots:
 
 public slots:
   void hideFind();
-  void showFind();
-  void showFindAndReplace();
+  void actionShowFind();
+  void actionShowFindAndReplace();
 
 private slots:
-  void selectFindType(int);
+  void actionSelectFind(int);
   void findString(const QString&);
   void findNext();
   void findPrev();

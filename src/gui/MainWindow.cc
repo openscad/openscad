@@ -501,8 +501,8 @@ MainWindow::MainWindow(const QStringList& filenames) :
   connect(this->editActionCopyVPF, &QAction::triggered, this, &MainWindow::copyViewportFov);
   connect(this->editActionPreferences, &QAction::triggered, this, &MainWindow::preferences);
   // Edit->Find
-  connect(this->editActionFind, &QAction::triggered, this, &MainWindow::showFind);
-  connect(this->editActionFindAndReplace, &QAction::triggered, this, &MainWindow::showFindAndReplace);
+  connect(this->editActionFind, &QAction::triggered, this, &MainWindow::actionShowFind);
+  connect(this->editActionFindAndReplace, &QAction::triggered, this, &MainWindow::actionShowFindAndReplace);
 #ifdef Q_OS_WIN
   this->editActionFindAndReplace->setShortcut(QKeySequence(Qt::CTRL, Qt::SHIFT, Qt::Key_F));
 #endif
@@ -638,7 +638,7 @@ MainWindow::MainWindow(const QStringList& filenames) :
   this->setColorScheme(cs);
 
   //find and replace panel
-  connect(this->findTypeComboBox, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &MainWindow::selectFindType);
+  connect(this->findTypeComboBox, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &MainWindow::actionSelectFind);
   connect(this->findInputField, &QWordSearchField::textChanged, this, &MainWindow::findString);
   connect(this->findInputField, &QWordSearchField::returnPressed, this->findNextButton, [this]{this->findNextButton->animateClick();});
   find_panel->installEventFilter(this);
@@ -1815,24 +1815,41 @@ void MainWindow::hideFind()
   this->processEvents();
 }
 
-void MainWindow::showFind()
+// Prepare the UI for the find (and replace if requested)
+// Among other thing it makes the text field and replacement field visible and well as it configures the
+// activeEditor to appropriate search mode.
+void MainWindow::showFind(bool doFindAndReplace)
 {
-  this->findInputField->setFindCount(activeEditor->updateFindIndicators(this->findInputField->text()));
-  this->processEvents();
-  findTypeComboBox->setCurrentIndex(0);
-  replaceInputField->hide();
-  replaceButton->hide();
-  replaceAllButton->hide();
-  //replaceLabel->setVisible(false);
-  find_panel->show();
-  activeEditor->findState = TabManager::FIND_VISIBLE;
-  editActionFindNext->setEnabled(true);
-  editActionFindPrevious->setEnabled(true);
-  if (!activeEditor->selectedText().isEmpty()) {
-    findInputField->setText(activeEditor->selectedText());
-  }
-  findInputField->setFocus();
-  findInputField->selectAll();
+    findInputField->setFindCount(activeEditor->updateFindIndicators(findInputField->text()));
+    processEvents();
+
+    if(doFindAndReplace){
+        findTypeComboBox->setCurrentIndex(1);
+        replaceInputField->show();
+        replaceButton->show();
+        replaceAllButton->show();
+        activeEditor->findState = TabManager::FIND_REPLACE_VISIBLE;
+    }else{
+        findTypeComboBox->setCurrentIndex(0);
+        replaceInputField->hide();
+        replaceButton->hide();
+        replaceAllButton->hide();
+        activeEditor->findState = TabManager::FIND_VISIBLE;
+    }
+
+    find_panel->show();
+    editActionFindNext->setEnabled(true);
+    editActionFindPrevious->setEnabled(true);
+    if (!activeEditor->selectedText().isEmpty()) {
+      findInputField->setText(activeEditor->selectedText());
+    }
+    findInputField->setFocus();
+    findInputField->selectAll();
+}
+
+void MainWindow::actionShowFind()
+{
+    showFind(false);
 }
 
 void MainWindow::findString(const QString& textToFind)
@@ -1842,30 +1859,15 @@ void MainWindow::findString(const QString& textToFind)
   activeEditor->find(textToFind);
 }
 
-void MainWindow::showFindAndReplace()
+void MainWindow::actionShowFindAndReplace()
 {
-  this->findInputField->setFindCount(activeEditor->updateFindIndicators(this->findInputField->text()));
-  this->processEvents();
-  findTypeComboBox->setCurrentIndex(1);
-  replaceInputField->show();
-  replaceButton->show();
-  replaceAllButton->show();
-  //replaceLabel->setVisible(true);
-  find_panel->show();
-  activeEditor->findState = TabManager::FIND_REPLACE_VISIBLE;
-  editActionFindNext->setEnabled(true);
-  editActionFindPrevious->setEnabled(true);
-  if (!activeEditor->selectedText().isEmpty()) {
-    findInputField->setText(activeEditor->selectedText());
-  }
-  findInputField->setFocus();
-  findInputField->selectAll();
+    showFind(true);
 }
 
-void MainWindow::selectFindType(int type)
+void MainWindow::actionSelectFind(int type)
 {
-  if (type == 0) showFind();
-  if (type == 1) showFindAndReplace();
+  // If type is one, then we shows the find and replace UI component
+  showFind(type == 1);
 }
 
 void MainWindow::replace()
