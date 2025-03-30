@@ -182,6 +182,10 @@ private:
   // The "type" is used to specify the type of content with the title of the window,
   void showTextInWindow(const QString& type, const QString& textToShow);
 
+  // Change the perspective mode of the 3D view.
+  typedef Camera::ProjectionType ProjectionType;
+  void setProjectionType(ProjectionType mode);
+
   void loadViewSettings();
   void loadDesignSettings();
   void prepareCompile(const char *afterCompileSlot, bool procevents, bool preview);

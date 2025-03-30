@@ -3088,35 +3088,34 @@ void MainWindow::viewCenter()
   this->qglview->update();
 }
 
+void MainWindow::setProjectionType(ProjectionType mode)
+{
+    bool isOrthogonal = ProjectionType::ORTHOGONAL == mode;
+    QSettingsCached settings;
+    settings.setValue("view/orthogonalProjection", isOrthogonal);
+    viewActionPerspective->setChecked(!isOrthogonal);
+    viewActionOrthogonal->setChecked(isOrthogonal);
+    qglview->setOrthoMode(isOrthogonal);
+    qglview->update();
+}
+
 void MainWindow::viewPerspective()
 {
-  QSettingsCached settings;
-  settings.setValue("view/orthogonalProjection", false);
-  viewActionPerspective->setChecked(true);
-  viewActionOrthogonal->setChecked(false);
-  this->qglview->setOrthoMode(false);
-  this->qglview->update();
+    setProjectionType(ProjectionType::PERSPECTIVE);
 }
 
 void MainWindow::viewOrthogonal()
 {
-  QSettingsCached settings;
-  settings.setValue("view/orthogonalProjection", true);
-  viewActionPerspective->setChecked(false);
-  viewActionOrthogonal->setChecked(true);
-  this->qglview->setOrthoMode(true);
-  this->qglview->update();
+    setProjectionType(ProjectionType::ORTHOGONAL);
 }
 
 void MainWindow::viewTogglePerspective()
 {
   const QSettingsCached settings;
-  if (settings.value("view/orthogonalProjection").toBool()) {
-    viewPerspective();
-  } else {
-    viewOrthogonal();
-  }
+  bool isOrtho = settings.value("view/orthogonalProjection").toBool();
+  setProjectionType(isOrtho?ProjectionType::PERSPECTIVE:ProjectionType::ORTHOGONAL);
 }
+
 void MainWindow::viewResetView()
 {
   this->qglview->resetView();
