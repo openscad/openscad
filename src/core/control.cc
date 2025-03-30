@@ -186,6 +186,7 @@ static std::shared_ptr<AbstractNode> builtin_assign(const ModuleInstantiation *i
   // -> parallel evaluation. This is to be backwards compatible.
   Arguments arguments{inst->arguments, context};
   ContextHandle<Context> assignContext{Context::create<Context>(context)};
+  assignContext->reserve_additional_lexical_variables(arguments.size()); // TODO: count lex vs config vars
   for (auto& argument : arguments) {
     if (!argument.name) {
       LOG(message_group::Warning, inst->location(), context->documentRoot(), "Assignment without variable name %1$s", argument->toEchoStringNoThrow());
