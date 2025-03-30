@@ -2496,10 +2496,7 @@ void MainWindow::rightClick(QPoint position)
 
 void MainWindow::measureFinished()
 {
-  this->qglview->selected_obj.clear();
-  this->qglview->shown_obj.clear();
-  this->qglview->update();
-  this->qglview->measure_state = MEASURE_IDLE;
+    meas.stopMeasure();
 }
 
 void MainWindow::clearAllSelectionIndicators()
