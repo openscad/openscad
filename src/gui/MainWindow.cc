@@ -2657,64 +2657,47 @@ void MainWindow::UnknownExceptionCleanup(std::string msg){
   if (designActionAutoReload->isChecked()) autoReloadTimer->start();
 }
 
+void MainWindow::showTextInWindow(const QString& type, const QString& content)
+{
+    auto e = new QTextEdit(this);
+    e->setAttribute(Qt::WA_DeleteOnClose);
+    e->setWindowFlags(Qt::Window);
+    e->setTabStopDistance(tabStopWidth);
+    e->setWindowTitle(type+" Dump");
+    if(content.isEmpty())
+        e->setPlainText("No "+type+"to dump. Please try compiling first...");
+    else
+        e->setPlainText(content);
+
+    e->setReadOnly(true);
+    e->resize(600, 400);
+    e->show();
+}
+
 void MainWindow::actionDisplayAST()
 {
   setCurrentOutput();
-  auto e = new QTextEdit(this);
-  e->setAttribute(Qt::WA_DeleteOnClose);
-  e->setWindowFlags(Qt::Window);
-  e->setTabStopDistance(tabStopWidth);
-  e->setWindowTitle("AST Dump");
-  e->setReadOnly(true);
-  if (rootFile) {
-    e->setPlainText(QString::fromStdString(rootFile->dump("")));
-  } else {
-    e->setPlainText("No AST to dump. Please try compiling first...");
-  }
-  e->resize(600, 400);
-  e->show();
+  QString text = (rootFile)? QString::fromStdString(rootFile->dump("")) : "";
+  showTextInWindow("AST", text);
   clearCurrentOutput();
 }
 
 void MainWindow::actionDisplayCSGTree()
 {
   setCurrentOutput();
-  auto e = new QTextEdit(this);
-  e->setAttribute(Qt::WA_DeleteOnClose);
-  e->setWindowFlags(Qt::Window);
-  e->setTabStopDistance(tabStopWidth);
-  e->setWindowTitle("CSG Tree Dump");
-  e->setReadOnly(true);
-  if (this->rootNode) {
-    e->setPlainText(QString::fromStdString(this->tree.getString(*this->rootNode, "  ")));
-  } else {
-    e->setPlainText("No CSG to dump. Please try compiling first...");
-  }
-  e->resize(600, 400);
-  e->show();
+  QString text = (rootNode)? QString::fromStdString(tree.getString(*rootNode, "  ")) : "";
+  showTextInWindow("CGS", text);
   clearCurrentOutput();
 }
 
 void MainWindow::actionDisplayCSGProducts()
 {
-  const std::string NA("N/A");
   setCurrentOutput();
-  auto e = new QTextEdit(this);
-  e->setAttribute(Qt::WA_DeleteOnClose);
-  e->setWindowFlags(Qt::Window);
-  e->setTabStopDistance(tabStopWidth);
-  e->setWindowTitle("CSG Products Dump");
-  e->setReadOnly(true);
-  e->setPlainText(QString("\nCSG before normalization:\n%1\n\n\nCSG after normalization:\n%2\n\n\nCSG rendering chain:\n%3\n\n\nHighlights CSG rendering chain:\n%4\n\n\nBackground CSG rendering chain:\n%5\n")
-
-                  .arg(QString::fromStdString(this->csgRoot ? this->csgRoot->dump() : NA),
-                       QString::fromStdString(this->normalizedRoot ? this->normalizedRoot->dump() : NA),
-                       QString::fromStdString(this->rootProduct ? this->rootProduct->dump() : NA),
-                       QString::fromStdString(this->highlightsProducts ? this->highlightsProducts->dump() : NA),
-                       QString::fromStdString(this->backgroundProducts ? this->backgroundProducts->dump() : NA)));
-
-  e->resize(600, 400);
-  e->show();
+  // a small lambda to avoid code duplication
+  auto constexpr dump = [](auto node){ return QString::fromStdString(node? node->dump() : "N/A"); };
+  auto text = QString("\nCSG before normalization:\n%1\n\n\nCSG after normalization:\n%2\n\n\nCSG rendering chain:\n%3\n\n\nHighlights CSG rendering chain:\n%4\n\n\nBackground CSG rendering chain:\n%5\n")
+                  .arg(dump(csgRoot), dump(normalizedRoot), dump(rootProduct), dump(highlightsProducts), dump(backgroundProducts));
+  showTextInWindow("CSG Products Dump", text);
   clearCurrentOutput();
 }
 

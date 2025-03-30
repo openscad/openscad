@@ -177,6 +177,10 @@ private:
   bool checkEditorModified();
   QString dumpCSGTree(const std::shared_ptr<AbstractNode>& root);
 
+  // Opens an independent windows with a text area showing the text given in argument
+  // The "type" is used to specify the type of content with the title of the window,
+  void showTextInWindow(const QString& type, const QString& textToShow);
+
   void loadViewSettings();
   void loadDesignSettings();
   void prepareCompile(const char *afterCompileSlot, bool procevents, bool preview);
