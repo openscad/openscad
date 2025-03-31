@@ -531,7 +531,9 @@ MainWindow::MainWindow(const QStringList& filenames) :
   connect(this->editActionPrevBookmark, &QAction::triggered, tabManager, &TabManager::prevBookmark);
   connect(this->editActionJumpToNextError, &QAction::triggered, tabManager, &TabManager::jumpToNextError);
 
+  connect(tabManager, &TabManager::editorAboutToClose, this, &MainWindow::onTabManagerAboutToCloseEditor);
   connect(tabManager, &TabManager::currentEditorChanged, this, &MainWindow::onTabManagerEditorChanged);
+  connect(tabManager, &TabManager::editorContentReloaded, this, &MainWindow::onTabManagerEditorContentReloaded);
 
   connect(GlobalPreferences::inst(), &Preferences::consoleFontChanged, this->console, &Console::setFont);
 
@@ -608,7 +610,7 @@ MainWindow::MainWindow(const QStringList& filenames) :
   // File menu
   connect(this->fileActionNewWindow, &QAction::triggered, this, &MainWindow::actionNewWindow);
   connect(this->fileActionNew, &QAction::triggered, tabManager, &TabManager::actionNew);
-  connect(this->fileActionOpenWindow, &QAction::triggered, this,&MainWindow::actionOpenWindow);
+  connect(this->fileActionOpenWindow, &QAction::triggered, this, &MainWindow::actionOpenWindow);
   connect(this->fileActionOpen, &QAction::triggered, this, &MainWindow::actionOpen);
   connect(this->fileActionSave, &QAction::triggered, this, &MainWindow::actionSave);
   connect(this->fileActionSaveAs, &QAction::triggered, this, &MainWindow::actionSaveAs);
@@ -801,7 +803,9 @@ MainWindow::MainWindow(const QStringList& filenames) :
   //find and replace panel
   connect(this->findTypeComboBox, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &MainWindow::selectFindType);
   connect(this->findInputField, &QWordSearchField::textChanged, this, &MainWindow::findString);
-  connect(this->findInputField, &QWordSearchField::returnPressed, this->findNextButton, [this]{this->findNextButton->animateClick();});
+  connect(this->findInputField, &QWordSearchField::returnPressed, this->findNextButton, [this] {
+    this->findNextButton->animateClick();
+  });
   find_panel->installEventFilter(this);
   if (QApplication::clipboard()->supportsFindBuffer()) {
     connect(this->findInputField, &QWordSearchField::textChanged, this, &MainWindow::updateFindBuffer);
@@ -816,7 +820,9 @@ MainWindow::MainWindow(const QStringList& filenames) :
   connect(this->cancelButton, &QPushButton::clicked, this, &MainWindow::hideFind);
   connect(this->replaceButton, &QPushButton::clicked, this, &MainWindow::replace);
   connect(this->replaceAllButton, &QPushButton::clicked, this, &MainWindow::replaceAll);
-  connect(this->replaceInputField, &QLineEdit::returnPressed, this->replaceButton, [this]{this->replaceButton->animateClick();});
+  connect(this->replaceInputField, &QLineEdit::returnPressed, this->replaceButton, [this] {
+    this->replaceButton->animateClick();
+  });
   addKeyboardShortCut(this->viewerToolBar->actions());
   addKeyboardShortCut(this->editortoolbar->actions());
 
@@ -974,6 +980,9 @@ MainWindow::MainWindow(const QStringList& filenames) :
     preferences->setHighlightingColorSchemes(activeEditor->colorSchemes());
 
   onTabManagerEditorChanged(activeEditor);
+
+  // fills the content of the Recents Files menu.
+  updateRecentFileActions();
 }
 
 void MainWindow::onNavigationOpenContextMenu() {
@@ -1487,7 +1496,7 @@ void MainWindow::compile(bool reload, bool forcedone)
       // if we haven't yet compiled the current text.
       else {
         auto current_doc = activeEditor->toPlainText();
-        if (current_doc.size() && lastCompiledDoc.size() == 0) {
+        if (current_doc.size() != lastCompiledDoc.size()) {
           shouldcompiletoplevel = true;
         }
       }
@@ -1502,6 +1511,7 @@ void MainWindow::compile(bool reload, bool forcedone)
         shouldcompiletoplevel = true;
       }
     }
+
     // Parsing and dependency handling must run to completion even with stop on errors to prevent auto
     // reload picking up where it left off, thwarting the stop, so we turn off exceptions in PRINT.
     no_exceptions_for_warnings();
@@ -1657,6 +1667,8 @@ void MainWindow::instantiateRoot()
 
   const std::filesystem::path doc(activeEditor->filepath.toStdString());
   this->tree.setDocumentPath(doc.parent_path().string());
+
+  renderedEditor = activeEditor;
 
   if (this->rootFile) {
     // Evaluate CSG tree
@@ -1881,6 +1893,8 @@ void MainWindow::clearRecentFiles()
   updateRecentFileActions();
 }
 
+// Updates the content of the recent files menu entries
+// by iterating over the recently opened files.
 void MainWindow::updateRecentFileActions()
 {
   auto files = UIUtils::recentFiles();
@@ -2007,15 +2021,15 @@ void MainWindow::actionPythonCreateVenv()
   if (!venvDir.exists()) {
     // Should not happen, but just in case double check...
     QMessageBox::critical(this, _("Create Virtual Environment"),
-        "Directory does not exist. Can't create virtual environment.",
-        QMessageBox::Ok);
+                          "Directory does not exist. Can't create virtual environment.",
+                          QMessageBox::Ok);
     return;
   }
 
   if (!venvDir.isEmpty()) {
     QMessageBox::critical(this, _("Create Virtual Environment"),
-        "Directory is not empty. Can't create virtual environment.",
-        QMessageBox::Ok);
+                          "Directory is not empty. Can't create virtual environment.",
+                          QMessageBox::Ok);
     return;
   }
 
@@ -2028,15 +2042,15 @@ void MainWindow::actionPythonCreateVenv()
     Settings::Settings::visit(SettingsWriter());
     LOG("Python virtual environment creation successfull.");
     QMessageBox::information(this, _("Create Virtual Environment"),
-        "Virtual environment created, please restart OpenSCAD to activate.",
-        QMessageBox::Ok);
+                             "Virtual environment created, please restart OpenSCAD to activate.",
+                             QMessageBox::Ok);
   } else {
     LOG("Python virtual environment creation failed.");
     QMessageBox::critical(this, _("Create Virtual Environment"),
-        "Virtual environment creation failed.",
-        QMessageBox::Ok);
+                          "Virtual environment creation failed.",
+                          QMessageBox::Ok);
   }
-#endif
+#endif // ifdef ENABLE_PYTHON
 }
 
 void MainWindow::actionPythonSelectVenv()
@@ -2051,10 +2065,10 @@ void MainWindow::actionPythonSelectVenv()
     Settings::SettingsPython::pythonVirtualEnv.setValue(venvDir.toStdString());
     Settings::Settings::visit(SettingsWriter());
     QMessageBox::information(this, _("Select Virtual Environment"),
-        "Virtual environment selected, please restart OpenSCAD to activate.",
-        QMessageBox::Ok);
+                             "Virtual environment selected, please restart OpenSCAD to activate.",
+                             QMessageBox::Ok);
   }
-#endif
+#endif // ifdef ENABLE_PYTHON
 }
 
 void MainWindow::actionSaveACopy()
@@ -2390,9 +2404,6 @@ bool MainWindow::trust_python_file(const std::string& file,  const std::string& 
   }
   return false;
 }
-#endif
-
-#ifdef ENABLE_PYTHON
 void MainWindow::recomputePythonActive()
 {
   auto fnameba = activeEditor->filepath.toLocal8Bit();
@@ -2412,34 +2423,25 @@ void MainWindow::recomputePythonActive()
     emit this->pythonActiveChanged(this->python_active);
   }
 }
-#endif
+#endif // ifdef ENABLE_PYTHON
 
-void MainWindow::parseTopLevelDocument()
+SourceFile *MainWindow::parseDocument(EditorInterface *editor)
 {
   resetSuppressedMessages();
 
-  this->lastCompiledDoc = activeEditor->toPlainText();
+  auto document = editor->toPlainText();
+  auto fulltext = std::string(document.toUtf8().constData()) + "\n\x03\n" + commandline_commands;
+  auto fnameba = editor->filepath.toLocal8Bit();
 
-  auto fulltext =
-    std::string(this->lastCompiledDoc.toUtf8().constData()) +
-    "\n\x03\n" + commandline_commands;
   auto fulltext_py =
       std::string(this->lastCompiledDoc.toUtf8().constData());
-
-  auto fnameba = activeEditor->filepath.toLocal8Bit();
-  const char *fname = activeEditor->filepath.isEmpty() ? "" : fnameba;
-  delete this->parsedFile;
+  const char *fname = editor->filepath.isEmpty() ? "" : fnameba;
+  SourceFile *sourceFile;
 #ifdef ENABLE_PYTHON
   recomputePythonActive();
-  boost::regex ex_number( R"(^(\w+)\s*=\s*(-?[\d.]+))");
-  boost::regex ex_string( R"(^(\w+)\s*=\s*\"([^\"]*)\")");
   if (this->python_active) {
-
-    this->parsedFile = nullptr; // because the parse() call can throw and we don't want a stale pointer!
-    this->rootFile = nullptr;  // ditto
-    fs::path parser_sourcefile = fs::path(fname).generic_string();				
-    this->rootFile =new SourceFile(parser_sourcefile.parent_path().string(), parser_sourcefile.filename().string());
-    this->parsedFile = this->rootFile;
+    auto fulltext_py =
+      std::string(this->lastCompiledDoc.toUtf8().constData());
 
     const auto& venv = venvBinDirFromSettings();
     const auto& binDir = venv.empty() ? PlatformUtils::applicationPath() : venv;
@@ -2456,9 +2458,9 @@ void MainWindow::parseTopLevelDocument()
 	if(pos1 == -1) break;
 	pos=pos1;
       }	      
-      if(pos == -1) break; // no paremter statements included
+      if(pos == -1) break; // no parameter statements included
       pos = fulltext_py.find("\n",pos);			   
-      if(pos == -1) break; // no paremter statements included
+      if(pos == -1) break; // no parameter statements included
       std::string par_text = fulltext_py.substr(0,pos);
       //
       //add parameters as annotation in AST
@@ -2472,37 +2474,50 @@ void MainWindow::parseTopLevelDocument()
     }
     while(0);
 
-    customizer_parameters_finished = this->rootFile->scope.assignments;
+    if(this->rootFile != nullptr) customizer_parameters_finished = this->rootFile->scope.assignments;
     customizer_parameters.clear();
     if (venv.empty()) {
-        LOG("Running %1$s without venv.", python_version());
+      LOG("Running %1$s without venv.", python_version());
     } else {
-        const auto& v = Settings::SettingsPython::pythonVirtualEnv.value();
-        LOG("Running %1$s in venv '%2$s'.", python_version(), v);
+      const auto& v = Settings::SettingsPython::pythonVirtualEnv.value();
+      LOG("Running %1$s in venv '%2$s'.", python_version(), v);
     }
     auto error = evaluatePython(fulltext_py, false); // add assignments TODO check 
     if (error.size() > 0) LOG(message_group::Error, Location::NONE, "", error.c_str());
     finishPython();
+  sourceFile = parse(sourceFile, "", fname, fname, false) ? sourceFile : nullptr;
 
   } else // python not enabled
 #endif // ifdef ENABLE_PYTHON
 {
-  this->parsedFile = nullptr; // because the parse() call can throw and we don't want a stale pointer!
-  this->rootFile = nullptr;  // ditto
-  this->rootFile = parse(this->parsedFile, fulltext, fname, fname, false) ? this->parsedFile : nullptr;
 
-  this->activeEditor->resetHighlighting();
-  if (this->rootFile != nullptr) {
+  sourceFile = parse(sourceFile, fulltext, fname, fname, false) ? sourceFile : nullptr;
+
+  editor->resetHighlighting();
+  if (sourceFile) {
     //add parameters as annotation in AST
-    CommentParser::collectParameters(fulltext, this->rootFile, '/' );
-    this->activeEditor->parameterWidget->setParameters(this->rootFile, fulltext);
-    this->activeEditor->parameterWidget->applyParameters(this->rootFile);
-    this->activeEditor->parameterWidget->setEnabled(true);
-    this->activeEditor->setIndicator(this->rootFile->indicatorData);
+    CommentParser::collectParameters(fulltext, sourceFile, '/');
+    editor->parameterWidget->setParameters(sourceFile, fulltext);
+    editor->parameterWidget->applyParameters(sourceFile);
+    editor->parameterWidget->setEnabled(true);
+    editor->setIndicator(sourceFile->indicatorData);
   } else {
-    this->activeEditor->parameterWidget->setEnabled(false);
+    editor->parameterWidget->setEnabled(false);
   }
+
 }
+  return sourceFile;
+}
+
+void MainWindow::parseTopLevelDocument()
+{
+  resetSuppressedMessages();
+
+  this->lastCompiledDoc = activeEditor->toPlainText();
+
+  activeEditor->resetHighlighting();
+  this->rootFile = parseDocument(activeEditor);
+  this->parsedFile = this->rootFile;
 }
 
 void MainWindow::changeParameterWidget()
@@ -2576,9 +2591,10 @@ void MainWindow::prepareCompile(const char *afterCompileSlot, bool procevents, b
 void MainWindow::actionRenderPreview()
 {
   static bool preview_requested;
-
   preview_requested = true;
+
   if (GuiLocker::isLocked()) return;
+
   GuiLocker::lock();
   preview_requested = false;
 
@@ -2587,17 +2603,19 @@ void MainWindow::actionRenderPreview()
 
   prepareCompile("csgRender", !animateDock->isVisible(), true);
   compile(false, false);
+
   if (preview_requested) {
     // if the action was called when the gui was locked, we must request it one more time
     // however, it's not possible to call it directly NOR make the loop
     // it must be called from the mainloop
     QTimer::singleShot(0, this, &MainWindow::actionRenderPreview);
+    return;
   }
 }
 
 void MainWindow::csgRender()
 {
-    if (this->rootNode) compileCSG();
+  if (this->rootNode) compileCSG();
 }
 
 void MainWindow::csgRenderFinished()
@@ -2738,7 +2756,7 @@ void MainWindow::actionRenderDone(const std::shared_ptr<const Geometry>& root_ge
     LOG("Rendering finished.");
 
     this->rootGeom = root_geom;
-    // Choose PolySetRenderer for PolySet and Polygon2d, and for Manifold since we 
+    // Choose PolySetRenderer for PolySet and Polygon2d, and for Manifold since we
     // know that all geometries are convertible to PolySet.
     if (RenderSettings::inst()->backend3D == RenderBackend3D::ManifoldBackend ||
         std::dynamic_pointer_cast<const PolySet>(this->rootGeom) ||
@@ -2815,6 +2833,7 @@ void MainWindow::leftClick(QPoint mouse)
  */
 void MainWindow::rightClick(QPoint position)
 {
+  std::cout << "RIGHT CLICK " << std::endl;
   // selecting without a renderer?!
   if (!this->qglview->renderer) {
     return;
@@ -2838,7 +2857,6 @@ void MainWindow::rightClick(QPoint position)
       if (step->name() == "root") {
         continue;
       }
-
       auto location = step->modinst->location();
       ss.str("");
 
@@ -2857,17 +2875,17 @@ void MainWindow::rightClick(QPoint position)
         ss << name << " (library "
            << location.fileName().substr(libpath.string().length() + 1) << ":"
            << location.firstLine() << ")";
-      } else if (activeEditor->filepath.toStdString() == location.fileName()) {
+      } else if (renderedEditor->filepath.toStdString() == location.fileName()) {
         // removes the "module" prefix if any as it makes it not clear if it is module declaration or call.
         ss << name << " (" << location.filePath().filename().string() << ":"
            << location.firstLine() << ")";
       } else {
-        auto relative_filename = fs_uncomplete(location.filePath(), fs::path(activeEditor->filepath.toStdString()).parent_path())
+        auto relative_filename = fs_uncomplete(location.filePath(), fs::path(renderedEditor->filepath.toStdString()).parent_path())
           .generic_string();
+
         // Set the displayed name relative to the active editor window
         ss << name << " (" << relative_filename << ":" << location.firstLine() << ")";
       }
-
       // Prepare the action to be sent
       auto action = tracemenu.addAction(QString::fromStdString(ss.str()));
       if (editorDock->isVisible()) {
@@ -2879,6 +2897,18 @@ void MainWindow::rightClick(QPoint position)
       }
     }
 
+    // Before starting we need to lock the GUI to avoid interferance with reload/update
+    // triggered by other part of the application (eg: changing the renderedEditor)
+    GuiLocker::lock();
+
+    // Execute this lambda function when the selection menu is closing.
+    connect(&tracemenu, &QMenu::aboutToHide, [this](){
+      // remove the visual hints in the editor
+      renderedEditor->clearAllSelectionIndicators();
+      // unlock the GUI so the other part of the interface can now be updated.
+      // (eg: changing the renderedEditor)
+      GuiLocker::unlock();
+    });
     tracemenu.exec(this->qglview->mapToGlobal(position));
   } else {
     clearAllSelectionIndicators();
@@ -2900,8 +2930,8 @@ void MainWindow::clearAllSelectionIndicators()
 }
 
 static void findNodesWithSameMod(const std::shared_ptr<const AbstractNode>& tree,
-                          const std::shared_ptr<const AbstractNode>& node_mod,
-                          std::vector<std::shared_ptr<const AbstractNode>>& nodes){
+                                 const std::shared_ptr<const AbstractNode>& node_mod,
+                                 std::vector<std::shared_ptr<const AbstractNode>>& nodes){
   if (node_mod->modinst == tree->modinst) {
     nodes.push_back(tree);
   }
@@ -2910,7 +2940,7 @@ static void findNodesWithSameMod(const std::shared_ptr<const AbstractNode>& tree
   }
 }
 
-void MainWindow::setSelectionIndicatorStatus(int nodeIndex, EditorSelectionIndicatorStatus status)
+void MainWindow::setSelectionIndicatorStatus(EditorInterface *editor, int nodeIndex, EditorSelectionIndicatorStatus status)
 {
   std::deque<std::shared_ptr<const AbstractNode>> stack;
   this->rootNode->getNodeByID(nodeIndex, stack);
@@ -2924,15 +2954,13 @@ void MainWindow::setSelectionIndicatorStatus(int nodeIndex, EditorSelectionIndic
     const auto& node = stack[i];
 
     auto& location = node->modinst->location();
-    if (location.filePath().compare(activeEditor->filepath.toStdString()) != 0) {
-      std::cout << "--->>> Line of code in a different file -- PATH -- " << location.fileName() << std::endl;
-      node->modinst->print(std::cout, "");
+    if (location.filePath().compare(editor->filepath.toStdString()) != 0) {
       level++;
       continue;
     }
 
     if (node->verbose_name().rfind("module", 0) == 0 || node->modinst->name() == "children") {
-      this->activeEditor->setSelectionIndicatorStatus(
+      editor->setSelectionIndicatorStatus(
         status, level,
         location.firstLine() - 1, location.firstColumn() - 1, location.lastLine() - 1, location.lastColumn() - 1);
       level++;
@@ -2949,11 +2977,12 @@ void MainWindow::setSelectionIndicatorStatus(int nodeIndex, EditorSelectionIndic
   // Update the location returned by location to cover the whole section.
   node->getCodeLocation(0, 0, &line, &column, &lastLine, &lastColumn, 0);
 
-  this->activeEditor->setSelectionIndicatorStatus(status, 0, line - 1, column - 1, lastLine - 1, lastColumn - 1);
+  editor->setSelectionIndicatorStatus(status, 0, line - 1, column - 1, lastLine - 1, lastColumn - 1);
 }
 
 void MainWindow::setSelection(int index)
 {
+  assert(renderedEditor != nullptr);
   if (currentlySelectedObject == index) return;
 
   std::deque<std::shared_ptr<const AbstractNode>> path;
@@ -2975,7 +3004,8 @@ void MainWindow::setSelection(int index)
   }
 
   // removes all previsly configure selection indicators.
-  clearAllSelectionIndicators();
+  renderedEditor->clearAllSelectionIndicators();
+  renderedEditor->show();
 
   std::vector<std::shared_ptr<const AbstractNode>> nodesSameModule{};
   findNodesWithSameMod(rootNode, selected_node, nodesSameModule);
@@ -2983,15 +3013,15 @@ void MainWindow::setSelection(int index)
   // highlight in the text editor all the text fragment of the hierarchy of object with same mode.
   for (const auto& element : nodesSameModule) {
     if (element->index() != currentlySelectedObject) {
-      setSelectionIndicatorStatus(element->index(), EditorSelectionIndicatorStatus::IMPACTED);
+      setSelectionIndicatorStatus(renderedEditor, element->index(), EditorSelectionIndicatorStatus::IMPACTED);
     }
   }
 
   // highlight in the text editor only the fragment correponding to the selected stack.
   // this step must be done after all the impacted element have been marked.
-  setSelectionIndicatorStatus(currentlySelectedObject, EditorSelectionIndicatorStatus::SELECTED);
+  setSelectionIndicatorStatus(renderedEditor, currentlySelectedObject, EditorSelectionIndicatorStatus::SELECTED);
 
-  activeEditor->setCursorPosition(line - 1, column - 1);
+  renderedEditor->setCursorPosition(line - 1, column - 1);
 }
 
 /**
@@ -2999,6 +3029,7 @@ void MainWindow::setSelection(int index)
  */
 void MainWindow::onHoveredObjectInSelectionMenu()
 {
+  assert(renderedEditor != nullptr);
   auto *action = qobject_cast<QAction *>(sender());
   if (!action || !action->property("id").isValid()) {
     return;
@@ -3658,6 +3689,9 @@ bool MainWindow::isEmpty()
 
 void MainWindow::editorContentChanged()
 {
+  // this slot is called when the content of the active editor changed.
+  // it rely on the activeEditor member to pick the new data.
+
   auto current_doc = activeEditor->toPlainText();
   if (current_doc != lastCompiledDoc) {
     animateWidget->editorContentChanged();
@@ -3942,14 +3976,61 @@ QString MainWindow::getCurrentFileName() const
   return fname.replace("&", "&&");
 }
 
-void MainWindow::onTabManagerEditorChanged(EditorInterface *neweditor)
+void MainWindow::onTabManagerAboutToCloseEditor(EditorInterface *closingEditor)
 {
-  activeEditor = neweditor;
+  // This slots is in charge of closing properly the preview when the
+  // associated editor is about to close.
+  if (closingEditor == renderedEditor) {
+    renderedEditor = nullptr;
 
-  if (neweditor == nullptr) return;
+    // Invalidate renderers before we kill the CSG tree
+    this->qglview->setRenderer(nullptr);
+       #ifdef ENABLE_OPENCSG
+    this->previewRenderer = nullptr;
+       #endif
+    this->thrownTogetherRenderer = nullptr;
 
-  parameterDock->setWidget(neweditor->parameterWidget);
-  editActionUndo->setEnabled(neweditor->canUndo());
+    // Remove previous CSG tree
+    this->absoluteRootNode.reset();
+
+    this->csgRoot.reset();
+    this->normalizedRoot.reset();
+    this->rootProduct.reset();
+
+    this->rootNode.reset();
+    this->tree.setRoot(nullptr);
+    this->qglview->update();
+  }
+}
+
+void MainWindow::onTabManagerEditorContentReloaded(EditorInterface *reloadedEditor)
+{
+  try {
+    // when a new editor is created, it is important to compile the initial geometry
+    // so the customizer panels are ok.
+    parseDocument(reloadedEditor);
+  } catch (const HardWarningException&) {
+    exceptionCleanup();
+  } catch (const std::exception& ex) {
+    UnknownExceptionCleanup(ex.what());
+  } catch (...) {
+    UnknownExceptionCleanup();
+  }
+
+  // updates the content of the Recents Files menu to integrate the one possibly
+  // associated with the created editor. The reason is that an editor can be created
+  // or updated without a file associated with it.
+  updateRecentFileActions();
+}
+
+void MainWindow::onTabManagerEditorChanged(EditorInterface *newEditor)
+{
+  activeEditor = newEditor;
+
+  if (newEditor == nullptr) return;
+
+  parameterDock->setWidget(newEditor->parameterWidget);
+  editActionUndo->setEnabled(newEditor->canUndo());
 
   const QString name = getCurrentFileName();
   setWindowTitle(name);
@@ -3959,6 +4040,11 @@ void MainWindow::onTabManagerEditorChanged(EditorInterface *neweditor)
   animateDock->setNameSuffix(name);
   fontListDock->setNameSuffix(name);
   viewportControlDock->setNameSuffix(name);
+
+  // If there is no renderedEditor we request for a new preview.
+  if (renderedEditor == nullptr) {
+    actionRenderPreview();
+  }
 }
 
 Dock *MainWindow::findVisibleDockToActivate(int offset) const

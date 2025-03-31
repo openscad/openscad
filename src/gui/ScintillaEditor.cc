@@ -1655,9 +1655,6 @@ void ScintillaEditor::clearAllSelectionIndicators()
   qsci->markerDeleteAll(selectionMarkerLevelNumber + 3);
   qsci->markerDeleteAll(selectionMarkerLevelNumber + 4);
   qsci->markerDeleteAll(selectionMarkerLevelNumber + 5);
-
-  // if there is no more marker... hide the dedicated area in the editor
-  updateSymbolMarginVisibility();
 }
 
 /**

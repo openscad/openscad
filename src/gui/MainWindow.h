@@ -134,7 +134,7 @@ private:
   volatile bool isClosing = false;
   void consoleOutputRaw(const QString& msg);
   void clearAllSelectionIndicators();
-  void setSelectionIndicatorStatus(int nodeIndex, EditorSelectionIndicatorStatus status);
+  void setSelectionIndicatorStatus(EditorInterface *editor, int nodeIndex, EditorSelectionIndicatorStatus status);
 
 protected:
   void closeEvent(QCloseEvent *event) override;
@@ -148,7 +148,11 @@ private slots:
   void openCSGSettingsChanged();
   void consoleOutput(const Message& msgObj);
   void setSelection(int index);
+
+  // implements the actions to be done when the selection menu is closing
+  // the seclection menu is the one that show up when right click on the geometry in the 3d view.
   void onHoveredObjectInSelectionMenu();
+
   void measureFinished();
   void errorLogOutput(const Message& log_msg);
   void addMenuItemCB(QString function);
@@ -161,6 +165,14 @@ private slots:
   // the tab manager editor is changed.
   void onTabManagerEditorChanged(EditorInterface *);
 
+  // implement the different actions needed when
+  // the tab manager editor is about to close one of the tab
+  void onTabManagerAboutToCloseEditor(EditorInterface *);
+
+  // implement the different actions needed when an editor
+  // has its content replaced (because of load)
+  void onTabManagerEditorContentReloaded(EditorInterface *reloadedEditor);
+
 public:
   static void consoleOutput(const Message& msgObj, void *userdata);
   static void errorLogOutput(const Message& log_msg, void *userdata);
@@ -168,6 +180,11 @@ public:
   static void noOutputErrorLog(const Message&, void *) {} // /dev/null
 
   bool fileChangedOnDisk();
+
+  // Parse the document contained in the editor, update the editors's parameters and returns a SourceFile object
+  // if parsing suceeded. Nullptr otherwise.
+  SourceFile *parseDocument(EditorInterface *editor);
+
   void parseTopLevelDocument();
   void exceptionCleanup();
   void setLastFocus(QWidget *widget);
