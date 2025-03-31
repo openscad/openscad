@@ -99,6 +99,24 @@ double PyDataObjectToValue(PyObject *obj)
 }
 
 
+PyObject *python_data_str(PyObject *self) {
+  std::ostringstream stream;
+  PyObject *dummydict;    
+  PyDataObject *data = (PyDataObject *) self;
+  switch(data->data_type) {
+   case DATA_TYPE_LIBFIVE:
+     stream << "Libfive Tree";	   
+     break;
+   case DATA_TYPE_SCADMODULE:
+     stream << "SCAD Class Module";	   
+     break;
+   case DATA_TYPE_MARKEDVALUE:
+     stream << "Marked Value (" << PyDataObjectToValue(self) << ")";	   
+     break;
+  }
+  return PyUnicode_FromStringAndSize(stream.str().c_str(),stream.str().size());
+}
+
 #ifdef ENABLE_LIBFIVE
 
 PyObject *PyDataObjectFromTree(PyTypeObject *type, const std::vector<libfive::Tree *> &tree)
@@ -132,24 +150,6 @@ PyObject *PyDataObjectFromTree(PyTypeObject *type, const std::vector<libfive::Tr
   return Py_None;
 }
 
-
-PyObject *python_data_str(PyObject *self) {
-  std::ostringstream stream;
-  PyObject *dummydict;    
-  PyDataObject *data = (PyDataObject *) self;
-  switch(data->data_type) {
-   case DATA_TYPE_LIBFIVE:
-     stream << "Libfive Tree";	   
-     break;
-   case DATA_TYPE_SCADMODULE:
-     stream << "SCAD Class Module";	   
-     break;
-   case DATA_TYPE_MARKEDVALUE:
-     stream << "Marked Value (" << PyDataObjectToValue(self) << ")";	   
-     break;
-  }
-  return PyUnicode_FromStringAndSize(stream.str().c_str(),stream.str().size());
-}
 
 std::vector<libfive::Tree *> PyDataObjectToTree(PyObject *obj)
 {

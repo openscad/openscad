@@ -174,17 +174,19 @@ bool handle_triangle_color(PLib3MFPropertyHandler *propertyhandler, const std::u
   return true;
 }
 
-
 /*
  * PolySet must be triangulated.
  */
-bool append_polyset(const std::shared_ptr<const PolySet>& ps, ExportContext& ctx)
+bool append_polyset(const std::shared_ptr<const PolySet>& ps,  const Export3mfPartInfo info, ExportContext& ctx)
 {
   PLib3MFModelMeshObject *mesh = nullptr;
   if (lib3mf_model_addmeshobject(ctx.model, &mesh) != LIB3MF_OK) {
     export_3mf_error("Can't add mesh to 3MF model.", ctx.model);
     return false;
   }
+#ifdef ENABLE_PYTHON    
+    info.writeProps((void *) &mesh);
+#endif    
 
   std::string name = "OpenSCAD Model";
   std::string partname = "";
@@ -194,7 +196,7 @@ bool append_polyset(const std::shared_ptr<const PolySet>& ps, ExportContext& ctx
     name += " " + std::to_string(mesh_count);
     partname += "Part " + std::to_string(mesh_count);
   }
-  if (lib3mf_object_setnameutf8(mesh, name.c_str()) != LIB3MF_OK) {
+  if (lib3mf_object_setnameutf8(mesh, info.name.c_str()) != LIB3MF_OK) {
     export_3mf_error("Can't set name for 3MF model.", ctx.model);
     return false;
   }
@@ -321,7 +323,7 @@ bool append_polyset(const std::shared_ptr<const PolySet>& ps, ExportContext& ctx
 }
 
 #ifdef ENABLE_CGAL
-bool append_nef(const CGAL_Nef_polyhedron& root_N, ExportContext& ctx)
+bool append_nef(const CGAL_Nef_polyhedron& root_N, const Export3mfPartInfo &info, ExportContext& ctx)
 {
   if (!root_N.p3) {
     LOG(message_group::Export_Error, "Export failed, empty geometry.");
@@ -332,9 +334,8 @@ bool append_nef(const CGAL_Nef_polyhedron& root_N, ExportContext& ctx)
     LOG(message_group::Export_Warning, "Exported object may not be a valid 2-manifold and may need repair");
   }
 
-
   if (std::shared_ptr<PolySet> ps = CGALUtils::createPolySetFromNefPolyhedron3(*root_N.p3)) {
-    return append_polyset(ps, ctx);
+    return append_polyset(ps, info, ctx);
   }
 
   export_3mf_error("Error converting NEF Polyhedron.", ctx.model);
@@ -342,26 +343,26 @@ bool append_nef(const CGAL_Nef_polyhedron& root_N, ExportContext& ctx)
 }
 #endif
 
-static bool append_3mf(const std::shared_ptr<const Geometry>& geom, ExportContext& ctx)
+bool append_3mf(const std::shared_ptr<const Geometry>& geom, const Export3mfPartInfo info, ExportContext& ctx)
 {
   if (const auto geomlist = std::dynamic_pointer_cast<const GeometryList>(geom)) {
     ctx.modelcount = geomlist->getChildren().size();
     for (const auto& item : geomlist->getChildren()) {
-      if (!append_3mf(item.second, ctx)) return false;
+      if (!append_3mf(item.second, info, ctx)) return false;
     }
 #ifdef ENABLE_CGAL
   } else if (const auto N = std::dynamic_pointer_cast<const CGAL_Nef_polyhedron>(geom)) {
-    return append_nef(*N, ctx);
+    return append_nef(*N, info, ctx);
 #endif
 #ifdef ENABLE_MANIFOLD
   } else if (const auto mani = std::dynamic_pointer_cast<const ManifoldGeometry>(geom)) {
-    return append_polyset(mani->toPolySet(), ctx);
+    return append_polyset(mani->toPolySet(), info, ctx);
 #endif
   } else if (const auto ps = std::dynamic_pointer_cast<const PolySet>(geom)) {
-    return append_polyset(PolySetUtils::tessellate_faces(*ps), ctx);
-  } else if (std::dynamic_pointer_cast<const Polygon2d>(geom)) { // NOLINT(bugprone-branch-clone)
+    return append_polyset(PolySetUtils::tessellate_faces(*ps), info, ctx);
+  } else if (std::dynamic_pointer_cast<const Polygon2d>(geom)) {
     assert(false && "Unsupported file format");
-  } else { // NOLINT(bugprone-branch-clone)
+  } else {
     assert(false && "Not implemented");
   }
 
@@ -489,8 +490,8 @@ void export_3mf(const std::vector<struct Export3mfPartInfo> & infos, std::ostrea
     .options = options3mf
   };
 
-  for(auto &info : infos) {
-    if (!append_3mf(info.geom, ctx)) {
+  for(int i=0;i<infos.size();i++) {
+    if (!append_3mf(infos[i].geom, infos[i], ctx)) {
       if (model) lib3mf_release(model);
       return;
     }
