@@ -3166,7 +3166,7 @@ PyObject *python_csg_sub(PyObject *self, PyObject *args, PyObject *kwargs, OpenS
   for (i = 0; i < PyTuple_Size(args);i++) {
     obj = PyTuple_GetItem(args, i);
     PyObject *dict = nullptr;	  
-    if(i == 0) child = PyOpenSCADObjectToNodeMulti(obj, &dict);
+    child = PyOpenSCADObjectToNodeMulti(obj, &dict);
     child_dict.push_back(dict);
     if(child != NULL) {
       node->children.push_back(child);
