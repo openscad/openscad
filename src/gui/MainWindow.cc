@@ -2454,7 +2454,6 @@ void MainWindow::leftClick(QPoint mouse)
  */
 void MainWindow::rightClick(QPoint position)
 {
-  std::cout << "RIGHT CLICK " << std::endl;
   // selecting without a renderer?!
   if (!this->qglview->renderer) {
     return;
