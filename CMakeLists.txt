@@ -343,6 +343,11 @@ if (MSVC)
   target_include_directories(OpenSCAD SYSTEM PRIVATE ${HARFBUZZ_INCLUDE_DIRS}/harfbuzz)
   target_link_libraries(OpenSCAD PRIVATE harfbuzz::harfbuzz)
 
+  find_package(fmt REQUIRED)
+  message(STATUS "fmt: ${fmt_VERSION}")
+  target_include_directories(OpenSCAD SYSTEM PRIVATE ${fmt_INCLUDE_DIRS})
+  target_link_libraries(OpenSCAD PRIVATE fmt::fmt)
+
   find_package(unofficial-fontconfig CONFIG REQUIRED)
   target_link_libraries(OpenSCAD PRIVATE unofficial::fontconfig::fontconfig)
 
@@ -394,6 +399,11 @@ else()
   find_package(FontConfig 2.8.0 REQUIRED QUIET)
   message(STATUS "Fontconfig: ${FONTCONFIG_VERSION}")
   target_link_libraries(OpenSCAD PRIVATE ${FONTCONFIG_LIBRARIES})
+
+  find_package(fmt 7.1.3 REQUIRED)
+  message(STATUS "fmt: ${fmt_VERSION}")
+  target_include_directories(OpenSCAD SYSTEM PRIVATE ${fmt_INCLUDE_DIRS})
+  target_link_libraries(OpenSCAD PRIVATE fmt::fmt)
 
   find_package(GLIB2 2.26 REQUIRED QUIET)
   message(STATUS "Glib: ${GLIB2_VERSION}")
