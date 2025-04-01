@@ -127,7 +127,7 @@ void Console::update()
   }
   msgBuffer.clear();
   this->setTextCursor(appendCursor);
-  this->setMaximumBlockCount(Preferences::inst()->getValue("advanced/consoleMaxLines").toUInt());
+  this->setMaximumBlockCount(GlobalPreferences::inst()->getValue("advanced/consoleMaxLines").toUInt());
 }
 
 void Console::actionClearConsole_triggered()

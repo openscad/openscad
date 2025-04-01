@@ -256,6 +256,32 @@ void addExportActions(const MainWindow *mainWindow, QToolBar *toolbar, QAction *
   }
 }
 
+std::unique_ptr<ExternalToolInterface> createExternalToolService(
+  print_service_t serviceType, const QString& serviceName, FileFormat fileFormat)
+{
+  switch (serviceType) {
+  case print_service_t::NONE:
+    // TODO: Print warning
+    return nullptr;
+    break;
+  case print_service_t::PRINT_SERVICE: {
+    if (const auto printService = PrintService::getPrintService(serviceName.toStdString())) {
+      return createExternalPrintService(printService, fileFormat);
+    }
+    LOG("Unknown print service \"%1$s\"", serviceName.toStdString());
+    return nullptr;
+    break;
+  }
+  case print_service_t::OCTOPRINT:
+    return createOctoPrintService(fileFormat);
+    break;
+  case print_service_t::LOCAL_APPLICATION:
+    return createLocalProgramService(fileFormat);
+    break;
+  }
+  return {};
+}
+
 } // namespace
 
 MainWindow::MainWindow(const QStringList& filenames) :
@@ -353,15 +379,17 @@ MainWindow::MainWindow(const QStringList& filenames) :
   connect(this->editActionPrevBookmark, &QAction::triggered, tabManager, &TabManager::prevBookmark);
   connect(this->editActionJumpToNextError, &QAction::triggered, tabManager, &TabManager::jumpToNextError);
 
+  connect(tabManager, &TabManager::editorAboutToClose, this, &MainWindow::onTabManagerAboutToCloseEditor);
   connect(tabManager, &TabManager::currentEditorChanged, this, &MainWindow::onTabManagerEditorChanged);
+  connect(tabManager, &TabManager::editorContentReloaded, this, &MainWindow::onTabManagerEditorContentReloaded);
 
-  connect(Preferences::inst(), &Preferences::consoleFontChanged, this->console, &Console::setFont);
+  connect(GlobalPreferences::inst(), &Preferences::consoleFontChanged, this->console, &Console::setFont);
 
   const QString version = QString("<b>OpenSCAD %1</b>").arg(QString::fromStdString(openscad_versionnumber));
   const QString weblink = "<a href=\"https://www.openscad.org/\">https://www.openscad.org/</a><br>";
   this->console->setFont(
-    Preferences::inst()->getValue("advanced/consoleFontFamily").toString(),
-    Preferences::inst()->getValue("advanced/consoleFontSize").toUInt()
+    GlobalPreferences::inst()->getValue("advanced/consoleFontFamily").toString(),
+    GlobalPreferences::inst()->getValue("advanced/consoleFontSize").toUInt()
     );
 
   consoleOutputRaw(version);
@@ -372,10 +400,10 @@ MainWindow::MainWindow(const QStringList& filenames) :
   connect(this->errorLogWidget, &ErrorLog::openFile, this, &MainWindow::openFileFromPath);
   connect(this->console, &Console::openFile, this, &MainWindow::openFileFromPath);
 
-  connect(Preferences::inst()->ButtonConfig, &ButtonConfigWidget::inputMappingChanged, InputDriverManager::instance(), &InputDriverManager::onInputMappingUpdated, Qt::UniqueConnection);
-  connect(Preferences::inst()->AxisConfig, &AxisConfigWidget::inputMappingChanged, InputDriverManager::instance(), &InputDriverManager::onInputMappingUpdated, Qt::UniqueConnection);
-  connect(Preferences::inst()->AxisConfig, &AxisConfigWidget::inputCalibrationChanged, InputDriverManager::instance(), &InputDriverManager::onInputCalibrationUpdated, Qt::UniqueConnection);
-  connect(Preferences::inst()->AxisConfig, &AxisConfigWidget::inputGainChanged, InputDriverManager::instance(), &InputDriverManager::onInputGainUpdated, Qt::UniqueConnection);
+  connect(GlobalPreferences::inst()->ButtonConfig, &ButtonConfigWidget::inputMappingChanged, InputDriverManager::instance(), &InputDriverManager::onInputMappingUpdated, Qt::UniqueConnection);
+  connect(GlobalPreferences::inst()->AxisConfig, &AxisConfigWidget::inputMappingChanged, InputDriverManager::instance(), &InputDriverManager::onInputMappingUpdated, Qt::UniqueConnection);
+  connect(GlobalPreferences::inst()->AxisConfig, &AxisConfigWidget::inputCalibrationChanged, InputDriverManager::instance(), &InputDriverManager::onInputCalibrationUpdated, Qt::UniqueConnection);
+  connect(GlobalPreferences::inst()->AxisConfig, &AxisConfigWidget::inputGainChanged, InputDriverManager::instance(), &InputDriverManager::onInputGainUpdated, Qt::UniqueConnection);
 
   setCorner(Qt::TopLeftCorner, Qt::LeftDockWidgetArea);
   setCorner(Qt::TopRightCorner, Qt::RightDockWidgetArea);
@@ -418,7 +446,7 @@ MainWindow::MainWindow(const QStringList& filenames) :
   waitAfterReloadTimer->setSingleShot(true);
   waitAfterReloadTimer->setInterval(autoReloadPollingPeriodMS);
   connect(waitAfterReloadTimer, &QTimer::timeout, this, &MainWindow::waitAfterReload);
-  connect(Preferences::inst(), &Preferences::ExperimentalChanged, this, &MainWindow::changeParameterWidget);
+  connect(GlobalPreferences::inst(), &Preferences::ExperimentalChanged, this, &MainWindow::changeParameterWidget);
 
   progressThrottle->start();
 
@@ -430,7 +458,7 @@ MainWindow::MainWindow(const QStringList& filenames) :
   // File menu
   connect(this->fileActionNewWindow, &QAction::triggered, this, &MainWindow::actionNewWindow);
   connect(this->fileActionNew, &QAction::triggered, tabManager, &TabManager::actionNew);
-  connect(this->fileActionOpenWindow, &QAction::triggered, this,&MainWindow::actionOpenWindow);
+  connect(this->fileActionOpenWindow, &QAction::triggered, this, &MainWindow::actionOpenWindow);
   connect(this->fileActionOpen, &QAction::triggered, this, &MainWindow::actionOpen);
   connect(this->fileActionSave, &QAction::triggered, this, &MainWindow::actionSave);
   connect(this->fileActionSaveAs, &QAction::triggered, this, &MainWindow::actionSaveAs);
@@ -597,24 +625,26 @@ MainWindow::MainWindow(const QStringList& filenames) :
   connect(this->qglview, &QGLView::doRightClick, this, &MainWindow::rightClick);
   connect(this->qglview, &QGLView::doLeftClick, this, &MainWindow::leftClick);
 
-  connect(Preferences::inst(), &Preferences::requestRedraw, this->qglview, QOverload<>::of(&QGLView::update));
-  connect(Preferences::inst(), &Preferences::updateMouseCentricZoom, this->qglview, &QGLView::setMouseCentricZoom);
-  connect(Preferences::inst(), &Preferences::updateMouseSwapButtons, this->qglview, &QGLView::setMouseSwapButtons);
-  connect(Preferences::inst(), &Preferences::updateReorderMode, this, &MainWindow::updateReorderMode);
-  connect(Preferences::inst(), &Preferences::updateUndockMode, this, &MainWindow::updateUndockMode);
-  connect(Preferences::inst(), &Preferences::openCSGSettingsChanged, this, &MainWindow::openCSGSettingsChanged);
-  connect(Preferences::inst(), &Preferences::colorSchemeChanged, this, &MainWindow::setColorScheme);
-  connect(Preferences::inst(), &Preferences::toolbarExportChanged, this, &MainWindow::updateExportActions);
+  connect(GlobalPreferences::inst(), &Preferences::requestRedraw, this->qglview, QOverload<>::of(&QGLView::update));
+  connect(GlobalPreferences::inst(), &Preferences::updateMouseCentricZoom, this->qglview, &QGLView::setMouseCentricZoom);
+  connect(GlobalPreferences::inst(), &Preferences::updateMouseSwapButtons, this->qglview, &QGLView::setMouseSwapButtons);
+  connect(GlobalPreferences::inst(), &Preferences::updateReorderMode, this, &MainWindow::updateReorderMode);
+  connect(GlobalPreferences::inst(), &Preferences::updateUndockMode, this, &MainWindow::updateUndockMode);
+  connect(GlobalPreferences::inst(), &Preferences::openCSGSettingsChanged, this, &MainWindow::openCSGSettingsChanged);
+  connect(GlobalPreferences::inst(), &Preferences::colorSchemeChanged, this, &MainWindow::setColorScheme);
+  connect(GlobalPreferences::inst(), &Preferences::toolbarExportChanged, this, &MainWindow::updateExportActions);
 
-  Preferences::inst()->apply_win();   // not sure if to be commented, checked must not be commented(done some changes in apply())
+  GlobalPreferences::inst()->apply_win();   // not sure if to be commented, checked must not be commented(done some changes in apply())
 
-  const QString cs = Preferences::inst()->getValue("3dview/colorscheme").toString();
+  const QString cs = GlobalPreferences::inst()->getValue("3dview/colorscheme").toString();
   this->setColorScheme(cs);
 
   //find and replace panel
   connect(this->findTypeComboBox, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &MainWindow::selectFindType);
   connect(this->findInputField, &QWordSearchField::textChanged, this, &MainWindow::findString);
-  connect(this->findInputField, &QWordSearchField::returnPressed, this->findNextButton, [this]{this->findNextButton->animateClick();});
+  connect(this->findInputField, &QWordSearchField::returnPressed, this->findNextButton, [this] {
+    this->findNextButton->animateClick();
+  });
   find_panel->installEventFilter(this);
   if (QApplication::clipboard()->supportsFindBuffer()) {
     connect(this->findInputField, &QWordSearchField::textChanged, this, &MainWindow::updateFindBuffer);
@@ -629,11 +659,13 @@ MainWindow::MainWindow(const QStringList& filenames) :
   connect(this->cancelButton, &QPushButton::clicked, this, &MainWindow::hideFind);
   connect(this->replaceButton, &QPushButton::clicked, this, &MainWindow::replace);
   connect(this->replaceAllButton, &QPushButton::clicked, this, &MainWindow::replaceAll);
-  connect(this->replaceInputField, &QLineEdit::returnPressed, this->replaceButton, [this]{this->replaceButton->animateClick();});
+  connect(this->replaceInputField, &QLineEdit::returnPressed, this->replaceButton, [this] {
+    this->replaceButton->animateClick();
+  });
   addKeyboardShortCut(this->viewerToolBar->actions());
   addKeyboardShortCut(this->editortoolbar->actions());
 
-  Preferences *instance = Preferences::inst();
+  Preferences *instance = GlobalPreferences::inst();
 
   InputDriverManager::instance()->registerActions(this->menuBar()->actions(), "", "");
   InputDriverManager::instance()->registerActions(this->animateWidget->actions(), "animation", "animate");
@@ -779,7 +811,17 @@ MainWindow::MainWindow(const QStringList& filenames) :
   updateExportActions();
 
   activeEditor->setFocus();
+
+  // Configure the highlighting color scheme from the active editor one.
+  // This is done only one time at creation of the first MainWindow instance
+  auto preferences = GlobalPreferences::inst();
+  if(!preferences->hasHighlightingColorScheme())
+    preferences->setHighlightingColorSchemes(activeEditor->colorSchemes());
+
   onTabManagerEditorChanged(activeEditor);
+
+  // fills the content of the Recents Files menu.
+  updateRecentFileActions();
 }
 
 void MainWindow::onNavigationOpenContextMenu() {
@@ -971,8 +1013,8 @@ void MainWindow::loadViewSettings(){
     viewPerspective();
   }
 
-  updateUndockMode(Preferences::inst()->getValue("advanced/undockableWindows").toBool());
-  updateReorderMode(Preferences::inst()->getValue("advanced/reorderWindows").toBool());
+  updateUndockMode(GlobalPreferences::inst()->getValue("advanced/undockableWindows").toBool());
+  updateReorderMode(GlobalPreferences::inst()->getValue("advanced/reorderWindows").toBool());
 }
 
 void MainWindow::loadDesignSettings()
@@ -981,11 +1023,11 @@ void MainWindow::loadDesignSettings()
   if (settings.value("design/autoReload", false).toBool()) {
     designActionAutoReload->setChecked(true);
   }
-  auto polySetCacheSizeMB = Preferences::inst()->getValue("advanced/polysetCacheSizeMB").toUInt();
+  auto polySetCacheSizeMB = GlobalPreferences::inst()->getValue("advanced/polysetCacheSizeMB").toUInt();
   GeometryCache::instance()->setMaxSizeMB(polySetCacheSizeMB);
-  auto cgalCacheSizeMB = Preferences::inst()->getValue("advanced/cgalCacheSizeMB").toUInt();
+  auto cgalCacheSizeMB = GlobalPreferences::inst()->getValue("advanced/cgalCacheSizeMB").toUInt();
   CGALCache::instance()->setMaxSizeMB(cgalCacheSizeMB);
-  auto backend3D = Preferences::inst()->getValue("advanced/renderBackend3D").toString().toStdString();
+  auto backend3D = GlobalPreferences::inst()->getValue("advanced/renderBackend3D").toString().toStdString();
   RenderSettings::inst()->backend3D = renderBackend3DFromString(backend3D);
 }
 
@@ -1115,11 +1157,11 @@ void MainWindow::updateRecentFiles(const QString& FileSavedOrOpened)
  */
 void MainWindow::compile(bool reload, bool forcedone)
 {
-  OpenSCAD::hardwarnings = Preferences::inst()->getValue("advanced/enableHardwarnings").toBool();
-  OpenSCAD::traceDepth = Preferences::inst()->getValue("advanced/traceDepth").toUInt();
-  OpenSCAD::traceUsermoduleParameters = Preferences::inst()->getValue("advanced/enableTraceUsermoduleParameters").toBool();
-  OpenSCAD::parameterCheck = Preferences::inst()->getValue("advanced/enableParameterCheck").toBool();
-  OpenSCAD::rangeCheck = Preferences::inst()->getValue("advanced/enableParameterRangeCheck").toBool();
+  OpenSCAD::hardwarnings = GlobalPreferences::inst()->getValue("advanced/enableHardwarnings").toBool();
+  OpenSCAD::traceDepth = GlobalPreferences::inst()->getValue("advanced/traceDepth").toUInt();
+  OpenSCAD::traceUsermoduleParameters = GlobalPreferences::inst()->getValue("advanced/enableTraceUsermoduleParameters").toBool();
+  OpenSCAD::parameterCheck = GlobalPreferences::inst()->getValue("advanced/enableParameterCheck").toBool();
+  OpenSCAD::rangeCheck = GlobalPreferences::inst()->getValue("advanced/enableParameterRangeCheck").toBool();
 
   try{
     bool shouldcompiletoplevel = false;
@@ -1135,7 +1177,7 @@ void MainWindow::compile(bool reload, bool forcedone)
       // Refresh files if it has changed on disk
       if (fileChangedOnDisk() && checkEditorModified()) {
         shouldcompiletoplevel = tabManager->refreshDocument();         // don't compile if we couldn't open the file
-        if (shouldcompiletoplevel && Preferences::inst()->getValue("advanced/autoReloadRaise").toBool()) {
+        if (shouldcompiletoplevel && GlobalPreferences::inst()->getValue("advanced/autoReloadRaise").toBool()) {
           // reloading the 'same' document brings the 'old' one to front.
           this->raise();
         }
@@ -1144,7 +1186,7 @@ void MainWindow::compile(bool reload, bool forcedone)
       // if we haven't yet compiled the current text.
       else {
         auto current_doc = activeEditor->toPlainText();
-        if (current_doc.size() && lastCompiledDoc.size() == 0) {
+        if (current_doc.size() != lastCompiledDoc.size()) {
           shouldcompiletoplevel = true;
         }
       }
@@ -1159,13 +1201,14 @@ void MainWindow::compile(bool reload, bool forcedone)
         shouldcompiletoplevel = true;
       }
     }
+
     // Parsing and dependency handling must run to completion even with stop on errors to prevent auto
     // reload picking up where it left off, thwarting the stop, so we turn off exceptions in PRINT.
     no_exceptions_for_warnings();
     if (shouldcompiletoplevel) {
       initialize_rng();
       this->errorLogWidget->clearModel();
-      if (Preferences::inst()->getValue("advanced/consoleAutoClear").toBool()) {
+      if (GlobalPreferences::inst()->getValue("advanced/consoleAutoClear").toBool()) {
         this->console->actionClearConsole_triggered();
       }
       if (activeEditor->isContentModified()) saveBackup();
@@ -1266,7 +1309,7 @@ void MainWindow::updateCompileResult()
 
 void MainWindow::compileDone(bool didchange)
 {
-  OpenSCAD::hardwarnings = Preferences::inst()->getValue("advanced/enableHardwarnings").toBool();
+  OpenSCAD::hardwarnings = GlobalPreferences::inst()->getValue("advanced/enableHardwarnings").toBool();
   try{
     const char *callslot;
     if (didchange) {
@@ -1314,6 +1357,8 @@ void MainWindow::instantiateRoot()
 
   const std::filesystem::path doc(activeEditor->filepath.toStdString());
   this->tree.setDocumentPath(doc.parent_path().string());
+
+  renderedEditor = activeEditor;
 
   if (this->rootFile) {
     // Evaluate CSG tree
@@ -1369,7 +1414,7 @@ void MainWindow::instantiateRoot()
  */
 void MainWindow::compileCSG(std::shared_ptr<const AbstractNode> selectedNode)
 {
-  OpenSCAD::hardwarnings = Preferences::inst()->getValue("advanced/enableHardwarnings").toBool();
+  OpenSCAD::hardwarnings = GlobalPreferences::inst()->getValue("advanced/enableHardwarnings").toBool();
   try{
     assert(this->rootNode);
     LOG("Compiling design (CSG Products generation)...");
@@ -1404,7 +1449,7 @@ void MainWindow::compileCSG(std::shared_ptr<const AbstractNode> selectedNode)
     LOG("Compiling design (CSG Products normalization)...");
     this->processEvents();
 
-    const size_t normalizelimit = 2ul * Preferences::inst()->getValue("advanced/openCSGLimit").toUInt();
+    const size_t normalizelimit = 2ul * GlobalPreferences::inst()->getValue("advanced/openCSGLimit").toUInt();
     CSGTreeNormalizer normalizer(normalizelimit);
 
     if (this->csgRoot) {
@@ -1453,7 +1498,7 @@ void MainWindow::compileCSG(std::shared_ptr<const AbstractNode> selectedNode)
 
     if (this->rootProduct &&
         (this->rootProduct->size() >
-         Preferences::inst()->getValue("advanced/openCSGLimit").toUInt())) {
+         GlobalPreferences::inst()->getValue("advanced/openCSGLimit").toUInt())) {
       LOG(message_group::UI_Warning, "Normalized tree has %1$d elements!", this->rootProduct->size());
       LOG(message_group::UI_Warning, "OpenCSG rendering has been disabled.");
     }
@@ -1520,6 +1565,8 @@ void MainWindow::clearRecentFiles()
   updateRecentFileActions();
 }
 
+// Updates the content of the recent files menu entries
+// by iterating over the recently opened files.
 void MainWindow::updateRecentFileActions()
 {
   auto files = UIUtils::recentFiles();
@@ -1646,15 +1693,15 @@ void MainWindow::actionPythonCreateVenv()
   if (!venvDir.exists()) {
     // Should not happen, but just in case double check...
     QMessageBox::critical(this, _("Create Virtual Environment"),
-        "Directory does not exist. Can't create virtual environment.",
-        QMessageBox::Ok);
+                          "Directory does not exist. Can't create virtual environment.",
+                          QMessageBox::Ok);
     return;
   }
 
   if (!venvDir.isEmpty()) {
     QMessageBox::critical(this, _("Create Virtual Environment"),
-        "Directory is not empty. Can't create virtual environment.",
-        QMessageBox::Ok);
+                          "Directory is not empty. Can't create virtual environment.",
+                          QMessageBox::Ok);
     return;
   }
 
@@ -1667,15 +1714,15 @@ void MainWindow::actionPythonCreateVenv()
     Settings::Settings::visit(SettingsWriter());
     LOG("Python virtual environment creation successfull.");
     QMessageBox::information(this, _("Create Virtual Environment"),
-        "Virtual environment created, please restart OpenSCAD to activate.",
-        QMessageBox::Ok);
+                             "Virtual environment created, please restart OpenSCAD to activate.",
+                             QMessageBox::Ok);
   } else {
     LOG("Python virtual environment creation failed.");
     QMessageBox::critical(this, _("Create Virtual Environment"),
-        "Virtual environment creation failed.",
-        QMessageBox::Ok);
+                          "Virtual environment creation failed.",
+                          QMessageBox::Ok);
   }
-#endif
+#endif // ifdef ENABLE_PYTHON
 }
 
 void MainWindow::actionPythonSelectVenv()
@@ -1690,10 +1737,10 @@ void MainWindow::actionPythonSelectVenv()
     Settings::SettingsPython::pythonVirtualEnv.setValue(venvDir.toStdString());
     Settings::Settings::visit(SettingsWriter());
     QMessageBox::information(this, _("Select Virtual Environment"),
-        "Virtual environment selected, please restart OpenSCAD to activate.",
-        QMessageBox::Ok);
+                             "Virtual environment selected, please restart OpenSCAD to activate.",
+                             QMessageBox::Ok);
   }
-#endif
+#endif // ifdef ENABLE_PYTHON
 }
 
 void MainWindow::actionSaveACopy()
@@ -2031,19 +2078,16 @@ bool MainWindow::trust_python_file(const std::string& file,  const std::string& 
 }
 #endif // ifdef ENABLE_PYTHON
 
-void MainWindow::parseTopLevelDocument()
+
+SourceFile *MainWindow::parseDocument(EditorInterface *editor)
 {
   resetSuppressedMessages();
 
-  this->lastCompiledDoc = activeEditor->toPlainText();
+  auto document = editor->toPlainText();
+  auto fulltext = std::string(document.toUtf8().constData()) + "\n\x03\n" + commandline_commands;
+  auto fnameba = editor->filepath.toLocal8Bit();
 
-  auto fulltext =
-    std::string(this->lastCompiledDoc.toUtf8().constData()) +
-    "\n\x03\n" + commandline_commands;
-
-  auto fnameba = activeEditor->filepath.toLocal8Bit();
-  const char *fname = activeEditor->filepath.isEmpty() ? "" : fnameba;
-  delete this->parsedFile;
+  const char *fname = editor->filepath.isEmpty() ? "" : fnameba;
 #ifdef ENABLE_PYTHON
   this->python_active = false;
   if (fname != NULL) {
@@ -2065,31 +2109,44 @@ void MainWindow::parseTopLevelDocument()
     initPython(binDir, this->animateWidget->getAnimTval());
 
     if (venv.empty()) {
-        LOG("Running %1$s without venv.", python_version());
+      LOG("Running %1$s without venv.", python_version());
     } else {
-        const auto& v = Settings::SettingsPython::pythonVirtualEnv.value();
-        LOG("Running %1$s in venv '%2$s'.", python_version(), v);
+      const auto& v = Settings::SettingsPython::pythonVirtualEnv.value();
+      LOG("Running %1$s in venv '%2$s'.", python_version(), v);
     }
     auto error = evaluatePython(fulltext_py, false);
     if (error.size() > 0) LOG(message_group::Error, Location::NONE, "", error.c_str());
     fulltext = "\n";
   }
 #endif // ifdef ENABLE_PYTHON
-  this->parsedFile = nullptr;   // because the parse() call can throw and we don't want a stale pointer!
-  this->rootFile = nullptr;    // ditto
-  this->rootFile = parse(this->parsedFile, fulltext, fname, fname, false) ? this->parsedFile : nullptr;
 
-  this->activeEditor->resetHighlighting();
-  if (this->rootFile != nullptr) {
+  SourceFile *sourceFile;
+  sourceFile = parse(sourceFile, fulltext, fname, fname, false) ? sourceFile : nullptr;
+
+  editor->resetHighlighting();
+  if (sourceFile) {
     //add parameters as annotation in AST
-    CommentParser::collectParameters(fulltext, this->rootFile);
-    this->activeEditor->parameterWidget->setParameters(this->rootFile, fulltext);
-    this->activeEditor->parameterWidget->applyParameters(this->rootFile);
-    this->activeEditor->parameterWidget->setEnabled(true);
-    this->activeEditor->setIndicator(this->rootFile->indicatorData);
+    CommentParser::collectParameters(fulltext, sourceFile);
+    editor->parameterWidget->setParameters(sourceFile, fulltext);
+    editor->parameterWidget->applyParameters(sourceFile);
+    editor->parameterWidget->setEnabled(true);
+    editor->setIndicator(sourceFile->indicatorData);
   } else {
-    this->activeEditor->parameterWidget->setEnabled(false);
+    editor->parameterWidget->setEnabled(false);
   }
+
+  return sourceFile;
+}
+
+void MainWindow::parseTopLevelDocument()
+{
+  resetSuppressedMessages();
+
+  this->lastCompiledDoc = activeEditor->toPlainText();
+
+  activeEditor->resetHighlighting();
+  this->rootFile = parseDocument(activeEditor);
+  this->parsedFile = this->rootFile;
 }
 
 void MainWindow::changeParameterWidget()
@@ -2174,9 +2231,10 @@ void MainWindow::prepareCompile(const char *afterCompileSlot, bool procevents, b
 void MainWindow::actionRenderPreview()
 {
   static bool preview_requested;
-
   preview_requested = true;
+
   if (GuiLocker::isLocked()) return;
+
   GuiLocker::lock();
   preview_requested = false;
 
@@ -2185,11 +2243,13 @@ void MainWindow::actionRenderPreview()
 
   prepareCompile("csgRender", !animateDock->isVisible(), true);
   compile(false, false);
+
   if (preview_requested) {
     // if the action was called when the gui was locked, we must request it one more time
     // however, it's not possible to call it directly NOR make the loop
     // it must be called from the mainloop
     QTimer::singleShot(0, this, &MainWindow::actionRenderPreview);
+    return;
   }
 }
 
@@ -2218,32 +2278,6 @@ void MainWindow::csgRender()
   compileEnded();
 }
 
-static std::unique_ptr<ExternalToolInterface> createExternalToolService(
-  print_service_t serviceType, const QString& serviceName, FileFormat fileFormat)
-{
-  switch (serviceType) {
-  case print_service_t::NONE:
-    // TODO: Print warning
-    return nullptr;
-    break;
-  case print_service_t::PRINT_SERVICE: {
-    if (const auto printService = PrintService::getPrintService(serviceName.toStdString())) {
-      return createExternalPrintService(printService, fileFormat);
-    }
-    LOG("Unknown print service \"%1$s\"", serviceName.toStdString());
-    return nullptr;
-    break;
-  }
-  case print_service_t::OCTOPRINT:
-    return createOctoPrintService(fileFormat);
-    break;
-  case print_service_t::LOCAL_APPLICATION:
-    return createLocalProgramService(fileFormat);
-    break;
-  }
-  return {};
-}
-
 void MainWindow::sendToExternalTool(ExternalToolInterface& externalToolService)
 {
   const QFileInfo activeFile(activeEditor->filepath);
@@ -2254,6 +2288,9 @@ void MainWindow::sendToExternalTool(ExternalToolInterface& externalToolService)
   activeFileName = activeFileName + QString::fromStdString("." + fileformat::toSuffix(externalToolService.fileFormat()));
 
   const bool export_status = externalToolService.exportTemporaryFile(rootGeom, activeFileName, &qglview->cam);
+  if (!export_status) {
+    return;
+  }
 
   this->progresswidget = new ProgressWidget(this);
   connect(this->progresswidget, &ProgressWidget::requestShow, this, &MainWindow::showProgress);
@@ -2262,6 +2299,9 @@ void MainWindow::sendToExternalTool(ExternalToolInterface& externalToolService)
     return network_progress_func(permille);
   });
   updateStatusBar(nullptr);
+  if (!process_status) {
+    return;
+  }
 
   const auto url = externalToolService.getURL();
   if (!url.empty()) {
@@ -2290,8 +2330,7 @@ void MainWindow::action3DPrint()
 
     LOG("Selected File format: %1$s", fileformat::info(fileFormat).description);
 
-
-    Preferences::Preferences::inst()->updateGUI();
+    GlobalPreferences::inst()->updateGUI();
     const auto externalToolService = createExternalToolService(serviceType, serviceName, fileFormat);
     if (!externalToolService) {
       LOG("Error: Unable to create service: %1$d %2$s %3$d", static_cast<int>(serviceType), serviceName.toStdString(), static_cast<int>(fileFormat));
@@ -2354,7 +2393,7 @@ void MainWindow::actionRenderDone(const std::shared_ptr<const Geometry>& root_ge
     LOG("Rendering finished.");
 
     this->rootGeom = root_geom;
-    // Choose PolySetRenderer for PolySet and Polygon2d, and for Manifold since we 
+    // Choose PolySetRenderer for PolySet and Polygon2d, and for Manifold since we
     // know that all geometries are convertible to PolySet.
     if (RenderSettings::inst()->backend3D == RenderBackend3D::ManifoldBackend ||
         std::dynamic_pointer_cast<const PolySet>(this->rootGeom) ||
@@ -2376,8 +2415,8 @@ void MainWindow::actionRenderDone(const std::shared_ptr<const Geometry>& root_ge
 
   updateStatusBar(nullptr);
 
-  const bool renderSoundEnabled = Preferences::inst()->getValue("advanced/enableSoundNotification").toBool();
-  const uint soundThreshold = Preferences::inst()->getValue("advanced/timeThresholdOnRenderCompleteSound").toUInt();
+  const bool renderSoundEnabled = GlobalPreferences::inst()->getValue("advanced/enableSoundNotification").toBool();
+  const uint soundThreshold = GlobalPreferences::inst()->getValue("advanced/timeThresholdOnRenderCompleteSound").toUInt();
   if (renderSoundEnabled && soundThreshold <= renderStatistic.ms().count() / 1000) {
     renderCompleteSoundEffect->play();
   }
@@ -2416,6 +2455,7 @@ void MainWindow::leftClick(QPoint mouse)
  */
 void MainWindow::rightClick(QPoint position)
 {
+  std::cout << "RIGHT CLICK " << std::endl;
   // selecting without a renderer?!
   if (!this->qglview->renderer) {
     return;
@@ -2439,7 +2479,6 @@ void MainWindow::rightClick(QPoint position)
       if (step->name() == "root") {
         continue;
       }
-
       auto location = step->modinst->location();
       ss.str("");
 
@@ -2458,17 +2497,17 @@ void MainWindow::rightClick(QPoint position)
         ss << name << " (library "
            << location.fileName().substr(libpath.string().length() + 1) << ":"
            << location.firstLine() << ")";
-      } else if (activeEditor->filepath.toStdString() == location.fileName()) {
+      } else if (renderedEditor->filepath.toStdString() == location.fileName()) {
         // removes the "module" prefix if any as it makes it not clear if it is module declaration or call.
         ss << name << " (" << location.filePath().filename().string() << ":"
            << location.firstLine() << ")";
       } else {
-        auto relative_filename = fs_uncomplete(location.filePath(), fs::path(activeEditor->filepath.toStdString()).parent_path())
+        auto relative_filename = fs_uncomplete(location.filePath(), fs::path(renderedEditor->filepath.toStdString()).parent_path())
           .generic_string();
+
         // Set the displayed name relative to the active editor window
         ss << name << " (" << relative_filename << ":" << location.firstLine() << ")";
       }
-
       // Prepare the action to be sent
       auto action = tracemenu.addAction(QString::fromStdString(ss.str()));
       if (editorDock->isVisible()) {
@@ -2477,6 +2516,18 @@ void MainWindow::rightClick(QPoint position)
       }
     }
 
+    // Before starting we need to lock the GUI to avoid interferance with reload/update
+    // triggered by other part of the application (eg: changing the renderedEditor)
+    GuiLocker::lock();
+
+    // Execute this lambda function when the selection menu is closing.
+    connect(&tracemenu, &QMenu::aboutToHide, [this](){
+      // remove the visual hints in the editor
+      renderedEditor->clearAllSelectionIndicators();
+      // unlock the GUI so the other part of the interface can now be updated.
+      // (eg: changing the renderedEditor)
+      GuiLocker::unlock();
+    });
     tracemenu.exec(this->qglview->mapToGlobal(position));
   } else {
     setSelectedObjectPreview(nullptr);
@@ -2533,8 +2584,8 @@ void MainWindow::clearAllSelectionIndicators()
 }
 
 static void findNodesWithSameMod(const std::shared_ptr<const AbstractNode>& tree,
-                          const std::shared_ptr<const AbstractNode>& node_mod,
-                          std::vector<std::shared_ptr<const AbstractNode>>& nodes){
+                                 const std::shared_ptr<const AbstractNode>& node_mod,
+                                 std::vector<std::shared_ptr<const AbstractNode>>& nodes){
   if (node_mod->modinst == tree->modinst) {
     nodes.push_back(tree);
   }
@@ -2543,51 +2594,7 @@ static void findNodesWithSameMod(const std::shared_ptr<const AbstractNode>& tree
   }
 }
 
-static void getCodeLocation(const AbstractNode *self, int currentLevel,  int includeLevel, int *firstLine, int *firstColumn, int *lastLine, int *lastColumn, int nestedModuleDepth)
-{
-  auto location = self->modinst->location();
-  if (currentLevel >= includeLevel && nestedModuleDepth == 0) {
-    if (*firstLine < 0 || *firstLine > location.firstLine()) {
-      *firstLine = location.firstLine();
-      *firstColumn = location.firstColumn();
-    } else if (*firstLine == location.firstLine() && *firstColumn > location.firstColumn()) {
-      *firstColumn = location.firstColumn();
-    }
-
-    if (*lastLine < 0 || *lastLine < location.lastLine()) {
-      *lastLine = location.lastLine();
-      *lastColumn = location.lastColumn();
-    } else {
-      if (*firstLine < 0 || *firstLine > location.firstLine()) {
-        *firstLine = location.firstLine();
-        *firstColumn = location.firstColumn();
-      } else if (*firstLine == location.firstLine() && *firstColumn > location.firstColumn()) {
-        *firstColumn = location.firstColumn();
-      }
-      if (*lastLine < 0 || *lastLine < location.lastLine()) {
-        *lastLine = location.lastLine();
-        *lastColumn = location.lastColumn();
-      } else if (*lastLine == location.lastLine() && *lastColumn < location.lastColumn()) {
-        *lastColumn = location.lastColumn();
-      }
-    }
-  }
-
-  if (self->verbose_name().rfind("module", 0) == 0) {
-    nestedModuleDepth++;
-  }
-  if (self->modinst->name() == "children") {
-    nestedModuleDepth--;
-  }
-
-  if (nestedModuleDepth >= 0) {
-    for (const auto& node : self->children) {
-      getCodeLocation(node.get(), currentLevel + 1, includeLevel, firstLine,  firstColumn, lastLine, lastColumn, nestedModuleDepth);
-    }
-  }
-}
-
-void MainWindow::setSelectionIndicatorStatus(int nodeIndex, EditorSelectionIndicatorStatus status)
+void MainWindow::setSelectionIndicatorStatus(EditorInterface *editor, int nodeIndex, EditorSelectionIndicatorStatus status)
 {
   std::deque<std::shared_ptr<const AbstractNode>> stack;
   this->rootNode->getNodeByID(nodeIndex, stack);
@@ -2601,15 +2608,13 @@ void MainWindow::setSelectionIndicatorStatus(int nodeIndex, EditorSelectionIndic
     const auto& node = stack[i];
 
     auto& location = node->modinst->location();
-    if (location.filePath().compare(activeEditor->filepath.toStdString()) != 0) {
-      std::cout << "--->>> Line of code in a different file -- PATH -- " << location.fileName() << std::endl;
-      node->modinst->print(std::cout, "");
+    if (location.filePath().compare(editor->filepath.toStdString()) != 0) {
       level++;
       continue;
     }
 
     if (node->verbose_name().rfind("module", 0) == 0 || node->modinst->name() == "children") {
-      this->activeEditor->setSelectionIndicatorStatus(
+      editor->setSelectionIndicatorStatus(
         status, level,
         location.firstLine() - 1, location.firstColumn() - 1, location.lastLine() - 1, location.lastColumn() - 1);
       level++;
@@ -2624,13 +2629,14 @@ void MainWindow::setSelectionIndicatorStatus(int nodeIndex, EditorSelectionIndic
   auto lastColumn = location.lastColumn();
 
   // Update the location returned by location to cover the whole section.
-  getCodeLocation(node.get(), 0, 0, &line, &column, &lastLine, &lastColumn, 0);
+  node->getCodeLocation(0, 0, &line, &column, &lastLine, &lastColumn, 0);
 
-  this->activeEditor->setSelectionIndicatorStatus(status, 0, line - 1, column - 1, lastLine - 1, lastColumn - 1);
+  editor->setSelectionIndicatorStatus(status, 0, line - 1, column - 1, lastLine - 1, lastColumn - 1);
 }
 
 void MainWindow::setSelection(int index)
 {
+  assert(renderedEditor != nullptr);
   if (currentlySelectedObject == index) return;
 
   std::deque<std::shared_ptr<const AbstractNode>> path;
@@ -2652,7 +2658,8 @@ void MainWindow::setSelection(int index)
   }
 
   // removes all previsly configure selection indicators.
-  clearAllSelectionIndicators();
+  renderedEditor->clearAllSelectionIndicators();
+  renderedEditor->show();
 
   std::vector<std::shared_ptr<const AbstractNode>> nodesSameModule{};
   findNodesWithSameMod(rootNode, selected_node, nodesSameModule);
@@ -2660,13 +2667,15 @@ void MainWindow::setSelection(int index)
   // highlight in the text editor all the text fragment of the hierarchy of object with same mode.
   for (const auto& element : nodesSameModule) {
     if (element->index() != currentlySelectedObject) {
-      setSelectionIndicatorStatus(element->index(), EditorSelectionIndicatorStatus::IMPACTED);
+      setSelectionIndicatorStatus(renderedEditor, element->index(), EditorSelectionIndicatorStatus::IMPACTED);
     }
   }
 
   // highlight in the text editor only the fragment correponding to the selected stack.
   // this step must be done after all the impacted element have been marked.
-  setSelectionIndicatorStatus(currentlySelectedObject, EditorSelectionIndicatorStatus::SELECTED);
+  setSelectionIndicatorStatus(renderedEditor, currentlySelectedObject, EditorSelectionIndicatorStatus::SELECTED);
+  renderedEditor->setCursorPosition(line - 1, column - 1);
+
   setSelectedObjectPreview(selected_node);
 }
 
@@ -2675,6 +2684,7 @@ void MainWindow::setSelection(int index)
  */
 void MainWindow::onHoveredObjectInSelectionMenu()
 {
+  assert(renderedEditor != nullptr);
   auto *action = qobject_cast<QAction *>(sender());
   if (!action || !action->property("id").isValid()) {
     return;
@@ -3128,6 +3138,9 @@ bool MainWindow::isEmpty()
 
 void MainWindow::editorContentChanged()
 {
+  // this slot is called when the content of the active editor changed.
+  // it rely on the activeEditor member to pick the new data.
+
   auto current_doc = activeEditor->toPlainText();
   if (current_doc != lastCompiledDoc) {
     animateWidget->editorContentChanged();
@@ -3406,14 +3419,61 @@ QString MainWindow::getCurrentFileName() const
   return fname.replace("&", "&&");
 }
 
-void MainWindow::onTabManagerEditorChanged(EditorInterface *neweditor)
+void MainWindow::onTabManagerAboutToCloseEditor(EditorInterface *closingEditor)
 {
-  activeEditor = neweditor;
+  // This slots is in charge of closing properly the preview when the
+  // associated editor is about to close.
+  if (closingEditor == renderedEditor) {
+    renderedEditor = nullptr;
 
-  if (neweditor == nullptr) return;
+    // Invalidate renderers before we kill the CSG tree
+    this->qglview->setRenderer(nullptr);
+       #ifdef ENABLE_OPENCSG
+    this->previewRenderer = nullptr;
+       #endif
+    this->thrownTogetherRenderer = nullptr;
 
-  parameterDock->setWidget(neweditor->parameterWidget);
-  editActionUndo->setEnabled(neweditor->canUndo());
+    // Remove previous CSG tree
+    this->absoluteRootNode.reset();
+
+    this->csgRoot.reset();
+    this->normalizedRoot.reset();
+    this->rootProduct.reset();
+
+    this->rootNode.reset();
+    this->tree.setRoot(nullptr);
+    this->qglview->update();
+  }
+}
+
+void MainWindow::onTabManagerEditorContentReloaded(EditorInterface *reloadedEditor)
+{
+  try {
+    // when a new editor is created, it is important to compile the initial geometry
+    // so the customizer panels are ok.
+    parseDocument(reloadedEditor);
+  } catch (const HardWarningException&) {
+    exceptionCleanup();
+  } catch (const std::exception& ex) {
+    UnknownExceptionCleanup(ex.what());
+  } catch (...) {
+    UnknownExceptionCleanup();
+  }
+
+  // updates the content of the Recents Files menu to integrate the one possibly
+  // associated with the created editor. The reason is that an editor can be created
+  // or updated without a file associated with it.
+  updateRecentFileActions();
+}
+
+void MainWindow::onTabManagerEditorChanged(EditorInterface *newEditor)
+{
+  activeEditor = newEditor;
+
+  if (newEditor == nullptr) return;
+
+  parameterDock->setWidget(newEditor->parameterWidget);
+  editActionUndo->setEnabled(newEditor->canUndo());
 
   const QString name = getCurrentFileName();
   setWindowTitle(name);
@@ -3423,6 +3483,11 @@ void MainWindow::onTabManagerEditorChanged(EditorInterface *neweditor)
   animateDock->setNameSuffix(name);
   fontListDock->setNameSuffix(name);
   viewportControlDock->setNameSuffix(name);
+
+  // If there is no renderedEditor we request for a new preview.
+  if (renderedEditor == nullptr) {
+    actionRenderPreview();
+  }
 }
 
 Dock *MainWindow::findVisibleDockToActivate(int offset) const
@@ -3448,7 +3513,6 @@ Dock *MainWindow::findVisibleDockToActivate(int offset) const
     focusedDockIndice = 0;
   }
 
-  const auto& dock = std::get<0>(docks.at(focusedDockIndice));
   for (int o = 1; o < dockCount; ++o) {
     // starting from dockCount + focusedDockIndice move left or right (o*offset)
     // to find the first visible one. dockCount is there so there is no situation in which
@@ -3586,9 +3650,10 @@ void MainWindow::closeEvent(QCloseEvent *event)
 
 void MainWindow::preferences()
 {
-  Preferences::inst()->show();
-  Preferences::inst()->activateWindow();
-  Preferences::inst()->raise();
+  GlobalPreferences::inst()->update();
+  GlobalPreferences::inst()->show();
+  GlobalPreferences::inst()->activateWindow();
+  GlobalPreferences::inst()->raise();
 }
 
 void MainWindow::setColorScheme(const QString& scheme)
@@ -3667,7 +3732,7 @@ void MainWindow::clearCurrentOutput()
 void MainWindow::openCSGSettingsChanged()
 {
 #ifdef ENABLE_OPENCSG
-  OpenCSG::setOption(OpenCSG::AlgorithmSetting, Preferences::inst()->getValue("advanced/forceGoldfeather").toBool() ?
+  OpenCSG::setOption(OpenCSG::AlgorithmSetting, GlobalPreferences::inst()->getValue("advanced/forceGoldfeather").toBool() ?
                      OpenCSG::Goldfeather : OpenCSG::Automatic);
 #endif
 }

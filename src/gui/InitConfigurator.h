@@ -30,6 +30,7 @@ private:
 class InitConfigurator
 {
 protected:
+  void writeSettings();
   /** Set checkbox status from the settings value */
   void initUpdateCheckBox(const BlockSignals<QCheckBox *>& checkBox, const Settings::SettingsEntryBool& entry);
   /** Initialize spinbox min/max values from the settings range values */
@@ -57,6 +58,20 @@ protected:
 
   void initMetaData(QCheckBox *, QLineEdit *, Settings::SettingsEntryBool *, Settings::SettingsEntryString&);
   void applyMetaData(const QCheckBox *, const QLineEdit *, Settings::SettingsEntryBool *, Settings::SettingsEntryString&);
+
+  template<typename item_type>
+  QListWidgetItem * createListItem(const item_type& itemType, const QString& text = "", bool editable = false) {
+    const auto icon = QIcon::fromTheme(QString::fromStdString(itemType.icon()));
+    std::string description = itemType.description();
+    const auto itemText = description.empty() ? text : QString::fromStdString(description);
+    const auto listItem = new QListWidgetItem(icon, itemText,
+      nullptr,
+      static_cast<int>(QListWidgetItem::UserType) + static_cast<int>(itemType));
+    if (editable) {
+      listItem->setFlags(listItem->flags() | Qt::ItemIsEditable);
+    }
+    return listItem;
+  }
 };
 
 template<typename enum_type>
