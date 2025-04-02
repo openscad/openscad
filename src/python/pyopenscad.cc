@@ -822,6 +822,7 @@ void initPython(const std::string& binDir, double time)
 #endif
     stream << sep << PlatformUtils::userLibraryPath();
     stream << sepchar << ".";
+    PyConfig_SetBytesString(&config, &config.pythonpath_env, stream.str().c_str());
     
     PyConfig_SetBytesString(&config, &config.program_name, name);
     PyConfig_SetBytesString(&config, &config.executable, exe.c_str());
