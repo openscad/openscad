@@ -504,7 +504,30 @@ def align(obj:PyOpenSCAD, refmat:list[float], objmat:list[float]) -> PyOpenSCAD:
     refmat: handle matrix of the reference object
     objmat: handle matrix of the new object
     """
-        ...
+    ...
+
+def add_menuitem(menuname:str, itemname:str, callback: str) -> 
+    """Add custom function to the PythonSCAD Banner menu
+    """
+    ...
+
+def model() -> PyOpenSCAD:
+    """Returns the parsed Module shown
+    This can be used process the model from within custom menu items
+    """
+    ...
+
+def modelpath() -> str:
+    """Returns the path of the python file on the host computer
+    """
+    ...
+
+def marked(number:double) -> PyOpenSCAD:
+    """Returns a "marked" number 
+    Marked numbers are just numbers, but they are enabled for interactive model dragging
+    """
+    ...
+
 
 
 
