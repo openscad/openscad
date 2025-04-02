@@ -32,19 +32,22 @@
 #include <QWidget>
 #include <exception>
 #include <QDir>
+#include <QList>
 #include <QFileInfo>
+#include <QFileInfoList>
 #include <QUrl>
 #include <QFileDialog>
 #include <QDesktopServices>
 #include <QRegularExpression>
+#include <QJsonObject>
+#include <QJsonDocument>
 
 #include "version.h"
 #include "platform/PlatformUtils.h"
 #include "gui/QSettingsCached.h"
 
-#include <boost/property_tree/ptree.hpp>
-#include <boost/property_tree/json_parser.hpp>
-
+#include <cstdlib>
+#include <filesystem>
 #include <string>
 
 namespace {
@@ -59,6 +62,82 @@ QString fileOpenFilter(const QString& pattern, QStringList extensions)
     }
     extensions.replaceInStrings(QRegularExpression("^"), "*.");
     return pattern.arg(extensions.join(" "));
+}
+
+QList<UIUtils::ExampleCategory> _exampleCategories;
+QMap<QString, QList<UIUtils::ExampleEntry>> _examples;
+
+bool hasCategory(const QString& name)
+{
+  for (const auto& category : _exampleCategories) {
+    if (category.name == name) {
+      return true;
+    }
+  }
+  return false;
+}
+
+void readExamplesDir(const QJsonObject& obj, const fs::path& dir)
+{
+  QString name = obj["name"].toString(QString::fromStdString(dir.filename().generic_string()));
+
+  if (!hasCategory(name)) {
+    _exampleCategories.append(UIUtils::ExampleCategory{
+      .sort = obj["sort"].toInt(UIUtils::ExampleCategory::DEFAULT_SORT),
+      .name = name,
+      .tooltip = obj["tooltip"].toString()});
+  }
+
+  auto& examples = _examples[name];
+  for (const auto& entry : fs::directory_iterator{dir}) {
+      if (!entry.is_regular_file()) {
+        continue;
+      }
+      const auto& path = entry.path();
+      if (path.extension() != ".scad") 
+        if (path.extension() != ".py") 
+        continue;
+      examples.append(UIUtils::ExampleEntry{
+        .name = QString::fromStdString(path.filename().generic_string()),
+        .fileInfo = QFileInfo(QString::fromStdString(path.generic_string()))
+      });
+  }
+  std::sort(examples.begin(), examples.end(), [](const UIUtils::ExampleEntry& e1, const UIUtils::ExampleEntry& e2) -> bool {
+    return e1.name < e2.name;
+  });
+}
+
+void enumerateExamples(const fs::path& dir)
+{
+  if (!fs::is_directory(dir)) {
+    return;
+  }
+  for (const auto& entry : fs::directory_iterator{dir}) {
+    if (!entry.is_directory()) {
+      continue;
+    }
+    auto fileInfo = QFileInfo{QDir{QString::fromStdString(entry.path().generic_string())}, "example-dir.json"};
+    QJsonObject obj;
+    if (fileInfo.isReadable()) {
+      QFile file;
+      file.setFileName(fileInfo.filePath());
+      file.open(QIODevice::ReadOnly);
+      obj = QJsonDocument::fromJson(file.readAll()).object();
+    }
+    readExamplesDir(obj, entry.path());
+  }
+  std::sort(_exampleCategories.begin(), _exampleCategories.end(), [](const UIUtils::ExampleCategory& c1, const UIUtils::ExampleCategory& c2) -> bool {
+    return c2.sort > c1.sort;
+  });
+}
+
+const QList<UIUtils::ExampleCategory>& readExamples()
+{
+  if (_exampleCategories.empty()) {
+    enumerateExamples(fs::path{PlatformUtils::resourceBasePath()} / "examples");
+    enumerateExamples(PlatformUtils::userExamplesPath());
+  }
+  return _exampleCategories;
 }
 
 }
@@ -126,50 +205,19 @@ QStringList UIUtils::recentFiles()
   return files;
 }
 
-using namespace boost::property_tree;
-
-static ptree *examples_tree = nullptr;
-static ptree *examplesTree()
+const QList<UIUtils::ExampleCategory>& UIUtils::exampleCategories()
 {
-  if (!examples_tree) {
-    std::string path = (PlatformUtils::resourcePath("examples") / "examples.json").string();
-    try {
-      examples_tree = new ptree;
-      read_json(path, *examples_tree);
-    } catch (const std::exception& e) {
-      LOG("Error reading examples.json: %1$s", e.what());
-      delete examples_tree;
-      examples_tree = nullptr;
-    }
-  }
-  return examples_tree;
-}
-
-QStringList UIUtils::exampleCategories()
-{
-  // categories in File menu item - Examples
-  QStringList categories;
-  ptree *pt = examplesTree();
-  if (pt) {
-    for (const auto& v : *pt) {
-      // v.first is the name of the child.
-      // v.second is the child tree.
-      categories << QString::fromStdString(v.first);
-    }
-  }
-
-  return categories;
+  return readExamples();
 }
 
 QFileInfoList UIUtils::exampleFiles(const QString& category)
 {
   QFileInfoList examples;
-  ptree *pt = examplesTree();
-  if (pt) {
-    fs::path examplesPath = PlatformUtils::resourcePath("examples") / category.toStdString();
-    for (const auto& v : pt->get_child(category.toStdString())) {
-      examples << QFileInfo(QString::fromStdString((examplesPath / v.second.data()).string()));
-    }
+  if (!_examples.contains(category)) {
+    return examples;
+  }
+  for (const auto& e : _examples[category]) {
+    examples << e.fileInfo;
   }
   return examples;
 }
