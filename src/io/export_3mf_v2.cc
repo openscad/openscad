@@ -450,7 +450,6 @@ void export_3mf(const std::vector<struct Export3mfPartInfo> & infos, std::ostrea
   }
 
   try {
-    if(ctx.options->decimalPrecision != 0)
     writer->SetDecimalPrecision(ctx.options->decimalPrecision);
   } catch (Lib3MF::ELib3MFException& e) {
     LOG(message_group::Export_Error, "Error setting decimal precision for export: %1$s", e.what());
