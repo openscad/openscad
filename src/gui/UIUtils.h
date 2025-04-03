@@ -31,9 +31,28 @@
 #include <QStringList>
 #include <QFileInfoList>
 #include <filesystem>
+
 namespace fs = std::filesystem;
 
 namespace UIUtils {
+
+struct ExampleCategory
+{
+  constexpr static int DEFAULT_SORT = 10000;
+
+  int sort = DEFAULT_SORT;
+  QString name;
+  QString tooltip;
+};
+
+struct ExampleEntry
+{
+  constexpr static int DEFAULT_SORT = 10000;
+
+  int sort = DEFAULT_SORT;
+  QString name;
+  QFileInfo fileInfo;
+};
 
 static const int maxRecentFiles = 10;
 
@@ -43,7 +62,7 @@ QFileInfoList openFiles(QWidget *parent = nullptr, QStringList extensions = {});
 
 QStringList recentFiles();
 
-QStringList exampleCategories();
+const QList<UIUtils::ExampleCategory>& exampleCategories();
 
 QFileInfoList exampleFiles(const QString& category);
 
