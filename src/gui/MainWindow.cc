@@ -236,7 +236,7 @@ void removeExportActions(QToolBar *toolbar, QAction *action) {
   int idx = toolbar->actions().indexOf(action);
   while (idx > 0) {
     QAction *a = toolbar->actions().at(idx - 1);
-    if (a->objectName().isEmpty())     // separator
+    if (a->objectName().isEmpty())         // separator
       break;
     toolbar->removeAction(a);
     idx--;
@@ -318,7 +318,7 @@ MainWindow::MainWindow(const QStringList& filenames) :
   this->fontListDock->setConfigKey("view/hideFontList");
   this->viewportControlDock->setConfigKey("view/hideViewportControl");
 
-  this->versionLabel = nullptr;   // must be initialized before calling updateStatusBar()
+  this->versionLabel = nullptr;     // must be initialized before calling updateStatusBar()
   updateStatusBar(nullptr);
 
   renderCompleteSoundEffect = new QSoundEffect();
@@ -385,6 +385,8 @@ MainWindow::MainWindow(const QStringList& filenames) :
 
   connect(GlobalPreferences::inst(), &Preferences::consoleFontChanged, this->console, &Console::setFont);
 
+  connect(&this->fileSystemWatcher, &QFileSystemWatcher::fileChanged, this, &MainWindow::onFileChanged);
+
   const QString version = QString("<b>OpenSCAD %1</b>").arg(QString::fromStdString(openscad_versionnumber));
   const QString weblink = "<a href=\"https://www.openscad.org/\">https://www.openscad.org/</a><br>";
   this->console->setFont(
@@ -395,7 +397,7 @@ MainWindow::MainWindow(const QStringList& filenames) :
   consoleOutputRaw(version);
   consoleOutputRaw(weblink);
   consoleOutputRaw(copyrighttext);
-  this->consoleUpdater->start(0);   // Show "Loaded Design" message from TabManager
+  this->consoleUpdater->start(0);     // Show "Loaded Design" message from TabManager
 
   connect(this->errorLogWidget, &ErrorLog::openFile, this, &MainWindow::openFileFromPath);
   connect(this->console, &Console::openFile, this, &MainWindow::openFileFromPath);
@@ -430,22 +432,12 @@ MainWindow::MainWindow(const QStringList& filenames) :
   this->designActionMeasureDist->setEnabled(false);
   this->designActionMeasureAngle->setEnabled(false);
 
-  autoReloadTimer = new QTimer(this);
-  autoReloadTimer->setSingleShot(false);
-  autoReloadTimer->setInterval(autoReloadPollingPeriodMS);
-  connect(autoReloadTimer, &QTimer::timeout, this, &MainWindow::checkAutoReload);
-
   this->exportFormatMapper = new QSignalMapper(this);
 #if QT_VERSION >= QT_VERSION_CHECK(5, 15, 0)
   connect(this->exportFormatMapper, &QSignalMapper::mappedInt, this, &MainWindow::actionExportFileFormat);
 #else
   connect(this->exportFormatMapper, static_cast<void (QSignalMapper::*)(int)>(&QSignalMapper::mapped), this, &MainWindow::actionExportFileFormat);
 #endif
-
-  waitAfterReloadTimer = new QTimer(this);
-  waitAfterReloadTimer->setSingleShot(true);
-  waitAfterReloadTimer->setInterval(autoReloadPollingPeriodMS);
-  connect(waitAfterReloadTimer, &QTimer::timeout, this, &MainWindow::waitAfterReload);
   connect(GlobalPreferences::inst(), &Preferences::ExperimentalChanged, this, &MainWindow::changeParameterWidget);
 
   progressThrottle->start();
@@ -634,7 +626,7 @@ MainWindow::MainWindow(const QStringList& filenames) :
   connect(GlobalPreferences::inst(), &Preferences::colorSchemeChanged, this, &MainWindow::setColorScheme);
   connect(GlobalPreferences::inst(), &Preferences::toolbarExportChanged, this, &MainWindow::updateExportActions);
 
-  GlobalPreferences::inst()->apply_win();   // not sure if to be commented, checked must not be commented(done some changes in apply())
+  GlobalPreferences::inst()->apply_win();     // not sure if to be commented, checked must not be commented(done some changes in apply())
 
   const QString cs = GlobalPreferences::inst()->getValue("3dview/colorscheme").toString();
   this->setColorScheme(cs);
@@ -815,8 +807,7 @@ MainWindow::MainWindow(const QStringList& filenames) :
   // Configure the highlighting color scheme from the active editor one.
   // This is done only one time at creation of the first MainWindow instance
   auto preferences = GlobalPreferences::inst();
-  if(!preferences->hasHighlightingColorScheme())
-    preferences->setHighlightingColorSchemes(activeEditor->colorSchemes());
+  if (!preferences->hasHighlightingColorScheme()) preferences->setHighlightingColorSchemes(activeEditor->colorSchemes());
 
   onTabManagerEditorChanged(activeEditor);
 
@@ -1101,6 +1092,7 @@ MainWindow::~MainWindow()
   }
 }
 
+
 void MainWindow::showProgress()
 {
   updateStatusBar(qobject_cast<ProgressWidget *>(sender()));
@@ -1137,7 +1129,7 @@ void MainWindow::updateRecentFiles(const QString& FileSavedOrOpened)
 {
   // Check that the canonical file path exists - only update recent files
   // if it does. Should prevent empty list items on initial open etc.
-  QSettingsCached settings;   // already set up properly via main.cpp
+  QSettingsCached settings;     // already set up properly via main.cpp
   auto files = settings.value("recentFileList").toStringList();
   files.removeAll(FileSavedOrOpened);
   files.prepend(FileSavedOrOpened);
@@ -1152,6 +1144,48 @@ void MainWindow::updateRecentFiles(const QString& FileSavedOrOpened)
   }
 }
 
+
+/*!
+   compiles the design. Calls compileDone() if anything was compiled
+ */
+void MainWindow::rawCompile(bool reload, bool forcedone)
+{
+  OpenSCAD::hardwarnings = GlobalPreferences::inst()->getValue("advanced/enableHardwarnings").toBool();
+  OpenSCAD::traceDepth = GlobalPreferences::inst()->getValue("advanced/traceDepth").toUInt();
+  OpenSCAD::traceUsermoduleParameters = GlobalPreferences::inst()->getValue("advanced/enableTraceUsermoduleParameters").toBool();
+  OpenSCAD::parameterCheck = GlobalPreferences::inst()->getValue("advanced/enableParameterCheck").toBool();
+  OpenSCAD::rangeCheck = GlobalPreferences::inst()->getValue("advanced/enableParameterRangeCheck").toBool();
+
+  try{
+    compileErrors = 0;
+    compileWarnings = 0;
+
+    this->renderStatistic.start();
+
+    auto current_doc = activeEditor->toPlainText();
+
+    parseTopLevelDocument();
+
+    if (parser_error_pos != lastParserErrorPos) {
+      if (lastParserErrorPos >= 0) emit unhighlightLastError();
+      if (parser_error_pos >= 0) emit highlightError(parser_error_pos);
+      lastParserErrorPos = parser_error_pos;
+      return;
+    }
+    // Had any errors in the parse that would have caused exceptions via PRINT.
+    if (would_have_thrown()) throw HardWarningException("");
+
+    compileDone(true);
+  } catch (const HardWarningException&) {
+    exceptionCleanup();
+  } catch (const std::exception& ex) {
+    UnknownExceptionCleanup(ex.what());
+  } catch (...) {
+    UnknownExceptionCleanup();
+  }
+  return;
+}
+
 /*!
    compiles the design. Calls compileDone() if anything was compiled
  */
@@ -1162,6 +1196,8 @@ void MainWindow::compile(bool reload, bool forcedone)
   OpenSCAD::traceUsermoduleParameters = GlobalPreferences::inst()->getValue("advanced/enableTraceUsermoduleParameters").toBool();
   OpenSCAD::parameterCheck = GlobalPreferences::inst()->getValue("advanced/enableParameterCheck").toBool();
   OpenSCAD::rangeCheck = GlobalPreferences::inst()->getValue("advanced/enableParameterRangeCheck").toBool();
+
+  std::cout << "Reload " << reload << " , " << forcedone << std::endl;
 
   try{
     bool shouldcompiletoplevel = false;
@@ -1176,7 +1212,7 @@ void MainWindow::compile(bool reload, bool forcedone)
     if (reload) {
       // Refresh files if it has changed on disk
       if (fileChangedOnDisk() && checkEditorModified()) {
-        shouldcompiletoplevel = tabManager->refreshDocument();         // don't compile if we couldn't open the file
+        shouldcompiletoplevel = tabManager->refreshDocument();                 // don't compile if we couldn't open the file
         if (shouldcompiletoplevel && GlobalPreferences::inst()->getValue("advanced/autoReloadRaise").toBool()) {
           // reloading the 'same' document brings the 'old' one to front.
           this->raise();
@@ -1237,7 +1273,7 @@ void MainWindow::compile(bool reload, bool forcedone)
     // if something changed _and_ there are any external dependencies
     if (reload && didcompile && this->rootFile) {
       if (this->rootFile->hasIncludes() || this->rootFile->usesLibraries()) {
-        this->waitAfterReloadTimer->start();
+        std::cout << "COMPILED: REMOVED AUTO RELOAD START " << std::endl;
         this->procevents = false;
         return;
       }
@@ -1253,17 +1289,30 @@ void MainWindow::compile(bool reload, bool forcedone)
   }
 }
 
+void MainWindow::onFileChanged(const QString& path)
+{
+  std::cout << " FILE " << path.toStdString() << " has changed on file ... " << std::endl;
+  if (renderedEditor->filepath == path) {
+    std::cout << " FILE " << path.toStdString() << " will be reloaded ... XX " << std::endl;
+    tabManager->refreshDocument();
+    rawCompile(true);
+  }
+
+  // Some texts editors, when saving files are actually saving in a new file,
+  // then remove the old one and finally rename the new one. In that case
+  // QFileSystemWatcher stops monitoring.
+  // So, we check if this is the case for the given path, and if the path
+  // still exists... we re-add it to the monitor.
+  if (!fileSystemWatcher.files().contains(path)) {
+    std::cout << " The file is not tracked anymore " << std::endl;
+    std::cout << " File exists: " << QFileInfo(path).exists() << std::endl;
+    fileSystemWatcher.addPath(path);
+  }
+}
+
 void MainWindow::waitAfterReload()
 {
-  no_exceptions_for_warnings();
-  auto mtime = this->rootFile->handleDependencies();
-  auto stop = would_have_thrown();
-  if (mtime > this->depsMTime) this->depsMTime = mtime;
-  else if (!stop) {
-    compile(true, true);     // In case file itself or top-level includes changed during dependency updates
-    return;
-  }
-  this->waitAfterReloadTimer->start();
+  std::cout << "IS THIS USEFULL ? I REMOVED EVERYTHING " << std::endl;
 }
 
 void MainWindow::on_toolButtonCompileResultClose_clicked()
@@ -1331,7 +1380,6 @@ void MainWindow::compileEnded()
 {
   clearCurrentOutput();
   GuiLocker::unlock();
-  if (designActionAutoReload->isChecked()) autoReloadTimer->start();
 }
 
 void MainWindow::instantiateRoot()
@@ -1557,7 +1605,7 @@ void MainWindow::actionOpenRecent()
 
 void MainWindow::clearRecentFiles()
 {
-  QSettingsCached settings;   // already set up properly via main.cpp
+  QSettingsCached settings;     // already set up properly via main.cpp
   const QStringList files;
   settings.setValue("recentFileList", files);
 
@@ -1767,9 +1815,10 @@ void MainWindow::actionShowLibraryFolder()
 
 void MainWindow::actionReload()
 {
+  std::cout << "MainWindow:: actionReload " << std::endl;
   if (checkEditorModified()) {
-    fileChangedOnDisk();     // force cached autoReloadId to update
-    (void)tabManager->refreshDocument();     // ignore errors opening the file
+    fileChangedOnDisk();         // force cached autoReloadId to update
+    (void)tabManager->refreshDocument();         // ignore errors opening the file
   }
 }
 
@@ -2040,11 +2089,11 @@ bool MainWindow::trust_python_file(const std::string& file,  const std::string& 
     return true;
   }
 
-  if (content.size() <= 1) {   // 1st character already typed
+  if (content.size() <= 1) {     // 1st character already typed
     this->trusted_edit_document_name = file;
     return true;
   }
-  if (content.rfind("from openscad import", 0) == 0) {   // 1st character already typed
+  if (content.rfind("from openscad import", 0) == 0) {     // 1st character already typed
     this->trusted_edit_document_name = file;
     return true;
   }
@@ -2159,20 +2208,21 @@ void MainWindow::changeParameterWidget()
 
 void MainWindow::checkAutoReload()
 {
+  std::cout << " TIME BASE CHECK AUTO RELOAD " << std::endl;
   if (!activeEditor->filepath.isEmpty()) {
-    actionReloadRenderPreview();
+    //actionReloadRenderPreview();
   }
+}
+
+bool MainWindow::autoReloadEnabled()
+{
+  return designActionAutoReload->isChecked();
 }
 
 void MainWindow::autoReloadSet(bool on)
 {
   QSettingsCached settings;
   settings.setValue("design/autoReload", designActionAutoReload->isChecked());
-  if (on) {
-    autoReloadTimer->start(autoReloadPollingPeriodMS);
-  } else {
-    autoReloadTimer->stop();
-  }
 }
 
 bool MainWindow::checkEditorModified()
@@ -2193,12 +2243,14 @@ void MainWindow::actionReloadRenderPreview()
 {
   if (GuiLocker::isLocked()) return;
   GuiLocker::lock();
-  autoReloadTimer->stop();
+
   setCurrentOutput();
 
   this->afterCompileSlot = "csgReloadRender";
   this->procevents = true;
   this->isPreview = true;
+  std::cout << "MainWindow::" << " actionReloadRenderPreview" << std::endl;
+
   compile(true);
 }
 
@@ -2221,7 +2273,6 @@ void MainWindow::csgReloadRender()
 
 void MainWindow::prepareCompile(const char *afterCompileSlot, bool procevents, bool preview)
 {
-  autoReloadTimer->stop();
   setCurrentOutput();
   LOG(" ");
   LOG("Parsing design (AST generation)...");
@@ -2700,11 +2751,10 @@ void MainWindow::exceptionCleanup(){
   LOG("Execution aborted");
   LOG(" ");
   GuiLocker::unlock();
-  if (designActionAutoReload->isChecked()) autoReloadTimer->start();
 }
 
 void MainWindow::UnknownExceptionCleanup(std::string msg){
-  setCurrentOutput();   // we need to show this error
+  setCurrentOutput();     // we need to show this error
   if (msg.size() == 0) {
     LOG(message_group::Error, "Compilation aborted by unknown exception");
   } else {
@@ -2712,7 +2762,6 @@ void MainWindow::UnknownExceptionCleanup(std::string msg){
   }
   LOG(" ");
   GuiLocker::unlock();
-  if (designActionAutoReload->isChecked()) autoReloadTimer->start();
 }
 
 void MainWindow::actionDisplayAST()
@@ -3107,6 +3156,7 @@ void MainWindow::editorContentChanged()
   // this slot is called when the content of the active editor changed.
   // it rely on the activeEditor member to pick the new data.
 
+  std::cout << "MainWindow:: " << " editorContentChanged" << std::endl;
   auto current_doc = activeEditor->toPlainText();
   if (current_doc != lastCompiledDoc) {
     animateWidget->editorContentChanged();
@@ -3394,9 +3444,9 @@ void MainWindow::onTabManagerAboutToCloseEditor(EditorInterface *closingEditor)
 
     // Invalidate renderers before we kill the CSG tree
     this->qglview->setRenderer(nullptr);
-       #ifdef ENABLE_OPENCSG
+#ifdef ENABLE_OPENCSG
     this->previewRenderer = nullptr;
-       #endif
+#endif
     this->thrownTogetherRenderer = nullptr;
 
     // Remove previous CSG tree
@@ -3414,10 +3464,23 @@ void MainWindow::onTabManagerAboutToCloseEditor(EditorInterface *closingEditor)
 
 void MainWindow::onTabManagerEditorContentReloaded(EditorInterface *reloadedEditor)
 {
+  std::cout << "MainWindow:: " << " onTabManagerEditorContentReloaded" << std::endl;
   try {
+    // Start monitoring the file
+    if (!reloadedEditor->filepath.isEmpty()) {
+      std::cout << "Start monitoring file: " << reloadedEditor->filepath.toStdString() << std::endl;
+      fileSystemWatcher.addPath(reloadedEditor->filepath);
+    }
+
     // when a new editor is created, it is important to compile the initial geometry
     // so the customizer panels are ok.
     parseDocument(reloadedEditor);
+
+    if (renderedEditor == nullptr || autoReloadEnabled()) {
+      std::cout << "I should update the renderer view" << std::endl;
+      actionRenderPreview();
+    }
+
   } catch (const HardWarningException&) {
     exceptionCleanup();
   } catch (const std::exception& ex) {
@@ -3434,6 +3497,9 @@ void MainWindow::onTabManagerEditorContentReloaded(EditorInterface *reloadedEdit
 
 void MainWindow::onTabManagerEditorChanged(EditorInterface *newEditor)
 {
+  // When we change the active tab in MainWindow.
+  std::cout << "MainWindow:: " << " onTabManagerEditorChanged" << std::endl;
+
   activeEditor = newEditor;
 
   if (newEditor == nullptr) return;
@@ -3451,7 +3517,7 @@ void MainWindow::onTabManagerEditorChanged(EditorInterface *newEditor)
   viewportControlDock->setNameSuffix(name);
 
   // If there is no renderedEditor we request for a new preview.
-  if (renderedEditor == nullptr) {
+  if (renderedEditor == nullptr || autoReloadEnabled()) {
     actionRenderPreview();
   }
 }
@@ -3659,7 +3725,7 @@ void MainWindow::consoleOutput(const Message& msgObj)
   // Then processEvents should no longer be needed here.
   this->processEvents();
   if (consoleUpdater && !consoleUpdater->isActive()) {
-    consoleUpdater->start(50);     // Limit console updates to 20 FPS
+    consoleUpdater->start(50);         // Limit console updates to 20 FPS
   }
 }
 
