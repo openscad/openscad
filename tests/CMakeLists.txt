@@ -1647,6 +1647,14 @@ set_tests_properties(
 endif (EXPERIMENTAL)
 
 if (LIB3MF_FOUND)
+  if (EXPERIMENTAL)
+    set_tests_properties(
+      # https://github.com/openscad/openscad/issues/5800
+      3mfexport_3mf-export
+
+      PROPERTIES DISABLED TRUE
+    )
+  endif (EXPERIMENTAL)
   set_tests_properties(
     # We don't repair polygon winding order in CGAL mode
     # We could perhaps split the test into good+bad polyhedrons
@@ -1659,9 +1667,6 @@ if (LIB3MF_FOUND)
     # For some reason, only failing on Linux
     3mfrendertest_bad-stl-tardis
     
-    # https://github.com/openscad/openscad/issues/5800
-    3mfexport_3mf-export
-
     PROPERTIES DISABLED TRUE
   )
 else()
