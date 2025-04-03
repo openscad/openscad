@@ -1567,8 +1567,12 @@ void MainWindow::show_examples()
   bool found_example = false;
 
   for (const auto& cat : UIUtils::exampleCategories()) {
-    auto examples = UIUtils::exampleFiles(cat);
-    auto menu = this->menuExamples->addMenu(gettext(cat.toStdString().c_str()));
+    auto examples = UIUtils::exampleFiles(cat.name);
+    auto menu = this->menuExamples->addMenu(gettext(cat.name.toStdString().c_str()));
+    if (!cat.tooltip.trimmed().isEmpty()) {
+      menu->setToolTip(gettext(cat.tooltip.toStdString().c_str()));
+      menu->setToolTipsVisible(true);
+    }
 
     for (const auto& ex : examples) {
       auto openAct = new QAction(ex.fileName().replace("&", "&&"), this);

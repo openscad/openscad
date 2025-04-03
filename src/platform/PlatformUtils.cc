@@ -119,7 +119,7 @@ bool PlatformUtils::createUserLibraryPath()
   return OK;
 }
 
-std::string PlatformUtils::userLibraryPath()
+std::string PlatformUtils::userPath(const std::string& name)
 {
   fs::path path;
   try {
@@ -134,7 +134,7 @@ std::string PlatformUtils::userLibraryPath()
     // LOG(message_group::NONE,,"lib path found: [%1$s]",path);
     if (path.empty()) return "";
     path /= OPENSCAD_FOLDER_NAME;
-    path /= "libraries";
+    path /= name;
     // LOG(message_group::NONE,,"Appended path %1$s",path);
     // LOG(message_group::NONE,,"Exists: %1$i",fs::exists(path));
   } catch (const fs::filesystem_error& ex) {
@@ -143,6 +143,15 @@ std::string PlatformUtils::userLibraryPath()
   return path.generic_string();
 }
 
+std::string PlatformUtils::userLibraryPath()
+{
+  return userPath("libraries");
+}
+
+std::string PlatformUtils::userExamplesPath()
+{
+  return userPath("examples");
+}
 
 std::string PlatformUtils::backupPath()
 {
