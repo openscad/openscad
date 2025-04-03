@@ -1659,6 +1659,9 @@ if (LIB3MF_FOUND)
     # For some reason, only failing on Linux
     3mfrendertest_bad-stl-tardis
     
+    # https://github.com/openscad/openscad/issues/5800
+    3mfexport_3mf-export
+
     PROPERTIES DISABLED TRUE
   )
 else()
