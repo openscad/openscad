@@ -55,6 +55,14 @@ void Measurement::startMeasureAngle(void)
   this->qglview->measure_state=MEASURE_ANG1;
 }
 
+void Measurement::stopMeasure()
+{
+  qglview->selected_obj.clear();
+  qglview->shown_obj = nullptr;
+  qglview->update();
+  qglview->measure_state = MEASURE_IDLE;
+}
+
 void Measurement::startFindHandle(void)
 {
   this->qglview->selected_obj.clear();
@@ -148,10 +156,7 @@ QString Measurement::statemachine(QPoint mouse)
 	  qglview->selected_obj.push_back(ruler);
           return QString("Distance is %1").arg(fabs(dist));
         }
-        qglview->selected_obj.clear();
-        qglview->shown_obj = nullptr;
-        qglview->update();
-        qglview->measure_state = MEASURE_IDLE;
+        stopMeasure();
       }
       break;
       case MEASURE_ANG1:
