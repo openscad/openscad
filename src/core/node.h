@@ -89,6 +89,9 @@ public:
   void getCodeLocation(int currentLevel,  int includeLevel, int *firstLine,
                        int *firstColumn, int *lastLine, int *lastColumn, int nestedModuleDepth) const;
 
+  void findNodesWithSameMod(const std::shared_ptr<const AbstractNode>& node_mod,
+                            std::vector<std::shared_ptr<const AbstractNode>>& nodes) const;
+
   std::shared_ptr<AbstractNode> clone(void);
   void  dump_counts(int indent, int use_cnt);
 #ifdef ENABLE_PYTHON  

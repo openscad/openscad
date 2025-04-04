@@ -114,6 +114,15 @@ void AbstractNode::getCodeLocation(int currentLevel,  int includeLevel,
   }
 }
 
+void AbstractNode::findNodesWithSameMod(const std::shared_ptr<const AbstractNode>& node_mod,
+                                        std::vector<std::shared_ptr<const AbstractNode>>& nodes) const {
+  if (node_mod->modinst == modinst) {
+    nodes.push_back(shared_from_this());
+  }
+  for (const auto& step : children) {
+    step->findNodesWithSameMod(node_mod, nodes);
+  }
+}
 
 std::string GroupNode::name() const
 {

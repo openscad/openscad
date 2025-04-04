@@ -25,12 +25,14 @@
  */
 
 #include "gui/QGLView.h"
+#include <QtCore/qpoint.h>
 
 #include "geometry/linalg.h"
 #include "gui/qtgettext.h"
 #include "gui/Preferences.h"
 #include "glview/Renderer.h"
 #include "utils/degree_trig.h"
+#include "utils/scope_guard.hpp"
 #if defined(USE_GLEW) || defined(OPENCSG_GLEW)
 #include "glview/glew-utils.h"
 #endif
@@ -78,7 +80,6 @@ QGLView::QGLView(QWidget *parent) : QOpenGLWidget(parent)
 
 QGLView::~QGLView()
 {
-  std::cout << "QGLView::~QGLView()" << std::endl;
   // Just to make sure we can call GL functions in the supertype destructor
   makeCurrent();
 }
@@ -675,11 +676,14 @@ int QGLView::pickObject(QPoint position)
 {
   if (!isValid()) return -1;
 
-// FIXME: If renderer isn't prepared, we cannot call this 
-//  renderer->prepare(&this->selector->shaderinfo);
+  if (this->getRenderer()) {
+    this->makeCurrent();
+    auto guard = sg::make_scope_guard([this]() { this->doneCurrent(); });
 
-  // Update the selector with the right image size
-  this->selector->reset(this);
+    // Update the selector with the right image size
+    this->selector->reset(this);
 
-  return this->selector->select(this->getRenderer(), position.x(), position.y());
+    return this->selector->select(this->getRenderer(), position.x(), position.y());
+  }
+  return -1;
 }

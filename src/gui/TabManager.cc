@@ -463,8 +463,8 @@ void TabManager::stopAnimation()
 
 void TabManager::updateFindState()
 {
-  if (editor->findState == TabManager::FIND_REPLACE_VISIBLE) par->showFindAndReplace();
-  else if (editor->findState == TabManager::FIND_VISIBLE) par->showFind();
+  if (editor->findState == TabManager::FIND_REPLACE_VISIBLE) par->showFind(true);
+  else if (editor->findState == TabManager::FIND_VISIBLE) par->showFind(false);
   else par->hideFind();
 }
 

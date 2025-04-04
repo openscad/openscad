@@ -22,6 +22,7 @@ class Measurement
     void startMeasureDist(void);
     void startMeasureAngle(void);
     void startFindHandle(void);
+    void stopMeasure();
   private:
     QGLView *qglview;
 };
