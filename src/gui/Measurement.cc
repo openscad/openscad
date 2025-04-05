@@ -54,6 +54,15 @@ void Measurement::startMeasureAngle(void)
   this->qglview->update();
   this->qglview->measure_state=MEASURE_ANG1;
 }
+
+void Measurement::stopMeasure()
+{
+  qglview->selected_obj.clear();
+  qglview->shown_obj.clear();
+  qglview->update();
+  qglview->measure_state = MEASURE_IDLE;
+}
+
 QString Measurement::statemachine(QPoint mouse)
 {
   if(qglview->measure_state == MEASURE_IDLE) return "";
@@ -78,10 +87,7 @@ QString Measurement::statemachine(QPoint mouse)
         if(!std::isnan(dist)) {
           return QString("Distance is %1").arg(fabs(dist));
         }
-        qglview->selected_obj.clear();
-        qglview->shown_obj.clear();
-        qglview->update();
-        qglview->measure_state = MEASURE_IDLE;
+        stopMeasure();
       }
       break;
       case MEASURE_ANG1:
@@ -142,10 +148,7 @@ display_angle:
         {
           return QString("Angle  is %1 Degrees").arg(ang);
         }
-        qglview->selected_obj.clear();
-        qglview->shown_obj.clear();
-        qglview->update();
-        qglview->measure_state = MEASURE_IDLE;
+        stopMeasure();
       }
       break;
   }

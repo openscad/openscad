@@ -64,7 +64,11 @@ void MouseSelector::setupFramebuffer(int width, int height) {
       this->framebuffer->width() != width ||
       this->framebuffer->height() != height) {
     this->framebuffer = createFBO(width, height);
+    // We bind the framebuffer before initializing shaders since
+    // shader validation requires a valid framebuffer.
+    this->framebuffer->bind();
     this->initShader();
+    this->framebuffer->unbind();
   }
 }
 
@@ -85,8 +89,9 @@ int MouseSelector::select(const Renderer *renderer, int x, int y) {
 
   // TODO: Ideally, we should make the above configurable and reduce duplicate render code in this function.
 
-  if (x > static_cast<int>(this->view->cam.pixel_width) || x < 0 ||
-      y > static_cast<int>(this->view->cam.pixel_height) || y < 0) {
+  const int width = this->view->cam.pixel_width;
+  const int height = this->view->cam.pixel_height;
+  if (x >= width || x < 0 || y >= height || y < 0) {
     return -1;
   }
 
@@ -100,7 +105,7 @@ int MouseSelector::select(const Renderer *renderer, int x, int y) {
   glClearColor(0, 0, 0, 1.0);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
-  glViewport(0, 0, this->view->cam.pixel_width, this->view->cam.pixel_height);
+  glViewport(0, 0, width, height);
   this->view->setupCamera();
   glTranslated(this->view->cam.object_trans.x(),
                this->view->cam.object_trans.y(),
@@ -122,8 +127,7 @@ int MouseSelector::select(const Renderer *renderer, int x, int y) {
   // Grab the color from the framebuffer and convert it back to an identifier
   GLubyte color[3] = { 0 };
   // Qt position is originated top-left, so flip y to get GL coordinates.
-  GL_CHECKD(glReadPixels(x, this->view->cam.pixel_height - y, 1, 1, GL_RGB, GL_UNSIGNED_BYTE, color));
-  glDisable(GL_DEPTH_TEST);
+  GL_CHECKD(glReadPixels(x, height - y, 1, 1, GL_RGB, GL_UNSIGNED_BYTE, color));
 
   const int index = (uint32_t)color[0] | ((uint32_t)color[1] << 8) | ((uint32_t)color[2] << 16);
 

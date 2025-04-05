@@ -49,7 +49,7 @@ PACKAGES=(
     "libzip 1.9.2"
     "fontconfig 2.14.1"
     "hidapi 0.12.0"
-    "lib3mf 2.3.1"
+    "lib3mf 2.4.1"
     "pcre2 10.44"
     "glib2 2.83.0"
     "pixman 0.42.2"

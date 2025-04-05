@@ -72,5 +72,3 @@ else
   brew unlink qscintilla2
   brew install qscintilla2.rb
 fi
-
-$TAP untap openscad/homebrew-tap || true
