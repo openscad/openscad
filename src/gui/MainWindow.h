@@ -109,7 +109,6 @@ public:
   QAction *actionRecentFile[UIUtils::maxRecentFiles];
   QShortcut *shortcutNextWindow{nullptr};
   QShortcut *shortcutPreviousWindow{nullptr};
-  QMap<QString, QString> knownFileExtensions;
 
   QLabel *versionLabel;
 
