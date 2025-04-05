@@ -44,6 +44,7 @@ public:
     if (trans3dState != Transform3dState::NONE) mergeTrans3d();
     this->theoutlines.push_back(outline);
   }
+  void reverse(void);
   [[nodiscard]] std::unique_ptr<PolySet> tessellate(bool in3d= false) const;
   [[nodiscard]] double area() const;
 

@@ -297,3 +297,10 @@ void Polygon2d::applyTrans3dToOutlines(Polygon2d::Outlines2d &outlines) const {
     for (auto &o : outlines)
       std::reverse(o.vertices.begin(), o.vertices.end());
 }
+
+void Polygon2d::reverse(void) {
+  for (auto &o : theoutlines)
+    std::reverse(o.vertices.begin(), o.vertices.end());
+  for (auto &o : trans3dOutlines)
+    std::reverse(o.vertices.begin(), o.vertices.end());
+}
