@@ -184,27 +184,12 @@ std::shared_ptr<ManifoldGeometry> createManifoldFromPolySet(const PolySet& ps)
   }
   const PolySet& triangle_set = ps.isTriangular() ? ps : *triangulated;
 
+  // Note: This function also performs a merge if the first attempt fails.
   auto mani = createManifoldFromTriangularPolySet(triangle_set);
   if (mani->getManifold().Status() == Error::NoError) {
     return mani;
   }
 
-  // Before announcing that the conversion failed, let's try to fix the most common
-  // causes of a non-manifold topology:
-  // Polygon soup of manifold topology with co-incident vertices having identical vertex positions
-  //
-  // Note: This causes us to lose the ability to represent manifold topologies with duplicate
-  // vertex positions (touching cubes, donut with vertex in the center etc.)
-  PolySetBuilder builder(ps.vertices.size(), ps.indices.size(),
-                         ps.getDimension(), ps.convexValue());
-  builder.appendPolySet(triangle_set);
-  const std::unique_ptr<PolySet> rebuilt_ps = builder.build();
-  mani = createManifoldFromTriangularPolySet(*rebuilt_ps);
-  if (mani->getManifold().Status() == Error::NoError) {
-    return mani;
-  }
-
-  // FIXME: Should we attempt merging vertices within epsilon distance before issuing this warning?
   LOG(message_group::Warning,"PolySet -> Manifold conversion failed: %1$s\n"
       "Trying to repair and reconstruct mesh..",
       ManifoldUtils::statusToString(mani->getManifold().Status()));
