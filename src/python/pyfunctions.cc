@@ -2434,14 +2434,27 @@ PyObject *python_faces_core(PyObject *obj, bool tessellate)
 
 
   if(ps != nullptr){
-    if(tessellate == true) {
+    PolygonIndices inds;	 
+    std::vector<int> face_parents;
+    if(tessellate == true){
       ps = PolySetUtils::tessellate_faces(*ps);
+      inds = ps->indices;
+      for(int i=0;i<inds.size();i++) face_parents.push_back(-1);
     }
+    else {
+      std::vector<Vector4d> normals, new_normals;      
+      normals = calcTriangleNormals(ps->vertices, ps->indices);
+      inds  = mergeTriangles(ps->indices, normals, new_normals, face_parents, ps->vertices);
+    }
+    int resultlen=0, resultiter=0;
+    for(int i=0;i<face_parents.size();i++)
+      if(face_parents[i] == -1) resultlen++;	    
 
-    PyObject *pyth_faces = PyList_New(ps->indices.size());
+    PyObject *pyth_faces = PyList_New(resultlen);
 
-    for (size_t j=0;j<ps->indices.size();j++) {
-      auto &face = ps->indices[j];	    
+    for (size_t j=0;j<inds.size();j++) {
+      if(face_parents[j] != -1) continue;	    
+      auto &face = inds[j];	    
       if(face.size() < 3) continue;	    
       Vector3d zdir=calcTriangleNormal(ps->vertices,face).head<3>().normalized();
       // calc center of face
@@ -2467,11 +2480,32 @@ PyObject *python_faces_core(PyObject *obj, bool tessellate)
       
       DECLARE_INSTANCE
       auto poly = std::make_shared<PolygonNode>(instance);
+      std::vector<size_t> path;
       for(size_t i=0;i<face.size();i++) {
         Vector3d pt = ps->vertices[face[i]];
         Vector4d pt4(pt[0], pt[1], pt[2], 1);
         pt4 = invmat * pt4 ;
+	path.push_back(poly->points.size());
         poly->points.push_back(pt4.head<2>());
+      }
+      poly->paths.push_back(path);
+
+        // check if there are holes
+      for (size_t k=0;k<inds.size();k++) {
+        if(face_parents[k] == j){
+          auto &hole = inds[k];		
+
+          std::vector<size_t> path;
+          for(size_t i=0;i<hole.size();i++) {
+            Vector3d pt = ps->vertices[hole[i]];
+            Vector4d pt4(pt[0], pt[1], pt[2], 1);
+            pt4 = invmat * pt4 ;
+	    path.push_back(poly->points.size());
+            poly->points.push_back(pt4.head<2>());
+          }
+          poly->paths.push_back(path);
+
+        }
       }
       {
         DECLARE_INSTANCE
@@ -2480,12 +2514,11 @@ PyObject *python_faces_core(PyObject *obj, bool tessellate)
 	mult->children.push_back(poly);
 
         PyObject *pyth_face = PyOpenSCADObjectFromNode(&PyOpenSCADType, mult);
-        PyList_SetItem(pyth_faces, j, pyth_face);
+        PyList_SetItem(pyth_faces, resultiter++, pyth_face);
       }
 
     }
     return  pyth_faces;
-// do the magic here
   }  
   return Py_None;
 }
@@ -3206,6 +3239,7 @@ PyObject *python_csg_sub(PyObject *self, PyObject *args, PyObject *kwargs, OpenS
   for(int i=child_dict.size()-1;i>=0; i--) // merge from back  to give 1st child most priority
   {
     auto &dict = child_dict[i];	  
+    if(dict == nullptr) continue;
     PyObject *key, *value;
     Py_ssize_t pos = 0;
      while(PyDict_Next(dict, &pos, &key, &value)) {
