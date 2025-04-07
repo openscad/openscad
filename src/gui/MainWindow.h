@@ -183,6 +183,7 @@ public:
   void exceptionCleanup();
   void setLastFocus(QWidget *widget);
   void UnknownExceptionCleanup(std::string msg = "");
+  void showFind(bool doFindAndReplace);
 
 private:
   [[nodiscard]] QString getCurrentFileName() const;
@@ -194,6 +195,14 @@ private:
   void compileCSG(std::shared_ptr<const AbstractNode> selectedNode=nullptr);
   bool checkEditorModified();
   QString dumpCSGTree(const std::shared_ptr<AbstractNode>& root);
+
+  // Opens an independent windows with a text area showing the text given in argument
+  // The "type" is used to specify the type of content with the title of the window,
+  void showTextInWindow(const QString& type, const QString& textToShow);
+
+  // Change the perspective mode of the 3D view.
+  typedef Camera::ProjectionType ProjectionType;
+  void setProjectionType(ProjectionType mode);
 
   void loadViewSettings();
   void loadDesignSettings();
@@ -275,11 +284,11 @@ private slots:
 
 public slots:
   void hideFind();
-  void showFind();
-  void showFindAndReplace();
+  void actionShowFind();
+  void actionShowFindAndReplace();
 
 private slots:
-  void selectFindType(int);
+  void actionSelectFind(int);
   void findString(const QString&);
   void findNext();
   void findPrev();
