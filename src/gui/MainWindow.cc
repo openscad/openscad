@@ -485,8 +485,8 @@ MainWindow::MainWindow(const QStringList& filenames) :
   connect(this->editActionCopyVPF, &QAction::triggered, this, &MainWindow::copyViewportFov);
   connect(this->editActionPreferences, &QAction::triggered, this, &MainWindow::preferences);
   // Edit->Find
-  connect(this->editActionFind, &QAction::triggered, this, &MainWindow::showFind);
-  connect(this->editActionFindAndReplace, &QAction::triggered, this, &MainWindow::showFindAndReplace);
+  connect(this->editActionFind, &QAction::triggered, this, &MainWindow::actionShowFind);
+  connect(this->editActionFindAndReplace, &QAction::triggered, this, &MainWindow::actionShowFindAndReplace);
 #ifdef Q_OS_WIN
   this->editActionFindAndReplace->setShortcut(QKeySequence(Qt::CTRL, Qt::SHIFT, Qt::Key_F));
 #endif
@@ -622,7 +622,7 @@ MainWindow::MainWindow(const QStringList& filenames) :
   this->setColorScheme(cs);
 
   //find and replace panel
-  connect(this->findTypeComboBox, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &MainWindow::selectFindType);
+  connect(this->findTypeComboBox, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &MainWindow::actionSelectFind);
   connect(this->findInputField, &QWordSearchField::textChanged, this, &MainWindow::findString);
   connect(this->findInputField, &QWordSearchField::returnPressed, this->findNextButton, [this] {
     this->findNextButton->animateClick();
@@ -1815,24 +1815,41 @@ void MainWindow::hideFind()
   this->processEvents();
 }
 
-void MainWindow::showFind()
+// Prepare the UI for the find (and replace if requested)
+// Among other thing it makes the text field and replacement field visible and well as it configures the
+// activeEditor to appropriate search mode.
+void MainWindow::showFind(bool doFindAndReplace)
 {
-  this->findInputField->setFindCount(activeEditor->updateFindIndicators(this->findInputField->text()));
-  this->processEvents();
-  findTypeComboBox->setCurrentIndex(0);
-  replaceInputField->hide();
-  replaceButton->hide();
-  replaceAllButton->hide();
-  //replaceLabel->setVisible(false);
-  find_panel->show();
-  activeEditor->findState = TabManager::FIND_VISIBLE;
-  editActionFindNext->setEnabled(true);
-  editActionFindPrevious->setEnabled(true);
-  if (!activeEditor->selectedText().isEmpty()) {
-    findInputField->setText(activeEditor->selectedText());
-  }
-  findInputField->setFocus();
-  findInputField->selectAll();
+    findInputField->setFindCount(activeEditor->updateFindIndicators(findInputField->text()));
+    processEvents();
+
+    if(doFindAndReplace){
+        findTypeComboBox->setCurrentIndex(1);
+        replaceInputField->show();
+        replaceButton->show();
+        replaceAllButton->show();
+        activeEditor->findState = TabManager::FIND_REPLACE_VISIBLE;
+    }else{
+        findTypeComboBox->setCurrentIndex(0);
+        replaceInputField->hide();
+        replaceButton->hide();
+        replaceAllButton->hide();
+        activeEditor->findState = TabManager::FIND_VISIBLE;
+    }
+
+    find_panel->show();
+    editActionFindNext->setEnabled(true);
+    editActionFindPrevious->setEnabled(true);
+    if (!activeEditor->selectedText().isEmpty()) {
+      findInputField->setText(activeEditor->selectedText());
+    }
+    findInputField->setFocus();
+    findInputField->selectAll();
+}
+
+void MainWindow::actionShowFind()
+{
+    showFind(false);
 }
 
 void MainWindow::findString(const QString& textToFind)
@@ -1842,30 +1859,15 @@ void MainWindow::findString(const QString& textToFind)
   activeEditor->find(textToFind);
 }
 
-void MainWindow::showFindAndReplace()
+void MainWindow::actionShowFindAndReplace()
 {
-  this->findInputField->setFindCount(activeEditor->updateFindIndicators(this->findInputField->text()));
-  this->processEvents();
-  findTypeComboBox->setCurrentIndex(1);
-  replaceInputField->show();
-  replaceButton->show();
-  replaceAllButton->show();
-  //replaceLabel->setVisible(true);
-  find_panel->show();
-  activeEditor->findState = TabManager::FIND_REPLACE_VISIBLE;
-  editActionFindNext->setEnabled(true);
-  editActionFindPrevious->setEnabled(true);
-  if (!activeEditor->selectedText().isEmpty()) {
-    findInputField->setText(activeEditor->selectedText());
-  }
-  findInputField->setFocus();
-  findInputField->selectAll();
+    showFind(true);
 }
 
-void MainWindow::selectFindType(int type)
+void MainWindow::actionSelectFind(int type)
 {
-  if (type == 0) showFind();
-  if (type == 1) showFindAndReplace();
+  // If type is one, then we shows the find and replace UI component
+  showFind(type == 1);
 }
 
 void MainWindow::replace()
@@ -2440,7 +2442,6 @@ void MainWindow::leftClick(QPoint mouse)
  */
 void MainWindow::rightClick(QPoint position)
 {
-  std::cout << "RIGHT CLICK " << std::endl;
   // selecting without a renderer?!
   if (!this->qglview->renderer) {
     return;
@@ -2521,26 +2522,12 @@ void MainWindow::rightClick(QPoint position)
 
 void MainWindow::measureFinished()
 {
-  this->qglview->selected_obj.clear();
-  this->qglview->shown_obj.clear();
-  this->qglview->update();
-  this->qglview->measure_state = MEASURE_IDLE;
+    meas.stopMeasure();
 }
 
 void MainWindow::clearAllSelectionIndicators()
 {
   this->activeEditor->clearAllSelectionIndicators();
-}
-
-static void findNodesWithSameMod(const std::shared_ptr<const AbstractNode>& tree,
-                                 const std::shared_ptr<const AbstractNode>& node_mod,
-                                 std::vector<std::shared_ptr<const AbstractNode>>& nodes){
-  if (node_mod->modinst == tree->modinst) {
-    nodes.push_back(tree);
-  }
-  for (const auto& step : tree->children) {
-    findNodesWithSameMod(step, node_mod, nodes);
-  }
 }
 
 void MainWindow::setSelectionIndicatorStatus(EditorInterface *editor, int nodeIndex, EditorSelectionIndicatorStatus status)
@@ -2611,7 +2598,7 @@ void MainWindow::setSelection(int index)
   renderedEditor->show();
 
   std::vector<std::shared_ptr<const AbstractNode>> nodesSameModule{};
-  findNodesWithSameMod(rootNode, selected_node, nodesSameModule);
+  rootNode->findNodesWithSameMod(selected_node, nodesSameModule);
 
   // highlight in the text editor all the text fragment of the hierarchy of object with same mode.
   for (const auto& element : nodesSameModule) {
@@ -2697,64 +2684,47 @@ void MainWindow::UnknownExceptionCleanup(std::string msg){
   if (designActionAutoReload->isChecked()) autoReloadTimer->start();
 }
 
+void MainWindow::showTextInWindow(const QString& type, const QString& content)
+{
+    auto e = new QTextEdit(this);
+    e->setAttribute(Qt::WA_DeleteOnClose);
+    e->setWindowFlags(Qt::Window);
+    e->setTabStopDistance(tabStopWidth);
+    e->setWindowTitle(type+" Dump");
+    if(content.isEmpty())
+        e->setPlainText("No "+type+"to dump. Please try compiling first...");
+    else
+        e->setPlainText(content);
+
+    e->setReadOnly(true);
+    e->resize(600, 400);
+    e->show();
+}
+
 void MainWindow::actionDisplayAST()
 {
   setCurrentOutput();
-  auto e = new QTextEdit(this);
-  e->setAttribute(Qt::WA_DeleteOnClose);
-  e->setWindowFlags(Qt::Window);
-  e->setTabStopDistance(tabStopWidth);
-  e->setWindowTitle("AST Dump");
-  e->setReadOnly(true);
-  if (rootFile) {
-    e->setPlainText(QString::fromStdString(rootFile->dump("")));
-  } else {
-    e->setPlainText("No AST to dump. Please try compiling first...");
-  }
-  e->resize(600, 400);
-  e->show();
+  QString text = (rootFile)? QString::fromStdString(rootFile->dump("")) : "";
+  showTextInWindow("AST", text);
   clearCurrentOutput();
 }
 
 void MainWindow::actionDisplayCSGTree()
 {
   setCurrentOutput();
-  auto e = new QTextEdit(this);
-  e->setAttribute(Qt::WA_DeleteOnClose);
-  e->setWindowFlags(Qt::Window);
-  e->setTabStopDistance(tabStopWidth);
-  e->setWindowTitle("CSG Tree Dump");
-  e->setReadOnly(true);
-  if (this->rootNode) {
-    e->setPlainText(QString::fromStdString(this->tree.getString(*this->rootNode, "  ")));
-  } else {
-    e->setPlainText("No CSG to dump. Please try compiling first...");
-  }
-  e->resize(600, 400);
-  e->show();
+  QString text = (rootNode)? QString::fromStdString(tree.getString(*rootNode, "  ")) : "";
+  showTextInWindow("CGS", text);
   clearCurrentOutput();
 }
 
 void MainWindow::actionDisplayCSGProducts()
 {
-  const std::string NA("N/A");
   setCurrentOutput();
-  auto e = new QTextEdit(this);
-  e->setAttribute(Qt::WA_DeleteOnClose);
-  e->setWindowFlags(Qt::Window);
-  e->setTabStopDistance(tabStopWidth);
-  e->setWindowTitle("CSG Products Dump");
-  e->setReadOnly(true);
-  e->setPlainText(QString("\nCSG before normalization:\n%1\n\n\nCSG after normalization:\n%2\n\n\nCSG rendering chain:\n%3\n\n\nHighlights CSG rendering chain:\n%4\n\n\nBackground CSG rendering chain:\n%5\n")
-
-                  .arg(QString::fromStdString(this->csgRoot ? this->csgRoot->dump() : NA),
-                       QString::fromStdString(this->normalizedRoot ? this->normalizedRoot->dump() : NA),
-                       QString::fromStdString(this->rootProduct ? this->rootProduct->dump() : NA),
-                       QString::fromStdString(this->highlightsProducts ? this->highlightsProducts->dump() : NA),
-                       QString::fromStdString(this->backgroundProducts ? this->backgroundProducts->dump() : NA)));
-
-  e->resize(600, 400);
-  e->show();
+  // a small lambda to avoid code duplication
+  auto constexpr dump = [](auto node){ return QString::fromStdString(node? node->dump() : "N/A"); };
+  auto text = QString("\nCSG before normalization:\n%1\n\n\nCSG after normalization:\n%2\n\n\nCSG rendering chain:\n%3\n\n\nHighlights CSG rendering chain:\n%4\n\n\nBackground CSG rendering chain:\n%5\n")
+                  .arg(dump(csgRoot), dump(normalizedRoot), dump(rootProduct), dump(highlightsProducts), dump(backgroundProducts));
+  showTextInWindow("CSG Products Dump", text);
   clearCurrentOutput();
 }
 
@@ -3146,35 +3116,34 @@ void MainWindow::viewCenter()
   this->qglview->update();
 }
 
+void MainWindow::setProjectionType(ProjectionType mode)
+{
+    bool isOrthogonal = ProjectionType::ORTHOGONAL == mode;
+    QSettingsCached settings;
+    settings.setValue("view/orthogonalProjection", isOrthogonal);
+    viewActionPerspective->setChecked(!isOrthogonal);
+    viewActionOrthogonal->setChecked(isOrthogonal);
+    qglview->setOrthoMode(isOrthogonal);
+    qglview->update();
+}
+
 void MainWindow::viewPerspective()
 {
-  QSettingsCached settings;
-  settings.setValue("view/orthogonalProjection", false);
-  viewActionPerspective->setChecked(true);
-  viewActionOrthogonal->setChecked(false);
-  this->qglview->setOrthoMode(false);
-  this->qglview->update();
+    setProjectionType(ProjectionType::PERSPECTIVE);
 }
 
 void MainWindow::viewOrthogonal()
 {
-  QSettingsCached settings;
-  settings.setValue("view/orthogonalProjection", true);
-  viewActionPerspective->setChecked(false);
-  viewActionOrthogonal->setChecked(true);
-  this->qglview->setOrthoMode(true);
-  this->qglview->update();
+    setProjectionType(ProjectionType::ORTHOGONAL);
 }
 
 void MainWindow::viewTogglePerspective()
 {
   const QSettingsCached settings;
-  if (settings.value("view/orthogonalProjection").toBool()) {
-    viewPerspective();
-  } else {
-    viewOrthogonal();
-  }
+  bool isOrtho = settings.value("view/orthogonalProjection").toBool();
+  setProjectionType(isOrtho?ProjectionType::PERSPECTIVE:ProjectionType::ORTHOGONAL);
 }
+
 void MainWindow::viewResetView()
 {
   this->qglview->resetView();
