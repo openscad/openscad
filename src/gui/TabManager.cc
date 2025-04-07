@@ -21,6 +21,7 @@
 #include <Qsci/qscicommandset.h>
 
 #include "gui/Editor.h"
+#include "gui/ImportUtils.h"
 #include "gui/ScintillaEditor.h"
 #include "gui/Preferences.h"
 #include "gui/MainWindow.h"
@@ -496,9 +497,12 @@ void TabManager::openTabFile(const QString& filename)
 
   QFileInfo fileinfo(filename);
   const auto suffix = fileinfo.suffix().toLower();
-  const auto knownFileType = par->knownFileExtensions.contains(suffix);
-  const auto cmd = par->knownFileExtensions[suffix];
-  if (knownFileType && cmd.isEmpty()) {
+  const auto knownFileType = Importer::knownFileExtensions.contains(suffix);
+  if(!knownFileType)
+    return;
+
+  const auto cmd = Importer::knownFileExtensions[suffix];
+  if (cmd.isEmpty()) {
     editor->filepath = fileinfo.absoluteFilePath();
     editor->parameterWidget->readFile(fileinfo.absoluteFilePath());
     par->updateRecentFiles(filename);

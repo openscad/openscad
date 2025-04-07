@@ -1240,6 +1240,7 @@ set(GUI_SOURCES
   src/gui/FontListDialog.cc
   src/gui/FontListTableView.cc
   src/gui/InitConfigurator.cc
+  src/gui/ImportUtils.cc
   src/gui/LaunchingScreen.cc
   src/gui/LibraryInfoDialog.cc
   src/gui/MainWindow.cc
@@ -1312,6 +1313,7 @@ set(GUI_HEADERS
     src/gui/FontListDialog.h
     src/gui/FontListTableView.h
     src/gui/IgnoreWheelWhenNotFocused.h
+    src/gui/ImportUtils.h
     src/gui/InitConfigurator.h
     src/gui/LaunchingScreen.h
     src/gui/LibraryInfoDialog.h
