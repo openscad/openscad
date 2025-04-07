@@ -94,7 +94,6 @@ public:
   bool trust_python_file(const std::string& file, const std::string& content);
 #endif
   Tree tree;
-  EditorInterface *activeEditor;
   TabManager *tabManager;
 
   std::shared_ptr<const Geometry> rootGeom;
@@ -184,6 +183,8 @@ public:
   void setLastFocus(QWidget *widget);
   void UnknownExceptionCleanup(std::string msg = "");
   void showFind(bool doFindAndReplace);
+
+  EditorInterface* activeEditor() const;
 
 private:
   [[nodiscard]] QString getCurrentFileName() const;
