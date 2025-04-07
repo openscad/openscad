@@ -285,7 +285,7 @@ std::unique_ptr<ExternalToolInterface> createExternalToolService(
 } // namespace
 
 EditorInterface* MainWindow::activeEditor() const {
-    return tabManager->editor();
+    return tabManager->activeEditor();
 }
 
 MainWindow::MainWindow(const QStringList& filenames) :
@@ -3395,6 +3395,9 @@ void MainWindow::onTabManagerEditorContentReloaded(EditorInterface *reloadedEdit
     // when a new editor is created, it is important to compile the initial geometry
     // so the customizer panels are ok.
     parseDocument(reloadedEditor);
+
+    // The name of the editor can also be changed on reload, so we need to update it.
+    setWindowTitle(getCurrentFileName());
   } catch (const HardWarningException&) {
     exceptionCleanup();
   } catch (const std::exception& ex) {
@@ -3416,7 +3419,7 @@ void MainWindow::onTabManagerEditorChanged(EditorInterface *newEditor)
   parameterDock->setWidget(newEditor->parameterWidget);
   editActionUndo->setEnabled(newEditor->canUndo());
 
-  const QString name = getCurrentFileName();
+  QString name = getCurrentFileName();
   setWindowTitle(name);
 
   consoleDock->setNameSuffix(name);

@@ -40,7 +40,8 @@ public:
   void open(const QString& filename);
   size_t count();
 
-  EditorInterface* editor();
+  EditorInterface* activeEditor();
+  QSet<EditorInterface *> editors() const;
 
 public:
   static constexpr const int FIND_HIDDEN = 0;
