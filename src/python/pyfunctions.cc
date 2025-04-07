@@ -840,7 +840,7 @@ PyObject *python_polygon(PyObject *self, PyObject *args, PyObject *kwargs)
   int convexity = 2;
 
   PyObject *element;
-  Vector2d point;
+  Vector3d point;
 
   if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O!|O!i", kwlist,
                                    &PyList_Type, &points,
@@ -858,15 +858,12 @@ PyObject *python_polygon(PyObject *self, PyObject *args, PyObject *kwargs)
     }
     for (i = 0; i < PyList_Size(points); i++) {
       element = PyList_GetItem(points, i);
-      if (PyList_Check(element) && PyList_Size(element) == 2) {
-        point[0] = PyFloat_AsDouble(PyList_GetItem(element, 0));
-        point[1] = PyFloat_AsDouble(PyList_GetItem(element, 1));
-        node->points.push_back(point);
-      } else {
-        PyErr_SetString(PyExc_TypeError, "Coordinate must exactly contain 2 numbers");
+      point[2]=0; // default no radius
+      if (python_vectorval(element, 2, 3, &point[0], &point[1], &point[2])) {
+        PyErr_SetString(PyExc_TypeError, "Coordinate must contain 2 or 3 numbers");
         return NULL;
       }
-
+      node->points.push_back(point);
     }
   } else {
     PyErr_SetString(PyExc_TypeError, "Polygon points must be a list of coordinates");
@@ -2486,7 +2483,9 @@ PyObject *python_faces_core(PyObject *obj, bool tessellate)
         Vector4d pt4(pt[0], pt[1], pt[2], 1);
         pt4 = invmat * pt4 ;
 	path.push_back(poly->points.size());
-        poly->points.push_back(pt4.head<2>());
+	Vector3d pt3 = pt4.head<3>();
+	pt3[2]=0; // no radius
+        poly->points.push_back(pt3);
       }
       poly->paths.push_back(path);
 
@@ -2501,7 +2500,9 @@ PyObject *python_faces_core(PyObject *obj, bool tessellate)
             Vector4d pt4(pt[0], pt[1], pt[2], 1);
             pt4 = invmat * pt4 ;
 	    path.push_back(poly->points.size());
-            poly->points.push_back(pt4.head<2>());
+	    Vector3d pt3 = pt4.head<3>();
+	    pt3[2]=0; // no radius
+            poly->points.push_back(pt3);
           }
           poly->paths.push_back(path);
 

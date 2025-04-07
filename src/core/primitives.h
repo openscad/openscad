@@ -224,9 +224,10 @@ public:
   std::string name() const override { return "polygon"; }
   std::unique_ptr<const Geometry> createGeometry() const override;
 
-  std::vector<Vector2d> points;
+  std::vector<Vector3d> points;
   std::vector<std::vector<size_t>> paths;
   int convexity = 1;
+  std::vector<Vector2d>  createGeometry_sub(const std::vector<Vector3d> &points, const std::vector<long unsigned> &path, double fn, double fa, double fs) const;
 };
 
 class SplineNode : public LeafNode
