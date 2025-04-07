@@ -2552,7 +2552,7 @@ void MainWindow::setSelectedObjectPreview(std::shared_ptr<const AbstractNode> ne
                                                 csgRoot, highlight_terms);
 
     if (highlight_terms.size() > 0) {
-      size_t normalizelimit = 2ul * Preferences::inst()->getValue("advanced/openCSGLimit").toUInt();
+      size_t normalizelimit = 2ul * GlobalPreferences::inst()->getValue("advanced/openCSGLimit").toUInt();
       CSGTreeNormalizer normalizer(normalizelimit);
       this->highlightsProducts.reset(new CSGProducts());
       for (const auto& highlight_term : highlight_terms) {

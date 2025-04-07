@@ -110,7 +110,6 @@ void OpenCSGRenderer::setHighlights(std::shared_ptr<CSGProducts> highLightedProd
 
         auto setHighlightsMode = [&](std::vector<CSGChainObject> csgobjects){
             for (const auto &csgobj : csgobjects) {
-                std::cout << "ADDING AN OBJECT FOR " << csgobj.leaf->index << std::endl;
                 if (csgobj.leaf->polyset) {
                     if (csgobj.flags == CSGNode::Flag::FLAG_HIGHLIGHT_SELECTED) {
                         highLightingMode[csgobj.leaf->index] = ColorMode::HIGHLIGHT_SELECTED;
