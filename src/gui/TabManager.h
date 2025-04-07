@@ -14,10 +14,8 @@ class TabManager : public QObject
   Q_OBJECT
 
 public:
-  TabManager(MainWindow *o, const QString& filename);
+  TabManager(MainWindow *o);
   QWidget *getTabContent();
-  EditorInterface *editor;
-  QSet<EditorInterface *> editorList;
 
   void createTab(const QString& filename);
   void openTabFile(const QString& filename);
@@ -41,6 +39,8 @@ public:
   bool saveACopy(EditorInterface *edt);
   void open(const QString& filename);
   size_t count();
+
+  EditorInterface* editor();
 
 public:
   static constexpr const int FIND_HIDDEN = 0;
