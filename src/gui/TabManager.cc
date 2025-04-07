@@ -434,9 +434,12 @@ void TabManager::stopAnimation()
 
 void TabManager::updateFindState()
 {
-  if (editor()->findState == TabManager::FIND_REPLACE_VISIBLE) par->showFindAndReplace();
-  else if (editor()->findState == TabManager::FIND_VISIBLE) par->showFind();
-  else par->hideFind();
+  switch(editor()->findState)
+  {
+  case TabManager::FIND_REPLACE_VISIBLE: par->showFind(true); break;
+  case TabManager::FIND_VISIBLE: par->showFind(false); break;
+  default: par->hideFind(); break;
+  }
 }
 
 void TabManager::onTabModified(EditorInterface *edt)
