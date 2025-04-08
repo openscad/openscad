@@ -122,6 +122,7 @@
 #include "gui/ExportPdfDialog.h"
 #include "gui/ExternalToolInterface.h"
 #include "gui/FontListDialog.h"
+#include "gui/ImportUtils.h"
 #include "gui/input/InputDriverEvent.h"
 #include "gui/input/InputDriverManager.h"
 #include "gui/LibraryInfoDialog.h"
@@ -327,25 +328,6 @@ MainWindow::MainWindow(const QStringList& filenames) :
 
   renderCompleteSoundEffect = new QSoundEffect();
   renderCompleteSoundEffect->setSource(QUrl("qrc:/sounds/complete.wav"));
-
-  const QString importStatement = "import(\"%1\");\n";
-  const QString surfaceStatement = "surface(\"%1\");\n";
-  const QString importFunction = "data = import(\"%1\");\n";
-  knownFileExtensions["stl"] = importStatement;
-  knownFileExtensions["obj"] = importStatement;
-  knownFileExtensions["3mf"] = importStatement;
-  knownFileExtensions["off"] = importStatement;
-  knownFileExtensions["dxf"] = importStatement;
-  knownFileExtensions["svg"] = importStatement;
-  knownFileExtensions["amf"] = importStatement;
-  knownFileExtensions["dat"] = surfaceStatement;
-  knownFileExtensions["png"] = surfaceStatement;
-  knownFileExtensions["json"] = importFunction;
-  knownFileExtensions["scad"] = "";
-#ifdef ENABLE_PYTHON
-  knownFileExtensions["py"] = "";
-#endif
-  knownFileExtensions["csg"] = "";
 
   rootFile = nullptr;
   parsedFile = nullptr;
@@ -3506,7 +3488,7 @@ void MainWindow::handleFileDrop(const QUrl& url)
   const auto fileName = url.toLocalFile();
   const auto fileInfo = QFileInfo{fileName};
   const auto suffix = fileInfo.suffix().toLower();
-  const auto cmd = knownFileExtensions[suffix];
+  const auto cmd = Importer::knownFileExtensions[suffix];
   if (cmd.isEmpty()) {
     tabManager->open(fileName);
   } else {
