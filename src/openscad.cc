@@ -587,8 +587,7 @@ int cmdline(const CommandLine& cmd)
   std::string text_py=text;
   if(python_active) {
     if(cmd.animate.frames == 0) {
-      initPython(PlatformUtils::applicationPath(),0.0);
-      python_setscriptpath(cmd.filename);
+      initPython(PlatformUtils::applicationPath(),cmd.filename, 0.0);
       auto error = evaluatePython(commandline_commands);
       error += evaluatePython(text_py);
       finishPython();
@@ -647,7 +646,7 @@ int cmdline(const CommandLine& cmd)
       render_variables.time = frame * (1.0 / cmd.animate.frames);
 #ifdef ENABLE_PYTHON      
     if(python_active) {
-      initPython(PlatformUtils::applicationPath(),render_variables.time);
+      initPython(PlatformUtils::applicationPath(),cmd.filename, render_variables.time);
       auto error  = evaluatePython(text_py);
       if(error.size() > 0) LOG(error.c_str());
       finishPython();

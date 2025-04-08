@@ -343,7 +343,7 @@ void MainWindow::addMenuItemCB(QString callback)
   if(content.size() == 0) return;
   const auto& venv = venvBinDirFromSettings();
   const auto& binDir = venv.empty() ? PlatformUtils::applicationPath() : venv;
-  initPython(binDir, 0.0);
+  initPython(binDir, "", 0.0);
   evaluatePython(content);
   evaluatePython(cbstr);
   finishPython();
@@ -419,7 +419,7 @@ void MainWindow::customSetup(void)
   connect (this->addmenu_mapper, SIGNAL(mapped(QString)), this, SLOT(addMenuItemCB(QString))) ;
   const auto& venv = venvBinDirFromSettings();
   const auto& binDir = venv.empty() ? PlatformUtils::applicationPath() : venv;
-  initPython(binDir, 0.0);
+  initPython(binDir, "", 0.0);
   evaluatePython(content);
   addmenuitem_this = this;
   evaluatePython("setup()");
@@ -2432,8 +2432,7 @@ SourceFile *MainWindow::parseDocument(EditorInterface *editor)
 
     const auto& venv = venvBinDirFromSettings();
     const auto& binDir = venv.empty() ? PlatformUtils::applicationPath() : venv;
-    initPython(binDir, this->animateWidget->getAnimTval());
-    python_setscriptpath(fnameba.constData());
+    initPython(binDir, fnameba.constData(), this->animateWidget->getAnimTval());
     this->activeEditor->resetHighlighting();
     this->activeEditor->parameterWidget->setEnabled(false);
     do {

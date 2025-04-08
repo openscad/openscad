@@ -65,11 +65,6 @@ std::vector<std::string> mapping_code;
 std::vector<int> mapping_level;
 std::shared_ptr<const FileContext> osinclude_context = nullptr;
 
-void python_setscriptpath(const std::string &scriptpath)
-{
-	python_scriptpath = scriptpath;	
-}
-
 void PyOpenSCADObject_dealloc(PyOpenSCADObject *self)
 {
   Py_XDECREF(self->dict);
@@ -444,7 +439,7 @@ Outline2d python_getprofile(void *v_cbfunc, int fn, double arg)
 {
 	PyObject *cbfunc = (PyObject *) v_cbfunc;
 	Outline2d result;
-	if(pythonInitDict == NULL)  initPython(PlatformUtils::applicationPath(),0.0);
+	if(pythonInitDict == NULL)  initPython(PlatformUtils::applicationPath(),"", 0.0);
 	PyObject* args = PyTuple_Pack(1,PyFloat_FromDouble(arg));
 	PyObject* polygon = PyObject_CallObject(cbfunc, args);
         Py_XDECREF(args);
@@ -717,10 +712,11 @@ void openscad_object_callback(PyObject *obj) {
 	}
 }
 #endif
-void initPython(const std::string& binDir, double time)
+void initPython(const std::string& binDir, const std::string &scriptpath, double time)
 {
   const auto name = "openscad-python";
   const auto exe = binDir + "/" + name;
+  if(scriptpath.size() > 0) python_scriptpath = scriptpath;	
   if(pythonInitDict) { /* If already initialized, undo to reinitialize after */
     PyObject *key, *value;
     Py_ssize_t pos = 0;
@@ -820,7 +816,9 @@ void initPython(const std::string& binDir, double time)
         }
     }
 #endif
+    fs::path scriptfile(python_scriptpath);
     stream << sep << PlatformUtils::userLibraryPath();
+    stream << sep << scriptfile.parent_path().string();
     stream << sepchar << ".";
     PyConfig_SetBytesString(&config, &config.pythonpath_env, stream.str().c_str());
     
@@ -1194,7 +1192,7 @@ Py_RunMain(void)
 
 
 void ipython(void) {
-    initPython(PlatformUtils::applicationPath(),0.0);
+    initPython(PlatformUtils::applicationPath(),"", 0.0);
     Py_RunMain();
     return ;
 }

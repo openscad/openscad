@@ -97,7 +97,7 @@ void SourceFile::registerUse(const std::string& path, const Location& loc)
         const auto& venv = venvBinDirFromSettings();
         const auto& binDir = venv.empty() ? PlatformUtils::applicationPath() : venv;
 
-        if(!pythonRuntimeInitialized) initPython(binDir, 0.0);
+        if(!pythonRuntimeInitialized) initPython(binDir, "", 0.0);
         std::string error=evaluatePython(cmd); 
         if (error.size() > 0) LOG(message_group::Error, Location::NONE, "", error.c_str());
       } else LOG(message_group::Error, "File not trusted '%1$s'", path);
