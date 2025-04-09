@@ -750,12 +750,13 @@ std::vector<Vector2d>  PolygonNode::createGeometry_sub(const std::vector<Vector3
   }  // for
   return result;
 }
+extern bool pythonMainModuleInitialized;
 std::unique_ptr<const Geometry> PolygonNode::createGeometry() const
 {
   auto p = std::make_unique<Polygon2d>();
   double fn=2, fa=12, fs=2;
 #ifdef ENABLE_PYTHON  
-  get_fnas(fn, fa, fs);
+  if(pythonMainModuleInitialized) get_fnas(fn, fa, fs);
 #endif  
   if (this->paths.empty() && this->points.size() > 2) {
     Outline2d outline;
@@ -895,7 +896,7 @@ static std::shared_ptr<AbstractNode> builtin_polygon(const ModuleInstantiation *
         !std::isfinite(point[0]) || !std::isfinite(point[1])
         ) {
       LOG(message_group::Error, inst->location(), parameters.documentRoot(), "Unable to convert points[%1$d] = %2$s to a vec2 of numbers", node->points.size(), pointValue.toEchoStringNoThrow());
-      node->points.push_back({0, 0});
+      node->points.push_back({0, 0, 0});
     } else {
       node->points.push_back(point);
     }

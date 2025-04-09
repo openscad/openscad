@@ -119,9 +119,9 @@ public:
            << ", $fs = " << fs
            << ", h = " << h
            << ", r1 = " << r1
-           << ", r2 = " << r2
-           << ", angle = " << angle
-           << ", center = " << (center ? "true" : "false")
+           << ", r2 = " << r2;
+    if(angle != 360) stream << ", angle = " << angle;
+    stream << ", center = " << (center ? "true" : "false")
            << ")";
     return stream.str();
   }
