@@ -113,14 +113,19 @@ std::string RotateExtrudeNode::toString() const
 {
   std::ostringstream stream;
 
-  stream << this->name() << "("
-      "origin = [" << std::dec << this->origin_x << ", " << this->origin_y << "], "
-      "offset = [" << std::dec << this->offset_x << ", " << this->offset_y << "], "
-      "scale = " << this->scale << ", "
-    "angle = " << this->angle << ", "
-    "method = \"" << this->method << "\", "
-    "v = [ " << this->v[0] <<  ", " << this->v[1] << ", " << this->v[2] << "], "
-    "start = " << this->start << ", "
+  stream << this->name() << "(";
+  if(fabs(origin_x)+fabs(origin_y) > 0) 
+    stream <<  "origin = [" << std::dec << this->origin_x << ", " << this->origin_y << "], ";
+  if(fabs(offset_x)+fabs(offset_y) > 0)
+    stream << "offset = [" << std::dec << this->offset_x << ", " << this->offset_y << "], ";
+  if(scale != 1) 
+    stream << "scale = " << this->scale << ", ";
+  stream << "angle = " << this->angle << ", ";
+  if(method != "centered")
+    stream << "method = \"" << this->method << "\", ";
+  if(v.norm() > 0)
+    stream << "v = [ " << this->v[0] <<  ", " << this->v[1] << ", " << this->v[2] << "], ";
+  stream <<  "start = " << this->start << ", "
     "convexity = " << this->convexity << ", ";
 #ifdef ENABLE_PYTHON  
  if(this->profile_func != NULL) {
@@ -130,6 +135,7 @@ std::string RotateExtrudeNode::toString() const
     stream << ", twist_func = " << rand() ;
  } else
 #endif  
+  if(twist != 0)
     stream << "twist = " << this->twist << ", ";
 
     stream <<

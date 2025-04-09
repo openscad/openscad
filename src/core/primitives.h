@@ -202,9 +202,9 @@ public:
            << "($fn = " << fn
            << ", $fa = " << fa
            << ", $fs = " << fs
-           << ", r = " << r
-           << ", angle = " << angle
-           << ")";
+           << ", r = " << r;
+    if(angle != 360) stream << ", angle = " << angle;
+    stream << ")";
     return stream.str();
   }
   std::string name() const override { return "circle"; }

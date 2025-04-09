@@ -245,7 +245,11 @@ static std::shared_ptr<AbstractNode> builtin_color(const ModuleInstantiation *in
 
 std::string ColorNode::toString() const
 {
-  return STR("color([", this->color[0], ", ", this->color[1], ", ", this->color[2], ", ", this->color[3], ", ",this->textureind, "])");
+  std::ostringstream stream;	
+  stream << "color(["<< this->color[0]<< ", "<< this->color[1]<< ", "<< this->color[2]<< ", "<< this->color[3];
+  if(this->textureind != 0) stream << ", ",this->textureind;
+  stream << "])";
+  return stream.str();
 }
 
 std::string ColorNode::name() const

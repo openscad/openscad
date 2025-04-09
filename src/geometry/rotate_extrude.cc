@@ -230,7 +230,7 @@ std::unique_ptr<Geometry> rotatePolygon(const RotateExtrudeNode& node, const Pol
       min_x, max_x);
     return nullptr;
   }
-  fragments = (unsigned int)std::ceil(fmax(Calc::get_fragments_from_r(max_x - min_x, node.angle, node.fn, node.fs, node.fa) * std::abs(node.angle) / 360, 1));
+  fragments = (unsigned int)std::ceil(fmax(Calc::get_fragments_from_r(max_x - min_x, node.angle, node.fn, node.fs, node.fa) , 1));
   bool flip_faces = (min_x >= 0 && node.angle > 0 && node.angle != 360) || (min_x < 0 && (node.angle < 0 || node.angle == 360));
 
   // check if its save to extrude
