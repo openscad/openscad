@@ -175,10 +175,14 @@ std::string CSGLeaf::dump() const
 }
 
 void CSGLeaf::applyMatrix(const Transform3d &mat) {
+#if 0
+// this is used to make differences of 2.5d faces look correct in preview,
+but causes other bad errors, disable it for now
   if(this->is_2d) {
     this->matrix = mat * this->matrix;
     this->initBoundingBox();
   }
+#endif
 }
 
 // Recursive traversal can cause stack overflow with very large loops of child nodes,
