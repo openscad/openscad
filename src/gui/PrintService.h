@@ -30,15 +30,17 @@
 #include <unordered_map>
 #include <string>
 #include <vector>
-#include <QJsonObject>
 #include <mutex>
 
 #include <QString>
 #include <QStringList>
+#include <QJsonObject>
 #include <QJsonDocument>
 
 #include "io/export.h"
 #include "gui/Network.h"
+
+using PrintServices = std::unordered_map<std::string, std::unique_ptr<class PrintService>>;
 
 class PrintService
 {
@@ -57,7 +59,7 @@ public:
   bool init(const QJsonObject& serviceObject);
 
   static const PrintService *getPrintService(const std::string& name);
-  static const std::unordered_map<std::string, std::unique_ptr<PrintService>> &getPrintServices();
+  static const PrintServices &getPrintServices();
 
 private:
 
@@ -70,4 +72,5 @@ private:
   std::vector<FileFormat> fileFormats;
 
   static std::mutex printServiceMutex;
+  static PrintServices printServices;
 };

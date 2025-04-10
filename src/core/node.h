@@ -41,6 +41,7 @@ public:
       overloaded to provide specialization for e.g. CSG nodes, primitive nodes etc.
       Used for human-readable output. */
   virtual std::string name() const = 0;
+
   /*| When a more specific name for user interaction shall be used, such as module names,
       the verbose name shall be overloaded. */
   virtual std::string verbose_name() const { return this->name(); }
@@ -65,6 +66,14 @@ public:
   int idx; // Node index (unique per tree)
 
   std::shared_ptr<const AbstractNode> getNodeByID(int idx, std::deque<std::shared_ptr<const AbstractNode>>& path) const;
+
+  // returns the precise source code location associated with the node
+  void getCodeLocation(int currentLevel,  int includeLevel, int *firstLine,
+                       int *firstColumn, int *lastLine, int *lastColumn, int nestedModuleDepth) const;
+
+  void findNodesWithSameMod(const std::shared_ptr<const AbstractNode>& node_mod,
+                            std::vector<std::shared_ptr<const AbstractNode>>& nodes) const;
+
   std::shared_ptr<AbstractNode> clone(void);
 };
 

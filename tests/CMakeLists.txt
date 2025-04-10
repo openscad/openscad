@@ -944,6 +944,13 @@ list(REMOVE_ITEM PREVIEWMANIFOLDTEST_FILES
   ${SCADFILES_FAILING_WITH_MANIFOLD}
 )
 
+list(APPEND MANIFOLDHARDWARNING_FILES
+  ${TEST_SCAD_DIR}/3D/features/polyhedron-soup.scad
+  ${TEST_SCAD_DIR}/3D/issues/issue5135b.scad
+  ${TEST_SCAD_DIR}/3D/issues/issue5741.scad
+  ${TEST_SCAD_DIR}/3D/issues/issue5555.scad
+)
+
 ##############################
 # Define test configurations #
 ##############################
@@ -969,7 +976,7 @@ set_test_config(Bugs FILES ${BUGS_FILES} PREFIXES
   stlrendertest stlrendermanifoldtest
   stlrenderforcetest stlrendermanifoldforcetest
   binstlrenderforcetest binstlrendermanifoldforcetest
-  offrendertest)
+  offrendertest renderforcemanifoldtest)
 
 # Re-enable "fixed by manifold" bugs for Manifold
 set_test_config(Bugs FILES
@@ -1012,6 +1019,7 @@ set_test_config(Examples FILES ${EXAMPLE_2D_FILES} PREFIXES dxfrendertest)
 # o rendertest: Export to PNG using --render
 # o renderforcetest: Export to PNG using --render=force
 # o rendermanifoldtest: Export to PNG using --render with --backend=manifold
+# o renderforcemanifoldtest: Export to PNG using --render=force with --backend=manifold
 # o previewtest: Export to PNG using OpenCSG
 # o previewmanifoldtest: Export to PNG in preview mode with --backend=manifold
 # o throwntogethertest: Export to PNG using the Throwntogether renderer
@@ -1079,6 +1087,9 @@ add_cmdline_test(rendermanifoldtest            OPENSCAD SUFFIX png FILES ${RENDE
 add_cmdline_test(rendermanifoldtest-different  OPENSCAD SUFFIX png FILES ${SCADFILES_DIFFERENT_MANIFOLD_RENDER_EXPECTATIONS} ARGS --render --backend=manifold)
 add_cmdline_test(previewmanifoldtest           OPENSCAD SUFFIX png FILES ${PREVIEWMANIFOLDTEST_FILES} EXPECTEDDIR previewtest ARGS --backend=manifold)
 add_cmdline_test(previewmanifoldtest-different OPENSCAD SUFFIX png FILES ${SCADFILES_DIFFERENT_MANIFOLD_PREVIEW_EXPECTATIONS} ARGS --backend=manifold)
+add_cmdline_test(renderforcemanifoldtest       OPENSCAD SUFFIX png FILES ${TEST_SCAD_DIR}/Bugs/import-single-triangle.scad ARGS --render=force --backend=manifold)
+# This tests that no warnings are issued when using Manifold for converting or processing geometry
+add_cmdline_test(renderforcemanifoldtest-hardwarnings OPENSCAD SUFFIX png FILES ${MANIFOLDHARDWARNING_FILES} EXPECTEDDIR rendertest ARGS --render=force --backend=manifold --hardwarnings)
 endif()
 
 set(VIEWBOX_TEST "${TEST_SCAD_DIR}/svg/extruded/viewbox-test.scad")
@@ -1663,6 +1674,14 @@ set_tests_properties(
 endif (EXPERIMENTAL)
 
 if (LIB3MF_FOUND)
+  if (EXPERIMENTAL)
+    set_tests_properties(
+      # https://github.com/openscad/openscad/issues/5800
+      3mfexport_3mf-export
+
+      PROPERTIES DISABLED TRUE
+    )
+  endif (EXPERIMENTAL)
   set_tests_properties(
     # We don't repair polygon winding order in CGAL mode
     # We could perhaps split the test into good+bad polyhedrons

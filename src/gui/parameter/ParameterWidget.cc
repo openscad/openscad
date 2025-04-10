@@ -71,11 +71,11 @@ ParameterWidget::ParameterWidget(QWidget *parent) : QWidget(parent)
   connect(addButton, &QPushButton::clicked, this, &ParameterWidget::onSetAdd);
   connect(deleteButton, &QPushButton::clicked, this, &ParameterWidget::onSetDelete);
 
-  QString fontfamily = Preferences::inst()->getValue("advanced/customizerFontFamily").toString();
-  uint fontsize = Preferences::inst()->getValue("advanced/customizerFontSize").toUInt();
+  QString fontfamily = GlobalPreferences::inst()->getValue("advanced/customizerFontFamily").toString();
+  uint fontsize = GlobalPreferences::inst()->getValue("advanced/customizerFontSize").toUInt();
   setFontFamilySize(fontfamily, fontsize);
 
-  connect(Preferences::inst(), &Preferences::customizerFontChanged, this, &ParameterWidget::setFontFamilySize);
+  connect(GlobalPreferences::inst(), &Preferences::customizerFontChanged, this, &ParameterWidget::setFontFamilySize);
 }
 
 // Can only be called before the initial setParameters().
