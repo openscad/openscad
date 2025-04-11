@@ -132,7 +132,7 @@ Clipper2Lib::Paths64 fromPolygon2d(const Polygon2d& poly, int scale_bits)
   const bool keep_orientation = poly.isSanitized();
   const double scale = std::ldexp(1.0, scale_bits);
   Clipper2Lib::Paths64 result;
-  for (const auto& outline : poly.untransformedOutlines()) {
+  for (const auto& outline : poly.transformedOutlines()) {
     Clipper2Lib::Path64 p;
     for (const auto& v : outline.vertices) {
       p.emplace_back(v[0] * scale, v[1] * scale);
@@ -283,8 +283,6 @@ std::unique_ptr<Polygon2d> apply(const std::vector<std::shared_ptr<const Polygon
   }
   auto res = apply(pathsvector, clipType, scale_bits);
   assert(res);
-  if(polygons.size() > 0)
-    res->transform3d(polygons[0]->getTransform3d());	  
   return res;
 }
 
