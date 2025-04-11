@@ -488,7 +488,7 @@ MainWindow::MainWindow(const QStringList& filenames) :
   connect(this->editActionFind, &QAction::triggered, this, &MainWindow::actionShowFind);
   connect(this->editActionFindAndReplace, &QAction::triggered, this, &MainWindow::actionShowFindAndReplace);
 #ifdef Q_OS_WIN
-  this->editActionFindAndReplace->setShortcut(QKeySequence(Qt::CTRL, Qt::SHIFT, Qt::Key_F));
+  this->editActionFindAndReplace->setShortcut(QKeySequence("Ctrl+Shift+F"));
 #endif
   connect(this->editActionFindNext, &QAction::triggered, this, &MainWindow::findNext);
   connect(this->editActionFindPrevious, &QAction::triggered, this, &MainWindow::findPrev);
