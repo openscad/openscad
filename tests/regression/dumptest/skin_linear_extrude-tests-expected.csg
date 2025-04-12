@@ -61,16 +61,16 @@ multmatrix([[1, 0, 0, 19], [0, 1, 0, 5], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 				skin() {
 					multmatrix([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 10], [0, 0, 0, 1]]) {
 						group() {
-							difference(r=0fn = 2) {
-								circle($fn = 0, $fa = 12, $fs = 2, r = 5, angle = 360);
-								circle($fn = 0, $fa = 12, $fs = 2, r = 3, angle = 360);
+							difference() {
+								circle($fn = 0, $fa = 12, $fs = 2, r = 5);
+								circle($fn = 0, $fa = 12, $fs = 2, r = 3);
 							}
 						}
 					}
 					group() {
-						difference(r=0fn = 2) {
-							circle($fn = 0, $fa = 12, $fs = 2, r = 5, angle = 360);
-							circle($fn = 0, $fa = 12, $fs = 2, r = 3, angle = 360);
+						difference() {
+							circle($fn = 0, $fa = 12, $fs = 2, r = 5);
+							circle($fn = 0, $fa = 12, $fs = 2, r = 3);
 						}
 					}
 				}
@@ -286,7 +286,7 @@ multmatrix([[1, 0, 0, 1], [0, 1, 0, 21], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 						multmatrix([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 							multmatrix([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 								group() {
-									difference(r=0fn = 2) {
+									difference() {
 										multmatrix([[1, 0, 0, -1], [0, 1, 0, -1], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 											square(size = [10, 10], center = false);
 										}
@@ -300,7 +300,7 @@ multmatrix([[1, 0, 0, 1], [0, 1, 0, 21], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 						multmatrix([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 10], [0, 0, 0, 1]]) {
 							multmatrix([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 								group() {
-									difference(r=0fn = 2) {
+									difference() {
 										multmatrix([[1, 0, 0, -1], [0, 1, 0, -1], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 											square(size = [10, 10], center = false);
 										}
@@ -314,7 +314,7 @@ multmatrix([[1, 0, 0, 1], [0, 1, 0, 21], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 						multmatrix([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 20], [0, 0, 0, 1]]) {
 							multmatrix([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 								group() {
-									difference(r=0fn = 2) {
+									difference() {
 										multmatrix([[1, 0, 0, -1], [0, 1, 0, -1], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 											square(size = [10, 10], center = false);
 										}

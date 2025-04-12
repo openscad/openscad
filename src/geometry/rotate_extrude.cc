@@ -107,7 +107,6 @@ std::unique_ptr<Geometry> rotatePolygonSub(const RotateExtrudeNode& node, const 
     }
   }
   num_vertices = slice_stride * num_rings;
-
   std::vector<Vector3d> vertices;
   vertices.reserve(num_vertices);
   PolygonIndices indices;
@@ -233,7 +232,7 @@ std::unique_ptr<Geometry> rotatePolygon(const RotateExtrudeNode& node, const Pol
   const auto num_sections = (unsigned int)std::ceil(fmax(
     Calc::get_fragments_from_r(max_x - min_x, 360.0, node.fn, node.fs, node.fa) * std::abs(node.angle) / 360,
     1));
-  bool flip_faces = (min_x >= 0 && node.angle > 0 && node.angle != 360) || (min_x < 0 && (node.angle < 0 || node.angle == 360));
+  bool flip_faces = (min_x >= 0 && node.angle > 0) || (min_x < 0 && node.angle < 0);
 
   // check if its save to extrude
   bool safe=true;
