@@ -177,7 +177,6 @@ return format == FileFormat::ASCII_STL ||
   format == FileFormat::AMF ||
   format == FileFormat::_3MF ||
   format == FileFormat::NEFDBG ||
-  format == FileFormat::PDF ||
   format == FileFormat::PS ||
   format == FileFormat::NEF3 ||
   format == FileFormat::STEP ||

@@ -1397,13 +1397,17 @@ GeometryEvaluator::ResultObject GeometryEvaluator::applyToChildren3D(const Abstr
 #ifdef ENABLE_MANIFOLD
     if (RenderSettings::inst()->backend3D == RenderBackend3D::ManifoldBackend) {
       std::shared_ptr<const ManifoldGeometry> csgResult = ManifoldUtils::applyOperator3DManifold(children, op);	    
-      const CsgOpNode *csgOpNode = dynamic_cast<const CsgOpNode *>(&node);
-      if(csgOpNode->r != 0){
+      do
+      {
+      	const CsgOpNode *csgOpNode = dynamic_cast<const CsgOpNode *>(&node);
+	if(csgOpNode == nullptr) break;
+        if(csgOpNode->r == 0) break;
         std::unique_ptr<const Geometry> geom_u = addFillets(csgResult, children, csgOpNode->r,csgOpNode->fn);
 	std::shared_ptr<const Geometry> geom_s(geom_u.release());
 //	csgResult = ManifoldUtils::createManifoldFromGeometry(geom_s);
         return ResultObject::mutableResult(geom_s);
       }
+      while(0);
       return ResultObject::mutableResult(csgResult);
     }
 #endif
@@ -1416,6 +1420,7 @@ GeometryEvaluator::ResultObject GeometryEvaluator::applyToChildren3D(const Abstr
     break;
   }
   }
+
 }
 
 

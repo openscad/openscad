@@ -121,7 +121,7 @@ std::shared_ptr<AbstractNode> ModuleInstantiation::evaluate(const std::shared_pt
 #ifdef ENABLE_PYTHON
     result = python_modulefunc(this, context,error);
     if(!error.empty() && result == nullptr) {
-      LOG(message_group::Warning, loc, context->documentRoot(), "Python:: '%1$s'", error);
+      LOG(message_group::Warning, loc, context->documentRoot(), "Python: '%1$s'", error);
       return nullptr;
     }
 #endif
