@@ -67,6 +67,7 @@ PolySetRenderer::PolySetRenderer(const std::shared_ptr<const class Geometry>& ge
 
 void PolySetRenderer::addGeometry(const std::shared_ptr<const Geometry>& geom)
 {
+  assert(geom != nullptr);
   if (const auto geomlist = std::dynamic_pointer_cast<const GeometryList>(geom)) {
     for (const auto& item : geomlist->getChildren()) {
       this->addGeometry(item.second);
