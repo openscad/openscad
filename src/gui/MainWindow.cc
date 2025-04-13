@@ -3449,7 +3449,7 @@ void MainWindow::activateDock(Dock *dock)
   if (dock == nullptr) return;
 
   // We always need to activate the window.
-  if (dock->isTopLevel()) dock->activateWindow();
+  if (dock->isFloating()) dock->activateWindow();
   else QMainWindow::activateWindow();
 
   dock->raise();
