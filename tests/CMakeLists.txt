@@ -745,7 +745,11 @@ list(REMOVE_ITEM RENDERTEST_FILES
   ${TEST_SCAD_DIR}/3D/features/hex-colors-tests.scad
 )
 
-list(APPEND RENDERFORCETEST_FILES ${TEST_SCAD_DIR}/3D/issues/issue5548.scad)
+list(APPEND RENDERFORCETEST_FILES
+  ${TEST_SCAD_DIR}/3D/issues/issue5548.scad
+  ${TEST_SCAD_DIR}/3D/issues/issue5135-good.scad
+  ${TEST_SCAD_DIR}/3D/issues/issue5135-bad.scad
+)
 
 set(PRUNE_TEST ${TEST_SCAD_DIR}/misc/intersection-prune-test.scad)
 list(APPEND PREVIEWTEST_FILES ${3MF_IMPORT_FILES} ${OBJ_IMPORT_FILES} ${OFF_IMPORT_FILES} ${STL_IMPORT_FILES} ${RENDERTEST_FILES} ${PRUNE_TEST} ${PREVIEW_ONLY_FILES})
@@ -938,9 +942,11 @@ list(REMOVE_ITEM PREVIEWMANIFOLDTEST_FILES
 
 list(APPEND MANIFOLDHARDWARNING_FILES
   ${TEST_SCAD_DIR}/3D/features/polyhedron-soup.scad
-  ${TEST_SCAD_DIR}/3D/issues/issue5135b.scad
   ${TEST_SCAD_DIR}/3D/issues/issue5741.scad
   ${TEST_SCAD_DIR}/3D/issues/issue5555.scad
+  ${TEST_SCAD_DIR}/3D/issues/issue5555b.scad
+  ${TEST_SCAD_DIR}/3D/issues/issue5135.scad
+  ${TEST_SCAD_DIR}/3D/issues/issue5135-good.scad
 )
 
 ##############################
@@ -1079,7 +1085,7 @@ add_cmdline_test(rendermanifoldtest            OPENSCAD SUFFIX png FILES ${RENDE
 add_cmdline_test(rendermanifoldtest-different  OPENSCAD SUFFIX png FILES ${SCADFILES_DIFFERENT_MANIFOLD_RENDER_EXPECTATIONS} ARGS --render --backend=manifold)
 add_cmdline_test(previewmanifoldtest           OPENSCAD SUFFIX png FILES ${PREVIEWMANIFOLDTEST_FILES} EXPECTEDDIR previewtest ARGS --backend=manifold)
 add_cmdline_test(previewmanifoldtest-different OPENSCAD SUFFIX png FILES ${SCADFILES_DIFFERENT_MANIFOLD_PREVIEW_EXPECTATIONS} ARGS --backend=manifold)
-add_cmdline_test(renderforcemanifoldtest       OPENSCAD SUFFIX png FILES ${TEST_SCAD_DIR}/Bugs/import-single-triangle.scad ARGS --render=force --backend=manifold)
+add_cmdline_test(renderforcemanifoldtest       OPENSCAD SUFFIX png FILES ${RENDERFORCETEST_FILES} ${TEST_SCAD_DIR}/Bugs/import-single-triangle.scad EXPECTEDDIR rendertest ARGS --render=force --backend=manifold)
 # This tests that no warnings are issued when using Manifold for converting or processing geometry
 add_cmdline_test(renderforcemanifoldtest-hardwarnings OPENSCAD SUFFIX png FILES ${MANIFOLDHARDWARNING_FILES} EXPECTEDDIR rendertest ARGS --render=force --backend=manifold --hardwarnings)
 endif()
@@ -1632,6 +1638,9 @@ set_tests_properties(
 
   # https://github.com/openscad/openscad/issues/5158
   previewmanifoldtest_example017
+
+  # https://github.com/openscad/openscad/issues/5135
+  renderforcemanifoldtest_issue5135-bad
 
   PROPERTIES DISABLED TRUE
 )
