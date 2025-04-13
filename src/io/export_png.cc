@@ -36,6 +36,7 @@ void setupCamera(Camera& cam, const BoundingBox& bbox)
 
 bool export_png(const std::shared_ptr<const Geometry>& root_geom, const ViewOptions& options, Camera& camera, std::ostream& output)
 {
+  assert(root_geom != nullptr);
   PRINTD("export_png geom");
   std::unique_ptr<OffscreenView> glview;
   try {

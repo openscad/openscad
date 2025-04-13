@@ -749,6 +749,7 @@ list(APPEND RENDERFORCETEST_FILES
   ${TEST_SCAD_DIR}/3D/issues/issue5548.scad
   ${TEST_SCAD_DIR}/3D/issues/issue5135-good.scad
   ${TEST_SCAD_DIR}/3D/issues/issue5135-bad.scad
+  ${TEST_SCAD_DIR}/3D/misc/import-single-triangle.scad
 )
 
 set(PRUNE_TEST ${TEST_SCAD_DIR}/misc/intersection-prune-test.scad)
@@ -1077,7 +1078,7 @@ add_cmdline_test(previewtest        OPENSCAD FILES ${PREVIEWTEST_FILES} SUFFIX p
 add_cmdline_test(throwntogethertest OPENSCAD SUFFIX png FILES ${THROWNTOGETHERTEST_FILES} ARGS --preview=throwntogether)
 
 # Other PNG tests
-add_cmdline_test(renderforcetest     OPENSCAD FILES ${RENDERFORCETEST_FILES} SUFFIX png ARGS --render=force)
+add_cmdline_test(renderforcetest     OPENSCAD SUFFIX png FILES ${RENDERFORCETEST_FILES} ARGS --render=force)
 add_cmdline_test(renderstdiotest     OPENSCAD SUFFIX png FILES ${RENDERSTDIOTEST_FILES} STDIO EXPECTEDDIR rendertest ARGS --export-format png --render)
 add_cmdline_test(csgrendertest       SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png FILES ${RENDERTEST_FILES} EXPECTEDDIR rendertest ARGS ${OPENSCAD_EXE_ARG} --format=csg --render)
 if (ENABLE_MANIFOLD)
@@ -1085,7 +1086,7 @@ add_cmdline_test(rendermanifoldtest            OPENSCAD SUFFIX png FILES ${RENDE
 add_cmdline_test(rendermanifoldtest-different  OPENSCAD SUFFIX png FILES ${SCADFILES_DIFFERENT_MANIFOLD_RENDER_EXPECTATIONS} ARGS --render --backend=manifold)
 add_cmdline_test(previewmanifoldtest           OPENSCAD SUFFIX png FILES ${PREVIEWMANIFOLDTEST_FILES} EXPECTEDDIR previewtest ARGS --backend=manifold)
 add_cmdline_test(previewmanifoldtest-different OPENSCAD SUFFIX png FILES ${SCADFILES_DIFFERENT_MANIFOLD_PREVIEW_EXPECTATIONS} ARGS --backend=manifold)
-add_cmdline_test(renderforcemanifoldtest       OPENSCAD SUFFIX png FILES ${RENDERFORCETEST_FILES} ${TEST_SCAD_DIR}/Bugs/import-single-triangle.scad EXPECTEDDIR rendertest ARGS --render=force --backend=manifold)
+add_cmdline_test(renderforcemanifoldtest       OPENSCAD SUFFIX png FILES ${RENDERFORCETEST_FILES} EXPECTEDDIR rendertest ARGS --render=force --backend=manifold)
 # This tests that no warnings are issued when using Manifold for converting or processing geometry
 add_cmdline_test(renderforcemanifoldtest-hardwarnings OPENSCAD SUFFIX png FILES ${MANIFOLDHARDWARNING_FILES} EXPECTEDDIR rendertest ARGS --render=force --backend=manifold --hardwarnings)
 endif()
