@@ -205,6 +205,7 @@ int curl_download(std::string url, std::string path)
 {
     CURLcode status;
     FILE *fh=fopen((path+"_").c_str(),"wb");
+    LOG(message_group::Warning, "Downloading to %1$s",path.c_str());
     if(fh != nullptr) {
       CURL *curl = curl_easy_init();
       if(curl) {
