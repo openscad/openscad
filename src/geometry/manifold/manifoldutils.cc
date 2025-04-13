@@ -1,13 +1,9 @@
 // Portions of this file are Copyright 2023 Google LLC, and licensed under GPL2+. See COPYING.
 #include "geometry/manifold/manifoldutils.h"
-#include "geometry/Geometry.h"
-#include "geometry/linalg.h"
-#include "geometry/manifold/ManifoldGeometry.h"
-#include "geometry/PolySetBuilder.h"
-#include "Feature.h"
-#include "utils/printutils.h"
-#ifdef ENABLE_CGAL
-#include "geometry/cgal/cgalutils.h"
+
+#include <cstddef>
+#include <optional>
+#include <vector>
 #include <cassert>
 #include <map>
 #include <set>
@@ -15,18 +11,102 @@
 #include <utility>
 #include <cstdint>
 #include <memory>
+
+#include <manifold/polygon.h>
+#ifdef ENABLE_CGAL
 #include <CGAL/convex_hull_3.h>
 #include <CGAL/Surface_mesh.h>
 #endif
+
+#include "geometry/Geometry.h"
+#include "geometry/linalg.h"
+#include "geometry/manifold/ManifoldGeometry.h"
+#include "geometry/PolySetBuilder.h"
+#include "utils/printutils.h"
 #include "geometry/PolySetUtils.h"
 #include "geometry/PolySet.h"
-#include <manifold/polygon.h>
-
-#include <cstddef>
-#include <optional>
-#include <vector>
+#ifdef ENABLE_CGAL
+#include "geometry/cgal/cgalutils.h"
+#endif
 
 using Error = manifold::Manifold::Error;
+
+namespace {
+
+std::shared_ptr<ManifoldGeometry> createManifoldFromTriangularPolySet(const PolySet& ps)
+{
+  assert(ps.isTriangular());
+
+  manifold::MeshGL64 mesh;
+
+  mesh.numProp = 3;
+  mesh.vertProperties.reserve(ps.vertices.size() * 3);
+  for (const auto& v : ps.vertices) {
+    mesh.vertProperties.push_back(v.x());
+    mesh.vertProperties.push_back(v.y());
+    mesh.vertProperties.push_back(v.z());
+  }
+
+  mesh.triVerts.reserve(ps.indices.size() * 3);
+
+  std::set<uint32_t> originalIDs;
+  std::map<uint32_t, Color4f> originalIDToColor;
+
+  std::map<std::optional<Color4f>, std::vector<size_t>> colorToFaceIndices;
+  for (size_t i = 0, n = ps.indices.size(); i < n; i++) {
+    auto color_index = i < ps.color_indices.size() ? ps.color_indices[i] : -1;
+    std::optional<Color4f> color;
+    if (color_index >= 0) {
+      color = ps.colors[color_index];
+    }
+    colorToFaceIndices[color].push_back(i);
+  }
+  auto next_id = manifold::Manifold::ReserveIDs(colorToFaceIndices.size());
+  for (const auto& [color, faceIndices] : colorToFaceIndices) {
+
+    auto id = next_id++;
+    if (color.has_value()) {
+      originalIDToColor[id] = color.value();
+    }
+
+    mesh.runIndex.push_back(mesh.triVerts.size());
+    mesh.runOriginalID.push_back(id);
+    originalIDs.insert(id);
+
+    for (size_t faceIndex : faceIndices) {
+      auto & face = ps.indices[faceIndex];
+      assert(face.size() == 3);
+      mesh.triVerts.push_back(face[0]);
+      mesh.triVerts.push_back(face[1]);
+      mesh.triVerts.push_back(face[2]);
+    }
+  }
+  mesh.runIndex.push_back(mesh.triVerts.size());
+
+  auto mani = manifold::Manifold(mesh);
+
+  if (mani.Status() != Error::NoError) {
+    PRINTD("Manifold creation initially failed");
+    bool merged = mesh.Merge();
+    mani = manifold::Manifold(mesh);
+    if (mani.Status() == Error::NoError && merged) {
+      PRINTD("..succeeded after merge");
+    }
+    else if (mani.Status() != Error::NoError && merged) {
+      PRINTD("..still failing after merge");
+    }
+    else if (mani.Status() != Error::NoError && !merged) {
+      PRINTD("..unable to merge");
+    }
+    else if (mani.Status() == Error::NoError && !merged) {
+      PRINTD("..unable to merge, but somehow succeeded anyway?");
+    }
+  }
+
+  return std::make_shared<ManifoldGeometry>(mani, originalIDs, originalIDToColor);
+}
+
+}  // namespace
 
 namespace ManifoldUtils {
 
@@ -98,60 +178,6 @@ template std::shared_ptr<ManifoldGeometry> createManifoldFromSurfaceMesh(const C
 template std::shared_ptr<ManifoldGeometry> createManifoldFromSurfaceMesh(const CGAL_DoubleMesh &tm);
 #endif
 
-std::shared_ptr<ManifoldGeometry> createManifoldFromTriangularPolySet(const PolySet& ps)
-{
-  assert(ps.isTriangular());
-
-  manifold::MeshGL64 mesh;
-
-  mesh.numProp = 3;
-  mesh.vertProperties.reserve(ps.vertices.size() * 3);
-  for (const auto& v : ps.vertices) {
-    mesh.vertProperties.push_back(v.x());
-    mesh.vertProperties.push_back(v.y());
-    mesh.vertProperties.push_back(v.z());
-  }
-
-  mesh.triVerts.reserve(ps.indices.size() * 3);
-
-  std::set<uint32_t> originalIDs;
-  std::map<uint32_t, Color4f> originalIDToColor;
-
-  std::map<std::optional<Color4f>, std::vector<size_t>> colorToFaceIndices;
-  for (size_t i = 0, n = ps.indices.size(); i < n; i++) {
-    auto color_index = i < ps.color_indices.size() ? ps.color_indices[i] : -1;
-    std::optional<Color4f> color;
-    if (color_index >= 0) {
-      color = ps.colors[color_index];
-    }
-    colorToFaceIndices[color].push_back(i);
-  }
-  auto next_id = manifold::Manifold::ReserveIDs(colorToFaceIndices.size());
-  for (const auto& [color, faceIndices] : colorToFaceIndices) {
-
-    auto id = next_id++;
-    if (color.has_value()) {
-      originalIDToColor[id] = color.value();
-    }
-
-    mesh.runIndex.push_back(mesh.triVerts.size());
-    mesh.runOriginalID.push_back(id);
-    originalIDs.insert(id);
-
-    for (size_t faceIndex : faceIndices) {
-      auto & face = ps.indices[faceIndex];
-      assert(face.size() == 3);
-      mesh.triVerts.push_back(face[0]);
-      mesh.triVerts.push_back(face[1]);
-      mesh.triVerts.push_back(face[2]);
-    }
-  }
-  mesh.runIndex.push_back(mesh.triVerts.size());
-
-  auto mani = manifold::Manifold(mesh);
-  return std::make_shared<ManifoldGeometry>(mani, originalIDs, originalIDToColor);
-}
-
 std::shared_ptr<ManifoldGeometry> createManifoldFromPolySet(const PolySet& ps)
 {
   // 1. If the PolySet is already manifold, we should be able to build a Manifold object directly
@@ -165,27 +191,12 @@ std::shared_ptr<ManifoldGeometry> createManifoldFromPolySet(const PolySet& ps)
   }
   const PolySet& triangle_set = ps.isTriangular() ? ps : *triangulated;
 
+  // Note: This function also performs a merge if the first attempt fails.
   auto mani = createManifoldFromTriangularPolySet(triangle_set);
   if (mani->getManifold().Status() == Error::NoError) {
     return mani;
   }
 
-  // Before announcing that the conversion failed, let's try to fix the most common
-  // causes of a non-manifold topology:
-  // Polygon soup of manifold topology with co-incident vertices having identical vertex positions
-  //
-  // Note: This causes us to lose the ability to represent manifold topologies with duplicate
-  // vertex positions (touching cubes, donut with vertex in the center etc.)
-  PolySetBuilder builder(ps.vertices.size(), ps.indices.size(),
-                         ps.getDimension(), ps.convexValue());
-  builder.appendPolySet(triangle_set);
-  const std::unique_ptr<PolySet> rebuilt_ps = builder.build();
-  mani = createManifoldFromTriangularPolySet(*rebuilt_ps);
-  if (mani->getManifold().Status() == Error::NoError) {
-    return mani;
-  }
-
-  // FIXME: Should we attempt merging vertices within epsilon distance before issuing this warning?
   LOG(message_group::Warning,"PolySet -> Manifold conversion failed: %1$s\n"
       "Trying to repair and reconstruct mesh..",
       ManifoldUtils::statusToString(mani->getManifold().Status()));
