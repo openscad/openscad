@@ -968,14 +968,14 @@ set_test_config(Heavy FILES
 
 # Bugs
 set_test_config(Bugs FILES ${BUGS_FILES} ${BUGS_2D_FILES} PREFIXES
- rendertest-cgal rendertest-manifold csgrendertest previewtest previewmanifoldtest throwntogethertest)
+ rendertest-cgal rendertest-manifold csgrendertest previewtest-cgal previewtest-manifold throwntogethertest)
 set_test_config(Bugs FILES ${BUGS_FILES} PREFIXES
   offpreviewtest monotonerendertest 
   stlpreviewtest stlpreviewmanifoldtest 
   stlrendertest stlrendermanifoldtest
   stlrenderforcetest stlrendermanifoldforcetest
   binstlrenderforcetest binstlrendermanifoldforcetest
-  offrendertest renderforcemanifoldtest)
+  offrendertest renderforcetest-manifold)
 
 # Re-enable "fixed by manifold" bugs for Manifold
 set_test_config(Bugs FILES
@@ -1003,7 +1003,7 @@ remove_test_config(Bugs FILES
 # Examples
 set_test_config(Examples FILES ${EXAMPLE_FILES} PREFIXES
   rendertest-cgal rendertest-manifold
-  previewtest previewmanifoldtest previewmanifoldtest-different previewtestthrowntogethertest 
+  previewtest-cgal previewtest-manifold previewtest-manifold previewtest throwntogethertest 
   csgrendertest monotonerendertest 
   offpreviewtest offrendertest dumptest-examples)
 set_test_config(Examples FILES ${EXAMPLE_2D_FILES} PREFIXES dxfrendertest)
@@ -1015,12 +1015,12 @@ set_test_config(Examples FILES ${EXAMPLE_2D_FILES} PREFIXES dxfrendertest)
 # Types of tests:
 # o echotest: Just record console output
 # o dumptest: Export .csg
-# o rendertest: Export to PNG using --render
-# o renderforcetest: Export to PNG using --render=force
-# o rendermanifoldtest: Export to PNG using --render with --backend=manifold
-# o renderforcemanifoldtest: Export to PNG using --render=force with --backend=manifold
-# o previewtest: Export to PNG using OpenCSG
-# o previewmanifoldtest: Export to PNG in preview mode with --backend=manifold
+# o rendertest-cgal: Export to PNG using --render
+# o rendertest-force-cgal: Export to PNG using --render=force
+# o rendertest-manifold: Export to PNG using --render with --backend=manifold
+# o rendertest-force-manifold: Export to PNG using --render=force with --backend=manifold
+# o previewtest-cgal: Export to PNG using OpenCSG
+# o previewtest-manifold: Export to PNG in preview mode with --backend=manifold
 # o throwntogethertest: Export to PNG using the Throwntogether renderer
 # o csgrendertest: 1) Export to .csg, 2) import .csg and export to PNG (--render)
 # o monotonerendertest: Same as rendertest but with the "Monotone" color scheme
@@ -1072,26 +1072,28 @@ add_cmdline_test(dumptest-examples  OPENSCAD FILES ${EXAMPLE_FILES} SUFFIX csg A
 # non-ASCII filenames
 add_cmdline_test(openscad-nonascii  OPENSCAD FILES ${TEST_SCAD_DIR}/misc/sfære.scad SUFFIX csg)
 
+add_cmdline_test(previewtest-cgal    OPENSCAD FILES ${PREVIEWTEST_FILES} EXPECTEDDIR previewtest SUFFIX png ARGS --backend=cgal)
+add_cmdline_test(throwntogethertest  OPENSCAD FILES ${THROWNTOGETHERTEST_FILES} SUFFIX png ARGS --preview=throwntogether)
+
 # Baseline PNG tests
+# TODO:
+# * Split files into common results, CGAL results, and Manifold results
 add_cmdline_test(rendertest-cgal     OPENSCAD FILES ${RENDERTEST_FILES} EXPECTEDDIR rendertest SUFFIX png ARGS --render --backend=cgal)
 if (ENABLE_MANIFOLD)
 add_cmdline_test(rendertest-manifold OPENSCAD FILES ${RENDERMANIFOLDTEST_FILES} EXPECTEDDIR rendertest SUFFIX png ARGS --render --backend=manifold)
 add_cmdline_test(rendertest-manifold OPENSCAD FILES ${SCADFILES_DIFFERENT_MANIFOLD_RENDER_EXPECTATIONS} SUFFIX png ARGS --render --backend=manifold)
 endif()
 
-add_cmdline_test(previewtest         OPENSCAD FILES ${PREVIEWTEST_FILES} SUFFIX png ARGS)
-add_cmdline_test(throwntogethertest  OPENSCAD SUFFIX png FILES ${THROWNTOGETHERTEST_FILES} ARGS --preview=throwntogether)
-
 # Other PNG tests
-add_cmdline_test(renderforcetest     OPENSCAD SUFFIX png FILES ${RENDERFORCETEST_FILES} ARGS --render=force)
-add_cmdline_test(renderstdiotest     OPENSCAD SUFFIX png FILES ${RENDERSTDIOTEST_FILES} STDIO EXPECTEDDIR rendertest ARGS --export-format png --render)
-add_cmdline_test(csgrendertest       SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png FILES ${RENDERTEST_FILES} EXPECTEDDIR rendertest ARGS ${OPENSCAD_EXE_ARG} --format=csg --render)
+add_cmdline_test(rendertest-force-cgal OPENSCAD SUFFIX png FILES ${RENDERFORCETEST_FILES} ARGS --render=force --backend=cgal)
+add_cmdline_test(rendertest-stdio-cgal OPENSCAD SUFFIX png FILES ${RENDERSTDIOTEST_FILES} STDIO EXPECTEDDIR rendertest ARGS --export-format png --render --backend=cgal)
+add_cmdline_test(csgrendertest         SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png FILES ${RENDERTEST_FILES} EXPECTEDDIR rendertest ARGS ${OPENSCAD_EXE_ARG} --format=csg --render)
 if (ENABLE_MANIFOLD)
-add_cmdline_test(previewmanifoldtest           OPENSCAD SUFFIX png FILES ${PREVIEWMANIFOLDTEST_FILES} EXPECTEDDIR previewtest ARGS --backend=manifold)
-add_cmdline_test(previewmanifoldtest-different OPENSCAD SUFFIX png FILES ${SCADFILES_DIFFERENT_MANIFOLD_PREVIEW_EXPECTATIONS} ARGS --backend=manifold)
-add_cmdline_test(renderforcemanifoldtest       OPENSCAD SUFFIX png FILES ${RENDERFORCETEST_FILES} EXPECTEDDIR rendertest ARGS --render=force --backend=manifold)
+add_cmdline_test(previewtest-manifold           OPENSCAD SUFFIX png FILES ${PREVIEWMANIFOLDTEST_FILES} EXPECTEDDIR previewtest ARGS --backend=manifold)
+add_cmdline_test(previewtest-manifold OPENSCAD SUFFIX png FILES ${SCADFILES_DIFFERENT_MANIFOLD_PREVIEW_EXPECTATIONS} ARGS --backend=manifold)
+add_cmdline_test(rendertest-force-manifold      OPENSCAD SUFFIX png FILES ${RENDERFORCETEST_FILES} EXPECTEDDIR rendertest ARGS --render=force --backend=manifold)
 # This tests that no warnings are issued when using Manifold for converting or processing geometry
-add_cmdline_test(renderforcemanifoldtest-hardwarnings OPENSCAD SUFFIX png FILES ${MANIFOLDHARDWARNING_FILES} EXPECTEDDIR rendertest ARGS --render=force --backend=manifold --hardwarnings)
+add_cmdline_test(rendertest-force-manifold-hardwarnings OPENSCAD SUFFIX png FILES ${MANIFOLDHARDWARNING_FILES} EXPECTEDDIR rendertest ARGS --render=force --backend=manifold --hardwarnings)
 endif()
 
 set(VIEWBOX_TEST "${TEST_SCAD_DIR}/svg/extruded/viewbox-test.scad")
@@ -1425,13 +1427,13 @@ add_cmdline_test(lazyunion-svgrendertest  EXPERIMENTAL SCRIPT ${EXPORT_IMPORT_PN
 # --enable=roof tests
 #
 list(APPEND EXPERIMENTAL_ROOF_FILES ${EXAMPLES_DIR}/Basics/roof.scad)
-add_cmdline_test(dumptest-examples   EXPERIMENTAL OPENSCAD SUFFIX csg FILES ${EXPERIMENTAL_ROOF_FILES} ARGS --enable=roof)
-add_cmdline_test(rendertest          EXPERIMENTAL OPENSCAD SUFFIX png FILES ${EXPERIMENTAL_ROOF_FILES} ARGS --render --enable=roof)
-add_cmdline_test(csgrendertest       EXPERIMENTAL SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png FILES ${EXPERIMENTAL_ROOF_FILES} EXPECTEDDIR rendertest ARGS ${OPENSCAD_EXE_ARG} --format=csg --render --enable=roof)
-add_cmdline_test(rendertest-manifold EXPERIMENTAL OPENSCAD SUFFIX png FILES ${EXPERIMENTAL_ROOF_FILES} EXPECTEDDIR rendertest ARGS --render --enable=roof --backend=manifold)
-add_cmdline_test(previewtest         EXPERIMENTAL OPENSCAD SUFFIX png FILES ${EXPERIMENTAL_ROOF_FILES} ARGS --enable=roof)
-add_cmdline_test(previewmanifoldtest EXPERIMENTAL OPENSCAD SUFFIX png FILES ${EXPERIMENTAL_ROOF_FILES} ARGS --enable=roof --backend=manifold)
-add_cmdline_test(throwntogethertest  EXPERIMENTAL OPENSCAD SUFFIX png FILES ${EXPERIMENTAL_ROOF_FILES} ARGS --preview=throwntogether --enable=roof)
+add_cmdline_test(dumptest-examples    EXPERIMENTAL OPENSCAD SUFFIX csg FILES ${EXPERIMENTAL_ROOF_FILES} ARGS --enable=roof)
+add_cmdline_test(rendertest-cgal      EXPERIMENTAL OPENSCAD SUFFIX png FILES ${EXPERIMENTAL_ROOF_FILES} ARGS --render --enable=roof --backend=cgal)
+add_cmdline_test(rendertest-manifold  EXPERIMENTAL OPENSCAD SUFFIX png FILES ${EXPERIMENTAL_ROOF_FILES} EXPECTEDDIR rendertest ARGS --render --enable=roof --backend=manifold)
+add_cmdline_test(previewtest-cgal     EXPERIMENTAL OPENSCAD SUFFIX png FILES ${EXPERIMENTAL_ROOF_FILES} ARGS --enable=roof --backend=cgal)
+add_cmdline_test(previewtest-manifold EXPERIMENTAL OPENSCAD SUFFIX png FILES ${EXPERIMENTAL_ROOF_FILES} ARGS --enable=roof --backend=manifold)
+add_cmdline_test(throwntogethertest   EXPERIMENTAL OPENSCAD SUFFIX png FILES ${EXPERIMENTAL_ROOF_FILES} ARGS --preview=throwntogether --enable=roof)
+add_cmdline_test(csgrendertest        EXPERIMENTAL SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png FILES ${EXPERIMENTAL_ROOF_FILES} EXPECTEDDIR rendertest ARGS ${OPENSCAD_EXE_ARG} --format=csg --render --enable=roof)
 
 #
 # --enable=import-function tests
@@ -1454,10 +1456,10 @@ list(APPEND EXPERIMENTAL_TEXTMETRICS_FILES
 )
 add_cmdline_test(echotest           EXPERIMENTAL OPENSCAD SUFFIX echo FILES ${EXPERIMENTAL_TEXTMETRICS_ECHOTEST_FILES} ARGS --enable=textmetrics)
 add_cmdline_test(dumptest           EXPERIMENTAL OPENSCAD SUFFIX csg  FILES ${EXPERIMENTAL_TEXTMETRICS_FILES} ARGS --enable=textmetrics)
-add_cmdline_test(previewtest        EXPERIMENTAL OPENSCAD SUFFIX png  FILES ${EXPERIMENTAL_TEXTMETRICS_FILES} ARGS --enable=textmetrics)
+add_cmdline_test(previewtest-cgal   EXPERIMENTAL OPENSCAD SUFFIX png  FILES ${EXPERIMENTAL_TEXTMETRICS_FILES} ARGS --enable=textmetrics --backend=cgal)
 add_cmdline_test(throwntogethertest EXPERIMENTAL OPENSCAD SUFFIX png  FILES ${EXPERIMENTAL_TEXTMETRICS_FILES} ARGS --preview=throwntogether --enable=textmetrics)
 add_cmdline_test(csgrendertest      EXPERIMENTAL SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png FILES ${EXPERIMENTAL_TEXTMETRICS_FILES} EXPECTEDDIR rendertest ARGS ${OPENSCAD_EXE_ARG} --format=csg --render --enable=textmetrics)
-add_cmdline_test(rendertest         EXPERIMENTAL OPENSCAD SUFFIX png FILES ${EXPERIMENTAL_TEXTMETRICS_FILES} ARGS --render --enable=textmetrics)
+add_cmdline_test(rendertest-cgal    EXPERIMENTAL OPENSCAD SUFFIX png FILES ${EXPERIMENTAL_TEXTMETRICS_FILES} ARGS --render --enable=textmetrics --backend=cgal)
 add_cmdline_test(dxfrendertest      EXPERIMENTAL SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png ARGS ${OPENSCAD_EXE_ARG} --format=DXF --render=force --enable=textmetrics EXPECTEDDIR rendertest FILES ${EXPERIMENTAL_TEXTMETRICS_FILES})
 add_cmdline_test(svgrendertest      EXPERIMENTAL SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png ARGS ${OPENSCAD_EXE_ARG} --format=SVG --render=force --enable=textmetrics EXPECTEDDIR rendertest FILES ${EXPERIMENTAL_TEXTMETRICS_FILES})
 
@@ -1520,8 +1522,8 @@ set_tests_properties(
 
   # z-fighting different on different machines
   throwntogethertest_issue1803
-  previewtest_issue1165
-  previewtest_issue1215
+  previewtest-cgal_issue1165
+  previewtest-cgal_issue1215
   throwntogethertest_issue1089
   throwntogethertest_issue1215
 
@@ -1552,14 +1554,14 @@ set_tests_properties(
   openscad-manifold-viewoptions-edges_view-options-tests
 
   # OpenCSG z fighting
-  previewtest_surface_image
+  previewtest-cgal_surface_image
   throwntogethertest_surface_image
 
   # CGAL sometimes fail to union minkowski convex decompositions, causing visual differences
   # in rendering.
   rendertest-cgal_minkowski3-difference-test
   csgrendertest_minkowski3-difference-test
-  previewtest_minkowski3-difference-test
+  previewtest-cgal_minkowski3-difference-test
 
   # Transparent objects rendered differently on different machines
   throwntogethertest_offset
@@ -1571,7 +1573,7 @@ set_tests_properties(
   # https://github.com/openscad/openscad/issues/5158
   throwntogethertest_example017
   rendertest-cgal_example017 
-  previewtest_example017
+  previewtest-cgal_example017
   
   # https://github.com/openscad/openscad/issues/4398
   csgrendertest_logo_and_text
@@ -1597,22 +1599,22 @@ set_tests_properties(
 
   # https://github.com/openscad/openscad/issues/2301
   rendertest-cgal_issue2301
-  previewtest_issue2301
+  previewtest-cgal_issue2301
   csgrendertest_issue2301
 
   # https://github.com/openscad/openscad/issues/2090
   rendertest-cgal_issue2090
-  previewtest_issue2090
+  previewtest-cgal_issue2090
   throwntogethertest_issue2090
   csgrendertest_issue2090
 
   # https://github.com/openscad/openscad/issues/2841
   rendertest-cgal_issue2841
-  previewtest_issue2841
+  previewtest-cgal_issue2841
   csgrendertest_issue2841
   throwntogethertest_issue2841
   rendertest-cgal_issue2841b
-  previewtest_issue2841b
+  previewtest-cgal_issue2841b
   throwntogethertest_issue2841b
   csgrendertest_issue2841b
   
@@ -1621,8 +1623,8 @@ set_tests_properties(
 if (ENABLE_MANIFOLD)
 set_tests_properties(
   # z-fighting different on different machines
-  previewmanifoldtest_issue1165
-  previewmanifoldtest_issue1215
+  previewtest-manifold_issue1165
+  previewtest-manifold_issue1215
 
   # Manifold triangle order not stable, causes transparent
   # objects to render differently on different machines
@@ -1635,16 +1637,16 @@ set_tests_properties(
 
   # https://github.com/openscad/openscad/issues/2841
   rendertest-manifold_issue2841b
-  previewmanifoldtest_issue2841b
+  previewtest-manifold_issue2841b
 
   # OpenCSG z fighting
-  previewmanifoldtest_surface_image
+  previewtest-manifold_surface_image
 
   # https://github.com/openscad/openscad/issues/5158
-  previewmanifoldtest_example017
+  previewtest-manifold_example017
 
   # https://github.com/openscad/openscad/issues/5135
-  renderforcemanifoldtest_issue5135-bad
+  rendertest-force-manifold_issue5135-bad
 
   PROPERTIES DISABLED TRUE
 )
@@ -1684,7 +1686,7 @@ if (LIB3MF_FOUND)
   )
 else()
   set_tests_properties(
-    previewtest_import_3mf-tests
+    previewtest-cgal_import_3mf-tests
     rendertest-cgal_import_3mf-tests
     csgrendertest_import_3mf-tests
     throwntogethertest_import_3mf-tests
@@ -1694,7 +1696,7 @@ endif(LIB3MF_FOUND)
 
 list(APPEND NEF3_BROKEN_TESTS
   rendertest-cgal_nef3_broken
-  previewtest_nef3_broken
+  previewtest-cgal_nef3_broken
   throwntogethertest_nef3_broken
   csgrendertest_nef3_broken
 )
