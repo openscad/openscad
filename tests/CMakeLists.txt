@@ -963,12 +963,12 @@ endforeach()
 # Heavy tests are tests taking more than 5 seconds on a decent 2023 desktop
 set_test_config(Heavy FILES
   csgrendertest_issue267-normalization-crash
-  rendertest_issue267-normalization-crash
+  rendertest-cgal_issue267-normalization-crash
 )
 
 # Bugs
 set_test_config(Bugs FILES ${BUGS_FILES} ${BUGS_2D_FILES} PREFIXES
- rendertest rendermanifoldtest csgrendertest previewtest previewmanifoldtest throwntogethertest)
+ rendertest-cgal rendermanifoldtest csgrendertest previewtest previewmanifoldtest throwntogethertest)
 set_test_config(Bugs FILES ${BUGS_FILES} PREFIXES
   offpreviewtest monotonerendertest 
   stlpreviewtest stlpreviewmanifoldtest 
@@ -980,7 +980,7 @@ set_test_config(Bugs FILES ${BUGS_FILES} PREFIXES
 # Re-enable "fixed by manifold" bugs for Manifold
 set_test_config(Bugs FILES
   # https://github.com/openscad/openscad/issues/3567
-  rendertest_linear_extrude-scale-zero-tests
+  rendertest-cgal_linear_extrude-scale-zero-tests
   csgrendertest_linear_extrude-scale-zero-tests
 
 )
@@ -1073,7 +1073,7 @@ add_cmdline_test(dumptest-examples  OPENSCAD FILES ${EXAMPLE_FILES} SUFFIX csg A
 add_cmdline_test(openscad-nonascii  OPENSCAD FILES ${TEST_SCAD_DIR}/misc/sfære.scad SUFFIX csg)
 
 # Baseline PNG tests
-add_cmdline_test(rendertest         OPENSCAD FILES ${RENDERTEST_FILES} SUFFIX png ARGS --render)
+add_cmdline_test(rendertest-cgal    OPENSCAD FILES ${RENDERTEST_FILES} EXPECTEDDIR rendertest SUFFIX png ARGS --render)
 add_cmdline_test(previewtest        OPENSCAD FILES ${PREVIEWTEST_FILES} SUFFIX png ARGS)
 add_cmdline_test(throwntogethertest OPENSCAD SUFFIX png FILES ${THROWNTOGETHERTEST_FILES} ARGS --preview=throwntogether)
 
@@ -1536,9 +1536,9 @@ set_tests_properties(
 
   # Triggers a floating point accuracy issue causing loaded .csg to
   # render slightly differently
-  rendertest_nothing-decimal-comma-separated
-  rendertest_import-empty-tests
-  rendertest_empty-shape-tests
+  rendertest-cgal_nothing-decimal-comma-separated
+  rendertest-cgal_import-empty-tests
+  rendertest-cgal_empty-shape-tests
   csgrendertest_issue1258
 
   # The Apple SW renderer has a bug in the GLSL dFdy() function, used
@@ -1554,7 +1554,7 @@ set_tests_properties(
 
   # CGAL sometimes fail to union minkowski convex decompositions, causing visual differences
   # in rendering.
-  rendertest_minkowski3-difference-test
+  rendertest-cgal_minkowski3-difference-test
   csgrendertest_minkowski3-difference-test
   previewtest_minkowski3-difference-test
 
@@ -1562,12 +1562,12 @@ set_tests_properties(
   throwntogethertest_offset
 
   # https://github.com/openscad/openscad/issues/5159
-  rendertest_projection
+  rendertest-cgal_projection
   csgrendertest_projection
 
   # https://github.com/openscad/openscad/issues/5158
   throwntogethertest_example017
-  rendertest_example017 
+  rendertest-cgal_example017 
   previewtest_example017
   
   # https://github.com/openscad/openscad/issues/4398
@@ -1593,22 +1593,22 @@ set_tests_properties(
   objrendertest_bad-stl-wing
 
   # https://github.com/openscad/openscad/issues/2301
-  rendertest_issue2301
+  rendertest-cgal_issue2301
   previewtest_issue2301
   csgrendertest_issue2301
 
   # https://github.com/openscad/openscad/issues/2090
-  rendertest_issue2090
+  rendertest-cgal_issue2090
   previewtest_issue2090
   throwntogethertest_issue2090
   csgrendertest_issue2090
 
   # https://github.com/openscad/openscad/issues/2841
-  rendertest_issue2841
+  rendertest-cgal_issue2841
   previewtest_issue2841
   csgrendertest_issue2841
   throwntogethertest_issue2841
-  rendertest_issue2841b
+  rendertest-cgal_issue2841b
   previewtest_issue2841b
   throwntogethertest_issue2841b
   csgrendertest_issue2841b
@@ -1649,7 +1649,7 @@ endif (ENABLE_MANIFOLD)
 if (EXPERIMENTAL)
 set_tests_properties(
   # https://github.com/openscad/openscad/issues/5220
-  rendertest_roof
+  rendertest-cgal_roof
   csgrendertest_roof
 
   PROPERTIES DISABLED TRUE
@@ -1682,7 +1682,7 @@ if (LIB3MF_FOUND)
 else()
   set_tests_properties(
     previewtest_import_3mf-tests
-    rendertest_import_3mf-tests
+    rendertest-cgal_import_3mf-tests
     csgrendertest_import_3mf-tests
     throwntogethertest_import_3mf-tests
     PROPERTIES DISABLED TRUE
@@ -1690,7 +1690,7 @@ else()
 endif(LIB3MF_FOUND)
 
 list(APPEND NEF3_BROKEN_TESTS
-  rendertest_nef3_broken
+  rendertest-cgal_nef3_broken
   previewtest_nef3_broken
   throwntogethertest_nef3_broken
   csgrendertest_nef3_broken
