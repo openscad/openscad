@@ -1,0 +1,29 @@
+skin() {
+	square(size = [10, 10], center = false);
+	multmatrix([[0, -1, 0, 0], [1, 0, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+		multmatrix([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 50], [0, 0, 0, 1]]) {
+			square(size = [10, 10], center = false);
+		}
+	}
+}
+multmatrix([[1, 0, 0, 20], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+	skin(segments = 8) {
+		square(size = [10, 10], center = false);
+		multmatrix([[0, -1, 0, 0], [1, 0, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+			multmatrix([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 50], [0, 0, 0, 1]]) {
+				square(size = [10, 10], center = false);
+			}
+		}
+	}
+}
+multmatrix([[1, 0, 0, 40], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+	skin(segments = 32) {
+		square(size = [10, 10], center = false);
+		multmatrix([[0, -1, 0, 0], [1, 0, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+			multmatrix([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 50], [0, 0, 0, 1]]) {
+				square(size = [10, 10], center = false);
+			}
+		}
+	}
+}
+
