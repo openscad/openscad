@@ -82,21 +82,29 @@ extern SourceFile *rootfile;
   Handle locations.
   Since flex doesn't handle column numbers, we deal with those manually.
   See "Advanced Use of Flex" / "Advanced Use of Bison"
+  https://www.lrde.epita.fr/~akim/ccmp/doc/gnuprog2/Advanced-Use-of-Flex.html
+  https://www.lrde.epita.fr/~akim/ccmp/doc/gnuprog2/Advanced-Use-of-Bison.html
 */
 extern YYLTYPE parserlloc;
 
 #define LOCATION(loc) Location(loc.first_line, loc.first_column, loc.last_line, loc.last_column, sourcefile())
 #define LOCATION_INIT(loc) do { (loc).first_line = (loc).first_column = (loc).last_line = (loc).last_column = yylineno = 1; } while (0)
-#define LOCATION_NEXT(loc) do { (loc).first_column = (loc).last_column; (loc).first_line = (loc).last_line; } while (0)
-#define LOCATION_ADD_LINES(loc, cnt) do { (loc).last_column = 1; (loc).last_line += cnt; LOCATION_NEXT(loc); } while (0)
+#define LOCATION_NEXT(loc) do { (loc).first_column = (loc).last_column; (loc).first_line = yylineno = (loc).last_line; } while (0)
+#define LOCATION_ADD_LINE(loc) do { (loc).last_column = 1; (loc).last_line++; LOCATION_NEXT(loc); } while (0)
 
-#define LOCATION_COUNT_LINES(loc, text) \
-    for(int i = 0; (text[i]) != '\0'; i++) { \
-        if((text[i]) == '\n') { \
-            (loc).last_line++; \
-            (loc).last_column = 1; \
-        } \
-    } 
+#define LOCATION_COUNT_LINES(loc, text)                     \
+    do {                                                    \
+        for(int i = 0; (text)[i] != '\0'; i++) {            \
+            if((text)[i] == '\r' && (text)[i+1] == '\n') {  \
+                i++;                                        \
+            }                                               \
+            if((text)[i] == '\n' || (text)[i] == '\r') {    \
+                (loc).last_line++;                          \
+                (loc).last_column = 1;                      \
+            }                                               \
+        }                                                   \
+        LOCATION_NEXT(loc);                                 \
+    } while (0)
 
 #define YY_USER_ACTION parserlloc.last_column += yyleng;
 
@@ -114,7 +122,7 @@ std::string filename;
 std::string filepath;
 %}
 
-%option yylineno
+    /* Note:  no option yylineno; we update yylineno on our own. */
 %option noyywrap
 
 %x cond_comment cond_lcomment cond_string
@@ -130,6 +138,7 @@ U2      [\xc2-\xdf]
 U3      [\xe0-\xef]
 U4      [\xf0-\xf4]
 UNICODE {U2}{U}|{U3}{U}{U}|{U4}{U}{U}{U}
+NL      \n|\r\n|\r
 
 IDSTART [a-zA-Z_$]
 IDREST  [a-zA-Z0-9_]
@@ -142,10 +151,10 @@ LOCATION_NEXT(parserlloc);
 
 include[ \t\r\n]*"<"    { BEGIN(cond_include); filepath = filename = ""; LOCATION_COUNT_LINES(parserlloc, yytext); }
 <cond_include>{
-[\n\r]                  {
-                            LOCATION_ADD_LINES(parserlloc, yyleng);
+{NL}                    {
                             // see merge request #4221
                             LOG(message_group::Warning,LOCATION(parserlloc),"","new lines in 'include<>'-statement is not defined - behavior may change in the future");
+                            LOCATION_ADD_LINE(parserlloc);
 }
 [^\t\r\n>]*"/"          { filepath = yytext; }
 [^\t\r\n>/]+            { filename = yytext; }
@@ -156,10 +165,10 @@ include[ \t\r\n]*"<"    { BEGIN(cond_include); filepath = filename = ""; LOCATIO
 
 use[ \t\r\n]*"<"        { BEGIN(cond_use); LOCATION_COUNT_LINES(parserlloc, yytext); }
 <cond_use>{
-[\n\r]                  {
-                            LOCATION_ADD_LINES(parserlloc, yyleng);
+{NL}                    {
                             // see merge request #4221
                             LOG(message_group::Warning,LOCATION(parserlloc),"","new lines 'use<>'-statement is not defined - behavior may change in the future");
+                            LOCATION_ADD_LINE(parserlloc);
 }
 [^\t\r\n>]+             { filename = yytext; }
  ">"                    {
@@ -187,28 +196,28 @@ use[ \t\r\n]*"<"        { BEGIN(cond_use); LOCATION_COUNT_LINES(parserlloc, yyte
 {UNICODE}               { /* parser_error_pos -= strlen(lexertext) - 1; */ stringcontents += lexertext; }
 \\x[0-7]{H}             { unsigned long i = strtoul(lexertext + 2, NULL, 16); stringcontents += (i == 0 ? ' ' : (unsigned char)(i & 0xff)); }
 \\u{H}{4}|\\U{H}{6}     { const auto c = strtoul(lexertext + 2, NULL, 16); stringcontents += str_utf8_wrapper(c).toString(); }
-[^\\\n\"]               { stringcontents += lexertext; }
-[\n\r]                  { LOCATION_ADD_LINES(parserlloc, yyleng); }
+[^\\\r\n\"]             { stringcontents += lexertext; }
+{NL}                    { LOCATION_ADD_LINE(parserlloc); }
 \"                      { BEGIN(INITIAL); parserlval.text = strdup(stringcontents.c_str()); return TOK_STRING; }
 <<EOF>>                 { parsererror("Unterminated string"); return TOK_ERROR; }
 }
 
 [\t ]                   { LOCATION_NEXT(parserlloc); }
-[\n\r]                  { LOCATION_ADD_LINES(parserlloc, yyleng); }
+{NL}                    { LOCATION_ADD_LINE(parserlloc); }
 
 \/\/                    { BEGIN(cond_lcomment); }
 <cond_lcomment>{
-\n                      { BEGIN(INITIAL); LOCATION_ADD_LINES(parserlloc, yyleng); }
+{NL}                    { BEGIN(INITIAL); LOCATION_ADD_LINE(parserlloc); }
 {UNICODE}               { /* parser_error_pos -= strlen(lexertext) - 1; */ }
-[^\n]
+.
 }
 
 "/*"                    BEGIN(cond_comment);
 <cond_comment>{
 "*/"                    { BEGIN(INITIAL); }
 {UNICODE}               { /* parser_error_pos -= strlen(lexertext) - 1; */ }
+{NL}                    { LOCATION_ADD_LINE(parserlloc); }
 .
-[\n]                    { LOCATION_ADD_LINES(parserlloc, yyleng); }
 <<EOF>>                 { parsererror("Unterminated comment"); return TOK_ERROR; }
 }
 
