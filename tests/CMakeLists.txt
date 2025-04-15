@@ -962,13 +962,13 @@ endforeach()
 
 # Heavy tests are tests taking more than 5 seconds on a decent 2023 desktop
 set_test_config(Heavy FILES
-  csgrendertest_issue267-normalization-crash
+  rendertest-export-import-csg-cgal_issue267-normalization-crash
   rendertest-cgal_issue267-normalization-crash
 )
 
 # Bugs
 set_test_config(Bugs FILES ${BUGS_FILES} ${BUGS_2D_FILES} PREFIXES
- rendertest-cgal rendertest-manifold csgrendertest previewtest-cgal previewtest-manifold throwntogethertest)
+ rendertest-cgal rendertest-manifold rendertest-export-import-csg-cgal previewtest-cgal previewtest-manifold throwntogethertest)
 set_test_config(Bugs FILES ${BUGS_FILES} PREFIXES
   offpreviewtest monotonerendertest 
   stlpreviewtest stlpreviewmanifoldtest 
@@ -981,7 +981,7 @@ set_test_config(Bugs FILES ${BUGS_FILES} PREFIXES
 set_test_config(Bugs FILES
   # https://github.com/openscad/openscad/issues/3567
   rendertest-cgal_linear_extrude-scale-zero-tests
-  csgrendertest_linear_extrude-scale-zero-tests
+  rendertest-export-import-csg-cgal_linear_extrude-scale-zero-tests
 
 )
 
@@ -1004,7 +1004,7 @@ remove_test_config(Bugs FILES
 set_test_config(Examples FILES ${EXAMPLE_FILES} PREFIXES
   rendertest-cgal rendertest-manifold
   previewtest-cgal previewtest-manifold previewtest-manifold previewtest throwntogethertest 
-  csgrendertest monotonerendertest 
+  rendertest-export-import-csg-cgal monotonerendertest 
   offpreviewtest offrendertest dumptest-examples)
 set_test_config(Examples FILES ${EXAMPLE_2D_FILES} PREFIXES dxfrendertest)
 
@@ -1022,7 +1022,7 @@ set_test_config(Examples FILES ${EXAMPLE_2D_FILES} PREFIXES dxfrendertest)
 # o previewtest-cgal: Export to PNG using OpenCSG
 # o previewtest-manifold: Export to PNG in preview mode with --backend=manifold
 # o throwntogethertest: Export to PNG using the Throwntogether renderer
-# o csgrendertest: 1) Export to .csg, 2) import .csg and export to PNG (--render)
+# o rendertest-export-import-csg-cgal: 1) Export to .csg, 2) import .csg and export to PNG (--render)
 # o monotonerendertest: Same as rendertest but with the "Monotone" color scheme
 # o stlpreviewtest: Export to STL, Re-import and render to PNG (--render)
 # o stlrendertest: Export to STL, Re-import and render to PNG (--render=force)
@@ -1087,7 +1087,7 @@ endif()
 # Other PNG tests
 add_cmdline_test(rendertest-force-cgal OPENSCAD SUFFIX png FILES ${RENDERFORCETEST_FILES} ARGS --render=force --backend=cgal)
 add_cmdline_test(rendertest-stdio-cgal OPENSCAD SUFFIX png FILES ${RENDERSTDIOTEST_FILES} STDIO EXPECTEDDIR rendertest ARGS --export-format png --render --backend=cgal)
-add_cmdline_test(csgrendertest         SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png FILES ${RENDERTEST_FILES} EXPECTEDDIR rendertest ARGS ${OPENSCAD_EXE_ARG} --format=csg --render)
+add_cmdline_test(rendertest-export-import-csg-cgal SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png FILES ${RENDERTEST_FILES} EXPECTEDDIR rendertest ARGS ${OPENSCAD_EXE_ARG} --format=csg --render --backend=cgal)
 if (ENABLE_MANIFOLD)
 add_cmdline_test(previewtest-manifold           OPENSCAD SUFFIX png FILES ${PREVIEWMANIFOLDTEST_FILES} EXPECTEDDIR previewtest ARGS --backend=manifold)
 add_cmdline_test(previewtest-manifold OPENSCAD SUFFIX png FILES ${SCADFILES_DIFFERENT_MANIFOLD_PREVIEW_EXPECTATIONS} ARGS --backend=manifold)
@@ -1433,7 +1433,7 @@ add_cmdline_test(rendertest-manifold  EXPERIMENTAL OPENSCAD SUFFIX png FILES ${E
 add_cmdline_test(previewtest-cgal     EXPERIMENTAL OPENSCAD SUFFIX png FILES ${EXPERIMENTAL_ROOF_FILES} EXPECTEDDIR previewtest ARGS --enable=roof --backend=cgal)
 add_cmdline_test(previewtest-manifold EXPERIMENTAL OPENSCAD SUFFIX png FILES ${EXPERIMENTAL_ROOF_FILES} ARGS --enable=roof --backend=manifold)
 add_cmdline_test(throwntogethertest   EXPERIMENTAL OPENSCAD SUFFIX png FILES ${EXPERIMENTAL_ROOF_FILES} ARGS --preview=throwntogether --enable=roof)
-add_cmdline_test(csgrendertest        EXPERIMENTAL SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png FILES ${EXPERIMENTAL_ROOF_FILES} EXPECTEDDIR rendertest ARGS ${OPENSCAD_EXE_ARG} --format=csg --render --enable=roof)
+add_cmdline_test(rendertest-export-import-csg-cgal        EXPERIMENTAL SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png FILES ${EXPERIMENTAL_ROOF_FILES} EXPECTEDDIR rendertest ARGS ${OPENSCAD_EXE_ARG} --format=csg --render --enable=roof)
 
 #
 # --enable=import-function tests
@@ -1458,7 +1458,7 @@ add_cmdline_test(echotest           EXPERIMENTAL OPENSCAD SUFFIX echo FILES ${EX
 add_cmdline_test(dumptest           EXPERIMENTAL OPENSCAD SUFFIX csg  FILES ${EXPERIMENTAL_TEXTMETRICS_FILES} ARGS --enable=textmetrics)
 add_cmdline_test(previewtest-cgal   EXPERIMENTAL OPENSCAD SUFFIX png  FILES ${EXPERIMENTAL_TEXTMETRICS_FILES} EXPECTEDDIR previewtest ARGS --enable=textmetrics --backend=cgal)
 add_cmdline_test(throwntogethertest EXPERIMENTAL OPENSCAD SUFFIX png  FILES ${EXPERIMENTAL_TEXTMETRICS_FILES} ARGS --preview=throwntogether --enable=textmetrics)
-add_cmdline_test(csgrendertest      EXPERIMENTAL SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png FILES ${EXPERIMENTAL_TEXTMETRICS_FILES} EXPECTEDDIR rendertest ARGS ${OPENSCAD_EXE_ARG} --format=csg --render --enable=textmetrics)
+add_cmdline_test(rendertest-export-import-csg-cgal      EXPERIMENTAL SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png FILES ${EXPERIMENTAL_TEXTMETRICS_FILES} EXPECTEDDIR rendertest ARGS ${OPENSCAD_EXE_ARG} --format=csg --render --enable=textmetrics)
 add_cmdline_test(rendertest-cgal    EXPERIMENTAL OPENSCAD SUFFIX png FILES ${EXPERIMENTAL_TEXTMETRICS_FILES} EXPECTEDDIR rendertest ARGS --render --enable=textmetrics --backend=cgal)
 add_cmdline_test(dxfrendertest      EXPERIMENTAL SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png ARGS ${OPENSCAD_EXE_ARG} --format=DXF --render=force --enable=textmetrics EXPECTEDDIR rendertest FILES ${EXPERIMENTAL_TEXTMETRICS_FILES})
 add_cmdline_test(svgrendertest      EXPERIMENTAL SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png ARGS ${OPENSCAD_EXE_ARG} --format=SVG --render=force --enable=textmetrics EXPECTEDDIR rendertest FILES ${EXPERIMENTAL_TEXTMETRICS_FILES})
@@ -1536,15 +1536,15 @@ set_tests_properties(
   # FIXME: define export behavior for inf/nan when exporting CSG files
   # These tests return error code 1.
   # FIXME: We should have a way of running these and verify the return code
-  csgrendertest_primitive-inf-tests
-  csgrendertest_transform-nan-inf-tests
+  rendertest-export-import-csg-cgal_primitive-inf-tests
+  rendertest-export-import-csg-cgal_transform-nan-inf-tests
 
   # Triggers a floating point accuracy issue causing loaded .csg to
   # render slightly differently
   rendertest-cgal_nothing-decimal-comma-separated
   rendertest-cgal_import-empty-tests
   rendertest-cgal_empty-shape-tests
-  csgrendertest_issue1258
+  rendertest-export-import-csg-cgal_issue1258
 
   # The Apple SW renderer has a bug in the GLSL dFdy() function, used
   # by GLSL fwidth(), which causes horizonal line artifacts when using
@@ -1560,7 +1560,7 @@ set_tests_properties(
   # CGAL sometimes fail to union minkowski convex decompositions, causing visual differences
   # in rendering.
   rendertest-cgal_minkowski3-difference-test
-  csgrendertest_minkowski3-difference-test
+  rendertest-export-import-csg-cgal_minkowski3-difference-test
   previewtest-cgal_minkowski3-difference-test
 
   # Transparent objects rendered differently on different machines
@@ -1568,7 +1568,7 @@ set_tests_properties(
 
   # https://github.com/openscad/openscad/issues/5159
   rendertest-cgal_projection
-  csgrendertest_projection
+  rendertest-export-import-csg-cgal_projection
 
   # https://github.com/openscad/openscad/issues/5158
   throwntogethertest_example017
@@ -1576,7 +1576,7 @@ set_tests_properties(
   previewtest-cgal_example017
   
   # https://github.com/openscad/openscad/issues/4398
-  csgrendertest_logo_and_text
+  rendertest-export-import-csg-cgal_logo_and_text
 
   # https://github.com/openscad/openscad/issues/909
   amfpreviewtest_polyhedron-single-triangle
@@ -1600,23 +1600,23 @@ set_tests_properties(
   # https://github.com/openscad/openscad/issues/2301
   rendertest-cgal_issue2301
   previewtest-cgal_issue2301
-  csgrendertest_issue2301
+  rendertest-export-import-csg-cgal_issue2301
 
   # https://github.com/openscad/openscad/issues/2090
   rendertest-cgal_issue2090
   previewtest-cgal_issue2090
   throwntogethertest_issue2090
-  csgrendertest_issue2090
+  rendertest-export-import-csg-cgal_issue2090
 
   # https://github.com/openscad/openscad/issues/2841
   rendertest-cgal_issue2841
   previewtest-cgal_issue2841
-  csgrendertest_issue2841
+  rendertest-export-import-csg-cgal_issue2841
   throwntogethertest_issue2841
   rendertest-cgal_issue2841b
   previewtest-cgal_issue2841b
   throwntogethertest_issue2841b
-  csgrendertest_issue2841b
+  rendertest-export-import-csg-cgal_issue2841b
   
   PROPERTIES DISABLED TRUE
 )
@@ -1656,7 +1656,7 @@ if (EXPERIMENTAL)
 set_tests_properties(
   # https://github.com/openscad/openscad/issues/5220
   rendertest-cgal_roof
-  csgrendertest_roof
+  rendertest-export-import-csg-cgal_roof
 
   PROPERTIES DISABLED TRUE
 )
@@ -1689,7 +1689,7 @@ else()
   set_tests_properties(
     previewtest-cgal_import_3mf-tests
     rendertest-cgal_import_3mf-tests
-    csgrendertest_import_3mf-tests
+    rendertest-export-import-csg-cgal_import_3mf-tests
     throwntogethertest_import_3mf-tests
     PROPERTIES DISABLED TRUE
   )
@@ -1699,7 +1699,7 @@ list(APPEND NEF3_BROKEN_TESTS
   rendertest-cgal_nef3_broken
   previewtest-cgal_nef3_broken
   throwntogethertest_nef3_broken
-  csgrendertest_nef3_broken
+  rendertest-export-import-csg-cgal_nef3_broken
 )
 
 # Platform specific test disable
