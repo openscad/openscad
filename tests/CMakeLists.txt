@@ -1644,6 +1644,7 @@ set_tests_properties(
 
   # https://github.com/openscad/openscad/issues/5158
   previewtest-manifold_example017
+  rendertest-manifold_example017 
 
   # https://github.com/openscad/openscad/issues/5135
   rendertest-force-manifold_issue5135-bad
