@@ -750,7 +750,7 @@ list(APPEND RENDERFORCETEST_FILES
 )
 
 set(PRUNE_TEST ${TEST_SCAD_DIR}/misc/intersection-prune-test.scad)
-list(APPEND PREVIEWTEST_FILES ${3MF_IMPORT_FILES} ${OBJ_IMPORT_FILES} ${OFF_IMPORT_FILES} ${STL_IMPORT_FILES} ${ALL_RENDERTEST_FILES} ${PRUNE_TEST} ${PREVIEW_ONLY_FILES})
+list(APPEND ALL_PREVIEWTEST_FILES ${3MF_IMPORT_FILES} ${OBJ_IMPORT_FILES} ${OFF_IMPORT_FILES} ${STL_IMPORT_FILES} ${ALL_RENDERTEST_FILES} ${PRUNE_TEST} ${PREVIEW_ONLY_FILES})
 list(APPEND THROWNTOGETHERTEST_FILES ${ALL_RENDERTEST_FILES} ${PRUNE_TEST} ${PREVIEW_ONLY_FILES})
 
 list(APPEND COLOR_3D_TEST_FILES
@@ -927,10 +927,9 @@ list(REMOVE_ITEM RENDERTEST_COMMON_FILES
   ${RENDERTEST_DIFFERENT_EXPECTATIONS}
 )
 
-list(APPEND PREVIEWMANIFOLDTEST_FILES ${PREVIEWTEST_FILES})
-list(REMOVE_ITEM PREVIEWMANIFOLDTEST_FILES
+list(APPEND PREVIEWTEST_COMMON_FILES ${ALL_PREVIEWTEST_FILES})
+list(REMOVE_ITEM PREVIEWTEST_COMMON_FILES
   ${PREVIEWTEST_DIFFERENT_EXPECTATIONS}
-  ${SCADFILES_FAILING_WITH_MANIFOLD}
 )
 
 list(APPEND MANIFOLDHARDWARNING_FILES
@@ -1076,9 +1075,10 @@ add_cmdline_test(rendertest-force-manifold      OPENSCAD SUFFIX png FILES ${REND
 add_cmdline_test(rendertest-force-manifold-hardwarnings OPENSCAD SUFFIX png FILES ${MANIFOLDHARDWARNING_FILES} EXPECTEDDIR rendertest ARGS --render=force --backend=manifold --hardwarnings)
 endif()
 
-add_cmdline_test(previewtest-cgal    OPENSCAD FILES ${PREVIEWTEST_FILES} EXPECTEDDIR previewtest SUFFIX png ARGS --backend=cgal)
+add_cmdline_test(previewtest-cgal    OPENSCAD FILES ${PREVIEWTEST_COMMON_FILES} EXPECTEDDIR previewtest SUFFIX png ARGS --backend=cgal)
+add_cmdline_test(previewtest-cgal    OPENSCAD FILES ${PREVIEWTEST_DIFFERENT_EXPECTATIONS} SUFFIX png ARGS --backend=cgal)
 if (ENABLE_MANIFOLD)
-add_cmdline_test(previewtest-manifold OPENSCAD SUFFIX png FILES ${PREVIEWMANIFOLDTEST_FILES} EXPECTEDDIR previewtest ARGS --backend=manifold)
+add_cmdline_test(previewtest-manifold OPENSCAD SUFFIX png FILES ${PREVIEWTEST_COMMON_FILES} EXPECTEDDIR previewtest ARGS --backend=manifold)
 add_cmdline_test(previewtest-manifold OPENSCAD SUFFIX png FILES ${PREVIEWTEST_DIFFERENT_EXPECTATIONS} ARGS --backend=manifold)
 endif()
 
@@ -1162,29 +1162,29 @@ ${TEST_SCAD_DIR}/misc/rotate_extrude-hole.scad
 
 
 # Export tests (compare actually exported files)
-add_cmdline_test(stlexport              EXPERIMENTAL OPENSCAD SUFFIX stl FILES ${EXPORT_STL_TEST_FILES} ARGS --enable=predictible-output --render)
-add_cmdline_test(stlexport-stdout       EXPERIMENTAL OPENSCAD SUFFIX stl FILES ${EXPORT_STL_TEST_FILES} STDIO EXPECTEDDIR stlexport ARGS --enable=predictible-output --render --export-format asciistl)
+add_cmdline_test(export-stl              EXPERIMENTAL OPENSCAD SUFFIX stl FILES ${EXPORT_STL_TEST_FILES} ARGS --enable=predictible-output --render)
+add_cmdline_test(export-stl-stdout       EXPERIMENTAL OPENSCAD SUFFIX stl FILES ${EXPORT_STL_TEST_FILES} STDIO EXPECTEDDIR export-stl ARGS --enable=predictible-output --render --export-format asciistl)
 if (ENABLE_MANIFOLD)
-add_cmdline_test(manifold-stlexport     EXPERIMENTAL OPENSCAD SUFFIX stl FILES ${EXPORT_STL_TEST_FILES} EXPECTEDDIR stlexport ARGS --enable=predictible-output --backend=manifold --render)
+add_cmdline_test(export-stl-manifold     EXPERIMENTAL OPENSCAD SUFFIX stl FILES ${EXPORT_STL_TEST_FILES} EXPECTEDDIR export-stl ARGS --enable=predictible-output --backend=manifold --render)
 endif()
 
-add_cmdline_test(binstlexport           EXPERIMENTAL OPENSCAD SUFFIX stl FILES ${EXPORT_STL_TEST_FILES} ARGS --enable=predictible-output --render --export-format binstl)
-add_cmdline_test(binstlexport-stdout    EXPERIMENTAL OPENSCAD SUFFIX stl FILES ${EXPORT_STL_TEST_FILES} STDIO EXPECTEDDIR binstlexport ARGS --enable=predictible-output --render --export-format binstl)
+add_cmdline_test(export-binstl           EXPERIMENTAL OPENSCAD SUFFIX stl FILES ${EXPORT_STL_TEST_FILES} ARGS --enable=predictible-output --render --export-format binstl)
+add_cmdline_test(export-binstl-stdout    EXPERIMENTAL OPENSCAD SUFFIX stl FILES ${EXPORT_STL_TEST_FILES} STDIO EXPECTEDDIR export-binstl ARGS --enable=predictible-output --render --export-format binstl)
 
-add_cmdline_test(objexport              EXPERIMENTAL OPENSCAD SUFFIX obj FILES ${EXPORT_OBJ_TEST_FILES} ARGS --enable=predictible-output)
+add_cmdline_test(export-obj              EXPERIMENTAL OPENSCAD SUFFIX obj FILES ${EXPORT_OBJ_TEST_FILES} ARGS --enable=predictible-output)
 if (LIB3MF_FOUND)
-add_cmdline_test(3mfexport              EXPERIMENTAL OPENSCAD SUFFIX 3mf FILES ${EXPORT_3MF_TEST_FILES} ARGS --enable=predictible-output)
+add_cmdline_test(export-3mf              EXPERIMENTAL OPENSCAD SUFFIX 3mf FILES ${EXPORT_3MF_TEST_FILES} ARGS --enable=predictible-output)
 endif()
-add_cmdline_test(povexport-as-is        EXPERIMENTAL OPENSCAD SUFFIX pov FILES ${EXPORT_POV_TEST_FILES} ARGS --enable=predictible-output --backend=manifold)
-add_cmdline_test(povexport-translate-1  EXPERIMENTAL OPENSCAD SUFFIX pov FILES ${EXPORT_POV_TEST_FILES} ARGS --enable=predictible-output --backend=manifold --camera=0,0,0,0,0,0,140)
-add_cmdline_test(povexport-translate-2  EXPERIMENTAL OPENSCAD SUFFIX pov FILES ${EXPORT_POV_TEST_FILES} ARGS --enable=predictible-output --backend=manifold --camera=10,0,0,0,0,0,140)
-add_cmdline_test(povexport-translate-3  EXPERIMENTAL OPENSCAD SUFFIX pov FILES ${EXPORT_POV_TEST_FILES} ARGS --enable=predictible-output --backend=manifold --camera=0,10,0,0,0,0,140)
-add_cmdline_test(povexport-translate-4  EXPERIMENTAL OPENSCAD SUFFIX pov FILES ${EXPORT_POV_TEST_FILES} ARGS --enable=predictible-output --backend=manifold --camera=0,0,10,0,0,0,140)
-add_cmdline_test(povexport-rotate-1     EXPERIMENTAL OPENSCAD SUFFIX pov FILES ${EXPORT_POV_TEST_FILES} ARGS --enable=predictible-output --backend=manifold --camera=0,0,0,90,0,0,140)
-add_cmdline_test(povexport-rotate-2     EXPERIMENTAL OPENSCAD SUFFIX pov FILES ${EXPORT_POV_TEST_FILES} ARGS --enable=predictible-output --backend=manifold --camera=0,0,0,0,90,0,140)
-add_cmdline_test(povexport-rotate-3     EXPERIMENTAL OPENSCAD SUFFIX pov FILES ${EXPORT_POV_TEST_FILES} ARGS --enable=predictible-output --backend=manifold --camera=0,0,0,0,0,90,140)
-add_cmdline_test(povexport-distance-1   EXPERIMENTAL OPENSCAD SUFFIX pov FILES ${EXPORT_POV_TEST_FILES} ARGS --enable=predictible-output --backend=manifold --camera=0,0,0,0,0,0,100)
-add_cmdline_test(povexport-all          EXPERIMENTAL OPENSCAD SUFFIX pov FILES ${EXPORT_POV_TEST_FILES} ARGS --enable=predictible-output --backend=manifold --camera=1,2,3,4,5,6,7)
+add_cmdline_test(export-pov-as-is        EXPERIMENTAL OPENSCAD SUFFIX pov FILES ${EXPORT_POV_TEST_FILES} ARGS --enable=predictible-output --backend=manifold)
+add_cmdline_test(export-pov-translate-1  EXPERIMENTAL OPENSCAD SUFFIX pov FILES ${EXPORT_POV_TEST_FILES} ARGS --enable=predictible-output --backend=manifold --camera=0,0,0,0,0,0,140)
+add_cmdline_test(export-pov-translate-2  EXPERIMENTAL OPENSCAD SUFFIX pov FILES ${EXPORT_POV_TEST_FILES} ARGS --enable=predictible-output --backend=manifold --camera=10,0,0,0,0,0,140)
+add_cmdline_test(export-pov-translate-3  EXPERIMENTAL OPENSCAD SUFFIX pov FILES ${EXPORT_POV_TEST_FILES} ARGS --enable=predictible-output --backend=manifold --camera=0,10,0,0,0,0,140)
+add_cmdline_test(export-pov-translate-4  EXPERIMENTAL OPENSCAD SUFFIX pov FILES ${EXPORT_POV_TEST_FILES} ARGS --enable=predictible-output --backend=manifold --camera=0,0,10,0,0,0,140)
+add_cmdline_test(export-pov-rotate-1     EXPERIMENTAL OPENSCAD SUFFIX pov FILES ${EXPORT_POV_TEST_FILES} ARGS --enable=predictible-output --backend=manifold --camera=0,0,0,90,0,0,140)
+add_cmdline_test(export-pov-rotate-2     EXPERIMENTAL OPENSCAD SUFFIX pov FILES ${EXPORT_POV_TEST_FILES} ARGS --enable=predictible-output --backend=manifold --camera=0,0,0,0,90,0,140)
+add_cmdline_test(export-pov-rotate-3     EXPERIMENTAL OPENSCAD SUFFIX pov FILES ${EXPORT_POV_TEST_FILES} ARGS --enable=predictible-output --backend=manifold --camera=0,0,0,0,0,90,140)
+add_cmdline_test(export-pov-distance-1   EXPERIMENTAL OPENSCAD SUFFIX pov FILES ${EXPORT_POV_TEST_FILES} ARGS --enable=predictible-output --backend=manifold --camera=0,0,0,0,0,0,100)
+add_cmdline_test(export-pov-all          EXPERIMENTAL OPENSCAD SUFFIX pov FILES ${EXPORT_POV_TEST_FILES} ARGS --enable=predictible-output --backend=manifold --camera=1,2,3,4,5,6,7)
 
 # Trivial Export/Import files: Sanity-checks bidirectional file format import/export
 set(SIMPLE_EXPORT_IMPORT_2D_FILES ${TEST_SCAD_DIR}/misc/square10.scad)
@@ -1231,7 +1231,8 @@ add_cmdline_test(previewtest-off SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png F
 add_cmdline_test(previewtest-amf SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png FILES ${EXPORT_IMPORT_3D_PREVIEW_FILES} EXPECTEDDIR rendertest-monotone ARGS ${OPENSCAD_EXE_ARG} --format=AMF)
 add_cmdline_test(previewtest-obj SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png FILES ${EXPORT_IMPORT_3D_PREVIEW_FILES} EXPECTEDDIR rendertest-monotone ARGS ${OPENSCAD_EXE_ARG} --format=OBJ)
 
-add_cmdline_test(rendertest-csg-cgal SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png FILES ${ALL_RENDERTEST_FILES} EXPECTEDDIR rendertest ARGS ${OPENSCAD_EXE_ARG} --format=csg --render --backend=cgal)
+add_cmdline_test(rendertest-csg-cgal SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png FILES ${RENDERTEST_COMMON_FILES} EXPECTEDDIR rendertest ARGS ${OPENSCAD_EXE_ARG} --format=csg --render --backend=cgal)
+add_cmdline_test(rendertest-csg-cgal SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png FILES ${RENDERTEST_DIFFERENT_EXPECTATIONS} EXPECTEDDIR rendertest-cgal ARGS ${OPENSCAD_EXE_ARG} --format=csg --render --backend=cgal)
 add_cmdline_test(rendertest-stl SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png FILES ${EXPORT_IMPORT_3D_RENDER_FILES} EXPECTEDDIR rendertest-monotone ARGS ${OPENSCAD_EXE_ARG} --format=STL --render=force)
 add_cmdline_test(rendertest-off SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png FILES ${EXPORT_IMPORT_3D_RENDER_FILES} EXPECTEDDIR rendertest-monotone ARGS ${OPENSCAD_EXE_ARG} --format=OFF --render=force)
 add_cmdline_test(rendertest-amf SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png FILES ${EXPORT_IMPORT_3D_RENDER_FILES} EXPECTEDDIR rendertest-monotone ARGS ${OPENSCAD_EXE_ARG} --format=AMF --render=force)
@@ -1271,14 +1272,14 @@ add_cmdline_test(rendertest-svg  SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png F
 
 # FIXME: We don't actually need to compare the output of cgalstlsanitytest
 # with anything. It's self-contained and returns != 0 on error
-add_cmdline_test(stlexportsanitytest  SCRIPT ${STLEXPORTSANITYTEST_PY} SUFFIX txt FILES ${TEST_SCAD_DIR}/misc/normal-nan.scad ARGS ${OPENSCAD_EXE_ARG})
+add_cmdline_test(export-stl-sanitytest  SCRIPT ${STLEXPORTSANITYTEST_PY} SUFFIX txt FILES ${TEST_SCAD_DIR}/misc/normal-nan.scad ARGS ${OPENSCAD_EXE_ARG})
 
 # Export/import color support
 add_cmdline_test(offcolorpngtest EXPERIMENTAL SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png FILES ${COLOR_3D_TEST_FILES} EXPECTEDDIR rendertest-manifold ARGS ${OPENSCAD_EXE_ARG} --format=OFF --backend=manifold --render)
 add_cmdline_test(3mfcolorpngtest EXPERIMENTAL SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png FILES ${COLOR_3D_TEST_FILES} EXPECTEDDIR rendertest-manifold ARGS ${OPENSCAD_EXE_ARG} --format=3MF --backend=manifold --render)
 
 # PDF Export
-add_cmdline_test(pdfexporttest SCRIPT ${EXPORT_PNGTEST_PY} SUFFIX png FILES ${SCAD_PDF_FILES} ARGS ${OPENSCAD_EXE_ARG} --format=PDF KERNEL Square:2)
+add_cmdline_test(export-pdf SCRIPT ${EXPORT_PNGTEST_PY} SUFFIX png FILES ${SCAD_PDF_FILES} ARGS ${OPENSCAD_EXE_ARG} --format=PDF KERNEL Square:2)
 
 # Expected failing tests
 add_failing_test(stlfailedtest         SUFFIX stl  FILES ${TEST_SCAD_DIR}/misc/empty-union.scad ARGS --retval=1)
@@ -1656,7 +1657,7 @@ if (LIB3MF_FOUND)
   if (EXPERIMENTAL)
     set_tests_properties(
       # https://github.com/openscad/openscad/issues/5800
-      3mfexport_3mf-export
+      export-3mf_3mf-export
 
       PROPERTIES DISABLED TRUE
     )
@@ -1700,8 +1701,8 @@ elseif(WIN32 OR MXECROSS)
     # Known UTF-8 issue on Windows
     openscad-nonascii_sfære
     # requires `gs` tool
-    pdfexporttest_centered
-    pdfexporttest_simple-pdf
+    export-pdf_centered
+    export-pdf_simple-pdf
     PROPERTIES DISABLED TRUE
   )
 endif()
