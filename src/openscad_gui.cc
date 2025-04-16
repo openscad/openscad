@@ -73,6 +73,8 @@
 #include "platform/CocoaUtils.h"
 #include "utils/printutils.h"
 
+#include "guitests.h"
+
 Q_DECLARE_METATYPE(Message);
 Q_DECLARE_METATYPE(std::shared_ptr<const Geometry>);
 
@@ -289,6 +291,16 @@ int gui(std::vector<std::string>& inputFiles, const std::filesystem::path& origi
     }
   }
 #endif
+
+    QTimer::singleShot(0, [&]()
+    {
+        std::cout << "YO LO RUNNER " << std::endl;
+        std::cout << " " << app.windowManager.getWindows().count();
+        for(auto w : app.windowManager.getWindows()){
+            runAllTest(w);
+        }
+        app.exit(0);
+    });
 
   InputDriverManager::instance()->init();
   return app.exec();

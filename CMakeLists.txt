@@ -1235,7 +1235,7 @@ endif()
 if (ENABLE_MANIFOLD AND ENABLE_CGAL)
   list(APPEND Sources ${MANIFOLD_CGAL_SOURCES})
 endif()
-list(APPEND Sources src/openscad.cc ${CORE_SOURCES} ${OFFSCREEN_SOURCES})
+list(APPEND Sources src/openscad.cc src/guitests.cc src/guitests.h ${CORE_SOURCES} ${OFFSCREEN_SOURCES})
 
 set_source_files_properties(
   # flex and bison tends to generate many macros, which does not work well with
@@ -1361,6 +1361,9 @@ else()
     target_link_libraries(OpenSCAD PRIVATE Qt5::QSvgPlugin)
   endif()
 endif()
+
+find_package(Qt5 REQUIRED COMPONENTS Test)
+target_link_libraries(OpenSCAD PRIVATE Qt5::Test)
 
 # Configure icon-related files, for release vs nightly
 configure_file(${CMAKE_CURRENT_LIST_DIR}/openscad.appdata.xml.in ${CMAKE_CURRENT_LIST_DIR}/openscad.appdata.xml.in2)
