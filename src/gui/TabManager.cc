@@ -135,6 +135,7 @@ QSet<EditorInterface*> TabManager::editors() const
 void TabManager::open(const QString& filename)
 {
   assert(!filename.isEmpty());
+  std::cout << __PRETTY_FUNCTION__ << std::endl;
 
   for (auto edt: editors()) {
     if (filename == edt->filepath) {
@@ -153,6 +154,8 @@ void TabManager::open(const QString& filename)
 void TabManager::createTab(const QString& filename)
 {
   assert(par != nullptr);
+
+  std::cout << __PRETTY_FUNCTION__ << std::endl;
 
   auto scintillaEditor = new ScintillaEditor(tabWidget);
   scintillaEditor->parameterWidget = new ParameterWidget(par->parameterDock);
@@ -187,6 +190,7 @@ void TabManager::createTab(const QString& filename)
   connect(scintillaEditor, &EditorInterface::contentsChanged, this, &TabManager::setContentRenderState);
   connect(scintillaEditor, &EditorInterface::modificationChanged, this, &TabManager::onTabModified);
   connect(scintillaEditor->parameterWidget, &ParameterWidget::modificationChanged, [scintillaEditor, this] {
+    std::cout << "Parameter Widget modificaiton changed " << std::endl;
     onTabModified(scintillaEditor);
   });
 
@@ -460,6 +464,7 @@ void TabManager::onTabModified(EditorInterface *edt)
 {
   // Get the name of the editor and its filepath with the status modifier
   auto [fname, fpath] = getEditorTabNameWithModifier(edt);
+  std::cout << " on tab modifieid " << fname.toStdString() << std::endl;
 
   // and set the tab bar widget.
   setEditorTabName(fname, fpath, edt);
@@ -467,13 +472,13 @@ void TabManager::onTabModified(EditorInterface *edt)
 
 void TabManager::openTabFile(const QString& filename)
 {
+    std::cout << __PRETTY_FUNCTION__ << std::endl;
+
 #ifdef ENABLE_PYTHON
   if (boost::algorithm::ends_with(filename, ".py")) {
     std::string templ = "from openscad import *\n";
   } else
 #endif
-      activeEditor()->setPlainText("");
-
   QFileInfo fileinfo(filename);
   const auto suffix = fileinfo.suffix().toLower();
   const auto knownFileType = Importer::knownFileExtensions.contains(suffix);
@@ -483,18 +488,19 @@ void TabManager::openTabFile(const QString& filename)
   const auto cmd = Importer::knownFileExtensions[suffix];
   if (cmd.isEmpty()) {
     activeEditor()->filepath = fileinfo.absoluteFilePath();
+    refreshDocument();
     activeEditor()->parameterWidget->readFile(fileinfo.absoluteFilePath());
     par->updateRecentFiles(filename);
   } else {
-      activeEditor()->filepath = "";
-      activeEditor()->setPlainText(cmd.arg(filename));
+    activeEditor()->filepath = "";
+    activeEditor()->setPlainText(cmd.arg(filename));
   }
-  refreshDocument();
-
-  auto [fname, fpath] = getEditorTabNameWithModifier(activeEditor());
-  setEditorTabName(fname, fpath, activeEditor());
 
   emit editorContentReloaded(activeEditor());
+
+  auto [fname, fpath] = getEditorTabNameWithModifier(activeEditor());
+  std::cout << " on tab open " << fname.toStdString() << std::endl;
+  setEditorTabName(fname, fpath, activeEditor());
 }
 
 std::tuple<QString, QString> TabManager::getEditorTabName(EditorInterface *edt)
@@ -529,8 +535,12 @@ void TabManager::setEditorTabName(const QString& tabName, const QString& tabTool
                                   EditorInterface *edt)
 {
   int index = tabWidget->indexOf(edt);
-  tabWidget->setTabText(index, QString(tabName).replace("&", "&&"));
+  QString name = QString(tabName).replace("&", "&&");
+  tabWidget->setTabText(index, name);
   tabWidget->setTabToolTip(index, tabToolTip);
+
+  if( edt == activeEditor() )
+    emit editorNameChanged(name);
 }
 
 bool TabManager::refreshDocument()

@@ -368,6 +368,7 @@ MainWindow::MainWindow(const QStringList& filenames) :
   connect(tabManager, &TabManager::editorAboutToClose, this, &MainWindow::onTabManagerAboutToCloseEditor);
   connect(tabManager, &TabManager::currentEditorChanged, this, &MainWindow::onTabManagerEditorChanged);
   connect(tabManager, &TabManager::editorContentReloaded, this, &MainWindow::onTabManagerEditorContentReloaded);
+  connect(tabManager, &TabManager::editorNameChanged, this, &MainWindow::onTabManagerEditorNameChanged);
 
   // Now the tabManager has been created and connected we can create a first tab form the command line filename
   tabManager->createTab(filenames.isEmpty() ? QString() : filenames[0]);
@@ -3371,15 +3372,18 @@ void MainWindow::onTabManagerAboutToCloseEditor(EditorInterface *closingEditor)
   }
 }
 
+void MainWindow::onTabManagerEditorNameChanged(const QString& name)
+{
+    std::cout << "CHANGE TITLE " << name.toStdString() << std::endl;
+    setWindowTitle(name);
+}
+
 void MainWindow::onTabManagerEditorContentReloaded(EditorInterface *reloadedEditor)
 {
   try {
     // when a new editor is created, it is important to compile the initial geometry
     // so the customizer panels are ok.
     parseDocument(reloadedEditor);
-
-    // The name of the editor can also be changed on reload, so we need to update it.
-    setWindowTitle(getCurrentFileName());
   } catch (const HardWarningException&) {
     exceptionCleanup();
   } catch (const std::exception& ex) {

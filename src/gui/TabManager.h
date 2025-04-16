@@ -60,6 +60,9 @@ signals:
   // emitted when the content of an editor is reloaded
   void editorContentReloaded(EditorInterface *editor);
 
+  // emitted when the content of an editor is reloaded
+  void editorNameChanged(const QString& name);
+
 private:
   MainWindow *par;
   QTabWidget *tabWidget;
