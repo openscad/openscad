@@ -116,6 +116,7 @@ bool fileEnded=false;
 %token TOK_LET
 %token TOK_ASSERT
 %token TOK_ECHO
+%token TOK_WRITE
 %token TOK_EACH
 
 %token <text> TOK_ID
@@ -319,6 +320,7 @@ module_id
         | TOK_LET { $$ = strdup("let"); }
         | TOK_ASSERT { $$ = strdup("assert"); }
         | TOK_ECHO { $$ = strdup("echo"); }
+        | TOK_WRITE { $$ = strdup("write"); }
         | TOK_EACH { $$ = strdup("each"); }
         ;
 
@@ -355,6 +357,11 @@ expr
         | TOK_ECHO '(' arguments ')' expr_or_empty
             {
               $$ = FunctionCall::create("echo", *$3, $5, LOCD("echo", @$));
+              delete $3;
+            }
+        | TOK_WRITE '(' arguments ')' expr_or_empty
+            {
+              $$ = FunctionCall::create("write", *$3, $5, LOCD("write", @$));
               delete $3;
             }
         ;
