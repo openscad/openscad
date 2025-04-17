@@ -56,7 +56,6 @@ void draw_text(const char *text, cairo_t *cr, double x, double y, double fontSiz
   cairo_rotate(cr, angle*G_PI/180.0);
   cairo_show_text(cr, text);
   cairo_restore(cr);
-
 }
 
 double mm_to_points(double mm)
@@ -138,38 +137,36 @@ void draw_axes(cairo_t *cr, double left, double right, double bottom, double top
   
   // tics and labels
   // bounds are margins in points.
-  	// compute Xrange in 10mm
+  // compute Xrange in 10mm
   int Xstart=ceil(points_to_mm(left)/10.);
   int Xstop=floor(points_to_mm(right)/10.);
-   for (int i = Xstart; i < Xstop+1; i++) {
-      pts=mm_to_points(i*10.);
-      cairo_move_to(cr, pts, bottom);
-      cairo_line_to(cr, pts, bottom + offset);
-      cairo_stroke(cr);
-      if (i % 2 == 0) {
-            std::string num = std::to_string(i * 10);
-            draw_text(num.c_str(), cr, pts+1, bottom+offset-2, 6., 0.);
-      }
+  for (int i = Xstart; i < Xstop+1; i++) {
+    pts=mm_to_points(i*10.);
+    cairo_move_to(cr, pts, bottom);
+    cairo_line_to(cr, pts, bottom + offset);
+    cairo_stroke(cr);
+    if (i % 2 == 0) {
+      const std::string num = std::to_string(i * 10);
+      draw_text(num.c_str(), cr, pts+1, bottom+offset-2, 6., 0.);
+    }
   };
-  	// compute Yrange in 10mm
+  // compute Yrange in 10mm
   int Ystart=ceil(points_to_mm(top)/10.);
   int Ystop=floor(points_to_mm(bottom)/10.);
-   for (int i = Ystart; i < Ystop+1; i++) {
-      pts=mm_to_points(i*10.);
-      cairo_move_to(cr, left, pts);
-      cairo_line_to(cr, left-offset, pts);
-      cairo_stroke(cr);
-      if (i % 2 == 0) {
-            std::string num = std::to_string(-i * 10);
-            draw_text(num.c_str(), cr, left-offset, pts - 3, 6., 0.);
-      }
+  for (int i = Ystart; i < Ystop+1; i++) {
+    pts=mm_to_points(i*10.);
+    cairo_move_to(cr, left, pts);
+    cairo_line_to(cr, left-offset, pts);
+    cairo_stroke(cr);
+    if (i % 2 == 0) {
+      const std::string num = std::to_string(-i * 10);
+      draw_text(num.c_str(), cr, left-offset, pts - 3, 6., 0.);
+    }
   };
 }  
 
 // Draws a single 2D polygon.
 void draw_geom(const Polygon2d& poly, cairo_t *cr, double tcX, double tcY ){
-  cairo_save(cr);	
-  cairo_translate(cr, tcX, tcY);  // Center page on geometry; // TODO dies nicht fuer foldable
   for (const auto& o : poly.outlines()) {
     if (o.vertices.empty()) {
       continue;
@@ -188,10 +185,9 @@ void draw_geom(const Polygon2d& poly, cairo_t *cr, double tcX, double tcY ){
     cairo_line_to(cr, mm_to_points(p0.x()), mm_to_points(-p0.y()));
 
   }
-  cairo_restore(cr);	
 }
 
-
+// Main entry:  draw geometry that consists of 2D polygons.  Walks the tree...
 void draw_geom(const std::shared_ptr<const PolySet> & ps, cairo_t *cr, double pdfX, double pdfY){
   double factor=72.0/25.4;
   plotSettingsS plot_s;
@@ -346,6 +342,7 @@ void export_pdf(const std::shared_ptr<const Geometry>& geom, std::ostream& outpu
 
   cairo_t *cr = cairo_create(surface);
   // Note Y axis + is DOWN.  Drawings have to invert Y, but these translations account for that.
+  cairo_translate(cr, tcX, tcY);  // Center page on geometry;
 
   cairo_set_source_rgba(cr, 0., 0., 0., 1.0); // Set black line, opaque
   cairo_set_line_width(cr, 1);  // 1 point width.

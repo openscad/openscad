@@ -711,7 +711,7 @@ std::string PolygonNode::toString() const
 void get_fnas(double& fn, double& fa, double& fs);
 int linsystem( Vector3d v1,Vector3d v2,Vector3d v3,Vector3d pt,Vector3d &res,double *detptr=nullptr);
 
-VectorOfVector2d  PolygonNode::createGeometry_sub(const std::vector<Vector3d> &points, const std::vector<long long unsigned> &path, double fn, double fa, double fs) const
+VectorOfVector2d  PolygonNode::createGeometry_sub(const std::vector<Vector3d> &points, const std::vector<size_t> &path, double fn, double fa, double fs) const
 {
   std::vector<Vector2d> result;
   int n = path.size();
@@ -760,7 +760,7 @@ std::unique_ptr<const Geometry> PolygonNode::createGeometry() const
 #endif  
   if (this->paths.empty() && this->points.size() > 2) {
     Outline2d outline;
-    std::vector<long long unsigned> path;
+    std::vector<size_t> path;
     for(int i=0;i<this->points.size();i++) path.push_back(i);
     outline.vertices = createGeometry_sub(this->points,path,  fn, fa, fs);
     p->addOutline(outline);
