@@ -363,13 +363,11 @@ function(add_cmdline_test TESTCMD_BASENAME)
     # add global experimental options here
     set(EXPERIMENTAL_OPTION "")
 
-
-
-#    if (ENABLE_MANIFOLD)
-#      if (NOT TESTCMD_ARGS OR NOT "${TESTCMD_ARGS}" MATCHES "--backend")
-#        set(MANIFOLD_OPTION "--backend=manifold")
-#      endif()
-#    endif()
+   if (ENABLE_MANIFOLD)
+     if (NOT TESTCMD_ARGS OR NOT "${TESTCMD_ARGS}" MATCHES "--backend")
+       set(MANIFOLD_OPTION "--backend=manifold")
+     endif()
+   endif()
 
     # 2D tests should be viewed from the top, not an angle.
     set(CAMERA_OPTION "")
@@ -1117,19 +1115,13 @@ list(APPEND EXPORT_POV_TEST_FILES ${TEST_SCAD_DIR}/pov/pov-export.scad)
 
 list(APPEND EXPORT_IMPORT_3D_FILES
 ${TEST_SCAD_DIR}/3D/features/mirror-tests.scad
-${TEST_SCAD_DIR}/3D/features/polyhedron-tests.scad
 ${TEST_SCAD_DIR}/3D/features/polyhedron-nonplanar-tests.scad
 ${TEST_SCAD_DIR}/3D/features/rotate_extrude-tests.scad
 ${TEST_SCAD_DIR}/3D/features/union-coincident-test.scad
 ${TEST_SCAD_DIR}/3D/issues/fn_bug.scad
-${TEST_SCAD_DIR}/3D/issues/issue904.scad
-${TEST_SCAD_DIR}/3D/issues/issue1105.scad
-${TEST_SCAD_DIR}/3D/issues/issue1105b.scad
 ${TEST_SCAD_DIR}/3D/issues/issue1105c.scad
-${TEST_SCAD_DIR}/3D/issues/issue1105d.scad
 ${TEST_SCAD_DIR}/3D/issues/issue1215.scad
 ${TEST_SCAD_DIR}/3D/issues/issue1215b.scad
-${TEST_SCAD_DIR}/3D/issues/issue1215c.scad
 ${TEST_SCAD_DIR}/3D/issues/issue1221.scad
 ${TEST_SCAD_DIR}/3D/issues/issue1225.scad
 ${TEST_SCAD_DIR}/3D/issues/issue1258.scad
@@ -1137,11 +1129,23 @@ ${TEST_SCAD_DIR}/3D/issues/issue2259.scad
 ${TEST_SCAD_DIR}/misc/bad-stl-pcbvicebar.scad
 ${TEST_SCAD_DIR}/misc/bad-stl-tardis.scad
 ${TEST_SCAD_DIR}/misc/bad-stl-wing.scad
-${TEST_SCAD_DIR}/misc/internal-cavity.scad
-${TEST_SCAD_DIR}/misc/internal-cavity-polyhedron.scad
 ${TEST_SCAD_DIR}/misc/nonmanifold-polyhedron.scad
 ${TEST_SCAD_DIR}/misc/preview_variable.scad
+)
+
+list(APPEND EXPORT_IMPORT_3D_DIFFERENT_FILES
+${TEST_SCAD_DIR}/3D/issues/issue904.scad
+${TEST_SCAD_DIR}/3D/issues/issue1105.scad
+${TEST_SCAD_DIR}/3D/issues/issue1105b.scad
+${TEST_SCAD_DIR}/3D/issues/issue1105d.scad
+${TEST_SCAD_DIR}/3D/issues/issue1215c.scad
+${TEST_SCAD_DIR}/misc/internal-cavity.scad
+${TEST_SCAD_DIR}/misc/internal-cavity-polyhedron.scad
 ${TEST_SCAD_DIR}/misc/rotate_extrude-hole.scad
+)
+
+list(APPEND EXPORT_IMPORT_3D_DIFFERENT_MANIFOLD_FILES
+${TEST_SCAD_DIR}/3D/features/polyhedron-tests.scad
 )
 
 #
@@ -1233,7 +1237,8 @@ add_cmdline_test(preview-obj SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png FILES
 add_cmdline_test(render-csg-cgal SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png FILES ${RENDER_COMMON_FILES} EXPECTEDDIR render ARGS ${OPENSCAD_EXE_ARG} --format=csg --render --backend=cgal)
 add_cmdline_test(render-csg-cgal SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png FILES ${RENDER_DIFFERENT_EXPECTATIONS} EXPECTEDDIR render-cgal ARGS ${OPENSCAD_EXE_ARG} --format=csg --render --backend=cgal)
 add_cmdline_test(render-stl SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png FILES ${EXPORT_IMPORT_3D_RENDER_FILES} EXPECTEDDIR render-monotone ARGS ${OPENSCAD_EXE_ARG} --format=STL --render=force)
-add_cmdline_test(render-off SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png FILES ${EXPORT_IMPORT_3D_RENDER_FILES} EXPECTEDDIR render-monotone ARGS ${OPENSCAD_EXE_ARG} --format=OFF --render=force)
+add_cmdline_test(render-off-cgal SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png FILES ${EXPORT_IMPORT_3D_RENDER_FILES} EXPECTEDDIR render-monotone ARGS ${OPENSCAD_EXE_ARG} --format=OFF --render=force --backend=cgal)
+add_cmdline_test(render-off-cgal SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png FILES ${EXPORT_IMPORT_3D_DIFFERENT_FILES} EXPECTEDDIR render-monotone ARGS ${OPENSCAD_EXE_ARG} --format=OFF --render=force --backend=cgal)
 add_cmdline_test(render-amf SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png FILES ${EXPORT_IMPORT_3D_RENDER_FILES} EXPECTEDDIR render-monotone ARGS ${OPENSCAD_EXE_ARG} --format=AMF --render=force)
 add_cmdline_test(render-obj SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png FILES ${EXPORT_IMPORT_3D_RENDER_FILES} EXPECTEDDIR render-monotone ARGS ${OPENSCAD_EXE_ARG} --format=OBJ --render=force)
 
@@ -1244,9 +1249,9 @@ list(REMOVE_ITEM render-off-manifold_FILES
  ${TEST_SCAD_DIR}/3D/features/polyhedron-tests.scad
 )
 set(render-3mf-manifold_FILES ${render-off-manifold_FILES})
-add_cmdline_test(render-off-manifold SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png FILES ${render-off-manifold_FILES} EXPECTEDDIR render ARGS ${OPENSCAD_EXE_ARG} --format=OFF --render=force --backend=manifold)
-add_cmdline_test(render-off-manifold SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png FILES ${TEST_SCAD_DIR}/misc/cube10.scad EXPECTEDDIR render-monotone ARGS ${OPENSCAD_EXE_ARG} --format=OFF --render=force --backend=manifold)
-add_cmdline_test(render-off-manifold SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png FILES ${TEST_SCAD_DIR}/3D/features/polyhedron-tests.scad EXPECTEDDIR render-manifold ARGS ${OPENSCAD_EXE_ARG} --format=OFF --render=force --backend=manifold)
+add_cmdline_test(render-off-manifold SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png FILES ${EXPORT_IMPORT_3D_RENDER_FILES} EXPECTEDDIR render-monotone ARGS ${OPENSCAD_EXE_ARG} --format=OFF --render=force --backend=manifold)
+add_cmdline_test(render-off-manifold SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png FILES ${EXPORT_IMPORT_3D_DIFFERENT_FILES} EXPECTEDDIR render ARGS ${OPENSCAD_EXE_ARG} --format=OFF --render=force --backend=manifold)
+add_cmdline_test(render-off-manifold SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png FILES ${EXPORT_IMPORT_3D_DIFFERENT_MANIFOLD_FILES} EXPECTEDDIR render-manifold ARGS ${OPENSCAD_EXE_ARG} --format=OFF --render=force --backend=manifold)
 add_cmdline_test(render-off-manifold SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png FILES ${FILES_MANIFOLD_CORNER_CASES} ARGS ${OPENSCAD_EXE_ARG} --format=OFF --render=force --backend=manifold)
 
 add_cmdline_test(render-stl-manifold SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png FILES ${EXPORT_IMPORT_3D_RENDERMANIFOLD_FILES} EXPECTEDDIR render-monotone ARGS ${OPENSCAD_EXE_ARG} --format=STL --render=force --backend=manifold)
@@ -1258,12 +1263,12 @@ add_cmdline_test(render-obj-manifold SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX p
 endif(ENABLE_MANIFOLD)
 
 if (LIB3MF_FOUND)
-add_cmdline_test(preview-3mf        SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png FILES ${EXPORT_IMPORT_3D_PREVIEW_FILES} EXPECTEDDIR render-monotone ARGS ${OPENSCAD_EXE_ARG} --format=3MF)
-add_cmdline_test(render-3mf         SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png FILES ${EXPORT_IMPORT_3D_RENDER_FILES} EXPECTEDDIR render-monotone ARGS ${OPENSCAD_EXE_ARG} --format=3MF --render=force)
-add_cmdline_test(render-3mf-manifold SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png FILES ${render-3mf-manifold_FILES} EXPECTEDDIR render ARGS ${OPENSCAD_EXE_ARG} --format=3MF --render=force --backend=manifold)
-add_cmdline_test(render-3mf-manifold SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png FILES ${FILES_MANIFOLD_CORNER_CASES} EXPECTEDDIR render-off-manifold ARGS ${OPENSCAD_EXE_ARG} --format=3MF --render=force --backend=manifold)
-add_cmdline_test(render-3mf-manifold SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png FILES ${TEST_SCAD_DIR}/misc/cube10.scad EXPECTEDDIR render-monotone ARGS ${OPENSCAD_EXE_ARG} --format=3MF --render=force --backend=manifold)
-add_cmdline_test(render-3mf-manifold SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png FILES ${TEST_SCAD_DIR}/3D/features/polyhedron-tests.scad EXPECTEDDIR render-manifold ARGS ${OPENSCAD_EXE_ARG} --format=3MF --render=force --backend=manifold)
+add_cmdline_test(preview-3mf         SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png FILES ${EXPORT_IMPORT_3D_PREVIEW_FILES} EXPECTEDDIR render-monotone ARGS ${OPENSCAD_EXE_ARG} --format=3MF)
+add_cmdline_test(render-3mf-cgal     SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png FILES ${EXPORT_IMPORT_3D_RENDER_FILES} EXPECTEDDIR render-monotone ARGS ${OPENSCAD_EXE_ARG} --format=3MF --render=force --backend=cgal)
+add_cmdline_test(render-3mf-cgal     SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png FILES ${EXPORT_IMPORT_3D_DIFFERENT_FILES} EXPECTEDDIR render-monotone ARGS ${OPENSCAD_EXE_ARG} --format=3MF --render=force --backend=cgal)
+add_cmdline_test(render-3mf-manifold SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png FILES ${EXPORT_IMPORT_3D_RENDER_FILES} EXPECTEDDIR render-monotone ARGS ${OPENSCAD_EXE_ARG} --format=3MF --render=force --backend=manifold)
+add_cmdline_test(render-3mf-manifold SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png FILES ${EXPORT_IMPORT_3D_DIFFERENT_FILES} EXPECTEDDIR render ARGS ${OPENSCAD_EXE_ARG} --format=3MF --render=force --backend=manifold)
+add_cmdline_test(render-3mf-manifold SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png FILES ${EXPORT_IMPORT_3D_DIFFERENT_MANIFOLD_FILES} EXPECTEDDIR render-manifold ARGS ${OPENSCAD_EXE_ARG} --format=3MF --render=force --backend=manifold)
 endif()
 
 add_cmdline_test(render-dxf  SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png FILES ${EXPORT_IMPORT_2D_RENDER_FILES} ${SCAD_DXF_FILES} EXPECTEDDIR render ARGS ${OPENSCAD_EXE_ARG} --format=DXF --render=force)
@@ -1404,14 +1409,12 @@ add_cmdline_test(openscad-colorscheme-metallic-render OPENSCAD FILES ${CSG_EXAMP
 #
 # --enable=lazyunion tests
 #
-add_cmdline_test(lazyunion-dump        EXPERIMENTAL OPENSCAD SUFFIX csg FILES ${LAZYUNION_FILES} ARGS --enable=lazy-union)
+add_cmdline_test(lazyunion-export-csg  EXPERIMENTAL OPENSCAD SUFFIX csg FILES ${LAZYUNION_FILES} ARGS --enable=lazy-union)
 add_cmdline_test(lazyunion-preview     EXPERIMENTAL OPENSCAD SUFFIX png FILES ${LAZYUNION_FILES} ARGS --enable=lazy-union)
 add_cmdline_test(lazyunion-render      EXPERIMENTAL OPENSCAD SUFFIX png FILES ${LAZYUNION_FILES} ARGS --enable=lazy-union --render)
-add_cmdline_test(lazyunion-monotonepng EXPERIMENTAL OPENSCAD SUFFIX png FILES ${LAZYUNION_3D_FILES} ARGS --colorscheme=Monotone --enable=lazy-union --render )
-add_cmdline_test(lazyunion-preview-stl  EXPERIMENTAL SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png FILES ${LAZYUNION_3D_FILES} EXPECTEDDIR lazyunion-monotonepng ARGS ${OPENSCAD_EXE_ARG} --format=STL --enable=lazy-union --render=force)
-add_cmdline_test(lazyunion-preview-off  EXPERIMENTAL SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png FILES ${LAZYUNION_3D_FILES} EXPECTEDDIR lazyunion-monotonepng ARGS ${OPENSCAD_EXE_ARG} --format=OFF --enable=lazy-union --render=force)
-add_cmdline_test(lazyunion-render-dxf  EXPERIMENTAL SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png FILES ${LAZYUNION_2D_FILES} EXPECTEDDIR lazyunion-render     ARGS ${OPENSCAD_EXE_ARG} --format=DXF --enable=lazy-union --render=force)
-add_cmdline_test(lazyunion-render-svg  EXPERIMENTAL SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png FILES ${LAZYUNION_2D_FILES} EXPECTEDDIR lazyunion-render     ARGS ${OPENSCAD_EXE_ARG} --format=SVG --enable=lazy-union --render=force)
+add_cmdline_test(lazyunion-render-stl  EXPERIMENTAL SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png FILES ${LAZYUNION_3D_FILES} ARGS ${OPENSCAD_EXE_ARG} --format=STL --enable=lazy-union --render=force)
+add_cmdline_test(lazyunion-render-dxf  EXPERIMENTAL SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png FILES ${LAZYUNION_2D_FILES} EXPECTEDDIR lazyunion-render ARGS ${OPENSCAD_EXE_ARG} --format=DXF --enable=lazy-union --render=force)
+add_cmdline_test(lazyunion-render-svg  EXPERIMENTAL SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png FILES ${LAZYUNION_2D_FILES} EXPECTEDDIR lazyunion-render ARGS ${OPENSCAD_EXE_ARG} --format=SVG --enable=lazy-union --render=force)
 
 #
 # --enable=roof tests
@@ -1557,24 +1560,17 @@ set_tests_properties(
   render-amf_bad-stl-tardis
   render-amf_bad-stl-pcbvicebar
   render-amf_bad-stl-wing
-  
-  # We don't repair polygon winding order in CGAL mode
-  # We could perhaps split the test into good+bad polyhedrons
-  # and only disable the bad ones.
-  render-stl_polyhedron-tests
-  render-off_polyhedron-tests
-  render-amf_polyhedron-tests
-  render-obj_polyhedron-tests
 
   # When exported from CGAL, the file cannot be re-imported
   render-stl_bad-stl-wing
-  render-off_bad-stl-wing
+  render-off-cgal_bad-stl-wing
   render-obj_bad-stl-wing
 
   # https://github.com/openscad/openscad/issues/2301
   render-cgal_issue2301
   preview-cgal_issue2301
   render-csg-cgal_issue2301
+  throwntogether_issue2301
 
   # https://github.com/openscad/openscad/issues/2090
   render-cgal_issue2090
@@ -1643,16 +1639,11 @@ if (LIB3MF_FOUND)
     )
   endif (EXPERIMENTAL)
   set_tests_properties(
-    # We don't repair polygon winding order in CGAL mode
-    # We could perhaps split the test into good+bad polyhedrons
-    # and only disable the bad ones.
-    render-3mf_polyhedron-tests
-
     # When exported from CGAL, the file cannot be re-imported
-    render-3mf_bad-stl-wing
+    render-3mf-cgal_bad-stl-wing
 
     # For some reason, only failing on Linux
-    render-3mf_bad-stl-tardis
+    render-3mf-cgal_bad-stl-tardis
     
     PROPERTIES DISABLED TRUE
   )
