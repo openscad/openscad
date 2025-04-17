@@ -1670,7 +1670,7 @@ elseif(UNIX)
 elseif(WIN32 OR MXECROSS)
   set_tests_properties(
     # Known UTF-8 issue on Windows
-    openscad-nonascii_sfære
+    export-csg-nonascii_sfære
     # requires `gs` tool
     export-pdf_centered
     export-pdf_simple-pdf
