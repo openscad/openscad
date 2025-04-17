@@ -57,6 +57,15 @@ PyObject *PyOpenSCADObject_alloc(PyTypeObject *cls, Py_ssize_t nitems)
 {
   PyObject *self = PyType_GenericAlloc(cls, nitems);
   ((PyOpenSCADObject *)self)->dict = PyDict_New();
+  PyObject *origin=PyList_New(4);
+  for(int i=0;i<4;i++) {
+  	PyObject *row=PyList_New(4);
+	for(int j=0;j<4;j++)
+		PyList_SetItem(row,j,PyFloat_FromDouble(i==j?1.0:0.0));
+	PyList_SetItem(origin,i,row);
+  }
+  PyDict_SetItemString(((PyOpenSCADObject *)self)->dict,"origin",origin);
+  Py_XDECREF(origin);
   return self;
 }
 
@@ -111,7 +120,7 @@ std::shared_ptr<AbstractNode> PyOpenSCADObjectToNode(PyObject *obj, PyObject **d
 std::string python_version(void)
 {
   std::ostringstream stream;
-  stream << "Python" <<  PY_MAJOR_VERSION  <<  "."  <<  PY_MINOR_VERSION  << "." << PY_MICRO_VERSION ;
+  stream << "Python " <<  PY_MAJOR_VERSION  <<  "."  <<  PY_MINOR_VERSION  << "." << PY_MICRO_VERSION ;
   return stream.str();
 }
 
@@ -310,8 +319,10 @@ void python_catch_error(std::string &errorstr)
     }
 }
 
-void initPython(double time)
+void initPython(const std::string& binDir, double time)
 {
+  const auto name = "openscad-python";
+  const auto exe = binDir + "/" + name;
   if(pythonInitDict) { /* If already initialized, undo to reinitialize after */
     PyObject *key, *value;
     Py_ssize_t pos = 0;
@@ -402,8 +413,10 @@ void initPython(double time)
 #endif
     stream << sep << PlatformUtils::userLibraryPath();
     stream << sepchar << ".";
+    
+    PyConfig_SetBytesString(&config, &config.program_name, name);
+    PyConfig_SetBytesString(&config, &config.executable, exe.c_str());
 
-    PyConfig_SetBytesString(&config, &config.pythonpath_env, stream.str().c_str());
     PyStatus status = Py_InitializeFromConfig(&config);
     if (PyStatus_Exception(status)) {
       LOG( message_group::Error, "Python not found. Is it installed ?");
@@ -454,6 +467,8 @@ class InputCatcher:\n\
       return self.data\n\
    def readline(self):\n\
       return self.data\n\
+   def isatty(self):\n\
+      return False\n\
 class OutputCatcher:\n\
    def __init__(self):\n\
       self.data = ''\n\

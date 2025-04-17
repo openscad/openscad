@@ -3,6 +3,7 @@
 #include <memory>
 #include <string>
 #include <vector>
+
 #include "geometry/linalg.h"
 
 class DxfData

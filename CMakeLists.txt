@@ -470,11 +470,12 @@ if(ENABLE_PYTHON)
     message(WARNING "Nettle not found, disabling python support.")
     set(ENABLE_PYTHON OFF CACHE BOOL "" FORCE)
   else()
-    message(STATUS "Python enabled, using Nettle ${Nettle_VERSION}")
+    message(STATUS "Python ${Python_VERSION} enabled, using Nettle ${Nettle_VERSION}")
     target_include_directories(OpenSCAD PRIVATE ${Python_INCLUDE_DIRS})
     target_link_libraries(OpenSCAD PRIVATE ${Python_LIBRARIES})
     target_include_directories(OpenSCAD PRIVATE ${Nettle_INCLUDE_DIRS})
     target_link_libraries(OpenSCAD PRIVATE ${Nettle_LIBRARIES})
+    add_custom_target(OpenSCADPython ALL COMMAND ${CMAKE_COMMAND} -E create_symlink openscad${SUFFIX_WITH_DASH} "openscad-python")
   endif()
 endif()
 
@@ -845,6 +846,7 @@ set(CORE_SOURCES
   src/geometry/boolean_utils.cc
   src/geometry/linalg.cc
   src/geometry/linear_extrude.cc
+  src/geometry/rotate_extrude.cc
   src/glview/Camera.cc
   src/glview/ColorMap.cc
   src/glview/OffscreenContextFactory.cc
@@ -906,6 +908,7 @@ set(CORE_SOURCES
   ${BISON_comment_parser_OUTPUTS})
 if(ENABLE_PYTHON)
 	list(APPEND CORE_SOURCES
+		    src/python/pymod.cc
 		    src/python/pyopenscad.cc 
 		    src/python/pyfunctions.cc )
 	target_compile_definitions(OpenSCAD PRIVATE ENABLE_PYTHON)
@@ -1074,9 +1077,11 @@ set(GUI_SOURCES
   src/gui/EventFilter.h
   src/gui/Export3mfDialog.cc
   src/gui/ExportPdfDialog.cc
+  src/gui/OctoPrintApiKeyDialog.cc
   src/gui/FontListDialog.cc
   src/gui/FontListTableView.cc
   src/gui/InitConfigurator.cc
+  src/gui/ImportUtils.cc
   src/gui/LaunchingScreen.cc
   src/gui/LibraryInfoDialog.cc
   src/gui/MainWindow.cc
@@ -1142,10 +1147,12 @@ set(GUI_HEADERS
     src/gui/EventFilter.h
     src/gui/Export3mfDialog.h
     src/gui/ExportPdfDialog.h
+    src/gui/OctoPrintApiKeyDialog.h
     src/gui/FontList.h
     src/gui/FontListDialog.h
     src/gui/FontListTableView.h
     src/gui/IgnoreWheelWhenNotFocused.h
+    src/gui/ImportUtils.h
     src/gui/InitConfigurator.h
     src/gui/LaunchingScreen.h
     src/gui/LibraryInfoDialog.h
@@ -1195,6 +1202,7 @@ set(GUI_UIS
     src/gui/ErrorLog.ui
     src/gui/Export3mfDialog.ui
     src/gui/ExportPdfDialog.ui
+    src/gui/OctoPrintApiKeyDialog.ui
     src/gui/FontList.ui
     src/gui/FontListDialog.ui
     src/gui/LaunchingScreen.ui
@@ -1372,6 +1380,9 @@ endif()
 if(NOT APPLE OR APPLE_UNIX)
   set_target_properties(OpenSCAD PROPERTIES OUTPUT_NAME openscad${SUFFIX_WITH_DASH})
   install(TARGETS OpenSCAD RUNTIME DESTINATION "${OPENSCAD_BINDIR}")
+  if(ENABLE_PYTHON)
+    install(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/openscad-python DESTINATION "${OPENSCAD_BINDIR}")
+  endif()
   if(WIN32)
     if(USE_MIMALLOC AND MI_LINK_SHARED)
       if(CMAKE_SIZEOF_VOID_P EQUAL 8)

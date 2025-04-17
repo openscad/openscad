@@ -72,9 +72,6 @@ private:
   RangeType& operator=(RangeType&&) = default;
   ~RangeType() = default;
 
-  explicit RangeType(double begin, double end)
-    : begin_val(begin), step_val(1.0), end_val(end) {}
-
   explicit RangeType(double begin, double step, double end)
     : begin_val(begin), step_val(step), end_val(end) {}
 

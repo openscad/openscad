@@ -23,15 +23,18 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  */
-#include "geometry/linalg.h"
 #include "utils/degree_trig.h"
+
+#include <cmath>
+#include <limits>
+
+#include <Eigen/Core>
+
+#include "geometry/linalg.h"
 
 //
 // Trigonometry function taking degrees, accurate for 30, 45, 60 and 90, etc.
 //
-#include <cmath>
-#include <limits>
-
 
 static inline double rad2deg(double x)
 {
@@ -57,7 +60,7 @@ double sin_degrees(double x)
   if (x < TRIG_HUGE_VAL && x > -TRIG_HUGE_VAL)
 #endif
   {
-    double revolutions = floor(x / 360.0);
+    const double revolutions = floor(x / 360.0);
     x -= 360.0 * revolutions;
   }
 #ifdef TRIG_HUGE_VAL
@@ -67,7 +70,7 @@ double sin_degrees(double x)
     return std::numeric_limits<double>::quiet_NaN();
   }
 #endif
-  bool oppose = x >= 180.0;
+  const bool oppose = x >= 180.0;
   if (oppose) x -= 180.0;
   if (x > 90.0) x = 180.0 - x;
   if (x < 45.0) {
@@ -93,7 +96,7 @@ double cos_degrees(double x)
   if (x < TRIG_HUGE_VAL && x > -TRIG_HUGE_VAL)
 #endif
   {
-    double revolutions = floor(x / 360.0);
+    const double revolutions = floor(x / 360.0);
     x -= 360.0 * revolutions;
   }
 #ifdef TRIG_HUGE_VAL
@@ -124,7 +127,7 @@ double cos_degrees(double x)
 
 double tan_degrees(double x)
 {
-  int cycles = floor((x) / 180.0);
+  const int cycles = floor((x) / 180.0);
   // use positive tests because of possible Inf/NaN
   if (x < 180.0 && x >= 0.0) {
     // Ok for now
@@ -142,7 +145,7 @@ double tan_degrees(double x)
     return std::numeric_limits<double>::quiet_NaN();
   }
 #endif
-  bool oppose = x > 90.0;
+  const bool oppose = x > 90.0;
   if (oppose) x = 180.0 - x;
   if (x == 0.0) {
     x = (cycles % 2) == 0 ? 0.0 : -0.0;

@@ -67,6 +67,63 @@ std::shared_ptr<const AbstractNode> AbstractNode::getNodeByID(int idx, std::dequ
   return nullptr;
 }
 
+void AbstractNode::getCodeLocation(int currentLevel,  int includeLevel,
+                                   int *firstLine, int *firstColumn, int *lastLine, int *lastColumn,
+                                   int nestedModuleDepth) const
+{
+  auto location = modinst->location();
+  if (currentLevel >= includeLevel && nestedModuleDepth == 0) {
+    if (*firstLine < 0 || *firstLine > location.firstLine()) {
+      *firstLine = location.firstLine();
+      *firstColumn = location.firstColumn();
+    } else if (*firstLine == location.firstLine() && *firstColumn > location.firstColumn()) {
+      *firstColumn = location.firstColumn();
+    }
+
+    if (*lastLine < 0 || *lastLine < location.lastLine()) {
+      *lastLine = location.lastLine();
+      *lastColumn = location.lastColumn();
+    } else {
+      if (*firstLine < 0 || *firstLine > location.firstLine()) {
+        *firstLine = location.firstLine();
+        *firstColumn = location.firstColumn();
+      } else if (*firstLine == location.firstLine() && *firstColumn > location.firstColumn()) {
+        *firstColumn = location.firstColumn();
+      }
+      if (*lastLine < 0 || *lastLine < location.lastLine()) {
+        *lastLine = location.lastLine();
+        *lastColumn = location.lastColumn();
+      } else if (*lastLine == location.lastLine() && *lastColumn < location.lastColumn()) {
+        *lastColumn = location.lastColumn();
+      }
+    }
+  }
+
+  if (verbose_name().rfind("module", 0) == 0) {
+    nestedModuleDepth++;
+  }
+  if (modinst->name() == "children") {
+    nestedModuleDepth--;
+  }
+
+  if (nestedModuleDepth >= 0) {
+    for (const auto& node : children) {
+      node->getCodeLocation(currentLevel + 1, includeLevel, firstLine,  firstColumn, lastLine,
+                            lastColumn, nestedModuleDepth);
+    }
+  }
+}
+
+void AbstractNode::findNodesWithSameMod(const std::shared_ptr<const AbstractNode>& node_mod,
+                                        std::vector<std::shared_ptr<const AbstractNode>>& nodes) const {
+  if (node_mod->modinst == modinst) {
+    nodes.push_back(shared_from_this());
+  }
+  for (const auto& step : children) {
+    step->findNodesWithSameMod(node_mod, nodes);
+  }
+}
+
 std::string GroupNode::name() const
 {
   return "group";

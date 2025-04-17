@@ -9,6 +9,7 @@
 #include <Eigen/Core>
 #include <glib.h>
 
+#include "io/lib3mf_utils.h"
 
 #ifndef OPENSCAD_NOGUI
 #include <QtGlobal>
@@ -68,7 +69,6 @@
 extern std::vector<std::string> librarypath;
 extern std::vector<std::string> fontpath;
 extern const std::string get_cairo_version();
-extern const std::string get_lib3mf_version();
 extern const char *LODEPNG_VERSION_STRING;
 
 std::string LibraryInfo::info()
@@ -173,6 +173,7 @@ std::string LibraryInfo::info()
     << "\nUser Documents Path: " << PlatformUtils::userDocumentsPath()
     << "\nResource Path: " << PlatformUtils::resourceBasePath()
     << "\nUser Library Path: " << PlatformUtils::userLibraryPath()
+    << "\nUser Examples Path: " << PlatformUtils::userExamplesPath()
     << "\nUser Config Path: " << PlatformUtils::userConfigPath()
     << "\nBackup Path: " << PlatformUtils::backupPath()
     << "\nOPENSCADPATH: " << (env_path == nullptr ? "<not set>" : env_path)

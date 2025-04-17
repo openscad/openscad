@@ -1,12 +1,13 @@
 #pragma once
 
 #include <limits>
-#include "utils/printutils.h"
-
-#include <boost/cast.hpp>
 #include <sstream>
 
+#include <boost/cast.hpp>
 #include <boost/logic/tribool.hpp>
+
+#include "utils/printutils.h"
+
 BOOST_TRIBOOL_THIRD_STATE(unknown)
 
 /* Convert number types but print WARNING for failures during

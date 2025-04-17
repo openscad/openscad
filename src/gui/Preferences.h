@@ -23,6 +23,7 @@
 #include "core/Settings.h"
 #include "gui/InitConfigurator.h"
 
+class GlobalPreferences;
 class Preferences : public QMainWindow, public Ui::Preferences, public InitConfigurator
 {
   Q_OBJECT;
@@ -30,29 +31,19 @@ class Preferences : public QMainWindow, public Ui::Preferences, public InitConfi
 public:
   ~Preferences() override;
 
-  static void create(const QStringList& colorSchemes);
-  static Preferences *inst();
-
   QVariant getValue(const QString& key) const;
   void init();
+  void update();
   void apply_win() const;
   void updateGUI();
   void fireEditorConfigChanged() const;
   void insertListItem(QListWidget *listBox, QListWidgetItem *listItem);
 
-  template<typename item_type>
-  QListWidgetItem * createListItem(const item_type& itemType, const QString& text = "", bool editable = false) {
-    const auto icon = QIcon::fromTheme(QString::fromStdString(itemType.icon()));
-    std::string description = itemType.description();
-    const auto itemText = description.empty() ? text : QString::fromStdString(description);
-    const auto listItem = new QListWidgetItem(icon, itemText,
-      nullptr,
-      static_cast<int>(QListWidgetItem::UserType) + static_cast<int>(itemType));
-    if (editable) {
-      listItem->setFlags(listItem->flags() | Qt::ItemIsEditable);
-    }
-    return listItem;
-  }
+  // Returns true if there is an higlightling color scheme configured.
+  bool hasHighlightingColorScheme() const;
+
+  // Set a new colorScheme.
+  void setHighlightingColorSchemes(const QStringList& colorSchemes);
 
 public slots:
   void actionTriggered(class QAction *);
@@ -130,6 +121,7 @@ public slots:
   void on_checkBoxEnableLineNumbers_toggled(bool);
 
   // Print
+  void on_checkBoxEnableRemotePrintServices_toggled(bool);
   void on_comboBoxDefaultPrintService_activated(int);
   void on_pushButtonOctoPrintCheckConnection_clicked();
   void on_pushButtonOctoPrintSlicingEngine_clicked();
@@ -141,6 +133,7 @@ public slots:
   void on_lineEditOctoPrintURL_editingFinished();
   void on_lineEditOctoPrintApiKey_editingFinished();
   void on_pushButtonOctoPrintApiKey_clicked();
+  void on_pushButtonOctoPrintRequestApiKey_clicked();
   void on_lineEditLocalAppExecutable_editingFinished();
   void on_toolButtonLocalAppSelectExecutable_clicked();
   void on_lineEditLocalAppTempDir_editingFinished();
@@ -163,6 +156,7 @@ public slots:
   // Dialogs
   void on_checkBoxAlwaysShowExportPdfDialog_toggled(bool);
   void on_checkBoxAlwaysShowExport3mfDialog_toggled(bool);
+  void on_checkBoxAlwaysShowPrintServiceDialog_toggled(bool);
 
 signals:
   void requestRedraw() const;
@@ -189,6 +183,7 @@ private slots:
   void on_checkBoxEnableNumberScrollWheel_toggled(bool checked);
 
 private:
+  friend GlobalPreferences;
   Preferences(QWidget *parent = nullptr);
   void keyPressEvent(QKeyEvent *e) override;
   void showEvent(QShowEvent *e) override;
@@ -211,7 +206,10 @@ private:
 
   QSettings::SettingsMap defaultmap;
   QHash<const QAction *, QWidget *> prefPages;
+};
 
-  static Preferences *instance;
-  static const char *featurePropertyName;
+class GlobalPreferences
+{
+public:
+    static Preferences* inst();
 };

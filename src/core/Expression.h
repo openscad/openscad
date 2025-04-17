@@ -29,6 +29,7 @@ class UnaryOp : public Expression
 public:
   enum class Op {
     Not,
+    BinaryNot,
     Negate
   };
   [[nodiscard]] bool isLiteral() const override;
@@ -55,6 +56,10 @@ public:
     Modulo,
     Plus,
     Minus,
+    ShiftLeft,
+    ShiftRight,
+    BinaryAnd,
+    BinaryOr,
     Less,
     LessEqual,
     Greater,

@@ -198,9 +198,12 @@ SettingsEntryEnum<std::string> Settings::modifierNumberScrollWheel("editor", "mo
 }, "Alt");
 
 SettingsEntryString Settings::defaultPrintService("printing", "printService", "NONE");
-
+SettingsEntryBool Settings::enableRemotePrintServices("printing", "enableRemotePrintServices", false);
+SettingsEntryBool Settings::printServiceAlwaysShowDialog("printing", "always-show-dialog", false);
 SettingsEntryString Settings::printServiceName("printing", "printServiceName", "");
-SettingsEntryString Settings::printServiceFileFormat("printing", "printServiceFileFormat", "stl");
+SettingsEntryEnum<std::string> Settings::printServiceFileFormat(
+    "printing", "printServiceFileFormat", createFileFormatItems(fileformat::all3D()),
+    fileformat::info(FileFormat::ASCII_STL).description);
 
 SettingsEntryString Settings::octoPrintUrl("printing", "octoPrintUrl", "");
 SettingsEntryString Settings::octoPrintApiKey("printing", "octoPrintApiKey", "");
@@ -309,6 +312,9 @@ SettingsEntryDouble Settings::axisDeadzone7("input", "axisDeadzone7", 0.0, 0.01,
 SettingsEntryDouble Settings::axisDeadzone8("input", "axisDeadzone8", 0.0, 0.01, 1.0, 0.10);
 
 SettingsEntryInt Settings::joystickNr("input", "joystickNr", 0, 9, 0);
+
+SettingsEntryString SettingsPython::pythonTrustedFiles(SECTION_PYTHON, "trusted-files", "");
+SettingsEntryString SettingsPython::pythonVirtualEnv(SECTION_PYTHON, "virtual-env", "");
 
 SettingsEntryBool SettingsExportPdf::exportPdfAlwaysShowDialog(SECTION_EXPORT_PDF, "always-show-dialog", true);
 SettingsEntryEnum<ExportPdfPaperSize> SettingsExportPdf::exportPdfPaperSize(SECTION_EXPORT_PDF, "paper-size", {
