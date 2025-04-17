@@ -271,6 +271,7 @@
     <addaction name="menuPython"/>
     <addaction name="separator"/>
     <addaction name="fileShowLibraryFolder"/>
+    <addaction name="fileShowTreasureTrove"/>
     <addaction name="separator"/>
     <addaction name="fileActionQuit"/>
    </widget>
@@ -1446,6 +1447,11 @@
   <action name="fileShowLibraryFolder">
    <property name="text">
     <string>Show &amp;Library Folder...</string>
+   </property>
+  </action>
+  <action name="fileShowTreasureTrove">
+   <property name="text">
+    <string>Show Treasure Trove</string>
    </property>
   </action>
   <action name="viewActionResetView">

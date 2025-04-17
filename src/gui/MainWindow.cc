@@ -450,6 +450,7 @@ MainWindow::MainWindow(const QStringList& filenames) :
   connect(this->fileActionClose, &QAction::triggered, tabManager, &TabManager::closeCurrentTab);
   connect(this->fileActionQuit, &QAction::triggered, scadApp, &OpenSCADApp::quit, Qt::QueuedConnection);
   connect(this->fileShowLibraryFolder, &QAction::triggered, this, &MainWindow::actionShowLibraryFolder);
+  connect(this->fileShowTreasureTrove, &QAction::triggered, this, &MainWindow::actionTreasureTrove);
 
 #ifdef ENABLE_PYTHON
   connect(this->fileActionPythonRevoke, &QAction::triggered, this, &MainWindow::actionPythonRevokeTrustedFiles);
@@ -1745,6 +1746,36 @@ void MainWindow::actionShowLibraryFolder()
   auto url = QString::fromStdString(path);
   LOG("Opening file browser for %1$s", url.toStdString());
   QDesktopServices::openUrl(QUrl::fromLocalFile(url));
+}
+
+void MainWindow::actionTreasureTrove()
+{
+  QString dirname (PlatformUtils::backupPath().c_str());
+  QStringList extensions = {};
+  extensions << "scad" << "csg";
+#ifdef ENABLE_PYTHON
+    extensions << "py";
+#endif
+  extensions.replaceInStrings(QRegularExpression("^"), "*.");
+  const auto filter = QString("OpenSCAD Backups (%1)").arg(extensions.join(" "));
+
+  // Bug in QT: dirname is ignored for getOpenFileName
+  QString filename = QFileDialog::getSaveFileName(this, "Open File", dirname, filter);
+
+  if(filename.size() == 0) return; // dont proceed when cancelled
+  
+  tabManager->actionNew();
+
+  std::ostringstream stream; // compile restored design
+  stream << "/*\n"; // put into comments in case it crashes (again)			     
+  std::ifstream file( filename.toStdString());
+  if ( file ) {
+    stream << file.rdbuf();
+    file.close();
+  }
+
+  stream << "\n*/\n";		    
+  activeEditor->setText(stream.str().c_str());
 }
 
 void MainWindow::actionReload()
