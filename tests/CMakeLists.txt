@@ -363,19 +363,13 @@ function(add_cmdline_test TESTCMD_BASENAME)
     # add global experimental options here
     set(EXPERIMENTAL_OPTION "")
 
-    # # To give manifold some extra test coverage, enable manifold 
-    # # for all tests except those marked as skipped.
-    # if (ENABLE_MANIFOLD
-    #     AND NOT SCADFILE IN_LIST SCADFILES_DIFFERENT_MANIFOLD_EXPECTATIONS
-    #     AND NOT SCADFILE IN_LIST SCADFILES_FAILING_WITH_MANIFOLD
-    #     AND NOT TEST_FULLNAME IN_LIST TESTS_FAILING_WITH_MANIFOLD
-    #     AND NOT TESTCMD_BASENAME MATCHES "^(stlexport|objexport)$"
-    #     AND NOT TESTCMD_BASENAME MATCHES "^openscad-viewoptions-.*"
-    #     AND NOT TESTCMD_BASENAME MATCHES "^remesh-.*")
-    #   set(MANIFOLD_OPTION "--backend=manifold")
-    # else()
-    set(MANIFOLD_OPTION "")
-    # endif()
+
+
+    if (ENABLE_MANIFOLD)
+      if (NOT TESTCMD_ARGS OR NOT "${TESTCMD_ARGS}" MATCHES "--backend")
+        set(MANIFOLD_OPTION "--backend=manifold")
+      endif()
+    endif()
 
     # 2D tests should be viewed from the top, not an angle.
     set(CAMERA_OPTION "")
@@ -932,6 +926,11 @@ list(REMOVE_ITEM PREVIEW_COMMON_FILES
   ${PREVIEW_DIFFERENT_EXPECTATIONS}
 )
 
+list(APPEND ALL_THROWNTOGETHER_FILES ${ALL_RENDER_FILES})
+list(REMOVE_ITEM ALL_THROWNTOGETHER_FILES
+  ${PREVIEW_DIFFERENT_EXPECTATIONS}
+)
+
 list(APPEND MANIFOLDHARDWARNING_FILES
   ${TEST_SCAD_DIR}/3D/features/polyhedron-soup.scad
   ${TEST_SCAD_DIR}/3D/issues/issue5741.scad
@@ -1053,7 +1052,7 @@ add_cmdline_test(echo         OPENSCAD SUFFIX echo FILES ${TEST_SCAD_DIR}/issues
 add_cmdline_test(dump           OPENSCAD FILES ${FEATURES_2D_FILES} ${FEATURES_3D_FILES} ${DEPRECATED_3D_FILES} ${MISC_FILES} SUFFIX csg ARGS)
 add_cmdline_test(dump-examples  OPENSCAD FILES ${EXAMPLE_FILES} SUFFIX csg ARGS)
 # non-ASCII filenames
-add_cmdline_test(openscad-nonascii  OPENSCAD FILES ${TEST_SCAD_DIR}/misc/sfære.scad SUFFIX csg)
+add_cmdline_test(export-csg-nonascii  OPENSCAD FILES ${TEST_SCAD_DIR}/misc/sfære.scad SUFFIX csg)
 
 add_cmdline_test(render-cgal      OPENSCAD FILES ${RENDER_COMMON_FILES} EXPECTEDDIR render SUFFIX png ARGS --render --backend=cgal)
 add_cmdline_test(render-cgal      OPENSCAD FILES ${RENDER_DIFFERENT_EXPECTATIONS} SUFFIX png ARGS --render --backend=cgal)
@@ -1074,7 +1073,7 @@ add_cmdline_test(preview-manifold OPENSCAD SUFFIX png FILES ${PREVIEW_COMMON_FIL
 add_cmdline_test(preview-manifold OPENSCAD SUFFIX png FILES ${PREVIEW_DIFFERENT_EXPECTATIONS} ARGS --backend=manifold)
 endif()
 
-add_cmdline_test(throwntogether  OPENSCAD FILES ${THROWNTOGETHER_FILES} SUFFIX png ARGS --preview=throwntogether)
+add_cmdline_test(throwntogether  OPENSCAD FILES ${ALL_THROWNTOGETHER_FILES} SUFFIX png ARGS --preview=throwntogether)
 
 set(VIEWBOX_TEST "${TEST_SCAD_DIR}/svg/extruded/viewbox-test.scad")
 foreach(TEST ${SVG_VIEWBOX_TESTS})
@@ -1364,18 +1363,18 @@ add_cmdline_test(openscad-camvp-override      OPENSCAD FILES ${CAMERA_TEST_VP} S
 # View Options tests
 #
 set(VIEW_OPTIONS_TEST "${TEST_SCAD_DIR}/3D/misc/view-options-tests.scad")
-add_cmdline_test(openscad-viewoptions-axes              OPENSCAD FILES ${VIEW_OPTIONS_TEST} SUFFIX png ARGS ${IMGSIZE} --camera=80,14,19,0,0,0 --viewall --view axes)
-add_cmdline_test(openscad-viewoptions-axes-scales       OPENSCAD FILES ${VIEW_OPTIONS_TEST} SUFFIX png ARGS ${IMGSIZE} --camera=80,14,19,0,0,0 --viewall --view axes,scales)
-add_cmdline_test(openscad-viewoptions-axes-scales-edges OPENSCAD FILES ${VIEW_OPTIONS_TEST} SUFFIX png ARGS ${IMGSIZE} --camera=80,14,19,0,0,0 --viewall --view axes,scales,edges)
-add_cmdline_test(openscad-viewoptions-crosshairs        OPENSCAD FILES ${VIEW_OPTIONS_TEST} SUFFIX png ARGS ${IMGSIZE} --camera=80,14,19,0,0,0 --viewall --render --view crosshairs)
+add_cmdline_test(preview-view-axes              OPENSCAD FILES ${VIEW_OPTIONS_TEST} SUFFIX png ARGS ${IMGSIZE} --camera=80,14,19,0,0,0 --viewall --view axes)
+add_cmdline_test(preview-view-axes-scales       OPENSCAD FILES ${VIEW_OPTIONS_TEST} SUFFIX png ARGS ${IMGSIZE} --camera=80,14,19,0,0,0 --viewall --view axes,scales)
+add_cmdline_test(preview-view-axes-scales-edges OPENSCAD FILES ${VIEW_OPTIONS_TEST} SUFFIX png ARGS ${IMGSIZE} --camera=80,14,19,0,0,0 --viewall --view axes,scales,edges)
+add_cmdline_test(render-view-crosshairs         OPENSCAD FILES ${VIEW_OPTIONS_TEST} SUFFIX png ARGS ${IMGSIZE} --camera=80,14,19,0,0,0 --viewall --render --view crosshairs)
 set(VIEW_OPTIONS_EDGES_TEST
   ${VIEW_OPTIONS_TEST}
   ${TEST_SCAD_DIR}/misc/cube10.scad
   ${TEST_SCAD_DIR}/3D/features/render-preserve-colors.scad
 )
-add_cmdline_test(openscad-viewoptions-edges                 OPENSCAD FILES ${VIEW_OPTIONS_EDGES_TEST} SUFFIX png ARGS ${IMGSIZE} --camera=80,14,19,0,0,0 --viewall --view edges)
-add_cmdline_test(openscad-manifold-viewoptions-edges        OPENSCAD FILES ${VIEW_OPTIONS_EDGES_TEST} SUFFIX png ARGS ${IMGSIZE} --camera=80,14,19,0,0,0 --viewall --view edges --backend=manifold)
-add_cmdline_test(openscad-render-manifold-viewoptions-edges OPENSCAD FILES ${VIEW_OPTIONS_EDGES_TEST} SUFFIX png ARGS ${IMGSIZE} --camera=80,14,19,0,0,0 --viewall --view edges --render --backend=manifold)
+add_cmdline_test(preview-view-edges-cgal           OPENSCAD FILES ${VIEW_OPTIONS_EDGES_TEST} SUFFIX png ARGS ${IMGSIZE} --camera=80,14,19,0,0,0 --viewall --view edges --backend=cgal)
+add_cmdline_test(preview-view-edges-manifold       OPENSCAD FILES ${VIEW_OPTIONS_EDGES_TEST} SUFFIX png ARGS ${IMGSIZE} --camera=80,14,19,0,0,0 --viewall --view edges --backend=manifold)
+add_cmdline_test(render-view-edges-manifold OPENSCAD FILES ${VIEW_OPTIONS_EDGES_TEST} SUFFIX png ARGS ${IMGSIZE} --camera=80,14,19,0,0,0 --viewall --view edges --render --backend=manifold)
 
 #
 # Colorscheme tests
@@ -1498,20 +1497,9 @@ set_tests_properties(
   render-svg_text-empty-tests
   render-svg_nullspace-2d
 
-  # Not useful
-  throwntogether_internal-cavity
-  throwntogether_internal-cavity-polyhedron
-  throwntogether_nullspace-difference
-
   # z-fighting different on different machines
-  throwntogether_issue1803
   preview-cgal_issue1165
   preview-cgal_issue1215
-  throwntogether_issue1089
-  throwntogether_issue1215
-
-  # This test won't render anything meaningful in throwntogether mode
-  throwntogether_minkowski3-erosion
 
   # The inf/nan tests fail when exporting CSG and rendering that output again
   # as currently inf/nan is written directly to the CSG file (e.g. r = inf)
@@ -1532,9 +1520,9 @@ set_tests_properties(
   # The Apple SW renderer has a bug in the GLSL dFdy() function, used
   # by GLSL fwidth(), which causes horizonal line artifacts when using
   # wireframe rendering in preview model.
-  openscad-viewoptions-edges_view-options-tests
-  openscad-viewoptions-axes-scales-edges_view-options-tests
-  openscad-manifold-viewoptions-edges_view-options-tests
+  preview-view-edges-cgal_view-options-tests
+  render-view-edges-manifold_view-options-tests
+  preview-view-axes-scales-edges_view-options-tests
 
   # OpenCSG z fighting
   preview-cgal_surface_image
@@ -1545,9 +1533,6 @@ set_tests_properties(
   render-cgal_minkowski3-difference-test
   render-csg-cgal_minkowski3-difference-test
   preview-cgal_minkowski3-difference-test
-
-  # Transparent objects rendered differently on different machines
-  throwntogether_offset
 
   # https://github.com/openscad/openscad/issues/5159
   render-cgal_projection
@@ -1588,17 +1573,14 @@ set_tests_properties(
   # https://github.com/openscad/openscad/issues/2090
   render-cgal_issue2090
   preview-cgal_issue2090
-  throwntogether_issue2090
   render-csg-cgal_issue2090
 
   # https://github.com/openscad/openscad/issues/2841
   render-cgal_issue2841
   preview-cgal_issue2841
   render-csg-cgal_issue2841
-  throwntogether_issue2841
   render-cgal_issue2841b
   preview-cgal_issue2841b
-  throwntogether_issue2841b
   render-csg-cgal_issue2841b
   
   PROPERTIES DISABLED TRUE
