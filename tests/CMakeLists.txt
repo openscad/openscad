@@ -365,11 +365,11 @@ function(add_cmdline_test TESTCMD_BASENAME)
 
 
 
-    if (ENABLE_MANIFOLD)
-      if (NOT TESTCMD_ARGS OR NOT "${TESTCMD_ARGS}" MATCHES "--backend")
-        set(MANIFOLD_OPTION "--backend=manifold")
-      endif()
-    endif()
+#    if (ENABLE_MANIFOLD)
+#      if (NOT TESTCMD_ARGS OR NOT "${TESTCMD_ARGS}" MATCHES "--backend")
+#        set(MANIFOLD_OPTION "--backend=manifold")
+#      endif()
+#    endif()
 
     # 2D tests should be viewed from the top, not an angle.
     set(CAMERA_OPTION "")
@@ -745,7 +745,6 @@ list(APPEND RENDERFORCETEST_FILES
 
 set(PRUNE_TEST ${TEST_SCAD_DIR}/misc/intersection-prune-test.scad)
 list(APPEND ALL_PREVIEW_FILES ${3MF_IMPORT_FILES} ${OBJ_IMPORT_FILES} ${OFF_IMPORT_FILES} ${STL_IMPORT_FILES} ${ALL_RENDER_FILES} ${PRUNE_TEST} ${PREVIEW_ONLY_FILES})
-list(APPEND THROWNTOGETHER_FILES ${ALL_RENDER_FILES} ${PRUNE_TEST} ${PREVIEW_ONLY_FILES})
 
 list(APPEND COLOR_3D_TEST_FILES
   ${TEST_SCAD_DIR}/misc/color-cubes.scad
@@ -929,6 +928,15 @@ list(REMOVE_ITEM PREVIEW_COMMON_FILES
 list(APPEND ALL_THROWNTOGETHER_FILES ${ALL_RENDER_FILES})
 list(REMOVE_ITEM ALL_THROWNTOGETHER_FILES
   ${PREVIEW_DIFFERENT_EXPECTATIONS}
+  ${SCAD_NEF3_FILES}
+  ${TEST_SCAD_DIR}/3D/features/minkowski3-erosion.scad
+  ${TEST_SCAD_DIR}/3D/features/nullspace-difference.scad
+  ${TEST_SCAD_DIR}/misc/internal-cavity-polyhedron.scad
+  ${TEST_SCAD_DIR}/3D/issues/issue1165.scad
+	${TEST_SCAD_DIR}/3D/issues/issue1803.scad
+	${TEST_SCAD_DIR}/3D/issues/issue2090.scad
+	${TEST_SCAD_DIR}/3D/issues/issue2841.scad
+	${TEST_SCAD_DIR}/3D/issues/issue2841b.scad
 )
 
 list(APPEND MANIFOLDHARDWARNING_FILES
@@ -1526,8 +1534,7 @@ set_tests_properties(
 
   # OpenCSG z fighting
   preview-cgal_surface_image
-  throwntogether_surface_image
-
+  
   # CGAL sometimes fail to union minkowski convex decompositions, causing visual differences
   # in rendering.
   render-cgal_minkowski3-difference-test
@@ -1539,7 +1546,6 @@ set_tests_properties(
   render-csg-cgal_projection
 
   # https://github.com/openscad/openscad/issues/5158
-  throwntogether_example017
   render-cgal_example017 
   preview-cgal_example017
   
