@@ -964,7 +964,7 @@ set_test_config(Heavy FILES
 
 # Bugs
 set_test_config(Bugs FILES ${BUGS_FILES} ${BUGS_2D_FILES} PREFIXES
- render-cgal render-manifold render-csg-cgal preview-cgal preview-manifold throwntogether)
+ render-cgal render-manifold render-csg-cgal preview-cgal preview-manifold throwntogether-cgal throwntogether-manifold)
 set_test_config(Bugs FILES ${BUGS_FILES} PREFIXES
   preview-off render-monotone 
   preview-stl 
@@ -991,7 +991,7 @@ remove_test_config(Bugs FILES
 # Examples
 set_test_config(Examples FILES ${EXAMPLE_FILES} PREFIXES
   render-cgal render-manifold
-  preview-cgal preview-manifold preview-manifold preview throwntogether 
+  preview-cgal preview-manifold preview-manifold preview throwntogether-cgal throwntogether-manifold 
   render-csg-cgal render-monotone 
   preview-off render-off dump-examples)
 set_test_config(Examples FILES ${EXAMPLE_2D_FILES} PREFIXES render-dxf)
@@ -1009,7 +1009,8 @@ set_test_config(Examples FILES ${EXAMPLE_2D_FILES} PREFIXES render-dxf)
 # o render-force-manifold: Export to PNG using --render=force with --backend=manifold
 # o preview-cgal: Export to PNG using OpenCSG
 # o preview-manifold: Export to PNG in preview mode with --backend=manifold
-# o throwntogether: Export to PNG using the Throwntogether renderer
+# o throwntogether-cgal: Export to PNG using the Throwntogether renderer
+# o throwntogether-manifold
 # o render-csg-cgal: 1) Export to .csg, 2) import .csg and export to PNG (--render)
 # o render-monotone: Same as render-cgal but with the "Monotone" color scheme
 # o preview-stl: Export to STL, Re-import and render to PNG (--render)
@@ -1079,7 +1080,8 @@ add_cmdline_test(preview-manifold OPENSCAD SUFFIX png FILES ${PREVIEW_COMMON_FIL
 add_cmdline_test(preview-manifold OPENSCAD SUFFIX png FILES ${PREVIEW_DIFFERENT_EXPECTATIONS} ARGS --backend=manifold)
 endif()
 
-add_cmdline_test(throwntogether  OPENSCAD FILES ${ALL_THROWNTOGETHER_FILES} SUFFIX png ARGS --preview=throwntogether)
+add_cmdline_test(throwntogether-cgal  OPENSCAD FILES ${ALL_THROWNTOGETHER_FILES} SUFFIX png EXPECTEDDIR throwntogether ARGS --preview=throwntogether --backend=cgal)
+add_cmdline_test(throwntogether-manifold  OPENSCAD FILES ${ALL_THROWNTOGETHER_FILES} SUFFIX png EXPECTEDDIR throwntogether ARGS --preview=throwntogether --backend=manifold)
 
 set(VIEWBOX_TEST "${TEST_SCAD_DIR}/svg/extruded/viewbox-test.scad")
 foreach(TEST ${SVG_VIEWBOX_TESTS})
@@ -1570,7 +1572,7 @@ set_tests_properties(
   render-cgal_issue2301
   preview-cgal_issue2301
   render-csg-cgal_issue2301
-  throwntogether_issue2301
+  throwntogether-cgal_issue2301
 
   # https://github.com/openscad/openscad/issues/2090
   render-cgal_issue2090
@@ -1616,6 +1618,10 @@ set_tests_properties(
   # https://github.com/openscad/openscad/issues/5135
   render-force-manifold_issue5135-bad
 
+  # https://github.com/openscad/openscad/issues/5218
+  throwntogether-manifold_issue5218
+  throwntogether-manifold_issue913
+
   PROPERTIES DISABLED TRUE
 )
 endif (ENABLE_MANIFOLD)
@@ -1652,7 +1658,8 @@ else()
     preview-cgal_import_3mf-tests
     render-cgal_import_3mf-tests
     render-csg-cgal_import_3mf-tests
-    throwntogether_import_3mf-tests
+    throwntogether-cgal_import_3mf-tests
+    throwntogether-manifold_import_3mf-tests
     PROPERTIES DISABLED TRUE
   )
 endif(LIB3MF_FOUND)
@@ -1660,7 +1667,7 @@ endif(LIB3MF_FOUND)
 list(APPEND NEF3_BROKEN_TESTS
   render-cgal_nef3_broken
   preview-cgal_nef3_broken
-  throwntogether_nef3_broken
+  throwntogether-cgal_nef3_broken
   render-csg-cgal_nef3_broken
 )
 
