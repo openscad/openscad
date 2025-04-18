@@ -1514,6 +1514,10 @@ set_tests_properties(
   # z-fighting different on different machines
   preview-cgal_issue1165
   preview-cgal_issue1215
+  throwntogether-cgal_issue1089
+  throwntogether-manifold_issue1089
+  throwntogether-cgal_issue1215
+  throwntogether-manifold_issue1215
 
   # The inf/nan tests fail when exporting CSG and rendering that output again
   # as currently inf/nan is written directly to the CSG file (e.g. r = inf)
@@ -1535,6 +1539,7 @@ set_tests_properties(
   # by GLSL fwidth(), which causes horizonal line artifacts when using
   # wireframe rendering in preview model.
   preview-view-edges-cgal_view-options-tests
+  preview-view-edges-manifold_view-options-tests
   render-view-edges-manifold_view-options-tests
   preview-view-axes-scales-edges_view-options-tests
 
