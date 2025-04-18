@@ -795,7 +795,7 @@ void initPython(const std::string& binDir, const std::string &scriptpath, double
     std::string sep = "";
     std::ostringstream stream;
 #ifdef _WIN32
-    char sepchar = ':';
+    char sepchar = ';';
     sep = sepchar;
     stream << PlatformUtils::applicationPath() << "\\..\\libraries\\python";
 #else
