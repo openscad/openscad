@@ -927,6 +927,7 @@ list(APPEND ALL_THROWNTOGETHER_FILES ${ALL_RENDER_FILES})
 list(REMOVE_ITEM ALL_THROWNTOGETHER_FILES
   ${PREVIEW_DIFFERENT_EXPECTATIONS}
   ${SCAD_NEF3_FILES}
+  ${TEST_SCAD_DIR}/3D/features/color-tests2.scad
   ${TEST_SCAD_DIR}/3D/features/minkowski3-erosion.scad
   ${TEST_SCAD_DIR}/3D/features/nullspace-difference.scad
   ${TEST_SCAD_DIR}/misc/internal-cavity-polyhedron.scad
