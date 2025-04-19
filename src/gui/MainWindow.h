@@ -240,7 +240,7 @@ private slots:
   void actionSaveACopy();
   void actionReload();
   void actionShowLibraryFolder();
-  void actionTreasureTrove();
+  void actionShowBackupFiles();
   void convertTabsToSpaces();
   void copyText();
 

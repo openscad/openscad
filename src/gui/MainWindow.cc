@@ -450,7 +450,7 @@ MainWindow::MainWindow(const QStringList& filenames) :
   connect(this->fileActionClose, &QAction::triggered, tabManager, &TabManager::closeCurrentTab);
   connect(this->fileActionQuit, &QAction::triggered, scadApp, &OpenSCADApp::quit, Qt::QueuedConnection);
   connect(this->fileShowLibraryFolder, &QAction::triggered, this, &MainWindow::actionShowLibraryFolder);
-  connect(this->fileShowTreasureTrove, &QAction::triggered, this, &MainWindow::actionTreasureTrove);
+  connect(this->fileShowBackupFiles, &QAction::triggered, this, &MainWindow::actionShowBackupFiles);
 
 #ifdef ENABLE_PYTHON
   connect(this->fileActionPythonRevoke, &QAction::triggered, this, &MainWindow::actionPythonRevokeTrustedFiles);
@@ -1748,7 +1748,7 @@ void MainWindow::actionShowLibraryFolder()
   QDesktopServices::openUrl(QUrl::fromLocalFile(url));
 }
 
-void MainWindow::actionTreasureTrove()
+void MainWindow::actionShowBackupFiles()
 {
   QString dirname (PlatformUtils::backupPath().c_str());
   QStringList extensions = {};
@@ -1759,23 +1759,30 @@ void MainWindow::actionTreasureTrove()
   extensions.replaceInStrings(QRegularExpression("^"), "*.");
   const auto filter = QString("OpenSCAD Backups (%1)").arg(extensions.join(" "));
 
-  // Bug in QT: dirname is ignored for getOpenFileName
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+  // QT5 just shows the most recent files in my place , getSaveFileName workaround
   QString filename = QFileDialog::getSaveFileName(this, "Open File", dirname, filter);
+#else
+  QString filename = QFileDialog::getOpenFileName(this, "Open File", dirname, filter);
+#endif
 
   if(filename.size() == 0) return; // dont proceed when cancelled
   
   tabManager->actionNew();
 
-  std::ostringstream stream; // compile restored design
+  QString result;
+  QTextStream stream(&result); // compile restored design
   stream << "/*\n"; // put into comments in case it crashes (again)			     
   std::ifstream file( filename.toStdString());
   if ( file ) {
-    stream << file.rdbuf();
+    std::string file_content;
+    std::getline(file, file_content, '\0');
+    stream << file_content.c_str();
     file.close();
   }
 
-  stream << "\n*/\n";		    
-  activeEditor->setText(stream.str().c_str());
+  stream << "\n*/\n";
+  activeEditor->setText(result);
 }
 
 void MainWindow::actionReload()

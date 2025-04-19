@@ -260,6 +260,7 @@
     <addaction name="fileActionNewWindow"/>
     <addaction name="fileActionOpenWindow"/>
     <addaction name="fileActionClose"/>
+    <addaction name="fileShowBackupFiles"/>
     <addaction name="separator"/>
     <addaction name="fileActionSave"/>
     <addaction name="fileActionSaveAs"/>
@@ -271,7 +272,6 @@
     <addaction name="menuPython"/>
     <addaction name="separator"/>
     <addaction name="fileShowLibraryFolder"/>
-    <addaction name="fileShowTreasureTrove"/>
     <addaction name="separator"/>
     <addaction name="fileActionQuit"/>
    </widget>
@@ -1449,9 +1449,9 @@
     <string>Show &amp;Library Folder...</string>
    </property>
   </action>
-  <action name="fileShowTreasureTrove">
+  <action name="fileShowBackupFiles">
    <property name="text">
-    <string>Show Treasure Trove</string>
+    <string>Show Backup Files</string>
    </property>
   </action>
   <action name="viewActionResetView">
