@@ -1559,6 +1559,8 @@ set_tests_properties(
   # https://github.com/openscad/openscad/issues/5158
   render-cgal_example017 
   preview-cgal_example017
+  throwntogether-cgal_example017
+  throwntogether-manifold_example017
   
   # https://github.com/openscad/openscad/issues/4398
   render-csg-cgal_logo_and_text
@@ -1627,6 +1629,7 @@ set_tests_properties(
   # https://github.com/openscad/openscad/issues/5218
   throwntogether-manifold_issue5218
   throwntogether-manifold_issue913
+  throwntogether-manifold_example016
 
   PROPERTIES DISABLED TRUE
 )
