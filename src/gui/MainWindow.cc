@@ -1750,39 +1750,13 @@ void MainWindow::actionShowLibraryFolder()
 
 void MainWindow::actionShowBackupFiles()
 {
-  QString dirname (PlatformUtils::backupPath().c_str());
-  QStringList extensions = {};
-  extensions << "scad" << "csg";
-#ifdef ENABLE_PYTHON
-    extensions << "py";
-#endif
-  extensions.replaceInStrings(QRegularExpression("^"), "*.");
-  const auto filter = QString("OpenSCAD Backups (%1)").arg(extensions.join(" "));
-
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-  // QT5 just shows the most recent files in my place , getSaveFileName workaround
-  QString filename = QFileDialog::getSaveFileName(this, "Open File", dirname, filter);
-#else
-  QString filename = QFileDialog::getOpenFileName(this, "Open File", dirname, filter);
-#endif
-
+  QString filename = UIUtils::getBackupFileName(this);
   if(filename.size() == 0) return; // dont proceed when cancelled
-  
   tabManager->actionNew();
-
-  QString result;
-  QTextStream stream(&result); // compile restored design
-  stream << "/*\n"; // put into comments in case it crashes (again)			     
-  std::ifstream file( filename.toStdString());
-  if ( file ) {
-    std::string file_content;
-    std::getline(file, file_content, '\0');
-    stream << file_content.c_str();
-    file.close();
-  }
-
-  stream << "\n*/\n";
-  activeEditor->setText(result);
+  QString errorString;
+  QString result = UIUtils::readFileContents(filename, errorString);
+  if(result == nullptr) return;
+  activeEditor->setText("assert(0);\n"+result);
 }
 
 void MainWindow::actionReload()
