@@ -14,12 +14,10 @@
 
 #include "geometry/Geometry.h"
 #include "geometry/linalg.h"
-#include "geometry/manifold/ManifoldGeometry.h"
 #include "libtess2/Include/tesselator.h"
 #include "utils/printutils.h"
 #include "geometry/Reindexer.h"
 #include "glview/RenderSettings.h"
-#include "Feature.h"
 #include "geometry/PolySet.h"
 
 #ifdef ENABLE_CGAL
@@ -28,6 +26,7 @@
 
 #ifdef ENABLE_MANIFOLD
 #include "geometry/manifold/manifoldutils.h"
+#include "geometry/manifold/ManifoldGeometry.h"
 #endif
 
 static void *stdAlloc(void *userData, unsigned int size) {
