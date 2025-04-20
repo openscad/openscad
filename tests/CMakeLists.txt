@@ -1545,7 +1545,8 @@ set_tests_properties(
 
   # OpenCSG z fighting
   preview-cgal_surface_image
-  
+  throwntogether-cgal_surface_image
+
   # CGAL sometimes fail to union minkowski convex decompositions, causing visual differences
   # in rendering.
   render-cgal_minkowski3-difference-test
@@ -1618,6 +1619,7 @@ set_tests_properties(
 
   # OpenCSG z fighting
   preview-manifold_surface_image
+  throwntogether-manifold_surface_image
 
   # https://github.com/openscad/openscad/issues/5158
   preview-manifold_example017
