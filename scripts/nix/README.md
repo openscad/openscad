@@ -18,3 +18,5 @@ cmake --build build
 # this must be done in a shell with dependencies installed
 ./build/openscad
 ```
+
+For packaging see [nixpgs](https://github.com/NixOS/nixpkgs/blob/master/pkgs/applications/graphics/openscad/default.nix) for the Qt5 release, or [this gist](https://gist.github.com/AaronVerDow/b945a96dbcf35edfc13f543662966534) for a more up to date Qt6 pacakge.
