@@ -402,7 +402,7 @@ def only(obj:PyOpenSCAD) -> PyOpenSCAD:
     ...
 
 def projection(obj:PyOpenSCAD, cut:bool, convexity:int) -> PyOpenSCAD:
-    """Crated 2D Projection from a 3D Object
+    """Create 2D Projection from a 3D Object
     """
     ...
 
