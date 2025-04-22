@@ -104,6 +104,11 @@ struct ExportPdfOptions {
     std::string metaDataAuthor;
     std::string metaDataSubject;
     std::string metaDataKeywords;
+    bool fill = false;
+    std::string fillColor = "black";
+    bool stroke = true;
+    std::string strokeColor = "black";
+    double strokeWidth = 1;
 
   static std::shared_ptr<const ExportPdfOptions> withOptions(const CmdLineExportOptions& cmdLineOptions) {
     return std::make_shared<const ExportPdfOptions>(ExportPdfOptions{
@@ -119,6 +124,11 @@ struct ExportPdfOptions {
         .metaDataAuthor = set_cmd_line_option(cmdLineOptions, Settings::SECTION_EXPORT_PDF, Settings::SettingsExportPdf::exportPdfMetaDataAuthor),
         .metaDataSubject = set_cmd_line_option(cmdLineOptions, Settings::SECTION_EXPORT_PDF, Settings::SettingsExportPdf::exportPdfMetaDataSubject),
         .metaDataKeywords = set_cmd_line_option(cmdLineOptions, Settings::SECTION_EXPORT_PDF, Settings::SettingsExportPdf::exportPdfMetaDataKeywords),
+        .fill = SPDF::exportPdfFill.value(),
+        .fillColor = SPDF::exportPdfFillColor.value(),
+        .stroke = SPDF::exportPdfStroke.value(),
+        .strokeColor = SPDF::exportPdfStrokeColor.value(),
+        .strokeWidth = SPDF::exportPdfStrokeWidth.value(),
     });
   }
 
