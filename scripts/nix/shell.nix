@@ -28,9 +28,16 @@ pkgs.mkShell {
     python3
     python3Packages.numpy
     qscintilla
-    qt6.full
     tbb
     wayland
     wayland-protocols
+
+    libsForQt5.full
+    # qt6.full
+    # qt6.qttools
+    # qt6.wrapQtAppsHook
+    # qt6.qt5compat
+    # qt6.qtmultimedia
+    # qt6.qtbase
   ];
 }
