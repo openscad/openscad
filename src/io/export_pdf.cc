@@ -290,10 +290,21 @@ void export_pdf(const std::shared_ptr<const Geometry>& geom, std::ostream& outpu
   // Note Y axis + is DOWN.  Drawings have to invert Y, but these translations account for that.
   cairo_translate(cr, tcX, tcY);  // Center page on geometry;
 
-  cairo_set_source_rgba(cr, 0., 0., 0., 1.0); // Set black line, opaque
-  cairo_set_line_width(cr, 1);  // 1 point width.
-  draw_geom(geom, cr);
-  cairo_stroke(cr);
+
+  if (options->fill) {
+    LOG("Fill PDF");
+    cairo_set_source_rgba(cr, 0., 0., 0., 1.0); // black
+    draw_geom(geom, cr);
+    cairo_fill(cr);
+  }
+
+  if (options->stroke) {
+    LOG("Stroke PDF");
+    cairo_set_source_rgba(cr, 0., 0., 0., 1.0); // black
+    cairo_set_line_width(cr, options->strokeWidth);
+    draw_geom(geom, cr);
+    cairo_stroke(cr);
+  }
     
     // Set Annotations
     const std::string about = "Scale is to calibrate actual printed dimension. Check both X and Y. Measure between tick 0 and last tick";
