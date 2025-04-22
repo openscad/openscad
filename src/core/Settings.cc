@@ -333,10 +333,10 @@ SettingsEntryEnum<ExportPdfPaperOrientation> SettingsExportPdf::exportPdfOrienta
   {ExportPdfPaperOrientation::LANDSCAPE, "landscape", _("Landscape (Horizontal)")},
   {ExportPdfPaperOrientation::AUTO,      "auto",      _("Auto")}
 }, ExportPdfPaperOrientation::PORTRAIT);
-SettingsEntryBool SettingsExportPdf::exportPdfShowFilename(SECTION_EXPORT_PDF, "show-filename", true);
+SettingsEntryBool SettingsExportPdf::exportPdfShowFilename(SECTION_EXPORT_PDF, "show-filename", false);
 SettingsEntryBool SettingsExportPdf::exportPdfShowScale(SECTION_EXPORT_PDF, "show-scale", true);
 SettingsEntryBool SettingsExportPdf::exportPdfShowScaleMessage(SECTION_EXPORT_PDF, "show-scale-message", true);
-SettingsEntryBool SettingsExportPdf::exportPdfShowGrid(SECTION_EXPORT_PDF, "show-grid", true);
+SettingsEntryBool SettingsExportPdf::exportPdfShowGrid(SECTION_EXPORT_PDF, "show-grid", false);
 SettingsEntryDouble SettingsExportPdf::exportPdfGridSize(SECTION_EXPORT_PDF, "grid-size", 1.0, 1.0, 100.0, 10.0);
 SettingsEntryBool SettingsExportPdf::exportPdfAddMetaData(SECTION_EXPORT_PDF, "add-meta-data", true);
 SettingsEntryBool SettingsExportPdf::exportPdfAddMetaDataAuthor(SECTION_EXPORT_PDF, "add-meta-data-author", false);

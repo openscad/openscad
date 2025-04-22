@@ -76,6 +76,21 @@ bool is2D(FileFormat format);
 
 using CmdLineExportOptions = std::unordered_map<std::string, std::unordered_map<std::string, std::string>>;
 
+template<typename settings_entry_type>
+auto set_cmd_line_option(const CmdLineExportOptions& cmdLineOptions, const std::string& section, const settings_entry_type& se)
+{
+  if (cmdLineOptions.count(section) == 0) {
+    return se.defaultValue();
+  }
+
+  const auto& o = cmdLineOptions.at(section);
+  if (o.count(se.name()) == 0) {
+    return se.defaultValue();
+  }
+
+  return se.decode(o.at(se.name()));
+}
+
 // include defaults to use without dialog or direction.
 // Defaults match values used prior to incorporation of options.
 struct ExportPdfOptions {
@@ -93,11 +108,20 @@ struct ExportPdfOptions {
     std::string metaDataKeywords;
 
   static std::shared_ptr<const ExportPdfOptions> withOptions(const CmdLineExportOptions& cmdLineOptions) {
-    ExportPdfOptions options;
-    if (cmdLineOptions.count(Settings::SECTION_EXPORT_PDF) > 0) {
-      //const auto& o = cmdLineOptions.at(Settings::SECTION_EXPORT_PDF);
-    }
-    return std::make_shared<const ExportPdfOptions>(options);
+    return std::make_shared<const ExportPdfOptions>(ExportPdfOptions{
+        .showScale = set_cmd_line_option(cmdLineOptions, Settings::SECTION_EXPORT_PDF, Settings::SettingsExportPdf::exportPdfShowScale),
+        .showScaleMsg = set_cmd_line_option(cmdLineOptions, Settings::SECTION_EXPORT_PDF, Settings::SettingsExportPdf::exportPdfShowScaleMessage),
+        .showGrid = set_cmd_line_option(cmdLineOptions, Settings::SECTION_EXPORT_PDF, Settings::SettingsExportPdf::exportPdfShowGrid),
+        .gridSize = set_cmd_line_option(cmdLineOptions, Settings::SECTION_EXPORT_PDF, Settings::SettingsExportPdf::exportPdfGridSize),
+        .showDesignFilename = set_cmd_line_option(cmdLineOptions, Settings::SECTION_EXPORT_PDF, Settings::SettingsExportPdf::exportPdfShowFilename),
+        .orientation = set_cmd_line_option(cmdLineOptions, Settings::SECTION_EXPORT_PDF, Settings::SettingsExportPdf::exportPdfOrientation),
+        .paperSize = set_cmd_line_option(cmdLineOptions, Settings::SECTION_EXPORT_PDF, Settings::SettingsExportPdf::exportPdfPaperSize),
+        .addMetaData = set_cmd_line_option(cmdLineOptions, Settings::SECTION_EXPORT_PDF, Settings::SettingsExportPdf::exportPdfAddMetaData),
+        .metaDataTitle = set_cmd_line_option(cmdLineOptions, Settings::SECTION_EXPORT_PDF, Settings::SettingsExportPdf::exportPdfMetaDataTitle),
+        .metaDataAuthor = set_cmd_line_option(cmdLineOptions, Settings::SECTION_EXPORT_PDF, Settings::SettingsExportPdf::exportPdfMetaDataAuthor),
+        .metaDataSubject = set_cmd_line_option(cmdLineOptions, Settings::SECTION_EXPORT_PDF, Settings::SettingsExportPdf::exportPdfMetaDataSubject),
+        .metaDataKeywords = set_cmd_line_option(cmdLineOptions, Settings::SECTION_EXPORT_PDF, Settings::SettingsExportPdf::exportPdfMetaDataKeywords),
+    });
   }
 
   static const std::shared_ptr<const ExportPdfOptions> fromSettings() {
@@ -117,21 +141,6 @@ struct ExportPdfOptions {
     });
   }
 };
-
-template<typename settings_entry_type>
-auto set_cmd_line_option(const CmdLineExportOptions& cmdLineOptions, const std::string& section, const settings_entry_type& se)
-{
-  if (cmdLineOptions.count(section) == 0) {
-    return se.defaultValue();
-  }
-
-  const auto& o = cmdLineOptions.at(Settings::SECTION_EXPORT_3MF);
-  if (o.count(se.name()) == 0) {
-    return se.defaultValue();
-  }
-
-  return se.decode(o.at(se.name()));
-}
 
 struct Export3mfOptions {
   Export3mfColorMode colorMode;
