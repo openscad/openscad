@@ -31,8 +31,10 @@
 #include <unordered_map>
 #include "src/utils/boost-utils.h"
 #include <src/utils/hash.h>
+#ifdef ENABLE_CAIRO
 #include <cairo.h>
 #include <cairo-pdf.h>
+#endif
 
 #include "export_foldable.h"
 

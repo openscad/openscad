@@ -127,9 +127,9 @@ std::unique_ptr<Geometry> rotatePolygonSub(const RotateExtrudeNode& node, const 
         Outline2d curFace;
         Outline2d outl = python_getprofile(node.profile_func, node.fn, j/(double) fragments);
 	vertices2d = outl.vertices;
-      }
+      } else
 #endif
-      else vertices2d = outline.vertices;
+      vertices2d = outline.vertices;
 #ifdef ENABLE_PYTHON	      
       if(node.twist_func != NULL) cur_twist = python_doublefunc(node.twist_func, 0); 
       else

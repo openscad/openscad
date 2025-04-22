@@ -4,7 +4,9 @@
 #include "utils/printutils.h"
 #include "platform/PlatformUtils.h"
 #include "glview/system-gl.h"
+#ifndef OPENSCAD_NOGUI
 #include "core/TextureNode.h"
+#endif
 
 #include <sstream>
 #include <Eigen/LU>
