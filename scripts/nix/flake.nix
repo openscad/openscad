@@ -12,36 +12,36 @@
         devShells.default = pkgs.mkShell {
           buildInputs = with pkgs; [
             bison
-            flex
-            pkg-config
-            gettext
-            cmake
-            python3
-            python3Packages.numpy
-            ghostscript
-            eigen
             boost
-            opencsg
-            manifold
+            cairo
             cgal
-            mpfr
-            gmp
+            cmake
+            double-conversion
+            eigen
+            flex
+            fontconfig
+            freetype
+            gettext
+            ghostscript
             glib
+            gmp
             harfbuzz
             lib3mf
-            libzip
-            double-conversion
-            freetype
-            fontconfig
-            qscintilla
-            cairo
-            tbb
-            libGLU
             libGL
+            libGLU
+            libxml2
+            libzip
+            manifold
+            mpfr
+            opencsg
+            pkg-config
+            python3
+            python3Packages.numpy
+            qscintilla
+            qt6.full
+            tbb
             wayland
             wayland-protocols
-            libxml2
-            qt6.full
           ];
         };
       });
