@@ -880,6 +880,7 @@ int main(int argc, char **argv)
     ("check-parameters", po::value<std::string>(), "=true/false, configure the parameter check for user modules and functions")
     ("check-parameter-ranges", po::value<std::string>(), "=true/false, configure the parameter range check for builtin modules")
     ("debug", po::value<std::string>(), "special debug info - specify 'all' or a set of source file names")
+    ("run-tests", po::value<std::string>(), "special testing mode - specify 'all' or a set of test to run")
 #ifdef ENABLE_PYTHON
   ("trust-python",  "Trust python")
   ("python-module", po::value<std::string>(), "=module Call pip python module")
