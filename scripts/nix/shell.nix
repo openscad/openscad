@@ -32,16 +32,16 @@ pkgs.mkShell {
     wayland-protocols
 
     # QT5 
-    libsForQt5.full
-    qscintilla
+    # libsForQt5.full
+    # qscintilla
 
     #QT6
-    # qt6Packages.qscintilla
-    # qt6.full
-    # qt6.qttools
-    # qt6.wrapQtAppsHook
-    # qt6.qt5compat
-    # qt6.qtmultimedia
-    # qt6.qtbase
+    qt6.full
+    qt6.qt5compat
+    qt6.qtbase
+    qt6.qtmultimedia
+    qt6.qttools
+    qt6.wrapQtAppsHook
+    qt6Packages.qscintilla
   ];
 }

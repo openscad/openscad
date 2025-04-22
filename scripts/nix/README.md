@@ -10,8 +10,8 @@ cd scripts/nix
 nix-shell
 cd ../..
 
-# run compile commands from main README.md
-cmake -B build -DEXPERIMENTAL=1
+# run compile commands from main README.md, with QT6 enabled
+cmake -B build -DEXPERIMENTAL=1 -DUSE_QT6=on
 cmake --build build
 
 # launch openscad from build directory
