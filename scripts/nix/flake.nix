@@ -17,11 +17,12 @@
             gettext
             cmake
             python3
+            python3Packages.numpy
             ghostscript
             eigen
             boost
-            glew
             opencsg
+            manifold
             cgal
             mpfr
             gmp
@@ -40,7 +41,7 @@
             wayland
             wayland-protocols
             libxml2
-            libsForQt5.full
+            qt6.full
           ];
         };
       });
