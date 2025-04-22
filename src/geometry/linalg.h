@@ -32,6 +32,7 @@ using Eigen::Matrix4d;
 bool matrix_contains_infinity(const Transform3d& m);
 bool matrix_contains_nan(const Transform3d& m);
 int32_t hash_floating_point(double v);
+bool linsystem( Vector3d v1,Vector3d v2,Vector3d v3,Vector3d pt,Vector3d &res,double *detptr = nullptr);
 
 template <typename Derived> bool is_finite(const Eigen::MatrixBase<Derived>& x) {
   //infinity minus infinity is NaN, which never compares equal to itself

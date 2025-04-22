@@ -709,7 +709,6 @@ std::string PolygonNode::toString() const
 }
 
 void get_fnas(double& fn, double& fa, double& fs);
-int linsystem( Vector3d v1,Vector3d v2,Vector3d v3,Vector3d pt,Vector3d &res,double *detptr=nullptr);
 
 VectorOfVector2d  PolygonNode::createGeometry_sub(const std::vector<Vector3d> &points, const std::vector<size_t> &path, double fn, double fa, double fs) const
 {
@@ -840,7 +839,7 @@ std::unique_ptr<const Geometry> SplineNode::createGeometry() const
 
     bool convex=true;
     Vector2d diff=this->points[(i+1)%n]-this->points[i];
-    if(linsystem( tangent[i], tangent[(i+1)%n],dirz,Vector3d(diff[0], diff[1], 0),res)) convex=false;
+    if(linsystem( tangent[i], tangent[(i+1)%n],dirz,Vector3d(diff[0], diff[1], 0),res, nullptr)) convex=false;
     if(res[0] < -1e-6 || res[1] < -1e-6) convex=false;
     if(convex) {
       Vector2d cornerpt=this->points[i] + res[0]*tangent[i].head<2>();
@@ -862,13 +861,13 @@ std::unique_ptr<const Geometry> SplineNode::createGeometry() const
       Vector2d diff=midpt - this->points[i];
 
       // 1st arc
-      if(linsystem( tangent[i], Vector3d(midtang[0], midtang[1], 0),dirz,Vector3d(diff[0], diff[1], 0),res)) printf("prog errr\n");
+      if(linsystem( tangent[i], Vector3d(midtang[0], midtang[1], 0),dirz,Vector3d(diff[0], diff[1], 0),res, nullptr)) printf("prog errr\n");
       Vector2d cornerpt1=this->points[i] + res[0]*tangent[i].head<2>();
       auto pts =draw_arc(fn, tangent[i].head<2>(), res[0], midtang, res[1],cornerpt1);	    
       for(const Vector2d &pt: pts) result.vertices.push_back(pt);	      
       
       // 2nd arc
-      if(linsystem( Vector3d(midtang[0], midtang[1], 0),tangent[(i+1)%n],dirz,Vector3d(diff[0], diff[1], 0),res)) printf("prog errr\n");
+      if(linsystem( Vector3d(midtang[0], midtang[1], 0),tangent[(i+1)%n],dirz,Vector3d(diff[0], diff[1], 0),res, nullptr)) printf("prog errr\n");
       Vector2d cornerpt2=this->points[(i+1)%n] - res[1]*tangent[(i+1)%n].head<2>();
       auto pts2 =draw_arc(fn, midtang, res[0], tangent[(i+1)%n].head<2>(), res[1], cornerpt2);	    
       for(const Vector2d &pt: pts2) result.vertices.push_back(pt);	      

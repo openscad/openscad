@@ -10,7 +10,6 @@ extern void SchemaInit( class Registry & );
 // https://github.com/slugdev/stltostp/blob/master/StepKernel.cpp
 //
 Vector4d calcTriangleNormal(const std::vector<Vector3d> &vertices,const IndexedFace &pol);
-int linsystem( Vector3d v1,Vector3d v2,Vector3d v3,Vector3d pt,Vector3d &res,double *detptr=NULL);
 bool GeometryUtils::tessellatePolygonWithHoles(const std::vector<Vector3f>& vertices,
                                                const std::vector<IndexedFace>& faces,
                                                std::vector<IndexedTriangle>& triangles,
@@ -65,10 +64,10 @@ void import_shell(PolySetBuilder &builder, StepKernel &sk, StepKernel::Shell *sh
 	  Vector3d ydir=zdir.cross(xdir).normalized();
 	  // calc start angle
 	  Vector3d res;
-	  if(linsystem( xdir, ydir, zdir, pt1->pt - axis->point->pt,res)) continue;
+	  if(linsystem( xdir, ydir, zdir, pt1->pt - axis->point->pt,res, nullptr)) continue;
 	  double startang=atan2(res[1], res[0]);
 
-	  if(linsystem( xdir, ydir, zdir, pt2->pt - axis->point->pt,res)) continue;
+	  if(linsystem( xdir, ydir, zdir, pt2->pt - axis->point->pt,res, nullptr)) continue;
 	  double endang=atan2(res[1], res[0]);
 
 	  if(endang <= startang) endang += 2*M_PI;

@@ -174,7 +174,7 @@ bool pointInPolygon(const std::vector<Vector3d> &vert, const IndexedFace &bnd, i
 		const Vector3d &p1=vert[bnd[i]];
 		const Vector3d &p2=vert[bnd[(i+1)%n]];
 
-                if(linsystem( p2-p1, raydir,fn,pt-p1,res)) continue;
+                if(linsystem( p2-p1, raydir,fn,pt-p1,res, nullptr)) continue;
 
 		if(res[1] > 0) continue; // not behind
 		if(res[0] < 0) continue; // within segment
@@ -2488,7 +2488,7 @@ static int pullObject_calccut(const PullNode &node, Vector3d p1, Vector3d p2,Vec
 	Vector3d z(0,0,1);
 	v1=node.dir.cross(dir);
 	v2=node.dir.cross(v1);
-	if(linsystem(dir,v1,v2,node.anchor-p1,res)) return 1;
+	if(linsystem(dir,v1,v2,node.anchor-p1,res, nullptr)) return 1;
 
 	if(res[0] < 0 || res[0] > 1) return 1;
 	r =p1+dir*res[0];

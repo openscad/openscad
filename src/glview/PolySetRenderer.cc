@@ -300,8 +300,6 @@ BoundingBox PolySetRenderer::getBoundingBox() const
   return bbox;
 }
 
-int linsystem( Vector3d v1,Vector3d v2,Vector3d v3,Vector3d pt,Vector3d &res,double *detptr=NULL);
-
 std::shared_ptr<SelectedObject>
 PolySetRenderer::findModelObject(const Vector3d &near_pt, const Vector3d &far_pt, int /*mouse_x*/,
                               int /*mouse_y*/, double tolerance) {
@@ -381,7 +379,7 @@ PolySetRenderer::findModelObject(const Vector3d &near_pt, const Vector3d &far_pt
 	Vector3d total = far_pt - vertices[ind1];
 
 	Vector3d res;
-	if(linsystem(v1, v2, v3, total, res)) continue;
+	if(linsystem(v1, v2, v3, total, res, nullptr)) continue;
         if(res[0] > 0) continue;
         if(res[1] < 0 || res[2] < 0) continue;
         if(res[1] + res[2] > 1) continue;	

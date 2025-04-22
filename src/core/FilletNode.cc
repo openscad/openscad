@@ -69,9 +69,6 @@ std::shared_ptr<const PolySet> childToPolySet( std::shared_ptr<AbstractNode> chi
   return PolySetUtils::getGeometryAsPolySet(geom);
 }
 
-int linsystem( Vector3d v1,Vector3d v2,Vector3d v3,Vector3d pt,Vector3d &res,double *detptr);
-
-
 int point_in_polyhedron(const PolySet & ps, const Vector3d &pt) 
 {
   // polygons are clockwise     
