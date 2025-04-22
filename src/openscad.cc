@@ -494,6 +494,7 @@ int do_export(const CommandLine& cmd, const RenderVariables& render_variables, F
           root_geom = std::make_shared<GeometryList>(flatlist);
         } else {
           root_geom = GeometryUtils::getBackendSpecificGeometry(root_geom);
+          assert(root_geom != nullptr);
         }
         LOG("Converted to backend-specific geometry");
       }

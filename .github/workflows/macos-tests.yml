@@ -5,6 +5,13 @@ on:
     branches:
       - master
   pull_request:
+  workflow_dispatch:
+    inputs:
+      debug_enabled:
+        type: boolean
+        description: 'Run the build with ssh debugging enabled'
+        required: false
+        default: false
 
 jobs:
   build_and_test:
@@ -15,6 +22,9 @@ jobs:
         exclude:
           # macos-latest runs on arm64, which has a broken SW renderer
           - os: macos-latest
+          # QScintilla for qt5 is not longer available on Homebrew, and
+          # it's too much work to keep that running.
+          - qt: qt5
     runs-on:  ${{ matrix.os }}
     name: ${{ matrix.os }} ${{ matrix.qt }}
     # If it's not done in 60 minutes, something is wrong.
@@ -30,6 +40,13 @@ jobs:
       uses: actions/checkout@v4
       with:
         submodules: 'recursive'
+    - name: Setup (detached) tmate ssh session if enabled
+      if: ${{ github.event_name == 'workflow_dispatch' && inputs.debug_enabled }}
+      uses: mxschmitt/action-tmate@v3
+      timeout-minutes: 15
+      with:
+        detached: true
+        limit-access-to-actor: true
     - name: Install CMake
       uses: jwlawson/actions-setup-cmake@v2
       with:
