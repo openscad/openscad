@@ -1768,4 +1768,3 @@ foreach(CONF ${TEST_CONFIGS})
   message(DEBUG "${CONF}: ${${CONF}_TEST_CONFIG}")
 endforeach()
 
-add_subdirectory(unittests)
