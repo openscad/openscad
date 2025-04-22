@@ -376,11 +376,6 @@ def resize(obj:PyOpenSCAD) -> PyOpenSCAD:
     ...
 
 
-def resize(obj:PyOpenSCAD) -> PyOpenSCAD:
-    """Resize an Object
-    """
-    ...
-
 def concat(obj:PyOpenSCAD, r:float, fn:int) -> PyOpenSCAD:
     """Concatenate the Triangles of several objects together without any CSG
     """
