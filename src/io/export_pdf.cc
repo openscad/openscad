@@ -292,16 +292,14 @@ void export_pdf(const std::shared_ptr<const Geometry>& geom, std::ostream& outpu
 
 
   if (options->fill) {
-    LOG("Fill PDF");
     cairo_set_source_rgba(cr, 0., 0., 0., 1.0); // black
     draw_geom(geom, cr);
     cairo_fill(cr);
   }
 
   if (options->stroke) {
-    LOG("Stroke PDF");
     cairo_set_source_rgba(cr, 0., 0., 0., 1.0); // black
-    cairo_set_line_width(cr, options->strokeWidth);
+    cairo_set_line_width(cr, mm_to_points(options->strokeWidth));
     draw_geom(geom, cr);
     cairo_stroke(cr);
   }

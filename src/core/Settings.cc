@@ -348,7 +348,7 @@ SettingsEntryBool SettingsExportPdf::exportPdfFill(SECTION_EXPORT_PDF, "fill", f
 SettingsEntryString SettingsExportPdf::exportPdfFillColor(SECTION_EXPORT_PDF, "fill-color", "black");
 SettingsEntryBool SettingsExportPdf::exportPdfStroke(SECTION_EXPORT_PDF, "stroke", true);
 SettingsEntryString SettingsExportPdf::exportPdfStrokeColor(SECTION_EXPORT_PDF, "stroke-color", "black");
-SettingsEntryDouble SettingsExportPdf::exportPdfStrokeWidth(SECTION_EXPORT_PDF, "stroke-width", 0, 0.01, 1, 999);
+SettingsEntryDouble SettingsExportPdf::exportPdfStrokeWidth(SECTION_EXPORT_PDF, "stroke-width", 0, 0.01, 999, 0.35);
 
 SettingsEntryBool SettingsExport3mf::export3mfAlwaysShowDialog(SECTION_EXPORT_3MF, "always-show-dialog", true);
 SettingsEntryEnum<Export3mfColorMode> SettingsExport3mf::export3mfColorMode(SECTION_EXPORT_3MF, "color-mode", {
