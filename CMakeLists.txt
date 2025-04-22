@@ -1193,6 +1193,14 @@ set(GUI_HEADERS
     src/gui/parameter/ParameterWidget.h
 )
 
+set(GUITESTS_HEADERS
+  src/guitests/guitests.h
+)
+
+set(GUITESTS_SOURCES
+  src/guitests/guitests.cc
+)
+
 # To be added in Source for QtCreator to show them in project tree
 set(GUI_UIS
     ${GUI_UIS}
@@ -1235,7 +1243,7 @@ endif()
 if (ENABLE_MANIFOLD AND ENABLE_CGAL)
   list(APPEND Sources ${MANIFOLD_CGAL_SOURCES})
 endif()
-list(APPEND Sources src/openscad.cc src/guitests.cc src/guitests.h ${CORE_SOURCES} ${OFFSCREEN_SOURCES})
+list(APPEND Sources src/openscad.cc ${CORE_SOURCES} ${OFFSCREEN_SOURCES})
 
 set_source_files_properties(
   # flex and bison tends to generate many macros, which does not work well with
@@ -1282,6 +1290,8 @@ else()
   # GUI_UIS for .ui files to be indexed by Qt Creator despite AUTOUIC usage
   # GUI_HEADERS for .h files to be indexed by Qt Creator despite AUTOUIC usage
   list(APPEND Sources ${GUI_SOURCES} ${GUI_HEADER_ONLY} ${GUI_UIS} ${GUI_HEADERS})
+
+  list(APPEND Sources ${GUITESTS_SOURCES} ${GUITESTS_HEADER})
 endif()
 
 if (SNAPSHOT)

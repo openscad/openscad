@@ -698,12 +698,17 @@ bool TabManager::saveAs(EditorInterface *edt)
     }
   }
 
-  bool saveOk = save(edt, filename);
-  if (saveOk) {
-    auto [fname, fpath] = getEditorTabNameWithModifier(edt);
-    setEditorTabName(fname, fpath, edt);
-  }
-  return saveOk;
+  return saveAs(edt, filename);
+}
+
+bool TabManager::saveAs(EditorInterface *edt, const QString& filepath)
+{
+    bool saveOk = save(edt, filepath);
+    if (saveOk) {
+      auto [fname, fpath] = getEditorTabNameWithModifier(edt);
+      setEditorTabName(fname, fpath, edt);
+    }
+    return saveOk;
 }
 
 bool TabManager::saveACopy(EditorInterface *edt)
