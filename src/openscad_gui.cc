@@ -167,7 +167,7 @@ void registerDefaultIcon(const QString&) { }
 #define DESKTOP_FILENAME "openscad"
 #endif
 
-int gui(std::vector<std::string>& inputFiles, const std::filesystem::path& original_path, int argc, char **argv)
+int gui(std::vector<std::string>& inputFiles, const std::filesystem::path& original_path, int argc, char **argv, const std::string& gui_test)
 {
   OpenSCADApp app(argc, argv);
   // remove ugly frames in the QStatusBar when using additional widgets
@@ -292,15 +292,19 @@ int gui(std::vector<std::string>& inputFiles, const std::filesystem::path& origi
   }
 #endif
 
-    QTimer::singleShot(0, [&]()
-    {
-        std::cout << "YO LO RUNNER " << std::endl;
-        std::cout << " " << app.windowManager.getWindows().count();
-        for(auto w : app.windowManager.getWindows()){
-            runAllTest(w);
-        }
-        app.exit(0);
-    });
+  // Adds a singleshot timer that will be executed when the application will be started.
+  // the timer validates taht each mainwindow respects the expected UX behavior.
+  if(gui_test != "none"){
+      QTimer::singleShot(0, [&]()
+      {
+          std::cout << "YO LO RUNNER " << std::endl;
+          std::cout << " " << app.windowManager.getWindows().count();
+          for(auto w : app.windowManager.getWindows()){
+              runAllTest(w);
+          }
+          app.exit(0);
+      });
+  }
 
   InputDriverManager::instance()->init();
   return app.exec();

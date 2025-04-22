@@ -59,10 +59,9 @@ void runAllTest(MainWindow* window)
     // such design is questionnable and may refactor in a future
     global_window = window;
 
-    char* argv[1] {"Yo"};
+    char* argv[1] {"Tests"};
     runTests<TestTabManager>(1, argv);
 
-    std::cout << "WINDOW NAME. " << window->windowTitle().toStdString() << std::endl;
 }
 
 
