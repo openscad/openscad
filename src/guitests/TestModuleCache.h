@@ -6,7 +6,7 @@ class TestModuleCache: public UXTest
 {
     Q_OBJECT;
 private slots:
-    void test0();
+    void testBasicCache();
 
 private:
     QStringList files;
