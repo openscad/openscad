@@ -4357,6 +4357,7 @@ PyObject *python_import(PyObject *self, PyObject *args, PyObject *kwargs) {
 
 extern int curl_download(std::string url, std::string path);
 
+#ifndef OPENSCAD_NOGUI
 PyObject *python_nimport(PyObject *self, PyObject *args, PyObject *kwargs)
 {
   static bool called_already=false;	
@@ -4385,7 +4386,6 @@ PyObject *python_nimport(PyObject *self, PyObject *args, PyObject *kwargs)
     do_download=true;	  
   }
 
-  // TODO download
   if(do_download) {
     curl_download(url, path);	  
 	  
@@ -4394,6 +4394,7 @@ PyObject *python_nimport(PyObject *self, PyObject *args, PyObject *kwargs)
   PyRun_SimpleString(importcode.c_str());
   return Py_None;
 }
+#endif
 
 PyObject *python_str(PyObject *self) {
   std::ostringstream stream;
@@ -4627,7 +4628,7 @@ PyObject *python_nb_invert(PyObject *arg) { return python_debug_modifier(arg,0);
 PyObject *python_nb_neg(PyObject *arg) { return python_debug_modifier(arg,1); }
 PyObject *python_nb_pos(PyObject *arg) { return python_debug_modifier(arg,2); }
 
-#ifndef ENABLE_PIP
+#ifndef OPENSCAD_NOGUI
 extern void  add_menuitem_trampoline(const char *menuname, const char *itemname, const char *callback);
 PyObject *python_add_menuitem(PyObject *self, PyObject *args, PyObject *kwargs, int mode)
 {
@@ -4746,7 +4747,6 @@ PyMethodDef PyOpenSCADFunctions[] = {
   {"group", (PyCFunction) python_group, METH_VARARGS | METH_KEYWORDS, "Group Object."},
   {"render", (PyCFunction) python_render, METH_VARARGS | METH_KEYWORDS, "Render Object."},
   {"osimport", (PyCFunction) python_import, METH_VARARGS | METH_KEYWORDS, "Import Object."},
-  {"nimport", (PyCFunction) python_nimport, METH_VARARGS | METH_KEYWORDS, "Import Networked Object."},
   {"osuse", (PyCFunction) python_osuse, METH_VARARGS | METH_KEYWORDS, "Use OpenSCAD Library."},
   {"osinclude", (PyCFunction) python_osinclude, METH_VARARGS | METH_KEYWORDS, "Include OpenSCAD Library."},
   {"version", (PyCFunction) python_osversion, METH_VARARGS | METH_KEYWORDS, "Output openscad Version."},
@@ -4754,8 +4754,9 @@ PyMethodDef PyOpenSCADFunctions[] = {
   {"add_parameter", (PyCFunction) python_add_parameter, METH_VARARGS | METH_KEYWORDS, "Add Parameter for Customizer."},
   {"scad", (PyCFunction) python_scad, METH_VARARGS | METH_KEYWORDS, "Source OpenSCAD code."},
   {"align", (PyCFunction) python_align, METH_VARARGS | METH_KEYWORDS, "Align Object to another."},
-#ifndef ENABLE_PIP  
+#ifndef OPENSCAD_NOGUI  
   {"add_menuitem", (PyCFunction) python_add_menuitem, METH_VARARGS | METH_KEYWORDS, "Add Menuitem to the the openscad window."},
+  {"nimport", (PyCFunction) python_nimport, METH_VARARGS | METH_KEYWORDS, "Import Networked Object."},
 #endif  
   {"model", (PyCFunction) python_model, METH_VARARGS | METH_KEYWORDS, "Yield Model"},
   {"modelpath", (PyCFunction) python_modelpath, METH_VARARGS | METH_KEYWORDS, "Returns absolute Path to script"},

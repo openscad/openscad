@@ -926,7 +926,7 @@ sys.stdout = stdout_bak\n\
 sys.stderr = stderr_bak\n\
 ";
 
-#ifndef ENABLE_PIP  
+#ifndef OPENSCAD_NOGUI  
     PyRun_SimpleString(python_init_code);
 #endif    
 #ifdef HAVE_PYTHON_YIELD
@@ -939,7 +939,7 @@ sys.stderr = stderr_bak\n\
     result.reset(PyRun_String(code.c_str(), Py_file_input, pythonInitDict.get(), pythonInitDict.get())); /* actual code is run here */
 
 
-#ifndef ENABLE_PIP
+#ifndef OPENSCAD_NOGUI
     if(result  == nullptr) {
       PyErr_Print();
       error = ""; 

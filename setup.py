@@ -239,7 +239,7 @@ def main():
                   ("ENABLE_CGAL","1"),
                   ("ENABLE_MANIFOLD","1"),
                   ("EXPERIMENTAL","1"),
-                  ("ENABLE_PIP","1"),
+                  ("OPENSCAD_NOGUI","1"),
                   ("MANIFOLD_PAR","-1"),
                   ("OPENSCAD_YEAR","2025"),
                   ("OPENSCAD_MONTH","2"),
