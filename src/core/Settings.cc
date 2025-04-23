@@ -345,9 +345,9 @@ SettingsEntryString SettingsExportPdf::exportPdfMetaDataAuthor(SECTION_EXPORT_PD
 SettingsEntryString SettingsExportPdf::exportPdfMetaDataSubject(SECTION_EXPORT_PDF, "meta-data-subject", "");
 SettingsEntryString SettingsExportPdf::exportPdfMetaDataKeywords(SECTION_EXPORT_PDF, "meta-data-keywords", "");
 SettingsEntryBool SettingsExportPdf::exportPdfFill(SECTION_EXPORT_PDF, "fill", false);
-SettingsEntryString SettingsExportPdf::exportPdfFillColor(SECTION_EXPORT_PDF, "fill-color", "#000000");
+SettingsEntryString SettingsExportPdf::exportPdfFillColor(SECTION_EXPORT_PDF, "fill-color", "black");
 SettingsEntryBool SettingsExportPdf::exportPdfStroke(SECTION_EXPORT_PDF, "stroke", true);
-SettingsEntryString SettingsExportPdf::exportPdfStrokeColor(SECTION_EXPORT_PDF, "stroke-color", "#000000");
+SettingsEntryString SettingsExportPdf::exportPdfStrokeColor(SECTION_EXPORT_PDF, "stroke-color", "black");
 SettingsEntryDouble SettingsExportPdf::exportPdfStrokeWidth(SECTION_EXPORT_PDF, "stroke-width", 0, 0.01, 999, 0.35);
 
 SettingsEntryBool SettingsExport3mf::export3mfAlwaysShowDialog(SECTION_EXPORT_3MF, "always-show-dialog", true);
