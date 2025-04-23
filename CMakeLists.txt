@@ -1380,6 +1380,10 @@ if (USE_QT6)
       ${QT6QSCINTILLA_LIBRARY} ${Qt6DBus_LIBRARIES} ${Qt6Gamepad_LIBRARIES}
     )
   endif()
+  if(NOT ENABLE_GUI_TESTS)
+    find_package(Qt6 REQUIRED COMPONENTS Test)
+    target_link_libraries(OpenSCAD PRIVATE Qt6::Test)
+  endif()
   if(MXECROSS)
     target_link_libraries(OpenSCAD PRIVATE Qt6::QSvgPlugin)
   endif()
@@ -1389,14 +1393,15 @@ else()
       Qt5::Core Qt5::Widgets Qt5::Multimedia Qt5::OpenGL Qt5::Concurrent Qt5::Network Qt5::Svg
       ${QT5QSCINTILLA_LIBRARY} ${Qt5DBus_LIBRARIES} ${Qt5Gamepad_LIBRARIES}
     )
+    if(NOT ENABLE_GUI_TESTS)
+      find_package(Qt5 REQUIRED COMPONENTS Test)
+      target_link_libraries(OpenSCAD PRIVATE Qt5::Test)
+    endif()
   endif()
   if(MXECROSS)
     target_link_libraries(OpenSCAD PRIVATE Qt5::QSvgPlugin)
   endif()
 endif()
-
-find_package(Qt5 REQUIRED COMPONENTS Test)
-target_link_libraries(OpenSCAD PRIVATE Qt5::Test)
 
 # Configure icon-related files, for release vs nightly
 configure_file(${CMAKE_CURRENT_LIST_DIR}/openscad.appdata.xml.in ${CMAKE_CURRENT_LIST_DIR}/openscad.appdata.xml.in2)
