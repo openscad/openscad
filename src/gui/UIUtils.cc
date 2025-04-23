@@ -314,3 +314,38 @@ QString UIUtils::blendForBackgroundColorStyleSheet(const QColor& input, const QC
     255.0 * (transparency * blend.blueF() + (1 - transparency) * input.blueF()));
   return getBackgroundColorStyleSheet(result);
 }
+
+QString UIUtils::readFileContents(const QString &filepath, QString &errorstring)
+{
+  QFile file(filepath);
+  if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+    errorstring = file.errorString();
+    return nullptr;	  
+  } else {
+    QTextStream reader(&file);
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+    reader.setCodec("UTF-8");
+#endif
+    return reader.readAll();
+  }
+  return nullptr;
+}
+
+QString UIUtils::getBackupFileName(QWidget *parent) {
+  QString dirname (PlatformUtils::backupPath().c_str());
+  QStringList extensions = {};
+  extensions << "scad" << "csg";
+#ifdef ENABLE_PYTHON
+    extensions << "py";
+#endif
+  extensions.replaceInStrings(QRegularExpression("^"), "*.");
+  const auto filter = QString("OpenSCAD Backups (%1)").arg(extensions.join(" "));
+
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+  // QT5 just shows the most recent files in my place , getSaveFileName workaround
+  QString filename = QFileDialog::getSaveFileName(parent, "Open File", dirname, filter);
+#else
+  QString filename = QFileDialog::getOpenFileName(parent, "Open File", dirname, filter);
+#endif
+  return filename;
+}
