@@ -30,6 +30,7 @@ include("cmake/Modules/openscad_version.cmake")
 
 option(INFO "Display build configuration info at end of cmake config" ON)
 option(ENABLE_TESTS "Run testsuite after building." ON)
+option(ENABLE_GUI_TESTS "Compile a special version of the openscad gui with feature for testing." OFF)
 option(EXPERIMENTAL "Enable Experimental Features" OFF)
 option(USE_MANIFOLD_TRIANGULATOR "Use Manifold's triangulator instead of CGAL's" ON)
 option(USE_BUILTIN_MANIFOLD "Use manifold from submodule" ON)
@@ -1193,14 +1194,6 @@ set(GUI_HEADERS
     src/gui/parameter/ParameterWidget.h
 )
 
-set(GUITESTS_HEADERS
-  src/guitests/guitests.h
-)
-
-set(GUITESTS_SOURCES
-  src/guitests/guitests.cc
-)
-
 # To be added in Source for QtCreator to show them in project tree
 set(GUI_UIS
     ${GUI_UIS}
@@ -1281,6 +1274,7 @@ set_source_files_properties(
 set(RESOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/resources)
 if(HEADLESS)
   target_compile_definitions(OpenSCAD PRIVATE OPENSCAD_NOGUI)
+  set(ENABLE_GUI_TESTS OFF)
 else()
   list(APPEND RESOURCE_FILES
     ${RESOURCE_DIR}/common.qrc
@@ -1290,8 +1284,37 @@ else()
   # GUI_UIS for .ui files to be indexed by Qt Creator despite AUTOUIC usage
   # GUI_HEADERS for .h files to be indexed by Qt Creator despite AUTOUIC usage
   list(APPEND Sources ${GUI_SOURCES} ${GUI_HEADER_ONLY} ${GUI_UIS} ${GUI_HEADERS})
+endif()
 
-  list(APPEND Sources ${GUITESTS_SOURCES} ${GUITESTS_HEADER})
+if(ENABLE_GUI_TESTS)
+  set(GUITESTS_HEADERS
+    src/guitests/guitests.h
+    src/guitests/TestModuleCache.h
+    src/guitests/TestTabManager.h
+    src/guitests/TestMainWindow.h
+    src/guitests/UXTest.h
+  )
+
+  set(GUITESTS_SOURCES
+    src/guitests/guitests.cc
+    src/guitests/TestModuleCache.cc
+    src/guitests/TestTabManager.cc
+    src/guitests/TestMainWindow.cc
+    src/guitests/UXTest.cc
+  )
+
+  list(APPEND Sources ${GUITESTS_SOURCES} ${GUITESTS_HEADERS})
+  target_compile_definitions(OpenSCAD PRIVATE HAS_GUI_TESTS=true)
+else()
+  set(GUITESTS_HEADERS
+    src/guitests/guitests.h
+  )
+
+  set(GUITESTS_SOURCES
+    src/guitests/guitests.cc
+  )
+  list(APPEND Sources ${GUITESTS_SOURCES} ${GUITESTS_HEADERS})
+  target_compile_definitions(OpenSCAD PRIVATE HAS_GUI_TESTS=false)
 endif()
 
 if (SNAPSHOT)

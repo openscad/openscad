@@ -294,14 +294,17 @@ int gui(std::vector<std::string>& inputFiles, const std::filesystem::path& origi
 
   // Adds a singleshot timer that will be executed when the application will be started.
   // the timer validates taht each mainwindow respects the expected UX behavior.
-  if(gui_test != "none"){
-      QTimer::singleShot(0, [&]()
-      {
-          for(auto w : app.windowManager.getWindows()){
-              runAllTest(w);
-          }
-          app.exit(0);
-      });
+  if constexpr(Feature::HasGuiTesting)
+  {
+      if(gui_test != "none"){
+          QTimer::singleShot(0, [&]()
+          {
+              for(auto w : app.windowManager.getWindows()){
+                  runAllTest(w);
+              }
+              app.exit(0);
+          });
+      }
   }
 
   InputDriverManager::instance()->init();

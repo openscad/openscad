@@ -23,6 +23,8 @@ public:
   static const Feature ExperimentalPythonEngine;
 #endif
 
+  static const bool HasGuiTesting {HAS_GUI_TESTS};
+
   [[nodiscard]] const std::string& get_name() const;
   [[nodiscard]] const std::string& get_description() const;
 
