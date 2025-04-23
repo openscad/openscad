@@ -294,22 +294,14 @@ void export_pdf(const std::shared_ptr<const Geometry>& geom, std::ostream& outpu
   const Color4f black = Color4f(0.0f, 0.0f, 0.0f);
 
   if (options->fill) {
-    const auto requestedFillColor = OpenSCAD::parse_hex_color(options->fillColor);
-    if (!requestedFillColor) {
-      LOG(message_group::Warning, "Invalid PDF fill color ('%1$s'), defaulting to black.", options->fillColor);
-    }
-    Color4f fillColor = requestedFillColor.value_or(black);
+    Color4f fillColor = OpenSCAD::parse_color(options->fillColor);
     cairo_set_source_rgba(cr, fillColor[0], fillColor[1], fillColor[2], 1.0);
     draw_geom(geom, cr);
     cairo_fill(cr);
   }
 
   if (options->stroke) {
-    const auto requestedStrokeColor = OpenSCAD::parse_hex_color(options->strokeColor);
-    if (!requestedStrokeColor) {
-      LOG(message_group::Warning, "Invalid PDF stroke color ('%1$s'), defaulting to black.", options->strokeColor);
-    }
-    Color4f strokeColor = requestedStrokeColor.value_or(black);
+    Color4f strokeColor = OpenSCAD::parse_color(options->strokeColor);
     cairo_set_source_rgba(cr, strokeColor[0], strokeColor[1], strokeColor[2], 1.0);
     cairo_set_line_width(cr, mm_to_points(options->strokeWidth));
     draw_geom(geom, cr);

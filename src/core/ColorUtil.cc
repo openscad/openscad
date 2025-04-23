@@ -2,7 +2,6 @@
 #include <unordered_map>
 #include "geometry/linalg.h"
 #include "core/ColorUtil.h"
-#include "core/Webcolors.h"
 #include "utils/printutils.h"
 #include <boost/algorithm/string/case_conv.hpp>
 
@@ -104,9 +103,9 @@ std::optional<Color4f> parse_hex_color(const std::string& hex) {
   return rgba;
 }
 
-Color4f parse_color(const std::string& colorname, const Color4f& defaultcolor)
+Color4f parse_color(const std::string& col, const Color4f& defaultcolor)
 {
-  boost::algorithm::to_lower(colorname);
+  std::string colorname = boost::algorithm::to_lower_copy(col);
   if (webcolors.find(colorname) != webcolors.end()) {
     return webcolors.at(colorname);
   } 
@@ -115,7 +114,7 @@ Color4f parse_color(const std::string& colorname, const Color4f& defaultcolor)
   const auto parsed = OpenSCAD::parse_hex_color(colorname);
 
   if (!parsed) {
-    LOG(message_group::Warning, "Unable to parse color \"%1$s\"", colorname);
+    LOG(message_group::Warning, "Unable to parse color \"%1$s\"", col);
     LOG("Please see https://en.wikipedia.org/wiki/Web_colors");
   } 
 
