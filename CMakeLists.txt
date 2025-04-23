@@ -514,7 +514,7 @@ if(ENABLE_PYTHON)
     target_include_directories(OpenSCADPy SYSTEM PRIVATE ${HARFBUZZ_INCLUDE_DIRS})
     target_include_directories(OpenSCADPy SYSTEM PRIVATE ${FREETYPE_INCLUDE_DIRS})
   else() #MXE
-    find_package(Python REQUIRED COMPONENTS Interpreter Development)
+    find_package(Python REQUIRED COMPONENTS Development)
     if(NOT Nettle_FOUND)
       message(WARNING "Nettle not found, disabling python support.")
       set(ENABLE_PYTHON OFF CACHE BOOL "" FORCE)
