@@ -355,21 +355,15 @@ void export_3mf(const std::shared_ptr<const Geometry>& geom, std::ostream& outpu
     break;
   }
 
-  const auto settingsColor = OpenSCAD::parse_hex_color(options3mf->color);
+  // use default color that ultimately should come from the color scheme
+  Color4f color = exportInfo.defaultColor;
 
   Lib3MF::PColorGroup colorgroup;
   Lib3MF::PBaseMaterialGroup basematerialgroup;
   if (options3mf->colorMode != Export3mfColorMode::none) {
-    Color4f color;
-    if (options3mf->colorMode == Export3mfColorMode::model) {
-      // use default color that ultimately should come from the color scheme
-      color = exportInfo.defaultColor;
-    } else {
+    if (options3mf->colorMode != Export3mfColorMode::model) {
       // use color selected in the export dialog and stored in settings (if valid)
-      if (!settingsColor) {
-        LOG(message_group::Warning, "Default color in settings is invalid ('%1$s'), using default from model.", options3mf->color);
-      }
-      color = settingsColor.value_or(exportInfo.defaultColor);
+      color = OpenSCAD::getColor(options3mf->color, exportInfo.defaultColor);
     }
     if (options3mf->materialType == Export3mfMaterialType::basematerial) {
       basematerialgroup = model->AddBaseMaterialGroup();
@@ -408,7 +402,7 @@ void export_3mf(const std::shared_ptr<const Geometry>& geom, std::ostream& outpu
     .colorgroup = colorgroup,
     .basematerialgroup = basematerialgroup,
     .modelcount = 1,
-    .selectedColor = settingsColor.value_or(exportInfo.defaultColor),
+    .selectedColor = color,
     .info = exportInfo,
     .options = options3mf
   };
