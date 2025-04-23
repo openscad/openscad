@@ -2,6 +2,7 @@
 
 #include <string>
 #include <optional>
+#include <unordered_map>
 
 #include "geometry/linalg.h"
 
@@ -24,10 +25,12 @@ void rgbtohsv(float r, float g, float b, float& h, float& s, float& v);
 
 std::optional<Color4f> parse_hex_color(const std::string& hex);
 
-Color4f parse_color(const std::string& colorname, const Color4f& default = Color4f(0.0f, 0.0f, 0.0f));
+Color4f parse_color(const std::string& colorname, const Color4f& defaultcolor = Color4f(0.0f, 0.0f, 0.0f));
 
 Color4f getContrastColor(const Color4f& col);
 
 Color4f getColorHSV(const Color4f& col);
+
+extern std::unordered_map<std::string, Color4f> webcolors;
 
 } // namespace
