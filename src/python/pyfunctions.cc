@@ -50,8 +50,6 @@
 #include "handle_dep.h"
 
 
-extern std::unordered_map<std::string, Color4f> webcolors;
-
 PyObject *python_cube(PyObject *self, PyObject *args, PyObject *kwargs)
 {
   DECLARE_INSTANCE
@@ -1043,8 +1041,8 @@ PyObject *python_color_core(PyObject *obj, PyObject *color, double alpha)
     PyObject* value = PyUnicode_AsEncodedString(color, "utf-8", "~");
     char *colorname =  PyBytes_AS_STRING(value);
     boost::algorithm::to_lower(colorname);
-    if (webcolors.find(colorname) != webcolors.end()) {
-      node->color = webcolors.at(colorname);
+    if (OpenSCAD::webcolors.find(colorname) != OpenSCAD::webcolors.end()) {
+      node->color = OpenSCAD::webcolors.at(colorname);
       node->color[3]=alpha;
     } else {
     // Try parsing it as a hex color such as "#rrggbb".
