@@ -1,6 +1,7 @@
 #include <string>
 #include "geometry/linalg.h"
 #include "core/ColorUtil.h"
+#include "core/Webcolors.h"
 
 namespace OpenSCAD {
 
@@ -98,6 +99,24 @@ std::optional<Color4f> parse_hex_color(const std::string& hex) {
   }
 
   return rgba;
+}
+
+Color4f parse_color(const std::string& colorname, const Color4f& default)
+{
+  boost::algorithm::to_lower(colorname);
+  if (webcolors.find(colorname) != webcolors.end()) {
+    return webcolors.at(colorname);
+  } 
+
+  // Try parsing it as a hex color such as "#rrggbb".
+  const auto color = OpenSCAD::parse_hex_color(colorname);
+  if (color) {
+    return color
+  } 
+
+  LOG(message_group::Warning, inst->location(), parameters.documentRoot(), "Unable to parse color \"%1$s\"", colorname);
+  LOG("Please see https://en.wikipedia.org/wiki/Web_colors");
+  return default
 }
 
 } // namespace
