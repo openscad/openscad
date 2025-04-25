@@ -1314,6 +1314,7 @@ void MainWindow::compileEnded()
   clearCurrentOutput();
   GuiLocker::unlock();
   if (designActionAutoReload->isChecked()) autoReloadTimer->start();
+  emit compilationDone(this->rootFile);
 }
 
 void MainWindow::instantiateRoot()
