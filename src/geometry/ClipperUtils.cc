@@ -188,6 +188,7 @@ std::unique_ptr<Polygon2d> toPolygon2d(const Clipper2Lib::PolyTree64& polytree, 
   const double scale = std::ldexp(1.0, -scale_bits);
   auto processChildren = [scale, &result](auto&& processChildren, const Clipper2Lib::PolyPath64& node) -> void {
     Outline2d outline;
+    for(int i=0;i<4;i++) outline.color[i]=0.5;
     // When using offset, clipper can get the hole status wrong.
     // IsPositive() calculates the area of the polygon, and if it's negative, it's a hole.
     outline.positive = IsPositive(node.Polygon());

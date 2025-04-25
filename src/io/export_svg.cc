@@ -38,12 +38,12 @@
 
 static void append_svg(const Polygon2d& poly, std::ostream& output)
 {
-  output << "<path d=\"\n";
   for (const auto& o : poly.outlines()) {
     if (o.vertices.empty()) {
       continue;
     }
 
+    output << "<path d=\"\n";
     const Eigen::Vector2d& p0 = o.vertices[0];
     output << "M " << p0.x() << "," << -p0.y();
     for (unsigned int idx = 1; idx < o.vertices.size(); ++idx) {
@@ -54,8 +54,14 @@ static void append_svg(const Polygon2d& poly, std::ostream& output)
       }
     }
     output << " z\n";
+    std:: stringstream ss;
+    ss << "#" << std::hex 
+  	  << std::setfill('0') << std::setw(2) << (int)(o.color[0]*255) 
+  	  << std::setfill('0') << std::setw(2) << (int)(o.color[1]*255) 
+  	  << std::setfill('0') << std::setw(2) << (int)(o.color[2]*255) ;
+    std::string color = ss.str();
+    output << "\" stroke=\"black\" fill=\"" << color << "\" stroke-width=\"0.5\"/>\n";
   }
-  output << "\" stroke=\"black\" fill=\"lightgray\" stroke-width=\"0.5\"/>\n";
 
 }
 
