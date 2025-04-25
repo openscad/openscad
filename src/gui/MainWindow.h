@@ -68,9 +68,12 @@ class ThrownTogetherRenderer;
 #include "ui_MainWindow.h"
 #include "utils/printutils.h"
 
+class UXTest;
 class MainWindow : public QMainWindow, public Ui::MainWindow, public InputEventHandler
 {
   Q_OBJECT
+
+  friend UXTest;
 
 public:
   Preferences *prefs;
@@ -426,6 +429,7 @@ private:
   std::vector<std::unique_ptr<QTemporaryFile>> allTempFiles;
 
 signals:
+  void compilationDone(SourceFile*);
   void highlightError(int);
   void unhighlightLastError();
 };
