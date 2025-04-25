@@ -29,15 +29,3 @@ Color4f getContrastColor(const Color4f& col);
 Color4f getColorHSV(const Color4f& col);
 
 } // namespace OpenSCAD
-
-namespace {
-
-void rgbtohsv(float r, float g, float b, float& h, float& s, float& v);
-
-std::optional<Color4f> parse_hex_color(const std::string& hex);
-
-std::optional<Color4f> parse_web_color(const std::string& col);
-
-extern std::unordered_map<std::string, Color4f> webcolors;
-
-} // namespace

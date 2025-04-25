@@ -5,7 +5,7 @@
 #include "utils/printutils.h"
 #include <boost/algorithm/string/case_conv.hpp>
 
-namespace OpenSCAD {
+namespace {
 
 // Colors extracted from https://drafts.csswg.org/css-color/ on 2015-08-02
 // CSS Color Module Level 4 - Editor’s Draft, 29 May 2015
@@ -185,42 +185,6 @@ void rgbtohsv(float r, float g, float b, float& h, float& s, float& v)
   v = r;
 }
 
-Color4f getColorHSV(const Color4f& col)
-{
-  float h, s, v;
-  OpenSCAD::rgbtohsv(col[0], col[1], col[2], h, s, v);
-  return {h, s, v, col[3]};
-}
-
-/**
- * Calculate contrast color. Based on the article
- * http://gamedev.stackexchange.com/questions/38536/given-a-rgb-color-x-how-to-find-the-most-contrasting-color-y
- *
- * @param col the input color
- * @return a color with high contrast to the input color
- */
-Color4f getContrastColor(const Color4f& col)
-{
-  Color4f hsv = getColorHSV(col);
-  float Y = 0.2126f * col[0] + 0.7152f * col[1] + 0.0722f * col[2];
-  float S = hsv[1];
-
-  if (S < 0.5) {
-    // low saturation, choose between black / white based on luminance Y
-    float val = Y > 0.5 ? 0.0f : 1.0f;
-    return {val, val, val, 1.0f};
-  } else {
-    float H = 360 * hsv[0];
-    if ((H < 60) || (H > 300)) {
-      return {0.0f, 1.0f, 1.0f, 1.0f}; // red -> cyan
-    } else if (H < 180) {
-      return {1.0f, 0.0f, 1.0f, 1.0f}; // green -> magenta
-    } else {
-      return {1.0f, 1.0f, 0.0f, 1.0f}; // blue -> yellow
-    }
-  }
-}
-
 // Parses hex colors according to: https://drafts.csswg.org/css-color/#typedef-hex-color.
 // If the input is invalid, returns boost::none.
 // Supports the following formats:
@@ -268,13 +232,16 @@ std::optional<Color4f> parse_web_color(const std::string& col) {
   return {};
 }
 
+} // namespace
+namespace OpenSCAD {
+
 std::optional<Color4f> parse_color(const std::string& col) {
-  const auto webcolor = parse_web_color(col);
+  const auto webcolor = ::parse_web_color(col);
   if (webcolor) {
     return webcolor;
   }
 
-  const auto hexcolor = parse_hex_color(col);
+  const auto hexcolor = ::parse_hex_color(col);
   if (hexcolor) {
     return hexcolor;
   }
@@ -292,6 +259,42 @@ Color4f getColor(const std::string& col, const Color4f& defaultcolor)
   }
 
   return parsed.value_or(defaultcolor);
+}
+
+Color4f getColorHSV(const Color4f& col)
+{
+  float h, s, v;
+  ::rgbtohsv(col[0], col[1], col[2], h, s, v);
+  return {h, s, v, col[3]};
+}
+
+/**
+ * Calculate contrast color. Based on the article
+ * http://gamedev.stackexchange.com/questions/38536/given-a-rgb-color-x-how-to-find-the-most-contrasting-color-y
+ *
+ * @param col the input color
+ * @return a color with high contrast to the input color
+ */
+Color4f getContrastColor(const Color4f& col)
+{
+  Color4f hsv = getColorHSV(col);
+  float Y = 0.2126f * col[0] + 0.7152f * col[1] + 0.0722f * col[2];
+  float S = hsv[1];
+
+  if (S < 0.5) {
+    // low saturation, choose between black / white based on luminance Y
+    float val = Y > 0.5 ? 0.0f : 1.0f;
+    return {val, val, val, 1.0f};
+  } else {
+    float H = 360 * hsv[0];
+    if ((H < 60) || (H > 300)) {
+      return {0.0f, 1.0f, 1.0f, 1.0f}; // red -> cyan
+    } else if (H < 180) {
+      return {1.0f, 0.0f, 1.0f, 1.0f}; // green -> magenta
+    } else {
+      return {1.0f, 1.0f, 0.0f, 1.0f}; // blue -> yellow
+    }
+  }
 }
 
 } // namespace OpenSCAD
