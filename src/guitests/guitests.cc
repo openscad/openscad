@@ -11,9 +11,11 @@ void runTests(MainWindow* window)
 {
     if constexpr(Feature::HasGuiTesting)
     {
-        QTEST_DISABLE_KEYPAD_NAVIGATION TestClass tc;
+        TestClass tc;
         tc.setWindow(window);
+        #if HAS_GUI_TESTS == 1
         QTest::qExec(&tc);
+        #endif
     }
 }
 
