@@ -25,7 +25,7 @@
  */
 
 #include "io/export.h"
- 
+
 #include <algorithm>
 #include <cstddef>
 #include <cassert>
@@ -94,10 +94,10 @@ Lib3MF_uint8 get_color_channel(const Color4f& col, int idx)
 }
 
 int count_mesh_objects(const Lib3MF::PModel& model) {
-    const auto mesh_object_it = model->GetMeshObjects();
-    int count = 0;
-    while (mesh_object_it->MoveNext()) ++count;
-    return count;
+  const auto mesh_object_it = model->GetMeshObjects();
+  int count = 0;
+  while (mesh_object_it->MoveNext()) ++count;
+  return count;
 }
 
 void handle_triangle_color(const std::shared_ptr<const PolySet>& ps, ExportContext& ctx, Lib3MF::PMeshObject& mesh, Lib3MF_uint32 triangle, int color_index) {
@@ -144,13 +144,13 @@ void handle_triangle_color(const std::shared_ptr<const PolySet>& ps, ExportConte
 
   if (res_id > 0) {
     mesh->SetTriangleProperties(triangle, {
-      res_id,
-      {
-        col_idx,
-        col_idx,
-        col_idx
-      }
-    });
+        res_id,
+        {
+          col_idx,
+          col_idx,
+          col_idx
+        }
+      });
   }
 }
 
@@ -174,39 +174,39 @@ bool append_polyset(const std::shared_ptr<const PolySet>& ps, ExportContext& ctx
     }
 
     auto vertexFunc = [&](const Vector3d& coords) -> bool {
-      const auto f = coords.cast<float>();
-      try {
-        const Lib3MF::sPosition v{f[0], f[1], f[2]};
-        mesh->AddVertex(v);
-      } catch (Lib3MF::ELib3MFException& e) {
-        export_3mf_error(e.what());
-        return false;
-      }
-      return true;
-    };
+        const auto f = coords.cast<float>();
+        try {
+          const Lib3MF::sPosition v{f[0], f[1], f[2]};
+          mesh->AddVertex(v);
+        } catch (Lib3MF::ELib3MFException& e) {
+          export_3mf_error(e.what());
+          return false;
+        }
+        return true;
+      };
 
     auto triangleFunc = [&](const IndexedFace& indices, int color_index) -> bool {
-      try {
-        const auto triangle = mesh->AddTriangle({
-          static_cast<Lib3MF_uint32>(indices[0]),
-          static_cast<Lib3MF_uint32>(indices[1]),
-          static_cast<Lib3MF_uint32>(indices[2])
-        });
+        try {
+          const auto triangle = mesh->AddTriangle({
+            static_cast<Lib3MF_uint32>(indices[0]),
+            static_cast<Lib3MF_uint32>(indices[1]),
+            static_cast<Lib3MF_uint32>(indices[2])
+          });
 
-        handle_triangle_color(ps, ctx, mesh, triangle, color_index);
-      } catch (Lib3MF::ELib3MFException& e) {
-        export_3mf_error(e.what());
-        return false;
-      }
-      return true;
-    };
+          handle_triangle_color(ps, ctx, mesh, triangle, color_index);
+        } catch (Lib3MF::ELib3MFException& e) {
+          export_3mf_error(e.what());
+          return false;
+        }
+        return true;
+      };
 
     std::shared_ptr<const PolySet> out_ps = ps;
     if (Feature::ExperimentalPredictibleOutput.is_enabled()) {
       out_ps = createSortedPolySet(*ps);
     }
 
-    for (const auto &v : out_ps->vertices) {
+    for (const auto& v : out_ps->vertices) {
       if (!vertexFunc(v)) {
         export_3mf_error("Can't add vertex to 3MF model.");
         return false;
@@ -254,7 +254,7 @@ bool append_nef(const CGAL_Nef_polyhedron& root_N, ExportContext& ctx)
   export_3mf_error("Error converting NEF Polyhedron.");
   return false;
 }
-#endif
+#endif // ifdef ENABLE_CGAL
 
 bool append_3mf(const std::shared_ptr<const Geometry>& geom, ExportContext& ctx)
 {

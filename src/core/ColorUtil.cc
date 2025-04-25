@@ -238,8 +238,8 @@ std::optional<Color4f> parse_hex_color(const std::string& hex) {
   if (hex[0] != '#') return {};
   if (!std::all_of(std::begin(hex) + 1, std::end(hex),
                    [](char c) {
-    return std::isxdigit(static_cast<unsigned char>(c));
-  })) {
+      return std::isxdigit(static_cast<unsigned char>(c));
+    })) {
     return {};
   }
 
@@ -264,7 +264,7 @@ std::optional<Color4f> parse_web_color(const std::string& col) {
   std::string colorname = boost::algorithm::to_lower_copy(col);
   if (webcolors.find(colorname) != webcolors.end()) {
     return webcolors.at(colorname);
-  } 
+  }
   return {};
 }
 
@@ -289,7 +289,7 @@ Color4f getColor(const std::string& col, const Color4f& defaultcolor)
   if (!parsed) {
     LOG(message_group::Warning, "Unable to parse color \"%1$s\", reverting to default color.", col);
     LOG("Please see https://en.wikipedia.org/wiki/Web_colors");
-  } 
+  }
 
   return parsed.value_or(defaultcolor);
 }
