@@ -22,7 +22,7 @@ gs_cmd = [
     "-dSAFER",
     "-dNOPAUSE",
     "-dBATCH",
-    "-sDEVICE=pnggray",
+    "-sDEVICE=png16m",
     "-dTextAlphaBits=1",
     "-dGraphicsAlphaBits=1",
     "-r300"
