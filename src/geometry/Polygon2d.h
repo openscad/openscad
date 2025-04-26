@@ -17,7 +17,7 @@ struct Outline2d {
   Outline2d() = default;
   VectorOfVector2d vertices;
   bool positive{true};
-  Color4f color = Color4f(0.5,0.5,0.5,1);
+  Color4f color = Color4f(0.5,0.5,0.5,0 );
   [[nodiscard]] BoundingBox getBoundingBox() const;
 };
 

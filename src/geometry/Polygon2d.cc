@@ -306,6 +306,7 @@ void Polygon2d::reverse(void) {
 }
 
 void Polygon2d::setColor(const Color4f& c){
-  for(auto o : theoutlines) o.color = c;	  
-  for(auto o : trans3dOutlines) o.color = c;	  
+  for(auto &o : theoutlines )    o.color = c;
+  for(auto &o : trans3dOutlines) o.color = c;	  
+
 }

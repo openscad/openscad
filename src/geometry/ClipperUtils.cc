@@ -188,7 +188,6 @@ std::unique_ptr<Polygon2d> toPolygon2d(const Clipper2Lib::PolyTree64& polytree, 
   const double scale = std::ldexp(1.0, -scale_bits);
   auto processChildren = [scale, &result](auto&& processChildren, const Clipper2Lib::PolyPath64& node) -> void {
     Outline2d outline;
-    for(int i=0;i<4;i++) outline.color[i]=0.5;
     // When using offset, clipper can get the hole status wrong.
     // IsPositive() calculates the area of the polygon, and if it's negative, it's a hole.
     outline.positive = IsPositive(node.Polygon());
@@ -259,6 +258,13 @@ std::unique_ptr<Polygon2d> apply(const std::vector<Clipper2Lib::Paths64>& pathsv
   return ClipperUtils::toPolygon2d(sumresult, scale_bits);
 }
 
+void  copy_color_to(const std::shared_ptr<const Polygon2d>&src, std::unique_ptr<Polygon2d> &dst)
+{
+    if(src->outlines().size() > 0) {    
+      dst->setColor(src->outlines()[0].color);	 // TODO this is inaccueate
+    }  
+}
+
 /*!
    Apply the clipper operator to the given polygons.
 
@@ -282,9 +288,50 @@ std::unique_ptr<Polygon2d> apply(const std::vector<std::shared_ptr<const Polygon
       pathsvector.emplace_back();
     }
   }
-  auto res = apply(pathsvector, clipType, scale_bits);
-  assert(res);
-  return res;
+  switch(clipType) {
+    case Clipper2Lib::ClipType::Union: { // Union is way more extensive
+      int n = polygons.size();
+      int inputs_old=0;
+      Polygon2d union_result;
+
+      while(inputs_old < n) {
+        int input_width=1; // TODO fix
+
+        // union all new shapes
+	Clipper2Lib::Paths64  union_new;
+        if(input_width > 1) { // TODO union
+        }  else{
+		union_new = pathsvector[inputs_old];
+	}
+
+	// difference all old
+		
+        std::vector<Clipper2Lib::Paths64> diff_operands;
+        diff_operands.push_back(union_new);
+        for(int i=0;i<inputs_old;i++) 
+	 diff_operands.push_back(pathsvector[i]);
+	std::unique_ptr<Polygon2d> diff_result = apply(diff_operands,  Clipper2Lib::ClipType::Difference , scale_bits);
+        copy_color_to(polygons[inputs_old],diff_result );
+	// now colect all
+	for(const auto &o : diff_result->outlines()) {
+          union_result.addOutline(o);		  
+	}
+
+        inputs_old += input_width;
+      }
+      return std::make_unique<Polygon2d>(union_result);
+    }
+    break;		  
+    default:	  
+    { 
+       std::unique_ptr<Polygon2d> result = apply(pathsvector, clipType, scale_bits);
+       assert(result);
+       if(polygons.size() > 0) copy_color_to(polygons[0],result);
+       return result;
+    }
+    break;
+  }
+  
 }
 
 std::unique_ptr<Polygon2d> applyMinkowski(const std::vector<std::shared_ptr<const Polygon2d>>& polygons)

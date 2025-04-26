@@ -274,20 +274,24 @@ std::unique_ptr<PolySet> createTriangulatedPolySetFromPolygon2d(const Polygon2d&
   auto polyset = std::make_unique<PolySet>(2);
   polyset->setTriangular(true);
 
-  manifold::Polygons polygons;
   for (const auto& outline : in3d? polygon2d.untransformedOutlines() : polygon2d.outlines()) {
+    int v_off = polyset->vertices.size();
+    int c_off = polyset->colors.size();
+    manifold::Polygons polygons;
     manifold::SimplePolygon simplePolygon;
     for (const auto& vertex : outline.vertices) {
       polyset->vertices.emplace_back(vertex[0], vertex[1], 0.0);
       simplePolygon.emplace_back(vertex[0], vertex[1]);
     }
     polygons.push_back(std::move(simplePolygon));
-  }
 
-  const auto triangles = manifold::Triangulate(polygons);
+    const auto triangles = manifold::Triangulate(polygons);
 
-  for (const auto& triangle : triangles) {
-    polyset->indices.push_back({triangle[0], triangle[1], triangle[2]});
+    polyset->colors.push_back(outline.color);
+    for (const auto& triangle : triangles) {
+      polyset->indices.push_back({v_off + triangle[0], v_off + triangle[1], v_off + triangle[2]});
+      polyset->color_indices.push_back(c_off);
+    }
   }
   return polyset;
 
