@@ -104,6 +104,11 @@ struct ExportPdfOptions {
     std::string metaDataAuthor;
     std::string metaDataSubject;
     std::string metaDataKeywords;
+    bool fill = false;
+    std::string fillColor = "black";
+    bool stroke = true;
+    std::string strokeColor = "black";
+    double strokeWidth = 1;
 
   static std::shared_ptr<const ExportPdfOptions> withOptions(const CmdLineExportOptions& cmdLineOptions) {
     return std::make_shared<const ExportPdfOptions>(ExportPdfOptions{
@@ -119,6 +124,11 @@ struct ExportPdfOptions {
         .metaDataAuthor = set_cmd_line_option(cmdLineOptions, Settings::SECTION_EXPORT_PDF, Settings::SettingsExportPdf::exportPdfMetaDataAuthor),
         .metaDataSubject = set_cmd_line_option(cmdLineOptions, Settings::SECTION_EXPORT_PDF, Settings::SettingsExportPdf::exportPdfMetaDataSubject),
         .metaDataKeywords = set_cmd_line_option(cmdLineOptions, Settings::SECTION_EXPORT_PDF, Settings::SettingsExportPdf::exportPdfMetaDataKeywords),
+        .fill = set_cmd_line_option(cmdLineOptions, Settings::SECTION_EXPORT_PDF, Settings::SettingsExportPdf::exportPdfFill),
+        .fillColor = set_cmd_line_option(cmdLineOptions, Settings::SECTION_EXPORT_PDF, Settings::SettingsExportPdf::exportPdfFillColor),
+        .stroke = set_cmd_line_option(cmdLineOptions, Settings::SECTION_EXPORT_PDF, Settings::SettingsExportPdf::exportPdfStroke),
+        .strokeColor = set_cmd_line_option(cmdLineOptions, Settings::SECTION_EXPORT_PDF, Settings::SettingsExportPdf::exportPdfStrokeColor),
+        .strokeWidth = set_cmd_line_option(cmdLineOptions, Settings::SECTION_EXPORT_PDF, Settings::SettingsExportPdf::exportPdfStrokeWidth),
     });
   }
 
@@ -136,6 +146,11 @@ struct ExportPdfOptions {
       .metaDataAuthor = SPDF::exportPdfAddMetaDataAuthor.value() ? SPDF::exportPdfMetaDataAuthor.value() : "",
       .metaDataSubject = SPDF::exportPdfAddMetaDataSubject.value() ? SPDF::exportPdfMetaDataSubject.value() : "",
       .metaDataKeywords = SPDF::exportPdfAddMetaDataKeywords.value() ? SPDF::exportPdfMetaDataKeywords.value() : "",
+      .fill = SPDF::exportPdfFill.value(),
+      .fillColor = SPDF::exportPdfFillColor.value(),
+      .stroke = SPDF::exportPdfStroke.value(),
+      .strokeColor = SPDF::exportPdfStrokeColor.value(),
+      .strokeWidth = SPDF::exportPdfStrokeWidth.value(),
     });
   }
 };
