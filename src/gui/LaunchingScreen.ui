@@ -2,13 +2,6 @@
 <ui version="4.0">
  <class>LaunchingScreen</class>
  <widget class="QDialog" name="LaunchingScreen">
-  <property name="styleSheet">
-   <string notr="true">
-    QLabel { font-size: 9pt; }
-    QPushButton { font-size: 9pt; }
-    QCheckBox { font-size: 9pt; }
-   </string>
-  </property>
   <property name="windowTitle">
    <string>Welcome to OpenSCAD</string>
   </property>
