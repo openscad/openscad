@@ -296,10 +296,37 @@ std::unique_ptr<Polygon2d> apply(const std::vector<std::shared_ptr<const Polygon
 
       while(inputs_old < n) {
         int input_width=1; // TODO fix
+        while(true) {
+		// see if we can join one more input
+		if(inputs_old + input_width >= n) break;
+
+		// check if current one has different colors
+		auto & outl = polygons[inputs_old]->outlines();
+		if(outl.size() == 0) break;
+		bool valid=true;
+		Color4f refcol = outl[0].color;
+		for(int i=1;valid && i<outl.size();i++) {
+                  if(outl[i].color != refcol) valid=false;
+		}
+		if(!valid) break;
+		auto & outl_n = polygons[inputs_old+input_width]->outlines();
+
+		for(int i=0;valid && i<outl_n.size();i++) {
+                  if(outl_n[i].color != refcol) valid=false;
+		}
+		if(!valid) break;
+		input_width++;
+	}		
 
         // union all new shapes
 	Clipper2Lib::Paths64  union_new;
-        if(input_width > 1) { // TODO union
+        if(input_width > 1) { 
+          std::vector<Clipper2Lib::Paths64> union_operands;
+          for(int i=0;i<input_width;i++) 
+	    union_operands.push_back(pathsvector[inputs_old + i]);
+	  std::unique_ptr<Polygon2d> union_result = apply(union_operands,  Clipper2Lib::ClipType::Union , scale_bits);
+          union_new = fromPolygon2d(*union_result, scale_bits);
+
         }  else{
 		union_new = pathsvector[inputs_old];
 	}
