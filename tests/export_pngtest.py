@@ -23,8 +23,8 @@ gs_cmd = [
     "-dNOPAUSE",
     "-dBATCH",
     "-sDEVICE=png16m",
-    "-dTextAlphaBits=1",
-    "-dGraphicsAlphaBits=1",
+    "-dTextAlphaBits=4",
+    "-dGraphicsAlphaBits=4",
     "-r300"
 ]
 
