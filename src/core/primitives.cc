@@ -587,7 +587,7 @@ std::unique_ptr<const Geometry> SquareNode::createGeometry() const
 
   Outline2d o;
   o.vertices = {v1, {v2[0], v1[1]}, v2, {v1[0], v2[1]}};
-  o.color = *OpenSCAD::parse_hex_color("#f9d72c");
+  o.color = *OpenSCAD::parse_color("#f9d72c");
   return std::make_unique<Polygon2d>(o);
 }
 
@@ -640,7 +640,7 @@ std::unique_ptr<const Geometry> CircleNode::createGeometry() const
     double phi = (this->angle * i) / fragments_div;
     o.vertices[i] = {this->r * cos_degrees(phi), this->r * sin_degrees(phi)};
   }
-  o.color = *OpenSCAD::parse_hex_color("#f9d72c");
+  o.color = *OpenSCAD::parse_color("#f9d72c");
   return std::make_unique<Polygon2d>(o);
 }
 
@@ -779,7 +779,7 @@ std::unique_ptr<const Geometry> PolygonNode::createGeometry() const
   if (p->outlines().size() > 0) {
     p->setConvexity(convexity);
   }
-  p->setColor(*OpenSCAD::parse_hex_color("#f9d72c"));
+  p->setColor(*OpenSCAD::parse_color("#f9d72c"));
   return p;
 }
 
