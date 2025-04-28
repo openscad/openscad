@@ -173,7 +173,10 @@ std::unique_ptr<Polygon2d> sanitize(const Polygon2d& poly)
   auto scale_bits = scaleBitsFromPrecision();
 
   auto paths = ClipperUtils::fromPolygon2d(poly, scale_bits);
-  return toPolygon2d(*sanitize(paths), scale_bits);
+  auto result = toPolygon2d(*sanitize(paths), scale_bits);
+  if(poly.outlines().size() > 0)   
+    result->setColor(poly.outlines()[0].color);	 // TODO this is inaccueate
+  return result;
 }
 
 /*!
