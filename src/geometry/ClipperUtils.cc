@@ -174,8 +174,9 @@ std::unique_ptr<Polygon2d> sanitize(const Polygon2d& poly)
 
   auto paths = ClipperUtils::fromPolygon2d(poly, scale_bits);
   auto result = toPolygon2d(*sanitize(paths), scale_bits);
-  if(poly.outlines().size() > 0)   
-    result->setColor(poly.outlines()[0].color);	 // TODO this is inaccueate
+  printf("sanitize\n");
+ 
+  result->stamp_color(poly);
   return result;
 }
 
@@ -261,13 +262,6 @@ std::unique_ptr<Polygon2d> apply(const std::vector<Clipper2Lib::Paths64>& pathsv
   return ClipperUtils::toPolygon2d(sumresult, scale_bits);
 }
 
-void  copy_color_to(const std::shared_ptr<const Polygon2d>&src, std::unique_ptr<Polygon2d> &dst)
-{
-    if(src->outlines().size() > 0) {    
-      dst->setColor(src->outlines()[0].color);	 // TODO this is inaccueate
-    }  
-}
-
 /*!
    Apply the clipper operator to the given polygons.
 
@@ -298,7 +292,7 @@ std::unique_ptr<Polygon2d> apply(const std::vector<std::shared_ptr<const Polygon
       Polygon2d union_result;
 
       while(inputs_old < n) {
-        int input_width=1; // TODO fix
+        int input_width=1; 
         while(true) {
 		// see if we can join one more input
 		if(inputs_old + input_width >= n) break;
@@ -341,7 +335,7 @@ std::unique_ptr<Polygon2d> apply(const std::vector<std::shared_ptr<const Polygon
         for(int i=0;i<inputs_old;i++) 
 	 diff_operands.push_back(pathsvector[i]);
 	std::unique_ptr<Polygon2d> diff_result = apply(diff_operands,  Clipper2Lib::ClipType::Difference , scale_bits);
-        copy_color_to(polygons[inputs_old],diff_result );
+	diff_result->stamp_color(*polygons[inputs_old]);
 	// now colect all
 	for(const auto &o : diff_result->outlines()) {
           union_result.addOutline(o);		  
@@ -356,7 +350,7 @@ std::unique_ptr<Polygon2d> apply(const std::vector<std::shared_ptr<const Polygon
     { 
        std::unique_ptr<Polygon2d> result = apply(pathsvector, clipType, scale_bits);
        assert(result);
-       if(polygons.size() > 0) copy_color_to(polygons[0],result);
+       if(polygons.size() > 0) result->stamp_color(*polygons[0]);
        return result;
     }
     break;

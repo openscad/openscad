@@ -218,7 +218,9 @@ std::unique_ptr<const Geometry> ImportNode::createGeometry() const
   }
 #ifndef ENABLE_PIP			
   case ImportType::SVG: {
+				printf("before import\n");
     g = import_svg(this->fn, this->fs, this->fa, this->filename, this->id, this->layer, this->dpi, this->center, loc);
+    printf("after import\n");
     break;
   }
 #endif			

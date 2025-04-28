@@ -201,7 +201,6 @@ std::unique_ptr<Polygon2d> import_svg(double fn, double fs, double fa,
     Polygon2d result;
     for (const auto& shape_ptr : *shapes) {
       if (!shape_ptr->is_excluded()) {
-//        auto poly = std::make_shared<Polygon2d>();
         const auto& s = *shape_ptr;
         for (const auto& p : s.get_path_list()) {
           Outline2d outline;
@@ -212,6 +211,7 @@ std::unique_ptr<Polygon2d> import_svg(double fn, double fs, double fa,
             outline.positive = true;
           }
 	  outline.color=*OpenSCAD::parse_color(s.get_fill());
+	  printf("Adding outline %s\n",s.get_fill().c_str());
           result.addOutline(outline);
         }
       }

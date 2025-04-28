@@ -17,6 +17,7 @@
 #include "Feature.h"
 #include "geometry/PolySet.h"
 #include "glview/RenderSettings.h"
+#include "utils/hash.h"
 
 
 Polygon2d::Polygon2d(Outline2d outline) : sanitized(true) {
@@ -308,5 +309,34 @@ void Polygon2d::reverse(void) {
 void Polygon2d::setColor(const Color4f& c){
   for(auto &o : theoutlines )    o.color = c;
   for(auto &o : trans3dOutlines) o.color = c;	  
+}
+
+Vector2d pt_round(const Vector2d &pt) {
+  Vector2d r;
+  r[0]=int(pt[0]*1000)/1000.0  ;
+  r[1]=int(pt[1]*1000)/1000.0  ;
+  return r;
+}
+void  Polygon2d::stamp_color(const Polygon2d &src)
+{
+	std::unordered_map<Vector2d, Color4f, boost::hash<Vector2d> > lookup;
+
+	// create db
+	for( const auto &o : src.outlines()) {
+          for(const auto &pt : o.vertices) {
+            lookup[pt_round(pt)] = o.color;		   
+	  }		   
+	}
+	// lookup each color in dst
+	for( auto &o : theoutlines) {
+          for( auto &pt :	o.vertices) {
+            auto ptr = pt_round(pt);
+            if(lookup.count(ptr) > 0) {
+              o.color = lookup.at(ptr);
+              break;	      
+	    }		    
+	  }	  
+	}
+
 
 }
