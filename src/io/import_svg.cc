@@ -43,6 +43,7 @@
 #include "libsvg/shape.h"
 #include "libsvg/util.h"
 #include "utils/printutils.h"
+#include "src/core/ColorUtil.h"
 
 namespace {
 
@@ -197,10 +198,10 @@ std::unique_ptr<Polygon2d> import_svg(double fn, double fs, double fa,
     const double cx = center ? bbox.center().x() : -align.x();
     const double cy = center ? bbox.center().y() : height_mm - align.y();
 
-    std::vector<std::shared_ptr<const Polygon2d>> polygons;
+    Polygon2d result;
     for (const auto& shape_ptr : *shapes) {
       if (!shape_ptr->is_excluded()) {
-        auto poly = std::make_shared<Polygon2d>();
+//        auto poly = std::make_shared<Polygon2d>();
         const auto& s = *shape_ptr;
         for (const auto& p : s.get_path_list()) {
           Outline2d outline;
@@ -210,13 +211,13 @@ std::unique_ptr<Polygon2d> import_svg(double fn, double fs, double fa,
             outline.vertices.emplace_back(x, y);
             outline.positive = true;
           }
-          poly->addOutline(outline);
+	  outline.color=*OpenSCAD::parse_color(s.get_fill());
+          result.addOutline(outline);
         }
-        if (!poly->isEmpty()) polygons.push_back(poly);
       }
     }
     libsvg_free(shapes);
-    return ClipperUtils::apply(polygons, Clipper2Lib::ClipType::Union);
+    return std::make_unique<Polygon2d>(result);
   } catch (const std::exception& e) {
     LOG(message_group::Error, "%1$s, import() at line %2$d", e.what(), loc.firstLine());
     return std::make_unique<Polygon2d>();

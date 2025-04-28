@@ -226,6 +226,7 @@ path::set_attrs(attr_map_t& attrs, void *context)
 
   shape::set_attrs(attrs, context);
   this->data = attrs["d"];
+  this->fill = attrs["fill"];
 
   boost::char_separator<char> sep(" ,", commands.c_str());
   tokenizer tokens(this->data, sep);
