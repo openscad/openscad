@@ -3086,7 +3086,7 @@ void MainWindow::showTextInWindow(const QString& type, const QString& content)
     e->setTabStopDistance(tabStopWidth);
     e->setWindowTitle(type+" Dump");
     if(content.isEmpty())
-        e->setPlainText("No "+type+"to dump. Please try compiling first...");
+        e->setPlainText("No "+type+" to dump. Please try compiling first...");
     else
         e->setPlainText(content);
 

@@ -17,6 +17,7 @@ struct Outline2d {
   Outline2d() = default;
   VectorOfVector2d vertices;
   bool positive{true};
+  Color4f color;
   [[nodiscard]] BoundingBox getBoundingBox() const;
 };
 
@@ -75,6 +76,7 @@ public:
   [[nodiscard]] bool isSanitized() const { return this->sanitized; }
   void setSanitized(bool s) { this->sanitized = s; }
   [[nodiscard]] bool is_convex() const;
+  void setColor(const Color4f& c) override;
 private:
   Outlines2d theoutlines;
   bool sanitized{false};

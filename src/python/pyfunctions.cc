@@ -2062,19 +2062,13 @@ PyObject *python_color_core(PyObject *obj, PyObject *color, double alpha, int te
   else if(PyUnicode_Check(color)) {
     PyObject* value = PyUnicode_AsEncodedString(color, "utf-8", "~");
     char *colorname =  PyBytes_AS_STRING(value);
-    boost::algorithm::to_lower(colorname);
-    if (webcolors.find(colorname) != webcolors.end()) {
-      node->color = webcolors.at(colorname);
+    const auto color = OpenSCAD::parse_color(colorname);
+    if (color) {
+      node->color = *color;
       node->color[3]=alpha;
     } else {
-    // Try parsing it as a hex color such as "#rrggbb".
-      const auto hexColor = OpenSCAD::parse_hex_color(colorname);
-      if (hexColor) {
-        node->color = *hexColor;
-      } else {
-        PyErr_SetString(PyExc_TypeError, "Cannot parse color");
-        return NULL;
-      }
+      PyErr_SetString(PyExc_TypeError, "Cannot parse color");
+      return NULL;
     }
   } else {
     PyErr_SetString(PyExc_TypeError, "Unknown color representation");
