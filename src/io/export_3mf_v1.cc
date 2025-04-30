@@ -25,7 +25,7 @@
  */
 
 #include "io/export.h"
- 
+
 #include <algorithm>
 #include <cassert>
 #include <cstdint>
@@ -100,24 +100,24 @@ BYTE get_color_channel(const Color4f& col, int idx)
 }
 
 int count_mesh_objects(PLib3MFModel *& model) {
-    PLib3MFModelResourceIterator *it;
-    if (lib3mf_model_getmeshobjects(model, &it) != LIB3MF_OK) {
+  PLib3MFModelResourceIterator *it;
+  if (lib3mf_model_getmeshobjects(model, &it) != LIB3MF_OK) {
+    return 0;
+  }
+
+  BOOL hasNext;
+  int count = 0;
+  while (true) {
+    if (lib3mf_resourceiterator_movenext(it, &hasNext) != LIB3MF_OK) {
       return 0;
     }
-
-    BOOL hasNext;
-    int count = 0;
-    while (true) {
-      if (lib3mf_resourceiterator_movenext(it, &hasNext) != LIB3MF_OK) {
-          return 0;
-      }
-      if (!hasNext) {
-        break;
-      }
-       ++count;
+    if (!hasNext) {
+      break;
     }
+    ++count;
+  }
 
-    return count;
+  return count;
 }
 
 bool handle_triangle_color(PLib3MFPropertyHandler *propertyhandler, const std::unique_ptr<PolySet>& ps, int triangle_index, int color_index, ExportContext& ctx)
@@ -175,34 +175,34 @@ bool append_polyset(const std::shared_ptr<const PolySet>& ps, ExportContext& ctx
     export_3mf_error("Can't set name for 3MF model.", ctx.model);
     return false;
   }
-  
+
   auto vertexFunc = [&](const Vector3d& coords) -> bool {
-    const auto f = coords.cast<float>();
-    MODELMESHVERTEX v{f[0], f[1], f[2]};
-    return lib3mf_meshobject_addvertex(mesh, &v, nullptr) == LIB3MF_OK;
-  };
+      const auto f = coords.cast<float>();
+      MODELMESHVERTEX v{f[0], f[1], f[2]};
+      return lib3mf_meshobject_addvertex(mesh, &v, nullptr) == LIB3MF_OK;
+    };
 
   auto triangleFunc = [&](const IndexedFace& indices) -> bool {
-    MODELMESHTRIANGLE t{(DWORD)indices[0], (DWORD)indices[1], (DWORD)indices[2]};
-    return lib3mf_meshobject_addtriangle(mesh, &t, nullptr) == LIB3MF_OK;
-  };
+      MODELMESHTRIANGLE t{(DWORD)indices[0], (DWORD)indices[1], (DWORD)indices[2]};
+      return lib3mf_meshobject_addtriangle(mesh, &t, nullptr) == LIB3MF_OK;
+    };
 
   auto materialFunc = [&](int idx, const Color4f& col) -> DWORD {
-    const auto colname = "Color " + std::to_string(idx);
+      const auto colname = "Color " + std::to_string(idx);
 
-    DWORD id = 0;
-    lib3mf_basematerial_addmaterialutf8(ctx.basematerial,
-      colname.c_str(),
-      get_color_channel(col, 0),
-      get_color_channel(col, 1),
-      get_color_channel(col, 2),
-      &id);
-    return id;
-  };
+      DWORD id = 0;
+      lib3mf_basematerial_addmaterialutf8(ctx.basematerial,
+                                          colname.c_str(),
+                                          get_color_channel(col, 0),
+                                          get_color_channel(col, 1),
+                                          get_color_channel(col, 2),
+                                          &id);
+      return id;
+    };
 
   auto sorted_ps = createSortedPolySet(*ps);
 
-  for (const auto &v : sorted_ps->vertices) {
+  for (const auto& v : sorted_ps->vertices) {
     if (!vertexFunc(v)) {
       export_3mf_error("Can't add vertex to 3MF model.", ctx.model);
       return false;
@@ -239,22 +239,22 @@ bool append_polyset(const std::shared_ptr<const PolySet>& ps, ExportContext& ctx
           lib3mf_basematerial_getcount(resource, &count);
           materials = count;
         }
-      };
+      }
     }
 
     ctx.materialids.reserve(sorted_ps->colors.size());
-    for (int i = 0;i < sorted_ps->colors.size();i++) {
+    for (int i = 0; i < sorted_ps->colors.size(); i++) {
       ctx.materialids.push_back(materialFunc(materials + i, sorted_ps->colors[i]));
     }
   }
 
   PLib3MFPropertyHandler *propertyhandler = nullptr;
-	if (lib3mf_meshobject_createpropertyhandler(mesh, &propertyhandler) != LIB3MF_OK) {
+  if (lib3mf_meshobject_createpropertyhandler(mesh, &propertyhandler) != LIB3MF_OK) {
     export_3mf_error("Can't create property handler for 3MF model.", ctx.model);
     return false;
   }
 
-  for (int i = 0;i < sorted_ps->color_indices.size();++i) {
+  for (int i = 0; i < sorted_ps->color_indices.size(); ++i) {
     const int32_t idx = sorted_ps->color_indices[i];
     if (!handle_triangle_color(propertyhandler, sorted_ps, i, idx, ctx)) {
       return false;
@@ -264,7 +264,7 @@ bool append_polyset(const std::shared_ptr<const PolySet>& ps, ExportContext& ctx
   lib3mf_release(propertyhandler);
 
   PLib3MFPropertyHandler *defaultpropertyhandler = nullptr;
-	if (lib3mf_object_createdefaultpropertyhandler(mesh, &defaultpropertyhandler) != LIB3MF_OK) {
+  if (lib3mf_object_createdefaultpropertyhandler(mesh, &defaultpropertyhandler) != LIB3MF_OK) {
     export_3mf_error("Can't create default property handler for 3MF model.", ctx.model);
     return false;
   }
@@ -273,10 +273,10 @@ bool append_polyset(const std::shared_ptr<const PolySet>& ps, ExportContext& ctx
     lib3mf_defaultpropertyhandler_setbasematerial(defaultpropertyhandler, ctx.basematerialid, ctx.defaultColorId);
   } else if (ctx.usecolors) {
     lib3mf_defaultpropertyhandler_setcolorrgba(defaultpropertyhandler,
-        get_color_channel(ctx.defaultColor, 0),
-        get_color_channel(ctx.defaultColor, 1),
-        get_color_channel(ctx.defaultColor, 2),
-        get_color_channel(ctx.defaultColor, 3));
+                                               get_color_channel(ctx.defaultColor, 0),
+                                               get_color_channel(ctx.defaultColor, 1),
+                                               get_color_channel(ctx.defaultColor, 2),
+                                               get_color_channel(ctx.defaultColor, 3));
   }
 
   lib3mf_release(defaultpropertyhandler);
@@ -317,7 +317,7 @@ bool append_nef(const CGAL_Nef_polyhedron& root_N, ExportContext& ctx)
   export_3mf_error("Error converting NEF Polyhedron.", ctx.model);
   return false;
 }
-#endif
+#endif // ifdef ENABLE_CGAL
 
 static bool append_3mf(const std::shared_ptr<const Geometry>& geom, ExportContext& ctx)
 {
@@ -383,29 +383,28 @@ void export_3mf(const std::shared_ptr<const Geometry>& geom, std::ostream& outpu
 
   const auto& options3mf = exportInfo.options3mf ? exportInfo.options3mf : std::make_shared<Export3mfOptions>();
   switch (options3mf->unit) {
-    case Export3mfUnit::micron:
-      lib3mf_model_setunit(model, eModelUnit::MODELUNIT_MICROMETER);
-      break;
-    case Export3mfUnit::centimeter:
-      lib3mf_model_setunit(model, eModelUnit::MODELUNIT_CENTIMETER);
-      break;
-    case Export3mfUnit::meter:
-      lib3mf_model_setunit(model, eModelUnit::MODELUNIT_METER);
-      break;
-    case Export3mfUnit::inch:
-      lib3mf_model_setunit(model, eModelUnit::MODELUNIT_INCH);
-      break;
-    case Export3mfUnit::foot:
-      lib3mf_model_setunit(model, eModelUnit::MODELUNIT_FOOT);
-      break;
-    default:
-      lib3mf_model_setunit(model, eModelUnit::MODELUNIT_MILLIMETER);
-      break;
+  case Export3mfUnit::micron:
+    lib3mf_model_setunit(model, eModelUnit::MODELUNIT_MICROMETER);
+    break;
+  case Export3mfUnit::centimeter:
+    lib3mf_model_setunit(model, eModelUnit::MODELUNIT_CENTIMETER);
+    break;
+  case Export3mfUnit::meter:
+    lib3mf_model_setunit(model, eModelUnit::MODELUNIT_METER);
+    break;
+  case Export3mfUnit::inch:
+    lib3mf_model_setunit(model, eModelUnit::MODELUNIT_INCH);
+    break;
+  case Export3mfUnit::foot:
+    lib3mf_model_setunit(model, eModelUnit::MODELUNIT_FOOT);
+    break;
+  default:
+    lib3mf_model_setunit(model, eModelUnit::MODELUNIT_MILLIMETER);
+    break;
   }
 
   Color4f defaultColor;
   DWORD defaultColorId = 0;
-  const auto settingsColor = OpenSCAD::parse_hex_color(options3mf->color);
 
   bool usecolors = false;
   DWORD basematerialid = 0;
@@ -415,11 +414,7 @@ void export_3mf(const std::shared_ptr<const Geometry>& geom, std::ostream& outpu
       // use default color that ultimately should come from the color scheme
       defaultColor = exportInfo.defaultColor;
     } else {
-      if (!settingsColor) {
-      // use color selected in the export dialog and stored in settings (if valid)
-        LOG(message_group::Warning, "Default color in settings is invalid ('%1$s'), using default from model.", options3mf->color);
-      }
-      defaultColor = settingsColor.value_or(exportInfo.defaultColor);
+      defaultColor = OpenSCAD::getColor(options3mf->color, exportInfo.defaultColor);
     }
     if (options3mf->materialType == Export3mfMaterialType::basematerial) {
       if (lib3mf_model_addbasematerialgroup(model, &basematerial) != LIB3MF_OK) {
@@ -431,10 +426,10 @@ void export_3mf(const std::shared_ptr<const Geometry>& geom, std::ostream& outpu
         return;
       }
       if (lib3mf_basematerial_addmaterialutf8(basematerial, "Default",
-        get_color_channel(defaultColor, 0),
-        get_color_channel(defaultColor, 1),
-        get_color_channel(defaultColor, 2),
-        &defaultColorId) != LIB3MF_OK) {
+                                              get_color_channel(defaultColor, 0),
+                                              get_color_channel(defaultColor, 1),
+                                              get_color_channel(defaultColor, 2),
+                                              &defaultColorId) != LIB3MF_OK) {
         export_3mf_error("Can't add default material color.", model);
         return;
       }

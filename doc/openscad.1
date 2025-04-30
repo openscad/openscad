@@ -56,6 +56,11 @@ If a nonexisting file is accessed during OpenSCAD's operation, it will try to
 invoke \fImake_command missing_file\fP to create the missing file, and then
 read it again.
 .TP
+\fB-O\fP \fIsection/key=val\fP
+Pass settings value to the file export using the format section/key=value, e.g 
+export-pdf/paper-size=a3. Use --help-export to list all available settings.
+More than one \fB-O\fP option can be given.
+.TP
 \fB-D\fP \fIvar=val\fP
 This option can be used to assign constant values to OpenSCAD variables. The
 variable's value is an expression, so if this mechanism is used to assign
@@ -67,6 +72,12 @@ Customizer parameter file.
 .TP
 .B \-P [ \-\-P ] arg
 Customizer parameter set.
+.TP
+.B \-h [ \-\-help ]
+Print basic program usage.
+.TP
+.B \-\-help\-export
+Print list of export parameters and values that can be set via -O
 .TP
 .B \-v
 Print version.
