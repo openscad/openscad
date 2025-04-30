@@ -4355,9 +4355,9 @@ PyObject *python_import(PyObject *self, PyObject *args, PyObject *kwargs) {
 }
 
 
-extern int curl_download(std::string url, std::string path);
 
 #ifndef OPENSCAD_NOGUI
+extern int curl_download(std::string url, std::string path);
 PyObject *python_nimport(PyObject *self, PyObject *args, PyObject *kwargs)
 {
   static bool called_already=false;	
