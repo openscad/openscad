@@ -1756,7 +1756,8 @@ void MainWindow::actionShowBackupFiles()
   QString errorString;
   QString result = UIUtils::readFileContents(filename, errorString);
   if(result == nullptr) return;
-  activeEditor->setText("assert(0);\n"+result);
+  autoReloadTimer->stop(); // temporarily disable autoreload until next session
+  activeEditor->setText(result);
 }
 
 void MainWindow::actionReload()
