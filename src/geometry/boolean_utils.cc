@@ -101,22 +101,15 @@ std::unique_ptr<PolySet> applyHull(const Geometry::Geometries& children)
   return nullptr;
 }
 
-/*!
-   children cannot contain nullptr objects
-
-  FIXME: This shouldn't return const, but it does due to internal implementation details
- */
-std::shared_ptr<const Geometry> applyMinkowski(const Geometry::Geometries& children)
+std::shared_ptr<const Geometry> applyMinkowskiCGAL(const Geometry::Geometries& children)
 {
-#if ENABLE_MANIFOLD
-  if (RenderSettings::inst()->backend3D == RenderBackend3D::ManifoldBackend) {
-    return ManifoldUtils::applyMinkowskiManifold(children);
-  }
-#endif  // ENABLE_MANIFOLD
-  CGAL::Timer t, t_tot;
   assert(children.size() >= 2);
-  auto it = children.begin();
+
+  CGAL::Timer t;
+  CGAL::Timer t_tot;
   t_tot.start();
+  
+  auto it = children.begin();
   std::shared_ptr<const Geometry> operands[2] = {it->second, std::shared_ptr<const Geometry>()};
   try {
     while (++it != children.end()) {
@@ -245,8 +238,8 @@ std::shared_ptr<const Geometry> applyMinkowski(const Geometry::Geometries& child
 
 
               for (CGAL::Polyhedron_3<Hull_kernel>::Vertex::Halfedge_handle j = h->next_on_vertex();
-                   j != h && !collinear && !coplanar;
-                   j = j->next_on_vertex()) {
+                    j != h && !collinear && !coplanar;
+                    j = j->next_on_vertex()) {
 
                 Hull_kernel::Point_3 const& r = j->opposite()->vertex()->point();
                 if (CGAL::collinear(p, q, r)) {
@@ -286,7 +279,7 @@ std::shared_ptr<const Geometry> applyMinkowski(const Geometry::Geometries& child
         Geometry::Geometries fake_children;
         for (const auto& part : result_parts) {
           fake_children.push_back(std::make_pair(std::shared_ptr<const AbstractNode>(),
-                                                 partToGeom(part)));
+                                                  partToGeom(part)));
         }
         auto N = CGALUtils::applyUnion3D(fake_children.begin(), fake_children.end());
         // FIXME: This should really never throw.
@@ -313,6 +306,21 @@ std::shared_ptr<const Geometry> applyMinkowski(const Geometry::Geometries& child
     return N;
   }
 }
+
+/*!
+   children cannot contain nullptr objects
+
+  FIXME: This shouldn't return const, but it does due to internal implementation details
+ */
+std::shared_ptr<const Geometry> applyMinkowski(const Geometry::Geometries& children)
+{
+#if ENABLE_MANIFOLD
+  if (RenderSettings::inst()->backend3D == RenderBackend3D::ManifoldBackend) {
+    return ManifoldUtils::applyMinkowskiManifold(children);
+  }
+#endif  // ENABLE_MANIFOLD
+  return applyMinkowskiCGAL(children);
+}
 #else  // ENABLE_CGAL
 std::unique_ptr<PolySet> applyHull(const Geometry::Geometries& children)
 {
@@ -323,4 +331,4 @@ std::shared_ptr<const Geometry> applyMinkowski(const Geometry::Geometries& child
 {
   return std::make_shared<PolySet>(3);
 }
-#endif  // ENABLE_CGAL
+#endif  // !ENABLE_CGAL

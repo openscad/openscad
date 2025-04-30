@@ -98,16 +98,16 @@ std::unique_ptr<CGALNefGeometry> createNefPolyhedronFromPolySet(const PolySet& p
     }
   }
   if (plane_error) try {
-      CGAL_Polyhedron P;
-      auto err = CGALUtils::createPolyhedronFromPolySet(*ps_tri, P);
-      if (!err) {
-        PRINTDB("Polyhedron is closed: %d", P.is_closed());
-        PRINTDB("Polyhedron is valid: %d", P.is_valid(false, 0));
-      }
-      if (!err) N = std::make_shared<CGAL_Nef_polyhedron3>(P);
-    } catch (const CGAL::Assertion_exception& e) {
-      LOG(message_group::Error, "Alternate construction failed. CGAL error in CGAL_Nef_polyhedron3(): %1$s", e.what());
+    CGAL_Polyhedron P;
+    auto err = CGALUtils::createPolyhedronFromPolySet(*ps_tri, P);
+    if (!err) {
+      PRINTDB("Polyhedron is closed: %d", P.is_closed());
+      PRINTDB("Polyhedron is valid: %d", P.is_valid(false, 0));
     }
+    if (!err) N = std::make_shared<CGAL_Nef_polyhedron3>(P);
+  } catch (const CGAL::Assertion_exception& e) {
+    LOG(message_group::Error, "Alternate construction failed. CGAL error in CGAL_Nef_polyhedron3(): %1$s", e.what());
+  }
   return std::make_unique<CGALNefGeometry>(N);
 }
 

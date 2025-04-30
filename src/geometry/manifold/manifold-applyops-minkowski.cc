@@ -26,6 +26,8 @@ namespace ManifoldUtils {
  */
 std::shared_ptr<const Geometry> applyMinkowskiManifold(const Geometry::Geometries& children)
 {
+  assert(children.size() >= 2);
+
   using Hull_kernel = CGAL::Epick;
   using Hull_Mesh = CGAL::Surface_mesh<CGAL::Point_3<Hull_kernel>>;
   using Hull_Points = std::vector<Hull_kernel::Point_3>;
@@ -50,12 +52,6 @@ std::shared_ptr<const Geometry> applyMinkowskiManifold(const Geometry::Geometrie
     throw 0;
   };
 
-  assert(children.size() >= 2);
-  auto it = children.begin();
-  CGAL::Timer t_tot;
-  t_tot.start();
-  std::vector<std::shared_ptr<const Geometry>> operands = {it->second, std::shared_ptr<const Geometry>()};
-
   CGAL::Cartesian_converter<Nef_kernel, Hull_kernel> conv;
   auto getHullPoints = [&](const Polyhedron &poly) {
     std::vector<Hull_kernel::Point_3> out;
@@ -66,6 +62,12 @@ std::shared_ptr<const Geometry> applyMinkowskiManifold(const Geometry::Geometrie
     return out;
   };
 
+  CGAL::Timer t_tot;
+  t_tot.start();
+
+  auto it = children.begin();
+  std::vector<std::shared_ptr<const Geometry>> operands = {it->second, std::shared_ptr<const Geometry>()};
+
   try {
     // Note: we could parallelize more, e.g. compute all decompositions ahead of time instead of doing them 2 by 2,
     // but this could use substantially more memory.
@@ -74,7 +76,8 @@ std::shared_ptr<const Geometry> applyMinkowskiManifold(const Geometry::Geometrie
 
       std::vector<std::list<Hull_Points>> part_points(2);
 
-      parallelizable_transform(operands.begin(), operands.begin() + 2, part_points.begin(), [&](const auto &operand) {
+      parallelizable_transform(operands.begin(), operands.begin() + 2, part_points.begin(),
+                               [&](std::shared_ptr<const Geometry> &operand) {
         std::list<Hull_Points> part_points;
 
         bool is_convex;

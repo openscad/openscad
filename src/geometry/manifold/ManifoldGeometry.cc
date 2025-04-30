@@ -227,10 +227,25 @@ public:
 template <class Polyhedron>
 std::shared_ptr<Polyhedron> ManifoldGeometry::toPolyhedron() const
 {
-  auto p = std::make_shared<Polyhedron>();
+  try {
+    // Going through Surface_mesh allows us to represent more corner case manifold objects than
+    // when using CGAL::Polyhedron.
+    using SurfaceMesh = CGAL::Surface_mesh<CGAL_Point_3>;
+    auto surface_mesh = ManifoldUtils::createSurfaceMeshFromManifold<SurfaceMesh>(getManifold());
+    return std::make_shared<Polyhedron>(surface_mesh);
+  } catch (const CGAL::Assertion_exception& e) {
+    LOG(message_group::Error, "CGAL error in CGALUtils::createPolyhedronFromPolySet: %1$s", e.what());
+  }
+  return {};
+}
+
+template std::shared_ptr<CGAL_Nef_polyhedron3> ManifoldGeometry::toPolyhedron() const;
+
+template<> std::shared_ptr<CGAL_Polyhedron> ManifoldGeometry::toPolyhedron() const {
+  auto p = std::make_shared<CGAL_Polyhedron>();
   try {
     auto meshgl = getManifold().GetMeshGL64();
-    CGALPolyhedronBuilderFromManifold<Polyhedron> builder(meshgl);
+    CGALPolyhedronBuilderFromManifold<CGAL_Polyhedron> builder(meshgl);
     p->delegate(builder);
   } catch (const CGAL::Assertion_exception& e) {
     LOG(message_group::Error, "CGAL error in CGALUtils::createPolyhedronFromPolySet: %1$s", e.what());
@@ -238,7 +253,6 @@ std::shared_ptr<Polyhedron> ManifoldGeometry::toPolyhedron() const
   return p;
 }
 
-template std::shared_ptr<CGAL::Polyhedron_3<CGAL_Kernel3>> ManifoldGeometry::toPolyhedron() const;
 #endif
 
 ManifoldGeometry ManifoldGeometry::binOp(const ManifoldGeometry& lhs, const ManifoldGeometry& rhs, manifold::OpType opType) const {

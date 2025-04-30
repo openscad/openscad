@@ -51,13 +51,16 @@ template <class InputKernel, class OutputKernel>
 void copyPolyhedron(const CGAL::Polyhedron_3<InputKernel>& poly_a, CGAL::Polyhedron_3<OutputKernel>& poly_b);
 template <typename Polyhedron> bool createPolyhedronFromPolySet(const PolySet& ps, Polyhedron& p);
 
-template <class TriangleMesh>
-std::unique_ptr<PolySet> createPolySetFromMesh(const TriangleMesh& mesh);
 template <class InputKernel, class OutputKernel>
 void copyMesh(const CGAL::Surface_mesh<CGAL::Point_3<InputKernel>>& input,
               CGAL::Surface_mesh<CGAL::Point_3<OutputKernel>>& output);
-template <class TriangleMesh>
-bool createMeshFromPolySet(const PolySet& ps, TriangleMesh& mesh);
+
+CGAL_DoubleMesh repairPolySet(const PolySet& ps);
+
+template <class SurfaceMesh>
+void createSurfaceMeshFromPolySet(const PolySet& ps, SurfaceMesh& mesh);
+template <class SurfaceMesh>
+std::unique_ptr<PolySet> createPolySetFromSurfaceMesh(const SurfaceMesh& mesh);
 
 template <typename K>
 std::unique_ptr<PolySet> createPolySetFromNefPolyhedron3(const CGAL::Nef_polyhedron_3<K>& N);
@@ -115,6 +118,10 @@ template <typename K>
 void inPlaceNefMinkowski(CGAL::Nef_polyhedron_3<K>& lhs, CGAL::Nef_polyhedron_3<K>& rhs);
 template <typename K>
 void convertNefToPolyhedron(const CGAL::Nef_polyhedron_3<K>& nef, CGAL::Polyhedron_3<K>& polyhedron);
+
+template <typename SurfaceMesh>
+void convertNefToSurfaceMesh(const CGAL_Nef_polyhedron3& nef, SurfaceMesh& mesh);
+
 template <class TriangleMesh>
 bool corefineAndComputeUnion(TriangleMesh& lhs, TriangleMesh& rhs, TriangleMesh& out);
 template <class TriangleMesh>

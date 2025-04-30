@@ -1,9 +1,13 @@
 #pragma once
 
 #include <memory>
+
+#include <CGAL/Surface_mesh/Surface_mesh.h>
+
 #include "geometry/Geometry.h"
 #include "core/enums.h"
 #include "geometry/manifold/ManifoldGeometry.h"
+#include "manifold/manifold.h"
 
 namespace ManifoldUtils {
 
@@ -14,7 +18,9 @@ namespace ManifoldUtils {
 
   template <class TriangleMesh>
   std::shared_ptr<ManifoldGeometry> createManifoldFromSurfaceMesh(const TriangleMesh& mesh);
-
+  template <typename TriangleMesh>
+  TriangleMesh createSurfaceMeshFromManifold(const manifold::Manifold& mani);
+  
   std::shared_ptr<ManifoldGeometry> applyOperator3DManifold(const Geometry::Geometries& children, OpenSCADOperator op);
 
   Polygon2d polygonsToPolygon2d(const manifold::Polygons& polygons);
