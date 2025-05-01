@@ -38,9 +38,9 @@
 #ifdef ENABLE_CGAL
 std::unique_ptr<PolySet> applyHull(const Geometry::Geometries& children)
 {
-  using K = CGAL::Epick;
+  using Hull_kernel = CGAL::Epick;
   // Collect point cloud
-  Reindexer<K::Point_3> reindexer;
+  Reindexer<Hull_kernel::Point_3> reindexer;
 
   auto addCapacity = [&](const auto n) {
     reindexer.reserve(reindexer.size() + n);
@@ -57,7 +57,7 @@ std::unique_ptr<PolySet> applyHull(const Geometry::Geometries& children)
       if (!N->isEmpty()) {
         addCapacity(N->p3->number_of_vertices());
         for (CGAL_Nef_polyhedron3::Vertex_const_iterator i = N->p3->vertices_begin(); i != N->p3->vertices_end(); ++i) {
-          addPoint(CGALUtils::vector_convert<K::Point_3>(i->point()));
+          addPoint(CGALUtils::vector_convert<Hull_kernel::Point_3>(i->point()));
         }
       }
 #endif  // ENABLE_CGAL
@@ -65,7 +65,7 @@ std::unique_ptr<PolySet> applyHull(const Geometry::Geometries& children)
     } else if (const auto *mani = dynamic_cast<const ManifoldGeometry*>(chgeom.get())) {
       addCapacity(mani->numVertices());
       mani->foreachVertexUntilTrue([&](auto& p) {
-          addPoint(CGALUtils::vector_convert<K::Point_3>(p));
+          addPoint(CGALUtils::vector_convert<Hull_kernel::Point_3>(p));
           return false;
         });
 #endif  // ENABLE_MANIFOLD
@@ -73,7 +73,7 @@ std::unique_ptr<PolySet> applyHull(const Geometry::Geometries& children)
       addCapacity(ps->indices.size() * 3);
       for (const auto& p : ps->indices) {
         for (const auto& ind : p) {
-          addPoint(CGALUtils::vector_convert<K::Point_3>(ps->vertices[ind]));
+          addPoint(CGALUtils::vector_convert<Hull_kernel::Point_3>(ps->vertices[ind]));
         }
       }
     }
@@ -85,7 +85,7 @@ std::unique_ptr<PolySet> applyHull(const Geometry::Geometries& children)
   // Apply hull
   if (points.size() >= 4) {
     try {
-      CGAL::Polyhedron_3<K> r;
+      CGAL::Polyhedron_3<Hull_kernel> r;
       CGAL::convex_hull_3(points.begin(), points.end(), r);
       PRINTDB("After hull vertices: %d", r.size_of_vertices());
       PRINTDB("After hull facets: %d", r.size_of_facets());

@@ -290,7 +290,6 @@ bool createPolyhedronFromPolySet(const PolySet& ps, Polyhedron& p)
 
 template bool createPolyhedronFromPolySet(const PolySet& ps, CGAL_Polyhedron& p);
 template bool createPolyhedronFromPolySet(const PolySet& ps, CGAL::Polyhedron_3<CGAL::Epick>& p);
-template bool createPolyhedronFromPolySet(const PolySet& ps, CGAL::Polyhedron_3<CGAL::Epeck>& p);
 
 template <typename Polyhedron>
 std::unique_ptr<PolySet> createPolySetFromPolyhedron(const Polyhedron& p)
@@ -318,7 +317,6 @@ std::unique_ptr<PolySet> createPolySetFromPolyhedron(const Polyhedron& p)
 
 template std::unique_ptr<PolySet> createPolySetFromPolyhedron(const CGAL_Polyhedron& p);
 template std::unique_ptr<PolySet> createPolySetFromPolyhedron(const CGAL::Polyhedron_3<CGAL::Epick>& p);
-template std::unique_ptr<PolySet> createPolySetFromPolyhedron(const CGAL::Polyhedron_3<CGAL::Simple_cartesian<long>>& p);
 
 class Polyhedron_writer
 {

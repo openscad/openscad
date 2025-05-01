@@ -126,7 +126,7 @@ void convertNefPolyhedronToTriangleMesh(const CGAL::Nef_polyhedron_3<K>& nef, CG
   CGAL::convert_nef_polyhedron_to_polygon_mesh(nef, mesh, /* triangulate_all_faces */ true);
 }
 
-template void convertNefPolyhedronToTriangleMesh(const CGAL::Nef_polyhedron_3<CGAL_Kernel3>& nef, CGAL::Surface_mesh<CGAL::Point_3<CGAL_Kernel3>>& mesh);
+template void convertNefPolyhedronToTriangleMesh(const CGAL_Nef_polyhedron3& nef, CGAL::Surface_mesh<CGAL_Point_3>& mesh);
 
 
 } // namespace CGALUtils

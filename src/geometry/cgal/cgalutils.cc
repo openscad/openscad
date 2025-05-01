@@ -1,8 +1,5 @@
 // this file is split into many separate cgalutils* files
 // in order to workaround gcc 4.9.1 crashing on systems with only 2GB of RAM
-
-#ifdef ENABLE_CGAL
-
 #include "geometry/cgal/cgalutils.h"
 
 #include "geometry/Geometry.h"
@@ -54,17 +51,17 @@ std::unique_ptr<CGALNefGeometry> createNefPolyhedronFromPolySet(const PolySet& p
   psq.quantizeVertices(&points3d);
   auto ps_tri = PolySetUtils::tessellate_faces(psq);
   if (ps_tri->isConvex()) {
-    using K = CGAL::Epick;
+    using Hull_kernel = CGAL::Epick;
     // Collect point cloud
-    std::vector<K::Point_3> points(points3d.size());
+    std::vector<Hull_kernel::Point_3> points(points3d.size());
     for (size_t i = 0, n = points3d.size(); i < n; i++) {
-      points[i] = vector_convert<K::Point_3>(points3d[i]);
+      points[i] = vector_convert<Hull_kernel::Point_3>(points3d[i]);
     }
 
     if (points.size() <= 3) return std::make_unique<CGALNefGeometry>();
 
     // Apply hull
-    CGAL::Polyhedron_3<K> r;
+    CGAL::Polyhedron_3<Hull_kernel> r;
     CGAL::convex_hull_3(points.begin(), points.end(), r);
     CGAL_Polyhedron r_exact;
     CGALUtils::copyPolyhedron(r, r_exact);
@@ -162,7 +159,7 @@ bool is_approximately_convex(const PolySet& ps) {
 
   const double angle_threshold = cos_degrees(.1); // .1°
 
-  using K = CGAL::Simple_cartesian<double>;
+  using K = CGAL_DoubleKernel;
   using Vector = K::Vector_3;
   using Point = K::Point_3;
   using Plane = K::Plane_3;
@@ -506,5 +503,3 @@ std::shared_ptr<const PolySet> getGeometryAsPolySet(const std::shared_ptr<const 
 }
 
 }  // namespace CGALUtils
-
-#endif /* ENABLE_CGAL */

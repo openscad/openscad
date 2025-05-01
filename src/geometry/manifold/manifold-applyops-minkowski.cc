@@ -30,7 +30,7 @@ std::shared_ptr<const Geometry> applyMinkowskiManifold(const Geometry::Geometrie
 
   using Hull_kernel = CGAL::Epick;
   using Hull_Mesh = CGAL::Surface_mesh<CGAL::Point_3<Hull_kernel>>;
-  using Hull_Points = std::vector<Hull_kernel::Point_3>;
+  using Hull_Points = std::vector<CGAL::Point_3<Hull_kernel>>;
   using Nef_kernel = CGAL_Kernel3;
   using Polyhedron = CGAL_Polyhedron;
 

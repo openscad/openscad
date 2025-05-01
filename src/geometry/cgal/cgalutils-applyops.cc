@@ -1,8 +1,5 @@
 // this file is split into many separate cgalutils* files
 // in order to workaround gcc 4.9.1 crashing on systems with only 2GB of RAM
-
-#ifdef ENABLE_CGAL
-
 #include "geometry/cgal/cgal.h"
 #include "geometry/Geometry.h"
 #include "geometry/cgal/cgalutils.h"
@@ -156,6 +153,3 @@ std::shared_ptr<const Geometry> applyOperator3D(const Geometry::Geometries& chil
 }
 
 }  // namespace CGALUtils
-
-
-#endif // ENABLE_CGAL

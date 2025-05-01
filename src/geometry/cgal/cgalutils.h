@@ -1,25 +1,19 @@
 #pragma once
 
+#include <memory>
+#include <vector>
+
+#ifdef ENABLE_CGAL
+#include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
+#include "geometry/cgal/CGALNefGeometry.h"
+#include "geometry/cgal/cgal.h"
+#endif
+
 #include "geometry/Geometry.h"
 #include "geometry/linalg.h"
 #include "geometry/Polygon2d.h"
 #include "geometry/PolySet.h"
 #include "core/enums.h"
-
-#include <memory>
-#include <cstddef>
-#include <vector>
-
-#include "core/CsgOpNode.h"
-#ifdef ENABLE_CGAL
-#include "geometry/cgal/cgal.h"
-#include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
-#include "geometry/cgal/CGALNefGeometry.h"
-using K = CGAL::Epick;
-using Vertex3K = CGAL::Point_3<K>;
-using PolygonK = std::vector<Vertex3K>;
-using PolyholeK = std::vector<PolygonK>;
-#endif
 
 namespace CGALUtils {
 
@@ -77,12 +71,12 @@ template <typename K>
 Transform3d computeResizeTransform(
   const CGAL::Iso_cuboid_3<K>& bb, unsigned int dimension, const Vector3d& newsize,
   const Eigen::Matrix<bool, 3, 1>& autosize);
-bool tessellatePolygon(const PolygonK& polygon,
+bool tessellatePolygon(const std::vector<CGAL::Point_3<CGAL::Epick>>& polygon,
                        Polygons& triangles,
-                       const K::Vector_3 *normal = nullptr);
-bool tessellatePolygonWithHoles(const PolyholeK& polygons,
+                       const CGAL::Vector_3<CGAL::Epick> *normal = nullptr);
+bool tessellatePolygonWithHoles(const std::vector<std::vector<CGAL::Point_3<CGAL::Epick>>>& polygons,
                                 Polygons& triangles,
-                                const K::Vector_3 *normal = nullptr);
+                                const CGAL::Vector_3<CGAL::Epick> *normal = nullptr);
 bool tessellate3DFaceWithHoles(std::vector<CGAL_Polygon_3>& polygons,
                                std::vector<CGAL_Polygon_3>& triangles,
                                CGAL::Plane_3<CGAL_Kernel3>& plane);
