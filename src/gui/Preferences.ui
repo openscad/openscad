@@ -146,8 +146,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>666</width>
-             <height>927</height>
+             <width>576</width>
+             <height>953</height>
             </rect>
            </property>
            <layout class="QGridLayout" name="gridLayout_5">
@@ -1274,6 +1274,7 @@
            <widget class="QLabel" name="labelFeatures">
             <property name="font">
              <font>
+              <weight>75</weight>
               <bold>true</bold>
              </font>
             </property>
@@ -1359,7 +1360,7 @@
              <x>0</x>
              <y>0</y>
              <width>584</width>
-             <height>663</height>
+             <height>679</height>
             </rect>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_9">
@@ -1946,7 +1947,7 @@
              <x>0</x>
              <y>0</y>
              <width>587</width>
-             <height>1397</height>
+             <height>1436</height>
             </rect>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_12">
@@ -2725,8 +2726,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>623</width>
-             <height>547</height>
+             <width>98</width>
+             <height>28</height>
             </rect>
            </property>
           </widget>

@@ -87,35 +87,6 @@ void QGLView::init()
   this->statusLabel = nullptr;
 
   setMouseTracking(true);
-
-  // FIXME - this is just hardcoding values to check that code in mouseDrag works, remove it later.
-  // // First zero all the array elements by default
-  // for (int i=0; i < this->numMouseActions; i++) {
-  //   mouseActions[i] = 0.0;
-  // }
-  // // Left-click rotates
-  // mouseActions[1] = 1.0;
-  // mouseActions[4] = 1.0;
-  // // Ctrl-Left does the same
-  // mouseActions[2*14 + 1] = 1.0;
-  // mouseActions[2*14 + 4] = 1.0;
-  // // Shift-left does pitch-and-roll
-  // mouseActions[1*14 + 1] = 1.0;
-  // mouseActions[1*14 + 2] = 1.0;
-  // // Right-click pans in xz
-  // mouseActions[6*14 + 6 + 0] = 1.0;
-  // mouseActions[6*14 + 6 + 5] = -1.0;
-  // // Ctrl-Right does the same
-  // mouseActions[8*14 + 6 + 0] = 1.0;
-  // mouseActions[8*14 + 6 + 5] = -1.0;
-  // // Shift-Right zooms
-  // mouseActions[7*14 + 6 + 6 + 1] = -1.0;
-  // // Middle-click pans in y
-  // mouseActions[3*14 + 6 + 3] = -1.0;
-  // // Ctrl-Middle does the same
-  // mouseActions[5*14 + 6 + 3] = -1.0;
-  // // Shift-Middle zooms
-  // mouseActions[4*14 + 6 + 6 + 1] = -1.0;
 }
 
 void QGLView::resetView()
@@ -416,40 +387,6 @@ void QGLView::mouseMoveEvent(QMouseEvent *event)
     }
   }
   last_mouse = this_mouse;
-
-  // FIXME - dead code, remove later. Just keeping it around for reference.
-    //   // Left button rotates in xz, Shift-left rotates in xy
-    //   // On Mac, Ctrl-Left is handled as right button on other platforms
-    //   if ((QApplication::keyboardModifiers() & Qt::ShiftModifier) != 0) {
-    //     rotate(dy, dx, 0.0, true);
-    //   } else {
-    //     rotate(dy, 0.0, dx, true);
-    //   }
-    //
-    //   normalizeAngle(cam.object_rot.x());
-    //   normalizeAngle(cam.object_rot.y());
-    //   normalizeAngle(cam.object_rot.z());
-    // } else {
-    //   // Right button pans in the xz plane
-    //   // Middle button pans in the xy plane
-    //   // Shift-right and Shift-middle zooms
-    //   if ((QApplication::keyboardModifiers() & Qt::ShiftModifier) != 0) {
-    //     zoom(-12.0 * dy, true);
-    //   } else {
-    //     double mx = +(dx) * 3.0 * cam.zoomValue() / QWidget::width();
-    //     double mz = -(dy) * 3.0 * cam.zoomValue() / QWidget::height();
-    //     double my = 0;
-    //     if (event->buttons() & Qt::MiddleButton) {
-    //       my = mz;
-    //       mz = 0;
-    //       // actually lock the x-position
-    //       // (turns out to be easier to use than xy panning)
-    //       mx = 0;
-    //     }
-    //
-    //     translate(mx, my, mz, true);
-    //   }
-    // }
 }
 
 void QGLView::mouseReleaseEvent(QMouseEvent *event)

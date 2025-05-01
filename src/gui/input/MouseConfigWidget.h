@@ -1,5 +1,4 @@
 #pragma once
-// FIXME - copyright
 
 #include "gui/qtgettext.h"
 #include <QComboBox>

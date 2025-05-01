@@ -201,9 +201,6 @@ SettingsEntryEnum<std::string> Settings::modifierNumberScrollWheel("editor", "mo
 
 SettingsEntryString Settings::defaultPrintService("printing", "printService", "NONE");
 
-SettingsEntryString Settings::mouseConfigPreset("mouseConfig", "preset", "OpenSCAD");
-SettingsEntryString Settings::mouseConfigLeftClick("mouseConfig", "preset", "OpenSCAD");
-
 SettingsEntryString Settings::printServiceName("printing", "printServiceName", "");
 SettingsEntryString Settings::printServiceFileFormat("printing", "printServiceFileFormat", "stl");
 

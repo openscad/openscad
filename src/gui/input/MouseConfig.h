@@ -2,7 +2,6 @@
 #include <map>
 #include <string>
 #include <array>
-// FIXME - copyright
 
 namespace MouseConfig {
 

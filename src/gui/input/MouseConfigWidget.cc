@@ -140,7 +140,6 @@ void MouseConfigWidget::on_comboBoxPreset_activated(int val)
     disableBoxes(true);
   }
 
-  //applyComboBox(comboBoxPreset, val, Settings::Settings::inputMousePreset);
   writeSettings();
   emit updateMouseActions();
 }
