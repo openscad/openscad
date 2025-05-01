@@ -26,6 +26,7 @@ constexpr inline auto PROPERTY_NAME = "_settings_value";
 // Additional value for enums that can map to an additional value (e.g. GridSize in PDF Export)
 constexpr inline auto PROPERTY_SELECTED_VALUE = "_selected_value";
 
+constexpr inline auto SECTION_PYTHON = "python";
 constexpr inline auto SECTION_EXPORT_PDF = "export-pdf";
 constexpr inline auto SECTION_EXPORT_3MF = "export-3mf";
 
@@ -379,8 +380,10 @@ public:
   static SettingsEntryEnum<std::string> modifierNumberScrollWheel;
 
   static SettingsEntryString defaultPrintService;
+  static SettingsEntryBool enableRemotePrintServices;
+  static SettingsEntryBool printServiceAlwaysShowDialog;
   static SettingsEntryString printServiceName;
-  static SettingsEntryString printServiceFileFormat;
+  static SettingsEntryEnum<std::string> printServiceFileFormat;
 
   static SettingsEntryString octoPrintUrl;
   static SettingsEntryString octoPrintApiKey;
@@ -486,6 +489,12 @@ public:
   static SettingsEntryInt joystickNr;
 
   static void visit(const SettingsVisitor& visitor);
+};
+
+class SettingsPython {
+public:
+  static SettingsEntryString pythonTrustedFiles;
+  static SettingsEntryString pythonVirtualEnv;
 };
 
 class SettingsExportPdf {

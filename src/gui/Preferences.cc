@@ -32,6 +32,7 @@
 #include <QFontComboBox>
 #include <QMainWindow>
 #include <QObject>
+#include <QDialog>
 #include <QSizePolicy>
 #include <QSpacerItem>
 #include <QString>
@@ -54,6 +55,7 @@
 #include <QListWidget>
 #include <QListWidgetItem>
 #include <boost/algorithm/string.hpp>
+#include "OctoPrintApiKeyDialog.h"
 #include "geometry/GeometryCache.h"
 #include "gui/AutoUpdater.h"
 #include "Feature.h"
@@ -72,9 +74,11 @@
 
 #include <string>
 
-Preferences *Preferences::instance = nullptr;
 
-const char *Preferences::featurePropertyName = "FeatureProperty";
+static const char* featurePropertyName="FeatureProperty";
+
+using S = Settings::Settings;
+
 Q_DECLARE_METATYPE(Feature *);
 
 class SettingsReader : public Settings::SettingsVisitor
@@ -94,6 +98,19 @@ class SettingsReader : public Settings::SettingsVisitor
 Preferences::Preferences(QWidget *parent) : QMainWindow(parent)
 {
   setupUi(this);
+
+  std::list<std::string> names = ColorMap::inst()->colorSchemeNames(true);
+  QStringList renderColorSchemes;
+  for (const auto& name : names) renderColorSchemes << name.c_str();
+
+  syntaxHighlight->clear();
+  colorSchemeChooser->clear();
+  colorSchemeChooser->addItems(renderColorSchemes);
+  init();
+  AxisConfig->init();
+  setupFeaturesPage();
+  setup3DPrintPage();
+  updateGUI();
 }
 
 void Preferences::init() {
@@ -178,7 +195,7 @@ void Preferences::init() {
   addPrefPage(group, prefsActionAdvanced, pageAdvanced);
   addPrefPage(group, prefsActionDialogs, pageDialogs);
 
-  connect(group, SIGNAL(triggered(QAction*)), this, SLOT(actionTriggered(QAction*)));
+  connect(group, &QActionGroup::triggered, this, &Preferences::actionTriggered);
 
   prefsAction3DView->setChecked(true);
   this->actionTriggered(this->prefsAction3DView);
@@ -256,16 +273,19 @@ void Preferences::init() {
     this->comboBoxOctoPrintSlicingProfile->addItem(profileDesc, QVariant{profile});
   }
 
-  this->checkBoxAlwaysShowExportPdfDialog->setChecked(Settings::SettingsExportPdf::exportPdfAlwaysShowDialog.value());
-  this->checkBoxAlwaysShowExport3mfDialog->setChecked(Settings::SettingsExport3mf::export3mfAlwaysShowDialog.value());
-
   emit editorConfigChanged();
 }
 
 Preferences::~Preferences()
 {
   removeDefaultSettings();
-  instance = nullptr;
+}
+
+void Preferences::update()
+{
+  this->checkBoxAlwaysShowExportPdfDialog->setChecked(Settings::SettingsExportPdf::exportPdfAlwaysShowDialog.value());
+  this->checkBoxAlwaysShowExport3mfDialog->setChecked(Settings::SettingsExport3mf::export3mfAlwaysShowDialog.value());
+  this->checkBoxAlwaysShowPrintServiceDialog->setChecked(Settings::Settings::printServiceAlwaysShowDialog.value());
 }
 
 /**
@@ -366,7 +386,7 @@ void Preferences::setupFeaturesPage()
     feature->enable(value);
     cb->setChecked(value);
     cb->setProperty(featurePropertyName, QVariant::fromValue<Feature *>(feature));
-    connect(cb, SIGNAL(toggled(bool)), this, SLOT(featuresCheckBoxToggled(bool)));
+    connect(cb, &QCheckBox::toggled, this, &Preferences::featuresCheckBoxToggled);
     gridLayoutExperimentalFeatures->addWidget(cb, row, 0, 1, 2, Qt::AlignLeading);
     row++;
 
@@ -385,38 +405,36 @@ void Preferences::setupFeaturesPage()
 void Preferences::setup3DPrintPage()
 {
   const auto& currentPrintService = Settings::Settings::defaultPrintService.value();
-  const auto currentPrintServiceName =
-      QString::fromStdString(Settings::Settings::printServiceName.value());
-
-  instance->comboBoxDefaultPrintService->clear();
+  const auto currentPrintServiceName = QString::fromStdString(Settings::Settings::printServiceName.value());
+  checkBoxEnableRemotePrintServices->setChecked(Settings::Settings::enableRemotePrintServices.value());
+  comboBoxDefaultPrintService->clear();
   const std::unordered_map<std::string, QString> services = {
       {"NONE", _("NONE")},
       {"OCTOPRINT", _("OctoPrint")},
-      {"LOCALSLICER", _("Local Application")},
+      {"LOCAL_APPLICATION", _("Local Application")},
   };
 
-  instance->comboBoxDefaultPrintService->addItem(services.at("NONE"),
+  comboBoxDefaultPrintService->addItem(services.at("NONE"),
                                                  QStringList{"NONE", ""});
   for (const auto &printServiceItem : PrintService::getPrintServices()) {
     const auto &key = printServiceItem.first;
     const auto &printService = printServiceItem.second;
-    const auto settingValue =
-        QStringList{"PRINT_SERVICE", QString::fromStdString(key)};
+    const auto settingValue = QStringList{"PRINT_SERVICE", QString::fromStdString(key)};
     const auto displayName = QString(printService->getDisplayName());
-    instance->comboBoxDefaultPrintService->addItem(displayName, settingValue);
+    comboBoxDefaultPrintService->addItem(displayName, settingValue);
     if (key == currentPrintServiceName.toStdString()) {
-      instance->comboBoxDefaultPrintService->setCurrentText(
+      comboBoxDefaultPrintService->setCurrentText(
           QString(printService->getDisplayName()));
     }
   }
-  instance->comboBoxDefaultPrintService->addItem(services.at("OCTOPRINT"),
+  comboBoxDefaultPrintService->addItem(services.at("OCTOPRINT"),
                                                  QStringList{"OCTOPRINT", ""});
-  instance->comboBoxDefaultPrintService->addItem(services.at("LOCALSLICER"),
-                                                 QStringList{"LOCALSLICER", ""});
+  comboBoxDefaultPrintService->addItem(services.at("LOCAL_APPLICATION"),
+                                                 QStringList{"LOCAL_APPLICATION", ""});
 
   auto it = services.find(currentPrintService);
   if (it != services.end()) {
-    instance->comboBoxDefaultPrintService->setCurrentText(it->second);
+    comboBoxDefaultPrintService->setCurrentText(it->second);
   }
 }
 
@@ -841,6 +859,12 @@ void Preferences::on_enableHidapiTraceCheckBox_toggled(bool checked)
   writeSettings();
 }
 
+void Preferences::on_checkBoxEnableRemotePrintServices_toggled(bool checked)
+{
+  S::enableRemotePrintServices.setValue(checked);
+  writeSettings();
+}
+
 void Preferences::on_comboBoxDefaultPrintService_activated(int)
 {
   QStringList currentPrintServiceList = comboBoxDefaultPrintService->currentData().toStringList();
@@ -869,6 +893,17 @@ void Preferences::on_lineEditOctoPrintApiKey_editingFinished()
 void Preferences::on_pushButtonOctoPrintApiKey_clicked()
 {
   this->lineEditOctoPrintApiKey->setEchoMode(this->pushButtonOctoPrintApiKey->isChecked() ? QLineEdit::EchoMode::Normal : QLineEdit::EchoMode::PasswordEchoOnEdit);
+}
+
+void Preferences::on_pushButtonOctoPrintRequestApiKey_clicked()
+{
+  OctoPrintApiKeyDialog dialog;
+  if (dialog.exec() == QDialog::Accepted) {
+    const auto& apiKey = dialog.getApiKey();
+    this->lineEditOctoPrintApiKey->setText(apiKey);
+    S::octoPrintApiKey.setValue(apiKey.toStdString());
+    writeSettings();
+  }
 }
 
 void Preferences::on_comboBoxOctoPrintFileFormat_activated(int val)
@@ -1134,6 +1169,12 @@ void Preferences::on_checkBoxAlwaysShowExport3mfDialog_toggled(bool state)
   writeSettings();
 }
 
+void Preferences::on_checkBoxAlwaysShowPrintServiceDialog_toggled(bool state)
+{
+  Settings::Settings::printServiceAlwaysShowDialog.setValue(state);
+  writeSettings();
+}
+
 void Preferences::writeSettings()
 {
   Settings::Settings::visit(SettingsWriter());
@@ -1312,34 +1353,17 @@ void Preferences::apply_win() const
   emit openCSGSettingsChanged();
 }
 
-void Preferences::create(const QStringList& colorSchemes)
+bool Preferences::hasHighlightingColorScheme() const
 {
-  if (instance != nullptr) {
-    return;
-  }
-
-  std::list<std::string> names = ColorMap::inst()->colorSchemeNames(true);
-  QStringList renderColorSchemes;
-  for (const auto& name : names) renderColorSchemes << name.c_str();
-
-  instance = new Preferences();
-  instance->syntaxHighlight->clear();
-  BlockSignals<QComboBox *>(instance->syntaxHighlight)->addItems(colorSchemes);
-  instance->colorSchemeChooser->clear();
-  instance->colorSchemeChooser->addItems(renderColorSchemes);
-  instance->init();
-  instance->AxisConfig->init();
-  instance->setupFeaturesPage();
-  instance->setup3DPrintPage();
-  instance->updateGUI();
+    return BlockSignals<QComboBox *>(syntaxHighlight)->count() != 0;
 }
 
-Preferences *Preferences::inst() {
-  assert(instance != nullptr);
-
-  return instance;
+void Preferences::setHighlightingColorSchemes(const QStringList& colorSchemes)
+{
+    auto combobox = BlockSignals<QComboBox *>(syntaxHighlight);
+    combobox->clear();
+    combobox->addItems(colorSchemes);
 }
-
 
 void Preferences::createFontSizeMenu(QComboBox *boxarg, const QString &setting)
 {
@@ -1375,3 +1399,9 @@ void Preferences::updateGUIFontSize(QComboBox *fsSelector, const QString &settin
     BlockSignals<QComboBox *>(fsSelector)->setEditText(fontsize);
   }
 }
+
+Preferences* GlobalPreferences::inst()
+{
+    static auto* instance = new Preferences();
+    return instance;
+};

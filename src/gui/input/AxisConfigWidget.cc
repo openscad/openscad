@@ -77,9 +77,9 @@ void AxisConfigWidget::AxesChanged(int nr, double val) const {
 }
 
 void AxisConfigWidget::init() {
-  connect(this->pushButtonAxisTrim, SIGNAL(clicked()), this, SLOT(on_AxisTrim()));
-  connect(this->pushButtonAxisTrimReset, SIGNAL(clicked()), this, SLOT(on_AxisTrimReset()));
-  connect(this->pushButtonUpdate, SIGNAL(clicked()), this, SLOT(updateStates()));
+  connect(this->pushButtonAxisTrim, &QPushButton::clicked, this, &AxisConfigWidget::on_AxisTrim);
+  connect(this->pushButtonAxisTrimReset, &QPushButton::clicked, this, &AxisConfigWidget::on_AxisTrimReset);
+  connect(this->pushButtonUpdate, &QPushButton::clicked, this, &AxisConfigWidget::updateStates);
 
   initComboBox(this->comboBoxTranslationX, Settings::Settings::inputTranslationX);
   initComboBox(this->comboBoxTranslationY, Settings::Settings::inputTranslationY);

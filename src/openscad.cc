@@ -494,6 +494,7 @@ int do_export(const CommandLine& cmd, const RenderVariables& render_variables, F
           root_geom = std::make_shared<GeometryList>(flatlist);
         } else {
           root_geom = GeometryUtils::getBackendSpecificGeometry(root_geom);
+          assert(root_geom != nullptr);
         }
         LOG("Converted to backend-specific geometry");
       }
@@ -586,7 +587,7 @@ int cmdline(const CommandLine& cmd)
 
   if(python_active) {
     auto fulltext_py = text;
-    initPython(0.0);
+    initPython(PlatformUtils::applicationPath(), 0.0);
     auto error  = evaluatePython(fulltext_py, false);
     if(error.size() > 0) LOG(error.c_str());
     text ="\n";
@@ -807,6 +808,15 @@ int main(int argc, char **argv)
 #endif
   PlatformUtils::registerApplicationPath(applicationPath);
 
+#ifdef ENABLE_PYTHON
+  // The original name as called, not resolving links and so on. This will
+  // just forward everything to the python main.
+  const auto applicationName = fs::path(argv[0]).filename().generic_string();
+  if (applicationName == "openscad-python") {
+      return pythonRunArgs(argc, argv);
+  }
+#endif
+
 #ifdef ENABLE_CGAL
   // Always throw exceptions from CGAL, so we can catch instead of crashing on bad geometry.
   CGAL::set_error_behaviour(CGAL::THROW_EXCEPTION);
@@ -823,7 +833,7 @@ int main(int argc, char **argv)
   ViewOptions viewOptions{};
   po::options_description desc("Allowed options");
   desc.add_options()
-    ("export-format", po::value<std::string>(), "overrides format of exported scad file when using option '-o', arg can be any of its supported file extensions.  For ascii stl export, specify 'asciistl', and for binary stl export, specify 'binstl'.  Ascii export is the current stl default, but binary stl is planned as the future default so asciistl should be explicitly specified in scripts when needed.\n")
+    ("export-format", po::value<std::string>(), "overrides format of exported scad file when using option '-o', arg can be any of its supported file extensions.  For ASCII stl export, specify 'asciistl', and for binary stl export, specify 'binstl'.  ASCII export is the current stl default, but binary stl is planned as the future default so asciistl should be explicitly specified in scripts when needed.\n")
     ("o,o", po::value<std::vector<std::string>>(), "output specified file instead of running the GUI. The file extension specifies the type: stl, off, wrl, amf, 3mf, csg, dxf, svg, pdf, png, echo, ast, term, nef3, nefdbg, param, pov. May be used multiple times for different exports. Use '-' for stdout.\n")
     ("O,O", po::value<std::vector<std::string>>(), "pass settings value to the file export using the format section/key=value, e.g export-pdf/paper-size=a3. Use --help-export to list all available settings.")
     ("D,D", po::value<std::vector<std::string>>(), "var=val -pre-define variables")
@@ -871,10 +881,9 @@ int main(int argc, char **argv)
     ("check-parameters", po::value<std::string>(), "=true/false, configure the parameter check for user modules and functions")
     ("check-parameter-ranges", po::value<std::string>(), "=true/false, configure the parameter range check for builtin modules")
     ("debug", po::value<std::string>(), "special debug info - specify 'all' or a set of source file names")
-    ("s,s", po::value<std::string>(), "stl_file deprecated, use -o")
-    ("x,x", po::value<std::string>(), "dxf_file deprecated, use -o")
 #ifdef ENABLE_PYTHON
   ("trust-python",  "Trust python")
+  ("python-module", po::value<std::string>(), "=module Call pip python module")
 #endif
   ;
 
@@ -908,6 +917,16 @@ int main(int argc, char **argv)
   if (vm.count("trust-python")) {
     LOG("Python Engine enabled", OpenSCAD::debug);
     python_trusted = true;
+  }
+
+  const auto pymod = "python-module";
+  if (vm.count(pymod)) {
+      PRINTDB("Running Python Module %s", pymod);
+      std::vector<std::string> args;
+      if (vm.count("input-file")) {
+          args = vm["input-file"].as<std::vector<std::string>>();
+      }
+      return pythonRunModule(applicationPath, vm[pymod].as<std::string>(), args);
   }
 #endif
   if (vm.count("quiet")) {
@@ -975,14 +994,6 @@ int main(int argc, char **argv)
 
   if (vm.count("o")) {
     output_files = vm["o"].as<std::vector<std::string>>();
-  }
-  if (vm.count("s")) {
-    LOG(message_group::Deprecated, "The -s option is deprecated. Use -o instead.\n");
-    output_files.push_back(vm["s"].as<std::string>());
-  }
-  if (vm.count("x")) {
-    LOG(message_group::Deprecated, "The -x option is deprecated. Use -o instead.\n");
-    output_files.push_back(vm["x"].as<std::string>());
   }
   if (vm.count("d")) {
     if (deps_output_file) help(argv[0], desc, true);

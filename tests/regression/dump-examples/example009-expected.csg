@@ -1,0 +1,24 @@
+%linear_extrude(height = 22, center = true, $fn = 0, $fa = 3, $fs = 1, convexity = 10) {
+	import(file = "example009.dxf", layer = "body", origin = [0, 0], scale = 1, center = false, convexity = 1, $fn = 0, $fa = 3, $fs = 1, timestamp = 1544039412);
+}
+%group() {
+	multmatrix([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 12], [0, 0, 0, 1]]) {
+		linear_extrude(height = 2, center = true, $fn = 0, $fa = 3, $fs = 1, convexity = 10) {
+			import(file = "example009.dxf", layer = "plate", origin = [0, 0], scale = 1, center = false, convexity = 1, $fn = 0, $fa = 3, $fs = 1, timestamp = 1544039412);
+		}
+	}
+	multmatrix([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, -12], [0, 0, 0, 1]]) {
+		linear_extrude(height = 2, center = true, $fn = 0, $fa = 3, $fs = 1, convexity = 10) {
+			import(file = "example009.dxf", layer = "plate", origin = [0, 0], scale = 1, center = false, convexity = 1, $fn = 0, $fa = 3, $fs = 1, timestamp = 1544039412);
+		}
+	}
+}
+intersection() {
+	linear_extrude(height = 20, center = true, twist = -57.5288, $fn = 0, $fa = 3, $fs = 1, convexity = 10) {
+		import(file = "example009.dxf", layer = "fan_top", origin = [0, 0], scale = 1, center = false, convexity = 1, $fn = 0, $fa = 3, $fs = 1, timestamp = 1544039412);
+	}
+	rotate_extrude(angle = 360, start = 180, convexity = 10, $fn = 0, $fa = 3, $fs = 1) {
+		import(file = "example009.dxf", layer = "fan_side", origin = [0, -40], scale = 1, center = false, convexity = 1, $fn = 0, $fa = 3, $fs = 1, timestamp = 1544039412);
+	}
+}
+

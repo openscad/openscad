@@ -4,8 +4,9 @@
 #include <ios>
 #include <memory>
 #include <string>
-#include "utils/printutils.h"
+
 #include "core/AST.h"
+#include "utils/printutils.h"
 
 #ifdef ENABLE_CGAL
 #include "geometry/cgal/cgal.h"

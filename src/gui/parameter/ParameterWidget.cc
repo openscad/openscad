@@ -61,22 +61,21 @@ ParameterWidget::ParameterWidget(QWidget *parent) : QWidget(parent)
   autoPreviewTimer.setInterval(1000);
   autoPreviewTimer.setSingleShot(true);
 
-  connect(&autoPreviewTimer, SIGNAL(timeout()), this, SLOT(emitParametersChanged()));
+  connect(&autoPreviewTimer, &QTimer::timeout, this, &ParameterWidget::emitParametersChanged);
   connect(checkBoxAutoPreview, &QCheckBox::toggled, [this]() {
     this->autoPreview(true);
   });
-  connect(comboBoxDetails, SIGNAL(currentIndexChanged(int)), this, SLOT(rebuildWidgets()));
-  connect(comboBoxPreset, SIGNAL(activated(int)), this, SLOT(onSetChanged(int)));
-  //connect(comboBoxPreset, SIGNAL(editTextChanged(const QString&)), this, SLOT(onSetNameChanged()));
-  connect(addButton, SIGNAL(clicked()), this, SLOT(onSetAdd()));
-  connect(deleteButton, SIGNAL(clicked()), this, SLOT(onSetDelete()));
+  connect(comboBoxDetails, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &ParameterWidget::rebuildWidgets);
+  connect(comboBoxPreset, QOverload<int>::of(&QComboBox::activated), this, &ParameterWidget::onSetChanged);
+  //connect(comboBoxPreset, &QComboBox::editTextChanged, this, &ParameterWidget::onSetNameChanged);
+  connect(addButton, &QPushButton::clicked, this, &ParameterWidget::onSetAdd);
+  connect(deleteButton, &QPushButton::clicked, this, &ParameterWidget::onSetDelete);
 
-  QString fontfamily = Preferences::inst()->getValue("advanced/customizerFontFamily").toString();
-  uint fontsize = Preferences::inst()->getValue("advanced/customizerFontSize").toUInt();
+  QString fontfamily = GlobalPreferences::inst()->getValue("advanced/customizerFontFamily").toString();
+  uint fontsize = GlobalPreferences::inst()->getValue("advanced/customizerFontSize").toUInt();
   setFontFamilySize(fontfamily, fontsize);
 
-  connect(Preferences::inst(), SIGNAL(customizerFontChanged(const QString&, uint)), this,
-    SLOT(setFontFamilySize(const QString&, uint)));
+  connect(GlobalPreferences::inst(), &Preferences::customizerFontChanged, this, &ParameterWidget::setFontFamilySize);
 }
 
 // Can only be called before the initial setParameters().
@@ -313,7 +312,7 @@ void ParameterWidget::updateSetEditability()
   } else {
     if (!comboBoxPreset->isEditable()) {
       comboBoxPreset->setEditable(true);
-      connect(comboBoxPreset->lineEdit(), SIGNAL(textEdited(const QString&)), this, SLOT(onSetNameChanged()));
+      connect(comboBoxPreset->lineEdit(), &QLineEdit::textEdited, this, &ParameterWidget::onSetNameChanged);
     }
     deleteButton->setEnabled(true);
   }
@@ -340,7 +339,7 @@ void ParameterWidget::rebuildWidgets()
     auto *groupWidget = new GroupWidget(group.name);
     for (ParameterObject *parameter : group.parameters) {
       ParameterVirtualWidget *parameterWidget = createParameterWidget(parameter, descriptionStyle);
-      connect(parameterWidget, SIGNAL(changed(bool)), this, SLOT(parameterModified(bool)));
+      connect(parameterWidget, &ParameterVirtualWidget::changed, this, &ParameterWidget::parameterModified);
       if (!widgets.count(parameter)) {
         widgets[parameter] = {};
       }

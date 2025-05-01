@@ -200,9 +200,12 @@ SettingsEntryEnum<std::string> Settings::modifierNumberScrollWheel("editor", "mo
 }, "Alt");
 
 SettingsEntryString Settings::defaultPrintService("printing", "printService", "NONE");
-
+SettingsEntryBool Settings::enableRemotePrintServices("printing", "enableRemotePrintServices", false);
+SettingsEntryBool Settings::printServiceAlwaysShowDialog("printing", "always-show-dialog", false);
 SettingsEntryString Settings::printServiceName("printing", "printServiceName", "");
-SettingsEntryString Settings::printServiceFileFormat("printing", "printServiceFileFormat", "stl");
+SettingsEntryEnum<std::string> Settings::printServiceFileFormat(
+    "printing", "printServiceFileFormat", createFileFormatItems(fileformat::all3D()),
+    fileformat::info(FileFormat::ASCII_STL).description);
 
 SettingsEntryString Settings::octoPrintUrl("printing", "octoPrintUrl", "");
 SettingsEntryString Settings::octoPrintApiKey("printing", "octoPrintApiKey", "");
@@ -322,6 +325,9 @@ SettingsEntryDouble Settings::axisDeadzone8("input", "axisDeadzone8", 0.0, 0.01,
 
 SettingsEntryInt Settings::joystickNr("input", "joystickNr", 0, 9, 0);
 
+SettingsEntryString SettingsPython::pythonTrustedFiles(SECTION_PYTHON, "trusted-files", "");
+SettingsEntryString SettingsPython::pythonVirtualEnv(SECTION_PYTHON, "virtual-env", "");
+
 SettingsEntryBool SettingsExportPdf::exportPdfAlwaysShowDialog(SECTION_EXPORT_PDF, "always-show-dialog", true);
 SettingsEntryEnum<ExportPdfPaperSize> SettingsExportPdf::exportPdfPaperSize(SECTION_EXPORT_PDF, "paper-size", {
   {ExportPdfPaperSize::A6,      "a6",      _("A6 (105 x 148 mm)")},
@@ -337,10 +343,10 @@ SettingsEntryEnum<ExportPdfPaperOrientation> SettingsExportPdf::exportPdfOrienta
   {ExportPdfPaperOrientation::LANDSCAPE, "landscape", _("Landscape (Horizontal)")},
   {ExportPdfPaperOrientation::AUTO,      "auto",      _("Auto")}
 }, ExportPdfPaperOrientation::PORTRAIT);
-SettingsEntryBool SettingsExportPdf::exportPdfShowFilename(SECTION_EXPORT_PDF, "show-filename", true);
+SettingsEntryBool SettingsExportPdf::exportPdfShowFilename(SECTION_EXPORT_PDF, "show-filename", false);
 SettingsEntryBool SettingsExportPdf::exportPdfShowScale(SECTION_EXPORT_PDF, "show-scale", true);
 SettingsEntryBool SettingsExportPdf::exportPdfShowScaleMessage(SECTION_EXPORT_PDF, "show-scale-message", true);
-SettingsEntryBool SettingsExportPdf::exportPdfShowGrid(SECTION_EXPORT_PDF, "show-grid", true);
+SettingsEntryBool SettingsExportPdf::exportPdfShowGrid(SECTION_EXPORT_PDF, "show-grid", false);
 SettingsEntryDouble SettingsExportPdf::exportPdfGridSize(SECTION_EXPORT_PDF, "grid-size", 1.0, 1.0, 100.0, 10.0);
 SettingsEntryBool SettingsExportPdf::exportPdfAddMetaData(SECTION_EXPORT_PDF, "add-meta-data", true);
 SettingsEntryBool SettingsExportPdf::exportPdfAddMetaDataAuthor(SECTION_EXPORT_PDF, "add-meta-data-author", false);

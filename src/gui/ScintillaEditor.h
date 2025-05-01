@@ -145,21 +145,16 @@ public slots:
   void nextBookmark() override;
   void prevBookmark() override;
   void jumpToNextError() override;
+  void applySettings();
+  void onAutocompleteChanged(bool state);
+  void onCharacterThresholdChanged(int val);
 
 private slots:
   void onTextChanged();
   void onUserListSelected(const int id, const QString& text);
-  void applySettings();
-  void onAutocompleteChanged(bool state);
-  void onCharacterThresholdChanged(int val);
   void fireModificationChanged();
   void onIndicatorClicked(int line, int col, Qt::KeyboardModifiers state);
   void onIndicatorReleased(int line, int col, Qt::KeyboardModifiers state);
-signals:
-  void escapePressed(void);
-
-public:
-  void public_applySettings();
 
 private:
   QVBoxLayout *scintillaLayout;

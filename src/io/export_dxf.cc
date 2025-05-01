@@ -23,12 +23,14 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  */
+#include "io/export.h"
 
 #include <cassert>
+#include <clocale>
 #include <limits>
-#include <ostream>
 #include <memory>
-#include "io/export.h"
+#include <ostream>
+
 #include "geometry/Geometry.h"
 #include "geometry/linalg.h"
 #include "geometry/Polygon2d.h"
@@ -38,7 +40,7 @@
     Saves the current Polygon2d as DXF to the given absolute filename.
  */
 
-void export_dxf_header(std::ostream& output, double xMin, double yMin, double xMax, double yMax) {
+static void export_dxf_header(std::ostream& output, double xMin, double yMin, double xMax, double yMax) {
 
   // https://dxfwrite.readthedocs.io/en/latest/headervars.html
   // http://paulbourke.net/dataformats/dxf/min3d.html
@@ -159,7 +161,7 @@ void export_dxf_header(std::ostream& output, double xMin, double yMin, double xM
 
 }
 
-void export_dxf(const Polygon2d& poly, std::ostream& output)
+static void export_dxf(const Polygon2d& poly, std::ostream& output)
 {
   setlocale(LC_NUMERIC, "C"); // Ensure radix is . (not ,) in output
 

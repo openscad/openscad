@@ -232,24 +232,24 @@ ScintillaEditor::ScintillaEditor(QWidget *parent) : EditorInterface(parent)
 
   initMargin();
 
-  connect(qsci, SIGNAL(textChanged()), this, SIGNAL(contentsChanged()));
-  connect(qsci, SIGNAL(modificationChanged(bool)), this, SLOT(fireModificationChanged()));
-  connect(qsci, SIGNAL(userListActivated(int,const QString&)), this, SLOT(onUserListSelected(const int,const QString&)));
+  connect(qsci, &QsciScintilla::textChanged, this, &ScintillaEditor::contentsChanged);
+  connect(qsci, &QsciScintilla::modificationChanged, this, &ScintillaEditor::fireModificationChanged);
+  connect(qsci, &QsciScintilla::userListActivated, this, &ScintillaEditor::onUserListSelected);
   qsci->installEventFilter(this);
   qsci->viewport()->installEventFilter(this);
 
   qsci->setContextMenuPolicy(Qt::CustomContextMenu);
-  connect(qsci, SIGNAL(customContextMenuRequested(const QPoint&)), this, SIGNAL(showContextMenuEvent(const QPoint&)));
+  connect(qsci, &QsciScintilla::customContextMenuRequested, this, &ScintillaEditor::showContextMenuEvent);
 
   qsci->indicatorDefine(QsciScintilla::ThinCompositionIndicator, hyperlinkIndicatorNumber);
   qsci->SendScintilla(QsciScintilla::SCI_INDICSETSTYLE, hyperlinkIndicatorNumber, QsciScintilla::INDIC_HIDDEN);
-  connect(qsci, SIGNAL(indicatorClicked(int,int,Qt::KeyboardModifiers)), this, SLOT(onIndicatorClicked(int,int,Qt::KeyboardModifiers)));
-  connect(qsci, SIGNAL(indicatorReleased(int,int,Qt::KeyboardModifiers)), this, SLOT(onIndicatorReleased(int,int,Qt::KeyboardModifiers)));
+  connect(qsci, &QsciScintilla::indicatorClicked, this, &ScintillaEditor::onIndicatorClicked);
+  connect(qsci, &QsciScintilla::indicatorReleased, this, &ScintillaEditor::onIndicatorReleased);
 
 #if QSCINTILLA_VERSION >= 0x020b00
-  connect(qsci, SIGNAL(SCN_URIDROPPED(const QUrl&)), this, SIGNAL(uriDropped(const QUrl&)));
+  connect(qsci, &QsciScintilla::SCN_URIDROPPED, this, &ScintillaEditor::uriDropped);
 #endif
-  connect(qsci, SIGNAL(SCN_FOCUSIN()), this, SIGNAL(focusIn()));
+  connect(qsci, &QsciScintilla::SCN_FOCUSIN, this, &ScintillaEditor::focusIn);
 
   // Disabling buffered drawing resolves non-integer HiDPI scaling.
   qsci->SendScintilla(QsciScintillaBase::SCI_SETBUFFEREDDRAW, false);
@@ -352,7 +352,7 @@ void ScintillaEditor::setupAutoComplete(const bool forceOff)
     qsci->SendScintilla(QsciScintilla::SCI_CALLTIPCANCEL);
   }
 
-  const bool configValue = Preferences::inst()->getValue("editor/enableAutocomplete").toBool();
+  const bool configValue = GlobalPreferences::inst()->getValue("editor/enableAutocomplete").toBool();
   const bool enable = configValue && !forceOff;
 
   if (enable) {
@@ -367,18 +367,13 @@ void ScintillaEditor::setupAutoComplete(const bool forceOff)
     qsci->setCallTipsStyle(QsciScintilla::CallTipsNone);
   }
 
-  int val = Preferences::inst()->getValue("editor/characterThreshold").toInt();
+  int val = GlobalPreferences::inst()->getValue("editor/characterThreshold").toInt();
   qsci->setAutoCompletionThreshold(val <= 0 ? 1 : val);
 }
 
 void ScintillaEditor::fireModificationChanged()
 {
   emit modificationChanged(this);
-}
-
-void ScintillaEditor::public_applySettings()
-{
-  applySettings();
 }
 
 void ScintillaEditor::setPlainText(const QString& text)
@@ -788,7 +783,7 @@ void ScintillaEditor::initFont(const QString& fontName, uint size)
 
 void ScintillaEditor::initMargin()
 {
-  connect(qsci, SIGNAL(textChanged()), this, SLOT(onTextChanged()));
+  connect(qsci, &QsciScintilla::textChanged, this, &ScintillaEditor::onTextChanged);
 }
 
 void ScintillaEditor::onTextChanged()
@@ -1169,7 +1164,7 @@ bool ScintillaEditor::handleKeyEventNavigateNumber(QKeyEvent *keyEvent)
   if (previewAfterUndo && keyEvent->type() == QEvent::KeyPress) {
     int k = keyEvent->key() | keyEvent->modifiers();
     auto *cmd = qsci->standardCommands()->boundTo(k);
-    if (cmd && (cmd->command() == QsciCommand::Undo || cmd->command() == QsciCommand::Redo)) QTimer::singleShot(0, this, SIGNAL(previewRequest()));
+    if (cmd && (cmd->command() == QsciCommand::Undo || cmd->command() == QsciCommand::Redo)) QTimer::singleShot(0, this, &ScintillaEditor::previewRequest);
     else if (cmd || !keyEvent->text().isEmpty()) {
       // any insert or command (but not undo/redo) cancels the preview after undo
       previewAfterUndo = false;
@@ -1214,7 +1209,7 @@ bool ScintillaEditor::handleWheelEventNavigateNumber(QWheelEvent *wheelEvent)
   if (previewAfterUndo) {
     int k = wheelEvent->buttons() & Qt::LeftButton;
     auto *cmd = qsci->standardCommands()->boundTo(k);
-    if (cmd && (cmd->command() == QsciCommand::Undo || cmd->command() == QsciCommand::Redo)) QTimer::singleShot(0, this, SIGNAL(previewRequest()));
+    if (cmd && (cmd->command() == QsciCommand::Undo || cmd->command() == QsciCommand::Redo)) QTimer::singleShot(0, this, &ScintillaEditor::previewRequest);
     else if (cmd || wheelEvent->angleDelta().y()) {
       // any insert or command (but not undo/redo) cancels the preview after undo
       previewAfterUndo = false;
@@ -1286,7 +1281,7 @@ bool ScintillaEditor::modifyNumber(int key)
   auto number = (dotpos < 0)?nr.toLongLong():(nr.left(dotpos) + nr.mid(dotpos + 1)).toLongLong();
   auto tail = nr.length() - curpos;
   auto exponent = tail - ((dotpos >= curpos)?1:0);
-  long long int step = Preferences::inst()->getValue("editor/stepSize").toInt();
+  long long int step = GlobalPreferences::inst()->getValue("editor/stepSize").toInt();
   for (int i = exponent; i > 0; i--) step *= 10;
 
   switch (key) {
@@ -1576,9 +1571,6 @@ void ScintillaEditor::clearAllSelectionIndicators()
   qsci->markerDeleteAll(selectionMarkerLevelNumber + 3);
   qsci->markerDeleteAll(selectionMarkerLevelNumber + 4);
   qsci->markerDeleteAll(selectionMarkerLevelNumber + 5);
-
-  // if there is no more marker... hide the dedicated area in the editor
-  updateSymbolMarginVisibility();
 }
 
 /**

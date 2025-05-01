@@ -49,9 +49,9 @@
 Console::Console(QWidget *parent) : QPlainTextEdit(parent)
 {
   setupUi(this);
-  connect(this->actionClear, SIGNAL(triggered()), this, SLOT(actionClearConsole_triggered()));
-  connect(this->actionSaveAs, SIGNAL(triggered()), this, SLOT(actionSaveAs_triggered()));
-  connect(this, SIGNAL(linkActivated(QString)), this, SLOT(hyperlinkClicked(const QString&)));
+  connect(this->actionClear, &QAction::triggered, this, &Console::actionClearConsole_triggered);
+  connect(this->actionSaveAs, &QAction::triggered, this, &Console::actionSaveAs_triggered);
+  connect(this, &Console::linkActivated, this, &Console::hyperlinkClicked);
   this->setUndoRedoEnabled(false);
   this->appendCursor = this->textCursor();
 }
@@ -127,7 +127,7 @@ void Console::update()
   }
   msgBuffer.clear();
   this->setTextCursor(appendCursor);
-  this->setMaximumBlockCount(Preferences::inst()->getValue("advanced/consoleMaxLines").toUInt());
+  this->setMaximumBlockCount(GlobalPreferences::inst()->getValue("advanced/consoleMaxLines").toUInt());
 }
 
 void Console::actionClearConsole_triggered()

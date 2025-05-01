@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>643</width>
-    <height>636</height>
+    <width>865</width>
+    <height>860</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -146,8 +146,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>576</width>
-             <height>953</height>
+             <width>707</width>
+             <height>1005</height>
             </rect>
            </property>
            <layout class="QGridLayout" name="gridLayout_5">
@@ -1359,8 +1359,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>584</width>
-             <height>679</height>
+             <width>845</width>
+             <height>768</height>
             </rect>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_9">
@@ -1370,17 +1370,10 @@
                <string>General</string>
               </property>
               <layout class="QGridLayout" name="gridLayout_10">
-               <item row="0" column="0">
-                <widget class="QLabel" name="labelDefaultPrintService">
-                 <property name="text">
-                  <string>Default Print Service</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="0" column="1">
+               <item row="1" column="1">
                 <widget class="QComboBox" name="comboBoxDefaultPrintService"/>
                </item>
-               <item row="0" column="2">
+               <item row="1" column="2">
                 <spacer name="horizontalSpacerDefaultPrintService">
                  <property name="orientation">
                   <enum>Qt::Horizontal</enum>
@@ -1392,6 +1385,20 @@
                   </size>
                  </property>
                 </spacer>
+               </item>
+               <item row="1" column="0">
+                <widget class="QLabel" name="labelDefaultPrintService">
+                 <property name="text">
+                  <string>Default Print Service</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="0" colspan="3">
+                <widget class="QCheckBox" name="checkBoxEnableRemotePrintServices">
+                 <property name="text">
+                  <string>Enable remote print services</string>
+                 </property>
+                </widget>
                </item>
               </layout>
              </widget>
@@ -1638,6 +1645,13 @@
                    </property>
                    <property name="clearButtonEnabled">
                     <bool>true</bool>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QPushButton" name="pushButtonOctoPrintRequestApiKey">
+                   <property name="text">
+                    <string>Request</string>
                    </property>
                   </widget>
                  </item>
@@ -1946,8 +1960,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>587</width>
-             <height>1436</height>
+             <width>743</width>
+             <height>1514</height>
             </rect>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_12">
@@ -2791,6 +2805,13 @@
             <widget class="QCheckBox" name="checkBoxAlwaysShowExport3mfDialog">
              <property name="text">
               <string>Always show 3MF export dialog</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QCheckBox" name="checkBoxAlwaysShowPrintServiceDialog">
+             <property name="text">
+              <string>Always show Print Service dialog</string>
              </property>
             </widget>
            </item>

@@ -1,0 +1,19 @@
+multmatrix([[1, 0, 0, 2], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+	import(file = "import.stl", origin = [0, 0], scale = 1, center = false, convexity = 1, $fn = 0, $fa = 12, $fs = 2, timestamp = -4727561290);
+}
+multmatrix([[1, 0, 0, 4], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+	import(file = "import_bin.stl", origin = [0, 0], scale = 1, center = false, convexity = 1, $fn = 0, $fa = 12, $fs = 2, timestamp = -4727561290);
+}
+multmatrix([[1, 0, 0, 0], [0, 1, 0, 4], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+	import(file = "import_bin_solid.stl", origin = [0, 0], scale = 1, center = false, convexity = 1, $fn = 0, $fa = 12, $fs = 2, timestamp = -4727561290);
+}
+multmatrix([[1, 0, 0, 0], [0, 1, 0, 2], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+	import(file = "import.stl", origin = [0, 0], scale = 1, center = false, convexity = 1, $fn = 0, $fa = 12, $fs = 2, timestamp = -4727561290);
+}
+multmatrix([[1, 0, 0, 2], [0, 1, 0, 2], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+	difference() {
+		import(file = "not-found.stl", origin = [0, 0], scale = 1, center = false, convexity = 1, $fn = 0, $fa = 12, $fs = 2, timestamp = 0);
+		cube(size = [1, 1, 4], center = true);
+	}
+}
+

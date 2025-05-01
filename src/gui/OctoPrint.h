@@ -45,6 +45,8 @@ public:
   const QString url() const;
   const std::string apiKey() const;
   const std::pair<const QString, const QString> getVersion() const;
+  const QString requestApiKey() const;
+  const std::pair<int, QString> pollApiKeyApproval(const QString& token) const;
   const std::vector<std::pair<const QString, const QString>> getSlicers() const;
   const std::vector<std::pair<const QString, const QString>> getProfiles(const QString& slicer) const;
   const QString upload(const QString& exportFileName, const QString& fileName, const network_progress_func_t& progress_func) const;
