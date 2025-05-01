@@ -305,9 +305,10 @@ void export_pdf(const std::shared_ptr<const Geometry>& geom, std::ostream& outpu
     	draw_axes(cr, Mlx,Mrx,Mty,Mby);
     	// Scale Message
     	if (options->showScaleMsg) draw_text(about.c_str(), cr, Mlx+1, Mty-1, 5.);
+	// Grid
+        if (options->showGrid) draw_grid(cr, Mlx,Mrx,Mty,Mby, options->gridSize);
     }
-    // Grid
-    if (options->showGrid) draw_grid(cr, Mlx,Mrx,Mty,Mby, options->gridSize);
+
 
   cairo_show_page(cr);
   cairo_surface_destroy(surface);
