@@ -12,6 +12,8 @@
 #include <memory>
 #include <cstddef>
 #include <vector>
+#include "src/core/ColorUtil.h"
+
 
 namespace ClipperUtils {
 
@@ -431,7 +433,9 @@ std::unique_ptr<Polygon2d> applyMinkowski(const std::vector<std::shared_ptr<cons
 
   Clipper2Lib::PolyTree64 polytree;
   clipper.Execute(Clipper2Lib::ClipType::Union, Clipper2Lib::FillRule::NonZero, polytree);
-  return toPolygon2d(polytree, scale_bits);
+  auto result = toPolygon2d(polytree, scale_bits);
+  result->setColor(*OpenSCAD::parse_color("#f9d72c"));
+  return result;
 }
 
 std::unique_ptr<Polygon2d> applyOffset(const Polygon2d& poly, double offset, Clipper2Lib::JoinType joinType,
@@ -450,6 +454,7 @@ std::unique_ptr<Polygon2d> applyOffset(const Polygon2d& poly, double offset, Cli
   co.Execute(std::ldexp(offset, scale_bits), result);
   auto r = toPolygon2d(result, scale_bits);
   r->transform3d(poly.getTransform3d());	  
+  r->setColor(*OpenSCAD::parse_color("#f9d72c"));
   return r;
 }
 
