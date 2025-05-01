@@ -77,6 +77,7 @@ public:
   void setSanitized(bool s) { this->sanitized = s; }
   [[nodiscard]] bool is_convex() const;
   void setColor(const Color4f& c) override;
+  void setColorUndef(const Color4f& c);
   void  stamp_color(const Polygon2d &src);
 private:
   Outlines2d theoutlines;

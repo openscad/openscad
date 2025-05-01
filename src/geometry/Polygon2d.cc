@@ -311,6 +311,11 @@ void Polygon2d::setColor(const Color4f& c){
   for(auto &o : trans3dOutlines) o.color = c;	  
 }
 
+void Polygon2d::setColorUndef (const Color4f& c){
+  for(auto &o : theoutlines ) if(o.color[0] <0)     o.color = c;
+  for(auto &o : trans3dOutlines)  if(o.color[0] <0) o.color = c;	  
+}
+
 Vector2d pt_round(const Vector2d &pt) {
   Vector2d r;
   r[0]=int(pt[0]*1000)/1000.0  ;

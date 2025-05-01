@@ -328,7 +328,8 @@ Polygon2d cleanUnion(const std::vector<std::shared_ptr<const Polygon2d>>& polygo
   diff_operands.push_back(pathsvector[i]);
   std::unique_ptr<Polygon2d> diff_result = apply(diff_operands,  Clipper2Lib::ClipType::Difference , scale_bits);
   diff_result->stamp_color(*polygons[inputs_old]);
-  // now colect all
+  Color4f defcolor = polygons[inputs_old]->outlines()[0].color;
+  diff_result->setColorUndef(defcolor);
   for(const auto &o : diff_result->outlines()) {
     union_result.addOutline(o);      
   }
