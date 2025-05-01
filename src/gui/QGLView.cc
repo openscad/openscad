@@ -395,14 +395,12 @@ void QGLView::mouseReleaseEvent(QMouseEvent *event)
   mouse_drag_active = false;
   releaseMouse();
 
-  auto button_right = this->mouseSwapButtons?Qt::LeftButton : Qt::RightButton;
-  auto button_left =  this->mouseSwapButtons?Qt::RightButton : Qt::LeftButton;
   if (!mouse_drag_moved) {
-    if(event->button() == button_right) {
+    if(event->button() == Qt::RightButton) {
       QPoint point = event->pos();
       emit doRightClick(point);
     }
-    if(event->button() == button_left) {
+    if(event->button() == Qt::LeftButton) {
       QPoint point = event->pos();
       emit doLeftClick(point);
     }

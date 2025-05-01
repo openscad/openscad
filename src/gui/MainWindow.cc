@@ -407,7 +407,6 @@ MainWindow::MainWindow(const QStringList& filenames) :
 
   const QSettingsCached settings;
   this->qglview->setMouseCentricZoom(Settings::Settings::mouseCentricZoom.value());
-  this->qglview->setMouseSwapButtons(Settings::Settings::mouseSwapButtons.value());
   this->setAllMouseViewActions();
   this->meas.setView(qglview);
   this->designActionMeasureDist->setEnabled(false);
@@ -610,7 +609,6 @@ MainWindow::MainWindow(const QStringList& filenames) :
 
   connect(GlobalPreferences::inst(), &Preferences::requestRedraw, this->qglview, QOverload<>::of(&QGLView::update));
   connect(GlobalPreferences::inst(), &Preferences::updateMouseCentricZoom, this->qglview, &QGLView::setMouseCentricZoom);
-  connect(GlobalPreferences::inst(), &Preferences::updateMouseSwapButtons, this->qglview, &QGLView::setMouseSwapButtons);
   connect(GlobalPreferences::inst()->MouseConfig, &MouseConfigWidget::updateMouseActions, this, &MainWindow::setAllMouseViewActions);
   connect(GlobalPreferences::inst(), &Preferences::updateReorderMode, this, &MainWindow::updateReorderMode);
   connect(GlobalPreferences::inst(), &Preferences::updateUndockMode, this, &MainWindow::updateUndockMode);
