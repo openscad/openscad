@@ -286,6 +286,10 @@ Polygon2d cleanUnion(const std::vector<std::shared_ptr<const Polygon2d>>& polygo
   Polygon2d union_result;
   while(inputs_old < n) {
     int input_width=1; 
+    if(polygons[inputs_old] == nullptr) {
+      inputs_old++;
+      continue;      
+    }
     while(true) {
       // see if we can join one more input
       if(inputs_old + input_width >= n) break;
@@ -299,6 +303,7 @@ Polygon2d cleanUnion(const std::vector<std::shared_ptr<const Polygon2d>>& polygo
         if(outl[i].color != refcol) valid=false;
     }
     if(!valid) break;
+    if( polygons[inputs_old+input_width] == nullptr) break;
     auto & outl_n = polygons[inputs_old+input_width]->outlines();
 
     for(int i=0;valid && i<outl_n.size();i++) {
