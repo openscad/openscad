@@ -24,4 +24,5 @@ std::unique_ptr<Polygon2d> applyOffset(const Polygon2d& poly, double offset, Cli
 std::unique_ptr<Polygon2d> applyMinkowski(const std::vector<std::shared_ptr<const Polygon2d>>& polygons);
 std::unique_ptr<Polygon2d> applyProjection(const std::vector<std::shared_ptr<const Polygon2d>>& polygons);
 std::unique_ptr<Polygon2d> apply(const std::vector<std::shared_ptr<const Polygon2d>>& polygons, Clipper2Lib::ClipType);
+Polygon2d cleanUnion(const std::vector<std::shared_ptr<const Polygon2d>>& polygons);
 }

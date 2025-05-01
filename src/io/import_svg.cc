@@ -198,7 +198,7 @@ std::unique_ptr<Polygon2d> import_svg(double fn, double fs, double fa,
     const double cx = center ? bbox.center().x() : -align.x();
     const double cy = center ? bbox.center().y() : height_mm - align.y();
 
-    Polygon2d result;
+    std::vector<std::shared_ptr<const Polygon2d> >  results;
     for (const auto& shape_ptr : *shapes) {
       if (!shape_ptr->is_excluded()) {
         const auto& s = *shape_ptr;
@@ -211,13 +211,17 @@ std::unique_ptr<Polygon2d> import_svg(double fn, double fs, double fa,
             outline.positive = true;
           }
 	  outline.color=*OpenSCAD::parse_color(s.get_fill());
-	  printf("Adding outline %s\n",s.get_fill().c_str());
-          result.addOutline(outline);
+          Polygon2d result(outline);		
+	  results.push_back(std::make_shared<const Polygon2d>(result));
         }
       }
     }
     libsvg_free(shapes);
-    return std::make_unique<Polygon2d>(result);
+    std::reverse(results.begin(), results.end());
+
+    auto result_cleaned = ClipperUtils::cleanUnion(results); 
+
+    return std::make_unique<Polygon2d>(result_cleaned);
   } catch (const std::exception& e) {
     LOG(message_group::Error, "%1$s, import() at line %2$d", e.what(), loc.firstLine());
     return std::make_unique<Polygon2d>();

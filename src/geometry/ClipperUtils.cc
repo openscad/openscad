@@ -174,10 +174,10 @@ std::unique_ptr<Polygon2d> sanitize(const Polygon2d& poly)
 
   auto paths = ClipperUtils::fromPolygon2d(poly, scale_bits);
   auto result = toPolygon2d(*sanitize(paths), scale_bits);
-  printf("sanitize\n");
  
   result->stamp_color(poly);
-  return result;
+  //return result;
+  return std::make_unique<Polygon2d>(poly);
 }
 
 /*!
@@ -262,14 +262,11 @@ std::unique_ptr<Polygon2d> apply(const std::vector<Clipper2Lib::Paths64>& pathsv
   return ClipperUtils::toPolygon2d(sumresult, scale_bits);
 }
 
-/*!
-   Apply the clipper operator to the given polygons.
-
-   May return an empty Polygon2d, but will not return nullptr.
- */
-std::unique_ptr<Polygon2d> apply(const std::vector<std::shared_ptr<const Polygon2d>>& polygons,
-				 Clipper2Lib::ClipType clipType)
+Polygon2d cleanUnion(const std::vector<std::shared_ptr<const Polygon2d>>& polygons)
 {
+  int n = polygons.size();
+  int inputs_old=0;
+
   const int scale_bits = scaleBitsFromPrecision();
 
   std::vector<Clipper2Lib::Paths64> pathsvector;
@@ -285,73 +282,98 @@ std::unique_ptr<Polygon2d> apply(const std::vector<std::shared_ptr<const Polygon
       pathsvector.emplace_back();
     }
   }
-  switch(clipType) {
+
+  Polygon2d union_result;
+  while(inputs_old < n) {
+    int input_width=1; 
+    while(true) {
+      // see if we can join one more input
+      if(inputs_old + input_width >= n) break;
+
+      // check if current one has different colors
+      auto & outl = polygons[inputs_old]->outlines();
+      if(outl.size() == 0) break;
+      bool valid=true;
+      Color4f refcol = outl[0].color;
+      for(int i=1;valid && i<outl.size();i++) {
+        if(outl[i].color != refcol) valid=false;
+    }
+    if(!valid) break;
+    auto & outl_n = polygons[inputs_old+input_width]->outlines();
+
+    for(int i=0;valid && i<outl_n.size();i++) {
+      if(outl_n[i].color != refcol) valid=false;
+    }
+    if(!valid) break;
+    input_width++;
+  }    
+
+  // union all new shapes
+  Clipper2Lib::Paths64  union_new;
+  if(input_width > 1) { 
+    std::vector<Clipper2Lib::Paths64> union_operands;
+    for(int i=0;i<input_width;i++) 
+      union_operands.push_back(pathsvector[inputs_old + i]);
+    std::unique_ptr<Polygon2d> union_result = apply(union_operands,  Clipper2Lib::ClipType::Union , scale_bits);
+    union_new = fromPolygon2d(*union_result, scale_bits);
+  }  else{
+    union_new = pathsvector[inputs_old];
+  }
+
+  // difference all old
+    
+  std::vector<Clipper2Lib::Paths64> diff_operands;
+  diff_operands.push_back(union_new);
+  for(int i=0;i<inputs_old;i++) 
+  diff_operands.push_back(pathsvector[i]);
+  std::unique_ptr<Polygon2d> diff_result = apply(diff_operands,  Clipper2Lib::ClipType::Difference , scale_bits);
+  diff_result->stamp_color(*polygons[inputs_old]);
+  // now colect all
+  for(const auto &o : diff_result->outlines()) {
+    union_result.addOutline(o);      
+  }
+
+    inputs_old += input_width;
+  }
+  union_result.setSanitized(true);
+  return union_result;
+}
+
+/*!
+   Apply the clipper operator to the given polygons.
+
+   May return an empty Polygon2d, but will not return nullptr.
+ */
+std::unique_ptr<Polygon2d> apply(const std::vector<std::shared_ptr<const Polygon2d>>& polygons,
+				 Clipper2Lib::ClipType clipType)
+{
+   switch(clipType) {
     case Clipper2Lib::ClipType::Union: { // Union is way more extensive
-      int n = polygons.size();
-      int inputs_old=0;
-      Polygon2d union_result;
-
-      while(inputs_old < n) {
-        int input_width=1; 
-        while(true) {
-		// see if we can join one more input
-		if(inputs_old + input_width >= n) break;
-
-		// check if current one has different colors
-		auto & outl = polygons[inputs_old]->outlines();
-		if(outl.size() == 0) break;
-		bool valid=true;
-		Color4f refcol = outl[0].color;
-		for(int i=1;valid && i<outl.size();i++) {
-                  if(outl[i].color != refcol) valid=false;
-		}
-		if(!valid) break;
-		auto & outl_n = polygons[inputs_old+input_width]->outlines();
-
-		for(int i=0;valid && i<outl_n.size();i++) {
-                  if(outl_n[i].color != refcol) valid=false;
-		}
-		if(!valid) break;
-		input_width++;
-	}		
-
-        // union all new shapes
-	Clipper2Lib::Paths64  union_new;
-        if(input_width > 1) { 
-          std::vector<Clipper2Lib::Paths64> union_operands;
-          for(int i=0;i<input_width;i++) 
-	    union_operands.push_back(pathsvector[inputs_old + i]);
-	  std::unique_ptr<Polygon2d> union_result = apply(union_operands,  Clipper2Lib::ClipType::Union , scale_bits);
-          union_new = fromPolygon2d(*union_result, scale_bits);
-
-        }  else{
-		union_new = pathsvector[inputs_old];
-	}
-
-	// difference all old
-		
-        std::vector<Clipper2Lib::Paths64> diff_operands;
-        diff_operands.push_back(union_new);
-        for(int i=0;i<inputs_old;i++) 
-	 diff_operands.push_back(pathsvector[i]);
-	std::unique_ptr<Polygon2d> diff_result = apply(diff_operands,  Clipper2Lib::ClipType::Difference , scale_bits);
-	diff_result->stamp_color(*polygons[inputs_old]);
-	// now colect all
-	for(const auto &o : diff_result->outlines()) {
-          union_result.addOutline(o);		  
-	}
-
-        inputs_old += input_width;
-      }
+      Polygon2d union_result = cleanUnion(polygons);
       return std::make_unique<Polygon2d>(union_result);
     }
     break;		  
     default:	  
     { 
-       std::unique_ptr<Polygon2d> result = apply(pathsvector, clipType, scale_bits);
-       assert(result);
-       if(polygons.size() > 0) result->stamp_color(*polygons[0]);
-       return result;
+      const int scale_bits = scaleBitsFromPrecision();
+
+      std::vector<Clipper2Lib::Paths64> pathsvector;
+      for (const auto& polygon : polygons) {
+        if (polygon) {
+          auto polypaths = fromPolygon2d(*polygon, scale_bits);
+          if (!polygon->isSanitized()) {
+            polypaths = Clipper2Lib::PolyTreeToPaths64(*sanitize(polypaths));
+          }
+          pathsvector.push_back(std::move(polypaths));
+        } else {
+          // Insert empty object as this could be the positive object in a difference
+          pathsvector.emplace_back();
+        }
+      }
+      std::unique_ptr<Polygon2d> result = apply(pathsvector, clipType, scale_bits);
+      assert(result);
+      if(polygons.size() > 0) result->stamp_color(*polygons[0]);
+        return result;
     }
     break;
   }
