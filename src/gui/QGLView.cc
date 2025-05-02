@@ -318,6 +318,8 @@ void QGLView::mouseMoveEvent(QMouseEvent *event)
     if (event->buttons() & button_compare
 #ifdef Q_OS_MACOS
         && !(event->modifiers() & Qt::MetaModifier)
+#elif !defined(_WIN32)
+       && !QApplication::keyboardModifiers().testFlag(Qt::ControlModifier)
 #endif
         ) {
       // Left button rotates in xz, Shift-left rotates in xy
