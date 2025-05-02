@@ -651,6 +651,7 @@ MainWindow::MainWindow(const QStringList& filenames) :
 
   InputDriverManager::instance()->registerActions(this->menuBar()->actions(), "", "");
   InputDriverManager::instance()->registerActions(this->animateWidget->actions(), "animation", "animate");
+  InputDriverManager::instance()->setCurrentWindow(this);
   instance->ButtonConfig->init();
 
   // fetch window states to be restored after restoreState() call
