@@ -38,19 +38,9 @@
 
 static void append_svg(const Polygon2d& poly, std::ostream& output)
 {
-  // sort outlines by color
-  std::vector<Outline2d> out_work = poly.outlines();
-  while(out_work.size() > 0) {
-    std::vector<Outline2d> out_remain;
-    Color4f col = out_work[0].color;
-
   output << "<path d=\"\n";
-  for (const auto& o : out_work) {
+  for (const auto& o : poly.outlines()) {
     if (o.vertices.empty()) {
-      continue;
-    }
-    if(o.color != col) {
-      out_remain.push_back(o);
       continue;
     }
 
@@ -65,15 +55,7 @@ static void append_svg(const Polygon2d& poly, std::ostream& output)
     }
     output << " z\n";
   }
-    std:: stringstream ss;
-    ss << "#" << std::hex 
-  	  << std::setfill('0') << std::setw(2) << (int)(col[0]*255) 
-  	  << std::setfill('0') << std::setw(2) << (int)(col[1]*255) 
-  	  << std::setfill('0') << std::setw(2) << (int)(col[2]*255) ;
-    std::string color_str = ss.str();
-  output << "\" stroke=\"black\" fill=\"" <<color_str << "\" stroke-width=\"0.5\"/>\n";
-  out_work = out_remain;
-  }
+  output << "\" stroke=\"black\" fill=\"lightgray\" stroke-width=\"0.5\"/>\n";
 
 }
 

@@ -43,7 +43,6 @@
 #include "libsvg/shape.h"
 #include "libsvg/util.h"
 #include "utils/printutils.h"
-#include "src/core/ColorUtil.h"
 
 namespace {
 
@@ -200,39 +199,24 @@ std::unique_ptr<Polygon2d> import_svg(double fn, double fs, double fa,
 
     std::vector<std::shared_ptr<const Polygon2d>> polygons;
     for (const auto& shape_ptr : *shapes) {
-//      printf("shape\n");
       if (!shape_ptr->is_excluded()) {
-	Polygon2d poly;
+        auto poly = std::make_shared<Polygon2d>();
         const auto& s = *shape_ptr;
         for (const auto& p : s.get_path_list()) {
           Outline2d outline;
-//          printf("path\n");
-	  std::string fill = s.get_fill();
-	  if(fill.size() == 0) fill = "#f9d72c";
-          outline.color=*OpenSCAD::parse_color(fill);
           for (const auto& v : p) {
             const double x = scale.x() * (-viewbox.x() + v.x()) - cx;
             const double y = scale.y() * (-viewbox.y() - v.y()) + cy;
-//	    printf("pt %g/%g\n",x,y);
             outline.vertices.emplace_back(x, y);
             outline.positive = true;
           }
-          poly.addOutline(outline);
+          poly->addOutline(outline);
         }
-        if (!poly.isEmpty()) polygons.push_back(std::make_shared<const Polygon2d>(poly));
+        if (!poly->isEmpty()) polygons.push_back(poly);
       }
     }
     libsvg_free(shapes);
-    std::reverse(polygons.begin(), polygons.end());
-
-    auto result_cleaned = ClipperUtils::cleanUnion(polygons); 
-//    printf("colors are :\n");
-//    for(const auto &o : result_cleaned.outlines()) {
-//      const Color4f &c = o.color;
-//      printf("%g/%g/%g :%d \n",c[0], c[1], c[2], o.vertices.size());      
-//    }
-
-    return std::make_unique<Polygon2d>(result_cleaned);
+    return ClipperUtils::apply(polygons, Clipper2Lib::ClipType::Union);
   } catch (const std::exception& e) {
     LOG(message_group::Error, "%1$s, import() at line %2$d", e.what(), loc.firstLine());
     return std::make_unique<Polygon2d>();

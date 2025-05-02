@@ -278,23 +278,13 @@ Outline2d splitOutlineByFs(
 std::unique_ptr<PolySet> assemblePolySetForManifold(
   const Polygon2d& polyref,
   std::vector<Vector3d>& vertices, PolygonIndices& indices,
-  std::vector<Color4f> &colors, std::vector<int> &color_indices,
   int convexity, boost::tribool isConvex, int index_offset) {
   auto final_polyset = std::make_unique<PolySet>(3, isConvex);
   final_polyset->setTriangular(true);
   final_polyset->setConvexity(convexity);
   final_polyset->vertices = std::move(vertices);
   final_polyset->indices = std::move(indices);
-  final_polyset->colors = std::move(colors);
-  final_polyset->color_indices = std::move(color_indices);
 
-  std::vector<int> colormap;
-  for(int i=0;i<final_polyset->vertices.size();i++)
-    colormap.push_back(0);
-  for(int i=0;i<final_polyset->indices.size();i++) {
-    auto &pol =final_polyset->indices[i];
-    for(auto ind : pol) colormap[ind]=final_polyset->color_indices[i];
-  }
   // Create top and bottom face.
   auto ps_bottom = polyref.tessellate(); // bottom
   // Flip vertex ordering for bottom polygon
@@ -315,9 +305,6 @@ std::unique_ptr<PolySet> assemblePolySetForManifold(
 
   // LOG(PolySetUtils::polySetToPolyhedronSource(*final_polyset));
 
-  for(int j=final_polyset->color_indices.size();j<final_polyset->indices.size();j++) {
-    final_polyset->color_indices.push_back(colormap[final_polyset->indices[j][0]]);
-  }
   return final_polyset;
 }
 
@@ -373,7 +360,7 @@ std::unique_ptr<PolySet> assemblePolySetForCGAL(const Polygon2d& polyref,
    Quads are triangulated across the shorter of the two diagonals, which works well in most cases.
    However, when diagonals are equal length, decision may flip depending on other factors.
  */
-void add_slice_indices(PolygonIndices &indices, std::vector<Color4f> &colors, std::vector<int> &color_indices, int slice_idx, int slice_stride, const Polygon2d& poly,
+void add_slice_indices(PolygonIndices &indices, int slice_idx, int slice_stride, const Polygon2d& poly,
                               double rot1, double rot2,
                               const Vector2d& scale1, const Vector2d& scale2)
 {
@@ -400,8 +387,7 @@ void add_slice_indices(PolygonIndices &indices, std::vector<Color4f> &colors, st
     // and extruded with twist.  Diagonal choice determined by whichever option
     // matched the direction of diagonal for neighboring edges (which did not exhibit "equal" diagonals).
     bool flip = ((!o.positive) xor (back_twist));
-    int color_ind=colors.size();
-    colors.push_back(o.color);
+
     for (int i = 1; i <= o.vertices.size(); ++i) {
       // curr1: previous slice, current vertex
       // curr2: current slice, current vertex
@@ -438,8 +424,6 @@ void add_slice_indices(PolygonIndices &indices, std::vector<Color4f> &colors, st
           curr_slice + prev_idx,
         });
       }
-      color_indices.push_back(color_ind);
-      color_indices.push_back(color_ind);
       prev1 = curr1;
       prev2 = curr2;
     }
@@ -638,8 +622,7 @@ std::unique_ptr<Geometry> extrudePolygon(const LinearExtrudeNode& node, const Po
       }
     }
   }
-  std::vector<Color4f> colors;
-  std::vector<int> color_indices;
+
   // Create indices for sides
   for (unsigned int slice_idx = 1; slice_idx <= num_slices; slice_idx++) {
     double rot_prev = node.twist * (slice_idx -1)/ num_slices;
@@ -650,7 +633,7 @@ std::unique_ptr<Geometry> extrudePolygon(const LinearExtrudeNode& node, const Po
                     1 - (1 - node.scale_y) * (slice_idx - 1) / num_slices);
     Vector2d scale_curr(1 - (1 - node.scale_x) * slice_idx / num_slices,
                     1 - (1 - node.scale_y) * slice_idx / num_slices);
-    add_slice_indices(indices, colors, color_indices, slice_idx, slice_stride, polyref, rot_prev, rot_curr, scale_prev, scale_curr);
+    add_slice_indices(indices, slice_idx, slice_stride, polyref, rot_prev, rot_curr, scale_prev, scale_curr);
   }
 
   // For Manifold, we can tesselate the endcaps using existing vertices to build a manifold mesh.
@@ -659,12 +642,12 @@ std::unique_ptr<Geometry> extrudePolygon(const LinearExtrudeNode& node, const Po
 
 #ifdef ENABLE_MANIFOLD
   if (RenderSettings::inst()->backend3D == RenderBackend3D::ManifoldBackend) {
-    return assemblePolySetForManifold(polyref, vertices, indices, colors, color_indices,
+    return assemblePolySetForManifold(polyref, vertices, indices,
                                       node.convexity, isConvex, slice_stride * num_slices);
   }
   else
 #endif
-  return assemblePolySetForManifold(polyref, vertices, indices, colors, color_indices,
+  return assemblePolySetForManifold(polyref, vertices, indices,
                                       node.convexity, isConvex, slice_stride * num_slices);
 }
 

@@ -11,9 +11,6 @@ namespace std {
 std::size_t hash<Vector3f>::operator()(const Vector3f& s) const {
   return Eigen::hash_value(s);
 }
-std::size_t hash<Vector2d>::operator()(const Vector2d& s) const {
-  return Eigen::hash_value(s);
-}
 std::size_t hash<Vector3d>::operator()(const Vector3d& s) const {
   return Eigen::hash_value(s);
 }
@@ -33,12 +30,6 @@ size_t hash_value(Vector3f const& v) {
 size_t hash_value(Vector3d const& v) {
   size_t seed = 0;
   for (int i = 0; i < 3; ++i) boost::hash_combine(seed, v[i]);
-  return seed;
-}
-
-size_t hash_value(Vector2d const& v) {
-  size_t seed = 0;
-  for (int i = 0; i < 2; ++i) boost::hash_combine(seed, v[i]);
   return seed;
 }
 

@@ -274,35 +274,20 @@ std::unique_ptr<PolySet> createTriangulatedPolySetFromPolygon2d(const Polygon2d&
   auto polyset = std::make_unique<PolySet>(2);
   polyset->setTriangular(true);
 
-  std::vector<Outline2d> outline_work = in3d? polygon2d.untransformedOutlines() : polygon2d.outlines();
-  while(outline_work.size() > 0) {
-    std::vector<Outline2d> outline_next;
-    int v_off = polyset->vertices.size();
-    int c_off = polyset->colors.size();
-    manifold::Polygons polygons;
+  manifold::Polygons polygons;
+  for (const auto& outline : in3d? polygon2d.untransformedOutlines() : polygon2d.outlines()) {
     manifold::SimplePolygon simplePolygon;
-
-    Color4f col = outline_work[0].color;
-    polyset->colors.push_back(col);
-    for (const auto& outline : outline_work) {
-      if(outline.color != col) {
-        outline_next.push_back(outline);
-        continue;
-      }
-      for (const auto& vertex : outline.vertices) {
-        polyset->vertices.emplace_back(vertex[0], vertex[1], 0.0);
-        simplePolygon.emplace_back(vertex[0], vertex[1]);
-      }
-      polygons.push_back(std::move(simplePolygon));
+    for (const auto& vertex : outline.vertices) {
+      polyset->vertices.emplace_back(vertex[0], vertex[1], 0.0);
+      simplePolygon.emplace_back(vertex[0], vertex[1]);
     }
-    
-    const auto triangles = manifold::Triangulate(polygons);
+    polygons.push_back(std::move(simplePolygon));
+  }
 
-    for (const auto& triangle : triangles) {
-      polyset->indices.push_back({v_off + triangle[0], v_off + triangle[1], v_off + triangle[2]});
-      polyset->color_indices.push_back(c_off);
-    }
-    outline_work = outline_next;
+  const auto triangles = manifold::Triangulate(polygons);
+
+  for (const auto& triangle : triangles) {
+    polyset->indices.push_back({triangle[0], triangle[1], triangle[2]});
   }
   return polyset;
 
