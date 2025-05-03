@@ -540,7 +540,7 @@ std::shared_ptr<const Geometry> GeometryUtils::getBackendSpecificGeometry(const 
 #if ENABLE_CGAL
   if (auto ps = std::dynamic_pointer_cast<const PolySet>(geom)) {
     return CGALUtils::createNefPolyhedronFromPolySet(*ps);
-  } else if (auto poly = std::dynamic_pointer_cast<const CGAL_Nef_polyhedron>(geom)) {
+  } else if (auto poly = std::dynamic_pointer_cast<const CGALNefGeometry>(geom)) {
     return geom;
   } else {
     assert(false && "Unexpected geometry");

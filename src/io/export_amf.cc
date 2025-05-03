@@ -31,7 +31,7 @@
 #ifdef ENABLE_CGAL
 #include "geometry/cgal/cgal.h"
 #include "geometry/cgal/cgalutils.h"
-#include "geometry/cgal/CGAL_Nef_polyhedron.h"
+#include "geometry/cgal/CGALNefGeometry.h"
 #endif
 
 #include <algorithm>
@@ -88,7 +88,7 @@ static size_t add_vertex(std::vector<vertex_str>& vertices, const Point& p) {
     Saves the current 3D CGAL Nef polyhedron as AMF to the given file.
     The file must be open.
  */
-static void append_amf(const CGAL_Nef_polyhedron& root_N, std::ostream& output)
+static void append_amf(const CGALNefGeometry& root_N, std::ostream& output)
 {
   if (!root_N.p3->is_simple()) {
     LOG(message_group::Export_Warning, "Export failed, the object isn't a valid 2-manifold.");

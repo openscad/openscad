@@ -11,7 +11,7 @@
 #ifdef ENABLE_CGAL
 #include "geometry/Geometry.h"
 #include "geometry/cgal/cgal.h"
-#include "geometry/cgal/CGAL_Nef_polyhedron.h"
+#include "geometry/cgal/CGALNefGeometry.h"
 #include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
 #include <CGAL/normal_vector_newell_3.h>
 #include <CGAL/Handle_hash_function.h>
@@ -53,7 +53,7 @@ std::unique_ptr<PolySet> applyHull(const Geometry::Geometries& children)
   for (const auto& item : children) {
     auto& chgeom = item.second;
 #ifdef ENABLE_CGAL
-    if (const auto *N = dynamic_cast<const CGAL_Nef_polyhedron*>(chgeom.get())) {
+    if (const auto *N = dynamic_cast<const CGALNefGeometry*>(chgeom.get())) {
       if (!N->isEmpty()) {
         addCapacity(N->p3->number_of_vertices());
         for (CGAL_Nef_polyhedron3::Vertex_const_iterator i = N->p3->vertices_begin(); i != N->p3->vertices_end(); ++i) {
@@ -131,7 +131,7 @@ std::shared_ptr<const Geometry> applyMinkowski(const Geometry::Geometries& child
         CGAL_Polyhedron poly;
 
         auto ps = std::dynamic_pointer_cast<const PolySet>(operands[i]);
-        auto nef = std::dynamic_pointer_cast<const CGAL_Nef_polyhedron>(operands[i]);
+        auto nef = std::dynamic_pointer_cast<const CGALNefGeometry>(operands[i]);
 
         if (!nef) {
           nef = CGALUtils::getNefPolyhedronFromGeometry(operands[i]);
@@ -297,7 +297,7 @@ std::shared_ptr<const Geometry> applyMinkowski(const Geometry::Geometries& child
         t.reset();
         operands[0] = std::move(N);
       } else {
-        operands[0] = std::make_shared<CGAL_Nef_polyhedron>();
+        operands[0] = std::make_shared<CGALNefGeometry>();
       }
     }
 

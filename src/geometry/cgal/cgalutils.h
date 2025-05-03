@@ -14,7 +14,7 @@
 #ifdef ENABLE_CGAL
 #include "geometry/cgal/cgal.h"
 #include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
-#include "geometry/cgal/CGAL_Nef_polyhedron.h"
+#include "geometry/cgal/CGALNefGeometry.h"
 using K = CGAL::Epick;
 using Vertex3K = CGAL::Point_3<K>;
 using PolygonK = std::vector<Vertex3K>;
@@ -29,7 +29,7 @@ Result vector_convert(V const& v) {
   return Result(CGAL::to_double(v[0]), CGAL::to_double(v[1]), CGAL::to_double(v[2]));
 }
 
-std::unique_ptr<CGAL_Nef_polyhedron> createNefPolyhedronFromPolySet(const PolySet& ps);
+std::unique_ptr<CGALNefGeometry> createNefPolyhedronFromPolySet(const PolySet& ps);
 template <typename K>
 bool is_weakly_convex(const CGAL::Polyhedron_3<K>& p);
 template <typename K>
@@ -37,8 +37,8 @@ bool is_weakly_convex(const CGAL::Surface_mesh<CGAL::Point_3<K>>& m);
 std::shared_ptr<const Geometry> applyOperator3D(const Geometry::Geometries& children, OpenSCADOperator op);
 std::unique_ptr<const Geometry> applyUnion3D(Geometry::Geometries::iterator chbegin, Geometry::Geometries::iterator chend);
 //FIXME: Old, can be removed:
-//void applyBinaryOperator(CGAL_Nef_polyhedron &target, const CGAL_Nef_polyhedron &src, OpenSCADOperator op);
-std::unique_ptr<Polygon2d> project(const CGAL_Nef_polyhedron& N, bool cut);
+//void applyBinaryOperator(CGALNefGeometry &target, const CGALNefGeometry &src, OpenSCADOperator op);
+std::unique_ptr<Polygon2d> project(const CGALNefGeometry& N, bool cut);
 template <typename K>
 CGAL::Iso_cuboid_3<K> boundingBox(const CGAL::Nef_polyhedron_3<K>& N);
 template <typename K>
@@ -61,8 +61,8 @@ bool createMeshFromPolySet(const PolySet& ps, TriangleMesh& mesh);
 
 template <typename K>
 std::unique_ptr<PolySet> createPolySetFromNefPolyhedron3(const CGAL::Nef_polyhedron_3<K>& N);
-std::shared_ptr<const CGAL_Nef_polyhedron> getNefPolyhedronFromGeometry(const std::shared_ptr<const Geometry>& geom);
-std::shared_ptr<const CGAL_Nef_polyhedron> getGeometryAsNefPolyhedron(const std::shared_ptr<const Geometry>&);
+std::shared_ptr<const CGALNefGeometry> getNefPolyhedronFromGeometry(const std::shared_ptr<const Geometry>& geom);
+std::shared_ptr<const CGALNefGeometry> getGeometryAsNefPolyhedron(const std::shared_ptr<const Geometry>&);
 
 template <typename K>
 CGAL::Aff_transformation_3<K> createAffineTransformFromMatrix(const Transform3d& matrix);
