@@ -16,10 +16,10 @@ namespace ManifoldUtils {
   std::shared_ptr<ManifoldGeometry> createManifoldFromPolySet(const PolySet& ps);
   std::shared_ptr<const ManifoldGeometry> createManifoldFromGeometry(const std::shared_ptr<const Geometry>& geom);
 
-  template <class TriangleMesh>
-  std::shared_ptr<ManifoldGeometry> createManifoldFromSurfaceMesh(const TriangleMesh& mesh);
-  template <typename TriangleMesh>
-  TriangleMesh createSurfaceMeshFromManifold(const manifold::Manifold& mani);
+  template <class SurfaceMesh>
+  std::shared_ptr<ManifoldGeometry> createManifoldFromSurfaceMesh(const SurfaceMesh& mesh);
+  template <typename SurfaceMesh>
+  std::shared_ptr<SurfaceMesh> createSurfaceMeshFromManifold(const manifold::Manifold& mani);
   
   std::shared_ptr<ManifoldGeometry> applyOperator3DManifold(const Geometry::Geometries& children, OpenSCADOperator op);
 

@@ -289,18 +289,18 @@ std::shared_ptr<ManifoldGeometry> createManifoldFromSurfaceMesh(const SurfaceMes
 }
 
 template <class SurfaceMesh>
-SurfaceMesh createSurfaceMeshFromManifold(const manifold::Manifold& mani)
+std::shared_ptr<SurfaceMesh> createSurfaceMeshFromManifold(const manifold::Manifold& mani)
 {
   const auto meshgl = mani.GetMeshGL64();
-  SurfaceMesh mesh;
-  mesh.reserve(meshgl.NumVert(), meshgl.NumTri() * 3, meshgl.NumTri());
+  auto mesh = std::make_shared<SurfaceMesh>();
+  mesh->reserve(meshgl.NumVert(), meshgl.NumTri() * 3, meshgl.NumTri());
   for (auto i = 0; i < meshgl.NumVert(); i++) {
     const auto& v = meshgl.GetVertPos(i);
-    mesh.add_vertex(typename SurfaceMesh::Point(v[0], v[1], v[2]));
+    mesh->add_vertex(typename SurfaceMesh::Point(v[0], v[1], v[2]));
   }
   for (auto i = 0; i < meshgl.NumTri(); i++) {
     const auto& tri = meshgl.GetTriVerts(i);
-    mesh.add_face(typename SurfaceMesh::Vertex_index(tri[0]),
+    mesh->add_face(typename SurfaceMesh::Vertex_index(tri[0]),
                   typename SurfaceMesh::Vertex_index(tri[1]), 
                   typename SurfaceMesh::Vertex_index(tri[2]));
   }
@@ -310,8 +310,8 @@ SurfaceMesh createSurfaceMeshFromManifold(const manifold::Manifold& mani)
 #ifdef ENABLE_CGAL
 template std::shared_ptr<ManifoldGeometry> createManifoldFromSurfaceMesh(const CGAL::Surface_mesh<CGAL::Point_3<CGAL::Epick>> &tm);
 template std::shared_ptr<ManifoldGeometry> createManifoldFromSurfaceMesh(const CGAL_DoubleMesh &tm);
-template CGAL::Surface_mesh<manifold::vec3> createSurfaceMeshFromManifold<CGAL::Surface_mesh<manifold::vec3>>(const manifold::Manifold& mani);
-template CGAL::Surface_mesh<CGAL_Point_3> createSurfaceMeshFromManifold<CGAL::Surface_mesh<CGAL_Point_3>>(const manifold::Manifold& mani);
+template std::shared_ptr<CGAL::Surface_mesh<manifold::vec3>> createSurfaceMeshFromManifold<CGAL::Surface_mesh<manifold::vec3>>(const manifold::Manifold& mani);
+template std::shared_ptr<CGAL::Surface_mesh<CGAL_Point_3>> createSurfaceMeshFromManifold<CGAL::Surface_mesh<CGAL_Point_3>>(const manifold::Manifold& mani);
 #endif
 
 }; // namespace ManifoldUtils
