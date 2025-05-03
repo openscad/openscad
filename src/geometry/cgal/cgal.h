@@ -58,6 +58,7 @@ using CGAL_Polyhedron = CGAL::Polyhedron_3<CGAL_Kernel3>;
 using CGAL_Point_3 = CGAL::Point_3<CGAL_Kernel3>;
 using CGAL_Iso_cuboid_3 = CGAL::Iso_cuboid_3<CGAL_Kernel3>;
 using CGAL_Polygon_3 = std::vector<CGAL_Point_3>;
+using CGAL_Kernel3Mesh = CGAL::Surface_mesh<CGAL_Point_3>;
 
 using CGAL_DoubleKernel = CGAL::Simple_cartesian<double>;
 using CGAL_DoubleMesh = CGAL::Surface_mesh<CGAL::Point_3<CGAL_DoubleKernel>>;

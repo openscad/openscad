@@ -266,13 +266,18 @@ void convertNefToPolyhedron(
 
 template void convertNefToPolyhedron(const CGAL_Nef_polyhedron3& nef, CGAL_Polyhedron& polyhedron);
 
-
 template <typename SurfaceMesh>
 void convertNefToSurfaceMesh(const CGAL_Nef_polyhedron3& nef, SurfaceMesh& mesh)
 {
   constexpr bool triangulate = false;
   CGAL::convert_nef_polyhedron_to_polygon_mesh(nef, mesh, triangulate);
 }
+
+void converSurfaceMeshToNef(const CGAL_Kernel3Mesh& mesh, CGAL_Nef_polyhedron3& nef)
+{
+  nef = CGAL_Nef_polyhedron3(mesh);
+}
+
 
 template <typename Polyhedron>
 bool createPolyhedronFromPolySet(const PolySet& ps, Polyhedron& p)

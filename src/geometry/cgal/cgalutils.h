@@ -26,8 +26,10 @@ Result vector_convert(V const& v) {
 std::unique_ptr<CGALNefGeometry> createNefPolyhedronFromPolySet(const PolySet& ps);
 template <typename K>
 bool is_weakly_convex(const CGAL::Polyhedron_3<K>& p);
+
 template <typename K>
 bool is_weakly_convex(const CGAL::Surface_mesh<CGAL::Point_3<K>>& m);
+
 std::shared_ptr<const Geometry> applyOperator3D(const Geometry::Geometries& children, OpenSCADOperator op);
 std::unique_ptr<const Geometry> applyUnion3D(Geometry::Geometries::iterator chbegin, Geometry::Geometries::iterator chend);
 //FIXME: Old, can be removed:
@@ -35,15 +37,21 @@ std::unique_ptr<const Geometry> applyUnion3D(Geometry::Geometries::iterator chbe
 std::unique_ptr<Polygon2d> project(const CGALNefGeometry& N, bool cut);
 template <typename K>
 CGAL::Iso_cuboid_3<K> boundingBox(const CGAL::Nef_polyhedron_3<K>& N);
+
 template <typename K>
 CGAL::Iso_cuboid_3<K> boundingBox(const CGAL::Surface_mesh<CGAL::Point_3<K>>& mesh);
+
 CGAL_Iso_cuboid_3 createIsoCuboidFromBoundingBox(const BoundingBox& bbox);
 bool is_approximately_convex(const PolySet& ps);
 
-template <typename Polyhedron> std::unique_ptr<PolySet> createPolySetFromPolyhedron(const Polyhedron& p);
+template <typename Polyhedron>
+std::unique_ptr<PolySet> createPolySetFromPolyhedron(const Polyhedron& p);
+
+template <typename Polyhedron>
+bool createPolyhedronFromPolySet(const PolySet& ps, Polyhedron& p);
+
 template <class InputKernel, class OutputKernel>
 void copyPolyhedron(const CGAL::Polyhedron_3<InputKernel>& poly_a, CGAL::Polyhedron_3<OutputKernel>& poly_b);
-template <typename Polyhedron> bool createPolyhedronFromPolySet(const PolySet& ps, Polyhedron& p);
 
 template <class InputKernel, class OutputKernel>
 void copyMesh(const CGAL::Surface_mesh<CGAL::Point_3<InputKernel>>& input,
@@ -56,8 +64,8 @@ void createSurfaceMeshFromPolySet(const PolySet& ps, SurfaceMesh& mesh);
 template <class SurfaceMesh>
 std::unique_ptr<PolySet> createPolySetFromSurfaceMesh(const SurfaceMesh& mesh);
 
-template <typename K>
-std::unique_ptr<PolySet> createPolySetFromNefPolyhedron3(const CGAL::Nef_polyhedron_3<K>& N);
+std::unique_ptr<PolySet> createPolySetFromNefPolyhedron3(const CGAL_Nef_polyhedron3& N);
+
 std::shared_ptr<const CGALNefGeometry> getNefPolyhedronFromGeometry(const std::shared_ptr<const Geometry>& geom);
 std::shared_ptr<const CGALNefGeometry> getGeometryAsNefPolyhedron(const std::shared_ptr<const Geometry>&);
 
@@ -94,37 +102,19 @@ getCartesianConverter()
   return CGAL::Cartesian_converter<
     FromKernel, ToKernel, KernelConverter<FromKernel, ToKernel>>();
 }
-template <typename Polyhedron>
-void triangulateFaces(Polyhedron& polyhedron);
+
+template <typename SurfaceMesh>
+void triangulateFaces(SurfaceMesh& mesh);
 template <typename Polyhedron>
 bool isClosed(const Polyhedron& polyhedron);
-template <typename Polyhedron>
-void orientToBoundAVolume(Polyhedron& polyhedron);
-template <typename Polyhedron>
-void reverseFaceOrientations(Polyhedron& polyhedron);
-template <typename K>
-void inPlaceNefUnion(CGAL::Nef_polyhedron_3<K>& lhs, const CGAL::Nef_polyhedron_3<K>& rhs);
-template <typename K>
-void inPlaceNefDifference(CGAL::Nef_polyhedron_3<K>& lhs, const CGAL::Nef_polyhedron_3<K>& rhs);
-template <typename K>
-void inPlaceNefIntersection(CGAL::Nef_polyhedron_3<K>& lhs, const CGAL::Nef_polyhedron_3<K>& rhs);
-template <typename K>
-void inPlaceNefMinkowski(CGAL::Nef_polyhedron_3<K>& lhs, CGAL::Nef_polyhedron_3<K>& rhs);
+template <typename SurfaceMesh>
+void orientToBoundAVolume(SurfaceMesh& mesh);
 template <typename K>
 void convertNefToPolyhedron(const CGAL::Nef_polyhedron_3<K>& nef, CGAL::Polyhedron_3<K>& polyhedron);
 
-template <typename SurfaceMesh>
-void convertNefToSurfaceMesh(const CGAL_Nef_polyhedron3& nef, SurfaceMesh& mesh);
+void convertNefToSurfaceMesh(const CGAL_Nef_polyhedron3& nef, CGAL_Kernel3Mesh& mesh);
+void converSurfaceMeshToNef(const CGAL_Kernel3Mesh& mesh, CGAL_Nef_polyhedron3& nef);
 
-template <class TriangleMesh>
-bool corefineAndComputeUnion(TriangleMesh& lhs, TriangleMesh& rhs, TriangleMesh& out);
-template <class TriangleMesh>
-bool corefineAndComputeIntersection(TriangleMesh& lhs, TriangleMesh& rhs, TriangleMesh& out);
-template <class TriangleMesh>
-bool corefineAndComputeDifference(TriangleMesh& lhs, TriangleMesh& rhs, TriangleMesh& out);
-
-template <typename K>
-void convertNefPolyhedronToTriangleMesh(const CGAL::Nef_polyhedron_3<K>& nef, CGAL::Surface_mesh<CGAL::Point_3<K>>& mesh);
 #endif
 std::unique_ptr<PolySet> createTriangulatedPolySetFromPolygon2d(const Polygon2d& polygon2d);
 

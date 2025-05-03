@@ -56,8 +56,8 @@ std::unique_ptr<PolySet> applyHull(const Geometry::Geometries& children)
     if (const auto *N = dynamic_cast<const CGALNefGeometry*>(chgeom.get())) {
       if (!N->isEmpty()) {
         addCapacity(N->p3->number_of_vertices());
-        for (CGAL_Nef_polyhedron3::Vertex_const_iterator i = N->p3->vertices_begin(); i != N->p3->vertices_end(); ++i) {
-          addPoint(CGALUtils::vector_convert<Hull_kernel::Point_3>(i->point()));
+        for (auto it = N->p3->vertices_begin(); it != N->p3->vertices_end(); ++it) {
+          addPoint(CGALUtils::vector_convert<Hull_kernel::Point_3>(it->point()));
         }
       }
 #endif  // ENABLE_CGAL
@@ -154,8 +154,7 @@ std::shared_ptr<const Geometry> applyMinkowskiCGAL(const Geometry::Geometries& c
           CGAL::convex_decomposition_3(decomposed_nef);
 
           // the first volume is the outer volume, which ignored in the decomposition
-          CGAL_Nef_polyhedron3::Volume_const_iterator ci = ++decomposed_nef.volumes_begin();
-          for (; ci != decomposed_nef.volumes_end(); ++ci) {
+          for (auto ci = ++decomposed_nef.volumes_begin(); ci != decomposed_nef.volumes_end(); ++ci) {
             if (ci->mark()) {
               CGAL_Polyhedron poly;
               decomposed_nef.convert_inner_shell_to_polyhedron(ci->shells_begin(), poly);

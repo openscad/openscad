@@ -262,8 +262,7 @@ std::shared_ptr<const CGALNefGeometry> getNefPolyhedronFromGeometry(const std::s
    formats) do not allow for holes in their faces. The function documents
    the method used to deal with this
  */
-template <typename K>
-std::unique_ptr<PolySet> createPolySetFromNefPolyhedron3(const CGAL::Nef_polyhedron_3<K>& N)
+std::unique_ptr<PolySet> createPolySetFromNefPolyhedron3(const CGAL_Nef_polyhedron3& N)
 {
   // 1. Build Indexed PolyMesh
   // 2. Validate mesh (manifoldness)
@@ -272,7 +271,7 @@ std::unique_ptr<PolySet> createPolySetFromNefPolyhedron3(const CGAL::Nef_polyhed
   // 4. Validate mesh (manifoldness)
   // 5. Create PolySet
 
-  using Nef = CGAL::Nef_polyhedron_3<K>;
+  using Nef = CGAL_Nef_polyhedron3;
 
   // 1. Build Indexed PolyMesh
   Reindexer<Vector3f> allVertices;
@@ -280,7 +279,7 @@ std::unique_ptr<PolySet> createPolySetFromNefPolyhedron3(const CGAL::Nef_polyhed
 
   typename Nef::Halffacet_const_iterator hfaceti;
   CGAL_forall_halffacets(hfaceti, N) {
-    CGAL::Plane_3<K> plane(hfaceti->plane());
+    Nef::Plane_3 plane(hfaceti->plane());
     // Since we're downscaling to float, vertices might merge during this conversion.
     // To avoid passing equal vertices to the tessellator, we remove consecutively identical
     // vertices.
@@ -397,8 +396,6 @@ std::unique_ptr<PolySet> createPolySetFromNefPolyhedron3(const CGAL::Nef_polyhed
 
   return polyset;
 }
-
-template std::unique_ptr<PolySet> createPolySetFromNefPolyhedron3(const CGAL_Nef_polyhedron3& N);
 
 template <typename K>
 CGAL::Aff_transformation_3<K> createAffineTransformFromMatrix(const Transform3d& matrix) {
