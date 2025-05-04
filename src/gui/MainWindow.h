@@ -7,6 +7,7 @@
 #include <string>
 #include <vector>
 
+#include <QFileSystemWatcher>
 #include <QAction>
 #include <QCloseEvent>
 #include <QDragEnterEvent>
@@ -79,8 +80,6 @@ public:
 
   bool isPreview;
 
-  QTimer *autoReloadTimer;
-  QTimer *waitAfterReloadTimer;
   RenderStatistic renderStatistic;
 
   SourceFile *rootFile; // Result of parsing
@@ -153,6 +152,7 @@ private slots:
   void onNavigationCloseContextMenu();
   void onNavigationHoveredContextMenuEntry();
   void onNavigationTriggerContextMenuEntry();
+  void onFileChanged(const QString& path);
 
   // implement the different actions needed when
   // the tab manager editor is changed.
@@ -189,6 +189,7 @@ private:
 
   void setRenderVariables(ContextHandle<BuiltinContext>& context);
   void updateCompileResult();
+  void rawCompile(bool reload, bool forcedone = false);
   void compile(bool reload, bool forcedone = false);
   void compileCSG();
   bool checkEditorModified();
@@ -218,6 +219,7 @@ private:
   LibraryInfoDialog *libraryInfoDialog{nullptr};
   FontListDialog *fontListDialog{nullptr};
   QSignalMapper *exportFormatMapper;
+  QFileSystemWatcher fileSystemWatcher;
 
 public slots:
   void updateExportActions();
@@ -248,7 +250,6 @@ private slots:
   void compileEnded();
   void changeParameterWidget();
 
-private slots:
   void copyViewportTranslation();
   void copyViewportRotation();
   void copyViewportDistance();
@@ -329,6 +330,7 @@ public:
   void clearCurrentOutput();
   void hideCurrentOutput();
   bool isEmpty();
+  bool autoReloadEnabled();
 
   void onAxisChanged(InputEventAxisChanged *event) override;
   void onButtonChanged(InputEventButtonChanged *event) override;
