@@ -43,7 +43,7 @@ void Dock::setConfigKey(const QString& configKey)
 
 void Dock::updateTitle(){
   QString title(name);
-  if (isTopLevel() && !namesuffix.isEmpty()) {
+  if (isFloating() && !namesuffix.isEmpty()) {
     title += " (" + namesuffix + ")";
   }
   setWindowTitle(title);
