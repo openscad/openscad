@@ -2308,6 +2308,13 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event)
     return false;
   }
 
+  auto keyEvent = static_cast<QKeyEvent *>(event);
+  if (keyEvent != nullptr && keyEvent->key() == Qt::Key_Escape) {
+    if(this->qglview->measure_state != MEASURE_IDLE) {
+      this->qglview->handle_mode=false;
+      meas.stopMeasure();
+    }
+  }
   return QMainWindow::eventFilter(obj, event);
 }
 
