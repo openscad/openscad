@@ -25,7 +25,7 @@
  */
 
 #include "gui/input/MouseConfigWidget.h"
-#include "gui/input/MouseConfig.h"
+#include "core/MouseConfig.h"
 
 #include <QChar>
 #include <QComboBox>

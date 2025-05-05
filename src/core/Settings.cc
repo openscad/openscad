@@ -1,6 +1,6 @@
 #include "core/Settings.h"
 
-#include "gui/input/MouseConfig.h"
+#include "core/MouseConfig.h"
 
 #include <ostream>
 #include <cassert>

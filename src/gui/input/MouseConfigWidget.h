@@ -4,7 +4,7 @@
 #include <QComboBox>
 #include <QWidget>
 #include "ui_MouseConfigWidget.h"
-#include "gui/input/MouseConfig.h"
+#include "core/MouseConfig.h"
 #include "core/Settings.h"
 
 class MouseConfigWidget : public QWidget, public Ui::Mouse

@@ -1,7 +1,5 @@
 #pragma once
 
-#include "gui/input/MouseConfig.h"
-
 #include <cstddef>
 #include <cstdint>
 #include <string>
