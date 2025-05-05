@@ -334,19 +334,19 @@ void QGLView::mouseMoveEvent(QMouseEvent *event)
         buttonIndex = 2;
       }
     }
-    bool multipleModifiersPressed = false;
     int modifierIndex = 0;
     if (QApplication::keyboardModifiers() & Qt::ShiftModifier) {
       modifierIndex = 1;
     }
     if (QApplication::keyboardModifiers() & Qt::ControlModifier) {
-      if (modifierIndex != 0) {
-        multipleModifiersPressed = true;
+      if (modifierIndex == 1) {
+        modifierIndex = 3;  // Ctrl + Shift
+      } else {
+        modifierIndex = 2;
       }
-      modifierIndex = 2;
     }
 
-    if (buttonIndex != -1 && !multipleButtonsPressed && !multipleModifiersPressed) {
+    if (buttonIndex != -1 && !multipleButtonsPressed) {
       float *selectedMouseActions =
         &this->mouseActions[MouseConfig::ACTION_DIMENSION*(buttonIndex + modifierIndex*3)];
 

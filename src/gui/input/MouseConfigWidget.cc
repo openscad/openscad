@@ -71,6 +71,9 @@ void MouseConfigWidget::init() {
   actionToComboBox.insert({MouseConfig::CTRL_LEFT_CLICK, comboBoxCtrlLeftClick});
   actionToComboBox.insert({MouseConfig::CTRL_MIDDLE_CLICK, comboBoxCtrlMiddleClick});
   actionToComboBox.insert({MouseConfig::CTRL_RIGHT_CLICK, comboBoxCtrlRightClick});
+  actionToComboBox.insert({MouseConfig::CTRL_SHIFT_LEFT_CLICK, comboBoxCtrlShiftLeftClick});
+  actionToComboBox.insert({MouseConfig::CTRL_SHIFT_MIDDLE_CLICK, comboBoxCtrlShiftMiddleClick});
+  actionToComboBox.insert({MouseConfig::CTRL_SHIFT_RIGHT_CLICK, comboBoxCtrlShiftRightClick});
   actionToSetting.clear();
   actionToSetting.insert({MouseConfig::LEFT_CLICK, &Settings::Settings::inputMouseLeftClick});
   actionToSetting.insert({MouseConfig::MIDDLE_CLICK, &Settings::Settings::inputMouseMiddleClick});
@@ -81,6 +84,9 @@ void MouseConfigWidget::init() {
   actionToSetting.insert({MouseConfig::CTRL_LEFT_CLICK, &Settings::Settings::inputMouseCtrlLeftClick});
   actionToSetting.insert({MouseConfig::CTRL_MIDDLE_CLICK, &Settings::Settings::inputMouseCtrlMiddleClick});
   actionToSetting.insert({MouseConfig::CTRL_RIGHT_CLICK, &Settings::Settings::inputMouseCtrlRightClick});
+  actionToSetting.insert({MouseConfig::CTRL_SHIFT_LEFT_CLICK, &Settings::Settings::inputMouseCtrlShiftLeftClick});
+  actionToSetting.insert({MouseConfig::CTRL_SHIFT_MIDDLE_CLICK, &Settings::Settings::inputMouseCtrlShiftMiddleClick});
+  actionToSetting.insert({MouseConfig::CTRL_SHIFT_RIGHT_CLICK, &Settings::Settings::inputMouseCtrlShiftRightClick});
 
   for (int i=0; i < MouseConfig::NUM_MOUSE_ACTIONS; i++) {
     auto mouseAction = static_cast<MouseConfig::MouseAction>(i);
@@ -93,8 +99,10 @@ void MouseConfigWidget::init() {
   comboBoxPreset->setCurrentIndex(preset);
   if (preset != MouseConfig::CUSTOM) {
     updateAllToPreset(preset);
+    disableBoxes(true);
+  } else {
+    disableBoxes(false);
   }
-  disableBoxes(true);
 
   installIgnoreWheelWhenNotFocused(this);
 
@@ -195,6 +203,24 @@ void MouseConfigWidget::on_comboBoxCtrlMiddleClick_activated(int val)
 void MouseConfigWidget::on_comboBoxCtrlRightClick_activated(int val)
 {
   applyComboBox(comboBoxCtrlRightClick, val, Settings::Settings::inputMouseCtrlRightClick);
+  emit updateMouseActions();
+}
+
+void MouseConfigWidget::on_comboBoxCtrlShiftLeftClick_activated(int val)
+{
+  applyComboBox(comboBoxCtrlShiftLeftClick, val, Settings::Settings::inputMouseCtrlShiftLeftClick);
+  emit updateMouseActions();
+}
+
+void MouseConfigWidget::on_comboBoxCtrlShiftMiddleClick_activated(int val)
+{
+  applyComboBox(comboBoxCtrlShiftMiddleClick, val, Settings::Settings::inputMouseCtrlShiftMiddleClick);
+  emit updateMouseActions();
+}
+
+void MouseConfigWidget::on_comboBoxCtrlShiftRightClick_activated(int val)
+{
+  applyComboBox(comboBoxCtrlShiftRightClick, val, Settings::Settings::inputMouseCtrlShiftRightClick);
   emit updateMouseActions();
 }
 

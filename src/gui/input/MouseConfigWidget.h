@@ -27,6 +27,9 @@ public slots:
   void on_comboBoxCtrlLeftClick_activated(int val);
   void on_comboBoxCtrlMiddleClick_activated(int val);
   void on_comboBoxCtrlRightClick_activated(int val);
+  void on_comboBoxCtrlShiftLeftClick_activated(int val);
+  void on_comboBoxCtrlShiftMiddleClick_activated(int val);
+  void on_comboBoxCtrlShiftRightClick_activated(int val);
 
 signals:
   void updateMouseActions() const;

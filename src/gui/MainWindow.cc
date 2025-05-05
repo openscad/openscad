@@ -828,6 +828,12 @@ void MainWindow::setAllMouseViewActions()
     MouseConfig::viewActionArrays.at(static_cast<MouseConfig::ViewAction>(Settings::Settings::inputMouseCtrlMiddleClick.value())));
   this->qglview->setMouseActions(MouseConfig::MouseAction::CTRL_RIGHT_CLICK,
     MouseConfig::viewActionArrays.at(static_cast<MouseConfig::ViewAction>(Settings::Settings::inputMouseCtrlRightClick.value())));
+  this->qglview->setMouseActions(MouseConfig::MouseAction::CTRL_SHIFT_LEFT_CLICK,
+    MouseConfig::viewActionArrays.at(static_cast<MouseConfig::ViewAction>(Settings::Settings::inputMouseCtrlShiftLeftClick.value())));
+  this->qglview->setMouseActions(MouseConfig::MouseAction::CTRL_SHIFT_MIDDLE_CLICK,
+    MouseConfig::viewActionArrays.at(static_cast<MouseConfig::ViewAction>(Settings::Settings::inputMouseCtrlShiftMiddleClick.value())));
+  this->qglview->setMouseActions(MouseConfig::MouseAction::CTRL_SHIFT_RIGHT_CLICK,
+    MouseConfig::viewActionArrays.at(static_cast<MouseConfig::ViewAction>(Settings::Settings::inputMouseCtrlShiftRightClick.value())));
 
 
 }

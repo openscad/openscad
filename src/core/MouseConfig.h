@@ -25,6 +25,9 @@ namespace MouseConfig {
     CTRL_LEFT_CLICK,
     CTRL_MIDDLE_CLICK,
     CTRL_RIGHT_CLICK,
+    CTRL_SHIFT_LEFT_CLICK,
+    CTRL_SHIFT_MIDDLE_CLICK,
+    CTRL_SHIFT_RIGHT_CLICK,
     NUM_MOUSE_ACTIONS
   };
 
@@ -39,21 +42,26 @@ namespace MouseConfig {
     NUM_VIEW_ACTIONS
   };
 
+// FIXME - need to set up correct Ctrl+Shift+Click behaviour for each preset here.
+
   inline static std::map<Preset, std::map<MouseAction, ViewAction>> presetSettings = {
     {OPEN_SCAD, {
       {LEFT_CLICK, ROTATE_ALT_AZ},
+      {MIDDLE_CLICK, PAN_FORE_BACK},
+      {RIGHT_CLICK, PAN_LR_UD},
+      {SHIFT_LEFT_CLICK, ROTATE_PITCH_ROLL},
+      {SHIFT_MIDDLE_CLICK, ZOOM},
+      {SHIFT_RIGHT_CLICK, ZOOM},
 #ifdef Q_OS_MACOS
       {CTRL_LEFT_CLICK, PAN_LR_UD},
 #else
       {CTRL_LEFT_CLICK, ROTATE_ALT_AZ},
 #endif
-      {SHIFT_LEFT_CLICK, ROTATE_PITCH_ROLL},
-      {MIDDLE_CLICK, PAN_FORE_BACK},
       {CTRL_MIDDLE_CLICK, PAN_FORE_BACK},
-      {RIGHT_CLICK, PAN_LR_UD},
       {CTRL_RIGHT_CLICK, PAN_LR_UD},
-      {SHIFT_MIDDLE_CLICK, ZOOM},
-      {SHIFT_RIGHT_CLICK, ZOOM},
+      {CTRL_SHIFT_LEFT_CLICK, ROTATE_ALT_AZ},
+      {CTRL_SHIFT_MIDDLE_CLICK, PAN_FORE_BACK},
+      {CTRL_SHIFT_RIGHT_CLICK, PAN_LR_UD},
     }},
     {BLENDER, {
       {MIDDLE_CLICK, ROTATE_ALT_AZ},  // Technically slightly different - Blender always
@@ -86,7 +94,10 @@ namespace MouseConfig {
     {CTRL_LEFT_CLICK, "Ctrl + Left-click"},
     {CTRL_MIDDLE_CLICK, "Ctrl + Middle-click"},
     {CTRL_RIGHT_CLICK, "Ctrl + Right-click"},
-  };
+    {CTRL_SHIFT_LEFT_CLICK, "Ctrl + Shift + Left-click"},
+    {CTRL_SHIFT_MIDDLE_CLICK, "Ctrl + Shift + Middle-click"},
+    {CTRL_SHIFT_RIGHT_CLICK, "Ctrl + +Shift + Right-click"},
+};
 
   static std::map<ViewAction, std::string> viewActionNames = {
     {NONE, "None"},

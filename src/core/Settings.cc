@@ -303,6 +303,9 @@ SettingsEntryInt Settings::inputMouseShiftRightClick("inputMouse", "shiftRightCl
 SettingsEntryInt Settings::inputMouseCtrlLeftClick("inputMouse", "ctrlLeftClick", 0, MouseConfig::ViewAction::NUM_VIEW_ACTIONS, MouseConfig::presetSettings.at(MouseConfig::Preset::OPEN_SCAD).at(MouseConfig::MouseAction::CTRL_LEFT_CLICK));
 SettingsEntryInt Settings::inputMouseCtrlMiddleClick("inputMouse", "ctrlMiddleClick", 0, MouseConfig::ViewAction::NUM_VIEW_ACTIONS, MouseConfig::presetSettings.at(MouseConfig::Preset::OPEN_SCAD).at(MouseConfig::MouseAction::CTRL_MIDDLE_CLICK));
 SettingsEntryInt Settings::inputMouseCtrlRightClick("inputMouse", "ctrlRightClick", 0, MouseConfig::ViewAction::NUM_VIEW_ACTIONS, MouseConfig::presetSettings.at(MouseConfig::Preset::OPEN_SCAD).at(MouseConfig::MouseAction::CTRL_RIGHT_CLICK));
+SettingsEntryInt Settings::inputMouseCtrlShiftLeftClick("inputMouse", "ctrlShiftLeftClick", 0, MouseConfig::ViewAction::NUM_VIEW_ACTIONS, MouseConfig::presetSettings.at(MouseConfig::Preset::OPEN_SCAD).at(MouseConfig::MouseAction::CTRL_SHIFT_LEFT_CLICK));
+SettingsEntryInt Settings::inputMouseCtrlShiftMiddleClick("inputMouse", "ctrlShiftMiddleClick", 0, MouseConfig::ViewAction::NUM_VIEW_ACTIONS, MouseConfig::presetSettings.at(MouseConfig::Preset::OPEN_SCAD).at(MouseConfig::MouseAction::CTRL_SHIFT_MIDDLE_CLICK));
+SettingsEntryInt Settings::inputMouseCtrlShiftRightClick("inputMouse", "ctrlShiftRightClick", 0, MouseConfig::ViewAction::NUM_VIEW_ACTIONS, MouseConfig::presetSettings.at(MouseConfig::Preset::OPEN_SCAD).at(MouseConfig::MouseAction::CTRL_SHIFT_RIGHT_CLICK));
 SettingsEntryDouble Settings::axisTrim0("input", "axisTrim0", -1.0, 0.01, 1.0, 0.0);
 SettingsEntryDouble Settings::axisTrim1("input", "axisTrim1", -1.0, 0.01, 1.0, 0.0);
 SettingsEntryDouble Settings::axisTrim2("input", "axisTrim2", -1.0, 0.01, 1.0, 0.0);
