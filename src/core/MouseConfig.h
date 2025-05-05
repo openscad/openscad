@@ -42,7 +42,11 @@ namespace MouseConfig {
   inline static std::map<Preset, std::map<MouseAction, ViewAction>> presetSettings = {
     {OPEN_SCAD, {
       {LEFT_CLICK, ROTATE_ALT_AZ},
+#ifdef Q_OS_MACOS
+      {CTRL_LEFT_CLICK, PAN_LR_UD},
+#else
       {CTRL_LEFT_CLICK, ROTATE_ALT_AZ},
+#endif
       {SHIFT_LEFT_CLICK, ROTATE_PITCH_ROLL},
       {MIDDLE_CLICK, PAN_FORE_BACK},
       {CTRL_MIDDLE_CLICK, PAN_FORE_BACK},
