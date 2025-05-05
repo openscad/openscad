@@ -58,34 +58,33 @@ namespace MouseConfig {
       {CTRL_SHIFT_MIDDLE_CLICK, ZOOM},
       {CTRL_SHIFT_RIGHT_CLICK, ZOOM},
     }},
-{OPEN_SCAD_MACOS, {
-        {LEFT_CLICK, ROTATE_ALT_AZ},
-        {MIDDLE_CLICK, PAN_FORE_BACK},
-        {RIGHT_CLICK, PAN_LR_UD},
-        {SHIFT_LEFT_CLICK, ROTATE_PITCH_ROLL},
-        {SHIFT_MIDDLE_CLICK, ZOOM},
-        {SHIFT_RIGHT_CLICK, ZOOM},
-        {CTRL_LEFT_CLICK, PAN_LR_UD},
-        {CTRL_MIDDLE_CLICK, PAN_FORE_BACK},
-        {CTRL_RIGHT_CLICK, PAN_LR_UD},
-        {CTRL_SHIFT_LEFT_CLICK, ZOOM},
-        {CTRL_SHIFT_MIDDLE_CLICK, ZOOM},
-        {CTRL_SHIFT_RIGHT_CLICK, ZOOM},
-      }},
- {BLENDER, {
+    {OPEN_SCAD_MACOS, {
+      {LEFT_CLICK, ROTATE_ALT_AZ},
+      {MIDDLE_CLICK, PAN_FORE_BACK},
+      {RIGHT_CLICK, PAN_LR_UD},
+      {SHIFT_LEFT_CLICK, ROTATE_PITCH_ROLL},
+      {SHIFT_MIDDLE_CLICK, ZOOM},
+      {SHIFT_RIGHT_CLICK, ZOOM},
+      {CTRL_LEFT_CLICK, PAN_LR_UD},
+      {CTRL_MIDDLE_CLICK, PAN_FORE_BACK},
+      {CTRL_RIGHT_CLICK, PAN_LR_UD},
+      {CTRL_SHIFT_LEFT_CLICK, ZOOM},
+      {CTRL_SHIFT_MIDDLE_CLICK, ZOOM},
+      {CTRL_SHIFT_RIGHT_CLICK, ZOOM},
+    }},
+    {BLENDER, {
       {MIDDLE_CLICK, ROTATE_ALT_AZ},  // Technically slightly different - Blender always
-                                             // seems to rotate around the z-axis. But very close.
+                                      // seems to rotate around the z-axis. But very close.
       {SHIFT_MIDDLE_CLICK, PAN_LR_UD},
       {CTRL_MIDDLE_CLICK, ZOOM},
       {CTRL_SHIFT_MIDDLE_CLICK, ZOOM},
     }},
-{FUSION, {
+    {FUSION, {
       {MIDDLE_CLICK, PAN_LR_UD},
       {SHIFT_MIDDLE_CLICK, ROTATE_ALT_AZ},
       {CTRL_MIDDLE_CLICK, PAN_LR_UD},
       {CTRL_SHIFT_MIDDLE_CLICK, ZOOM},
-    }
-    },
+    }},
   };
 
   static std::map<Preset, std::string> presetNames = {
