@@ -60,7 +60,7 @@ void copyMesh(const CGAL::Surface_mesh<CGAL::Point_3<InputKernel>>& input,
 CGAL_DoubleMesh repairPolySet(const PolySet& ps);
 
 template <class SurfaceMesh>
-void createSurfaceMeshFromPolySet(const PolySet& ps, SurfaceMesh& mesh);
+std::shared_ptr<SurfaceMesh> createSurfaceMeshFromPolySet(const PolySet& ps);
 template <class SurfaceMesh>
 std::unique_ptr<PolySet> createPolySetFromSurfaceMesh(const SurfaceMesh& mesh);
 

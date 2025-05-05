@@ -6,6 +6,7 @@
 #include <vector>
 
 #include <boost/range/adaptor/transformed.hpp>
+#include <CGAL/Point_3.h>
 #include <CGAL/boost/graph/convert_nef_polyhedron_to_polygon_mesh.h>
 #include <CGAL/boost/graph/graph_traits_Surface_mesh.h>
 #include <CGAL/Surface_mesh.h>
@@ -46,20 +47,21 @@ CGAL_DoubleMesh repairPolySet(const PolySet& ps)
 }
 
 template <class SurfaceMesh>
-SurfaceMesh createSurfaceMeshFromPolySet(const PolySet& ps)
+std::shared_ptr<SurfaceMesh> createSurfaceMeshFromPolySet(const PolySet& ps)
 {
-  SurfaceMesh mesh;
-  mesh.reserve(ps.vertices.size(), ps.indices.size() * 3, ps.indices.size());
+  auto mesh = std::make_shared<SurfaceMesh>();
+  mesh->reserve(ps.vertices.size(), ps.indices.size() * 3, ps.indices.size());
   for (const auto& v : ps.vertices) {
-    mesh.add_vertex(typename SurfaceMesh::Point(v[0], v[1], v[2]));
+    mesh->add_vertex(typename SurfaceMesh::Point(v[0], v[1], v[2]));
   }
   for (const auto& face : ps.indices) {
-    mesh.add_face(face | boost::adaptors::transformed([](uint32_t i){ return typename SurfaceMesh::Vertex_index(i); }));
+    mesh->add_face(face | boost::adaptors::transformed([](uint32_t i){ return typename SurfaceMesh::Vertex_index(i); }));
   }
   return mesh;
 }
 
-template CGAL_DoubleMesh createSurfaceMeshFromPolySet(const PolySet& ps);
+template std::shared_ptr<CGAL_DoubleMesh> createSurfaceMeshFromPolySet<CGAL_DoubleMesh>(const PolySet& ps);
+template std::shared_ptr<CGAL::Surface_mesh<CGAL::Point_3<CGAL_Kernel3>>> createSurfaceMeshFromPolySet(const PolySet& ps);
 
 
 template <class SurfaceMesh>
