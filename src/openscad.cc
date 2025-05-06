@@ -887,10 +887,9 @@ int main(int argc, char **argv)
 #endif
   ;
 
-  if constexpr (Feature::HasGuiTesting)
-  {
+#ifdef ENABLE_GUI_TESTS
     desc.add_options()("run-gui-test", po::value<std::string>(), "special gui testing mode - specify 'all' or a set of tests to run");
-  }
+#endif
 
   po::options_description hidden("Hidden options");
   hidden.add_options()

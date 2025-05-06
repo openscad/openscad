@@ -73,7 +73,9 @@
 #include "platform/CocoaUtils.h"
 #include "utils/printutils.h"
 
+#ifdef ENABLE_GUI_TESTS
 #include "guitests/guitests.h"
+#endif
 
 Q_DECLARE_METATYPE(Message);
 Q_DECLARE_METATYPE(std::shared_ptr<const Geometry>);
@@ -292,20 +294,19 @@ int gui(std::vector<std::string>& inputFiles, const std::filesystem::path& origi
   }
 #endif
 
+#ifdef ENABLE_GUI_TESTS
   // Adds a singleshot timer that will be executed when the application will be started.
   // the timer validates taht each mainwindow respects the expected UX behavior.
-  if constexpr(Feature::HasGuiTesting)
-  {
-      if(gui_test != "none"){
-          QTimer::singleShot(0, [&]()
-          {
-              for(auto w : app.windowManager.getWindows()){
-                  runAllTest(w);
-              }
-              app.exit(0);
-          });
-      }
+  if(gui_test != "none"){
+      QTimer::singleShot(0, [&]()
+      {
+          for(auto w : app.windowManager.getWindows()){
+              runAllTest(w);
+          }
+          app.exit(0);
+      });
   }
+#endif // ENABLE_GUI_TESTS
 
   InputDriverManager::instance()->init();
   return app.exec();

@@ -2,9 +2,7 @@
 #include "TestMainWindow.h"
 #include "TestTabManager.h"
 
-#if HAS_GUI_TESTS == 1
 #include <QTest>
-#endif
 
 template <typename TestClass>
 int runTests(MainWindow* window)
@@ -13,9 +11,7 @@ int runTests(MainWindow* window)
     {
         TestClass tc;
         tc.setWindow(window);
-        #if HAS_GUI_TESTS == 1
         return QTest::qExec(&tc);
-        #endif
     }
     return 0;
 }
@@ -29,7 +25,7 @@ void runAllTest(MainWindow* window)
         totalTestFailures+=runTests<TestTabManager>(window);
         totalTestFailures+=runTests<TestMainWindow>(window);
         totalTestFailures+=runTests<TestModuleCache>(window);
-        std::cout << "******************************* RESULTS ********************************" << std::endl;
+        std::cout << "********************************** RESULTS *********************************" << std::endl;
         std::cout << "Failures: " << totalTestFailures << std::endl;
 
     }

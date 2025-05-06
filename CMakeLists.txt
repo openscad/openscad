@@ -1304,17 +1304,7 @@ if(ENABLE_GUI_TESTS)
   )
 
   list(APPEND Sources ${GUITESTS_SOURCES} ${GUITESTS_HEADERS})
-  target_compile_definitions(OpenSCAD PRIVATE HAS_GUI_TESTS=true)
-else()
-  set(GUITESTS_HEADERS
-    src/guitests/guitests.h
-  )
-
-  set(GUITESTS_SOURCES
-    src/guitests/guitests.cc
-  )
-  list(APPEND Sources ${GUITESTS_SOURCES} ${GUITESTS_HEADERS})
-  target_compile_definitions(OpenSCAD PRIVATE HAS_GUI_TESTS=false)
+  target_compile_definitions(OpenSCAD PRIVATE ENABLE_GUI_TESTS)
 endif()
 
 if (SNAPSHOT)
