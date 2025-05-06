@@ -53,7 +53,7 @@
 #include "glview/VertexState.h"
 
 #ifdef ENABLE_CGAL
-#include "geometry/cgal/CGAL_Nef_polyhedron.h"
+#include "geometry/cgal/CGALNefGeometry.h"
 #endif
 #ifdef ENABLE_MANIFOLD
 #include "geometry/manifold/ManifoldGeometry.h"
@@ -85,7 +85,7 @@ void PolySetRenderer::addGeometry(const std::shared_ptr<const Geometry>& geom)
     this->polysets_.push_back(mani->toPolySet());
 #endif
 #ifdef ENABLE_CGAL
-  } else if (const auto N = std::dynamic_pointer_cast<const CGAL_Nef_polyhedron>(geom)) {
+  } else if (const auto N = std::dynamic_pointer_cast<const CGALNefGeometry>(geom)) {
     // Note: It's rare, but possible for Nef polyhedrons to exist among geometries in Manifold mode.
     // One way is through import("file.nef3")
     assert(N->getDimension() == 3);

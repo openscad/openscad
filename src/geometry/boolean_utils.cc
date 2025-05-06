@@ -11,7 +11,7 @@
 #ifdef ENABLE_CGAL
 #include "geometry/Geometry.h"
 #include "geometry/cgal/cgal.h"
-#include "geometry/cgal/CGAL_Nef_polyhedron.h"
+#include "geometry/cgal/CGALNefGeometry.h"
 #include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
 #include <CGAL/normal_vector_newell_3.h>
 #include <CGAL/Handle_hash_function.h>
@@ -38,9 +38,9 @@
 #ifdef ENABLE_CGAL
 std::unique_ptr<PolySet> applyHull(const Geometry::Geometries& children)
 {
-  using K = CGAL::Epick;
+  using Hull_kernel = CGAL::Epick;
   // Collect point cloud
-  Reindexer<K::Point_3> reindexer;
+  Reindexer<Hull_kernel::Point_3> reindexer;
 
   auto addCapacity = [&](const auto n) {
     reindexer.reserve(reindexer.size() + n);
@@ -53,11 +53,11 @@ std::unique_ptr<PolySet> applyHull(const Geometry::Geometries& children)
   for (const auto& item : children) {
     auto& chgeom = item.second;
 #ifdef ENABLE_CGAL
-    if (const auto *N = dynamic_cast<const CGAL_Nef_polyhedron*>(chgeom.get())) {
+    if (const auto *N = dynamic_cast<const CGALNefGeometry*>(chgeom.get())) {
       if (!N->isEmpty()) {
         addCapacity(N->p3->number_of_vertices());
-        for (CGAL_Nef_polyhedron3::Vertex_const_iterator i = N->p3->vertices_begin(); i != N->p3->vertices_end(); ++i) {
-          addPoint(CGALUtils::vector_convert<K::Point_3>(i->point()));
+        for (auto it = N->p3->vertices_begin(); it != N->p3->vertices_end(); ++it) {
+          addPoint(CGALUtils::vector_convert<Hull_kernel::Point_3>(it->point()));
         }
       }
 #endif  // ENABLE_CGAL
@@ -65,7 +65,7 @@ std::unique_ptr<PolySet> applyHull(const Geometry::Geometries& children)
     } else if (const auto *mani = dynamic_cast<const ManifoldGeometry*>(chgeom.get())) {
       addCapacity(mani->numVertices());
       mani->foreachVertexUntilTrue([&](auto& p) {
-          addPoint(CGALUtils::vector_convert<K::Point_3>(p));
+          addPoint(CGALUtils::vector_convert<Hull_kernel::Point_3>(p));
           return false;
         });
 #endif  // ENABLE_MANIFOLD
@@ -73,7 +73,7 @@ std::unique_ptr<PolySet> applyHull(const Geometry::Geometries& children)
       addCapacity(ps->indices.size() * 3);
       for (const auto& p : ps->indices) {
         for (const auto& ind : p) {
-          addPoint(CGALUtils::vector_convert<K::Point_3>(ps->vertices[ind]));
+          addPoint(CGALUtils::vector_convert<Hull_kernel::Point_3>(ps->vertices[ind]));
         }
       }
     }
@@ -85,7 +85,7 @@ std::unique_ptr<PolySet> applyHull(const Geometry::Geometries& children)
   // Apply hull
   if (points.size() >= 4) {
     try {
-      CGAL::Polyhedron_3<K> r;
+      CGAL::Polyhedron_3<Hull_kernel> r;
       CGAL::convex_hull_3(points.begin(), points.end(), r);
       PRINTDB("After hull vertices: %d", r.size_of_vertices());
       PRINTDB("After hull facets: %d", r.size_of_facets());
@@ -101,26 +101,19 @@ std::unique_ptr<PolySet> applyHull(const Geometry::Geometries& children)
   return nullptr;
 }
 
-/*!
-   children cannot contain nullptr objects
-
-  FIXME: This shouldn't return const, but it does due to internal implementation details
- */
-std::shared_ptr<const Geometry> applyMinkowski(const Geometry::Geometries& children)
+std::shared_ptr<const Geometry> applyMinkowskiCGAL(const Geometry::Geometries& children)
 {
   std::string instance_name; 
   AssignmentList inst_asslist;
   ModuleInstantiation *instance = new ModuleInstantiation(instance_name,inst_asslist, Location::NONE);
   auto node = std::make_shared<CsgOpNode>(instance,OpenSCADOperator::UNION);
-#if ENABLE_MANIFOLD
-  if (RenderSettings::inst()->backend3D == RenderBackend3D::ManifoldBackend) {
-    return ManifoldUtils::applyMinkowskiManifold(children);
-  }
-#endif  // ENABLE_MANIFOLD
-  CGAL::Timer t, t_tot;
   assert(children.size() >= 2);
-  auto it = children.begin();
+
+  CGAL::Timer t;
+  CGAL::Timer t_tot;
   t_tot.start();
+  
+  auto it = children.begin();
   std::shared_ptr<const Geometry> operands[2] = {it->second, std::shared_ptr<const Geometry>()};
   try {
     while (++it != children.end()) {
@@ -135,7 +128,7 @@ std::shared_ptr<const Geometry> applyMinkowski(const Geometry::Geometries& child
         CGAL_Polyhedron poly;
 
         auto ps = std::dynamic_pointer_cast<const PolySet>(operands[i]);
-        auto nef = std::dynamic_pointer_cast<const CGAL_Nef_polyhedron>(operands[i]);
+        auto nef = std::dynamic_pointer_cast<const CGALNefGeometry>(operands[i]);
 
         if (!nef) {
           nef = CGALUtils::getNefPolyhedronFromGeometry(operands[i]);
@@ -165,8 +158,7 @@ std::shared_ptr<const Geometry> applyMinkowski(const Geometry::Geometries& child
           CGAL::convex_decomposition_3(decomposed_nef);
 
           // the first volume is the outer volume, which ignored in the decomposition
-          CGAL_Nef_polyhedron3::Volume_const_iterator ci = ++decomposed_nef.volumes_begin();
-          for (; ci != decomposed_nef.volumes_end(); ++ci) {
+          for (auto ci = ++decomposed_nef.volumes_begin(); ci != decomposed_nef.volumes_end(); ++ci) {
             if (ci->mark()) {
               CGAL_Polyhedron poly;
               decomposed_nef.convert_inner_shell_to_polyhedron(ci->shells_begin(), poly);
@@ -249,8 +241,8 @@ std::shared_ptr<const Geometry> applyMinkowski(const Geometry::Geometries& child
 
 
               for (CGAL::Polyhedron_3<Hull_kernel>::Vertex::Halfedge_handle j = h->next_on_vertex();
-                   j != h && !collinear && !coplanar;
-                   j = j->next_on_vertex()) {
+                    j != h && !collinear && !coplanar;
+                    j = j->next_on_vertex()) {
 
                 Hull_kernel::Point_3 const& r = j->opposite()->vertex()->point();
                 if (CGAL::collinear(p, q, r)) {
@@ -302,7 +294,7 @@ std::shared_ptr<const Geometry> applyMinkowski(const Geometry::Geometries& child
         t.reset();
         operands[0] = std::move(N);
       } else {
-        operands[0] = std::make_shared<CGAL_Nef_polyhedron>();
+        operands[0] = std::make_shared<CGALNefGeometry>();
       }
     }
 
@@ -318,6 +310,21 @@ std::shared_ptr<const Geometry> applyMinkowski(const Geometry::Geometries& child
     return N;
   }
 }
+
+/*!
+   children cannot contain nullptr objects
+
+  FIXME: This shouldn't return const, but it does due to internal implementation details
+ */
+std::shared_ptr<const Geometry> applyMinkowski(const Geometry::Geometries& children)
+{
+#if ENABLE_MANIFOLD
+  if (RenderSettings::inst()->backend3D == RenderBackend3D::ManifoldBackend) {
+    return ManifoldUtils::applyMinkowskiManifold(children);
+  }
+#endif  // ENABLE_MANIFOLD
+  return applyMinkowskiCGAL(children);
+}
 #else  // ENABLE_CGAL
 std::unique_ptr<PolySet> applyHull(const Geometry::Geometries& children)
 {
@@ -328,4 +335,4 @@ std::shared_ptr<const Geometry> applyMinkowski(const Geometry::Geometries& child
 {
   return std::make_shared<PolySet>(3);
 }
-#endif  // ENABLE_CGAL
+#endif  // !ENABLE_CGAL

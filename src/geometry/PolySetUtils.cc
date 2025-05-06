@@ -187,7 +187,7 @@ std::shared_ptr<const PolySet> getGeometryAsPolySet(const std::shared_ptr<const 
     return ps;
   }
 #ifdef ENABLE_CGAL
-  if (auto N = std::dynamic_pointer_cast<const CGAL_Nef_polyhedron>(geom)) {
+  if (auto N = std::dynamic_pointer_cast<const CGALNefGeometry>(geom)) {
     if (!N->isEmpty()) {
       if (auto ps = CGALUtils::createPolySetFromNefPolyhedron3(*N->p3)) {
         ps->setConvexity(N->getConvexity());

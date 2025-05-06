@@ -239,6 +239,7 @@ std::shared_ptr<Polyhedron> ManifoldGeometry::toPolyhedron() const
 }
 
 template std::shared_ptr<CGAL::Polyhedron_3<CGAL_Kernel3>> ManifoldGeometry::toPolyhedron() const;
+
 #endif
 
 ManifoldGeometry ManifoldGeometry::binOp(const ManifoldGeometry& lhs, const ManifoldGeometry& rhs, manifold::OpType opType) const {
@@ -270,8 +271,8 @@ ManifoldGeometry ManifoldGeometry::binOp(const ManifoldGeometry& lhs, const Mani
 std::shared_ptr<ManifoldGeometry> minkowskiOp(const ManifoldGeometry& lhs, const ManifoldGeometry& rhs) {
 // FIXME: How to deal with operation not supported?
 #ifdef ENABLE_CGAL
-  auto lhs_nef = std::shared_ptr<CGAL_Nef_polyhedron>(CGALUtils::createNefPolyhedronFromPolySet(*lhs.toPolySet()));
-  auto rhs_nef = std::shared_ptr<CGAL_Nef_polyhedron>(CGALUtils::createNefPolyhedronFromPolySet(*rhs.toPolySet()));
+  auto lhs_nef = std::shared_ptr<CGALNefGeometry>(CGALUtils::createNefPolyhedronFromPolySet(*lhs.toPolySet()));
+  auto rhs_nef = std::shared_ptr<CGALNefGeometry>(CGALUtils::createNefPolyhedronFromPolySet(*rhs.toPolySet()));
   if (lhs_nef->isEmpty() || rhs_nef->isEmpty()) {
     return {};
   }

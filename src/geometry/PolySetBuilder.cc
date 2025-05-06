@@ -31,7 +31,7 @@
 
 #ifdef ENABLE_CGAL
 #include "geometry/cgal/cgalutils.h"
-#include "geometry/cgal/CGAL_Nef_polyhedron.h"
+#include "geometry/cgal/CGALNefGeometry.h"
 #endif
 #ifdef ENABLE_MANIFOLD
 #include "geometry/manifold/ManifoldGeometry.h"
@@ -96,7 +96,7 @@ void PolySetBuilder::appendGeometry(const std::shared_ptr<const Geometry>& geom)
   } else if (const auto ps = std::dynamic_pointer_cast<const PolySet>(geom)) {
     appendPolySet(*ps);
 #ifdef ENABLE_CGAL
-  } else if (const auto N = std::dynamic_pointer_cast<const CGAL_Nef_polyhedron>(geom)) {
+  } else if (const auto N = std::dynamic_pointer_cast<const CGALNefGeometry>(geom)) {
     if (const auto ps = CGALUtils::createPolySetFromNefPolyhedron3(*(N->p3))) {
       appendPolySet(*ps);
     }

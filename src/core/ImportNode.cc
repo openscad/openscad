@@ -33,7 +33,7 @@
 #include "core/ModuleInstantiation.h"
 #include "geometry/PolySet.h"
 #ifdef ENABLE_CGAL
-#include "geometry/cgal/CGAL_Nef_polyhedron.h"
+#include "geometry/cgal/CGALNefGeometry.h"
 #endif
 #include "geometry/Polygon2d.h"
 #include "core/Builtins.h"

@@ -10,7 +10,7 @@
 #include "geometry/linalg.h"
 
 class AbstractNode;
-class CGAL_Nef_polyhedron;
+class CGALNefGeometry;
 class GeometryList;
 class GeometryVisitor;
 class Polygon2d;
@@ -65,7 +65,7 @@ public:
   virtual void visit(const Polygon2d& node) = 0;
   virtual void visit(const Barcode1d& node) = 0;
 #ifdef ENABLE_CGAL
-  virtual void visit(const CGAL_Nef_polyhedron& node) = 0;
+  virtual void visit(const CGALNefGeometry& node) = 0;
 #endif
 #ifdef ENABLE_MANIFOLD
   virtual void visit(const ManifoldGeometry& node) = 0;

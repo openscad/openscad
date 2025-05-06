@@ -1,5 +1,6 @@
 #include "geometry/GeometryEvaluator.h"
 #include "geometry/Geometry.h"
+#include "geometry/cgal/cgal.h"
 #include "geometry/linalg.h"
 #include "core/Tree.h"
 #include "geometry/GeometryCache.h"
@@ -1437,7 +1438,7 @@ std::unique_ptr<Polygon2d> GeometryEvaluator::applyHull2D(const AbstractNode& no
   auto geometry = std::make_unique<Polygon2d>();
 
 #ifdef ENABLE_CGAL
-  using CGALPoint2 = CGAL::Point_2<CGAL::Cartesian<double>>;
+  using CGALPoint2 = CGAL::Point_2<CGAL_DoubleKernel>;
   // Collect point cloud
   std::list<CGALPoint2> points;
   for (const auto& p : children) {
