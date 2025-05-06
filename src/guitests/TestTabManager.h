@@ -8,6 +8,4 @@ private slots:
     void initTestCase();
     void checkOpenClose();
     void checkReOpen();
-private:
-    QStringList files;
 };

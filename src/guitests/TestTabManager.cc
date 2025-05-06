@@ -1,38 +1,51 @@
 #include <QTest>
 #include <QStringList>
+#include "platform/PlatformUtils.h"
 #include "TestTabManager.h"
 
 void TestTabManager::initTestCase()
 {
-    files = UIUtils::recentFiles();
 }
 
 void TestTabManager::checkOpenClose()
 {
-    window->tabManager->open(files[0]);
-    // The active editor must have a filepath equal to the loaded file
-    QCOMPARE(window->activeEditor->filepath, files[0]);
+    // The window has only one editor with file default.scad
+    restoreWindowInitialState();
 
-    window->tabManager->open(files[1]);
-    // The active editor must have a filepath equal to the loaded file
-    QCOMPARE(window->activeEditor->filepath, files[1]);
+    QString filename = QString::fromStdString(PlatformUtils::resourceBasePath()) + "/tests/basic-ux/empty.scad";
+    QString filename2 = QString::fromStdString(PlatformUtils::resourceBasePath()) + "/tests/basic-ux/empty2.scad";
 
+    window->tabManager->open(filename);
+    // The active editor must have a filepath equal to the loaded file
+    QCOMPARE(window->activeEditor->filepath, filename);
+
+    window->tabManager->open(filename2);
+    // The active editor must have a filepath equal to the loaded file
+    QCOMPARE(window->activeEditor->filepath, filename2);
+
+    // Close empty2.scad
     window->tabManager->closeCurrentTab();
+
+    // Close empty.scad
+    window->tabManager->closeCurrentTab();
+
+    // Only default.scad remain.
     QCOMPARE(window->tabManager->count(), 1);
 }
 
 void TestTabManager::checkReOpen()
 {
+    restoreWindowInitialState();
+
+    QString filename = QString::fromStdString(PlatformUtils::resourceBasePath()) + "/tests/basic-ux/empty.scad";
     auto numPanel = window->tabManager->count();
-    // We must be one tab
-    QCOMPARE(1, window->tabManager->count());
 
     // When we open a new file,
-    window->tabManager->open(files[1]);
+    window->tabManager->open(filename);
     QCOMPARE(numPanel+1, window->tabManager->count());
 
     // When we re-open a new file, nothing should happens as the file is already there
-    window->tabManager->open(files[1]);
+    window->tabManager->open(filename);
     QCOMPARE(numPanel+1, window->tabManager->count());
 
     // After the tests we close the current tab.

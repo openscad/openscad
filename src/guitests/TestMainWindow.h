@@ -7,5 +7,5 @@ class TestMainWindow: public UXTest
     Q_OBJECT;
 private slots:
     void checkOpenTabPropagateToWindow();
-    void checkSaveToShouldUpdate();
+    void checkSaveToShouldUpdateWindowTitle();
 };

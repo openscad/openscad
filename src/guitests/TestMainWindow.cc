@@ -1,34 +1,40 @@
 #include <QTest>
 #include <QStringList>
 #include "TestMainWindow.h"
+#include "platform/PlatformUtils.h"
 
 void TestMainWindow::checkOpenTabPropagateToWindow()
 {
-    auto files = UIUtils::recentFiles();
+    restoreWindowInitialState();
+
+    QString filename = QString::fromStdString(PlatformUtils::resourceBasePath()) + "/tests/basic-ux/empty.scad";
 
     // When we open a new file,
-    window->tabManager->open(files[0]);
+    window->tabManager->open(filename);
 
     // The window title must also have the name of open file
-    QCOMPARE(window->windowTitle(), QFileInfo(files[0]).fileName());
+    QCOMPARE(window->windowTitle(), QFileInfo(filename).fileName());
 
-    // After the tests we close the current tab.
-    window->tabManager->closeCurrentTab();
-}
-
-void TestMainWindow::checkSaveToShouldUpdate()
-{
-    // Issue 5810
-    auto files = UIUtils::recentFiles();
+    filename = QString::fromStdString(PlatformUtils::resourceBasePath()) + "/tests/basic-ux/empty2.scad";
 
     // When we open a new file,
-    window->tabManager->open(files[0]);
+    window->tabManager->open(filename);
+
+    // The window title must also have the name of open file
+    QCOMPARE(window->windowTitle(), QFileInfo(filename).fileName());
+}
+
+void TestMainWindow::checkSaveToShouldUpdateWindowTitle()
+{
+    restoreWindowInitialState();
+
+    QString filename = QString::fromStdString(PlatformUtils::resourceBasePath()) + "/tests/basic-ux/empty.scad";
+
+    // When we open a new file,
+    window->tabManager->open(filename);
 
     window->tabManager->saveAs(window->activeEditor, "test-tmp.scad");
 
     // The window title must also have the name of open file
     QCOMPARE(window->windowTitle(), "test-tmp.scad");
-
-    // After the tests we close the current tab.
-    window->tabManager->closeCurrentTab();
 }

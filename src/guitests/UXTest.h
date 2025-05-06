@@ -11,5 +11,7 @@ public:
     void setWindow(MainWindow* window);
 
 protected:
+    void restoreWindowInitialState();
+
     MainWindow* window;
 };

@@ -7,16 +7,17 @@
 #endif
 
 template <typename TestClass>
-void runTests(MainWindow* window)
+int runTests(MainWindow* window)
 {
     if constexpr(Feature::HasGuiTesting)
     {
         TestClass tc;
         tc.setWindow(window);
         #if HAS_GUI_TESTS == 1
-        QTest::qExec(&tc);
+        return QTest::qExec(&tc);
         #endif
     }
+    return 0;
 }
 
 void runAllTest(MainWindow* window)
@@ -24,9 +25,13 @@ void runAllTest(MainWindow* window)
     if constexpr(Feature::HasGuiTesting)
     {
         std::cout << "******************************* RUN UX TESTS ********************************" << std::endl;
-        runTests<TestTabManager>(window);
-        runTests<TestMainWindow>(window);
-        runTests<TestModuleCache>(window);
+        int totalTestFailures = 0;
+        totalTestFailures+=runTests<TestTabManager>(window);
+        totalTestFailures+=runTests<TestMainWindow>(window);
+        totalTestFailures+=runTests<TestModuleCache>(window);
+        std::cout << "******************************* RESULTS ********************************" << std::endl;
+        std::cout << "Failures: " << totalTestFailures << std::endl;
+
     }
 }
 
