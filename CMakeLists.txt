@@ -929,8 +929,6 @@ set(CGAL_SOURCES
   src/geometry/cgal/cgalutils-convex.cc
   src/geometry/cgal/cgalutils-kernel.cc
   src/geometry/cgal/cgalutils-mesh.cc
-  src/geometry/cgal/cgalutils-minkowski.cc
-  src/geometry/cgal/cgalutils-nef.cc
   src/geometry/cgal/cgalutils-orient.cc
   src/geometry/cgal/cgalutils-polyhedron.cc
   src/geometry/cgal/cgalutils-project.cc

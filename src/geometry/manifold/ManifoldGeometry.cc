@@ -239,6 +239,7 @@ std::shared_ptr<Polyhedron> ManifoldGeometry::toPolyhedron() const
 }
 
 template std::shared_ptr<CGAL::Polyhedron_3<CGAL_Kernel3>> ManifoldGeometry::toPolyhedron() const;
+
 #endif
 
 ManifoldGeometry ManifoldGeometry::binOp(const ManifoldGeometry& lhs, const ManifoldGeometry& rhs, manifold::OpType opType) const {
