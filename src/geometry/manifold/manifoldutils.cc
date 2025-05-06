@@ -127,57 +127,6 @@ const char* statusToString(Error status) {
   }
 }
 
-template <class TriangleMesh>
-std::shared_ptr<ManifoldGeometry> createManifoldFromSurfaceMesh(const TriangleMesh& tm)
-{
-  using vertex_descriptor = typename TriangleMesh::Vertex_index;
-
-  manifold::MeshGL64 meshgl;
-
-  meshgl.numProp = 3;
-  meshgl.vertProperties.resize(tm.number_of_vertices() * 3);
-  for (vertex_descriptor vd : tm.vertices()){
-    const auto &v = tm.point(vd);
-    meshgl.vertProperties[3 * vd] = v.x();
-    meshgl.vertProperties[3 * vd + 1] = v.y();
-    meshgl.vertProperties[3 * vd + 2] = v.z();
-  }
-
-  meshgl.triVerts.reserve(tm.number_of_faces() * 3);
-  for (const auto& f : tm.faces()) {
-    size_t idx[3];
-    size_t i = 0;
-    for (vertex_descriptor vd : vertices_around_face(tm.halfedge(f), tm)) {
-      if (i >= 3) break;
-      idx[i++] = vd;
-    }
-    if (i < 3) continue;
-    for (size_t j : {0, 1, 2})
-      meshgl.triVerts.emplace_back(idx[j]);
-  }
-
-  assert((meshgl.triVerts.size() == tm.number_of_faces() * 3) || !"Mesh was not triangular!");
-
-  auto mani = manifold::Manifold(meshgl).AsOriginal();
-  if (mani.Status() != Error::NoError) {
-    LOG(message_group::Error,
-        "[manifold] Surface_mesh -> Manifold conversion failed: %1$s",
-        ManifoldUtils::statusToString(mani.Status()));
-    return nullptr;
-  }
-  std::set<uint32_t> originalIDs;
-  auto id = mani.OriginalID();
-  if (id >= 0) {
-    originalIDs.insert(id);
-  }
-  return std::make_shared<ManifoldGeometry>(mani, originalIDs);
-}
-
-#ifdef ENABLE_CGAL
-template std::shared_ptr<ManifoldGeometry> createManifoldFromSurfaceMesh(const CGAL::Surface_mesh<CGAL::Point_3<CGAL::Epick>> &tm);
-template std::shared_ptr<ManifoldGeometry> createManifoldFromSurfaceMesh(const CGAL_DoubleMesh &tm);
-#endif
-
 std::shared_ptr<ManifoldGeometry> createManifoldFromPolySet(const PolySet& ps)
 {
   // 1. If the PolySet is already manifold, we should be able to build a Manifold object directly
@@ -226,7 +175,7 @@ std::shared_ptr<ManifoldGeometry> createManifoldFromPolySet(const PolySet& ps)
       CGAL::convex_hull_3(points.begin(), points.end(), r);
       CGALUtils::copyMesh(r, m);
     } else {
-      CGALUtils::createMeshFromPolySet(*ps_tri, m);
+      m = CGALUtils::repairPolySet(*ps_tri);
     }
 
     if (!ps_tri->isConvex()) {
@@ -292,5 +241,77 @@ std::unique_ptr<PolySet> createTriangulatedPolySetFromPolygon2d(const Polygon2d&
   return polyset;
 
 }
+
+template <class SurfaceMesh>
+std::shared_ptr<ManifoldGeometry> createManifoldFromSurfaceMesh(const SurfaceMesh& tm)
+{
+  using vertex_descriptor = typename SurfaceMesh::Vertex_index;
+
+  manifold::MeshGL64 meshgl;
+
+  meshgl.numProp = 3;
+  meshgl.vertProperties.resize(tm.number_of_vertices() * 3);
+  for (vertex_descriptor vd : tm.vertices()){
+    const auto &v = tm.point(vd);
+    meshgl.vertProperties[3 * vd] = v.x();
+    meshgl.vertProperties[3 * vd + 1] = v.y();
+    meshgl.vertProperties[3 * vd + 2] = v.z();
+  }
+
+  meshgl.triVerts.reserve(tm.number_of_faces() * 3);
+  for (const auto& f : tm.faces()) {
+    size_t idx[3];
+    size_t i = 0;
+    for (vertex_descriptor vd : vertices_around_face(tm.halfedge(f), tm)) {
+      if (i >= 3) break;
+      idx[i++] = vd;
+    }
+    if (i < 3) continue;
+    for (size_t j : {0, 1, 2})
+      meshgl.triVerts.emplace_back(idx[j]);
+  }
+
+  assert((meshgl.triVerts.size() == tm.number_of_faces() * 3) || !"Mesh was not triangular!");
+
+  auto mani = manifold::Manifold(meshgl).AsOriginal();
+  if (mani.Status() != Error::NoError) {
+    LOG(message_group::Error,
+        "[manifold] Surface_mesh -> Manifold conversion failed: %1$s",
+        ManifoldUtils::statusToString(mani.Status()));
+    return nullptr;
+  }
+  std::set<uint32_t> originalIDs;
+  auto id = mani.OriginalID();
+  if (id >= 0) {
+    originalIDs.insert(id);
+  }
+  return std::make_shared<ManifoldGeometry>(mani, originalIDs);
+}
+
+template <class SurfaceMesh>
+std::shared_ptr<SurfaceMesh> createSurfaceMeshFromManifold(const manifold::Manifold& mani)
+{
+  const auto meshgl = mani.GetMeshGL64();
+  auto mesh = std::make_shared<SurfaceMesh>();
+  mesh->reserve(meshgl.NumVert(), meshgl.NumTri() * 3, meshgl.NumTri());
+  for (auto i = 0; i < meshgl.NumVert(); i++) {
+    const auto& v = meshgl.GetVertPos(i);
+    mesh->add_vertex(typename SurfaceMesh::Point(v[0], v[1], v[2]));
+  }
+  for (auto i = 0; i < meshgl.NumTri(); i++) {
+    const auto& tri = meshgl.GetTriVerts(i);
+    mesh->add_face(typename SurfaceMesh::Vertex_index(tri[0]),
+                  typename SurfaceMesh::Vertex_index(tri[1]), 
+                  typename SurfaceMesh::Vertex_index(tri[2]));
+  }
+  return mesh;
+}
+
+#ifdef ENABLE_CGAL
+template std::shared_ptr<ManifoldGeometry> createManifoldFromSurfaceMesh(const CGAL::Surface_mesh<CGAL::Point_3<CGAL::Epick>> &tm);
+template std::shared_ptr<ManifoldGeometry> createManifoldFromSurfaceMesh(const CGAL_DoubleMesh &tm);
+template std::shared_ptr<CGAL::Surface_mesh<manifold::vec3>> createSurfaceMeshFromManifold<CGAL::Surface_mesh<manifold::vec3>>(const manifold::Manifold& mani);
+template std::shared_ptr<CGAL::Surface_mesh<CGAL_Point_3>> createSurfaceMeshFromManifold<CGAL::Surface_mesh<CGAL_Point_3>>(const manifold::Manifold& mani);
+#endif
 
 }; // namespace ManifoldUtils

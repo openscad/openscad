@@ -116,20 +116,16 @@ std::string LibraryInfo::info()
 #ifdef ENABLE_CGAL
   std::string cgal_3d_kernel = typeid(CGAL_Kernel3).name();
   std::string cgal_2d_kernel = typeid(CGAL_Kernel2).name();
-  std::string cgal_2d_kernelEx = typeid(CGAL_ExactKernel2).name();
 #if defined(openscad_info_demangle_)
   int status;
   cgal_3d_kernel = std::string(abi::__cxa_demangle(cgal_3d_kernel.c_str(), nullptr, nullptr, &status) );
   cgal_2d_kernel = std::string(abi::__cxa_demangle(cgal_2d_kernel.c_str(), nullptr, nullptr, &status) );
-  cgal_2d_kernelEx = std::string(abi::__cxa_demangle(cgal_2d_kernelEx.c_str(), nullptr, nullptr, &status) );
 #endif // demangle
   boost::replace_all(cgal_3d_kernel, "CGAL::", "");
   boost::replace_all(cgal_2d_kernel, "CGAL::", "");
-  boost::replace_all(cgal_2d_kernelEx, "CGAL::", "");
 #else // ENABLE_CGAL
   std::string cgal_3d_kernel = "";
   std::string cgal_2d_kernel = "";
-  std::string cgal_2d_kernelEx = "";
 #endif // ENABLE_CGAL
 
   const char *env_path = getenv("OPENSCADPATH");
@@ -144,7 +140,7 @@ std::string LibraryInfo::info()
     << "\nBoost version: " << BOOST_LIB_VERSION
     << "\nEigen version: " << EIGEN_WORLD_VERSION << "." << EIGEN_MAJOR_VERSION << "." << EIGEN_MINOR_VERSION
 #ifdef ENABLE_CGAL
-    << "\nCGAL version, kernels: " << TOSTRING(CGAL_VERSION) << ", " << cgal_3d_kernel << ", " << cgal_2d_kernel << ", " << cgal_2d_kernelEx
+    << "\nCGAL version, kernels: " << TOSTRING(CGAL_VERSION) << ", " << cgal_3d_kernel << ", " << cgal_2d_kernel
 #endif
 #ifdef ENABLE_PYTHON
     << "\nPython Version: " << python_version()

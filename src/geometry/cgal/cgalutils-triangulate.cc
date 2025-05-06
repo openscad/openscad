@@ -1,6 +1,4 @@
 // Portions of this file are Copyright 2021 Google LLC, and licensed under GPL2+. See COPYING.
-#include "geometry/PolySetBuilder.h"
-#include "geometry/Polygon2d.h"
 #include "geometry/cgal/cgalutils.h"
 
 #include <cassert>
@@ -14,6 +12,9 @@
 #include <CGAL/Surface_mesh.h>
 #include <CGAL/Triangulation_face_base_with_info_2.h>
 #include <CGAL/exceptions.h>
+
+#include "geometry/PolySetBuilder.h"
+#include "geometry/Polygon2d.h"
 
 namespace CGALUtils {
 
@@ -96,10 +97,10 @@ mark_domains(CDT& cdt)
 
 } // namespace Polygon2DCGAL
 
-template <typename Polyhedron>
-void triangulateFaces(Polyhedron& polyhedron)
+template <typename SurfaceMesh>
+void triangulateFaces(SurfaceMesh& mesh)
 {
-  CGAL::Polygon_mesh_processing::triangulate_faces(polyhedron);
+  CGAL::Polygon_mesh_processing::triangulate_faces(mesh);
 }
 
 template void triangulateFaces(CGAL::Surface_mesh<CGAL::Point_3<CGAL::Epick>>& polyhedron);
