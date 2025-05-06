@@ -39,6 +39,7 @@
 #include "core/Parameters.h"
 #include "utils/printutils.h"
 #include <cstdint>
+#include <fstream>
 
 static std::shared_ptr<AbstractNode> lazyUnionNode(const ModuleInstantiation *inst)
 {
@@ -163,6 +164,37 @@ static std::shared_ptr<AbstractNode> builtin_echo(const ModuleInstantiation *ins
   return node;
 }
 
+static std::shared_ptr<AbstractNode> builtin_write(const ModuleInstantiation *inst, Arguments arguments, const Children& children)
+{
+    if (arguments.size() < 2) {
+        LOG(message_group::Error, "write() requires filename and text arguments");
+        return {};
+    }
+    // Access arguments 
+    std::string filename = arguments[0].value.toString();
+    std::string text = arguments[1].value.toString();
+    bool append = arguments.size() > 2 ? arguments[2].value.toBool() : true;
+    // Write to file
+    std::ofstream file;
+    if (append) {
+        file.open(filename, std::ios::app);
+    } else {
+        file.open(filename);
+    }
+    if (!file.is_open()) {
+        LOG(message_group::Error, "Cannot open file '%1$s'", filename);
+        return {};
+    }
+    file << text;
+    file.close();
+
+    auto node = children.instantiate(lazyUnionNode(inst));
+    if (node->children.empty()) {
+        return {};
+    }
+    return node;
+}
+
 static std::shared_ptr<AbstractNode> builtin_assert(const ModuleInstantiation *inst, const std::shared_ptr<const Context>& context)
 {
   Assert::performAssert(inst->arguments, inst->location(), context);
@@ -264,6 +296,11 @@ void register_builtin_control()
   {
     "assert(boolean)",
     "assert(boolean, string)",
+  });
+
+  Builtins::init("write", new BuiltinModule(builtin_write),
+  {
+    "write(filename, text, append = true)",
   });
 
   Builtins::init("for", new BuiltinModule(builtin_for),

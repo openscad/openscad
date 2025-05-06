@@ -138,4 +138,5 @@ void Builtins::initKeywordList()
   Builtins::keywordList.insert({"undef", {}});
   Builtins::keywordList.insert({"use", {}});
   Builtins::keywordList.insert({"include", {}});
+  Builtins::keywordList.insert({"write", {}});
 }

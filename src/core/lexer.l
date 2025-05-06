@@ -239,6 +239,7 @@ use[ \t\r\n]*"<"        { BEGIN(cond_use); LOCATION_COUNT_LINES(parserlloc, yyte
 "let"                   return TOK_LET;
 "assert"                return TOK_ASSERT;
 "echo"                  return TOK_ECHO;
+"write"                 return TOK_WRITE; 
 "for"                   return TOK_FOR;
 "each"                  return TOK_EACH;
 
