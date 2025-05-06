@@ -8,17 +8,17 @@
 #include <utility>
 #include "geometry/linalg.h"
 
-class CGAL_Nef_polyhedron : public Geometry
+class CGALNefGeometry : public Geometry
 {
 public:
   VISITABLE_GEOMETRY();
-  CGAL_Nef_polyhedron() = default;
-  CGAL_Nef_polyhedron(std::shared_ptr<const CGAL_Nef_polyhedron3> p) : p3(std::move(p)) {}
-  CGAL_Nef_polyhedron(const CGAL_Nef_polyhedron& src);
-  CGAL_Nef_polyhedron& operator=(const CGAL_Nef_polyhedron&) = default;
-  CGAL_Nef_polyhedron(CGAL_Nef_polyhedron&&) = default;
-  CGAL_Nef_polyhedron& operator=(CGAL_Nef_polyhedron&&) = default;
-  ~CGAL_Nef_polyhedron() override = default;
+  CGALNefGeometry() = default;
+  CGALNefGeometry(std::shared_ptr<const CGAL_Nef_polyhedron3> p) : p3(std::move(p)) {}
+  CGALNefGeometry(const CGALNefGeometry& src);
+  CGALNefGeometry& operator=(const CGALNefGeometry&) = default;
+  CGALNefGeometry(CGALNefGeometry&&) = default;
+  CGALNefGeometry& operator=(CGALNefGeometry&&) = default;
+  ~CGALNefGeometry() override = default;
 
   [[nodiscard]] size_t memsize() const override;
   // FIXME: Implement, but we probably want a high-resolution BBox..
@@ -31,11 +31,11 @@ public:
   [[nodiscard]] size_t numFacets() const override { return p3->number_of_facets(); }
 
   void reset() { p3.reset(); }
-  CGAL_Nef_polyhedron operator+(const CGAL_Nef_polyhedron& other) const;
-  CGAL_Nef_polyhedron& operator+=(const CGAL_Nef_polyhedron& other);
-  CGAL_Nef_polyhedron& operator*=(const CGAL_Nef_polyhedron& other);
-  CGAL_Nef_polyhedron& operator-=(const CGAL_Nef_polyhedron& other);
-  CGAL_Nef_polyhedron& minkowski(const CGAL_Nef_polyhedron& other);
+  CGALNefGeometry operator+(const CGALNefGeometry& other) const;
+  CGALNefGeometry& operator+=(const CGALNefGeometry& other);
+  CGALNefGeometry& operator*=(const CGALNefGeometry& other);
+  CGALNefGeometry& operator-=(const CGALNefGeometry& other);
+  CGALNefGeometry& minkowski(const CGALNefGeometry& other);
   void transform(const Transform3d& matrix) override;
   void resize(const Vector3d& newsize, const Eigen::Matrix<bool, 3, 1>& autosize) override;
 

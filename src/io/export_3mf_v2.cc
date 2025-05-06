@@ -49,7 +49,7 @@
 
 #ifdef ENABLE_CGAL
 #include "geometry/cgal/cgalutils.h"
-#include "geometry/cgal/CGAL_Nef_polyhedron.h"
+#include "geometry/cgal/CGALNefGeometry.h"
 #endif
 #ifdef ENABLE_MANIFOLD
 #include "geometry/manifold/ManifoldGeometry.h"
@@ -237,7 +237,7 @@ bool append_polyset(const std::shared_ptr<const PolySet>& ps, ExportContext& ctx
 }
 
 #ifdef ENABLE_CGAL
-bool append_nef(const CGAL_Nef_polyhedron& root_N, ExportContext& ctx)
+bool append_nef(const CGALNefGeometry& root_N, ExportContext& ctx)
 {
   if (!root_N.p3) {
     LOG(message_group::Export_Error, "Export failed, empty geometry.");
@@ -264,7 +264,7 @@ bool append_3mf(const std::shared_ptr<const Geometry>& geom, ExportContext& ctx)
       if (!append_3mf(item.second, ctx)) return false;
     }
 #ifdef ENABLE_CGAL
-  } else if (const auto N = std::dynamic_pointer_cast<const CGAL_Nef_polyhedron>(geom)) {
+  } else if (const auto N = std::dynamic_pointer_cast<const CGALNefGeometry>(geom)) {
     return append_nef(*N, ctx);
 #endif
 #ifdef ENABLE_MANIFOLD
