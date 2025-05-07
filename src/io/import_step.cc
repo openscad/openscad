@@ -224,7 +224,6 @@ void import_shell(PolySetBuilder &builder, StepKernel &sk, StepKernel::Shell *sh
   }
 }
 std::unique_ptr<PolySet> import_step(const std::string& filename, const Location& loc) {
-  printf("Importing %s\n",filename.c_str());
   PolySetBuilder builder;
   StepKernel sk;
   sk.read_step(filename);

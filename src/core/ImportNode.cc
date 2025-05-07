@@ -82,6 +82,7 @@ static std::shared_ptr<AbstractNode> do_import(const ModuleInstantiation *inst, 
     std::string ext = boost::algorithm::to_lower_copy(extraw);
     if (ext == ".stl") actualtype = ImportType::STL;
     else if (ext == ".step") actualtype = ImportType::STEP;
+    else if (ext == ".stp") actualtype = ImportType::STEP;
     else if (ext == ".off") actualtype = ImportType::OFF;
     else if (ext == ".dxf") actualtype = ImportType::DXF;
     else if (ext == ".nef3") actualtype = ImportType::NEF3;

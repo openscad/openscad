@@ -8,6 +8,7 @@ int Importer::init(){
     const QString importFunction = "data = import(\"%1\");\n";
     knownFileExtensions["stl"] = importStatement;
     knownFileExtensions["step"] = importStatement;
+    knownFileExtensions["stp"] = importStatement;
     knownFileExtensions["obj"] = importStatement;
     knownFileExtensions["3mf"] = importStatement;
     knownFileExtensions["off"] = importStatement;

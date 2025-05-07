@@ -606,7 +606,10 @@ public:
 
 		virtual void serialize(std::ostream& stream_in)
 		{
-			stream_in << "#" << id << " = MANIFOLD_SURFACE_SHAPE_REPRESENTATION('" << label << "', (#" << axis->id << ", #" << shell->id << "));\n";
+			if(axis == 0)
+				stream_in << "#" << id << " = MANIFOLD_SOLID_BREP('" << label << "',#" << shell->id << ");\n";
+			else
+				stream_in << "#" << id << " = MANIFOLD_SURFACE_SHAPE_REPRESENTATION('" << label << "', (#" << axis->id << ", #" << shell->id << "));\n";
 		}
 		virtual void parse_args(std::map<int, Entity*> &ent_map, std::string args)
 		{

@@ -155,11 +155,9 @@ void StepKernel::build_tri_body(std::vector<Vector3d> vertices, std::vector<Inde
 	}
 
 	// build the model
-	auto open_shell = new Shell(entities, sfaces);
-	std::vector<Shell*> shells;
-	shells.push_back(open_shell);
-//	auto shell_model = new ShellModel(entities, shells);
-//	auto manifold_shape = new ManifoldShape(entities, base_axis, shell_model);
+	auto closed_shell = new Shell(entities, sfaces);
+	closed_shell->isOpen= false;
+	auto manifold_solid = new ManifoldSolid(entities, 0, closed_shell);
 }
 
 StepKernel::EdgeCurve *StepKernel::get_line_from_map(
