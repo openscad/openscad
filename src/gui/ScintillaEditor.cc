@@ -1523,7 +1523,7 @@ void ScintillaEditor::onPythonActiveChanged(bool pythonActive) {
     }
     this->qsci->update();
     // This is needed otherwise the sidebar with line numbers has the wrong size and bg color
-//    this->setHighlightScheme(Preferences::inst()->getValue("editor/syntaxhighlight").toString());
+   this->setHighlightScheme(GlobalPreferences::inst()->getValue("editor/syntaxhighlight").toString());
 }
 #endif
 

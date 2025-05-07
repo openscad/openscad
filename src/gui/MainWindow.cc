@@ -1865,6 +1865,8 @@ void MainWindow::actionOpenRecent()
 {
   auto action = qobject_cast<QAction *>(sender());
   tabManager->open(action->data().toString());
+  this->python_active = -1; // unknown
+  recomputePythonActive();
 }
 
 void MainWindow::clearRecentFiles()
@@ -2416,12 +2418,12 @@ void MainWindow::recomputePythonActive()
   auto fnameba = activeEditor->filepath.toLocal8Bit();
   const char *fname = activeEditor->filepath.isEmpty() ? "" : fnameba;
 
-  bool oldPythonActive = this->python_active;
-  this->python_active = false;
+  int oldPythonActive = this->python_active;
+  this->python_active = 0;
   if (fname != NULL) {
     if(boost::algorithm::ends_with(fname, ".py")) {
 	    std::string content = std::string(this->lastCompiledDoc.toUtf8().constData());
-      if ( trust_python_file(std::string(fname), content)) this->python_active = true;
+      if ( trust_python_file(std::string(fname), content)) this->python_active = 1;
       else LOG(message_group::Warning, Location::NONE, "", "Python is not enabled");
     }
   }
