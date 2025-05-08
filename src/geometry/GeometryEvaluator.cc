@@ -2488,6 +2488,10 @@ static int pullObject_calccut(const PullNode &node, Vector3d p1, Vector3d p2,Vec
 	Vector3d v1, v2;
 	Vector3d z(0,0,1);
 	v1=node.dir.cross(dir);
+        if(v1.norm()  < 0.001) {
+          v1=Vector3d(dir[1], dir[2], dir[2]);
+	  v1=node.dir.cross(v1);
+        }
 	v2=node.dir.cross(v1);
 	if(linsystem(dir,v1,v2,node.anchor-p1,res, nullptr)) return 1;
 
@@ -2498,9 +2502,9 @@ static int pullObject_calccut(const PullNode &node, Vector3d p1, Vector3d p2,Vec
 static void pullObject_addtri(PolySetBuilder &builder,Vector3d a, Vector3d b, Vector3d c)
 {
 	builder.beginPolygon(3);
-	builder.addVertex(builder.vertexIndex(Vector3d(c[0], c[1], c[2])));
-	builder.addVertex(builder.vertexIndex(Vector3d(b[0], b[1], b[2])));
-	builder.addVertex(builder.vertexIndex(Vector3d(a[0], a[1], a[2])));
+	builder.addVertex(c);
+	builder.addVertex(b);
+	builder.addVertex(a);
 }
 
 static std::unique_ptr<PolySet> pullObject(const PullNode& node, const PolySet *ps)
@@ -2508,7 +2512,7 @@ static std::unique_ptr<PolySet> pullObject(const PullNode& node, const PolySet *
   PolySetBuilder builder(0,0,3,true);
   auto ps_tess = PolySetUtils::tessellate_faces( *ps);
   for(unsigned int i=0;i<ps_tess->indices.size();i++) {
-	  auto pol = ps_tess->indices[i];
+	  auto & pol = ps_tess->indices[i];
 
 	  //count upper points
 	  int upper=0;
@@ -2525,7 +2529,7 @@ static std::unique_ptr<PolySet> pullObject(const PullNode& node, const PolySet *
 		  case 0:
 	  		builder.beginPolygon(3);
 			for(int j=0;j<3;j++) { 
-			        builder.addVertex(pol[2-j]);
+			        builder.addVertex(ps_tess->vertices[pol[j]]);
 			}
 			break;
 		  case 1:
@@ -2548,6 +2552,7 @@ static std::unique_ptr<PolySet> pullObject(const PullNode& node, const PolySet *
 
 				pullObject_addtri(builder, p02+node.dir,p12+node.dir,ps_tess->vertices[pol1[2]]+node.dir);
 			}
+			break;
 		  case 2: 
 			{
 				std::vector<int> pol1;
@@ -2573,7 +2578,7 @@ static std::unique_ptr<PolySet> pullObject(const PullNode& node, const PolySet *
 	  		builder.beginPolygon(3);
 			for(int j=0;j<3;j++) { 
 				Vector3d pt=ps_tess->vertices[pol[2-j]]+node.dir;
-			        builder.addVertex(builder.vertexIndex(Vector3d(pt[0],pt[1], pt[2])));
+			        builder.addVertex(pt);
 			}
 			break;
 	  }
