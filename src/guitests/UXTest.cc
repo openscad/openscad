@@ -10,4 +10,6 @@ void UXTest::restoreWindowInitialState(){
     while(window->tabCount > 1){
         window->tabManager->closeCurrentTab();
     }
+
+    window->designActionAutoReload->setChecked(true); // Enable auto-reload  & preview
 }

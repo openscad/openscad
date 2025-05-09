@@ -1,4 +1,4 @@
 #pragma once
 
 #include "gui/MainWindow.h"
-void runAllTest(MainWindow* window);
+int runAllTest(MainWindow* window);

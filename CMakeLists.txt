@@ -605,8 +605,15 @@ if(NOT HEADLESS)
   set_property(TARGET OpenSCAD PROPERTY AUTORCC ON)
   set_property(TARGET OpenSCAD PROPERTY AUTOUIC_OPTIONS --tr q_)
   set_property(TARGET OpenSCAD PROPERTY AUTORCC_OPTIONS --threshold 10 --compress 9)
+
+  if(ENABLE_GUI_TESTS)
+    set(QT_TEST_IF_ANY Test)
+  else()
+    set(QT_TEST_IF_ANY)
+  endif()
+
   if (USE_QT6)
-    find_package(Qt6 COMPONENTS Core Core5Compat Widgets Multimedia OpenGL OpenGLWidgets Concurrent Network Svg REQUIRED QUIET)
+    find_package(Qt6 COMPONENTS Core Core5Compat Widgets Multimedia OpenGL OpenGLWidgets Concurrent Network Svg ${QT_TEST_IF_ANY} REQUIRED QUIET)
     message(STATUS "Qt6: ${Qt6_VERSION}")
 
     if (Qt6_POSITION_INDEPENDENT_CODE)
@@ -615,10 +622,6 @@ if(NOT HEADLESS)
 
     find_package(Qt6QScintilla 2.8.0 REQUIRED QUIET)
     message(STATUS "QScintilla: ${QT6QSCINTILLA_VERSION_STRING}")
-
-    if(ENABLE_GUI_TESTS)
-      find_package(Qt6 REQUIRED COMPONENTS Test)
-    endif()
 
     if(ENABLE_QTDBUS)
       find_package(Qt6DBus QUIET)
@@ -635,7 +638,7 @@ if(NOT HEADLESS)
       message(STATUS "DBus input driver disabled per user request.")
     endif()
   else()
-    find_package(Qt5 5.12 COMPONENTS Core Widgets Multimedia OpenGL Concurrent Network Svg REQUIRED QUIET)
+    find_package(Qt5 5.12 COMPONENTS Core Widgets Multimedia OpenGL Concurrent Network Svg ${QT_TEST_IF_ANY} REQUIRED QUIET)
     message(STATUS "Qt5: ${Qt5_VERSION}")
 
     if (Qt5_POSITION_INDEPENDENT_CODE)
@@ -648,10 +651,6 @@ if(NOT HEADLESS)
 
     find_package(Qt5QScintilla 2.8.0 REQUIRED QUIET)
     message(STATUS "QScintilla: ${QT5QSCINTILLA_VERSION_STRING}")
-
-    if(ENABLE_GUI_TESTS)
-      find_package(Qt5 REQUIRED COMPONENTS Test)
-    endif()
 
     if(ENABLE_QTDBUS)
       find_package(Qt5DBus QUIET)
@@ -1354,12 +1353,16 @@ if(APPLE AND NOT APPLE_UNIX)
   set(BUNDLE_RESOURCES_DIR ${CMAKE_CURRENT_BINARY_DIR}/OpenSCAD.app/Contents/Resources)
   file(COPY ${CMAKE_SOURCE_DIR}/color-schemes DESTINATION ${BUNDLE_RESOURCES_DIR})
   file(COPY ${CMAKE_SOURCE_DIR}/examples DESTINATION ${BUNDLE_RESOURCES_DIR})
-  file(COPY ${CMAKE_SOURCE_DIR}/tests/data DESTINATION ${BUNDLE_RESOURCES_DIR}/tests)
   file(COPY ${CMAKE_SOURCE_DIR}/fonts DESTINATION ${BUNDLE_RESOURCES_DIR})
   file(COPY ${CMAKE_SOURCE_DIR}/libraries DESTINATION ${BUNDLE_RESOURCES_DIR})
   file(COPY ${CMAKE_SOURCE_DIR}/locale DESTINATION ${BUNDLE_RESOURCES_DIR})
   file(COPY ${CMAKE_SOURCE_DIR}/shaders DESTINATION ${BUNDLE_RESOURCES_DIR})
   file(COPY ${CMAKE_SOURCE_DIR}/templates DESTINATION ${BUNDLE_RESOURCES_DIR})
+
+  if(ENABLE_GUI_TESTS)
+    file(COPY ${CMAKE_SOURCE_DIR}/tests/data DESTINATION ${BUNDLE_RESOURCES_DIR}/tests)
+  endif()
+
 elseif(MINGW)
   set_target_properties(OpenSCAD PROPERTIES
     LINK_FLAGS "-Wl,--stack,${STACKSIZE}"
@@ -1441,12 +1444,16 @@ if(NOT APPLE OR APPLE_UNIX)
   endif()
   install(DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/color-schemes DESTINATION "${OPENSCAD_INSTALL_RESOURCEDIR}")
   install(DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/examples DESTINATION "${OPENSCAD_INSTALL_RESOURCEDIR}")
-  install(DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/tests/data/ DESTINATION ${OPENSCAD_INSTALL_RESOURCEDIR}/tests)
   install(DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/fonts DESTINATION "${OPENSCAD_INSTALL_RESOURCEDIR}" PATTERN ".uuid" EXCLUDE)
   install(DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/libraries DESTINATION "${OPENSCAD_INSTALL_RESOURCEDIR}" PATTERN ".git*" EXCLUDE)
   install(DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/locale DESTINATION "${OPENSCAD_INSTALL_RESOURCEDIR}" FILES_MATCHING PATTERN "*/LC_MESSAGES/openscad.mo")
   install(DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/shaders DESTINATION "${OPENSCAD_INSTALL_RESOURCEDIR}")
   install(DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/templates DESTINATION "${OPENSCAD_INSTALL_RESOURCEDIR}" FILES_MATCHING PATTERN "*.json")
+
+  if(ENABLE_GUI_TESTS)
+    install(DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/tests/data/ DESTINATION ${OPENSCAD_INSTALL_RESOURCEDIR}/tests)
+  endif()
+
 else()
   install(TARGETS ${CMAKE_PROJECT_NAME}
       BUNDLE DESTINATION ${CMAKE_INSTALL_BINDIR}

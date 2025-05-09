@@ -429,9 +429,18 @@ private:
   std::vector<std::unique_ptr<QTemporaryFile>> allTempFiles;
 
 signals:
-  void compilationDone(SourceFile*);
   void highlightError(int);
   void unhighlightLastError();
+
+#ifdef ENABLE_GUI_TESTS
+public:
+  std::shared_ptr<AbstractNode> instantiateRootFromSource(SourceFile* file);
+signals:
+  // This is a new signal introduced while drafting the testing framework, while in experimental mode
+  // we protected it using the #ifdef/endif so it should not be considered as part of the MainWindow API.
+  void compilationDone(SourceFile*);
+#endif //
+
 };
 
 class GuiLocker

@@ -296,14 +296,15 @@ int gui(std::vector<std::string>& inputFiles, const std::filesystem::path& origi
 
 #ifdef ENABLE_GUI_TESTS
   // Adds a singleshot timer that will be executed when the application will be started.
-  // the timer validates taht each mainwindow respects the expected UX behavior.
+  // the timer validates that each mainwindow respects the expected UX behavior.
   if(gui_test != "none"){
       QTimer::singleShot(0, [&]()
       {
+          int failureCount=0;
           for(auto w : app.windowManager.getWindows()){
-              runAllTest(w);
+              failureCount+=runAllTest(w);
           }
-          app.exit(0);
+          app.exit(failureCount);
       });
   }
 #endif // ENABLE_GUI_TESTS

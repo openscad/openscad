@@ -707,6 +707,7 @@ bool TabManager::saveAs(EditorInterface *edt, const QString& filepath)
     if (saveOk) {
       auto [fname, fpath] = getEditorTabNameWithModifier(edt);
       setEditorTabName(fname, fpath, edt);
+      par->setWindowTitle(fname);
     }
     return saveOk;
 }

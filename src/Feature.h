@@ -24,9 +24,9 @@ public:
 #endif
 
 #ifdef ENABLE_GUI_TESTS
-  static const bool HasGuiTesting {true};
+  static constexpr bool HasGuiTesting {true};
 #else
-  static const bool HasGuiTesting {false};
+  static constexpr bool HasGuiTesting {false};
 #endif
 
   [[nodiscard]] const std::string& get_name() const;

@@ -888,7 +888,7 @@ int main(int argc, char **argv)
   ;
 
 #ifdef ENABLE_GUI_TESTS
-    desc.add_options()("run-gui-test", po::value<std::string>(), "special gui testing mode - specify 'all' or a set of tests to run");
+    desc.add_options()("run-all-gui-tests", "special gui testing mode - run all the tests");
 #endif
 
   po::options_description hidden("Hidden options");
@@ -1135,8 +1135,8 @@ int main(int argc, char **argv)
       LOG("Ignoring --export-format option");
     }
     std::string gui_test="none";
-    if (vm.count("run-gui-test")){
-        gui_test = vm["run-gui-test"].as<std::string>();
+    if (vm.count("run-all-gui-tests")){
+        gui_test = "all";
     }
     rc = gui(inputFiles, original_path, argc, argv, gui_test);
 #endif
