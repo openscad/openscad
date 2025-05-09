@@ -351,13 +351,8 @@ bool append_3mf(const std::shared_ptr<const Geometry>& geom, const Export3mfPart
       if (!append_3mf(item.second, info, ctx)) return false;
     }
 #ifdef ENABLE_CGAL
-<<<<<<< HEAD
-  } else if (const auto N = std::dynamic_pointer_cast<const CGAL_Nef_polyhedron>(geom)) {
-    return append_nef(*N, info, ctx);
-=======
   } else if (const auto N = std::dynamic_pointer_cast<const CGALNefGeometry>(geom)) {
-    return append_nef(*N, ctx);
->>>>>>> upstream/master
+    return append_nef(*N, info, ctx);
 #endif
 #ifdef ENABLE_MANIFOLD
   } else if (const auto mani = std::dynamic_pointer_cast<const ManifoldGeometry>(geom)) {
