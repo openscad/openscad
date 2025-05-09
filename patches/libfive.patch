@@ -1,0 +1,81 @@
+diff -Naru libfive_org/libfive/bind/python/CMakeLists.txt libfive/libfive/bind/python/CMakeLists.txt
+--- libfive_org/libfive/bind/python/CMakeLists.txt	2025-03-18 10:50:54.114708717 +0100
++++ libfive/libfive/bind/python/CMakeLists.txt	2025-05-09 21:14:29.459726830 +0200
+@@ -36,7 +36,7 @@
+     endif()
+ 
+     # Install all Python files into that directory
+-    #    install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/libfive
+-    #        DESTINATION ${PYTHON_SITE_PACKAGES_DIR}
+-    #        FILES_MATCHING PATTERN "*.py")
++    install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/libfive
++            DESTINATION ${PYTHON_SITE_PACKAGES_DIR}
++            FILES_MATCHING PATTERN "*.py")
+ endif(UNIX)
+diff -Naru libfive_org/libfive/include/libfive/render/brep/mesh.hpp libfive/libfive/include/libfive/render/brep/mesh.hpp
+--- libfive_org/libfive/include/libfive/render/brep/mesh.hpp	2025-05-09 20:47:22.844726739 +0200
++++ libfive/libfive/include/libfive/render/brep/mesh.hpp	2025-05-09 21:14:29.467726957 +0200
+@@ -8,7 +8,6 @@
+ */
+ #pragma once
+ 
+-#define LIBFIVE_IS_SHARED
+ #include "libfive/tree/tree.hpp"
+ 
+ #include "libfive/render/brep/brep.hpp"
+@@ -29,7 +28,7 @@
+      *  Returns nullptr if min_feature is invalid or cancel is set to true
+      *  partway through the computation.
+      */
+-    static std::shared_ptr<Mesh> render(
++    static std::unique_ptr<Mesh> render(
+             const Tree& t, const Region<3>& r,
+             const BRepSettings& settings);
+ 
+@@ -40,7 +39,7 @@
+      *  Returns nullptr if min_feature is invalid or cancel is set to true
+      *  partway through the computation.
+      */
+-    static std::shared_ptr<Mesh> render(
++    static std::unique_ptr<Mesh> render(
+             Evaluator* es, const Region<3>& r,
+             const BRepSettings& settings);
+ 
+diff -Naru libfive_org/libfive/src/libfive.cpp libfive/libfive/src/libfive.cpp
+--- libfive_org/libfive/src/libfive.cpp	2025-05-09 20:51:42.298072850 +0200
++++ libfive/libfive/src/libfive.cpp	2025-05-09 21:14:29.467726957 +0200
+@@ -429,7 +429,7 @@
+     std::list<const libfive::Mesh*> meshes;
+     for (unsigned i=0; trees[i] != nullptr; ++i){
+         auto ms = Mesh::render(Tree(trees[i]), region, settings);
+-        meshes.push_back(ms.get());
++        meshes.push_back(ms.release());
+     }
+ 
+     const bool out = Mesh::saveSTL(f, meshes);
+diff -Naru libfive_org/libfive/src/render/brep/mesh.cpp libfive/libfive/src/render/brep/mesh.cpp
+--- libfive_org/libfive/src/render/brep/mesh.cpp	2025-05-09 20:49:02.045275872 +0200
++++ libfive/libfive/src/render/brep/mesh.cpp	2025-05-09 21:14:29.469726989 +0200
+@@ -32,7 +32,7 @@
+ 
+ namespace libfive {
+ 
+-std::shared_ptr<Mesh> Mesh::render(const Tree& t_, const Region<3>& r,
++std::unique_ptr<Mesh> Mesh::render(const Tree& t_, const Region<3>& r,
+                                    const BRepSettings& settings)
+ {
+     std::vector<Evaluator, Eigen::aligned_allocator<Evaluator>> es;
+@@ -45,11 +45,11 @@
+     return render(es.data(), r, settings);
+ }
+ 
+-std::shared_ptr<Mesh> Mesh::render(
++std::unique_ptr<Mesh> Mesh::render(
+         Evaluator* es,
+         const Region<3>& r, const BRepSettings& settings)
+ {
+-    std::shared_ptr<Mesh> out;
++    std::unique_ptr<Mesh> out;
+     if (settings.alg == DUAL_CONTOURING)
+     {
+         if (settings.progress_handler) {
