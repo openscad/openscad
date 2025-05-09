@@ -25,7 +25,7 @@
  */
 
 #include "io/export.h"
- 
+
 #include <algorithm>
 #include <cstddef>
 #include <cassert>
@@ -49,7 +49,7 @@
 
 #ifdef ENABLE_CGAL
 #include "geometry/cgal/cgalutils.h"
-#include "geometry/cgal/CGAL_Nef_polyhedron.h"
+#include "geometry/cgal/CGALNefGeometry.h"
 #endif
 #ifdef ENABLE_MANIFOLD
 #include "geometry/manifold/ManifoldGeometry.h"
@@ -94,10 +94,10 @@ Lib3MF_uint8 get_color_channel(const Color4f& col, int idx)
 }
 
 int count_mesh_objects(const Lib3MF::PModel& model) {
-    const auto mesh_object_it = model->GetMeshObjects();
-    int count = 0;
-    while (mesh_object_it->MoveNext()) ++count;
-    return count;
+  const auto mesh_object_it = model->GetMeshObjects();
+  int count = 0;
+  while (mesh_object_it->MoveNext()) ++count;
+  return count;
 }
 
 void handle_triangle_color(const std::shared_ptr<const PolySet>& ps, ExportContext& ctx, Lib3MF::PMeshObject& mesh, Lib3MF_uint32 triangle, int color_index) {
@@ -144,13 +144,13 @@ void handle_triangle_color(const std::shared_ptr<const PolySet>& ps, ExportConte
 
   if (res_id > 0) {
     mesh->SetTriangleProperties(triangle, {
-      res_id,
-      {
-        col_idx,
-        col_idx,
-        col_idx
-      }
-    });
+        res_id,
+        {
+          col_idx,
+          col_idx,
+          col_idx
+        }
+      });
   }
 }
 
@@ -174,39 +174,39 @@ bool append_polyset(const std::shared_ptr<const PolySet>& ps, ExportContext& ctx
     }
 
     auto vertexFunc = [&](const Vector3d& coords) -> bool {
-      const auto f = coords.cast<float>();
-      try {
-        const Lib3MF::sPosition v{f[0], f[1], f[2]};
-        mesh->AddVertex(v);
-      } catch (Lib3MF::ELib3MFException& e) {
-        export_3mf_error(e.what());
-        return false;
-      }
-      return true;
-    };
+        const auto f = coords.cast<float>();
+        try {
+          const Lib3MF::sPosition v{f[0], f[1], f[2]};
+          mesh->AddVertex(v);
+        } catch (Lib3MF::ELib3MFException& e) {
+          export_3mf_error(e.what());
+          return false;
+        }
+        return true;
+      };
 
     auto triangleFunc = [&](const IndexedFace& indices, int color_index) -> bool {
-      try {
-        const auto triangle = mesh->AddTriangle({
-          static_cast<Lib3MF_uint32>(indices[0]),
-          static_cast<Lib3MF_uint32>(indices[1]),
-          static_cast<Lib3MF_uint32>(indices[2])
-        });
+        try {
+          const auto triangle = mesh->AddTriangle({
+            static_cast<Lib3MF_uint32>(indices[0]),
+            static_cast<Lib3MF_uint32>(indices[1]),
+            static_cast<Lib3MF_uint32>(indices[2])
+          });
 
-        handle_triangle_color(ps, ctx, mesh, triangle, color_index);
-      } catch (Lib3MF::ELib3MFException& e) {
-        export_3mf_error(e.what());
-        return false;
-      }
-      return true;
-    };
+          handle_triangle_color(ps, ctx, mesh, triangle, color_index);
+        } catch (Lib3MF::ELib3MFException& e) {
+          export_3mf_error(e.what());
+          return false;
+        }
+        return true;
+      };
 
     std::shared_ptr<const PolySet> out_ps = ps;
     if (Feature::ExperimentalPredictibleOutput.is_enabled()) {
       out_ps = createSortedPolySet(*ps);
     }
 
-    for (const auto &v : out_ps->vertices) {
+    for (const auto& v : out_ps->vertices) {
       if (!vertexFunc(v)) {
         export_3mf_error("Can't add vertex to 3MF model.");
         return false;
@@ -237,7 +237,7 @@ bool append_polyset(const std::shared_ptr<const PolySet>& ps, ExportContext& ctx
 }
 
 #ifdef ENABLE_CGAL
-bool append_nef(const CGAL_Nef_polyhedron& root_N, ExportContext& ctx)
+bool append_nef(const CGALNefGeometry& root_N, ExportContext& ctx)
 {
   if (!root_N.p3) {
     LOG(message_group::Export_Error, "Export failed, empty geometry.");
@@ -254,7 +254,7 @@ bool append_nef(const CGAL_Nef_polyhedron& root_N, ExportContext& ctx)
   export_3mf_error("Error converting NEF Polyhedron.");
   return false;
 }
-#endif
+#endif // ifdef ENABLE_CGAL
 
 bool append_3mf(const std::shared_ptr<const Geometry>& geom, ExportContext& ctx)
 {
@@ -264,7 +264,7 @@ bool append_3mf(const std::shared_ptr<const Geometry>& geom, ExportContext& ctx)
       if (!append_3mf(item.second, ctx)) return false;
     }
 #ifdef ENABLE_CGAL
-  } else if (const auto N = std::dynamic_pointer_cast<const CGAL_Nef_polyhedron>(geom)) {
+  } else if (const auto N = std::dynamic_pointer_cast<const CGALNefGeometry>(geom)) {
     return append_nef(*N, ctx);
 #endif
 #ifdef ENABLE_MANIFOLD
@@ -355,21 +355,15 @@ void export_3mf(const std::shared_ptr<const Geometry>& geom, std::ostream& outpu
     break;
   }
 
-  const auto settingsColor = OpenSCAD::parse_hex_color(options3mf->color);
+  // use default color that ultimately should come from the color scheme
+  Color4f color = exportInfo.defaultColor;
 
   Lib3MF::PColorGroup colorgroup;
   Lib3MF::PBaseMaterialGroup basematerialgroup;
   if (options3mf->colorMode != Export3mfColorMode::none) {
-    Color4f color;
-    if (options3mf->colorMode == Export3mfColorMode::model) {
-      // use default color that ultimately should come from the color scheme
-      color = exportInfo.defaultColor;
-    } else {
+    if (options3mf->colorMode != Export3mfColorMode::model) {
       // use color selected in the export dialog and stored in settings (if valid)
-      if (!settingsColor) {
-        LOG(message_group::Warning, "Default color in settings is invalid ('%1$s'), using default from model.", options3mf->color);
-      }
-      color = settingsColor.value_or(exportInfo.defaultColor);
+      color = OpenSCAD::getColor(options3mf->color, exportInfo.defaultColor);
     }
     if (options3mf->materialType == Export3mfMaterialType::basematerial) {
       basematerialgroup = model->AddBaseMaterialGroup();
@@ -408,7 +402,7 @@ void export_3mf(const std::shared_ptr<const Geometry>& geom, std::ostream& outpu
     .colorgroup = colorgroup,
     .basematerialgroup = basematerialgroup,
     .modelcount = 1,
-    .selectedColor = settingsColor.value_or(exportInfo.defaultColor),
+    .selectedColor = color,
     .info = exportInfo,
     .options = options3mf
   };

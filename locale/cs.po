@@ -2763,8 +2763,8 @@ msgstr ""
 #~ msgid "WARNING: minkowski() could not get any points from object 2!"
 #~ msgstr "VAROVÁNÍ: minkowski() nenalezl žádné body v objektu 2!"
 
-#~ msgid "CGAL error in CGAL_Nef_polyhedron's %s operator: %s"
-#~ msgstr "CGAL chyba v CGAL_Nef_polyhedron operátoru %s: %s"
+#~ msgid "CGAL error in CGALNefGeometry's %s operator: %s"
+#~ msgstr "CGAL chyba v CGALNefGeometry operátoru %s: %s"
 
 #~ msgid "WARNING: hull() does not support mixing 2D and 3D objects."
 #~ msgstr "VAROVÁNÍ: hull() neumožňuje kombinovat 2D a 3D objekty."

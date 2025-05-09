@@ -1,8 +1,5 @@
 // this file is split into many separate cgalutils* files
 // in order to workaround gcc 4.9.1 crashing on systems with only 2GB of RAM
-
-#ifdef ENABLE_CGAL
-
 #include "geometry/cgal/cgalutils.h"
 
 #include "geometry/Geometry.h"
@@ -42,9 +39,9 @@
 
 namespace CGALUtils {
 
-std::unique_ptr<CGAL_Nef_polyhedron> createNefPolyhedronFromPolySet(const PolySet& ps)
+std::unique_ptr<CGALNefGeometry> createNefPolyhedronFromPolySet(const PolySet& ps)
 {
-  if (ps.isEmpty()) return std::make_unique<CGAL_Nef_polyhedron>();
+  if (ps.isEmpty()) return std::make_unique<CGALNefGeometry>();
   assert(ps.getDimension() == 3);
 
   // Since is_convex doesn't work well with non-planar faces,
@@ -54,21 +51,21 @@ std::unique_ptr<CGAL_Nef_polyhedron> createNefPolyhedronFromPolySet(const PolySe
   psq.quantizeVertices(&points3d);
   auto ps_tri = PolySetUtils::tessellate_faces(psq);
   if (ps_tri->isConvex()) {
-    using K = CGAL::Epick;
+    using Hull_kernel = CGAL::Epick;
     // Collect point cloud
-    std::vector<K::Point_3> points(points3d.size());
+    std::vector<Hull_kernel::Point_3> points(points3d.size());
     for (size_t i = 0, n = points3d.size(); i < n; i++) {
-      points[i] = vector_convert<K::Point_3>(points3d[i]);
+      points[i] = vector_convert<Hull_kernel::Point_3>(points3d[i]);
     }
 
-    if (points.size() <= 3) return std::make_unique<CGAL_Nef_polyhedron>();
+    if (points.size() <= 3) return std::make_unique<CGALNefGeometry>();
 
     // Apply hull
-    CGAL::Polyhedron_3<K> r;
+    CGAL::Polyhedron_3<Hull_kernel> r;
     CGAL::convex_hull_3(points.begin(), points.end(), r);
     CGAL_Polyhedron r_exact;
     CGALUtils::copyPolyhedron(r, r_exact);
-    return std::make_unique<CGAL_Nef_polyhedron>(std::make_shared<CGAL_Nef_polyhedron3>(r_exact));
+    return std::make_unique<CGALNefGeometry>(std::make_shared<CGAL_Nef_polyhedron3>(r_exact));
   }
 
   std::shared_ptr<CGAL_Nef_polyhedron3> N;
@@ -78,9 +75,9 @@ std::unique_ptr<CGAL_Nef_polyhedron> createNefPolyhedronFromPolySet(const PolySe
     auto err = CGALUtils::createPolyhedronFromPolySet(psq, P);
     if (!err) {
       if (!P.is_closed()) {
-        LOG(message_group::Error, "The given mesh is not closed! Unable to convert to CGAL_Nef_Polyhedron.");
+        LOG(message_group::Error, "The given mesh is not closed! Unable to convert to CGALNefGeometry.");
       } else if (!P.is_valid(false, 0)) {
-        LOG(message_group::Error, "The given mesh is invalid! Unable to convert to CGAL_Nef_Polyhedron.");
+        LOG(message_group::Error, "The given mesh is invalid! Unable to convert to CGALNefGeometry.");
       } else {
         N = std::make_shared<CGAL_Nef_polyhedron3>(P);
       }
@@ -98,17 +95,17 @@ std::unique_ptr<CGAL_Nef_polyhedron> createNefPolyhedronFromPolySet(const PolySe
     }
   }
   if (plane_error) try {
-      CGAL_Polyhedron P;
-      auto err = CGALUtils::createPolyhedronFromPolySet(*ps_tri, P);
-      if (!err) {
-        PRINTDB("Polyhedron is closed: %d", P.is_closed());
-        PRINTDB("Polyhedron is valid: %d", P.is_valid(false, 0));
-      }
-      if (!err) N = std::make_shared<CGAL_Nef_polyhedron3>(P);
-    } catch (const CGAL::Assertion_exception& e) {
-      LOG(message_group::Error, "Alternate construction failed. CGAL error in CGAL_Nef_polyhedron3(): %1$s", e.what());
+    CGAL_Polyhedron P;
+    auto err = CGALUtils::createPolyhedronFromPolySet(*ps_tri, P);
+    if (!err) {
+      PRINTDB("Polyhedron is closed: %d", P.is_closed());
+      PRINTDB("Polyhedron is valid: %d", P.is_valid(false, 0));
     }
-  return std::make_unique<CGAL_Nef_polyhedron>(N);
+    if (!err) N = std::make_shared<CGAL_Nef_polyhedron3>(P);
+  } catch (const CGAL::Assertion_exception& e) {
+    LOG(message_group::Error, "Alternate construction failed. CGAL error in CGAL_Nef_polyhedron3(): %1$s", e.what());
+  }
+  return std::make_unique<CGALNefGeometry>(N);
 }
 
 template <typename K>
@@ -162,7 +159,7 @@ bool is_approximately_convex(const PolySet& ps) {
 
   const double angle_threshold = cos_degrees(.1); // .1°
 
-  using K = CGAL::Simple_cartesian<double>;
+  using K = CGAL_DoubleKernel;
   using Vector = K::Vector_3;
   using Point = K::Point_3;
   using Plane = K::Plane_3;
@@ -241,18 +238,18 @@ bool is_approximately_convex(const PolySet& ps) {
   return explored_facets.size() == ps.indices.size();
 }
 
-std::shared_ptr<const CGAL_Nef_polyhedron> getNefPolyhedronFromGeometry(const std::shared_ptr<const Geometry>& geom)
+std::shared_ptr<const CGALNefGeometry> getNefPolyhedronFromGeometry(const std::shared_ptr<const Geometry>& geom)
 {
   if (auto ps = std::dynamic_pointer_cast<const PolySet>(geom)) {
-    return std::shared_ptr<CGAL_Nef_polyhedron>(createNefPolyhedronFromPolySet(*ps));
+    return std::shared_ptr<CGALNefGeometry>(createNefPolyhedronFromPolySet(*ps));
   } else if (auto poly2d = std::dynamic_pointer_cast<const Polygon2d>(geom)) {
     std::shared_ptr<PolySet> ps(poly2d->tessellate());
-    return std::shared_ptr<CGAL_Nef_polyhedron>(createNefPolyhedronFromPolySet(*ps));
-  } else if (auto nef = std::dynamic_pointer_cast<const CGAL_Nef_polyhedron>(geom)) {
+    return std::shared_ptr<CGALNefGeometry>(createNefPolyhedronFromPolySet(*ps));
+  } else if (auto nef = std::dynamic_pointer_cast<const CGALNefGeometry>(geom)) {
     return nef;
 #if ENABLE_MANIFOLD
   } else if (auto mani = std::dynamic_pointer_cast<const ManifoldGeometry>(geom)) {
-    return std::shared_ptr<CGAL_Nef_polyhedron>(createNefPolyhedronFromPolySet(*mani->toPolySet()));
+    return std::shared_ptr<CGALNefGeometry>(createNefPolyhedronFromPolySet(*mani->toPolySet()));
 #endif
   }
   return nullptr;
@@ -265,8 +262,7 @@ std::shared_ptr<const CGAL_Nef_polyhedron> getNefPolyhedronFromGeometry(const st
    formats) do not allow for holes in their faces. The function documents
    the method used to deal with this
  */
-template <typename K>
-std::unique_ptr<PolySet> createPolySetFromNefPolyhedron3(const CGAL::Nef_polyhedron_3<K>& N)
+std::unique_ptr<PolySet> createPolySetFromNefPolyhedron3(const CGAL_Nef_polyhedron3& N)
 {
   // 1. Build Indexed PolyMesh
   // 2. Validate mesh (manifoldness)
@@ -275,7 +271,7 @@ std::unique_ptr<PolySet> createPolySetFromNefPolyhedron3(const CGAL::Nef_polyhed
   // 4. Validate mesh (manifoldness)
   // 5. Create PolySet
 
-  using Nef = CGAL::Nef_polyhedron_3<K>;
+  using Nef = CGAL_Nef_polyhedron3;
 
   // 1. Build Indexed PolyMesh
   Reindexer<Vector3f> allVertices;
@@ -283,7 +279,7 @@ std::unique_ptr<PolySet> createPolySetFromNefPolyhedron3(const CGAL::Nef_polyhed
 
   typename Nef::Halffacet_const_iterator hfaceti;
   CGAL_forall_halffacets(hfaceti, N) {
-    CGAL::Plane_3<K> plane(hfaceti->plane());
+    Nef::Plane_3 plane(hfaceti->plane());
     // Since we're downscaling to float, vertices might merge during this conversion.
     // To avoid passing equal vertices to the tessellator, we remove consecutively identical
     // vertices.
@@ -401,8 +397,6 @@ std::unique_ptr<PolySet> createPolySetFromNefPolyhedron3(const CGAL::Nef_polyhed
   return polyset;
 }
 
-template std::unique_ptr<PolySet> createPolySetFromNefPolyhedron3(const CGAL_Nef_polyhedron3& N);
-
 template <typename K>
 CGAL::Aff_transformation_3<K> createAffineTransformFromMatrix(const Transform3d& matrix) {
   return CGAL::Aff_transformation_3<K>(
@@ -486,7 +480,7 @@ std::shared_ptr<const PolySet> getGeometryAsPolySet(const std::shared_ptr<const 
   if (auto ps = std::dynamic_pointer_cast<const PolySet>(geom)) {
     return ps;
   }
-  if (auto N = std::dynamic_pointer_cast<const CGAL_Nef_polyhedron>(geom)) {
+  if (auto N = std::dynamic_pointer_cast<const CGALNefGeometry>(geom)) {
     auto ps = std::make_shared<PolySet>(3);
     if (!N->isEmpty()) {
       if (auto ps = CGALUtils::createPolySetFromNefPolyhedron3(*N->p3)) {
@@ -506,5 +500,3 @@ std::shared_ptr<const PolySet> getGeometryAsPolySet(const std::shared_ptr<const 
 }
 
 }  // namespace CGALUtils
-
-#endif /* ENABLE_CGAL */

@@ -18,7 +18,6 @@
 #include "utils/printutils.h"
 #include "geometry/Reindexer.h"
 #include "glview/RenderSettings.h"
-#include "Feature.h"
 #include "geometry/PolySet.h"
 
 #ifdef ENABLE_CGAL
@@ -27,6 +26,7 @@
 
 #ifdef ENABLE_MANIFOLD
 #include "geometry/manifold/manifoldutils.h"
+#include "geometry/manifold/ManifoldGeometry.h"
 #endif
 
 static void *stdAlloc(void *userData, unsigned int size) {
@@ -525,7 +525,11 @@ std::shared_ptr<const Geometry> GeometryUtils::getBackendSpecificGeometry(const 
 #if ENABLE_MANIFOLD
   if (RenderSettings::inst()->backend3D == RenderBackend3D::ManifoldBackend) {
     if (const auto ps = std::dynamic_pointer_cast<const PolySet>(geom)) {
-      return ManifoldUtils::createManifoldFromPolySet(*ps);
+      std::shared_ptr<ManifoldGeometry> mani = ManifoldUtils::createManifoldFromPolySet(*ps);
+      if (mani == nullptr) {
+         mani = std::make_shared<ManifoldGeometry>();
+      }
+      return mani;
     } else if (auto mani = std::dynamic_pointer_cast<const ManifoldGeometry>(geom)) {
       return geom;
     } else {
@@ -536,7 +540,7 @@ std::shared_ptr<const Geometry> GeometryUtils::getBackendSpecificGeometry(const 
 #if ENABLE_CGAL
   if (auto ps = std::dynamic_pointer_cast<const PolySet>(geom)) {
     return CGALUtils::createNefPolyhedronFromPolySet(*ps);
-  } else if (auto poly = std::dynamic_pointer_cast<const CGAL_Nef_polyhedron>(geom)) {
+  } else if (auto poly = std::dynamic_pointer_cast<const CGALNefGeometry>(geom)) {
     return geom;
   } else {
     assert(false && "Unexpected geometry");

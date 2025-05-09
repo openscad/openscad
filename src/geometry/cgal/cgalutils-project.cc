@@ -172,12 +172,12 @@ void ZRemover::visit(CGAL_Nef_polyhedron3::Halffacet_const_handle hfacet)
 
 namespace CGALUtils {
 
-std::unique_ptr<Polygon2d> project(const CGAL_Nef_polyhedron& N, bool cut)
+std::unique_ptr<Polygon2d> project(const CGALNefGeometry& N, bool cut)
 {
   std::unique_ptr<Polygon2d> poly;
   if (N.getDimension() != 3) return poly;
 
-  CGAL_Nef_polyhedron newN;
+  CGALNefGeometry newN;
   if (cut) {
     try {
       CGAL_Nef_polyhedron3::Plane_3 xy_plane = CGAL_Nef_polyhedron3::Plane_3(0, 0, 1, 0);

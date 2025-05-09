@@ -48,7 +48,7 @@
 #include "glview/Camera.h"
 #include "utils/printutils.h"
 #ifdef ENABLE_CGAL
-#include "geometry/cgal/CGAL_Nef_polyhedron.h"
+#include "geometry/cgal/CGALNefGeometry.h"
 #include "geometry/cgal/CGALCache.h"
 #endif // ENABLE_CGAL
 #ifdef ENABLE_MANIFOLD
@@ -86,7 +86,7 @@ struct LogVisitor : public StatisticVisitor
   void visit(const PolySet& node) override;
   void visit(const Polygon2d& node) override;
 #ifdef ENABLE_CGAL
-  void visit(const CGAL_Nef_polyhedron& node) override;
+  void visit(const CGALNefGeometry& node) override;
 #endif // ENABLE_CGAL
 #ifdef ENABLE_MANIFOLD
   void visit(const ManifoldGeometry& node) override;
@@ -110,7 +110,7 @@ struct StreamVisitor : public StatisticVisitor
   void visit(const PolySet& node) override;
   void visit(const Polygon2d& node) override;
 #ifdef ENABLE_CGAL
-  void visit(const CGAL_Nef_polyhedron& node) override;
+  void visit(const CGALNefGeometry& node) override;
 #endif // ENABLE_CGAL
 #ifdef ENABLE_MANIFOLD
   void visit(const ManifoldGeometry& node) override;
@@ -261,7 +261,7 @@ void LogVisitor::visit(const PolySet& ps)
 }
 
 #ifdef ENABLE_CGAL
-void LogVisitor::visit(const CGAL_Nef_polyhedron& nef)
+void LogVisitor::visit(const CGALNefGeometry& nef)
 {
   if (nef.getDimension() == 3) {
     const bool simple = nef.p3->is_simple();
@@ -364,7 +364,7 @@ void StreamVisitor::visit(const PolySet& ps)
 }
 
 #ifdef ENABLE_CGAL
-void StreamVisitor::visit(const CGAL_Nef_polyhedron& nef)
+void StreamVisitor::visit(const CGALNefGeometry& nef)
 {
   if (is_enabled(RenderStatistic::GEOMETRY)) {
     nlohmann::json geometryJson;

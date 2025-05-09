@@ -929,14 +929,12 @@ set(CGAL_SOURCES
   src/geometry/cgal/cgalutils-convex.cc
   src/geometry/cgal/cgalutils-kernel.cc
   src/geometry/cgal/cgalutils-mesh.cc
-  src/geometry/cgal/cgalutils-minkowski.cc
-  src/geometry/cgal/cgalutils-nef.cc
   src/geometry/cgal/cgalutils-orient.cc
   src/geometry/cgal/cgalutils-polyhedron.cc
   src/geometry/cgal/cgalutils-project.cc
   src/geometry/cgal/cgalutils-tess.cc
   src/geometry/cgal/cgalutils-triangulate.cc
-  src/geometry/cgal/CGAL_Nef_polyhedron.cc
+  src/geometry/cgal/CGALNefGeometry.cc
   src/geometry/cgal/CGALCache.cc
   src/io/export_nef.cc
   src/io/import_nef.cc
@@ -1081,6 +1079,7 @@ set(GUI_SOURCES
   src/gui/FontListDialog.cc
   src/gui/FontListTableView.cc
   src/gui/InitConfigurator.cc
+  src/gui/ImportUtils.cc
   src/gui/LaunchingScreen.cc
   src/gui/LibraryInfoDialog.cc
   src/gui/MainWindow.cc
@@ -1151,6 +1150,7 @@ set(GUI_HEADERS
     src/gui/FontListDialog.h
     src/gui/FontListTableView.h
     src/gui/IgnoreWheelWhenNotFocused.h
+    src/gui/ImportUtils.h
     src/gui/InitConfigurator.h
     src/gui/LaunchingScreen.h
     src/gui/LibraryInfoDialog.h
