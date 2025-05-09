@@ -12,7 +12,7 @@
 #include "glview/ColorMap.h"
 #include "glview/VertexState.h"
 #ifdef ENABLE_CGAL
-#include "geometry/cgal/CGAL_Nef_polyhedron.h"
+#include "geometry/cgal/CGALNefGeometry.h"
 #endif
 
 class CGALRenderer : public VBORenderer
@@ -43,7 +43,7 @@ private:
   std::vector<std::pair<std::shared_ptr<const Polygon2d>, std::shared_ptr<const PolySet>>> polygons_;
 #ifdef ENABLE_CGAL
   std::vector<std::shared_ptr<class VBOPolyhedron>> polyhedrons_;
-  std::vector<std::shared_ptr<const CGAL_Nef_polyhedron>> nefPolyhedrons_;
+  std::vector<std::shared_ptr<const CGALNefGeometry>> nefPolyhedrons_;
 #endif
 
   std::vector<VertexStateContainer> vertex_state_containers_;

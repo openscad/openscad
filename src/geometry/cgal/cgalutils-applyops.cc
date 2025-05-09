@@ -1,8 +1,5 @@
 // this file is split into many separate cgalutils* files
 // in order to workaround gcc 4.9.1 crashing on systems with only 2GB of RAM
-
-#ifdef ENABLE_CGAL
-
 #include "geometry/cgal/cgal.h"
 #include "geometry/Geometry.h"
 #include "geometry/cgal/cgalutils.h"
@@ -41,7 +38,7 @@ namespace CGALUtils {
 std::unique_ptr<const Geometry> applyUnion3D(
 Geometry::Geometries::iterator chbegin, Geometry::Geometries::iterator chend)
 {
-  using QueueConstItem = std::pair<std::shared_ptr<const CGAL_Nef_polyhedron>, int>;
+  using QueueConstItem = std::pair<std::shared_ptr<const CGALNefGeometry>, int>;
   struct QueueItemGreater {
     // stable sort for priority_queue by facets, then progress mark
     bool operator()(const QueueConstItem& lhs, const QueueConstItem& rhs) const
@@ -72,12 +69,12 @@ Geometry::Geometries::iterator chbegin, Geometry::Geometries::iterator chend)
       q.pop();
       auto p2 = q.top();
       q.pop();
-      q.emplace(std::make_unique<const CGAL_Nef_polyhedron>(*p1.first + *p2.first), -1);
+      q.emplace(std::make_unique<const CGALNefGeometry>(*p1.first + *p2.first), -1);
       progress_tick();
     }
 
     if (q.size() == 1) {
-      return std::make_unique<CGAL_Nef_polyhedron>(q.top().first->p3);
+      return std::make_unique<CGALNefGeometry>(q.top().first->p3);
     } else {
       return nullptr;
     }
@@ -93,7 +90,7 @@ Geometry::Geometries::iterator chbegin, Geometry::Geometries::iterator chend)
  */
 std::shared_ptr<const Geometry> applyOperator3D(const Geometry::Geometries& children, OpenSCADOperator op)
 {
-  std::shared_ptr<CGAL_Nef_polyhedron> N;
+  std::shared_ptr<CGALNefGeometry> N;
 
   assert(op != OpenSCADOperator::UNION && "use applyUnion3D() instead of applyOperator3D()");
   bool foundFirst = false;
@@ -107,7 +104,7 @@ std::shared_ptr<const Geometry> applyOperator3D(const Geometry::Geometries& chil
       if (!foundFirst) {
         if (chN) {
 	  // FIXME: Do we need to make a copy here?
-          N = std::make_shared<CGAL_Nef_polyhedron>(*chN);
+          N = std::make_shared<CGALNefGeometry>(*chN);
         } else { // first child geometry might be empty/null
           N = nullptr;
         }
@@ -156,6 +153,3 @@ std::shared_ptr<const Geometry> applyOperator3D(const Geometry::Geometries& chil
 }
 
 }  // namespace CGALUtils
-
-
-#endif // ENABLE_CGAL

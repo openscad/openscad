@@ -1,22 +1,21 @@
-#ifdef ENABLE_CGAL
-
 #include "geometry/cgal/cgalutils.h"
-#include "geometry/linalg.h"
-#include "geometry/PolySet.h"
-#include "geometry/PolySetBuilder.h"
-#include "utils/printutils.h"
-#include "geometry/Grid.h"
 
 #include <algorithm>
 #include <iterator>
 #include <ostream>
 #include <memory>
-#include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
-
-#include <boost/range/adaptor/reversed.hpp>
-
 #include <cstddef>
 #include <vector>
+
+#include <boost/range/adaptor/reversed.hpp>
+#include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
+#include <CGAL/boost/graph/convert_nef_polyhedron_to_polygon_mesh.h>
+
+#include "geometry/linalg.h"
+#include "geometry/PolySet.h"
+#include "geometry/PolySetBuilder.h"
+#include "utils/printutils.h"
+#include "geometry/Grid.h"
 
 #undef GEN_SURFACE_DEBUG
 namespace /* anonymous */ {
@@ -267,6 +266,19 @@ void convertNefToPolyhedron(
 
 template void convertNefToPolyhedron(const CGAL_Nef_polyhedron3& nef, CGAL_Polyhedron& polyhedron);
 
+template <typename SurfaceMesh>
+void convertNefToSurfaceMesh(const CGAL_Nef_polyhedron3& nef, SurfaceMesh& mesh)
+{
+  constexpr bool triangulate = false;
+  CGAL::convert_nef_polyhedron_to_polygon_mesh(nef, mesh, triangulate);
+}
+
+void converSurfaceMeshToNef(const CGAL_Kernel3Mesh& mesh, CGAL_Nef_polyhedron3& nef)
+{
+  nef = CGAL_Nef_polyhedron3(mesh);
+}
+
+
 template <typename Polyhedron>
 bool createPolyhedronFromPolySet(const PolySet& ps, Polyhedron& p)
 {
@@ -283,7 +295,6 @@ bool createPolyhedronFromPolySet(const PolySet& ps, Polyhedron& p)
 
 template bool createPolyhedronFromPolySet(const PolySet& ps, CGAL_Polyhedron& p);
 template bool createPolyhedronFromPolySet(const PolySet& ps, CGAL::Polyhedron_3<CGAL::Epick>& p);
-template bool createPolyhedronFromPolySet(const PolySet& ps, CGAL::Polyhedron_3<CGAL::Epeck>& p);
 
 template <typename Polyhedron>
 std::unique_ptr<PolySet> createPolySetFromPolyhedron(const Polyhedron& p)
@@ -311,7 +322,6 @@ std::unique_ptr<PolySet> createPolySetFromPolyhedron(const Polyhedron& p)
 
 template std::unique_ptr<PolySet> createPolySetFromPolyhedron(const CGAL_Polyhedron& p);
 template std::unique_ptr<PolySet> createPolySetFromPolyhedron(const CGAL::Polyhedron_3<CGAL::Epick>& p);
-template std::unique_ptr<PolySet> createPolySetFromPolyhedron(const CGAL::Polyhedron_3<CGAL::Simple_cartesian<long>>& p);
 
 class Polyhedron_writer
 {
@@ -359,5 +369,3 @@ public:
 };
 
 }  // namespace CGALUtils
-
-#endif /* ENABLE_CGAL */
