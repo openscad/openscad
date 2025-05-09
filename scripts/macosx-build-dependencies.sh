@@ -38,7 +38,7 @@ OPTION_X86_64=false
 
 PACKAGES=(
     "double_conversion 3.2.1"
-    "boost 1.86.0"
+    "boost 1.88.0"
     "eigen 3.4.0"
     "gmp 6.3.0"
     "mpfr 4.2.0"
@@ -49,12 +49,12 @@ PACKAGES=(
     "libzip 1.9.2"
     "fontconfig 2.14.1"
     "hidapi 0.12.0"
-    "lib3mf 2.3.1"
+    "lib3mf 2.4.1"
     "pcre2 10.44"
     "glib2 2.83.0"
     "pixman 0.42.2"
     "cairo 1.18.0"
-    "cgal 6.0"
+    "cgal 6.0.1"
     # Using Qt6 going forward, leaving Qt5 config just in case
     # "qt5 5.15.16"
     "qt6 6.5.3"

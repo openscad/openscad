@@ -109,7 +109,6 @@ public:
   QAction *actionRecentFile[UIUtils::maxRecentFiles];
   QShortcut *shortcutNextWindow{nullptr};
   QShortcut *shortcutPreviousWindow{nullptr};
-  QMap<QString, QString> knownFileExtensions;
 
   QLabel *versionLabel;
 
@@ -129,7 +128,7 @@ private:
   volatile bool isClosing = false;
   void consoleOutputRaw(const QString& msg);
   void clearAllSelectionIndicators();
-  void setSelectionIndicatorStatus(int nodeIndex, EditorSelectionIndicatorStatus status);
+  void setSelectionIndicatorStatus(EditorInterface *editor, int nodeIndex, EditorSelectionIndicatorStatus status);
 
 protected:
   void closeEvent(QCloseEvent *event) override;
@@ -143,7 +142,11 @@ private slots:
   void openCSGSettingsChanged();
   void consoleOutput(const Message& msgObj);
   void setSelection(int index);
+
+  // implements the actions to be done when the selection menu is closing
+  // the seclection menu is the one that show up when right click on the geometry in the 3d view.
   void onHoveredObjectInSelectionMenu();
+
   void measureFinished();
   void errorLogOutput(const Message& log_msg);
   void onNavigationOpenContextMenu();
@@ -155,6 +158,14 @@ private slots:
   // the tab manager editor is changed.
   void onTabManagerEditorChanged(EditorInterface *);
 
+  // implement the different actions needed when
+  // the tab manager editor is about to close one of the tab
+  void onTabManagerAboutToCloseEditor(EditorInterface *);
+
+  // implement the different actions needed when an editor
+  // has its content replaced (because of load)
+  void onTabManagerEditorContentReloaded(EditorInterface *reloadedEditor);
+
 public:
   static void consoleOutput(const Message& msgObj, void *userdata);
   static void errorLogOutput(const Message& log_msg, void *userdata);
@@ -162,10 +173,16 @@ public:
   static void noOutputErrorLog(const Message&, void *) {} // /dev/null
 
   bool fileChangedOnDisk();
+
+  // Parse the document contained in the editor, update the editors's parameters and returns a SourceFile object
+  // if parsing suceeded. Nullptr otherwise.
+  SourceFile *parseDocument(EditorInterface *editor);
+
   void parseTopLevelDocument();
   void exceptionCleanup();
   void setLastFocus(QWidget *widget);
   void UnknownExceptionCleanup(std::string msg = "");
+  void showFind(bool doFindAndReplace);
 
 private:
   [[nodiscard]] QString getCurrentFileName() const;
@@ -176,6 +193,14 @@ private:
   void compileCSG();
   bool checkEditorModified();
   QString dumpCSGTree(const std::shared_ptr<AbstractNode>& root);
+
+  // Opens an independent windows with a text area showing the text given in argument
+  // The "type" is used to specify the type of content with the title of the window,
+  void showTextInWindow(const QString& type, const QString& textToShow);
+
+  // Change the perspective mode of the 3D view.
+  typedef Camera::ProjectionType ProjectionType;
+  void setProjectionType(ProjectionType mode);
 
   void loadViewSettings();
   void loadDesignSettings();
@@ -257,11 +282,11 @@ private slots:
 
 public slots:
   void hideFind();
-  void showFind();
-  void showFindAndReplace();
+  void actionShowFind();
+  void actionShowFindAndReplace();
 
 private slots:
-  void selectFindType(int);
+  void actionSelectFind(int);
   void findString(const QString&);
   void findNext();
   void findPrev();

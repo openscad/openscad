@@ -205,6 +205,10 @@ build, again check dependencies.
 
 After that, follow the Compilation instructions below.
 
+### Building on Nix
+
+A [development Nix shell](scripts/nix) is included for local, incremental compilation.
+
 ### Building for Windows
 
 OpenSCAD for Windows is usually cross-compiled from Linux. If you wish to

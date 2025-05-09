@@ -51,7 +51,7 @@
 #include "geometry/manifold/ManifoldGeometry.h"
 #endif
 #ifdef ENABLE_CGAL
-#include "geometry/cgal/CGAL_Nef_polyhedron.h"
+#include "geometry/cgal/CGALNefGeometry.h"
 #include "geometry/cgal/cgalutils.h"
 #endif
 
@@ -195,7 +195,7 @@ uint64_t append_stl(const std::shared_ptr<const PolySet>& polyset, std::ostream&
     Saves the current 3D CGAL Nef polyhedron as STL to the given file.
     The file must be open.
  */
-uint64_t append_stl(const CGAL_Nef_polyhedron& root_N, std::ostream& output,
+uint64_t append_stl(const CGALNefGeometry& root_N, std::ostream& output,
                     bool binary)
 {
   uint64_t triangle_count = 0;
@@ -250,7 +250,7 @@ uint64_t append_stl(const std::shared_ptr<const Geometry>& geom, std::ostream& o
   } else if (const auto ps = std::dynamic_pointer_cast<const PolySet>(geom)) {
     triangle_count += append_stl(ps, output, binary);
 #ifdef ENABLE_CGAL
-  } else if (const auto N = std::dynamic_pointer_cast<const CGAL_Nef_polyhedron>(geom)) {
+  } else if (const auto N = std::dynamic_pointer_cast<const CGALNefGeometry>(geom)) {
     triangle_count += append_stl(*N, output, binary);
 #endif
 #ifdef ENABLE_MANIFOLD

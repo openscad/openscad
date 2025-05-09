@@ -26,6 +26,7 @@
     * Support $fn, $fs, $fa #3994
     * TODO: Just for SVG, how is this enforced? Added id= and layer= parameters to SVG import() #4042 #4378
 * Vector swizzle feature #4010
+* Ranges on the form [begin:end] with begin value greater than the end value now yields an empty range #5750
 
 * Bugfixes
   * Relative includes could resolve to the wrong path #569

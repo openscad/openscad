@@ -1,28 +1,29 @@
 #include "geometry/cgal/cgalutils.h"
-#include "Feature.h"
-#include "geometry/linalg.h"
-#include "utils/hash.h"
 
 #include <unordered_map>
 #include <memory>
+#include <cstddef>
+#include <vector>
+
+#include <boost/range/adaptor/transformed.hpp>
+#include <CGAL/Point_3.h>
 #include <CGAL/boost/graph/convert_nef_polyhedron_to_polygon_mesh.h>
 #include <CGAL/boost/graph/graph_traits_Surface_mesh.h>
 #include <CGAL/Surface_mesh.h>
-#include "geometry/PolySetBuilder.h"
 #include <CGAL/Polygon_mesh_processing/polygon_soup_to_polygon_mesh.h>
 #include <CGAL/Polygon_mesh_processing/repair_polygon_soup.h>
 
-#include <cstddef>
-#include <vector>
+#include "geometry/cgal/cgal.h"
+#include "geometry/linalg.h"
+#include "geometry/PolySetBuilder.h"
 
 namespace CGALUtils {
 
 namespace PMP = CGAL::Polygon_mesh_processing;
 
-template <class TriangleMesh>
-bool createMeshFromPolySet(const PolySet& ps, TriangleMesh& mesh)
+CGAL_DoubleMesh repairPolySet(const PolySet& ps)
 {
-  std::vector<typename TriangleMesh::Point> points;
+  std::vector<CGAL_DoubleMesh::Point> points;
   std::vector<std::vector<size_t>> polygons;
 
   // at least 3*numFacets
@@ -33,29 +34,45 @@ bool createMeshFromPolySet(const PolySet& ps, TriangleMesh& mesh)
     polygon.reserve(inds.size());
     for (const auto &ind : inds) {
       polygon.push_back(points.size());
-        auto &pt = ps.vertices[ind];
-      points.push_back({pt[0], pt[1], pt[2]});
+      auto &pt = ps.vertices[ind];
+      points.emplace_back(pt[0], pt[1], pt[2]);
     }
   }
 
   PMP::repair_polygon_soup(points, polygons);
   PMP::orient_polygon_soup(points, polygons);
+  CGAL_DoubleMesh mesh;
   PMP::polygon_soup_to_polygon_mesh(points, polygons, mesh);
-  return false;
+  return mesh;
 }
 
-template bool createMeshFromPolySet(const PolySet& ps, CGAL_DoubleMesh& mesh);
+template <class SurfaceMesh>
+std::shared_ptr<SurfaceMesh> createSurfaceMeshFromPolySet(const PolySet& ps)
+{
+  auto mesh = std::make_shared<SurfaceMesh>();
+  mesh->reserve(ps.vertices.size(), ps.indices.size() * 3, ps.indices.size());
+  for (const auto& v : ps.vertices) {
+    mesh->add_vertex(typename SurfaceMesh::Point(v[0], v[1], v[2]));
+  }
+  for (const auto& face : ps.indices) {
+    mesh->add_face(face | boost::adaptors::transformed([](uint32_t i){ return typename SurfaceMesh::Vertex_index(i); }));
+  }
+  return mesh;
+}
+
+template std::shared_ptr<CGAL_DoubleMesh> createSurfaceMeshFromPolySet<CGAL_DoubleMesh>(const PolySet& ps);
+template std::shared_ptr<CGAL::Surface_mesh<CGAL::Point_3<CGAL_Kernel3>>> createSurfaceMeshFromPolySet(const PolySet& ps);
 
 
-template <class TriangleMesh>
-std::unique_ptr<PolySet> createPolySetFromMesh(const TriangleMesh& mesh)
+template <class SurfaceMesh>
+std::unique_ptr<PolySet> createPolySetFromSurfaceMesh(const SurfaceMesh& mesh)
 {
   //  FIXME: We may want to convert directly, without PolySetBuilder here, to maintain manifoldness, if possible.
   PolySetBuilder builder(0, mesh.number_of_faces()+ mesh.number_of_faces());
   for (const auto& f : mesh.faces()) {
     builder.beginPolygon(mesh.degree(f));
 
-    CGAL::Vertex_around_face_iterator<TriangleMesh> vbegin, vend;
+    CGAL::Vertex_around_face_iterator<SurfaceMesh> vbegin, vend;
     for (boost::tie(vbegin, vend) = vertices_around_face(mesh.halfedge(f), mesh); vbegin != vend;
          ++vbegin) {
       auto& v = mesh.point(*vbegin);
@@ -104,14 +121,6 @@ void copyMesh(
 }
 
 template void copyMesh(const CGAL::Surface_mesh<CGAL::Point_3<CGAL::Epick>>& input, CGAL_DoubleMesh& output);
-
-template <typename K>
-void convertNefPolyhedronToTriangleMesh(const CGAL::Nef_polyhedron_3<K>& nef, CGAL::Surface_mesh<CGAL::Point_3<K>>& mesh)
-{
-  CGAL::convert_nef_polyhedron_to_polygon_mesh(nef, mesh, /* triangulate_all_faces */ true);
-}
-
-template void convertNefPolyhedronToTriangleMesh(const CGAL::Nef_polyhedron_3<CGAL_Kernel3>& nef, CGAL::Surface_mesh<CGAL::Point_3<CGAL_Kernel3>>& mesh);
 
 
 } // namespace CGALUtils
