@@ -122,7 +122,6 @@ std::unique_ptr<Geometry> rotatePolygonSub(const RotateExtrudeNode& node, const 
 #ifdef ENABLE_PYTHON
       if(node.profile_func != NULL)
       {
-        fragments=node.fn;
         Outline2d lastFace;
         Outline2d curFace;
         Outline2d outl = python_getprofile(node.profile_func, node.fn, j/(double) fragments);
@@ -248,6 +247,7 @@ std::unique_ptr<Geometry> rotatePolygon(const RotateExtrudeNode& node, const Pol
 
   // now create a fragment splitting plan
   size_t splits=ceil(node.angle/300.0);
+  fragments = num_sections;
   int fragstart=0,fragend;
   std::unique_ptr<ManifoldGeometry> result = nullptr;
 
