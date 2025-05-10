@@ -30,6 +30,7 @@ include("cmake/Modules/openscad_version.cmake")
 
 option(INFO "Display build configuration info at end of cmake config" ON)
 option(ENABLE_TESTS "Run testsuite after building." ON)
+option(ENABLE_GUI_TESTS "Compile a special version of the openscad gui with feature for testing." OFF)
 option(EXPERIMENTAL "Enable Experimental Features" OFF)
 option(USE_MANIFOLD_TRIANGULATOR "Use Manifold's triangulator instead of CGAL's" ON)
 option(USE_BUILTIN_MANIFOLD "Use manifold from submodule" ON)
@@ -604,8 +605,15 @@ if(NOT HEADLESS)
   set_property(TARGET OpenSCAD PROPERTY AUTORCC ON)
   set_property(TARGET OpenSCAD PROPERTY AUTOUIC_OPTIONS --tr q_)
   set_property(TARGET OpenSCAD PROPERTY AUTORCC_OPTIONS --threshold 10 --compress 9)
+
+  if(ENABLE_GUI_TESTS)
+    set(QT_TEST_IF_ANY Test)
+  else()
+    set(QT_TEST_IF_ANY)
+  endif()
+
   if (USE_QT6)
-    find_package(Qt6 COMPONENTS Core Core5Compat Widgets Multimedia OpenGL OpenGLWidgets Concurrent Network Svg REQUIRED QUIET)
+    find_package(Qt6 COMPONENTS Core Core5Compat Widgets Multimedia OpenGL OpenGLWidgets Concurrent Network Svg ${QT_TEST_IF_ANY} REQUIRED QUIET)
     message(STATUS "Qt6: ${Qt6_VERSION}")
 
     if (Qt6_POSITION_INDEPENDENT_CODE)
@@ -630,7 +638,7 @@ if(NOT HEADLESS)
       message(STATUS "DBus input driver disabled per user request.")
     endif()
   else()
-    find_package(Qt5 5.12 COMPONENTS Core Widgets Multimedia OpenGL Concurrent Network Svg REQUIRED QUIET)
+    find_package(Qt5 5.12 COMPONENTS Core Widgets Multimedia OpenGL Concurrent Network Svg ${QT_TEST_IF_ANY} REQUIRED QUIET)
     message(STATUS "Qt5: ${Qt5_VERSION}")
 
     if (Qt5_POSITION_INDEPENDENT_CODE)
@@ -1271,6 +1279,7 @@ set_source_files_properties(
 set(RESOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/resources)
 if(HEADLESS)
   target_compile_definitions(OpenSCAD PRIVATE OPENSCAD_NOGUI)
+  set(ENABLE_GUI_TESTS OFF)
 else()
   list(APPEND RESOURCE_FILES
     ${RESOURCE_DIR}/common.qrc
@@ -1280,6 +1289,27 @@ else()
   # GUI_UIS for .ui files to be indexed by Qt Creator despite AUTOUIC usage
   # GUI_HEADERS for .h files to be indexed by Qt Creator despite AUTOUIC usage
   list(APPEND Sources ${GUI_SOURCES} ${GUI_HEADER_ONLY} ${GUI_UIS} ${GUI_HEADERS})
+endif()
+
+if(ENABLE_GUI_TESTS)
+  set(GUITESTS_HEADERS
+    src/guitests/guitests.h
+    src/guitests/TestModuleCache.h
+    src/guitests/TestTabManager.h
+    src/guitests/TestMainWindow.h
+    src/guitests/UXTest.h
+  )
+
+  set(GUITESTS_SOURCES
+    src/guitests/guitests.cc
+    src/guitests/TestModuleCache.cc
+    src/guitests/TestTabManager.cc
+    src/guitests/TestMainWindow.cc
+    src/guitests/UXTest.cc
+  )
+
+  list(APPEND Sources ${GUITESTS_SOURCES} ${GUITESTS_HEADERS})
+  target_compile_definitions(OpenSCAD PRIVATE ENABLE_GUI_TESTS)
 endif()
 
 if (SNAPSHOT)
@@ -1328,6 +1358,11 @@ if(APPLE AND NOT APPLE_UNIX)
   file(COPY ${CMAKE_SOURCE_DIR}/locale DESTINATION ${BUNDLE_RESOURCES_DIR})
   file(COPY ${CMAKE_SOURCE_DIR}/shaders DESTINATION ${BUNDLE_RESOURCES_DIR})
   file(COPY ${CMAKE_SOURCE_DIR}/templates DESTINATION ${BUNDLE_RESOURCES_DIR})
+
+  if(ENABLE_GUI_TESTS)
+    file(COPY ${CMAKE_SOURCE_DIR}/tests/data DESTINATION ${BUNDLE_RESOURCES_DIR}/tests)
+  endif()
+
 elseif(MINGW)
   set_target_properties(OpenSCAD PROPERTIES
     LINK_FLAGS "-Wl,--stack,${STACKSIZE}"
@@ -1345,6 +1380,9 @@ if (USE_QT6)
       ${QT6QSCINTILLA_LIBRARY} ${Qt6DBus_LIBRARIES} ${Qt6Gamepad_LIBRARIES}
     )
   endif()
+  if(ENABLE_GUI_TESTS)
+    target_link_libraries(OpenSCAD PRIVATE Qt6::Test)
+  endif()
   if(MXECROSS)
     target_link_libraries(OpenSCAD PRIVATE Qt6::QSvgPlugin)
   endif()
@@ -1354,6 +1392,9 @@ else()
       Qt5::Core Qt5::Widgets Qt5::Multimedia Qt5::OpenGL Qt5::Concurrent Qt5::Network Qt5::Svg
       ${QT5QSCINTILLA_LIBRARY} ${Qt5DBus_LIBRARIES} ${Qt5Gamepad_LIBRARIES}
     )
+  endif()
+  if(ENABLE_GUI_TESTS)
+    target_link_libraries(OpenSCAD PRIVATE Qt5::Test)
   endif()
   if(MXECROSS)
     target_link_libraries(OpenSCAD PRIVATE Qt5::QSvgPlugin)
@@ -1408,6 +1449,11 @@ if(NOT APPLE OR APPLE_UNIX)
   install(DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/locale DESTINATION "${OPENSCAD_INSTALL_RESOURCEDIR}" FILES_MATCHING PATTERN "*/LC_MESSAGES/openscad.mo")
   install(DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/shaders DESTINATION "${OPENSCAD_INSTALL_RESOURCEDIR}")
   install(DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/templates DESTINATION "${OPENSCAD_INSTALL_RESOURCEDIR}" FILES_MATCHING PATTERN "*.json")
+
+  if(ENABLE_GUI_TESTS)
+    install(DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/tests/data/ DESTINATION ${OPENSCAD_INSTALL_RESOURCEDIR}/tests)
+  endif()
+
 else()
   install(TARGETS ${CMAKE_PROJECT_NAME}
       BUNDLE DESTINATION ${CMAKE_INSTALL_BINDIR}

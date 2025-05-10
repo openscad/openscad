@@ -68,9 +68,12 @@ class ThrownTogetherRenderer;
 #include "ui_MainWindow.h"
 #include "utils/printutils.h"
 
+class UXTest;
 class MainWindow : public QMainWindow, public Ui::MainWindow, public InputEventHandler
 {
   Q_OBJECT
+
+  friend UXTest;
 
 public:
   Preferences *prefs;
@@ -428,6 +431,16 @@ private:
 signals:
   void highlightError(int);
   void unhighlightLastError();
+
+#ifdef ENABLE_GUI_TESTS
+public:
+  std::shared_ptr<AbstractNode> instantiateRootFromSource(SourceFile* file);
+signals:
+  // This is a new signal introduced while drafting the testing framework, while in experimental mode
+  // we protected it using the #ifdef/endif so it should not be considered as part of the MainWindow API.
+  void compilationDone(SourceFile*);
+#endif //
+
 };
 
 class GuiLocker
