@@ -152,6 +152,8 @@ if (CMAKE_SYSTEM_NAME STREQUAL Emscripten)
   set(ENV{PKG_CONFIG_PATH} "/emsdk/upstream/emscripten/cache/sysroot/lib/pkgconfig")
   target_compile_definitions(OpenSCAD PRIVATE CGAL_DISABLE_ROUNDING_MATH_CHECK)
   target_link_libraries(OpenSCAD PRIVATE /emsdk/upstream/emscripten/cache/sysroot/lib/libz.a)
+  target_link_libraries(OpenSCAD PRIVATE /emsdk/upstream/emscripten/cache/sysroot/lib/wasm32-emscripten/libbz2.a)
+  target_link_libraries(OpenSCAD PRIVATE /emsdk/upstream/emscripten/cache/sysroot/lib/wasm32-emscripten/libsqlite3.a)
   
   # https://emscripten.org/docs/tools_reference/emcc.html
   # https://emscripten.org/docs/tools_reference/settings_reference.html
