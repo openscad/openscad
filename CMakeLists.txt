@@ -473,6 +473,7 @@ if(ENABLE_PYTHON)
     SET(PYTHON_SOURCES
       src/python/pyopenscad.cc 
       src/python/pyfunctions.cc
+      src/python/pymod.cc
     )
 
     add_library(OpenSCADPy ${PYTHON_SOURCES} )
@@ -485,7 +486,11 @@ if(ENABLE_PYTHON)
     target_include_directories(OpenSCADPy PRIVATE
       "src"
     )
-    target_include_directories(OpenSCADPy SYSTEM PRIVATE ${GLIB2_INCLUDE_DIRS})
+    target_include_directories(OpenSCADPy PRIVATE ${GLIB2_INCLUDE_DIRS})
+    target_include_directories(OpenSCADPy PRIVATE ${FREETYPE_INCLUDE_DIRS})
+    message(ERROR "WATCH HERE: ${HARFBUZZ_INCLUDE_DIRS}")
+    target_include_directories(OpenSCADPy PRIVATE ${HARFBUZZ_INCLUDE_DIRS})
+    target_include_directories(OpenSCADPy PRIVATE "submodules/Clipper2/CPP/Clipper2Lib/include")
     target_link_libraries(OpenSCADPy PRIVATE Eigen3::Eigen)
     target_compile_definitions(OpenSCADPy PRIVATE "STACKSIZE=${STACKSIZE}")
     target_compile_definitions(OpenSCADPy PRIVATE EIGEN_DONT_ALIGN)
