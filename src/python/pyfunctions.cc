@@ -4108,7 +4108,7 @@ PyObject *python_oo_offset(PyObject *obj, PyObject *args, PyObject *kwargs)
   return python_offset_core(obj,r, delta, chamfer, fn, fa, fs);
 }
 
-PyObject *python_projection_core(PyObject *obj, const char *cutmode, int convexity)
+PyObject *python_projection_core(PyObject *obj, PyObject *cut, int convexity)
 {
   DECLARE_INSTANCE
   auto node = std::make_shared<ProjectionNode>(instance);
@@ -4121,7 +4121,12 @@ PyObject *python_projection_core(PyObject *obj, const char *cutmode, int convexi
 
   node->convexity = convexity;
   node->cut_mode = 0;
-  if (cutmode != NULL && !strcasecmp(cutmode, "cut")) node->cut_mode = 1;
+  if (cut == Py_True)  node->cut_mode = 1;
+  else if (cut == Py_False)  node->cut_mode = 0;
+  else {
+    PyErr_SetString(PyExc_TypeError, "cut can be either True or false");
+    return NULL;
+  }
 
   node->children.push_back(child);
   return PyOpenSCADObjectFromNode(&PyOpenSCADType, node);
@@ -4131,9 +4136,9 @@ PyObject *python_projection(PyObject *self, PyObject *args, PyObject *kwargs)
 {
   char *kwlist[] = {"obj", "cut", "convexity", NULL};
   PyObject *obj = NULL;
-  const char *cutmode = NULL;
+  PyObject *cutmode = NULL;
   long convexity = 2;
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O|sl", kwlist,
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O|Ol", kwlist,
                                    &obj,
                                    &cutmode, &convexity
                                    )) {
@@ -4146,9 +4151,9 @@ PyObject *python_projection(PyObject *self, PyObject *args, PyObject *kwargs)
 PyObject *python_oo_projection(PyObject *obj, PyObject *args, PyObject *kwargs)
 {
   char *kwlist[] = {"cut", "convexity", NULL};
-  const char *cutmode = NULL;
+  PyObject *cutmode = NULL;
   long convexity = 2;
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|sl", kwlist,
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|Ol", kwlist,
                                    &cutmode, &convexity
                                    )) {
     PyErr_SetString(PyExc_TypeError, "Error during parsing projection(object)");
