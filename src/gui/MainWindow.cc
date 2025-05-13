@@ -696,7 +696,7 @@ MainWindow::MainWindow(const QStringList& filenames) :
      * ignored by the layouting as the editor is set to expand to
      * fill the available space.
      */
-    activeEditor()->setInitialSizeHint(QSize((5 * this->width() / 11), 100));
+    // activeEditor()->setInitialSizeHint(QSize((5 * this->width() / 11), 100));
     tabifyDockWidget(consoleDock, errorLogDock);
     tabifyDockWidget(errorLogDock, fontListDock);
     tabifyDockWidget(fontListDock, animateDock);
@@ -791,15 +791,10 @@ MainWindow::MainWindow(const QStringList& filenames) :
   setAcceptDrops(true);
   clearCurrentOutput();
 
-  // Now the tabManager has been created and connected we can create a first tab from the first command line filename
-  tabManager->createTab(filenames.isEmpty() ? QString() : filenames[0]);
-
-  for (int i = 1; i < filenames.size(); ++i)
+  for (int i = 0; i < filenames.size(); ++i)
     tabManager->createTab(filenames[i]);
 
   updateExportActions();
-
-  activeEditor()->setFocus();
 
   // Configure the highlighting color scheme from the active editor one.
   // This is done only one time at creation of the first MainWindow instance
