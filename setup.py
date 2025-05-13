@@ -12,6 +12,7 @@ def main():
               "src/python/pyfunctions.cc",
               "src/python/pydata.cc",
               "src/python/pyopenscad.cc",
+              "src/python/pymod.cc",
               "src/python/pip_fixer.cc"
             ] 
     geometry = [
@@ -27,8 +28,7 @@ def main():
               "src/geometry/cgal/cgalutils-triangulate.cc",
               "src/geometry/cgal/cgalutils-tess.cc",
               "src/geometry/cgal/cgalutils-orient.cc",
-              "src/geometry/cgal/cgalutils-mesh.cc",
-              "src/geometry/cgal/CGAL_Nef_polyhedron.cc",
+              "src/geometry/cgal/CGALNefGeometry.cc",
               "src/geometry/cgal/cgalutils-polyhedron.cc",
               "src/geometry/cgal/cgalutils-convex.cc",
               "src/geometry/cgal/cgalutils-project.cc",
@@ -154,8 +154,28 @@ def main():
               "src/io/import_3mf_dummy.cc",
               "src/io/import_amf.cc",
               "src/io/import_nef.cc",
+              "src/io/import_svg.cc",
               "src/io/import_off.cc",
               "src/io/import_stl.cc" ]
+    libsvg = [
+              "src/libsvg/circle.cc",
+              "src/libsvg/line.cc",
+              "src/libsvg/shape.cc",
+              "src/libsvg/use.cc",
+              "src/libsvg/data.cc",
+              "src/libsvg/path.cc",
+              "src/libsvg/svgpage.cc",
+              "src/libsvg/util.cc",
+              "src/libsvg/ellipse.cc",
+              "src/libsvg/polygon.cc",
+              "src/libsvg/text.cc",
+              "src/libsvg/group.cc",
+              "src/libsvg/polyline.cc",
+              "src/libsvg/transformation.cc",
+              "src/libsvg/libsvg.cc",
+              "src/libsvg/rect.cc",
+              "src/libsvg/tspan.cc"
+              ]
     io = [              
               "src/io/export.cc",
               "src/io/DxfData.cc",
@@ -178,6 +198,7 @@ def main():
               "submodules/manifold/src/sort.cpp",
               "submodules/manifold/src/sdf.cpp",
               "submodules/manifold/src/polygon.cpp",
+              "submodules/manifold/src/tree2d.cpp",
               "submodules/manifold/src/impl.cpp" ]
     clipper = [
               "submodules/Clipper2/CPP/Clipper2Lib/src/clipper.engine.cpp",
@@ -195,7 +216,7 @@ def main():
             ]
     glview = [
               "src/glview/Camera.cc",
-              "src/glview/PolySetRenderer.cc",
+#              "src/glview/PolySetRenderer.cc",
               "src/glview/ColorMap.cc",
               "src/glview/RenderSettings.cc" ]
     lex_yacc = [
@@ -205,7 +226,7 @@ def main():
     lodepng = [ "src/ext/lodepng/lodepng.cpp" ]
 
     pythonscad_ext = Extension("openscad"
-        , sources = root + python + geometry + ext + io + core +  manifold + 
+        , sources = root + python + geometry + ext + io + libsvg + core +  manifold + 
         clipper + utils + platform  + glview + lex_yacc + lodepng
         ,include_dirs = [
                   ".",
