@@ -11,7 +11,9 @@
 using Projection = CGAL::Triangulation_2_filtered_projection_traits_3<K>;
 #else
 #include <CGAL/Projection_traits_3.h>
-using Projection = CGAL::Filtered_projection_traits_3<K>;
+
+using Tess_kernel = CGAL::Epick;
+using Projection = CGAL::Filtered_projection_traits_3<Tess_kernel>;
 #endif
 #include <CGAL/Triangulation_face_base_with_info_2.h>
 
@@ -20,7 +22,7 @@ struct FaceInfo {
   bool in_domain() { return nesting_level % 2 == 1; }
 };
 
-using Fbb = CGAL::Triangulation_face_base_with_info_2<FaceInfo, K>;
+using Fbb = CGAL::Triangulation_face_base_with_info_2<FaceInfo, Tess_kernel>;
 using Tds = CGAL::Triangulation_data_structure_2<CGAL::Triangulation_vertex_base_2<Projection>, CGAL::Constrained_triangulation_face_base_2<Projection, Fbb>>;
 using CDT = CGAL::Constrained_Delaunay_triangulation_2<Projection, Tds, CGAL::Exact_predicates_tag>;
 
@@ -85,9 +87,9 @@ namespace CGALUtils {
 
    The resulting triangles is added to the given triangles vector.
  */
-bool tessellatePolygonWithHoles(const PolyholeK& polygons,
+bool tessellatePolygonWithHoles(const std::vector<std::vector<CGAL::Point_3<CGAL::Epick>>>& polygons,
                                 Polygons& triangles,
-                                const K::Vector_3 *normal)
+                                const CGAL::Vector_3<CGAL::Epick> *normal)
 {
   // No polygon. FIXME: Will this ever happen or can we assert here?
   if (polygons.empty()) return false;
@@ -95,7 +97,7 @@ bool tessellatePolygonWithHoles(const PolyholeK& polygons,
   // No hole
   if (polygons.size() == 1) return tessellatePolygon(polygons.front(), triangles, normal);
 
-  K::Vector_3 normalvec;
+  CGAL::Vector_3<CGAL::Epick> normalvec;
   if (normal) {
     normalvec = *normal;
   } else {
@@ -127,7 +129,7 @@ bool tessellatePolygonWithHoles(const PolyholeK& polygons,
     if (fit->info().in_domain()) {
       Polygon tri;
       for (int i = 0; i < 3; ++i) {
-        Vertex3K v = cdt.triangle(fit)[i];
+        CGAL::Point_3<CGAL::Epick> v = cdt.triangle(fit)[i];
         tri.push_back(Vector3d(v.x(), v.y(), v.z()));
       }
       triangles.push_back(tri);
@@ -137,9 +139,9 @@ bool tessellatePolygonWithHoles(const PolyholeK& polygons,
   return false;
 }
 
-bool tessellatePolygon(const PolygonK& polygon,
+bool tessellatePolygon(const std::vector<CGAL::Point_3<CGAL::Epick>>& polygon,
                        Polygons& triangles,
-                       const K::Vector_3 *normal)
+                       const CGAL::Vector_3<CGAL::Epick> *normal)
 {
   if (polygon.size() == 3) {
     PRINTD("input polygon has 3 points. shortcut tessellation.");
@@ -151,7 +153,7 @@ bool tessellatePolygon(const PolygonK& polygon,
     return false;
   }
 
-  K::Vector_3 normalvec;
+  CGAL::Vector_3<CGAL::Epick> normalvec;
   if (normal) {
     normalvec = *normal;
   } else {
@@ -181,7 +183,7 @@ bool tessellatePolygon(const PolygonK& polygon,
     if (fit->info().in_domain()) {
       Polygon tri;
       for (int i = 0; i < 3; ++i) {
-        K::Point_3 v = cdt.triangle(fit)[i];
+        Tess_kernel::Point_3 v = cdt.triangle(fit)[i];
         tri.push_back(Vector3d(v.x(), v.y(), v.z()));
       }
       triangles.push_back(tri);

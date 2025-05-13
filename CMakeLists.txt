@@ -929,14 +929,12 @@ set(CGAL_SOURCES
   src/geometry/cgal/cgalutils-convex.cc
   src/geometry/cgal/cgalutils-kernel.cc
   src/geometry/cgal/cgalutils-mesh.cc
-  src/geometry/cgal/cgalutils-minkowski.cc
-  src/geometry/cgal/cgalutils-nef.cc
   src/geometry/cgal/cgalutils-orient.cc
   src/geometry/cgal/cgalutils-polyhedron.cc
   src/geometry/cgal/cgalutils-project.cc
   src/geometry/cgal/cgalutils-tess.cc
   src/geometry/cgal/cgalutils-triangulate.cc
-  src/geometry/cgal/CGAL_Nef_polyhedron.cc
+  src/geometry/cgal/CGALNefGeometry.cc
   src/geometry/cgal/CGALCache.cc
   src/io/export_nef.cc
   src/io/import_nef.cc

@@ -1,5 +1,5 @@
 module LazyChildrenTest() {
-  color("Red") children();
+  children();
 }
 
 LazyChildrenTest() {

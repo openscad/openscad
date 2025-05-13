@@ -149,7 +149,7 @@
 #ifdef ENABLE_CGAL
 #include "geometry/cgal/cgal.h"
 #include "geometry/cgal/CGALCache.h"
-#include "geometry/cgal/CGAL_Nef_polyhedron.h"
+#include "geometry/cgal/CGALNefGeometry.h"
 #endif // ENABLE_CGAL
 #ifdef ENABLE_MANIFOLD
 #include "geometry/manifold/manifoldutils.h"
@@ -495,7 +495,7 @@ MainWindow::MainWindow(const QStringList& filenames) :
   connect(this->editActionFind, &QAction::triggered, this, &MainWindow::actionShowFind);
   connect(this->editActionFindAndReplace, &QAction::triggered, this, &MainWindow::actionShowFindAndReplace);
 #ifdef Q_OS_WIN
-  this->editActionFindAndReplace->setShortcut(QKeySequence(Qt::CTRL, Qt::SHIFT, Qt::Key_F));
+  this->editActionFindAndReplace->setShortcut(QKeySequence("Ctrl+Shift+F"));
 #endif
   connect(this->editActionFindNext, &QAction::triggered, this, &MainWindow::findNext);
   connect(this->editActionFindPrevious, &QAction::triggered, this, &MainWindow::findPrev);
@@ -2700,7 +2700,7 @@ void MainWindow::showTextInWindow(const QString& type, const QString& content)
     e->setTabStopDistance(tabStopWidth);
     e->setWindowTitle(type+" Dump");
     if(content.isEmpty())
-        e->setPlainText("No "+type+"to dump. Please try compiling first...");
+        e->setPlainText("No "+type+" to dump. Please try compiling first...");
     else
         e->setPlainText(content);
 
@@ -2756,7 +2756,7 @@ void MainWindow::actionCheckValidity()
 
   bool valid = true;
 #ifdef ENABLE_CGAL
-  if (auto N = std::dynamic_pointer_cast<const CGAL_Nef_polyhedron>(rootGeom)) {
+  if (auto N = std::dynamic_pointer_cast<const CGALNefGeometry>(rootGeom)) {
     valid = N->p3 ? const_cast<CGAL_Nef_polyhedron3&>(*N->p3).is_valid() : false;
   } else
 #endif
@@ -2814,7 +2814,7 @@ bool MainWindow::canExport(unsigned int dim)
   }
 
 #ifdef ENABLE_CGAL
-  auto N = dynamic_cast<const CGAL_Nef_polyhedron *>(rootGeom.get());
+  auto N = dynamic_cast<const CGALNefGeometry *>(rootGeom.get());
   if (N && !N->p3->is_simple()) {
     LOG(message_group::UI_Warning, "Object may not be a valid 2-manifold and may need repair! See https://en.wikibooks.org/wiki/OpenSCAD_User_Manual/STL_Import_and_Export");
   }
