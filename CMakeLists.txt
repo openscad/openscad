@@ -490,6 +490,8 @@ if(ENABLE_PYTHON)
   endif()
   target_compile_definitions(OpenSCAD PRIVATE ENABLE_PYTHON)
   target_compile_definitions(OpenSCADPy PRIVATE ENABLE_PYTHON)
+  target_compile_definitions(OpenSCADPy PRIVATE ENABLE_CGAL)
+  target_compile_definitions(OpenSCADPy PRIVATE ENABLE_EXPERIMENTAL)
   find_package(Nettle 3.4)
   if(WIN32) 
     #MINGW environment	  
