@@ -370,9 +370,6 @@ MainWindow::MainWindow(const QStringList& filenames) :
   connect(tabManager, &TabManager::editorContentReloaded, this, &MainWindow::onTabManagerEditorContentReloaded);
   connect(tabManager, &TabManager::editorNameChanged, this, &MainWindow::onTabManagerEditorNameChanged);
 
-  // Now the tabManager has been created and connected we can create a first tab form the command line filename
-  tabManager->createTab(filenames.isEmpty() ? QString() : filenames[0]);
-
   connect(GlobalPreferences::inst(), &Preferences::consoleFontChanged, this->console, &Console::setFont);
 
   const QString version = QString("<b>OpenSCAD %1</b>").arg(QString::fromStdString(openscad_versionnumber));
@@ -777,7 +774,6 @@ MainWindow::MainWindow(const QStringList& filenames) :
   QObject::connect(parameterDock,  &Dock::visibilityChanged,
                    this,        &MainWindow::onParametersDockVisibilityChanged);
 
-  connect(activeEditor(), &EditorInterface::escapePressed, this, &MainWindow::measureFinished);
   // display this window and check for OpenGL 2.0 (OpenCSG) support
   viewModeThrownTogether();
   show();
@@ -794,6 +790,9 @@ MainWindow::MainWindow(const QStringList& filenames) :
 
   setAcceptDrops(true);
   clearCurrentOutput();
+
+  // Now the tabManager has been created and connected we can create a first tab from the first command line filename
+  tabManager->createTab(filenames.isEmpty() ? QString() : filenames[0]);
 
   for (int i = 1; i < filenames.size(); ++i)
     tabManager->createTab(filenames[i]);
@@ -1815,6 +1814,8 @@ QList<double> MainWindow::getRotation() const
 
 void MainWindow::hideFind()
 {
+  if(!activeEditor())
+      return;
   find_panel->hide();
   activeEditor()->findState = TabManager::FIND_HIDDEN;
   editActionFindNext->setEnabled(false);
@@ -3202,6 +3203,9 @@ void MainWindow::showLink(const QString& link)
 
 void MainWindow::onEditorDockVisibilityChanged(bool isVisible)
 {
+  if(!activeEditor())
+      return;
+
   auto e = static_cast<ScintillaEditor*>(activeEditor());
   if (isVisible) {
     e->qsci->setReadOnly(false);
@@ -3265,6 +3269,9 @@ void MainWindow::onViewportControlDockVisibilityChanged(bool isVisible)
 
 void MainWindow::onParametersDockVisibilityChanged(bool isVisible)
 {
+  if(!activeEditor())
+    return;
+
   if (isVisible) {
     parameterDock->raise();
     activeEditor()->parameterWidget->scrollArea->setFocus();
@@ -3374,7 +3381,6 @@ void MainWindow::onTabManagerAboutToCloseEditor(EditorInterface *closingEditor)
 
 void MainWindow::onTabManagerEditorNameChanged(const QString& name)
 {
-    std::cout << "CHANGE TITLE " << name.toStdString() << std::endl;
     setWindowTitle(name);
 }
 
@@ -3418,6 +3424,7 @@ void MainWindow::onTabManagerEditorChanged(EditorInterface *newEditor)
   if (renderedEditor == nullptr) {
     actionRenderPreview();
   }
+  connect(newEditor, &EditorInterface::escapePressed, this, &MainWindow::measureFinished);
 }
 
 Dock *MainWindow::findVisibleDockToActivate(int offset) const

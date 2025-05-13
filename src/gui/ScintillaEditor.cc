@@ -373,22 +373,17 @@ void ScintillaEditor::setupAutoComplete(const bool forceOff)
 
 void ScintillaEditor::fireModificationChanged()
 {
-  std::cout << __PRETTY_FUNCTION__ << std::endl;
   emit modificationChanged(this);
 }
 
 void ScintillaEditor::setPlainText(const QString& text)
 {
-  std::cout << __PRETTY_FUNCTION__ << " : 1 " << std::endl;
-
   {
       // we blocks signal about having the content changed for the moment
       const QSignalBlocker blocker(qsci);
       qsci->setText(text);
   }
-  std::cout << __PRETTY_FUNCTION__ << " : 2 " << std::endl;
   setContentModified(false);
-  std::cout << __PRETTY_FUNCTION__ << " : 3 " << std::endl;
 }
 
 QString ScintillaEditor::toPlainText()
@@ -398,17 +393,13 @@ QString ScintillaEditor::toPlainText()
 
 void ScintillaEditor::setContentModified(bool modified)
 {  
-  std::cout << __PRETTY_FUNCTION__ << " : 0 "  << " status " << modified << std::endl;
-
   if(modified){
       // FIXME: Due to an issue with QScintilla, we need to do this on the document itself.
     qsci->SCN_SAVEPOINTLEFT();
-    std::cout << __PRETTY_FUNCTION__ << " : 1 " << std::endl;
     //qsci->setModified(modified);
   }else
   {
     qsci->SCN_SAVEPOINTREACHED();
-    std::cout << __PRETTY_FUNCTION__ << " : 3 " << std::endl;
     //qsci->setModified(modified);
   }
 }
