@@ -124,12 +124,12 @@ void TabManager::actionNew()
   createTab("");
 }
 
-QSet<EditorInterface*> TabManager::editors() const
+QSet<EditorInterface *> TabManager::editors() const
 {
-    QSet<EditorInterface*> editors;
-    for(int i=0;i<tabWidget->count();++i)
-        editors.insert(static_cast<EditorInterface*>(tabWidget->widget(i)));
-    return editors;
+  QSet<EditorInterface *> editors;
+  for (int i = 0; i < tabWidget->count(); ++i)
+    editors.insert(static_cast<EditorInterface *>(tabWidget->widget(i)));
+  return editors;
 }
 
 void TabManager::open(const QString& filename)
@@ -227,92 +227,92 @@ size_t TabManager::count()
 
 void TabManager::highlightError(int i)
 {
-    activeEditor()->highlightError(i);
+  activeEditor()->highlightError(i);
 }
 
 void TabManager::unhighlightLastError()
 {
-    activeEditor()->unhighlightLastError();
+  activeEditor()->unhighlightLastError();
 }
 
 void TabManager::undo()
 {
-    activeEditor()->undo();
+  activeEditor()->undo();
 }
 
 void TabManager::redo()
 {
-    activeEditor()->redo();
+  activeEditor()->redo();
 }
 
 void TabManager::cut()
 {
-    activeEditor()->cut();
+  activeEditor()->cut();
 }
 
 void TabManager::copy()
 {
-    activeEditor()->copy();
+  activeEditor()->copy();
 }
 
 void TabManager::paste()
 {
-    activeEditor()->paste();
+  activeEditor()->paste();
 }
 
 void TabManager::indentSelection()
 {
-    activeEditor()->indentSelection();
+  activeEditor()->indentSelection();
 }
 
 void TabManager::unindentSelection()
 {
-    activeEditor()->unindentSelection();
+  activeEditor()->unindentSelection();
 }
 
 void TabManager::commentSelection()
 {
-    activeEditor()->commentSelection();
+  activeEditor()->commentSelection();
 }
 
 void TabManager::uncommentSelection()
 {
-    activeEditor()->uncommentSelection();
+  activeEditor()->uncommentSelection();
 }
 
 void TabManager::toggleBookmark()
 {
-    activeEditor()->toggleBookmark();
+  activeEditor()->toggleBookmark();
 }
 
 void TabManager::nextBookmark()
 {
-    activeEditor()->nextBookmark();
+  activeEditor()->nextBookmark();
 }
 
 void TabManager::prevBookmark()
 {
-    activeEditor()->prevBookmark();
+  activeEditor()->prevBookmark();
 }
 
 void TabManager::jumpToNextError()
 {
-    activeEditor()->jumpToNextError();
+  activeEditor()->jumpToNextError();
 }
 
 void TabManager::setFocus()
 {
-    activeEditor()->setFocus();
+  activeEditor()->setFocus();
 }
 
 void TabManager::updateActionUndoState()
 {
-    par->editActionUndo->setEnabled(activeEditor()->canUndo());
+  par->editActionUndo->setEnabled(activeEditor()->canUndo());
 }
 
 void TabManager::onHyperlinkIndicatorClicked(int val)
 {
-    const QString filename = QString::fromStdString(activeEditor()->indicatorData[val].path);
+  const QString filename = QString::fromStdString(activeEditor()->indicatorData[val].path);
   this->open(filename);
 }
 
@@ -371,7 +371,7 @@ void TabManager::closeTab()
 
 void TabManager::showContextMenuEvent(const QPoint& pos)
 {
-    auto menu = activeEditor()->createStandardContextMenu();
+  auto menu = activeEditor()->createStandardContextMenu();
 
   menu->addSeparator();
   menu->addAction(par->editActionFind);
@@ -430,14 +430,14 @@ void TabManager::showTabHeaderContextMenu(const QPoint& pos)
   menu.exec(globalCursorPos);
 }
 
-EditorInterface* TabManager::activeEditor(){
-    return static_cast<EditorInterface*>(tabWidget->currentWidget());
+EditorInterface *TabManager::activeEditor(){
+  return static_cast<EditorInterface *>(tabWidget->currentWidget());
 }
 
 void TabManager::setContentRenderState() //since last render
 {
-    activeEditor()->contentsRendered = false;   //since last render
-    activeEditor()->parameterWidget->setEnabled(false);
+  activeEditor()->contentsRendered = false;     //since last render
+  activeEditor()->parameterWidget->setEnabled(false);
 }
 
 void TabManager::stopAnimation()
@@ -448,8 +448,7 @@ void TabManager::stopAnimation()
 
 void TabManager::updateFindState()
 {
-    switch(activeEditor()->findState)
-  {
+  switch (activeEditor()->findState) {
   case TabManager::FIND_REPLACE_VISIBLE: par->showFind(true); break;
   case TabManager::FIND_VISIBLE: par->showFind(false); break;
   default: par->hideFind(); break;
@@ -475,8 +474,7 @@ void TabManager::openTabFile(const QString& filename)
   QFileInfo fileinfo(filename);
   const auto suffix = fileinfo.suffix().toLower();
   const auto knownFileType = Importer::knownFileExtensions.contains(suffix);
-  if(!knownFileType)
-    return;
+  if (!knownFileType) return;
 
   const auto cmd = Importer::knownFileExtensions[suffix];
   if (cmd.isEmpty()) {
@@ -531,15 +529,14 @@ void TabManager::setEditorTabName(const QString& tabName, const QString& tabTool
   tabWidget->setTabText(index, name);
   tabWidget->setTabToolTip(index, tabToolTip);
 
-  if( edt == activeEditor() )
-    emit editorNameChanged(name);
+  if (edt == activeEditor() ) emit editorNameChanged(name);
 }
 
 bool TabManager::refreshDocument()
 {
   bool file_opened = false;
   if (!activeEditor()->filepath.isEmpty()) {
-      QFile file(activeEditor()->filepath);
+    QFile file(activeEditor()->filepath);
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
       LOG("Failed to open file %1$s: %2$s",
           activeEditor()->filepath.toLocal8Bit().constData(), file.errorString().toLocal8Bit().constData());
@@ -551,7 +548,7 @@ bool TabManager::refreshDocument()
       auto text = reader.readAll();
       LOG("Loaded design '%1$s'.", activeEditor()->filepath.toLocal8Bit().constData());
       if (activeEditor()->toPlainText() != text) {
-          activeEditor()->setPlainText(text);
+        activeEditor()->setPlainText(text);
         setContentRenderState();         // since last render
       }
       file_opened = true;
@@ -593,7 +590,7 @@ bool TabManager::maybeSave(int x)
  */
 bool TabManager::shouldClose()
 {
-  for(auto editor : editors()) {
+  for (auto editor : editors()) {
     if (!(editor->isContentModified() || editor->parameterWidget->isModified())) continue;
 
     QMessageBox box(par);
@@ -740,7 +737,7 @@ bool TabManager::saveACopy(EditorInterface *edt)
 
 bool TabManager::saveAll()
 {
-  for(auto editor : editors()) {
+  for (auto editor : editors()) {
     if (editor->isContentModified() || editor->parameterWidget->isModified()) {
       if (!save(editor)) {
         return false;

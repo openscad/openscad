@@ -285,8 +285,8 @@ std::unique_ptr<ExternalToolInterface> createExternalToolService(
 
 } // namespace
 
-EditorInterface* MainWindow::activeEditor() const {
-    return tabManager->activeEditor();
+EditorInterface *MainWindow::activeEditor() const {
+  return tabManager->activeEditor();
 }
 
 MainWindow::MainWindow(const QStringList& filenames) :
@@ -799,8 +799,7 @@ MainWindow::MainWindow(const QStringList& filenames) :
   // Configure the highlighting color scheme from the active editor one.
   // This is done only one time at creation of the first MainWindow instance
   auto preferences = GlobalPreferences::inst();
-  if(!preferences->hasHighlightingColorScheme())
-    preferences->setHighlightingColorSchemes(activeEditor()->colorSchemes());
+  if (!preferences->hasHighlightingColorScheme()) preferences->setHighlightingColorSchemes(activeEditor()->colorSchemes());
 
   onTabManagerEditorChanged(activeEditor());
 
@@ -1809,8 +1808,7 @@ QList<double> MainWindow::getRotation() const
 
 void MainWindow::hideFind()
 {
-  if(!activeEditor())
-      return;
+  if (!activeEditor()) return;
   find_panel->hide();
   activeEditor()->findState = TabManager::FIND_HIDDEN;
   editActionFindNext->setEnabled(false);
@@ -1824,37 +1822,37 @@ void MainWindow::hideFind()
 // activeEditor to appropriate search mode.
 void MainWindow::showFind(bool doFindAndReplace)
 {
-    auto editor = activeEditor();
-    findInputField->setFindCount(editor->updateFindIndicators(findInputField->text()));
-    processEvents();
+  auto editor = activeEditor();
+  findInputField->setFindCount(editor->updateFindIndicators(findInputField->text()));
+  processEvents();
 
-    if(doFindAndReplace){
-        findTypeComboBox->setCurrentIndex(1);
-        replaceInputField->show();
-        replaceButton->show();
-        replaceAllButton->show();
-        editor->findState = TabManager::FIND_REPLACE_VISIBLE;
-    }else{
-        findTypeComboBox->setCurrentIndex(0);
-        replaceInputField->hide();
-        replaceButton->hide();
-        replaceAllButton->hide();
-        editor->findState = TabManager::FIND_VISIBLE;
-    }
+  if (doFindAndReplace) {
+    findTypeComboBox->setCurrentIndex(1);
+    replaceInputField->show();
+    replaceButton->show();
+    replaceAllButton->show();
+    editor->findState = TabManager::FIND_REPLACE_VISIBLE;
+  } else {
+    findTypeComboBox->setCurrentIndex(0);
+    replaceInputField->hide();
+    replaceButton->hide();
+    replaceAllButton->hide();
+    editor->findState = TabManager::FIND_VISIBLE;
+  }
 
-    find_panel->show();
-    editActionFindNext->setEnabled(true);
-    editActionFindPrevious->setEnabled(true);
-    if (!editor->selectedText().isEmpty()) {
-      findInputField->setText(editor->selectedText());
-    }
-    findInputField->setFocus();
-    findInputField->selectAll();
+  find_panel->show();
+  editActionFindNext->setEnabled(true);
+  editActionFindPrevious->setEnabled(true);
+  if (!editor->selectedText().isEmpty()) {
+    findInputField->setText(editor->selectedText());
+  }
+  findInputField->setFocus();
+  findInputField->selectAll();
 }
 
 void MainWindow::actionShowFind()
 {
-    showFind(false);
+  showFind(false);
 }
 
 void MainWindow::findString(const QString& textToFind)
@@ -1866,7 +1864,7 @@ void MainWindow::findString(const QString& textToFind)
 
 void MainWindow::actionShowFindAndReplace()
 {
-    showFind(true);
+  showFind(true);
 }
 
 void MainWindow::actionSelectFind(int type)
@@ -2527,7 +2525,7 @@ void MainWindow::rightClick(QPoint position)
 
 void MainWindow::measureFinished()
 {
-    meas.stopMeasure();
+  meas.stopMeasure();
 }
 
 void MainWindow::clearAllSelectionIndicators()
@@ -2691,19 +2689,17 @@ void MainWindow::UnknownExceptionCleanup(std::string msg){
 
 void MainWindow::showTextInWindow(const QString& type, const QString& content)
 {
-    auto e = new QTextEdit(this);
-    e->setAttribute(Qt::WA_DeleteOnClose);
-    e->setWindowFlags(Qt::Window);
-    e->setTabStopDistance(tabStopWidth);
-    e->setWindowTitle(type+" Dump");
-    if(content.isEmpty())
-        e->setPlainText("No "+type+" to dump. Please try compiling first...");
-    else
-        e->setPlainText(content);
+  auto e = new QTextEdit(this);
+  e->setAttribute(Qt::WA_DeleteOnClose);
+  e->setWindowFlags(Qt::Window);
+  e->setTabStopDistance(tabStopWidth);
+  e->setWindowTitle(type + " Dump");
+  if (content.isEmpty()) e->setPlainText("No " + type + " to dump. Please try compiling first...");
+  else e->setPlainText(content);
 
-    e->setReadOnly(true);
-    e->resize(600, 400);
-    e->show();
+  e->setReadOnly(true);
+  e->resize(600, 400);
+  e->show();
 }
 
 void MainWindow::actionDisplayAST()
@@ -2726,9 +2722,11 @@ void MainWindow::actionDisplayCSGProducts()
 {
   setCurrentOutput();
   // a small lambda to avoid code duplication
-  auto constexpr dump = [](auto node){ return QString::fromStdString(node? node->dump() : "N/A"); };
+  auto constexpr dump = [](auto node){
+      return QString::fromStdString(node? node->dump() : "N/A");
+    };
   auto text = QString("\nCSG before normalization:\n%1\n\n\nCSG after normalization:\n%2\n\n\nCSG rendering chain:\n%3\n\n\nHighlights CSG rendering chain:\n%4\n\n\nBackground CSG rendering chain:\n%5\n")
-                  .arg(dump(csgRoot), dump(normalizedRoot), dump(rootProduct), dump(highlightsProducts), dump(backgroundProducts));
+    .arg(dump(csgRoot), dump(normalizedRoot), dump(rootProduct), dump(highlightsProducts), dump(backgroundProducts));
   showTextInWindow("CSG Products Dump", text);
   clearCurrentOutput();
 }
@@ -3123,23 +3121,23 @@ void MainWindow::viewCenter()
 
 void MainWindow::setProjectionType(ProjectionType mode)
 {
-    bool isOrthogonal = ProjectionType::ORTHOGONAL == mode;
-    QSettingsCached settings;
-    settings.setValue("view/orthogonalProjection", isOrthogonal);
-    viewActionPerspective->setChecked(!isOrthogonal);
-    viewActionOrthogonal->setChecked(isOrthogonal);
-    qglview->setOrthoMode(isOrthogonal);
-    qglview->update();
+  bool isOrthogonal = ProjectionType::ORTHOGONAL == mode;
+  QSettingsCached settings;
+  settings.setValue("view/orthogonalProjection", isOrthogonal);
+  viewActionPerspective->setChecked(!isOrthogonal);
+  viewActionOrthogonal->setChecked(isOrthogonal);
+  qglview->setOrthoMode(isOrthogonal);
+  qglview->update();
 }
 
 void MainWindow::viewPerspective()
 {
-    setProjectionType(ProjectionType::PERSPECTIVE);
+  setProjectionType(ProjectionType::PERSPECTIVE);
 }
 
 void MainWindow::viewOrthogonal()
 {
-    setProjectionType(ProjectionType::ORTHOGONAL);
+  setProjectionType(ProjectionType::ORTHOGONAL);
 }
 
 void MainWindow::viewTogglePerspective()
@@ -3198,10 +3196,9 @@ void MainWindow::showLink(const QString& link)
 
 void MainWindow::onEditorDockVisibilityChanged(bool isVisible)
 {
-  if(!activeEditor())
-      return;
+  if (!activeEditor()) return;
 
-  auto e = static_cast<ScintillaEditor*>(activeEditor());
+  auto e = static_cast<ScintillaEditor *>(activeEditor());
   if (isVisible) {
     e->qsci->setReadOnly(false);
     e->setupAutoComplete(false);
@@ -3264,8 +3261,7 @@ void MainWindow::onViewportControlDockVisibilityChanged(bool isVisible)
 
 void MainWindow::onParametersDockVisibilityChanged(bool isVisible)
 {
-  if(!activeEditor())
-    return;
+  if (!activeEditor()) return;
 
   if (isVisible) {
     parameterDock->raise();
@@ -3376,7 +3372,7 @@ void MainWindow::onTabManagerAboutToCloseEditor(EditorInterface *closingEditor)
 
 void MainWindow::onTabManagerEditorNameChanged(const QString& name)
 {
-    setWindowTitle(name);
+  setWindowTitle(name);
 }
 
 void MainWindow::onTabManagerEditorContentReloaded(EditorInterface *reloadedEditor)

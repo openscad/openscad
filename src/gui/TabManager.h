@@ -40,7 +40,7 @@ public:
   void open(const QString& filename);
   size_t count();
 
-  EditorInterface* activeEditor();
+  EditorInterface *activeEditor();
   QSet<EditorInterface *> editors() const;
 
 public:

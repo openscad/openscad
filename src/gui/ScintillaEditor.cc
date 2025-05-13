@@ -379,9 +379,9 @@ void ScintillaEditor::fireModificationChanged()
 void ScintillaEditor::setPlainText(const QString& text)
 {
   {
-      // we blocks signal about having the content changed for the moment
-      const QSignalBlocker blocker(qsci);
-      qsci->setText(text);
+    // we blocks signal about having the content changed for the moment
+    const QSignalBlocker blocker(qsci);
+    qsci->setText(text);
   }
   setContentModified(false);
 }
@@ -392,13 +392,12 @@ QString ScintillaEditor::toPlainText()
 }
 
 void ScintillaEditor::setContentModified(bool modified)
-{  
-  if(modified){
-      // FIXME: Due to an issue with QScintilla, we need to do this on the document itself.
+{
+  if (modified) {
+    // FIXME: Due to an issue with QScintilla, we need to do this on the document itself.
     qsci->SCN_SAVEPOINTLEFT();
     //qsci->setModified(modified);
-  }else
-  {
+  } else {
     qsci->SCN_SAVEPOINTREACHED();
     //qsci->setModified(modified);
   }

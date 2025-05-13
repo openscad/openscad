@@ -187,7 +187,7 @@ public:
   void UnknownExceptionCleanup(std::string msg = "");
   void showFind(bool doFindAndReplace);
 
-  EditorInterface* activeEditor() const;
+  EditorInterface *activeEditor() const;
 
 private:
   [[nodiscard]] QString getCurrentFileName() const;
