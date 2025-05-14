@@ -1755,3 +1755,4 @@ foreach(CONF ${TEST_CONFIGS})
   list(SORT ${CONF}_TEST_CONFIG)
   message(DEBUG "${CONF}: ${${CONF}_TEST_CONFIG}")
 endforeach()
+

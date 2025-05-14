@@ -73,6 +73,10 @@
 #include "platform/CocoaUtils.h"
 #include "utils/printutils.h"
 
+#ifdef ENABLE_GUI_TESTS
+#include "guitests/guitests.h"
+#endif
+
 Q_DECLARE_METATYPE(Message);
 Q_DECLARE_METATYPE(std::shared_ptr<const Geometry>);
 
@@ -165,7 +169,7 @@ void registerDefaultIcon(const QString&) { }
 #define DESKTOP_FILENAME "openscad"
 #endif
 
-int gui(std::vector<std::string>& inputFiles, const std::filesystem::path& original_path, int argc, char **argv)
+int gui(std::vector<std::string>& inputFiles, const std::filesystem::path& original_path, int argc, char **argv, const std::string& gui_test)
 {
   OpenSCADApp app(argc, argv);
   // remove ugly frames in the QStatusBar when using additional widgets
@@ -289,6 +293,21 @@ int gui(std::vector<std::string>& inputFiles, const std::filesystem::path& origi
     }
   }
 #endif
+
+#ifdef ENABLE_GUI_TESTS
+  // Adds a singleshot timer that will be executed when the application will be started.
+  // the timer validates that each mainwindow respects the expected UX behavior.
+  if(gui_test != "none"){
+      QTimer::singleShot(0, [&]()
+      {
+          int failureCount=0;
+          for(auto w : app.windowManager.getWindows()){
+              failureCount+=runAllTest(w);
+          }
+          app.exit(failureCount);
+      });
+  }
+#endif // ENABLE_GUI_TESTS
 
   InputDriverManager::instance()->init();
   return app.exec();
