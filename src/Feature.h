@@ -18,6 +18,7 @@ public:
   static const Feature ExperimentalVxORenderersIndexing;
   static const Feature ExperimentalTextMetricsFunctions;
   static const Feature ExperimentalImportFunction;
+  static const Feature ExperimentalObjectFunction;
   static const Feature ExperimentalPredictibleOutput;
 #ifdef ENABLE_PYTHON
   static const Feature ExperimentalPythonEngine;
