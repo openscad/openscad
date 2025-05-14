@@ -94,7 +94,6 @@ public:
   bool trust_python_file(const std::string& file, const std::string& content);
 #endif
   Tree tree;
-  EditorInterface *activeEditor;
   TabManager *tabManager;
 
   std::shared_ptr<const Geometry> rootGeom;
@@ -162,9 +161,13 @@ private slots:
   // the tab manager editor is about to close one of the tab
   void onTabManagerAboutToCloseEditor(EditorInterface *);
 
-  // implement the different actions needed when an editor
+  // implement the different actions needed when the active editor
   // has its content replaced (because of load)
   void onTabManagerEditorContentReloaded(EditorInterface *reloadedEditor);
+
+  // implement the different actions needed when the active editor
+  // has its tab "name" replaced (eg: because of load, save, etc...)
+  void onTabManagerEditorNameChanged(const QString& name);
 
 public:
   static void consoleOutput(const Message& msgObj, void *userdata);
@@ -183,6 +186,8 @@ public:
   void setLastFocus(QWidget *widget);
   void UnknownExceptionCleanup(std::string msg = "");
   void showFind(bool doFindAndReplace);
+
+  EditorInterface *activeEditor() const;
 
 private:
   [[nodiscard]] QString getCurrentFileName() const;

@@ -14,10 +14,8 @@ class TabManager : public QObject
   Q_OBJECT
 
 public:
-  TabManager(MainWindow *o, const QString& filename);
+  TabManager(MainWindow *o);
   QWidget *getTabContent();
-  EditorInterface *editor;
-  QSet<EditorInterface *> editorList;
 
   void createTab(const QString& filename);
   void openTabFile(const QString& filename);
@@ -42,6 +40,9 @@ public:
   void open(const QString& filename);
   size_t count();
 
+  EditorInterface *activeEditor();
+  QSet<EditorInterface *> editors() const;
+
 public:
   static constexpr const int FIND_HIDDEN = 0;
   static constexpr const int FIND_VISIBLE = 1;
@@ -58,6 +59,9 @@ signals:
 
   // emitted when the content of an editor is reloaded
   void editorContentReloaded(EditorInterface *editor);
+
+  // emitted when the content of an editor is reloaded
+  void editorNameChanged(const QString& name);
 
 private:
   MainWindow *par;
