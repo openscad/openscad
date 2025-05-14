@@ -66,6 +66,7 @@ public:
   virtual float getDPI() { return 1.0f; }
 
   std::unique_ptr<ShaderUtils::ShaderInfo> edge_shader;
+  std::unique_ptr<ShaderUtils::ShaderInfo> preview_shader;
   std::shared_ptr<Renderer> renderer;
   const ColorScheme *colorscheme;
   Camera cam;
