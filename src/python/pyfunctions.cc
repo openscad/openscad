@@ -1653,23 +1653,22 @@ PyObject *python_oo_wrap(PyObject *obj, PyObject *args, PyObject *kwargs)
   return python_wrap_core(obj, r, fn, fa, fs);
 }
 
-PyObject *python_show_core(PyObject *obj)
+void python_show_final(void)
 {
-  PyObject *child_dict;
-  std::shared_ptr<AbstractNode> child = PyOpenSCADObjectToNodeMulti(obj, &child_dict);
-  if (child == NULL) {
-    PyErr_SetString(PyExc_TypeError, "Invalid type for Object in show");
-    return NULL;
-  }
-  PyObject *key, *value;
-  Py_ssize_t pos = 0;
-  python_result_node = child;
-  python_result_obj = obj;
+  if(shows.size() < 1) return;
+  python_result_obj = shows[0];
+  std::vector<std::shared_ptr<AbstractNode>> childs;
+  for(const auto &obj : shows) {
   mapping_name.clear();
   mapping_code.clear();
   mapping_level.clear();
-  python_build_hashmap(child,0);
   python_result_handle.clear();
+  PyObject *child_dict;
+  std::shared_ptr<AbstractNode> child = PyOpenSCADObjectToNodeMulti(obj, &child_dict);
+  childs.push_back(child);
+  PyObject *key, *value;
+  Py_ssize_t pos = 0;
+  python_build_hashmap(child,0);
   Matrix4d raw;
   SelectedObject sel;
   std::string varname=child->getPyName();
@@ -1688,7 +1687,29 @@ PyObject *python_show_core(PyObject *obj)
        python_result_handle.push_back(sel);
     }
   }
-  return Py_None;
+    Py_DECREF(obj);
+  }
+  if(childs.size() == 1) python_result_node = childs[0];
+  else {
+    DECLARE_INSTANCE
+    python_result_node = std::make_shared<CsgOpNode>(instance, OpenSCADOperator::UNION);
+    python_result_node -> children = childs;
+  }
+  shows.clear();
+}
+
+PyObject *python_show_core(PyObject *obj)
+{
+  // just checking
+  PyObject *child_dict;
+  std::shared_ptr<AbstractNode> child = PyOpenSCADObjectToNodeMulti(obj, &child_dict);
+  if (child == NULL) { 
+    PyErr_SetString(PyExc_TypeError, "Invalid type for Object in show");
+    return NULL;
+  }
+  Py_INCREF(obj);
+  shows.push_back(obj);
+  return obj;
 }
 
 PyObject *python_show(PyObject *self, PyObject *args, PyObject *kwargs)

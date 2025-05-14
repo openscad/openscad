@@ -56,6 +56,7 @@ bool pythonDryRun=false;
 std::shared_ptr<AbstractNode> python_result_node = nullptr; /* global result veriable containing the python created result */
 PyObject *python_result_obj = nullptr;
 std::vector<SelectedObject> python_result_handle;
+std::vector<PyObject *> shows;
 bool python_runipython = false;
 bool pythonMainModuleInitialized = false;
 bool pythonRuntimeInitialized = false;
@@ -875,6 +876,7 @@ void finishPython(void)
         } 
       }
 #endif
+      python_show_final();
 }
 
 std::string evaluatePython(const std::string & code, bool dry_run)
