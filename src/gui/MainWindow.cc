@@ -1314,7 +1314,24 @@ void MainWindow::compileEnded()
   clearCurrentOutput();
   GuiLocker::unlock();
   if (designActionAutoReload->isChecked()) autoReloadTimer->start();
+#ifdef ENABLE_GUI_TESTS
+  emit compilationDone(this->rootFile);
+#endif
 }
+
+#ifdef ENABLE_GUI_TESTS
+std::shared_ptr<AbstractNode> MainWindow::instantiateRootFromSource(SourceFile* file)
+{
+    EvaluationSession session{file->getFullpath()};
+    ContextHandle<BuiltinContext> builtin_context{Context::create<BuiltinContext>(&session)};
+    setRenderVariables(builtin_context);
+
+    std::shared_ptr<const FileContext> file_context;
+    std::shared_ptr<AbstractNode> node = this->rootFile->instantiate(*builtin_context, &file_context);
+
+    return node;
+}
+#endif
 
 void MainWindow::instantiateRoot()
 {
@@ -1994,7 +2011,6 @@ bool MainWindow::fileChangedOnDisk()
     if (!valid) return false;
 
     auto newid = str(boost::format("%x.%x") % st.st_mtime % st.st_size);
-
     if (newid != activeEditor->autoReloadId) {
       activeEditor->autoReloadId = newid;
       return true;
@@ -3449,7 +3465,7 @@ void MainWindow::activateDock(Dock *dock)
   if (dock == nullptr) return;
 
   // We always need to activate the window.
-  if (dock->isTopLevel()) dock->activateWindow();
+  if (dock->isFloating()) dock->activateWindow();
   else QMainWindow::activateWindow();
 
   dock->raise();
