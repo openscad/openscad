@@ -1659,16 +1659,16 @@ void python_show_final(void)
   python_result_obj = shows[0];
   std::vector<std::shared_ptr<AbstractNode>> childs;
   for(const auto &obj : shows) {
-  mapping_name.clear();
-  mapping_code.clear();
-  mapping_level.clear();
-  python_result_handle.clear();
   PyObject *child_dict;
   std::shared_ptr<AbstractNode> child = PyOpenSCADObjectToNodeMulti(obj, &child_dict);
   childs.push_back(child);
   PyObject *key, *value;
   Py_ssize_t pos = 0;
+  mapping_name.clear();
+  mapping_code.clear();
+  mapping_level.clear();
   python_build_hashmap(child,0);
+  python_result_handle.clear();
   Matrix4d raw;
   SelectedObject sel;
   std::string varname=child->getPyName();
