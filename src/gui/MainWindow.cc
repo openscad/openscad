@@ -1164,12 +1164,11 @@ void MainWindow::compile(bool reload, bool forcedone)
           this->raise();
         }
       }
-
-      // If the file hasn't changed, we might still need to compile it
-      // if we haven't yet compiled the current text.
+      // If the file has some content and there is no currently compiled content,
+      // then we force the top level compilation.
       else {
         auto current_doc = activeEditor->toPlainText();
-        if (current_doc.size() != lastCompiledDoc.size()) {
+        if (current_doc.size() && lastCompiledDoc.size() == 0) {
           shouldcompiletoplevel = true;
         }
       }
