@@ -900,6 +900,10 @@ int main(int argc, char **argv)
 #endif
   ;
 
+#ifdef ENABLE_GUI_TESTS
+    desc.add_options()("run-all-gui-tests", "special gui testing mode - run all the tests");
+#endif
+
   po::options_description hidden("Hidden options");
   hidden.add_options()
 #ifdef Q_OS_MACOS
@@ -1152,7 +1156,11 @@ int main(int argc, char **argv)
     if (vm.count("export-format")) {
       LOG("Ignoring --export-format option");
     }
-    rc = gui(inputFiles, original_path, argc, argv);
+    std::string gui_test="none";
+    if (vm.count("run-all-gui-tests")){
+        gui_test = "all";
+    }
+    rc = gui(inputFiles, original_path, argc, argv, gui_test);
 #endif
   } else {
     LOG("Requested GUI mode but can't open display!\n");
