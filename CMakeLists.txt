@@ -218,6 +218,8 @@ endif()
 if (NOT "${SUFFIX}" STREQUAL "")
   set(SUFFIX_WITH_DASH "-${SUFFIX}")
   target_compile_definitions(OpenSCAD PRIVATE OPENSCAD_SUFFIX="${SUFFIX_WITH_DASH}")
+else()
+  set(SUFFIX_WITH_DASH "")
 endif()
 
 if (MXECROSS OR WIN32)
