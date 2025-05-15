@@ -82,7 +82,6 @@ public slots:
   void on_enableHidapiTraceCheckBox_toggled(bool);
   void on_checkBoxShowWarningsIn3dView_toggled(bool);
   void on_checkBoxMouseCentricZoom_toggled(bool);
-  void on_checkBoxMouseSwapButtons_toggled(bool);
   void on_timeThresholdOnRenderCompleteSoundEdit_textChanged(const QString&);
   void on_enableClearConsoleCheckBox_toggled(bool);
   void on_consoleMaxLinesEdit_textChanged(const QString&);
@@ -171,7 +170,6 @@ signals:
   void editorConfigChanged() const;
   void ExperimentalChanged() const;
   void updateMouseCentricZoom(bool state) const;
-  void updateMouseSwapButtons(bool state) const;
   void autocompleteChanged(bool status) const;
   void characterThresholdChanged(int val) const;
   void stepSizeChanged(int val) const;
