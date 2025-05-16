@@ -4321,6 +4321,7 @@ PyObject *do_import_python(PyObject *self, PyObject *args, PyObject *kwargs, Imp
     std::string ext = boost::algorithm::to_lower_copy(extraw);
     if (ext == ".stl") actualtype = ImportType::STL;
     else if (ext == ".off") actualtype = ImportType::OFF;
+    else if (ext == ".obj") actualtype = ImportType::OBJ;
     else if (ext == ".dxf") actualtype = ImportType::DXF;
     else if (ext == ".nef3") actualtype = ImportType::NEF3;
     else if (ext == ".3mf") actualtype = ImportType::_3MF;
