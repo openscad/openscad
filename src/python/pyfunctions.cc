@@ -1707,6 +1707,10 @@ PyObject *python_show_core(PyObject *obj)
     PyErr_SetString(PyExc_TypeError, "Invalid type for Object in show");
     return NULL;
   }
+  // see if its already there
+  for(const auto &s : shows) {
+    if(s == obj) return obj;	  
+  }
   Py_INCREF(obj);
   shows.push_back(obj);
   return obj;
