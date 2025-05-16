@@ -243,6 +243,7 @@ private slots:
   void actionSaveACopy();
   void actionReload();
   void actionShowLibraryFolder();
+  void actionShowBackupFiles();
   void convertTabsToSpaces();
   void copyText();
 

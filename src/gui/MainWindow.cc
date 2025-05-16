@@ -450,6 +450,7 @@ MainWindow::MainWindow(const QStringList& filenames) :
   connect(this->fileActionClose, &QAction::triggered, tabManager, &TabManager::closeCurrentTab);
   connect(this->fileActionQuit, &QAction::triggered, scadApp, &OpenSCADApp::quit, Qt::QueuedConnection);
   connect(this->fileShowLibraryFolder, &QAction::triggered, this, &MainWindow::actionShowLibraryFolder);
+  connect(this->fileShowBackupFiles, &QAction::triggered, this, &MainWindow::actionShowBackupFiles);
 
 #ifdef ENABLE_PYTHON
   connect(this->fileActionPythonRevoke, &QAction::triggered, this, &MainWindow::actionPythonRevokeTrustedFiles);
@@ -1762,6 +1763,18 @@ void MainWindow::actionShowLibraryFolder()
   auto url = QString::fromStdString(path);
   LOG("Opening file browser for %1$s", url.toStdString());
   QDesktopServices::openUrl(QUrl::fromLocalFile(url));
+}
+
+void MainWindow::actionShowBackupFiles()
+{
+  QString filename = UIUtils::getBackupFileName(this);
+  if(filename.size() == 0) return; // dont proceed when cancelled
+  tabManager->actionNew();
+  QString errorString;
+  QString result = UIUtils::readFileContents(filename, errorString);
+  if(result == nullptr) return;
+  autoReloadTimer->stop(); // temporarily disable autoreload until next session
+  activeEditor->setText(result);
 }
 
 void MainWindow::actionReload()
