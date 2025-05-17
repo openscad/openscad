@@ -204,7 +204,7 @@ namespace {
 
 const int autoReloadPollingPeriodMS = 200;
 const char copyrighttext[] =
-  "<p>Copyright (C) 2009-2024 The OpenSCAD Developers</p>"
+  "<p>Copyright (C) 2009-2025 The OpenSCAD Developers</p>"
   "<p>This program is free software; you can redistribute it and/or modify "
   "it under the terms of the GNU General Public License as published by "
   "the Free Software Foundation; either version 2 of the License, or "
@@ -456,7 +456,7 @@ MainWindow::MainWindow(const QStringList& filenames) :
   connect(this->fileActionPythonCreateVenv, &QAction::triggered, this, &MainWindow::actionPythonCreateVenv);
   connect(this->fileActionPythonSelectVenv, &QAction::triggered, this, &MainWindow::actionPythonSelectVenv);
 #else
-  this->menuPython->setVisible(false);
+  this->menuPython->menuAction()->setVisible(false);
 #endif
 
 #ifndef __APPLE__
@@ -1164,11 +1164,11 @@ void MainWindow::compile(bool reload, bool forcedone)
           this->raise();
         }
       }
-      // If the file hasn't changed, we might still need to compile it
-      // if we haven't yet compiled the current text.
+      // If the file has some content and there is no currently compiled content,
+      // then we force the top level compilation.
       else {
         auto current_doc = activeEditor->toPlainText();
-        if (current_doc.size() != lastCompiledDoc.size()) {
+        if (current_doc.size() && lastCompiledDoc.size() == 0) {
           shouldcompiletoplevel = true;
         }
       }
@@ -1314,7 +1314,24 @@ void MainWindow::compileEnded()
   clearCurrentOutput();
   GuiLocker::unlock();
   if (designActionAutoReload->isChecked()) autoReloadTimer->start();
+#ifdef ENABLE_GUI_TESTS
+  emit compilationDone(this->rootFile);
+#endif
 }
+
+#ifdef ENABLE_GUI_TESTS
+std::shared_ptr<AbstractNode> MainWindow::instantiateRootFromSource(SourceFile* file)
+{
+    EvaluationSession session{file->getFullpath()};
+    ContextHandle<BuiltinContext> builtin_context{Context::create<BuiltinContext>(&session)};
+    setRenderVariables(builtin_context);
+
+    std::shared_ptr<const FileContext> file_context;
+    std::shared_ptr<AbstractNode> node = this->rootFile->instantiate(*builtin_context, &file_context);
+
+    return node;
+}
+#endif
 
 void MainWindow::instantiateRoot()
 {
@@ -1994,7 +2011,6 @@ bool MainWindow::fileChangedOnDisk()
     if (!valid) return false;
 
     auto newid = str(boost::format("%x.%x") % st.st_mtime % st.st_size);
-
     if (newid != activeEditor->autoReloadId) {
       activeEditor->autoReloadId = newid;
       return true;
@@ -3449,7 +3465,7 @@ void MainWindow::activateDock(Dock *dock)
   if (dock == nullptr) return;
 
   // We always need to activate the window.
-  if (dock->isTopLevel()) dock->activateWindow();
+  if (dock->isFloating()) dock->activateWindow();
   else QMainWindow::activateWindow();
 
   dock->raise();
