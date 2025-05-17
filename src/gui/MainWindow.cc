@@ -609,7 +609,7 @@ MainWindow::MainWindow(const QStringList& filenames) :
   connect(this->fileActionPythonCreateVenv, &QAction::triggered, this, &MainWindow::actionPythonCreateVenv);
   connect(this->fileActionPythonSelectVenv, &QAction::triggered, this, &MainWindow::actionPythonSelectVenv);
 #else
-  this->menuPython->setVisible(false);
+  this->menuPython->menuAction()->setVisible(false);
 #endif
 
 #ifndef __APPLE__
