@@ -431,6 +431,9 @@ private:
 signals:
   void highlightError(int);
   void unhighlightLastError();
+  #ifdef ENABLE_PYTHON
+  void pythonActiveChanged(bool pythonActive);
+  #endif
 
 #ifdef ENABLE_GUI_TESTS
 public:

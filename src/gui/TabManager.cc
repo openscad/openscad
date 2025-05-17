@@ -153,7 +153,7 @@ void TabManager::createTab(const QString& filename)
 {
   assert(par != nullptr);
 
-  auto scintillaEditor = new ScintillaEditor(tabWidget);
+  auto scintillaEditor = new ScintillaEditor(tabWidget, *par);
   editor = scintillaEditor;
   par->activeEditor = editor;
   editor->parameterWidget = new ParameterWidget(par->parameterDock);
