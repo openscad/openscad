@@ -15,6 +15,7 @@ pkgs.mkShell {
     ghostscript
     glib
     gmp
+    gsettings-desktop-schemas
     harfbuzz
     lib3mf
     libGL
@@ -44,4 +45,6 @@ pkgs.mkShell {
     qt6.wrapQtAppsHook
     qt6Packages.qscintilla
   ];
+
+  GSETTINGS_SCHEMA_DIR = "${pkgs.gtk3}/share/gsettings-schemas/${pkgs.gtk3.name}/glib-2.0/schemas";
 }
