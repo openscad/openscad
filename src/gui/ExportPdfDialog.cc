@@ -28,9 +28,11 @@
 
 #include <QString>
 #include <QDialog>
+#include <QColorDialog>
 
 #include "io/export.h"
 #include "core/Settings.h"
+#include "gui/UIUtils.h"
 #include "gui/SettingsWriter.h"
 
 using S = Settings::SettingsExportPdf;
@@ -50,24 +52,30 @@ ExportPdfDialog::ExportPdfDialog()
   this->groupGrid->setChecked(S::exportPdfShowGrid.value());
   this->setGridSize(S::exportPdfGridSize.value());
 
-	groupMetaData->setChecked(S::exportPdfAddMetaData.value());
-	initMetaData(nullptr, this->lineEditMetaDataTitle, nullptr, S::exportPdfMetaDataTitle);
-	initMetaData(this->checkBoxMetaDataAuthor, this->lineEditMetaDataAuthor, &S::exportPdfAddMetaDataAuthor, S::exportPdfMetaDataAuthor);
-	initMetaData(this->checkBoxMetaDataSubject, this->lineEditMetaDataSubject, &S::exportPdfAddMetaDataSubject, S::exportPdfMetaDataSubject);
-	initMetaData(this->checkBoxMetaDataKeywords, this->lineEditMetaDataKeywords, &S::exportPdfAddMetaDataKeywords, S::exportPdfMetaDataKeywords);
+  // Initialize fill options
+  this->checkBoxEnableFill->setChecked(S::exportPdfFill.value());
+  this->fillColor = QColor(QString::fromStdString(S::exportPdfFillColor.value()));
+  this->labelFillColor->setStyleSheet(UIUtils::getBackgroundColorStyleSheet(this->fillColor));
+  updateFillControlsEnabled();
+
+  groupMetaData->setChecked(S::exportPdfAddMetaData.value());
+  initMetaData(nullptr, this->lineEditMetaDataTitle, nullptr, S::exportPdfMetaDataTitle);
+  initMetaData(this->checkBoxMetaDataAuthor, this->lineEditMetaDataAuthor, &S::exportPdfAddMetaDataAuthor, S::exportPdfMetaDataAuthor);
+  initMetaData(this->checkBoxMetaDataSubject, this->lineEditMetaDataSubject, &S::exportPdfAddMetaDataSubject, S::exportPdfMetaDataSubject);
+  initMetaData(this->checkBoxMetaDataKeywords, this->lineEditMetaDataKeywords, &S::exportPdfAddMetaDataKeywords, S::exportPdfMetaDataKeywords);
 }
 
 int ExportPdfDialog::exec()
 {
   bool showDialog = this->checkBoxAlwaysShowDialog->isChecked();
   if ((QApplication::keyboardModifiers() & Qt::ShiftModifier) != 0) {
-  	showDialog = true;
+    showDialog = true;
   }
 
   const auto result = showDialog ? QDialog::exec() : QDialog::Accepted;
 
   if (result == QDialog::Accepted) {
-  	S::exportPdfAlwaysShowDialog.setValue(this->checkBoxAlwaysShowDialog->isChecked());
+    S::exportPdfAlwaysShowDialog.setValue(this->checkBoxAlwaysShowDialog->isChecked());
     applyButtonGroup(this->buttonGroupPaperSize, S::exportPdfPaperSize);
     applyButtonGroup(this->buttonGroupOrientation, S::exportPdfOrientation);
     S::exportPdfShowFilename.setValue(this->checkBoxShowFilename->isChecked());
@@ -75,6 +83,8 @@ int ExportPdfDialog::exec()
     S::exportPdfShowScaleMessage.setValue(this->checkBoxShowScaleMessage->isChecked());
     S::exportPdfShowGrid.setValue(this->groupGrid->isChecked());
     S::exportPdfGridSize.setValue(getGridSize());
+    S::exportPdfFill.setValue(this->checkBoxEnableFill->isChecked());
+    S::exportPdfFillColor.setValue(this->fillColor.name().toStdString());
     S::exportPdfAddMetaData.setValue(this->groupMetaData->isChecked());
     applyMetaData(nullptr, this->lineEditMetaDataTitle, nullptr, S::exportPdfMetaDataTitle);
     applyMetaData(this->checkBoxMetaDataAuthor, this->lineEditMetaDataAuthor, &S::exportPdfAddMetaDataAuthor, S::exportPdfMetaDataAuthor);
@@ -94,12 +104,39 @@ double ExportPdfDialog::getGridSize() const
 
 void ExportPdfDialog::setGridSize(double value)
 {
-  for (auto button : buttonGroupGridSize->buttons()) {
-    const auto buttonValue = button->property(Settings::PROPERTY_SELECTED_VALUE).toDouble();
-    if (std::abs(buttonValue - value) < 0.5) {
+  for (auto *button : buttonGroupGridSize->buttons()) {
+    if (button->property(Settings::PROPERTY_SELECTED_VALUE).toDouble() == value) {
       button->setChecked(true);
-      return;
+      break;
     }
   }
-  rbGs_10mm->setChecked(true); // default
+}
+
+void ExportPdfDialog::updateFillColor(const QColor& color)
+{
+  this->fillColor = color;
+  this->labelFillColor->setStyleSheet(UIUtils::getBackgroundColorStyleSheet(this->fillColor));
+}
+
+void ExportPdfDialog::updateFillControlsEnabled()
+{
+  bool enabled = this->checkBoxEnableFill->isChecked();
+  this->labelFillColor->setEnabled(enabled);
+  this->toolButtonFillColor->setEnabled(enabled);
+  this->toolButtonFillColorReset->setEnabled(enabled);
+}
+
+void ExportPdfDialog::on_toolButtonFillColor_clicked()
+{
+  updateFillColor(QColorDialog::getColor(this->fillColor));
+}
+
+void ExportPdfDialog::on_toolButtonFillColorReset_clicked()
+{
+  updateFillColor(QColor(QString::fromStdString(S::exportPdfFillColor.defaultValue())));
+}
+
+void ExportPdfDialog::on_checkBoxEnableFill_toggled(bool checked)
+{
+  updateFillControlsEnabled();
 }

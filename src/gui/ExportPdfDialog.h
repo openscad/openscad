@@ -28,6 +28,7 @@
 
 #include <memory>
 #include <QDialog>
+#include <QColor>
 
 #include "gui/qtgettext.h" // IWYU pragma: keep
 #include "io/export.h"
@@ -50,8 +51,16 @@ public:
     return ExportPdfOptions::fromSettings();
   }
 
+private slots:
+  void on_toolButtonFillColor_clicked();
+  void on_toolButtonFillColorReset_clicked();
+  void on_checkBoxEnableFill_toggled(bool checked);
+
 private:
-  ExportPdfOptions options;
+  void updateFillColor(const QColor& color);
+  void updateFillControlsEnabled();
+
+  QColor fillColor;
 };
 
 

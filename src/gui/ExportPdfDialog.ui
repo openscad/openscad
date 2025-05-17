@@ -360,6 +360,63 @@
            </widget>
           </item>
           <item>
+           <widget class="QCheckBox" name="checkBoxEnableFill">
+            <property name="toolTip">
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Enable filling of exported geometry with a color.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            </property>
+            <property name="text">
+             <string>Fill Geometry</string>
+            </property>
+            <property name="checked">
+             <bool>false</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <layout class="QHBoxLayout" name="horizontalLayoutFillColor">
+            <property name="topMargin">
+             <number>9</number>
+            </property>
+            <item>
+             <widget class="QLabel" name="labelFillColor">
+              <property name="minimumSize">
+               <size>
+                <width>100</width>
+                <height>0</height>
+               </size>
+              </property>
+              <property name="frameShape">
+               <enum>QFrame::Box</enum>
+              </property>
+              <property name="lineWidth">
+               <number>2</number>
+              </property>
+              <property name="text">
+               <string/>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QToolButton" name="toolButtonFillColorReset">
+              <property name="text">
+               <string>...</string>
+              </property>
+              <property name="icon">
+               <iconset theme="chokusen-undo">
+                <normaloff>.</normaloff>.</iconset>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QToolButton" name="toolButtonFillColor">
+              <property name="text">
+               <string>...</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item>
            <widget class="QGroupBox" name="groupScale">
             <property name="toolTip">
              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Include rulers on page to confirm 1:1 printing scale.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
@@ -565,6 +622,9 @@
   <tabstop>radioButtonOrientationLandscape</tabstop>
   <tabstop>radioButtonOrientationAuto</tabstop>
   <tabstop>checkBoxShowFilename</tabstop>
+  <tabstop>checkBoxEnableFill</tabstop>
+  <tabstop>toolButtonFillColorReset</tabstop>
+  <tabstop>toolButtonFillColor</tabstop>
   <tabstop>groupScale</tabstop>
   <tabstop>groupGrid</tabstop>
   <tabstop>rbGs_2mm</tabstop>
