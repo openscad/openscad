@@ -45,18 +45,33 @@ ExportPdfDialog::ExportPdfDialog()
   initButtonGroup(this->buttonGroupPaperSize, S::exportPdfPaperSize);
   initButtonGroup(this->buttonGroupOrientation, S::exportPdfOrientation);
 
-  // Get current settings or defaults modify the two enums (next two rows) to explicitly use default by lookup to string (see the later set methods).
+  // Get current settings or defaults
   this->checkBoxShowFilename->setChecked(S::exportPdfShowFilename.value());
   this->groupScale->setChecked(S::exportPdfShowScale.value());
   this->checkBoxShowScaleMessage->setChecked(S::exportPdfShowScaleMessage.value());
   this->groupGrid->setChecked(S::exportPdfShowGrid.value());
-  this->setGridSize(S::exportPdfGridSize.value());
+  
+  // Initialize grid size from settings
+  const auto gridSize = S::exportPdfGridSize.value();
+  for (auto *button : buttonGroupGridSize->buttons()) {
+    if (button->property("_selected_value").toDouble() == gridSize) {
+      button->setChecked(true);
+      break;
+    }
+  }
 
-  // Initialize fill options
+  // Fill settings
   this->checkBoxEnableFill->setChecked(S::exportPdfFill.value());
   this->fillColor = QColor(QString::fromStdString(S::exportPdfFillColor.value()));
-  this->labelFillColor->setStyleSheet(UIUtils::getBackgroundColorStyleSheet(this->fillColor));
+  updateFillColor(this->fillColor);
   updateFillControlsEnabled();
+
+  // Stroke settings
+  this->checkBoxEnableStroke->setChecked(S::exportPdfStroke.value());
+  this->strokeColor = QColor(QString::fromStdString(S::exportPdfStrokeColor.value()));
+  this->doubleSpinBoxStrokeWidth->setValue(S::exportPdfStrokeWidth.value());
+  updateStrokeColor(this->strokeColor);
+  updateStrokeControlsEnabled();
 
   groupMetaData->setChecked(S::exportPdfAddMetaData.value());
   initMetaData(nullptr, this->lineEditMetaDataTitle, nullptr, S::exportPdfMetaDataTitle);
@@ -85,6 +100,9 @@ int ExportPdfDialog::exec()
     S::exportPdfGridSize.setValue(getGridSize());
     S::exportPdfFill.setValue(this->checkBoxEnableFill->isChecked());
     S::exportPdfFillColor.setValue(this->fillColor.name().toStdString());
+    S::exportPdfStroke.setValue(this->checkBoxEnableStroke->isChecked());
+    S::exportPdfStrokeColor.setValue(this->strokeColor.name().toStdString());
+    S::exportPdfStrokeWidth.setValue(this->doubleSpinBoxStrokeWidth->value());
     S::exportPdfAddMetaData.setValue(this->groupMetaData->isChecked());
     applyMetaData(nullptr, this->lineEditMetaDataTitle, nullptr, S::exportPdfMetaDataTitle);
     applyMetaData(this->checkBoxMetaDataAuthor, this->lineEditMetaDataAuthor, &S::exportPdfAddMetaDataAuthor, S::exportPdfMetaDataAuthor);
@@ -99,23 +117,21 @@ int ExportPdfDialog::exec()
 double ExportPdfDialog::getGridSize() const
 {
   const auto button = buttonGroupGridSize->checkedButton();
-  return button ? button->property(Settings::PROPERTY_SELECTED_VALUE).toDouble() : 10.0;
-}
-
-void ExportPdfDialog::setGridSize(double value)
-{
-  for (auto *button : buttonGroupGridSize->buttons()) {
-    if (button->property(Settings::PROPERTY_SELECTED_VALUE).toDouble() == value) {
-      button->setChecked(true);
-      break;
-    }
-  }
+  return button ? button->property("_selected_value").toDouble() : 10.0;
 }
 
 void ExportPdfDialog::updateFillColor(const QColor& color)
 {
   this->fillColor = color;
-  this->labelFillColor->setStyleSheet(UIUtils::getBackgroundColorStyleSheet(this->fillColor));
+  QString styleSheet = QString("QLabel { background-color: %1; }").arg(color.name());
+  this->labelFillColor->setStyleSheet(styleSheet);
+}
+
+void ExportPdfDialog::updateStrokeColor(const QColor& color)
+{
+  this->strokeColor = color;
+  QString styleSheet = QString("QLabel { background-color: %1; }").arg(color.name());
+  this->labelStrokeColor->setStyleSheet(styleSheet);
 }
 
 void ExportPdfDialog::updateFillControlsEnabled()
@@ -126,9 +142,31 @@ void ExportPdfDialog::updateFillControlsEnabled()
   this->toolButtonFillColorReset->setEnabled(enabled);
 }
 
+void ExportPdfDialog::updateStrokeControlsEnabled()
+{
+  bool enabled = this->checkBoxEnableStroke->isChecked();
+  this->labelStrokeColor->setEnabled(enabled);
+  this->toolButtonStrokeColor->setEnabled(enabled);
+  this->toolButtonStrokeColorReset->setEnabled(enabled);
+  this->labelStrokeWidth->setEnabled(enabled);
+  this->doubleSpinBoxStrokeWidth->setEnabled(enabled);
+  this->toolButtonStrokeWidthReset->setEnabled(enabled);
+}
+
 void ExportPdfDialog::on_toolButtonFillColor_clicked()
 {
-  updateFillColor(QColorDialog::getColor(this->fillColor));
+  QColor color = QColorDialog::getColor(this->fillColor, this);
+  if (color.isValid()) {
+    updateFillColor(color);
+  }
+}
+
+void ExportPdfDialog::on_toolButtonStrokeColor_clicked()
+{
+  QColor color = QColorDialog::getColor(this->strokeColor, this);
+  if (color.isValid()) {
+    updateStrokeColor(color);
+  }
 }
 
 void ExportPdfDialog::on_toolButtonFillColorReset_clicked()
@@ -136,7 +174,22 @@ void ExportPdfDialog::on_toolButtonFillColorReset_clicked()
   updateFillColor(QColor(QString::fromStdString(S::exportPdfFillColor.defaultValue())));
 }
 
+void ExportPdfDialog::on_toolButtonStrokeColorReset_clicked()
+{
+  updateStrokeColor(QColor(QString::fromStdString(S::exportPdfStrokeColor.defaultValue())));
+}
+
+void ExportPdfDialog::on_toolButtonStrokeWidthReset_clicked()
+{
+  this->doubleSpinBoxStrokeWidth->setValue(this->defaultStrokeWidth);
+}
+
 void ExportPdfDialog::on_checkBoxEnableFill_toggled(bool checked)
 {
   updateFillControlsEnabled();
+}
+
+void ExportPdfDialog::on_checkBoxEnableStroke_toggled(bool checked)
+{
+  updateStrokeControlsEnabled();
 }
