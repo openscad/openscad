@@ -1558,10 +1558,8 @@ set_tests_properties(
   render-csg-cgal_projection
 
   # https://github.com/openscad/openscad/issues/5158
-  render-cgal_example017 
-  preview-cgal_example017
-  throwntogether-cgal_example017
-  throwntogether-manifold_example017
+  #render-cgal_example017 
+  #throwntogether-cgal_example017
   
   # https://github.com/openscad/openscad/issues/4398
   render-csg-cgal_logo_and_text
@@ -1622,8 +1620,8 @@ set_tests_properties(
   throwntogether-manifold_surface_image
 
   # https://github.com/openscad/openscad/issues/5158
-  preview-manifold_example017
-  render-manifold_example017 
+  #preview-manifold_example017
+  #render-manifold_example017 
 
   # https://github.com/openscad/openscad/issues/5135
   render-force-manifold_issue5135-bad

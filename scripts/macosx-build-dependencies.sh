@@ -103,7 +103,7 @@ PACKAGES=(
     "clipper2 1.5.3"
 
     # https://github.com/elalish/manifold/releases
-    "manifold 3.0.1"
+    "manifold 3.1.0"
 )
 DEPLOY_PACKAGES=(
     # https://github.com/sparkle-project/Sparkle/releases
