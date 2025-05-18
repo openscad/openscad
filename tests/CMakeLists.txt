@@ -866,6 +866,7 @@ list(APPEND SCADFILES_WITH_COLOR
   ${EXAMPLES_DIR}/Old/example017.scad
 
   ${TEST_SCAD_DIR}/3D/issues/issue5217.scad
+  ${TEST_SCAD_DIR}/3D/issues/issue5738.scad
 
   #${TEST_SCAD_DIR}/bugs/issue1000.scad
 )
@@ -887,7 +888,7 @@ list(APPEND RENDER_DIFFERENT_EXPECTATIONS
   ${TEST_SCAD_DIR}/3D/features/render-tests.scad
   ${EXAMPLES_DIR}/Old/example016.scad
 
-  # Manifold can represent the very think slice
+  # Manifold can represent the very thin slice
   ${TEST_SCAD_DIR}/3D/issues/issue1165.scad
 )
 
