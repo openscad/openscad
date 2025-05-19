@@ -1687,7 +1687,7 @@ void python_show_final(void)
        python_result_handle.push_back(sel);
     }
   }
-//    Py_DECREF(obj);
+//    Py_DECREF(obj); // should be activated
   }
   if(childs.size() == 1) python_result_node = childs[0];
   else {

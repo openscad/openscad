@@ -3236,7 +3236,7 @@ void MainWindow::actionShareDesignPublish()
   shareDesignDialog->close();
   if(success) 
     QMessageBox::information(this,"Share Design","Design successfully submitted");  
-  else QMessageBox::information(this,"Share Design","Error during submission");  
+//  else QMessageBox::information(this,"Share Design","Error during submission");  
 }
 
 void MainWindow::actionShareDesign()
