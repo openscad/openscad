@@ -56,7 +56,7 @@ void python_retrieve_pyname(const std::shared_ptr<AbstractNode> &node);
 void python_build_hashmap(const std::shared_ptr<AbstractNode> &node, int level);
 PyObject *python_fromopenscad(const Value &val);
 void python_show_final(void);
-extern std::vector<PyObject *> shows;
+extern std::vector<std::shared_ptr<AbstractNode>> shows;
 
 
 extern std::vector<std::string> mapping_name;

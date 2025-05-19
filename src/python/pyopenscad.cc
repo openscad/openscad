@@ -56,7 +56,7 @@ bool pythonDryRun=false;
 std::shared_ptr<AbstractNode> python_result_node = nullptr; /* global result veriable containing the python created result */
 PyObject *python_result_obj = nullptr;
 std::vector<SelectedObject> python_result_handle;
-std::vector<PyObject *> shows;
+std::vector<std::shared_ptr<AbstractNode> > shows;
 bool python_runipython = false;
 bool pythonMainModuleInitialized = false;
 bool pythonRuntimeInitialized = false;
@@ -182,7 +182,7 @@ std::string python_version(void)
 
 std::shared_ptr<AbstractNode> PyOpenSCADObjectToNodeMulti(PyObject *objs,PyObject **dict)
 {
-  std::shared_ptr<AbstractNode> result;
+  std::shared_ptr<AbstractNode> result = nullptr;
   if (Py_TYPE(objs) == &PyOpenSCADType) {
     result = ((PyOpenSCADObject *) objs)->node;
     if(result.use_count() > 2) {
@@ -741,16 +741,16 @@ void initPython(const std::string& binDir, const std::string &scriptpath, double
         PyObject *key1, *value1;
         Py_ssize_t pos1 = 0;
         while (PyDict_Next(sysdict, &pos1, &key1, &value1)) {
-          PyObjectUniquePtr key1_(PyUnicode_AsEncodedString(key1, "utf-8", "~"), PyObjectDeleter);
+          PyObject *key1_ = PyUnicode_AsEncodedString(key1, "utf-8", "~");
           if(key1_ == nullptr) continue;
-          const char *key1_str =  PyBytes_AS_STRING(key1_.get());
+          const char *key1_str =  PyBytes_AS_STRING(key1_);
           if(strcmp(key1_str,"modules") == 0) {
             PyObject *key2, *value2;
             Py_ssize_t pos2 = 0;
             while (PyDict_Next(value1, &pos2, &key2, &value2)) {
-              PyObjectUniquePtr key2_(PyUnicode_AsEncodedString(key2, "utf-8", "~"), PyObjectDeleter);
+              PyObject *key2_ =PyUnicode_AsEncodedString(key2, "utf-8", "~");
               if(key2_ == nullptr) continue;
-              const char *key2_str =  PyBytes_AS_STRING(key2_.get());
+              const char *key2_str =  PyBytes_AS_STRING(key2_);
 	      if(key2_str == nullptr) continue;
 	      if(!PyModule_Check(value2)) continue;
 
@@ -855,6 +855,7 @@ void initPython(const std::string& binDir, const std::string &scriptpath, double
   PyRun_String(stream.str().c_str(), Py_file_input, pythonInitDict.get(), pythonInitDict.get());
   customizer_parameters_finished = customizer_parameters;
   customizer_parameters.clear();
+  python_result_handle.clear();
 }
 
 void finishPython(void)
@@ -926,6 +927,9 @@ sys.stderr = catcher_err\n\
 sys.stdin = stdin_bak\n\
 sys.stdout = stdout_bak\n\
 sys.stderr = stderr_bak\n\
+stdin_bak = None\n\
+stdout_bak = None\n\
+stderr_bak = None\n\
 ";
 
 #ifndef OPENSCAD_NOGUI  

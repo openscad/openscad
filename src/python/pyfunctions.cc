@@ -1655,64 +1655,49 @@ PyObject *python_oo_wrap(PyObject *obj, PyObject *args, PyObject *kwargs)
 
 void python_show_final(void)
 {
-  if(shows.size() < 1) return;
-  python_result_obj = shows[0];
-  std::vector<std::shared_ptr<AbstractNode>> childs;
-  for(const auto &obj : shows) {
-  PyObject *child_dict;
-  std::shared_ptr<AbstractNode> child = PyOpenSCADObjectToNodeMulti(obj, &child_dict);
-  childs.push_back(child);
-  PyObject *key, *value;
-  Py_ssize_t pos = 0;
   mapping_name.clear();
   mapping_code.clear();
   mapping_level.clear();
-  python_build_hashmap(child,0);
-  python_result_handle.clear();
-  Matrix4d raw;
-  SelectedObject sel;
-  std::string varname=child->getPyName();
-  if(child_dict != nullptr) {
-    while(PyDict_Next(child_dict, &pos, &key, &value)) {
-       if(python_tomatrix(value, raw)) continue;
-       PyObject* value1 = PyUnicode_AsEncodedString(key, "utf-8", "~");
-       const char *value_str =  PyBytes_AS_STRING(value1);
-       sel.pt.clear();
-       sel.pt.push_back(Vector3d(raw(0,3),raw(1,3),raw(2,3)));
-       sel.pt.push_back(Vector3d(raw(0,0),raw(1,0),raw(2,0)));
-       sel.pt.push_back(Vector3d(raw(0,1),raw(1,1),raw(2,1)));
-       sel.pt.push_back(Vector3d(raw(0,2),raw(1,2),raw(2,2)));
-       sel.type=SelectionType::SELECTION_HANDLE;
-       sel.name=varname+"."+value_str;
-       python_result_handle.push_back(sel);
-    }
-  }
-//    Py_DECREF(obj); // should be activated
-  }
-  if(childs.size() == 1) python_result_node = childs[0];
+  if(shows.size() == 1) python_result_node = shows[0];
   else {
     DECLARE_INSTANCE
     python_result_node = std::make_shared<CsgOpNode>(instance, OpenSCADOperator::UNION);
-    python_result_node -> children = childs;
+    python_result_node -> children = shows;
   }
   shows.clear();
 }
 
 PyObject *python_show_core(PyObject *obj)
 {
-  // just checking
-  PyObject *child_dict;
+  python_result_obj = obj;
+  PyObject *child_dict = nullptr;
   std::shared_ptr<AbstractNode> child = PyOpenSCADObjectToNodeMulti(obj, &child_dict);
   if (child == NULL) { 
     PyErr_SetString(PyExc_TypeError, "Invalid type for Object in show");
     return NULL;
   }
-  // see if its already there
-  for(const auto &s : shows) {
-    if(s == obj) return obj;	  
+  PyObject *key, *value;
+  Py_ssize_t pos = 0;
+  python_build_hashmap(child,0);
+  std::string varname=child->getPyName();
+  if(child_dict != nullptr) {
+    while(PyDict_Next(child_dict, &pos, &key, &value)) {
+     Matrix4d raw;
+     if(python_tomatrix(value, raw)) continue;
+     PyObject* value1 = PyUnicode_AsEncodedString(key, "utf-8", "~");
+     const char *value_str =  PyBytes_AS_STRING(value1);
+     SelectedObject sel;
+     sel.pt.clear();
+     sel.pt.push_back(Vector3d(raw(0,3),raw(1,3),raw(2,3)));
+     sel.pt.push_back(Vector3d(raw(0,0),raw(1,0),raw(2,0)));
+     sel.pt.push_back(Vector3d(raw(0,1),raw(1,1),raw(2,1)));
+     sel.pt.push_back(Vector3d(raw(0,2),raw(1,2),raw(2,2)));
+     sel.type=SelectionType::SELECTION_HANDLE;
+     sel.name=varname+"."+value_str;
+     python_result_handle.push_back(sel);
+    }
   }
-  Py_INCREF(obj);
-  shows.push_back(obj);
+  shows.push_back(child);
   return obj;
 }
 
