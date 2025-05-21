@@ -196,41 +196,34 @@ std::string SHA256HashString(std::string aString){
 #include <iostream>
 static size_t curl_download_write(void *ptr, size_t size, size_t nmemb, void *stream)
 {
-        
-  size_t written = fwrite(ptr, size, nmemb, (FILE *)stream);
-  return written;
+  QFile *fh = (QFile *) stream ;
+  fh -> write(QByteArray((const char *) ptr, size*nmemb));
+  return size*nmemb;
 }
 	
 int curl_download(std::string url, std::string path)
 {
     CURLcode status;
-    FILE *fh=fopen((path+"_").c_str(),"wb");
+    QFile fh((path).c_str());
+    if (!fh.open(QIODevice::WriteOnly)) {
+        LOG(message_group::Error, "Cannot open file %1$s",path.c_str());
+        return  -1;
+    }
     LOG(message_group::Warning, "Downloading to %1$s",path.c_str());
-    if(fh != nullptr) {
       CURL *curl = curl_easy_init();
       if(curl) {
         curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
-        curl_easy_setopt(curl, CURLOPT_WRITEDATA, fh);
+        curl_easy_setopt(curl, CURLOPT_WRITEDATA, &fh);
         curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, curl_download_write);
         curl_easy_setopt(curl, CURLOPT_FORBID_REUSE, 1L);
  
         status = curl_easy_perform(curl);
         curl_easy_cleanup(curl);
       }	
-      fclose(fh);
-      if(status == CURLE_OK) {
-	try {
-	  if(std::filesystem::exists(path)) std::filesystem::remove(path);
-          std::filesystem::rename(path+"_", path);	      
-	}catch(const std::exception& ex)
-        {
-	  std::cerr << ex.what() << std::endl;
-          LOG(message_group::Error, "Exception during installing file!");
-        }  
-      } else {
+      fh.close();
+      if(status != CURLE_OK) {
         LOG(message_group::Error, "Could not download!");
       }
-    }
     return 0;
 }
 #endif // ifdef ENABLE_PYTHON

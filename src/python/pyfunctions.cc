@@ -4367,6 +4367,8 @@ PyObject *python_import(PyObject *self, PyObject *args, PyObject *kwargs) {
 
 
 #ifndef OPENSCAD_NOGUI
+std::vector<std::string> nimport_downloaded;
+
 extern int curl_download(std::string url, std::string path);
 PyObject *python_nimport(PyObject *self, PyObject *args, PyObject *kwargs)
 {
@@ -4387,10 +4389,11 @@ PyObject *python_nimport(PyObject *self, PyObject *args, PyObject *kwargs)
 
   path =PlatformUtils::userLibraryPath() + "/" + filename;
   bool do_download=false; 
-  if(!called_already) {
+  if(std::find(nimport_downloaded.begin(), nimport_downloaded.end(), url) == nimport_downloaded.end()) {
     do_download=true;	  
-  }
-  called_already=true; // TODO per file 
+    nimport_downloaded.push_back(url);
+  }  
+
   std::ifstream f(path.c_str());
   if(!f.good()) {
     do_download=true;	  
