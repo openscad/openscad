@@ -3572,36 +3572,42 @@ PyObject *python_csg_adv_sub(PyObject *self, PyObject *args, PyObject *kwargs, C
 PyObject *python_minkowski(PyObject *self, PyObject *args, PyObject *kwargs)
 {
   DECLARE_INSTANCE
+  auto node = std::make_shared<CgalAdvNode>(instance, CgalAdvType::MINKOWSKI);
   std::shared_ptr<AbstractNode> child;
   int i;
   int n;
-  int convexity = 2;
 
-  auto node = std::make_shared<CgalAdvNode>(instance, CgalAdvType::MINKOWSKI);
-  char *kwlist[] = { "obj", "convexity", NULL };
-  PyObject *objs = NULL;
-  PyObject *obj;
-  PyObject *dummydict;	  
-
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O!|i", kwlist,
-                                   &PyList_Type, &objs,
-                                   &convexity
-                                   )) {
-    PyErr_SetString(PyExc_TypeError, "Error during parsing minkowski(object)");
-    return NULL;
+  if(kwargs != nullptr) {
+    PyObject *key, *value;
+    Py_ssize_t pos = 0;
+    while (PyDict_Next(kwargs, &pos, &key, &value)) {
+      PyObject* value1 = PyUnicode_AsEncodedString(key, "utf-8", "~");
+      const char *value_str =  PyBytes_AS_STRING(value1);
+      if(value_str == nullptr) {
+          PyErr_SetString(PyExc_TypeError, "Unkown parameter name in CSG.");
+	  return nullptr;
+      } else if(strcmp(value_str,"convexity") == 0) {
+        double tmp;
+        python_numberval(value,&tmp);
+	node->convexity=(int)tmp;
+      } else {
+          PyErr_SetString(PyExc_TypeError, "Unkown parameter name in CSG.");
+	  return nullptr;
+      }
+    }	    
   }
-  n = PyList_Size(objs);
-  for (i = 0; i < n; i++) {
-    obj = PyList_GetItem(objs, i);
-    if (Py_TYPE(obj) == &PyOpenSCADType) {
-     child = PyOpenSCADObjectToNode(obj, &dummydict);
-     node->children.push_back(child);
+  for (i = 0; i < PyTuple_Size(args);i++) {
+    PyObject *obj = PyTuple_GetItem(args, i);
+    PyObject *dict = nullptr;	  
+    child = PyOpenSCADObjectToNodeMulti(obj, &dict);
+    if(child != NULL) {
+      node->children.push_back(child);
     } else {
-      PyErr_SetString(PyExc_TypeError, "minkowski input data must be shapes");
-      return NULL;
-    }
+      PyErr_SetString(PyExc_TypeError, "Error during parsing minkowski. arguments must be solids or arrays.");
+      return nullptr;
+    }  
   }
-  node->convexity = convexity;
+
 
   return PyOpenSCADObjectFromNode(&PyOpenSCADType, node);
 }
