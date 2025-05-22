@@ -3572,42 +3572,31 @@ PyObject *python_csg_adv_sub(PyObject *self, PyObject *args, PyObject *kwargs, C
 PyObject *python_minkowski(PyObject *self, PyObject *args, PyObject *kwargs)
 {
   DECLARE_INSTANCE
-  auto node = std::make_shared<CgalAdvNode>(instance, CgalAdvType::MINKOWSKI);
   std::shared_ptr<AbstractNode> child;
   int i;
   int n;
+  int convexity = 2;
 
-  if(kwargs != nullptr) {
-    PyObject *key, *value;
-    Py_ssize_t pos = 0;
-    while (PyDict_Next(kwargs, &pos, &key, &value)) {
-      PyObject* value1 = PyUnicode_AsEncodedString(key, "utf-8", "~");
-      const char *value_str =  PyBytes_AS_STRING(value1);
-      if(value_str == nullptr) {
-          PyErr_SetString(PyExc_TypeError, "Unkown parameter name in CSG.");
-	  return nullptr;
-      } else if(strcmp(value_str,"convexity") == 0) {
-        double tmp;
-        python_numberval(value,&tmp);
-	node->convexity=(int)tmp;
-      } else {
-          PyErr_SetString(PyExc_TypeError, "Unkown parameter name in CSG.");
-	  return nullptr;
-      }
-    }	    
-  }
-  for (i = 0; i < PyTuple_Size(args);i++) {
-    PyObject *obj = PyTuple_GetItem(args, i);
-    PyObject *dict = nullptr;	  
-    child = PyOpenSCADObjectToNodeMulti(obj, &dict);
-    if(child != NULL) {
-      node->children.push_back(child);
-    } else {
-      PyErr_SetString(PyExc_TypeError, "Error during parsing minkowski. arguments must be solids or arrays.");
-      return nullptr;
-    }  
-  }
+  auto node = std::make_shared<CgalAdvNode>(instance, CgalAdvType::MINKOWSKI);
+  char *kwlist[] = { "obj1", "obj2", "convexity", NULL };
+  PyObject *obj1, *obj2;
+  PyObject *dummydict;	  
 
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "OO|i", kwlist,
+                                   &obj1, 
+				   &obj2,
+                                   &convexity
+                                   )) {
+    PyErr_SetString(PyExc_TypeError, "Error during parsing minkowski(object1, object2[, convexity])");
+    return NULL;
+  }
+  child = PyOpenSCADObjectToNodeMulti(obj1, &dummydict);
+  node->children.push_back(child);
+
+  child = PyOpenSCADObjectToNodeMulti(obj2, &dummydict);
+  node->children.push_back(child);
+
+  node->convexity = convexity;
 
   return PyOpenSCADObjectFromNode(&PyOpenSCADType, node);
 }
