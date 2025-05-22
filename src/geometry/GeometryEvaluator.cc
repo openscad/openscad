@@ -2138,13 +2138,14 @@ std::vector<Vector3d> calculate_path_profile(Vector3d *vec_x, Vector3d *vec_y,Ve
 
 
 
-static std::unique_ptr<Geometry> extrudePolygon(const PathExtrudeNode& node, const Polygon2d& poly)
+static std::unique_ptr<Geometry> extrudePath(const PathExtrudeNode& node, const Polygon2d& poly)
 {
   PolySetBuilder builder;
   builder.setConvexity(node.convexity);
   std::vector<Vector3d> path_os;
   std::vector<double> length_os;
   gboolean intersect=false;
+  if(node.path.size() < 2) return builder.build();
 
   // Round the corners with radius
   int xdir_offset = 0; // offset in point list to apply the xdir
@@ -2442,7 +2443,7 @@ Response GeometryEvaluator::visit(State& state, const PathExtrudeNode& node)
       std::shared_ptr<Geometry> geometry =  applyToChildren2D(node, OpenSCADOperator::UNION);
       if (geometry) {
         const auto polygons = std::dynamic_pointer_cast<const Polygon2d>(geometry);
-        auto extruded = extrudePolygon(node, *polygons);
+        auto extruded = extrudePath(node, *polygons);
 //	printf("extrude = %p\n",extruded);
         assert(extruded);
         geom = std::move(extruded);
