@@ -32,6 +32,7 @@ extern PyTypeObject PyOpenSCADType;
 extern std::shared_ptr<AbstractNode> python_result_node;
 extern PyObject *python_result_obj;
 extern std::vector<SelectedObject> python_result_handle;
+extern void python_catch_error(std::string &errorstr);
 
 extern bool python_active;
 extern std::string python_scriptpath;

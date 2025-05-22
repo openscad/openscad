@@ -210,7 +210,7 @@ PyObject *python_cube(PyObject *self, PyObject *args, PyObject *kwargs)
   return PyOpenSCADObjectFromNode(&PyOpenSCADType, node);
 }
 
-Vector3d sphereCalcIndInt(PyObject *func, Vector3d dir)
+int sphereCalcIndInt(PyObject *func, Vector3d &dir)
 {
   dir.normalize();
   PyObject *dir_p= PyList_New(3);
@@ -220,15 +220,21 @@ Vector3d sphereCalcIndInt(PyObject *func, Vector3d dir)
   PyObject* len_p = PyObject_CallObject(func, args);
   double len=0;
   if(len_p == nullptr) {
-	  return dir;
+    std::string errorstr;
+    python_catch_error(errorstr);	  
+    PyErr_SetString(PyExc_TypeError, errorstr.c_str());
+    LOG(message_group::Error, errorstr.c_str());
+    return 1;
   }
   python_numberval(len_p, &len);
-  return dir * len;
+  dir *= len;
+  return 0;
 }
 
 int sphereCalcInd(PolySetBuilder &builder, std::vector<Vector3d> &vertices, PyObject *func, Vector3d dir)
 {
-  dir = sphereCalcIndInt(func, dir);	
+  std::string errorstr;	
+  if(sphereCalcIndInt(func, dir)) return -1; // TODO fix
   unsigned int ind=builder.vertexIndex(dir);
   if(ind == vertices.size()) vertices.push_back(dir);
   return ind;
@@ -268,7 +274,7 @@ int sphereCalcSplitInd(PolySetBuilder &builder, std::vector<Vector3d> &vertices,
     return edges[edge];
   }
   int result = sphereCalcInd(builder, vertices, func, vertices[ind1]+vertices[ind2]);
-  edges[edge]=result;
+  if(result != -1) edges[edge]=result;
   return result;
 }
 
@@ -282,11 +288,13 @@ std::unique_ptr<const Geometry> sphereCreateFuncGeometry(void *funcptr, double f
 
   int topind, botind, leftind, rightind, frontind, backind;
   leftind=sphereCalcInd(builder, vertices, func, Vector3d(-1,0,0));
+  if(leftind < 0 ) return builder.build();
   rightind=sphereCalcInd(builder, vertices, func, Vector3d(1,0,0));
   frontind=sphereCalcInd(builder, vertices, func, Vector3d(0,-1,0));
   backind=sphereCalcInd(builder, vertices, func, Vector3d(0,1,0));
   botind=sphereCalcInd(builder, vertices, func, Vector3d(0,0,-1));
   topind=sphereCalcInd(builder, vertices, func, Vector3d(0,0,1));
+  if(rightind < 0 || frontind < 0 || backind < 0 || botind < 0 || topind < 0) return builder.build();
 
   std::vector<IndexedTriangle> triangles;
   std::vector<IndexedTriangle> tri_new;
@@ -323,7 +331,7 @@ std::unique_ptr<const Geometry> sphereCreateFuncGeometry(void *funcptr, double f
 	pmin=p1;
 	pmax=p2;
 	pmid=(pmin+pmax)/2;
-	pmid=sphereCalcIndInt(func, pmid);
+	if(sphereCalcIndInt(func, pmid)) return builder.build();
 	dir1=(pmid-p1).normalized();
 	dir2=(p2-pmid).normalized();
 	ang=acos(dir1.dot(dir2));
@@ -332,7 +340,7 @@ std::unique_ptr<const Geometry> sphereCreateFuncGeometry(void *funcptr, double f
 	do
 	{
 	  pmid_test=(pmin+pmid)/2;
-	  pmid_test=sphereCalcIndInt(func, pmid_test);
+	  if(sphereCalcIndInt(func, pmid_test)) return builder.build();
 	  dir1=(pmid_test-p1).normalized();
 	  dir2=(p2-pmid_test).normalized();
 	  ang_test=acos(dir1.dot(dir2));
@@ -342,7 +350,7 @@ std::unique_ptr<const Geometry> sphereCreateFuncGeometry(void *funcptr, double f
 	  }
 
  	  pmid_test=(pmax+pmid)/2;
- 	  pmid_test=sphereCalcIndInt(func, pmid_test);
+ 	  if(sphereCalcIndInt(func, pmid_test)) return builder.build();
 	  dir1=(pmid_test-p1).normalized();
 	  dir2=(p2-pmid_test).normalized();
 	  ang_test=acos(dir1.dot(dir2));
@@ -362,7 +370,7 @@ std::unique_ptr<const Geometry> sphereCreateFuncGeometry(void *funcptr, double f
 	p2=vertices[tri[1]];
 	p3=vertices[tri[2]];
 	pmid=(p1+p2+p3)/3.0;
-	pmid=sphereCalcIndInt(func, pmid);
+	if(sphereCalcIndInt(func, pmid)) return builder.build();
         Vector4d norm=calcTriangleNormal(vertices,{tri[0], tri[1], tri[2] });
 	if(fabs(pmid.dot(norm.head<3>())- norm[3]) > 1e-3) {
   	  midind=builder.vertexIndex(pmid);
