@@ -3831,16 +3831,7 @@ PyObject *python_surface_core(const char *file, PyObject *center, PyObject *inve
 
   std::string fileval = file == NULL ? "" : file;
 
-#ifdef _WIN32
-  std::string cur_dir = ".";
-#else 
-#ifdef __APPLE__
-    std::string cur_dir = ".";
-#else
-  std::string cur_dir = get_current_dir_name();
-#endif
-#endif  
-  std::string filename = lookup_file(fileval,  cur_dir, instance->location().filePath().parent_path().string());
+  std::string filename = lookup_file(fileval,  python_scriptpath.parent_path(), instance->location().filePath().parent_path().string());
   node->filename = filename;
   handle_dep(fs::path(filename).generic_string());
 
@@ -4295,17 +4286,7 @@ PyObject *do_import_python(PyObject *self, PyObject *args, PyObject *kwargs, Imp
     PyErr_SetString(PyExc_TypeError, "Error during parsing osimport(filename)");
     return NULL;
   }
-
-#ifdef _WIN32
-  std::string cur_dir = ".";
-#else 
-#ifdef __APPLE__
-    std::string cur_dir = ".";
-#else
-  std::string cur_dir = get_current_dir_name();
-#endif
-#endif  
-  filename = lookup_file(v == NULL ? "" : v, cur_dir, instance->location().filePath().parent_path().string());
+  filename = lookup_file(v == NULL ? "" : v, python_scriptpath.parent_path(), instance->location().filePath().parent_path().string());
   if (!filename.empty()) handle_dep(filename);
   ImportType actualtype = type;
   if (actualtype == ImportType::UNKNOWN) {
@@ -4529,7 +4510,7 @@ PyObject *python_osuse_include(int mode, PyObject *self, PyObject *args, PyObjec
     else PyErr_SetString(PyExc_TypeError, "Error during parsing osuse(path)");
     return NULL;
   }
-  const std::string filename = lookup_file(file, ".",".");
+  const std::string filename = lookup_file(file, python_scriptpath.parent_path(),".");
   stream << "include <" << filename << ">\n";
 
   SourceFile *source;

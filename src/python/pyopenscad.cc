@@ -42,7 +42,7 @@ extern "C" PyObject *PyInit_openscad(void);
 
 bool python_active;
 bool python_trusted;
-std::string python_scriptpath;
+fs::path python_scriptpath;
 // https://docs.python.org/3.10/extending/newtypes.html
 
 void PyObjectDeleter (PyObject *pObject) { Py_XDECREF(pObject); };

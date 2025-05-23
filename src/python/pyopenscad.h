@@ -35,7 +35,7 @@ extern std::vector<SelectedObject> python_result_handle;
 extern void python_catch_error(std::string &errorstr);
 
 extern bool python_active;
-extern std::string python_scriptpath;
+extern fs::path python_scriptpath;
 extern std::string trusted_edit_document_name;
 extern std::string untrusted_edit_document_name;
 bool trust_python_file(const std::string &file, const std::string &content);
