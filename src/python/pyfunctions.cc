@@ -1446,6 +1446,33 @@ PyObject *python_oo_roty(PyObject *self, PyObject *args, PyObject *kwargs) { ret
 PyObject *python_rotz(PyObject *self, PyObject *args, PyObject *kwargs) { return python_dir_sub(self, args,kwargs, 8); }
 PyObject *python_oo_rotz(PyObject *self, PyObject *args, PyObject *kwargs) { return python_oo_dir_sub(self, args,kwargs, 8); }
 
+PyObject *python_math_sub(PyObject *self, PyObject *args, PyObject *kwargs,int mode)
+{
+  char *kwlist[] = {"value", NULL};
+  double arg;
+  double result = 0;
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "d", kwlist, &arg)) {
+    PyErr_SetString(PyExc_TypeError, "Error during parsing translate(object,vec3)");
+    return NULL;
+  }
+  switch(mode) {
+    case 0: result = sin(arg* M_PI / 180.0); break;	    
+    case 1: result = cos(arg* M_PI / 180.0); break;	    
+    case 2: result = tan(arg* M_PI / 180.0); break;	    
+    case 3: result = asin(arg)*180.0 /  M_PI; break;	    
+    case 4: result = acos(arg)*180.0 /  M_PI; break;	    
+    case 5: result = atan(arg)*180.0 /  M_PI; break;	    
+  }
+  return PyFloat_FromDouble(result);
+}
+
+PyObject *python_sin(PyObject *self, PyObject *args, PyObject *kwargs) { return python_math_sub(self, args,kwargs, 0); }
+PyObject *python_cos(PyObject *self, PyObject *args, PyObject *kwargs) { return python_math_sub(self, args,kwargs, 1); }
+PyObject *python_tan(PyObject *self, PyObject *args, PyObject *kwargs) { return python_math_sub(self, args,kwargs, 2); }
+PyObject *python_asin(PyObject *self, PyObject *args, PyObject *kwargs) { return python_math_sub(self, args,kwargs, 4); }
+PyObject *python_acos(PyObject *self, PyObject *args, PyObject *kwargs) { return python_math_sub(self, args,kwargs, 5); }
+PyObject *python_atan(PyObject *self, PyObject *args, PyObject *kwargs) { return python_math_sub(self, args,kwargs, 6); }
+
 PyObject *python_multmatrix_sub(PyObject *pyobj, PyObject *pymat, int div)
 {
   Matrix4d mat;
@@ -4758,6 +4785,12 @@ PyMethodDef PyOpenSCADFunctions[] = {
   {"model", (PyCFunction) python_model, METH_VARARGS | METH_KEYWORDS, "Yield Model"},
   {"modelpath", (PyCFunction) python_modelpath, METH_VARARGS | METH_KEYWORDS, "Returns absolute Path to script"},
   {"marked", (PyCFunction) python_marked, METH_VARARGS | METH_KEYWORDS, "Create a marked value."},
+  {"Sin",    (PyCFunction) python_sin, METH_VARARGS | METH_KEYWORDS, "Calculate sin."},
+  {"Cos",    (PyCFunction) python_cos, METH_VARARGS | METH_KEYWORDS, "Calculate cos."},
+  {"Tan",    (PyCFunction) python_tan, METH_VARARGS | METH_KEYWORDS, "Calculate tan."},
+  {"Asin",   (PyCFunction) python_asin, METH_VARARGS | METH_KEYWORDS, "Calculate asin."},
+  {"Acos",   (PyCFunction) python_acos, METH_VARARGS | METH_KEYWORDS, "Calculate acos."},
+  {"Atan",   (PyCFunction) python_atan, METH_VARARGS | METH_KEYWORDS, "Calculate atan."},
   {NULL, NULL, 0, NULL}
 };
 
