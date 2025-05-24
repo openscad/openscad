@@ -308,14 +308,17 @@ PolySetRenderer::findModelObject(const Vector3d &near_pt, const Vector3d &far_pt
   Vector3d pt1_nearest;
   Vector3d pt2_nearest;
   Vector3d pt3_nearest;
+  int ind_nearest = -1;
   std::vector<Vector3d> pts_nearest;
   const auto find_nearest_point = [&](const std::vector<Vector3d> &vertices){
-    for (const Vector3d &pt : vertices) {
+    for (int i=0;i<vertices.size();i++) {
+      const Vector3d &pt = vertices[i];	    
       SelectedObject ruler = calculateLinePointDistance(near_pt, far_pt, pt, dist_near);
       double dist_pt = (ruler.pt[0]-ruler.pt[1]).norm();
       if (dist_pt < tolerance && dist_near < dist_nearest) {
         dist_nearest = dist_near;
         pt1_nearest = pt;
+	ind_nearest = i;
       }
     }
   };
@@ -330,6 +333,7 @@ PolySetRenderer::findModelObject(const Vector3d &near_pt, const Vector3d &far_pt
       .type = SelectionType::SELECTION_POINT,
     };
     obj.pt.push_back(pt1_nearest);
+    obj.ind=ind_nearest;
 
     return std::make_shared<SelectedObject>(obj);
   }

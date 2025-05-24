@@ -36,6 +36,7 @@ enum class SelectionType {
 };
 
 struct SelectedObject {
+	int ind;
 	SelectionType type;
 	std::vector<Vector3d> pt;
 	std::string name;

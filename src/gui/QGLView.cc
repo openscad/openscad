@@ -204,7 +204,7 @@ void QGLView::paintGL()
         case SelectionType::SELECTION_POINT:
           if(shown_obj->pt.size() < 1) break;		
 	  p1=shown_obj->pt[0];
-          status = QString("Point (%1/%2/%3)").arg(p1[0]).arg(p1[1]).arg(p1[2]);
+          status = QString("Point %4(%1/%2/%3)").arg(p1[0]).arg(p1[1]).arg(p1[2]).arg(shown_obj->ind);
           statusLabel->setText(status);
 	  break;
         case SelectionType::SELECTION_SEGMENT:
