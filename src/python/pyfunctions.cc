@@ -452,6 +452,78 @@ std::unique_ptr<const Geometry> sphereCreateFuncGeometry(void *funcptr, double f
     builder.appendPolygon({tri[0], tri[1], tri[2]});
   }
   auto ps = builder.build();
+
+  int done=0;
+  round=0;
+  do {
+    done=0;
+    auto edge_db = createEdgeDb(ps->indices);
+    for(int i=0;i<ps->indices.size();i++){
+      auto &tri = ps->indices[i];	  
+      if(tri[0] == tri[1] || tri[0] == tri[2] || tri[1] == tri[2]) continue;
+      for(int j=0;j<3;j++) {
+        int debug = 0;	      
+        int i1=tri[j];
+        int i2=tri[(j+1)%3];
+        double l1=(ps->vertices[i1] - ps->vertices[i2]).norm();
+        EdgeKey ek(tri[j],tri[(j+1)%3]);	    
+        if(edge_db.count(ek) != 0) {
+          auto ev = edge_db.at(ek);
+	  int face_o, pos_o;
+	  if(i2 > i1) {
+            face_o = ev.faceb;
+	    pos_o  = ev.posb;
+	  } else {
+            face_o = ev.facea;		
+	    pos_o  = ev.posa;
+	  }
+	  if(face_o == -1 || pos_o == -1) continue;
+	  auto &tri_oth= ps->indices[face_o];
+	  double l2 = (ps->vertices[tri[(j+2)%3]] - ps->vertices[tri_oth[(pos_o+2)%3]]).norm();
+	  if(l2 < l1) {
+	    Vector3d norm =calcTriangleNormal(ps->vertices,tri).head<3>();
+	    Vector3d norm_oth =calcTriangleNormal(ps->vertices,tri_oth).head<3>();
+
+            auto tri_ = tri;
+            auto tri_oth_ = tri_oth;
+
+	    tri_[(j+1)%3] = tri_oth[(pos_o+2)%3];
+	    for(int k=0;k<3;k++)
+	      if(tri_oth[k] == i1) tri_oth_[k] = tri[(j+2)%3];
+		// reorganize
+
+	    Vector3d norm_ =calcTriangleNormal(ps->vertices,tri_).head<3>();
+	    Vector3d norm_oth_ =calcTriangleNormal(ps->vertices,tri_oth_).head<3>();
+
+	    if(norm.dot(norm_) > 0 && norm_oth.dot(norm_oth_) > 0) {
+              tri = tri_;
+	      tri_oth = tri_oth_;
+    	    
+    			    
+	      for(int k=0;k<3;k++) {
+                edge_db.erase(EdgeKey(tri[k],tri[(k+1)%3]));	    
+                edge_db.erase(EdgeKey(tri_oth[k],tri_oth[(k+1)%3]));	    
+	      }
+	      done++;
+              break; // dont proceed with 
+            }
+          }	 
+	}
+      }
+    }	    
+    printf("\ndone=%d\n",done);
+    for(int i=0;i<ps->indices.size();i++) {
+      auto &tri = ps->indices[i];	    
+      if(tri[0] == tri[1] && tri[0] == tri[2]) {
+        ps->indices.erase(ps->indices.begin()+i);
+	i--;
+      }	      
+ 	    
+    }
+    round++;
+  }
+  while(done > 0) ; //  && round < 3);
+
   return ps; 
 }
 
