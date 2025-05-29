@@ -59,6 +59,7 @@ void GLView::setupShader() {
 }
 
 void GLView::teardownShader() {
+  if(edge_sharer == nullptr) return; // in case GLX is not found	
   if (edge_shader->resource.shader_program) {
     glDeleteProgram(edge_shader->resource.shader_program);
   }
