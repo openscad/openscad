@@ -4221,7 +4221,6 @@ PyObject *python_projection_core(PyObject *obj, PyObject *cut, int convexity)
     PyErr_SetString(PyExc_TypeError, "Invalid type for Object in projection");
     return NULL;
   }
-
   node->convexity = convexity;
   node->cut_mode = 0;
   if (cut == Py_True)  node->cut_mode = 1;
@@ -4239,7 +4238,7 @@ PyObject *python_projection(PyObject *self, PyObject *args, PyObject *kwargs)
 {
   char *kwlist[] = {"obj", "cut", "convexity", NULL};
   PyObject *obj = NULL;
-  PyObject *cutmode = NULL;
+  PyObject *cutmode = Py_False;
   long convexity = 2;
   if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O|Ol", kwlist,
                                    &obj,
@@ -4254,7 +4253,7 @@ PyObject *python_projection(PyObject *self, PyObject *args, PyObject *kwargs)
 PyObject *python_oo_projection(PyObject *obj, PyObject *args, PyObject *kwargs)
 {
   char *kwlist[] = {"cut", "convexity", NULL};
-  PyObject *cutmode = NULL;
+  PyObject *cutmode = Py_False;
   long convexity = 2;
   if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|Ol", kwlist,
                                    &cutmode, &convexity
