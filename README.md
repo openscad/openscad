@@ -16,11 +16,11 @@ Before I continue I'd like to say I fully appreciate all the efforts the team an
 
 These limitations cause OpenSCAD programs to be written in the most convoluted ways, making them difficult to understand. While my goal to be able to use Python with OpenSCAD is actually completed, the problem that remains is getting it merged into mainline OpenSCAD.
 
-The argument is Python will introduce a massive security hole into the sharing culture. So the proposed solution is to put the Python capability behind an option, which I have done. Additionally OpenSCAD asks you, if you trust to a new Python Script and it will saves this decsion for you in an SHA256 hash. Now I hope it's just a matter of time until things are merged.
+The argument is Python will introduce a massive security hole into the sharing culture. So the proposed solution is to put the Python capability behind an option, which I have done. Additionally PythonSCAD asks you, if you trust to a new Python Script and it will saves this decsion for you in an SHA256 hash. Now I hope it's just a matter of time until things are merged.
 
 # Getting started
 
-You can download the latest binaries of OpenSCAD at
+You can download the latest binaries of PythonSCAD at
 <https://www.pythonscad.org/donloads.html>. Install binaries as you would any other
 software.
 
@@ -33,11 +33,11 @@ cy.show()
 
 # Documentation
 
-Have a look at the OpenSCAD Homepage (https://pythonscad.org/tutorial/site/index.html) for a small tutorial
+Have a look at the PythonSCAD Homepage (https://pythonscad.org/tutorial/site/index.html) for a small tutorial
 
 ## Building PythonSCAD
 
-To build OpenSCAD from source, follow the instructions for the
+To build PythonSCAD from source, follow the instructions for the
 platform applicable to you below.
 
 ### Prerequisites
