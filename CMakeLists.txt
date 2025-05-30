@@ -25,6 +25,9 @@ endif()
 if(POLICY CMP0077) # Let parent project set child project options (used to skip python lookup from manifold & force TBB)
   cmake_policy(SET CMP0079 NEW)
 endif()
+if(POLICY CMP0167) # Use upstream's FindBoost.cmake to find Boost libraries.
+  cmake_policy(SET CMP0167 NEW) # Use upstream's FindBoost.cmake to find Boost libraries.
+endif()
 
 include("cmake/Modules/openscad_version.cmake")
 
