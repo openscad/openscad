@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 
 # test_pretty_print by don bright 2012. Copyright assigned to Marius Kintel and
 # Clifford Wolf 2012. Released under the GPL 2, or later, as described in
