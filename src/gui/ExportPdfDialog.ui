@@ -491,6 +491,179 @@
          </layout>
         </widget>
        </item>
+       <item row="2" column="0" colspan="2">
+        <widget class="QGroupBox" name="groupFillStroke">
+         <property name="title">
+          <string>Fill and Stroke</string>
+         </property>
+         <layout class="QVBoxLayout" name="verticalLayoutFillStroke">
+          <item>
+           <widget class="QCheckBox" name="checkBoxEnableFill">
+            <property name="toolTip">
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Enable filling of exported geometry with a color.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            </property>
+            <property name="text">
+             <string>Fill Geometry</string>
+            </property>
+            <property name="checked">
+             <bool>false</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <layout class="QHBoxLayout" name="horizontalLayoutFillColor">
+            <property name="topMargin">
+             <number>9</number>
+            </property>
+            <item>
+             <widget class="QLabel" name="labelFillColor">
+              <property name="minimumSize">
+               <size>
+                <width>100</width>
+                <height>0</height>
+               </size>
+              </property>
+              <property name="frameShape">
+               <enum>QFrame::Box</enum>
+              </property>
+              <property name="lineWidth">
+               <number>2</number>
+              </property>
+              <property name="text">
+               <string/>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QToolButton" name="toolButtonFillColorReset">
+              <property name="text">
+               <string>...</string>
+              </property>
+              <property name="icon">
+               <iconset theme="chokusen-undo">
+                <normaloff>.</normaloff>.</iconset>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QToolButton" name="toolButtonFillColor">
+              <property name="text">
+               <string>...</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <widget class="QCheckBox" name="checkBoxEnableStroke">
+            <property name="toolTip">
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Enable outline stroke for exported geometry.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            </property>
+            <property name="text">
+             <string>Stroke Outline</string>
+            </property>
+            <property name="checked">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <layout class="QHBoxLayout" name="horizontalLayoutStrokeColor">
+            <property name="topMargin">
+             <number>9</number>
+            </property>
+            <item>
+             <widget class="QLabel" name="labelStrokeColor">
+              <property name="minimumSize">
+               <size>
+                <width>100</width>
+                <height>0</height>
+               </size>
+              </property>
+              <property name="frameShape">
+               <enum>QFrame::Box</enum>
+              </property>
+              <property name="lineWidth">
+               <number>2</number>
+              </property>
+              <property name="text">
+               <string/>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QToolButton" name="toolButtonStrokeColorReset">
+              <property name="text">
+               <string>...</string>
+              </property>
+              <property name="icon">
+               <iconset theme="chokusen-undo">
+                <normaloff>.</normaloff>.</iconset>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QToolButton" name="toolButtonStrokeColor">
+              <property name="text">
+               <string>...</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <layout class="QHBoxLayout" name="horizontalLayoutStrokeWidth">
+            <property name="topMargin">
+             <number>9</number>
+            </property>
+            <item>
+             <widget class="QLabel" name="labelStrokeWidth">
+              <property name="text">
+               <string>Stroke Width:</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QDoubleSpinBox" name="doubleSpinBoxStrokeWidth">
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
+              <property name="suffix">
+               <string> mm</string>
+              </property>
+              <property name="decimals">
+               <number>2</number>
+              </property>
+              <property name="minimum">
+               <double>0.01</double>
+              </property>
+              <property name="maximum">
+               <double>10.00</double>
+              </property>
+              <property name="singleStep">
+               <double>0.10</double>
+              </property>
+              <property name="value">
+               <double>0.35</double>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QToolButton" name="toolButtonStrokeWidthReset">
+              <property name="text">
+               <string>...</string>
+              </property>
+              <property name="icon">
+               <iconset theme="chokusen-undo">
+                <normaloff>.</normaloff>.</iconset>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+         </layout>
+        </widget>
+       </item>
        <item row="4" column="0" colspan="2">
         <spacer name="verticalSpacerPdfDialog">
          <property name="orientation">
@@ -573,6 +746,14 @@
   <tabstop>rbGs_5mm</tabstop>
   <tabstop>rbGs_10mm</tabstop>
   <tabstop>checkBoxShowScaleMessage</tabstop>
+  <tabstop>checkBoxEnableFill</tabstop>
+  <tabstop>toolButtonFillColorReset</tabstop>
+  <tabstop>toolButtonFillColor</tabstop>
+  <tabstop>checkBoxEnableStroke</tabstop>
+  <tabstop>toolButtonStrokeColorReset</tabstop>
+  <tabstop>toolButtonStrokeColor</tabstop>
+  <tabstop>doubleSpinBoxStrokeWidth</tabstop>
+  <tabstop>toolButtonStrokeWidthReset</tabstop>
   <tabstop>groupMetaData</tabstop>
   <tabstop>lineEditMetaDataTitle</tabstop>
   <tabstop>checkBoxMetaDataAuthor</tabstop>

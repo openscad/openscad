@@ -8,6 +8,7 @@
 
 #include <Eigen/Core>
 
+#include "core/ColorUtil.h"
 #include "geometry/Geometry.h"
 #include "geometry/linalg.h"
 #include "geometry/Polygon2d.h"
@@ -290,10 +291,26 @@ void export_pdf(const std::shared_ptr<const Geometry>& geom, std::ostream& outpu
   // Note Y axis + is DOWN.  Drawings have to invert Y, but these translations account for that.
   cairo_translate(cr, tcX, tcY);  // Center page on geometry;
 
-  cairo_set_source_rgba(cr, 0., 0., 0., 1.0); // Set black line, opaque
-  cairo_set_line_width(cr, 1);  // 1 point width.
+  const Color4f black = Color4f(0.0f, 0.0f, 0.0f);
+
+  // create path
   draw_geom(geom, cr);
-  cairo_stroke(cr);
+
+  if (options->fill) {
+    Color4f fillColor = OpenSCAD::getColor(options->fillColor, black);
+    cairo_set_source_rgba(cr, fillColor[0], fillColor[1], fillColor[2], fillColor[3]);
+    cairo_fill_preserve(cr);
+  }
+
+  if (options->stroke) {
+    Color4f strokeColor = OpenSCAD::getColor(options->strokeColor, black);
+    cairo_set_source_rgba(cr, strokeColor[0], strokeColor[1], strokeColor[2], strokeColor[3]);
+    cairo_set_line_width(cr, mm_to_points(options->strokeWidth));
+    cairo_stroke_preserve(cr);
+  }
+
+  // clear path
+  cairo_new_path(cr);
     
     // Set Annotations
     const std::string about = "Scale is to calibrate actual printed dimension. Check both X and Y. Measure between tick 0 and last tick";
