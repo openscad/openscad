@@ -111,10 +111,15 @@ std::string collect_mesh_objects(const Lib3MF::PModel& model, MeshObjectList& ob
   bool hasuuid = false;
   const auto uuid = object->GetUUID(hasuuid);
 
+#if 0
+  // Validation disabled for now, this crashes in some cases. One example
+  // is the MicroscopeMainBody.3mf from the blog post
+  // https://axotron.se/blog/microscope-adapter-for-mobile-phone-camera/
   const auto is_valid_object = object->IsValid();
   if (!is_valid_object) {
     LOG(message_group::Warning, "Object '%1$s' with UUID '%2$s' is not valid, import() at line %3$d", name, uuid, loc.firstLine());
   }
+#endif
 
   if (is_mesh_object) {
     const auto meshobject = model->GetMeshObjectByID(object->GetUniqueResourceID());
