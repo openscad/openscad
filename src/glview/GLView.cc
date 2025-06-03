@@ -68,6 +68,7 @@ void GLView::setupShader() {
 }
 
 void GLView::teardownShader() {
+  if( edge_shader == nullptr) return; // if OpenGL context was not initialized
   if (edge_shader->resource.shader_program) {
     glDeleteProgram(edge_shader->resource.shader_program);
   }
