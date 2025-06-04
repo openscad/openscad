@@ -59,6 +59,7 @@ Follow the instructions for the platform you're compiling on below.
  * [GMP (5.x)](https://gmplib.org/)
  * [MPFR (3.x)](https://www.mpfr.org/)
 * [boost (1.70 ->)](https://www.boost.org/)
+* [curl (7.58 ->)](https://curl.se/)
 * [OpenCSG (1.4.2 ->)](http://www.opencsg.org/)
 * [GLEW (1.5.4 ->)](http://glew.sourceforge.net/)
 * [Eigen (3.x)](https://eigen.tuxfamily.org/)
@@ -91,4 +92,3 @@ This will download the latest sources into a directory named `pythonscad`.
     cmake -DEXPERIMENTAL=1 -DENABLE_PYTHON=1 -DENABLE_LIBFIVE=1 ..
     make
     sudo make install
-
