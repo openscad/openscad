@@ -81,7 +81,10 @@ PACKAGES=(
 
     # https://gitlab.freedesktop.org/pixman/pixman/-/tags
     "pixman 0.46.0"
-    
+
+    # https://www.cairographics.org/news/ 
+    "cairo 1.18.0"
+
     # https://github.com/CGAL/cgal/releases
     "cgal 6.0.1"
 
