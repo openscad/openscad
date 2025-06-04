@@ -675,6 +675,9 @@ endif()
 find_package(FLEX REQUIRED QUIET)
 message(STATUS "Flex: ${FLEX_VERSION}")
 
+find_package(CURL REQUIRED)
+message(STATUS "curl: found in ${CURL_INCLUDE_DIRS}")
+
 find_package(BISON REQUIRED QUIET)
 message(STATUS "Bison: ${BISON_VERSION}")
 if(APPLE)
