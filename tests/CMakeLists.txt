@@ -1611,6 +1611,8 @@ set_tests_properties(
 
   # https://github.com/openscad/openscad/issues/909
   render-amf-manifold_bad-stl-wing
+  render-amf-manifold_bad-stl-pcbvicebar
+  render-amf-manifold_bad-stl-tardis
 
   # https://github.com/openscad/openscad/issues/2841
   render-manifold_issue2841b
