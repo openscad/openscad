@@ -271,8 +271,9 @@ void PrintInitDialog::on_pushButtonCancel_clicked()
 int PrintInitDialog::exec()
 {
   bool showDialog = this->checkBoxAlwaysShowDialog->isChecked();
-  if ((QApplication::keyboardModifiers() & Qt::ShiftModifier) != 0) {
-	showDialog = true;
+  if ((QApplication::keyboardModifiers() & Qt::ShiftModifier) != 0 ||
+      this->selectedPrintService == print_service_t::NONE) {
+  	showDialog = true;
   }
 
   const auto result = showDialog ? QDialog::exec() : QDialog::Accepted;
