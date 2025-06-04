@@ -38,6 +38,7 @@ extern bool python_active;
 extern fs::path python_scriptpath;
 extern std::string trusted_edit_document_name;
 extern std::string untrusted_edit_document_name;
+extern std::vector<std::shared_ptr<AbstractNode>> nodes_hold;
 bool trust_python_file(const std::string &file, const std::string &content);
 PyObject *PyOpenSCADObjectFromNode(PyTypeObject *type, const std::shared_ptr<AbstractNode> &node);
 std::shared_ptr<AbstractNode> PyOpenSCADObjectToNode(PyObject *object, PyObject **dict );

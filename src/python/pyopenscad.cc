@@ -64,7 +64,7 @@ bool pythonRuntimeInitialized = false;
 std::vector<std::string> mapping_name;
 std::vector<std::string> mapping_code;
 std::vector<int> mapping_level;
-std::shared_ptr<const FileContext> osinclude_context = nullptr;
+std::vector<std::shared_ptr<AbstractNode>> nodes_hold; // make sure, that these nodes are not yet freed
 
 void PyOpenSCADObject_dealloc(PyOpenSCADObject *self)
 {
@@ -856,6 +856,7 @@ void initPython(const std::string& binDir, const std::string &scriptpath, double
   customizer_parameters_finished = customizer_parameters;
   customizer_parameters.clear();
   python_result_handle.clear();
+  nodes_hold.clear();
 }
 
 void finishPython(void)
