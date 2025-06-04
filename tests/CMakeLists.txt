@@ -866,6 +866,7 @@ list(APPEND SCADFILES_WITH_COLOR
   ${EXAMPLES_DIR}/Old/example017.scad
 
   ${TEST_SCAD_DIR}/3D/issues/issue5217.scad
+  ${TEST_SCAD_DIR}/3D/issues/issue5738.scad
 
   #${TEST_SCAD_DIR}/bugs/issue1000.scad
 )
@@ -887,7 +888,7 @@ list(APPEND RENDER_DIFFERENT_EXPECTATIONS
   ${TEST_SCAD_DIR}/3D/features/render-tests.scad
   ${EXAMPLES_DIR}/Old/example016.scad
 
-  # Manifold can represent the very think slice
+  # Manifold can represent the very thin slice
   ${TEST_SCAD_DIR}/3D/issues/issue1165.scad
 )
 
@@ -1558,10 +1559,8 @@ set_tests_properties(
   render-csg-cgal_projection
 
   # https://github.com/openscad/openscad/issues/5158
-  render-cgal_example017 
-  preview-cgal_example017
-  throwntogether-cgal_example017
-  throwntogether-manifold_example017
+  #render-cgal_example017 
+  #throwntogether-cgal_example017
   
   # https://github.com/openscad/openscad/issues/4398
   render-csg-cgal_logo_and_text
@@ -1612,6 +1611,8 @@ set_tests_properties(
 
   # https://github.com/openscad/openscad/issues/909
   render-amf-manifold_bad-stl-wing
+  render-amf-manifold_bad-stl-pcbvicebar
+  render-amf-manifold_bad-stl-tardis
 
   # https://github.com/openscad/openscad/issues/2841
   render-manifold_issue2841b
@@ -1622,8 +1623,8 @@ set_tests_properties(
   throwntogether-manifold_surface_image
 
   # https://github.com/openscad/openscad/issues/5158
-  preview-manifold_example017
-  render-manifold_example017 
+  #preview-manifold_example017
+  #render-manifold_example017 
 
   # https://github.com/openscad/openscad/issues/5135
   render-force-manifold_issue5135-bad
