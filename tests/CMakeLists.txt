@@ -1602,6 +1602,8 @@ set_tests_properties(
   # z-fighting different on different machines
   preview-manifold_issue1165
   preview-manifold_issue1215
+  preview-cgal_example017
+  preview-manifold_example017
 
   # Manifold triangle order not stable, causes transparent
   # objects to render differently on different machines
@@ -1621,10 +1623,6 @@ set_tests_properties(
   # OpenCSG z fighting
   preview-manifold_surface_image
   throwntogether-manifold_surface_image
-
-  # https://github.com/openscad/openscad/issues/5158
-  #preview-manifold_example017
-  #render-manifold_example017 
 
   # https://github.com/openscad/openscad/issues/5135
   render-force-manifold_issue5135-bad
