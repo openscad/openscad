@@ -1528,12 +1528,12 @@ PyObject *python_math_sub(PyObject *self, PyObject *args, PyObject *kwargs,int m
     return NULL;
   }
   switch(mode) {
-    case 0: result = sin(arg* M_PI / 180.0); break;	    
-    case 1: result = cos(arg* M_PI / 180.0); break;	    
-    case 2: result = tan(arg* M_PI / 180.0); break;	    
-    case 3: result = asin(arg)*180.0 /  M_PI; break;	    
-    case 4: result = acos(arg)*180.0 /  M_PI; break;	    
-    case 5: result = atan(arg)*180.0 /  M_PI; break;	    
+    case 0: result = sin(arg* G_PI / 180.0); break;	    
+    case 1: result = cos(arg* G_PI / 180.0); break;	    
+    case 2: result = tan(arg* G_PI / 180.0); break;	    
+    case 3: result = asin(arg)*180.0 /  G_PI; break;	    
+    case 4: result = acos(arg)*180.0 /  G_PI; break;	    
+    case 5: result = atan(arg)*180.0 /  G_PI; break;	    
   }
   return PyFloat_FromDouble(result);
 }
@@ -3930,7 +3930,7 @@ PyObject *python_surface_core(const char *file, PyObject *center, PyObject *inve
 
   std::string fileval = file == NULL ? "" : file;
 
-  std::string filename = lookup_file(fileval,  python_scriptpath.parent_path(), instance->location().filePath().parent_path().string());
+  std::string filename = lookup_file(fileval,  python_scriptpath.parent_path().u8string(), instance->location().filePath().parent_path().string());
   node->filename = filename;
   handle_dep(fs::path(filename).generic_string());
 
@@ -4384,7 +4384,7 @@ PyObject *do_import_python(PyObject *self, PyObject *args, PyObject *kwargs, Imp
     PyErr_SetString(PyExc_TypeError, "Error during parsing osimport(filename)");
     return NULL;
   }
-  filename = lookup_file(v == NULL ? "" : v, python_scriptpath.parent_path(), instance->location().filePath().parent_path().string());
+  filename = lookup_file(v == NULL ? "" : v, python_scriptpath.parent_path().u8string(), instance->location().filePath().parent_path().string());
   if (!filename.empty()) handle_dep(filename);
   ImportType actualtype = type;
   if (actualtype == ImportType::UNKNOWN) {
@@ -4608,7 +4608,7 @@ PyObject *python_osuse_include(int mode, PyObject *self, PyObject *args, PyObjec
     else PyErr_SetString(PyExc_TypeError, "Error during parsing osuse(path)");
     return NULL;
   }
-  const std::string filename = lookup_file(file, python_scriptpath.parent_path(),".");
+  const std::string filename = lookup_file(file, python_scriptpath.parent_path().u8string(),".");
   stream << "include <" << filename << ">\n";
 
   SourceFile *source;
@@ -4761,7 +4761,7 @@ PyObject *python_modelpath(PyObject *self, PyObject *args, PyObject *kwargs, int
     PyErr_SetString(PyExc_TypeError, "Error during parsing model");
     return NULL;
   }
-  return PyUnicode_FromString(python_scriptpath.c_str());
+  return PyUnicode_FromString(python_scriptpath.u8string().c_str());
 }
 
 PyMethodDef PyOpenSCADFunctions[] = {
