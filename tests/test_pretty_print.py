@@ -28,7 +28,7 @@
 # 1. why is hash differing
 
 
-import string, sys, re, os, hashlib, subprocess, time, platform, html, base64
+import pathlib, string, sys, re, os, hashlib, subprocess, time, platform, html, base64
 
 from urllib.error import URLError
 from urllib.request import urlopen
@@ -207,13 +207,13 @@ def png_encode64(fname, width=512, data=None, alt=''):
 
 def findlogfile(builddir):
     logpath = os.path.join(builddir, 'Testing', 'Temporary')
-    logfilename = os.path.join(logpath, 'LastTest.log.tmp')
-    if not os.path.isfile(logfilename):
-        logfilename = os.path.join(logpath, 'LastTest.log')
+    # The ctest command may not finish before the LastTest.log.tmp* is flushed,
+    # so read that file if it exists.
+    logfilename = next(pathlib.Path(logpath).glob('LastTest.log*'), None)
     if not os.path.isfile(logfilename):
         print('can\'t find and/or open logfile', logfilename)
         sys.exit()
-    return logfilename
+    return str(logfilename)
 
 # --- Templating ---
 
