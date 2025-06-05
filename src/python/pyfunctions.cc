@@ -1036,7 +1036,7 @@ int python_tomatrix(PyObject *pyt, Matrix4d &mat)
   if(pyt == nullptr) return 1;
   PyObject *row, *cell;
   double val;
-  if(!PyList_Check(pyt)) return 1; // TODO crash wenn pyt eine funktion ist
+  if(!PyList_Check(pyt)) return 1;
   if(PyList_Size(pyt) != 4) return 1;
   for(int i=0;i<4;i++) {
     row=PyList_GetItem(pyt,i);
@@ -1050,6 +1050,22 @@ int python_tomatrix(PyObject *pyt, Matrix4d &mat)
   }
   return 0;
 }
+
+int python_tovector(PyObject *pyt, Vector3d &vec)
+{
+  if(pyt == nullptr) return 1;
+  PyObject *cell;
+  double val;
+  if(!PyList_Check(pyt)) return 1;
+  if(PyList_Size(pyt) != 3) return 1;
+  for(int i=0;i<3;i++) {
+    cell=PyList_GetItem(pyt,i);
+    if(python_numberval(cell,&val)) return 1;
+    vec[i]=val;
+  }
+  return 0;
+}
+
 PyObject *python_frommatrix(const Matrix4d &mat) {
   PyObject *pyo=PyList_New(4);
   PyObject *row;
@@ -1063,26 +1079,41 @@ PyObject *python_frommatrix(const Matrix4d &mat) {
   return pyo;
 }
 
+PyObject *python_fromvector(const Vector3d vec) {
+  PyObject *res=PyList_New(3);
+  for(int i=0;i<3;i++)
+    PyList_SetItem(res,i,PyFloat_FromDouble(vec[i]));
+  return res;
+}
 
-PyObject *python_matrix_scale(PyObject *mat, Vector3d scalevec)
+
+PyObject *python_number_scale(PyObject *pynum, Vector3d scalevec)
 {
-  Transform3d matrix=Transform3d::Identity();
-  matrix.scale(scalevec);
-  Matrix4d raw;
-  if(python_tomatrix(mat, raw)) return nullptr;
-  Vector3d n;
-  for(int i=0;i<3;i++) {
-    n =Vector3d(raw(0,i),raw(1,i),raw(2,i)); // TODO fix
-    n = matrix * n;
-    for(int j=0;j<3;j++) raw(j,i) = n[j];
+  Matrix4d mat;
+  if(!python_tomatrix(pynum, mat)){
+    Transform3d matrix=Transform3d::Identity();
+    matrix.scale(scalevec);
+    Vector3d n;
+    for(int i=0;i<3;i++) {
+      n =Vector3d(mat(0,i),mat(1,i),mat(2,i)); 
+      n = matrix * n;
+      for(int j=0;j<3;j++) mat(j,i) = n[j];
+    }  
+    return python_frommatrix(mat);
   }  
-  return python_frommatrix(raw);
+  Vector3d vec;
+  if(!python_tovector(pynum, vec)){
+    for(int i=0;i<3;i++)
+      vec[i] *= scalevec[i];	    
+    return python_fromvector(vec);
+  }
+  return nullptr;
 }
 
 
 PyObject *python_scale_sub(PyObject *obj, Vector3d scalevec)
 {
-  PyObject *mat = python_matrix_scale(obj, scalevec);
+  PyObject *mat = python_number_scale(obj, scalevec);
   if(mat != nullptr) return mat;
 
   DECLARE_INSTANCE
@@ -1102,7 +1133,7 @@ PyObject *python_scale_sub(PyObject *obj, Vector3d scalevec)
     PyObject *key, *value;
     Py_ssize_t pos = 0;
      while(PyDict_Next(child_dict, &pos, &key, &value)) {
-       PyObject *value1 = python_matrix_scale(value,scalevec);
+       PyObject *value1 = python_number_scale(value,scalevec);
        if(value1 != nullptr) PyDict_SetItem(((PyOpenSCADObject *) pyresult)->dict,key, value1);
        else PyDict_SetItem(((PyOpenSCADObject *) pyresult)->dict,key, value);
     }
@@ -1373,18 +1404,26 @@ PyObject *python_oo_mirror(PyObject *obj, PyObject *args, PyObject *kwargs)
   return python_mirror_core(obj, val_v);
 }
 
-PyObject *python_matrix_trans(PyObject *mat, Vector3d transvec)
+PyObject *python_number_trans(PyObject *pynum, Vector3d transvec)
 {
-  Matrix4d raw;
-  if(python_tomatrix(mat, raw)) return nullptr;
-  for(int i=0;i<3;i++) raw(i,3) += transvec[i];
-  return python_frommatrix(raw);
+  Matrix4d mat;
+  if(!python_tomatrix(pynum, mat)){
+    for(int i=0;i<3;i++) mat(i,3) += transvec[i];
+    return python_frommatrix(mat);
+  }
+
+  Vector3d vec;
+  if(!python_tovector(pynum, vec)){
+    return python_fromvector(vec+transvec);
+  }
+
+  return nullptr;  
 }
 
 PyObject *python_translate_sub(PyObject *obj, Vector3d translatevec, int dragflags)
 {
   PyObject *child_dict;
-  PyObject *mat = python_matrix_trans(obj,translatevec);
+  PyObject *mat = python_number_trans(obj,translatevec);
   if(mat != nullptr) return mat;
 
   DECLARE_INSTANCE
@@ -1405,7 +1444,7 @@ PyObject *python_translate_sub(PyObject *obj, Vector3d translatevec, int dragfla
     PyObject *key, *value;
     Py_ssize_t pos = 0;
      while(PyDict_Next(child_dict, &pos, &key, &value)) {
-       PyObject *value1 = python_matrix_trans(value,translatevec);
+       PyObject *value1 = python_number_trans(value,translatevec);
        if(value1 != nullptr) PyDict_SetItem(((PyOpenSCADObject *) pyresult)->dict,key, value1);
        else PyDict_SetItem(((PyOpenSCADObject *) pyresult)->dict,key, value);
     }
@@ -1518,13 +1557,13 @@ PyObject *python_oo_roty(PyObject *self, PyObject *args, PyObject *kwargs) { ret
 PyObject *python_rotz(PyObject *self, PyObject *args, PyObject *kwargs) { return python_dir_sub(self, args,kwargs, 8); }
 PyObject *python_oo_rotz(PyObject *self, PyObject *args, PyObject *kwargs) { return python_oo_dir_sub(self, args,kwargs, 8); }
 
-PyObject *python_math_sub(PyObject *self, PyObject *args, PyObject *kwargs,int mode)
+PyObject *python_math_sub1(PyObject *self, PyObject *args, PyObject *kwargs, int mode)
 {
   char *kwlist[] = {"value", NULL};
   double arg;
   double result = 0;
   if (!PyArg_ParseTupleAndKeywords(args, kwargs, "d", kwlist, &arg)) {
-    PyErr_SetString(PyExc_TypeError, "Error during parsing translate(object,vec3)");
+    PyErr_SetString(PyExc_TypeError, "Error during parsing math function");
     return NULL;
   }
   switch(mode) {
@@ -1538,12 +1577,63 @@ PyObject *python_math_sub(PyObject *self, PyObject *args, PyObject *kwargs,int m
   return PyFloat_FromDouble(result);
 }
 
-PyObject *python_sin(PyObject *self, PyObject *args, PyObject *kwargs) { return python_math_sub(self, args,kwargs, 0); }
-PyObject *python_cos(PyObject *self, PyObject *args, PyObject *kwargs) { return python_math_sub(self, args,kwargs, 1); }
-PyObject *python_tan(PyObject *self, PyObject *args, PyObject *kwargs) { return python_math_sub(self, args,kwargs, 2); }
-PyObject *python_asin(PyObject *self, PyObject *args, PyObject *kwargs) { return python_math_sub(self, args,kwargs, 4); }
-PyObject *python_acos(PyObject *self, PyObject *args, PyObject *kwargs) { return python_math_sub(self, args,kwargs, 5); }
-PyObject *python_atan(PyObject *self, PyObject *args, PyObject *kwargs) { return python_math_sub(self, args,kwargs, 6); }
+
+PyObject *python_math_sub2(PyObject *self, PyObject *args, PyObject *kwargs, int mode)
+{
+  int dragflags=0;
+  char *kwlist[] = {"vec1","vec2", NULL};
+  double arg;
+  double result = 0;
+  PyObject *obj1 = nullptr;
+  PyObject *obj2 = nullptr;
+  Vector3d vec31(0,0,0);
+  Vector3d vec32(0,0,0);
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "OO", kwlist, &obj1, &obj2)) {
+    PyErr_SetString(PyExc_TypeError, "Error during parsing norm(vec3)");
+    return NULL;
+  }
+  python_vectorval(obj1, 1, 3, &(vec31[0]), &(vec31[1]), &(vec31[2]), nullptr, &dragflags);
+  python_vectorval(obj2, 1, 3, &(vec32[0]), &(vec32[1]), &(vec32[2]), nullptr, &dragflags);
+
+  switch(mode) {
+    case 0:	  
+      return PyFloat_FromDouble(vec31.dot(vec32));
+      break;
+    case 1:	  
+      Vector3d res =vec31.cross(vec32);
+      return python_fromvector(vec31.cross(vec32));
+      break;
+  }
+  return Py_None;
+}
+
+PyObject *python_sin(PyObject *self, PyObject *args, PyObject *kwargs) { return python_math_sub1(self, args,kwargs, 0); }
+PyObject *python_cos(PyObject *self, PyObject *args, PyObject *kwargs) { return python_math_sub1(self, args,kwargs, 1); }
+PyObject *python_tan(PyObject *self, PyObject *args, PyObject *kwargs) { return python_math_sub1(self, args,kwargs, 2); }
+PyObject *python_asin(PyObject *self, PyObject *args, PyObject *kwargs) { return python_math_sub1(self, args,kwargs, 3); }
+PyObject *python_acos(PyObject *self, PyObject *args, PyObject *kwargs) { return python_math_sub1(self, args,kwargs, 4); }
+PyObject *python_atan(PyObject *self, PyObject *args, PyObject *kwargs) { return python_math_sub1(self, args,kwargs, 5); }
+
+PyObject *python_dot(PyObject *self, PyObject *args, PyObject *kwargs) { return python_math_sub2(self, args,kwargs, 0); }
+PyObject *python_cross(PyObject *self, PyObject *args, PyObject *kwargs) { return python_math_sub2(self, args,kwargs, 1); }
+
+PyObject *python_norm(PyObject *self, PyObject *args, PyObject *kwargs)
+{
+  int dragflags=0;
+  char *kwlist[] = {"vec", NULL};
+  double arg;
+  double result = 0;
+  PyObject *obj = nullptr;
+  Vector3d vec3(0,0,0);
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O", kwlist, &obj)) {
+    PyErr_SetString(PyExc_TypeError, "Error during parsing norm(vec3)");
+    return NULL;
+  }
+  python_vectorval(obj, 1, 3, &(vec3[0]), &(vec3[1]), &(vec3[2]), nullptr, &dragflags);
+
+  result = sqrt(vec3[0]*vec3[0] + vec3[1]*vec3[1]+vec3[2]*vec3[2]);
+  return PyFloat_FromDouble(result);
+}
 
 PyObject *python_multmatrix_sub(PyObject *pyobj, PyObject *pymat, int div)
 {
@@ -3569,8 +3659,8 @@ PyObject *python_nb_sub_vec3(PyObject *arg1, PyObject *arg2, int mode) // 0: tra
           vecs.push_back(Vector3d(x,y,z));		
   } else vecs = python_vectors(arg2,2,3, &dragflags);
 
-  if(mode == 0 && vecs.size() == 1) {
-    PyObject *mat = python_matrix_trans(arg1,vecs[0]);
+  if(mode == 0 && vecs.size() == 1) { // translate on numbers
+    PyObject *mat = python_number_trans(arg1,vecs[0]);
     if(mat != nullptr) return mat;
   }
 
@@ -3607,7 +3697,7 @@ PyObject *python_nb_sub_vec3(PyObject *arg1, PyObject *arg2, int mode) // 0: tra
         PyObject *key, *value;
         Py_ssize_t pos = 0;
          while(PyDict_Next(child_dict, &pos, &key, &value)) {
-           PyObject *value1 = python_matrix_trans(value,vecs[0]);
+           PyObject *value1 = python_number_trans(value,vecs[0]);
            if(value1 != nullptr) PyDict_SetItem(((PyOpenSCADObject *) pyresult)->dict,key, value1);
            else PyDict_SetItem(((PyOpenSCADObject *) pyresult)->dict,key, value);
         }
@@ -4862,6 +4952,9 @@ PyMethodDef PyOpenSCADFunctions[] = {
   {"Asin",   (PyCFunction) python_asin, METH_VARARGS | METH_KEYWORDS, "Calculate asin."},
   {"Acos",   (PyCFunction) python_acos, METH_VARARGS | METH_KEYWORDS, "Calculate acos."},
   {"Atan",   (PyCFunction) python_atan, METH_VARARGS | METH_KEYWORDS, "Calculate atan."},
+  {"norm",   (PyCFunction) python_norm, METH_VARARGS | METH_KEYWORDS, "Calculate vector size."},
+  {"dot",   (PyCFunction) python_dot, METH_VARARGS | METH_KEYWORDS, "Calculate dot product."},
+  {"cross",   (PyCFunction) python_cross, METH_VARARGS | METH_KEYWORDS, "Calculate cross product."},
   {NULL, NULL, 0, NULL}
 };
 
