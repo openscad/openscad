@@ -12,15 +12,16 @@
 
 # Part 0. Finding MCAD
 
-if(POLICY CMP0012) # Allow ON/OFF in if statements
-  cmake_policy(SET CMP0012 NEW)
-endif()
+# Allow ON/OFF in if statements
+cmake_policy(SET CMP0012 NEW)
 
 set(ENV{OPENSCADPATH} "@CMAKE_SOURCE_DIR@/libraries")
 
+#
 # Part 1. X11 and Virtual Framebuffer, for headless Linux/BSD systems. 
-# This is not used by Windows or Mac because they have alternate means 
+# This is not used by Windows or macOS because they have alternate means 
 # of accessing OpenGL.
+#
 
 set(debug_openscad_template 1)
 
@@ -74,16 +75,15 @@ if(@CMAKE_SYSTEM_NAME@ MATCHES "Linux|BSD")
    endif()
   endif()
 endif()
+
+#
 # Part 2. Pretty Printing
+#
 
 message("running '@OPENSCAD_BINPATH@ --info' to generate sysinfo.txt")
 execute_process(COMMAND @OPENSCAD_BINPATH@ --info OUTPUT_FILE sysinfo.txt)
 
-if("${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION}.${CMAKE_PATCH_VERSION}" VERSION_LESS 2.8.12)
-  set(CTEST_CUSTOM_POST_TEST ${CTEST_CUSTOM_POST_TEST} "@CMAKE_CURRENT_BINARY_DIR@/test_pretty_print")
-else()
-  set(CTEST_CUSTOM_POST_TEST ${CTEST_CUSTOM_POST_TEST} "@Python3_EXECUTABLE@ \"@CMAKE_CURRENT_SOURCE_DIR@/test_pretty_print.py\" --builddir=@CMAKE_BINARY_DIR@ @UPLOADARG@")
-endif()
+set(CTEST_CUSTOM_POST_TEST ${CTEST_CUSTOM_POST_TEST} "@Python3_EXECUTABLE@ \"@CMAKE_CURRENT_SOURCE_DIR@/test_pretty_print.py\" --builddir=@CMAKE_BINARY_DIR@ @UPLOADARG@")
 
 if ( ${debug_openscad_template} )
   foreach(post_test ${CTEST_CUSTOM_POST_TEST} )

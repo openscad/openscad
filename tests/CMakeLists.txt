@@ -3,11 +3,9 @@
 #set(DEBUG_OSCD 1) # print debug info during cmake
 
 cmake_minimum_required(VERSION 3.13)
-if(POLICY CMP0017)
-  # Explicitly use new include policy to avoid globally shadowing included modules
-  # https://cmake.org/cmake/help/v2.8.8/cmake.html#policy:CMP0017
-  cmake_policy(SET CMP0017 NEW)
-endif()
+# Explicitly use new include policy to avoid globally shadowing included modules
+# https://cmake.org/cmake/help/latest/policy/CMP0017.html
+cmake_policy(SET CMP0017 NEW)
 cmake_policy(SET CMP0057 NEW) # Interpret IN_LIST
 cmake_policy(SET CMP0070 NEW) # Allow relative paths for file(GENERATE ...)
 
