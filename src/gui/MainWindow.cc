@@ -1552,6 +1552,7 @@ void MainWindow::actionOpenRecent()
 {
   auto action = qobject_cast<QAction *>(sender());
   tabManager->open(action->data().toString());
+  recomputePythonActive();
 }
 
 void MainWindow::clearRecentFiles()
@@ -2079,8 +2080,26 @@ bool MainWindow::trust_python_file(const std::string& file,  const std::string& 
   }
   return false;
 }
-#endif // ifdef ENABLE_PYTHON
+void MainWindow::recomputePythonActive()
+{
+  auto fnameba = activeEditor->filepath.toLocal8Bit();
+  const char *fname = activeEditor->filepath.isEmpty() ? "" : fnameba;
 
+  bool oldPythonActive = this->python_active;
+  this->python_active = false;
+  if (fname != NULL) {
+    if(boost::algorithm::ends_with(fname, ".py")) {
+	    std::string content = std::string(this->lastCompiledDoc.toUtf8().constData());
+      if ( trust_python_file(std::string(fname), content)) this->python_active = 1;
+      else LOG(message_group::Warning, Location::NONE, "", "Python is not enabled");
+    }
+  }
+
+  if (oldPythonActive != this->python_active) {
+    emit this->pythonActiveChanged(this->python_active);
+  }
+}
+#endif // ifdef ENABLE_PYTHON
 
 SourceFile *MainWindow::parseDocument(EditorInterface *editor)
 {
@@ -2092,6 +2111,7 @@ SourceFile *MainWindow::parseDocument(EditorInterface *editor)
 
   const char *fname = editor->filepath.isEmpty() ? "" : fnameba;
 #ifdef ENABLE_PYTHON
+  recomputePythonActive();
   this->python_active = false;
   if (fname != NULL) {
     if (boost::algorithm::ends_with(fname, ".py")) {
