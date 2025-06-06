@@ -34,8 +34,14 @@
 
 std::shared_ptr<AbstractNode> builtin_group(const ModuleInstantiation *inst, Arguments arguments, const Children& children)
 {
-  Parameters parameters = Parameters::parse(std::move(arguments), inst->location(), {});
-  return children.instantiate(std::make_shared<GroupNode>(inst));
+  Parameters parameters = Parameters::parse(std::move(arguments), inst->location(), {}, {"name"});
+
+  std::string group_name = "";
+  if (parameters["name"].type() == Value::Type::STRING) {
+    group_name = parameters["name"].toString();
+  }
+
+  return children.instantiate(std::make_shared<GroupNode>(inst, "", group_name));
 }
 
 void register_builtin_group()
@@ -43,5 +49,7 @@ void register_builtin_group()
   Builtins::init("group", new BuiltinModule(builtin_group),
   {
     "group",
+    "group()",
+    "group(name)",
   });
 }
