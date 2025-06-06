@@ -1097,6 +1097,7 @@ PyObject *python_oo_color(PyObject *obj, PyObject *args, PyObject *kwargs)
   return python_color_core(obj, color, alpha);
 }
 
+typedef std::vector<int> intList;
 PyObject *python_mesh_core(PyObject *obj, bool tessellate)
 {
   PyObject *dummydict;
@@ -1183,6 +1184,111 @@ PyObject *python_oo_mesh(PyObject *obj, PyObject *args, PyObject *kwargs)
     return NULL;
   }
   return python_mesh_core(obj, tess == Py_True);
+}
+
+PyObject *python_separate_core(PyObject *obj)
+{
+  PyObject *dummydict;
+  std::shared_ptr<AbstractNode> child = PyOpenSCADObjectToNodeMulti(obj, &dummydict);
+  if (child == NULL) {
+    PyErr_SetString(PyExc_TypeError, "Invalid type for  Object in separate \n");
+    return NULL;
+  }
+  Tree tree(child, "");
+  GeometryEvaluator geomevaluator(tree);
+  std::shared_ptr<const Geometry> geom = geomevaluator.evaluateGeometry(*tree.root(), true);
+  std::shared_ptr<const PolySet> ps = PolySetUtils::getGeometryAsPolySet(geom);
+
+  if(ps != nullptr){
+    // setup databases	  
+    intList empty_list;
+    std::vector<intList> pt2tri;	  
+
+    std::vector<int> vert_db;
+    for(int i=0;i<ps->vertices.size();i++){
+      vert_db.push_back(-1);
+      pt2tri.push_back(empty_list);
+    }
+
+    std::vector<int> tri_db;
+    for(int i=0;i<ps->indices.size();i++) {
+      tri_db.push_back(-1);
+      for(auto ind: ps->indices[i])
+        pt2tri[ind].push_back(i);	      
+    }
+
+    // now sort for objects
+    int obj_num=0;
+    for(int i=0;i<vert_db.size();i++) {
+      if(vert_db[i] != -1) continue;
+      std::vector<int> vert_todo;
+      vert_todo.push_back(i);
+      while(vert_todo.size() > 0)
+      {
+        int vert_ind=vert_todo[vert_todo.size()-1];	      
+	vert_todo.pop_back();
+	if(vert_db[vert_ind] != -1) continue;
+        vert_db[vert_ind]= obj_num;
+	for(int tri_ind : pt2tri[vert_ind]) {
+          if(tri_db[tri_ind] != -1) continue;
+	  tri_db[tri_ind]= obj_num;
+          for(int vert1_ind: ps->indices[tri_ind]) {
+            if(vert_db[vert1_ind] != -1) continue;		  
+	    vert_todo.push_back(vert1_ind);
+	  }	  
+	}
+      }
+      obj_num++;      
+    }
+
+    PyObject *objects = PyList_New(obj_num);  
+    for(int i=0;i<obj_num;i++) {
+      // create a polyhedron for each	    
+      DECLARE_INSTANCE
+      auto node = std::make_shared<PolyhedronNode>(instance);
+      node->convexity=2;
+      std::vector<int> vert_map;
+      for(int j=0;j<ps->vertices.size();j++) {
+        if(vert_db[j] == i) {
+          vert_map.push_back(node->points.size());
+          node->points.push_back(ps->vertices[j]);		
+	} else vert_map.push_back(-1);
+      }
+      for(int j=0;j<ps->indices.size();j++) {
+        if(tri_db[j] == i) {
+          IndexedFace face_map;				
+          for(auto ind: ps->indices[j]) {
+            face_map.push_back(vert_map[ind]);
+	  }		  
+	  node->faces.push_back(face_map);
+	}		
+      }
+      PyList_SetItem(objects, i, PyOpenSCADObjectFromNode(&PyOpenSCADType, node));
+    }
+    return objects;
+  }  
+  return Py_None;
+}
+
+PyObject *python_separate(PyObject *self, PyObject *args, PyObject *kwargs)
+{
+  char *kwlist[] = {"obj", NULL};
+  PyObject *obj = NULL;
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O", kwlist, &obj)) {
+    PyErr_SetString(PyExc_TypeError, "error during parsing\n");
+    return NULL;
+  }
+  return python_separate_core(obj);
+}
+
+PyObject *python_oo_separate(PyObject *obj, PyObject *args, PyObject *kwargs)
+{
+  char *kwlist[] = { NULL};
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "", kwlist)) {
+    PyErr_SetString(PyExc_TypeError, "error during parsing\n");
+    return NULL;
+  }
+  return python_separate_core(obj);
 }
 
 PyObject *rotate_extrude_core(PyObject *obj,  int convexity, double scale, double angle, PyObject *twist, PyObject *origin, PyObject *offset, PyObject *vp, char *method, double fn, double fa, double fs)
@@ -1555,9 +1661,42 @@ PyObject *python_nb_sub_vec3(PyObject *arg1, PyObject *arg2, int mode) // 0: tra
   child = PyOpenSCADObjectToNodeMulti(arg1, &child_dict);
   std::vector<Vector3d> vecs;
 		
-  vecs = python_vectors(arg2,2,3);
+  if(mode == 3) {
+    if(!PyList_Check(arg2)) {
+      PyErr_SetString(PyExc_TypeError, "explode arg must be a list");
+      return NULL;
+    }
+    int n=PyList_Size(arg2);
+    if(PyList_Size(arg2) > 3) {
+      PyErr_SetString(PyExc_TypeError, "explode arg list can have maximal 3 directions");
+      return NULL;
+    }
+    double dmy;
+    std::vector<float> vals[3];
+    for(int i=0;i<3;i++) vals[i].push_back(0.0);
+    for(int i=0;i<n;i++) {
+      vals[i].clear();	    
+      auto *item =PyList_GetItem(arg2,i);	    // TODO fix here
+      if (!python_numberval(item, &dmy)) vals[i].push_back(dmy);
+      else if(PyList_Check(item)) {
+        int m = PyList_Size(item);	      
+	for(int j=0;j<m;j++) {
+          auto *item1 =PyList_GetItem(item,j);	    
+          if (!python_numberval(item1, &dmy)) vals[i].push_back(dmy);
+	}  
+      } else {
+        PyErr_SetString(PyExc_TypeError, "Unknown explode spec");
+        return NULL;
+      }
 
-  if(mode == 0 && vecs.size() == 1) {
+    }
+    for(auto z : vals[2])
+      for(auto y : vals[1])
+        for(auto x : vals[0])
+          vecs.push_back(Vector3d(x,y,z));		
+  } else vecs = python_vectors(arg2,2,3);
+
+  if(mode == 0 && vecs.size() == 1) { // translate on numbers
     PyObject *mat = python_matrix_trans(arg1,vecs[0]);
     if(mat != nullptr) return mat;
   }
@@ -1569,10 +1708,22 @@ PyObject *python_nb_sub_vec3(PyObject *arg1, PyObject *arg2, int mode) // 0: tra
     }
     std::vector<std::shared_ptr<TransformNode>> nodes;
     for(size_t j=0;j<vecs.size();j++) {
-      auto node = std::make_shared<TransformNode>(instance, "transform");
-      if(mode == 0 || mode == 3) node->matrix.translate(vecs[j]);
-      if(mode == 1) node->matrix.scale(vecs[j]);
-      if(mode == 2) node->matrix.translate(-vecs[j]);
+      std::shared_ptr<TransformNode> node;
+      switch(mode) {
+        case 0:
+        case 3:		
+          node = std::make_shared<TransformNode>(instance, "translate");
+          node->matrix.translate(vecs[j]);
+	  break;
+        case 1:
+          node = std::make_shared<TransformNode>(instance, "scale");
+          node->matrix.scale(vecs[j]);
+          break;	  
+        case 2:
+          node = std::make_shared<TransformNode>(instance, "translate");
+          node->matrix.translate(-vecs[j]);
+          break;	  
+      }
       node->children.push_back(child);
       nodes.push_back(node);
     }  
@@ -1589,12 +1740,19 @@ PyObject *python_nb_sub_vec3(PyObject *arg1, PyObject *arg2, int mode) // 0: tra
       }
       return pyresult;
     }
+    else {
+      auto node = std::make_shared<CsgOpNode>(instance, OpenSCADOperator::UNION);
+      DECLARE_INSTANCE
+      for(auto x : nodes) node->children.push_back(x);
+      return PyOpenSCADObjectFromNode(&PyOpenSCADType, node);
+    }  
   }
   PyErr_SetString(PyExc_TypeError, "invalid argument right to operator");
   return NULL;
 }
 
 PyObject *python_nb_add(PyObject *arg1, PyObject *arg2) { return python_nb_sub_vec3(arg1, arg2, 0); }  // translate
+PyObject *python_nb_xor(PyObject *arg1, PyObject *arg2) { return python_nb_sub_vec3(arg1, arg2, 3); }
 PyObject *python_nb_mul(PyObject *arg1, PyObject *arg2) { return python_nb_sub_vec3(arg1, arg2, 1); } // scale
 PyObject *python_nb_or(PyObject *arg1, PyObject *arg2) { return python_nb_sub(arg1, arg2,  OpenSCADOperator::UNION); }
 PyObject *python_nb_subtract(PyObject *arg1, PyObject *arg2)
@@ -2301,6 +2459,7 @@ PyMethodDef PyOpenSCADFunctions[] = {
 #endif  
   {"color", (PyCFunction) python_color, METH_VARARGS | METH_KEYWORDS, "Color Object."},
   {"show", (PyCFunction) python_show, METH_VARARGS | METH_KEYWORDS, "Show the result."},
+  {"separate", (PyCFunction) python_separate, METH_VARARGS | METH_KEYWORDS, "Split into separate parts."},
   {"linear_extrude", (PyCFunction) python_linear_extrude, METH_VARARGS | METH_KEYWORDS, "Linear_extrude Object."},
   {"rotate_extrude", (PyCFunction) python_rotate_extrude, METH_VARARGS | METH_KEYWORDS, "Rotate_extrude Object."},
   {"union", (PyCFunction) python_union, METH_VARARGS | METH_KEYWORDS, "Union Object."},
@@ -2337,6 +2496,7 @@ PyMethodDef PyOpenSCADMethods[] = {
   OO_METHOD_ENTRY(roof,"Roof Object")	
 #endif  
   OO_METHOD_ENTRY(color,"Color Object")	
+  OO_METHOD_ENTRY(separate,"Split into separate Objects")	
   OO_METHOD_ENTRY(linear_extrude,"Linear_extrude Object")	
   OO_METHOD_ENTRY(rotate_extrude,"Rotate_extrude Object")	
   OO_METHOD_ENTRY(resize,"Resize Object")	
@@ -2366,7 +2526,7 @@ PyNumberMethods PyOpenSCADNumbers =
      0,			//binaryfunc nb_lshift
      0,			//binaryfunc nb_rshift
      python_nb_and,	//binaryfunc nb_and 
-     0,			//binaryfunc nb_xor
+     python_nb_xor,      //binaryfunc nb_xor
      python_nb_or,	//binaryfunc nb_or 
      0,			//unaryfunc nb_int
      0,			//void *nb_reserved
