@@ -80,6 +80,8 @@ void GLView::teardownShader() {
 void GLView::setRenderer(std::shared_ptr<Renderer> r)
 {
   this->renderer = r;
+  shown_obj.clear();
+  selected_obj.clear();
 }
 
 /* update the color schemes of the Renderer attached to this GLView
