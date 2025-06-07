@@ -47,6 +47,10 @@ jobs:
       with:
         detached: true
         limit-access-to-actor: true
+    - name: Workaround for https://github.com/actions/runner-images/issues/9966
+      run: |
+        brew unlink python3
+        brew link --overwrite python3
     - name: Install Homebrew packages
       env:
         HOMEBREW_NO_AUTO_UPDATE: 1
