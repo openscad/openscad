@@ -1,3 +1,4 @@
+#include "geometry/cgal/cgal.h"
 #include "geometry/cgal/cgalutils.h"
 
 #include <algorithm>
@@ -273,7 +274,7 @@ void convertNefToSurfaceMesh(const CGAL_Nef_polyhedron3& nef, SurfaceMesh& mesh)
   CGAL::convert_nef_polyhedron_to_polygon_mesh(nef, mesh, triangulate);
 }
 
-void converSurfaceMeshToNef(const CGAL_Kernel3Mesh& mesh, CGAL_Nef_polyhedron3& nef)
+void convertSurfaceMeshToNef(const CGAL_Kernel3Mesh& mesh, CGAL_Nef_polyhedron3& nef)
 {
   nef = CGAL_Nef_polyhedron3(mesh);
 }
