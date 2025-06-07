@@ -87,7 +87,6 @@ public:
   virtual void display_opencsg_warning() = 0;
   int opencsg_id;
 #endif
-  void showObject(const SelectedObject &pt,const Vector3d &eyedir);
 private:
   void showCrosshairs(const Color4f& col);
   void showAxes(const Color4f& col);
