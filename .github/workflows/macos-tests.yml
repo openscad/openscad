@@ -47,14 +47,6 @@ jobs:
       with:
         detached: true
         limit-access-to-actor: true
-    - name: Install CMake
-      uses: jwlawson/actions-setup-cmake@v2
-      with:
-        cmake-version: 3.31.6
-    - name: Set up Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: 3.11
     - name: Install Homebrew packages
       env:
         HOMEBREW_NO_AUTO_UPDATE: 1
