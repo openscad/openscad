@@ -44,8 +44,8 @@
 #include "geometry/linalg.h"
 #include "geometry/PolySet.h"
 #include "geometry/PolySetUtils.h"
+#include "geometry/GeometryUtils.h"
 #include "glview/ColorMap.h"
-#include "glview/cgal/CGALRenderUtils.h"
 #include "glview/VBORenderer.h"
 #include "glview/Renderer.h"
 #include "glview/ShaderUtils.h"
@@ -301,55 +301,61 @@ BoundingBox PolySetRenderer::getBoundingBox() const
 }
 
 std::vector<SelectedObject> PolySetRenderer::findModelObject(const Vector3d& near_pt, const Vector3d& far_pt, int /*mouse_x*/, int /*mouse_y*/, double tolerance) {
-  std::vector<SelectedObject> results;
-  double dist_near;
-  double dist_nearest = NAN;
-  Vector3d pt1_nearest;
-  Vector3d pt2_nearest;
+  SelectedObject result;
+  double dist_nearest = INFINITY;
+  double squared_tolerance = tolerance * tolerance;
+
   for (const auto& ps : this->polysets_) {
     for (const auto &pt: ps->vertices) {
-      const double dist_pt= calculateLinePointDistance(near_pt, far_pt, pt, dist_near);
-      if (dist_pt < tolerance) {
-        if (isnan(dist_nearest) || dist_near < dist_nearest) {
-          dist_nearest = dist_near;
-          pt1_nearest = pt;
-        }      
+      Vector3d nearest = GeometryUtils::calculatePointSegNearestPoint(pt, near_pt, far_pt);
+      if ((pt - nearest).squaredNorm() > squared_tolerance) {
+        continue;
+      }
+
+      double dist = (near_pt - nearest).squaredNorm();
+      if (dist < dist_nearest) {
+        dist_nearest = dist;
+        result.type = SelectionType::SELECTION_POINT;
+        result.p1 = pt;
       }
     }
   }
-  if (!isnan(dist_nearest)) {
-    const SelectedObject obj = {
-      .type = SelectionType::SELECTION_POINT,
-      .p1=pt1_nearest,
-    };
-    results.push_back(obj);
-    return results;
+
+  if (isfinite(dist_nearest)) {
+    return {result};
   }
+
   for (const std::shared_ptr<const PolySet>& ps : this->polysets_) {
     for(const auto &pol : ps->indices) {
       const int n = pol.size();
       for(int i=0;i<n;i++) {
-        const int ind1 = pol[i];
-        const int ind2 = pol[(i+1)%n];
-        double dist_lat;
-        const double dist_norm = std::fabs(calculateLineLineDistance(ps->vertices[ind1], ps->vertices[ind2], near_pt, far_pt,dist_lat));
-        if (dist_lat >= 0 && dist_lat <= 1 && dist_norm < tolerance) {
-          dist_nearest = dist_lat;
-          pt1_nearest = ps->vertices[ind1];
-          pt2_nearest = ps->vertices[ind2];
+        int ind1 = pol[i];
+        int ind2 = pol[(i+1)%n];
+        Vector3d nfNearest;
+        Vector3d edgeNearest;
+        GeometryUtils::calculateSegSegNearestPoints(near_pt, far_pt, ps->vertices[ind1], ps->vertices[ind2], nfNearest, edgeNearest);
+        if ((edgeNearest - nfNearest).squaredNorm() > squared_tolerance) {
+          continue;
         }
-      }      
+
+        double dist = (near_pt - nfNearest).squaredNorm();
+        if (dist < dist_nearest) {
+          if (ind1 > ind2) {
+            std::swap(ind1, ind2);
+          }
+
+          dist_nearest = dist;
+          result.type = SelectionType::SELECTION_LINE;
+          result.p1 = ps->vertices[ind1];
+          result.p2 = ps->vertices[ind2];
+        }
+      }
     }
   }
 
-  if (!isnan(dist_nearest)) {
-    const SelectedObject obj = {
-      .type = SelectionType::SELECTION_LINE,
-      .p1 = pt1_nearest,
-      .p2 = pt2_nearest,
-    };
-    results.push_back(obj);
-    return results;
+  if (isfinite(dist_nearest)) {
+    return {result};
   }
-  return results;
+
+  return {};
 }
