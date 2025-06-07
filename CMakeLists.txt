@@ -130,7 +130,7 @@ if(("${CMAKE_CXX_COMPILER_FRONTEND_VARIANT}" STREQUAL "GNU") OR
   target_link_options(OpenSCAD BEFORE PRIVATE "-v")
 endif()
 
-set(EXECUTABLE_NAME "LolCAD" CACHE STRING "Name of the executable callable by the user")
+set(EXECUTABLE_NAME "OpenSCAD" CACHE STRING "Name of the executable callable by the user")
 set(SUFFIX "" CACHE STRING "Installation suffix for binary (e.g. 'nightly')")
 set(STACKSIZE 8388608 CACHE STRING "Stack size (default is 8MB)")
 
