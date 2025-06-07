@@ -260,6 +260,7 @@
     <addaction name="fileActionNewWindow"/>
     <addaction name="fileActionOpenWindow"/>
     <addaction name="fileActionClose"/>
+    <addaction name="fileShowBackupFiles"/>
     <addaction name="separator"/>
     <addaction name="fileActionSave"/>
     <addaction name="fileActionSaveAs"/>
@@ -1446,6 +1447,11 @@
   <action name="fileShowLibraryFolder">
    <property name="text">
     <string>Show &amp;Library Folder...</string>
+   </property>
+  </action>
+  <action name="fileShowBackupFiles">
+   <property name="text">
+    <string>Show Backup Files</string>
    </property>
   </action>
   <action name="viewActionResetView">
