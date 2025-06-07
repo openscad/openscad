@@ -115,17 +115,22 @@ QString Measurement::statemachine(QPoint mouse)
         }
         else if(obj1.type == SelectionType::SELECTION_LINE && obj2.type == SelectionType::SELECTION_LINE)
         {
-          if(obj1.p2 == obj2.p1) {
-            side1=(obj2.p1-obj1.p1).normalized();
-            side2=(obj2.p1-obj2.p2).normalized();
-          }
-          else if(obj2.p2 == obj1.p1) {
-            side1=(obj1.p1-obj2.p1).normalized();
-            side2=(obj1.p1-obj1.p2).normalized();
-          } else {
-            side1=(obj1.p2-obj1.p1).normalized();
-            side2=(obj2.p2-obj2.p1).normalized();
-          }
+          // Check all 4 permutations of the lines' directions and use the one where the starting points are closest to one another as the corner point for the angle
+          double nearestDist = INFINITY;
+          auto permutation = [&nearestDist, &side1, &side2](const Vector3d& s1s, const Vector3d& s1e, const Vector3d& s2s, const Vector3d& s2e) {
+            double dist = (s1s - s2s).squaredNorm();
+            if (dist < nearestDist) {
+              nearestDist = dist;
+              side1 = (s1e - s1s).normalized();
+              side2 = (s2e - s2s).normalized();
+            }
+          };
+
+          permutation(obj1.p1, obj1.p2, obj2.p1, obj2.p2);
+          permutation(obj1.p2, obj1.p1, obj2.p1, obj2.p2);
+          permutation(obj1.p1, obj1.p2, obj2.p2, obj2.p1);
+          permutation(obj1.p2, obj1.p1, obj2.p2, obj2.p1);
+          
           ang=acos(side1.dot(side2))*180.0/3.14159265359;
           goto display_angle;
         } else
