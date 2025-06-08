@@ -2424,6 +2424,69 @@ PyObject *python_oo_mesh(PyObject *obj, PyObject *args, PyObject *kwargs)
   return python_mesh_core(obj, tess == Py_True);
 }
 
+
+PyObject *python_bbox_core(PyObject *obj)
+{
+  PyObject *dummydict;
+  std::shared_ptr<AbstractNode> child = PyOpenSCADObjectToNodeMulti(obj, &dummydict);
+  if (child == NULL) {
+    PyErr_SetString(PyExc_TypeError, "Invalid type for  Object in bbox \n");
+    return NULL;
+  }
+  Tree tree(child, "");
+  GeometryEvaluator geomevaluator(tree);
+  std::shared_ptr<const Geometry> geom = geomevaluator.evaluateGeometry(*tree.root(), true);
+  std::shared_ptr<const PolySet> ps = PolySetUtils::getGeometryAsPolySet(geom);
+
+  if(ps != nullptr && ps->vertices.size() > 0){
+    Vector3d pmin = ps->vertices[0];
+    Vector3d pmax = pmin;
+    for(const auto &pt: ps->vertices) {
+      for(int i=0;i<3;i++)  {	    
+        if(pt[i] > pmax[i]) pmax[i] = pt[i];	    
+        if(pt[i] < pmin[i]) pmin[i] = pt[i];	    
+      }	
+    }
+  // Now create Python Vectors
+    PyObject *ptmin = PyList_New(3);  
+    PyObject *ptmax = PyList_New(3);  
+    for(int i=0;i<3;i++) {
+      PyList_SetItem(ptmin, i, PyFloat_FromDouble(pmin[i]));
+      PyList_SetItem(ptmax, i, PyFloat_FromDouble(pmax[i]));
+    }	  
+    Py_XINCREF(ptmin);
+    Py_XINCREF(ptmax);
+
+    PyObject *result = PyTuple_New(2);
+    PyTuple_SetItem(result, 0, ptmin);
+    PyTuple_SetItem(result, 1, ptmax);
+    return result;
+  }  
+  return Py_None;
+}
+
+
+PyObject *python_bbox(PyObject *self, PyObject *args, PyObject *kwargs)
+{
+  char *kwlist[] = {"obj", NULL};
+  PyObject *obj = NULL;
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O", kwlist, &obj)) {
+    PyErr_SetString(PyExc_TypeError, "error during parsing\n");
+    return NULL;
+  }
+  return python_bbox_core(obj);
+}
+
+PyObject *python_oo_bbox(PyObject *obj, PyObject *args, PyObject *kwargs)
+{
+  char *kwlist[] = {  NULL};
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "", kwlist)) {
+    PyErr_SetString(PyExc_TypeError, "error during parsing\n");
+    return NULL;
+  }
+  return python_bbox_core(obj);
+}
+
 PyObject *python_separate_core(PyObject *obj)
 {
   PyObject *dummydict;
@@ -4757,6 +4820,7 @@ PyObject *python_osuse(PyObject *self, PyObject *args, PyObject *kwargs)
 
 PyObject *python_osinclude(PyObject *self, PyObject *args, PyObject *kwargs)
 {
+  LOG(message_group::Deprecated, "osinclude  is deprecated, please use osuse() instead");
   return python_osuse_include(1,self, args, kwargs);
 }
 
@@ -4923,6 +4987,7 @@ PyMethodDef PyOpenSCADFunctions[] = {
   {"surface", (PyCFunction) python_surface, METH_VARARGS | METH_KEYWORDS, "Surface Object."},
   {"texture", (PyCFunction) python_texture, METH_VARARGS | METH_KEYWORDS, "Include a texture."},
   {"mesh", (PyCFunction) python_mesh, METH_VARARGS | METH_KEYWORDS, "exports mesh."},
+  {"bbox", (PyCFunction) python_bbox, METH_VARARGS | METH_KEYWORDS, "caluculate bbox of object."},
   {"faces", (PyCFunction) python_faces, METH_VARARGS | METH_KEYWORDS, "exports a list of faces."},
   {"edges", (PyCFunction) python_edges, METH_VARARGS | METH_KEYWORDS, "exports a list of edges from a face."},
   {"oversample", (PyCFunction) python_oversample, METH_VARARGS | METH_KEYWORDS, "oversample."},
@@ -4999,6 +5064,7 @@ PyMethodDef PyOpenSCADMethods[] = {
   OO_METHOD_ENTRY(resize,"Resize Object")	
 
   OO_METHOD_ENTRY(mesh, "Mesh Object")	
+  OO_METHOD_ENTRY(bbox, "Evaluate Bound Box of object")	
   OO_METHOD_ENTRY(faces, "Create Faces list")	
   OO_METHOD_ENTRY(edges, "Create Edges list")	
   OO_METHOD_ENTRY(oversample,"Oversample Object")	
