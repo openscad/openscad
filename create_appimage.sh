@@ -2,6 +2,7 @@
 
 cd build
 cmake  -DCMAKE_INSTALL_PREFIX=/usr -DEXPERIMENTAL=1 -DENABLE_PYTHON=1 -DENABLE_LIBFIVE=1 ..
+cp ../pythonscad.appdata.xml.in2 ../pythonscad.appdata.xml # TODO fix here
 make -j3
 rm -rf ../AppDir
 make install DESTDIR=../AppDir

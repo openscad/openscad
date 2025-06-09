@@ -1577,7 +1577,7 @@ else()
 endif()
 
 # Configure icon-related files, for release vs nightly
-configure_file(${CMAKE_CURRENT_LIST_DIR}/openscad.appdata.xml.in ${CMAKE_CURRENT_LIST_DIR}/openscad.appdata.xml.in2)
+configure_file(${CMAKE_CURRENT_LIST_DIR}/pythonscad.appdata.xml.in ${CMAKE_CURRENT_LIST_DIR}/pythonscad.appdata.xml.in2)
 configure_file(${RESOURCE_DIR}/icons/pythonscad.desktop.in ${RESOURCE_DIR}/icons/pythonscad.desktop)
 configure_file(${RESOURCE_DIR}/common.qrc.in ${RESOURCE_DIR}/common.qrc)
 configure_file(${RESOURCE_DIR}/mac.qrc.in ${RESOURCE_DIR}/mac.qrc)
@@ -1588,11 +1588,11 @@ if(WIN32)
   set(OPENSCAD_INSTALL_RESOURCEDIR ".")
 else()
   set(OPENSCAD_BINDIR ${CMAKE_INSTALL_BINDIR})
-  set(OPENSCAD_INSTALL_RESOURCEDIR ${CMAKE_INSTALL_DATAROOTDIR}/openscad${SUFFIX_WITH_DASH})
+  set(OPENSCAD_INSTALL_RESOURCEDIR ${CMAKE_INSTALL_DATAROOTDIR}/pythonscad${SUFFIX_WITH_DASH})
 endif()
 
 if(NOT APPLE OR APPLE_UNIX)
-  set_target_properties(OpenSCAD PROPERTIES OUTPUT_NAME openscad${SUFFIX_WITH_DASH})
+  set_target_properties(OpenSCAD PROPERTIES OUTPUT_NAME pythonscad${SUFFIX_WITH_DASH})
   install(TARGETS OpenSCAD RUNTIME DESTINATION "${OPENSCAD_BINDIR}")
   if(ENABLE_PYTHON)
     install(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/openscad-python DESTINATION "${OPENSCAD_BINDIR}")
@@ -1611,7 +1611,7 @@ if(NOT APPLE OR APPLE_UNIX)
     endif()
   else()
     install(FILES ${CMAKE_CURRENT_LIST_DIR}/doc/openscad.1 DESTINATION ${CMAKE_INSTALL_MANDIR}/man1 RENAME openscad${SUFFIX_WITH_DASH}.1)
-    install(FILES ${CMAKE_CURRENT_LIST_DIR}/pythonscad.appdata.xml DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/metainfo RENAME org.openscad.OpenSCAD${SUFFIX_WITH_DASH}.appdata.xml)
+    install(FILES ${CMAKE_CURRENT_LIST_DIR}/pythonscad.appdata.xml DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/metainfo RENAME org.pythonscad.OpenSCAD${SUFFIX_WITH_DASH}.appdata.xml)
     if(ENABLE_LIBFIVE)
       install(FILES ${CMAKE_BINARY_DIR}/submodules/libfive/libfive/src/libfive.so DESTINATION "lib")
     endif()
@@ -1652,7 +1652,7 @@ set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "The Programmer's Solid 3D CAD Modeler")
 if(MXECROSS)
   set(CPACK_GENERATOR ZIP;NSIS)
   set(CPACK_SYSTEM_NAME ${PACKAGE_ARCH})
-  set(CPACK_PACKAGE_EXECUTABLES "openscad;${CPACK_PACKAGE_NAME}${SNAPSHOT_NAME_SUFFIX}")
+  set(CPACK_PACKAGE_EXECUTABLES "pythonscad;${CPACK_PACKAGE_NAME}${SNAPSHOT_NAME_SUFFIX}")
   set(CPACK_PACKAGE_INSTALL_DIRECTORY "${CPACK_PACKAGE_NAME}${SNAPSHOT_NAME_SUFFIX}")
   set(CPACK_PACKAGE_INSTALL_REGISTRY_KEY "${CPACK_PACKAGE_NAME}${SNAPSHOT_NAME_SUFFIX}")
   if("${CMAKE_VERSION}" VERSION_GREATER_EQUAL "3.22")
@@ -1665,7 +1665,8 @@ if(MXECROSS)
     !include \\\"${CMAKE_SOURCE_DIR}/cmake/nsis/mingw-file-association.nsh\\\"\
   ")
   set(CPACK_NSIS_EXTRA_INSTALL_COMMANDS "\
-    !include \\\"${CMAKE_BINARY_DIR}/nsis-extra-install-commands.nsh\\\"\
+    !include \\\"${CMAKE_BINARY_DIR}/nsis-extra-install-commands.nsh\\\"\n\
+    CreateShortCut $INSTDIR\\\\openscad.lnk $INSTDIR\\\\pythonscad.exe\
   ")
   set(CPACK_NSIS_EXTRA_UNINSTALL_COMMANDS "\
     !include \\\"${CMAKE_BINARY_DIR}/nsis-extra-uninstall-commands.nsh\\\"\
@@ -1697,7 +1698,7 @@ if(MXECROSS)
   set(CPACK_DEBIAN_PACKAGE_DEPENDS "")
 
 
-  execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink "./openscad" "pythonscad")
+  execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink "./pythonscad" "openscad")
   install(FILES ${CMAKE_CURRENT_BINARY_DIR}/pythonscad DESTINATION "." COMPONENT libraries)
 
 endif()
