@@ -2561,6 +2561,7 @@ PyObject *python_separate_core(PyObject *obj)
           for(auto ind: ps->indices[j]) {
             face_map.push_back(vert_map[ind]);
 	  }		  
+	  std::reverse(face_map.begin(),face_map.end());
 	  node->faces.push_back(face_map);
 	}		
       }
