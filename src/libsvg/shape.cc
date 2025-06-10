@@ -53,7 +53,7 @@
 #include "libsvg/use.h"
 
 #include "libsvg/transformation.h"
-#include "submodules/Clipper2/CPP/Clipper2Lib/include/clipper2/clipper.offset.h"
+#include "clipper2/clipper.offset.h"
 #include "utils/degree_trig.h"
 #include "utils/calc.h"
 
