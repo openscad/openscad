@@ -32,8 +32,7 @@ bool is_weakly_convex(const CGAL::Surface_mesh<CGAL::Point_3<K>>& m);
 
 std::shared_ptr<const Geometry> applyOperator3D(const Geometry::Geometries& children, OpenSCADOperator op);
 std::unique_ptr<const Geometry> applyUnion3D(Geometry::Geometries::iterator chbegin, Geometry::Geometries::iterator chend);
-//FIXME: Old, can be removed:
-//void applyBinaryOperator(CGALNefGeometry &target, const CGALNefGeometry &src, OpenSCADOperator op);
+
 std::unique_ptr<Polygon2d> project(const CGALNefGeometry& N, bool cut);
 template <typename K>
 CGAL::Iso_cuboid_3<K> boundingBox(const CGAL::Nef_polyhedron_3<K>& N);
