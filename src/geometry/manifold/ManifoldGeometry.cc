@@ -233,7 +233,7 @@ std::shared_ptr<Polyhedron> ManifoldGeometry::toPolyhedron() const
     CGALPolyhedronBuilderFromManifold<Polyhedron> builder(meshgl);
     p->delegate(builder);
   } catch (const CGAL::Assertion_exception& e) {
-    LOG(message_group::Error, "CGAL error in CGALUtils::createPolyhedronFromPolySet: %1$s", e.what());
+    LOG(message_group::Error, "CGAL error in ManifoldGeometry::toPolyhedron(): %1$s", e.what());
   }
   return p;
 }

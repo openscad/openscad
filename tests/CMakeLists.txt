@@ -1138,6 +1138,7 @@ ${TEST_SCAD_DIR}/3D/issues/issue1221.scad
 ${TEST_SCAD_DIR}/3D/issues/issue1225.scad
 ${TEST_SCAD_DIR}/3D/issues/issue1258.scad
 ${TEST_SCAD_DIR}/3D/issues/issue2259.scad
+${TEST_SCAD_DIR}/3D/issues/issue5216.scad
 ${TEST_SCAD_DIR}/misc/bad-stl-pcbvicebar.scad
 ${TEST_SCAD_DIR}/misc/bad-stl-tardis.scad
 ${TEST_SCAD_DIR}/misc/bad-stl-wing.scad
@@ -1663,6 +1664,7 @@ set_tests_properties(
   PROPERTIES DISABLED TRUE
 )
 endif (ENABLE_MANIFOLD)
+
 if (EXPERIMENTAL)
 set_tests_properties(
   # https://github.com/openscad/openscad/issues/5220
@@ -1682,6 +1684,15 @@ if (LIB3MF_FOUND)
       PROPERTIES DISABLED TRUE
     )
   endif (EXPERIMENTAL)
+  if (ENABLE_MANIFOLD)
+    set_tests_properties(
+      # https://github.com/openscad/openscad/issues/5966
+     render-off-manifold_issue5216
+     render-3mf-manifold_issue5216
+
+     PROPERTIES DISABLED TRUE
+    )
+  endif (ENABLE_MANIFOLD)  
   set_tests_properties(
     # When exported from CGAL, the file cannot be re-imported
     render-3mf-cgal_bad-stl-wing
