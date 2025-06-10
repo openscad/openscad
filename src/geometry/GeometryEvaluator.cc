@@ -111,9 +111,13 @@ bool GeometryEvaluator::isValidDim(const Geometry::GeometryItem& item, unsigned 
 
 GeometryEvaluator::ResultObject GeometryEvaluator::applyToChildren(const AbstractNode& node, OpenSCADOperator op)
 {
+  const bool allowMultiDim = (op == OpenSCADOperator::MINKOWSKI) || (op == OpenSCADOperator::HULL);
   unsigned int dim = 0;
   for (const auto& item : this->visitedchildren[node.index()]) {
-    if (!isValidDim(item, dim)) break;
+    unsigned int tmp = allowMultiDim ? 0 : dim;
+    if (!isValidDim(item, tmp))
+      break;
+    dim = (allowMultiDim && (dim > tmp)) ? dim : tmp;
   }
   if (dim == 2) return ResultObject::mutableResult(std::shared_ptr<Geometry>(applyToChildren2D(node, op)));
   else if (dim == 3) return applyToChildren3D(node, op);
@@ -127,7 +131,8 @@ GeometryEvaluator::ResultObject GeometryEvaluator::applyToChildren(const Abstrac
  */
 GeometryEvaluator::ResultObject GeometryEvaluator::applyToChildren3D(const AbstractNode& node, OpenSCADOperator op)
 {
-  Geometry::Geometries children = collectChildren3D(node);
+  const bool promoteTo3d = (op == OpenSCADOperator::MINKOWSKI) || (op == OpenSCADOperator::HULL);
+  Geometry::Geometries children = collectChildren3D(node, promoteTo3d);
   if (children.empty()) return {};
 
   if (op == OpenSCADOperator::HULL) {
@@ -256,7 +261,7 @@ std::unique_ptr<Polygon2d> GeometryEvaluator::applyFill2D(const AbstractNode& no
 
 std::unique_ptr<Geometry> GeometryEvaluator::applyHull3D(const AbstractNode& node)
 {
-  Geometry::Geometries children = collectChildren3D(node);
+  Geometry::Geometries children = collectChildren3D(node, true);
 
   auto P = PolySet::createEmpty();
   return applyHull(children);
@@ -356,7 +361,7 @@ std::shared_ptr<const Geometry> GeometryEvaluator::smartCacheGet(const AbstractN
    Returns a list of 3D Geometry children of the given node.
    May return empty geometries, but not nullptr objects
  */
-Geometry::Geometries GeometryEvaluator::collectChildren3D(const AbstractNode& node)
+Geometry::Geometries GeometryEvaluator::collectChildren3D(const AbstractNode& node, const bool promoteTo3d)
 {
   Geometry::Geometries children;
   for (const auto& item : this->visitedchildren[node.index()]) {
@@ -370,12 +375,21 @@ Geometry::Geometries GeometryEvaluator::collectChildren3D(const AbstractNode& no
     // sibling object.
     smartCacheInsert(*chnode, chgeom);
 
-    if (chgeom && chgeom->getDimension() == 2) {
-      LOG(message_group::Warning, item.first->modinst->location(), this->tree.getDocumentPath(), "Ignoring 2D child object for 3D operation");
-      children.push_back(std::make_pair(item.first, nullptr)); // replace 2D geometry with empty geometry
-    } else {
+    if (!chgeom || chgeom->getDimension() == 3) {
       // Add children if geometry is 3D OR null/empty
       children.push_back(item);
+    } else if (promoteTo3d) {
+      // Not 3D, so if promotion is allowed, then promote to 3D to add
+      LOG(message_group::Trace, item.first->modinst->location(), this->tree.getDocumentPath(), "Promoting %1$dD child object for 3D operation", chgeom->getDimension());
+      const Polygon2d *p = dynamic_cast<const Polygon2d *>(chgeom.get());
+      assert(p);
+      PolySetBuilder builder(0, 0, 3, p->is_convex());
+      builder.setConvexity(chgeom->getConvexity());
+      builder.appendPolySet(*p->tessellate());
+      children.push_back(std::make_pair(item.first, builder.build()));
+    } else {
+      LOG(message_group::Warning, item.first->modinst->location(), this->tree.getDocumentPath(), "Ignoring %1$dD child object for 3D operation", chgeom->getDimension());
+      children.push_back(std::make_pair(item.first, nullptr)); // replace 2D geometry with empty geometry
     }
   }
   return children;

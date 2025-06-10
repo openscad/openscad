@@ -86,7 +86,7 @@ private:
   bool isSmartCached(const AbstractNode& node);
   bool isValidDim(const Geometry::GeometryItem& item, unsigned int& dim) const;
   std::vector<std::shared_ptr<const Polygon2d>> collectChildren2D(const AbstractNode& node);
-  Geometry::Geometries collectChildren3D(const AbstractNode& node);
+  Geometry::Geometries collectChildren3D(const AbstractNode& node, const bool promoteTo3d);
   std::unique_ptr<Polygon2d> applyMinkowski2D(const AbstractNode& node);
   std::unique_ptr<Polygon2d> applyHull2D(const AbstractNode& node);
   std::unique_ptr<Polygon2d> applyFill2D(const AbstractNode& node);
