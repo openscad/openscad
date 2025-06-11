@@ -38,21 +38,21 @@ static std::string lookupResourcesPath()
     "../../..", // Dev location
     "../../../..", // Test location (cmake)
     "..",   // Test location
-    RESOURCE_FOLDER("../share/openscad"), // Unix mode
+    RESOURCE_FOLDER("../share/pythonscad"), // Unix mode
     nullptr
   };
 #else
 #ifdef _WIN32
   const char *searchpath[] = {
     ".", // Release location
-    RESOURCE_FOLDER("../share/openscad"), // MSYS2 location
+    RESOURCE_FOLDER("../share/pythonscad"), // MSYS2 location
     "..", // Dev location
     nullptr
   };
 #else
   const char *searchpath[] = {
-    RESOURCE_FOLDER("../share/openscad"),
-    RESOURCE_FOLDER("../../share/openscad"),
+    RESOURCE_FOLDER("../share/pythonscad"),
+    RESOURCE_FOLDER("../../share/pythonscad"),
     ".",
     "..",
     "../..",

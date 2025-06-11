@@ -2704,7 +2704,7 @@ static std::unique_ptr<PolySet> debugObject(const DebugNode& node, const PolySet
   psx->colors.push_back(debug_color);    
   for(size_t i=0;i<node.faces.size();i++) {
    int ind=node.faces[i];
-   psx->color_indices[ind] = colorind;
+   if(ind >= 0 && ind < psx->color_indices.size()) psx->color_indices[ind] = colorind;
   }
 
   return psx;
