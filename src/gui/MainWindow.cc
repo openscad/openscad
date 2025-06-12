@@ -1875,8 +1875,10 @@ void MainWindow::actionOpenRecent()
 {
   auto action = qobject_cast<QAction *>(sender());
   tabManager->open(action->data().toString());
+#ifdef ENABLE_PYTHON  
   this->python_active = -1; // unknown
   recomputePythonActive();
+#endif  
 }
 
 void MainWindow::clearRecentFiles()
