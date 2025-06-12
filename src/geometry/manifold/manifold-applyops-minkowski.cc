@@ -8,7 +8,9 @@
 #include <memory>
 #include <utility>
 #include <vector>
+
 #include <CGAL/convex_hull_3.h>
+#include <CGAL/Surface_mesh/Surface_mesh.h>
 
 #include "geometry/cgal/cgal.h"
 #include "geometry/Geometry.h"
@@ -91,6 +93,8 @@ std::shared_ptr<const Geometry> applyMinkowskiManifold(const Geometry::Geometrie
   auto it = children.begin();
   std::vector<std::shared_ptr<const Geometry>> operands = {it->second, std::shared_ptr<const Geometry>()};
 
+  // TODO(kintel): Remove this once the Surface_mesh path is stable.
+  #define USE_SURFACE_MESH 
   try {
     // Note: we could parallelize more, e.g. compute all decompositions ahead of time instead of doing them 2 by 2,
     // but this could use substantially more memory.
@@ -104,18 +108,31 @@ std::shared_ptr<const Geometry> applyMinkowskiManifold(const Geometry::Geometrie
         std::list<Hull_Points> part_points;
 
         bool is_convex;
-        auto poly = polyhedronFromGeometry(operand, &is_convex);
-        if (!poly) throw 0;
-        if (poly->empty()) {
+        #ifdef USE_SURFACE_MESH
+          auto mesh = surfaceMeshFromGeometry(operand, &is_convex);
+        #else
+          auto mesh = polyhedronFromGeometry(operand, &is_convex);
+        #endif
+        if (!mesh) throw 0;
+        if (mesh->is_empty()) {
           throw 0;
         }
 
         if (is_convex) {
-          part_points.emplace_back(getHullPoints(*poly));
+          #ifdef USE_SURFACE_MESH
+            part_points.emplace_back(getHullPointsFromMesh(*mesh));
+          #else
+            part_points.emplace_back(getHullPoints(*mesh));
+          #endif
         } else {
           // The CGAL_Nef_polyhedron3 constructor can crash on bad polyhedron, so don't try
-          if (!poly->is_valid()) throw 0;
-          CGAL_Nef_polyhedron3 decomposed_nef(*poly);
+          if (!mesh->is_valid()) throw 0;
+          #ifdef USE_SURFACE_MESH
+            CGAL_Nef_polyhedron3 decomposed_nef;
+            CGALUtils::convertSurfaceMeshToNef(*mesh, decomposed_nef);
+          #else
+            CGAL_Nef_polyhedron3 decomposed_nef(*mesh);
+          #endif
           CGAL::Timer t;
           t.start();
           CGAL::convex_decomposition_3(decomposed_nef);
