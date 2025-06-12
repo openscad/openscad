@@ -3,11 +3,9 @@
 #set(DEBUG_OSCD 1) # print debug info during cmake
 
 cmake_minimum_required(VERSION 3.13)
-if(POLICY CMP0017)
-  # Explicitly use new include policy to avoid globally shadowing included modules
-  # https://cmake.org/cmake/help/v2.8.8/cmake.html#policy:CMP0017
-  cmake_policy(SET CMP0017 NEW)
-endif()
+# Explicitly use new include policy to avoid globally shadowing included modules
+# https://cmake.org/cmake/help/latest/policy/CMP0017.html
+cmake_policy(SET CMP0017 NEW)
 cmake_policy(SET CMP0057 NEW) # Interpret IN_LIST
 cmake_policy(SET CMP0070 NEW) # Allow relative paths for file(GENERATE ...)
 
@@ -866,6 +864,7 @@ list(APPEND SCADFILES_WITH_COLOR
   ${EXAMPLES_DIR}/Old/example017.scad
 
   ${TEST_SCAD_DIR}/3D/issues/issue5217.scad
+  ${TEST_SCAD_DIR}/3D/issues/issue5738.scad
 
   #${TEST_SCAD_DIR}/bugs/issue1000.scad
 )
@@ -887,7 +886,7 @@ list(APPEND RENDER_DIFFERENT_EXPECTATIONS
   ${TEST_SCAD_DIR}/3D/features/render-tests.scad
   ${EXAMPLES_DIR}/Old/example016.scad
 
-  # Manifold can represent the very think slice
+  # Manifold can represent the very thin slice
   ${TEST_SCAD_DIR}/3D/issues/issue1165.scad
 )
 
@@ -1129,6 +1128,7 @@ ${TEST_SCAD_DIR}/3D/issues/issue1221.scad
 ${TEST_SCAD_DIR}/3D/issues/issue1225.scad
 ${TEST_SCAD_DIR}/3D/issues/issue1258.scad
 ${TEST_SCAD_DIR}/3D/issues/issue2259.scad
+${TEST_SCAD_DIR}/3D/issues/issue5216.scad
 ${TEST_SCAD_DIR}/misc/bad-stl-pcbvicebar.scad
 ${TEST_SCAD_DIR}/misc/bad-stl-tardis.scad
 ${TEST_SCAD_DIR}/misc/bad-stl-wing.scad
@@ -1558,10 +1558,8 @@ set_tests_properties(
   render-csg-cgal_projection
 
   # https://github.com/openscad/openscad/issues/5158
-  render-cgal_example017 
-  preview-cgal_example017
-  throwntogether-cgal_example017
-  throwntogether-manifold_example017
+  #render-cgal_example017 
+  #throwntogether-cgal_example017
   
   # https://github.com/openscad/openscad/issues/4398
   render-csg-cgal_logo_and_text
@@ -1603,6 +1601,8 @@ set_tests_properties(
   # z-fighting different on different machines
   preview-manifold_issue1165
   preview-manifold_issue1215
+  preview-cgal_example017
+  preview-manifold_example017
 
   # Manifold triangle order not stable, causes transparent
   # objects to render differently on different machines
@@ -1612,6 +1612,8 @@ set_tests_properties(
 
   # https://github.com/openscad/openscad/issues/909
   render-amf-manifold_bad-stl-wing
+  render-amf-manifold_bad-stl-pcbvicebar
+  render-amf-manifold_bad-stl-tardis
 
   # https://github.com/openscad/openscad/issues/2841
   render-manifold_issue2841b
@@ -1620,10 +1622,6 @@ set_tests_properties(
   # OpenCSG z fighting
   preview-manifold_surface_image
   throwntogether-manifold_surface_image
-
-  # https://github.com/openscad/openscad/issues/5158
-  preview-manifold_example017
-  render-manifold_example017 
 
   # https://github.com/openscad/openscad/issues/5135
   render-force-manifold_issue5135-bad
@@ -1636,6 +1634,7 @@ set_tests_properties(
   PROPERTIES DISABLED TRUE
 )
 endif (ENABLE_MANIFOLD)
+
 if (EXPERIMENTAL)
 set_tests_properties(
   # https://github.com/openscad/openscad/issues/5220
@@ -1655,6 +1654,15 @@ if (LIB3MF_FOUND)
       PROPERTIES DISABLED TRUE
     )
   endif (EXPERIMENTAL)
+  if (ENABLE_MANIFOLD)
+    set_tests_properties(
+      # https://github.com/openscad/openscad/issues/5966
+     render-off-manifold_issue5216
+     render-3mf-manifold_issue5216
+
+     PROPERTIES DISABLED TRUE
+    )
+  endif (ENABLE_MANIFOLD)  
   set_tests_properties(
     # When exported from CGAL, the file cannot be re-imported
     render-3mf-cgal_bad-stl-wing
