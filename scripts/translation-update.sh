@@ -27,7 +27,7 @@ updatepot()
 	> ./locale/json-strings.pot
 
  # extract strings from appdata file
- itstool -o ./locale/appdata-strings.pot ./openscad.appdata.xml.in2 --its=./contrib/appdata.its
+ itstool -o ./locale/appdata-strings.pot ./pythonscad.appdata.xml.in2 --its=./contrib/appdata.its
 
  VER=`date +"%Y.%m.%d"`
  OPTS=
@@ -42,14 +42,14 @@ updatepot()
  OPTS=$OPTS' --keyword=q_:1,2c'
  OPTS=$OPTS' --keyword=ngettext:1,2'
  OPTS=$OPTS' --files-from=./locale/POTFILES'
- cmd="${GETTEXT_PATH}xgettext "$OPTS' -o ./locale/openscad-tmp.pot'
+ cmd="${GETTEXT_PATH}xgettext "$OPTS' -o ./locale/pythonscad-tmp.pot'
  echo $cmd
  $cmd
  if [ ! $? = 0 ]; then
   echo error running xgettext
   exit 1
  fi
- cmd="${GETTEXT_PATH}msgcat -o ./locale/openscad.pot ./locale/openscad-tmp.pot ./locale/json-strings.pot ./locale/appdata-strings.pot"
+ cmd="${GETTEXT_PATH}msgcat -o ./locale/pythonscad.pot ./locale/pythonscad-tmp.pot ./locale/json-strings.pot ./locale/appdata-strings.pot"
  echo $cmd
  $cmd
  if [ ! $? = 0 ]; then
@@ -57,15 +57,15 @@ updatepot()
   exit 1
  fi
 
- sed -e s/"CHARSET"/"UTF-8"/g ./locale/openscad.pot > ./locale/openscad.pot.new && mv ./locale/openscad.pot.new ./locale/openscad.pot
- rm -f ./locale/json-strings.pot ./locale/openscad-tmp.pot ./locale/appdata-strings.pot
+ sed -e s/"CHARSET"/"UTF-8"/g ./locale/pythonscad.pot > ./locale/pythonscad.pot.new && mv ./locale/pythonscad.pot.new ./locale/pythonscad.pot
+ rm -f ./locale/json-strings.pot ./locale/pythonscad-tmp.pot ./locale/appdata-strings.pot
 }
 
 updatepo()
 {
  for LANGCODE in `cat ./locale/LINGUAS | grep -v "#"`; do
   OPTS='--update --backup=t'
-  cmd="$GETTEXT_PATH"'msgmerge '$OPTS' ./locale/'$LANGCODE'.po ./locale/openscad.pot'
+  cmd="$GETTEXT_PATH"'msgmerge '$OPTS' ./locale/'$LANGCODE'.po ./locale/pythonscad.pot'
   echo $cmd
   $cmd
   if [ ! $? = 0 ]; then
@@ -81,7 +81,7 @@ updatemo()
   for LANGCODE in `cat locale/LINGUAS | grep -v "#"`; do
     mkdir -p ./locale/$LANGCODE/LC_MESSAGES
     OPTS='-c -v'
-    cmd="$GETTEXT_PATH"'msgfmt '$OPTS' -o ./locale/'$LANGCODE'/LC_MESSAGES/openscad.mo ./locale/'$LANGCODE'.po'
+    cmd="$GETTEXT_PATH"'msgfmt '$OPTS' -o ./locale/'$LANGCODE'/LC_MESSAGES/pythonscad.mo ./locale/'$LANGCODE'.po'
     echo $cmd
     $cmd
     if [ ! $? = 0 ]; then
@@ -93,11 +93,11 @@ updatemo()
   if which itstool > /dev/null 2>&1; then
     # ugly workaround for bug https://bugs.freedesktop.org/show_bug.cgi?id=90937
     for LANGCODE in `cat locale/LINGUAS | grep -v "#"`; do
-      ln -s openscad.mo ./locale/$LANGCODE/LC_MESSAGES/$LANGCODE.mo
+      ln -s pythonscad.mo ./locale/$LANGCODE/LC_MESSAGES/$LANGCODE.mo
     done
 
     # generate translated appdata file
-    itstool -j ./openscad.appdata.xml.in2 -o ./openscad.appdata.xml ./locale/*/LC_MESSAGES/[a-z][a-z].mo
+    itstool -j ./pythonscad.appdata.xml.in2 -o ./pythonscad.appdata.xml ./locale/*/LC_MESSAGES/[a-z][a-z].mo
 
     # clean the mess
     for LANGCODE in `cat locale/LINGUAS | grep -v "#"`; do
@@ -105,9 +105,9 @@ updatemo()
     done
   else
     if [ x"$(uname -s)" = x"Linux" ]; then
-      echo "itstool missing, won't apply translations to openscad.appdata.xml"
+      echo "itstool missing, won't apply translations to pythonscad.appdata.xml"
     fi
-    cp -f ./openscad.appdata.xml.in2 ./openscad.appdata.xml
+    cp -f ./pythonscad.appdata.xml.in2 ./pythonscad.appdata.xml
   fi
 }
 
