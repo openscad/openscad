@@ -94,7 +94,7 @@ jobs:
         type: string
     working_directory: ~/workspace
     docker:
-      - image: openscad/wasm-base:latest
+      - image: openscad/wasm-base-release:latest
     resource_class: large
     steps:
       - checkout
