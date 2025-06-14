@@ -175,6 +175,9 @@ jobs:
       - run:
           name: Install Homebrew packages
           command: |
+            brew analytics off
+            brew tap
+            brew untap homebrew/homebrew-cask-versions
             brew update
             brew install automake libtool cmake pkg-config wget meson python-packaging
       - restore_cache:
