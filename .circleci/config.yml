@@ -177,6 +177,7 @@ jobs:
           command: |
             brew analytics off
             brew tap
+            brew uninstall --cask temurin17
             brew untap homebrew/homebrew-cask-versions
             brew update
             brew install automake libtool cmake pkg-config wget meson python-packaging
