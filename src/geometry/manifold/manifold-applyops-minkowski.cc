@@ -26,7 +26,7 @@ namespace ManifoldUtils {
 /*!
    children cannot contain nullptr objects
  */
-std::shared_ptr<const Geometry> applyMinkowskiManifold(const Geometry::Geometries& children)
+std::shared_ptr<const Geometry> applyMinkowski(const Geometry::Geometries& children)
 {
   assert(children.size() >= 2);
 

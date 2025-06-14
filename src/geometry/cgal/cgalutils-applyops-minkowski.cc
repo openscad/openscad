@@ -2,7 +2,10 @@
 
 #include <memory>
 
+#include <CGAL/Timer.h>
 #include <CGAL/convex_hull_3.h>
+
+#include "utils/printutils.h"
 
 namespace CGALUtils {
 
@@ -182,8 +185,7 @@ std::shared_ptr<const Geometry> applyMinkowski3D(const Geometry::Geometries& chi
         PRINTDB("Minkowski: Computing union of %d parts", result_parts.size());
         Geometry::Geometries fake_children;
         for (const auto& part : result_parts) {
-          fake_children.push_back(std::make_pair(std::shared_ptr<const AbstractNode>(),
-                                                  partToGeom(part)));
+          fake_children.emplace_back(std::shared_ptr<const AbstractNode>(), partToGeom(part));
         }
         auto N = CGALUtils::applyUnion3D(fake_children.begin(), fake_children.end());
         // FIXME: This should really never throw.

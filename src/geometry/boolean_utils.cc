@@ -5,13 +5,8 @@
 #include <vector>
 
 #ifdef ENABLE_CGAL
-#include "geometry/Geometry.h"
 #include "geometry/cgal/CGALNefGeometry.h"
 #include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
-#include <CGAL/normal_vector_newell_3.h>
-#include <CGAL/Handle_hash_function.h>
-#include <CGAL/config.h>
-#include <CGAL/version.h>
 #include <CGAL/convex_hull_3.h>
 #include "geometry/cgal/cgalutils.h"
 #endif  // ENABLE_CGAL
@@ -102,7 +97,7 @@ std::shared_ptr<const Geometry> applyMinkowski(const Geometry::Geometries& child
 {
 #if ENABLE_MANIFOLD
   if (RenderSettings::inst()->backend3D == RenderBackend3D::ManifoldBackend) {
-    return ManifoldUtils::applyMinkowskiManifold(children);
+    return ManifoldUtils::applyMinkowski(children);
   }
 #endif  // ENABLE_MANIFOLD
   return CGALUtils::applyMinkowski3D(children);
