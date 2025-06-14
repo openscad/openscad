@@ -188,6 +188,20 @@ if (CMAKE_SYSTEM_NAME STREQUAL Emscripten)
       # Alternatively to single-file mode, code caching could make repeated runs faster:
       # -sNODE_CODE_CACHING -sWASM_ASYNC_COMPILATION=0
     )
+  elseif (WASM_BUILD_TYPE STREQUAL "node-module")
+    target_link_options(OpenSCAD PUBLIC
+      -sENVIRONMENT=node,worker
+      -sEXPORT_ES6=1
+      -sEXPORT_NAME=OpenSCAD
+      -sMODULARIZE=1
+      -sNODERAWFS
+
+      # Single .js (more elegant for CLI release) is larger than separate .js & .wasm (preferred for web)
+      $<$<CONFIG:Release>:-sSINGLE_FILE> 
+      
+      # Alternatively to single-file mode, code caching could make repeated runs faster:
+      # -sNODE_CODE_CACHING -sWASM_ASYNC_COMPILATION=0
+    )
 
     # Ensure the resulting .js file is executable on Unix:
     file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/prepend_node_shebang.cmake "
