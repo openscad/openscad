@@ -39,6 +39,9 @@
 
 namespace CGALUtils {
 
+// TODO: We could rewrite this to use PolygonMeshProcessing concepts, similar to how
+// we create Manifold geometries from PolySet; convert via Surface_mesh, check if it's closed,
+// use repair|orient_polygon_soup, etc.
 std::unique_ptr<CGALNefGeometry> createNefPolyhedronFromPolySet(const PolySet& ps)
 {
   if (ps.isEmpty()) return std::make_unique<CGALNefGeometry>();
