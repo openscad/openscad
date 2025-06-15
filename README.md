@@ -21,7 +21,7 @@ The argument is Python will introduce a massive security hole into the sharing c
 # Getting started
 
 You can download the latest binaries of PythonSCAD at
-<https://www.pythonscad.org/downloads.html>. Install binaries as you would any other
+<https://www.pythonscad.org/downloads.php>. Install binaries as you would any other
 software.
 
 The GUI of PythonSCAD is basically unchanged, just the language is a different one.
