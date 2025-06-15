@@ -35,6 +35,7 @@
 #include <Context.h>
 #include <Selection.h>
 #include "platform/PlatformUtils.h"
+#include "primitives.h"
 namespace fs = std::filesystem;
 
 // #define HAVE_PYTHON_YIELD
@@ -202,6 +203,19 @@ std::shared_ptr<AbstractNode> PyOpenSCADObjectToNodeMulti(PyObject *objs,PyObjec
       } else return nullptr;
     }
     result=node;
+    *dict = nullptr; // TODO improve
+  } else if(objs == Py_None || objs == Py_False){
+    DECLARE_INSTANCE
+    result  = std::make_shared<PolyhedronNode>(instance);
+    *dict = nullptr; // TODO improve
+  } else if(objs == Py_True){
+    DECLARE_INSTANCE
+    auto node  = std::make_shared<CubeNode>(instance);
+    for(int i=0;i<3;i++) {
+	    node->dim[i]=1000;
+	    node->center[i]=0;
+    }
+    result = node;
     *dict = nullptr; // TODO improve
   } else result=nullptr;
   return result;
