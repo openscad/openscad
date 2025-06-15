@@ -22,8 +22,10 @@
 #include "geometry/Reindexer.h"
 #include "geometry/GeometryUtils.h"
 
+namespace {
+
 #ifdef ENABLE_CGAL
-std::unique_ptr<PolySet> applyHull(const Geometry::Geometries& children)
+std::unique_ptr<PolySet> applyHullCGAL(const Geometry::Geometries& children)
 {
   using Hull_kernel = CGAL::Epick;
   // Collect point cloud
@@ -86,6 +88,18 @@ std::unique_ptr<PolySet> applyHull(const Geometry::Geometries& children)
     }
   }
   return nullptr;
+}
+
+}  // namespace
+
+std::unique_ptr<Geometry> applyHull(const Geometry::Geometries& children)
+{
+#if ENABLE_MANIFOLD
+  if (RenderSettings::inst()->backend3D == RenderBackend3D::ManifoldBackend) {
+    return std::make_unique<ManifoldGeometry>(ManifoldUtils::applyHull(children));
+  }
+#endif  // ENABLE_MANIFOLD
+  return applyHullCGAL(children);
 }
 
 /*!

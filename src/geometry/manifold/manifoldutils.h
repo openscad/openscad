@@ -29,6 +29,7 @@ namespace ManifoldUtils {
   // FIXME: This shouldn't return const, but it does due to internal implementation details.
   std::shared_ptr<const Geometry> applyMinkowski(const Geometry::Geometries& children);
 #endif
+  manifold::Manifold applyHull(const Geometry::Geometries& children);
 
   std::unique_ptr<PolySet> createTriangulatedPolySetFromPolygon2d(const Polygon2d& polygon2d);
 };
