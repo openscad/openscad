@@ -1455,7 +1455,6 @@ PyObject *python_translate_sub(PyObject *obj, Vector3d translatevec, int dragfla
 PyObject *python_nb_sub_vec3(PyObject *arg1, PyObject *arg2, int mode);
 PyObject *python_translate_core(PyObject *obj, PyObject *v) 
 {
-  if(v == nullptr) return obj;
   return  python_nb_sub_vec3(obj, v, 0);
 }	
 
@@ -3686,6 +3685,7 @@ PyObject *python_nb_sub_vec3(PyObject *arg1, PyObject *arg2, int mode) // 0: tra
   PyObject *child_dict;	  
 
   child = PyOpenSCADObjectToNodeMulti(arg1, &child_dict);
+  if(arg2 == nullptr) return PyOpenSCADObjectFromNode(&PyOpenSCADType, child);
   std::vector<Vector3d> vecs;
   int dragflags=0;
   if(mode == 3) {
