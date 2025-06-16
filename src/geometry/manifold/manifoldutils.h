@@ -27,7 +27,7 @@ namespace ManifoldUtils {
 
 #ifdef ENABLE_CGAL
   // FIXME: This shouldn't return const, but it does due to internal implementation details.
-  std::shared_ptr<const Geometry> applyMinkowskiManifold(const Geometry::Geometries& children);
+  std::shared_ptr<const Geometry> applyMinkowski(const Geometry::Geometries& children);
 #endif
 
   std::unique_ptr<PolySet> createTriangulatedPolySetFromPolygon2d(const Polygon2d& polygon2d, bool in3d);

@@ -145,12 +145,12 @@ std::shared_ptr<const Geometry> applyOperator3D(const CsgOpNode &node, const Geo
   // union && difference assert triggered by tests/data/scad/bugs/rotate-diff-nonmanifold-crash.scad and tests/data/scad/bugs/issue204.scad
   catch (const CGAL::Failure_exception& e) {
     std::string opstr = op == OpenSCADOperator::INTERSECTION ? "intersection" : op == OpenSCADOperator::DIFFERENCE ? "difference" : op == OpenSCADOperator::UNION ? "union" : "UNKNOWN";
-    LOG(message_group::Error, "CGAL error in CGALUtils::applyBinaryOperator %1$s: %2$s", opstr, e.what());
+    LOG(message_group::Error, "CGAL error in CGALUtils::applyOperator3D %1$s: %2$s", opstr, e.what());
   }
   // boost any_cast throws exceptions inside CGAL code, ending here https://github.com/openscad/openscad/issues/3756
   catch (const std::exception& e) {
     std::string opstr = op == OpenSCADOperator::INTERSECTION ? "intersection" : op == OpenSCADOperator::DIFFERENCE ? "difference" : op == OpenSCADOperator::UNION ? "union" : "UNKNOWN";
-    LOG(message_group::Error, "exception in CGALUtils::applyBinaryOperator %1$s: %2$s", opstr, e.what());
+    LOG(message_group::Error, "exception in CGALUtils::applyOperator3D %1$s: %2$s", opstr, e.what());
   }
 //
  if(node.r != 0){

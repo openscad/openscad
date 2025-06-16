@@ -26,34 +26,13 @@ namespace ManifoldUtils {
 /*!
    children cannot contain nullptr objects
  */
-std::shared_ptr<const Geometry> applyMinkowskiManifold(const Geometry::Geometries& children)
+std::shared_ptr<const Geometry> applyMinkowski(const Geometry::Geometries& children)
 {
-#ifdef ENABLE_CGAL	
-
   assert(children.size() >= 2);
 
   using Hull_kernel = CGAL::Epick;
   using Hull_Mesh = CGAL::Surface_mesh<CGAL::Point_3<Hull_kernel>>;
   using Hull_Points = std::vector<CGAL::Point_3<Hull_kernel>>;
-
-  auto polyhedronFromGeometry = [](const std::shared_ptr<const Geometry>& geom, bool *pIsConvexOut) -> std::shared_ptr<CGAL_Polyhedron>
-  {
-    auto ps = std::dynamic_pointer_cast<const PolySet>(geom);
-    if (ps) {
-      auto poly = std::make_shared<CGAL_Polyhedron>();
-      CGALUtils::createPolyhedronFromPolySet(*ps, *poly);
-      if (pIsConvexOut) *pIsConvexOut = ps->isConvex();
-      return poly;
-    } else {
-      if (auto mani = std::dynamic_pointer_cast<const ManifoldGeometry>(geom)) {
-        auto poly = mani->toPolyhedron<CGAL_Polyhedron>();
-        if (pIsConvexOut) *pIsConvexOut = CGALUtils::is_weakly_convex(*poly);
-        return poly;
-      } else throw 0;
-    }
-    throw 0;
-  };
-#endif
 
   auto surfaceMeshFromGeometry = [](const std::shared_ptr<const Geometry>& geom, bool *pIsConvexOut) -> std::shared_ptr<CGAL_Kernel3Mesh>
   {
@@ -96,8 +75,6 @@ std::shared_ptr<const Geometry> applyMinkowskiManifold(const Geometry::Geometrie
   auto it = children.begin();
   std::vector<std::shared_ptr<const Geometry>> operands = {it->second, std::shared_ptr<const Geometry>()};
 
-  // TODO(kintel): Remove this once the Surface_mesh path is stable.
-  #define USE_SURFACE_MESH 
   try {
     // Note: we could parallelize more, e.g. compute all decompositions ahead of time instead of doing them 2 by 2,
     // but this could use substantially more memory.
@@ -111,31 +88,19 @@ std::shared_ptr<const Geometry> applyMinkowskiManifold(const Geometry::Geometrie
         std::list<Hull_Points> part_points;
 
         bool is_convex;
-        #ifdef USE_SURFACE_MESH
-          auto mesh = surfaceMeshFromGeometry(operand, &is_convex);
-        #else
-          auto mesh = polyhedronFromGeometry(operand, &is_convex);
-        #endif
+        auto mesh = surfaceMeshFromGeometry(operand, &is_convex);
         if (!mesh) throw 0;
         if (mesh->is_empty()) {
           throw 0;
         }
 
         if (is_convex) {
-          #ifdef USE_SURFACE_MESH
-            part_points.emplace_back(getHullPointsFromMesh(*mesh));
-          #else
-            part_points.emplace_back(getHullPoints(*mesh));
-          #endif
+          part_points.emplace_back(getHullPointsFromMesh(*mesh));
         } else {
           // The CGAL_Nef_polyhedron3 constructor can crash on bad polyhedron, so don't try
           if (!mesh->is_valid()) throw 0;
-          #ifdef USE_SURFACE_MESH
-            CGAL_Nef_polyhedron3 decomposed_nef;
-            CGALUtils::convertSurfaceMeshToNef(*mesh, decomposed_nef);
-          #else
-            CGAL_Nef_polyhedron3 decomposed_nef(*mesh);
-          #endif
+          CGAL_Nef_polyhedron3 decomposed_nef;
+          CGALUtils::convertSurfaceMeshToNef(*mesh, decomposed_nef);
           CGAL::Timer t;
           t.start();
           CGAL::convex_decomposition_3(decomposed_nef);
