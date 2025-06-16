@@ -296,18 +296,11 @@ const instance = await OpenSCAD({
 const inFile = "model.scad";
 const outFile = "model.stl";
 
-const vars = {};
-const features = [];
-const extraArgs: string[] = [];
-
 instance.callMain([
     inFile,
     "-o", outFile,
     "--backend=manifold",
     "--export-format=binstl",
-    ...(Object.entries(vars ?? {}).flatMap(([k, v]) => [`-D${k}=${formatValue(v)}`])),
-    ...(features ?? []).map(f => `--enable=${f}`),
-    ...(extraArgs ?? [])
 ]);
 
 // Model is now generated

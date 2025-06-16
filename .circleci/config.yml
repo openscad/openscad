@@ -265,7 +265,7 @@ workflows:
       - openscad-wasm:
           matrix:
             parameters:
-              wasm-type: [web, node]
+              wasm-type: [web, node, node-module]
           context: secret-context
           filters:
               branches:
@@ -296,7 +296,7 @@ workflows:
       - openscad-wasm:
           matrix:
             parameters:
-              wasm-type: [web, node]
+              wasm-type: [web, node, node-module]
           filters:
               branches:
                   ignore:
