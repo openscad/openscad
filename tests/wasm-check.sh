@@ -13,6 +13,7 @@ case $ENV in
   node)
     echo "Checking WASM node build..."
     n use latest
+    chmod +x ../../build/openscad.js
     ../../build/openscad.js \
         --backend=manifold \
         $PWD/../examples/Basics/CSG.scad \
