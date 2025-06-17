@@ -13,7 +13,7 @@ case $ENV in
   node)
     echo "Checking WASM node build..."
     n use latest
-    node $PWD/../build/openscad.js \
+    ../../build/openscad.js \
         --backend=manifold \
         $PWD/../examples/Basics/CSG.scad \
         -o out.stl
@@ -22,7 +22,7 @@ case $ENV in
   node-module)
     echo "Checking WASM node module build..."
     n use latest
-    node -e "import OpenSCAD from '../build/openscad.js';\
+    node -e "import OpenSCAD from '../../build/openscad.js';\
       OpenSCAD({noInitialRun: true}).then(instance => instance.callMain([\
         '$PWD/../examples/Basics/CSG.scad',\
         '-o', 'out.stl',\
