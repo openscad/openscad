@@ -3577,7 +3577,12 @@ PyObject *python_oo_csg_sub(PyObject *self, PyObject *args, PyObject *kwargs, Op
     if(i == 0) child = PyOpenSCADObjectToNodeMulti(obj, &child_dict);
     else child = PyOpenSCADObjectToNodeMulti(obj, &dummy_dict);
     if(child != NULL) {
-      node->children.push_back(child);
+      if(child.get() == void_node.get() && mode == OpenSCADOperator::UNION) {}
+      if(child.get() == void_node.get() && i > 0 && mode == OpenSCADOperator::DIFFERENCE) {}
+      if(child.get() == full_node.get() && mode == OpenSCADOperator::INTERSECTION) {}
+      else {      
+        node->children.push_back(child);
+      }	
     } else {
       switch(mode) {
         case OpenSCADOperator::UNION:	    

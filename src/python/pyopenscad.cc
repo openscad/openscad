@@ -66,6 +66,7 @@ std::vector<std::string> mapping_name;
 std::vector<std::string> mapping_code;
 std::vector<int> mapping_level;
 std::vector<std::shared_ptr<AbstractNode>> nodes_hold; // make sure, that these nodes are not yet freed
+std::shared_ptr<AbstractNode> void_node, full_node;				       
 
 void PyOpenSCADObject_dealloc(PyOpenSCADObject *self)
 {
@@ -205,17 +206,10 @@ std::shared_ptr<AbstractNode> PyOpenSCADObjectToNodeMulti(PyObject *objs,PyObjec
     result=node;
     *dict = nullptr; // TODO improve
   } else if(objs == Py_None || objs == Py_False){
-    DECLARE_INSTANCE
-    result  = std::make_shared<PolyhedronNode>(instance);
+    result = void_node;	  
     *dict = nullptr; // TODO improve
   } else if(objs == Py_True){
-    DECLARE_INSTANCE
-    auto node  = std::make_shared<CubeNode>(instance);
-    for(int i=0;i<3;i++) {
-	    node->dim[i]=1000;
-	    node->center[i]=0;
-    }
-    result = node;
+    result = full_node;	  
     *dict = nullptr; // TODO improve
   } else result=nullptr;
   return result;
@@ -871,6 +865,9 @@ void initPython(const std::string& binDir, const std::string &scriptpath, double
   customizer_parameters.clear();
   python_result_handle.clear();
   nodes_hold.clear();
+  DECLARE_INSTANCE
+  void_node = std::make_shared<CubeNode>(instance); // just placeholders
+  full_node = std::make_shared<CubeNode>(instance); // just placeholders
 }
 
 void finishPython(void)
