@@ -1602,6 +1602,7 @@ if(NOT APPLE OR APPLE_UNIX)
     if(ENABLE_PYTHON)
       install(FILES ${CMAKE_SOURCE_DIR}/python311.dll DESTINATION "." )
       install(FILES ${CMAKE_SOURCE_DIR}/python311.zip DESTINATION "." )
+      //https://www.python.org/ftp/python/3.11.2/python-3.11.2-embed-amd64.zip
     endif()  
     if(USE_MIMALLOC AND MI_LINK_SHARED)
       if(CMAKE_SIZEOF_VOID_P EQUAL 8)

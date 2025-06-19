@@ -723,6 +723,8 @@ void openscad_object_callback(PyObject *obj) {
 #endif
 void initPython(const std::string& binDir, const std::string &scriptpath, double time)
 {
+  static bool alreadyTried=false;
+  if(alreadyTried) return;  
   const auto name = "openscad-python";
   const auto exe = binDir + "/" + name;
   if(scriptpath.size() > 0) python_scriptpath = scriptpath;	
@@ -836,7 +838,8 @@ void initPython(const std::string& binDir, const std::string &scriptpath, double
 
     PyStatus status = Py_InitializeFromConfig(&config);
     if (PyStatus_Exception(status)) {
-      LOG( message_group::Error, "Python not found. Is it installed ?");
+      alreadyTried=true;	    
+      LOG( message_group::Error, "Python %1$lu.%2$lu.%3$lu not found. Is it installed ?",PY_MAJOR_VERSION, PY_MINOR_VERSION, PY_MICRO_VERSION);
       return;
     }
     PyConfig_Clear(&config);
