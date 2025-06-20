@@ -1654,15 +1654,6 @@ if (LIB3MF_FOUND)
       PROPERTIES DISABLED TRUE
     )
   endif (EXPERIMENTAL)
-  if (ENABLE_MANIFOLD)
-    set_tests_properties(
-      # https://github.com/openscad/openscad/issues/5966
-     render-off-manifold_issue5216
-     render-3mf-manifold_issue5216
-
-     PROPERTIES DISABLED TRUE
-    )
-  endif (ENABLE_MANIFOLD)  
   set_tests_properties(
     # When exported from CGAL, the file cannot be re-imported
     render-3mf-cgal_bad-stl-wing

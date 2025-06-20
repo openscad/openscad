@@ -462,7 +462,9 @@ Response GeometryEvaluator::visit(State& state, const ColorNode& node)
       ResultObject res = applyToChildren(node, OpenSCADOperator::UNION);
       if ((geom = res.constptr())) {
         auto mutableGeom = res.asMutableGeometry();
-        if (mutableGeom) mutableGeom->setColor(node.color);
+        if (mutableGeom && node.color[0] >= 0) {
+          mutableGeom->setColor(node.color);
+        }
         geom = mutableGeom;
       }
     } else {
