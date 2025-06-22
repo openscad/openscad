@@ -62,7 +62,6 @@ public:
               static_cast<float>(b) / 255.0f,
               static_cast<float>(a) / 255.0f;
   }
-
   void setRgba(float r, float g, float b, float a = 1.0f) {
     color_ << r, g, b, a;
   }

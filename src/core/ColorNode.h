@@ -15,5 +15,5 @@ public:
   std::string toString() const override;
   std::string name() const override;
 
-  Color4f color{-1.0f, -1.0f, -1.0f, 1.0f};
+  Color4f color;
 };

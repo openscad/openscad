@@ -63,8 +63,9 @@ void export_off(const std::shared_ptr<const Geometry>& geom, std::ostream& outpu
       if (color_index >= 0) {
         auto color = ps->colors[color_index];
         int r, g, b, a;
-        color.getRgba(r, g, b, a);
-        // TODO(kintel): getRgba() error handling
+        if (!color.getRgba(r, g, b, a)) {
+          LOG(message_group::Warning, "Invalid color in OFF export");
+        }
         output << " " << (int)r << " " << (int)g << " " << (int)b;
         // Alpha channel is read by apps like MeshLab.
         if (a != 255) output << " " << (int)a;

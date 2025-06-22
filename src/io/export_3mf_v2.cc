@@ -115,8 +115,10 @@ void handle_triangle_color(const std::shared_ptr<const PolySet>& ps, ExportConte
   Lib3MF_uint32 col_idx = 0;
   if (col_it == ctx.colors.end()) {
     Lib3MF::sColor materialcolor;
-    col.getRgba(materialcolor.m_Red, materialcolor.m_Green, materialcolor.m_Blue, materialcolor.m_Alpha);
-    // TODO(kintel): Error handling
+    if (!col.getRgba(materialcolor.m_Red, materialcolor.m_Green, materialcolor.m_Blue, materialcolor.m_Alpha)) {
+      LOG(message_group::Warning, "Invalid color in 3MF export");
+      return;
+    }
     if (ctx.basematerialgroup) {
       col_idx = ctx.basematerialgroup->AddMaterial("Color " + std::to_string(ctx.basematerialgroup->GetCount()), materialcolor);
     } else if (ctx.colorgroup) {
@@ -360,15 +362,19 @@ void export_3mf(const std::shared_ptr<const Geometry>& geom, std::ostream& outpu
     if (options3mf->materialType == Export3mfMaterialType::basematerial) {
       basematerialgroup = model->AddBaseMaterialGroup();
       Lib3MF::sColor materialcolor;
-      color.getRgba(materialcolor.m_Red, materialcolor.m_Green, materialcolor.m_Blue, materialcolor.m_Alpha);
-      // TODO(kintel): Error handling
+      if (!color.getRgba(materialcolor.m_Red, materialcolor.m_Green, materialcolor.m_Blue, materialcolor.m_Alpha)) {
+        LOG(message_group::Warning, "Invalid color in 3MF export");
+        return;
+      }
       materialcolor.m_Alpha = 0xff;
       basematerialgroup->AddMaterial("Default", materialcolor);
     } else if (options3mf->materialType == Export3mfMaterialType::color) {
       colorgroup = model->AddColorGroup();
       Lib3MF::sColor groupcolor;
-      color.getRgba(groupcolor.m_Red, groupcolor.m_Green, groupcolor.m_Blue, groupcolor.m_Alpha);
-      // TODO(kintel): Error handling
+      if (!color.getRgba(groupcolor.m_Red, groupcolor.m_Green, groupcolor.m_Blue, groupcolor.m_Alpha)) {
+        LOG(message_group::Warning, "Invalid color in 3MF export");
+        return;
+      }
       colorgroup->AddColor(groupcolor);
     }
   }
