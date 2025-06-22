@@ -37,13 +37,6 @@
 #include "geometry/PolySet.h"
 #include "geometry/PolySetUtils.h"
 
-static uint8_t clamp_color_channel(float value)
-{
-  if (value < 0) return 0;
-  if (value > 1) return 255;
-  return (uint8_t)(value * 255);
-}
-
 void export_off(const std::shared_ptr<const Geometry>& geom, std::ostream& output)
 {
   auto ps = PolySetUtils::getGeometryAsPolySet(geom);
@@ -69,10 +62,9 @@ void export_off(const std::shared_ptr<const Geometry>& geom, std::ostream& outpu
       auto color_index = ps->color_indices[i];
       if (color_index >= 0) {
         auto color = ps->colors[color_index];
-        auto r = clamp_color_channel(color[0]);
-        auto g = clamp_color_channel(color[1]);
-        auto b = clamp_color_channel(color[2]);
-        auto a = clamp_color_channel(color[3]);
+        int r, g, b, a;
+        color.getRgba(r, g, b, a);
+        // TODO(kintel): getRgba() error handling
         output << " " << (int)r << " " << (int)g << " " << (int)b;
         // Alpha channel is read by apps like MeshLab.
         if (a != 255) output << " " << (int)a;

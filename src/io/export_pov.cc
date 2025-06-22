@@ -75,10 +75,10 @@ void export_pov(const std::shared_ptr<const Geometry>& geom, std::ostream& outpu
       auto color_index = ps->color_indices[polygon_index];
       if (color_index >= 0) {
         auto color = ps->colors[color_index];
-        r = color[0];
-        g = color[1];
-        b = color[2];
-        f = 1.0 - color[3];
+        r = color.r();
+        g = color.g();
+        b = color.b();
+        f = 1.0 - color.a();
       }
     }
     output << "\n";

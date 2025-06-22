@@ -169,12 +169,8 @@ bool Renderer::getShaderColor(Renderer::ColorMode colormode, const Color4f& obje
   // Fill in missing components with the color from the colorscheme
   Color4f basecol;
   if (Renderer::getColorSchemeColor(colormode, basecol)) {
-    // if (!outcolor.hasRGB()) outcolor.setRgb(basecol.r(), basecol.g(), basecol.b());
-    // if (!outcolor.hasAlpha()) outcolor.setAlpha(basecol.a());
-    outcolor = Color4f(outcolor[0] >= 0 ? outcolor[0] : basecol[0], 
-                       outcolor[1] >= 0 ? outcolor[1] : basecol[1],
-                       outcolor[2] >= 0 ? outcolor[2] : basecol[2],
-                       outcolor[3] >= 0 ? outcolor[3] : basecol[3]);
+    if (!outcolor.hasRgb()) outcolor.setRgb(basecol.r(), basecol.g(), basecol.b());
+    if (!outcolor.hasAlpha()) outcolor.setAlpha(basecol.a());
     return true;
   }
 
