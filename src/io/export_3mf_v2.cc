@@ -117,7 +117,6 @@ void handle_triangle_color(const std::shared_ptr<const PolySet>& ps, ExportConte
     Lib3MF::sColor materialcolor;
     if (!col.getRgba(materialcolor.m_Red, materialcolor.m_Green, materialcolor.m_Blue, materialcolor.m_Alpha)) {
       LOG(message_group::Warning, "Invalid color in 3MF export");
-      return;
     }
     if (ctx.basematerialgroup) {
       col_idx = ctx.basematerialgroup->AddMaterial("Color " + std::to_string(ctx.basematerialgroup->GetCount()), materialcolor);
@@ -364,7 +363,6 @@ void export_3mf(const std::shared_ptr<const Geometry>& geom, std::ostream& outpu
       Lib3MF::sColor materialcolor;
       if (!color.getRgba(materialcolor.m_Red, materialcolor.m_Green, materialcolor.m_Blue, materialcolor.m_Alpha)) {
         LOG(message_group::Warning, "Invalid color in 3MF export");
-        return;
       }
       materialcolor.m_Alpha = 0xff;
       basematerialgroup->AddMaterial("Default", materialcolor);
@@ -373,7 +371,6 @@ void export_3mf(const std::shared_ptr<const Geometry>& geom, std::ostream& outpu
       Lib3MF::sColor groupcolor;
       if (!color.getRgba(groupcolor.m_Red, groupcolor.m_Green, groupcolor.m_Blue, groupcolor.m_Alpha)) {
         LOG(message_group::Warning, "Invalid color in 3MF export");
-        return;
       }
       colorgroup->AddColor(groupcolor);
     }

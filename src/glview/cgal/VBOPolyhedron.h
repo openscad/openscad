@@ -391,9 +391,10 @@ public:
   }
 
   void setColor(CGALColorIndex color_index, const Color4f& c) {
+    // Note: Not setting alpha here as none of our built-in colors currently have an alpha component
+    // This _may_ yield unexpected results for user-defined colors with alpha components.
     PRINTDB("setColor %i %f %f %f", color_index % c.r() % c.g() % c.b());
     this->colors[color_index] = CGAL::Color(c.r() * 255, c.g() * 255, c.b() * 255);
-    // TODO(kintel): Handle alpha?
   }
 
 protected:

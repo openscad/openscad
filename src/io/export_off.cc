@@ -66,9 +66,9 @@ void export_off(const std::shared_ptr<const Geometry>& geom, std::ostream& outpu
         if (!color.getRgba(r, g, b, a)) {
           LOG(message_group::Warning, "Invalid color in OFF export");
         }
-        output << " " << (int)r << " " << (int)g << " " << (int)b;
+        output << " " << r << " " << g << " " << b;
         // Alpha channel is read by apps like MeshLab.
-        if (a != 255) output << " " << (int)a;
+        if (a != 255) output << " " << a;
       }
     }
     output << "\n";

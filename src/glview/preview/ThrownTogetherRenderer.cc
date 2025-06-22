@@ -203,7 +203,7 @@ void ThrownTogetherRenderer::createChainObject(VertexStateContainer& container, 
       ttr_vs->setCsgObjectIndex(csgobj.leaf->index);
     }
 
-    color.setRgb(1.0, 0.0, 1.0);
+    color.setRgb(1.0, 0.0, 1.0); // override leaf color on front/back error
 
     colormode = getColorMode(csgobj.flags, highlight_mode, background_mode, true, type);
     getShaderColor(colormode, leaf_color, color);
