@@ -1035,7 +1035,7 @@ PyObject *python_color_core(PyObject *obj, PyObject *color, double alpha)
 
   Vector4d col(0,0,0,alpha);
   if(!python_vectorval(color, 3, 4, &col[0], &col[1], &col[2], &col[3])) {
-	  for(int i=0;i<4;i++) node->color[i] = col[i];
+    node->color.setRgba(float(col[0]), float(col[1]), float(col[2]), float(col[3]));
   }
   else if(PyUnicode_Check(color)) {
     PyObject* value = PyUnicode_AsEncodedString(color, "utf-8", "~");
@@ -1043,7 +1043,7 @@ PyObject *python_color_core(PyObject *obj, PyObject *color, double alpha)
     const auto color = OpenSCAD::parse_color(colorname);
     if (color) {
       node->color = *color;
-      node->color[3]=alpha;
+      node->color.setAlpha(alpha);
     } else {
       PyErr_SetString(PyExc_TypeError, "Cannot parse color");
       return NULL;
