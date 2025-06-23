@@ -85,7 +85,7 @@ void VBOBuilder::createVertex(const std::array<Vector3d, 3>& points,
     addAttributeValues(*(data()->normalData()), normals[active_point_index][0], normals[active_point_index][1], normals[active_point_index][2]);
   }
   if (data()->hasColorData()) {
-    addAttributeValues(*(data()->colorData()), color[0], color[1], color[2], color[3]);
+    addAttributeValues(*(data()->colorData()), color.r(), color.g(), color.b(), color.a());
   }
 
   if (useElements()) {

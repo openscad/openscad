@@ -65,17 +65,6 @@ std::string get_lib3mf_version() {
   return OpenSCAD::get_version_string(header_version, runtime_version);
 }
 
-template<> struct std::hash<Color4f> {
-    std::size_t operator()(Color4f const& c) const noexcept {
-      std::size_t hash = 0;
-      for (int idx = 0;idx < 4;idx++) {
-        std::size_t h = std::hash<float>{}(c[idx]);
-        hash = h ^ (hash << 1);
-      }
-      return hash;
-    }
-};
-
 namespace {
 
 struct MeshObject
