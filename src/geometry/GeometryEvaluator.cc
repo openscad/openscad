@@ -2588,6 +2588,183 @@ static std::unique_ptr<PolySet> pullObject(const PullNode& node, const PolySet *
   return builder.build();
 }
 
+
+Vector3d cross_pt(Vector3d p1, Vector3d p2, double x)
+{
+  double f = (x-p1[0])/(p2[0]-p1[0]);
+  double y = p1[1] + (p2[1]-p1[1])*f;
+  double z = p1[2] + (p2[2]-p1[2])*f;
+  return Vector3d(x,y,z);
+}
+
+std::vector<std::vector<MyPoly>>  wrapSlice(std::vector<MyPoly> polygons,std::vector<double> xsteps)
+{
+  std::vector<std::vector<MyPoly>> stripPolygons; // nach strips sortiert
+  std::vector<MyPoly> stripTops; // obere Randpunkte eines Streifens				       	
+  std::vector<MyPoly> stripBots; // obere Randpunkte eines Streifens				       	
+  std::vector<std::vector<MyPoly>> results; // nach strips sortiert
+  int strips = xsteps.size()+1;
+
+  // initialize
+  MyPoly dmy;
+  std::vector<MyPoly> dmyx;
+  for(int i=0;  i<strips;i++) {
+    stripPolygons.push_back(dmyx);	  
+    results.push_back(dmyx);	  
+    stripTops.push_back(dmy);	  
+    stripBots.push_back(dmy);	  
+  }
+
+  // now split all  input
+  for(auto &poly : polygons) {
+    int n = poly.size();
+    MyPoly chain;
+    if(n < 1) continue;
+    Vector3d curpt = poly[n-1];    
+    chain.push_back(curpt);
+    int curlevel=0; // 0 ebene0, 1, zwishen, 2, ebene1, 3 zwischen
+    while(curlevel <2*strips-2 && curpt[0] > xsteps[curlevel>>1]) curlevel+=2;
+    if(curpt[0] ==  xsteps[curlevel>>1]) curlevel++; // TODO genau auf kante
+
+    int curpols=stripPolygons[curlevel>>1].size();
+    for(int i=0;i<n;i++) {
+      Vector3d newpt = poly[i];
+      int newlevel=0;      
+      while(newlevel < 2*strips-2 && newpt[0] > xsteps[(newlevel>>1)]) newlevel+=2;
+      if(newpt[0] ==  xsteps[newlevel>>1]) newlevel++; // TODO genau auf kante
+      
+      while(curlevel != newlevel) {
+        if(newlevel < curlevel) { // down
+	  if(!(curlevel &1)) // in die mitte
+          {		 
+            Vector3d ptx = cross_pt(curpt, newpt,xsteps[(curlevel>>1)-1]);
+	    chain.push_back(ptx);
+	    stripPolygons[curlevel>>1].push_back(chain);
+	    chain.clear();
+	    stripBots[curlevel>>1].push_back(ptx);
+            curlevel--;	  
+	  } else { // aus der mitte)
+            Vector3d ptx = cross_pt(curpt, newpt,xsteps[((curlevel+1)>>1)-1]);
+	    chain.push_back(ptx);
+            curlevel--;	  
+	    stripTops[curlevel>>1].push_back(ptx);
+	  }  
+	}		
+        if(newlevel > curlevel) { // up
+	  if(!(curlevel &1)) // in die mitte
+          { 				  
+            Vector3d ptx = cross_pt(curpt, newpt,xsteps[(curlevel>>1)]);
+	    chain.push_back(ptx);
+	    stripPolygons[curlevel>>1].push_back(chain);
+	    chain.clear();
+	    stripTops[curlevel>>1].push_back(ptx);
+            curlevel++;	  
+	  } else {  
+            Vector3d ptx = cross_pt(curpt, newpt,xsteps[((curlevel-1)>>1)]);
+	    chain.push_back(ptx);
+            curlevel++;	  
+	    stripBots[curlevel>>1].push_back(ptx);
+	  }  
+	}		
+      }      
+      curpt=newpt;
+      chain.push_back(curpt);
+    }
+    // patching
+    stripPolygons[curlevel>>1][curpols].insert(stripPolygons[curlevel>>1][curpols].begin(), chain.begin(), chain.end()-1);
+  }
+  auto compare_func = [](const Vector3d &b, const Vector3d &a)
+  {
+   if(b[2] > a[2]) return 1.0;	  
+   if(b[2] < a[2]) return -1.0;	  
+   return b[1]-a[1];
+  };
+
+  // TODO locher innerhalb einer ebene muessen gleich in sresult
+  for(int i=0;i<strips;i++) {
+    printf("Processing Strip %d\n",i);	  
+    if(stripPolygons[i].size() == 0) continue;	  
+    std::sort(stripBots[i].begin(), stripBots[i].end(), compare_func);
+    std::sort(stripTops[i].begin(), stripTops[i].end(), compare_func);
+
+    MyPoly chain;
+    Vector3d connpt;
+    bool done=true;
+    while(done)
+    {
+      done=false;	    
+      if(chain.size() == 0) {	    
+        if(stripPolygons[i].size() > 0) {	      
+          chain = stripPolygons[i][0];
+          stripPolygons[i].erase(stripPolygons[i].begin());
+          connpt=chain[chain.size()-1];
+	  done=true;
+	}  
+      }	else {
+	for(int j=0;j< stripPolygons[i].size();j++) {
+          if(stripPolygons[i][j][0] == connpt) {
+            chain.insert(chain.end(), stripPolygons[i][j].begin(), stripPolygons[i][j].end());
+	    stripPolygons[i].erase(stripPolygons[i].begin()+j);
+            connpt=chain[chain.size()-1];
+	    done=true;
+            break;
+	  }		  
+	}		
+      }
+      for(int j=0;j<stripBots[i].size();j+=2 ) { 
+        if(stripBots[i][j] == connpt) {
+          connpt = stripBots[i][j+1];
+	  stripBots[i].erase(stripBots[i].begin()+j, stripBots[i].begin()+j+2);
+          done=true;			  
+          break;			
+	}		
+      }
+      for(int j=0;j<stripTops[i].size();j+=2 ) { 
+        if(stripTops[i][j+1] == connpt) {
+          connpt = stripTops[i][j];
+	  stripTops[i].erase(stripTops[i].begin()+j, stripTops[i].begin()+j+2);
+          done=true;			  
+          break;			
+	}		
+      }
+      if(chain.size() > 0 && connpt == chain[0]) { // harvest
+        results[i].push_back(chain);	      
+	chain.clear();
+      }
+
+    }  
+    if(chain.size() != 0) { printf("Error A\n"); }
+    if(stripPolygons[i].size() != 0) { printf("Error B\n"); }
+    if(stripBots[i].size() != 0) { printf("Error C\n"); }
+    if(stripTops[i].size() != 0) { printf("Error D\n"); }
+  }
+
+  for(int i=0;i<strips;i++) {
+    printf("Strip %d\n",i);	  
+    for(auto & poly: stripPolygons[i]) {
+      for(auto &pt : poly) {
+        printf("%g/%g ", pt[0], pt[1]);	      
+      }	      
+      printf("\n");
+    }
+    printf("Bots\n");
+    for(auto & pt: stripBots[i]) printf("%g/%g ", pt[0], pt[1]);	      
+    printf("\n");
+
+    printf("Tops\n");
+    for(auto & pt: stripTops[i]) printf("%g/%g ", pt[0], pt[1]);	      
+    printf("\n");
+    printf("Result %d\n",i);	  
+    for(auto & poly: results[i]) {
+      for(auto &pt : poly) {
+        printf("%g/%g ", pt[0], pt[1]);	      
+      }	      
+      printf("\n");
+    }
+  }  
+}
+
+// TODO linear_slice
 static std::unique_ptr<PolySet> wrapObject(const WrapNode& node, const PolySet *ps)
 {
   PolySetBuilder builder(0,0,3,true);
@@ -2596,6 +2773,95 @@ static std::unique_ptr<PolySet> wrapObject(const WrapNode& node, const PolySet *
   int segments=segments1>segments2?segments1:segments2;	  
   if(node.fn > 0) segments=node.fn;
   double arclen=2*G_PI*node.r/segments;
+  printf("segments=%d arclen=%g\n",segments, arclen);
+
+  // find maxmal xrange
+  double xmin=NAN, xmax;
+  for(const auto &p : ps->indices) {
+   for(int i : p) {
+      double x = ps->vertices[i][0];
+      if( isnan(xmin)) { xmin=x; xmax=x; } else {
+        if(x < xmin) xmin=x;	      
+        if(x > xmin) xmax=x;	      
+      }
+   }	   
+  }
+  printf("xmin=%g xmax=%g\n",xmin, xmax);
+  // now build scale form xmin to xmax
+  std::vector<float> xscale;
+  std::vector<Vector2d> polygon;
+  int polygonlen;
+  if(node.shape != nullptr)
+  {
+    printf("Shape\n");	  
+    Tree tree(node.shape, "");
+    GeometryEvaluator geomevaluator(tree);
+    std::shared_ptr<const Geometry> geom = geomevaluator.evaluateGeometry(*tree.root(), true);
+    std::shared_ptr<const Polygon2d> pol = std::dynamic_pointer_cast<const Polygon2d>(geom);
+    if(pol != nullptr) {
+      auto outlines = pol->untransformedOutlines();
+      if(outlines.size() > 0)
+      {
+        const Outline2d outl = outlines[0];	      
+	polygon=outl.vertices;
+	printf("t %d points\n",outl.vertices.size());
+      }
+    }
+    if(polygon.size() == 0) return builder.build(); 
+    polygonlen = polygon.size();				 
+    double off=xmin;
+    int ind=0;
+    xscale.push_back( off);
+    do
+    {
+      auto &p1 = polygon[ind%polygonlen];
+      auto &p2 = polygon[(ind+1)%polygonlen];
+      off += (p2-p1).norm();
+      ind++;
+      xscale.push_back( off);
+    }
+    while(off < xmax);
+   } else {
+    if(xmin >= 0) xmin = ceil((xmin+1e-6)/arclen)*arclen;
+    else xmin = -floor((-xmin+1e-6)/arclen)*arclen;
+    printf("row is ");
+    do {
+     printf("%g ", xmin);	  
+     Vector2d pt(node.r*cos(xmin/node.r), node.r*sin(xmin/node.r));
+
+     xscale.push_back(xmin);
+     polygon.push_back(pt);
+     xmin += arclen;   
+    }
+    while(xmin <= xmax+1e-6);
+    xscale.push_back(xmin);
+   }  
+
+   int scalelen = xscale.size(); // TODO rundherum
+   printf("row is ");
+   for(int i=0;i<polygonlen;i++) 
+   {
+     printf("%g (%g/%g) ",xscale[i], polygon[i][0], polygon[i][1]);	   
+   }
+   printf("\n");
+   printf("%d values\n", xscale.size());
+
+  auto wrap_convert  =  [node,xscale, polygon, polygonlen](Vector3d pt, double tanfact, int ind) {
+    auto &p1 = polygon[ind%polygonlen];
+    auto &p2 = polygon[(ind+1)%polygonlen];    
+    Vector2d dir = (p2-p1).normalized();
+    Vector2d dirn =Vector2d(-dir[1],  dir[0]);
+    Vector3d res;
+    Vector2d px=p1+dir*(pt[0]-xscale[ind]+pt[1]*tanfact )+dirn*pt[1];
+    res=Vector3d(px[0], px[1],pt[2]);
+
+// TODO neues striefen-qalg dann tesselation weg
+// TODO dann 2D streifen
+
+    return res;
+  };
+
+  // now build vector from xmin to xmax
 
   for(const auto &p : ps->indices) {
     // find leftmost point		 
@@ -2607,23 +2873,28 @@ static std::unique_ptr<PolySet> wrapObject(const WrapNode& node, const PolySet *
     }
     int forw_ind=minind;
     int back_ind=minind;
-    double xcur, xnext;
+    double xcur;
 
     xcur=ps->vertices[p[minind]][0];
     std::vector<Vector3d> curslice;
-    curslice.push_back(ps->vertices[p[minind]]);
+    int xnextind=0;	    
+    double tanfact=1.0;
+    while(xnextind < xscale.size()-1 && xscale[xnextind] < xcur+1e-6) xnextind++; // TODO rundherum mit offset
+    curslice.push_back(wrap_convert(ps->vertices[p[minind]],0.0, xnextind-1)); // TODO 0 ist problem
 
     int end=0;
     do {
-      if(xcur >= 0) xnext = ceil((xcur+1e-6)/arclen)*arclen;
-      else xnext = -floor((-xcur+1e-6)/arclen)*arclen;
+      while(xnextind < xscale.size()-1 && xscale[xnextind] < xcur+1e-6) xnextind++; // TODO rundherum mit offset
+ 
+      double xnext = xscale[xnextind];	
+
       while(ps->vertices[p[(forw_ind+1)%n]][0] <= xnext && ((forw_ind+1)%n) != back_ind ) {
         forw_ind= (forw_ind+1)%n;
-        curslice.push_back(ps->vertices[p[forw_ind]]);
+        curslice.push_back(wrap_convert(ps->vertices[p[forw_ind]],0.0, xnextind-1));
       }
       while(ps->vertices[p[(back_ind+n-1)%n]][0] <= xnext && ((back_ind+n-1)%n) != forw_ind) {
         back_ind= (back_ind+n-1)%n;
-        curslice.insert(curslice.begin(),ps->vertices[p[back_ind]]);
+        curslice.insert(curslice.begin(),wrap_convert(ps->vertices[p[back_ind]],0.0, xnextind-1));
       }
 
       Vector3d  forw_pt, back_pt;
@@ -2631,26 +2902,25 @@ static std::unique_ptr<PolySet> wrapObject(const WrapNode& node, const PolySet *
       end=1;
       } else {
         // calculate intermediate forward point
+        auto &pt1 = polygon[(xnextind+polygonlen-1)%polygonlen];
+        auto &pt2 = polygon[(xnextind+polygonlen)%polygonlen];
+        auto &pt3 = polygon[(xnextind+polygonlen+1)%polygonlen];
+	Vector2d d1=(pt2-pt1).normalized();
+	Vector2d d2=(pt3-pt2).normalized();
+	tanfact=tan(acos(d1.dot(d2))/2); // TODO improve
         Vector3d tmp1, tmp2;
+	// TODO rundherum, TODO negative werte
 	
         tmp1 = ps->vertices[p[forw_ind]];
         tmp2 = ps->vertices[p[(forw_ind+1)%n]];
         forw_pt = tmp1 +(tmp2-tmp1)*(xnext-tmp1[0])/(tmp2[0]-tmp1[0]);
-        curslice.push_back(forw_pt);									      
+        curslice.push_back(wrap_convert(forw_pt,-tanfact, xnextind-1));									      
         tmp1 = ps->vertices[p[back_ind]];
         tmp2 = ps->vertices[p[(back_ind+n-1)%n]];
-        back_pt = tmp1 +(tmp2-tmp1)*(xnext-tmp1[0])/(tmp2[0]-tmp1[0]);
-        curslice.insert(curslice.begin(), back_pt);									      
+        back_pt = tmp1 +(tmp2-tmp1)*(xscale[xnextind]-tmp1[0])/(tmp2[0]-tmp1[0]);
+        curslice.insert(curslice.begin(), wrap_convert(back_pt,-tanfact, xnextind-1));									      
       }  
 									      
-      double ang, rad;
-
-      for(size_t j=0;j<curslice.size();j++) {
-        auto &pt = curslice[j];
-        ang=pt[0]/node.r;
-        rad = node.r-pt[1];
-        pt=Vector3d(rad*cos(ang),rad*sin(ang),pt[2]);
-      }
       for(size_t j=0;j<curslice.size()-2;j++) {
         builder.beginPolygon(curslice.size());	  
         builder.addVertex(curslice[0]);	    
@@ -2661,8 +2931,8 @@ static std::unique_ptr<PolySet> wrapObject(const WrapNode& node, const PolySet *
 // TODO color alpha
       curslice.clear();
       xcur=xnext;
-      curslice.push_back(back_pt);	    
-      curslice.push_back(forw_pt);	    
+      curslice.push_back(wrap_convert(back_pt,tanfact, xnextind));	    
+      curslice.push_back(wrap_convert(forw_pt,tanfact, xnextind));	    
     } while(end == 0);
   }
   auto ps1 = builder.build();

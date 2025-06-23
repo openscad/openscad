@@ -41,6 +41,9 @@ struct EdgeVal {
   IndexedFace bez2;
   double angle;
 };
+typedef std::vector<Vector3d> MyPoly;
+
+std::vector<std::vector<MyPoly>>  wrapSlice(std::vector<MyPoly> polygons,std::vector<double> xsteps);
 
 // 3D Map stuff
 //

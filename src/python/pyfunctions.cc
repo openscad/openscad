@@ -1800,7 +1800,7 @@ PyObject *python_oo_pull(PyObject *obj, PyObject *args, PyObject *kwargs)
   return python_pull_core(obj, anchor, dir);
 }
 
-PyObject *python_wrap_core(PyObject *obj, double r, double fn, double fa, double fs)
+PyObject *python_wrap_core(PyObject *obj, PyObject *target, double fn, double fa, double fs)
 {
   DECLARE_INSTANCE
   auto node = std::make_shared<WrapNode>(instance);
@@ -1811,8 +1811,20 @@ PyObject *python_wrap_core(PyObject *obj, double r, double fn, double fa, double
     return NULL;
   }
 
+  if(PyFloat_Check(target)) {
+	  printf("is float\n");
+      node->r = PyFloat_AsDouble(target);
+      node->shape = nullptr;
+  } else if( Py_TYPE(target) == &PyOpenSCADType) {
+    node->r = 5; // TODO fix	  
+    std::shared_ptr<AbstractNode> abstr = ((PyOpenSCADObject *) target)->node;		 
+    node->shape =  abstr;
+    printf("is shape %p\n", abstr);		 
+  } else {
+    PyErr_SetString(PyExc_TypeError, "warppign object must bei either Polygon or cylidner radius\n");
+    return NULL;
+  }
 
-  node->r = r;
   get_fnas(node->fn, node->fa, node->fs);
   if(!isnan(fn)) node->fn=fn;
   if(!isnan(fa)) node->fa=fa;
@@ -1821,33 +1833,231 @@ PyObject *python_wrap_core(PyObject *obj, double r, double fn, double fa, double
   return PyOpenSCADObjectFromNode(&PyOpenSCADType, node);
 }
 
+#if 0
+typedef std::vector<Vector3d> MyPoly;
+
+Vector3d cross_pt(Vector3d p1, Vector3d p2, double x)
+{
+  double f = (x-p1[0])/(p2[0]-p1[0]);
+  double y = p1[1] + (p2[1]-p1[1])*f;
+  double z = p1[2] + (p2[2]-p1[2])*f;
+  return Vector3d(x,y,z);
+}
+
+std::vector<std::vector<MyPoly>>  wrapSlice(std::vector<MyPoly> polygons,std::vector<double> xsteps)
+{
+  std::vector<std::vector<MyPoly>> stripPolygons; // nach strips sortiert
+  std::vector<MyPoly> stripTops; // obere Randpunkte eines Streifens				       	
+  std::vector<MyPoly> stripBots; // obere Randpunkte eines Streifens				       	
+  std::vector<std::vector<MyPoly>> results; // nach strips sortiert
+  int strips = xsteps.size()+1;
+
+  // initialize
+  MyPoly dmy;
+  std::vector<MyPoly> dmyx;
+  for(int i=0;  i<strips;i++) {
+    stripPolygons.push_back(dmyx);	  
+    results.push_back(dmyx);	  
+    stripTops.push_back(dmy);	  
+    stripBots.push_back(dmy);	  
+  }
+
+  // now split all  input
+  for(auto &poly : polygons) {
+    int n = poly.size();
+    MyPoly chain;
+    if(n < 1) continue;
+    Vector3d curpt = poly[n-1];    
+    chain.push_back(curpt);
+    int curlevel=0; // 0 ebene0, 1, zwishen, 2, ebene1, 3 zwischen
+    while(curlevel <2*strips-2 && curpt[0] > xsteps[curlevel>>1]) curlevel+=2;
+    if(curpt[0] ==  xsteps[curlevel>>1]) curlevel++; // TODO genau auf kante
+
+    int curpols=stripPolygons[curlevel>>1].size();
+    for(int i=0;i<n;i++) {
+      Vector3d newpt = poly[i];
+      int newlevel=0;      
+      while(newlevel < 2*strips-2 && newpt[0] > xsteps[(newlevel>>1)]) newlevel+=2; 
+      if(newpt[0] ==  xsteps[newlevel>>1]) newlevel++; // TODO genau auf kante
+      
+      while(curlevel != newlevel) {
+        if(newlevel < curlevel) { // down
+	  if(!(curlevel &1)) // in die mitte
+          {		 
+            Vector3d ptx = cross_pt(curpt, newpt,xsteps[(curlevel>>1)-1]);
+	    chain.push_back(ptx);
+	    stripPolygons[curlevel>>1].push_back(chain);
+	    chain.clear();
+	    stripBots[curlevel>>1].push_back(ptx);
+            curlevel--;	  
+	  } else { // aus der mitte)
+            Vector3d ptx = cross_pt(curpt, newpt,xsteps[((curlevel+1)>>1)-1]);
+	    chain.push_back(ptx);
+            curlevel--;	  
+	    stripTops[curlevel>>1].push_back(ptx);
+	  }  
+	}		
+        if(newlevel > curlevel) { // up
+	  if(!(curlevel &1)) // in die mitte
+          { 				  
+            Vector3d ptx = cross_pt(curpt, newpt,xsteps[(curlevel>>1)]);
+	    chain.push_back(ptx);
+	    stripPolygons[curlevel>>1].push_back(chain);
+	    chain.clear();
+	    stripTops[curlevel>>1].push_back(ptx);
+            curlevel++;	  
+	  } else {  
+            Vector3d ptx = cross_pt(curpt, newpt,xsteps[((curlevel-1)>>1)]);
+	    chain.push_back(ptx);
+            curlevel++;	  
+	    stripBots[curlevel>>1].push_back(ptx);
+	  }  
+	}		
+      }      
+      curpt=newpt;
+      chain.push_back(curpt);
+    }
+    // patching
+    stripPolygons[curlevel>>1][curpols].insert(stripPolygons[curlevel>>1][curpols].begin(), chain.begin(), chain.end()-1);
+  }
+  auto compare_func = [](const Vector3d &b, const Vector3d &a)
+  {
+   if(b[2] > a[2]) return 1.0;	  
+   if(b[2] < a[2]) return -1.0;	  
+   return b[1]-a[1];
+  };
+
+  // TODO locher innerhalb einer ebene muessen gleich in sresult
+  for(int i=0;i<strips;i++) {
+    printf("Processing Strip %d\n",i);	  
+    if(stripPolygons[i].size() == 0) continue;	  
+    std::sort(stripBots[i].begin(), stripBots[i].end(), compare_func);
+    std::sort(stripTops[i].begin(), stripTops[i].end(), compare_func);
+
+    MyPoly chain;
+    Vector3d connpt;
+    bool done=true;
+    while(done)
+    {
+      done=false;	    
+      if(chain.size() == 0) {	    
+        if(stripPolygons[i].size() > 0) {	      
+          chain = stripPolygons[i][0];
+          stripPolygons[i].erase(stripPolygons[i].begin());
+          connpt=chain[chain.size()-1];
+	  done=true;
+	}  
+      }	else {
+	for(int j=0;j< stripPolygons[i].size();j++) {
+          if(stripPolygons[i][j][0] == connpt) {
+            chain.insert(chain.end(), stripPolygons[i][j].begin(), stripPolygons[i][j].end());
+	    stripPolygons[i].erase(stripPolygons[i].begin()+j);
+            connpt=chain[chain.size()-1];
+	    done=true;
+            break;
+	  }		  
+	}		
+      }
+      for(int j=0;j<stripBots[i].size();j+=2 ) { 
+        if(stripBots[i][j] == connpt) {
+          connpt = stripBots[i][j+1];
+	  stripBots[i].erase(stripBots[i].begin()+j, stripBots[i].begin()+j+2);
+          done=true;			  
+          break;			
+	}		
+      }
+      for(int j=0;j<stripTops[i].size();j+=2 ) { 
+        if(stripTops[i][j+1] == connpt) {
+          connpt = stripTops[i][j];
+	  stripTops[i].erase(stripTops[i].begin()+j, stripTops[i].begin()+j+2);
+          done=true;			  
+          break;			
+	}		
+      }
+      if(chain.size() > 0 && connpt == chain[0]) { // harvest
+        results[i].push_back(chain);	      
+	chain.clear();
+      }
+
+    }  
+    if(chain.size() != 0) { printf("Error A\n"); }
+    if(stripPolygons[i].size() != 0) { printf("Error B\n"); }
+    if(stripBots[i].size() != 0) { printf("Error C\n"); }
+    if(stripTops[i].size() != 0) { printf("Error D\n"); }
+  }
+
+  for(int i=0;i<strips;i++) {
+    printf("Strip %d\n",i);	  
+    for(auto & poly: stripPolygons[i]) {
+      for(auto &pt : poly) {
+        printf("%g/%g ", pt[0], pt[1]);	      
+      }	      
+      printf("\n");
+    }
+    printf("Bots\n");
+    for(auto & pt: stripBots[i]) printf("%g/%g ", pt[0], pt[1]);	      
+    printf("\n");
+
+    printf("Tops\n");
+    for(auto & pt: stripTops[i]) printf("%g/%g ", pt[0], pt[1]);	      
+    printf("\n");
+    printf("Result %d\n",i);	  
+    for(auto & poly: results[i]) {
+      for(auto &pt : poly) {
+        printf("%g/%g ", pt[0], pt[1]);	      
+      }	      
+      printf("\n");
+    }
+  }  
+}
+
+#endif
 PyObject *python_wrap(PyObject *self, PyObject *args, PyObject *kwargs)
 {
-  char *kwlist[] = {"obj", "r","fn","fa","fs", NULL};
-  PyObject *obj = NULL;
-  double r, fn, fa, fs;
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "Od|ddd", kwlist,
+  char *kwlist[] = {"obj", "target","fn","fa","fs", NULL};
+  PyObject *obj = NULL, *target = NULL;
+  double  fn, fa, fs;
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "OO|ddd", kwlist,
                                    &obj,
-                                   &r, &fn, &fa, &fs
+                                   &target, &fn, &fa, &fs
                                    )) {
     PyErr_SetString(PyExc_TypeError, "error during parsing wrap\n");
     return NULL;
   }
-  return python_wrap_core(obj, r, fn,fa, fs);
+  return python_wrap_core(obj, target, fn,fa, fs);
 }
 
 PyObject *python_oo_wrap(PyObject *obj, PyObject *args, PyObject *kwargs)
 {
-  char *kwlist[] = {"r","fn","fa","fs",NULL};
-  double r,fn=NAN,fa=NAN,fs=NAN;
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "d|ddd", kwlist,
-                                   &r,&fn,&fa,&fs
+  char *kwlist[] = {"target","fn","fa","fs",NULL};
+  double fn=NAN,fa=NAN,fs=NAN;
+  PyObject *target = NULL;
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O|ddd", kwlist,
+                                   &target,&fn,&fa,&fs
                                    )) {
     PyErr_SetString(PyExc_TypeError, "error during parsing\n");
     return NULL;
   }
-  return python_wrap_core(obj, r, fn, fa, fs);
+  std::vector<double> xsteps;
+  xsteps.push_back(4);
+  xsteps.push_back(6);
+
+/*  
+  MyPoly poly;
+  poly.push_back(Vector3d(0,0, 0));
+  poly.push_back(Vector3d(10,0, 0));
+  poly.push_back(Vector3d(10,10, 0));
+  poly.push_back(Vector3d(0,10, 0));
+
+  std::vector<MyPoly> polygons;
+  polygons.push_back(poly);
+
+  wrapSlice(polygons, xsteps);
+*/
+  return python_wrap_core(obj, target, fn, fa, fs);
 }
+
+
 
 void python_show_final(void)
 {
