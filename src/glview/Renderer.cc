@@ -162,7 +162,8 @@ bool Renderer::getShaderColor(Renderer::ColorMode colormode, const Color4f& obje
 {
   // If an object was colored, use any set components from that color, except in pure highlight mode
   if ((colormode == ColorMode::BACKGROUND || colormode != ColorMode::HIGHLIGHT)) {
-    outcolor = object_color;
+    if (object_color.hasRgb()) outcolor.setRgb(object_color.r(), object_color.g(), object_color.b());
+    if (object_color.hasAlpha()) outcolor.setAlpha(object_color.a());
     if (outcolor.isValid()) return true;
   }
 
