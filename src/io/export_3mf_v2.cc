@@ -104,11 +104,6 @@ void export_3mf_error(std::string msg)
   LOG(message_group::Export_Error, std::move(msg));
 }
 
-Lib3MF_uint8 get_color_channel(const Color4f& col, int idx)
-{
-  return std::clamp(static_cast<int>(255.0 * col[idx]), 0, 255);
-}
-
 int count_mesh_objects(const Lib3MF::PModel& model) {
   const auto mesh_object_it = model->GetMeshObjects();
   int count = 0;
@@ -135,12 +130,10 @@ void handle_triangle_color(const std::shared_ptr<const PolySet>& ps, ExportConte
 
   Lib3MF_uint32 col_idx = 0;
   if (col_it == ctx.colors.end()) {
-    const Lib3MF::sColor materialcolor{
-      .m_Red = get_color_channel(col, 0),
-      .m_Green = get_color_channel(col, 1),
-      .m_Blue = get_color_channel(col, 2),
-      .m_Alpha = get_color_channel(col, 3)
-    };
+    Lib3MF::sColor materialcolor;
+    if (!col.getRgba(materialcolor.m_Red, materialcolor.m_Green, materialcolor.m_Blue, materialcolor.m_Alpha)) {
+      LOG(message_group::Warning, "Invalid color in 3MF export");
+    }
     if (ctx.basematerialgroup) {
       col_idx = ctx.basematerialgroup->AddMaterial("Color " + std::to_string(ctx.basematerialgroup->GetCount()), materialcolor);
     } else if (ctx.colorgroup) {
@@ -385,20 +378,19 @@ void export_3mf(const std::vector<struct Export3mfPartInfo> & infos, std::ostrea
     }
     if (options3mf->materialType == Export3mfMaterialType::basematerial) {
       basematerialgroup = model->AddBaseMaterialGroup();
-      basematerialgroup->AddMaterial("Default", {
-        .m_Red = get_color_channel(color, 0),
-        .m_Green = get_color_channel(color, 1),
-        .m_Blue = get_color_channel(color, 2),
-        .m_Alpha = 0xff
-      });
+      Lib3MF::sColor materialcolor;
+      if (!color.getRgba(materialcolor.m_Red, materialcolor.m_Green, materialcolor.m_Blue, materialcolor.m_Alpha)) {
+        LOG(message_group::Warning, "Invalid color in 3MF export");
+      }
+      materialcolor.m_Alpha = 0xff;
+      basematerialgroup->AddMaterial("Default", materialcolor);
     } else if (options3mf->materialType == Export3mfMaterialType::color) {
       colorgroup = model->AddColorGroup();
-      colorgroup->AddColor({
-        .m_Red = get_color_channel(color, 0),
-        .m_Green = get_color_channel(color, 1),
-        .m_Blue = get_color_channel(color, 2),
-        .m_Alpha = get_color_channel(color, 3)
-      });
+      Lib3MF::sColor groupcolor;
+      if (!color.getRgba(groupcolor.m_Red, groupcolor.m_Green, groupcolor.m_Blue, groupcolor.m_Alpha)) {
+        LOG(message_group::Warning, "Invalid color in 3MF export");
+      }
+      colorgroup->AddColor(groupcolor);
     }
   }
 

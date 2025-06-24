@@ -10,6 +10,7 @@ using Eigen::Vector2d;
 using Eigen::Vector3d;
 using Eigen::Vector4d;
 using Eigen::Vector3f;
+using Eigen::Vector4f;
 using Eigen::Vector3i;
 
 #ifdef _MSC_VER
@@ -45,33 +46,102 @@ template <typename Derived> bool is_nan(const Eigen::MatrixBase<Derived>& x) {
 
 BoundingBox operator*(const Transform3d& m, const BoundingBox& box);
 
-// Vector4f is fixed-size vectorizable
-// Use Eigen::DontAlign so we can store Color4f in STL containers
-// https://eigen.tuxfamily.org/dox/group__DenseMatrixManipulation__Alignement.html
-class Color4f : public Eigen::Matrix<float, 4, 1, Eigen::DontAlign>
+class Color4f
 {
 public:
-  Color4f(int r, int g, int b, int a = 255) { setRgb(r, g, b, a); }
-  Color4f(float r = -1.0f, float g = -1.0f, float b = -1.0f, float a = 1.0f) : Eigen::Matrix<float, 4, 1, Eigen::DontAlign>(r, g, b, a) { }
+  Color4f(const Vector4f& v) : color_(v) { }
+  Color4f(int r, int g, int b, int a = 255) { setRgba(r, g, b, a); }
+  Color4f(float r = -1.0f, float g = -1.0f, float b = -1.0f, float a = -1.0f) : color_(r, g, b, a) { }
 
-  void setRgb(int r, int g, int b, int a = 255) {
-    *this << static_cast<float>(r) / 255.0f,
-             static_cast<float>(g) / 255.0f,
-             static_cast<float>(b) / 255.0f,
-             static_cast<float>(a) / 255.0f;
+  [[nodiscard]] bool isValid() const { return color_.minCoeff() >= 0.0f; }
+  [[nodiscard]] bool hasRgb() const { return color_[0] >= 0.0f && color_[1] >= 0.0f && color_[2] >= 0.0f; }
+  [[nodiscard]] bool hasAlpha() const { return color_[3] >= 0.0f; }
+
+  void setRgba(int r, int g, int b, int a = 255) {
+    color_ << static_cast<float>(r) / 255.0f,
+              static_cast<float>(g) / 255.0f,
+              static_cast<float>(b) / 255.0f,
+              static_cast<float>(a) / 255.0f;
+  }
+  void setRgba(float r, float g, float b, float a = 1.0f) {
+    color_ << r, g, b, a;
+  }
+  void setRgb(float r, float g, float b) {
+    color_.head<3>() << r, g, b;
+  }
+  void setAlpha(float a) {
+    color_[3] = a;
   }
 
-  [[nodiscard]] bool isValid() const { return this->minCoeff() >= 0.0f; }
-  [[nodiscard]] float r() const { return coeff(0); }
-  [[nodiscard]] float g() const { return coeff(1); }
-  [[nodiscard]] float b() const { return coeff(2); }
-  [[nodiscard]] float a() const { return coeff(3); }
+  bool getRgba(int &r, int &g, int &b, int &a) const {
+    if (!isValid()) return false;
+    r = std::clamp(static_cast<int>(this->r() * 255.0f), 0, 255);
+    g = std::clamp(static_cast<int>(this->g() * 255.0f), 0, 255);
+    b = std::clamp(static_cast<int>(this->b() * 255.0f), 0, 255);
+    a = std::clamp(static_cast<int>(this->a() * 255.0f), 0, 255);
+    return true;
+  }
 
-  bool operator<(const Color4f &b) const {
+  bool getRgba(uint8_t &r, uint8_t &g, uint8_t &b, uint8_t &a) const {
+    if (!isValid()) return false;
+    r = static_cast<uint8_t>(std::clamp(this->r(), 0.0f, 1.0f) * 255.0f);
+    g = static_cast<uint8_t>(std::clamp(this->g(), 0.0f, 1.0f) * 255.0f);
+    b = static_cast<uint8_t>(std::clamp(this->b(), 0.0f, 1.0f) * 255.0f);
+    a = static_cast<uint8_t>(std::clamp(this->a(), 0.0f, 1.0f) * 255.0f);
+    return true;
+  }
+
+  bool getRgba(float &r, float &g, float &b, float &a) const {
+    if (!isValid()) return false;
+    r = this->r();
+    g = this->g();
+    b = this->b();
+    a = this->a();
+    return true;
+  }
+
+  [[nodiscard]] Vector4f toVector4f() const {
+    return color_;
+  }
+
+  [[nodiscard]] float r() const { return color_[0]; }
+  [[nodiscard]] float g() const { return color_[1]; }
+  [[nodiscard]] float b() const { return color_[2]; }
+  [[nodiscard]] float a() const { return color_[3]; }
+
+  [[nodiscard]] bool operator<(const Color4f &b) const {
     for (int i = 0; i < 4; i++) {
-      if ((*this)[i] < b[i]) return true;
-      if ((*this)[i] > b[i]) return false;
+      if (color_[i] < b.color_[i]) return true;
+      if (color_[i] > b.color_[i]) return false;
     }
     return false;
   }
+
+  [[nodiscard]] bool operator==(const Color4f &b) const {
+    return color_ == b.color_;
+  }
+
+  [[nodiscard]] bool operator!=(const Color4f &b) const {
+    return !(*this == b);
+  }
+
+  [[nodiscard]] size_t hash() const {
+    size_t hash = 0;
+    for (const auto c : color_) {
+      hash = std::hash<float>{}(c) ^ (hash << 1);
+    }
+    return hash;
+  }
+private:
+  // Vector4f is fixed-size vectorizable
+  // Use Eigen::DontAlign so we can store Color4f in STL containers
+  // https://eigen.tuxfamily.org/dox/group__DenseMatrixManipulation__Alignement.html
+  Eigen::Matrix<float, 4, 1, Eigen::DontAlign> color_;
 };
+
+template <> struct std::hash<Color4f> {
+  std::size_t operator()(Color4f const& c) const noexcept {
+    return c.hash();
+  }
+};
+

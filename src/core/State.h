@@ -13,8 +13,6 @@ public:
   State(std::shared_ptr<const AbstractNode> parent)
     : parentnode(std::move(parent)) {
     this->matrix_ = Transform3d::Identity();
-    this->color_.fill(-1.0f);
-    this->textureind_=0;
   }
 
   void setPrefix(bool on) { FLAG(this->flags, PREFIX, on); }
