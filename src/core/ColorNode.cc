@@ -25,24 +25,25 @@
  */
 
 #include "core/ColorNode.h"
-#include "geometry/linalg.h"
+
+#include <utility>
+#include <memory>
+#include <cctype>
+#include <cstddef>
+#include <string>
+#include <boost/algorithm/string/case_conv.hpp>
+#include <boost/assign/std/vector.hpp>
+#include <boost/assign/list_of.hpp>
+
 #include "core/module.h"
 #include "core/ModuleInstantiation.h"
 #include "core/Builtins.h"
 #include "core/Children.h"
 #include "core/Parameters.h"
 #include "core/ColorUtil.h"
+#include "geometry/linalg.h"
 #include "utils/printutils.h"
-#include <algorithm>
-#include <utility>
-#include <memory>
-#include <cctype>
-#include <cstddef>
-#include <string>
-#include <iterator>
-#include <boost/algorithm/string/case_conv.hpp>
-#include <boost/assign/std/vector.hpp>
-#include <boost/assign/list_of.hpp>
+
 using namespace boost::assign; // bring 'operator+=()' into scope
 
 static std::shared_ptr<AbstractNode> builtin_color(const ModuleInstantiation *inst, Arguments arguments, const Children& children)
@@ -52,12 +53,14 @@ static std::shared_ptr<AbstractNode> builtin_color(const ModuleInstantiation *in
   Parameters parameters = Parameters::parse(std::move(arguments), inst->location(), {"c", "alpha", "texture"});
   if (parameters["c"].type() == Value::Type::VECTOR) {
     const auto& vec = parameters["c"].toVector();
+    Vector4f color;
     for (size_t i = 0; i < 4; ++i) {
-      node->color[i] = i < vec.size() ? (float)vec[i].toDouble() : 1.0f;
-      if (node->color[i] > 1 || node->color[i] < 0) {
-        LOG(message_group::Warning, inst->location(), parameters.documentRoot(), "color() expects numbers between 0.0 and 1.0. Value of %1$.1f is out of range", node->color[i]);
+      color[i] = i < vec.size() ? (float)vec[i].toDouble() : 1.0f;
+      if (color[i] > 1 || color[i] < 0) {
+        LOG(message_group::Warning, inst->location(), parameters.documentRoot(), "color() expects numbers between 0.0 and 1.0. Value of %1$.1f is out of range", color[i]);
       }
     }
+    node->color = color;
   } else if (parameters["c"].type() == Value::Type::STRING) {
     auto colorname = parameters["c"].toString();
     const auto parsed_color = OpenSCAD::parse_color(colorname);
@@ -69,12 +72,15 @@ static std::shared_ptr<AbstractNode> builtin_color(const ModuleInstantiation *in
     }
   }
   if (parameters["alpha"].type() == Value::Type::NUMBER) {
-    node->color[3] = parameters["alpha"].toDouble();
+    node->color.setAlpha(parameters["alpha"].toDouble());
+    if (node->color.a() < 0.0f || node->color.a() > 1.0f) {
+      LOG(message_group::Warning, inst->location(), parameters.documentRoot(), "color() expects alpha between 0.0 and 1.0. Value of %1$.1f is out of range", node->color.a());
+    }
   }
   node->textureind=0; 
   if (parameters["texture"].type() == Value::Type::NUMBER) {
     node->textureind = (int) parameters["texture"].toDouble();
-    if(node->color[0] < 0) { node->color[0]=0.5; node->color[1]=0.5; node->color[2]=0.5; node->color[3]=1.0; }
+    if(node->color.r() < 0) { node->color.setRgba(0.5f, 0.5f, 0.5f, 1.0f); }
   }
 
   return children.instantiate(node);
@@ -82,11 +88,7 @@ static std::shared_ptr<AbstractNode> builtin_color(const ModuleInstantiation *in
 
 std::string ColorNode::toString() const
 {
-  std::ostringstream stream;	
-  stream << "color(["<< this->color[0]<< ", "<< this->color[1]<< ", "<< this->color[2]<< ", "<< this->color[3];
-  if(this->textureind != 0) stream << ", ",this->textureind;
-  stream << "])";
-  return stream.str();
+  return STR("color([", this->color.r(), ", ", this->color.g(), ", ", this->color.b(), ", ", this->color.a(), "])");
 }
 
 std::string ColorNode::name() const
