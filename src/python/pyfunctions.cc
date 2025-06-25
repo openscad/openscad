@@ -1815,10 +1815,8 @@ PyObject *python_wrap_core(PyObject *obj, PyObject *target, double fn, double fa
       node->r = PyFloat_AsDouble(target);
       node->shape = nullptr;
   } else if( Py_TYPE(target) == &PyOpenSCADType) {
-    node->r = 5; // TODO fix	  
     std::shared_ptr<AbstractNode> abstr = ((PyOpenSCADObject *) target)->node;		 
     node->shape =  abstr;
-    printf("is shape %p\n", abstr);		 
   } else {
     PyErr_SetString(PyExc_TypeError, "warpign object must bei either Polygon or cylidner radius\n");
     return NULL;

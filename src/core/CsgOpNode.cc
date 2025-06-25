@@ -60,6 +60,10 @@ std::string CsgOpNode::toString() const
 {
   std::ostringstream stream;	
   stream << this->name() << "(";
+  for(const auto &child: children) {
+    stream << child->toString();
+    stream << ", ";
+  }
   if(r != 0 || fn != 2)
     stream << " r = " << this->r << " , fn = " << this->fn << " ";
   stream << ")";

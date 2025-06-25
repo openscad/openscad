@@ -37,6 +37,7 @@ public:
   // Calling this is optional; will be called automatically when adding a new polygon or building the PolySet
   void endPolygon(const Color4f &color = {});
   void copyVertices(std::vector<Vector3d> &vertices);
+  void copyVertices(std::vector<Vector3f> &vertices);
   void addCurve(std::shared_ptr<Curve> curve);
   void addSurface(std::shared_ptr<Surface> surface);
   void addColor(const Color4f& color);

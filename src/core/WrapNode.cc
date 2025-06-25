@@ -34,12 +34,10 @@ std::string WrapNode::toString() const
            << ", $fa = " << fa
            << ", $fs = " << fs;
   if(shape != nullptr) {
-    stream << "shape = " << shape->toString() << ", ";	  
+    stream << ", shape = " << shape->toString();
   }  else stream << ", r = " << r;
   stream << ")";
 
-  stream <<
-    "r = " << this->r << ")" ;
   return stream.str();
 }
 

@@ -42,7 +42,8 @@ struct EdgeVal {
   double angle;
 };
 
-std::vector<std::vector<Polygon>>  wrapSlice(const std::vector<Vector3d> vertices, const std::vector<IndexedFace> &faces,std::vector<double> xsteps);
+class PolySetBuilder;
+std::vector<std::vector<IndexedTriangle>>  wrapSlice(PolySetBuilder &builder, const std::vector<Vector3d> vertices, const std::vector<IndexedFace> &faces,const std::vector<Vector4d> &normals, std::vector<double> xsteps);
 
 // 3D Map stuff
 //
