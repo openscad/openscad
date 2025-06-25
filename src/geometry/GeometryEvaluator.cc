@@ -29,7 +29,6 @@
 #include "core/RenderNode.h"
 #include "geometry/ClipperUtils.h"
 #include "geometry/PolySetUtils.h"
-#include "geometry/PolySetUtils.h"
 #include "geometry/PolySet.h"
 #include "glview/Renderer.h"
 #include "geometry/PolySetBuilder.h"
