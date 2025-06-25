@@ -64,7 +64,6 @@ extern bool parse(SourceFile *& file, const std::string& text, const std::string
 #include "core/SurfaceNode.h"
 #include "core/TextNode.h"
 #include "core/OffsetNode.h"
-#include "core/TextureNode.h"
 #include <hash.h>
 #include "geometry/PolySetUtils.h"
 #include "core/ProjectionNode.h"
@@ -2249,7 +2248,7 @@ int python__setitem__(PyObject *dict, PyObject *key, PyObject *v)
 }
 
 
-PyObject *python_color_core(PyObject *obj, PyObject *color, double alpha, int textureind)
+PyObject *python_color_core(PyObject *obj, PyObject *color, double alpha)
 {
   PyObject *child_dict;
   std::shared_ptr<AbstractNode> child;
@@ -2281,10 +2280,7 @@ PyObject *python_color_core(PyObject *obj, PyObject *color, double alpha, int te
     return nullptr;
   }
 	
-  node->textureind=textureind;
-  if(textureind != -1 && color == NULL) {
-        node->color.setRgba(0.5f,0.5f,0.5f,1.0f);	  
-  }
+  node->textureind=-1;
   node->children.push_back(child);
 
   PyObject *pyresult = PyOpenSCADObjectFromNode(&PyOpenSCADType, node);
@@ -2301,34 +2297,32 @@ PyObject *python_color_core(PyObject *obj, PyObject *color, double alpha, int te
 
 PyObject *python_color(PyObject *self, PyObject *args, PyObject *kwargs)
 {
-  char *kwlist[] = {"obj", "c", "alpha", "texture",NULL};
+  char *kwlist[] = {"obj", "c", "alpha", NULL};
   PyObject *obj = NULL;
   PyObject *color = NULL;
   double alpha = 1.0;
-  int textureind=-1;
   if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O|Odi", kwlist,
                                    &obj,
-                                   &color, &alpha, &textureind
+                                   &color, &alpha
                                    )) {
     PyErr_SetString(PyExc_TypeError, "error during parsing color");
     return NULL;
   }
-  return python_color_core(obj, color, alpha, textureind);
+  return python_color_core(obj, color, alpha);
 }
 
 PyObject *python_oo_color(PyObject *obj, PyObject *args, PyObject *kwargs)
 {
-  char *kwlist[] = {"c", "alpha", "texture",NULL};
+  char *kwlist[] = {"c", "alpha", NULL};
   PyObject *color = NULL;
   double alpha = 1.0;
-  int textureind=-1;
   if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|Odi", kwlist,
-                                   &color, &alpha, &textureind
+                                   &color, &alpha
                                    )) {
     PyErr_SetString(PyExc_TypeError, "error during parsing color");
     return NULL;
   }
-  return python_color_core(obj, color, alpha, textureind);
+  return python_color_core(obj, color, alpha);
 }
 
 typedef std::vector<int> intList;
@@ -4173,24 +4167,6 @@ PyObject *python_text(PyObject *self, PyObject *args, PyObject *kwargs)
   return PyOpenSCADObjectFromNode(&PyOpenSCADType, node);
 }
 
-PyObject *python_texture(PyObject *self, PyObject *args, PyObject *kwargs)
-{
-  DECLARE_INSTANCE
-
-  char *kwlist[] = {"file", "uv", NULL};
-  char *texturename = NULL;
-  double uv=10.0;
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "s|f", kwlist,
-                                   &texturename,&uv
-                                   )) {
-    PyErr_SetString(PyExc_TypeError, "error during parsing texture");
-    return NULL;
-  }
-  TextureUV txt(texturename, uv);
-  textures.push_back(txt);
-  return Py_None;
-}
-
 PyObject *python_textmetrics(PyObject *self, PyObject *args, PyObject *kwargs)
 {
   DECLARE_INSTANCE
@@ -4990,7 +4966,6 @@ PyMethodDef PyOpenSCADFunctions[] = {
 
   {"projection", (PyCFunction) python_projection, METH_VARARGS | METH_KEYWORDS, "Projection Object."},
   {"surface", (PyCFunction) python_surface, METH_VARARGS | METH_KEYWORDS, "Surface Object."},
-  {"texture", (PyCFunction) python_texture, METH_VARARGS | METH_KEYWORDS, "Include a texture."},
   {"mesh", (PyCFunction) python_mesh, METH_VARARGS | METH_KEYWORDS, "exports mesh."},
   {"bbox", (PyCFunction) python_bbox, METH_VARARGS | METH_KEYWORDS, "caluculate bbox of object."},
   {"faces", (PyCFunction) python_faces, METH_VARARGS | METH_KEYWORDS, "exports a list of faces."},
