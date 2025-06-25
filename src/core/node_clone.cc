@@ -46,7 +46,6 @@
 #include "core/SurfaceNode.h"
 #include "core/TextNode.h"
 #include "core/OffsetNode.h"
-#include "core/TextureNode.h"
 #include "core/ProjectionNode.h"
 #include "core/ImportNode.h"
 

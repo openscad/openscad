@@ -685,10 +685,6 @@ if(APPLE)
     target_include_directories(OpenSCAD PRIVATE "/usr/local/include")
     target_link_directories(OpenSCAD PRIVATE "/usr/local/lib")
     target_link_libraries(OpenSCAD PRIVATE "libjpeg.a")
-else()	
-  find_package(JPEG REQUIRED QUIET)
-  target_include_directories(OpenSCAD SYSTEM PRIVATE ${JPEG_INCLUDE_DIRS})
-  target_link_libraries(OpenSCAD PRIVATE ${JPEG_LIBRARIES})
 endif()
 
 if(NOT MSVC)
@@ -944,7 +940,6 @@ set(CORE_SOURCES
   src/core/ColorNode.cc
   src/core/PullNode.cc
   src/core/WrapNode.cc
-  src/core/TextureNode.cc
   src/core/ColorUtil.cc
   src/core/Context.cc
   src/core/ContextFrame.cc
