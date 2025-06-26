@@ -499,30 +499,46 @@ if(ENABLE_PYTHON)
   find_package(Nettle 3.4)
   if(WIN32) 
     #MINGW environment	  
-    SET(PYTHON_MINGW_DEVPATH "${CMAKE_CURRENT_SOURCE_DIR}/python_mingw")
     SET(CALLSTACK "ucrt")
+    SET(PYTHON_MINGW_VERSION "3.11")
     #	SET(CALLSTACK "mingw")
     #	SET(CALLSTACK "clang")
+    SET(PYTHON_MINGW_DEVPATH "${CMAKE_CURRENT_SOURCE_DIR}/python_mingw")
     SET(PYTHON_MINGW_PACKAGEFOLDER "https://mirror.msys2.org/mingw/${CALLSTACK}64")
-    SET(PYTHON_MINGW_PACKAGETAR "mingw-w64-${CALLSTACK}-x86_64-python-3.11.9-1-any.pkg.tar")   
+    SET(PYTHON_MINGW_PACKAGETAR "mingw-w64-${CALLSTACK}-x86_64-python-${PYTHON_MINGW_VERSION}.9-1-any.pkg.tar")   # TODO hier
     SET(PYTHON_MINGW_PACKAGEZST "${PYTHON_MINGW_PACKAGETAR}.zst")
-    SET(PYTHON_MINGW_VERSION "python3.11")
-    SET(PYTHON_MINGW_ARCHIVE "${PYTHON_MINGW_DEVPATH}/${CALLSTACK}64/lib/lib${PYTHON_MINGW_VERSION}.dll.a")
+    SET(PYTHON_MINGW_ARCHIVE "${PYTHON_MINGW_DEVPATH}/${CALLSTACK}64/lib/libpython${PYTHON_MINGW_VERSION}.dll.a")
+
+    # https://mirror.msys2.org/mingw/ucrt64/mingw-w64-ucrt-x86_64-python-.9-1-any.pkg.tar.zst
+
+    SET(PYTHON_EMBED_DEVPATH "${CMAKE_CURRENT_SOURCE_DIR}/python_embed")
+    SET(PYTHON_EMBED_FILENAME "python-${PYTHON_MINGW_VERSION}.2-embed-amd64.zip")
+    SET(PYTHON_EMBED_ARCHIVE "${PYTHON_EMBED_DEVPATH}/${PYTHON_EMBED_FILENAME}")
+    SET(PYTHON_EMBED_SHLIB "${PYTHON_EMBED_DEVPATH}/python311.dll")
+    SET(PYTHON_EMBED_URL "https://www.python.org/ftp/python/${PYTHON_MINGW_VERSION}.2/${PYTHON_EMBED_FILENAME}")
+
     add_custom_command(
       WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
       COMMAND rm -rf python_mingw && mkdir python_mingw && cd python_mingw && wget ${PYTHON_MINGW_PACKAGEFOLDER}/${PYTHON_MINGW_PACKAGEZST} && unzstd ${PYTHON_MINGW_PACKAGEZST} && tar -xf ${PYTHON_MINGW_PACKAGETAR} &&  ${CMAKE_CURRENT_SOURCE_DIR}/scripts/libpython_patch.sh
       OUTPUT ${PYTHON_MINGW_ARCHIVE}
     )
     add_custom_target(tgt_python_mingw DEPENDS ${PYTHON_MINGW_ARCHIVE})
-
     add_dependencies(OpenSCADPy tgt_python_mingw)
 
-    target_include_directories(OpenSCADPy SYSTEM PRIVATE "${PYTHON_MINGW_DEVPATH}/${CALLSTACK}64/include/${PYTHON_MINGW_VERSION}")
+    add_custom_command(
+      WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+      COMMAND rm -rf python_embed && mkdir python_embed && cd python_embed && wget ${PYTHON_EMBED_URL} && unzip ${PYTHON_EMBED_FILENAME} && rm ${PYTHON_EMBED_FILENAME}
+      OUTPUT ${PYTHON_EMBED_SHLIB}
+    )
+    add_custom_target(tgt_python_embed DEPENDS ${PYTHON_EMBED_SHLIB})
+    add_dependencies(OpenSCADPy tgt_python_embed)
+
+    target_include_directories(OpenSCADPy SYSTEM PRIVATE "${PYTHON_MINGW_DEVPATH}/${CALLSTACK}64/include/python${PYTHON_MINGW_VERSION}")
     target_link_libraries(OpenSCADPy PRIVATE "${PYTHON_MINGW_ARCHIVE}")
     target_include_directories(OpenSCADPy SYSTEM PRIVATE ${HARFBUZZ_INCLUDE_DIRS})
     target_include_directories(OpenSCADPy SYSTEM PRIVATE ${FREETYPE_INCLUDE_DIRS})
   else() #MXE
-    find_package(Python REQUIRED COMPONENTS Development)
+	  find_package(Python  ${PYTHON_VERSION} EXACT REQUIRED COMPONENTS Development)
     if(NOT Nettle_FOUND)
       message(WARNING "Nettle not found, disabling python support.")
       set(ENABLE_PYTHON OFF CACHE BOOL "" FORCE)
@@ -533,18 +549,8 @@ if(ENABLE_PYTHON)
         set(ENABLE_PYTHON OFF CACHE BOOL "" FORCE)
       endif()
     endif()
-    if("${PYTHON_VERSION}" STREQUAL "")
-	    SET(Python_Eff_LIBRARIES ${Python_LIBRARIES} )
-	    SET(Python_Eff_INCLUDE_DIRS ${Python_INCLUDE_DIRS} )
-    else()
-	    if("${PYTHON_VERSION}" STREQUAL "OFF")
-                    SET(Python_Eff_LIBRARIES ${Python_LIBRARIES} )
-		    SET(Python_Eff_INCLUDE_DIRS ${Python_INCLUDE_DIRS} )
-            else()		    
-	   	     string(REGEX REPLACE "python[0-9.]+" "python${PYTHON_VERSION}"  Python_Eff_INCLUDE_DIRS "${Python_INCLUDE_DIRS}" )
-	             string(REGEX REPLACE "python[0-9.]+.so" "python${PYTHON_VERSION}.so"  Python_Eff_LIBRARIES "${Python_LIBRARIES}" )
-            endif()		     
-    endif()
+    SET(Python_Eff_LIBRARIES ${Python_LIBRARIES} )
+    SET(Python_Eff_INCLUDE_DIRS ${Python_INCLUDE_DIRS} )
     target_link_libraries(OpenSCADPy PRIVATE ${Python_Eff_LIBRARIES})
     target_include_directories(OpenSCADPy PRIVATE ${Python_Eff_INCLUDE_DIRS})
     target_include_directories(OpenSCADPy PRIVATE "${CMAKE_SOURCE_DIR}/submodules/Clipper2/CPP/Clipper2Lib/include")
@@ -1595,9 +1601,7 @@ if(NOT APPLE OR APPLE_UNIX)
   endif()
   if(WIN32)
     if(ENABLE_PYTHON)
-      install(FILES ${CMAKE_SOURCE_DIR}/python311.dll DESTINATION "." )
-      install(FILES ${CMAKE_SOURCE_DIR}/python311.zip DESTINATION "." )
-      # https://www.python.org/ftp/python/3.11.2/python-3.11.2-embed-amd64.zip
+	    install(DIRECTORY "${PYTHON_EMBED_DEVPATH}/" DESTINATION "." )
     endif()  
     if(USE_MIMALLOC AND MI_LINK_SHARED)
       if(CMAKE_SIZEOF_VOID_P EQUAL 8)
