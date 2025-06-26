@@ -1,0 +1,10 @@
+have_fun: true
+code_review:
+  disable: true
+  comment_severity_threshold: MEDIUM
+  max_review_comments: -1
+  pull_request_opened:
+    help: false
+    summary: false
+    code_review: false
+ignore_patterns: []
