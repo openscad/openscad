@@ -1920,6 +1920,7 @@ PyObject *python_show_core(PyObject *obj)
     }
   }
   shows.push_back(child);
+  Py_INCREF(obj);
   return obj;
 }
 
@@ -2248,6 +2249,7 @@ PyObject *python__getitem__(PyObject *obj, PyObject *key)
   PyObject *result = PyDict_GetItem(self->dict, key);
   if (result == NULL){
     PyObject* keyname = PyUnicode_AsEncodedString(key, "utf-8", "~");
+    if(keyname == nullptr) return nullptr;
     std::string keystr = PyBytes_AS_STRING(keyname);
     result = Py_None;
     if(keystr == "matrix") {
