@@ -85,14 +85,12 @@ manifold::Manifold applyHull(const Geometry::Geometries& children)
   };
 
   for (const auto& [_, chgeom] : children) {
-#ifdef ENABLE_MANIFOLD
     if (const auto *mani = dynamic_cast<const ManifoldGeometry*>(chgeom.get())) {
       addCapacity(mani->numVertices());
       mani->foreachVertexUntilTrue([&](auto& p) {
         addPoint(p);
         return false;
       });
-#endif  // ENABLE_MANIFOLD
     } else if (const auto *ps = dynamic_cast<const PolySet*>(chgeom.get())) {
       addCapacity(ps->vertices.size());
       for (const auto& v : ps->vertices) {
