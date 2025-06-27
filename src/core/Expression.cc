@@ -726,8 +726,24 @@ const Expression *Let::evaluateStep(ContextHandle<Context>& targetContext) const
 
 Value Let::evaluate(const std::shared_ptr<const Context>& context) const
 {
-  ContextHandle<Context> letContext{Context::create<Context>(context)};
-  return evaluateStep(letContext)->evaluate(*letContext);
+    ContextHandle<Context> letContext { 
+        Context::create<Context>(context)
+    };
+
+    if ( !expr) {
+      ObjectType obj(context->session());
+
+      for (auto & assignment : this->arguments) {
+        auto && name = assignment->getName();
+        Value && value = assignment->getExpr()->evaluate(*letContext);
+        letContext->set_variable(name, value.clone());
+        obj.set(name, std::move(value));
+      }
+      return std::move(obj);
+
+    } else {
+        return evaluateStep(letContext)->evaluate(*letContext);
+    }
 }
 
 void Let::print(std::ostream& stream, const std::string&) const

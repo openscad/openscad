@@ -342,7 +342,7 @@ expr
             {
               $$ = new TernaryOp($1, $3, $5, LOCD("ternary", @$));
             }
-        | TOK_LET '(' arguments ')' expr
+        | TOK_LET '(' arguments ')' expr_or_empty
             {
               $$ = FunctionCall::create("let", *$3, $5, LOCD("let", @$));
               delete $3;

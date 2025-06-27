@@ -1268,15 +1268,18 @@ ObjectType::ObjectType(EvaluationSession *session) :
 
 const Value& ObjectType::get(const std::string& key) const
 {
-  auto result = ptr->map.find(key);
-  // NEEDSWORK it would be nice to have a "cause" for the undef, but Value::undef(...)
-  // does not appear compatible with Value&.
-  return result == ptr->map.end() ? Value::undefined : result->second;
+    auto it = std::find(ptr->keys.begin(), ptr->keys.end(), key);
+    if ( it != ptr->keys.end()){
+        size_t index = std::distance(ptr->keys.begin(), it);
+        if (index < ptr->values.size()) {
+            return ptr->values[index];
+        }
+    }
+    return Value::undefined;
 }
 
 void ObjectType::set(const std::string& key, Value&& value)
 {
-  ptr->map.emplace(key, value.clone());
   ptr->keys.emplace_back(key);
   ptr->values.emplace_back(std::move(value));
 }

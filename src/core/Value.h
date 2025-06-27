@@ -388,8 +388,6 @@ private:
 
 // The object type which ObjectType's shared_ptr points to.
 struct Value::ObjectType::ObjectObject {
-  using obj_t = std::unordered_map<std::string, Value>;
-  obj_t map;
   class EvaluationSession *evaluation_session = nullptr;
   std::vector<std::string> keys;
   std::vector<Value> values;
