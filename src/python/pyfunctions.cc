@@ -1311,7 +1311,7 @@ PyObject *python_matrix_mirror(PyObject *mat, Matrix4d m)
   Matrix4d raw;
   if(python_tomatrix(mat, raw)) return nullptr;
   Vector4d n;
-  for(int i=0;i<3;i++) {
+  for(int i=0;i<4;i++) {
     n =Vector4d(raw(0,i),raw(1,i),raw(2,i),0);
     n = m * n;
     for(int j=0;j<3;j++) raw(j,i) = n[j];
