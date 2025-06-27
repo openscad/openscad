@@ -500,21 +500,22 @@ if(ENABLE_PYTHON)
   if(WIN32) 
     #MINGW environment	  
     SET(CALLSTACK "ucrt")
-    SET(PYTHON_MINGW_VERSION "3.11")
+    SET(PYTHON_MINGW_VERSION "3.12") # define python version here
     #	SET(CALLSTACK "mingw")
     #	SET(CALLSTACK "clang")
+
+    # Caller side
     SET(PYTHON_MINGW_DEVPATH "${CMAKE_CURRENT_SOURCE_DIR}/python_mingw")
     SET(PYTHON_MINGW_PACKAGEFOLDER "https://mirror.msys2.org/mingw/${CALLSTACK}64")
-    SET(PYTHON_MINGW_PACKAGETAR "mingw-w64-${CALLSTACK}-x86_64-python-${PYTHON_MINGW_VERSION}.9-1-any.pkg.tar")   # TODO hier
+    SET(PYTHON_MINGW_PACKAGETAR "mingw-w64-${CALLSTACK}-x86_64-python-${PYTHON_MINGW_VERSION}.9-5-any.pkg.tar")   # adapt here
     SET(PYTHON_MINGW_PACKAGEZST "${PYTHON_MINGW_PACKAGETAR}.zst")
     SET(PYTHON_MINGW_ARCHIVE "${PYTHON_MINGW_DEVPATH}/${CALLSTACK}64/lib/libpython${PYTHON_MINGW_VERSION}.dll.a")
 
-    # https://mirror.msys2.org/mingw/ucrt64/mingw-w64-ucrt-x86_64-python-.9-1-any.pkg.tar.zst
-
+    # these dll are actually used
     SET(PYTHON_EMBED_DEVPATH "${CMAKE_CURRENT_SOURCE_DIR}/python_embed")
-    SET(PYTHON_EMBED_FILENAME "python-${PYTHON_MINGW_VERSION}.2-embed-amd64.zip")
+    SET(PYTHON_EMBED_FILENAME "python-${PYTHON_MINGW_VERSION}.2-embed-amd64.zip") #adapt here
     SET(PYTHON_EMBED_ARCHIVE "${PYTHON_EMBED_DEVPATH}/${PYTHON_EMBED_FILENAME}")
-    SET(PYTHON_EMBED_SHLIB "${PYTHON_EMBED_DEVPATH}/python311.dll")
+    SET(PYTHON_EMBED_SHLIB "${PYTHON_EMBED_DEVPATH}/python312.dll")
     SET(PYTHON_EMBED_URL "https://www.python.org/ftp/python/${PYTHON_MINGW_VERSION}.2/${PYTHON_EMBED_FILENAME}")
 
     add_custom_command(
