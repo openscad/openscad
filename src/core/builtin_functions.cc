@@ -1,6 +1,6 @@
 /*
  *  OpenSCAD (www.openscad.org)
- *  Copyright (C) 2009-2011 Clifford Wolf <clifford@clifford.at> and
+ *  Copyright (C) 2009-2025 Clifford Wolf <clifford@clifford.at> and
  *                          Marius Kintel <marius@kintel.net>
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -24,6 +24,7 @@
  *
  */
 
+#include "core/Value.h"
 #include "core/function.h"
 #include "core/AST.h"
 #include "core/Arguments.h"
@@ -34,9 +35,11 @@
 #include "utils/degree_trig.h"
 #include "core/FreetypeRenderer.h"
 #include "core/Parameters.h"
+#include "core/Format.h"
 #include "io/import.h"
 #include "io/fileutils.h"
 
+#include <string>
 #include <utility>
 #include <cstdint>
 #include <memory>
@@ -943,6 +946,23 @@ Value builtin_import(Arguments arguments, const Location& loc)
   return import_json(file, session, loc);
 }
 
+Value builtin_format(Arguments arguments, const Location& loc)
+{
+  int idx = -1;
+  std::string format;
+  fmt::dynamic_format_arg_store<fmt::format_context> fmt_args;
+  for (const auto& arg : arguments) {
+      ++idx;
+      const std::string name = arg.name.value_or("");
+      if (name == "format" || (idx == 0 && name.empty())) {
+          format = arg->toString();
+          continue;
+      }
+      fmt_args.push_back(fmt::arg(name.c_str(), std::cref(arg.value)));
+  }
+  return fmt::vformat(format, fmt_args);
+}
+
 void register_builtin_functions()
 {
   Builtins::init("abs", new BuiltinFunction(&builtin_abs),
@@ -1164,5 +1184,10 @@ void register_builtin_functions()
   Builtins::init("import", new BuiltinFunction(&builtin_import, &Feature::ExperimentalImportFunction),
   {
     "import(file) -> object",
+  });
+
+  Builtins::init("format", new BuiltinFunction(&builtin_format, &Feature::ExperimentalFormatFunction),
+  {
+    "format(fmt, args) -> string",
   });
 }
