@@ -74,9 +74,9 @@ void export_wrl(const std::shared_ptr<const Geometry>& geom, std::ostream& outpu
     const auto &poly=ps->indices[i];
     for(size_t j=0;j<poly.size();j++) {
       output << poly[j];
-        if (j < poly.size() - 1) output << ",";
-      output << "\n";
+      output << ",";
     }
+    output << "-1\n";
   }
   output << "]\n\n";
 
