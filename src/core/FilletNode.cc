@@ -280,24 +280,14 @@ std::unique_ptr<const Geometry> createFilletInt(std::shared_ptr<const PolySet> p
 
       if(corner_rounds[e.first.ind1].size() == 2)
       {
-        double a=(e_fb1.cross(e_fa1)).dot(dir);
-	double b=(fan.cross(fbn)).dot(e_fa1p)*fanf*fbnf;
         if(list_included(corner_rounds[e.first.ind1],indposao)){
-		e_fa1 += dir*fanf; 
-		double ang=(dir*fanf).dot(e_fa1.normalized());
-		e_fa1.normalize();
-		e_fa1 /= sqrt(1-ang*ang);
-		if(a*b < 0) e_fa1 = -e_fa1*fanf;
-		else e_fa1 = e_fa1*fanf;
+          e_fa1 = dir*fanf;
+          e_fa1 -= fanf*fbnf*dir.cross(fan).normalized()*r_;
 	} 
 
         if(list_included(corner_rounds[e.first.ind1],indposbo)){
-		e_fb1 += dir*fbnf;
-		double ang=(dir*fbnf).dot(e_fb1.normalized());
-		e_fb1.normalize();
-		e_fb1 /= sqrt(1-ang*ang);
-		if(a*b < 0) e_fb1 = -e_fb1;
-		else e_fb1 = e_fb1*fbnf;
+          e_fb1 = dir*fbnf;
+          e_fb1 += fanf*fbnf*dir.cross(fbn).normalized()*r_;
 	}
 	e_fa1 *= createFilletLimit(p2org-p1org,r_);
 	e_fb1 *= createFilletLimit(p2org-p1org,r_);
@@ -341,23 +331,14 @@ std::unique_ptr<const Geometry> createFilletInt(std::shared_ptr<const PolySet> p
 													   //
       if(corner_rounds[e.first.ind2].size() == 2) 
       {
-        double a=(e_fb2.cross(e_fa2)).dot(dir);
-	double b=(fan.cross(fbn)).dot(e_fa2p)*fanf*fbnf;
         if(list_included(corner_rounds[e.first.ind2],indposao)){
-		e_fa2 -= dir*fanf;
-		double ang=(dir*fanf).dot(e_fa2.normalized());
-		e_fa2.normalize();
-		e_fa2 /= sqrt(1-ang*ang);
-		if(a*b > 0) e_fa2 = -e_fa2*fanf;
-		else e_fa2 = e_fa2*fanf;
+		e_fa2 = -dir*fanf;
+          	e_fa2 -= fanf*fbnf*dir.cross(fan).normalized()*r_;
 	}
 
         if(list_included(corner_rounds[e.first.ind2],indposbo)){
-		e_fb2 -= dir*fbnf;
-		double ang=(dir*fbnf).dot(e_fb2.normalized());
-		e_fb2.normalize();
-		e_fb2 /= sqrt(1-ang*ang);
-		if(a*b > 0)  e_fb2 = -e_fb2;
+		e_fb2 = -dir*fbnf;
+          	e_fb2 += fanf*fbnf*dir.cross(fbn).normalized()*r_;
 	}
 	e_fa2 *= createFilletLimit(p2org-p1org, r_);
         e_fb2 *= createFilletLimit(p2org-p1org, r_);	      
@@ -436,9 +417,11 @@ std::unique_ptr<const Geometry> createFilletInt(std::shared_ptr<const PolySet> p
           sp.push_back(s);
         }   
      }	
+//     printf("\nNum=%d\n",debug);
+//     printf("P : %g/%g/%g EA: %g/%g/%g EB %g/%g/%g\n",p1[0], p1[1], p1[2], e_fa1[0], e_fa1[1], e_fa1[2], e_fb1[0], e_fb1[1], e_fb1[2]);
+//     printf("P : %g/%g/%g EA: %g/%g/%g EB %g/%g/%g\n",p2[0], p2[1], p2[2], e_fa2[0], e_fa2[1], e_fa2[2], e_fb2[0], e_fb2[1], e_fb2[2]);
 
     }	
-
   }
   // now dump all sp
 //  for(int i=0;i<sp.size();i++) {
