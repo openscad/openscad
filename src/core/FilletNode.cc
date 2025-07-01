@@ -282,15 +282,15 @@ std::unique_ptr<const Geometry> createFilletInt(std::shared_ptr<const PolySet> p
       {
         if(list_included(corner_rounds[e.first.ind1],indposao)){
           e_fa1 = dir*fanf;
-          e_fa1 -= fanf*fbnf*dir.cross(fan).normalized()*r_;
+          e_fa1 -= fanf*fbnf*dir.cross(fan).normalized();
 	} 
 
         if(list_included(corner_rounds[e.first.ind1],indposbo)){
           e_fb1 = dir*fbnf;
-          e_fb1 += fanf*fbnf*dir.cross(fbn).normalized()*r_;
+          e_fb1 += fanf*fbnf*dir.cross(fbn).normalized();
 	}
-	e_fa1 *= createFilletLimit(p2org-p1org,r_);
-	e_fb1 *= createFilletLimit(p2org-p1org,r_);
+	e_fa1 *= r_;
+	e_fb1 *= r_;
       }
 
       if(corner_rounds[e.first.ind1].size() == 3)
@@ -333,15 +333,15 @@ std::unique_ptr<const Geometry> createFilletInt(std::shared_ptr<const PolySet> p
       {
         if(list_included(corner_rounds[e.first.ind2],indposao)){
 		e_fa2 = -dir*fanf;
-          	e_fa2 -= fanf*fbnf*dir.cross(fan).normalized()*r_;
+          	e_fa2 -= fanf*fbnf*dir.cross(fan).normalized();
 	}
 
         if(list_included(corner_rounds[e.first.ind2],indposbo)){
 		e_fb2 = -dir*fbnf;
-          	e_fb2 += fanf*fbnf*dir.cross(fbn).normalized()*r_;
+          	e_fb2 += fanf*fbnf*dir.cross(fbn).normalized();
 	}
-	e_fa2 *= createFilletLimit(p2org-p1org, r_);
-        e_fb2 *= createFilletLimit(p2org-p1org, r_);	      
+	e_fa2 *= r_;
+        e_fb2 *= r_;
 
       }	
 
