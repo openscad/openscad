@@ -1273,7 +1273,6 @@ Vector3d createFilletRound(Vector3d pt)
    return Vector3d(x,y,z);
 }
 std::unique_ptr<const Geometry> addFillets(std::shared_ptr<const Geometry> result, const Geometry::Geometries & children, double r, int fn) {
-  printf("do fillet magic\n");	
   std::unordered_set<Vector3d> points;
   Vector3d pt;
   std::shared_ptr<const PolySet> psr = PolySetUtils::getGeometryAsPolySet(result);
