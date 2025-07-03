@@ -1,5 +1,4 @@
 WARNING: Can't call function on undefined in file function-literal-tests.scad, line 5
-WARNING: Ignoring unknown function '(undef)' in file function-literal-tests.scad, line 5
 ECHO: undef
 WARNING: Can't call function on bool in file function-literal-tests.scad, line 6
 ECHO: undef
