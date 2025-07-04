@@ -436,6 +436,59 @@ Value builtin_concat(Arguments arguments, const Location& /*loc*/)
   return std::move(result);
 }
 
+Value builtin_object(const std::shared_ptr<const Context>& context, const FunctionCall *call)
+{
+  ObjectType result(context->session());
+  for (const auto& argument : call->arguments) {
+    Value value = argument->getExpr()->evaluate(context);
+    if (argument->getName().empty()) {
+      if (value.type() == Value::Type::VECTOR) {
+	const auto &vec = value.toVector();
+	for (const auto& keyval : vec) {
+	  if (keyval.type() != Value::Type::VECTOR || (keyval.toVector().size()!=1 && keyval.toVector().size()!=2)) {
+	    LOG(message_group::Warning, call->location(), context->documentRoot(), "un-named object() arguments must be another object, a list of [keystring,value] pairs to set, or a list of singleton [keystring] names to delete.");
+	  } else {
+	    if (keyval[0].type() != Value::Type::STRING) {
+	      LOG(message_group::Warning, call->location(), context->documentRoot(), "un-named object() arguments must be another object, a list of [keystring,value] pairs to set, or a list of singleton [keystring] names to delete.");
+	    } else {
+	      const auto &key = keyval[0].toString();
+	      if (keyval.toVector().size()==1) {
+		// keyval is one of a list of singleton [key] name strings to delete.
+		result.del(key);
+	      } else {
+		// keyval is one of a list of [key,value] entries to add or set.
+		result.set(key, keyval[1]);
+	      }
+	    }
+	  }
+	}
+      } else if (value.type() != Value::Type::OBJECT) {
+	LOG(message_group::Warning, call->location(), context->documentRoot(), "un-named object() arguments must be another object, a list of [keystring,value] pairs to set, or a list of singleton [keystring] names to delete.");
+      } else {
+	// Argument is another object to copy from.
+	const auto obj = value.toObject();
+	for (const auto& key : obj.keys()) {
+	  result.set(key, obj.get(key).clone());
+	}
+      }
+    } else {
+      // Argument is a named key=value to add or set.
+      result.set(argument->getName(), std::move(value));
+    }
+  }
+  return std::move(result);
+}
+
+Value builtin_has_key(Arguments arguments, const Location& loc)
+{
+  if (!check_arguments("has_key", arguments, loc, { Value::Type::OBJECT, Value::Type::STRING })) {
+    return Value::undefined.clone();
+  }
+  const auto &obj = arguments[0]->toObject();
+  const auto &key = arguments[1]->toString();
+  return Value(obj.contains(key));
+}
+
 Value builtin_lookup(Arguments arguments, const Location& loc)
 {
   if (!check_arguments("lookup", arguments, loc, { Value::Type::NUMBER, Value::Type::VECTOR })) {
@@ -1161,8 +1214,19 @@ void register_builtin_functions()
     "is_object(arg) -> boolean",
   });
 
+  Builtins::init("object", new BuiltinFunction(&builtin_object, &Feature::ExperimentalObjectFunction),
+  {
+    "object([ object, ] [ key-val list, ] key=value, ...) -> object",
+  });
+
+  Builtins::init("has_key", new BuiltinFunction(&builtin_has_key, &Feature::ExperimentalObjectFunction),
+  {
+    "has_key(object, key) -> boolean",
+  });
+
   Builtins::init("import", new BuiltinFunction(&builtin_import, &Feature::ExperimentalImportFunction),
   {
     "import(file) -> object",
   });
+
 }
