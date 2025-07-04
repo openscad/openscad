@@ -436,6 +436,133 @@ Value builtin_concat(Arguments arguments, const Location& /*loc*/)
   return std::move(result);
 }
 
+static Value warning( const std::shared_ptr<const Context>& context, const FunctionCall *call, const std::string & msg) {
+    LOG(message_group::Warning, call->location(), context->documentRoot(), msg.c_str());
+    return Value::undef(msg);
+}
+
+template <typename ...Args>
+std::string format(const std::string& format, Args && ...args)
+{
+    auto size = std::snprintf(nullptr, 0, format.c_str(), std::forward<Args>(args)...);
+    std::string output(size + 1, '\0');
+    std::snprintf(&output[0], size+1, format.c_str(), std::forward<Args>(args)...);
+    return output;
+}
+
+#define OBJECT_HELP "In an unnamed list, entries must be [key,value] to set or [key] to delete. The key must be <string>."
+
+static std::string builtin_object_unnamed(ObjectType & result, Value & value, int arg_index) {
+
+    std::string prior_args = std::string();
+        for ( int i=0; i<arg_index; i++) prior_args += "_, ";
+
+    switch(value.type()){
+    case Value::Type::OBJECT: {
+        const auto & obj = value.toObject();
+        for (const auto& key : obj.keys()) {
+            result.set(key, obj.get(key).clone());
+        }
+        return "";
+    }
+    case Value::Type::VECTOR: {
+        std::string prior_entries;
+
+        const VectorType & vector = value.toVector();
+        for (const auto& member : vector) {
+
+            if (member.type() != Value::Type::VECTOR) {
+                return format(
+            "object( %s[%s<%s>] ) Entry type is not a list, it is <%s>. " OBJECT_HELP, 
+                    prior_args.c_str(), 
+                    prior_entries.c_str(), 
+                    Value::typeName(member.type()).c_str(),
+                    Value::typeName(member.type()).c_str() );
+            }
+
+            const auto & entry = member.toVector();
+            switch(entry.size()){
+            case 2:
+            case 1: {
+                if ( entry[0].type() != Value::Type::STRING) { 
+                    const char * es = entry.size()==1 ? "" : ",value";
+                    return format("object(%s[%s[<%s>%s]]) The key of the entry is not <string> but <%s>. " OBJECT_HELP, 
+                    prior_args.c_str(), 
+                    prior_entries.c_str(), 
+                    Value::typeName(entry[0].type()).c_str(), 
+                    es,
+                    Value::typeName(entry[0].type()).c_str());
+                }
+                const auto & key = entry[0].toString();
+                if ( entry.size() == 1) {
+                    result.del(key);
+                } else {
+                    result.set(key,entry[1].clone());
+                }
+                break;
+            };
+
+            case 0: return format("object(%s[%s[]]) Entry is empty." OBJECT_HELP, 
+                                prior_args.c_str(), 
+                                prior_entries.c_str());
+
+            default: return format("object(%s[%s[/* %d entries */]]) Entry length is not 1 or 2 but %d. " OBJECT_HELP, 
+                    prior_args.c_str(), 
+                    prior_entries.c_str(),
+                    entry.size(), 
+                    entry.size());
+            }
+            prior_entries += "_, ";
+        }
+        return "";
+    }
+    default:
+       return format("object(%s<%s>) An unnamed argument must be either <object> or <list>, it is <%s>.", 
+        prior_args.c_str(), 
+        Value::typeName(value.type()).c_str(),
+        Value::typeName(value.type()).c_str());
+    }
+}
+/**
+    The builtin_object function takes either a named or unnamed argument.
+    A named argument is assigned with name=value to the result object. An unnamed
+    argument is either an object or a vector. An object will have its
+    entries copied, potentially overwriting earlier entries. A vector
+    must be of vectors. It can contain as member vectors:
+
+        ["k"]       deletes key k
+        ["k", v]    sets key k=v
+
+    Any other values are incorrect and will return undef and be logged as warning.
+*/
+Value builtin_object(const std::shared_ptr<const Context>& context, const FunctionCall *call)
+{
+    ObjectType result(context->session());
+    int n = 0;
+    for (const auto& argument : call->arguments) {
+        Value value = argument->getExpr()->evaluate(context);
+        if (argument->getName().empty()) {
+            const auto error = builtin_object_unnamed(result,value, n);
+            if ( !error.empty())
+                return warning(context,call,error);
+        } else {
+           result.set(argument->getName(), std::move(value));
+        }
+        n++;
+    }
+    return std::move(result);
+}
+
+Value builtin_has_key(Arguments arguments, const Location& loc)
+{
+  if (!check_arguments("has_key", arguments, loc, { Value::Type::OBJECT, Value::Type::STRING })) {
+    return Value::undefined.clone();
+  }
+  const auto &obj = arguments[0]->toObject();
+  const auto &key = arguments[1]->toString();
+  return obj.contains(key);
+}
+
 Value builtin_lookup(Arguments arguments, const Location& loc)
 {
   if (!check_arguments("lookup", arguments, loc, { Value::Type::NUMBER, Value::Type::VECTOR })) {
@@ -1159,6 +1286,16 @@ void register_builtin_functions()
                                                   &Feature::ExperimentalTextMetricsFunctions),
   {
     "is_object(arg) -> boolean",
+  });
+
+  Builtins::init("object", new BuiltinFunction(&builtin_object, &Feature::ExperimentalObjectFunction),
+  {
+    "object([ object, ] [ key-val list, ] key=value, ...) -> object",
+  });
+
+  Builtins::init("has_key", new BuiltinFunction(&builtin_has_key, &Feature::ExperimentalObjectFunction),
+  {
+    "has_key(object, key) -> boolean",
   });
 
   Builtins::init("import", new BuiltinFunction(&builtin_import, &Feature::ExperimentalImportFunction),
