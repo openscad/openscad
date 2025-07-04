@@ -8,10 +8,10 @@
 #include <CGAL/Constrained_Delaunay_triangulation_2.h>
 #if CGAL_VERSION_NR < CGAL_VERSION_NUMBER(5, 4, 0)
 #include <CGAL/Triangulation_2_projection_traits_3.h>
-using Projection = CGAL::Triangulation_2_filtered_projection_traits_3<K>;
+using Tess_kernel = CGAL::Epick;
+using Projection = CGAL::Triangulation_2_filtered_projection_traits_3<Tess_kernel>;
 #else
 #include <CGAL/Projection_traits_3.h>
-
 using Tess_kernel = CGAL::Epick;
 using Projection = CGAL::Filtered_projection_traits_3<Tess_kernel>;
 #endif

@@ -10,23 +10,21 @@
 
 cmake_minimum_required(VERSION 3.13)
 
-if(POLICY CMP0071) # Let AUTOMOC and AUTOUIC process GENERATED files.
-  cmake_policy(SET CMP0071 NEW)
-endif()
-if(POLICY CMP0072) # FindOpenGL prefers GLVND by default when available.
-  cmake_policy(SET CMP0072 NEW)
-endif()
-if(POLICY CMP0079) # `target_link_libraries()` allows use with targets in other directories.
-  cmake_policy(SET CMP0079 NEW)
-endif()
-if(POLICY CMP0082) # Install rules from add_subdirectory() calls are interleaved with those in caller.
+# Let AUTOMOC and AUTOUIC process GENERATED files.
+cmake_policy(SET CMP0071 NEW)
+# FindOpenGL prefers GLVND by default when available.
+cmake_policy(SET CMP0072 NEW)
+#`target_link_libraries()` allows use with targets in other directories.
+cmake_policy(SET CMP0079 NEW)
+# Let parent project set child project options (used to skip python lookup from manifold & force TBB)
+cmake_policy(SET CMP0079 NEW)
+if(POLICY CMP0082) # Since CMake 3.14
+  # Install rules from add_subdirectory() calls are interleaved with those in caller.
   cmake_policy(SET CMP0082 NEW)
 endif()
-if(POLICY CMP0077) # Let parent project set child project options (used to skip python lookup from manifold & force TBB)
-  cmake_policy(SET CMP0079 NEW)
-endif()
-if(POLICY CMP0167) # Use upstream's FindBoost.cmake to find Boost libraries.
-  cmake_policy(SET CMP0167 NEW) # Use upstream's FindBoost.cmake to find Boost libraries.
+if(POLICY CMP0167) # Since CMake 3.30
+  # Use upstream's FindBoost.cmake to find Boost libraries.
+  cmake_policy(SET CMP0167 NEW)
 endif()
 
 include("cmake/Modules/openscad_version.cmake")
@@ -67,6 +65,7 @@ option(ALLOW_BUNDLED_HIDAPI "Allow usage of bundled HIDAPI library (Windows only
 option(ENABLE_PYTHON "Enable experimental Python Interpreter" OFF)
 option(PYTHON_VERSION "Specify Exact Python Version" "")
 option(ENABLE_LIBFIVE "Enable libfive Library" OFF)
+option(USE_BUILTIN_LIBFIVE "Use libfive from submodule." ON)
 option(BUILD_SHARED_LIBS "Build shared library" OFF)
 include(CMakeDependentOption)
 cmake_dependent_option(APPLE_UNIX "Build OpenSCAD in Unix mode in MacOS X instead of an Apple Bundle" OFF "APPLE" OFF)
@@ -487,8 +486,14 @@ if(ENABLE_PYTHON)
   if(ENABLE_LIBFIVE)
     target_compile_definitions(OpenSCAD PRIVATE ENABLE_LIBFIVE)
     target_compile_definitions(OpenSCADPy PRIVATE ENABLE_LIBFIVE)
-    add_subdirectory(submodules/libfive EXCLUDE_FROM_ALL)
-    target_link_libraries(OpenSCADPy PRIVATE libfive)
+    if(USE_BUILTIN_LIBFIVE)
+      add_subdirectory(submodules/libfive EXCLUDE_FROM_ALL)
+      target_link_libraries(OpenSCADPy PRIVATE libfive)
+    else()
+      pkg_check_modules(libfive REQUIRED libfive)
+      include_directories(${libfive_INCLUDE_DIRS})
+      target_link_libraries(OpenSCADPy PRIVATE five)
+  endif()
     target_compile_definitions(OpenSCADPy PRIVATE BUILD_STUDIO_APP=OFF)
     target_compile_definitions(OpenSCADPy PRIVATE BUILD_GUILE_BINDINGS=OFF)
     target_compile_definitions(OpenSCADPy PRIVATE BUILD_PYTHON_BINDINGS=OFF)
@@ -501,30 +506,47 @@ if(ENABLE_PYTHON)
   find_package(Nettle 3.4)
   if(WIN32) 
     #MINGW environment	  
-    SET(PYTHON_MINGW_DEVPATH "${CMAKE_CURRENT_SOURCE_DIR}/python_mingw")
     SET(CALLSTACK "ucrt")
+    SET(PYTHON_MINGW_VERSION "3.12") # define python version here
     #	SET(CALLSTACK "mingw")
     #	SET(CALLSTACK "clang")
+
+    # Caller side
+    SET(PYTHON_MINGW_DEVPATH "${CMAKE_CURRENT_SOURCE_DIR}/python_mingw")
     SET(PYTHON_MINGW_PACKAGEFOLDER "https://mirror.msys2.org/mingw/${CALLSTACK}64")
-    SET(PYTHON_MINGW_PACKAGETAR "mingw-w64-${CALLSTACK}-x86_64-python-3.11.5-2-any.pkg.tar")   
+    SET(PYTHON_MINGW_PACKAGETAR "mingw-w64-${CALLSTACK}-x86_64-python-${PYTHON_MINGW_VERSION}.9-5-any.pkg.tar")   # adapt here
     SET(PYTHON_MINGW_PACKAGEZST "${PYTHON_MINGW_PACKAGETAR}.zst")
-    SET(PYTHON_MINGW_VERSION "python3.11")
-    SET(PYTHON_MINGW_ARCHIVE "${PYTHON_MINGW_DEVPATH}/${CALLSTACK}64/lib/lib${PYTHON_MINGW_VERSION}.dll.a")
+    SET(PYTHON_MINGW_ARCHIVE "${PYTHON_MINGW_DEVPATH}/${CALLSTACK}64/lib/libpython${PYTHON_MINGW_VERSION}.dll.a")
+
+    # these dll are actually used
+    SET(PYTHON_EMBED_DEVPATH "${CMAKE_CURRENT_SOURCE_DIR}/python_embed")
+    SET(PYTHON_EMBED_FILENAME "python-${PYTHON_MINGW_VERSION}.2-embed-amd64.zip") #adapt here
+    SET(PYTHON_EMBED_ARCHIVE "${PYTHON_EMBED_DEVPATH}/${PYTHON_EMBED_FILENAME}")
+    SET(PYTHON_EMBED_SHLIB "${PYTHON_EMBED_DEVPATH}/python312.dll")
+    SET(PYTHON_EMBED_URL "https://www.python.org/ftp/python/${PYTHON_MINGW_VERSION}.2/${PYTHON_EMBED_FILENAME}")
+
     add_custom_command(
       WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
       COMMAND rm -rf python_mingw && mkdir python_mingw && cd python_mingw && wget ${PYTHON_MINGW_PACKAGEFOLDER}/${PYTHON_MINGW_PACKAGEZST} && unzstd ${PYTHON_MINGW_PACKAGEZST} && tar -xf ${PYTHON_MINGW_PACKAGETAR} &&  ${CMAKE_CURRENT_SOURCE_DIR}/scripts/libpython_patch.sh
       OUTPUT ${PYTHON_MINGW_ARCHIVE}
     )
     add_custom_target(tgt_python_mingw DEPENDS ${PYTHON_MINGW_ARCHIVE})
-
     add_dependencies(OpenSCADPy tgt_python_mingw)
 
-    target_include_directories(OpenSCADPy SYSTEM PRIVATE "${PYTHON_MINGW_DEVPATH}/${CALLSTACK}64/include/${PYTHON_MINGW_VERSION}")
+    add_custom_command(
+      WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+      COMMAND rm -rf python_embed && mkdir python_embed && cd python_embed && wget ${PYTHON_EMBED_URL} && unzip ${PYTHON_EMBED_FILENAME} && rm ${PYTHON_EMBED_FILENAME}
+      OUTPUT ${PYTHON_EMBED_SHLIB}
+    )
+    add_custom_target(tgt_python_embed DEPENDS ${PYTHON_EMBED_SHLIB})
+    add_dependencies(OpenSCADPy tgt_python_embed)
+
+    target_include_directories(OpenSCADPy SYSTEM PRIVATE "${PYTHON_MINGW_DEVPATH}/${CALLSTACK}64/include/python${PYTHON_MINGW_VERSION}")
     target_link_libraries(OpenSCADPy PRIVATE "${PYTHON_MINGW_ARCHIVE}")
     target_include_directories(OpenSCADPy SYSTEM PRIVATE ${HARFBUZZ_INCLUDE_DIRS})
     target_include_directories(OpenSCADPy SYSTEM PRIVATE ${FREETYPE_INCLUDE_DIRS})
   else() #MXE
-    find_package(Python REQUIRED COMPONENTS Development)
+	  find_package(Python  ${PYTHON_VERSION} EXACT REQUIRED COMPONENTS Development)
     if(NOT Nettle_FOUND)
       message(WARNING "Nettle not found, disabling python support.")
       set(ENABLE_PYTHON OFF CACHE BOOL "" FORCE)
@@ -535,18 +557,8 @@ if(ENABLE_PYTHON)
         set(ENABLE_PYTHON OFF CACHE BOOL "" FORCE)
       endif()
     endif()
-    if("${PYTHON_VERSION}" STREQUAL "")
-	    SET(Python_Eff_LIBRARIES ${Python_LIBRARIES} )
-	    SET(Python_Eff_INCLUDE_DIRS ${Python_INCLUDE_DIRS} )
-    else()
-	    if("${PYTHON_VERSION}" STREQUAL "OFF")
-                    SET(Python_Eff_LIBRARIES ${Python_LIBRARIES} )
-		    SET(Python_Eff_INCLUDE_DIRS ${Python_INCLUDE_DIRS} )
-            else()		    
-	   	     string(REGEX REPLACE "python[0-9.]+" "python${PYTHON_VERSION}"  Python_Eff_INCLUDE_DIRS "${Python_INCLUDE_DIRS}" )
-	             string(REGEX REPLACE "python[0-9.]+.so" "python${PYTHON_VERSION}.so"  Python_Eff_LIBRARIES "${Python_LIBRARIES}" )
-            endif()		     
-    endif()
+    SET(Python_Eff_LIBRARIES ${Python_LIBRARIES} )
+    SET(Python_Eff_INCLUDE_DIRS ${Python_INCLUDE_DIRS} )
     target_link_libraries(OpenSCADPy PRIVATE ${Python_Eff_LIBRARIES})
     target_include_directories(OpenSCADPy PRIVATE ${Python_Eff_INCLUDE_DIRS})
     target_include_directories(OpenSCADPy PRIVATE "${CMAKE_SOURCE_DIR}/submodules/Clipper2/CPP/Clipper2Lib/include")
@@ -678,16 +690,15 @@ endif()
 find_package(FLEX REQUIRED QUIET)
 message(STATUS "Flex: ${FLEX_VERSION}")
 
+find_package(CURL REQUIRED)
+message(STATUS "curl: found in ${CURL_INCLUDE_DIRS}")
+
 find_package(BISON REQUIRED QUIET)
 message(STATUS "Bison: ${BISON_VERSION}")
 if(APPLE)
     target_include_directories(OpenSCAD PRIVATE "/usr/local/include")
     target_link_directories(OpenSCAD PRIVATE "/usr/local/lib")
     target_link_libraries(OpenSCAD PRIVATE "libjpeg.a")
-else()	
-  find_package(JPEG REQUIRED QUIET)
-  target_include_directories(OpenSCAD SYSTEM PRIVATE ${JPEG_INCLUDE_DIRS})
-  target_link_libraries(OpenSCAD PRIVATE ${JPEG_LIBRARIES})
 endif()
 
 if(NOT MSVC)
@@ -943,7 +954,6 @@ set(CORE_SOURCES
   src/core/ColorNode.cc
   src/core/PullNode.cc
   src/core/WrapNode.cc
-  src/core/TextureNode.cc
   src/core/ColorUtil.cc
   src/core/Context.cc
   src/core/ContextFrame.cc
@@ -1099,6 +1109,7 @@ endif()
 set(CGAL_SOURCES
   src/geometry/cgal/cgalutils.cc
   src/geometry/cgal/cgalutils-applyops.cc
+  src/geometry/cgal/cgalutils-applyops-minkowski.cc
   src/geometry/cgal/cgalutils-closed.cc
   src/geometry/cgal/cgalutils-convex.cc
   src/geometry/cgal/cgalutils-kernel.cc
@@ -1491,7 +1502,7 @@ if (SNAPSHOT)
   set(SNAPSHOT_NAME_SUFFIX " (Nightly)")
   target_compile_definitions(OpenSCAD PRIVATE OPENSCAD_SNAPSHOT)
 endif()
-set(WINDOWS_RESOURCE_PATH ${CMAKE_BINARY_DIR}/openscad_win32${SNAPSHOT_SUFFIX}.rc)
+set(WINDOWS_RESOURCE_PATH ${CMAKE_BINARY_DIR}/pythonscad_win32${SNAPSHOT_SUFFIX}.rc)
 set(MACOSX_BUNDLE_ICON_FILE icon${SNAPSHOT_SUFFIX}.icns)
 
 if (APPLE)
@@ -1576,8 +1587,8 @@ else()
 endif()
 
 # Configure icon-related files, for release vs nightly
-configure_file(${CMAKE_CURRENT_LIST_DIR}/openscad.appdata.xml.in ${CMAKE_CURRENT_LIST_DIR}/openscad.appdata.xml.in2)
-configure_file(${RESOURCE_DIR}/icons/openscad.desktop.in ${RESOURCE_DIR}/icons/openscad.desktop)
+configure_file(${CMAKE_CURRENT_LIST_DIR}/pythonscad.appdata.xml.in ${CMAKE_CURRENT_LIST_DIR}/pythonscad.appdata.xml.in2)
+configure_file(${RESOURCE_DIR}/icons/pythonscad.desktop.in ${RESOURCE_DIR}/icons/pythonscad.desktop)
 configure_file(${RESOURCE_DIR}/common.qrc.in ${RESOURCE_DIR}/common.qrc)
 configure_file(${RESOURCE_DIR}/mac.qrc.in ${RESOURCE_DIR}/mac.qrc)
 
@@ -1587,18 +1598,18 @@ if(WIN32)
   set(OPENSCAD_INSTALL_RESOURCEDIR ".")
 else()
   set(OPENSCAD_BINDIR ${CMAKE_INSTALL_BINDIR})
-  set(OPENSCAD_INSTALL_RESOURCEDIR ${CMAKE_INSTALL_DATAROOTDIR}/openscad${SUFFIX_WITH_DASH})
+  set(OPENSCAD_INSTALL_RESOURCEDIR ${CMAKE_INSTALL_DATAROOTDIR}/pythonscad${SUFFIX_WITH_DASH})
 endif()
 
 if(NOT APPLE OR APPLE_UNIX)
-  set_target_properties(OpenSCAD PROPERTIES OUTPUT_NAME openscad${SUFFIX_WITH_DASH})
+  set_target_properties(OpenSCAD PROPERTIES OUTPUT_NAME pythonscad${SUFFIX_WITH_DASH})
   install(TARGETS OpenSCAD RUNTIME DESTINATION "${OPENSCAD_BINDIR}")
   if(ENABLE_PYTHON)
     install(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/openscad-python DESTINATION "${OPENSCAD_BINDIR}")
   endif()
   if(WIN32)
     if(ENABLE_PYTHON)
-      install(FILES ${CMAKE_SOURCE_DIR}/python311.dll DESTINATION "." )
+	    install(DIRECTORY "${PYTHON_EMBED_DEVPATH}/" DESTINATION "." )
     endif()  
     if(USE_MIMALLOC AND MI_LINK_SHARED)
       if(CMAKE_SIZEOF_VOID_P EQUAL 8)
@@ -1610,17 +1621,17 @@ if(NOT APPLE OR APPLE_UNIX)
     endif()
   else()
     install(FILES ${CMAKE_CURRENT_LIST_DIR}/doc/openscad.1 DESTINATION ${CMAKE_INSTALL_MANDIR}/man1 RENAME openscad${SUFFIX_WITH_DASH}.1)
-    install(FILES ${CMAKE_CURRENT_LIST_DIR}/openscad.appdata.xml DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/metainfo RENAME org.openscad.OpenSCAD${SUFFIX_WITH_DASH}.appdata.xml)
+    install(FILES ${CMAKE_CURRENT_LIST_DIR}/pythonscad.appdata.xml DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/metainfo RENAME org.pythonscad.PythonSCAD.appdata.xml)
     if(ENABLE_LIBFIVE)
       install(FILES ${CMAKE_BINARY_DIR}/submodules/libfive/libfive/src/libfive.so DESTINATION "lib")
     endif()
-    install(FILES ${RESOURCE_DIR}/icons/openscad.desktop DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/applications RENAME openscad${SUFFIX_WITH_DASH}.desktop)
-    install(FILES ${RESOURCE_DIR}/icons/openscad.xml DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/mime/packages RENAME openscad${SUFFIX_WITH_DASH}.xml)
-    install(FILES ${RESOURCE_DIR}/icons/openscad${SNAPSHOT_SUFFIX}-48.png DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/icons/hicolor/48x48/apps RENAME openscad${SNAPSHOT_SUFFIX}.png)
-    install(FILES ${RESOURCE_DIR}/icons/openscad${SNAPSHOT_SUFFIX}-64.png DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/icons/hicolor/64x64/apps RENAME openscad${SNAPSHOT_SUFFIX}.png)
-    install(FILES ${RESOURCE_DIR}/icons/openscad${SNAPSHOT_SUFFIX}-128.png DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/icons/hicolor/128x128/apps RENAME openscad${SNAPSHOT_SUFFIX}.png)
-    install(FILES ${RESOURCE_DIR}/icons/openscad${SNAPSHOT_SUFFIX}-256.png DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/icons/hicolor/256x256/apps RENAME openscad${SNAPSHOT_SUFFIX}.png)
-    install(FILES ${RESOURCE_DIR}/icons/openscad${SNAPSHOT_SUFFIX}-512.png DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/icons/hicolor/512x512/apps RENAME openscad${SNAPSHOT_SUFFIX}.png)
+    install(FILES ${RESOURCE_DIR}/icons/pythonscad.desktop DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/applications RENAME pythonscad${SUFFIX_WITH_DASH}.desktop)
+    install(FILES ${RESOURCE_DIR}/icons/pythonscad.xml DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/mime/packages RENAME pythonscad${SUFFIX_WITH_DASH}.xml)
+    install(FILES ${RESOURCE_DIR}/icons/pythonscad${SNAPSHOT_SUFFIX}-48.png DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/icons/hicolor/48x48/apps RENAME pythonscad${SNAPSHOT_SUFFIX}.png)
+    install(FILES ${RESOURCE_DIR}/icons/pythonscad${SNAPSHOT_SUFFIX}-64.png DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/icons/hicolor/64x64/apps RENAME pythonscad${SNAPSHOT_SUFFIX}.png)
+    install(FILES ${RESOURCE_DIR}/icons/pythonscad${SNAPSHOT_SUFFIX}-128.png DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/icons/hicolor/128x128/apps RENAME pythonscad${SNAPSHOT_SUFFIX}.png)
+    install(FILES ${RESOURCE_DIR}/icons/pythonscad${SNAPSHOT_SUFFIX}-256.png DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/icons/hicolor/256x256/apps RENAME pythonscad${SNAPSHOT_SUFFIX}.png)
+    install(FILES ${RESOURCE_DIR}/icons/pythonscad${SNAPSHOT_SUFFIX}-512.png DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/icons/hicolor/512x512/apps RENAME pythonscad${SNAPSHOT_SUFFIX}.png)
   endif()
   install(DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/color-schemes DESTINATION "${OPENSCAD_INSTALL_RESOURCEDIR}")
   install(DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/examples DESTINATION "${OPENSCAD_INSTALL_RESOURCEDIR}")
@@ -1651,7 +1662,7 @@ set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "The Programmer's Solid 3D CAD Modeler")
 if(MXECROSS)
   set(CPACK_GENERATOR ZIP;NSIS)
   set(CPACK_SYSTEM_NAME ${PACKAGE_ARCH})
-  set(CPACK_PACKAGE_EXECUTABLES "openscad;${CPACK_PACKAGE_NAME}${SNAPSHOT_NAME_SUFFIX}")
+  set(CPACK_PACKAGE_EXECUTABLES "pythonscad;${CPACK_PACKAGE_NAME}${SNAPSHOT_NAME_SUFFIX}")
   set(CPACK_PACKAGE_INSTALL_DIRECTORY "${CPACK_PACKAGE_NAME}${SNAPSHOT_NAME_SUFFIX}")
   set(CPACK_PACKAGE_INSTALL_REGISTRY_KEY "${CPACK_PACKAGE_NAME}${SNAPSHOT_NAME_SUFFIX}")
   if("${CMAKE_VERSION}" VERSION_GREATER_EQUAL "3.22")
@@ -1664,7 +1675,8 @@ if(MXECROSS)
     !include \\\"${CMAKE_SOURCE_DIR}/cmake/nsis/mingw-file-association.nsh\\\"\
   ")
   set(CPACK_NSIS_EXTRA_INSTALL_COMMANDS "\
-    !include \\\"${CMAKE_BINARY_DIR}/nsis-extra-install-commands.nsh\\\"\
+    !include \\\"${CMAKE_BINARY_DIR}/nsis-extra-install-commands.nsh\\\"\n\
+    CreateShortCut $INSTDIR\\\\openscad.lnk $INSTDIR\\\\pythonscad.exe\
   ")
   set(CPACK_NSIS_EXTRA_UNINSTALL_COMMANDS "\
     !include \\\"${CMAKE_BINARY_DIR}/nsis-extra-uninstall-commands.nsh\\\"\
@@ -1696,7 +1708,7 @@ if(MXECROSS)
   set(CPACK_DEBIAN_PACKAGE_DEPENDS "")
 
 
-  execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink "./openscad" "pythonscad")
+  execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink "./pythonscad" "openscad")
   install(FILES ${CMAKE_CURRENT_BINARY_DIR}/pythonscad DESTINATION "." COMPONENT libraries)
 
 endif()
@@ -1727,8 +1739,8 @@ if(OFFLINE_DOCS)
   add_subdirectory(resources)
 endif()
 
-configure_file(${RESOURCE_DIR}/openscad_win32${SNAPSHOT_SUFFIX}.rc.in
-	       ${CMAKE_BINARY_DIR}/openscad_win32${SNAPSHOT_SUFFIX}.rc)
+configure_file(${RESOURCE_DIR}/pythonscad_win32${SNAPSHOT_SUFFIX}.rc.in
+	       ${CMAKE_BINARY_DIR}/pythonscad_win32${SNAPSHOT_SUFFIX}.rc)
 include(CPack)
 
 add_sanitizers(OpenSCAD)

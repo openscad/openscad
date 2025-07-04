@@ -4,9 +4,6 @@
 #include "utils/printutils.h"
 #include "platform/PlatformUtils.h"
 #include "glview/system-gl.h"
-#ifndef OPENSCAD_NOGUI
-#include "core/TextureNode.h"
-#endif
 
 #include <sstream>
 #include <Eigen/LU>
@@ -163,26 +160,18 @@ bool Renderer::getColorSchemeColor(Renderer::ColorMode colormode, Color4f& outco
 bool Renderer::getShaderColor(Renderer::ColorMode colormode, const Color4f& object_color,
                               Color4f& outcolor) const
 {
-  // If an object was colored, use that color, except when using the highlight/background operator
-  if ((colormode != ColorMode::BACKGROUND) && (colormode != ColorMode::HIGHLIGHT) && object_color.isValid()) {
-    outcolor = object_color;
-    return true;
+  // If an object was colored, use any set components from that color, except in pure highlight mode
+  if ((colormode == ColorMode::BACKGROUND || colormode != ColorMode::HIGHLIGHT)) {
+    if (object_color.hasRgb()) outcolor.setRgb(object_color.r(), object_color.g(), object_color.b());
+    if (object_color.hasAlpha()) outcolor.setAlpha(object_color.a());
+    if (outcolor.isValid()) return true;
   }
 
+  // Fill in missing components with the color from the colorscheme
   Color4f basecol;
   if (Renderer::getColorSchemeColor(colormode, basecol)) {
-    // In highlight/background mode, pull unset colors from the basecol
-    if (colormode == ColorMode::BACKGROUND || colormode != ColorMode::HIGHLIGHT) {
-      basecol = Color4f(object_color[0] >= 0 ? object_color[0] : basecol[0], object_color[1] >= 0 ? object_color[1] : basecol[1],
-                        object_color[2] >= 0 ? object_color[2] : basecol[2], object_color[3] >= 0 ? object_color[3] : basecol[3]);
-    }
-    Color4f col;
-    Renderer::getColorSchemeColor(ColorMode::MATERIAL, col);
-    outcolor = basecol;
-    if (outcolor[0] < 0) outcolor[0] = col[0];
-    if (outcolor[1] < 0) outcolor[1] = col[1];
-    if (outcolor[2] < 0) outcolor[2] = col[2];
-    if (outcolor[3] < 0) outcolor[3] = col[3];
+    if (!outcolor.hasRgb()) outcolor.setRgb(basecol.r(), basecol.g(), basecol.b());
+    if (!outcolor.hasAlpha()) outcolor.setAlpha(basecol.a());
     return true;
   }
 

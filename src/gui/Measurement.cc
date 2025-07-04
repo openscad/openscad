@@ -73,6 +73,7 @@ QString Measurement::statemachine(QPoint mouse)
 {
   if(qglview->measure_state == MEASURE_IDLE) return {};
   qglview->selectPoint(mouse.x(),mouse.y());
+  double ang=NAN;
   double dist=NAN;
   SelectedObject obj1, obj2, obj3;
   SelectedObject ruler = {
@@ -167,19 +168,43 @@ QString Measurement::statemachine(QPoint mouse)
       {
         obj1=qglview->selected_obj[0];
         obj2=qglview->selected_obj[1];
+        Vector3d side1, side2;
         if(obj1.type == SelectionType::SELECTION_SEGMENT && obj2.type == SelectionType::SELECTION_POINT)
-	  return display_angle(obj1.pt[0], obj1.pt[1], obj1.pt[1], obj2.pt[0]);
+        {
+          side1=(obj1.pt[1]-obj1.pt[0]).normalized();
+          side2=(obj1.pt[1]-obj2.pt[0]).normalized();
+          ang=acos(side1.dot(side2))*180.0/3.14159265359;
+          goto display_angle;
+        }
         else if(obj1.type == SelectionType::SELECTION_POINT && obj2.type == SelectionType::SELECTION_SEGMENT)
-          return display_angle(obj1.pt[0],obj2.pt[0],obj2.pt[0],obj2.pt[1]);
+        {
+          side1=(obj2.pt[1]-obj2.pt[0]).normalized();
+          side2=(obj2.pt[1]-obj1.pt[0]).normalized();
+          ang=acos(side1.dot(side2))*180.0/3.14159265359;
+          goto display_angle;
+        }
         else if(obj1.type == SelectionType::SELECTION_SEGMENT && obj2.type == SelectionType::SELECTION_SEGMENT)
-	  return display_angle(obj1.pt[0],obj1.pt[1],obj2.pt[0],obj2.pt[1]);
-        else if(obj1.type == SelectionType::SELECTION_FACE && obj2.type == SelectionType::SELECTION_FACE) {
-	  Vector3d n1=(obj1.pt[1]-obj1.pt[0]).cross(obj1.pt[2]-obj1.pt[0]).normalized();
-	  Vector3d n2=(obj2.pt[1]-obj2.pt[0]).cross(obj2.pt[2]-obj2.pt[0]).normalized();
-          double ang=180-acos(n1.dot(n2))*180.0/G_PI;
-          return QString("Angle  is %1 Degrees").arg(ang);
-	}
-        else qglview->measure_state = MEASURE_ANG3;
+        {
+          // Check all 4 permutations of the lines' directions and use the one where the starting points are closest to one another as the corner point for the angle
+          double nearestDist = INFINITY;
+          auto permutation = [&nearestDist, &side1, &side2](const Vector3d& s1s, const Vector3d& s1e, const Vector3d& s2s, const Vector3d& s2e) {
+            double dist = (s1s - s2s).squaredNorm();
+            if (dist < nearestDist) {
+              nearestDist = dist;
+              side1 = (s1e - s1s).normalized();
+              side2 = (s2e - s2s).normalized();
+            }
+          };
+
+          permutation(obj1.pt[0], obj1.pt[1], obj2.pt[0], obj2.pt[1]);
+          permutation(obj1.pt[1], obj1.pt[0], obj2.pt[0], obj2.pt[1]);
+          permutation(obj1.pt[0], obj1.pt[1], obj2.pt[1], obj2.pt[0]);
+          permutation(obj1.pt[1], obj1.pt[0], obj2.pt[1], obj2.pt[0]);
+          
+          ang=acos(side1.dot(side2))*180.0/3.14159265359;
+          goto display_angle;
+        } else
+          qglview->measure_state = MEASURE_ANG3;
       }
       break;
       case MEASURE_ANG3:
@@ -188,8 +213,17 @@ QString Measurement::statemachine(QPoint mouse)
         obj2=qglview->selected_obj[1];
         obj3=qglview->selected_obj[2];
         if(obj1.type == SelectionType::SELECTION_POINT && obj2.type == SelectionType::SELECTION_POINT && obj3.type == SelectionType::SELECTION_POINT)
-	  return display_angle(obj1.pt[0],obj2.pt[0],obj2.pt[0],obj3.pt[0]);
-	break;
+        {
+          Vector3d side1=(obj2.pt[0]-obj1.pt[0]).normalized();
+          Vector3d side2=(obj2.pt[0]-obj3.pt[0]).normalized();
+          ang=acos(side1.dot(side2))*180.0/3.14159265359;
+        }
+display_angle:
+        if(!std::isnan(ang))
+        {
+          return QString("Angle  is %1 Degrees").arg(ang);
+        }
+        stopMeasure();
       }
       break;
   }

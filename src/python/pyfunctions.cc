@@ -64,7 +64,6 @@ extern bool parse(SourceFile *& file, const std::string& text, const std::string
 #include "core/SurfaceNode.h"
 #include "core/TextNode.h"
 #include "core/OffsetNode.h"
-#include "core/TextureNode.h"
 #include <hash.h>
 #include "geometry/PolySetUtils.h"
 #include "core/ProjectionNode.h"
@@ -1036,7 +1035,7 @@ int python_tomatrix(PyObject *pyt, Matrix4d &mat)
   if(pyt == nullptr) return 1;
   PyObject *row, *cell;
   double val;
-  if(!PyList_Check(pyt)) return 1; // TODO crash wenn pyt eine funktion ist
+  if(!PyList_Check(pyt)) return 1;
   if(PyList_Size(pyt) != 4) return 1;
   for(int i=0;i<4;i++) {
     row=PyList_GetItem(pyt,i);
@@ -1050,6 +1049,22 @@ int python_tomatrix(PyObject *pyt, Matrix4d &mat)
   }
   return 0;
 }
+
+int python_tovector(PyObject *pyt, Vector3d &vec)
+{
+  if(pyt == nullptr) return 1;
+  PyObject *cell;
+  double val;
+  if(!PyList_Check(pyt)) return 1;
+  if(PyList_Size(pyt) != 3) return 1;
+  for(int i=0;i<3;i++) {
+    cell=PyList_GetItem(pyt,i);
+    if(python_numberval(cell,&val)) return 1;
+    vec[i]=val;
+  }
+  return 0;
+}
+
 PyObject *python_frommatrix(const Matrix4d &mat) {
   PyObject *pyo=PyList_New(4);
   PyObject *row;
@@ -1063,26 +1078,41 @@ PyObject *python_frommatrix(const Matrix4d &mat) {
   return pyo;
 }
 
+PyObject *python_fromvector(const Vector3d vec) {
+  PyObject *res=PyList_New(3);
+  for(int i=0;i<3;i++)
+    PyList_SetItem(res,i,PyFloat_FromDouble(vec[i]));
+  return res;
+}
 
-PyObject *python_matrix_scale(PyObject *mat, Vector3d scalevec)
+
+PyObject *python_number_scale(PyObject *pynum, Vector3d scalevec)
 {
-  Transform3d matrix=Transform3d::Identity();
-  matrix.scale(scalevec);
-  Matrix4d raw;
-  if(python_tomatrix(mat, raw)) return nullptr;
-  Vector3d n;
-  for(int i=0;i<3;i++) {
-    n =Vector3d(raw(0,i),raw(1,i),raw(2,i)); // TODO fix
-    n = matrix * n;
-    for(int j=0;j<3;j++) raw(j,i) = n[j];
+  Matrix4d mat;
+  if(!python_tomatrix(pynum, mat)){
+    Transform3d matrix=Transform3d::Identity();
+    matrix.scale(scalevec);
+    Vector3d n;
+    for(int i=0;i<3;i++) {
+      n =Vector3d(mat(0,i),mat(1,i),mat(2,i)); 
+      n = matrix * n;
+      for(int j=0;j<3;j++) mat(j,i) = n[j];
+    }  
+    return python_frommatrix(mat);
   }  
-  return python_frommatrix(raw);
+  Vector3d vec;
+  if(!python_tovector(pynum, vec)){
+    for(int i=0;i<3;i++)
+      vec[i] *= scalevec[i];	    
+    return python_fromvector(vec);
+  }
+  return nullptr;
 }
 
 
 PyObject *python_scale_sub(PyObject *obj, Vector3d scalevec)
 {
-  PyObject *mat = python_matrix_scale(obj, scalevec);
+  PyObject *mat = python_number_scale(obj, scalevec);
   if(mat != nullptr) return mat;
 
   DECLARE_INSTANCE
@@ -1102,7 +1132,7 @@ PyObject *python_scale_sub(PyObject *obj, Vector3d scalevec)
     PyObject *key, *value;
     Py_ssize_t pos = 0;
      while(PyDict_Next(child_dict, &pos, &key, &value)) {
-       PyObject *value1 = python_matrix_scale(value,scalevec);
+       PyObject *value1 = python_number_scale(value,scalevec);
        if(value1 != nullptr) PyDict_SetItem(((PyOpenSCADObject *) pyresult)->dict,key, value1);
        else PyDict_SetItem(((PyOpenSCADObject *) pyresult)->dict,key, value);
     }
@@ -1281,7 +1311,7 @@ PyObject *python_matrix_mirror(PyObject *mat, Matrix4d m)
   Matrix4d raw;
   if(python_tomatrix(mat, raw)) return nullptr;
   Vector4d n;
-  for(int i=0;i<3;i++) {
+  for(int i=0;i<4;i++) {
     n =Vector4d(raw(0,i),raw(1,i),raw(2,i),0);
     n = m * n;
     for(int j=0;j<3;j++) raw(j,i) = n[j];
@@ -1373,18 +1403,26 @@ PyObject *python_oo_mirror(PyObject *obj, PyObject *args, PyObject *kwargs)
   return python_mirror_core(obj, val_v);
 }
 
-PyObject *python_matrix_trans(PyObject *mat, Vector3d transvec)
+PyObject *python_number_trans(PyObject *pynum, Vector3d transvec)
 {
-  Matrix4d raw;
-  if(python_tomatrix(mat, raw)) return nullptr;
-  for(int i=0;i<3;i++) raw(i,3) += transvec[i];
-  return python_frommatrix(raw);
+  Matrix4d mat;
+  if(!python_tomatrix(pynum, mat)){
+    for(int i=0;i<3;i++) mat(i,3) += transvec[i];
+    return python_frommatrix(mat);
+  }
+
+  Vector3d vec;
+  if(!python_tovector(pynum, vec)){
+    return python_fromvector(vec+transvec);
+  }
+
+  return nullptr;  
 }
 
 PyObject *python_translate_sub(PyObject *obj, Vector3d translatevec, int dragflags)
 {
   PyObject *child_dict;
-  PyObject *mat = python_matrix_trans(obj,translatevec);
+  PyObject *mat = python_number_trans(obj,translatevec);
   if(mat != nullptr) return mat;
 
   DECLARE_INSTANCE
@@ -1405,7 +1443,7 @@ PyObject *python_translate_sub(PyObject *obj, Vector3d translatevec, int dragfla
     PyObject *key, *value;
     Py_ssize_t pos = 0;
      while(PyDict_Next(child_dict, &pos, &key, &value)) {
-       PyObject *value1 = python_matrix_trans(value,translatevec);
+       PyObject *value1 = python_number_trans(value,translatevec);
        if(value1 != nullptr) PyDict_SetItem(((PyOpenSCADObject *) pyresult)->dict,key, value1);
        else PyDict_SetItem(((PyOpenSCADObject *) pyresult)->dict,key, value);
     }
@@ -1416,7 +1454,6 @@ PyObject *python_translate_sub(PyObject *obj, Vector3d translatevec, int dragfla
 PyObject *python_nb_sub_vec3(PyObject *arg1, PyObject *arg2, int mode);
 PyObject *python_translate_core(PyObject *obj, PyObject *v) 
 {
-  if(v == nullptr) return obj;
   return  python_nb_sub_vec3(obj, v, 0);
 }	
 
@@ -1518,32 +1555,83 @@ PyObject *python_oo_roty(PyObject *self, PyObject *args, PyObject *kwargs) { ret
 PyObject *python_rotz(PyObject *self, PyObject *args, PyObject *kwargs) { return python_dir_sub(self, args,kwargs, 8); }
 PyObject *python_oo_rotz(PyObject *self, PyObject *args, PyObject *kwargs) { return python_oo_dir_sub(self, args,kwargs, 8); }
 
-PyObject *python_math_sub(PyObject *self, PyObject *args, PyObject *kwargs,int mode)
+PyObject *python_math_sub1(PyObject *self, PyObject *args, PyObject *kwargs, int mode)
 {
   char *kwlist[] = {"value", NULL};
   double arg;
   double result = 0;
   if (!PyArg_ParseTupleAndKeywords(args, kwargs, "d", kwlist, &arg)) {
-    PyErr_SetString(PyExc_TypeError, "Error during parsing translate(object,vec3)");
+    PyErr_SetString(PyExc_TypeError, "Error during parsing math function");
     return NULL;
   }
   switch(mode) {
-    case 0: result = sin(arg* M_PI / 180.0); break;	    
-    case 1: result = cos(arg* M_PI / 180.0); break;	    
-    case 2: result = tan(arg* M_PI / 180.0); break;	    
-    case 3: result = asin(arg)*180.0 /  M_PI; break;	    
-    case 4: result = acos(arg)*180.0 /  M_PI; break;	    
-    case 5: result = atan(arg)*180.0 /  M_PI; break;	    
+    case 0: result = sin(arg* G_PI / 180.0); break;	    
+    case 1: result = cos(arg* G_PI / 180.0); break;	    
+    case 2: result = tan(arg* G_PI / 180.0); break;	    
+    case 3: result = asin(arg)*180.0 /  G_PI; break;	    
+    case 4: result = acos(arg)*180.0 /  G_PI; break;	    
+    case 5: result = atan(arg)*180.0 /  G_PI; break;	    
   }
   return PyFloat_FromDouble(result);
 }
 
-PyObject *python_sin(PyObject *self, PyObject *args, PyObject *kwargs) { return python_math_sub(self, args,kwargs, 0); }
-PyObject *python_cos(PyObject *self, PyObject *args, PyObject *kwargs) { return python_math_sub(self, args,kwargs, 1); }
-PyObject *python_tan(PyObject *self, PyObject *args, PyObject *kwargs) { return python_math_sub(self, args,kwargs, 2); }
-PyObject *python_asin(PyObject *self, PyObject *args, PyObject *kwargs) { return python_math_sub(self, args,kwargs, 4); }
-PyObject *python_acos(PyObject *self, PyObject *args, PyObject *kwargs) { return python_math_sub(self, args,kwargs, 5); }
-PyObject *python_atan(PyObject *self, PyObject *args, PyObject *kwargs) { return python_math_sub(self, args,kwargs, 6); }
+
+PyObject *python_math_sub2(PyObject *self, PyObject *args, PyObject *kwargs, int mode)
+{
+  int dragflags=0;
+  char *kwlist[] = {"vec1","vec2", NULL};
+  double arg;
+  double result = 0;
+  PyObject *obj1 = nullptr;
+  PyObject *obj2 = nullptr;
+  Vector3d vec31(0,0,0);
+  Vector3d vec32(0,0,0);
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "OO", kwlist, &obj1, &obj2)) {
+    PyErr_SetString(PyExc_TypeError, "Error during parsing norm(vec3)");
+    return NULL;
+  }
+  python_vectorval(obj1, 1, 3, &(vec31[0]), &(vec31[1]), &(vec31[2]), nullptr, &dragflags);
+  python_vectorval(obj2, 1, 3, &(vec32[0]), &(vec32[1]), &(vec32[2]), nullptr, &dragflags);
+
+  switch(mode) {
+    case 0:	  
+      return PyFloat_FromDouble(vec31.dot(vec32));
+      break;
+    case 1:	  
+      Vector3d res =vec31.cross(vec32);
+      return python_fromvector(vec31.cross(vec32));
+      break;
+  }
+  return Py_None;
+}
+
+PyObject *python_sin(PyObject *self, PyObject *args, PyObject *kwargs) { return python_math_sub1(self, args,kwargs, 0); }
+PyObject *python_cos(PyObject *self, PyObject *args, PyObject *kwargs) { return python_math_sub1(self, args,kwargs, 1); }
+PyObject *python_tan(PyObject *self, PyObject *args, PyObject *kwargs) { return python_math_sub1(self, args,kwargs, 2); }
+PyObject *python_asin(PyObject *self, PyObject *args, PyObject *kwargs) { return python_math_sub1(self, args,kwargs, 3); }
+PyObject *python_acos(PyObject *self, PyObject *args, PyObject *kwargs) { return python_math_sub1(self, args,kwargs, 4); }
+PyObject *python_atan(PyObject *self, PyObject *args, PyObject *kwargs) { return python_math_sub1(self, args,kwargs, 5); }
+
+PyObject *python_dot(PyObject *self, PyObject *args, PyObject *kwargs) { return python_math_sub2(self, args,kwargs, 0); }
+PyObject *python_cross(PyObject *self, PyObject *args, PyObject *kwargs) { return python_math_sub2(self, args,kwargs, 1); }
+
+PyObject *python_norm(PyObject *self, PyObject *args, PyObject *kwargs)
+{
+  int dragflags=0;
+  char *kwlist[] = {"vec", NULL};
+  double arg;
+  double result = 0;
+  PyObject *obj = nullptr;
+  Vector3d vec3(0,0,0);
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O", kwlist, &obj)) {
+    PyErr_SetString(PyExc_TypeError, "Error during parsing norm(vec3)");
+    return NULL;
+  }
+  python_vectorval(obj, 1, 3, &(vec3[0]), &(vec3[1]), &(vec3[2]), nullptr, &dragflags);
+
+  result = sqrt(vec3[0]*vec3[0] + vec3[1]*vec3[1]+vec3[2]*vec3[2]);
+  return PyFloat_FromDouble(result);
+}
 
 PyObject *python_multmatrix_sub(PyObject *pyobj, PyObject *pymat, int div)
 {
@@ -1711,7 +1799,7 @@ PyObject *python_oo_pull(PyObject *obj, PyObject *args, PyObject *kwargs)
   return python_pull_core(obj, anchor, dir);
 }
 
-PyObject *python_wrap_core(PyObject *obj, double r, double fn, double fa, double fs)
+PyObject *python_wrap_core(PyObject *obj, PyObject *target, double fn, double fa, double fs)
 {
   DECLARE_INSTANCE
   auto node = std::make_shared<WrapNode>(instance);
@@ -1722,8 +1810,18 @@ PyObject *python_wrap_core(PyObject *obj, double r, double fn, double fa, double
     return NULL;
   }
 
+  if(PyFloat_Check(target)) {
+      printf("is float\n");
+      node->r = PyFloat_AsDouble(target);
+      node->shape = nullptr;
+  } else if( Py_TYPE(target) == &PyOpenSCADType) {
+    std::shared_ptr<AbstractNode> abstr = ((PyOpenSCADObject *) target)->node;		 
+    node->shape =  abstr;
+  } else {
+    PyErr_SetString(PyExc_TypeError, "warpign object must bei either Polygon or cylidner radius\n");
+    return NULL;
+  }
 
-  node->r = r;
   get_fnas(node->fn, node->fa, node->fs);
   if(!isnan(fn)) node->fn=fn;
   if(!isnan(fa)) node->fa=fa;
@@ -1734,30 +1832,47 @@ PyObject *python_wrap_core(PyObject *obj, double r, double fn, double fa, double
 
 PyObject *python_wrap(PyObject *self, PyObject *args, PyObject *kwargs)
 {
-  char *kwlist[] = {"obj", "r","fn","fa","fs", NULL};
-  PyObject *obj = NULL;
-  double r, fn, fa, fs;
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "Od|ddd", kwlist,
+  char *kwlist[] = {"obj", "target","fn","fa","fs", NULL};
+  PyObject *obj = NULL, *target = NULL;
+  double  fn, fa, fs;
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "OO|ddd", kwlist,
                                    &obj,
-                                   &r, &fn, &fa, &fs
+                                   &target, &fn, &fa, &fs
                                    )) {
     PyErr_SetString(PyExc_TypeError, "error during parsing wrap\n");
     return NULL;
   }
-  return python_wrap_core(obj, r, fn,fa, fs);
+  return python_wrap_core(obj, target, fn,fa, fs);
 }
 
 PyObject *python_oo_wrap(PyObject *obj, PyObject *args, PyObject *kwargs)
 {
-  char *kwlist[] = {"r","fn","fa","fs",NULL};
-  double r,fn=NAN,fa=NAN,fs=NAN;
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "d|ddd", kwlist,
-                                   &r,&fn,&fa,&fs
+  char *kwlist[] = {"target","fn","fa","fs",NULL};
+  double fn=NAN,fa=NAN,fs=NAN;
+  PyObject *target = NULL;
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O|ddd", kwlist,
+                                   &target,&fn,&fa,&fs
                                    )) {
     PyErr_SetString(PyExc_TypeError, "error during parsing\n");
     return NULL;
   }
-  return python_wrap_core(obj, r, fn, fa, fs);
+  std::vector<double> xsteps;
+  xsteps.push_back(4);
+  xsteps.push_back(6);
+
+/*  
+  MyPoly poly;
+  poly.push_back(Vector3d(0,0, 0));
+  poly.push_back(Vector3d(10,0, 0));
+  poly.push_back(Vector3d(10,10, 0));
+  poly.push_back(Vector3d(0,10, 0));
+
+  std::vector<MyPoly> polygons;
+  polygons.push_back(poly);
+
+  wrapSlice(polygons, xsteps);
+*/
+  return python_wrap_core(obj, target, fn, fa, fs);
 }
 
 void python_show_final(void)
@@ -1805,6 +1920,7 @@ PyObject *python_show_core(PyObject *obj)
     }
   }
   shows.push_back(child);
+  Py_INCREF(obj);
   return obj;
 }
 
@@ -2133,6 +2249,7 @@ PyObject *python__getitem__(PyObject *obj, PyObject *key)
   PyObject *result = PyDict_GetItem(self->dict, key);
   if (result == NULL){
     PyObject* keyname = PyUnicode_AsEncodedString(key, "utf-8", "~");
+    if(keyname == nullptr) return nullptr;
     std::string keystr = PyBytes_AS_STRING(keyname);
     result = Py_None;
     if(keystr == "matrix") {
@@ -2160,7 +2277,7 @@ int python__setitem__(PyObject *dict, PyObject *key, PyObject *v)
 }
 
 
-PyObject *python_color_core(PyObject *obj, PyObject *color, double alpha, int textureind)
+PyObject *python_color_core(PyObject *obj, PyObject *color, double alpha)
 {
   PyObject *child_dict;
   std::shared_ptr<AbstractNode> child;
@@ -2174,7 +2291,7 @@ PyObject *python_color_core(PyObject *obj, PyObject *color, double alpha, int te
 
   Vector4d col(0,0,0,alpha);
   if(!python_vectorval(color, 3, 4, &col[0], &col[1], &col[2], &col[3])) {
-	  for(int i=0;i<4;i++) node->color[i] = col[i];
+    node->color.setRgba(float(col[0]), float(col[1]), float(col[2]), float(col[3]));
   }
   else if(PyUnicode_Check(color)) {
     PyObject* value = PyUnicode_AsEncodedString(color, "utf-8", "~");
@@ -2182,7 +2299,7 @@ PyObject *python_color_core(PyObject *obj, PyObject *color, double alpha, int te
     const auto color = OpenSCAD::parse_color(colorname);
     if (color) {
       node->color = *color;
-      node->color[3]=alpha;
+      node->color.setAlpha(alpha);
     } else {
       PyErr_SetString(PyExc_TypeError, "Cannot parse color");
       return NULL;
@@ -2192,12 +2309,7 @@ PyObject *python_color_core(PyObject *obj, PyObject *color, double alpha, int te
     return nullptr;
   }
 	
-  node->textureind=textureind;
-  if(textureind != -1 && color == NULL) {
-	node->color[0]=0.5;
-	node->color[1]=0.5;
-	node->color[2]=0.5;
-  }
+  node->textureind=-1;
   node->children.push_back(child);
 
   PyObject *pyresult = PyOpenSCADObjectFromNode(&PyOpenSCADType, node);
@@ -2214,34 +2326,32 @@ PyObject *python_color_core(PyObject *obj, PyObject *color, double alpha, int te
 
 PyObject *python_color(PyObject *self, PyObject *args, PyObject *kwargs)
 {
-  char *kwlist[] = {"obj", "c", "alpha", "texture",NULL};
+  char *kwlist[] = {"obj", "c", "alpha", NULL};
   PyObject *obj = NULL;
   PyObject *color = NULL;
   double alpha = 1.0;
-  int textureind=-1;
   if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O|Odi", kwlist,
                                    &obj,
-                                   &color, &alpha, &textureind
+                                   &color, &alpha
                                    )) {
     PyErr_SetString(PyExc_TypeError, "error during parsing color");
     return NULL;
   }
-  return python_color_core(obj, color, alpha, textureind);
+  return python_color_core(obj, color, alpha);
 }
 
 PyObject *python_oo_color(PyObject *obj, PyObject *args, PyObject *kwargs)
 {
-  char *kwlist[] = {"c", "alpha", "texture",NULL};
+  char *kwlist[] = {"c", "alpha", NULL};
   PyObject *color = NULL;
   double alpha = 1.0;
-  int textureind=-1;
   if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|Odi", kwlist,
-                                   &color, &alpha, &textureind
+                                   &color, &alpha
                                    )) {
     PyErr_SetString(PyExc_TypeError, "error during parsing color");
     return NULL;
   }
-  return python_color_core(obj, color, alpha, textureind);
+  return python_color_core(obj, color, alpha);
 }
 
 typedef std::vector<int> intList;
@@ -2334,6 +2444,69 @@ PyObject *python_oo_mesh(PyObject *obj, PyObject *args, PyObject *kwargs)
   return python_mesh_core(obj, tess == Py_True);
 }
 
+
+PyObject *python_bbox_core(PyObject *obj)
+{
+  PyObject *dummydict;
+  std::shared_ptr<AbstractNode> child = PyOpenSCADObjectToNodeMulti(obj, &dummydict);
+  if (child == NULL) {
+    PyErr_SetString(PyExc_TypeError, "Invalid type for  Object in bbox \n");
+    return NULL;
+  }
+  Tree tree(child, "");
+  GeometryEvaluator geomevaluator(tree);
+  std::shared_ptr<const Geometry> geom = geomevaluator.evaluateGeometry(*tree.root(), true);
+  std::shared_ptr<const PolySet> ps = PolySetUtils::getGeometryAsPolySet(geom);
+
+  if(ps != nullptr && ps->vertices.size() > 0){
+    Vector3d pmin = ps->vertices[0];
+    Vector3d pmax = pmin;
+    for(const auto &pt: ps->vertices) {
+      for(int i=0;i<3;i++)  {	    
+        if(pt[i] > pmax[i]) pmax[i] = pt[i];	    
+        if(pt[i] < pmin[i]) pmin[i] = pt[i];	    
+      }	
+    }
+  // Now create Python Vectors
+    PyObject *ptmin = PyList_New(3);  
+    PyObject *ptmax = PyList_New(3);  
+    for(int i=0;i<3;i++) {
+      PyList_SetItem(ptmin, i, PyFloat_FromDouble(pmin[i]));
+      PyList_SetItem(ptmax, i, PyFloat_FromDouble(pmax[i]));
+    }	  
+    Py_XINCREF(ptmin);
+    Py_XINCREF(ptmax);
+
+    PyObject *result = PyTuple_New(2);
+    PyTuple_SetItem(result, 0, ptmin);
+    PyTuple_SetItem(result, 1, ptmax);
+    return result;
+  }  
+  return Py_None;
+}
+
+
+PyObject *python_bbox(PyObject *self, PyObject *args, PyObject *kwargs)
+{
+  char *kwlist[] = {"obj", NULL};
+  PyObject *obj = NULL;
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O", kwlist, &obj)) {
+    PyErr_SetString(PyExc_TypeError, "error during parsing\n");
+    return NULL;
+  }
+  return python_bbox_core(obj);
+}
+
+PyObject *python_oo_bbox(PyObject *obj, PyObject *args, PyObject *kwargs)
+{
+  char *kwlist[] = {  NULL};
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "", kwlist)) {
+    PyErr_SetString(PyExc_TypeError, "error during parsing\n");
+    return NULL;
+  }
+  return python_bbox_core(obj);
+}
+
 PyObject *python_separate_core(PyObject *obj)
 {
   PyObject *dummydict;
@@ -2408,6 +2581,7 @@ PyObject *python_separate_core(PyObject *obj)
           for(auto ind: ps->indices[j]) {
             face_map.push_back(vert_map[ind]);
 	  }		  
+	  std::reverse(face_map.begin(),face_map.end());
 	  node->faces.push_back(face_map);
 	}		
       }
@@ -3317,7 +3491,10 @@ PyObject *python_csg_sub(PyObject *self, PyObject *args, PyObject *kwargs, OpenS
     child = PyOpenSCADObjectToNodeMulti(obj, &dict);
     child_dict.push_back(dict);
     if(child != NULL) {
-      node->children.push_back(child);
+      if(child.get() == void_node.get() && mode == OpenSCADOperator::UNION) {}
+      else if(child.get() == void_node.get() && i > 0 && mode == OpenSCADOperator::DIFFERENCE) {}
+      else if(child.get() == full_node.get() && mode == OpenSCADOperator::INTERSECTION) {}
+      else {      node->children.push_back(child); }	
     } else {
       switch(mode) {
         case OpenSCADOperator::UNION:	    
@@ -3424,7 +3601,10 @@ PyObject *python_oo_csg_sub(PyObject *self, PyObject *args, PyObject *kwargs, Op
     if(i == 0) child = PyOpenSCADObjectToNodeMulti(obj, &child_dict);
     else child = PyOpenSCADObjectToNodeMulti(obj, &dummy_dict);
     if(child != NULL) {
-      node->children.push_back(child);
+      if(child.get() == void_node.get() && mode == OpenSCADOperator::UNION) {}
+      else if(child.get() == void_node.get() && i > 0 && mode == OpenSCADOperator::DIFFERENCE) {}
+      else if(child.get() == full_node.get() && mode == OpenSCADOperator::INTERSECTION) { }
+      else {      node->children.push_back(child); }	
     } else {
       switch(mode) {
         case OpenSCADOperator::UNION:	    
@@ -3532,6 +3712,7 @@ PyObject *python_nb_sub_vec3(PyObject *arg1, PyObject *arg2, int mode) // 0: tra
   PyObject *child_dict;	  
 
   child = PyOpenSCADObjectToNodeMulti(arg1, &child_dict);
+  if(arg2 == nullptr) return PyOpenSCADObjectFromNode(&PyOpenSCADType, child);
   std::vector<Vector3d> vecs;
   int dragflags=0;
   if(mode == 3) {
@@ -3569,8 +3750,8 @@ PyObject *python_nb_sub_vec3(PyObject *arg1, PyObject *arg2, int mode) // 0: tra
           vecs.push_back(Vector3d(x,y,z));		
   } else vecs = python_vectors(arg2,2,3, &dragflags);
 
-  if(mode == 0 && vecs.size() == 1) {
-    PyObject *mat = python_matrix_trans(arg1,vecs[0]);
+  if(mode == 0 && vecs.size() == 1) { // translate on numbers
+    PyObject *mat = python_number_trans(arg1,vecs[0]);
     if(mat != nullptr) return mat;
   }
 
@@ -3607,7 +3788,7 @@ PyObject *python_nb_sub_vec3(PyObject *arg1, PyObject *arg2, int mode) // 0: tra
         PyObject *key, *value;
         Py_ssize_t pos = 0;
          while(PyDict_Next(child_dict, &pos, &key, &value)) {
-           PyObject *value1 = python_matrix_trans(value,vecs[0]);
+           PyObject *value1 = python_number_trans(value,vecs[0]);
            if(value1 != nullptr) PyDict_SetItem(((PyOpenSCADObject *) pyresult)->dict,key, value1);
            else PyDict_SetItem(((PyOpenSCADObject *) pyresult)->dict,key, value);
         }
@@ -3930,7 +4111,7 @@ PyObject *python_surface_core(const char *file, PyObject *center, PyObject *inve
 
   std::string fileval = file == NULL ? "" : file;
 
-  std::string filename = lookup_file(fileval,  python_scriptpath.parent_path(), instance->location().filePath().parent_path().string());
+  std::string filename = lookup_file(fileval,  python_scriptpath.parent_path().u8string(), instance->location().filePath().parent_path().string());
   node->filename = filename;
   handle_dep(fs::path(filename).generic_string());
 
@@ -4013,24 +4194,6 @@ PyObject *python_text(PyObject *self, PyObject *args, PyObject *kwargs)
    node->params.detect_properties();
 
   return PyOpenSCADObjectFromNode(&PyOpenSCADType, node);
-}
-
-PyObject *python_texture(PyObject *self, PyObject *args, PyObject *kwargs)
-{
-  DECLARE_INSTANCE
-
-  char *kwlist[] = {"file", "uv", NULL};
-  char *texturename = NULL;
-  double uv=10.0;
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "s|f", kwlist,
-                                   &texturename,&uv
-                                   )) {
-    PyErr_SetString(PyExc_TypeError, "error during parsing texture");
-    return NULL;
-  }
-  TextureUV txt(texturename, uv);
-  textures.push_back(txt);
-  return Py_None;
 }
 
 PyObject *python_textmetrics(PyObject *self, PyObject *args, PyObject *kwargs)
@@ -4384,7 +4547,7 @@ PyObject *do_import_python(PyObject *self, PyObject *args, PyObject *kwargs, Imp
     PyErr_SetString(PyExc_TypeError, "Error during parsing osimport(filename)");
     return NULL;
   }
-  filename = lookup_file(v == NULL ? "" : v, python_scriptpath.parent_path(), instance->location().filePath().parent_path().string());
+  filename = lookup_file(v == NULL ? "" : v, python_scriptpath.parent_path().u8string(), instance->location().filePath().parent_path().string());
   if (!filename.empty()) handle_dep(filename);
   ImportType actualtype = type;
   if (actualtype == ImportType::UNKNOWN) {
@@ -4608,7 +4771,7 @@ PyObject *python_osuse_include(int mode, PyObject *self, PyObject *args, PyObjec
     else PyErr_SetString(PyExc_TypeError, "Error during parsing osuse(path)");
     return NULL;
   }
-  const std::string filename = lookup_file(file, python_scriptpath.parent_path(),".");
+  const std::string filename = lookup_file(file, python_scriptpath.parent_path().u8string(),".");
   stream << "include <" << filename << ">\n";
 
   SourceFile *source;
@@ -4667,6 +4830,7 @@ PyObject *python_osuse(PyObject *self, PyObject *args, PyObject *kwargs)
 
 PyObject *python_osinclude(PyObject *self, PyObject *args, PyObject *kwargs)
 {
+  LOG(message_group::Deprecated, "osinclude  is deprecated, please use osuse() instead");
   return python_osuse_include(1,self, args, kwargs);
 }
 
@@ -4761,7 +4925,7 @@ PyObject *python_modelpath(PyObject *self, PyObject *args, PyObject *kwargs, int
     PyErr_SetString(PyExc_TypeError, "Error during parsing model");
     return NULL;
   }
-  return PyUnicode_FromString(python_scriptpath.c_str());
+  return PyUnicode_FromString(python_scriptpath.u8string().c_str());
 }
 
 PyMethodDef PyOpenSCADFunctions[] = {
@@ -4831,8 +4995,8 @@ PyMethodDef PyOpenSCADFunctions[] = {
 
   {"projection", (PyCFunction) python_projection, METH_VARARGS | METH_KEYWORDS, "Projection Object."},
   {"surface", (PyCFunction) python_surface, METH_VARARGS | METH_KEYWORDS, "Surface Object."},
-  {"texture", (PyCFunction) python_texture, METH_VARARGS | METH_KEYWORDS, "Include a texture."},
   {"mesh", (PyCFunction) python_mesh, METH_VARARGS | METH_KEYWORDS, "exports mesh."},
+  {"bbox", (PyCFunction) python_bbox, METH_VARARGS | METH_KEYWORDS, "caluculate bbox of object."},
   {"faces", (PyCFunction) python_faces, METH_VARARGS | METH_KEYWORDS, "exports a list of faces."},
   {"edges", (PyCFunction) python_edges, METH_VARARGS | METH_KEYWORDS, "exports a list of edges from a face."},
   {"oversample", (PyCFunction) python_oversample, METH_VARARGS | METH_KEYWORDS, "oversample."},
@@ -4862,6 +5026,9 @@ PyMethodDef PyOpenSCADFunctions[] = {
   {"Asin",   (PyCFunction) python_asin, METH_VARARGS | METH_KEYWORDS, "Calculate asin."},
   {"Acos",   (PyCFunction) python_acos, METH_VARARGS | METH_KEYWORDS, "Calculate acos."},
   {"Atan",   (PyCFunction) python_atan, METH_VARARGS | METH_KEYWORDS, "Calculate atan."},
+  {"norm",   (PyCFunction) python_norm, METH_VARARGS | METH_KEYWORDS, "Calculate vector size."},
+  {"dot",   (PyCFunction) python_dot, METH_VARARGS | METH_KEYWORDS, "Calculate dot product."},
+  {"cross",   (PyCFunction) python_cross, METH_VARARGS | METH_KEYWORDS, "Calculate cross product."},
   {NULL, NULL, 0, NULL}
 };
 
@@ -4906,6 +5073,7 @@ PyMethodDef PyOpenSCADMethods[] = {
   OO_METHOD_ENTRY(resize,"Resize Object")	
 
   OO_METHOD_ENTRY(mesh, "Mesh Object")	
+  OO_METHOD_ENTRY(bbox, "Evaluate Bound Box of object")	
   OO_METHOD_ENTRY(faces, "Create Faces list")	
   OO_METHOD_ENTRY(edges, "Create Edges list")	
   OO_METHOD_ENTRY(oversample,"Oversample Object")	

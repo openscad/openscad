@@ -177,13 +177,15 @@ int gui(std::vector<std::string>& inputFiles, const std::filesystem::path& origi
   QIcon::setThemeName(isDarkMode() ? "chokusen-dark" : "chokusen");
 
   // set up groups for QSettings
-  QCoreApplication::setOrganizationName("OpenSCAD");
-  QCoreApplication::setOrganizationDomain("openscad.org");
-  QCoreApplication::setApplicationName("OpenSCAD");
+  QCoreApplication::setOrganizationName("PythonSCAD");
+  QCoreApplication::setOrganizationDomain("pythonscad.org");
+  QCoreApplication::setApplicationName("PythonSCAD");
   QCoreApplication::setApplicationVersion(TOSTRING(OPENSCAD_VERSION));
-  QGuiApplication::setApplicationDisplayName("OpenSCAD");
+  QGuiApplication::setApplicationDisplayName("PythonSCAD");
   QGuiApplication::setDesktopFileName(DESKTOP_FILENAME);
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
   QCoreApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
+#endif
 #ifdef Q_OS_MACOS
   app.setWindowIcon(QIcon(":/icon-macos.png"));
 #else

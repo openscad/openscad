@@ -5,8 +5,10 @@ mkdir -p tmp
 cd tmp
 rm -rf *
 
+STUBFILE=../ucrt64/lib/libpython3.12.dll.a
+OBJFILE="libpython3_12_dll_d001737.o"
 #unpack
-ar x ../ucrt64/lib/libpython3.11.dll.a
+ar x ${STUBFILE}
 
 #patch
 
@@ -16,11 +18,16 @@ ar x ../ucrt64/lib/libpython3.11.dll.a
 #00000090: 0000 0000 0000 0000 0000 0000 7079 7468  ............pyth
 #000000a0: 6f6e 3331 312e 646c 6c00 0000 0000 0000  on311.dll.......
 #
-bspatch libpython3_11_dll_d001667.o libpython3_11_dll_d001667.o.tmp ../../scripts/libpython3_11_dll_d001667.o.diff
-mv libpython3_11_dll_d001667.o.tmp libpython3_11_dll_d001667.o
+# xxd  libpython3_12_dll_d001737.o > tmpfile
+# edit tmpfile
+# xxd -r tmpfile > libpython3_12_dll_d001737.o.tmp
+# then  bsdiff  libpython3_12_dll_d001737.o libpython3_12_dll_d001737.o.tmp ../../scripts/libpython3_12_dll_d001737.o.diff 
+#
+bspatch ${OBJFILE} ${OBJFILE}.tmp ../../scripts/${OBJFILE}.diff
+mv ${OBJFILE}.tmp ${OBJFILE}
 
 #pack again
-ar -rc ../ucrt64/lib/libpython3.11.dll.a *.o
+ar -rc ${STUBFILE} *.o
 
 
  

@@ -117,11 +117,6 @@ void export_3mf_error(std::string msg, PLib3MFModel *& model)
   }
 }
 
-BYTE get_color_channel(const Color4f& col, int idx)
-{
-  return std::clamp(static_cast<int>(255.0 * col[idx]), 0, 255);
-}
-
 int count_mesh_objects(PLib3MFModel *& model) {
   PLib3MFModelResourceIterator *it;
   if (lib3mf_model_getmeshobjects(model, &it) != LIB3MF_OK) {
@@ -216,11 +211,13 @@ bool append_polyset(const std::shared_ptr<const PolySet>& ps,  const Export3mfPa
       const auto colname = "Color " + std::to_string(idx);
 
       DWORD id = 0;
+      uint8_t r, g, b, a;
+      if (!col.getRgba(r,g,b,a)) {
+        LOG(message_group::Warning, "Invalid color in 3MF export");
+      }
       lib3mf_basematerial_addmaterialutf8(ctx.basematerial,
                                           colname.c_str(),
-                                          get_color_channel(col, 0),
-                                          get_color_channel(col, 1),
-                                          get_color_channel(col, 2),
+                                          r,g,b,
                                           &id);
       return id;
     };
@@ -297,11 +294,11 @@ bool append_polyset(const std::shared_ptr<const PolySet>& ps,  const Export3mfPa
   if (ctx.basematerial) {
     lib3mf_defaultpropertyhandler_setbasematerial(defaultpropertyhandler, ctx.basematerialid, ctx.defaultColorId);
   } else if (ctx.usecolors) {
-    lib3mf_defaultpropertyhandler_setcolorrgba(defaultpropertyhandler,
-                                               get_color_channel(ctx.defaultColor, 0),
-                                               get_color_channel(ctx.defaultColor, 1),
-                                               get_color_channel(ctx.defaultColor, 2),
-                                               get_color_channel(ctx.defaultColor, 3));
+    uint8_t r, g, b, a;
+    if (!ctx.defaultColor.getRgba(r,g,b,a)) {
+      LOG(message_group::Warning, "Invalid color in 3MF export");
+    }
+    lib3mf_defaultpropertyhandler_setcolorrgba(defaultpropertyhandler,r,g,b,a);
   }
 
   lib3mf_release(defaultpropertyhandler);
@@ -449,10 +446,12 @@ void export_3mf(const std::vector<struct Export3mfPartInfo> & infos, std::ostrea
         export_3mf_error("Can't get base material resource id.", model);
         return;
       }
+      uint8_t r, g, b, a;
+      if (!defaultColor.getRgba(r,g,b,a)) {
+        LOG(message_group::Warning, "Invalid color in 3MF export");
+      }
       if (lib3mf_basematerial_addmaterialutf8(basematerial, "Default",
-                                              get_color_channel(defaultColor, 0),
-                                              get_color_channel(defaultColor, 1),
-                                              get_color_channel(defaultColor, 2),
+                                              r, g, b,
                                               &defaultColorId) != LIB3MF_OK) {
         export_3mf_error("Can't add default material color.", model);
         return;

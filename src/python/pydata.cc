@@ -471,14 +471,9 @@ PyObject *PyDataObject_call(PyObject *self, PyObject *args, PyObject *kwargs)
   source->scope.moduleInstantiations.clear();
   source->scope.moduleInstantiations.push_back(modinst);
   std::shared_ptr<AbstractNode> resultnode = source->instantiate(*builtin_context, &dummy_context);  
-#ifndef _WIN32   // this code crashes on mxe for unknown reason
+  nodes_hold.push_back(resultnode); // dirty hacks so resultnode does not go out of context
   resultnode = resultnode->clone();// use own ModuleInstatiation
-  delete source;
-  source = nullptr;
-#endif  
-
-  auto result = PyOpenSCADObjectFromNode(&PyOpenSCADType, resultnode);
-  return result;
+  return  PyOpenSCADObjectFromNode(&PyOpenSCADType, resultnode);
 }
 
 PyNumberMethods PyDataNumbers =

@@ -81,7 +81,10 @@ PACKAGES=(
 
     # https://gitlab.freedesktop.org/pixman/pixman/-/tags
     "pixman 0.46.0"
-    
+
+    # https://www.cairographics.org/news/ 
+    "cairo 1.18.0"
+
     # https://github.com/CGAL/cgal/releases
     "cgal 6.0.1"
 
@@ -103,7 +106,7 @@ PACKAGES=(
     "clipper2 1.5.3"
 
     # https://github.com/elalish/manifold/releases
-    "manifold 3.0.1"
+    "manifold 3.1.1"
 )
 DEPLOY_PACKAGES=(
     # https://github.com/sparkle-project/Sparkle/releases

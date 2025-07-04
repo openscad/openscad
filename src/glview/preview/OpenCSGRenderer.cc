@@ -231,7 +231,7 @@ void OpenCSGRenderer::createCSGVBOProducts(
 
         add_shader_pointers(vbo_builder, shaderinfo);
 
-        if (color[3] == 1.0f) {
+        if (color.a() == 1.0f) {
           // object is opaque, draw normally
           vbo_builder.create_surface(*csgobj.leaf->polyset, 
                          csgobj.leaf->matrix, last_color, enable_barycentric, override_color);

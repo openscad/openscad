@@ -311,7 +311,7 @@ def run_test(testname, cmd, args, redirect_stdin=False, redirect_stdout=False):
         args[0] = "-"
 
     try:
-        is_openscad = os.path.split(cmd)[1].lower().startswith("openscad")
+        is_openscad = os.path.split(cmd)[1].lower().startswith("pythonscad")
         if(is_openscad):
             outargs = ['-o', '-'] if (redirect_stdout) else ['-o', outputname]
         else:

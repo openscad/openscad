@@ -646,8 +646,11 @@ MainWindow::MainWindow(const QStringList& filenames) :
   connect(this->designActionPreview, &QAction::triggered, this, &MainWindow::actionRenderPreview);
   connect(this->designActionRender, &QAction::triggered, this, &MainWindow::actionRender);
   connect(this->designActionMeasureDistance, &QAction::triggered, this, &MainWindow::actionMeasureDistance);
+  this->designActionMeasureDistance->setCheckable(true);
   connect(this->designActionMeasureAngle, &QAction::triggered, this, &MainWindow::actionMeasureAngle);
+  this->designActionMeasureAngle->setCheckable(true);
   connect(this->designActionFindHandle, &QAction::triggered, this, &MainWindow::actionFindHandle);
+  this->designActionFindHandle->setCheckable(true);
   connect(this->designAction3DPrint, &QAction::triggered, this, &MainWindow::action3DPrint);
   connect(this->designShareDesign, &QAction::triggered, this, &MainWindow::actionShareDesign);
   connect(this->designLoadShareDesign, &QAction::triggered, this, &MainWindow::actionLoadShareDesign);
@@ -1875,8 +1878,10 @@ void MainWindow::actionOpenRecent()
 {
   auto action = qobject_cast<QAction *>(sender());
   tabManager->open(action->data().toString());
+#ifdef ENABLE_PYTHON  
   this->python_active = -1; // unknown
   recomputePythonActive();
+#endif  
 }
 
 void MainWindow::clearRecentFiles()
@@ -2323,6 +2328,9 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event)
   auto keyEvent = static_cast<QKeyEvent *>(event);
   if (keyEvent != nullptr && keyEvent->key() == Qt::Key_Escape) {
     if(this->qglview->measure_state != MEASURE_IDLE) {
+      this->designActionMeasureDistance->setChecked(false);
+      this->designActionMeasureAngle->setChecked(false);
+      this->designActionFindHandle->setChecked(false);
       this->qglview->handle_mode=false;
       meas.stopMeasure();
     }
@@ -2809,17 +2817,45 @@ void MainWindow::actionRenderDone(const std::shared_ptr<const Geometry>& root_ge
 
 void MainWindow::actionMeasureDistance()
 {
-  meas.startMeasureDist();
+  if(this->designActionMeasureDistance->isChecked()){
+    this->qglview->handle_mode=false;
+    meas.stopMeasure();
+    this->designActionMeasureAngle->setChecked(false);
+    this->designActionFindHandle->setChecked(false);
+    meas.startMeasureDist();
+  } else {
+      this->qglview->handle_mode=false;
+      meas.stopMeasure();
+  }  
 }
 
 void MainWindow::actionMeasureAngle()
 {
-  meas.startMeasureAngle();
+  if(this->designActionMeasureAngle->isChecked()){
+    this->qglview->handle_mode=false;
+    meas.stopMeasure();
+    this->designActionMeasureDistance->setChecked(false);
+    this->designActionFindHandle->setChecked(false);
+    meas.startMeasureAngle();
+  } else {
+      this->qglview->handle_mode=false;
+      meas.stopMeasure();
+  }  
 }
 void MainWindow::actionFindHandle()
 {
-  meas.startFindHandle();	
-  qglview->handle_mode=true;
+  if(this->designActionFindHandle->isChecked()){
+    this->qglview->handle_mode=false;
+    meas.stopMeasure();
+    this->designActionMeasureDistance->setChecked(false);
+    this->designActionMeasureAngle->setChecked(false);
+    meas.startFindHandle();	
+    qglview->handle_mode=true;
+  } else {
+      this->qglview->handle_mode=false;
+      meas.stopMeasure();
+  }
+
 }
 
 void MainWindow::leftClick(QPoint mouse)
@@ -3144,7 +3180,7 @@ void MainWindow::actionDisplayCSGTree()
 {
   setCurrentOutput();
   QString text = (rootNode)? QString::fromStdString(tree.getString(*rootNode, "  ")) : "";
-  showTextInWindow("CGS", text);
+  showTextInWindow("CSG", text);
   clearCurrentOutput();
 }
 

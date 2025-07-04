@@ -594,7 +594,7 @@ static SimplificationResult simplify_function_body(const Expression *expression,
 #ifdef ENABLE_PYTHON    
       if(f == boost::none)
       {
-        int error;	      
+        int error = 0;	      
         Value v = python_functionfunc(call,context, error);
         if(!error) return v;
       }

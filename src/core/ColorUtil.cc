@@ -1,3 +1,4 @@
+#include <boost/spirit/home/support/common_terminals.hpp>
 #include <string>
 #include <unordered_map>
 #include "geometry/linalg.h"
@@ -211,7 +212,7 @@ std::optional<Color4f> parse_hex_color(const std::string& hex) {
   const int stride = short_syntax ? 1 : 2;
   const float channel_max = short_syntax ? 15.0f : 255.0f;
 
-  Color4f rgba;
+  Vector4f rgba;
   rgba[3] = 1.0; // default alpha to 100%
 
   for (unsigned i = 0; i < (hex.size() - 1) / stride; ++i) {
@@ -233,15 +234,16 @@ std::optional<Color4f> parse_web_color(const std::string& col) {
 }
 
 } // namespace
+
 namespace OpenSCAD {
 
 std::optional<Color4f> parse_color(const std::string& col) {
-  const auto webcolor = ::parse_web_color(col);
+  auto webcolor = ::parse_web_color(col);
   if (webcolor) {
     return webcolor;
   }
 
-  const auto hexcolor = ::parse_hex_color(col);
+  auto hexcolor = ::parse_hex_color(col);
   if (hexcolor) {
     return hexcolor;
   }
@@ -261,11 +263,11 @@ Color4f getColor(const std::string& col, const Color4f& defaultcolor)
   return parsed.value_or(defaultcolor);
 }
 
-Color4f getColorHSV(const Color4f& col)
+Vector4f getColorHSV(const Color4f& col)
 {
   float h, s, v;
-  ::rgbtohsv(col[0], col[1], col[2], h, s, v);
-  return {h, s, v, col[3]};
+  ::rgbtohsv(col.r(), col.g(), col.b(), h, s, v);
+  return {h, s, v, col.a()};
 }
 
 /**
@@ -277,13 +279,13 @@ Color4f getColorHSV(const Color4f& col)
  */
 Color4f getContrastColor(const Color4f& col)
 {
-  Color4f hsv = getColorHSV(col);
-  float Y = 0.2126f * col[0] + 0.7152f * col[1] + 0.0722f * col[2];
+  const auto hsv = getColorHSV(col);
+  float Y = 0.2126f * col.r() + 0.7152f * col.g() + 0.0722f * col.b();
   float S = hsv[1];
 
   if (S < 0.5) {
     // low saturation, choose between black / white based on luminance Y
-    float val = Y > 0.5 ? 0.0f : 1.0f;
+    const float val = Y > 0.5 ? 0.0f : 1.0f;
     return {val, val, val, 1.0f};
   } else {
     float H = 360 * hsv[0];

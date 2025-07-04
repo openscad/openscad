@@ -13,7 +13,7 @@ get_fedora_deps_yum()
   boost-devel mpfr-devel gmp-devel glew-devel CGAL-devel gcc gcc-c++ pkgconfig \
   opencsg-devel git libXmu-devel curl imagemagick ImageMagick glib2-devel make \
   xorg-x11-server-Xvfb gettext qscintilla-qt5-devel \
-  mesa-dri-drivers double-conversion-devel tbb-devel
+  mesa-dri-drivers double-conversion-devel tbb-devel libcurl-devel
 }
 
 get_fedora_deps_dnf()
@@ -24,7 +24,7 @@ get_fedora_deps_dnf()
   opencsg-devel git libXmu-devel curl ImageMagick glib2-devel make \
   xorg-x11-server-Xvfb gettext qscintilla-qt5-devel \
   mesa-dri-drivers libzip-devel ccache qt5-qtmultimedia-devel qt5-qtsvg-devel \
-  double-conversion-devel tbb-devel
+  double-conversion-devel tbb-devel libcurl-devel
  dnf -y install libxml2-devel
  dnf -y install libffi-devel
  dnf -y install redhat-rpm-config
@@ -41,7 +41,7 @@ get_altlinux_deps()
  for i in boost-devel gcc4.5 gcc4.5-c++ boost-program_options-devel \
   boost-thread-devel boost-system-devel boost-regex-devel eigen3 \
   libmpfr libgmp libgmp_cxx-devel qt5-devel libcgal-devel git-core tbb-devel \
-  libglew-devel flex bison curl imagemagick gettext glib2-devel; do apt-get install $i; done
+  libglew-devel flex bison curl imagemagick gettext glib2-devel libcurl-devel; do apt-get install $i; done
 }
 
 get_freebsd_deps()
@@ -50,14 +50,14 @@ get_freebsd_deps()
   xorg libGLU libXmu libXi xorg-vfbserver glew \
   qt5-core qt5-gui qt5-buildtools qt5-opengl qt5-qmake \
   opencsg cgal curl imagemagick glib2-devel gettext libdouble-conversion-3.0.0 \
-  devel/onetbb
+  devel/onetbb libcurl
 }
 
 get_netbsd_deps()
 {
  pkgin install bison boost cmake git bash eigen3 flex gmake gmp mpfr \
   qt5 glew cgal opencsg python27 curl \
-  ImageMagick glib2 gettext threadingbuildingblocks
+  ImageMagick glib2 gettext threadingbuildingblocks libcurl
 }
 
 get_opensuse_deps()
@@ -68,7 +68,7 @@ get_opensuse_deps()
   qscintilla-qt5-devel libqt5-qtbase-devel libQt5OpenGL-devel \
   xvfb-run libzip-devel libqt5-qtmultimedia-devel libqt5-qtsvg-devel \
   double-conversion-devel libboost_regex-devel \
-  libboost_program_options-devel tbb-devel
+  libboost_program_options-devel tbb-devel libcurl-devel
  # qscintilla-qt5-devel replaces libqscintilla_qt5-devel
  # but openscad compiles with both
  zypper install libeigen3-devel
@@ -97,7 +97,7 @@ get_mageia_deps()
  urpmi task-c-devel task-c++-devel libqt5-devel libgmp-devel \
   libmpfr-devel libboost-devel eigen3-devel libglew-devel bison flex \
   cmake imagemagick glib2-devel python curl git x11-server-xvfb gettext \
-  double-conversion-devel tbb
+  double-conversion-devel tbb libcurl-devel
 }
 
 get_debian_deps()
@@ -111,7 +111,7 @@ get_debian_deps()
   imagemagick libfreetype6-dev libdouble-conversion-dev libxml2-dev \
   gtk-doc-tools libglib2.0-dev gettext xvfb pkg-config ragel libtbb-dev \
   libgl1-mesa-dev libxi-dev libxmu-dev libfontconfig-dev libzip-dev libjpeg-dev libjpeg-dev \
-  python3-venv python3-dev nettle-dev \
+  python3-dev nettle-dev python3-venv libcurl4-openssl-dev
  get_qt5_deps_debian 
 }
 
@@ -124,21 +124,21 @@ get_qt5_deps_debian()
 get_arch_deps()
 {
   pacman -S --noconfirm \
-	base-devel gcc bison flex make libzip \
-	qt5 qscintilla-qt5 cgal gmp mpfr boost opencsg \
-	glew eigen glib2 fontconfig freetype2 harfbuzz \
-	double-conversion imagemagick tbb
+  base-devel gcc bison flex make libzip \
+  qt5 qscintilla-qt5 cgal gmp mpfr boost opencsg \
+  glew eigen glib2 fontconfig freetype2 harfbuzz \
+  double-conversion imagemagick tbb curl
 }
 
 get_solus_deps()
 {
   eopkg -y it -c system.devel
   eopkg -y install qt5-base-devel qt5-multimedia-devel qt5-svg-devel qscintilla-devel \
-	CGAL-devel gmp-devel mpfr-devel glib2-devel libboost-devel \
-	opencsg-devel glew-devel eigen3 \
-	fontconfig-devel freetype2-devel harfbuzz-devel libzip-devel \
-	double-conversion-devel \
-	bison flex intel-tbb-devel
+  CGAL-devel gmp-devel mpfr-devel glib2-devel libboost-devel \
+  opencsg-devel glew-devel eigen3 \
+  fontconfig-devel freetype2-devel harfbuzz-devel libzip-devel \
+  double-conversion-devel \
+  bison flex intel-tbb-devel libcurl-devel
 }
 
 unknown()

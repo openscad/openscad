@@ -39,6 +39,33 @@
 #include "io/export.h"
 #include "geometry/Geometry.h"
 
+namespace {
+
+QString getArgValue(const Settings::LocalAppParameter& arg,
+                    const std::string& exportedFilename,
+                    const std::string& sourceFilename)
+{
+  const QFileInfo info(QString::fromStdString(exportedFilename));
+  switch (arg.type) {
+  case Settings::LocalAppParameterType::string:
+    return QString::fromStdString(arg.value);
+  case Settings::LocalAppParameterType::file:
+    return QString::fromStdString(exportedFilename);
+  case Settings::LocalAppParameterType::dir:
+    return info.absoluteDir().path();
+  case Settings::LocalAppParameterType::extension:
+    return info.suffix();
+  case Settings::LocalAppParameterType::source:
+    return QString::fromStdString(sourceFilename);
+  case Settings::LocalAppParameterType::sourcedir:
+    return QFileInfo(QString::fromStdString(sourceFilename)).absoluteDir().path();
+  default:
+    return {};
+  }
+}
+
+}  // namespace
+
 bool ExternalToolInterface::exportTemporaryFile(const std::shared_ptr<const Geometry>& rootGeometry, 
   const QString& sourceFileName, const Camera *const camera)
 {
@@ -111,40 +138,32 @@ bool LocalProgramService::process(const std::string& displayName, std::function<
     return false;
   }
 
-  QStringList args;
-  const auto info = QFileInfo(QString::fromStdString(exportedFilename_));
+#ifdef Q_OS_MACOS
+  QStringList fileArgs, otherArgs;
   for (const auto& arg : Settings::Settings::localAppParameterList.value()) {
-    switch (arg.type) {
-    case Settings::LocalAppParameterType::string:
-      args.append(QString::fromStdString(arg.value));
-      break;
-    case Settings::LocalAppParameterType::file:
-      args.append(QString::fromStdString(exportedFilename_));
-      break;
-    case Settings::LocalAppParameterType::dir:
-      args.append(info.absoluteDir().path());
-      break;
-    case Settings::LocalAppParameterType::extension:
-      args.append(info.suffix());
-      break;
-    case Settings::LocalAppParameterType::source:
-      args.append(QString::fromStdString(sourceFilename_));
-      break;
-    case Settings::LocalAppParameterType::sourcedir:
-      args.append(QFileInfo(QString::fromStdString(sourceFilename_)).absoluteDir().path());
-      break;
-    default:
-      break;
+    if (arg.type == Settings::LocalAppParameterType::file) {
+      fileArgs << getArgValue(arg, exportedFilename_, sourceFilename_);
+    } else {
+      otherArgs << getArgValue(arg, exportedFilename_, sourceFilename_);
     }
   }
-  const auto argsStr = args.empty() ? "<none>" : "['" + args.join("', '").toStdString() + "']";
-  PRINTDB("Running application '%s' with arguments: %s", application.toStdString() % argsStr);
-#ifdef Q_OS_MACOS
-  if (!process.startDetached("open", QStringList({"-a", application, "--args"}) + args)) {
+
+  QStringList commandArgs(fileArgs);
+  commandArgs << "-a" << application;
+  if (!otherArgs.isEmpty()) {
+    commandArgs << "--args" << otherArgs;
+  }
+  PRINTD("Executing: open " + commandArgs.join(" ").toStdString());
+  if (!process.startDetached("open", commandArgs)) {
 #else
+  QStringList args;
+  for (const auto& arg : Settings::Settings::localAppParameterList.value()) {
+    args << getArgValue(arg, exportedFilename_, sourceFilename_);
+  }
+  PRINTD("Executing: " + application.toStdString() + " " + args.join(" ").toStdString());
   if (!process.startDetached(application, args)) {
 #endif
-    LOG(message_group::Error, "Could not start Slicer '%1$s': %2$s", application.toStdString(), process.errorString().toStdString());
+    LOG(message_group::Error, "Could not start local application '%1$s': %2$s", application.toStdString(), process.errorString().toStdString());
     const auto output = process.readAll();
     if (output.length() > 0) {
       LOG(message_group::Error, "Output: %1$s", output.toStdString());

@@ -217,6 +217,16 @@ void PolySetBuilder::copyVertices(std::vector<Vector3d> &vertices) {
   vertices_.copy(std::back_inserter(vertices));
 }
 
+void PolySetBuilder::copyVertices(std::vector<Vector3f> &vertices) {
+  std::vector<Vector3d> verticesD;
+  copyVertices(verticesD);
+
+  vertices.clear();	
+  vertices.reserve(vertices_.size());
+  for(const Vector3d &f : verticesD)
+    vertices.push_back(Vector3f(f[0], f[1], f[2]));	  
+}
+
 void PolySetBuilder::addCurve(std::shared_ptr<Curve> new_curve){
   if(new_curve->start > new_curve->end) new_curve->reverse();
   auto arc_new_curve = std::dynamic_pointer_cast<ArcCurve>(new_curve);
