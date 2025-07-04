@@ -1,0 +1,2 @@
+ECHO: "basic format              ", { a = 1; b = 2; c = [3]; f = function() 1; }
+ECHO: "basic format of a copy    ", { a = 1; b = 2; c = [3]; f = function() 1; }

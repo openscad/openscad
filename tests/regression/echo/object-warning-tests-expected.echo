@@ -1,0 +1,11 @@
+ECHO: "warnings"
+WARNING: object(_, [[<bool>,value]]) The key of the entry is not <string> but <bool>. In an unnamed list, entries must be [key,value] to set or [key] to delete. The key must be <string>. in file object-warning-tests.scad, line 3
+ECHO: undef, "true as remove key"
+WARNING: object(_, [[<undefined>]]) The key of the entry is not <string> but <undefined>. In an unnamed list, entries must be [key,value] to set or [key] to delete. The key must be <string>. in file object-warning-tests.scad, line 4
+ECHO: undef, "undef as remove key"
+WARNING: object(_, <undefined>) An unnamed argument must be either <object> or <list>, it is <undefined>. in file object-warning-tests.scad, line 5
+ECHO: undef, "undef as edit list"
+WARNING: object( _, [<undefined>] ) Entry type is not a list, it is <undefined>. In an unnamed list, entries must be [key,value] to set or [key] to delete. The key must be <string>. in file object-warning-tests.scad, line 6
+ECHO: undef, "undef as entry in edit list"
+WARNING: object( _, [_, <undefined>] ) Entry type is not a list, it is <undefined>. In an unnamed list, entries must be [key,value] to set or [key] to delete. The key must be <string>. in file object-warning-tests.scad, line 7
+ECHO: undef, "undef 2nd entry as edit list"

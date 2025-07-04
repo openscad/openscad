@@ -720,12 +720,32 @@ bool Value::isUncheckedUndef() const
   return this->type() == Type::UNDEFINED && !std::get<UndefType>(this->value).empty();
 }
 
-Value ObjectType::operator==(const ObjectType& /*other*/) const {
-  return Value::undef("operation undefined (object == object)");
+Value ObjectType::operator==(const ObjectType& other) const {
+    if (other.ptr == this->ptr) {
+        return true;
+    }
+    if (other.ptr->values.size() != this->ptr->values.size()) {
+        return false;
+    }
+
+    for ( size_t i = 0; i< this->ptr->values.size(); i++){
+        auto a = this->ptr->keys[i] != other.ptr->keys[i];
+        if ( a ) {
+            return false;
+        }
+
+        auto b = this->ptr->values[i] != other.ptr->values[i];
+        if ( b.toBool() ) {
+            return false;
+        }
+    }
+    return true;
 }
-Value ObjectType::operator!=(const ObjectType& /*other*/) const {
-  return Value::undef("operation undefined (object != object)");
+Value ObjectType::operator!=(const ObjectType& other) const {
+    Value a = * this == other;
+    return !a.toBool();
 }
+
 Value ObjectType::operator<(const ObjectType& /*other*/) const {
   return Value::undef("operation undefined (object < object)");
 }
