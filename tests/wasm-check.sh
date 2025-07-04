@@ -4,25 +4,39 @@
 #
 set -euo pipefail
 
+cd $(dirname $0)
+
 ENV=$1
 
 rm -f out.stl
 case $ENV in
   node)
     echo "Checking WASM node build..."
-    ../build/openscad.js \
+    n use latest
+    chmod +x ../../build/openscad.js
+    ../../build/openscad.js \
         --backend=manifold \
-        examples/Basics/CSG.scad \
+        $PWD/../examples/Basics/CSG.scad \
         -o out.stl
+    cat out.stl
+    ;;
+  node-module)
+    echo "Checking WASM node module build..."
+    n use latest
+    node -e "import OpenSCAD from '../../build/openscad.js';\
+      OpenSCAD({noInitialRun: true}).then(instance => instance.callMain([\
+        '$PWD/../examples/Basics/CSG.scad',\
+        '-o', 'out.stl',\
+        '--backend=manifold'\
+      ]))"
     cat out.stl
     ;;
   web)
     echo "Checking WASM web build..."
-    file="tests/wasm-check.html"
-    node tests/wasm-check.mjs $PWD/$file
+    node wasm-check.mjs $PWD/wasm-check.html
     ;;
   *)
-    echo "Usage: $0 {node|web}"
+    echo "Usage: $0 {node|web|node-module}"
     exit 1
     ;;
 esac 2>&1 | tee out.log
