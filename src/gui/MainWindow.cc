@@ -3180,7 +3180,7 @@ void MainWindow::actionDisplayCSGTree()
 {
   setCurrentOutput();
   QString text = (rootNode)? QString::fromStdString(tree.getString(*rootNode, "  ")) : "";
-  showTextInWindow("CGS", text);
+  showTextInWindow("CSG", text);
   clearCurrentOutput();
 }
 
