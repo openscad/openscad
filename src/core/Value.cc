@@ -1266,67 +1266,19 @@ ObjectType::ObjectType(EvaluationSession *session) :
   ptr->evaluation_session = session;
 }
 
-const Value& ObjectType::get(const std::string& key) const
-{
-  auto result = ptr->map.find(key);
-  // NEEDSWORK it would be nice to have a "cause" for the undef, but Value::undef(...)
-  // does not appear compatible with Value&.
-  return result == ptr->map.end() ? Value::undefined : result->second;
-}
-
-void ObjectType::set(const std::string& key, Value&& value)
-{
-  if (ptr->map.find(key) == ptr->map.end()) {
-    ptr->map.emplace(key, std::move(value));
-    ptr->keys.emplace_back(key);
-    ptr->values.emplace_back(std::move(value));
-  } else {
-    ptr->map.erase(key);
-    ptr->map.emplace(key, std::move(value));
-    for (int i = ptr->keys.size() - 1; i >= 0; i--) {
-      if (ptr->keys[i] == key) {
-	ptr->values[i] = std::move(value);
-	break;
-      }
-    }
-  }
-}
-
-void ObjectType::del(const std::string& key)
-{
-  if (ptr->map.find(key) != ptr->map.end()) {
-    ptr->map.erase(key);
-    auto kit = ptr->keys.begin();
-    auto vit = ptr->values.begin();
-    for ( ; kit != ptr->keys.end(); ++kit, ++vit) {
-      if (*kit == key) {
-	ptr->keys.erase(kit);
-	ptr->values.erase(vit);
-	break;
-      }
-    }
-  }
-}
-
-bool ObjectType::contains(const std::string& key) const
-{
-  return ptr->map.find(key) != ptr->map.end();
-}
-
-bool ObjectType::empty() const
-{
-  return ptr->map.empty();
-}
-
-const std::vector<std::string>& ObjectType::keys() const
-{
-  return ptr->keys;
-}
+const Value& ObjectType::get(const std::string& key) const              { return ptr->get(key); }
+bool ObjectType::set(const std::string& key, Value&& value)             { return ptr->set(key,value); }
+bool ObjectType::del(const std::string& key)                            { return ptr->del(key) != NOINDEX; }
+bool ObjectType::contains(const std::string& key) const                 { return ptr->find(key)!= NOINDEX; }
+bool ObjectType::empty() const                                          { return ptr->values.empty(); }
+const std::vector<std::string>& ObjectType::keys() const                { return ptr->keys; }
+const std::vector<Value>& ObjectType::values() const                    { return ptr->values; }
 
 const Value& ObjectType::operator[](const str_utf8_wrapper& v) const
 {
   return this->get(v.toString());
 }
+
 
 // Copy explicitly only when necessary
 ObjectType ObjectType::clone() const
