@@ -189,10 +189,10 @@ std::unique_ptr<const Geometry> createFilletInt(std::shared_ptr<const PolySet> p
   auto vertices_copy = ps->vertices;
 
   bool improved=false;
-  std::vector<std::vector<int>> corner_rounds ; 
   std::unordered_map<EdgeKey, EdgeVal, boost::hash<EdgeKey> > edge_db;
   std::vector<intList> polinds, polposs;
 
+  std::vector<std::vector<int>> corner_rounds ; 
   do {
     improved=false; // fix short edges until happy
     std::vector<int> lockouts;		    
@@ -241,6 +241,7 @@ std::unique_ptr<const Geometry> createFilletInt(std::shared_ptr<const PolySet> p
         corner_rounds[e.first.ind2].push_back(e.first.ind1);
       }		      
     }
+/* TODO activate
 
     // eliminate  too short edges by extrapolating the neighboring edges
     for(auto &e: edge_db) {
@@ -353,6 +354,7 @@ std::unique_ptr<const Geometry> createFilletInt(std::shared_ptr<const PolySet> p
       }  
     
     }   
+*/
   } while(improved == true); 
 
   // start builder with existing vertices to have VertexIndex available
@@ -408,13 +410,17 @@ std::unique_ptr<const Geometry> createFilletInt(std::shared_ptr<const PolySet> p
         double a=(e_fb1.cross(e_fa1)).dot(dir);
 	double b=(fan.cross(fbn)).dot(e_fa1p)*fanf*fbnf;
         if(list_included(corner_rounds[e.first.ind1],indposao)){
+	double ang=(dir).dot(e_fa1.normalized());
 	  e_fa1 += dir*fanf; 
 	  if(a*b < 0) e_fa1 = -e_fa1*fanf;
+	  e_fa1 /= sqrt(1-ang*ang);
 	} 
 
         if(list_included(corner_rounds[e.first.ind1],indposbo)){
+	  double ang=(dir).dot(e_fb1.normalized());
 		e_fb1 += dir*fbnf; 
 		if(a*b < 0) e_fb1 = -e_fb1*fbnf;
+	  e_fb1 /= sqrt(1-ang*ang);
 	}
 	e_fa1 *= r_;
 	e_fb1 *= r_;
@@ -462,13 +468,17 @@ std::unique_ptr<const Geometry> createFilletInt(std::shared_ptr<const PolySet> p
 	double b=(fan.cross(fbn)).dot(e_fa2p)*fanf*fbnf;
         double c = (fan.cross(fbn)).dot(dir);
         if(list_included(corner_rounds[e.first.ind2],indposao)){
+	  double ang=(dir).dot(e_fa2.normalized());
           e_fa2 -= dir*fanf;
-	 if(a*b > 0) e_fa2 = -e_fa2*fanf;
+	  if(a*b > 0) e_fa2 = -e_fa2*fanf;
+	  e_fa2 /= sqrt(1-ang*ang);
 	}
 
         if(list_included(corner_rounds[e.first.ind2],indposbo)){
+  	  double ang=(dir).dot(e_fb2.normalized());
 	  e_fb2 -= dir*fbnf;
 	  if(a*b > 0)  e_fb2 = -e_fb2*fbnf;
+	  e_fb2 /= sqrt(1-ang*ang);
 	}
 	e_fa2 *= r_;
         e_fb2 *= r_;
@@ -677,7 +687,7 @@ std::unique_ptr<const Geometry> createFilletInt(std::shared_ptr<const PolySet> p
         for(int i=0;i<3;i++) {
           pdir[i]=-dir[(i+dirshift)%3];
 	}		
-        bezier_patch(builder, vertices_copy[i]-pdir[0]-pdir[1]-pdir[2], pdir,conc1, conc2, conc3, bn);
+        bezier_patch(builder, ps->vertices[i]-pdir[0]-pdir[1]-pdir[2], pdir,conc1, conc2, conc3, bn);
       }	
     }	    
   }
