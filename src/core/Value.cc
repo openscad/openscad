@@ -729,13 +729,13 @@ Value ObjectType::operator==(const ObjectType& other) const {
     }
 
     for ( size_t i = 0; i< this->ptr->values.size(); i++){
-        auto a = this->ptr->keys[i] != other.ptr->keys[i];
-        if ( a ) {
+        auto key_the_same = this->ptr->keys[i] != other.ptr->keys[i];
+        if ( key_the_same ) {
             return false;
         }
 
-        auto b = this->ptr->values[i] != other.ptr->values[i];
-        if ( b.toBool() ) {
+        auto value_the_same = this->ptr->values[i] != other.ptr->values[i];
+        if ( value_the_same.toBool() ) {
             return false;
         }
     }

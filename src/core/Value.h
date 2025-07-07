@@ -400,8 +400,9 @@ struct Value::ObjectType::ObjectObject {
   // order of the keys+values remains the insertion
   // order. No such map exists in the C++ lib.
   // However, for the garbage collection in ContextMemoryManager.cc
-  // it is paramount we only have 1 reference to a Value
-  // so we use a map for performance but maintain an index
+  // it is paramount we only have 1 reference to a Value and that
+  // we can provide a pointer to a vector<Value>.
+  // We therefore use a map for performance but maintain an index
   // instead of a secondary reference.
 
     std::unordered_map<std::string, size_t> map;

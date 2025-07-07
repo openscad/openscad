@@ -1,4 +1,5 @@
 o1 = object(a=1,b=2,c=[3], f= function() 1);
+all = object(t=true,i=42, d=42.42, v=[3], f= function() 1, o=object( a=1, b=2 ));
 
 // printouts
 
@@ -32,8 +33,10 @@ testEq( [ for (i = o1 ) i ], ["a", "b", "c", "f" ], "expected different set of k
 
 // equality 
 testEq( o1, o1,                                     "same object must be equal");
+testEq( all, all,                                   "same object with all types must be equal");
 testEq( o1, object(o1),                             "copy must be equal");
 testNEq( o1, object(o1,[["f"]]),                    "copy must not be equal when f removed");
+testNEq( all, object(all,[["o"]]),                  "copy must not be equal when o removed for all types");
 
 // editing
 
@@ -45,6 +48,7 @@ testEq( object(a=4, b=2, c=[3],x=42), object(o1, [["f"], ["a",4]], x=42),       
 testEq( object(a=1, b=4, c=[3],x=42), object(o1, [["f"], ["b",4]], x=42),           "!f,b=4,x=42");
 testEq( object(a=1, b=2, c=[4],x=42), object(o1, [["f"], ["c",[4]]], x=42),         "!f,c=[4],x=42");
 testEq( object(a=1, b=2, c=[4],x=undef), object(o1, [["f"], ["c",[4]]], x=undef),   "!f,c=[4],x=undef");
+testEq( object(a=1, b=2, c=[3],x=undef), object(o1, [["f"]], [], [], [], x=undef),  "!f []... x=undef");
 testEq( object(a=1, b=2, c=[3],x=undef), object(o1, [["f"]], [], [], [], x=undef),  "!f []... x=undef");
 
 
@@ -59,9 +63,11 @@ o = object(entries);
 test( function() o._99999 == 99999,                 "test 100k entries");
 
 // do random access to 100k entries 100k times
-access = [ for ( n = rands(0,100000,100000)) str("_",floor(n)) ];
+access = [ for ( n = rands(1,100000,100000)) floor(n) ];
 for ( i=access ) {
-    x=o[ i ];
+    key = str("_",i) ;
+    value=o[ key ];
+    assert(value == i);
 }
 
 

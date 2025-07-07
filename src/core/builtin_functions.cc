@@ -436,11 +436,6 @@ Value builtin_concat(Arguments arguments, const Location& /*loc*/)
   return std::move(result);
 }
 
-static Value warning( const std::shared_ptr<const Context>& context, const FunctionCall *call, const std::string & msg) {
-    LOG(message_group::Warning, call->location(), context->documentRoot(), msg.c_str());
-    return Value::undef(msg);
-}
-
 template <typename ...Args>
 std::string format(const std::string& format, Args && ...args)
 {
@@ -454,8 +449,7 @@ std::string format(const std::string& format, Args && ...args)
 
 static std::string builtin_object_unnamed(ObjectType & result, Value & value, int arg_index) {
 
-    std::string prior_args = std::string();
-        for ( int i=0; i<arg_index; i++) prior_args += "_, ";
+    std::string prior_args = "Argument " + std::to_string(arg_index) + " ";
 
     switch(value.type()){
     case Value::Type::OBJECT: {
@@ -466,10 +460,11 @@ static std::string builtin_object_unnamed(ObjectType & result, Value & value, in
         return "";
     }
     case Value::Type::VECTOR: {
-        std::string prior_entries;
 
         const VectorType & vector = value.toVector();
+        int element = 0;
         for (const auto& member : vector) {
+            std::string prior_entries = "Element " + std::to_string(element++) + " ";
 
             if (member.type() != Value::Type::VECTOR) {
                 return format(
@@ -506,10 +501,9 @@ static std::string builtin_object_unnamed(ObjectType & result, Value & value, in
                                 prior_args.c_str(), 
                                 prior_entries.c_str());
 
-            default: return format("object(%s[%s[/* %d entries */]]) Entry length is not 1 or 2 but %d. " OBJECT_HELP, 
+            default: return format("object(%s[%s[...]]) Entry length is %d, must be 1 [key] or 2 [key,value]. " OBJECT_HELP, 
                     prior_args.c_str(), 
                     prior_entries.c_str(),
-                    entry.size(), 
                     entry.size());
             }
             prior_entries += "_, ";
@@ -543,14 +537,16 @@ Value builtin_object(const std::shared_ptr<const Context>& context, const Functi
         Value value = argument->getExpr()->evaluate(context);
         if (argument->getName().empty()) {
             const auto error = builtin_object_unnamed(result,value, n);
-            if ( !error.empty())
-                return warning(context,call,error);
+            if ( !error.empty()) {
+                LOG(message_group::Warning, call->location(), context->documentRoot(), error.c_str());
+                return Value::undef(error);
+            }
         } else {
            result.set(argument->getName(), std::move(value));
         }
         n++;
     }
-    return std::move(result);
+    return result;
 }
 
 Value builtin_has_key(Arguments arguments, const Location& loc)
