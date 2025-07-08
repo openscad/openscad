@@ -1287,7 +1287,7 @@ ObjectType::ObjectType(EvaluationSession *session) :
 }
 
 const Value& ObjectType::get(const std::string& key) const              { return ptr->get(key); }
-bool ObjectType::set(const std::string& key, Value&& value)             { return ptr->set(key,value); }
+bool ObjectType::set(const std::string& key, Value value)               { return ptr->set(key,std::move(value)); }
 bool ObjectType::del(const std::string& key)                            { return ptr->del(key) != NOINDEX; }
 bool ObjectType::contains(const std::string& key) const                 { return ptr->find(key)!= NOINDEX; }
 bool ObjectType::empty() const                                          { return ptr->values.empty(); }

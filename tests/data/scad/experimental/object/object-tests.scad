@@ -27,6 +27,15 @@ test( function() [for (i=o1) has_key(o1, i)]
     ==  [true, true, true, true],                   "all keys must be present");
 test( function() len([for (i=o1) i]) == 4,          "check we have 4 keys");
 
+// empty key
+
+empty_key = object([["","empty-key"]]);
+
+test( function() has_key(empty_key,""),             "check if empty key exists");
+test( function() empty_key[""] == "empty-key",      "check if empty key has correct value");
+test( function() object() == object(empty_key,[[""]]), "remove empty key");
+
+
 // comprehension
 
 testEq( [ for (i = o1 ) i ], ["a", "b", "c", "f" ], "expected different set of keys");

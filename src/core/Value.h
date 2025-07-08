@@ -278,7 +278,7 @@ public:
     ObjectType(class EvaluationSession *session);
     [[nodiscard]] ObjectType clone() const;
     [[nodiscard]] const Value& get(const std::string& key) const;
-    bool set(const std::string& key, Value&& value);
+    bool set(const std::string& key, Value value);
     bool del(const std::string& key); // true if was present
     bool contains(const std::string& key) const;
     bool empty() const;
@@ -390,7 +390,7 @@ private:
   Variant value;
 };
 
-static size_t NOINDEX = std::string::npos;
+static const size_t NOINDEX = std::string::npos;
 // The object type which ObjectType's shared_ptr points to.
 struct Value::ObjectType::ObjectObject {
 
@@ -422,7 +422,7 @@ struct Value::ObjectType::ObjectObject {
             return NOINDEX;
     }
 
-    bool set(const std::string & key, Value & value) {
+    bool set(const std::string & key, Value  value) {
         size_t index = find(key);
         if ( index != NOINDEX) {
             // if contains key, keep at same position

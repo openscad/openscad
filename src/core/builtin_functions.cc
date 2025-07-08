@@ -49,6 +49,7 @@
 #include <vector>
 
 #include "utils/boost-utils.h"
+#include <boost/format.hpp>
 // hash double
 #include "geometry/linalg.h"
 
@@ -436,18 +437,9 @@ Value builtin_concat(Arguments arguments, const Location& /*loc*/)
   return std::move(result);
 }
 
-template <typename ...Args>
-std::string format(const std::string& format, Args && ...args)
-{
-    auto size = std::snprintf(nullptr, 0, format.c_str(), std::forward<Args>(args)...);
-    std::string output(size + 1, '\0');
-    std::snprintf(&output[0], size+1, format.c_str(), std::forward<Args>(args)...);
-    return output;
-}
-
 #define OBJECT_HELP "In an unnamed list, entries must be [key,value] to set or [key] to delete. The key must be <string>."
 
-static std::string builtin_object_unnamed(ObjectType & result, Value & value, int arg_index) {
+static std::string builtin_object_unnamed(ObjectType & result, const Value & value, int arg_index) {
 
     std::string prior_args = "Argument " + std::to_string(arg_index) + " ";
 
@@ -467,12 +459,12 @@ static std::string builtin_object_unnamed(ObjectType & result, Value & value, in
             std::string prior_entries = "Element " + std::to_string(element++) + " ";
 
             if (member.type() != Value::Type::VECTOR) {
-                return format(
-            "object( %s[%s<%s>] ) Entry type is not a list, it is <%s>. " OBJECT_HELP, 
-                    prior_args.c_str(), 
-                    prior_entries.c_str(), 
-                    Value::typeName(member.type()).c_str(),
-                    Value::typeName(member.type()).c_str() );
+                return str(boost::format(
+            "object( %s[%s<%s>] ) Entry type is not a list, it is <%s>. " OBJECT_HELP) 
+                    % prior_args.c_str() 
+                    % prior_entries.c_str() 
+                    % Value::typeName(member.type())
+                    % Value::typeName(member.type()));
             }
 
             const auto & entry = member.toVector();
@@ -481,12 +473,12 @@ static std::string builtin_object_unnamed(ObjectType & result, Value & value, in
             case 1: {
                 if ( entry[0].type() != Value::Type::STRING) { 
                     const char * es = entry.size()==1 ? "" : ",value";
-                    return format("object(%s[%s[<%s>%s]]) The key of the entry is not <string> but <%s>. " OBJECT_HELP, 
-                    prior_args.c_str(), 
-                    prior_entries.c_str(), 
-                    Value::typeName(entry[0].type()).c_str(), 
-                    es,
-                    Value::typeName(entry[0].type()).c_str());
+                    return str(boost::format("object(%s[%s[<%s>%s]]) The key of the entry is not <string> but <%s>. " OBJECT_HELP) 
+                    % prior_args
+                    % prior_entries 
+                    % Value::typeName(entry[0].type()) 
+                    % es
+                    % Value::typeName(entry[0].type()));
                 }
                 const auto & key = entry[0].toString();
                 if ( entry.size() == 1) {
@@ -497,24 +489,23 @@ static std::string builtin_object_unnamed(ObjectType & result, Value & value, in
                 break;
             };
 
-            case 0: return format("object(%s[%s[]]) Entry is empty." OBJECT_HELP, 
-                                prior_args.c_str(), 
-                                prior_entries.c_str());
+            case 0: return str(boost::format("object(%s[%s[]]) Entry is empty. " OBJECT_HELP)  
+                                % prior_args.c_str() 
+                                % prior_entries.c_str());
 
-            default: return format("object(%s[%s[...]]) Entry length is %d, must be 1 [key] or 2 [key,value]. " OBJECT_HELP, 
-                    prior_args.c_str(), 
-                    prior_entries.c_str(),
-                    entry.size());
+            default: return str(boost::format("object(%s[%s[...]]) Entry length is %d, must be 1 [key] or 2 [key,value]. " OBJECT_HELP) 
+                    % prior_args
+                    % prior_entries
+                    % entry.size());
             }
-            prior_entries += "_, ";
         }
         return "";
     }
     default:
-       return format("object(%s<%s>) An unnamed argument must be either <object> or <list>, it is <%s>.", 
-        prior_args.c_str(), 
-        Value::typeName(value.type()).c_str(),
-        Value::typeName(value.type()).c_str());
+       return str(boost::format("object(%s<%s>) An unnamed argument must be either <object> or <list>, it is <%s>. ") 
+        % prior_args
+        % Value::typeName(value.type())
+        % Value::typeName(value.type()));
     }
 }
 /**
