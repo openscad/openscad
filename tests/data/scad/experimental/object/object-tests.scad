@@ -83,16 +83,19 @@ for ( i=access ) {
 module test( f, s ) {
     if ( !f()) {
         echo("FAIL:", f, s );
-    }
+    } else
+        echo("PASS:", s );            
 }
 
 module testEq( a, b, s) {
     if ( a != b) {
         echo("FAIL:", a, "==", b, s );
-    }
+    } else
+        echo("PASS:", s );            
 }
 module testNEq( a, b, s) {
     if ( a == b) {
         echo("FAIL:", a, "==", b, s );
-    }
+    } else
+        echo("PASS:", s );            
 }
