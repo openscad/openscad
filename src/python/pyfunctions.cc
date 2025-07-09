@@ -1086,14 +1086,14 @@ PyObject *python_fromvector(const Vector3d vec) {
 }
 
 
-PyObject *python_number_scale(PyObject *pynum, Vector3d scalevec)
+PyObject *python_number_scale(PyObject *pynum, Vector3d scalevec,int vecs)
 {
   Matrix4d mat;
   if(!python_tomatrix(pynum, mat)){
     Transform3d matrix=Transform3d::Identity();
     matrix.scale(scalevec);
     Vector3d n;
-    for(int i=0;i<3;i++) {
+    for(int i=0;i<vecs;i++) {
       n =Vector3d(mat(0,i),mat(1,i),mat(2,i)); 
       n = matrix * n;
       for(int j=0;j<3;j++) mat(j,i) = n[j];
@@ -1112,7 +1112,7 @@ PyObject *python_number_scale(PyObject *pynum, Vector3d scalevec)
 
 PyObject *python_scale_sub(PyObject *obj, Vector3d scalevec)
 {
-  PyObject *mat = python_number_scale(obj, scalevec);
+  PyObject *mat = python_number_scale(obj, scalevec,3);
   if(mat != nullptr) return mat;
 
   DECLARE_INSTANCE
@@ -1132,7 +1132,7 @@ PyObject *python_scale_sub(PyObject *obj, Vector3d scalevec)
     PyObject *key, *value;
     Py_ssize_t pos = 0;
      while(PyDict_Next(child_dict, &pos, &key, &value)) {
-       PyObject *value1 = python_number_scale(value,scalevec);
+       PyObject *value1 = python_number_scale(value,scalevec,4);
        if(value1 != nullptr) PyDict_SetItem(((PyOpenSCADObject *) pyresult)->dict,key, value1);
        else PyDict_SetItem(((PyOpenSCADObject *) pyresult)->dict,key, value);
     }
@@ -1187,14 +1187,14 @@ PyObject *python_oo_scale(PyObject *obj, PyObject *args, PyObject *kwargs)
   }
   return python_scale_core(obj,val_v);
 }
-PyObject *python_matrix_rot(PyObject *mat, Matrix3d rotvec)
+PyObject *python_number_rot(PyObject *mat, Matrix3d rotvec, int vecs)
 {
   Transform3d matrix=Transform3d::Identity();
   matrix.rotate(rotvec);
   Matrix4d raw;
   if(python_tomatrix(mat, raw)) return nullptr;
   Vector3d n;
-  for(int i=0;i<4;i++) {
+  for(int i=0;i<vecs;i++) {
     n =Vector3d(raw(0,i),raw(1,i),raw(2,i));
     n = matrix * n;
     for(int j=0;j<3;j++) raw(j,i) = n[j];
@@ -1232,7 +1232,7 @@ PyObject *python_rotate_sub(PyObject *obj, Vector3d vec3, double angle, int drag
   } else {
     M = angle_axis_degrees(angle, vec3);
   }
-  PyObject *mat = python_matrix_rot(obj, M);
+  PyObject *mat = python_number_rot(obj, M, 3);
   if(mat != nullptr) return mat;
 
   DECLARE_INSTANCE
@@ -1254,7 +1254,7 @@ PyObject *python_rotate_sub(PyObject *obj, Vector3d vec3, double angle, int drag
     PyObject *key, *value;
     Py_ssize_t pos = 0;
      while(PyDict_Next(child_dict, &pos, &key, &value)) {
-       PyObject *value1 = python_matrix_rot(value,M);
+       PyObject *value1 = python_number_rot(value,M,4);
        if(value1 != nullptr) PyDict_SetItem(((PyOpenSCADObject *) pyresult)->dict,key, value1);
        else PyDict_SetItem(((PyOpenSCADObject *) pyresult)->dict,key, value);
     }
@@ -1306,12 +1306,12 @@ PyObject *python_oo_rotate(PyObject *obj, PyObject *args, PyObject *kwargs)
 }
 
 
-PyObject *python_matrix_mirror(PyObject *mat, Matrix4d m)
+PyObject *python_number_mirror(PyObject *mat, Matrix4d m, int vecs)
 {
   Matrix4d raw;
   if(python_tomatrix(mat, raw)) return nullptr;
   Vector4d n;
-  for(int i=0;i<4;i++) {
+  for(int i=0;i<vecs;i++) {
     n =Vector4d(raw(0,i),raw(1,i),raw(2,i),0);
     n = m * n;
     for(int j=0;j<3;j++) raw(j,i) = n[j];
@@ -1322,7 +1322,7 @@ PyObject *python_matrix_mirror(PyObject *mat, Matrix4d m)
 
 PyObject *python_mirror_sub(PyObject *obj, Matrix4d &m)
 {
-  PyObject *mat = python_matrix_mirror(obj,m);
+  PyObject *mat = python_number_mirror(obj,m, 3);
   if(mat != nullptr) return mat;
 
   DECLARE_INSTANCE
@@ -1341,7 +1341,7 @@ PyObject *python_mirror_sub(PyObject *obj, Matrix4d &m)
     PyObject *key, *value;
     Py_ssize_t pos = 0;
      while(PyDict_Next(child_dict, &pos, &key, &value)) {
-       PyObject *value1 = python_matrix_mirror(value,m);
+       PyObject *value1 = python_number_mirror(value,m, 4);
        if(value1 != nullptr) PyDict_SetItem(((PyOpenSCADObject *) pyresult)->dict,key, value1);
        else PyDict_SetItem(((PyOpenSCADObject *) pyresult)->dict,key, value);
     }
@@ -1403,7 +1403,7 @@ PyObject *python_oo_mirror(PyObject *obj, PyObject *args, PyObject *kwargs)
   return python_mirror_core(obj, val_v);
 }
 
-PyObject *python_number_trans(PyObject *pynum, Vector3d transvec)
+PyObject *python_number_trans(PyObject *pynum, Vector3d transvec, int vecs)
 {
   Matrix4d mat;
   if(!python_tomatrix(pynum, mat)){
@@ -1422,7 +1422,7 @@ PyObject *python_number_trans(PyObject *pynum, Vector3d transvec)
 PyObject *python_translate_sub(PyObject *obj, Vector3d translatevec, int dragflags)
 {
   PyObject *child_dict;
-  PyObject *mat = python_number_trans(obj,translatevec);
+  PyObject *mat = python_number_trans(obj,translatevec,3);
   if(mat != nullptr) return mat;
 
   DECLARE_INSTANCE
@@ -1443,7 +1443,7 @@ PyObject *python_translate_sub(PyObject *obj, Vector3d translatevec, int dragfla
     PyObject *key, *value;
     Py_ssize_t pos = 0;
      while(PyDict_Next(child_dict, &pos, &key, &value)) {
-       PyObject *value1 = python_number_trans(value,translatevec);
+       PyObject *value1 = python_number_trans(value,translatevec,4);
        if(value1 != nullptr) PyDict_SetItem(((PyOpenSCADObject *) pyresult)->dict,key, value1);
        else PyDict_SetItem(((PyOpenSCADObject *) pyresult)->dict,key, value);
     }
@@ -3751,7 +3751,7 @@ PyObject *python_nb_sub_vec3(PyObject *arg1, PyObject *arg2, int mode) // 0: tra
   } else vecs = python_vectors(arg2,2,3, &dragflags);
 
   if(mode == 0 && vecs.size() == 1) { // translate on numbers
-    PyObject *mat = python_number_trans(arg1,vecs[0]);
+    PyObject *mat = python_number_trans(arg1,vecs[0],4);
     if(mat != nullptr) return mat;
   }
 
@@ -3788,7 +3788,7 @@ PyObject *python_nb_sub_vec3(PyObject *arg1, PyObject *arg2, int mode) // 0: tra
         PyObject *key, *value;
         Py_ssize_t pos = 0;
          while(PyDict_Next(child_dict, &pos, &key, &value)) {
-           PyObject *value1 = python_number_trans(value,vecs[0]);
+           PyObject *value1 = python_number_trans(value,vecs[0], 4);
            if(value1 != nullptr) PyDict_SetItem(((PyOpenSCADObject *) pyresult)->dict,key, value1);
            else PyDict_SetItem(((PyOpenSCADObject *) pyresult)->dict,key, value);
         }
