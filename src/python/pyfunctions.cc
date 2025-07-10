@@ -4654,12 +4654,33 @@ PyObject *python_nimport(PyObject *self, PyObject *args, PyObject *kwargs)
 }
 #endif
 
+void python_str_sub(std::ostringstream &stream, const  std::shared_ptr<AbstractNode> &node, int ident)
+{
+    for(int i=0;i<ident;i++) stream << "  ";	
+    stream << node->toString();
+    switch(node->children.size()) {
+      case 0:
+        stream << ";\n";
+        break;	
+      case 1:
+        stream << "\n";
+	python_str_sub(stream, node->children[0],ident+1);
+        break;	
+      default:	
+        stream << "{\n";
+	for(const auto child: node->children) {
+	  python_str_sub(stream, child,ident+1);
+	}
+        for(int i=0;i<ident;i++) stream << "  ";	
+        stream << "}\n";
+    }
+}
 PyObject *python_str(PyObject *self) {
   std::ostringstream stream;
   PyObject *dummydict;	  
   std::shared_ptr<AbstractNode> node=PyOpenSCADObjectToNode(self, &dummydict);
   if(node != nullptr)
-    stream << "OpenSCAD (" << (int) node->index() << ")";
+    python_str_sub(stream, node,0);	  
   else
     stream << "Invalid OpenSCAD Object";
 
