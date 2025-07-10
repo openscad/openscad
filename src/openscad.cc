@@ -112,6 +112,7 @@
 #ifdef ENABLE_PYTHON
 #include "python/python_public.h"
 #endif
+#include "genlang/genlang.h"
 
 namespace po = boost::program_options;
 namespace fs = std::filesystem;
@@ -405,8 +406,8 @@ int do_export(const CommandLine& cmd, const RenderVariables& render_variables, F
   std::shared_ptr<AbstractNode> absolute_root_node;
 
 #ifdef ENABLE_PYTHON    
-  if(python_result_node != NULL && python_active) {
-    absolute_root_node = python_result_node;
+  if(genlang_result_node != NULL && python_active) {
+    absolute_root_node = genlang_result_node;
   } else {
 #endif	    
   absolute_root_node = root_file->instantiate(*builtin_context, &file_context);

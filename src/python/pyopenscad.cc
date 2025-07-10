@@ -24,6 +24,7 @@
  *
  */
 #include <Python.h>
+#include "genlang/genlang.h"
 #include <filesystem>
 
 #include "pyopenscad.h"
@@ -54,17 +55,12 @@ std::list<std::string> pythonInventory;
 AssignmentList customizer_parameters;
 AssignmentList customizer_parameters_finished;
 bool pythonDryRun=false;
-std::shared_ptr<AbstractNode> python_result_node = nullptr; /* global result veriable containing the python created result */
 PyObject *python_result_obj = nullptr;
 std::vector<SelectedObject> python_result_handle;
-std::vector<std::shared_ptr<AbstractNode> > shows;
 bool python_runipython = false;
 bool pythonMainModuleInitialized = false;
 bool pythonRuntimeInitialized = false;
 
-std::vector<std::string> mapping_name;
-std::vector<std::string> mapping_code;
-std::vector<int> mapping_level;
 std::vector<std::shared_ptr<AbstractNode>> nodes_hold; // make sure, that these nodes are not yet freed
 std::shared_ptr<AbstractNode> void_node, full_node;				       
 
@@ -892,13 +888,13 @@ void finishPython(void)
         } 
       }
 #endif
-      python_show_final();
+      show_final();
 }
 
 std::string evaluatePython(const std::string & code, bool dry_run)
 {
   std::string error;
-  python_result_node = nullptr;
+  genlang_result_node = nullptr;
   python_result_handle.clear();
   PyObjectUniquePtr pyExcValue (nullptr, PyObjectDeleter);
   PyObjectUniquePtr pyExcTraceback (nullptr, PyObjectDeleter);

@@ -9,12 +9,6 @@
 
 #pragma GCC diagnostic ignored "-Wwrite-strings"
 
-#define DECLARE_INSTANCE	std::string instance_name; \
-	AssignmentList inst_asslist;\
-	ModuleInstantiation *instance = new ModuleInstantiation(instance_name,inst_asslist, Location::NONE); \
-	modinsts_list.push_back(instance);
-
-
 typedef struct {
   PyObject_HEAD
   std::shared_ptr<AbstractNode> node;
@@ -29,7 +23,6 @@ PyMODINIT_FUNC PyInit_PyOpenSCAD(void);
 
 extern PyTypeObject PyOpenSCADType;
 
-extern std::shared_ptr<AbstractNode> python_result_node;
 extern PyObject *python_result_obj;
 extern std::vector<SelectedObject> python_result_handle;
 extern void python_catch_error(std::string &errorstr);
@@ -58,13 +51,7 @@ void get_fnas(double& fn, double& fa, double& fs);
 void python_retrieve_pyname(const std::shared_ptr<AbstractNode> &node);
 void python_build_hashmap(const std::shared_ptr<AbstractNode> &node, int level);
 PyObject *python_fromopenscad(const Value &val);
-void python_show_final(void);
-extern std::vector<std::shared_ptr<AbstractNode>> shows;
 
-
-extern std::vector<std::string> mapping_name;
-extern std::vector<std::string> mapping_code;
-extern std::vector<int> mapping_level;
 extern SourceFile *osinclude_source;
 
 PyObject *python_str(PyObject *self);

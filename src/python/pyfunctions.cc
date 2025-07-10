@@ -39,6 +39,7 @@
 #include "SourceFile.h"
 #include "BuiltinContext.h"
 #include <PolySetBuilder.h>
+#include "genlang/genlang.h"
 extern bool parse(SourceFile *& file, const std::string& text, const std::string& filename, const std::string& mainFile, int debug);
 
 #include <python/pydata.h>
@@ -1873,20 +1874,6 @@ PyObject *python_oo_wrap(PyObject *obj, PyObject *args, PyObject *kwargs)
   wrapSlice(polygons, xsteps);
 */
   return python_wrap_core(obj, target, fn, fa, fs);
-}
-
-void python_show_final(void)
-{
-  mapping_name.clear();
-  mapping_code.clear();
-  mapping_level.clear();
-  if(shows.size() == 1) python_result_node = shows[0];
-  else {
-    DECLARE_INSTANCE
-    python_result_node = std::make_shared<CsgOpNode>(instance, OpenSCADOperator::UNION);
-    python_result_node -> children = shows;
-  }
-  shows.clear();
 }
 
 PyObject *python_show_core(PyObject *obj)
@@ -4934,8 +4921,8 @@ PyObject *python_model(PyObject *self, PyObject *args, PyObject *kwargs, int mod
     PyErr_SetString(PyExc_TypeError, "Error during parsing model");
     return NULL;
   }
-  if(python_result_node == nullptr) return Py_None;
-  return PyOpenSCADObjectFromNode(&PyOpenSCADType, python_result_node);
+  if(genlang_result_node == nullptr) return Py_None;
+  return PyOpenSCADObjectFromNode(&PyOpenSCADType, genlang_result_node);
 }
 
 PyObject *python_modelpath(PyObject *self, PyObject *args, PyObject *kwargs, int mode)
