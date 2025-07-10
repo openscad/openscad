@@ -10,6 +10,7 @@
 #include "BuiltinContext.h"
 #include "Expression.h"
 #include "pyopenscad.h"
+#include "genlang/genlang.h"
 
 #include "../src/geometry/GeometryEvaluator.h"
 #include "../src/core/primitives.h"
