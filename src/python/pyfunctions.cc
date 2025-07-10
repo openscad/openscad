@@ -4949,6 +4949,14 @@ PyObject *python_modelpath(PyObject *self, PyObject *args, PyObject *kwargs, int
   return PyUnicode_FromString(python_scriptpath.u8string().c_str());
 }
 
+PyObject *python_oo_dict(PyObject *self, PyObject *args, PyObject *kwargs)
+{
+  char *kwlist[] = {NULL};
+  PyObject *dict = ((PyOpenSCADObject *)self)->dict;
+  Py_INCREF(dict);
+  return dict;
+}
+
 PyMethodDef PyOpenSCADFunctions[] = {
   {"edge", (PyCFunction) python_edge, METH_VARARGS | METH_KEYWORDS, "Create Edge."},
   {"square", (PyCFunction) python_square, METH_VARARGS | METH_KEYWORDS, "Create Square."},
@@ -5110,6 +5118,7 @@ PyMethodDef PyOpenSCADMethods[] = {
   OO_METHOD_ENTRY(pull,"Pull Obejct apart")	
   OO_METHOD_ENTRY(wrap,"Wrap Object around Cylinder")	
   OO_METHOD_ENTRY(render,"Render Object")	
+  OO_METHOD_ENTRY(dict,"return all dictionary")	
   {NULL, NULL, 0, NULL}
 };
 
