@@ -190,10 +190,11 @@ public:
 private:
   [[nodiscard]] QString getCurrentFileName() const;
 
+  void setSelectedObjectPreview(std::shared_ptr<const AbstractNode> newSelectedNode);
   void setRenderVariables(ContextHandle<BuiltinContext>& context);
   void updateCompileResult();
   void compile(bool reload, bool forcedone = false);
-  void compileCSG();
+  void compileCSG(std::shared_ptr<const AbstractNode> selectedNode=nullptr);
   bool checkEditorModified();
   QString dumpCSGTree(const std::shared_ptr<AbstractNode>& root);
 
@@ -401,10 +402,12 @@ private:
   static QElapsedTimer *progressThrottle;
   QWidget *lastFocus; // keep track of active copyable widget (Editor|Console) for global menu action Edit->Copy
 
+  std::shared_ptr<const AbstractNode> selectedNode; // The currently selected node. nullptr if none.
   std::shared_ptr<CSGNode> csgRoot; // Result of the CSGTreeEvaluator
   std::shared_ptr<CSGNode> normalizedRoot; // Normalized CSG tree
   std::shared_ptr<CSGProducts> rootProduct;
   std::shared_ptr<CSGProducts> highlightsProducts;
+  std::shared_ptr<CSGProducts> compileTimeHighlightedProducts;
   std::shared_ptr<CSGProducts> backgroundProducts;
   int currentlySelectedObject {-1};
 
