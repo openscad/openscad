@@ -194,7 +194,7 @@ std::shared_ptr<const PolySet> polygon2dToPolySet(const Polygon2d &p2d) {
     builder.beginPolygon(poly.size());
     // Flip vertex ordering for bottom polygon
     for (const auto& ind: boost::adaptors::reverse(poly)) {
-      builder.addVertex(ps->vertices[ind] - Vector3d(0, 0, 0.1));
+      builder.addVertex(ps->vertices[ind] - Vector3d(0, 0, 0.20));
     }
   }
 
@@ -202,7 +202,7 @@ std::shared_ptr<const PolySet> polygon2dToPolySet(const Polygon2d &p2d) {
   for (const auto& poly : ps->indices) {
     builder.beginPolygon(poly.size());
     for (const auto& ind: poly) {
-      builder.addVertex(ps->vertices[ind] + Vector3d(0, 0, 0.1));
+      builder.addVertex(ps->vertices[ind] + Vector3d(0, 0, 0.20));
     }
   }
 
@@ -213,10 +213,10 @@ std::shared_ptr<const PolySet> polygon2dToPolySet(const Polygon2d &p2d) {
       const Vector2d &prev = o.vertices[i];
       const Vector2d &curr = o.vertices[(i+1)%o.vertices.size()];
       builder.appendPolygon({
-        tr*Vector3d(prev[0], prev[1], -0.1),
-        tr*Vector3d(curr[0], curr[1], -0.1),
-        tr*Vector3d(curr[0], curr[1], 0.1),
-        tr*Vector3d(prev[0], prev[1], 0.1),
+        tr*Vector3d(prev[0], prev[1], -0.20),
+        tr*Vector3d(curr[0], curr[1], -0.20),
+        tr*Vector3d(curr[0], curr[1], 0.20),
+        tr*Vector3d(prev[0], prev[1], 0.20),
       });
     }
   }
