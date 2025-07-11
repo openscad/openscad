@@ -2868,8 +2868,7 @@ static std::unique_ptr<PolySet> wrapObject(const WrapNode& node, const PolySet *
     int segments2=2*G_PI*node.r/node.fs;
     int segments=segments1>segments2?segments1:segments2;	  
     if(node.fn > 0) segments=node.fn;
-    polygonlen = segments;
-    double arclen=2*G_PI*node.r/segments;
+    double arclen=(xmax-xmin)/segments;
     if(xmin >= 0) xmin = ceil((xmin+1e-6)/arclen)*arclen;
     else xmin = -floor((-xmin+1e-6)/arclen)*arclen;
     do {
@@ -2879,7 +2878,8 @@ static std::unique_ptr<PolySet> wrapObject(const WrapNode& node, const PolySet *
      polygon.push_back(pt);
      xmin += arclen;   
     }
-    while(xmin <= xmax+1e-6);
+    while(xmin <= xmax+1e-6+arclen);
+    polygonlen = polygon.size();
     xscale.push_back(xmin);
   }  
 

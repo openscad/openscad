@@ -1800,10 +1800,11 @@ PyObject *python_oo_pull(PyObject *obj, PyObject *args, PyObject *kwargs)
   return python_pull_core(obj, anchor, dir);
 }
 
-PyObject *python_wrap_core(PyObject *obj, PyObject *target, double fn, double fa, double fs)
+PyObject *python_wrap_core(PyObject *obj, PyObject *target, double r, double d, double fn, double fa, double fs)
 {
   DECLARE_INSTANCE
   auto node = std::make_shared<WrapNode>(instance);
+		
   PyObject *dummydict;
   std::shared_ptr<AbstractNode> child = PyOpenSCADObjectToNodeMulti(obj, &dummydict);
   if (child == NULL) {
@@ -1813,9 +1814,15 @@ PyObject *python_wrap_core(PyObject *obj, PyObject *target, double fn, double fa
 
   if(!python_numberval(target, &node->r)) {
       node->shape = nullptr;
-  } else if( Py_TYPE(target) == &PyOpenSCADType) {
+  } else if( target != nullptr && Py_TYPE(target) == &PyOpenSCADType) {
     std::shared_ptr<AbstractNode> abstr = ((PyOpenSCADObject *) target)->node;		 
     node->shape =  abstr;
+  } else if(!isnan(r)) {    
+      node->r = r;	  
+      node->shape = nullptr;
+  } else if(!isnan(d)) {    
+      node->r = d/2.0;	  
+      node->shape = nullptr;
   } else {
     PyErr_SetString(PyExc_TypeError, "wrapping object must bei either Polygon or cylinder radius\n");
     return NULL;
@@ -1831,47 +1838,37 @@ PyObject *python_wrap_core(PyObject *obj, PyObject *target, double fn, double fa
 
 PyObject *python_wrap(PyObject *self, PyObject *args, PyObject *kwargs)
 {
-  char *kwlist[] = {"obj", "target","fn","fa","fs", NULL};
+  char *kwlist[] = {"obj", "target","r","d", "fn","fa","fs", NULL};
   PyObject *obj = NULL, *target = NULL;
   double  fn, fa, fs;
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "OO|ddd", kwlist,
+  double r = NAN, d=NAN;
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O|Oddddd", kwlist,
                                    &obj,
-                                   &target, &fn, &fa, &fs
+                                   &target, &r, &d, &fn, &fa, &fs
                                    )) {
     PyErr_SetString(PyExc_TypeError, "error during parsing wrap\n");
     return NULL;
   }
-  return python_wrap_core(obj, target, fn,fa, fs);
+  return python_wrap_core(obj, target, r,d, fn,fa, fs);
 }
 
 PyObject *python_oo_wrap(PyObject *obj, PyObject *args, PyObject *kwargs)
 {
-  char *kwlist[] = {"target","fn","fa","fs",NULL};
+  char *kwlist[] = {"target","r","d", "fn","fa","fs",NULL};
   double fn=NAN,fa=NAN,fs=NAN;
   PyObject *target = NULL;
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O|ddd", kwlist,
-                                   &target,&fn,&fa,&fs
+  double r = NAN, d=NAN;
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|Oddddd", kwlist,
+                                   &target,&r, &d, &fn,&fa,&fs
                                    )) {
-    PyErr_SetString(PyExc_TypeError, "error during parsing\n");
+    PyErr_SetString(PyExc_TypeError, "error during parsing wrap\n");
     return NULL;
   }
   std::vector<double> xsteps;
   xsteps.push_back(4);
   xsteps.push_back(6);
 
-/*  
-  MyPoly poly;
-  poly.push_back(Vector3d(0,0, 0));
-  poly.push_back(Vector3d(10,0, 0));
-  poly.push_back(Vector3d(10,10, 0));
-  poly.push_back(Vector3d(0,10, 0));
-
-  std::vector<MyPoly> polygons;
-  polygons.push_back(poly);
-
-  wrapSlice(polygons, xsteps);
-*/
-  return python_wrap_core(obj, target, fn, fa, fs);
+  return python_wrap_core(obj, target, r, d, fn, fa, fs);
 }
 
 PyObject *python_show_core(PyObject *obj)
