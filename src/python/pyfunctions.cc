@@ -1811,15 +1811,13 @@ PyObject *python_wrap_core(PyObject *obj, PyObject *target, double fn, double fa
     return NULL;
   }
 
-  if(PyFloat_Check(target)) {
-      printf("is float\n");
-      node->r = PyFloat_AsDouble(target);
+  if(!python_numberval(target, &node->r)) {
       node->shape = nullptr;
   } else if( Py_TYPE(target) == &PyOpenSCADType) {
     std::shared_ptr<AbstractNode> abstr = ((PyOpenSCADObject *) target)->node;		 
     node->shape =  abstr;
   } else {
-    PyErr_SetString(PyExc_TypeError, "warpign object must bei either Polygon or cylidner radius\n");
+    PyErr_SetString(PyExc_TypeError, "wrapping object must bei either Polygon or cylinder radius\n");
     return NULL;
   }
 
@@ -2332,7 +2330,7 @@ PyObject *python_oo_color(PyObject *obj, PyObject *args, PyObject *kwargs)
   char *kwlist[] = {"c", "alpha", NULL};
   PyObject *color = NULL;
   double alpha = 1.0;
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|Odi", kwlist,
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|Od", kwlist,
                                    &color, &alpha
                                    )) {
     PyErr_SetString(PyExc_TypeError, "error during parsing color");
