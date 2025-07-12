@@ -25,6 +25,10 @@ public:
   [[nodiscard]] const std::shared_ptr<const Context>& getContext() const { return context; }
   [[nodiscard]] const std::shared_ptr<Expression>& getExpr() const { return expr; }
   [[nodiscard]] const std::shared_ptr<AssignmentList>& getParameters() const { return parameters; }
+  
+  void set_receiver(Value v);
+  std::shared_ptr<Value> get_receiver() const;
+  std::shared_ptr<std::vector<Value>> receiver{std::make_shared<std::vector<Value>>()};
 private:
   std::shared_ptr<const Context> context;
   std::shared_ptr<Expression> expr;

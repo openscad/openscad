@@ -93,7 +93,7 @@ struct EmbeddedValuesVisitor
   const std::vector<Value> *operator()(const VectorType& value) const { return &value.ptr->vec; }
   const std::vector<Value> *operator()(const EmbeddedVectorType& value) const { return &value.ptr->vec; }
   const std::vector<Value> *operator()(const ObjectType& value) const { return &value.ptr->values; }
-  const std::vector<Value> *operator()(const FunctionPtr&) const { return nullptr; }
+  const std::vector<Value> *operator()(const FunctionPtr& fp) const { return fp->receiver.get(); }
 };
 
 struct ReferencedContextVisitor
