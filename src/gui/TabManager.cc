@@ -95,9 +95,7 @@ void TabManager::tabSwitched(int x)
     setTabsCloseButtonVisibility(idx, isVisible);
   }
 
-#ifdef ENABLE_PYTHON
-  par->recomputePythonActive();
-#endif
+  par->recomputeLanguageActive();
   emit currentEditorChanged(editor);
 }
 

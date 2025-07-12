@@ -1680,7 +1680,7 @@ void MainWindow::instantiateRoot()
 
     std::shared_ptr<const FileContext> file_context;
 #ifdef ENABLE_PYTHON
-    if (genlang_result_node != NULL && this->python_active) this->absoluteRootNode = genlang_result_node;
+    if (genlang_result_node != NULL && language != LANG_SCAD) this->absoluteRootNode = genlang_result_node;
     else
 #endif
     this->absoluteRootNode = this->rootFile->instantiate(*builtin_context, &file_context);
@@ -1879,10 +1879,8 @@ void MainWindow::actionOpenRecent()
 {
   auto action = qobject_cast<QAction *>(sender());
   tabManager->open(action->data().toString());
-#ifdef ENABLE_PYTHON  
-  this->python_active = -1; // unknown
-  recomputePythonActive();
-#endif  
+  language = LANG_NONE; // unknown
+  recomputeLanguageActive();
 }
 
 void MainWindow::clearRecentFiles()
@@ -1979,7 +1977,7 @@ void MainWindow::saveBackup()
 
   if (!this->tempFile) {
 #ifdef ENABLE_PYTHON
-    const QString suffix = this->python_active ? "py" : "scad";
+    const QString suffix = language == LANG_PYTHON? "py" : "scad";
 #else
     const QString suffix = "scad";
 #endif
@@ -2431,23 +2429,23 @@ bool MainWindow::trust_python_file(const std::string& file,  const std::string& 
   }
   return false;
 }
-void MainWindow::recomputePythonActive()
+void MainWindow::recomputeLanguageActive()
 {
   auto fnameba = activeEditor->filepath.toLocal8Bit();
   const char *fname = activeEditor->filepath.isEmpty() ? "" : fnameba;
 
-  int oldPythonActive = this->python_active;
-  this->python_active = 0;
+  int oldLanguage = language;
+  language = LANG_SCAD;
   if (fname != NULL) {
     if(boost::algorithm::ends_with(fname, ".py")) {
 	    std::string content = std::string(this->lastCompiledDoc.toUtf8().constData());
-      if ( trust_python_file(std::string(fname), content)) this->python_active = 1;
+      if ( trust_python_file(std::string(fname), content)) language = LANG_PYTHON;
       else LOG(message_group::Warning, Location::NONE, "", "Python is not enabled");
     }
   }
 
-  if (oldPythonActive != this->python_active) {
-    emit this->pythonActiveChanged(this->python_active);
+  if (oldLanguage != language) {
+    emit this->pythonActiveChanged(language == LANG_PYTHON);
   }
 }
 #endif // ifdef ENABLE_PYTHON
@@ -2464,9 +2462,9 @@ SourceFile *MainWindow::parseDocument(EditorInterface *editor)
       std::string(this->lastCompiledDoc.toUtf8().constData());
   const char *fname = editor->filepath.isEmpty() ? "" : fnameba;
   SourceFile *sourceFile;
+  recomputeLanguageActive();
 #ifdef ENABLE_PYTHON
-  recomputePythonActive();
-  if (this->python_active) {
+  if (language == LANG_PYTHON) {
     auto fulltext_py =
       std::string(this->lastCompiledDoc.toUtf8().constData());
 
