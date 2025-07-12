@@ -78,15 +78,13 @@ Follow the instructions for the platform you're compiling on below.
 
 Install git (https://git-scm.com/) onto your system. Then run a clone:
 
-    git clone https://github.com/pythohn/pythonscad.git
+    git clone https://github.com/pythonscad/pythonscad.git
 
 This will download the latest sources into a directory named `pythonscad`.
 
-    git submodule update --init --recursive
     cd pythonscad
     git submodule update --init --recursive
     sudo ./scripts/uni-get-dependencies.sh
-    # make sure to get cryptopp and python dev packages installed, additionally
     mkdir build
     cd build
     cmake -DEXPERIMENTAL=1 -DENABLE_PYTHON=1 -DENABLE_LIBFIVE=1 ..
