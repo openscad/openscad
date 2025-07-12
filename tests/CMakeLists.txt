@@ -1103,6 +1103,14 @@ add_cmdline_test(svgimport OPENSCAD ARGS --imgsize 600,600 SUFFIX png FILES
   ${TEST_SCAD_DIR}/svg/extruded/simple-center.scad
 )
 
+# 
+# OBJECT echo tests
+#
+
+file(GLOB OBJECT_TEST ${TEST_SCAD_DIR}/experimental/object/*.scad)
+add_cmdline_test(echo EXPERIMENTAL OPENSCAD SUFFIX echo FILES ${OBJECT_TEST} ARGS --enable object-function)
+
+
 #
 # Export/import tests
 #

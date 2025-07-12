@@ -266,7 +266,7 @@ bool Value::toBool() const
   case Type::STRING:    return !std::get<str_utf8_wrapper>(this->value).empty();
   case Type::VECTOR:    return !std::get<VectorType>(this->value).empty();
   case Type::RANGE:     return true;
-  case Type::OBJECT:    return true;
+  case Type::OBJECT:    return !std::get<ObjectType>(this->value).empty();
   case Type::FUNCTION:  return true;
   default: assert(false && "unknown Value variant type"); return false;
   }
@@ -749,12 +749,32 @@ bool Value::isUncheckedUndef() const
   return this->type() == Type::UNDEFINED && !std::get<UndefType>(this->value).empty();
 }
 
-Value ObjectType::operator==(const ObjectType& /*other*/) const {
-  return Value::undef("operation undefined (object == object)");
+Value ObjectType::operator==(const ObjectType& other) const {
+    if (other.ptr == this->ptr) {
+        return true;
+    }
+    if (other.ptr->values.size() != this->ptr->values.size()) {
+        return false;
+    }
+
+    for ( size_t i = 0; i< this->ptr->values.size(); i++){
+        auto key_the_same = this->ptr->keys[i] != other.ptr->keys[i];
+        if ( key_the_same ) {
+            return false;
+        }
+
+        auto value_the_same = this->ptr->values[i] != other.ptr->values[i];
+        if ( value_the_same.toBool() ) {
+            return false;
+        }
+    }
+    return true;
 }
-Value ObjectType::operator!=(const ObjectType& /*other*/) const {
-  return Value::undef("operation undefined (object != object)");
+Value ObjectType::operator!=(const ObjectType& other) const {
+    Value a = * this == other;
+    return !a.toBool();
 }
+
 Value ObjectType::operator<(const ObjectType& /*other*/) const {
   return Value::undef("operation undefined (object < object)");
 }
@@ -1302,30 +1322,19 @@ ObjectType::ObjectType(EvaluationSession *session) :
   ptr->evaluation_session = session;
 }
 
-const Value& ObjectType::get(const std::string& key) const
-{
-  auto result = ptr->map.find(key);
-  // NEEDSWORK it would be nice to have a "cause" for the undef, but Value::undef(...)
-  // does not appear compatible with Value&.
-  return result == ptr->map.end() ? Value::undefined : result->second;
-}
-
-void ObjectType::set(const std::string& key, Value&& value)
-{
-  ptr->map.emplace(key, value.clone());
-  ptr->keys.emplace_back(key);
-  ptr->values.emplace_back(std::move(value));
-}
-
-const std::vector<std::string>& ObjectType::keys() const
-{
-  return ptr->keys;
-}
+const Value& ObjectType::get(const std::string& key) const              { return ptr->get(key); }
+bool ObjectType::set(const std::string& key, Value value)               { return ptr->set(key,std::move(value)); }
+bool ObjectType::del(const std::string& key)                            { return ptr->del(key) != NOINDEX; }
+bool ObjectType::contains(const std::string& key) const                 { return ptr->find(key)!= NOINDEX; }
+bool ObjectType::empty() const                                          { return ptr->values.empty(); }
+const std::vector<std::string>& ObjectType::keys() const                { return ptr->keys; }
+const std::vector<Value>& ObjectType::values() const                    { return ptr->values; }
 
 const Value& ObjectType::operator[](const str_utf8_wrapper& v) const
 {
   return this->get(v.toString());
 }
+
 
 // Copy explicitly only when necessary
 ObjectType ObjectType::clone() const
