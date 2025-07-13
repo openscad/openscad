@@ -1113,7 +1113,7 @@ PyObject *python_number_scale(PyObject *pynum, Vector3d scalevec,int vecs)
 
 PyObject *python_scale_sub(PyObject *obj, Vector3d scalevec)
 {
-  PyObject *mat = python_number_scale(obj, scalevec,3);
+  PyObject *mat = python_number_scale(obj, scalevec,4);
   if(mat != nullptr) return mat;
 
   DECLARE_INSTANCE
@@ -1233,7 +1233,7 @@ PyObject *python_rotate_sub(PyObject *obj, Vector3d vec3, double angle, int drag
   } else {
     M = angle_axis_degrees(angle, vec3);
   }
-  PyObject *mat = python_number_rot(obj, M, 3);
+  PyObject *mat = python_number_rot(obj, M, 4);
   if(mat != nullptr) return mat;
 
   DECLARE_INSTANCE
@@ -1323,7 +1323,7 @@ PyObject *python_number_mirror(PyObject *mat, Matrix4d m, int vecs)
 
 PyObject *python_mirror_sub(PyObject *obj, Matrix4d &m)
 {
-  PyObject *mat = python_number_mirror(obj,m, 3);
+  PyObject *mat = python_number_mirror(obj,m, 4);
   if(mat != nullptr) return mat;
 
   DECLARE_INSTANCE
@@ -1423,7 +1423,7 @@ PyObject *python_number_trans(PyObject *pynum, Vector3d transvec, int vecs)
 PyObject *python_translate_sub(PyObject *obj, Vector3d translatevec, int dragflags)
 {
   PyObject *child_dict;
-  PyObject *mat = python_number_trans(obj,translatevec,3);
+  PyObject *mat = python_number_trans(obj,translatevec,4);
   if(mat != nullptr) return mat;
 
   DECLARE_INSTANCE
