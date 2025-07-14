@@ -1004,6 +1004,67 @@ int python__setattro__(PyObject *dict, PyObject *key, PyObject *v)
 }
 
 
+typedef struct {
+    PyObject_HEAD
+    PyObject *container;  // Referenz auf das Original-Objekt
+    Py_ssize_t index;     // Aktueller Index
+} PyOpenSCADObjectIter;
+
+extern PyTypeObject PyOpenSCADObjectIterType;
+
+PyObject *PyOpenSCADType_iter(PyObject *self)
+{
+    PyOpenSCADObjectIter *iter = (PyOpenSCADObjectIter *) PyObject_New(PyOpenSCADObjectIter , &PyOpenSCADObjectIterType);
+    if (iter == NULL) {
+        return NULL;
+    }
+    Py_INCREF(iter);
+    
+    Py_INCREF(self);
+    iter->container = self;
+    iter->index = 0;
+    
+    return (PyObject *)iter;
+}
+	
+
+PyObject *PyOpenSCADType_next(PyObject *self)
+{
+    PyOpenSCADObjectIter *iter = (PyOpenSCADObjectIter *)self;
+    PyOpenSCADObject *container = (PyOpenSCADObject  *)iter->container;
+    
+    // Prüfe ob noch Elemente vorhanden
+    Py_ssize_t size = container->node->children.size();
+    if (iter->index >= size) {
+        PyErr_SetNone(PyExc_StopIteration);
+        return NULL;
+    }
+    
+    // Nächstes Element holen
+    auto node = container->node->children[iter->index];
+    iter->index++;
+    return PyOpenSCADObjectFromNode(&PyOpenSCADType, node);
+}
+	
+// Iterator dealloc
+static void PyOpenSCADObjectIter_dealloc(PyObject *self)
+{
+    PyOpenSCADObjectIter *iter = (PyOpenSCADObjectIter *)self;
+    Py_XDECREF(iter->container);
+    PyObject_Del(self);
+}
+
+// Iterator Type Definition
+PyTypeObject PyOpenSCADObjectIterType = {
+    PyVarObject_HEAD_INIT(NULL, 0)
+    .tp_name = "PyOpenSCADType.Iterator",
+    .tp_basicsize = sizeof(PyOpenSCADObjectIter),
+    .tp_flags = Py_TPFLAGS_DEFAULT,
+    //.tp_dealloc = (destructor) PyOpenSCADObjectIter_dealloc,
+    .tp_iter = PyOpenSCADType_iter,
+    .tp_iternext = PyOpenSCADType_next,  // <-- __next__ Implementierung
+};
+
 PyTypeObject PyOpenSCADType = {
     PyVarObject_HEAD_INIT(nullptr, 0)
     "PyOpenSCAD",             			/* tp_name */
@@ -1030,7 +1091,7 @@ PyTypeObject PyOpenSCADType = {
     0,                         			/* tp_clear */
     0,                         			/* tp_richcompare */
     0,                         			/* tp_weaklistoffset */
-    0,                         			/* tp_iter */
+    PyOpenSCADType_iter,       			/* tp_iter */
     0,                         			/* tp_iternext */
     PyOpenSCADMethods,             		/* tp_methods */
     0,             				/* tp_members */
