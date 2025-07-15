@@ -2528,6 +2528,11 @@ void MainWindow::setSelectedObjectPreview(std::shared_ptr<const AbstractNode> ne
         return;
 
     selectedNode = newSelectedNode;
+
+    // Check if there is no selection, then re-initialize the currently selected object
+    if(!selectedNode)
+        currentlySelectedObject = -1;
+
     std::vector<std::shared_ptr<CSGNode>> highlight_terms;
     CSGTreeEvaluator::selectAndHighlightCSGTree(selectedNode,
                                                 *rootNode.get(),
@@ -2616,7 +2621,6 @@ void MainWindow::setSelection(int index)
   const std::shared_ptr<const AbstractNode> selected_node = rootNode->getNodeByID(index, path);
 
   if (!selected_node) return;
-
   currentlySelectedObject = index;
 
   auto location = selected_node->modinst->location();
@@ -2658,6 +2662,7 @@ void MainWindow::setSelection(int index)
 void MainWindow::onHoveredObjectInSelectionMenu()
 {
   assert(renderedEditor != nullptr);
+
   auto *action = qobject_cast<QAction *>(sender());
   if (!action || !action->property("id").isValid()) {
     return;
