@@ -84,16 +84,22 @@ struct UseCountVisitor
 
 struct EmbeddedValuesVisitor
 {
-  const std::vector<Value> *operator()(const UndefType&) const { return nullptr; }
-  const std::vector<Value> *operator()(bool) const { return nullptr; }
-  const std::vector<Value> *operator()(double) const { return nullptr; }
-  const std::vector<Value> *operator()(const str_utf8_wrapper&) const { return nullptr; }
-  const std::vector<Value> *operator()(const RangePtr&) const { return nullptr; }
+  const std::shared_ptr<Values> operator()(const UndefType&) const { return nullptr; }
+  const std::shared_ptr<Values> operator()(bool) const { return nullptr; }
+  const std::shared_ptr<Values> operator()(double) const { return nullptr; }
+  const std::shared_ptr<Values> operator()(const str_utf8_wrapper&) const { return nullptr; }
+  const std::shared_ptr<Values> operator()(const RangePtr&) const { return nullptr; }
 
-  const std::vector<Value> *operator()(const VectorType& value) const { return &value.ptr->vec; }
-  const std::vector<Value> *operator()(const EmbeddedVectorType& value) const { return &value.ptr->vec; }
-  const std::vector<Value> *operator()(const ObjectType& value) const { return &value.ptr->values; }
-  const std::vector<Value> *operator()(const FunctionPtr&) const { return nullptr; }
+  const std::shared_ptr<Values> operator()(const VectorType& value) const {
+    return value.embeddedValues();
+  }
+  const std::shared_ptr<Values> operator()(const EmbeddedVectorType& value) const {
+    return value.embeddedValues();
+  }
+  const std::shared_ptr<Values> operator()(const ObjectType& value) const {
+    return value.embeddedValues();
+  }
+  const std::shared_ptr<Values> operator()(const FunctionPtr&) const { return nullptr; }
 };
 
 struct ReferencedContextVisitor
@@ -147,7 +153,7 @@ static std::vector<Context *> findRootContexts(const std::vector<std::shared_ptr
       int requiredReferences = std::visit(UseCountVisitor(), value.getVariant());
       assert(accountedReferences <= requiredReferences);
       if (accountedReferences == requiredReferences) {
-        const std::vector<Value> *embeddedValues = std::visit(EmbeddedValuesVisitor(), value.getVariant());
+        const std::shared_ptr<Values> embeddedValues = std::visit(EmbeddedValuesVisitor(), value.getVariant());
         if (embeddedValues) {
           for (const Value& embeddedValue : *embeddedValues) {
             valueQueue.push_back(&embeddedValue);
@@ -243,7 +249,7 @@ static std::unordered_set<const Context *> findReachableContexts(const std::vect
       const Value *value = valueQueue.front();
       valueQueue.pop_front();
 
-      const std::vector<Value> *embeddedValues = std::visit(EmbeddedValuesVisitor(), value->getVariant());
+      const std::shared_ptr<Values> embeddedValues = std::visit(EmbeddedValuesVisitor(), value->getVariant());
       if (embeddedValues) {
         for (const Value& embeddedValue : *embeddedValues) {
           visitValue(embeddedValue);

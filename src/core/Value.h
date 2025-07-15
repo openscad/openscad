@@ -21,6 +21,7 @@ class tostring_visitor;
 class tostream_visitor;
 class Expression;
 class Value;
+class Values;
 
 class QuotedString : public std::string
 {
@@ -205,6 +206,7 @@ public:
       bool operator==(const iterator& other) const { return this->vo == other.vo && this->index == other.index; }
       bool operator!=(const iterator& other) const { return this->vo != other.vo || this->index != other.index; }
     };
+    std::shared_ptr<Values> embeddedValues() const;
     using const_iterator = const iterator;
     VectorType(class EvaluationSession *session);
     VectorType(class EvaluationSession *session, double x, double y, double z);
@@ -291,6 +293,7 @@ public:
     const Value& operator[](const str_utf8_wrapper& v) const;
     [[nodiscard]] const std::vector<std::string>& keys() const;
     [[nodiscard]] const std::vector<Value>& values() const;
+    std::shared_ptr<Values> embeddedValues() const;
   };
 
 private:
@@ -461,3 +464,36 @@ std::ostream& operator<<(std::ostream& stream, const Value::ObjectType& u);
 using VectorType = Value::VectorType;
 using EmbeddedVectorType = Value::EmbeddedVectorType;
 using ObjectType = Value::ObjectType;
+
+class VirtualValueIterator
+{
+public:
+  // These need to know how the particular iterator works, and so must be implemented in
+  // a subclass.
+  virtual void inc();
+  virtual const Value& operator*() const;
+  virtual bool operator==(const VirtualValueIterator& other) const;
+  virtual bool operator!=(const VirtualValueIterator& other) const;
+  // This one can be generically built on top of the others.
+  const Value *operator->() const { return &**this; }
+};
+
+class ValueIterator {
+private:
+  std::shared_ptr<VirtualValueIterator> vi;
+public:
+  ValueIterator(std::shared_ptr<VirtualValueIterator> i) : vi(i) { };
+
+  ValueIterator& operator++() { vi->inc(); return *this; }
+  const Value& operator*() const { return (**vi); }
+  bool operator==(const ValueIterator& other) const { return *vi == *other.vi; }
+  bool operator!=(const ValueIterator& other) const { return *vi != *other.vi; }
+  const Value *operator->() const { return &**this; }
+};
+
+class Values
+{
+public:
+    [[nodiscard]] virtual const ValueIterator begin() const;
+    [[nodiscard]] virtual const ValueIterator   end() const;
+};

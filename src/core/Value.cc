@@ -635,6 +635,61 @@ void VectorType::VectorObjectDeleter::operator()(VectorObject *v)
   delete orig;
 }
 
+std::shared_ptr<Values>
+VectorType::embeddedValues() const
+{
+  class VectorValueIterator: public VirtualValueIterator  {
+  private:
+    VectorType::iterator it;
+  public:
+    VectorValueIterator(VectorType::iterator i) : it(i) {};
+
+    void inc() { ++it; };
+    const Value& operator*() const { return *it; }
+    bool operator==(const VirtualValueIterator& other) const { return it == dynamic_cast<const VectorValueIterator *>(&other)->it; }
+    bool operator!=(const VirtualValueIterator& other) const { return it != dynamic_cast<const VectorValueIterator *>(&other)->it; }
+  };
+
+  class VectorValues : public Values {
+  public:
+    VectorValues(const VectorType *v) : vector(v) { };
+
+    const ValueIterator begin() const { return ValueIterator(std::make_shared<VectorValueIterator>(vector->begin())); };
+    const ValueIterator end() const { return ValueIterator(std::make_shared<VectorValueIterator>(vector->end())); };
+  private:
+    const VectorType *vector;
+  };
+  return std::make_shared<VectorValues>(this);
+}
+
+std::shared_ptr<Values>
+ObjectType::embeddedValues() const
+{
+  class ObjectValueIterator: public VirtualValueIterator  {
+  public:
+    ObjectValueIterator(std::vector<std::string>::const_iterator i, const ObjectType *o) : it(i), obj(o) {};
+
+    void inc() { ++it; };
+    const Value& operator*() const { return obj->get(*it); }
+    bool operator==(const VirtualValueIterator& other) const { return it == dynamic_cast<const ObjectValueIterator *>(&other)->it; }
+    bool operator!=(const VirtualValueIterator& other) const { return it != dynamic_cast<const ObjectValueIterator *>(&other)->it; }
+  private:
+    std::vector<std::string>::const_iterator it;
+    const ObjectType *obj;
+  };
+
+  class ObjectValues : public Values {
+  public:
+    ObjectValues(const ObjectType *o) : obj(o) { };
+
+    const ValueIterator begin() const { return ValueIterator(std::make_shared<ObjectValueIterator>(obj->keys().begin(), obj)); };
+    const ValueIterator end() const { return ValueIterator(std::make_shared<ObjectValueIterator>(obj->keys().end(), obj)); };
+  private:
+    const ObjectType *obj;
+  };
+  return std::make_shared<ObjectValues>(this);
+}
+
 const VectorType& Value::toVector() const
 {
   static const VectorType empty(nullptr);
