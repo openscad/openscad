@@ -1306,6 +1306,16 @@ ObjectType ObjectType::clone() const
   return ObjectType(this->ptr);
 }
 
+Value ObjectType::get_fixed(const std::string & key) const {
+    Value value = ptr->get(key).clone();
+    if( value.type() == Value::Type::FUNCTION) {
+        FunctionType function(value.toFunction());
+        function.set_receiver(*this);
+        return std::move(function);
+    } else
+        return value;
+}
+
 std::ostream& operator<<(std::ostream& stream, const ObjectType& v)
 {
   stream << "{ ";

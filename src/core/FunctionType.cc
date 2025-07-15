@@ -23,6 +23,26 @@ Value FunctionType::operator>=(const FunctionType& /*other*/) const {
   return Value::undef("operation undefined (function >= function)");
 }
 
+std::shared_ptr<Value> FunctionType::get_receiver() const {
+    if ( receiver->empty() ) {
+        std::shared_ptr<Value> empty;
+        return std::move(empty);
+    } else {
+        auto value = receiver->at(0).clone();
+        return std::make_shared<Value>(std::move(value));
+    }
+}
+
+void FunctionType::set_receiver(Value value) {
+    assert( value.isDefinedAs(Value::Type::OBJECT));
+    receiver = std::make_shared<std::vector<Value>>();
+    receiver->emplace_back(std::move(value));
+}
+
+std::vector<Value> * FunctionType::get_values() const {
+    return receiver.get();
+}
+
 std::ostream& operator<<(std::ostream& stream, const FunctionType& f)
 {
   stream << "function(";

@@ -390,8 +390,11 @@ Value MemberLookup::evaluate(const std::shared_ptr<const Context>& context) cons
     if (this->member == "step") return v[1];
     if (this->member == "end") return v[2];
     break;
-  case Value::Type::OBJECT:
-    return v[this->member];
+  case Value::Type::OBJECT: {
+        ObjectType object = v.toObject();
+        Value value(object.get_fixed(member));
+        return std::move(value);
+  }
   default:
     break;
   }
@@ -514,6 +517,7 @@ static SimplificationResult simplify_function_body(const Expression *expression,
       const Expression *function_body;
       const AssignmentList *required_parameters;
       std::shared_ptr<const Context> defining_context;
+      std::shared_ptr<const Value> receiver;
 
       auto f = call->evaluate_function_expression(context);
       if (!f) {
@@ -539,14 +543,24 @@ static SimplificationResult simplify_function_body(const Expression *expression,
           function_body = function->getExpr().get();
           required_parameters = function->getParameters().get();
           defining_context = function->getContext();
+          receiver = function->get_receiver();
         }
       }
+
       ContextHandle<Context> body_context{Context::create<Context>(defining_context)};
+      if (receiver) {
+        ObjectType object = receiver->toObject();
+        
+        for ( const std::string & key : object.keys()){
+            Value v = object.get_fixed(key);
+            body_context->set_variable(key, std::move(v));
+        }
+        body_context->set_variable("$this", std::move(object));
+      }
       body_context->apply_config_variables(*context);
       Arguments arguments{call->arguments, context};
       Parameters parameters = Parameters::parse(std::move(arguments), call->location(), *required_parameters, defining_context);
       body_context->apply_variables(std::move(parameters).to_context_frame());
-
       return SimplifiedExpression{function_body, std::move(body_context), call};
     } else {
       return expression->evaluate(context);
