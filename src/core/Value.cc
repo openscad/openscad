@@ -644,18 +644,18 @@ VectorType::embeddedValues() const
   public:
     VectorValueIterator(VectorType::iterator i) : it(i) {};
 
-    void inc() { ++it; };
-    const Value& operator*() const { return *it; }
-    bool operator==(const VirtualValueIterator& other) const { return it == dynamic_cast<const VectorValueIterator *>(&other)->it; }
-    bool operator!=(const VirtualValueIterator& other) const { return it != dynamic_cast<const VectorValueIterator *>(&other)->it; }
+    VectorValueIterator& operator++() override { ++it; return *this; }
+    const Value& operator*() const override { return *it; }
+    bool operator==(const VirtualValueIterator& other) const override { return it == dynamic_cast<const VectorValueIterator *>(&other)->it; }
+    bool operator!=(const VirtualValueIterator& other) const override { return it != dynamic_cast<const VectorValueIterator *>(&other)->it; }
   };
 
   class VectorValues : public Values {
   public:
     VectorValues(const VectorType *v) : vector(v) { };
 
-    const ValueIterator begin() const { return ValueIterator(std::make_shared<VectorValueIterator>(vector->begin())); };
-    const ValueIterator end() const { return ValueIterator(std::make_shared<VectorValueIterator>(vector->end())); };
+    const ValueIterator begin() const override { return ValueIterator(std::make_shared<VectorValueIterator>(vector->begin())); };
+    const ValueIterator end() const override { return ValueIterator(std::make_shared<VectorValueIterator>(vector->end())); };
   private:
     const VectorType *vector;
   };
@@ -669,10 +669,10 @@ ObjectType::embeddedValues() const
   public:
     ObjectValueIterator(std::vector<std::string>::const_iterator i, const ObjectType *o) : it(i), obj(o) {};
 
-    void inc() { ++it; };
-    const Value& operator*() const { return obj->get(*it); }
-    bool operator==(const VirtualValueIterator& other) const { return it == dynamic_cast<const ObjectValueIterator *>(&other)->it; }
-    bool operator!=(const VirtualValueIterator& other) const { return it != dynamic_cast<const ObjectValueIterator *>(&other)->it; }
+    ObjectValueIterator& operator++() override { ++it; return *this; }
+    const Value& operator*() const override { return obj->get(*it); }
+    bool operator==(const VirtualValueIterator& other) const override { return it == dynamic_cast<const ObjectValueIterator *>(&other)->it; }
+    bool operator!=(const VirtualValueIterator& other) const override { return it != dynamic_cast<const ObjectValueIterator *>(&other)->it; }
   private:
     std::vector<std::string>::const_iterator it;
     const ObjectType *obj;
@@ -682,8 +682,8 @@ ObjectType::embeddedValues() const
   public:
     ObjectValues(const ObjectType *o) : obj(o) { };
 
-    const ValueIterator begin() const { return ValueIterator(std::make_shared<ObjectValueIterator>(obj->keys().begin(), obj)); };
-    const ValueIterator end() const { return ValueIterator(std::make_shared<ObjectValueIterator>(obj->keys().end(), obj)); };
+    const ValueIterator begin() const override { return ValueIterator(std::make_shared<ObjectValueIterator>(obj->keys().begin(), obj)); };
+    const ValueIterator end() const override { return ValueIterator(std::make_shared<ObjectValueIterator>(obj->keys().end(), obj)); };
   private:
     const ObjectType *obj;
   };

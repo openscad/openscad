@@ -470,10 +470,10 @@ class VirtualValueIterator
 public:
   // These need to know how the particular iterator works, and so must be implemented in
   // a subclass.
-  virtual void inc();
-  virtual const Value& operator*() const;
-  virtual bool operator==(const VirtualValueIterator& other) const;
-  virtual bool operator!=(const VirtualValueIterator& other) const;
+  virtual VirtualValueIterator& operator++() = 0;
+  virtual const Value& operator*() const = 0;
+  virtual bool operator==(const VirtualValueIterator& other) const = 0;
+  virtual bool operator!=(const VirtualValueIterator& other) const = 0;
   // This one can be generically built on top of the others.
   const Value *operator->() const { return &**this; }
 };
@@ -484,7 +484,7 @@ private:
 public:
   ValueIterator(std::shared_ptr<VirtualValueIterator> i) : vi(i) { };
 
-  ValueIterator& operator++() { vi->inc(); return *this; }
+  ValueIterator& operator++() { ++(*vi); return *this; }
   const Value& operator*() const { return (**vi); }
   bool operator==(const ValueIterator& other) const { return *vi == *other.vi; }
   bool operator!=(const ValueIterator& other) const { return *vi != *other.vi; }
@@ -494,6 +494,6 @@ public:
 class Values
 {
 public:
-    [[nodiscard]] virtual const ValueIterator begin() const;
-    [[nodiscard]] virtual const ValueIterator   end() const;
+    [[nodiscard]] virtual const ValueIterator begin() const = 0;
+    [[nodiscard]] virtual const ValueIterator   end() const = 0;
 };
