@@ -3549,12 +3549,16 @@ PyObject *python_oo_csg_sub(PyObject *self, PyObject *args, PyObject *kwargs, Op
 
 
   PyObject *obj;
-  PyObject *child_dict;	  
-  PyObject *dummy_dict;	  
+  std::vector<PyObject *>child_dict;
   std::shared_ptr<AbstractNode> child;
+  PyObject *dict;
 
-  child = PyOpenSCADObjectToNodeMulti(self, &child_dict);
-  if(child != NULL) node->children.push_back(child);
+  dict = nullptr;
+  child = PyOpenSCADObjectToNodeMulti(self, &dict);
+  if(child != NULL) {
+	  node->children.push_back(child);
+	  child_dict.push_back(dict);
+  }
   
   if(kwargs != nullptr) {
     PyObject *key, *value;
@@ -3580,8 +3584,8 @@ PyObject *python_oo_csg_sub(PyObject *self, PyObject *args, PyObject *kwargs, Op
   }
   for (i = 0; i < PyTuple_Size(args);i++) {
     obj = PyTuple_GetItem(args, i);
-    if(i == 0) child = PyOpenSCADObjectToNodeMulti(obj, &child_dict);
-    else child = PyOpenSCADObjectToNodeMulti(obj, &dummy_dict);
+    child = PyOpenSCADObjectToNodeMulti(obj, &dict);
+    child_dict.push_back(dict);
     if(child != NULL) {
       if(child.get() == void_node.get() && mode == OpenSCADOperator::UNION) {}
       else if(child.get() == void_node.get() && i > 0 && mode == OpenSCADOperator::DIFFERENCE) {}
@@ -3614,10 +3618,15 @@ PyObject *python_oo_csg_sub(PyObject *self, PyObject *args, PyObject *kwargs, Op
   }
 
   PyObject *pyresult =PyOpenSCADObjectFromNode(&PyOpenSCADType, node);
-  if(child_dict != nullptr ) {
+  for(int i=child_dict.size()-1;i>=0; i--) // merge from back  to give 1st child most priority
+  {
+    auto &dict = child_dict[i];	  
+    if(dict == nullptr) continue;
     PyObject *key, *value;
     Py_ssize_t pos = 0;
-     while(PyDict_Next(child_dict, &pos, &key, &value)) {
+     while(PyDict_Next(dict, &pos, &key, &value)) {
+       PyObject* value1 = PyUnicode_AsEncodedString(key, "utf-8", "~");
+       const char *value_str =  PyBytes_AS_STRING(value1);
        PyDict_SetItem(((PyOpenSCADObject *) pyresult)->dict, key, value);
     }
   }
@@ -3643,23 +3652,29 @@ PyObject *python_nb_sub(PyObject *arg1, PyObject *arg2, OpenSCADOperator mode)
 {
   DECLARE_INSTANCE
   std::shared_ptr<AbstractNode> child[2];
-  PyObject *child_dict[2];	  
+  std::vector<PyObject *> child_dict;
 
   if(arg1 == Py_None && mode == OpenSCADOperator::UNION) return arg2;
   if(arg2 == Py_None && mode == OpenSCADOperator::UNION) return arg1;
   if(arg2 == Py_None && mode == OpenSCADOperator::DIFFERENCE) return arg1;
 
 
-  child[0] = PyOpenSCADObjectToNodeMulti(arg1, &child_dict[0]);
+  PyObject *dict;
+  dict = nullptr;
+  child[0] = PyOpenSCADObjectToNodeMulti(arg1, &dict);
   if (child[0] == NULL) {
     PyErr_SetString(PyExc_TypeError, "invalid argument left to operator");
     return NULL;
   }
-  child[1] = PyOpenSCADObjectToNodeMulti(arg2, &child_dict[1]);
+  child_dict.push_back(dict);
+
+  dict=nullptr;
+  child[1] = PyOpenSCADObjectToNodeMulti(arg2, &dict);
   if (child[1] == NULL) {
     PyErr_SetString(PyExc_TypeError, "invalid argument right to operator");
     return NULL;
   }
+  child_dict.push_back(dict);
   auto node = std::make_shared<CsgOpNode>(instance, mode);
   node->children.push_back(child[0]);
   node->children.push_back(child[1]);
@@ -3677,9 +3692,7 @@ PyObject *python_nb_sub(PyObject *arg1, PyObject *arg2, OpenSCADOperator mode)
           std::string handle_name=name+"_"+key_str;
           PyObject *key_mod = PyUnicode_FromStringAndSize(handle_name.c_str(),strlen(handle_name.c_str()));
           PyDict_SetItem(((PyOpenSCADObject *) pyresult)->dict,key_mod, value);
-	} else if(i == 0) {
-          PyDict_SetItem(((PyOpenSCADObject *) pyresult)->dict,key, value);
-	}
+	} else PyDict_SetItem(((PyOpenSCADObject *) pyresult)->dict,key, value);
 
       }
     }

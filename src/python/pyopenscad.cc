@@ -192,15 +192,31 @@ std::shared_ptr<AbstractNode> PyOpenSCADObjectToNodeMulti(PyObject *objs,PyObjec
     auto node = std::make_shared<CsgOpNode>(instance, OpenSCADOperator::UNION);
 
     int n = PyList_Size(objs);
+    std::vector<PyObject *>child_dict;
+    PyObject *subdict;
     for (int i = 0; i < n; i++) {
       PyObject *obj = PyList_GetItem(objs, i);
       if(Py_TYPE(obj) ==  &PyOpenSCADType) {
-        std::shared_ptr<AbstractNode> child = PyOpenSCADObjectToNode(obj,dict);
+        std::shared_ptr<AbstractNode> child = PyOpenSCADObjectToNode(obj,&subdict);
         node->children.push_back(child);
+	child_dict.push_back(subdict);
       } else return nullptr;
     }
     result=node;
-    *dict = nullptr; // TODO improve
+
+    *dict = PyDict_New();
+    for(int i=child_dict.size()-1;i>=0; i--) // merge from back  to give 1st child most priority
+    {
+      auto &subdict = child_dict[i];	  
+      if(subdict == nullptr) continue;
+      PyObject *key, *value;
+      Py_ssize_t pos = 0;
+       while(PyDict_Next(subdict, &pos, &key, &value)) {
+         PyObject* value1 = PyUnicode_AsEncodedString(key, "utf-8", "~");
+         const char *value_str =  PyBytes_AS_STRING(value1);
+         PyDict_SetItem(*dict, key, value);
+      }
+    }
   } else if(objs == Py_None || objs == Py_False){
     result = void_node;	  
     *dict = nullptr; // TODO improve
