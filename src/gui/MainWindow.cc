@@ -2628,15 +2628,15 @@ void MainWindow::setSelection(int index)
   auto line = location.firstLine();
   auto column = location.firstColumn();
 
+  // removes all previously configure selection indicators.
+  tabManager->editor->clearAllSelectionIndicators();
+  tabManager->editor->show();
+
   // Unsaved files do have the pwd as current path, therefore we will not open a new
   // tab on click
   if (!fs::is_directory(fs::path(file))) {
     tabManager->open(QString::fromStdString(file));
   }
-
-  // removes all previsly configure selection indicators.
-  renderedEditor->clearAllSelectionIndicators();
-  renderedEditor->show();
 
   std::vector<std::shared_ptr<const AbstractNode>> nodesSameModule{};
   rootNode->findNodesWithSameMod(selected_node, nodesSameModule);
@@ -2644,14 +2644,14 @@ void MainWindow::setSelection(int index)
   // highlight in the text editor all the text fragment of the hierarchy of object with same mode.
   for (const auto& element : nodesSameModule) {
     if (element->index() != currentlySelectedObject) {
-      setSelectionIndicatorStatus(renderedEditor, element->index(), EditorSelectionIndicatorStatus::IMPACTED);
+      setSelectionIndicatorStatus(tabManager->editor, element->index(), EditorSelectionIndicatorStatus::IMPACTED);
     }
   }
 
   // highlight in the text editor only the fragment correponding to the selected stack.
   // this step must be done after all the impacted element have been marked.
-  setSelectionIndicatorStatus(renderedEditor, currentlySelectedObject, EditorSelectionIndicatorStatus::SELECTED);
-  renderedEditor->setCursorPosition(line - 1, column - 1);
+  setSelectionIndicatorStatus(tabManager->editor, currentlySelectedObject, EditorSelectionIndicatorStatus::SELECTED);
+  tabManager->editor->setCursorPosition(line - 1, column - 1);
 
   setSelectedObjectPreview(selected_node);
 }
