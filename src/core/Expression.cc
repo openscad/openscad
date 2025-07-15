@@ -391,14 +391,10 @@ Value MemberLookup::evaluate(const std::shared_ptr<const Context>& context) cons
     if (this->member == "end") return v[2];
     break;
   case Value::Type::OBJECT: {
-        Value value(v[this->member]);
-        if ( value.type() == Value::Type::FUNCTION) {
-            auto function(value.toFunction());
-            function.set_receiver(std::move(v.clone()));
-            return std::move(function);
-        }else
-            return std::move(value);
-    }
+        ObjectType object = v.toObject();
+        Value value(object.get_fixed(member));
+        return std::move(value);
+  }
   default:
     break;
   }
@@ -550,11 +546,13 @@ static SimplificationResult simplify_function_body(const Expression *expression,
           receiver = function->get_receiver();
         }
       }
+
       ContextHandle<Context> body_context{Context::create<Context>(defining_context)};
       if (receiver) {
         ObjectType object = receiver->toObject();
+        
         for ( const std::string & key : object.keys()){
-            Value v = object[key].clone();
+            Value v = object.get_fixed(key);
             body_context->set_variable(key, std::move(v));
         }
         body_context->set_variable("$this", std::move(object));
