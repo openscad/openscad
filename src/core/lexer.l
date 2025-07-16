@@ -189,7 +189,6 @@ use[ \t\r\n]*"<"        { BEGIN(cond_use); LOCATION_COUNT_LINES(parserlloc, yyte
 \\u{H}{4}|\\U{H}{6}     { const auto c = strtoul(lexertext + 2, NULL, 16); stringcontents += str_utf8_wrapper(c).toString(); }
 [^\\\n\"]               { stringcontents += lexertext; }
 [\n]                    { LOCATION_ADD_LINES(parserlloc, yyleng); }
-[\r]                    ;
 \"                      { BEGIN(INITIAL); parserlval.text = strdup(stringcontents.c_str()); return TOK_STRING; }
 <<EOF>>                 { parsererror("Unterminated string"); return TOK_ERROR; }
 }
