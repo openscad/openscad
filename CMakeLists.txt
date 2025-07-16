@@ -1094,6 +1094,7 @@ set(CORE_SOURCES
   src/utils/printutils.cc
   src/utils/svg.cc
   src/utils/version_check.h
+  src/genlang/genlang.cc
   src/version.cc
   ${LIB3MF_SOURCES}
   ${PLATFORM_SOURCES}
@@ -1275,7 +1276,6 @@ set(GUI_SOURCES
   src/gui/LaunchingScreen.cc
   src/gui/LibraryInfoDialog.cc
   src/gui/MainWindow.cc
-  src/genlang/genlang.cc
   src/gui/Measurement.cc
   src/gui/Animate.cc
   src/gui/FontList.cc
