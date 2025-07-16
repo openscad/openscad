@@ -1063,7 +1063,7 @@ PyObject *PyOpenSCADType_next(PyObject *self)
 }
 	
 // Iterator dealloc
-static void PyOpenSCADObjectIter_dealloc(PyObject *self)
+void PyOpenSCADObjectIter_dealloc(PyOpenSCADObjectIter *self)
 {
     PyOpenSCADObjectIter *iter = (PyOpenSCADObjectIter *)self;
     Py_XDECREF(iter->container);
@@ -1075,8 +1075,8 @@ PyTypeObject PyOpenSCADObjectIterType = {
     PyVarObject_HEAD_INIT(NULL, 0)
     .tp_name = "PyOpenSCADType.Iterator",
     .tp_basicsize = sizeof(PyOpenSCADObjectIter),
+    .tp_dealloc = (destructor) PyOpenSCADObjectIter_dealloc,
     .tp_flags = Py_TPFLAGS_DEFAULT,
-    //.tp_dealloc = (destructor) PyOpenSCADObjectIter_dealloc,
     .tp_iter = PyOpenSCADType_iter,
     .tp_iternext = PyOpenSCADType_next,  // <-- __next__ Implementierung
 };
