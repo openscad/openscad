@@ -605,6 +605,11 @@ std::unique_ptr<Geometry> extrudePolygon(const LinearExtrudeNode& node, const Po
 #ifdef ENABLE_PYTHON
     if(node.profile_func != nullptr) {
       auto o = python_getprofile(node.profile_func, node.fn, full_height[2]*slice_idx/num_slices);
+      auto outl= seg_poly.outlines();
+      if(outl.size() != 1 || o.vertices.size() != outl[0].vertices.size()) {
+        LOG(message_group::Warning, "Number of Vertices must stay constant");
+	return nullptr;
+      }
         for (const auto& v : o.vertices) {
           auto tmp = trans * v;
           vertices.emplace_back(Vector3d(tmp[0], tmp[1], 0.0) + h1 + full_height * slice_idx / num_slices);
