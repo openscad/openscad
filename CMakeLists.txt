@@ -302,10 +302,10 @@ macro(find_graphics)
 
     target_compile_definitions(OpenSCAD PRIVATE ENABLE_OPENCSG)
 
-    #    if (${OPENCSG_VERSION_STRING} VERSION_LESS "1.6.0")
+    if (${OPENCSG_VERSION_STRING} VERSION_LESS "1.6.0")
       set(OPENCSG_GLEW ON)
       target_compile_definitions(OpenSCAD PRIVATE OPENCSG_GLEW)
-      #endif()
+    endif()
 
     if (NOT USE_GLAD AND NOT USE_GLEW)
       if (OPENCSG_GLEW)
