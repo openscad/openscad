@@ -30,7 +30,7 @@ foreach (_Lib3MF_VERSION_MAJOR IN LISTS _Lib3MF_REQUIRED_VERSIONS)
       VERSION_VAR PC_LIB3MF_VERSION
       REQUIRED_VARS
         PC_LIB3MF_LIBRARIES
-        PC_LIB3MF_INCLUDE_DIRS
+        PC_LIB3MF_INCLUDEDIR
     )
     if (Lib3MF_FOUND)
 
@@ -44,7 +44,7 @@ foreach (_Lib3MF_VERSION_MAJOR IN LISTS _Lib3MF_REQUIRED_VERSIONS)
 
       find_path(Lib3MF_INCLUDE_DIRS
           NAMES "${FIND_HEADER}"
-          HINTS ${PC_LIB3MF_INCLUDE_DIRS} /usr/include
+          HINTS ${PC_LIB3MF_INCLUDEDIR} /usr/include
           PATH_SUFFIXES lib3mf Bindings/Cpp
       )
 
