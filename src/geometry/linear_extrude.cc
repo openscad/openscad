@@ -550,7 +550,6 @@ std::unique_ptr<Geometry> extrudePolygon(const LinearExtrudeNode& node, const Po
   if(node.profile_func != nullptr){
     is_segmented = true;
     seg_poly = python_getprofile(node.profile_func, node.fn, 0);
-    num_slices =  node.fn;	  
   }
 #endif
 
@@ -603,18 +602,7 @@ std::unique_ptr<Geometry> extrudePolygon(const LinearExtrudeNode& node, const Po
       Eigen::Affine2d(rotate_degrees(act_rot)));
 
 #ifdef ENABLE_PYTHON
-    if(node.profile_func != nullptr) {
-      auto o = python_getprofile(node.profile_func, node.fn, full_height[2]*slice_idx/num_slices);
-      auto outl= seg_poly.outlines();
-      if(outl.size() != 1 || o.vertices.size() != outl[0].vertices.size()) {
-        LOG(message_group::Warning, "Number of Vertices must stay constant");
-	return nullptr;
-      }
-        for (const auto& v : o.vertices) {
-          auto tmp = trans * v;
-          vertices.emplace_back(Vector3d(tmp[0], tmp[1], 0.0) + h1 + full_height * slice_idx / num_slices);
-	}
-    } else 
+    if(node.profile_func == nullptr) 
 #endif
 {
      Transform3d tr = 	polyref.getTransform3d();
@@ -627,6 +615,79 @@ std::unique_ptr<Geometry> extrudePolygon(const LinearExtrudeNode& node, const Po
       }
     }
   }
+#ifdef ENABLE_PYTHON
+  if(node.profile_func != nullptr){
+	  // completely differet alg
+    PolySetBuilder builder(0, 0, 3, isConvex);
+    std::vector<Vector3d> botvertices;
+    for (unsigned int slice_idx = 0; slice_idx <= num_slices; slice_idx++) {
+      double act_rot ;
+      if(node.twist_func != NULL) {
+        act_rot = python_doublefunc(node.twist_func, (double)(slice_idx/num_slices));
+      }  else  act_rot = full_rot * slice_idx / num_slices;
+
+      Eigen::Affine2d trans(
+        Eigen::Scaling(Vector2d(1,1) - full_scale * slice_idx / num_slices) * 
+        Eigen::Affine2d(rotate_degrees(act_rot)));
+      auto prof = python_getprofile(node.profile_func, node.fn, full_height[2]*slice_idx/num_slices);
+      std::vector<Vector3d> topvertices;
+      for (const auto& v : prof.vertices) {
+        auto tmp = trans * v;
+        topvertices.push_back(Vector3d(tmp[0], tmp[1], 0.0) + h1 + full_height * slice_idx / num_slices);
+      }
+
+      if(botvertices.size() > 0) {
+        int nbot = botvertices.size();
+        int ntop = topvertices.size();
+        int ibot = 0;
+	int itop = 0;
+        int top_off = 0;
+	double distmin=0;
+        for(int i=0;i<ntop; i++) {
+          double dist= (botvertices[ibot]-topvertices[i]).norm();
+	  if(i == 0 || dist < distmin) { 
+            distmin=dist;
+            top_off=i;	    
+	  }
+	}	
+        // calculate next step
+	while(ibot < nbot || itop < ntop) 
+	{
+  	  double dist_bot = (botvertices[(ibot+1)%nbot]-topvertices[(itop+top_off)%ntop]).norm();
+	  double dist_top = (botvertices[ibot]-topvertices[(itop+top_off+1)%ntop]).norm();
+	  if(dist_bot < dist_top && ibot < nbot || (itop == ntop)) {
+            builder.beginPolygon(3);
+            builder.addVertex(botvertices[ibot%nbot]);
+            builder.addVertex(botvertices[(ibot+1)%nbot]);
+            builder.addVertex(topvertices[(itop+top_off)%ntop]);
+            builder.endPolygon();
+	    ibot++;
+	  } else {  // distr_top < dist_bot or itop < ntop
+            builder.beginPolygon(3);
+            builder.addVertex(botvertices[ibot%nbot]);
+            builder.addVertex(topvertices[(itop+top_off+1)%ntop]);
+            builder.addVertex(topvertices[(itop+top_off)%ntop]);
+            builder.endPolygon();
+	    itop++;
+	  }
+	}  
+      } else {
+        builder.beginPolygon(topvertices.size()); // bottom
+        for(int i=topvertices.size()-1;i>=0; i--)
+            builder.addVertex(topvertices[i]);
+        builder.endPolygon();
+      }
+      botvertices = topvertices;
+    }
+    builder.beginPolygon(botvertices.size()); // top
+    for(int i=0;i<botvertices.size();i++)
+        builder.addVertex(botvertices[i]);
+    builder.endPolygon();
+
+    return builder.build();
+	  
+  }
+#endif
 
   // Create indices for sides
   for (unsigned int slice_idx = 1; slice_idx <= num_slices; slice_idx++) {
