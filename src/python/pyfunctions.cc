@@ -3651,7 +3651,7 @@ PyObject *python_oo_intersection(PyObject *self, PyObject *args, PyObject *kwarg
 PyObject *python_nb_sub(PyObject *arg1, PyObject *arg2, OpenSCADOperator mode)
 {
   DECLARE_INSTANCE
-  std::shared_ptr<AbstractNode> child[2];
+  std::vector<std::shared_ptr<AbstractNode>> child;
   std::vector<PyObject *> child_dict;
 
   if(arg1 == Py_None && mode == OpenSCADOperator::UNION) return arg2;
@@ -3659,22 +3659,27 @@ PyObject *python_nb_sub(PyObject *arg1, PyObject *arg2, OpenSCADOperator mode)
   if(arg2 == Py_None && mode == OpenSCADOperator::DIFFERENCE) return arg1;
 
 
-  PyObject *dict;
-  dict = nullptr;
-  child[0] = PyOpenSCADObjectToNodeMulti(arg1, &dict);
-  if (child[0] == NULL) {
-    PyErr_SetString(PyExc_TypeError, "invalid argument left to operator");
-    return NULL;
+  for(int i=0;i<2;i++) {
+    PyObject *dict;
+    dict = nullptr;
+    auto x =  PyOpenSCADObjectToNodeMulti(i==1?arg2:arg1, &dict);
+    if (x == NULL) {
+      PyErr_SetString(PyExc_TypeError, "invalid argument left to operator");
+      return NULL;
+    }
+    if(x == void_node &&  mode == OpenSCADOperator::UNION) continue;
+    if(x == full_node &&  mode == OpenSCADOperator::UNION) return PyOpenSCADObjectFromNode(&PyOpenSCADType, full_node);
+    if(x == full_node &&  mode == OpenSCADOperator::INTERSECTION) continue;
+    if(x == void_node &&  mode == OpenSCADOperator::DIFFERENCE && i == 0) return PyOpenSCADObjectFromNode(&PyOpenSCADType, void_node);
+    if(x == void_node &&  mode == OpenSCADOperator::DIFFERENCE && i > 0) continue;
+    if(x == full_node &&  mode == OpenSCADOperator::DIFFERENCE && i > 0) return PyOpenSCADObjectFromNode(&PyOpenSCADType, void_node);
+    child.push_back(x);
+    child_dict.push_back(dict);
+  }  
+  if(child.size() == 1) {
+    return PyOpenSCADObjectFromNode(&PyOpenSCADType, child[0]);
   }
-  child_dict.push_back(dict);
 
-  dict=nullptr;
-  child[1] = PyOpenSCADObjectToNodeMulti(arg2, &dict);
-  if (child[1] == NULL) {
-    PyErr_SetString(PyExc_TypeError, "invalid argument right to operator");
-    return NULL;
-  }
-  child_dict.push_back(dict);
   auto node = std::make_shared<CsgOpNode>(instance, mode);
   node->children.push_back(child[0]);
   node->children.push_back(child[1]);
