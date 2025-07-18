@@ -463,7 +463,32 @@ std::string PolyhedronNode::toString() const
       }
       stream << index;
     }
-    stream << "]";
+  }  
+  if(this->colors.size() > 0) {
+    stream << "], colors = [";
+    bool firstColor = true;
+    for (const auto& color : this->colors) {
+      if (firstColor) {
+        firstColor = false;
+      } else {
+        stream << ", ";
+      }
+      stream << "[" << color.r() << ", " << color.g() << ", " << color.b() << "]";
+    }
+  }  
+  
+  if(this->color_indices.size() > 0) {
+    stream << "], color_indices = [";
+    bool firstColInd = true;
+    for (const auto& colind : this->color_indices) {
+      if (firstColInd) {
+        firstColInd = false;
+      } else {
+        stream << ", ";
+      }
+
+      stream << colind;
+    }  
   }
   stream << "], convexity = " << this->convexity << ")";
   return stream.str();
