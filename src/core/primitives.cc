@@ -483,6 +483,8 @@ std::unique_ptr<const Geometry> PolyhedronNode::createGeometry() const
     }
   }
   p->setTriangular(is_triangular);
+  p->colors = this->colors;
+  p->color_indices = this->color_indices;
   return p;
 }
 

@@ -148,6 +148,8 @@ public:
   std::vector<Vector3d> points;
   std::vector<IndexedFace> faces;
   int convexity = 1;
+  std::vector<int32_t> color_indices; // when present, must be same size as faces
+  std::vector<Color4f> colors;
 };
 
 

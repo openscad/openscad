@@ -678,22 +678,24 @@ PyObject *python_polyhedron(PyObject *self, PyObject *args, PyObject *kwargs)
   unsigned int i, j, pointIndex;
   auto node = std::make_shared<PolyhedronNode>(instance);
 
-  char *kwlist[] = {"points", "faces", "convexity", "triangles", NULL};
+  char *kwlist[] = {"points", "faces", "convexity", "triangles", "colors",NULL};
   PyObject *points = NULL;
   PyObject *faces = NULL;
   int convexity = 2;
   PyObject *triangles = NULL;
+  PyObject *colors = NULL;
 
   PyObject *element;
   Vector3d point;
 
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O!O!|iO!", kwlist,
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O!O!|iO!O!", kwlist,
                                    &PyList_Type, &points,
                                    &PyList_Type, &faces,
                                    &convexity,
-                                   &PyList_Type, &triangles
+                                   &PyList_Type, &triangles,
+                                   &PyList_Type, &colors
                                    )) {
-	  PyErr_SetString(PyExc_TypeError, "Error during parsing polyhedron(points, faces)");
+	  PyErr_SetString(PyExc_TypeError, "Error during parsing polyhedron(points, faces, convexity, triangles, colors)");
 	  return NULL;
   } 
 
@@ -759,6 +761,35 @@ PyObject *python_polyhedron(PyObject *self, PyObject *args, PyObject *kwargs)
     return NULL;
   }
 
+  if (colors != NULL && PyList_Check(colors) ) {
+    if(PyList_Size(colors) != node->faces.size()) {
+      PyErr_SetString(PyExc_TypeError, "when specified must match number of faces");
+      return NULL;
+    }
+    for (i = 0; i < PyList_Size(colors); i++) {
+      element = PyList_GetItem(colors, i);
+      if (PyList_Check(element) && PyList_Size(element) == 3) {
+        Vector4f color(0,0,0,1.0);	      
+        for (j = 0; j < 3; j++) {
+          color[j] = PyFloat_AsDouble(PyList_GetItem(element, j));
+        }
+	int colind=-1;
+	int ind=0;
+	for(auto &c :node->colors) {
+          if (c == color) { colind=ind; break; }
+	  ind++;
+	}
+	if(colind == -1) { colind = node->colors.size(); node->colors.push_back(color); }
+	node->color_indices.push_back(colind);
+      } else {
+    	PyErr_SetString(PyExc_TypeError, "Face Color must be a list with 3 values");
+	return NULL;
+      }
+    }
+  } else {
+    PyErr_SetString(PyExc_TypeError, "Polyhedron faces must be a list of indices");
+    return NULL;
+  }
 
   node->convexity = convexity;
   if (node->convexity < 1) node->convexity = 1;
@@ -2052,14 +2083,14 @@ PyObject *python_export_core(PyObject *obj, char *file)
   if(exportFileFormat == FileFormat::_3MF) {
     std::ofstream fstream(file,  std::ios::out | std::ios::trunc | std::ios::binary);
     if (!fstream.is_open()) {
-      LOG(_("Can't open file \"%1$s\" for export"), file);
+      PyErr_SetString(PyExc_TypeError, "Can't write export file");
       return nullptr;
     }
     export_3mf(export3mfPartInfos, fstream, exportInfo);
   }
   else{
     if(export3mfPartInfos.size() > 1) {
-      LOG("This Format can at most export one object");
+      PyErr_SetString(PyExc_TypeError, "This Format can at most export one object");
       return nullptr;
     }	    
     exportFileByName(export3mfPartInfos[0].geom, file, exportInfo);
