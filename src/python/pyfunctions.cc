@@ -2915,8 +2915,10 @@ PyObject *python_fillet_core(PyObject *obj, double  r, int fn, PyObject *sel, do
     return NULL;
   }
 
-  if(sel != nullptr) 
-    node->children.push_back(PyOpenSCADObjectToNodeMulti(sel, &dummydict));
+  if(sel != nullptr) {
+    auto child = PyOpenSCADObjectToNodeMulti(sel, &dummydict);	  
+    if(child != nullptr) node->children.push_back(child);
+  }
 
   return PyOpenSCADObjectFromNode(&PyOpenSCADType, node);
 }
@@ -2926,7 +2928,7 @@ PyObject *python_fillet(PyObject *self, PyObject *args, PyObject *kwargs)
   double r=1.0;
   double fn=NAN;
   double minang=30;
-  char *kwlist[] = {"obj", "r","sel","n", "minang", NULL};
+  char *kwlist[] = {"obj", "r","sel","fn", "minang", NULL};
   PyObject *obj = NULL;
   PyObject *sel = NULL;
   if (!PyArg_ParseTupleAndKeywords(args, kwargs, "Od|Odd", kwlist, &obj,&r,&sel,&fn,&minang)) {
