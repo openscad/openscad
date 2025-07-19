@@ -463,6 +463,7 @@ std::string PolyhedronNode::toString() const
       }
       stream << index;
     }
+    stream << "]";
   }  
   if(this->colors.size() > 0) {
     stream << "], colors = [";
