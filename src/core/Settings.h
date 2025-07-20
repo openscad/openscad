@@ -505,8 +505,13 @@ public:
   static SettingsEntryString exportPdfMetaDataAuthor;
   static SettingsEntryString exportPdfMetaDataSubject;
   static SettingsEntryString exportPdfMetaDataKeywords;
+  static SettingsEntryBool exportPdfFill;
+  static SettingsEntryString exportPdfFillColor;
+  static SettingsEntryBool exportPdfStroke;
+  static SettingsEntryString exportPdfStrokeColor;
+  static SettingsEntryDouble exportPdfStrokeWidth;
 
-  static constexpr std::array<const SettingsEntryBase *, 12> cmdline{
+  static constexpr std::array<const SettingsEntryBase *, 17> cmdline{
     &exportPdfPaperSize,
     &exportPdfOrientation,
     &exportPdfShowFilename,
@@ -519,6 +524,11 @@ public:
     &exportPdfMetaDataAuthor,
     &exportPdfMetaDataSubject,
     &exportPdfMetaDataKeywords,
+    &exportPdfFill,
+    &exportPdfFillColor,
+    &exportPdfStroke,
+    &exportPdfStrokeColor,
+    &exportPdfStrokeWidth,
   };
 };
 

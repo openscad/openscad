@@ -205,11 +205,16 @@ void Lex::lex_results(const std::string& input, int start, LexInterface *const o
   int isstyle = obj->getStyleAt(start - 1);
   if (isstyle == ecomment) results.state = rules_.state("COMMENT");
 
+  char* styles = new char[input.size()];
   lexertl::lookup(sm, results);
   while (results.id != eEOF) {
-    obj->highlighting(start, input, results);
+    size_t s = std::distance(input.begin(), results.first);
+    size_t len = std::distance(results.first, results.second);
+    memset(styles + s, results.id, len);
     lexertl::lookup(sm, results);
   }
+  obj->highlightingMultiple(start, input.size(), styles);
+  delete [] styles;
 }
 
 /***************************************************************/
@@ -319,18 +324,9 @@ int ScadLexer2::getStyleAt(int pos)
   return sstyle;
 }
 
-void ScadLexer2::highlighting(int start, const std::string& input, lexertl::smatch results)
-{
-  std::string token = results.str();
-  int style = results.id;
-
-#if DEBUG_LEXERTL
-  QString glyphs = QString::fromStdString(token);
-  std::cout << "highlighting ( " << style << " ):" << token << " [ " << token.length() << " bytes, " << glyphs.length() << " glyphs ]" << std::endl;
-#endif
-
-  startStyling(start + std::distance(input.begin(), results.first));
-  setStyling(token.length(), style);
+void ScadLexer2::highlightingMultiple(int start, int length, char* styles) {
+  editor()->SendScintilla(QsciScintilla::SCI_STARTSTYLING, start);
+  editor()->SendScintilla(QsciScintilla::SCI_SETSTYLINGEX, length, styles);
 }
 
 QColor ScadLexer2::defaultColor(int style) const

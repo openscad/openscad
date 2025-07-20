@@ -42,6 +42,15 @@ void export_obj(const std::shared_ptr<const Geometry>& geom, std::ostream& outpu
   // FIXME: In lazy union mode, should we export multiple objects?
   
   std::shared_ptr<const PolySet> out = PolySetUtils::getGeometryAsPolySet(geom);
+  if (!out->isTriangular()) {
+    // While the OBJ format allows for faces to have more than 3
+    // vertices, this seems to confuse a number of applications
+    // we care about, so for now this will just always tesselate
+    // faces to be composed of triangles only.
+    //
+    // See: https://github.com/openscad/openscad/issues/5993
+    out = PolySetUtils::tessellate_faces(*out);
+  }
   if (Feature::ExperimentalPredictibleOutput.is_enabled()) {
     out = createSortedPolySet(*out);
   }

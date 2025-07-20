@@ -50,7 +50,7 @@ private:
 class LexInterface
 {
 public:
-  virtual void highlighting(int start, const std::string& input, lexertl::smatch results) = 0;
+  virtual void highlightingMultiple(int start, int length, char* styles) = 0;
   virtual int getStyleAt(int position) = 0;
 };
 
@@ -118,7 +118,7 @@ public:
 
   QColor defaultColor(int style) const override;
 
-  void highlighting(int start, const std::string& input, lexertl::smatch results) override;
+  void highlightingMultiple(int start, int length, char* styles) override;
   QString description(int style) const override;
   QStringList autoCompletionWordSeparators() const override;
 

@@ -173,7 +173,10 @@ int gui(std::vector<std::string>& inputFiles, const std::filesystem::path& origi
 {
   OpenSCADApp app(argc, argv);
   // remove ugly frames in the QStatusBar when using additional widgets
-  app.setStyleSheet("QStatusBar::item { border: 0px solid black; }");
+  app.setStyleSheet(
+    "QStatusBar::item { border: 0px solid black; }"
+    "* { font-size: 9pt }"
+    );
   QIcon::setThemeName(isDarkMode() ? "chokusen-dark" : "chokusen");
 
   // set up groups for QSettings
