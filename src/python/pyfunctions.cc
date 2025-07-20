@@ -786,9 +786,6 @@ PyObject *python_polyhedron(PyObject *self, PyObject *args, PyObject *kwargs)
 	return NULL;
       }
     }
-  } else {
-    PyErr_SetString(PyExc_TypeError, "Polyhedron faces must be a list of indices");
-    return NULL;
   }
 
   node->convexity = convexity;
