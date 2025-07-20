@@ -2378,7 +2378,8 @@ Response GeometryEvaluator::visit(State& state, const ConcatNode& node)
             LOG(message_group::Error, "Concat only works for PolySet Data");
             continue;			    
 	  }
-	  for(const auto &face:ps->indices) {
+	  for(int i=0;i<ps->indices.size();i++) {
+            const auto &face = ps->indices[i];
             builder.beginPolygon(face.size());		  
             for(int ind: face) {
               Vector3d pt=ps->vertices[ind];		    
@@ -2387,6 +2388,8 @@ Response GeometryEvaluator::visit(State& state, const ConcatNode& node)
 	      pt[2]=concat_round(pt[2]);
 	      builder.addVertex(pt);
 	    }		    
+	    if(ps->color_indices.size() > i) builder.endPolygon(ps->colors[ps->color_indices[i]]);
+             else builder.endPolygon();		  
 	  }
 	}
 	geom = builder.build();

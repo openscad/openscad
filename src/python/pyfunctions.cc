@@ -3348,15 +3348,26 @@ PyObject *python_concat(PyObject *self, PyObject *args, PyObject *kwargs)
 
   auto node = std::make_shared<ConcatNode>(instance);
   PyObject *obj;
+  PyObject *obj1;
   PyObject *child_dict = nullptr;	  
   PyObject *dummy_dict = nullptr;	  
   std::shared_ptr<AbstractNode> child;
+  // dont do union in any circumstance
   for (i = 0; i < PyTuple_Size(args);i++) {
     obj = PyTuple_GetItem(args, i);
-    if(i == 0) child = PyOpenSCADObjectToNodeMulti(obj, &child_dict);
-    else child = PyOpenSCADObjectToNodeMulti(obj, &dummy_dict);
-    if(child != NULL) {
-      node->children.push_back(child);
+    if(obj->ob_type == &PyOpenSCADType) {
+      node->children.push_back(((PyOpenSCADObject *) obj)->node);
+    } 
+    else if(PyList_Check(obj)) {
+      for (int j = 0; j < PyList_Size(obj);j++) {
+        obj1 = PyList_GetItem(obj, j);
+        if(obj1->ob_type == &PyOpenSCADType) {
+          node->children.push_back(((PyOpenSCADObject *) obj1)->node);
+        } else {
+          PyErr_SetString(PyExc_TypeError, "Error during concat. arguments must be solids");
+	  return nullptr;
+        }
+      }
     } else {
         PyErr_SetString(PyExc_TypeError, "Error during concat. arguments must be solids");
 	return nullptr;
