@@ -2101,12 +2101,12 @@ PyObject *python_offset(PyObject *self, PyObject *args, PyObject *kwargs)
   double r = NAN, delta = NAN;
   PyObject *chamfer = NULL;
   double fn = NAN, fa = NAN, fs = NAN;
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "Od|dOddd", kwlist,
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O|ddOddd", kwlist,
                                    &obj,
                                    &r, &delta, &chamfer,
                                    &fn, &fa, &fs
                                    )) {
-    PyErr_SetString(PyExc_TypeError, "Error during parsing offset(object,r)");
+    PyErr_SetString(PyExc_TypeError, "Error during parsing offset(object,r,delta)");
     return NULL;
   }
   return python_offset_core(obj,r, delta, chamfer, fn, fa, fs);
@@ -2118,11 +2118,11 @@ PyObject *python_oo_offset(PyObject *obj, PyObject *args, PyObject *kwargs)
   double r = NAN, delta = NAN;
   PyObject *chamfer = NULL;
   double fn = NAN, fa = NAN, fs = NAN;
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "d|dOddd", kwlist,
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|ddOddd", kwlist,
                                    &r, &delta, &chamfer,
                                    &fn, &fa, &fs
                                    )) {
-    PyErr_SetString(PyExc_TypeError, "Error during parsing offset(object,r)");
+    PyErr_SetString(PyExc_TypeError, "Error during parsing offset(object,r,delta)");
     return NULL;
   }
   return python_offset_core(obj,r, delta, chamfer, fn, fa, fs);
