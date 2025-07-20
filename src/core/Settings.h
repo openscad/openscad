@@ -357,7 +357,6 @@ class Settings
 public:
   static SettingsEntryBool showWarningsIn3dView;
   static SettingsEntryBool mouseCentricZoom;
-  static SettingsEntryBool mouseSwapButtons;
   static SettingsEntryInt indentationWidth;
   static SettingsEntryInt tabWidth;
   static SettingsEntryEnum<std::string> lineWrap;
@@ -456,6 +455,19 @@ public:
   static SettingsEntryString inputButton21;
   static SettingsEntryString inputButton22;
   static SettingsEntryString inputButton23;
+  static SettingsEntryInt inputMousePreset;
+  static SettingsEntryInt inputMouseLeftClick;
+  static SettingsEntryInt inputMouseMiddleClick;
+  static SettingsEntryInt inputMouseRightClick;
+  static SettingsEntryInt inputMouseShiftLeftClick;
+  static SettingsEntryInt inputMouseShiftMiddleClick;
+  static SettingsEntryInt inputMouseShiftRightClick;
+  static SettingsEntryInt inputMouseCtrlLeftClick;
+  static SettingsEntryInt inputMouseCtrlMiddleClick;
+  static SettingsEntryInt inputMouseCtrlRightClick;
+  static SettingsEntryInt inputMouseCtrlShiftLeftClick;
+  static SettingsEntryInt inputMouseCtrlShiftMiddleClick;
+  static SettingsEntryInt inputMouseCtrlShiftRightClick;
   static SettingsEntryDouble axisTrim0;
   static SettingsEntryDouble axisTrim1;
   static SettingsEntryDouble axisTrim2;
