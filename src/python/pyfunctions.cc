@@ -4395,7 +4395,7 @@ PyObject *python_offset(PyObject *self, PyObject *args, PyObject *kwargs)
                                    &r, &delta, &chamfer,
                                    &fn, &fa, &fs
                                    )) {
-    PyErr_SetString(PyExc_TypeError, "Error during parsing offset(object,r, delta)");
+    PyErr_SetString(PyExc_TypeError, "Error during parsing offset(object,r,delta)");
     return NULL;
   }
   return python_offset_core(obj,r, delta, chamfer, fn, fa, fs);
@@ -4411,7 +4411,7 @@ PyObject *python_oo_offset(PyObject *obj, PyObject *args, PyObject *kwargs)
                                    &r, &delta, &chamfer,
                                    &fn, &fa, &fs
                                    )) {
-    PyErr_SetString(PyExc_TypeError, "Error during parsing offset(object,r, delta)");
+    PyErr_SetString(PyExc_TypeError, "Error during parsing offset(object,r,delta)");
     return NULL;
   }
   return python_offset_core(obj,r, delta, chamfer, fn, fa, fs);
