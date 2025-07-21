@@ -56,62 +56,58 @@ using ValueIdentifier = void *;
 
 struct IdentifierVisitor
 {
-  ValueIdentifier operator()(const UndefType&) const { return nullptr; }
-  ValueIdentifier operator()(bool) const { return nullptr; }
-  ValueIdentifier operator()(double) const { return nullptr; }
-  ValueIdentifier operator()(const str_utf8_wrapper&) const { return nullptr; }
-  ValueIdentifier operator()(const RangePtr&) const { return nullptr; }
-  ValueIdentifier operator()(const PythonClassPtr&) const { return nullptr; }
-
   ValueIdentifier operator()(const VectorType& value) const { return value.ptr.get(); }
   ValueIdentifier operator()(const EmbeddedVectorType& value) const { return value.ptr.get(); }
   ValueIdentifier operator()(const ObjectType& value) const { return value.ptr.get(); }
   ValueIdentifier operator()(const FunctionPtr& value) const { return value.get().get(); }
+
+  // all types without identity
+  template <typename T> ValueIdentifier operator()(const T&) const {
+    return nullptr;
+  }
 };
 
 struct UseCountVisitor
 {
-  int operator()(const UndefType&) const { return 0; }
-  int operator()(bool) const { return 0; }
-  int operator()(double) const { return 0; }
-  int operator()(const str_utf8_wrapper&) const { return 0; }
-  int operator()(const RangePtr&) const { return 0; }
-  int operator()(const PythonClassPtr&) const { return 0; }
-
-  int operator()(const VectorType& value) const { return value.ptr.use_count(); }
+  int operator()(const VectorType& value) const         { return value.ptr.use_count(); }
   int operator()(const EmbeddedVectorType& value) const { return value.ptr.use_count(); }
-  int operator()(const ObjectType& value) const { return value.ptr.use_count(); }
-  int operator()(const FunctionPtr& value) const { return value.get().use_count(); }
+  int operator()(const ObjectType& value) const         { return value.ptr.use_count(); }
+  int operator()(const FunctionPtr& value) const        { return value.get().use_count(); }
+
+  // all types without use count
+  template <typename T> int operator()(const T&) const {
+      return 0;
+  }
 };
 
-struct EmbeddedValuesVisitor
-{
-  const std::vector<Value> *operator()(const UndefType&) const { return nullptr; }
-  const std::vector<Value> *operator()(bool) const { return nullptr; }
-  const std::vector<Value> *operator()(double) const { return nullptr; }
-  const std::vector<Value> *operator()(const str_utf8_wrapper&) const { return nullptr; }
-  const std::vector<Value> *operator()(const RangePtr&) const { return nullptr; }
-  const std::vector<Value> *operator()(const PythonClassPtr&) const { return nullptr; }
+template <typename F>
+struct EmbeddedValuesVisitor {
+  const F&& func;
+  explicit EmbeddedValuesVisitor(F&& func) : func(std::forward<F>(func)) {}
 
-  const std::vector<Value> *operator()(const VectorType& value) const { return &value.ptr->vec; }
-  const std::vector<Value> *operator()(const EmbeddedVectorType& value) const { return &value.ptr->vec; }
-  const std::vector<Value> *operator()(const ObjectType& value) const { return &value.ptr->values; }
-  const std::vector<Value> *operator()(const FunctionPtr&) const { return nullptr; }
+  void operator()(const VectorType& value) const          { call_each(value.ptr->vec); }
+  void operator()(const EmbeddedVectorType& value) const  { call_each(value.ptr->vec); }
+  void operator()(const ObjectType& value) const          { call_each(value.ptr->values); }
+
+  // unused types
+  template <typename T> void operator()(const T&) const {}
+
+private:
+    void call_each(const std::vector<Value>& vector) const {
+      for (const Value& member : vector) {
+        func(member);
+      }
+  }
 };
 
 struct ReferencedContextVisitor
 {
-  const std::shared_ptr<const Context> *operator()(const UndefType&) const { return nullptr; }
-  const std::shared_ptr<const Context> *operator()(bool) const { return nullptr; }
-  const std::shared_ptr<const Context> *operator()(double) const { return nullptr; }
-  const std::shared_ptr<const Context> *operator()(const str_utf8_wrapper&) const { return nullptr; }
-  const std::shared_ptr<const Context> *operator()(const RangePtr&) const { return nullptr; }
-  const std::shared_ptr<const Context> *operator()(const PythonClassPtr&) const { return nullptr; }
-
-  const std::shared_ptr<const Context> *operator()(const VectorType&) const { return nullptr; }
-  const std::shared_ptr<const Context> *operator()(const EmbeddedVectorType&) const { return nullptr; }
-  const std::shared_ptr<const Context> *operator()(const ObjectType&) const { return nullptr; }
   const std::shared_ptr<const Context> *operator()(const FunctionPtr& value) const { return &value->getContext(); }
+
+  // unused types
+  template <typename T> const std::shared_ptr<const Context> *operator()(const T&) const {
+      return nullptr;
+  }
 };
 
 
@@ -139,37 +135,36 @@ static std::vector<Context *> findRootContexts(const std::vector<std::shared_ptr
   std::deque<const std::shared_ptr<const Context> *> contextQueue;
 
   auto visitValue = [&](const Value& value) {
-      ValueIdentifier identifier = std::visit(IdentifierVisitor(), value.getVariant());
-      if (!identifier) {
-        return;
-      }
+    ValueIdentifier identifier = std::visit(IdentifierVisitor(), value.getVariant());
+    if (!identifier) {
+      return;
+    }
 
-      if (!accountedValueReferences.count(identifier)) {
-        accountedValueReferences[identifier] = 0;
-      }
-      int accountedReferences = ++accountedValueReferences[identifier];
-      int requiredReferences = std::visit(UseCountVisitor(), value.getVariant());
-      assert(accountedReferences <= requiredReferences);
-      if (accountedReferences == requiredReferences) {
-        const std::vector<Value> *embeddedValues = std::visit(EmbeddedValuesVisitor(), value.getVariant());
-        if (embeddedValues) {
-          for (const Value& embeddedValue : *embeddedValues) {
-            valueQueue.push_back(&embeddedValue);
-          }
-        }
+    if (!accountedValueReferences.count(identifier)) {
+      accountedValueReferences[identifier] = 0;
+    }
+    const int accountedReferences = ++accountedValueReferences[identifier];
+    const int requiredReferences = std::visit(UseCountVisitor(), value.getVariant());
+    assert(accountedReferences <= requiredReferences);
 
-        const std::shared_ptr<const Context> *referencedContext = std::visit(ReferencedContextVisitor(), value.getVariant());
-        if (referencedContext) {
-          contextQueue.push_back(referencedContext);
-        }
+    if (accountedReferences == requiredReferences) {
+      std::visit( EmbeddedValuesVisitor{[&](const Value& v) {
+              valueQueue.push_back(&v);
+          }}, value.getVariant());
+
+      const std::shared_ptr<const Context> *referencedContext = std::visit(ReferencedContextVisitor(), value.getVariant());
+      if (referencedContext) {
+        contextQueue.push_back(referencedContext);
       }
-    };
+    }
+  };
+
   auto visitContext = [&](const std::shared_ptr<const Context>& context) {
       if (!accountedContextReferences.count(context.get())) {
         accountedContextReferences[context.get()] = 0;
       }
-      int accountedReferences = ++accountedContextReferences[context.get()];
-      int requiredReferences = context.use_count();
+      const int accountedReferences = ++accountedContextReferences[context.get()];
+      const int requiredReferences = context.use_count();
       assert(accountedReferences <= requiredReferences);
       if (accountedReferences == requiredReferences) {
         fullyAccountedContexts.insert(context.get());
@@ -247,12 +242,9 @@ static std::unordered_set<const Context *> findReachableContexts(const std::vect
       const Value *value = valueQueue.front();
       valueQueue.pop_front();
 
-      const std::vector<Value> *embeddedValues = std::visit(EmbeddedValuesVisitor(), value->getVariant());
-      if (embeddedValues) {
-        for (const Value& embeddedValue : *embeddedValues) {
-          visitValue(embeddedValue);
-        }
-      }
+      std::visit( EmbeddedValuesVisitor{[&](const Value& v) {
+            visitValue(v);
+          }}, value->getVariant());
 
       const std::shared_ptr<const Context> *referencedContext = std::visit(ReferencedContextVisitor(), value->getVariant());
       if (referencedContext) {
@@ -263,12 +255,12 @@ static std::unordered_set<const Context *> findReachableContexts(const std::vect
       const Context *context = contextQueue.front();
       contextQueue.pop_front();
 
-      std::vector<const Value *> values = context->list_embedded_values();
+      const std::vector<const Value *> values = context->list_embedded_values();
       for (const Value *value : values) {
         visitValue(*value);
       }
 
-      std::vector<const std::shared_ptr<const Context> *> referencedContexts = context->list_referenced_contexts();
+      const std::vector<const std::shared_ptr<const Context> *> referencedContexts = context->list_referenced_contexts();
       for (const std::shared_ptr<const Context> *referencedContext : referencedContexts) {
         visitContext(referencedContext->get());
       }
@@ -314,16 +306,16 @@ static void collectGarbage(std::vector<std::weak_ptr<Context>>& managedContexts)
     }
   }
 
-  std::vector<Context *> rootContexts = findRootContexts(allContexts);
+  const std::vector<Context *> rootContexts = findRootContexts(allContexts);
 
-  std::unordered_set<const Context *> reachableContexts = findReachableContexts(rootContexts);
+  const std::unordered_set<const Context *> reachableContexts = findReachableContexts(rootContexts);
 
 #ifdef DEBUG
   std::vector<std::weak_ptr<Context>> removedContexts;
 #endif
 
   managedContexts.clear();
-  for (std::shared_ptr<Context>& context : allContexts) {
+  for (const std::shared_ptr<Context>& context : allContexts) {
     if (reachableContexts.count(context.get())) {
       managedContexts.emplace_back(context);
     } else {
