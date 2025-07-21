@@ -55,6 +55,7 @@ extern bool parse(SourceFile *& file, const std::string& text, const std::string
 #include "core/WrapNode.h"
 #include "core/OversampleNode.h"
 #include "core/DebugNode.h"
+#include "core/RepairNode.h"
 #include "core/FilletNode.h"
 #include "core/SkinNode.h"
 #include "core/ConcatNode.h"
@@ -2929,6 +2930,49 @@ PyObject *python_oo_debug(PyObject *self, PyObject *args, PyObject *kwargs)
 }
 
 
+PyObject *python_repair_core(PyObject *obj, PyObject *color)
+{
+  PyObject *dummydict;
+  std::shared_ptr<AbstractNode> child = PyOpenSCADObjectToNode(obj, &dummydict);
+  if (child == NULL) {
+    PyErr_SetString(PyExc_TypeError, "Invalid type for  Object in repair \n");
+    return NULL;
+  }
+
+  DECLARE_INSTANCE
+  auto node = std::make_shared<RepairNode>(instance);
+  node->children.push_back(child);
+  if(color != nullptr) {
+//    std::vector<int> intfaces = python_intlistval(faces);
+//    node->faces = intfaces;
+  }  
+  return PyOpenSCADObjectFromNode(&PyOpenSCADType, node);
+}
+
+PyObject *python_repair(PyObject *self, PyObject *args, PyObject *kwargs)
+{
+  char *kwlist[] = {"obj", "color",NULL};
+  PyObject *obj = NULL;
+  PyObject *color= NULL;
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O|O", kwlist, &obj,&color)) {
+    PyErr_SetString(PyExc_TypeError, "error duing parsing\n");
+    return NULL;
+  }
+  return python_repair_core(obj,color);
+}
+
+PyObject *python_oo_repair(PyObject *self, PyObject *args, PyObject *kwargs)
+{
+  char *kwlist[] = {"color",NULL};
+  PyObject *color= NULL;
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|O", kwlist, &color)) {
+    PyErr_SetString(PyExc_TypeError, "error duing parsing\n");
+    return NULL;
+  }
+  return python_repair_core(self,color);
+}
+
+
 PyObject *python_fillet_core(PyObject *obj, double  r, int fn, PyObject *sel, double minang)
 {
   PyObject *dummydict;
@@ -5073,6 +5117,7 @@ PyMethodDef PyOpenSCADFunctions[] = {
   {"edges", (PyCFunction) python_edges, METH_VARARGS | METH_KEYWORDS, "exports a list of edges from a face."},
   {"oversample", (PyCFunction) python_oversample, METH_VARARGS | METH_KEYWORDS, "oversample."},
   {"debug", (PyCFunction) python_debug, METH_VARARGS | METH_KEYWORDS, "debug a face."},
+  {"repair", (PyCFunction) python_repair, METH_VARARGS | METH_KEYWORDS, "Make solid watertight."},
   {"fillet", (PyCFunction) python_fillet, METH_VARARGS | METH_KEYWORDS, "fillet."},
 
   {"group", (PyCFunction) python_group, METH_VARARGS | METH_KEYWORDS, "Group Object."},
@@ -5150,6 +5195,7 @@ PyMethodDef PyOpenSCADMethods[] = {
   OO_METHOD_ENTRY(edges, "Create Edges list")	
   OO_METHOD_ENTRY(oversample,"Oversample Object")	
   OO_METHOD_ENTRY(debug,"Debug Object Faces")	
+  OO_METHOD_ENTRY(repair,"Make solid watertight")	
   OO_METHOD_ENTRY(fillet,"Fillet Object")	
   OO_METHOD_ENTRY(align,"Align Object to another")	
 

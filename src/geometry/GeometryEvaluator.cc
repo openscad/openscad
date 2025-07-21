@@ -21,6 +21,7 @@
 #include "core/RotateExtrudeNode.h"
 #include "core/PullNode.h"
 #include "core/DebugNode.h"
+#include "core/RepairNode.h"
 #include "core/WrapNode.h"
 #include "core/CgalAdvNode.h"
 #include "core/ProjectionNode.h"
@@ -3118,6 +3119,35 @@ Response GeometryEvaluator::visit(State& state, const DebugNode& node)
     else ps = std::dynamic_pointer_cast<const PolySet>(geom);
     if(ps != nullptr) {
       std::unique_ptr<Geometry> ps_pulled =  debugObject(node,ps.get());
+      newgeom = std::move(ps_pulled);
+      addToParent(state, node, newgeom);
+      node.progress_report();
+    }
+  }
+  return Response::ContinueTraversal;
+}
+
+
+static std::unique_ptr<PolySet> repairObject(const RepairNode& node, const PolySet *ps)
+{
+  auto psx  = std::make_unique<PolySet>(ps->getDimension(), ps->convexValue());	  
+  *psx = *ps;
+
+
+  return psx;
+}
+
+Response GeometryEvaluator::visit(State& state, const RepairNode& node)
+{
+  std::shared_ptr<const Geometry> newgeom;
+  std::shared_ptr<const Geometry> geom = applyToChildren3D(node, OpenSCADOperator::UNION).constptr();
+  if (geom) {
+    std::shared_ptr<const PolySet> ps=nullptr;
+    if(std::shared_ptr<const ManifoldGeometry> mani = std::dynamic_pointer_cast<const ManifoldGeometry>(geom)) 
+      ps=mani->toPolySet();
+    else ps = std::dynamic_pointer_cast<const PolySet>(geom);
+    if(ps != nullptr) {
+      std::unique_ptr<Geometry> ps_pulled =  repairObject(node,ps.get());
       newgeom = std::move(ps_pulled);
       addToParent(state, node, newgeom);
       node.progress_report();

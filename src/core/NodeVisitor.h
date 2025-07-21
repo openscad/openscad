@@ -24,6 +24,7 @@ class NodeVisitor :
   public Visitor<class RotateExtrudeNode>,
   public Visitor<class PullNode>,
   public Visitor<class DebugNode>,
+  public Visitor<class RepairNode>,
   public Visitor<class WrapNode>,
   public Visitor<class RoofNode>,
   public Visitor<class ImportNode>,
@@ -85,6 +86,9 @@ public:
     return visit(state, (const AbstractPolyNode&) node);
   }
   Response visit(State& state, const DebugNode& node) override {
+    return visit(state, (const AbstractPolyNode&) node);
+  }
+  Response visit(State& state, const RepairNode& node) override {
     return visit(state, (const AbstractPolyNode&) node);
   }
   Response visit(State& state, const WrapNode& node) override {

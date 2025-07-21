@@ -976,6 +976,7 @@ set(CORE_SOURCES
   src/core/PathExtrudeNode.cc
   src/core/OversampleNode.cc
   src/core/DebugNode.cc
+  src/core/RepairNode.cc
   src/core/FilletNode.cc
   src/core/LocalScope.cc
   src/core/node_clone.cc
