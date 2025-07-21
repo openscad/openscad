@@ -43,7 +43,7 @@ struct EdgeVal {
 };
 
 class PolySetBuilder;
-std::vector<std::vector<IndexedTriangle>>  wrapSlice(PolySetBuilder &builder, const std::vector<Vector3d> vertices, const std::vector<IndexedFace> &faces,const std::vector<Vector4d> &normals, std::vector<double> xsteps);
+std::vector<std::vector<IndexedColorTriangle>>  wrapSlice(PolySetBuilder &builder, const std::vector<Vector3d> vertices, const std::vector<IndexedColorFace> &faces,const std::vector<Vector4d> &normals, std::vector<double> xsteps);
 
 // 3D Map stuff
 //
@@ -82,6 +82,7 @@ bool pointInPolygon(const std::vector<Vector3d> &vert, const IndexedFace &bnd, i
 Vector4d calcTriangleNormal(const std::vector<Vector3d> &vertices,const IndexedFace &pol);
 std::vector<Vector4d> calcTriangleNormals(const std::vector<Vector3d> &vertices, const std::vector<IndexedFace> &indices);
 std::vector<IndexedFace> mergeTriangles(const std::vector<IndexedFace> polygons,const std::vector<Vector4d> normals,std::vector<Vector4d> &newNormals, std::vector<int> &faceParents, const std::vector<Vector3d> &vert);
+std::vector<IndexedColorFace> mergeTriangles(const std::vector<IndexedColorFace> polygons,const std::vector<Vector4d> normals,std::vector<Vector4d> &newNormals, std::vector<int> &faceParents, const std::vector<Vector3d> &vert);
 std::unordered_map<EdgeKey, EdgeVal, boost::hash<EdgeKey> > createEdgeDb(const std::vector<IndexedFace> &indices);
 
 VectorOfVector2d alterprofile(VectorOfVector2d vertices,double scalex, double scaley, double origin_x, double origin_y,double offset_x, double offset_y, double rot);

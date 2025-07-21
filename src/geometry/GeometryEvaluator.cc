@@ -595,6 +595,106 @@ std::vector<IndexedFace> mergeTriangles(const std::vector<IndexedFace> polygons,
 
 	return indices;
 }
+std::vector<IndexedColorFace> mergeTriangles(const std::vector<IndexedColorFace> polygons,const std::vector<Vector4d> normals,std::vector<Vector4d> &newNormals, std::vector<int> &faceParents, const std::vector<Vector3d> &vert) 
+{
+	indexedFaceList emptyList;
+	std::vector<Vector4d> norm_list;
+	std::vector<int>      color_list;
+	std::vector<indexedFaceList>  polygons_sorted;
+	// sort polygons into buckets of same orientation and color
+	for(unsigned int i=0;i<polygons.size();i++) {
+		Vector4d norm=normals[i];
+		const IndexedColorFace &triangle = polygons[i]; 
+
+		int bucket_ind=-1;// TODO fix name
+		for(unsigned int j=0;bucket_ind == -1 && j<norm_list.size();j++) {
+			if(polygons[i].color == color_list[j]) {
+				const auto &cur_norm = norm_list[j];
+				if(cur_norm.head<3>().dot(norm.head<3>()) > 0.99999 && fabs(cur_norm[3] - norm[3]) < 0.001) {
+					bucket_ind=j;
+				}
+				if(cur_norm.norm() < 1e-6 && norm.norm() < 1e-6) bucket_ind=j; // zero vector matches zero vector
+			}											     
+		}
+		if(bucket_ind == -1) {
+			bucket_ind=norm_list.size();
+			norm_list.push_back(norm);
+			color_list.push_back(polygons[i].color);
+			polygons_sorted.push_back(emptyList);
+		}
+		polygons_sorted[bucket_ind].push_back(triangle.face);
+	}
+
+	//  now put back hole of polygons into the correct bucket
+	for(unsigned int i=0;i<polygons_sorted.size();i++ ) {
+		// check if bucket has an opposite oriented bucket
+		//Vector4d n = norm_list[i];
+		int i_=-1;
+		Vector3d nref = norm_list[i].head<3>();
+		for(unsigned int j=0;j<polygons_sorted.size();j++) {
+			if(j == i) continue;
+			if(norm_list[j].head<3>().dot(nref) < -0.999 && fabs(norm_list[j][3] + norm_list[i][3]) < 0.005) {
+				i_=j;
+				break;
+			}
+		}
+		if(i_ == -1) continue;
+		// assuming that i_ contains the holes, find, it there is a match
+
+		for(unsigned int k=0;k< polygons_sorted[i].size();k++) {
+			IndexedFace poly = polygons_sorted[i][k];
+			for(unsigned int l=0;l<polygons_sorted[i_].size();l++) {
+				IndexedFace hole = polygons_sorted[i_][l];
+//				// holes dont intersect with the polygon, so its sufficent to check, if one point of the hole is inside the polygon
+				if(mergeTrianglesOpposite(poly, hole)){
+					polygons_sorted[i].erase(polygons_sorted[i].begin()+k);
+					polygons_sorted[i_].erase(polygons_sorted[i_].begin()+l);
+					k--;
+					l--;
+				}
+				else if(pointInPolygon(vert, poly, hole[0])){
+					polygons_sorted[i].push_back(hole);
+					polygons_sorted[i_].erase(polygons_sorted[i_].begin()+l);
+					l--; // could have more holes
+				}
+			}
+		}
+		
+		
+	}
+
+	// now merge the polygons in all buckets independly
+	std::vector<IndexedColorFace> indices;
+	newNormals.clear();
+	faceParents.clear();
+	for(unsigned int i=0;i<polygons_sorted.size();i++ ) {
+		indexedFaceList indices_sub = mergeTrianglesSub(polygons_sorted[i], vert);
+		int off=indices.size();
+		for(unsigned int j=0;j<indices_sub.size();j++) {
+			indices.push_back(IndexedColorFace({.face=indices_sub[j],.color=color_list[i]}));
+			newNormals.push_back(norm_list[i]);
+			Vector4d loc_norm = calcTriangleNormal(vert,indices_sub[j]);
+			if(norm_list[i].head<3>().dot(loc_norm.head<3>()) > 0) 
+				faceParents.push_back(-1); 
+			else {
+				int par=-1;
+				for(unsigned int k=0;k< indices_sub.size();k++)
+				{
+					if(k == j) continue;
+					if(pointInPolygon(vert, indices_sub[k],indices_sub[j][0])) {
+						par=k;
+					}
+				}
+				if(par == -1) printf("par not found here\n");
+				// assert(par != -1); TODO fix
+				faceParents.push_back(par+off);
+			}			
+		}
+	}
+
+
+	return indices;
+}
 
 
 Map3DTree::Map3DTree(void) {
@@ -2597,16 +2697,16 @@ Vector3d cross_pt(Vector3d p1, Vector3d p2, double x)
   return Vector3d(x,y,z);
 }
 
-std::vector<std::vector<IndexedTriangle>>  wrapSlice(PolySetBuilder &builder, const std::vector<Vector3d> vertices, const std::vector<IndexedFace> &polygons,const std::vector<Vector4d> &normals, std::vector<double> xsteps)
+std::vector<std::vector<IndexedColorTriangle>>  wrapSlice(PolySetBuilder &builder, const std::vector<Vector3d> vertices, const std::vector<IndexedColorFace> &polygons,const std::vector<Vector4d> &normals, std::vector<double> xsteps)
 {
   std::vector<Vector3f> builder_vertices;
-  std::vector<std::vector<IndexedTriangle>> results; // nach strips sortiert
+  std::vector<std::vector<IndexedColorTriangle>> results; // nach strips sortiert
   int strips = xsteps.size()+1;
 
   // initialize
   Polygon dmy;
   std::vector<Polygon> dmyx;
-  std::vector<IndexedTriangle> dmyz;
+  std::vector<IndexedColorTriangle> dmyz;
   for(int i=0;  i<strips;i++) {
     results.push_back(dmyz);	  
   }
@@ -2614,29 +2714,34 @@ std::vector<std::vector<IndexedTriangle>>  wrapSlice(PolySetBuilder &builder, co
 // sort in buckets of equal normal direction
   indexedFaceList emptyList;
   std::vector<Vector4d> norm_list;
+  std::vector<int>      color_list;
   std::vector<indexedFaceList>  polygons_sorted;
 //  std::vector<Vector4d> normals = calcTriangleNormals(vertices, polygons);
   // sort polygons into buckets of same orientation
   for(unsigned int i=0;i<polygons.size();i++) {
     Vector4d norm=normals[i];
-    const IndexedFace &triangle = polygons[i]; 
+    const IndexedColorFace &triangle = polygons[i]; 
     
-    int norm_ind=-1;
-    for(unsigned int j=0;norm_ind == -1 && j<norm_list.size();j++) {
+    int bucket_ind=-1;
+    for(unsigned int j=0;bucket_ind == -1 && j<norm_list.size();j++) {
       const auto &cur = norm_list[j];
-      if(cur.head<3>().dot(norm.head<3>()) > 0.99999 && fabs(cur[3] - norm[3]) < 0.001) {
-        norm_ind=j;
-      }
-      if(cur.norm() < 1e-6 && norm.norm() < 1e-6) norm_ind=j; // zero vector matches zero vector
+      if(triangle.color == color_list[j]) {
+        if(cur.head<3>().dot(norm.head<3>()) > 0.99999 && fabs(cur[3] - norm[3]) < 0.001) {
+          bucket_ind=j;
+        }
+        if(cur.norm() < 1e-6 && norm.norm() < 1e-6) bucket_ind=j; // zero vector matches zero vector
+      }								   
     }
-    if(norm_ind == -1) {
-      norm_ind=norm_list.size();
+    if(bucket_ind == -1) {
+      bucket_ind=norm_list.size();
       norm_list.push_back(norm);
+      color_list.push_back(triangle.color);
       polygons_sorted.push_back(emptyList);
     }
-    polygons_sorted[norm_ind].push_back(triangle);
+    polygons_sorted[bucket_ind].push_back(triangle.face);
   }
 
+  int color_ind=0;
   for(auto &bucket: polygons_sorted) {
     std::vector<std::vector<Polygon>> stripPolygons; // nach strips sortiert
     std::vector<Polygon> stripTops; // obere Randpunkte eines Streifens				       	
@@ -2811,9 +2916,11 @@ std::vector<std::vector<IndexedTriangle>>  wrapSlice(PolySetBuilder &builder, co
       GeometryUtils::tessellatePolygonWithHoles(builder_vertices, polys_ind, triangles);
 
       for(const auto &tri: triangles) {
-        results[i].push_back(tri);
+        IndexedColorTriangle tri_col(tri[0], tri[1], tri[2],color_list[color_ind]);
+        results[i].push_back(tri_col);
       }
     }
+    color_ind++;
   }
   return results;
 }
@@ -2907,11 +3014,19 @@ static std::unique_ptr<PolySet> wrapObject(const WrapNode& node, const PolySet *
   std::vector<Vector4d> normals = calcTriangleNormals(ps->vertices, ps->indices);
   std::vector<int> faceParents;
   std::vector<Vector4d> newnormals;
-  std::vector<IndexedFace> tri_merged = mergeTriangles(ps->indices,normals, newnormals, faceParents, ps->vertices);
+  std::vector<IndexedColorFace> tri_color;
+  for(int i=0;i<ps->indices.size();i++) {
+    const auto &tri = ps->indices[i];
+    if( i < ps->color_indices.size())
+	    tri_color.push_back(IndexedColorFace({.face=tri,.color=ps->color_indices[i]}));
+	    else tri_color.push_back(IndexedColorFace({.face=tri,.color=-1}));
 
+  }
+  std::vector<IndexedColorFace> tri_color_merged = mergeTriangles(tri_color,normals, newnormals, faceParents, ps->vertices);
 
   // now build vector from xmin to xmax
-   std::vector<std::vector<IndexedTriangle>> sliceresult = wrapSlice(builder, ps->vertices, tri_merged, newnormals, xscale);
+   std::vector<std::vector<IndexedColorTriangle>> sliceresult = wrapSlice(builder, ps->vertices, tri_color_merged, newnormals, xscale);
+
    std::vector<Vector3d> builder_vertices;
    builder.copyVertices(builder_vertices); // TODO sehr ineffizient
    int ind=0;
@@ -2940,8 +3055,9 @@ static std::unique_ptr<PolySet> wrapObject(const WrapNode& node, const PolySet *
          if(fabs(pt[0]-xtop) < 1e-3) fact=topfact;
          Vector3d pt_tran = wrap_convert(pt, fact, ind);
          builder.addVertex(pt_tran);	    
-       }	       
-       builder.endPolygon();
+       }	
+       if(poly[3] != -1) builder.endPolygon(ps->colors[poly[3]]);
+       		else builder.endPolygon();
      }	     
      botfact=topfact;
      ind++;

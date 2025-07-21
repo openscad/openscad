@@ -12,6 +12,7 @@ using Eigen::Vector4d;
 using Eigen::Vector3f;
 using Eigen::Vector4f;
 using Eigen::Vector3i;
+using Eigen::Vector4i;
 
 #ifdef _MSC_VER
   #include <Eigen/StdVector> // https://eigen.tuxfamily.org/dox/group__TopicStlContainers.html
