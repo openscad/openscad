@@ -82,8 +82,10 @@ void TabManager::tabSwitched(int x)
   par->setWindowTitle(tabWidget->tabText(x).replace("&&", "&"));
   if(use_gvim) {
 // **MCH*
-   std::string str= tabWidget->tabToolTip(x).toUtf8().constData();
-   QString editorcmd="gvim --remote-send '<esc>:sb "+ QString::fromStdString(str)+"<cr>'";
+   auto* tabEditor = (EditorInterface *)tabWidget->widget(x);
+   std::string filename = tabEditor->filepath.toUtf8().constData();
+   QString editorcmd = "gvim --remote-send '<esc>:sb " + QString::fromStdString(filename) + "<cr>' || (gvim '" + QString::fromStdString(filename) + "' &)";
+//   LOG("1. Opening file '%1$s'",editorcmd.toUtf8().constData());
    system(editorcmd.toUtf8().constData());
 // **MCH*
  }
@@ -152,8 +154,9 @@ void TabManager::open(const QString& filename)
   assert(!filename.isEmpty());
 
   if(use_gvim) {
-    QString editorcmd="gvim --remote-tab-silent ";
+    QString editorcmd = "gvim --remote-tab-silent '" + filename.toUtf8() + "' || gvim '" + filename.toUtf8() + "' &";
     editorcmd += filename.toUtf8();
+//    LOG("2. Opening file '%1$s'",editorcmd.toUtf8().constData());
     system(editorcmd.toUtf8().constData());
   }
   for (auto edt: editorList) {
@@ -177,7 +180,8 @@ void TabManager::createTab(const QString& filename)
   auto scintillaEditor = new ScintillaEditor(tabWidget, *par);
   editor = scintillaEditor;
 //  Preferences::create(editor->colorSchemes());   // needs to be done only once, however handled
-//  this->use_gvim = Preferences::inst()->getValue("editor/usegvim").toBool();
+  this->use_gvim = GlobalPreferences::inst()->getValue("editor/usegvim").toBool();
+//  this->use_gvim = true;
   par->activeEditor = editor;
   editor->parameterWidget = new ParameterWidget(par->parameterDock);
   connect(editor->parameterWidget, &ParameterWidget::parametersChanged, par, &MainWindow::actionRenderPreview);
