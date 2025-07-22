@@ -2708,7 +2708,7 @@ std::vector<std::vector<IndexedColorTriangle>>  wrapSlice(PolySetBuilder &builde
   Polygon dmy;
   std::vector<Polygon> dmyx;
   std::vector<IndexedColorTriangle> dmyz;
-  for(int i=0;  i<strips;i++) {
+  for(int i=0;  i<strips-2;i++) { // TODO check very carefully
     results.push_back(dmyz);	  
   }
 
@@ -2997,20 +2997,6 @@ static std::unique_ptr<PolySet> wrapObject(const WrapNode& node, const PolySet *
 
   int scalelen = xscale.size();
 
-  auto wrap_convert  =  [node,xscale, polygon, polygonlen](Vector3d pt, double tanfact, int ind) {
-    auto &p1 = polygon[ind%polygonlen];
-    auto &p2 = polygon[(ind+1)%polygonlen];    
-    Vector2d dir = (p2-p1).normalized();
-    Vector2d dirn =Vector2d(-dir[1],  dir[0]);
-    Vector3d res;
-    Vector2d px=p1+dir*(pt[0]-xscale[ind]-pt[1]*tanfact )+dirn*pt[1];
-    res=Vector3d(px[0], px[1],pt[2]);
-
-// TODO dann 2D streifen
-
-    return res;
-  };
-
   std::vector<indexedFaceList>  polygons_sorted;
   std::vector<Vector4d> normals = calcTriangleNormals(ps->vertices, ps->indices);
   std::vector<int> faceParents;
@@ -3031,19 +3017,7 @@ static std::unique_ptr<PolySet> wrapObject(const WrapNode& node, const PolySet *
    std::vector<Vector3d> builder_vertices;
    builder.copyVertices(builder_vertices); // TODO sehr ineffizient
    int ind=0;
-   double botfact=0.0, topfact=0.0;
    for(const auto &slice : sliceresult) {
-     topfact=0;
-     if(ind < xscale.size()-2) {     
-       Vector2d p1=polygon[ind%polygonlen];	   
-       Vector2d p2=polygon[(ind+1)%polygonlen];	   
-       Vector2d p3=polygon[(ind+2)%polygonlen];	   
-       Vector2d d1=(p2-p1).normalized();
-       Vector2d d2=(p3-p2).normalized();
-       double d = d1.dot(d2);
-       topfact = (1-d)/sqrt(1-d*d); // tan(acos(d)/2);
-       if(d1[0]*d2[1]-d1[1]*d2[0] < 0) topfact=-topfact; // handle concave angles
-     }  
      double xbot = xscale[ind];
      double xtop = xscale[ind+1];     
      for(const auto &poly: slice) {
@@ -3051,16 +3025,36 @@ static std::unique_ptr<PolySet> wrapObject(const WrapNode& node, const PolySet *
        builder.beginPolygon(3);	  
        for(int j=0;j<3;j++) {
          Vector3d pt = builder_vertices[poly[j]];	       
-         double fact=0.0;	       
-         if(fabs(pt[0]-xbot) < 1e-3) fact=-botfact;
-         if(fabs(pt[0]-xtop) < 1e-3) fact=topfact;
-         Vector3d pt_tran = wrap_convert(pt, fact, ind);
+	 
+         auto &p0 = polygon[ind>1?ind-1:0]; 
+         auto &p1 = polygon[ind];
+         auto &p2 = polygon[ind<polygonlen-1?ind+1:polygonlen-1];    
+         auto &p3 = polygon[ind<polygonlen-2?ind+2:polygonlen-1];    
+
+         Vector2d dir0 = (p1-p0).normalized();
+         Vector2d dir0n =Vector2d(-dir0[1],  dir0[0]); 
+
+         Vector2d dir1u = (p2-p1);
+         Vector2d dir1 = dir1u.normalized();
+         Vector2d dir1n =Vector2d(-dir1[1],  dir1[0]);
+
+         Vector2d dir2 = (p3-p2).normalized();
+         Vector2d dir2n =Vector2d(-dir2[1],  dir2[0]);
+
+	 Vector2d dirn = dir0n*(xtop-pt[0])/(xtop-xbot) + dir2n*(pt[0]-xbot)/(xtop-xbot);
+	 dirn = (dirn + dir1n).normalized();
+
+         Vector2d px=p1+dir1u*(pt[0]-xscale[ind])/(xscale[ind+1]-xscale[ind])+dirn*pt[1];
+         Vector3d pt_tran=Vector3d(px[0], px[1],pt[2]);
+	 pt_tran[0] = concat_round(pt_tran[0]);
+	 pt_tran[1] = concat_round(pt_tran[1]);
+	 pt_tran[2] = concat_round(pt_tran[2]);
+
          builder.addVertex(pt_tran);	    
        }	
        if(poly[3] != -1) builder.endPolygon(ps->colors[poly[3]]);
        		else builder.endPolygon();
      }	     
-     botfact=topfact;
      ind++;
    }
   auto ps1 = builder.build();
@@ -3133,6 +3127,65 @@ static std::unique_ptr<PolySet> repairObject(const RepairNode& node, const PolyS
   auto psx  = std::make_unique<PolySet>(ps->getDimension(), ps->convexValue());	  
   *psx = *ps;
 
+  int color_ind=-1;
+  if (node.color.isValid()) {
+    auto it = std::find(psx->colors.begin(), psx->colors.end(), node.color);
+    if (it == psx->colors.end()) {
+      color_ind = psx->colors.size();		  
+      psx->colors.push_back(node.color);
+    } else {
+      color_ind = it- psx->colors.begin();		  
+    }
+  }
+
+  indexedFaceList defects = mergeTrianglesSub(ps->indices, ps->vertices);
+  for(int i=0;i<defects.size();i++) {
+    auto face = defects[i];
+    auto fence = defects[i];
+    IndexedFace fence_new;
+    int cnt=0;
+    int ind=0;
+    int l = face.size();
+    while(l >= 3) {
+      const Vector3d &p0 = ps->vertices[face[(ind+0)%l]];
+      const Vector3d &p1 = ps->vertices[face[(ind+1)%l]];
+      const Vector3d &p2 = ps->vertices[face[(ind+2)%l]];
+      Vector3d n = (p1-p0).cross(p2-p1);
+      // check that all vertices are below the plane
+      bool valid=true;
+      for(auto ind: fence) {
+	const auto &pt = ps->vertices[ind];	      
+        double dist = (p1-pt).dot(n);
+        if(dist < -1e-3) {
+          valid=false;
+          break;
+        }
+      }
+      if(valid){
+        IndexedFace patch;
+        patch.push_back(face[(ind+0)%l]);
+        patch.push_back(face[(ind+1)%l]);
+        patch.push_back(face[(ind+2)%l]);
+        psx->indices.push_back(patch);
+
+        if(color_ind != -1) {	
+          psx->color_indices.resize(psx->indices.size() - 1, -1);
+          psx->color_indices.push_back(color_ind);
+	}
+
+	fence_new.push_back(face[(ind+1)%l]);
+        face.erase(face.begin()+((ind+1)%l));
+        l--;
+	cnt=0;
+      } else ind=(ind+1)%l;
+      cnt++;
+      if(cnt > l){
+        if(fence_new.size() == 0) break;
+	fence = fence_new;
+	fence_new.clear();
+      }
+    }
+  }
 
   return psx;
 }
