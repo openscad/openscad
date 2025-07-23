@@ -392,7 +392,7 @@ PyObject *PyDataObject_call(PyObject *self, PyObject *args, PyObject *kwargs)
   int error;
   for(int i=0;i<PyTuple_Size(args);i++) {
     PyObject *arg = 	PyTuple_GetItem(args,i);  
-    if(Py_TYPE(arg) == &PyOpenSCADType) {
+    if (PyObject_IsInstance(arg, reinterpret_cast<PyObject*>(&PyOpenSCADType))) {
 	std::shared_ptr<AbstractNode> child = ((PyOpenSCADObject *) arg)->node;
 	Tree tree(child, "");
 	GeometryEvaluator geomevaluator(tree);
