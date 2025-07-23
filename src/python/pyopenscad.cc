@@ -310,6 +310,12 @@ int python_numberval(PyObject *number, double *result, int *flags, int flagor)
      *result = PyDataObjectToValue(number);    
      return 0;
   }
+  if (PyNumber_Check(number)) {
+    // Handle other python number protocol objects (e.g. numpy.int64)
+    PyObject * f = PyNumber_Float(number);
+    *result = PyFloat_AsDouble(f);
+    return 0;
+  }
   if (PyUnicode_Check(number) && flags != nullptr) {
     PyObjectUniquePtr str( PyUnicode_AsEncodedString(number, "utf-8", "~"), PyObjectDeleter);
     char *str1 = PyBytes_AS_STRING(str.get());
