@@ -4206,7 +4206,7 @@ PyObject *python_oo_render(PyObject *obj, PyObject *args, PyObject *kwargs)
   return python_render_core(obj, convexity);
 }
 
-PyObject *python_surface_core(const char *file, PyObject *center, PyObject *invert, int convexity)
+PyObject *python_surface_core(const char *file, PyObject *center, PyObject *invert, PyObject *color, int convexity)
 {
   DECLARE_INSTANCE
   std::shared_ptr<AbstractNode> child;
@@ -4225,6 +4225,14 @@ PyObject *python_surface_core(const char *file, PyObject *center, PyObject *inve
       PyErr_SetString(PyExc_TypeError, "Unknown Value for center parameter");
       return NULL;
   }
+
+  if (color == Py_True) node->color = 1;
+  else if (color == Py_False || color == NULL )  node->color = 0;
+  else {
+      PyErr_SetString(PyExc_TypeError, "Unknown Value for color parameter");
+      return NULL;
+  }
+
   node->convexity = 2;
   if (invert  == Py_True)  node->invert = 1;
   else if (center == Py_False || center == NULL )  node->center = 0;
@@ -4238,19 +4246,20 @@ PyObject *python_surface_core(const char *file, PyObject *center, PyObject *inve
 
 PyObject *python_surface(PyObject *self, PyObject *args, PyObject *kwargs)
 {
-  char *kwlist[] = {"file", "center", "convexity", "invert", NULL};
+  char *kwlist[] = {"file", "center", "convexity", "invert", "color",NULL};
   const char *file = NULL;
   PyObject *center = NULL;
   PyObject *invert = NULL;
+  PyObject *color = NULL;
   long convexity = 2;
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "s|OlO", kwlist,
-                                   &file, &center, &convexity
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "s|OlOO", kwlist,
+                                   &file, &center, &convexity, &invert, &color
                                    )) {
-    PyErr_SetString(PyExc_TypeError, "Error during parsing surface(object)");
+    PyErr_SetString(PyExc_TypeError, "Error during parsing surface(file, center, convexity, invert, color)");
     return NULL;
   }
 
-  return python_surface_core(file, center, invert, convexity);
+  return python_surface_core(file, center, invert, color, convexity);
 }
 
 PyObject *python_text(PyObject *self, PyObject *args, PyObject *kwargs)

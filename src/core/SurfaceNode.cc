@@ -67,7 +67,7 @@ static std::shared_ptr<AbstractNode> builtin_surface(const ModuleInstantiation *
 {
   auto node = std::make_shared<SurfaceNode>(inst);
 
-  Parameters parameters = Parameters::parse(std::move(arguments), inst->location(), {"file", "center", "convexity"}, {"invert"});
+  Parameters parameters = Parameters::parse(std::move(arguments), inst->location(), {"file", "center", "convexity"}, {"invert", "color"});
 
   std::string fileval = parameters["file"].isUndefined() ? "" : parameters["file"].toString();
   auto filename = lookup_file(fileval, inst->location().filePath().parent_path().string(), parameters.documentRoot());
@@ -86,6 +86,10 @@ static std::shared_ptr<AbstractNode> builtin_surface(const ModuleInstantiation *
     node->invert = parameters["invert"].toBool();
   }
 
+  if (parameters["color"].type() == Value::Type::BOOL) {
+    node->invert = parameters["color"].toBool();
+  }
+
   return node;
 }
 
@@ -98,13 +102,10 @@ void SurfaceNode::convert_image(img_data_t& data, std::vector<uint8_t>& img, uns
   for (unsigned int y = 0; y < height; ++y) {
     for (unsigned int x = 0; x < width; ++x) {
       long idx = 4l * (y * width + x);
-      double pixel = 0.2126 * img[idx] + 0.7152 * img[idx + 1] + 0.0722 * img[idx + 2];
-      double z = 100.0 / 255 * (invert ? 1 - pixel : pixel);
-      data[ x + (width * (height - 1 - y)) ] = z;
-      min_val = std::min(z, min_val);
+      data[ x + (width * (height - 1 - y)) ] = Vector3f(img[idx], img[idx + 1], img[idx + 2]);
     }
   }
-  data.min_val = min_val;
+//  data.min_val = min_val;
 }
 
 bool SurfaceNode::is_png(std::vector<uint8_t>& png) const
@@ -201,15 +202,15 @@ img_data_t SurfaceNode::read_dat(std::string filename) const
 
   data.width = columns;
   data.height = lines;
-  data.min_val = min_val;
 
   // Now convert the unordered, possibly non-rectangular data into a well ordered vector
   // for faster access and reduced memory usage.
   data.resize( (size_t)lines * columns);
   for (int i = 0; i < lines; ++i)
-    for (int j = 0; j < columns; ++j)
-      data[ i * columns + j ] = unordered_data[std::make_pair(i, j)];
-
+    for (int j = 0; j < columns; ++j){
+      auto pixel = unordered_data[std::make_pair(i, j)];
+      data[ i * columns + j ] = Vector3f(pixel, pixel, pixel);
+    }
   return data;
 }
 
@@ -220,7 +221,17 @@ std::unique_ptr<const Geometry> SurfaceNode::createGeometry() const
 
   int lines = data.height;
   int columns = data.width;
-  double min_val = data.min_value() - 1; // make the bottom solid, and match old code
+  auto color_to_z = [this] (const Vector3f &col) {
+    double pixel = 0.2126 * col[0] + 0.7152 * col[1] + 0.0722 * col[2];
+    return  100.0 / 255 * (this->invert ? 1 - pixel : pixel);
+  };
+
+  double min_val = 0;
+  for (int i = 0; i < lines*columns; ++i) {
+    double z= color_to_z(data[i]);
+    if(i == 0 || z < min_val) min_val=z; 
+  }
+  min_val -=1;
 
   // reserve the polygon vector size so we don't have to reallocate as often
 
@@ -233,81 +244,102 @@ std::unique_ptr<const Geometry> SurfaceNode::createGeometry() const
   // the bulk of the heightmap
   for (int i = 1; i < lines; ++i)
     for (int j = 1; j < columns; ++j) {
-      double v1 = data[ (j - 1) + (i - 1) * columns ];
-      double v2 = data[ (j) + (i - 1) * columns ];
-      double v3 = data[ (j - 1) + (i) * columns ];
-      double v4 = data[ (j) + (i) * columns ];
+        Vector3f &c1 = data[ (j - 1) + (i - 1) * columns ];
+        Vector3f &c2 = data[ (j) + (i - 1) * columns ];
+        Vector3f &c3 = data[ (j - 1) + (i) * columns ];
+        Vector3f &c4 = data[ (j) + (i) * columns ];
+	Color4f col(c1[0]/255.0f, c1[1]/255.0f, c1[2]/255.0f, 1.0);
+
+	double v1=color_to_z(c1);
+	double v2=color_to_z(c2);
+	double v3=color_to_z(c3);
+	double v4=color_to_z(c4);
 
       double vx = (v1 + v2 + v3 + v4) / 4;
 
-      builder.appendPolygon({
-                Vector3d(ox + j - 1, oy + i - 1, v1),
-                Vector3d(ox + j, oy + i - 1, v2),
-                Vector3d(ox + j - 0.5, oy + i - 0.5, vx)
-                });
+      builder.beginPolygon(3);
+      builder.addVertex(Vector3d(ox + j - 1, oy + i - 1, v1));
+      builder.addVertex(Vector3d(ox + j, oy + i - 1, v2));
+      builder.addVertex(Vector3d(ox + j - 0.5, oy + i - 0.5, vx));
+      if(color) builder.endPolygon(col); else builder.endPolygon();
 
-      builder.appendPolygon({
-                Vector3d(ox + j, oy + i - 1, v2),
-                Vector3d(ox + j, oy + i, v4),
-                Vector3d(ox + j - 0.5, oy + i - 0.5, vx)
-                });
+      builder.beginPolygon(3);
+      builder.addVertex(Vector3d(ox + j, oy + i - 1, v2));
+      builder.addVertex(Vector3d(ox + j, oy + i, v4));
+      builder.addVertex(Vector3d(ox + j - 0.5, oy + i - 0.5, vx));
+      if(color) builder.endPolygon(col); else builder.endPolygon();
 
-      builder.appendPolygon({
-                Vector3d(ox + j, oy + i, v4),
-                Vector3d(ox + j - 1, oy + i, v3),
-                Vector3d(ox + j - 0.5, oy + i - 0.5, vx)
-                });
+      builder.beginPolygon(3);
+      builder.addVertex(Vector3d(ox + j, oy + i, v4));
+      builder.addVertex(Vector3d(ox + j - 1, oy + i, v3));
+      builder.addVertex(Vector3d(ox + j - 0.5, oy + i - 0.5, vx));
+      if(color) builder.endPolygon(col); else builder.endPolygon();
 
-      builder.appendPolygon({
-                Vector3d(ox + j - 1, oy + i, v3),
-                Vector3d(ox + j - 1, oy + i - 1, v1),
-                Vector3d(ox + j - 0.5, oy + i - 0.5, vx)
-                });
+      builder.beginPolygon(3);
+      builder.addVertex(Vector3d(ox + j - 1, oy + i, v3));
+      builder.addVertex(Vector3d(ox + j - 1, oy + i - 1, v1));
+      builder.addVertex(Vector3d(ox + j - 0.5, oy + i - 0.5, vx));
+      if(color) builder.endPolygon(col); else builder.endPolygon();
+
+
     }
 
   // edges along Y
   for (int i = 1; i < lines; ++i) {
-    double v1 = data[ (0) + (i - 1) * columns ];
-    double v2 = data[ (0) + (i) * columns ];
-    double v3 = data[ (columns - 1) + (i - 1) * columns ];
-    double v4 = data[ (columns - 1) + (i) * columns ];
+        auto c1 = data[ (0) + (i - 1) * columns ];
+        auto c2 = data[ (0) + (i) * columns ];
+        auto c3 = data[ (columns - 1) + (i - 1) * columns ];
+        auto c4 = data[ (columns - 1) + (i) * columns ];
+	double v1=color_to_z(c1);
+	double v2=color_to_z(c2);
+	double v3=color_to_z(c3);
+	double v4=color_to_z(c4);
+
+	Color4f col1(c1[0]/255.0f, c1[1]/255.0f, c1[2]/255.0f, 1.0);
+	Color4f col4(c4[0]/255.0f, c4[1]/255.0f, c4[2]/255.0f, 1.0);
 
 
-    builder.appendPolygon({
-        Vector3d(ox + 0, oy + i - 1, min_val),
-        Vector3d(ox + 0, oy + i - 1, v1),
-        Vector3d(ox + 0, oy + i, v2),
-        Vector3d(ox + 0, oy + i, min_val)
-    });
+    builder.beginPolygon(4);
+    builder.addVertex(Vector3d(ox + 0, oy + i - 1, min_val));
+    builder.addVertex(Vector3d(ox + 0, oy + i - 1, v1));
+    builder.addVertex(Vector3d(ox + 0, oy + i, v2));
+    builder.addVertex(Vector3d(ox + 0, oy + i, min_val));
+    if(color) builder.endPolygon(col1); else builder.endPolygon();
 
-    builder.appendPolygon({
-        Vector3d(ox + columns - 1, oy + i, min_val),
-        Vector3d(ox + columns - 1, oy + i, v4),
-        Vector3d(ox + columns - 1, oy + i - 1, v3),
-        Vector3d(ox + columns - 1, oy + i - 1, min_val)
-    });
+    builder.beginPolygon(4);
+    builder.addVertex(Vector3d(ox + columns - 1, oy + i, min_val));
+    builder.addVertex(Vector3d(ox + columns - 1, oy + i, v4));
+    builder.addVertex(Vector3d(ox + columns - 1, oy + i - 1, v3));
+    builder.addVertex(Vector3d(ox + columns - 1, oy + i - 1, min_val));
+    if(color) builder.endPolygon(col4); else builder.endPolygon();
   }
 
   // edges along X
   for (int i = 1; i < columns; ++i) {
-    double v1 = data[ (i - 1) + (0) * columns ];
-    double v2 = data[ (i) + (0) * columns ];
-    double v3 = data[ (i - 1) + (lines - 1) * columns ];
-    double v4 = data[ (i) + (lines - 1) * columns ];
+    auto c1 = data[ (i - 1) + (0) * columns ];
+    auto c2 = data[ (i) + (0) * columns ];
+    auto c3 = data[ (i - 1) + (lines - 1) * columns ];
+    auto c4 = data[ (i) + (lines - 1) * columns ];
+    double v1=color_to_z(c1);
+    double v2=color_to_z(c2);
+    double v3=color_to_z(c3);
+    double v4=color_to_z(c4);
+    Color4f col2(c2[0]/255.0f, c2[1]/255.0f, c2[2]/255.0f, 1.0);
+    Color4f col3(c3[0]/255.0f, c3[1]/255.0f, c3[2]/255.0f, 1.0);
 
-    builder.appendPolygon({
-        Vector3d(ox + i, oy + 0, min_val),
-        Vector3d(ox + i, oy + 0, v2),
-        Vector3d(ox + i - 1, oy + 0, v1),
-        Vector3d(ox + i - 1, oy + 0, min_val)
-    });
+    builder.beginPolygon(4);
+    builder.addVertex(Vector3d(ox + i, oy + 0, min_val));
+    builder.addVertex(Vector3d(ox + i, oy + 0, v2));
+    builder.addVertex(Vector3d(ox + i - 1, oy + 0, v1));
+    builder.addVertex(Vector3d(ox + i - 1, oy + 0, min_val));
+    if(color) builder.endPolygon(col2); else builder.endPolygon();
 
-    builder.appendPolygon({
-        Vector3d(ox + i - 1, oy + lines - 1, min_val),
-        Vector3d(ox + i - 1, oy + lines - 1, v3),
-        Vector3d(ox + i, oy + lines - 1, v4),
-        Vector3d(ox + i, oy + lines - 1, min_val)
-    });
+    builder.beginPolygon(4);
+    builder.addVertex(Vector3d(ox + i - 1, oy + lines - 1, min_val));
+    builder.addVertex(Vector3d(ox + i - 1, oy + lines - 1, v3));
+    builder.addVertex(Vector3d(ox + i, oy + lines - 1, v4));
+    builder.addVertex(Vector3d(ox + i, oy + lines - 1, min_val));
+    if(color) builder.endPolygon(col2); else builder.endPolygon();
   }
 
   // the bottom of the shape (one less than the real minimum value), making it a solid volume
@@ -333,8 +365,9 @@ std::string SurfaceNode::toString() const
 
   stream << this->name() << "(file = " << this->filename
          << ", center = " << (this->center ? "true" : "false")
-         << ", invert = " << (this->invert ? "true" : "false")
-         << ", " "timestamp = " << fs_timestamp(path)
+         << ", invert = " << (this->invert ? "true" : "false");
+  if(this->color) stream << ", color = true";
+  stream << ", " "timestamp = " << fs_timestamp(path)
          << ")";
 
   return stream.str();
