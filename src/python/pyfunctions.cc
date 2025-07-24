@@ -2795,6 +2795,22 @@ PyObject *python_faces_core(PyObject *obj, bool tessellate)
 	pt3[2]=0; // no radius
         poly->points.push_back(pt3);
       }
+
+      // xdir should be parallel to the longest edge
+      int n= poly->points.size();
+      Vector3d maxline(0,0,0);
+      for(int i=0;i<n;i++) {
+         Vector3d line = poly->points[(i+1)%n]- poly->points[i];
+	 if(line.norm() > maxline.norm()) maxline=line;
+      }
+      double arcshift=atan2(maxline[1], maxline[0]);
+      Vector3d newpt(0,0,0);
+      for(auto &pt :poly->points) {
+	newpt[0] = pt[0]*cos(-arcshift) - pt[1]*sin(-arcshift);
+        newpt[1] = pt[0]*sin(-arcshift) + pt[1]*cos(-arcshift);
+	pt = newpt;
+      }
+
       poly->paths.push_back(path);
 
         // check if there are holes
@@ -2809,8 +2825,9 @@ PyObject *python_faces_core(PyObject *obj, bool tessellate)
             pt4 = invmat * pt4 ;
 	    path.push_back(poly->points.size());
 	    Vector3d pt3 = pt4.head<3>();
-	    pt3[2]=0; // no radius
-            poly->points.push_back(pt3);
+	    newpt[0] = pt3[0]*cos(-arcshift) - pt3[1]*sin(-arcshift);
+            newpt[1] = pt3[0]*sin(-arcshift) + pt3[1]*cos(-arcshift);
+            poly->points.push_back(newpt);
           }
           poly->paths.push_back(path);
 
@@ -2819,6 +2836,20 @@ PyObject *python_faces_core(PyObject *obj, bool tessellate)
       {
         DECLARE_INSTANCE
         auto mult = std::make_shared<TransformNode>(instance,"multmatrix");
+	// mat um arcshift drehen
+	Vector3d xvec(mat(0,0),mat(1,0),mat(2,0));
+	Vector3d yvec(mat(0,1),mat(1,1),mat(2,1));
+	
+	// rotate xvec
+	mat(0,0) = xvec[0]*cos(arcshift)+yvec[0]*sin(arcshift);
+        mat(1,0) = xvec[1]*cos(arcshift)+yvec[1]*sin(arcshift);
+        mat(2,0) = xvec[2]*cos(arcshift)+yvec[2]*sin(arcshift);
+
+	// rotate yvec
+	mat(0,1) = yvec[0]*cos(arcshift)-xvec[0]*sin(arcshift);
+        mat(1,1) = yvec[1]*cos(arcshift)-xvec[1]*sin(arcshift);
+        mat(2,1) = yvec[2]*cos(arcshift)-xvec[2]*sin(arcshift);
+
 	mult->matrix = mat;
 	mult->children.push_back(poly);
 
