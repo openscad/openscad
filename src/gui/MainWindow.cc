@@ -2090,7 +2090,7 @@ SourceFile *MainWindow::parseDocument(EditorInterface *editor)
   auto fulltext = std::string(document.toUtf8().constData()) + "\n\x03\n" + commandline_commands;
   auto fnameba = editor->filepath.toLocal8Bit();
 
-  const char *fname = editor->filepath.isEmpty() ? "" : fnameba;
+  const char *fname = editor->filepath.isEmpty() ? "" : fnameba.constData();
 #ifdef ENABLE_PYTHON
   this->python_active = false;
   if (fname != NULL) {
