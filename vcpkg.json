@@ -1,0 +1,23 @@
+{
+  "name": "openscad",
+  "version-string": "1.0.0",
+  "dependencies": [
+    "boost",
+    "eigen3",
+    "cgal",
+    "qt5-gamepad",
+    "harfbuzz",
+    "fontconfig",
+    "double-conversion",
+    "opencsg",
+    "libxml2",
+    "qt5-base",
+    "qt5-multimedia",
+    "libzip",
+    "glib",
+    "gperf",
+    "qscintilla",
+    "tbb",
+    "gettext"
+  ]
+}
