@@ -366,6 +366,7 @@ std::vector<int>  python_intlistval(PyObject *list)
 
 int python_vectorval(PyObject *vec, int minval, int maxval, double *x, double *y, double *z, double *w, int *flags)
 {
+  if(vec == nullptr) return 1;	
   if(flags != nullptr) *flags = 0;
   if (PyList_Check(vec)) {
     if(PyList_Size(vec) < minval || PyList_Size(vec) > maxval) return 1;
