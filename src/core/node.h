@@ -46,6 +46,8 @@ public:
       the verbose name shall be overloaded. */
   virtual std::string verbose_name() const { return this->name(); }
 
+  virtual std::string model_name() const { return ""; }
+
   const std::vector<std::shared_ptr<AbstractNode>>& getChildren() const {
     return this->children;
   }
@@ -118,11 +120,17 @@ class GroupNode : public AbstractNode
 {
 public:
   VISITABLE();
-  GroupNode(const ModuleInstantiation *mi, std::string name = "") : AbstractNode(mi), _name(std::move(name)) { }
+  GroupNode(const ModuleInstantiation *mi, std::string name = "", std::string model_name = "")
+    : AbstractNode(mi), _name(std::move(name)), _model_name(std::move(model_name))
+  {
+  }
   std::string name() const override;
   std::string verbose_name() const override;
+  std::string model_name() const override;
+
 private:
   const std::string _name;
+  const std::string _model_name;
 };
 
 /*!
