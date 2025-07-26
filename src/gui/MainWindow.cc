@@ -2460,7 +2460,7 @@ SourceFile *MainWindow::parseDocument(EditorInterface *editor)
 
   auto fulltext_py =
       std::string(this->lastCompiledDoc.toUtf8().constData());
-  const char *fname = editor->filepath.isEmpty() ? "" : fnameba;
+  const char *fname = editor->filepath.isEmpty() ? "" : fnameba.constData();
   SourceFile *sourceFile;
   recomputeLanguageActive();
 #ifdef ENABLE_PYTHON
