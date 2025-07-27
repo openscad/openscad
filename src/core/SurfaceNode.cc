@@ -208,7 +208,7 @@ img_data_t SurfaceNode::read_dat(std::string filename) const
   data.resize( (size_t)lines * columns);
   for (int i = 0; i < lines; ++i)
     for (int j = 0; j < columns; ++j){
-      auto pixel = unordered_data[std::make_pair(i, j)];
+      auto pixel = unordered_data[std::make_pair(i, j)]*255.0/100.0;
       data[ i * columns + j ] = Vector3f(pixel, pixel, pixel);
     }
   return data;
