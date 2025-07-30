@@ -20,7 +20,7 @@
 class tostring_visitor;
 class tostream_visitor;
 class Expression;
-class Value;
+class ObjectObject;
 
 class QuotedString : public std::string
 {
@@ -264,20 +264,14 @@ public:
 
   class ObjectType
   {
-protected:
-    struct ObjectObject;
-    struct ObjectObjectDeleter {
-      void operator()(ObjectObject *obj);
-    };
-
-private:
-    explicit ObjectType(const std::shared_ptr<ObjectObject>& copy);
 
 public:
-    std::shared_ptr<ObjectObject> ptr;
+
     ObjectType(class EvaluationSession *session);
+    explicit ObjectType(const std::shared_ptr<ObjectObject>& copy);
+    std::shared_ptr<ObjectObject> ptr;
     [[nodiscard]] ObjectType clone() const;
-    [[nodiscard]] const Value& get(const std::string& key) const;
+    [[nodiscard]] Value get(const std::string& key) const;
     bool set(const std::string& key, Value value);
     bool del(const std::string& key); // true if was present
     bool contains(const std::string& key) const;
@@ -390,13 +384,19 @@ private:
   Variant value;
 };
 
-static const size_t NOINDEX = std::string::npos;
-// The object type which ObjectType's shared_ptr points to.
-struct Value::ObjectType::ObjectObject {
+
+std::ostream& operator<<(std::ostream& stream, const Value::ObjectType& u);
+using VectorType = Value::VectorType;
+using EmbeddedVectorType = Value::EmbeddedVectorType;
+using ObjectType = Value::ObjectType;
+
+
+static constexpr size_t NOINDEX = std::string::npos;
+struct ObjectObject {
 
   class EvaluationSession *evaluation_session = nullptr;
 
-  // for consistency, it is important that the 
+  // for consistency, it is important that the
   // order of the keys+values remains the insertion
   // order. No such map exists in the C++ lib.
   // However, for the garbage collection in ContextMemoryManager.cc
@@ -405,59 +405,53 @@ struct Value::ObjectType::ObjectObject {
   // We therefore use a map for performance but maintain an index
   // instead of a secondary reference.
 
-    std::unordered_map<std::string, size_t> map;
-    std::vector<std::string> keys;
-    std::vector<Value> values;
+  std::unordered_map<std::string, size_t> map;
+  std::vector<std::string> keys;
+  std::vector<Value> values;
 
-    const size_t find(const std::string & key) {
-        if (!keys.empty() && map.empty()){
-            for ( size_t i = 0; i<keys.size(); i++) {
-                map.emplace(keys[i], i);
-            }
-        }
-        auto it = map.find(key);
-        if ( it != map.end()) {
-            return it->second;
-        } else
-            return NOINDEX;
+  const size_t find(const std::string & key) {
+    if (!keys.empty() && map.empty()){
+      for ( size_t i = 0; i<keys.size(); i++) {
+        map.emplace(keys[i], i);
+      }
     }
+    auto it = map.find(key);
+    if ( it != map.end()) {
+      return it->second;
+    } else
+      return NOINDEX;
+  }
 
-    bool set(const std::string & key, Value  value) {
-        size_t index = find(key);
-        if ( index != NOINDEX) {
-            // if contains key, keep at same position
-            values[index] = std::move(value);
-        } else {
-            if (!map.empty()) {
-                map[key]=keys.size(); // incremental update
-            }
-            keys.emplace_back(key);
-            values.emplace_back(std::move(value));
-        }
-        return index == NOINDEX;
+  bool set(const std::string & key, Value  value) {
+    size_t index = find(key);
+    if ( index != NOINDEX) {
+      // if contains key, keep at same position
+      values[index] = std::move(value);
+    } else {
+      if (!map.empty()) {
+        map[key]=keys.size(); // incremental update
+      }
+      keys.emplace_back(key);
+      values.emplace_back(std::move(value));
     }
+    return index == NOINDEX;
+  }
 
-    size_t del(const std::string & key) {
-        size_t index = find(key);
-        if(index != NOINDEX) {
-            keys.erase(keys.begin()+index);
-            values.erase(values.begin()+index);
-            map.clear();
-        }
-        return index;
+  size_t del(const std::string & key) {
+    size_t index = find(key);
+    if(index != NOINDEX) {
+      keys.erase(keys.begin()+index);
+      values.erase(values.begin()+index);
+      map.clear();
     }
+    return index;
+  }
 
-    const Value & get(const std::string & key) {
-        size_t index = find(key);
-        if(index != NOINDEX)
-            return values[index];
-        else
-            return Value::undefined;
-    }
+  const Value & get(const std::string & key) {
+    size_t index = find(key);
+    if(index != NOINDEX)
+      return values[index];
+    else
+      return Value::undefined;
+  }
 };
-
-std::ostream& operator<<(std::ostream& stream, const Value::ObjectType& u);
-
-using VectorType = Value::VectorType;
-using EmbeddedVectorType = Value::EmbeddedVectorType;
-using ObjectType = Value::ObjectType;

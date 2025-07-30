@@ -24,7 +24,6 @@
  *
  */
 
-#include "core/Value.h"
 
 #include <filesystem>
 #include <cmath>
@@ -41,6 +40,7 @@
 #include <vector>
 #include <boost/lexical_cast.hpp>
 
+#include "core/Value.h"
 #include "core/EvaluationSession.h"
 #include "io/fileutils.h"
 #include "utils/printutils.h"
@@ -446,7 +446,7 @@ public:
   }
 
   std::string operator()(const ObjectType& v) const {
-    return STR(v);
+        return STR(v);
   }
 
   std::string operator()(const RangePtr& v) const {
@@ -1286,13 +1286,22 @@ ObjectType::ObjectType(EvaluationSession *session) :
   ptr->evaluation_session = session;
 }
 
-const Value& ObjectType::get(const std::string& key) const              { return ptr->get(key); }
-bool ObjectType::set(const std::string& key, Value value)               { return ptr->set(key,std::move(value)); }
+Value ObjectType::get(const std::string& key) const                     { return ptr->get(key).clone(); }
 bool ObjectType::del(const std::string& key)                            { return ptr->del(key) != NOINDEX; }
 bool ObjectType::contains(const std::string& key) const                 { return ptr->find(key)!= NOINDEX; }
 bool ObjectType::empty() const                                          { return ptr->values.empty(); }
 const std::vector<std::string>& ObjectType::keys() const                { return ptr->keys; }
 const std::vector<Value>& ObjectType::values() const                    { return ptr->values; }
+
+bool ObjectType::set(const std::string& key, Value value) {
+  if ( value.type() == Value::Type::FUNCTION ) {
+    FunctionPtr const fptr = std::get<FunctionPtr>(value.getVariant());
+    FunctionType & type = *fptr.get().get();
+    FunctionPtr fixed_ptr(FunctionType(type, this->ptr));
+    value = fixed_ptr;
+  }
+  return ptr->set(key,std::move(value));
+}
 
 const Value& ObjectType::operator[](const str_utf8_wrapper& v) const
 {
