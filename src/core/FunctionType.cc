@@ -23,6 +23,11 @@ Value FunctionType::operator>=(const FunctionType& /*other*/) const {
   return Value::undef("operation undefined (function >= function)");
 }
 
+const std::weak_ptr<ObjectObject>& FunctionType::get_receiver() const {
+  return receiver;
+}
+
+
 std::ostream& operator<<(std::ostream& stream, const FunctionType& f)
 {
   stream << "function(";
