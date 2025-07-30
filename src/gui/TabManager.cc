@@ -563,8 +563,10 @@ bool TabManager::refreshDocument()
   if (!editor->filepath.isEmpty()) {
     QFile file(editor->filepath);
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+      if(!boost::algorithm::ends_with(editor->filepath, "Untitled.py")) {
       LOG("Failed to open file %1$s: %2$s",
           editor->filepath.toLocal8Bit().constData(), file.errorString().toLocal8Bit().constData());
+      }
     } else {
       QTextStream reader(&file);
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
