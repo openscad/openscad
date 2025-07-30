@@ -73,34 +73,34 @@ void add_item(Containers& containers, const FileFormatInfo& info) {
   containers.fileFormatToInfo[info.format] = info;
 }
 
-Containers &containers() {
+Containers& containers() {
   static std::unique_ptr<Containers> containers = [](){
-    auto containers = std::make_unique<Containers>();
+      auto containers = std::make_unique<Containers>();
 
-    add_item(*containers, {FileFormat::ASCII_STL, "asciistl", "stl", "STL (ascii)"});
-    add_item(*containers, {FileFormat::BINARY_STL, "binstl", "stl", "STL (binary)"});
-    add_item(*containers, {FileFormat::OBJ, "obj", "obj", "OBJ"});
-    add_item(*containers, {FileFormat::OFF, "off", "off", "OFF"});
-    add_item(*containers, {FileFormat::WRL, "wrl", "wrl", "VRML"});
-    add_item(*containers, {FileFormat::AMF, "amf", "amf", "AMF"});
-    add_item(*containers, {FileFormat::_3MF, "3mf", "3mf", "3MF"});
-    add_item(*containers, {FileFormat::DXF, "dxf", "dxf", "DXF"});
-    add_item(*containers, {FileFormat::SVG, "svg", "svg", "SVG"});
-    add_item(*containers, {FileFormat::NEFDBG, "nefdbg", "nefdbg", "nefdbg"});
-    add_item(*containers, {FileFormat::NEF3, "nef3", "nef3", "nef3"});
-    add_item(*containers, {FileFormat::CSG, "csg", "csg", "CSG"});
-    add_item(*containers, {FileFormat::PARAM, "param", "param", "param"});
-    add_item(*containers, {FileFormat::AST, "ast", "ast", "AST"});
-    add_item(*containers, {FileFormat::TERM, "term", "term", "term"});
-    add_item(*containers, {FileFormat::ECHO, "echo", "echo", "echo"});
-    add_item(*containers, {FileFormat::PNG, "png", "png", "PNG"});
-    add_item(*containers, {FileFormat::PDF, "pdf", "pdf", "PDF"});
-    add_item(*containers, {FileFormat::POV, "pov", "pov", "POV"});
+      add_item(*containers, {FileFormat::ASCII_STL, "asciistl", "stl", "STL (ascii)"});
+      add_item(*containers, {FileFormat::BINARY_STL, "binstl", "stl", "STL (binary)"});
+      add_item(*containers, {FileFormat::OBJ, "obj", "obj", "OBJ"});
+      add_item(*containers, {FileFormat::OFF, "off", "off", "OFF"});
+      add_item(*containers, {FileFormat::WRL, "wrl", "wrl", "VRML"});
+      add_item(*containers, {FileFormat::AMF, "amf", "amf", "AMF"});
+      add_item(*containers, {FileFormat::_3MF, "3mf", "3mf", "3MF"});
+      add_item(*containers, {FileFormat::DXF, "dxf", "dxf", "DXF"});
+      add_item(*containers, {FileFormat::SVG, "svg", "svg", "SVG"});
+      add_item(*containers, {FileFormat::NEFDBG, "nefdbg", "nefdbg", "nefdbg"});
+      add_item(*containers, {FileFormat::NEF3, "nef3", "nef3", "nef3"});
+      add_item(*containers, {FileFormat::CSG, "csg", "csg", "CSG"});
+      add_item(*containers, {FileFormat::PARAM, "param", "param", "param"});
+      add_item(*containers, {FileFormat::AST, "ast", "ast", "AST"});
+      add_item(*containers, {FileFormat::TERM, "term", "term", "term"});
+      add_item(*containers, {FileFormat::ECHO, "echo", "echo", "echo"});
+      add_item(*containers, {FileFormat::PNG, "png", "png", "PNG"});
+      add_item(*containers, {FileFormat::PDF, "pdf", "pdf", "PDF"});
+      add_item(*containers, {FileFormat::POV, "pov", "pov", "POV"});
 
-    // Alias
-    containers->identifierToInfo["stl"] = containers->identifierToInfo["asciistl"];  
-    return containers;
-  }();
+      // Alias
+      containers->identifierToInfo["stl"] = containers->identifierToInfo["asciistl"];
+      return containers;
+    }();
   return *containers;
 }
 
@@ -167,22 +167,22 @@ bool canPreview(FileFormat format) {
 }
 
 bool is3D(FileFormat format) {
-return format == FileFormat::ASCII_STL ||
-  format == FileFormat::BINARY_STL ||
-  format == FileFormat::OBJ ||
-  format == FileFormat::OFF ||
-  format == FileFormat::WRL ||
-  format == FileFormat::AMF ||
-  format == FileFormat::_3MF ||
-  format == FileFormat::NEFDBG ||
-  format == FileFormat::NEF3 ||
-  format == FileFormat::POV;
+  return format == FileFormat::ASCII_STL ||
+         format == FileFormat::BINARY_STL ||
+         format == FileFormat::OBJ ||
+         format == FileFormat::OFF ||
+         format == FileFormat::WRL ||
+         format == FileFormat::AMF ||
+         format == FileFormat::_3MF ||
+         format == FileFormat::NEFDBG ||
+         format == FileFormat::NEF3 ||
+         format == FileFormat::POV;
 }
 
 bool is2D(FileFormat format) {
   return format == FileFormat::DXF ||
-    format == FileFormat::SVG ||
-    format == FileFormat::PDF;
+         format == FileFormat::SVG ||
+         format == FileFormat::PDF;
 }
 
 }  // namespace FileFormat
@@ -204,6 +204,8 @@ ExportInfo createExportInfo(const FileFormat& format, const FileFormatInfo& info
     exportInfo.options3mf = Export3mfOptions::withOptions(cmdLineOptions);
   } else if (format == FileFormat::PDF) {
     exportInfo.optionsPdf = ExportPdfOptions::withOptions(cmdLineOptions);
+  } else if (format == FileFormat::SVG) {
+    exportInfo.optionsSvg = ExportSvgOptions::withOptions(cmdLineOptions);
   }
 
   return exportInfo;
@@ -237,7 +239,7 @@ static void exportFile(const std::shared_ptr<const Geometry>& root_geom, std::os
     export_dxf(root_geom, output);
     break;
   case FileFormat::SVG:
-    export_svg(root_geom, output);
+    export_svg(root_geom, output, exportInfo);
     break;
   case FileFormat::PDF:
     export_pdf(root_geom, output, exportInfo);
@@ -312,22 +314,22 @@ Vector3d remove_negative_zero(const Vector3d& pt) {
   };
 }
 
-#if EIGEN_VERSION_AT_LEAST(3,4,0)
+#if EIGEN_VERSION_AT_LEAST(3, 4, 0)
 // Eigen 3.4.0 added begin()/end()
 struct LexographicLess {
-  template<class T>
+  template <class T>
   bool operator()(T const& lhs, T const& rhs) const {
     return std::lexicographical_compare(lhs.begin(), lhs.end(), rhs.begin(), rhs.end(), std::less{});
   }
 };
 #else
 struct LexographicLess {
-  template<class T>
+  template <class T>
   bool operator()(T const& lhs, T const& rhs) const {
     return std::lexicographical_compare(lhs.data(), lhs.data() + lhs.size(), rhs.data(), rhs.data() + rhs.size(), std::less{});
   }
 };
-#endif
+#endif // if EIGEN_VERSION_AT_LEAST(3, 4, 0)
 
 } // namespace
 
@@ -359,7 +361,7 @@ std::unique_ptr<PolySet> createSortedPolySet(const PolySet& ps)
   std::vector<int> indexTranslationMap(vertexMap.size());
   out->vertices.reserve(vertexMap.size());
 
-  for (const auto& [v,i] : vertexMap) {
+  for (const auto& [v, i] : vertexMap) {
     indexTranslationMap[i] = out->vertices.size();
     out->vertices.push_back(v);
   }
@@ -388,7 +390,7 @@ std::unique_ptr<PolySet> createSortedPolySet(const PolySet& ps)
       return a.face < b.face;
     });
     for (size_t i = 0, n = faces.size(); i < n; i++) {
-      auto & face = faces[i];
+      auto& face = faces[i];
       out->indices[i] = face.face;
       out->color_indices[i] = face.color_index;
     }
