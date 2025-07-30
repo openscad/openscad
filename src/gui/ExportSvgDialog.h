@@ -43,4 +43,4 @@ private:
   QColor fillColor;
   QColor strokeColor;
   double defaultStrokeWidth = 0.35;
-}; 
+};
