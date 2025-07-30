@@ -2429,6 +2429,7 @@ bool MainWindow::trust_python_file(const std::string& file,  const std::string& 
   }
   return false;
 }
+#endif // ifdef ENABLE_PYTHON
 void MainWindow::recomputeLanguageActive()
 {
   auto fnameba = activeEditor->filepath.toLocal8Bit();
@@ -2437,18 +2438,21 @@ void MainWindow::recomputeLanguageActive()
   int oldLanguage = language;
   language = LANG_SCAD;
   if (fname != NULL) {
+#ifdef ENABLE_PYTHON	  
     if(boost::algorithm::ends_with(fname, ".py")) {
 	    std::string content = std::string(this->lastCompiledDoc.toUtf8().constData());
       if ( trust_python_file(std::string(fname), content)) language = LANG_PYTHON;
       else LOG(message_group::Warning, Location::NONE, "", "Python is not enabled");
     }
+#endif    
   }
 
+#ifdef ENABLE_PYTHON  
   if (oldLanguage != language) {
     emit this->pythonActiveChanged(language == LANG_PYTHON);
   }
+#endif  
 }
-#endif // ifdef ENABLE_PYTHON
 
 SourceFile *MainWindow::parseDocument(EditorInterface *editor)
 {
