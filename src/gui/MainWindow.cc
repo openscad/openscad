@@ -2045,7 +2045,7 @@ void MainWindow::actionPythonCreateVenv()
     Settings::Settings::visit(SettingsWriter());
     LOG("Python virtual environment creation successfull.");
     QMessageBox::information(this, _("Create Virtual Environment"),
-                             "Virtual environment created, please restart OpenSCAD to activate.",
+                             "Virtual environment created, please restart PythonSCAD to activate.",
                              QMessageBox::Ok);
   } else {
     LOG("Python virtual environment creation failed.");

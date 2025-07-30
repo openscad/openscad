@@ -1183,7 +1183,7 @@ PyMODINIT_FUNC PyInit_PyOpenSCAD(void)
 // ----------------------------------------------
 
 static PyStatus
-pymain_init(void)
+pymain_init_ipython(void)
 {
     PyStatus status;
 
@@ -1225,7 +1225,7 @@ pymain_init(void)
 /* Write an exitcode into *exitcode and return 1 if we have to exit Python.
    Return 0 otherwise. */
 static int
-pymain_run_interactive_hook(int *exitcode)
+pymain_run_interactive_hook_ipython(int *exitcode)
 {
     PyObject *sys, *hook, *result;
     sys = PyImport_ImportModule("sys");
@@ -1263,9 +1263,9 @@ error:
 
 
 static void
-pymain_repl(int *exitcode)
+pymain_repl_ipython(int *exitcode)
 {
-    if (pymain_run_interactive_hook(exitcode)) {
+    if (pymain_run_interactive_hook_ipython(exitcode)) {
         return;
     }
     PyCompilerFlags cf = _PyCompilerFlags_INIT;
@@ -1275,12 +1275,12 @@ pymain_repl(int *exitcode)
 
 
 static void
-pymain_run_python(int *exitcode)
+pymain_run_python_ipython(int *exitcode)
 {
     PyObject *main_importer_path = NULL;
 //    PyInterpreterState *interp = PyInterpreterState_Get();
 
-    pymain_repl(exitcode);
+    pymain_repl_ipython(exitcode);
     goto done;
 
 //    *exitcode = pymain_exit_err_print();
@@ -1291,11 +1291,11 @@ done:
 }
 
 int
-Py_RunMain(void)
+Py_RunMain_ipython(void)
 {
     int exitcode = 0;
 
-    pymain_run_python(&exitcode);
+//    pymain_run_python_ipython(&exitcode);
 
 //    if (Py_FinalizeEx() < 0) {
 //        exitcode = 120;
@@ -1313,7 +1313,7 @@ Py_RunMain(void)
 
 void ipython(void) {
     initPython(PlatformUtils::applicationPath(),"", 0.0);
-    Py_RunMain();
+    Py_RunMain_ipython();
     return ;
 }
 // -------------------------
