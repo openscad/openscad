@@ -472,6 +472,14 @@ message(STATUS "LibXml2: ${LIBXML2_VERSION_STRING}")
 target_include_directories(OpenSCAD SYSTEM PRIVATE ${LIBXML2_INCLUDE_DIR})
 target_link_libraries(OpenSCAD PRIVATE ${LIBXML2_LIBRARIES})
 
+set(EXECUTABLE_NAME pythonscad${SUFFIX_WITH_DASH})
+set(PYTHON_EXECUTABLE_NAME pythonscad-python${SUFFIX_WITH_DASH})
+
+configure_file(
+  "${CMAKE_CURRENT_SOURCE_DIR}/src/executable.h.in"
+  "${CMAKE_CURRENT_BINARY_DIR}/executable.h"
+)
+
 if(ENABLE_PYTHON)
   SET(PYTHON_SOURCES
     src/python/pyopenscad.cc
@@ -572,7 +580,7 @@ if(ENABLE_PYTHON)
   endif() # endif MXE
   target_include_directories(OpenSCADPy PRIVATE ${Nettle_INCLUDE_DIRS})
   target_link_libraries(OpenSCADPy PRIVATE ${Nettle_LIBRARIES})
-  add_custom_target(OpenSCADPython ALL COMMAND ${CMAKE_COMMAND} -E create_symlink pythonscad${SUFFIX_WITH_DASH} "pythonscad-python")
+  add_custom_target(OpenSCADPython ALL COMMAND ${CMAKE_COMMAND} -E create_symlink ${EXECUTABLE_NAME} ${PYTHON_EXECUTABLE_NAME})
   target_include_directories(OpenSCADPy SYSTEM PRIVATE ${FREETYPE_INCLUDE_DIRS})
   if(MSVC)
     target_include_directories(OpenSCADPy SYSTEM PRIVATE ${HARFBUZZ_INCLUDE_DIRS}/harfbuzz)
@@ -1604,11 +1612,11 @@ if(WIN32)
   set(OPENSCAD_INSTALL_RESOURCEDIR ".")
 else()
   set(OPENSCAD_BINDIR ${CMAKE_INSTALL_BINDIR})
-  set(OPENSCAD_INSTALL_RESOURCEDIR ${CMAKE_INSTALL_DATAROOTDIR}/pythonscad${SUFFIX_WITH_DASH})
+  set(OPENSCAD_INSTALL_RESOURCEDIR ${CMAKE_INSTALL_DATAROOTDIR}/${EXECUTABLE_NAME})
 endif()
 
 if(NOT APPLE OR APPLE_UNIX)
-  set_target_properties(OpenSCAD PROPERTIES OUTPUT_NAME pythonscad${SUFFIX_WITH_DASH})
+  set_target_properties(OpenSCAD PROPERTIES OUTPUT_NAME ${EXECUTABLE_NAME})
   install(TARGETS OpenSCAD RUNTIME DESTINATION "${OPENSCAD_BINDIR}")
   if(ENABLE_PYTHON)
     install(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/pythonscad-python DESTINATION "${OPENSCAD_BINDIR}")
@@ -1631,8 +1639,8 @@ if(NOT APPLE OR APPLE_UNIX)
     if(ENABLE_LIBFIVE AND USE_BUILTIN_LIBFIVE)
       install(FILES ${CMAKE_BINARY_DIR}/submodules/libfive/libfive/src/libfive.so DESTINATION "lib")
     endif()
-    install(FILES ${RESOURCE_DIR}/icons/pythonscad.desktop DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/applications RENAME pythonscad${SUFFIX_WITH_DASH}.desktop)
-    install(FILES ${RESOURCE_DIR}/icons/pythonscad.xml DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/mime/packages RENAME pythonscad${SUFFIX_WITH_DASH}.xml)
+    install(FILES ${RESOURCE_DIR}/icons/pythonscad.desktop DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/applications RENAME ${EXECUTABLE_NAME}.desktop)
+    install(FILES ${RESOURCE_DIR}/icons/pythonscad.xml DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/mime/packages RENAME ${EXECUTABLE_NAME}.xml)
     install(FILES ${RESOURCE_DIR}/icons/pythonscad${SNAPSHOT_SUFFIX}-48.png DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/icons/hicolor/48x48/apps RENAME pythonscad${SNAPSHOT_SUFFIX}.png)
     install(FILES ${RESOURCE_DIR}/icons/pythonscad${SNAPSHOT_SUFFIX}-64.png DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/icons/hicolor/64x64/apps RENAME pythonscad${SNAPSHOT_SUFFIX}.png)
     install(FILES ${RESOURCE_DIR}/icons/pythonscad${SNAPSHOT_SUFFIX}-128.png DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/icons/hicolor/128x128/apps RENAME pythonscad${SNAPSHOT_SUFFIX}.png)

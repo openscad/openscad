@@ -31,6 +31,7 @@
 #include "pydata.h"
 #include "core/CsgOpNode.h"
 #include "Value.h"
+#include "executable.h"
 #include "Expression.h"
 #include "PlatformUtils.h"
 #include <Context.h>
@@ -764,7 +765,7 @@ void initPython(const std::string& binDir, const std::string &scriptpath, double
 {
   static bool alreadyTried=false;
   if(alreadyTried) return;  
-  const auto name = "openscad-python";
+  const auto name = PYTHON_EXECUTABLE_NAME;
   const auto exe = binDir + "/" + name;
   if(scriptpath.size() > 0) python_scriptpath = scriptpath;	
   if(pythonInitDict) { /* If already initialized, undo to reinitialize after */
