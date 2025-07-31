@@ -1,4 +1,4 @@
-find_package(PkgConfig REQUIRED QUIET)
+find_package(PkgConfig REQUIRED)
 
 pkg_search_module(GLIB2 glib-2.0)
 set(GLIB2_DEFINITIONS ${GLIB2_CFLAGS_OTHER})

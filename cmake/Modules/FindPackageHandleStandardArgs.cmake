@@ -162,7 +162,7 @@ Another example for the full signature:
 
 .. code-block:: cmake
 
-  find_package(Automoc4 QUIET NO_MODULE HINTS /opt/automoc4)
+  find_package(Automoc4 NO_MODULE HINTS /opt/automoc4)
   find_package_handle_standard_args(Automoc4  CONFIG_MODE)
 
 In this case, a ``FindAutmoc4.cmake`` module wraps a call to

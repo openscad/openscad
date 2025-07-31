@@ -30,9 +30,9 @@
 # HARFBUZZ_INCLUDE_DIRS - containing the HarfBuzz headers
 # HARFBUZZ_LIBRARIES - containing the HarfBuzz library
 
-find_package(PkgConfig REQUIRED QUIET)
+find_package(PkgConfig REQUIRED)
 
-pkg_check_modules(PC_HARFBUZZ QUIET harfbuzz>=0.9.0)
+pkg_check_modules(PC_HARFBUZZ harfbuzz>=0.9.0)
 
 find_path(HARFBUZZ_INCLUDE_DIRS NAMES hb.h
   HINTS ${PC_HARFBUZZ_INCLUDE_DIRS} ${PC_HARFBUZZ_INCLUDEDIR}

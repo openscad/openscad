@@ -80,7 +80,7 @@ include(${CMAKE_CURRENT_LIST_DIR}/FindPackageHandleStandardArgs.cmake)
 if(NOT CURL_NO_CURL_CMAKE)
   # do a find package call to specifically look for the CMake version
   # of curl
-  find_package(CURL QUIET NO_MODULE)
+  find_package(CURL NO_MODULE)
   mark_as_advanced(CURL_DIR)
 
   # if we found the CURL cmake package then we are done, and
@@ -95,9 +95,9 @@ if(NOT CURL_NO_CURL_CMAKE)
   endif()
 endif()
 
-find_package(PkgConfig QUIET)
+find_package(PkgConfig)
 if(PKG_CONFIG_FOUND)
-  pkg_check_modules(PC_CURL QUIET libcurl)
+  pkg_check_modules(PC_CURL libcurl)
   if(PC_CURL_FOUND)
     pkg_get_variable(CURL_SUPPORTED_PROTOCOLS_STRING libcurl supported_protocols)
     string(REPLACE " " ";" CURL_SUPPORTED_PROTOCOLS "${CURL_SUPPORTED_PROTOCOLS_STRING}")

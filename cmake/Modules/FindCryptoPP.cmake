@@ -4,7 +4,7 @@
 # CRYPTOPP_INCLUDE_DIRS - containing the Crypto++ headers
 # CRYPTOPP_LIBRARIES - containing the Crypto++ library
 
-find_package(PkgConfig REQUIRED QUIET)
+find_package(PkgConfig REQUIRED)
 
 pkg_check_modules(PC_CRYPTOPP cryptopp>=5.6.0) 
 

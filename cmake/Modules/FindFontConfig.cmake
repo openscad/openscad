@@ -42,8 +42,8 @@ else (FONTCONFIG_LIBRARIES AND FONTCONFIG_INCLUDE_DIR)
   if (NOT WIN32)
     # use pkg-config to get the directories and then use these values
     # in the FIND_PATH() and FIND_LIBRARY() calls
-    find_package(PkgConfig REQUIRED QUIET)
-    pkg_check_modules(PC_FONTCONFIG QUIET fontconfig)
+    find_package(PkgConfig REQUIRED)
+    pkg_check_modules(PC_FONTCONFIG fontconfig)
 
     set(FONTCONFIG_DEFINITIONS ${PC_FONTCONFIG_CFLAGS_OTHER})
   endif (NOT WIN32)

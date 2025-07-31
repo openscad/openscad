@@ -162,12 +162,12 @@ else()
   endif()
 endif()
 
-find_package(Lib3MF QUIET)
+find_package(Lib3MF)
 # Disable LIB3MF tests if library was disabled in build
 if(NOT LIB3MF_FOUND)
   # check again via pkgconfig
   if(NOT MSVC)
-    find_package(PkgConfig QUIET)
+    find_package(PkgConfig)
     if (PKG_CONFIG_FOUND)
       pkg_check_modules(LIB3MF lib3MF)
     endif()

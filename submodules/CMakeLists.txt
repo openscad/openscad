@@ -8,7 +8,7 @@ if(USE_MIMALLOC)
     message(AUTHOR_WARNING "Target OpenSCAD appears to have libraries linked before mimalloc (${OSCAD_LIBS}).  This might cause problems.")
   endif()
 
-  find_package(mimalloc QUIET)
+  find_package(mimalloc)
   if(TARGET mimalloc)
     # MSYS2 provides a mimalloc package with both static and shared builds
     message(STATUS "Using already installed mimalloc package, version ${mimalloc_VERSION}")
