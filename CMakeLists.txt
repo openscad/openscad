@@ -1,5 +1,5 @@
 #
-# CMake build system for OpenSCAD
+# CMake build system for PythonSCAD
 #
 # Configuration variables
 #   -DHEADLESS=<ON|OFF>
@@ -31,7 +31,7 @@ include("cmake/Modules/openscad_version.cmake")
 
 option(INFO "Display build configuration info at end of cmake config" ON)
 option(ENABLE_TESTS "Run testsuite after building." ON)
-option(ENABLE_GUI_TESTS "Compile a special version of the openscad gui with feature for testing." OFF)
+option(ENABLE_GUI_TESTS "Compile a special version of the PythonSCAD gui with feature for testing." OFF)
 option(EXPERIMENTAL "Enable Experimental Features" OFF)
 option(USE_MANIFOLD_TRIANGULATOR "Use Manifold's triangulator instead of CGAL's" ON)
 option(USE_BUILTIN_MANIFOLD "Use manifold from submodule" ON)
@@ -62,17 +62,17 @@ option(ENABLE_HIDAPI "Enable support for HIDAPI input driver." ON)
 option(ENABLE_CGAL "Enable CGAL." ON)
 option(ENABLE_MANIFOLD "Enable Manifold." ON)
 option(ALLOW_BUNDLED_HIDAPI "Allow usage of bundled HIDAPI library (Windows only)." OFF)
-option(ENABLE_PYTHON "Enable experimental Python Interpreter" OFF)
+option(ENABLE_PYTHON "Enable experimental Python Interpreter" ON)
 option(PYTHON_VERSION "Specify Exact Python Version" "")
 option(ENABLE_LIBFIVE "Enable libfive Library" OFF)
 option(USE_BUILTIN_LIBFIVE "Use libfive from submodule." ON)
 option(BUILD_SHARED_LIBS "Build shared library" OFF)
 include(CMakeDependentOption)
-cmake_dependent_option(APPLE_UNIX "Build OpenSCAD in Unix mode in MacOS X instead of an Apple Bundle" OFF "APPLE" OFF)
+cmake_dependent_option(APPLE_UNIX "Build PythonSCAD in Unix mode in MacOS X instead of an Apple Bundle" OFF "APPLE" OFF)
 cmake_dependent_option(ENABLE_QTDBUS "Enable DBus input driver for Qt." ON "NOT HEADLESS" OFF)
 cmake_dependent_option(ENABLE_GAMEPAD "Enable Qt5Gamepad input driver." ON "NOT HEADLESS;NOT USE_QT6" OFF)
 set(WASM_BUILD_TYPE "web" CACHE STRING 
-  "WebAssembly build type. Support web (builds an OpenSCAD module) or node (standalone .js executable)")
+  "WebAssembly build type. Support web (builds a PythonSCAD module) or node (standalone .js executable)")
 
 if (USE_QT6)
   # Minimum version required for Qt-6.5
