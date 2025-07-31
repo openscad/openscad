@@ -73,9 +73,9 @@ void add_item(Containers& containers, const FileFormatInfo& info) {
   containers.fileFormatToInfo[info.format] = info;
 }
 
-Containers &containers() {
+Containers& containers() {
   static std::unique_ptr<Containers> containers = [](){
-    auto containers = std::make_unique<Containers>();
+      auto containers = std::make_unique<Containers>();
 
     add_item(*containers, {FileFormat::ASCII_STL, "asciistl", "stl", "STL (ascii)"});
     add_item(*containers, {FileFormat::BINARY_STL, "binstl", "stl", "STL (binary)"});
@@ -99,10 +99,10 @@ Containers &containers() {
     add_item(*containers, {FileFormat::PDF, "pdf", "pdf", "PDF"});
     add_item(*containers, {FileFormat::POV, "pov", "pov", "POV"});
 
-    // Alias
-    containers->identifierToInfo["stl"] = containers->identifierToInfo["asciistl"];  
-    return containers;
-  }();
+      // Alias
+      containers->identifierToInfo["stl"] = containers->identifierToInfo["asciistl"];
+      return containers;
+    }();
   return *containers;
 }
 
@@ -185,8 +185,8 @@ return format == FileFormat::ASCII_STL ||
 
 bool is2D(FileFormat format) {
   return format == FileFormat::DXF ||
-    format == FileFormat::SVG ||
-    format == FileFormat::PDF;
+         format == FileFormat::SVG ||
+         format == FileFormat::PDF;
 }
 
 }  // namespace FileFormat
@@ -327,22 +327,22 @@ Vector3d remove_negative_zero(const Vector3d& pt) {
   };
 }
 
-#if EIGEN_VERSION_AT_LEAST(3,4,0)
+#if EIGEN_VERSION_AT_LEAST(3, 4, 0)
 // Eigen 3.4.0 added begin()/end()
 struct LexographicLess {
-  template<class T>
+  template <class T>
   bool operator()(T const& lhs, T const& rhs) const {
     return std::lexicographical_compare(lhs.begin(), lhs.end(), rhs.begin(), rhs.end(), std::less{});
   }
 };
 #else
 struct LexographicLess {
-  template<class T>
+  template <class T>
   bool operator()(T const& lhs, T const& rhs) const {
     return std::lexicographical_compare(lhs.data(), lhs.data() + lhs.size(), rhs.data(), rhs.data() + rhs.size(), std::less{});
   }
 };
-#endif
+#endif // if EIGEN_VERSION_AT_LEAST(3, 4, 0)
 
 } // namespace
 
@@ -374,7 +374,7 @@ std::unique_ptr<PolySet> createSortedPolySet(const PolySet& ps)
   std::vector<int> indexTranslationMap(vertexMap.size());
   out->vertices.reserve(vertexMap.size());
 
-  for (const auto& [v,i] : vertexMap) {
+  for (const auto& [v, i] : vertexMap) {
     indexTranslationMap[i] = out->vertices.size();
     out->vertices.push_back(v);
   }
@@ -403,7 +403,7 @@ std::unique_ptr<PolySet> createSortedPolySet(const PolySet& ps)
       return a.face < b.face;
     });
     for (size_t i = 0, n = faces.size(); i < n; i++) {
-      auto & face = faces[i];
+      auto& face = faces[i];
       out->indices[i] = face.face;
       out->color_indices[i] = face.color_index;
     }

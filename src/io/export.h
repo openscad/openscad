@@ -76,7 +76,7 @@ bool is2D(FileFormat format);
 
 using CmdLineExportOptions = std::unordered_map<std::string, std::unordered_map<std::string, std::string>>;
 
-template<typename settings_entry_type>
+template <typename settings_entry_type>
 auto set_cmd_line_option(const CmdLineExportOptions& cmdLineOptions, const std::string& section, const settings_entry_type& se)
 {
   if (cmdLineOptions.count(section) == 0) {
@@ -94,43 +94,43 @@ auto set_cmd_line_option(const CmdLineExportOptions& cmdLineOptions, const std::
 // include defaults to use without dialog or direction.
 // Defaults match values used prior to incorporation of options.
 struct ExportPdfOptions {
-    bool showScale = true;
-    bool showScaleMsg = true;
-    bool showGrid = false;
-    double gridSize = 10.0;
-    bool showDesignFilename = false;
-    ExportPdfPaperOrientation orientation = ExportPdfPaperOrientation::PORTRAIT;
-    ExportPdfPaperSize paperSize = ExportPdfPaperSize::A4;
-    bool addMetaData = SPDF::exportPdfAddMetaData.defaultValue();
-    std::string metaDataTitle;
-    std::string metaDataAuthor;
-    std::string metaDataSubject;
-    std::string metaDataKeywords;
-    bool fill = false;
-    std::string fillColor = "black";
-    bool stroke = true;
-    std::string strokeColor = "black";
-    double strokeWidth = 1;
+  bool showScale = true;
+  bool showScaleMsg = true;
+  bool showGrid = false;
+  double gridSize = 10.0;
+  bool showDesignFilename = false;
+  ExportPdfPaperOrientation orientation = ExportPdfPaperOrientation::PORTRAIT;
+  ExportPdfPaperSize paperSize = ExportPdfPaperSize::A4;
+  bool addMetaData = SPDF::exportPdfAddMetaData.defaultValue();
+  std::string metaDataTitle;
+  std::string metaDataAuthor;
+  std::string metaDataSubject;
+  std::string metaDataKeywords;
+  bool fill = false;
+  std::string fillColor = "black";
+  bool stroke = true;
+  std::string strokeColor = "black";
+  double strokeWidth = 1;
 
   static std::shared_ptr<const ExportPdfOptions> withOptions(const CmdLineExportOptions& cmdLineOptions) {
     return std::make_shared<const ExportPdfOptions>(ExportPdfOptions{
-        .showScale = set_cmd_line_option(cmdLineOptions, Settings::SECTION_EXPORT_PDF, Settings::SettingsExportPdf::exportPdfShowScale),
-        .showScaleMsg = set_cmd_line_option(cmdLineOptions, Settings::SECTION_EXPORT_PDF, Settings::SettingsExportPdf::exportPdfShowScaleMessage),
-        .showGrid = set_cmd_line_option(cmdLineOptions, Settings::SECTION_EXPORT_PDF, Settings::SettingsExportPdf::exportPdfShowGrid),
-        .gridSize = set_cmd_line_option(cmdLineOptions, Settings::SECTION_EXPORT_PDF, Settings::SettingsExportPdf::exportPdfGridSize),
-        .showDesignFilename = set_cmd_line_option(cmdLineOptions, Settings::SECTION_EXPORT_PDF, Settings::SettingsExportPdf::exportPdfShowFilename),
-        .orientation = set_cmd_line_option(cmdLineOptions, Settings::SECTION_EXPORT_PDF, Settings::SettingsExportPdf::exportPdfOrientation),
-        .paperSize = set_cmd_line_option(cmdLineOptions, Settings::SECTION_EXPORT_PDF, Settings::SettingsExportPdf::exportPdfPaperSize),
-        .addMetaData = set_cmd_line_option(cmdLineOptions, Settings::SECTION_EXPORT_PDF, Settings::SettingsExportPdf::exportPdfAddMetaData),
-        .metaDataTitle = set_cmd_line_option(cmdLineOptions, Settings::SECTION_EXPORT_PDF, Settings::SettingsExportPdf::exportPdfMetaDataTitle),
-        .metaDataAuthor = set_cmd_line_option(cmdLineOptions, Settings::SECTION_EXPORT_PDF, Settings::SettingsExportPdf::exportPdfMetaDataAuthor),
-        .metaDataSubject = set_cmd_line_option(cmdLineOptions, Settings::SECTION_EXPORT_PDF, Settings::SettingsExportPdf::exportPdfMetaDataSubject),
-        .metaDataKeywords = set_cmd_line_option(cmdLineOptions, Settings::SECTION_EXPORT_PDF, Settings::SettingsExportPdf::exportPdfMetaDataKeywords),
-        .fill = set_cmd_line_option(cmdLineOptions, Settings::SECTION_EXPORT_PDF, Settings::SettingsExportPdf::exportPdfFill),
-        .fillColor = set_cmd_line_option(cmdLineOptions, Settings::SECTION_EXPORT_PDF, Settings::SettingsExportPdf::exportPdfFillColor),
-        .stroke = set_cmd_line_option(cmdLineOptions, Settings::SECTION_EXPORT_PDF, Settings::SettingsExportPdf::exportPdfStroke),
-        .strokeColor = set_cmd_line_option(cmdLineOptions, Settings::SECTION_EXPORT_PDF, Settings::SettingsExportPdf::exportPdfStrokeColor),
-        .strokeWidth = set_cmd_line_option(cmdLineOptions, Settings::SECTION_EXPORT_PDF, Settings::SettingsExportPdf::exportPdfStrokeWidth),
+      .showScale = set_cmd_line_option(cmdLineOptions, Settings::SECTION_EXPORT_PDF, Settings::SettingsExportPdf::exportPdfShowScale),
+      .showScaleMsg = set_cmd_line_option(cmdLineOptions, Settings::SECTION_EXPORT_PDF, Settings::SettingsExportPdf::exportPdfShowScaleMessage),
+      .showGrid = set_cmd_line_option(cmdLineOptions, Settings::SECTION_EXPORT_PDF, Settings::SettingsExportPdf::exportPdfShowGrid),
+      .gridSize = set_cmd_line_option(cmdLineOptions, Settings::SECTION_EXPORT_PDF, Settings::SettingsExportPdf::exportPdfGridSize),
+      .showDesignFilename = set_cmd_line_option(cmdLineOptions, Settings::SECTION_EXPORT_PDF, Settings::SettingsExportPdf::exportPdfShowFilename),
+      .orientation = set_cmd_line_option(cmdLineOptions, Settings::SECTION_EXPORT_PDF, Settings::SettingsExportPdf::exportPdfOrientation),
+      .paperSize = set_cmd_line_option(cmdLineOptions, Settings::SECTION_EXPORT_PDF, Settings::SettingsExportPdf::exportPdfPaperSize),
+      .addMetaData = set_cmd_line_option(cmdLineOptions, Settings::SECTION_EXPORT_PDF, Settings::SettingsExportPdf::exportPdfAddMetaData),
+      .metaDataTitle = set_cmd_line_option(cmdLineOptions, Settings::SECTION_EXPORT_PDF, Settings::SettingsExportPdf::exportPdfMetaDataTitle),
+      .metaDataAuthor = set_cmd_line_option(cmdLineOptions, Settings::SECTION_EXPORT_PDF, Settings::SettingsExportPdf::exportPdfMetaDataAuthor),
+      .metaDataSubject = set_cmd_line_option(cmdLineOptions, Settings::SECTION_EXPORT_PDF, Settings::SettingsExportPdf::exportPdfMetaDataSubject),
+      .metaDataKeywords = set_cmd_line_option(cmdLineOptions, Settings::SECTION_EXPORT_PDF, Settings::SettingsExportPdf::exportPdfMetaDataKeywords),
+      .fill = set_cmd_line_option(cmdLineOptions, Settings::SECTION_EXPORT_PDF, Settings::SettingsExportPdf::exportPdfFill),
+      .fillColor = set_cmd_line_option(cmdLineOptions, Settings::SECTION_EXPORT_PDF, Settings::SettingsExportPdf::exportPdfFillColor),
+      .stroke = set_cmd_line_option(cmdLineOptions, Settings::SECTION_EXPORT_PDF, Settings::SettingsExportPdf::exportPdfStroke),
+      .strokeColor = set_cmd_line_option(cmdLineOptions, Settings::SECTION_EXPORT_PDF, Settings::SettingsExportPdf::exportPdfStrokeColor),
+      .strokeWidth = set_cmd_line_option(cmdLineOptions, Settings::SECTION_EXPORT_PDF, Settings::SettingsExportPdf::exportPdfStrokeWidth),
     });
   }
 

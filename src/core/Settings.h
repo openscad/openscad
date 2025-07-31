@@ -13,9 +13,9 @@
 
 namespace Settings {
 
-  // Note that those 2 values also relate to the currently
-  // static list of fields in the preferences GUI, so updating
-  // here needs a change in the UI definition!
+// Note that those 2 values also relate to the currently
+// static list of fields in the preferences GUI, so updating
+// here needs a change in the UI definition!
 constexpr inline size_t max_axis = 9;
 constexpr inline size_t max_buttons = 24;
 
@@ -49,7 +49,7 @@ private:
   std::string _name;
 };
 
-template<typename entry_type>
+template <typename entry_type>
 class SettingsEntry : public SettingsEntryBase
 {
 public:
@@ -77,10 +77,10 @@ public:
   bool isDefault() const override { return _value == _defaultValue; }
   std::string encode() const override;
   const bool decode(const std::string& encoded) const override;
-  void set(const std::string& encoded) override { setValue(decode(encoded)); };
+  void set(const std::string& encoded) override { setValue(decode(encoded)); }
   const std::tuple<std::string, std::string> help() const override {
     return {"bool", defaultValue() ? "<true>/false" : "true/<false>"};
-  };
+  }
 
 private:
   bool _value;
@@ -106,10 +106,10 @@ public:
   bool isDefault() const override { return _value == _defaultValue; }
   std::string encode() const override;
   const int decode(const std::string& encoded) const override;
-  void set(const std::string& encoded) override { setValue(decode(encoded)); };
+  void set(const std::string& encoded) override { setValue(decode(encoded)); }
   const std::tuple<std::string, std::string> help() const override {
     return {"int", std::to_string(_minimum) + " : <" + std::to_string(defaultValue()) + "> : " + std::to_string(maximum())};
-  };
+  }
 
 private:
   int _value;
@@ -139,10 +139,10 @@ public:
   bool isDefault() const override { return _value == _defaultValue; }
   std::string encode() const override;
   const double decode(const std::string& encoded) const override;
-  void set(const std::string& encoded) override { setValue(decode(encoded)); };
+  void set(const std::string& encoded) override { setValue(decode(encoded)); }
   const std::tuple<std::string, std::string> help() const override {
     return {"double", std::to_string(_minimum) + " : <" + std::to_string(defaultValue()) + "> : " + std::to_string(maximum())};
-  };
+  }
 
 private:
   double _value;
@@ -167,20 +167,21 @@ public:
   bool isDefault() const override { return _value == _defaultValue; }
   std::string encode() const override { return value(); }
   const std::string decode(const std::string& encoded) const override { return encoded; }
-  void set(const std::string& encoded) override { setValue(decode(encoded)); };
-  const std::tuple<std::string, std::string> help() const override { return {"string", "\"" + encode() + "\""}; };
+  void set(const std::string& encoded) override { setValue(decode(encoded)); }
+  const std::tuple<std::string, std::string> help() const override { return {"string", "\"" + encode() + "\""}; }
 
 private:
   std::string _value;
   std::string _defaultValue;
 };
 
-template<typename enum_type>
+template <typename enum_type>
 class SettingsEntryEnum : public SettingsEntry<enum_type>
 {
 public:
   struct Item {
-    Item(enum_type value, std::string name, std::string description) : value(value), name(std::move(name)), description(std::move(description)) {}
+    Item(enum_type value, std::string name, std::string description) : value(value), name(std::move(name)), description(std::move(description)) {
+    }
     enum_type value;
     std::string name;
     std::string description;
@@ -216,7 +217,7 @@ public:
     }
     list += "]";
     return {"enum", list};
-  };
+  }
 
 private:
   std::vector<Item> _items;
@@ -224,7 +225,7 @@ private:
   enum_type _defaultValue;
 };
 
-template<typename enum_type>
+template <typename enum_type>
 void SettingsEntryEnum<enum_type>::setValue(const enum_type& value)
 {
   for (size_t i = 0; i < _items.size(); ++i) {
@@ -235,10 +236,10 @@ void SettingsEntryEnum<enum_type>::setValue(const enum_type& value)
   }
 }
 
-template<typename enum_type>
+template <typename enum_type>
 std::string SettingsEntryEnum<enum_type>::encode() const { return item().name; }
 
-template<typename enum_type>
+template <typename enum_type>
 const enum_type SettingsEntryEnum<enum_type>::decode(const std::string& encoded) const {
   for (const Item& item : items()) {
     if (item.name == encoded) {
@@ -248,10 +249,10 @@ const enum_type SettingsEntryEnum<enum_type>::decode(const std::string& encoded)
   return defaultValue();
 }
 
-template<>
+template <>
 inline std::string SettingsEntryEnum<std::string>::encode() const { return value(); }
 
-template<>
+template <>
 inline const std::string SettingsEntryEnum<std::string>::decode(const std::string& encoded) const { return encoded; }
 
 class LocalAppParameterType
@@ -270,30 +271,32 @@ public:
 
   LocalAppParameterType() = default;
   constexpr LocalAppParameterType(Value v) : value(v) { }
-  constexpr operator Value() const { return value; }
+  constexpr operator Value() const {
+    return value;
+  }
   explicit operator bool() const = delete;
 
   std::string icon() const {
     switch (value) {
-      case string: return "chokusen-parameter";
-      case file: return "chokusen-orthogonal";
-      case dir: return "chokusen-folder";
-      case extension: return "chokusen-parameter";
-      case source: return "chokusen-file";
-      case sourcedir: return "chokusen-folder";
-      default: return "*invalid*";
+    case string: return "chokusen-parameter";
+    case file: return "chokusen-orthogonal";
+    case dir: return "chokusen-folder";
+    case extension: return "chokusen-parameter";
+    case source: return "chokusen-file";
+    case sourcedir: return "chokusen-folder";
+    default: return "*invalid*";
     }
   }
 
   std::string description() const {
     switch (value) {
-      case string: return "";
-      case file: return "<full path to the output file>";
-      case dir: return "<directory of the output file>";
-      case extension: return "<extension of the output file without leading dot>";
-      case source: return "<full path to the main source file>";
-      case sourcedir: return "<directory of the main source file>";
-      default: return "*invalid*";
+    case string: return "";
+    case file: return "<full path to the output file>";
+    case dir: return "<directory of the output file>";
+    case extension: return "<extension of the output file without leading dot>";
+    case source: return "<full path to the main source file>";
+    case sourcedir: return "<directory of the main source file>";
+    default: return "*invalid*";
     }
   }
 
@@ -305,12 +308,16 @@ struct LocalAppParameter {
   LocalAppParameterType type;
   std::string value;
 
-  LocalAppParameter() : type(LocalAppParameterType::string), value("") {}
-  LocalAppParameter(const LocalAppParameterType t, std::string v) : type(t), value(std::move(v)) {}
-  operator bool() const { return type != LocalAppParameterType::invalid; }
+  LocalAppParameter() : type(LocalAppParameterType::string), value("") {
+  }
+  LocalAppParameter(const LocalAppParameterType t, std::string v) : type(t), value(std::move(v)) {
+  }
+  operator bool() const {
+    return type != LocalAppParameterType::invalid;
+  }
 };
 
-template<typename item_type>
+template <typename item_type>
 class SettingsEntryList : public SettingsEntry<std::vector<item_type>>
 {
 public:
@@ -342,9 +349,10 @@ public:
     }
     return items;
   }
-  void set(const std::string& encoded) override { setValue(decode(encoded)); };
-  const std::tuple<std::string, std::string> help() const override { return {"list", ""};
-  };
+  void set(const std::string& encoded) override { setValue(decode(encoded)); }
+  const std::tuple<std::string, std::string> help() const override {
+    return {"list", ""};
+  }
 
 private:
   list_type_t _items;
@@ -481,13 +489,15 @@ public:
   static void visit(const SettingsVisitor& visitor);
 };
 
-class SettingsPython {
+class SettingsPython
+{
 public:
   static SettingsEntryString pythonTrustedFiles;
   static SettingsEntryString pythonVirtualEnv;
 };
 
-class SettingsExportPdf {
+class SettingsExportPdf
+{
 public:
   static SettingsEntryBool exportPdfAlwaysShowDialog;
   static SettingsEntryEnum<ExportPdfPaperSize> exportPdfPaperSize;
@@ -532,7 +542,8 @@ public:
   };
 };
 
-class SettingsExport3mf {
+class SettingsExport3mf
+{
 public:
   static SettingsEntryBool export3mfAlwaysShowDialog;
   static SettingsEntryEnum<Export3mfColorMode> export3mfColorMode;

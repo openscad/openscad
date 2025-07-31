@@ -30,9 +30,9 @@ std::vector<SettingsEntryEnum<std::string>::Item> createFileFormatItems(std::vec
   std::vector<SettingsEntryEnum<std::string>::Item> items;
   std::transform(formats.begin(), formats.end(), std::back_inserter(items),
                  [](const FileFormat& format){
-    const FileFormatInfo &info = fileformat::info(format);
-    return SettingsEntryEnum<std::string>::Item{info.identifier, info.identifier, info.description};
-    });
+        const FileFormatInfo& info = fileformat::info(format);
+        return SettingsEntryEnum<std::string>::Item{info.identifier, info.identifier, info.description};
+      });
   return items;
 }
 
@@ -149,91 +149,91 @@ SettingsEntryBool Settings::mouseSwapButtons("3dview", "mouseSwapButtons", false
 SettingsEntryInt Settings::indentationWidth("editor", "indentationWidth", 1, 16, 4);
 SettingsEntryInt Settings::tabWidth("editor", "tabWidth", 1, 16, 4);
 SettingsEntryEnum<std::string> Settings::lineWrap("editor", "lineWrap", {
-  {"None", "none", _("None")},
-  {"Char", "char", _("Wrap at character boundaries")},
-  {"Word", "word", _("Wrap at word boundaries")}
-}, "Word");
+    {"None", "none", _("None")},
+    {"Char", "char", _("Wrap at character boundaries")},
+    {"Word", "word", _("Wrap at word boundaries")}
+  }, "Word");
 SettingsEntryEnum<std::string> Settings::lineWrapIndentationStyle("editor", "lineWrapIndentationStyle", {
-  {"Fixed",    "fixed",    _("Fixed")},
-  {"Same",     "same",     _("Same")},
-  {"Indented", "indented", _("Indented")}
-}, "Fixed");
+    {"Fixed",    "fixed",    _("Fixed")},
+    {"Same",     "same",     _("Same")},
+    {"Indented", "indented", _("Indented")}
+  }, "Fixed");
 SettingsEntryInt Settings::lineWrapIndentation("editor", "lineWrapIndentation", 0, 999, 4);
 SettingsEntryEnum<std::string> Settings::lineWrapVisualizationBegin("editor", "lineWrapVisualizationBegin", {
-  {"None",   "none",   _("None")},
-  {"Text",   "text"  , _("Text")},
-  {"Border", "border", _("Border")},
-  {"Margin", "margin", _("Margin")}
-}, "None");
+    {"None",   "none",   _("None")},
+    {"Text",   "text", _("Text")},
+    {"Border", "border", _("Border")},
+    {"Margin", "margin", _("Margin")}
+  }, "None");
 SettingsEntryEnum<std::string> Settings::lineWrapVisualizationEnd("editor", "lineWrapVisualizationEnd", {
-  {"None",   "none",   _("None")},
-  {"Text",   "text",   _("Text")},
-  {"Border", "border", _("Border")},
-  {"Margin", "margin", _("Margin")}
-}, "Border");
+    {"None",   "none",   _("None")},
+    {"Text",   "text",   _("Text")},
+    {"Border", "border", _("Border")},
+    {"Margin", "margin", _("Margin")}
+  }, "Border");
 SettingsEntryEnum<std::string> Settings::showWhitespace("editor", "showWhitespaces", {
-  {"Never",            "never",        _("Never")},
-  {"Always",           "always",       _("Always")},
-  {"AfterIndentation", "after-indent", _("After indentation")}
-}, "Never");
+    {"Never",            "never",        _("Never")},
+    {"Always",           "always",       _("Always")},
+    {"AfterIndentation", "after-indent", _("After indentation")}
+  }, "Never");
 SettingsEntryInt Settings::showWhitespaceSize("editor", "showWhitespacesSize", 1, 16, 2);
 SettingsEntryBool Settings::autoIndent("editor", "autoIndent", true);
 SettingsEntryBool Settings::backspaceUnindents("editor", "backspaceUnindents", false);
 SettingsEntryEnum<std::string> Settings::indentStyle("editor", "indentStyle", {
-  {"Spaces", "spaces", _("Spaces")},
-  {"Tabs",   "tabs",   _("Tabs")}
-}, "spaces");
+    {"Spaces", "spaces", _("Spaces")},
+    {"Tabs",   "tabs",   _("Tabs")}
+  }, "spaces");
 SettingsEntryEnum<std::string> Settings::tabKeyFunction("editor", "tabKeyFunction", {
-  {"Indent",    "indent", _("Indent")},
-  {"InsertTab", "tab",    _("Insert Tab")}
-}, "Indent");
+    {"Indent",    "indent", _("Indent")},
+    {"InsertTab", "tab",    _("Insert Tab")}
+  }, "Indent");
 SettingsEntryBool Settings::highlightCurrentLine("editor", "highlightCurrentLine", true);
 SettingsEntryBool Settings::enableBraceMatching("editor", "enableBraceMatching", true);
 SettingsEntryBool Settings::enableLineNumbers("editor", "enableLineNumbers", true);
 SettingsEntryBool Settings::enableNumberScrollWheel("editor", "enableNumberScrollWheel", true);
 SettingsEntryEnum<std::string> Settings::modifierNumberScrollWheel("editor", "modifierNumberScrollWheel", {
-  {"Alt",               "alt",               _("Alt")},
-  {"Left Mouse Button", "left-mouse-button", _("Left Mouse Button")},
-  {"Either",            "either",            _("Either")}
-}, "Alt");
+    {"Alt",               "alt",               _("Alt")},
+    {"Left Mouse Button", "left-mouse-button", _("Left Mouse Button")},
+    {"Either",            "either",            _("Either")}
+  }, "Alt");
 
 SettingsEntryString Settings::defaultPrintService("printing", "printService", "NONE");
 SettingsEntryBool Settings::enableRemotePrintServices("printing", "enableRemotePrintServices", false);
 SettingsEntryBool Settings::printServiceAlwaysShowDialog("printing", "always-show-dialog", false);
 SettingsEntryString Settings::printServiceName("printing", "printServiceName", "");
 SettingsEntryEnum<std::string> Settings::printServiceFileFormat(
-    "printing", "printServiceFileFormat", createFileFormatItems(fileformat::all3D()),
-    fileformat::info(FileFormat::ASCII_STL).description);
+  "printing", "printServiceFileFormat", createFileFormatItems(fileformat::all3D()),
+  fileformat::info(FileFormat::ASCII_STL).description);
 
 SettingsEntryString Settings::octoPrintUrl("printing", "octoPrintUrl", "");
 SettingsEntryString Settings::octoPrintApiKey("printing", "octoPrintApiKey", "");
 SettingsEntryEnum<std::string> Settings::octoPrintAction("printing", "octoPrintAction", {
-  {"upload", "upload", _("Upload only")},
-  {"slice",  "slice",  _("Upload & Slice")},
-  {"select", "select", _("Upload, Slice & Select for printing")},
-  {"print",  "print",  _("Upload, Slice & Start printing")}
-}, "upload");
+    {"upload", "upload", _("Upload only")},
+    {"slice",  "slice",  _("Upload & Slice")},
+    {"select", "select", _("Upload, Slice & Select for printing")},
+    {"print",  "print",  _("Upload, Slice & Start printing")}
+  }, "upload");
 SettingsEntryString Settings::octoPrintSlicerEngine("printing", "octoPrintSlicerEngine", "");
 SettingsEntryString Settings::octoPrintSlicerEngineDesc("printing", "octoPrintSlicerEngineDesc", "");
 SettingsEntryString Settings::octoPrintSlicerProfile("printing", "octoPrintSlicerProfile", "");
 SettingsEntryString Settings::octoPrintSlicerProfileDesc("printing", "octoPrintSlicerProfileDesc", "");
 SettingsEntryEnum<std::string> Settings::octoPrintFileFormat(
-    "printing", "octoPrintFileFormat",
-    createFileFormatItems({FileFormat::ASCII_STL, FileFormat::BINARY_STL, FileFormat::_3MF, FileFormat::OFF}),
-    fileformat::info(FileFormat::ASCII_STL).description);
+  "printing", "octoPrintFileFormat",
+  createFileFormatItems({FileFormat::ASCII_STL, FileFormat::BINARY_STL, FileFormat::_3MF, FileFormat::OFF}),
+  fileformat::info(FileFormat::ASCII_STL).description);
 
 SettingsEntryString Settings::pythonNetworkImportList("python", "networkImportList", "");
 SettingsEntryString Settings::localAppExecutable("printing", "localAppExecutable", "");
 SettingsEntryString Settings::localAppTempDir("printing", "localAppTempDir", "");
 SettingsEntryEnum<std::string> Settings::localAppFileFormat(
-    "printing", "localAppFileFormat", createFileFormatItems(fileformat::all3D()),
-    fileformat::info(FileFormat::ASCII_STL).description);
+  "printing", "localAppFileFormat", createFileFormatItems(fileformat::all3D()),
+  fileformat::info(FileFormat::ASCII_STL).description);
 SettingsEntryList<LocalAppParameter> Settings::localAppParameterList("printing", "localAppParameterList");
 
 SettingsEntryEnum<std::string> Settings::renderBackend3D("advanced", "renderBackend3D", {
-  {"CGAL",     "cgal",     "CGAL (old/slow)"},
-  {"Manifold", "manifold", "Manifold (new/fast)"}
-}, "CGAL");
+    {"CGAL",     "cgal",     "CGAL (old/slow)"},
+    {"Manifold", "manifold", "Manifold (new/fast)"}
+  }, "CGAL");
 SettingsEntryEnum<std::string> Settings::toolbarExport3D("advanced", "toolbarExport3D", createFileFormatItems(fileformat::all3D()), fileformat::info(FileFormat::ASCII_STL).description);
 SettingsEntryEnum<std::string> Settings::toolbarExport2D("advanced", "toolbarExport2D", createFileFormatItems(fileformat::all2D()), fileformat::info(FileFormat::DXF).description);
 
@@ -320,19 +320,19 @@ SettingsEntryString SettingsPython::pythonVirtualEnv(SECTION_PYTHON, "virtual-en
 
 SettingsEntryBool SettingsExportPdf::exportPdfAlwaysShowDialog(SECTION_EXPORT_PDF, "always-show-dialog", true);
 SettingsEntryEnum<ExportPdfPaperSize> SettingsExportPdf::exportPdfPaperSize(SECTION_EXPORT_PDF, "paper-size", {
-  {ExportPdfPaperSize::A6,      "a6",      _("A6 (105 x 148 mm)")},
-  {ExportPdfPaperSize::A5,      "a5",      _("A5 (148 x 210 mm)")},
-  {ExportPdfPaperSize::A4,      "a4",      _("A4 (210x297 mm)")},
-  {ExportPdfPaperSize::A3,      "a3",      _("A3 (297x420 mm)")},
-  {ExportPdfPaperSize::LETTER,  "letter",  _("Letter (8.5x11 in)")},
-  {ExportPdfPaperSize::LEGAL,   "legal",   _("Legal (8.5x14 in)")},
-  {ExportPdfPaperSize::TABLOID, "tabloid", _("Tabloid (11x17 in)")}
-}, ExportPdfPaperSize::A4);
+    {ExportPdfPaperSize::A6,      "a6",      _("A6 (105 x 148 mm)")},
+    {ExportPdfPaperSize::A5,      "a5",      _("A5 (148 x 210 mm)")},
+    {ExportPdfPaperSize::A4,      "a4",      _("A4 (210x297 mm)")},
+    {ExportPdfPaperSize::A3,      "a3",      _("A3 (297x420 mm)")},
+    {ExportPdfPaperSize::LETTER,  "letter",  _("Letter (8.5x11 in)")},
+    {ExportPdfPaperSize::LEGAL,   "legal",   _("Legal (8.5x14 in)")},
+    {ExportPdfPaperSize::TABLOID, "tabloid", _("Tabloid (11x17 in)")}
+  }, ExportPdfPaperSize::A4);
 SettingsEntryEnum<ExportPdfPaperOrientation> SettingsExportPdf::exportPdfOrientation(SECTION_EXPORT_PDF, "orientation", {
-  {ExportPdfPaperOrientation::PORTRAIT,  "portrait",  _("Portrait (Vertical)")},
-  {ExportPdfPaperOrientation::LANDSCAPE, "landscape", _("Landscape (Horizontal)")},
-  {ExportPdfPaperOrientation::AUTO,      "auto",      _("Auto")}
-}, ExportPdfPaperOrientation::PORTRAIT);
+    {ExportPdfPaperOrientation::PORTRAIT,  "portrait",  _("Portrait (Vertical)")},
+    {ExportPdfPaperOrientation::LANDSCAPE, "landscape", _("Landscape (Horizontal)")},
+    {ExportPdfPaperOrientation::AUTO,      "auto",      _("Auto")}
+  }, ExportPdfPaperOrientation::PORTRAIT);
 SettingsEntryBool SettingsExportPdf::exportPdfShowFilename(SECTION_EXPORT_PDF, "show-filename", false);
 SettingsEntryBool SettingsExportPdf::exportPdfShowScale(SECTION_EXPORT_PDF, "show-scale", true);
 SettingsEntryBool SettingsExportPdf::exportPdfShowScaleMessage(SECTION_EXPORT_PDF, "show-scale-message", true);
@@ -354,23 +354,23 @@ SettingsEntryDouble SettingsExportPdf::exportPdfStrokeWidth(SECTION_EXPORT_PDF, 
 
 SettingsEntryBool SettingsExport3mf::export3mfAlwaysShowDialog(SECTION_EXPORT_3MF, "always-show-dialog", true);
 SettingsEntryEnum<Export3mfColorMode> SettingsExport3mf::export3mfColorMode(SECTION_EXPORT_3MF, "color-mode", {
-  {Export3mfColorMode::model,               "model",               _("Use colors from model")},
-  {Export3mfColorMode::none,                "none",                _("No colors")},
-  {Export3mfColorMode::selected_only,       "selected-only",       _("Use selected color only")},
-}, Export3mfColorMode::model);
+    {Export3mfColorMode::model,               "model",               _("Use colors from model")},
+    {Export3mfColorMode::none,                "none",                _("No colors")},
+    {Export3mfColorMode::selected_only,       "selected-only",       _("Use selected color only")},
+  }, Export3mfColorMode::model);
 SettingsEntryEnum<Export3mfUnit> SettingsExport3mf::export3mfUnit(SECTION_EXPORT_3MF, "unit", {
-  {Export3mfUnit::micron,     "micron",     _("Micron")},
-  {Export3mfUnit::millimeter, "millimeter", _("Millimeter")},
-  {Export3mfUnit::centimeter, "centimeter", _("Centimeter")},
-  {Export3mfUnit::meter,      "meter",      _("Meter")},
-  {Export3mfUnit::inch,       "inch",       _("Inch")},
-  {Export3mfUnit::foot,       "foot",       _("Feet")},
-}, Export3mfUnit::millimeter);
+    {Export3mfUnit::micron,     "micron",     _("Micron")},
+    {Export3mfUnit::millimeter, "millimeter", _("Millimeter")},
+    {Export3mfUnit::centimeter, "centimeter", _("Centimeter")},
+    {Export3mfUnit::meter,      "meter",      _("Meter")},
+    {Export3mfUnit::inch,       "inch",       _("Inch")},
+    {Export3mfUnit::foot,       "foot",       _("Feet")},
+  }, Export3mfUnit::millimeter);
 SettingsEntryString SettingsExport3mf::export3mfColor(SECTION_EXPORT_3MF, "color", "#f9d72c"); // Cornfield: CGAL_FACE_FRONT_COLOR
 SettingsEntryEnum<Export3mfMaterialType> SettingsExport3mf::export3mfMaterialType(SECTION_EXPORT_3MF, "material-type", {
-  {Export3mfMaterialType::color,        "color",        _("Color")},
-  {Export3mfMaterialType::basematerial, "basematerial", _("Base Material")},
-}, Export3mfMaterialType::basematerial);
+    {Export3mfMaterialType::color,        "color",        _("Color")},
+    {Export3mfMaterialType::basematerial, "basematerial", _("Base Material")},
+  }, Export3mfMaterialType::basematerial);
 SettingsEntryInt SettingsExport3mf::export3mfDecimalPrecision(SECTION_EXPORT_3MF, "decimal-precision", 1, 16, 6);
 SettingsEntryBool SettingsExport3mf::export3mfAddMetaData(SECTION_EXPORT_3MF, "add-meta-data", true);
 SettingsEntryBool SettingsExport3mf::export3mfAddMetaDataDesigner(SECTION_EXPORT_3MF, "add-meta-data-designer", false);
