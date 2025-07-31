@@ -209,8 +209,7 @@ bool checkAndExport(const std::shared_ptr<const Geometry>& root_geom, unsigned d
 
   if (is_stdout) {
     exportFileStdOut(root_geom, exportInfo);
-  }
-  else {
+  } else {
     exportFileByName(root_geom, filename, exportInfo);
   }
   return true;
@@ -223,7 +222,7 @@ void help(const char *arg0, const po::options_description& desc, bool failure = 
   exit(failure ? 1 : 0);
 }
 
-template<std::size_t size>
+template <std::size_t size>
 void help_export(const std::array<const Settings::SettingsEntryBase *, size>& options) {
   LOG("Section '%1$s':", options.at(0)->category());
 
@@ -257,7 +256,7 @@ int info()
   try {
     OffscreenView const glview(512, 512);
     std::cout << glview.getRendererInfo() << "\n";
-  } catch (const OffscreenViewException &ex) {
+  } catch (const OffscreenViewException& ex) {
     LOG("Can't create OpenGL OffscreenView: %1$s. Exiting.\n", ex.what());
     return 1;
   }
@@ -404,14 +403,14 @@ int do_export(const CommandLine& cmd, const RenderVariables& render_variables, F
   std::shared_ptr<const FileContext> file_context;
   std::shared_ptr<AbstractNode> absolute_root_node;
 
-#ifdef ENABLE_PYTHON    
-  if(python_result_node != NULL && python_active) {
+#ifdef ENABLE_PYTHON
+  if (python_result_node != NULL && python_active) {
     absolute_root_node = python_result_node;
   } else {
-#endif	    
+#endif
   absolute_root_node = root_file->instantiate(*builtin_context, &file_context);
 #ifdef ENABLE_PYTHON
-  }
+}
 #endif
 
   Camera camera = cmd.camera;
@@ -441,29 +440,29 @@ int do_export(const CommandLine& cmd, const RenderVariables& render_variables, F
     // the output.
     fs::current_path(fparent); // Force exported filenames to be relative to document path
     with_output(cmd.is_stdout, filename_str, [&tree, root_node](std::ostream& stream) {
-      stream << tree.getString(*root_node, "\t") << "\n";
-    });
+        stream << tree.getString(*root_node, "\t") << "\n";
+      });
     fs::current_path(cmd.original_path);
   } else if (export_format == FileFormat::AST) {
     fs::current_path(fparent); // Force exported filenames to be relative to document path
     with_output(cmd.is_stdout, filename_str, [root_file](std::ostream& stream) {
-      stream << root_file->dump("");
-    });
+        stream << root_file->dump("");
+      });
     fs::current_path(cmd.original_path);
   } else if (export_format == FileFormat::PARAM) {
     with_output(cmd.is_stdout, filename_str, [&root_file, &fpath](std::ostream& stream) {
-      export_param(root_file, fpath, stream);
-    });
+        export_param(root_file, fpath, stream);
+      });
   } else if (export_format == FileFormat::TERM) {
     CSGTreeEvaluator csgRenderer(tree);
     auto root_raw_term = csgRenderer.buildCSGTree(*root_node);
     with_output(cmd.is_stdout, filename_str, [root_raw_term](std::ostream& stream) {
-      if (!root_raw_term || root_raw_term->isEmptySet()) {
-        stream << "No top-level CSG object\n";
-      } else {
-        stream << root_raw_term->dump() << "\n";
-      }
-    });
+        if (!root_raw_term || root_raw_term->isEmptySet()) {
+          stream << "No top-level CSG object\n";
+        } else {
+          stream << root_raw_term->dump() << "\n";
+        }
+      });
   } else if (export_format == FileFormat::ECHO) {
     // echo -> don't need to evaluate any geometry
   } else {
@@ -510,12 +509,12 @@ int do_export(const CommandLine& cmd, const RenderVariables& render_variables, F
     if (export_format == FileFormat::PNG) {
       bool success = true;
       bool const wrote = with_output(cmd.is_stdout, filename_str, [&success, &root_geom, &cmd, &camera, &glview](std::ostream& stream) {
-        if (cmd.viewOptions.renderer == RenderType::BACKEND_SPECIFIC || cmd.viewOptions.renderer == RenderType::GEOMETRY) {
-          success = export_png(root_geom, cmd.viewOptions, camera, stream);
-        } else {
-          success = export_png(*glview, stream);
-        }
-      }, std::ios::out | std::ios::binary);
+          if (cmd.viewOptions.renderer == RenderType::BACKEND_SPECIFIC || cmd.viewOptions.renderer == RenderType::GEOMETRY) {
+            success = export_png(root_geom, cmd.viewOptions, camera, stream);
+          } else {
+            success = export_png(*glview, stream);
+          }
+        }, std::ios::out | std::ios::binary);
       if (!success || !wrote) {
         return 1;
       }
@@ -576,23 +575,23 @@ int cmdline(const CommandLine& cmd)
     text = std::string((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
   }
 
-#ifdef ENABLE_PYTHON  
+#ifdef ENABLE_PYTHON
   python_active = false;
-  if(cmd.filename.c_str() != NULL) {
-	  if(boost::algorithm::ends_with(cmd.filename, ".py")) {
-		  if( python_trusted == true) python_active = true;
-		  else  LOG("Python is not enabled");
-	  }
+  if (cmd.filename.c_str() != NULL) {
+    if (boost::algorithm::ends_with(cmd.filename, ".py")) {
+      if (python_trusted == true) python_active = true;
+      else LOG("Python is not enabled");
+    }
   }
 
-  if(python_active) {
+  if (python_active) {
     auto fulltext_py = text;
     initPython(PlatformUtils::applicationPath(), 0.0);
-    auto error  = evaluatePython(fulltext_py, false);
-    if(error.size() > 0) LOG(error.c_str());
-    text ="\n";
+    auto error = evaluatePython(fulltext_py, false);
+    if (error.size() > 0)LOG(error.c_str());
+    text = "\n";
   }
-#endif	  
+#endif // ifdef ENABLE_PYTHON
   text += "\n\x03\n" + commandline_commands;
 
   SourceFile *root_file = nullptr;
@@ -625,7 +624,7 @@ int cmdline(const CommandLine& cmd)
   RenderVariables render_variables = {
     .preview = fileformat::canPreview(export_format)
       ? (cmd.viewOptions.renderer == RenderType::OPENCSG
-        || cmd.viewOptions.renderer == RenderType::THROWNTOGETHER)
+         || cmd.viewOptions.renderer == RenderType::THROWNTOGETHER)
       : false,
     .camera = cmd.camera,
   };
@@ -687,8 +686,7 @@ static bool flagConvert(const std::string& str){
 static std::tuple<std::string, std::string> simple_split(const std::string& str, const char c)
 {
   const auto idx = str.find_first_of(c);
-  if (idx == std::string::npos)
-    return {};
+  if (idx == std::string::npos)return {};
   const auto first = str.substr(0, idx);
   const auto second = str.substr(idx + 1);
   return {first, second};
@@ -813,7 +811,7 @@ int main(int argc, char **argv)
   // just forward everything to the python main.
   const auto applicationName = fs::path(argv[0]).filename().generic_string();
   if (applicationName == "openscad-python") {
-      return pythonRunArgs(argc, argv);
+    return pythonRunArgs(argc, argv);
   }
 #endif
 
@@ -833,21 +831,21 @@ int main(int argc, char **argv)
   ViewOptions viewOptions{};
   po::options_description desc("Allowed options");
   desc.add_options()
-    ("export-format", po::value<std::string>(), "overrides format of exported scad file when using option '-o', arg can be any of its supported file extensions.  For ASCII stl export, specify 'asciistl', and for binary stl export, specify 'binstl'.  ASCII export is the current stl default, but binary stl is planned as the future default so asciistl should be explicitly specified in scripts when needed.\n")
-    ("o,o", po::value<std::vector<std::string>>(), "output specified file instead of running the GUI. The file extension specifies the type: stl, off, wrl, amf, 3mf, csg, dxf, svg, pdf, png, echo, ast, term, nef3, nefdbg, param, pov. May be used multiple times for different exports. Use '-' for stdout.\n")
-    ("O,O", po::value<std::vector<std::string>>(), "pass settings value to the file export using the format section/key=value, e.g export-pdf/paper-size=a3. Use --help-export to list all available settings.")
-    ("D,D", po::value<std::vector<std::string>>(), "var=val -pre-define variables")
-    ("p,p", po::value<std::string>(), "customizer parameter file")
-    ("P,P", po::value<std::string>(), "customizer parameter set")
+  ("export-format", po::value<std::string> (), "overrides format of exported scad file when using option '-o', arg can be any of its supported file extensions.  For ASCII stl export, specify 'asciistl', and for binary stl export, specify 'binstl'.  ASCII export is the current stl default, but binary stl is planned as the future default so asciistl should be explicitly specified in scripts when needed.\n")
+  ("o,o", po::value<std::vector<std::string>> (), "output specified file instead of running the GUI. The file extension specifies the type: stl, off, wrl, amf, 3mf, csg, dxf, svg, pdf, png, echo, ast, term, nef3, nefdbg, param, pov. May be used multiple times for different exports. Use '-' for stdout.\n")
+  ("O,O", po::value<std::vector<std::string>> (), "pass settings value to the file export using the format section/key=value, e.g export-pdf/paper-size=a3. Use --help-export to list all available settings.")
+  ("D,D", po::value<std::vector<std::string>> (), "var=val -pre-define variables")
+  ("p,p", po::value<std::string> (), "customizer parameter file")
+  ("P,P", po::value<std::string> (), "customizer parameter set")
 #ifdef ENABLE_EXPERIMENTAL
-  ("enable", po::value<std::vector<std::string>>(), ("enable experimental features (specify 'all' for enabling all available features): " +
-                                           str_join(boost::make_iterator_range(Feature::begin(), Feature::end()), " | ",
-                                                    [](const Feature *feature) {
+  ("enable", po::value<std::vector<std::string>> (), ("enable experimental features (specify 'all' for enabling all available features): " +
+                                                      str_join(boost::make_iterator_range(Feature::begin(), Feature::end()), " | ",
+                                                               [](const Feature *feature) {
     return feature->get_name();
   }) +
-                                           "\n").c_str())
+                                                               "\n").c_str())
 #endif
-    ("help,h", "print this help message and exit")
+  ("help,h", "print this help message and exit")
     ("help-export", "print list of export parameters and values that can be set via -O")
     ("version,v", "print the version")
     ("info", "print information about the build process\n")
@@ -867,11 +865,11 @@ int main(int argc, char **argv)
     ("summary", po::value<std::vector<std::string>>(), "enable additional render summary and statistics: all | cache | time | camera | geometry | bounding-box | area")
     ("summary-file", po::value<std::string>(), "output summary information in JSON format to the given file, using '-' outputs to stdout")
     ("colorscheme", po::value<std::string>(), ("=colorscheme: " +
-                                          str_join(ColorMap::inst()->colorSchemeNames(), " | ",
-                                                   [](const std::string& colorScheme) {
-    return (colorScheme == ColorMap::inst()->defaultColorSchemeName() ? "*" : "") + colorScheme;
-  }) +
-                                          "\n").c_str())
+                                               str_join(ColorMap::inst()->colorSchemeNames(), " | ",
+                                                        [](const std::string& colorScheme) {
+                                                        return (colorScheme == ColorMap::inst()->defaultColorSchemeName() ? "*" : "") + colorScheme;
+    }) +
+                                               "\n").c_str())
     ("d,d", po::value<std::string>(), "deps_file -generate a dependency file for make")
     ("m,m", po::value<std::string>(), "make_cmd -runs make_cmd file if file is missing")
     ("quiet,q", "quiet mode (don't print anything *except* errors)")
@@ -883,12 +881,12 @@ int main(int argc, char **argv)
     ("debug", po::value<std::string>(), "special debug info - specify 'all' or a set of source file names")
 #ifdef ENABLE_PYTHON
   ("trust-python",  "Trust python")
-  ("python-module", po::value<std::string>(), "=module Call pip python module")
+    ("python-module", po::value<std::string>(), "=module Call pip python module")
 #endif
   ;
 
 #ifdef ENABLE_GUI_TESTS
-    desc.add_options()("run-all-gui-tests", "special gui testing mode - run all the tests");
+  desc.add_options()("run-all-gui-tests", "special gui testing mode - run all the tests");
 #endif
 
   po::options_description hidden("Hidden options");
@@ -925,14 +923,14 @@ int main(int argc, char **argv)
 
   const auto pymod = "python-module";
   if (vm.count(pymod)) {
-      PRINTDB("Running Python Module %s", pymod);
-      std::vector<std::string> args;
-      if (vm.count("input-file")) {
-          args = vm["input-file"].as<std::vector<std::string>>();
-      }
-      return pythonRunModule(applicationPath, vm[pymod].as<std::string>(), args);
+    PRINTDB("Running Python Module %s", pymod);
+    std::vector<std::string> args;
+    if (vm.count("input-file")) {
+      args = vm["input-file"].as<std::vector<std::string>>();
+    }
+    return pythonRunModule(applicationPath, vm[pymod].as<std::string>(), args);
   }
-#endif
+#endif // ifdef ENABLE_PYTHON
   if (vm.count("quiet")) {
     OpenSCAD::quiet = true;
   }
@@ -1134,9 +1132,9 @@ int main(int argc, char **argv)
     if (vm.count("export-format")) {
       LOG("Ignoring --export-format option");
     }
-    std::string gui_test="none";
+    std::string gui_test = "none";
     if (vm.count("run-all-gui-tests")){
-        gui_test = "all";
+      gui_test = "all";
     }
     rc = gui(inputFiles, original_path, argc, argv, gui_test);
 #endif
