@@ -1,4 +1,4 @@
-![PythonSCAD](https://pythonscad.org/pictures/plogo.PNG)
+<img src="https://pythonscad.org/pictures/plogo.PNG" width="200">
 # What is PythonSCAD?
 
 PythonSCAD is software which lets you turn simple Python Code into 3D Models suitable for 3D printing. A Case  can be accomplished
