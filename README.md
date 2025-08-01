@@ -1,5 +1,5 @@
-<img src="https://pythonscad.org/pictures/plogo.PNG" width="200">
-# What is PythonSCAD?
+<center><img src="https://pythonscad.org/pictures/plogo.PNG" width="200"></center>
+What is PythonSCAD?
 
 PythonSCAD is software which lets you turn simple Python Code into 3D Models suitable for 3D printing. A Case  can be accomplished
 with few very readable lines only. PythonSCAD is a direct fork of the great well-known OpenSCAD and includes all functions which OpenSCAD does.  Unfortunately, OpenSCAD  itself comes with a lot of intentional limitations.
