@@ -405,6 +405,12 @@ std::unique_ptr<const Geometry> createFilletInt(std::shared_ptr<const PolySet> p
       Vector3d e_fb1 =  (vertices_copy[indposbo]-vertices_copy[faceb[(e.second.posb+1)%facebn]]).normalized()*fbnf; // Faceb neben ind1
       Vector3d e_fb1p = (vertices_copy[indposbi]-vertices_copy[faceb[(e.second.posb+1)%facebn]])*fbnf; 
 
+      if(corner_rounds[e.first.ind1].size() == 1) 
+      {
+        e_fa1 *= r_;	      
+        e_fb1 *= r_;	      
+      }
+
       if(corner_rounds[e.first.ind1].size() == 2)
       {
         double a=(e_fb1.cross(e_fa1)).dot(dir);
@@ -462,6 +468,12 @@ std::unique_ptr<const Geometry> createFilletInt(std::shared_ptr<const PolySet> p
       Vector3d e_fb2p = (vertices_copy[indposbi]-vertices_copy[faceb[(e.second.posb+0)%facebn]])*fbnf; // Face2 entfernte Rcithung
 
 													   //
+      if(corner_rounds[e.first.ind2].size() == 1) 
+      {
+        e_fa2 *= r_;	      
+        e_fb2 *= r_;	      
+      }
+
       if(corner_rounds[e.first.ind2].size() == 2) 
       {
         double a=(e_fb2.cross(e_fa2)).dot(dir);
