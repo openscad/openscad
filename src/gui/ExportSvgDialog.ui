@@ -167,6 +167,10 @@
           <property name="text">
            <string>...</string>
           </property>
+          <property name="icon">
+           <iconset theme="chokusen-undo">
+           <normaloff>.</normaloff>.</iconset>
+          </property>
          </widget>
         </item>
        </layout>
