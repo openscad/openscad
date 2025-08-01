@@ -1,6 +1,8 @@
+![PythonSCAD](https://pythonscad.org/pictures/plogo.PNG)
 # What is PythonSCAD?
 
-OpenSCAD is a very cool tool that lets you express 3D models using its own language. Unfortunately the language itself comes with a lot of intentional limitations.
+PythonSCAD is software which lets you turn simple Python Code into 3D Models suitable for 3D printing. A Case  can be accomplished
+with few very readable lines only. PythonSCAD is a direct fork of the great well-known OpenSCAD and includes all functions which OpenSCAD does.  Unfortunately, OpenSCAD  itself comes with a lot of intentional limitations.
 
 No mutation of variables (immutability, "single assignment of any variable")
 Limited number of iterations
@@ -9,14 +11,19 @@ These exist for the reason that they don't want the language to be able to do ba
 
 Additionally the choice to use their own language brings with it a whole new mental model that must be learned and mastered. This is a problem for wide adoption.
 
-This fork lets you use Python inside of OpenSCAD as its native language
-
-No extra external script to create OpenSCAD code. And as its based on openscad we aim to keep all the features which already exist in openscad. Only added features, no skipped ones ...
 Before I continue I'd like to say I fully appreciate all the efforts the team and the Open Source community has contributed towards it over the years. The project is truly a work of love and has brought for many the joy of programming back into their lives. I believe the choice to have a safe script language is a good one.
+
+This fork lets you use Python inside of OpenSCAD as its native language. Use PythonSCAD when you were programming before and feel,
+that you want to assign the object to a variable for later use. On the other hand if you rather want to describe your models with
+sub-items, rather stay with OpenSCAD.
 
 These limitations cause OpenSCAD programs to be written in the most convoluted ways, making them difficult to understand. While my goal to be able to use Python with OpenSCAD is actually completed, the problem that remains is getting it merged into mainline OpenSCAD.
 
-The argument is Python will introduce a massive security hole into the sharing culture. So the proposed solution is to put the Python capability behind an option, which I have done. Additionally PythonSCAD asks you, if you trust to a new Python Script and it will saves this decsion for you in an SHA256 hash. Now I hope it's just a matter of time until things are merged.
+In PythonSCAD all solids are 1st class objects and they can easily be a function parameter or return value. Any Object doubles as a dictionary to store arbritary data. If you like object oriented programming, just do so, you can even easily subclass the "openscad" type.
+
+There are many additional methods over OpenSCAD (fillets is one of them, accessing single model vertices is another ). Arrays of Objects are implicitely unioned. Together with Python's List comprehesion, you can very effictively duplicate variants of your model detail in one readable line. 
+Finally just export your model(or model parts) by script into many supported 3D model formats.
+Many people use it already to realize their needs. Difficulaties which arise during that process can be discussed on Reddit. Some Peope eveven share their designs. just watch on Thingiverse.
 
 # Getting started
 
@@ -29,7 +36,7 @@ The GUI of PythonSCAD is basically unchanged, just the language is a different o
 from openscad import *
 
 cyl = cylinder(r=5, h=20)
-cy.show()
+cyl.show()
 
 # Documentation
 
