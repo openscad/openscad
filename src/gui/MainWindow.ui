@@ -1669,12 +1669,12 @@
   </action>
   <action name="fileActionPythonCreateVenv">
    <property name="text">
-    <string>Create Virtual Environment</string>
+    <string>Create Virtual Environment...</string>
    </property>
   </action>
   <action name="fileActionPythonSelectVenv">
    <property name="text">
-    <string>Select Virtual Environment</string>
+    <string>Select Virtual Environment...</string>
    </property>
   </action>
  </widget>
