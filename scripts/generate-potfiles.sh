@@ -12,10 +12,10 @@ do
     fi
 done
 
-for src in src/{,gui/,gui/input/,gui/parameter/}*.{h,cc,cpp,mm}
-do
-    if [ -f "$src" ]
-    then
-	    echo $src
-    fi
-done
+find src \
+	-name \*.h \
+	-o -name \*.c \
+	-o -name \*.cc \
+	-o -name \*.cpp \
+	-o -name \*.mm \
+	| sort -f
