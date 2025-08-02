@@ -120,6 +120,7 @@
 #include "gui/Measurement.h"
 #include "gui/Export3mfDialog.h"
 #include "gui/ExportPdfDialog.h"
+#include "gui/ExportSvgDialog.h"
 #include "gui/ExternalToolInterface.h"
 #include "gui/FontListDialog.h"
 #include "gui/ImportUtils.h"
@@ -2945,6 +2946,16 @@ void MainWindow::actionExportFileFormat(int fmt)
         LOG("Can't open file \"%1$s\" for export image", img_filename.toLocal8Bit().constData());
       }
     }
+  }
+  break;
+  case FileFormat::SVG:
+  {
+    ExportSvgDialog exportSvgDialog;
+    if (exportSvgDialog.exec() == QDialog::Rejected) {
+      return;
+    }
+    exportInfo.optionsSvg = std::make_shared<ExportSvgOptions>(exportSvgDialog.getOptions());
+    actionExport(2, exportInfo);
   }
   break;
   default:

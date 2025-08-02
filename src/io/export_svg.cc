@@ -36,8 +36,20 @@
 #include "geometry/Polygon2d.h"
 #include "geometry/PolySet.h"
 
-static void append_svg(const Polygon2d& poly, std::ostream& output)
+static void append_svg(const Polygon2d& poly, std::ostream& output, const ExportInfo& exportInfo)
 {
+  const ExportSvgOptions *options;
+  const ExportSvgOptions defaultSvgOptions;
+
+  if (exportInfo.optionsSvg) {
+    options = exportInfo.optionsSvg.get();
+  } else {
+    options = &defaultSvgOptions;
+  }
+
+  const std::string stroke = options->stroke ? options->strokeColor : "none";
+  const std::string fill = options->fill ? options->fillColor : "none";
+  const double strokeWidth = options->strokeWidth;
   output << "<path d=\"\n";
   for (const auto& o : poly.outlines()) {
     if (o.vertices.empty()) {
@@ -55,18 +67,17 @@ static void append_svg(const Polygon2d& poly, std::ostream& output)
     }
     output << " z\n";
   }
-  output << "\" stroke=\"black\" fill=\"lightgray\" stroke-width=\"0.5\"/>\n";
-
+  output << "\" stroke=\"" << stroke << "\" fill=\"" << fill << "\" stroke-width=\"" << strokeWidth << "\"/>\n";
 }
 
-static void append_svg(const std::shared_ptr<const Geometry>& geom, std::ostream& output)
+static void append_svg(const std::shared_ptr<const Geometry>& geom, std::ostream& output, const ExportInfo& exportInfo)
 {
   if (const auto geomlist = std::dynamic_pointer_cast<const GeometryList>(geom)) {
     for (const auto& item : geomlist->getChildren()) {
-      append_svg(item.second, output);
+      append_svg(item.second, output, exportInfo);
     }
   } else if (const auto poly = std::dynamic_pointer_cast<const Polygon2d>(geom)) {
-    append_svg(*poly, output);
+    append_svg(*poly, output, exportInfo);
   } else if (std::dynamic_pointer_cast<const PolySet>(geom)) { // NOLINT(bugprone-branch-clone)
     assert(false && "Unsupported file format");
   } else { // NOLINT(bugprone-branch-clone)
@@ -74,15 +85,24 @@ static void append_svg(const std::shared_ptr<const Geometry>& geom, std::ostream
   }
 }
 
-void export_svg(const std::shared_ptr<const Geometry>& geom, std::ostream& output)
+void export_svg(const std::shared_ptr<const Geometry>& geom, std::ostream& output, const ExportInfo& exportInfo)
 {
   setlocale(LC_NUMERIC, "C"); // Ensure radix is . (not ,) in output
-
   BoundingBox bbox = geom->getBoundingBox();
-  const int minx = (int)floor(bbox.min().x());
-  const int miny = (int)floor(-bbox.max().y());
-  const int maxx = (int)ceil(bbox.max().x());
-  const int maxy = (int)ceil(-bbox.min().y());
+  const ExportSvgOptions *options;
+  const ExportSvgOptions defaultSvgOptions;
+
+  if (exportInfo.optionsSvg) {
+    options = exportInfo.optionsSvg.get();
+  } else {
+    options = &defaultSvgOptions;
+  }
+
+  const double strokePad = options->stroke ? options->strokeWidth / 2.0 : 0.0;
+  const int minx = (int)floor(bbox.min().x() - strokePad);
+  const int miny = (int)floor(-bbox.max().y() - strokePad);
+  const int maxx = (int)ceil(bbox.max().x() + strokePad);
+  const int maxy = (int)ceil(-bbox.min().y() + strokePad);
   const int width = maxx - minx;
   const int height = maxy - miny;
 
@@ -93,9 +113,7 @@ void export_svg(const std::shared_ptr<const Geometry>& geom, std::ostream& outpu
     << "mm\" viewBox=\"" << minx << " " << miny << " " << width << " " << height
     << "\" xmlns=\"http://www.w3.org/2000/svg\" version=\"1.1\">\n"
     << "<title>OpenSCAD Model</title>\n";
-
-  append_svg(geom, output);
-
+  append_svg(geom, output, exportInfo);
   output << "</svg>\n";
   setlocale(LC_NUMERIC, ""); // Set default locale
 }

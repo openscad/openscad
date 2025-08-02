@@ -27,6 +27,7 @@ constexpr inline auto PROPERTY_SELECTED_VALUE = "_selected_value";
 constexpr inline auto SECTION_PYTHON = "python";
 constexpr inline auto SECTION_EXPORT_PDF = "export-pdf";
 constexpr inline auto SECTION_EXPORT_3MF = "export-3mf";
+constexpr inline auto SECTION_EXPORT_SVG = "export-svg";
 
 class SettingsEntryBase
 {
@@ -575,6 +576,25 @@ public:
     &export3mfMetaDataCopyright,
     &export3mfMetaDataLicenseTerms,
     &export3mfMetaDataRating,
+  };
+};
+
+class SettingsExportSvg
+{
+public:
+  static SettingsEntryBool exportSvgAlwaysShowDialog;
+  static SettingsEntryBool exportSvgFill;
+  static SettingsEntryString exportSvgFillColor;
+  static SettingsEntryBool exportSvgStroke;
+  static SettingsEntryString exportSvgStrokeColor;
+  static SettingsEntryDouble exportSvgStrokeWidth;
+
+  static constexpr std::array<const SettingsEntryBase *, 5> cmdline{
+    &exportSvgFill,
+    &exportSvgFillColor,
+    &exportSvgStroke,
+    &exportSvgStrokeColor,
+    &exportSvgStrokeWidth,
   };
 };
 
