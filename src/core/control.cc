@@ -279,12 +279,12 @@ void register_builtin_control()
 
   Builtins::init("for", new BuiltinModule(builtin_for),
   {
-    "for([start : increment : end])",
-    "for([start : end])",
-    "for([vector])",
-    "for([start : increment : end],boolean)",
-    "for([start : end],boolean)",
-    "for([vector],boolean)",
+    "for(iter = [start : increment : end])",
+    "for(iter = [start : end])",
+    "for(iter = [vector])",
+    "for(iter = [start : increment : end],boolean)",
+    "for(iter = [start : end],boolean)",
+    "for(iter = [vector],boolean)",
   });
 
   Builtins::init("let", new BuiltinModule(builtin_let),
@@ -294,9 +294,9 @@ void register_builtin_control()
 
   Builtins::init("intersection_for", new BuiltinModule(builtin_intersection_for),
   {
-    "intersection_for([start : increment : end])",
-    "intersection_for([start : end])",
-    "intersection_for([vector])",
+    "intersection_for(iter = [start : increment : end])",
+    "intersection_for(iter = [start : end])",
+    "intersection_for(iter = [vector])",
   });
 
   Builtins::init("if", new BuiltinModule(builtin_if),

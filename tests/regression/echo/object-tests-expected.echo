@@ -36,3 +36,5 @@ ECHO: "PASS:", "!f []... x=undef"
 ECHO: "PASS:", "check size"
 ECHO: "PASS:", "check value"
 ECHO: "PASS:", "test 100k entries"
+ECHO: Wilma = { spouse = { }; }
+ECHO: Betty = { friends = [{ spouse = { }; }]; }

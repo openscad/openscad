@@ -79,6 +79,15 @@ for ( i=access ) {
     assert(value == i);
 }
 
+Wilma = object(
+    spouse=object()
+);
+echo( Wilma=Wilma);
+
+Betty = object(
+    friends=[Wilma]
+);
+echo( Betty  = Betty );
 
 module test( f, s ) {
     if ( !f()) {
