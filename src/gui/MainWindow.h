@@ -156,6 +156,7 @@ private slots:
   void onNavigationCloseContextMenu();
   void onNavigationHoveredContextMenuEntry();
   void onNavigationTriggerContextMenuEntry();
+  void setAllMouseViewActions();
 
   // implement the different actions needed when
   // the tab manager editor is changed.

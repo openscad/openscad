@@ -314,43 +314,77 @@ void QGLView::mouseMoveEvent(QMouseEvent *event)
   double dy = (this_mouse.y() - last_mouse.y()) * 0.7;
   if (mouse_drag_active) {
     mouse_drag_moved = true;
-    auto button_compare = this->mouseSwapButtons?Qt::RightButton : Qt::LeftButton;
-    if (event->buttons() & button_compare
-#ifdef Q_OS_MACOS
-        && !(event->modifiers() & Qt::MetaModifier)
-#endif
-        ) {
-      // Left button rotates in xz, Shift-left rotates in xy
-      // On Mac, Ctrl-Left is handled as right button on other platforms
-      if ((QApplication::keyboardModifiers() & Qt::ShiftModifier) != 0) {
-        rotate(dy, dx, 0.0, true);
+
+    bool multipleButtonsPressed = false;
+    int buttonIndex = -1;
+    if (event->buttons() & Qt::LeftButton) {
+      buttonIndex = 0;
+    }
+    if (event->buttons() & Qt::MiddleButton) {
+      if (buttonIndex != -1) {
+        multipleButtonsPressed = true;
       } else {
-        rotate(dy, 0.0, dx, true);
+        buttonIndex = 1;
+      }
+    }
+    if (event->buttons() & Qt::RightButton) {
+      if (buttonIndex != -1) {
+        multipleButtonsPressed = true;
+      } else {
+        buttonIndex = 2;
+      }
+    }
+    int modifierIndex = 0;
+    if (QApplication::keyboardModifiers() & Qt::ShiftModifier) {
+      modifierIndex = 1;
+    }
+    if (QApplication::keyboardModifiers() & Qt::ControlModifier) {
+      if (modifierIndex == 1) {
+        modifierIndex = 3;  // Ctrl + Shift
+      } else {
+        modifierIndex = 2;
+      }
+    }
+
+    if (buttonIndex != -1 && !multipleButtonsPressed) {
+      float *selectedMouseActions =
+        &this->mouseActions[MouseConfig::ACTION_DIMENSION*(buttonIndex + modifierIndex*3)];
+
+      // Rotation angles from mouse movement
+      // First 6 elements to selectedMouseActions are interpreted as a row-major 3x2 matrix, which is
+      // right-multiplied by (dx, dy)^T to produce the rotation angle increments.
+      double rx = selectedMouseActions[0]*dx + selectedMouseActions[1]*dy;
+      double ry = selectedMouseActions[2]*dx + selectedMouseActions[3]*dy;
+      double rz = selectedMouseActions[4]*dx + selectedMouseActions[5]*dy;
+      if (!(rx==0.0 && ry==0.0 && rz==0.0)) {
+        rotate(rx, ry, rz, true);
+        normalizeAngle(cam.object_rot.x());
+        normalizeAngle(cam.object_rot.y());
+        normalizeAngle(cam.object_rot.z());
       }
 
-      normalizeAngle(cam.object_rot.x());
-      normalizeAngle(cam.object_rot.y());
-      normalizeAngle(cam.object_rot.z());
-    } else {
-      // Right button pans in the xz plane
-      // Middle button pans in the xy plane
-      // Shift-right and Shift-middle zooms
-      if ((QApplication::keyboardModifiers() & Qt::ShiftModifier) != 0) {
-        zoom(-12.0 * dy, true);
-      } else {
-        double mx = +(dx) * 3.0 * cam.zoomValue() / QWidget::width();
-        double mz = -(dy) * 3.0 * cam.zoomValue() / QWidget::height();
-        double my = 0;
-        if (event->buttons() & Qt::MiddleButton) {
-          my = mz;
-          mz = 0;
-          // actually lock the x-position
-          // (turns out to be easier to use than xy panning)
-          mx = 0;
-        }
-
-        translate(mx, my, mz, true);
+      // Panning from mouse movement
+      // Elements 6..12 of selectedMouseActions are interpreted as another row-major 3x2 matrix, which is
+      // right-multiplied by (dx, dy)^T, and then scaled by the zoom, to produce the translation increments.
+      double mx = selectedMouseActions[6 + 0]*(dx / QWidget::width()) + selectedMouseActions[6 + 1]*(dy / QWidget::height());
+      double my = selectedMouseActions[6 + 2]*(dx / QWidget::width()) + selectedMouseActions[6 + 3]*(dy / QWidget::height());
+      double mz = selectedMouseActions[6 + 4]*(dx / QWidget::width()) + selectedMouseActions[6 + 5]*(dy / QWidget::height());
+      if (!(mx==0.0 && my == 0.0 && mz==0.0)) {
+        mx *= 3.0*cam.zoomValue();
+        my *= 3.0*cam.zoomValue();
+        mz *= 3.0*cam.zoomValue();
       }
+      translate(mx, my, mz, true);
+
+      // Zoom from mouse movement
+      // Final 2 elements of selectedMouseActions are interpreted as a 2-dimensional vector. The inner product of
+      // this is taken with (dx, dy)^T to produce the zoom increment.
+      double dZoom = selectedMouseActions[12] * dx + selectedMouseActions[13] * dy;
+      if (dZoom != 0.0) {
+        dZoom *= 12.0;
+        zoom(dZoom, true);
+      }
+
     }
   }
   last_mouse = this_mouse;
@@ -361,14 +395,12 @@ void QGLView::mouseReleaseEvent(QMouseEvent *event)
   mouse_drag_active = false;
   releaseMouse();
 
-  auto button_right = this->mouseSwapButtons?Qt::LeftButton : Qt::RightButton;
-  auto button_left =  this->mouseSwapButtons?Qt::RightButton : Qt::LeftButton;
   if (!mouse_drag_moved) {
-    if(event->button() == button_right) {
+    if(event->button() == Qt::RightButton) {
       QPoint point = event->pos();
       emit doRightClick(point);
     }
-    if(event->button() == button_left) {
+    if(event->button() == Qt::LeftButton) {
       QPoint point = event->pos();
       emit doLeftClick(point);
     }

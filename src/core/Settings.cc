@@ -1,5 +1,7 @@
 #include "core/Settings.h"
 
+#include "core/MouseConfig.h"
+
 #include <ostream>
 #include <cassert>
 #include <cstddef>
@@ -145,7 +147,6 @@ std::istream& operator>>(std::istream& stream, LocalAppParameter& param)
 
 SettingsEntryBool Settings::showWarningsIn3dView("3dview", "showWarningsIn3dView", true);
 SettingsEntryBool Settings::mouseCentricZoom("3dview", "mouseCentricZoom", true);
-SettingsEntryBool Settings::mouseSwapButtons("3dview", "mouseSwapButtons", false);
 SettingsEntryInt Settings::indentationWidth("editor", "indentationWidth", 1, 16, 4);
 SettingsEntryInt Settings::tabWidth("editor", "tabWidth", 1, 16, 4);
 SettingsEntryEnum<std::string> Settings::lineWrap("editor", "lineWrap", {
@@ -292,6 +293,24 @@ SettingsEntryString Settings::inputButton20("input", "button20", "");
 SettingsEntryString Settings::inputButton21("input", "button21", "");
 SettingsEntryString Settings::inputButton22("input", "button22", "");
 SettingsEntryString Settings::inputButton23("input", "button23", "");
+#ifndef Q_OS_MACOS
+static MouseConfig::Preset default_mouse_preset = MouseConfig::Preset::OPEN_SCAD;
+#else
+static MouseConfig::Preset default_mouse_preset = MouseConfig::Preset::OPEN_SCAD_MACOS;
+#endif
+SettingsEntryInt Settings::inputMousePreset("inputMouse", "preset", 0, MouseConfig::Preset::NUM_PRESETS, default_mouse_preset);
+SettingsEntryInt Settings::inputMouseLeftClick("inputMouse", "leftClick", 0, MouseConfig::ViewAction::NUM_VIEW_ACTIONS, MouseConfig::presetSettings.at(default_mouse_preset).at(MouseConfig::MouseAction::LEFT_CLICK));
+SettingsEntryInt Settings::inputMouseMiddleClick("inputMouse", "middleClick", 0, MouseConfig::ViewAction::NUM_VIEW_ACTIONS, MouseConfig::presetSettings.at(default_mouse_preset).at(MouseConfig::MouseAction::MIDDLE_CLICK));
+SettingsEntryInt Settings::inputMouseRightClick("inputMouse", "rightClick", 0, MouseConfig::ViewAction::NUM_VIEW_ACTIONS, MouseConfig::presetSettings.at(default_mouse_preset).at(MouseConfig::MouseAction::RIGHT_CLICK));
+SettingsEntryInt Settings::inputMouseShiftLeftClick("inputMouse", "shiftLeftClick", 0, MouseConfig::ViewAction::NUM_VIEW_ACTIONS, MouseConfig::presetSettings.at(default_mouse_preset).at(MouseConfig::MouseAction::SHIFT_LEFT_CLICK));
+SettingsEntryInt Settings::inputMouseShiftMiddleClick("inputMouse", "shiftMiddleClick", 0, MouseConfig::ViewAction::NUM_VIEW_ACTIONS, MouseConfig::presetSettings.at(default_mouse_preset).at(MouseConfig::MouseAction::SHIFT_MIDDLE_CLICK));
+SettingsEntryInt Settings::inputMouseShiftRightClick("inputMouse", "shiftRightClick", 0, MouseConfig::ViewAction::NUM_VIEW_ACTIONS, MouseConfig::presetSettings.at(default_mouse_preset).at(MouseConfig::MouseAction::SHIFT_RIGHT_CLICK));
+SettingsEntryInt Settings::inputMouseCtrlLeftClick("inputMouse", "ctrlLeftClick", 0, MouseConfig::ViewAction::NUM_VIEW_ACTIONS, MouseConfig::presetSettings.at(default_mouse_preset).at(MouseConfig::MouseAction::CTRL_LEFT_CLICK));
+SettingsEntryInt Settings::inputMouseCtrlMiddleClick("inputMouse", "ctrlMiddleClick", 0, MouseConfig::ViewAction::NUM_VIEW_ACTIONS, MouseConfig::presetSettings.at(default_mouse_preset).at(MouseConfig::MouseAction::CTRL_MIDDLE_CLICK));
+SettingsEntryInt Settings::inputMouseCtrlRightClick("inputMouse", "ctrlRightClick", 0, MouseConfig::ViewAction::NUM_VIEW_ACTIONS, MouseConfig::presetSettings.at(default_mouse_preset).at(MouseConfig::MouseAction::CTRL_RIGHT_CLICK));
+SettingsEntryInt Settings::inputMouseCtrlShiftLeftClick("inputMouse", "ctrlShiftLeftClick", 0, MouseConfig::ViewAction::NUM_VIEW_ACTIONS, MouseConfig::presetSettings.at(default_mouse_preset).at(MouseConfig::MouseAction::CTRL_SHIFT_LEFT_CLICK));
+SettingsEntryInt Settings::inputMouseCtrlShiftMiddleClick("inputMouse", "ctrlShiftMiddleClick", 0, MouseConfig::ViewAction::NUM_VIEW_ACTIONS, MouseConfig::presetSettings.at(default_mouse_preset).at(MouseConfig::MouseAction::CTRL_SHIFT_MIDDLE_CLICK));
+SettingsEntryInt Settings::inputMouseCtrlShiftRightClick("inputMouse", "ctrlShiftRightClick", 0, MouseConfig::ViewAction::NUM_VIEW_ACTIONS, MouseConfig::presetSettings.at(default_mouse_preset).at(MouseConfig::MouseAction::CTRL_SHIFT_RIGHT_CLICK));
 SettingsEntryDouble Settings::axisTrim0("input", "axisTrim0", -1.0, 0.01, 1.0, 0.0);
 SettingsEntryDouble Settings::axisTrim1("input", "axisTrim1", -1.0, 0.01, 1.0, 0.0);
 SettingsEntryDouble Settings::axisTrim2("input", "axisTrim2", -1.0, 0.01, 1.0, 0.0);

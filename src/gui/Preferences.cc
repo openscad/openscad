@@ -191,6 +191,7 @@ void Preferences::init() {
 #endif
   addPrefPage(group, prefsActionInput, pageInput);
   addPrefPage(group, prefsActionInputButton, pageInputButton);
+  addPrefPage(group, prefsActionMouse, pageMouse);
   addPrefPage(group, prefsActionAdvanced, pageAdvanced);
   addPrefPage(group, prefsActionDialogs, pageDialogs);
 
@@ -591,13 +592,6 @@ void Preferences::on_checkBoxMouseCentricZoom_toggled(bool val)
   Settings::Settings::mouseCentricZoom.setValue(val);
   writeSettings();
   emit updateMouseCentricZoom(val);
-}
-
-void Preferences::on_checkBoxMouseSwapButtons_toggled(bool val)
-{
-  Settings::Settings::mouseSwapButtons.setValue(val);
-  writeSettings();
-  emit updateMouseSwapButtons(val);
 }
 
 void Preferences::on_spinBoxIndentationWidth_valueChanged(int val)
@@ -1322,7 +1316,6 @@ void Preferences::updateGUI()
   initUpdateCheckBox(this->checkBoxEnableNumberScrollWheel, Settings::Settings::enableNumberScrollWheel);
   initUpdateCheckBox(this->checkBoxShowWarningsIn3dView, Settings::Settings::showWarningsIn3dView);
   initUpdateCheckBox(this->checkBoxMouseCentricZoom, Settings::Settings::mouseCentricZoom);
-  initUpdateCheckBox(this->checkBoxMouseSwapButtons, Settings::Settings::mouseSwapButtons);
   initUpdateCheckBox(this->checkBoxEnableLineNumbers, Settings::Settings::enableLineNumbers);
 
 

@@ -107,16 +107,6 @@
           </property>
          </widget>
         </item>
-        <item>
-         <widget class="QCheckBox" name="checkBoxMouseSwapButtons">
-          <property name="text">
-           <string>Swap Mouse Buttons</string>
-          </property>
-          <property name="checked">
-           <bool>false</bool>
-          </property>
-         </widget>
-        </item>
        </layout>
       </widget>
       <widget class="QWidget" name="pageEditor">
@@ -2749,6 +2739,31 @@
         </item>
        </layout>
       </widget>
+      <widget class="QWidget" name="pageMouse">
+       <widget class="QScrollArea" name="scrollArea_Mouse">
+        <property name="geometry">
+         <rect>
+          <x>0</x>
+          <y>0</y>
+          <width>625</width>
+          <height>549</height>
+         </rect>
+        </property>
+        <property name="widgetResizable">
+         <bool>true</bool>
+        </property>
+        <widget class="MouseConfigWidget" name="MouseConfig">
+         <property name="geometry">
+          <rect>
+           <x>0</x>
+           <y>0</y>
+           <width>623</width>
+           <height>547</height>
+          </rect>
+         </property>
+        </widget>
+       </widget>
+      </widget>
       <widget class="QWidget" name="pageDialogs">
        <layout class="QVBoxLayout" name="verticalLayout_18">
         <property name="leftMargin">
@@ -2845,6 +2860,7 @@
    <addaction name="prefsActionAdvanced"/>
    <addaction name="prefsActionInput"/>
    <addaction name="prefsActionInputButton"/>
+   <addaction name="prefsActionMouse"/>
    <addaction name="prefsActionDialogs"/>
   </widget>
   <action name="prefsAction3DView">
@@ -2937,6 +2953,18 @@
     <string>Buttons</string>
    </property>
   </action>
+  <action name="prefsActionMouse">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="../../resources/common.qrc">
+     <normaloff>:/icons/prefsInput.png</normaloff>:/icons/prefsInput.png</iconset>
+   </property>
+   <property name="text">
+    <string>Mouse</string>
+   </property>
+  </action>
   <action name="prefsAction3DPrint">
    <property name="checkable">
     <bool>true</bool>
@@ -3021,6 +3049,12 @@
    <class>ButtonConfigWidget</class>
    <extends>QWidget</extends>
    <header>gui/input/ButtonConfigWidget.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>MouseConfigWidget</class>
+   <extends>QWidget</extends>
+   <header>gui/input/MouseConfigWidget.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>
