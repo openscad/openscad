@@ -1277,6 +1277,7 @@ set(GUI_SOURCES
   src/gui/ExportPdfDialog.cc
   src/gui/LoadShareDesignDialog.cc
   src/gui/ShareDesignDialog.cc
+  src/gui/ExportSvgDialog.cc
   src/gui/OctoPrintApiKeyDialog.cc
   src/gui/FontListDialog.cc
   src/gui/FontListTableView.cc
@@ -1349,6 +1350,7 @@ set(GUI_HEADERS
     src/gui/ShareDesignDialog.h
     src/gui/Export3mfDialog.h
     src/gui/ExportPdfDialog.h
+    src/gui/ExportSvgDialog.h
     src/gui/OctoPrintApiKeyDialog.h
     src/gui/FontList.h
     src/gui/FontListDialog.h
@@ -1406,6 +1408,7 @@ set(GUI_UIS
     src/gui/ExportPdfDialog.ui
     src/gui/ShareDesignDialog.ui
     src/gui/LoadShareDesignDialog.ui
+    src/gui/ExportSvgDialog.ui
     src/gui/OctoPrintApiKeyDialog.ui
     src/gui/FontList.ui
     src/gui/FontListDialog.ui

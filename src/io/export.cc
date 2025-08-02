@@ -208,6 +208,8 @@ ExportInfo createExportInfo(const FileFormat& format, const FileFormatInfo& info
     exportInfo.options3mf = Export3mfOptions::withOptions(cmdLineOptions);
   } else if (format == FileFormat::PDF) {
     exportInfo.optionsPdf = ExportPdfOptions::withOptions(cmdLineOptions);
+  } else if (format == FileFormat::SVG) {
+    exportInfo.optionsSvg = ExportSvgOptions::withOptions(cmdLineOptions);
   }
 
   return exportInfo;
@@ -246,7 +248,7 @@ static void exportFile(const std::shared_ptr<const Geometry>& root_geom, std::os
     export_dxf(root_geom, output);
     break;
   case FileFormat::SVG:
-    export_svg(root_geom, output);
+    export_svg(root_geom, output, exportInfo);
     break;
   case FileFormat::PDF:
     export_pdf(root_geom, output, exportInfo);

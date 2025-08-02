@@ -206,6 +206,34 @@ struct Export3mfOptions {
   }
 };
 
+struct ExportSvgOptions {
+  bool fill = false;
+  std::string fillColor = "white";
+  bool stroke = true;
+  std::string strokeColor = "black";
+  double strokeWidth = 0.35;
+
+  static std::shared_ptr<const ExportSvgOptions> withOptions(const CmdLineExportOptions& cmdLineOptions) {
+    return std::make_shared<const ExportSvgOptions>(ExportSvgOptions{
+      .fill = set_cmd_line_option(cmdLineOptions, Settings::SECTION_EXPORT_SVG, Settings::SettingsExportSvg::exportSvgFill),
+      .fillColor = set_cmd_line_option(cmdLineOptions, Settings::SECTION_EXPORT_SVG, Settings::SettingsExportSvg::exportSvgFillColor),
+      .stroke = set_cmd_line_option(cmdLineOptions, Settings::SECTION_EXPORT_SVG, Settings::SettingsExportSvg::exportSvgStroke),
+      .strokeColor = set_cmd_line_option(cmdLineOptions, Settings::SECTION_EXPORT_SVG, Settings::SettingsExportSvg::exportSvgStrokeColor),
+      .strokeWidth = set_cmd_line_option(cmdLineOptions, Settings::SECTION_EXPORT_SVG, Settings::SettingsExportSvg::exportSvgStrokeWidth),
+    });
+  }
+
+  static const std::shared_ptr<const ExportSvgOptions> fromSettings() {
+    return std::make_shared<const ExportSvgOptions>(ExportSvgOptions{
+      .fill = Settings::SettingsExportSvg::exportSvgFill.value(),
+      .fillColor = Settings::SettingsExportSvg::exportSvgFillColor.value(),
+      .stroke = Settings::SettingsExportSvg::exportSvgStroke.value(),
+      .strokeColor = Settings::SettingsExportSvg::exportSvgStrokeColor.value(),
+      .strokeWidth = Settings::SettingsExportSvg::exportSvgStrokeWidth.value(),
+    });
+  }
+};
+
 struct ExportInfo {
   FileFormat format;
   FileFormatInfo info;
@@ -217,6 +245,7 @@ struct ExportInfo {
 
   std::shared_ptr<const ExportPdfOptions> optionsPdf;
   std::shared_ptr<const Export3mfOptions> options3mf;
+  std::shared_ptr<const ExportSvgOptions> optionsSvg;
 };
 
 class Export3mfPartInfo{
@@ -248,7 +277,7 @@ void export_wrl(const std::shared_ptr<const Geometry>& geom, std::ostream& outpu
 void export_ps(const std::shared_ptr<const Geometry>& geom, std::ostream& output);
 void export_amf(const std::shared_ptr<const Geometry>& geom, std::ostream& output);
 void export_dxf(const std::shared_ptr<const Geometry>& geom, std::ostream& output);
-void export_svg(const std::shared_ptr<const Geometry>& geom, std::ostream& output);
+void export_svg(const std::shared_ptr<const Geometry>& geom, std::ostream& output, const ExportInfo& exportInfo);
 void export_pov(const std::shared_ptr<const Geometry>& geom, std::ostream& output, const ExportInfo& exportInfo);
 void export_pdf(const std::shared_ptr<const Geometry>& geom, std::ostream& output, const ExportInfo& exportInfo);
 void export_step(const std::shared_ptr<const Geometry>& geom, std::ostream& output, const ExportInfo& exportInfo);

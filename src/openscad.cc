@@ -242,6 +242,7 @@ void help_export()
   LOG("openscad -O export-pdf/paper-size=a6 -O export-pdf/show-grid=false\n");
   help_export(Settings::SettingsExportPdf::cmdline);
   help_export(Settings::SettingsExport3mf::cmdline);
+  help_export(Settings::SettingsExportSvg::cmdline);
   exit(0);
 }
 
