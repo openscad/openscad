@@ -383,4 +383,11 @@ SettingsEntryString SettingsExport3mf::export3mfMetaDataCopyright(SECTION_EXPORT
 SettingsEntryString SettingsExport3mf::export3mfMetaDataLicenseTerms(SECTION_EXPORT_3MF, "meta-data-license-terms", "");
 SettingsEntryString SettingsExport3mf::export3mfMetaDataRating(SECTION_EXPORT_3MF, "meta-data-rating", "");
 
+SettingsEntryBool SettingsExportSvg::exportSvgAlwaysShowDialog(SECTION_EXPORT_SVG, "always-show-dialog", true);
+SettingsEntryBool SettingsExportSvg::exportSvgFill(SECTION_EXPORT_SVG, "fill", false);
+SettingsEntryString SettingsExportSvg::exportSvgFillColor(SECTION_EXPORT_SVG, "fill-color", "white");
+SettingsEntryBool SettingsExportSvg::exportSvgStroke(SECTION_EXPORT_SVG, "stroke", true);
+SettingsEntryString SettingsExportSvg::exportSvgStrokeColor(SECTION_EXPORT_SVG, "stroke-color", "black");
+SettingsEntryDouble SettingsExportSvg::exportSvgStrokeWidth(SECTION_EXPORT_SVG, "stroke-width", 0, 0.01, 999, 0.35);
+
 } // namespace Settings
