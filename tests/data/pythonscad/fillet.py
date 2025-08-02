@@ -2,9 +2,12 @@ from openscad import *
 
 mask=cube([30,15,1]) + [-6,-6,4.5]
 mask2=cube([30,1,30],center=True)+ [0,-5,0]
+mask3=cube([30,1,1] ) + [-20,-5.5,4.5]
 
 fig1 = cube(10,center=True)
 fig2 = cube([4,4,10], center=True).up(5)
+
+fig1.fillet(4, mask3,fn=20).right(45).show()
 
 set1=fig1|fig2
 set1 |= (fig1-fig2).right(15)

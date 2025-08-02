@@ -165,12 +165,6 @@ void bezier_patch(PolySetBuilder &builder, Vector3d center, Vector3d dir[3], int
   }
 }
 
-double createFilletLimit(Vector3d v, double r) {
-  double l=v.norm()/2.0;
-  if(l > r) l=r;
-  return l;
-}
-
 void debug_pt(const char *msg, Vector3d pt) {
   printf("%s %g/%g/%g\n",msg, pt[0], pt[1], pt[2]);	
 }
@@ -374,8 +368,8 @@ std::unique_ptr<const Geometry> createFilletInt(std::shared_ptr<const PolySet> p
       Vector3d p2=vertices_copy[e.first.ind2];
       Vector3d p1org=p1, p2org=p2;
       Vector3d dir=p2-p1;
-      if(corner_rounds[e.first.ind1].size() >=  3) p1 += dir.normalized()*createFilletLimit(dir,r_);
-      if(corner_rounds[e.first.ind2].size() >=  3) p2 -= dir.normalized()*createFilletLimit(dir,r_);
+      if(corner_rounds[e.first.ind1].size() >=  3) p1 += dir.normalized()*r_;
+      if(corner_rounds[e.first.ind2].size() >=  3) p2 -= dir.normalized()*r_;
       dir=dir.normalized(); // TODO
       auto &facea =merged[e.second.facea];								  
       auto &faceb =merged[e.second.faceb];								  
@@ -405,18 +399,12 @@ std::unique_ptr<const Geometry> createFilletInt(std::shared_ptr<const PolySet> p
       Vector3d e_fb1 =  (vertices_copy[indposbo]-vertices_copy[faceb[(e.second.posb+1)%facebn]]).normalized()*fbnf; // Faceb neben ind1
       Vector3d e_fb1p = (vertices_copy[indposbi]-vertices_copy[faceb[(e.second.posb+1)%facebn]])*fbnf; 
 
-      if(corner_rounds[e.first.ind1].size() == 1) 
-      {
-        e_fa1 *= r_;	      
-        e_fb1 *= r_;	      
-      }
-
       if(corner_rounds[e.first.ind1].size() == 2)
       {
         double a=(e_fb1.cross(e_fa1)).dot(dir);
 	double b=(fan.cross(fbn)).dot(e_fa1p)*fanf*fbnf;
         if(list_included(corner_rounds[e.first.ind1],indposao)){
-	double ang=(dir).dot(e_fa1.normalized());
+	  double ang=(dir).dot(e_fa1.normalized());
 	  e_fa1 += dir*fanf; 
 	  if(a*b < 0) e_fa1 = -e_fa1*fanf;
 	  e_fa1 /= sqrt(1-ang*ang);
@@ -428,31 +416,29 @@ std::unique_ptr<const Geometry> createFilletInt(std::shared_ptr<const PolySet> p
 		if(a*b < 0) e_fb1 = -e_fb1*fbnf;
 	  e_fb1 /= sqrt(1-ang*ang);
 	}
-	e_fa1 *= r_;
-	e_fb1 *= r_;
       }
 
       if(corner_rounds[e.first.ind1].size() == 3)
       {
-        e_fa1 *= createFilletLimit(p2org-p1org,r_);
-        e_fb1 *= createFilletLimit(p2org-p1org,r_);
         if( (fbn.cross(fan)).dot(e_fa1p) < 0 || (fbn.cross(fan)).dot(e_fb1p) < 0) {
 	  if((e_fa1p.cross(e_fa1)).dot(fan)*fanf < 0) {
-	    e_fa1 = -e_fa1*fanf - 2*(p2org-p1org).normalized()*createFilletLimit(p2org-p1org, r_);
+	    e_fa1 = -e_fa1*fanf - 2*(p2org-p1org).normalized();
 	  }
 	  if((e_fb1p.cross(e_fb1)).dot(fbn)*fbnf > 0) {
-	    e_fb1 = -e_fb1*fbnf - 2*(p2org-p1org).normalized()*createFilletLimit(p2org-p1org, r_);
+	    e_fb1 = -e_fb1*fbnf - 2*(p2org-p1org).normalized();
 	  }
 	}
         if(  (fbn.cross(fan)).dot(e_fb1p) > 0 ) {
 	  if((e_fa1p.cross(e_fa1)).dot(fan)*fanf > 0  && (e_fa1p.cross(e_fb1)).dot(fbn)*fbnf > 0) {
-	    e_fb1 = -e_fb1*fbnf - 2*dir*r_;
+	    e_fb1 = -e_fb1*fbnf - 2*dir;
 	  }
 	  if((e_fb1p.cross(e_fb1)).dot(fbn)*fbnf < 0  && (e_fb1p.cross(e_fa1)).dot(fan)*fanf < 0 ) {
-	    e_fa1 = -e_fa1*fanf - 2*dir*r_;
+	    e_fa1 = -e_fa1*fanf - 2*dir;
 	  }
 	}
       }
+      e_fa1 *= r_;	      
+      e_fb1 *= r_;	      
 
 
       indposao = facea[(e.second.posa+2)%facean];		
@@ -468,12 +454,6 @@ std::unique_ptr<const Geometry> createFilletInt(std::shared_ptr<const PolySet> p
       Vector3d e_fb2p = (vertices_copy[indposbi]-vertices_copy[faceb[(e.second.posb+0)%facebn]])*fbnf; // Face2 entfernte Rcithung
 
 													   //
-      if(corner_rounds[e.first.ind2].size() == 1) 
-      {
-        e_fa2 *= r_;	      
-        e_fb2 *= r_;	      
-      }
-
       if(corner_rounds[e.first.ind2].size() == 2) 
       {
         double a=(e_fb2.cross(e_fa2)).dot(dir);
@@ -492,32 +472,31 @@ std::unique_ptr<const Geometry> createFilletInt(std::shared_ptr<const PolySet> p
 	  if(a*b > 0)  e_fb2 = -e_fb2*fbnf;
 	  e_fb2 /= sqrt(1-ang*ang);
 	}
-	e_fa2 *= r_;
-        e_fb2 *= r_;
 
       }	
 
       if(corner_rounds[e.first.ind2].size() == 3)
       {
-        e_fa2 *= createFilletLimit(p2org-p1org, r_);
-        e_fb2 *= createFilletLimit(p2org-p1org, r_);
         if( -(fbn.cross(fan)).dot(e_fa2p) < 0 || -(fbn.cross(fan)).dot(e_fb2p) < 0 ) {
 	  if(-(e_fa2p.cross(e_fa2)).dot(fan)*fanf < 0){
-            e_fa2 = -e_fa2*fanf + 2*dir*r_; 
+            e_fa2 = -e_fa2*fanf + 2*dir; 
 	  }  
 	  if(-(e_fb2p.cross(e_fb2)).dot(fbn)*fbnf > 0){
-            e_fb2 = -e_fb2*fbnf + 2*dir*r_;
+            e_fb2 = -e_fb2*fbnf + 2*dir;
 	  }  
 	}
         if(/* -(fbn.cross(fan)).dot(e_fa2p) > 0 || */ -(fbn.cross(fan)).dot(e_fb2p) > 0  ) {
 	  if(-(e_fb2p.cross(e_fb2)).dot(fbn)*fbnf < 0 && (e_fb2p.cross(e_fa2)).dot(fan)*fanf > 0){
-            e_fa2 = -e_fa2*fanf + 2*dir*r_; // laengs links
+            e_fa2 = -e_fa2*fanf + 2*dir; // laengs links
 	  }  
 	  if(-(e_fa2p.cross(e_fa2)).dot(fan)*fanf > 0 && (e_fa2p.cross(e_fb2)).dot(fbn)*fbnf < 0 ){
-            e_fb2 = -e_fb2*fbnf + 2*dir*r_; 
+            e_fb2 = -e_fb2*fbnf + 2*dir; 
 	  }  
 	}
       }
+
+      e_fa2 *= r_;	      
+      e_fb2 *= r_;	      
 
       // Calculate bezier patches
       for(int i=0;i<bn;i++) {
@@ -665,23 +644,23 @@ std::unique_ptr<const Geometry> createFilletInt(std::shared_ptr<const PolySet> p
       Vector3d x;
       if(faceend[0] == facebeg[1]) { // 0,1,2
         x = vertices_copy[faceend[1]]-vertices_copy[i];			    
-        dir.push_back(x.normalized()*createFilletLimit(x,r_));
+        dir.push_back(x.normalized()*r_);
 	angle.push_back((facenorm[1].cross(facenorm[2])).dot(vertices_copy[faceend[1]]-vertices_copy[i])>0?1:-1);
 	x = vertices_copy[faceend[2]]-vertices_copy[i];
-        dir.push_back(x.normalized()*createFilletLimit(x,r_));
+        dir.push_back(x.normalized()*r_);
 	angle.push_back((facenorm[2].cross(facenorm[0])).dot(vertices_copy[faceend[2]]-vertices_copy[i])>0?1:-1);
 	x = vertices_copy[faceend[0]]-vertices_copy[i];
-        dir.push_back(x.normalized() *createFilletLimit(x,r_));
+        dir.push_back(x.normalized()*r_);
 	angle.push_back((facenorm[0].cross(facenorm[1])).dot(vertices_copy[faceend[0]]-vertices_copy[i])>0?1:-1);
       } else if(faceend[0] == facebeg[2]) { 
         x = vertices_copy[faceend[2]]-vertices_copy[i];	      
-        dir.push_back(x.normalized() * createFilletLimit(x ,r_));
+        dir.push_back(x.normalized()*r_);
 	angle.push_back((facenorm[2].cross(facenorm[1])).dot(vertices_copy[faceend[2]]-vertices_copy[i])>0?1:-1);
 	x = vertices_copy[faceend[0]]-vertices_copy[i];
-        dir.push_back(x.normalized() *createFilletLimit(x ,r_));
+        dir.push_back(x.normalized()*r_);
 	angle.push_back((facenorm[0].cross(facenorm[2])).dot(vertices_copy[faceend[0]]-vertices_copy[i])>0?1:-1);
 	x = vertices_copy[faceend[1]]-vertices_copy[i];
-        dir.push_back(x.normalized() * createFilletLimit(x ,r_));
+        dir.push_back(x.normalized()*r_);
 	angle.push_back((facenorm[1].cross(facenorm[0])).dot(vertices_copy[faceend[1]]-vertices_copy[i])>0?1:-1);
       } else assert(0);
       int conc1=-1, conc2=-1, conc3=-1;		      
