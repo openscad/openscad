@@ -387,6 +387,19 @@ public:
     stream << ']';
   }
 
+  void operator()(const ObjectType& v) const {
+    if (StackCheck::inst().check()) {
+      throw VectorEchoStringException::create();
+    }
+    stream << "{ ";
+    for ( auto & key : v.keys()) {
+      stream << key << " = ";
+      std::visit(*this, v.get(key).getVariant());
+      stream << "; ";
+    }
+    stream << '}';
+  }
+  
   void operator()(const str_utf8_wrapper& v) const {
     stream << '"' << v.toString() << '"';
   }
@@ -446,7 +459,14 @@ public:
   }
 
   std::string operator()(const ObjectType& v) const {
-    return STR(v);
+    std::ostringstream stream;
+    try {
+      (tostream_visitor(stream))(v);
+    } catch (EvaluationException& e) {
+      LOG(message_group::Error, e.what());
+      throw;
+    }
+    return stream.str();
   }
 
   std::string operator()(const RangePtr& v) const {
@@ -522,6 +542,7 @@ public:
     }
     return stream.str();
   }
+
 
   std::string operator()(const RangePtr& v) const
   {
