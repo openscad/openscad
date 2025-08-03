@@ -874,6 +874,7 @@ int main(int argc, char **argv)
     ("d,d", po::value<std::string>(), "deps_file -generate a dependency file for make")
     ("m,m", po::value<std::string>(), "make_cmd -runs make_cmd file if file is missing")
     ("quiet,q", "quiet mode (don't print anything *except* errors)")
+    ("reset-window-settings", "Reset GUI settings for window placement and fonts.")
     ("hardwarnings", "Stop on the first warning")
     ("trace-depth", po::value<unsigned int>(), "=n, maximum number of trace messages")
     ("trace-usermodule-parameters", po::value<std::string>(), "=true/false, configure the output of user module parameters in a trace")
@@ -1137,7 +1138,8 @@ int main(int argc, char **argv)
     if (vm.count("run-all-gui-tests")){
       gui_test = "all";
     }
-    rc = gui(inputFiles, original_path, argc, argv, gui_test);
+    auto reset_window_settings = vm.count("reset-window-settings") > 0;
+    rc = gui(inputFiles, original_path, argc, argv, gui_test, reset_window_settings);
 #endif
   } else {
     LOG("Requested GUI mode but can't open display!\n");
