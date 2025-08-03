@@ -122,14 +122,17 @@ void Preferences::init() {
   this->defaultmap["editor/fontsize"] = 12;
   this->defaultmap["editor/syntaxhighlight"] = "For Light Background";
 
+  const QFont applicationFont = QTextDocument().defaultFont();
+  this->defaultmap["advanced/applicationFontFamily"] = applicationFont.family();
+  this->defaultmap["advanced/applicationFontSize"] = applicationFont.pointSize();
+
   // Leave Console font with default if user has not chosen another.
-  const QFont font2 = QTextDocument().defaultFont();
-  this->defaultmap["advanced/consoleFontFamily"] = font2.family();
-  this->defaultmap["advanced/consoleFontSize"] = font2.pointSize();
+  this->defaultmap["advanced/consoleFontFamily"] = applicationFont.family();
+  this->defaultmap["advanced/consoleFontSize"] = applicationFont.pointSize();
 
   // Leave Customizer font with default if user has not chosen another.
-  this->defaultmap["advanced/customizerFontFamily"] = font2.family();
-  this->defaultmap["advanced/customizerFontSize"] = font2.pointSize();
+  this->defaultmap["advanced/customizerFontFamily"] = applicationFont.family();
+  this->defaultmap["advanced/customizerFontSize"] = applicationFont.pointSize();
 
 #ifdef Q_OS_MACOS
   this->defaultmap["editor/ctrlmousewheelzoom"] = false;
@@ -138,6 +141,7 @@ void Preferences::init() {
 #endif
 
   createFontSizeMenu(fontSize, "editor/fontsize");
+  createFontSizeMenu(comboBoxApplicationFontSize, "advanced/applicationFontSize");
   createFontSizeMenu(consoleFontSize, "advanced/consoleFontSize");
   createFontSizeMenu(customizerFontSize, "advanced/customizerFontSize");
 
@@ -720,6 +724,28 @@ void Preferences::on_consoleMaxLinesEdit_textChanged(const QString& text)
   settings.setValue("advanced/consoleMaxLines", text);
 }
 
+void Preferences::fireApplicationFontChanged() const
+{
+  const auto family = getValue("advanced/applicationFontFamily").toString();
+  const auto size = getValue("advanced/applicationFontSize").toUInt();
+  emit applicationFontChanged(family, size);
+}
+
+void Preferences::on_fontComboBoxApplicationFontFamily_currentFontChanged(const QFont& font)
+{
+  QSettingsCached settings;
+  settings.setValue("advanced/applicationFontFamily", font.family());
+  fireApplicationFontChanged();
+}
+
+void Preferences::on_comboBoxApplicationFontSize_currentIndexChanged(int index)
+{
+  uint intsize = this->comboBoxApplicationFontSize->itemText(index).toUInt();
+  QSettingsCached settings;
+  settings.setValue("advanced/applicationFontSize", intsize);
+  fireApplicationFontChanged();
+}
+
 void Preferences::on_consoleFontChooser_currentFontChanged(const QFont& font)
 {
   QSettingsCached settings;
@@ -1264,6 +1290,9 @@ void Preferences::updateGUI()
   BlockSignals<QLineEdit *>(this->timeThresholdOnRenderCompleteSoundEdit)->setText(getValue("advanced/timeThresholdOnRenderCompleteSound").toString());
   BlockSignals<QCheckBox *>(this->enableClearConsoleCheckBox)->setChecked(getValue("advanced/consoleAutoClear").toBool());
   BlockSignals<QLineEdit *>(this->consoleMaxLinesEdit)->setText(getValue("advanced/consoleMaxLines").toString());
+
+  updateGUIFontFamily(fontComboBoxApplicationFontFamily, "advanced/applicationFontFamily");
+  updateGUIFontSize(comboBoxApplicationFontSize, "advanced/applicationFontSize");
 
   updateGUIFontFamily(consoleFontChooser, "advanced/consoleFontFamily");
   updateGUIFontSize(consoleFontSize, "advanced/consoleFontSize");

@@ -367,13 +367,13 @@ MainWindow::MainWindow(const QStringList& filenames) :
   connect(tabManager, &TabManager::editorContentReloaded, this, &MainWindow::onTabManagerEditorContentReloaded);
 
   connect(GlobalPreferences::inst(), &Preferences::consoleFontChanged, this->console, &Console::setFont);
-
-  const QString version = QString("<b>OpenSCAD %1</b>").arg(QString::fromStdString(openscad_versionnumber));
-  const QString weblink = "<a href=\"https://www.openscad.org/\">https://www.openscad.org/</a><br>";
   this->console->setFont(
     GlobalPreferences::inst()->getValue("advanced/consoleFontFamily").toString(),
     GlobalPreferences::inst()->getValue("advanced/consoleFontSize").toUInt()
-    );
+  );
+
+  const QString version = QString("<b>OpenSCAD %1</b>").arg(QString::fromStdString(openscad_versionnumber));
+  const QString weblink = "<a href=\"https://www.openscad.org/\">https://www.openscad.org/</a><br>";
 
   consoleOutputRaw(version);
   consoleOutputRaw(weblink);
@@ -805,6 +805,9 @@ MainWindow::MainWindow(const QStringList& filenames) :
 
   // fills the content of the Recents Files menu.
   updateRecentFileActions();
+
+  // Kick the re-styling again, otherwise it does not catch menu items
+  GlobalPreferences::inst()->fireApplicationFontChanged();
 }
 
 void MainWindow::setAllMouseViewActions()

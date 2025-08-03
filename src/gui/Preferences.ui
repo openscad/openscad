@@ -27,7 +27,7 @@
     <item row="0" column="0">
      <widget class="QStackedWidget" name="stackedWidget">
       <property name="currentIndex">
-       <number>8</number>
+       <number>5</number>
       </property>
       <widget class="QWidget" name="page3DView">
        <layout class="QVBoxLayout" name="verticalLayout_4">
@@ -136,8 +136,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>707</width>
-             <height>1005</height>
+             <width>668</width>
+             <height>953</height>
             </rect>
            </property>
            <layout class="QGridLayout" name="gridLayout_5">
@@ -1349,8 +1349,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>845</width>
-             <height>768</height>
+             <width>701</width>
+             <height>710</height>
             </rect>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_9">
@@ -1950,8 +1950,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>743</width>
-             <height>1514</height>
+             <width>831</width>
+             <height>1471</height>
             </rect>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_12">
@@ -2158,6 +2158,40 @@
                <string>User Interface</string>
               </property>
               <layout class="QVBoxLayout" name="verticalLayout_13">
+               <item>
+                <layout class="QHBoxLayout" name="horizontalLayoutApplicationFont">
+                 <item>
+                  <widget class="QLabel" name="labelApplicationFont">
+                   <property name="text">
+                    <string>Font</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QFontComboBox" name="fontComboBoxApplicationFontFamily"/>
+                 </item>
+                 <item>
+                  <widget class="QComboBox" name="comboBoxApplicationFontSize">
+                   <property name="editable">
+                    <bool>true</bool>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <spacer name="horizontalSpacerApplicationFont">
+                   <property name="orientation">
+                    <enum>Qt::Horizontal</enum>
+                   </property>
+                   <property name="sizeHint" stdset="0">
+                    <size>
+                     <width>40</width>
+                     <height>20</height>
+                    </size>
+                   </property>
+                  </spacer>
+                 </item>
+                </layout>
+               </item>
                <item>
                 <widget class="QCheckBox" name="reorderCheckBox">
                  <property name="text">
