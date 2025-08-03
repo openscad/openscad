@@ -303,22 +303,14 @@ MainWindow::MainWindow(const QStringList& filenames) :
   this->addAction(editActionFoldAll);
 
   docks = {
-    {editorDock, QString(_("Editor"))},
-    {consoleDock, QString(_("Console"))},
-    {parameterDock, QString(_("Customizer"))},
-    {errorLogDock, QString(_("Error-Log"))},
-    {animateDock, QString(_("Animate"))},
-    {fontListDock, QString(_("Font Lists"))},
-    {viewportControlDock, QString(_("Viewport-Control"))}
+    {editorDock, _("Editor"), "view/hideEditor"},
+    {consoleDock, _("Console"), "view/hideConsole"},
+    {parameterDock, _("Customizer"), "view/hideCustomizer"},
+    {errorLogDock, _("Error-Log"), "view/hideErrorLog"},
+    {animateDock, _("Animate"), "view/hideAnimate"},
+    {fontListDock, _("Font Lists"), "view/hideFontList"},
+    {viewportControlDock, _("Viewport-Control"), "view/hideViewportControl"}
   };
-
-  this->editorDock->setConfigKey("view/hideEditor");
-  this->consoleDock->setConfigKey("view/hideConsole");
-  this->parameterDock->setConfigKey("view/hideCustomizer");
-  this->errorLogDock->setConfigKey("view/hideErrorLog");
-  this->animateDock->setConfigKey("view/hideAnimate");
-  this->fontListDock->setConfigKey("view/hideFontList");
-  this->viewportControlDock->setConfigKey("view/hideViewportControl");
 
   this->versionLabel = nullptr;   // must be initialized before calling updateStatusBar()
   updateStatusBar(nullptr);
@@ -567,18 +559,6 @@ MainWindow::MainWindow(const QStringList& filenames) :
   connect(this->viewActionHideEditorToolBar, &QAction::triggered, this, &MainWindow::hideEditorToolbar);
   connect(this->viewActionHide3DViewToolBar, &QAction::triggered, this, &MainWindow::hide3DViewToolbar);
 
-  // Create the docks and connect corresponding action
-  for (auto& [dock, title] : docks) {
-    dock->setName(title);
-    dock->setFocusPolicy(Qt::FocusPolicy::StrongFocus);
-
-    // It is neede to have the event filter installed in each dock so that the events are
-    // correctly processed when the dock are floating (is in a different window that the mainwindow)
-    dock->installEventFilter(this);
-
-    menuWindow->addAction(dock->toggleViewAction());
-  }
-
   // Help menu
   connect(this->helpActionAbout, &QAction::triggered, this, &MainWindow::helpAbout);
   connect(this->helpActionHomepage, &QAction::triggered, this, &MainWindow::helpHomepage);
@@ -656,13 +636,6 @@ MainWindow::MainWindow(const QStringList& filenames) :
   instance->MouseConfig->init();
 
   // fetch window states to be restored after restoreState() call
-  const bool isConsoldDockVisible = !settings.value("view/hideConsole").toBool();
-  const bool isEditorDockVisible = !settings.value("view/hideEditor").toBool();
-  bool isCustomizerDockVisible = !settings.value("view/hideCustomizer").toBool();
-  const bool isErrorLogVisible = !settings.value("view/hideErrorLog").toBool();
-  const bool isAnimateDockVisible = !settings.value("view/hideAnimate").toBool();
-  const bool isFontListDockVisible = !settings.value("view/hideFontList").toBool();
-  bool isViewportControlVisible = !settings.value("view/hideViewportControl").toBool();
   const bool isEditorToolbarVisible = !settings.value("view/hideEditorToolbar").toBool();
   const bool is3DViewToolbarVisible = !settings.value("view/hide3DViewToolbar").toBool();
 
@@ -698,8 +671,6 @@ MainWindow::MainWindow(const QStringList& filenames) :
     tabifyDockWidget(errorLogDock, fontListDock);
     tabifyDockWidget(fontListDock, animateDock);
     consoleDock->show();
-    isCustomizerDockVisible = true;
-    isViewportControlVisible = true;
   } else {
 #ifdef Q_OS_WIN
     // Try moving the main window into the display range, this
@@ -720,7 +691,7 @@ MainWindow::MainWindow(const QStringList& filenames) :
 #endif // ifdef Q_OS_WIN
   }
 
-  updateWindowSettings(isConsoldDockVisible, isEditorDockVisible, isCustomizerDockVisible, isErrorLogVisible, isEditorToolbarVisible, is3DViewToolbarVisible, isAnimateDockVisible, isFontListDockVisible, isViewportControlVisible);
+  updateWindowSettings(isEditorToolbarVisible, is3DViewToolbarVisible);
 
   // Connect the menu "Windows/Navigation" to slot that process it by opening in a pop menu
   // the navigationMenu.
@@ -728,12 +699,26 @@ MainWindow::MainWindow(const QStringList& filenames) :
 
   // Create the popup menu to navigate between the docks by keyboard.
   navigationMenu = new QMenu();
-  for (auto& [dock, title] : docks) {
-    auto action2 = navigationMenu->addAction(title);
-    action2->setProperty("id", QVariant::fromValue(dock));
-    connect(action2, &QAction::triggered, this, &MainWindow::onNavigationTriggerContextMenuEntry);
-    connect(action2, &QAction::hovered, this, &MainWindow::onNavigationHoveredContextMenuEntry);
+
+  // Create the docks, connect corresponding action and install menu entries
+  for (auto& [dock, title, configKey] : docks) {
+    dock->setName(title);
+    dock->setConfigKey(configKey);
+    dock->setVisible(!GlobalPreferences::inst()->getValue(configKey).toBool());
+    dock->setFocusPolicy(Qt::FocusPolicy::StrongFocus);
+
+    // It is neede to have the event filter installed in each dock so that the events are
+    // correctly processed when the dock are floating (is in a different window that the mainwindow)
+    dock->installEventFilter(this);
+
+    menuWindow->addAction(dock->toggleViewAction());
+
+    auto dockAction = navigationMenu->addAction(title);
+    dockAction->setProperty("id", QVariant::fromValue(dock));
+    connect(dockAction, &QAction::triggered, this, &MainWindow::onNavigationTriggerContextMenuEntry);
+    connect(dockAction, &QAction::hovered, this, &MainWindow::onNavigationHoveredContextMenuEntry);
   }
+
   connect(navigationMenu, &QMenu::aboutToHide, this, &MainWindow::onNavigationCloseContextMenu);
   connect(menuWindow, &QMenu::aboutToHide, this, &MainWindow::onNavigationCloseContextMenu);
   windowActionJumpTo->setMenu(navigationMenu);
@@ -925,24 +910,8 @@ void MainWindow::addKeyboardShortCut(const QList<QAction *>& actions)
  * Qt call. So the values are loaded before the call and restored here
  * regardless of the (potential outdated) serialized state.
  */
-void MainWindow::updateWindowSettings(bool isConsoleVisible,
-                                      bool isEditorVisible,
-                                      bool isCustomizerVisible,
-                                      bool isErrorLogVisible,
-                                      bool isEditorToolbarVisible,
-                                      bool isViewToolbarVisible,
-                                      bool isAnimateVisible,
-                                      bool isFontListVisible,
-                                      bool isViewportControlVisible)
+void MainWindow::updateWindowSettings(bool isEditorToolbarVisible, bool isViewToolbarVisible)
 {
-  editorDock->setVisible(isEditorVisible);
-  consoleDock->setVisible(isConsoleVisible);
-  errorLogDock->setVisible(isErrorLogVisible);
-  parameterDock->setVisible(isCustomizerVisible);
-  animateDock->setVisible(isAnimateVisible);
-  fontListDock->setVisible(isFontListVisible);
-  viewportControlDock->setVisible(isViewportControlVisible);
-
   viewActionHideEditorToolBar->setChecked(!isEditorToolbarVisible);
   hideEditorToolbar();
   viewActionHide3DViewToolBar->setChecked(!isViewToolbarVisible);
@@ -1100,7 +1069,7 @@ void MainWindow::updateUndockMode(bool undockMode)
 void MainWindow::updateReorderMode(bool reorderMode)
 {
   MainWindow::reorderMode = reorderMode;
-  for (auto& [dock, name] : docks) {
+  for (auto& [dock, name, configKey] : docks) {
     dock->setTitleBarVisibility(!reorderMode);
   }
 }

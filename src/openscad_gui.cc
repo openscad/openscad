@@ -170,7 +170,7 @@ void registerDefaultIcon(const QString&) { }
 #define DESKTOP_FILENAME "openscad"
 #endif
 
-int gui(std::vector<std::string>& inputFiles, const std::filesystem::path& original_path, int argc, char **argv, const std::string& gui_test)
+int gui(std::vector<std::string>& inputFiles, const std::filesystem::path& original_path, int argc, char **argv, const std::string& gui_test, const bool reset_window_settings)
 {
   OpenSCADApp app(argc, argv);
   QIcon::setThemeName(isDarkMode() ? "chokusen-dark" : "chokusen");
@@ -203,6 +203,33 @@ int gui(std::vector<std::string>& inputFiles, const std::filesystem::path& origi
   QSettingsCached settings;
   if (settings.value("advanced/localization", true).toBool()) {
     localization_init();
+  }
+  if (reset_window_settings) {
+    const auto keys = std::array<std::string, 20> {
+      "editor/fontfamily",
+      "editor/fontsize",
+      "advanced/applicationFontSize",
+      "advanced/applicationFontFamily",
+      "advanced/consoleFontFamily",
+      "advanced/consoleFontSize",
+      "advanced/customizerFontFamily",
+      "advanced/customizerFontSize",
+      "advanced/undockableWindows",
+      "window/state",
+      "window/geometry",
+      "window/position",
+      "window/size",
+      "view/hideEditor",
+      "view/hideConsole",
+      "view/hideErrorLog",
+      "view/hideAnimate",
+      "view/hideCustomizer",
+      "view/hideFontList",
+      "view/hideViewportControl",
+    };
+    for (const auto& key : keys) {
+      settings.remove(QString::fromStdString(key));
+    }
   }
 
 #ifdef Q_OS_MACOS

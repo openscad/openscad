@@ -168,11 +168,12 @@ void Preferences::init() {
   this->defaultmap["advanced/enableTraceUsermoduleParameters"] = true;
   this->defaultmap["advanced/enableParameterCheck"] = true;
   this->defaultmap["advanced/enableParameterRangeCheck"] = false;
-  this->defaultmap["view/hideConsole"] = false;
   this->defaultmap["view/hideEditor"] = false;
-  this->defaultmap["view/hideErrorLog"] = false;
-  this->defaultmap["view/hideAnimate"] = false;
+  this->defaultmap["view/hideConsole"] = false;
+  this->defaultmap["view/hideErrorLog"] = true;
+  this->defaultmap["view/hideAnimate"] = true;
   this->defaultmap["view/hideCustomizer"] = true;
+  this->defaultmap["view/hideFontList"] = true;
   this->defaultmap["view/hideViewportControl"] = true;
   this->defaultmap["editor/enableAutocomplete"] = true;
   this->defaultmap["editor/characterThreshold"] = 1;
