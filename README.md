@@ -1,5 +1,5 @@
 <h1 align="center">
-  <a href="https://pythonscad.org"><img src="https://pythonscad.org/pictures/plogo.PNG" alt="PythonSCAD Logo" width="200"></a>
+  <a href="https://pythonscad.org" target="_blank"><img src="https://pythonscad.org/pictures/plogo.PNG" alt="PythonSCAD Logo" width="200"></a>
   <br>
   PythonSCAD
   <br>
@@ -8,10 +8,10 @@
 native language</h3>
 
 <p align="center">
-<a href="https://www.reddit.com/r/OpenPythonSCAD/">
+<a href="https://www.reddit.com/r/OpenPythonSCAD/" target="_blank">
 <img src="https://img.shields.io/badge/subreddit-red?logo=reddit&logoColor=white"/>
 </a>
-<a href="https://pythonscad.org">
+<a href="https://pythonscad.org" target="_blank">
 <img src="https://img.shields.io/badge/Website-0060DF?logo=Python&logoColor=white"/>
 </a>
 </p>
