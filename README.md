@@ -1,61 +1,115 @@
-<center><img src="https://pythonscad.org/pictures/plogo.PNG" width="200"></center>
-What is PythonSCAD?
+<h1 align="center">
+  <a href=""><img src="https://pythonscad.org/pictures/plogo.PNG" alt="PythonSCAD Logo" width="200"></a>
+  <br>
+  PythonSCAD
+  <br>
+</h1>
+<h3 align="center">Script-based 3D modeling app which lets you use Python as its
+native language</h3>
 
-PythonSCAD is software which lets you turn simple Python Code into 3D Models suitable for 3D printing. A Case  can be accomplished
-with few very readable lines only. PythonSCAD is a direct fork of the great well-known OpenSCAD and includes all functions which OpenSCAD does.  Unfortunately, OpenSCAD  itself comes with a lot of intentional limitations.
+<p align="center">
+<a href="https://www.reddit.com/r/OpenPythonSCAD/">
+<img src="https://img.shields.io/badge/subreddit-red?logo=reddit&logoColor=white"/>
+</a>
+<a href="https://pythonscad.org">
+<img src="https://img.shields.io/badge/Website-0060DF?logo=Python&logoColor=white"/>
+</a>
+</p>
 
-No mutation of variables (immutability, "single assignment of any variable")
-Limited number of iterations
-No file I/O
-These exist for the reason that they don't want the language to be able to do bad things to people's computers, which allows the "script sharing culture" to be safe.
 
-Additionally the choice to use their own language brings with it a whole new mental model that must be learned and mastered. This is a problem for wide adoption.
+PythonSCAD is a programmatic 3D modeling application. It allows you to turn simple code into 3D models suitable for 3D printing.
 
-Before I continue I'd like to say I fully appreciate all the efforts the team and the Open Source community has contributed towards it over the years. The project is truly a work of love and has brought for many the joy of programming back into their lives. I believe the choice to have a safe script language is a good one.
+It is a fork of OpenSCAD which not only adds support for using Python as a native language, but also adds new features and improves existing ones.
 
-This fork lets you use Python inside of OpenSCAD as its native language. Use PythonSCAD when you were programming before and feel,
-that you want to assign the object to a variable for later use. On the other hand if you rather want to describe your models with
-sub-items, rather stay with OpenSCAD.
+- [When to not use PythonSCAD](#when-to-not-use-pythonscad)
+- [Difference to OpenSCAD](#difference-to-openscad)
+  - [Intentional language limitations of OpenSCAD](#intentional-language-limitations-of-openscad)
+  - [Solids as 1st class objects](#solids-as-1st-class-objects)
+  - [Additional methods in PythonSCAD](#additional-methods-in-pythonscad)
+- [Installing](#installing)
+- [Example code](#example-code)
+- [Documentation](#documentation)
+- [Building PythonSCAD from source](#building-pythonscad-from-source)
+    - [Prerequisites](#prerequisites)
+    - [Getting the source code](#getting-the-source-code)
 
-These limitations cause OpenSCAD programs to be written in the most convoluted ways, making them difficult to understand. While my goal to be able to use Python with OpenSCAD is actually completed, the problem that remains is getting it merged into mainline OpenSCAD.
 
-In PythonSCAD all solids are 1st class objects and they can easily be a function parameter or return value. Any Object doubles as a dictionary to store arbritary data. If you like object oriented programming, just do so, you can even easily subclass the "openscad" type.
+# When to not use PythonSCAD
 
-There are many additional methods over OpenSCAD (fillets is one of them, accessing single model vertices is another ). Arrays of Objects are implicitely unioned. Together with Python's List comprehesion, you can very effictively duplicate variants of your model detail in one readable line. 
-Finally just export your model(or model parts) by script into many supported 3D model formats.
-Many people use it already to realize their needs. Difficulaties which arise during that process can be discussed on Reddit. Some Peope eveven share their designs. just watch on Thingiverse.
+If you need to create complex organic shapes, animate models, or produce visual effects, PythonSCAD is not the ideal choice. You will probably be much happier using [Blender](https://www.blender.org/) or similar tools, especially for creative, visual, and animation tasks.
 
-# Getting started
+PythonSCAD is optimized for script-based, parametric, and engineering-oriented modeling. If you prefer a point-and-click style design approach you might want to try [FreeCAD](https://www.freecad.org/).
 
-You can download the latest binaries of PythonSCAD at
-<https://www.pythonscad.org/downloads.php>. Install binaries as you would any other
-software.
+# Difference to OpenSCAD
 
-The GUI of PythonSCAD is basically unchanged, just the language is a different one.
+PythonSCAD is a direct fork of OpenSCAD and thus includes all functionality from OpenSCAD and it is closely kept in sync with it's upstream project.
 
+This section should help you decide whether OpenSCAD or PythonSCAD is better suited for your needs.
+
+## Intentional language limitations of OpenSCAD
+
+OpenSCAD has some intentional limitations:
+
+- variables are immutable
+- file i/o is limited (you can include other OpenSCAD scripts or import graphics files for example)
+- the number of iterations is limited
+
+The intention is to prevent scripts to do bad things like reading arbitrary data from the filesystem, overwriting user files, leaking data via the internet, etc. so the script-sharing culture could be safe.
+
+Using Python as the scripting language on the one hand lifts those limitations, but it also comes with the responsibility to carefully check code you have not written yourself.
+
+On the plus side you have the whole Python ecosystem at your disposal. You could host your code on [PyPI](https://pypi.org/) and use libraries developed by other people, you could use your favorite IDE, use linting tools, etc..
+
+If you already know how to program in Python, you don't need to learn yet another domain-specific language and will feel right at home from the start.
+
+All of this however doesn't make OpenSCAD inferior in any way. The choice to have a safe scripting language is a valid one. PythonSCAD just uses a slightly different route towards the same goal: Making 3D design fully scriptable and more accessible.
+
+Without all the efforts and contributions of the team and the open source community towards OpenSCAD, PythonSCAD would not be possible and the authors and contributors of PythonSCAD are very grateful for that.
+
+## Solids as 1st class objects
+
+In PythonSCAD all solids are 1st class objects and they can easily be a function parameter or return value. Any object doubles as a dictionary to store arbitrary data. If you like object oriented programming, just do so, you can even easily subclass the `openscad` type.
+
+## Additional methods in PythonSCAD
+
+There are many additional methods over OpenSCAD, for example fillets or the possibility of accessing single model vertices. Arrays of Objects are implicitly unioned. Together with Python's List comprehension, you can very effectively duplicate variants of your model detail in one readable line.
+
+Finally just export your model (or model parts) by script into many supported 3D model formats.
+
+# Installing
+
+Pre-built binaries are available at <https://www.pythonscad.org/downloads.php>.
+
+You could also [build PythonSCAD from source](#building-pythonscad-from-source).
+
+# Example code
+
+```python
+# Import the openscad module's contents
 from openscad import *
 
-cyl = cylinder(r=5, h=20)
-cyl.show()
+# Create a cube amd tint it red
+c = cube([10, 20, 30]).color("Tomato")
+
+# Render the cube
+show(c)
+```
 
 # Documentation
 
 Have a look at the PythonSCAD Homepage (https://pythonscad.org/tutorial/site/index.html) for a small tutorial
 
-## Building PythonSCAD
+# Building PythonSCAD from source
 
 To build PythonSCAD from source, follow the instructions for the
 platform applicable to you below.
 
 ### Prerequisites
 
-To build PythonSCAD, you need some libraries and tools. The version
-numbers in brackets specify the versions which have been used for
-development. Other versions may or may not work as well.
+To build PythonSCAD, you need some libraries and tools. The version numbers in brackets specify the versions which have been used for development. Other versions may or may not work as well.
 
-If you're using a newer version of Ubuntu, you can install these 
-libraries from aptitude. If you're using Mac, or an older Linux/BSD, there 
-are build scripts that download and compile the libraries from source. 
+If you're using a newer version of Ubuntu, you can install these libraries with the built in package manager. If you're using Mac, or an older Linux/BSD, there are build scripts that download and compile the libraries from source.
+
 Follow the instructions for the platform you're compiling on below.
 
 * A C++ compiler supporting C++17
@@ -63,8 +117,8 @@ Follow the instructions for the platform you're compiling on below.
 * [Qt (5.12 ->)](https://qt.io/)
 * [QScintilla2 (2.9 ->)](https://riverbankcomputing.com/software/qscintilla/)
 * [CGAL (5.4 ->)](https://www.cgal.org/)
- * [GMP (5.x)](https://gmplib.org/)
- * [MPFR (3.x)](https://www.mpfr.org/)
+* [GMP (5.x)](https://gmplib.org/)
+* [MPFR (3.x)](https://www.mpfr.org/)
 * [boost (1.70 ->)](https://www.boost.org/)
 * [curl (7.58 ->)](https://curl.se/)
 * [OpenCSG (1.4.2 ->)](http://www.opencsg.org/)
@@ -89,11 +143,14 @@ Install git (https://git-scm.com/) onto your system. Then run a clone:
 
 This will download the latest sources into a directory named `pythonscad`.
 
-    cd pythonscad
-    git submodule update --init --recursive
-    sudo ./scripts/uni-get-dependencies.sh
-    mkdir build
-    cd build
-    cmake -DEXPERIMENTAL=1 -DENABLE_PYTHON=1 -DENABLE_LIBFIVE=1 ..
-    make
-    sudo make install
+```shell
+cd pythonscad
+git submodule update --init --recursive
+sudo ./scripts/uni-get-dependencies.sh
+mkdir build
+cd build
+cmake -DEXPERIMENTAL=1 -DENABLE_PYTHON=1 -DENABLE_LIBFIVE=1 ..
+make
+make test
+sudo make install
+```
