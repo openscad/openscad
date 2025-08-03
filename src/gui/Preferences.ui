@@ -27,7 +27,7 @@
     <item row="0" column="0">
      <widget class="QStackedWidget" name="stackedWidget">
       <property name="currentIndex">
-       <number>8</number>
+       <number>5</number>
       </property>
       <widget class="QWidget" name="page3DView">
        <layout class="QVBoxLayout" name="verticalLayout_4">
@@ -107,16 +107,6 @@
           </property>
          </widget>
         </item>
-        <item>
-         <widget class="QCheckBox" name="checkBoxMouseSwapButtons">
-          <property name="text">
-           <string>Swap Mouse Buttons</string>
-          </property>
-          <property name="checked">
-           <bool>false</bool>
-          </property>
-         </widget>
-        </item>
        </layout>
       </widget>
       <widget class="QWidget" name="pageEditor">
@@ -146,8 +136,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>707</width>
-             <height>1005</height>
+             <width>668</width>
+             <height>953</height>
             </rect>
            </property>
            <layout class="QGridLayout" name="gridLayout_5">
@@ -764,7 +754,7 @@
               </item>
              </layout>
             </item>
-  	    <item row="1" column="0">
+            <item row="1" column="0">
              <widget class="QGroupBox" name="groupBoxIndentation">
               <property name="title">
                <string>Indentation</string>
@@ -1369,8 +1359,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>845</width>
-             <height>768</height>
+             <width>701</width>
+             <height>710</height>
             </rect>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_9">
@@ -1970,8 +1960,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>743</width>
-             <height>1514</height>
+             <width>831</width>
+             <height>1471</height>
             </rect>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_12">
@@ -2178,6 +2168,40 @@
                <string>User Interface</string>
               </property>
               <layout class="QVBoxLayout" name="verticalLayout_13">
+               <item>
+                <layout class="QHBoxLayout" name="horizontalLayoutApplicationFont">
+                 <item>
+                  <widget class="QLabel" name="labelApplicationFont">
+                   <property name="text">
+                    <string>Font</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QFontComboBox" name="fontComboBoxApplicationFontFamily"/>
+                 </item>
+                 <item>
+                  <widget class="QComboBox" name="comboBoxApplicationFontSize">
+                   <property name="editable">
+                    <bool>true</bool>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <spacer name="horizontalSpacerApplicationFont">
+                   <property name="orientation">
+                    <enum>Qt::Horizontal</enum>
+                   </property>
+                   <property name="sizeHint" stdset="0">
+                    <size>
+                     <width>40</width>
+                     <height>20</height>
+                    </size>
+                   </property>
+                  </spacer>
+                 </item>
+                </layout>
+               </item>
                <item>
                 <widget class="QCheckBox" name="reorderCheckBox">
                  <property name="text">
@@ -2802,6 +2826,31 @@
         </item>
        </layout>
       </widget>
+      <widget class="QWidget" name="pageMouse">
+       <widget class="QScrollArea" name="scrollArea_Mouse">
+        <property name="geometry">
+         <rect>
+          <x>0</x>
+          <y>0</y>
+          <width>625</width>
+          <height>549</height>
+         </rect>
+        </property>
+        <property name="widgetResizable">
+         <bool>true</bool>
+        </property>
+        <widget class="MouseConfigWidget" name="MouseConfig">
+         <property name="geometry">
+          <rect>
+           <x>0</x>
+           <y>0</y>
+           <width>623</width>
+           <height>547</height>
+          </rect>
+         </property>
+        </widget>
+       </widget>
+      </widget>
       <widget class="QWidget" name="pageDialogs">
        <layout class="QVBoxLayout" name="verticalLayout_18">
         <property name="leftMargin">
@@ -2899,6 +2948,7 @@
    <addaction name="prefsActionInput"/>
    <addaction name="prefsActionInputButton"/>
    <addaction name="prefsActionPython"/>
+   <addaction name="prefsActionMouse"/>
    <addaction name="prefsActionDialogs"/>
   </widget>
   <action name="prefsAction3DView">
@@ -2991,6 +3041,19 @@
     <string>Buttons</string>
    </property>
   </action>
+  <action name="prefsActionMouse">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="../../resources/common.qrc">
+     <normaloff>:/icons/prefsInput.png</normaloff>:/icons/prefsInput.png</iconset>
+   </property>
+   <property name="text">
+    <string>Mouse</string>
+   </property>
+  </action>
+
   <action name="prefsActionPython">
    <property name="checkable">
     <bool>true</bool>
@@ -3090,6 +3153,12 @@
    <class>ButtonConfigWidget</class>
    <extends>QWidget</extends>
    <header>gui/input/ButtonConfigWidget.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>MouseConfigWidget</class>
+   <extends>QWidget</extends>
+   <header>gui/input/MouseConfigWidget.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

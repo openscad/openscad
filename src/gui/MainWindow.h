@@ -130,7 +130,7 @@ public:
 private:
   RubberBandManager rubberBandManager;
 
-  std::vector<std::tuple<Dock *, QString>> docks;
+  std::vector<std::tuple<Dock *, QString, QString>> docks;
 
   volatile bool isClosing = false;
   void consoleOutputRaw(const QString& msg);
@@ -161,6 +161,7 @@ private slots:
   void onNavigationCloseContextMenu();
   void onNavigationHoveredContextMenuEntry();
   void onNavigationTriggerContextMenuEntry();
+  void setAllMouseViewActions();
 
   // implement the different actions needed when
   // the tab manager editor is changed.
@@ -217,7 +218,7 @@ private:
   void loadViewSettings();
   void loadDesignSettings();
   void prepareCompile(const char *afterCompileSlot, bool procevents, bool preview);
-  void updateWindowSettings(bool console, bool editor, bool customizer, bool errorLog, bool editorToolbar, bool viewToolbar, bool animate, bool fontList, bool ViewportControlWidget);
+  void updateWindowSettings(bool isEditorToolbarVisible, bool isViewToolbarVisible);
   void saveBackup();
   void writeBackup(QFile *file);
   void show_examples();
