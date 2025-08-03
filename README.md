@@ -9,10 +9,10 @@ native language</h3>
 
 <p align="center">
 <a href="https://www.reddit.com/r/OpenPythonSCAD/" target="_blank">
-<img src="https://img.shields.io/badge/subreddit-red?logo=reddit&logoColor=white"/>
+<img src="https://img.shields.io/badge/Reddit-FF4500?logo=reddit&logoColor=white"/>
 </a>
 <a href="https://pythonscad.org" target="_blank">
-<img src="https://img.shields.io/badge/Website-0060DF?logo=Python&logoColor=white"/>
+<img src="https://img.shields.io/badge/Website-3776AB?logo=Python&logoColor=white"/>
 </a>
 </p>
 
