@@ -37,6 +37,7 @@ public:
   void apply_win() const;
   void updateGUI();
   void fireEditorConfigChanged() const;
+  void fireApplicationFontChanged() const;
   void insertListItem(QListWidget *listBox, QListWidgetItem *listItem);
 
   // Returns true if there is an higlightling color scheme configured.
@@ -85,6 +86,8 @@ public slots:
   void on_timeThresholdOnRenderCompleteSoundEdit_textChanged(const QString&);
   void on_enableClearConsoleCheckBox_toggled(bool);
   void on_consoleMaxLinesEdit_textChanged(const QString&);
+  void on_fontComboBoxApplicationFontFamily_currentFontChanged(const QFont&);
+  void on_comboBoxApplicationFontSize_currentIndexChanged(int);
   void on_consoleFontChooser_currentFontChanged(const QFont&);
   void on_consoleFontSize_currentIndexChanged(int);
   void on_customizerFontChooser_currentFontChanged(const QFont&);
@@ -162,6 +165,7 @@ signals:
   void updateUndockMode(bool undockMode) const;
   void updateReorderMode(bool undockMode) const;
   void fontChanged(const QString& family, uint size) const;
+  void applicationFontChanged(const QString& family, uint size) const;
   void consoleFontChanged(const QString& family, uint size) const;
   void customizerFontChanged(const QString& family, uint size) const;
   void colorSchemeChanged(const QString& scheme) const;

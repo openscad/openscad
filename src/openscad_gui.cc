@@ -69,6 +69,7 @@
 #include "gui/MainWindow.h"
 #include "gui/OpenSCADApp.h"
 #include "gui/QSettingsCached.h"
+#include "gui/Preferences.h"
 #include "openscad.h"
 #include "platform/CocoaUtils.h"
 #include "utils/printutils.h"
@@ -172,11 +173,6 @@ void registerDefaultIcon(const QString&) { }
 int gui(std::vector<std::string>& inputFiles, const std::filesystem::path& original_path, int argc, char **argv, const std::string& gui_test)
 {
   OpenSCADApp app(argc, argv);
-  // remove ugly frames in the QStatusBar when using additional widgets
-  app.setStyleSheet(
-    "QStatusBar::item { border: 0px solid black; }"
-    "* { font-size: 9pt }"
-    );
   QIcon::setThemeName(isDarkMode() ? "chokusen-dark" : "chokusen");
 
   // set up groups for QSettings
@@ -189,6 +185,7 @@ int gui(std::vector<std::string>& inputFiles, const std::filesystem::path& origi
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
   QCoreApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
 #endif
+
 #ifdef Q_OS_MACOS
   app.setWindowIcon(QIcon(":/icon-macos.png"));
 #else
@@ -220,6 +217,9 @@ int gui(std::vector<std::string>& inputFiles, const std::filesystem::path& origi
   if (updater->automaticallyChecksForUpdates()) updater->checkForUpdates();
   updater->init();
 #endif
+
+  QObject::connect(GlobalPreferences::inst(), &Preferences::applicationFontChanged, &app, &OpenSCADApp::setApplicationFont);
+  GlobalPreferences::inst()->fireApplicationFontChanged();
 
   set_render_color_scheme(arg_colorscheme, false);
   auto noInputFiles = false;
