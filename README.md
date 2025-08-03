@@ -19,7 +19,7 @@ native language</h3>
 
 PythonSCAD is a programmatic 3D modeling application. It allows you to turn simple code into 3D models suitable for 3D printing.
 
-It is a fork of OpenSCAD which not only adds support for using Python as a native language, but also adds new features and improves existing ones.
+It is a fork of [OpenSCAD](https://openscad.org) which not only adds support for using Python as a native language, but also adds new features and improves existing ones.
 
 - [When to not use PythonSCAD](#when-to-not-use-pythonscad)
 - [Difference to OpenSCAD](#difference-to-openscad)
