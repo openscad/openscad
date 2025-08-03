@@ -1,5 +1,5 @@
 <h1 align="center">
-  <a href=""><img src="https://pythonscad.org/pictures/plogo.PNG" alt="PythonSCAD Logo" width="200"></a>
+  <a href="https://pythonscad.org"><img src="https://pythonscad.org/pictures/plogo.PNG" alt="PythonSCAD Logo" width="200"></a>
   <br>
   PythonSCAD
   <br>
