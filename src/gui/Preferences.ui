@@ -27,7 +27,7 @@
     <item row="0" column="0">
      <widget class="QStackedWidget" name="stackedWidget">
       <property name="currentIndex">
-       <number>5</number>
+       <number>7</number>
       </property>
       <widget class="QWidget" name="page3DView">
        <layout class="QVBoxLayout" name="verticalLayout_4">
@@ -1960,7 +1960,7 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>831</width>
+             <width>699</width>
              <height>1471</height>
             </rect>
            </property>
@@ -2739,7 +2739,7 @@
          <number>0</number>
         </property>
         <item row="0" column="0">
-         <widget class="QScrollArea" name="scrollArea_InputAxis">
+         <widget class="QScrollArea" name="scrollAreaInputAxis">
           <property name="widgetResizable">
            <bool>true</bool>
           </property>
@@ -2748,8 +2748,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>98</width>
-             <height>28</height>
+             <width>845</width>
+             <height>770</height>
             </rect>
            </property>
           </widget>
@@ -2808,7 +2808,7 @@
          <number>0</number>
         </property>
         <item row="3" column="1">
-         <widget class="QScrollArea" name="scrollArea_InputButton">
+         <widget class="QScrollArea" name="scrollAreaInputButton">
           <property name="widgetResizable">
            <bool>true</bool>
           </property>
@@ -2817,8 +2817,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>98</width>
-             <height>28</height>
+             <width>845</width>
+             <height>770</height>
             </rect>
            </property>
           </widget>
@@ -2827,29 +2827,40 @@
        </layout>
       </widget>
       <widget class="QWidget" name="pageMouse">
-       <widget class="QScrollArea" name="scrollArea_Mouse">
-        <property name="geometry">
-         <rect>
-          <x>0</x>
-          <y>0</y>
-          <width>625</width>
-          <height>549</height>
-         </rect>
+       <layout class="QGridLayout" name="gridLayoutPageMouse">
+        <property name="leftMargin">
+         <number>0</number>
         </property>
-        <property name="widgetResizable">
-         <bool>true</bool>
+        <property name="topMargin">
+         <number>0</number>
         </property>
-        <widget class="MouseConfigWidget" name="MouseConfig">
-         <property name="geometry">
-          <rect>
-           <x>0</x>
-           <y>0</y>
-           <width>623</width>
-           <height>547</height>
-          </rect>
-         </property>
-        </widget>
-       </widget>
+        <property name="rightMargin">
+         <number>0</number>
+        </property>
+        <property name="bottomMargin">
+         <number>0</number>
+        </property>
+        <property name="spacing">
+         <number>0</number>
+        </property>
+        <item row="0" column="0">
+         <widget class="QScrollArea" name="scrollAreaMouseConfig">
+          <property name="widgetResizable">
+           <bool>true</bool>
+          </property>
+          <widget class="MouseConfigWidget" name="MouseConfig">
+           <property name="geometry">
+            <rect>
+             <x>0</x>
+             <y>0</y>
+             <width>845</width>
+             <height>770</height>
+            </rect>
+           </property>
+          </widget>
+         </widget>
+        </item>
+       </layout>
       </widget>
       <widget class="QWidget" name="pageDialogs">
        <layout class="QVBoxLayout" name="verticalLayout_18">
