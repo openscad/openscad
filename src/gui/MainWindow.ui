@@ -383,6 +383,7 @@
     <addaction name="helpActionManual"/>
     <addaction name="helpActionOfflineManual"/>
     <addaction name="helpActionCheatSheet"/>
+    <addaction name="helpActionPythonCheatSheet"/>
     <addaction name="helpActionOfflineCheatSheet"/>
     <addaction name="helpActionLibraryInfo"/>
     <addaction name="helpActionFontInfo"/>
@@ -1617,6 +1618,11 @@
   <action name="helpActionCheatSheet">
    <property name="text">
     <string>&amp;Cheat Sheet</string>
+   </property>
+  </action>
+  <action name="helpActionPythonCheatSheet">
+   <property name="text">
+    <string>&amp;Python Cheat Sheet</string>
    </property>
   </action>
   <action name="fileActionExportPDF">

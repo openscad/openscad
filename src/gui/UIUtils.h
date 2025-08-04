@@ -80,6 +80,8 @@ void openOfflineUserManual();
 
 void openCheatSheetURL();
 
+void openPythonCheatSheetURL();
+
 fs::path returnOfflineCheatSheetPath();
 
 bool hasOfflineCheatSheet();

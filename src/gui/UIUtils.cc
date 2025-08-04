@@ -276,6 +276,11 @@ void UIUtils::openCheatSheetURL()
 #endif
 }
 
+void UIUtils::openPythonCheatSheetURL()
+{
+  openURL("https://pythonscad.org/pythonscadhelper.html");
+}
+
 fs::path UIUtils::returnOfflineCheatSheetPath()
 {
   fs::path resPath = PlatformUtils::resourcePath("resources");

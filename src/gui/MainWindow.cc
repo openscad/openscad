@@ -721,6 +721,7 @@ MainWindow::MainWindow(const QStringList& filenames) :
   connect(this->helpActionHomepage, &QAction::triggered, this, &MainWindow::helpHomepage);
   connect(this->helpActionManual, &QAction::triggered, this, &MainWindow::helpManual);
   connect(this->helpActionCheatSheet, &QAction::triggered, this, &MainWindow::helpCheatSheet);
+  connect(this->helpActionPythonCheatSheet, &QAction::triggered, this, &MainWindow::helpPythonCheatSheet);
   connect(this->helpActionLibraryInfo, &QAction::triggered, this, &MainWindow::helpLibrary);
   connect(this->helpActionFontInfo, &QAction::triggered, this, &MainWindow::helpFontInfo);
 
@@ -4191,6 +4192,11 @@ void MainWindow::helpOfflineManual()
 void MainWindow::helpCheatSheet()
 {
   UIUtils::openCheatSheetURL();
+}
+
+void MainWindow::helpPythonCheatSheet()
+{
+  UIUtils::openPythonCheatSheetURL();
 }
 
 void MainWindow::helpOfflineCheatSheet()

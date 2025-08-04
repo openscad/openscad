@@ -407,6 +407,7 @@ public slots:
   void helpManual();
   void helpOfflineManual();
   void helpCheatSheet();
+  void helpPythonCheatSheet();
   void helpOfflineCheatSheet();
   void helpLibrary();
   void helpFontInfo();
