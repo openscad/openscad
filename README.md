@@ -88,7 +88,7 @@ You could also [build PythonSCAD from source](#building-pythonscad-from-source).
 # Import the openscad module's contents
 from openscad import *
 
-# Create a cube amd tint it red
+# Create a cube and tint it red
 c = cube([10, 20, 30]).color("Tomato")
 
 # Render the cube
