@@ -27,6 +27,7 @@ It is a fork of [OpenSCAD](https://openscad.org) which not only adds support for
   - [Solids as 1st class objects](#solids-as-1st-class-objects)
   - [Additional methods in PythonSCAD](#additional-methods-in-pythonscad)
   - [Python](#python)
+  - [PythonSCAD -\> functional language, OpenSCAD -\> descriptive Language](#pythonscad---functional-language-openscad---descriptive-language)
 - [Installing](#installing)
 - [Example code](#example-code)
 - [Documentation](#documentation)
@@ -82,6 +83,10 @@ Finally just export your model (or model parts) by script into many supported 3D
 One obvious difference is that you can us Python when programming in PythonSCAD. While part of the Python support has been merged to OpenSCAD already, not all of it is in there yet, so you probably will have a better experience when using PythonSCAD for writing models in Python.
 
 This is especially beneficial if you have some experience in programming with Python or even other languages.
+
+## PythonSCAD -> functional language, OpenSCAD -> descriptive Language
+
+PythonSCAD follows a functional language model while OpenSCAD is closer to a descriptive language. Both have their pro's and con's.
 
 # Installing
 
