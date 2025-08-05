@@ -6,6 +6,7 @@
 #include <memory>
 #include "geometry/manifold/manifoldutils.h"
 #include "geometry/Geometry.h"
+#include "geometry/PolySet.h"
 #include "core/AST.h"
 #include "geometry/manifold/ManifoldGeometry.h"
 #include "core/node.h"
@@ -71,6 +72,33 @@ std::shared_ptr<ManifoldGeometry> applyOperator3DManifold(const Geometry::Geomet
     if (item.first) item.first->progress_report();
   }
   return geom;
+}
+
+manifold::Manifold applyHull(const Geometry::Geometries& children)
+{
+  std::vector<manifold::vec3> vertices;
+  auto addCapacity = [&vertices](const auto n) {
+    vertices.reserve(vertices.size() + n);
+  };
+  auto addPoint = [&vertices](const auto& v) {
+    vertices.emplace_back(v[0], v[1], v[2]);
+  };
+
+  for (const auto& [_, chgeom] : children) {
+    if (const auto *mani = dynamic_cast<const ManifoldGeometry*>(chgeom.get())) {
+      addCapacity(mani->numVertices());
+      mani->foreachVertexUntilTrue([&](auto& p) {
+        addPoint(p);
+        return false;
+      });
+    } else if (const auto *ps = dynamic_cast<const PolySet*>(chgeom.get())) {
+      addCapacity(ps->vertices.size());
+      for (const auto& v : ps->vertices) {
+        addPoint(v);
+      }
+    }
+  }
+  return manifold::Manifold::Hull(vertices);
 }
 
 };  // namespace ManifoldUtils
