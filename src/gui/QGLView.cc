@@ -250,6 +250,8 @@ void QGLView::mousePressEvent(QMouseEvent *event)
  *   should probably be ignored.
  */
 void QGLView::mouseDoubleClickEvent(QMouseEvent *event) {
+  if(event->button() != Qt::MouseButton::LeftButton )
+      return ;
   QOpenGLContext *oldContext = getGLContext();
   this->makeCurrent();
   setupCamera();
@@ -269,6 +271,7 @@ void QGLView::mouseDoubleClickEvent(QMouseEvent *event) {
 
   glGetError(); // clear error state so we don't pick up previous errors
   glReadPixels(x, y, 1, 1, GL_DEPTH_COMPONENT, GL_FLOAT, &z);
+
   if (const auto glError = glGetError(); glError != GL_NO_ERROR) {
     if (statusLabel) {
       auto status = QString("Center View: OpenGL Error reading Pixel: %s")
@@ -291,6 +294,7 @@ void QGLView::mouseDoubleClickEvent(QMouseEvent *event) {
   if (success == GL_TRUE) {
     cam.object_trans -= Vector3d(px, py, pz);
     update();
+
     emit cameraChanged();
   }
   setGLContext(oldContext);

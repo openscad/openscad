@@ -1415,7 +1415,7 @@ void MainWindow::instantiateRoot()
    Generates CSG tree for OpenCSG evaluation.
    Assumes that the design has been parsed and evaluated (this->root_node is set)
  */
-void MainWindow::compileCSG()
+void MainWindow::compileCSG(std::shared_ptr<const AbstractNode> selectedNode)
 {
   OpenSCAD::hardwarnings = GlobalPreferences::inst()->getValue("advanced/enableHardwarnings").toBool();
   try{
@@ -1429,7 +1429,7 @@ void MainWindow::compileCSG()
 
     GeometryEvaluator geomevaluator(this->tree);
 #ifdef ENABLE_OPENCSG
-    CSGTreeEvaluator csgrenderer(this->tree, &geomevaluator);
+    CSGTreeEvaluator csgrenderer(this->tree, selectedNode, &geomevaluator);
 #endif
 
     if (!isClosing) progress_report_prep(this->rootNode, report_func, this);
@@ -1472,15 +1472,15 @@ void MainWindow::compileCSG()
       LOG("Compiling highlights (%1$d CSG Trees)...", highlight_terms.size());
       this->processEvents();
 
-      this->highlightsProducts = std::make_shared<CSGProducts>();
+      this->compileTimeHighlightedProducts = std::make_shared<CSGProducts>();
       for (const auto& highlight_term : highlight_terms) {
         auto nterm = normalizer.normalize(highlight_term);
         if (nterm) {
-          this->highlightsProducts->import(nterm);
+            this->compileTimeHighlightedProducts->import(nterm);
         }
       }
     } else {
-      this->highlightsProducts.reset();
+        this->compileTimeHighlightedProducts.reset();
     }
 
     const auto& background_terms = csgrenderer.getBackgroundNodes();
@@ -1509,13 +1509,14 @@ void MainWindow::compileCSG()
     else {
       LOG("Normalized tree has %1$d elements!",
           (this->rootProduct ? this->rootProduct->size() : 0));
-      this->previewRenderer = std::make_shared<OpenCSGRenderer>(this->rootProduct,
-                                                                this->highlightsProducts,
+       auto openCSGRenderer = std::make_shared<OpenCSGRenderer>(this->rootProduct,
                                                                 this->backgroundProducts);
+       openCSGRenderer->setHighlights(this->compileTimeHighlightedProducts);
+       this->previewRenderer = openCSGRenderer;
     }
 #endif // ifdef ENABLE_OPENCSG
     this->thrownTogetherRenderer = std::make_shared<ThrownTogetherRenderer>(this->rootProduct,
-                                                                            this->highlightsProducts,
+                                                                            this->compileTimeHighlightedProducts,
                                                                             this->backgroundProducts);
     LOG("Compile and preview finished.");
     renderStatistic.printRenderingTime();
@@ -2536,8 +2537,49 @@ void MainWindow::rightClick(QPoint position)
     });
     tracemenu.exec(this->qglview->mapToGlobal(position));
   } else {
+    setSelectedObjectPreview(nullptr);
     clearAllSelectionIndicators();
   }
+}
+
+void MainWindow::setSelectedObjectPreview(std::shared_ptr<const AbstractNode> newSelectedNode)
+{
+    if(selectedNode == newSelectedNode)
+        return;
+
+    selectedNode = newSelectedNode;
+
+    // Check if there is no selection, then re-initialize the currently selected object
+    if(!selectedNode)
+        currentlySelectedObject = -1;
+
+    std::vector<std::shared_ptr<CSGNode>> highlight_terms;
+    CSGTreeEvaluator::selectAndHighlightCSGTree(selectedNode,
+                                                *rootNode.get(),
+                                                csgRoot, highlight_terms);
+
+    if (highlight_terms.size() > 0) {
+      size_t normalizelimit = 2ul * GlobalPreferences::inst()->getValue("advanced/openCSGLimit").toUInt();
+      CSGTreeNormalizer normalizer(normalizelimit);
+      this->highlightsProducts.reset(new CSGProducts());
+      for (const auto& highlight_term : highlight_terms) {
+        auto nterm = normalizer.normalize(highlight_term);
+        if (nterm) {
+          this->highlightsProducts->import(nterm);
+        }
+      }
+    } else {
+      this->highlightsProducts = this->compileTimeHighlightedProducts;
+    }
+
+    auto rdr = dynamic_cast<OpenCSGRenderer*>(this->previewRenderer.get());
+    if(rdr)
+        rdr->setHighlights(this->highlightsProducts);
+
+    viewModePreview();
+
+    // request the update of the 3D view to take into account the change of selection.
+    this->qglview->update();
 }
 
 void MainWindow::measureFinished()
@@ -2599,7 +2641,6 @@ void MainWindow::setSelection(int index)
   const std::shared_ptr<const AbstractNode> selected_node = rootNode->getNodeByID(index, path);
 
   if (!selected_node) return;
-
   currentlySelectedObject = index;
 
   auto location = selected_node->modinst->location();
@@ -2607,15 +2648,15 @@ void MainWindow::setSelection(int index)
   auto line = location.firstLine();
   auto column = location.firstColumn();
 
+  // removes all previously configure selection indicators.
+  tabManager->editor->clearAllSelectionIndicators();
+  tabManager->editor->show();
+
   // Unsaved files do have the pwd as current path, therefore we will not open a new
   // tab on click
   if (!fs::is_directory(fs::path(file))) {
     tabManager->open(QString::fromStdString(file));
   }
-
-  // removes all previsly configure selection indicators.
-  renderedEditor->clearAllSelectionIndicators();
-  renderedEditor->show();
 
   std::vector<std::shared_ptr<const AbstractNode>> nodesSameModule{};
   rootNode->findNodesWithSameMod(selected_node, nodesSameModule);
@@ -2623,15 +2664,16 @@ void MainWindow::setSelection(int index)
   // highlight in the text editor all the text fragment of the hierarchy of object with same mode.
   for (const auto& element : nodesSameModule) {
     if (element->index() != currentlySelectedObject) {
-      setSelectionIndicatorStatus(renderedEditor, element->index(), EditorSelectionIndicatorStatus::IMPACTED);
+      setSelectionIndicatorStatus(tabManager->editor, element->index(), EditorSelectionIndicatorStatus::IMPACTED);
     }
   }
 
   // highlight in the text editor only the fragment correponding to the selected stack.
   // this step must be done after all the impacted element have been marked.
-  setSelectionIndicatorStatus(renderedEditor, currentlySelectedObject, EditorSelectionIndicatorStatus::SELECTED);
+  setSelectionIndicatorStatus(tabManager->editor, currentlySelectedObject, EditorSelectionIndicatorStatus::SELECTED);
+  tabManager->editor->setCursorPosition(line - 1, column - 1);
 
-  renderedEditor->setCursorPosition(line - 1, column - 1);
+  setSelectedObjectPreview(selected_node);
 }
 
 /**
@@ -2640,6 +2682,7 @@ void MainWindow::setSelection(int index)
 void MainWindow::onHoveredObjectInSelectionMenu()
 {
   assert(renderedEditor != nullptr);
+
   auto *action = qobject_cast<QAction *>(sender());
   if (!action || !action->property("id").isValid()) {
     return;
