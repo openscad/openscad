@@ -26,6 +26,7 @@ It is a fork of [OpenSCAD](https://openscad.org) which not only adds support for
   - [Intentional language limitations of OpenSCAD](#intentional-language-limitations-of-openscad)
   - [Solids as 1st class objects](#solids-as-1st-class-objects)
   - [Additional methods in PythonSCAD](#additional-methods-in-pythonscad)
+  - [Python](#python)
 - [Installing](#installing)
 - [Example code](#example-code)
 - [Documentation](#documentation)
@@ -75,6 +76,12 @@ In PythonSCAD all solids are 1st class objects and they can easily be a function
 There are many additional methods over OpenSCAD, for example fillets or the possibility of accessing single model vertices. Arrays of Objects are implicitly unioned. Together with Python's List comprehension, you can very effectively duplicate variants of your model detail in one readable line.
 
 Finally just export your model (or model parts) by script into many supported 3D model formats.
+
+## Python
+
+One obvious difference is that you can us Python when programming in PythonSCAD. While part of the Python support has been merged to OpenSCAD already, not all of it is in there yet, so you probably will have a better experience when using PythonSCAD for writing models in Python.
+
+This is especially beneficial if you have some experience in programming with Python or even other languages.
 
 # Installing
 
