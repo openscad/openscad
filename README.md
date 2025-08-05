@@ -148,6 +148,8 @@ c = cube([10, 20, 30]).color("Tomato")
 show(c)
 ```
 
+![Example code rendered in PythonSCAD](resources/images/red-box-example.png)
+
 # Documentation
 
 Have a look at the PythonSCAD Homepage
