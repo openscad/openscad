@@ -4,10 +4,13 @@
   <h3 align="center">Script-based 3D modeling app which lets you use
   Python as its native language</h3>
 
-<p align="center"> <a href="https://www.reddit.com/r/OpenPythonSCAD/"
+<p align="center"> <a href="https://groups.google.com/g/pythonscad"
+target="_blank"> <img
+src="https://img.shields.io/badge/Google%20Groups-4285F4?logo=Google&logoColor=white"/>
+</a><a href="https://www.reddit.com/r/OpenPythonSCAD/"
 target="_blank"> <img
 src="https://img.shields.io/badge/Reddit-FF4500?logo=reddit&logoColor=white"/>
-</a> <a href="https://pythonscad.org" target="_blank"> <img
+</a><a href="https://pythonscad.org" target="_blank"> <img
 src="https://img.shields.io/badge/Website-3776AB?logo=Python&logoColor=white"/>
 </a> </p>
 
