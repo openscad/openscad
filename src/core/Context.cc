@@ -71,7 +71,7 @@ std::vector<const std::shared_ptr<const Context> *> Context::list_referenced_con
 
 boost::optional<const Value&> Context::try_lookup_variable(const std::string& name) const
 {
-  if (is_config_variable(name)) {
+  if (is_config_variable(name) && name != "$this") {
     return session()->try_lookup_special_variable(name);
   }
   for (const Context *context = this; context != nullptr; context = context->getParent().get()) {

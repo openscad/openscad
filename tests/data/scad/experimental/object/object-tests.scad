@@ -48,7 +48,7 @@ testEq( len( object(a=1,b=2,c=3, f=function() 1)), 4, "len of object with 4 entr
 // equality 
 testEq( o1, o1,                                     "same object must be equal");
 testEq( all, all,                                   "same object with all types must be equal");
-testEq( o1, object(o1),                             "copy must be equal");
+testEq( object(o1,[["f"]]), object(o1,[["f"]]),     "copy must be equal");
 testNEq( o1, object(o1,[["f"]]),                    "copy must not be equal when f removed");
 testNEq( all, object(all,[["o"]]),                  "copy must not be equal when o removed for all types");
 
@@ -93,6 +93,40 @@ Betty = object(
     friends=[Wilma]
 );
 echo( Betty  = Betty );
+
+// Tests to check the implicit scope for functions in objects
+osc = object( a=42, f=function() a );
+test( function() osc.f() == 42, "check referring to other field");
+fsc = osc.f;
+test( function() fsc() == 42,   "check referring from copied field");
+
+fsc1 = object(a=42, f=function() a).f;
+test( function() fsc1() == 42,  "function stored from orphaned object");
+
+osc1 = object( a=42, f=function() $this.a );
+test( function() osc1.f() == 42, "using $this");
+
+osc2 = object( $this=42, f=function() $this );
+test( function() osc2.f() == osc2, "$this cannot be a field and used");
+
+top = object( level = "top", f = function() let(_=assert( level == "top")) 42);
+mid = object( level = "mid", f = function() let(_=assert( level == "mid")) top.f());
+bot = object( level = "bot", f = function() let(_=assert( level == "bot")) mid.f());
+test( function() bot.f() == 42, "verify that the $this when recursively called stays separate");
+
+osc3 = object(osc, [["a",43]]);
+testNEq( osc3.f, osc.f, "functions are not equal");
+testEq( osc3.f(), 43, "access copied object");
+testEq( osc.f(), 42, "access original object");
+
+Y = object( f=function(n) n> 1 ? n*f(n-1) : 1).f;
+testEq( Y(5), 120, "recursively calling a function in an object");
+
+testEq( object( $fs = 42 ).$fs, 42, "using config names as field is ok");
+testEq( object( $this = 42 ).$this, 42, "also $this");
+testEq( object( $this = 42, f=function() $this.$this ).f(), 42, "but functions see the $this object");
+
+
 
 module test( f, s ) {
     if ( !f()) {
