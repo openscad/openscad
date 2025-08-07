@@ -557,7 +557,33 @@ Value builtin_object(const std::shared_ptr<const Context>& context, const Functi
     }
     n++;
   }
-  return result;
+  std::vector<Context*> used_context;
+  for ( int i =0; i<result.ptr->values.size(); i++) {
+    const Value & value = result.ptr->values[i];
+    if ( value.type()==Value::Type::FUNCTION) {
+      auto & function = value.toFunction();
+      auto parent = function.getContext();
+      if (parent->lookup_local_variable("$this")) {
+        // function is already a method, so take the parent context
+        parent = parent->getParent();
+      }
+      ContextHandle<Context> ctx = Context::create<Context>(parent);
+      used_context.push_back(ctx.operator->());
+      Value method(FunctionType(*ctx, function.getExpr(), function.getParameters()));
+      result.ptr->values[i]= std::move(method);
+    }
+  }
+  Value object(result);
+  for (Context * c : used_context) {
+    for ( const auto & name : result.ptr->keys) {
+      if ( !c->is_config_variable(name)) {
+        c->set_variable(name,result.ptr->get(name).clone());
+      }
+    }
+    c->set_variable("$this",object.clone());
+  }
+
+  return std::move(object);
 }
 
 Value builtin_has_key(Arguments arguments, const Location& loc)
