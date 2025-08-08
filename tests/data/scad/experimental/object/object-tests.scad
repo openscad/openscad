@@ -40,6 +40,11 @@ test( function() object() == object(empty_key,[[""]]), "remove empty key");
 
 testEq( [ for (i = o1 ) i ], ["a", "b", "c", "f" ], "expected different set of keys");
 
+// len
+testEq( len( object()), 0,                     "len of empty object must be 0");
+testEq( len( object(a=1,b=2,c=3)), 3,          "len of object with 3 entries must be 3");
+testEq( len( object(a=1,b=2,c=3, f=function() 1)), 4, "len of object with 4 entries must be 4");
+
 // equality 
 testEq( o1, o1,                                     "same object must be equal");
 testEq( all, all,                                   "same object with all types must be equal");

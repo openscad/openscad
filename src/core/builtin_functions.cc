@@ -353,6 +353,9 @@ Value builtin_length(Arguments arguments, const Location& loc)
   if (try_check_arguments(arguments, { Value::Type::VECTOR })) {
     return {double(arguments[0]->toVector().size())};
   }
+  if (try_check_arguments(arguments, { Value::Type::OBJECT })) {
+    return double(arguments[0]->toObject().values().size());
+  }
   if (!check_arguments("len", arguments, loc, { Value::Type::STRING })) {
     return Value::undefined.clone();
   }
