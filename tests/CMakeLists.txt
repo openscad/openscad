@@ -809,8 +809,10 @@ list(APPEND SCADFILES_WITH_GREEN_FACES
   ${TEST_SCAD_DIR}/3D/features/difference-tests.scad
   ${TEST_SCAD_DIR}/3D/features/for-tests.scad
   ${TEST_SCAD_DIR}/3D/features/highlight-modifier2.scad
+  ${TEST_SCAD_DIR}/3D/features/hull3-promote-2D-test.scad
   ${TEST_SCAD_DIR}/3D/features/minkowski3-erosion.scad
   ${TEST_SCAD_DIR}/3D/features/minkowski3-difference-test.scad
+  ${TEST_SCAD_DIR}/3D/features/minkowski3-promote-2D-test.scad
   ${TEST_SCAD_DIR}/3D/features/render-tests.scad
   ${TEST_SCAD_DIR}/3D/features/resize-convexity-tests.scad
   ${TEST_SCAD_DIR}/3D/issues/issue1105.scad
