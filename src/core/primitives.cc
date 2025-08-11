@@ -50,12 +50,13 @@
 #include <string>
 #include <vector>
 
-using namespace boost::assign; // bring 'operator+=()' into scope
+using namespace boost::assign;  // bring 'operator+=()' into scope
 
 #define F_MINIMUM 0.01
 
 template <class InsertIterator>
-static void generate_circle(InsertIterator iter, double r, double z, int fragments) {
+static void generate_circle(InsertIterator iter, double r, double z, int fragments)
+{
   for (int i = 0; i < fragments; ++i) {
     double phi = (360.0 * i) / fragments;
     *(iter++) = {r * cos_degrees(phi), r * sin_degrees(phi), z};
@@ -74,7 +75,8 @@ static void generate_circle(InsertIterator iter, double r, double z, int fragmen
  * @return radius value of type Value::Type::NUMBER or Value::Type::UNDEFINED if both
  *         variables are invalid or not set.
  */
-static Value lookup_radius(const Parameters& parameters, const ModuleInstantiation *inst, const std::string& diameter_var, const std::string& radius_var)
+static Value lookup_radius(const Parameters& parameters, const ModuleInstantiation *inst,
+                           const std::string& diameter_var, const std::string& radius_var)
 {
   const auto& d = parameters[diameter_var];
   const auto& r = parameters[radius_var];
@@ -83,8 +85,8 @@ static Value lookup_radius(const Parameters& parameters, const ModuleInstantiati
   if (d.type() == Value::Type::NUMBER) {
     if (r_defined) {
       LOG(message_group::Warning, inst->location(), parameters.documentRoot(),
-          "Ignoring radius variable %1$s as diameter %2$s is defined too.",
-          quoteVar(radius_var), quoteVar(diameter_var));
+          "Ignoring radius variable %1$s as diameter %2$s is defined too.", quoteVar(radius_var),
+          quoteVar(diameter_var));
     }
     return d.toDouble() / 2.0;
   } else if (r_defined) {
@@ -94,7 +96,8 @@ static Value lookup_radius(const Parameters& parameters, const ModuleInstantiati
   }
 }
 
-static void set_fragments(const Parameters& parameters, const ModuleInstantiation *inst, double& fn, double& fs, double& fa)
+static void set_fragments(const Parameters& parameters, const ModuleInstantiation *inst, double& fn,
+                          double& fs, double& fa)
 {
   fn = parameters["$fn"].toDouble();
   fs = parameters["$fs"].toDouble();
@@ -112,14 +115,10 @@ static void set_fragments(const Parameters& parameters, const ModuleInstantiatio
   }
 }
 
-
-
 std::unique_ptr<const Geometry> CubeNode::createGeometry() const
 {
-  if (this->x <= 0 || !std::isfinite(this->x)
-    || this->y <= 0 || !std::isfinite(this->y)
-    || this->z <= 0 || !std::isfinite(this->z)
-    ) {
+  if (this->x <= 0 || !std::isfinite(this->x) || this->y <= 0 || !std::isfinite(this->y) ||
+      this->z <= 0 || !std::isfinite(this->z)) {
     return PolySet::createEmpty();
   }
 
@@ -137,18 +136,17 @@ std::unique_ptr<const Geometry> CubeNode::createGeometry() const
     y2 = this->y;
     z2 = this->z;
   }
-  auto ps = std::make_unique<PolySet>(3, /*convex*/true);
+  auto ps = std::make_unique<PolySet>(3, /*convex*/ true);
   for (int i = 0; i < 8; i++) {
-    ps->vertices.emplace_back(i & 1 ? x2 : x1, i & 2 ? y2 : y1,
-                              i & 4 ? z2 : z1);
+    ps->vertices.emplace_back(i & 1 ? x2 : x1, i & 2 ? y2 : y1, i & 4 ? z2 : z1);
   }
   ps->indices = {
-      {4, 5, 7, 6}, // top
-      {2, 3, 1, 0}, // bottom
-      {0, 1, 5, 4}, // front
-      {1, 3, 7, 5}, // right
-      {3, 2, 6, 7}, // back
-      {2, 0, 4, 6}, // left
+    {4, 5, 7, 6},  // top
+    {2, 3, 1, 0},  // bottom
+    {0, 1, 5, 4},  // front
+    {1, 3, 7, 5},  // right
+    {3, 2, 6, 7},  // back
+    {2, 0, 4, 6},  // left
   };
 
   return ps;
@@ -168,12 +166,15 @@ static std::shared_ptr<AbstractNode> builtin_cube(const ModuleInstantiation *ins
     converted |= size.getDouble(node->z);
     converted |= size.getVec3(node->x, node->y, node->z);
     if (!converted) {
-      LOG(message_group::Warning, inst->location(), parameters.documentRoot(), "Unable to convert cube(size=%1$s, ...) parameter to a number or a vec3 of numbers", size.toEchoStringNoThrow());
+      LOG(message_group::Warning, inst->location(), parameters.documentRoot(),
+          "Unable to convert cube(size=%1$s, ...) parameter to a number or a vec3 of numbers",
+          size.toEchoStringNoThrow());
     } else if (OpenSCAD::rangeCheck) {
       bool ok = (node->x > 0) && (node->y > 0) && (node->z > 0);
       ok &= std::isfinite(node->x) && std::isfinite(node->y) && std::isfinite(node->z);
       if (!ok) {
-        LOG(message_group::Warning, inst->location(), parameters.documentRoot(), "cube(size=%1$s, ...)", size.toEchoStringNoThrow());
+        LOG(message_group::Warning, inst->location(), parameters.documentRoot(), "cube(size=%1$s, ...)",
+            size.toEchoStringNoThrow());
       }
     }
   }
@@ -197,7 +198,7 @@ std::unique_ptr<const Geometry> SphereNode::createGeometry() const
   //  if (num_rings % 2 == 0) num_rings++; // To ensure that the middle ring is at
   //  phi == 0 degrees
 
-  auto polyset = std::make_unique<PolySet>(3, /*convex*/true);
+  auto polyset = std::make_unique<PolySet>(3, /*convex*/ true);
   polyset->vertices.reserve(num_rings * num_fragments);
 
   // double offset = 0.5 * ((fragments / 2) % 2);
@@ -214,12 +215,12 @@ std::unique_ptr<const Geometry> SphereNode::createGeometry() const
   }
 
   for (int i = 0; i < num_rings - 1; ++i) {
-    for (int r=0;r<num_fragments;++r) {
+    for (int r = 0; r < num_fragments; ++r) {
       polyset->indices.push_back({
-        i*num_fragments+(r+1)%num_fragments,
-        i*num_fragments+r,
-        (i+1)*num_fragments+r,
-        (i+1)*num_fragments+(r+1)%num_fragments,
+        i * num_fragments + (r + 1) % num_fragments,
+        i * num_fragments + r,
+        (i + 1) * num_fragments + r,
+        (i + 1) * num_fragments + (r + 1) % num_fragments,
       });
     }
   }
@@ -243,28 +244,23 @@ static std::shared_ptr<AbstractNode> builtin_sphere(const ModuleInstantiation *i
   if (r.type() == Value::Type::NUMBER) {
     node->r = r.toDouble();
     if (OpenSCAD::rangeCheck && (node->r <= 0 || !std::isfinite(node->r))) {
-      LOG(message_group::Warning, inst->location(), parameters.documentRoot(),
-          "sphere(r=%1$s)", r.toEchoStringNoThrow());
+      LOG(message_group::Warning, inst->location(), parameters.documentRoot(), "sphere(r=%1$s)",
+          r.toEchoStringNoThrow());
     }
   }
 
   return node;
 }
 
-
-
 std::unique_ptr<const Geometry> CylinderNode::createGeometry() const
 {
-  if (
-    this->h <= 0 || !std::isfinite(this->h)
-    || this->r1 < 0 || !std::isfinite(this->r1)
-    || this->r2 < 0 || !std::isfinite(this->r2)
-    || (this->r1 <= 0 && this->r2 <= 0)
-    ) {
+  if (this->h <= 0 || !std::isfinite(this->h) || this->r1 < 0 || !std::isfinite(this->r1) ||
+      this->r2 < 0 || !std::isfinite(this->r2) || (this->r1 <= 0 && this->r2 <= 0)) {
     return PolySet::createEmpty();
   }
 
-  auto num_fragments = Calc::get_fragments_from_r(std::fmax(this->r1, this->r2), this->fn, this->fs, this->fa);
+  auto num_fragments =
+    Calc::get_fragments_from_r(std::fmax(this->r1, this->r2), this->fn, this->fs, this->fa);
 
   double z1, z2;
   if (this->center) {
@@ -278,13 +274,13 @@ std::unique_ptr<const Geometry> CylinderNode::createGeometry() const
   bool cone = (r2 == 0.0);
   bool inverted_cone = (r1 == 0.0);
 
-  auto polyset = std::make_unique<PolySet>(3, /*convex*/true);
+  auto polyset = std::make_unique<PolySet>(3, /*convex*/ true);
   polyset->vertices.reserve((cone || inverted_cone) ? num_fragments + 1 : 2 * num_fragments);
 
   if (inverted_cone) {
     polyset->vertices.emplace_back(0.0, 0.0, z1);
   } else {
-   generate_circle(std::back_inserter(polyset->vertices), r1, z1, num_fragments);
+    generate_circle(std::back_inserter(polyset->vertices), r1, z1, num_fragments);
   }
   if (cone) {
     polyset->vertices.emplace_back(0.0, 0.0, z2);
@@ -295,32 +291,34 @@ std::unique_ptr<const Geometry> CylinderNode::createGeometry() const
   for (int i = 0; i < num_fragments; ++i) {
     int j = (i + 1) % num_fragments;
     if (cone) polyset->indices.push_back({i, j, num_fragments});
-    else if (inverted_cone) polyset->indices.push_back({0, j+1, i+1});
-    else polyset->indices.push_back({i, j, j+num_fragments, i+num_fragments});
+    else if (inverted_cone) polyset->indices.push_back({0, j + 1, i + 1});
+    else polyset->indices.push_back({i, j, j + num_fragments, i + num_fragments});
   }
 
   if (!inverted_cone) {
     polyset->indices.push_back({});
     for (int i = 0; i < num_fragments; ++i) {
-      polyset->indices.back().push_back(num_fragments-i-1);
+      polyset->indices.back().push_back(num_fragments - i - 1);
     }
   }
   if (!cone) {
     polyset->indices.push_back({});
     int offset = inverted_cone ? 1 : num_fragments;
     for (int i = 0; i < num_fragments; ++i) {
-      polyset->indices.back().push_back(offset+i);
+      polyset->indices.back().push_back(offset + i);
     }
   }
 
   return polyset;
 }
 
-static std::shared_ptr<AbstractNode> builtin_cylinder(const ModuleInstantiation *inst, Arguments arguments)
+static std::shared_ptr<AbstractNode> builtin_cylinder(const ModuleInstantiation *inst,
+                                                      Arguments arguments)
 {
   auto node = std::make_shared<CylinderNode>(inst);
 
-  Parameters parameters = Parameters::parse(std::move(arguments), inst->location(), {"h", "r1", "r2", "center"}, {"r", "d", "d1", "d2"});
+  Parameters parameters = Parameters::parse(std::move(arguments), inst->location(),
+                                            {"h", "r1", "r2", "center"}, {"r", "d", "d1", "d2"});
 
   set_fragments(parameters, inst, node->fn, node->fs, node->fa);
   if (parameters["h"].type() == Value::Type::NUMBER) {
@@ -331,9 +329,9 @@ static std::shared_ptr<AbstractNode> builtin_cylinder(const ModuleInstantiation 
   auto r1 = lookup_radius(parameters, inst, "d1", "r1");
   auto r2 = lookup_radius(parameters, inst, "d2", "r2");
   if (r.type() == Value::Type::NUMBER &&
-      (r1.type() == Value::Type::NUMBER || r2.type() == Value::Type::NUMBER)
-      ) {
-    LOG(message_group::Warning, inst->location(), parameters.documentRoot(), "Cylinder parameters ambiguous");
+      (r1.type() == Value::Type::NUMBER || r2.type() == Value::Type::NUMBER)) {
+    LOG(message_group::Warning, inst->location(), parameters.documentRoot(),
+        "Cylinder parameters ambiguous");
   }
 
   if (r.type() == Value::Type::NUMBER) {
@@ -349,9 +347,11 @@ static std::shared_ptr<AbstractNode> builtin_cylinder(const ModuleInstantiation 
 
   if (OpenSCAD::rangeCheck) {
     if (node->h <= 0 || !std::isfinite(node->h)) {
-      LOG(message_group::Warning, inst->location(), parameters.documentRoot(), "cylinder(h=%1$s, ...)", parameters["h"].toEchoStringNoThrow());
+      LOG(message_group::Warning, inst->location(), parameters.documentRoot(), "cylinder(h=%1$s, ...)",
+          parameters["h"].toEchoStringNoThrow());
     }
-    if (node->r1 < 0 || node->r2 < 0 || (node->r1 == 0 && node->r2 == 0) || !std::isfinite(node->r1) || !std::isfinite(node->r2)) {
+    if (node->r1 < 0 || node->r2 < 0 || (node->r1 == 0 && node->r2 == 0) || !std::isfinite(node->r1) ||
+        !std::isfinite(node->r2)) {
       LOG(message_group::Warning, inst->location(), parameters.documentRoot(),
           "cylinder(r1=%1$s, r2=%2$s, ...)",
           (r1.type() == Value::Type::NUMBER ? r1.toEchoStringNoThrow() : r.toEchoStringNoThrow()),
@@ -365,7 +365,6 @@ static std::shared_ptr<AbstractNode> builtin_cylinder(const ModuleInstantiation 
 
   return node;
 }
-
 
 std::string PolyhedronNode::toString() const
 {
@@ -408,11 +407,11 @@ std::unique_ptr<const Geometry> PolyhedronNode::createGeometry() const
 {
   auto p = PolySet::createEmpty();
   p->setConvexity(this->convexity);
-  p->vertices=this->points;
-  p->indices=this->faces;
+  p->vertices = this->points;
+  p->indices = this->faces;
   bool is_triangular = true;
-  for (auto &poly : p->indices) {
-    std::reverse(poly.begin(),poly.end());
+  for (auto& poly : p->indices) {
+    std::reverse(poly.begin(), poly.end());
     if (is_triangular && poly.size() > 3) {
       is_triangular = false;
     }
@@ -421,23 +420,28 @@ std::unique_ptr<const Geometry> PolyhedronNode::createGeometry() const
   return p;
 }
 
-static std::shared_ptr<AbstractNode> builtin_polyhedron(const ModuleInstantiation *inst, Arguments arguments)
+static std::shared_ptr<AbstractNode> builtin_polyhedron(const ModuleInstantiation *inst,
+                                                        Arguments arguments)
 {
   auto node = std::make_shared<PolyhedronNode>(inst);
 
-  Parameters parameters = Parameters::parse(std::move(arguments), inst->location(), {"points", "faces", "convexity"}, {"triangles"});
+  Parameters parameters = Parameters::parse(std::move(arguments), inst->location(),
+                                            {"points", "faces", "convexity"}, {"triangles"});
 
   if (parameters["points"].type() != Value::Type::VECTOR) {
-    LOG(message_group::Error, inst->location(), parameters.documentRoot(), "Unable to convert points = %1$s to a vector of coordinates", parameters["points"].toEchoStringNoThrow());
+    LOG(message_group::Error, inst->location(), parameters.documentRoot(),
+        "Unable to convert points = %1$s to a vector of coordinates",
+        parameters["points"].toEchoStringNoThrow());
     return node;
   }
   node->points.reserve(parameters["points"].toVector().size());
   for (const Value& pointValue : parameters["points"].toVector()) {
     Vector3d point;
-    if (!pointValue.getVec3(point[0], point[1], point[2], 0.0) ||
-        !std::isfinite(point[0]) || !std::isfinite(point[1]) || !std::isfinite(point[2])
-        ) {
-      LOG(message_group::Error, inst->location(), parameters.documentRoot(), "Unable to convert points[%1$d] = %2$s to a vec3 of numbers", node->points.size(), pointValue.toEchoStringNoThrow());
+    if (!pointValue.getVec3(point[0], point[1], point[2], 0.0) || !std::isfinite(point[0]) ||
+        !std::isfinite(point[1]) || !std::isfinite(point[2])) {
+      LOG(message_group::Error, inst->location(), parameters.documentRoot(),
+          "Unable to convert points[%1$d] = %2$s to a vec3 of numbers", node->points.size(),
+          pointValue.toEchoStringNoThrow());
       node->points.push_back({0, 0, 0});
     } else {
       node->points.push_back(point);
@@ -445,34 +449,45 @@ static std::shared_ptr<AbstractNode> builtin_polyhedron(const ModuleInstantiatio
   }
 
   const Value *faces = nullptr;
-  if (parameters["faces"].type() == Value::Type::UNDEFINED && parameters["triangles"].type() != Value::Type::UNDEFINED) {
+  if (parameters["faces"].type() == Value::Type::UNDEFINED &&
+      parameters["triangles"].type() != Value::Type::UNDEFINED) {
     // backwards compatible
-    LOG(message_group::Deprecated, inst->location(), parameters.documentRoot(), "polyhedron(triangles=[]) will be removed in future releases. Use polyhedron(faces=[]) instead.");
+    LOG(
+      message_group::Deprecated, inst->location(), parameters.documentRoot(),
+      "polyhedron(triangles=[]) will be removed in future releases. Use polyhedron(faces=[]) instead.");
     faces = &parameters["triangles"];
   } else {
     faces = &parameters["faces"];
   }
   if (faces->type() != Value::Type::VECTOR) {
-    LOG(message_group::Error, inst->location(), parameters.documentRoot(), "Unable to convert faces = %1$s to a vector of vector of point indices", faces->toEchoStringNoThrow());
+    LOG(message_group::Error, inst->location(), parameters.documentRoot(),
+        "Unable to convert faces = %1$s to a vector of vector of point indices",
+        faces->toEchoStringNoThrow());
     return node;
   }
   size_t faceIndex = 0;
   node->faces.reserve(faces->toVector().size());
   for (const Value& faceValue : faces->toVector()) {
     if (faceValue.type() != Value::Type::VECTOR) {
-      LOG(message_group::Error, inst->location(), parameters.documentRoot(), "Unable to convert faces[%1$d] = %2$s to a vector of numbers", faceIndex, faceValue.toEchoStringNoThrow());
+      LOG(message_group::Error, inst->location(), parameters.documentRoot(),
+          "Unable to convert faces[%1$d] = %2$s to a vector of numbers", faceIndex,
+          faceValue.toEchoStringNoThrow());
     } else {
       size_t pointIndexIndex = 0;
       IndexedFace face;
       for (const Value& pointIndexValue : faceValue.toVector()) {
         if (pointIndexValue.type() != Value::Type::NUMBER) {
-          LOG(message_group::Error, inst->location(), parameters.documentRoot(), "Unable to convert faces[%1$d][%2$d] = %3$s to a number", faceIndex, pointIndexIndex, pointIndexValue.toEchoStringNoThrow());
+          LOG(message_group::Error, inst->location(), parameters.documentRoot(),
+              "Unable to convert faces[%1$d][%2$d] = %3$s to a number", faceIndex, pointIndexIndex,
+              pointIndexValue.toEchoStringNoThrow());
         } else {
           auto pointIndex = (size_t)pointIndexValue.toDouble();
           if (pointIndex < node->points.size()) {
             face.push_back(pointIndex);
           } else {
-            LOG(message_group::Warning, inst->location(), parameters.documentRoot(), "Point index %1$d is out of bounds (from faces[%2$d][%3$d])", pointIndex, faceIndex, pointIndexIndex);
+            LOG(message_group::Warning, inst->location(), parameters.documentRoot(),
+                "Point index %1$d is out of bounds (from faces[%2$d][%3$d])", pointIndex, faceIndex,
+                pointIndexIndex);
           }
         }
         pointIndexIndex++;
@@ -491,11 +506,9 @@ static std::shared_ptr<AbstractNode> builtin_polyhedron(const ModuleInstantiatio
   return node;
 }
 
-
 std::unique_ptr<const Geometry> SquareNode::createGeometry() const
 {
-  if (this->x <= 0 || !std::isfinite(this->x) ||
-      this->y <= 0 || !std::isfinite(this->y)) {
+  if (this->x <= 0 || !std::isfinite(this->x) || this->y <= 0 || !std::isfinite(this->y)) {
     return std::make_unique<Polygon2d>();
   }
 
@@ -524,13 +537,16 @@ static std::shared_ptr<AbstractNode> builtin_square(const ModuleInstantiation *i
     converted |= size.getDouble(node->y);
     converted |= size.getVec2(node->x, node->y);
     if (!converted) {
-      LOG(message_group::Warning, inst->location(), parameters.documentRoot(), "Unable to convert square(size=%1$s, ...) parameter to a number or a vec2 of numbers", size.toEchoStringNoThrow());
+      LOG(message_group::Warning, inst->location(), parameters.documentRoot(),
+          "Unable to convert square(size=%1$s, ...) parameter to a number or a vec2 of numbers",
+          size.toEchoStringNoThrow());
     } else if (OpenSCAD::rangeCheck) {
       bool ok = true;
       ok &= (node->x > 0) && (node->y > 0);
       ok &= std::isfinite(node->x) && std::isfinite(node->y);
       if (!ok) {
-        LOG(message_group::Warning, inst->location(), parameters.documentRoot(), "square(size=%1$s, ...)", size.toEchoStringNoThrow());
+        LOG(message_group::Warning, inst->location(), parameters.documentRoot(),
+            "square(size=%1$s, ...)", size.toEchoStringNoThrow());
       }
     }
   }
@@ -568,15 +584,13 @@ static std::shared_ptr<AbstractNode> builtin_circle(const ModuleInstantiation *i
   if (r.type() == Value::Type::NUMBER) {
     node->r = r.toDouble();
     if (OpenSCAD::rangeCheck && ((node->r <= 0) || !std::isfinite(node->r))) {
-      LOG(message_group::Warning, inst->location(), parameters.documentRoot(),
-          "circle(r=%1$s)", r.toEchoStringNoThrow());
+      LOG(message_group::Warning, inst->location(), parameters.documentRoot(), "circle(r=%1$s)",
+          r.toEchoStringNoThrow());
     }
   }
 
   return node;
 }
-
-
 
 std::string PolygonNode::toString() const
 {
@@ -631,7 +645,7 @@ std::unique_ptr<const Geometry> PolygonNode::createGeometry() const
     }
     p->addOutline(outline);
   } else {
-    bool positive = true; // First outline is positive
+    bool positive = true;  // First outline is positive
     for (const auto& path : this->paths) {
       Outline2d outline;
       for (const auto& index : path) {
@@ -641,7 +655,7 @@ std::unique_ptr<const Geometry> PolygonNode::createGeometry() const
       }
       outline.positive = positive;
       p->addOutline(outline);
-      positive = false; // Subsequent outlines are holes
+      positive = false;  // Subsequent outlines are holes
     }
   }
   if (p->outlines().size() > 0) {
@@ -650,22 +664,27 @@ std::unique_ptr<const Geometry> PolygonNode::createGeometry() const
   return p;
 }
 
-static std::shared_ptr<AbstractNode> builtin_polygon(const ModuleInstantiation *inst, Arguments arguments)
+static std::shared_ptr<AbstractNode> builtin_polygon(const ModuleInstantiation *inst,
+                                                     Arguments arguments)
 {
   auto node = std::make_shared<PolygonNode>(inst);
 
-  Parameters parameters = Parameters::parse(std::move(arguments), inst->location(), {"points", "paths", "convexity"});
+  Parameters parameters =
+    Parameters::parse(std::move(arguments), inst->location(), {"points", "paths", "convexity"});
 
   if (parameters["points"].type() != Value::Type::VECTOR) {
-    LOG(message_group::Error, inst->location(), parameters.documentRoot(), "Unable to convert points = %1$s to a vector of coordinates", parameters["points"].toEchoStringNoThrow());
+    LOG(message_group::Error, inst->location(), parameters.documentRoot(),
+        "Unable to convert points = %1$s to a vector of coordinates",
+        parameters["points"].toEchoStringNoThrow());
     return node;
   }
   for (const Value& pointValue : parameters["points"].toVector()) {
     Vector2d point;
-    if (!pointValue.getVec2(point[0], point[1]) ||
-        !std::isfinite(point[0]) || !std::isfinite(point[1])
-        ) {
-      LOG(message_group::Error, inst->location(), parameters.documentRoot(), "Unable to convert points[%1$d] = %2$s to a vec2 of numbers", node->points.size(), pointValue.toEchoStringNoThrow());
+    if (!pointValue.getVec2(point[0], point[1]) || !std::isfinite(point[0]) ||
+        !std::isfinite(point[1])) {
+      LOG(message_group::Error, inst->location(), parameters.documentRoot(),
+          "Unable to convert points[%1$d] = %2$s to a vec2 of numbers", node->points.size(),
+          pointValue.toEchoStringNoThrow());
       node->points.push_back({0, 0});
     } else {
       node->points.push_back(point);
@@ -676,19 +695,25 @@ static std::shared_ptr<AbstractNode> builtin_polygon(const ModuleInstantiation *
     size_t pathIndex = 0;
     for (const Value& pathValue : parameters["paths"].toVector()) {
       if (pathValue.type() != Value::Type::VECTOR) {
-        LOG(message_group::Error, inst->location(), parameters.documentRoot(), "Unable to convert paths[%1$d] = %2$s to a vector of numbers", pathIndex, pathValue.toEchoStringNoThrow());
+        LOG(message_group::Error, inst->location(), parameters.documentRoot(),
+            "Unable to convert paths[%1$d] = %2$s to a vector of numbers", pathIndex,
+            pathValue.toEchoStringNoThrow());
       } else {
         size_t pointIndexIndex = 0;
         std::vector<size_t> path;
         for (const Value& pointIndexValue : pathValue.toVector()) {
           if (pointIndexValue.type() != Value::Type::NUMBER) {
-            LOG(message_group::Error, inst->location(), parameters.documentRoot(), "Unable to convert paths[%1$d][%2$d] = %3$s to a number", pathIndex, pointIndexIndex, pointIndexValue.toEchoStringNoThrow());
+            LOG(message_group::Error, inst->location(), parameters.documentRoot(),
+                "Unable to convert paths[%1$d][%2$d] = %3$s to a number", pathIndex, pointIndexIndex,
+                pointIndexValue.toEchoStringNoThrow());
           } else {
             auto pointIndex = (size_t)pointIndexValue.toDouble();
             if (pointIndex < node->points.size()) {
               path.push_back(pointIndex);
             } else {
-              LOG(message_group::Warning, inst->location(), parameters.documentRoot(), "Point index %1$d is out of bounds (from paths[%2$d][%3$d])", pointIndex, pathIndex, pointIndexIndex);
+              LOG(message_group::Warning, inst->location(), parameters.documentRoot(),
+                  "Point index %1$d is out of bounds (from paths[%2$d][%3$d])", pointIndex, pathIndex,
+                  pointIndexIndex);
             }
           }
           pointIndexIndex++;
@@ -698,7 +723,9 @@ static std::shared_ptr<AbstractNode> builtin_polygon(const ModuleInstantiation *
       pathIndex++;
     }
   } else if (parameters["paths"].type() != Value::Type::UNDEFINED) {
-    LOG(message_group::Error, inst->location(), parameters.documentRoot(), "Unable to convert paths = %1$s to a vector of vector of point indices", parameters["paths"].toEchoStringNoThrow());
+    LOG(message_group::Error, inst->location(), parameters.documentRoot(),
+        "Unable to convert paths = %1$s to a vector of vector of point indices",
+        parameters["paths"].toEchoStringNoThrow());
     return node;
   }
 
@@ -708,54 +735,52 @@ static std::shared_ptr<AbstractNode> builtin_polygon(const ModuleInstantiation *
   return node;
 }
 
-
-
 void register_builtin_primitives()
 {
   Builtins::init("cube", new BuiltinModule(builtin_cube),
                  {
-                     "cube(size)",
-                     "cube([width, depth, height])",
-                     "cube([width, depth, height], center = true)",
+                   "cube(size)",
+                   "cube([width, depth, height])",
+                   "cube([width, depth, height], center = true)",
                  });
 
   Builtins::init("sphere", new BuiltinModule(builtin_sphere),
                  {
-                     "sphere(radius)",
-                     "sphere(r = radius)",
-                     "sphere(d = diameter)",
+                   "sphere(radius)",
+                   "sphere(r = radius)",
+                   "sphere(d = diameter)",
                  });
 
   Builtins::init("cylinder", new BuiltinModule(builtin_cylinder),
-      {
-          "cylinder(h, r1, r2)",
-          "cylinder(h = height, r = radius, center = true)",
-          "cylinder(h = height, r1 = bottom, r2 = top, center = true)",
-          "cylinder(h = height, d = diameter, center = true)",
-          "cylinder(h = height, d1 = bottom, d2 = top, center = true)",
-      });
+                 {
+                   "cylinder(h, r1, r2)",
+                   "cylinder(h = height, r = radius, center = true)",
+                   "cylinder(h = height, r1 = bottom, r2 = top, center = true)",
+                   "cylinder(h = height, d = diameter, center = true)",
+                   "cylinder(h = height, d1 = bottom, d2 = top, center = true)",
+                 });
 
   Builtins::init("polyhedron", new BuiltinModule(builtin_polyhedron),
                  {
-                     "polyhedron(points, faces, convexity)",
+                   "polyhedron(points, faces, convexity)",
                  });
 
   Builtins::init("square", new BuiltinModule(builtin_square),
                  {
-                     "square(size, center = true)",
-                     "square([width,height], center = true)",
+                   "square(size, center = true)",
+                   "square([width,height], center = true)",
                  });
 
   Builtins::init("circle", new BuiltinModule(builtin_circle),
                  {
-                     "circle(radius)",
-                     "circle(r = radius)",
-                     "circle(d = diameter)",
+                   "circle(radius)",
+                   "circle(r = radius)",
+                   "circle(d = diameter)",
                  });
 
   Builtins::init("polygon", new BuiltinModule(builtin_polygon),
                  {
-                     "polygon([points])",
-                     "polygon([points], [paths])",
+                   "polygon([points])",
+                   "polygon([points], [paths])",
                  });
 }

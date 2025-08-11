@@ -16,36 +16,38 @@ void VertexState::draw() const
   if (draw_size_ > 0) {
     if (elements_vbo_) {
       GL_TRACE("glDrawElements(%s, %d, %s, %d)",
-               (draw_mode_ == GL_POINTS ? "GL_POINTS" :
-                draw_mode_ == GL_LINES ? "GL_LINES" :
-                draw_mode_ == GL_LINE_LOOP ? "GL_LINE_LOOP" :
-                draw_mode_ == GL_LINE_STRIP ? "GL_LINE_STRIP" :
-                draw_mode_ == GL_TRIANGLES ? "GL_TRIANGLES" :
-                draw_mode_ == GL_TRIANGLE_STRIP ? "GL_TRIANGLE_STRIP" :
-                draw_mode_ == GL_TRIANGLE_FAN ? "GL_TRIANGLE_FAN" :
-                draw_mode_ == GL_QUADS ? "GL_QUADS" :
-                draw_mode_ == GL_QUAD_STRIP ? "GL_QUAD_STRIP" :
-                draw_mode_ == GL_POLYGON ? "GL_POLYGON" :
-                "UNKNOWN") % draw_size_ %
-               (draw_type_ == GL_UNSIGNED_BYTE ? "GL_UNSIGNED_BYTE" :
-                draw_type_ == GL_UNSIGNED_SHORT ? "GL_UNSIGNED_SHORT" :
-                draw_type_ == GL_UNSIGNED_INT ? "GL_UNSIGNED_INT" :
-                "UNKNOWN") % element_offset_);
+               (draw_mode_ == GL_POINTS           ? "GL_POINTS"
+                : draw_mode_ == GL_LINES          ? "GL_LINES"
+                : draw_mode_ == GL_LINE_LOOP      ? "GL_LINE_LOOP"
+                : draw_mode_ == GL_LINE_STRIP     ? "GL_LINE_STRIP"
+                : draw_mode_ == GL_TRIANGLES      ? "GL_TRIANGLES"
+                : draw_mode_ == GL_TRIANGLE_STRIP ? "GL_TRIANGLE_STRIP"
+                : draw_mode_ == GL_TRIANGLE_FAN   ? "GL_TRIANGLE_FAN"
+                : draw_mode_ == GL_QUADS          ? "GL_QUADS"
+                : draw_mode_ == GL_QUAD_STRIP     ? "GL_QUAD_STRIP"
+                : draw_mode_ == GL_POLYGON        ? "GL_POLYGON"
+                                                  : "UNKNOWN") %
+                 draw_size_ %
+                 (draw_type_ == GL_UNSIGNED_BYTE    ? "GL_UNSIGNED_BYTE"
+                  : draw_type_ == GL_UNSIGNED_SHORT ? "GL_UNSIGNED_SHORT"
+                  : draw_type_ == GL_UNSIGNED_INT   ? "GL_UNSIGNED_INT"
+                                                    : "UNKNOWN") %
+                 element_offset_);
       // NOLINTNEXTLINE(performance-no-int-to-ptr)
       glDrawElements(draw_mode_, draw_size_, draw_type_, (GLvoid *)element_offset_);
     } else {
-      GL_TRACE("glDrawArrays(%s, 0, %d)",
-               (draw_mode_ == GL_POINTS ? "GL_POINTS" :
-                draw_mode_ == GL_LINES ? "GL_LINES" :
-                draw_mode_ == GL_LINE_LOOP ? "GL_LINE_LOOP" :
-                draw_mode_ == GL_LINE_STRIP ? "GL_LINE_STRIP" :
-                draw_mode_ == GL_TRIANGLES ? "GL_TRIANGLES" :
-                draw_mode_ == GL_TRIANGLE_STRIP ? "GL_TRIANGLE_STRIP" :
-                draw_mode_ == GL_TRIANGLE_FAN ? "GL_TRIANGLE_FAN" :
-                draw_mode_ == GL_QUADS ? "GL_QUADS" :
-                draw_mode_ == GL_QUAD_STRIP ? "GL_QUAD_STRIP" :
-                draw_mode_ == GL_POLYGON ? "GL_POLYGON" :
-                "UNKNOWN") % draw_size_);
+      GL_TRACE("glDrawArrays(%s, 0, %d)", (draw_mode_ == GL_POINTS           ? "GL_POINTS"
+                                           : draw_mode_ == GL_LINES          ? "GL_LINES"
+                                           : draw_mode_ == GL_LINE_LOOP      ? "GL_LINE_LOOP"
+                                           : draw_mode_ == GL_LINE_STRIP     ? "GL_LINE_STRIP"
+                                           : draw_mode_ == GL_TRIANGLES      ? "GL_TRIANGLES"
+                                           : draw_mode_ == GL_TRIANGLE_STRIP ? "GL_TRIANGLE_STRIP"
+                                           : draw_mode_ == GL_TRIANGLE_FAN   ? "GL_TRIANGLE_FAN"
+                                           : draw_mode_ == GL_QUADS          ? "GL_QUADS"
+                                           : draw_mode_ == GL_QUAD_STRIP     ? "GL_QUAD_STRIP"
+                                           : draw_mode_ == GL_POLYGON        ? "GL_POLYGON"
+                                                                             : "UNKNOWN") %
+                                            draw_size_);
       glDrawArrays(draw_mode_, 0, draw_size_);
     }
   }

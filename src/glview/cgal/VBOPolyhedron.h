@@ -55,43 +55,42 @@ public:
     NUM_COLORS
   };
 
-  VBOPolyhedron(const ColorScheme& cs) {
+  VBOPolyhedron(const ColorScheme& cs)
+  {
     // Set default colors.
     setColor(CGALColorIndex::MARKED_VERTEX_COLOR, {0xb7, 0xe8, 0x5c});
     setColor(CGALColorIndex::UNMARKED_VERTEX_COLOR, {0xff, 0xf6, 0x7c});
-    setColor(CGALColorIndex::MARKED_FACET_COLOR, ColorMap::getColor(cs, RenderColor::CGAL_FACE_BACK_COLOR));
-    setColor(CGALColorIndex::UNMARKED_FACET_COLOR, ColorMap::getColor(cs, RenderColor::CGAL_FACE_FRONT_COLOR));
-    setColor(CGALColorIndex::MARKED_EDGE_COLOR, ColorMap::getColor(cs, RenderColor::CGAL_EDGE_BACK_COLOR));
-    setColor(CGALColorIndex::UNMARKED_EDGE_COLOR, ColorMap::getColor(cs, RenderColor::CGAL_EDGE_FRONT_COLOR));
+    setColor(CGALColorIndex::MARKED_FACET_COLOR,
+             ColorMap::getColor(cs, RenderColor::CGAL_FACE_BACK_COLOR));
+    setColor(CGALColorIndex::UNMARKED_FACET_COLOR,
+             ColorMap::getColor(cs, RenderColor::CGAL_FACE_FRONT_COLOR));
+    setColor(CGALColorIndex::MARKED_EDGE_COLOR,
+             ColorMap::getColor(cs, RenderColor::CGAL_EDGE_BACK_COLOR));
+    setColor(CGALColorIndex::UNMARKED_EDGE_COLOR,
+             ColorMap::getColor(cs, RenderColor::CGAL_EDGE_FRONT_COLOR));
   }
 
   ~VBOPolyhedron() override = default;
 
-  void draw(Vertex_iterator v, VBOBuilder& vbo_builder) const {
+  void draw(Vertex_iterator v, VBOBuilder& vbo_builder) const
+  {
     PRINTD("draw(Vertex_iterator)");
 
     CGAL::Color c = getVertexColor(v);
-    vbo_builder.createVertex({Vector3d(v->x(), v->y(), v->z())},
-                              {},
-                              Color4f(c.red(), c.green(), c.blue()),
-                              0, 0, 1);
+    vbo_builder.createVertex({Vector3d(v->x(), v->y(), v->z())}, {},
+                             Color4f(c.red(), c.green(), c.blue()), 0, 0, 1);
   }
 
-  void draw(Edge_iterator e, VBOBuilder& vbo_builder) const {
+  void draw(Edge_iterator e, VBOBuilder& vbo_builder) const
+  {
     PRINTD("draw(Edge_iterator)");
 
     const Double_point p = e->source(), q = e->target();
     const CGAL::Color c = getEdgeColor(e);
     const Color4f color(c.red(), c.green(), c.blue());
 
-    vbo_builder.createVertex({Vector3d(p.x(), p.y(), p.z())},
-                              {},
-                              color,
-                              0, 0, true);
-    vbo_builder.createVertex({Vector3d(q.x(), q.y(), q.z())},
-                              {},
-                              color,
-                              0, 1, true);
+    vbo_builder.createVertex({Vector3d(p.x(), p.y(), p.z())}, {}, color, 0, 0, true);
+    vbo_builder.createVertex({Vector3d(q.x(), q.y(), q.z())}, {}, color, 0, 1, true);
   }
 
   struct TessUserData {
@@ -106,7 +105,8 @@ public:
     VBOBuilder& vbo_builder;
   };
 
-  static inline void CGAL_GLU_TESS_CALLBACK beginCallback(GLenum which, GLvoid *user) {
+  static inline void CGAL_GLU_TESS_CALLBACK beginCallback(GLenum which, GLvoid *user)
+  {
     auto *tess(static_cast<TessUserData *>(user));
     // Create separate vertex set since "which" could be different draw type
     tess->which = which;
@@ -122,27 +122,30 @@ public:
     }
   }
 
-  static inline void CGAL_GLU_TESS_CALLBACK endCallback(GLvoid *user) {
+  static inline void CGAL_GLU_TESS_CALLBACK endCallback(GLvoid *user)
+  {
     auto *tess(static_cast<TessUserData *>(user));
 
     GLenum elements_type = 0;
     if (tess->vbo_builder.useElements()) elements_type = tess->vbo_builder.elementsData()->glType();
-    std::shared_ptr<VertexState> vs = tess->vbo_builder.createVertexState(
-      tess->which, tess->draw_size, elements_type,
-      tess->vbo_builder.writeIndex(), tess->elements_offset);
+    std::shared_ptr<VertexState> vs =
+      tess->vbo_builder.createVertexState(tess->which, tess->draw_size, elements_type,
+                                          tess->vbo_builder.writeIndex(), tess->elements_offset);
     tess->vbo_builder.states().emplace_back(std::move(vs));
     tess->vbo_builder.addAttributePointers(tess->last_size);
     tess->primitive_index++;
   }
 
-  static inline void CGAL_GLU_TESS_CALLBACK errorCallback(GLenum errorCode) {
+  static inline void CGAL_GLU_TESS_CALLBACK errorCallback(GLenum errorCode)
+  {
     const GLubyte *estring;
     estring = gluErrorString(errorCode);
     fprintf(stderr, "Tessellation Error: %s\n", estring);
     std::exit(0);
   }
 
-  static inline void CGAL_GLU_TESS_CALLBACK vertexCallback(GLvoid *vertex_arg, GLvoid *user_arg) {
+  static inline void CGAL_GLU_TESS_CALLBACK vertexCallback(GLvoid *vertex_arg, GLvoid *user_arg)
+  {
     auto *vertex(static_cast<GLdouble *>(vertex_arg));
     auto *tess(static_cast<TessUserData *>(user_arg));
     size_t shape_size = 0;
@@ -150,27 +153,21 @@ public:
     switch (tess->which) {
     case GL_TRIANGLES:
     case GL_TRIANGLE_FAN:
-    case GL_TRIANGLE_STRIP:
-      shape_size = 3;
-      break;
-    case GL_POINTS:
-      shape_size = 1;
-      break;
-    default:
-      assert(false && "Unsupported primitive type");
-      break;
+    case GL_TRIANGLE_STRIP: shape_size = 3; break;
+    case GL_POINTS:         shape_size = 1; break;
+    default:                assert(false && "Unsupported primitive type"); break;
     }
 
-
-    tess->vbo_builder.createVertex({Vector3d(vertex)},
-                                    {Vector3d(tess->normal)},
-                                    Color4f(tess->color.red(), tess->color.green(), tess->color.blue()),
-                                    0, 0, shape_size);
+    tess->vbo_builder.createVertex({Vector3d(vertex)}, {Vector3d(tess->normal)},
+                                   Color4f(tess->color.red(), tess->color.green(), tess->color.blue()),
+                                   0, 0, shape_size);
     tess->draw_size++;
     tess->active_point_index++;
   }
 
-  static inline void CGAL_GLU_TESS_CALLBACK combineCallback(GLdouble coords[3], GLvoid *[4], GLfloat [4], GLvoid **dataOut) {
+  static inline void CGAL_GLU_TESS_CALLBACK combineCallback(GLdouble coords[3], GLvoid *[4], GLfloat[4],
+                                                            GLvoid **dataOut)
+  {
     static std::vector<std::unique_ptr<Vector3d>> vertexCache;
     if (dataOut) {
       vertexCache.push_back(std::make_unique<Vector3d>(coords));
@@ -180,36 +177,32 @@ public:
     }
   }
 
-  void draw(Halffacet_iterator f, VBOBuilder& vbo_builder) const {
+  void draw(Halffacet_iterator f, VBOBuilder& vbo_builder) const
+  {
     PRINTD("draw(Halffacet_iterator)");
 
     GLUtesselator *tess_ = gluNewTess();
     gluTessCallback(tess_, GLenum(GLU_TESS_VERTEX_DATA),
-                    (GLvoid(CGAL_GLU_TESS_CALLBACK *)(CGAL_GLU_TESS_DOTS)) & vertexCallback);
+                    (GLvoid(CGAL_GLU_TESS_CALLBACK *)(CGAL_GLU_TESS_DOTS))&vertexCallback);
     gluTessCallback(tess_, GLenum(GLU_TESS_COMBINE),
-                    (GLvoid(CGAL_GLU_TESS_CALLBACK *)(CGAL_GLU_TESS_DOTS)) & combineCallback);
+                    (GLvoid(CGAL_GLU_TESS_CALLBACK *)(CGAL_GLU_TESS_DOTS))&combineCallback);
     gluTessCallback(tess_, GLenum(GLU_TESS_BEGIN_DATA),
-                    (GLvoid(CGAL_GLU_TESS_CALLBACK *)(CGAL_GLU_TESS_DOTS)) & beginCallback);
+                    (GLvoid(CGAL_GLU_TESS_CALLBACK *)(CGAL_GLU_TESS_DOTS))&beginCallback);
     gluTessCallback(tess_, GLenum(GLU_TESS_END_DATA),
-                    (GLvoid(CGAL_GLU_TESS_CALLBACK *)(CGAL_GLU_TESS_DOTS)) & endCallback);
+                    (GLvoid(CGAL_GLU_TESS_CALLBACK *)(CGAL_GLU_TESS_DOTS))&endCallback);
     gluTessCallback(tess_, GLenum(GLU_TESS_ERROR),
-                    (GLvoid(CGAL_GLU_TESS_CALLBACK *)(CGAL_GLU_TESS_DOTS)) & errorCallback);
-    gluTessProperty(tess_, GLenum(GLU_TESS_WINDING_RULE),
-                    GLU_TESS_WINDING_POSITIVE);
+                    (GLvoid(CGAL_GLU_TESS_CALLBACK *)(CGAL_GLU_TESS_DOTS))&errorCallback);
+    gluTessProperty(tess_, GLenum(GLU_TESS_WINDING_RULE), GLU_TESS_WINDING_POSITIVE);
 
     CGAL::OGL::DFacet::Coord_const_iterator cit;
-    TessUserData tess_data = {
-      0, f->normal(), getFacetColor(f),
-      0, 0, 0, 0, 0, vbo_builder
-    };
+    TessUserData tess_data = {0, f->normal(), getFacetColor(f), 0, 0, 0, 0, 0, vbo_builder};
 
     gluTessBeginPolygon(tess_, &tess_data);
     // forall facet cycles of f:
     for (unsigned i = 0; i < f->number_of_facet_cycles(); ++i) {
       gluTessBeginContour(tess_);
       // put all vertices in facet cycle into contour:
-      for (cit = f->facet_cycle_begin(i);
-           cit != f->facet_cycle_end(i); ++cit) {
+      for (cit = f->facet_cycle_begin(i); cit != f->facet_cycle_end(i); ++cit) {
         gluTessVertex(tess_, *cit, *cit);
       }
       gluTessEndContour(tess_);
@@ -219,12 +212,14 @@ public:
     combineCallback(nullptr, nullptr, nullptr, nullptr);
   }
 
-  void create_polyhedron() {
+  void create_polyhedron()
+  {
     PRINTD("create_polyhedron");
 
     points_edges_container_ = std::make_unique<VertexStateContainer>();
 
-    VBOBuilder points_edges_builder(std::make_unique<VertexStateFactory>(), *points_edges_container_.get());
+    VBOBuilder points_edges_builder(std::make_unique<VertexStateFactory>(),
+                                    *points_edges_container_.get());
 
     points_edges_builder.addEdgeData();
     points_edges_builder.writeEdge();
@@ -252,14 +247,13 @@ public:
     });
     points_edges_container_->states().emplace_back(std::move(settings));
 
-    for (v = vertices_.begin(); v != vertices_.end(); ++v)
-      draw(v, points_edges_builder);
+    for (v = vertices_.begin(); v != vertices_.end(); ++v) draw(v, points_edges_builder);
 
     GLenum elements_type = 0;
-    if (points_edges_builder.useElements()) elements_type = points_edges_builder.elementsData()->glType();
+    if (points_edges_builder.useElements())
+      elements_type = points_edges_builder.elementsData()->glType();
     std::shared_ptr<VertexState> vs = points_edges_builder.createVertexState(
-      GL_POINTS, vertices_.size(), elements_type,
-      points_edges_builder.writeIndex(), elements_offset);
+      GL_POINTS, vertices_.size(), elements_type, points_edges_builder.writeIndex(), elements_offset);
     points_edges_container_->states().emplace_back(std::move(vs));
     points_edges_builder.addAttributePointers(last_size);
 
@@ -283,15 +277,13 @@ public:
     });
     points_edges_container_->states().emplace_back(std::move(settings));
 
-    for (e = edges_.begin(); e != edges_.end(); ++e)
-      draw(e, points_edges_builder);
-
+    for (e = edges_.begin(); e != edges_.end(); ++e) draw(e, points_edges_builder);
 
     elements_type = 0;
-    if (points_edges_builder.useElements()) elements_type = points_edges_builder.elementsData()->glType();
-    vs = points_edges_builder.createVertexState(
-      GL_LINES, edges_.size() * 2, elements_type,
-      points_edges_builder.writeIndex(), elements_offset);
+    if (points_edges_builder.useElements())
+      elements_type = points_edges_builder.elementsData()->glType();
+    vs = points_edges_builder.createVertexState(GL_LINES, edges_.size() * 2, elements_type,
+                                                points_edges_builder.writeIndex(), elements_offset);
     points_edges_container_->states().emplace_back(std::move(vs));
     points_edges_builder.addAttributePointers(last_size);
 
@@ -300,7 +292,8 @@ public:
     // Halffacets
     halffacets_container_ = std::make_unique<VertexStateContainer>();
 
-    // FIXME: We don't know the size of this VertexArray in advanced, so we have to deal with some fallback mechanism for filling in the data. This complicates code quite a bit
+    // FIXME: We don't know the size of this VertexArray in advanced, so we have to deal with some
+    // fallback mechanism for filling in the data. This complicates code quite a bit
     VBOBuilder halffacets_builder(std::make_unique<VertexStateFactory>(), *halffacets_container_.get());
     halffacets_builder.addSurfaceData();
     halffacets_builder.writeSurface();
@@ -324,18 +317,21 @@ public:
     halffacets_builder.createInterleavedVBOs();
   }
 
-  void init() override {
+  void init() override
+  {
     PRINTD("VBO init()");
     create_polyhedron();
     PRINTD("VBO init() end");
   }
 
-  void draw() const override {
+  void draw() const override
+  {
     PRINTD("VBO draw()");
     PRINTD("VBO draw() end");
   }
 
-  void draw(bool showedges) const override {
+  void draw(bool showedges) const override
+  {
     PRINTDB("VBO draw(showedges = %d)", showedges);
     // grab current state to restore after
     GLfloat current_point_size, current_line_width;
@@ -369,28 +365,34 @@ public:
     PRINTD("VBO draw() end");
   }
 
-
   // overrides function in OGL_helper.h
-  [[nodiscard]] CGAL::Color getVertexColor(Vertex_iterator v) const override {
+  [[nodiscard]] CGAL::Color getVertexColor(Vertex_iterator v) const override
+  {
     PRINTD("getVertexColor");
-    CGAL::Color c = v->mark() ? colors[CGALColorIndex::UNMARKED_VERTEX_COLOR] : colors[CGALColorIndex::MARKED_VERTEX_COLOR];
+    CGAL::Color c = v->mark() ? colors[CGALColorIndex::UNMARKED_VERTEX_COLOR]
+                              : colors[CGALColorIndex::MARKED_VERTEX_COLOR];
     return c;
   }
 
   // overrides function in OGL_helper.h
-  [[nodiscard]] CGAL::Color getEdgeColor(Edge_iterator e) const override {
+  [[nodiscard]] CGAL::Color getEdgeColor(Edge_iterator e) const override
+  {
     PRINTD("getEdgeColor");
-    CGAL::Color c = e->mark() ? colors[CGALColorIndex::UNMARKED_EDGE_COLOR] : colors[CGALColorIndex::MARKED_EDGE_COLOR];
+    CGAL::Color c = e->mark() ? colors[CGALColorIndex::UNMARKED_EDGE_COLOR]
+                              : colors[CGALColorIndex::MARKED_EDGE_COLOR];
     return c;
   }
 
   // overrides function in OGL_helper.h
-  [[nodiscard]] CGAL::Color getFacetColor(Halffacet_iterator f) const override {
-    CGAL::Color c = f->mark() ? colors[CGALColorIndex::UNMARKED_FACET_COLOR] : colors[CGALColorIndex::MARKED_FACET_COLOR];
+  [[nodiscard]] CGAL::Color getFacetColor(Halffacet_iterator f) const override
+  {
+    CGAL::Color c = f->mark() ? colors[CGALColorIndex::UNMARKED_FACET_COLOR]
+                              : colors[CGALColorIndex::MARKED_FACET_COLOR];
     return c;
   }
 
-  void setColor(CGALColorIndex color_index, const Color4f& c) {
+  void setColor(CGALColorIndex color_index, const Color4f& c)
+  {
     // Note: Not setting alpha here as none of our built-in colors currently have an alpha component
     // This _may_ yield unexpected results for user-defined colors with alpha components.
     PRINTDB("setColor %i %f %f %f", color_index % c.r() % c.g() % c.b());
@@ -401,4 +403,4 @@ protected:
   CGAL::Color colors[CGALColorIndex::NUM_COLORS];
   std::unique_ptr<VertexStateContainer> points_edges_container_;
   std::unique_ptr<VertexStateContainer> halffacets_container_;
-}; // Polyhedron
+};  // Polyhedron

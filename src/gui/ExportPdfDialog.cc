@@ -50,7 +50,7 @@ ExportPdfDialog::ExportPdfDialog()
   this->groupScale->setChecked(S::exportPdfShowScale.value());
   this->checkBoxShowScaleMessage->setChecked(S::exportPdfShowScaleMessage.value());
   this->groupGrid->setChecked(S::exportPdfShowGrid.value());
-  
+
   // Initialize grid size from settings
   const auto gridSize = S::exportPdfGridSize.value();
   for (auto *button : buttonGroupGridSize->buttons()) {
@@ -75,9 +75,12 @@ ExportPdfDialog::ExportPdfDialog()
 
   groupMetaData->setChecked(S::exportPdfAddMetaData.value());
   initMetaData(nullptr, this->lineEditMetaDataTitle, nullptr, S::exportPdfMetaDataTitle);
-  initMetaData(this->checkBoxMetaDataAuthor, this->lineEditMetaDataAuthor, &S::exportPdfAddMetaDataAuthor, S::exportPdfMetaDataAuthor);
-  initMetaData(this->checkBoxMetaDataSubject, this->lineEditMetaDataSubject, &S::exportPdfAddMetaDataSubject, S::exportPdfMetaDataSubject);
-  initMetaData(this->checkBoxMetaDataKeywords, this->lineEditMetaDataKeywords, &S::exportPdfAddMetaDataKeywords, S::exportPdfMetaDataKeywords);
+  initMetaData(this->checkBoxMetaDataAuthor, this->lineEditMetaDataAuthor,
+               &S::exportPdfAddMetaDataAuthor, S::exportPdfMetaDataAuthor);
+  initMetaData(this->checkBoxMetaDataSubject, this->lineEditMetaDataSubject,
+               &S::exportPdfAddMetaDataSubject, S::exportPdfMetaDataSubject);
+  initMetaData(this->checkBoxMetaDataKeywords, this->lineEditMetaDataKeywords,
+               &S::exportPdfAddMetaDataKeywords, S::exportPdfMetaDataKeywords);
 }
 
 int ExportPdfDialog::exec()
@@ -105,9 +108,12 @@ int ExportPdfDialog::exec()
     S::exportPdfStrokeWidth.setValue(this->doubleSpinBoxStrokeWidth->value());
     S::exportPdfAddMetaData.setValue(this->groupMetaData->isChecked());
     applyMetaData(nullptr, this->lineEditMetaDataTitle, nullptr, S::exportPdfMetaDataTitle);
-    applyMetaData(this->checkBoxMetaDataAuthor, this->lineEditMetaDataAuthor, &S::exportPdfAddMetaDataAuthor, S::exportPdfMetaDataAuthor);
-    applyMetaData(this->checkBoxMetaDataSubject, this->lineEditMetaDataSubject, &S::exportPdfAddMetaDataSubject, S::exportPdfMetaDataSubject);
-    applyMetaData(this->checkBoxMetaDataKeywords, this->lineEditMetaDataKeywords, &S::exportPdfAddMetaDataKeywords, S::exportPdfMetaDataKeywords);
+    applyMetaData(this->checkBoxMetaDataAuthor, this->lineEditMetaDataAuthor,
+                  &S::exportPdfAddMetaDataAuthor, S::exportPdfMetaDataAuthor);
+    applyMetaData(this->checkBoxMetaDataSubject, this->lineEditMetaDataSubject,
+                  &S::exportPdfAddMetaDataSubject, S::exportPdfMetaDataSubject);
+    applyMetaData(this->checkBoxMetaDataKeywords, this->lineEditMetaDataKeywords,
+                  &S::exportPdfAddMetaDataKeywords, S::exportPdfMetaDataKeywords);
     Settings::Settings::visit(SettingsWriter());
   }
 
@@ -184,12 +190,6 @@ void ExportPdfDialog::on_toolButtonStrokeWidthReset_clicked()
   this->doubleSpinBoxStrokeWidth->setValue(this->defaultStrokeWidth);
 }
 
-void ExportPdfDialog::on_checkBoxEnableFill_toggled(bool checked)
-{
-  updateFillControlsEnabled();
-}
+void ExportPdfDialog::on_checkBoxEnableFill_toggled(bool checked) { updateFillControlsEnabled(); }
 
-void ExportPdfDialog::on_checkBoxEnableStroke_toggled(bool checked)
-{
-  updateStrokeControlsEnabled();
-}
+void ExportPdfDialog::on_checkBoxEnableStroke_toggled(bool checked) { updateStrokeControlsEnabled(); }

@@ -11,7 +11,8 @@
 #include "utils/exceptions.h"
 #include "utils/printutils.h"
 
-void ModuleInstantiation::print(std::ostream& stream, const std::string& indent, const bool inlined) const
+void ModuleInstantiation::print(std::ostream& stream, const std::string& indent,
+                                const bool inlined) const
 {
   if (!inlined) stream << indent;
   stream << modname + "(";
@@ -33,7 +34,8 @@ void ModuleInstantiation::print(std::ostream& stream, const std::string& indent,
   }
 }
 
-void IfElseModuleInstantiation::print(std::ostream& stream, const std::string& indent, const bool inlined) const
+void IfElseModuleInstantiation::print(std::ostream& stream, const std::string& indent,
+                                      const bool inlined) const
 {
   ModuleInstantiation::print(stream, indent, inlined);
   if (else_scope) {
@@ -60,18 +62,21 @@ void IfElseModuleInstantiation::print(std::ostream& stream, const std::string& i
  * noinline is required, as we here specifically optimize for stack usage
  * during normal operating, not runtime during error handling.
  */
-static void NOINLINE print_trace(const ModuleInstantiation *mod, const std::shared_ptr<const Context>& context){
+static void NOINLINE print_trace(const ModuleInstantiation *mod,
+                                 const std::shared_ptr<const Context>& context)
+{
   LOG(message_group::Trace, mod->location(), context->documentRoot(), "called by '%1$s'", mod->name());
 }
 
-std::shared_ptr<AbstractNode> ModuleInstantiation::evaluate(const std::shared_ptr<const Context>& context) const
+std::shared_ptr<AbstractNode> ModuleInstantiation::evaluate(
+  const std::shared_ptr<const Context>& context) const
 {
   boost::optional<InstantiableModule> module = context->lookup_module(this->name(), this->loc);
   if (!module) {
     return nullptr;
   }
 
-  try{
+  try {
     auto node = module->module->instantiate(module->defining_context, this, context);
     return node;
   } catch (EvaluationException& e) {

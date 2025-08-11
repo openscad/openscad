@@ -31,7 +31,7 @@
 #include <QDialog>
 #include <QString>
 
-#include "gui/qtgettext.h" // IWYU pragma: keep
+#include "gui/qtgettext.h"  // IWYU pragma: keep
 #include "ui_OctoPrintApiKeyDialog.h"
 
 class OctoPrintApiKeyDialog : public QDialog, public Ui::OctoPrintApiKeyDialog
@@ -63,5 +63,5 @@ private:
 
   QIcon iconOk;
   QIcon iconError;
-	QIcon iconWaiting;
+  QIcon iconWaiting;
 };

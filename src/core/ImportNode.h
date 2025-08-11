@@ -26,7 +26,7 @@ public:
   constexpr static double SVG_DEFAULT_DPI = 72.0;
 
   VISITABLE();
-  ImportNode(const ModuleInstantiation *mi, ImportType type) : LeafNode(mi), type(type) { }
+  ImportNode(const ModuleInstantiation *mi, ImportType type) : LeafNode(mi), type(type) {}
   std::string toString() const override;
   std::string name() const override;
 

@@ -8,8 +8,8 @@
 #include <sstream>
 #include <boost/regex.hpp>
 
-
-void GroupNodeChecker::incChildCount(int groupNodeIndex) {
+void GroupNodeChecker::incChildCount(int groupNodeIndex)
+{
   auto search = this->groupChildCounts.find(groupNodeIndex);
   // if no entry then given node wasn't a group node
   if (search != this->groupChildCounts.end()) {
@@ -17,7 +17,8 @@ void GroupNodeChecker::incChildCount(int groupNodeIndex) {
   }
 }
 
-int GroupNodeChecker::getChildCount(int groupNodeIndex) const {
+int GroupNodeChecker::getChildCount(int groupNodeIndex) const
+{
   auto search = this->groupChildCounts.find(groupNodeIndex);
   if (search != this->groupChildCounts.end()) {
     return search->second;
@@ -47,7 +48,6 @@ Response GroupNodeChecker::visit(State& state, const AbstractNode&)
   return Response::ContinueTraversal;
 }
 
-
 /*!
    \class NodeDumper
 
@@ -63,15 +63,9 @@ void NodeDumper::initCache()
   this->cache.clear();
 }
 
-void NodeDumper::finalizeCache()
-{
-  this->cache.setRootString(this->dumpstream.str());
-}
+void NodeDumper::finalizeCache() { this->cache.setRootString(this->dumpstream.str()); }
 
-bool NodeDumper::isCached(const AbstractNode& node) const
-{
-  return this->cache.contains(node);
-}
+bool NodeDumper::isCached(const AbstractNode& node) const { return this->cache.contains(node); }
 
 Response NodeDumper::visit(State& state, const GroupNode& node)
 {
@@ -121,14 +115,12 @@ Response NodeDumper::visit(State& state, const GroupNode& node)
   return Response::ContinueTraversal;
 }
 
-
 /*!
    Called for each node in the tree.
  */
 Response NodeDumper::visit(State& state, const AbstractNode& node)
 {
   if (state.isPrefix()) {
-
     // For handling root modifier '!'
     // Check if we are processing the root of the current Tree and init cache
     if (this->root.get() == &node) {
@@ -150,18 +142,17 @@ Response NodeDumper::visit(State& state, const AbstractNode& node)
     this->cache.insertStart(node.index(), this->dumpstream.tellp());
 
     if (this->idString) {
-
       static const boost::regex re(R"([^\s\"]+|\"(?:[^\"\\]|\\.)*\")");
       const auto name = STR(node);
       boost::sregex_token_iterator it(name.begin(), name.end(), re, 0);
-      std::copy(it, boost::sregex_token_iterator(), std::ostream_iterator<std::string>(this->dumpstream));
+      std::copy(it, boost::sregex_token_iterator(),
+                std::ostream_iterator<std::string>(this->dumpstream));
 
       if (node.getChildren().size() > 0) {
         this->dumpstream << "{";
       }
 
     } else {
-
       for (int i = 0; i < this->currindent; ++i) {
         this->dumpstream << this->indent;
       }
@@ -174,7 +165,6 @@ Response NodeDumper::visit(State& state, const AbstractNode& node)
     this->currindent++;
 
   } else if (state.isPostfix()) {
-
     this->currindent--;
 
     if (this->idString) {

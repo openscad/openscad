@@ -17,32 +17,31 @@ QWordSearchField::QWordSearchField(QFrame *parent) : QLineEdit(parent)
   fieldLabel->hide();
   connect(this, &QWordSearchField::findCountChanged, this, &QWordSearchField::updateFieldLabel);
   auto frameWidth = style()->pixelMetric(QStyle::PM_DefaultFrameWidth);
-  setStyleSheet(QString("QLineEdit { padding-right: %1px; } ").arg(fieldLabel->sizeHint().width() + frameWidth + 1));
+  setStyleSheet(
+    QString("QLineEdit { padding-right: %1px; } ").arg(fieldLabel->sizeHint().width() + frameWidth + 1));
   auto minsize = minimumSizeHint();
   setMinimumSize(qMax(minsize.width(), fieldLabel->sizeHint().height() + frameWidth * 2 + 2),
                  qMax(minsize.height(), fieldLabel->sizeHint().height() + frameWidth * 2 + 2));
   fieldLabel->setAlignment(Qt::AlignRight);
 }
 
-void QWordSearchField::resizeEvent(QResizeEvent *)
-{
-  resizeSearchField();
-}
+void QWordSearchField::resizeEvent(QResizeEvent *) { resizeSearchField(); }
 
 void QWordSearchField::resizeSearchField()
 {
   auto size = fieldLabel->sizeHint();
   auto frameWidth = style()->pixelMetric(QStyle::PM_DefaultFrameWidth);
-  fieldLabel->move(rect().right() - frameWidth - size.width(), (rect().bottom() + 1 - size.height()) / 2);
+  fieldLabel->move(rect().right() - frameWidth - size.width(),
+                   (rect().bottom() + 1 - size.height()) / 2);
 }
-
 
 void QWordSearchField::updateFieldLabel()
 {
   if (findcount > 0) {
     fieldLabel->setText(QString::number(findcount));
-    //Fixes issue #2962 : Due to that fieldLabel->setText above does not seem to change the size of the field correct (seems to always be to short field to accommodate all digits)
-    //when the field changes many times during several searches, we need to work around that by setting minimum size.
+    // Fixes issue #2962 : Due to that fieldLabel->setText above does not seem to change the size of the
+    // field correct (seems to always be to short field to accommodate all digits) when the field changes
+    // many times during several searches, we need to work around that by setting minimum size.
     fieldLabel->setMinimumSize(fieldLabel->minimumSizeHint());
     fieldLabel->setVisible(true);
   } else {

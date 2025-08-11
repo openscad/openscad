@@ -16,8 +16,10 @@ class Builtins
 public:
   static Builtins *instance(bool erase = false);
   static void init(const std::string& name, AbstractModule *module);
-  static void init(const std::string& name, AbstractModule *module, const std::vector<std::string>& calltipList);
-  static void init(const std::string& name, BuiltinFunction *function, const std::vector<std::string>& calltipList);
+  static void init(const std::string& name, AbstractModule *module,
+                   const std::vector<std::string>& calltipList);
+  static void init(const std::string& name, BuiltinFunction *function,
+                   const std::vector<std::string>& calltipList);
   void initialize();
   std::string isDeprecated(const std::string& name) const;
 

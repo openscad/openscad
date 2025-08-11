@@ -40,7 +40,7 @@ class HidApiInputDriver : public InputDriver
   std::string name;
   unsigned int buttons{0};
   hid_device *hid_dev{nullptr};
-  const struct device_id *dev {nullptr};
+  const struct device_id *dev{nullptr};
 
 public:
   HidApiInputDriver();
@@ -54,12 +54,8 @@ public:
   void hidapi_decode_axis(const unsigned char *buf, unsigned int len);
   void hidapi_decode_button(const unsigned char *buf, unsigned int len);
 
-  size_t getButtonCount() const override {
-    return Settings::max_buttons;
-  }
-  size_t getAxisCount() const override {
-    return Settings::max_axis;
-  }
+  size_t getButtonCount() const override { return Settings::max_buttons; }
+  size_t getAxisCount() const override { return Settings::max_axis; }
 
 private:
   std::pair<hid_device *, const struct device_id *> enumerate() const;

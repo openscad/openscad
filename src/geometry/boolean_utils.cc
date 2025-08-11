@@ -29,18 +29,14 @@ std::unique_ptr<PolySet> applyHull(const Geometry::Geometries& children)
   // Collect point cloud
   Reindexer<Hull_kernel::Point_3> reindexer;
 
-  auto addCapacity = [&](const auto n) {
-    reindexer.reserve(reindexer.size() + n);
-  };
+  auto addCapacity = [&](const auto n) { reindexer.reserve(reindexer.size() + n); };
 
-  auto addPoint = [&](const auto& v) {
-    reindexer.lookup(v);
-  };
+  auto addPoint = [&](const auto& v) { reindexer.lookup(v); };
 
   for (const auto& item : children) {
     auto& chgeom = item.second;
 #ifdef ENABLE_CGAL
-    if (const auto *N = dynamic_cast<const CGALNefGeometry*>(chgeom.get())) {
+    if (const auto *N = dynamic_cast<const CGALNefGeometry *>(chgeom.get())) {
       if (!N->isEmpty()) {
         addCapacity(N->p3->number_of_vertices());
         for (auto it = N->p3->vertices_begin(); it != N->p3->vertices_end(); ++it) {
@@ -49,14 +45,14 @@ std::unique_ptr<PolySet> applyHull(const Geometry::Geometries& children)
       }
 #endif  // ENABLE_CGAL
 #ifdef ENABLE_MANIFOLD
-    } else if (const auto *mani = dynamic_cast<const ManifoldGeometry*>(chgeom.get())) {
+    } else if (const auto *mani = dynamic_cast<const ManifoldGeometry *>(chgeom.get())) {
       addCapacity(mani->numVertices());
       mani->foreachVertexUntilTrue([&](auto& p) {
-          addPoint(CGALUtils::vector_convert<Hull_kernel::Point_3>(p));
-          return false;
-        });
+        addPoint(CGALUtils::vector_convert<Hull_kernel::Point_3>(p));
+        return false;
+      });
 #endif  // ENABLE_MANIFOLD
-    } else if (const auto *ps = dynamic_cast<const PolySet*>(chgeom.get())) {
+    } else if (const auto *ps = dynamic_cast<const PolySet *>(chgeom.get())) {
       addCapacity(ps->indices.size() * 3);
       for (const auto& p : ps->indices) {
         for (const auto& ind : p) {
@@ -66,7 +62,7 @@ std::unique_ptr<PolySet> applyHull(const Geometry::Geometries& children)
     }
   }
 
-  const auto &points = reindexer.getArray();
+  const auto& points = reindexer.getArray();
   if (points.size() <= 3) return nullptr;
 
   // Apply hull
@@ -102,7 +98,7 @@ std::shared_ptr<const Geometry> applyMinkowski(const Geometry::Geometries& child
 #endif  // ENABLE_MANIFOLD
   return CGALUtils::applyMinkowski3D(children);
 }
-#else  // ENABLE_CGAL
+#else   // ENABLE_CGAL
 std::unique_ptr<PolySet> applyHull(const Geometry::Geometries& children)
 {
   return std::make_unique<PolySet>(3, true);

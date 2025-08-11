@@ -30,7 +30,8 @@
 #include <QString>
 #include <string>
 
-void SettingsWriter::handle(Settings::SettingsEntryBase& entry) const {
+void SettingsWriter::handle(Settings::SettingsEntryBase& entry) const
+{
   QSettingsCached settings;
   std::string key = entry.category() + "/" + entry.name();
   if (entry.isDefault()) {

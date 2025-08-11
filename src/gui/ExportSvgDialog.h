@@ -4,7 +4,7 @@
 #include <QDialog>
 #include <QColor>
 
-#include "gui/qtgettext.h" // IWYU pragma: keep
+#include "gui/qtgettext.h"  // IWYU pragma: keep
 #include "ui_ExportSvgDialog.h"
 #include "gui/InitConfigurator.h"
 #include "io/export.h"

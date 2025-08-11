@@ -54,15 +54,15 @@ public:
   const QString getInfoUrl() const { return infoUrl; }
   const std::vector<FileFormat> getFileFormats() const { return fileFormats; }
 
-  const QString upload(const QString& exportFileName, const QString& fileName, const network_progress_func_t& progress_func) const;
+  const QString upload(const QString& exportFileName, const QString& fileName,
+                       const network_progress_func_t& progress_func) const;
 
   bool init(const QJsonObject& serviceObject);
 
   static const PrintService *getPrintService(const std::string& name);
-  static const PrintServices &getPrintServices();
+  static const PrintServices& getPrintServices();
 
 private:
-
   QString service;
   QString displayName;
   QString apiUrl;

@@ -21,7 +21,8 @@
 #include "core/RoofNode.h"
 
 #define RAISE_ROOF_EXCEPTION(message) \
-        throw RoofNode::roof_exception((boost::format("%s line %d: %s") % __FILE__ % __LINE__ % (message)).str());
+  throw RoofNode::roof_exception(     \
+    (boost::format("%s line %d: %s") % __FILE__ % __LINE__ % (message)).str());
 
 namespace roof_vd {
 
@@ -33,7 +34,8 @@ struct Point {
   VD_int a;
   VD_int b;
   Point(VD_int x, VD_int y) : a(x), b(y) {}
-  friend std::ostream& operator<<(std::ostream& os, const Point& point) {
+  friend std::ostream& operator<<(std::ostream& os, const Point& point)
+  {
     return os << "(" << point.a << ", " << point.b << ")";
   }
 };
@@ -42,12 +44,13 @@ struct Segment {
   Point p0;
   Point p1;
   Segment(VD_int x1, VD_int y1, VD_int x2, VD_int y2) : p0(x1, y1), p1(x2, y2) {}
-  friend std::ostream& operator<<(std::ostream& os, const Segment& segment) {
+  friend std::ostream& operator<<(std::ostream& os, const Segment& segment)
+  {
     return os << segment.p0 << " -- " << segment.p1;
   }
 };
 
-} // roof_vd
+}  // namespace roof_vd
 
 // pass our Point and Segment structures to boost::polygon
 namespace boost::polygon {
@@ -59,8 +62,8 @@ template <>
 struct point_traits<roof_vd::Point> {
   using coordinate_type = roof_vd::VD_int;
 
-  static inline coordinate_type get(
-    const roof_vd::Point& point, const orientation_2d& orient) {
+  static inline coordinate_type get(const roof_vd::Point& point, const orientation_2d& orient)
+  {
     return (orient == HORIZONTAL) ? point.a : point.b;
   }
 };
@@ -73,44 +76,40 @@ struct segment_traits<roof_vd::Segment> {
   using coordinate_type = roof_vd::VD_int;
   using point_type = roof_vd::Point;
 
-  static inline point_type get(const roof_vd::Segment& segment, const direction_1d& dir) {
+  static inline point_type get(const roof_vd::Segment& segment, const direction_1d& dir)
+  {
     return dir.to_int() ? segment.p1 : segment.p0;
   }
 };
-}  // boost::polygon
-
+}  // namespace boost::polygon
 
 namespace roof_vd {
 
-bool operator==(const Point& lhs, const Point& rhs)
-{
-  return lhs.a == rhs.a  &&  lhs.b == rhs.b;
-}
+bool operator==(const Point& lhs, const Point& rhs) { return lhs.a == rhs.a && lhs.b == rhs.b; }
 
-bool operator==(const Segment& lhs, const Segment& rhs)
-{
-  return lhs.p0 == rhs.p0  &&  lhs.p1 == rhs.p1;
-}
+bool operator==(const Segment& lhs, const Segment& rhs) { return lhs.p0 == rhs.p0 && lhs.p1 == rhs.p1; }
 
-bool segment_has_endpoint(const Segment& segment, const Point& point) {
+bool segment_has_endpoint(const Segment& segment, const Point& point)
+{
   return segment.p0 == point || segment.p1 == point;
 }
 
-double distance_to_segment(const Vector2d& vertex, const Segment& segment) {
+double distance_to_segment(const Vector2d& vertex, const Segment& segment)
+{
   Vector2d segment_normal(-(segment.p1.b - segment.p0.b), segment.p1.a - segment.p0.a);
   segment_normal.normalize();
   Vector2d p0_to_vertex(vertex[0] - segment.p0.a, vertex[1] - segment.p0.b);
   return std::abs(segment_normal.dot(p0_to_vertex));
 }
 
-double distance_to_point(const Vector2d& vertex, const Point& point) {
+double distance_to_point(const Vector2d& vertex, const Point& point)
+{
   Vector2d point_to_vertex(vertex[0] - point.a, vertex[1] - point.b);
   return point_to_vertex.norm();
 }
 
-std::vector<Vector2d> discretize_arc(const Point& point, const Segment& segment,
-                                     const Vector2d& v0, const Vector2d& v1,
-                                     double fa, double fs)
+std::vector<Vector2d> discretize_arc(const Point& point, const Segment& segment, const Vector2d& v0,
+                                     const Vector2d& v1, double fa, double fs)
 {
   std::vector<Vector2d> ret;
 
@@ -146,27 +145,23 @@ std::vector<Vector2d> discretize_arc(const Point& point, const Segment& segment,
     RAISE_ROOF_EXCEPTION("error in parabolic arc discretization");
   }
 
-  // in transformed coordinates the parabola has equation y = (x^2 - point_distance^2) / (2 point_distance)
+  // in transformed coordinates the parabola has equation y = (x^2 - point_distance^2) / (2
+  // point_distance)
   auto y = [point_distance](double x) {
-      return (x * x - point_distance * point_distance) / (2 * point_distance);
-    };
-  auto y_prime = [point_distance](double x) {
-      return x / point_distance;
-    };
+    return (x * x - point_distance * point_distance) / (2 * point_distance);
+  };
+  auto y_prime = [point_distance](double x) { return x / point_distance; };
   // angle between a segment and the parabola
-  auto segment_angle = [y, y_prime](double x1, double x2){
-      double dx = x2 - x1,
-       dy = y(x2) - y(x1);
-      double tx = 1,
-             ty = (std::abs(x1) < std::abs(x2)) ? y_prime(x1) : y_prime(x2);
-      return std::abs(std::atan2(dx * ty - dy * tx, dx * tx + dy * ty));
-    };
+  auto segment_angle = [y, y_prime](double x1, double x2) {
+    double dx = x2 - x1, dy = y(x2) - y(x1);
+    double tx = 1, ty = (std::abs(x1) < std::abs(x2)) ? y_prime(x1) : y_prime(x2);
+    return std::abs(std::atan2(dx * ty - dy * tx, dx * tx + dy * ty));
+  };
   // squared length of segment
-  auto segment_sqr_length = [y](double x1, double x2){
-      double dx = x2 - x1,
-       dy = y(x2) - y(x1);
-      return dx * dx + dy * dy;
-    };
+  auto segment_sqr_length = [y](double x1, double x2) {
+    double dx = x2 - x1, dy = y(x2) - y(x1);
+    return dx * dx + dy * dy;
+  };
 
   std::vector<double> transformed_points_x = {transformed_v0_x, transformed_v1_x};
 
@@ -201,7 +196,8 @@ std::vector<Vector2d> discretize_arc(const Point& point, const Segment& segment,
 // a structure that saves 2d faces and heights of vertices
 struct Faces_2_plus_1 {
   struct Vector2d_comp {
-    bool operator()(const Vector2d& lhs, const Vector2d& rhs) const {
+    bool operator()(const Vector2d& lhs, const Vector2d& rhs) const
+    {
       return (lhs[0] < rhs[0]) || (lhs[0] == rhs[0] && lhs[1] < rhs[1]);
     }
   };
@@ -209,23 +205,22 @@ struct Faces_2_plus_1 {
   std::map<Vector2d, double, Vector2d_comp> heights;
 };
 
-Faces_2_plus_1 vd_inner_faces(const voronoi_diagram& vd,
-                              const std::vector<Segment>& segments,
-                              double fa, double fs) {
+Faces_2_plus_1 vd_inner_faces(const voronoi_diagram& vd, const std::vector<Segment>& segments, double fa,
+                              double fs)
+{
   Faces_2_plus_1 ret;
 
   auto cell_contains_boundary_point = [&segments](const voronoi_diagram::cell_type *cell,
                                                   const Point& point) {
-      Segment segment = segments[cell->source_index()];
-      return (cell->contains_segment() && segment_has_endpoint(segment, point) )
-             || (cell->source_category() == ::boost::polygon::SOURCE_CATEGORY_SEGMENT_START_POINT
-                 && segment.p0 == point)
-             || (cell->source_category() == ::boost::polygon::SOURCE_CATEGORY_SEGMENT_END_POINT
-                 && segment.p1 == point);
-    };
+    Segment segment = segments[cell->source_index()];
+    return (cell->contains_segment() && segment_has_endpoint(segment, point)) ||
+           (cell->source_category() == ::boost::polygon::SOURCE_CATEGORY_SEGMENT_START_POINT &&
+            segment.p0 == point) ||
+           (cell->source_category() == ::boost::polygon::SOURCE_CATEGORY_SEGMENT_END_POINT &&
+            segment.p1 == point);
+  };
 
   for (const auto& cell : vd.cells()) {
-
     std::size_t cell_index = cell.source_index();
     if (cell.is_degenerate()) {
       RAISE_ROOF_EXCEPTION("Voronoi error");
@@ -236,8 +231,8 @@ Faces_2_plus_1 vd_inner_faces(const voronoi_diagram& vd,
       // walk around the cell, find edge starting from segment.p1 or passing through it
       const voronoi_diagram::edge_type *edge = cell.incident_edge();
       for (;;) {
-        if (cell_contains_boundary_point(edge->twin()->cell(), segment.p1)
-            && !cell_contains_boundary_point(edge->next()->twin()->cell(), segment.p1)) {
+        if (cell_contains_boundary_point(edge->twin()->cell(), segment.p1) &&
+            !cell_contains_boundary_point(edge->next()->twin()->cell(), segment.p1)) {
           break;
         }
         edge = edge->next();
@@ -253,21 +248,22 @@ Faces_2_plus_1 vd_inner_faces(const voronoi_diagram& vd,
         ret.heights[p] = 0.0;
       }
       do {
-        if (edge->is_linear()) { // linear edge is simple
+        if (edge->is_linear()) {  // linear edge is simple
           Vector2d p(edge->vertex1()->x(), edge->vertex1()->y());
           ret.faces.back().push_back(p);
           ret.heights[p] = distance_to_segment(p, segment);
-        } else { // discretize a parabolic edge
+        } else {  // discretize a parabolic edge
           const voronoi_diagram::cell_type *twin_cell = edge->twin()->cell();
           if (!(twin_cell->contains_point())) {
             RAISE_ROOF_EXCEPTION("Voronoi error");
           }
           Segment twin_segment = segments[twin_cell->source_index()];
           Point twin_point =
-            (twin_cell->source_category() == ::boost::polygon::SOURCE_CATEGORY_SEGMENT_START_POINT) ?
-            twin_segment.p0 : twin_segment.p1;
+            (twin_cell->source_category() == ::boost::polygon::SOURCE_CATEGORY_SEGMENT_START_POINT)
+              ? twin_segment.p0
+              : twin_segment.p1;
           Vector2d v0(edge->vertex0()->x(), edge->vertex0()->y()),
-          v1(edge->vertex1()->x(), edge->vertex1()->y());
+            v1(edge->vertex1()->x(), edge->vertex1()->y());
           std::vector<Vector2d> discr = discretize_arc(twin_point, segment, v1, v0, fa, fs);
           std::reverse(discr.begin(), discr.end());
           for (std::size_t k = 1; k < discr.size(); k++) {
@@ -282,11 +278,12 @@ Faces_2_plus_1 vd_inner_faces(const voronoi_diagram& vd,
         ret.faces.back().push_back(p);
         ret.heights[p] = 0.0;
       }
-    } else { // point cell
+    } else {  // point cell
       const voronoi_diagram::edge_type *edge = cell.incident_edge();
-      const Point point = (cell.source_category() == ::boost::polygon::SOURCE_CATEGORY_SEGMENT_START_POINT) ?
-        segment.p0 : segment.p1;
-      while (!(edge->is_secondary() && edge->prev()->is_secondary() )) {
+      const Point point =
+        (cell.source_category() == ::boost::polygon::SOURCE_CATEGORY_SEGMENT_START_POINT) ? segment.p0
+                                                                                          : segment.p1;
+      while (!(edge->is_secondary() && edge->prev()->is_secondary())) {
         edge = edge->next();
         if (edge == cell.incident_edge()) {
           RAISE_ROOF_EXCEPTION("Voronoi error");
@@ -294,22 +291,21 @@ Faces_2_plus_1 vd_inner_faces(const voronoi_diagram& vd,
       }
 
       auto add_triangle = [&ret, &point](const Vector2d& v0, const Vector2d& v1) {
-          ret.faces.emplace_back();
+        ret.faces.emplace_back();
 
-          Vector2d p(point.a, point.b);
-          ret.faces.back().push_back(p);
-          ret.heights[p] = 0.0;
+        Vector2d p(point.a, point.b);
+        ret.faces.back().push_back(p);
+        ret.heights[p] = 0.0;
 
-          ret.faces.back().push_back(v0);
-          ret.heights[v0] = distance_to_point(v0, point);
+        ret.faces.back().push_back(v0);
+        ret.heights[v0] = distance_to_point(v0, point);
 
-          ret.faces.back().push_back(v1);
-          ret.heights[v1] = distance_to_point(v1, point);
-        };
+        ret.faces.back().push_back(v1);
+        ret.heights[v1] = distance_to_point(v1, point);
+      };
 
-      if (edge->next()->next() != edge &&
-          segments[edge->twin()->cell()->source_index()].p0 ==
-          segments[edge->prev()->twin()->cell()->source_index()].p1) {
+      if (edge->next()->next() != edge && segments[edge->twin()->cell()->source_index()].p0 ==
+                                            segments[edge->prev()->twin()->cell()->source_index()].p1) {
         // inner non-degenerate cell
         for (;;) {
           edge = edge->next();
@@ -317,7 +313,7 @@ Faces_2_plus_1 vd_inner_faces(const voronoi_diagram& vd,
             break;
           } else {
             Vector2d v0(edge->vertex0()->x(), edge->vertex0()->y()),
-            v1(edge->vertex1()->x(), edge->vertex1()->y());
+              v1(edge->vertex1()->x(), edge->vertex1()->y());
             if (edge->is_curved()) {
               Segment twin_segment = segments[edge->twin()->cell()->source_index()];
               std::vector<Vector2d> discr = discretize_arc(point, twin_segment, v0, v1, fa, fs);
@@ -340,9 +336,8 @@ std::unique_ptr<PolySet> voronoi_diagram_roof(const Polygon2d& poly, double fa, 
   PolySetBuilder hatbuilder = PolySetBuilder();
 
   try {
-
     // input data for voronoi diagram is 32 bit integers
-    // FIXME: Why does this need to be 32 bits? The default we use elsewhere is 
+    // FIXME: Why does this need to be 32 bits? The default we use elsewhere is
     // scaleBitsFromPrecision(DEFAULT_PRECISION) which is 10^8.
     const int scale_bits = ClipperUtils::scaleBitsFromBounds(poly.getBoundingBox(), 32);
     const double scale = std::ldexp(1.0, scale_bits);
@@ -378,13 +373,14 @@ std::unique_ptr<PolySet> voronoi_diagram_roof(const Polygon2d& poly, double fa, 
       for (const IndexedFace& triangle : tess->indices) {
         std::vector<int> roof;
         for (int tvind : triangle) {
-          Vector3d tv=tess->vertices[tvind];
+          Vector3d tv = tess->vertices[tvind];
           Vector2d v;
           v << tv[0], tv[1];
           if (!(inner_faces.heights.find(v) != inner_faces.heights.end())) {
             RAISE_ROOF_EXCEPTION("Voronoi error");
           }
-          roof.push_back(hatbuilder.vertexIndex(Vector3d(v[0] / scale, v[1] / scale, inner_faces.heights[v] / scale)));
+          roof.push_back(hatbuilder.vertexIndex(
+            Vector3d(v[0] / scale, v[1] / scale, inner_faces.heights[v] / scale)));
         }
         hatbuilder.appendPolygon(roof);
       }
@@ -403,9 +399,9 @@ std::unique_ptr<PolySet> voronoi_diagram_roof(const Polygon2d& poly, double fa, 
         poly_floor.addOutline(o);
       }
       auto tess = poly_floor.tessellate();
-      for (const IndexedFace & triangle : tess->indices) {
+      for (const IndexedFace& triangle : tess->indices) {
         std::vector<int> floor;
-        for (const int  tv : triangle) {
+        for (const int tv : triangle) {
           floor.push_back(hatbuilder.vertexIndex(tess->vertices[tv]));
         }
         // floor has reverse orientation
@@ -420,4 +416,4 @@ std::unique_ptr<PolySet> voronoi_diagram_roof(const Polygon2d& poly, double fa, 
   return hatbuilder.build();
 }
 
-} // roof_vd
+}  // namespace roof_vd
