@@ -61,7 +61,7 @@ do
   fi
 
   if [ "$KEY" == "--diffbase" ]; then
-    [ -z "$var" ] && echo "script option --diffbase=BASE requires a non-empty value" && exit 1
+    [ -z "${VALUE}" ] && echo "script option --diffbase=BASE requires a non-empty value" && exit 1
     DIFFBASE="${VALUE}"
   elif [ "$PARAM" == "--check" ]; then
     CHECKALL=1
