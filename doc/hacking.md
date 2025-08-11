@@ -9,18 +9,24 @@ Coding style highlights:
 
 ## Beautifying code
 
-Code to be committed can be beautified by installing `uncrustify`
-(https://github.com/uncrustify/uncrustify) and running
-`scripts/beautify.sh`. This will, by default, beautify all files that
+Code to be committed can be beautified by installing `clang-format` and running
+`./scripts/beautify.sh`. This will, by default, beautify all files that
 are currently changed.
 
-Alternatively, it's possible to beautify the entire codebase by running `scripts/beautify.sh --all`.
-This is not recommended except in special cases like:
-* We're upgrading uncrustify to fix rules globally
-* You're bringing an old branch to life and want to minimize conflict cause by the large coding style update
+Alternatively, it's possible to beautify the entire codebase by running `./scripts/beautify.sh --all`.
 
-Note: Uncrustify is in heavy development and tends to introduce breaking changes from time to time.
-OpenSCAD has been tested against uncrustify commit a05edf605a5b1ea69ac36918de563d4acf7f31fb (Dec 24 2017).
+All pull requests must pass `./scripts/beautify.sh --check` . In rare cases beautify may need to be run multiple times before all issues are resolved. If there is an issue with the local version of `clang-format` conflicting with the workflow version, the workflows output a patch that can be manually applied to resolve the differences. The patch can be pulled from GitHub or generated locally using `act`:
+
+    act -j Beautify --artifact-server-path build/artifacts/
+    unzip build/artifacts/1/beautify-patch/beautify-patch.zip
+    git apply beautify.patch
+
+`beautify.sh` can also be used directly as a git hook.
+
+    cd .git/hooks
+    ln -s ../../scripts/beautify.sh pre-commit
+
+After making a commit beautify will automatically run. You can then check the changes, and add them to their own commit, or amend them to the previous commit using `git commit --amend`
 
 # Regression Tests
 
