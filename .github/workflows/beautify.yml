@@ -42,3 +42,7 @@ jobs:
       with:
         name: beautify-patch
         path: ${{ runner.temp }}/beautify.patch
+
+    - name: Raise failure
+      if: steps.check.outcome == 'failure'
+      run: exit 1
