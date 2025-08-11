@@ -17,7 +17,7 @@ Alternatively, it's possible to beautify the entire codebase by running `./scrip
 
 All pull requests must pass `./scripts/beautify.sh --check` . In rare cases beautify may need to be run multiple times before all issues are resolved. If there is an issue with the local version of `clang-format` conflicting with the workflow version, the workflows output a patch that can be manually applied to resolve the differences. The patch can be pulled from GitHub or generated locally using `act`:
 
-    act -j Beautify --artifact-server-path build/artifacts/
+    act -j Beautify -P ubuntu-latest=ghcr.io/catthehacker/ubuntu:act-24.04 --artifact-server-path build/artifacts/
     unzip build/artifacts/1/beautify-patch/beautify-patch.zip
     git apply beautify.patch
 
