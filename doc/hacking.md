@@ -21,7 +21,9 @@ All pull requests must pass `./scripts/beautify.sh --check` . In rare cases beau
     unzip build/artifacts/1/beautify-patch/beautify-patch.zip
     git apply beautify.patch
 
-`beautify.sh` can also be used directly as a git hook.
+This can be done automatically using `./scripts/hard_beautify.sh`
+
+`beautify.sh` or `hard_beautify.sh` can also be used directly as a git hook:
 
     cd .git/hooks
     ln -s ../../scripts/beautify.sh pre-commit
