@@ -86,6 +86,7 @@ function execute() {
     MESSAGE=$2
 
     echo "$MESSAGE"
+    $VERSION_CMD
     
     "$FUNCTION"
     RETURN_VALUE=$?
