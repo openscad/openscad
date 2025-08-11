@@ -121,10 +121,8 @@ std::string CgalAdvNode::toString() const
   case CgalAdvType::FILL:      stream << "()"; break;
   case CgalAdvType::RESIZE:
     stream << "(newsize = [" << this->newsize[0] << "," << this->newsize[1] << "," << this->newsize[2]
-           << "]"
-           << ", auto = [" << this->autosize[0] << "," << this->autosize[1] << "," << this->autosize[2]
-           << "]"
-           << ", convexity = " << this->convexity << ")";
+           << "]" << ", auto = [" << this->autosize[0] << "," << this->autosize[1] << ","
+           << this->autosize[2] << "]" << ", convexity = " << this->convexity << ")";
     break;
   default: assert(false);
   }

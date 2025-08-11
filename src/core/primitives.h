@@ -61,8 +61,8 @@ public:
   std::string toString() const override
   {
     std::ostringstream stream;
-    stream << "sphere"
-           << "($fn = " << fn << ", $fa = " << fa << ", $fs = " << fs << ", r = " << r << ")";
+    stream << "sphere" << "($fn = " << fn << ", $fa = " << fa << ", $fs = " << fs << ", r = " << r
+           << ")";
     return stream.str();
   }
   std::string name() const override { return "sphere"; }
@@ -79,9 +79,8 @@ public:
   std::string toString() const override
   {
     std::ostringstream stream;
-    stream << "cylinder"
-           << "($fn = " << fn << ", $fa = " << fa << ", $fs = " << fs << ", h = " << h << ", r1 = " << r1
-           << ", r2 = " << r2 << ", center = " << (center ? "true" : "false") << ")";
+    stream << "cylinder" << "($fn = " << fn << ", $fa = " << fa << ", $fs = " << fs << ", h = " << h
+           << ", r1 = " << r1 << ", r2 = " << r2 << ", center = " << (center ? "true" : "false") << ")";
     return stream.str();
   }
   std::string name() const override { return "cylinder"; }
@@ -130,8 +129,8 @@ public:
   std::string toString() const override
   {
     std::ostringstream stream;
-    stream << "circle"
-           << "($fn = " << fn << ", $fa = " << fa << ", $fs = " << fs << ", r = " << r << ")";
+    stream << "circle" << "($fn = " << fn << ", $fa = " << fa << ", $fs = " << fs << ", r = " << r
+           << ")";
     return stream.str();
   }
   std::string name() const override { return "circle"; }

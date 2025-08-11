@@ -59,8 +59,7 @@ std::unique_ptr<Geometry> PolySet::copy() const { return std::make_unique<PolySe
 std::string PolySet::dump() const
 {
   std::ostringstream out;
-  out << "PolySet:"
-      << "\n dimensions:" << dim_ << "\n convexity:" << this->convexity
+  out << "PolySet:" << "\n dimensions:" << dim_ << "\n convexity:" << this->convexity
       << "\n num polygons: " << indices.size() << "\n polygons data:";
   for (const auto& polygon : indices) {
     out << "\n  polygon begin:";
