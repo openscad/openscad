@@ -134,6 +134,11 @@ std::string GroupNode::verbose_name() const
   return this->_name;
 }
 
+std::string GroupNode::model_name() const
+{
+  return this->_model_name;
+}
+
 std::string ListNode::name() const
 {
   return "list";

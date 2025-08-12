@@ -69,6 +69,7 @@ struct ExportContext {
   Color4f selectedColor;
   const ExportInfo& info;
   const std::shared_ptr<const Export3mfOptions> options;
+  std::string model_name;
 };
 
 uint32_t lib3mf_write_callback(const char *data, uint32_t bytes, std::ostream *stream)
@@ -157,7 +158,7 @@ bool append_polyset(const std::shared_ptr<const PolySet>& ps, ExportContext& ctx
     if (!mesh) return false;
 
     const int mesh_count = count_mesh_objects(ctx.model);
-    const auto modelname = ctx.modelcount == 1 ? "OpenSCAD Model" : "OpenSCAD Model " + std::to_string(mesh_count);
+    const auto modelname = ctx.model_name.empty() ?(ctx.modelcount == 1 ? "OpenSCAD Model" : "OpenSCAD Model " + std::to_string(mesh_count)) : ctx.model_name;
     const auto partname = ctx.modelcount == 1 ? "" : "Part " + std::to_string(mesh_count);
     mesh->SetName(modelname);
     if (ctx.basematerialgroup) {
@@ -251,6 +252,7 @@ bool append_nef(const CGALNefGeometry& root_N, ExportContext& ctx)
 
 bool append_3mf(const std::shared_ptr<const Geometry>& geom, ExportContext& ctx)
 {
+  ctx.model_name = geom.get()->getModelName();
   if (const auto geomlist = std::dynamic_pointer_cast<const GeometryList>(geom)) {
     ctx.modelcount = geomlist->getChildren().size();
     for (const auto& item : geomlist->getChildren()) {
