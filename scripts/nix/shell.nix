@@ -49,7 +49,7 @@ pkgs.mkShell {
     imagemagick
 
     # used by scripts/beautify.sh to clean up code
-    uncrustify
+    clang-tools
   ];
 
   # avoid segfault when showing a file dialog or color picker
