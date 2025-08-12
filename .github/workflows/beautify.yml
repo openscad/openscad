@@ -45,4 +45,7 @@ jobs:
 
     - name: Raise failure
       if: steps.check.outcome == 'failure'
-      run: exit 1
+      run: |
+        echo "Code is improperly formatted. Check steps above and see https://github.com/openscad/openscad/blob/master/doc/hacking.md for more information."
+        clang-format --version
+        exit 1
