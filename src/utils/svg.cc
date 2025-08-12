@@ -327,12 +327,18 @@ std::string dump_svg(const CGAL_Nef_polyhedron3& N)
   out << "<!--CGAL_Nef_polyhedron3 dump begin-->\n";
   out << svg_header() << "\n" << svg_border() << "\n";
   out << svg_styleblock(linewidth) << "\n" << svg_axes() << "\n";
-  out << "\n<!-- CGAL Nef Polyhedron data" << "\nnumber of vertices " << N.number_of_vertices()
-      << "\nnumber of halfedges " << N.number_of_halfedges() << "\nnumber of edges "
-      << N.number_of_edges() << "\nnumber of halffacets " << N.number_of_halffacets()
-      << "\nnumber of facets " << N.number_of_facets() << "\nnumber of volumes " << N.number_of_volumes()
-      << "\nis_simple()? " << N.is_simple() << "\nis_valid()? "
-      << (const_cast<CGAL_Nef_polyhedron3&>(N)).is_valid() << "\n -->\n";
+  // clang-format off
+  out << "\n<!-- CGAL Nef Polyhedron data"
+    << "\nnumber of vertices " << N.number_of_vertices()
+    << "\nnumber of halfedges " << N.number_of_halfedges()
+    << "\nnumber of edges " << N.number_of_edges()
+    << "\nnumber of halffacets " << N.number_of_halffacets()
+    << "\nnumber of facets " << N.number_of_facets()
+    << "\nnumber of volumes " << N.number_of_volumes()
+    << "\nis_simple()? " << N.is_simple()
+    << "\nis_valid()? " << (const_cast<CGAL_Nef_polyhedron3&>(N)).is_valid()
+    << "\n -->\n";
+  // clang-format on
   out << "<!-- CGAL Nef Polyhedron sphere map: -->\n";
   out << sphere_map_dump(N);
 

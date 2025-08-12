@@ -203,9 +203,11 @@ Matrix3d angle_axis_degrees(double a, Vector3d v)
   if (m > 0) {
     const Vector3d Cv = v * ((1 - c) / m);
     const Vector3d us = v.normalized() * s;
-    M << Cv[0] * v[0] + c, Cv[1] * v[0] - us[2], Cv[2] * v[0] + us[1], Cv[0] * v[1] + us[2],
-      Cv[1] * v[1] + c, Cv[2] * v[1] - us[0], Cv[0] * v[2] - us[1], Cv[1] * v[2] + us[0],
-      Cv[2] * v[2] + c;
+    // clang-format off
+    M << Cv[0] * v[0] + c,     Cv[1] * v[0] - us[2], Cv[2] * v[0] + us[1],
+         Cv[0] * v[1] + us[2], Cv[1] * v[1] + c,     Cv[2] * v[1] - us[0],
+         Cv[0] * v[2] - us[1], Cv[1] * v[2] + us[0], Cv[2] * v[2] + c;
+    // clang-format on
   }
   return M;
 }
@@ -217,6 +219,11 @@ Matrix3d rotate_degrees(double angle)
   Eigen::Matrix3d m;
   const auto s = sin_degrees(angle);
   const auto c = cos_degrees(angle);
-  m << c, -s, 0, s, c, 0, 0, 0, 1;
+  // clang-format off
+  m <<
+    c, -s,  0,
+    s,  c,  0,
+    0,  0,  1;
+  // clang-format on
   return m;
 }

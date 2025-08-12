@@ -613,9 +613,11 @@ PyObject *python_rotate_sub(PyObject *obj, Vector3d vec3, double angle)
       sx = sin_degrees(a);
       cx = cos_degrees(a);
     }
-
-    M << cy * cz, cz * sx * sy - cx * sz, cx * cz * sy + sx * sz, cy * sz, cx * cz + sx * sy * sz,
-      -cz * sx + cx * sy * sz, -sy, cy * sx, cx * cy;
+    // clang-format off
+    M << cy * cz, cz * sx * sy - cx * sz, cx * cz * sy + sx * sz,
+         cy * sz, cx * cz + sx * sy * sz, -cz * sx + cx * sy * sz,
+         -sy,     cy * sx,                cx * cy;
+    // clang-format on
   } else {
     M = angle_axis_degrees(angle, vec3);
   }

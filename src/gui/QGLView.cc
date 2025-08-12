@@ -488,7 +488,12 @@ void QGLView::translate(double x, double y, double z, bool relative, bool viewPo
   }
 
   Matrix4d vec;
-  vec << 0, 0, 0, x, 0, 0, 0, y, 0, 0, 0, z, 0, 0, 0, 1;
+  // clang-format off
+  vec << 0, 0, 0, x,
+         0, 0, 0, y,
+         0, 0, 0, z,
+         0, 0, 0, 1;
+  // clang-format on
   tm = tm * vec;
   double f = relative ? 1 : 0;
   cam.object_trans.x() = f * cam.object_trans.x() + tm(0, 3);

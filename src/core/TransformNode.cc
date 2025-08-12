@@ -132,8 +132,11 @@ std::shared_ptr<AbstractNode> builtin_rotate(const ModuleInstantiation *inst, Ar
       }
     }
     Matrix3d M;
-    M << cy * cz, cz * sx * sy - cx * sz, cx * cz * sy + sx * sz, cy * sz, cx * cz + sx * sy * sz,
-      -cz * sx + cx * sy * sz, -sy, cy * sx, cx * cy;
+    // clang-format off
+    M << cy * cz, cz * sx * sy - cx * sz, cx * cz * sy + sx * sz,
+         cy * sz, cx * cz + sx * sy * sz, -cz * sx + cx * sy * sz,
+         -sy,     cy * sx,                cx * cy;
+    // clang-format on
     node->matrix.rotate(M);
   } else {
     double a = 0.0;
@@ -185,8 +188,12 @@ std::shared_ptr<AbstractNode> builtin_mirror(const ModuleInstantiation *inst, Ar
     double a = x * x + y * y + z * z;
 
     Matrix4d m;
-    m << 1 - 2 * x * x / a, -2 * y * x / a, -2 * z * x / a, 0, -2 * x * y / a, 1 - 2 * y * y / a,
-      -2 * z * y / a, 0, -2 * x * z / a, -2 * y * z / a, 1 - 2 * z * z / a, 0, 0, 0, 0, 1;
+    // clang-format off
+    m << 1 - 2 * x * x / a, -2 * y * x / a,    -2 * z * x / a,    0,
+         -2 * x * y / a,    1 - 2 * y * y / a, -2 * z * y / a,    0,
+         -2 * x * z / a,    -2 * y * z / a,    1 - 2 * z * z / a, 0,
+         0,                 0,                 0,                 1;
+    // clang-format on
     node->matrix = m;
   }
 

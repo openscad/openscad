@@ -107,10 +107,12 @@ Color4f get_color(const MODELMESH_TRIANGLECOLOR_SRGB& color, int idx)
 Matrix4d get_matrix(MODELTRANSFORM& transform)
 {
   Matrix4d tm;
-  tm << transform.m_fFields[0][0], transform.m_fFields[0][1], transform.m_fFields[0][2],
-    transform.m_fFields[0][3], transform.m_fFields[1][0], transform.m_fFields[1][1],
-    transform.m_fFields[1][2], transform.m_fFields[1][3], transform.m_fFields[2][0],
-    transform.m_fFields[2][1], transform.m_fFields[2][2], transform.m_fFields[2][3], 0, 0, 0, 1;
+  // clang-format off
+  tm << transform.m_fFields[0][0], transform.m_fFields[0][1], transform.m_fFields[0][2], transform.m_fFields[0][3],
+        transform.m_fFields[1][0], transform.m_fFields[1][1], transform.m_fFields[1][2], transform.m_fFields[1][3],
+        transform.m_fFields[2][0], transform.m_fFields[2][1], transform.m_fFields[2][2], transform.m_fFields[2][3],
+        0,                         0,                         0,                         1;
+  // clang-format on
   return tm;
 }
 
