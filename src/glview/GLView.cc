@@ -330,7 +330,9 @@ void GLView::showSmallaxes(const Color4f& col)
   auto scale = 90.0;
   glOrtho(-scale * dpi * aspectratio, scale * dpi * aspectratio, -scale * dpi, scale * dpi, -scale * dpi,
           scale * dpi);
-  gluLookAt(0.0, -1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0);
+  gluLookAt(0.0, -1.0, 0.0,  // eye
+            0.0, 0.0, 0.0,   // center
+            0.0, 0.0, 1.0);  // up
 
   glMatrixMode(GL_MODELVIEW);
   glLoadIdentity();

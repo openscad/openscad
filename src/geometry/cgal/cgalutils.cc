@@ -473,8 +473,12 @@ Transform3d computeResizeTransform(const CGAL::Iso_cuboid_3<K>& bb, unsigned int
   }
 
   Eigen::Matrix4d t;
-  t << CGAL::to_double(scale[0]), 0, 0, 0, 0, CGAL::to_double(scale[1]), 0, 0, 0, 0,
-    CGAL::to_double(scale[2]), 0, 0, 0, 0, 1;
+  // clang-format off
+  t << CGAL::to_double(scale[0]), 0,                         0,                         0,
+       0,                         CGAL::to_double(scale[1]), 0,                         0,
+       0,                         0,                         CGAL::to_double(scale[2]), 0,
+       0,                         0,                         0,                         1;
+  // clang-format on
 
   return Transform3d(t);
 }

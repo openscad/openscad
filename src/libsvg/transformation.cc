@@ -65,7 +65,11 @@ std::vector<Eigen::Matrix3d> matrix::get_matrices()
   }
 
   Eigen::Matrix3d m;
-  m << args[0], args[2], args[4], args[1], args[3], args[5], 0, 0, 1;
+  // clang-format off
+  m << args[0], args[2], args[4],
+       args[1], args[3], args[5],
+       0,       0,       1;
+  // clang-format on
 
   std::vector<Eigen::Matrix3d> result;
   result.push_back(m);
@@ -89,7 +93,11 @@ std::vector<Eigen::Matrix3d> translate::get_matrices()
   double ty = args.size() > 1 ? args[1] : 0;
 
   Eigen::Matrix3d m;
-  m << 1, 0, tx, 0, 1, ty, 0, 0, 1;
+  // clang-format off
+  m << 1, 0, tx,
+       0, 1, ty,
+       0, 0, 1;
+  // clang-format on
 
   std::vector<Eigen::Matrix3d> result;
   result.push_back(m);
@@ -113,7 +121,11 @@ std::vector<Eigen::Matrix3d> scale::get_matrices()
   double sy = args.size() > 1 ? args[1] : args[0];
 
   Eigen::Matrix3d m;
-  m << sx, 0, 0, 0, sy, 0, 0, 0, 1;
+  // clang-format off
+  m << sx, 0,  0,
+       0,  sy, 0,
+       0,  0,  1;
+  // clang-format on
 
   std::vector<Eigen::Matrix3d> result;
   result.push_back(m);
@@ -150,7 +162,11 @@ std::vector<Eigen::Matrix3d> rotate::get_matrices()
 
   if (has_center) {
     Eigen::Matrix3d t;
-    t << 1, 0, -cx, 0, 1, -cy, 0, 0, 1;
+    // clang-format off
+    t << 1, 0, -cx,
+         0, 1, -cy,
+         0, 0, 1;
+    // clang-format on
     result.push_back(t);
   }
 
@@ -158,7 +174,11 @@ std::vector<Eigen::Matrix3d> rotate::get_matrices()
 
   if (has_center) {
     Eigen::Matrix3d t;
-    t << 1, 0, cx, 0, 1, cy, 0, 0, 1;
+    // clang-format off
+    t << 1, 0, cx,
+         0, 1, cy,
+         0, 0, 1;
+    // clang-format on
     result.push_back(t);
   }
 
@@ -180,7 +200,11 @@ std::vector<Eigen::Matrix3d> skew_x::get_matrices()
   double angle = args[0];
 
   Eigen::Matrix3d m;
-  m << 1, tan_degrees(angle), 0, 0, 1, 0, 0, 0, 1;
+  // clang-format off
+  m << 1, tan_degrees(angle), 0,
+       0, 1,                  0,
+       0, 0,                  1;
+  // clang-format on
 
   std::vector<Eigen::Matrix3d> result;
   result.push_back(m);
@@ -202,7 +226,11 @@ std::vector<Eigen::Matrix3d> skew_y::get_matrices()
   double angle = args[0];
 
   Eigen::Matrix3d m;
-  m << 1, 0, 0, tan_degrees(angle), 1, 0, 0, 0, 1;
+  // clang-format off
+  m << 1,                  0, 0,
+       tan_degrees(angle), 1, 0,
+       0,                  0, 1;
+  // clang-format on
 
   std::vector<Eigen::Matrix3d> result;
   result.push_back(m);

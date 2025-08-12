@@ -81,10 +81,12 @@ std::string get_object_type_name(const Lib3MF::eObjectType objecttype)
 Matrix4d get_matrix(Lib3MF::sTransform& transform)
 {
   Matrix4d tm;
-  tm << transform.m_Fields[0][0], transform.m_Fields[1][0], transform.m_Fields[2][0],
-    transform.m_Fields[3][0], transform.m_Fields[0][1], transform.m_Fields[1][1],
-    transform.m_Fields[2][1], transform.m_Fields[3][1], transform.m_Fields[0][2],
-    transform.m_Fields[1][2], transform.m_Fields[2][2], transform.m_Fields[3][2], 0, 0, 0, 1;
+  // clang-format off
+  tm << transform.m_Fields[0][0], transform.m_Fields[1][0], transform.m_Fields[2][0], transform.m_Fields[3][0],
+        transform.m_Fields[0][1], transform.m_Fields[1][1], transform.m_Fields[2][1], transform.m_Fields[3][1],
+        transform.m_Fields[0][2], transform.m_Fields[1][2], transform.m_Fields[2][2], transform.m_Fields[3][2],
+        0,                        0,                        0,                        1;
+  // clang-format on
   return tm;
 }
 
