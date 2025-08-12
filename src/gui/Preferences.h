@@ -17,7 +17,7 @@
 #include <QSettings>
 #include <string>
 
-#include "gui/qtgettext.h" // IWYU pragma: keep
+#include "gui/qtgettext.h"  // IWYU pragma: keep
 #include "openscad_gui.h"
 #include "ui_Preferences.h"
 #include "core/Settings.h"
@@ -116,7 +116,6 @@ public slots:
   void on_comboBoxLineWrapVisualizationEnd_activated(int);
   void on_comboBoxModifierNumberScrollWheel_activated(int);
 
-
   // Display
   void on_checkBoxHighlightCurrentLine_toggled(bool);
   void on_checkBoxEnableBraceMatching_toggled(bool);
@@ -196,9 +195,9 @@ private:
   void writeSettings();
   void hidePasswords();
   void addPrefPage(QActionGroup *group, QAction *action, QWidget *widget);
-  void createFontSizeMenu(QComboBox *box, const QString &setting);
-  void updateGUIFontFamily(QFontComboBox *fontSelector, const QString &setting);
-  void updateGUIFontSize(QComboBox *fsSelector, const QString &setting);
+  void createFontSizeMenu(QComboBox *box, const QString& setting);
+  void updateGUIFontFamily(QFontComboBox *fontSelector, const QString& setting);
+  void updateGUIFontSize(QComboBox *fsSelector, const QString& setting);
   void updateLocalAppParams();
   void addLocalAppParameter(const Settings::LocalAppParameterType&);
   void moveListBoxRow(QListWidget *listBox, int offset);
@@ -213,5 +212,5 @@ private:
 class GlobalPreferences
 {
 public:
-    static Preferences* inst();
+  static Preferences *inst();
 };

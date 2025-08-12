@@ -52,4 +52,4 @@ public:
   static const std::string name;
 };
 
-}
+}  // namespace libsvg

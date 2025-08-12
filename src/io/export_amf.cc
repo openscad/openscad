@@ -44,14 +44,12 @@
 #include <string>
 #include <vector>
 
-#define QUOTE(x__) # x__
+#define QUOTE(x__) #x__
 #define QUOTED(x__) QUOTE(x__)
 
 struct vertex_str {
   std::string x, y, z;
-  bool operator==(const vertex_str& rhs) {
-    return x == rhs.x && y == rhs.y && z == rhs.z;
-  }
+  bool operator==(const vertex_str& rhs) { return x == rhs.x && y == rhs.y && z == rhs.z; }
 };
 using vertex_vec = std::vector<vertex_str>;
 
@@ -70,7 +68,8 @@ struct triangle {
 static int objectid;
 
 #ifdef ENABLE_CGAL
-static size_t add_vertex(std::vector<vertex_str>& vertices, const Point& p) {
+static size_t add_vertex(std::vector<vertex_str>& vertices, const Point& p)
+{
   double x = CGAL::to_double(p.x());
   double y = CGAL::to_double(p.y());
   double z = CGAL::to_double(p.z());
@@ -147,7 +146,8 @@ static void append_amf(const CGALNefGeometry& root_N, std::ostream& output)
     output << "  </mesh>\r\n"
            << " </object>\r\n";
   } catch (std::exception& e) {
-    LOG(message_group::Export_Error, "CGAL error in CGAL_Nef_polyhedron3::convert_to_polyhedron(): %1$s", e.what());
+    LOG(message_group::Export_Error, "CGAL error in CGAL_Nef_polyhedron3::convert_to_polyhedron(): %1$s",
+        e.what());
   }
 }
 #endif
@@ -163,9 +163,9 @@ static void append_amf(const std::shared_ptr<const Geometry>& geom, std::ostream
     // FIXME: Implement this without creating a Nef polyhedron
     if (!N->isEmpty()) append_amf(*N, output);
 #endif
-  } else if (geom->getDimension() != 3) { // NOLINT(bugprone-branch-clone)
+  } else if (geom->getDimension() != 3) {  // NOLINT(bugprone-branch-clone)
     assert(false && "Unsupported file format");
-  } else { // NOLINT(bugprone-branch-clone)
+  } else {  // NOLINT(bugprone-branch-clone)
     assert(false && "Not implemented");
   }
 }
@@ -173,19 +173,19 @@ static void append_amf(const std::shared_ptr<const Geometry>& geom, std::ostream
 void export_amf(const std::shared_ptr<const Geometry>& geom, std::ostream& output)
 {
   LOG(message_group::Deprecated, "AMF export is deprecated. Please use 3MF instead.");
-  setlocale(LC_NUMERIC, "C"); // Ensure radix is . (not ,) in output
+  setlocale(LC_NUMERIC, "C");  // Ensure radix is . (not ,) in output
 
   output << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n"
          << "<amf unit=\"millimeter\">\r\n"
          << " <metadata type=\"producer\">OpenSCAD " << QUOTED(OPENSCAD_VERSION)
 #ifdef OPENSCAD_COMMIT
-    << " (git " << QUOTED(OPENSCAD_COMMIT) << ")"
+         << " (git " << QUOTED(OPENSCAD_COMMIT) << ")"
 #endif
-    << "</metadata>\r\n";
+         << "</metadata>\r\n";
 
   objectid = 0;
   append_amf(geom, output);
 
   output << "</amf>\r\n";
-  setlocale(LC_NUMERIC, ""); // Set default locale
+  setlocale(LC_NUMERIC, "");  // Set default locale
 }

@@ -72,8 +72,7 @@ const std::string path::name("path");
    PATHSEG_CURVETO_QUADRATIC_SMOOTH_REL t
  */
 
-static double
-vector_angle(double ux, double uy, double vx, double vy)
+static double vector_angle(double ux, double uy, double vx, double vy)
 {
   double angle = atan2_degrees(vy, vx) - atan2_degrees(uy, ux);
   if (angle < 0) {
@@ -82,17 +81,17 @@ vector_angle(double ux, double uy, double vx, double vy)
   return angle;
 }
 
-static inline
-unsigned long CalcFn(double fn, unsigned long minimum) {
+static inline unsigned long CalcFn(double fn, unsigned long minimum)
+{
   unsigned long result = 3;
-  if (fn > 3.0)     // > 0.0 && > 3
+  if (fn > 3.0)  // > 0.0 && > 3
     result = static_cast<unsigned long>(fn);
   if (result < minimum) result = minimum;
   return result;
 }
 
-void
-path::arc_to(path_t& path, double x1, double y1, double rx, double ry, double x2, double y2, double angle, bool large, bool sweep, void *context)
+void path::arc_to(path_t& path, double x1, double y1, double rx, double ry, double x2, double y2,
+                  double angle, bool large, bool sweep, void *context)
 {
   const auto *fValues = reinterpret_cast<const fnContext *>(context);
 
@@ -144,9 +143,10 @@ path::arc_to(path_t& path, double x1, double y1, double rx, double ry, double x2
 
   double rmax = fmax(rx, ry);
   unsigned long fn = Calc::get_fragments_from_r(rmax, fValues->fn, fValues->fs, fValues->fa);
-  fn = (unsigned long) ceil(fn * fabs(delta) / 360.0); // because we are creating a section of an ellipse, not the full ellipse
+  fn = (unsigned long)ceil(
+    fn * fabs(delta) / 360.0);  // because we are creating a section of an ellipse, not the full ellipse
   unsigned int steps = (std::fabs(delta) * 10.0 / 180) + 4;
-  if (steps < fn) // use the maximum of calculated steps and user specified steps
+  if (steps < fn)  // use the maximum of calculated steps and user specified steps
     steps = fn;
   for (unsigned int a = 0; a <= steps; ++a) {
     double phi = theta + delta * a / steps;
@@ -158,13 +158,13 @@ path::arc_to(path_t& path, double x1, double y1, double rx, double ry, double x2
   }
 }
 
-
-void
-path::curve_to(path_t& path, double x, double y, double cx1, double cy1, double x2, double y2, void *context)
+void path::curve_to(path_t& path, double x, double y, double cx1, double cy1, double x2, double y2,
+                    void *context)
 {
-  // NOTE - this could be done better using a chord length iteration (uniform in space) to implement $fa (lot of work, little gain)
+  // NOTE - this could be done better using a chord length iteration (uniform in space) to implement $fa
+  // (lot of work, little gain)
   const auto *fValues = reinterpret_cast<const fnContext *>(context);
-  unsigned long fn = CalcFn(fValues->fn, 20); // preserve the old minimum
+  unsigned long fn = CalcFn(fValues->fn, 20);  // preserve the old minimum
   for (unsigned long idx = 1; idx <= fn; ++idx) {
     const double a = idx * (1.0 / (double)fn);
     const double xx = x * t(a, 2) + cx1 * 2 * t(a, 1) * a + x2 * a * a;
@@ -173,12 +173,13 @@ path::curve_to(path_t& path, double x, double y, double cx1, double cy1, double 
   }
 }
 
-void
-path::curve_to(path_t& path, double x, double y, double cx1, double cy1, double cx2, double cy2, double x2, double y2, void *context)
+void path::curve_to(path_t& path, double x, double y, double cx1, double cy1, double cx2, double cy2,
+                    double x2, double y2, void *context)
 {
-  // NOTE - this could be done better using a chord length iteration (uniform in space) to implement $fa (lot of work, little gain)
+  // NOTE - this could be done better using a chord length iteration (uniform in space) to implement $fa
+  // (lot of work, little gain)
   const auto *fValues = reinterpret_cast<const fnContext *>(context);
-  unsigned long fn = CalcFn(fValues->fn, 20); // preserve the old minimum
+  unsigned long fn = CalcFn(fValues->fn, 20);  // preserve the old minimum
   for (unsigned long idx = 1; idx <= fn; ++idx) {
     const double a = idx * (1.0 / (double)fn);
     const double xx = x * t(a, 3) + cx1 * 3 * t(a, 2) * a + cx2 * 3 * t(a, 1) * a * a + x2 * a * a * a;
@@ -219,8 +220,7 @@ static std::vector<std::string> split_dots(const std::string& str)
   return result;
 }
 
-void
-path::set_attrs(attr_map_t& attrs, void *context)
+void path::set_attrs(attr_map_t& attrs, void *context)
 {
   std::string commands = "-zmlcqahvstZMLCQAHVST";
 
@@ -259,7 +259,6 @@ path::set_attrs(attr_map_t& attrs, void *context)
   std::string pre_exp;
   path_list.push_back(path_t());
   for (const auto& v : path_tokens) {
-
     double p = 0;
     if ((v.length() == 1) && (commands.find(v) != std::string::npos)) {
       if (v[0] == '-') {
@@ -289,24 +288,12 @@ path::set_attrs(attr_map_t& attrs, void *context)
     case 'A':
       //(rx ry x-axis-rotation large-arc-flag sweep-flag x y)
       switch (point) {
-      case 0:
-        rx = std::fabs(p);
-        break;
-      case 1:
-        ry = std::fabs(p);
-        break;
-      case 2:
-        angle = p;
-        break;
-      case 3:
-        large = p > 0.5;
-        break;
-      case 4:
-        sweep = p > 0.5;
-        break;
-      case 5:
-        xx = cmd == 'a' ? x + p : p;
-        break;
+      case 0: rx = std::fabs(p); break;
+      case 1: ry = std::fabs(p); break;
+      case 2: angle = p; break;
+      case 3: large = p > 0.5; break;
+      case 4: sweep = p > 0.5; break;
+      case 5: xx = cmd == 'a' ? x + p : p; break;
       case 6:
         yy = cmd == 'a' ? y + p : p;
         arc_to(path_list.back(), x, y, rx, ry, xx, yy, angle, large, sweep, context);
@@ -321,9 +308,7 @@ path::set_attrs(attr_map_t& attrs, void *context)
     case 'l':
     case 'L':
       switch (point) {
-      case 0:
-        xx = cmd == 'l' ? x + p : p;
-        break;
+      case 0: xx = cmd == 'l' ? x + p : p; break;
       case 1:
         yy = cmd == 'l' ? y + p : p;
         path_list.back().push_back(Eigen::Vector3d(xx, yy, 0));
@@ -338,21 +323,11 @@ path::set_attrs(attr_map_t& attrs, void *context)
     case 'c':
     case 'C':
       switch (point) {
-      case 0:
-        cx1 = p;
-        break;
-      case 1:
-        cy1 = p;
-        break;
-      case 2:
-        cx2 = p;
-        break;
-      case 3:
-        cy2 = p;
-        break;
-      case 4:
-        xx = cmd == 'c' ? x + p : p;
-        break;
+      case 0: cx1 = p; break;
+      case 1: cy1 = p; break;
+      case 2: cx2 = p; break;
+      case 3: cy2 = p; break;
+      case 4: xx = cmd == 'c' ? x + p : p; break;
       case 5:
         yy = cmd == 'c' ? y + p : p;
         cx1 = cmd == 'c' ? x + cx1 : cx1;
@@ -384,12 +359,8 @@ path::set_attrs(attr_map_t& attrs, void *context)
         }
         cx2 = p;
         break;
-      case 1:
-        cy2 = p;
-        break;
-      case 2:
-        xx = cmd == 's' ? x + p : p;
-        break;
+      case 1: cy2 = p; break;
+      case 2: xx = cmd == 's' ? x + p : p; break;
       case 3:
         yy = cmd == 's' ? y + p : p;
         cx2 = cmd == 's' ? x + cx2 : cx2;
@@ -406,15 +377,9 @@ path::set_attrs(attr_map_t& attrs, void *context)
     case 'q':
     case 'Q':
       switch (point) {
-      case 0:
-        cx1 = p;
-        break;
-      case 1:
-        cy1 = p;
-        break;
-      case 2:
-        xx = cmd == 'q' ? x + p : p;
-        break;
+      case 0: cx1 = p; break;
+      case 1: cy1 = p; break;
+      case 2: xx = cmd == 'q' ? x + p : p; break;
       case 3:
         yy = cmd == 'q' ? y + p : p;
         cx1 = cmd == 'q' ? x + cx1 : cx1;
@@ -458,9 +423,7 @@ path::set_attrs(attr_map_t& attrs, void *context)
     case 'm':
     case 'M':
       switch (point) {
-      case 0:
-        xx = cmd == 'm' ? x + p : p;
-        break;
+      case 0: xx = cmd == 'm' ? x + p : p; break;
       case 1:
         yy = cmd == 'm' ? y + p : p;
         cmd = cmd == 'm' ? 'l' : 'L';
@@ -537,22 +500,19 @@ path::set_attrs(attr_map_t& attrs, void *context)
   }
 }
 
-bool
-path::is_open_path(path_t& path) const
+bool path::is_open_path(path_t& path) const
 {
   const Eigen::Vector3d& p1 = path[0];
   const Eigen::Vector3d& p2 = path.back();
-  double distance = pow(pow(p1.x() - p2.x(), 2) + pow(p1.y() - p2.y(), 2) + pow(p1.z() - p2.z(), 2), 0.5);
+  double distance =
+    pow(pow(p1.x() - p2.x(), 2) + pow(p1.y() - p2.y(), 2) + pow(p1.z() - p2.z(), 2), 0.5);
   return distance > 0.1;
 }
 
-const std::string
-path::dump() const
+const std::string path::dump() const
 {
   std::stringstream s;
-  s << get_name()
-    << ": x = " << this->x
-    << ", y = " << this->y;
+  s << get_name() << ": x = " << this->x << ", y = " << this->y;
   for (const auto& p : path_list) {
     s << "[";
     for (const auto& v : p) {
@@ -563,4 +523,4 @@ path::dump() const
   return s.str();
 }
 
-} // namespace libsvg
+}  // namespace libsvg

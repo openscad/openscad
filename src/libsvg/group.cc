@@ -29,25 +29,17 @@
 #include <string>
 #include <iostream>
 
-
 namespace libsvg {
 
 const std::string group::name("g");
 
-void
-group::set_attrs(attr_map_t& attrs, void *context)
-{
-  shape::set_attrs(attrs, context);
-}
+void group::set_attrs(attr_map_t& attrs, void *context) { shape::set_attrs(attrs, context); }
 
-const std::string
-group::dump() const
+const std::string group::dump() const
 {
   std::stringstream s;
-  s << get_name()
-    << ": x = " << this->x
-    << ": y = " << this->y;
+  s << get_name() << ": x = " << this->x << ": y = " << this->y;
   return s.str();
 }
 
-}
+}  // namespace libsvg

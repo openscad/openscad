@@ -2,10 +2,10 @@
 
 #include "UXTest.h"
 
-class TestMainWindow: public UXTest
+class TestMainWindow : public UXTest
 {
-    Q_OBJECT;
+  Q_OBJECT;
 private slots:
-    void checkOpenTabPropagateToWindow();
-    void checkSaveToShouldUpdateWindowTitle();
+  void checkOpenTabPropagateToWindow();
+  void checkSaveToShouldUpdateWindowTitle();
 };

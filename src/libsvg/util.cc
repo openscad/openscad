@@ -34,15 +34,13 @@
 #include <boost/fusion/adapted/struct/adapt_struct.hpp>
 #include <boost/fusion/include/adapt_struct.hpp>
 
-
 BOOST_FUSION_ADAPT_STRUCT(libsvg::length_struct, (double, number)(std::string, unit))
 
 namespace libsvg {
 
 namespace qi = boost::spirit::qi;
 
-double
-parse_double(const std::string& number)
+double parse_double(const std::string& number)
 {
   std::string::const_iterator iter = number.begin(), end = number.end();
 
@@ -54,8 +52,7 @@ parse_double(const std::string& number)
   return result && iter == end ? d : 0;
 }
 
-static unit_t
-get_unit(const std::string& value)
+static unit_t get_unit(const std::string& value)
 {
   if (value == "em") {
     return unit_t::EM;
@@ -80,8 +77,7 @@ get_unit(const std::string& value)
   }
 }
 
-const length_t
-parse_length(const std::string& value)
+const length_t parse_length(const std::string& value)
 {
   std::string::const_iterator it = value.begin(), end = value.end();
 
@@ -91,7 +87,8 @@ parse_length(const std::string& value)
 
   length = number >> -unit;
   number = qi::double_;
-  unit = qi::string("em") | qi::string("ex") | qi::string("px") | qi::string("in") | qi::string("cm") | qi::string("mm") | qi::string("pt") | qi::string("pc") | qi::string("%");
+  unit = qi::string("em") | qi::string("ex") | qi::string("px") | qi::string("in") | qi::string("cm") |
+         qi::string("mm") | qi::string("pt") | qi::string("pc") | qi::string("%");
 
   libsvg::length_struct parsed;
   qi::phrase_parse(it, end, length, qi::space, parsed);
@@ -105,8 +102,7 @@ parse_length(const std::string& value)
   return result;
 }
 
-const viewbox_t
-parse_viewbox(const std::string& value)
+const viewbox_t parse_viewbox(const std::string& value)
 {
   std::string::const_iterator it = value.begin(), end = value.end();
 
@@ -122,7 +118,8 @@ parse_viewbox(const std::string& value)
   qi::phrase_parse(it, end, viewbox, qi::space, parsed);
 
   viewbox_t result{0.0, 0.0, 0.0, 0.0, false};
-  if ((it != value.begin()) && (it == end) && (parsed.size() == 4) && (parsed[2] >= 0.0) && (parsed[3] >= 0.0)) {
+  if ((it != value.begin()) && (it == end) && (parsed.size() == 4) && (parsed[2] >= 0.0) &&
+      (parsed[3] >= 0.0)) {
     result.x = parsed[0];
     result.y = parsed[1];
     result.width = parsed[2];
@@ -133,8 +130,7 @@ parse_viewbox(const std::string& value)
   return result;
 }
 
-const alignment_t
-parse_alignment(const std::string& value)
+const alignment_t parse_alignment(const std::string& value)
 {
   std::string::const_iterator it = value.begin(), end = value.end();
 
@@ -145,10 +141,9 @@ parse_alignment(const std::string& value)
 
   alignment = -qi::as_string[defer] >> qi::as_string[align] >> -qi::as_string[meet_or_slice];
   defer = qi::string("defer");
-  align = qi::string("none")
-    | qi::string("xMinYMin") | qi::string("xMidYMin") | qi::string("xMaxYMin")
-    | qi::string("xMinYMid") | qi::string("xMidYMid") | qi::string("xMaxYMid")
-    | qi::string("xMinYMax") | qi::string("xMidYMax") | qi::string("xMaxYMax");
+  align = qi::string("none") | qi::string("xMinYMin") | qi::string("xMidYMin") | qi::string("xMaxYMin") |
+          qi::string("xMinYMid") | qi::string("xMidYMid") | qi::string("xMaxYMid") |
+          qi::string("xMinYMax") | qi::string("xMidYMax") | qi::string("xMaxYMax");
   meet_or_slice = qi::string("meet") | qi::string("slice");
 
   std::vector<std::string> parsed;
@@ -205,38 +200,17 @@ parse_alignment(const std::string& value)
 std::ostream& operator<<(std::ostream& stream, const unit_t& unit)
 {
   switch (unit) {
-  case unit_t::EM:
-    stream << "em";
-    break;
-  case unit_t::EX:
-    stream << "ex";
-    break;
-  case unit_t::PX:
-    stream << "px";
-    break;
-  case unit_t::IN:
-    stream << "in";
-    break;
-  case unit_t::CM:
-    stream << "cm";
-    break;
-  case unit_t::MM:
-    stream << "mm";
-    break;
-  case unit_t::PT:
-    stream << "pt";
-    break;
-  case unit_t::PC:
-    stream << "pc";
-    break;
-  case unit_t::PERCENT:
-    stream << "%";
-    break;
-  case unit_t::NONE:
-    break;
-  case unit_t::UNDEFINED:
-    stream << " (invalid)";
-    break;
+  case unit_t::EM:        stream << "em"; break;
+  case unit_t::EX:        stream << "ex"; break;
+  case unit_t::PX:        stream << "px"; break;
+  case unit_t::IN:        stream << "in"; break;
+  case unit_t::CM:        stream << "cm"; break;
+  case unit_t::MM:        stream << "mm"; break;
+  case unit_t::PT:        stream << "pt"; break;
+  case unit_t::PC:        stream << "pc"; break;
+  case unit_t::PERCENT:   stream << "%"; break;
+  case unit_t::NONE:      break;
+  case unit_t::UNDEFINED: stream << " (invalid)"; break;
   }
   return stream;
 }
@@ -250,23 +224,13 @@ std::ostream& operator<<(std::ostream& stream, const length_t& length)
 std::ostream& operator<<(std::ostream& stream, const align_t& align)
 {
   switch (align) {
-  case align_t::MIN:
-    stream << "min";
-    break;
-  case align_t::MID:
-    stream << "mid";
-    break;
-  case align_t::MAX:
-    stream << "max";
-    break;
-  case align_t::NONE:
-    stream << "none";
-    break;
-  case align_t::UNDEFINED:
-    stream << "undefined";
-    break;
+  case align_t::MIN:       stream << "min"; break;
+  case align_t::MID:       stream << "mid"; break;
+  case align_t::MAX:       stream << "max"; break;
+  case align_t::NONE:      stream << "none"; break;
+  case align_t::UNDEFINED: stream << "undefined"; break;
   }
   return stream;
 }
 
-} // namespace libsvg
+}  // namespace libsvg

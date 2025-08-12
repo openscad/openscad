@@ -14,18 +14,14 @@
 #include <QProgressDialog>
 #include <boost/foreach.hpp>
 
-OpenSCADApp::OpenSCADApp(int& argc, char **argv)
-  : QApplication(argc, argv)
+OpenSCADApp::OpenSCADApp(int& argc, char **argv) : QApplication(argc, argv)
 {
 #ifdef Q_OS_MACOS
   this->installEventFilter(new SCADEventFilter(this));
 #endif
 }
 
-OpenSCADApp::~OpenSCADApp()
-{
-  delete this->fontCacheDialog;
-}
+OpenSCADApp::~OpenSCADApp() { delete this->fontCacheDialog; }
 
 #include <QMessageBox>
 
@@ -40,7 +36,10 @@ bool OpenSCADApp::notify(QObject *object, QEvent *event)
     msg = _("Unknown error");
   }
   // This happens when an uncaught exception is thrown in a Qt event handler
-  QMessageBox::critical(nullptr, QString(_("Critical Error")), QString(_("A critical error was caught. The application may have become unstable:\n%1")).arg(QString(msg)));
+  QMessageBox::critical(
+    nullptr, QString(_("Critical Error")),
+    QString(_("A critical error was caught. The application may have become unstable:\n%1"))
+      .arg(QString(msg)));
   return false;
 }
 
@@ -64,7 +63,8 @@ void OpenSCADApp::requestOpenFile(const QString& filename)
 void OpenSCADApp::showFontCacheDialog()
 {
   if (!this->fontCacheDialog) this->fontCacheDialog = new QProgressDialog();
-  this->fontCacheDialog->setLabelText(_("Fontconfig needs to update its font cache.\nThis can take up to a couple of minutes."));
+  this->fontCacheDialog->setLabelText(
+    _("Fontconfig needs to update its font cache.\nThis can take up to a couple of minutes."));
   this->fontCacheDialog->setMinimum(0);
   this->fontCacheDialog->setMaximum(0);
   this->fontCacheDialog->setCancelButton(nullptr);
@@ -86,6 +86,7 @@ void OpenSCADApp::setApplicationFont(const QString& family, uint size)
   // Trigger style sheet refresh to update the application font
   // (hopefully) everywhere. Also remove ugly frames in the QStatusBar
   // when using additional widgets
-  const auto stylesheet = QString("* { font-family: '%1'; font-size: %2 } QStatusBar::item { border: 0px solid black; }");
+  const auto stylesheet =
+    QString("* { font-family: '%1'; font-size: %2 } QStatusBar::item { border: 0px solid black; }");
   scadApp->setStyleSheet(stylesheet.arg(family, QString::number(size)));
 }

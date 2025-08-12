@@ -23,7 +23,8 @@ public:
   void draw(bool showedges, const ShaderUtils::ShaderInfo *shaderinfo) const override;
   void setColorScheme(const ColorScheme& cs) override;
   BoundingBox getBoundingBox() const override;
-  std::vector<SelectedObject> findModelObject(const Vector3d& near_pt, const Vector3d& far_pt, int mouse_x, int mouse_y, double tolerance) override;
+  std::vector<SelectedObject> findModelObject(const Vector3d& near_pt, const Vector3d& far_pt,
+                                              int mouse_x, int mouse_y, double tolerance) override;
 
 private:
   void addGeometry(const std::shared_ptr<const class Geometry>& geom);

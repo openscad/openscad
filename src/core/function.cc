@@ -35,20 +35,22 @@
 #include <cstddef>
 #include <utility>
 
-BuiltinFunction::BuiltinFunction(Value(*f)(const std::shared_ptr<const Context>&, const FunctionCall *), const Feature *feature) :
-  evaluate(f),
-  feature(feature)
-{}
-
-BuiltinFunction::BuiltinFunction(Value(*f)(Arguments, const Location&), const Feature *feature) :
-  feature(feature)
+BuiltinFunction::BuiltinFunction(Value (*f)(const std::shared_ptr<const Context>&, const FunctionCall *),
+                                 const Feature *feature)
+  : evaluate(f), feature(feature)
 {
-  evaluate = [f] (const std::shared_ptr<const Context>& context, const FunctionCall *call) {
-      return f(Arguments(call->arguments, context), call->location());
-    };
 }
 
-UserFunction::UserFunction(const char *name, AssignmentList& parameters, std::shared_ptr<Expression> expr, const Location& loc)
+BuiltinFunction::BuiltinFunction(Value (*f)(Arguments, const Location&), const Feature *feature)
+  : feature(feature)
+{
+  evaluate = [f](const std::shared_ptr<const Context>& context, const FunctionCall *call) {
+    return f(Arguments(call->arguments, context), call->location());
+  };
+}
+
+UserFunction::UserFunction(const char *name, AssignmentList& parameters,
+                           std::shared_ptr<Expression> expr, const Location& loc)
   : ASTNode(loc), name(name), parameters(parameters), expr(std::move(expr))
 {
 }

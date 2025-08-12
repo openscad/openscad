@@ -59,11 +59,8 @@ std::string svg_border()
 {
   std::ostringstream out;
   out << " <!-- border -->\n";
-  out << "  <polyline points='0,0 "
-      << svg_px_width << ",0 "
-      << svg_px_width << "," << svg_px_height
-      << " 0," << svg_px_height << "'"
-      << " style='fill:none;stroke:black' />\n";
+  out << "  <polyline points='0,0 " << svg_px_width << ",0 " << svg_px_width << "," << svg_px_height
+      << " 0," << svg_px_height << "'" << " style='fill:none;stroke:black' />\n";
   out << " <!-- /border -->";
   return out.str();
 }
@@ -78,15 +75,16 @@ std::string svg_axes()
   return out.str();
 }
 
-CGAL_Nef_polyhedron2::Explorer::Point project_svg_3to2(const CGAL_Point_3& p, const CGAL_Iso_cuboid_3& bbox)
+CGAL_Nef_polyhedron2::Explorer::Point project_svg_3to2(const CGAL_Point_3& p,
+                                                       const CGAL_Iso_cuboid_3& bbox)
 {
   CGAL_Kernel3::FT screenw(svg_px_width);
   CGAL_Kernel3::FT screenh(svg_px_height);
   CGAL_Kernel3::FT screenxc = screenw / 2;
   CGAL_Kernel3::FT screenyc = screenh / 2;
-  CGAL_Kernel3::FT bboxx = (bbox.xmax() - bbox.xmin() );
-  CGAL_Kernel3::FT bboxy = (bbox.ymax() - bbox.ymin() );
-  CGAL_Kernel3::FT bboxz = (bbox.zmax() - bbox.zmin() );
+  CGAL_Kernel3::FT bboxx = (bbox.xmax() - bbox.xmin());
+  CGAL_Kernel3::FT bboxy = (bbox.ymax() - bbox.ymin());
+  CGAL_Kernel3::FT bboxz = (bbox.zmax() - bbox.zmin());
   CGAL_Kernel3::FT largest_dim = CGAL::max(CGAL::max(bboxx, bboxy), bboxz);
   CGAL_Kernel3::FT bboxxc = bboxx / 2 + bbox.xmin();
   CGAL_Kernel3::FT bboxyc = bboxy / 2 + bbox.ymin();
@@ -108,38 +106,36 @@ CGAL_Point_2e project_svg_2to2(const CGAL_Point_2e& p, const CGAL_Iso_rectangle_
   double borderh = screenh * 0.1618;
   double vizw = screenw - borderw * 2;
   double vizh = screenh - borderh * 2;
-  double bboxw = CGAL::to_double(bbox.xmax() - bbox.xmin() );
-  double bboxh = CGAL::to_double(bbox.ymax() - bbox.ymin() );
-  double xinbox = CGAL::to_double(p.x() ) - CGAL::to_double(bbox.xmin() );
-  double yinbox = CGAL::to_double(p.y() ) - CGAL::to_double(bbox.ymin() );
-  double tx = borderw + (xinbox / (bboxw == 0?1:bboxw) ) * (vizw);
-  double ty = screenh - borderh - (yinbox / (bboxh == 0?1:bboxh) ) * (vizh);
+  double bboxw = CGAL::to_double(bbox.xmax() - bbox.xmin());
+  double bboxh = CGAL::to_double(bbox.ymax() - bbox.ymin());
+  double xinbox = CGAL::to_double(p.x()) - CGAL::to_double(bbox.xmin());
+  double yinbox = CGAL::to_double(p.y()) - CGAL::to_double(bbox.ymin());
+  double tx = borderw + (xinbox / (bboxw == 0 ? 1 : bboxw)) * (vizw);
+  double ty = screenh - borderh - (yinbox / (bboxh == 0 ? 1 : bboxh)) * (vizh);
   return {tx, ty};
 }
 
 std::string dump_cgal_nef_polyhedron2_face_svg(
   CGAL_Nef_polyhedron2::Explorer::Halfedge_around_face_const_circulator c1,
   CGAL_Nef_polyhedron2::Explorer::Halfedge_around_face_const_circulator c2,
-  const CGAL_Nef_polyhedron2::Explorer& explorer,
-  bool facemark, bool body)
+  const CGAL_Nef_polyhedron2::Explorer& explorer, bool facemark, bool body)
 {
   std::ostringstream style;
   style << "halfedge_f" << facemark << "_b" << body << "_m";
   auto styleclass = style.str();
 
   std::ostringstream out;
-  CGAL_For_all(c1, c2) {
+  CGAL_For_all(c1, c2)
+  {
     if (explorer.is_standard(explorer.target(c1))) {
-      auto source = explorer.point(explorer.source(c1) );
-      auto target = explorer.point(explorer.target(c1) );
+      auto source = explorer.point(explorer.source(c1));
+      auto target = explorer.point(explorer.target(c1));
       out << "    <!-- Halfedge. Mark: " << c1->mark() << " -->\n";
       auto he_mark = boost::lexical_cast<std::string>(c1->mark());
-      out << "     <line"
-          << " x1='" << CGAL::to_double(source.x()) << "'"
-          << " y1='" << CGAL::to_double(source.y()) << "'"
-          << " x2='" << CGAL::to_double(target.x()) << "'"
-          << " y2='" << CGAL::to_double(target.y()) << "'"
-          << " class='" << styleclass + he_mark << "' />\n";
+      out << "     <line" << " x1='" << CGAL::to_double(source.x()) << "'" << " y1='"
+          << CGAL::to_double(source.y()) << "'" << " x2='" << CGAL::to_double(target.x()) << "'"
+          << " y2='" << CGAL::to_double(target.y()) << "'" << " class='" << styleclass + he_mark
+          << "' />\n";
     } else {
       out << "     <!-- 2d Nef Rays - not implemented -->\n";
     }
@@ -195,29 +191,22 @@ std::string dump_svg(const CGAL_Nef_polyhedron2& N)
 std::string point_dump(const CGAL_Point_3& p)
 {
   std::ostringstream out;
-  out << CGAL::to_double(p.x()) << ","
-      << CGAL::to_double(p.y()) << ","
-      << CGAL::to_double(p.z());
+  out << CGAL::to_double(p.x()) << "," << CGAL::to_double(p.y()) << "," << CGAL::to_double(p.z());
   return out.str();
 }
 
 std::string point_dump(const CGAL::Sphere_point<CGAL_Kernel3>& p)
 {
   std::ostringstream out;
-  out << CGAL::to_double(p.x()) << ","
-      << CGAL::to_double(p.y()) << ","
-      << CGAL::to_double(p.z());
+  out << CGAL::to_double(p.x()) << "," << CGAL::to_double(p.y()) << "," << CGAL::to_double(p.z());
   return out.str();
 }
 
-std::string vert_dump(CGAL_Nef_polyhedron3::Vertex_const_handle vch)
-{
-  return point_dump(vch->point() );
-}
+std::string vert_dump(CGAL_Nef_polyhedron3::Vertex_const_handle vch) { return point_dump(vch->point()); }
 
 std::string vert_dump(CGAL_Nef_polyhedron3::Nef_polyhedron_S2::SVertex_const_handle vch)
 {
-  return point_dump(vch->point() );
+  return point_dump(vch->point());
 }
 
 /*
@@ -252,21 +241,20 @@ std::string sphere_map_dump(const CGAL_Nef_polyhedron3& N)
     out << "  connected_components: " << S.number_of_connected_components() << "\n";
     out << "  integrity check...(asserts if not OK)\n";
     S.check_integrity_and_topological_planarity();
-// S.print_statistics( out );
+    // S.print_statistics( out );
     int i = 0;
     SFace_const_iterator sf;
     for (sf = S.sfaces_begin(); sf != S.sfaces_end(); ++sf) {
       SFace_cycle_const_iterator it;
       out << " the sface cycles of sface " << i++ << " start with an\n";
       for (it = sf->sface_cycles_begin(); it != sf->sface_cycles_end(); ++it) {
-        if (it.is_svertex()) out << "  svertex at position "
-                                 << vert_dump(SVertex_const_handle(it) ) << "\n";
+        if (it.is_svertex())
+          out << "  svertex at position " << vert_dump(SVertex_const_handle(it)) << "\n";
         else if (it.is_shalfedge())
-          out << "  shalfedge from "
-              << vert_dump(SHalfedge_const_handle(it)->source() ) << " to "
-              << vert_dump(SHalfedge_const_handle(it)->target() ) << std::endl;
-        else if (it.is_shalfloop()) out << "  shalfloop lying in the plane "
-                                        << SHalfloop_const_handle(it)->circle() << std::endl;
+          out << "  shalfedge from " << vert_dump(SHalfedge_const_handle(it)->source()) << " to "
+              << vert_dump(SHalfedge_const_handle(it)->target()) << std::endl;
+        else if (it.is_shalfloop())
+          out << "  shalfloop lying in the plane " << SHalfloop_const_handle(it)->circle() << std::endl;
         else out << "  unknown bug\n";
       }
     }
@@ -283,31 +271,16 @@ class NefPoly3_dumper_svg
 public:
   std::ostringstream out;
   CGAL_Iso_cuboid_3 bbox;
-  NefPoly3_dumper_svg(const CGAL_Nef_polyhedron3& N)
-  {
-    bbox = CGALUtils::boundingBox(N);
-  }
+  NefPoly3_dumper_svg(const CGAL_Nef_polyhedron3& N) { bbox = CGALUtils::boundingBox(N); }
   void visit(CGAL_Nef_polyhedron3::Vertex_const_handle vch)
   {
     auto p = vch->point();
     out << "     <!-- vertex " << point_dump(p) << " -->\n";
   }
-  void visit(CGAL_Nef_polyhedron3::Halfedge_const_handle)
-  {
-    out << "  <!-- halfedge --> \n";
-  }
-  void visit(CGAL_Nef_polyhedron3::SHalfedge_const_handle)
-  {
-    out << "  <!-- shalfedge --> \n";
-  }
-  void visit(CGAL_Nef_polyhedron3::SHalfloop_const_handle)
-  {
-    out << "  <!-- shalfloop --> \n";
-  }
-  void visit(CGAL_Nef_polyhedron3::SFace_const_handle)
-  {
-    out << "  <!-- sface --> \n";
-  }
+  void visit(CGAL_Nef_polyhedron3::Halfedge_const_handle) { out << "  <!-- halfedge --> \n"; }
+  void visit(CGAL_Nef_polyhedron3::SHalfedge_const_handle) { out << "  <!-- shalfedge --> \n"; }
+  void visit(CGAL_Nef_polyhedron3::SHalfloop_const_handle) { out << "  <!-- shalfloop --> \n"; }
+  void visit(CGAL_Nef_polyhedron3::SFace_const_handle) { out << "  <!-- sface --> \n"; }
   void visit(CGAL_Nef_polyhedron3::Halffacet_const_handle hfacet)
   {
     int contour_count = 0;
@@ -315,7 +288,8 @@ public:
     std::string color = "gold";
     if (!(*hfacet).mark()) color = "green";
     CGAL_Nef_polyhedron3::Halffacet_cycle_const_iterator i;
-    CGAL_forall_facet_cycles_of(i, hfacet) {
+    CGAL_forall_facet_cycles_of(i, hfacet)
+    {
       CGAL_Nef_polyhedron3::SHalfloop_const_handle shl_handle;
       out << "   <!-- Halffacet cycle begin: -->\n";
       if (contour_count == 0) {
@@ -324,21 +298,18 @@ public:
         out << "    <!-- Hole contour:--> \n";
       }
       CGAL_Nef_polyhedron3::SHalfedge_around_facet_const_circulator c1(i), c2(c1);
-      CGAL_For_all(c1, c2) {
+      CGAL_For_all(c1, c2)
+      {
         // don't know why we use source()->source(), except that's what CGAL does internally
         auto source = c1->source()->source()->point();
         auto target = c1->source()->target()->point();
         auto tp1 = project_svg_3to2(source, bbox);
         auto tp2 = project_svg_3to2(target, bbox);
-        out << "     <!-- " << CGAL::to_double(source.x()) << ","
-            << CGAL::to_double(source.y()) << ","
+        out << "     <!-- " << CGAL::to_double(source.x()) << "," << CGAL::to_double(source.y()) << ","
             << CGAL::to_double(source.z()) << " -->\n";
-        out << "     <line "
-            << "x1='" << CGAL::to_double(tp1.x()) << "' "
-            << "y1='" << CGAL::to_double(tp1.y()) << "' "
-            << "x2='" << CGAL::to_double(tp2.x()) << "' "
-            << "y2='" << CGAL::to_double(tp2.y()) << "' "
-            << " stroke='" << color << "'";
+        out << "     <line " << "x1='" << CGAL::to_double(tp1.x()) << "' " << "y1='"
+            << CGAL::to_double(tp1.y()) << "' " << "x2='" << CGAL::to_double(tp2.x()) << "' " << "y2='"
+            << CGAL::to_double(tp2.y()) << "' " << " stroke='" << color << "'";
         if (!(*hfacet).mark()) out << " stroke-dasharray='4 4' />\n";
         else out << " />\n";
       }
@@ -349,7 +320,6 @@ public:
   }
 };
 
-
 std::string dump_svg(const CGAL_Nef_polyhedron3& N)
 {
   std::ostringstream out;
@@ -357,25 +327,29 @@ std::string dump_svg(const CGAL_Nef_polyhedron3& N)
   out << "<!--CGAL_Nef_polyhedron3 dump begin-->\n";
   out << svg_header() << "\n" << svg_border() << "\n";
   out << svg_styleblock(linewidth) << "\n" << svg_axes() << "\n";
+  // clang-format off
   out << "\n<!-- CGAL Nef Polyhedron data"
-      << "\nnumber of vertices " << N.number_of_vertices()
-      << "\nnumber of halfedges " << N.number_of_halfedges()
-      << "\nnumber of edges " << N.number_of_edges()
-      << "\nnumber of halffacets " << N.number_of_halffacets()
-      << "\nnumber of facets " << N.number_of_facets()
-      << "\nnumber of volumes " << N.number_of_volumes()
-      << "\nis_simple()? " << N.is_simple()
-      << "\nis_valid()? " << (const_cast<CGAL_Nef_polyhedron3&>(N)).is_valid()
-      << "\n -->\n";
+    << "\nnumber of vertices " << N.number_of_vertices()
+    << "\nnumber of halfedges " << N.number_of_halfedges()
+    << "\nnumber of edges " << N.number_of_edges()
+    << "\nnumber of halffacets " << N.number_of_halffacets()
+    << "\nnumber of facets " << N.number_of_facets()
+    << "\nnumber of volumes " << N.number_of_volumes()
+    << "\nis_simple()? " << N.is_simple()
+    << "\nis_valid()? " << (const_cast<CGAL_Nef_polyhedron3&>(N)).is_valid()
+    << "\n -->\n";
+  // clang-format on
   out << "<!-- CGAL Nef Polyhedron sphere map: -->\n";
   out << sphere_map_dump(N);
 
   CGAL_Nef_polyhedron3::Volume_const_iterator c;
-  CGAL_forall_volumes(c, N) {
+  CGAL_forall_volumes(c, N)
+  {
     out << " <!--Volume begin-->\n";
     out << "  <!--Mark: " << (*c).mark() << "-->\n";
     CGAL_Nef_polyhedron3::Shell_entry_const_iterator it;
-    CGAL_forall_shells_of(it, c) {
+    CGAL_forall_shells_of(it, c)
+    {
       out << "  <!--Shell begin-->\n";
       NefPoly3_dumper_svg dumper_svg(N);
       N.visit_shell_objects(CGAL_Nef_polyhedron3::SFace_const_handle(it), dumper_svg);
@@ -391,6 +365,6 @@ std::string dump_svg(const CGAL_Nef_polyhedron3& N)
   return tmp;
 }
 
-} // namespace
+}  // namespace OpenSCAD
 
-#endif // ENABLE_CGAL
+#endif  // ENABLE_CGAL

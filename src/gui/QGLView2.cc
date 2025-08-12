@@ -34,14 +34,9 @@
  */
 #include <QOpenGLContext>
 
-QOpenGLContext *
-getGLContext()
-{
-  return (QOpenGLContext::currentContext());
-}
+QOpenGLContext *getGLContext() { return (QOpenGLContext::currentContext()); }
 
-void
-setGLContext(QOpenGLContext *ctx)
+void setGLContext(QOpenGLContext *ctx)
 {
   /*
    * This seems like the simplest way to select QOpenGLContext.

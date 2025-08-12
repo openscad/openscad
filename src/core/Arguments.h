@@ -14,7 +14,9 @@ struct Argument {
   boost::optional<std::string> name;
   Value value;
 
-  Argument(boost::optional<std::string> name, Value value) : name(std::move(name)), value(std::move(value)) {
+  Argument(boost::optional<std::string> name, Value value)
+    : name(std::move(name)), value(std::move(value))
+  {
   }
   Argument(Argument&& other) = default;
   Argument& operator=(Argument&& other) = default;

@@ -52,11 +52,12 @@ template <class Key, class T>
 class Cache
 {
   struct Node {
-    inline Node() : keyPtr(nullptr), t(nullptr), c(0), p(nullptr), n(nullptr) {
-    }
-    inline Node(T * data, size_t cost) : keyPtr(nullptr), t(data), c(cost), p(nullptr), n(nullptr) {
-    }
-    const Key *keyPtr; T *t; size_t c; Node *p, *n;
+    inline Node() : keyPtr(nullptr), t(nullptr), c(0), p(nullptr), n(nullptr) {}
+    inline Node(T *data, size_t cost) : keyPtr(nullptr), t(data), c(cost), p(nullptr), n(nullptr) {}
+    const Key *keyPtr;
+    T *t;
+    size_t c;
+    Node *p, *n;
   };
   using map_type = typename std::unordered_map<Key, Node>;
   using iterator_type = typename map_type::iterator;
@@ -67,7 +68,8 @@ class Cache
   void *unused{nullptr};
   size_t mx, total{0};
 
-  inline void unlink(Node& n) {
+  inline void unlink(Node& n)
+  {
     if (n.p) n.p->n = n.n;
     if (n.n) n.n->p = n.p;
     if (l == &n) l = n.p;
@@ -77,7 +79,8 @@ class Cache
     hash.erase(*n.keyPtr);
     delete obj;
   }
-  inline T *relink(const Key& key) {
+  inline T *relink(const Key& key)
+  {
     auto i = hash.find(key);
     if (i == hash.end()) return nullptr;
 
@@ -95,20 +98,25 @@ class Cache
   }
 
 public:
-  inline explicit Cache(size_t maxCost = 100)
-    : f(nullptr), l(nullptr), mx(maxCost) { }
+  inline explicit Cache(size_t maxCost = 100) : f(nullptr), l(nullptr), mx(maxCost) {}
   inline ~Cache() { clear(); }
 
   [[nodiscard]] inline size_t maxCost() const { return mx; }
-  void setMaxCost(size_t m) { mx = m; trim(mx); }
+  void setMaxCost(size_t m)
+  {
+    mx = m;
+    trim(mx);
+  }
   [[nodiscard]] inline size_t totalCost() const { return total; }
 
   [[nodiscard]] inline size_t size() const { return hash.size(); }
   [[nodiscard]] inline bool empty() const { return hash.empty(); }
 
-  void clear() {
+  void clear()
+  {
     while (f) {
-      delete f->t; f = f->n;
+      delete f->t;
+      f = f->n;
     }
     hash.clear();
     l = nullptr;

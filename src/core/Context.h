@@ -19,9 +19,8 @@ template <typename T>
 class ContextHandle : ContextFrameHandle
 {
 public:
-  ContextHandle(std::shared_ptr<T>&& context) :
-    ContextFrameHandle(context.get()),
-    context(std::move(context))
+  ContextHandle(std::shared_ptr<T>&& context)
+    : ContextFrameHandle(context.get()), context(std::move(context))
   {
     try {
       this->context->init();
@@ -44,13 +43,14 @@ public:
   ContextHandle(ContextHandle&& other) noexcept = default;
 
   // Valid only if $other is on the top of the stack.
-  ContextHandle& operator=(ContextHandle&& other) noexcept {
+  ContextHandle& operator=(ContextHandle&& other) noexcept
+  {
     assert(session);
     assert(context);
     assert(other.context);
     assert(other.session);
 
-    //session->contextMemoryManager().releaseContext();
+    // session->contextMemoryManager().releaseContext();
     session->contextMemoryManager().addContext(std::move(this->context));
     other.release();
     context = std::move(other.context);
@@ -75,12 +75,13 @@ protected:
 public:
   ~Context() override;
 
-  template <typename C, typename ... T>
-  static ContextHandle<C> create(T&& ... t) {
+  template <typename C, typename... T>
+  static ContextHandle<C> create(T&&...t)
+  {
     return ContextHandle<C>{std::shared_ptr<C>(new C(std::forward<T>(t)...))};
   }
 
-  virtual void init() { }
+  virtual void init() {}
 
   std::shared_ptr<const Context> get_shared_ptr() const { return shared_from_this(); }
   virtual const class Children *user_module_children() const;
@@ -102,7 +103,8 @@ public:
 protected:
   std::shared_ptr<const Context> parent;
 
-  bool accountingAdded = false;   // avoiding bad accounting when exception threw in constructor issue #3871
+  bool accountingAdded =
+    false;  // avoiding bad accounting when exception threw in constructor issue #3871
 
 public:
 #ifdef DEBUG

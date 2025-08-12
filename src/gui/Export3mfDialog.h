@@ -30,7 +30,7 @@
 #include <QDialog>
 
 #include "core/Settings.h"
-#include "gui/qtgettext.h" // IWYU pragma: keep
+#include "gui/qtgettext.h"  // IWYU pragma: keep
 #include "io/export.h"
 #include "ui_Export3mfDialog.h"
 #include "gui/InitConfigurator.h"
@@ -47,9 +47,7 @@ public:
 
   int exec() override;
 
-  std::shared_ptr<const Export3mfOptions> getOptions() const {
-    return Export3mfOptions::fromSettings();
-  }
+  std::shared_ptr<const Export3mfOptions> getOptions() const { return Export3mfOptions::fromSettings(); }
 
 private slots:
   void on_toolButtonColorsSelected_clicked();

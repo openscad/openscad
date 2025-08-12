@@ -51,4 +51,4 @@ public:
   [[nodiscard]] shape *clone() const override { return new ellipse(*this); }
 };
 
-}
+}  // namespace libsvg

@@ -6,6 +6,6 @@
 class Importer
 {
 public:
-    static int init();
-    static QMap<QString, QString> knownFileExtensions;
+  static int init();
+  static QMap<QString, QString> knownFileExtensions;
 };

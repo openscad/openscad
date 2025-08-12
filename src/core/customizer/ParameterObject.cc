@@ -31,7 +31,7 @@ bool set_enum_value(json& o, const std::string& name, const EnumParameter::EnumI
   }
 }
 
-}
+}  // namespace
 
 bool BoolParameter::importValue(boost::property_tree::ptree encodedValue, bool store)
 {
@@ -65,14 +65,13 @@ void BoolParameter::apply(Assignment *assignment) const
   assignment->setExpr(std::make_shared<Literal>(value));
 }
 
-StringParameter::StringParameter(
-  const std::string& name, const std::string& description, const std::string& group,
-  const std::string& defaultValue,
-  boost::optional<size_t> maximumSize
-  ) :
-  ParameterObject(name, description, group, ParameterObject::ParameterType::String),
-  value(defaultValue), defaultValue(defaultValue),
-  maximumSize(maximumSize)
+StringParameter::StringParameter(const std::string& name, const std::string& description,
+                                 const std::string& group, const std::string& defaultValue,
+                                 boost::optional<size_t> maximumSize)
+  : ParameterObject(name, description, group, ParameterObject::ParameterType::String),
+    value(defaultValue),
+    defaultValue(defaultValue),
+    maximumSize(maximumSize)
 {
   if (maximumSize && defaultValue.size() > *maximumSize) {
     maximumSize = defaultValue.size();
@@ -247,7 +246,8 @@ bool EnumParameter::importValue(boost::property_tree::ptree encodedValue, bool s
   int index;
   boost::optional<double> decodedDouble = encodedValue.get_value_optional<double>();
   for (size_t i = 0; i < items.size(); i++) {
-    if ((decodedDouble && items[i].value == EnumValue(*decodedDouble)) || items[i].value == EnumValue(encodedValue.data())) {
+    if ((decodedDouble && items[i].value == EnumValue(*decodedDouble)) ||
+        items[i].value == EnumValue(encodedValue.data())) {
       index = i;
       found = true;
       break;
@@ -306,14 +306,12 @@ void EnumParameter::apply(Assignment *assignment) const
   }
 }
 
-
-
-struct EnumValues
-{
+struct EnumValues {
   std::vector<EnumParameter::EnumItem> items;
   int defaultValueIndex;
 };
-static EnumValues parseEnumItems(const Expression *parameter, const std::string& defaultKey, const EnumParameter::EnumValue& defaultValue)
+static EnumValues parseEnumItems(const Expression *parameter, const std::string& defaultKey,
+                                 const EnumParameter::EnumValue& defaultValue)
 {
   EnumValues output;
 
@@ -392,8 +390,7 @@ static EnumValues parseEnumItems(const Expression *parameter, const std::string&
   return output;
 }
 
-struct NumericLimits
-{
+struct NumericLimits {
   boost::optional<double> minimum;
   boost::optional<double> maximum;
   boost::optional<double> step;
@@ -416,10 +413,7 @@ static NumericLimits parseNumericLimits(const Expression *parameter, const std::
   } else if (const auto *range = dynamic_cast<const Range *>(parameter)) {
     const auto *minimum = dynamic_cast<const Literal *>(range->getBegin());
     const auto *maximum = dynamic_cast<const Literal *>(range->getEnd());
-    if (
-      minimum && minimum->isDouble()
-      && maximum && maximum->isDouble()
-      ) {
+    if (minimum && minimum->isDouble() && maximum && maximum->isDouble()) {
       output.minimum = minimum->toDouble();
       output.maximum = maximum->toDouble();
 
@@ -467,7 +461,6 @@ std::unique_ptr<ParameterObject> ParameterObject::fromAssignment(const Assignmen
     const auto *expression = dynamic_cast<const Literal *>(groupAnnotation->getExpr().get());
     if (expression && expression->isString()) {
       group = boost::algorithm::trim_copy(expression->toString());
-
     }
     if (group == "Hidden") return nullptr;
   }
@@ -490,7 +483,8 @@ std::unique_ptr<ParameterObject> ParameterObject::fromAssignment(const Assignmen
       }
       EnumValues values = parseEnumItems(parameter, key, value);
       if (!values.items.empty()) {
-        return std::make_unique<EnumParameter>(name, description, group, values.defaultValueIndex, values.items);
+        return std::make_unique<EnumParameter>(name, description, group, values.defaultValueIndex,
+                                               values.items);
       }
     }
 
@@ -507,7 +501,8 @@ std::unique_ptr<ParameterObject> ParameterObject::fromAssignment(const Assignmen
     if (expression->isDouble()) {
       double value = expression->toDouble();
       NumericLimits limits = parseNumericLimits(parameter, {value});
-      return std::make_unique<NumberParameter>(name, description, group, value, limits.minimum, limits.maximum, limits.step);
+      return std::make_unique<NumberParameter>(name, description, group, value, limits.minimum,
+                                               limits.maximum, limits.step);
     }
   } else if (const auto *expression = dynamic_cast<const Vector *>(valueExpression)) {
     if (expression->getChildren().size() < 1 || expression->getChildren().size() > 4) {
@@ -527,7 +522,8 @@ std::unique_ptr<ParameterObject> ParameterObject::fromAssignment(const Assignmen
     }
 
     NumericLimits limits = parseNumericLimits(parameter, value);
-    return std::make_unique<VectorParameter>(name, description, group, value, limits.minimum, limits.maximum, limits.step);
+    return std::make_unique<VectorParameter>(name, description, group, value, limits.minimum,
+                                             limits.maximum, limits.step);
   }
   return nullptr;
 }

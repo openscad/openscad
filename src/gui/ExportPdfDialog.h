@@ -30,7 +30,7 @@
 #include <QDialog>
 #include <QColor>
 
-#include "gui/qtgettext.h" // IWYU pragma: keep
+#include "gui/qtgettext.h"  // IWYU pragma: keep
 #include "io/export.h"
 #include "ui_ExportPdfDialog.h"
 #include "gui/InitConfigurator.h"
@@ -47,9 +47,7 @@ public:
   double getGridSize() const;
   void setGridSize(double value);
 
-  std::shared_ptr<const ExportPdfOptions> getOptions() const {
-    return ExportPdfOptions::fromSettings();
-  }
+  std::shared_ptr<const ExportPdfOptions> getOptions() const { return ExportPdfOptions::fromSettings(); }
 
 private slots:
   void on_toolButtonFillColor_clicked();
@@ -70,8 +68,3 @@ private:
   QColor strokeColor;
   double defaultStrokeWidth = 0.35;
 };
-
-
-
-
-

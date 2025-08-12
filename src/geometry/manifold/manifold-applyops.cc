@@ -23,7 +23,8 @@ Location getLocation(const std::shared_ptr<const AbstractNode>& node)
    Applies op to all children and returns the result.
    The child list should be guaranteed to contain non-NULL 3D or empty Geometry objects
  */
-std::shared_ptr<ManifoldGeometry> applyOperator3DManifold(const Geometry::Geometries& children, OpenSCADOperator op)
+std::shared_ptr<ManifoldGeometry> applyOperator3DManifold(const Geometry::Geometries& children,
+                                                          OpenSCADOperator op)
 {
   std::shared_ptr<ManifoldGeometry> geom;
 
@@ -53,20 +54,11 @@ std::shared_ptr<ManifoldGeometry> applyOperator3DManifold(const Geometry::Geomet
     }
 
     switch (op) {
-    case OpenSCADOperator::UNION:
-      *geom = *geom + *chN;
-      break;
-    case OpenSCADOperator::INTERSECTION:
-      *geom = *geom * *chN;
-      break;
-    case OpenSCADOperator::DIFFERENCE:
-      *geom = *geom - *chN;
-      break;
-    case OpenSCADOperator::MINKOWSKI:
-      *geom = geom->minkowski(*chN);
-      break;
-    default:
-      LOG(message_group::Error, "Unsupported CGAL operator: %1$d", static_cast<int>(op));
+    case OpenSCADOperator::UNION:        *geom = *geom + *chN; break;
+    case OpenSCADOperator::INTERSECTION: *geom = *geom * *chN; break;
+    case OpenSCADOperator::DIFFERENCE:   *geom = *geom - *chN; break;
+    case OpenSCADOperator::MINKOWSKI:    *geom = geom->minkowski(*chN); break;
+    default:                             LOG(message_group::Error, "Unsupported CGAL operator: %1$d", static_cast<int>(op));
     }
     if (item.first) item.first->progress_report();
   }
@@ -75,4 +67,4 @@ std::shared_ptr<ManifoldGeometry> applyOperator3DManifold(const Geometry::Geomet
 
 };  // namespace ManifoldUtils
 
-#endif // ENABLE_MANIFOLD
+#endif  // ENABLE_MANIFOLD

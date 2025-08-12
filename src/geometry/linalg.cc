@@ -17,7 +17,7 @@ BoundingBox operator*(const Transform3d& m, const BoundingBox& box)
 {
   if (box.isEmpty()) return box;
   BoundingBox newbox;
-  Vector3d boxvec[2] = { box.min(), box.max() };
+  Vector3d boxvec[2] = {box.min(), box.max()};
   for (auto& k : boxvec) {
     for (auto& j : boxvec) {
       for (auto& i : boxvec) {
@@ -70,7 +70,7 @@ using Float_t = double;
 Py_hash_t hash_floating_point(Float_t v)
 {
   static constexpr int PyHASH_BITS = 31;
-  //if (sizeof(Py_uhash_t)==8) PyHASH_BITS=61;
+  // if (sizeof(Py_uhash_t)==8) PyHASH_BITS=61;
 
   static constexpr Py_uhash_t PyHASH_MODULUS = (((Py_uhash_t)1 << PyHASH_BITS) - 1);
   static constexpr Py_uhash_t PyHASH_INF = 314159;
@@ -98,7 +98,7 @@ Py_hash_t hash_floating_point(Float_t v)
   x = 0;
   while (m) {
     x = ((x << 28) & PyHASH_MODULUS) | x >> (PyHASH_BITS - 28);
-    m *= 268435456.0; // 2**28
+    m *= 268435456.0;  // 2**28
     e -= 28;
     y = (Py_uhash_t)m; /* pull out integer part */
     m -= y;

@@ -34,23 +34,24 @@ void setupCamera(Camera& cam, const BoundingBox& bbox)
 
 }  // namespace
 
-bool export_png(const std::shared_ptr<const Geometry>& root_geom, const ViewOptions& options, Camera& camera, std::ostream& output)
+bool export_png(const std::shared_ptr<const Geometry>& root_geom, const ViewOptions& options,
+                Camera& camera, std::ostream& output)
 {
   assert(root_geom != nullptr);
   PRINTD("export_png geom");
   std::unique_ptr<OffscreenView> glview;
   try {
     glview = std::make_unique<OffscreenView>(camera.pixel_width, camera.pixel_height);
-  } catch (const OffscreenViewException &ex) {
+  } catch (const OffscreenViewException& ex) {
     fprintf(stderr, "Can't create OffscreenView: %s.\n", ex.what());
     return false;
   }
   std::shared_ptr<Renderer> geomRenderer;
-  // Choose PolySetRenderer for PolySet and Polygon2d, and for Manifold since we 
+  // Choose PolySetRenderer for PolySet and Polygon2d, and for Manifold since we
   // know that all geometries are convertible to PolySet.
   if (RenderSettings::inst()->backend3D == RenderBackend3D::ManifoldBackend ||
       std::dynamic_pointer_cast<const PolySet>(root_geom) ||
-      std::dynamic_pointer_cast<const Polygon2d>(root_geom)){
+      std::dynamic_pointer_cast<const Polygon2d>(root_geom)) {
     geomRenderer = std::make_shared<PolySetRenderer>(root_geom);
   } else {
     geomRenderer = std::make_shared<CGALRenderer>(root_geom);
@@ -79,7 +80,7 @@ std::unique_ptr<OffscreenView> prepare_preview(Tree& tree, const ViewOptions& op
   std::unique_ptr<OffscreenView> glview;
   try {
     glview = std::make_unique<OffscreenView>(camera.pixel_width, camera.pixel_height);
-  } catch (const OffscreenViewException &ex) {
+  } catch (const OffscreenViewException& ex) {
     LOG("Can't create OffscreenView: %1$s.", ex.what());
     return nullptr;
   }
@@ -88,18 +89,19 @@ std::unique_ptr<OffscreenView> prepare_preview(Tree& tree, const ViewOptions& op
   if (options.previewer == Previewer::OPENCSG) {
 #ifdef ENABLE_OPENCSG
     PRINTD("Initializing OpenCSGRenderer");
-    renderer = std::make_shared<OpenCSGRenderer>(csgInfo.root_products, csgInfo.highlights_products, csgInfo.background_products);
+    renderer = std::make_shared<OpenCSGRenderer>(csgInfo.root_products, csgInfo.highlights_products,
+                                                 csgInfo.background_products);
 #else
     fprintf(stderr, "This openscad was built without OpenCSG support\n");
     return 0;
 #endif
   } else {
     PRINTD("Initializing ThrownTogetherRenderer");
-    renderer = std::make_shared<ThrownTogetherRenderer>(csgInfo.root_products, csgInfo.highlights_products, csgInfo.background_products);
+    renderer = std::make_shared<ThrownTogetherRenderer>(
+      csgInfo.root_products, csgInfo.highlights_products, csgInfo.background_products);
   }
 
   glview->setRenderer(renderer);
-
 
 #ifdef ENABLE_OPENCSG
   const BoundingBox bbox = glview->getRenderer()->getBoundingBox();
@@ -124,10 +126,17 @@ bool export_png(const OffscreenView& glview, std::ostream& output)
   return true;
 }
 
-#else // NULLGL
+#else  // NULLGL
 
-bool export_png(const std::shared_ptr<const Geometry>& root_geom, const ViewOptions& options, Camera& camera, std::ostream& output) { return false; }
-std::unique_ptr<OffscreenView> prepare_preview(Tree& tree, const ViewOptions& options, Camera& camera) { return nullptr; }
+bool export_png(const std::shared_ptr<const Geometry>& root_geom, const ViewOptions& options,
+                Camera& camera, std::ostream& output)
+{
+  return false;
+}
+std::unique_ptr<OffscreenView> prepare_preview(Tree& tree, const ViewOptions& options, Camera& camera)
+{
+  return nullptr;
+}
 bool export_png(const OffscreenView& glview, std::ostream& output) { return false; }
 
-#endif // NULLGL
+#endif  // NULLGL

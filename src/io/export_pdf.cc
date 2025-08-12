@@ -66,7 +66,7 @@ void draw_grid(cairo_t *cr, double left, double right, double bottom, double top
   const double lightLine = 0.24;
   const int major = (gridSize > 10.0 ? gridSize : int(10.0 / gridSize));
 
-  double pts = 0.0; // for iteration across page
+  double pts = 0.0;  // for iteration across page
 
   // Bounds are margins in points.
   // Compute Xrange in units of gridSize

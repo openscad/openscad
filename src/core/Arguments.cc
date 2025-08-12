@@ -30,14 +30,15 @@
 #include <memory>
 #include "core/Expression.h"
 
-Arguments::Arguments(const AssignmentList& argument_expressions, const std::shared_ptr<const Context>& context) :
-  evaluation_session(context->session())
+Arguments::Arguments(const AssignmentList& argument_expressions,
+                     const std::shared_ptr<const Context>& context)
+  : evaluation_session(context->session())
 {
   for (const auto& argument_expression : argument_expressions) {
-    emplace_back(
-      argument_expression->getName().empty() ? boost::none : boost::optional<std::string>(argument_expression->getName()),
-      argument_expression->getExpr()->evaluate(context)
-      );
+    emplace_back(argument_expression->getName().empty()
+                   ? boost::none
+                   : boost::optional<std::string>(argument_expression->getName()),
+                 argument_expression->getExpr()->evaluate(context));
   }
 }
 
