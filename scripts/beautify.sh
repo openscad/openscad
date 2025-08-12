@@ -69,12 +69,16 @@ do
     DOALL=1
   elif [ "$KEY" == "-h" ]; then
     SCRIPT=$(basename "$0")
-    echo "Runs clang-format on files which differ from diffbase, OR across the entire project (for --all)"
-    echo "If no options given, then diffbase defaults to \"origin/master\""
-    echo
-    echo "Usage:"
-    echo "    $SCRIPT [--all|--diffbase=BASE]"
-    echo
+cat << EOF
+Usage: $SCRIPT [--all|--check|--diffbase=BASE]
+
+Runs clang-format on files. Default scope is files changed from origin/master.
+
+    --all               format all files
+    --check             check files, do not make changes
+    --diffbase=BASE     format files that differ from BASE
+
+EOF
     exit
   fi
 done
