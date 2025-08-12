@@ -369,7 +369,7 @@ void ManifoldGeometry::resize(const Vector3d& newsize, const Eigen::Matrix<bool,
 
 /*! Iterate over all vertices' points until the function returns true (for done). */
 void ManifoldGeometry::foreachVertexUntilTrue(const std::function<bool(const manifold::vec3& pt)>& f) const {
-  auto mesh = getManifold().GetMeshGL64();
+  const auto mesh = getManifold().GetMeshGL64();
   const auto numVert = mesh.NumVert();
   for (size_t v = 0; v < numVert; ++v) {
     if (f(mesh.GetVertPos(v))) {
