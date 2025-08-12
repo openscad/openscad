@@ -196,11 +196,11 @@ ScintillaEditor::ScintillaEditor(QWidget *parent) : EditorInterface(parent)
 
   qsci->indicatorDefine(QsciScintilla::RoundBoxIndicator, errorIndicatorNumber);
   qsci->indicatorDefine(QsciScintilla::RoundBoxIndicator, findIndicatorNumber);
-  qsci->indicatorDefine(QsciScintilla::RoundBoxIndicator, selectionIndicatorIsActiveNumber);
-  qsci->indicatorDefine(QsciScintilla::RoundBoxIndicator, selectionIndicatorIsActiveNumber + 1);
-  qsci->indicatorDefine(QsciScintilla::RoundBoxIndicator, selectionIndicatorIsImpactedNumber);
-  qsci->indicatorDefine(QsciScintilla::RoundBoxIndicator, selectionIndicatorIsImpactedNumber + 1);
-  qsci->indicatorDefine(QsciScintilla::RoundBoxIndicator, selectionIndicatorIsImpactedNumber + 2);
+  qsci->indicatorDefine(QsciScintilla::FullBoxIndicator, selectionIndicatorIsActiveNumber);
+  qsci->indicatorDefine(QsciScintilla::FullBoxIndicator, selectionIndicatorIsActiveNumber + 1);
+  qsci->indicatorDefine(QsciScintilla::FullBoxIndicator, selectionIndicatorIsImpactedNumber);
+  qsci->indicatorDefine(QsciScintilla::FullBoxIndicator, selectionIndicatorIsImpactedNumber + 1);
+  qsci->indicatorDefine(QsciScintilla::FullBoxIndicator, selectionIndicatorIsImpactedNumber + 2);
 
   qsci->markerDefine(QsciScintilla::Circle, errMarkerNumber);
   qsci->markerDefine(QsciScintilla::Bookmark, bmMarkerNumber);

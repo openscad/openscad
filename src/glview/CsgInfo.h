@@ -26,7 +26,7 @@ public:
   bool compile_products(const Tree& tree) {
     auto& root_node = tree.root();
     GeometryEvaluator geomevaluator(tree);
-    CSGTreeEvaluator evaluator(tree, &geomevaluator);
+    CSGTreeEvaluator evaluator(tree, nullptr, &geomevaluator);
     const std::shared_ptr<CSGNode> csgRoot = evaluator.buildCSGTree(*root_node);
     std::vector<std::shared_ptr<CSGNode>> highlightNodes = evaluator.getHighlightNodes();
     std::vector<std::shared_ptr<CSGNode>> backgroundNodes = evaluator.getBackgroundNodes();

@@ -47,6 +47,9 @@ public:
     MATERIAL,
     CUTOUT,
     HIGHLIGHT,
+    HIGHLIGHT_SELECTED,
+    HIGHLIGHT_IMPACTED,
+    HIGHLIGHT_BACKGROUND,
     BACKGROUND,
     MATERIAL_EDGES,
     CUTOUT_EDGES,
@@ -67,4 +70,6 @@ protected:
   std::map<ColorMode, Color4f> colormap_;
   const ColorScheme *colorscheme_{nullptr};
   void setupShader();
+
+  std::unique_ptr<ShaderUtils::ShaderInfo> shader;
 };

@@ -45,6 +45,73 @@ std::shared_ptr<CSGNode> CSGTreeEvaluator::buildCSGTree(const AbstractNode& node
   return this->rootNode = t;
 }
 
+void CSGTreeEvaluator::selectAndHighlightCSGTree(std::shared_ptr<CSGNode>& node,
+                                                 int depth,
+                                                 std::map<int, CSGNode::Flag>& hightlight,
+                                                 std::vector<std::shared_ptr<CSGNode>>& highlightsNodes)
+{
+    auto leaf = dynamic_cast<CSGLeaf*>(node.get());
+    auto op = dynamic_cast<CSGOperation*>(node.get());
+    if(leaf)
+    {
+        if(hightlight.find(leaf->index) != hightlight.end())
+        {
+            auto& leafnode = hightlight[leaf->index];
+            node->setSelected(false);
+            node->setImpacted(false);
+
+            if(leafnode & CSGNode::FLAG_HIGHLIGHT_SELECTED)
+                node->setSelected(true);
+            else if (leafnode & CSGNode::FLAG_HIGHLIGHT_IMPACTED)
+                node->setImpacted(true);
+            highlightsNodes.push_back(node);
+            hightlight.erase(leaf->index);
+        }
+    }
+    if(op)
+    {
+        selectAndHighlightCSGTree(op->left(), depth+4, hightlight, highlightsNodes);
+        selectAndHighlightCSGTree(op->right(), depth+4, hightlight, highlightsNodes);
+    }
+}
+
+void CSGTreeEvaluator::selectAndHighlightCSGTree(std::shared_ptr<const AbstractNode> selectedNodes,
+                                                 const AbstractNode& node, std::shared_ptr<CSGNode> csgnode,
+                                                 std::vector<std::shared_ptr<CSGNode>>& highlighted)
+{
+    std::map<int, CSGNode::Flag> highlight;
+
+    // recursively traverse the CSG tree to locate the selectedNode and propagate to its children nodes the
+    // proper selection status
+    if(selectedNodes)
+    {
+        selectAndHighlightCSGTree(selectedNodes, node, highlight, false, false);
+    }
+
+    // starting from the root of the hierarchy and mark the csgnode with the proper flag.
+    selectAndHighlightCSGTree(csgnode, 0, highlight, highlighted);
+}
+
+void CSGTreeEvaluator::selectAndHighlightCSGTree(std::shared_ptr<const AbstractNode> selectedNodes, const AbstractNode& node, std::map<int, CSGNode::Flag>& hightlight, bool isSelected, bool isImpacted)
+{
+    if(selectedNodes)
+    {
+        if( selectedNodes->index() == node.index() )
+            isSelected = true;
+        if (node.modinst == selectedNodes->modinst)
+            isImpacted = true;
+
+        if(isSelected)
+            hightlight[node.index()] = CSGNode::FLAG_HIGHLIGHT_SELECTED;
+        else if(isImpacted) hightlight[node.index()] = CSGNode::FLAG_HIGHLIGHT_IMPACTED;
+    }
+
+    for(auto& child : node.getChildren())
+    {
+        selectAndHighlightCSGTree(selectedNodes, *child.get(), hightlight, isSelected, isImpacted);
+    }
+}
+
 void CSGTreeEvaluator::applyBackgroundAndHighlight(State& /*state*/, const AbstractNode& node)
 {
   for (const auto& chnode : this->visitedchildren[node.index()]) {

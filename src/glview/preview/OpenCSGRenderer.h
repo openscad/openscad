@@ -67,19 +67,31 @@ class OpenCSGRenderer : public VBORenderer
 {
 public:
   OpenCSGRenderer(std::shared_ptr<CSGProducts> root_products,
-                  std::shared_ptr<CSGProducts> highlights_products,
                   std::shared_ptr<CSGProducts> background_products);
   ~OpenCSGRenderer() override = default;
+  void setHighlights(std::shared_ptr<CSGProducts> highLightedProducts);
   void prepare(const ShaderUtils::ShaderInfo *shaderinfo = nullptr) override;
   void draw(bool showedges, const ShaderUtils::ShaderInfo *shaderinfo = nullptr) const override;
+
+  // needed ?
+  // void resize(int w, int h) override;
+  // void renderImmediate(std::shared_ptr<CSGProducts>) const;
 
   BoundingBox getBoundingBox() const override;
 private:
   void createCSGVBOProducts(const CSGProducts& products, bool highlight_mode, bool background_mode, const ShaderUtils::ShaderInfo *shaderinfo);
 
+  void drawProducts(bool showEdges, const ShaderUtils::ShaderInfo *shaderInfo) const;
+  void drawHighlightedProducts(bool showedges, const ShaderUtils::ShaderInfo *shaderinfo) const;
+
   std::vector<std::unique_ptr<OpenCSGVBOProduct>> vertex_state_containers_;
   std::shared_ptr<CSGProducts> root_products_;
   std::shared_ptr<CSGProducts> highlights_products_;
   std::shared_ptr<CSGProducts> background_products_;
+
+  // use this to get from the id of a product which highlighting mode should be used.
+  std::map<size_t, ColorMode> highLightingMode;
+
   std::string opencsg_vertex_shader_code_;
+  std::string opencsg_fragment_shader_code_;
 };

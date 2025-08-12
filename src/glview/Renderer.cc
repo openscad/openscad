@@ -137,6 +137,9 @@ Renderer::Renderer()
   // MATERIAL is set by this object's colorscheme
   // CUTOUT is set by this object's colorscheme
   colormap_[ColorMode::HIGHLIGHT] = {255, 81, 81, 128};
+  colormap_[ColorMode::HIGHLIGHT_SELECTED] =   {174, 255, 170, 170};
+  colormap_[ColorMode::HIGHLIGHT_IMPACTED] = {255, 170, 214, 170};
+  colormap_[ColorMode::HIGHLIGHT_BACKGROUND] = {180, 180, 180, 170};
   colormap_[ColorMode::BACKGROUND] = {180, 180, 180, 128};
   // MATERIAL_EDGES is set by this object's colorscheme
   // CUTOUT_EDGES is set by this object's colorscheme
@@ -155,6 +158,22 @@ bool Renderer::getColorSchemeColor(Renderer::ColorMode colormode, Color4f& outco
     return true;
   }
   return false;
+}
+
+void Renderer::setupShader()
+{
+    auto resource = ShaderUtils::compileShaderProgram(ShaderUtils::loadShaderSource("OpenCSG.vert"),
+                                                      ShaderUtils::loadShaderSource("OpenCSG.frag"));
+
+    shader = std::make_unique<ShaderUtils::ShaderInfo>(ShaderUtils::ShaderInfo{
+      .resource = resource,
+      .type = ShaderUtils::ShaderType::EDGE_RENDERING,
+      .uniforms = {
+        {"color", glGetUniformLocation(resource.shader_program, "color")},
+      },
+      .attributes = {
+      },
+    });
 }
 
 bool Renderer::getShaderColor(Renderer::ColorMode colormode, const Color4f& object_color,
