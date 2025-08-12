@@ -24,8 +24,10 @@ public:
   virtual std::vector<const Value *> list_embedded_values() const;
   virtual size_t clear();
 
+  // Before calling this method repeatedly, one should reserve extra capacity for the relevant maps.
   virtual bool set_variable(const std::string& name, Value&& value);
 
+  // All of the apply_*variables methods reserve extra capacity in the relevant maps.
   void apply_variables(const ValueMap& variables);
   void apply_lexical_variables(const ContextFrame& other);
   void apply_config_variables(const ContextFrame& other);
@@ -44,7 +46,11 @@ public:
   EvaluationSession *session() const { return evaluation_session; }
   const std::string& documentRoot() const { return evaluation_session->documentRoot(); }
 
+  void reserve_additional_lexical_variables(size_t count) { lexical_variables.reserve(lexical_variables.size() + count); }
+  void reserve_additional_config_variables(size_t count) { config_variables.reserve(config_variables.size() + count); }
+
 protected:
+
   ValueMap lexical_variables;
   ValueMap config_variables;
   EvaluationSession *evaluation_session;

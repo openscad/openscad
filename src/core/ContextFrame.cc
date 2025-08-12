@@ -98,6 +98,8 @@ bool ContextFrame::set_variable(const std::string& name, Value&& value)
 
 void ContextFrame::apply_variables(const ValueMap& variables)
 {
+  reserve_additional_lexical_variables(variables.size());
+
   for (const auto& variable : variables) {
     set_variable(variable.first, variable.second.clone());
   }
@@ -105,16 +107,26 @@ void ContextFrame::apply_variables(const ValueMap& variables)
 
 void ContextFrame::apply_lexical_variables(const ContextFrame& other)
 {
-  apply_variables(other.lexical_variables);
+  reserve_additional_lexical_variables(other.lexical_variables.size());
+  for (auto& [name, value] : other.lexical_variables) {
+    assert(!name.is_config_variable());
+    lexical_variables.insert_or_assign(name, value.clone());
+  }
 }
 
 void ContextFrame::apply_config_variables(const ContextFrame& other)
 {
-  apply_variables(other.config_variables);
+  reserve_additional_config_variables(other.config_variables.size());
+  for (auto& [name, value] : other.config_variables) {
+    assert(name.is_config_variable());
+    config_variables.insert_or_assign(name, value.clone());
+  }
 }
 
 void ContextFrame::apply_variables(ValueMap&& variables)
 {
+  reserve_additional_lexical_variables(variables.size());
+
   for (auto& variable : variables) {
     set_variable(variable.first, std::move(variable.second));
   }
