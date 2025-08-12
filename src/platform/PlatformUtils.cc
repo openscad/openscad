@@ -47,6 +47,7 @@ static std::string lookupResourcesPath()
     ".", // Release location
     RESOURCE_FOLDER("../share/openscad"), // MSYS2 location
     "..", // Dev location
+    "../..", // MSVC, to account for build output in /build/Debug and /build/Release
     nullptr
   };
 #else
