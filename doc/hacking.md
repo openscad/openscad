@@ -15,20 +15,28 @@ are currently changed.
 
 Alternatively, it's possible to beautify the entire codebase by running `./scripts/beautify.sh --all`.
 
-All pull requests must pass `./scripts/beautify.sh --check` . In rare cases beautify may need to be run multiple times before all issues are resolved. If there is an issue with the local version of `clang-format` conflicting with the workflow version, the workflows output a patch that can be manually applied to resolve the differences. The patch can be pulled from GitHub or generated locally using `act`:
+All pull requests must pass `./scripts/beautify.sh --check` . In rare cases beautify may need to be run multiple times before all issues are resolved. Different clang versions between local development environment and the workflow can cause issues.
+
+Clang-format versions:
+
+* 18: current standard used in workflow under Ubuntu 24.04
+* 19: known conflicts with version 18
+* 20: compatible with 18 so far
+
+To deal with version conflicts the workflow generates a patch that can be used to format the code. This can be pulled from GitHub after a job fails, or generated locally using `act` and `docker`:
 
     act -j Beautify -P ubuntu-latest=ghcr.io/catthehacker/ubuntu:act-24.04 --artifact-server-path build/artifacts/
     unzip build/artifacts/1/beautify-patch/beautify-patch.zip
     git apply beautify.patch
 
-This can be done automatically using `./scripts/hard_beautify.sh`
+This can be done automatically using `./scripts/hard_beautify.sh`, which also functions as a git hook. 
 
-`beautify.sh` or `hard_beautify.sh` can also be used directly as a git hook:
+To set up a git hook create a symlink for `beautify.sh` or `hard_beautify.sh`:
 
     cd .git/hooks
     ln -s ../../scripts/beautify.sh pre-commit
 
-After making a commit beautify will automatically run. You can then check the changes, and add them to their own commit, or amend them to the previous commit using `git commit --amend`
+After making a commit beautify will automatically run. You can then check the changes, and add them to their own commit, or amend them to the previous commit.
 
 # Regression Tests
 
