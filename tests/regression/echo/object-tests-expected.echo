@@ -1,5 +1,5 @@
-ECHO: "basic format              ", { a = 1; b = 2; c = [3]; f = function() 1; }
-ECHO: "basic format of a copy    ", { a = 1; b = 2; c = [3]; f = function() 1; }
+ECHO: "basic format              ", { a : 1, b : 2, c : [3], f : function() 1 }
+ECHO: "basic format of a copy    ", { a : 1, b : 2, c : [3], f : function() 1 }
 ECHO: "PASS:", "o1 must not be undef"
 ECHO: "PASS:", "o1 must not be a bool"
 ECHO: "PASS:", "o1 must not be a num"
@@ -39,5 +39,5 @@ ECHO: "PASS:", "!f []... x=undef"
 ECHO: "PASS:", "check size"
 ECHO: "PASS:", "check value"
 ECHO: "PASS:", "test 100k entries"
-ECHO: Wilma = { spouse = { }; }
-ECHO: Betty = { friends = [{ spouse = { }; }]; }
+ECHO: Wilma = { spouse : { } }
+ECHO: Betty = { friends : [{ spouse : { } }] }
