@@ -7,6 +7,7 @@
 #include "glview/Renderer.h"
 #include "utils/degree_trig.h"
 #include "glview/hershey.h"
+#include "glview/UIGeometryRenderer.h"
 
 #include <functional>
 #include <memory>
@@ -17,6 +18,11 @@
 #ifdef ENABLE_OPENCSG
 #include <opencsg.h>
 #endif
+
+namespace
+{
+void showObject(UIGeometryRenderer &renderer, const SelectedObject &obj, const Color4f& color);
+}
 
 GLView::GLView()
 {
@@ -74,6 +80,8 @@ void GLView::teardownShader() {
 void GLView::setRenderer(std::shared_ptr<Renderer> r)
 {
   this->renderer = r;
+  shown_obj.clear();
+  selected_obj.clear();
 }
 
 /* update the color schemes of the Renderer attached to this GLView
@@ -209,15 +217,16 @@ void GLView::paintGL()
     this->renderer->prepare(edge_shader.get());
     this->renderer->draw(showedges, edge_shader.get());
   }
-  Vector3d eyedir(this->modelview[2],this->modelview[6],this->modelview[10]);
-  glColor3f(1,0,0);
-  for (const SelectedObject &obj:this->selected_obj) {
-    showObject(obj,eyedir);
+
+  UIGeometryRenderer uiRenderer(cam.zoomValue());
+  for (const SelectedObject &obj: this->selected_obj) {
+    showObject(uiRenderer, obj, Color4f(1.0f, 0.0f, 0.0f, 1.0f));
   }
-  glColor3f(0,1,0);
   for (const SelectedObject &obj: this->shown_obj) {
-    showObject(obj,eyedir);
+    showObject(uiRenderer, obj, Color4f(0.0f, 1.0f, 0.0f, 1.0f));
   }
+  uiRenderer.draw(edge_shader.get());
+
   glDisable(GL_LIGHTING);
   if (showaxes) GLView::showSmallaxes(axescolor);
 
@@ -448,49 +457,6 @@ void GLView::showCrosshairs(const Color4f& col)
   glEnd();
 }
 
-void GLView::showObject(const SelectedObject &obj, const Vector3d &eyedir)
-{
-  auto vd = cam.zoomValue()/200.0;
-  switch(obj.type) {
-    case SelectionType::SELECTION_POINT:
-    {
-      double n=1/sqrt(3);
-      // create an octaeder
-      //x- x+ y- y+ z- z+
-      int sequence[]={ 2, 0, 4, 1, 2, 4, 0, 3, 4, 3, 1, 4, 0, 2, 5, 2, 1, 5, 3, 0, 5, 1, 3, 5 };
-      glBegin(GL_TRIANGLES);
-      for(int i=0;i<8;i++) {
-	glNormal3f((i&1)?-n:n,(i&2)?-n:n,(i&4)?-n:n);
-	for(int j=0;j<3;j++) {
-	  int code=sequence[i*3+j];
-          switch(code) {
-		case 0: glVertex3d(obj.p1[0]-vd,obj.p1[1],obj.p1[2]); break;
-		case 1: glVertex3d(obj.p1[0]+vd,obj.p1[1],obj.p1[2]); break;
-		case 2: glVertex3d(obj.p1[0],obj.p1[1]-vd,obj.p1[2]); break;
-		case 3: glVertex3d(obj.p1[0],obj.p1[1]+vd,obj.p1[2]); break;
-		case 4: glVertex3d(obj.p1[0],obj.p1[1],obj.p1[2]-vd); break;
-		case 5: glVertex3d(obj.p1[0],obj.p1[1],obj.p1[2]+vd); break;
-          }
-	}
-      }
-      glEnd();
-     }
-     break;
-   case SelectionType::SELECTION_LINE:
-     {
-	Vector3d diff=obj.p2-obj.p1;
-	Vector3d wdir=eyedir.cross(diff).normalized()*vd/2.0;
-        glBegin(GL_QUADS);
-        glVertex3d(obj.p1[0]-wdir[0],obj.p1[1]-wdir[1],obj.p1[2]-wdir[2]);
-        glVertex3d(obj.p2[0]-wdir[0],obj.p2[1]-wdir[1],obj.p2[2]-wdir[2]);
-        glVertex3d(obj.p2[0]+wdir[0],obj.p2[1]+wdir[1],obj.p2[2]+wdir[2]);
-        glVertex3d(obj.p1[0]+wdir[0],obj.p1[1]+wdir[1],obj.p1[2]+wdir[2]);
-        glEnd();
-      }
-      break;
-  }
-}
-
 void GLView::showScalemarkers(const Color4f& col)
 {
   // Add scale ticks on large axes
@@ -640,4 +606,24 @@ void GLView::decodeMarkerValue(double i, double l, int size_div_sm)
     if (needs_glend) glEnd();
     needs_glend = false;
   }
+}
+
+
+namespace
+{
+
+void showObject(UIGeometryRenderer &renderer, const SelectedObject &obj, const Color4f& color)
+{
+  switch (obj.type) {
+    case SelectionType::SELECTION_POINT:
+      renderer.addPoint(obj.p1, color);
+      break;
+
+    case SelectionType::SELECTION_LINE: {
+      renderer.addLine(obj.p1, obj.p2, color);
+      break;
+    }
+  }
+}
+
 }

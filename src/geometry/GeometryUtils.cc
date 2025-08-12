@@ -548,3 +548,61 @@ std::shared_ptr<const Geometry> GeometryUtils::getBackendSpecificGeometry(const 
 #endif
   return nullptr;
 }
+
+// Calculates the nearest point to pt on the line segment (sb-se).
+Vector3d GeometryUtils::calculatePointSegNearestPoint(const Vector3d& pt, const Vector3d &sb, const Vector3d& se)
+{
+  Vector3d d = se - sb;
+
+  double dd = d.dot(d);
+  if (dd < 0.0001) {
+    // segment is very short, assume it is a point
+    return sb;
+  }
+
+  double t = std::clamp((pt - sb).dot(d) / dd, 0.0, 1.0);
+  return sb + d * t;
+}
+
+// Calculates the points on line segments (s1b-s1e) and (s2b-s2e) at which the segments are nearest to each other.
+// If there are an infinite number of such point pairs (segments are parallel and close to each other), an arbitrary segment endpoint is chosen as one of the points.
+void GeometryUtils::calculateSegSegNearestPoints(const Vector3d &s1b, const Vector3d &s1e, const Vector3d &s2b, const Vector3d& s2e, Vector3d& s1Nearest, Vector3d& s2Nearest)
+{
+  Vector3d db = s2b - s1b;
+  Vector3d d1 = s1e - s1b;
+  Vector3d d2 = s2e - s2b;
+
+  double dbd1 = db.dot(d1);
+  double dbd2 = db.dot(d2);
+  double d1d1 = d1.dot(d1);
+  double d1d2 = d1.dot(d2);
+  double d2d2 = d2.dot(d2);
+
+  double det = d1d1 * d2d2 - d1d2 * d1d2;
+  if (fabs(det) < 0.0001) {
+    // Line segments are [almost] parallel, check all 4 segment endpoints and find the one that's closest to the other segment to use as the other point
+    float nearestDist = INFINITY;
+    const auto check = [&nearestDist](const Vector3d& pt, const Vector3d& sb, const Vector3d& se, Vector3d& ptNearest, Vector3d& segNearest) {
+      Vector3d nearest = calculatePointSegNearestPoint(pt, sb, se);
+      double dist = nearest.squaredNorm();
+      if (dist < nearestDist) {
+        nearestDist = dist;
+        ptNearest = pt;
+        segNearest = nearest;
+      }
+    };
+
+    check(s1b, s2b, s2e, s1Nearest, s2Nearest);
+    check(s1e, s2b, s2e, s1Nearest, s2Nearest);
+    check(s2b, s1b, s1e, s2Nearest, s1Nearest);
+    check(s2e, s1b, s1e, s2Nearest, s1Nearest);
+    return;
+  }
+
+  // segments are sufficiently non-parallel, calculate exact points
+  double t1 = std::clamp((dbd1 * d2d2 - dbd2 * d1d2) / det, 0.0, 1.0);
+  s1Nearest = s1b + t1 * d1;
+
+  double t2 = std::clamp((dbd1 * d1d2 - dbd2 * d1d1) / det, 0.0, 1.0);
+  s2Nearest = s2b + t2 * d2;
+}

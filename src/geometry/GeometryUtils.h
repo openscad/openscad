@@ -46,4 +46,7 @@ int findUnconnectedEdges(const std::vector<IndexedTriangle>& triangles);
 Transform3d getResizeTransform(const BoundingBox &bbox, const Vector3d& newsize, const Eigen::Matrix<bool, 3, 1>& autosize);
 std::shared_ptr<const Geometry> getBackendSpecificGeometry(const std::shared_ptr<const Geometry>& geom);
 
+Vector3d calculatePointSegNearestPoint(const Vector3d& pt, const Vector3d &sb, const Vector3d& se);
+void calculateSegSegNearestPoints(const Vector3d &s1b, const Vector3d &s1e, const Vector3d &s2b, const Vector3d& s2e, Vector3d& s1Nearest, Vector3d& s2Nearest);
+
 }

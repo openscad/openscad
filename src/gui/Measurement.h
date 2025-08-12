@@ -20,6 +20,7 @@ class Measurement
     QString statemachine(QPoint mouse);
     void startMeasureDist(void);
     void startMeasureAngle(void);
+    void completeMeasure();
     void stopMeasure();
   private:
     QGLView *qglview;
