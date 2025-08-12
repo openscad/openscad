@@ -526,23 +526,19 @@ bool TabManager::refreshDocument()
 {
   bool file_opened = false;
   if (!editor->filepath.isEmpty()) {
-    QFile file(editor->filepath);
-    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-      LOG("Failed to open file %1$s: %2$s",
-          editor->filepath.toLocal8Bit().constData(), file.errorString().toLocal8Bit().constData());
-    } else {
-      QTextStream reader(&file);
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-      reader.setCodec("UTF-8");
-#endif
-      auto text = reader.readAll();
+      QString errorstring;
+      auto text = UIUtils::readFileContents(editor->filepath, errorstring);
+      if(text == nullptr) {
+        LOG("Failed to open file %1$s: %2$s",
+        editor->filepath.toLocal8Bit().constData(), errorstring.toLocal8Bit().constData());
+	return file_opened;
+      }
       LOG("Loaded design '%1$s'.", editor->filepath.toLocal8Bit().constData());
       if (editor->toPlainText() != text) {
         editor->setPlainText(text);
         setContentRenderState();         // since last render
       }
       file_opened = true;
-    }
   }
   return file_opened;
 }
