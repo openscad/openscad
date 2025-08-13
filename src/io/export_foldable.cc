@@ -389,7 +389,7 @@ std::vector<sheetS> fold_3d(std::shared_ptr<const PolySet> ps, const plotSetting
   //  for(int i=0;i<faces.size();i++)
   //  {
   //	printf("%d %g/%g/%g/%g par=%d\n",i, newNormals[i][0], newNormals[i][1], newNormals[i][2],
-  //newNormals[i][3], faceParents[i]);
+  // newNormals[i][3], faceParents[i]);
   //  }
 
   //

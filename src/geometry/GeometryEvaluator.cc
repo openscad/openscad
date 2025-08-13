@@ -536,7 +536,7 @@ std::vector<IndexedFace> mergeTriangles(const std::vector<IndexedFace> polygons,
       for (unsigned int l = 0; l < polygons_sorted[i_].size(); l++) {
         IndexedFace hole = polygons_sorted[i_][l];
         //				// holes dont intersect with the polygon, so its sufficent to
-        //check, if one point of the hole is inside the polygon
+        // check, if one point of the hole is inside the polygon
         if (mergeTrianglesOpposite(poly, hole)) {
           polygons_sorted[i].erase(polygons_sorted[i].begin() + k);
           polygons_sorted[i_].erase(polygons_sorted[i_].begin() + l);
@@ -636,7 +636,7 @@ std::vector<IndexedColorFace> mergeTriangles(const std::vector<IndexedColorFace>
       for (unsigned int l = 0; l < polygons_sorted[i_].size(); l++) {
         IndexedFace hole = polygons_sorted[i_][l];
         //				// holes dont intersect with the polygon, so its sufficent to
-        //check, if one point of the hole is inside the polygon
+        // check, if one point of the hole is inside the polygon
         if (mergeTrianglesOpposite(poly, hole)) {
           polygons_sorted[i].erase(polygons_sorted[i].begin() + k);
           polygons_sorted[i_].erase(polygons_sorted[i_].begin() + l);
