@@ -45,4 +45,4 @@ public:
   [[nodiscard]] shape *clone() const override { return new polygon(*this); }
 };
 
-}
+}  // namespace libsvg

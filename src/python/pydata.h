@@ -15,9 +15,8 @@
 #define DATA_TYPE_MARKEDVALUE 2
 
 typedef struct {
-  PyObject_HEAD
-  void *data;
-  int data_type;  
+  PyObject_HEAD void *data;
+  int data_type;
   /* Type-specific fields go here. */
 } PyDataObject;
 
@@ -26,14 +25,12 @@ PyMODINIT_FUNC PyInit_PyData(void);
 extern PyTypeObject PyDataType;
 
 #ifdef ENABLE_LIBFIVE
-PyObject *PyDataObjectFromTree(PyTypeObject *type, const std::vector<libfive::Tree *> &tree);
+PyObject *PyDataObjectFromTree(PyTypeObject *type, const std::vector<libfive::Tree *>& tree);
 std::vector<libfive::Tree *> PyDataObjectToTree(PyObject *object);
 #endif
 
 PyObject *PyDataObjectFromModule(PyTypeObject *type, std::string modulepath, std::string modulename);
-void PyDataObjectToModule(PyObject *obj, std::string &modulepath, std::string &modulename);
+void PyDataObjectToModule(PyObject *obj, std::string& modulepath, std::string& modulename);
 
 PyObject *PyDataObjectFromValue(PyTypeObject *type, double value);
 double PyDataObjectToValue(PyObject *obj);
-
-

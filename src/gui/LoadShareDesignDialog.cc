@@ -31,15 +31,13 @@ LoadShareDesignDialog::LoadShareDesignDialog()
 {
   setupUi(this);
   this->setAttribute(Qt::WA_DeleteOnClose);
-
 }
 // Getters
 
-//std::string LoadShareDesignDialog::getAuthorName() {
-//  return name_author->text().toStdString();
-//}
+// std::string LoadShareDesignDialog::getAuthorName() {
+//   return name_author->text().toStdString();
+// }
 //
-//std::string LoadShareDesignDialog::getDesignName() {
-//  return name_design->text().toStdString();
-//}
-
+// std::string LoadShareDesignDialog::getDesignName() {
+//   return name_design->text().toStdString();
+// }

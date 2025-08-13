@@ -31,23 +31,22 @@
 #include <QObject>
 #include <utility>
 
-using network_progress_func_t = std::function<bool (double)>;
+using network_progress_func_t = std::function<bool(double)>;
 
 class NetworkSignal : public QObject
 {
   Q_OBJECT;
 
-  using callback_t = std::function<void (qint64, qint64)>;
+  using callback_t = std::function<void(qint64, qint64)>;
 
-  NetworkSignal(QObject *parent, callback_t callback) : QObject(parent), callback(std::move(callback)) { }
+  NetworkSignal(QObject *parent, callback_t callback) : QObject(parent), callback(std::move(callback)) {}
 
 public slots:
-  void network_progress(qint64 bytesSent, qint64 bytesTotal) {
-    callback(bytesSent, bytesTotal);
-  }
+  void network_progress(qint64 bytesSent, qint64 bytesTotal) { callback(bytesSent, bytesTotal); }
 
 private:
   callback_t callback;
 
-  template <typename T> friend class NetworkRequest;
+  template <typename T>
+  friend class NetworkRequest;
 };

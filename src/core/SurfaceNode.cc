@@ -57,20 +57,22 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string.hpp>
 #include <boost/assign/std/vector.hpp>
-using namespace boost::assign; // bring 'operator+=()' into scope
+using namespace boost::assign;  // bring 'operator+=()' into scope
 
 #include <filesystem>
 namespace fs = std::filesystem;
 
-
-static std::shared_ptr<AbstractNode> builtin_surface(const ModuleInstantiation *inst, Arguments arguments)
+static std::shared_ptr<AbstractNode> builtin_surface(const ModuleInstantiation *inst,
+                                                     Arguments arguments)
 {
   auto node = std::make_shared<SurfaceNode>(inst);
 
-  Parameters parameters = Parameters::parse(std::move(arguments), inst->location(), {"file", "center", "convexity"}, {"invert", "color"});
+  Parameters parameters = Parameters::parse(std::move(arguments), inst->location(),
+                                            {"file", "center", "convexity"}, {"invert", "color"});
 
   std::string fileval = parameters["file"].isUndefined() ? "" : parameters["file"].toString();
-  auto filename = lookup_file(fileval, inst->location().filePath().parent_path().string(), parameters.documentRoot());
+  auto filename =
+    lookup_file(fileval, inst->location().filePath().parent_path().string(), parameters.documentRoot());
   node->filename = filename;
   handle_dep(fs::path(filename).generic_string());
 
@@ -93,27 +95,27 @@ static std::shared_ptr<AbstractNode> builtin_surface(const ModuleInstantiation *
   return node;
 }
 
-void SurfaceNode::convert_image(img_data_t& data, std::vector<uint8_t>& img, unsigned int width, unsigned int height) const
+void SurfaceNode::convert_image(img_data_t& data, std::vector<uint8_t>& img, unsigned int width,
+                                unsigned int height) const
 {
   data.width = width;
   data.height = height;
-  data.resize( (size_t)width * height);
+  data.resize((size_t)width * height);
   double min_val = 200;
   for (unsigned int y = 0; y < height; ++y) {
     for (unsigned int x = 0; x < width; ++x) {
       long idx = 4l * (y * width + x);
-      data[ x + (width * (height - 1 - y)) ] = Vector3f(img[idx], img[idx + 1], img[idx + 2]);
+      data[x + (width * (height - 1 - y))] = Vector3f(img[idx], img[idx + 1], img[idx + 2]);
     }
   }
-//  data.min_val = min_val;
+  //  data.min_val = min_val;
 }
 
 bool SurfaceNode::is_png(std::vector<uint8_t>& png) const
 {
   const size_t pngHeaderLength = 8;
   const uint8_t pngHeader[pngHeaderLength] = {0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a};
-  return (png.size() >= pngHeaderLength &&
-          std::memcmp(png.data(), pngHeader, pngHeaderLength) == 0);
+  return (png.size() >= pngHeaderLength && std::memcmp(png.data(), pngHeader, pngHeaderLength) == 0);
 }
 
 img_data_t SurfaceNode::read_png_or_dat(std::string filename) const
@@ -121,7 +123,7 @@ img_data_t SurfaceNode::read_png_or_dat(std::string filename) const
   img_data_t data;
   std::vector<uint8_t> png;
   int ret_val = 0;
-  try{
+  try {
     ret_val = lodepng::load_file(png, filename);
   } catch (std::bad_alloc& ba) {
     LOG(message_group::Warning, "bad_alloc caught for '%1$s'.", ba.what());
@@ -163,14 +165,16 @@ img_data_t SurfaceNode::read_dat(std::string filename) const
   }
 
   int lines = 0, columns = 0;
-  double min_val = 1; // this balances out with the (min_val-1) inside createGeometry, to match old behavior
+  double min_val =
+    1;  // this balances out with the (min_val-1) inside createGeometry, to match old behavior
 
   using tokenizer = boost::tokenizer<boost::char_separator<char>>;
   boost::char_separator<char> sep(" \t");
 
   // We use an unordered map because the data file may not be rectangular,
   // and we may need to fill in some bits.
-  using unordered_image_data_t = std::unordered_map<std::pair<int, int>, double, boost::hash<std::pair<int, int>>>;
+  using unordered_image_data_t =
+    std::unordered_map<std::pair<int, int>, double, boost::hash<std::pair<int, int>>>;
   unordered_image_data_t unordered_data;
 
   while (!stream.eof()) {
@@ -186,7 +190,7 @@ img_data_t SurfaceNode::read_dat(std::string filename) const
     try {
       for (const auto& token : tokens) {
         auto v = boost::lexical_cast<double>(token);
-        unordered_data[ std::make_pair(lines, col++) ] = v;
+        unordered_data[std::make_pair(lines, col++)] = v;
         if (col > columns) columns = col;
         min_val = std::min(v, min_val);
       }
@@ -205,11 +209,11 @@ img_data_t SurfaceNode::read_dat(std::string filename) const
 
   // Now convert the unordered, possibly non-rectangular data into a well ordered vector
   // for faster access and reduced memory usage.
-  data.resize( (size_t)lines * columns);
+  data.resize((size_t)lines * columns);
   for (int i = 0; i < lines; ++i)
-    for (int j = 0; j < columns; ++j){
-      auto pixel = unordered_data[std::make_pair(i, j)]*255.0/100.0;
-      data[ i * columns + j ] = Vector3f(pixel, pixel, pixel);
+    for (int j = 0; j < columns; ++j) {
+      auto pixel = unordered_data[std::make_pair(i, j)] * 255.0 / 100.0;
+      data[i * columns + j] = Vector3f(pixel, pixel, pixel);
     }
   return data;
 }
@@ -221,17 +225,17 @@ std::unique_ptr<const Geometry> SurfaceNode::createGeometry() const
 
   int lines = data.height;
   int columns = data.width;
-  auto color_to_z = [this] (const Vector3f &col) {
+  auto color_to_z = [this](const Vector3f& col) {
     double pixel = 0.2126 * col[0] + 0.7152 * col[1] + 0.0722 * col[2];
-    return  100.0 / 255 * (this->invert ? 1 - pixel : pixel);
+    return 100.0 / 255 * (this->invert ? 1 - pixel : pixel);
   };
 
   double min_val = 0;
-  for (int i = 0; i < lines*columns; ++i) {
-    double z= color_to_z(data[i]);
-    if(i == 0 || z < min_val) min_val=z; 
+  for (int i = 0; i < lines * columns; ++i) {
+    double z = color_to_z(data[i]);
+    if (i == 0 || z < min_val) min_val = z;
   }
-  min_val -=1;
+  min_val -= 1;
 
   // reserve the polygon vector size so we don't have to reallocate as often
 
@@ -244,16 +248,16 @@ std::unique_ptr<const Geometry> SurfaceNode::createGeometry() const
   // the bulk of the heightmap
   for (int i = 1; i < lines; ++i)
     for (int j = 1; j < columns; ++j) {
-        Vector3f &c1 = data[ (j - 1) + (i - 1) * columns ];
-        Vector3f &c2 = data[ (j) + (i - 1) * columns ];
-        Vector3f &c3 = data[ (j - 1) + (i) * columns ];
-        Vector3f &c4 = data[ (j) + (i) * columns ];
-	Color4f col(c1[0]/255.0f, c1[1]/255.0f, c1[2]/255.0f, 1.0);
+      Vector3f& c1 = data[(j - 1) + (i - 1) * columns];
+      Vector3f& c2 = data[(j) + (i - 1) * columns];
+      Vector3f& c3 = data[(j - 1) + (i)*columns];
+      Vector3f& c4 = data[(j) + (i)*columns];
+      Color4f col(c1[0] / 255.0f, c1[1] / 255.0f, c1[2] / 255.0f, 1.0);
 
-	double v1=color_to_z(c1);
-	double v2=color_to_z(c2);
-	double v3=color_to_z(c3);
-	double v4=color_to_z(c4);
+      double v1 = color_to_z(c1);
+      double v2 = color_to_z(c2);
+      double v3 = color_to_z(c3);
+      double v4 = color_to_z(c4);
 
       double vx = (v1 + v2 + v3 + v4) / 4;
 
@@ -261,98 +265,99 @@ std::unique_ptr<const Geometry> SurfaceNode::createGeometry() const
       builder.addVertex(Vector3d(ox + j - 1, oy + i - 1, v1));
       builder.addVertex(Vector3d(ox + j, oy + i - 1, v2));
       builder.addVertex(Vector3d(ox + j - 0.5, oy + i - 0.5, vx));
-      if(color) builder.endPolygon(col); else builder.endPolygon();
+      if (color) builder.endPolygon(col);
+      else builder.endPolygon();
 
       builder.beginPolygon(3);
       builder.addVertex(Vector3d(ox + j, oy + i - 1, v2));
       builder.addVertex(Vector3d(ox + j, oy + i, v4));
       builder.addVertex(Vector3d(ox + j - 0.5, oy + i - 0.5, vx));
-      if(color) builder.endPolygon(col); else builder.endPolygon();
+      if (color) builder.endPolygon(col);
+      else builder.endPolygon();
 
       builder.beginPolygon(3);
       builder.addVertex(Vector3d(ox + j, oy + i, v4));
       builder.addVertex(Vector3d(ox + j - 1, oy + i, v3));
       builder.addVertex(Vector3d(ox + j - 0.5, oy + i - 0.5, vx));
-      if(color) builder.endPolygon(col); else builder.endPolygon();
+      if (color) builder.endPolygon(col);
+      else builder.endPolygon();
 
       builder.beginPolygon(3);
       builder.addVertex(Vector3d(ox + j - 1, oy + i, v3));
       builder.addVertex(Vector3d(ox + j - 1, oy + i - 1, v1));
       builder.addVertex(Vector3d(ox + j - 0.5, oy + i - 0.5, vx));
-      if(color) builder.endPolygon(col); else builder.endPolygon();
-
-
+      if (color) builder.endPolygon(col);
+      else builder.endPolygon();
     }
 
   // edges along Y
   for (int i = 1; i < lines; ++i) {
-        auto c1 = data[ (0) + (i - 1) * columns ];
-        auto c2 = data[ (0) + (i) * columns ];
-        auto c3 = data[ (columns - 1) + (i - 1) * columns ];
-        auto c4 = data[ (columns - 1) + (i) * columns ];
-	double v1=color_to_z(c1);
-	double v2=color_to_z(c2);
-	double v3=color_to_z(c3);
-	double v4=color_to_z(c4);
+    auto c1 = data[(0) + (i - 1) * columns];
+    auto c2 = data[(0) + (i)*columns];
+    auto c3 = data[(columns - 1) + (i - 1) * columns];
+    auto c4 = data[(columns - 1) + (i)*columns];
+    double v1 = color_to_z(c1);
+    double v2 = color_to_z(c2);
+    double v3 = color_to_z(c3);
+    double v4 = color_to_z(c4);
 
-	Color4f col1(c1[0]/255.0f, c1[1]/255.0f, c1[2]/255.0f, 1.0);
-	Color4f col4(c4[0]/255.0f, c4[1]/255.0f, c4[2]/255.0f, 1.0);
-
+    Color4f col1(c1[0] / 255.0f, c1[1] / 255.0f, c1[2] / 255.0f, 1.0);
+    Color4f col4(c4[0] / 255.0f, c4[1] / 255.0f, c4[2] / 255.0f, 1.0);
 
     builder.beginPolygon(4);
     builder.addVertex(Vector3d(ox + 0, oy + i - 1, min_val));
     builder.addVertex(Vector3d(ox + 0, oy + i - 1, v1));
     builder.addVertex(Vector3d(ox + 0, oy + i, v2));
     builder.addVertex(Vector3d(ox + 0, oy + i, min_val));
-    if(color) builder.endPolygon(col1); else builder.endPolygon();
+    if (color) builder.endPolygon(col1);
+    else builder.endPolygon();
 
     builder.beginPolygon(4);
     builder.addVertex(Vector3d(ox + columns - 1, oy + i, min_val));
     builder.addVertex(Vector3d(ox + columns - 1, oy + i, v4));
     builder.addVertex(Vector3d(ox + columns - 1, oy + i - 1, v3));
     builder.addVertex(Vector3d(ox + columns - 1, oy + i - 1, min_val));
-    if(color) builder.endPolygon(col4); else builder.endPolygon();
+    if (color) builder.endPolygon(col4);
+    else builder.endPolygon();
   }
 
   // edges along X
   for (int i = 1; i < columns; ++i) {
-    auto c1 = data[ (i - 1) + (0) * columns ];
-    auto c2 = data[ (i) + (0) * columns ];
-    auto c3 = data[ (i - 1) + (lines - 1) * columns ];
-    auto c4 = data[ (i) + (lines - 1) * columns ];
-    double v1=color_to_z(c1);
-    double v2=color_to_z(c2);
-    double v3=color_to_z(c3);
-    double v4=color_to_z(c4);
-    Color4f col2(c2[0]/255.0f, c2[1]/255.0f, c2[2]/255.0f, 1.0);
-    Color4f col3(c3[0]/255.0f, c3[1]/255.0f, c3[2]/255.0f, 1.0);
+    auto c1 = data[(i - 1) + (0) * columns];
+    auto c2 = data[(i) + (0) * columns];
+    auto c3 = data[(i - 1) + (lines - 1) * columns];
+    auto c4 = data[(i) + (lines - 1) * columns];
+    double v1 = color_to_z(c1);
+    double v2 = color_to_z(c2);
+    double v3 = color_to_z(c3);
+    double v4 = color_to_z(c4);
+    Color4f col2(c2[0] / 255.0f, c2[1] / 255.0f, c2[2] / 255.0f, 1.0);
+    Color4f col3(c3[0] / 255.0f, c3[1] / 255.0f, c3[2] / 255.0f, 1.0);
 
     builder.beginPolygon(4);
     builder.addVertex(Vector3d(ox + i, oy + 0, min_val));
     builder.addVertex(Vector3d(ox + i, oy + 0, v2));
     builder.addVertex(Vector3d(ox + i - 1, oy + 0, v1));
     builder.addVertex(Vector3d(ox + i - 1, oy + 0, min_val));
-    if(color) builder.endPolygon(col2); else builder.endPolygon();
+    if (color) builder.endPolygon(col2);
+    else builder.endPolygon();
 
     builder.beginPolygon(4);
     builder.addVertex(Vector3d(ox + i - 1, oy + lines - 1, min_val));
     builder.addVertex(Vector3d(ox + i - 1, oy + lines - 1, v3));
     builder.addVertex(Vector3d(ox + i, oy + lines - 1, v4));
     builder.addVertex(Vector3d(ox + i, oy + lines - 1, min_val));
-    if(color) builder.endPolygon(col2); else builder.endPolygon();
+    if (color) builder.endPolygon(col2);
+    else builder.endPolygon();
   }
 
   // the bottom of the shape (one less than the real minimum value), making it a solid volume
   if (columns > 1 && lines > 1) {
-    builder.beginPolygon(2 * (columns - 1) + 2 * (lines - 1) );
-    for (int i = 0; i < lines - 1; ++i)
-      builder.addVertex(Vector3d(ox + 0, oy + i, min_val));
-    for (int i = 0; i < columns - 1; ++i)
-      builder.addVertex(Vector3d(ox + i, oy + lines - 1, min_val));
-    for (int i = lines - 1; i > 0; i--)
-      builder.addVertex(Vector3d(ox + columns - 1, oy + i, min_val));
-    for (int i = columns - 1; i > 0; i--)
-      builder.addVertex(Vector3d(ox + i, oy + 0, min_val));
+    builder.beginPolygon(2 * (columns - 1) + 2 * (lines - 1));
+    for (int i = 0; i < lines - 1; ++i) builder.addVertex(Vector3d(ox + 0, oy + i, min_val));
+    for (int i = 0; i < columns - 1; ++i) builder.addVertex(Vector3d(ox + i, oy + lines - 1, min_val));
+    for (int i = lines - 1; i > 0; i--) builder.addVertex(Vector3d(ox + columns - 1, oy + i, min_val));
+    for (int i = columns - 1; i > 0; i--) builder.addVertex(Vector3d(ox + i, oy + 0, min_val));
   }
 
   return builder.build();
@@ -361,14 +366,15 @@ std::unique_ptr<const Geometry> SurfaceNode::createGeometry() const
 std::string SurfaceNode::toString() const
 {
   std::ostringstream stream;
-  fs::path path{static_cast<std::string>(this->filename)}; // gcc-4.6
+  fs::path path{static_cast<std::string>(this->filename)};  // gcc-4.6
 
   stream << this->name() << "(file = " << this->filename
          << ", center = " << (this->center ? "true" : "false")
          << ", invert = " << (this->invert ? "true" : "false");
-  if(this->color) stream << ", color = true";
-  stream << ", " "timestamp = " << fs_timestamp(path)
-         << ")";
+  if (this->color) stream << ", color = true";
+  stream << ", "
+            "timestamp = "
+         << fs_timestamp(path) << ")";
 
   return stream.str();
 }
@@ -376,7 +382,7 @@ std::string SurfaceNode::toString() const
 void register_builtin_surface()
 {
   Builtins::init("surface", new BuiltinModule(builtin_surface),
-  {
-    "surface(string, center = false, invert = false, number)",
-  });
+                 {
+                   "surface(string, center = false, invert = false, number)",
+                 });
 }

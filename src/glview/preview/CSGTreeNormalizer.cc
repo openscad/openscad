@@ -49,17 +49,20 @@ std::shared_ptr<CSGNode> CSGTreeNormalizer::cleanup_term(std::shared_ptr<CSGNode
   return t;
 }
 
-static bool isUnion(const std::shared_ptr<CSGNode>& node) {
+static bool isUnion(const std::shared_ptr<CSGNode>& node)
+{
   std::shared_ptr<CSGOperation> op = std::dynamic_pointer_cast<CSGOperation>(node);
   return op && op->getType() == OpenSCADOperator::UNION;
 }
 
-static bool hasRightNonLeaf(const std::shared_ptr<CSGNode>& node) {
+static bool hasRightNonLeaf(const std::shared_ptr<CSGNode>& node)
+{
   std::shared_ptr<CSGOperation> op = std::dynamic_pointer_cast<CSGOperation>(node);
   return op->right() && (std::dynamic_pointer_cast<CSGLeaf>(op->right()) == nullptr);
 }
 
-static bool hasLeftUnion(const std::shared_ptr<CSGNode>& node) {
+static bool hasLeftUnion(const std::shared_ptr<CSGNode>& node)
+{
   std::shared_ptr<CSGOperation> op = std::dynamic_pointer_cast<CSGOperation>(node);
   return op && isUnion(op->left());
 }
@@ -92,18 +95,19 @@ entrypoint:
     }
     this->nodecount++;
     if (nodecount > this->limit) {
-      LOG(message_group::Warning, "Normalized tree is growing past %1$d elements. Aborting normalization.\n", this->limit);
+      LOG(message_group::Warning,
+          "Normalized tree is growing past %1$d elements. Aborting normalization.\n", this->limit);
       this->aborted = true;
       return {};
     }
     if (!node || std::dynamic_pointer_cast<CSGLeaf>(node)) goto return_node;
     goto normalize_left_if_op;
-cont_left:;
+  cont_left:;
   } while (!this->aborted && !isUnion(node) && (hasRightNonLeaf(node) || hasLeftUnion(node)));
 
   if (!this->aborted) {
     goto normalize_right;
-cont_right:;
+  cont_right:;
   }
 
   // FIXME: Do we need to take into account any transformation of item here?
@@ -119,11 +123,11 @@ return_node:
   } else {
     stackframe_t frame = callstack.top();
     callstack.pop();
-    if (frame.second) { // came from a left call
+    if (frame.second) {  // came from a left call
       frame.first->left() = node;
       node = frame.first;
       goto cont_left;
-    } else { // came from a right call
+    } else {  // came from a right call
       frame.first->right() = node;
       node = frame.first;
       goto cont_right;
@@ -150,7 +154,8 @@ std::shared_ptr<CSGNode> CSGTreeNormalizer::collapse_null_terms(const std::share
   if (op) {
     if (!op->right()) {
       this->nodecount--;
-      if (op->getType() == OpenSCADOperator::UNION || op->getType() == OpenSCADOperator::DIFFERENCE) return op->left();
+      if (op->getType() == OpenSCADOperator::UNION || op->getType() == OpenSCADOperator::DIFFERENCE)
+        return op->left();
       else return op->right();
     }
     if (!op->left()) {
@@ -178,44 +183,49 @@ bool CSGTreeNormalizer::match_and_replace(std::shared_ptr<CSGNode>& node)
 
     // 1.  x - (y + z) -> (x - y) - z
     if (op->getType() == OpenSCADOperator::DIFFERENCE && rightop->getType() == OpenSCADOperator::UNION) {
-      node = CSGOperation::createCSGNode(OpenSCADOperator::DIFFERENCE,
-                                         CSGOperation::createCSGNode(OpenSCADOperator::DIFFERENCE, x, y),
-                                         z);
+      node =
+        CSGOperation::createCSGNode(OpenSCADOperator::DIFFERENCE,
+                                    CSGOperation::createCSGNode(OpenSCADOperator::DIFFERENCE, x, y), z);
       return true;
     }
     // 2.  x * (y + z) -> (x * y) + (x * z)
-    else if (op->getType() == OpenSCADOperator::INTERSECTION && rightop->getType() == OpenSCADOperator::UNION) {
-      node = CSGOperation::createCSGNode(OpenSCADOperator::UNION,
-                                         CSGOperation::createCSGNode(OpenSCADOperator::INTERSECTION, x, y),
-                                         CSGOperation::createCSGNode(OpenSCADOperator::INTERSECTION, x, z));
+    else if (op->getType() == OpenSCADOperator::INTERSECTION &&
+             rightop->getType() == OpenSCADOperator::UNION) {
+      node = CSGOperation::createCSGNode(
+        OpenSCADOperator::UNION, CSGOperation::createCSGNode(OpenSCADOperator::INTERSECTION, x, y),
+        CSGOperation::createCSGNode(OpenSCADOperator::INTERSECTION, x, z));
       return true;
     }
     // 3.  x - (y * z) -> (x - y) + (x - z)
-    else if (op->getType() == OpenSCADOperator::DIFFERENCE && rightop->getType() == OpenSCADOperator::INTERSECTION) {
-      node = CSGOperation::createCSGNode(OpenSCADOperator::UNION,
-                                         CSGOperation::createCSGNode(OpenSCADOperator::DIFFERENCE, x, y),
-                                         CSGOperation::createCSGNode(OpenSCADOperator::DIFFERENCE, x, z));
+    else if (op->getType() == OpenSCADOperator::DIFFERENCE &&
+             rightop->getType() == OpenSCADOperator::INTERSECTION) {
+      node = CSGOperation::createCSGNode(
+        OpenSCADOperator::UNION, CSGOperation::createCSGNode(OpenSCADOperator::DIFFERENCE, x, y),
+        CSGOperation::createCSGNode(OpenSCADOperator::DIFFERENCE, x, z));
       return true;
     }
     // 4.  x * (y * z) -> (x * y) * z
-    else if (op->getType() == OpenSCADOperator::INTERSECTION && rightop->getType() == OpenSCADOperator::INTERSECTION) {
-      node = CSGOperation::createCSGNode(OpenSCADOperator::INTERSECTION,
-                                         CSGOperation::createCSGNode(OpenSCADOperator::INTERSECTION, x, y),
-                                         z);
+    else if (op->getType() == OpenSCADOperator::INTERSECTION &&
+             rightop->getType() == OpenSCADOperator::INTERSECTION) {
+      node = CSGOperation::createCSGNode(
+        OpenSCADOperator::INTERSECTION,
+        CSGOperation::createCSGNode(OpenSCADOperator::INTERSECTION, x, y), z);
       return true;
     }
     // 5.  x - (y - z) -> (x - y) + (x * z)
-    else if (op->getType() == OpenSCADOperator::DIFFERENCE && rightop->getType() == OpenSCADOperator::DIFFERENCE) {
-      node = CSGOperation::createCSGNode(OpenSCADOperator::UNION,
-                                         CSGOperation::createCSGNode(OpenSCADOperator::DIFFERENCE, x, y),
-                                         CSGOperation::createCSGNode(OpenSCADOperator::INTERSECTION, x, z));
+    else if (op->getType() == OpenSCADOperator::DIFFERENCE &&
+             rightop->getType() == OpenSCADOperator::DIFFERENCE) {
+      node = CSGOperation::createCSGNode(
+        OpenSCADOperator::UNION, CSGOperation::createCSGNode(OpenSCADOperator::DIFFERENCE, x, y),
+        CSGOperation::createCSGNode(OpenSCADOperator::INTERSECTION, x, z));
       return true;
     }
     // 6.  x * (y - z) -> (x * y) - z
-    else if (op->getType() == OpenSCADOperator::INTERSECTION && rightop->getType() == OpenSCADOperator::DIFFERENCE) {
-      node = CSGOperation::createCSGNode(OpenSCADOperator::DIFFERENCE,
-                                         CSGOperation::createCSGNode(OpenSCADOperator::INTERSECTION, x, y),
-                                         z);
+    else if (op->getType() == OpenSCADOperator::INTERSECTION &&
+             rightop->getType() == OpenSCADOperator::DIFFERENCE) {
+      node = CSGOperation::createCSGNode(
+        OpenSCADOperator::DIFFERENCE, CSGOperation::createCSGNode(OpenSCADOperator::INTERSECTION, x, y),
+        z);
       return true;
     }
   }
@@ -228,24 +238,27 @@ bool CSGTreeNormalizer::match_and_replace(std::shared_ptr<CSGNode>& node)
     std::shared_ptr<CSGNode> z = op->right();
 
     // 7. (x - y) * z  -> (x * z) - y
-    if (leftop->getType() == OpenSCADOperator::DIFFERENCE && op->getType() == OpenSCADOperator::INTERSECTION) {
-      node = CSGOperation::createCSGNode(OpenSCADOperator::DIFFERENCE,
-                                         CSGOperation::createCSGNode(OpenSCADOperator::INTERSECTION, x, z),
-                                         y);
+    if (leftop->getType() == OpenSCADOperator::DIFFERENCE &&
+        op->getType() == OpenSCADOperator::INTERSECTION) {
+      node = CSGOperation::createCSGNode(
+        OpenSCADOperator::DIFFERENCE, CSGOperation::createCSGNode(OpenSCADOperator::INTERSECTION, x, z),
+        y);
       return true;
     }
     // 8. (x + y) - z  -> (x - z) + (y - z)
-    else if (leftop->getType() == OpenSCADOperator::UNION && op->getType() == OpenSCADOperator::DIFFERENCE) {
-      node = CSGOperation::createCSGNode(OpenSCADOperator::UNION,
-                                         CSGOperation::createCSGNode(OpenSCADOperator::DIFFERENCE, x, z),
-                                         CSGOperation::createCSGNode(OpenSCADOperator::DIFFERENCE, y, z));
+    else if (leftop->getType() == OpenSCADOperator::UNION &&
+             op->getType() == OpenSCADOperator::DIFFERENCE) {
+      node = CSGOperation::createCSGNode(
+        OpenSCADOperator::UNION, CSGOperation::createCSGNode(OpenSCADOperator::DIFFERENCE, x, z),
+        CSGOperation::createCSGNode(OpenSCADOperator::DIFFERENCE, y, z));
       return true;
     }
     // 9. (x + y) * z  -> (x * z) + (y * z)
-    else if (leftop->getType() == OpenSCADOperator::UNION && op->getType() == OpenSCADOperator::INTERSECTION) {
-      node = CSGOperation::createCSGNode(OpenSCADOperator::UNION,
-                                         CSGOperation::createCSGNode(OpenSCADOperator::INTERSECTION, x, z),
-                                         CSGOperation::createCSGNode(OpenSCADOperator::INTERSECTION, y, z));
+    else if (leftop->getType() == OpenSCADOperator::UNION &&
+             op->getType() == OpenSCADOperator::INTERSECTION) {
+      node = CSGOperation::createCSGNode(
+        OpenSCADOperator::UNION, CSGOperation::createCSGNode(OpenSCADOperator::INTERSECTION, x, z),
+        CSGOperation::createCSGNode(OpenSCADOperator::INTERSECTION, y, z));
       return true;
     }
   }

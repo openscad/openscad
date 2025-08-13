@@ -15,19 +15,16 @@ private:
   QStringList params;
 
 public:
-  ApiFunc(QString name, QString param) : name(std::move(name)), params{std::move(param)} { }
-  ApiFunc(QString name, QString param1, QString param2) : name(std::move(name)), params{std::move(param1), std::move(param2)} { }
-  ApiFunc(QString name, QStringList params) : name(std::move(name)), params(std::move(params)) { }
-
-  const QString& get_name() const
+  ApiFunc(QString name, QString param) : name(std::move(name)), params{std::move(param)} {}
+  ApiFunc(QString name, QString param1, QString param2)
+    : name(std::move(name)), params{std::move(param1), std::move(param2)}
   {
-    return name;
   }
+  ApiFunc(QString name, QStringList params) : name(std::move(name)), params(std::move(params)) {}
 
-  const QStringList& get_params() const
-  {
-    return params;
-  }
+  const QString& get_name() const { return name; }
+
+  const QStringList& get_params() const { return params; }
 
   ApiFunc& operator=(const ApiFunc& other)
   {
@@ -44,10 +41,10 @@ class ScadTemplate
 private:
   QString text;
   int cursor_offset;
-public:
 
-  ScadTemplate() : text(""), cursor_offset(0) { }
-  ScadTemplate(QString text, int cursor_offset) : text(std::move(text)), cursor_offset(cursor_offset) { }
+public:
+  ScadTemplate() : text(""), cursor_offset(0) {}
+  ScadTemplate(QString text, int cursor_offset) : text(std::move(text)), cursor_offset(cursor_offset) {}
   const QString& get_text() const { return text; }
   int get_cursor_offset() const { return cursor_offset; }
 
@@ -72,7 +69,8 @@ private:
   QList<ApiFunc> funcs;
 
 protected:
-  void autoCompleteFolder(const QStringList& context, const QString& text, const int col, QStringList& list);
+  void autoCompleteFolder(const QStringList& context, const QString& text, const int col,
+                          QStringList& list);
   void autoCompleteFunctions(const QStringList& context, QStringList& list);
 
 public:
@@ -80,5 +78,6 @@ public:
 
   void updateAutoCompletionList(const QStringList& context, QStringList& list) override;
   void autoCompletionSelected(const QString& selection) override;
-  QStringList callTips(const QStringList& context, int commas, QsciScintilla::CallTipsStyle style, QList<int>& shifts) override;
+  QStringList callTips(const QStringList& context, int commas, QsciScintilla::CallTipsStyle style,
+                       QList<int>& shifts) override;
 };

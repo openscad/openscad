@@ -36,8 +36,7 @@ namespace fs = std::filesystem;
 
 namespace UIUtils {
 
-struct ExampleCategory
-{
+struct ExampleCategory {
   constexpr static int DEFAULT_SORT = 10000;
 
   int sort = DEFAULT_SORT;
@@ -45,8 +44,7 @@ struct ExampleCategory
   QString tooltip;
 };
 
-struct ExampleEntry
-{
+struct ExampleEntry {
   constexpr static int DEFAULT_SORT = 10000;
 
   int sort = DEFAULT_SORT;
@@ -88,11 +86,12 @@ bool hasOfflineCheatSheet();
 
 void openOfflineCheatSheet();
 
-QString getBackgroundColorStyleSheet(const QColor &color);
+QString getBackgroundColorStyleSheet(const QColor& color);
 
-QString blendForBackgroundColorStyleSheet(const QColor& input, const QColor& blend, float transparency = 0.2);
+QString blendForBackgroundColorStyleSheet(const QColor& input, const QColor& blend,
+                                          float transparency = 0.2);
 
-QString readFileContents(const QString &filepath, QString &errorstring);
+QString readFileContents(const QString& filepath, QString& errorstring);
 
 QString getBackupFileName(QWidget *parent);
-} // namespace UIUtils
+}  // namespace UIUtils

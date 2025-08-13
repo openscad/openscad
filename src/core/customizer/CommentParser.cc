@@ -9,7 +9,8 @@
 #include <vector>
 #include <boost/range/adaptor/reversed.hpp>
 // gcc 4.8 and earlier have issues with std::regex see
-// #2291 and https://stackoverflow.com/questions/12530406/is-gcc-4-8-or-earlier-buggy-about-regular-expressions
+// #2291 and
+// https://stackoverflow.com/questions/12530406/is-gcc-4-8-or-earlier-buggy-about-regular-expressions
 // therefore, we use boost::regex
 #include <boost/regex.hpp>
 
@@ -25,12 +26,13 @@ using GroupList = std::vector<GroupInfo>;
 
  */
 
-static int getLineToStop(const std::string& fulltext, char comment_char){
+static int getLineToStop(const std::string& fulltext, char comment_char)
+{
   int lineNo = 1;
   bool inString = false;
-  char line_comment[3]={comment_char,comment_char,'\0' };
-  char line_comment_o[3]={comment_char,'*','\0' };
-  char line_comment_c[3]={'*', comment_char,'\0' };
+  char line_comment[3] = {comment_char, comment_char, '\0'};
+  char line_comment_o[3] = {comment_char, '*', '\0'};
+  char line_comment_c[3] = {'*', comment_char, '\0'};
   for (unsigned int i = 0; i < fulltext.length(); ++i) {
     // increase line number
     if (fulltext[i] == '\n') {
@@ -44,7 +46,7 @@ static int getLineToStop(const std::string& fulltext, char comment_char){
       continue;
     }
 
-    //start or end of string negate the checkpoint
+    // start or end of string negate the checkpoint
     if (fulltext[i] == '"') {
       inString = !inString;
       continue;
@@ -57,7 +59,7 @@ static int getLineToStop(const std::string& fulltext, char comment_char){
       continue;
     }
 
-    //start of multi line comment if check is true
+    // start of multi line comment if check is true
     if (!inString && fulltext.compare(i, 2, line_comment_o) == 0) {
       i++;
       if (i < fulltext.length()) {
@@ -77,21 +79,20 @@ static int getLineToStop(const std::string& fulltext, char comment_char){
     if (comment_char == '/' && i < fulltext.length() && fulltext[i] == '{') {
       return lineNo;
     }
-    if (comment_char == '#' && i < fulltext.length() && fulltext.compare(i,1,"(") == 0) {
+    if (comment_char == '#' && i < fulltext.length() && fulltext.compare(i, 1, "(") == 0) {
       return lineNo;
     }
   }
   return lineNo;
 }
 
-
 /*
    Finds the given line in the given source code text, and
    extracts the comment (excluding the "//" prefix)
  */
-static std::string getComment(const std::string& fulltext, int line,char comment_char)
+static std::string getComment(const std::string& fulltext, int line, char comment_char)
 {
-  char line_comment[3]={comment_char,comment_char,'\0' };
+  char line_comment[3] = {comment_char, comment_char, '\0'};
   if (line < 1) return "";
 
   // Locate line
@@ -117,7 +118,7 @@ static std::string getComment(const std::string& fulltext, int line,char comment
     }
     if (comment[startText] == '"') inString = !inString;
     if (!inString) {
-      if (comment.compare(startText, 2, line_comment) == 0) break; 
+      if (comment.compare(startText, 2, line_comment) == 0) break;
       if (comment[startText] == ';' && noOfSemicolon > 0) return "";
       if (comment[startText] == ';') noOfSemicolon++;
     }
@@ -135,7 +136,7 @@ static std::string getComment(const std::string& fulltext, int line,char comment
  */
 static std::string getDescription(const std::string& fulltext, int line, char comment_char)
 {
-  char line_comment[3]={comment_char,comment_char,'\0' };
+  char line_comment[3] = {comment_char, comment_char, '\0'};
   if (line < 1) return "";
 
   unsigned int start = 0;
@@ -150,7 +151,7 @@ static std::string getDescription(const std::string& fulltext, int line, char co
   // Jump over the two forward slashes
   start = start + 2;
 
-  //Jump over all the spaces
+  // Jump over all the spaces
   while (fulltext[start] == ' ' || fulltext[start] == '\t') start++;
   std::string retString = "";
 
@@ -173,11 +174,11 @@ static std::string getDescription(const std::string& fulltext, int line, char co
  */
 static GroupInfo createGroup(std::string comment, int lineNo)
 {
-  //store info related to group
+  // store info related to group
   GroupInfo groupInfo;
   std::string finalGroupName;
 
-  boost::regex regex("\\[(.*?)\\]"); 
+  boost::regex regex("\\[(.*?)\\]");
   boost::match_results<std::string::const_iterator> match;
   while (boost::regex_search(comment, match, regex)) {
     std::string groupName = match[1].str();
@@ -196,19 +197,18 @@ static GroupInfo createGroup(std::string comment, int lineNo)
   return groupInfo;
 }
 
-
 /*
    This function collect all groups of parameters described in the
    scad file.
  */
 static GroupList collectGroups(const std::string& fulltext, char comment_char)
 {
-  GroupList groupList; // container of all group names
-  int lineNo = 1; // tracks line number
-  bool inString = false; // check if its string or (line-) commen, char comment_startt
-  char line_comment[3]={comment_char,comment_char,'\0' };
-  char line_comment_o[3]={comment_char,'*','\0' };
-  char line_comment_c[3]={'*', comment_char,'\0' };
+  GroupList groupList;    // container of all group names
+  int lineNo = 1;         // tracks line number
+  bool inString = false;  // check if its string or (line-) commen, char comment_startt
+  char line_comment[3] = {comment_char, comment_char, '\0'};
+  char line_comment_o[3] = {comment_char, '*', '\0'};
+  char line_comment_c[3] = {'*', comment_char, '\0'};
 
   // iterate through whole scad file
   for (unsigned int i = 0; i < fulltext.length(); ++i) {
@@ -224,7 +224,7 @@ static GroupList collectGroups(const std::string& fulltext, char comment_char)
       continue;
     }
 
-    //start or end of string negate the checkpoint
+    // start or end of string negate the checkpoint
     if (fulltext[i] == '"') {
       inString = !inString;
       continue;
@@ -237,9 +237,9 @@ static GroupList collectGroups(const std::string& fulltext, char comment_char)
       continue;
     }
 
-    //start of multi line comment if check is true
+    // start of multi line comment if check is true
     if (!inString && fulltext.compare(i, 2, line_comment_o) == 0) {
-      //store comment
+      // store comment
       std::string comment;
       i++;
       if (i < fulltext.length()) {
@@ -264,53 +264,49 @@ static GroupList collectGroups(const std::string& fulltext, char comment_char)
   return groupList;
 }
 
-
-
 /*!
    Insert Parameters in AST of given scad file
    form of annotations
  */
-void CommentParser::collectParameters(const std::string& fulltext, SourceFile *root_file,char comment_char)
+void CommentParser::collectParameters(const std::string& fulltext, SourceFile *root_file,
+                                      char comment_char)
 {
   static auto EmptyStringLiteral(std::make_shared<Literal>(""));
 
   // Get all groups of parameters
   GroupList groupList = collectGroups(fulltext, comment_char);
-  int parseTill = getLineToStop(fulltext,comment_char);
+  int parseTill = getLineToStop(fulltext, comment_char);
   // Extract parameters for all literal assignments
   for (auto& assignment : root_file->scope.assignments) {
-    if (!assignment->getExpr()->isLiteral()) continue; // Only consider literals
+    if (!assignment->getExpr()->isLiteral()) continue;  // Only consider literals
 
-    int firstLine=0;
+    int firstLine = 0;
     Location location(Location::NONE);
-    if(comment_char != '#' ) {
-    // get location of assignment node
-    auto firstLocation = assignment->location();
-    auto overwriteLocation = assignment->locationOfOverwrite();
-    location = overwriteLocation.isNone() ? firstLocation : overwriteLocation;
-    firstLine = location.firstLine();
-  } else {	 
-    // search for line number of parameter  in code
-    firstLine=0;
-    boost::regex ex_variable( R"(^(\w+)\s*=)");
-    std::istringstream iss(fulltext);
-    boost::smatch results;
-    int lineNo=0;
-    for (std::string line; std::getline(iss, line); ) {
-    lineNo++;
-    if(lineNo >= parseTill) break;
-    if (boost::regex_search(line, results, ex_variable) && results.size() >= 1) {
-      std::string res=results[1];
-      if(res == assignment->getName()) firstLine=lineNo;
+    if (comment_char != '#') {
+      // get location of assignment node
+      auto firstLocation = assignment->location();
+      auto overwriteLocation = assignment->locationOfOverwrite();
+      location = overwriteLocation.isNone() ? firstLocation : overwriteLocation;
+      firstLine = location.firstLine();
+    } else {
+      // search for line number of parameter  in code
+      firstLine = 0;
+      boost::regex ex_variable(R"(^(\w+)\s*=)");
+      std::istringstream iss(fulltext);
+      boost::smatch results;
+      int lineNo = 0;
+      for (std::string line; std::getline(iss, line);) {
+        lineNo++;
+        if (lineNo >= parseTill) break;
+        if (boost::regex_search(line, results, ex_variable) && results.size() >= 1) {
+          std::string res = results[1];
+          if (res == assignment->getName()) firstLine = lineNo;
+        }
+      }
     }
-   }
-
-    }
-    if (firstLine >= parseTill || (
-          location.fileName() != "" &&
-          location.fileName() != root_file->getFilename() &&
-          location.fileName() != root_file->getFullpath()
-          )) {
+    if (firstLine >= parseTill ||
+        (location.fileName() != "" && location.fileName() != root_file->getFilename() &&
+         location.fileName() != root_file->getFullpath())) {
       continue;
     }
     // making list to add annotations
@@ -319,7 +315,8 @@ void CommentParser::collectParameters(const std::string& fulltext, SourceFile *r
     // Extracting the parameter comment
     std::shared_ptr<Expression> params;
     std::string comment = getComment(fulltext, firstLine, comment_char);
-    if (comment.length() > 0) { // don't parse what doesn't exist, so we don't get bogus errors from the parser
+    if (comment.length() >
+        0) {  // don't parse what doesn't exist, so we don't get bogus errors from the parser
       // getting the node for parameter annotation
       params = CommentParser::parser(comment.c_str());
     }
@@ -328,18 +325,18 @@ void CommentParser::collectParameters(const std::string& fulltext, SourceFile *r
     // adding parameter to the list
     annotationList->push_back(Annotation("Parameter", params));
 
-    //extracting the description
+    // extracting the description
     std::string descr = getDescription(fulltext, firstLine - 1, comment_char);
     if (descr != "") {
-      //creating node for description
+      // creating node for description
       std::shared_ptr<Expression> expr(new Literal(descr));
       annotationList->push_back(Annotation("Description", expr));
     }
 
     // Look for the group to which the given assignment belong
-    for (const auto& groupInfo :boost::adaptors::reverse(groupList)) {
+    for (const auto& groupInfo : boost::adaptors::reverse(groupList)) {
       if (groupInfo.lineNo < firstLine) {
-        //creating node for description
+        // creating node for description
         std::shared_ptr<Expression> expr(new Literal(groupInfo.commentString));
         annotationList->push_back(Annotation("Group", expr));
         break;

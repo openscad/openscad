@@ -18,16 +18,19 @@ class PolySetBuilder;
 
 class PolySet : public Geometry
 {
-  friend class PolySetBuilder;	
+  friend class PolySetBuilder;
+
 public:
   VISITABLE_GEOMETRY();
   PolygonIndices indices;
   std::vector<Vector3d> vertices;
   // Per polygon color, indexing the colors vector below. Can be empty, and -1 means no specific color.
-  std::vector<int32_t> color_indices; 
+  std::vector<int32_t> color_indices;
   std::vector<Color4f> colors;
-  std::vector<std::shared_ptr<Curve>> curves; // defines vertex connections(edges) which are not straight lines
-  std::vector<std::shared_ptr<Surface>> surfaces; // defines vertex connections(edges) which are not straight lines
+  std::vector<std::shared_ptr<Curve>>
+    curves;  // defines vertex connections(edges) which are not straight lines
+  std::vector<std::shared_ptr<Surface>>
+    surfaces;  // defines vertex connections(edges) which are not straight lines
 
   PolySet(unsigned int dim, boost::tribool convex = unknown);
 

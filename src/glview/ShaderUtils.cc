@@ -8,7 +8,8 @@
 
 namespace {
 
-GLuint compileShader(const std::string& name, GLuint shader_type) {
+GLuint compileShader(const std::string& name, GLuint shader_type)
+{
   auto shader_source = ShaderUtils::loadShaderSource(name);
   const GLuint shader = glCreateShader(shader_type);
   auto *c_source = shader_source.c_str();
@@ -30,7 +31,8 @@ GLuint compileShader(const std::string& name, GLuint shader_type) {
 
 namespace ShaderUtils {
 
-std::string loadShaderSource(const std::string& name) {
+std::string loadShaderSource(const std::string& name)
+{
   std::string shaderPath = (PlatformUtils::resourcePath("shaders") / name).string();
   std::ostringstream buffer;
   const std::ifstream f(shaderPath);
@@ -42,7 +44,8 @@ std::string loadShaderSource(const std::string& name) {
   return buffer.str();
 }
 
-ShaderResource compileShaderProgram(const std::string& vs_str, const std::string& fs_str) {
+ShaderResource compileShaderProgram(const std::string& vs_str, const std::string& fs_str)
+{
   int shaderstatus;
   const char *vs_source = vs_str.c_str();
   const char *fs_source = fs_str.c_str();

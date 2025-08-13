@@ -30,27 +30,27 @@
 #include "geometry/Geometry.h"
 #include "utils/printutils.h"
 
-void export_3mf(const std::vector<struct Export3mfInfo> & infos, std::ostream& output,  const ExportInfo&) 
+void export_3mf(const std::vector<struct Export3mfInfo>& infos, std::ostream& output, const ExportInfo&)
 {
   LOG("Export to 3MF format was not enabled when building the application.");
 }
 
-void Export3mfPartInfo::writePropsFloat(void *pobj, const  char *name, float f) const
+void Export3mfPartInfo::writePropsFloat(void *pobj, const char *name, float f) const
 {
-//	Lib3MF::PMeshObject  *obj = (Lib3MF::PMeshObject *) pobj;
-//	printf("Writing %s: %f\n",name, f);
-	//void SetObjectLevelProperty(const Lib3MF_uint32 nUniqueResourceID, const Lib3MF_uint32 nPropertyID);
+  //	Lib3MF::PMeshObject  *obj = (Lib3MF::PMeshObject *) pobj;
+  //	printf("Writing %s: %f\n",name, f);
+  // void SetObjectLevelProperty(const Lib3MF_uint32 nUniqueResourceID, const Lib3MF_uint32 nPropertyID);
 }
-void Export3mfPartInfo::writePropsLong(void *pobj, const  char *name, long l) const
+void Export3mfPartInfo::writePropsLong(void *pobj, const char *name, long l) const
 {
-//	printf("Writing %s: %d\n",name, l);
+  //	printf("Writing %s: %d\n",name, l);
 }
-void Export3mfPartInfo::writePropsString(void *pobj, const  char *name, const char *val) const
+void Export3mfPartInfo::writePropsString(void *pobj, const char *name, const char *val) const
 {
-//	printf("Writing %s: %s\n",name, val);
+  //	printf("Writing %s: %s\n",name, val);
 }
 
-void export_3mf(const std::vector<struct Export3mfPartInfo> & infos, std::ostream& output, const ExportInfo& exportInfo) {
+void export_3mf(const std::vector<struct Export3mfPartInfo>& infos, std::ostream& output,
+                const ExportInfo& exportInfo)
+{
 }
-
-

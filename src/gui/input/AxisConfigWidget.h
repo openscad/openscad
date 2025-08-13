@@ -83,13 +83,19 @@ private:
 
   bool initialized = false;
 
-  QString NotEnabledDuringBuild = _("This driver was not enabled during build time and is thus not available.");
+  QString NotEnabledDuringBuild =
+    _("This driver was not enabled during build time and is thus not available.");
 
-  QString DBusInputDriverDescription = _("The DBUS driver is not for actual devices but for remote control, Linux only.");
-  QString HidApiInputDriverDescription = _("The HIDAPI driver communicates directly with the 3D mice, Windows and macOS.");
-  QString SpaceNavInputDriverDescription = _("The SpaceNav driver enables 3D-input-devices using the spacenavd daemon, Linux only.");
-  QString JoystickInputDriverDescription = _("The Joystick driver uses the Linux joystick device (fixed to /dev/input/js0), Linux only.");
-  QString QGamepadInputDriverDescription = _("The QGAMEPAD driver is for multiplattform Gamepad Support.");
+  QString DBusInputDriverDescription =
+    _("The DBUS driver is not for actual devices but for remote control, Linux only.");
+  QString HidApiInputDriverDescription =
+    _("The HIDAPI driver communicates directly with the 3D mice, Windows and macOS.");
+  QString SpaceNavInputDriverDescription =
+    _("The SpaceNav driver enables 3D-input-devices using the spacenavd daemon, Linux only.");
+  QString JoystickInputDriverDescription =
+    _("The Joystick driver uses the Linux joystick device (fixed to /dev/input/js0), Linux only.");
+  QString QGamepadInputDriverDescription =
+    _("The QGAMEPAD driver is for multiplattform Gamepad Support.");
 
   bool darkModeDetected = false;
 

@@ -58,14 +58,15 @@ void LocalScope::print(std::ostream& stream, const std::string& indent, const bo
   }
 }
 
-void LocalScope::print_python(std::ostream& stream, std::ostream& stream_def, const std::string& indent, const bool inlined, const int context_mode) const
+void LocalScope::print_python(std::ostream& stream, std::ostream& stream_def, const std::string& indent,
+                              const bool inlined, const int context_mode) const
 // 0: array
 // 1: return array
 // 2: tuple
 {
   std::ostringstream tmpstream;
   for (const auto& f : this->astFunctions) {
-    f.second->print_python(tmpstream, stream_def,  indent);
+    f.second->print_python(tmpstream, stream_def, indent);
   }
   for (const auto& m : this->astModules) {
     m.second->print_python(tmpstream, stream_def, indent);
@@ -73,22 +74,24 @@ void LocalScope::print_python(std::ostream& stream, std::ostream& stream_def, co
   for (const auto& assignment : this->assignments) {
     assignment->print_python(stream, stream_def, indent);
   }
-  if(context_mode == 1) stream << indent << "return ";
-  if(this->moduleInstantiations.size() == 1) {
+  if (context_mode == 1) stream << indent << "return ";
+  if (this->moduleInstantiations.size() == 1) {
     this->moduleInstantiations[0]->print_python(stream, stream_def, indent, inlined, context_mode);
   } else {
-    if(context_mode != 2) stream << "[\n";	  
-    for (size_t i=0; i<this->moduleInstantiations.size();i++) {
-      if(i > 0) stream << ",\n";	    
-      this->moduleInstantiations[i]->print_python(stream, stream_def, indent+"  ", inlined, context_mode);
+    if (context_mode != 2) stream << "[\n";
+    for (size_t i = 0; i < this->moduleInstantiations.size(); i++) {
+      if (i > 0) stream << ",\n";
+      this->moduleInstantiations[i]->print_python(stream, stream_def, indent + "  ", inlined,
+                                                  context_mode);
     }
-    if(!inlined) stream << "\n";
-    if(context_mode != 2)  stream << indent << "]";	  
-  }    
+    if (!inlined) stream << "\n";
+    if (context_mode != 2) stream << indent << "]";
+  }
   stream_def << tmpstream.str();
 }
 
-std::shared_ptr<AbstractNode> LocalScope::instantiateModules(const std::shared_ptr<const Context>& context, const std::shared_ptr<AbstractNode> &target) const
+std::shared_ptr<AbstractNode> LocalScope::instantiateModules(
+  const std::shared_ptr<const Context>& context, const std::shared_ptr<AbstractNode>& target) const
 {
   for (const auto& modinst : this->moduleInstantiations) {
     auto node = modinst->evaluate(context);
@@ -96,19 +99,19 @@ std::shared_ptr<AbstractNode> LocalScope::instantiateModules(const std::shared_p
       // GroupNode can pass its children through to parent without an implied union.
       // This might later be handled by GeometryEvaluator, but for now just completely
       // remove the GroupNode from the tree.
-      std::shared_ptr<GroupNode> gr= std::dynamic_pointer_cast<GroupNode>(node);
+      std::shared_ptr<GroupNode> gr = std::dynamic_pointer_cast<GroupNode>(node);
       if (gr && !gr->getImpliedUnion()) {
         target->children.insert(target->children.end(), node->children.begin(), node->children.end());
         node->children.clear();
-      }
-      else
-        target->children.push_back(node);
+      } else target->children.push_back(node);
     }
   }
   return target;
 }
 
-std::shared_ptr<AbstractNode> LocalScope::instantiateModules(const std::shared_ptr<const Context>& context, const std::shared_ptr<AbstractNode> &target, const std::vector<size_t>& indices) const
+std::shared_ptr<AbstractNode> LocalScope::instantiateModules(
+  const std::shared_ptr<const Context>& context, const std::shared_ptr<AbstractNode>& target,
+  const std::vector<size_t>& indices) const
 {
   for (size_t index : indices) {
     assert(index < this->moduleInstantiations.size());
@@ -117,13 +120,11 @@ std::shared_ptr<AbstractNode> LocalScope::instantiateModules(const std::shared_p
       // GroupNode can pass its children through to parent without an implied union.
       // This might later be handled by GeometryEvaluator, but for now just completely
       // remove the GroupNode from the tree.
-      std::shared_ptr<GroupNode> gr= std::dynamic_pointer_cast<GroupNode>(node);
+      std::shared_ptr<GroupNode> gr = std::dynamic_pointer_cast<GroupNode>(node);
       if (gr && !gr->getImpliedUnion()) {
         target->children.insert(target->children.end(), node->children.begin(), node->children.end());
         node->children.clear();
-      }
-      else
-        target->children.push_back(node);
+      } else target->children.push_back(node);
     }
   }
   return target;

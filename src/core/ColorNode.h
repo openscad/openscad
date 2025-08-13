@@ -11,7 +11,7 @@ class ColorNode : public AbstractNode
 {
 public:
   VISITABLE();
-  ColorNode(const ModuleInstantiation *mi) : AbstractNode(mi) { }
+  ColorNode(const ModuleInstantiation *mi) : AbstractNode(mi) {}
   std::string toString() const override;
   std::string name() const override;
 

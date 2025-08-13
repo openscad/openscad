@@ -35,8 +35,9 @@
 
 namespace CGALUtils {
 
-std::unique_ptr<const Geometry> applyUnion3D(
-const CsgOpNode &node, Geometry::Geometries::iterator chbegin, Geometry::Geometries::iterator chend)
+std::unique_ptr<const Geometry> applyUnion3D(const CsgOpNode& node,
+                                             Geometry::Geometries::iterator chbegin,
+                                             Geometry::Geometries::iterator chend)
 {
   using QueueConstItem = std::pair<std::shared_ptr<const CGALNefGeometry>, int>;
   struct QueueItemGreater {
@@ -89,9 +90,12 @@ const CsgOpNode &node, Geometry::Geometries::iterator chbegin, Geometry::Geometr
    The child list should be guaranteed to contain non-NULL 3D or empty Geometry objects
  */
 
-std::unique_ptr<const Geometry> addFillets(std::shared_ptr<const Geometry> result, const Geometry::Geometries & children, double r, int fn);
+std::unique_ptr<const Geometry> addFillets(std::shared_ptr<const Geometry> result,
+                                           const Geometry::Geometries& children, double r, int fn);
 
-std::shared_ptr<const Geometry> applyOperator3D(const CsgOpNode &node, const Geometry::Geometries& children, OpenSCADOperator op)
+std::shared_ptr<const Geometry> applyOperator3D(const CsgOpNode& node,
+                                                const Geometry::Geometries& children,
+                                                OpenSCADOperator op)
 {
   std::shared_ptr<CGALNefGeometry> N;
 
@@ -106,9 +110,9 @@ std::shared_ptr<const Geometry> applyOperator3D(const CsgOpNode &node, const Geo
       // Initialize N with first expected geometric object
       if (!foundFirst) {
         if (chN) {
-	  // FIXME: Do we need to make a copy here?
+          // FIXME: Do we need to make a copy here?
           N = std::make_shared<CGALNefGeometry>(*chN);
-        } else { // first child geometry might be empty/null
+        } else {  // first child geometry might be empty/null
           N = nullptr;
         }
         foundFirst = true;
@@ -127,36 +131,37 @@ std::shared_ptr<const Geometry> applyOperator3D(const CsgOpNode &node, const Geo
       if (!N || N->isEmpty()) continue;
 
       switch (op) {
-      case OpenSCADOperator::INTERSECTION:
-        *N *= *chN;
-        break;
-      case OpenSCADOperator::DIFFERENCE:
-        *N -= *chN;
-        break;
-      case OpenSCADOperator::MINKOWSKI:
-        N->minkowski(*chN);
-        break;
-      default:
-        LOG(message_group::Error, "Unsupported CGAL operator: %1$d", static_cast<int>(op));
+      case OpenSCADOperator::INTERSECTION: *N *= *chN; break;
+      case OpenSCADOperator::DIFFERENCE:   *N -= *chN; break;
+      case OpenSCADOperator::MINKOWSKI:    N->minkowski(*chN); break;
+      default:                             LOG(message_group::Error, "Unsupported CGAL operator: %1$d", static_cast<int>(op));
       }
       if (item.first) item.first->progress_report();
     }
   }
-  // union && difference assert triggered by tests/data/scad/bugs/rotate-diff-nonmanifold-crash.scad and tests/data/scad/bugs/issue204.scad
+  // union && difference assert triggered by tests/data/scad/bugs/rotate-diff-nonmanifold-crash.scad and
+  // tests/data/scad/bugs/issue204.scad
   catch (const CGAL::Failure_exception& e) {
-    std::string opstr = op == OpenSCADOperator::INTERSECTION ? "intersection" : op == OpenSCADOperator::DIFFERENCE ? "difference" : op == OpenSCADOperator::UNION ? "union" : "UNKNOWN";
+    std::string opstr = op == OpenSCADOperator::INTERSECTION ? "intersection"
+                        : op == OpenSCADOperator::DIFFERENCE ? "difference"
+                        : op == OpenSCADOperator::UNION      ? "union"
+                                                             : "UNKNOWN";
     LOG(message_group::Error, "CGAL error in CGALUtils::applyOperator3D %1$s: %2$s", opstr, e.what());
   }
-  // boost any_cast throws exceptions inside CGAL code, ending here https://github.com/openscad/openscad/issues/3756
+  // boost any_cast throws exceptions inside CGAL code, ending here
+  // https://github.com/openscad/openscad/issues/3756
   catch (const std::exception& e) {
-    std::string opstr = op == OpenSCADOperator::INTERSECTION ? "intersection" : op == OpenSCADOperator::DIFFERENCE ? "difference" : op == OpenSCADOperator::UNION ? "union" : "UNKNOWN";
+    std::string opstr = op == OpenSCADOperator::INTERSECTION ? "intersection"
+                        : op == OpenSCADOperator::DIFFERENCE ? "difference"
+                        : op == OpenSCADOperator::UNION      ? "union"
+                                                             : "UNKNOWN";
     LOG(message_group::Error, "exception in CGALUtils::applyOperator3D %1$s: %2$s", opstr, e.what());
   }
-//
- if(node.r != 0){
-//    std::unique_ptr<const Geometry> geom_u = addFillets(N, children, node.r, node.fn);
-//    std::shared_ptr<const Geometry> geom_s(geom_u.release());
-//    N=geom_s; //  = ManifoldUtils::createManifoldFromGeometry(geom_s);
+  //
+  if (node.r != 0) {
+    //    std::unique_ptr<const Geometry> geom_u = addFillets(N, children, node.r, node.fn);
+    //    std::shared_ptr<const Geometry> geom_s(geom_u.release());
+    //    N=geom_s; //  = ManifoldUtils::createManifoldFromGeometry(geom_s);
   }
 
   return N;

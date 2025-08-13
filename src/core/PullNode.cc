@@ -30,11 +30,7 @@ std::string PullNode::toString() const
 {
   std::ostringstream stream;
   stream << this->name() << "(";
-  stream <<
-    "anchor = " << this->anchor[0] << ", " << this->anchor[1] << ", " << this->anchor[2] << ", " <<
-    "dir = " << this->dir[0] << ", " << this->dir[1] << ", " << this->dir[2] << ", " ;
+  stream << "anchor = " << this->anchor[0] << ", " << this->anchor[1] << ", " << this->anchor[2] << ", "
+         << "dir = " << this->dir[0] << ", " << this->dir[1] << ", " << this->dir[2] << ", ";
   return stream.str();
 }
-
-
-

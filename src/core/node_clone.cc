@@ -52,110 +52,77 @@
 
 std::vector<ModuleInstantiation *> modinsts_list;
 
-#define NodeCloneFunc(T) std::shared_ptr<T> clone_what(const T *node) {\
-       	ModuleInstantiation *inst = new ModuleInstantiation(node->modinst->name() ,\
-	node->modinst->arguments, node->modinst->location());\
-	modinsts_list.push_back(inst); \
-       	auto clone = std::make_shared<T>(*node);\
-       	clone->modinst = inst; \
-	return clone;\
-}
+#define NodeCloneFunc(T)                                                           \
+  std::shared_ptr<T> clone_what(const T *node)                                     \
+  {                                                                                \
+    ModuleInstantiation *inst = new ModuleInstantiation(                           \
+      node->modinst->name(), node->modinst->arguments, node->modinst->location()); \
+    modinsts_list.push_back(inst);                                                 \
+    auto clone = std::make_shared<T>(*node);                                       \
+    clone->modinst = inst;                                                         \
+    return clone;                                                                  \
+  }
 
-#define NodeCloneUse(T) { const T *node = dynamic_cast<const T *>(this); if((node) != nullptr) clone=clone_what(node); }
-NodeCloneFunc(CubeNode)
-NodeCloneFunc(SphereNode)
-NodeCloneFunc(CylinderNode)
-NodeCloneFunc(PolyhedronNode)
-NodeCloneFunc(EdgeNode)
-NodeCloneFunc(SquareNode)
-NodeCloneFunc(CircleNode)
-NodeCloneFunc(PolygonNode)
-NodeCloneFunc(SplineNode)
-NodeCloneFunc(TransformNode)
-NodeCloneFunc(PullNode)
-NodeCloneFunc(DebugNode)
-NodeCloneFunc(RepairNode)
-NodeCloneFunc(WrapNode)
-NodeCloneFunc(ColorNode)
-NodeCloneFunc(OversampleNode)
-NodeCloneFunc(FilletNode)
-NodeCloneFunc(RotateExtrudeNode)
-NodeCloneFunc(LinearExtrudeNode)
-NodeCloneFunc(PathExtrudeNode)
-NodeCloneFunc(CsgOpNode)
-NodeCloneFunc(CgalAdvNode)
-NodeCloneFunc(RenderNode)
-NodeCloneFunc(SkinNode)
-NodeCloneFunc(ConcatNode)
-NodeCloneFunc(SurfaceNode)
-NodeCloneFunc(TextNode)
-NodeCloneFunc(OffsetNode)
-NodeCloneFunc(ProjectionNode)
-NodeCloneFunc(GroupNode)
-NodeCloneFunc(ImportNode)
+#define NodeCloneUse(T)                              \
+  {                                                  \
+    const T *node = dynamic_cast<const T *>(this);   \
+    if ((node) != nullptr) clone = clone_what(node); \
+  }
+NodeCloneFunc(CubeNode) NodeCloneFunc(SphereNode) NodeCloneFunc(CylinderNode)
+  NodeCloneFunc(PolyhedronNode) NodeCloneFunc(EdgeNode) NodeCloneFunc(SquareNode)
+    NodeCloneFunc(CircleNode) NodeCloneFunc(PolygonNode) NodeCloneFunc(SplineNode)
+      NodeCloneFunc(TransformNode) NodeCloneFunc(PullNode) NodeCloneFunc(DebugNode)
+        NodeCloneFunc(RepairNode) NodeCloneFunc(WrapNode) NodeCloneFunc(ColorNode)
+          NodeCloneFunc(OversampleNode) NodeCloneFunc(FilletNode) NodeCloneFunc(RotateExtrudeNode)
+            NodeCloneFunc(LinearExtrudeNode) NodeCloneFunc(PathExtrudeNode) NodeCloneFunc(CsgOpNode)
+              NodeCloneFunc(CgalAdvNode) NodeCloneFunc(RenderNode) NodeCloneFunc(SkinNode)
+                NodeCloneFunc(ConcatNode) NodeCloneFunc(SurfaceNode) NodeCloneFunc(TextNode)
+                  NodeCloneFunc(OffsetNode) NodeCloneFunc(ProjectionNode) NodeCloneFunc(GroupNode)
+                    NodeCloneFunc(ImportNode)
 #if defined(ENABLE_EXPERIMENTAL) && defined(ENABLE_CGAL)
-NodeCloneFunc(RoofNode)
+                      NodeCloneFunc(RoofNode)
 #endif
 
-std::shared_ptr<AbstractNode> AbstractNode::clone(void)
+                        std::shared_ptr<AbstractNode> AbstractNode::clone(void)
 {
-	std::shared_ptr<AbstractNode> clone=nullptr;
-	NodeCloneUse(CubeNode)
-	NodeCloneUse(SphereNode)
-	NodeCloneUse(CylinderNode)
-	NodeCloneUse(PolyhedronNode)
-	NodeCloneUse(EdgeNode)
-	NodeCloneUse(SquareNode)
-	NodeCloneUse(CircleNode)
-	NodeCloneUse(PolygonNode)
-	NodeCloneUse(SplineNode)
-	NodeCloneUse(TransformNode)
-	NodeCloneUse(PullNode)
-	NodeCloneUse(DebugNode)
-	NodeCloneUse(RepairNode)
-	NodeCloneUse(WrapNode)
-	NodeCloneUse(ColorNode)
-	NodeCloneUse(OversampleNode)
-	NodeCloneUse(FilletNode)
-	NodeCloneUse(RotateExtrudeNode)
-	NodeCloneUse(LinearExtrudeNode)
-	NodeCloneUse(PathExtrudeNode)
-	NodeCloneUse(CsgOpNode)
-	NodeCloneUse(CgalAdvNode)
-	NodeCloneUse(RenderNode)
-	NodeCloneUse(SkinNode)
-	NodeCloneUse(ConcatNode)
-	NodeCloneUse(SurfaceNode)
-	NodeCloneUse(TextNode)
-	NodeCloneUse(OffsetNode)
-	NodeCloneUse(ProjectionNode)
-	NodeCloneUse(GroupNode)
-	NodeCloneUse(ImportNode)
+  std::shared_ptr<AbstractNode> clone = nullptr;
+  NodeCloneUse(CubeNode) NodeCloneUse(SphereNode) NodeCloneUse(CylinderNode) NodeCloneUse(PolyhedronNode)
+    NodeCloneUse(EdgeNode) NodeCloneUse(SquareNode) NodeCloneUse(CircleNode) NodeCloneUse(PolygonNode)
+      NodeCloneUse(SplineNode) NodeCloneUse(TransformNode) NodeCloneUse(PullNode) NodeCloneUse(DebugNode)
+        NodeCloneUse(RepairNode) NodeCloneUse(WrapNode) NodeCloneUse(ColorNode)
+          NodeCloneUse(OversampleNode) NodeCloneUse(FilletNode) NodeCloneUse(RotateExtrudeNode)
+            NodeCloneUse(LinearExtrudeNode) NodeCloneUse(PathExtrudeNode) NodeCloneUse(CsgOpNode)
+              NodeCloneUse(CgalAdvNode) NodeCloneUse(RenderNode) NodeCloneUse(SkinNode)
+                NodeCloneUse(ConcatNode) NodeCloneUse(SurfaceNode) NodeCloneUse(TextNode)
+                  NodeCloneUse(OffsetNode) NodeCloneUse(ProjectionNode) NodeCloneUse(GroupNode)
+                    NodeCloneUse(ImportNode)
 #if defined(ENABLE_EXPERIMENTAL) && defined(ENABLE_CGAL)
-	NodeCloneUse(RoofNode)
+                      NodeCloneUse(RoofNode)
 #endif
-	if(clone != nullptr) {
-		clone->idx = idx_counter++;
-		clone->children.clear();
-		for(const auto &child: this->children) {
-			clone->children.push_back(child->clone());
-		}
-		return clone;
-	}
-	std::cout << "Type not defined for clone :" << typeid(this).name() << "\n\r";
-	return std::shared_ptr<AbstractNode>(this);
+                        if (clone != nullptr)
+  {
+    clone->idx = idx_counter++;
+    clone->children.clear();
+    for (const auto& child : this->children) {
+      clone->children.push_back(child->clone());
+    }
+    return clone;
+  }
+  std::cout << "Type not defined for clone :" << typeid(this).name() << "\n\r";
+  return std::shared_ptr<AbstractNode>(this);
 }
 
-void  AbstractNode::dump_counts(int indent,int use_cnt){
-  int i=0;
-  for(i=0;i<indent;i++) printf(" ");
+void AbstractNode::dump_counts(int indent, int use_cnt)
+{
+  int i = 0;
+  for (i = 0; i < indent; i++) printf(" ");
 
-  printf("%s use =%d mi=%p ",this->name().c_str(), use_cnt, this->modinst);
+  printf("%s use =%d mi=%p ", this->name().c_str(), use_cnt, this->modinst);
 
-  printf("(%d/%d/%d) ",this->modinst->tag_highlight, this->modinst->tag_background, this->modinst->tag_root);
-  printf("\n");  
-  for(const auto &child : this->children) {
-    child->dump_counts(indent+1, child.use_count());	  
+  printf("(%d/%d/%d) ", this->modinst->tag_highlight, this->modinst->tag_background,
+         this->modinst->tag_root);
+  printf("\n");
+  for (const auto& child : this->children) {
+    child->dump_counts(indent + 1, child.use_count());
   }
 }
-

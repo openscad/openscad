@@ -44,20 +44,23 @@
 #include "geometry/linalg.h"
 #include "utils/printutils.h"
 
-using namespace boost::assign; // bring 'operator+=()' into scope
+using namespace boost::assign;  // bring 'operator+=()' into scope
 
-static std::shared_ptr<AbstractNode> builtin_color(const ModuleInstantiation *inst, Arguments arguments, const Children& children)
+static std::shared_ptr<AbstractNode> builtin_color(const ModuleInstantiation *inst, Arguments arguments,
+                                                   const Children& children)
 {
   auto node = std::make_shared<ColorNode>(inst);
 
-  Parameters parameters = Parameters::parse(std::move(arguments), inst->location(), {"c", "alpha", "texture"});
+  Parameters parameters =
+    Parameters::parse(std::move(arguments), inst->location(), {"c", "alpha", "texture"});
   if (parameters["c"].type() == Value::Type::VECTOR) {
     const auto& vec = parameters["c"].toVector();
     Vector4f color;
     for (size_t i = 0; i < 4; ++i) {
       color[i] = i < vec.size() ? (float)vec[i].toDouble() : 1.0f;
       if (color[i] > 1 || color[i] < 0) {
-        LOG(message_group::Warning, inst->location(), parameters.documentRoot(), "color() expects numbers between 0.0 and 1.0. Value of %1$.1f is out of range", color[i]);
+        LOG(message_group::Warning, inst->location(), parameters.documentRoot(),
+            "color() expects numbers between 0.0 and 1.0. Value of %1$.1f is out of range", color[i]);
       }
     }
     node->color = color;
@@ -67,20 +70,24 @@ static std::shared_ptr<AbstractNode> builtin_color(const ModuleInstantiation *in
     if (parsed_color) {
       node->color = *parsed_color;
     } else {
-      LOG(message_group::Warning, inst->location(), parameters.documentRoot(), "Unable to parse color \"%1$s\"", colorname);
+      LOG(message_group::Warning, inst->location(), parameters.documentRoot(),
+          "Unable to parse color \"%1$s\"", colorname);
       LOG("Please see https://en.wikipedia.org/wiki/Web_colors");
     }
   }
   if (parameters["alpha"].type() == Value::Type::NUMBER) {
     node->color.setAlpha(parameters["alpha"].toDouble());
     if (node->color.a() < 0.0f || node->color.a() > 1.0f) {
-      LOG(message_group::Warning, inst->location(), parameters.documentRoot(), "color() expects alpha between 0.0 and 1.0. Value of %1$.1f is out of range", node->color.a());
+      LOG(message_group::Warning, inst->location(), parameters.documentRoot(),
+          "color() expects alpha between 0.0 and 1.0. Value of %1$.1f is out of range", node->color.a());
     }
   }
-  node->textureind=0; 
+  node->textureind = 0;
   if (parameters["texture"].type() == Value::Type::NUMBER) {
-    node->textureind = (int) parameters["texture"].toDouble();
-    if(node->color.r() < 0) { node->color.setRgba(0.5f, 0.5f, 0.5f, 1.0f); }
+    node->textureind = (int)parameters["texture"].toDouble();
+    if (node->color.r() < 0) {
+      node->color.setRgba(0.5f, 0.5f, 0.5f, 1.0f);
+    }
   }
 
   return children.instantiate(node);
@@ -88,21 +95,19 @@ static std::shared_ptr<AbstractNode> builtin_color(const ModuleInstantiation *in
 
 std::string ColorNode::toString() const
 {
-  return STR("color([", this->color.r(), ", ", this->color.g(), ", ", this->color.b(), ", ", this->color.a(), "])");
+  return STR("color([", this->color.r(), ", ", this->color.g(), ", ", this->color.b(), ", ",
+             this->color.a(), "])");
 }
 
-std::string ColorNode::name() const
-{
-  return "color";
-}
+std::string ColorNode::name() const { return "color"; }
 
 void register_builtin_color()
 {
   Builtins::init("color", new BuiltinModule(builtin_color),
-  {
-    "color(c = [r, g, b, a])",
-    "color(c = [r, g, b], alpha = 1.0)",
-    "color(\"#hexvalue\")",
-    "color(\"colorname\", 1.0)",
-  });
+                 {
+                   "color(c = [r, g, b, a])",
+                   "color(c = [r, g, b], alpha = 1.0)",
+                   "color(\"#hexvalue\")",
+                   "color(\"colorname\", 1.0)",
+                 });
 }

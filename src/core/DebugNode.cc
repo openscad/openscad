@@ -26,16 +26,13 @@
 #include "DebugNode.h"
 
 std::string DebugNode::toString() const
-  {
-    std::ostringstream stream;
-    stream << "debugnode( faces = ";
-    for(size_t i=0;i<faces.size();i++) {
-      stream << faces[i] ;
-      stream << " ";
-    }
-    stream << ")";
-    return  stream.str();
+{
+  std::ostringstream stream;
+  stream << "debugnode( faces = ";
+  for (size_t i = 0; i < faces.size(); i++) {
+    stream << faces[i];
+    stream << " ";
   }
-
-
-
+  stream << ")";
+  return stream.str();
+}

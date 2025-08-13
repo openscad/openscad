@@ -37,17 +37,13 @@ void Assignment::addAnnotations(AnnotationList *annotations)
   }
 }
 
-bool Assignment::hasAnnotations() const
-{
-  return !annotations.empty();
-}
+bool Assignment::hasAnnotations() const { return !annotations.empty(); }
 
 const Annotation *Assignment::annotation(const std::string& name) const
 {
   auto found = annotations.find(name);
   return found == annotations.end() ? nullptr : found->second;
 }
-
 
 void Assignment::print(std::ostream& stream, const std::string& indent) const
 {
@@ -62,7 +58,8 @@ void Assignment::print(std::ostream& stream, const std::string& indent) const
   stream << indent << this->name << " = " << *this->expr << ";\n";
 }
 
-void Assignment::print_python(std::ostream& stream, std::ostream& stream_def, const std::string& indent) const
+void Assignment::print_python(std::ostream& stream, std::ostream& stream_def,
+                              const std::string& indent) const
 {
   if (this->hasAnnotations() && 0) {
     const Annotation *group = this->annotation("Group");

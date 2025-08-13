@@ -18,9 +18,9 @@ std::shared_ptr<const Geometry> applyMinkowski3D(const Geometry::Geometries& chi
   t_tot.start();
   AssignmentList inst_asslist;
   std::string instance_name;
-  ModuleInstantiation *instance = new ModuleInstantiation(instance_name,inst_asslist, Location::NONE);
-  CsgOpNode node(instance,OpenSCADOperator::UNION);
-  
+  ModuleInstantiation *instance = new ModuleInstantiation(instance_name, inst_asslist, Location::NONE);
+  CsgOpNode node(instance, OpenSCADOperator::UNION);
+
   auto it = children.begin();
   std::shared_ptr<const Geometry> operands[2] = {it->second, std::shared_ptr<const Geometry>()};
   try {
@@ -46,15 +46,15 @@ std::shared_ptr<const Geometry> applyMinkowski3D(const Geometry::Geometries& chi
         else if (nef && nef->p3->is_simple()) CGALUtils::convertNefToPolyhedron(*nef->p3, poly);
         else throw 0;
 
-        if ((ps && ps->isConvex()) ||
-            (!ps && CGALUtils::is_weakly_convex(poly))) {
-          PRINTDB("Minkowski: child %d is convex and %s", i % (ps?"PolySet":"Nef"));
+        if ((ps && ps->isConvex()) || (!ps && CGALUtils::is_weakly_convex(poly))) {
+          PRINTDB("Minkowski: child %d is convex and %s", i % (ps ? "PolySet" : "Nef"));
           P[i].push_back(poly);
         } else {
           CGAL_Nef_polyhedron3 decomposed_nef;
 
           if (ps) {
-            PRINTDB("Minkowski: child %d is nonconvex PolySet, transforming to Nef and decomposing...", i);
+            PRINTDB("Minkowski: child %d is nonconvex PolySet, transforming to Nef and decomposing...",
+                    i);
             auto p = CGALUtils::getNefPolyhedronFromGeometry(ps);
             if (p && !p->isEmpty()) decomposed_nef = *p->p3;
           } else {
@@ -73,7 +73,6 @@ std::shared_ptr<const Geometry> applyMinkowski3D(const Geometry::Geometries& chi
               P[i].push_back(poly);
             }
           }
-
 
           PRINTDB("Minkowski: decomposed into %d convex parts", P[i].size());
           t.stop();
@@ -94,12 +93,13 @@ std::shared_ptr<const Geometry> applyMinkowski3D(const Geometry::Geometries& chi
 
           for (int k = 0; k < 2; ++k) {
             auto it = P[k].begin();
-            std::advance(it, k == 0?i:j);
+            std::advance(it, k == 0 ? i : j);
 
             CGAL_Polyhedron const& poly = *it;
             points[k].reserve(poly.size_of_vertices());
 
-            for (CGAL_Polyhedron::Vertex_const_iterator pi = poly.vertices_begin(); pi != poly.vertices_end(); ++pi) {
+            for (CGAL_Polyhedron::Vertex_const_iterator pi = poly.vertices_begin();
+                 pi != poly.vertices_end(); ++pi) {
               CGAL_Polyhedron::Point_3 const& p = pi->point();
               points[k].push_back(conv(p));
             }
@@ -120,7 +120,8 @@ std::shared_ptr<const Geometry> applyMinkowski3D(const Geometry::Geometries& chi
 
           CGAL::Polyhedron_3<Hull_kernel> result;
           t.stop();
-          PRINTDB("Minkowski: Point cloud creation (%d ⨉ %d -> %d) took %f ms", points[0].size() % points[1].size() % minkowski_points.size() % (t.time() * 1000));
+          PRINTDB("Minkowski: Point cloud creation (%d ⨉ %d -> %d) took %f ms",
+                  points[0].size() % points[1].size() % minkowski_points.size() % (t.time() * 1000));
           t.reset();
 
           t.start();
@@ -130,7 +131,8 @@ std::shared_ptr<const Geometry> applyMinkowski3D(const Geometry::Geometries& chi
           std::vector<Hull_kernel::Point_3> strict_points;
           strict_points.reserve(minkowski_points.size());
 
-          for (CGAL::Polyhedron_3<Hull_kernel>::Vertex_iterator i = result.vertices_begin(); i != result.vertices_end(); ++i) {
+          for (CGAL::Polyhedron_3<Hull_kernel>::Vertex_iterator i = result.vertices_begin();
+               i != result.vertices_end(); ++i) {
             Hull_kernel::Point_3 const& p = i->point();
 
             CGAL::Polyhedron_3<Hull_kernel>::Vertex::Halfedge_handle h, e;
@@ -141,17 +143,14 @@ std::shared_ptr<const Geometry> applyMinkowski3D(const Geometry::Geometries& chi
 
             do {
               Hull_kernel::Point_3 const& q = h->opposite()->vertex()->point();
-              if (coplanar && !CGAL::coplanar(p, q,
-                                              h->next_on_vertex()->opposite()->vertex()->point(),
-                                              h->next_on_vertex()->next_on_vertex()->opposite()->vertex()->point())) {
+              if (coplanar && !CGAL::coplanar(
+                                p, q, h->next_on_vertex()->opposite()->vertex()->point(),
+                                h->next_on_vertex()->next_on_vertex()->opposite()->vertex()->point())) {
                 coplanar = false;
               }
 
-
               for (CGAL::Polyhedron_3<Hull_kernel>::Vertex::Halfedge_handle j = h->next_on_vertex();
-                    j != h && !collinear && !coplanar;
-                    j = j->next_on_vertex()) {
-
+                   j != h && !collinear && !coplanar; j = j->next_on_vertex()) {
                 Hull_kernel::Point_3 const& r = j->opposite()->vertex()->point();
                 if (CGAL::collinear(p, q, r)) {
                   collinear = true;
@@ -167,7 +166,6 @@ std::shared_ptr<const Geometry> applyMinkowski3D(const Geometry::Geometries& chi
           result.clear();
           CGAL::convex_hull_3(strict_points.begin(), strict_points.end(), result);
 
-
           t.stop();
           PRINTDB("Minkowski: Computing convex hull took %f s", t.time());
           t.reset();
@@ -179,8 +177,8 @@ std::shared_ptr<const Geometry> applyMinkowski3D(const Geometry::Geometries& chi
       if (it != std::next(children.begin())) operands[0].reset();
 
       auto partToGeom = [&](auto& poly) -> std::shared_ptr<const Geometry> {
-          return CGALUtils::createPolySetFromPolyhedron(poly);
-        };
+        return CGALUtils::createPolySetFromPolyhedron(poly);
+      };
 
       if (result_parts.size() == 1) {
         operands[0] = partToGeom(*result_parts.begin());
@@ -212,7 +210,8 @@ std::shared_ptr<const Geometry> applyMinkowski3D(const Geometry::Geometries& chi
     // If anything throws we simply fall back to Nef Minkowski
     PRINTD("Minkowski: Falling back to Nef Minkowski");
 
-    auto N = std::shared_ptr<const Geometry>(CGALUtils::applyOperator3D(node, children, OpenSCADOperator::MINKOWSKI));
+    auto N = std::shared_ptr<const Geometry>(
+      CGALUtils::applyOperator3D(node, children, OpenSCADOperator::MINKOWSKI));
     return N;
   }
 }

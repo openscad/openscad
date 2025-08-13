@@ -45,17 +45,12 @@
 #include <vector>
 #include <cassert>
 #include <boost/assign/std/vector.hpp>
-using namespace boost::assign; // bring 'operator+=()' into scope
+using namespace boost::assign;  // bring 'operator+=()' into scope
 
-enum class transform_type_e {
-  SCALE,
-  ROTATE,
-  MIRROR,
-  TRANSLATE,
-  MULTMATRIX
-};
+enum class transform_type_e { SCALE, ROTATE, MIRROR, TRANSLATE, MULTMATRIX };
 
-std::shared_ptr<AbstractNode> builtin_scale(const ModuleInstantiation *inst, Arguments arguments, const Children& children)
+std::shared_ptr<AbstractNode> builtin_scale(const ModuleInstantiation *inst, Arguments arguments,
+                                            const Children& children)
 {
   auto node = std::make_shared<TransformNode>(inst, "scale");
 
@@ -67,12 +62,16 @@ std::shared_ptr<AbstractNode> builtin_scale(const ModuleInstantiation *inst, Arg
     if (parameters["v"].getDouble(num)) {
       scalevec.setConstant(num);
     } else {
-      LOG(message_group::Warning, inst->location(), parameters.documentRoot(), "Unable to convert scale(%1$s) parameter to a number, a vec3 or vec2 of numbers or a number", parameters["v"].toEchoStringNoThrow());
+      LOG(message_group::Warning, inst->location(), parameters.documentRoot(),
+          "Unable to convert scale(%1$s) parameter to a number, a vec3 or vec2 of numbers or a number",
+          parameters["v"].toEchoStringNoThrow());
     }
   }
   if (OpenSCAD::rangeCheck) {
-    if (scalevec[0] == 0 || scalevec[1] == 0 || scalevec[2] == 0 || !std::isfinite(scalevec[0])|| !std::isfinite(scalevec[1])|| !std::isfinite(scalevec[2])) {
-      LOG(message_group::Warning, inst->location(), parameters.documentRoot(), "scale(%1$s)", parameters["v"].toEchoStringNoThrow());
+    if (scalevec[0] == 0 || scalevec[1] == 0 || scalevec[2] == 0 || !std::isfinite(scalevec[0]) ||
+        !std::isfinite(scalevec[1]) || !std::isfinite(scalevec[2])) {
+      LOG(message_group::Warning, inst->location(), parameters.documentRoot(), "scale(%1$s)",
+          parameters["v"].toEchoStringNoThrow());
     }
   }
   node->matrix.scale(scalevec);
@@ -80,7 +79,8 @@ std::shared_ptr<AbstractNode> builtin_scale(const ModuleInstantiation *inst, Arg
   return children.instantiate(node);
 }
 
-std::shared_ptr<AbstractNode> builtin_rotate(const ModuleInstantiation *inst, Arguments arguments, const Children& children)
+std::shared_ptr<AbstractNode> builtin_rotate(const ModuleInstantiation *inst, Arguments arguments,
+                                             const Children& children)
 {
   auto node = std::make_shared<TransformNode>(inst, "rotate");
 
@@ -95,9 +95,7 @@ std::shared_ptr<AbstractNode> builtin_rotate(const ModuleInstantiation *inst, Ar
     bool ok = true;
     const auto& vec_a = val_a.toVector();
     switch (vec_a.size()) {
-    default:
-      ok &= false;
-      [[fallthrough]];
+    default: ok &= false; [[fallthrough]];
     case 3:
       ok &= vec_a[2].getDouble(a);
       ok &= !std::isinf(a) && !std::isnan(a);
@@ -116,26 +114,29 @@ std::shared_ptr<AbstractNode> builtin_rotate(const ModuleInstantiation *inst, Ar
       sx = sin_degrees(a);
       cx = cos_degrees(a);
       break;
-    case 0:
-      break;
+    case 0: break;
     }
 
     bool v_supplied = val_v.isDefined();
     if (ok) {
       if (v_supplied) {
-        LOG(message_group::Warning, inst->location(), parameters.documentRoot(), "When parameter a is supplied as vector, v is ignored rotate(a=%1$s, v=%2$s)", val_a.toEchoStringNoThrow(), val_v.toEchoStringNoThrow());
+        LOG(message_group::Warning, inst->location(), parameters.documentRoot(),
+            "When parameter a is supplied as vector, v is ignored rotate(a=%1$s, v=%2$s)",
+            val_a.toEchoStringNoThrow(), val_v.toEchoStringNoThrow());
       }
     } else {
       if (v_supplied) {
-        LOG(message_group::Warning, inst->location(), parameters.documentRoot(), "Problem converting rotate(a=%1$s, v=%2$s) parameter", val_a.toEchoStringNoThrow(), val_v.toEchoStringNoThrow());
+        LOG(message_group::Warning, inst->location(), parameters.documentRoot(),
+            "Problem converting rotate(a=%1$s, v=%2$s) parameter", val_a.toEchoStringNoThrow(),
+            val_v.toEchoStringNoThrow());
       } else {
-        LOG(message_group::Warning, inst->location(), parameters.documentRoot(), "Problem converting rotate(a=%1$s) parameter", val_a.toEchoStringNoThrow());
+        LOG(message_group::Warning, inst->location(), parameters.documentRoot(),
+            "Problem converting rotate(a=%1$s) parameter", val_a.toEchoStringNoThrow());
       }
     }
     Matrix3d M;
-    M << cy * cz,  cz *sx *sy - cx * sz,   cx *cz *sy + sx * sz,
-      cy *sz,  cx *cz + sx * sy * sz,  -cz * sx + cx * sy * sz,
-      -sy,       cy *sx,                  cx *cy;
+    M << cy * cz, cz * sx * sy - cx * sz, cx * cz * sy + sx * sz, cy * sz, cx * cz + sx * sy * sz,
+      -cz * sx + cx * sy * sz, -sy, cy * sx, cx * cy;
     node->matrix.rotate(M);
   } else {
     double a = 0.0;
@@ -147,19 +148,24 @@ std::shared_ptr<AbstractNode> builtin_rotate(const ModuleInstantiation *inst, Ar
     node->matrix.rotate(angle_axis_degrees(aConverted ? a : 0, v));
     if (val_v.isDefined() && !vConverted) {
       if (aConverted) {
-        LOG(message_group::Warning, inst->location(), parameters.documentRoot(), "Problem converting rotate(..., v=%1$s) parameter", val_v.toEchoStringNoThrow());
+        LOG(message_group::Warning, inst->location(), parameters.documentRoot(),
+            "Problem converting rotate(..., v=%1$s) parameter", val_v.toEchoStringNoThrow());
       } else {
-        LOG(message_group::Warning, inst->location(), parameters.documentRoot(), "Problem converting rotate(a=%1$s, v=%2$s) parameter", val_a.toEchoStringNoThrow(), val_v.toEchoStringNoThrow());
+        LOG(message_group::Warning, inst->location(), parameters.documentRoot(),
+            "Problem converting rotate(a=%1$s, v=%2$s) parameter", val_a.toEchoStringNoThrow(),
+            val_v.toEchoStringNoThrow());
       }
     } else if (!aConverted) {
-      LOG(message_group::Warning, inst->location(), parameters.documentRoot(), "Problem converting rotate(a=%1$s) parameter", val_a.toEchoStringNoThrow());
+      LOG(message_group::Warning, inst->location(), parameters.documentRoot(),
+          "Problem converting rotate(a=%1$s) parameter", val_a.toEchoStringNoThrow());
     }
   }
 
   return children.instantiate(node);
 }
 
-std::shared_ptr<AbstractNode> builtin_mirror(const ModuleInstantiation *inst, Arguments arguments, const Children& children)
+std::shared_ptr<AbstractNode> builtin_mirror(const ModuleInstantiation *inst, Arguments arguments,
+                                             const Children& children)
 {
   auto node = std::make_shared<TransformNode>(inst, "mirror");
 
@@ -167,30 +173,31 @@ std::shared_ptr<AbstractNode> builtin_mirror(const ModuleInstantiation *inst, Ar
 
   double x = 1.0, y = 0.0, z = 0.0;
   if (!parameters["v"].getVec3(x, y, z, 0.0)) {
-    LOG(message_group::Warning, inst->location(), parameters.documentRoot(), "Unable to convert mirror(%1$s) parameter to a vec3 or vec2 of numbers", parameters["v"].toEchoStringNoThrow());
+    LOG(message_group::Warning, inst->location(), parameters.documentRoot(),
+        "Unable to convert mirror(%1$s) parameter to a vec3 or vec2 of numbers",
+        parameters["v"].toEchoStringNoThrow());
   }
 
   // x /= sqrt(x*x + y*y + z*z)
   // y /= sqrt(x*x + y*y + z*z)
   // z /= sqrt(x*x + y*y + z*z)
   if (x != 0.0 || y != 0.0 || z != 0.0) {
-    // skip using sqrt to normalize the vector since each element of matrix contributes it with two multiplied terms
-    // instead just divide directly within each matrix element
-    // simplified calculation leads to less float errors
+    // skip using sqrt to normalize the vector since each element of matrix contributes it with two
+    // multiplied terms instead just divide directly within each matrix element simplified calculation
+    // leads to less float errors
     double a = x * x + y * y + z * z;
 
     Matrix4d m;
-    m << 1 - 2 * x * x / a, -2 * y * x / a, -2 * z * x / a, 0,
-      -2 * x * y / a, 1 - 2 * y * y / a, -2 * z * y / a, 0,
-      -2 * x * z / a, -2 * y * z / a, 1 - 2 * z * z / a, 0,
-      0, 0, 0, 1;
+    m << 1 - 2 * x * x / a, -2 * y * x / a, -2 * z * x / a, 0, -2 * x * y / a, 1 - 2 * y * y / a,
+      -2 * z * y / a, 0, -2 * x * z / a, -2 * y * z / a, 1 - 2 * z * z / a, 0, 0, 0, 0, 1;
     node->matrix = m;
   }
 
   return children.instantiate(node);
 }
 
-std::shared_ptr<AbstractNode> builtin_translate(const ModuleInstantiation *inst, Arguments arguments, const Children& children)
+std::shared_ptr<AbstractNode> builtin_translate(const ModuleInstantiation *inst, Arguments arguments,
+                                                const Children& children)
 {
   auto node = std::make_shared<TransformNode>(inst, "translate");
 
@@ -198,17 +205,21 @@ std::shared_ptr<AbstractNode> builtin_translate(const ModuleInstantiation *inst,
 
   Vector3d translatevec(0, 0, 0);
   bool ok = parameters["v"].getVec3(translatevec[0], translatevec[1], translatevec[2], 0.0);
-  ok &= std::isfinite(translatevec[0]) && std::isfinite(translatevec[1]) && std::isfinite(translatevec[2]);
+  ok &=
+    std::isfinite(translatevec[0]) && std::isfinite(translatevec[1]) && std::isfinite(translatevec[2]);
   if (ok) {
     node->matrix.translate(translatevec);
   } else {
-    LOG(message_group::Warning, inst->location(), parameters.documentRoot(), "Unable to convert translate(%1$s) parameter to a vec3 or vec2 of numbers", parameters["v"].toEchoStringNoThrow());
+    LOG(message_group::Warning, inst->location(), parameters.documentRoot(),
+        "Unable to convert translate(%1$s) parameter to a vec3 or vec2 of numbers",
+        parameters["v"].toEchoStringNoThrow());
   }
 
   return children.instantiate(node);
 }
 
-std::shared_ptr<AbstractNode> builtin_multmatrix(const ModuleInstantiation *inst, Arguments arguments, const Children& children)
+std::shared_ptr<AbstractNode> builtin_multmatrix(const ModuleInstantiation *inst, Arguments arguments,
+                                                 const Children& children)
 {
   auto node = std::make_shared<TransformNode>(inst, "multmatrix");
 
@@ -250,155 +261,146 @@ std::string TransformNode::toString() const
   return stream.str();
 }
 
-TransformNode::TransformNode(const ModuleInstantiation *mi, std::string verbose_name) :
-  AbstractNode(mi),
-  matrix(Transform3d::Identity()),
-  _name(std::move(verbose_name))
+TransformNode::TransformNode(const ModuleInstantiation *mi, std::string verbose_name)
+  : AbstractNode(mi), matrix(Transform3d::Identity()), _name(std::move(verbose_name))
 {
 }
 
-std::shared_ptr<const Geometry> TransformNode::dragPoint(const Vector3d &pt, const Vector3d &newpt, DragResult &result)
+std::shared_ptr<const Geometry> TransformNode::dragPoint(const Vector3d& pt, const Vector3d& newpt,
+                                                         DragResult& result)
 {
-  if(!(dragflags&0x80)) {matrix_ = matrix; dragflags |= 0x80; }
-  Transform3d invmat = matrix_.inverse();		
+  if (!(dragflags & 0x80)) {
+    matrix_ = matrix;
+    dragflags |= 0x80;
+  }
+  Transform3d invmat = matrix_.inverse();
   Vector3d pt_tran = invmat * pt;
   Vector3d newpt_tran = invmat * newpt;
   std::shared_ptr<PolySet> result_geom = nullptr;
 
   result_geom = std::make_shared<PolySet>(3);
-  for(int i=0;i<children.size();i++) {
-    auto &child = children[i];	    
+  for (int i = 0; i < children.size(); i++) {
+    auto& child = children[i];
     int fresh = std::isnan(result.anchor[0]);
     std::shared_ptr<const Geometry> child_geom = child->dragPoint(pt_tran, newpt_tran, result);
-    if(fresh && !std::isnan(result.anchor[0])){
-	result.anchor= matrix * result.anchor;	    
+    if (fresh && !std::isnan(result.anchor[0])) {
+      result.anchor = matrix * result.anchor;
     }
     std::shared_ptr<const PolySet> ps = nullptr;
     ps = std::dynamic_pointer_cast<const PolySet>(child_geom);
-    if(ps == nullptr) continue;
-    bool found=false;
-    if(dragflags) 
-    {
-      for(const auto &v:ps->vertices){
-        if((v-pt_tran).norm() < 1e-3) {
-          found=true;
-	  break;
+    if (ps == nullptr) continue;
+    bool found = false;
+    if (dragflags) {
+      for (const auto& v : ps->vertices) {
+        if ((v - pt_tran).norm() < 1e-3) {
+          found = true;
+          break;
         }
       }
     }
-    if(_name == "rotate") {
-      if(dragflags && found) 
-      {
-        result.modname="rotate";
-        result.mods.clear();	
-        double sx=0, sy=0, sz=0;
-        double cx=1, cy=1, cz=1;
+    if (_name == "rotate") {
+      if (dragflags && found) {
+        result.modname = "rotate";
+        result.mods.clear();
+        double sx = 0, sy = 0, sz = 0;
+        double cx = 1, cy = 1, cz = 1;
 
-        if(dragflags & 1) {
-          double newang= atan2(newpt_tran[2], newpt_tran[1]);		  
-          cx=cos(newang);
-          sx=sin(newang);
-	}
-        if(dragflags & 2) {
-          double newang= atan2(newpt_tran[2], newpt_tran[0]);		  
-          cy=cos(newang);
-          sy=sin(newang);
-	}
-        if(dragflags & 4) {
-          double newang= atan2(newpt_tran[1], newpt_tran[0]);		  
-          cz=cos(newang);
-          sz=sin(newang);
-	}
-	        
+        if (dragflags & 1) {
+          double newang = atan2(newpt_tran[2], newpt_tran[1]);
+          cx = cos(newang);
+          sx = sin(newang);
+        }
+        if (dragflags & 2) {
+          double newang = atan2(newpt_tran[2], newpt_tran[0]);
+          cy = cos(newang);
+          sy = sin(newang);
+        }
+        if (dragflags & 4) {
+          double newang = atan2(newpt_tran[1], newpt_tran[0]);
+          cz = cos(newang);
+          sz = sin(newang);
+        }
+
         Matrix3d M;
-        M << cy * cz,  cz *sx *sy - cx * sz,   cx *cz *sy + sx * sz,
-        cy *sz,  cx *cz + sx * sy * sz,  -cz * sx + cx * sy * sz,
-        -sy,       cy *sx,                  cx *cy;
-        matrix=matrix_;
+        M << cy * cz, cz * sx * sy - cx * sz, cx * cz * sy + sx * sz, cy * sz, cx * cz + sx * sy * sz,
+          -cz * sx + cx * sy * sz, -sy, cy * sx, cx * cy;
+        matrix = matrix_;
         matrix.rotate(M);
-	result.anchor =matrix *pt_tran;
-        if(dragflags & 1) {
-	  DragMod mod;
-	  mod.index=0;
-	  mod.name="angle";
-	  mod.arrinfo.push_back(0);
-          double newang= atan2(matrix(2,0),matrix(1,0));		  
-	  mod.value=newang*180/M_PI;
-	  result.mods.push_back(mod);
-        }  
-        if(dragflags & 2) {
-	  DragMod mod;
-	  mod.index=0;
-	  mod.name="angle";
-	  mod.arrinfo.push_back(1);
-          double newang= atan2(matrix(2,0),matrix(0,0));		  
-	  mod.value=newang*180/M_PI;
-	  result.mods.push_back(mod);
-        }  
-        if(dragflags & 4) {
-	  DragMod mod;
-	  mod.index=0;
-	  mod.name="angle";
-	  mod.arrinfo.push_back(2);
-          double newang= atan2(matrix(1,0),matrix(0,0));		  
-	  mod.value=newang*180/M_PI;
-	  result.mods.push_back(mod);
-        }  
+        result.anchor = matrix * pt_tran;
+        if (dragflags & 1) {
+          DragMod mod;
+          mod.index = 0;
+          mod.name = "angle";
+          mod.arrinfo.push_back(0);
+          double newang = atan2(matrix(2, 0), matrix(1, 0));
+          mod.value = newang * 180 / M_PI;
+          result.mods.push_back(mod);
+        }
+        if (dragflags & 2) {
+          DragMod mod;
+          mod.index = 0;
+          mod.name = "angle";
+          mod.arrinfo.push_back(1);
+          double newang = atan2(matrix(2, 0), matrix(0, 0));
+          mod.value = newang * 180 / M_PI;
+          result.mods.push_back(mod);
+        }
+        if (dragflags & 4) {
+          DragMod mod;
+          mod.index = 0;
+          mod.name = "angle";
+          mod.arrinfo.push_back(2);
+          double newang = atan2(matrix(1, 0), matrix(0, 0));
+          mod.value = newang * 180 / M_PI;
+          result.mods.push_back(mod);
+        }
       }
-    }	    
-    if(_name == "translate") {
-      if(dragflags && found) 
-      {
-        Vector3d tranvect(0,0,0);
-        for(i=0;i<3;i++)
-	  if(dragflags& ( 1<<i)) 
-             tranvect[i]=newpt_tran[i] - pt_tran[i];		  
-		  
-        matrix=matrix_;
-        matrix.translate(tranvect); 
-	result.anchor =matrix *pt_tran;
+    }
+    if (_name == "translate") {
+      if (dragflags && found) {
+        Vector3d tranvect(0, 0, 0);
+        for (i = 0; i < 3; i++)
+          if (dragflags & (1 << i)) tranvect[i] = newpt_tran[i] - pt_tran[i];
+
+        matrix = matrix_;
+        matrix.translate(tranvect);
+        result.anchor = matrix * pt_tran;
       }
-    }	    
-    result_geom->vertices = ps->vertices; // TODO concatenate vertices
+    }
+    result_geom->vertices = ps->vertices;  // TODO concatenate vertices
     result_geom->transform(matrix_);
-  }	  
+  }
   return result_geom;
 }
 
-std::string TransformNode::name() const
-{
-  return "transform";
-}
+std::string TransformNode::name() const { return "transform"; }
 
-std::string TransformNode::verbose_name() const
-{
-  return _name;
-}
+std::string TransformNode::verbose_name() const { return _name; }
 
 void register_builtin_transform()
 {
   Builtins::init("scale", new BuiltinModule(builtin_scale),
-  {
-    "scale([x, y, z])",
-  });
+                 {
+                   "scale([x, y, z])",
+                 });
 
   Builtins::init("rotate", new BuiltinModule(builtin_rotate),
-  {
-    "rotate([x, y, z])",
-  });
+                 {
+                   "rotate([x, y, z])",
+                 });
 
   Builtins::init("mirror", new BuiltinModule(builtin_mirror),
-  {
-    "mirror([x, y, z])",
-  });
+                 {
+                   "mirror([x, y, z])",
+                 });
 
   Builtins::init("translate", new BuiltinModule(builtin_translate),
-  {
-    "translate([x, y, z])",
-  });
+                 {
+                   "translate([x, y, z])",
+                 });
 
   Builtins::init("multmatrix", new BuiltinModule(builtin_multmatrix),
-  {
-    "multmatrix(matrix_4_by_4)",
-  });
+                 {
+                   "multmatrix(matrix_4_by_4)",
+                 });
 }

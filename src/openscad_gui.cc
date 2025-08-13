@@ -95,7 +95,8 @@ namespace {
 // field, see:
 // UIUtils::blendForBackgroundColorStyleSheet(const QColor& input, const QColor& blend)
 
-bool isDarkMode() {
+bool isDarkMode()
+{
 #if QT_VERSION >= QT_VERSION_CHECK(6, 5, 0)
   const auto scheme = QGuiApplication::styleHints()->colorScheme();
   return scheme == Qt::ColorScheme::Dark;
@@ -104,16 +105,16 @@ bool isDarkMode() {
   const auto& text = defaultPalette.color(QPalette::WindowText);
   const auto& window = defaultPalette.color(QPalette::Window);
   return text.lightness() > window.lightness();
-#endif // QT_VERSION
+#endif  // QT_VERSION
 }
 
-}
+}  // namespace
 
 namespace {
 
 // Only if "fileName" is not absolute, prepend the "absoluteBase".
-QString assemblePath(const std::filesystem::path& absoluteBaseDir,
-                     const std::string& fileName) {
+QString assemblePath(const std::filesystem::path& absoluteBaseDir, const std::string& fileName)
+{
   if (fileName.empty()) return "";
   auto qsDir = QString::fromLocal8Bit(absoluteBaseDir.generic_string().c_str());
   auto qsFile = QString::fromLocal8Bit(fileName.c_str());
@@ -122,20 +123,15 @@ QString assemblePath(const std::filesystem::path& absoluteBaseDir,
   return fileInfo.absoluteFilePath();
 }
 
-
-void dialogThreadFunc(FontCacheInitializer *initializer)
-{
-  initializer->run();
-}
+void dialogThreadFunc(FontCacheInitializer *initializer) { initializer->run(); }
 
 void dialogInitHandler(FontCacheInitializer *initializer, void *)
 {
   QFutureWatcher<void> futureWatcher;
-  QObject::connect(&futureWatcher, &QFutureWatcher<void>::finished, scadApp, &OpenSCADApp::hideFontCacheDialog);
+  QObject::connect(&futureWatcher, &QFutureWatcher<void>::finished, scadApp,
+                   &OpenSCADApp::hideFontCacheDialog);
 
-  auto future = QtConcurrent::run([initializer] {
-    return dialogThreadFunc(initializer);
-  });
+  auto future = QtConcurrent::run([initializer] { return dialogThreadFunc(initializer); });
   futureWatcher.setFuture(future);
 
   // We don't always get the started() signal, so we start manually
@@ -150,16 +146,18 @@ void dialogInitHandler(FontCacheInitializer *initializer, void *)
 }
 
 #ifdef Q_OS_WIN
-void registerDefaultIcon(QString applicationFilePath) {
+void registerDefaultIcon(QString applicationFilePath)
+{
   // Not using cached instance here, so this needs to be in a
   // separate scope to ensure the QSettings instance is released
   // directly after use.
   QSettings reg_setting(QLatin1String("HKEY_CURRENT_USER"), QSettings::NativeFormat);
   auto appPath = QDir::toNativeSeparators(applicationFilePath + QLatin1String(",1"));
-  reg_setting.setValue(QLatin1String("Software/Classes/OpenSCAD_File/DefaultIcon/Default"), QVariant(appPath));
+  reg_setting.setValue(QLatin1String("Software/Classes/OpenSCAD_File/DefaultIcon/Default"),
+                       QVariant(appPath));
 }
 #else
-void registerDefaultIcon(const QString&) { }
+void registerDefaultIcon(const QString&) {}
 #endif
 
 }  // namespace
@@ -170,7 +168,8 @@ void registerDefaultIcon(const QString&) { }
 #define DESKTOP_FILENAME "openscad"
 #endif
 
-int gui(std::vector<std::string>& inputFiles, const std::filesystem::path& original_path, int argc, char **argv, const std::string& gui_test, const bool reset_window_settings)
+int gui(std::vector<std::string>& inputFiles, const std::filesystem::path& original_path, int argc,
+        char **argv, const std::string& gui_test, const bool reset_window_settings)
 {
   OpenSCADApp app(argc, argv);
   QIcon::setThemeName(isDarkMode() ? "chokusen-dark" : "chokusen");
@@ -205,7 +204,7 @@ int gui(std::vector<std::string>& inputFiles, const std::filesystem::path& origi
     localization_init();
   }
   if (reset_window_settings) {
-    const auto keys = std::array<std::string, 20> {
+    const auto keys = std::array<std::string, 20>{
       "editor/fontfamily",
       "editor/fontsize",
       "advanced/applicationFontSize",
@@ -245,7 +244,8 @@ int gui(std::vector<std::string>& inputFiles, const std::filesystem::path& origi
   updater->init();
 #endif
 
-  QObject::connect(GlobalPreferences::inst(), &Preferences::applicationFontChanged, &app, &OpenSCADApp::setApplicationFont);
+  QObject::connect(GlobalPreferences::inst(), &Preferences::applicationFontChanged, &app,
+                   &OpenSCADApp::setApplicationFont);
   GlobalPreferences::inst()->fireApplicationFontChanged();
 
   set_render_color_scheme(arg_colorscheme, false);
@@ -278,11 +278,11 @@ int gui(std::vector<std::string>& inputFiles, const std::filesystem::path& origi
   }
 
   QStringList inputFilesList;
-  for (const auto& infile: inputFiles) {
+  for (const auto& infile : inputFiles) {
     inputFilesList.append(assemblePath(original_path, infile));
   }
   new MainWindow(inputFilesList);
-  QObject::connect(&app, &QCoreApplication::aboutToQuit, [](){
+  QObject::connect(&app, &QCoreApplication::aboutToQuit, []() {
     QSettingsCached{}.release();
 #ifdef Q_OS_MACOS
     CocoaUtils::endApplication();
@@ -329,17 +329,16 @@ int gui(std::vector<std::string>& inputFiles, const std::filesystem::path& origi
 #ifdef ENABLE_GUI_TESTS
   // Adds a singleshot timer that will be executed when the application will be started.
   // the timer validates that each mainwindow respects the expected UX behavior.
-  if(gui_test != "none"){
-      QTimer::singleShot(0, [&]()
-      {
-          int failureCount=0;
-          for(auto w : app.windowManager.getWindows()){
-              failureCount+=runAllTest(w);
-          }
-          app.exit(failureCount);
-      });
+  if (gui_test != "none") {
+    QTimer::singleShot(0, [&]() {
+      int failureCount = 0;
+      for (auto w : app.windowManager.getWindows()) {
+        failureCount += runAllTest(w);
+      }
+      app.exit(failureCount);
+    });
   }
-#endif // ENABLE_GUI_TESTS
+#endif  // ENABLE_GUI_TESTS
 
   InputDriverManager::instance()->init();
   return app.exec();

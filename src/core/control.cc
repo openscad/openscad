@@ -49,25 +49,33 @@ static std::shared_ptr<AbstractNode> lazyUnionNode(const ModuleInstantiation *in
   }
 }
 
-static boost::optional<size_t> validChildIndex(int n, const Children *children, const ModuleInstantiation *inst, const std::shared_ptr<const Context>& context)
+static boost::optional<size_t> validChildIndex(int n, const Children *children,
+                                               const ModuleInstantiation *inst,
+                                               const std::shared_ptr<const Context>& context)
 {
   if (n < 0 || n >= static_cast<int>(children->size())) {
-    LOG(message_group::Warning, inst->location(), context->documentRoot(), "Children index (%1$d) out of bounds (%2$d children)", n, children->size());
+    LOG(message_group::Warning, inst->location(), context->documentRoot(),
+        "Children index (%1$d) out of bounds (%2$d children)", n, children->size());
     return boost::none;
   }
   return size_t(n);
 }
 
-static boost::optional<size_t> validChildIndex(const Value& value, const Children *children, const ModuleInstantiation *inst, const std::shared_ptr<const Context>& context)
+static boost::optional<size_t> validChildIndex(const Value& value, const Children *children,
+                                               const ModuleInstantiation *inst,
+                                               const std::shared_ptr<const Context>& context)
 {
   if (value.type() != Value::Type::NUMBER) {
-    LOG(message_group::Warning, inst->location(), context->documentRoot(), "Bad parameter type (%1$s) for children, only accept: empty, number, vector, range.", value.toString());
+    LOG(message_group::Warning, inst->location(), context->documentRoot(),
+        "Bad parameter type (%1$s) for children, only accept: empty, number, vector, range.",
+        value.toString());
     return boost::none;
   }
   return validChildIndex(static_cast<int>(value.toDouble()), children, inst, context);
 }
 
-static std::shared_ptr<AbstractNode> builtin_child(const ModuleInstantiation *inst, const std::shared_ptr<const Context>& context)
+static std::shared_ptr<AbstractNode> builtin_child(const ModuleInstantiation *inst,
+                                                   const std::shared_ptr<const Context>& context)
 {
   LOG(message_group::Deprecated, "child() will be removed in future releases. Use children() instead.");
 
@@ -75,7 +83,8 @@ static std::shared_ptr<AbstractNode> builtin_child(const ModuleInstantiation *in
 
   BuiltinModule::noChildren(inst, arguments);
 
-  Parameters parameters = Parameters::parse(std::move(arguments), inst->location(), {}, std::vector<std::string>{"index"});
+  Parameters parameters =
+    Parameters::parse(std::move(arguments), inst->location(), {}, std::vector<std::string>{"index"});
   const Children *children = context->user_module_children();
   if (!children) {
     // child() called outside any user module
@@ -94,13 +103,15 @@ static std::shared_ptr<AbstractNode> builtin_child(const ModuleInstantiation *in
   return children->instantiate(lazyUnionNode(inst), {*index});
 }
 
-static std::shared_ptr<AbstractNode> builtin_children(const ModuleInstantiation *inst, const std::shared_ptr<const Context>& context)
+static std::shared_ptr<AbstractNode> builtin_children(const ModuleInstantiation *inst,
+                                                      const std::shared_ptr<const Context>& context)
 {
   Arguments arguments{inst->arguments, context};
 
   BuiltinModule::noChildren(inst, arguments);
 
-  Parameters parameters = Parameters::parse(std::move(arguments), inst->location(), {}, std::vector<std::string>{"index"});
+  Parameters parameters =
+    Parameters::parse(std::move(arguments), inst->location(), {}, std::vector<std::string>{"index"});
   const Children *children = context->user_module_children();
   if (!children) {
     // children() called outside any user module
@@ -146,12 +157,15 @@ static std::shared_ptr<AbstractNode> builtin_children(const ModuleInstantiation 
     return children->instantiate(lazyUnionNode(inst), indices);
   } else {
     // Invalid argument
-    LOG(message_group::Warning, inst->location(), parameters.documentRoot(), "Bad parameter type (%1$s) for children, only accept: empty, number, vector, range", parameters["index"].toEchoStringNoThrow());
+    LOG(message_group::Warning, inst->location(), parameters.documentRoot(),
+        "Bad parameter type (%1$s) for children, only accept: empty, number, vector, range",
+        parameters["index"].toEchoStringNoThrow());
     return {};
   }
 }
 
-static std::shared_ptr<AbstractNode> builtin_echo(const ModuleInstantiation *inst, Arguments arguments, const Children& children)
+static std::shared_ptr<AbstractNode> builtin_echo(const ModuleInstantiation *inst, Arguments arguments,
+                                                  const Children& children)
 {
   LOG(message_group::Echo, "%1$s", STR(arguments));
 
@@ -163,7 +177,8 @@ static std::shared_ptr<AbstractNode> builtin_echo(const ModuleInstantiation *ins
   return node;
 }
 
-static std::shared_ptr<AbstractNode> builtin_assert(const ModuleInstantiation *inst, const std::shared_ptr<const Context>& context)
+static std::shared_ptr<AbstractNode> builtin_assert(const ModuleInstantiation *inst,
+                                                    const std::shared_ptr<const Context>& context)
 {
   Assert::performAssert(inst->arguments, inst->location(), context);
 
@@ -175,12 +190,16 @@ static std::shared_ptr<AbstractNode> builtin_assert(const ModuleInstantiation *i
   return node;
 }
 
-static std::shared_ptr<AbstractNode> builtin_let(const ModuleInstantiation *inst, const std::shared_ptr<const Context>& context)
+static std::shared_ptr<AbstractNode> builtin_let(const ModuleInstantiation *inst,
+                                                 const std::shared_ptr<const Context>& context)
 {
-  return Children(&inst->scope, *Let::sequentialAssignmentContext(inst->arguments, inst->location(), context)).instantiate(lazyUnionNode(inst));
+  return Children(&inst->scope,
+                  *Let::sequentialAssignmentContext(inst->arguments, inst->location(), context))
+    .instantiate(lazyUnionNode(inst));
 }
 
-static std::shared_ptr<AbstractNode> builtin_assign(const ModuleInstantiation *inst, const std::shared_ptr<const Context>& context)
+static std::shared_ptr<AbstractNode> builtin_assign(const ModuleInstantiation *inst,
+                                                    const std::shared_ptr<const Context>& context)
 {
   // We create a new context to avoid arguments from influencing each other
   // -> parallel evaluation. This is to be backwards compatible.
@@ -188,11 +207,14 @@ static std::shared_ptr<AbstractNode> builtin_assign(const ModuleInstantiation *i
   ContextHandle<Context> assignContext{Context::create<Context>(context)};
   for (auto& argument : arguments) {
     if (!argument.name) {
-      LOG(message_group::Warning, inst->location(), context->documentRoot(), "Assignment without variable name %1$s", argument->toEchoStringNoThrow());
+      LOG(message_group::Warning, inst->location(), context->documentRoot(),
+          "Assignment without variable name %1$s", argument->toEchoStringNoThrow());
     } else {
       if (assignContext->lookup_local_variable(*argument.name)) {
         // TODO Should maybe quote the entire assignment with a new quoteExpr() or quoteStmt().
-        LOG(message_group::Warning, inst->location(), context->documentRoot(), "Duplicate variable assignment %1$s = %2$s", quoteVar(*argument.name), argument->toEchoStringNoThrow());
+        LOG(message_group::Warning, inst->location(), context->documentRoot(),
+            "Duplicate variable assignment %1$s = %2$s", quoteVar(*argument.name),
+            argument->toEchoStringNoThrow());
       }
       assignContext->set_variable(*argument.name, std::move(argument.value));
     }
@@ -201,44 +223,42 @@ static std::shared_ptr<AbstractNode> builtin_assign(const ModuleInstantiation *i
   return Children(&inst->scope, *assignContext).instantiate(lazyUnionNode(inst));
 }
 
-static std::shared_ptr<AbstractNode> builtin_for(const ModuleInstantiation *inst, const std::shared_ptr<const Context>& context)
+static std::shared_ptr<AbstractNode> builtin_for(const ModuleInstantiation *inst,
+                                                 const std::shared_ptr<const Context>& context)
 {
   auto node = lazyUnionNode(inst);
 
   // special case: if user appends "union=false" then pass all child nodes
   // of for() loop to the parent node as if they were declared there.
   std::shared_ptr<GroupNode> gr;
-  if (Feature::ExperimentalSkin.is_enabled()
-    && inst->arguments.size()>=2 
-    && inst->arguments[1]->getName()=="union"
-    && (gr = std::dynamic_pointer_cast<GroupNode>(node))
-  )
+  if (Feature::ExperimentalSkin.is_enabled() && inst->arguments.size() >= 2 &&
+      inst->arguments[1]->getName() == "union" && (gr = std::dynamic_pointer_cast<GroupNode>(node)))
     gr->setImpliedUnion(inst->arguments[1]->getExpr()->evaluate(context).toBool());
 
   if (!inst->arguments.empty()) {
     LcFor::forEach(inst->arguments, inst->location(), context,
-                   [inst, node] (const std::shared_ptr<const Context>& iterationContext) {
-      Children(&inst->scope, iterationContext).instantiate(node);
-    }
-                   );
+                   [inst, node](const std::shared_ptr<const Context>& iterationContext) {
+                     Children(&inst->scope, iterationContext).instantiate(node);
+                   });
   }
   return node;
 }
 
-static std::shared_ptr<AbstractNode> builtin_intersection_for(const ModuleInstantiation *inst, const std::shared_ptr<const Context>& context)
+static std::shared_ptr<AbstractNode> builtin_intersection_for(
+  const ModuleInstantiation *inst, const std::shared_ptr<const Context>& context)
 {
   auto node = std::make_shared<AbstractIntersectionNode>(inst);
   if (!inst->arguments.empty()) {
     LcFor::forEach(inst->arguments, inst->location(), context,
-                   [inst, node] (const std::shared_ptr<const Context>& iterationContext) {
-      Children(&inst->scope, iterationContext).instantiate(node);
-    }
-                   );
+                   [inst, node](const std::shared_ptr<const Context>& iterationContext) {
+                     Children(&inst->scope, iterationContext).instantiate(node);
+                   });
   }
   return node;
 }
 
-static std::shared_ptr<AbstractNode> builtin_if(const ModuleInstantiation *inst, const std::shared_ptr<const Context>& context)
+static std::shared_ptr<AbstractNode> builtin_if(const ModuleInstantiation *inst,
+                                                const std::shared_ptr<const Context>& context)
 {
   Arguments arguments{inst->arguments, context};
   const auto *ifelse = dynamic_cast<const IfElseModuleInstantiation *>(inst);
@@ -258,49 +278,49 @@ void register_builtin_control()
   Builtins::init("child", new BuiltinModule(builtin_child));
 
   Builtins::init("children", new BuiltinModule(builtin_children),
-  {
-    "children()",
-    "children(number)",
-    "children([start : step : end])",
-    "children([start : end])",
-    "children([vector])",
-  });
+                 {
+                   "children()",
+                   "children(number)",
+                   "children([start : step : end])",
+                   "children([start : end])",
+                   "children([vector])",
+                 });
 
   Builtins::init("echo", new BuiltinModule(builtin_echo),
-  {
-    "echo(arg, ...)",
-  });
+                 {
+                   "echo(arg, ...)",
+                 });
 
   Builtins::init("assert", new BuiltinModule(builtin_assert),
-  {
-    "assert(boolean)",
-    "assert(boolean, string)",
-  });
+                 {
+                   "assert(boolean)",
+                   "assert(boolean, string)",
+                 });
 
   Builtins::init("for", new BuiltinModule(builtin_for),
-  {
-    "for(iter = [start : increment : end])",
-    "for(iter = [start : end])",
-    "for(iter = [vector])",
-    "for(iter = [start : increment : end],boolean)",
-    "for(iter = [start : end],boolean)",
-    "for(iter = [vector],boolean)",
-  });
+                 {
+                   "for(iter = [start : increment : end])",
+                   "for(iter = [start : end])",
+                   "for(iter = [vector])",
+                   "for(iter = [start : increment : end],boolean)",
+                   "for(iter = [start : end],boolean)",
+                   "for(iter = [vector],boolean)",
+                 });
 
   Builtins::init("let", new BuiltinModule(builtin_let),
-  {
-    "let(arg, ...) expression",
-  });
+                 {
+                   "let(arg, ...) expression",
+                 });
 
   Builtins::init("intersection_for", new BuiltinModule(builtin_intersection_for),
-  {
-    "intersection_for(iter = [start : increment : end])",
-    "intersection_for(iter = [start : end])",
-    "intersection_for(iter = [vector])",
-  });
+                 {
+                   "intersection_for(iter = [start : increment : end])",
+                   "intersection_for(iter = [start : end])",
+                   "intersection_for(iter = [vector])",
+                 });
 
   Builtins::init("if", new BuiltinModule(builtin_if),
-  {
-    "if(boolean)",
-  });
+                 {
+                   "if(boolean)",
+                 });
 }

@@ -53,6 +53,7 @@ public:
   [[nodiscard]] const std::string& get_file() const;
   [[nodiscard]] const uint32_t get_hash() const;
   bool operator<(const FontInfo& rhs) const;
+
 private:
   std::string family;
   std::string style;
@@ -70,24 +71,22 @@ using FontInfoList = std::vector<FontInfo>;
 class FontCacheInitializer
 {
 public:
-  FontCacheInitializer(FcConfig *config) : config(config) { }
+  FontCacheInitializer(FcConfig *config) : config(config) {}
   void run() { FcConfigBuildFonts(config); }
+
 private:
   FcConfig *config;
 };
 
-struct FontFace
-{
+struct FontFace {
   FT_Face face_;
   std::vector<std::string> features_;
 
-  FontFace(FT_Face face, std::vector<std::string> features)
-    : face_(face), features_(std::move(features)) {
+  FontFace(FT_Face face, std::vector<std::string> features) : face_(face), features_(std::move(features))
+  {
   }
 
-  virtual ~FontFace() {
-    FT_Done_Face(face_);
-  }
+  virtual ~FontFace() { FT_Done_Face(face_); }
 };
 
 using FontFacePtr = std::shared_ptr<const FontFace>;
@@ -112,7 +111,7 @@ public:
 
   static FontCache *instance();
 
-  using InitHandlerFunc = void (FontCacheInitializer *, void *);
+  using InitHandlerFunc = void(FontCacheInitializer *, void *);
   static void registerProgressHandler(InitHandlerFunc *handler, void *userdata = nullptr);
 
 private:
@@ -140,4 +139,3 @@ private:
   [[nodiscard]] FontFacePtr find_face_fontconfig(const std::string& font) const;
   bool try_charmap(const FontFacePtr& face_ptr, int platform_id, int encoding_id) const;
 };
-

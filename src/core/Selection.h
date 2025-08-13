@@ -28,17 +28,16 @@
 #include "geometry/linalg.h"
 
 enum class SelectionType {
-	SELECTION_POINT, 
-	SELECTION_SEGMENT,
-	SELECTION_FACE,
-	SELECTION_HANDLE,
-	SELECTION_INVALID
+  SELECTION_POINT,
+  SELECTION_SEGMENT,
+  SELECTION_FACE,
+  SELECTION_HANDLE,
+  SELECTION_INVALID
 };
 
 struct SelectedObject {
-	int ind;
-	SelectionType type;
-	std::vector<Vector3d> pt;
-	std::string name;
+  int ind;
+  SelectionType type;
+  std::vector<Vector3d> pt;
+  std::string name;
 };
-

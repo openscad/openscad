@@ -15,7 +15,11 @@
  */
 struct Edge1d {
   Edge1d() = default;
-  Edge1d(double begin, double end){this->begin=begin; this->end=end; } 
+  Edge1d(double begin, double end)
+  {
+    this->begin = begin;
+    this->end = end;
+  }
   double begin, end;
   bool positive{true};
   [[nodiscard]] BoundingBox getBoundingBox() const;
@@ -23,7 +27,8 @@ struct Edge1d {
 
 class Barcode1d : public Geometry
 {
-  enum class Transform3dState { NONE= 0, PENDING= 1, CACHED= 2 };
+  enum class Transform3dState { NONE = 0, PENDING = 1, CACHED = 2 };
+
 public:
   VISITABLE_GEOMETRY();
   Barcode1d() = default;
@@ -35,11 +40,12 @@ public:
   [[nodiscard]] bool isEmpty() const override;
   [[nodiscard]] std::unique_ptr<Geometry> copy() const override;
   [[nodiscard]] size_t numFacets() const override { return 1; }
-  void addEdge(const Edge1d &edge) {
+  void addEdge(const Edge1d& edge)
+  {
     if (trans3dState != Transform3dState::NONE) mergeTrans3d();
     this->theedges.push_back(edge);
   }
-  [[nodiscard]] std::unique_ptr<PolySet> tessellate(bool in3d= false) const;
+  [[nodiscard]] std::unique_ptr<PolySet> tessellate(bool in3d = false) const;
   [[nodiscard]] double area() const;
 
   using Edges1d = std::vector<Edge1d>;
@@ -47,28 +53,34 @@ public:
   //// It would be better to fix the class relationships, so that Barcode1d does
   //// not inherit an unused 3d transform function.
   //// But that will likely require significant refactoring.
-  const Edges1d &edges() const { return trans3dState == Transform3dState::NONE? theedges : transformedEdges(); }
-  const Edges1d &untransformedEdges() const { return theedges; }
-  const Edges1d &transformedEdges() const;
+  const Edges1d& edges() const
+  {
+    return trans3dState == Transform3dState::NONE ? theedges : transformedEdges();
+  }
+  const Edges1d& untransformedEdges() const { return theedges; }
+  const Edges1d& transformedEdges() const;
   using Geometry::transform;
 
   void transform(const Transform2d& mat);
-  void transform3d(const Transform3d &mat);
+  void transform3d(const Transform3d& mat);
   bool hasTransform3d() const { return trans3dState != Transform3dState::NONE; }
-  const Transform3d &getTransform3d() const {
+  const Transform3d& getTransform3d() const
+  {
     // lazy initialization doesn't actually violate 'const'
     if (trans3dState == Transform3dState::NONE)
-      const_cast<Barcode1d*>(this)->trans3d= Transform3d::Identity();
+      const_cast<Barcode1d *>(this)->trans3d = Transform3d::Identity();
     return trans3d;
   }
   void resize(const Vector2d& newsize, const Eigen::Matrix<bool, 2, 1>& autosize);
-  void resize(const Vector3d& newsize, const Eigen::Matrix<bool, 3, 1>& autosize) override {
+  void resize(const Vector3d& newsize, const Eigen::Matrix<bool, 3, 1>& autosize) override
+  {
     resize(Vector2d(newsize[0], newsize[1]), Eigen::Matrix<bool, 2, 1>(autosize[0], autosize[1]));
   }
 
   [[nodiscard]] bool isSanitized() const { return this->sanitized; }
   void setSanitized(bool s) { this->sanitized = s; }
   [[nodiscard]] bool is_convex() const;
+
 private:
   Edges1d theedges;
   bool sanitized{false};
@@ -76,5 +88,5 @@ private:
   Transform3d trans3d;
   Edges1d trans3dEdges;
   void mergeTrans3d();
-  void applyTrans3dToEdges(Barcode1d::Edges1d &edges) const;
+  void applyTrans3dToEdges(Barcode1d::Edges1d& edges) const;
 };

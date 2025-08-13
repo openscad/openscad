@@ -8,6 +8,7 @@ class Tree;
 class CGALWorker : public QObject
 {
   Q_OBJECT;
+
 public:
   CGALWorker();
   ~CGALWorker() override;
@@ -22,7 +23,6 @@ signals:
   void done(std::shared_ptr<const class Geometry>);
 
 protected:
-
   class QThread *thread;
   const class Tree *tree;
 };

@@ -47,11 +47,13 @@ CGALNefGeometry& CGALNefGeometry::operator-=(const CGALNefGeometry& other)
   return *this;
 }
 
-// Note: this is only the fallback method in case of failure in CGALUtils::applyMinkowski (see: cgalutils-applyops.cc)
+// Note: this is only the fallback method in case of failure in CGALUtils::applyMinkowski (see:
+// cgalutils-applyops.cc)
 CGALNefGeometry& CGALNefGeometry::minkowski(const CGALNefGeometry& other)
 {
   // It is required to construct copies of our const input operands here.
-  // "Postcondition: If either of the input polyhedra is non-convex, it is modified during the computation,
+  // "Postcondition: If either of the input polyhedra is non-convex, it is modified during the
+  // computation,
   //  i.e., it is decomposed into convex pieces."
   // from https://doc.cgal.org/latest/Minkowski_sum_3/group__PkgMinkowskiSum3Ref.html
   CGAL_Nef_polyhedron3 op1(*this->p3);
@@ -69,10 +71,7 @@ size_t CGALNefGeometry::memsize() const
   return memsize;
 }
 
-bool CGALNefGeometry::isEmpty() const
-{
-  return !this->p3 || this->p3->is_empty();
-}
+bool CGALNefGeometry::isEmpty() const { return !this->p3 || this->p3->is_empty(); }
 
 BoundingBox CGALNefGeometry::getBoundingBox() const
 {
@@ -87,22 +86,16 @@ BoundingBox CGALNefGeometry::getBoundingBox() const
   return result;
 }
 
-void CGALNefGeometry::resize(const Vector3d& newsize,
-                                 const Eigen::Matrix<bool, 3, 1>& autosize)
+void CGALNefGeometry::resize(const Vector3d& newsize, const Eigen::Matrix<bool, 3, 1>& autosize)
 {
   // Based on resize() in Giles Bathgate's RapCAD (but not exactly)
   if (this->isEmpty()) return;
 
-  transform(
-    CGALUtils::computeResizeTransform(
-      CGALUtils::boundingBox(*this->p3),
-      getDimension(), newsize, autosize));
+  transform(CGALUtils::computeResizeTransform(CGALUtils::boundingBox(*this->p3), getDimension(), newsize,
+                                              autosize));
 }
 
-std::string CGALNefGeometry::dump() const
-{
-  return OpenSCAD::dump_svg(*this->p3);
-}
+std::string CGALNefGeometry::dump() const { return OpenSCAD::dump_svg(*this->p3); }
 
 void CGALNefGeometry::transform(const Transform3d& matrix)
 {

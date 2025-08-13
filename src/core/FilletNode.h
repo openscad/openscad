@@ -13,12 +13,11 @@ public:
   {
     std::ostringstream stream;
     stream << "fillet( r = " << r << " fn = " << fn << " minang = " << minang << " )";
-    return  stream.str();
+    return stream.str();
   }
   std::string name() const override { return "fillet"; }
   std::unique_ptr<const Geometry> createGeometry() const override;
   double r;
   double minang;
-  int fn=2;
+  int fn = 2;
 };
-

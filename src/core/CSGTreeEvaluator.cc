@@ -72,7 +72,6 @@ void CSGTreeEvaluator::applyToChildren(State& state, const AbstractNode& node, O
     if (t2 && !t1) {
       t1 = t2;
     } else if (t2 && t1) {
-
       std::shared_ptr<CSGNode> t;
       // Handle background
       // Background objects are simply moved to backgroundNodes
@@ -84,10 +83,10 @@ void CSGTreeEvaluator::applyToChildren(State& state, const AbstractNode& node, O
         this->backgroundNodes.push_back(t1);
       } else {
         auto t1l = std::dynamic_pointer_cast<CSGLeaf>(t1);
-	if(t1l != nullptr && t1l->is_2d) {
-	  Transform3d &m1 = t1l->matrix;
-	  t2->applyMatrix(m1);
-	}
+        if (t1l != nullptr && t1l->is_2d) {
+          Transform3d& m1 = t1l->matrix;
+          t2->applyMatrix(m1);
+        }
         t = CSGOperation::createCSGNode(op, t1, t2);
       }
       // Handle highlight
@@ -100,8 +99,7 @@ void CSGTreeEvaluator::applyToChildren(State& state, const AbstractNode& node, O
         }
         break;
       case OpenSCADOperator::INTERSECTION:
-        if (t && !t->isEmptySet() && t != t1 && t != t2 &&
-            t1->isHighlight() && t2->isHighlight()) {
+        if (t && !t->isEmptySet() && t != t1 && t != t2 && t1->isHighlight() && t2->isHighlight()) {
           t->setHighlight(true);
         } else {
           if (t != t1 && t1->isHighlight()) {
@@ -113,8 +111,7 @@ void CSGTreeEvaluator::applyToChildren(State& state, const AbstractNode& node, O
         }
         break;
       case OpenSCADOperator::UNION:
-        if (t != t1 && t != t2 &&
-            t1->isHighlight() && t2->isHighlight()) {
+        if (t != t1 && t != t2 && t1->isHighlight() && t2->isHighlight()) {
           t->setHighlight(true);
         } else if (t != t1 && t1->isHighlight()) {
           this->highlightNodes.push_back(t1);
@@ -128,8 +125,7 @@ void CSGTreeEvaluator::applyToChildren(State& state, const AbstractNode& node, O
       case OpenSCADOperator::HULL:
       case OpenSCADOperator::FILL:
       case OpenSCADOperator::RESIZE:
-      case OpenSCADOperator::OFFSET:
-        break;
+      case OpenSCADOperator::OFFSET:    break;
       }
       t1 = t;
     }
@@ -167,7 +163,7 @@ Response CSGTreeEvaluator::visit(State& state, const class ListNode& node)
       if (node.modinst->isBackground()) state.setBackground(true);
     }
     if (state.isPostfix()) {
-      for (auto &chnode : this->visitedchildren[node.index()]) {
+      for (auto& chnode : this->visitedchildren[node.index()]) {
         addToParent(state, *chnode);
       }
     }
@@ -176,24 +172,23 @@ Response CSGTreeEvaluator::visit(State& state, const class ListNode& node)
     // Handle root modifier on ListNode just like a group
     return visit(state, (const AbstractNode&)node);
   }
-
 }
 
 // Creates a 1-unit-thick PolySet with dim==2 from a Polygon2d.
-std::shared_ptr<const PolySet> polygon2dToPolySet(const Polygon2d &p2d) {
+std::shared_ptr<const PolySet> polygon2dToPolySet(const Polygon2d& p2d)
+{
   const auto ps = p2d.tessellate(true);
   constexpr int dim = 2;
   // Estimating num vertices and polygons: top + bottom + sides
-  PolySetBuilder builder(ps->vertices.size() * 2, 
-                         ps->indices.size() * 2 + ps->vertices.size(),
-                         dim, p2d.is_convex());
+  PolySetBuilder builder(ps->vertices.size() * 2, ps->indices.size() * 2 + ps->vertices.size(), dim,
+                         p2d.is_convex());
   builder.setConvexity(p2d.getConvexity());
 
   // Create bottom face.
   for (const auto& poly : ps->indices) {
     builder.beginPolygon(poly.size());
     // Flip vertex ordering for bottom polygon
-    for (const auto& ind: boost::adaptors::reverse(poly)) {
+    for (const auto& ind : boost::adaptors::reverse(poly)) {
       builder.addVertex(ps->vertices[ind] - Vector3d(0, 0, 0.20));
     }
   }
@@ -201,22 +196,22 @@ std::shared_ptr<const PolySet> polygon2dToPolySet(const Polygon2d &p2d) {
   // Create top face.
   for (const auto& poly : ps->indices) {
     builder.beginPolygon(poly.size());
-    for (const auto& ind: poly) {
+    for (const auto& ind : poly) {
       builder.addVertex(ps->vertices[ind] + Vector3d(0, 0, 0.20));
     }
   }
 
   // Create sides
-  Transform3d tr= p2d.getTransform3d();
+  Transform3d tr = p2d.getTransform3d();
   for (const auto& o : p2d.untransformedOutlines()) {
     for (size_t i = 0; i < o.vertices.size(); ++i) {
-      const Vector2d &prev = o.vertices[i];
-      const Vector2d &curr = o.vertices[(i+1)%o.vertices.size()];
+      const Vector2d& prev = o.vertices[i];
+      const Vector2d& curr = o.vertices[(i + 1) % o.vertices.size()];
       builder.appendPolygon({
-        tr*Vector3d(prev[0], prev[1], -0.20),
-        tr*Vector3d(curr[0], curr[1], -0.20),
-        tr*Vector3d(curr[0], curr[1], 0.20),
-        tr*Vector3d(prev[0], prev[1], 0.20),
+        tr * Vector3d(prev[0], prev[1], -0.20),
+        tr * Vector3d(curr[0], curr[1], -0.20),
+        tr * Vector3d(curr[0], curr[1], 0.20),
+        tr * Vector3d(prev[0], prev[1], 0.20),
       });
     }
   }
@@ -224,13 +219,12 @@ std::shared_ptr<const PolySet> polygon2dToPolySet(const Polygon2d &p2d) {
   return builder.build();
 }
 
-
 std::shared_ptr<CSGNode> CSGTreeEvaluator::evaluateCSGNodeFromGeometry(
-  State& state, const std::shared_ptr<const Geometry>& geom,
-  const ModuleInstantiation *modinst, const AbstractNode& node)
+  State& state, const std::shared_ptr<const Geometry>& geom, const ModuleInstantiation *modinst,
+  const AbstractNode& node)
 {
   assert(geom);
-  bool is_2d=false;
+  bool is_2d = false;
   // We cannot render Polygon2d directly, so we convert it to a PolySet here
   std::shared_ptr<const PolySet> ps;
   if (!geom->isEmpty()) {
@@ -238,13 +232,15 @@ std::shared_ptr<CSGNode> CSGTreeEvaluator::evaluateCSGNodeFromGeometry(
       ps = polygon2dToPolySet(*p2d);
       is_2d = true;
     }
-    // 3D PolySets are tessellated before inserting into Geometry cache, inside GeometryEvaluator::evaluateGeometry
+    // 3D PolySets are tessellated before inserting into Geometry cache, inside
+    // GeometryEvaluator::evaluateGeometry
     else {
       ps = std::dynamic_pointer_cast<const PolySet>(geom);
     }
   }
 
-  std::shared_ptr<CSGLeaf> t(new CSGLeaf(ps, state.matrix(), state.color(), state.textureind(), STR(node.name(), node.index()), node.index()));
+  std::shared_ptr<CSGLeaf> t(new CSGLeaf(ps, state.matrix(), state.color(), state.textureind(),
+                                         STR(node.name(), node.index()), node.index()));
   t->is_2d = is_2d;
   if (modinst->isHighlight() || state.isHighlight()) t->setHighlight(true);
   if (modinst->isBackground() || state.isBackground()) t->setBackground(true);
@@ -283,7 +279,8 @@ Response CSGTreeEvaluator::visit(State& state, const TransformNode& node)
 {
   if (state.isPrefix()) {
     if (matrix_contains_infinity(node.matrix) || matrix_contains_nan(node.matrix)) {
-      LOG(message_group::Warning, "Transformation matrix contains Not-a-Number and/or Infinity - removing object.");
+      LOG(message_group::Warning,
+          "Transformation matrix contains Not-a-Number and/or Infinity - removing object.");
       return Response::PruneTraversal;
     }
     state.setMatrix(state.matrix() * node.matrix);
@@ -353,7 +350,9 @@ Response CSGTreeEvaluator::visit(State& state, const CgalAdvNode& node)
 /*!
    Adds ourself to out parent's list of traversed children.
    Call this for _every_ node which affects output during traversal.
-    Usually, this should be called from the postfix stage, but for some nodes, we defer traversal letting other components (e.g. CGAL) render the subgraph, and we'll then call this from prefix and prune further traversal.
+    Usually, this should be called from the postfix stage, but for some nodes, we defer traversal letting
+   other components (e.g. CGAL) render the subgraph, and we'll then call this from prefix and prune
+   further traversal.
  */
 void CSGTreeEvaluator::addToParent(const State& state, const AbstractNode& node)
 {

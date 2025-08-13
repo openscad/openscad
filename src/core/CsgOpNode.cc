@@ -38,19 +38,22 @@
 #include <string>
 #include <cassert>
 
-static std::shared_ptr<AbstractNode> builtin_union(const ModuleInstantiation *inst, Arguments arguments, const Children& children)
+static std::shared_ptr<AbstractNode> builtin_union(const ModuleInstantiation *inst, Arguments arguments,
+                                                   const Children& children)
 {
   Parameters parameters = Parameters::parse(std::move(arguments), inst->location(), {});
   return children.instantiate(std::make_shared<CsgOpNode>(inst, OpenSCADOperator::UNION));
 }
 
-static std::shared_ptr<AbstractNode> builtin_difference(const ModuleInstantiation *inst, Arguments arguments, const Children& children)
+static std::shared_ptr<AbstractNode> builtin_difference(const ModuleInstantiation *inst,
+                                                        Arguments arguments, const Children& children)
 {
   Parameters parameters = Parameters::parse(std::move(arguments), inst->location(), {});
   return children.instantiate(std::make_shared<CsgOpNode>(inst, OpenSCADOperator::DIFFERENCE));
 }
 
-static std::shared_ptr<AbstractNode> builtin_intersection(const ModuleInstantiation *inst, Arguments arguments, const Children& children)
+static std::shared_ptr<AbstractNode> builtin_intersection(const ModuleInstantiation *inst,
+                                                          Arguments arguments, const Children& children)
 {
   Parameters parameters = Parameters::parse(std::move(arguments), inst->location(), {});
   return children.instantiate(std::make_shared<CsgOpNode>(inst, OpenSCADOperator::INTERSECTION));
@@ -58,41 +61,34 @@ static std::shared_ptr<AbstractNode> builtin_intersection(const ModuleInstantiat
 
 std::string CsgOpNode::toString() const
 {
-  std::ostringstream stream;	
+  std::ostringstream stream;
   stream << this->name() << "(";
-  if(r != 0 || fn != 2)
-    stream << " r = " << this->r << " , fn = " << this->fn << " ";
+  if (r != 0 || fn != 2) stream << " r = " << this->r << " , fn = " << this->fn << " ";
   stream << ")";
   return stream.str();
 }
 
-std::shared_ptr<const Geometry> CsgOpNode::dragPoint(const Vector3d &pt, const Vector3d &newpt, DragResult &result)
+std::shared_ptr<const Geometry> CsgOpNode::dragPoint(const Vector3d& pt, const Vector3d& newpt,
+                                                     DragResult& result)
 {
-  std::shared_ptr<PolySet> result_geom =  std::make_shared<PolySet>(3);
-  for(auto &child : children) {
+  std::shared_ptr<PolySet> result_geom = std::make_shared<PolySet>(3);
+  for (auto& child : children) {
     std::shared_ptr<const Geometry> child_geom = child->dragPoint(pt, newpt, result);
-    if(child_geom == nullptr) continue;
+    if (child_geom == nullptr) continue;
     std::shared_ptr<const PolySet> ps = std::dynamic_pointer_cast<const PolySet>(child_geom);
-    if(ps == nullptr) continue;
-    for(const auto &v : ps->vertices) // just put all vertices alltogether
-	result_geom->vertices.push_back(v);	    
+    if (ps == nullptr) continue;
+    for (const auto& v : ps->vertices)  // just put all vertices alltogether
+      result_geom->vertices.push_back(v);
   }
   return result_geom;
 }
 std::string CsgOpNode::name() const
 {
   switch (this->type) {
-  case OpenSCADOperator::UNION:
-    return "union";
-    break;
-  case OpenSCADOperator::DIFFERENCE:
-    return "difference";
-    break;
-  case OpenSCADOperator::INTERSECTION:
-    return "intersection";
-    break;
-  default:
-    assert(false);
+  case OpenSCADOperator::UNION:        return "union"; break;
+  case OpenSCADOperator::DIFFERENCE:   return "difference"; break;
+  case OpenSCADOperator::INTERSECTION: return "intersection"; break;
+  default:                             assert(false);
   }
   return "internal_error";
 }
@@ -100,17 +96,17 @@ std::string CsgOpNode::name() const
 void register_builtin_csgops()
 {
   Builtins::init("union", new BuiltinModule(builtin_union),
-  {
-    "union()",
-  });
+                 {
+                   "union()",
+                 });
 
   Builtins::init("difference", new BuiltinModule(builtin_difference),
-  {
-    "difference()",
-  });
+                 {
+                   "difference()",
+                 });
 
   Builtins::init("intersection", new BuiltinModule(builtin_intersection),
-  {
-    "intersection()",
-  });
+                 {
+                   "intersection()",
+                 });
 }

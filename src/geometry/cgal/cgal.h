@@ -15,8 +15,8 @@
    //*/
 
 #include <vector>
-   
-#include "CGAL/CGAL_workaround_Mark_bounded_volumes.h" // This file must be included prior to CGAL/Nef_polyhedron_3.h
+
+#include "CGAL/CGAL_workaround_Mark_bounded_volumes.h"  // This file must be included prior to CGAL/Nef_polyhedron_3.h
 #include <CGAL/Gmpq.h>
 #include <CGAL/Extended_cartesian.h>
 #include <CGAL/Nef_polyhedron_2.h>
@@ -25,7 +25,7 @@
 #include <CGAL/Nef_polyhedron_3.h>
 #include <CGAL/Surface_mesh.h>
 #include <CGAL/IO/Polyhedron_iostream.h>
-#include <CGAL/IO/Nef_polyhedron_iostream_3.h> // for dumping .nef3
+#include <CGAL/IO/Nef_polyhedron_iostream_3.h>  // for dumping .nef3
 #include <CGAL/Exact_predicates_exact_constructions_kernel.h>
 #include <CGAL/Polygon_2.h>
 #include <CGAL/Polygon_with_holes_2.h>

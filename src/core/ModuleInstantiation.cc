@@ -14,7 +14,8 @@
 #include "python/python_public.h"
 #endif
 
-void ModuleInstantiation::print(std::ostream& stream, const std::string& indent, const bool inlined) const
+void ModuleInstantiation::print(std::ostream& stream, const std::string& indent,
+                                const bool inlined) const
 {
   if (!inlined) stream << indent;
   stream << modname + "(";
@@ -36,17 +37,18 @@ void ModuleInstantiation::print(std::ostream& stream, const std::string& indent,
   }
 }
 
-void ModuleInstantiation::print_python(std::ostream& stream, std::ostream& stream_def, const std::string& indent, const bool inlined, const int context_mode) const
+void ModuleInstantiation::print_python(std::ostream& stream, std::ostream& stream_def,
+                                       const std::string& indent, const bool inlined,
+                                       const int context_mode) const
 {
   if (!inlined) stream << indent;
-//  if(context_mode == 1) stream << "return ";
-  stream  <<  modname << "(" ;
-  int n=0;
-  if(scope.numElements() > 1) {
+  //  if(context_mode == 1) stream << "return ";
+  stream << modname << "(";
+  int n = 0;
+  if (scope.numElements() > 1) {
     scope.print_python(stream, stream_def, indent + "\t", false, 0);
     n++;
-  }
-  else if(scope.numElements() == 1) {
+  } else if (scope.numElements() == 1) {
     scope.print_python(stream, stream_def, indent + "\t", true, 0);
     n++;
   }
@@ -58,10 +60,11 @@ void ModuleInstantiation::print_python(std::ostream& stream, std::ostream& strea
     stream << *arg->getExpr();
     n++;
   }
-  stream << ")" ;
+  stream << ")";
 }
 
-void IfElseModuleInstantiation::print(std::ostream& stream, const std::string& indent, const bool inlined) const
+void IfElseModuleInstantiation::print(std::ostream& stream, const std::string& indent,
+                                      const bool inlined) const
 {
   ModuleInstantiation::print(stream, indent, inlined);
   if (else_scope) {
@@ -81,7 +84,9 @@ void IfElseModuleInstantiation::print(std::ostream& stream, const std::string& i
   }
 }
 
-void IfElseModuleInstantiation::print_python(std::ostream& stream, std::ostream& stream_def,  const std::string& indent, const bool inlined, const int context_mode) const
+void IfElseModuleInstantiation::print_python(std::ostream& stream, std::ostream& stream_def,
+                                             const std::string& indent, const bool inlined,
+                                             const int context_mode) const
 {
   ModuleInstantiation::print(stream, indent, inlined);
   if (else_scope) {
@@ -108,28 +113,33 @@ void IfElseModuleInstantiation::print_python(std::ostream& stream, std::ostream&
  * noinline is required, as we here specifically optimize for stack usage
  * during normal operating, not runtime during error handling.
  */
-static void NOINLINE print_trace(const ModuleInstantiation *mod, const std::shared_ptr<const Context>& context){
+static void NOINLINE print_trace(const ModuleInstantiation *mod,
+                                 const std::shared_ptr<const Context>& context)
+{
   LOG(message_group::Trace, mod->location(), context->documentRoot(), "called by '%1$s'", mod->name());
 }
 
-std::shared_ptr<AbstractNode> ModuleInstantiation::evaluate(const std::shared_ptr<const Context>& context) const
+std::shared_ptr<AbstractNode> ModuleInstantiation::evaluate(
+  const std::shared_ptr<const Context>& context) const
 {
   boost::optional<InstantiableModule> module = context->lookup_module(this->name(), this->loc);
   if (!module) {
-    std::shared_ptr<AbstractNode> result=nullptr;
+    std::shared_ptr<AbstractNode> result = nullptr;
     std::string error;
 #ifdef ENABLE_PYTHON
-    result = python_modulefunc(this, context,error);
-    if(!error.empty() && result == nullptr) {
+    result = python_modulefunc(this, context, error);
+    if (!error.empty() && result == nullptr) {
       LOG(message_group::Warning, loc, context->documentRoot(), "Python: '%1$s'", error);
       return nullptr;
     }
 #endif
-    if(result == nullptr && error.size() > 0) LOG(message_group::Warning, loc, context->documentRoot(), "Ignoring unknown module '%1$s'", this->name()); // TODO muss anschlagen, wenn das modul NIRGENDS gefunden wurde
+    if (result == nullptr && error.size() > 0)
+      LOG(message_group::Warning, loc, context->documentRoot(), "Ignoring unknown module '%1$s'",
+          this->name());  // TODO muss anschlagen, wenn das modul NIRGENDS gefunden wurde
     return result;
   }
 
-  try{
+  try {
     auto node = module->module->instantiate(module->defining_context, this, context);
     return node;
   } catch (EvaluationException& e) {

@@ -26,12 +26,9 @@
 #include "RepairNode.h"
 
 std::string RepairNode::toString() const
-  {
-    std::ostringstream stream;
-    stream << "repair( color = [" << color.r() << ", " 
-	   << color.g()  << ", " << color.b() << ", " << color.a() << "] )";
-    return  stream.str();
-  }
-
-
-
+{
+  std::ostringstream stream;
+  stream << "repair( color = [" << color.r() << ", " << color.g() << ", " << color.b() << ", "
+         << color.a() << "] )";
+  return stream.str();
+}

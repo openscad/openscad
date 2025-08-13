@@ -56,7 +56,7 @@
 #include <QOpenGLContext>
 #endif
 #include "gui/OpenCSGWarningDialog.h"
- #ifdef ENABLE_PYTHON
+#ifdef ENABLE_PYTHON
 #include <python_public.h>
 #endif
 #include <math.h>
@@ -67,16 +67,13 @@
 #include <vector>
 
 #ifdef ENABLE_OPENCSG
-#  include <opencsg.h>
+#include <opencsg.h>
 #endif
 
 #include "gui/qt-obsolete.h"
 #include "gui/Measurement.h"
 
-QGLView::QGLView(QWidget *parent) : QOpenGLWidget(parent)
-{
-  init();
-}
+QGLView::QGLView(QWidget *parent) : QOpenGLWidget(parent) { init(); }
 
 QGLView::~QGLView()
 {
@@ -95,10 +92,7 @@ void QGLView::init()
   mouseDraggedSel = nullptr;
 }
 
-void QGLView::resetView()
-{
-  cam.resetView();
-}
+void QGLView::resetView() { cam.resetView(); }
 
 void QGLView::viewAll()
 {
@@ -118,15 +112,17 @@ void QGLView::initializeGL()
 #endif
 #ifdef USE_GLAD
   // We could ask for gladLoadGLES2UserPtr() here if we want to use GLES2+
-  const auto version = gladLoadGLUserPtr([](void *ctx, const char *name) -> GLADapiproc {
-    return reinterpret_cast<QOpenGLContext *>(ctx)->getProcAddress(name);
-  }, this->context());
+  const auto version = gladLoadGLUserPtr(
+    [](void *ctx, const char *name) -> GLADapiproc {
+      return reinterpret_cast<QOpenGLContext *>(ctx)->getProcAddress(name);
+    },
+    this->context());
   if (version == 0) {
     std::cerr << "Unable to init GLAD" << std::endl;
     return;
   }
   PRINTDB("GLAD: Loaded OpenGL %d.%d", GLAD_VERSION_MAJOR(version) % GLAD_VERSION_MINOR(version));
-#endif // ifdef USE_GLAD
+#endif  // ifdef USE_GLAD
   GLView::initializeGL();
 
   this->selector = std::make_unique<MouseSelector>(this);
@@ -145,8 +141,8 @@ std::string QGLView::getRendererInfo() const
   auto abits = qsf.alphaBufferSize();
   auto dbits = qsf.depthBufferSize();
   auto sbits = qsf.stencilBufferSize();
-  info << boost::format("\nQSurfaceFormat: RGBA(%d%d%d%d), depth(%d), stencil(%d)\n\n") %
-    rbits % gbits % bbits % abits % dbits % sbits;
+  info << boost::format("\nQSurfaceFormat: RGBA(%d%d%d%d), depth(%d), stencil(%d)\n\n") % rbits % gbits %
+            bbits % abits % dbits % sbits;
   info << gl_extensions_dump();
   return info.str();
 }
@@ -163,28 +159,28 @@ void QGLView::display_opencsg_warning_dialog()
 {
   auto dialog = new OpenCSGWarningDialog(this);
 
-  QString message = _("Warning: Missing OpenGL capabilities for OpenCSG - OpenCSG has been disabled.\n\n");
-  message += _("It is highly recommended to use OpenSCAD on a system with "
-               "OpenGL 2.0 or later.\n"
-               "Your renderer information is as follows:\n");
+  QString message =
+    _("Warning: Missing OpenGL capabilities for OpenCSG - OpenCSG has been disabled.\n\n");
+  message +=
+    _("It is highly recommended to use OpenSCAD on a system with "
+      "OpenGL 2.0 or later.\n"
+      "Your renderer information is as follows:\n");
 #if defined(USE_GLEW) || defined(OPENCSG_GLEW)
   QString rendererinfo(_("GLEW version %1\n%2 (%3)\nOpenGL version %4\n"));
-  message += rendererinfo.arg((const char *)glewGetString(GLEW_VERSION),
-                              (const char *)glGetString(GL_RENDERER),
-                              (const char *)glGetString(GL_VENDOR),
-                              (const char *)glGetString(GL_VERSION));
+  message +=
+    rendererinfo.arg((const char *)glewGetString(GLEW_VERSION), (const char *)glGetString(GL_RENDERER),
+                     (const char *)glGetString(GL_VENDOR), (const char *)glGetString(GL_VERSION));
 #endif
 #ifdef USE_GLAD
   QString rendererinfo(_("GLAD version %1\n%2 (%3)\nOpenGL version %4\n"));
-  message += rendererinfo.arg(GLAD_GENERATOR_VERSION,
-                              (const char *)glGetString(GL_RENDERER),
-                              (const char *)glGetString(GL_VENDOR),
-                              (const char *)glGetString(GL_VERSION));
+  message +=
+    rendererinfo.arg(GLAD_GENERATOR_VERSION, (const char *)glGetString(GL_RENDERER),
+                     (const char *)glGetString(GL_VENDOR), (const char *)glGetString(GL_VERSION));
 #endif
   dialog->setText(message);
   dialog->exec();
 }
-#endif // ifdef ENABLE_OPENCSG
+#endif  // ifdef ENABLE_OPENCSG
 
 void QGLView::resizeGL(int w, int h)
 {
@@ -198,46 +194,49 @@ void QGLView::paintGL()
 
   Vector3d p1, p2, p3, norm;
   if (statusLabel) {
-    QString status;	  
-    if(this->shown_obj != nullptr) {
-      switch(this->shown_obj->type) {
-        case SelectionType::SELECTION_POINT:
-          if(shown_obj->pt.size() < 1) break;		
-	  p1=shown_obj->pt[0];
-          status = QString("Point %4(%1/%2/%3)").arg(p1[0]).arg(p1[1]).arg(p1[2]).arg(shown_obj->ind);
-          statusLabel->setText(status);
-	  break;
-        case SelectionType::SELECTION_SEGMENT:
-          if(shown_obj->pt.size() < 2) break;		
-	  p1=shown_obj->pt[0];
-	  p2=shown_obj->pt[1];
-          status = QString("Segment (%1/%2/%3) - (%4/%5/%6) delta (%7/%8/%9)")
-		  .arg(p1[0]).arg(p1[1]).arg(p1[2])
-		  .arg(p2[0]).arg(p2[1]).arg(p2[2])
-		  .arg(p2[0]-p1[0]).arg(p2[1]-p1[1]).arg(p2[2]-p1[2]);
-          statusLabel->setText(status);
-	  break;
-        case SelectionType::SELECTION_FACE:
-          if(shown_obj->pt.size() < 3) break;		
-	  p1=shown_obj->pt[0];
-	  p2=shown_obj->pt[1];
-	  p3=shown_obj->pt[2];
-	  norm=(p2-p1).cross(p3-p2).normalized();
-	  status=QString("Face norm=(%1/%2/%3)").arg(norm[0]).arg(norm[1]).arg(norm[2]);
-          statusLabel->setText(status);
-	  break;
-        case SelectionType::SELECTION_HANDLE:
-          break;
-        case SelectionType::SELECTION_INVALID:
-          break;
-
-      } 
+    QString status;
+    if (this->shown_obj != nullptr) {
+      switch (this->shown_obj->type) {
+      case SelectionType::SELECTION_POINT:
+        if (shown_obj->pt.size() < 1) break;
+        p1 = shown_obj->pt[0];
+        status = QString("Point %4(%1/%2/%3)").arg(p1[0]).arg(p1[1]).arg(p1[2]).arg(shown_obj->ind);
+        statusLabel->setText(status);
+        break;
+      case SelectionType::SELECTION_SEGMENT:
+        if (shown_obj->pt.size() < 2) break;
+        p1 = shown_obj->pt[0];
+        p2 = shown_obj->pt[1];
+        status = QString("Segment (%1/%2/%3) - (%4/%5/%6) delta (%7/%8/%9)")
+                   .arg(p1[0])
+                   .arg(p1[1])
+                   .arg(p1[2])
+                   .arg(p2[0])
+                   .arg(p2[1])
+                   .arg(p2[2])
+                   .arg(p2[0] - p1[0])
+                   .arg(p2[1] - p1[1])
+                   .arg(p2[2] - p1[2]);
+        statusLabel->setText(status);
+        break;
+      case SelectionType::SELECTION_FACE:
+        if (shown_obj->pt.size() < 3) break;
+        p1 = shown_obj->pt[0];
+        p2 = shown_obj->pt[1];
+        p3 = shown_obj->pt[2];
+        norm = (p2 - p1).cross(p3 - p2).normalized();
+        status = QString("Face norm=(%1/%2/%3)").arg(norm[0]).arg(norm[1]).arg(norm[2]);
+        statusLabel->setText(status);
+        break;
+      case SelectionType::SELECTION_HANDLE:  break;
+      case SelectionType::SELECTION_INVALID: break;
+      }
       return;
     }
     status = QString("%1 (%2x%3)")
-      .arg(QString::fromStdString(cam.statusText()))
-      .arg(size().rwidth())
-      .arg(size().rheight());
+               .arg(QString::fromStdString(cam.statusText()))
+               .arg(size().rwidth())
+               .arg(size().rheight());
     statusLabel->setText(status);
   }
 }
@@ -292,7 +291,8 @@ void QGLView::mousePressEvent(QMouseEvent *event)
  * - This function should probably only react to left double clicks.  Right double clicks
  *   should probably be ignored.
  */
-void QGLView::mouseDoubleClickEvent(QMouseEvent *event) {
+void QGLView::mouseDoubleClickEvent(QMouseEvent *event)
+{
   QOpenGLContext *oldContext = getGLContext();
   this->makeCurrent();
   setupCamera();
@@ -310,12 +310,12 @@ void QGLView::mouseDoubleClickEvent(QMouseEvent *event) {
   const double y = viewport[3] - event->pos().y() * dpi;
   GLfloat z = 0;
 
-  glGetError(); // clear error state so we don't pick up previous errors
+  glGetError();  // clear error state so we don't pick up previous errors
   glReadPixels(x, y, 1, 1, GL_DEPTH_COMPONENT, GL_FLOAT, &z);
   if (const auto glError = glGetError(); glError != GL_NO_ERROR) {
     if (statusLabel) {
       auto status = QString("Center View: OpenGL Error reading Pixel: %s")
-        .arg(QString::fromLocal8Bit((const char *)gluErrorString(glError)));
+                      .arg(QString::fromLocal8Bit((const char *)gluErrorString(glError)));
       statusLabel->setText(status);
     }
     setGLContext(oldContext);
@@ -324,7 +324,7 @@ void QGLView::mouseDoubleClickEvent(QMouseEvent *event) {
 
   if (z == 1) {
     setGLContext(oldContext);
-    return; // outside object
+    return;  // outside object
   }
 
   GLdouble px, py, pz;
@@ -349,7 +349,7 @@ void QGLView::mouseMoveEvent(QMouseEvent *event)
 {
   auto this_mouse = event->globalPos();
   QPoint pt = event->pos();
-  if(measure_state != MEASURE_IDLE) {
+  if (measure_state != MEASURE_IDLE) {
     this->shown_obj = findObject(pt.x(), pt.y());
     update();
   }
@@ -357,28 +357,30 @@ void QGLView::mouseMoveEvent(QMouseEvent *event)
   double dy = (this_mouse.y() - last_mouse.y()) * 0.7;
   if (mouse_drag_active) {
     mouse_drag_moved = true;
-/* this is drag point trigger, please integrate it again into the new system
-	int drag_x=event->x() - mouseDraggedPoint.x();	      
-	int drag_y=mouseDraggedPoint.y() - event->y();	      
+    /* this is drag point trigger, please integrate it again into the new system
+            int drag_x=event->x() - mouseDraggedPoint.x();
+            int drag_y=mouseDraggedPoint.y() - event->y();
 
-        if(mouseDraggedSel == nullptr){
-          mouseDraggedSel = findObject(pt.x(), pt.y()); 
-          if(mouseDraggedSel != nullptr && mouseDraggedSel->type !=  SelectionType::SELECTION_POINT )
-            mouseDraggedSel = nullptr;				
+            if(mouseDraggedSel == nullptr){
+              mouseDraggedSel = findObject(pt.x(), pt.y());
+              if(mouseDraggedSel != nullptr && mouseDraggedSel->type !=  SelectionType::SELECTION_POINT )
+                mouseDraggedSel = nullptr;
 
-	}
-	if(mouseDraggedSel != nullptr){
-          int viewport[4]={0,0,0,0};
-          viewport[2]=size().rwidth();
-          viewport[3]=size().rheight();
-	  GLdouble viewcoord[3];
-          gluProject(mouseDraggedSel->pt[0][0],mouseDraggedSel->pt[0][1],mouseDraggedSel->pt[0][2], this->modelview, this->projection, viewport,&viewcoord[0], &viewcoord[1], &viewcoord[2]);
+            }
+            if(mouseDraggedSel != nullptr){
+              int viewport[4]={0,0,0,0};
+              viewport[2]=size().rwidth();
+              viewport[3]=size().rheight();
+              GLdouble viewcoord[3];
+              gluProject(mouseDraggedSel->pt[0][0],mouseDraggedSel->pt[0][1],mouseDraggedSel->pt[0][2],
+       this->modelview, this->projection, viewport,&viewcoord[0], &viewcoord[1], &viewcoord[2]);
 
-	  Vector3d newpos;
-          gluUnProject(viewcoord[0]+drag_x, viewcoord[1]+drag_y, viewcoord[2], this->modelview, this->projection, viewport,&newpos[0], &newpos[1], &newpos[2]);
-	  emit dragPoint(mouseDraggedSel->pt[0], newpos);
-	}
-*/
+              Vector3d newpos;
+              gluUnProject(viewcoord[0]+drag_x, viewcoord[1]+drag_y, viewcoord[2], this->modelview,
+       this->projection, viewport,&newpos[0], &newpos[1], &newpos[2]); emit
+       dragPoint(mouseDraggedSel->pt[0], newpos);
+            }
+    */
 
     bool multipleButtonsPressed = false;
     int buttonIndex = -1;
@@ -407,21 +409,21 @@ void QGLView::mouseMoveEvent(QMouseEvent *event)
       if (modifierIndex == 1) {
         modifierIndex = 3;  // Ctrl + Shift
       } else {
-        modifierIndex = 2; // Ctrl
+        modifierIndex = 2;  // Ctrl
       }
     }
 
     if (buttonIndex != -1 && !multipleButtonsPressed) {
       float *selectedMouseActions =
-        &this->mouseActions[MouseConfig::ACTION_DIMENSION*(buttonIndex + modifierIndex*3)];
+        &this->mouseActions[MouseConfig::ACTION_DIMENSION * (buttonIndex + modifierIndex * 3)];
 
       // Rotation angles from mouse movement
       // First 6 elements to selectedMouseActions are interpreted as a row-major 3x2 matrix, which is
       // right-multiplied by (dx, dy)^T to produce the rotation angle increments.
-      double rx = selectedMouseActions[0]*dx + selectedMouseActions[1]*dy;
-      double ry = selectedMouseActions[2]*dx + selectedMouseActions[3]*dy;
-      double rz = selectedMouseActions[4]*dx + selectedMouseActions[5]*dy;
-      if (!(rx==0.0 && ry==0.0 && rz==0.0)) {
+      double rx = selectedMouseActions[0] * dx + selectedMouseActions[1] * dy;
+      double ry = selectedMouseActions[2] * dx + selectedMouseActions[3] * dy;
+      double rz = selectedMouseActions[4] * dx + selectedMouseActions[5] * dy;
+      if (!(rx == 0.0 && ry == 0.0 && rz == 0.0)) {
         rotate(rx, ry, rz, true);
         normalizeAngle(cam.object_rot.x());
         normalizeAngle(cam.object_rot.y());
@@ -430,26 +432,29 @@ void QGLView::mouseMoveEvent(QMouseEvent *event)
 
       // Panning from mouse movement
       // Elements 6..12 of selectedMouseActions are interpreted as another row-major 3x2 matrix, which is
-      // right-multiplied by (dx, dy)^T, and then scaled by the zoom, to produce the translation increments.
-      double mx = selectedMouseActions[6 + 0]*(dx / QWidget::width()) + selectedMouseActions[6 + 1]*(dy / QWidget::height());
-      double my = selectedMouseActions[6 + 2]*(dx / QWidget::width()) + selectedMouseActions[6 + 3]*(dy / QWidget::height());
-      double mz = selectedMouseActions[6 + 4]*(dx / QWidget::width()) + selectedMouseActions[6 + 5]*(dy / QWidget::height());
-      if (!(mx==0.0 && my == 0.0 && mz==0.0)) {
-        mx *= 3.0*cam.zoomValue();
-        my *= 3.0*cam.zoomValue();
-        mz *= 3.0*cam.zoomValue();
+      // right-multiplied by (dx, dy)^T, and then scaled by the zoom, to produce the translation
+      // increments.
+      double mx = selectedMouseActions[6 + 0] * (dx / QWidget::width()) +
+                  selectedMouseActions[6 + 1] * (dy / QWidget::height());
+      double my = selectedMouseActions[6 + 2] * (dx / QWidget::width()) +
+                  selectedMouseActions[6 + 3] * (dy / QWidget::height());
+      double mz = selectedMouseActions[6 + 4] * (dx / QWidget::width()) +
+                  selectedMouseActions[6 + 5] * (dy / QWidget::height());
+      if (!(mx == 0.0 && my == 0.0 && mz == 0.0)) {
+        mx *= 3.0 * cam.zoomValue();
+        my *= 3.0 * cam.zoomValue();
+        mz *= 3.0 * cam.zoomValue();
       }
       translate(mx, my, mz, true);
 
       // Zoom from mouse movement
-      // Final 2 elements of selectedMouseActions are interpreted as a 2-dimensional vector. The inner product of
-      // this is taken with (dx, dy)^T to produce the zoom increment.
+      // Final 2 elements of selectedMouseActions are interpreted as a 2-dimensional vector. The inner
+      // product of this is taken with (dx, dy)^T to produce the zoom increment.
       double dZoom = selectedMouseActions[12] * dx + selectedMouseActions[13] * dy;
       if (dZoom != 0.0) {
         dZoom *= 12.0;
         zoom(dZoom, true);
       }
-
     }
   }
   last_mouse = this_mouse;
@@ -459,18 +464,18 @@ void QGLView::mouseReleaseEvent(QMouseEvent *event)
 {
   mouse_drag_active = false;
   releaseMouse();
-  if(mouseDraggedSel != nullptr) {
+  if (mouseDraggedSel != nullptr) {
     shown_obj = nullptr;
     emit dragPointEnd(mouseDraggedSel->pt[0]);
   }
   mouseDraggedSel = nullptr;
 
   if (!mouse_drag_moved) {
-    if(event->button() == Qt::RightButton) {
+    if (event->button() == Qt::RightButton) {
       QPoint point = event->pos();
       emit doRightClick(point);
     }
-    if(event->button() == Qt::LeftButton) {
+    if (event->button() == Qt::LeftButton) {
       QPoint point = event->pos();
       emit doLeftClick(point);
     }
@@ -486,17 +491,14 @@ const QImage& QGLView::grabFrame()
   return this->frame;
 }
 
-bool QGLView::save(const char *filename) const
-{
-  return this->frame.save(filename, "PNG");
-}
+bool QGLView::save(const char *filename) const { return this->frame.save(filename, "PNG"); }
 
 void QGLView::wheelEvent(QWheelEvent *event)
 {
   const auto pos = Q_WHEEL_EVENT_POSITION(event);
   const int v = event->angleDelta().y();
   if (QApplication::keyboardModifiers() & Qt::ShiftModifier) {
-    zoomFov (v);
+    zoomFov(v);
   } else if (this->mouseCentricZoom) {
     zoomCursor(pos.x(), pos.y(), v);
   } else {
@@ -504,15 +506,9 @@ void QGLView::wheelEvent(QWheelEvent *event)
   }
 }
 
-void QGLView::ZoomIn()
-{
-  zoom(120, true);
-}
+void QGLView::ZoomIn() { zoom(120, true); }
 
-void QGLView::ZoomOut()
-{
-  zoom(-120, true);
-}
+void QGLView::ZoomOut() { zoom(-120, true); }
 
 void QGLView::zoom(double v, bool relative)
 {
@@ -523,7 +519,7 @@ void QGLView::zoom(double v, bool relative)
 
 void QGLView::zoomFov(double v)
 {
-  this->cam.setVpf( this->cam.fovValue () * pow(0.9, v / 120.0));
+  this->cam.setVpf(this->cam.fovValue() * pow(0.9, v / 120.0));
   update();
   emit cameraChanged();
 }
@@ -567,12 +563,7 @@ void QGLView::translate(double x, double y, double z, bool relative, bool viewPo
   }
 
   Matrix4d vec;
-  vec <<
-    0, 0, 0, x,
-    0, 0, 0, y,
-    0, 0, 0, z,
-    0, 0, 0, 1
-  ;
+  vec << 0, 0, 0, x, 0, 0, 0, y, 0, 0, 0, z, 0, 0, 0, 1;
   tm = tm * vec;
   double f = relative ? 1 : 0;
   cam.object_trans.x() = f * cam.object_trans.x() + tm(0, 3);
@@ -644,61 +635,60 @@ void QGLView::rotate2(double x, double y, double z)
 
 std::shared_ptr<SelectedObject> QGLView::findObject(int mouse_x, int mouse_y)
 {
-  int viewport[4]={0,0,0,0};
+  int viewport[4] = {0, 0, 0, 0};
   double posXF, posYF, posZF;
   double posXN, posYN, posZN;
-  viewport[2]=size().rwidth();
-  viewport[3]=size().rheight();
+  viewport[2] = size().rwidth();
+  viewport[3] = size().rheight();
 
   GLdouble winX = mouse_x;
   GLdouble winY = viewport[3] - mouse_y;
 
-  gluUnProject(winX, winY, 1, this->modelview, this->projection, viewport,&posXF, &posYF, &posZF);
-  gluUnProject(winX, winY, -1, this->modelview, this->projection, viewport,&posXN, &posYN, &posZN);
+  gluUnProject(winX, winY, 1, this->modelview, this->projection, viewport, &posXF, &posYF, &posZF);
+  gluUnProject(winX, winY, -1, this->modelview, this->projection, viewport, &posXN, &posYN, &posZN);
   Vector3d far_pt(posXF, posYF, posZF);
   Vector3d near_pt(posXN, posYN, posZN);
 
-  Vector3d testpt(0,0,0);
-  double tolerance=cam.zoomValue()/300;
-#ifdef ENABLE_PYTHON  
-  if(handle_mode) {
+  Vector3d testpt(0, 0, 0);
+  double tolerance = cam.zoomValue() / 300;
+#ifdef ENABLE_PYTHON
+  if (handle_mode) {
     SelectedObject result;
     result.type = SelectionType::SELECTION_HANDLE;
     double dist_near;
-    double dist_nearest=NAN;
+    double dist_nearest = NAN;
     std::string dist_name;
-    int found_ind=-1;
-    for(int i=0;i<python_result_handle.size();i++) 
-    {    
-      SelectedObject dist= calculateLinePointDistance(near_pt, far_pt, python_result_handle[i].pt[0], dist_near);
-      double dist_pt=(dist.pt[0]-dist.pt[1]).norm();
-      if(dist_pt < tolerance  ) {
-        if(isnan(dist_nearest) || dist_near < dist_nearest)
-        {
-          found_ind=i;		
-          dist_nearest=dist_near;
-	  dist_name=python_result_handle[i].name;
-        }	  
+    int found_ind = -1;
+    for (int i = 0; i < python_result_handle.size(); i++) {
+      SelectedObject dist =
+        calculateLinePointDistance(near_pt, far_pt, python_result_handle[i].pt[0], dist_near);
+      double dist_pt = (dist.pt[0] - dist.pt[1]).norm();
+      if (dist_pt < tolerance) {
+        if (isnan(dist_nearest) || dist_near < dist_nearest) {
+          found_ind = i;
+          dist_nearest = dist_near;
+          dist_name = python_result_handle[i].name;
+        }
       }
     }
-    if(!isnan(dist_nearest)) {
+    if (!isnan(dist_nearest)) {
       result = python_result_handle[found_ind];
-      emit toolTipShow(QPoint(mouse_x, mouse_y),QString(python_result_handle[found_ind].name.c_str()));
+      emit toolTipShow(QPoint(mouse_x, mouse_y), QString(python_result_handle[found_ind].name.c_str()));
     }
     return std::make_shared<SelectedObject>(result);
   }
-#endif    
+#endif
 
   std::vector<SelectedObject> result;
   auto renderer = this->getRenderer();
-  if(renderer == nullptr) return nullptr;
-  return renderer->findModelObject(near_pt, far_pt, mouse_x, mouse_y, cam.zoomValue()/300);
+  if (renderer == nullptr) return nullptr;
+  return renderer->findModelObject(near_pt, far_pt, mouse_x, mouse_y, cam.zoomValue() / 300);
 }
 
 void QGLView::selectPoint(int mouse_x, int mouse_y)
 {
-  std::shared_ptr<SelectedObject>  obj= findObject(mouse_x, mouse_y);
-  if(obj != nullptr) {
+  std::shared_ptr<SelectedObject> obj = findObject(mouse_x, mouse_y);
+  if (obj != nullptr) {
     this->selected_obj.push_back(*obj);
     update();
   }
