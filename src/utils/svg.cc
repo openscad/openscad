@@ -133,12 +133,10 @@ std::string dump_cgal_nef_polyhedron2_face_svg(
       auto target = explorer.point(explorer.target(c1));
       out << "    <!-- Halfedge. Mark: " << c1->mark() << " -->\n";
       auto he_mark = boost::lexical_cast<std::string>(c1->mark());
-      out << "     <line"
-          << " x1='" << CGAL::to_double(source.x()) << "'"
-          << " y1='" << CGAL::to_double(source.y()) << "'"
-          << " x2='" << CGAL::to_double(target.x()) << "'"
-          << " y2='" << CGAL::to_double(target.y()) << "'"
-          << " class='" << styleclass + he_mark << "' />\n";
+      out << "     <line" << " x1='" << CGAL::to_double(source.x()) << "'" << " y1='"
+          << CGAL::to_double(source.y()) << "'" << " x2='" << CGAL::to_double(target.x()) << "'"
+          << " y2='" << CGAL::to_double(target.y()) << "'" << " class='" << styleclass + he_mark
+          << "' />\n";
     } else {
       out << "     <!-- 2d Nef Rays - not implemented -->\n";
     }
@@ -310,12 +308,9 @@ public:
         auto tp2 = project_svg_3to2(target, bbox);
         out << "     <!-- " << CGAL::to_double(source.x()) << "," << CGAL::to_double(source.y()) << ","
             << CGAL::to_double(source.z()) << " -->\n";
-        out << "     <line "
-            << "x1='" << CGAL::to_double(tp1.x()) << "' "
-            << "y1='" << CGAL::to_double(tp1.y()) << "' "
-            << "x2='" << CGAL::to_double(tp2.x()) << "' "
-            << "y2='" << CGAL::to_double(tp2.y()) << "' "
-            << " stroke='" << color << "'";
+        out << "     <line " << "x1='" << CGAL::to_double(tp1.x()) << "' " << "y1='"
+            << CGAL::to_double(tp1.y()) << "' " << "x2='" << CGAL::to_double(tp2.x()) << "' " << "y2='"
+            << CGAL::to_double(tp2.y()) << "' " << " stroke='" << color << "'";
         if (!(*hfacet).mark()) out << " stroke-dasharray='4 4' />\n";
         else out << " />\n";
       }
@@ -333,6 +328,7 @@ std::string dump_svg(const CGAL_Nef_polyhedron3& N)
   out << "<!--CGAL_Nef_polyhedron3 dump begin-->\n";
   out << svg_header() << "\n" << svg_border() << "\n";
   out << svg_styleblock(linewidth) << "\n" << svg_axes() << "\n";
+  // clang-format off
   out << "\n<!-- CGAL Nef Polyhedron data"
       << "\nnumber of vertices " << N.number_of_vertices() << "\nnumber of halfedges "
       << N.number_of_halfedges() << "\nnumber of edges " << N.number_of_edges()

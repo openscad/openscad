@@ -292,8 +292,10 @@ static void export_dxf(const Polygon2d& poly, std::ostream& output)
     }
   }
 
-  output << "  0\n" << "ENDSEC\n";
-  output << "  0\n" << "EOF\n";
+  output << "  0\n"
+         << "ENDSEC\n";
+  output << "  0\n"
+         << "EOF\n";
 
   setlocale(LC_NUMERIC, "");  // set default locale
 }
