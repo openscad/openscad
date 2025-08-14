@@ -58,6 +58,9 @@ PACKAGES=(
     # https://freetype.org/index.html#news
     "freetype 2.13.3  "
 
+    # https://github.com/silnrsi/graphite/releases
+    "libgraphite2 1.3.14"
+
     # https://github.com/harfbuzz/harfbuzz/releases
     "harfbuzz 11.4.1"
 
@@ -737,6 +740,21 @@ build_glib2()
   install_name_tool -id @rpath/libglib-2.0.dylib $DEPLOYDIR/lib/libglib-2.0.dylib
 }
 
+build_libgraphite2()
+{
+  version=$1
+  cd $BASEDIR/src
+  rm -rf graphite-$version
+  if [ ! -f graphite-$version.tar.gz ]; then
+   curl -L https://github.com/silnrsi/graphite/archive/refs/tags/$version.tar.gz -o graphite-$version.tar.gz
+ fi
+ tar xzf graphite-$version.tar.gz
+  cd graphite-$version
+  cmake -DCMAKE_POLICY_VERSION_MINIMUM=3.5 -DCMAKE_PREFIX_PATH=$DEPLOYDIR -DCMAKE_INSTALL_PREFIX=$DEPLOYDIR -DCMAKE_OSX_DEPLOYMENT_TARGET="$MAC_OSX_VERSION_MIN" -DCMAKE_OSX_ARCHITECTURES="$ARCHS_COMBINED" .
+  make -j"$NUMCPU" VERBOSE=1
+  make -j"$NUMCPU" install
+}
+
 build_harfbuzz()
 {
   version=$1
@@ -751,7 +769,7 @@ build_harfbuzz()
   # Build each arch separately
   for arch in ${ARCHS[*]}; do
     sed -e "s,@MAC_OSX_VERSION_MIN@,$MAC_OSX_VERSION_MIN,g" -e "s,@DEPLOYDIR@,$DEPLOYDIR,g" $OPENSCADDIR/scripts/macos-$arch.txt.in > macos-$arch.txt
-    meson setup --prefix $PWD/../../install --cross-file macos-$arch.txt build-$arch -Dfreetype=enabled -Dgobject=disabled -Dcairo=disabled -Dicu=disabled -Dcoretext=auto -Dglib=disabled -Dtests=disabled -Ddocs=disabled
+    meson setup --prefix $PWD/../../install --cross-file macos-$arch.txt build-$arch -Dfreetype=enabled -Dgraphite2=enabled -Dgobject=disabled -Dcairo=disabled -Dicu=disabled -Dcoretext=auto -Dglib=disabled -Dtests=disabled -Ddocs=disabled
     meson compile -C build-$arch
     DESTDIR=install/ meson install -C build-$arch
   done
