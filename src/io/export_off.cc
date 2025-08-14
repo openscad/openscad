@@ -46,14 +46,13 @@ void export_off(const std::shared_ptr<const Geometry>& geom, std::ostream& outpu
   const auto& v = ps->vertices;
   const size_t numverts = v.size();
 
-
   output << "OFF " << numverts << " " << ps->indices.size() << " 0\n";
   for (size_t i = 0; i < numverts; ++i) {
     output << v[i][0] << " " << v[i][1] << " " << v[i][2] << " " << "\n";
   }
 
   auto has_color = !ps->color_indices.empty();
-  
+
   for (size_t i = 0; i < ps->indices.size(); ++i) {
     const size_t nverts = ps->indices[i].size();
     output << nverts;

@@ -31,15 +31,9 @@ ShareDesignDialog::ShareDesignDialog()
 {
   setupUi(this);
   this->setAttribute(Qt::WA_DeleteOnClose);
-
 }
 // Getters
 
-std::string ShareDesignDialog::getAuthorName() {
-  return name_author->text().toStdString();
-}
+std::string ShareDesignDialog::getAuthorName() { return name_author->text().toStdString(); }
 
-std::string ShareDesignDialog::getDesignName() {
-  return name_design->text().toStdString();
-}
-
+std::string ShareDesignDialog::getDesignName() { return name_design->text().toStdString(); }

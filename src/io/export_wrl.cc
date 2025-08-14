@@ -71,8 +71,8 @@ void export_wrl(const std::shared_ptr<const Geometry>& geom, std::ostream& outpu
   output << "coordIndex [\n";
   const size_t numindices = ps->indices.size();
   for (size_t i = 0; i < numindices; ++i) {
-    const auto &poly=ps->indices[i];
-    for(size_t j=0;j<poly.size();j++) {
+    const auto& poly = ps->indices[i];
+    for (size_t j = 0; j < poly.size(); j++) {
       output << poly[j];
       output << ",";
     }

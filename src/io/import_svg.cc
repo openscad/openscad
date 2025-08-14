@@ -25,7 +25,7 @@
  */
 
 #include "io/import.h"
- 
+
 #include <exception>
 #include <memory>
 #include <string>
@@ -48,23 +48,17 @@ namespace {
 
 constexpr double INCH_TO_MM = 25.4;
 
-double to_mm(const libsvg::length_t& length, const double viewbox, const bool viewbox_valid, const double dpi)
+double to_mm(const libsvg::length_t& length, const double viewbox, const bool viewbox_valid,
+             const double dpi)
 {
   switch (length.unit) {
-  case libsvg::unit_t::NONE:
-    return INCH_TO_MM * length.number / dpi;
-  case libsvg::unit_t::PX:
-    return INCH_TO_MM * length.number / 96.0;
-  case libsvg::unit_t::PT:
-    return INCH_TO_MM * length.number / 72.0;
-  case libsvg::unit_t::PC:
-    return INCH_TO_MM * length.number / 6.0;
-  case libsvg::unit_t::IN:
-    return INCH_TO_MM * length.number;
-  case libsvg::unit_t::CM:
-    return 10 * length.number;
-  case libsvg::unit_t::MM:
-    return length.number;
+  case libsvg::unit_t::NONE: return INCH_TO_MM * length.number / dpi;
+  case libsvg::unit_t::PX:   return INCH_TO_MM * length.number / 96.0;
+  case libsvg::unit_t::PT:   return INCH_TO_MM * length.number / 72.0;
+  case libsvg::unit_t::PC:   return INCH_TO_MM * length.number / 6.0;
+  case libsvg::unit_t::IN:   return INCH_TO_MM * length.number;
+  case libsvg::unit_t::CM:   return 10 * length.number;
+  case libsvg::unit_t::MM:   return length.number;
   case libsvg::unit_t::PERCENT:
     return viewbox_valid ? INCH_TO_MM * length.number / 100.0 * viewbox / dpi : 0.0;
   case libsvg::unit_t::UNDEFINED:
@@ -72,56 +66,52 @@ double to_mm(const libsvg::length_t& length, const double viewbox, const bool vi
     // the DPI value (e.g. Adobe Illustrator does that in older
     // versions)
     return viewbox_valid ? INCH_TO_MM * viewbox / dpi : 0.0;
-  default:
-    return viewbox_valid ? viewbox : 0.0;
+  default: return viewbox_valid ? viewbox : 0.0;
   }
 }
 
 double calc_alignment(const libsvg::align_t alignment, double page_mm, double scale, double viewbox)
 {
   switch (alignment) {
-  case libsvg::align_t::MID:
-    return page_mm / 2.0 - scale * viewbox / 2.0;
-  case libsvg::align_t::MAX:
-    return page_mm - scale * viewbox;
-  default:
-    return 0.0;
+  case libsvg::align_t::MID: return page_mm / 2.0 - scale * viewbox / 2.0;
+  case libsvg::align_t::MAX: return page_mm - scale * viewbox;
+  default:                   return 0.0;
   }
 }
 
-} // namespace
+}  // namespace
 
-
-std::unique_ptr<Polygon2d> import_svg(double fn, double fs, double fa,
-				      const std::string& filename,
-				      const boost::optional<std::string>& id, const boost::optional<std::string>& layer,
-				      const double dpi, const bool center, const Location& loc)
+std::unique_ptr<Polygon2d> import_svg(double fn, double fs, double fa, const std::string& filename,
+                                      const boost::optional<std::string>& id,
+                                      const boost::optional<std::string>& layer, const double dpi,
+                                      const bool center, const Location& loc)
 {
   try {
     fnContext scadContext(fn, fs, fa);
     if (id) {
       scadContext.selector = [&scadContext, id, layer](const libsvg::shape *s) {
-          bool layer_match = true;
-          if (layer) {
-            layer_match = false;
-            for (const libsvg::shape *shape = s; shape->get_parent() != nullptr; shape = shape->get_parent()) {
-              if (shape->has_layer() && shape->get_layer() == layer.get()) {
-                layer_match = true;
-                break;
-              }
+        bool layer_match = true;
+        if (layer) {
+          layer_match = false;
+          for (const libsvg::shape *shape = s; shape->get_parent() != nullptr;
+               shape = shape->get_parent()) {
+            if (shape->has_layer() && shape->get_layer() == layer.get()) {
+              layer_match = true;
+              break;
             }
           }
-          return scadContext.match(layer_match && s->has_id() && s->get_id() == id.get());
-        };
+        }
+        return scadContext.match(layer_match && s->has_id() && s->get_id() == id.get());
+      };
     } else if (layer) {
       scadContext.selector = [&scadContext, layer](const libsvg::shape *s) {
-          return scadContext.match(s->has_layer() && s->get_layer() == layer.get());
-        };
+        return scadContext.match(s->has_layer() && s->get_layer() == layer.get());
+      };
     } else {
       // no selection means selecting the root
       scadContext.selector = [&scadContext](const libsvg::shape *s) {
-          return scadContext.match(s->get_parent() == nullptr);
-        };
+        return scadContext.match(s->get_parent() == nullptr);
+      };
     }
 
     std::string match_args;
@@ -133,9 +123,10 @@ std::unique_ptr<Polygon2d> import_svg(double fn, double fs, double fa,
       match_args += "layer = \"" + layer.get() + "\"";
     }
 
-    const auto shapes = libsvg::libsvg_read_file(filename.c_str(), (void *) &scadContext);
+    const auto shapes = libsvg::libsvg_read_file(filename.c_str(), (void *)&scadContext);
     if (!match_args.empty() && !scadContext.has_matches()) {
-      LOG(message_group::Warning, loc, "", "import() filter %2$s did not match anything", filename, match_args);
+      LOG(message_group::Warning, loc, "", "import() filter %2$s did not match anything", filename,
+          match_args);
     }
 
     double width_mm = 0.0;
@@ -161,10 +152,9 @@ std::unique_ptr<Polygon2d> import_svg(double fn, double fs, double fa,
         if (viewbox_valid) {
           const double px = w.unit == libsvg::unit_t::PERCENT ? w.number / 100.0 : 1.0;
           const double py = h.unit == libsvg::unit_t::PERCENT ? h.number / 100.0 : 1.0;
-          viewbox << px * page->get_viewbox().x, py *page->get_viewbox().y;
+          viewbox << px * page->get_viewbox().x, py * page->get_viewbox().y;
 
-          scale << width_mm / page->get_viewbox().width,
-            height_mm / page->get_viewbox().height;
+          scale << width_mm / page->get_viewbox().width, height_mm / page->get_viewbox().height;
 
           if (alignment.x != libsvg::align_t::NONE) {
             double scaling;

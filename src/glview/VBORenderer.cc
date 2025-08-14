@@ -62,7 +62,7 @@ void shader_attribs_disable(const ShaderUtils::ShaderInfo& shaderinfo)
 VBORenderer::VBORenderer() : Renderer() {}
 
 size_t VBORenderer::calcNumVertices(const std::shared_ptr<CSGProducts>& products,
-                                         bool unique_geometry) const
+                                    bool unique_geometry) const
 {
   size_t buffer_size = 0;
   if (unique_geometry) this->geom_visit_mark_.clear();

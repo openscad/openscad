@@ -13,17 +13,13 @@ class PolySet;
 class CSGNode
 {
 public:
-  enum Flag {
-    FLAG_NONE = 0x00,
-    FLAG_BACKGROUND = 0x01,
-    FLAG_HIGHLIGHT = 0x02
-  };
+  enum Flag { FLAG_NONE = 0x00, FLAG_BACKGROUND = 0x01, FLAG_HIGHLIGHT = 0x02 };
 
   CSGNode(Flag flags = FLAG_NONE) : flags(flags) {}
   virtual ~CSGNode() = default;
   [[nodiscard]] virtual std::string dump() const = 0;
   [[nodiscard]] virtual bool isEmptySet() const { return false; }
-  virtual void applyMatrix(const Transform3d &mat)  = 0;
+  virtual void applyMatrix(const Transform3d& mat) = 0;
 
   [[nodiscard]] const BoundingBox& getBoundingBox() const { return this->bbox; }
   [[nodiscard]] unsigned int getFlags() const { return this->flags; }
@@ -50,7 +46,7 @@ public:
   CSGOperation() = default;
   void initBoundingBox() override;
   [[nodiscard]] std::string dump() const override;
-  virtual void applyMatrix(const Transform3d &mat) override;
+  virtual void applyMatrix(const Transform3d& mat) override;
 
   std::shared_ptr<CSGNode>& left() { return this->children[0]; }
   std::shared_ptr<CSGNode>& right() { return this->children[1]; }
@@ -59,10 +55,12 @@ public:
 
   [[nodiscard]] OpenSCADOperator getType() const { return this->type; }
 
-  static std::shared_ptr<CSGNode> createCSGNode(OpenSCADOperator type, std::shared_ptr<CSGNode> left, std::shared_ptr<CSGNode> right);
+  static std::shared_ptr<CSGNode> createCSGNode(OpenSCADOperator type, std::shared_ptr<CSGNode> left,
+                                                std::shared_ptr<CSGNode> right);
 
 private:
-  CSGOperation(OpenSCADOperator type, const std::shared_ptr<CSGNode>& left, const std::shared_ptr<CSGNode>& right);
+  CSGOperation(OpenSCADOperator type, const std::shared_ptr<CSGNode>& left,
+               const std::shared_ptr<CSGNode>& right);
   OpenSCADOperator type;
   std::vector<std::shared_ptr<CSGNode>> children;
 };
@@ -70,7 +68,8 @@ private:
 // very large lists of children can overflow stack due to recursive destruction of shared_ptr,
 // so move shared_ptrs into a temporary vector
 struct CSGOperationDeleter {
-  void operator()(CSGOperation *node) {
+  void operator()(CSGOperation *node)
+  {
     std::vector<std::shared_ptr<CSGNode>> purge;
     purge.emplace_back(std::move(node->right()));
     purge.emplace_back(std::move(node->left()));
@@ -90,14 +89,15 @@ class CSGLeaf : public CSGNode
 {
 public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-  CSGLeaf(const std::shared_ptr<const PolySet>& ps, Transform3d matrix, Color4f color, int textureind, std::string label, const int index);
+  CSGLeaf(const std::shared_ptr<const PolySet>& ps, Transform3d matrix, Color4f color, int textureind,
+          std::string label, const int index);
   void initBoundingBox() override;
-  virtual void applyMatrix(const Transform3d &mat) override;
+  virtual void applyMatrix(const Transform3d& mat) override;
   [[nodiscard]] bool isEmptySet() const override;
   [[nodiscard]] std::string dump() const override;
   std::string label;
   std::shared_ptr<const PolySet> polyset;
-  bool is_2d=false;
+  bool is_2d = false;
   Transform3d matrix;
   Color4f color;
   int textureind;
@@ -115,7 +115,9 @@ class CSGChainObject
 {
 public:
   CSGChainObject(const std::shared_ptr<CSGLeaf>& leaf, CSGNode::Flag flags = CSGNode::FLAG_NONE)
-    : leaf(leaf), flags(flags) {}
+    : leaf(leaf), flags(flags)
+  {
+  }
 
   std::shared_ptr<CSGLeaf> leaf;
   CSGNode::Flag flags;
@@ -136,11 +138,10 @@ public:
 class CSGProducts
 {
 public:
-  CSGProducts() {
-    this->createProduct();
-  }
+  CSGProducts() { this->createProduct(); }
 
-  void import(std::shared_ptr<CSGNode> csgtree, OpenSCADOperator type = OpenSCADOperator::UNION, CSGNode::Flag flags = CSGNode::FLAG_NONE);
+  void import(std::shared_ptr<CSGNode> csgtree, OpenSCADOperator type = OpenSCADOperator::UNION,
+              CSGNode::Flag flags = CSGNode::FLAG_NONE);
   [[nodiscard]] std::string dump() const;
   [[nodiscard]] BoundingBox getBoundingBox(bool throwntogether = false) const;
 
@@ -149,7 +150,8 @@ public:
   [[nodiscard]] size_t size() const;
 
 private:
-  void createProduct() {
+  void createProduct()
+  {
     this->products.emplace_back();
     this->currentproduct = &this->products.back();
     this->currentlist = &this->currentproduct->intersections;

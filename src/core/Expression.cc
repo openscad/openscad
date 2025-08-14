@@ -52,27 +52,27 @@
 #ifdef ENABLE_PYTHON
 #include "python/python_public.h"
 #endif
-using namespace boost::assign; // bring 'operator+=()' into scope
+using namespace boost::assign;  // bring 'operator+=()' into scope
 
-Value Expression::checkUndef(Value&& val, const std::shared_ptr<const Context>& context) const {
-  if (val.isUncheckedUndef()) LOG(message_group::Warning, loc, context->documentRoot(), "%1$s", val.toUndefString());
+Value Expression::checkUndef(Value&& val, const std::shared_ptr<const Context>& context) const
+{
+  if (val.isUncheckedUndef())
+    LOG(message_group::Warning, loc, context->documentRoot(), "%1$s", val.toUndefString());
   return std::move(val);
 }
 
-bool Expression::isLiteral() const
-{
-  return false;
-}
+bool Expression::isLiteral() const { return false; }
 
-UnaryOp::UnaryOp(UnaryOp::Op op, Expression *expr, const Location& loc) : Expression(loc), op(op), expr(expr)
+UnaryOp::UnaryOp(UnaryOp::Op op, Expression *expr, const Location& loc)
+  : Expression(loc), op(op), expr(expr)
 {
 }
 
 Value UnaryOp::evaluate(const std::shared_ptr<const Context>& context) const
 {
   switch (this->op) {
-  case (Op::Not):    return !this->expr->evaluate(context).toBool();
-  case (Op::Negate): return checkUndef(-this->expr->evaluate(context), context);
+  case (Op::Not):       return !this->expr->evaluate(context).toBool();
+  case (Op::Negate):    return checkUndef(-this->expr->evaluate(context), context);
   case (Op::BinaryNot): return checkUndef(~this->expr->evaluate(context), context);
   default:
     assert(false && "Non-existent unary operator!");
@@ -83,8 +83,8 @@ Value UnaryOp::evaluate(const std::shared_ptr<const Context>& context) const
 const char *UnaryOp::opString() const
 {
   switch (this->op) {
-  case Op::Not:    return "!";
-  case Op::Negate: return "-";
+  case Op::Not:       return "!";
+  case Op::Negate:    return "-";
   case Op::BinaryNot: return "~";
   default:
     assert(false && "Non-existent unary operator!");
@@ -92,23 +92,20 @@ const char *UnaryOp::opString() const
   }
 }
 
-bool UnaryOp::isLiteral() const {
-  return this->expr->isLiteral();
-}
+bool UnaryOp::isLiteral() const { return this->expr->isLiteral(); }
 
 void UnaryOp::print(std::ostream& stream, const std::string&) const
 {
   stream << opString() << *this->expr;
 }
 
-
 void UnaryOp::print_python(std::ostream& stream, std::ostream& stream_def, const std::string&) const
 {
   stream << opString() << *this->expr;
 }
 
-BinaryOp::BinaryOp(Expression *left, BinaryOp::Op op, Expression *right, const Location& loc) :
-  Expression(loc), op(op), left(left), right(right)
+BinaryOp::BinaryOp(Expression *left, BinaryOp::Op op, Expression *right, const Location& loc)
+  : Expression(loc), op(op), left(left), right(right)
 {
 }
 
@@ -175,9 +172,9 @@ const char *BinaryOp::opString() const
   case Op::Equal:        return "==";
   case Op::NotEqual:     return "!=";
   case Op::BinaryOr:     return "|";
-  case Op::BinaryAnd:     return "&";
-  case Op::ShiftLeft:     return "<<";
-  case Op::ShiftRight:     return ">>";
+  case Op::BinaryAnd:    return "&";
+  case Op::ShiftLeft:    return "<<";
+  case Op::ShiftRight:   return ">>";
   default:
     assert(false && "Non-existent binary operator!");
     throw EvaluationException("Non-existent binary operator!");
@@ -188,7 +185,6 @@ void BinaryOp::print(std::ostream& stream, const std::string&) const
 {
   stream << "(" << *this->left << " " << opString() << " " << *this->right << ")";
 }
-
 
 void BinaryOp::print_python(std::ostream& stream, std::ostream& stream_def, const std::string&) const
 {
@@ -225,7 +221,8 @@ ArrayLookup::ArrayLookup(Expression *array, Expression *index, const Location& l
 {
 }
 
-Value ArrayLookup::evaluate(const std::shared_ptr<const Context>& context) const {
+Value ArrayLookup::evaluate(const std::shared_ptr<const Context>& context) const
+{
   return this->array->evaluate(context)[this->index->evaluate(context)];
 }
 
@@ -239,15 +236,9 @@ void ArrayLookup::print_python(std::ostream& stream, std::ostream& stream_def, c
   stream << *array << "[" << *index << "]";
 }
 
-Value Literal::evaluate(const std::shared_ptr<const Context>&) const
-{
-  return value.clone();
-}
+Value Literal::evaluate(const std::shared_ptr<const Context>&) const { return value.clone(); }
 
-void Literal::print(std::ostream& stream, const std::string&) const
-{
-  stream << value;
-}
+void Literal::print(std::ostream& stream, const std::string&) const { stream << value; }
 
 void Literal::print_python(std::ostream& stream, std::ostream& stream_def, const std::string&) const
 {
@@ -271,16 +262,19 @@ Range::Range(Expression *begin, Expression *step, Expression *end, const Locatio
  * noinline is required, as we here specifically optimize for stack usage
  * during normal operating, not runtime during error handling.
  */
-static void NOINLINE print_range_err(const std::string& begin, const std::string& step, const Location& loc, const std::shared_ptr<const Context>& context){
-  LOG(message_group::Warning, loc, context->documentRoot(), "begin %1$s than the end, but step %2$s", begin, step);
+static void NOINLINE print_range_err(const std::string& begin, const std::string& step,
+                                     const Location& loc, const std::shared_ptr<const Context>& context)
+{
+  LOG(message_group::Warning, loc, context->documentRoot(), "begin %1$s than the end, but step %2$s",
+      begin, step);
 }
 
 Value Range::evaluate(const std::shared_ptr<const Context>& context) const
 {
   double begin_val;
   double end_val;
-  if (!this->begin->evaluate(context).getDouble(begin_val)
-    || !this->end->evaluate(context).getDouble(end_val)) {
+  if (!this->begin->evaluate(context).getDouble(begin_val) ||
+      !this->end->evaluate(context).getDouble(end_val)) {
     return Value::undefined.clone();
   }
 
@@ -316,17 +310,16 @@ void Range::print_python(std::ostream& stream, std::ostream& stream_def, const s
   stream << "]";
 }
 
-bool Range::isLiteral() const {
-  return this->step ?
-         begin->isLiteral() && end->isLiteral() && step->isLiteral() :
-         begin->isLiteral() && end->isLiteral();
-}
-
-Vector::Vector(const Location& loc) : Expression(loc), literal_flag(unknown)
+bool Range::isLiteral() const
 {
+  return this->step ? begin->isLiteral() && end->isLiteral() && step->isLiteral()
+                    : begin->isLiteral() && end->isLiteral();
 }
 
-bool Vector::isLiteral() const {
+Vector::Vector(const Location& loc) : Expression(loc), literal_flag(unknown) {}
+
+bool Vector::isLiteral() const
+{
   if (unknown(literal_flag)) {
     for (const auto& e : this->children) {
       if (!e->isLiteral()) {
@@ -341,10 +334,7 @@ bool Vector::isLiteral() const {
   }
 }
 
-void Vector::emplace_back(Expression *expr)
-{
-  this->children.emplace_back(expr);
-}
+void Vector::emplace_back(Expression *expr) { this->children.emplace_back(expr); }
 
 Value Vector::evaluate(const std::shared_ptr<const Context>& context) const
 {
@@ -386,19 +376,14 @@ void Vector::print_python(std::ostream& stream, std::ostream& stream_def, const 
   stream << "]";
 }
 
-Lookup::Lookup(std::string name, const Location& loc) : Expression(loc), name(std::move(name))
-{
-}
+Lookup::Lookup(std::string name, const Location& loc) : Expression(loc), name(std::move(name)) {}
 
 Value Lookup::evaluate(const std::shared_ptr<const Context>& context) const
 {
   return context->lookup_variable(this->name, loc).clone();
 }
 
-void Lookup::print(std::ostream& stream, const std::string&) const
-{
-  stream << this->name;
-}
+void Lookup::print(std::ostream& stream, const std::string&) const { stream << this->name; }
 
 void Lookup::print_python(std::ostream& stream, std::ostream& stream_def, const std::string&) const
 {
@@ -420,12 +405,15 @@ Value MemberLookup::evaluate(const std::shared_ptr<const Context>& context) cons
     if (this->member.length() > 1 && boost::regex_match(this->member, re_swizzle_validation)) {
       VectorType ret(context->session());
       ret.reserve(this->member.length());
-      for (const char& ch : this->member)
-        switch (ch) {
-        case 'r': case 'x': ret.emplace_back(v[0]); break;
-        case 'g': case 'y': ret.emplace_back(v[1]); break;
-        case 'b': case 'z': ret.emplace_back(v[2]); break;
-        case 'a': case 'w': ret.emplace_back(v[3]); break;
+      for (const char& ch : this->member) switch (ch) {
+        case 'r':
+        case 'x': ret.emplace_back(v[0]); break;
+        case 'g':
+        case 'y': ret.emplace_back(v[1]); break;
+        case 'b':
+        case 'z': ret.emplace_back(v[2]); break;
+        case 'a':
+        case 'w': ret.emplace_back(v[3]); break;
         }
       return {std::move(ret)};
     }
@@ -443,10 +431,8 @@ Value MemberLookup::evaluate(const std::shared_ptr<const Context>& context) cons
     if (this->member == "step") return v[1];
     if (this->member == "end") return v[2];
     break;
-  case Value::Type::OBJECT:
-    return v[this->member];
-  default:
-    break;
+  case Value::Type::OBJECT: return v[this->member];
+  default:                  break;
   }
   return Value::undefined.clone();
 }
@@ -485,7 +471,8 @@ void FunctionDefinition::print(std::ostream& stream, const std::string& indent) 
   stream << ") " << *this->expr;
 }
 
-void FunctionDefinition::print_python(std::ostream& stream, std::ostream& stream_def, const std::string& indent) const
+void FunctionDefinition::print_python(std::ostream& stream, std::ostream& stream_def,
+                                      const std::string& indent) const
 {
   stream << indent << "def(";
   bool first = true;
@@ -506,8 +493,11 @@ void FunctionDefinition::print_python(std::ostream& stream, std::ostream& stream
  * noinline is required, as we here specifically optimize for stack usage
  * during normal operating, not runtime during error handling.
  */
-static void NOINLINE print_err(const char *name, const Location& loc, const std::shared_ptr<const Context>& context){
-  LOG(message_group::Error, loc, context->documentRoot(), "Recursion detected calling function '%1$s'", name);
+static void NOINLINE print_err(const char *name, const Location& loc,
+                               const std::shared_ptr<const Context>& context)
+{
+  LOG(message_group::Error, loc, context->documentRoot(), "Recursion detected calling function '%1$s'",
+      name);
 }
 
 /**
@@ -517,8 +507,10 @@ static void NOINLINE print_err(const char *name, const Location& loc, const std:
  * noinline is required, as we here specifically optimize for stack usage
  * during normal operating, not runtime during error handling.
  */
-static void NOINLINE print_trace(const FunctionCall *val, const std::shared_ptr<const Context>& context){
-  LOG(message_group::Trace, val->location(), context->documentRoot(), "called by '%1$s'", val->get_name());
+static void NOINLINE print_trace(const FunctionCall *val, const std::shared_ptr<const Context>& context)
+{
+  LOG(message_group::Trace, val->location(), context->documentRoot(), "called by '%1$s'",
+      val->get_name());
 }
 
 FunctionCall::FunctionCall(Expression *expr, AssignmentList args, const Location& loc)
@@ -538,7 +530,8 @@ FunctionCall::FunctionCall(Expression *expr, AssignmentList args, const Location
   }
 }
 
-boost::optional<CallableFunction> FunctionCall::evaluate_function_expression(const std::shared_ptr<const Context>& context) const
+boost::optional<CallableFunction> FunctionCall::evaluate_function_expression(
+  const std::shared_ptr<const Context>& context) const
 {
   if (isLookup) {
     return context->lookup_function(name, location());
@@ -547,13 +540,14 @@ boost::optional<CallableFunction> FunctionCall::evaluate_function_expression(con
     auto v = expr->evaluate(context);
     if (v.type() == Value::Type::FUNCTION) {
       return CallableFunction{std::move(v)};
-    } else if(member_expr != nullptr){
+    } else if (member_expr != nullptr) {
     } else {
-      LOG(message_group::Warning, loc, context->documentRoot(), "Can't call function on %1$s", v.typeName());
+      LOG(message_group::Warning, loc, context->documentRoot(), "Can't call function on %1$s",
+          v.typeName());
       return boost::none;
     }
   }
-      return boost::none;
+  return boost::none;
 }
 
 struct SimplifiedExpression {
@@ -563,7 +557,8 @@ struct SimplifiedExpression {
 };
 using SimplificationResult = std::variant<SimplifiedExpression, Value>;
 
-static SimplificationResult simplify_function_body(const Expression *expression, const std::shared_ptr<const Context>& context)
+static SimplificationResult simplify_function_body(const Expression *expression,
+                                                   const std::shared_ptr<const Context>& context)
 {
   if (!expression) {
     return Value::undefined.clone();
@@ -591,16 +586,16 @@ static SimplificationResult simplify_function_body(const Expression *expression,
       std::shared_ptr<const Context> defining_context;
 
       auto f = call->evaluate_function_expression(context);
-#ifdef ENABLE_PYTHON    
-      if(f == boost::none)
-      {
-        int error = 0;	      
-        Value v = python_functionfunc(call,context, error);
-        if(!error) return v;
+#ifdef ENABLE_PYTHON
+      if (f == boost::none) {
+        int error = 0;
+        Value v = python_functionfunc(call, context, error);
+        if (!error) return v;
       }
-#endif    
+#endif
       if (!f) {
-	LOG(message_group::Warning, call->location(), context->documentRoot(), "Ignoring unknown function '%1$s'", call->name);
+        LOG(message_group::Warning, call->location(), context->documentRoot(),
+            "Ignoring unknown function '%1$s'", call->name);
         return Value::undefined.clone();
       } else {
         auto index = f->index();
@@ -628,7 +623,8 @@ static SimplificationResult simplify_function_body(const Expression *expression,
       ContextHandle<Context> body_context{Context::create<Context>(defining_context)};
       body_context->apply_config_variables(*context);
       Arguments arguments{call->arguments, context};
-      Parameters parameters = Parameters::parse(std::move(arguments), call->location(), *required_parameters, defining_context);
+      Parameters parameters = Parameters::parse(std::move(arguments), call->location(),
+                                                *required_parameters, defining_context);
       body_context->apply_variables(std::move(parameters).to_context_frame());
 
       return SimplifiedExpression{function_body, std::move(body_context), call};
@@ -672,7 +668,8 @@ Value FunctionCall::evaluate(const std::shared_ptr<const Context>& context) cons
       if (simplified_expression->new_active_function_call) {
         current_call = *simplified_expression->new_active_function_call;
         if (recursion_depth++ == 1000000) {
-          LOG(message_group::Error, expression->location(), expression_context->documentRoot(), "Recursion detected calling function '%1$s'", current_call->name);
+          LOG(message_group::Error, expression->location(), expression_context->documentRoot(),
+              "Recursion detected calling function '%1$s'", current_call->name);
           throw RecursionException::create("function", current_call->name, current_call->location());
         }
       }
@@ -696,7 +693,8 @@ void FunctionCall::print_python(std::ostream& stream, std::ostream& stream_def, 
   stream << this->get_name() << "(" << this->arguments << ")";
 }
 
-Expression *FunctionCall::create(const std::string& funcname, const AssignmentList& arglist, Expression *expr, const Location& loc)
+Expression *FunctionCall::create(const std::string& funcname, const AssignmentList& arglist,
+                                 Expression *expr, const Location& loc)
 {
   if (funcname == "assert") {
     return new Assert(arglist, expr, loc);
@@ -709,18 +707,19 @@ Expression *FunctionCall::create(const std::string& funcname, const AssignmentLi
   }
   return nullptr;
   // TODO: Generate error/warning if expr != 0?
-  //return new FunctionCall(funcname, arglist, loc);
+  // return new FunctionCall(funcname, arglist, loc);
 }
 
 Assert::Assert(AssignmentList args, Expression *expr, const Location& loc)
   : Expression(loc), arguments(std::move(args)), expr(expr)
 {
-
 }
 
-void Assert::performAssert(const AssignmentList& arguments, const Location& location, const std::shared_ptr<const Context>& context)
+void Assert::performAssert(const AssignmentList& arguments, const Location& location,
+                           const std::shared_ptr<const Context>& context)
 {
-  Parameters parameters = Parameters::parse(Arguments(arguments, context), location, {"condition"}, {"message"});
+  Parameters parameters =
+    Parameters::parse(Arguments(arguments, context), location, {"condition"}, {"message"});
   const Expression *conditionExpression = nullptr;
   for (const auto& argument : arguments) {
     if (argument->getName() == "" || argument->getName() == "condition") {
@@ -731,8 +730,10 @@ void Assert::performAssert(const AssignmentList& arguments, const Location& loca
 
   if (!parameters["condition"].toBool()) {
     std::string conditionString = conditionExpression ? STR(" '", *conditionExpression, "'") : "";
-    std::string messageString = parameters.contains("message") ? (": " + parameters["message"].toEchoStringNoThrow()) : "";
-    LOG(message_group::Error, location, context->documentRoot(), "Assertion%1$s failed%2$s", conditionString, messageString);
+    std::string messageString =
+      parameters.contains("message") ? (": " + parameters["message"].toEchoStringNoThrow()) : "";
+    LOG(message_group::Error, location, context->documentRoot(), "Assertion%1$s failed%2$s",
+        conditionString, messageString);
     throw AssertionFailedException("Assertion Failed", location);
   }
 }
@@ -764,7 +765,6 @@ void Assert::print_python(std::ostream& stream, std::ostream& stream_def, const 
 Echo::Echo(AssignmentList args, Expression *expr, const Location& loc)
   : Expression(loc), arguments(std::move(args)), expr(expr)
 {
-
 }
 
 const Expression *Echo::evaluateStep(const std::shared_ptr<const Context>& context) const
@@ -792,19 +792,16 @@ void Echo::print_python(std::ostream& stream, std::ostream& stream_def, const st
   if (this->expr) stream << " " << *this->expr;
 }
 
-
 const Expression *Texture::evaluateStep(const std::shared_ptr<const Context>& context) const
 {
   Arguments arguments{this->arguments, context};
-//  LOG(message_group::Echo, Location::NONE, "", "%1$s", STR(arguments));
+  //  LOG(message_group::Echo, Location::NONE, "", "%1$s", STR(arguments));
   return expr.get();
 }
-
 
 Texture::Texture(AssignmentList args, Expression *expr, const Location& loc)
   : Expression(loc), arguments(std::move(args)), expr(expr)
 {
-
 }
 Value Texture::evaluate(const std::shared_ptr<const Context>& context) const
 {
@@ -818,7 +815,7 @@ void Texture::print(std::ostream& stream, const std::string&) const
   if (this->expr) stream << " " << *this->expr;
 }
 
-void Texture::print_python(std::ostream& stream, std::ostream& stream_def,  const std::string&) const
+void Texture::print_python(std::ostream& stream, std::ostream& stream_def, const std::string&) const
 {
   stream << "tex2(" << this->arguments << ")";
   if (this->expr) stream << " " << *this->expr;
@@ -829,16 +826,20 @@ Let::Let(AssignmentList args, Expression *expr, const Location& loc)
 {
 }
 
-void Let::doSequentialAssignment(const AssignmentList& assignments, const Location& location, ContextHandle<Context>& targetContext)
+void Let::doSequentialAssignment(const AssignmentList& assignments, const Location& location,
+                                 ContextHandle<Context>& targetContext)
 {
   std::set<std::string> seen;
   for (const auto& assignment : assignments) {
     Value value = assignment->getExpr()->evaluate(*targetContext);
     if (assignment->getName().empty()) {
-      LOG(message_group::Warning, location, targetContext->documentRoot(), "Assignment without variable name %1$s", value.toEchoStringNoThrow());
+      LOG(message_group::Warning, location, targetContext->documentRoot(),
+          "Assignment without variable name %1$s", value.toEchoStringNoThrow());
     } else if (seen.find(assignment->getName()) != seen.end()) {
       // TODO Should maybe quote the entire assignment with a new quoteExpr() or quoteStmt().
-      LOG(message_group::Warning, location, targetContext->documentRoot(), "Ignoring duplicate variable assignment %1$s = %2$s", quoteVar(assignment->getName()), value.toEchoStringNoThrow());
+      LOG(message_group::Warning, location, targetContext->documentRoot(),
+          "Ignoring duplicate variable assignment %1$s = %2$s", quoteVar(assignment->getName()),
+          value.toEchoStringNoThrow());
     } else {
       targetContext->set_variable(assignment->getName(), std::move(value));
       seen.insert(assignment->getName());
@@ -846,7 +847,9 @@ void Let::doSequentialAssignment(const AssignmentList& assignments, const Locati
   }
 }
 
-ContextHandle<Context> Let::sequentialAssignmentContext(const AssignmentList& assignments, const Location& location, const std::shared_ptr<const Context>& context)
+ContextHandle<Context> Let::sequentialAssignmentContext(const AssignmentList& assignments,
+                                                        const Location& location,
+                                                        const std::shared_ptr<const Context>& context)
 {
   ContextHandle<Context> letContext{Context::create<Context>(context)};
   doSequentialAssignment(assignments, location, letContext);
@@ -875,9 +878,7 @@ void Let::print_python(std::ostream& stream, std::ostream& stream_def, const std
   stream << "let(" << this->arguments << ") " << *expr;
 }
 
-ListComprehension::ListComprehension(const Location& loc) : Expression(loc)
-{
-}
+ListComprehension::ListComprehension(const Location& loc) : Expression(loc) {}
 
 LcIf::LcIf(Expression *cond, Expression *ifexpr, Expression *elseexpr, const Location& loc)
   : ListComprehension(loc), cond(cond), ifexpr(ifexpr), elseexpr(elseexpr)
@@ -886,7 +887,8 @@ LcIf::LcIf(Expression *cond, Expression *ifexpr, Expression *elseexpr, const Loc
 
 Value LcIf::evaluate(const std::shared_ptr<const Context>& context) const
 {
-  const std::shared_ptr<Expression>& expr = this->cond->evaluate(context).toBool() ? this->ifexpr : this->elseexpr;
+  const std::shared_ptr<Expression>& expr =
+    this->cond->evaluate(context).toBool() ? this->ifexpr : this->elseexpr;
   if (expr) {
     return expr->evaluate(context);
   } else {
@@ -910,9 +912,7 @@ void LcIf::print_python(std::ostream& stream, std::ostream& stream_def, const st
   }
 }
 
-LcEach::LcEach(Expression *expr, const Location& loc) : ListComprehension(loc), expr(expr)
-{
-}
+LcEach::LcEach(Expression *expr, const Location& loc) : ListComprehension(loc), expr(expr) {}
 
 // Need this for recurring into already embedded vectors, and performing "each" on their elements
 //    Context is only passed along for the possible use in Range warning.
@@ -922,7 +922,8 @@ Value LcEach::evalRecur(Value&& v, const std::shared_ptr<const Context>& context
     const RangeType& range = v.toRange();
     uint32_t steps = range.numValues();
     if (steps >= 1000000) {
-      LOG(message_group::Warning, loc, context->documentRoot(), "Bad range parameter in for statement: too many elements (%1$lu)", steps);
+      LOG(message_group::Warning, loc, context->documentRoot(),
+          "Bad range parameter in for statement: too many elements (%1$lu)", steps);
     } else {
       EmbeddedVectorType vec(context->session());
       vec.reserve(range.numValues());
@@ -930,7 +931,8 @@ Value LcEach::evalRecur(Value&& v, const std::shared_ptr<const Context>& context
       return {std::move(vec)};
     }
   } else if (v.type() == Value::Type::VECTOR) {
-    // Safe to move the overall vector ptr since we have a temporary value (could be a copy, or constructed just for us, doesn't matter)
+    // Safe to move the overall vector ptr since we have a temporary value (could be a copy, or
+    // constructed just for us, doesn't matter)
     auto vec = EmbeddedVectorType(std::move(v.toVectorNonConst()));
     return {std::move(vec)};
   } else if (v.type() == Value::Type::EMBEDDED_VECTOR) {
@@ -938,11 +940,11 @@ Value LcEach::evalRecur(Value&& v, const std::shared_ptr<const Context>& context
     vec.reserve(v.toEmbeddedVector().size());
     // Not safe to move values out of a vector, since it's shared_ptr maye be shared with another Value,
     // which should remain constant
-    for (const auto& val : v.toEmbeddedVector()) vec.emplace_back(evalRecur(val.clone(), context) );
+    for (const auto& val : v.toEmbeddedVector()) vec.emplace_back(evalRecur(val.clone(), context));
     return {std::move(vec)};
   } else if (v.type() == Value::Type::STRING) {
     EmbeddedVectorType vec(context->session());
-    auto &wrapper = v.toStrUtf8Wrapper();
+    auto& wrapper = v.toStrUtf8Wrapper();
     vec.reserve(wrapper.size());
     for (auto ch : wrapper) vec.emplace_back(std::move(ch));
     return {std::move(vec)};
@@ -972,21 +974,19 @@ LcFor::LcFor(AssignmentList args, Expression *expr, const Location& loc)
 {
 }
 
-static inline ContextHandle<Context> forContext(const std::shared_ptr<const Context>& context, const std::string& name, Value value)
+static inline ContextHandle<Context> forContext(const std::shared_ptr<const Context>& context,
+                                                const std::string& name, Value value)
 {
   ContextHandle<Context> innerContext{Context::create<Context>(context)};
   innerContext->set_variable(name, std::move(value));
   return innerContext;
 }
 
-static void doForEach(
-  const AssignmentList& assignments,
-  const Location& location,
-  const std::function<void(const std::shared_ptr<const Context>&)>& operation,
-  size_t assignment_index,
-  const std::shared_ptr<const Context>& context,
-  const std::function<void(size_t)> *pReserve = nullptr
-  ) {
+static void doForEach(const AssignmentList& assignments, const Location& location,
+                      const std::function<void(const std::shared_ptr<const Context>&)>& operation,
+                      size_t assignment_index, const std::shared_ptr<const Context>& context,
+                      const std::function<void(size_t)> *pReserve = nullptr)
+{
   if (assignment_index >= assignments.size()) {
     operation(context);
     return;
@@ -1007,48 +1007,46 @@ static void doForEach(
       }
       for (double value : range) {
         doForEach(assignments, location, operation, assignment_index + 1,
-                  *forContext(context, variable_name, value)
-                  );
+                  *forContext(context, variable_name, value));
       }
     }
   } else if (variable_values.type() == Value::Type::VECTOR) {
-    auto &vec = variable_values.toVector();
+    auto& vec = variable_values.toVector();
     if (pReserve) {
       (*pReserve)(vec.size());
     }
     for (const auto& value : vec) {
       doForEach(assignments, location, operation, assignment_index + 1,
-                *forContext(context, variable_name, value.clone())
-                );
+                *forContext(context, variable_name, value.clone()));
     }
   } else if (variable_values.type() == Value::Type::OBJECT) {
-    auto &keys = variable_values.toObject().keys();
+    auto& keys = variable_values.toObject().keys();
     if (pReserve) {
       (*pReserve)(keys.size());
     }
     for (auto key : keys) {
       doForEach(assignments, location, operation, assignment_index + 1,
-                *forContext(context, variable_name, key)
-                );
+                *forContext(context, variable_name, key));
     }
   } else if (variable_values.type() == Value::Type::STRING) {
-    auto &wrapper = variable_values.toStrUtf8Wrapper();
+    auto& wrapper = variable_values.toStrUtf8Wrapper();
     if (pReserve) {
       (*pReserve)(wrapper.size());
     }
     for (auto value : wrapper) {
       doForEach(assignments, location, operation, assignment_index + 1,
-                *forContext(context, variable_name, Value(std::move(value)))
-                );
+                *forContext(context, variable_name, Value(std::move(value))));
     }
   } else if (variable_values.type() != Value::Type::UNDEFINED) {
     doForEach(assignments, location, operation, assignment_index + 1,
-              *forContext(context, variable_name, std::move(variable_values))
-              );
+              *forContext(context, variable_name, std::move(variable_values)));
   }
 }
 
-void LcFor::forEach(const AssignmentList& assignments, const Location& loc, const std::shared_ptr<const Context>& context, const std::function<void(const std::shared_ptr<const Context>&)>& operation, const std::function<void(size_t)>* pReserve)
+void LcFor::forEach(const AssignmentList& assignments, const Location& loc,
+                    const std::shared_ptr<const Context>& context,
+                    const std::function<void(const std::shared_ptr<const Context>&)>& operation,
+                    const std::function<void(size_t)> *pReserve)
 {
   doForEach(assignments, loc, operation, 0, context, pReserve);
 }
@@ -1056,13 +1054,13 @@ void LcFor::forEach(const AssignmentList& assignments, const Location& loc, cons
 Value LcFor::evaluate(const std::shared_ptr<const Context>& context) const
 {
   EmbeddedVectorType vec(context->session());
-  std::function<void(size_t)> reserve = [&vec](size_t capacity) {
-    vec.reserve(capacity);
-  };
-  forEach(this->arguments, this->loc, context,
-          [&vec, expression = expr.get()] (const std::shared_ptr<const Context>& iterationContext) {
-    vec.emplace_back(expression->evaluate(iterationContext));
-  }, &reserve);
+  std::function<void(size_t)> reserve = [&vec](size_t capacity) { vec.reserve(capacity); };
+  forEach(
+    this->arguments, this->loc, context,
+    [&vec, expression = expr.get()](const std::shared_ptr<const Context>& iterationContext) {
+      vec.emplace_back(expression->evaluate(iterationContext));
+    },
+    &reserve);
   return {std::move(vec)};
 }
 
@@ -1076,8 +1074,13 @@ void LcFor::print_python(std::ostream& stream, std::ostream& stream_def, const s
   stream << "for(" << this->arguments << ") (" << *this->expr << ")";
 }
 
-LcForC::LcForC(AssignmentList args, AssignmentList incrargs, Expression *cond, Expression *expr, const Location& loc)
-  : ListComprehension(loc), arguments(std::move(args)), incr_arguments(std::move(incrargs)), cond(cond), expr(expr)
+LcForC::LcForC(AssignmentList args, AssignmentList incrargs, Expression *cond, Expression *expr,
+               const Location& loc)
+  : ListComprehension(loc),
+    arguments(std::move(args)),
+    incr_arguments(std::move(incrargs)),
+    cond(cond),
+    expr(expr)
 {
 }
 
@@ -1085,7 +1088,8 @@ Value LcForC::evaluate(const std::shared_ptr<const Context>& context) const
 {
   EmbeddedVectorType output(context->session());
 
-  ContextHandle<Context> initialContext{Let::sequentialAssignmentContext(this->arguments, this->location(), context)};
+  ContextHandle<Context> initialContext{
+    Let::sequentialAssignmentContext(this->arguments, this->location(), context)};
   ContextHandle<Context> currentContext{Context::create<Context>(*initialContext)};
 
   unsigned int counter = 0;
@@ -1108,7 +1112,8 @@ Value LcForC::evaluate(const std::shared_ptr<const Context>& context) const
      * captured context references in lambda functions.
      * So, we reparent the next context to the initial context.
      */
-    ContextHandle<Context> nextContext{Let::sequentialAssignmentContext(this->incr_arguments, this->location(), *currentContext)};
+    ContextHandle<Context> nextContext{
+      Let::sequentialAssignmentContext(this->incr_arguments, this->location(), *currentContext)};
     currentContext = std::move(nextContext);
     currentContext->setParent(*initialContext);
   }
@@ -1117,20 +1122,14 @@ Value LcForC::evaluate(const std::shared_ptr<const Context>& context) const
 
 void LcForC::print(std::ostream& stream, const std::string&) const
 {
-  stream
-    << "for(" << this->arguments
-    << ";" << *this->cond
-    << ";" << this->incr_arguments
-    << ") " << *this->expr;
+  stream << "for(" << this->arguments << ";" << *this->cond << ";" << this->incr_arguments << ") "
+         << *this->expr;
 }
 
 void LcForC::print_python(std::ostream& stream, std::ostream& stream_def, const std::string&) const
 {
-  stream
-    << "for(" << this->arguments
-    << ";" << *this->cond
-    << ";" << this->incr_arguments
-    << ") " << *this->expr;
+  stream << "for(" << this->arguments << ";" << *this->cond << ";" << this->incr_arguments << ") "
+         << *this->expr;
 }
 
 LcLet::LcLet(AssignmentList args, Expression *expr, const Location& loc)
@@ -1140,7 +1139,8 @@ LcLet::LcLet(AssignmentList args, Expression *expr, const Location& loc)
 
 Value LcLet::evaluate(const std::shared_ptr<const Context>& context) const
 {
-  return this->expr->evaluate(*Let::sequentialAssignmentContext(this->arguments, this->location(), context));
+  return this->expr->evaluate(
+    *Let::sequentialAssignmentContext(this->arguments, this->location(), context));
 }
 
 void LcLet::print(std::ostream& stream, const std::string&) const
@@ -1148,7 +1148,7 @@ void LcLet::print(std::ostream& stream, const std::string&) const
   stream << "let(" << this->arguments << ") (" << *this->expr << ")";
 }
 
-void LcLet::print_python(std::ostream& stream, std::ostream& stream_def,const std::string&) const
+void LcLet::print_python(std::ostream& stream, std::ostream& stream_def, const std::string&) const
 {
   stream << "let(" << this->arguments << ") (" << *this->expr << ")";
 }

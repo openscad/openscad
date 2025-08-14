@@ -19,21 +19,24 @@ extern void (*progress_report_f)(const std::shared_ptr<const AbstractNode>&, voi
 extern void *progress_report_vp;
 extern std::vector<ModuleInstantiation *> modinsts_list;
 
-void progress_report_prep(const std::shared_ptr<AbstractNode>& root, void (*f)(const std::shared_ptr<const AbstractNode>& node, void *vp, int mark), void *vp);
+void progress_report_prep(const std::shared_ptr<AbstractNode>& root,
+                          void (*f)(const std::shared_ptr<const AbstractNode>& node, void *vp, int mark),
+                          void *vp);
 void progress_report_fin();
 using Eigen::Vector3d;
 class DragMod
 {
-  public:	
+public:
   std::string name;
   int index;
   std::vector<int> arrinfo;
-  double value;  
+  double value;
 };
 
-class DragResult {
-  public:
-  Vector3d anchor;	
+class DragResult
+{
+public:
+  Vector3d anchor;
   std::string modname;
   std::vector<DragMod> mods;
 };
@@ -50,7 +53,7 @@ class AbstractNode : public BaseVisitable, public std::enable_shared_from_this<A
   // We can hash on pointer value or smth. else.
   //  -> remove and
   // use smth. else to display node identifier in CSG tree output?
-  static size_t idx_counter; // Node instantiation index
+  static size_t idx_counter;  // Node instantiation index
 public:
   VISITABLE();
   AbstractNode(const ModuleInstantiation *mi);
@@ -64,9 +67,7 @@ public:
       the verbose name shall be overloaded. */
   virtual std::string verbose_name() const { return this->name(); }
 
-  const std::vector<std::shared_ptr<AbstractNode>>& getChildren() const {
-    return this->children;
-  }
+  const std::vector<std::shared_ptr<AbstractNode>>& getChildren() const { return this->children; }
   size_t index() const { return this->idx; }
 
   static void resetIndexCounter() { idx_counter = 1; }
@@ -81,32 +82,38 @@ public:
   void progress_prepare();
   void progress_report() const;
 
-  int idx; // Node index (unique per tree)
+  int idx;  // Node index (unique per tree)
 
-  std::shared_ptr<const AbstractNode> getNodeByID(int idx, std::deque<std::shared_ptr<const AbstractNode>>& path) const;
+  std::shared_ptr<const AbstractNode> getNodeByID(
+    int idx, std::deque<std::shared_ptr<const AbstractNode>>& path) const;
 
   // returns the precise source code location associated with the node
-  void getCodeLocation(int currentLevel,  int includeLevel, int *firstLine,
-                       int *firstColumn, int *lastLine, int *lastColumn, int nestedModuleDepth) const;
+  void getCodeLocation(int currentLevel, int includeLevel, int *firstLine, int *firstColumn,
+                       int *lastLine, int *lastColumn, int nestedModuleDepth) const;
 
   void findNodesWithSameMod(const std::shared_ptr<const AbstractNode>& node_mod,
                             std::vector<std::shared_ptr<const AbstractNode>>& nodes) const;
 
   std::shared_ptr<AbstractNode> clone(void);
-  void  dump_counts(int indent, int use_cnt);
-#ifdef ENABLE_PYTHON  
+  void dump_counts(int indent, int use_cnt);
+#ifdef ENABLE_PYTHON
   std::string py_name;
-  void setPyName(const std::string &name);
-  std::string  getPyName(void);
-#endif  
-  virtual std::shared_ptr<const Geometry> dragPoint(const Vector3d &pt, const Vector3d &delta,DragResult &result) {printf("drag Point on AbstractNode\n"); return nullptr; }
+  void setPyName(const std::string& name);
+  std::string getPyName(void);
+#endif
+  virtual std::shared_ptr<const Geometry> dragPoint(const Vector3d& pt, const Vector3d& delta,
+                                                    DragResult& result)
+  {
+    printf("drag Point on AbstractNode\n");
+    return nullptr;
+  }
 };
 
 class AbstractIntersectionNode : public AbstractNode
 {
 public:
   VISITABLE();
-  AbstractIntersectionNode(const ModuleInstantiation *mi) : AbstractNode(mi) { }
+  AbstractIntersectionNode(const ModuleInstantiation *mi) : AbstractNode(mi) {}
   std::string toString() const override;
   std::string name() const override;
 };
@@ -115,12 +122,9 @@ class AbstractPolyNode : public AbstractNode
 {
 public:
   VISITABLE();
-  AbstractPolyNode(const ModuleInstantiation *mi) : AbstractNode(mi) { }
+  AbstractPolyNode(const ModuleInstantiation *mi) : AbstractNode(mi) {}
 
-  enum class render_mode_e {
-    RENDER_CGAL,
-    RENDER_OPENCSG
-  };
+  enum class render_mode_e { RENDER_CGAL, RENDER_OPENCSG };
 };
 
 /*!
@@ -131,7 +135,7 @@ class ListNode : public AbstractNode
 {
 public:
   VISITABLE();
-  ListNode(const ModuleInstantiation *mi) : AbstractNode(mi) { }
+  ListNode(const ModuleInstantiation *mi) : AbstractNode(mi) {}
   std::string name() const override;
 };
 
@@ -143,16 +147,20 @@ class GroupNode : public AbstractNode
 {
 public:
   VISITABLE();
-  GroupNode(const ModuleInstantiation *mi, std::string name = "") : AbstractNode(mi), _name(std::move(name)) { }
+  GroupNode(const ModuleInstantiation *mi, std::string name = "")
+    : AbstractNode(mi), _name(std::move(name))
+  {
+  }
   std::string name() const override;
   std::string verbose_name() const override;
 
-  void setImpliedUnion(bool val) {_impliedUnion = val;};
-  bool getImpliedUnion() {return _impliedUnion; }
+  void setImpliedUnion(bool val) { _impliedUnion = val; };
+  bool getImpliedUnion() { return _impliedUnion; }
+
 private:
   const std::string _name;
   // To maintain back-compat, GroupNode might perform an implied UNION of its children.
-  bool _impliedUnion {true};
+  bool _impliedUnion{true};
 };
 
 /*!
@@ -162,8 +170,9 @@ class RootNode : public GroupNode
 {
 public:
   VISITABLE();
-  RootNode() : GroupNode(&mi), mi("group") { }
+  RootNode() : GroupNode(&mi), mi("group") {}
   std::string name() const override;
+
 private:
   ModuleInstantiation mi;
 };
@@ -172,9 +181,10 @@ class LeafNode : public AbstractPolyNode
 {
 public:
   VISITABLE();
-  LeafNode(const ModuleInstantiation *mi) : AbstractPolyNode(mi) { }
+  LeafNode(const ModuleInstantiation *mi) : AbstractPolyNode(mi) {}
   virtual std::unique_ptr<const class Geometry> createGeometry() const = 0;
 };
 
 std::ostream& operator<<(std::ostream& stream, const AbstractNode& node);
-std::shared_ptr<AbstractNode> find_root_tag(const std::shared_ptr<AbstractNode>& node, const Location **nextLocation = nullptr);
+std::shared_ptr<AbstractNode> find_root_tag(const std::shared_ptr<AbstractNode>& node,
+                                            const Location **nextLocation = nullptr);

@@ -29,17 +29,12 @@
 std::string WrapNode::toString() const
 {
   std::ostringstream stream;
-  stream << "wrap" <<  "("
-         << "($fn = " << fn
-           << ", $fa = " << fa
-           << ", $fs = " << fs;
-  if(shape != nullptr) {
+  stream << "wrap" << "("
+         << "($fn = " << fn << ", $fa = " << fa << ", $fs = " << fs;
+  if (shape != nullptr) {
     stream << ", shape = " << shape->toString();
-  }  else stream << ", r = " << r;
+  } else stream << ", r = " << r;
   stream << ")";
 
   return stream.str();
 }
-
-
-

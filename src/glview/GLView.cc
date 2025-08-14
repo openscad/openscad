@@ -37,15 +37,13 @@ GLView::GLView()
   static int sId = 0;
   this->opencsg_id = sId++;
 #endif
-  this->handle_mode=false;
+  this->handle_mode = false;
 }
 
-GLView::~GLView()
+GLView::~GLView() { teardownShader(); }
+
+void GLView::setupShader()
 {
-  teardownShader();
-}
-
-void GLView::setupShader() {
   if (edge_shader) return;
 
   auto resource = ShaderUtils::compileShaderProgram(ShaderUtils::loadShaderSource("ViewEdges.vert"),
@@ -54,20 +52,23 @@ void GLView::setupShader() {
   edge_shader = std::make_unique<ShaderUtils::ShaderInfo>(ShaderUtils::ShaderInfo{
     .resource = resource,
     .type = ShaderUtils::ShaderType::EDGE_RENDERING,
-    .uniforms = {
-      {"color_area", glGetUniformLocation(resource.shader_program, "color_area")},
-      {"color_edge", glGetUniformLocation(resource.shader_program, "color_edge")},
-      {"tex1", glGetUniformLocation(resource.shader_program, "tex1")},
-      {"texturefactor", glGetUniformLocation(resource.shader_program, "texturefactor")},
-    },
-    .attributes = {
-      {"barycentric", glGetAttribLocation(resource.shader_program, "barycentric")},
-    },
+    .uniforms =
+      {
+        {"color_area", glGetUniformLocation(resource.shader_program, "color_area")},
+        {"color_edge", glGetUniformLocation(resource.shader_program, "color_edge")},
+        {"tex1", glGetUniformLocation(resource.shader_program, "tex1")},
+        {"texturefactor", glGetUniformLocation(resource.shader_program, "texturefactor")},
+      },
+    .attributes =
+      {
+        {"barycentric", glGetAttribLocation(resource.shader_program, "barycentric")},
+      },
   });
 }
 
-void GLView::teardownShader() {
-  if( edge_shader == nullptr) return; // if OpenGL context was not initialized
+void GLView::teardownShader()
+{
+  if (edge_shader == nullptr) return;  // if OpenGL context was not initialized
   if (edge_shader->resource.shader_program) {
     glDeleteProgram(edge_shader->resource.shader_program);
   }
@@ -79,10 +80,7 @@ void GLView::teardownShader() {
   }
 }
 
-void GLView::setRenderer(std::shared_ptr<Renderer> r)
-{
-  this->renderer = r;
-}
+void GLView::setRenderer(std::shared_ptr<Renderer> r) { this->renderer = r; }
 
 /* update the color schemes of the Renderer attached to this GLView
    to match the colorscheme of this GLView.*/
@@ -120,10 +118,7 @@ void GLView::resizeGL(int w, int h)
   setupShader();
 }
 
-void GLView::setCamera(const Camera& cam)
-{
-  this->cam = cam;
-}
+void GLView::setCamera(const Camera& cam) { this->cam = cam; }
 
 void GLView::setupCamera()
 {
@@ -138,25 +133,24 @@ void GLView::setupCamera()
   default:
   case Camera::ProjectionType::ORTHOGONAL: {
     auto height = dist * tan_degrees(cam.fov / 2);
-    glOrtho(-height * aspectratio, height * aspectratio,
-            -height, height,
-            -100 * dist, +100 * dist);
+    glOrtho(-height * aspectratio, height * aspectratio, -height, height, -100 * dist, +100 * dist);
     break;
   }
   }
   glMatrixMode(GL_MODELVIEW);
   glLoadIdentity();
-  gluLookAt(0.0, -dist, 0.0, // eye
-            0.0, 0.0,   0.0,// center
-            0.0, 0.0,   1.0);// up
+  gluLookAt(0.0, -dist, 0.0,  // eye
+            0.0, 0.0, 0.0,    // center
+            0.0, 0.0, 1.0);   // up
 
   glRotated(cam.object_rot.x(), 1.0, 0.0, 0.0);
   glRotated(cam.object_rot.y(), 0.0, 1.0, 0.0);
   glRotated(cam.object_rot.z(), 0.0, 0.0, 1.0);
-  glTranslated(cam.object_trans[0],cam.object_trans[1],cam.object_trans[2]); // translation be part of modelview matrix!
-  glGetDoublev(GL_MODELVIEW_MATRIX,this->modelview);
-  glTranslated(-cam.object_trans[0],-cam.object_trans[1],-cam.object_trans[2]);
-  glGetDoublev(GL_PROJECTION_MATRIX,this->projection);
+  glTranslated(cam.object_trans[0], cam.object_trans[1],
+               cam.object_trans[2]);  // translation be part of modelview matrix!
+  glGetDoublev(GL_MODELVIEW_MATRIX, this->modelview);
+  glTranslated(-cam.object_trans[0], -cam.object_trans[1], -cam.object_trans[2]);
+  glGetDoublev(GL_PROJECTION_MATRIX, this->projection);
 }
 
 void GLView::paintGL()
@@ -179,7 +173,7 @@ void GLView::paintGL()
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
 
-    //draw screen aligned quad with color gradient
+    // draw screen aligned quad with color gradient
     glBegin(GL_QUADS);
     glColor3f(bgcol.r(), bgcol.g(), bgcol.b());
     glVertex2f(-1.0f, +1.0f);
@@ -209,35 +203,34 @@ void GLView::paintGL()
   glLineWidth(2);
   glColor3d(1.0, 0.0, 0.0);
 
-  glColor3f(0,1,0);
-  Vector3d eyedir(this->modelview[2],this->modelview[6],this->modelview[10]);
-  if(shown_obj != nullptr)
-    showObject(*shown_obj,eyedir);
-#ifdef ENABLE_PYTHON 
-  if(this->handle_mode) {
-    glColor3f(0,0,1);
-    for (const SelectedObject sel: python_result_handle) {
-      showObject(sel,eyedir);
+  glColor3f(0, 1, 0);
+  Vector3d eyedir(this->modelview[2], this->modelview[6], this->modelview[10]);
+  if (shown_obj != nullptr) showObject(*shown_obj, eyedir);
+#ifdef ENABLE_PYTHON
+  if (this->handle_mode) {
+    glColor3f(0, 0, 1);
+    for (const SelectedObject sel : python_result_handle) {
+      showObject(sel, eyedir);
     }
-  }  
-#endif  
+  }
+#endif
 
   if (this->renderer) {
 #if defined(ENABLE_OPENCSG)
     // FIXME: This belongs in the OpenCSG renderer, but it doesn't know about this ID yet
     OpenCSG::setContext(this->opencsg_id);
 #endif
-    if(this->handle_mode) {
+    if (this->handle_mode) {
       glEnable(GL_BLEND);
-      glBlendFunc(GL_DST_COLOR, GL_ONE_MINUS_DST_COLOR); 
-    }  
+      glBlendFunc(GL_DST_COLOR, GL_ONE_MINUS_DST_COLOR);
+    }
     this->renderer->prepare(edge_shader.get());
     this->renderer->draw(showedges, edge_shader.get());
-    if(this->handle_mode) glDisable(GL_BLEND);
+    if (this->handle_mode) glDisable(GL_BLEND);
   }
-  glColor3f(1,0,0);
-  for (const SelectedObject &obj:this->selected_obj) {
-    showObject(obj,eyedir);
+  glColor3f(1, 0, 0);
+  for (const SelectedObject& obj : this->selected_obj) {
+    showObject(obj, eyedir);
   }
   glDisable(GL_LIGHTING);
   if (showaxes) GLView::showSmallaxes(axescolor);
@@ -263,7 +256,8 @@ void GLView::paintGL()
 
 #ifdef ENABLE_OPENCSG
 
-void glCompileCheck(GLuint shader) {
+void glCompileCheck(GLuint shader)
+{
   GLint status;
   glGetShaderiv(shader, GL_COMPILE_STATUS, &status);
   if (status == GL_FALSE) {
@@ -290,8 +284,7 @@ void GLView::enable_opencsg_shaders()
     display_opencsg_warning();
   }
 }
-#endif // ifdef ENABLE_OPENCSG
-
+#endif  // ifdef ENABLE_OPENCSG
 
 #ifdef DEBUG
 // Requires OpenGL 4.3+
@@ -357,12 +350,9 @@ void GLView::showSmallaxes(const Color4f& col)
   glLoadIdentity();
   glTranslatef(-0.8f, -0.8f, 0.0f);
   auto scale = 90.0;
-  glOrtho(-scale * dpi * aspectratio, scale * dpi * aspectratio,
-          -scale * dpi, scale * dpi,
-          -scale * dpi, scale * dpi);
-  gluLookAt(0.0, -1.0, 0.0,
-            0.0, 0.0, 0.0,
-            0.0, 0.0, 1.0);
+  glOrtho(-scale * dpi * aspectratio, scale * dpi * aspectratio, -scale * dpi, scale * dpi, -scale * dpi,
+          scale * dpi);
+  gluLookAt(0.0, -1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0);
 
   glMatrixMode(GL_MODELVIEW);
   glLoadIdentity();
@@ -373,11 +363,14 @@ void GLView::showSmallaxes(const Color4f& col)
   glLineWidth(dpi);
   glBegin(GL_LINES);
   glColor3d(1.0, 0.0, 0.0);
-  glVertex3d(0, 0, 0); glVertex3d(10 * dpi, 0, 0);
+  glVertex3d(0, 0, 0);
+  glVertex3d(10 * dpi, 0, 0);
   glColor3d(0.0, 1.0, 0.0);
-  glVertex3d(0, 0, 0); glVertex3d(0, 10 * dpi, 0);
+  glVertex3d(0, 0, 0);
+  glVertex3d(0, 10 * dpi, 0);
   glColor3d(0.0, 0.0, 1.0);
-  glVertex3d(0, 0, 0); glVertex3d(0, 0, 10 * dpi);
+  glVertex3d(0, 0, 0);
+  glVertex3d(0, 0, 10 * dpi);
   glEnd();
 
   GLdouble mat_model[16];
@@ -391,15 +384,18 @@ void GLView::showSmallaxes(const Color4f& col)
 
   GLdouble xlabel_x, xlabel_y, xlabel_z;
   gluProject(12 * dpi, 0, 0, mat_model, mat_proj, viewport, &xlabel_x, &xlabel_y, &xlabel_z);
-  xlabel_x = std::round(xlabel_x); xlabel_y = std::round(xlabel_y);
+  xlabel_x = std::round(xlabel_x);
+  xlabel_y = std::round(xlabel_y);
 
   GLdouble ylabel_x, ylabel_y, ylabel_z;
   gluProject(0, 12 * dpi, 0, mat_model, mat_proj, viewport, &ylabel_x, &ylabel_y, &ylabel_z);
-  ylabel_x = std::round(ylabel_x); ylabel_y = std::round(ylabel_y);
+  ylabel_x = std::round(ylabel_x);
+  ylabel_y = std::round(ylabel_y);
 
   GLdouble zlabel_x, zlabel_y, zlabel_z;
   gluProject(0, 0, 12 * dpi, mat_model, mat_proj, viewport, &zlabel_x, &zlabel_y, &zlabel_z);
-  zlabel_x = std::round(zlabel_x); zlabel_y = std::round(zlabel_y);
+  zlabel_x = std::round(zlabel_x);
+  zlabel_y = std::round(zlabel_y);
 
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
@@ -414,15 +410,22 @@ void GLView::showSmallaxes(const Color4f& col)
   float d = 3 * dpi;
   glBegin(GL_LINES);
   // X Label
-  glVertex3d(xlabel_x - d, xlabel_y - d, 0); glVertex3d(xlabel_x + d, xlabel_y + d, 0);
-  glVertex3d(xlabel_x - d, xlabel_y + d, 0); glVertex3d(xlabel_x + d, xlabel_y - d, 0);
+  glVertex3d(xlabel_x - d, xlabel_y - d, 0);
+  glVertex3d(xlabel_x + d, xlabel_y + d, 0);
+  glVertex3d(xlabel_x - d, xlabel_y + d, 0);
+  glVertex3d(xlabel_x + d, xlabel_y - d, 0);
   // Y Label
-  glVertex3d(ylabel_x - d, ylabel_y - d, 0); glVertex3d(ylabel_x + d, ylabel_y + d, 0);
-  glVertex3d(ylabel_x - d, ylabel_y + d, 0); glVertex3d(ylabel_x, ylabel_y, 0);
+  glVertex3d(ylabel_x - d, ylabel_y - d, 0);
+  glVertex3d(ylabel_x + d, ylabel_y + d, 0);
+  glVertex3d(ylabel_x - d, ylabel_y + d, 0);
+  glVertex3d(ylabel_x, ylabel_y, 0);
   // Z Label
-  glVertex3d(zlabel_x - d, zlabel_y - d, 0); glVertex3d(zlabel_x + d, zlabel_y - d, 0);
-  glVertex3d(zlabel_x - d, zlabel_y + d, 0); glVertex3d(zlabel_x + d, zlabel_y + d, 0);
-  glVertex3d(zlabel_x - d, zlabel_y - d, 0); glVertex3d(zlabel_x + d, zlabel_y + d, 0);
+  glVertex3d(zlabel_x - d, zlabel_y - d, 0);
+  glVertex3d(zlabel_x + d, zlabel_y - d, 0);
+  glVertex3d(zlabel_x - d, zlabel_y + d, 0);
+  glVertex3d(zlabel_x + d, zlabel_y + d, 0);
+  glVertex3d(zlabel_x - d, zlabel_y - d, 0);
+  glVertex3d(zlabel_x + d, zlabel_y + d, 0);
   glEnd();
 }
 
@@ -434,7 +437,7 @@ void GLView::showAxes(const Color4f& col)
 
   glBegin(GL_LINES);
   glVertex4d(0, 0, 0, 1);
-  glVertex4d(1, 0, 0, 0); // w = 0 goes to infinity
+  glVertex4d(1, 0, 0, 0);  // w = 0 goes to infinity
   glVertex4d(0, 0, 0, 1);
   glVertex4d(0, 1, 0, 0);
   glVertex4d(0, 0, 0, 1);
@@ -469,85 +472,79 @@ void GLView::showCrosshairs(const Color4f& col)
   glEnd();
 }
 
-void GLView::showObject(const SelectedObject &obj, const Vector3d &eyedir)
+void GLView::showObject(const SelectedObject& obj, const Vector3d& eyedir)
 {
   auto dpi = this->getDPI();
-  auto vd = cam.zoomValue()/100.0;
-  switch(obj.type) {
-    case SelectionType::SELECTION_POINT:
-    case SelectionType::SELECTION_HANDLE:
-    {
-      if(obj.pt.size() < 1) break;
-      Vector3d p1=obj.pt[0];
+  auto vd = cam.zoomValue() / 100.0;
+  switch (obj.type) {
+  case SelectionType::SELECTION_POINT:
+  case SelectionType::SELECTION_HANDLE: {
+    if (obj.pt.size() < 1) break;
+    Vector3d p1 = obj.pt[0];
 
-      double n=1/sqrt(3);
-      // create an octaeder
-      //x- x+ y- y+ z- z+
-      int sequence[]={ 2, 0, 4, 1, 2, 4, 0, 3, 4, 3, 1, 4, 0, 2, 5, 2, 1, 5, 3, 0, 5, 1, 3, 5 };
-      glBegin(GL_TRIANGLES);
-      for(int i=0;i<8;i++) {
-	glNormal3f((i&1)?-n:n,(i&2)?-n:n,(i&4)?-n:n);
-	for(int j=0;j<3;j++) {
-	  int code=sequence[i*3+j];
-          switch(code) {
-		case 0: glVertex3d(p1[0]-vd,p1[1],p1[2]); break;
-		case 1: glVertex3d(p1[0]+vd,p1[1],p1[2]); break;
-		case 2: glVertex3d(p1[0],p1[1]-vd,p1[2]); break;
-		case 3: glVertex3d(p1[0],p1[1]+vd,p1[2]); break;
-		case 4: glVertex3d(p1[0],p1[1],p1[2]-vd); break;
-		case 5: glVertex3d(p1[0],p1[1],p1[2]+vd); break;
-          }		
-	}	
-      }	
-      glEnd();
-      if(obj.type != SelectionType::SELECTION_HANDLE) break;
-      glLineWidth(dpi);
-      glBegin(GL_LINES);
-      for(int i=0;i<3;i++) {
-        switch(i) {
-          case 0: glColor3d(1.0, 0.0, 0.0); break;
-          case 1: glColor3d(0.0, 1.0, 0.0); break;
-          case 2: glColor3d(0.0, 0.0, 1.0); break;
+    double n = 1 / sqrt(3);
+    // create an octaeder
+    // x- x+ y- y+ z- z+
+    int sequence[] = {2, 0, 4, 1, 2, 4, 0, 3, 4, 3, 1, 4, 0, 2, 5, 2, 1, 5, 3, 0, 5, 1, 3, 5};
+    glBegin(GL_TRIANGLES);
+    for (int i = 0; i < 8; i++) {
+      glNormal3f((i & 1) ? -n : n, (i & 2) ? -n : n, (i & 4) ? -n : n);
+      for (int j = 0; j < 3; j++) {
+        int code = sequence[i * 3 + j];
+        switch (code) {
+        case 0: glVertex3d(p1[0] - vd, p1[1], p1[2]); break;
+        case 1: glVertex3d(p1[0] + vd, p1[1], p1[2]); break;
+        case 2: glVertex3d(p1[0], p1[1] - vd, p1[2]); break;
+        case 3: glVertex3d(p1[0], p1[1] + vd, p1[2]); break;
+        case 4: glVertex3d(p1[0], p1[1], p1[2] - vd); break;
+        case 5: glVertex3d(p1[0], p1[1], p1[2] + vd); break;
         }
-        glVertex3d(obj.pt[0][0], obj.pt[0][1], obj.pt[0][2]); 
-        glVertex3d(obj.pt[0][0]+obj.pt[i+1][0]*5*dpi, obj.pt[0][1] + obj.pt[i+1][1]*5*dpi, obj.pt[0][2] + obj.pt[i+1][2]*5*dpi);
       }
-      glEnd();
-
-
-     }
-     break;	
-   case SelectionType::SELECTION_SEGMENT:
-     {
-        if(obj.pt.size() < 2) break;
-	Vector3d p1=obj.pt[0];
-	Vector3d p2=obj.pt[1];
-	Vector3d diff=p2-p1;
-	Vector3d wdir=eyedir.cross(diff).normalized()*vd/2.0;
-        glBegin(GL_QUADS);
-	glNormal3f(wdir[0], wdir[1], wdir[2]);
-        glVertex3d(p1[0]-wdir[0],p1[1]-wdir[1],p1[2]-wdir[2]);
-        glVertex3d(p2[0]-wdir[0],p2[1]-wdir[1],p2[2]-wdir[2]);
-        glVertex3d(p2[0]+wdir[0],p2[1]+wdir[1],p2[2]+wdir[2]);
-        glVertex3d(p1[0]+wdir[0],p1[1]+wdir[1],p1[2]+wdir[2]);
-        glEnd();
-      }	
-      break;	
-   case SelectionType::SELECTION_FACE:
-      {
-        if(obj.pt.size() < 2) break;
-
-        Vector3d n=(obj.pt[1]-obj.pt[0]).cross(obj.pt[2]-obj.pt[0]).normalized();
-        glBegin(GL_TRIANGLES);
-	glNormal3f(n[0], n[1], n[2]);
-	for(const auto pt: obj.pt) {
-	  Vector3d px=pt+n*1e-3;
-          glVertex3d(px[0],px[1],px[2]);
-	} 
-	glEnd();
+    }
+    glEnd();
+    if (obj.type != SelectionType::SELECTION_HANDLE) break;
+    glLineWidth(dpi);
+    glBegin(GL_LINES);
+    for (int i = 0; i < 3; i++) {
+      switch (i) {
+      case 0: glColor3d(1.0, 0.0, 0.0); break;
+      case 1: glColor3d(0.0, 1.0, 0.0); break;
+      case 2: glColor3d(0.0, 0.0, 1.0); break;
       }
-    case SelectionType::SELECTION_INVALID:
-     break;
+      glVertex3d(obj.pt[0][0], obj.pt[0][1], obj.pt[0][2]);
+      glVertex3d(obj.pt[0][0] + obj.pt[i + 1][0] * 5 * dpi, obj.pt[0][1] + obj.pt[i + 1][1] * 5 * dpi,
+                 obj.pt[0][2] + obj.pt[i + 1][2] * 5 * dpi);
+    }
+    glEnd();
+
+  } break;
+  case SelectionType::SELECTION_SEGMENT: {
+    if (obj.pt.size() < 2) break;
+    Vector3d p1 = obj.pt[0];
+    Vector3d p2 = obj.pt[1];
+    Vector3d diff = p2 - p1;
+    Vector3d wdir = eyedir.cross(diff).normalized() * vd / 2.0;
+    glBegin(GL_QUADS);
+    glNormal3f(wdir[0], wdir[1], wdir[2]);
+    glVertex3d(p1[0] - wdir[0], p1[1] - wdir[1], p1[2] - wdir[2]);
+    glVertex3d(p2[0] - wdir[0], p2[1] - wdir[1], p2[2] - wdir[2]);
+    glVertex3d(p2[0] + wdir[0], p2[1] + wdir[1], p2[2] + wdir[2]);
+    glVertex3d(p1[0] + wdir[0], p1[1] + wdir[1], p1[2] + wdir[2]);
+    glEnd();
+  } break;
+  case SelectionType::SELECTION_FACE: {
+    if (obj.pt.size() < 2) break;
+
+    Vector3d n = (obj.pt[1] - obj.pt[0]).cross(obj.pt[2] - obj.pt[0]).normalized();
+    glBegin(GL_TRIANGLES);
+    glNormal3f(n[0], n[1], n[2]);
+    for (const auto pt : obj.pt) {
+      Vector3d px = pt + n * 1e-3;
+      glVertex3d(px[0], px[1], px[2]);
+    }
+    glEnd();
+  }
+  case SelectionType::SELECTION_INVALID: break;
   }
 }
 
@@ -567,18 +564,18 @@ void GLView::showScalemarkers(const Color4f& col)
   // Calculate tick width.
   const double tick_width = l_adjusted / 10.0;
 
-  const int size_div_sm = 60; // divisor for l to determine minor tick size
+  const int size_div_sm = 60;  // divisor for l to determine minor tick size
   int line_cnt = 0;
 
   size_t divs = l / tick_width;
   for (auto div = 0; div < divs; ++div) {
-    double i = div * tick_width; // i represents the position along the axis
+    double i = div * tick_width;  // i represents the position along the axis
     int size_div;
-    if (line_cnt > 0 && line_cnt % 10 == 0) { // major tick
-      size_div = size_div_sm * .5; // resize to a major tick
-      GLView::decodeMarkerValue(i, l, size_div_sm); // print number
-    } else {        // minor tick
-      size_div = size_div_sm; // set the minor tick to the standard size
+    if (line_cnt > 0 && line_cnt % 10 == 0) {        // major tick
+      size_div = size_div_sm * .5;                   // resize to a major tick
+      GLView::decodeMarkerValue(i, l, size_div_sm);  // print number
+    } else {                                         // minor tick
+      size_div = size_div_sm;                        // set the minor tick to the standard size
 
       // Draw additional labels if there are few major tick labels visible due to
       // zoom. Because the spacing/units of major tick marks only change when the
@@ -593,7 +590,7 @@ void GLView::showScalemarkers(const Color4f& col)
       // draw additional labels every 2 minor ticks
       const int more_labels_freq = 2;
       if (line_cnt > 0 && line_cnt % more_labels_freq == 0 && l / l_adjusted < more_labels_threshold) {
-        GLView::decodeMarkerValue(i, l, size_div_sm); // print number
+        GLView::decodeMarkerValue(i, l, size_div_sm);  // print number
       }
     }
     line_cnt++;
@@ -610,19 +607,22 @@ void GLView::showScalemarkers(const Color4f& col)
     // positive axes
     glBegin(GL_LINES);
     // x
-    glVertex3d(i, 0, 0); glVertex3d(i, -l / size_div, 0); // 1 arm
-    //glVertex3d(i,-l/size_div,0); glVertex3d(i,l/size_div,0); // 2 arms
-    //glVertex3d(i,0,-l/size_div); glVertex3d(i,0,l/size_div); // 4 arms (w/ 2 arms line)
+    glVertex3d(i, 0, 0);
+    glVertex3d(i, -l / size_div, 0);  // 1 arm
+    // glVertex3d(i,-l/size_div,0); glVertex3d(i,l/size_div,0); // 2 arms
+    // glVertex3d(i,0,-l/size_div); glVertex3d(i,0,l/size_div); // 4 arms (w/ 2 arms line)
 
     // y
-    glVertex3d(0, i, 0); glVertex3d(-l / size_div, i, 0); // 1 arm
-    //glVertex3d(-l/size_div,i,0); glVertex3d(l/size_div,i,0); // 2 arms
-    //glVertex3d(0,i,-l/size_div); glVertex3d(0,i,l/size_div); // 4 arms (w/ 2 arms line)
+    glVertex3d(0, i, 0);
+    glVertex3d(-l / size_div, i, 0);  // 1 arm
+    // glVertex3d(-l/size_div,i,0); glVertex3d(l/size_div,i,0); // 2 arms
+    // glVertex3d(0,i,-l/size_div); glVertex3d(0,i,l/size_div); // 4 arms (w/ 2 arms line)
 
     // z
-    glVertex3d(0, 0, i); glVertex3d(-l / size_div, 0, i); // 1 arm
-    //glVertex3d(-l/size_div,0,i); glVertex3d(l/size_div,0,i); // 2 arms
-    //glVertex3d(0,-l/size_div,i); glVertex3d(0,l/size_div,i); // 4 arms (w/ 2 arms line)
+    glVertex3d(0, 0, i);
+    glVertex3d(-l / size_div, 0, i);  // 1 arm
+    // glVertex3d(-l/size_div,0,i); glVertex3d(l/size_div,0,i); // 2 arms
+    // glVertex3d(0,-l/size_div,i); glVertex3d(0,l/size_div,i); // 4 arms (w/ 2 arms line)
     glEnd();
 
     // negative axes
@@ -631,19 +631,22 @@ void GLView::showScalemarkers(const Color4f& col)
     glLineStipple(3, 0xAAAA);
     glBegin(GL_LINES);
     // x
-    glVertex3d(-i, 0, 0); glVertex3d(-i, -l / size_div, 0); // 1 arm
-    //glVertex3d(-i,-l/size_div,0); glVertex3d(-i,l/size_div,0); // 2 arms
-    //glVertex3d(-i,0,-l/size_div); glVertex3d(-i,0,l/size_div); // 4 arms (w/ 2 arms line)
+    glVertex3d(-i, 0, 0);
+    glVertex3d(-i, -l / size_div, 0);  // 1 arm
+    // glVertex3d(-i,-l/size_div,0); glVertex3d(-i,l/size_div,0); // 2 arms
+    // glVertex3d(-i,0,-l/size_div); glVertex3d(-i,0,l/size_div); // 4 arms (w/ 2 arms line)
 
     // y
-    glVertex3d(0, -i, 0); glVertex3d(-l / size_div, -i, 0); // 1 arm
-    //glVertex3d(-l/size_div,-i,0); glVertex3d(l/size_div,-i,0); // 2 arms
-    //glVertex3d(0,-i,-l/size_div); glVertex3d(0,-i,l/size_div); // 4 arms (w/ 2 arms line)
+    glVertex3d(0, -i, 0);
+    glVertex3d(-l / size_div, -i, 0);  // 1 arm
+    // glVertex3d(-l/size_div,-i,0); glVertex3d(l/size_div,-i,0); // 2 arms
+    // glVertex3d(0,-i,-l/size_div); glVertex3d(0,-i,l/size_div); // 4 arms (w/ 2 arms line)
 
     // z
-    glVertex3d(0, 0, -i); glVertex3d(-l / size_div, 0, -i); // 1 arm
-    //glVertex3d(-l/size_div,0,-i); glVertex3d(l/size_div,0,-i); // 2 arms
-    //glVertex3d(0,-l/size_div,-i); glVertex3d(0,l/size_div,-i); // 4 arms (w/ 2 arms line)
+    glVertex3d(0, 0, -i);
+    glVertex3d(-l / size_div, 0, -i);  // 1 arm
+    // glVertex3d(-l/size_div,0,-i); glVertex3d(l/size_div,0,-i); // 2 arms
+    // glVertex3d(0,-l/size_div,-i); glVertex3d(0,l/size_div,-i); // 4 arms (w/ 2 arms line)
     glEnd();
     glPopAttrib();
   }
@@ -665,8 +668,8 @@ void GLView::decodeMarkerValue(double i, double l, int size_div_sm)
   // Draw functions that help map 2D axis label drawings into their plane.
   // Since we're just on axis, no need for fancy affine transformation,
   // just calling glVertex3d() with coordinates in the right plane.
-  using PlaneVertexDraw = std::function<void (
-                                          float x, float y, float font_height, float baseline_offset)>;
+  using PlaneVertexDraw =
+    std::function<void(float x, float y, float font_height, float baseline_offset)>;
 
   const PlaneVertexDraw axis_draw_planes[3] = {
     [](float x, float y, float /*fh*/, float bl) {
@@ -683,20 +686,19 @@ void GLView::decodeMarkerValue(double i, double l, int size_div_sm)
   for (const PlaneVertexDraw& axis_draw : axis_draw_planes) {
     // We get 'plot instructions', a sequence of vertices. Translate into gl ops
     const auto plot_fun = [&](bool pen_down, float x, float y) {
-        if (!pen_down) { // Start a new line, coordinates just move not draw
-          if (needs_glend) glEnd();
-          glBegin(GL_LINE_STRIP);
-          needs_glend = true;
-        }
-        axis_draw(x, y, font_size, baseline_offset);
-      };
+      if (!pen_down) {  // Start a new line, coordinates just move not draw
+        if (needs_glend) glEnd();
+        glBegin(GL_LINE_STRIP);
+        needs_glend = true;
+      }
+      axis_draw(x, y, font_size, baseline_offset);
+    };
 
-    hershey::DrawText(pos_number_str, i, 0,
-                      hershey::TextAlign::kCenter, font_size, plot_fun);
+    hershey::DrawText(pos_number_str, i, 0, hershey::TextAlign::kCenter, font_size, plot_fun);
     if (needs_glend) glEnd();
     needs_glend = false;
-    hershey::DrawText(neg_number_str, -i - prefix_offset, 0,
-                      hershey::TextAlign::kCenter, font_size, plot_fun);
+    hershey::DrawText(neg_number_str, -i - prefix_offset, 0, hershey::TextAlign::kCenter, font_size,
+                      plot_fun);
     if (needs_glend) glEnd();
     needs_glend = false;
   }

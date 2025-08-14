@@ -38,17 +38,18 @@
 #include <cmath>
 #include <sstream>
 #include <boost/assign/std/vector.hpp>
-using namespace boost::assign; // bring 'operator+=()' into scope
+using namespace boost::assign;  // bring 'operator+=()' into scope
 
 namespace {
-std::shared_ptr<AbstractNode> builtin_concat(const ModuleInstantiation *inst, Arguments arguments, const Children& children)
+std::shared_ptr<AbstractNode> builtin_concat(const ModuleInstantiation *inst, Arguments arguments,
+                                             const Children& children)
 {
   auto node = std::make_shared<ConcatNode>(inst);
   children.instantiate(node);
   return node;
 }
 
-} // namespace
+}  // namespace
 
 std::string ConcatNode::toString() const
 {
@@ -61,7 +62,7 @@ std::string ConcatNode::toString() const
 void register_builtin_concat()
 {
   Builtins::init("concat", new BuiltinModule(builtin_concat),
-  {
-    R"(concat())",
-  });
+                 {
+                   R"(concat())",
+                 });
 }

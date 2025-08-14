@@ -58,8 +58,8 @@ class CSGTreeEvaluator;
 #include "gui/Editor.h"
 #include "gui/input/InputDriverEvent.h"
 #include "gui/Measurement.h"
-#include "gui/qt-obsolete.h" // IWYU pragma: keep
-#include "gui/qtgettext.h" // IWYU pragma: keep
+#include "gui/qt-obsolete.h"  // IWYU pragma: keep
+#include "gui/qtgettext.h"    // IWYU pragma: keep
 #include "gui/RubberBandManager.h"
 #include "gui/TabManager.h"
 #include "gui/UIUtils.h"
@@ -88,10 +88,10 @@ public:
   QTimer *waitAfterReloadTimer;
   RenderStatistic renderStatistic;
 
-  SourceFile *rootFile; // Result of parsing
-  SourceFile *parsedFile; // Last parse for include list
-  std::shared_ptr<AbstractNode> absoluteRootNode; // Result of tree evaluation
-  std::shared_ptr<AbstractNode> rootNode; // Root if the root modifier (!) is used
+  SourceFile *rootFile;                            // Result of parsing
+  SourceFile *parsedFile;                          // Last parse for include list
+  std::shared_ptr<AbstractNode> absoluteRootNode;  // Result of tree evaluation
+  std::shared_ptr<AbstractNode> rootNode;          // Root if the root modifier (!) is used
 #ifdef ENABLE_PYTHON
   std::string trusted_edit_document_name;
   std::string untrusted_edit_document_name;
@@ -135,7 +135,8 @@ private:
   volatile bool isClosing = false;
   void consoleOutputRaw(const QString& msg);
   void clearAllSelectionIndicators();
-  void setSelectionIndicatorStatus(EditorInterface *editor, int nodeIndex, EditorSelectionIndicatorStatus status);
+  void setSelectionIndicatorStatus(EditorInterface *editor, int nodeIndex,
+                                   EditorSelectionIndicatorStatus status);
 
 protected:
   void closeEvent(QCloseEvent *event) override;
@@ -178,20 +179,20 @@ private slots:
 public:
   static void consoleOutput(const Message& msgObj, void *userdata);
   static void errorLogOutput(const Message& log_msg, void *userdata);
-  static void noOutputConsole(const Message&, void *) {} // /dev/null
-  static void noOutputErrorLog(const Message&, void *) {} // /dev/null
+  static void noOutputConsole(const Message&, void *) {}   // /dev/null
+  static void noOutputErrorLog(const Message&, void *) {}  // /dev/null
 
   bool fileChangedOnDisk();
 
-  // Parse the document contained in the editor, update the editors's parameters and returns a SourceFile object
-  // if parsing suceeded. Nullptr otherwise.
+  // Parse the document contained in the editor, update the editors's parameters and returns a SourceFile
+  // object if parsing suceeded. Nullptr otherwise.
   SourceFile *parseDocument(EditorInterface *editor);
 
   void parseTopLevelDocument();
   void exceptionCleanup();
   void setLastFocus(QWidget *widget);
   void UnknownExceptionCleanup(std::string msg = "");
- CSGTreeEvaluator *csgrenderer;
+  CSGTreeEvaluator *csgrenderer;
   bool isLightTheme();
   void compileCSG();
   void compileCSGThread();
@@ -313,6 +314,7 @@ private slots:
   void findBufferChanged();
   void updateFindBuffer(const QString&);
   bool event(QEvent *event) override;
+
 protected:
   bool eventFilter(QObject *obj, QEvent *event) override;
 
@@ -371,7 +373,7 @@ public slots:
   void processEvents();
   void jumpToLine(int, int);
   void openFileFromPath(const QString&, int);
-  void toolTipShow(QPoint,QString msg);
+  void toolTipShow(QPoint, QString msg);
   void dragPoint(Vector3d pt, Vector3d newpt);
   void dragPointEnd(Vector3d pt);
 
@@ -423,14 +425,15 @@ private:
   static bool reorderMode;
   static const int tabStopWidth;
   static QElapsedTimer *progressThrottle;
-  QWidget *lastFocus; // keep track of active copyable widget (Editor|Console) for global menu action Edit->Copy
+  QWidget *lastFocus;  // keep track of active copyable widget (Editor|Console) for global menu action
+                       // Edit->Copy
 
-  std::shared_ptr<CSGNode> csgRoot; // Result of the CSGTreeEvaluator
-  std::shared_ptr<CSGNode> normalizedRoot; // Normalized CSG tree
+  std::shared_ptr<CSGNode> csgRoot;         // Result of the CSGTreeEvaluator
+  std::shared_ptr<CSGNode> normalizedRoot;  // Normalized CSG tree
   std::shared_ptr<CSGProducts> rootProduct;
   std::shared_ptr<CSGProducts> highlightsProducts;
   std::shared_ptr<CSGProducts> backgroundProducts;
-  int currentlySelectedObject {-1};
+  int currentlySelectedObject{-1};
 
   char const *afterCompileSlot;
   bool procevents{false};
@@ -440,12 +443,13 @@ private:
   CSGWorker *csgworker;
   QMutex consolemutex;
   DragResult dragResult;
-  EditorInterface *renderedEditor; // stores pointer to editor which has been most recently rendered
-  time_t includesMTime{0}; // latest include mod time
-  time_t depsMTime{0}; // latest dependency mod time
-  std::unordered_map<QString, QString> exportPaths; // for each file type, where it was exported to last
-  QString exportPath(const QString& suffix); // look up the last export path and generate one if not found
-  int lastParserErrorPos{-1}; // last highlighted error position
+  EditorInterface *renderedEditor;  // stores pointer to editor which has been most recently rendered
+  time_t includesMTime{0};          // latest include mod time
+  time_t depsMTime{0};              // latest dependency mod time
+  std::unordered_map<QString, QString> exportPaths;  // for each file type, where it was exported to last
+  QString exportPath(
+    const QString& suffix);    // look up the last export path and generate one if not found
+  int lastParserErrorPos{-1};  // last highlighted error position
   int tabCount = 0;
   ExportPdfPaperSize sizeString2Enum(const QString& current);
   ExportPdfPaperOrientation orientationsString2Enum(const QString& current);
@@ -457,37 +461,28 @@ private:
 signals:
   void highlightError(int);
   void unhighlightLastError();
-  #ifdef ENABLE_PYTHON
+#ifdef ENABLE_PYTHON
   void pythonActiveChanged(bool pythonActive);
-  #endif
+#endif
 
 #ifdef ENABLE_GUI_TESTS
 public:
-  std::shared_ptr<AbstractNode> instantiateRootFromSource(SourceFile* file);
+  std::shared_ptr<AbstractNode> instantiateRootFromSource(SourceFile *file);
 signals:
   // This is a new signal introduced while drafting the testing framework, while in experimental mode
   // we protected it using the #ifdef/endif so it should not be considered as part of the MainWindow API.
-  void compilationDone(SourceFile*);
-#endif //
-
+  void compilationDone(SourceFile *);
+#endif  //
 };
 
 class GuiLocker
 {
 public:
-  GuiLocker() {
-    GuiLocker::lock();
-  }
-  ~GuiLocker() {
-    GuiLocker::unlock();
-  }
+  GuiLocker() { GuiLocker::lock(); }
+  ~GuiLocker() { GuiLocker::unlock(); }
   static bool isLocked() { return guiLocked > 0; }
-  static void lock() {
-    guiLocked++;
-  }
-  static void unlock() {
-    guiLocked--;
-  }
+  static void lock() { guiLocked++; }
+  static void unlock() { guiLocked--; }
 
 private:
   static unsigned int guiLocked;

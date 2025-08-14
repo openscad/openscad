@@ -63,50 +63,49 @@ void SourceFile::print(std::ostream& stream, const std::string& indent) const
   scope.print(stream, indent);
 }
 
-void SourceFile::print_python(std::ostream& stream, std::ostream& stream_def, const std::string& indent) const
+void SourceFile::print_python(std::ostream& stream, std::ostream& stream_def,
+                              const std::string& indent) const
 {
   scope.print_python(stream, stream_def, indent);
 }
 
 void SourceFile::registerUse(const std::string& path, const Location& loc)
 {
-  PRINTDB("registerUse(): (%p) %d, %d - %d, %d (%s) -> %s", this %
-          loc.firstLine() % loc.firstColumn() %
-          loc.lastLine() % loc.lastColumn() %
-          loc.fileName() %
-          path);
+  PRINTDB("registerUse(): (%p) %d, %d - %d, %d (%s) -> %s", this % loc.firstLine() % loc.firstColumn() %
+                                                              loc.lastLine() % loc.lastColumn() %
+                                                              loc.fileName() % path);
 
   auto ext = fs::path(path).extension().generic_string();
-#ifdef ENABLE_PYTHON  
+#ifdef ENABLE_PYTHON
   if (boost::iequals(ext, ".py")) {
     if (fs::is_regular_file(path)) {
-
-      bool trusted=python_trusted;
-/*      
-      if(!is_cmdline_mode()) { 
-        std::ifstream fh(path, std::ios::in | std::ios::binary);
-        std::string content{std::istreambuf_iterator<char>(fh), std::istreambuf_iterator<char>()};
-	if(python_trusted) trusted=true;
-        if(trust_python_file(path, content)) trusted=true;
-        fh.close();
-      }	else trusted =  python_trusted;
-*/      
-      if(trusted) {
-        std::filesystem::path fs_path(path); 
-        std::string cmd = "import sys\nsys.path.append('"+fs_path.parent_path().string()+"')\nimport "+fs_path.stem().string();
+      bool trusted = python_trusted;
+      /*
+            if(!is_cmdline_mode()) {
+              std::ifstream fh(path, std::ios::in | std::ios::binary);
+              std::string content{std::istreambuf_iterator<char>(fh), std::istreambuf_iterator<char>()};
+              if(python_trusted) trusted=true;
+              if(trust_python_file(path, content)) trusted=true;
+              fh.close();
+            }	else trusted =  python_trusted;
+      */
+      if (trusted) {
+        std::filesystem::path fs_path(path);
+        std::string cmd = "import sys\nsys.path.append('" + fs_path.parent_path().string() +
+                          "')\nimport " + fs_path.stem().string();
         const auto& venv = venvBinDirFromSettings();
         const auto& binDir = venv.empty() ? PlatformUtils::applicationPath() : venv;
 
-        if(!pythonRuntimeInitialized) initPython(binDir, "", 0.0);
-        std::string error=evaluatePython(cmd); 
+        if (!pythonRuntimeInitialized) initPython(binDir, "", 0.0);
+        std::string error = evaluatePython(cmd);
         if (error.size() > 0) LOG(message_group::Error, Location::NONE, "", error.c_str());
       } else LOG(message_group::Error, "File not trusted '%1$s'", path);
 
-    } else { // is_regular
+    } else {  // is_regular
       LOG(message_group::Error, "Can't read python with path '%1$s'", path);
     }
-  } else 
-#endif	  
+  } else
+#endif
     if (boost::iequals(ext, ".otf") || boost::iequals(ext, ".ttf")) {
     if (fs::is_regular_file(path)) {
       FontCache::instance()->register_font_file(path);
@@ -118,22 +117,23 @@ void SourceFile::registerUse(const std::string& path, const Location& loc)
     if (pos != usedlibs.end()) usedlibs.erase(pos);
     usedlibs.insert(usedlibs.begin(), path);
     if (!loc.isNone()) {
-      indicatorData.emplace_back(loc.firstLine(), loc.firstColumn(), loc.lastLine(), loc.lastColumn(), path);
+      indicatorData.emplace_back(loc.firstLine(), loc.firstColumn(), loc.lastLine(), loc.lastColumn(),
+                                 path);
     }
   }
 }
 
-void SourceFile::registerInclude(const std::string& localpath, const std::string& fullpath, const Location& loc)
+void SourceFile::registerInclude(const std::string& localpath, const std::string& fullpath,
+                                 const Location& loc)
 {
-  PRINTDB("registerInclude(): (%p) %d, %d - %d, %d (%s) -> %s", this %
-          loc.firstLine() % loc.firstColumn() %
-          loc.lastLine() % loc.lastColumn() %
-          localpath %
-          fullpath);
+  PRINTDB("registerInclude(): (%p) %d, %d - %d, %d (%s) -> %s",
+          this % loc.firstLine() % loc.firstColumn() % loc.lastLine() % loc.lastColumn() % localpath %
+            fullpath);
 
   this->includes[localpath] = fullpath;
   if (!loc.isNone()) {
-    indicatorData.emplace_back(loc.firstLine(), loc.firstColumn(), loc.lastLine(), loc.lastColumn(), fullpath);
+    indicatorData.emplace_back(loc.firstLine(), loc.firstColumn(), loc.lastLine(), loc.lastColumn(),
+                               fullpath);
   }
 }
 
@@ -175,7 +175,6 @@ time_t SourceFile::handleDependencies(bool is_root)
   // as it will have a relative path.
   time_t latest = 0;
   for (auto filename : this->usedlibs) {
-
     auto found = true;
 
     // Get an absolute filename for the module
@@ -214,7 +213,9 @@ time_t SourceFile::handleDependencies(bool is_root)
   return latest;
 }
 
-std::shared_ptr<AbstractNode> SourceFile::instantiate(const std::shared_ptr<const Context>& context, std::shared_ptr<const FileContext> *resulting_file_context) const
+std::shared_ptr<AbstractNode> SourceFile::instantiate(
+  const std::shared_ptr<const Context>& context,
+  std::shared_ptr<const FileContext> *resulting_file_context) const
 {
   auto node = std::make_shared<RootNode>();
   try {
@@ -230,10 +231,11 @@ std::shared_ptr<AbstractNode> SourceFile::instantiate(const std::shared_ptr<cons
   return node;
 }
 
-//please preferably use getFilename
-//if you compare filenames (which is the origin of this method),
-//please call getFilename first and use this method only as a fallback
-const std::string SourceFile::getFullpath() const {
+// please preferably use getFilename
+// if you compare filenames (which is the origin of this method),
+// please call getFilename first and use this method only as a fallback
+const std::string SourceFile::getFullpath() const
+{
   if (fs::path(this->filename).is_absolute()) {
     return this->filename;
   } else if (!this->path.empty()) {

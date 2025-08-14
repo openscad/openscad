@@ -39,20 +39,22 @@
 #include <cmath>
 #include <sstream>
 #include <boost/assign/std/vector.hpp>
-using namespace boost::assign; // bring 'operator+=()' into scope
+using namespace boost::assign;  // bring 'operator+=()' into scope
 
 namespace {
 
-std::shared_ptr<AbstractNode> builtin_rotate_extrude(const ModuleInstantiation *inst, Arguments arguments, const Children& children)
+std::shared_ptr<AbstractNode> builtin_rotate_extrude(const ModuleInstantiation *inst,
+                                                     Arguments arguments, const Children& children)
 {
   auto node = std::make_shared<RotateExtrudeNode>(inst);
-#ifdef ENABLE_PYTHON  
+#ifdef ENABLE_PYTHON
   node->profile_func = NULL;
   node->twist_func = NULL;
 #endif
 
-  const Parameters parameters = Parameters::parse(std::move(arguments), inst->location(),
-                                            {"angle", "start", "origin","scale"}, {"convexity","v", "a", "method" });
+  const Parameters parameters =
+    Parameters::parse(std::move(arguments), inst->location(), {"angle", "start", "origin", "scale"},
+                      {"convexity", "v", "a", "method"});
 
   node->fn = parameters["$fn"].toDouble();
   node->fs = parameters["$fs"].toDouble();
@@ -62,7 +64,7 @@ std::shared_ptr<AbstractNode> builtin_rotate_extrude(const ModuleInstantiation *
   // If an angle is specified, use it, defaulting to starting at zero.
   // If no angle is specified, use 360 and default to starting at 180.
   // Regardless, if a start angle is specified, use it.
-  bool hasAngle = parameters[{"angle","a"}].getFiniteDouble(node->angle);
+  bool hasAngle = parameters[{"angle", "a"}].getFiniteDouble(node->angle);
   if (hasAngle) {
     node->start = 0;
     if ((node->angle <= -360) || (node->angle > 360)) node->angle = 360;
@@ -72,18 +74,20 @@ std::shared_ptr<AbstractNode> builtin_rotate_extrude(const ModuleInstantiation *
   }
   bool hasStart = parameters["start"].getFiniteDouble(node->start);
   if (!hasAngle && !hasStart && (int)node->fn % 2 != 0) {
-    LOG(message_group::Deprecated, "In future releases, rotational extrusion without \"angle\" will start at zero, the +X axis.  Set start=180 to explicitly start on the -X axis.");
+    LOG(message_group::Deprecated,
+        "In future releases, rotational extrusion without \"angle\" will start at zero, the +X axis.  "
+        "Set start=180 to explicitly start on the -X axis.");
   }
 
   if (node->convexity <= 0) node->convexity = 2;
 
   if (node->scale <= 0) node->scale = 1;
 
-  Vector3d v(0,0,0);
+  Vector3d v(0, 0, 0);
 
   if (parameters["v"].isDefined()) {
-    if(!parameters["v"].getVec3(v[0], v[1], v[2])) {
-      v=Vector3d(0,0,0);
+    if (!parameters["v"].getVec3(v[0], v[1], v[2])) {
+      v = Vector3d(0, 0, 0);
       LOG(message_group::Error, "v when specified should be a 3d vector.");
     }
   }
@@ -101,7 +105,7 @@ std::shared_ptr<AbstractNode> builtin_rotate_extrude(const ModuleInstantiation *
   if (node->angle <= -360) node->angle = 360;
   if (node->angle > 360 && v.norm() == 0) node->angle = 360;
 
-  node->v=v;
+  node->v = v;
   children.instantiate(node);
 
   return node;
@@ -114,34 +118,37 @@ std::string RotateExtrudeNode::toString() const
   std::ostringstream stream;
 
   stream << this->name() << "(";
-  if(fabs(origin_x)+fabs(origin_y) > 0) 
-    stream <<  "origin = [" << std::dec << this->origin_x << ", " << this->origin_y << "], ";
-  if(fabs(offset_x)+fabs(offset_y) > 0)
+  if (fabs(origin_x) + fabs(origin_y) > 0)
+    stream << "origin = [" << std::dec << this->origin_x << ", " << this->origin_y << "], ";
+  if (fabs(offset_x) + fabs(offset_y) > 0)
     stream << "offset = [" << std::dec << this->offset_x << ", " << this->offset_y << "], ";
-  if(scale != 1) 
-    stream << "scale = " << this->scale << ", ";
+  if (scale != 1) stream << "scale = " << this->scale << ", ";
   stream << "angle = " << this->angle << ", ";
-  if(method != "centered")
-    stream << "method = \"" << this->method << "\", ";
-  if(v.norm() > 0)
-    stream << "v = [ " << this->v[0] <<  ", " << this->v[1] << ", " << this->v[2] << "], ";
-  stream <<  "start = " << this->start << ", "
-    "convexity = " << this->convexity << ", ";
-#ifdef ENABLE_PYTHON  
- if(this->profile_func != NULL) {
-    stream << ", profile = " << rand() ;
- }
- if(this->twist_func != NULL) {
-    stream << ", twist_func = " << rand() ;
- } else
-#endif  
-  if(twist != 0)
+  if (method != "centered") stream << "method = \"" << this->method << "\", ";
+  if (v.norm() > 0)
+    stream << "v = [ " << this->v[0] << ", " << this->v[1] << ", " << this->v[2] << "], ";
+  stream << "start = " << this->start
+         << ", "
+            "convexity = "
+         << this->convexity << ", ";
+#ifdef ENABLE_PYTHON
+  if (this->profile_func != NULL) {
+    stream << ", profile = " << rand();
+  }
+  if (this->twist_func != NULL) {
+    stream << ", twist_func = " << rand();
+  } else
+#endif
+    if (twist != 0)
     stream << "twist = " << this->twist << ", ";
 
-    stream <<
-    "$fn = " << this->fn << ", "
-    "$fa = " << this->fa << ", "
-    "$fs = " << this->fs << ")";
+  stream << "$fn = " << this->fn
+         << ", "
+            "$fa = "
+         << this->fa
+         << ", "
+            "$fs = "
+         << this->fs << ")";
 
   return stream.str();
 }
@@ -149,7 +156,7 @@ std::string RotateExtrudeNode::toString() const
 void register_builtin_rotate_extrude()
 {
   Builtins::init("rotate_extrude", new BuiltinModule(builtin_rotate_extrude),
-  {
-    "rotate_extrude(angle = 360, convexity = 2)",
-  });
+                 {
+                   "rotate_extrude(angle = 360, convexity = 2)",
+                 });
 }

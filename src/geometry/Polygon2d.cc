@@ -18,17 +18,12 @@
 #include "geometry/PolySet.h"
 #include "glview/RenderSettings.h"
 
+Polygon2d::Polygon2d(Outline2d outline) : sanitized(true) { addOutline(std::move(outline)); }
 
-Polygon2d::Polygon2d(Outline2d outline) : sanitized(true) {
-  addOutline(std::move(outline));
-}
+std::unique_ptr<Geometry> Polygon2d::copy() const { return std::make_unique<Polygon2d>(*this); }
 
-std::unique_ptr<Geometry> Polygon2d::copy() const
+BoundingBox Outline2d::getBoundingBox() const
 {
-  return std::make_unique<Polygon2d>(*this);
-}
-
-BoundingBox Outline2d::getBoundingBox() const {
   BoundingBox bbox;
   // Note: this uses ->outlines, and so automatically gets trans3d applied
   for (const auto& v : this->vertices) {
@@ -55,10 +50,10 @@ BoundingBox Outline2d::getBoundingBox() const {
 size_t Polygon2d::memsize() const
 {
   size_t mem = 0;
-  for (const auto &o : this->theoutlines) {
+  for (const auto& o : this->theoutlines) {
     mem += o.vertices.size() * sizeof(Vector2d) + sizeof(Outline2d);
   }
-  for (const auto &o : this->trans3dOutlines) {
+  for (const auto& o : this->trans3dOutlines) {
     mem += o.vertices.size() * sizeof(Vector2d) + sizeof(Outline2d);
   }
   mem += sizeof(Polygon2d);
@@ -86,9 +81,9 @@ std::string Polygon2d::dump() const
   }
   if (trans3dState != Transform3dState::NONE) {
     out << "with trans3d: [";
-    for (int j=0;j<4;j++) {
+    for (int j = 0; j < 4; j++) {
       out << "[";
-      for (int i=0;i<4;i++) {
+      for (int i = 0; i < 4; i++) {
         double v(this->trans3d(j, i));
         out << v;
         if (i != 3) out << ", ";
@@ -101,17 +96,14 @@ std::string Polygon2d::dump() const
   return out.str();
 }
 
-bool Polygon2d::isEmpty() const
-{
-  return this->theoutlines.empty();
-}
+bool Polygon2d::isEmpty() const { return this->theoutlines.empty(); }
 
 void Polygon2d::transform(const Transform2d& mat)
 {
   if (mat.matrix().determinant() == 0) {
     LOG(message_group::Warning, "Scaling a 2D object with 0 - removing object");
     this->theoutlines.clear();
-    trans3dState= Transform3dState::NONE;
+    trans3dState = Transform3dState::NONE;
     return;
   }
   if (trans3dState != Transform3dState::NONE) mergeTrans3d();
@@ -139,10 +131,7 @@ void Polygon2d::resize(const Vector2d& newsize, const Eigen::Matrix<bool, 2, 1>&
                     !autosize[1] || (newsize[1] > 0) ? scale[1] : autoscale);
 
   Transform2d t;
-  t.matrix() <<
-    newscale[0], 0, 0,
-    0, newscale[1], 0,
-    0, 0, 1;
+  t.matrix() << newscale[0], 0, 0, 0, newscale[1], 0, 0, 0, 1;
 
   this->transform(t);
 }
@@ -177,10 +166,7 @@ double Polygon2d::area() const
     const auto& v1 = ps->vertices[poly[0]];
     const auto& v2 = ps->vertices[poly[1]];
     const auto& v3 = ps->vertices[poly[2]];
-    area += 0.5 * (
-      v1.x() * (v2.y() - v3.y())
-      + v2.x() * (v3.y() - v1.y())
-      + v3.x() * (v1.y() - v2.y()));
+    area += 0.5 * (v1.x() * (v2.y() - v3.y()) + v2.x() * (v3.y() - v1.y()) + v3.x() * (v1.y() - v2.y()));
   }
   return area;
 }
@@ -204,31 +190,25 @@ std::unique_ptr<PolySet> Polygon2d::tessellate(bool in3d) const
 #if defined(ENABLE_MANIFOLD) && defined(USE_MANIFOLD_TRIANGULATOR)
   if (RenderSettings::inst()->backend3D == RenderBackend3D::ManifoldBackend) {
     res = ManifoldUtils::createTriangulatedPolySetFromPolygon2d(*this, in3d);
-  }
-  else
+  } else
 #endif
     res = CGALUtils::createTriangulatedPolySetFromPolygon2d(*this, in3d);
-  if (in3d)
-    res->transform(this->getTransform3d());
+  if (in3d) res->transform(this->getTransform3d());
   return res;
 }
 
-void Polygon2d::transform3d(const Transform3d &mat)
+void Polygon2d::transform3d(const Transform3d& mat)
 {
   // Check whether it can be a 2d transform, and avoid the 3d overhead
-  if (trans3dState == Transform3dState::NONE
-    && mat(2,0) == 0 && mat(2,1) == 0 && mat(2,2) == 1 && mat(2,3) == 0
-    && mat(0,2) == 0 && mat(1,2) == 0 && mat(3,2) == 0
-  ) {
+  if (trans3dState == Transform3dState::NONE && mat(2, 0) == 0 && mat(2, 1) == 0 && mat(2, 2) == 1 &&
+      mat(2, 3) == 0 && mat(0, 2) == 0 && mat(1, 2) == 0 && mat(3, 2) == 0) {
     Transform2d t;
-    t.matrix() <<
-      mat(0,0), mat(0,1), mat(0,3),
-      mat(1,0), mat(1,1), mat(1,3),
-      mat(3,0), mat(3,1), mat(3,3);
+    t.matrix() << mat(0, 0), mat(0, 1), mat(0, 3), mat(1, 0), mat(1, 1), mat(1, 3), mat(3, 0), mat(3, 1),
+      mat(3, 3);
     if (t.matrix().determinant() == 0) {
-      LOG(message_group::Warning,"Scaling a 2D object with 0 - removing object");
+      LOG(message_group::Warning, "Scaling a 2D object with 0 - removing object");
       this->theoutlines.clear();
-      trans3dState= Transform3dState::NONE;
+      trans3dState = Transform3dState::NONE;
       return;
     }
     transform(t);
@@ -236,57 +216,54 @@ void Polygon2d::transform3d(const Transform3d &mat)
     // If that happens with a sanitized polygon, we need to reverse
     // the winding order for it to be correct.
     if (sanitized && t.matrix().determinant() < 0)
-      for (auto &o : this->theoutlines)
-        std::reverse(o.vertices.begin(), o.vertices.end());
-  }
-  else {
+      for (auto& o : this->theoutlines) std::reverse(o.vertices.begin(), o.vertices.end());
+  } else {
     if (mat.matrix().determinant() == 0) {
-      LOG(message_group::Warning,"Scaling a 2D object with 0 - removing object");
+      LOG(message_group::Warning, "Scaling a 2D object with 0 - removing object");
       this->theoutlines.clear();
-      trans3dState= Transform3dState::NONE;
+      trans3dState = Transform3dState::NONE;
       return;
     }
-    trans3d= (trans3dState == Transform3dState::NONE)? mat : mat * trans3d;
-    trans3dState= Transform3dState::PENDING;
+    trans3d = (trans3dState == Transform3dState::NONE) ? mat : mat * trans3d;
+    trans3dState = Transform3dState::PENDING;
   }
 }
-
 
 // This returns the outlines after applying any Transform3d that might be Transform3dState::PENDING.
 // If there is no Transform3d, this returns the outlines vector.
 // If there is a Transform3dState::CACHED Transform3d, this uses the cache.
 // Else it creates and returns the cache
-const Polygon2d::Outlines2d &Polygon2d::transformedOutlines() const {
+const Polygon2d::Outlines2d& Polygon2d::transformedOutlines() const
+{
   if (trans3dState == Transform3dState::NONE) return theoutlines;
   if (trans3dState != Transform3dState::CACHED) {
-    // Need to remove const from the cache object.  It maintains proper const semantics to the public API though.
-    Polygon2d::Outlines2d &cache= const_cast<Polygon2d::Outlines2d&>(trans3dOutlines);
-    cache= theoutlines;
+    // Need to remove const from the cache object.  It maintains proper const semantics to the public API
+    // though.
+    Polygon2d::Outlines2d& cache = const_cast<Polygon2d::Outlines2d&>(trans3dOutlines);
+    cache = theoutlines;
     applyTrans3dToOutlines(cache);
-    const_cast<Polygon2d*>(this)->trans3dState= Transform3dState::CACHED;
+    const_cast<Polygon2d *>(this)->trans3dState = Transform3dState::CACHED;
   }
   return trans3dOutlines;
 }
 
 // This flattens the 3D transform into the 2D transform that it would have been
 // originally.
-void Polygon2d::mergeTrans3d() {
-  if (trans3dState == Transform3dState::CACHED)
-    theoutlines.swap(trans3dOutlines);
-  else if (trans3dState == Transform3dState::PENDING)
-    applyTrans3dToOutlines(theoutlines);
+void Polygon2d::mergeTrans3d()
+{
+  if (trans3dState == Transform3dState::CACHED) theoutlines.swap(trans3dOutlines);
+  else if (trans3dState == Transform3dState::PENDING) applyTrans3dToOutlines(theoutlines);
   trans3dOutlines.clear();
-  trans3dState= Transform3dState::NONE;
+  trans3dState = Transform3dState::NONE;
 }
 
-void Polygon2d::applyTrans3dToOutlines(Polygon2d::Outlines2d &outlines) const {
+void Polygon2d::applyTrans3dToOutlines(Polygon2d::Outlines2d& outlines) const
+{
   Transform2d t;
-  t.matrix() <<
-    trans3d(0,0), trans3d(0,1), trans3d(0,3),
-    trans3d(1,0), trans3d(1,1), trans3d(1,3),
-    trans3d(3,0), trans3d(3,1), trans3d(3,3);
-  for (auto &o : outlines) {
-    for (auto &v : o.vertices) {
+  t.matrix() << trans3d(0, 0), trans3d(0, 1), trans3d(0, 3), trans3d(1, 0), trans3d(1, 1), trans3d(1, 3),
+    trans3d(3, 0), trans3d(3, 1), trans3d(3, 3);
+  for (auto& o : outlines) {
+    for (auto& v : o.vertices) {
       v = t * v;
     }
   }
@@ -294,13 +271,11 @@ void Polygon2d::applyTrans3dToOutlines(Polygon2d::Outlines2d &outlines) const {
   // If that happens with a sanitized polygon, we need to reverse
   // the winding order for it to be correct.
   if (sanitized && t.matrix().determinant() < 0)
-    for (auto &o : outlines)
-      std::reverse(o.vertices.begin(), o.vertices.end());
+    for (auto& o : outlines) std::reverse(o.vertices.begin(), o.vertices.end());
 }
 
-void Polygon2d::reverse(void) {
-  for (auto &o : theoutlines)
-    std::reverse(o.vertices.begin(), o.vertices.end());
-  for (auto &o : trans3dOutlines)
-    std::reverse(o.vertices.begin(), o.vertices.end());
+void Polygon2d::reverse(void)
+{
+  for (auto& o : theoutlines) std::reverse(o.vertices.begin(), o.vertices.end());
+  for (auto& o : trans3dOutlines) std::reverse(o.vertices.begin(), o.vertices.end());
 }

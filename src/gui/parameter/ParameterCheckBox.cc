@@ -1,16 +1,17 @@
 #include <QWidget>
 #include "gui/parameter/ParameterCheckBox.h"
 
-ParameterCheckBox::ParameterCheckBox(QWidget *parent, BoolParameter *parameter, DescriptionStyle descriptionStyle) :
-  ParameterVirtualWidget(parent, parameter),
-  parameter(parameter)
+ParameterCheckBox::ParameterCheckBox(QWidget *parent, BoolParameter *parameter,
+                                     DescriptionStyle descriptionStyle)
+  : ParameterVirtualWidget(parent, parameter), parameter(parameter)
 {
   setupUi(this);
   descriptionWidget->setDescription(parameter, descriptionStyle);
 
   if (descriptionStyle == DescriptionStyle::ShowDetails) {
-    //large checkbox, when we have the space
-    checkBox->setStyleSheet("QCheckBox::indicator { width: 20px; height: 20px; } QCheckBox { spacing: 0px; }");
+    // large checkbox, when we have the space
+    checkBox->setStyleSheet(
+      "QCheckBox::indicator { width: 20px; height: 20px; } QCheckBox { spacing: 0px; }");
   }
 
   connect(checkBox, &QCheckBox::clicked, this, &ParameterCheckBox::onChanged);
@@ -23,7 +24,4 @@ void ParameterCheckBox::onChanged()
   emit changed(true);
 }
 
-void ParameterCheckBox::setValue()
-{
-  checkBox->setChecked(parameter->value);
-}
+void ParameterCheckBox::setValue() { checkBox->setChecked(parameter->value); }

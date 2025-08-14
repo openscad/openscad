@@ -16,9 +16,7 @@
 
 LaunchingScreen *LaunchingScreen::inst = nullptr;
 
-LaunchingScreen *LaunchingScreen::getDialog() {
-  return LaunchingScreen::inst;
-}
+LaunchingScreen *LaunchingScreen::getDialog() { return LaunchingScreen::inst; }
 
 // Called (possibly multiple times) by EventFilter on MacOS, e.g.
 // when the user opens files from Finder.
@@ -34,9 +32,11 @@ LaunchingScreen::LaunchingScreen(QWidget *parent) : QDialog(parent)
   LaunchingScreen::inst = this;
   setupUi(this);
 
-  this->setStyleSheet("QDialog {background-image:url(':/icons/background.png')} QPushButton {color:white;}");
+  this->setStyleSheet(
+    "QDialog {background-image:url(':/icons/background.png')} QPushButton {color:white;}");
 
-  this->versionNumberLabel->setText("PythonSCAD " + QString::fromStdString(openscad_displayversionnumber));
+  this->versionNumberLabel->setText("PythonSCAD " +
+                                    QString::fromStdString(openscad_displayversionnumber));
 
   QStringList recentFiles = UIUtils::recentFiles();
   for (const auto& recentFile : recentFiles) {
@@ -63,17 +63,19 @@ LaunchingScreen::LaunchingScreen(QWidget *parent) : QDialog(parent)
     this->treeWidget->addTopLevelItem(categoryItem);
   }
 
-#ifdef ENABLE_PYTHON  
+#ifdef ENABLE_PYTHON
   connect(this->pushButtonNew, &QPushButton::clicked, this, &LaunchingScreen::openPython);
 #else
   this->pushButtonNew->hide();
-#endif  
+#endif
   connect(this->pushButtonOpen, &QPushButton::clicked, this, &LaunchingScreen::openUserFile);
   connect(this->pushButtonHelp, &QPushButton::clicked, this, &LaunchingScreen::openUserManualURL);
-  connect(this->recentList->selectionModel(), &QItemSelectionModel::currentRowChanged, this, &LaunchingScreen::enableRecentButton);
+  connect(this->recentList->selectionModel(), &QItemSelectionModel::currentRowChanged, this,
+          &LaunchingScreen::enableRecentButton);
 
   connect(this->recentList, &QListWidget::itemDoubleClicked, this, &LaunchingScreen::openRecent);
-  connect(this->treeWidget, &QTreeWidget::currentItemChanged, this, &LaunchingScreen::enableExampleButton);
+  connect(this->treeWidget, &QTreeWidget::currentItemChanged, this,
+          &LaunchingScreen::enableExampleButton);
 
   connect(this->treeWidget, &QTreeWidget::itemDoubleClicked, this, &LaunchingScreen::openExample);
   connect(this->openRecentButton, &QPushButton::clicked, this, &LaunchingScreen::openRecent);
@@ -81,15 +83,9 @@ LaunchingScreen::LaunchingScreen(QWidget *parent) : QDialog(parent)
   connect(this->checkBox, &QCheckBox::toggled, this, &LaunchingScreen::checkboxState);
 }
 
-LaunchingScreen::~LaunchingScreen()
-{
-  LaunchingScreen::inst = nullptr;
-}
+LaunchingScreen::~LaunchingScreen() { LaunchingScreen::inst = nullptr; }
 
-QStringList LaunchingScreen::selectedFiles() const
-{
-  return this->files;
-}
+QStringList LaunchingScreen::selectedFiles() const { return this->files; }
 
 bool LaunchingScreen::isForceShowEditor() const
 {
@@ -163,7 +159,4 @@ void LaunchingScreen::checkboxState(bool state) const
   settings.setValue("launcher/showOnStartup", !state);
 }
 
-void LaunchingScreen::openUserManualURL() const
-{
-  UIUtils::openUserManualURL();
-}
+void LaunchingScreen::openUserManualURL() const { UIUtils::openUserManualURL(); }

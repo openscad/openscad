@@ -23,9 +23,10 @@
 #include "src/geometry/manifold/manifoldutils.h"
 
 static std::unique_ptr<PolySet> assemblePolySetForManifold(const Polygon2d& polyref,
-                                                    std::vector<Vector3d>& vertices,
-                                                    PolygonIndices& indices, bool closed, int convexity,
-                                                    int index_offset, bool flip_faces)
+                                                           std::vector<Vector3d>& vertices,
+                                                           PolygonIndices& indices, bool closed,
+                                                           int convexity, int index_offset,
+                                                           bool flip_faces)
 {
   auto final_polyset = std::make_unique<PolySet>(3, false);
   final_polyset->setTriangular(true);
@@ -52,10 +53,10 @@ static std::unique_ptr<PolySet> assemblePolySetForManifold(const Polygon2d& poly
       }
     }
     std::copy(ps_bottom->indices.begin(), ps_bottom->indices.end(),
-      std::back_inserter(final_polyset->indices));
+              std::back_inserter(final_polyset->indices));
   }
 
-//  LOG(PolySetUtils::polySetToPolyhedronSource(*final_polyset));
+  //  LOG(PolySetUtils::polySetToPolyhedronSource(*final_polyset));
 
   return final_polyset;
 }
@@ -77,11 +78,14 @@ static std::unique_ptr<PolySet> assemblePolySetForManifold(const Polygon2d& poly
 
    Currently, we generate a lot of zero-area triangles
  */
-VectorOfVector2d alterprofile(VectorOfVector2d vertices,double scalex, double scaley, double origin_x, double origin_y,double offset_x, double offset_y, double rot);
+VectorOfVector2d alterprofile(VectorOfVector2d vertices, double scalex, double scaley, double origin_x,
+                              double origin_y, double offset_x, double offset_y, double rot);
 
-std::unique_ptr<Geometry> rotatePolygonSub(const RotateExtrudeNode& node, const Polygon2d& poly, int fragments, size_t fragstart, size_t fragend, bool flip_faces)
+std::unique_ptr<Geometry> rotatePolygonSub(const RotateExtrudeNode& node, const Polygon2d& poly,
+                                           int fragments, size_t fragstart, size_t fragend,
+                                           bool flip_faces)
 {
-  double fact=(node.v[2]/node.angle)*(180.0/G_PI);
+  double fact = (node.v[2] / node.angle) * (180.0 / G_PI);
 
   // # of sections. For closed rotations, # vertices is thus fragments*outline_size. For open
   // rotations # vertices is (fragments+1)*outline_size.
@@ -93,15 +97,13 @@ std::unique_ptr<Geometry> rotatePolygonSub(const RotateExtrudeNode& node, const 
   // slice_stride is the number of vertices in a single ring
   size_t slice_stride = 0;
   int num_vertices = 0;
-#ifdef ENABLE_PYTHON  
-  if(node.profile_func != NULL)
-  {
+#ifdef ENABLE_PYTHON
+  if (node.profile_func != NULL) {
     Outline2d outl = python_getprofile(node.profile_func, node.fn, 0);
-      slice_stride += outl.vertices.size();
-  }
-  else
+    slice_stride += outl.vertices.size();
+  } else
 #endif
-  {	  
+  {
     for (const auto& o : poly.outlines()) {
       slice_stride += o.vertices.size();
     }
@@ -113,54 +115,54 @@ std::unique_ptr<Geometry> rotatePolygonSub(const RotateExtrudeNode& node, const 
   indices.reserve(slice_stride * num_rings * 2);  // sides + endcaps if needed
 
   for (unsigned int j = fragstart; j <= fragend; ++j) {
-    Vector3d dv = node.v*j/fragments;
+    Vector3d dv = node.v * j / fragments;
 
     for (const auto& outline : poly.outlines()) {
       const double angle = node.start + j * node.angle / fragments;  // start on the X axis
       std::vector<Vector2d> vertices2d;
-      double cur_twist=0;
+      double cur_twist = 0;
 #ifdef ENABLE_PYTHON
-      if(node.profile_func != NULL)
-      {
+      if (node.profile_func != NULL) {
         Outline2d lastFace;
         Outline2d curFace;
-        Outline2d outl = python_getprofile(node.profile_func, node.fn, j/(double) fragments);
-	vertices2d = outl.vertices;
+        Outline2d outl = python_getprofile(node.profile_func, node.fn, j / (double)fragments);
+        vertices2d = outl.vertices;
       } else
 #endif
-      vertices2d = outline.vertices;
-#ifdef ENABLE_PYTHON	      
-      if(node.twist_func != NULL) cur_twist = python_doublefunc(node.twist_func, 0); 
+        vertices2d = outline.vertices;
+#ifdef ENABLE_PYTHON
+      if (node.twist_func != NULL) cur_twist = python_doublefunc(node.twist_func, 0);
       else
 #endif
-      cur_twist=node.twist *j/ fragments;
-      vertices2d = alterprofile(vertices2d, 1.0, 1.0,node.origin_x, node.origin_y, node.offset_x, node.offset_y, cur_twist);
-      double xmid=NAN;
-      if(node.method == "centered") {
+        cur_twist = node.twist * j / fragments;
+      vertices2d = alterprofile(vertices2d, 1.0, 1.0, node.origin_x, node.origin_y, node.offset_x,
+                                node.offset_y, cur_twist);
+      double xmid = NAN;
+      if (node.method == "centered") {
         double xmin, xmax;
-        xmin=xmax=vertices2d[0][0];
-        for(const auto &v : vertices2d) {
-          if(v[0] < xmin) xmin=v[0];	    
-          if(v[0] > xmax) xmax=v[0];	    
+        xmin = xmax = vertices2d[0][0];
+        for (const auto& v : vertices2d) {
+          if (v[0] < xmin) xmin = v[0];
+          if (v[0] > xmax) xmax = v[0];
         }
-        xmid=(xmin+xmax)/2;
-      } 
+        xmid = (xmin + xmax) / 2;
+      }
 
       for (const auto& v : vertices2d) {
-        double tan_pitch= fact/(std::isnan(xmid)?v[0]:xmid);
+        double tan_pitch = fact / (std::isnan(xmid) ? v[0] : xmid);
         //
         // cos(atan(x))=1/sqrt(1+x*x)
         // sin(atan(x))=x/sqrt(1+x*x)
-        double cf=1/sqrt(1+tan_pitch*tan_pitch);
-        double sf=cf*tan_pitch;
-        Vector3d centripedal=Vector3d( cos_degrees(angle), sin_degrees(angle) ,0);
-        Vector3d progress=Vector3d(-sin_degrees(angle)*cf, cos_degrees(angle)*cf, sf);
-        Vector3d upwards=centripedal.cross(progress);
-        Vector3d res =  centripedal * v[0] + upwards * v[1] + dv;
+        double cf = 1 / sqrt(1 + tan_pitch * tan_pitch);
+        double sf = cf * tan_pitch;
+        Vector3d centripedal = Vector3d(cos_degrees(angle), sin_degrees(angle), 0);
+        Vector3d progress = Vector3d(-sin_degrees(angle) * cf, cos_degrees(angle) * cf, sf);
+        Vector3d upwards = centripedal.cross(progress);
+        Vector3d res = centripedal * v[0] + upwards * v[1] + dv;
         vertices.emplace_back(res);
-      } // vertices
-    } // outlines
-  } // fragments/rings
+      }  // vertices
+    }  // outlines
+  }  // fragments/rings
 
   // Calculate all indices
   for (unsigned int slice_idx = 1; slice_idx <= num_sections; slice_idx++) {
@@ -182,7 +184,7 @@ std::unique_ptr<Geometry> rotatePolygonSub(const RotateExtrudeNode& node, const 
             (curr_slice + curr_idx) % num_vertices,
             (prev_slice + prev_idx) % num_vertices,
             (curr_slice + prev_idx) % num_vertices,
-          });  
+          });
         } else {
           indices.push_back({
             (prev_slice + curr_idx) % num_vertices,
@@ -200,10 +202,11 @@ std::unique_ptr<Geometry> rotatePolygonSub(const RotateExtrudeNode& node, const 
     }
   }
 
-  // TODO(kintel): Without Manifold, we don't have such tessellator available which guarantees to not modify vertices, so we technically may end up with 
-  // broken end caps if we build OpenSCAD without ENABLE_MANIFOLD. Should be fixed, but it's low priority and it's not 
-  // trivial to come up with a test case for this.
-return assemblePolySetForManifold(poly, vertices, indices, closed, node.convexity,
+  // TODO(kintel): Without Manifold, we don't have such tessellator available which guarantees to not
+  // modify vertices, so we technically may end up with broken end caps if we build OpenSCAD without
+  // ENABLE_MANIFOLD. Should be fixed, but it's low priority and it's not trivial to come up with a test
+  // case for this.
+  return assemblePolySetForManifold(poly, vertices, indices, closed, node.convexity,
                                     slice_stride * num_sections, flip_faces);
 }
 
@@ -228,39 +231,39 @@ std::unique_ptr<Geometry> rotatePolygon(const RotateExtrudeNode& node, const Pol
       min_x, max_x);
     return nullptr;
   }
-  const auto num_sections = (unsigned int)std::ceil(fmax(
-    Calc::get_fragments_from_r(max_x - min_x, 360.0, node.fn, node.fs, node.fa) * std::abs(node.angle) / 360,
-    1));
+  const auto num_sections = (unsigned int)std::ceil(
+    fmax(Calc::get_fragments_from_r(max_x - min_x, 360.0, node.fn, node.fs, node.fa) *
+           std::abs(node.angle) / 360,
+         1));
   bool flip_faces = (min_x >= 0 && node.angle > 0) || (min_x < 0 && node.angle < 0);
 
   // check if its save to extrude
-  bool safe=true;
-  do
-  {
-    if(node.angle < 300) break;	  
-    if(node.v.norm() == 0) break;
-    if(node.v[2]/(node.angle/360.0)  >  (max_x-min_x) * 1.5) break;
-    safe=false;
+  bool safe = true;
+  do {
+    if (node.angle < 300) break;
+    if (node.v.norm() == 0) break;
+    if (node.v[2] / (node.angle / 360.0) > (max_x - min_x) * 1.5) break;
+    safe = false;
 
-  } while(false);
-  if(safe) return rotatePolygonSub(node, poly, num_sections, 0, num_sections, flip_faces);	
+  } while (false);
+  if (safe) return rotatePolygonSub(node, poly, num_sections, 0, num_sections, flip_faces);
 
   // now create a fragment splitting plan
-  size_t splits=ceil(node.angle/300.0);
+  size_t splits = ceil(node.angle / 300.0);
   fragments = num_sections;
-  int fragstart=0,fragend;
+  int fragstart = 0, fragend;
   std::unique_ptr<ManifoldGeometry> result = nullptr;
 
-  for(size_t i=0;i<splits;i++) {
-    fragend=fragstart+(fragments/splits)+1;    	 
-    if(fragend > fragments) fragend=fragments;
-    std::unique_ptr<Geometry> part_u =rotatePolygonSub(node, poly, fragments, fragstart, fragend, flip_faces);	
+  for (size_t i = 0; i < splits; i++) {
+    fragend = fragstart + (fragments / splits) + 1;
+    if (fragend > fragments) fragend = fragments;
+    std::unique_ptr<Geometry> part_u =
+      rotatePolygonSub(node, poly, fragments, fragstart, fragend, flip_faces);
     std::shared_ptr<Geometry> part_s = std::move(part_u);
-    std::shared_ptr<const ManifoldGeometry>term = ManifoldUtils::createManifoldFromGeometry(part_s);
-    if(result == nullptr) result = std::make_unique<ManifoldGeometry>(*term);
-      else *result = *result + *term;	
-    fragstart=fragend-1;
+    std::shared_ptr<const ManifoldGeometry> term = ManifoldUtils::createManifoldFromGeometry(part_s);
+    if (result == nullptr) result = std::make_unique<ManifoldGeometry>(*term);
+    else *result = *result + *term;
+    fragstart = fragend - 1;
   }
-  return  result; 
+  return result;
 }
-

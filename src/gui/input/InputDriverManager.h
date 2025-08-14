@@ -79,7 +79,8 @@ public:
   void registerDriver(InputDriver *driver);
   void unregisterDriver(InputDriver *driver);
   void closeDrivers();
-  void registerActions(const QList<QAction *>& actions, const QString& parent = QString(""), const QString& target = QString(""));
+  void registerActions(const QList<QAction *>& actions, const QString& parent = QString(""),
+                       const QString& target = QString(""));
 
   static InputDriverManager *instance();
 

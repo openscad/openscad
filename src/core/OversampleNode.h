@@ -13,11 +13,10 @@ public:
   {
     std::ostringstream stream;
     stream << "oversample( n = " << n << ", round = " << round << ")";
-    return  stream.str();
+    return stream.str();
   }
   std::string name() const override { return "oversample"; }
   std::unique_ptr<const Geometry> createGeometry() const override;
   int n;
   int round;
 };
-

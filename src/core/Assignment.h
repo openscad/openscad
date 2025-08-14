@@ -14,14 +14,18 @@ class Assignment : public ASTNode
 {
 public:
   Assignment(std::string name, const Location& loc)
-    : ASTNode(loc), name(std::move(name)), locOfOverwrite(Location::NONE) { }
-  Assignment(std::string name,
-             std::shared_ptr<class Expression> expr = {},
+    : ASTNode(loc), name(std::move(name)), locOfOverwrite(Location::NONE)
+  {
+  }
+  Assignment(std::string name, std::shared_ptr<class Expression> expr = {},
              const Location& loc = Location::NONE)
-    : ASTNode(loc), name(std::move(name)), expr(std::move(expr)), locOfOverwrite(Location::NONE){ }
+    : ASTNode(loc), name(std::move(name)), expr(std::move(expr)), locOfOverwrite(Location::NONE)
+  {
+  }
 
   void print(std::ostream& stream, const std::string& indent) const override;
-  void print_python(std::ostream& stream, std::ostream& stream_def, const std::string& indent) const override;
+  void print_python(std::ostream& stream, std::ostream& stream_def,
+                    const std::string& indent) const override;
   const std::string& getName() const { return name; }
   const std::shared_ptr<Expression>& getExpr() const { return expr; }
   const AnnotationMap& getAnnotations() const { return annotations; }
@@ -42,8 +46,10 @@ protected:
   Location locOfOverwrite;
 };
 
-template <class ... Args> std::shared_ptr<Assignment> assignment(Args... args) {
-  return std::make_shared<Assignment>(args ...);
+template <class... Args>
+std::shared_ptr<Assignment> assignment(Args... args)
+{
+  return std::make_shared<Assignment>(args...);
 }
 
 using AssignmentList = std::vector<std::shared_ptr<Assignment>>;

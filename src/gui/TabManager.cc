@@ -38,7 +38,8 @@ TabManager::TabManager(MainWindow *o, const QString& filename)
   tabWidget->setContextMenuPolicy(Qt::CustomContextMenu);
 
   connect(tabWidget, &QTabWidget::tabCloseRequested, this, &TabManager::closeTabRequested);
-  connect(tabWidget, &QTabWidget::customContextMenuRequested, this, &TabManager::showTabHeaderContextMenu);
+  connect(tabWidget, &QTabWidget::customContextMenuRequested, this,
+          &TabManager::showTabHeaderContextMenu);
 
   connect(tabWidget, &QTabWidget::currentChanged, this, &TabManager::stopAnimation);
   connect(tabWidget, &QTabWidget::currentChanged, this, &TabManager::updateFindState);
@@ -53,7 +54,8 @@ TabManager::TabManager(MainWindow *o, const QString& filename)
 QTabBar::ButtonPosition TabManager::getClosingButtonPosition()
 {
   auto bar = tabWidget->tabBar();
-  return (QTabBar::ButtonPosition)bar->style()->styleHint(QStyle::SH_TabBar_CloseButtonPosition, nullptr, bar);
+  return (QTabBar::ButtonPosition)bar->style()->styleHint(QStyle::SH_TabBar_CloseButtonPosition, nullptr,
+                                                          bar);
 }
 
 void TabManager::setTabsCloseButtonVisibility(int indice, bool isVisible)
@@ -80,15 +82,16 @@ void TabManager::tabSwitched(int x)
 
   par->editActionUndo->setEnabled(editor->canUndo());
   par->setWindowTitle(tabWidget->tabText(x).replace("&&", "&"));
-  if(use_gvim) {
-// **MCH*
-   auto* tabEditor = (EditorInterface *)tabWidget->widget(x);
-   std::string filename = tabEditor->filepath.toUtf8().constData();
-   QString editorcmd = "gvim --remote-send '<esc>:sb " + QString::fromStdString(filename) + "<cr>' || (gvim '" + QString::fromStdString(filename) + "' &)";
-//   LOG("1. Opening file '%1$s'",editorcmd.toUtf8().constData());
-   system(editorcmd.toUtf8().constData());
-// **MCH*
- }
+  if (use_gvim) {
+    // **MCH*
+    auto *tabEditor = (EditorInterface *)tabWidget->widget(x);
+    std::string filename = tabEditor->filepath.toUtf8().constData();
+    QString editorcmd = "gvim --remote-send '<esc>:sb " + QString::fromStdString(filename) +
+                        "<cr>' || (gvim '" + QString::fromStdString(filename) + "' &)";
+    //   LOG("1. Opening file '%1$s'",editorcmd.toUtf8().constData());
+    system(editorcmd.toUtf8().constData());
+    // **MCH*
+  }
 
   auto numberOfOpenTabs = tabWidget->count();
   // Hides all the closing button except the one on the currently focused editor
@@ -126,8 +129,8 @@ void TabManager::closeCurrentTab()
   /* Close tab or close the current window if only one tab is open. */
   if (tabWidget->count() > 1) this->closeTabRequested(tabWidget->currentIndex());
   else {
-	 par->close();
-	 if(use_gvim) this->closeTabRequested(tabWidget->currentIndex());	// ** MCH **
+    par->close();
+    if (use_gvim) this->closeTabRequested(tabWidget->currentIndex());  // ** MCH **
   }
 }
 
@@ -145,7 +148,8 @@ void TabManager::prevTab()
 
 void TabManager::actionNew()
 {
-  if (!par->editorDock->isVisible()) par->editorDock->setVisible(true);   //if editor hidden, make it visible
+  if (!par->editorDock->isVisible())
+    par->editorDock->setVisible(true);  // if editor hidden, make it visible
   createTab("Untitled.py");
 }
 
@@ -153,20 +157,22 @@ void TabManager::open(const QString& filename)
 {
   assert(!filename.isEmpty());
 
-  if(use_gvim) {
-    QString editorcmd = "gvim --remote-tab-silent '" + filename.toUtf8() + "' || gvim '" + filename.toUtf8() + "' &";
+  if (use_gvim) {
+    QString editorcmd =
+      "gvim --remote-tab-silent '" + filename.toUtf8() + "' || gvim '" + filename.toUtf8() + "' &";
     editorcmd += filename.toUtf8();
-//    LOG("2. Opening file '%1$s'",editorcmd.toUtf8().constData());
+    //    LOG("2. Opening file '%1$s'",editorcmd.toUtf8().constData());
     system(editorcmd.toUtf8().constData());
   }
-  for (auto edt: editorList) {
+  for (auto edt : editorList) {
     if (filename == edt->filepath) {
       tabWidget->setCurrentWidget(edt);
       return;
     }
   }
 
-  if (editor->filepath.isEmpty() && !editor->isContentModified() && !editor->parameterWidget->isModified()) {
+  if (editor->filepath.isEmpty() && !editor->isContentModified() &&
+      !editor->parameterWidget->isModified()) {
     openTabFile(filename);
   } else {
     createTab(filename);
@@ -179,12 +185,13 @@ void TabManager::createTab(const QString& filename)
 
   auto scintillaEditor = new ScintillaEditor(tabWidget, *par);
   editor = scintillaEditor;
-//  Preferences::create(editor->colorSchemes());   // needs to be done only once, however handled
+  //  Preferences::create(editor->colorSchemes());   // needs to be done only once, however handled
   this->use_gvim = GlobalPreferences::inst()->getValue("editor/usegvim").toBool();
-//  this->use_gvim = true;
+  //  this->use_gvim = true;
   par->activeEditor = editor;
   editor->parameterWidget = new ParameterWidget(par->parameterDock);
-  connect(editor->parameterWidget, &ParameterWidget::parametersChanged, par, &MainWindow::actionRenderPreview);
+  connect(editor->parameterWidget, &ParameterWidget::parametersChanged, par,
+          &MainWindow::actionRenderPreview);
   par->parameterDock->setWidget(editor->parameterWidget);
 
   // clearing default mapping of keyboard shortcut for font size
@@ -197,13 +204,14 @@ void TabManager::createTab(const QString& filename)
   connect(scintillaEditor, &ScintillaEditor::uriDropped, par, &MainWindow::handleFileDrop);
   connect(scintillaEditor, &ScintillaEditor::previewRequest, par, &MainWindow::actionRenderPreview);
   connect(editor, &EditorInterface::showContextMenuEvent, this, &TabManager::showContextMenuEvent);
-  connect(editor, &EditorInterface::focusIn, this, [ this ]() {
-    par->setLastFocus(editor);
-  });
+  connect(editor, &EditorInterface::focusIn, this, [this]() { par->setLastFocus(editor); });
 
-  connect(GlobalPreferences::inst(), &Preferences::editorConfigChanged, scintillaEditor, &ScintillaEditor::applySettings);
-  connect(GlobalPreferences::inst(), &Preferences::autocompleteChanged, scintillaEditor, &ScintillaEditor::onAutocompleteChanged);
-  connect(GlobalPreferences::inst(), &Preferences::characterThresholdChanged, scintillaEditor, &ScintillaEditor::onCharacterThresholdChanged);
+  connect(GlobalPreferences::inst(), &Preferences::editorConfigChanged, scintillaEditor,
+          &ScintillaEditor::applySettings);
+  connect(GlobalPreferences::inst(), &Preferences::autocompleteChanged, scintillaEditor,
+          &ScintillaEditor::onAutocompleteChanged);
+  connect(GlobalPreferences::inst(), &Preferences::characterThresholdChanged, scintillaEditor,
+          &ScintillaEditor::onCharacterThresholdChanged);
   scintillaEditor->applySettings();
   editor->addTemplate();
 
@@ -211,19 +219,21 @@ void TabManager::createTab(const QString& filename)
   connect(par->editActionZoomTextOut, &QAction::triggered, editor, &EditorInterface::zoomOut);
 
   connect(editor, &EditorInterface::contentsChanged, this, &TabManager::updateActionUndoState);
-  connect(editor, &EditorInterface::contentsChanged, par,  &MainWindow::editorContentChanged);
+  connect(editor, &EditorInterface::contentsChanged, par, &MainWindow::editorContentChanged);
   connect(editor, &EditorInterface::contentsChanged, this, &TabManager::setContentRenderState);
   connect(editor, &EditorInterface::modificationChanged, this, &TabManager::onTabModified);
-  connect(editor->parameterWidget, &ParameterWidget::modificationChanged, [editor = this->editor, this] {
-    onTabModified(editor);
-  });
+  connect(editor->parameterWidget, &ParameterWidget::modificationChanged,
+          [editor = this->editor, this] { onTabModified(editor); });
 
   connect(GlobalPreferences::inst(), &Preferences::fontChanged, editor, &EditorInterface::initFont);
-  connect(GlobalPreferences::inst(), &Preferences::syntaxHighlightChanged, editor, &EditorInterface::setHighlightScheme);
-  editor->initFont(GlobalPreferences::inst()->getValue("editor/fontfamily").toString(), GlobalPreferences::inst()->getValue("editor/fontsize").toUInt());
+  connect(GlobalPreferences::inst(), &Preferences::syntaxHighlightChanged, editor,
+          &EditorInterface::setHighlightScheme);
+  editor->initFont(GlobalPreferences::inst()->getValue("editor/fontfamily").toString(),
+                   GlobalPreferences::inst()->getValue("editor/fontsize").toUInt());
   editor->setHighlightScheme(GlobalPreferences::inst()->getValue("editor/syntaxhighlight").toString());
 
-  connect(scintillaEditor, &ScintillaEditor::hyperlinkIndicatorClicked, this, &TabManager::onHyperlinkIndicatorClicked);
+  connect(scintillaEditor, &ScintillaEditor::hyperlinkIndicatorClicked, this,
+          &TabManager::onHyperlinkIndicatorClicked);
 
   // Fill the editor with the content of the file
   if (filename.isEmpty()) {
@@ -242,95 +252,41 @@ void TabManager::createTab(const QString& filename)
   emit tabCountChanged(editorList.size());
 }
 
-size_t TabManager::count()
-{
-  return tabWidget->count();
-}
+size_t TabManager::count() { return tabWidget->count(); }
 
-void TabManager::highlightError(int i)
-{
-  editor->highlightError(i);
-}
+void TabManager::highlightError(int i) { editor->highlightError(i); }
 
-void TabManager::unhighlightLastError()
-{
-  editor->unhighlightLastError();
-}
+void TabManager::unhighlightLastError() { editor->unhighlightLastError(); }
 
-void TabManager::undo()
-{
-  editor->undo();
-}
+void TabManager::undo() { editor->undo(); }
 
-void TabManager::redo()
-{
-  editor->redo();
-}
+void TabManager::redo() { editor->redo(); }
 
-void TabManager::cut()
-{
-  editor->cut();
-}
+void TabManager::cut() { editor->cut(); }
 
-void TabManager::copy()
-{
-  editor->copy();
-}
+void TabManager::copy() { editor->copy(); }
 
-void TabManager::paste()
-{
-  editor->paste();
-}
+void TabManager::paste() { editor->paste(); }
 
-void TabManager::indentSelection()
-{
-  editor->indentSelection();
-}
+void TabManager::indentSelection() { editor->indentSelection(); }
 
-void TabManager::unindentSelection()
-{
-  editor->unindentSelection();
-}
+void TabManager::unindentSelection() { editor->unindentSelection(); }
 
-void TabManager::commentSelection()
-{
-  editor->commentSelection();
-}
+void TabManager::commentSelection() { editor->commentSelection(); }
 
-void TabManager::uncommentSelection()
-{
-  editor->uncommentSelection();
-}
+void TabManager::uncommentSelection() { editor->uncommentSelection(); }
 
-void TabManager::toggleBookmark()
-{
-  editor->toggleBookmark();
-}
+void TabManager::toggleBookmark() { editor->toggleBookmark(); }
 
-void TabManager::nextBookmark()
-{
-  editor->nextBookmark();
-}
+void TabManager::nextBookmark() { editor->nextBookmark(); }
 
-void TabManager::prevBookmark()
-{
-  editor->prevBookmark();
-}
+void TabManager::prevBookmark() { editor->prevBookmark(); }
 
-void TabManager::jumpToNextError()
-{
-  editor->jumpToNextError();
-}
+void TabManager::jumpToNextError() { editor->jumpToNextError(); }
 
-void TabManager::setFocus()
-{
-  editor->setFocus();
-}
+void TabManager::setFocus() { editor->setFocus(); }
 
-void TabManager::updateActionUndoState()
-{
-  par->editActionUndo->setEnabled(editor->canUndo());
-}
+void TabManager::updateActionUndoState() { par->editActionUndo->setEnabled(editor->canUndo()); }
 
 void TabManager::onHyperlinkIndicatorClicked(int val)
 {
@@ -360,7 +316,7 @@ void TabManager::applyAction(QObject *object, const std::function<void(int, Edit
 
 void TabManager::copyFileName()
 {
-  applyAction(QObject::sender(), [](int, EditorInterface *edt){
+  applyAction(QObject::sender(), [](int, EditorInterface *edt) {
     QClipboard *clipboard = QApplication::clipboard();
     clipboard->setText(QFileInfo(edt->filepath).fileName());
   });
@@ -368,7 +324,7 @@ void TabManager::copyFileName()
 
 void TabManager::copyFilePath()
 {
-  applyAction(QObject::sender(), [](int, EditorInterface *edt){
+  applyAction(QObject::sender(), [](int, EditorInterface *edt) {
     QClipboard *clipboard = QApplication::clipboard();
     clipboard->setText(edt->filepath);
   });
@@ -376,7 +332,7 @@ void TabManager::copyFilePath()
 
 void TabManager::openFolder()
 {
-  applyAction(QObject::sender(), [](int, EditorInterface *edt){
+  applyAction(QObject::sender(), [](int, EditorInterface *edt) {
     auto dir = QFileInfo(edt->filepath).dir();
     if (dir.exists()) {
       QDesktopServices::openUrl(QUrl::fromLocalFile(dir.absolutePath()));
@@ -386,9 +342,7 @@ void TabManager::openFolder()
 
 void TabManager::closeTab()
 {
-  applyAction(QObject::sender(), [this](int idx, EditorInterface *){
-    closeTabRequested(idx);
-  });
+  applyAction(QObject::sender(), [this](int idx, EditorInterface *) { closeTabRequested(idx); });
 }
 
 void TabManager::showContextMenuEvent(const QPoint& pos)
@@ -452,9 +406,9 @@ void TabManager::showTabHeaderContextMenu(const QPoint& pos)
   menu.exec(globalCursorPos);
 }
 
-void TabManager::setContentRenderState() //since last render
+void TabManager::setContentRenderState()  // since last render
 {
-  editor->contentsRendered = false;   //since last render
+  editor->contentsRendered = false;  // since last render
   editor->parameterWidget->setEnabled(false);
 }
 
@@ -483,25 +437,24 @@ void TabManager::onTabModified(EditorInterface *edt)
 void TabManager::openTabFile(const QString& filename)
 {
 #ifdef ENABLE_PYTHON
-  if(boost::algorithm::ends_with(filename, ".py")) {
-    std::string templ="from openscad import *\n";	  
+  if (boost::algorithm::ends_with(filename, ".py")) {
+    std::string templ = "from openscad import *\n";
     std::string libs = Settings::Settings::pythonNetworkImportList.value();
     std::stringstream ss(libs);
     std::string word;
-    while(std::getline(ss,word,'\n')){
-      if(word.size() == 0) continue;	    
+    while (std::getline(ss, word, '\n')) {
+      if (word.size() == 0) continue;
       templ += "nimport(\"" + word + "\")\n";
     }
     editor->setPlainText(QString::fromStdString(templ));
   } else
 #endif
-  editor->setPlainText("");
+    editor->setPlainText("");
 
   QFileInfo fileinfo(filename);
   const auto suffix = fileinfo.suffix().toLower();
   const auto knownFileType = Importer::knownFileExtensions.contains(suffix);
-  if(!knownFileType)
-    return;
+  if (!knownFileType) return;
 
   const auto cmd = Importer::knownFileExtensions[suffix];
   if (cmd.isEmpty()) {
@@ -541,8 +494,7 @@ std::tuple<QString, QString> TabManager::getEditorTabNameWithModifier(EditorInte
   auto [fname, fpath] = getEditorTabName(edt);
 
   // Add the "modification" star if it was changed.
-  bool isDirty = edt->isContentModified()
-    || edt->parameterWidget->isModified();
+  bool isDirty = edt->isContentModified() || edt->parameterWidget->isModified();
 
   if (isDirty) fname += "*";
 
@@ -563,9 +515,9 @@ bool TabManager::refreshDocument()
   if (!editor->filepath.isEmpty()) {
     QFile file(editor->filepath);
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-      if(!boost::algorithm::ends_with(editor->filepath, "Untitled.py")) {
-      LOG("Failed to open file %1$s: %2$s",
-          editor->filepath.toLocal8Bit().constData(), file.errorString().toLocal8Bit().constData());
+      if (!boost::algorithm::ends_with(editor->filepath, "Untitled.py")) {
+        LOG("Failed to open file %1$s: %2$s", editor->filepath.toLocal8Bit().constData(),
+            file.errorString().toLocal8Bit().constData());
       }
     } else {
       QTextStream reader(&file);
@@ -576,7 +528,7 @@ bool TabManager::refreshDocument()
       LOG("Loaded design '%1$s'.", editor->filepath.toLocal8Bit().constData());
       if (editor->toPlainText() != text) {
         editor->setPlainText(text);
-        setContentRenderState();         // since last render
+        setContentRenderState();  // since last render
       }
       file_opened = true;
     }
@@ -586,7 +538,7 @@ bool TabManager::refreshDocument()
 
 bool TabManager::maybeSave(int x)
 {
-  auto *edt = (EditorInterface *) tabWidget->widget(x);
+  auto *edt = (EditorInterface *)tabWidget->widget(x);
   if (edt->isContentModified() || edt->parameterWidget->isModified()) {
     QMessageBox box(par);
     box.setText(_("The document has been modified."));
@@ -600,7 +552,7 @@ bool TabManager::maybeSave(int x)
     box.button(QMessageBox::Discard)->setShortcut(QKeySequence("Ctrl+D"));
     box.button(QMessageBox::Discard)->setShortcutEnabled(true);
 #endif
-    auto ret = (QMessageBox::StandardButton) box.exec();
+    auto ret = (QMessageBox::StandardButton)box.exec();
 
     if (ret == QMessageBox::Save) {
       return save(edt);
@@ -617,7 +569,7 @@ bool TabManager::maybeSave(int x)
  */
 bool TabManager::shouldClose()
 {
-  foreach(EditorInterface * edt, editorList) {
+  foreach (EditorInterface *edt, editorList) {
     if (!(edt->isContentModified() || edt->parameterWidget->isModified())) continue;
 
     QMessageBox box(par);
@@ -632,7 +584,7 @@ bool TabManager::shouldClose()
     box.button(QMessageBox::Discard)->setShortcut(QKeySequence("Ctrl+D"));
     box.button(QMessageBox::Discard)->setShortcutEnabled(true);
 #endif
-    auto ret = (QMessageBox::StandardButton) box.exec();
+    auto ret = (QMessageBox::StandardButton)box.exec();
 
     if (ret == QMessageBox::Cancel) {
       return false;
@@ -664,7 +616,7 @@ bool TabManager::save(EditorInterface *edt)
 {
   assert(edt != nullptr);
 
-  if (edt->filepath.endsWith("Untitled.py")) edt->filepath="";	  
+  if (edt->filepath.endsWith("Untitled.py")) edt->filepath = "";
   if (edt->filepath.isEmpty()) {
     return saveAs(edt);
   } else {
@@ -721,7 +673,8 @@ bool TabManager::saveAs(EditorInterface *edt)
 #ifdef ENABLE_PYTHON
   QString selectedFilter;
   QString pythonFilter = _("PythonSCAD Designs (*.py)");
-  auto filename = QFileDialog::getSaveFileName(par, _("Save File"), dir, QString("%1").arg(pythonFilter), &selectedFilter);
+  auto filename = QFileDialog::getSaveFileName(par, _("Save File"), dir, QString("%1").arg(pythonFilter),
+                                               &selectedFilter);
 #else
   auto filename = QFileDialog::getSaveFileName(par, _("Save File"), dir, _("OpenSCAD Designs (*.scad)"));
 #endif
@@ -733,10 +686,10 @@ bool TabManager::saveAs(EditorInterface *edt)
 #ifdef ENABLE_PYTHON
     // Check if the user selected the Python filter
     if (selectedFilter == pythonFilter) {
-        filename.append(".py");
+      filename.append(".py");
     } else {
-        // For other cases, use .scad as the default extension
-        filename.append(".scad");
+      // For other cases, use .scad as the default extension
+      filename.append(".scad");
     }
 #else
     filename.append(".scad");
@@ -746,8 +699,10 @@ bool TabManager::saveAs(EditorInterface *edt)
     // defaultSuffix property
     const QFileInfo info(filename);
     if (info.exists()) {
-      const auto text = QString(_("%1 already exists.\nDo you want to replace it?")).arg(info.fileName());
-      if (QMessageBox::warning(par, par->windowTitle(), text, QMessageBox::Yes | QMessageBox::No, QMessageBox::No) != QMessageBox::Yes) {
+      const auto text =
+        QString(_("%1 already exists.\nDo you want to replace it?")).arg(info.fileName());
+      if (QMessageBox::warning(par, par->windowTitle(), text, QMessageBox::Yes | QMessageBox::No,
+                               QMessageBox::No) != QMessageBox::Yes) {
         return false;
       }
     }
@@ -758,13 +713,13 @@ bool TabManager::saveAs(EditorInterface *edt)
 
 bool TabManager::saveAs(EditorInterface *edt, const QString& filepath)
 {
-    bool saveOk = save(edt, filepath);
-    if (saveOk) {
-      auto [fname, fpath] = getEditorTabNameWithModifier(edt);
-      setEditorTabName(fname, fpath, edt);
-      par->setWindowTitle(fname);
-    }
-    return saveOk;
+  bool saveOk = save(edt, filepath);
+  if (saveOk) {
+    auto [fname, fpath] = getEditorTabNameWithModifier(edt);
+    setEditorTabName(fname, fpath, edt);
+    par->setWindowTitle(fname);
+  }
+  return saveOk;
 }
 
 bool TabManager::saveACopy(EditorInterface *edt)
@@ -775,26 +730,28 @@ bool TabManager::saveACopy(EditorInterface *edt)
 #ifdef ENABLE_PYTHON
   QString selectedFilter;
   QString pythonFilter = _("PythonSCAD Designs (*.py)");
-  auto filename = QFileDialog::getSaveFileName(par, _("Save a Copy"), dir, QString("%1").arg(pythonFilter), &selectedFilter);
+  auto filename = QFileDialog::getSaveFileName(par, _("Save a Copy"), dir,
+                                               QString("%1").arg(pythonFilter), &selectedFilter);
 #else
-  auto filename = QFileDialog::getSaveFileName(par, _("Save a Copy"), dir, _("OpenSCAD Designs (*.scad)"));
+  auto filename =
+    QFileDialog::getSaveFileName(par, _("Save a Copy"), dir, _("OpenSCAD Designs (*.scad)"));
 #endif
   if (filename.isEmpty()) {
     return false;
   }
 
   if (QFileInfo(filename).suffix().isEmpty()) {
-    #ifdef ENABLE_PYTHON
+#ifdef ENABLE_PYTHON
     // Check if the user selected the Python filter
     if (selectedFilter == pythonFilter) {
-        filename.append(".py");
+      filename.append(".py");
     } else {
-        // For other cases, use .scad as the default extension
-        filename.append(".scad");
+      // For other cases, use .scad as the default extension
+      filename.append(".scad");
     }
-    #else
+#else
     filename.append(".scad");
-    #endif
+#endif
   }
 
   return save(edt, filename);
@@ -802,7 +759,7 @@ bool TabManager::saveACopy(EditorInterface *edt)
 
 bool TabManager::saveAll()
 {
-  foreach(EditorInterface * edt, editorList) {
+  foreach (EditorInterface *edt, editorList) {
     if (edt->isContentModified() || edt->parameterWidget->isModified()) {
       if (!save(edt)) {
         return false;

@@ -22,7 +22,8 @@ struct Outline2d {
 
 class Polygon2d : public Geometry
 {
-  enum class Transform3dState { NONE= 0, PENDING= 1, CACHED= 2 };
+  enum class Transform3dState { NONE = 0, PENDING = 1, CACHED = 2 };
+
 public:
   VISITABLE_GEOMETRY();
   Polygon2d() = default;
@@ -33,19 +34,18 @@ public:
   [[nodiscard]] unsigned int getDimension() const override { return 2; }
   [[nodiscard]] bool isEmpty() const override;
   [[nodiscard]] std::unique_ptr<Geometry> copy() const override;
-  [[nodiscard]] size_t numFacets() const override {
+  [[nodiscard]] size_t numFacets() const override
+  {
     return std::accumulate(theoutlines.begin(), theoutlines.end(), 0,
-                           [](size_t a, const Outline2d& b) {
-      return a + b.vertices.size();
-    }
-                           );
+                           [](size_t a, const Outline2d& b) { return a + b.vertices.size(); });
   }
-  void addOutline(const Outline2d &outline) {
+  void addOutline(const Outline2d& outline)
+  {
     if (trans3dState != Transform3dState::NONE) mergeTrans3d();
     this->theoutlines.push_back(outline);
   }
   void reverse(void);
-  [[nodiscard]] std::unique_ptr<PolySet> tessellate(bool in3d= false) const;
+  [[nodiscard]] std::unique_ptr<PolySet> tessellate(bool in3d = false) const;
   [[nodiscard]] double area() const;
 
   using Outlines2d = std::vector<Outline2d>;
@@ -53,28 +53,34 @@ public:
   //// It would be better to fix the class relationships, so that Polygon2d does
   //// not inherit an unused 3d transform function.
   //// But that will likely require significant refactoring.
-  const Outlines2d &outlines() const { return trans3dState == Transform3dState::NONE? theoutlines : transformedOutlines(); }
-  const Outlines2d &untransformedOutlines() const { return theoutlines; }
-  const Outlines2d &transformedOutlines() const;
+  const Outlines2d& outlines() const
+  {
+    return trans3dState == Transform3dState::NONE ? theoutlines : transformedOutlines();
+  }
+  const Outlines2d& untransformedOutlines() const { return theoutlines; }
+  const Outlines2d& transformedOutlines() const;
   using Geometry::transform;
 
   void transform(const Transform2d& mat);
-  void transform3d(const Transform3d &mat);
+  void transform3d(const Transform3d& mat);
   bool hasTransform3d() const { return trans3dState != Transform3dState::NONE; }
-  const Transform3d &getTransform3d() const {
+  const Transform3d& getTransform3d() const
+  {
     // lazy initialization doesn't actually violate 'const'
     if (trans3dState == Transform3dState::NONE)
-      const_cast<Polygon2d*>(this)->trans3d= Transform3d::Identity();
+      const_cast<Polygon2d *>(this)->trans3d = Transform3d::Identity();
     return trans3d;
   }
   void resize(const Vector2d& newsize, const Eigen::Matrix<bool, 2, 1>& autosize);
-  void resize(const Vector3d& newsize, const Eigen::Matrix<bool, 3, 1>& autosize) override {
+  void resize(const Vector3d& newsize, const Eigen::Matrix<bool, 3, 1>& autosize) override
+  {
     resize(Vector2d(newsize[0], newsize[1]), Eigen::Matrix<bool, 2, 1>(autosize[0], autosize[1]));
   }
 
   [[nodiscard]] bool isSanitized() const { return this->sanitized; }
   void setSanitized(bool s) { this->sanitized = s; }
   [[nodiscard]] bool is_convex() const;
+
 private:
   Outlines2d theoutlines;
   bool sanitized{false};
@@ -82,5 +88,5 @@ private:
   Transform3d trans3d;
   Outlines2d trans3dOutlines;
   void mergeTrans3d();
-  void applyTrans3dToOutlines(Polygon2d::Outlines2d &outlines) const;
+  void applyTrans3dToOutlines(Polygon2d::Outlines2d& outlines) const;
 };

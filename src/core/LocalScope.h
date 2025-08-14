@@ -17,14 +17,18 @@ class LocalScope
 public:
   size_t numElements() const { return assignments.size() + moduleInstantiations.size(); }
   void print(std::ostream& stream, const std::string& indent, const bool inlined = false) const;
-  void print_python(std::ostream& stream, std::ostream& stream_def, const std::string& indent, const bool inlined = false, const int context_mode = 0) const;
-  std::shared_ptr<AbstractNode> instantiateModules(const std::shared_ptr<const Context>& context, const std::shared_ptr<AbstractNode> &target) const;
-  std::shared_ptr<AbstractNode> instantiateModules(const std::shared_ptr<const Context>& context, const std::shared_ptr<AbstractNode> &target, const std::vector<size_t>& indices) const;
+  void print_python(std::ostream& stream, std::ostream& stream_def, const std::string& indent,
+                    const bool inlined = false, const int context_mode = 0) const;
+  std::shared_ptr<AbstractNode> instantiateModules(const std::shared_ptr<const Context>& context,
+                                                   const std::shared_ptr<AbstractNode>& target) const;
+  std::shared_ptr<AbstractNode> instantiateModules(const std::shared_ptr<const Context>& context,
+                                                   const std::shared_ptr<AbstractNode>& target,
+                                                   const std::vector<size_t>& indices) const;
   void addModuleInst(const std::shared_ptr<class ModuleInstantiation>& modinst);
   void addModule(const std::shared_ptr<class UserModule>& module);
   void addFunction(const std::shared_ptr<class UserFunction>& function);
   void addAssignment(const std::shared_ptr<class Assignment>& assignment);
-  bool hasChildren() const {return !(moduleInstantiations.empty());}
+  bool hasChildren() const { return !(moduleInstantiations.empty()); }
 
   AssignmentList assignments;
   std::vector<std::shared_ptr<ModuleInstantiation>> moduleInstantiations;

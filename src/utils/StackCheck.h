@@ -15,11 +15,13 @@ public:
   inline bool check() { return size() >= limit; }
 
 private:
-  StackCheck() : limit(PlatformUtils::stackLimit()) {
+  StackCheck() : limit(PlatformUtils::stackLimit())
+  {
     unsigned char c;
-    ptr = &c; // NOLINT(*StackAddressEscape)
+    ptr = &c;  // NOLINT(*StackAddressEscape)
   }
-  inline unsigned long size() {
+  inline unsigned long size()
+  {
     unsigned char c;
     return std::abs(ptr - &c);
   }

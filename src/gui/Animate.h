@@ -53,7 +53,6 @@ public slots:
 protected:
   void resizeEvent(QResizeEvent *event) override;
 
-
 private:
   MainWindow *mainWindow;
 

@@ -11,8 +11,7 @@ class PathExtrudeNode : public AbstractPolyNode
 {
 public:
   VISITABLE();
-  PathExtrudeNode(const ModuleInstantiation *mi) : AbstractPolyNode(mi) {
-  }
+  PathExtrudeNode(const ModuleInstantiation *mi) : AbstractPolyNode(mi) {}
   std::string toString() const override;
   std::string name() const override { return "linear_extrude"; }
 
@@ -23,13 +22,12 @@ public:
   unsigned int convexity = 1u;
   unsigned int slices = 1u, segments = 0u;
   bool has_twist = false, has_slices = false, has_segments = false;
-  double xdir_x=1.0, xdir_y=0.0, xdir_z=0.0;
+  double xdir_x = 1.0, xdir_y = 0.0, xdir_z = 0.0;
   std::vector<Vector4d> path;
-  bool closed=false;
-  bool allow_intersect=false;
- #ifdef ENABLE_PYTHON
+  bool closed = false;
+  bool allow_intersect = false;
+#ifdef ENABLE_PYTHON
   void *profile_func;
   void *twist_func;
- #endif  
-
+#endif
 };

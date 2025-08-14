@@ -38,16 +38,16 @@
 #include <cmath>
 #include <sstream>
 #include <boost/assign/std/vector.hpp>
-using namespace boost::assign; // bring 'operator+=()' into scope
+using namespace boost::assign;  // bring 'operator+=()' into scope
 
 namespace {
-std::shared_ptr<AbstractNode> builtin_skin(const ModuleInstantiation *inst, Arguments arguments, const Children& children)
+std::shared_ptr<AbstractNode> builtin_skin(const ModuleInstantiation *inst, Arguments arguments,
+                                           const Children& children)
 {
   auto node = std::make_shared<SkinNode>(inst);
 
   Parameters parameters = Parameters::parse(std::move(arguments), inst->location(),
-                                            {"segments","interpolate","align_angle"},
-                                            {"convexity"});
+                                            {"segments", "interpolate", "align_angle"}, {"convexity"});
   parameters.set_caller("skin");
 
   parameters["convexity"].getPositiveInt(node->convexity);
@@ -55,8 +55,7 @@ std::shared_ptr<AbstractNode> builtin_skin(const ModuleInstantiation *inst, Argu
   node->has_align_angle = parameters["align_angle"].getPositiveInt(node->align_angle);
 
   node->has_segments = parameters.validate_integral("segments", node->segments, 0u);
-  if (parameters["interpolate"].type() == Value::Type::BOOL)
-  {
+  if (parameters["interpolate"].type() == Value::Type::BOOL) {
     node->interpolate = parameters["interpolate"].toBool();
     node->has_interpolate = true;
   }
@@ -66,7 +65,7 @@ std::shared_ptr<AbstractNode> builtin_skin(const ModuleInstantiation *inst, Argu
   return node;
 }
 
-} // namespace
+}  // namespace
 
 std::string SkinNode::toString() const
 {
@@ -79,17 +78,17 @@ std::string SkinNode::toString() const
     paramNo++;
   }
   if (this->has_align_angle) {
-    if (paramNo>0) stream << ", ";
+    if (paramNo > 0) stream << ", ";
     stream << "align_angle = " << align_angle;
     paramNo++;
   }
   if (this->has_segments) {
-    if (paramNo>0) stream << ", ";
+    if (paramNo > 0) stream << ", ";
     stream << "segments = " << this->segments;
     paramNo++;
   }
   if (this->has_interpolate) {
-    if (paramNo>0) stream << ", ";
+    if (paramNo > 0) stream << ", ";
     stream << "interpolate = " << (this->interpolate ? "true" : "false");
     paramNo++;
   }
@@ -100,7 +99,7 @@ std::string SkinNode::toString() const
 void register_builtin_skin()
 {
   Builtins::init("skin", new BuiltinModule(builtin_skin, &Feature::ExperimentalSkin),
-  {
-    R"(skin(convexity = 1, align_angle = 0, segments = 0, interpolate = true))",
-  });
+                 {
+                   R"(skin(convexity = 1, align_angle = 0, segments = 0, interpolate = true))",
+                 });
 }

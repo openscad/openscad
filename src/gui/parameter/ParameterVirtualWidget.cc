@@ -8,15 +8,16 @@
 #include <QRegularExpression>
 #include <vector>
 
-ParameterDescriptionWidget::ParameterDescriptionWidget(QWidget *parent) :
-  QWidget(parent)
+ParameterDescriptionWidget::ParameterDescriptionWidget(QWidget *parent) : QWidget(parent)
 {
   setupUi(this);
 }
 
-void ParameterDescriptionWidget::setDescription(ParameterObject *parameter, DescriptionStyle descriptionStyle)
+void ParameterDescriptionWidget::setDescription(ParameterObject *parameter,
+                                                DescriptionStyle descriptionStyle)
 {
-  labelParameter->setText(QString::fromStdString(parameter->name()).replace(QRegularExpression("([_]+)"), " "));
+  labelParameter->setText(
+    QString::fromStdString(parameter->name()).replace(QRegularExpression("([_]+)"), " "));
   if (parameter->description().empty()) {
     labelDescription->hide();
     labelInline->setText("");
@@ -39,9 +40,8 @@ void ParameterDescriptionWidget::setDescription(ParameterObject *parameter, Desc
   }
 }
 
-ParameterVirtualWidget::ParameterVirtualWidget(QWidget *parent, ParameterObject *parameter) :
-  QWidget(parent),
-  parameter(parameter)
+ParameterVirtualWidget::ParameterVirtualWidget(QWidget *parent, ParameterObject *parameter)
+  : QWidget(parent), parameter(parameter)
 {
   QSizePolicy policy;
   policy.setHorizontalPolicy(QSizePolicy::Ignored);

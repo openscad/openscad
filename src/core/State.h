@@ -8,10 +8,9 @@
 
 class State
 {
-
 public:
-  State(std::shared_ptr<const AbstractNode> parent)
-    : parentnode(std::move(parent)) {
+  State(std::shared_ptr<const AbstractNode> parent) : parentnode(std::move(parent))
+  {
     this->matrix_ = Transform3d::Identity();
   }
 
@@ -22,7 +21,11 @@ public:
   void setNumChildren(unsigned int numc) { this->numchildren = numc; }
   void setParent(const std::shared_ptr<const AbstractNode>& parent) { this->parentnode = parent; }
   void setMatrix(const Transform3d& m) { this->matrix_ = m; }
-  void setColor(const Color4f& c, int textureind) { this->color_ = c; this->textureind_ = textureind; }
+  void setColor(const Color4f& c, int textureind)
+  {
+    this->color_ = c;
+    this->textureind_ = textureind;
+  }
   void setPreferNef(bool on) { FLAG(this->flags, PREFERNEF, on); }
   [[nodiscard]] bool preferNef() const { return this->flags & PREFERNEF; }
 
@@ -38,15 +41,16 @@ public:
 
 private:
   enum StateFlags : unsigned int {
-    NONE       = 0x00u,
-    PREFIX     = 0x01u,
-    POSTFIX    = 0x02u,
-    PREFERNEF  = 0x04u,
-    HIGHLIGHT  = 0x08u,
+    NONE = 0x00u,
+    PREFIX = 0x01u,
+    POSTFIX = 0x02u,
+    PREFERNEF = 0x04u,
+    HIGHLIGHT = 0x08u,
     BACKGROUND = 0x10u
   };
 
-  constexpr void FLAG(unsigned int& var, StateFlags flag, bool on) {
+  constexpr void FLAG(unsigned int& var, StateFlags flag, bool on)
+  {
     if (on) {
       var |= flag;
     } else {

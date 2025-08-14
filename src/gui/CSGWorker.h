@@ -7,6 +7,7 @@
 class CSGWorker : public QObject
 {
   Q_OBJECT;
+
 public:
   CSGWorker(MainWindow *main);
   ~CSGWorker() override;
@@ -21,7 +22,6 @@ signals:
   void done(void);
 
 protected:
-
   class QThread *thread;
   MainWindow *main;
   int started;

@@ -18,17 +18,12 @@
 #include "geometry/PolySet.h"
 #include "glview/RenderSettings.h"
 
+Barcode1d::Barcode1d(Edge1d edge) : sanitized(true) { addEdge(std::move(edge)); }
 
-Barcode1d::Barcode1d(Edge1d edge) : sanitized(true) {
-  addEdge(std::move(edge));
-}
+std::unique_ptr<Geometry> Barcode1d::copy() const { return std::make_unique<Barcode1d>(*this); }
 
-std::unique_ptr<Geometry> Barcode1d::copy() const
+BoundingBox Edge1d::getBoundingBox() const
 {
-  return std::make_unique<Barcode1d>(*this);
-}
-
-BoundingBox Edge1d::getBoundingBox() const {
   BoundingBox bbox;
   bbox.extend(Vector3d(begin, 0, 0));
   bbox.extend(Vector3d(end, 0, 0));
@@ -54,11 +49,11 @@ BoundingBox Edge1d::getBoundingBox() const {
 size_t Barcode1d::memsize() const
 {
   size_t mem = 0;
-  for (const auto &o : this->theedges) {
-    mem += 2*sizeof(double);
+  for (const auto& o : this->theedges) {
+    mem += 2 * sizeof(double);
   }
-  for (const auto &o : this->trans3dEdges) {
-    mem += 2*sizeof(double);
+  for (const auto& o : this->trans3dEdges) {
+    mem += 2 * sizeof(double);
   }
   mem += sizeof(Barcode1d);
   return mem;
@@ -78,14 +73,14 @@ std::string Barcode1d::dump() const
   std::ostringstream out;
   for (const auto& o : this->theedges) {
     out << "contour:\n";
-      out << "  " << o.begin << " " << o.end;
+    out << "  " << o.begin << " " << o.end;
     out << "\n";
   }
   if (trans3dState != Transform3dState::NONE) {
     out << "with trans3d: [";
-    for (int j=0;j<4;j++) {
+    for (int j = 0; j < 4; j++) {
       out << "[";
-      for (int i=0;i<4;i++) {
+      for (int i = 0; i < 4; i++) {
         double v(this->trans3d(j, i));
         out << v;
         if (i != 3) out << ", ";
@@ -98,23 +93,20 @@ std::string Barcode1d::dump() const
   return out.str();
 }
 
-bool Barcode1d::isEmpty() const
-{
-  return this->theedges.empty();
-}
+bool Barcode1d::isEmpty() const { return this->theedges.empty(); }
 
 void Barcode1d::transform(const Transform2d& mat)
 {
   if (mat.matrix().determinant() == 0) {
     LOG(message_group::Warning, "Scaling a 2D object with 0 - removing object");
     this->theedges.clear();
-    trans3dState= Transform3dState::NONE;
+    trans3dState = Transform3dState::NONE;
     return;
   }
   if (trans3dState != Transform3dState::NONE) mergeTrans3d();
   for (auto& o : this->theedges) {
-    o.begin = mat(0,0)*o.begin;
-    o.end = mat(0,0)*o.end;
+    o.begin = mat(0, 0) * o.begin;
+    o.end = mat(0, 0) * o.end;
   }
 }
 
@@ -135,23 +127,14 @@ void Barcode1d::resize(const Vector2d& newsize, const Eigen::Matrix<bool, 2, 1>&
                     !autosize[1] || (newsize[1] > 0) ? scale[1] : autoscale);
 
   Transform2d t;
-  t.matrix() <<
-    newscale[0], 0, 0,
-    0, newscale[1], 0,
-    0, 0, 1;
+  t.matrix() << newscale[0], 0, 0, 0, newscale[1], 0, 0, 0, 1;
 
   this->transform(t);
 }
 
-bool Barcode1d::is_convex() const
-{
-  return true;
-}
+bool Barcode1d::is_convex() const { return true; }
 
-double Barcode1d::area() const
-{
-  return 0;
-}
+double Barcode1d::area() const { return 0; }
 
 /*!
    Triangulates this polygon2d and returns a 2D-in-3D PolySet.
@@ -165,56 +148,50 @@ double Barcode1d::area() const
    * guarantee that vertices and their order are untouched (apart from adding a zero 3rd dimension)
    *
  */
-void Barcode1d::transform3d(const Transform3d &mat)
+void Barcode1d::transform3d(const Transform3d& mat)
 {
   // Check whether it can be a 2d transform, and avoid the 3d overhead
-  if (trans3dState == Transform3dState::NONE
-    && mat(2,0) == 0 && mat(2,1) == 0 && mat(2,2) == 1 && mat(2,3) == 0
-    && mat(0,2) == 0 && mat(1,2) == 0 && mat(3,2) == 0
-  ) {
+  if (trans3dState == Transform3dState::NONE && mat(2, 0) == 0 && mat(2, 1) == 0 && mat(2, 2) == 1 &&
+      mat(2, 3) == 0 && mat(0, 2) == 0 && mat(1, 2) == 0 && mat(3, 2) == 0) {
     Transform2d t;
-    t.matrix() <<
-      mat(0,0), mat(0,1), mat(0,3),
-      mat(1,0), mat(1,1), mat(1,3),
-      mat(3,0), mat(3,1), mat(3,3);
+    t.matrix() << mat(0, 0), mat(0, 1), mat(0, 3), mat(1, 0), mat(1, 1), mat(1, 3), mat(3, 0), mat(3, 1),
+      mat(3, 3);
     if (t.matrix().determinant() == 0) {
-      LOG(message_group::Warning,"Scaling a 2D object with 0 - removing object");
+      LOG(message_group::Warning, "Scaling a 2D object with 0 - removing object");
       this->theedges.clear();
-      trans3dState= Transform3dState::NONE;
+      trans3dState = Transform3dState::NONE;
       return;
     }
     transform(t);
     // A 2D transformation may flip the winding order of a polygon.
     // If that happens with a sanitized polygon, we need to reverse
     // the winding order for it to be correct.
-//    if (sanitized && t.matrix().determinant() < 0)
-//      for (auto &o : this->theedges)
-//        std::reverse(o.vertices.begin(), o.vertices.end());
-  }
-  else {
+    //    if (sanitized && t.matrix().determinant() < 0)
+    //      for (auto &o : this->theedges)
+    //        std::reverse(o.vertices.begin(), o.vertices.end());
+  } else {
     if (mat.matrix().determinant() == 0) {
-      LOG(message_group::Warning,"Scaling a 2D object with 0 - removing object");
+      LOG(message_group::Warning, "Scaling a 2D object with 0 - removing object");
       this->theedges.clear();
-      trans3dState= Transform3dState::NONE;
+      trans3dState = Transform3dState::NONE;
       return;
     }
-    trans3d= (trans3dState == Transform3dState::NONE)? mat : mat * trans3d;
-    trans3dState= Transform3dState::PENDING;
+    trans3d = (trans3dState == Transform3dState::NONE) ? mat : mat * trans3d;
+    trans3dState = Transform3dState::PENDING;
   }
 }
-
 
 // This returns the edges after applying any Transform3d that might be Transform3dState::PENDING.
 // If there is no Transform3d, this returns the edges vector.
 // If there is a Transform3dState::CACHED Transform3d, this uses the cache.
 // Else it creates and returns the cache
-const Barcode1d::Edges1d &Barcode1d::transformedEdges() const {
+const Barcode1d::Edges1d& Barcode1d::transformedEdges() const
+{
   if (trans3dState == Transform3dState::NONE) return theedges;
   /*
   if (trans3dState != Transform3dState::CACHED) {
-    // Need to remove const from the cache object.  It maintains proper const semantics to the public API though.
-    Barcode1d::Edges2d &cache= const_cast<Barcode1d::Edges2d&>(trans3dEdges);
-    cache= theedges;
+    // Need to remove const from the cache object.  It maintains proper const semantics to the public API
+though. Barcode1d::Edges2d &cache= const_cast<Barcode1d::Edges2d&>(trans3dEdges); cache= theedges;
     applyTrans3dToEdges(cache);
 // TODO    const_cast<Barcode1d*>(this)->trans3dState= Transform3dState::CACHED;
   }
@@ -223,32 +200,29 @@ const Barcode1d::Edges1d &Barcode1d::transformedEdges() const {
 }
 // This flattens the 3D transform into the 2D transform that it would have been
 // originally.
-void Barcode1d::mergeTrans3d() {
-  if (trans3dState == Transform3dState::CACHED)
-    theedges.swap(trans3dEdges);
-  else if (trans3dState == Transform3dState::PENDING)
-    applyTrans3dToEdges(theedges);
+void Barcode1d::mergeTrans3d()
+{
+  if (trans3dState == Transform3dState::CACHED) theedges.swap(trans3dEdges);
+  else if (trans3dState == Transform3dState::PENDING) applyTrans3dToEdges(theedges);
   trans3dEdges.clear();
-  trans3dState= Transform3dState::NONE;
+  trans3dState = Transform3dState::NONE;
 }
-void Barcode1d::applyTrans3dToEdges(Barcode1d::Edges1d &edges) const {
+void Barcode1d::applyTrans3dToEdges(Barcode1d::Edges1d& edges) const
+{
   Transform2d t;
-  t.matrix() <<
-    trans3d(0,0), trans3d(0,1), trans3d(0,3),
-    trans3d(1,0), trans3d(1,1), trans3d(1,3),
-    trans3d(3,0), trans3d(3,1), trans3d(3,3);
-  for (auto &o : edges) {
-    o.begin = trans3d(0,0) * o.begin;	  
-    o.end = trans3d(0,0) * o.end;	  
+  t.matrix() << trans3d(0, 0), trans3d(0, 1), trans3d(0, 3), trans3d(1, 0), trans3d(1, 1), trans3d(1, 3),
+    trans3d(3, 0), trans3d(3, 1), trans3d(3, 3);
+  for (auto& o : edges) {
+    o.begin = trans3d(0, 0) * o.begin;
+    o.end = trans3d(0, 0) * o.end;
   }
   // A 2D transformation may flip the winding order of a polygon.
   // If that happens with a sanitized polygon, we need to reverse
   // the winding order for it to be correct.
   if (sanitized && t.matrix().determinant() < 0)
-    for (auto &o : edges)
-    {
-	    double tmp=o.begin;
-	    o.begin=o.end;
-	    o.end=tmp;
+    for (auto& o : edges) {
+      double tmp = o.begin;
+      o.begin = o.end;
+      o.end = tmp;
     }
 }

@@ -45,14 +45,20 @@
 
 std::vector<std::string> StaticModuleNameStack::stack;
 
-static void NOINLINE print_err(std::string name, const Location& loc, const std::shared_ptr<const Context>& context){
-  LOG(message_group::Error, loc, context->documentRoot(), "Recursion detected calling module '%1$s'", name);
+static void NOINLINE print_err(std::string name, const Location& loc,
+                               const std::shared_ptr<const Context>& context)
+{
+  LOG(message_group::Error, loc, context->documentRoot(), "Recursion detected calling module '%1$s'",
+      name);
 }
 
-static void NOINLINE print_trace(const UserModule *mod, const std::shared_ptr<const UserModuleContext>& context, const AssignmentList& parameters){
+static void NOINLINE print_trace(const UserModule *mod,
+                                 const std::shared_ptr<const UserModuleContext>& context,
+                                 const AssignmentList& parameters)
+{
   std::stringstream stream;
   if (parameters.size() == 0) {
-    //nothing to do
+    // nothing to do
   } else if (StackCheck::inst().check()) {
     stream << "...";
   } else {
@@ -74,12 +80,13 @@ static void NOINLINE print_trace(const UserModule *mod, const std::shared_ptr<co
       }
     }
   }
-  LOG(message_group::Trace, mod->location(), context->documentRoot(), "call of '%1$s(%2$s)'",
-      mod->name, stream.str()
-      );
+  LOG(message_group::Trace, mod->location(), context->documentRoot(), "call of '%1$s(%2$s)'", mod->name,
+      stream.str());
 }
 
-std::shared_ptr<AbstractNode> UserModule::instantiate(const std::shared_ptr<const Context>& defining_context, const ModuleInstantiation *inst, const std::shared_ptr<const Context>& context) const
+std::shared_ptr<AbstractNode> UserModule::instantiate(
+  const std::shared_ptr<const Context>& defining_context, const ModuleInstantiation *inst,
+  const std::shared_ptr<const Context>& context) const
 {
   if (StackCheck::inst().check()) {
     print_err(inst->name(), loc, context);
@@ -87,22 +94,19 @@ std::shared_ptr<AbstractNode> UserModule::instantiate(const std::shared_ptr<cons
     return nullptr;
   }
 
-  StaticModuleNameStack name{inst->name()}; // push on static stack, pop at end of method!
+  StaticModuleNameStack name{inst->name()};  // push on static stack, pop at end of method!
   ContextHandle<UserModuleContext> module_context{Context::create<UserModuleContext>(
-                                                    defining_context,
-                                                    this,
-                                                    inst->location(),
-                                                    Arguments(inst->arguments, context),
-                                                    Children(&inst->scope, context)
-                                                    )};
+    defining_context, this, inst->location(), Arguments(inst->arguments, context),
+    Children(&inst->scope, context))};
 #if 0 && DEBUG
   PRINTDB("UserModuleContext for module %s(%s):\n", this->name % STR(this->parameters));
   PRINTDB("%s", module_context->dump());
 #endif
 
   std::shared_ptr<AbstractNode> ret;
-  try{
-    ret = this->body.instantiateModules(*module_context, std::make_shared<GroupNode>(inst, std::string("module ") + this->name));
+  try {
+    ret = this->body.instantiateModules(
+      *module_context, std::make_shared<GroupNode>(inst, std::string("module ") + this->name));
   } catch (EvaluationException& e) {
     if (OpenSCAD::traceUsermoduleParameters && e.traceDepth > 0) {
       print_trace(this, *module_context, this->parameters);
@@ -133,7 +137,8 @@ void UserModule::print(std::ostream& stream, const std::string& indent) const
   }
 }
 
-void UserModule::print_python(std::ostream& stream, std::ostream& stream_def, const std::string& indent) const
+void UserModule::print_python(std::ostream& stream, std::ostream& stream_def,
+                              const std::string& indent) const
 {
   std::string tab;
   if (!this->name.empty()) {
@@ -147,10 +152,10 @@ void UserModule::print_python(std::ostream& stream, std::ostream& stream_def, co
     stream << "):\n";
     tab = "\t";
   }
-//  stream << "\t";
-  body.print_python(stream, stream_def, indent + tab,false, 1);
+  //  stream << "\t";
+  body.print_python(stream, stream_def, indent + tab, false, 1);
   stream << "\n\n";
-//  if (!this->name.empty()) {
-//    stream << indent << "}\n";
-//  }
+  //  if (!this->name.empty()) {
+  //    stream << indent << "}\n";
+  //  }
 }

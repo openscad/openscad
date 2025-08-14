@@ -5,13 +5,13 @@
 
 class UXTest : public QObject
 {
-    Q_OBJECT;
+  Q_OBJECT;
 
 public:
-    void setWindow(MainWindow* window);
+  void setWindow(MainWindow *window);
 
 protected:
-    void restoreWindowInitialState();
+  void restoreWindowInitialState();
 
-    MainWindow* window;
+  MainWindow *window;
 };

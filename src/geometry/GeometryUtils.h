@@ -13,7 +13,7 @@ using Polygons = std::vector<Polygon>;
 using IndexedFace = boost::container::small_vector<int, 4>;
 struct IndexedColorFace {
   IndexedFace face;
-  int color;  
+  int color;
 };
 using IndexedTriangle = Vector3i;
 using IndexedColorTriangle = Vector4i;
@@ -37,9 +37,7 @@ struct IndexedPolyMesh {
 
 namespace GeometryUtils {
 
-bool tessellatePolygon(const Polygon& polygon,
-                       Polygons& triangles,
-                       const Vector3f *normal = nullptr);
+bool tessellatePolygon(const Polygon& polygon, Polygons& triangles, const Vector3f *normal = nullptr);
 bool tessellatePolygonWithHoles(const std::vector<Vector3f>& vertices,
                                 const std::vector<IndexedFace>& faces,
                                 std::vector<IndexedTriangle>& triangles,
@@ -48,7 +46,8 @@ bool tessellatePolygonWithHoles(const std::vector<Vector3f>& vertices,
 int findUnconnectedEdges(const std::vector<std::vector<IndexedFace>>& polygons);
 int findUnconnectedEdges(const std::vector<IndexedTriangle>& triangles);
 
-Transform3d getResizeTransform(const BoundingBox &bbox, const Vector3d& newsize, const Eigen::Matrix<bool, 3, 1>& autosize);
+Transform3d getResizeTransform(const BoundingBox& bbox, const Vector3d& newsize,
+                               const Eigen::Matrix<bool, 3, 1>& autosize);
 std::shared_ptr<const Geometry> getBackendSpecificGeometry(const std::shared_ptr<const Geometry>& geom);
 
-}
+}  // namespace GeometryUtils

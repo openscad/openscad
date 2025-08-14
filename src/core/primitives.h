@@ -43,32 +43,30 @@ public:
   std::string toString() const override
   {
     std::ostringstream stream;
-    stream << "cube(size = ["
-           << dim[0] << ", "
-           << dim[1] << ", "
-           << dim[2] << "], center = " ;
-    if(center[0] == center[1] && center[1] == center[2])
-	    stream << ((center[0] == 0) ? "true" : "false");
+    stream << "cube(size = [" << dim[0] << ", " << dim[1] << ", " << dim[2] << "], center = ";
+    if (center[0] == center[1] && center[1] == center[2])
+      stream << ((center[0] == 0) ? "true" : "false");
     else {
-      stream << "\"";	      
-      for(int i = 0; i<3;i++) {
-        if(center[i] < 0) stream << "-";
-        if(center[i] == 0) stream << "|";	      
-        if(center[i] > 0) stream << "+";	      
-      }	      
-      stream << "\"";	      
+      stream << "\"";
+      for (int i = 0; i < 3; i++) {
+        if (center[i] < 0) stream << "-";
+        if (center[i] == 0) stream << "|";
+        if (center[i] > 0) stream << "+";
+      }
+      stream << "\"";
     }
     stream << ")";
     return stream.str();
   }
   std::string name() const override { return "cube"; }
   std::unique_ptr<const Geometry> createGeometry() const override;
-  virtual std::shared_ptr<const Geometry> dragPoint(const Vector3d &pt, const Vector3d &delta, DragResult &result) override;
+  virtual std::shared_ptr<const Geometry> dragPoint(const Vector3d& pt, const Vector3d& delta,
+                                                    DragResult& result) override;
 
-  double dim[3]= {1,1,1};
-  int dragflags=0; // X, Y, Z
-  double dim_[3]={0,0,0};
-  int center[3] = {1,1,1} ; // -1 means negative side, 0 means centered, 1 means positive side
+  double dim[3] = {1, 1, 1};
+  int dragflags = 0;  // X, Y, Z
+  double dim_[3] = {0, 0, 0};
+  int center[3] = {1, 1, 1};  // -1 means negative side, 0 means centered, 1 means positive side
 };
 
 std::unique_ptr<const Geometry> sphereCreateFuncGeometry(void *funcptr, double fs, int n);
@@ -81,30 +79,27 @@ public:
   {
     std::ostringstream stream;
     stream << "sphere"
-           << "($fn = " << fn
-           << ", $fa = " << fa
-           << ", $fs = " << fs ;
+           << "($fn = " << fn << ", $fa = " << fa << ", $fs = " << fs;
 #ifdef ENABLE_PYTHON
-    if(r_func != nullptr)
-        stream << ", r_func = " << rand() ;
+    if (r_func != nullptr) stream << ", r_func = " << rand();
     else
 #endif
-    	stream << ", r = " << r ;
+      stream << ", r = " << r;
     stream << ")";
     return stream.str();
   }
   std::string name() const override { return "sphere"; }
   std::unique_ptr<const Geometry> createGeometry() const override;
-  virtual std::shared_ptr<const Geometry> dragPoint(const Vector3d &pt, const Vector3d &delta, DragResult &result) override;
+  virtual std::shared_ptr<const Geometry> dragPoint(const Vector3d& pt, const Vector3d& delta,
+                                                    DragResult& result) override;
 
   double fn, fs, fa;
   double r = 1;
 #ifdef ENABLE_PYTHON
   void *r_func = nullptr;
 #endif
-  int dragflags = 0 ; // r
+  int dragflags = 0;  // r
 };
-
 
 class CylinderNode : public LeafNode
 {
@@ -114,33 +109,28 @@ public:
   {
     std::ostringstream stream;
     stream << "cylinder"
-           << "($fn = " << fn
-           << ", $fa = " << fa
-           << ", $fs = " << fs
-           << ", h = " << h
-           << ", r1 = " << r1
+           << "($fn = " << fn << ", $fa = " << fa << ", $fs = " << fs << ", h = " << h << ", r1 = " << r1
            << ", r2 = " << r2;
-    if(angle != 360) stream << ", angle = " << angle;
-    stream << ", center = " << (center ? "true" : "false")
-           << ")";
+    if (angle != 360) stream << ", angle = " << angle;
+    stream << ", center = " << (center ? "true" : "false") << ")";
     return stream.str();
   }
   std::string name() const override { return "cylinder"; }
   std::unique_ptr<const Geometry> createGeometry() const override;
-  virtual std::shared_ptr<const Geometry> dragPoint(const Vector3d &pt, const Vector3d &delta, DragResult &result) override;
+  virtual std::shared_ptr<const Geometry> dragPoint(const Vector3d& pt, const Vector3d& delta,
+                                                    DragResult& result) override;
 
   double fn, fs, fa;
   double r1 = 1, r2 = 1, h = 1;
-  double angle=360;
+  double angle = 360;
   bool center = false;
-  int dragflags = 0 ; // r, h
+  int dragflags = 0;  // r, h
 };
-
 
 class PolyhedronNode : public LeafNode
 {
 public:
-  PolyhedronNode (const ModuleInstantiation *mi) : LeafNode(mi) {}
+  PolyhedronNode(const ModuleInstantiation *mi) : LeafNode(mi) {}
   std::string toString() const override;
   std::string name() const override { return "polyhedron"; }
   std::unique_ptr<const Geometry> createGeometry() const override;
@@ -148,10 +138,9 @@ public:
   std::vector<Vector3d> points;
   std::vector<IndexedFace> faces;
   int convexity = 1;
-  std::vector<int32_t> color_indices; // when present, must be same size as faces
+  std::vector<int32_t> color_indices;  // when present, must be same size as faces
   std::vector<Color4f> colors;
 };
-
 
 class EdgeNode : public LeafNode
 {
@@ -160,15 +149,13 @@ public:
   std::string toString() const override
   {
     std::ostringstream stream;
-    stream << "edge(size = "
-           << size << ", center = "
-           << (center ? "true" : "false") << ")";
+    stream << "edge(size = " << size << ", center = " << (center ? "true" : "false") << ")";
     return stream.str();
   }
   std::string name() const override { return "edge"; }
   std::unique_ptr<const Geometry> createGeometry() const override;
 
-  double size=1;
+  double size = 1;
   bool center = false;
 };
 
@@ -179,10 +166,8 @@ public:
   std::string toString() const override
   {
     std::ostringstream stream;
-    stream << "square(size = ["
-           << x << ", "
-           << y << "], center = "
-           << (center ? "true" : "false") << ")";
+    stream << "square(size = [" << x << ", " << y << "], center = " << (center ? "true" : "false")
+           << ")";
     return stream.str();
   }
   std::string name() const override { return "square"; }
@@ -192,7 +177,6 @@ public:
   bool center = false;
 };
 
-
 class CircleNode : public LeafNode
 {
 public:
@@ -201,11 +185,8 @@ public:
   {
     std::ostringstream stream;
     stream << "circle"
-           << "($fn = " << fn
-           << ", $fa = " << fa
-           << ", $fs = " << fs
-           << ", r = " << r;
-    if(angle != 360) stream << ", angle = " << angle;
+           << "($fn = " << fn << ", $fa = " << fa << ", $fs = " << fs << ", r = " << r;
+    if (angle != 360) stream << ", angle = " << angle;
     stream << ")";
     return stream.str();
   }
@@ -214,14 +195,13 @@ public:
 
   double fn, fs, fa;
   double r = 1;
-  double angle=360;
+  double angle = 360;
 };
-
 
 class PolygonNode : public LeafNode
 {
 public:
-  PolygonNode (const ModuleInstantiation *mi) : LeafNode(mi) {}
+  PolygonNode(const ModuleInstantiation *mi) : LeafNode(mi) {}
   std::string toString() const override;
   std::string name() const override { return "polygon"; }
   std::unique_ptr<const Geometry> createGeometry() const override;
@@ -229,16 +209,19 @@ public:
   std::vector<Vector3d> points;
   std::vector<std::vector<size_t>> paths;
   int convexity = 1;
-  VectorOfVector2d  createGeometry_sub(const std::vector<Vector3d> &points, const std::vector<size_t> &path, double fn, double fa, double fs) const;
+  VectorOfVector2d createGeometry_sub(const std::vector<Vector3d>& points,
+                                      const std::vector<size_t>& path, double fn, double fa,
+                                      double fs) const;
 };
 
 class SplineNode : public LeafNode
 {
 public:
-  SplineNode (const ModuleInstantiation *mi) : LeafNode(mi) {}
+  SplineNode(const ModuleInstantiation *mi) : LeafNode(mi) {}
   std::string toString() const override;
   std::string name() const override { return "spline"; }
-  std::vector<Vector2d> draw_arc(int fn, const Vector2d &tang1, double l1, const Vector2d &tang2, double l2, const Vector2d &cornerpt) const;
+  std::vector<Vector2d> draw_arc(int fn, const Vector2d& tang1, double l1, const Vector2d& tang2,
+                                 double l2, const Vector2d& cornerpt) const;
   std::unique_ptr<const Geometry> createGeometry() const override;
 
   std::vector<Vector2d> points;
