@@ -15,7 +15,6 @@ jobs:
     permissions:
       issues: write
       pull-requests: write
-      contents: write # only for delete-branch option
     steps:
       - uses: actions/stale@v9
         with:
@@ -30,7 +29,7 @@ jobs:
           # Exempt all issues with assignees from stale
           exempt-all-issue-assignees: true
           # Exempt feature requests
-          exempt-issue-labels: "enhancement"
+          exempt-issue-labels: "Type: Enhancement"
           # Idle number of days before marking issues stale
           days-before-issue-stale: 90
           # Idle number of days before marking issues close after stale label
@@ -67,5 +66,3 @@ jobs:
           stale-pr-message: "Openscad bot: this PR is stale because it has been open for 90 days with no activity."
           # PR closure message
           close-pr-message: "Openscad bot: This PR was closed because it has been inactive for 14 days since being marked as stale."
-          # Delete branch after closing a stale PR
-          delete-branch: true
