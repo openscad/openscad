@@ -59,7 +59,7 @@ PACKAGES=(
     "freetype 2.13.3  "
 
     # https://github.com/harfbuzz/harfbuzz/releases
-    "harfbuzz 6.0.0"
+    "harfbuzz 11.4.1"
 
     # https://github.com/nih-at/libzip/releases
     "libzip 1.11.4"
@@ -749,13 +749,11 @@ build_harfbuzz()
   cd "harfbuzz-$version"
 
   # Build each arch separately
-  for i in ${!ARCHS[@]}; do
-    arch=${ARCHS[$i]}
-    mkdir build-$arch
-    cd build-$arch
-    PKG_CONFIG_LIBDIR="$DEPLOYDIR/lib/pkgconfig" ../configure --prefix=$DEPLOYDIR CFLAGS="-arch $arch -mmacos-version-min=$MAC_OSX_VERSION_MIN" CXXFLAGS="-arch $arch -mmacos-version-min=$MAC_OSX_VERSION_MIN" LDFLAGS="-arch $arch -mmacos-version-min=$MAC_OSX_VERSION_MIN" --with-freetype=yes --with-gobject=no --with-cairo=no --with-icu=no --with-coretext=auto --with-glib=no --disable-gtk-doc-html --disable-static --host=${GNU_ARCHS[$i]}-apple-darwin17.0.0
-    make -j"$NUMCPU" install DESTDIR=$PWD/install/
-    cd ..
+  for arch in ${ARCHS[*]}; do
+    sed -e "s,@MAC_OSX_VERSION_MIN@,$MAC_OSX_VERSION_MIN,g" -e "s,@DEPLOYDIR@,$DEPLOYDIR,g" $OPENSCADDIR/scripts/macos-$arch.txt.in > macos-$arch.txt
+    meson setup --prefix $PWD/../../install --cross-file macos-$arch.txt build-$arch -Dfreetype=enabled -Dgobject=disabled -Dcairo=disabled -Dicu=disabled -Dcoretext=auto -Dglib=disabled -Dtests=disabled -Ddocs=disabled
+    meson compile -C build-$arch
+    DESTDIR=install/ meson install -C build-$arch
   done
 
   # Install the first arch
