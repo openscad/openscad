@@ -1,0 +1,71 @@
+name: Openscad Stale bot
+on:
+  schedule:
+    - cron: "0 0 * * *"
+  workflow_dispatch:
+    inputs:
+      logLevel:
+        description: 'Log level'
+        required: true
+        default: 'warning'
+
+jobs:
+  stale:
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      pull-requests: write
+      contents: write # only for delete-branch option
+    steps:
+      - uses: actions/stale@v9
+        with:
+          # Max number of operations per run
+          operations-per-run: 1000
+          # Order to get issues/PRs
+          ascending: true
+
+          # ISSUES
+          # Do not auto-close an issue if it is assigned to a milestone
+          exempt-all-issue-milestones: true
+          # Exempt all issues with assignees from stale
+          exempt-all-issue-assignees: true
+          # Exempt feature requests
+          exempt-issue-labels: "enhancement"
+          # Idle number of days before marking issues stale
+          days-before-issue-stale: 90
+          # Idle number of days before marking issues close after stale label
+          days-before-issue-close: 14
+          # Label to apply on staled issues
+          stale-issue-label: "stale"
+          # Issue close reason
+          close-issue-reason: idle_closed
+          # Remove stale label from issues on updates
+          remove-issue-stale-when-updated: true
+          # Issue stale message
+          stale-issue-message: "Openscad bot: this issue is stale because it has been open for 90 days with no activity."
+          # Issue closure message
+          close-issue-message: "Openscad bot: This issue was closed because it has been inactive for 14 days since being marked as stale."
+
+          # PRs
+          # Do not auto-close a PR if it is assigned to a milestone
+          exempt-all-pr-milestones: true
+          # Exempt all PRs with assignees from stale
+          exempt-all-pr-assignees: true
+          # Skip the stale action for draft PRs
+          exempt-draft-pr: true
+          # Idle number of days before marking PRs stale
+          days-before-pr-stale: 90
+          # Idle number of days before marking PRs close after stale label
+          days-before-pr-close: 14
+          # Label to apply on staled PRs
+          stale-pr-label: "stale"
+          # Label to apply on closed PRs
+          close-pr-label: idle_closed
+          # Remove stale label from PRs on updates
+          remove-pr-stale-when-updated: true
+          # PR stale message
+          stale-pr-message: "Openscad bot: this PR is stale because it has been open for 90 days with no activity."
+          # PR closure message
+          close-pr-message: "Openscad bot: This PR was closed because it has been inactive for 14 days since being marked as stale."
+          # Delete branch after closing a stale PR
+          delete-branch: true
