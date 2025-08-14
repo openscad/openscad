@@ -56,13 +56,13 @@ PACKAGES=(
     "gettext 0.22.5"
 
     # https://freetype.org/index.html#news
-    "freetype 2.13.3  "
+    "freetype 2.13.3"
 
     # https://github.com/silnrsi/graphite/releases
     "libgraphite2 1.3.14"
 
     # https://github.com/harfbuzz/harfbuzz/releases
-    "harfbuzz 11.4.1"
+    "harfbuzz 11.4.1 1"
 
     # https://github.com/nih-at/libzip/releases
     "libzip 1.11.4"
