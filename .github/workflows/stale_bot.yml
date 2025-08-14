@@ -35,7 +35,7 @@ jobs:
           # Idle number of days before marking issues close after stale label
           days-before-issue-close: 14
           # Label to apply on staled issues
-          stale-issue-label: "stale"
+          stale-issue-label: "Stalled"
           # Issue close reason
           close-issue-reason: idle_closed
           # Remove stale label from issues on updates
@@ -57,7 +57,7 @@ jobs:
           # Idle number of days before marking PRs close after stale label
           days-before-pr-close: 14
           # Label to apply on staled PRs
-          stale-pr-label: "stale"
+          stale-pr-label: "Stalled"
           # Label to apply on closed PRs
           close-pr-label: idle_closed
           # Remove stale label from PRs on updates
