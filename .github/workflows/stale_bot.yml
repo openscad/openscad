@@ -1,4 +1,4 @@
-name: Openscad Stale bot
+name: OpenSCAD Stale bot
 on:
   schedule:
     - cron: "0 0 * * *"
@@ -33,7 +33,7 @@ jobs:
           # Idle number of days before marking issues stale
           days-before-issue-stale: 90
           # Idle number of days before marking issues close after stale label
-          days-before-issue-close: 14
+          days-before-issue-close: -1
           # Label to apply on staled issues
           stale-issue-label: "Stalled"
           # Issue close reason
@@ -55,7 +55,7 @@ jobs:
           # Idle number of days before marking PRs stale
           days-before-pr-stale: 90
           # Idle number of days before marking PRs close after stale label
-          days-before-pr-close: 14
+          days-before-pr-close: -1
           # Label to apply on staled PRs
           stale-pr-label: "Stalled"
           # Label to apply on closed PRs
