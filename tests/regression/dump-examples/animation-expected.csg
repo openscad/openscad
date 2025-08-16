@@ -20,29 +20,29 @@ group() {
 	}
 }
 group() {
-	sphere($fn = 30, $fa = 12, $fs = 2, r = 4);
+	sphere($fn = 30, $fa = 12, $fs = 2, r = 4, style = "orig");
 	cylinder($fn = 30, $fa = 12, $fs = 2, h = 12, r1 = 2, r2 = 2, center = true);
 	multmatrix([[-0.980906, -0.194483, 0, 0], [0.194483, -0.980906, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 		group() {
 			color([1, 0, 0, 1]) {
 				hull() {
-					sphere($fn = 30, $fa = 12, $fs = 2, r = 2);
+					sphere($fn = 30, $fa = 12, $fs = 2, r = 2, style = "orig");
 					multmatrix([[1, 0, 0, 70], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-						sphere($fn = 30, $fa = 12, $fs = 2, r = 2);
+						sphere($fn = 30, $fa = 12, $fs = 2, r = 2, style = "orig");
 					}
 				}
 			}
 		}
 	}
 	multmatrix([[1, 0, 0, -68.6634], [0, 1, 0, 13.6138], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-		sphere($fn = 30, $fa = 12, $fs = 2, r = 4);
+		sphere($fn = 30, $fa = 12, $fs = 2, r = 4, style = "orig");
 		multmatrix([[0.373268, -0.927723, 0, 0], [0.927723, 0.373268, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 			group() {
 				color([0, 0.501961, 0, 1]) {
 					hull() {
-						sphere($fn = 30, $fa = 12, $fs = 2, r = 2);
+						sphere($fn = 30, $fa = 12, $fs = 2, r = 2, style = "orig");
 						multmatrix([[1, 0, 0, 50], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-							sphere($fn = 30, $fa = 12, $fs = 2, r = 2);
+							sphere($fn = 30, $fa = 12, $fs = 2, r = 2, style = "orig");
 						}
 					}
 				}

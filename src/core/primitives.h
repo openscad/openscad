@@ -62,14 +62,17 @@ public:
   {
     std::ostringstream stream;
     stream << "sphere" << "($fn = " << fn << ", $fa = " << fa << ", $fs = " << fs << ", r = " << r
-           << ")";
+           << ", style = \"" << style << "\"" << ")";
     return stream.str();
   }
   std::string name() const override { return "sphere"; }
   std::unique_ptr<const Geometry> createGeometry() const override;
+  std::unique_ptr<const Geometry> createGeometryOrig() const;
+  std::unique_ptr<const Geometry> createGeometryOcta() const;
 
   double fn, fs, fa;
   double r = 1;
+  std::string style = "orig";
 };
 
 class CylinderNode : public LeafNode
