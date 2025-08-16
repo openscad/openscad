@@ -21,3 +21,17 @@ jobs:
           block_assignment: false
           reminder_days: 7
           max_assignments: 12
+          assigned_comment: |
+            ### 🎉 Issue Assignment Confirmation
+
+            Hey @{{ handle }}, thanks for taking on this issue!
+
+            This issue will be automatically unassigned if idle for **{{ total_days }} days**.
+
+            <details>
+            <summary>ℹ️ Important information</summary>
+
+            - To prevent automatic unassignment, a maintainer can add the **{{{ pin_label }}}** label
+            - You can unassign yourself at any time by commenting with `/unassign-me`
+            - Updates and status reports are encouraged to show progress
+            </details>
