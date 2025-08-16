@@ -43,7 +43,7 @@ jobs:
           exempt-all-pr-milestones: true
           exempt-draft-pr: true
           # Idle number of days before marking PRs stale
-          days-before-pr-stale: 60
+          days-before-pr-stale: 90
           # Idle number of days before marking PRs close after stale label
           days-before-pr-close: 60
           stale-pr-label: "Stalled"
