@@ -68,18 +68,38 @@ parts:
       "-DCMAKE_POLICY_VERSION_MINIMUM=3.5",
     ]
 
+  harfbuzz:
+    source: https://github.com/harfbuzz/harfbuzz/releases/download/11.4.1/harfbuzz-11.4.1.tar.xz
+    plugin: meson
+    build-packages:
+      - meson
+      - libgraphite2-dev
+    meson-parameters: [
+      "--prefix=/usr",
+      "-Dcpp_args=-fno-exceptions",
+      "-Dgraphite2=enabled",
+      "-Dgobject=disabled",
+      "-Dutilities=disabled",
+      "-Dtests=disabled",
+      "-Dbenchmark=disabled",
+      "-Ddocs=disabled"
+    ]
+
   openscad-nightly:
     source: .
+    source-type: git
     build-snaps: [cmake]
     plugin: cmake
     override-build: |
         export CC="clang"
         export CXX="clang++"
-        export OPENSCAD_VERSION="$(date +%Y.%m.%d).snap"
+        export OPENSCAD_COMMIT="$(GIT_DIR=$SNAPCRAFT_PART_SRC/.git git rev-parse --short HEAD)"
+        export OPENSCAD_VERSION="$(GIT_DIR=$SNAPCRAFT_PART_SRC/.git git log -1 --format=%at | xargs -I{} date -d @{} +%Y.%m.%d.snap)"
         cmake ${SNAPCRAFT_PART_SRC} \
             -G 'Unix Makefiles' \
             -DCMAKE_PREFIX_PATH="${SNAPCRAFT_STAGE}/usr" \
             -DOPENSCAD_VERSION="${OPENSCAD_VERSION}" \
+            -DOPENSCAD_COMMIT="${OPENSCAD_COMMIT}" \
             -DCMAKE_INSTALL_PREFIX=/usr \
             -DCMAKE_BUILD_TYPE=Release \
             -DUSE_BUILTIN_OPENCSG=ON \
@@ -92,7 +112,9 @@ parts:
             -DSNAPSHOT=ON
         cmake --build .
         cmake --install . --prefix "${SNAPCRAFT_PART_INSTALL}/usr"
-    after: [ desktop-qt5, cgal, lib3mf2 ]
+    after: [ desktop-qt5, cgal, lib3mf2, harfbuzz ]
+    stage:
+    - -usr/lib/*/libharfbuzz*
     build-packages:
     - git
     - clang
@@ -125,8 +147,6 @@ parts:
     - libzip-dev
     - libgl-dev
     - libxml2-dev
-    - libharfbuzz-dev
-    - libfreetype-dev
     - libfontconfig1-dev
     - libqscintilla2-qt5-dev
     stage-packages:
@@ -166,6 +186,8 @@ parts:
     source-subdir: qt
     plugin: make
     make-parameters: ["FLAVOR=qt5"]
+    stage:
+    - -usr/lib/*/libharfbuzz*
     build-packages:
       - build-essential
       - qtbase5-dev
