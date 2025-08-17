@@ -8,8 +8,7 @@ enum class RenderBackend3D {
   ManifoldBackend,
 };
 
-inline constexpr RenderBackend3D DEFAULT_RENDERING_BACKEND_3D =
-  RenderBackend3D::CGALBackend;  // ManifoldBackend;
+inline constexpr RenderBackend3D DEFAULT_RENDERING_BACKEND_3D = RenderBackend3D::ManifoldBackend;
 
 std::string renderBackend3DToString(RenderBackend3D backend);
 RenderBackend3D renderBackend3DFromString(std::string backend);
