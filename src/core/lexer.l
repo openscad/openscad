@@ -191,7 +191,7 @@ use[ \t\r\n]*"<"        { BEGIN(cond_use); LOCATION_COUNT_LINES(parserlloc, yyte
 \\\"                    { stringcontents += '"'; }
 \\x[0-7]{H}             { unsigned long i = strtoul(lexertext + 2, NULL, 16); stringcontents += (i == 0 ? ' ' : (unsigned char)(i & 0xff)); }
 \\u{H}{4}|\\U{H}{6}     { const auto c = strtoul(lexertext + 2, NULL, 16); stringcontents += str_utf8_wrapper(c).toString(); }
-\\                      { parsererror("Undefined escape sequence"); return TOK_ERROR; }
+\\                      { LOG(message_group::Warning, LOCATION(parserlloc), "", "Undefined escape sequence"); }
 
 %{/* Special characters */%}
 \n                      { LOCATION_ADD_LINES(parserlloc, yyleng); }
