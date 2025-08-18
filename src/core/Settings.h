@@ -410,6 +410,7 @@ public:
 
   static SettingsEntryString octoPrintUrl;
   static SettingsEntryString octoPrintApiKey;
+  static SettingsEntryString openaiApiKey;
   static SettingsEntryEnum<std::string> octoPrintFileFormat;
   static SettingsEntryEnum<std::string> octoPrintAction;
   static SettingsEntryString octoPrintSlicerEngine;

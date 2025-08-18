@@ -924,6 +924,12 @@ void Preferences::on_lineEditOctoPrintApiKey_editingFinished()
   writeSettings();
 }
 
+void Preferences::on_openaiApiKeyEdit_editingFinished()
+{
+  Settings::Settings::openaiApiKey.setValue(this->openaiApiKeyEdit->text().toStdString());
+  writeSettings();
+}
+
 void Preferences::on_pushButtonOctoPrintApiKey_clicked()
 {
   this->lineEditOctoPrintApiKey->setEchoMode(this->pushButtonOctoPrintApiKey->isChecked()
@@ -1421,6 +1427,8 @@ void Preferences::updateGUI()
     ->setText(QString::fromStdString(Settings::Settings::octoPrintUrl.value()));
   BlockSignals<QLineEdit *>(this->lineEditOctoPrintApiKey)
     ->setText(QString::fromStdString(Settings::Settings::octoPrintApiKey.value()));
+  BlockSignals<QLineEdit *>(this->openaiApiKeyEdit)
+    ->setText(QString::fromStdString(Settings::Settings::openaiApiKey.value()));
   updateComboBox(this->comboBoxOctoPrintAction, Settings::Settings::octoPrintAction);
   updateComboBox(this->comboBoxOctoPrintSlicingEngine,
                  Settings::Settings::octoPrintSlicerEngine.value());

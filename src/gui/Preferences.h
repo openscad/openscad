@@ -133,6 +133,7 @@ public slots:
   void on_comboBoxOctoPrintFileFormat_activated(int);
   void on_lineEditOctoPrintURL_editingFinished();
   void on_lineEditOctoPrintApiKey_editingFinished();
+  void on_openaiApiKeyEdit_editingFinished();
   void on_pushButtonOctoPrintApiKey_clicked();
   void on_pushButtonOctoPrintRequestApiKey_clicked();
   void on_lineEditLocalAppExecutable_editingFinished();
