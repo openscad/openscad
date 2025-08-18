@@ -201,6 +201,7 @@ SettingsEntryEnum<std::string> Settings::printServiceFileFormat(
 
 SettingsEntryString Settings::octoPrintUrl("printing", "octoPrintUrl", "");
 SettingsEntryString Settings::octoPrintApiKey("printing", "octoPrintApiKey", "");
+SettingsEntryString Settings::openaiApiKey("api", "openaiApiKey", "");
 SettingsEntryEnum<std::string> Settings::octoPrintAction(
   "printing", "octoPrintAction",
   {{"upload", "upload", _("Upload only")},

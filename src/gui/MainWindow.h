@@ -28,6 +28,8 @@
 #include <QElapsedTimer>
 #include <QIcon>
 #include <QIODevice>
+
+class ChatWidget;
 #include <QMutex>
 #include <QSoundEffect>
 #include <QTime>

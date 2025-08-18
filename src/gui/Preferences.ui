@@ -2673,6 +2673,46 @@
              </widget>
             </item>
             <item>
+             <widget class="QGroupBox" name="groupBox_API">
+              <property name="title">
+               <string>API Settings</string>
+              </property>
+              <layout class="QVBoxLayout" name="verticalLayout_API">
+               <item>
+                <layout class="QHBoxLayout" name="horizontalLayout_API">
+                 <item>
+                  <widget class="QLabel" name="label_OpenAI_API">
+                   <property name="text">
+                    <string>OpenAI API Key:</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QLineEdit" name="openaiApiKeyEdit">
+                   <property name="echoMode">
+                    <enum>QLineEdit::Password</enum>
+                   </property>
+                   <property name="placeholderText">
+                    <string>Enter your OpenAI API key</string>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
+               </item>
+               <item>
+                <widget class="QLabel" name="label_API_Info">
+                 <property name="text">
+                  <string>Get your API key from: https://platform.openai.com/api-keys</string>
+                 </property>
+                 <property name="styleSheet">
+                  <string>color: gray; font-size: 10px;</string>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </widget>
+            </item>
+            <item>
              <widget class="QGroupBox" name="groupBox_Debug">
               <property name="title">
                <string>Debugging</string>

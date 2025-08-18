@@ -1094,6 +1094,7 @@ set(GUI_SOURCES
   src/gui/Measurement.cc
   src/gui/Animate.cc
   src/gui/FontList.cc
+  src/gui/ChatWidget.cc
   src/gui/MouseSelector.cc
   src/gui/OctoPrint.cc
   src/gui/OpenCSGWarningDialog.cc
@@ -1168,6 +1169,7 @@ set(GUI_HEADERS
     src/gui/MouseSelector.h
     src/gui/Network.h
     src/gui/NetworkSignal.h
+    src/gui/ChatWidget.h
     src/gui/OctoPrint.h
     src/gui/OpenCSGWarningDialog.h
     src/gui/OpenSCADApp.h
