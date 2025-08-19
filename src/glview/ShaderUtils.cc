@@ -6,29 +6,6 @@
 
 #include "platform/PlatformUtils.h"
 
-namespace {
-
-GLuint compileShader(const std::string& name, GLuint shader_type)
-{
-  auto shader_source = ShaderUtils::loadShaderSource(name);
-  const GLuint shader = glCreateShader(shader_type);
-  auto *c_source = shader_source.c_str();
-  glShaderSource(shader, 1, (const GLchar **)&c_source, nullptr);
-  glCompileShader(shader);
-  GLint status;
-  glGetShaderiv(shader, GL_COMPILE_STATUS, &status);
-  if (!status) {
-    int loglen;
-    char logbuffer[1000];
-    glGetShaderInfoLog(shader, sizeof(logbuffer), &loglen, logbuffer);
-    PRINTDB("OpenGL shader compilation error:\n%s", logbuffer);
-    return 0;
-  }
-  return shader;
-}
-
-}  // namespace
-
 namespace ShaderUtils {
 
 std::string loadShaderSource(const std::string& name)
