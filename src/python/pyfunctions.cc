@@ -30,6 +30,7 @@
 #include "export.h"
 #include "GeometryUtils.h"
 #include <Python.h>
+#include "pyfunctions.h"
 #include "python/pyopenscad.h"
 #include "core/primitives.h"
 #include "core/CsgOpNode.h"
@@ -881,6 +882,7 @@ PyObject *python_square(PyObject *self, PyObject *args, PyObject *kwargs)
   python_retrieve_pyname(node);
   return PyOpenSCADObjectFromNode(&PyOpenSCADType, node);
 }
+
 PyObject *python_circle(PyObject *self, PyObject *args, PyObject *kwargs)
 {
   DECLARE_INSTANCE
@@ -930,6 +932,7 @@ PyObject *python_circle(PyObject *self, PyObject *args, PyObject *kwargs)
   python_retrieve_pyname(node);
   return PyOpenSCADObjectFromNode(&PyOpenSCADType, node);
 }
+
 PyObject *python_polygon(PyObject *self, PyObject *args, PyObject *kwargs)
 {
   DECLARE_INSTANCE
@@ -1198,6 +1201,7 @@ PyObject *python_oo_scale(PyObject *obj, PyObject *args, PyObject *kwargs)
   }
   return python_scale_core(obj, val_v);
 }
+
 PyObject *python_number_rot(PyObject *mat, Matrix3d rotvec, int vecs)
 {
   Transform3d matrix = Transform3d::Identity();
@@ -1457,7 +1461,6 @@ PyObject *python_translate_sub(PyObject *obj, Vector3d translatevec, int dragfla
   return pyresult;
 }
 
-PyObject *python_nb_sub_vec3(PyObject *arg1, PyObject *arg2, int mode);
 PyObject *python_translate_core(PyObject *obj, PyObject *v) { return python_nb_sub_vec3(obj, v, 0); }
 
 PyObject *python_translate(PyObject *self, PyObject *args, PyObject *kwargs)
@@ -1534,70 +1537,87 @@ PyObject *python_right(PyObject *self, PyObject *args, PyObject *kwargs)
 {
   return python_dir_sub(self, args, kwargs, 0);
 }
+
 PyObject *python_oo_right(PyObject *self, PyObject *args, PyObject *kwargs)
 {
   return python_oo_dir_sub(self, args, kwargs, 0);
 }
+
 PyObject *python_left(PyObject *self, PyObject *args, PyObject *kwargs)
 {
   return python_dir_sub(self, args, kwargs, 1);
 }
+
 PyObject *python_oo_left(PyObject *self, PyObject *args, PyObject *kwargs)
 {
   return python_oo_dir_sub(self, args, kwargs, 1);
 }
+
 PyObject *python_front(PyObject *self, PyObject *args, PyObject *kwargs)
 {
   return python_dir_sub(self, args, kwargs, 2);
 }
+
 PyObject *python_oo_front(PyObject *self, PyObject *args, PyObject *kwargs)
 {
   return python_oo_dir_sub(self, args, kwargs, 2);
 }
+
 PyObject *python_back(PyObject *self, PyObject *args, PyObject *kwargs)
 {
   return python_dir_sub(self, args, kwargs, 3);
 }
+
 PyObject *python_oo_back(PyObject *self, PyObject *args, PyObject *kwargs)
 {
   return python_oo_dir_sub(self, args, kwargs, 3);
 }
+
 PyObject *python_down(PyObject *self, PyObject *args, PyObject *kwargs)
 {
   return python_dir_sub(self, args, kwargs, 4);
 }
+
 PyObject *python_oo_down(PyObject *self, PyObject *args, PyObject *kwargs)
 {
   return python_oo_dir_sub(self, args, kwargs, 4);
 }
+
 PyObject *python_up(PyObject *self, PyObject *args, PyObject *kwargs)
 {
   return python_dir_sub(self, args, kwargs, 5);
 }
+
 PyObject *python_oo_up(PyObject *self, PyObject *args, PyObject *kwargs)
 {
   return python_oo_dir_sub(self, args, kwargs, 5);
 }
+
 PyObject *python_rotx(PyObject *self, PyObject *args, PyObject *kwargs)
 {
   return python_dir_sub(self, args, kwargs, 6);
 }
+
 PyObject *python_oo_rotx(PyObject *self, PyObject *args, PyObject *kwargs)
 {
   return python_oo_dir_sub(self, args, kwargs, 6);
 }
+
 PyObject *python_roty(PyObject *self, PyObject *args, PyObject *kwargs)
 {
   return python_dir_sub(self, args, kwargs, 7);
 }
+
 PyObject *python_oo_roty(PyObject *self, PyObject *args, PyObject *kwargs)
 {
   return python_oo_dir_sub(self, args, kwargs, 7);
 }
+
 PyObject *python_rotz(PyObject *self, PyObject *args, PyObject *kwargs)
 {
   return python_dir_sub(self, args, kwargs, 8);
 }
+
 PyObject *python_oo_rotz(PyObject *self, PyObject *args, PyObject *kwargs)
 {
   return python_oo_dir_sub(self, args, kwargs, 8);
@@ -1654,22 +1674,27 @@ PyObject *python_sin(PyObject *self, PyObject *args, PyObject *kwargs)
 {
   return python_math_sub1(self, args, kwargs, 0);
 }
+
 PyObject *python_cos(PyObject *self, PyObject *args, PyObject *kwargs)
 {
   return python_math_sub1(self, args, kwargs, 1);
 }
+
 PyObject *python_tan(PyObject *self, PyObject *args, PyObject *kwargs)
 {
   return python_math_sub1(self, args, kwargs, 2);
 }
+
 PyObject *python_asin(PyObject *self, PyObject *args, PyObject *kwargs)
 {
   return python_math_sub1(self, args, kwargs, 3);
 }
+
 PyObject *python_acos(PyObject *self, PyObject *args, PyObject *kwargs)
 {
   return python_math_sub1(self, args, kwargs, 4);
 }
+
 PyObject *python_atan(PyObject *self, PyObject *args, PyObject *kwargs)
 {
   return python_math_sub1(self, args, kwargs, 5);
@@ -1679,6 +1704,7 @@ PyObject *python_dot(PyObject *self, PyObject *args, PyObject *kwargs)
 {
   return python_math_sub2(self, args, kwargs, 0);
 }
+
 PyObject *python_cross(PyObject *self, PyObject *args, PyObject *kwargs)
 {
   return python_math_sub2(self, args, kwargs, 1);
@@ -2272,6 +2298,21 @@ PyObject *python__getitem__(PyObject *obj, PyObject *key)
       Matrix4d matrix = Matrix4d::Identity();
       if (trans != nullptr) matrix = trans->matrix.matrix();
       result = python_frommatrix(matrix);
+    } else if (keystr == "size") {
+      PyObject *bbox;
+      bbox = python_bbox_core(obj);
+      if (bbox == Py_None) {
+        return Py_None;
+      }
+      PyObject *negative_ones = Py_BuildValue("[f,f,f]", -1.0, -1.0, -1.0);
+      if (!negative_ones) {
+        return Py_None;
+      }
+      PyObject *size = python_nb_sub_vec3(PyTuple_GetItem(bbox, 1),
+                                          python_scale_core(PyTuple_GetItem(bbox, 0), negative_ones), 0);
+      Py_DECREF(negative_ones);
+      Py_INCREF(size);
+      return size;
     }
   } else Py_INCREF(result);
   return result;
@@ -3945,15 +3986,19 @@ PyObject *python_nb_add(PyObject *arg1, PyObject *arg2)
 {
   return python_nb_sub_vec3(arg1, arg2, 0);
 }  // translate
+
 PyObject *python_nb_xor(PyObject *arg1, PyObject *arg2) { return python_nb_sub_vec3(arg1, arg2, 3); }
+
 PyObject *python_nb_mul(PyObject *arg1, PyObject *arg2)
 {
   return python_nb_sub_vec3(arg1, arg2, 1);
 }  // scale
+
 PyObject *python_nb_or(PyObject *arg1, PyObject *arg2)
 {
   return python_nb_sub(arg1, arg2, OpenSCADOperator::UNION);
 }
+
 PyObject *python_nb_subtract(PyObject *arg1, PyObject *arg2)
 {
   double dmy;
@@ -3965,6 +4010,7 @@ PyObject *python_nb_subtract(PyObject *arg1, PyObject *arg2)
   }
   return python_nb_sub(arg1, arg2, OpenSCADOperator::DIFFERENCE);  // if its solid
 }
+
 PyObject *python_nb_and(PyObject *arg1, PyObject *arg2)
 {
   return python_nb_sub(arg1, arg2, OpenSCADOperator::INTERSECTION);
@@ -4807,6 +4853,7 @@ void python_str_sub(std::ostringstream& stream, const std::shared_ptr<AbstractNo
     stream << "}\n";
   }
 }
+
 PyObject *python_str(PyObject *self)
 {
   std::ostringstream stream;
@@ -5014,33 +5061,41 @@ PyObject *python_debug_modifier_func_oo(PyObject *obj, PyObject *args, PyObject 
   }
   return python_debug_modifier(obj, mode);
 }
+
 PyObject *python_highlight(PyObject *self, PyObject *args, PyObject *kwargs)
 {
   return python_debug_modifier_func(self, args, kwargs, 0);
 }
+
 PyObject *python_oo_highlight(PyObject *self, PyObject *args, PyObject *kwargs)
 {
   return python_debug_modifier_func_oo(self, args, kwargs, 0);
 }
+
 PyObject *python_background(PyObject *self, PyObject *args, PyObject *kwargs)
 {
   return python_debug_modifier_func(self, args, kwargs, 1);
 }
+
 PyObject *python_oo_background(PyObject *self, PyObject *args, PyObject *kwargs)
 {
   return python_debug_modifier_func_oo(self, args, kwargs, 1);
 }
+
 PyObject *python_only(PyObject *self, PyObject *args, PyObject *kwargs)
 {
   return python_debug_modifier_func(self, args, kwargs, 2);
 }
+
 PyObject *python_oo_only(PyObject *self, PyObject *args, PyObject *kwargs)
 {
   return python_debug_modifier_func_oo(self, args, kwargs, 2);
 }
 
 PyObject *python_nb_invert(PyObject *arg) { return python_debug_modifier(arg, 0); }
+
 PyObject *python_nb_neg(PyObject *arg) { return python_debug_modifier(arg, 1); }
+
 PyObject *python_nb_pos(PyObject *arg) { return python_debug_modifier(arg, 2); }
 
 #ifndef OPENSCAD_NOGUI
