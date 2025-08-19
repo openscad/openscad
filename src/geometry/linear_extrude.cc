@@ -310,7 +310,7 @@ void add_slice_indices(PolygonIndices& indices, int slice_idx, int slice_stride,
     // matched the direction of diagonal for neighboring edges (which did not exhibit "equal" diagonals).
     bool flip = ((!o.positive) xor (back_twist));
 
-    for (int i = 1; i <= o.vertices.size(); ++i) {
+    for (size_t i = 1; i <= o.vertices.size(); ++i) {
       // curr1: previous slice, current vertex
       // curr2: current slice, current vertex
       Vector2d curr1 = trans1 * o.vertices[i % o.vertices.size()];
