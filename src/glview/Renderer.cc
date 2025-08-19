@@ -38,14 +38,6 @@ GLuint compileShader(const std::string& name, GLuint shader_type)
 
 namespace RendererUtils {
 
-CSGMode getCsgMode(const bool highlight_mode, const bool background_mode, const OpenSCADOperator type)
-{
-  int csgmode =
-    highlight_mode ? CSGMODE_HIGHLIGHT : (background_mode ? CSGMODE_BACKGROUND : CSGMODE_NORMAL);
-  if (type == OpenSCADOperator::DIFFERENCE) csgmode |= CSGMODE_DIFFERENCE_FLAG;
-  return static_cast<CSGMode>(csgmode);
-}
-
 std::string loadShaderSource(const std::string& name)
 {
   std::string shaderPath = (PlatformUtils::resourcePath("shaders") / name).string();

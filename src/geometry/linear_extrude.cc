@@ -510,8 +510,6 @@ std::unique_ptr<Geometry> extrudePolygon(const LinearExtrudeNode& node, const Po
   for (unsigned int slice_idx = 1; slice_idx <= num_slices; slice_idx++) {
     double rot_prev = node.twist * (slice_idx - 1) / num_slices;
     double rot_curr = node.twist * slice_idx / num_slices;
-    auto height_prev = h1 + (h2 - h1) * (slice_idx - 1) / num_slices;
-    auto height_curr = h1 + (h2 - h1) * slice_idx / num_slices;
     Vector2d scale_prev(1 - (1 - node.scale_x) * (slice_idx - 1) / num_slices,
                         1 - (1 - node.scale_y) * (slice_idx - 1) / num_slices);
     Vector2d scale_curr(1 - (1 - node.scale_x) * slice_idx / num_slices,

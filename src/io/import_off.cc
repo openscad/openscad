@@ -227,8 +227,6 @@ std::unique_ptr<PolySet> import_off(const std::string& filename, const Location&
     }
   }
 
-  auto logged_color_warning = false;
-
   while (!f.eof() && (face++ < faces_count)) {
     if (!getline_clean("reading faces: end of file")) {
       return PolySet::createEmpty();
