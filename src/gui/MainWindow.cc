@@ -353,7 +353,7 @@ MainWindow::MainWindow(const QStringList& filenames) : rubberBandManager(this)
   this->chatWidget = new ChatWidget(this);
   this->chatWidget->setObjectName("chatWidget");
   this->chatWidget->setMinimumSize(250, 200);
-  
+
   // Replace in the layout
   QLayout *chatLayout = oldChatWidget->parentWidget()->layout();
   if (chatLayout) {
@@ -1117,7 +1117,7 @@ void MainWindow::updateUndockMode(bool undockMode)
     }
     viewportControlDock->setFeatures(viewportControlDock->features() &
                                      ~QDockWidget::DockWidgetFloatable);
-    
+
     if (chatDock->isFloating()) {
       chatDock->setFloating(false);
     }

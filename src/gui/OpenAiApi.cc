@@ -44,7 +44,10 @@ const QString OpenAiApi::url() const
   return QString::fromStdString(Settings::Settings::aiApiUrl.value());
 }
 
-const QString OpenAiApi::apiKey() const { return QString::fromStdString(Settings::Settings::aiApiKey.value()); }
+const QString OpenAiApi::apiKey() const
+{
+  return QString::fromStdString(Settings::Settings::aiApiKey.value());
+}
 
 const QJsonDocument OpenAiApi::getJsonData(const QString& endpoint) const
 {
