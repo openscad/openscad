@@ -1,5 +1,5 @@
 #include "ChatWidget.h"
-#include "core/Settings.h"
+
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QTextEdit>
@@ -17,19 +17,25 @@
 #include <QMessageBox>
 #include <QApplication>
 
+#include "core/Settings.h"
+
+using S = Settings::Settings;
+
 ChatWidget::ChatWidget(QWidget *parent)
     : QWidget(parent)
     , networkManager(new QNetworkAccessManager(this))
 {
     setupUI();
-    
-    // Load API key from settings
-    apiKey = QString::fromStdString(Settings::Settings::openaiApiKey.value());
-    apiUrl = "https://api.openai.com/v1/chat/completions";
-    
-    if (apiKey.isEmpty()) {
-        addMessage("⚠️ OpenAI API key not set. Go to Edit → Preferences to configure.", false);
-    }
+
+    QJsonObject systemMessage;
+    systemMessage["role"] = "system";
+    systemMessage["content"] =
+    "You are a helpful and friendly assistant with knowledge about the OpenSCAD application "
+    "and it's scripting language. You always answer truthfully and concise. If possible you "
+    "provide short example scripts the user can run. If you do not find clear information "
+    "about the question you have been asked, then you answer that you don't know the answer "
+    "to the question.";
+    conversationHistory.append(systemMessage);
 }
 
 void ChatWidget::setupUI()
@@ -54,7 +60,7 @@ void ChatWidget::setupUI()
     mainLayout->addWidget(scrollArea);
     
     // Input area
-    QHBoxLayout *inputLayout = new QHBoxLayout();
+    auto *inputLayout = new QHBoxLayout();
     inputField = new QLineEdit(this);
     inputField->setPlaceholderText("Ask GPT about OpenSCAD...");
     
@@ -80,12 +86,7 @@ void ChatWidget::sendMessage()
     
     inputField->clear();
     addMessage(message, true);
-    
-    if (apiKey.isEmpty()) {
-        addMessage("❌ Please set your OpenAI API key in preferences first.", false);
-        return;
-    }
-    
+
     // Add user message to conversation history
     QJsonObject userMessage;
     userMessage["role"] = "user";
@@ -94,18 +95,20 @@ void ChatWidget::sendMessage()
     
     // Prepare API request
     QJsonObject requestData;
-    requestData["model"] = "gpt-3.5-turbo";
+    requestData["model"] = QString::fromStdString(S::aiModel.value());
     requestData["messages"] = conversationHistory;
-    requestData["max_tokens"] = 500;
     requestData["temperature"] = 0.7;
     
     QJsonDocument doc(requestData);
     QByteArray jsonData = doc.toJson();
     
-    QUrl url("https://api.openai.com/v1/chat/completions");
+    QUrl url(QString::fromStdString(S::aiApiUrl.value()) + "/chat/completions");
     QNetworkRequest request(url);
     request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
-    request.setRawHeader("Authorization", ("Bearer " + apiKey).toUtf8());
+    const auto apiKey = QString::fromStdString(S::aiApiKey.value());
+    if (!apiKey.isEmpty()) {
+        request.setRawHeader("Authorization", ("Bearer " + apiKey).toUtf8());
+    }
 
     QNetworkReply *reply = networkManager->post(request, jsonData);
     connect(reply, &QNetworkReply::finished, this, &ChatWidget::onApiResponse);
@@ -119,7 +122,7 @@ void ChatWidget::sendMessage()
 
 void ChatWidget::onApiResponse()
 {
-    QNetworkReply *reply = qobject_cast<QNetworkReply*>(sender());
+    auto *reply = qobject_cast<QNetworkReply*>(sender());
     if (!reply) return;
     
     sendButton->setEnabled(true);
@@ -186,7 +189,7 @@ void ChatWidget::onApiError(QNetworkReply::NetworkError error)
 
 void ChatWidget::addMessage(const QString& message, bool isUser)
 {
-    QLabel *messageLabel = new QLabel(formatMessage(message, isUser));
+    auto *messageLabel = new QLabel(formatMessage(message, isUser));
     messageLabel->setWordWrap(true);
     messageLabel->setTextInteractionFlags(Qt::TextSelectableByMouse | Qt::TextSelectableByKeyboard);
     messageLabel->setMargin(8);

@@ -201,7 +201,6 @@ SettingsEntryEnum<std::string> Settings::printServiceFileFormat(
 
 SettingsEntryString Settings::octoPrintUrl("printing", "octoPrintUrl", "");
 SettingsEntryString Settings::octoPrintApiKey("printing", "octoPrintApiKey", "");
-SettingsEntryString Settings::openaiApiKey("api", "openaiApiKey", "");
 SettingsEntryEnum<std::string> Settings::octoPrintAction(
   "printing", "octoPrintAction",
   {{"upload", "upload", _("Upload only")},
@@ -366,6 +365,10 @@ SettingsEntryDouble Settings::axisDeadzone7("input", "axisDeadzone7", 0.0, 0.01,
 SettingsEntryDouble Settings::axisDeadzone8("input", "axisDeadzone8", 0.0, 0.01, 1.0, 0.10);
 
 SettingsEntryInt Settings::joystickNr("input", "joystickNr", 0, 9, 0);
+
+SettingsEntryString Settings::aiApiUrl("ai", "apiUrl", "");
+SettingsEntryString Settings::aiApiKey("ai", "apiKey", "");
+SettingsEntryString Settings::aiModel("ai", "model", "");
 
 SettingsEntryString SettingsPython::pythonTrustedFiles(SECTION_PYTHON, "trusted-files", "");
 SettingsEntryString SettingsPython::pythonVirtualEnv(SECTION_PYTHON, "virtual-env", "");

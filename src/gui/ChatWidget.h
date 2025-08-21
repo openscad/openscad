@@ -42,7 +42,5 @@ private:
     QPushButton *sendButton;
     QNetworkAccessManager *networkManager;
     
-    QString apiKey;
-    QString apiUrl;
     QJsonArray conversationHistory;
 };

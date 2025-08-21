@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>865</width>
-    <height>860</height>
+    <width>755</width>
+    <height>835</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -27,7 +27,7 @@
     <item row="0" column="0">
      <widget class="QStackedWidget" name="stackedWidget">
       <property name="currentIndex">
-       <number>7</number>
+       <number>10</number>
       </property>
       <widget class="QWidget" name="page3DView">
        <layout class="QVBoxLayout" name="verticalLayout_4">
@@ -1292,8 +1292,8 @@
               <rect>
                <x>0</x>
                <y>0</y>
-               <width>100</width>
-               <height>30</height>
+               <width>84</width>
+               <height>26</height>
               </rect>
              </property>
              <layout class="QVBoxLayout" name="verticalLayout_10">
@@ -1949,8 +1949,8 @@
            <property name="geometry">
             <rect>
              <x>0</x>
-             <y>0</y>
-             <width>699</width>
+             <y>-701</y>
+             <width>831</width>
              <height>1471</height>
             </rect>
            </property>
@@ -2673,46 +2673,6 @@
              </widget>
             </item>
             <item>
-             <widget class="QGroupBox" name="groupBox_API">
-              <property name="title">
-               <string>API Settings</string>
-              </property>
-              <layout class="QVBoxLayout" name="verticalLayout_API">
-               <item>
-                <layout class="QHBoxLayout" name="horizontalLayout_API">
-                 <item>
-                  <widget class="QLabel" name="label_OpenAI_API">
-                   <property name="text">
-                    <string>OpenAI API Key:</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item>
-                  <widget class="QLineEdit" name="openaiApiKeyEdit">
-                   <property name="echoMode">
-                    <enum>QLineEdit::Password</enum>
-                   </property>
-                   <property name="placeholderText">
-                    <string>Enter your OpenAI API key</string>
-                   </property>
-                  </widget>
-                 </item>
-                </layout>
-               </item>
-               <item>
-                <widget class="QLabel" name="label_API_Info">
-                 <property name="text">
-                  <string>Get your API key from: https://platform.openai.com/api-keys</string>
-                 </property>
-                 <property name="styleSheet">
-                  <string>color: gray; font-size: 10px;</string>
-                 </property>
-                </widget>
-               </item>
-              </layout>
-             </widget>
-            </item>
-            <item>
              <widget class="QGroupBox" name="groupBox_Debug">
               <property name="title">
                <string>Debugging</string>
@@ -2771,8 +2731,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>845</width>
-             <height>770</height>
+             <width>98</width>
+             <height>28</height>
             </rect>
            </property>
           </widget>
@@ -2804,8 +2764,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>845</width>
-             <height>770</height>
+             <width>98</width>
+             <height>28</height>
             </rect>
            </property>
           </widget>
@@ -2908,6 +2868,79 @@
         </item>
        </layout>
       </widget>
+      <widget class="QWidget" name="pageAI">
+       <layout class="QVBoxLayout" name="verticalLayoutAI">
+        <item>
+         <widget class="QScrollArea" name="scrollAreaAI">
+          <property name="widgetResizable">
+           <bool>true</bool>
+          </property>
+          <widget class="QWidget" name="scrollAreaWidgetContentsAI">
+           <property name="geometry">
+            <rect>
+             <x>0</x>
+             <y>0</y>
+             <width>717</width>
+             <height>727</height>
+            </rect>
+           </property>
+           <layout class="QGridLayout" name="gridLayout_11" columnstretch="0,0,1,0">
+            <item row="2" column="2">
+             <widget class="QComboBox" name="comboBoxAIModel"/>
+            </item>
+            <item row="1" column="0">
+             <widget class="QLabel" name="labelAIApiKey">
+              <property name="text">
+               <string>API Key</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="0">
+             <widget class="QLabel" name="labelAIApiUrl">
+              <property name="text">
+               <string>API URL</string>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="0">
+             <widget class="QLabel" name="labelAIModel">
+              <property name="text">
+               <string>Model</string>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="1">
+             <widget class="QPushButton" name="pushButtonAIModelLoad">
+              <property name="text">
+               <string>Load</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="1" colspan="2">
+             <widget class="QLineEdit" name="lineEditAIApiKey"/>
+            </item>
+            <item row="0" column="1" colspan="2">
+             <widget class="QLineEdit" name="lineEditAIApiUrl"/>
+            </item>
+            <item row="3" column="2">
+             <spacer name="verticalSpacerAI">
+              <property name="orientation">
+               <enum>Qt::Vertical</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>20</width>
+                <height>40</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+           </layout>
+          </widget>
+         </widget>
+        </item>
+       </layout>
+      </widget>
      </widget>
     </item>
    </layout>
@@ -2947,6 +2980,7 @@
    <addaction name="prefsActionInputButton"/>
    <addaction name="prefsActionMouse"/>
    <addaction name="prefsActionDialogs"/>
+   <addaction name="prefsActionAI"/>
   </widget>
   <action name="prefsAction3DView">
    <property name="checkable">
@@ -3120,6 +3154,14 @@
    </property>
    <property name="text">
     <string>Full path to the output file</string>
+   </property>
+  </action>
+  <action name="prefsActionAI">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>AI</string>
    </property>
   </action>
  </widget>

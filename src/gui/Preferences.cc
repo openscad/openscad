@@ -69,6 +69,7 @@
 #include "gui/QSettingsCached.h"
 #include "gui/SettingsWriter.h"
 #include "gui/OctoPrint.h"
+#include "gui/OpenAiApi.h"
 #include "gui/IgnoreWheelWhenNotFocused.h"
 #include "gui/PrintService.h"
 
@@ -182,6 +183,7 @@ void Preferences::init()
   this->defaultmap["view/hideCustomizer"] = true;
   this->defaultmap["view/hideFontList"] = true;
   this->defaultmap["view/hideViewportControl"] = true;
+  this->defaultmap["view/hideChat"] = true;
   this->defaultmap["editor/enableAutocomplete"] = true;
   this->defaultmap["editor/characterThreshold"] = 1;
   this->defaultmap["editor/stepSize"] = 1;
@@ -206,6 +208,7 @@ void Preferences::init()
   addPrefPage(group, prefsActionMouse, pageMouse);
   addPrefPage(group, prefsActionAdvanced, pageAdvanced);
   addPrefPage(group, prefsActionDialogs, pageDialogs);
+  addPrefPage(group, prefsActionAI, pageAI);
 
   connect(group, &QActionGroup::triggered, this, &Preferences::actionTriggered);
 
@@ -291,6 +294,11 @@ void Preferences::init()
   this->comboBoxOctoPrintSlicingProfile->addItem(_("<Default>"), QVariant{""});
   if (!profile.isEmpty()) {
     this->comboBoxOctoPrintSlicingProfile->addItem(profileDesc, QVariant{profile});
+  }
+
+  const auto aiModel = QString::fromStdString(Settings::Settings::aiModel.value());
+  if (!aiModel.isEmpty()) {
+    this->comboBoxAIModel->addItem(aiModel, QVariant{aiModel});
   }
 
   emit editorConfigChanged();
@@ -924,9 +932,15 @@ void Preferences::on_lineEditOctoPrintApiKey_editingFinished()
   writeSettings();
 }
 
-void Preferences::on_openaiApiKeyEdit_editingFinished()
+void Preferences::on_lineEditAIApiUrl_editingFinished()
 {
-  Settings::Settings::openaiApiKey.setValue(this->openaiApiKeyEdit->text().toStdString());
+  Settings::Settings::aiApiUrl.setValue(this->lineEditAIApiUrl->text().toStdString());
+  writeSettings();
+}
+
+void Preferences::on_lineEditAIApiKey_editingFinished()
+{
+  Settings::Settings::aiApiKey.setValue(this->lineEditAIApiKey->text().toStdString());
   writeSettings();
 }
 
@@ -1141,6 +1155,35 @@ void Preferences::on_pushButtonOctoPrintCheckConnection_clicked()
     QMessageBox::critical(this, _("Error"), QString::fromStdString(e.getErrorMessage()),
                           QMessageBox::Ok);
     this->labelOctoPrintCheckConnection->setText("");
+  }
+}
+
+void Preferences::on_comboBoxAIModel_activated(int val)
+{
+  const QString model = this->comboBoxAIModel->itemData(val).toString();
+  Settings::Settings::aiModel.setValue(model.toStdString());
+  writeSettings();
+}
+
+void Preferences::on_pushButtonAIModelLoad_clicked()
+{
+  OpenAiApi api;
+
+  const QString selection = this->comboBoxAIModel->currentText();
+
+  try {
+    const auto models = api.getModels();
+    this->comboBoxAIModel->clear();
+    for (const auto& model : models) {
+      this->comboBoxAIModel->addItem(model.second, QVariant{model.first});
+    }
+    const int idx = this->comboBoxAIModel->findText(selection);
+    if (idx >= 0) {
+      this->comboBoxAIModel->setCurrentIndex(idx);
+    }
+  } catch (const NetworkException& e) {
+    QMessageBox::critical(this, _("Error"), QString::fromStdString(e.getErrorMessage()),
+                          QMessageBox::Ok);
   }
 }
 
@@ -1427,13 +1470,17 @@ void Preferences::updateGUI()
     ->setText(QString::fromStdString(Settings::Settings::octoPrintUrl.value()));
   BlockSignals<QLineEdit *>(this->lineEditOctoPrintApiKey)
     ->setText(QString::fromStdString(Settings::Settings::octoPrintApiKey.value()));
-  BlockSignals<QLineEdit *>(this->openaiApiKeyEdit)
-    ->setText(QString::fromStdString(Settings::Settings::openaiApiKey.value()));
   updateComboBox(this->comboBoxOctoPrintAction, Settings::Settings::octoPrintAction);
   updateComboBox(this->comboBoxOctoPrintSlicingEngine,
                  Settings::Settings::octoPrintSlicerEngine.value());
   updateComboBox(this->comboBoxOctoPrintSlicingProfile,
                  Settings::Settings::octoPrintSlicerProfile.value());
+
+  BlockSignals<QLineEdit *>(this->lineEditAIApiUrl)
+    ->setText(QString::fromStdString(Settings::Settings::aiApiUrl.value()));
+  BlockSignals<QLineEdit *>(this->lineEditAIApiKey)
+    ->setText(QString::fromStdString(Settings::Settings::aiApiKey.value()));
+  updateComboBox(this->comboBoxAIModel, Settings::Settings::aiModel.value());
 }
 
 void Preferences::applyComboBox(QComboBox * /*comboBox*/, int val,

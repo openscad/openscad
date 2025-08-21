@@ -133,7 +133,6 @@ public slots:
   void on_comboBoxOctoPrintFileFormat_activated(int);
   void on_lineEditOctoPrintURL_editingFinished();
   void on_lineEditOctoPrintApiKey_editingFinished();
-  void on_openaiApiKeyEdit_editingFinished();
   void on_pushButtonOctoPrintApiKey_clicked();
   void on_pushButtonOctoPrintRequestApiKey_clicked();
   void on_lineEditLocalAppExecutable_editingFinished();
@@ -159,6 +158,12 @@ public slots:
   void on_checkBoxAlwaysShowExportPdfDialog_toggled(bool);
   void on_checkBoxAlwaysShowExport3mfDialog_toggled(bool);
   void on_checkBoxAlwaysShowPrintServiceDialog_toggled(bool);
+
+  // AI
+  void on_lineEditAIApiUrl_editingFinished();
+  void on_lineEditAIApiKey_editingFinished();
+  void on_pushButtonAIModelLoad_clicked();
+  void on_comboBoxAIModel_activated(int);
 
 signals:
   void requestRedraw() const;

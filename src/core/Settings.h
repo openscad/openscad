@@ -410,7 +410,6 @@ public:
 
   static SettingsEntryString octoPrintUrl;
   static SettingsEntryString octoPrintApiKey;
-  static SettingsEntryString openaiApiKey;
   static SettingsEntryEnum<std::string> octoPrintFileFormat;
   static SettingsEntryEnum<std::string> octoPrintAction;
   static SettingsEntryString octoPrintSlicerEngine;
@@ -514,6 +513,10 @@ public:
   static SettingsEntryDouble axisDeadzone7;
   static SettingsEntryDouble axisDeadzone8;
   static SettingsEntryInt joystickNr;
+
+  static SettingsEntryString aiApiUrl;
+  static SettingsEntryString aiApiKey;
+  static SettingsEntryString aiModel;
 
   static void visit(const SettingsVisitor& visitor);
 };
