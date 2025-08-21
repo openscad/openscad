@@ -37,17 +37,13 @@ void Assignment::addAnnotations(AnnotationList *annotations)
   }
 }
 
-bool Assignment::hasAnnotations() const
-{
-  return !annotations.empty();
-}
+bool Assignment::hasAnnotations() const { return !annotations.empty(); }
 
 const Annotation *Assignment::annotation(const std::string& name) const
 {
   auto found = annotations.find(name);
   return found == annotations.end() ? nullptr : found->second;
 }
-
 
 void Assignment::print(std::ostream& stream, const std::string& indent) const
 {

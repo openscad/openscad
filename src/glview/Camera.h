@@ -52,7 +52,7 @@ public:
   Eigen::Vector3d object_rot;
 
   // Perspective settings
-  double fov; // Field of view
+  double fov;  // Field of view
 
   // true if camera should try to view everything in a given
   // bounding box.

@@ -49,40 +49,46 @@
 class NetworkException : public std::exception
 {
 public:
-  NetworkException(const QNetworkReply::NetworkError& error, const QString& errorMessage) : error(error), errorMessage(errorMessage.toStdString()) { }
+  NetworkException(const QNetworkReply::NetworkError& error, const QString& errorMessage)
+    : error(error), errorMessage(errorMessage.toStdString())
+  {
+  }
 
   const QNetworkReply::NetworkError& getError() const { return error; }
   const std::string& getErrorMessage() const { return errorMessage; }
 
-  const char *what() const noexcept override
-  {
-    return errorMessage.c_str();
-  }
+  const char *what() const noexcept override { return errorMessage.c_str(); }
 
 private:
   QNetworkReply::NetworkError error;
   std::string errorMessage;
 };
 
-using network_progress_func_t = std::function<bool (double)>;
+using network_progress_func_t = std::function<bool(double)>;
 
 template <typename ResultType>
 class NetworkRequest
 {
 public:
-  using setup_func_t = std::function<void (QNetworkRequest&)>;
+  using setup_func_t = std::function<void(QNetworkRequest&)>;
   using reply_func_t = std::function<QNetworkReply *(QNetworkAccessManager&, QNetworkRequest&)>;
-  using transform_func_t = std::function<ResultType (QNetworkReply *)>;
-  using error_func_t = std::function<ResultType (QNetworkReply *)>;
+  using transform_func_t = std::function<ResultType(QNetworkReply *)>;
+  using error_func_t = std::function<ResultType(QNetworkReply *)>;
 
   NetworkRequest(QUrl url, std::vector<int> accepted_codes, const int timeout_seconds)
     : url(std::move(url)), accepted_codes(std::move(accepted_codes)), timeout_seconds(timeout_seconds)
-  { }
+  {
+  }
   virtual ~NetworkRequest() = default;
 
-  void set_progress_func(const network_progress_func_t& progress_func) { this->progress_func = progress_func; }
-  ResultType execute(const setup_func_t& setup_func, const reply_func_t& reply_func, const transform_func_t& transform_func);
-  ResultType execute(const setup_func_t& setup_func, const reply_func_t& reply_func, const transform_func_t& transform_func, const error_func_t& error_func);
+  void set_progress_func(const network_progress_func_t& progress_func)
+  {
+    this->progress_func = progress_func;
+  }
+  ResultType execute(const setup_func_t& setup_func, const reply_func_t& reply_func,
+                     const transform_func_t& transform_func);
+  ResultType execute(const setup_func_t& setup_func, const reply_func_t& reply_func,
+                     const transform_func_t& transform_func, const error_func_t& error_func);
 
 private:
   QUrl url;
@@ -92,10 +98,9 @@ private:
 };
 
 template <typename ResultType>
-ResultType NetworkRequest<ResultType>::execute(
-    const NetworkRequest::setup_func_t& setup_func,
-    const NetworkRequest::reply_func_t& reply_func,
-    const NetworkRequest::transform_func_t& transform_func)
+ResultType NetworkRequest<ResultType>::execute(const NetworkRequest::setup_func_t& setup_func,
+                                               const NetworkRequest::reply_func_t& reply_func,
+                                               const NetworkRequest::transform_func_t& transform_func)
 {
   return execute(setup_func, reply_func, transform_func, [](QNetworkReply *reply) -> ResultType {
     throw NetworkException{reply->error(), reply->errorString()};
@@ -103,14 +108,14 @@ ResultType NetworkRequest<ResultType>::execute(
 }
 
 template <typename ResultType>
-ResultType NetworkRequest<ResultType>::execute(
-    const NetworkRequest::setup_func_t& setup_func,
-    const NetworkRequest::reply_func_t& reply_func,
-    const NetworkRequest::transform_func_t& transform_func,
-    const NetworkRequest::error_func_t& error_func)
+ResultType NetworkRequest<ResultType>::execute(const NetworkRequest::setup_func_t& setup_func,
+                                               const NetworkRequest::reply_func_t& reply_func,
+                                               const NetworkRequest::transform_func_t& transform_func,
+                                               const NetworkRequest::error_func_t& error_func)
 {
   QNetworkRequest request(url);
-  request.setHeader(QNetworkRequest::UserAgentHeader, QString::fromStdString(PlatformUtils::user_agent()));
+  request.setHeader(QNetworkRequest::UserAgentHeader,
+                    QString::fromStdString(PlatformUtils::user_agent()));
   setup_func(request);
 
   QNetworkAccessManager nam;

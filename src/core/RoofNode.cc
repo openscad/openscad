@@ -14,14 +14,13 @@
 #include "core/Parameters.h"
 #include "core/Children.h"
 
-static std::shared_ptr<AbstractNode> builtin_roof(const ModuleInstantiation *inst, Arguments arguments, const Children& children)
+static std::shared_ptr<AbstractNode> builtin_roof(const ModuleInstantiation *inst, Arguments arguments,
+                                                  const Children& children)
 {
   auto node = std::make_shared<RoofNode>(inst);
 
-  Parameters parameters = Parameters::parse(std::move(arguments), inst->location(),
-                                            {"method"},
-                                            {"convexity"}
-                                            );
+  Parameters parameters =
+    Parameters::parse(std::move(arguments), inst->location(), {"method"}, {"convexity"});
 
   node->fn = parameters["$fn"].toDouble();
   node->fs = parameters["$fs"].toDouble();
@@ -60,11 +59,8 @@ std::string RoofNode::toString() const
 {
   std::stringstream stream;
 
-  stream << "roof(method = \"" << this->method << "\""
-         << ", $fa = " << this->fa
-         << ", $fs = " << this->fs
-         << ", $fn = " << this->fn
-         << ", convexity = " << this->convexity
+  stream << "roof(method = \"" << this->method << "\"" << ", $fa = " << this->fa
+         << ", $fs = " << this->fs << ", $fn = " << this->fn << ", convexity = " << this->convexity
          << ")";
 
   return stream.str();
@@ -72,7 +68,6 @@ std::string RoofNode::toString() const
 
 void register_builtin_roof()
 {
-  Builtins::init("roof", new BuiltinModule(builtin_roof, &Feature::ExperimentalRoof), {
-    "roof(method = \"voronoi\")"
-  });
+  Builtins::init("roof", new BuiltinModule(builtin_roof, &Feature::ExperimentalRoof),
+                 {"roof(method = \"voronoi\")"});
 }

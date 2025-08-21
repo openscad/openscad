@@ -9,18 +9,34 @@ Coding style highlights:
 
 ## Beautifying code
 
-Code to be committed can be beautified by installing `uncrustify`
-(https://github.com/uncrustify/uncrustify) and running
-`scripts/beautify.sh`. This will, by default, beautify all files that
+Code to be committed can be beautified by installing `clang-format` and running
+`./scripts/beautify.sh`. This will, by default, beautify all files that
 are currently changed.
 
-Alternatively, it's possible to beautify the entire codebase by running `scripts/beautify.sh --all`.
-This is not recommended except in special cases like:
-* We're upgrading uncrustify to fix rules globally
-* You're bringing an old branch to life and want to minimize conflict cause by the large coding style update
+Alternatively, it's possible to beautify the entire codebase by running `./scripts/beautify.sh --all`.
 
-Note: Uncrustify is in heavy development and tends to introduce breaking changes from time to time.
-OpenSCAD has been tested against uncrustify commit a05edf605a5b1ea69ac36918de563d4acf7f31fb (Dec 24 2017).
+All pull requests must pass `./scripts/beautify.sh --check` . In rare cases beautify may need to be run multiple times before all issues are resolved. Different clang versions between local development environment and the workflow can cause issues.
+
+Clang-format versions:
+
+* 18: current standard used in workflow under Ubuntu 24.04
+* 19: known conflicts with version 18
+* 20: compatible with 18 so far
+
+To deal with version conflicts the workflow generates a patch that can be used to format the code. This can be pulled from GitHub after a job fails, or generated locally using `act` and `docker`:
+
+    act -j Beautify -P ubuntu-latest=ghcr.io/catthehacker/ubuntu:act-24.04 --artifact-server-path build/artifacts/
+    unzip build/artifacts/1/beautify-patch/beautify-patch.zip
+    git apply beautify.patch
+
+This can be done automatically using `./scripts/hard_beautify.sh`, which also functions as a git hook. 
+
+To set up a git hook create a symlink for `beautify.sh` or `hard_beautify.sh`:
+
+    cd .git/hooks
+    ln -s ../../scripts/beautify.sh pre-commit
+
+After making a commit beautify will automatically run. You can then check the changes, and add them to their own commit, or amend them to the previous commit.
 
 # Regression Tests
 

@@ -88,10 +88,9 @@ const std::string rect::name("rect");
  *
  * 9) perform an absolute elliptical arc operation to coordinate (x+rx,y)
  */
-void
-rect::set_attrs(attr_map_t& attrs, void *context)
+void rect::set_attrs(attr_map_t& attrs, void *context)
 {
-  shape::set_attrs(attrs, context); // NOLINT(bugprone-parent-virtual-call)
+  shape::set_attrs(attrs, context);  // NOLINT(bugprone-parent-virtual-call)
   this->x = parse_double(attrs["x"]);
   this->y = parse_double(attrs["y"]);
   this->width = parse_double(attrs["width"]);
@@ -115,27 +114,21 @@ rect::set_attrs(attr_map_t& attrs, void *context)
       this->ry = this->height / 2;
     }
 
-    std::string path = boost::str(boost::format(""
-                                                "M %1%,%2% "
-                                                "H %3% "
-                                                "A %4%,%5% 0 0,1 %6%,%7% "
-                                                "V %8% "
-                                                "A %9%,%10% 0 0,1 %11%,%12% "
-                                                "H %13% "
-                                                "A %14%,%15% 0 0,1 %16%,%17% "
-                                                "V %18% "
-                                                "A %19%,%20% 0 0,1 %21%,%22% "
-                                                "z")
-                                  % (x + rx) % y
-                                  % (x + width - rx)
-                                  % rx % ry % (x + width) % (y + ry)
-                                  % (y + height - ry)
-                                  % rx % ry % (x + width - rx) % (y + height)
-                                  % (x + rx)
-                                  % rx % ry % x % (y + height - ry)
-                                  % (y + ry)
-                                  % rx % ry % (x + rx) % y
-                                  );
+    std::string path =
+      boost::str(boost::format(""
+                               "M %1%,%2% "
+                               "H %3% "
+                               "A %4%,%5% 0 0,1 %6%,%7% "
+                               "V %8% "
+                               "A %9%,%10% 0 0,1 %11%,%12% "
+                               "H %13% "
+                               "A %14%,%15% 0 0,1 %16%,%17% "
+                               "V %18% "
+                               "A %19%,%20% 0 0,1 %21%,%22% "
+                               "z") %
+                 (x + rx) % y % (x + width - rx) % rx % ry % (x + width) % (y + ry) % (y + height - ry) %
+                 rx % ry % (x + width - rx) % (y + height) % (x + rx) % rx % ry % x % (y + height - ry) %
+                 (y + ry) % rx % ry % (x + rx) % y);
     attrs["d"] = path;
     path::set_attrs(attrs, context);
   } else {
@@ -149,16 +142,12 @@ rect::set_attrs(attr_map_t& attrs, void *context)
   }
 }
 
-const std::string
-rect::dump() const
+const std::string rect::dump() const
 {
   std::stringstream s;
-  s << get_name()
-    << ": x = " << this->x
-    << ": y = " << this->y
-    << ": width = " << this->width
+  s << get_name() << ": x = " << this->x << ": y = " << this->y << ": width = " << this->width
     << ": height = " << this->height;
   return s.str();
 }
 
-} // namespace libsvg
+}  // namespace libsvg

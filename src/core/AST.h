@@ -11,12 +11,14 @@ namespace fs = std::filesystem;
 
 class Location
 {
-
 public:
-  Location(int firstLine, int firstCol, int lastLine, int lastCol,
-           std::shared_ptr<fs::path> path)
-    : first_line(firstLine), first_col(firstCol), last_line(lastLine),
-    last_col(lastCol), path(std::move(path)) {
+  Location(int firstLine, int firstCol, int lastLine, int lastCol, std::shared_ptr<fs::path> path)
+    : first_line(firstLine),
+      first_col(firstCol),
+      last_line(lastLine),
+      last_col(lastCol),
+      path(std::move(path))
+  {
   }
 
   [[nodiscard]] std::string fileName() const { return path ? path->generic_string() : ""; }
@@ -33,6 +35,7 @@ public:
   bool operator!=(Location const& rhs);
 
   static const Location NONE;
+
 private:
   int first_line;
   int first_col;

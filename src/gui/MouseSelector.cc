@@ -19,7 +19,8 @@
  * might do "fancy" optimization.
  */
 
-MouseSelector::MouseSelector(GLView *view) {
+MouseSelector::MouseSelector(GLView *view)
+{
   this->view = view;
   if (view) this->reset(view);
 }
@@ -27,7 +28,8 @@ MouseSelector::MouseSelector(GLView *view) {
 /**
  * Resize the framebuffer whenever it changed
  */
-void MouseSelector::reset(GLView *view) {
+void MouseSelector::reset(GLView *view)
+{
   this->view = view;
   this->setupFramebuffer(view->cam.pixel_width, view->cam.pixel_height);
 }
@@ -35,12 +37,14 @@ void MouseSelector::reset(GLView *view) {
 /**
  * Initialize the used shaders and setup the ShaderInfo struct
  */
-void MouseSelector::initShader() {
+void MouseSelector::initShader()
+{
   // Attributes:
-  // frag_idcolor - (uniform) 24 bit of the selected object's id encoded into R/G/B components as float values 
-  const auto selectshader = ShaderUtils::compileShaderProgram(
-    ShaderUtils::loadShaderSource("MouseSelector.vert"),
-    ShaderUtils::loadShaderSource("MouseSelector.frag"));
+  // frag_idcolor - (uniform) 24 bit of the selected object's id encoded into R/G/B components as float
+  // values
+  const auto selectshader =
+    ShaderUtils::compileShaderProgram(ShaderUtils::loadShaderSource("MouseSelector.vert"),
+                                      ShaderUtils::loadShaderSource("MouseSelector.frag"));
 
   const GLint frag_idcolor = glGetUniformLocation(selectshader.shader_program, "frag_idcolor");
   if (frag_idcolor < 0) {
@@ -50,18 +54,19 @@ void MouseSelector::initShader() {
   this->shaderinfo = {
     .resource = selectshader,
     .type = ShaderUtils::ShaderType::SELECT_RENDERING,
-    .uniforms = {
-      {"frag_idcolor", glGetUniformLocation(selectshader.shader_program, "frag_idcolor")},
-    },
+    .uniforms =
+      {
+        {"frag_idcolor", glGetUniformLocation(selectshader.shader_program, "frag_idcolor")},
+      },
   };
 }
 
 /**
  * Resize or create the framebuffer
  */
-void MouseSelector::setupFramebuffer(int width, int height) {
-  if (!this->framebuffer ||
-      this->framebuffer->width() != width ||
+void MouseSelector::setupFramebuffer(int width, int height)
+{
+  if (!this->framebuffer || this->framebuffer->width() != width ||
       this->framebuffer->height() != height) {
     this->framebuffer = createFBO(width, height);
     // We bind the framebuffer before initializing shaders since
@@ -79,7 +84,8 @@ void MouseSelector::setupFramebuffer(int width, int height) {
  *
  * returns index of picked node (AbstractNode::idx) or -1 if no object was found.
  */
-int MouseSelector::select(const Renderer *renderer, int x, int y) {
+int MouseSelector::select(const Renderer *renderer, int x, int y)
+{
   // This function should render a frame, as usual, with the following changes:
   // * Render to as custom framebuffer
   // * The shader should be the selector shader
@@ -87,7 +93,8 @@ int MouseSelector::select(const Renderer *renderer, int x, int y) {
   // * No lighting
   // * No decorations, like axes
 
-  // TODO: Ideally, we should make the above configurable and reduce duplicate render code in this function.
+  // TODO: Ideally, we should make the above configurable and reduce duplicate render code in this
+  // function.
 
   const int width = this->view->cam.pixel_width;
   const int height = this->view->cam.pixel_height;
@@ -107,8 +114,7 @@ int MouseSelector::select(const Renderer *renderer, int x, int y) {
 
   glViewport(0, 0, width, height);
   this->view->setupCamera();
-  glTranslated(this->view->cam.object_trans.x(),
-               this->view->cam.object_trans.y(),
+  glTranslated(this->view->cam.object_trans.x(), this->view->cam.object_trans.y(),
                this->view->cam.object_trans.z());
 
   glDisable(GL_LIGHTING);
@@ -125,7 +131,7 @@ int MouseSelector::select(const Renderer *renderer, int x, int y) {
   glFinish();
 
   // Grab the color from the framebuffer and convert it back to an identifier
-  GLubyte color[3] = { 0 };
+  GLubyte color[3] = {0};
   // Qt position is originated top-left, so flip y to get GL coordinates.
   GL_CHECKD(glReadPixels(x, height - y, 1, 1, GL_RGB, GL_UNSIGNED_BYTE, color));
 

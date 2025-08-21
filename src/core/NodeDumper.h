@@ -33,8 +33,10 @@ private:
 class NodeDumper : public NodeVisitor
 {
 public:
-  NodeDumper(NodeCache& cache, std::shared_ptr<const AbstractNode> root_node, std::string indent, bool idString) :
-    cache(cache), indent(std::move(indent)), idString(idString), root(std::move(root_node)) {
+  NodeDumper(NodeCache& cache, std::shared_ptr<const AbstractNode> root_node, std::string indent,
+             bool idString)
+    : cache(cache), indent(std::move(indent)), idString(idString), root(std::move(root_node))
+  {
     if (idString) {
       groupChecker.traverse(*root);
     }
@@ -59,7 +61,4 @@ private:
   std::shared_ptr<const AbstractNode> root;
   GroupNodeChecker groupChecker;
   std::ostringstream dumpstream;
-
 };
-
-

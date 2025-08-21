@@ -11,7 +11,6 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/split.hpp>
 
-
 #if !ENABLE_LEXERTL
 
 ScadLexer::ScadLexer(QObject *parent) : QsciLexerCPP(parent)
@@ -46,10 +45,7 @@ ScadLexer::ScadLexer(QObject *parent) : QsciLexerCPP(parent)
   setFoldAtElse(true);
 }
 
-const char *ScadLexer::language() const
-{
-  return "SCAD";
-}
+const char *ScadLexer::language() const { return "SCAD"; }
 
 void ScadLexer::setKeywords(int set, const std::string& keywords)
 {
@@ -77,13 +73,13 @@ const char *ScadLexer::keywords(int set) const
 QStringList ScadLexer::autoCompletionWordSeparators() const
 {
   QStringList wl;
-  wl << "."; // dot notation, not used yet, but preparation for object support
-  wl << "<"; // for include/use auto complete
-  wl << "/"; // for include/use directory auto complete
+  wl << ".";  // dot notation, not used yet, but preparation for object support
+  wl << "<";  // for include/use auto complete
+  wl << "/";  // for include/use directory auto complete
   return wl;
 }
 
-#endif // if !ENABLE_LEXERTL
+#endif  // if !ENABLE_LEXERTL
 
 /***************************************************************/
 /***************************************************************/
@@ -97,7 +93,7 @@ QStringList ScadLexer::autoCompletionWordSeparators() const
 #include "lexertl/generator.hpp"
 #include "lexertl/lookup.hpp"
 
-//#define DEBUG_LEXERTL   1
+// #define DEBUG_LEXERTL   1
 
 #if DEBUG_LEXERTL
 #include "lexertl/debug.hpp"
@@ -112,29 +108,33 @@ void Lex::default_rules()
   rules_.push_state("PATH");
   rules_.push_state("COMMENT");
 
-  std::string keywords("module function echo import projection render "
-                       "return if else let for each assert");
+  std::string keywords(
+    "module function echo import projection render "
+    "return if else let for each assert");
   defineRules(keywords, ekeyword);
 
-  //include and use have a unique syntax
+  // include and use have a unique syntax
   rules_.push("INITIAL", "use", ekeyword, "PATH");
   rules_.push("INITIAL", "include", ekeyword, "PATH");
-  rules_.push("PATH", ".|\n", etext, "INITIAL"); //leave this state; "use" and "include" can also be used as variable names
+  rules_.push("PATH", ".|\n", etext,
+              "INITIAL");  // leave this state; "use" and "include" can also be used as variable names
   rules_.push("PATH", "[ \t\r\n]*<[^>]*>", eQuotedString, "INITIAL");
 
-  std::string transformations("translate rotate scale linear_extrude "
-                              "rotate_extrude resize mirror multmatrix color "
-                              "offset hull minkowski children");
+  std::string transformations(
+    "translate rotate scale linear_extrude "
+    "rotate_extrude resize mirror multmatrix color "
+    "offset hull minkowski children");
   defineRules(transformations, etransformation);
 
   std::string booleans("union difference intersection intersection_for");
   defineRules(booleans, eboolean);
 
-  std::string functions("abs sign rands min max sin cos asin acos tan atan atan2 round "
-                        "ceil floor pow sqrt exp len log ln str chr ord concat lookup "
-                        "search version version_num norm cross parent_module dxf_dim "
-                        "dxf_cross is_undef is_list is_num is_bool is_string "
-                        "is_function is_object");
+  std::string functions(
+    "abs sign rands min max sin cos asin acos tan atan atan2 round "
+    "ceil floor pow sqrt exp len log ln str chr ord concat lookup "
+    "search version version_num norm cross parent_module dxf_dim "
+    "dxf_cross is_undef is_list is_num is_bool is_string "
+    "is_function is_object");
   defineRules(functions, efunction);
 
   std::string models("sphere cube cylinder polyhedron square polygon text circle surface roof");
@@ -174,8 +174,8 @@ void Lex::finalize_rules()
   rules_.push("[a-zA-Z0-9_]+", evariable);
   rules_.push("[$][a-zA-Z0-9_]+", especialVariable);
 
-  rules_.push("INITIAL", "\"/*\"",  ecomment, "COMMENT");
-  rules_.push("COMMENT", "[^*]+|.", ecomment,  "COMMENT");
+  rules_.push("INITIAL", "\"/*\"", ecomment, "COMMENT");
+  rules_.push("COMMENT", "[^*]+|.", ecomment, "COMMENT");
   rules_.push("COMMENT", "\"*/\"", ecomment, "INITIAL");
   rules_.push("[/][/].*$", ecomment);
 
@@ -197,19 +197,24 @@ void Lex::lex_results(const std::string& input, int start, LexInterface *const o
 #endif
   lexertl::smatch results(input.begin(), input.end());
 
-  //The editor can ask to only lex from a starting point.
-  //This can be faster the lexing the whole text,
-  //but requires the lexer to try to restore the lexer state.
-  //We currently handle comments (COMMENT State) pretty well.
-  //We currently do not handle include/use (PATH State).
+  // The editor can ask to only lex from a starting point.
+  // This can be faster the lexing the whole text,
+  // but requires the lexer to try to restore the lexer state.
+  // We currently handle comments (COMMENT State) pretty well.
+  // We currently do not handle include/use (PATH State).
   int isstyle = obj->getStyleAt(start - 1);
   if (isstyle == ecomment) results.state = rules_.state("COMMENT");
 
+  char *styles = new char[input.size()];
   lexertl::lookup(sm, results);
   while (results.id != eEOF) {
-    obj->highlighting(start, input, results);
+    size_t s = std::distance(input.begin(), results.first);
+    size_t len = std::distance(results.first, results.second);
+    memset(styles + s, results.id, len);
     lexertl::lookup(sm, results);
   }
+  obj->highlightingMultiple(start, input.size(), styles);
+  delete[] styles;
 }
 
 /***************************************************************/
@@ -220,10 +225,7 @@ ScadLexer2::ScadLexer2(QObject *parent) : QsciLexerCustom(parent), LexInterface(
   my_lexer->default_rules();
 }
 
-ScadLexer2::~ScadLexer2()
-{
-  delete my_lexer;
-}
+ScadLexer2::~ScadLexer2() { delete my_lexer; }
 
 void ScadLexer2::styleText(int start, int end)
 {
@@ -245,7 +247,7 @@ void ScadLexer2::styleText(int start, int end)
   my_lexer->lex_results(input, start, this);
   this->fold(start, end);
 
-  delete [] data;
+  delete[] data;
   if (source.isEmpty()) return;
 }
 
@@ -259,7 +261,8 @@ void ScadLexer2::fold(int start, int end)
 {
   char chNext = editor()->SendScintilla(QsciScintilla::SCI_GETCHARAT, start);
   int lineCurrent = editor()->SendScintilla(QsciScintilla::SCI_LINEFROMPOSITION, start);
-  int levelPrev = editor()->SendScintilla(QsciScintilla::SCI_GETFOLDLEVEL, lineCurrent) & QsciScintilla::SC_FOLDLEVELNUMBERMASK;
+  int levelPrev = editor()->SendScintilla(QsciScintilla::SCI_GETFOLDLEVEL, lineCurrent) &
+                  QsciScintilla::SC_FOLDLEVELNUMBERMASK;
   int levelCurrent = levelPrev;
   for (int i = start; i < end; i++) {
     char ch = chNext;
@@ -272,13 +275,12 @@ void ScadLexer2::fold(int start, int end)
 
     bool currStyleIsOtherText = (currStyle == OtherText);
     if (currStyleIsOtherText) {
-      if ((ch == '{') || (ch == '[') ) {
+      if ((ch == '{') || (ch == '[')) {
         levelCurrent++;
-      } else if ((ch == '}') || (ch == ']') ) {
+      } else if ((ch == '}') || (ch == ']')) {
         levelCurrent--;
       }
     }
-
 
     bool prevStyleIsComment = (prevStyle == Comment);
     bool currStyleIsComment = (currStyle == Comment);
@@ -308,10 +310,10 @@ void ScadLexer2::fold(int start, int end)
     }
   }
 
-  int flagsNext = editor()->SendScintilla(QsciScintilla::SCI_GETFOLDLEVEL, lineCurrent) & QsciScintilla::SC_FOLDLEVELNUMBERMASK;
+  int flagsNext = editor()->SendScintilla(QsciScintilla::SCI_GETFOLDLEVEL, lineCurrent) &
+                  QsciScintilla::SC_FOLDLEVELNUMBERMASK;
   editor()->SendScintilla(QsciScintilla::SCI_SETFOLDLEVEL, lineCurrent, levelPrev | flagsNext);
 }
-
 
 int ScadLexer2::getStyleAt(int pos)
 {
@@ -319,39 +321,23 @@ int ScadLexer2::getStyleAt(int pos)
   return sstyle;
 }
 
-void ScadLexer2::highlighting(int start, const std::string& input, lexertl::smatch results)
+void ScadLexer2::highlightingMultiple(int start, int length, char *styles)
 {
-  std::string token = results.str();
-  int style = results.id;
-
-#if DEBUG_LEXERTL
-  QString glyphs = QString::fromStdString(token);
-  std::cout << "highlighting ( " << style << " ):" << token << " [ " << token.length() << " bytes, " << glyphs.length() << " glyphs ]" << std::endl;
-#endif
-
-  startStyling(start + std::distance(input.begin(), results.first));
-  setStyling(token.length(), style);
+  editor()->SendScintilla(QsciScintilla::SCI_STARTSTYLING, start);
+  editor()->SendScintilla(QsciScintilla::SCI_SETSTYLINGEX, length, styles);
 }
 
 QColor ScadLexer2::defaultColor(int style) const
 {
   switch (style) {
-  case Keyword:
-    return Qt::blue;
-  case Comment:
-    return Qt::green;
-  case Number:
-    return Qt::red;
-  case Transformation:
-    return "#f32222";
-  case Boolean:
-    return "#22f322";
-  case Function:
-    return "#2222f3";
-  case Model:
-    return Qt::blue;
-  case Default:
-    return Qt::black;
+  case Keyword:        return Qt::blue;
+  case Comment:        return Qt::green;
+  case Number:         return Qt::red;
+  case Transformation: return "#f32222";
+  case Boolean:        return "#22f322";
+  case Function:       return "#2222f3";
+  case Model:          return Qt::blue;
+  case Default:        return Qt::black;
   }
   return Qt::black;
 }
@@ -359,66 +345,41 @@ QColor ScadLexer2::defaultColor(int style) const
 QString ScadLexer2::description(int style) const
 {
   switch (style) {
-  case Default:
-    return "Default";
-  case Keyword:
-    return "Keyword";
-  case Transformation:
-    return "Transformation";
-  case Boolean:
-    return "Boolean";
-  case Function:
-    return "Function";
-  case Model:
-    return "Model";
-  case Operator:
-    return "Operator";
-  case String:
-    return "String";
-  case Number:
-    return "Number";
-  case Custom1:
-    return "Custom1";
-  case Custom2:
-    return "Custom2";
-  case Custom3:
-    return "Custom3";
-  case Custom4:
-    return "Custom4";
-  case Custom5:
-    return "Custom5";
-  case Custom6:
-    return "Custom6";
-  case Custom7:
-    return "Custom7";
-  case Custom8:
-    return "Custom8";
-  case Custom9:
-    return "Custom9";
-  case Custom10:
-    return "Custom10";
-  case Variable:
-    return "Variable";
-  case SpecialVariable:
-    return "SpecialVariable";
-  case Comment:
-    return "Comment";
+  case Default:         return "Default";
+  case Keyword:         return "Keyword";
+  case Transformation:  return "Transformation";
+  case Boolean:         return "Boolean";
+  case Function:        return "Function";
+  case Model:           return "Model";
+  case Operator:        return "Operator";
+  case String:          return "String";
+  case Number:          return "Number";
+  case Custom1:         return "Custom1";
+  case Custom2:         return "Custom2";
+  case Custom3:         return "Custom3";
+  case Custom4:         return "Custom4";
+  case Custom5:         return "Custom5";
+  case Custom6:         return "Custom6";
+  case Custom7:         return "Custom7";
+  case Custom8:         return "Custom8";
+  case Custom9:         return "Custom9";
+  case Custom10:        return "Custom10";
+  case Variable:        return "Variable";
+  case SpecialVariable: return "SpecialVariable";
+  case Comment:         return "Comment";
   }
   return {QString::number(style)};
 }
 
-const char *ScadLexer2::language() const
-{
-  return "SCAD";
-}
+const char *ScadLexer2::language() const { return "SCAD"; }
 
 QStringList ScadLexer2::autoCompletionWordSeparators() const
 {
   QStringList wl;
-  wl << "."; // dot notation, not used yet, but preparation for object support
-  wl << "<"; // for include/use auto complete
-  wl << "/"; // for include/use directory auto complete
+  wl << ".";  // dot notation, not used yet, but preparation for object support
+  wl << "<";  // for include/use auto complete
+  wl << "/";  // for include/use directory auto complete
   return wl;
 }
 
-#endif // if ENABLE_LEXERTL
+#endif  // if ENABLE_LEXERTL

@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>Mouse</class>
+ <widget class="QWidget" name="Mouse">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>325</width>
+    <height>447</height>
+   </rect>
+  </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
+  </property>
+  <property name="windowTitle">
+   <string>Preferences</string>
+  </property>
+  <property name="unifiedTitleAndToolBarOnMac" stdset="0">
+   <bool>true</bool>
+  </property>
+  <layout class="QGridLayout" name="gridLayout">
+   <item row="11" column="0">
+    <widget class="QLabel" name="labelCtrlShiftMiddleClick">
+     <property name="text">
+      <string>Ctrl + Shift + Middle-click</string>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="0">
+    <widget class="QLabel" name="labelLeftClick">
+     <property name="text">
+      <string>Left-click</string>
+     </property>
+    </widget>
+   </item>
+   <item row="7" column="0">
+    <widget class="QLabel" name="labelCtrlLeftClick">
+     <property name="text">
+      <string>Ctrl + Left-click</string>
+     </property>
+    </widget>
+   </item>
+   <item row="4" column="0">
+    <widget class="QLabel" name="labelShiftLeftClick">
+     <property name="text">
+      <string>Shift + Left-click</string>
+     </property>
+    </widget>
+   </item>
+   <item row="10" column="1">
+    <widget class="QComboBox" name="comboBoxCtrlShiftLeftClick"/>
+   </item>
+   <item row="12" column="0">
+    <widget class="QLabel" name="labelCtrlShiftRightClick">
+     <property name="text">
+      <string>Ctrl + Shift + Right-click</string>
+     </property>
+    </widget>
+   </item>
+   <item row="9" column="1">
+    <widget class="QComboBox" name="comboBoxCtrlRightClick"/>
+   </item>
+   <item row="2" column="1">
+    <widget class="QComboBox" name="comboBoxMiddleClick"/>
+   </item>
+   <item row="3" column="1">
+    <widget class="QComboBox" name="comboBoxRightClick"/>
+   </item>
+   <item row="0" column="0">
+    <widget class="QLabel" name="labelInputPreset">
+     <property name="text">
+      <string>Preset</string>
+     </property>
+    </widget>
+   </item>
+   <item row="3" column="0">
+    <widget class="QLabel" name="labelRightClick">
+     <property name="text">
+      <string>Right-click</string>
+     </property>
+    </widget>
+   </item>
+   <item row="8" column="0">
+    <widget class="QLabel" name="labelCtrlMiddleClick">
+     <property name="text">
+      <string>Ctrl + Middle-click</string>
+     </property>
+    </widget>
+   </item>
+   <item row="11" column="1">
+    <widget class="QComboBox" name="comboBoxCtrlShiftMiddleClick"/>
+   </item>
+   <item row="8" column="1">
+    <widget class="QComboBox" name="comboBoxCtrlMiddleClick"/>
+   </item>
+   <item row="5" column="0">
+    <widget class="QLabel" name="labelShiftMiddleClick">
+     <property name="text">
+      <string>Shift + Middle-click</string>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="1">
+    <widget class="QComboBox" name="comboBoxPreset"/>
+   </item>
+   <item row="9" column="0">
+    <widget class="QLabel" name="labelCtrlRightClick">
+     <property name="text">
+      <string>Ctrl + Right-click</string>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="1">
+    <widget class="QComboBox" name="comboBoxLeftClick"/>
+   </item>
+   <item row="6" column="1">
+    <widget class="QComboBox" name="comboBoxShiftRightClick"/>
+   </item>
+   <item row="5" column="1">
+    <widget class="QComboBox" name="comboBoxShiftMiddleClick"/>
+   </item>
+   <item row="10" column="0">
+    <widget class="QLabel" name="labelCtrlShiftLeftClick">
+     <property name="text">
+      <string>Ctrl + Shift + Left-click</string>
+     </property>
+    </widget>
+   </item>
+   <item row="6" column="0">
+    <widget class="QLabel" name="labelShiftRightClick">
+     <property name="text">
+      <string>Shift + Right-click</string>
+     </property>
+    </widget>
+   </item>
+   <item row="7" column="1">
+    <widget class="QComboBox" name="comboBoxCtrlLeftClick"/>
+   </item>
+   <item row="2" column="0">
+    <widget class="QLabel" name="labelMiddleClick">
+     <property name="text">
+      <string>Middle-click</string>
+     </property>
+    </widget>
+   </item>
+   <item row="13" column="1">
+    <spacer name="horizontalSpacerButtonConfig">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>0</width>
+       <height>0</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+   <item row="4" column="1">
+    <widget class="QComboBox" name="comboBoxShiftLeftClick"/>
+   </item>
+   <item row="13" column="0">
+    <spacer name="verticalSpacerButtonConfig">
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>20</width>
+       <height>0</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+   <item row="12" column="1">
+    <widget class="QComboBox" name="comboBoxCtrlShiftRightClick"/>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

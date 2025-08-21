@@ -46,63 +46,75 @@ using SEString = Settings::SettingsEntryString;
 
 Export3mfDialog::Export3mfDialog()
 {
-	setupUi(this);
-	this->checkBoxAlwaysShowDialog->setChecked(S::export3mfAlwaysShowDialog.value());
-	initButtonGroup(this->buttonGroupColors, S::export3mfColorMode);
-	initButtonGroup(this->buttonGroupUnit, S::export3mfUnit);
-	this->color = QColor(QString::fromStdString(S::export3mfColor.value()));
-	this->labelColorsSelected->setStyleSheet(UIUtils::getBackgroundColorStyleSheet(this->color));
-	this->spinBoxDecimalPrecision->setValue(S::export3mfDecimalPrecision.value());
-	initComboBox(this->comboBoxMaterialType, S::export3mfMaterialType);
+  setupUi(this);
+  this->checkBoxAlwaysShowDialog->setChecked(S::export3mfAlwaysShowDialog.value());
+  initButtonGroup(this->buttonGroupColors, S::export3mfColorMode);
+  initButtonGroup(this->buttonGroupUnit, S::export3mfUnit);
+  this->color = QColor(QString::fromStdString(S::export3mfColor.value()));
+  this->labelColorsSelected->setStyleSheet(UIUtils::getBackgroundColorStyleSheet(this->color));
+  this->spinBoxDecimalPrecision->setValue(S::export3mfDecimalPrecision.value());
+  initComboBox(this->comboBoxMaterialType, S::export3mfMaterialType);
 
-	groupMetaData->setChecked(S::export3mfAddMetaData.value());
-	initMetaData(nullptr, this->lineEditMetaDataTitle, nullptr, S::export3mfMetaDataTitle);
-	initMetaData(this->checkBoxMetaDataDesigner, this->lineEditMetaDataDesigner, &S::export3mfAddMetaDataDesigner, S::export3mfMetaDataDesigner);
-	initMetaData(this->checkBoxMetaDataDescription, this->lineEditMetaDataDescription, &S::export3mfAddMetaDataDescription, S::export3mfMetaDataDescription);
-	initMetaData(this->checkBoxMetaDataCopyright, this->lineEditMetaDataCopyright, &S::export3mfAddMetaDataCopyright, S::export3mfMetaDataCopyright);
-	initMetaData(this->checkBoxMetaDataLicenseTerms, this->lineEditMetaDataLicenseTerms, &S::export3mfAddMetaDataLicenseTerms, S::export3mfMetaDataLicenseTerms);
-	initMetaData(this->checkBoxMetaDataRating, this->lineEditMetaDataRating, &S::export3mfAddMetaDataRating, S::export3mfMetaDataRating);
+  groupMetaData->setChecked(S::export3mfAddMetaData.value());
+  initMetaData(nullptr, this->lineEditMetaDataTitle, nullptr, S::export3mfMetaDataTitle);
+  initMetaData(this->checkBoxMetaDataDesigner, this->lineEditMetaDataDesigner,
+               &S::export3mfAddMetaDataDesigner, S::export3mfMetaDataDesigner);
+  initMetaData(this->checkBoxMetaDataDescription, this->lineEditMetaDataDescription,
+               &S::export3mfAddMetaDataDescription, S::export3mfMetaDataDescription);
+  initMetaData(this->checkBoxMetaDataCopyright, this->lineEditMetaDataCopyright,
+               &S::export3mfAddMetaDataCopyright, S::export3mfMetaDataCopyright);
+  initMetaData(this->checkBoxMetaDataLicenseTerms, this->lineEditMetaDataLicenseTerms,
+               &S::export3mfAddMetaDataLicenseTerms, S::export3mfMetaDataLicenseTerms);
+  initMetaData(this->checkBoxMetaDataRating, this->lineEditMetaDataRating,
+               &S::export3mfAddMetaDataRating, S::export3mfMetaDataRating);
 
-	const auto library_version = get_lib3mf_version();
-	if (library_version.compare(0, 2, "1.") == 0) {
-		this->spinBoxDecimalPrecision->setEnabled(false);
-		this->toolButtonDecimalPrecisionReset->setEnabled(false);
-		this->labelDecimalPrecision->setEnabled(false);
-		this->spinBoxDecimalPrecision->setToolTip(_("This OpenSCAD build uses lib3mf version 1. Setting the decimal precision for export needs version 2 or later."));
-		this->toolButtonDecimalPrecisionReset->setToolTip("");
-	}
+  const auto library_version = get_lib3mf_version();
+  if (library_version.compare(0, 2, "1.") == 0) {
+    this->spinBoxDecimalPrecision->setEnabled(false);
+    this->toolButtonDecimalPrecisionReset->setEnabled(false);
+    this->labelDecimalPrecision->setEnabled(false);
+    this->spinBoxDecimalPrecision->setToolTip(
+      _("This OpenSCAD build uses lib3mf version 1. Setting the decimal precision for export needs "
+        "version 2 or later."));
+    this->toolButtonDecimalPrecisionReset->setToolTip("");
+  }
 }
 
 void Export3mfDialog::updateColor(const QColor& color)
 {
-	this->color = color;
-	this->labelColorsSelected->setStyleSheet(UIUtils::getBackgroundColorStyleSheet(this->color));
+  this->color = color;
+  this->labelColorsSelected->setStyleSheet(UIUtils::getBackgroundColorStyleSheet(this->color));
 }
 
 int Export3mfDialog::exec()
 {
   bool showDialog = this->checkBoxAlwaysShowDialog->isChecked();
   if ((QApplication::keyboardModifiers() & Qt::ShiftModifier) != 0) {
-	showDialog = true;
+    showDialog = true;
   }
 
   const auto result = showDialog ? QDialog::exec() : QDialog::Accepted;
 
   if (result == QDialog::Accepted) {
-	S::export3mfAlwaysShowDialog.setValue(this->checkBoxAlwaysShowDialog->isChecked());
-	applyButtonGroup(this->buttonGroupColors, S::export3mfColorMode);
-	applyButtonGroup(this->buttonGroupUnit, S::export3mfUnit);
-	S::export3mfColor.setValue(this->color.toRgb().name().toStdString());
-	S::export3mfMaterialType.setIndex(this->comboBoxMaterialType->currentIndex());
-	S::export3mfDecimalPrecision.setValue(this->spinBoxDecimalPrecision->value());
-	S::export3mfAddMetaData.setValue(this->groupMetaData->isChecked());
-	applyMetaData(nullptr, this->lineEditMetaDataTitle, nullptr, S::export3mfMetaDataTitle);
-	applyMetaData(this->checkBoxMetaDataDesigner, this->lineEditMetaDataDesigner, &S::export3mfAddMetaDataDesigner, S::export3mfMetaDataDesigner);
-	applyMetaData(this->checkBoxMetaDataDescription, this->lineEditMetaDataDescription, &S::export3mfAddMetaDataDescription, S::export3mfMetaDataDescription);
-	applyMetaData(this->checkBoxMetaDataCopyright, this->lineEditMetaDataCopyright, &S::export3mfAddMetaDataCopyright, S::export3mfMetaDataCopyright);
-	applyMetaData(this->checkBoxMetaDataLicenseTerms, this->lineEditMetaDataLicenseTerms, &S::export3mfAddMetaDataLicenseTerms, S::export3mfMetaDataLicenseTerms);
-	applyMetaData(this->checkBoxMetaDataRating, this->lineEditMetaDataRating, &S::export3mfAddMetaDataRating, S::export3mfMetaDataRating);
-	Settings::Settings::visit(SettingsWriter());
+    S::export3mfAlwaysShowDialog.setValue(this->checkBoxAlwaysShowDialog->isChecked());
+    applyButtonGroup(this->buttonGroupColors, S::export3mfColorMode);
+    applyButtonGroup(this->buttonGroupUnit, S::export3mfUnit);
+    S::export3mfColor.setValue(this->color.toRgb().name().toStdString());
+    S::export3mfMaterialType.setIndex(this->comboBoxMaterialType->currentIndex());
+    S::export3mfDecimalPrecision.setValue(this->spinBoxDecimalPrecision->value());
+    S::export3mfAddMetaData.setValue(this->groupMetaData->isChecked());
+    applyMetaData(nullptr, this->lineEditMetaDataTitle, nullptr, S::export3mfMetaDataTitle);
+    applyMetaData(this->checkBoxMetaDataDesigner, this->lineEditMetaDataDesigner,
+                  &S::export3mfAddMetaDataDesigner, S::export3mfMetaDataDesigner);
+    applyMetaData(this->checkBoxMetaDataDescription, this->lineEditMetaDataDescription,
+                  &S::export3mfAddMetaDataDescription, S::export3mfMetaDataDescription);
+    applyMetaData(this->checkBoxMetaDataCopyright, this->lineEditMetaDataCopyright,
+                  &S::export3mfAddMetaDataCopyright, S::export3mfMetaDataCopyright);
+    applyMetaData(this->checkBoxMetaDataLicenseTerms, this->lineEditMetaDataLicenseTerms,
+                  &S::export3mfAddMetaDataLicenseTerms, S::export3mfMetaDataLicenseTerms);
+    applyMetaData(this->checkBoxMetaDataRating, this->lineEditMetaDataRating,
+                  &S::export3mfAddMetaDataRating, S::export3mfMetaDataRating);
+    Settings::Settings::visit(SettingsWriter());
   }
 
   return result;
@@ -110,15 +122,15 @@ int Export3mfDialog::exec()
 
 void Export3mfDialog::on_toolButtonColorsSelected_clicked()
 {
-	updateColor(QColorDialog::getColor(this->color));
+  updateColor(QColorDialog::getColor(this->color));
 }
 
 void Export3mfDialog::on_toolButtonColorsSelectedReset_clicked()
 {
-	updateColor(QColor(QString::fromStdString(S::export3mfColor.defaultValue())));
+  updateColor(QColor(QString::fromStdString(S::export3mfColor.defaultValue())));
 }
 
 void Export3mfDialog::on_toolButtonDecimalPrecisionReset_clicked()
 {
-	this->spinBoxDecimalPrecision->setValue(S::export3mfDecimalPrecision.defaultValue());
+  this->spinBoxDecimalPrecision->setValue(S::export3mfDecimalPrecision.defaultValue());
 }

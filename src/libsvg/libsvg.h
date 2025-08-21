@@ -37,12 +37,9 @@ namespace libsvg {
 class SvgException : public std::exception
 {
 public:
-  SvgException(std::string message) : message(std::move(message)) { }
+  SvgException(std::string message) : message(std::move(message)) {}
 
-  [[nodiscard]] const char *what() const noexcept override
-  {
-    return message.c_str();
-  }
+  [[nodiscard]] const char *what() const noexcept override { return message.c_str(); }
 
 private:
   std::string message;
@@ -50,10 +47,8 @@ private:
 
 using shapes_list_t = std::vector<std::shared_ptr<shape>>;
 
-shapes_list_t *
-libsvg_read_file(const char *filename, void *context);
+shapes_list_t *libsvg_read_file(const char *filename, void *context);
 
-void
-libsvg_free(shapes_list_t *shapes);
+void libsvg_free(shapes_list_t *shapes);
 
-}
+}  // namespace libsvg

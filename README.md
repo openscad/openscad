@@ -140,6 +140,16 @@ To pull the various submodules (incl. the [MCAD library](https://github.com/open
     cd openscad
     git submodule update --init --recursive
 
+### Contributing Changes
+
+You can create an issue to plan and discuss your change by visiting https://github.com/openscad/openscad/issues.
+
+If you want to work on an existing issue and plan to contribute changes via a PR later, you can assign the issue to yourself by commenting:
+
+`/assign-me`
+
+in a comment on the issue.
+
 ### Building for macOS
 
 Prerequisites:

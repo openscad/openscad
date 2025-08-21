@@ -13,9 +13,9 @@
 
 namespace Settings {
 
-  // Note that those 2 values also relate to the currently
-  // static list of fields in the preferences GUI, so updating
-  // here needs a change in the UI definition!
+// Note that those 2 values also relate to the currently
+// static list of fields in the preferences GUI, so updating
+// here needs a change in the UI definition!
 constexpr inline size_t max_axis = 9;
 constexpr inline size_t max_buttons = 24;
 
@@ -27,6 +27,7 @@ constexpr inline auto PROPERTY_SELECTED_VALUE = "_selected_value";
 constexpr inline auto SECTION_PYTHON = "python";
 constexpr inline auto SECTION_EXPORT_PDF = "export-pdf";
 constexpr inline auto SECTION_EXPORT_3MF = "export-3mf";
+constexpr inline auto SECTION_EXPORT_SVG = "export-svg";
 
 class SettingsEntryBase
 {
@@ -49,7 +50,7 @@ private:
   std::string _name;
 };
 
-template<typename entry_type>
+template <typename entry_type>
 class SettingsEntry : public SettingsEntryBase
 {
 public:
@@ -58,18 +59,19 @@ public:
   virtual const entry_type decode(const std::string& encoded) const = 0;
 
 protected:
-  SettingsEntry(const std::string& category, const std::string& name) : SettingsEntryBase(category, name) {}
+  SettingsEntry(const std::string& category, const std::string& name) : SettingsEntryBase(category, name)
+  {
+  }
   virtual ~SettingsEntry() = default;
 };
 
 class SettingsEntryBool : public SettingsEntry<bool>
 {
 public:
-  SettingsEntryBool(const std::string& category, const std::string& name, bool defaultValue) :
-    SettingsEntry(category, name),
-    _value(defaultValue),
-    _defaultValue(defaultValue)
-  {}
+  SettingsEntryBool(const std::string& category, const std::string& name, bool defaultValue)
+    : SettingsEntry(category, name), _value(defaultValue), _defaultValue(defaultValue)
+  {
+  }
 
   bool value() const { return _value; }
   void setValue(bool value) { _value = value; }
@@ -77,10 +79,11 @@ public:
   bool isDefault() const override { return _value == _defaultValue; }
   std::string encode() const override;
   const bool decode(const std::string& encoded) const override;
-  void set(const std::string& encoded) override { setValue(decode(encoded)); };
-  const std::tuple<std::string, std::string> help() const override {
+  void set(const std::string& encoded) override { setValue(decode(encoded)); }
+  const std::tuple<std::string, std::string> help() const override
+  {
     return {"bool", defaultValue() ? "<true>/false" : "true/<false>"};
-  };
+  }
 
 private:
   bool _value;
@@ -90,13 +93,15 @@ private:
 class SettingsEntryInt : public SettingsEntry<int>
 {
 public:
-  SettingsEntryInt(const std::string& category, const std::string& name, int minimum, int maximum, int defaultValue) :
-    SettingsEntry(category, name),
-    _value(defaultValue),
-    _defaultValue(defaultValue),
-    _minimum(minimum),
-    _maximum(maximum)
-  {}
+  SettingsEntryInt(const std::string& category, const std::string& name, int minimum, int maximum,
+                   int defaultValue)
+    : SettingsEntry(category, name),
+      _value(defaultValue),
+      _defaultValue(defaultValue),
+      _minimum(minimum),
+      _maximum(maximum)
+  {
+  }
 
   int value() const { return _value; }
   void setValue(int value) { _value = value; }
@@ -106,10 +111,12 @@ public:
   bool isDefault() const override { return _value == _defaultValue; }
   std::string encode() const override;
   const int decode(const std::string& encoded) const override;
-  void set(const std::string& encoded) override { setValue(decode(encoded)); };
-  const std::tuple<std::string, std::string> help() const override {
-    return {"int", std::to_string(_minimum) + " : <" + std::to_string(defaultValue()) + "> : " + std::to_string(maximum())};
-  };
+  void set(const std::string& encoded) override { setValue(decode(encoded)); }
+  const std::tuple<std::string, std::string> help() const override
+  {
+    return {"int", std::to_string(_minimum) + " : <" + std::to_string(defaultValue()) +
+                     "> : " + std::to_string(maximum())};
+  }
 
 private:
   int _value;
@@ -121,14 +128,16 @@ private:
 class SettingsEntryDouble : public SettingsEntry<double>
 {
 public:
-  SettingsEntryDouble(const std::string& category, const std::string& name, double minimum, double step, double maximum, double defaultValue) :
-    SettingsEntry(category, name),
-    _value(defaultValue),
-    _defaultValue(defaultValue),
-    _minimum(minimum),
-    _step(step),
-    _maximum(maximum)
-  {}
+  SettingsEntryDouble(const std::string& category, const std::string& name, double minimum, double step,
+                      double maximum, double defaultValue)
+    : SettingsEntry(category, name),
+      _value(defaultValue),
+      _defaultValue(defaultValue),
+      _minimum(minimum),
+      _step(step),
+      _maximum(maximum)
+  {
+  }
 
   double value() const { return _value; }
   void setValue(double value) { _value = value; }
@@ -139,10 +148,12 @@ public:
   bool isDefault() const override { return _value == _defaultValue; }
   std::string encode() const override;
   const double decode(const std::string& encoded) const override;
-  void set(const std::string& encoded) override { setValue(decode(encoded)); };
-  const std::tuple<std::string, std::string> help() const override {
-    return {"double", std::to_string(_minimum) + " : <" + std::to_string(defaultValue()) + "> : " + std::to_string(maximum())};
-  };
+  void set(const std::string& encoded) override { setValue(decode(encoded)); }
+  const std::tuple<std::string, std::string> help() const override
+  {
+    return {"double", std::to_string(_minimum) + " : <" + std::to_string(defaultValue()) +
+                        "> : " + std::to_string(maximum())};
+  }
 
 private:
   double _value;
@@ -155,11 +166,11 @@ private:
 class SettingsEntryString : public SettingsEntry<std::string>
 {
 public:
-  SettingsEntryString(const std::string& category, const std::string& name, const std::string& defaultValue) :
-    SettingsEntry(category, name),
-    _value(defaultValue),
-    _defaultValue(defaultValue)
-  {}
+  SettingsEntryString(const std::string& category, const std::string& name,
+                      const std::string& defaultValue)
+    : SettingsEntry(category, name), _value(defaultValue), _defaultValue(defaultValue)
+  {
+  }
 
   const std::string& value() const { return _value; }
   void setValue(const std::string& value) { _value = value; }
@@ -167,28 +178,35 @@ public:
   bool isDefault() const override { return _value == _defaultValue; }
   std::string encode() const override { return value(); }
   const std::string decode(const std::string& encoded) const override { return encoded; }
-  void set(const std::string& encoded) override { setValue(decode(encoded)); };
-  const std::tuple<std::string, std::string> help() const override { return {"string", "\"" + encode() + "\""}; };
+  void set(const std::string& encoded) override { setValue(decode(encoded)); }
+  const std::tuple<std::string, std::string> help() const override
+  {
+    return {"string", "\"" + encode() + "\""};
+  }
 
 private:
   std::string _value;
   std::string _defaultValue;
 };
 
-template<typename enum_type>
+template <typename enum_type>
 class SettingsEntryEnum : public SettingsEntry<enum_type>
 {
 public:
   struct Item {
-    Item(enum_type value, std::string name, std::string description) : value(value), name(std::move(name)), description(std::move(description)) {}
+    Item(enum_type value, std::string name, std::string description)
+      : value(value), name(std::move(name)), description(std::move(description))
+    {
+    }
     enum_type value;
     std::string name;
     std::string description;
   };
-  SettingsEntryEnum(const std::string& category, const std::string& name, std::vector<Item> items, enum_type defaultValue) :
-    SettingsEntry<enum_type>(category, name),
-    _items(std::move(items)),
-    _defaultValue(std::move(defaultValue))
+  SettingsEntryEnum(const std::string& category, const std::string& name, std::vector<Item> items,
+                    enum_type defaultValue)
+    : SettingsEntry<enum_type>(category, name),
+      _items(std::move(items)),
+      _defaultValue(std::move(defaultValue))
   {
     setValue(_defaultValue);
   }
@@ -197,14 +215,18 @@ public:
   const enum_type& value() const { return item().value; }
   size_t index() const { return _index; }
   void setValue(const enum_type& value);
-  void setIndex(size_t index) { if (index < _items.size()) _index = index; }
+  void setIndex(size_t index)
+  {
+    if (index < _items.size()) _index = index;
+  }
   const std::vector<Item>& items() const { return _items; }
   const enum_type& defaultValue() const { return _defaultValue; }
   bool isDefault() const override { return value() == _defaultValue; }
   std::string encode() const override;
   const enum_type decode(const std::string& encoded) const override;
   void set(const std::string& encoded) override { setValue(decode(encoded)); }
-  const std::tuple<std::string, std::string> help() const override {
+  const std::tuple<std::string, std::string> help() const override
+  {
     std::string sep = "[";
     std::string list = "";
     for (const auto& item : items()) {
@@ -216,7 +238,7 @@ public:
     }
     list += "]";
     return {"enum", list};
-  };
+  }
 
 private:
   std::vector<Item> _items;
@@ -224,7 +246,7 @@ private:
   enum_type _defaultValue;
 };
 
-template<typename enum_type>
+template <typename enum_type>
 void SettingsEntryEnum<enum_type>::setValue(const enum_type& value)
 {
   for (size_t i = 0; i < _items.size(); ++i) {
@@ -235,11 +257,15 @@ void SettingsEntryEnum<enum_type>::setValue(const enum_type& value)
   }
 }
 
-template<typename enum_type>
-std::string SettingsEntryEnum<enum_type>::encode() const { return item().name; }
+template <typename enum_type>
+std::string SettingsEntryEnum<enum_type>::encode() const
+{
+  return item().name;
+}
 
-template<typename enum_type>
-const enum_type SettingsEntryEnum<enum_type>::decode(const std::string& encoded) const {
+template <typename enum_type>
+const enum_type SettingsEntryEnum<enum_type>::decode(const std::string& encoded) const
+{
   for (const Item& item : items()) {
     if (item.name == encoded) {
       return item.value;
@@ -248,52 +274,51 @@ const enum_type SettingsEntryEnum<enum_type>::decode(const std::string& encoded)
   return defaultValue();
 }
 
-template<>
-inline std::string SettingsEntryEnum<std::string>::encode() const { return value(); }
+template <>
+inline std::string SettingsEntryEnum<std::string>::encode() const
+{
+  return value();
+}
 
-template<>
-inline const std::string SettingsEntryEnum<std::string>::decode(const std::string& encoded) const { return encoded; }
+template <>
+inline const std::string SettingsEntryEnum<std::string>::decode(const std::string& encoded) const
+{
+  return encoded;
+}
 
 class LocalAppParameterType
 {
 public:
-  enum Value : uint8_t
-  {
-    invalid,
-    string,
-    file,
-    dir,
-    extension,
-    source,
-    sourcedir
-  };
+  enum Value : uint8_t { invalid, string, file, dir, extension, source, sourcedir };
 
   LocalAppParameterType() = default;
-  constexpr LocalAppParameterType(Value v) : value(v) { }
+  constexpr LocalAppParameterType(Value v) : value(v) {}
   constexpr operator Value() const { return value; }
   explicit operator bool() const = delete;
 
-  std::string icon() const {
+  std::string icon() const
+  {
     switch (value) {
-      case string: return "chokusen-parameter";
-      case file: return "chokusen-orthogonal";
-      case dir: return "chokusen-folder";
-      case extension: return "chokusen-parameter";
-      case source: return "chokusen-file";
-      case sourcedir: return "chokusen-folder";
-      default: return "*invalid*";
+    case string:    return "chokusen-parameter";
+    case file:      return "chokusen-orthogonal";
+    case dir:       return "chokusen-folder";
+    case extension: return "chokusen-parameter";
+    case source:    return "chokusen-file";
+    case sourcedir: return "chokusen-folder";
+    default:        return "*invalid*";
     }
   }
 
-  std::string description() const {
+  std::string description() const
+  {
     switch (value) {
-      case string: return "";
-      case file: return "<full path to the output file>";
-      case dir: return "<directory of the output file>";
-      case extension: return "<extension of the output file without leading dot>";
-      case source: return "<full path to the main source file>";
-      case sourcedir: return "<directory of the main source file>";
-      default: return "*invalid*";
+    case string:    return "";
+    case file:      return "<full path to the output file>";
+    case dir:       return "<directory of the output file>";
+    case extension: return "<extension of the output file without leading dot>";
+    case source:    return "<full path to the main source file>";
+    case sourcedir: return "<directory of the main source file>";
+    default:        return "*invalid*";
     }
   }
 
@@ -310,26 +335,28 @@ struct LocalAppParameter {
   operator bool() const { return type != LocalAppParameterType::invalid; }
 };
 
-template<typename item_type>
+template <typename item_type>
 class SettingsEntryList : public SettingsEntry<std::vector<item_type>>
 {
 public:
   using list_type_t = std::vector<item_type>;
-  SettingsEntryList(const std::string& category, const std::string& name) :
-    SettingsEntry<std::vector<item_type>>(category, name)
+  SettingsEntryList(const std::string& category, const std::string& name)
+    : SettingsEntry<std::vector<item_type>>(category, name)
   {
   }
   const list_type_t& value() const { return _items; }
   void setValue(const list_type_t& items) { _items = items; }
   bool isDefault() const override { return _items.empty(); }
-  std::string encode() const override {
+  std::string encode() const override
+  {
     std::ostringstream oss;
     for (const auto& item : _items) {
       oss << item;
     }
     return oss.str();
   }
-  const std::vector<item_type> decode(const std::string& encoded) const override {
+  const std::vector<item_type> decode(const std::string& encoded) const override
+  {
     std::vector<item_type> items;
     std::stringstream ss;
     ss << encoded;
@@ -342,9 +369,8 @@ public:
     }
     return items;
   }
-  void set(const std::string& encoded) override { setValue(decode(encoded)); };
-  const std::tuple<std::string, std::string> help() const override { return {"list", ""};
-  };
+  void set(const std::string& encoded) override { setValue(decode(encoded)); }
+  const std::tuple<std::string, std::string> help() const override { return {"list", ""}; }
 
 private:
   list_type_t _items;
@@ -357,7 +383,6 @@ class Settings
 public:
   static SettingsEntryBool showWarningsIn3dView;
   static SettingsEntryBool mouseCentricZoom;
-  static SettingsEntryBool mouseSwapButtons;
   static SettingsEntryInt indentationWidth;
   static SettingsEntryInt tabWidth;
   static SettingsEntryEnum<std::string> lineWrap;
@@ -456,6 +481,19 @@ public:
   static SettingsEntryString inputButton21;
   static SettingsEntryString inputButton22;
   static SettingsEntryString inputButton23;
+  static SettingsEntryInt inputMousePreset;
+  static SettingsEntryInt inputMouseLeftClick;
+  static SettingsEntryInt inputMouseMiddleClick;
+  static SettingsEntryInt inputMouseRightClick;
+  static SettingsEntryInt inputMouseShiftLeftClick;
+  static SettingsEntryInt inputMouseShiftMiddleClick;
+  static SettingsEntryInt inputMouseShiftRightClick;
+  static SettingsEntryInt inputMouseCtrlLeftClick;
+  static SettingsEntryInt inputMouseCtrlMiddleClick;
+  static SettingsEntryInt inputMouseCtrlRightClick;
+  static SettingsEntryInt inputMouseCtrlShiftLeftClick;
+  static SettingsEntryInt inputMouseCtrlShiftMiddleClick;
+  static SettingsEntryInt inputMouseCtrlShiftRightClick;
   static SettingsEntryDouble axisTrim0;
   static SettingsEntryDouble axisTrim1;
   static SettingsEntryDouble axisTrim2;
@@ -479,13 +517,15 @@ public:
   static void visit(const SettingsVisitor& visitor);
 };
 
-class SettingsPython {
+class SettingsPython
+{
 public:
   static SettingsEntryString pythonTrustedFiles;
   static SettingsEntryString pythonVirtualEnv;
 };
 
-class SettingsExportPdf {
+class SettingsExportPdf
+{
 public:
   static SettingsEntryBool exportPdfAlwaysShowDialog;
   static SettingsEntryEnum<ExportPdfPaperSize> exportPdfPaperSize;
@@ -503,24 +543,24 @@ public:
   static SettingsEntryString exportPdfMetaDataAuthor;
   static SettingsEntryString exportPdfMetaDataSubject;
   static SettingsEntryString exportPdfMetaDataKeywords;
+  static SettingsEntryBool exportPdfFill;
+  static SettingsEntryString exportPdfFillColor;
+  static SettingsEntryBool exportPdfStroke;
+  static SettingsEntryString exportPdfStrokeColor;
+  static SettingsEntryDouble exportPdfStrokeWidth;
 
-  static constexpr std::array<const SettingsEntryBase *, 12> cmdline{
-    &exportPdfPaperSize,
-    &exportPdfOrientation,
-    &exportPdfShowFilename,
-    &exportPdfShowScale,
-    &exportPdfShowScaleMessage,
-    &exportPdfShowGrid,
-    &exportPdfGridSize,
-    &exportPdfAddMetaData,
-    &exportPdfMetaDataTitle,
-    &exportPdfMetaDataAuthor,
-    &exportPdfMetaDataSubject,
-    &exportPdfMetaDataKeywords,
+  static constexpr std::array<const SettingsEntryBase *, 17> cmdline{
+    &exportPdfPaperSize,      &exportPdfOrientation,      &exportPdfShowFilename,
+    &exportPdfShowScale,      &exportPdfShowScaleMessage, &exportPdfShowGrid,
+    &exportPdfGridSize,       &exportPdfAddMetaData,      &exportPdfMetaDataTitle,
+    &exportPdfMetaDataAuthor, &exportPdfMetaDataSubject,  &exportPdfMetaDataKeywords,
+    &exportPdfFill,           &exportPdfFillColor,        &exportPdfStroke,
+    &exportPdfStrokeColor,    &exportPdfStrokeWidth,
   };
 };
 
-class SettingsExport3mf {
+class SettingsExport3mf
+{
 public:
   static SettingsEntryBool export3mfAlwaysShowDialog;
   static SettingsEntryEnum<Export3mfColorMode> export3mfColorMode;
@@ -557,6 +597,21 @@ public:
   };
 };
 
+class SettingsExportSvg
+{
+public:
+  static SettingsEntryBool exportSvgAlwaysShowDialog;
+  static SettingsEntryBool exportSvgFill;
+  static SettingsEntryString exportSvgFillColor;
+  static SettingsEntryBool exportSvgStroke;
+  static SettingsEntryString exportSvgStrokeColor;
+  static SettingsEntryDouble exportSvgStrokeWidth;
+
+  static constexpr std::array<const SettingsEntryBase *, 5> cmdline{
+    &exportSvgFill, &exportSvgFillColor, &exportSvgStroke, &exportSvgStrokeColor, &exportSvgStrokeWidth,
+  };
+};
+
 class SettingsVisitor
 {
 public:
@@ -566,4 +621,4 @@ public:
   virtual void handle(SettingsEntryBase& entry) const = 0;
 };
 
-} // namespace Settings
+}  // namespace Settings

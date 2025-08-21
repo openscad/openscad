@@ -47,10 +47,7 @@ const QString OctoPrint::url() const
   return QString::fromStdString(Settings::Settings::octoPrintUrl.value());
 }
 
-const std::string OctoPrint::apiKey() const
-{
-  return Settings::Settings::octoPrintApiKey.value();
-}
+const std::string OctoPrint::apiKey() const { return Settings::Settings::octoPrintApiKey.value(); }
 
 const QJsonDocument OctoPrint::getJsonData(const QString& endpoint) const
 {
@@ -58,22 +55,19 @@ const QJsonDocument OctoPrint::getJsonData(const QString& endpoint) const
     throw NetworkException{QNetworkReply::ProtocolFailure, "OctoPrint URL not configured."};
   }
 
-  auto networkRequest = NetworkRequest<const QJsonDocument>{QUrl{url() + endpoint}, { 200 }, 30};
+  auto networkRequest = NetworkRequest<const QJsonDocument>{QUrl{url() + endpoint}, {200}, 30};
 
   return networkRequest.execute(
     [&](QNetworkRequest& request) {
-    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
-    request.setRawHeader(QByteArray{"X-Api-Key"}, QByteArray{apiKey().c_str()});
-  },
-    [](QNetworkAccessManager& nam, QNetworkRequest& request) {
-    return nam.get(request);
-  },
+      request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
+      request.setRawHeader(QByteArray{"X-Api-Key"}, QByteArray{apiKey().c_str()});
+    },
+    [](QNetworkAccessManager& nam, QNetworkRequest& request) { return nam.get(request); },
     [](QNetworkReply *reply) -> const QJsonDocument {
-    auto doc = QJsonDocument::fromJson(reply->readAll());
-    PRINTDB("Response: %s", QString{doc.toJson()}.toStdString());
-    return doc;
-  }
-  );
+      auto doc = QJsonDocument::fromJson(reply->readAll());
+      PRINTDB("Response: %s", QString{doc.toJson()}.toStdString());
+      return doc;
+    });
 }
 
 const std::vector<std::pair<const QString, const QString>> OctoPrint::getSlicers() const
@@ -86,7 +80,8 @@ const std::vector<std::pair<const QString, const QString>> OctoPrint::getSlicers
   return slicers;
 }
 
-const std::vector<std::pair<const QString, const QString>> OctoPrint::getProfiles(const QString& slicer) const
+const std::vector<std::pair<const QString, const QString>> OctoPrint::getProfiles(
+  const QString& slicer) const
 {
   const auto obj = getJsonData("/slicing").object();
   std::vector<std::pair<const QString, const QString>> profiles;
@@ -120,7 +115,7 @@ const QString OctoPrint::requestApiKey() const
   QJsonObject jsonInput;
   jsonInput.insert("app", QString{"OpenSCAD"});
 
-  auto networkRequest = NetworkRequest<QString>{QUrl{url() + "/../plugin/appkeys/request"}, { 201 }, 30};
+  auto networkRequest = NetworkRequest<QString>{QUrl{url() + "/../plugin/appkeys/request"}, {201}, 30};
   return networkRequest.execute(
     [&](QNetworkRequest& request) {
       request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
@@ -134,20 +129,18 @@ const QString OctoPrint::requestApiKey() const
       const auto obj = doc.object();
       const auto token = obj.value("app_token").toString();
       return token;
-    }
-  );
+    });
 }
 
 const std::pair<int, QString> OctoPrint::pollApiKeyApproval(const QString& token) const
 {
-  auto networkRequest = NetworkRequest<std::pair<int, QString>>{QUrl{url() + "/../plugin/appkeys/request/" + token}, { 200, 202, 404 }, 30};
+  auto networkRequest = NetworkRequest<std::pair<int, QString>>{
+    QUrl{url() + "/../plugin/appkeys/request/" + token}, {200, 202, 404}, 30};
   return networkRequest.execute(
     [&](QNetworkRequest& request) {
       request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
     },
-    [&](QNetworkAccessManager& nam, QNetworkRequest& request) {
-      return nam.get(request);
-    },
+    [&](QNetworkAccessManager& nam, QNetworkRequest& request) { return nam.get(request); },
     [](QNetworkReply *reply) -> std::pair<int, QString> {
       const auto code = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
       PRINTDB("Response Code: %d", code);
@@ -158,15 +151,16 @@ const std::pair<int, QString> OctoPrint::pollApiKeyApproval(const QString& token
       const auto code = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
       PRINTDB("Response (Error) Code: %d", code);
       return std::make_pair(code, "");
-    }
-  );
+    });
 }
 
-const QString OctoPrint::upload(const QString& exportFileName, const QString& fileName, const network_progress_func_t& progress_func) const {
-
+const QString OctoPrint::upload(const QString& exportFileName, const QString& fileName,
+                                const network_progress_func_t& progress_func) const
+{
   auto *multiPart = new QHttpMultiPart(QHttpMultiPart::FormDataType);
   QHttpPart filePart;
-  filePart.setHeader(QNetworkRequest::ContentDispositionHeader, QVariant{R"(form-data; name="file"; filename=")" + fileName + "\""});
+  filePart.setHeader(QNetworkRequest::ContentDispositionHeader,
+                     QVariant{R"(form-data; name="file"; filename=")" + fileName + "\""});
   filePart.setHeader(QNetworkRequest::ContentTypeHeader, QVariant{"application/octet-stream"});
 
   auto *file = new QFile(exportFileName, multiPart);
@@ -175,29 +169,30 @@ const QString OctoPrint::upload(const QString& exportFileName, const QString& fi
 
   multiPart->append(filePart);
 
-  auto networkRequest = NetworkRequest<const QString>{QUrl{url() + "/files/local"}, { 200, 201 }, 180};
+  auto networkRequest = NetworkRequest<const QString>{QUrl{url() + "/files/local"}, {200, 201}, 180};
   networkRequest.set_progress_func(progress_func);
   return networkRequest.execute(
     [&](QNetworkRequest& request) {
-    request.setHeader(QNetworkRequest::UserAgentHeader, QString::fromStdString(PlatformUtils::user_agent()));
-    request.setRawHeader(QByteArray{"X-Api-Key"}, QByteArray{apiKey().c_str()});
-  },
+      request.setHeader(QNetworkRequest::UserAgentHeader,
+                        QString::fromStdString(PlatformUtils::user_agent()));
+      request.setRawHeader(QByteArray{"X-Api-Key"}, QByteArray{apiKey().c_str()});
+    },
     [&](QNetworkAccessManager& nam, QNetworkRequest& request) {
-    const auto reply = nam.post(request, multiPart);
-    multiPart->setParent(reply);
-    return reply;
-  },
+      const auto reply = nam.post(request, multiPart);
+      multiPart->setParent(reply);
+      return reply;
+    },
     [](QNetworkReply *reply) -> const QString {
-    const auto doc = QJsonDocument::fromJson(reply->readAll());
-    PRINTDB("Response: %s", QString{doc.toJson()}.toStdString());
-    auto location = reply->header(QNetworkRequest::LocationHeader).toString();
-    LOG("Uploaded successfully to %1$s", location.toStdString());
-    return location;
-  }
-    );
+      const auto doc = QJsonDocument::fromJson(reply->readAll());
+      PRINTDB("Response: %s", QString{doc.toJson()}.toStdString());
+      auto location = reply->header(QNetworkRequest::LocationHeader).toString();
+      LOG("Uploaded successfully to %1$s", location.toStdString());
+      return location;
+    });
 }
 
-void OctoPrint::slice(const QString& fileUrl, const QString& slicer, const QString& profile, const bool select, const bool print) const
+void OctoPrint::slice(const QString& fileUrl, const QString& slicer, const QString& profile,
+                      const bool select, const bool print) const
 {
   QJsonObject jsonInput;
   jsonInput.insert("command", QString{"slice"});
@@ -206,19 +201,18 @@ void OctoPrint::slice(const QString& fileUrl, const QString& slicer, const QStri
   jsonInput.insert("select", QString{select ? "true" : "false"});
   jsonInput.insert("print", QString{print ? "true" : "false"});
 
-  auto networkRequest = NetworkRequest<void>{QUrl{fileUrl}, { 200, 202 }, 30};
+  auto networkRequest = NetworkRequest<void>{QUrl{fileUrl}, {200, 202}, 30};
   return networkRequest.execute(
     [&](QNetworkRequest& request) {
-    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
-    request.setRawHeader(QByteArray{"X-Api-Key"}, QByteArray{apiKey().c_str()});
-  },
+      request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
+      request.setRawHeader(QByteArray{"X-Api-Key"}, QByteArray{apiKey().c_str()});
+    },
     [&](QNetworkAccessManager& nam, QNetworkRequest& request) {
-    return nam.post(request, QJsonDocument(jsonInput).toJson());
-  },
+      return nam.post(request, QJsonDocument(jsonInput).toJson());
+    },
     [](QNetworkReply *reply) {
-    const auto doc = QJsonDocument::fromJson(reply->readAll());
-    PRINTDB("Response: %s", QString{doc.toJson()}.toStdString());
-    LOG("Slice command successfully executed.");
-  }
-    );
+      const auto doc = QJsonDocument::fromJson(reply->readAll());
+      PRINTDB("Response: %s", QString{doc.toJson()}.toStdString());
+      LOG("Slice command successfully executed.");
+    });
 }

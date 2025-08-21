@@ -32,7 +32,8 @@
 #include "core/Children.h"
 #include "core/Parameters.h"
 
-std::shared_ptr<AbstractNode> builtin_group(const ModuleInstantiation *inst, Arguments arguments, const Children& children)
+std::shared_ptr<AbstractNode> builtin_group(const ModuleInstantiation *inst, Arguments arguments,
+                                            const Children& children)
 {
   Parameters parameters = Parameters::parse(std::move(arguments), inst->location(), {});
   return children.instantiate(std::make_shared<GroupNode>(inst));
@@ -41,7 +42,7 @@ std::shared_ptr<AbstractNode> builtin_group(const ModuleInstantiation *inst, Arg
 void register_builtin_group()
 {
   Builtins::init("group", new BuiltinModule(builtin_group),
-  {
-    "group",
-  });
+                 {
+                   "group",
+                 });
 }

@@ -23,7 +23,7 @@ namespace {
 bool path_initialized = false;
 std::string applicationpath;
 std::string resourcespath;
-}
+}  // namespace
 
 const char *PlatformUtils::OPENSCAD_FOLDER_NAME = "OpenSCAD";
 
@@ -33,33 +33,27 @@ static std::string lookupResourcesPath()
   PRINTDB("Looking up resource folder with application path '%s'", resourcedir.generic_string().c_str());
 
 #ifdef __APPLE__
-  const char *searchpath[] = {
-    "../Resources", // Resources can be bundled on Mac.
-    "../../..", // Dev location
-    "../../../..", // Test location (cmake)
-    "..",   // Test location
-    RESOURCE_FOLDER("../share/openscad"), // Unix mode
-    nullptr
-  };
+  const char *searchpath[] = {"../Resources",                        // Resources can be bundled on Mac.
+                              "../../..",                            // Dev location
+                              "../../../..",                         // Test location (cmake)
+                              "..",                                  // Test location
+                              RESOURCE_FOLDER("../share/openscad"),  // Unix mode
+                              nullptr};
 #else
 #ifdef _WIN32
-  const char *searchpath[] = {
-    ".", // Release location
-    RESOURCE_FOLDER("../share/openscad"), // MSYS2 location
-    "..", // Dev location
-    nullptr
-  };
+  const char *searchpath[] = {".",                                   // Release location
+                              RESOURCE_FOLDER("../share/openscad"),  // MSYS2 location
+                              "..",                                  // Dev location
+                              nullptr};
 #else
-  const char *searchpath[] = {
-    RESOURCE_FOLDER("../share/openscad"),
-    RESOURCE_FOLDER("../../share/openscad"),
-    ".",
-    "..",
-    "../..",
-    nullptr
-  };
-#endif // ifdef _WIN32
-#endif // ifdef __APPLE__
+  const char *searchpath[] = {RESOURCE_FOLDER("../share/openscad"),
+                              RESOURCE_FOLDER("../../share/openscad"),
+                              ".",
+                              "..",
+                              "../..",
+                              nullptr};
+#endif  // ifdef _WIN32
+#endif  // ifdef __APPLE__
 
   fs::path tmpdir;
   for (int a = 0; searchpath[a] != nullptr; ++a) {
@@ -143,15 +137,9 @@ std::string PlatformUtils::userPath(const std::string& name)
   return path.generic_string();
 }
 
-std::string PlatformUtils::userLibraryPath()
-{
-  return userPath("libraries");
-}
+std::string PlatformUtils::userLibraryPath() { return userPath("libraries"); }
 
-std::string PlatformUtils::userExamplesPath()
-{
-  return userPath("examples");
-}
+std::string PlatformUtils::userExamplesPath() { return userPath("examples"); }
 
 std::string PlatformUtils::backupPath()
 {
@@ -232,7 +220,7 @@ int PlatformUtils::setenv(const char *name, const char *value, int overwrite)
 
 std::string PlatformUtils::toMemorySizeString(uint64_t bytes, int digits)
 {
-  static const char *units[] = { "B", "kB", "MB", "GB", "TB", nullptr };
+  static const char *units[] = {"B", "kB", "MB", "GB", "TB", nullptr};
 
   int idx = 0;
   double val = bytes;

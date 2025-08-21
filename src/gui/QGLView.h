@@ -17,6 +17,7 @@
 #include <Eigen/Core>
 #include <Eigen/Geometry>
 #include "glview/GLView.h"
+#include "../core/MouseConfig.h"
 
 class QGLView : public QOpenGLWidget, public GLView
 {
@@ -54,11 +55,13 @@ public:
 public slots:
   void ZoomIn();
   void ZoomOut();
-  void setMouseCentricZoom(bool var){
-    this->mouseCentricZoom = var;
-  }
-  void setMouseSwapButtons(bool var){
-    this->mouseSwapButtons = var;
+  void setMouseCentricZoom(bool var) { this->mouseCentricZoom = var; }
+  void setMouseActions(int mouseAction, std::array<float, MouseConfig::ACTION_DIMENSION> var)
+  {
+    // Load an array defining the behaviour for a single mouse action.
+    for (int i = 0; i < MouseConfig::ACTION_DIMENSION; i++) {
+      this->mouseActions[MouseConfig::ACTION_DIMENSION * mouseAction + i] = var[i];
+    }
   }
 
 public:
@@ -77,9 +80,11 @@ private:
   bool mouse_drag_active;
   bool mouse_drag_moved = true;
   bool mouseCentricZoom = true;
-  bool mouseSwapButtons = false;
+  // Information held for each mouse action is a 3x2 rotation matrix, a 3x2 translation matrix, and a
+  // zoom 2-vector.
+  float mouseActions[MouseConfig::MouseAction::NUM_MOUSE_ACTIONS * MouseConfig::ACTION_DIMENSION];
   QPoint last_mouse;
-  QImage frame; // Used by grabFrame() and save()
+  QImage frame;  // Used by grabFrame() and save()
 
   void wheelEvent(QWheelEvent *event) override;
   void mousePressEvent(QMouseEvent *event) override;

@@ -29,7 +29,8 @@
 #include <string>
 #include <utility>
 
-extern bool parse(class SourceFile *& file, const std::string& text, const std::string& filename, const std::string& mainFile, int debug);
+extern bool parse(class SourceFile *& file, const std::string& text, const std::string& filename,
+                  const std::string& mainFile, int debug);
 
 extern std::string commandline_commands;
 

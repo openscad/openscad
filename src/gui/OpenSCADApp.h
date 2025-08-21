@@ -22,6 +22,7 @@ public:
 public slots:
   void showFontCacheDialog();
   void hideFontCacheDialog();
+  void setApplicationFont(const QString& family, uint size);
 
 public:
   WindowManager windowManager;

@@ -27,8 +27,8 @@ Animate::Animate(QWidget *parent) : QWidget(parent)
   const auto margins = layout()->contentsMargins();
   const auto scrollMargins = scrollAreaWidgetContents->layout()->contentsMargins();
   const auto parameterMargins = groupBoxParameter->layout()->contentsMargins();
-  initMinWidth = width + margins.left() + margins.right() + scrollMargins.left() + scrollMargins.right()
-    + parameterMargins.left() + parameterMargins.right();
+  initMinWidth = width + margins.left() + margins.right() + scrollMargins.left() +
+                 scrollMargins.right() + parameterMargins.left() + parameterMargins.right();
 }
 
 void Animate::initGUI()
@@ -126,7 +126,6 @@ void Animate::updatedAnimFpsAndAnimSteps()
   updatePauseButtonIcon();
 }
 
-
 void Animate::updatedAnimDump(bool checked)
 {
   if (!checked) this->animDumping = false;
@@ -179,7 +178,8 @@ void Animate::updateTVal()
   updatePauseButtonIcon();
 }
 
-void Animate::pauseAnimation(){
+void Animate::pauseAnimation()
+{
   animateTimer->stop();
   updatePauseButtonIcon();
 }
@@ -198,24 +198,26 @@ void Animate::updatePauseButtonIcon()
 {
   if (animateTimer->isActive()) {
     pauseButton->setIcon(this->iconPause);
-    pauseButton->setToolTip(_("press to pause animation") );
+    pauseButton->setToolTip(_("press to pause animation"));
   } else {
     if (this->fpsOK && this->steps_ok) {
       pauseButton->setIcon(this->iconRun);
-      pauseButton->setToolTip(_("press to start animation") );
+      pauseButton->setToolTip(_("press to start animation"));
     } else {
       pauseButton->setIcon(this->iconDisabled);
-      pauseButton->setToolTip(_("incorrect values") );
+      pauseButton->setToolTip(_("incorrect values"));
     }
   }
 }
 
-void Animate::cameraChanged(){
-  this->animateUpdate(); //for now so that we do not change the behavior
+void Animate::cameraChanged()
+{
+  this->animateUpdate();  // for now so that we do not change the behavior
 }
 
-void Animate::editorContentChanged(){
-  this->animateUpdate(); //for now so that we do not change the behavior
+void Animate::editorContentChanged()
+{
+  this->animateUpdate();  // for now so that we do not change the behavior
 }
 
 void Animate::animateUpdate()
@@ -231,11 +233,10 @@ void Animate::animateUpdate()
   }
 }
 
-bool Animate::dumpPictures(){
-  return this->e_dump->isChecked() && this->animateTimer->isActive();
-}
+bool Animate::dumpPictures() { return this->e_dump->isChecked() && this->animateTimer->isActive(); }
 
-int Animate::nextFrame(){
+int Animate::nextFrame()
+{
   if (animDumping && animDumpStartStep == animStep) {
     animDumping = false;
     e_dump->setChecked(false);
@@ -272,9 +273,7 @@ void Animate::resizeEvent(QResizeEvent *event)
   QWidget::resizeEvent(event);
 }
 
-const QList<QAction *>& Animate::actions(){
-  return actionList;
-}
+const QList<QAction *>& Animate::actions() { return actionList; }
 
 void Animate::onActionEvent(InputEventAction *event)
 {
@@ -287,29 +286,31 @@ void Animate::onActionEvent(InputEventAction *event)
   }
 }
 
-double Animate::getAnimTval(){
-  return animTVal;
-}
+double Animate::getAnimTval() { return animTVal; }
 
-void Animate::on_pushButton_MoveToBeginning_clicked(){
+void Animate::on_pushButton_MoveToBeginning_clicked()
+{
   pauseAnimation();
   this->animStep = 0;
   this->updateTVal();
 }
 
-void Animate::on_pushButton_StepBack_clicked(){
+void Animate::on_pushButton_StepBack_clicked()
+{
   pauseAnimation();
   this->animStep -= 1;
   this->updateTVal();
 }
 
-void Animate::on_pushButton_StepForward_clicked(){
+void Animate::on_pushButton_StepForward_clicked()
+{
   pauseAnimation();
   this->animStep += 1;
   this->updateTVal();
 }
 
-void Animate::on_pushButton_MoveToEnd_clicked(){
+void Animate::on_pushButton_MoveToEnd_clicked()
+{
   pauseAnimation();
   this->animStep = this->animNumSteps - 1;
   this->updateTVal();

@@ -361,12 +361,6 @@ function(add_cmdline_test TESTCMD_BASENAME)
     # add global experimental options here
     set(EXPERIMENTAL_OPTION "")
 
-   if (ENABLE_MANIFOLD)
-     if (NOT TESTCMD_ARGS OR NOT "${TESTCMD_ARGS}" MATCHES "--backend")
-       set(MANIFOLD_OPTION "--backend=manifold")
-     endif()
-   endif()
-
     # 2D tests should be viewed from the top, not an angle.
     set(CAMERA_OPTION "")
     is_2d(${SCADFILE} IS2D)
@@ -1093,6 +1087,14 @@ add_cmdline_test(svgimport OPENSCAD ARGS --imgsize 600,600 SUFFIX png FILES
   ${TEST_SCAD_DIR}/svg/extruded/simple-center.scad
 )
 
+# 
+# OBJECT echo tests
+#
+
+file(GLOB OBJECT_TEST ${TEST_SCAD_DIR}/experimental/object/*.scad)
+add_cmdline_test(echo EXPERIMENTAL OPENSCAD SUFFIX echo FILES ${OBJECT_TEST} ARGS --enable object-function)
+
+
 #
 # Export/import tests
 #
@@ -1277,6 +1279,11 @@ endif()
 add_cmdline_test(render-dxf  SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png FILES ${EXPORT_IMPORT_2D_RENDER_FILES} ${SCAD_DXF_FILES} EXPECTEDDIR render ARGS ${OPENSCAD_EXE_ARG} --format=DXF --render=force)
 add_cmdline_test(render-svg  SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png FILES ${EXPORT_IMPORT_2D_RENDER_FILES} ${SCAD_SVG_FILES} EXPECTEDDIR render ARGS ${OPENSCAD_EXE_ARG} --format=SVG --render=force)
 
+# SVG Export
+add_cmdline_test(export-svg SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX svg FILES ${SCAD_SVG_FILES} ARGS ${OPENSCAD_EXE_ARG} --format=SVG)
+add_cmdline_test(export-svg-fill-stroke SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX svg FILES ${SCAD_SVG_FILES} ARGS ${OPENSCAD_EXE_ARG} --format=SVG -O export-svg/fill=true -O export-svg/fill-color=cyan -O export-svg/stroke-color=magenta -O export-svg/stroke-width=3)
+add_cmdline_test(export-svg-fill-only SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX svg FILES ${SCAD_SVG_FILES} ARGS ${OPENSCAD_EXE_ARG} --format=SVG -O export-svg/fill=true -O export-svg/fill-color=blue -O export-svg/stroke=false)
+
 # FIXME: We don't actually need to compare the output of cgalstlsanitytest
 # with anything. It's self-contained and returns != 0 on error
 add_cmdline_test(export-stl-sanitytest  SCRIPT ${STLEXPORTSANITYTEST_PY} SUFFIX txt FILES ${TEST_SCAD_DIR}/misc/normal-nan.scad ARGS ${OPENSCAD_EXE_ARG})
@@ -1287,6 +1294,7 @@ add_cmdline_test(3mfcolorpngtest EXPERIMENTAL SCRIPT ${EXPORT_IMPORT_PNGTEST_PY}
 
 # PDF Export
 add_cmdline_test(export-pdf SCRIPT ${EXPORT_PNGTEST_PY} SUFFIX png FILES ${SCAD_PDF_FILES} ARGS ${OPENSCAD_EXE_ARG} --format=PDF -O export-pdf/show-scale=false KERNEL Square:2)
+add_cmdline_test(export-pdf-fill SCRIPT ${EXPORT_PNGTEST_PY} SUFFIX png FILES ${SCAD_PDF_FILES} ARGS ${OPENSCAD_EXE_ARG} --format=PDF -O export-pdf/show-scale=false -O export-pdf/fill=true -O export-pdf/fill-color=cyan -O export-pdf/stroke-color=magenta -O export-pdf/stroke-width=1 KERNEL Square:2)
 
 # Expected failing tests
 add_failing_test(stlfailedtest         SUFFIX stl  FILES ${TEST_SCAD_DIR}/misc/empty-union.scad ARGS --retval=1)

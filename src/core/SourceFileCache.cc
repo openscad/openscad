@@ -28,7 +28,8 @@ SourceFileCache *SourceFileCache::inst = nullptr;
 
    Returns the latest modification time of the file, its dependencies or includes.
  */
-std::time_t SourceFileCache::evaluate(const std::string& mainFile, const std::string& filename, SourceFile *& sourceFile)
+std::time_t SourceFileCache::evaluate(const std::string& mainFile, const std::string& filename,
+                                      SourceFile *& sourceFile)
 {
   sourceFile = nullptr;
   auto entry = this->entries.find(filename);
@@ -77,7 +78,7 @@ std::time_t SourceFileCache::evaluate(const std::string& mainFile, const std::st
 
 #ifdef DEBUG
   // Causes too much debug output
-  //if (!shouldCompile) LOG(message_group::NONE,,"Using cached library: %1$s (%2$p)",filename,file);
+  // if (!shouldCompile) LOG(message_group::NONE,,"Using cached library: %1$s (%2$p)",filename,file);
 #endif
 
   // If cache lookup failed (non-existing or old timestamp), compile file
@@ -103,7 +104,8 @@ std::time_t SourceFileCache::evaluate(const std::string& mainFile, const std::st
     print_messages_push();
 
     delete cacheEntry.parsed_file;
-    file = parse(cacheEntry.parsed_file, text, filename, mainFile, false) ? cacheEntry.parsed_file : nullptr;
+    file =
+      parse(cacheEntry.parsed_file, text, filename, mainFile, false) ? cacheEntry.parsed_file : nullptr;
     PRINTDB("compiled file: %s", filename);
     cacheEntry.file = file;
     cacheEntry.cache_id = cache_id;
@@ -119,10 +121,7 @@ std::time_t SourceFileCache::evaluate(const std::string& mainFile, const std::st
   return std::max({deps_mtime, cacheEntry.mtime, cacheEntry.includes_mtime});
 }
 
-void SourceFileCache::clear()
-{
-  this->entries.clear();
-}
+void SourceFileCache::clear() { this->entries.clear(); }
 
 SourceFile *SourceFileCache::lookup(const std::string& filename)
 {
@@ -130,7 +129,8 @@ SourceFile *SourceFileCache::lookup(const std::string& filename)
   return it != this->entries.end() ? it->second.file : nullptr;
 }
 
-void SourceFileCache::clear_markers() {
+void SourceFileCache::clear_markers()
+{
   for (const auto& entry : instance()->entries)
     if (auto lib = entry.second.file) lib->clearHandlingDependencies();
 }

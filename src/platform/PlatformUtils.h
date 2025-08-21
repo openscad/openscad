@@ -119,4 +119,4 @@ void ensureStdIO();
  * a given number of digits.
  */
 std::string toMemorySizeString(uint64_t bytes, int digits);
-} // namespace PlatformUtils
+}  // namespace PlatformUtils

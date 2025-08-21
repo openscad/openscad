@@ -58,11 +58,9 @@ void SourceFile::print(std::ostream& stream, const std::string& indent) const
 
 void SourceFile::registerUse(const std::string& path, const Location& loc)
 {
-  PRINTDB("registerUse(): (%p) %d, %d - %d, %d (%s) -> %s", this %
-          loc.firstLine() % loc.firstColumn() %
-          loc.lastLine() % loc.lastColumn() %
-          loc.fileName() %
-          path);
+  PRINTDB("registerUse(): (%p) %d, %d - %d, %d (%s) -> %s", this % loc.firstLine() % loc.firstColumn() %
+                                                              loc.lastLine() % loc.lastColumn() %
+                                                              loc.fileName() % path);
 
   auto ext = fs::path(path).extension().generic_string();
 
@@ -77,22 +75,23 @@ void SourceFile::registerUse(const std::string& path, const Location& loc)
     if (pos != usedlibs.end()) usedlibs.erase(pos);
     usedlibs.insert(usedlibs.begin(), path);
     if (!loc.isNone()) {
-      indicatorData.emplace_back(loc.firstLine(), loc.firstColumn(), loc.lastLine(), loc.lastColumn(), path);
+      indicatorData.emplace_back(loc.firstLine(), loc.firstColumn(), loc.lastLine(), loc.lastColumn(),
+                                 path);
     }
   }
 }
 
-void SourceFile::registerInclude(const std::string& localpath, const std::string& fullpath, const Location& loc)
+void SourceFile::registerInclude(const std::string& localpath, const std::string& fullpath,
+                                 const Location& loc)
 {
-  PRINTDB("registerInclude(): (%p) %d, %d - %d, %d (%s) -> %s", this %
-          loc.firstLine() % loc.firstColumn() %
-          loc.lastLine() % loc.lastColumn() %
-          localpath %
-          fullpath);
+  PRINTDB("registerInclude(): (%p) %d, %d - %d, %d (%s) -> %s",
+          this % loc.firstLine() % loc.firstColumn() % loc.lastLine() % loc.lastColumn() % localpath %
+            fullpath);
 
   this->includes[localpath] = fullpath;
   if (!loc.isNone()) {
-    indicatorData.emplace_back(loc.firstLine(), loc.firstColumn(), loc.lastLine(), loc.lastColumn(), fullpath);
+    indicatorData.emplace_back(loc.firstLine(), loc.firstColumn(), loc.lastLine(), loc.lastColumn(),
+                               fullpath);
   }
 }
 
@@ -134,7 +133,6 @@ time_t SourceFile::handleDependencies(bool is_root)
   // as it will have a relative path.
   time_t latest = 0;
   for (auto filename : this->usedlibs) {
-
     auto found = true;
 
     // Get an absolute filename for the module
@@ -173,7 +171,9 @@ time_t SourceFile::handleDependencies(bool is_root)
   return latest;
 }
 
-std::shared_ptr<AbstractNode> SourceFile::instantiate(const std::shared_ptr<const Context>& context, std::shared_ptr<const FileContext> *resulting_file_context) const
+std::shared_ptr<AbstractNode> SourceFile::instantiate(
+  const std::shared_ptr<const Context>& context,
+  std::shared_ptr<const FileContext> *resulting_file_context) const
 {
   auto node = std::make_shared<RootNode>();
   try {
@@ -189,10 +189,11 @@ std::shared_ptr<AbstractNode> SourceFile::instantiate(const std::shared_ptr<cons
   return node;
 }
 
-//please preferably use getFilename
-//if you compare filenames (which is the origin of this method),
-//please call getFilename first and use this method only as a fallback
-const std::string SourceFile::getFullpath() const {
+// please preferably use getFilename
+// if you compare filenames (which is the origin of this method),
+// please call getFilename first and use this method only as a fallback
+const std::string SourceFile::getFullpath() const
+{
   if (fs::path(this->filename).is_absolute()) {
     return this->filename;
   } else if (!this->path.empty()) {

@@ -52,13 +52,15 @@ namespace fs = std::filesystem;
 
 static Value builtin_dxf_dim(Arguments arguments, const Location& loc)
 {
-  const Parameters parameters = Parameters::parse(std::move(arguments), loc, {}, {"file", "layer", "origin", "scale", "name"});
+  const Parameters parameters =
+    Parameters::parse(std::move(arguments), loc, {}, {"file", "layer", "origin", "scale", "name"});
 
   std::string rawFilename;
   std::string filename;
   if (parameters.contains("file")) {
     rawFilename = parameters["file"].toString();
-    filename = lookup_file(rawFilename, loc.filePath().parent_path().string(), parameters.documentRoot());
+    filename =
+      lookup_file(rawFilename, loc.filePath().parent_path().string(), parameters.documentRoot());
   }
   double xorigin = 0;
   double yorigin = 0;
@@ -66,7 +68,8 @@ static Value builtin_dxf_dim(Arguments arguments, const Location& loc)
     bool originOk = parameters["origin"].getVec2(xorigin, yorigin);
     originOk &= std::isfinite(xorigin) && std::isfinite(yorigin);
     if (!originOk) {
-      LOG(message_group::Warning, loc, parameters.documentRoot(), "dxf_dim(..., origin=%1$s) could not be converted", parameters["origin"].toEchoString());
+      LOG(message_group::Warning, loc, parameters.documentRoot(),
+          "dxf_dim(..., origin=%1$s) could not be converted", parameters["origin"].toEchoString());
     }
   }
   std::string layername = parameters.get("layer", "");
@@ -82,12 +85,12 @@ static Value builtin_dxf_dim(Arguments arguments, const Location& loc)
       lastwritetime = fs_timestamp(filepath);
     }
   } else {
-    LOG(message_group::Warning, loc, parameters.documentRoot(), "Can't open DXF file '%1$s'!", rawFilename);
+    LOG(message_group::Warning, loc, parameters.documentRoot(), "Can't open DXF file '%1$s'!",
+        rawFilename);
     return Value::undefined.clone();
   }
-  const std::string key = STR(filename, "|", layername, "|", name, "|", xorigin,
-                        "|", yorigin, "|", scale, "|", lastwritetime,
-                        "|", filesize);
+  const std::string key = STR(filename, "|", layername, "|", name, "|", xorigin, "|", yorigin, "|",
+                              scale, "|", lastwritetime, "|", filesize);
   auto result = dxf_dim_cache.find(key);
   if (result != dxf_dim_cache.end()) return {result->second};
   handle_dep(filepath.string());
@@ -104,7 +107,8 @@ static Value builtin_dxf_dim(Arguments arguments, const Location& loc)
       const double x = d->coords[4][0] - d->coords[3][0];
       const double y = d->coords[4][1] - d->coords[3][1];
       const double angle = d->angle;
-      const double distance_projected_on_line = std::fabs(x * cos_degrees(angle) + y * sin_degrees(angle));
+      const double distance_projected_on_line =
+        std::fabs(x * cos_degrees(angle) + y * sin_degrees(angle));
       dxf_dim_cache.emplace(key, distance_projected_on_line);
       return {distance_projected_on_line};
     } else if (type == 1) {
@@ -116,8 +120,10 @@ static Value builtin_dxf_dim(Arguments arguments, const Location& loc)
       return {value};
     } else if (type == 2) {
       // Angular
-      const double a1 = atan2_degrees(d->coords[0][0] - d->coords[5][0], d->coords[0][1] - d->coords[5][1]);
-      const double a2 = atan2_degrees(d->coords[4][0] - d->coords[3][0], d->coords[4][1] - d->coords[3][1]);
+      const double a1 =
+        atan2_degrees(d->coords[0][0] - d->coords[5][0], d->coords[0][1] - d->coords[5][1]);
+      const double a2 =
+        atan2_degrees(d->coords[4][0] - d->coords[3][0], d->coords[4][1] - d->coords[3][1]);
       const double value = std::fabs(a1 - a2);
       dxf_dim_cache.emplace(key, value);
       return {value};
@@ -137,11 +143,13 @@ static Value builtin_dxf_dim(Arguments arguments, const Location& loc)
       return {value};
     }
 
-    LOG(message_group::Warning, loc, parameters.documentRoot(), "Dimension '%1$s' in '%2$s', layer '%3$s' has unsupported type!", name, rawFilename, layername);
+    LOG(message_group::Warning, loc, parameters.documentRoot(),
+        "Dimension '%1$s' in '%2$s', layer '%3$s' has unsupported type!", name, rawFilename, layername);
     return Value::undefined.clone();
   }
 
-  LOG(message_group::Warning, loc, parameters.documentRoot(), "Can't find dimension '%1$s' in '%2$s', layer '%3$s'!", name, rawFilename, layername);
+  LOG(message_group::Warning, loc, parameters.documentRoot(),
+      "Can't find dimension '%1$s' in '%2$s', layer '%3$s'!", name, rawFilename, layername);
 
   return Value::undefined.clone();
 }
@@ -149,13 +157,15 @@ static Value builtin_dxf_dim(Arguments arguments, const Location& loc)
 static Value builtin_dxf_cross(Arguments arguments, const Location& loc)
 {
   auto *session = arguments.session();
-  const Parameters parameters = Parameters::parse(std::move(arguments), loc, {}, {"file", "layer", "origin", "scale", "name"});
+  const Parameters parameters =
+    Parameters::parse(std::move(arguments), loc, {}, {"file", "layer", "origin", "scale", "name"});
 
   std::string rawFilename;
   std::string filename;
   if (parameters.contains("file")) {
     rawFilename = parameters["file"].toString();
-    filename = lookup_file(rawFilename, loc.filePath().parent_path().string(), parameters.documentRoot());
+    filename =
+      lookup_file(rawFilename, loc.filePath().parent_path().string(), parameters.documentRoot());
   }
   double xorigin = 0;
   double yorigin = 0;
@@ -163,7 +173,8 @@ static Value builtin_dxf_cross(Arguments arguments, const Location& loc)
     bool originOk = parameters["origin"].getVec2(xorigin, yorigin);
     originOk &= std::isfinite(xorigin) && std::isfinite(yorigin);
     if (!originOk) {
-      LOG(message_group::Warning, loc, parameters.documentRoot(), "dxf_cross(..., origin=%1$s) could not be converted", parameters["origin"].toEchoString());
+      LOG(message_group::Warning, loc, parameters.documentRoot(),
+          "dxf_cross(..., origin=%1$s) could not be converted", parameters["origin"].toEchoString());
     }
   }
   std::string layername = parameters.get("layer", "");
@@ -178,13 +189,13 @@ static Value builtin_dxf_cross(Arguments arguments, const Location& loc)
       lastwritetime = fs_timestamp(filepath);
     }
   } else {
-    LOG(message_group::Warning, loc, parameters.documentRoot(), "Can't open DXF file '%1$s'!", rawFilename);
+    LOG(message_group::Warning, loc, parameters.documentRoot(), "Can't open DXF file '%1$s'!",
+        rawFilename);
     return Value::undefined.clone();
   }
 
-  const std::string key = STR(filename, "|", layername, "|", xorigin, "|", yorigin,
-                        "|", scale, "|", lastwritetime,
-                        "|", filesize);
+  const std::string key = STR(filename, "|", layername, "|", xorigin, "|", yorigin, "|", scale, "|",
+                              lastwritetime, "|", filesize);
 
   auto result = dxf_cross_cache.find(key);
   if (result != dxf_cross_cache.end()) {
@@ -229,19 +240,20 @@ static Value builtin_dxf_cross(Arguments arguments, const Location& loc)
     }
   }
 
-  LOG(message_group::Warning, loc, parameters.documentRoot(), "Can't find cross in '%1$s', layer '%2$s'!", rawFilename, layername);
+  LOG(message_group::Warning, loc, parameters.documentRoot(),
+      "Can't find cross in '%1$s', layer '%2$s'!", rawFilename, layername);
   return Value::undefined.clone();
 }
 
 void initialize_builtin_dxf_dim()
 {
   Builtins::init("dxf_dim", new BuiltinFunction(&builtin_dxf_dim),
-  {
-    "dxf_dim()",
-  });
+                 {
+                   "dxf_dim()",
+                 });
 
   Builtins::init("dxf_cross", new BuiltinFunction(&builtin_dxf_cross),
-  {
-    "dxf_cross()",
-  });
+                 {
+                   "dxf_cross()",
+                 });
 }

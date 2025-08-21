@@ -57,8 +57,7 @@
 #include "glview/RenderSettings.h"
 #include "utils/printutils.h"
 
-
-#define QUOTE(x__) # x__
+#define QUOTE(x__) #x__
 #define QUOTED(x__) QUOTE(x__)
 
 namespace {
@@ -68,13 +67,15 @@ struct Containers {
   std::map<FileFormat, FileFormatInfo> fileFormatToInfo;
 };
 
-void add_item(Containers& containers, const FileFormatInfo& info) {
+void add_item(Containers& containers, const FileFormatInfo& info)
+{
   containers.identifierToInfo[info.identifier] = info;
   containers.fileFormatToInfo[info.format] = info;
 }
 
-Containers &containers() {
-  static std::unique_ptr<Containers> containers = [](){
+Containers& containers()
+{
+  static std::unique_ptr<Containers> containers = []() {
     auto containers = std::make_unique<Containers>();
 
     add_item(*containers, {FileFormat::ASCII_STL, "asciistl", "stl", "STL (ascii)"});
@@ -98,7 +99,7 @@ Containers &containers() {
     add_item(*containers, {FileFormat::POV, "pov", "pov", "POV"});
 
     // Alias
-    containers->identifierToInfo["stl"] = containers->identifierToInfo["asciistl"];  
+    containers->identifierToInfo["stl"] = containers->identifierToInfo["asciistl"];
     return containers;
   }();
   return *containers;
@@ -139,10 +140,7 @@ std::vector<FileFormat> all3D()
   return all3DFormats;
 }
 
-const FileFormatInfo& info(FileFormat fileFormat)
-{
-  return containers().fileFormatToInfo[fileFormat];
-}
+const FileFormatInfo& info(FileFormat fileFormat) { return containers().fileFormatToInfo[fileFormat]; }
 
 bool fromIdentifier(const std::string& identifier, FileFormat& format)
 {
@@ -152,42 +150,32 @@ bool fromIdentifier(const std::string& identifier, FileFormat& format)
   return true;
 }
 
-const std::string& toSuffix(FileFormat format)
+const std::string& toSuffix(FileFormat format) { return containers().fileFormatToInfo[format].suffix; }
+
+bool canPreview(FileFormat format)
 {
-  return containers().fileFormatToInfo[format].suffix;
+  return (format == FileFormat::AST || format == FileFormat::CSG || format == FileFormat::PARAM ||
+          format == FileFormat::ECHO || format == FileFormat::TERM || format == FileFormat::PNG);
 }
 
-bool canPreview(FileFormat format) {
-  return (format == FileFormat::AST ||
-          format == FileFormat::CSG ||
-          format == FileFormat::PARAM ||
-          format == FileFormat::ECHO ||
-          format == FileFormat::TERM ||
-          format == FileFormat::PNG);
+bool is3D(FileFormat format)
+{
+  return format == FileFormat::ASCII_STL || format == FileFormat::BINARY_STL ||
+         format == FileFormat::OBJ || format == FileFormat::OFF || format == FileFormat::WRL ||
+         format == FileFormat::AMF || format == FileFormat::_3MF || format == FileFormat::NEFDBG ||
+         format == FileFormat::NEF3 || format == FileFormat::POV;
 }
 
-bool is3D(FileFormat format) {
-return format == FileFormat::ASCII_STL ||
-  format == FileFormat::BINARY_STL ||
-  format == FileFormat::OBJ ||
-  format == FileFormat::OFF ||
-  format == FileFormat::WRL ||
-  format == FileFormat::AMF ||
-  format == FileFormat::_3MF ||
-  format == FileFormat::NEFDBG ||
-  format == FileFormat::NEF3 ||
-  format == FileFormat::POV;
+bool is2D(FileFormat format)
+{
+  return format == FileFormat::DXF || format == FileFormat::SVG || format == FileFormat::PDF;
 }
 
-bool is2D(FileFormat format) {
-  return format == FileFormat::DXF ||
-    format == FileFormat::SVG ||
-    format == FileFormat::PDF;
-}
+}  // namespace fileformat
 
-}  // namespace FileFormat
-
-ExportInfo createExportInfo(const FileFormat& format, const FileFormatInfo& info, const std::string& filepath, const Camera *camera, const CmdLineExportOptions& cmdLineOptions)
+ExportInfo createExportInfo(const FileFormat& format, const FileFormatInfo& info,
+                            const std::string& filepath, const Camera *camera,
+                            const CmdLineExportOptions& cmdLineOptions)
 {
   const auto colorScheme = ColorMap::inst()->findColorScheme(RenderSettings::inst()->colorscheme);
   auto exportInfo = ExportInfo{
@@ -204,57 +192,33 @@ ExportInfo createExportInfo(const FileFormat& format, const FileFormatInfo& info
     exportInfo.options3mf = Export3mfOptions::withOptions(cmdLineOptions);
   } else if (format == FileFormat::PDF) {
     exportInfo.optionsPdf = ExportPdfOptions::withOptions(cmdLineOptions);
+  } else if (format == FileFormat::SVG) {
+    exportInfo.optionsSvg = ExportSvgOptions::withOptions(cmdLineOptions);
   }
 
   return exportInfo;
 }
 
-static void exportFile(const std::shared_ptr<const Geometry>& root_geom, std::ostream& output, const ExportInfo& exportInfo)
+static void exportFile(const std::shared_ptr<const Geometry>& root_geom, std::ostream& output,
+                       const ExportInfo& exportInfo)
 {
   switch (exportInfo.format) {
-  case FileFormat::ASCII_STL:
-    export_stl(root_geom, output, false);
-    break;
-  case FileFormat::BINARY_STL:
-    export_stl(root_geom, output, true);
-    break;
-  case FileFormat::OBJ:
-    export_obj(root_geom, output);
-    break;
-  case FileFormat::OFF:
-    export_off(root_geom, output);
-    break;
-  case FileFormat::WRL:
-    export_wrl(root_geom, output);
-    break;
-  case FileFormat::AMF:
-    export_amf(root_geom, output);
-    break;
-  case FileFormat::_3MF:
-    export_3mf(root_geom, output, exportInfo);
-    break;
-  case FileFormat::DXF:
-    export_dxf(root_geom, output);
-    break;
-  case FileFormat::SVG:
-    export_svg(root_geom, output);
-    break;
-  case FileFormat::PDF:
-    export_pdf(root_geom, output, exportInfo);
-    break;
-  case FileFormat::POV:
-    export_pov(root_geom, output, exportInfo);
-    break;
+  case FileFormat::ASCII_STL:  export_stl(root_geom, output, false); break;
+  case FileFormat::BINARY_STL: export_stl(root_geom, output, true); break;
+  case FileFormat::OBJ:        export_obj(root_geom, output); break;
+  case FileFormat::OFF:        export_off(root_geom, output); break;
+  case FileFormat::WRL:        export_wrl(root_geom, output); break;
+  case FileFormat::AMF:        export_amf(root_geom, output); break;
+  case FileFormat::_3MF:       export_3mf(root_geom, output, exportInfo); break;
+  case FileFormat::DXF:        export_dxf(root_geom, output); break;
+  case FileFormat::SVG:        export_svg(root_geom, output, exportInfo); break;
+  case FileFormat::PDF:        export_pdf(root_geom, output, exportInfo); break;
+  case FileFormat::POV:        export_pov(root_geom, output, exportInfo); break;
 #ifdef ENABLE_CGAL
-  case FileFormat::NEFDBG:
-    export_nefdbg(root_geom, output);
-    break;
-  case FileFormat::NEF3:
-    export_nef3(root_geom, output);
-    break;
+  case FileFormat::NEFDBG: export_nefdbg(root_geom, output); break;
+  case FileFormat::NEF3:   export_nef3(root_geom, output); break;
 #endif
-  default:
-    assert(false && "Unknown file format");
+  default: assert(false && "Unknown file format");
   }
 }
 
@@ -267,10 +231,12 @@ bool exportFileStdOut(const std::shared_ptr<const Geometry>& root_geom, const Ex
   return true;
 }
 
-bool exportFileByName(const std::shared_ptr<const Geometry>& root_geom, const std::string& filename, const ExportInfo& exportInfo)
+bool exportFileByName(const std::shared_ptr<const Geometry>& root_geom, const std::string& filename,
+                      const ExportInfo& exportInfo)
 {
   std::ios::openmode mode = std::ios::out | std::ios::trunc;
-  if (exportInfo.format == FileFormat::_3MF || exportInfo.format == FileFormat::BINARY_STL || exportInfo.format == FileFormat::PDF) {
+  if (exportInfo.format == FileFormat::_3MF || exportInfo.format == FileFormat::BINARY_STL ||
+      exportInfo.format == FileFormat::PDF) {
     mode |= std::ios::binary;
   }
   const std::filesystem::path path(filename);
@@ -286,7 +252,7 @@ bool exportFileByName(const std::shared_ptr<const Geometry>& root_geom, const st
     } catch (std::ios::failure&) {
       onerror = true;
     }
-    try { // make sure file closed - resources released
+    try {  // make sure file closed - resources released
       fstream.close();
     } catch (std::ios::failure&) {
       onerror = true;
@@ -300,11 +266,10 @@ bool exportFileByName(const std::shared_ptr<const Geometry>& root_geom, const st
 
 namespace {
 
-double remove_negative_zero(double x) {
-  return x == -0 ? 0 : x;
-}
+double remove_negative_zero(double x) { return x == -0 ? 0 : x; }
 
-Vector3d remove_negative_zero(const Vector3d& pt) {
+Vector3d remove_negative_zero(const Vector3d& pt)
+{
   return {
     remove_negative_zero(pt[0]),
     remove_negative_zero(pt[1]),
@@ -312,29 +277,34 @@ Vector3d remove_negative_zero(const Vector3d& pt) {
   };
 }
 
-#if EIGEN_VERSION_AT_LEAST(3,4,0)
+#if EIGEN_VERSION_AT_LEAST(3, 4, 0)
 // Eigen 3.4.0 added begin()/end()
 struct LexographicLess {
-  template<class T>
-  bool operator()(T const& lhs, T const& rhs) const {
+  template <class T>
+  bool operator()(T const& lhs, T const& rhs) const
+  {
     return std::lexicographical_compare(lhs.begin(), lhs.end(), rhs.begin(), rhs.end(), std::less{});
   }
 };
 #else
 struct LexographicLess {
-  template<class T>
-  bool operator()(T const& lhs, T const& rhs) const {
-    return std::lexicographical_compare(lhs.data(), lhs.data() + lhs.size(), rhs.data(), rhs.data() + rhs.size(), std::less{});
+  template <class T>
+  bool operator()(T const& lhs, T const& rhs) const
+  {
+    return std::lexicographical_compare(lhs.data(), lhs.data() + lhs.size(), rhs.data(),
+                                        rhs.data() + rhs.size(), std::less{});
   }
 };
-#endif
+#endif  // if EIGEN_VERSION_AT_LEAST(3, 4, 0)
 
-} // namespace
+}  // namespace
 
-std::string get_current_iso8601_date_time_utc() {
+std::string get_current_iso8601_date_time_utc()
+{
   auto now = std::chrono::system_clock::now();
   auto time = std::chrono::system_clock::to_time_t(now);
-  return STR(std::put_time(gmtime(&time), "%Y-%m-%dT%H:%M:%SZ")); // %F/%T not fully supported everywhere
+  return STR(
+    std::put_time(gmtime(&time), "%Y-%m-%dT%H:%M:%SZ"));  // %F/%T not fully supported everywhere
 }
 
 std::unique_ptr<PolySet> createSortedPolySet(const PolySet& ps)
@@ -359,7 +329,7 @@ std::unique_ptr<PolySet> createSortedPolySet(const PolySet& ps)
   std::vector<int> indexTranslationMap(vertexMap.size());
   out->vertices.reserve(vertexMap.size());
 
-  for (const auto& [v,i] : vertexMap) {
+  for (const auto& [v, i] : vertexMap) {
     indexTranslationMap[i] = out->vertices.size();
     out->vertices.push_back(v);
   }
@@ -384,11 +354,10 @@ std::unique_ptr<PolySet> createSortedPolySet(const PolySet& ps)
     for (size_t i = 0, n = ps.indices.size(); i < n; i++) {
       faces.push_back({out->indices[i], out->color_indices[i]});
     }
-    std::sort(faces.begin(), faces.end(), [](const ColoredFace& a, const ColoredFace& b) {
-      return a.face < b.face;
-    });
+    std::sort(faces.begin(), faces.end(),
+              [](const ColoredFace& a, const ColoredFace& b) { return a.face < b.face; });
     for (size_t i = 0, n = faces.size(); i < n; i++) {
-      auto & face = faces[i];
+      auto& face = faces[i];
       out->indices[i] = face.face;
       out->color_indices[i] = face.color_index;
     }

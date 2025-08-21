@@ -33,7 +33,6 @@
 #include <cstdio>
 #include <vector>
 
-
 #include <fontconfig/fontconfig.h>
 #include <hb-ft.h>
 
@@ -46,9 +45,11 @@
 
 #include FT_OUTLINE_H
 // NOLINTNEXTLINE(bugprone-macro-parentheses)
-#define SCRIPT_UNTAG(tag)   ((uint8_t)((tag) >> 24)) % ((uint8_t)((tag) >> 16)) % ((uint8_t)((tag) >> 8)) % ((uint8_t)(tag))
+#define SCRIPT_UNTAG(tag) \
+  ((uint8_t)((tag) >> 24)) % ((uint8_t)((tag) >> 16)) % ((uint8_t)((tag) >> 8)) % ((uint8_t)(tag))
 
-static inline Vector2d get_scaled_vector(const FT_Vector *ft_vector, double scale) {
+static inline Vector2d get_scaled_vector(const FT_Vector *ft_vector, double scale)
+{
   return {ft_vector->x / scale, ft_vector->y / scale};
 }
 
@@ -88,7 +89,8 @@ int FreetypeRenderer::outline_conic_to_func(const FT_Vector *c1, const FT_Vector
   return 0;
 }
 
-int FreetypeRenderer::outline_cubic_to_func(const FT_Vector *c1, const FT_Vector *c2, const FT_Vector *to, void *user)
+int FreetypeRenderer::outline_cubic_to_func(const FT_Vector *c1, const FT_Vector *c2,
+                                            const FT_Vector *to, void *user)
 {
   auto *cb = reinterpret_cast<DrawingCallback *>(user);
 
@@ -97,8 +99,7 @@ int FreetypeRenderer::outline_cubic_to_func(const FT_Vector *c1, const FT_Vector
 }
 
 // Calculate offsets for horizontal text.
-void FreetypeRenderer::ShapeResults::calc_offsets_horiz(
-  const FreetypeRenderer::Params& params)
+void FreetypeRenderer::ShapeResults::calc_offsets_horiz(const FreetypeRenderer::Params& params)
 {
   if (params.halign == "right") {
     x_offset = -advance_x;
@@ -133,8 +134,7 @@ void FreetypeRenderer::ShapeResults::calc_offsets_horiz(
 }
 
 // Calculate offsets for vertical text.
-void FreetypeRenderer::ShapeResults::calc_offsets_vert(
-  const FreetypeRenderer::Params& params)
+void FreetypeRenderer::ShapeResults::calc_offsets_vert(const FreetypeRenderer::Params& params)
 {
   if (params.halign == "right") {
     x_offset = -right;
@@ -152,8 +152,7 @@ void FreetypeRenderer::ShapeResults::calc_offsets_vert(
 
   if (params.valign == "baseline") {
     LOG(message_group::Warning, params.loc, params.documentPath,
-        "Don't use valign=\"baseline\" with vertical layouts",
-        params.valign);
+        "Don't use valign=\"baseline\" with vertical layouts", params.valign);
     y_offset = 0;
   } else if (params.valign == "center") {
     y_offset = -advance_y / 2.0;
@@ -178,15 +177,13 @@ hb_direction_t FreetypeRenderer::Params::detect_direction(const hb_script_t scri
 
   hbdirection = hb_direction_from_string(direction.c_str(), -1);
   if (hbdirection != HB_DIRECTION_INVALID) {
-    PRINTDB("Explicit direction '%s' for %s",
-            hb_direction_to_string(hbdirection) % text.c_str());
+    PRINTDB("Explicit direction '%s' for %s", hb_direction_to_string(hbdirection) % text.c_str());
     return hbdirection;
   }
 
   hbdirection = hb_script_get_horizontal_direction(script);
   if (hbdirection != HB_DIRECTION_INVALID) {
-    PRINTDB("Detected direction '%s' for %s",
-            hb_direction_to_string(hbdirection) % text.c_str());
+    PRINTDB("Detected direction '%s' for %s", hb_direction_to_string(hbdirection) % text.c_str());
     return hbdirection;
   }
 
@@ -200,14 +197,13 @@ bool FreetypeRenderer::Params::is_ignored_script(const hb_script_t script)
   case HB_SCRIPT_COMMON:
   case HB_SCRIPT_INHERITED:
   case HB_SCRIPT_UNKNOWN:
-  case HB_SCRIPT_INVALID:
-    return true;
-  default:
-    return false;
+  case HB_SCRIPT_INVALID:   return true;
+  default:                  return false;
   }
 }
 
-hb_script_t FreetypeRenderer::Params::detect_script(hb_glyph_info_t *glyph_info, unsigned int glyph_count) const
+hb_script_t FreetypeRenderer::Params::detect_script(hb_glyph_info_t *glyph_info,
+                                                    unsigned int glyph_count) const
 {
   hb_script_t hbscript;
 
@@ -244,7 +240,9 @@ void FreetypeRenderer::Params::detect_properties()
   hb_buffer_destroy(hb_buf);
 
   if (!is_ignored_script(hbscript)) {
-    char script_buf[5] = { 0, };
+    char script_buf[5] = {
+      0,
+    };
     hb_tag_to_string(hb_script_to_iso15924_tag(hbscript), script_buf);
     set_script(script_buf);
   }
@@ -265,21 +263,19 @@ const FontFacePtr FreetypeRenderer::Params::get_font_face() const
 {
   FontCache *cache = FontCache::instance();
   if (!cache->is_init_ok()) {
-    LOG(message_group::Warning, loc, documentPath,
-        "Font cache initialization failed");
+    LOG(message_group::Warning, loc, documentPath, "Font cache initialization failed");
     return nullptr;
   }
 
   const FontFacePtr face = cache->get_font(font);
   if (!face) {
-    LOG(message_group::Warning, loc, documentPath,"Can't get font %1$s", font);
+    LOG(message_group::Warning, loc, documentPath, "Can't get font %1$s", font);
     return nullptr;
   }
 
   FT_Error error = FT_Set_Char_Size(face->face_, 0, scale, 100, 100);
   if (error) {
-    LOG(message_group::Warning, loc, documentPath,
-        "Can't set font size for font %1$s", font);
+    LOG(message_group::Warning, loc, documentPath, "Can't set font size for font %1$s", font);
     return nullptr;
   }
   return face;
@@ -293,15 +289,15 @@ void FreetypeRenderer::Params::set(Parameters& parameters)
   // However, we populate them here rather than "knowing" which
   // ones are and are not needed.
 
-  (void) parameters.valid("size", Value::Type::NUMBER);
-  (void) parameters.valid("text", Value::Type::STRING);
-  (void) parameters.valid("spacing", Value::Type::NUMBER);
-  (void) parameters.valid("font", Value::Type::STRING);
-  (void) parameters.valid("direction", Value::Type::STRING);
-  (void) parameters.valid("language", Value::Type::STRING);
-  (void) parameters.valid("script", Value::Type::STRING);
-  (void) parameters.valid("halign", Value::Type::STRING);
-  (void) parameters.valid("valign", Value::Type::STRING);
+  (void)parameters.valid("size", Value::Type::NUMBER);
+  (void)parameters.valid("text", Value::Type::STRING);
+  (void)parameters.valid("spacing", Value::Type::NUMBER);
+  (void)parameters.valid("font", Value::Type::STRING);
+  (void)parameters.valid("direction", Value::Type::STRING);
+  (void)parameters.valid("language", Value::Type::STRING);
+  (void)parameters.valid("script", Value::Type::STRING);
+  (void)parameters.valid("halign", Value::Type::STRING);
+  (void)parameters.valid("valign", Value::Type::STRING);
 
   set_fn(parameters["$fn"].toDouble());
   set_fa(parameters["$fa"].toDouble());
@@ -318,9 +314,7 @@ void FreetypeRenderer::Params::set(Parameters& parameters)
   set_valign(parameters.get("valign", "default"));
 }
 
-
-FreetypeRenderer::ShapeResults::ShapeResults(
-  const FreetypeRenderer::Params& params)
+FreetypeRenderer::ShapeResults::ShapeResults(const FreetypeRenderer::Params& params)
 {
   const FontFacePtr face = params.get_font_face();
   if (!face) {
@@ -351,23 +345,25 @@ FreetypeRenderer::ShapeResults::ShapeResults(
       }
     } else {
       LOG(message_group::Warning, params.loc, params.documentPath,
-          "Ignoring text with invalid UTF-8 encoding: \"%1$s\"",
-          params.text.c_str());
+          "Ignoring text with invalid UTF-8 encoding: \"%1$s\"", params.text.c_str());
     }
   } else {
-    hb_buffer_add_utf8(hb_buf, params.text.c_str(), strlen(params.text.c_str()), 0, strlen(params.text.c_str()));
+    hb_buffer_add_utf8(hb_buf, params.text.c_str(), strlen(params.text.c_str()), 0,
+                       strlen(params.text.c_str()));
   }
 
   std::vector<hb_feature_t> features;
   features.reserve(face->features_.size());
-  std::transform(begin(face->features_), end(face->features_), std::back_inserter(features), [](const std::string &s) {
-    hb_feature_t f;
-    hb_feature_from_string(s.c_str(), s.size(), &f);
-    return f;
-  });
+  std::transform(begin(face->features_), end(face->features_), std::back_inserter(features),
+                 [](const std::string& s) {
+                   hb_feature_t f;
+                   hb_feature_from_string(s.c_str(), s.size(), &f);
+                   return f;
+                 });
   std::vector<hb_feature_t *> features_ptr;
   features.reserve(features.size());
-  std::transform(begin(features), end(features), std::back_inserter(features_ptr), [](hb_feature_t &f) { return &f; });
+  std::transform(begin(features), end(features), std::back_inserter(features_ptr),
+                 [](hb_feature_t& f) { return &f; });
 
   hb_shape(hb_ft_font, hb_buf, features_ptr.data()[0], features_ptr.size());
 
@@ -430,15 +426,11 @@ FreetypeRenderer::ShapeResults::ShapeResults(
       const double gxoff = glyph.get_x_offset();
       const double gyoff = glyph.get_y_offset();
 
-      left = std::min(left,
-                      advance_x + gxoff + bbox.xMin / scale);
-      right = std::max(right,
-                       advance_x + gxoff + bbox.xMax / scale);
+      left = std::min(left, advance_x + gxoff + bbox.xMin / scale);
+      right = std::max(right, advance_x + gxoff + bbox.xMax / scale);
 
-      top = std::max(top,
-                     advance_y + gyoff + bbox.yMax / scale);
-      bottom = std::min(bottom,
-                        advance_y + gyoff + bbox.yMin / scale);
+      top = std::max(top, advance_y + gyoff + bbox.yMax / scale);
+      bottom = std::min(bottom, advance_y + gyoff + bbox.yMin / scale);
     }
 
     advance_x += glyph.get_x_advance() * params.spacing;
@@ -449,8 +441,7 @@ FreetypeRenderer::ShapeResults::ShapeResults(
   // contributed they will flip.  If they're still reversed,
   // there was no ink.
   if (right >= left) {
-    if (HB_DIRECTION_IS_HORIZONTAL(
-          hb_buffer_get_direction(hb_buf))) {
+    if (HB_DIRECTION_IS_HORIZONTAL(hb_buffer_get_direction(hb_buf))) {
       calc_offsets_horiz(params);
     } else {
       calc_offsets_vert(params);
@@ -481,8 +472,7 @@ FreetypeRenderer::ShapeResults::~ShapeResults()
   }
 }
 
-FreetypeRenderer::FontMetrics::FontMetrics(
-  const FreetypeRenderer::Params& params)
+FreetypeRenderer::FontMetrics::FontMetrics(const FreetypeRenderer::Params& params)
 {
   ok = false;
 
@@ -494,29 +484,18 @@ FreetypeRenderer::FontMetrics::FontMetrics(
   // scale is the width of an em in 26.6 fractional points
   // @ 100dpi = 100/72 pixels per point
   const FT_Size_Metrics *size_metrics = &face->face_->size->metrics;
-  nominal_ascent =
-    FT_MulFix(face->face_->ascender, size_metrics->y_scale) / scale
-    * params.size;
-  nominal_descent =
-    FT_MulFix(face->face_->descender, size_metrics->y_scale) / scale
-    * params.size;
-  max_ascent =
-    FT_MulFix(face->face_->bbox.yMax, size_metrics->y_scale) / scale
-    * params.size;
-  max_descent =
-    FT_MulFix(face->face_->bbox.yMin, size_metrics->y_scale) / scale
-    * params.size;
-  interline =
-    FT_MulFix(face->face_->height, size_metrics->y_scale) / scale
-    * params.size;
+  nominal_ascent = FT_MulFix(face->face_->ascender, size_metrics->y_scale) / scale * params.size;
+  nominal_descent = FT_MulFix(face->face_->descender, size_metrics->y_scale) / scale * params.size;
+  max_ascent = FT_MulFix(face->face_->bbox.yMax, size_metrics->y_scale) / scale * params.size;
+  max_descent = FT_MulFix(face->face_->bbox.yMin, size_metrics->y_scale) / scale * params.size;
+  interline = FT_MulFix(face->face_->height, size_metrics->y_scale) / scale * params.size;
   family_name = face->face_->family_name;
   style_name = face->face_->style_name;
 
   ok = true;
 }
 
-FreetypeRenderer::TextMetrics::TextMetrics(
-  const FreetypeRenderer::Params& params)
+FreetypeRenderer::TextMetrics::TextMetrics(const FreetypeRenderer::Params& params)
 {
   ok = false;
 
@@ -559,7 +538,8 @@ FreetypeRenderer::TextMetrics::TextMetrics(
   ok = true;
 }
 
-std::vector<std::shared_ptr<const Polygon2d>> FreetypeRenderer::render(const FreetypeRenderer::Params& params) const
+std::vector<std::shared_ptr<const Polygon2d>> FreetypeRenderer::render(
+  const FreetypeRenderer::Params& params) const
 {
   ShapeResults sr(params);
 
@@ -570,9 +550,7 @@ std::vector<std::shared_ptr<const Polygon2d>> FreetypeRenderer::render(const Fre
   DrawingCallback callback(params.segments, params.size);
   for (const auto& glyph : sr.glyph_array) {
     callback.start_glyph();
-    callback.set_glyph_offset(
-      sr.x_offset + glyph.get_x_offset(),
-      sr.y_offset + glyph.get_y_offset());
+    callback.set_glyph_offset(sr.x_offset + glyph.get_x_offset(), sr.y_offset + glyph.get_y_offset());
     FT_Outline outline = reinterpret_cast<FT_OutlineGlyph>(glyph.get_glyph())->outline;
     FT_Outline_Decompose(&outline, &funcs, &callback);
 
@@ -584,6 +562,7 @@ std::vector<std::shared_ptr<const Polygon2d>> FreetypeRenderer::render(const Fre
 
   // FIXME: The returned Polygon2d currently contains only outlines with the 'positive' flag set to true,
   // and where the winding order determines if the outlines should be interpreted as polygons or holes.
-  // We have to rely on any downstream processing to be aware of the winding order, and ignore the 'positive' flag.
+  // We have to rely on any downstream processing to be aware of the winding order, and ignore the
+  // 'positive' flag.
   return callback.get_result();
 }

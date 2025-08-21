@@ -56,10 +56,13 @@ PACKAGES=(
     "gettext 0.22.5"
 
     # https://freetype.org/index.html#news
-    "freetype 2.13.3  "
+    "freetype 2.13.3"
+
+    # https://github.com/silnrsi/graphite/releases
+    "libgraphite2 1.3.14"
 
     # https://github.com/harfbuzz/harfbuzz/releases
-    "harfbuzz 6.0.0"
+    "harfbuzz 11.4.1 1"
 
     # https://github.com/nih-at/libzip/releases
     "libzip 1.11.4"
@@ -106,7 +109,7 @@ PACKAGES=(
     "clipper2 1.5.3"
 
     # https://github.com/elalish/manifold/releases
-    "manifold 3.1.1"
+    "manifold 3.2.1"
 )
 DEPLOY_PACKAGES=(
     # https://github.com/sparkle-project/Sparkle/releases
@@ -737,6 +740,21 @@ build_glib2()
   install_name_tool -id @rpath/libglib-2.0.dylib $DEPLOYDIR/lib/libglib-2.0.dylib
 }
 
+build_libgraphite2()
+{
+  version=$1
+  cd $BASEDIR/src
+  rm -rf graphite-$version
+  if [ ! -f graphite-$version.tar.gz ]; then
+   curl -L https://github.com/silnrsi/graphite/archive/refs/tags/$version.tar.gz -o graphite-$version.tar.gz
+ fi
+ tar xzf graphite-$version.tar.gz
+  cd graphite-$version
+  cmake -DCMAKE_POLICY_VERSION_MINIMUM=3.5 -DCMAKE_PREFIX_PATH=$DEPLOYDIR -DCMAKE_INSTALL_PREFIX=$DEPLOYDIR -DCMAKE_OSX_DEPLOYMENT_TARGET="$MAC_OSX_VERSION_MIN" -DCMAKE_OSX_ARCHITECTURES="$ARCHS_COMBINED" .
+  make -j"$NUMCPU" VERBOSE=1
+  make -j"$NUMCPU" install
+}
+
 build_harfbuzz()
 {
   version=$1
@@ -749,13 +767,11 @@ build_harfbuzz()
   cd "harfbuzz-$version"
 
   # Build each arch separately
-  for i in ${!ARCHS[@]}; do
-    arch=${ARCHS[$i]}
-    mkdir build-$arch
-    cd build-$arch
-    PKG_CONFIG_LIBDIR="$DEPLOYDIR/lib/pkgconfig" ../configure --prefix=$DEPLOYDIR CFLAGS="-arch $arch -mmacos-version-min=$MAC_OSX_VERSION_MIN" CXXFLAGS="-arch $arch -mmacos-version-min=$MAC_OSX_VERSION_MIN" LDFLAGS="-arch $arch -mmacos-version-min=$MAC_OSX_VERSION_MIN" --with-freetype=yes --with-gobject=no --with-cairo=no --with-icu=no --with-coretext=auto --with-glib=no --disable-gtk-doc-html --disable-static --host=${GNU_ARCHS[$i]}-apple-darwin17.0.0
-    make -j"$NUMCPU" install DESTDIR=$PWD/install/
-    cd ..
+  for arch in ${ARCHS[*]}; do
+    sed -e "s,@MAC_OSX_VERSION_MIN@,$MAC_OSX_VERSION_MIN,g" -e "s,@DEPLOYDIR@,$DEPLOYDIR,g" $OPENSCADDIR/scripts/macos-$arch.txt.in > macos-$arch.txt
+    meson setup --prefix $PWD/../../install --cross-file macos-$arch.txt build-$arch -Dfreetype=enabled -Dgraphite2=enabled -Dgobject=disabled -Dcairo=disabled -Dicu=disabled -Dcoretext=auto -Dglib=disabled -Dtests=disabled -Ddocs=disabled
+    meson compile -C build-$arch
+    DESTDIR=install/ meson install -C build-$arch
   done
 
   # Install the first arch

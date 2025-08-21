@@ -8,12 +8,10 @@
 
 class State
 {
-
 public:
-  State(std::shared_ptr<const AbstractNode> parent)
-    : parentnode(std::move(parent)) {
+  State(std::shared_ptr<const AbstractNode> parent) : parentnode(std::move(parent))
+  {
     this->matrix_ = Transform3d::Identity();
-    this->color_.fill(-1.0f);
   }
 
   void setPrefix(bool on) { FLAG(this->flags, PREFIX, on); }
@@ -38,15 +36,16 @@ public:
 
 private:
   enum StateFlags : unsigned int {
-    NONE       = 0x00u,
-    PREFIX     = 0x01u,
-    POSTFIX    = 0x02u,
-    PREFERNEF  = 0x04u,
-    HIGHLIGHT  = 0x08u,
+    NONE = 0x00u,
+    PREFIX = 0x01u,
+    POSTFIX = 0x02u,
+    PREFERNEF = 0x04u,
+    HIGHLIGHT = 0x08u,
     BACKGROUND = 0x10u
   };
 
-  constexpr void FLAG(unsigned int& var, StateFlags flag, bool on) {
+  constexpr void FLAG(unsigned int& var, StateFlags flag, bool on)
+  {
     if (on) {
       var |= flag;
     } else {

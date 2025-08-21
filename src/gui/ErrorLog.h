@@ -10,9 +10,7 @@
 #include <list>
 #include <QStandardItemModel>
 
-enum errorLog_column {
-  group = 0, file, lineNo, message
-};
+enum errorLog_column { group = 0, file, lineNo, message };
 
 class ErrorLog : public QWidget, public Ui::errorLogWidget
 {

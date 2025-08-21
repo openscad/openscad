@@ -33,7 +33,7 @@
 #include <QString>
 #include <vector>
 #include "utils/printutils.h"
-#include "gui/qtgettext.h" // IWYU pragma: keep
+#include "gui/qtgettext.h"  // IWYU pragma: keep
 #include "ui_Console.h"
 
 struct ConsoleMessageBlock {
@@ -49,7 +49,7 @@ class Console : public QPlainTextEdit, public Ui::Console
 private:
   static constexpr int MAX_LINES = 5000;
   std::vector<ConsoleMessageBlock> msgBuffer;
-  QTextCursor appendCursor; // keep a cursor always at the end of document.
+  QTextCursor appendCursor;  // keep a cursor always at the end of document.
 
 public:
   Console(QWidget *parent = nullptr);

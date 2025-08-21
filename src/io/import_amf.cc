@@ -64,7 +64,7 @@ static const std::string triangle_v3 = triangle + "/v3";
 class AmfImporter
 {
 private:
-  std::string xpath; // element nesting stack
+  std::string xpath;  // element nesting stack
 
   using cb_func = void (*)(AmfImporter *, const xmlChar *);
 
@@ -104,9 +104,7 @@ public:
   virtual xmlTextReaderPtr createXmlReader(const char *filename);
 };
 
-AmfImporter::AmfImporter(const Location& loc) : loc(loc)
-{
-}
+AmfImporter::AmfImporter(const Location& loc) : loc(loc) {}
 
 void AmfImporter::set_x(AmfImporter *importer, const xmlChar *value)
 {
@@ -140,7 +138,7 @@ void AmfImporter::set_v3(AmfImporter *importer, const xmlChar *value)
 
 void AmfImporter::start_object(AmfImporter *importer, const xmlChar *)
 {
-  importer->builder = std::make_unique<PolySetBuilder>(0,0);
+  importer->builder = std::make_unique<PolySetBuilder>(0, 0);
 }
 
 void AmfImporter::end_object(AmfImporter *importer, const xmlChar *)
@@ -153,20 +151,22 @@ void AmfImporter::end_object(AmfImporter *importer, const xmlChar *)
 
 void AmfImporter::end_vertex(AmfImporter *importer, const xmlChar *)
 {
-  PRINTDB("AMF: add vertex %d - (%.2f, %.2f, %.2f)", importer->vertex_list.size() % importer->x % importer->y % importer->z);
+  PRINTDB("AMF: add vertex %d - (%.2f, %.2f, %.2f)",
+          importer->vertex_list.size() % importer->x % importer->y % importer->z);
   importer->vertex_list.emplace_back(importer->x, importer->y, importer->z);
 }
 
 void AmfImporter::end_triangle(AmfImporter *importer, const xmlChar *)
 {
-  int idx[3]= {importer->idx_v1,importer->idx_v2,importer->idx_v3};
-  PRINTDB("AMF: add triangle %d - (%.2f, %.2f, %.2f)", importer->vertex_list.size() % idx[0] % idx[1] % idx[2]);
+  int idx[3] = {importer->idx_v1, importer->idx_v2, importer->idx_v3};
+  PRINTDB("AMF: add triangle %d - (%.2f, %.2f, %.2f)",
+          importer->vertex_list.size() % idx[0] % idx[1] % idx[2]);
 
   std::vector<Eigen::Vector3d>& v = importer->vertex_list;
 
   importer->builder->beginPolygon(3);
-  for(auto i : idx) // TODO set vertex array first
-	  importer->builder->addVertex(Vector3d(v[i].x(), v[i].y(), v[i].z()));
+  for (auto i : idx)  // TODO set vertex array first
+    importer->builder->addVertex(Vector3d(v[i].x(), v[i].y(), v[i].z()));
 }
 
 void AmfImporter::processNode(xmlTextReaderPtr reader)
@@ -176,8 +176,7 @@ void AmfImporter::processNode(xmlTextReaderPtr reader)
   xmlChar *value = xmlTextReaderValue(reader);
   int node_type = xmlTextReaderNodeType(reader);
   switch (node_type) {
-  case XML_READER_TYPE_ELEMENT:
-  {
+  case XML_READER_TYPE_ELEMENT: {
     xpath += '/';
     xpath += name;
     cb_func startFunc = start_funcs[xpath];
@@ -185,10 +184,8 @@ void AmfImporter::processNode(xmlTextReaderPtr reader)
       PRINTDB("AMF: start %s", xpath);
       startFunc(this, nullptr);
     }
-  }
-  break;
-  case XML_READER_TYPE_END_ELEMENT:
-  {
+  } break;
+  case XML_READER_TYPE_END_ELEMENT: {
     cb_func endFunc = end_funcs[xpath];
     if (endFunc) {
       PRINTDB("AMF: end   %s", xpath);
@@ -196,21 +193,18 @@ void AmfImporter::processNode(xmlTextReaderPtr reader)
     }
     size_t pos = xpath.find_last_of('/');
     if (pos != std::string::npos) xpath.erase(pos);
-  }
-  break;
-  case XML_READER_TYPE_TEXT:
-  {
+  } break;
+  case XML_READER_TYPE_TEXT: {
     cb_func textFunc = funcs[xpath];
     if (textFunc) {
       PRINTDB("AMF: text  %s - '%s'", xpath % value);
       textFunc(this, value);
     }
-  }
-  break;
+  } break;
   }
 
   xmlFree(value);
-  xmlFree((void *) (name));
+  xmlFree((void *)(name));
 }
 
 xmlTextReaderPtr AmfImporter::createXmlReader(const char *filename)
@@ -225,7 +219,8 @@ int AmfImporter::streamFile(const char *filename)
   xmlTextReaderPtr reader = createXmlReader(filename);
 
   if (reader == nullptr) {
-    LOG(message_group::Warning, "Can't open import file '%1$s', import() at line %2$d", filename, this->loc.firstLine());
+    LOG(message_group::Warning, "Can't open import file '%1$s', import() at line %2$d", filename,
+        this->loc.firstLine());
     return 1;
   }
 
@@ -241,7 +236,8 @@ int AmfImporter::streamFile(const char *filename)
     ret = -1;
   }
   if (ret != 0) {
-    LOG(message_group::Warning, "Failed to parse file '%1$s', import() at line %2$d", filename, this->loc.firstLine());
+    LOG(message_group::Warning, "Failed to parse file '%1$s', import() at line %2$d", filename,
+        this->loc.firstLine());
   }
   return ret;
 }
@@ -279,8 +275,9 @@ std::unique_ptr<PolySet> AmfImporter::read(const std::string& filename)
       // FIXME: Unnecessary copy
       return std::make_unique<PolySet>(*ps);
     } else
-#endif // ENABLE_CGAL
-      LOG(message_group::Error, "Error importing multi-object AMF file '%1$s', import() at line %2$d", filename, this->loc.firstLine());
+#endif  // ENABLE_CGAL
+      LOG(message_group::Error, "Error importing multi-object AMF file '%1$s', import() at line %2$d",
+          filename, this->loc.firstLine());
   }
   return PolySet::createEmpty();
 }
@@ -292,8 +289,8 @@ std::unique_ptr<PolySet> AmfImporter::read(const std::string& filename)
 class AmfImporterZIP : public AmfImporter
 {
 private:
-  struct zip *archive {nullptr};
-  struct zip_file *zipfile {nullptr};
+  struct zip *archive{nullptr};
+  struct zip_file *zipfile{nullptr};
 
   static int read_callback(void *context, char *buffer, int len);
   static int close_callback(void *context);
@@ -304,9 +301,7 @@ public:
   xmlTextReaderPtr createXmlReader(const char *filename) override;
 };
 
-AmfImporterZIP::AmfImporterZIP(const Location& loc) : AmfImporter(loc)
-{
-}
+AmfImporterZIP::AmfImporterZIP(const Location& loc) : AmfImporter(loc) {}
 
 int AmfImporterZIP::read_callback(void *context, char *buffer, int len)
 {
@@ -331,7 +326,8 @@ xmlTextReaderPtr AmfImporterZIP::createXmlReader(const char *filepath)
     const char *filename = last_slash ? last_slash + 1 : filepath;
     zipfile = zip_fopen(archive, filename, ZIP_FL_NODIR);
     if (zipfile == nullptr) {
-      LOG(message_group::Warning, "Can't read file '%1$s' from zipped AMF '%2$s', import() at line %3$d", filename, filepath, this->loc.firstLine());
+      LOG(message_group::Warning, "Can't read file '%1$s' from zipped AMF '%2$s', import() at line %3$d",
+          filename, filepath, this->loc.firstLine());
     }
     if ((zipfile == nullptr) && (zip_get_num_entries(archive, 0) == 1)) {
       LOG(message_group::Warning, "Trying to read single entry '%1$s'", zip_get_name(archive, 0, 0));
@@ -350,7 +346,8 @@ xmlTextReaderPtr AmfImporterZIP::createXmlReader(const char *filepath)
   }
 }
 
-std::unique_ptr<PolySet> import_amf(const std::string& filename, const Location& loc) {
+std::unique_ptr<PolySet> import_amf(const std::string& filename, const Location& loc)
+{
   LOG(message_group::Deprecated, "AMF import is deprecated. Please use 3MF instead.");
   AmfImporterZIP importer(loc);
   return importer.read(filename);
@@ -358,10 +355,11 @@ std::unique_ptr<PolySet> import_amf(const std::string& filename, const Location&
 
 #else
 
-std::unique_ptr<PolySet> import_amf(const std::string& filename, const Location& loc) {
+std::unique_ptr<PolySet> import_amf(const std::string& filename, const Location& loc)
+{
   LOG(message_group::Deprecated, "AMF import is deprecated. Please use 3MF instead.");
   AmfImporter importer(loc);
   return importer.read(filename);
 }
 
-#endif // ifdef ENABLE_LIBZIP
+#endif  // ifdef ENABLE_LIBZIP

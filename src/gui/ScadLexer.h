@@ -5,7 +5,7 @@
 #include <Qsci/qsciglobal.h>
 #include <string>
 
-#define ENABLE_LEXERTL  1
+#define ENABLE_LEXERTL 1
 
 /***************************************************************/
 
@@ -30,7 +30,7 @@ private:
   QStringList autoCompletionWordSeparators() const override;
 };
 
-#endif // if !ENABLE_LEXERTL
+#endif  // if !ENABLE_LEXERTL
 
 /***************************************************************/
 /***************************************************************/
@@ -50,7 +50,7 @@ private:
 class LexInterface
 {
 public:
-  virtual void highlighting(int start, const std::string& input, lexertl::smatch results) = 0;
+  virtual void highlightingMultiple(int start, int length, char *styles) = 0;
   virtual int getStyleAt(int position) = 0;
 };
 
@@ -60,9 +60,31 @@ public:
   lexertl::state_machine sm;
   lexertl::rules rules_;
 
-  enum { eEOF, ekeyword, etransformation, eboolean, efunction, emodel, eoperator, eQuotedString, enumber,
-         ecustom1, ecustom2, ecustom3, ecustom4, ecustom5, ecustom6, ecustom7, ecustom8, ecustom9, ecustom10,
-         evariable, especialVariable, ecomment, etext };
+  enum {
+    eEOF,
+    ekeyword,
+    etransformation,
+    eboolean,
+    efunction,
+    emodel,
+    eoperator,
+    eQuotedString,
+    enumber,
+    ecustom1,
+    ecustom2,
+    ecustom3,
+    ecustom4,
+    ecustom5,
+    ecustom6,
+    ecustom7,
+    ecustom8,
+    ecustom9,
+    ecustom10,
+    evariable,
+    especialVariable,
+    ecomment,
+    etext
+  };
 
   Lex() = default;
 
@@ -118,17 +140,12 @@ public:
 
   QColor defaultColor(int style) const override;
 
-  void highlighting(int start, const std::string& input, lexertl::smatch results) override;
+  void highlightingMultiple(int start, int length, char *styles) override;
   QString description(int style) const override;
   QStringList autoCompletionWordSeparators() const override;
 
-  void addKeywords(const std::string& keywords, int id) {
-    my_lexer->defineRules(keywords, id);
-  }
-  void finalizeLexer() {
-    my_lexer->finalize_rules();
-  }
-
+  void addKeywords(const std::string& keywords, int id) { my_lexer->defineRules(keywords, id); }
+  void finalizeLexer() { my_lexer->finalize_rules(); }
 };
 
-#endif // if ENABLE_LEXERTL
+#endif  // if ENABLE_LEXERTL
