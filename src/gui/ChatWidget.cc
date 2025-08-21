@@ -112,9 +112,13 @@ void ChatWidget::sendMessage()
 
     QNetworkReply *reply = networkManager->post(request, jsonData);
     connect(reply, &QNetworkReply::finished, this, &ChatWidget::onApiResponse);
+#if QT_VERSION < QT_VERSION_CHECK(5, 15, 0)
     connect(reply, QOverload<QNetworkReply::NetworkError>::of(&QNetworkReply::error),
             this, &ChatWidget::onApiError);
-    
+#else
+    connect(reply, &QNetworkReply::errorOccurred, this, &ChatWidget::onApiError);
+#endif
+
     // Show loading message
     addMessage("🤔 Thinking...", false);
     sendButton->setEnabled(false);
