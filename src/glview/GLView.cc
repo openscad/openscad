@@ -637,10 +637,10 @@ void GLView::decodeMarkerValue(double i, double l, int size_div_sm)
       axis_draw(x, y, font_size, baseline_offset);
     };
 
-    hershey::DrawText(pos_number_str, i, 0, hershey::TextAlign::kCenter, font_size, plot_fun);
+    hershey::DrawTextHershey(pos_number_str, i, 0, hershey::TextAlign::kCenter, font_size, plot_fun);
     if (needs_glend) glEnd();
     needs_glend = false;
-    hershey::DrawText(neg_number_str, -i - prefix_offset, 0, hershey::TextAlign::kCenter, font_size,
+    hershey::DrawTextHershey(neg_number_str, -i - prefix_offset, 0, hershey::TextAlign::kCenter, font_size,
                       plot_fun);
     if (needs_glend) glEnd();
     needs_glend = false;

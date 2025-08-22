@@ -37,7 +37,7 @@ float TextWidth(std::string_view str, float size)
   return std::max(longest_line, w);
 }
 
-void DrawText(std::string_view str, float tx, float ty, TextAlign align, float size,
+void DrawTextHershey(std::string_view str, float tx, float ty, TextAlign align, float size,
               const std::function<void(bool do_line, float x, float y)>& draw)
 {
   float dx = 0;
