@@ -447,9 +447,9 @@ void VBOBuilder::create_surface(const PolySet& ps, const Transform3d& m, const C
 
   auto has_colors = !ps.color_indices.empty();
 
-  for (int i = 0, n = ps.indices.size(); i < n; i++) {
+  for (size_t i = 0, n = ps.indices.size(); i < n; i++) {
     const auto& poly = ps.indices[i];
-    const auto color_index = has_colors && i < ps.color_indices.size() ? ps.color_indices[i] : -1;
+    const size_t color_index = has_colors && i < ps.color_indices.size() ? ps.color_indices[i] : -1;
     const auto& color = !force_default_color && color_index >= 0 && color_index < ps.colors.size() &&
                             ps.colors[color_index].isValid()
                           ? ps.colors[color_index]

@@ -121,7 +121,7 @@ void ThrownTogetherRenderer::draw(bool showedges, const ShaderUtils::ShaderInfo 
 {
   // Only use shader if select rendering or showedges
   const bool enable_shader =
-    shaderinfo && (shaderinfo->type == ShaderUtils::ShaderType::EDGE_RENDERING && showedges ||
+    shaderinfo && ((shaderinfo->type == ShaderUtils::ShaderType::EDGE_RENDERING && showedges) ||
                    shaderinfo->type == ShaderUtils::ShaderType::SELECT_RENDERING);
   if (enable_shader) {
     GL_TRACE("glUseProgram(%d)", shaderinfo->resource.shader_program);
