@@ -204,7 +204,7 @@ std::unique_ptr<PolySet> import_off(const std::string& filename, const Location&
 
     try {
       Vector3d v = {0, 0, 0};
-      int i;
+      size_t i;
       for (i = 0; i < dimension; i++) {
         v[i] = boost::lexical_cast<double>(words[i]);
       }
@@ -226,8 +226,6 @@ std::unique_ptr<PolySet> import_off(const std::string& filename, const Location&
       return PolySet::createEmpty();
     }
   }
-
-  auto logged_color_warning = false;
 
   while (!f.eof() && (face++ < faces_count)) {
     if (!getline_clean("reading faces: end of file")) {
@@ -252,7 +250,7 @@ std::unique_ptr<PolySet> import_off(const std::string& filename, const Location&
       ps->indices.emplace_back().reserve(face_size);
       // PRINTDB("Index[%d] [%d] = { ", face % n);
       for (i = 0; i < face_size; i++) {
-        int ind = boost::lexical_cast<int>(words[i + 1]);
+        size_t ind = boost::lexical_cast<int>(words[i + 1]);
         // PRINTDB("%d, ", ind);
         if (ind >= 0 && ind < vertices_count) {
           ps->indices.back().push_back(ind);

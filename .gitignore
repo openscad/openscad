@@ -62,6 +62,7 @@ object_script.openscad.Release
 /locale/*.mo
 /locale/POTFILES
 /tmp
+/vcpkg_installed
 /nbproject
 /mingw32.*
 /mingw64.*

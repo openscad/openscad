@@ -226,7 +226,7 @@ public:
     size_t last_size = 0;
     size_t elements_offset = 0;
 
-    const size_t num_vertices = vertices_.size() + edges_.size() * 2, elements_size = 0;
+    const size_t num_vertices = vertices_.size() + edges_.size() * 2;
     points_edges_builder.allocateBuffers(num_vertices);
 
     // Points

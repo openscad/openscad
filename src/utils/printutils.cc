@@ -36,7 +36,6 @@ OutputHandlerFunc2 *outputhandler2 = nullptr;
 boost::circular_buffer<std::string> lastmessages(5);
 boost::circular_buffer<struct Message> lastlogmessages(5);
 
-int count = 0;
 bool no_throw;
 bool deferred;
 
