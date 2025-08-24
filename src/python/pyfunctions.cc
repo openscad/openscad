@@ -3689,8 +3689,6 @@ PyObject *python_csg_sub(PyObject *self, PyObject *args, PyObject *kwargs, OpenS
     PyObject *key, *value;
     Py_ssize_t pos = 0;
     while (PyDict_Next(dict, &pos, &key, &value)) {
-      PyObject *value1 = PyUnicode_AsEncodedString(key, "utf-8", "~");
-      const char *value_str = PyBytes_AS_STRING(value1);
       PyDict_SetItem(((PyOpenSCADObject *)pyresult)->dict, key, value);
     }
   }

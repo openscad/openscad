@@ -363,12 +363,6 @@ function(add_cmdline_test TESTCMD_BASENAME)
     # add global experimental options here
     set(EXPERIMENTAL_OPTION "")
 
-   if (ENABLE_MANIFOLD)
-     if (NOT TESTCMD_ARGS OR NOT "${TESTCMD_ARGS}" MATCHES "--backend")
-       set(MANIFOLD_OPTION "--backend=manifold")
-     endif()
-   endif()
-
     # 2D tests should be viewed from the top, not an angle.
     set(CAMERA_OPTION "")
     is_2d(${SCADFILE} IS2D)

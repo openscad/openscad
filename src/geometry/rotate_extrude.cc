@@ -92,7 +92,7 @@ std::unique_ptr<Geometry> rotatePolygonSub(const RotateExtrudeNode& node, const 
   const auto num_sections = fragend - fragstart;
   const bool closed = node.angle == 360 && node.v.norm() == 0;
   // # of rings of vertices
-  const int num_rings = num_sections + (closed ? 0 : 1);
+  const size_t num_rings = num_sections + (closed ? 0 : 1);
 
   // slice_stride is the number of vertices in a single ring
   size_t slice_stride = 0;
@@ -171,7 +171,7 @@ std::unique_ptr<Geometry> rotatePolygonSub(const RotateExtrudeNode& node, const 
     int curr_outline = 0;
     for (const auto& outline : poly.outlines()) {
       assert(outline.vertices.size() > 2);
-      for (int i = 1; i <= outline.vertices.size(); ++i) {
+      for (size_t i = 1; i <= outline.vertices.size(); ++i) {
         const int curr_idx = curr_outline + (i % outline.vertices.size());
         const int prev_idx = curr_outline + i - 1;
         if (flip_faces) {

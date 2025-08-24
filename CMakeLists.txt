@@ -341,7 +341,7 @@ if (MSVC)
   message(STATUS "Eigen: ${Eigen3_VERSION}")
 
   set(Boost_USE_STATIC_LIBS TRUE)
-  find_package(Boost 1.70 REQUIRED COMPONENTS system regex program_options)
+  find_package(Boost 1.70 REQUIRED COMPONENTS regex program_options)
   message(STATUS "Boost: ${Boost_VERSION}")
   target_include_directories(OpenSCAD SYSTEM PRIVATE ${Boost_INCLUDE_DIRS})
   target_link_libraries(OpenSCAD PRIVATE ${Boost_LIBRARIES})
@@ -389,7 +389,7 @@ else()
   target_compile_definitions(OpenSCAD PRIVATE EIGEN_DONT_ALIGN)
   message(STATUS "Eigen: ${Eigen3_VERSION}")
 
-  find_package(Boost 1.61 REQUIRED COMPONENTS system regex program_options)
+  find_package(Boost 1.70 REQUIRED COMPONENTS regex program_options)
   message(STATUS "Boost: ${Boost_VERSION}")
   target_include_directories(OpenSCAD SYSTEM PRIVATE ${Boost_INCLUDE_DIRS})
   target_link_libraries(OpenSCAD PRIVATE ${Boost_LIBRARIES})
@@ -1564,7 +1564,10 @@ if(APPLE AND NOT APPLE_UNIX)
   file(COPY ${CMAKE_SOURCE_DIR}/templates DESTINATION ${BUNDLE_RESOURCES_DIR})
 
   if(ENABLE_GUI_TESTS)
-    file(COPY ${CMAKE_SOURCE_DIR}/tests/data DESTINATION ${BUNDLE_RESOURCES_DIR}/tests)
+    file(COPY 
+         ${CMAKE_SOURCE_DIR}/tests/data/basic-ux
+         ${CMAKE_SOURCE_DIR}/tests/data/modulecache-tests
+         DESTINATION ${BUNDLE_RESOURCES_DIR}/tests)
   endif()
 
 elseif(MINGW)

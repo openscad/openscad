@@ -568,7 +568,7 @@ void GLView::showScalemarkers(const Color4f& col)
   int line_cnt = 0;
 
   size_t divs = l / tick_width;
-  for (auto div = 0; div < divs; ++div) {
+  for (size_t div = 0; div < divs; ++div) {
     double i = div * tick_width;  // i represents the position along the axis
     int size_div;
     if (line_cnt > 0 && line_cnt % 10 == 0) {        // major tick

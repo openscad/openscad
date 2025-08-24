@@ -249,7 +249,7 @@ std::unique_ptr<const Geometry> SphereNode::createGeometry() const
   polyset->vertices.reserve(num_rings * num_fragments);
 
   // double offset = 0.5 * ((fragments / 2) % 2);
-  for (size_t i = 0; i < num_rings; ++i) {
+  for (auto i = 0; i < num_rings; ++i) {
     //                double phi = (180.0 * (i + offset)) / (fragments/2);
     const double phi = (180.0 * (i + 0.5)) / num_rings;
     const double radius = r * sin_degrees(phi);
@@ -262,8 +262,8 @@ std::unique_ptr<const Geometry> SphereNode::createGeometry() const
     polyset->indices.back().push_back(i);
   }
 
-  for (int i = 0; i < num_rings - 1; ++i) {
-    for (int r = 0; r < num_fragments; ++r) {
+  for (auto i = 0; i < num_rings - 1; ++i) {
+    for (auto r = 0; r < num_fragments; ++r) {
       polyset->indices.push_back({
         i * num_fragments + (r + 1) % num_fragments,
         i * num_fragments + r,

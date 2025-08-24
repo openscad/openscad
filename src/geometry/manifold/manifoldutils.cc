@@ -292,11 +292,11 @@ std::shared_ptr<SurfaceMesh> createSurfaceMeshFromManifold(const manifold::Manif
   const auto meshgl = mani.GetMeshGL64();
   auto mesh = std::make_shared<SurfaceMesh>();
   mesh->reserve(meshgl.NumVert(), meshgl.NumTri() * 3, meshgl.NumTri());
-  for (auto i = 0; i < meshgl.NumVert(); i++) {
+  for (size_t i = 0; i < meshgl.NumVert(); i++) {
     const auto& v = meshgl.GetVertPos(i);
     mesh->add_vertex(typename SurfaceMesh::Point(v[0], v[1], v[2]));
   }
-  for (auto i = 0; i < meshgl.NumTri(); i++) {
+  for (size_t i = 0; i < meshgl.NumTri(); i++) {
     const auto& tri = meshgl.GetTriVerts(i);
     mesh->add_face(typename SurfaceMesh::Vertex_index(tri[0]),
                    typename SurfaceMesh::Vertex_index(tri[1]),

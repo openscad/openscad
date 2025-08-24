@@ -68,7 +68,7 @@ public:
   virtual std::string verbose_name() const { return this->name(); }
 
   const std::vector<std::shared_ptr<AbstractNode>>& getChildren() const { return this->children; }
-  size_t index() const { return this->idx; }
+  int index() const { return this->idx; }
 
   static void resetIndexCounter() { idx_counter = 1; }
 

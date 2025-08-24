@@ -118,7 +118,7 @@ void OpenCSGRenderer::draw(bool showedges, const ShaderUtils::ShaderInfo *shader
 #ifdef ENABLE_OPENCSG
   // Only use shader if select rendering or showedges
   bool enable_shader =
-    shaderinfo && (shaderinfo->type == ShaderUtils::ShaderType::EDGE_RENDERING && showedges ||
+    shaderinfo && ((shaderinfo->type == ShaderUtils::ShaderType::EDGE_RENDERING && showedges) ||
                    shaderinfo->type == ShaderUtils::ShaderType::SELECT_RENDERING);
 
   for (const auto& product : vertex_state_containers_) {
@@ -211,8 +211,6 @@ void OpenCSGRenderer::createCSGVBOProducts(const CSGProducts& products, bool hig
     for (const auto& csgobj : product.intersections) {
       if (csgobj.leaf->polyset) {
         const Color4f& c = csgobj.leaf->color;
-        const int& ti = csgobj.leaf->textureind;
-        const auto csgmode = RendererUtils::getCsgMode(highlight_mode, background_mode);
 
         ColorMode colormode = ColorMode::NONE;
         bool override_color;
@@ -287,10 +285,6 @@ void OpenCSGRenderer::createCSGVBOProducts(const CSGProducts& products, bool hig
     for (const auto& csgobj : product.subtractions) {
       if (csgobj.leaf->polyset) {
         const Color4f& c = csgobj.leaf->color;
-        const int& ti = csgobj.leaf->textureind;
-        const auto csgmode =
-          RendererUtils::getCsgMode(highlight_mode, background_mode, OpenSCADOperator::DIFFERENCE);
-
         ColorMode colormode = ColorMode::NONE;
         bool override_color;
         if (highlight_mode) {

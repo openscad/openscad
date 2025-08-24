@@ -110,7 +110,7 @@ std::unique_ptr<PolySet> createTriangulatedPolySetFromPolygon2d(const Polygon2d&
     // Adds all vertices, and add all contours as constraints.
     for (const auto& outline : in3d ? polygon2d.untransformedOutlines() : polygon2d.outlines()) {
       Polygon2DCGAL::CDT::Vertex_handle prev;
-      for (int i = 0; i <= outline.vertices.size(); i++) {
+      for (size_t i = 0; i <= outline.vertices.size(); i++) {
         const int idx = i % outline.vertices.size();
         const auto& v = outline.vertices[idx];
         auto curr = cdt.insert({v[0], v[1]});

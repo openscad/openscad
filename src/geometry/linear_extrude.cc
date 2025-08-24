@@ -429,7 +429,7 @@ void add_slice_indices(PolygonIndices& indices, int slice_idx, int slice_stride,
     // matched the direction of diagonal for neighboring edges (which did not exhibit "equal" diagonals).
     bool flip = ((!o.positive) xor (back_twist));
 
-    for (int i = 1; i <= o.vertices.size(); ++i) {
+    for (size_t i = 1; i <= o.vertices.size(); ++i) {
       // curr1: previous slice, current vertex
       // curr2: current slice, current vertex
       Vector2d curr1 = trans1 * o.vertices[i % o.vertices.size()];
@@ -737,8 +737,6 @@ std::unique_ptr<Geometry> extrudePolygon(const LinearExtrudeNode& node, const Po
   for (unsigned int slice_idx = 1; slice_idx <= num_slices; slice_idx++) {
     double rot_prev = node.twist * (slice_idx - 1) / num_slices;
     double rot_curr = node.twist * slice_idx / num_slices;
-    auto height_prev = h1 + (h2 - h1) * (slice_idx - 1) / num_slices;
-    auto height_curr = h1 + (h2 - h1) * slice_idx / num_slices;
     Vector2d scale_prev(1 - (1 - node.scale_x) * (slice_idx - 1) / num_slices,
                         1 - (1 - node.scale_y) * (slice_idx - 1) / num_slices);
     Vector2d scale_curr(1 - (1 - node.scale_x) * slice_idx / num_slices,

@@ -36,3 +36,5 @@ If applicable, add the content of the Help->Library Info window, or the output o
 
 **Additional context**
 Add any other context about the problem here.
+
+<!-- If you want to assign this issue to yourself, write /assign-me on its own line -->

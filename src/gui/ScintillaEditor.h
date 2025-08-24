@@ -16,7 +16,6 @@
 #include <QString>
 #include <QWidget>
 #include <QVBoxLayout>
-#include <QVBoxLayout>
 #include <Qsci/qsciscintilla.h>
 #include <Qsci/qscilexerpython.h>
 

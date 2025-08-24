@@ -3011,7 +3011,7 @@ void MainWindow::setSelectionIndicatorStatus(EditorInterface *editor, int nodeIn
   // first we flags all the nodes in the stack of the provided index
   // ends at size - 1 because we are not doing anything for the root node.
   // starts at 1 because we will process this one after later
-  for (int i = 1; i < stack.size() - 1; i++) {
+  for (size_t i = 1; i < stack.size() - 1; i++) {
     const auto& node = stack[i];
 
     auto& location = node->modinst->location();
@@ -4104,7 +4104,7 @@ Dock *MainWindow::findVisibleDockToActivate(int offset) const
     focusedDockIndice = 0;
   }
 
-  for (int o = 1; o < dockCount; ++o) {
+  for (size_t o = 1; o < dockCount; ++o) {
     // starting from dockCount + focusedDockIndice move left or right (o*offset)
     // to find the first visible one. dockCount is there so there is no situation in which
     // (-1) % dockCount

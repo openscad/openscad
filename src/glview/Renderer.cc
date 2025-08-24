@@ -13,38 +13,7 @@
 
 #ifndef NULLGL
 
-namespace {
-
-GLuint compileShader(const std::string& name, GLuint shader_type)
-{
-  auto shader_source = ShaderUtils::loadShaderSource(name);
-  const GLuint shader = glCreateShader(shader_type);
-  auto *c_source = shader_source.c_str();
-  glShaderSource(shader, 1, (const GLchar **)&c_source, nullptr);
-  glCompileShader(shader);
-  GLint status;
-  glGetShaderiv(shader, GL_COMPILE_STATUS, &status);
-  if (!status) {
-    int loglen;
-    char logbuffer[1000];
-    glGetShaderInfoLog(shader, sizeof(logbuffer), &loglen, logbuffer);
-    PRINTDB("OpenGL shader compilation error:\n%s", logbuffer);
-    return 0;
-  }
-  return shader;
-}
-
-}  // namespace
-
 namespace RendererUtils {
-
-CSGMode getCsgMode(const bool highlight_mode, const bool background_mode, const OpenSCADOperator type)
-{
-  int csgmode =
-    highlight_mode ? CSGMODE_HIGHLIGHT : (background_mode ? CSGMODE_BACKGROUND : CSGMODE_NORMAL);
-  if (type == OpenSCADOperator::DIFFERENCE) csgmode |= CSGMODE_DIFFERENCE_FLAG;
-  return static_cast<CSGMode>(csgmode);
-}
 
 std::string loadShaderSource(const std::string& name)
 {
