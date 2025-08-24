@@ -10,51 +10,6 @@
 #include <cmath>
 #include <vector>
 
-// Experimental code. See issue #399
-#if 0
-void ScopeContext::evaluateAssignments(const AssignmentList& assignments)
-{
-  // First, assign all simple variables
-  std::list<std::string> undefined_vars;
-  for (const auto& ass : assignments) {
-    Value tmpval = ass.second->evaluate(this);
-    if (tmpval.isUndefined()) undefined_vars.push_back(ass.first);
-    else this->set_variable(ass.first, tmpval);
-  }
-
-  // Variables which couldn't be evaluated in the first pass is attempted again,
-  // to allow for initialization out of order
-
-  std::unordered_map<std::string, Expression *> tmpass;
-  for (const auto& ass : assignments) {
-    tmpass[ass.first] = ass.second;
-  }
-
-  bool changed = true;
-  while (changed) {
-    changed = false;
-    std::list<std::string>::iterator iter = undefined_vars.begin();
-    while (iter != undefined_vars.end()) {
-      std::list<std::string>::iterator curr = iter++;
-      std::unordered_map<std::string, Expression *>::iterator found = tmpass.find(*curr);
-      if (found != tmpass.end()) {
-        const Expression *expr = found->second;
-        Value tmpval = expr->evaluate(this);
-        // FIXME: it's not enough to check for undefined;
-        // we need to check for any undefined variable in the subexpression
-        // For now, ignore this and revisit the validity and order of variable
-        // assignments later
-        if (!tmpval.isUndefined()) {
-          changed = true;
-          this->set_variable(*curr, tmpval);
-          undefined_vars.erase(curr);
-        }
-      }
-    }
-  }
-}
-#endif  // if 0
-
 void ScopeContext::init()
 {
   for (const auto& assignment : scope->assignments) {
@@ -81,9 +36,6 @@ void ScopeContext::init()
       throw;
     }
   }
-
-  // Experimental code. See issue #399
-  //	evaluateAssignments(module.scope.assignments);
 }
 
 boost::optional<CallableFunction> ScopeContext::lookup_local_function(const std::string& name,
