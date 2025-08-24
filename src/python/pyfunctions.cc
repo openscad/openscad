@@ -2068,7 +2068,8 @@ void python_export_obj_att(std::ostream& output)
 
 PyObject *python_export_core(PyObject *obj, char *file)
 {
-  const auto path = fs::path(file);
+  const std::string filename = lookup_file(file, python_scriptpath.parent_path().u8string(), ".");
+  const auto path = fs::path(filename);
   std::string suffix = path.has_extension() ? path.extension().generic_string().substr(1) : "";
   boost::algorithm::to_lower(suffix);
   python_result_obj = obj;
