@@ -5,6 +5,7 @@
     "boost",
     "eigen3",
     "cgal",
+    "cairo",
     "harfbuzz",
     "fontconfig",
     "double-conversion",
