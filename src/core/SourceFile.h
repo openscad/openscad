@@ -37,7 +37,7 @@ public:
   const std::string getFullpath() const;
   std::shared_ptr<LocalScope> getNamespaceScope(const char* name);
 
-  LocalScope scope;
+  std::shared_ptr<LocalScope> scope;
   std::vector<std::string> usedlibs;
 
   std::vector<IndicatorData> indicatorData;
