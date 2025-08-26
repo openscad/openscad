@@ -641,7 +641,7 @@ void GLView::decodeMarkerValue(double i, double l, int size_div_sm)
     if (needs_glend) glEnd();
     needs_glend = false;
     hershey::DrawTextHershey(neg_number_str, -i - prefix_offset, 0, hershey::TextAlign::kCenter,
-                                   font_size, plot_fun);
+                             font_size, plot_fun);
     if (needs_glend) glEnd();
     needs_glend = false;
   }

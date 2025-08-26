@@ -38,7 +38,7 @@ float TextWidth(std::string_view str, float size)
 }
 
 void DrawTextHershey(std::string_view str, float tx, float ty, TextAlign align, float size,
-                           const std::function<void(bool do_line, float x, float y)>& draw)
+                     const std::function<void(bool do_line, float x, float y)>& draw)
 {
   float dx = 0;
   if (align == TextAlign::kRight) dx = -TextWidth(str, size);
