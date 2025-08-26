@@ -578,6 +578,11 @@ list(APPEND MISC_FILES
   ${TEST_SCAD_DIR}/misc/variable-overwrite.scad
 )
 
+list(APPEND NAMESPACE_FILES
+  ${TEST_SCAD_DIR}/namespaces/namespace-tests.scad
+  ${TEST_SCAD_DIR}/namespaces/namespace-include-tests.scad
+)
+
 list(APPEND FAILING_FILES
   ${TEST_SCAD_DIR}/issues/issue1890-comment.scad
   ${TEST_SCAD_DIR}/issues/issue1890-include.scad
@@ -585,7 +590,7 @@ list(APPEND FAILING_FILES
   ${TEST_SCAD_DIR}/issues/issue1890-use.scad
 )
 
-list(APPEND ECHO_FILES ${FUNCTION_FILES} ${MISC_FILES} ${REDEFINITION_FILES}
+list(APPEND ECHO_FILES ${FUNCTION_FILES} ${MISC_FILES} ${NAMESPACE_FILES} ${REDEFINITION_FILES}
   ${TEST_SCAD_DIR}/3D/features/for-tests.scad
   ${TEST_SCAD_DIR}/3D/features/rotate-parameters.scad
   ${TEST_SCAD_DIR}/3D/features/linear_extrude-parameter-tests.scad
