@@ -85,3 +85,9 @@ class HardWarningException : public EvaluationException
 public:
   HardWarningException(const std::string& what_arg) : EvaluationException(what_arg) {}
 };
+
+class InvalidInstantiationException : public std::runtime_error
+{
+public:
+  InvalidInstantiationException(const std::string& what_arg) : std::runtime_error(what_arg) {}
+};

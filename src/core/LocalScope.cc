@@ -12,6 +12,7 @@
 #include "core/UserModule.h"
 #include "core/function.h"
 #include "core/node.h"
+#include "utils/exceptions.h"
 
 void LocalScope::addModuleInst(const std::shared_ptr<ModuleInstantiation>& modinst)
 {
@@ -102,4 +103,24 @@ std::shared_ptr<AbstractNode> LocalScope::instantiateModules(
     }
   }
   return target;
+}
+
+std::shared_ptr<AbstractNode> LocalNamespaceScope::instantiateModules(
+  const std::shared_ptr<const Context>& context, const std::shared_ptr<AbstractNode>& target) const
+{
+  throw InvalidInstantiationException("Shouldn't be able to instantiate modules in a namespace");
+  return NULL;
+}
+
+std::shared_ptr<AbstractNode> LocalNamespaceScope::instantiateModules(
+  const std::shared_ptr<const Context>& context, const std::shared_ptr<AbstractNode>& target,
+  const std::vector<size_t>& indices) const
+{
+  throw InvalidInstantiationException("Shouldn't be able to instantiate modules in a namespace");
+  return NULL;
+}
+
+void LocalNamespaceScope::addModuleInst(const std::shared_ptr<class ModuleInstantiation>& modinst)
+{
+  throw InvalidInstantiationException("Shouldn't be able to instantiate modules in a namespace");
 }

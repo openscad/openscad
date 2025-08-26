@@ -56,3 +56,14 @@ std::optional<UserFunction *> LocalScope::lookup(const std::string& name) const;
 
 template <>
 std::optional<UserModule *> LocalScope::lookup(const std::string& name) const;
+
+class LocalNamespaceScope : public LocalScope
+{
+public:
+  std::shared_ptr<AbstractNode> instantiateModules(const std::shared_ptr<const Context>& context,
+                                                   const std::shared_ptr<AbstractNode>& target) const;
+  std::shared_ptr<AbstractNode> instantiateModules(const std::shared_ptr<const Context>& context,
+                                                   const std::shared_ptr<AbstractNode>& target,
+                                                   const std::vector<size_t>& indices) const;
+  void addModuleInst(const std::shared_ptr<class ModuleInstantiation>& modinst);
+};
