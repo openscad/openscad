@@ -52,11 +52,14 @@
 #include <vector>
 #include <unordered_map>
 
+std::unique_ptr<const Geometry> sheetCreateFuncGeometry(void *funcptr, double imin, double imax, double jmin, double jmax);
 
 std::unique_ptr<const Geometry> SheetNode::createGeometry() const
 {
+#ifdef ENABLE_PYTHON
+  return sheetCreateFuncGeometry(this->func, this->imin, this->imax, this->jmin, this->jmax);
+#endif
   PolySetBuilder builder(0, 0);
-  printf("Creating geom\n");
   return builder.build();
 }
 

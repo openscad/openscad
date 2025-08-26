@@ -4336,6 +4336,261 @@ PyObject *python_surface(PyObject *self, PyObject *args, PyObject *kwargs)
   return python_surface_core(file, center, invert, color, convexity);
 }
 
+int sheetCalcIndInt(PyObject *func, double i, double j, Vector3d &pos)
+{
+  PyObject *args = PyTuple_Pack(2, PyFloat_FromDouble(i), PyFloat_FromDouble(j));
+  PyObject *pos_p = PyObject_CallObject(func, args);
+  if (pos_p == nullptr) {
+    std::string errorstr;
+    python_catch_error(errorstr);
+    PyErr_SetString(PyExc_TypeError, errorstr.c_str());
+    LOG(message_group::Error, errorstr.c_str());
+    return 1;
+  }
+  return python_vectorval(pos_p, 3, 3,&pos[0], &pos[1], &pos[2], nullptr, nullptr);
+}
+
+int sheetCalcInd(PolySetBuilder& builder, std::vector<Vector3d>& vertices, std::vector<double> &istore, std::vector<double> &jstore, PyObject *func, double i, double j)
+{
+  std::string errorstr;
+  Vector3d pos;
+  if (sheetCalcIndInt(func, i, j, pos)) return -1;
+//  printf("pos %g/%g/%g\n", pos[0], pos[1], pos[2]);
+  unsigned int ind = builder.vertexIndex(pos);
+  if (ind == vertices.size()) {
+    vertices.push_back(pos);
+    istore.push_back(i);
+    jstore.push_back(j);
+  }
+  return ind;
+}
+
+std::unique_ptr<const Geometry> sheetCreateFuncGeometry(void *funcptr, double imin, double imax, double jmin, double jmax)
+{
+  PyObject *func = (PyObject *)funcptr;
+  std::unordered_map<SphereEdgeDb, int, boost::hash<SphereEdgeDb>> edges;
+
+  PolySetBuilder builder;
+  std::vector<Vector3d> vertices;
+  std::vector<double> istore;
+  std::vector<double> jstore;
+// 
+  int ind11, ind21, ind12, ind22; // i, j
+  ind11 = sheetCalcInd(builder, vertices, istore, jstore, func, imin, jmin);
+  ind12 = sheetCalcInd(builder, vertices, istore, jstore, func, imin, jmax);
+  ind21 = sheetCalcInd(builder, vertices, istore, jstore, func, imax, jmin);
+  ind22 = sheetCalcInd(builder, vertices, istore, jstore, func, imax, jmax);
+  if (ind11 < 0 || ind12 < 0 || ind21 < 0 || ind22 < 0 ) return builder.build();
+
+  std::vector<IndexedTriangle> triangles;
+  std::vector<IndexedTriangle> tri_new;
+  tri_new.push_back(IndexedTriangle(ind11, ind21, ind22));
+  tri_new.push_back(IndexedTriangle(ind11, ind22, ind12));
+  int round = 0;
+  unsigned int i1, i2, imid;
+  Vector3d p1, p2, p3, pmin, pmax, pmid, pmid_test, dir1, dir2;
+  double dist, ang, ang_test;
+  int n=2; // TODO fix
+  double fs=1; // TODO fix	   
+  do {
+    triangles = tri_new;
+    if (round == n) break;
+    tri_new.clear();
+    std::vector<int> midinds;
+    for (const IndexedTriangle& tri : triangles) {
+      int zeroang = 0;
+      unsigned int midind = -1;
+      for (int i = 0; i < 3; i++) {
+        i1 = tri[i];
+        i2 = tri[(i + 1) % 3];
+        SphereEdgeDb edge(i1, i2);
+        if (edges.count(edge) > 0) continue;
+        dist = (vertices[i1] - vertices[i2]).norm();
+        //if (dist < fs) continue; // TODO problem
+        p1 = vertices[i1];
+        p2 = vertices[i2];
+	double i_mid=(istore[i1]+istore[i2])/2.0;
+	double j_mid=(jstore[i1]+jstore[i2])/2.0;
+        if (sheetCalcIndInt(func, i_mid, j_mid, pmid)) return builder.build();
+        dir1 = (pmid - p1).normalized();
+        dir2 = (p2 - pmid).normalized();
+        ang = acos(dir1.dot(dir2));
+        //	printf("ang=%g\n",ang*180/3.14);
+        imid = builder.vertexIndex(pmid); 
+        if (imid == vertices.size()){
+          vertices.push_back(pmid);
+	  istore.push_back(i_mid);
+	  jstore.push_back(j_mid);
+	}  
+        if (ang < 0.001) {
+          zeroang++;
+          continue;
+        }
+        edges[edge] = imid;
+      }
+      if (zeroang == 3) {
+        p1 = vertices[tri[0]];
+        p2 = vertices[tri[1]];
+        p3 = vertices[tri[2]];
+	double i_mid=(istore[tri[0]]+istore[tri[1]]+istore[tri[2]])/3.0;
+	double j_mid=(jstore[tri[0]]+jstore[tri[1]]+jstore[tri[2]])/3.0;
+
+        if (sheetCalcIndInt(func, i_mid, j_mid, pmid)) return builder.build(); // TODO fix
+        Vector4d norm = calcTriangleNormal(vertices, {tri[0], tri[1], tri[2]});
+        if (fabs(pmid.dot(norm.head<3>()) - norm[3]) > 1e-3) {
+          midind = builder.vertexIndex(pmid);
+          if (midind == vertices.size()){
+	      vertices.push_back(pmid);
+	      istore.push_back(i_mid);
+	      jstore.push_back(j_mid);
+            }  
+        }
+      }
+      midinds.push_back(midind);
+    }
+    // create new triangles from split edges
+    int ind = 0;
+    for (const IndexedTriangle& tri : triangles) {
+      int splitind[3];
+      for (int i = 0; i < 3; i++) {
+        SphereEdgeDb e(tri[i], tri[(i + 1) % 3]);
+        splitind[i] = edges.count(e) > 0 ? edges[e] : -1;
+      }
+
+      if (midinds[ind] != -1 ) {
+        for (int i = 0; i < 3; i++) {
+          if (splitind[i] == -1) {
+            tri_new.push_back(IndexedTriangle(tri[i], tri[(i + 1) % 3], midinds[ind]));
+          } else {
+            tri_new.push_back(IndexedTriangle(tri[i], splitind[i], midinds[ind]));
+            tri_new.push_back(IndexedTriangle(splitind[i], tri[(i + 1) % 3], midinds[ind]));
+          }
+        }
+        ind++;
+        continue;
+      }
+
+      int bucket =
+        ((splitind[0] != -1) ? 1 : 0) | ((splitind[1] != -1) ? 2 : 0) | ((splitind[2] != -1) ? 4 : 0);
+	printf("buvket=%d\n", bucket);
+      switch (bucket) {
+      case 0: tri_new.push_back(IndexedTriangle(tri[0], tri[1], tri[2])); break;
+      case 1:
+        tri_new.push_back(IndexedTriangle(tri[0], splitind[0], tri[2]));
+        tri_new.push_back(IndexedTriangle(tri[2], splitind[0], tri[1]));
+        break;
+      case 2:
+        tri_new.push_back(IndexedTriangle(tri[1], splitind[1], tri[0]));
+        tri_new.push_back(IndexedTriangle(tri[0], splitind[1], tri[2]));
+        break;
+      case 3:
+        tri_new.push_back(IndexedTriangle(tri[0], splitind[0], tri[2]));
+        tri_new.push_back(IndexedTriangle(splitind[0], splitind[1], tri[2]));
+        tri_new.push_back(IndexedTriangle(splitind[0], tri[1], splitind[1]));
+        break;
+      case 4:
+        tri_new.push_back(IndexedTriangle(tri[2], splitind[2], tri[1]));
+        tri_new.push_back(IndexedTriangle(tri[1], splitind[2], tri[0]));
+        break;
+      case 5:
+        tri_new.push_back(IndexedTriangle(tri[0], splitind[0], splitind[2]));
+        tri_new.push_back(IndexedTriangle(splitind[0], tri[2], splitind[2]));
+        tri_new.push_back(IndexedTriangle(splitind[0], tri[1], tri[2]));
+        break;
+      case 6:
+        tri_new.push_back(IndexedTriangle(tri[0], tri[1], splitind[2]));
+        tri_new.push_back(IndexedTriangle(tri[1], splitind[1], splitind[2]));
+        tri_new.push_back(IndexedTriangle(splitind[1], tri[2], splitind[2]));
+        break;
+      case 7:
+        tri_new.push_back(IndexedTriangle(splitind[2], tri[0], splitind[0]));
+        tri_new.push_back(IndexedTriangle(splitind[0], tri[1], splitind[1]));
+        tri_new.push_back(IndexedTriangle(splitind[1], tri[2], splitind[2]));
+        tri_new.push_back(IndexedTriangle(splitind[0], splitind[1], splitind[2]));
+        break;
+      }
+      ind++;
+    }
+
+    round++;
+  } while (tri_new.size() != triangles.size());
+  for (const IndexedTriangle& tri : tri_new) {
+    builder.appendPolygon({tri[0], tri[1], tri[2]});
+  }
+  auto ps = builder.build();
+  /*
+
+  int done = 0;
+  round = 0;
+  do {
+    done = 0;
+    auto edge_db = createEdgeDb(ps->indices);
+    for (int i = 0; i < ps->indices.size(); i++) {
+      auto& tri = ps->indices[i];
+      if (tri[0] == tri[1] || tri[0] == tri[2] || tri[1] == tri[2]) continue;
+      for (int j = 0; j < 3; j++) {
+        int debug = 0;
+        int i1 = tri[j];
+        int i2 = tri[(j + 1) % 3];
+        double l1 = (ps->vertices[i1] - ps->vertices[i2]).norm();
+        EdgeKey ek(tri[j], tri[(j + 1) % 3]);
+        if (edge_db.count(ek) != 0) {
+          auto ev = edge_db.at(ek);
+          int face_o, pos_o;
+          if (i2 > i1) {
+            face_o = ev.faceb;
+            pos_o = ev.posb;
+          } else {
+            face_o = ev.facea;
+            pos_o = ev.posa;
+          }
+          if (face_o == -1 || pos_o == -1) continue;
+          auto& tri_oth = ps->indices[face_o];
+          double l2 = (ps->vertices[tri[(j + 2) % 3]] - ps->vertices[tri_oth[(pos_o + 2) % 3]]).norm();
+          if (l2 < l1) {
+            Vector3d norm = calcTriangleNormal(ps->vertices, tri).head<3>();
+            Vector3d norm_oth = calcTriangleNormal(ps->vertices, tri_oth).head<3>();
+
+            auto tri_ = tri;
+            auto tri_oth_ = tri_oth;
+
+            tri_[(j + 1) % 3] = tri_oth[(pos_o + 2) % 3];
+            for (int k = 0; k < 3; k++)
+              if (tri_oth[k] == i1) tri_oth_[k] = tri[(j + 2) % 3];
+            // reorganize
+
+            Vector3d norm_ = calcTriangleNormal(ps->vertices, tri_).head<3>();
+            Vector3d norm_oth_ = calcTriangleNormal(ps->vertices, tri_oth_).head<3>();
+
+            if (norm.dot(norm_) > 0 && norm_oth.dot(norm_oth_) > 0) {
+              tri = tri_;
+              tri_oth = tri_oth_;
+
+              for (int k = 0; k < 3; k++) {
+                edge_db.erase(EdgeKey(tri[k], tri[(k + 1) % 3]));
+                edge_db.erase(EdgeKey(tri_oth[k], tri_oth[(k + 1) % 3]));
+              }
+              done++;
+              break;  // dont proceed with
+            }
+          }
+        }
+      }
+    }
+    printf("\ndone=%d\n", done);
+    for (int i = 0; i < ps->indices.size(); i++) {
+      auto& tri = ps->indices[i];
+      if (tri[0] == tri[1] && tri[0] == tri[2]) {
+        ps->indices.erase(ps->indices.begin() + i);
+        i--;
+      }
+    }
+    round++;
+  } while (done > 0);  //  && round < 3);
+*/
+  return ps;
+}
+
 PyObject *python_sheet_core(PyObject *func, double imin, double imax, double jmin, double jmax)
 {
   DECLARE_INSTANCE
