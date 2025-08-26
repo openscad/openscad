@@ -182,7 +182,7 @@ static std::shared_ptr<AbstractNode> builtin_assert(const ModuleInstantiation *i
 {
   Assert::performAssert(inst->arguments, inst->location(), context);
 
-  auto node = Children(&inst->scope, context).instantiate(lazyUnionNode(inst));
+  auto node = Children(inst->scope, context).instantiate(lazyUnionNode(inst));
   // assert without child geometries should not count as valid CSGNode
   if (node->children.empty()) {
     return {};
@@ -193,7 +193,7 @@ static std::shared_ptr<AbstractNode> builtin_assert(const ModuleInstantiation *i
 static std::shared_ptr<AbstractNode> builtin_let(const ModuleInstantiation *inst,
                                                  const std::shared_ptr<const Context>& context)
 {
-  return Children(&inst->scope,
+  return Children(inst->scope,
                   *Let::sequentialAssignmentContext(inst->arguments, inst->location(), context))
     .instantiate(lazyUnionNode(inst));
 }
@@ -220,7 +220,7 @@ static std::shared_ptr<AbstractNode> builtin_assign(const ModuleInstantiation *i
     }
   }
 
-  return Children(&inst->scope, *assignContext).instantiate(lazyUnionNode(inst));
+  return Children(inst->scope, *assignContext).instantiate(lazyUnionNode(inst));
 }
 
 static std::shared_ptr<AbstractNode> builtin_for(const ModuleInstantiation *inst,
@@ -230,7 +230,7 @@ static std::shared_ptr<AbstractNode> builtin_for(const ModuleInstantiation *inst
   if (!inst->arguments.empty()) {
     LcFor::forEach(inst->arguments, inst->location(), context,
                    [inst, node](const std::shared_ptr<const Context>& iterationContext) {
-                     Children(&inst->scope, iterationContext).instantiate(node);
+                     Children(inst->scope, iterationContext).instantiate(node);
                    });
   }
   return node;
@@ -243,7 +243,7 @@ static std::shared_ptr<AbstractNode> builtin_intersection_for(
   if (!inst->arguments.empty()) {
     LcFor::forEach(inst->arguments, inst->location(), context,
                    [inst, node](const std::shared_ptr<const Context>& iterationContext) {
-                     Children(&inst->scope, iterationContext).instantiate(node);
+                     Children(inst->scope, iterationContext).instantiate(node);
                    });
   }
   return node;
@@ -255,7 +255,7 @@ static std::shared_ptr<AbstractNode> builtin_if(const ModuleInstantiation *inst,
   Arguments arguments{inst->arguments, context};
   const auto *ifelse = dynamic_cast<const IfElseModuleInstantiation *>(inst);
   if (arguments.size() > 0 && arguments[0]->toBool()) {
-    return Children(&inst->scope, context).instantiate(lazyUnionNode(inst));
+    return Children(inst->scope, context).instantiate(lazyUnionNode(inst));
   } else if (ifelse->getElseScope()) {
     return Children(ifelse->getElseScope(), context).instantiate(lazyUnionNode(inst));
   } else {

@@ -61,7 +61,7 @@ boost::optional<InstantiableModule> ScopeContext::lookup_local_module(const std:
 UserModuleContext::UserModuleContext(const std::shared_ptr<const Context>& parent,
                                      const UserModule *module, const Location& loc, Arguments arguments,
                                      Children children)
-  : ScopeContext(parent, &module->body), children(std::move(children))
+  : ScopeContext(parent, module->body), children(std::move(children))
 {
   set_variable("$children", Value(double(this->children.size())));
   set_variable("$parent_modules", Value(double(StaticModuleNameStack::size())));
@@ -87,13 +87,13 @@ boost::optional<CallableFunction> FileContext::lookup_local_function(const std::
   for (const auto& m : source_file->usedlibs) {
     // usedmod is nullptr if the library wasn't be compiled (error or file-not-found)
     auto usedmod = SourceFileCache::instance()->lookup(m);
-    if (usedmod && usedmod->scope.functions.find(name) != usedmod->scope.functions.end()) {
+    if (usedmod && usedmod->scope->functions.find(name) != usedmod->scope->functions.end()) {
       ContextHandle<FileContext> context{Context::create<FileContext>(this->parent, usedmod)};
 #ifdef DEBUG
       PRINTDB("FileContext for function %s::%s:", m % name);
       PRINTDB("%s", context->dump());
 #endif
-      return CallableFunction{CallableUserFunction{*context, usedmod->scope.functions[name].get()}};
+      return CallableFunction{CallableUserFunction{*context, usedmod->scope->functions[name].get()}};
     }
   }
   return boost::none;
@@ -110,13 +110,13 @@ boost::optional<InstantiableModule> FileContext::lookup_local_module(const std::
   for (const auto& m : source_file->usedlibs) {
     // usedmod is nullptr if the library wasn't be compiled (error or file-not-found)
     auto usedmod = SourceFileCache::instance()->lookup(m);
-    if (usedmod && usedmod->scope.modules.find(name) != usedmod->scope.modules.end()) {
+    if (usedmod && usedmod->scope->modules.find(name) != usedmod->scope->modules.end()) {
       ContextHandle<FileContext> context{Context::create<FileContext>(this->parent, usedmod)};
 #ifdef DEBUG
       PRINTDB("FileContext for module %s::%s:", m % name);
       PRINTDB("%s", context->dump());
 #endif
-      return InstantiableModule{*context, usedmod->scope.modules[name].get()};
+      return InstantiableModule{*context, usedmod->scope->modules[name].get()};
     }
   }
   return boost::none;
