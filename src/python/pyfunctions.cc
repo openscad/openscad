@@ -5091,11 +5091,11 @@ PyObject *python_oo_only(PyObject *self, PyObject *args, PyObject *kwargs)
   return python_debug_modifier_func_oo(self, args, kwargs, 2);
 }
 
-PyObject *python_nb_invert(PyObject *arg) { return python_debug_modifier(arg, 0); }
+PyObject *python_nb_invert(PyObject *arg) { return python_debug_modifier(arg, 2); }
 
 PyObject *python_nb_neg(PyObject *arg) { return python_debug_modifier(arg, 1); }
 
-PyObject *python_nb_pos(PyObject *arg) { return python_debug_modifier(arg, 2); }
+PyObject *python_nb_pos(PyObject *arg) { return python_debug_modifier(arg, 0); }
 
 #ifndef OPENSCAD_NOGUI
 extern void add_menuitem_trampoline(const char *menuname, const char *itemname, const char *callback);
