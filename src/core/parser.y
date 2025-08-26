@@ -117,6 +117,7 @@ bool fileEnded=false;
 %token TOK_ASSERT
 %token TOK_ECHO
 %token TOK_EACH
+%token TOK_NAMESPACE
 
 %token <text> TOK_ID
 %token <text> TOK_STRING
@@ -179,16 +180,34 @@ input
               rootfile->registerUse(std::string($2), lexer_is_main_file() && parsingMainFile ? LOC(@2) : Location::NONE);
               free($2);
             }
-        | input statement
+	| input
+	  TOK_NAMESPACE TOK_ID
+            {
+	      auto nsScope = rootfile->getNamespaceScope($3);
+	      scope_stack.push(nsScope);
+	      free($3);
+            }
+          def_statement
+            {
+              scope_stack.pop();
+            }
+        | input top_level_statement
+        | input TOK_EOT
+            {
+                fileEnded=true;
+            }
         ;
 
-statement
-        : ';'
-        | '{' inner_input '}'
-        | module_instantiation
+single_statement
+        : module_instantiation
             {
               if ($1) scope_stack.top()->addModuleInst(std::shared_ptr<ModuleInstantiation>($1));
             }
+        | single_def_statement
+        ;
+
+single_def_statement
+        : ';'
         | assignment
         | TOK_MODULE TOK_ID '(' parameters ')'
             {
@@ -200,7 +219,7 @@ statement
               free($2);
               delete $4;
             }
-          statement
+          top_level_statement
             {
                 scope_stack.pop();
             }
@@ -212,15 +231,29 @@ statement
               free($2);
               delete $4;
             }
-        | TOK_EOT
-            {
-                fileEnded=true;
-            }
         ;
 
-inner_input
+top_level_statement
+        : '{' statements '}'
+	| single_statement
+        ;
+
+def_statement
+        : '{' def_statements '}'
+	| single_def_statement
+        ;
+
+
+statements
         : /* empty */
-        | inner_input statement
+        | '{' statements '}'
+        | statements single_statement
+        ;
+
+def_statements
+        : /* empty */
+        | '{' def_statements '}'
+        | def_statements single_def_statement
         ;
 
 assignment

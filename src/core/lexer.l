@@ -250,6 +250,7 @@ use[ \t\r\n]*"<"        { BEGIN(cond_use); LOCATION_COUNT_LINES(parserlloc, yyte
 "echo"                  return TOK_ECHO;
 "for"                   return TOK_FOR;
 "each"                  return TOK_EACH;
+"namespace"             return TOK_NAMESPACE;
 
 "true"                  return TOK_TRUE;
 "false"                 return TOK_FALSE;
