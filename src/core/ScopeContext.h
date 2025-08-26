@@ -28,9 +28,6 @@ protected:
   }
 
 private:
-  // Experimental code. See issue #399
-  //	void evaluateAssignments(const AssignmentList &assignments);
-
   const LocalScope *scope;
 
   friend class Context;
