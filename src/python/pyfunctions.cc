@@ -65,6 +65,7 @@ extern bool parse(SourceFile *& file, const std::string& text, const std::string
 #include "core/RoofNode.h"
 #include "core/RenderNode.h"
 #include "core/SurfaceNode.h"
+#include "core/SheetNode.h"
 #include "core/TextNode.h"
 #include "core/OffsetNode.h"
 #include <hash.h>
@@ -4335,6 +4336,39 @@ PyObject *python_surface(PyObject *self, PyObject *args, PyObject *kwargs)
   return python_surface_core(file, center, invert, color, convexity);
 }
 
+PyObject *python_sheet_core(PyObject *func, double imin, double imax, double jmin, double jmax)
+{
+  DECLARE_INSTANCE
+  auto node = std::make_shared<SheetNode>(instance);
+  // TODO check type of func
+  node->func = (void *) func;
+  node->imin = imin;
+  node->imax = imax;
+  node->jmin = jmin;
+  node->jmax = jmax;
+
+  return PyOpenSCADObjectFromNode(&PyOpenSCADType, node);
+}
+
+PyObject *python_sheet(PyObject *self, PyObject *args, PyObject *kwargs)
+{
+  char *kwlist[] = {"func", "imin", "imax", "jmin", "jmax", NULL};
+  PyObject *func = NULL;
+  double imin, imax, jmin, jmax;
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "Odddd", kwlist, &func, &imin, &imax, &jmin, &jmax)) {
+    PyErr_SetString(PyExc_TypeError,
+                    "Error during parsing sheet(func, imin, imax, jmin, jmax)");
+    return NULL;
+  }
+  if (func->ob_type != &PyFunction_Type){
+    PyErr_SetString(PyExc_TypeError,
+                    "must specify a function");
+    return NULL;
+  }
+
+  return python_sheet_core(func, imin, imax, jmin, jmax);
+}
+
 PyObject *python_text(PyObject *self, PyObject *args, PyObject *kwargs)
 {
   DECLARE_INSTANCE
@@ -5215,6 +5249,7 @@ PyMethodDef PyOpenSCADFunctions[] = {
 
   {"projection", (PyCFunction)python_projection, METH_VARARGS | METH_KEYWORDS, "Projection Object."},
   {"surface", (PyCFunction)python_surface, METH_VARARGS | METH_KEYWORDS, "Surface Object."},
+  {"sheet", (PyCFunction)python_sheet, METH_VARARGS | METH_KEYWORDS, "Sheet Object."},
   {"mesh", (PyCFunction)python_mesh, METH_VARARGS | METH_KEYWORDS, "exports mesh."},
   {"bbox", (PyCFunction)python_bbox, METH_VARARGS | METH_KEYWORDS, "caluculate bbox of object."},
   {"faces", (PyCFunction)python_faces, METH_VARARGS | METH_KEYWORDS, "exports a list of faces."},

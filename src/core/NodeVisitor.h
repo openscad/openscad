@@ -31,6 +31,7 @@ class NodeVisitor : public BaseVisitor,
                     public Visitor<class ProjectionNode>,
                     public Visitor<class RenderNode>,
                     public Visitor<class SurfaceNode>,
+                    public Visitor<class SheetNode>,
                     public Visitor<class TransformNode>,
                     public Visitor<class ColorNode>,
                     public Visitor<class OffsetNode>
@@ -131,6 +132,10 @@ public:
     return visit(state, (const AbstractNode&)node);
   }
   Response visit(State& state, const SurfaceNode& node) override
+  {
+    return visit(state, (const LeafNode&)node);
+  }
+  Response visit(State& state, const SheetNode& node) override
   {
     return visit(state, (const LeafNode&)node);
   }
