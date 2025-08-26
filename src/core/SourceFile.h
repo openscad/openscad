@@ -34,6 +34,7 @@ public:
   void setFilename(const std::string& filename) { this->filename = filename; }
   const std::string& getFilename() const { return this->filename; }
   const std::string getFullpath() const;
+  std::shared_ptr<LocalScope> getNamespaceScope(const char *name);
 
   const std::shared_ptr<LocalScope> scope;
   std::vector<std::string> usedlibs;
@@ -45,6 +46,7 @@ private:
 
   std::unordered_map<std::string, std::string> includes;
   bool is_handling_dependencies{false};
+  std::unordered_map<std::string, std::shared_ptr<LocalScope>> namespaceScopes;
 
   std::string path;
   std::string filename;

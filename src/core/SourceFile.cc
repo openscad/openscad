@@ -178,6 +178,7 @@ time_t SourceFile::handleDependencies(bool is_root)
   return latest;
 }
 
+// The passed-in `context` is treated as the parent context to `this`.
 std::shared_ptr<AbstractNode> SourceFile::instantiate(
   const std::shared_ptr<const Context>& context,
   std::shared_ptr<const FileContext> *resulting_file_context) const
@@ -208,4 +209,15 @@ const std::string SourceFile::getFullpath() const
   } else {
     return "";
   }
+}
+
+std::shared_ptr<LocalScope> SourceFile::getNamespaceScope(const char *name)
+{
+  if (auto it = this->namespaceScopes.find(name); it != this->namespaceScopes.end()) {
+    return it->second;
+  }
+  auto ls = std::make_shared<LocalNamespaceScope>();  // TODO: coryrc - should the scope contain the name
+                                                      // just for debugging purposes?
+  this->namespaceScopes.insert({name, ls});
+  return ls;
 }
