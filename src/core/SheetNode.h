@@ -47,4 +47,5 @@ public:
   double imin, imax, jmin, jmax;
   int convexity{1};
   std::unique_ptr<const Geometry> createGeometry() const override;
+  double fs;
 };

@@ -52,12 +52,12 @@
 #include <vector>
 #include <unordered_map>
 
-std::unique_ptr<const Geometry> sheetCreateFuncGeometry(void *funcptr, double imin, double imax, double jmin, double jmax);
+std::unique_ptr<const Geometry> sheetCreateFuncGeometry(void *funcptr, double imin, double imax, double jmin, double jmax, double fs);
 
 std::unique_ptr<const Geometry> SheetNode::createGeometry() const
 {
 #ifdef ENABLE_PYTHON
-  return sheetCreateFuncGeometry(this->func, this->imin, this->imax, this->jmin, this->jmax);
+  return sheetCreateFuncGeometry(this->func, this->imin, this->imax, this->jmin, this->jmax, fs);
 #endif
   PolySetBuilder builder(0, 0);
   return builder.build();
@@ -68,6 +68,7 @@ std::string SheetNode::toString() const
   std::ostringstream stream;
 
   stream << this->name() << "(func = " << rand()
+         << ", fs = " << (this->fs)
          << ", imin = " << (this->imin)
          << ", imax = " << (this->imax)
          << ", jmin = " << (this->jmin)
