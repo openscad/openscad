@@ -51,12 +51,16 @@ jobs:
       run: |
         brew unlink python3
         brew link --overwrite python3
+    - name: Install latest Homebrew packages
+      run: brew install cgal boost
     - name: Install Homebrew packages
       env:
         HOMEBREW_NO_AUTO_UPDATE: 1
       run: |
         export HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK=1
         ./scripts/macosx-build-homebrew.sh ${{ matrix.qt }}
+    - name: List installed Homebrew packages
+      run: brew list --versions
     - name: Build OpenSCAD
       run: |
         mkdir build
