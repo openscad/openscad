@@ -59,6 +59,8 @@ jobs:
       run: |
         export HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK=1
         ./scripts/macosx-build-homebrew.sh ${{ matrix.qt }}
+    - name: List installed Homebrew packages
+      run: brew list --versions
     - name: Build OpenSCAD
       run: |
         mkdir build
