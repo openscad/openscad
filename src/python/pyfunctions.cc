@@ -5144,6 +5144,8 @@ PyObject *python_oo_dict(PyObject *self, PyObject *args, PyObject *kwargs)
   return dict;
 }
 
+PyObject *python_member(PyObject *self, PyObject *args, PyObject *kwargs); 
+
 PyMethodDef PyOpenSCADFunctions[] = {
   {"edge", (PyCFunction)python_edge, METH_VARARGS | METH_KEYWORDS, "Create Edge."},
   {"square", (PyCFunction)python_square, METH_VARARGS | METH_KEYWORDS, "Create Square."},
@@ -5246,6 +5248,7 @@ PyMethodDef PyOpenSCADFunctions[] = {
   {"model", (PyCFunction)python_model, METH_VARARGS | METH_KEYWORDS, "Yield Model"},
   {"modelpath", (PyCFunction)python_modelpath, METH_VARARGS | METH_KEYWORDS,
    "Returns absolute Path to script"},
+  {"member", (PyCFunction)python_member, METH_VARARGS | METH_KEYWORDS, "Registers additional openscad member functions"},
   {"marked", (PyCFunction)python_marked, METH_VARARGS | METH_KEYWORDS, "Create a marked value."},
   {"Sin", (PyCFunction)python_sin, METH_VARARGS | METH_KEYWORDS, "Calculate sin."},
   {"Cos", (PyCFunction)python_cos, METH_VARARGS | METH_KEYWORDS, "Calculate cos."},
@@ -5304,6 +5307,108 @@ PyMethodDef PyOpenSCADMethods[] = {
                                             OO_METHOD_ENTRY(render, "Render Object")
                                               OO_METHOD_ENTRY(clone, "Clone Object") OO_METHOD_ENTRY(
                                                 dict, "return all dictionary"){NULL, NULL, 0, NULL}};
+
+int PyDict_SetDefaultRef(PyObject *d, PyObject *key, PyObject *default_value,
+                     PyObject **result)
+{
+    PyDict_SetDefault(d, key, default_value);
+    return 0;
+}
+
+int type_add_method(PyTypeObject *type, PyMethodDef *meth) // from typeobject.c
+{
+    PyObject *descr;
+    int isdescr = 1;
+    if (meth->ml_flags & METH_CLASS) {
+        if (meth->ml_flags & METH_STATIC) {
+            PyErr_SetString(PyExc_ValueError,
+                    "method cannot be both class and static");
+            return -1;
+        }
+        descr = PyDescr_NewClassMethod(type, meth);
+    }
+    else if (meth->ml_flags & METH_STATIC) {
+        PyObject *cfunc = PyCFunction_NewEx(meth, (PyObject*)type, NULL);
+        if (cfunc == NULL) {
+            return -1;
+        }
+        descr = PyStaticMethod_New(cfunc);
+        isdescr = 0;  // PyStaticMethod is not PyDescrObject
+        Py_DECREF(cfunc);
+    }
+    else {
+        descr = PyDescr_NewMethod(type, meth);
+    }
+    if (descr == NULL) {
+        return -1;
+    }
+
+    PyObject *name;
+    if (isdescr) {
+        name = PyDescr_NAME(descr);
+    }
+    else {
+        name = PyUnicode_FromString(meth->ml_name);
+        if (name == NULL) {
+            Py_DECREF(descr);
+            return -1;
+        }
+    }
+
+    int err;
+    PyObject *dict = type->tp_dict;
+    if (!(meth->ml_flags & METH_COEXIST)) {
+        err = PyDict_SetItem(dict, name, descr) < 0;
+        //err = PyDict_SetDefaultRef(dict, name, descr, NULL) < 0;
+    }
+    else {
+        err = PyDict_SetItem(dict, name, descr) < 0;
+    }
+    if (!isdescr) {
+        Py_DECREF(name);
+    }
+    Py_DECREF(descr);
+    if (err) {
+        return -1; // return here
+    }
+    return 0;
+}
+PyObject *callable;
+PyObject *python_member_trampoline(PyObject *self, PyObject *args, PyObject *kwargs)
+{
+	printf("Trampoline %p %p %p\n", self, args, kwargs);
+	printf("%s %s\n", self->ob_type->tp_name, args->ob_type->tp_name);
+	int n=  PyTuple_Size(args);
+	PyObject *newargs = PyTuple_New(n+1);
+	PyTuple_SetItem(newargs, 0, self);
+	for(int i=0;i<n;i++)
+		PyTuple_SetItem(newargs, i+1, PyTuple_GetItem(args,i));
+
+	return  PyObject_Call(callable, newargs, kwargs);
+}
+
+
+PyObject *python_member(PyObject *self, PyObject *args, PyObject *kwargs)
+{
+  char *kwlist[] = {"membername", "memberfunc", NULL};
+  char *membername = nullptr;
+  PyObject *memberfunc = nullptr;
+  
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "sO", kwlist, &membername, &memberfunc)) {
+    PyErr_SetString(PyExc_TypeError, "Error during parsing member");
+    return NULL;
+  }
+  int memberused=0, membersize=sizeof(PyOpenSCADMethods)/sizeof(PyOpenSCADMethods[0]);
+  PyMethodDef *meth = (PyMethodDef *) malloc(sizeof(PyMethodDef));
+  meth->ml_name = strdup(membername);
+  meth->ml_meth = (PyCFunction) python_member_trampoline;
+  meth->ml_flags =   METH_VARARGS | METH_KEYWORDS;
+
+  meth->ml_doc =  "Added" ;
+  callable = memberfunc;
+  if (type_add_method(&PyOpenSCADType, meth) < 0) return Py_None;
+  return Py_None;
+}
 
 PyNumberMethods PyOpenSCADNumbers = {
   python_nb_add,       // binaryfunc nb_add
