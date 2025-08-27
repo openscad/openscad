@@ -51,6 +51,8 @@ jobs:
       run: |
         brew unlink python3
         brew link --overwrite python3
+    - name: Upgrade Homebrew packages
+      run: brew upgrade cgal boost
     - name: Install Homebrew packages
       env:
         HOMEBREW_NO_AUTO_UPDATE: 1
