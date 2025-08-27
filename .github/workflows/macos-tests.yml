@@ -17,8 +17,14 @@ jobs:
   build_and_test:
     strategy:
       matrix:
-        os: [macos-14]
-        qt: [qt6]
+        os: [macos-13, macos-latest]
+        qt: [qt5, qt6]
+        exclude:
+          # macos-latest runs on arm64, which has a broken SW renderer
+          - os: macos-latest
+          # QScintilla for qt5 is not longer available on Homebrew, and
+          # it's too much work to keep that running.
+          - qt: qt5
     runs-on:  ${{ matrix.os }}
     name: ${{ matrix.os }} ${{ matrix.qt }}
     # If it's not done in 60 minutes, something is wrong.
