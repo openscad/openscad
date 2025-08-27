@@ -807,6 +807,7 @@ set(CORE_SOURCES
   src/core/LocalScope.cc
   src/core/node_clone.cc
   src/core/ModuleInstantiation.cc
+  src/core/Namespace.cc
   src/core/NodeDumper.cc
   src/core/NodeVisitor.cc
   src/core/OffsetNode.cc
