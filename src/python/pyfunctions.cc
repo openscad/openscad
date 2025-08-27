@@ -2068,7 +2068,8 @@ void python_export_obj_att(std::ostream& output)
 
 PyObject *python_export_core(PyObject *obj, char *file)
 {
-  const auto path = fs::path(file);
+  const std::string filename = lookup_file(file, python_scriptpath.parent_path().u8string(), ".");
+  const auto path = fs::path(filename);
   std::string suffix = path.has_extension() ? path.extension().generic_string().substr(1) : "";
   boost::algorithm::to_lower(suffix);
   python_result_obj = obj;
@@ -5090,11 +5091,11 @@ PyObject *python_oo_only(PyObject *self, PyObject *args, PyObject *kwargs)
   return python_debug_modifier_func_oo(self, args, kwargs, 2);
 }
 
-PyObject *python_nb_invert(PyObject *arg) { return python_debug_modifier(arg, 0); }
+PyObject *python_nb_invert(PyObject *arg) { return python_debug_modifier(arg, 2); }
 
 PyObject *python_nb_neg(PyObject *arg) { return python_debug_modifier(arg, 1); }
 
-PyObject *python_nb_pos(PyObject *arg) { return python_debug_modifier(arg, 2); }
+PyObject *python_nb_pos(PyObject *arg) { return python_debug_modifier(arg, 0); }
 
 #ifndef OPENSCAD_NOGUI
 extern void add_menuitem_trampoline(const char *menuname, const char *itemname, const char *callback);
