@@ -5373,10 +5373,13 @@ int type_add_method(PyTypeObject *type, PyMethodDef *meth) // from typeobject.c
     }
     return 0;
 }
-PyObject *callable;
+
+std::vector<PyObject *> python_member_callables;
+int python_member_callind;
+
 PyObject *python_member_trampoline(PyObject *self, PyObject *args, PyObject *kwargs)
 {
-	printf("Trampoline %p %p %p\n", self, args, kwargs);
+	printf("Trampoline %p %p %p %d\n", self, args, kwargs, python_member_callind);
 	printf("%s %s\n", self->ob_type->tp_name, args->ob_type->tp_name);
 	int n=  PyTuple_Size(args);
 	PyObject *newargs = PyTuple_New(n+1);
@@ -5384,9 +5387,8 @@ PyObject *python_member_trampoline(PyObject *self, PyObject *args, PyObject *kwa
 	for(int i=0;i<n;i++)
 		PyTuple_SetItem(newargs, i+1, PyTuple_GetItem(args,i));
 
-	return  PyObject_Call(callable, newargs, kwargs);
+	return  PyObject_Call(python_member_callables[python_member_callind], newargs, kwargs);
 }
-
 
 PyObject *python_member(PyObject *self, PyObject *args, PyObject *kwargs)
 {
@@ -5398,14 +5400,23 @@ PyObject *python_member(PyObject *self, PyObject *args, PyObject *kwargs)
     PyErr_SetString(PyExc_TypeError, "Error during parsing member");
     return NULL;
   }
+  int curind = python_member_callables.size();
+  printf("member curind is %d\n", curind);
+  auto *python_member_lambdaptr = +[curind](PyObject *self, PyObject *args, PyObject *kwargs){
+//    python_member_callind = curind;
+//    printf("setting to %d\n", curind);
+    return python_member_trampoline(self, args, kwargs);
+  };
+
   int memberused=0, membersize=sizeof(PyOpenSCADMethods)/sizeof(PyOpenSCADMethods[0]);
   PyMethodDef *meth = (PyMethodDef *) malloc(sizeof(PyMethodDef));
   meth->ml_name = strdup(membername);
-  meth->ml_meth = (PyCFunction) python_member_trampoline;
+  meth->ml_meth = (PyCFunction) python_member_lambdaptr;
+
   meth->ml_flags =   METH_VARARGS | METH_KEYWORDS;
 
   meth->ml_doc =  "Added" ;
-  callable = memberfunc;
+  python_member_callables.push_back(memberfunc);
   if (type_add_method(&PyOpenSCADType, meth) < 0) return Py_None;
   return Py_None;
 }
