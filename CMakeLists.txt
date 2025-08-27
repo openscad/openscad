@@ -826,6 +826,7 @@ set(CORE_SOURCES
   src/core/Tree.cc
   src/core/UndefType.cc
   src/core/UserModule.cc
+  src/core/Using.cc
   src/core/Value.cc
   src/core/builtin_functions.cc
   src/core/control.cc
