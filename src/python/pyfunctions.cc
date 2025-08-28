@@ -5144,7 +5144,172 @@ PyObject *python_oo_dict(PyObject *self, PyObject *args, PyObject *kwargs)
   return dict;
 }
 
-PyObject *python_member(PyObject *self, PyObject *args, PyObject *kwargs); 
+
+int PyDict_SetDefaultRef(PyObject *d, PyObject *key, PyObject *default_value,
+                     PyObject **result)
+{
+    PyDict_SetDefault(d, key, default_value);
+    return 0;
+}
+
+int type_add_method(PyTypeObject *type, PyMethodDef *meth) // from typeobject.c
+{
+    PyObject *descr;
+    int isdescr = 1;
+    if (meth->ml_flags & METH_CLASS) {
+        if (meth->ml_flags & METH_STATIC) {
+            PyErr_SetString(PyExc_ValueError,
+                    "method cannot be both class and static");
+            return -1;
+        }
+        descr = PyDescr_NewClassMethod(type, meth);
+    }
+    else if (meth->ml_flags & METH_STATIC) {
+        PyObject *cfunc = PyCFunction_NewEx(meth, (PyObject*)type, NULL);
+        if (cfunc == NULL) {
+            return -1;
+        }
+        descr = PyStaticMethod_New(cfunc);
+        isdescr = 0;  // PyStaticMethod is not PyDescrObject
+        Py_DECREF(cfunc);
+    }
+    else {
+        descr = PyDescr_NewMethod(type, meth);
+    }
+    if (descr == NULL) {
+        return -1;
+    }
+
+    PyObject *name;
+    if (isdescr) {
+        name = PyDescr_NAME(descr);
+    }
+    else {
+        name = PyUnicode_FromString(meth->ml_name);
+        if (name == NULL) {
+            Py_DECREF(descr);
+            return -1;
+        }
+    }
+
+    int err;
+    PyObject *dict = type->tp_dict;
+    if (!(meth->ml_flags & METH_COEXIST)) {
+        err = PyDict_SetDefaultRef(dict, name, descr, NULL) < 0;
+    }
+    else {
+        err = PyDict_SetItem(dict, name, descr) < 0;
+    }
+    if (!isdescr) {
+        Py_DECREF(name);
+    }
+    Py_DECREF(descr);
+    if (err) {
+        return -1; // return here
+    }
+    return 0;
+}
+
+std::vector<PyObject *> python_member_callables;
+std::vector<std::string > python_member_names;
+int python_member_callind;
+
+PyObject *python_member_trampoline(PyObject *self, PyObject *args, PyObject *kwargs)
+{
+	int n=  PyTuple_Size(args);
+	PyObject *newargs = PyTuple_New(n+1);
+	PyTuple_SetItem(newargs, 0, self);
+	for(int i=0;i<n;i++)
+		PyTuple_SetItem(newargs, i+1, PyTuple_GetItem(args,i));
+
+	return  PyObject_Call(python_member_callables[python_member_callind], newargs, kwargs);
+}
+
+#define PYTHON_MAX_USERMEMBERS 20
+
+PyObject *python_member_trampoline_0(PyObject *self, PyObject *args, PyObject *kwargs) { python_member_callind=0; return python_member_trampoline(self, args, kwargs);	}
+PyObject *python_member_trampoline_1(PyObject *self, PyObject *args, PyObject *kwargs) { python_member_callind=1; return python_member_trampoline(self, args, kwargs);	}
+PyObject *python_member_trampoline_2(PyObject *self, PyObject *args, PyObject *kwargs) { python_member_callind=2; return python_member_trampoline(self, args, kwargs);	}
+PyObject *python_member_trampoline_3(PyObject *self, PyObject *args, PyObject *kwargs) { python_member_callind=3; return python_member_trampoline(self, args, kwargs);	}
+PyObject *python_member_trampoline_4(PyObject *self, PyObject *args, PyObject *kwargs) { python_member_callind=4; return python_member_trampoline(self, args, kwargs);	}
+PyObject *python_member_trampoline_5(PyObject *self, PyObject *args, PyObject *kwargs) { python_member_callind=5; return python_member_trampoline(self, args, kwargs);	}
+PyObject *python_member_trampoline_6(PyObject *self, PyObject *args, PyObject *kwargs) { python_member_callind=6; return python_member_trampoline(self, args, kwargs);	}
+PyObject *python_member_trampoline_7(PyObject *self, PyObject *args, PyObject *kwargs) { python_member_callind=7; return python_member_trampoline(self, args, kwargs);	}
+PyObject *python_member_trampoline_8(PyObject *self, PyObject *args, PyObject *kwargs) { python_member_callind=8; return python_member_trampoline(self, args, kwargs);	}
+PyObject *python_member_trampoline_9(PyObject *self, PyObject *args, PyObject *kwargs) { python_member_callind=9; return python_member_trampoline(self, args, kwargs);	}
+PyObject *python_member_trampoline_10(PyObject *self, PyObject *args, PyObject *kwargs) { python_member_callind=10; return python_member_trampoline(self, args, kwargs);	}
+PyObject *python_member_trampoline_11(PyObject *self, PyObject *args, PyObject *kwargs) { python_member_callind=11; return python_member_trampoline(self, args, kwargs);	}
+PyObject *python_member_trampoline_12(PyObject *self, PyObject *args, PyObject *kwargs) { python_member_callind=12; return python_member_trampoline(self, args, kwargs);	}
+PyObject *python_member_trampoline_13(PyObject *self, PyObject *args, PyObject *kwargs) { python_member_callind=13; return python_member_trampoline(self, args, kwargs);	}
+PyObject *python_member_trampoline_14(PyObject *self, PyObject *args, PyObject *kwargs) { python_member_callind=14; return python_member_trampoline(self, args, kwargs);	}
+PyObject *python_member_trampoline_15(PyObject *self, PyObject *args, PyObject *kwargs) { python_member_callind=15; return python_member_trampoline(self, args, kwargs);	}
+PyObject *python_member_trampoline_16(PyObject *self, PyObject *args, PyObject *kwargs) { python_member_callind=16; return python_member_trampoline(self, args, kwargs);	}
+PyObject *python_member_trampoline_17(PyObject *self, PyObject *args, PyObject *kwargs) { python_member_callind=17; return python_member_trampoline(self, args, kwargs);	}
+PyObject *python_member_trampoline_18(PyObject *self, PyObject *args, PyObject *kwargs) { python_member_callind=18; return python_member_trampoline(self, args, kwargs);	}
+PyObject *python_member_trampoline_19(PyObject *self, PyObject *args, PyObject *kwargs) { python_member_callind=19; return python_member_trampoline(self, args, kwargs);	}
+
+PyObject *python_member(PyObject *self, PyObject *args, PyObject *kwargs)
+{
+  char *kwlist[] = {"membername", "memberfunc", "docstring", NULL};
+  char *membername = nullptr;
+  PyObject *memberfunc = nullptr;
+  char *memberdoc = nullptr;
+  
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "sO|s", kwlist, &membername, &memberfunc)) {
+    PyErr_SetString(PyExc_TypeError, "Error during parsing member");
+    return NULL;
+  }
+  std::string member_name = membername;
+  if(std::find(python_member_names.begin(),python_member_names.end(), member_name) != python_member_names.end()) {
+    return Py_None;    
+  }
+
+  if(memberdoc == nullptr) { memberdoc="Added by member function";
+  }
+  int curind = python_member_callables.size();
+
+  if(curind == PYTHON_MAX_USERMEMBERS) {
+    PyErr_SetString(PyExc_TypeError, "Maximum user member amount reached");
+    return NULL;
+  }
+
+  PyCFunction next_trampoline;
+  switch(curind){
+    case 0: next_trampoline = (PyCFunction) python_member_trampoline_0; break;
+    case 1: next_trampoline = (PyCFunction) python_member_trampoline_1; break;
+    case 2: next_trampoline = (PyCFunction) python_member_trampoline_2; break;
+    case 3: next_trampoline = (PyCFunction) python_member_trampoline_3; break;
+    case 4: next_trampoline = (PyCFunction) python_member_trampoline_4; break;
+    case 5: next_trampoline = (PyCFunction) python_member_trampoline_5; break;
+    case 6: next_trampoline = (PyCFunction) python_member_trampoline_6; break;
+    case 7: next_trampoline = (PyCFunction) python_member_trampoline_7; break;
+    case 8: next_trampoline = (PyCFunction) python_member_trampoline_8; break;
+    case 9: next_trampoline = (PyCFunction) python_member_trampoline_9; break;
+    case 10: next_trampoline = (PyCFunction) python_member_trampoline_10; break;
+    case 11: next_trampoline = (PyCFunction) python_member_trampoline_11; break;
+    case 12: next_trampoline = (PyCFunction) python_member_trampoline_12; break;
+    case 13: next_trampoline = (PyCFunction) python_member_trampoline_13; break;
+    case 14: next_trampoline = (PyCFunction) python_member_trampoline_14; break;
+    case 15: next_trampoline = (PyCFunction) python_member_trampoline_15; break;
+    case 16: next_trampoline = (PyCFunction) python_member_trampoline_16; break;
+    case 17: next_trampoline = (PyCFunction) python_member_trampoline_17; break;
+    case 18: next_trampoline = (PyCFunction) python_member_trampoline_18; break;
+    case 19: next_trampoline = (PyCFunction) python_member_trampoline_19; break;
+  }	    
+
+  PyMethodDef *meth = (PyMethodDef *) malloc(sizeof(PyMethodDef)); // never freed
+  meth->ml_name = strdup(membername);
+  meth->ml_meth = next_trampoline;
+  meth->ml_flags =   METH_VARARGS | METH_KEYWORDS;
+  meth->ml_doc =  memberdoc ;
+  if (type_add_method(&PyOpenSCADType, meth) < 0) return Py_None;
+
+  Py_INCREF(memberfunc); // needed because pythons garbage collector eats it when not used.
+  python_member_names.push_back(member_name);
+  python_member_callables.push_back(memberfunc);
+
+  return Py_None;
+}
 
 PyMethodDef PyOpenSCADFunctions[] = {
   {"edge", (PyCFunction)python_edge, METH_VARARGS | METH_KEYWORDS, "Create Edge."},
@@ -5307,119 +5472,6 @@ PyMethodDef PyOpenSCADMethods[] = {
                                             OO_METHOD_ENTRY(render, "Render Object")
                                               OO_METHOD_ENTRY(clone, "Clone Object") OO_METHOD_ENTRY(
                                                 dict, "return all dictionary"){NULL, NULL, 0, NULL}};
-
-int PyDict_SetDefaultRef(PyObject *d, PyObject *key, PyObject *default_value,
-                     PyObject **result)
-{
-    PyDict_SetDefault(d, key, default_value);
-    return 0;
-}
-
-int type_add_method(PyTypeObject *type, PyMethodDef *meth) // from typeobject.c
-{
-    PyObject *descr;
-    int isdescr = 1;
-    if (meth->ml_flags & METH_CLASS) {
-        if (meth->ml_flags & METH_STATIC) {
-            PyErr_SetString(PyExc_ValueError,
-                    "method cannot be both class and static");
-            return -1;
-        }
-        descr = PyDescr_NewClassMethod(type, meth);
-    }
-    else if (meth->ml_flags & METH_STATIC) {
-        PyObject *cfunc = PyCFunction_NewEx(meth, (PyObject*)type, NULL);
-        if (cfunc == NULL) {
-            return -1;
-        }
-        descr = PyStaticMethod_New(cfunc);
-        isdescr = 0;  // PyStaticMethod is not PyDescrObject
-        Py_DECREF(cfunc);
-    }
-    else {
-        descr = PyDescr_NewMethod(type, meth);
-    }
-    if (descr == NULL) {
-        return -1;
-    }
-
-    PyObject *name;
-    if (isdescr) {
-        name = PyDescr_NAME(descr);
-    }
-    else {
-        name = PyUnicode_FromString(meth->ml_name);
-        if (name == NULL) {
-            Py_DECREF(descr);
-            return -1;
-        }
-    }
-
-    int err;
-    PyObject *dict = type->tp_dict;
-    if (!(meth->ml_flags & METH_COEXIST)) {
-        err = PyDict_SetItem(dict, name, descr) < 0;
-        //err = PyDict_SetDefaultRef(dict, name, descr, NULL) < 0;
-    }
-    else {
-        err = PyDict_SetItem(dict, name, descr) < 0;
-    }
-    if (!isdescr) {
-        Py_DECREF(name);
-    }
-    Py_DECREF(descr);
-    if (err) {
-        return -1; // return here
-    }
-    return 0;
-}
-
-std::vector<PyObject *> python_member_callables;
-int python_member_callind;
-
-PyObject *python_member_trampoline(PyObject *self, PyObject *args, PyObject *kwargs)
-{
-	printf("Trampoline %p %p %p %d\n", self, args, kwargs, python_member_callind);
-	printf("%s %s\n", self->ob_type->tp_name, args->ob_type->tp_name);
-	int n=  PyTuple_Size(args);
-	PyObject *newargs = PyTuple_New(n+1);
-	PyTuple_SetItem(newargs, 0, self);
-	for(int i=0;i<n;i++)
-		PyTuple_SetItem(newargs, i+1, PyTuple_GetItem(args,i));
-
-	return  PyObject_Call(python_member_callables[python_member_callind], newargs, kwargs);
-}
-
-PyObject *python_member(PyObject *self, PyObject *args, PyObject *kwargs)
-{
-  char *kwlist[] = {"membername", "memberfunc", NULL};
-  char *membername = nullptr;
-  PyObject *memberfunc = nullptr;
-  
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "sO", kwlist, &membername, &memberfunc)) {
-    PyErr_SetString(PyExc_TypeError, "Error during parsing member");
-    return NULL;
-  }
-  int curind = python_member_callables.size();
-  printf("member curind is %d\n", curind);
-  auto *python_member_lambdaptr = +[curind](PyObject *self, PyObject *args, PyObject *kwargs){
-//    python_member_callind = curind;
-//    printf("setting to %d\n", curind);
-    return python_member_trampoline(self, args, kwargs);
-  };
-
-  int memberused=0, membersize=sizeof(PyOpenSCADMethods)/sizeof(PyOpenSCADMethods[0]);
-  PyMethodDef *meth = (PyMethodDef *) malloc(sizeof(PyMethodDef));
-  meth->ml_name = strdup(membername);
-  meth->ml_meth = (PyCFunction) python_member_lambdaptr;
-
-  meth->ml_flags =   METH_VARARGS | METH_KEYWORDS;
-
-  meth->ml_doc =  "Added" ;
-  python_member_callables.push_back(memberfunc);
-  if (type_add_method(&PyOpenSCADType, meth) < 0) return Py_None;
-  return Py_None;
-}
 
 PyNumberMethods PyOpenSCADNumbers = {
   python_nb_add,       // binaryfunc nb_add
