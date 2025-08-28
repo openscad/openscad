@@ -1,13 +1,37 @@
 {
-  "profile": "openscad",
-  "distros": {
-    "debian": {"extends": null, "packages": []},
-    "ubuntu": {"extends": "debian"},
-    "fedora": {"extends": null, "packages": []},
-    "arch": {"extends": null, "packages": []},
-    "gentoo": {"extends": null, "packages": []},
-    "freebsd": {"extends": null, "packages": []},
-    "netbsd": {"extends": null, "packages": []},
-    "macos": {"extends": null, "packages": []}
-  }
+    "profile": "openscad",
+    "notes": "Adds OpenSCAD build/runtime packages on top of OpenSCAD baseline.",
+    "distros": {
+        "debian": {
+            "extends": null,
+            "packages": []
+        },
+        "ubuntu": {
+            "extends": "debian"
+        },
+        "fedora": {
+            "extends": null,
+            "packages": []
+        },
+        "arch": {
+            "extends": null,
+            "packages": []
+        },
+        "gentoo": {
+            "extends": null,
+            "packages": []
+        },
+        "freebsd": {
+            "extends": null,
+            "packages": []
+        },
+        "netbsd": {
+            "extends": null,
+            "packages": []
+        },
+        "macos": {
+            "extends": null,
+            "packages": []
+        }
+    }
 }
