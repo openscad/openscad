@@ -1,0 +1,151 @@
+{
+  "schema": 1,
+  "notes": "Base distro definitions (shared across profiles). Profiles add or extend packages without redefining managers.",
+  "distros": {
+    "debian": {
+      "manager": "apt",
+      "packages": [
+        "build-essential", "bison", "flex", "git", "curl", "cmake", "ninja-build",
+        "libffi-dev", "libboost-program-options-dev", "libboost-regex-dev", "libboost-system-dev",
+        "libmpfr-dev", "libglew-dev", "libcairo2-dev", "libharfbuzz-dev", "libeigen3-dev",
+        "libcgal-dev", "libopencsg-dev", "libgmp-dev", "imagemagick", "libfreetype-dev",
+        "libdouble-conversion-dev", "libxml2-dev", "gtk-doc-tools", "libglib2.0-dev", "gettext",
+        "xvfb", "pkg-config", "ragel", "libtbb-dev", "libgl1-mesa-dev", "libxi-dev", "libxmu-dev",
+        "libfontconfig-dev", "libzip-dev", "python3-venv",
+        "qtbase5-dev", "libqscintilla2-qt5-dev", "libqt5opengl5-dev", "libqt5svg5-dev",
+        "qtmultimedia5-dev", "libqt5multimedia5-plugins", "qt5-qmake"
+      ],
+      "version_overrides": {
+        "12": { "add": [], "remove": [] }
+      }
+    },
+    "ubuntu": {
+      "extends": "debian",
+      "version_overrides": { "24": { "add": [], "remove": [] } }
+    },
+    "fedora": {
+      "manager": "dnf",
+      "packages": [
+        "gcc", "gcc-c++", "qt5-qtbase-devel", "bison", "flex", "eigen3-devel", "harfbuzz-devel",
+        "fontconfig-devel", "freetype-devel", "boost-devel", "mpfr-devel", "gmp-devel", "glew-devel",
+        "CGAL-devel", "pkgconfig", "opencsg-devel", "git", "libXmu-devel", "curl", "ImageMagick",
+        "glib2-devel", "make", "xorg-x11-server-Xvfb", "gettext", "qscintilla-qt5-devel",
+        "mesa-dri-drivers", "libzip-devel", "ccache", "qt5-qtmultimedia-devel", "qt5-qtsvg-devel",
+        "double-conversion-devel", "tbb-devel", "libxml2-devel", "libffi-devel", "redhat-rpm-config",
+        "qtchooser"
+      ],
+      "version_overrides": {
+        "42": { "add": [], "remove": [] }
+      }
+    },
+    "arch": {
+      "manager": "pacman",
+      "packages": [
+        "base-devel", "gcc", "bison", "flex", "make", "libzip", "qt5", "qscintilla-qt5", "cgal",
+        "gmp", "mpfr", "boost", "opencsg", "glew", "eigen", "glib2", "fontconfig", "freetype2",
+        "harfbuzz", "double-conversion", "imagemagick", "tbb", "curl", "git", "pkgconf", "mesa",
+        "libxi", "libxmu"
+      ],
+      "version_overrides": {}
+    },
+    "gentoo": {
+      "manager": "emerge",
+      "pre_commands": ["emerge --sync"],
+      "packages": [
+        "sys-devel/gcc", "sys-devel/bison", "sys-devel/flex", "dev-vcs/git", "net-misc/curl",
+        "dev-util/cmake", "dev-util/ninja", "dev-libs/libffi", "dev-libs/boost", "dev-libs/mpfr",
+        "dev-libs/gmp", "media-libs/glew", "media-libs/freetype", "media-libs/fontconfig",
+        "media-libs/harfbuzz", "sci-libs/eigen", "sci-mathematics/cgal", "media-gfx/imagemagick",
+        "media-libs/opencsg", "x11-libs/libXmu", "dev-cpp/tbb", "dev-libs/libzip", "dev-libs/libxml2",
+        "dev-qt/qtcore", "dev-qt/qtgui", "dev-qt/qtopengl", "dev-qt/qtsvg", "dev-qt/qtmultimedia",
+        "dev-qt/linguist-tools", "dev-util/ccache", "dev-qt/qtchooser"
+      ],
+      "version_overrides": {}
+    },
+    "freebsd": {
+      "manager": "pkg",
+      "packages": [
+        "bison", "boost-libs", "cmake", "git", "bash", "eigen3", "flex", "gmake", "gmp",
+        "mpfr", "xorg", "libGLU", "libXmu", "libXi", "xorg-vfbserver", "glew",
+        "qt5-core", "qt5-gui", "qt5-buildtools", "qt5-opengl", "qt5-qmake", "opencsg", "cgal",
+        "curl", "imagemagick", "gettext", "double-conversion", "onetbb", "libzip", "libxml2"
+      ],
+      "version_overrides": {}
+    },
+    "netbsd": {
+      "manager": "pkgin",
+      "packages": [
+        "bison", "boost", "cmake", "git", "bash", "eigen3", "flex", "gmake", "gmp", "mpfr",
+        "qt5", "glew", "cgal", "opencsg", "python", "curl", "ImageMagick", "gettext",
+        "threadingbuildingblocks", "libzip", "libxml2"
+      ],
+      "version_overrides": {}
+    },
+    "macos": {
+      "manager": "brew",
+      "packages": [
+        "qt@5", "qscintilla2", "boost", "cgal", "eigen", "gmp", "mpfr", "glew", "opencsg",
+        "freetype", "fontconfig", "harfbuzz", "pkg-config", "bison", "flex", "cmake", "ninja",
+        "git", "curl", "imagemagick", "tbb", "libzip", "libffi", "libxml2", "cairo",
+        "double-conversion"
+      ],
+      "version_overrides": {}
+    },
+    "opensuse": {
+      "manager": "zypper",
+      "packages": [
+        "mpfr-devel", "gmp-devel", "boost-devel", "glew-devel", "cmake", "git", "bison", "flex", "cgal-devel", "curl",
+        "glib2-devel", "gettext", "freetype-devel", "harfbuzz-devel", "qscintilla-qt5-devel", "libqt5-qtbase-devel", "libQt5OpenGL-devel",
+        "xvfb-run", "libzip-devel", "libqt5-qtmultimedia-devel", "libqt5-qtsvg-devel", "double-conversion-devel", "tbb-devel", "libeigen3-devel",
+        "ImageMagick", "opencsg-devel"
+      ],
+      "version_overrides": {}
+    },
+    "mageia": {
+      "manager": "urpmi",
+      "packages": [
+        "task-c-devel", "task-c++-devel", "libqt5-devel", "libgmp-devel", "libmpfr-devel", "libboost-devel", "eigen3-devel", "libglew-devel",
+        "bison", "flex", "cmake", "imagemagick", "glib2-devel", "python", "curl", "git", "x11-server-xvfb", "gettext", "double-conversion-devel", "tbb"
+      ],
+      "version_overrides": {}
+    },
+    "solus": {
+      "manager": "eopkg",
+      "packages": [
+        "system.devel", "qt5-base-devel", "qt5-multimedia-devel", "qt5-svg-devel", "qscintilla-devel", "CGAL-devel", "gmp-devel", "mpfr-devel",
+        "glib2-devel", "libboost-devel", "opencsg-devel", "glew-devel", "eigen3", "fontconfig-devel", "freetype2-devel", "harfbuzz-devel",
+        "libzip-devel", "double-conversion-devel", "bison", "flex", "intel-tbb-devel", "curl", "git"
+      ],
+      "version_overrides": {}
+    },
+    "altlinux": {
+      "manager": "apt",
+      "packages": [
+        "boost-devel", "gcc4.5", "gcc4.5-c++", "boost-program_options-devel", "boost-thread-devel", "boost-system-devel", "boost-regex-devel",
+        "eigen3", "libmpfr", "libgmp", "libgmp_cxx-devel", "qt5-devel", "libcgal-devel", "git-core", "tbb-devel", "libglew-devel", "flex",
+        "bison", "curl", "imagemagick", "gettext", "glib2-devel"
+      ],
+      "version_overrides": {}
+    },
+    "qomo": {
+      "manager": "dnf",
+      "packages": [
+        "qt5-qtbase-devel", "bison", "flex", "eigen3-devel", "harfbuzz-devel", "fontconfig-devel", "freetype-devel", "boost-devel", "mpfr-devel",
+        "gmp-devel", "glew-devel", "CGAL-devel", "gcc", "gcc-c++", "pkgconfig", "opencsg-devel", "git", "libXmu-devel", "curl", "ImageMagick",
+        "glib2-devel", "make", "xorg-x11-server-Xvfb", "gettext", "qscintilla-qt5-devel", "mesa-dri-drivers", "libzip-devel", "ccache",
+        "qt5-qtmultimedia-devel", "qt5-qtsvg-devel", "double-conversion-devel", "tbb-devel", "libxml2-devel", "libffi-devel", "redhat-rpm-config",
+        "qtchooser"
+      ],
+      "version_overrides": {}
+    },
+    "nixos": {
+      "manager": "nix-env",
+      "packages": [
+        "qt5.qtbase", "qt5.qtmultimedia", "qt5.qtsvg", "qscintilla", "boost", "cgal", "eigen", "gmp", "mpfr", "glew",
+        "opencsg", "freetype", "fontconfig", "harfbuzz", "pkg-config", "bison", "flex", "cmake", "ninja", "git", "curl",
+        "imagemagick", "tbb", "libzip", "libffi", "libxml2", "cairo", "double-conversion"
+      ],
+      "version_overrides": {}
+    }
+  }
+}
