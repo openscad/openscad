@@ -1958,6 +1958,15 @@ PyObject *python_show_core(PyObject *obj)
     PyErr_SetString(PyExc_TypeError, "Invalid type for Object in show");
     return NULL;
   }
+  if(child == void_node) {
+    return nullptr; 
+  }
+
+  if(child == full_node) {
+    PyErr_SetString(PyExc_TypeError, "Cannot display infinite space");
+    return nullptr;
+  }
+
   PyObject *key, *value;
   Py_ssize_t pos = 0;
   python_build_hashmap(child, 0);
@@ -3609,11 +3618,29 @@ PyObject *python_oo_path_extrude(PyObject *obj, PyObject *args, PyObject *kwargs
                            fa, fs);
 }
 
+PyObject *python_csg_core(std::shared_ptr<CsgOpNode> &node, const std::vector<std::shared_ptr<AbstractNode>> &childs)
+{
+  PyTypeObject *type = &PyOpenSCADType;
+  for(int i=0;i<childs.size();i++ ) {	
+    const auto &child = childs[i];	  
+    if (child.get() == void_node.get()) {
+      if(node->type == OpenSCADOperator::DIFFERENCE && i == 0) return PyOpenSCADObjectFromNode(type, void_node);
+      if(node->type == OpenSCADOperator::INTERSECTION) return PyOpenSCADObjectFromNode(type, void_node);
+    } else if (child.get() == full_node.get()) {
+      if(node->type == OpenSCADOperator::UNION) return PyOpenSCADObjectFromNode(type, full_node);
+      if(node->type == OpenSCADOperator::DIFFERENCE) { 
+        if(i == 0) return PyOpenSCADObjectFromNode(type, full_node); // eigentlich negativ
+	  else return PyOpenSCADObjectFromNode(type, void_node);
+      }
+    } else node->children.push_back(child);
+  }  
+  return PyOpenSCADObjectFromNode(type, node);
+}
+	
 PyObject *python_csg_sub(PyObject *self, PyObject *args, PyObject *kwargs, OpenSCADOperator mode)
 {
   DECLARE_INSTANCE
   int i;
-  PyTypeObject *type = &PyOpenSCADType;
   auto node = std::make_shared<CsgOpNode>(instance, mode);
   node->r = 0;
   node->fn = 1;
@@ -3641,49 +3668,44 @@ PyObject *python_csg_sub(PyObject *self, PyObject *args, PyObject *kwargs, OpenS
       }
     }
   }
+  std::vector<std::shared_ptr<AbstractNode>> child_solid;
   for (i = 0; i < PyTuple_Size(args); i++) {
     obj = PyTuple_GetItem(args, i);
     PyObject *dict = nullptr;
     child = PyOpenSCADObjectToNodeMulti(obj, &dict);
-    if (i == 0) type = PyOpenSCADObjectType(obj);
     if (dict != nullptr) {
       child_dict.push_back(dict);
     }
     if (child != NULL) {
-      if (child.get() == void_node.get() && mode == OpenSCADOperator::UNION) {
-      } else if (child.get() == void_node.get() && i > 0 && mode == OpenSCADOperator::DIFFERENCE) {
-      } else if (child.get() == full_node.get() && mode == OpenSCADOperator::INTERSECTION) {
-      } else {
-        node->children.push_back(child);
-      }
+      child_solid.push_back(child);
     } else {
       switch (mode) {
-      case OpenSCADOperator::UNION:
-        PyErr_SetString(PyExc_TypeError,
+        case OpenSCADOperator::UNION:
+          PyErr_SetString(PyExc_TypeError,
                         "Error during parsing union. arguments must be solids or arrays.");
-        return nullptr;
-        break;
-      case OpenSCADOperator::DIFFERENCE:
-        PyErr_SetString(PyExc_TypeError,
+          return nullptr;
+          break;
+        case OpenSCADOperator::DIFFERENCE:
+          PyErr_SetString(PyExc_TypeError,
                         "Error during parsing difference. arguments must be solids or arrays.");
-        return nullptr;
-        break;
-      case OpenSCADOperator::INTERSECTION:
-        PyErr_SetString(PyExc_TypeError,
+          return nullptr;
+          break;
+        case OpenSCADOperator::INTERSECTION:
+          PyErr_SetString(PyExc_TypeError,
                         "Error during parsing intersection. arguments must be solids or arrays.");
-        return nullptr;
-        break;
-      case OpenSCADOperator::MINKOWSKI: break;
-      case OpenSCADOperator::HULL:      break;
-      case OpenSCADOperator::FILL:      break;
-      case OpenSCADOperator::RESIZE:    break;
-      case OpenSCADOperator::OFFSET:    break;
+          return nullptr;
+          break;
+        case OpenSCADOperator::MINKOWSKI: break;
+        case OpenSCADOperator::HULL:      break;
+        case OpenSCADOperator::FILL:      break;
+        case OpenSCADOperator::RESIZE:    break;
+        case OpenSCADOperator::OFFSET:    break;
       }
       return NULL;
     }
   }
+  PyObject *pyresult = python_csg_core(node, child_solid);
 
-  PyObject *pyresult = PyOpenSCADObjectFromNode(type, node);
   for (int i = child_dict.size() - 1; i >= 0; i--)  // merge from back  to give 1st child most priority
   {
     auto& dict = child_dict[i];
@@ -3755,17 +3777,13 @@ PyObject *python_oo_csg_sub(PyObject *self, PyObject *args, PyObject *kwargs, Op
       }
     }
   }
+  std::vector<std::shared_ptr<AbstractNode>> child_solid;
   for (i = 0; i < PyTuple_Size(args); i++) {
     obj = PyTuple_GetItem(args, i);
     child = PyOpenSCADObjectToNodeMulti(obj, &dict);
     child_dict.push_back(dict);
     if (child != NULL) {
-      if (child.get() == void_node.get() && mode == OpenSCADOperator::UNION) {
-      } else if (child.get() == void_node.get() && i > 0 && mode == OpenSCADOperator::DIFFERENCE) {
-      } else if (child.get() == full_node.get() && mode == OpenSCADOperator::INTERSECTION) {
-      } else {
-        node->children.push_back(child);
-      }
+      child_solid.push_back(child);   
     } else {
       switch (mode) {
       case OpenSCADOperator::UNION:
@@ -3790,7 +3808,7 @@ PyObject *python_oo_csg_sub(PyObject *self, PyObject *args, PyObject *kwargs, Op
     }
   }
 
-  PyObject *pyresult = PyOpenSCADObjectFromNode(type, node);
+  PyObject *pyresult = python_csg_core(node, child_solid);
   for (int i = child_dict.size() - 1; i >= 0; i--)  // merge from back  to give 1st child most priority
   {
     auto& dict = child_dict[i];
@@ -3836,32 +3854,18 @@ PyObject *python_nb_sub(PyObject *arg1, PyObject *arg2, OpenSCADOperator mode)
   for (int i = 0; i < 2; i++) {
     PyObject *dict;
     dict = nullptr;
-    auto x = PyOpenSCADObjectToNodeMulti(i == 1 ? arg2 : arg1, &dict);
-    if (x == NULL) {
+    auto solid = PyOpenSCADObjectToNodeMulti(i == 1 ? arg2 : arg1, &dict);
+    child_dict.push_back(dict);
+    if(solid != nullptr) child.push_back(solid);
+    else {
       PyErr_SetString(PyExc_TypeError, "invalid argument left to operator");
       return NULL;
     }
-    if (x == void_node && mode == OpenSCADOperator::UNION) continue;
-    if (x == full_node && mode == OpenSCADOperator::UNION)
-      return PyOpenSCADObjectFromNode(type, full_node);
-    if (x == full_node && mode == OpenSCADOperator::INTERSECTION) continue;
-    if (x == void_node && mode == OpenSCADOperator::DIFFERENCE && i == 0)
-      return PyOpenSCADObjectFromNode(type, void_node);
-    if (x == void_node && mode == OpenSCADOperator::DIFFERENCE && i > 0) continue;
-    if (x == full_node && mode == OpenSCADOperator::DIFFERENCE && i > 0)
-      return PyOpenSCADObjectFromNode(type, void_node);
-    child.push_back(x);
-    child_dict.push_back(dict);
   }
-  if (child.size() == 1) {
-    return PyOpenSCADObjectFromNode(type, child[0]);
-  }
-
   auto node = std::make_shared<CsgOpNode>(instance, mode);
-  node->children.push_back(child[0]);
-  node->children.push_back(child[1]);
+  PyObject *pyresult = python_csg_core(node, child);
+
   python_retrieve_pyname(node);
-  PyObject *pyresult = PyOpenSCADObjectFromNode(type, node);
   for (int i = 1; i >= 0; i--) {
     if (child_dict[i] != nullptr) {
       std::string name = child[i]->getPyName();
@@ -3876,7 +3880,9 @@ PyObject *python_nb_sub(PyObject *arg1, PyObject *arg2, OpenSCADOperator mode)
             PyUnicode_FromStringAndSize(handle_name.c_str(), strlen(handle_name.c_str()));
           PyDict_SetItem(((PyOpenSCADObject *)pyresult)->dict, key_mod, value);
         } else PyDict_SetItem(((PyOpenSCADObject *)pyresult)->dict, key, value);
+
       }
+
     }
   }
   return pyresult;
@@ -5432,6 +5438,173 @@ PyObject *python_oo_dict(PyObject *self, PyObject *args, PyObject *kwargs)
   return dict;
 }
 
+
+int PyDict_SetDefaultRef(PyObject *d, PyObject *key, PyObject *default_value,
+                     PyObject **result)
+{
+    PyDict_SetDefault(d, key, default_value);
+    return 0;
+}
+
+int type_add_method(PyTypeObject *type, PyMethodDef *meth) // from typeobject.c
+{
+    PyObject *descr;
+    int isdescr = 1;
+    if (meth->ml_flags & METH_CLASS) {
+        if (meth->ml_flags & METH_STATIC) {
+            PyErr_SetString(PyExc_ValueError,
+                    "method cannot be both class and static");
+            return -1;
+        }
+        descr = PyDescr_NewClassMethod(type, meth);
+    }
+    else if (meth->ml_flags & METH_STATIC) {
+        PyObject *cfunc = PyCFunction_NewEx(meth, (PyObject*)type, NULL);
+        if (cfunc == NULL) {
+            return -1;
+        }
+        descr = PyStaticMethod_New(cfunc);
+        isdescr = 0;  // PyStaticMethod is not PyDescrObject
+        Py_DECREF(cfunc);
+    }
+    else {
+        descr = PyDescr_NewMethod(type, meth);
+    }
+    if (descr == NULL) {
+        return -1;
+    }
+
+    PyObject *name;
+    if (isdescr) {
+        name = PyDescr_NAME(descr);
+    }
+    else {
+        name = PyUnicode_FromString(meth->ml_name);
+        if (name == NULL) {
+            Py_DECREF(descr);
+            return -1;
+        }
+    }
+
+    int err;
+    PyObject *dict = type->tp_dict;
+    if (!(meth->ml_flags & METH_COEXIST)) {
+        err = PyDict_SetDefaultRef(dict, name, descr, NULL) < 0;
+    }
+    else {
+        err = PyDict_SetItem(dict, name, descr) < 0;
+    }
+    if (!isdescr) {
+        Py_DECREF(name);
+    }
+    Py_DECREF(descr);
+    if (err) {
+        return -1; // return here
+    }
+    return 0;
+}
+
+std::vector<PyObject *> python_member_callables;
+std::vector<std::string > python_member_names;
+int python_member_callind;
+
+PyObject *python_member_trampoline(PyObject *self, PyObject *args, PyObject *kwargs)
+{
+	int n=  PyTuple_Size(args);
+	PyObject *newargs = PyTuple_New(n+1);
+	PyTuple_SetItem(newargs, 0, self);
+	for(int i=0;i<n;i++)
+		PyTuple_SetItem(newargs, i+1, PyTuple_GetItem(args,i));
+
+	return  PyObject_Call(python_member_callables[python_member_callind], newargs, kwargs);
+}
+
+#define PYTHON_MAX_USERMEMBERS 20
+
+PyObject *python_member_trampoline_0(PyObject *self, PyObject *args, PyObject *kwargs) { python_member_callind=0; return python_member_trampoline(self, args, kwargs);	}
+PyObject *python_member_trampoline_1(PyObject *self, PyObject *args, PyObject *kwargs) { python_member_callind=1; return python_member_trampoline(self, args, kwargs);	}
+PyObject *python_member_trampoline_2(PyObject *self, PyObject *args, PyObject *kwargs) { python_member_callind=2; return python_member_trampoline(self, args, kwargs);	}
+PyObject *python_member_trampoline_3(PyObject *self, PyObject *args, PyObject *kwargs) { python_member_callind=3; return python_member_trampoline(self, args, kwargs);	}
+PyObject *python_member_trampoline_4(PyObject *self, PyObject *args, PyObject *kwargs) { python_member_callind=4; return python_member_trampoline(self, args, kwargs);	}
+PyObject *python_member_trampoline_5(PyObject *self, PyObject *args, PyObject *kwargs) { python_member_callind=5; return python_member_trampoline(self, args, kwargs);	}
+PyObject *python_member_trampoline_6(PyObject *self, PyObject *args, PyObject *kwargs) { python_member_callind=6; return python_member_trampoline(self, args, kwargs);	}
+PyObject *python_member_trampoline_7(PyObject *self, PyObject *args, PyObject *kwargs) { python_member_callind=7; return python_member_trampoline(self, args, kwargs);	}
+PyObject *python_member_trampoline_8(PyObject *self, PyObject *args, PyObject *kwargs) { python_member_callind=8; return python_member_trampoline(self, args, kwargs);	}
+PyObject *python_member_trampoline_9(PyObject *self, PyObject *args, PyObject *kwargs) { python_member_callind=9; return python_member_trampoline(self, args, kwargs);	}
+PyObject *python_member_trampoline_10(PyObject *self, PyObject *args, PyObject *kwargs) { python_member_callind=10; return python_member_trampoline(self, args, kwargs);	}
+PyObject *python_member_trampoline_11(PyObject *self, PyObject *args, PyObject *kwargs) { python_member_callind=11; return python_member_trampoline(self, args, kwargs);	}
+PyObject *python_member_trampoline_12(PyObject *self, PyObject *args, PyObject *kwargs) { python_member_callind=12; return python_member_trampoline(self, args, kwargs);	}
+PyObject *python_member_trampoline_13(PyObject *self, PyObject *args, PyObject *kwargs) { python_member_callind=13; return python_member_trampoline(self, args, kwargs);	}
+PyObject *python_member_trampoline_14(PyObject *self, PyObject *args, PyObject *kwargs) { python_member_callind=14; return python_member_trampoline(self, args, kwargs);	}
+PyObject *python_member_trampoline_15(PyObject *self, PyObject *args, PyObject *kwargs) { python_member_callind=15; return python_member_trampoline(self, args, kwargs);	}
+PyObject *python_member_trampoline_16(PyObject *self, PyObject *args, PyObject *kwargs) { python_member_callind=16; return python_member_trampoline(self, args, kwargs);	}
+PyObject *python_member_trampoline_17(PyObject *self, PyObject *args, PyObject *kwargs) { python_member_callind=17; return python_member_trampoline(self, args, kwargs);	}
+PyObject *python_member_trampoline_18(PyObject *self, PyObject *args, PyObject *kwargs) { python_member_callind=18; return python_member_trampoline(self, args, kwargs);	}
+PyObject *python_member_trampoline_19(PyObject *self, PyObject *args, PyObject *kwargs) { python_member_callind=19; return python_member_trampoline(self, args, kwargs);	}
+
+PyObject *python_memberfunction(PyObject *self, PyObject *args, PyObject *kwargs)
+{
+  char *kwlist[] = {"membername", "memberfunc", "docstring", NULL};
+  char *membername = nullptr;
+  PyObject *memberfunc = nullptr;
+  char *memberdoc = nullptr;
+  
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "sO|s", kwlist, &membername, &memberfunc)) {
+    PyErr_SetString(PyExc_TypeError, "Error during parsing member");
+    return NULL;
+  }
+  std::string member_name = membername;
+  if(std::find(python_member_names.begin(),python_member_names.end(), member_name) != python_member_names.end()) {
+    return Py_None;    
+  }
+
+  if(memberdoc == nullptr) { memberdoc="Added by member function";
+  }
+  int curind = python_member_callables.size();
+
+  if(curind == PYTHON_MAX_USERMEMBERS) {
+    PyErr_SetString(PyExc_TypeError, "Maximum user member amount reached");
+    return NULL;
+  }
+
+  PyCFunction next_trampoline;
+  switch(curind){
+    case 0: next_trampoline = (PyCFunction) python_member_trampoline_0; break;
+    case 1: next_trampoline = (PyCFunction) python_member_trampoline_1; break;
+    case 2: next_trampoline = (PyCFunction) python_member_trampoline_2; break;
+    case 3: next_trampoline = (PyCFunction) python_member_trampoline_3; break;
+    case 4: next_trampoline = (PyCFunction) python_member_trampoline_4; break;
+    case 5: next_trampoline = (PyCFunction) python_member_trampoline_5; break;
+    case 6: next_trampoline = (PyCFunction) python_member_trampoline_6; break;
+    case 7: next_trampoline = (PyCFunction) python_member_trampoline_7; break;
+    case 8: next_trampoline = (PyCFunction) python_member_trampoline_8; break;
+    case 9: next_trampoline = (PyCFunction) python_member_trampoline_9; break;
+    case 10: next_trampoline = (PyCFunction) python_member_trampoline_10; break;
+    case 11: next_trampoline = (PyCFunction) python_member_trampoline_11; break;
+    case 12: next_trampoline = (PyCFunction) python_member_trampoline_12; break;
+    case 13: next_trampoline = (PyCFunction) python_member_trampoline_13; break;
+    case 14: next_trampoline = (PyCFunction) python_member_trampoline_14; break;
+    case 15: next_trampoline = (PyCFunction) python_member_trampoline_15; break;
+    case 16: next_trampoline = (PyCFunction) python_member_trampoline_16; break;
+    case 17: next_trampoline = (PyCFunction) python_member_trampoline_17; break;
+    case 18: next_trampoline = (PyCFunction) python_member_trampoline_18; break;
+    case 19: next_trampoline = (PyCFunction) python_member_trampoline_19; break;
+  }	    
+
+  PyMethodDef *meth = (PyMethodDef *) malloc(sizeof(PyMethodDef)); // never freed
+  meth->ml_name = strdup(membername);
+  meth->ml_meth = next_trampoline;
+  meth->ml_flags =   METH_VARARGS | METH_KEYWORDS;
+  meth->ml_doc =  memberdoc ;
+  if (type_add_method(&PyOpenSCADType, meth) < 0) return Py_None;
+
+  Py_INCREF(memberfunc); // needed because pythons garbage collector eats it when not used.
+  python_member_names.push_back(member_name);
+  python_member_callables.push_back(memberfunc);
+
+  return Py_None;
+}
+
 PyMethodDef PyOpenSCADFunctions[] = {
   {"edge", (PyCFunction)python_edge, METH_VARARGS | METH_KEYWORDS, "Create Edge."},
   {"square", (PyCFunction)python_square, METH_VARARGS | METH_KEYWORDS, "Create Square."},
@@ -5535,6 +5708,7 @@ PyMethodDef PyOpenSCADFunctions[] = {
   {"model", (PyCFunction)python_model, METH_VARARGS | METH_KEYWORDS, "Yield Model"},
   {"modelpath", (PyCFunction)python_modelpath, METH_VARARGS | METH_KEYWORDS,
    "Returns absolute Path to script"},
+  {"memberfunction", (PyCFunction)python_memberfunction, METH_VARARGS | METH_KEYWORDS, "Registers additional openscad memberfunction functions"},
   {"marked", (PyCFunction)python_marked, METH_VARARGS | METH_KEYWORDS, "Create a marked value."},
   {"Sin", (PyCFunction)python_sin, METH_VARARGS | METH_KEYWORDS, "Calculate sin."},
   {"Cos", (PyCFunction)python_cos, METH_VARARGS | METH_KEYWORDS, "Calculate cos."},

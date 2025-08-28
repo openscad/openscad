@@ -335,6 +335,7 @@ if (MSVC)
   # Flex lexer options
   set(WINCOMPAT "--wincompat --nounistd")
   target_compile_definitions(OpenSCAD PRIVATE _USE_MATH_DEFINES)
+  target_compile_definitions(OpenSCAD PRIVATE NOMINMAX)
 
   find_package(Eigen3 CONFIG REQUIRED)
   target_link_libraries(OpenSCAD PRIVATE Eigen3::Eigen)
@@ -362,7 +363,7 @@ if (MSVC)
   find_package(double-conversion CONFIG REQUIRED)
   target_link_libraries(OpenSCAD PRIVATE double-conversion::double-conversion)
 
-  find_library(GETTEXT_LIBRARY libintl)
+  find_library(GETTEXT_LIBRARY intl)
   target_link_libraries(OpenSCAD PRIVATE ${GETTEXT_LIBRARY})
 
   # call before setting local CMAKE_MODULE_PATH so we use VCPKG version of FindGLEW
@@ -1202,7 +1203,7 @@ if(ENABLE_MANIFOLD)
     else()
       add_subdirectory(submodules/manifold EXCLUDE_FROM_ALL)
     endif()
-    message(STATUS "mainfold submodule: ${manifold_VERSION}")
+    message(STATUS "manifold submodule: ${manifold_VERSION}")
   else()
     find_package(manifold REQUIRED)
     message(STATUS "mainfold: ${manifold_VERSION}")
