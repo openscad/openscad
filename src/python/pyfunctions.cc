@@ -1957,6 +1957,15 @@ PyObject *python_show_core(PyObject *obj)
     PyErr_SetString(PyExc_TypeError, "Invalid type for Object in show");
     return NULL;
   }
+  if(child == void_node) {
+    return nullptr; 
+  }
+
+  if(child == full_node) {
+    PyErr_SetString(PyExc_TypeError, "Cannot display infinite space");
+    return nullptr;
+  }
+
   PyObject *key, *value;
   Py_ssize_t pos = 0;
   python_build_hashmap(child, 0);
@@ -3608,11 +3617,29 @@ PyObject *python_oo_path_extrude(PyObject *obj, PyObject *args, PyObject *kwargs
                            fa, fs);
 }
 
+PyObject *python_csg_core(std::shared_ptr<CsgOpNode> &node, const std::vector<std::shared_ptr<AbstractNode>> &childs)
+{
+  PyTypeObject *type = &PyOpenSCADType;
+  for(int i=0;i<childs.size();i++ ) {	
+    const auto &child = childs[i];	  
+    if (child.get() == void_node.get()) {
+      if(node->type == OpenSCADOperator::DIFFERENCE && i == 0) return PyOpenSCADObjectFromNode(type, void_node);
+      if(node->type == OpenSCADOperator::INTERSECTION) return PyOpenSCADObjectFromNode(type, void_node);
+    } else if (child.get() == full_node.get()) {
+      if(node->type == OpenSCADOperator::UNION) return PyOpenSCADObjectFromNode(type, full_node);
+      if(node->type == OpenSCADOperator::DIFFERENCE) { 
+        if(i == 0) return PyOpenSCADObjectFromNode(type, full_node); // eigentlich negativ
+	  else return PyOpenSCADObjectFromNode(type, void_node);
+      }
+    } else node->children.push_back(child);
+  }  
+  return PyOpenSCADObjectFromNode(type, node);
+}
+	
 PyObject *python_csg_sub(PyObject *self, PyObject *args, PyObject *kwargs, OpenSCADOperator mode)
 {
   DECLARE_INSTANCE
   int i;
-  PyTypeObject *type = &PyOpenSCADType;
   auto node = std::make_shared<CsgOpNode>(instance, mode);
   node->r = 0;
   node->fn = 1;
@@ -3640,49 +3667,44 @@ PyObject *python_csg_sub(PyObject *self, PyObject *args, PyObject *kwargs, OpenS
       }
     }
   }
+  std::vector<std::shared_ptr<AbstractNode>> child_solid;
   for (i = 0; i < PyTuple_Size(args); i++) {
     obj = PyTuple_GetItem(args, i);
     PyObject *dict = nullptr;
     child = PyOpenSCADObjectToNodeMulti(obj, &dict);
-    if (i == 0) type = PyOpenSCADObjectType(obj);
     if (dict != nullptr) {
       child_dict.push_back(dict);
     }
     if (child != NULL) {
-      if (child.get() == void_node.get() && mode == OpenSCADOperator::UNION) {
-      } else if (child.get() == void_node.get() && i > 0 && mode == OpenSCADOperator::DIFFERENCE) {
-      } else if (child.get() == full_node.get() && mode == OpenSCADOperator::INTERSECTION) {
-      } else {
-        node->children.push_back(child);
-      }
+      child_solid.push_back(child);
     } else {
       switch (mode) {
-      case OpenSCADOperator::UNION:
-        PyErr_SetString(PyExc_TypeError,
+        case OpenSCADOperator::UNION:
+          PyErr_SetString(PyExc_TypeError,
                         "Error during parsing union. arguments must be solids or arrays.");
-        return nullptr;
-        break;
-      case OpenSCADOperator::DIFFERENCE:
-        PyErr_SetString(PyExc_TypeError,
+          return nullptr;
+          break;
+        case OpenSCADOperator::DIFFERENCE:
+          PyErr_SetString(PyExc_TypeError,
                         "Error during parsing difference. arguments must be solids or arrays.");
-        return nullptr;
-        break;
-      case OpenSCADOperator::INTERSECTION:
-        PyErr_SetString(PyExc_TypeError,
+          return nullptr;
+          break;
+        case OpenSCADOperator::INTERSECTION:
+          PyErr_SetString(PyExc_TypeError,
                         "Error during parsing intersection. arguments must be solids or arrays.");
-        return nullptr;
-        break;
-      case OpenSCADOperator::MINKOWSKI: break;
-      case OpenSCADOperator::HULL:      break;
-      case OpenSCADOperator::FILL:      break;
-      case OpenSCADOperator::RESIZE:    break;
-      case OpenSCADOperator::OFFSET:    break;
+          return nullptr;
+          break;
+        case OpenSCADOperator::MINKOWSKI: break;
+        case OpenSCADOperator::HULL:      break;
+        case OpenSCADOperator::FILL:      break;
+        case OpenSCADOperator::RESIZE:    break;
+        case OpenSCADOperator::OFFSET:    break;
       }
       return NULL;
     }
   }
+  PyObject *pyresult = python_csg_core(node, child_solid);
 
-  PyObject *pyresult = PyOpenSCADObjectFromNode(type, node);
   for (int i = child_dict.size() - 1; i >= 0; i--)  // merge from back  to give 1st child most priority
   {
     auto& dict = child_dict[i];
@@ -3754,17 +3776,13 @@ PyObject *python_oo_csg_sub(PyObject *self, PyObject *args, PyObject *kwargs, Op
       }
     }
   }
+  std::vector<std::shared_ptr<AbstractNode>> child_solid;
   for (i = 0; i < PyTuple_Size(args); i++) {
     obj = PyTuple_GetItem(args, i);
     child = PyOpenSCADObjectToNodeMulti(obj, &dict);
     child_dict.push_back(dict);
     if (child != NULL) {
-      if (child.get() == void_node.get() && mode == OpenSCADOperator::UNION) {
-      } else if (child.get() == void_node.get() && i > 0 && mode == OpenSCADOperator::DIFFERENCE) {
-      } else if (child.get() == full_node.get() && mode == OpenSCADOperator::INTERSECTION) {
-      } else {
-        node->children.push_back(child);
-      }
+      child_solid.push_back(child);   
     } else {
       switch (mode) {
       case OpenSCADOperator::UNION:
@@ -3789,7 +3807,7 @@ PyObject *python_oo_csg_sub(PyObject *self, PyObject *args, PyObject *kwargs, Op
     }
   }
 
-  PyObject *pyresult = PyOpenSCADObjectFromNode(type, node);
+  PyObject *pyresult = python_csg_core(node, child_solid);
   for (int i = child_dict.size() - 1; i >= 0; i--)  // merge from back  to give 1st child most priority
   {
     auto& dict = child_dict[i];
@@ -3835,32 +3853,18 @@ PyObject *python_nb_sub(PyObject *arg1, PyObject *arg2, OpenSCADOperator mode)
   for (int i = 0; i < 2; i++) {
     PyObject *dict;
     dict = nullptr;
-    auto x = PyOpenSCADObjectToNodeMulti(i == 1 ? arg2 : arg1, &dict);
-    if (x == NULL) {
+    auto solid = PyOpenSCADObjectToNodeMulti(i == 1 ? arg2 : arg1, &dict);
+    child_dict.push_back(dict);
+    if(solid != nullptr) child.push_back(solid);
+    else {
       PyErr_SetString(PyExc_TypeError, "invalid argument left to operator");
       return NULL;
     }
-    if (x == void_node && mode == OpenSCADOperator::UNION) continue;
-    if (x == full_node && mode == OpenSCADOperator::UNION)
-      return PyOpenSCADObjectFromNode(type, full_node);
-    if (x == full_node && mode == OpenSCADOperator::INTERSECTION) continue;
-    if (x == void_node && mode == OpenSCADOperator::DIFFERENCE && i == 0)
-      return PyOpenSCADObjectFromNode(type, void_node);
-    if (x == void_node && mode == OpenSCADOperator::DIFFERENCE && i > 0) continue;
-    if (x == full_node && mode == OpenSCADOperator::DIFFERENCE && i > 0)
-      return PyOpenSCADObjectFromNode(type, void_node);
-    child.push_back(x);
-    child_dict.push_back(dict);
   }
-  if (child.size() == 1) {
-    return PyOpenSCADObjectFromNode(type, child[0]);
-  }
-
   auto node = std::make_shared<CsgOpNode>(instance, mode);
-  node->children.push_back(child[0]);
-  node->children.push_back(child[1]);
+  PyObject *pyresult = python_csg_core(node, child);
+
   python_retrieve_pyname(node);
-  PyObject *pyresult = PyOpenSCADObjectFromNode(type, node);
   for (int i = 1; i >= 0; i--) {
     if (child_dict[i] != nullptr) {
       std::string name = child[i]->getPyName();
@@ -3875,7 +3879,9 @@ PyObject *python_nb_sub(PyObject *arg1, PyObject *arg2, OpenSCADOperator mode)
             PyUnicode_FromStringAndSize(handle_name.c_str(), strlen(handle_name.c_str()));
           PyDict_SetItem(((PyOpenSCADObject *)pyresult)->dict, key_mod, value);
         } else PyDict_SetItem(((PyOpenSCADObject *)pyresult)->dict, key, value);
+
       }
+
     }
   }
   return pyresult;

@@ -160,7 +160,7 @@ int python_more_obj(std::vector<std::shared_ptr<AbstractNode>>& children, PyObje
 std::shared_ptr<AbstractNode> PyOpenSCADObjectToNode(PyObject *obj, PyObject **dict)
 {
   std::shared_ptr<AbstractNode> result = ((PyOpenSCADObject *)obj)->node;
-  if (result.use_count() > 2) {
+  if (result.use_count() > 2 && result != void_node && result != full_node) {
     result = result->clone();
   }
   *dict = ((PyOpenSCADObject *)obj)->dict;
@@ -203,7 +203,7 @@ std::shared_ptr<AbstractNode> PyOpenSCADObjectToNodeMulti(PyObject *objs, PyObje
   std::shared_ptr<AbstractNode> result = nullptr;
   if (PyObject_IsInstance(objs, reinterpret_cast<PyObject *>(&PyOpenSCADType))) {
     result = ((PyOpenSCADObject *)objs)->node;
-    if (result.use_count() > 2) {
+    if (result.use_count() > 2 && result != void_node && result != full_node) {
       result = result->clone();
     }
     *dict = ((PyOpenSCADObject *)objs)->dict;
