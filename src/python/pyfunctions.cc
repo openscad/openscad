@@ -5248,7 +5248,7 @@ PyObject *python_member_trampoline_17(PyObject *self, PyObject *args, PyObject *
 PyObject *python_member_trampoline_18(PyObject *self, PyObject *args, PyObject *kwargs) { python_member_callind=18; return python_member_trampoline(self, args, kwargs);	}
 PyObject *python_member_trampoline_19(PyObject *self, PyObject *args, PyObject *kwargs) { python_member_callind=19; return python_member_trampoline(self, args, kwargs);	}
 
-PyObject *python_member(PyObject *self, PyObject *args, PyObject *kwargs)
+PyObject *python_memberfunction(PyObject *self, PyObject *args, PyObject *kwargs)
 {
   char *kwlist[] = {"membername", "memberfunc", "docstring", NULL};
   char *membername = nullptr;
@@ -5413,7 +5413,7 @@ PyMethodDef PyOpenSCADFunctions[] = {
   {"model", (PyCFunction)python_model, METH_VARARGS | METH_KEYWORDS, "Yield Model"},
   {"modelpath", (PyCFunction)python_modelpath, METH_VARARGS | METH_KEYWORDS,
    "Returns absolute Path to script"},
-  {"member", (PyCFunction)python_member, METH_VARARGS | METH_KEYWORDS, "Registers additional openscad member functions"},
+  {"memberfunction", (PyCFunction)python_memberfunction, METH_VARARGS | METH_KEYWORDS, "Registers additional openscad memberfunction functions"},
   {"marked", (PyCFunction)python_marked, METH_VARARGS | METH_KEYWORDS, "Create a marked value."},
   {"Sin", (PyCFunction)python_sin, METH_VARARGS | METH_KEYWORDS, "Calculate sin."},
   {"Cos", (PyCFunction)python_cos, METH_VARARGS | METH_KEYWORDS, "Calculate cos."},
