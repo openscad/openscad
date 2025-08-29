@@ -42,6 +42,30 @@ void LocalScope::addAssignment(const std::shared_ptr<Assignment>& assignment)
   this->assignments.push_back(assignment);
 }
 
+template <typename T>
+boost::optional<T> LocalScope::lookup(const std::string& name) const
+{
+  return boost::none;
+}
+
+template <>
+boost::optional<UserFunction*> LocalScope::lookup(const std::string& name) const {
+  const auto& search = this->functions.find(name);
+  if (search != this->functions.end()) {
+    return search->second.get();
+  }
+  return boost::none;
+}
+
+template <>
+boost::optional<UserModule*> LocalScope::lookup(const std::string& name) const {
+  const auto& search = this->modules.find(name);
+  if (search != this->modules.end()) {
+    return search->second.get();
+  }
+  return boost::none;
+}
+
 void LocalScope::print(std::ostream& stream, const std::string& indent, const bool inlined) const
 {
   for (const auto& f : this->astFunctions) {
