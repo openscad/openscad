@@ -78,10 +78,9 @@ void PyOpenSCADObject_dealloc(PyOpenSCADObject *self)
  *  allocates a new PyOpenSCAD Object including its internal dictionary
  */
 
-static PyObject *PyOpenSCADObject_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
+PyObject *PyOpenSCADObject_alloc(PyTypeObject *cls, Py_ssize_t nitems)
 {
-  PyOpenSCADObject *self;
-  self = (PyOpenSCADObject *)type->tp_alloc(type, 0);
+  PyOpenSCADObject *self = (PyOpenSCADObject *) PyType_GenericAlloc(cls, nitems);
   self->dict = PyDict_New();
   PyObject *origin = PyList_New(4);
   for (int i = 0; i < 4; i++) {
@@ -92,6 +91,11 @@ static PyObject *PyOpenSCADObject_new(PyTypeObject *type, PyObject *args, PyObje
   PyDict_SetItemString(self->dict, "origin", origin);
   Py_XDECREF(origin);
   return (PyObject *)self;
+}
+
+static PyObject *PyOpenSCADObject_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
+{
+  return PyOpenSCADObject_alloc(type, 0);
 }
 
 /*
@@ -1154,7 +1158,7 @@ PyTypeObject PyOpenSCADType = {
   0,                                                       /* tp_descr_set */
   0,                                                       /* tp_dictoffset */
   (initproc)PyOpenSCADInit,                                /* tp_init */
-  0,                                                       /* tp_alloc */
+  PyOpenSCADObject_alloc,                                  /* tp_alloc */
   PyOpenSCADObject_new,                                    /* tp_new */
 };
 
