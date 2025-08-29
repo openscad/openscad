@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <boost/optional.hpp>
 
 #include "core/AST.h"
 #include "core/Context.h"
@@ -13,6 +14,9 @@ public:
                                                           const Location& loc) const override;
   boost::optional<InstantiableModule> lookup_local_module(const std::string& name,
                                                           const Location& loc) const override;
+
+  boost::optional<CallableFunction> lookup_function_as_namespace(const std::string& name) const override;
+  boost::optional<InstantiableModule> lookup_module_as_namespace(const std::string& name) const override;
 
 protected:
   BuiltinContext(EvaluationSession *session);

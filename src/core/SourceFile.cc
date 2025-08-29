@@ -47,13 +47,13 @@ namespace fs = std::filesystem;
 #include <sys/stat.h>
 
 SourceFile::SourceFile(std::string path, std::string filename)
-  : ASTNode(Location::NONE), path(std::move(path)), filename(std::move(filename))
+  : ASTNode(Location::NONE), path(std::move(path)), filename(std::move(filename)), scope(std::make_shared<LocalScope>())
 {
 }
 
 void SourceFile::print(std::ostream& stream, const std::string& indent) const
 {
-  scope.print(stream, indent);
+  scope->print(stream, indent);
 }
 
 void SourceFile::registerUse(const std::string& path, const Location& loc)
@@ -171,6 +171,8 @@ time_t SourceFile::handleDependencies(bool is_root)
   return latest;
 }
 
+// The passed-in `context` is treated as the parent context to the corresponding context to this object.
+// The output *resulting_file_context is just used for manipulating the camera after if this succeeds; at least, when used with command line.
 std::shared_ptr<AbstractNode> SourceFile::instantiate(
   const std::shared_ptr<const Context>& context,
   std::shared_ptr<const FileContext> *resulting_file_context) const
@@ -179,7 +181,8 @@ std::shared_ptr<AbstractNode> SourceFile::instantiate(
   try {
     ContextHandle<FileContext> file_context{Context::create<FileContext>(context, this)};
     *resulting_file_context = *file_context;
-    this->scope.instantiateModules(*file_context, node);
+    context->session()->setTopLevelNamespace(*file_context);
+    this->scope->instantiateModules(*file_context, node);
   } catch (HardWarningException& e) {
     throw;
   } catch (EvaluationException& e) {
@@ -201,4 +204,21 @@ const std::string SourceFile::getFullpath() const
   } else {
     return "";
   }
+}
+
+std::shared_ptr<LocalScope> SourceFile::registerNamespace(const char* name) {
+  if (auto it = this->namespaceScopes.find(name); it != this->namespaceScopes.end()) {
+    return it->second;
+  }
+  this->namespaceNamesOrdered.push_back(name);
+  auto ls = std::make_shared<LocalNamespaceScope>(); // TODO: coryrc - should the scope contain the name just for debugging purposes?
+  this->namespaceScopes.insert({name,ls});
+  return ls;
+}
+
+std::shared_ptr<LocalScope> SourceFile::getNamespaceScope(const std::string name) {
+  if (auto it = this->namespaceScopes.find(name); it != this->namespaceScopes.end()) {
+    return it->second;
+  }
+  return nullptr;
 }

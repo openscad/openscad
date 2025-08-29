@@ -4,6 +4,7 @@
 #include <cstddef>
 #include <string>
 #include <vector>
+#include <boost/optional.hpp>
 
 #include "core/EvaluationSession.h"
 #include "core/AST.h"
@@ -22,6 +23,21 @@ public:
                                                                   const Location& loc) const;
   virtual boost::optional<InstantiableModule> lookup_local_module(const std::string& name,
                                                                   const Location& loc) const;
+
+  /**
+   * @brief Lookup as if referencing by namespace
+   *
+   * Use this for looking up functions or modules from this context when
+   * the name is referenced via `using` or directly `ns::name`.
+   * Will search assignments for function literals.
+   * Does not follow `using` imports.
+   *
+   * TODO: github.com/openscad/openscad/issues/4724 - When adding module literals, lookup in assignments.
+   */
+  template <typename T>
+  boost::optional<T> lookup_as_namespace(const std::string& name) const;
+  virtual boost::optional<CallableFunction> lookup_function_as_namespace(const std::string& name) const;
+  virtual boost::optional<InstantiableModule> lookup_module_as_namespace(const std::string& name) const;
 
   virtual std::vector<const Value *> list_embedded_values() const;
   virtual size_t clear();

@@ -29,9 +29,14 @@
 #include <cassert>
 #include <cstddef>
 #include <string>
+#include <memory>
+#include <iostream> // coryrc
 
 #include "core/AST.h"
+#include "core/BuiltinContext.h"
 #include "core/ContextFrame.h"
+#include "core/ScopeContext.h"
+#include "core/SourceFile.h"
 #include "utils/printutils.h"
 
 size_t EvaluationSession::push_frame(ContextFrame *frame)
@@ -100,4 +105,34 @@ boost::optional<InstantiableModule> EvaluationSession::lookup_special_module(con
   }
   LOG(message_group::Warning, loc, documentRoot(), "Ignoring unknown module '%1$s'", name);
   return boost::none;
+}
+
+template <typename T>
+boost::optional<T> EvaluationSession::lookup_namespace(const std::string& ns_name, const std::string& name) const
+{
+  std::cerr << "session: Being asked to search ns '"<<ns_name<<"' for something with name '"<<name<<"'\n";
+  if (auto nsContext = namespace_contexts.find(ns_name); nsContext != namespace_contexts.end()) {
+    return nsContext->second.get()->lookup_as_namespace<T>(name);
+  }
+  return boost::none;
+}
+
+template boost::optional<CallableFunction> EvaluationSession::lookup_namespace<CallableFunction>(const std::string&, const std::string&) const;
+template boost::optional<InstantiableModule> EvaluationSession::lookup_namespace<InstantiableModule>(const std::string&, const std::string&) const;
+
+void EvaluationSession::init_namespaces(SourceFile* source, std::shared_ptr<const Context> builtinContext) {
+  // Add builtins namespace:
+  this->namespace_contexts.emplace("builtins", builtinContext);
+
+  for (auto nsName : source->getNamespaceNamesOrdered()) {
+    auto nsScope = source->getNamespaceScope(nsName);
+    // ContextHandle calls the right method to initialize assignments.
+    ContextHandle<ScopeContext> nsContext{Context::create<ScopeContext>(builtinContext, nsScope)};
+    this->namespace_contexts.emplace(nsName, nsContext->get_shared_ptr());
+  }
+}
+
+void EvaluationSession::setTopLevelNamespace(std::shared_ptr<const FileContext> c)
+{
+  this->namespace_contexts.emplace("top_level", c);
 }

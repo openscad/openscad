@@ -36,7 +36,17 @@ public:
   const std::string& getFilename() const { return this->filename; }
   const std::string getFullpath() const;
 
-  LocalScope scope;
+  /**
+   * @brief Get namespace scope, creating it if needed.
+   */
+  std::shared_ptr<LocalScope> registerNamespace(const char* name);
+  /**
+   * @brief If namespace exists, get its scope.
+   */
+  std::shared_ptr<LocalScope> getNamespaceScope(const std::string name);
+  const std::vector<std::string>& getNamespaceNamesOrdered() { return this->namespaceNamesOrdered; }
+
+  std::shared_ptr<LocalScope> scope;
   std::vector<std::string> usedlibs;
 
   std::vector<IndicatorData> indicatorData;
@@ -46,6 +56,8 @@ private:
 
   std::unordered_map<std::string, std::string> includes;
   bool is_handling_dependencies{false};
+  std::unordered_map<std::string, std::shared_ptr<LocalScope>> namespaceScopes;
+  std::vector<std::string> namespaceNamesOrdered;
 
   std::string path;
   std::string filename;

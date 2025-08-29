@@ -5,10 +5,13 @@
 #include <cstddef>
 #include <string>
 #include <vector>
+#include <boost/optional.hpp>
 
 #include "core/ContextFrame.h"
 #include "core/AST.h"
 #include "core/ContextMemoryManager.h"
+
+class EvaluationSession;
 
 /**
  * Local handle to a all context objects. This is used to maintain the
