@@ -239,7 +239,7 @@ std::unique_ptr<const Geometry> SphereNode::createGeometry() const
     return sphereCreateFuncGeometry(this->r_func, fs, fn);
   }
 #endif
-  size_t num_rings = (num_fragments + 1) / 2;
+  auto num_rings = (num_fragments + 1) / 2;
   // Uncomment the following three lines to enable experimental sphere
   // tessellation
   //  if (num_rings % 2 == 0) num_rings++; // To ensure that the middle ring is at
