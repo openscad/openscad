@@ -178,7 +178,9 @@ time_t SourceFile::handleDependencies(bool is_root)
   return latest;
 }
 
-// The passed-in `context` is treated as the parent context to `this`.
+// The passed-in `context` is treated as the parent context to the corresponding context to this object.
+// The output *resulting_file_context is just used for manipulating the camera after if this succeeds; at
+// least, when used with command line.
 std::shared_ptr<AbstractNode> SourceFile::instantiate(
   const std::shared_ptr<const Context>& context,
   std::shared_ptr<const FileContext> *resulting_file_context) const
@@ -187,6 +189,7 @@ std::shared_ptr<AbstractNode> SourceFile::instantiate(
   try {
     ContextHandle<FileContext> file_context{Context::create<FileContext>(context, this)};
     *resulting_file_context = *file_context;
+    context->session()->setTopLevelNamespace(*file_context);
     this->scope->instantiateModules(*file_context, node);
   } catch (HardWarningException& e) {
     throw;
@@ -211,13 +214,22 @@ const std::string SourceFile::getFullpath() const
   }
 }
 
-std::shared_ptr<LocalScope> SourceFile::getNamespaceScope(const char *name)
+std::shared_ptr<LocalScope> SourceFile::registerNamespace(const char *name)
 {
   if (auto it = this->namespaceScopes.find(name); it != this->namespaceScopes.end()) {
     return it->second;
   }
+  this->namespaceNamesOrdered.push_back(name);
   auto ls = std::make_shared<LocalNamespaceScope>();  // TODO: coryrc - should the scope contain the name
                                                       // just for debugging purposes?
   this->namespaceScopes.insert({name, ls});
   return ls;
+}
+
+std::shared_ptr<LocalScope> SourceFile::getNamespaceScope(const std::string name)
+{
+  if (auto it = this->namespaceScopes.find(name); it != this->namespaceScopes.end()) {
+    return it->second;
+  }
+  return nullptr;
 }
