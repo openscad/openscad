@@ -7,6 +7,7 @@
 #include <string>
 #include <unordered_set>
 #include <vector>
+#include <iostream>  // coryrc
 
 #include "core/Assignment.h"
 #include "core/ModuleInstantiation.h"
@@ -35,6 +36,7 @@ void LocalScope::addModule(const std::shared_ptr<class UserModule>& module)
 void LocalScope::addFunction(const std::shared_ptr<class UserFunction>& func)
 {
   assert(func);
+  std::cerr << "addFunction(" << func->name << ")\n";
   auto it = this->functions.find(func->name);
   if (it != this->functions.end()) it->second = func;
   else this->functions.emplace(func->name, func);
@@ -48,6 +50,7 @@ void LocalScope::addAssignment(const std::shared_ptr<Assignment>& assignment)
 
 void LocalScope::addUsing(const std::shared_ptr<Using>& u)
 {
+  std::cerr << "addUsing(" << u->getName() << ")\n";
   this->usings.push_back(u->getName());
   this->astNodes.push_back(u);
 }
@@ -61,26 +64,33 @@ void LocalScope::addNamespace(const std::shared_ptr<Namespace>& ns)
 template <typename T>
 std::optional<T> LocalScope::lookup(const std::string& name) const
 {
+  std::cerr << "ERROR lookup<T>(" << name << ")\n";
   return {};
 }
 
 template <>
 std::optional<UserFunction *> LocalScope::lookup(const std::string& name) const
 {
+  std::cerr << "lookup<UserFunction*>(" << name << ")\n";
   const auto& search = this->functions.find(name);
   if (search != this->functions.end()) {
+    std::cerr << "\tlookup:Found\n";
     return search->second.get();
   }
+  std::cerr << "\tlookup:Missing\n";
   return {};
 }
 
 template <>
 std::optional<UserModule *> LocalScope::lookup(const std::string& name) const
 {
+  std::cerr << "lookup<UserModule*>(" << name << ")\n";
   const auto& search = this->modules.find(name);
   if (search != this->modules.end()) {
+    std::cerr << "\tlookup:Found\n";
     return search->second.get();
   }
+  std::cerr << "\tlookup:Missing\n";
   return {};
 }
 
