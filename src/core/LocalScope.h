@@ -40,12 +40,12 @@ public:
   AssignmentList assignments;
   std::vector<std::shared_ptr<ModuleInstantiation>> moduleInstantiations;
 
+private:
   // Modules and functions are stored twice; once for lookup and once for AST serialization
   // FIXME: Should we split this class into an ASTNode and a run-time support class?
   std::unordered_map<std::string, std::shared_ptr<UserFunction>> functions;
   std::unordered_map<std::string, std::shared_ptr<UserModule>> modules;
 
-private:
   // All below only used for printing:
   std::vector<std::pair<std::string, std::shared_ptr<UserModule>>> astModules;
   std::vector<std::pair<std::string, std::shared_ptr<UserFunction>>> astFunctions;
