@@ -1287,11 +1287,11 @@ int Py_RunMain_ipython(void)
 {
   int exitcode = 0;
 
-  //    pymain_run_python_ipython(&exitcode);
+  pymain_run_python_ipython(&exitcode);
 
-  //    if (Py_FinalizeEx() < 0) {
-  //        exitcode = 120;
-  //    }
+  if (Py_FinalizeEx() < 0) {
+      exitcode = 120;
+  }
 
   //    pymain_free();
 
