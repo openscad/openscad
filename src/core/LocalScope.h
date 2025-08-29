@@ -27,6 +27,8 @@ public:
   void addModule(const std::shared_ptr<class UserModule>& module);
   void addFunction(const std::shared_ptr<class UserFunction>& function);
   void addAssignment(const std::shared_ptr<class Assignment>& assignment);
+  void addUsing(const std::shared_ptr<class Using>& u);
+  void addNamespace(const std::shared_ptr<class Namespace>& ns);
   bool hasChildren() const { return !(moduleInstantiations.empty()); }
 
   /**
@@ -37,6 +39,14 @@ public:
   template <typename T>
   std::optional<T> lookup(const std::string& name) const;
 
+  /**
+   * @brief Returns list of unique namespace names in reverse order
+   *
+   * The last using will be first. Repeats get the last using.
+   * Like assignments, it takes affect for the whole scope
+   */
+  const std::vector<std::string> getUsings() const;
+
   AssignmentList assignments;
   std::vector<std::shared_ptr<ModuleInstantiation>> moduleInstantiations;
 
@@ -46,9 +56,18 @@ private:
   std::unordered_map<std::string, std::shared_ptr<UserFunction>> functions;
   std::unordered_map<std::string, std::shared_ptr<UserModule>> modules;
 
+private:
+  /**
+   * @brief Non-unique list of namespaces named by `using` in this scope
+   */
+  std::vector<std::string> usings;
+
   // All below only used for printing:
   std::vector<std::pair<std::string, std::shared_ptr<UserModule>>> astModules;
   std::vector<std::pair<std::string, std::shared_ptr<UserFunction>>> astFunctions;
+  // Cleanup idea: Put functions and modules in astNodes too. The names of them aren't used and the order
+  // isn't preserved anyway and there's no deduping for nodes. And, it's only used for printing.
+  std::vector<std::shared_ptr<ASTNode>> astNodes;
 };
 
 template <>

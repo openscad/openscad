@@ -5,11 +5,14 @@
 #include <memory>
 #include <cstddef>
 #include <string>
+#include <unordered_set>
 #include <vector>
 
 #include "core/Assignment.h"
 #include "core/ModuleInstantiation.h"
+#include "core/Namespace.h"
 #include "core/UserModule.h"
+#include "core/Using.h"
 #include "core/function.h"
 #include "core/node.h"
 #include "utils/exceptions.h"
@@ -43,6 +46,24 @@ void LocalScope::addAssignment(const std::shared_ptr<Assignment>& assignment)
   this->assignments.push_back(assignment);
 }
 
+void LocalScope::addUsing(const std::shared_ptr<Using>& u)
+{
+  this->usings.push_back(u->getName());
+  this->astNodes.push_back(u);
+}
+
+void LocalScope::addNamespace(const std::shared_ptr<Namespace>& ns)
+{
+  // Namespace contents are already stored elsewhere; this is purely the AST node.
+  this->astNodes.push_back(ns);
+}
+
+template <typename T>
+std::optional<T> LocalScope::lookup(const std::string& name) const
+{
+  return {};
+}
+
 template <>
 std::optional<UserFunction *> LocalScope::lookup(const std::string& name) const
 {
@@ -63,6 +84,18 @@ std::optional<UserModule *> LocalScope::lookup(const std::string& name) const
   return {};
 }
 
+const std::vector<std::string> LocalScope::getUsings() const
+{
+  std::vector<std::string> ret;
+  std::unordered_set<std::string> unique;
+  for (const auto name : this->usings) {
+    if (auto iter_unique = unique.insert(name); iter_unique.second) {
+      ret.push_back(name);
+    }
+  }
+  return ret;
+}
+
 void LocalScope::print(std::ostream& stream, const std::string& indent, const bool inlined) const
 {
   for (const auto& f : this->astFunctions) {
@@ -70,6 +103,9 @@ void LocalScope::print(std::ostream& stream, const std::string& indent, const bo
   }
   for (const auto& m : this->astModules) {
     m.second->print(stream, indent);
+  }
+  for (const auto& a : this->astNodes) {
+    a->print(stream, indent);
   }
   for (const auto& assignment : this->assignments) {
     assignment->print(stream, indent);
@@ -79,6 +115,9 @@ void LocalScope::print(std::ostream& stream, const std::string& indent, const bo
   }
 }
 
+// For example, the first time this is called, context is a fresh FileContext with parent context of a
+// BuiltinContext; context's scope is the root_file's scope; and the target is a fresh RootNode which is
+// the top-level evaluated output.
 std::shared_ptr<AbstractNode> LocalScope::instantiateModules(
   const std::shared_ptr<const Context>& context, const std::shared_ptr<AbstractNode>& target) const
 {
