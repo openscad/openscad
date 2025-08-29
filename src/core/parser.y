@@ -40,6 +40,8 @@
 #include "core/UserModule.h"
 #include "core/ModuleInstantiation.h"
 #include "core/Assignment.h"
+#include "core/Using.h"
+#include "core/Namespace.h"
 #include "core/Expression.h"
 #include "core/function.h"
 #include "io/fileutils.h"
@@ -118,6 +120,7 @@ bool fileEnded=false;
 %token TOK_ECHO
 %token TOK_EACH
 %token TOK_NAMESPACE
+%token TOK_USING
 
 %token <text> TOK_ID
 %token <text> TOK_STRING
@@ -180,12 +183,20 @@ input
               rootfile->registerUse(std::string($2), lexer_is_main_file() && parsingMainFile ? LOC(@2) : Location::NONE);
               free($2);
             }
-	| input
-	  TOK_NAMESPACE TOK_ID
+        | input
+          TOK_NAMESPACE TOK_ID
             {
-	      auto nsScope = rootfile->getNamespaceScope($3);
-	      scope_stack.push(nsScope);
-	      free($3);
+              // A given namespace identifier should share scope.
+              auto nsScope = rootfile->registerNamespace($3);
+              // But each ASTNode is unique.
+              auto ns = std::make_shared<Namespace>($3, nsScope, LOCD("namespace", @$));
+
+              // This exact ordering is because `module` is done that way.
+              // It probably doesn't matter.
+              auto top = scope_stack.top();
+              scope_stack.push(nsScope);
+              top->addNamespace(ns);
+              free($3);
             }
           def_statement
             {
@@ -209,6 +220,11 @@ single_statement
 single_def_statement
         : ';'
         | assignment
+        | TOK_USING TOK_ID ';'
+            {
+              scope_stack.top()->addUsing(std::make_shared<Using>($2, LOCD("using", @$)));
+              free($2);
+            }
         | TOK_MODULE TOK_ID '(' parameters ')'
             {
               UserModule *newmodule = new UserModule($2, LOCD("module", @$));
