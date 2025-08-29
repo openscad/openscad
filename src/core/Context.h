@@ -11,6 +11,8 @@
 #include "core/ContextFrame.h"
 #include "core/EvaluationSession.h"
 
+class EvaluationSession;
+
 /**
  * Local handle to a all context objects. This is used to maintain the
  * dynamic scoping stack using object lifetime.

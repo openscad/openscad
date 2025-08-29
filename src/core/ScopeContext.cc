@@ -45,7 +45,17 @@ boost::optional<CallableFunction> ScopeContext::lookup_local_function(const std:
   if (defined) {
     return CallableFunction{CallableUserFunction{get_shared_ptr(), *defined}};
   }
-  return Context::lookup_local_function(name, loc);
+
+  // Search assignments before searching namespaces included via `using`.
+  // x = function () ...; should shadow function () x = ...; in a namespace.
+  auto in_assignment = Context::lookup_local_function(name, loc);
+  if (in_assignment) return in_assignment;
+
+  for (auto ns_name : scope->getUsings()) {
+    auto ret = session()->lookup_namespace<CallableFunction>(ns_name, name);
+    if (ret) return ret;
+  }
+  return boost::none;
 }
 
 boost::optional<InstantiableModule> ScopeContext::lookup_local_module(const std::string& name,
@@ -55,7 +65,41 @@ boost::optional<InstantiableModule> ScopeContext::lookup_local_module(const std:
   if (defined) {
     return InstantiableModule{get_shared_ptr(), *defined};
   }
-  return Context::lookup_local_module(name, loc);
+
+  // Search assignments before searching namespaces included via `using`.
+  // x = module () ...; should shadow module () x = ...; in a namespace.
+  auto in_assignment = Context::lookup_local_module(name, loc);
+  if (in_assignment) return in_assignment;
+
+  for (auto ns_name : scope->getUsings()) {
+    auto ret = session()->lookup_namespace<InstantiableModule>(ns_name, name);
+    if (ret) return ret;
+  }
+  return boost::none;
+}
+
+boost::optional<CallableFunction> ScopeContext::lookup_function_as_namespace(
+  const std::string& name) const
+{
+  // std::cerr << "lookup_function_as_namespace<CallableFunction>('"<<name<<"')\n";
+  if (auto uf = scope->lookup<UserFunction *>(name)) {
+    // std::cerr << "\tFound\n";
+    return CallableFunction{CallableUserFunction{get_shared_ptr(), *uf}};
+  }
+  // std::cerr << "\tNot in this scope\n";
+
+  return Context::lookup_local_function(name, Location::NONE);
+}
+
+boost::optional<InstantiableModule> ScopeContext::lookup_module_as_namespace(
+  const std::string& name) const
+{
+  // std::cerr << "lookup_module_as_namespace<InstantiableModule>('"<<name<<"')\n";
+  if (auto um = scope->lookup<UserModule *>(name)) {
+    return InstantiableModule{get_shared_ptr(), *um};
+  }
+
+  return Context::lookup_local_module(name, Location::NONE);
 }
 
 UserModuleContext::UserModuleContext(const std::shared_ptr<const Context>& parent,
@@ -84,6 +128,23 @@ boost::optional<CallableFunction> FileContext::lookup_local_function(const std::
     return result;
   }
 
+  return lookup_function_from_uses(name);
+}
+
+boost::optional<InstantiableModule> FileContext::lookup_local_module(const std::string& name,
+                                                                     const Location& loc) const
+{
+  auto result = ScopeContext::lookup_local_module(name, loc);
+  if (result) {
+    return result;
+  }
+
+  return lookup_module_from_uses(name);
+}
+
+boost::optional<CallableFunction> FileContext::lookup_function_from_uses(const std::string& name) const
+{
+  // std::cerr << "lookup_function_from_uses('"<<name<<"')\n";
   for (const auto& m : source_file->usedlibs) {
     // usedmod is nullptr if the library wasn't be compiled (error or file-not-found)
     auto usedmod = SourceFileCache::instance()->lookup(m);
@@ -103,14 +164,9 @@ boost::optional<CallableFunction> FileContext::lookup_local_function(const std::
   return boost::none;
 }
 
-boost::optional<InstantiableModule> FileContext::lookup_local_module(const std::string& name,
-                                                                     const Location& loc) const
+boost::optional<InstantiableModule> FileContext::lookup_module_from_uses(const std::string& name) const
 {
-  auto result = ScopeContext::lookup_local_module(name, loc);
-  if (result) {
-    return result;
-  }
-
+  // std::cerr << "lookup_module_from_uses('"<<name<<"')\n";
   for (const auto& m : source_file->usedlibs) {
     // usedmod is nullptr if the library wasn't be compiled (error or file-not-found)
     auto usedmod = SourceFileCache::instance()->lookup(m);

@@ -403,6 +403,10 @@ int do_export(const CommandLine& cmd, const RenderVariables& render_variables, F
   PRINTDB("BuiltinContext:\n%s", builtin_context->dump());
 #endif
 
+  // Initialize namespaces before anything at top-level, which means
+  // namespaces cannot use anything from top-level in *assignments*.
+  session.init_namespaces(root_file, *builtin_context);
+
   AbstractNode::resetIndexCounter();
   std::shared_ptr<const FileContext> file_context;
   std::shared_ptr<AbstractNode> absolute_root_node;

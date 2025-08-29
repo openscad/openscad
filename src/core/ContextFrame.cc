@@ -70,6 +70,32 @@ boost::optional<InstantiableModule> ContextFrame::lookup_local_module(const std:
   return boost::none;
 }
 
+template boost::optional<CallableFunction> ContextFrame::lookup_as_namespace(
+  const std::string& name) const;
+template boost::optional<InstantiableModule> ContextFrame::lookup_as_namespace(
+  const std::string& name) const;
+
+template <typename T>
+boost::optional<T> ContextFrame::lookup_as_namespace(const std::string& name) const
+{
+  if constexpr (std::is_same_v<T, CallableFunction>) {
+    return lookup_function_as_namespace(name);
+  } else if constexpr (std::is_same_v<T, InstantiableModule>) {
+    return lookup_module_as_namespace(name);
+  }
+  // std::cerr << "ERROR Bad type lookup_as_namespace called for '"<< name<<"'\n";
+  return boost::none;
+}
+
+boost::optional<CallableFunction> ContextFrame::lookup_function_as_namespace(const std::string&) const
+{
+  return boost::none;
+}
+boost::optional<InstantiableModule> ContextFrame::lookup_module_as_namespace(const std::string&) const
+{
+  return boost::none;
+}
+
 std::vector<const Value *> ContextFrame::list_embedded_values() const
 {
   std::vector<const Value *> output;

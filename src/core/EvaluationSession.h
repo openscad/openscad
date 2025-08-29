@@ -9,8 +9,12 @@
 #include "core/callables.h"
 #include "core/ContextMemoryManager.h"  // FIXME: don't use as value type so we don't need to include header
 
-class Value;
+class BuiltinContext;
 class ContextFrame;
+class ScopeContext;
+class SourceFile;
+class FileContext;
+class Value;
 
 class EvaluationSession
 {
@@ -28,6 +32,18 @@ public:
   [[nodiscard]] boost::optional<InstantiableModule> lookup_special_module(const std::string& name,
                                                                           const Location& loc) const;
 
+  /**
+   * @brief Lookup something from a namespace's environments
+   *
+   * Use these for looking up functions or modules from a namespace.
+   * TODO: coryrc - add assignments
+   */
+  template <typename T>
+  boost::optional<T> lookup_namespace(const std::string& ns_name, const std::string& name) const;
+
+  void init_namespaces(SourceFile *source, std::shared_ptr<const Context> builtinContext);
+  void setTopLevelNamespace(std::shared_ptr<const FileContext> c);
+
   [[nodiscard]] const std::string& documentRoot() const { return document_root; }
   ContextMemoryManager& contextMemoryManager() { return context_memory_manager; }
   HeapSizeAccounting& accounting() { return context_memory_manager.accounting(); }
@@ -36,4 +52,5 @@ private:
   std::string document_root;
   std::vector<ContextFrame *> stack;
   ContextMemoryManager context_memory_manager;
+  std::unordered_map<std::string, std::shared_ptr<const Context>> namespace_contexts;
 };

@@ -1364,6 +1364,10 @@ std::shared_ptr<AbstractNode> MainWindow::instantiateRootFromSource(SourceFile *
   ContextHandle<BuiltinContext> builtin_context{Context::create<BuiltinContext>(&session)};
   setRenderVariables(builtin_context);
 
+  // Initialize namespaces before anything at top-level, which means
+  // namespaces cannot use anything from top-level in *assignments*.
+  session.init_namespaces(this->rootFile, *builtin_context);
+
   std::shared_ptr<const FileContext> file_context;
   std::shared_ptr<AbstractNode> node = this->rootFile->instantiate(*builtin_context, &file_context);
 
@@ -1407,6 +1411,10 @@ void MainWindow::instantiateRoot()
     EvaluationSession session{doc.parent_path().string()};
     ContextHandle<BuiltinContext> builtin_context{Context::create<BuiltinContext>(&session)};
     setRenderVariables(builtin_context);
+
+    // Initialize namespaces before anything at top-level, which means
+    // namespaces cannot use anything from top-level in *assignments*.
+    session.init_namespaces(rootFile, *builtin_context);
 
     std::shared_ptr<const FileContext> file_context;
 #ifdef ENABLE_PYTHON
