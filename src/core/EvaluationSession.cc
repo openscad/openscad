@@ -30,6 +30,7 @@
 #include <cstddef>
 #include <string>
 #include <memory>
+#include <iostream> // coryrc
 
 #include "core/AST.h"
 #include "core/BuiltinContext.h"
@@ -109,6 +110,7 @@ boost::optional<InstantiableModule> EvaluationSession::lookup_special_module(con
 template <typename T>
 boost::optional<T> EvaluationSession::lookup_namespace(const std::string& ns_name, const std::string& name) const
 {
+  std::cerr << "session: Being asked to search ns '"<<ns_name<<"' for something with name '"<<name<<"'\n";
   if (auto nsContext = namespace_contexts.find(ns_name); nsContext != namespace_contexts.end()) {
     return nsContext->second.get()->lookup_as_namespace<T>(name);
   }

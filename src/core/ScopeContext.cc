@@ -10,6 +10,8 @@
 #include <cmath>
 #include <vector>
 
+#include <iostream> // coryrc
+
 void ScopeContext::init()
 {
   for (const auto& assignment : scope->assignments) {
@@ -41,18 +43,24 @@ void ScopeContext::init()
 boost::optional<CallableFunction> ScopeContext::lookup_local_function(const std::string& name,
                                                                       const Location& loc) const
 {
+  // std::cerr << "lookup_local_function('"<<name<<"',...)\n";
   // This could be replaced with scope->lookup<UserFunction*>(name)
   const auto& search = scope->functions.find(name);
   if (search != scope->functions.end()) {
+    // std::cerr << "\tFound in this scope\n";
     return CallableFunction{CallableUserFunction{get_shared_ptr(), search->second.get()}};
   }
+  // std::cerr << "\tMissing in this function scope\n";
 
   // Search assignments before searching namespaces included via `using`.
   // x = function () ...; should shadow function () x = ...; in a namespace.
   auto in_assignment = Context::lookup_local_function(name, loc);
   if (in_assignment) return in_assignment;
 
+  // std::cerr << "\tMissing in the assignments as a function literal\n";
+
   for (auto ns_name : scope->getUsings()) {
+    // std::cerr << "\tSearching namespace '"<< ns_name<<"'\n";
     auto ret = session()->lookup_namespace<CallableFunction>(ns_name, name);
     if (ret) return ret;
   }
