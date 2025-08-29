@@ -581,6 +581,7 @@ list(APPEND MISC_FILES
 list(APPEND NAMESPACE_FILES
   ${TEST_SCAD_DIR}/namespaces/namespace-tests.scad
   ${TEST_SCAD_DIR}/namespaces/namespace-include-tests.scad
+  ${TEST_SCAD_DIR}/namespaces/namespace-using-tests.scad
 )
 
 list(APPEND FAILING_FILES
