@@ -5,6 +5,7 @@
 #include <cstddef>
 #include <string>
 #include <vector>
+#include <boost/optional.hpp>
 
 #include "core/callables.h"
 #include "core/ContextFrame.h"
