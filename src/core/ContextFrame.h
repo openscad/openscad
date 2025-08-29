@@ -4,6 +4,7 @@
 #include <cstddef>
 #include <string>
 #include <vector>
+#include <boost/optional.hpp>
 
 #include "core/EvaluationSession.h"
 #include "core/AST.h"

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <boost/optional.hpp>
 
 #include "core/AST.h"
 #include "core/Context.h"

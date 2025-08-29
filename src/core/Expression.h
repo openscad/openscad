@@ -8,6 +8,7 @@
 #include <vector>
 #include <memory>
 #include <boost/logic/tribool.hpp>
+#include <boost/optional.hpp>
 #include "core/Assignment.h"
 #include "core/AST.h"
 #include "core/function.h"
