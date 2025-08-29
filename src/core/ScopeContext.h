@@ -3,12 +3,16 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include <boost/optional.hpp>
 
 #include "core/Arguments.h"
 #include "core/AST.h"
 #include "core/Children.h"
 #include "core/Context.h"
+#include "core/function.h"
+#include "core/module.h"
 #include "core/SourceFile.h"
+#include "core/Using.h"
 
 class UserModule;
 
@@ -20,6 +24,9 @@ public:
                                                           const Location& loc) const override;
   boost::optional<InstantiableModule> lookup_local_module(const std::string& name,
                                                           const Location& loc) const override;
+
+  boost::optional<CallableFunction> lookup_function_as_namespace(const std::string& name) const override;
+  boost::optional<InstantiableModule> lookup_module_as_namespace(const std::string& name) const override;
 
 protected:
   ScopeContext(const std::shared_ptr<const Context>& parent, const std::shared_ptr<LocalScope> scope)
@@ -57,6 +64,9 @@ public:
   boost::optional<InstantiableModule> lookup_local_module(const std::string& name,
                                                           const Location& loc) const override;
 
+  boost::optional<CallableFunction> lookup_function_as_namespace(const std::string& name) const override;
+  boost::optional<InstantiableModule> lookup_module_as_namespace(const std::string& name) const override;
+
 protected:
   FileContext(const std::shared_ptr<const Context>& parent, const SourceFile *source_file)
     : ScopeContext(parent, source_file->scope), source_file(source_file)
@@ -65,6 +75,8 @@ protected:
 
 private:
   const SourceFile *source_file;
+  boost::optional<CallableFunction> lookup_function_from_uses(const std::string& name) const;
+  boost::optional<InstantiableModule> lookup_module_from_uses(const std::string& name) const;
 
   friend class Context;
 };
