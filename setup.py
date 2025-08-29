@@ -9,6 +9,7 @@ def main():
             ]
 
     python =[
+              "src/genlang/genlang.cc",
               "src/python/pyfunctions.cc",
               "src/python/pydata.cc",
               "src/python/pyopenscad.cc",
@@ -24,6 +25,7 @@ def main():
               "src/geometry/cgal/cgalutils.cc",
               "src/geometry/cgal/cgalutils-kernel.cc",
               "src/geometry/cgal/cgalutils-applyops.cc",
+              "src/geometry/cgal/cgalutils-applyops-minkowski.cc",
               "src/geometry/cgal/cgalutils-mesh.cc",
               "src/geometry/cgal/cgalutils-triangulate.cc",
               "src/geometry/cgal/cgalutils-tess.cc",
@@ -72,7 +74,6 @@ def main():
               "src/core/LinearExtrudeNode.cc",
               "src/core/RotateExtrudeNode.cc",
               "src/core/RenderNode.cc",
-              "src/core/TextureNode.cc",
               "src/core/CSGNode.cc",
               "src/core/OffsetNode.cc",
               "src/core/RoofNode.cc",
@@ -83,7 +84,8 @@ def main():
               "src/core/DebugNode.cc",
               "src/core/PathExtrudeNode.cc",
               "src/core/GroupModule.cc",
-              "src/core/SkinNode.cc"
+              "src/core/SkinNode.cc",
+              "src/core/RepairNode.cc"
             ]
     context = [
               "src/core/ContextFrame.cc",
@@ -261,6 +263,7 @@ def main():
                   ("ENABLE_MANIFOLD","1"),
                   ("EXPERIMENTAL","1"),
                   ("OPENSCAD_NOGUI","1"),
+                  ("PYTHON_EXECUTABLE_NAME","\"pythonscad\""),
                   ("MANIFOLD_PAR","-1"),
                   ("OPENSCAD_YEAR","2025"),
                   ("OPENSCAD_MONTH","2"),

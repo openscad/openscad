@@ -2996,7 +2996,7 @@ static std::unique_ptr<PolySet> wrapObject(const WrapNode& node, const PolySet *
   PolySetBuilder builder(0, 0, 3, true);
 
   // find maxmal xrange
-  double xmin = NAN, xmax;
+  double xmin = NAN, xmax = NAN;
   for (const auto& p : ps->indices) {
     for (int i : p) {
       double x = ps->vertices[i][0];
@@ -3055,8 +3055,6 @@ static std::unique_ptr<PolySet> wrapObject(const WrapNode& node, const PolySet *
     polygonlen = polygon.size();
     xscale.push_back(xmin);
   }
-
-  int scalelen = xscale.size();
 
   std::vector<indexedFaceList> polygons_sorted;
   std::vector<Vector4d> normals = calcTriangleNormals(ps->vertices, ps->indices);

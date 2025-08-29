@@ -402,7 +402,6 @@ static std::vector<std::shared_ptr<const Polygon2d>> spinPolygons(
 {
   std::vector<std::shared_ptr<Polygon2d>> slicesadj;
   for (auto const& slice : slicesin) {
-    Polygon2d const& polyin = *slice;
     auto polyadj = std::make_shared<Polygon2d>();
     slicesadj.push_back(polyadj);
   }
