@@ -8,7 +8,7 @@
 #include <memory>
 #include <string>
 #include <vector>
-#include <boost/optional.hpp>
+#include <optional>
 
 class AbstractNode;
 class Context;
@@ -35,7 +35,7 @@ public:
    * FYI can only find `function x()` not `x = function ()`
    */
   template <typename T>
-  boost::optional<T> lookup(const std::string& name) const;
+  std::optional<T> lookup(const std::string& name) const;
 
   AssignmentList assignments;
   std::vector<std::shared_ptr<ModuleInstantiation>> moduleInstantiations;
@@ -52,7 +52,7 @@ private:
 };
 
 template <>
-boost::optional<UserFunction*> LocalScope::lookup(const std::string& name) const;
+std::optional<UserFunction*> LocalScope::lookup(const std::string& name) const;
 
 template <>
-boost::optional<UserModule*> LocalScope::lookup(const std::string& name) const;
+std::optional<UserModule*> LocalScope::lookup(const std::string& name) const;

@@ -41,7 +41,7 @@ void ScopeContext::init()
 boost::optional<CallableFunction> ScopeContext::lookup_local_function(const std::string& name,
                                                                       const Location& loc) const
 {
-  auto defined = scope->lookup<UserFunction*>(name);
+  const auto defined = scope->lookup<UserFunction*>(name);
   if (defined) {
     return CallableFunction{CallableUserFunction{get_shared_ptr(), *defined}};
   }
@@ -51,7 +51,7 @@ boost::optional<CallableFunction> ScopeContext::lookup_local_function(const std:
 boost::optional<InstantiableModule> ScopeContext::lookup_local_module(const std::string& name,
                                                                       const Location& loc) const
 {
-  auto defined = scope->lookup<UserModule*>(name);
+  const auto defined = scope->lookup<UserModule*>(name);
   if (defined) {
     return InstantiableModule{get_shared_ptr(), *defined};
   }
@@ -88,7 +88,7 @@ boost::optional<CallableFunction> FileContext::lookup_local_function(const std::
     // usedmod is nullptr if the library wasn't be compiled (error or file-not-found)
     auto usedmod = SourceFileCache::instance()->lookup(m);
     if (usedmod) {
-      if (auto defined = usedmod->scope->lookup<UserFunction*>(name)) {
+      if (const auto defined = usedmod->scope->lookup<UserFunction*>(name)) {
 	// `use` can only be used in the top-level scope, so this next
 	// line *should* be always passing the BuiltinContext as the new parent.
 	ContextHandle<FileContext> context{Context::create<FileContext>(this->parent, usedmod)};
@@ -115,7 +115,7 @@ boost::optional<InstantiableModule> FileContext::lookup_local_module(const std::
     // usedmod is nullptr if the library wasn't be compiled (error or file-not-found)
     auto usedmod = SourceFileCache::instance()->lookup(m);
     if (usedmod) {
-      if (auto defined = usedmod->scope->lookup<UserModule*>(name)) {
+      if (const auto defined = usedmod->scope->lookup<UserModule*>(name)) {
 	// `use` can only be used in the top-level scope, so this next
 	// line *should* be always passing the BuiltinContext as the new parent.
 	// Improvement idea: puposefully get builtins from session() so this is never wrong.
