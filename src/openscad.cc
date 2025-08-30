@@ -132,7 +132,7 @@ public:
   {
     set_output_handler(&Echostream::output, nullptr, this);
   }
-  Echostream(const std::string& filename) : fstream(filename), stream(fstream)
+  Echostream(const std::string& filename) : fstream(std::filesystem::u8path(filename)), stream(fstream)
   {
     set_output_handler(&Echostream::output, nullptr, this);
   }
