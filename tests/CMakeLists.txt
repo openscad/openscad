@@ -1,4 +1,5 @@
 # instructions - see ../doc/testing.txt
+# FUTURE: Python 3.15:  -Xutf8=1 will become unnecessary
 
 #set(DEBUG_OSCD 1) # print debug info during cmake
 
@@ -394,7 +395,7 @@ function(add_cmdline_test TESTCMD_BASENAME)
 
     string(JOIN " " DBG_COMMAND_STR
       "add_test(" ${TEST_FULLNAME} CONFIGURATIONS ${CONFVAL}
-      COMMAND ${Python3_EXECUTABLE}
+      COMMAND ${Python3_EXECUTABLE} -Xutf8=1
       ${TEST_CMDLINE_TOOL_PY} ${COMPARATOR} -c ${IMAGE_COMPARE_EXE}
       -s ${TESTCMD_SUFFIX} ${EXTRA_OPTIONS} ${TESTNAME_OPTION} ${FILENAME_OPTION}
       ${TESTCMD_EXE} ${TESTCMD_SCRIPT} ${SCADFILE} ${CAMERA_OPTION}
@@ -406,7 +407,7 @@ function(add_cmdline_test TESTCMD_BASENAME)
       # Use cmake option "--log-level DEBUG" during top level config to see this
       message(DEBUG "${DBG_COMMAND_STR}")
       add_test(NAME ${TEST_FULLNAME} CONFIGURATIONS ${CONFVAL}
-        COMMAND ${Python3_EXECUTABLE}
+        COMMAND ${Python3_EXECUTABLE} -Xutf8=1
         ${TEST_CMDLINE_TOOL_PY} ${COMPARATOR} -c ${IMAGE_COMPARE_EXE}
         -s ${TESTCMD_SUFFIX} ${EXTRA_OPTIONS} ${TESTNAME_OPTION} ${FILENAME_OPTION}
         ${TESTCMD_EXE} ${TESTCMD_SCRIPT} "${SCADFILE}" ${CAMERA_OPTION}
@@ -625,6 +626,7 @@ list(APPEND ECHO_FILES ${FUNCTION_FILES} ${MISC_FILES} ${REDEFINITION_FILES}
   ${TEST_SCAD_DIR}/misc/no-break-space-test.scad
   ${TEST_SCAD_DIR}/misc/unicode-tests.scad
   ${TEST_SCAD_DIR}/misc/utf8-tests.scad
+  ${TEST_SCAD_DIR}/misc/utf8-☠.scad
   ${TEST_SCAD_DIR}/misc/nbsp-utf8-test.scad
   ${TEST_SCAD_DIR}/misc/nbsp-latin1-test.scad
   ${TEST_SCAD_DIR}/misc/concat-tests.scad

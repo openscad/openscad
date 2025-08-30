@@ -132,7 +132,7 @@ public:
   {
     set_output_handler(&Echostream::output, nullptr, this);
   }
-  Echostream(const std::string& filename) : fstream(filename), stream(fstream)
+  Echostream(const std::string& filename) : fstream(std::filesystem::u8path(filename)), stream(fstream)
   {
     set_output_handler(&Echostream::output, nullptr, this);
   }
@@ -581,7 +581,7 @@ int cmdline(const CommandLine& cmd)
   if (cmd.is_stdin) {
     text = std::string((std::istreambuf_iterator<char>(std::cin)), std::istreambuf_iterator<char>());
   } else {
-    std::ifstream ifs(cmd.filename);
+    std::ifstream ifs(std::filesystem::u8path(cmd.filename));
     if (!ifs.is_open()) {
       LOG("Can't open input file '%1$s'!\n", cmd.filename);
       return 1;
@@ -1196,3 +1196,22 @@ int main(int argc, char **argv)
 
   return rc;
 }
+
+#ifdef _WIN32
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+static std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>, wchar_t> convert_wchar;
+#pragma GCC diagnostic pop
+std::string wchar_to_string(wchar_t *wcp) { return convert_wchar.to_bytes(wcp); }
+
+int wmain(int argc, wchar_t **argv)
+{
+  char *argv8[argc + 1];
+  for (int i = 0; i < argc; i++) {
+    argv8[i] = strdup(wchar_to_string(argv[i]).c_str());
+  }
+  argv8[argc] = NULL;
+
+  return (main(argc, argv8));
+}
+#endif  // _WIN32

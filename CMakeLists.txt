@@ -1387,6 +1387,10 @@ elseif(MSVC)
   )
 endif()
 
+if (WIN32)
+  set_property(TARGET OpenSCAD APPEND_STRING PROPERTY LINK_FLAGS " -municode")
+endif()
+
 if (USE_QT6)
   if(NOT HEADLESS)
     target_link_libraries(OpenSCAD PRIVATE
