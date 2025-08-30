@@ -36,7 +36,7 @@ public:
   const std::string& getFilename() const { return this->filename; }
   const std::string getFullpath() const;
 
-  LocalScope scope;
+  std::shared_ptr<LocalScope> scope;
   std::vector<std::string> usedlibs;
 
   std::vector<IndicatorData> indicatorData;
