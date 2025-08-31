@@ -226,7 +226,7 @@ attempt an MSVC build on Windows, please see this site:
 https://en.wikibooks.org/wiki/OpenSCAD_User_Manual/Building_on_Windows
 
 MSVC build support has been added to OpenSCAD. For instructions on how to build it,
-refer to [development Nix shell](doc/win-build.md)
+refer to [building with MSVC](doc/win-build.md).
 
 To cross-build, first make sure that you have all necessary dependencies 
 of the MXE project ( listed at https://mxe.cc/#requirements ). Don't install

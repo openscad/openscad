@@ -2,7 +2,9 @@
 
 Follow these steps to build OpenSCAD with Microsoft Visual Studio:
 
-- Make sure you have git installed and in your PATH.
+- Make sure you have git installed and in your PATH. For installing Git, follow the
+  instructions [here](https://github.com/git-guides/install-git).
+  To add a variable to PATH, a tutorial is available [here](https://www.eukhost.com/kb/how-to-add-to-the-path-on-windows-10-and-windows-11/)
 - Install Visual Studio 2022. Check the 'Desktop development with C++' component
   in the VS installer.
 - Download WinFlexBison binaries from the project's Github page:
@@ -17,10 +19,10 @@ Follow these steps to build OpenSCAD with Microsoft Visual Studio:
     git clone https://github.com/Microsoft/vcpkg.git
     .\vcpkg\bootstrap-vcpkg.bat
     ```
-Then add d:\vcpkg to your PATH.
-Clone the OpenSCAD repo somewhere (in this example, d:\openscad) and run
-scripts\win-msvc-build.bat in it:
-
+- Then add d:\vcpkg to your PATH.
+  Clone the OpenSCAD repo somewhere (in this example, d:\openscad) and run
+  scripts\win-msvc-build.bat in it:
+  
     ```
     git clone https://github.com/openscad/openscad.git
     cd openscad
