@@ -836,6 +836,7 @@ bool parse(SourceFile *&file, const std::string& text, const std::string &filena
   parser_error_pos = -1;
   parser_input_buffer = nullptr;
   scope_stack.pop();
+  assert(scope_stack.size()==0);
 
   return true;
 }
