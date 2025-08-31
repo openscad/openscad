@@ -52,7 +52,7 @@ private:
 };
 
 template <>
-std::optional<UserFunction*> LocalScope::lookup(const std::string& name) const;
+std::optional<UserFunction *> LocalScope::lookup(const std::string& name) const;
 
 template <>
-std::optional<UserModule*> LocalScope::lookup(const std::string& name) const;
+std::optional<UserModule *> LocalScope::lookup(const std::string& name) const;

@@ -15,7 +15,10 @@ class ModuleInstantiation : public ASTNode
 public:
   ModuleInstantiation(std::string name, AssignmentList args = AssignmentList(),
                       const Location& loc = Location::NONE)
-    : ASTNode(loc), arguments(std::move(args)), modname(std::move(name)), scope(std::make_shared<LocalScope>())
+    : ASTNode(loc),
+      arguments(std::move(args)),
+      modname(std::move(name)),
+      scope(std::make_shared<LocalScope>())
   {
   }
 

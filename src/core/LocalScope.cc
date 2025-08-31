@@ -43,7 +43,8 @@ void LocalScope::addAssignment(const std::shared_ptr<Assignment>& assignment)
 }
 
 template <>
-std::optional<UserFunction*> LocalScope::lookup(const std::string& name) const {
+std::optional<UserFunction *> LocalScope::lookup(const std::string& name) const
+{
   const auto& search = this->functions.find(name);
   if (search != this->functions.end()) {
     return search->second.get();
@@ -52,7 +53,8 @@ std::optional<UserFunction*> LocalScope::lookup(const std::string& name) const {
 }
 
 template <>
-std::optional<UserModule*> LocalScope::lookup(const std::string& name) const {
+std::optional<UserModule *> LocalScope::lookup(const std::string& name) const
+{
   const auto& search = this->modules.find(name);
   if (search != this->modules.end()) {
     return search->second.get();
