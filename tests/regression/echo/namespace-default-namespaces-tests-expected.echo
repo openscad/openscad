@@ -1,0 +1,2 @@
+ECHO: ["hello", "world"]
+ECHO: "I'm reading from the top level!"

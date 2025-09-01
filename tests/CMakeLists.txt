@@ -582,6 +582,8 @@ list(APPEND NAMESPACE_FILES
   ${TEST_SCAD_DIR}/namespaces/namespace-tests.scad
   ${TEST_SCAD_DIR}/namespaces/namespace-include-tests.scad
   ${TEST_SCAD_DIR}/namespaces/namespace-using-tests.scad
+  ${TEST_SCAD_DIR}/namespaces/namespace-default-namespaces-tests.scad
+  ${TEST_SCAD_DIR}/namespaces/namespace-implicit-parent-context-tests.scad
 )
 
 list(APPEND FAILING_FILES
