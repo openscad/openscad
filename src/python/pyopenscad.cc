@@ -884,6 +884,7 @@ void initPython(const std::string& binDir, const std::string& scriptpath, double
     }
 #endif
     fs::path scriptfile(python_scriptpath);
+    stream << sep << PlatformUtils::userPythonLibraryPath();
     stream << sep << PlatformUtils::userLibraryPath();
     stream << sep << scriptfile.parent_path().string();
     stream << sepchar << ".";

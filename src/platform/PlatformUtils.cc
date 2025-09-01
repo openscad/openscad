@@ -137,7 +137,32 @@ std::string PlatformUtils::userPath(const std::string& name)
   return path.generic_string();
 }
 
+std::string PlatformUtils::pythonUserPath(const std::string& name)
+{
+  fs::path path;
+  try {
+    std::string pathstr = PlatformUtils::documentsPath();
+    if (pathstr == "") return "";
+    path = fs::path(pathstr);
+    if (!fs::exists(path)) return "";
+#ifndef __EMSCRIPTEN__
+    path = fs::canonical(path);
+#endif
+    // LOG(message_group::NONE,,"path size %1$i",fs::stringy(path).size());
+    // LOG(message_group::NONE,,"lib path found: [%1$s]",path);
+    if (path.empty()) return "";
+    path /= "PythonSCAD";
+    path /= name;
+    // LOG(message_group::NONE,,"Appended path %1$s",path);
+    // LOG(message_group::NONE,,"Exists: %1$i",fs::exists(path));
+  } catch (const fs::filesystem_error& ex) {
+    LOG(message_group::Error, "%1$s", ex.what());
+  }
+  return path.generic_string();
+}
+
 std::string PlatformUtils::userLibraryPath() { return userPath("libraries"); }
+std::string PlatformUtils::userPythonLibraryPath() { return pythonUserPath("libraries"); }
 
 std::string PlatformUtils::userExamplesPath() { return userPath("examples"); }
 
