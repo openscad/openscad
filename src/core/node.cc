@@ -95,7 +95,7 @@ void AbstractNode::getCodeLocation(int currentLevel, int includeLevel, int *firs
   if (verbose_name().rfind("module", 0) == 0) {
     nestedModuleDepth++;
   }
-  if (modinst->name() == "children") {
+  if (modinst->isChildren()) {
     nestedModuleDepth--;
   }
 
