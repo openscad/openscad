@@ -119,6 +119,7 @@ boost::optional<T> EvaluationSession::lookup_namespace(const std::string& ns_nam
 
 template boost::optional<CallableFunction> EvaluationSession::lookup_namespace<CallableFunction>(const std::string&, const std::string&) const;
 template boost::optional<InstantiableModule> EvaluationSession::lookup_namespace<InstantiableModule>(const std::string&, const std::string&) const;
+template boost::optional<const Value&> EvaluationSession::lookup_namespace<const Value&>(const std::string&, const std::string&) const;
 
 void EvaluationSession::init_namespaces(SourceFile* source, std::shared_ptr<const Context> builtinContext) {
   // Add builtins namespace:
@@ -126,8 +127,8 @@ void EvaluationSession::init_namespaces(SourceFile* source, std::shared_ptr<cons
 
   for (auto nsName : source->getNamespaceNamesOrdered()) {
     auto nsScope = source->getNamespaceScope(nsName);
-    // ContextHandle calls the right method to initialize assignments.
-    ContextHandle<ScopeContext> nsContext{Context::create<ScopeContext>(builtinContext, nsScope)};
+    // ContextHandle calls the right method to evaluate/initialize assignments.
+    ContextHandle<UserNamespaceContext> nsContext{Context::create<UserNamespaceContext>(builtinContext, nsScope, nsName)};
     this->namespace_contexts.emplace(nsName, nsContext->get_shared_ptr());
   }
 }
