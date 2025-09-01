@@ -74,6 +74,7 @@ template boost::optional<CallableFunction> ContextFrame::lookup_as_namespace(
   const std::string& name) const;
 template boost::optional<InstantiableModule> ContextFrame::lookup_as_namespace(
   const std::string& name) const;
+template boost::optional<const Value&> ContextFrame::lookup_as_namespace(const std::string& name) const;
 
 template <typename T>
 boost::optional<T> ContextFrame::lookup_as_namespace(const std::string& name) const
@@ -82,6 +83,8 @@ boost::optional<T> ContextFrame::lookup_as_namespace(const std::string& name) co
     return lookup_function_as_namespace(name);
   } else if constexpr (std::is_same_v<T, InstantiableModule>) {
     return lookup_module_as_namespace(name);
+  } else if constexpr (std::is_same_v<T, const Value&>) {
+    return lookup_variable_as_namespace(name);
   }
   // std::cerr << "ERROR Bad type lookup_as_namespace called for '"<< name<<"'\n";
   return boost::none;
@@ -91,9 +94,21 @@ boost::optional<CallableFunction> ContextFrame::lookup_function_as_namespace(con
 {
   return boost::none;
 }
+
 boost::optional<InstantiableModule> ContextFrame::lookup_module_as_namespace(const std::string&) const
 {
   return boost::none;
+}
+
+boost::optional<const Value&> ContextFrame::lookup_variable_as_namespace(const std::string& name) const
+{
+  if (!is_config_variable(name)) {
+    auto result = lexical_variables.find(name);
+    if (result != lexical_variables.end()) {
+      return result->second;
+    }
+  }
+  return {};
 }
 
 std::vector<const Value *> ContextFrame::list_embedded_values() const

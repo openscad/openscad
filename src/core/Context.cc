@@ -35,6 +35,7 @@
 #include "core/AST.h"
 #include "core/EvaluationSession.h"
 #include "core/function.h"
+#include "core/lexer_shared.h"
 #include "utils/printutils.h"
 
 Context::Context(EvaluationSession *session) : ContextFrame(session), parent(nullptr) {}
@@ -69,7 +70,7 @@ std::vector<const std::shared_ptr<const Context> *> Context::list_referenced_con
   return output;
 }
 
-boost::optional<const Value&> Context::try_lookup_variable(const std::string& name) const
+boost::optional<const Value&> Context::lookup_variable(const std::string& name) const
 {
   if (is_config_variable(name)) {
     return session()->try_lookup_special_variable(name);
@@ -80,14 +81,15 @@ boost::optional<const Value&> Context::try_lookup_variable(const std::string& na
       return result;
     }
   }
-  return boost::none;
+  return {};
 }
 
-const Value& Context::lookup_variable(const std::string& name, const Location& loc) const
+const Value& Context::or_undef(boost::optional<const Value&> result, const std::string& name,
+                               const Location& loc, const std::string& ns_name) const
 {
-  boost::optional<const Value&> result = try_lookup_variable(name);
   if (!result) {
-    LOG(message_group::Warning, loc, documentRoot(), "Ignoring unknown variable %1$s", quoteVar(name));
+    auto quotedName = quoteVar(ns_name.empty() ? name : std::string(ns_name + LEXER_NS_SEP + name));
+    LOG(message_group::Warning, loc, documentRoot(), "Ignoring unknown variable %1$s", quotedName);
     return Value::undefined;
   }
   return *result;

@@ -75,7 +75,8 @@ static void NOINLINE print_trace(const UserModule *mod,
         stream << " = ";
       }
       try {
-        stream << context->lookup_variable(assignment->getName(), Location::NONE);
+        stream << context->or_undef(context->lookup_variable(assignment->getName()),
+                                    assignment->getName());
       } catch (EvaluationException& e) {
         stream << "...";
       }

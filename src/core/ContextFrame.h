@@ -41,6 +41,12 @@ public:
   boost::optional<T> lookup_as_namespace(const std::string& name) const;
   virtual boost::optional<CallableFunction> lookup_function_as_namespace(const std::string& name) const;
   virtual boost::optional<InstantiableModule> lookup_module_as_namespace(const std::string& name) const;
+  virtual boost::optional<const Value&> lookup_variable_as_namespace(const std::string& name) const;
+
+  /**
+   * @brief If a namespace context, is the name; otherwise empty string.
+   */
+  virtual const std::string get_namespace_name() const { return {}; }
 
   virtual std::vector<const Value *> list_embedded_values() const;
   virtual size_t clear();

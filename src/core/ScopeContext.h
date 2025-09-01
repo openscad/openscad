@@ -21,6 +21,7 @@ class ScopeContext : public Context
 {
 public:
   void init() override;
+  boost::optional<const Value&> lookup_local_variable(const std::string& name) const override;
   boost::optional<CallableFunction> lookup_local_function(const std::string& name,
                                                           const Location& loc) const override;
   boost::optional<InstantiableModule> lookup_local_module(const std::string& name,
@@ -37,6 +38,24 @@ protected:
 
 private:
   const std::shared_ptr<const LocalScope> scope;
+
+  friend class Context;
+};
+
+class UserNamespaceContext : public ScopeContext
+{
+public:
+  const std::string get_namespace_name() const override { return ns_name; }
+
+protected:
+  UserNamespaceContext(const std::shared_ptr<const Context>& parent,
+                       const std::shared_ptr<LocalScope> scope, std::string ns_name)
+    : ScopeContext(parent, scope), ns_name(std::move(ns_name))
+  {
+  }
+
+private:
+  std::string ns_name;
 
   friend class Context;
 };

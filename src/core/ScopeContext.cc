@@ -40,6 +40,21 @@ void ScopeContext::init()
   }
 }
 
+boost::optional<const Value&> ScopeContext::lookup_local_variable(const std::string& name) const
+{
+  auto result = Context::lookup_local_variable(name);
+  if (result) return result;
+
+  // TODO: coryrc - special variables are preserved, so you *could* look them up in usings... but should
+  // we? currently returns undef but we can save time by skipping all this if special var.
+  for (auto ns_name : scope->getUsings()) {
+    // std::cerr << "\tSearching namespace '"<< ns_name<<"'\n";
+    auto ret = session()->lookup_namespace<const Value&>(ns_name, name);
+    if (ret) return ret;
+  }
+  return {};
+}
+
 boost::optional<CallableFunction> ScopeContext::lookup_local_function(const std::string& name,
                                                                       const Location& loc) const
 {

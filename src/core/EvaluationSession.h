@@ -36,7 +36,6 @@ public:
    * @brief Lookup something from a namespace's environments
    *
    * Use these for looking up functions or modules from a namespace.
-   * TODO: coryrc - add assignments
    */
   template <typename T>
   boost::optional<T> lookup_namespace(const std::string& ns_name, const std::string& name) const;
