@@ -11,9 +11,20 @@
 
 class Feature;
 
+/**
+ * @brief A stack for holding module names while evaluating
+ *
+ * The names are used for the builtin function `parent_module` and
+ * the quantity for calculating `$parent_module` special variable.
+ */
 class StaticModuleNameStack
 {
 public:
+  /**
+   * @brief Push module's name on the static module name stack
+   *
+   * It will be popped in the destructor.
+   */
   StaticModuleNameStack(const std::string& name) { stack.push_back(name); }
   ~StaticModuleNameStack() { stack.pop_back(); }
 

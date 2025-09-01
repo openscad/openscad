@@ -2501,7 +2501,7 @@ void MainWindow::rightClick(QPoint position)
 
       // It happens that the verbose_name is empty (eg: in for loops), when this happens instead of
       // letting empty entry in the menu we prefer using the name in the modinstanciation.
-      if (step->verbose_name().empty()) name = step->modinst->name();
+      if (step->verbose_name().empty()) name = step->modinst->getPrintableName();
 
       // Check if the path is contained in a library (using parsersettings.h)
       const fs::path libpath = get_library_for_path(location.filePath());
@@ -2573,7 +2573,7 @@ void MainWindow::setSelectionIndicatorStatus(EditorInterface *editor, int nodeIn
       continue;
     }
 
-    if (node->verbose_name().rfind("module", 0) == 0 || node->modinst->name() == "children") {
+    if (node->verbose_name().rfind("module", 0) == 0 || node->modinst->isChildren()) {
       editor->setSelectionIndicatorStatus(status, level, location.firstLine() - 1,
                                           location.firstColumn() - 1, location.lastLine() - 1,
                                           location.lastColumn() - 1);

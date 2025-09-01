@@ -91,12 +91,12 @@ std::shared_ptr<AbstractNode> UserModule::instantiate(
   const std::shared_ptr<const Context>& context) const
 {
   if (StackCheck::inst().check()) {
-    print_err(inst->name(), loc, context);
-    throw RecursionException::create("module", inst->name(), loc);
+    print_err(inst->getPrintableName(), loc, context);
+    throw RecursionException::create("module", inst->getPrintableName(), loc);
     return nullptr;
   }
 
-  StaticModuleNameStack name{inst->name()};  // push on static stack, pop at end of method!
+  StaticModuleNameStack name{inst->getPrintableName()};  // push on static stack, pop at end of method!
   ContextHandle<UserModuleContext> module_context{Context::create<UserModuleContext>(
     defining_context, this, inst->location(), Arguments(inst->arguments, context),
     Children(inst->scope, context))};

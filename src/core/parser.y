@@ -131,7 +131,7 @@ bool fileEnded=false;
 %token TOK_FALSE
 %token TOK_UNDEF
 
-%token LE GE EQ NEQ AND OR LSH RSH
+%token LE GE EQ NEQ AND OR LSH RSH NS_SEP
 
 %nonassoc NO_ELSE
 %nonassoc TOK_ELSE
@@ -160,6 +160,8 @@ bool fileEnded=false;
 %type <ifelse> if_statement
 %type <ifelse> ifelse_statement
 %type <inst> single_module_instantiation
+%type <inst> single_maybe_namespaced_module_instantiation
+
 
 %type <args> arguments
 %type <args> argument_list
@@ -301,7 +303,7 @@ module_instantiation
                 delete $2;
                 $$ = NULL;
             }
-        | single_module_instantiation
+        | single_maybe_namespaced_module_instantiation
             {
                 $<inst>$ = $1;
                 scope_stack.push($1->scope);
@@ -371,12 +373,23 @@ module_id
         | TOK_EACH { $$ = strdup("each"); }
         ;
 
+single_maybe_namespaced_module_instantiation
+	: TOK_ID NS_SEP single_module_instantiation
+            {
+	      // TODO: coryrc - where to error if special variable?
+              $$ = $3;
+              if ($$) $$->setNamespaceName($1);
+		free($1);
+            }
+	| single_module_instantiation
+	;
+
 single_module_instantiation
         : module_id '(' arguments ')'
             {
-                $$ = new ModuleInstantiation($1, *$3, LOCD("modulecall", @$));
-                free($1);
-                delete $3;
+              $$ = new ModuleInstantiation($1, *$3, LOCD("modulecall", @$));
+              free($1);
+              delete $3;
             }
         ;
 
@@ -588,6 +601,13 @@ primary
               $$ = new Literal(std::string($1), LOCD("string", @$));
               free($1);
             }
+	| TOK_ID NS_SEP TOK_ID
+	    {
+	      // TODO: coryrc - where to error if special variable?
+	      $$ = new Lookup($1, $3, LOCD("namespaced_variable", @$));
+              free($1);
+              free($3);
+	    }
         | TOK_ID
             {
               $$ = new Lookup($1, LOCD("variable", @$));

@@ -76,7 +76,7 @@ void BuiltinModule::noChildren(const ModuleInstantiation *inst, Arguments& argum
 {
   if (inst->scope->hasChildren()) {
     LOG(message_group::Warning, inst->location(), arguments.documentRoot(),
-        "module %1$s() does not support child modules%2$s%3$s", inst->name(),
+        "module %1$s() does not support child modules%2$s%3$s", inst->getPrintableName(),
         auxmsg.size() != 0 ? " " : "", auxmsg);
   }
 }

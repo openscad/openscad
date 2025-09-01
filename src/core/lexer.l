@@ -320,6 +320,7 @@ use[ \t\r\n]*"<"        { BEGIN(cond_use); LOCATION_COUNT_LINES(parserlloc, yyte
 "||"                    return OR;
 "<<"                    return LSH;
 ">>"                    return RSH;
+"::"                    return NS_SEP; /* Update lexer_shared.h if this is changed. (no you can't just use the define here) */
 
 .                       { return yytext[0]; }
 
