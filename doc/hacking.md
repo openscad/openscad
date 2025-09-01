@@ -1,6 +1,6 @@
 # Coding Style
 
-The OpenSCAD coding style is encoded in `.uncrustify.cfg`.
+The OpenSCAD coding style is encoded in `.clang-format`.
 
 Coding style highlights:
 
@@ -21,12 +21,29 @@ All pull requests must pass `./scripts/beautify.sh --check` . In rare cases beau
     unzip build/artifacts/1/beautify-patch/beautify-patch.zip
     git apply beautify.patch
 
-`beautify.sh` can also be used directly as a git hook.
+This can be done automatically using `./scripts/hard_beautify.sh`, which also functions as a git hook. 
 
-    cd .git/hooks
-    ln -s ../../scripts/beautify.sh pre-commit
+## pre-commit
 
-After making a commit beautify will automatically run. You can then check the changes, and add them to their own commit, or amend them to the previous commit using `git commit --amend`
+OpenSCAD supports [pre-commit](https://pre-commit.com) which runs
+clang-format and a few other tools on code you want to commit.
+
+It is available in all major Linux distributions or can be installed
+via `pip install pre-commit`.
+
+Immediately after cloning the repository, run `pre-commit install`
+once, to install the necessary git hook.
+
+From then on, every time you commit changes, pre-commit will execute
+some hooks which will complain if there are issues for example with
+the code-styling. Minor things will be fixed automatically, but the
+commit will still be aborted. You should review those automated fixes
+and address any additional findings.  Stage those changes and commit
+again.
+
+If you want to run the hooks without committing, you can run
+`pre-commit run`. It will only check the staged versions of files
+though.
 
 # Regression Tests
 
