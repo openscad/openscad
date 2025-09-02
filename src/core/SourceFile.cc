@@ -220,8 +220,7 @@ std::shared_ptr<LocalScope> SourceFile::registerNamespace(const char *name)
     return it->second;
   }
   this->namespaceNamesOrdered.push_back(name);
-  auto ls = std::make_shared<LocalNamespaceScope>();  // TODO: coryrc - should the scope contain the name
-                                                      // just for debugging purposes?
+  auto ls = std::make_shared<LocalNamespaceScope>(name);
   this->namespaceScopes.insert({name, ls});
   return ls;
 }
