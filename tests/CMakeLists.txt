@@ -336,7 +336,7 @@ function(add_cmdline_test TESTCMD_BASENAME)
 
   # python script implies Python3_EXECUTABLE
   if (TESTCMD_SCRIPT MATCHES \\.[Pp][Yy]$)
-    set(TESTCMD_EXE ${Python3_EXECUTABLE})
+    set(TESTCMD_EXE ${Python3_EXECUTABLE} -Xutf8=1)
   endif()
   if (TESTCMD_OPENSCAD)
     set(TESTCMD_EXE ${OPENSCAD_BINPATH})
@@ -518,8 +518,13 @@ list(REMOVE_ITEM FEATURES_2D_FILES
 )
 file(GLOB ISSUES_2D_FILES     ${TEST_SCAD_DIR}/2D/issues/*.scad)
 file(GLOB_RECURSE BUGS_2D_FILES    ${TEST_SCAD_DIR}/bugs2D/*.scad)
-file(GLOB SCAD_DXF_FILES      ${TEST_SCAD_DIR}/dxf/*.scad)
-file(GLOB SCAD_PDF_FILES      ${TEST_SCAD_DIR}/pdf/*.scad)
+file(GLOB SCAD_DXF_FILES      ${TEST_SCAD_DIR}/dxf/*.scad
+  ${TEST_SCAD_DIR}/misc/utf8-☠-2D.scad
+)
+file(GLOB SCAD_PDF_FILES      ${TEST_SCAD_DIR}/pdf/*.scad
+  # GhostScript can't handle the names.
+  # ${TEST_SCAD_DIR}/misc/utf8-☠-2D.scad
+)
 file(GLOB SCAD_SVG_FILES      ${TEST_SCAD_DIR}/svg/svg-spec/*.scad
   ${TEST_SCAD_DIR}/svg/box-w-holes-2d.scad
   ${TEST_SCAD_DIR}/svg/display.scad
@@ -529,8 +534,10 @@ file(GLOB SCAD_SVG_FILES      ${TEST_SCAD_DIR}/svg/svg-spec/*.scad
   ${TEST_SCAD_DIR}/svg/simple-center-2d.scad
   ${TEST_SCAD_DIR}/svg/use-transform.scad
   ${TEST_SCAD_DIR}/svg/fill-rule.scad
-  ${TEST_SCAD_DIR}/svg/size-percent.scad)
-  list(APPEND EXAMPLE_2D_FILES
+  ${TEST_SCAD_DIR}/svg/size-percent.scad
+  ${TEST_SCAD_DIR}/misc/utf8-☠-2D.scad
+  )
+list(APPEND EXAMPLE_2D_FILES
   ${EXAMPLES_DIR}/Old/example015.scad
   ${EXAMPLES_DIR}/Advanced/module_recursion.scad
   ${EXAMPLES_DIR}/Functions/list_comprehensions.scad
@@ -576,6 +583,7 @@ list(APPEND MISC_FILES
   ${TEST_SCAD_DIR}/misc/allfunctions.scad
   ${TEST_SCAD_DIR}/misc/allmodules.scad
   ${TEST_SCAD_DIR}/misc/special-consts.scad
+  ${TEST_SCAD_DIR}/misc/utf8-☠-3D.scad
   ${TEST_SCAD_DIR}/misc/variable-overwrite.scad
 )
 
@@ -626,7 +634,6 @@ list(APPEND ECHO_FILES ${FUNCTION_FILES} ${MISC_FILES} ${REDEFINITION_FILES}
   ${TEST_SCAD_DIR}/misc/no-break-space-test.scad
   ${TEST_SCAD_DIR}/misc/unicode-tests.scad
   ${TEST_SCAD_DIR}/misc/utf8-tests.scad
-  ${TEST_SCAD_DIR}/misc/utf8-☠.scad
   ${TEST_SCAD_DIR}/misc/nbsp-utf8-test.scad
   ${TEST_SCAD_DIR}/misc/nbsp-latin1-test.scad
   ${TEST_SCAD_DIR}/misc/concat-tests.scad
@@ -721,6 +728,7 @@ list(APPEND PREVIEW_ONLY_FILES
   ${TEST_SCAD_DIR}/3D/features/highlight-modifier2.scad
   ${TEST_SCAD_DIR}/3D/features/background-modifier2.scad
   ${TEST_SCAD_DIR}/2D/issues/issue5574.scad
+  ${TEST_SCAD_DIR}/misc/utf8-☠-3D.scad
 )
 
 list(REMOVE_ITEM ALL_RENDER_FILES 
@@ -1103,6 +1111,7 @@ add_cmdline_test(echo EXPERIMENTAL OPENSCAD SUFFIX echo FILES ${OBJECT_TEST} ARG
 
 list(APPEND EXPORT_STL_TEST_FILES
   ${TEST_SCAD_DIR}/stl/stl-export.scad
+  ${TEST_SCAD_DIR}/misc/utf8-☠-3D.scad
 )
 
 # FIXME: Reintroduce
