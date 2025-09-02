@@ -218,7 +218,7 @@ git submodule update --init --recursive
 sudo ./scripts/uni-get-dependencies.sh
 mkdir build
 cd build
-cmake -DEXPERIMENTAL=1 -DENABLE_PYTHON=1 -DENABLE_LIBFIVE=1 ..
+cmake ..
 make
 make test
 sudo make install
