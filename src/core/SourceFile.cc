@@ -150,7 +150,7 @@ time_t SourceFile::handleDependencies(bool is_root)
     if (found) {
       auto oldmodule = SourceFileCache::instance()->lookup(filename);
       SourceFile *newmodule;
-      auto mtime = SourceFileCache::instance()->evaluate(this->getFullpath(), filename, newmodule);
+      auto mtime = SourceFileCache::instance()->process(this->getFullpath(), filename, newmodule);
       if (mtime > latest) latest = mtime;
       auto changed = newmodule && newmodule != oldmodule;
       // Detect appearance but not removal of files, and keep old module
