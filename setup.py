@@ -248,7 +248,8 @@ def main():
                   "/usr/include/freetype2",
                   "/usr/include/glib-2.0",
                   "/usr/include/cairo",
-                  "/usr/lib64/glib-2.0/include"
+                  "/usr/lib64/glib-2.0/include",
+                  "/usr/lib/x86_64-linux-gnu/glib-2.0/include"
                 ],libraries=[
                   "freetype",
                   "jpeg",

@@ -151,7 +151,6 @@ PyObject *python_cube(PyObject *self, PyObject *args, PyObject *kwargs)
   }
 
   if (size != NULL) {
-    int flags = 0;
     if (python_vectorval(size, 3, 3, &(node->dim[0]), &(node->dim[1]), &(node->dim[2]), nullptr,
                          &(node->dragflags))) {
       PyErr_SetString(PyExc_TypeError, "Invalid Cube dimensions");
@@ -460,11 +459,10 @@ std::unique_ptr<const Geometry> sphereCreateFuncGeometry(void *funcptr, double f
   do {
     done = 0;
     auto edge_db = createEdgeDb(ps->indices);
-    for (int i = 0; i < ps->indices.size(); i++) {
+    for (size_t i = 0; i < ps->indices.size(); i++) {
       auto& tri = ps->indices[i];
       if (tri[0] == tri[1] || tri[0] == tri[2] || tri[1] == tri[2]) continue;
       for (int j = 0; j < 3; j++) {
-        int debug = 0;
         int i1 = tri[j];
         int i2 = tri[(j + 1) % 3];
         double l1 = (ps->vertices[i1] - ps->vertices[i2]).norm();
@@ -512,8 +510,7 @@ std::unique_ptr<const Geometry> sphereCreateFuncGeometry(void *funcptr, double f
         }
       }
     }
-    printf("\ndone=%d\n", done);
-    for (int i = 0; i < ps->indices.size(); i++) {
+    for (size_t i = 0; i < ps->indices.size(); i++) {
       auto& tri = ps->indices[i];
       if (tri[0] == tri[1] && tri[0] == tri[2]) {
         ps->indices.erase(ps->indices.begin() + i);
@@ -760,7 +757,7 @@ PyObject *python_polyhedron(PyObject *self, PyObject *args, PyObject *kwargs)
   }
 
   if (colors != NULL && PyList_Check(colors)) {
-    if (PyList_Size(colors) != node->faces.size()) {
+    if ((size_t) PyList_Size(colors) != node->faces.size()) {
       PyErr_SetString(PyExc_TypeError, "when specified must match number of faces");
       return NULL;
     }
@@ -1647,8 +1644,6 @@ PyObject *python_math_sub2(PyObject *self, PyObject *args, PyObject *kwargs, int
 {
   int dragflags = 0;
   char *kwlist[] = {"vec1", "vec2", NULL};
-  double arg;
-  double result = 0;
   PyObject *obj1 = nullptr;
   PyObject *obj2 = nullptr;
   Vector3d vec31(0, 0, 0);
@@ -1663,7 +1658,6 @@ PyObject *python_math_sub2(PyObject *self, PyObject *args, PyObject *kwargs, int
   switch (mode) {
   case 0: return PyFloat_FromDouble(vec31.dot(vec32)); break;
   case 1:
-    Vector3d res = vec31.cross(vec32);
     return python_fromvector(vec31.cross(vec32));
     break;
   }
@@ -1714,7 +1708,6 @@ PyObject *python_norm(PyObject *self, PyObject *args, PyObject *kwargs)
 {
   int dragflags = 0;
   char *kwlist[] = {"vec", NULL};
-  double arg;
   double result = 0;
   PyObject *obj = nullptr;
   Vector3d vec3(0, 0, 0);
@@ -2580,20 +2573,20 @@ PyObject *python_separate_core(PyObject *obj)
     std::vector<intList> pt2tri;
 
     std::vector<int> vert_db;
-    for (int i = 0; i < ps->vertices.size(); i++) {
+    for (size_t i = 0; i < ps->vertices.size(); i++) {
       vert_db.push_back(-1);
       pt2tri.push_back(empty_list);
     }
 
     std::vector<int> tri_db;
-    for (int i = 0; i < ps->indices.size(); i++) {
+    for (size_t i = 0; i < ps->indices.size(); i++) {
       tri_db.push_back(-1);
       for (auto ind : ps->indices[i]) pt2tri[ind].push_back(i);
     }
 
     // now sort for objects
     int obj_num = 0;
-    for (int i = 0; i < vert_db.size(); i++) {
+    for (size_t i = 0; i < vert_db.size(); i++) {
       if (vert_db[i] != -1) continue;
       std::vector<int> vert_todo;
       vert_todo.push_back(i);
@@ -2621,13 +2614,13 @@ PyObject *python_separate_core(PyObject *obj)
       auto node = std::make_shared<PolyhedronNode>(instance);
       node->convexity = 2;
       std::vector<int> vert_map;
-      for (int j = 0; j < ps->vertices.size(); j++) {
+      for (size_t j = 0; j < ps->vertices.size(); j++) {
         if (vert_db[j] == i) {
           vert_map.push_back(node->points.size());
           node->points.push_back(ps->vertices[j]);
         } else vert_map.push_back(-1);
       }
-      for (int j = 0; j < ps->indices.size(); j++) {
+      for (size_t j = 0; j < ps->indices.size(); j++) {
         if (tri_db[j] == i) {
           IndexedFace face_map;
           for (auto ind : ps->indices[j]) {
@@ -2770,14 +2763,14 @@ PyObject *python_faces_core(PyObject *obj, bool tessellate)
     if (tessellate == true) {
       ps = PolySetUtils::tessellate_faces(*ps);
       inds = ps->indices;
-      for (int i = 0; i < inds.size(); i++) face_parents.push_back(-1);
+      for (size_t i = 0; i < inds.size(); i++) face_parents.push_back(-1);
     } else {
       std::vector<Vector4d> normals, new_normals;
       normals = calcTriangleNormals(ps->vertices, ps->indices);
       inds = mergeTriangles(ps->indices, normals, new_normals, face_parents, ps->vertices);
     }
     int resultlen = 0, resultiter = 0;
-    for (int i = 0; i < face_parents.size(); i++)
+    for (size_t i = 0; i < face_parents.size(); i++)
       if (face_parents[i] == -1) resultlen++;
 
     PyObject *pyth_faces = PyList_New(resultlen);
@@ -2839,7 +2832,7 @@ PyObject *python_faces_core(PyObject *obj, bool tessellate)
 
       // check if there are holes
       for (size_t k = 0; k < inds.size(); k++) {
-        if (face_parents[k] == j) {
+        if ((size_t) face_parents[k] == j) {
           auto& hole = inds[k];
 
           std::vector<size_t> path;
@@ -3490,7 +3483,6 @@ PyObject *python_concat(PyObject *self, PyObject *args, PyObject *kwargs)
   PyObject *obj;
   PyObject *obj1;
   PyObject *child_dict = nullptr;
-  PyObject *dummy_dict = nullptr;
   std::shared_ptr<AbstractNode> child;
   PyTypeObject *type = &PyOpenSCADType;
   // dont do union in any circumstance
@@ -3622,7 +3614,7 @@ PyObject *python_oo_path_extrude(PyObject *obj, PyObject *args, PyObject *kwargs
 PyObject *python_csg_core(std::shared_ptr<CsgOpNode> &node, const std::vector<std::shared_ptr<AbstractNode>> &childs)
 {
   PyTypeObject *type = &PyOpenSCADType;
-  for(int i=0;i<childs.size();i++ ) {	
+  for(size_t i=0;i<childs.size();i++ ) {	
     const auto &child = childs[i];	  
     if (child.get() == void_node.get()) {
       if(node->type == OpenSCADOperator::DIFFERENCE && i == 0) return PyOpenSCADObjectFromNode(type, void_node);
@@ -3750,7 +3742,6 @@ PyObject *python_oo_csg_sub(PyObject *self, PyObject *args, PyObject *kwargs, Op
   PyObject *dict;
 
   dict = nullptr;
-  PyTypeObject *type = PyOpenSCADObjectType(self);
   child = PyOpenSCADObjectToNodeMulti(self, &dict);
   if (child != NULL) {
     node->children.push_back(child);
@@ -3817,8 +3808,6 @@ PyObject *python_oo_csg_sub(PyObject *self, PyObject *args, PyObject *kwargs, Op
     PyObject *key, *value;
     Py_ssize_t pos = 0;
     while (PyDict_Next(dict, &pos, &key, &value)) {
-      PyObject *value1 = PyUnicode_AsEncodedString(key, "utf-8", "~");
-      const char *value_str = PyBytes_AS_STRING(value1);
       PyDict_SetItem(((PyOpenSCADObject *)pyresult)->dict, key, value);
     }
   }
@@ -3850,7 +3839,6 @@ PyObject *python_nb_sub(PyObject *arg1, PyObject *arg2, OpenSCADOperator mode)
   if (arg2 == Py_None && mode == OpenSCADOperator::UNION) return arg1;
   if (arg2 == Py_None && mode == OpenSCADOperator::DIFFERENCE) return arg1;
 
-  PyTypeObject *type = PyOpenSCADObjectType(arg1);
 
   for (int i = 0; i < 2; i++) {
     PyObject *dict;
@@ -4063,8 +4051,6 @@ PyObject *python_minkowski(PyObject *self, PyObject *args, PyObject *kwargs)
 {
   DECLARE_INSTANCE
   std::shared_ptr<AbstractNode> child;
-  int i;
-  int n;
   int convexity = 2;
 
   auto node = std::make_shared<CgalAdvNode>(instance, CgalAdvType::MINKOWSKI);
@@ -4853,7 +4839,7 @@ void python_str_sub(std::ostringstream& stream, const std::shared_ptr<AbstractNo
     break;
   default:
     stream << "{\n";
-    for (const auto child : node->children) {
+    for (const auto &child : node->children) {
       python_str_sub(stream, child, ident + 1);
     }
     for (int i = 0; i < ident; i++) stream << "  ";
@@ -5146,7 +5132,6 @@ PyObject *python_modelpath(PyObject *self, PyObject *args, PyObject *kwargs, int
 
 PyObject *python_oo_dict(PyObject *self, PyObject *args, PyObject *kwargs)
 {
-  char *kwlist[] = {NULL};
   PyObject *dict = ((PyOpenSCADObject *)self)->dict;
   Py_INCREF(dict);
   return dict;
@@ -5303,6 +5288,7 @@ PyObject *python_memberfunction(PyObject *self, PyObject *args, PyObject *kwargs
     case 17: next_trampoline = (PyCFunction) python_member_trampoline_17; break;
     case 18: next_trampoline = (PyCFunction) python_member_trampoline_18; break;
     case 19: next_trampoline = (PyCFunction) python_member_trampoline_19; break;
+    default: next_trampoline = nullptr;	     
   }	    
 
   PyMethodDef *meth = (PyMethodDef *) malloc(sizeof(PyMethodDef)); // never freed

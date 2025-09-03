@@ -238,8 +238,6 @@ std::shared_ptr<AbstractNode> PyOpenSCADObjectToNodeMulti(PyObject *objs, PyObje
       PyObject *key, *value;
       Py_ssize_t pos = 0;
       while (PyDict_Next(subdict, &pos, &key, &value)) {
-        PyObject *value1 = PyUnicode_AsEncodedString(key, "utf-8", "~");
-        const char *value_str = PyBytes_AS_STRING(value1);
         PyDict_SetItem(*dict, key, value);
       }
     }
@@ -966,6 +964,7 @@ std::string evaluatePython(const std::string& code, bool dry_run)
   modinsts_list.clear();
   pythonDryRun = dry_run;
   if (!pythonMainModuleInitialized) return "Python not initialized";
+#ifndef OPENSCAD_NOGUI
   const char *python_init_code =
     "\
 import sys\n\
@@ -1005,7 +1004,6 @@ stdout_bak = None\n\
 stderr_bak = None\n\
 ";
 
-#ifndef OPENSCAD_NOGUI
   PyRun_SimpleString(python_init_code);
 #endif
 #ifdef HAVE_PYTHON_YIELD
@@ -1187,48 +1185,6 @@ PyMODINIT_FUNC PyInit_PyOpenSCAD(void)
   Py_INCREF(&PyOpenSCADType);
   PyModule_AddObject(m, "Openscad", (PyObject *)&PyOpenSCADType);
   return m;
-}
-
-// ----------------------------------------------
-// IPython Interpreter side
-// ----------------------------------------------
-
-static PyStatus pymain_init_ipython(void)
-{
-  PyStatus status;
-
-  //    if (_PyStatus_EXCEPTION(status)) {
-  //        return status;
-  //    }
-
-  PyPreConfig preconfig;
-  PyPreConfig_InitPythonConfig(&preconfig);
-  //    status = _Py_PreInitializeFromPyArgv(&preconfig, args);
-  //    if (_PyStatus_EXCEPTION(status)) {
-  //        return status;
-  //    }
-
-  PyConfig config;
-  PyConfig_InitPythonConfig(&config);
-
-  //    if (args->use_bytes_argv) {
-  //        status = PyConfig_SetBytesArgv(&config, args->argc, args->bytes_argv);
-  //    }
-  //    else {
-  //        status = PyConfig_SetArgv(&config, args->argc, args->wchar_argv);
-  //    }
-  //    if (_PyStatus_EXCEPTION(status)) {
-  //        goto done;
-  //    }
-
-  status = Py_InitializeFromConfig(&config);
-  //    if (_PyStatus_EXCEPTION(status)) {
-  //        goto done;
-  //    }
-  //    status = 0; // PyStatus_Ok;
-
-  PyConfig_Clear(&config);
-  return status;
 }
 
 /* Write an exitcode into *exitcode and return 1 if we have to exit Python.

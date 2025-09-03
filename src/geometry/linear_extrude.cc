@@ -155,124 +155,6 @@ Outline2d splitOutlineByFn(const Outline2d& o, const double twist, const double 
   assert(o2.vertices.size() <= fn);
   return o2;
 }
-void append_linear_vertex(PolySetBuilder& builder, const Outline2d *face, int index, Vector3d h)
-{
-  builder.addVertex(builder.vertexIndex(
-    Vector3d(face->vertices[index][0] + h[0], face->vertices[index][1] + h[2], h[2])));
-}
-void calculate_path_dirs(Vector3d prevpt, Vector3d curpt, Vector3d nextpt, Vector3d vec_x_last,
-                         Vector3d vec_y_last, Vector3d *vec_x, Vector3d *vec_y)
-{
-  Vector3d diff1, diff2;
-  diff1 = curpt - prevpt;
-  diff2 = nextpt - curpt;
-  double xfac = 1.0, yfac = 1.0, beta;
-
-  if (diff1.norm() > 0.001) diff1.normalize();
-  if (diff2.norm() > 0.001) diff2.normalize();
-  Vector3d diff = diff1 + diff2;
-
-  if (diff.norm() < 0.001) {
-    printf("User Error!\n");
-    return;
-  }
-  if (vec_y_last.norm() < 0.001) {  // Needed in first step only
-    vec_y_last = diff2.cross(vec_x_last);
-    if (vec_y_last.norm() < 0.001) {
-      vec_x_last[0] = 1;
-      vec_x_last[1] = 0;
-      vec_x_last[2] = 0;
-      vec_y_last = diff.cross(vec_x_last);
-    }
-    if (vec_y_last.norm() < 0.001) {
-      vec_x_last[0] = 0;
-      vec_x_last[1] = 1;
-      vec_x_last[2] = 0;
-      vec_y_last = diff.cross(vec_x_last);
-    }
-    if (vec_y_last.norm() < 0.001) {
-      vec_x_last[0] = 0;
-      vec_x_last[1] = 0;
-      vec_x_last[2] = 1;
-      vec_y_last = diff.cross(vec_x_last);
-    }
-  } else {
-    // make vec_last normal to diff1
-    Vector3d xn = vec_y_last.cross(diff1).normalized();
-    Vector3d yn = diff1.cross(vec_x_last).normalized();
-
-    // now fix the angle between xn and yn
-    Vector3d vec_xy_ = (xn + yn).normalized();
-    Vector3d vec_xy = vec_xy_.cross(diff1).normalized();
-    vec_x_last = (vec_xy_ + vec_xy).normalized();
-    vec_y_last = diff1.cross(xn).normalized();
-  }
-
-  diff = (diff1 + diff2).normalized();
-
-  *vec_y = diff.cross(vec_x_last);
-  if (vec_y->norm() < 0.001) {
-    vec_x_last[0] = 1;
-    vec_x_last[1] = 0;
-    vec_x_last[2] = 0;
-    *vec_y = diff.cross(vec_x_last);
-  }
-  if (vec_y->norm() < 0.001) {
-    vec_x_last[0] = 0;
-    vec_x_last[1] = 1;
-    vec_x_last[2] = 0;
-    *vec_y = diff.cross(vec_x_last);
-  }
-  if (vec_y->norm() < 0.001) {
-    vec_x_last[0] = 0;
-    vec_x_last[1] = 0;
-    vec_x_last[2] = 1;
-    *vec_y = diff.cross(vec_x_last);
-  }
-  vec_y->normalize();
-
-  *vec_x = vec_y_last.cross(diff);
-  if (vec_x->norm() < 0.001) {
-    vec_y_last[0] = 1;
-    vec_y_last[1] = 0;
-    vec_y_last[2] = 0;
-    *vec_x = vec_y_last.cross(diff);
-  }
-  if (vec_x->norm() < 0.001) {
-    vec_y_last[0] = 0;
-    vec_y_last[1] = 1;
-    vec_y_last[2] = 0;
-    *vec_x = vec_y_last.cross(diff);
-  }
-  if (vec_x->norm() < 0.001) {
-    vec_y_last[0] = 0;
-    vec_y_last[1] = 0;
-    vec_y_last[2] = 1;
-    *vec_x = vec_y_last.cross(diff);
-  }
-  vec_x->normalize();
-
-  if (diff1.norm() > 0.001 && diff2.norm() > 0.001) {
-    beta = (*vec_x).dot(diff1);
-    xfac = sqrt(1 - beta * beta);
-    beta = (*vec_y).dot(diff1);
-    yfac = sqrt(1 - beta * beta);
-  }
-  (*vec_x) /= xfac;
-  (*vec_y) /= yfac;
-}
-
-std::vector<Vector3d> calculate_path_profile(Vector3d *vec_x, Vector3d *vec_y, Vector3d curpt,
-                                             const std::vector<Vector2d>& profile)
-{
-  std::vector<Vector3d> result;
-  for (unsigned int i = 0; i < profile.size(); i++) {
-    result.push_back(Vector3d(curpt[0] + (*vec_x)[0] * profile[i][0] + (*vec_y)[0] * profile[i][1],
-                              curpt[1] + (*vec_x)[1] * profile[i][0] + (*vec_y)[1] * profile[i][1],
-                              curpt[2] + (*vec_x)[2] * profile[i][0] + (*vec_y)[2] * profile[i][1]));
-  }
-  return result;
-}
 
 // For each edge in original outline, find its max length over all slice transforms,
 // and divide into segments no longer than fs.
@@ -348,51 +230,6 @@ std::unique_ptr<PolySet> assemblePolySetForManifold(const Polygon2d& polyref,
   // LOG(PolySetUtils::polySetToPolyhedronSource(*final_polyset));
 
   return final_polyset;
-}
-
-std::unique_ptr<PolySet> assemblePolySetForCGAL(const Polygon2d& polyref,
-                                                std::vector<Vector3d>& vertices, PolygonIndices& indices,
-                                                int convexity, boost::tribool isConvex, double scale_x,
-                                                double scale_y, const Vector3d& h1, const Vector3d& h2,
-                                                double twist)
-{
-  PolySetBuilder builder(0, 0, 3, isConvex);
-  builder.setConvexity(convexity);
-
-  for (const auto& poly : indices) {
-    builder.beginPolygon(poly.size());
-    for (const auto idx : poly) {
-      builder.addVertex(vertices[idx]);
-    }
-  }
-
-  auto translatePolySet = [](PolySet& ps, const Vector3d& translation) {
-    for (auto& v : ps.vertices) {
-      v += translation;
-    }
-  };
-
-  // Create bottom face.
-  auto ps_bottom = polyref.tessellate();  // bottom
-  // Flip vertex ordering for bottom polygon
-  for (auto& p : ps_bottom->indices) {
-    std::reverse(p.begin(), p.end());
-  }
-  translatePolySet(*ps_bottom, h1);
-  builder.appendPolySet(*ps_bottom);
-
-  // Create top face.
-  // If either scale components are 0, then top will be zero-area, so skip it.
-  if (scale_x != 0 && scale_y != 0) {
-    Polygon2d top_poly(polyref);
-    Eigen::Affine2d trans(Eigen::Scaling(scale_x, scale_y) * Eigen::Affine2d(rotate_degrees(-twist)));
-    top_poly.transform(trans);
-    auto ps_top = top_poly.tessellate();
-    translatePolySet(*ps_top, h2);
-    builder.appendPolySet(*ps_top);
-  }
-
-  return builder.build();
 }
 
 /*
@@ -702,7 +539,7 @@ std::unique_ptr<Geometry> extrudePolygon(const LinearExtrudeNode& node, const Po
           double dist_bot =
             (botvertices[(ibot + 1) % nbot] - topvertices[(itop + top_off) % ntop]).norm();
           double dist_top = (botvertices[ibot] - topvertices[(itop + top_off + 1) % ntop]).norm();
-          if (dist_bot < dist_top && ibot < nbot || (itop == ntop)) {
+          if ((dist_bot < dist_top && ibot < nbot) || (itop == ntop)) {
             builder.beginPolygon(3);
             builder.addVertex(botvertices[ibot % nbot]);
             builder.addVertex(botvertices[(ibot + 1) % nbot]);
@@ -726,7 +563,7 @@ std::unique_ptr<Geometry> extrudePolygon(const LinearExtrudeNode& node, const Po
       botvertices = topvertices;
     }
     builder.beginPolygon(botvertices.size());  // top
-    for (int i = 0; i < botvertices.size(); i++) builder.addVertex(botvertices[i]);
+    for (size_t i = 0; i < botvertices.size(); i++) builder.addVertex(botvertices[i]);
     builder.endPolygon();
 
     return builder.build();
