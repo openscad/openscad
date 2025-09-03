@@ -31,7 +31,7 @@ SourceFileCache *SourceFileCache::inst = nullptr;
    Returns the latest modification time of the file, its dependencies or includes.
  */
 std::time_t SourceFileCache::process(const std::string& mainFile, const std::string& filename,
-                                      SourceFile *& sourceFile)
+                                     SourceFile *& sourceFile)
 {
   sourceFile = nullptr;
   auto entry = this->entries.find(filename);
