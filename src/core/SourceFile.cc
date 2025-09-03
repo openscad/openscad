@@ -117,8 +117,8 @@ time_t SourceFile::include_modified(const std::string& filename) const
 }
 
 /*!
-   Check if any dependencies have been modified and recompile them.
-   Returns true if anything was recompiled.
+   Check if any dependencies have been modified and reparse them.
+   Returns true if anything was reparsed.
  */
 time_t SourceFile::handleDependencies(bool is_root)
 {
@@ -154,7 +154,7 @@ time_t SourceFile::handleDependencies(bool is_root)
       if (mtime > latest) latest = mtime;
       auto changed = newmodule && newmodule != oldmodule;
       // Detect appearance but not removal of files, and keep old module
-      // on compile errors (FIXME: Is this correct behavior?)
+      // on parse errors (FIXME: Is this correct behavior?)
       if (changed) {
         PRINTDB("  %s: %p -> %p", filename % oldmodule % newmodule);
       } else {
