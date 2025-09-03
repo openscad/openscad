@@ -216,7 +216,7 @@ std::unique_ptr<Geometry> rotatePolygon(const RotateExtrudeNode& node, const Pol
 
   double min_x = 0;
   double max_x = 0;
-  unsigned int fragments = 0;
+  size_t fragments = 0;
   for (const auto& o : poly.outlines()) {
     for (const auto& v : o.vertices) {
       min_x = fmin(min_x, v[0]);
@@ -251,7 +251,7 @@ std::unique_ptr<Geometry> rotatePolygon(const RotateExtrudeNode& node, const Pol
   // now create a fragment splitting plan
   size_t splits = ceil(node.angle / 300.0);
   fragments = num_sections;
-  int fragstart = 0, fragend;
+  size_t fragstart = 0, fragend;
   std::unique_ptr<ManifoldGeometry> result = nullptr;
 
   for (size_t i = 0; i < splits; i++) {

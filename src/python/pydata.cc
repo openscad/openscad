@@ -98,7 +98,6 @@ double PyDataObjectToValue(PyObject *obj)
 PyObject *python_data_str(PyObject *self)
 {
   std::ostringstream stream;
-  PyObject *dummydict;
   PyDataObject *data = (PyDataObject *)self;
   switch (data->data_type) {
   case DATA_TYPE_LIBFIVE:     stream << "Libfive Tree"; break;

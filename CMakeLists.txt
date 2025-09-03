@@ -32,7 +32,7 @@ include("cmake/Modules/openscad_version.cmake")
 option(INFO "Display build configuration info at end of cmake config" ON)
 option(ENABLE_TESTS "Run testsuite after building." ON)
 option(ENABLE_GUI_TESTS "Compile a special version of the PythonSCAD gui with feature for testing." OFF)
-option(EXPERIMENTAL "Enable Experimental Features" OFF)
+option(EXPERIMENTAL "Enable Experimental Features" ON)
 option(USE_MANIFOLD_TRIANGULATOR "Use Manifold's triangulator instead of CGAL's" ON)
 option(USE_BUILTIN_MANIFOLD "Use manifold from submodule" ON)
 option(USE_BUILTIN_CLIPPER2 "Use Clipper2 from submodule" ON)
@@ -71,7 +71,7 @@ include(CMakeDependentOption)
 cmake_dependent_option(APPLE_UNIX "Build PythonSCAD in Unix mode in MacOS X instead of an Apple Bundle" OFF "APPLE" OFF)
 cmake_dependent_option(ENABLE_QTDBUS "Enable DBus input driver for Qt." ON "NOT HEADLESS" OFF)
 cmake_dependent_option(ENABLE_GAMEPAD "Enable Qt5Gamepad input driver." ON "NOT HEADLESS;NOT USE_QT6" OFF)
-set(WASM_BUILD_TYPE "web" CACHE STRING 
+set(WASM_BUILD_TYPE "web" CACHE STRING
   "WebAssembly build type. Support web (builds a PythonSCAD module) or node (standalone .js executable)")
 
 if (USE_QT6)
@@ -121,7 +121,11 @@ set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/submodules/sanitizers-cmake/cmake" ${
 find_package(Sanitizers)
 
 # Strict c++17, e.g. no GNU extensions
-set_property(TARGET OpenSCAD PROPERTY CXX_STANDARD 17)
+if (MSVC) # For MSVC, errors show up when using c++ 17 for build.
+  set_property(TARGET OpenSCAD PROPERTY CXX_STANDARD 20)
+else()
+  set_property(TARGET OpenSCAD PROPERTY CXX_STANDARD 17)
+endif()
 set_property(TARGET OpenSCAD PROPERTY CXX_EXTENSIONS OFF)
 set_property(TARGET OpenSCAD PROPERTY CXX_STANDARD_REQUIRED ON)
 # Output compilation database (compile_commands.json), so we can e.g. run clang-tidy or other tools separately
@@ -157,7 +161,7 @@ if (CMAKE_SYSTEM_NAME STREQUAL Emscripten)
   target_link_libraries(OpenSCAD PRIVATE /emsdk/upstream/emscripten/cache/sysroot/lib/libz.a)
   target_link_libraries(OpenSCAD PRIVATE /emsdk/upstream/emscripten/cache/sysroot/lib/wasm32-emscripten/libbz2.a)
   target_link_libraries(OpenSCAD PRIVATE /emsdk/upstream/emscripten/cache/sysroot/lib/wasm32-emscripten/libsqlite3.a)
-  
+
   # https://emscripten.org/docs/tools_reference/emcc.html
   # https://emscripten.org/docs/tools_reference/settings_reference.html
   target_compile_options(OpenSCAD PRIVATE -fexceptions)
@@ -169,7 +173,7 @@ if (CMAKE_SYSTEM_NAME STREQUAL Emscripten)
     -sEXIT_RUNTIME=1
     -sEXPORTED_RUNTIME_METHODS=['ENV','ERRNO_CODES','FS','PATH','callMain']
     -sMAXIMUM_MEMORY=4GB
-    
+
     # -g produces DWARF debug info, which is quite large and may need debugger extensions.
     # Alternatively, can pass -gsource-map -sLOAD_SOURCE_MAP but then variable debugging isn't possible
     $<$<CONFIG:Debug>:-g -O0>
@@ -188,8 +192,8 @@ if (CMAKE_SYSTEM_NAME STREQUAL Emscripten)
       -sNODERAWFS
 
       # Single .js (more elegant for CLI release) is larger than separate .js & .wasm (preferred for web)
-      $<$<CONFIG:Release>:-sSINGLE_FILE> 
-      
+      $<$<CONFIG:Release>:-sSINGLE_FILE>
+
       # Alternatively to single-file mode, code caching could make repeated runs faster:
       # -sNODE_CODE_CACHING -sWASM_ASYNC_COMPILATION=0
     )
@@ -353,12 +357,11 @@ if (MSVC)
   target_include_directories(OpenSCAD SYSTEM PRIVATE ${HARFBUZZ_INCLUDE_DIRS}/harfbuzz)
   target_link_libraries(OpenSCAD PRIVATE harfbuzz::harfbuzz)
 
-  find_package(unofficial-fontconfig CONFIG REQUIRED)
-  target_link_libraries(OpenSCAD PRIVATE unofficial::fontconfig::fontconfig)
+  find_package(Fontconfig)
+  target_link_libraries(OpenSCAD PRIVATE Fontconfig::Fontconfig)
 
-  find_package(unofficial-glib CONFIG REQUIRED)
-  target_include_directories(OpenSCAD SYSTEM PRIVATE ${GLIB2_INCLUDE_DIRS})
-  target_link_libraries(OpenSCAD PRIVATE unofficial::glib::gio unofficial::glib::glib unofficial::glib::gmodule unofficial::glib::gobject)
+  pkg_check_modules(GLIB2 REQUIRED IMPORTED_TARGET glib-2.0)
+  target_link_libraries(OpenSCAD PRIVATE PkgConfig::GLIB2)
 
   find_package(double-conversion CONFIG REQUIRED)
   target_link_libraries(OpenSCAD PRIVATE double-conversion::double-conversion)
@@ -484,8 +487,8 @@ configure_file(
 if(ENABLE_PYTHON)
   SET(PYTHON_SOURCES
     src/python/pyopenscad.cc
-    src/python/pydata.cc 
-    src/python/pymod.cc 
+    src/python/pydata.cc
+    src/python/pymod.cc
     src/python/pyfunctions.cc)
   if(ENABLE_LIBFIVE)
     list(APPEND PYTHON_SOURCES
@@ -513,8 +516,8 @@ if(ENABLE_PYTHON)
   target_compile_definitions(OpenSCADPy PRIVATE ENABLE_CGAL)
   target_compile_definitions(OpenSCADPy PRIVATE ENABLE_EXPERIMENTAL)
   find_package(Nettle 3.4)
-  if(WIN32) 
-    #MINGW environment	  
+  if(WIN32)
+    #MINGW environment
     SET(CALLSTACK "ucrt")
     SET(PYTHON_MINGW_VERSION "3.12") # define python version here
     #	SET(CALLSTACK "mingw")
@@ -592,7 +595,7 @@ if(ENABLE_PYTHON)
     target_include_directories(OpenSCADPy PRIVATE "/usr/local/include")
     target_link_directories(OpenSCADPy PRIVATE "/usr/local/lib")
     target_link_libraries(OpenSCADPy PRIVATE "libnettle.a")
-  endif()   
+  endif()
   target_link_libraries(OpenSCADPy PRIVATE Eigen3::Eigen)
   target_link_libraries(OpenSCADPy PRIVATE ${GETTEXT_LIBRARY})
   target_link_libraries(OpenSCADPy PRIVATE ${GLIB2_LIBRARIES})
@@ -644,10 +647,10 @@ if(NOT HEADLESS)
     target_compile_definitions(OpenSCAD PRIVATE CURL_STATICLIB)
     target_include_directories(OpenSCAD SYSTEM PRIVATE ${CURL_INCLUDE_DIR})
     target_link_libraries(OpenSCAD PRIVATE "libcurl.a;libidn2.a;libssh2.a;libunistring.a")
-  else()	
+  else()
     target_link_directories(OpenSCAD PRIVATE "/usr/lib64")
     target_link_libraries(OpenSCAD PRIVATE "libcurl.so")
-  endif()    
+  endif()
 endif()
 
 if(ENABLE_HIDAPI)
@@ -687,14 +690,19 @@ if(ENABLE_SPNAV)
 endif()
 
 if(ENABLE_CAIRO)
-  find_package(Cairo 1.14)
-  if (CAIRO_VERSION)
-    message(STATUS "Cairo: ${CAIRO_VERSION}")
-    target_include_directories(OpenSCAD SYSTEM PRIVATE ${CAIRO_INCLUDE_DIRS})
-    target_link_libraries(OpenSCAD PRIVATE ${CAIRO_LIBRARIES})
-    target_compile_definitions(OpenSCAD PRIVATE ENABLE_CAIRO)
+  if (MSVC)
+    find_package(PkgConfig REQUIRED)
+    pkg_check_modules(CAIRO REQUIRED cairo)
   else()
-    message(STATUS "Cairo: disabled")
+    find_package(Cairo 1.14 QUIET)
+    if (CAIRO_VERSION)
+      message(STATUS "Cairo: ${CAIRO_VERSION}")
+      target_include_directories(OpenSCAD SYSTEM PRIVATE ${CAIRO_INCLUDE_DIRS})
+      target_link_libraries(OpenSCAD PRIVATE ${CAIRO_LIBRARIES})
+      target_compile_definitions(OpenSCAD PRIVATE ENABLE_CAIRO)
+    else()
+      message(STATUS "Cairo: disabled")
+    endif()
   endif()
 else()
   message(STATUS "Cairo: disabled per user request")
@@ -714,21 +722,19 @@ if(APPLE)
     target_link_libraries(OpenSCAD PRIVATE "libjpeg.a")
 endif()
 
-if(NOT MSVC)
-  find_package(Lib3MF)
-  if (Lib3MF_FOUND)
-    message(STATUS "lib3mf: ${Lib3MF_VERSION}")
-    target_link_libraries(OpenSCAD PRIVATE Lib3MF::Lib3MF)
-    target_compile_definitions(OpenSCAD PRIVATE ENABLE_LIB3MF)
-    if (Lib3MF_VERSION VERSION_GREATER_EQUAL 2)
-      set(LIB3MF_SOURCES src/io/export_3mf_v2.cc src/io/import_3mf_v2.cc)
-    else()
-      set(LIB3MF_SOURCES src/io/export_3mf_v1.cc src/io/import_3mf_v1.cc)
-    endif()
+find_package(Lib3MF)
+if (Lib3MF_FOUND)
+  message(STATUS "lib3mf: ${Lib3MF_VERSION}")
+  target_link_libraries(OpenSCAD PRIVATE Lib3MF::Lib3MF)
+  target_compile_definitions(OpenSCAD PRIVATE ENABLE_LIB3MF)
+  if (Lib3MF_VERSION VERSION_GREATER_EQUAL 2)
+    set(LIB3MF_SOURCES src/io/export_3mf_v2.cc src/io/import_3mf_v2.cc)
   else()
-    set(LIB3MF_SOURCES src/io/export_3mf_dummy.cc src/io/import_3mf_dummy.cc)
-    message(STATUS "lib3mf: disabled")
+    set(LIB3MF_SOURCES src/io/export_3mf_v1.cc src/io/import_3mf_v1.cc)
   endif()
+else()
+  set(LIB3MF_SOURCES src/io/export_3mf_dummy.cc src/io/import_3mf_dummy.cc)
+  message(STATUS "lib3mf: disabled")
 endif()
 
 # Automatically add the current source and build directories to the include path.
@@ -1566,7 +1572,7 @@ if(APPLE AND NOT APPLE_UNIX)
   file(COPY ${CMAKE_SOURCE_DIR}/templates DESTINATION ${BUNDLE_RESOURCES_DIR})
 
   if(ENABLE_GUI_TESTS)
-    file(COPY 
+    file(COPY
          ${CMAKE_SOURCE_DIR}/tests/data/basic-ux
          ${CMAKE_SOURCE_DIR}/tests/data/modulecache-tests
          DESTINATION ${BUNDLE_RESOURCES_DIR}/tests)
@@ -1634,7 +1640,7 @@ if(NOT APPLE OR APPLE_UNIX)
   if(WIN32)
     if(ENABLE_PYTHON)
 	    install(DIRECTORY "${PYTHON_EMBED_DEVPATH}/" DESTINATION "." )
-    endif()  
+    endif()
     if(USE_MIMALLOC AND MI_LINK_SHARED)
       if(CMAKE_SIZEOF_VOID_P EQUAL 8)
         install(FILES ${CMAKE_SOURCE_DIR}/submodules/mimalloc/bin/mimalloc-redirect.dll DESTINATION ".")

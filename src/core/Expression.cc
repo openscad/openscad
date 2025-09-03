@@ -607,7 +607,7 @@ static SimplificationResult simplify_function_body(const Expression *expression,
           required_parameters = &callable.function->parameters;
           defining_context = callable.defining_context;
         } else {
-          const FunctionType *function;
+          const FunctionType *function=nullptr;
           if (index == 2) {
             function = &std::get<Value>(*f).toFunction();
           } else if (index == 3) {

@@ -49,12 +49,8 @@ BoundingBox Edge1d::getBoundingBox() const
 size_t Barcode1d::memsize() const
 {
   size_t mem = 0;
-  for (const auto& o : this->theedges) {
-    mem += 2 * sizeof(double);
-  }
-  for (const auto& o : this->trans3dEdges) {
-    mem += 2 * sizeof(double);
-  }
+  mem += 2* this->theedges.size()*sizeof(double);
+  mem += 2* this->trans3dEdges.size()*sizeof(double);
   mem += sizeof(Barcode1d);
   return mem;
 }

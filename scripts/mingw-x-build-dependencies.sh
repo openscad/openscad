@@ -80,9 +80,9 @@ if [ "`git config --get remote.origin.url | grep github.com.openscad`" ]; then
  git checkout openscad-snapshot-build
 fi
 if [ "`echo $* | grep download`" ]; then
-PACKAGES='download-mpfr download-eigen download-opencsg download-cgal download-qtbase download-qtmultimedia download-ninja download-nsis download-glib download-libxml2 download-freetype download-fontconfig download-harfbuzz download-libzip download-lib3mf download-double-conversion download-zip'
+PACKAGES='download-mpfr download-eigen download-opencsg download-cgal download-qtbase download-qtmultimedia download-ninja download-nsis download-glib download-libxml2 download-freetype download-fontconfig download-harfbuzz download-libzip download-lib3mf download-double-conversion download-zip download-intel-tbb download-nettle download-glm download-tbb download-clipper2'
 else
-PACKAGES='qtbase qtmultimedia qscintilla2 mpfr eigen opencsg cgal ninja nsis glib libxml2 freetype fontconfig harfbuzz libzip lib3mf double-conversion zip'
+PACKAGES='qtbase qtmultimedia qscintilla2 mpfr eigen opencsg cgal ninja nsis glib libxml2 freetype fontconfig harfbuzz libzip lib3mf double-conversion zip intel-tbb nettle glm curl clipper2 pcre'
 fi
 echo make MXE_PLUGIN_DIRS=plugins/gcc11 $PACKAGES MXE_TARGETS=$MXE_TARGETS -j $NUMCPU JOBS=$NUMJOBS
 make MXE_PLUGIN_DIRS=plugins/gcc11 $PACKAGES MXE_TARGETS=$MXE_TARGETS -j $NUMCPU JOBS=$NUMJOBS
