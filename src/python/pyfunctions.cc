@@ -4359,7 +4359,7 @@ int sheetCalcInd(PolySetBuilder& builder, std::vector<Vector3d>& vertices, std::
   return ind;
 }
 
-std::unique_ptr<const Geometry> sheetCreateFuncGeometry(void *funcptr, double imin, double imax, double jmin, double jmax, double fs)
+std::unique_ptr<const Geometry> sheetCreateFuncGeometry(void *funcptr, double imin, double imax, double jmin, double jmax, double fs, double ispan, double jspan)
 {
   PyObject *func = (PyObject *)funcptr;
   std::unordered_map<SphereEdgeDb, int, boost::hash<SphereEdgeDb>> edges;
@@ -4369,17 +4369,42 @@ std::unique_ptr<const Geometry> sheetCreateFuncGeometry(void *funcptr, double im
   std::vector<double> istore;
   std::vector<double> jstore;
 // 
-  int ind11, ind21, ind12, ind22; // i, j
+  int ind11, ind21, ind12, ind22, indx1, indx2, ind1x, ind2x, indxx; 
+
   ind11 = sheetCalcInd(builder, vertices, istore, jstore, func, imin, jmin);
   ind12 = sheetCalcInd(builder, vertices, istore, jstore, func, imin, jmax);
   ind21 = sheetCalcInd(builder, vertices, istore, jstore, func, imax, jmin);
   ind22 = sheetCalcInd(builder, vertices, istore, jstore, func, imax, jmax);
+  if(!isnan(ispan)) {  
+    indx1 = sheetCalcInd(builder, vertices, istore, jstore, func, imin+ispan, jmin);
+    indx2 = sheetCalcInd(builder, vertices, istore, jstore, func, imin+ispan, jmax);
+  }
+  if(!isnan(jspan)) {  
+    ind1x = sheetCalcInd(builder, vertices, istore, jstore, func, imin, jmin+jspan);
+    ind2x = sheetCalcInd(builder, vertices, istore, jstore, func, imax, jmin+jspan);
+    if(!isnan(ispan)) {  
+      indxx = sheetCalcInd(builder, vertices, istore, jstore, func, imin + ispan, jmin+jspan);
+    }
+  }
   if (ind11 < 0 || ind12 < 0 || ind21 < 0 || ind22 < 0 ) return builder.build();
 
   std::vector<IndexedTriangle> triangles;
   std::vector<IndexedTriangle> tri_new;
   tri_new.push_back(IndexedTriangle(ind11, ind21, ind22));
   tri_new.push_back(IndexedTriangle(ind11, ind22, ind12));
+  if(!isnan(ispan)) {  
+    tri_new.push_back(IndexedTriangle(ind21, indx1, indx2));
+    tri_new.push_back(IndexedTriangle(ind21, indx2, ind22));
+  }
+  if(!isnan(jspan)) {  
+    tri_new.push_back(IndexedTriangle(ind12, ind22, ind2x));
+    tri_new.push_back(IndexedTriangle(ind12, ind2x, ind1x));
+    if(!isnan(ispan)) {  
+      tri_new.push_back(IndexedTriangle(ind22, indx2, indxx));
+      tri_new.push_back(IndexedTriangle(ind22, indxx, ind2x));
+
+    }
+  }
   int round = 0;
   unsigned int i1, i2, imid;
   Vector3d p1, p2, p3, pmin, pmax, pmid, pmid_test, dir1, dir2;
@@ -4581,7 +4606,7 @@ std::unique_ptr<const Geometry> sheetCreateFuncGeometry(void *funcptr, double im
   return ps;
 }
 
-PyObject *python_sheet_core(PyObject *func, double imin, double imax, double jmin, double jmax, double fs)
+PyObject *python_sheet_core(PyObject *func, double imin, double imax, double jmin, double jmax, double fs, double ispan, double jspan)
 {
   DECLARE_INSTANCE
   auto node = std::make_shared<SheetNode>(instance);
@@ -4592,18 +4617,20 @@ PyObject *python_sheet_core(PyObject *func, double imin, double imax, double jmi
   node->jmin = jmin;
   node->jmax = jmax;
   node->fs = fs;
+  node->ispan = ispan;
+  node->jspan = jspan;
 
   return PyOpenSCADObjectFromNode(&PyOpenSCADType, node);
 }
 
 PyObject *python_sheet(PyObject *self, PyObject *args, PyObject *kwargs)
 {
-  char *kwlist[] = {"func", "imin", "imax", "jmin", "jmax", "fs",NULL};
+  char *kwlist[] = {"func", "imin", "imax", "jmin", "jmax", "fs","ispan","jspan", NULL};
   PyObject *func = NULL;
-  double imin, imax, jmin, jmax;
+  double imin, imax, jmin, jmax, ispan=NAN, jspan=NAN;
   double dum1, dum2, fs;
   get_fnas(dum1, dum2, fs);
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "Odddd|d", kwlist, &func, &imin, &imax, &jmin, &jmax,&fs)) {
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "Odddd|ddd", kwlist, &func, &imin, &imax, &jmin, &jmax,&fs,&ispan, &jspan)) {
     PyErr_SetString(PyExc_TypeError,
                     "Error during parsing sheet(func, imin, imax, jmin, jmax)");
     return NULL;
@@ -4614,7 +4641,7 @@ PyObject *python_sheet(PyObject *self, PyObject *args, PyObject *kwargs)
     return NULL;
   }
 
-  return python_sheet_core(func, imin, imax, jmin, jmax, fs);
+  return python_sheet_core(func, imin, imax, jmin, jmax, fs, ispan, jspan);
 }
 
 PyObject *python_text(PyObject *self, PyObject *args, PyObject *kwargs)

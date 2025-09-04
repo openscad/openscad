@@ -44,7 +44,7 @@ public:
 #ifdef ENABLE_PYTHON
   void *func = nullptr;
 #endif
-  double imin, imax, jmin, jmax;
+  double imin, imax, jmin, jmax, ispan, jspan;
   int convexity{1};
   std::unique_ptr<const Geometry> createGeometry() const override;
   double fs;
