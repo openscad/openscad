@@ -8,7 +8,9 @@
 #include <boost/optional.hpp>
 
 #include "core/Assignment.h"
-#include "core/Context.h"
+#include "core/Value.h"
+
+class EvaluationSession;
 
 struct Argument {
   boost::optional<std::string> name;
@@ -45,7 +47,7 @@ public:
   [[nodiscard]] Arguments clone() const;
 
   [[nodiscard]] EvaluationSession *session() const { return evaluation_session; }
-  [[nodiscard]] const std::string& documentRoot() const { return evaluation_session->documentRoot(); }
+  const std::string& documentRoot() const;
 
 private:
   EvaluationSession *evaluation_session;

@@ -29,13 +29,15 @@
 #include <cstddef>
 #include <vector>
 
+#include "core/Arguments.h"
+#include "core/Builtins.h"
+#include "core/Children.h"
+#include "core/Context.h"
+#include "core/ContextFrame.h"
+#include "core/Expression.h"
 #include "core/module.h"
 #include "core/ModuleInstantiation.h"
 #include "core/node.h"
-#include "core/Arguments.h"
-#include "core/Children.h"
-#include "core/Expression.h"
-#include "core/Builtins.h"
 #include "core/Parameters.h"
 #include "utils/printutils.h"
 #include <cstdint>

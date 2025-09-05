@@ -40,11 +40,12 @@
 #include <typeinfo>
 #include <utility>
 #include <variant>
+#include "core/Context.h"
+#include "core/EvaluationSession.h"
+#include "core/Parameters.h"
 #include "utils/printutils.h"
 #include "utils/StackCheck.h"
-#include "core/Context.h"
 #include "utils/exceptions.h"
-#include "core/Parameters.h"
 #include "utils/printutils.h"
 #include "utils/boost-utils.h"
 #include <boost/regex.hpp>

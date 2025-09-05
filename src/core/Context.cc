@@ -33,8 +33,50 @@
 #include <vector>
 
 #include "core/AST.h"
+#include "core/EvaluationSession.h"
 #include "core/function.h"
 #include "utils/printutils.h"
+
+// Just for explicit template instantiations:
+#include "core/BuiltinContext.h"
+#include "core/ScopeContext.h"
+
+template <typename T>
+ContextHandle<T>::ContextHandle(std::shared_ptr<T>&& context)
+  : ContextFrameHandle(context.get()), context(std::move(context))
+{
+  try {
+    this->context->init();
+  } catch (...) {
+    session->contextMemoryManager().addContext(std::move(this->context));
+    throw;
+  }
+}
+
+template <typename T>
+ContextHandle<T>::~ContextHandle()
+{
+  assert(!!session == !!context);
+  if (session) {
+    session->contextMemoryManager().addContext(std::move(this->context));
+  }
+}
+
+template <typename T>
+ContextHandle<T>& ContextHandle<T>::operator=(ContextHandle&& other) noexcept
+{
+  assert(session);
+  assert(context);
+  assert(other.context);
+  assert(other.session);
+
+  // session->contextMemoryManager().releaseContext();
+  session->contextMemoryManager().addContext(std::move(this->context));
+  other.release();
+  context = std::move(other.context);
+  ContextFrameHandle::operator=(context.get());
+  return *this;
+}
 
 Context::Context(EvaluationSession *session) : ContextFrame(session), parent(nullptr) {}
 
@@ -153,3 +195,10 @@ std::string Context::dump() const
   return s.str();
 }
 #endif  // ifdef DEBUG
+
+// Alternative choice is to move the implementation to the header.
+template class ContextHandle<FileContext>;
+template class ContextHandle<BuiltinContext>;
+template class ContextHandle<UserModuleContext>;
+template class ContextHandle<ScopeContext>;
+template class ContextHandle<Context>;
