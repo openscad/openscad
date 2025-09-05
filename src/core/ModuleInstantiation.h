@@ -44,6 +44,7 @@ public:
   bool isRoot() const { return this->tag_root; }
   bool isChildren() const { return modname == "children" && ns_name.empty(); }  // FIXME: couldn't this be more robust?
   void setNamespaceName(const char *name) { ns_name = std::string(name); }
+  const std::string& getName() const { return modname; }
 
   AssignmentList arguments;
   std::shared_ptr<LocalScope> scope;

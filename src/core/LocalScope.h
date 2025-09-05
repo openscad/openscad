@@ -49,7 +49,8 @@ public:
    */
   const std::vector<std::string> getUsings() const;
 
-  AssignmentList assignments;
+  const AssignmentList& getAssignments() const { return assignments; }
+
   std::vector<std::shared_ptr<ModuleInstantiation>> moduleInstantiations;
 
   // Modules and functions are stored twice; once for lookup and once for AST serialization
@@ -66,6 +67,8 @@ private:
    * @brief Non-unique list of namespaces named by `using` in this scope
    */
   std::vector<std::string> usings;
+
+  AssignmentList assignments;
 
   // All below only used for printing:
   std::vector<std::pair<std::string, std::shared_ptr<UserModule>>> astModules;

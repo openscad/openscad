@@ -1,20 +1,25 @@
 #include "core/ScopeContext.h"
+
+#include "core/Arguments.h"
+#include "core/EvaluationSession.h"
 #include "core/Expression.h"
 #include "core/Parameters.h"
 #include "utils/printutils.h"
 #include "core/SourceFileCache.h"
 #include "core/UserModule.h"
+#include "core/SourceFile.h"
+#include "core/Value.h"
 
 #include <utility>
 #include <memory>
 #include <cmath>
 #include <vector>
 
-#include <iostream> // coryrc
+#include <iostream> // TODO: coryrc - remove
 
 void ScopeContext::init()
 {
-  for (const auto& assignment : scope->assignments) {
+  for (const auto& assignment : scope->getAssignments()) {
     if (assignment->getExpr()->isLiteral() && lookup_local_variable(assignment->getName())) {
       LOG(message_group::Warning, assignment->location(), this->documentRoot(),
           "Parameter %1$s is overwritten with a literal", quoteVar(assignment->getName()));
@@ -164,38 +169,57 @@ boost::optional<InstantiableModule> FileContext::lookup_local_module(const std::
   return lookup_module_from_uses(name);
 }
 
+FileContext::FileContext(const std::shared_ptr<const Context>& parent, const SourceFile *source_file)
+  : ScopeContext(parent, source_file->scope), source_file(source_file)
+{
+}
+
+template <typename T>
+boost::optional<std::pair<T,SourceFile*>> FileContext::lookup_from_uses(const std::string& name) const
+{
+  // std::cerr << "lookup_function_from_uses('"<<name<<"')\n";
+  auto ns_name = get_namespace_name();
+  if (ns_name.empty()) ns_name = "top_level"; // TODO: coryrc - use static const string for "top_level"
+  const auto& v = source_file->getNamespaceUsedLibrariesReverseOrdered(ns_name);
+  for (auto it = v.rbegin(); it != v.rend(); ++it) {
+    auto& m = *it;
+    // usedmod is nullptr if the library wasn't parsed successfully (error or file-not-found)
+    auto usedmod = SourceFileCache::instance()->lookup(m);
+    if (usedmod) {
+      if (const auto search = usedmod->scope->lookup<T>(name)) {
+	return std::pair(*search,usedmod);
+      }
+    }
+  }
+  return {};
+}
+
 boost::optional<CallableFunction> FileContext::lookup_function_from_uses(const std::string& name) const
 {
   // std::cerr << "lookup_function_from_uses('"<<name<<"')\n";
-  for (const auto& m : source_file->usedlibs) {
-    // usedmod is nullptr if the library wasn't be compiled (error or file-not-found)
-    auto usedmod = SourceFileCache::instance()->lookup(m);
-    if (usedmod && usedmod->scope->functions.find(name) != usedmod->scope->functions.end()) {
-      ContextHandle<FileContext> context{Context::create<FileContext>(this->parent, usedmod)};
+  if (auto pair = lookup_from_uses<UserFunction*>(name)) {
+    auto [func, usedmod] = *pair;
+    ContextHandle<FileContext> context{Context::create<FileContext>(session()->getBuiltinContext(), usedmod)};
 #ifdef DEBUG
-      PRINTDB("FileContext for function %s::%s:", m % name);
-      PRINTDB("%s", context->dump());
+    PRINTDB("FileContext for function %s::%s:", m % name);
+    PRINTDB("%s", context->dump());
 #endif
-      return CallableFunction{CallableUserFunction{*context, usedmod->scope->functions[name].get()}};
-    }
+    return CallableFunction{CallableUserFunction{*context, func}};
   }
-  return boost::none;
+  return {};
 }
 
 boost::optional<InstantiableModule> FileContext::lookup_module_from_uses(const std::string& name) const
 {
   // std::cerr << "lookup_module_from_uses('"<<name<<"')\n";
-  for (const auto& m : source_file->usedlibs) {
-    // usedmod is nullptr if the library wasn't be compiled (error or file-not-found)
-    auto usedmod = SourceFileCache::instance()->lookup(m);
-    if (usedmod && usedmod->scope->modules.find(name) != usedmod->scope->modules.end()) {
-      ContextHandle<FileContext> context{Context::create<FileContext>(this->parent, usedmod)};
+  if (auto pair = lookup_from_uses<UserModule*>(name)) {
+    auto [mod, usedmod] = *pair;
+    ContextHandle<FileContext> context{Context::create<FileContext>(session()->getBuiltinContext(), usedmod)};
 #ifdef DEBUG
       PRINTDB("FileContext for module %s::%s:", m % name);
       PRINTDB("%s", context->dump());
 #endif
-      return InstantiableModule{*context, usedmod->scope->modules[name].get()};
-    }
+      return InstantiableModule{*context, mod};
   }
   return boost::none;
 }

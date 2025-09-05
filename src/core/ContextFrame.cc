@@ -26,6 +26,7 @@
 
 #include "core/AST.h"
 #include "core/ContextFrame.h"
+#include "core/EvaluationSession.h"
 
 #include <utility>
 #include <cstddef>
@@ -33,6 +34,8 @@
 #include <vector>
 
 ContextFrame::ContextFrame(EvaluationSession *session) : evaluation_session(session) {}
+
+ContextFrame::~ContextFrame() = default;
 
 boost::optional<const Value&> ContextFrame::lookup_local_variable(const std::string& name) const
 {
@@ -162,25 +165,20 @@ void ContextFrame::apply_variables(ValueMap&& variables)
   variables.clear();
 }
 
-void ContextFrame::apply_lexical_variables(ContextFrame&& other)
+void ContextFrame::apply_variables(std::unique_ptr<ContextFrame>&& other)
 {
-  apply_variables(std::move(other.lexical_variables));
-}
-
-void ContextFrame::apply_config_variables(ContextFrame&& other)
-{
-  apply_variables(std::move(other.config_variables));
-}
-
-void ContextFrame::apply_variables(ContextFrame&& other)
-{
-  apply_variables(std::move(other.lexical_variables));
-  apply_variables(std::move(other.config_variables));
+  apply_variables(std::move(other->config_variables));
+  apply_variables(std::move(other->lexical_variables));
 }
 
 bool ContextFrame::is_config_variable(const std::string& name)
 {
   return name[0] == '$' && name != "$children";
+}
+
+const std::string& ContextFrame::documentRoot() const
+{
+  return evaluation_session->documentRoot();
 }
 
 #ifdef DEBUG
@@ -197,3 +195,24 @@ std::string ContextFrame::dumpFrame() const
   return s.str();
 }
 #endif  // ifdef DEBUG
+
+ContextFrameHandle::ContextFrameHandle(ContextFrame *frame) : session(frame->session())
+{
+  frame_index = session->push_frame(frame);
+}
+
+ContextFrameHandle& ContextFrameHandle::operator=(ContextFrame *frame)
+{
+  assert(session == frame->session());
+  session->replace_frame(frame_index, frame);
+  return *this;
+}
+
+void ContextFrameHandle::release()
+{
+  if (session) {
+    session->pop_frame(frame_index);
+    session = nullptr;
+  }
+}
+
