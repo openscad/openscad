@@ -2,7 +2,7 @@ using banana;
 namespace banana {
   c = "yellow";
   function x() = 7;
-  module m() {}
+  module m() { cube(10,center=true); }
 }
 namespace apple {
   using banana;
@@ -10,6 +10,6 @@ namespace apple {
 }
 echo(x());
 m();
-echo(z());
+echo(z()); // Should trigger warning
 echo(c);
-echo(apple::c);
+echo(apple::c); // Should trigger warning
