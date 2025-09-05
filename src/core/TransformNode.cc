@@ -279,7 +279,7 @@ std::shared_ptr<const Geometry> TransformNode::dragPoint(const Vector3d& pt, con
   std::shared_ptr<PolySet> result_geom = nullptr;
 
   result_geom = std::make_shared<PolySet>(3);
-  for (int i = 0; i < children.size(); i++) {
+  for (size_t i = 0; i < children.size(); i++) {
     auto& child = children[i];
     int fresh = std::isnan(result.anchor[0]);
     std::shared_ptr<const Geometry> child_geom = child->dragPoint(pt_tran, newpt_tran, result);

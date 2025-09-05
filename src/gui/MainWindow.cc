@@ -509,8 +509,8 @@ MainWindow::MainWindow(const QStringList& filenames) : rubberBandManager(this)
                          GlobalPreferences::inst()->getValue("advanced/consoleFontSize").toUInt());
 
   const QString version =
-    QString("<b>OpenSCAD %1</b>").arg(QString::fromStdString(openscad_versionnumber));
-  const QString weblink = "<a href=\"https://www.openscad.org/\">https://www.openscad.org/</a><br>";
+    QString("<b>PythonSCAD %1</b>").arg(QString::fromStdString(openscad_versionnumber));
+  const QString weblink = "<a href=\"https://www.pythonscad.org/\">https://www.pythonscad.org/</a><br>";
 
   consoleOutputRaw(version);
   consoleOutputRaw(weblink);

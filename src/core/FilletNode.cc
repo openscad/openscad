@@ -465,7 +465,6 @@ std::unique_ptr<const Geometry> createFilletInt(std::shared_ptr<const PolySet> p
       if (corner_rounds[e.first.ind2].size() == 2) {
         double a = (e_fb2.cross(e_fa2)).dot(dir);
         double b = (fan.cross(fbn)).dot(e_fa2p) * fanf * fbnf;
-        double c = (fan.cross(fbn)).dot(dir);
         if (list_included(corner_rounds[e.first.ind2], indposao)) {
           double ang = (dir).dot(e_fa2.normalized());
           e_fa2 -= dir * fanf;

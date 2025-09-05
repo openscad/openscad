@@ -239,7 +239,7 @@ std::unique_ptr<const Geometry> SphereNode::createGeometry() const
     return sphereCreateFuncGeometry(this->r_func, fs, fn);
   }
 #endif
-  size_t num_rings = (num_fragments + 1) / 2;
+  auto num_rings = (num_fragments + 1) / 2;
   // Uncomment the following three lines to enable experimental sphere
   // tessellation
   //  if (num_rings % 2 == 0) num_rings++; // To ensure that the middle ring is at
@@ -824,7 +824,7 @@ std::unique_ptr<const Geometry> PolygonNode::createGeometry() const
   if (this->paths.empty() && this->points.size() > 2) {
     Outline2d outline;
     std::vector<size_t> path;
-    for (int i = 0; i < this->points.size(); i++) path.push_back(i);
+    for (size_t i = 0; i < this->points.size(); i++) path.push_back(i);
     outline.vertices = createGeometry_sub(this->points, path, fn, fa, fs);
     p->addOutline(outline);
   } else {

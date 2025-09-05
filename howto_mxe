@@ -4,6 +4,23 @@ git clone https://github.com/openscad/openscad.git
 cd openscad
 jegliche cache files loeschen!
 source ./scripts/setenv-mingw-xbuild.sh 64
+
+#preparation
+sudo apt-get install autoconf
+sudo apt-get install automake
+sudo apt-get install libtool
+sudo apt-get install lzip
+sudo apt-get install autopoint
+sudo apt-get install gperf
+sudo apt-get install libtool
+sudo apt-get install intltool
+sudo apt-get install libtool-bin
+sudo apt-get install python-is-python3
+sudo apt-get install libssl-dev
+sudo apt-get install python3-mako
+ln -s /usr/bin/ninja /usr/bin/ninja-build
+sudo apt install ccache
+
 ./scripts/mingw-x-build-dependencies.sh 64
 ln -s /home/gsohler/openscad_deps/mxe/usr/x86_64-w64-mingw32.static.posix/lib/pkgconfig/intel-tbb.pc /home/gsohler/openscad_deps/mxe/usr/x86_64-w64-mingw32.static.posix/lib/pkgconfig/tbb.pc
 
