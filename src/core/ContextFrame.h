@@ -9,6 +9,10 @@
 #include "core/AST.h"
 #include "core/callables.h"
 #include "core/ValueMap.h"
+#include "core/function.h"
+#include "core/module.h"
+
+class EvaluationSession;
 
 class EvaluationSession;
 class Value;
@@ -17,7 +21,7 @@ class ContextFrame
 {
 public:
   ContextFrame(EvaluationSession *session);
-  virtual ~ContextFrame() = default;
+  virtual ~ContextFrame();
 
   ContextFrame(ContextFrame&& other) = default;
 
@@ -63,9 +67,7 @@ public:
   }
 
   void apply_variables(ValueMap&& variables);
-  void apply_lexical_variables(ContextFrame&& other);
-  void apply_config_variables(ContextFrame&& other);
-  void apply_variables(ContextFrame&& other);
+  void apply_variables(std::unique_ptr<ContextFrame>&& other);
 
   static bool is_config_variable(const std::string& name);
 

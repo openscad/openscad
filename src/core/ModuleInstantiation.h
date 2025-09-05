@@ -44,6 +44,7 @@ public:
   bool isRoot() const { return this->tag_root; }
   bool isChildren() const { return modname == "children" && ns_name.empty(); }
   void setNamespaceName(const char *name) { ns_name = std::string(name); }
+  const std::string& getName() const { return modname; }
 
   AssignmentList arguments;
   const std::shared_ptr<LocalScope> scope;

@@ -1,20 +1,25 @@
 #include "core/ScopeContext.h"
+
+#include "core/Arguments.h"
+#include "core/EvaluationSession.h"
 #include "core/Expression.h"
 #include "core/Parameters.h"
 #include "utils/printutils.h"
 #include "core/SourceFileCache.h"
 #include "core/UserModule.h"
+#include "core/SourceFile.h"
+#include "core/Value.h"
 
 #include <utility>
 #include <memory>
 #include <cmath>
 #include <vector>
 
-#include <iostream>  // coryrc
+#include <iostream>  // TODO: coryrc - remove
 
 void ScopeContext::init()
 {
-  for (const auto& assignment : scope->assignments) {
+  for (const auto& assignment : scope->getAssignments()) {
     if (assignment->getExpr()->isLiteral() && lookup_local_variable(assignment->getName())) {
       LOG(message_group::Warning, assignment->location(), this->documentRoot(),
           "Parameter %1$s is overwritten with a literal", quoteVar(assignment->getName()));
@@ -165,47 +170,62 @@ boost::optional<InstantiableModule> FileContext::lookup_local_module(const std::
   return lookup_module_from_uses(name);
 }
 
-boost::optional<CallableFunction> FileContext::lookup_function_from_uses(const std::string& name) const
+FileContext::FileContext(const std::shared_ptr<const Context>& parent,
+                         std::shared_ptr<const SourceFile> source_file)
+  : ScopeContext(parent, source_file->scope), source_file(std::move(source_file))
+{
+}
+
+template <typename T>
+boost::optional<std::pair<T, std::shared_ptr<const SourceFile>>> FileContext::lookup_from_uses(
+  const std::string& name) const
 {
   // std::cerr << "lookup_function_from_uses('"<<name<<"')\n";
-  for (const auto& m : source_file->usedlibs) {
-    // usedmod is nullptr if the library wasn't be compiled (error or file-not-found)
+  auto ns_name = get_namespace_name();
+  if (ns_name.empty()) ns_name = "top_level";  // TODO: coryrc - use static const string for "top_level"
+  const auto& v = source_file->getNamespaceUsedLibrariesReverseOrdered(ns_name);
+  for (auto it = v.rbegin(); it != v.rend(); ++it) {
+    auto& m = *it;
+    // usedmod is nullptr if the library wasn't parsed successfully (error or file-not-found)
     auto usedmod = SourceFileCache::instance()->lookup(m);
     if (usedmod) {
-      if (const auto defined = usedmod->scope->lookup<UserFunction *>(name)) {
-        // `use` can only be used in the top-level scope, so this next
-        // line *should* be always passing the BuiltinContext as the new parent.
-        ContextHandle<FileContext> context{Context::create<FileContext>(this->parent, usedmod)};
-#ifdef DEBUG
-        PRINTDB("FileContext for function %s::%s:", m % name);
-        PRINTDB("%s", context->dump());
-#endif
-        return CallableFunction{CallableUserFunction{*context, *defined}};
+      if (auto search = usedmod->scope->lookup<T>(name)) {
+        return boost::optional<std::pair<T, std::shared_ptr<const SourceFile>>>{
+          std::pair(*search, usedmod)};
       }
     }
   }
-  return boost::none;
+  return {};
+}
+
+boost::optional<CallableFunction> FileContext::lookup_function_from_uses(const std::string& name) const
+{
+  // std::cerr << "lookup_function_from_uses('"<<name<<"')\n";
+  if (auto pair = lookup_from_uses<UserFunction *>(name)) {
+    auto [func, usedmod] = *pair;
+    ContextHandle<FileContext> context{
+      Context::create<FileContext>(session()->getBuiltinContext(), usedmod)};
+#ifdef DEBUG
+    PRINTDB("FileContext for function %s::%s:", m % name);
+    PRINTDB("%s", context->dump());
+#endif
+    return CallableFunction{CallableUserFunction{*context, func}};
+  }
+  return {};
 }
 
 boost::optional<InstantiableModule> FileContext::lookup_module_from_uses(const std::string& name) const
 {
   // std::cerr << "lookup_module_from_uses('"<<name<<"')\n";
-  for (const auto& m : source_file->usedlibs) {
-    // usedmod is nullptr if the library wasn't be compiled (error or file-not-found)
-    auto usedmod = SourceFileCache::instance()->lookup(m);
-    if (usedmod) {
-      if (const auto defined = usedmod->scope->lookup<UserModule *>(name)) {
-        // `use` can only be used in the top-level scope, so this next
-        // line *should* be always passing the BuiltinContext as the new parent.
-        // Improvement idea: puposefully get builtins from session() so this is never wrong.
-        ContextHandle<FileContext> context{Context::create<FileContext>(this->parent, usedmod)};
+  if (auto pair = lookup_from_uses<UserModule *>(name)) {
+    auto [mod, usedmod] = *pair;
+    ContextHandle<FileContext> context{
+      Context::create<FileContext>(session()->getBuiltinContext(), usedmod)};
 #ifdef DEBUG
-        PRINTDB("FileContext for module %s::%s:", m % name);
-        PRINTDB("%s", context->dump());
+    PRINTDB("FileContext for module %s::%s:", m % name);
+    PRINTDB("%s", context->dump());
 #endif
-        return InstantiableModule{*context, *defined};
-      }
-    }
+    return InstantiableModule{*context, mod};
   }
-  return boost::none;
+  return {};
 }

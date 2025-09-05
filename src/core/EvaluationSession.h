@@ -9,6 +9,7 @@
 #include "core/callables.h"
 #include "core/ContextMemoryManager.h"  // FIXME: don't use as value type so we don't need to include header
 
+class Context;
 class BuiltinContext;
 class ContextFrame;
 class ScopeContext;
@@ -20,6 +21,7 @@ class EvaluationSession
 {
 public:
   EvaluationSession(std::string documentRoot) : document_root(std::move(documentRoot)) {}
+  ~EvaluationSession();
 
   size_t push_frame(ContextFrame *frame);
   void replace_frame(size_t index, ContextFrame *frame);
@@ -33,6 +35,13 @@ public:
                                                                           const Location& loc) const;
 
   /**
+   * @brief Return the builtin context
+   *
+   * Only available after it's been added via ContextFrameHandle.
+   */
+  std::shared_ptr<const Context> getBuiltinContext() const { return builtIn; }
+
+  /**
    * @brief Lookup something from a namespace's environments
    *
    * Use these for looking up functions or modules from a namespace.
@@ -40,8 +49,7 @@ public:
   template <typename T>
   boost::optional<T> lookup_namespace(const std::string& ns_name, const std::string& name) const;
 
-  void init_namespaces(std::shared_ptr<SourceFile> source,
-                       std::shared_ptr<const Context> builtinContext);
+  void init_namespaces(std::shared_ptr<SourceFile> source);
   void setTopLevelNamespace(std::shared_ptr<const FileContext> c);
 
   [[nodiscard]] const std::string& documentRoot() const { return document_root; }
@@ -50,7 +58,12 @@ public:
 
 private:
   std::string document_root;
+  /**
+   * Note: The parent context of each element on the stack is not necessarily
+   * the element directly below it.
+   */
   std::vector<ContextFrame *> stack;
+  std::shared_ptr<const Context> builtIn;
   ContextMemoryManager context_memory_manager;
   std::unordered_map<std::string, std::shared_ptr<const Context>> namespace_contexts;
 };

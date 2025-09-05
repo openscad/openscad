@@ -37,14 +37,9 @@
 #include "utils/exceptions.h"
 
 #include <algorithm>
-#include <ctime>
-#include <ostream>
-#include <memory>
 #include <boost/algorithm/string.hpp>
 #include <filesystem>
-#include <string>
 #include <utility>
-#include <vector>
 
 namespace fs = std::filesystem;
 #include "FontCache.h"
@@ -58,6 +53,12 @@ SourceFile::SourceFile(const make_shared_enabler&, std::string path, std::string
 {
 }
 
+SourceFile::SourceFile(const make_shared_enabler&, std::string path, std::string filename,
+                       std::shared_ptr<LocalScope> new_scope)
+  : ASTNode(Location::NONE), path(std::move(path)), filename(std::move(filename)), scope(new_scope)
+{
+}
+
 void SourceFile::print(std::ostream& stream, const std::string& indent) const
 {
   scope->print(stream, indent);
@@ -65,9 +66,15 @@ void SourceFile::print(std::ostream& stream, const std::string& indent) const
 
 void SourceFile::registerUse(const std::string& path, const Location& loc)
 {
-  PRINTDB("registerUse(): (%p) %d, %d - %d, %d (%s) -> %s", this % loc.firstLine() % loc.firstColumn() %
-                                                              loc.lastLine() % loc.lastColumn() %
-                                                              loc.fileName() % path);
+  registerNamespaceUse("top_level", path, loc);
+}
+
+void SourceFile::registerNamespaceUse(const std::string& ns_name, const std::string& path,
+                                      const Location& loc)
+{
+  PRINTDB("registerUse(): (%p) (ns:%s) %d, %d - %d, %d (%s) -> %s",
+          this % ns_name % loc.firstLine() % loc.firstColumn() % loc.lastLine() % loc.lastColumn() %
+            loc.fileName() % path);
 
   auto ext = fs::path(path).extension().generic_string();
 
@@ -78,9 +85,10 @@ void SourceFile::registerUse(const std::string& path, const Location& loc)
       LOG(message_group::Error, "Can't read font with path '%1$s'", path);
     }
   } else {
-    auto pos = std::find(usedlibs.begin(), usedlibs.end(), path);
-    if (pos != usedlibs.end()) usedlibs.erase(pos);
-    usedlibs.insert(usedlibs.begin(), path);
+    std::vector<std::string>& ns_vec = namespaceUsedLibs[ns_name];
+    auto pos = std::find(ns_vec.begin(), ns_vec.end(), path);
+    if (pos != ns_vec.end()) ns_vec.erase(pos);
+    ns_vec.push_back(path);
     if (!loc.isNone()) {
       indicatorData.emplace_back(loc.firstLine(), loc.firstColumn(), loc.lastLine(), loc.lastColumn(),
                                  path);
@@ -133,63 +141,78 @@ time_t SourceFile::handleDependencies(bool is_root)
   else if (this->is_handling_dependencies) return 0;
   this->is_handling_dependencies = true;
 
-  std::vector<std::pair<std::string, std::string>> updates;
+  std::unordered_map<std::string, std::string> updates;
+  std::unordered_set<std::string> uniqueUses;
 
-  // If a lib in usedlibs was previously missing, we need to relocate it
+  for (auto& [ns, uses] : namespaceUsedLibs) {
+    for (const auto& lib : uses) {
+      uniqueUses.insert(lib);
+    }
+  }
+
+  // If a lib was previously missing, we need to relocate it
   // by searching the applicable paths. We can identify a previously missing module
   // as it will have a relative path.
   time_t latest = 0;
-  for (auto filename : this->usedlibs) {
-    auto found = true;
-
+  for (auto filename : uniqueUses) {
     // Get an absolute filename for the module
     if (!fs::path(filename).is_absolute()) {
       auto fullpath = find_valid_path(this->path, filename);
-      if (!fullpath.empty()) {
-        auto newfilename = fullpath.generic_string();
-        updates.emplace_back(filename, newfilename);
-        filename = newfilename;
-      } else {
-        found = false;
+      // Can't find, so skip processing.
+      if (fullpath.empty()) {
+        continue;
+      }
+
+      auto newfilename = fullpath.generic_string();
+      updates.emplace(filename, newfilename);
+      filename = newfilename;
+
+      // If the fullpath also exists, then we can let it do the cache updating.
+      if (uniqueUses.count(newfilename)) {
+        continue;
       }
     }
 
-    if (found) {
-      auto oldmodule = SourceFileCache::instance()->lookup(filename);
-      std::shared_ptr<SourceFile> newmodule;
-      auto mtime = SourceFileCache::instance()->process(this->getFullpath(), filename, newmodule);
-      if (mtime > latest) latest = mtime;
-      auto changed = newmodule && newmodule != oldmodule;
-      // Detect appearance but not removal of files, and keep old module
-      // on parse errors (FIXME: Is this correct behavior?)
-      if (changed) {
-        PRINTDB("  %s: %p -> %p", filename % oldmodule % newmodule);
-      } else {
-        PRINTDB("  %s: %p", filename % oldmodule);
+    auto oldmodule = SourceFileCache::instance()->lookup(filename);
+    std::shared_ptr<SourceFile> newmodule;
+    auto mtime = SourceFileCache::instance()->process(this->getFullpath(), filename, newmodule);
+    if (mtime > latest) latest = mtime;
+    auto changed = newmodule && newmodule != oldmodule;
+    // Detect appearance but not removal of files, and keep old module
+    // on parse errors (FIXME: Is this correct behavior?)
+    if (changed) {
+      PRINTDB("  %s: %p -> %p", filename % oldmodule % newmodule);
+    } else {
+      PRINTDB("  %s: %p", filename % oldmodule);
+    }
+  }
+
+  // Relative filenames which were found are reinserted as absolute filenames
+  for (const auto& [relative_name, fullpath] : updates) {
+    for (auto& [_ns, uses] : namespaceUsedLibs) {
+      for (auto& lib : uses) {
+        if (lib == relative_name) {
+          lib = fullpath;
+        }
       }
     }
   }
 
-  // Relative filenames which were located are reinserted as absolute filenames
-  for (const auto& files : updates) {
-    auto pos = std::find(usedlibs.begin(), usedlibs.end(), files.first);
-    if (pos != usedlibs.end()) *pos = files.second;
-  }
   return latest;
 }
 
-// The passed-in `context` is treated as the parent context to the corresponding context to this object.
-// The output *resulting_file_context is just used for manipulating the camera after if this succeeds; at
-// least, when used with command line.
+// If this is the original source file, as opposed to a `use<>`d file,
+// the output *resulting_file_context is just used for manipulating the camera.
+// It's unused for `use<>`d files.
 std::shared_ptr<AbstractNode> SourceFile::instantiate(
-  const std::shared_ptr<const Context>& context,
+  const std::shared_ptr<const Context>& parent,
   std::shared_ptr<const FileContext> *resulting_file_context) const
 {
   auto node = std::make_shared<RootNode>();
   try {
-    ContextHandle<FileContext> file_context{Context::create<FileContext>(context, shared_from_this())};
+    ContextHandle<FileContext> file_context{Context::create<FileContext>(parent, shared_from_this())};
     *resulting_file_context = *file_context;
-    context->session()->setTopLevelNamespace(*file_context);
+    parent->session()->setTopLevelNamespace(*file_context);
     this->scope->instantiateModules(*file_context, node);
   } catch (HardWarningException& e) {
     throw;
@@ -232,3 +255,14 @@ std::shared_ptr<LocalScope> SourceFile::getNamespaceScope(const std::string name
   }
   return nullptr;
 }
+
+const std::vector<std::string>& SourceFile::getNamespaceUsedLibrariesReverseOrdered(
+  const std::string& name) const
+{
+  if (const auto& search = namespaceUsedLibs.find(name); search != namespaceUsedLibs.end()) {
+    return search->second;
+  }
+  return emptyStringVector;
+}
+
+const std::vector<std::string> SourceFile::emptyStringVector;

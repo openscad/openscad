@@ -7,6 +7,7 @@
 
 #include "utils/compiler_specific.h"
 #include "core/Context.h"
+#include "core/EvaluationSession.h"
 #include "core/Expression.h"
 #include "core/lexer_shared.h"
 #include "core/module.h"

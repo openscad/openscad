@@ -30,9 +30,10 @@
 #include <cstddef>
 #include <string>
 #include <memory>
-#include <iostream>  // coryrc
+#include <iostream>  // TODO: coryrc - remove
 
 #include "core/AST.h"
+#include "core/BuiltinContext.h"
 #include "core/Context.h"
 #include "core/ContextFrame.h"
 #include "core/function.h"
@@ -45,9 +46,18 @@
 size_t EvaluationSession::push_frame(ContextFrame *frame)
 {
   size_t index = stack.size();
+  if (index == 0) {
+    auto maybe_builtin = dynamic_cast<BuiltinContext *>(frame);
+    if (maybe_builtin == nullptr) {
+      throw std::runtime_error("First frame in session not a BuiltinContext");
+    }
+    builtIn = maybe_builtin->get_shared_ptr();
+  }
   stack.push_back(frame);
   return index;
 }
+
+EvaluationSession::~EvaluationSession() { builtIn.reset(); }
 
 void EvaluationSession::replace_frame(size_t index, ContextFrame *frame)
 {
@@ -129,19 +139,19 @@ template boost::optional<InstantiableModule> EvaluationSession::lookup_namespace
 template boost::optional<const Value&> EvaluationSession::lookup_namespace<const Value&>(
   const std::string&, const std::string&) const;
 
-void EvaluationSession::init_namespaces(std::shared_ptr<SourceFile> source,
-                                        std::shared_ptr<const Context> builtinContext)
+void EvaluationSession::init_namespaces(std::shared_ptr<SourceFile> source)
 {
   // Add builtins namespace:
-  this->namespace_contexts.emplace("builtins", builtinContext);
+  this->namespace_contexts.emplace("builtins", getBuiltinContext());
 
   for (auto nsName : source->getNamespaceNamesOrdered()) {
     auto nsScope = source->getNamespaceScope(nsName);
     // ContextHandle calls the right method to evaluate/initialize assignments.
     ContextHandle<UserNamespaceContext> nsContext{
-      Context::create<UserNamespaceContext>(builtinContext, nsScope, nsName)};
+      Context::create<UserNamespaceContext>(getBuiltinContext(), nsScope, nsName, source)};
     this->namespace_contexts.emplace(nsName, nsContext->get_shared_ptr());
   }
+  // TODO: coryrc - instantiate modules so that we run assert
 }
 
 void EvaluationSession::setTopLevelNamespace(std::shared_ptr<const FileContext> c)

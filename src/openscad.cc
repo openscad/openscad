@@ -405,7 +405,7 @@ int do_export(const CommandLine& cmd, const RenderVariables& render_variables, F
 
   // Initialize namespaces before anything at top-level, which means
   // namespaces cannot use anything from top-level in *assignments*.
-  session.init_namespaces(root_file, *builtin_context);
+  session.init_namespaces(root_file);
 
   AbstractNode::resetIndexCounter();
   std::shared_ptr<const FileContext> file_context;

@@ -5,17 +5,19 @@
 #include <vector>
 #include <boost/optional.hpp>
 
-#include "core/Arguments.h"
+// FIXME: header pollution, it's bad to include anything not in inheritance chain or used as a value
+// (which you should avoid)
 #include "core/AST.h"
 #include "core/callables.h"
 #include "core/Children.h"
 #include "core/Context.h"
 #include "core/function.h"
 #include "core/module.h"
-#include "core/SourceFile.h"
-#include "core/Using.h"
 
+class SourceFile;
 class UserModule;
+class Value;
+class Arguments;
 
 class ScopeContext : public Context
 {
@@ -38,24 +40,6 @@ protected:
 
 private:
   const std::shared_ptr<const LocalScope> scope;
-
-  friend class Context;
-};
-
-class UserNamespaceContext : public ScopeContext
-{
-public:
-  const std::string get_namespace_name() const override { return ns_name; }
-
-protected:
-  UserNamespaceContext(const std::shared_ptr<const Context>& parent,
-                       const std::shared_ptr<LocalScope> scope, std::string ns_name)
-    : ScopeContext(parent, scope), ns_name(std::move(ns_name))
-  {
-  }
-
-private:
-  std::string ns_name;
 
   friend class Context;
 };
@@ -86,15 +70,43 @@ public:
 
 protected:
   FileContext(const std::shared_ptr<const Context>& parent,
+              std::shared_ptr<const SourceFile> source_file);
+  FileContext(const std::shared_ptr<const Context>& parent, const std::shared_ptr<LocalScope> scope,
               std::shared_ptr<const SourceFile> source_file)
-    : ScopeContext(parent, source_file->scope), source_file(source_file)
+    : ScopeContext(parent, scope), source_file(std::move(source_file))
   {
   }
 
 private:
   const std::shared_ptr<const SourceFile> source_file;
+
+protected:
+  // TODO: coryrc - collapse all 3 into 1 which is optional<T> where T is CallableFunction or
+  // InstantiableModule?
+  template <typename T>
+  boost::optional<std::pair<T, std::shared_ptr<const SourceFile>>> lookup_from_uses(
+    const std::string& name) const;
   boost::optional<CallableFunction> lookup_function_from_uses(const std::string& name) const;
   boost::optional<InstantiableModule> lookup_module_from_uses(const std::string& name) const;
+
+  friend class Context;
+};
+
+class UserNamespaceContext : public FileContext
+{
+public:
+  const std::string get_namespace_name() const override { return ns_name; }
+
+protected:
+  UserNamespaceContext(const std::shared_ptr<const Context>& parent,
+                       const std::shared_ptr<LocalScope> scope, std::string ns_name,
+                       std::shared_ptr<const SourceFile> source_file)
+    : FileContext(parent, scope, source_file), ns_name(std::move(ns_name))
+  {
+  }
+
+private:
+  std::string ns_name;
 
   friend class Context;
 };

@@ -75,8 +75,16 @@ int lexerlex_destroy(void);
 int lexerlex(void);
 static void handle_assignment(const std::string token, Expression *expr, const Location loc);
 
-std::stack<std::shared_ptr<LocalScope>> scope_stack;
+std::vector<std::shared_ptr<LocalScope>> scope_stack;
 std::shared_ptr<SourceFile> rootfile;
+static const std::string current_namespace() {
+    std::string ns_name = "";
+    for (const auto& scope : scope_stack) {
+        auto ns = scope->get_namespace_name();
+        if (!ns.empty()) ns_name = ns;
+    }
+    return ns_name;
+}
 
 extern void lexerdestroy();
 extern FILE *lexerin;
@@ -195,14 +203,14 @@ input
 
               // This exact ordering is because `module` is done that way.
               // It probably doesn't matter.
-              auto top = scope_stack.top();
-              scope_stack.push(nsScope);
+              auto top = scope_stack.back();
+              scope_stack.push_back(nsScope);
               top->addNamespace(ns);
               free($3);
             }
-          def_statement
+          namespace_statement
             {
-              scope_stack.pop();
+              scope_stack.pop_back();
             }
         | input top_level_statement
         | input TOK_EOT
@@ -214,7 +222,23 @@ input
 single_statement
         : module_instantiation
             {
-              if ($1) scope_stack.top()->addModuleInst(std::shared_ptr<ModuleInstantiation>($1));
+              if ($1) scope_stack.back()->addModuleInst(std::shared_ptr<ModuleInstantiation>($1));
+            }
+        | single_def_statement
+        ;
+
+single_namespace_statement
+        : TOK_USE
+            {
+                rootfile->registerNamespaceUse(current_namespace(), std::string($1), lexer_is_main_file() && parsingMainFile ? LOC(@1) : Location::NONE);
+              free($1);
+            }
+        | module_instantiation
+            {
+              if ($1) {
+                if ($1->getName() == "assert") scope_stack.back()->addModuleInst(std::shared_ptr<ModuleInstantiation>($1));
+                free($1);
+              }
             }
         | single_def_statement
         ;
@@ -224,26 +248,26 @@ single_def_statement
         | assignment
         | TOK_USING TOK_ID ';'
             {
-              scope_stack.top()->addUsing(std::make_shared<Using>($2, LOCD("using", @$)));
+              scope_stack.back()->addUsing(std::make_shared<Using>($2, LOCD("using", @$)));
               free($2);
             }
         | TOK_MODULE TOK_ID '(' parameters ')'
             {
               UserModule *newmodule = new UserModule($2, LOCD("module", @$));
               newmodule->parameters = *$4;
-              auto top = scope_stack.top();
-              scope_stack.push(newmodule->body);
+              auto top = scope_stack.back();
+              scope_stack.push_back(newmodule->body);
               top->addModule(std::shared_ptr<UserModule>(newmodule));
               free($2);
               delete $4;
             }
           top_level_statement
             {
-                scope_stack.pop();
+                scope_stack.pop_back();
             }
         | TOK_FUNCTION TOK_ID '(' parameters ')' '=' expr ';'
             {
-              scope_stack.top()->addFunction(
+              scope_stack.back()->addFunction(
                 std::make_shared<UserFunction>($2, *$4, std::shared_ptr<Expression>($7), LOCD("function", @$))
               );
               free($2);
@@ -256,9 +280,9 @@ top_level_statement
 	| single_statement
         ;
 
-def_statement
-        : '{' def_statements '}'
-	| single_def_statement
+namespace_statement
+        : '{' namespace_statements '}'
+	| single_namespace_statement
         ;
 
 
@@ -268,10 +292,10 @@ statements
         | statements single_statement
         ;
 
-def_statements
+namespace_statements
         : /* empty */
-        | '{' def_statements '}'
-        | def_statements single_def_statement
+        | '{' namespace_statements '}'
+        | namespace_statements single_namespace_statement
         ;
 
 assignment
@@ -306,11 +330,11 @@ module_instantiation
         | single_maybe_namespaced_module_instantiation
             {
                 $<inst>$ = $1;
-                scope_stack.push($1->scope);
+                scope_stack.push_back($1->scope);
             }
           child_statement
             {
-                scope_stack.pop();
+                scope_stack.pop_back();
                 $$ = $<inst>2;
             }
         | ifelse_statement
@@ -326,11 +350,11 @@ ifelse_statement
             }
         | if_statement TOK_ELSE
             {
-                scope_stack.push($1->makeElseScope());
+                scope_stack.push_back($1->makeElseScope());
             }
           child_statement
             {
-                scope_stack.pop();
+                scope_stack.pop_back();
                 $$ = $1;
             }
         ;
@@ -339,11 +363,11 @@ if_statement
         : TOK_IF '(' expr ')'
             {
                 $<ifelse>$ = new IfElseModuleInstantiation(std::shared_ptr<Expression>($3), LOCD("if", @$));
-                scope_stack.push($<ifelse>$->scope);
+                scope_stack.push_back($<ifelse>$->scope);
             }
           child_statement
             {
-                scope_stack.pop();
+                scope_stack.pop_back();
                 $$ = $<ifelse>5;
             }
         ;
@@ -359,7 +383,7 @@ child_statement
         | '{' child_statements '}'
         | module_instantiation
             {
-                if ($1) scope_stack.top()->addModuleInst(std::shared_ptr<ModuleInstantiation>($1));
+                if ($1) scope_stack.back()->addModuleInst(std::shared_ptr<ModuleInstantiation>($1));
             }
         ;
 
@@ -826,7 +850,7 @@ static void warn_reassignment(const Location& loc, const std::shared_ptr<Assignm
 void handle_assignment(const std::string token, Expression *expr, const Location loc)
 {
 	bool found = false;
-	for (auto &assignment : scope_stack.top()->assignments) {
+	for (auto &assignment : scope_stack.back()->getAssignments()) {
 		if (assignment->getName() == token) {
 			auto mainFile = mainFilePath.string();
 			auto prevFile = assignment->location().fileName();
@@ -856,7 +880,7 @@ void handle_assignment(const std::string token, Expression *expr, const Location
 		}
 	}
 	if (!found) {
-		scope_stack.top()->addAssignment(assignment(token, std::shared_ptr<Expression>(expr), loc));
+		scope_stack.back()->addAssignment(assignment(token, std::shared_ptr<Expression>(expr), loc));
 	}
 }
 
@@ -884,9 +908,10 @@ bool parse(std::shared_ptr<SourceFile>& file, const std::string& text, const std
   parser_input_buffer = text.c_str();
   fileEnded = false;
 
-  file = SourceFile::create(parser_sourcefile.parent_path().string(), parser_sourcefile.filename().string());
+  auto rootfile_scope = std::make_shared<LocalScope>();
+  file = SourceFile::create(parser_sourcefile.parent_path().string(), parser_sourcefile.filename().string(), rootfile_scope);
   rootfile = file;
-  scope_stack.push(rootfile->scope);
+  scope_stack.push_back(rootfile_scope);
   //        PRINTB_NOCACHE("New module: %s %p", "root" % rootfile);
 
   parserdebug = debug;
@@ -904,7 +929,7 @@ bool parse(std::shared_ptr<SourceFile>& file, const std::string& text, const std
 
   parser_error_pos = -1;
   parser_input_buffer = nullptr;
-  scope_stack.pop();
+  scope_stack.pop_back();
   assert(scope_stack.size()==0);
 
   return true;
