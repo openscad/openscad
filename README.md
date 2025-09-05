@@ -214,8 +214,11 @@ This will download the latest sources into a directory named
 
 To pull the various submodules (incl. the [MCAD library](https://github.com/openscad/MCAD)), do the following:
 
-    cd openscad
-    git submodule update --init --recursive
+```shell
+cd pythonscad
+git submodule update --init --recursive
+```
+
 
 ### Contributing Changes
 
@@ -260,12 +263,16 @@ the dependency packages listed above using your system's package
 manager. A convenience script is provided that can help with this 
 process on some systems:
 
-    sudo ./scripts/uni-get-dependencies.sh
+```shell
+sudo ./scripts/uni-get-dependencies.sh
+```
 
 After installing dependencies, check their versions. You can run this 
 script to help you:
 
-    ./scripts/check-dependencies.sh
+```shell
+./scripts/check-dependencies.sh
+```
 
 Take care that you don't have old local copies anywhere (`/usr/local/`). 
 If all dependencies are present and of a high enough version, skip ahead 
@@ -282,7 +289,6 @@ environment variables.
 
 Then run the script to compile all the prerequisite libraries above:
 
-    ./scripts/uni-build-dependencies.sh
 
 Note that huge dependencies like gcc, qt, or glib2 are not included 
 here, only the smaller ones (boost, CGAL, opencsg, etc). After the 
@@ -295,6 +301,15 @@ After that, follow the Compilation instructions below.
 ### Building on Nix
 
 A [development Nix shell](scripts/nix) is included for local, incremental compilation.
+
+```shell
+mkdir build
+cd build
+cmake ..
+make
+make test
+sudo make install
+```
 
 ### Building for Windows
 
@@ -313,18 +328,24 @@ Then get your development tools installed to get GCC. Then after you've
 cloned this git repository, start a new clean bash shell and run the 
 script that sets up the environment variables.
 
+```bash
     source ./scripts/setenv-mingw-xbuild.sh 64
+```
 
 Then run the script to download & compile all the prerequisite libraries above:
 
+```bash
     ./scripts/mingw-x-build-dependencies.sh 64
+```
 
 Note that this process can take several hours, and tens of gigabytes of 
 disk space, as it uses the [https://mxe.cc](https://mxe.cc) system to cross-build many
 libraries. After it is complete, build OpenSCAD and package it to an 
 installer:
 
+```bash
     ./scripts/release-common.sh mingw64
+```
 
 For a 32-bit Windows cross-build, replace 64 with 32 in the above instructions. 
 
