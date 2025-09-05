@@ -31,6 +31,7 @@
 #include <vector>
 
 #include "core/Children.h"
+#include "core/EvaluationSession.h"
 #include "core/module.h"
 #include "core/ModuleInstantiation.h"
 #include "core/Parameters.h"
