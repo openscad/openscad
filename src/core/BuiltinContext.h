@@ -2,8 +2,9 @@
 
 #include <string>
 
-#include "core/AST.h"
 #include "core/Context.h"
+
+class Location;
 
 class BuiltinContext : public Context
 {
