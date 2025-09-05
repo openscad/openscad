@@ -5253,15 +5253,12 @@ PyObject *python_memberfunction(PyObject *self, PyObject *args, PyObject *kwargs
     return NULL;
   }
   std::string member_name = membername;
-  if(std::find(python_member_names.begin(),python_member_names.end(), member_name) != python_member_names.end()) {
-    return Py_None;    
-  }
+  int curind = std::find(python_member_names.begin(),python_member_names.end(), member_name) - python_member_names.begin();
 
   if(memberdoc == nullptr) { memberdoc="Added by member function";
   }
-  int curind = python_member_callables.size();
 
-  if(curind == PYTHON_MAX_USERMEMBERS) {
+  if(curind >= PYTHON_MAX_USERMEMBERS) {
     PyErr_SetString(PyExc_TypeError, "Maximum user member amount reached");
     return NULL;
   }
@@ -5299,8 +5296,12 @@ PyObject *python_memberfunction(PyObject *self, PyObject *args, PyObject *kwargs
   if (type_add_method(&PyOpenSCADType, meth) < 0) return Py_None;
 
   Py_INCREF(memberfunc); // needed because pythons garbage collector eats it when not used.
-  python_member_names.push_back(member_name);
-  python_member_callables.push_back(memberfunc);
+  if(curind < python_member_names.size()) {
+    python_member_callables[curind] = memberfunc;
+  } else {
+    python_member_names.push_back(member_name);
+    python_member_callables.push_back(memberfunc);
+  }  
 
   return Py_None;
 }
