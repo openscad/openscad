@@ -50,12 +50,6 @@ ContextHandle<ScopeContext> Children::scopeContext() const
   return Context::create<ScopeContext>(context, children_scope);
 }
 
-bool Children::empty() const
-{
-  return !children_scope->hasChildren();
-}
+bool Children::empty() const { return !children_scope->hasChildren(); }
 
-size_t Children:: size() const
-{
-  return children_scope->moduleInstantiations.size();
-}
+size_t Children::size() const { return children_scope->moduleInstantiations.size(); }
