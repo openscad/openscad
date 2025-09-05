@@ -26,13 +26,13 @@
 
 #include "core/SurfaceNode.h"
 
-#include "core/module.h"
-#include "core/ModuleInstantiation.h"
-#include "core/node.h"
 #include "geometry/PolySet.h"
 #include "geometry/PolySetBuilder.h"
 #include "core/Builtins.h"
 #include "core/Children.h"
+#include "core/module.h"
+#include "core/ModuleInstantiation.h"
+#include "core/node.h"
 #include "core/Parameters.h"
 #include "utils/printutils.h"
 #include "io/fileutils.h"
