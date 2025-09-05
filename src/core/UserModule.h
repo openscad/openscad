@@ -11,9 +11,20 @@
 
 class Feature;
 
+/**
+ * @brief A stack for holding module names while evaluating
+ *
+ * The names are used for the builtin function `parent_module` and
+ * the quantity for calculating `$parent_module` special variable.
+ */
 class StaticModuleNameStack
 {
 public:
+  /**
+   * @brief Push module's name on the static module name stack
+   *
+   * It will be popped in the destructor.
+   */
   StaticModuleNameStack(const std::string& name) { stack.push_back(name); }
   ~StaticModuleNameStack() { stack.pop_back(); }
 
@@ -27,9 +38,12 @@ private:
 class UserModule : public AbstractModule, public ASTNode
 {
 public:
-  UserModule(const char *name, const Location& loc) : ASTNode(loc), name(name) {}
+  UserModule(const char *name, const Location& loc)
+    : ASTNode(loc), name(name), body(std::make_shared<LocalScope>())
+  {
+  }
   UserModule(const char *name, const Feature& feature, const Location& loc)
-    : AbstractModule(feature), ASTNode(loc), name(name)
+    : AbstractModule(feature), ASTNode(loc), name(name), body(std::make_shared<LocalScope>())
   {
   }
 
@@ -42,5 +56,5 @@ public:
 
   std::string name;
   AssignmentList parameters;
-  LocalScope body;
+  std::shared_ptr<LocalScope> body;
 };

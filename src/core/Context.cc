@@ -33,8 +33,51 @@
 #include <vector>
 
 #include "core/AST.h"
+#include "core/EvaluationSession.h"
 #include "core/function.h"
+#include "core/lexer_shared.h"
 #include "utils/printutils.h"
+
+// Just for explicit template instantiations:
+#include "core/BuiltinContext.h"
+#include "core/ScopeContext.h"
+
+template <typename T>
+ContextHandle<T>::ContextHandle(std::shared_ptr<T>&& context)
+  : ContextFrameHandle(context.get()), context(std::move(context))
+{
+  try {
+    this->context->init();
+  } catch (...) {
+    session->contextMemoryManager().addContext(std::move(this->context));
+    throw;
+  }
+}
+
+template <typename T>
+ContextHandle<T>::~ContextHandle()
+{
+  assert(!!session == !!context);
+  if (session) {
+    session->contextMemoryManager().addContext(std::move(this->context));
+  }
+}
+
+template <typename T>
+ContextHandle<T>& ContextHandle<T>::operator=(ContextHandle&& other) noexcept
+{
+  assert(session);
+  assert(context);
+  assert(other.context);
+  assert(other.session);
+
+  // session->contextMemoryManager().releaseContext();
+  session->contextMemoryManager().addContext(std::move(this->context));
+  other.release();
+  context = std::move(other.context);
+  ContextFrameHandle::operator=(context.get());
+  return *this;
+}
 
 Context::Context(EvaluationSession *session) : ContextFrame(session), parent(nullptr) {}
 
@@ -68,7 +111,7 @@ std::vector<const std::shared_ptr<const Context> *> Context::list_referenced_con
   return output;
 }
 
-boost::optional<const Value&> Context::try_lookup_variable(const std::string& name) const
+boost::optional<const Value&> Context::lookup_variable(const std::string& name) const
 {
   if (is_config_variable(name)) {
     return session()->try_lookup_special_variable(name);
@@ -79,14 +122,14 @@ boost::optional<const Value&> Context::try_lookup_variable(const std::string& na
       return result;
     }
   }
-  return boost::none;
+  return {};
 }
 
-const Value& Context::lookup_variable(const std::string& name, const Location& loc) const
+const Value& Context::or_undef(boost::optional<const Value&> result, const std::string& name, const Location& loc, const std::string& ns_name) const
 {
-  boost::optional<const Value&> result = try_lookup_variable(name);
   if (!result) {
-    LOG(message_group::Warning, loc, documentRoot(), "Ignoring unknown variable %1$s", quoteVar(name));
+    auto quotedName = quoteVar(ns_name.empty() ? name : std::string(ns_name + LEXER_NS_SEP + name));
+    LOG(message_group::Warning, loc, documentRoot(), "Ignoring unknown variable %1$s", quotedName);
     return Value::undefined;
   }
   return *result;
@@ -153,3 +196,11 @@ std::string Context::dump() const
   return s.str();
 }
 #endif  // ifdef DEBUG
+
+// Alternative choice is to move the implementation to the header.
+template class ContextHandle<FileContext>;
+template class ContextHandle<BuiltinContext>;
+template class ContextHandle<UserModuleContext>;
+template class ContextHandle<ScopeContext>;
+template class ContextHandle<UserNamespaceContext>;
+template class ContextHandle<Context>;

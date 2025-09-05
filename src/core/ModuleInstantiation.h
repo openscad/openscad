@@ -15,7 +15,10 @@ class ModuleInstantiation : public ASTNode
 public:
   ModuleInstantiation(std::string name, AssignmentList args = AssignmentList(),
                       const Location& loc = Location::NONE)
-    : ASTNode(loc), arguments(std::move(args)), modname(std::move(name))
+    : ASTNode(loc),
+      arguments(std::move(args)),
+      modname(std::move(name)),
+      scope(std::make_shared<LocalScope>())
   {
   }
 
@@ -25,14 +28,26 @@ public:
     print(stream, indent, false);
   }
   std::shared_ptr<AbstractNode> evaluate(const std::shared_ptr<const Context>& context) const;
+  /**
+   * @brief Retain the name and arguments and location, but not scope or tags.
+   *
+   * Why? because that's what the code was doing elsewhere that was moved here.
+   */
+  ModuleInstantiation *clone(void) const;
 
-  const std::string& name() const { return this->modname; }
+  /**
+   * @brief Return module name, with namespace if given
+   */
+  const std::string getPrintableName() const;
   bool isBackground() const { return this->tag_background; }
   bool isHighlight() const { return this->tag_highlight; }
   bool isRoot() const { return this->tag_root; }
+  bool isChildren() const { return modname == "children" && ns_name.empty(); }  // FIXME: couldn't this be more robust?
+  void setNamespaceName(const char *name) { ns_name = std::string(name); }
+  const std::string& getName() const { return modname; }
 
   AssignmentList arguments;
-  LocalScope scope;
+  std::shared_ptr<LocalScope> scope;
 
   bool tag_root{false};
   bool tag_highlight{false};
@@ -40,6 +55,7 @@ public:
 
 protected:
   std::string modname;
+  std::string ns_name;
 };
 
 class IfElseModuleInstantiation : public ModuleInstantiation
@@ -50,10 +66,10 @@ public:
   {
   }
 
-  LocalScope *makeElseScope();
-  LocalScope *getElseScope() const { return this->else_scope.get(); }
+  std::shared_ptr<LocalScope> makeElseScope();
+  std::shared_ptr<LocalScope> getElseScope() const { return this->else_scope; }
   void print(std::ostream& stream, const std::string& indent, const bool inlined) const final;
 
 private:
-  std::unique_ptr<LocalScope> else_scope;
+  std::shared_ptr<LocalScope> else_scope;
 };

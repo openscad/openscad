@@ -250,6 +250,8 @@ use[ \t\r\n]*"<"        { BEGIN(cond_use); LOCATION_COUNT_LINES(parserlloc, yyte
 "echo"                  return TOK_ECHO;
 "for"                   return TOK_FOR;
 "each"                  return TOK_EACH;
+"namespace"             return TOK_NAMESPACE;
+"using"                 return TOK_USING;
 
 "true"                  return TOK_TRUE;
 "false"                 return TOK_FALSE;
@@ -318,6 +320,7 @@ use[ \t\r\n]*"<"        { BEGIN(cond_use); LOCATION_COUNT_LINES(parserlloc, yyte
 "||"                    return OR;
 "<<"                    return LSH;
 ">>"                    return RSH;
+"::"                    return NS_SEP; /* Update lexer_shared.h if this is changed. (no you can't just use the define here) */
 
 .                       { return yytext[0]; }
 

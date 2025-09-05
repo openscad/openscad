@@ -5,6 +5,7 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include <boost/optional.hpp>
 
 #include "core/Arguments.h"
 #include "core/AST.h"

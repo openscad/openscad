@@ -7,7 +7,9 @@
 
 #include "utils/compiler_specific.h"
 #include "core/Context.h"
+#include "core/EvaluationSession.h"
 #include "core/Expression.h"
+#include "core/lexer_shared.h"
 #include "utils/exceptions.h"
 #include "utils/printutils.h"
 
@@ -15,21 +17,21 @@ void ModuleInstantiation::print(std::ostream& stream, const std::string& indent,
                                 const bool inlined) const
 {
   if (!inlined) stream << indent;
-  stream << modname + "(";
+  stream << getPrintableName() + "(";
   for (size_t i = 0; i < this->arguments.size(); ++i) {
     const auto& arg = this->arguments[i];
     if (i > 0) stream << ", ";
     if (!arg->getName().empty()) stream << arg->getName() << " = ";
     stream << *arg->getExpr();
   }
-  if (scope.numElements() == 0) {
+  if (scope->numElements() == 0) {
     stream << ");\n";
-  } else if (scope.numElements() == 1) {
+  } else if (scope->numElements() == 1) {
     stream << ") ";
-    scope.print(stream, indent, true);
+    scope->print(stream, indent, true);
   } else {
     stream << ") {\n";
-    scope.print(stream, indent + "\t", false);
+    scope->print(stream, indent + "\t", false);
     stream << indent << "}\n";
   }
 }
@@ -65,19 +67,22 @@ void IfElseModuleInstantiation::print(std::ostream& stream, const std::string& i
 static void NOINLINE print_trace(const ModuleInstantiation *mod,
                                  const std::shared_ptr<const Context>& context)
 {
-  LOG(message_group::Trace, mod->location(), context->documentRoot(), "called by '%1$s'", mod->name());
+  LOG(message_group::Trace, mod->location(), context->documentRoot(), "called by '%1$s'",
+      mod->getPrintableName());
 }
 
 std::shared_ptr<AbstractNode> ModuleInstantiation::evaluate(
   const std::shared_ptr<const Context>& context) const
 {
-  boost::optional<InstantiableModule> module = context->lookup_module(this->name(), this->loc);
-  if (!module) {
+  boost::optional<InstantiableModule> m =
+    ns_name.empty() ? context->lookup_module(modname, loc)
+                    : context->session()->lookup_namespace<InstantiableModule>(ns_name, modname);
+  if (!m) {
     return nullptr;
   }
 
   try {
-    auto node = module->module->instantiate(module->defining_context, this, context);
+    auto node = m->module->instantiate(m->defining_context, this, context);
     return node;
   } catch (EvaluationException& e) {
     if (e.traceDepth > 0) {
@@ -88,8 +93,21 @@ std::shared_ptr<AbstractNode> ModuleInstantiation::evaluate(
   }
 }
 
-LocalScope *IfElseModuleInstantiation::makeElseScope()
+ModuleInstantiation *ModuleInstantiation::clone(void) const
 {
-  this->else_scope = std::make_unique<LocalScope>();
-  return this->else_scope.get();
+  auto ret = new ModuleInstantiation(modname, arguments, loc);
+  ret->setNamespaceName(ns_name.c_str());
+  return ret;
+}
+
+const std::string ModuleInstantiation::getPrintableName() const
+{
+  if (ns_name.empty()) return modname;
+  return std::string(ns_name + LEXER_NS_SEP + modname);
+}
+
+std::shared_ptr<LocalScope> IfElseModuleInstantiation::makeElseScope()
+{
+  this->else_scope = std::make_shared<LocalScope>();
+  return this->else_scope;
 }

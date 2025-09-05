@@ -25,15 +25,18 @@
  */
 
 #include "core/function.h"
+
 #include "core/AST.h"
 #include "core/Arguments.h"
-#include "core/Expression.h"
 #include "core/Builtins.h"
-#include "utils/printutils.h"
-#include "core/UserModule.h"
-#include "utils/degree_trig.h"
+#include "core/Context.h"
+#include "core/EvaluationSession.h"
+#include "core/Expression.h"
 #include "core/FreetypeRenderer.h"
 #include "core/Parameters.h"
+#include "core/UserModule.h"
+#include "utils/printutils.h"
+#include "utils/degree_trig.h"
 #include "io/import.h"
 #include "io/fileutils.h"
 
@@ -1015,7 +1018,7 @@ Value builtin_is_undef(const std::shared_ptr<const Context>& context, const Func
     return Value::undefined.clone();
   }
   if (auto lookup = std::dynamic_pointer_cast<Lookup>(call->arguments[0]->getExpr())) {
-    auto result = context->try_lookup_variable(lookup->get_name());
+    auto result = context->lookup_variable(lookup->get_name());
     return !result || result->isUndefined();
   } else {
     return call->arguments[0]->getExpr()->evaluate(context).isUndefined();

@@ -4,16 +4,21 @@
 #include <cstddef>
 #include <string>
 #include <vector>
+#include <boost/optional.hpp>
 
-#include "core/EvaluationSession.h"
+// FIXME: header pollution, it's bad to include anything not in inheritance chain and not used as value type
 #include "core/AST.h"
 #include "core/ValueMap.h"
+#include "core/function.h"
+#include "core/module.h"
+
+class EvaluationSession;
 
 class ContextFrame
 {
 public:
   ContextFrame(EvaluationSession *session);
-  virtual ~ContextFrame() = default;
+  virtual ~ContextFrame();
 
   ContextFrame(ContextFrame&& other) = default;
 
@@ -22,6 +27,27 @@ public:
                                                                   const Location& loc) const;
   virtual boost::optional<InstantiableModule> lookup_local_module(const std::string& name,
                                                                   const Location& loc) const;
+
+  /**
+   * @brief Lookup as if referencing by namespace
+   *
+   * Use this for looking up functions or modules from this context when
+   * the name is referenced via `using` or directly `ns::name`.
+   * Will search assignments for function literals.
+   * Does not follow `using` imports.
+   *
+   * TODO: github.com/openscad/openscad/issues/4724 - When adding module literals, lookup in assignments.
+   */
+  template <typename T>
+  boost::optional<T> lookup_as_namespace(const std::string& name) const;
+  virtual boost::optional<CallableFunction> lookup_function_as_namespace(const std::string& name) const;
+  virtual boost::optional<InstantiableModule> lookup_module_as_namespace(const std::string& name) const;
+  virtual boost::optional<const Value&> lookup_variable_as_namespace(const std::string& name) const;
+
+  /**
+   * @brief If a namespace context, is the name; otherwise empty string.
+   */
+  virtual const std::string get_namespace_name() const { return {}; }
 
   virtual std::vector<const Value *> list_embedded_values() const;
   virtual size_t clear();
@@ -38,14 +64,12 @@ public:
   }
 
   void apply_variables(ValueMap&& variables);
-  void apply_lexical_variables(ContextFrame&& other);
-  void apply_config_variables(ContextFrame&& other);
-  void apply_variables(ContextFrame&& other);
+  void apply_variables(std::unique_ptr<ContextFrame>&& other);
 
   static bool is_config_variable(const std::string& name);
 
   EvaluationSession *session() const { return evaluation_session; }
-  const std::string& documentRoot() const { return evaluation_session->documentRoot(); }
+  const std::string& documentRoot() const;
 
 protected:
   ValueMap lexical_variables;
@@ -65,10 +89,7 @@ public:
 class ContextFrameHandle
 {
 public:
-  ContextFrameHandle(ContextFrame *frame) : session(frame->session())
-  {
-    frame_index = session->push_frame(frame);
-  }
+  ContextFrameHandle(ContextFrame *frame);
   ~ContextFrameHandle() { release(); }
 
   ContextFrameHandle(const ContextFrameHandle&) = delete;
@@ -81,21 +102,10 @@ public:
     other.session = nullptr;
   }
 
-  ContextFrameHandle& operator=(ContextFrame *frame)
-  {
-    assert(session == frame->session());
-    session->replace_frame(frame_index, frame);
-    return *this;
-  }
+  ContextFrameHandle& operator=(ContextFrame *frame);
 
   // Valid only if handle is on the top of the stack.
-  void release()
-  {
-    if (session) {
-      session->pop_frame(frame_index);
-      session = nullptr;
-    }
-  }
+  void release();
 
 protected:
   EvaluationSession *session;
