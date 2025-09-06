@@ -37,7 +37,7 @@ jobs:
         qt5) echo "CMAKE_OPTIONS=-DUSE_QT6=0" >> $GITHUB_ENV ;;
         esac
     - name: Checkout
-      uses: actions/checkout@v4
+      uses: actions/checkout@v5
       with:
         submodules: 'recursive'
     - name: Setup (detached) tmate ssh session if enabled
