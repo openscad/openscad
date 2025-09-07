@@ -34,7 +34,7 @@ std::unique_ptr<PolySet> import_off(const std::string& filename, const Location&
   const boost::regex ex_comment(R"(\s*#.*$)");
   boost::smatch results;
 
-  std::ifstream f(filename.c_str(), std::ios::in | std::ios::binary);
+  std::ifstream f(std::filesystem::u8path(filename), std::ios::in | std::ios::binary);
 
   int lineno = 0;
   std::string line;

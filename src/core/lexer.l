@@ -171,6 +171,7 @@ use[ \t\r\n]*"<"        { BEGIN(cond_use); LOCATION_COUNT_LINES(parserlloc, yyte
                             } else {
                                 handle_dep(fullpath.generic_string());
                                 parserlval.text = strdup(fullpath.string().c_str());
+fprintf(stderr, "returning use<%s>\n", parserlval.text); fflush(stderr);
                             }
                             return TOK_USE;
                         }
@@ -357,7 +358,7 @@ void includefile(const Location& loc)
   }
   else {
     rootfile->registerInclude(localpath.generic_string(), localpath.generic_string(), Location::NONE);
-    LOG(message_group::Warning,LOCATION(parserlloc),"","Can't open include file '%1$s'.",localpath.generic_string());
+    LOG(message_group::Warning,LOCATION(parserlloc),"","Can't find include file '%1$s'.",localpath.generic_string());
     return;
   };
 
