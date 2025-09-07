@@ -316,8 +316,6 @@ MainWindow::MainWindow(const QStringList& filenames) : rubberBandManager(this)
   renderCompleteSoundEffect = new QSoundEffect();
   renderCompleteSoundEffect->setSource(QUrl("qrc:/sounds/complete.wav"));
 
-  rootFile = nullptr;
-  parsedFile = nullptr;
   absoluteRootNode = nullptr;
 
   // Open Recent
@@ -1114,9 +1112,6 @@ void MainWindow::updateReorderMode(bool reorderMode)
 
 MainWindow::~MainWindow()
 {
-  // If root_file is not null then it will be the same as parsed_file,
-  // so no need to delete it.
-  delete parsedFile;
   scadApp->windowManager.remove(this);
   if (scadApp->windowManager.getWindows().empty()) {
     // Quit application even in case some other windows like
@@ -2098,7 +2093,7 @@ bool MainWindow::trust_python_file(const std::string& file, const std::string& c
 }
 #endif  // ifdef ENABLE_PYTHON
 
-SourceFile *MainWindow::parseDocument(EditorInterface *editor)
+std::shared_ptr<SourceFile> MainWindow::parseDocument(EditorInterface *editor)
 {
   resetSuppressedMessages();
 
@@ -2153,7 +2148,7 @@ SourceFile *MainWindow::parseDocument(EditorInterface *editor)
     editor->parameterWidget->setEnabled(false);
   }
 
-  return sourceFile;
+  return std::shared_ptr<SourceFile>(sourceFile);
 }
 
 void MainWindow::parseTopLevelDocument()
