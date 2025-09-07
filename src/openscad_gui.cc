@@ -236,6 +236,9 @@ int gui(std::vector<std::string>& inputFiles, const std::filesystem::path& origi
 #endif
 
   registerDefaultIcon(app.applicationFilePath());
+  app.setApplicationFont(
+    GlobalPreferences::inst()->getValue("advanced/applicationFontFamily").toString(),
+    GlobalPreferences::inst()->getValue("advanced/applicationFontSize").toUInt());
 
 #ifdef OPENSCAD_UPDATER
   AutoUpdater *updater = new SparkleAutoUpdater;
@@ -246,7 +249,6 @@ int gui(std::vector<std::string>& inputFiles, const std::filesystem::path& origi
 
   QObject::connect(GlobalPreferences::inst(), &Preferences::applicationFontChanged, &app,
                    &OpenSCADApp::setApplicationFont);
-  GlobalPreferences::inst()->fireApplicationFontChanged();
 
   set_render_color_scheme(arg_colorscheme, false);
   auto noInputFiles = false;

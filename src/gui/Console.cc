@@ -99,7 +99,13 @@ void Console::addHtml(const QString& html)
 
 void Console::setFont(const QString& fontFamily, uint ptSize)
 {
-  this->document()->setDefaultFont(QFont(fontFamily, ptSize));
+  const auto stylesheet = QString(R"(
+    QPlainTextEdit {
+        font-family: '%1';
+        font-size: %2pt;
+    }
+  )");
+  this->setStyleSheet(stylesheet.arg(fontFamily, QString::number(ptSize)));
 }
 
 void Console::update()

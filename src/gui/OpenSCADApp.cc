@@ -79,14 +79,17 @@ void OpenSCADApp::hideFontCacheDialog()
 
 void OpenSCADApp::setApplicationFont(const QString& family, uint size)
 {
-  auto font = QFont();
-  font.setFamily(family);
-  font.setPointSize(size);
-  QApplication::setFont(font);
   // Trigger style sheet refresh to update the application font
   // (hopefully) everywhere. Also remove ugly frames in the QStatusBar
   // when using additional widgets
-  const auto stylesheet =
-    QString("* { font-family: '%1'; font-size: %2 } QStatusBar::item { border: 0px solid black; }");
+  const auto stylesheet = QString(R"(
+    * {
+        font-family: '%1';
+        font-size: %2pt;
+    }
+    QStatusBar::item {
+        border: 0px solid black;
+    }
+  )");
   scadApp->setStyleSheet(stylesheet.arg(family, QString::number(size)));
 }
