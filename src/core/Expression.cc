@@ -25,8 +25,6 @@
  */
 #include "core/Expression.h"
 
-#include "utils/compiler_specific.h"
-#include "core/Value.h"
 #include <set>
 #include <functional>
 #include <ostream>
@@ -40,9 +38,14 @@
 #include <typeinfo>
 #include <utility>
 #include <variant>
+
 #include "core/Context.h"
 #include "core/EvaluationSession.h"
+#include "core/function.h"
 #include "core/Parameters.h"
+#include "core/Value.h"
+
+#include "utils/compiler_specific.h"
 #include "utils/printutils.h"
 #include "utils/StackCheck.h"
 #include "utils/exceptions.h"

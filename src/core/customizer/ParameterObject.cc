@@ -6,6 +6,8 @@
 #include "core/Expression.h"
 #include "core/SourceFile.h"
 
+#include "utils/printutils.h"
+
 #include <variant>
 #include <map>
 #include <utility>

@@ -28,6 +28,7 @@
 #include <memory>
 #include "core/Builtins.h"
 #include "core/Children.h"
+#include "core/module.h"
 #include "core/ModuleInstantiation.h"
 #include "core/node.h"
 #include "core/Parameters.h"

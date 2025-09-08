@@ -6,6 +6,7 @@
 #include "core/Builtins.h"
 #include "core/Expression.h"
 #include "core/function.h"
+#include "core/module.h"
 #include "utils/printutils.h"
 
 BuiltinContext::BuiltinContext(EvaluationSession *session) : Context(session) {}

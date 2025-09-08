@@ -24,8 +24,12 @@
  *
  */
 
-#include "core/AST.h"
 #include "core/ContextFrame.h"
+
+#include "core/AST.h"
+#include "core/callables.h"
+#include "core/EvaluationSession.h"
+#include "core/Value.h"
 
 #include <utility>
 #include <cstddef>
@@ -141,6 +145,11 @@ bool ContextFrame::is_config_variable(const std::string& name)
   return name[0] == '$' && name != "$children";
 }
 
+const std::string& ContextFrame::documentRoot() const
+{
+  return evaluation_session->documentRoot();
+}
+
 #ifdef DEBUG
 std::string ContextFrame::dumpFrame() const
 {
@@ -155,3 +164,26 @@ std::string ContextFrame::dumpFrame() const
   return s.str();
 }
 #endif  // ifdef DEBUG
+
+ContextFrameHandle::ContextFrameHandle(ContextFrame *frame) : session(frame->session())
+{
+  frame_index = session->push_frame(frame);
+}
+
+ContextFrameHandle& ContextFrameHandle::operator=(ContextFrame *frame)
+{
+  assert(session == frame->session());
+  session->replace_frame(frame_index, frame);
+  return *this;
+}
+
+
+// Valid only if handle is on the top of the stack.
+void ContextFrameHandle::release()
+{
+  if (session) {
+    session->pop_frame(frame_index);
+    session = nullptr;
+  }
+}
+

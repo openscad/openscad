@@ -44,6 +44,7 @@
 #include <QStringList>
 #include <QtConcurrentRun>
 
+#include "Feature.h"
 #include "core/parsersettings.h"
 #include "core/Settings.h"
 #include "FontCache.h"
