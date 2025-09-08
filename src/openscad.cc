@@ -1213,7 +1213,7 @@ int wmain(int argc, wchar_t **argv)
   }
   argv8[argc] = NULL;
 
-  auto rc =  main(argc, argv8);
+  auto rc = main(argc, argv8);
 
   // Silence exit-time leak checkers.
   for (int i = 0; i < argc; i++) {
