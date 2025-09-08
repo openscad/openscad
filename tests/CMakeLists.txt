@@ -37,8 +37,6 @@ set(TEST_CMDLINE_TOOL_PY "${CCSD}/test_cmdline_tool.py")
 # Check Dependencies #
 ######################
 
-# If ctest is run with no configuration specified, then force "Default"
-set_directory_properties(PROPERTIES TEST_INCLUDE_FILES "${CCSD}/EnforceConfig.cmake")
 
 # MCAD
 if(NOT EXISTS ${LIBRARIES_DIR}/MCAD/__init__.py)
@@ -998,6 +996,8 @@ set_test_config(Examples FILES ${EXAMPLE_FILES} PREFIXES
   render-csg-cgal render-monotone 
   preview-off render-off dump-examples)
 set_test_config(Examples FILES ${EXAMPLE_2D_FILES} PREFIXES render-dxf)
+# If ctest is run with no configuration specified, then force "Default"
+set_directory_properties(PROPERTIES TEST_INCLUDE_FILES "${CCSD}/cmake/EnforceConfig.cmake")
 
 #############
 # Add tests #
