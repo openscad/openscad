@@ -96,8 +96,6 @@ endfunction()
 function(add_cmdline_test TESTCMD_BASENAME)
   cmake_parse_arguments(TESTCMD "OPENSCAD;STDIO;EXPERIMENTAL" "EXE;SCRIPT;SUFFIX;KERNEL;EXPECTEDDIR" "FILES;ARGS" ${ARGN})
 
-  message(STATUS "Adding cmdline test: ${TESTCMD_BASENAME}")
-
   set(EXTRA_OPTIONS "")
 
   # If sharing results with another test, pass on this to the python script
