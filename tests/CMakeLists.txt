@@ -13,36 +13,98 @@ option(USE_IMAGE_COMPARE_PY "Use built-in image_compare.py" ON)
 
 # Use variables for common paths, to reduce line lengths.
 
+project(OpenSCADTests)
+enable_testing()
+
 # Very commonly used cmake-provided paths
 set(CBD ${CMAKE_BINARY_DIR}) # build top level
 set(CSD ${CMAKE_SOURCE_DIR}) # project top level
 set(CCBD ${CMAKE_CURRENT_BINARY_DIR}) # tests build dir
 set(CCSD ${CMAKE_CURRENT_SOURCE_DIR}) # tests source dir
-# Project paths
-set(LIBRARIES_DIR       "${CSD}/libraries")
-set(EXAMPLES_DIR        "${CSD}/examples")
+
+# When configuring OpenSCADTests as a top-level project, we 
+# expect a self-contained OpenSCAD installation to exist.
+# The location can be specified via the OPENSCAD_BINARY CMake or
+# environment variable.
+if(PROJECT_IS_TOP_LEVEL)
+   message(STATUS "Configuring tests as a top-level project")
+  if(EXISTS "$ENV{OPENSCAD_BINARY}")
+    set(OPENSCAD_BINPATH "$ENV{OPENSCAD_BINARY}")
+  endif()
+
+  # Release builds are typically built against lib3mf
+  option(ENABLE_LIB3MF_TESTS "Enable lib3mf tests" ON)
+else(PROJECT_IS_TOP_LEVEL)
+  message(STATUS "Configuring tests in a subdirectory")
+  # Very commonly used cmake-provided paths
+  set(CBD ${CMAKE_BINARY_DIR}) # build top level
+  set(CSD ${CMAKE_SOURCE_DIR}) # project top level
+  # Project paths
+  set(LIBRARIES_DIR       "${CSD}/libraries")
+  set(EXAMPLES_DIR        "${CSD}/examples")
+
+  if(APPLE)
+    set(OPENSCAD_BINPATH "${CBD}/OpenSCAD.app/Contents/MacOS/OpenSCAD")
+  elseif (WIN32 OR MXECROSS)
+    set(OPENSCAD_BINPATH "${CBD}/openscad.com")
+  elseif(EXISTS "${CBD}/bin/openscad${SUFFIX_WITH_DASH}")
+    set(OPENSCAD_BINPATH "${CBD}/bin/openscad${SUFFIX_WITH_DASH}")
+  else()
+    set(OPENSCAD_BINPATH "${CBD}/openscad${SUFFIX_WITH_DASH}")
+  endif()
+
+  # MCAD
+  if(NOT EXISTS ${LIBRARIES_DIR}/MCAD/__init__.py)
+    message(FATAL_ERROR "MCAD not found. You can install from the OpenSCAD root as follows: \n  git submodule update --init --recursive")
+  endif()
+  list(APPEND CTEST_ENVIRONMENT "OPENSCADPATH=${LIBRARIES_DIR}")
+
+  find_package(Lib3MF QUIET)
+  # Disable LIB3MF tests if library was disabled in build
+  if(NOT LIB3MF_FOUND)
+    # check again via pkgconfig
+    if(NOT MSVC)
+      find_package(PkgConfig QUIET)
+      if (PKG_CONFIG_FOUND)
+        pkg_check_modules(LIB3MF lib3MF)
+      endif()
+    endif()
+  endif()
+  if(LIB3MF_FOUND)
+    set(ENABLE_LIB3MF_TESTS TRUE)
+  endif()
+endif(PROJECT_IS_TOP_LEVEL)
+
+if(OPENSCAD_BINPATH AND EXISTS "${OPENSCAD_BINPATH}")
+  message(STATUS "Found OpenSCAD binary: ${OPENSCAD_BINPATH}")
+  list(APPEND CTEST_ENVIRONMENT "OPENSCAD_BINARY=${OPENSCAD_BINPATH}")
+  # Argument used for import/export tests
+  set(OPENSCAD_EXE_ARG "--openscad=${OPENSCAD_BINPATH}")
+else()
+  if (NOT OPENSCAD_BINPATH) 
+    message(STATUS "OPENSCAD_BINPATH not set")
+  else()
+    message(STATUS "Couldn't find the OpenSCAD binary: ${OPENSCAD_BINPATH}")
+    message(FATAL_ERROR "Please build the OpenSCAD binary and place it here: ${OPENSCAD_BINPATH}")
+  endif()
+endif()
+
 # Test Data paths
 set(TEST_DATA_DIR       "${CCSD}/data")
 set(TEST_SCAD_DIR       "${CCSD}/data/scad")
 set(TEST_CUSTOMIZER_DIR "${CCSD}/data/scad/customizer")
 set(TEST_PYTHON_DIR     "${CCSD}/data/python")
 # Test runner Python scripts
-set(STLEXPORTSANITYTEST_PY "${CCSD}/stlexportsanitytest.py")
-set(EXPORT_IMPORT_PNGTEST_PY     "${CCSD}/export_import_pngtest.py")
-set(EXPORT_PNGTEST_PY    "${CCSD}/export_pngtest.py")
-set(SHOULDFAIL_PY        "${CCSD}/shouldfail.py")
-set(TEST_CMDLINE_TOOL_PY "${CCSD}/test_cmdline_tool.py")
+set(STLEXPORTSANITYTEST_PY   "${CCSD}/stlexportsanitytest.py")
+set(EXPORT_IMPORT_PNGTEST_PY "${CCSD}/export_import_pngtest.py")
+set(EXPORT_PNGTEST_PY        "${CCSD}/export_pngtest.py")
+set(SHOULDFAIL_PY            "${CCSD}/shouldfail.py")
+set(TEST_CMDLINE_TOOL_PY     "${CCSD}/test_cmdline_tool.py")
 
 ######################
 # Check Dependencies #
 ######################
 
-
-# MCAD
-if(NOT EXISTS ${LIBRARIES_DIR}/MCAD/__init__.py)
-  message(FATAL_ERROR "MCAD not found. You can install from the OpenSCAD root as follows: \n  git submodule update --init --recursive")
-endif()
-list(APPEND CTEST_ENVIRONMENT "OPENSCADPATH=${LIBRARIES_DIR}")
 
 find_package(Python3 3.4 COMPONENTS Interpreter REQUIRED)
 message(STATUS "Found Python at ${Python3_EXECUTABLE}")
@@ -74,7 +136,6 @@ if(USE_IMAGE_COMPARE_PY)
       set(BUILD_VENV FALSE)
     endif()
   else()
-    message(STATUS "venv not found")
     set(BUILD_VENV TRUE)
   endif()
   if(BUILD_VENV)
@@ -168,44 +229,6 @@ else()
   endif()
 endif()
 
-find_package(Lib3MF QUIET)
-# Disable LIB3MF tests if library was disabled in build
-if(NOT LIB3MF_FOUND)
-  # check again via pkgconfig
-  if(NOT MSVC)
-    find_package(PkgConfig QUIET)
-    if (PKG_CONFIG_FOUND)
-      pkg_check_modules(LIB3MF lib3MF)
-    endif()
-  endif()
-endif()
-
-# Determine path for openscad executable
-if(EXISTS "$ENV{OPENSCAD_BINARY}")
-  set(OPENSCAD_BINPATH "$ENV{OPENSCAD_BINARY}")
-elseif(APPLE)
-  set(OPENSCAD_BINPATH "${CBD}/OpenSCAD.app/Contents/MacOS/OpenSCAD")
-elseif (WIN32 OR MXECROSS)
-  set(OPENSCAD_BINPATH "${CBD}/openscad.com")
-elseif(EXISTS "${CBD}/bin/openscad${SUFFIX_WITH_DASH}")
-  set(OPENSCAD_BINPATH "${CBD}/bin/openscad${SUFFIX_WITH_DASH}")
-else()
-  set(OPENSCAD_BINPATH "${CBD}/openscad${SUFFIX_WITH_DASH}")
-endif()
-
-#if(EXISTS "${OPENSCAD_BINPATH}")
-#  message(STATUS "Found OpenSCAD binary: ${OPENSCAD_BINPATH}")
-#else()
-#  message(STATUS "Couldn't find the OpenSCAD binary: ${OPENSCAD_BINPATH}")
-#  message(FATAL_ERROR "Please build the OpenSCAD binary and place it here: ${OPENSCAD_BINPATH}")
-#endif()
-list(APPEND CTEST_ENVIRONMENT "OPENSCAD_BINARY=${OPENSCAD_BINPATH}")
-# Argument used for import/export tests
-set(OPENSCAD_EXE_ARG "--openscad=${OPENSCAD_BINPATH}")
-
-###############################
-# Define Macros and Functions #
-###############################
 
 #
 # Returns into the FULLNAME variable the global full test name (identifier)
