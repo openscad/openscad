@@ -130,6 +130,9 @@ find_package(Python3 3.4 COMPONENTS Interpreter REQUIRED QUIET)
 message(STATUS "Found Python at ${Python3_EXECUTABLE}")
 
 include("cmake/ImageCompare.cmake")
+include("cmake/GalliumFixes.cmake")
+include("cmake/TestFunctions.cmake")
+include("cmake/SetupCTestCustom.cmake")
 
 #################################################
 # Configure Templated Files and Generated Tests #
@@ -150,7 +153,6 @@ configure_file(${TEST_PYTHON_DIR}/gen_issue2342-template.py
 configure_file(${TEST_PYTHON_DIR}/gen_svg_viewbox_tests-template.py
                ${TEST_PYTHON_DIR}/gen_svg_viewbox_tests.py)
 
-endif()
 # generate a very large scad file which we would rather not commit to the source tree
 # this is for stress-testing the parser
 add_custom_target(issue2342 ALL
@@ -673,9 +675,6 @@ set_directory_properties(PROPERTIES TEST_INCLUDE_FILES "${CCSD}/cmake/EnforceCon
 # o render-off: Export to STL, Re-import and render to PNG (--render=force)
 # o render-dxf: Export to DXF, Re-import and render to PNG (--render=force)
 #
-include("cmake/GalliumFixes.cmake")
-include("cmake/TestFunctions.cmake")
-include("cmake/SetupCTestCustom.cmake")
 
 add_cmdline_test(astdump OPENSCAD SUFFIX ast FILES
   ${MISC_FILES}
@@ -1385,4 +1384,3 @@ foreach(CONF ${TEST_CONFIGS})
   list(SORT ${CONF}_TEST_CONFIG)
   message(DEBUG "${CONF}: ${${CONF}_TEST_CONFIG}")
 endforeach()
-
