@@ -37,7 +37,7 @@ jobs:
         qt5) echo "CMAKE_OPTIONS=-DUSE_QT6=0" >> $GITHUB_ENV ;;
         esac
     - name: Checkout
-      uses: actions/checkout@v4
+      uses: actions/checkout@v5
       with:
         submodules: 'recursive'
     - name: Setup (detached) tmate ssh session if enabled
@@ -51,6 +51,13 @@ jobs:
       run: |
         brew unlink python3
         brew link --overwrite python3
+    - name: Workaround for https://github.com/actions/runner-images/pull/12791
+      run: |
+        if brew tap-info local/pinned; then
+          brew uninstall cmake
+          brew untap local/pinned
+          brew install cmake
+        fi
     - name: Install Homebrew packages
       env:
         HOMEBREW_NO_AUTO_UPDATE: 1

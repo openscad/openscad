@@ -986,9 +986,6 @@ MainWindow::MainWindow(const QStringList& filenames) : rubberBandManager(this)
 
   // fills the content of the Recents Files menu.
   updateRecentFileActions();
-
-  // Kick the re-styling again, otherwise it does not catch menu items
-  GlobalPreferences::inst()->fireApplicationFontChanged();
 }
 
 void MainWindow::setAllMouseViewActions()
@@ -4076,8 +4073,9 @@ void MainWindow::onTabManagerEditorChanged(EditorInterface *newEditor)
   fontListDock->setNameSuffix(name);
   viewportControlDock->setNameSuffix(name);
 
-  // If there is no renderedEditor we request for a new preview.
-  if (renderedEditor == nullptr) {
+  // If there is no renderedEditor we request for a new preview if the
+  // auto-reload is enabled.
+  if (renderedEditor == nullptr && designActionAutoReload->isChecked()) {
     actionRenderPreview();
   }
 }

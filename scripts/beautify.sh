@@ -14,16 +14,19 @@ ROOT_DIR="$( cd "$SCRIPT_DIR/.." && pwd )"
 
 DOALL=0
 CHECKALL=0
+DOSTAGED=0
 
 FORMAT_CMD="clang-format -i --style file:$ROOT_DIR/.clang-format"
 CHECK_CMD="$FORMAT_CMD --dry-run --Werror"
 VERSION_CMD="clang-format --version"
+STAGED_FILES_CMD="git diff --name-only --cached"
 
 # Filter out any files that shouldn't be auto-formatted.
 # note: -v flag inverts selection - this tells grep to *filter out* anything
 #       that matches the pattern. For testing, you can remove the -v to see
 #       which files would have been excluded.
-FILTER_CMD="grep -v -E ext/"
+FILTER_CMD="grep -v -E /ext/"
+FILTER_EXTENSION_CMD="grep -E [.](h|hpp|cc|cpp)$"
 
 function find_all() {
     find "$ROOT_DIR/src" \( -name "*.h" -o -name "*.hpp" -o -name "*.cc" -o -name "*.cpp" \) -a -not -name findversion.h \
@@ -42,7 +45,17 @@ function reformat_all() {
 DIFFBASE="origin/master"
 function reformat_changed() {
     ANCESTOR=$(git merge-base HEAD "$DIFFBASE")
-    if FILES=$(git --no-pager diff --name-only "$ANCESTOR" | grep -E "\.(h|hpp|cc|cpp)" | $FILTER_CMD); then
+    if FILES=$(git --no-pager diff --name-only "$ANCESTOR" | $FILTER_EXTENSION_CMD | $FILTER_CMD); then
+        echo -e "Reformatting files:\n$FILES"
+        echo $FILES | xargs $FORMAT_CMD
+    else
+        echo "No files to format, exiting..."
+    fi
+}
+
+function reformat_staged() {
+    cd "$ROOT_DIR"
+    if FILES=$($STAGED_FILES_CMD | $FILTER_EXTENSION_CMD | $FILTER_CMD); then
         echo -e "Reformatting files:\n$FILES"
         echo $FILES | xargs $FORMAT_CMD
     else
@@ -67,14 +80,21 @@ do
     CHECKALL=1
   elif [ "$PARAM" == "--all" ]; then
     DOALL=1
+  elif [ "$PARAM" == "--staged" ]; then
+    DOSTAGED=1
   elif [ "$KEY" == "-h" ]; then
     SCRIPT=$(basename "$0")
-    echo "Runs clang-format on files which differ from diffbase, OR across the entire project (for --all)"
-    echo "If no options given, then diffbase defaults to \"origin/master\""
-    echo
-    echo "Usage:"
-    echo "    $SCRIPT [--all|--diffbase=BASE]"
-    echo
+cat << EOF
+Usage: $SCRIPT [--all|--staged|--check|--diffbase=BASE]
+
+Runs clang-format on files. Default scope is files changed from origin/master.
+
+    --all               format all files
+    --staged            format staged files
+    --check             check files, do not make changes
+    --diffbase=BASE     format files that differ from BASE
+
+EOF
     exit
   fi
 done
@@ -97,6 +117,8 @@ function execute() {
 
 if ((DOALL)); then
     execute reformat_all "Reformatting all files..."
+elif ((DOSTAGED)); then
+    execute reformat_staged "Reformatting staged files..."
 elif ((CHECKALL)); then
     execute check_all "Checking all files..."
 else
