@@ -35,7 +35,7 @@ public:
   bool isRoot() const { return this->tag_root; }
 
   AssignmentList arguments;
-  std::shared_ptr<LocalScope> scope;
+  const std::shared_ptr<LocalScope> scope;
 
   bool tag_root{false};
   bool tag_highlight{false};

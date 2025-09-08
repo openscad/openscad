@@ -22,13 +22,13 @@ public:
                                                           const Location& loc) const override;
 
 protected:
-  ScopeContext(const std::shared_ptr<const Context>& parent, const std::shared_ptr<LocalScope> scope)
-    : Context(parent), scope(scope)
+  ScopeContext(const std::shared_ptr<const Context>& parent, std::shared_ptr<const LocalScope> scope)
+    : Context(parent), scope(std::move(scope))
   {
   }
 
 private:
-  const std::shared_ptr<LocalScope> scope;
+  const std::shared_ptr<const LocalScope> scope;
 
   friend class Context;
 };

@@ -45,5 +45,5 @@ public:
 
   std::string name;
   AssignmentList parameters;
-  std::shared_ptr<LocalScope> body;
+  const std::shared_ptr<LocalScope> body;
 };
