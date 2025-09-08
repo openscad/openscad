@@ -7,7 +7,7 @@
 #include <boost/optional.hpp>
 
 #include "core/callables.h"
-#include "core/ContextMemoryManager.h" // FIXME: don't use as value type so we don't need to include header
+#include "core/ContextMemoryManager.h"  // FIXME: don't use as value type so we don't need to include header
 
 class Value;
 class ContextFrame;

@@ -145,10 +145,7 @@ bool ContextFrame::is_config_variable(const std::string& name)
   return name[0] == '$' && name != "$children";
 }
 
-const std::string& ContextFrame::documentRoot() const
-{
-  return evaluation_session->documentRoot();
-}
+const std::string& ContextFrame::documentRoot() const { return evaluation_session->documentRoot(); }
 
 #ifdef DEBUG
 std::string ContextFrame::dumpFrame() const
@@ -177,7 +174,6 @@ ContextFrameHandle& ContextFrameHandle::operator=(ContextFrame *frame)
   return *this;
 }
 
-
 // Valid only if handle is on the top of the stack.
 void ContextFrameHandle::release()
 {
@@ -186,4 +182,3 @@ void ContextFrameHandle::release()
     session = nullptr;
   }
 }
-
