@@ -27,9 +27,12 @@ private:
 class UserModule : public AbstractModule, public ASTNode
 {
 public:
-  UserModule(const char *name, const Location& loc) : ASTNode(loc), name(name) {}
+  UserModule(const char *name, const Location& loc)
+    : ASTNode(loc), name(name), body(std::make_shared<LocalScope>())
+  {
+  }
   UserModule(const char *name, const Feature& feature, const Location& loc)
-    : AbstractModule(feature), ASTNode(loc), name(name)
+    : AbstractModule(feature), ASTNode(loc), name(name), body(std::make_shared<LocalScope>())
   {
   }
 
@@ -42,5 +45,5 @@ public:
 
   std::string name;
   AssignmentList parameters;
-  LocalScope body;
+  const std::shared_ptr<LocalScope> body;
 };

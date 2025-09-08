@@ -15,8 +15,8 @@ class LocalScope;
 class Children
 {
 public:
-  Children(const LocalScope *children_scope, std::shared_ptr<const Context> context)
-    : children_scope(children_scope), context(std::move(context))
+  Children(std::shared_ptr<const LocalScope> children_scope, std::shared_ptr<const Context> context)
+    : children_scope(std::move(children_scope)), context(std::move(context))
   {
   }
 
@@ -38,7 +38,7 @@ public:
   [[nodiscard]] const std::shared_ptr<const Context>& getContext() const { return context; }
 
 private:
-  const LocalScope *children_scope;
+  const std::shared_ptr<const LocalScope> children_scope;
   std::shared_ptr<const Context> context;
 
   [[nodiscard]] ContextHandle<ScopeContext> scopeContext() const;
