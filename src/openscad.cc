@@ -1207,19 +1207,14 @@ std::string wchar_to_string(wchar_t *wcp) { return convert_wchar.to_bytes(wcp); 
 int wmain(int argc, wchar_t **argv)
 {
   char *argv8[argc + 1];
+  std::string argvString[argc];
 
   for (int i = 0; i < argc; i++) {
-    argv8[i] = strdup(wchar_to_string(argv[i]).c_str());
+    argvString[i] = wchar_to_string(argv[i]);
+    argv8[i] = argvString[i].data();
   }
   argv8[argc] = NULL;
 
-  auto rc = main(argc, argv8);
-
-  // Silence exit-time leak checkers.
-  for (int i = 0; i < argc; i++) {
-    free(argv8[i]);
-  }
-
-  return (rc);
+  return (main(argc, argv8));
 }
 #endif  // _WIN32
