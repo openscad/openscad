@@ -8,6 +8,7 @@
 
 #include "core/callables.h"
 #include "core/ContextFrame.h"
+#include "core/EvaluationSession.h"
 
 /**
  * Local handle to a all context objects. This is used to maintain the
@@ -18,15 +19,44 @@ template <typename T>
 class ContextHandle : ContextFrameHandle
 {
 public:
-  ContextHandle(std::shared_ptr<T>&& context);
-  ~ContextHandle();
+  ContextHandle(std::shared_ptr<T>&& context)
+    : ContextFrameHandle(context.get()), context(std::move(context))
+  {
+    try {
+      this->context->init();
+    } catch (...) {
+      session->contextMemoryManager().addContext(std::move(this->context));
+      throw;
+    }
+  }
+  ~ContextHandle()
+  {
+    assert(!!session == !!context);
+    if (session) {
+      session->contextMemoryManager().addContext(std::move(this->context));
+    }
+  }
+
 
   ContextHandle(const ContextHandle&) = delete;
   ContextHandle& operator=(const ContextHandle&) = delete;
   ContextHandle(ContextHandle&& other) noexcept = default;
 
   // Valid only if $other is on the top of the stack.
-  ContextHandle& operator=(ContextHandle&& other) noexcept;
+  ContextHandle& operator=(ContextHandle&& other) noexcept
+  {
+    assert(session);
+    assert(context);
+    assert(other.context);
+    assert(other.session);
+
+    // session->contextMemoryManager().releaseContext();
+    session->contextMemoryManager().addContext(std::move(this->context));
+    other.release();
+    context = std::move(other.context);
+    ContextFrameHandle::operator=(context.get());
+    return *this;
+  }
 
   const T *operator->() const { return context.get(); }
   T *operator->() { return context.get(); }
