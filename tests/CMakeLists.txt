@@ -39,9 +39,7 @@ else(PROJECT_IS_TOP_LEVEL)
   # Very commonly used cmake-provided paths
   set(CBD ${CMAKE_BINARY_DIR}) # build top level
   set(CSD ${CMAKE_SOURCE_DIR}) # project top level
-  # Project paths
-  set(LIBRARIES_DIR       "${CSD}/libraries")
-  set(EXAMPLES_DIR        "${CSD}/examples")
+  set(LIBRARIES_DIR "${CSD}/libraries")
 
   if(APPLE)
     set(OPENSCAD_BINPATH "${CBD}/OpenSCAD.app/Contents/MacOS/OpenSCAD")
@@ -87,6 +85,28 @@ else()
     message(STATUS "Couldn't find the OpenSCAD binary: ${OPENSCAD_BINPATH}")
     message(FATAL_ERROR "Please build the OpenSCAD binary and place it here: ${OPENSCAD_BINPATH}")
   endif()
+endif()
+
+if(PROJECT_IS_TOP_LEVEL)
+  if(NOT EXAMPLES_DIR)
+    get_filename_component(OPENSCAD_EXE_DIR "${OPENSCAD_BINPATH}" DIRECTORY)
+    find_path(EXAMPLES_DIR
+      NAMES "Basics/logo.scad"
+      HINTS
+        "${OPENSCAD_EXE_DIR}/../Resources" # macOS app bundle
+        "${OPENSCAD_EXE_DIR}/../share/openscad" # (Linux) package install
+        "${OPENSCAD_EXE_DIR}" # Windows install
+      PATH_SUFFIXES "examples"
+      NO_DEFAULT_PATH
+    )
+  endif()
+else()
+  set(EXAMPLES_DIR "${CSD}/examples")
+endif()
+
+if (NOT EXISTS "${EXAMPLES_DIR}")
+  unset(EXAMPLES_DIR)
+  message(WARNING "Examples directory not found, disabling examples tests")
 endif()
 
 # Test Data paths
