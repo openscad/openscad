@@ -458,8 +458,6 @@ MainWindow::MainWindow(const QStringList& filenames) : rubberBandManager(this)
   renderCompleteSoundEffect = new QSoundEffect();
   renderCompleteSoundEffect->setSource(QUrl("qrc:/sounds/complete.wav"));
 
-  rootFile = nullptr;
-  parsedFile = nullptr;
   absoluteRootNode = nullptr;
 
   this->csgworker = new CSGWorker(this);
@@ -1425,9 +1423,6 @@ void MainWindow::updateReorderMode(bool reorderMode)
 
 MainWindow::~MainWindow()
 {
-  // If root_file is not null then it will be the same as parsed_file,
-  // so no need to delete it.
-  delete parsedFile;
   scadApp->windowManager.remove(this);
   if (scadApp->windowManager.getWindows().empty()) {
     // Quit application even in case some other windows like
@@ -2476,7 +2471,7 @@ void MainWindow::recomputeLanguageActive()
 #endif
 }
 
-SourceFile *MainWindow::parseDocument(EditorInterface *editor)
+std::shared_ptr<SourceFile> MainWindow::parseDocument(EditorInterface *editor)
 {
   resetSuppressedMessages();
 
@@ -2512,15 +2507,15 @@ SourceFile *MainWindow::parseDocument(EditorInterface *editor)
       //
       // add parameters as annotation in AST
       auto error = evaluatePython(par_text, true);  // run dummy
-      this->rootFile->scope.assignments = customizer_parameters;
-      CommentParser::collectParameters(fulltext_py, this->rootFile, '#');        // add annotations
-      this->activeEditor->parameterWidget->setParameters(this->rootFile, "\n");  // set widgets values
-      this->activeEditor->parameterWidget->applyParameters(this->rootFile);      // use widget values
+      this->rootFile->scope->assignments = customizer_parameters;
+      CommentParser::collectParameters(fulltext_py, this->rootFile.get(), '#');        // add annotations
+      this->activeEditor->parameterWidget->setParameters(this->rootFile.get(), "\n");  // set widgets values
+      this->activeEditor->parameterWidget->applyParameters(this->rootFile.get());      // use widget values
       this->activeEditor->parameterWidget->setEnabled(true);
       this->activeEditor->setIndicator(this->rootFile->indicatorData);
     } while (0);
 
-    if (this->rootFile != nullptr) customizer_parameters_finished = this->rootFile->scope.assignments;
+    if (this->rootFile != nullptr) customizer_parameters_finished = this->rootFile->scope->assignments;
     customizer_parameters.clear();
     if (venv.empty()) {
       LOG("Running %1$s without venv.", python_version());
@@ -2551,7 +2546,7 @@ SourceFile *MainWindow::parseDocument(EditorInterface *editor)
       editor->parameterWidget->setEnabled(false);
     }
   }
-  return sourceFile;
+  return std::shared_ptr<SourceFile>(sourceFile);
 }
 
 void MainWindow::parseTopLevelDocument()

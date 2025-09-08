@@ -8,6 +8,7 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include <optional>
 
 class AbstractNode;
 class Context;
@@ -30,14 +31,30 @@ public:
   void addAssignment(const std::shared_ptr<class Assignment>& assignment);
   bool hasChildren() const { return !(moduleInstantiations.empty()); }
 
+  /**
+   * @brief Search corresponding environment of name for type
+   *
+   * FYI can only find `function x()` not `x = function ()`
+   */
+  template <typename T>
+  std::optional<T> lookup(const std::string& name) const;
+
   AssignmentList assignments;
   std::vector<std::shared_ptr<ModuleInstantiation>> moduleInstantiations;
 
   // Modules and functions are stored twice; once for lookup and once for AST serialization
   // FIXME: Should we split this class into an ASTNode and a run-time support class?
   std::unordered_map<std::string, std::shared_ptr<UserFunction>> functions;
-  std::vector<std::pair<std::string, std::shared_ptr<UserFunction>>> astFunctions;
-
   std::unordered_map<std::string, std::shared_ptr<UserModule>> modules;
+private:
+
+  // All below only used for printing:
   std::vector<std::pair<std::string, std::shared_ptr<UserModule>>> astModules;
+  std::vector<std::pair<std::string, std::shared_ptr<UserFunction>>> astFunctions;
 };
+
+template <>
+std::optional<UserFunction *> LocalScope::lookup(const std::string& name) const;
+
+template <>
+std::optional<UserModule *> LocalScope::lookup(const std::string& name) const;

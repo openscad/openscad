@@ -38,6 +38,7 @@ echo "
 
 docker run --rm -it \
   --platform=linux/amd64 \
+  -w /src \
   -v "$PWD:/src:rw" \
   -v $CCACHE_DIR:/root/.ccache:rw \
   openscad-wasm-ccache:local \

@@ -37,6 +37,13 @@ std::shared_ptr<ManifoldGeometry> createManifoldFromTriangularPolySet(const Poly
 {
   assert(ps.isTriangular());
 
+  printf("to Manifold\n");
+  for(auto &ind : ps.indices) {
+    for(int i : ind) {
+	    printf("%d ",i);
+    }
+    printf("\n");    
+  }
   manifold::MeshGL64 mesh;
 
   mesh.numProp = 3;

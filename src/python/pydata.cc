@@ -507,7 +507,7 @@ PyObject *PyDataObject_call(PyObject *self, PyObject *args, PyObject *kwargs)
 
   std::shared_ptr<ModuleInstantiation> modinst =
     std::make_shared<ModuleInstantiation>(modulename, pargs, Location::NONE);
-  modinst->scope.moduleInstantiations = modinsts;
+  modinst->scope->moduleInstantiations = modinsts;
 
   std::ostringstream stream;
   stream << "include <" << modulepath << ">";
@@ -522,8 +522,8 @@ PyObject *PyDataObject_call(PyObject *self, PyObject *args, PyObject *kwargs)
   EvaluationSession session{"python"};
   ContextHandle<BuiltinContext> builtin_context{Context::create<BuiltinContext>(&session)};
   std::shared_ptr<const FileContext> dummy_context;
-  source->scope.moduleInstantiations.clear();
-  source->scope.moduleInstantiations.push_back(modinst);
+  source->scope->moduleInstantiations.clear();
+  source->scope->moduleInstantiations.push_back(modinst);
   std::shared_ptr<AbstractNode> resultnode = source->instantiate(*builtin_context, &dummy_context);
   nodes_hold.push_back(resultnode);  // dirty hacks so resultnode does not go out of context
   resultnode = resultnode->clone();  // use own ModuleInstatiation
