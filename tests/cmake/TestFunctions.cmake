@@ -202,3 +202,45 @@ function(add_cmdline_test TESTCMD_BASENAME)
     endif()
   endforeach()
 endfunction()
+
+#
+function(add_failing_test TESTCMD_BASENAME)
+  cmake_parse_arguments(TESTCMD "" "RETVAL;EXE;SCRIPT;SUFFIX" "FILES;ARGS" ${ARGN})
+
+  if ("${TESTCMD_SUFFIX}" STREQUAL "") # Suffix "off" counts as a false value, so check directly for empty string.
+    message(FATAL_ERROR "add_failing_test() requires SUFFIX to be set" )
+  endif()
+  if (NOT TESTCMD_EXE)
+    set(TESTCMD_EXE ${Python3_EXECUTABLE})
+  endif()
+  if (NOT TESTCMD_SCRIPT)
+    set(TESTCMD_SCRIPT ${SHOULDFAIL_PY})
+  endif()
+
+  set(TESTNAME_OPTION -t ${TESTCMD_BASENAME})
+
+  # Add tests from args
+  foreach (SCADFILE ${TESTCMD_FILES})
+    get_filename_component(FILE_BASENAME ${SCADFILE} NAME_WE)
+    string(REPLACE " " "_" FILE_BASENAME ${FILE_BASENAME}) # Test names cannot include spaces
+    set(TEST_FULLNAME "${TESTCMD_BASENAME}_${FILE_BASENAME}")
+    # Handle configurations
+    unset(FOUNDCONFIGS)
+    get_test_config(${TEST_FULLNAME} FOUNDCONFIGS)
+    if (NOT FOUNDCONFIGS)
+      set_test_config(Default FILES ${TEST_FULLNAME})
+    endif()
+    set_test_config(All FILES ${TEST_FULLNAME})
+    unset(FOUNDCONFIGS)
+    get_test_config(${TEST_FULLNAME} FOUNDCONFIGS)
+    set(CONFVAL ${FOUNDCONFIGS})
+
+    # The python script cannot extract the testname when given extra parameters
+    if (TESTCMD_ARGS)
+      set(FILENAME_OPTION -f ${FILE_BASENAME})
+    endif()
+
+    add_test(NAME ${TEST_FULLNAME} CONFIGURATIONS ${CONFVAL} COMMAND ${TESTCMD_EXE} ${TESTCMD_SCRIPT} "${SCADFILE}" -s ${TESTCMD_SUFFIX} ${TESTCMD_ARGS})
+    set_property(TEST ${TEST_FULLNAME} PROPERTY ENVIRONMENT "${CTEST_ENVIRONMENT}")
+  endforeach()
+endfunction()
