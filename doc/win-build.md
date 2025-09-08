@@ -19,14 +19,20 @@ Follow these steps to build OpenSCAD with Microsoft Visual Studio:
     git clone https://github.com/Microsoft/vcpkg.git
     .\vcpkg\bootstrap-vcpkg.bat
     ```
-- Then add d:\vcpkg to your PATH.
-  Clone the OpenSCAD repo somewhere (in this example, d:\openscad) and run
+- Then add your vcpkg install location to your PATH (for example d:\vcpkg), and set VCPKG_ROOT to your directory.
+  A short way to do this for your current terminal session is
+
+    ```
+    $env:VCPKG_ROOT = "C:\path\to\vcpkg"
+    $env:PATH = "$env:VCPKG_ROOT;$env:PATH"
+    ```
+- Clone the OpenSCAD repo somewhere (in this example, d:\openscad) and run
   scripts\win-msvc-build.bat in it:
   
     ```
     git clone https://github.com/openscad/openscad.git
     cd openscad
-    scripts\win-msvc-build.bat
+    scripts/win-msvc-build.bat
     ```
 
 What that batch file does is first install all required packages through vcpkg,
