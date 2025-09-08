@@ -37,7 +37,6 @@ public:
     }
   }
 
-
   ContextHandle(const ContextHandle&) = delete;
   ContextHandle& operator=(const ContextHandle&) = delete;
   ContextHandle(ContextHandle&& other) noexcept = default;
