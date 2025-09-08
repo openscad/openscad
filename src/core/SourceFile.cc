@@ -47,13 +47,16 @@ namespace fs = std::filesystem;
 #include <sys/stat.h>
 
 SourceFile::SourceFile(std::string path, std::string filename)
-  : ASTNode(Location::NONE), path(std::move(path)), filename(std::move(filename))
+  : ASTNode(Location::NONE),
+    path(std::move(path)),
+    filename(std::move(filename)),
+    scope(std::make_shared<LocalScope>())
 {
 }
 
 void SourceFile::print(std::ostream& stream, const std::string& indent) const
 {
-  scope.print(stream, indent);
+  scope->print(stream, indent);
 }
 
 void SourceFile::registerUse(const std::string& path, const Location& loc)
@@ -179,7 +182,7 @@ std::shared_ptr<AbstractNode> SourceFile::instantiate(
   try {
     ContextHandle<FileContext> file_context{Context::create<FileContext>(context, this)};
     *resulting_file_context = *file_context;
-    this->scope.instantiateModules(*file_context, node);
+    this->scope->instantiateModules(*file_context, node);
   } catch (HardWarningException& e) {
     throw;
   } catch (EvaluationException& e) {

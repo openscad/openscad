@@ -86,8 +86,8 @@ public:
   QTimer *waitAfterReloadTimer;
   RenderStatistic renderStatistic;
 
-  SourceFile *rootFile;                            // Result of parsing
-  SourceFile *parsedFile;                          // Last parse for include list
+  std::shared_ptr<SourceFile> rootFile;            // Result of parsing
+  std::shared_ptr<SourceFile> parsedFile;          // Last parse for include list
   std::shared_ptr<AbstractNode> absoluteRootNode;  // Result of tree evaluation
   std::shared_ptr<AbstractNode> rootNode;          // Root if the root modifier (!) is used
 #ifdef ENABLE_PYTHON
@@ -181,7 +181,7 @@ public:
 
   // Parse the document contained in the editor, update the editors's parameters and returns a SourceFile
   // object if parsing suceeded. Nullptr otherwise.
-  SourceFile *parseDocument(EditorInterface *editor);
+  std::shared_ptr<SourceFile> parseDocument(EditorInterface *editor);
 
   void parseTopLevelDocument();
   void exceptionCleanup();
