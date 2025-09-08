@@ -106,7 +106,7 @@ set(TEST_CMDLINE_TOOL_PY     "${CCSD}/test_cmdline_tool.py")
 ######################
 
 
-find_package(Python3 3.4 COMPONENTS Interpreter REQUIRED)
+find_package(Python3 3.4 COMPONENTS Interpreter REQUIRED QUIET)
 message(STATUS "Found Python at ${Python3_EXECUTABLE}")
 
 # Image comparison - expected test image vs actual generated image
@@ -433,8 +433,6 @@ function(add_cmdline_test TESTCMD_BASENAME)
   endforeach()
 endfunction()
 
-# Usage add_failing_test(testbasename  RETVAL <expected return value>  SUFFIX <suffix>  FILES <test files>
-#                        [EXE <executable>] [SCRIPT <script>] [ARGS <args to exe>])
 #
 function(add_failing_test TESTCMD_BASENAME)
   cmake_parse_arguments(TESTCMD "" "RETVAL;EXE;SCRIPT;SUFFIX" "FILES;ARGS" ${ARGN})
