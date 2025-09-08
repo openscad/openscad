@@ -180,22 +180,6 @@ if(NOT LIB3MF_FOUND)
   endif()
 endif()
 
-####################################
-# Platform Specific Configurations #
-####################################
-
-# Workaround Gallium bugs
-if ( ${CMAKE_SYSTEM_PROCESSOR} MATCHES "ppc")
-  message(STATUS "Workaround PPC bug https://bugs.freedesktop.org/show_bug.cgi?id=42540")
-  list(APPEND CTEST_ENVIRONMENT "GALLIUM_DRIVER=softpipe")
-  list(APPEND CTEST_ENVIRONMENT "DRAW_USE_LLVM=no")
-endif()
-if ( ${CMAKE_SYSTEM_PROCESSOR} MATCHES "mips")
-  message(STATUS "Workaround MIPS bug https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=868745")
-  list(APPEND CTEST_ENVIRONMENT "GALLIUM_DRIVER=softpipe")
-  list(APPEND CTEST_ENVIRONMENT "DRAW_USE_LLVM=no")
-endif()
-
 # Determine path for openscad executable
 if(EXISTS "$ENV{OPENSCAD_BINARY}")
   set(OPENSCAD_BINPATH "$ENV{OPENSCAD_BINARY}")
@@ -1022,6 +1006,7 @@ set_directory_properties(PROPERTIES TEST_INCLUDE_FILES "${CCSD}/cmake/EnforceCon
 # o render-off: Export to STL, Re-import and render to PNG (--render=force)
 # o render-dxf: Export to DXF, Re-import and render to PNG (--render=force)
 #
+include("cmake/GalliumFixes.cmake")
 
 add_cmdline_test(astdump OPENSCAD SUFFIX ast FILES
   ${MISC_FILES}
