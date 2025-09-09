@@ -3179,16 +3179,6 @@ Response GeometryEvaluator::visit(State& state, const DebugNode& node)
 
 static std::unique_ptr<PolySet> repairObject(const RepairNode& node, const PolySet *ps)
 {
-  auto psx = std::make_unique<PolySet>(3, /*convex*/ true);	
-  psx->vertices = ps->vertices;
-  for(auto &ind : ps->indices){
-    IndexedFace newface;
-    for(int i=ind.size()-1;i>=0; i--) {
-      newface.push_back(ind[i]);	    
-    }
-    psx->indices.push_back(ind);    
-  }
-/*	
   auto psx = std::make_unique<PolySet>(ps->getDimension(), ps->convexValue());
   *psx = *ps;
 
@@ -3251,7 +3241,7 @@ static std::unique_ptr<PolySet> repairObject(const RepairNode& node, const PolyS
       }
     }
   }
-*/
+
   return psx;
 }
 
