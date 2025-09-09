@@ -27,10 +27,13 @@
 #pragma once
 
 #include <string>
+#include <memory>
 #include <utility>
 
-extern bool parse(class SourceFile *& file, const std::string& text, const std::string& filename,
-                  const std::string& mainFile, int debug);
+class SourceFile;
+
+extern bool parse(std::shared_ptr<SourceFile>& file, const std::string& text,
+                  const std::string& filename, const std::string& mainFile, int debug);
 
 extern std::string commandline_commands;
 

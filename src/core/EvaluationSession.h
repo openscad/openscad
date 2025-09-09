@@ -41,7 +41,8 @@ public:
   template <typename T>
   boost::optional<T> lookup_namespace(const std::string& ns_name, const std::string& name) const;
 
-  void init_namespaces(SourceFile *source, std::shared_ptr<const Context> builtinContext);
+  void init_namespaces(std::shared_ptr<SourceFile> source,
+                       std::shared_ptr<const Context> builtinContext);
   void setTopLevelNamespace(std::shared_ptr<const FileContext> c);
 
   [[nodiscard]] const std::string& documentRoot() const { return document_root; }

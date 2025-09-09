@@ -76,7 +76,7 @@ int lexerlex(void);
 static void handle_assignment(const std::string token, Expression *expr, const Location loc);
 
 std::stack<std::shared_ptr<LocalScope>> scope_stack;
-SourceFile *rootfile;
+std::shared_ptr<SourceFile> rootfile;
 
 extern void lexerdestroy();
 extern FILE *lexerin;
@@ -840,7 +840,7 @@ void handle_assignment(const std::string token, Expression *expr, const Location
 	}
 }
 
-bool parse(SourceFile *&file, const std::string& text, const std::string &filename, const std::string &mainFile, int debug)
+bool parse(std::shared_ptr<SourceFile>& file, const std::string& text, const std::string &filename, const std::string &mainFile, int debug)
 {
   fs::path filepath;
   try {
@@ -864,7 +864,8 @@ bool parse(SourceFile *&file, const std::string& text, const std::string &filena
   parser_input_buffer = text.c_str();
   fileEnded = false;
 
-  rootfile = new SourceFile(parser_sourcefile.parent_path().string(), parser_sourcefile.filename().string());
+  file = SourceFile::create(parser_sourcefile.parent_path().string(), parser_sourcefile.filename().string());
+  rootfile = file;
   scope_stack.push(rootfile->scope);
   //        PRINTB_NOCACHE("New module: %s %p", "root" % rootfile);
 
@@ -879,7 +880,6 @@ bool parse(SourceFile *&file, const std::string& text, const std::string &filena
   lexerdestroy();
   lexerlex_destroy();
 
-  file = rootfile;
   if (parserretval != 0) return false;
 
   parser_error_pos = -1;

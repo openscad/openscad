@@ -11,10 +11,20 @@
 #include "core/LocalScope.h"
 #include "core/IndicatorData.h"
 
-class SourceFile : public ASTNode
+class SourceFile : public ASTNode, public std::enable_shared_from_this<SourceFile>
 {
+  struct make_shared_enabler {
+  };
+
 public:
-  SourceFile(std::string path, std::string filename);
+  SourceFile(const make_shared_enabler&, std::string path, std::string filename);
+  SourceFile() = delete;
+
+  template <typename... T>
+  static std::shared_ptr<SourceFile> create(T&&...t)
+  {
+    return std::make_shared<SourceFile>(make_shared_enabler{}, std::forward<T>(t)...);
+  }
 
   std::shared_ptr<AbstractNode> instantiate(
     const std::shared_ptr<const Context>& context,
@@ -39,6 +49,10 @@ public:
    * @brief Get namespace scope, creating it if needed.
    */
   std::shared_ptr<LocalScope> registerNamespace(const char *name);
+  /**
+   * @brief If namespace exists, get its scope.
+   */
+  std::shared_ptr<LocalScope> getNamespaceScope(const std::string name) const;
   const std::vector<std::string>& getNamespaceNamesOrdered() { return this->namespaceNamesOrdered; }
 
   const std::shared_ptr<LocalScope> scope;

@@ -257,7 +257,7 @@ static GroupList collectGroups(const std::string& fulltext)
    Insert Parameters in AST of given scad file
    form of annotations
  */
-void CommentParser::collectParameters(const std::string& fulltext, SourceFile *root_file)
+void CommentParser::collectParameters(const std::string& fulltext, std::shared_ptr<SourceFile> root_file)
 {
   static auto EmptyStringLiteral(std::make_shared<Literal>(""));
 

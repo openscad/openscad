@@ -66,13 +66,14 @@ public:
                                                           const Location& loc) const override;
 
 protected:
-  FileContext(const std::shared_ptr<const Context>& parent, const SourceFile *source_file)
+  FileContext(const std::shared_ptr<const Context>& parent,
+              std::shared_ptr<const SourceFile> source_file)
     : ScopeContext(parent, source_file->scope), source_file(source_file)
   {
   }
 
 private:
-  const SourceFile *source_file;
+  const std::shared_ptr<const SourceFile> source_file;
   boost::optional<CallableFunction> lookup_function_from_uses(const std::string& name) const;
   boost::optional<InstantiableModule> lookup_module_from_uses(const std::string& name) const;
 

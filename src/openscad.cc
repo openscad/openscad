@@ -385,7 +385,7 @@ Camera get_camera(const po::variables_map& vm)
 }
 
 int do_export(const CommandLine& cmd, const RenderVariables& render_variables, FileFormat export_format,
-              SourceFile *root_file)
+              std::shared_ptr<SourceFile> root_file)
 {
   auto filename_str = fs::path(cmd.output_file).generic_string();
   // Avoid possibility of fs::absolute throwing when passed an empty path
@@ -613,10 +613,9 @@ int cmdline(const CommandLine& cmd)
 #endif  // ifdef ENABLE_PYTHON
   text += "\n\x03\n" + commandline_commands;
 
-  SourceFile *root_file = nullptr;
+  std::shared_ptr<SourceFile> root_file;
   if (!parse(root_file, text, cmd.filename, cmd.filename, false)) {
-    delete root_file;  // parse failed
-    root_file = nullptr;
+    root_file.reset();
   }
   if (!root_file) {
     LOG("Can't parse file '%1$s'!\n", cmd.filename);

@@ -32,9 +32,12 @@
 #include <memory>
 
 #include "core/AST.h"
+#include "core/Context.h"
 #include "core/ContextFrame.h"
 #include "core/function.h"
 #include "core/module.h"
+#include "core/ScopeContext.h"
+#include "core/SourceFile.h"
 #include "core/Value.h"
 #include "utils/printutils.h"
 
@@ -121,7 +124,7 @@ template boost::optional<CallableFunction> EvaluationSession::lookup_namespace<C
 template boost::optional<InstantiableModule> EvaluationSession::lookup_namespace<InstantiableModule>(
   const std::string&, const std::string&) const;
 
-void EvaluationSession::init_namespaces(SourceFile *source,
+void EvaluationSession::init_namespaces(std::shared_ptr<SourceFile> source,
                                         std::shared_ptr<const Context> builtinContext)
 {
   // Add builtins namespace:

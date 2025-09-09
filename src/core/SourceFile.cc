@@ -50,7 +50,7 @@ namespace fs = std::filesystem;
 #include "FontCache.h"
 #include <sys/stat.h>
 
-SourceFile::SourceFile(std::string path, std::string filename)
+SourceFile::SourceFile(const make_shared_enabler&, std::string path, std::string filename)
   : ASTNode(Location::NONE),
     path(std::move(path)),
     filename(std::move(filename)),
@@ -156,7 +156,7 @@ time_t SourceFile::handleDependencies(bool is_root)
 
     if (found) {
       auto oldmodule = SourceFileCache::instance()->lookup(filename);
-      SourceFile *newmodule;
+      std::shared_ptr<SourceFile> newmodule;
       auto mtime = SourceFileCache::instance()->process(this->getFullpath(), filename, newmodule);
       if (mtime > latest) latest = mtime;
       auto changed = newmodule && newmodule != oldmodule;
@@ -187,7 +187,7 @@ std::shared_ptr<AbstractNode> SourceFile::instantiate(
 {
   auto node = std::make_shared<RootNode>();
   try {
-    ContextHandle<FileContext> file_context{Context::create<FileContext>(context, this)};
+    ContextHandle<FileContext> file_context{Context::create<FileContext>(context, shared_from_this())};
     *resulting_file_context = *file_context;
     context->session()->setTopLevelNamespace(*file_context);
     this->scope->instantiateModules(*file_context, node);
@@ -226,7 +226,7 @@ std::shared_ptr<LocalScope> SourceFile::registerNamespace(const char *name)
   return ls;
 }
 
-std::shared_ptr<LocalScope> SourceFile::getNamespaceScope(const std::string name)
+std::shared_ptr<LocalScope> SourceFile::getNamespaceScope(const std::string name) const
 {
   if (auto it = this->namespaceScopes.find(name); it != this->namespaceScopes.end()) {
     return it->second;

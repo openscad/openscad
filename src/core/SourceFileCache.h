@@ -2,6 +2,7 @@
 
 #include <string>
 #include <ctime>
+#include <memory>
 #include <unordered_map>
 
 class SourceFile;
@@ -19,8 +20,8 @@ public:
   }
 
   std::time_t process(const std::string& mainFile, const std::string& filename,
-                      SourceFile *& sourceFile);
-  SourceFile *lookup(const std::string& filename);
+                      std::shared_ptr<SourceFile>& sourceFile);
+  std::shared_ptr<SourceFile> lookup(const std::string& filename);
   size_t size() const { return this->entries.size(); }
   void clear();
   static void clear_markers();
@@ -31,9 +32,9 @@ private:
   static SourceFileCache *inst;
 
   struct cache_entry {
-    SourceFile *file{};  // This is only valid if parsing succeeded?
-    SourceFile
-      *parsed_file{};  // the last version parsed for the include list, can exist even if parsing failed
+    std::shared_ptr<SourceFile> file;  // This is only valid if parsing succeeded?
+    std::shared_ptr<SourceFile>
+      parsed_file;  // the last version parsed for the include list, can exist even if parsing failed
     std::string cache_id;
     std::time_t mtime{};           // time file last modified
     std::time_t includes_mtime{};  // time the includes last changed

@@ -131,7 +131,8 @@ void ParameterWidget::saveBackupFile(const QString& scadFile)
   sets.writeFile(getJsonFile(scadFile).toStdString());
 }
 
-void ParameterWidget::setParameters(const SourceFile *sourceFile, const std::string& source)
+void ParameterWidget::setParameters(std::shared_ptr<const SourceFile> sourceFile,
+                                    const std::string& source)
 {
   if (this->source == source) {
     return;
@@ -143,7 +144,10 @@ void ParameterWidget::setParameters(const SourceFile *sourceFile, const std::str
   loadSet(comboBoxPreset->currentIndex());
 }
 
-void ParameterWidget::applyParameters(SourceFile *sourceFile) { this->parameters.apply(sourceFile); }
+void ParameterWidget::applyParameters(const std::shared_ptr<const SourceFile>& sourceFile)
+{
+  this->parameters.apply(sourceFile);
+}
 
 bool ParameterWidget::childHasFocus()
 {

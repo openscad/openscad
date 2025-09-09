@@ -2138,7 +2138,7 @@ std::shared_ptr<SourceFile> MainWindow::parseDocument(EditorInterface *editor)
   }
 #endif  // ifdef ENABLE_PYTHON
 
-  SourceFile *sourceFile;
+  std::shared_ptr<SourceFile> sourceFile;
   sourceFile = parse(sourceFile, fulltext, fname, fname, false) ? sourceFile : nullptr;
 
   editor->resetHighlighting();

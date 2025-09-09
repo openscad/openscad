@@ -530,7 +530,7 @@ std::unique_ptr<ParameterObject> ParameterObject::fromAssignment(const Assignmen
   return nullptr;
 }
 
-ParameterObjects ParameterObjects::fromSourceFile(const SourceFile *sourceFile)
+ParameterObjects ParameterObjects::fromSourceFile(const std::shared_ptr<const SourceFile>& sourceFile)
 {
   ParameterObjects output;
   for (const auto& assignment : sourceFile->scope->assignments) {
@@ -571,14 +571,14 @@ ParameterSet ParameterObjects::exportValues(const std::string& setName)
   return output;
 }
 
-void ParameterObjects::apply(SourceFile *sourceFile) const
+void ParameterObjects::apply(const std::shared_ptr<const SourceFile>& sourceFile) const
 {
   std::map<std::string, ParameterObject *> namedParameters;
   for (const auto& parameter : *this) {
     namedParameters[parameter->name()] = parameter.get();
   }
 
-  for (auto& assignment : sourceFile->scope->assignments) {
+  for (auto assignment : sourceFile->scope->assignments) {
     if (namedParameters.count(assignment->getName())) {
       namedParameters[assignment->getName()]->apply(assignment.get());
     }
