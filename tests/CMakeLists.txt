@@ -83,7 +83,10 @@ if(USE_IMAGE_COMPARE_PY)
     message(STATUS "Setting up testing venv for image comparison")
     execute_process(
       COMMAND "${Python3_EXECUTABLE}" "-m" "venv" "venv" "--system-site-packages" "--without-pip"
-      WORKING_DIRECTORY "${CCBD}")
+      WORKING_DIRECTORY "${CCBD}"
+      OUTPUT_QUIET
+      ERROR_QUIET
+    )
     # Since msys2 on Windows prefers bin/ over Scripts, we need to look for the actual folder to determine
     # how to utilize the venv
     find_path(VENV_BIN_PATH activate PATHS "${VENV_DIR}/bin" "${VENV_DIR}/Scripts" NO_DEFAULT_PATH NO_CACHE)
@@ -94,10 +97,16 @@ if(USE_IMAGE_COMPARE_PY)
     endif()
     execute_process(
       COMMAND "${IMAGE_COMPARE_EXE}" "-m" "ensurepip"
-      WORKING_DIRECTORY "${CCBD}")
+      WORKING_DIRECTORY "${CCBD}"
+      OUTPUT_QUIET
+      ERROR_QUIET
+    )
     execute_process(
       COMMAND "${IMAGE_COMPARE_EXE}" "-m" "pip" "install" "numpy" "Pillow"
-      WORKING_DIRECTORY "${CCBD}")
+      WORKING_DIRECTORY "${CCBD}"
+      OUTPUT_QUIET
+      ERROR_QUIET
+    )
   endif()
   set(COMPARATOR "--comparator=image_compare")
   if(BUILD_VENV)
