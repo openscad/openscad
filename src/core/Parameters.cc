@@ -26,6 +26,8 @@
 
 #include "core/Parameters.h"
 
+#include "Context.h"
+
 #include <initializer_list>
 #include <cassert>
 #include <sstream>
@@ -254,6 +256,9 @@ Parameters Parameters::parse(Arguments arguments, const Location& loc,
     [](const std::shared_ptr<Assignment>& assignment) { return assignment->getName(); })};
 
   for (const auto& parameter : required_parameters) {
+    // see builtin_functions.cc::builtin_object() for an explanation
+    if (parameter->getName() == "this" && defining_context->try_lookup_variable("this")) continue;
+
     if (!frame.lookup_local_variable(parameter->getName())) {
       if (parameter->getExpr()) {
         frame.set_variable(parameter->getName(), parameter->getExpr()->evaluate(defining_context));
