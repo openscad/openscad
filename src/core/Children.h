@@ -38,7 +38,7 @@ public:
   [[nodiscard]] const std::shared_ptr<const Context>& getContext() const { return context; }
 
 private:
-  const std::shared_ptr<const LocalScope> children_scope;
+  std::shared_ptr<const LocalScope> children_scope;
   std::shared_ptr<const Context> context;
 
   [[nodiscard]] ContextHandle<ScopeContext> scopeContext() const;
