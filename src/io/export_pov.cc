@@ -31,6 +31,7 @@
 #include <ostream>
 #include <vector>
 
+#include "Feature.h"
 #include "geometry/Geometry.h"
 #include "geometry/PolySet.h"
 #include "geometry/PolySetUtils.h"

@@ -7,7 +7,6 @@
 #include <ctime>
 #include <vector>
 
-#include "core/module.h"
 #include "core/AST.h"
 #include "core/LocalScope.h"
 #include "core/IndicatorData.h"

@@ -6,12 +6,10 @@
 #include <vector>
 #include <boost/optional.hpp>
 
-#include "core/ContextMemoryManager.h"
-#include "core/AST.h"
-#include "core/function.h"
-#include "core/module.h"
-#include "core/Value.h"
+#include "core/callables.h"
+#include "core/ContextMemoryManager.h"  // FIXME: don't use as value type so we don't need to include header
 
+class Value;
 class ContextFrame;
 
 class EvaluationSession
