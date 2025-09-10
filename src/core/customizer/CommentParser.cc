@@ -277,7 +277,7 @@ void CommentParser::collectParameters(const std::string& fulltext, SourceFile *r
   GroupList groupList = collectGroups(fulltext, comment_char);
   int parseTill = getLineToStop(fulltext, comment_char);
   // Extract parameters for all literal assignments
-  for (auto& assignment : root_file->scope.assignments) {
+  for (auto& assignment : root_file->scope->assignments) {
     if (!assignment->getExpr()->isLiteral()) continue;  // Only consider literals
 
     int firstLine = 0;

@@ -54,19 +54,22 @@ namespace fs = std::filesystem;
 #endif
 
 SourceFile::SourceFile(std::string path, std::string filename)
-  : ASTNode(Location::NONE), path(std::move(path)), filename(std::move(filename))
+  : ASTNode(Location::NONE),
+    path(std::move(path)),
+    filename(std::move(filename)),
+    scope(std::make_shared<LocalScope>())
 {
 }
 
 void SourceFile::print(std::ostream& stream, const std::string& indent) const
 {
-  scope.print(stream, indent);
+  scope->print(stream, indent);
 }
 
 void SourceFile::print_python(std::ostream& stream, std::ostream& stream_def,
                               const std::string& indent) const
 {
-  scope.print_python(stream, stream_def, indent);
+  scope->print_python(stream, stream_def, indent);
 }
 
 void SourceFile::registerUse(const std::string& path, const Location& loc)
@@ -221,7 +224,7 @@ std::shared_ptr<AbstractNode> SourceFile::instantiate(
   try {
     ContextHandle<FileContext> file_context{Context::create<FileContext>(context, this)};
     *resulting_file_context = *file_context;
-    this->scope.instantiateModules(*file_context, node);
+    this->scope->instantiateModules(*file_context, node);
   } catch (HardWarningException& e) {
     throw;
   } catch (EvaluationException& e) {

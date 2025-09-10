@@ -4960,7 +4960,7 @@ PyObject *python_osuse_include(int mode, PyObject *self, PyObject *args, PyObjec
     PyErr_SetString(PyExc_TypeError, "Error in SCAD code");
     return Py_None;
   }
-  if (mode == 0) source->scope.moduleInstantiations.clear();
+  if (mode == 0) source->scope->moduleInstantiations.clear();
   source->handleDependencies(true);
 
   EvaluationSession *session = new EvaluationSession("python");
@@ -4970,10 +4970,10 @@ PyObject *python_osuse_include(int mode, PyObject *self, PyObject *args, PyObjec
   std::shared_ptr<AbstractNode> resultnode =
     source->instantiate(*builtin_context, &osinclude_context);  // TODO keine globakle var, kollision!
 
-  LocalScope scope = source->scope;
+  auto scope = source->scope;
   PyOpenSCADObject *result = (PyOpenSCADObject *)PyOpenSCADObjectFromNode(&PyOpenSCADType, empty);
 
-  for (auto mod : source->scope.modules) {  // copy modules
+  for (auto mod : source->scope->modules) {  // copy modules
     std::shared_ptr<UserModule> usmod = mod.second;
     InstantiableModule m;
     //    m.defining_context=osinclude_context;
@@ -4983,7 +4983,7 @@ PyObject *python_osuse_include(int mode, PyObject *self, PyObject *args, PyObjec
                          PyDataObjectFromModule(&PyDataType, filename, mod.first));
   }
 
-  for (auto fun : source->scope.functions) {            // copy functions
+  for (auto fun : source->scope->functions) {            // copy functions
     std::shared_ptr<UserFunction> usfunc = fun.second;  // install lambda functions ?
                                                         //    printf("%s\n",fun.first.c_str());
                                                         //    InstantiableModule m;
@@ -4994,7 +4994,7 @@ PyObject *python_osuse_include(int mode, PyObject *self, PyObject *args, PyObjec
     //    ));
   }
 
-  for (auto ass : source->scope.assignments) {  // copy assignments
+  for (auto ass : source->scope->assignments) {  // copy assignments
                                                 //    printf("Var %s\n",ass->getName().c_str());
     const std::shared_ptr<Expression> expr = ass->getExpr();
     Value val = expr->evaluate(osinclude_context);
