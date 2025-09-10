@@ -94,37 +94,45 @@ Betty = object(
 );
 echo( Betty  = Betty );
 
+// tests if we handle the opt-in (this as parameter) correctly
+
+optin = object( a=42, fin=function(this) this.a, fout=function() this.a);
+test( function() optin.fin() == 42, "optin gets this");
+test( function() optin.fout() == undef, "optout does not get this");
+
+
+
 // Tests to check the implicit scope for functions in objects
-osc = object( a=42, f=function() a );
+osc = object( a=42, f=function(this) this.a );
 test( function() osc.f() == 42, "check referring to other field");
 fsc = osc.f;
 test( function() fsc() == 42,   "check referring from copied field");
 
-fsc1 = object(a=42, f=function() a).f;
+fsc1 = object(a=42, f=function(this) this.a).f;
 test( function() fsc1() == 42,  "function stored from orphaned object");
 
-osc1 = object( a=42, f=function() $this.a );
-test( function() osc1.f() == 42, "using $this");
+osc1 = object( a=42, f=function(this) this.a );
+test( function() osc1.f() == 42, "using this");
 
-osc2 = object( $this=42, f=function() $this );
-test( function() osc2.f() == osc2, "$this cannot be a field and used");
+osc2 = object( $this=42, f=function(this) this );
+test( function() osc2.f() == osc2, "this cannot be a field and used");
 
-top = object( level = "top", f = function() let(_=assert( level == "top")) 42);
-mid = object( level = "mid", f = function() let(_=assert( level == "mid")) top.f());
-bot = object( level = "bot", f = function() let(_=assert( level == "bot")) mid.f());
-test( function() bot.f() == 42, "verify that the $this when recursively called stays separate");
+top = object( level = "top", f = function(this) let(_=assert( this.level == "top")) 42);
+mid = object( level = "mid", f = function(this) let(_=assert( this.level == "mid")) top.f());
+bot = object( level = "bot", f = function(this) let(_=assert( this.level == "bot")) mid.f());
+test( function() bot.f() == 42, "verify that the this when recursively called stays separate");
 
 osc3 = object(osc, [["a",43]]);
 testNEq( osc3.f, osc.f, "functions are not equal");
 testEq( osc3.f(), 43, "access copied object");
 testEq( osc.f(), 42, "access original object");
 
-Y = object( f=function(n) n> 1 ? n*f(n-1) : 1).f;
+Y = object( f=function(n,this) n> 1 ? n*this.f(n-1) : 1).f;
 testEq( Y(5), 120, "recursively calling a function in an object");
 
 testEq( object( $fs = 42 ).$fs, 42, "using config names as field is ok");
-testEq( object( $this = 42 ).$this, 42, "also $this");
-testEq( object( $this = 42, f=function() $this.$this ).f(), 42, "but functions see the $this object");
+testEq( object( this = 42 ).this, 42, "also this");
+testEq( object( this = 42, f=function(this) this.this ).f(), 42, "but functions see the this object");
 
 
 
