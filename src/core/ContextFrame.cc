@@ -31,6 +31,10 @@
 #include "core/EvaluationSession.h"
 #include "core/Value.h"
 
+#ifdef DEBUG
+#include <boost/format.hpp>
+#include <sstream>
+#endif
 #include <utility>
 #include <cstddef>
 #include <string>
