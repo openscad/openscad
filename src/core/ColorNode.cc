@@ -35,10 +35,10 @@
 #include <boost/assign/std/vector.hpp>
 #include <boost/assign/list_of.hpp>
 
-#include "core/module.h"
-#include "core/ModuleInstantiation.h"
 #include "core/Builtins.h"
 #include "core/Children.h"
+#include "core/module.h"
+#include "core/ModuleInstantiation.h"
 #include "core/Parameters.h"
 #include "core/ColorUtil.h"
 #include "geometry/linalg.h"

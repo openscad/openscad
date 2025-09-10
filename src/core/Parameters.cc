@@ -37,7 +37,9 @@
 #include <vector>
 
 #include "core/AST.h"
+#include "core/EvaluationSession.h"
 #include "core/Expression.h"
+#include "utils/printutils.h"
 
 Parameters::Parameters(ContextFrame&& frame, Location loc)
   : loc(std::move(loc)), frame(std::move(frame)), handle(&this->frame)

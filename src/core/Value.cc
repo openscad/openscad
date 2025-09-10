@@ -43,6 +43,7 @@
 
 #include "core/EvaluationSession.h"
 #include "io/fileutils.h"
+#include "utils/exceptions.h"
 #include "utils/printutils.h"
 #include "utils/StackCheck.h"
 #include "utils/boost-utils.h"
