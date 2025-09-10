@@ -57,3 +57,15 @@ boost::optional<InstantiableModule> BuiltinContext::lookup_local_module(const st
   }
   return Context::lookup_local_module(name, loc);
 }
+
+boost::optional<CallableFunction> BuiltinContext::lookup_function_as_namespace(
+  const std::string& name) const
+{
+  return lookup_local_function(name, Location::NONE);
+}
+
+boost::optional<InstantiableModule> BuiltinContext::lookup_module_as_namespace(
+  const std::string& name) const
+{
+  return lookup_local_module(name, Location::NONE);
+}

@@ -35,7 +35,7 @@
 
 using json = nlohmann::json;
 
-bool export_param(SourceFile *sourceFile, const fs::path& path, std::ostream& output)
+bool export_param(std::shared_ptr<SourceFile>& sourceFile, const fs::path& path, std::ostream& output)
 {
   const ParameterObjects parameters = ParameterObjects::fromSourceFile(sourceFile);
 

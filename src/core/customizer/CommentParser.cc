@@ -257,7 +257,7 @@ static GroupList collectGroups(const std::string& fulltext)
    Insert Parameters in AST of given scad file
    form of annotations
  */
-void CommentParser::collectParameters(const std::string& fulltext, SourceFile *root_file)
+void CommentParser::collectParameters(const std::string& fulltext, std::shared_ptr<SourceFile> root_file)
 {
   static auto EmptyStringLiteral(std::make_shared<Literal>(""));
 
@@ -265,7 +265,7 @@ void CommentParser::collectParameters(const std::string& fulltext, SourceFile *r
   GroupList groupList = collectGroups(fulltext);
   int parseTill = getLineToStop(fulltext);
   // Extract parameters for all literal assignments
-  for (auto& assignment : root_file->scope->assignments) {
+  for (auto& assignment : root_file->getAssignments()) {
     if (!assignment->getExpr()->isLiteral()) continue;  // Only consider literals
 
     // get location of assignment node

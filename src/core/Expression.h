@@ -163,12 +163,17 @@ class Lookup : public Expression
 {
 public:
   Lookup(std::string name, const Location& loc);
+  /**
+   * @brief Lookup within a namespace
+   */
+  Lookup(std::string ns_name, std::string name, const Location& loc);
   [[nodiscard]] Value evaluate(const std::shared_ptr<const Context>& context) const override;
   void print(std::ostream& stream, const std::string& indent) const override;
   [[nodiscard]] const std::string& get_name() const { return name; }
+  [[nodiscard]] const std::string& get_namespace_name() const { return ns_name; }
 
 private:
-  std::string name;
+  std::string ns_name, name;
 };
 
 class MemberLookup : public Expression
@@ -192,14 +197,16 @@ public:
   [[nodiscard]] Value evaluate(const std::shared_ptr<const Context>& context) const override;
   void print(std::ostream& stream, const std::string& indent) const override;
   [[nodiscard]] const std::string& get_name() const { return name; }
+  [[nodiscard]] const std::string& get_namespace_name() const { return ns_name; }
   static Expression *create(const std::string& funcname, const AssignmentList& arglist, Expression *expr,
                             const Location& loc);
 
-public:
-  bool isLookup;
-  std::string name;
-  std::shared_ptr<Expression> expr;
   AssignmentList arguments;
+
+private:
+  bool isLookup;
+  std::string ns_name, name;
+  std::shared_ptr<Expression> expr;
 };
 
 class FunctionDefinition : public Expression

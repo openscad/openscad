@@ -57,8 +57,8 @@ public:
   void readFile(const QString& scadFile);
   void saveFile(const QString& scadFile);
   void saveBackupFile(const QString& scadFile);
-  void setParameters(const SourceFile *sourceFile, const std::string& source);
-  void applyParameters(SourceFile *sourceFile);
+  void setParameters(std::shared_ptr<const SourceFile> sourceFile, const std::string& source);
+  void applyParameters(const std::shared_ptr<const SourceFile>& sourceFile);
   bool childHasFocus();
   bool isModified() const { return modified; }
 

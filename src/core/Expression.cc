@@ -42,6 +42,7 @@
 #include "core/Context.h"
 #include "core/EvaluationSession.h"
 #include "core/function.h"
+#include "core/lexer_shared.h"
 #include "core/Parameters.h"
 #include "core/Value.h"
 
@@ -336,12 +337,23 @@ void Vector::print(std::ostream& stream, const std::string&) const
 
 Lookup::Lookup(std::string name, const Location& loc) : Expression(loc), name(std::move(name)) {}
 
-Value Lookup::evaluate(const std::shared_ptr<const Context>& context) const
+Lookup::Lookup(std::string ns_name, std::string name, const Location& loc)
+  : Expression(loc), ns_name(std::move(ns_name)), name(std::move(name))
 {
-  return context->lookup_variable(this->name, loc).clone();
 }
 
-void Lookup::print(std::ostream& stream, const std::string&) const { stream << this->name; }
+Value Lookup::evaluate(const std::shared_ptr<const Context>& context) const
+{
+  auto result = ns_name.empty() ? context->lookup_variable(name)
+                                : context->session()->lookup_namespace<const Value&>(ns_name, name);
+  return context->or_undef(result, name, loc, ns_name).clone();
+}
+
+void Lookup::print(std::ostream& stream, const std::string&) const
+{
+  if (!ns_name.empty()) stream << ns_name << LEXER_NS_SEP;
+  stream << name;
+}
 
 MemberLookup::MemberLookup(Expression *expr, std::string member, const Location& loc)
   : Expression(loc), expr(expr), member(std::move(member))
@@ -453,6 +465,7 @@ FunctionCall::FunctionCall(Expression *expr, AssignmentList args, const Location
     isLookup = true;
     const Lookup *lookup = static_cast<Lookup *>(expr);
     name = lookup->get_name();
+    ns_name = lookup->get_namespace_name();
   } else {
     isLookup = false;
     std::ostringstream s;
@@ -467,7 +480,8 @@ boost::optional<CallableFunction> FunctionCall::evaluate_function_expression(
   const std::shared_ptr<const Context>& context) const
 {
   if (isLookup) {
-    return context->lookup_function(name, location());
+    if (ns_name.empty()) return context->lookup_function(name, location());
+    return context->session()->lookup_namespace<CallableFunction>(ns_name, name);
   } else {
     auto v = expr->evaluate(context);
     if (v.type() == Value::Type::FUNCTION) {

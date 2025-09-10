@@ -9,6 +9,13 @@
 #include "core/AST.h"
 #include "core/callables.h"
 #include "core/ValueMap.h"
+#include "core/function.h"
+#include "core/module.h"
+
+class EvaluationSession;
+
+class EvaluationSession;
+class Value;
 
 class EvaluationSession;
 class Value;
@@ -17,7 +24,7 @@ class ContextFrame
 {
 public:
   ContextFrame(EvaluationSession *session);
-  virtual ~ContextFrame() = default;
+  virtual ~ContextFrame();
 
   ContextFrame(ContextFrame&& other) = default;
 
@@ -26,6 +33,27 @@ public:
                                                                   const Location& loc) const;
   virtual boost::optional<InstantiableModule> lookup_local_module(const std::string& name,
                                                                   const Location& loc) const;
+
+  /**
+   * @brief Lookup as if referencing by namespace
+   *
+   * Use this for looking up functions or modules from this context when
+   * the name is referenced via `using` or directly `ns::name`.
+   * Will search assignments for function literals.
+   * Does not follow `using` imports.
+   *
+   * TODO: github.com/openscad/openscad/issues/4724 - When adding module literals, lookup in assignments.
+   */
+  template <typename T>
+  boost::optional<T> lookup_as_namespace(const std::string& name) const;
+  virtual boost::optional<CallableFunction> lookup_function_as_namespace(const std::string& name) const;
+  virtual boost::optional<InstantiableModule> lookup_module_as_namespace(const std::string& name) const;
+  virtual boost::optional<const Value&> lookup_variable_as_namespace(const std::string& name) const;
+
+  /**
+   * @brief If a namespace context, is the name; otherwise empty string.
+   */
+  virtual const std::string get_namespace_name() const { return {}; }
 
   virtual std::vector<const Value *> list_embedded_values() const;
   virtual size_t clear();
@@ -42,9 +70,7 @@ public:
   }
 
   void apply_variables(ValueMap&& variables);
-  void apply_lexical_variables(ContextFrame&& other);
-  void apply_config_variables(ContextFrame&& other);
-  void apply_variables(ContextFrame&& other);
+  void apply_variables(std::unique_ptr<ContextFrame>&& other);
 
   static bool is_config_variable(const std::string& name);
 

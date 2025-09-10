@@ -28,11 +28,23 @@ public:
     print(stream, indent, false);
   }
   std::shared_ptr<AbstractNode> evaluate(const std::shared_ptr<const Context>& context) const;
+  /**
+   * @brief Retain the name and arguments and location, but not scope or tags.
+   *
+   * Why? because that's what the code was doing elsewhere that was moved here.
+   */
+  ModuleInstantiation *clone(void) const;
 
-  const std::string& name() const { return this->modname; }
+  /**
+   * @brief Return module name, with namespace if given
+   */
+  const std::string getPrintableName() const;
   bool isBackground() const { return this->tag_background; }
   bool isHighlight() const { return this->tag_highlight; }
   bool isRoot() const { return this->tag_root; }
+  bool isChildren() const { return modname == "children" && ns_name.empty(); }
+  void setNamespaceName(const char *name) { ns_name = std::string(name); }
+  const std::string& getName() const { return modname; }
 
   AssignmentList arguments;
   const std::shared_ptr<LocalScope> scope;
@@ -43,6 +55,7 @@ public:
 
 protected:
   std::string modname;
+  std::string ns_name;
 };
 
 class IfElseModuleInstantiation : public ModuleInstantiation

@@ -807,6 +807,8 @@ set(CORE_SOURCES
   src/core/LocalScope.cc
   src/core/node_clone.cc
   src/core/ModuleInstantiation.cc
+  src/core/Namespace.cc
+  src/core/NamespaceSpecifier.cc
   src/core/NodeDumper.cc
   src/core/NodeVisitor.cc
   src/core/OffsetNode.cc
@@ -826,6 +828,7 @@ set(CORE_SOURCES
   src/core/Tree.cc
   src/core/UndefType.cc
   src/core/UserModule.cc
+  src/core/Using.cc
   src/core/Value.cc
   src/core/builtin_functions.cc
   src/core/control.cc

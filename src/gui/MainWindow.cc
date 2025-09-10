@@ -1364,6 +1364,10 @@ std::shared_ptr<AbstractNode> MainWindow::instantiateRootFromSource(SourceFile *
   ContextHandle<BuiltinContext> builtin_context{Context::create<BuiltinContext>(&session)};
   setRenderVariables(builtin_context);
 
+  // Initialize namespaces before anything at top-level, which means
+  // namespaces cannot use anything from top-level in *assignments*.
+  session.init_namespaces(this->rootFile);
+
   std::shared_ptr<const FileContext> file_context;
   std::shared_ptr<AbstractNode> node = this->rootFile->instantiate(*builtin_context, &file_context);
 
@@ -1407,6 +1411,10 @@ void MainWindow::instantiateRoot()
     EvaluationSession session{doc.parent_path().string()};
     ContextHandle<BuiltinContext> builtin_context{Context::create<BuiltinContext>(&session)};
     setRenderVariables(builtin_context);
+
+    // Initialize namespaces before anything at top-level, which means
+    // namespaces cannot use anything from top-level in *assignments*.
+    session.init_namespaces(rootFile);
 
     std::shared_ptr<const FileContext> file_context;
 #ifdef ENABLE_PYTHON
@@ -2130,7 +2138,7 @@ std::shared_ptr<SourceFile> MainWindow::parseDocument(EditorInterface *editor)
   }
 #endif  // ifdef ENABLE_PYTHON
 
-  SourceFile *sourceFile;
+  std::shared_ptr<SourceFile> sourceFile;
   sourceFile = parse(sourceFile, fulltext, fname, fname, false) ? sourceFile : nullptr;
 
   editor->resetHighlighting();
@@ -2493,7 +2501,7 @@ void MainWindow::rightClick(QPoint position)
 
       // It happens that the verbose_name is empty (eg: in for loops), when this happens instead of
       // letting empty entry in the menu we prefer using the name in the modinstanciation.
-      if (step->verbose_name().empty()) name = step->modinst->name();
+      if (step->verbose_name().empty()) name = step->modinst->getPrintableName();
 
       // Check if the path is contained in a library (using parsersettings.h)
       const fs::path libpath = get_library_for_path(location.filePath());
@@ -2565,7 +2573,7 @@ void MainWindow::setSelectionIndicatorStatus(EditorInterface *editor, int nodeIn
       continue;
     }
 
-    if (node->verbose_name().rfind("module", 0) == 0 || node->modinst->name() == "children") {
+    if (node->verbose_name().rfind("module", 0) == 0 || node->modinst->isChildren()) {
       editor->setSelectionIndicatorStatus(status, level, location.firstLine() - 1,
                                           location.firstColumn() - 1, location.lastLine() - 1,
                                           location.lastColumn() - 1);

@@ -29,20 +29,35 @@
 #include <cassert>
 #include <cstddef>
 #include <string>
+#include <memory>
+#include <iostream>  // TODO: coryrc - remove
 
 #include "core/AST.h"
+#include "core/BuiltinContext.h"
+#include "core/Context.h"
 #include "core/ContextFrame.h"
 #include "core/function.h"
 #include "core/module.h"
+#include "core/ScopeContext.h"
+#include "core/SourceFile.h"
 #include "core/Value.h"
 #include "utils/printutils.h"
 
 size_t EvaluationSession::push_frame(ContextFrame *frame)
 {
   size_t index = stack.size();
+  if (index == 0) {
+    auto maybe_builtin = dynamic_cast<BuiltinContext *>(frame);
+    if (maybe_builtin == nullptr) {
+      throw std::runtime_error("First frame in session not a BuiltinContext");
+    }
+    builtIn = maybe_builtin->get_shared_ptr();
+  }
   stack.push_back(frame);
   return index;
 }
+
+EvaluationSession::~EvaluationSession() { builtIn.reset(); }
 
 void EvaluationSession::replace_frame(size_t index, ContextFrame *frame)
 {
@@ -103,4 +118,43 @@ boost::optional<InstantiableModule> EvaluationSession::lookup_special_module(con
   }
   LOG(message_group::Warning, loc, documentRoot(), "Ignoring unknown module '%1$s'", name);
   return boost::none;
+}
+
+template <typename T>
+boost::optional<T> EvaluationSession::lookup_namespace(const std::string& ns_name,
+                                                       const std::string& name) const
+{
+  std::cerr << "session: Being asked to search ns '" << ns_name << "' for something with name '" << name
+            << "'\n";
+  if (auto nsContext = namespace_contexts.find(ns_name); nsContext != namespace_contexts.end()) {
+    return nsContext->second.get()->lookup_as_namespace<T>(name);
+  }
+  return boost::none;
+}
+
+template boost::optional<CallableFunction> EvaluationSession::lookup_namespace<CallableFunction>(
+  const std::string&, const std::string&) const;
+template boost::optional<InstantiableModule> EvaluationSession::lookup_namespace<InstantiableModule>(
+  const std::string&, const std::string&) const;
+template boost::optional<const Value&> EvaluationSession::lookup_namespace<const Value&>(
+  const std::string&, const std::string&) const;
+
+void EvaluationSession::init_namespaces(std::shared_ptr<SourceFile> source)
+{
+  // Add builtins namespace:
+  this->namespace_contexts.emplace("builtins", getBuiltinContext());
+
+  for (auto nsName : source->getNamespaceNamesOrdered()) {
+    auto nsScope = source->getNamespaceScope(nsName);
+    // ContextHandle calls the right method to evaluate/initialize assignments.
+    ContextHandle<UserNamespaceContext> nsContext{
+      Context::create<UserNamespaceContext>(getBuiltinContext(), nsScope, nsName, source)};
+    this->namespace_contexts.emplace(nsName, nsContext->get_shared_ptr());
+  }
+  // TODO: coryrc - instantiate modules so that we run assert
+}
+
+void EvaluationSession::setTopLevelNamespace(std::shared_ptr<const FileContext> c)
+{
+  this->namespace_contexts.emplace("top_level", c);
 }

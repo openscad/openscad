@@ -43,15 +43,17 @@
 
 std::vector<ModuleInstantiation *> modinsts_list;
 
-#define NodeCloneFunc(T)                                                           \
-  std::shared_ptr<T> clone_what(const T *node)                                     \
-  {                                                                                \
-    ModuleInstantiation *inst = new ModuleInstantiation(                           \
-      node->modinst->name(), node->modinst->arguments, node->modinst->location()); \
-    modinsts_list.push_back(inst);                                                 \
-    auto clone = std::make_shared<T>(*node);                                       \
-    clone->modinst = inst;                                                         \
-    return clone;                                                                  \
+// FIXME: rewrite with if constexpr (std::is_same_v<T, CubeNode>), if, for no other reason,
+// than to stop Beautify from mangling this file
+
+#define NodeCloneFunc(T)                                \
+  std::shared_ptr<T> clone_what(const T *node)          \
+  {                                                     \
+    ModuleInstantiation *inst = node->modinst->clone(); \
+    modinsts_list.push_back(inst);                      \
+    auto clone = std::make_shared<T>(*node);            \
+    clone->modinst = inst;                              \
+    return clone;                                       \
   }
 
 #define NodeCloneUse(T)                              \

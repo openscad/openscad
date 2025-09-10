@@ -1,0 +1,6 @@
+ECHO: 7
+WARNING: Ignoring unknown function 'z' in file namespace-using-tests.scad, line 13
+ECHO: undef
+ECHO: "yellow"
+WARNING: Ignoring unknown variable "apple::c" in file namespace-using-tests.scad, line 15
+ECHO: undef

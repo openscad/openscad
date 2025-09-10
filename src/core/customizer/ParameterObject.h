@@ -171,9 +171,9 @@ public:
 class ParameterObjects : public std::vector<std::unique_ptr<ParameterObject>>
 {
 public:
-  static ParameterObjects fromSourceFile(const SourceFile *sourceFile);
+  static ParameterObjects fromSourceFile(const std::shared_ptr<const SourceFile>& sourceFile);
   void reset();
   void importValues(const ParameterSet& values);
   ParameterSet exportValues(const std::string& setName);
-  void apply(SourceFile *sourceFile) const;
+  void apply(const std::shared_ptr<const SourceFile>& sourceFile) const;
 };

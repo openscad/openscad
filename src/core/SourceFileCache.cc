@@ -31,12 +31,14 @@ SourceFileCache *SourceFileCache::inst = nullptr;
    Returns the latest modification time of the file, its dependencies or includes.
  */
 std::time_t SourceFileCache::process(const std::string& mainFile, const std::string& filename,
-                                     SourceFile *& sourceFile)
+                                     std::shared_ptr<SourceFile>& sourceFile)
 {
-  sourceFile = nullptr;
+  sourceFile.reset();
+  std::shared_ptr<SourceFile> file;
+
   auto entry = this->entries.find(filename);
   bool found{entry != this->entries.end()};
-  SourceFile *file{found ? entry->second.file : nullptr};
+  if (found) file = entry->second.file;
 
   // Don't try to recursively process - if the file changes
   // during processing, that would be really bad.
@@ -55,8 +57,6 @@ std::time_t SourceFileCache::process(const std::string& mainFile, const std::str
   cache_entry& cacheEntry = this->entries[filename];
   // Initialize entry, if new
   if (!found) {
-    cacheEntry.file = nullptr;
-    cacheEntry.parsed_file = nullptr;
     cacheEntry.cache_id = cache_id;
     cacheEntry.includes_mtime = st.st_mtime;
   }
@@ -105,7 +105,7 @@ std::time_t SourceFileCache::process(const std::string& mainFile, const std::str
 
     print_messages_push();
 
-    delete cacheEntry.parsed_file;
+    cacheEntry.parsed_file.reset();
     file =
       parse(cacheEntry.parsed_file, text, filename, mainFile, false) ? cacheEntry.parsed_file : nullptr;
     PRINTDB("parsed file: %s", filename);
@@ -125,7 +125,7 @@ std::time_t SourceFileCache::process(const std::string& mainFile, const std::str
 
 void SourceFileCache::clear() { this->entries.clear(); }
 
-SourceFile *SourceFileCache::lookup(const std::string& filename)
+std::shared_ptr<SourceFile> SourceFileCache::lookup(const std::string& filename)
 {
   auto it = this->entries.find(filename);
   return it != this->entries.end() ? it->second.file : nullptr;
