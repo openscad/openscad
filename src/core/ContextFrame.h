@@ -17,6 +17,9 @@ class EvaluationSession;
 class EvaluationSession;
 class Value;
 
+class EvaluationSession;
+class Value;
+
 class ContextFrame
 {
 public:

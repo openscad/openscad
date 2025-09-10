@@ -32,6 +32,11 @@
 #include "core/EvaluationSession.h"
 #include "core/Value.h"
 
+#include "core/AST.h"
+#include "core/callables.h"
+#include "core/EvaluationSession.h"
+#include "core/Value.h"
+
 #include <utility>
 #include <cstddef>
 #include <string>
