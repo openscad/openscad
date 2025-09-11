@@ -1721,55 +1721,6 @@ elseif(WIN32 OR MXECROSS)
   )
 endif()
 
-##############################################
-# Test Installation and Packaging (Win only) #
-##############################################
-
-# Package Tests with Windows (.zip archive only)
-if(MXECROSS AND EXPERIMENTAL)
-  set(CPACK_ARCHIVE_COMPONENT_INSTALL ON)
-
-  include(CPackComponent)
-  cpack_add_component(Tests ARCHIVE_FILE OpenSCAD-Tests-${CPACK_PACKAGE_VERSION})
-
-  install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/
-    DESTINATION tests
-    USE_SOURCE_PERMISSIONS
-    COMPONENT Tests
-    PATTERN ".git*" EXCLUDE
-    PATTERN "OpenSCAD_Test_Console.py" EXCLUDE
-    PATTERN "WinReadme.txt" EXCLUDE
-    PATTERN "mingw_convert_ctest.py" EXCLUDE
-    PATTERN "mingwcon.bat" EXCLUDE
-  )
-  install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/
-    DESTINATION tests-build
-    USE_SOURCE_PERMISSIONS
-    COMPONENT Tests
-    PATTERN "venv" EXCLUDE
-    PATTERN "CMakeFiles" EXCLUDE
-    PATTERN "CMakeLists.txt" EXCLUDE
-    PATTERN "cmake_install.cmake" EXCLUDE
-  )
-
-  # Move files to top project dir for visibility
-  install(FILES OpenSCAD_Test_Console.py DESTINATION . COMPONENT Tests)
-  install(FILES WinReadme.txt DESTINATION . COMPONENT Tests RENAME "Windows_Test_Readme.txt")
-  # Move files to tests-build dir
-  install(FILES mingw_convert_ctest.py DESTINATION tests-build COMPONENT Tests)
-  install(FILES mingwcon.bat DESTINATION tests-build COMPONENT Tests)
-
-  file(GENERATE OUTPUT mingw_cross_info.py CONTENT
-"# created automatically during packaging by cmake from within linux
-linux_abs_basedir='${CMAKE_SOURCE_DIR}'
-linux_abs_builddir='${CMAKE_BINARY_DIR}'
-linux_python='${Python3_EXECUTABLE}'
-linux_convert='${IMAGE_COMPARE_EXE}'
-win_installdir='OpenSCAD-Tests-${CPACK_PACKAGE_VERSION}'
-" NEWLINE_STYLE WIN32)
-
-endif()
-
 ####################
 # Extra Debug Info #
 ####################
