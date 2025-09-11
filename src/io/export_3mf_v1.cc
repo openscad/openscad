@@ -386,7 +386,6 @@ void export_3mf(const std::shared_ptr<const Geometry>& geom, std::ostream& outpu
     LOG(message_group::Export_Error, "Can't create 3MF model.");
     return;
   }
-
   const auto& options3mf =
     exportInfo.options3mf ? exportInfo.options3mf : std::make_shared<Export3mfOptions>();
   switch (options3mf->unit) {
@@ -456,7 +455,7 @@ void export_3mf(const std::shared_ptr<const Geometry>& geom, std::ostream& outpu
                     .options = options3mf};
 
   if (!append_3mf(geom, ctx)) {
-    if (model) lib3mf_release(model);
+    if (ctx.model) lib3mf_release(model);
     return;
   }
 
