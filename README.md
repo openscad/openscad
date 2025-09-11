@@ -12,8 +12,7 @@ target="_blank"> <img
 src="https://img.shields.io/badge/Reddit-FF4500?logo=reddit&logoColor=white"/>
 </a><a href="https://pythonscad.org" target="_blank"> <img
 src="https://img.shields.io/badge/Website-3776AB?logo=Python&logoColor=white"/>
-</a> 
-[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/pythonscad/pythonscad)
+</a> <a href="https://deepwiki.com/pythonscad/pythonscad"><img src="https://deepwiki.com/badge.svg" alt="Ask DeepWiki"></a>
 </p>
 
 
