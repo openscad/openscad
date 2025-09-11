@@ -833,7 +833,7 @@ bool parse(SourceFile *&file, const std::string& text, const std::string &filena
   file = rootfile;
   if (parserretval != 0) {
     // Clear scope_stack when parsing aborted
-    scope_stack = std::stack<std::shared_ptr<LocalScope>>();
+    scope_stack = {};
     return false;
   }
 
