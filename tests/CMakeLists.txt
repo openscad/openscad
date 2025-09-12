@@ -32,9 +32,10 @@ if(PROJECT_IS_TOP_LEVEL)
     set(OPENSCAD_BINPATH "$ENV{OPENSCAD_BINARY}")
   endif()
 
-  # Release builds are typically built against lib3mf
+  # Release builds are typically built against lib3mf and manifold
   option(ENABLE_LIB3MF_TESTS "Enable lib3mf tests" ON)
-else(PROJECT_IS_TOP_LEVEL)
+  option(ENABLE_MANIFOLD_TESTS "Enable manifold tests" ON)
+else() # !PROJECT_IS_TOP_LEVEL
   message(STATUS "Configuring tests in a subdirectory")
   # Very commonly used cmake-provided paths
   set(CBD ${CMAKE_BINARY_DIR}) # build top level
@@ -70,6 +71,9 @@ else(PROJECT_IS_TOP_LEVEL)
   endif()
   if(LIB3MF_FOUND)
     set(ENABLE_LIB3MF_TESTS TRUE)
+  endif()
+  if(ENABLE_MANIFOLD)
+    set(ENABLE_MANIFOLD_TESTS TRUE)
   endif()
 endif(PROJECT_IS_TOP_LEVEL)
 
@@ -725,7 +729,7 @@ add_cmdline_test(render-cgal      OPENSCAD FILES ${RENDER_COMMON_FILES} EXPECTED
 add_cmdline_test(render-cgal      OPENSCAD FILES ${RENDER_DIFFERENT_EXPECTATIONS} SUFFIX png ARGS --render --backend=cgal)
 add_cmdline_test(render-force-cgal OPENSCAD SUFFIX png FILES ${RENDERFORCETEST_FILES} ARGS --render=force --backend=cgal)
 add_cmdline_test(render-stdio-cgal OPENSCAD SUFFIX png FILES ${RENDERSTDIOTEST_FILES} STDIO EXPECTEDDIR render ARGS --export-format png --render --backend=cgal)
-if (ENABLE_MANIFOLD)
+if (ENABLE_MANIFOLD_TESTS)
 add_cmdline_test(render-manifold OPENSCAD FILES ${RENDER_COMMON_FILES} EXPECTEDDIR render SUFFIX png ARGS --render --backend=manifold)
 add_cmdline_test(render-manifold OPENSCAD FILES ${RENDER_DIFFERENT_EXPECTATIONS} SUFFIX png ARGS --render --backend=manifold)
 add_cmdline_test(render-force-manifold      OPENSCAD SUFFIX png FILES ${RENDERFORCETEST_FILES} EXPECTEDDIR render ARGS --render=force --backend=manifold)
@@ -735,7 +739,7 @@ endif()
 
 add_cmdline_test(preview-cgal    OPENSCAD FILES ${PREVIEW_COMMON_FILES} EXPECTEDDIR preview SUFFIX png ARGS --backend=cgal)
 add_cmdline_test(preview-cgal    OPENSCAD FILES ${PREVIEW_DIFFERENT_EXPECTATIONS} SUFFIX png ARGS --backend=cgal)
-if (ENABLE_MANIFOLD)
+if (ENABLE_MANIFOLD_TESTS)
 add_cmdline_test(preview-manifold OPENSCAD SUFFIX png FILES ${PREVIEW_COMMON_FILES} EXPECTEDDIR preview ARGS --backend=manifold)
 add_cmdline_test(preview-manifold OPENSCAD SUFFIX png FILES ${PREVIEW_DIFFERENT_EXPECTATIONS} ARGS --backend=manifold)
 endif()
@@ -838,7 +842,7 @@ ${TEST_SCAD_DIR}/3D/features/polyhedron-tests.scad
 # Export tests (compare actually exported files)
 add_cmdline_test(export-stl              EXPERIMENTAL OPENSCAD SUFFIX stl FILES ${EXPORT_STL_TEST_FILES} ARGS --enable=predictible-output --render)
 add_cmdline_test(export-stl-stdout       EXPERIMENTAL OPENSCAD SUFFIX stl FILES ${EXPORT_STL_TEST_FILES} STDIO EXPECTEDDIR export-stl ARGS --enable=predictible-output --render --export-format asciistl)
-if (ENABLE_MANIFOLD)
+if (ENABLE_MANIFOLD_TESTS)
 add_cmdline_test(export-stl-manifold     EXPERIMENTAL OPENSCAD SUFFIX stl FILES ${EXPORT_STL_TEST_FILES} EXPECTEDDIR export-stl ARGS --enable=predictible-output --backend=manifold --render)
 endif()
 
@@ -846,7 +850,7 @@ add_cmdline_test(export-binstl           EXPERIMENTAL OPENSCAD SUFFIX stl FILES 
 add_cmdline_test(export-binstl-stdout    EXPERIMENTAL OPENSCAD SUFFIX stl FILES ${EXPORT_STL_TEST_FILES} STDIO EXPECTEDDIR export-binstl ARGS --enable=predictible-output --render --export-format binstl)
 
 add_cmdline_test(export-obj              EXPERIMENTAL OPENSCAD SUFFIX obj FILES ${EXPORT_OBJ_TEST_FILES} ARGS --enable=predictible-output)
-if (LIB3MF_FOUND)
+if (ENABLE_LIB3MF_TESTS)
 add_cmdline_test(export-3mf              EXPERIMENTAL OPENSCAD SUFFIX 3mf FILES ${EXPORT_3MF_TEST_FILES} ARGS --enable=predictible-output)
 endif()
 add_cmdline_test(export-pov-as-is        EXPERIMENTAL OPENSCAD SUFFIX pov FILES ${EXPORT_POV_TEST_FILES} ARGS --enable=predictible-output --backend=manifold)
@@ -913,7 +917,7 @@ add_cmdline_test(render-off-cgal SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png F
 add_cmdline_test(render-amf SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png FILES ${EXPORT_IMPORT_3D_RENDER_FILES} EXPECTEDDIR render-monotone ARGS ${OPENSCAD_EXE_ARG} --format=AMF --render=force)
 add_cmdline_test(render-obj SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png FILES ${EXPORT_IMPORT_3D_RENDER_FILES} EXPECTEDDIR render-monotone ARGS ${OPENSCAD_EXE_ARG} --format=OBJ --render=force)
 
-if (ENABLE_MANIFOLD)
+if (ENABLE_MANIFOLD_TESTS)
 set(render-off-manifold_FILES ${EXPORT_IMPORT_3D_RENDERMANIFOLD_FILES})
 list(REMOVE_ITEM render-off-manifold_FILES
  ${TEST_SCAD_DIR}/misc/cube10.scad
@@ -931,9 +935,9 @@ add_cmdline_test(render-stl-manifold SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX p
 add_cmdline_test(render-amf-manifold SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png FILES ${EXPORT_IMPORT_3D_RENDERMANIFOLD_FILES} EXPECTEDDIR render-monotone ARGS ${OPENSCAD_EXE_ARG} --format=AMF --render=force --backend=manifold)
 add_cmdline_test(render-obj-manifold SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png FILES ${EXPORT_IMPORT_3D_RENDERMANIFOLD_FILES} EXPECTEDDIR render-monotone ARGS ${OPENSCAD_EXE_ARG} --format=OBJ --render=force --backend=manifold)
 add_cmdline_test(render-obj-manifold SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png FILES ${FILES_MANIFOLD_CORNER_CASES} EXPECTEDDIR render-off-manifold ARGS ${OPENSCAD_EXE_ARG} --format=OBJ --render=force --backend=manifold)
-endif(ENABLE_MANIFOLD)
+endif(ENABLE_MANIFOLD_TESTS)
 
-if (LIB3MF_FOUND)
+if (ENABLE_LIB3MF_TESTS)
 add_cmdline_test(preview-3mf         SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png FILES ${EXPORT_IMPORT_3D_PREVIEW_FILES} EXPECTEDDIR render-monotone ARGS ${OPENSCAD_EXE_ARG} --format=3MF)
 add_cmdline_test(render-3mf-cgal     SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png FILES ${EXPORT_IMPORT_3D_RENDER_FILES} EXPECTEDDIR render-monotone ARGS ${OPENSCAD_EXE_ARG} --format=3MF --render=force --backend=cgal)
 add_cmdline_test(render-3mf-cgal     SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png FILES ${EXPORT_IMPORT_3D_DIFFERENT_FILES} EXPECTEDDIR render-monotone ARGS ${OPENSCAD_EXE_ARG} --format=3MF --render=force --backend=cgal)
@@ -1270,7 +1274,7 @@ set_tests_properties(
   
   PROPERTIES DISABLED TRUE
 )
-if (ENABLE_MANIFOLD)
+if (ENABLE_MANIFOLD_TESTS)
 set_tests_properties(
   # z-fighting different on different machines
   preview-manifold_issue1165
@@ -1307,7 +1311,7 @@ set_tests_properties(
 
   PROPERTIES DISABLED TRUE
 )
-endif (ENABLE_MANIFOLD)
+endif (ENABLE_MANIFOLD_TESTS)
 
 if (EXPERIMENTAL)
 set_tests_properties(
@@ -1319,7 +1323,7 @@ set_tests_properties(
 )
 endif (EXPERIMENTAL)
 
-if (LIB3MF_FOUND)
+if (ENABLE_LIB3MF_TESTS)
   if (EXPERIMENTAL)
     set_tests_properties(
       # https://github.com/openscad/openscad/issues/5800
@@ -1328,7 +1332,7 @@ if (LIB3MF_FOUND)
       PROPERTIES DISABLED TRUE
     )
   endif (EXPERIMENTAL)
-  if (ENABLE_MANIFOLD)
+  if (ENABLE_MANIFOLD_TESTS)
     set_tests_properties(
       # https://github.com/openscad/openscad/issues/5966
      render-off-manifold_issue5216
@@ -1336,7 +1340,7 @@ if (LIB3MF_FOUND)
 
      PROPERTIES DISABLED TRUE
     )
-  endif (ENABLE_MANIFOLD)  
+  endif (ENABLE_MANIFOLD_TESTS)  
   set_tests_properties(
     # When exported from CGAL, the file cannot be re-imported
     render-3mf-cgal_bad-stl-wing
@@ -1355,7 +1359,7 @@ else()
     throwntogether-manifold_import_3mf-tests
     PROPERTIES DISABLED TRUE
   )
-endif(LIB3MF_FOUND)
+endif(ENABLE_LIB3MF_TESTS)
 
 list(APPEND NEF3_BROKEN_TESTS
   render-cgal_nef3_broken
