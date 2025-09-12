@@ -123,11 +123,13 @@ get_qt5_deps_debian()
 
 get_arch_deps()
 {
-  pacman -S --noconfirm \
-	base-devel gcc bison flex make libzip \
-	qt5 qscintilla-qt5 cgal gmp mpfr boost opencsg \
-	glew eigen glib2 fontconfig freetype2 harfbuzz \
-	double-conversion imagemagick tbb
+  pacman -Syu --noconfirm --needed \
+	base-devel boost cairo cgal cmake double-conversion eigen fontconfig \
+  freetype2 gcc-libs ghostscript glew glib2 glibc glu gmp harfbuzz \
+  hicolor-icon-theme hidapi imagemagick lib3mf libglvnd libspnav libx11 \
+  libxml2 libzip mimalloc mpfr nettle opencsg procps-ng python python-pip \
+  python-setuptools qscintilla-qt5 qt5-base qt5-multimedia qt5-svg tbb \
+  xorg-server-xvfb
 }
 
 get_solus_deps()
