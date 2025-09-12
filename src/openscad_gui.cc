@@ -117,8 +117,8 @@ namespace {
 QString assemblePath(const std::filesystem::path& absoluteBaseDir, const std::string& fileName)
 {
   if (fileName.empty()) return "";
-  auto qsDir = QString::fromLocal8Bit(absoluteBaseDir.generic_string().c_str());
-  auto qsFile = QString::fromLocal8Bit(fileName.c_str());
+  auto qsDir = QString::fromStdString(absoluteBaseDir.generic_string());
+  auto qsFile = QString::fromStdString(fileName);
   // if qsfile is absolute, dir is ignored. (see documentation of QFileInfo)
   const QFileInfo fileInfo(qsDir, qsFile);
   return fileInfo.absoluteFilePath();
