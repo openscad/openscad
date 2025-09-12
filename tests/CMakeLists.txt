@@ -79,7 +79,7 @@ endif(PROJECT_IS_TOP_LEVEL)
 
 if(PROJECT_IS_TOP_LEVEL)
   if(NOT OPENSCAD_BINPATH)
-    message(STATUS "OPENSCAD_BINPATH not set")
+    message(FATAL_ERROR "OPENSCAD_BINPATH not set")
   elseif(NOT EXISTS "${OPENSCAD_BINPATH}")
     message(STATUS "Couldn't find the OpenSCAD binary: ${OPENSCAD_BINPATH}")
     message(FATAL_ERROR "Please place an OpenSCAD binary at: ${OPENSCAD_BINPATH}")
@@ -197,13 +197,15 @@ file(GLOB SCAD_SVG_FILES      ${TEST_SCAD_DIR}/svg/svg-spec/*.scad
   ${TEST_SCAD_DIR}/svg/use-transform.scad
   ${TEST_SCAD_DIR}/svg/fill-rule.scad
   ${TEST_SCAD_DIR}/svg/size-percent.scad)
+if(EXAMPLES_DIR)
   list(APPEND EXAMPLE_2D_FILES
-  ${EXAMPLES_DIR}/Old/example015.scad
-  ${EXAMPLES_DIR}/Advanced/module_recursion.scad
-  ${EXAMPLES_DIR}/Functions/list_comprehensions.scad
-  ${EXAMPLES_DIR}/Functions/polygon_areas.scad
-  ${EXAMPLES_DIR}/Functions/recursion.scad
-)
+    ${EXAMPLES_DIR}/Old/example015.scad
+    ${EXAMPLES_DIR}/Advanced/module_recursion.scad
+    ${EXAMPLES_DIR}/Functions/list_comprehensions.scad
+    ${EXAMPLES_DIR}/Functions/polygon_areas.scad
+    ${EXAMPLES_DIR}/Functions/recursion.scad
+  )
+endif(EXAMPLES_DIR)
 
 file(GLOB FEATURES_3D_FILES   ${TEST_SCAD_DIR}/3D/features/*.scad)
 file(GLOB DEPRECATED_3D_FILES ${TEST_SCAD_DIR}/3D/deprecated/*.scad)
@@ -213,20 +215,21 @@ file(GLOB SCAD_NEF3_FILES          ${TEST_SCAD_DIR}/nef3/*.scad)
 file(GLOB FUNCTION_FILES           ${TEST_SCAD_DIR}/functions/*.scad)
 file(GLOB REDEFINITION_FILES       ${TEST_SCAD_DIR}/redefinition/*.scad)
 file(GLOB_RECURSE BUGS_FILES       ${TEST_SCAD_DIR}/bugs/*.scad)
-file(GLOB_RECURSE EXAMPLE_FILES    ${EXAMPLES_DIR}/*.scad)
-list(REMOVE_ITEM EXAMPLE_FILES
-  ${EXAMPLES_DIR}/Basics/roof.scad # -> EXPERIMENTAL_ROOF_FILES
-)
-
-list(APPEND EXAMPLE_3D_FILES ${EXAMPLE_FILES})
-# Remove 2D files from 3D examples
-list(REMOVE_ITEM EXAMPLE_3D_FILES
-  ${EXAMPLES_DIR}/Old/example015.scad
-  ${EXAMPLES_DIR}/Advanced/module_recursion.scad
-  ${EXAMPLES_DIR}/Functions/list_comprehensions.scad
-  ${EXAMPLES_DIR}/Functions/polygon_areas.scad
-  ${EXAMPLES_DIR}/Functions/recursion.scad
-)
+if(EXAMPLES_DIR)
+  file(GLOB_RECURSE EXAMPLE_FILES    ${EXAMPLES_DIR}/*.scad)
+  list(REMOVE_ITEM EXAMPLE_FILES
+    ${EXAMPLES_DIR}/Basics/roof.scad # -> EXPERIMENTAL_ROOF_FILES
+  )
+  list(APPEND EXAMPLE_3D_FILES ${EXAMPLE_FILES})
+  # Remove 2D files from 3D examples
+  list(REMOVE_ITEM EXAMPLE_3D_FILES
+    ${EXAMPLES_DIR}/Old/example015.scad
+    ${EXAMPLES_DIR}/Advanced/module_recursion.scad
+    ${EXAMPLES_DIR}/Functions/list_comprehensions.scad
+    ${EXAMPLES_DIR}/Functions/polygon_areas.scad
+    ${EXAMPLES_DIR}/Functions/recursion.scad
+  )
+endif(EXAMPLES_DIR)
 
 list(APPEND MISC_FILES
   ${TEST_SCAD_DIR}/misc/arg-permutations.scad
@@ -448,26 +451,30 @@ list(APPEND SVG_VIEWBOX_TESTS
 )
 
 # FIXME(kintel): Not in use anymore, but keep for reference?
+if(EXAMPLES_DIR)
+  list(APPEND SCADFILES_WITH_GREEN_FACES
+    ${EXAMPLES_DIR}/Advanced/children.scad
+    ${EXAMPLES_DIR}/Basics/CSG-modules.scad
+    ${EXAMPLES_DIR}/Basics/CSG.scad
+    ${EXAMPLES_DIR}/Basics/logo.scad
+    ${EXAMPLES_DIR}/Basics/LetterBlock.scad
+    ${EXAMPLES_DIR}/Basics/text_on_cube.scad
+    ${EXAMPLES_DIR}/Basics/logo_and_text.scad
+    ${EXAMPLES_DIR}/Parametric/sign.scad
+    ${EXAMPLES_DIR}/Parametric/candleStand.scad
+    ${EXAMPLES_DIR}/Old/example001.scad
+    ${EXAMPLES_DIR}/Old/example002.scad
+    ${EXAMPLES_DIR}/Old/example003.scad
+    ${EXAMPLES_DIR}/Old/example004.scad
+    ${EXAMPLES_DIR}/Old/example005.scad
+    ${EXAMPLES_DIR}/Old/example006.scad
+    ${EXAMPLES_DIR}/Old/example007.scad
+    ${EXAMPLES_DIR}/Old/example012.scad
+    ${EXAMPLES_DIR}/Old/example016.scad
+    ${EXAMPLES_DIR}/Old/example024.scad
+  )
+endif(EXAMPLES_DIR)
 list(APPEND SCADFILES_WITH_GREEN_FACES
-  ${EXAMPLES_DIR}/Advanced/children.scad
-  ${EXAMPLES_DIR}/Basics/CSG-modules.scad
-  ${EXAMPLES_DIR}/Basics/CSG.scad
-  ${EXAMPLES_DIR}/Basics/logo.scad
-  ${EXAMPLES_DIR}/Basics/LetterBlock.scad
-  ${EXAMPLES_DIR}/Basics/text_on_cube.scad
-  ${EXAMPLES_DIR}/Basics/logo_and_text.scad
-  ${EXAMPLES_DIR}/Parametric/sign.scad
-  ${EXAMPLES_DIR}/Parametric/candleStand.scad
-  ${EXAMPLES_DIR}/Old/example001.scad
-  ${EXAMPLES_DIR}/Old/example002.scad
-  ${EXAMPLES_DIR}/Old/example003.scad
-  ${EXAMPLES_DIR}/Old/example004.scad
-  ${EXAMPLES_DIR}/Old/example005.scad
-  ${EXAMPLES_DIR}/Old/example006.scad
-  ${EXAMPLES_DIR}/Old/example007.scad
-  ${EXAMPLES_DIR}/Old/example012.scad
-  ${EXAMPLES_DIR}/Old/example016.scad
-  ${EXAMPLES_DIR}/Old/example024.scad
   ${TEST_SCAD_DIR}/3D/features/difference-tests.scad
   ${TEST_SCAD_DIR}/3D/features/for-tests.scad
   ${TEST_SCAD_DIR}/3D/features/highlight-modifier2.scad
@@ -510,26 +517,29 @@ list(APPEND SCADFILES_WITH_COLOR
   ${TEST_SCAD_DIR}/3D/features/color-names-tests.scad
   ${TEST_SCAD_DIR}/3D/features/hex-colors-tests.scad
 
-  ${EXAMPLES_DIR}/Advanced/assert.scad
-  ${EXAMPLES_DIR}/Advanced/animation.scad
-  ${EXAMPLES_DIR}/Advanced/GEB.scad
-  ${EXAMPLES_DIR}/Advanced/children.scad
-  ${EXAMPLES_DIR}/Advanced/children_indexed.scad
-  ${EXAMPLES_DIR}/Basics/CSG-modules.scad
-  ${EXAMPLES_DIR}/Basics/linear_extrude.scad
-  ${EXAMPLES_DIR}/Basics/logo_and_text.scad
-  ${EXAMPLES_DIR}/Basics/projection.scad
-  ${EXAMPLES_DIR}/Basics/text_on_cube.scad
-  ${EXAMPLES_DIR}/Advanced/surface_image.scad
-  ${EXAMPLES_DIR}/Functions/functions.scad
-  ${EXAMPLES_DIR}/Basics/rotate_extrude.scad
-  ${EXAMPLES_DIR}/Old/example017.scad
-
   ${TEST_SCAD_DIR}/3D/issues/issue5217.scad
   ${TEST_SCAD_DIR}/3D/issues/issue5738.scad
 
   #${TEST_SCAD_DIR}/bugs/issue1000.scad
 )
+if(EXAMPLES_DIR)
+  list(APPEND SCADFILES_WITH_COLOR
+    ${EXAMPLES_DIR}/Advanced/assert.scad
+    ${EXAMPLES_DIR}/Advanced/animation.scad
+    ${EXAMPLES_DIR}/Advanced/GEB.scad
+    ${EXAMPLES_DIR}/Advanced/children.scad
+    ${EXAMPLES_DIR}/Advanced/children_indexed.scad
+    ${EXAMPLES_DIR}/Basics/CSG-modules.scad
+    ${EXAMPLES_DIR}/Basics/linear_extrude.scad
+    ${EXAMPLES_DIR}/Basics/logo_and_text.scad
+    ${EXAMPLES_DIR}/Basics/projection.scad
+    ${EXAMPLES_DIR}/Basics/text_on_cube.scad
+    ${EXAMPLES_DIR}/Advanced/surface_image.scad
+    ${EXAMPLES_DIR}/Functions/functions.scad
+    ${EXAMPLES_DIR}/Basics/rotate_extrude.scad
+    ${EXAMPLES_DIR}/Old/example017.scad
+  )
+endif(EXAMPLES_DIR)
 
 # Render in CGAL and Manifold should be the same, except for objects with color
 # ..but there are some exceptions.
@@ -546,11 +556,14 @@ list(APPEND RENDER_DIFFERENT_EXPECTATIONS
 
   # render() in manifold mode preserves colors
   ${TEST_SCAD_DIR}/3D/features/render-tests.scad
-  ${EXAMPLES_DIR}/Old/example016.scad
 
   # Manifold can represent the very thin slice
   ${TEST_SCAD_DIR}/3D/issues/issue1165.scad
 )
+if(EXAMPLES_DIR)
+  list(APPEND RENDER_DIFFERENT_EXPECTATIONS
+    ${EXAMPLES_DIR}/Old/example016.scad)
+endif(EXAMPLES_DIR)
 
 # Preview in CGAL and Manifold should be the same, except for objects with color
 # ..but there are some exceptions.
@@ -651,12 +664,15 @@ remove_test_config(Bugs FILES
 )
 
 # Examples
-set_test_config(Examples FILES ${EXAMPLE_FILES} PREFIXES
-  render-cgal render-manifold
-  preview-cgal preview-manifold preview-manifold preview throwntogether-cgal throwntogether-manifold 
-  render-csg-cgal render-monotone 
-  preview-off render-off dump-examples)
-set_test_config(Examples FILES ${EXAMPLE_2D_FILES} PREFIXES render-dxf)
+if(EXAMPLES_DIR)
+  set_test_config(Examples FILES ${EXAMPLE_FILES} PREFIXES
+    render-cgal render-manifold
+    preview-cgal preview-manifold preview-manifold preview throwntogether-cgal throwntogether-manifold 
+    render-csg-cgal render-monotone 
+    preview-off render-off dump-examples)
+  set_test_config(Examples FILES ${EXAMPLE_2D_FILES} PREFIXES render-dxf)
+endif(EXAMPLES_DIR)
+
 # If ctest is run with no configuration specified, then force "Default"
 set_directory_properties(PROPERTIES TEST_INCLUDE_FILES "${CCSD}/cmake/EnforceConfig.cmake")
 
@@ -721,7 +737,9 @@ add_cmdline_test(echo         OPENSCAD SUFFIX echo FILES ${TEST_SCAD_DIR}/misc/b
 add_cmdline_test(echo         OPENSCAD SUFFIX echo FILES ${TEST_SCAD_DIR}/issues/issue4172-echo-vector-stack-exhaust.scad ARGS --quiet --trace-usermodule-parameters=false)
 
 add_cmdline_test(dump           OPENSCAD FILES ${FEATURES_2D_FILES} ${FEATURES_3D_FILES} ${DEPRECATED_3D_FILES} ${MISC_FILES} SUFFIX csg ARGS)
-add_cmdline_test(dump-examples  OPENSCAD FILES ${EXAMPLE_FILES} SUFFIX csg ARGS)
+if(EXAMPLES_DIR)
+  add_cmdline_test(dump-examples  OPENSCAD FILES ${EXAMPLE_FILES} SUFFIX csg ARGS)
+endif(EXAMPLES_DIR)
 # non-ASCII filenames
 add_cmdline_test(export-csg-nonascii  OPENSCAD FILES ${TEST_SCAD_DIR}/misc/sfære.scad SUFFIX csg)
 
@@ -1073,15 +1091,17 @@ add_cmdline_test(render-view-edges-manifold OPENSCAD FILES ${VIEW_OPTIONS_EDGES_
 #
 # Colorscheme tests
 #
-set(LOGO_EXAMPLE ${EXAMPLES_DIR}/Basics/logo.scad)
-set(CSG_EXAMPLE  ${EXAMPLES_DIR}/Basics/CSG.scad)
-add_cmdline_test(openscad-colorscheme-cornfield       OPENSCAD FILES ${LOGO_EXAMPLE} SUFFIX png ARGS --colorscheme=Cornfield)
-add_cmdline_test(openscad-colorscheme-metallic        OPENSCAD FILES ${LOGO_EXAMPLE} SUFFIX png ARGS --colorscheme=Metallic)
-add_cmdline_test(openscad-colorscheme-sunset          OPENSCAD FILES ${LOGO_EXAMPLE} SUFFIX png ARGS --colorscheme=Sunset)
-add_cmdline_test(openscad-colorscheme-starnight       OPENSCAD FILES ${LOGO_EXAMPLE} SUFFIX png ARGS --colorscheme=Starnight)
-add_cmdline_test(openscad-colorscheme-monotone        OPENSCAD FILES ${LOGO_EXAMPLE} SUFFIX png ARGS --colorscheme=Monotone)
-add_cmdline_test(openscad-colorscheme-clearsky        OPENSCAD FILES ${LOGO_EXAMPLE} SUFFIX png ARGS --colorscheme=ClearSky)
-add_cmdline_test(openscad-colorscheme-metallic-render OPENSCAD FILES ${CSG_EXAMPLE}  SUFFIX png ARGS --colorscheme=Metallic --render)
+if(EXAMPLES_DIR)
+  set(LOGO_EXAMPLE ${EXAMPLES_DIR}/Basics/logo.scad)
+  set(CSG_EXAMPLE  ${EXAMPLES_DIR}/Basics/CSG.scad)
+  add_cmdline_test(openscad-colorscheme-cornfield       OPENSCAD FILES ${LOGO_EXAMPLE} SUFFIX png ARGS --colorscheme=Cornfield)
+  add_cmdline_test(openscad-colorscheme-metallic        OPENSCAD FILES ${LOGO_EXAMPLE} SUFFIX png ARGS --colorscheme=Metallic)
+  add_cmdline_test(openscad-colorscheme-sunset          OPENSCAD FILES ${LOGO_EXAMPLE} SUFFIX png ARGS --colorscheme=Sunset)
+  add_cmdline_test(openscad-colorscheme-starnight       OPENSCAD FILES ${LOGO_EXAMPLE} SUFFIX png ARGS --colorscheme=Starnight)
+  add_cmdline_test(openscad-colorscheme-monotone        OPENSCAD FILES ${LOGO_EXAMPLE} SUFFIX png ARGS --colorscheme=Monotone)
+  add_cmdline_test(openscad-colorscheme-clearsky        OPENSCAD FILES ${LOGO_EXAMPLE} SUFFIX png ARGS --colorscheme=ClearSky)
+  add_cmdline_test(openscad-colorscheme-metallic-render OPENSCAD FILES ${CSG_EXAMPLE}  SUFFIX png ARGS --colorscheme=Metallic --render)
+endif(EXAMPLES_DIR)
 
 ############################
 # Experimental tests       #
@@ -1100,14 +1120,16 @@ add_cmdline_test(lazyunion-render-svg  EXPERIMENTAL SCRIPT ${EXPORT_IMPORT_PNGTE
 #
 # --enable=roof tests
 #
-list(APPEND EXPERIMENTAL_ROOF_FILES ${EXAMPLES_DIR}/Basics/roof.scad)
-add_cmdline_test(dump-examples    EXPERIMENTAL OPENSCAD SUFFIX csg FILES ${EXPERIMENTAL_ROOF_FILES} ARGS --enable=roof)
-add_cmdline_test(render-cgal      EXPERIMENTAL OPENSCAD SUFFIX png FILES ${EXPERIMENTAL_ROOF_FILES} ARGS --render --enable=roof --backend=cgal)
-add_cmdline_test(render-manifold  EXPERIMENTAL OPENSCAD SUFFIX png FILES ${EXPERIMENTAL_ROOF_FILES} EXPECTEDDIR render ARGS --render --enable=roof --backend=manifold)
-add_cmdline_test(preview-cgal     EXPERIMENTAL OPENSCAD SUFFIX png FILES ${EXPERIMENTAL_ROOF_FILES} EXPECTEDDIR preview ARGS --enable=roof --backend=cgal)
-add_cmdline_test(preview-manifold EXPERIMENTAL OPENSCAD SUFFIX png FILES ${EXPERIMENTAL_ROOF_FILES} ARGS --enable=roof --backend=manifold)
-add_cmdline_test(throwntogether   EXPERIMENTAL OPENSCAD SUFFIX png FILES ${EXPERIMENTAL_ROOF_FILES} ARGS --preview=throwntogether --enable=roof)
-add_cmdline_test(render-csg-cgal        EXPERIMENTAL SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png FILES ${EXPERIMENTAL_ROOF_FILES} EXPECTEDDIR render ARGS ${OPENSCAD_EXE_ARG} --format=csg --render --enable=roof)
+if(EXAMPLES_DIR)
+  list(APPEND EXPERIMENTAL_ROOF_FILES ${EXAMPLES_DIR}/Basics/roof.scad)
+  add_cmdline_test(dump-examples    EXPERIMENTAL OPENSCAD SUFFIX csg FILES ${EXPERIMENTAL_ROOF_FILES} ARGS --enable=roof)
+  add_cmdline_test(render-cgal      EXPERIMENTAL OPENSCAD SUFFIX png FILES ${EXPERIMENTAL_ROOF_FILES} ARGS --render --enable=roof --backend=cgal)
+  add_cmdline_test(render-manifold  EXPERIMENTAL OPENSCAD SUFFIX png FILES ${EXPERIMENTAL_ROOF_FILES} EXPECTEDDIR render ARGS --render --enable=roof --backend=manifold)
+  add_cmdline_test(preview-cgal     EXPERIMENTAL OPENSCAD SUFFIX png FILES ${EXPERIMENTAL_ROOF_FILES} EXPECTEDDIR preview ARGS --enable=roof --backend=cgal)
+  add_cmdline_test(preview-manifold EXPERIMENTAL OPENSCAD SUFFIX png FILES ${EXPERIMENTAL_ROOF_FILES} ARGS --enable=roof --backend=manifold)
+  add_cmdline_test(throwntogether   EXPERIMENTAL OPENSCAD SUFFIX png FILES ${EXPERIMENTAL_ROOF_FILES} ARGS --preview=throwntogether --enable=roof)
+  add_cmdline_test(render-csg-cgal        EXPERIMENTAL SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png FILES ${EXPERIMENTAL_ROOF_FILES} EXPECTEDDIR render ARGS ${OPENSCAD_EXE_ARG} --format=csg --render --enable=roof)
+endif(EXAMPLES_DIR)
 
 #
 # --enable=import-function tests
@@ -1221,26 +1243,11 @@ set_tests_properties(
   render-view-edges-manifold_view-options-tests
   preview-view-axes-scales-edges_view-options-tests
 
-  # OpenCSG z fighting
-  preview-cgal_surface_image
-  throwntogether-cgal_surface_image
-
   # CGAL sometimes fail to union minkowski convex decompositions, causing visual differences
   # in rendering.
   render-cgal_minkowski3-difference-test
   render-csg-cgal_minkowski3-difference-test
   preview-cgal_minkowski3-difference-test
-
-  # https://github.com/openscad/openscad/issues/5159
-  render-cgal_projection
-  render-csg-cgal_projection
-
-  # https://github.com/openscad/openscad/issues/5158
-  #render-cgal_example017 
-  #throwntogether-cgal_example017
-  
-  # https://github.com/openscad/openscad/issues/4398
-  render-csg-cgal_logo_and_text
 
   # https://github.com/openscad/openscad/issues/909
   preview-amf_polyhedron-single-triangle
@@ -1274,43 +1281,77 @@ set_tests_properties(
   
   PROPERTIES DISABLED TRUE
 )
+if(EXAMPLES_DIR) 
+  set_tests_properties(
+    # OpenCSG z fighting
+    preview-cgal_surface_image
+    throwntogether-cgal_surface_image
+
+    # https://github.com/openscad/openscad/issues/5159
+    render-cgal_projection
+    render-csg-cgal_projection
+
+    # https://github.com/openscad/openscad/issues/5158
+    #render-cgal_example017 
+    #throwntogether-cgal_example017
+    
+    # https://github.com/openscad/openscad/issues/4398
+    render-csg-cgal_logo_and_text
+
+    PROPERTIES DISABLED TRUE
+  )
+endif(EXAMPLES_DIR)
+
+
 if (ENABLE_MANIFOLD_TESTS)
-set_tests_properties(
-  # z-fighting different on different machines
-  preview-manifold_issue1165
-  preview-manifold_issue1215
-  preview-cgal_example017
-  preview-manifold_example017
+  set_tests_properties(
+    # z-fighting different on different machines
+    preview-manifold_issue1165
+    preview-manifold_issue1215
 
-  # Manifold triangle order not stable, causes transparent
-  # objects to render differently on different machines
-  render-manifold_color-tests
-  render-manifold_hex-colors-tests
-  render-manifold_projection
+    # Manifold triangle order not stable, causes transparent
+    # objects to render differently on different machines
+    render-manifold_color-tests
+    render-manifold_hex-colors-tests
 
-  # https://github.com/openscad/openscad/issues/909
-  render-amf-manifold_bad-stl-wing
-  render-amf-manifold_bad-stl-pcbvicebar
-  render-amf-manifold_bad-stl-tardis
+    # https://github.com/openscad/openscad/issues/909
+    render-amf-manifold_bad-stl-wing
+    render-amf-manifold_bad-stl-pcbvicebar
+    render-amf-manifold_bad-stl-tardis
 
-  # https://github.com/openscad/openscad/issues/2841
-  render-manifold_issue2841b
-  preview-manifold_issue2841b
+    # https://github.com/openscad/openscad/issues/2841
+    render-manifold_issue2841b
+    preview-manifold_issue2841b
 
-  # OpenCSG z fighting
-  preview-manifold_surface_image
-  throwntogether-manifold_surface_image
+    # https://github.com/openscad/openscad/issues/5135
+    render-force-manifold_issue5135-bad
 
-  # https://github.com/openscad/openscad/issues/5135
-  render-force-manifold_issue5135-bad
+    # https://github.com/openscad/openscad/issues/5218
+    throwntogether-manifold_issue5218
+    throwntogether-manifold_issue913
 
-  # https://github.com/openscad/openscad/issues/5218
-  throwntogether-manifold_issue5218
-  throwntogether-manifold_issue913
-  throwntogether-manifold_example016
+    PROPERTIES DISABLED TRUE
+  )
+  if(EXAMPLES_DIR)
+    set_tests_properties(
+      # z-fighting different on different machines
+      preview-cgal_example017
+      preview-manifold_example017
 
-  PROPERTIES DISABLED TRUE
-)
+      # OpenCSG z fighting
+      preview-manifold_surface_image
+      throwntogether-manifold_surface_image
+
+      # Manifold triangle order not stable, causes transparent
+      # objects to render differently on different machines
+      render-manifold_projection
+
+      # https://github.com/openscad/openscad/issues/5218
+      throwntogether-manifold_example016
+
+      PROPERTIES DISABLED TRUE
+    )
+  endif(EXAMPLES_DIR)
 endif (ENABLE_MANIFOLD_TESTS)
 
 if (EXPERIMENTAL)
