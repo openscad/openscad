@@ -176,7 +176,7 @@ if [ -e /etc/issue ]; then
   get_mageia_deps
  elif [ "`grep -i qomo /etc/issue`" ]; then
   get_qomo_deps
- elif [ "`grep -i arch /etc/issue`" ]; then
+ elif test -r /etc/arch-release ; then
    get_arch_deps
  elif [ -e /etc/fedora-release ]; then
   if [ "`grep -i fedora.release /etc/fedora-release`" ]; then
