@@ -25,14 +25,16 @@
  */
 
 #include "core/SourceFile.h"
-#include "core/SourceFileCache.h"
+
+#include "core/EvaluationSession.h"
 #include "core/node.h"
-#include "utils/printutils.h"
-#include "utils/exceptions.h"
 #include "core/ScopeContext.h"
+#include "core/SourceFileCache.h"
 #include "core/parsersettings.h"
 #include "core/StatCache.h"
 #include "platform/PlatformUtils.h"
+#include "utils/printutils.h"
+#include "utils/exceptions.h"
 #include <algorithm>
 #include <ctime>
 #include <ostream>

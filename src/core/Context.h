@@ -6,9 +6,9 @@
 #include <string>
 #include <vector>
 
+#include "core/callables.h"
 #include "core/ContextFrame.h"
-#include "core/AST.h"
-#include "core/ContextMemoryManager.h"
+#include "core/EvaluationSession.h"
 
 /**
  * Local handle to a all context objects. This is used to maintain the
@@ -29,7 +29,6 @@ public:
       throw;
     }
   }
-
   ~ContextHandle()
   {
     assert(!!session == !!context);
@@ -75,15 +74,20 @@ protected:
 public:
   ~Context() override;
 
+  /**
+   * @brief Create a new Context or descendent
+   *
+   * Exists to ensure each Context object shares a single shared_ptr
+   */
   template <typename C, typename... T>
   static ContextHandle<C> create(T&&...t)
   {
     return ContextHandle<C>{std::shared_ptr<C>(new C(std::forward<T>(t)...))};
   }
+  std::shared_ptr<const Context> get_shared_ptr() const { return shared_from_this(); }
 
   virtual void init() {}
 
-  std::shared_ptr<const Context> get_shared_ptr() const { return shared_from_this(); }
   virtual const class Children *user_module_children() const;
   virtual std::vector<const std::shared_ptr<const Context> *> list_referenced_contexts() const;
 

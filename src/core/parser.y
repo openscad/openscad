@@ -826,7 +826,7 @@ bool parse(SourceFile *&file, const std::string& text, const std::string &filena
   parserdebug = debug;
   int parserretval = -1;
   try{
-     parserretval = parserparse();
+    parserretval = parserparse();
   }catch (const HardWarningException &e) {
     yyerror("stop on first warning");
   }
@@ -835,7 +835,11 @@ bool parse(SourceFile *&file, const std::string& text, const std::string &filena
   lexerlex_destroy();
 
   file = rootfile;
-  if (parserretval != 0) return false;
+  if (parserretval != 0) {
+    // Clear scope_stack when parsing aborted
+    scope_stack = {};
+    return false;
+  }
 
   parser_error_pos = -1;
   parser_input_buffer = nullptr;

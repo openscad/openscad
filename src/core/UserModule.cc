@@ -31,14 +31,15 @@
 #include <vector>
 
 #include "core/AST.h"
+#include "core/Arguments.h"
+#include "core/Expression.h"
 #include "core/ModuleInstantiation.h"
 #include "core/node.h"
-#include "utils/exceptions.h"
-#include "utils/StackCheck.h"
 #include "core/ScopeContext.h"
-#include "core/Expression.h"
-#include "utils/printutils.h"
 #include "utils/compiler_specific.h"
+#include "utils/exceptions.h"
+#include "utils/printutils.h"
+#include "utils/StackCheck.h"
 #include <cstddef>
 #include <sstream>
 #include <string>
