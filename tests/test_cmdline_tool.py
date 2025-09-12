@@ -33,6 +33,7 @@ import shutil
 import platform
 import string
 import difflib
+from pathlib import Path
 
 #_debug_tcct = True
 _debug_tcct = False
@@ -42,7 +43,7 @@ _debug_tcct = False
 build_to_test_sources = "../../tests"
 
 def get_runtime_to_test_sources():
-    return os.path.relpath(os.path.dirname(__file__))
+    return Path(os.path.relpath(os.path.dirname(__file__))).as_posix()
 
 def debug(*args):
     global _debug_tcct
