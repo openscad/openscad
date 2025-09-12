@@ -38,10 +38,11 @@ import difflib
 _debug_tcct = False
 
 # Path from the build/tests to the tests source dir
+# when test goldens were created
 build_to_test_sources = "../../tests"
 
 def get_runtime_to_test_sources():
-    return build_to_test_sources
+    return os.path.relpath(os.path.dirname(__file__))
 
 def debug(*args):
     global _debug_tcct
