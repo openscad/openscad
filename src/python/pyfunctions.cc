@@ -4008,10 +4008,10 @@ PyObject *python_nb_add(PyObject *arg1, PyObject *arg2)
 
 PyObject *python_nb_xor(PyObject *arg1, PyObject *arg2) {
   PyObject *dummy_dict;
-  auto node2 = PyOpenSCADObjectToNode(arg2, &dummy_dict);
-  if(node2 != nullptr) {
+  if (PyObject_IsInstance(arg2, reinterpret_cast<PyObject *>(&PyOpenSCADType))) {
     auto node1 = PyOpenSCADObjectToNode(arg1, &dummy_dict);
-    if(node1 == nullptr) {
+    auto node2 = PyOpenSCADObjectToNode(arg2, &dummy_dict);
+    if(node1 == nullptr || node2 == nullptr) {
       PyErr_SetString(PyExc_TypeError,
        "Error during parsing hull. arguments must be solids.");
       return nullptr;
@@ -4023,6 +4023,7 @@ PyObject *python_nb_xor(PyObject *arg1, PyObject *arg2) {
     node->children.push_back(node2);
     return PyOpenSCADObjectFromNode(&PyOpenSCADType, node);
   }
+  printf("Expl\n");
   return python_nb_sub_vec3(arg1, arg2, 3);
 }
 
