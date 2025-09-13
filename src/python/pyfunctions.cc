@@ -1199,7 +1199,6 @@ PyObject *python_oo_scale(PyObject *obj, PyObject *args, PyObject *kwargs)
   return python_scale_core(obj, val_v);
 }
 
-
 PyObject *python_explode(PyObject *self, PyObject *args, PyObject *kwargs)
 {
   char *kwlist[] = {"obj", "v", NULL};
@@ -4023,8 +4022,24 @@ PyObject *python_nb_xor(PyObject *arg1, PyObject *arg2) {
     node->children.push_back(node2);
     return PyOpenSCADObjectFromNode(&PyOpenSCADType, node);
   }
-  printf("Expl\n");
   return python_nb_sub_vec3(arg1, arg2, 3);
+}
+
+PyObject *python_nb_remainder(PyObject *arg1, PyObject *arg2) {
+  PyObject *dummy_dict;
+  auto node1 = PyOpenSCADObjectToNode(arg1, &dummy_dict);
+  auto node2 = PyOpenSCADObjectToNode(arg2, &dummy_dict);
+  if(node1 == nullptr || node2 == nullptr) {
+    PyErr_SetString(PyExc_TypeError,
+     "Error during parsing hull. arguments must be solids.");
+    return nullptr;
+  }
+  DECLARE_INSTANCE
+  std::shared_ptr<AbstractNode> child;
+  auto node = std::make_shared<CgalAdvNode>(instance, CgalAdvType::MINKOWSKI);
+  node->children.push_back(node1);
+  node->children.push_back(node2);
+  return PyOpenSCADObjectFromNode(&PyOpenSCADType, node);
 }
 
 PyObject *python_nb_mul(PyObject *arg1, PyObject *arg2)
@@ -4052,6 +4067,10 @@ PyObject *python_nb_subtract(PyObject *arg1, PyObject *arg2)
 PyObject *python_nb_and(PyObject *arg1, PyObject *arg2)
 {
   return python_nb_sub(arg1, arg2, OpenSCADOperator::INTERSECTION);
+}
+
+PyObject *python_nb_matmult(PyObject *arg1, PyObject *arg2) {
+  return python_multmatrix_sub(arg1, arg2, 0);
 }
 
 PyObject *python_csg_adv_sub(PyObject *self, PyObject *args, PyObject *kwargs, CgalAdvType mode)
@@ -5517,7 +5536,7 @@ PyNumberMethods PyOpenSCADNumbers = {
   python_nb_add,       // binaryfunc nb_add
   python_nb_subtract,  // binaryfunc nb_subtract
   python_nb_mul,       // binaryfunc nb_multiply
-  0,                   // binaryfunc nb_remainder
+  python_nb_remainder, // binaryfunc nb_remainder
   0,                   // binaryfunc nb_divmod
   0,                   // ternaryfunc nb_power
   python_nb_neg,       // unaryfunc nb_negative
@@ -5552,7 +5571,7 @@ PyNumberMethods PyOpenSCADNumbers = {
 
   0,  // unaryfunc nb_index
 
-  0,  // binaryfunc nb_matrix_multiply
+  python_nb_matmult,  // binaryfunc nb_matrix_multiply
   0   // binaryfunc nb_inplace_matrix_multiply
 };
 
