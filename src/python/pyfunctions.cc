@@ -1199,6 +1199,30 @@ PyObject *python_oo_scale(PyObject *obj, PyObject *args, PyObject *kwargs)
   return python_scale_core(obj, val_v);
 }
 
+
+PyObject *python_explode(PyObject *self, PyObject *args, PyObject *kwargs)
+{
+  char *kwlist[] = {"obj", "v", NULL};
+  PyObject *obj = NULL;
+  PyObject *val_v = NULL;
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "OO", kwlist, &obj, &val_v)) {
+    PyErr_SetString(PyExc_TypeError, "Error during parsing explode(object, list)");
+    return NULL;
+  }
+  return python_nb_sub_vec3(obj, val_v, 3); 
+}
+
+PyObject *python_oo_explode(PyObject *obj, PyObject *args, PyObject *kwargs)
+{
+  char *kwlist[] = {"v", NULL};
+  PyObject *val_v = NULL;
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O", kwlist, &val_v)) {
+    PyErr_SetString(PyExc_TypeError, "Error during parsing explode(object, list)");
+    return NULL;
+  }
+  return python_nb_sub_vec3(obj, val_v, 3); 
+}
+
 PyObject *python_number_rot(PyObject *mat, Matrix3d rotvec, int vecs)
 {
   Transform3d matrix = Transform3d::Identity();
@@ -3982,7 +4006,25 @@ PyObject *python_nb_add(PyObject *arg1, PyObject *arg2)
   return python_nb_sub_vec3(arg1, arg2, 0);
 }  // translate
 
-PyObject *python_nb_xor(PyObject *arg1, PyObject *arg2) { return python_nb_sub_vec3(arg1, arg2, 3); }
+PyObject *python_nb_xor(PyObject *arg1, PyObject *arg2) {
+  PyObject *dummy_dict;
+  auto node2 = PyOpenSCADObjectToNode(arg2, &dummy_dict);
+  if(node2 != nullptr) {
+    auto node1 = PyOpenSCADObjectToNode(arg1, &dummy_dict);
+    if(node1 == nullptr) {
+      PyErr_SetString(PyExc_TypeError,
+       "Error during parsing hull. arguments must be solids.");
+      return nullptr;
+    }
+    DECLARE_INSTANCE
+    std::shared_ptr<AbstractNode> child;
+    auto node = std::make_shared<CgalAdvNode>(instance, CgalAdvType::HULL);
+    node->children.push_back(node1);
+    node->children.push_back(node2);
+    return PyOpenSCADObjectFromNode(&PyOpenSCADType, node);
+  }
+  return python_nb_sub_vec3(arg1, arg2, 3);
+}
 
 PyObject *python_nb_mul(PyObject *arg1, PyObject *arg2)
 {
@@ -5382,6 +5424,7 @@ PyMethodDef PyOpenSCADFunctions[] = {
   {"faces", (PyCFunction)python_faces, METH_VARARGS | METH_KEYWORDS, "exports a list of faces."},
   {"edges", (PyCFunction)python_edges, METH_VARARGS | METH_KEYWORDS,
    "exports a list of edges from a face."},
+  {"explode", (PyCFunction)python_explode, METH_VARARGS | METH_KEYWORDS, "explode a solid with a vector"},
   {"oversample", (PyCFunction)python_oversample, METH_VARARGS | METH_KEYWORDS, "oversample."},
   {"debug", (PyCFunction)python_debug, METH_VARARGS | METH_KEYWORDS, "debug a face."},
   {"repair", (PyCFunction)python_repair, METH_VARARGS | METH_KEYWORDS, "Make solid watertight."},
@@ -5450,6 +5493,7 @@ PyMethodDef PyOpenSCADMethods[] = {
                       OO_METHOD_ENTRY(rotate_extrude, "Rotate_extrude Object") OO_METHOD_ENTRY(
                         path_extrude, "Path_extrude Object") OO_METHOD_ENTRY(resize, "Resize Object")
 
+                        OO_METHOD_ENTRY(explode, "Explode a solid with a vector")   
                         OO_METHOD_ENTRY(mesh, "Mesh Object")
                           OO_METHOD_ENTRY(bbox, "Evaluate Bound Box of object") OO_METHOD_ENTRY(
                             faces, "Create Faces list") OO_METHOD_ENTRY(edges, "Create Edges list")
