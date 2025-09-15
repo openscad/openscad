@@ -1,4 +1,5 @@
 # instructions - see ../doc/testing.txt
+# FUTURE: Python 3.15:  -Xutf8=1 will become unnecessary
 
 #set(DEBUG_OSCD 1) # print debug info during cmake
 
@@ -59,9 +60,9 @@ if(USE_IMAGE_COMPARE_PY)
   # how to utilize the venv
   find_path(VENV_BIN_PATH activate PATHS "${VENV_DIR}/bin" "${VENV_DIR}/Scripts" NO_DEFAULT_PATH NO_CACHE)
   if(WIN32)
-    set(IMAGE_COMPARE_EXE "${VENV_BIN_PATH}/python.exe")
+    set(IMAGE_COMPARE_EXE "${VENV_BIN_PATH}/python.exe -Xutf8=1")
   else()
-    set(IMAGE_COMPARE_EXE "${VENV_BIN_PATH}/python")
+    set(IMAGE_COMPARE_EXE "${VENV_BIN_PATH}/python -Xutf8=1")
   endif()
   if(EXISTS "${IMAGE_COMPARE_EXE}")
     message(STATUS "venv found, testing libraries")
@@ -344,7 +345,7 @@ function(add_cmdline_test TESTCMD_BASENAME)
 
   # python script implies Python3_EXECUTABLE
   if (TESTCMD_SCRIPT MATCHES \\.[Pp][Yy]$)
-    set(TESTCMD_EXE ${Python3_EXECUTABLE})
+    set(TESTCMD_EXE ${Python3_EXECUTABLE} -Xutf8=1)
   endif()
   if (TESTCMD_OPENSCAD)
     set(TESTCMD_EXE ${OPENSCAD_BINPATH})
@@ -403,7 +404,7 @@ function(add_cmdline_test TESTCMD_BASENAME)
 
     string(JOIN " " DBG_COMMAND_STR
       "add_test(" ${TEST_FULLNAME} CONFIGURATIONS ${CONFVAL}
-      COMMAND ${Python3_EXECUTABLE}
+      COMMAND ${Python3_EXECUTABLE} -Xutf8=1
       ${TEST_CMDLINE_TOOL_PY} ${COMPARATOR} -c ${IMAGE_COMPARE_EXE}
       -s ${TESTCMD_SUFFIX} ${EXTRA_OPTIONS} ${TESTNAME_OPTION} ${FILENAME_OPTION}
       ${TESTCMD_EXE} ${TESTCMD_SCRIPT} ${SCADFILE} ${CAMERA_OPTION}
@@ -415,7 +416,7 @@ function(add_cmdline_test TESTCMD_BASENAME)
       # Use cmake option "--log-level DEBUG" during top level config to see this
       message(DEBUG "${DBG_COMMAND_STR}")
       add_test(NAME ${TEST_FULLNAME} CONFIGURATIONS ${CONFVAL}
-        COMMAND ${Python3_EXECUTABLE}
+        COMMAND ${Python3_EXECUTABLE} -Xutf8=1
         ${TEST_CMDLINE_TOOL_PY} ${COMPARATOR} -c ${IMAGE_COMPARE_EXE}
         -s ${TESTCMD_SUFFIX} ${EXTRA_OPTIONS} ${TESTNAME_OPTION} ${FILENAME_OPTION}
         ${TESTCMD_EXE} ${TESTCMD_SCRIPT} "${SCADFILE}" ${CAMERA_OPTION}
@@ -526,8 +527,13 @@ list(REMOVE_ITEM FEATURES_2D_FILES
 )
 file(GLOB ISSUES_2D_FILES     ${TEST_SCAD_DIR}/2D/issues/*.scad)
 file(GLOB_RECURSE BUGS_2D_FILES    ${TEST_SCAD_DIR}/bugs2D/*.scad)
-file(GLOB SCAD_DXF_FILES      ${TEST_SCAD_DIR}/dxf/*.scad)
-file(GLOB SCAD_PDF_FILES      ${TEST_SCAD_DIR}/pdf/*.scad)
+file(GLOB SCAD_DXF_FILES      ${TEST_SCAD_DIR}/dxf/*.scad
+  ${TEST_SCAD_DIR}/misc/utf8-☠-2D.scad
+)
+file(GLOB SCAD_PDF_FILES      ${TEST_SCAD_DIR}/pdf/*.scad
+  # GhostScript can't handle the names.
+  # ${TEST_SCAD_DIR}/misc/utf8-☠-2D.scad
+)
 file(GLOB SCAD_SVG_FILES      ${TEST_SCAD_DIR}/svg/svg-spec/*.scad
   ${TEST_SCAD_DIR}/svg/box-w-holes-2d.scad
   ${TEST_SCAD_DIR}/svg/display.scad
@@ -537,8 +543,10 @@ file(GLOB SCAD_SVG_FILES      ${TEST_SCAD_DIR}/svg/svg-spec/*.scad
   ${TEST_SCAD_DIR}/svg/simple-center-2d.scad
   ${TEST_SCAD_DIR}/svg/use-transform.scad
   ${TEST_SCAD_DIR}/svg/fill-rule.scad
-  ${TEST_SCAD_DIR}/svg/size-percent.scad)
-  list(APPEND EXAMPLE_2D_FILES
+  ${TEST_SCAD_DIR}/svg/size-percent.scad
+  ${TEST_SCAD_DIR}/misc/utf8-☠-2D.scad
+  )
+list(APPEND EXAMPLE_2D_FILES
   ${EXAMPLES_DIR}/Old/example015.scad
   ${EXAMPLES_DIR}/Advanced/module_recursion.scad
   ${EXAMPLES_DIR}/Functions/list_comprehensions.scad
@@ -584,6 +592,7 @@ list(APPEND MISC_FILES
   ${TEST_SCAD_DIR}/misc/allfunctions.scad
   ${TEST_SCAD_DIR}/misc/allmodules.scad
   ${TEST_SCAD_DIR}/misc/special-consts.scad
+  ${TEST_SCAD_DIR}/misc/utf8-☠-3D.scad
   ${TEST_SCAD_DIR}/misc/variable-overwrite.scad
 )
 
@@ -728,6 +737,7 @@ list(APPEND PREVIEW_ONLY_FILES
   ${TEST_SCAD_DIR}/3D/features/highlight-modifier2.scad
   ${TEST_SCAD_DIR}/3D/features/background-modifier2.scad
   ${TEST_SCAD_DIR}/2D/issues/issue5574.scad
+  ${TEST_SCAD_DIR}/misc/utf8-☠-3D.scad
 )
 
 list(REMOVE_ITEM ALL_RENDER_FILES 
@@ -1110,6 +1120,7 @@ add_cmdline_test(echo EXPERIMENTAL OPENSCAD SUFFIX echo FILES ${OBJECT_TEST} ARG
 
 list(APPEND EXPORT_STL_TEST_FILES
   ${TEST_SCAD_DIR}/stl/stl-export.scad
+  ${TEST_SCAD_DIR}/misc/utf8-☠-3D.scad
 )
 
 # FIXME: Reintroduce
