@@ -1,5 +1,6 @@
 #pragma once
 
+#include <optional>
 #include <string>
 
 enum class RenderBackend3D {
@@ -11,7 +12,7 @@ enum class RenderBackend3D {
 inline constexpr RenderBackend3D DEFAULT_RENDERING_BACKEND_3D = RenderBackend3D::ManifoldBackend;
 
 std::string renderBackend3DToString(RenderBackend3D backend);
-RenderBackend3D renderBackend3DFromString(std::string backend);
+std::optional<RenderBackend3D> renderBackend3DFromString(std::string backend);
 
 class RenderSettings
 {
