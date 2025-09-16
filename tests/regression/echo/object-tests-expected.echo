@@ -42,7 +42,6 @@ ECHO: "PASS:", "test 100k entries"
 ECHO: Wilma = { spouse = { }; }
 ECHO: Betty = { friends = [{ spouse = { }; }]; }
 ECHO: "PASS:", "optin gets this"
-WARNING: Ignoring unknown variable "this" in file object-tests.scad, line 99
 ECHO: "PASS:", "optout does not get this"
 ECHO: "PASS:", "check referring to other field"
 ECHO: "PASS:", "check referring from copied field"
@@ -57,3 +56,6 @@ ECHO: "PASS:", "recursively calling a function in an object"
 ECHO: "PASS:", "using config names as field is ok"
 ECHO: "PASS:", "also this"
 ECHO: "PASS:", "but functions see the this object"
+ECHO: "PASS:", "global 'this' must not leak in functions when not a method"
+ECHO: "PASS:", "must work as method"
+ECHO: "PASS:", "leaks from nested invocation"

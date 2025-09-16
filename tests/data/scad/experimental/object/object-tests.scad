@@ -134,7 +134,17 @@ testEq( object( $fs = 42 ).$fs, 42, "using config names as field is ok");
 testEq( object( this = 42 ).this, 42, "also this");
 testEq( object( this = 42, f=function(this) this.this ).f(), 42, "but functions see the this object");
 
-
+{
+    this = 42;
+    fthis = function(this) this;
+    test( function() is_undef(fthis()), "global 'this' must not leak in functions when not a method");
+    test( function() !is_undef(object(f=fthis).f()), "must work as method");
+}
+{
+    p=object( f = function(child,this) child());
+    c=function(this) this;
+    test( function() is_undef(p.f( c )),"leaks from nested invocation" );
+}
 
 module test( f, s ) {
     if ( !f()) {

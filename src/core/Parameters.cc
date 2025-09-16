@@ -26,8 +26,6 @@
 
 #include "core/Parameters.h"
 
-#include "Context.h"
-
 #include <initializer_list>
 #include <cassert>
 #include <sstream>
@@ -39,6 +37,7 @@
 #include <vector>
 
 #include "core/AST.h"
+#include "core/Context.h"
 #include "core/EvaluationSession.h"
 #include "core/Expression.h"
 #include "utils/printutils.h"
@@ -257,7 +256,13 @@ Parameters Parameters::parse(Arguments arguments, const Location& loc,
 
   for (const auto& parameter : required_parameters) {
     // see builtin_functions.cc::builtin_object() for an explanation
-    if (parameter->getName() == "this" && defining_context->try_lookup_variable("this")) continue;
+    if (parameter->getName() == THIS_PARAMETER) {
+      auto const it = defining_context->lookup_local_variable(THIS_CONTEXT);
+      if (it) {
+        frame.set_variable(THIS_PARAMETER, it->clone());
+        continue;
+      }
+    }
 
     if (!frame.lookup_local_variable(parameter->getName())) {
       if (parameter->getExpr()) {
