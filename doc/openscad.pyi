@@ -292,6 +292,21 @@ class OpenSCADObject:
     def __getitem__(self, name): ...
     def __setitem__(self, name, value): ...
 
+    # Operators:
+
+    def __or__(self, other: OpenSCADObjects) -> "OpenSCADObject":
+        """Create a union of two objects"""
+        ...
+
+    def __and__(self, other: OpenSCADObjects) -> "OpenSCADObject":
+        """Create an intersection of two objects"""
+        ...
+
+    def __sub__(self, other: OpenSCADObjects) -> "OpenSCADObject":
+        """Create a difference of two objects"""
+        ...
+    # TODO: document __add__, __sub__ and __mul__ with a list of vectors
+
 def square(
     dim: Optional[Union[float, list[float]]] = None, center: Optional[bool] = None
 ) -> OpenSCADObject:
