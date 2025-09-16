@@ -36,16 +36,38 @@ public:
 
   void insertStart(const size_t nodeidx, const long startindex)
   {
-    assert(this->cache.count(nodeidx) == 0 && "start index inserted twice");
-    this->cache.emplace(nodeidx, std::make_pair(startindex, -1L));
+#ifdef ENABLE_PYTHON
+    if (true){
+      if (this->cache.count(nodeidx) ==
+          0)  // with python it can happen that nodes get dumped several times,
+              // but its understood that the dump will always be identical
+        this->cache.emplace(nodeidx, std::make_pair(startindex, -1L));
+    } else
+#endif
+    {
+      assert(this->cache.count(nodeidx) == 0 && "start index inserted twice");
+      this->cache.emplace(nodeidx, std::make_pair(startindex, -1L));
+    }
   }
 
   void insertEnd(const size_t nodeidx, const long endindex)
   {
     // throws std::out_of_range on miss
-    auto indexpair = this->cache.at(nodeidx);
-    assert(indexpair.second == -1L && "end index inserted twice");
-    this->cache[nodeidx] = std::make_pair(indexpair.first, endindex);
+    std::pair<long int, long int> indexpair;
+    try {
+      indexpair = this->cache.at(nodeidx);
+    } catch (std::exception& ex) {
+      return;
+    }
+#ifdef ENABLE_PYTHON
+    if (true) {
+      if (indexpair.second == -1L) this->cache[nodeidx] = std::make_pair(indexpair.first, endindex);
+    } else
+#endif
+    {
+      assert(indexpair.second == -1L && "end index inserted twice");
+      this->cache[nodeidx] = std::make_pair(indexpair.first, endindex);
+    }
 #ifdef DEBUG
     PRINTDB("NodeCache insert {%i,[%d:%d]}", nodeidx % indexpair.first % endindex);
 #endif
