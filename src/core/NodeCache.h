@@ -37,7 +37,7 @@ public:
   void insertStart(const size_t nodeidx, const long startindex)
   {
 #ifdef ENABLE_PYTHON
-    if (true){
+    if (true) {
       if (this->cache.count(nodeidx) ==
           0)  // with python it can happen that nodes get dumped several times,
               // but its understood that the dump will always be identical
