@@ -3,9 +3,9 @@
 #include <utility>
 #include <memory>
 #include <ostream>
+#include <boost/optional.hpp>
 
 #include "core/Assignment.h"
-#include <boost/optional.hpp>
 
 class Context;
 class Expression;
