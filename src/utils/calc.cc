@@ -33,9 +33,7 @@
 #include "utils/degree_trig.h"
 
 // Linear interpolate.  Can replace with std::lerp in C++20
-double Calc::lerp(double a, double b, double t) {
-  return (1 - t) * a + t * b;
-}
+double Calc::lerp(double a, double b, double t) { return (1 - t) * a + t * b; }
 
 /*!
    Returns the number of subdivision of a whole circle, given radius and
@@ -59,7 +57,8 @@ int Calc::get_fragments_from_r(double r, double fn, double fs, double fa)
    Solving for c gives                c = height / (twist*PI/180)
    Where (twist*PI/180) is just twist in radians, aka "T"
  */
-static double helix_arc_length(double r_sqr, double height, double twist) {
+static double helix_arc_length(double r_sqr, double height, double twist)
+{
   const double T = twist * M_DEG2RAD;
   const double c = height / T;
   return T * sqrt(r_sqr + c * c);
@@ -94,11 +93,14 @@ int Calc::get_helix_slices(double r_sqr, double height, double twist, double fn,
    Using the formula for its arc length, then pythagorean theorem with height
    should tell us the total distance a vertex covers.
  */
-static double archimedes_length(double a, double theta) {
+static double archimedes_length(double a, double theta)
+{
   return 0.5 * a * (theta * sqrt(1 + theta * theta) + asinh(theta));
 }
 
-int Calc::get_conical_helix_slices(double r_sqr, double height, double twist, double scale, double fn, double fs, double fa) {
+int Calc::get_conical_helix_slices(double r_sqr, double height, double twist, double scale, double fn,
+                                   double fs, double fa)
+{
   twist = fabs(twist);
   const double r = sqrt(r_sqr);
   const int min_slices = std::max(static_cast<int>(ceil(twist / 120.0)), 1);
@@ -129,7 +131,7 @@ int Calc::get_conical_helix_slices(double r_sqr, double height, double twist, do
      B = E - t            B = E - t
    */
   const double rads = twist * M_DEG2RAD;
-  double angle_end=0;
+  double angle_end = 0;
   if (scale > 1) {
     angle_end = rads * scale / (scale - 1);
   } else if (scale < 1) {
@@ -138,9 +140,10 @@ int Calc::get_conical_helix_slices(double r_sqr, double height, double twist, do
     assert(false && "Don't calculate conical slices on non-scaled extrude!");
   }
   const double angle_start = angle_end - rads;
-  const double a = r / angle_end; // spiral scale coefficient
+  const double a = r / angle_end;  // spiral scale coefficient
   const double spiral_length = archimedes_length(a, angle_end) - archimedes_length(a, angle_start);
-  // Treat (flat spiral_length,extrusion height) as (base,height) of a right triangle to get diagonal length.
+  // Treat (flat spiral_length,extrusion height) as (base,height) of a right triangle to get diagonal
+  // length.
   const double total_length = sqrt(spiral_length * spiral_length + height * height);
 
   const int fs_slices = static_cast<int>(ceil(total_length / fs));
@@ -157,7 +160,8 @@ int Calc::get_conical_helix_slices(double r_sqr, double height, double twist, do
     note: $fa is not considered since no twist
           scale is not passed in since it was already used to calculate the largest delta.
  */
-int Calc::get_diagonal_slices(double delta_sqr, double height, double fn, double fs) {
+int Calc::get_diagonal_slices(double delta_sqr, double height, double fn, double fs)
+{
   constexpr int min_slices = 1;
   if (sqrt(delta_sqr) < GRID_FINE || std::isinf(fn) || std::isnan(fn)) return min_slices;
   if (fn > 0.0) {

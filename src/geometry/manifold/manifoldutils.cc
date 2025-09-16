@@ -63,7 +63,6 @@ std::shared_ptr<ManifoldGeometry> createManifoldFromTriangularPolySet(const Poly
   }
   auto next_id = manifold::Manifold::ReserveIDs(colorToFaceIndices.size());
   for (const auto& [color, faceIndices] : colorToFaceIndices) {
-
     auto id = next_id++;
     if (color.has_value()) {
       originalIDToColor[id] = color.value();
@@ -74,7 +73,7 @@ std::shared_ptr<ManifoldGeometry> createManifoldFromTriangularPolySet(const Poly
     originalIDs.insert(id);
 
     for (size_t faceIndex : faceIndices) {
-      auto & face = ps.indices[faceIndex];
+      auto& face = ps.indices[faceIndex];
       assert(face.size() == 3);
       mesh.triVerts.push_back(face[0]);
       mesh.triVerts.push_back(face[1]);
@@ -91,14 +90,11 @@ std::shared_ptr<ManifoldGeometry> createManifoldFromTriangularPolySet(const Poly
     mani = manifold::Manifold(mesh);
     if (mani.Status() == Error::NoError && merged) {
       PRINTD("..succeeded after merge");
-    }
-    else if (mani.Status() != Error::NoError && merged) {
+    } else if (mani.Status() != Error::NoError && merged) {
       PRINTD("..still failing after merge");
-    }
-    else if (mani.Status() != Error::NoError && !merged) {
+    } else if (mani.Status() != Error::NoError && !merged) {
       PRINTD("..unable to merge");
-    }
-    else if (mani.Status() == Error::NoError && !merged) {
+    } else if (mani.Status() == Error::NoError && !merged) {
       PRINTD("..unable to merge, but somehow succeeded anyway?");
     }
   }
@@ -110,20 +106,21 @@ std::shared_ptr<ManifoldGeometry> createManifoldFromTriangularPolySet(const Poly
 
 namespace ManifoldUtils {
 
-const char* statusToString(Error status) {
+const char *statusToString(Error status)
+{
   switch (status) {
-    case Error::NoError: return "NoError";
-    case Error::NonFiniteVertex: return "NonFiniteVertex";
-    case Error::NotManifold: return "NotManifold";
-    case Error::VertexOutOfBounds: return "VertexOutOfBounds";
-    case Error::PropertiesWrongLength: return "PropertiesWrongLength";
-    case Error::MissingPositionProperties: return "MissingPositionProperties";
-    case Error::MergeVectorsDifferentLengths: return "MergeVectorsDifferentLengths";
-    case Error::MergeIndexOutOfBounds: return "MergeIndexOutOfBounds";
-    case Error::TransformWrongLength: return "TransformWrongLength";
-    case Error::RunIndexWrongLength: return "RunIndexWrongLength";
-    case Error::FaceIDWrongLength: return "FaceIDWrongLength";
-    default: return "unknown";
+  case Error::NoError:                      return "NoError";
+  case Error::NonFiniteVertex:              return "NonFiniteVertex";
+  case Error::NotManifold:                  return "NotManifold";
+  case Error::VertexOutOfBounds:            return "VertexOutOfBounds";
+  case Error::PropertiesWrongLength:        return "PropertiesWrongLength";
+  case Error::MissingPositionProperties:    return "MissingPositionProperties";
+  case Error::MergeVectorsDifferentLengths: return "MergeVectorsDifferentLengths";
+  case Error::MergeIndexOutOfBounds:        return "MergeIndexOutOfBounds";
+  case Error::TransformWrongLength:         return "TransformWrongLength";
+  case Error::RunIndexWrongLength:          return "RunIndexWrongLength";
+  case Error::FaceIDWrongLength:            return "FaceIDWrongLength";
+  default:                                  return "unknown";
   }
 }
 
@@ -146,7 +143,8 @@ std::shared_ptr<ManifoldGeometry> createManifoldFromPolySet(const PolySet& ps)
     return mani;
   }
 
-  LOG(message_group::Warning,"PolySet -> Manifold conversion failed: %1$s\n"
+  LOG(message_group::Warning,
+      "PolySet -> Manifold conversion failed: %1$s\n"
       "Trying to repair and reconstruct mesh..",
       ManifoldUtils::statusToString(mani->getManifold().Status()));
 
@@ -196,7 +194,9 @@ std::shared_ptr<ManifoldGeometry> createManifoldFromPolySet(const PolySet& ps)
   return std::make_shared<ManifoldGeometry>();
 }
 
-std::shared_ptr<const ManifoldGeometry> createManifoldFromGeometry(const std::shared_ptr<const Geometry>& geom) {
+std::shared_ptr<const ManifoldGeometry> createManifoldFromGeometry(
+  const std::shared_ptr<const Geometry>& geom)
+{
   if (auto mani = std::dynamic_pointer_cast<const ManifoldGeometry>(geom)) {
     return mani;
   }
@@ -206,7 +206,8 @@ std::shared_ptr<const ManifoldGeometry> createManifoldFromGeometry(const std::sh
   return nullptr;
 }
 
-Polygon2d polygonsToPolygon2d(const manifold::Polygons& polygons) {
+Polygon2d polygonsToPolygon2d(const manifold::Polygons& polygons)
+{
   Polygon2d poly2d;
   for (const auto& polygon : polygons) {
     Outline2d outline;
@@ -239,7 +240,6 @@ std::unique_ptr<PolySet> createTriangulatedPolySetFromPolygon2d(const Polygon2d&
     polyset->indices.push_back({triangle[0], triangle[1], triangle[2]});
   }
   return polyset;
-
 }
 
 template <class SurfaceMesh>
@@ -251,8 +251,8 @@ std::shared_ptr<ManifoldGeometry> createManifoldFromSurfaceMesh(const SurfaceMes
 
   meshgl.numProp = 3;
   meshgl.vertProperties.resize(tm.number_of_vertices() * 3);
-  for (vertex_descriptor vd : tm.vertices()){
-    const auto &v = tm.point(vd);
+  for (vertex_descriptor vd : tm.vertices()) {
+    const auto& v = tm.point(vd);
     meshgl.vertProperties[3 * vd] = v.x();
     meshgl.vertProperties[3 * vd + 1] = v.y();
     meshgl.vertProperties[3 * vd + 2] = v.z();
@@ -267,16 +267,14 @@ std::shared_ptr<ManifoldGeometry> createManifoldFromSurfaceMesh(const SurfaceMes
       idx[i++] = vd;
     }
     if (i < 3) continue;
-    for (size_t j : {0, 1, 2})
-      meshgl.triVerts.emplace_back(idx[j]);
+    for (size_t j : {0, 1, 2}) meshgl.triVerts.emplace_back(idx[j]);
   }
 
   assert((meshgl.triVerts.size() == tm.number_of_faces() * 3) || !"Mesh was not triangular!");
 
   auto mani = manifold::Manifold(meshgl).AsOriginal();
   if (mani.Status() != Error::NoError) {
-    LOG(message_group::Error,
-        "[manifold] Surface_mesh -> Manifold conversion failed: %1$s",
+    LOG(message_group::Error, "[manifold] Surface_mesh -> Manifold conversion failed: %1$s",
         ManifoldUtils::statusToString(mani.Status()));
     return nullptr;
   }
@@ -294,24 +292,27 @@ std::shared_ptr<SurfaceMesh> createSurfaceMeshFromManifold(const manifold::Manif
   const auto meshgl = mani.GetMeshGL64();
   auto mesh = std::make_shared<SurfaceMesh>();
   mesh->reserve(meshgl.NumVert(), meshgl.NumTri() * 3, meshgl.NumTri());
-  for (auto i = 0; i < meshgl.NumVert(); i++) {
+  for (size_t i = 0; i < meshgl.NumVert(); i++) {
     const auto& v = meshgl.GetVertPos(i);
     mesh->add_vertex(typename SurfaceMesh::Point(v[0], v[1], v[2]));
   }
-  for (auto i = 0; i < meshgl.NumTri(); i++) {
+  for (size_t i = 0; i < meshgl.NumTri(); i++) {
     const auto& tri = meshgl.GetTriVerts(i);
     mesh->add_face(typename SurfaceMesh::Vertex_index(tri[0]),
-                  typename SurfaceMesh::Vertex_index(tri[1]), 
-                  typename SurfaceMesh::Vertex_index(tri[2]));
+                   typename SurfaceMesh::Vertex_index(tri[1]),
+                   typename SurfaceMesh::Vertex_index(tri[2]));
   }
   return mesh;
 }
 
 #ifdef ENABLE_CGAL
-template std::shared_ptr<ManifoldGeometry> createManifoldFromSurfaceMesh(const CGAL::Surface_mesh<CGAL::Point_3<CGAL::Epick>> &tm);
-template std::shared_ptr<ManifoldGeometry> createManifoldFromSurfaceMesh(const CGAL_DoubleMesh &tm);
-template std::shared_ptr<CGAL::Surface_mesh<manifold::vec3>> createSurfaceMeshFromManifold<CGAL::Surface_mesh<manifold::vec3>>(const manifold::Manifold& mani);
-template std::shared_ptr<CGAL::Surface_mesh<CGAL_Point_3>> createSurfaceMeshFromManifold<CGAL::Surface_mesh<CGAL_Point_3>>(const manifold::Manifold& mani);
+template std::shared_ptr<ManifoldGeometry> createManifoldFromSurfaceMesh(
+  const CGAL::Surface_mesh<CGAL::Point_3<CGAL::Epick>>& tm);
+template std::shared_ptr<ManifoldGeometry> createManifoldFromSurfaceMesh(const CGAL_DoubleMesh& tm);
+template std::shared_ptr<CGAL::Surface_mesh<manifold::vec3>>
+createSurfaceMeshFromManifold<CGAL::Surface_mesh<manifold::vec3>>(const manifold::Manifold& mani);
+template std::shared_ptr<CGAL::Surface_mesh<CGAL_Point_3>>
+createSurfaceMeshFromManifold<CGAL::Surface_mesh<CGAL_Point_3>>(const manifold::Manifold& mani);
 #endif
 
-}; // namespace ManifoldUtils
+};  // namespace ManifoldUtils

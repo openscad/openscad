@@ -33,7 +33,6 @@ namespace libsvg {
 class group : public shape
 {
 protected:
-
 public:
   group() = default;
 
@@ -48,4 +47,4 @@ public:
   [[nodiscard]] shape *clone() const override { return new group(*this); }
 };
 
-}
+}  // namespace libsvg

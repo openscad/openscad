@@ -9,3 +9,5 @@
 
 # Run uncrustify (via scripts/beautify.sh --all). 2022-02-06 by t-paul
 9b3163e740cbcc771c6825b679e02bb76a9b2b45
+# Beautify run with clang-format and enforced with checks 2025-08-11 #6085
+1b100be767b02e8374852243a40545bf48b1a6ff

@@ -115,7 +115,8 @@ void FontListDialog::updateFontList()
   this->tableView->resizeColumnsToContents();
   this->tableView->setSortingEnabled(true);
 
-  connect(tableView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &FontListDialog::selection_changed);
+  connect(tableView->selectionModel(), &QItemSelectionModel::selectionChanged, this,
+          &FontListDialog::selection_changed);
 
   delete list;
 }
@@ -137,10 +138,10 @@ QString FontListDialog::quote(const QString& text)
 {
   QString result = text;
   result.replace('\\', R"(\\\\)")
-  .replace('-', "\\\\-")
-  .replace(':', "\\\\:")
-  .replace(',', "\\\\,")
-  .replace('=', "\\\\=")
-  .replace('_', "\\\\_");
+    .replace('-', "\\\\-")
+    .replace(':', "\\\\:")
+    .replace(',', "\\\\,")
+    .replace('=', "\\\\=")
+    .replace('_', "\\\\_");
   return result;
 }

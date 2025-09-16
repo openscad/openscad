@@ -37,7 +37,7 @@ jobs:
         qt5) echo "CMAKE_OPTIONS=-DUSE_QT6=0" >> $GITHUB_ENV ;;
         esac
     - name: Checkout
-      uses: actions/checkout@v4
+      uses: actions/checkout@v5
       with:
         submodules: 'recursive'
     - name: Setup (detached) tmate ssh session if enabled
@@ -47,14 +47,10 @@ jobs:
       with:
         detached: true
         limit-access-to-actor: true
-    - name: Install CMake
-      uses: jwlawson/actions-setup-cmake@v2
-      with:
-        cmake-version: 3.31.6
-    - name: Set up Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: 3.11
+    - name: Workaround for https://github.com/actions/runner-images/issues/9966
+      run: |
+        brew unlink python3
+        brew link --overwrite python3
     - name: Install Homebrew packages
       env:
         HOMEBREW_NO_AUTO_UPDATE: 1

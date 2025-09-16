@@ -179,18 +179,27 @@ use[ \t\r\n]*"<"        { BEGIN(cond_use); LOCATION_COUNT_LINES(parserlloc, yyte
 
 \"                      { BEGIN(cond_string); stringcontents.clear(); }
 <cond_string>{
+%{/* Termination */%}
+\"                      { BEGIN(INITIAL); parserlval.text = strdup(stringcontents.c_str()); return TOK_STRING; }
+<<EOF>>                 { parsererror("Unterminated string"); return TOK_ERROR; }
+
+%{/* Escape sequences */%}
 \\n                     { stringcontents += '\n'; }
 \\t                     { stringcontents += '\t'; }
 \\r                     { stringcontents += '\r'; }
 \\\\                    { stringcontents += '\\'; }
 \\\"                    { stringcontents += '"'; }
-{UNICODE}               { /* parser_error_pos -= strlen(lexertext) - 1; */ stringcontents += lexertext; }
 \\x[0-7]{H}             { unsigned long i = strtoul(lexertext + 2, NULL, 16); stringcontents += (i == 0 ? ' ' : (unsigned char)(i & 0xff)); }
 \\u{H}{4}|\\U{H}{6}     { const auto c = strtoul(lexertext + 2, NULL, 16); stringcontents += str_utf8_wrapper(c).toString(); }
-[^\\\n\"]               { stringcontents += lexertext; }
-[\n\r]                  { LOCATION_ADD_LINES(parserlloc, yyleng); }
-\"                      { BEGIN(INITIAL); parserlval.text = strdup(stringcontents.c_str()); return TOK_STRING; }
-<<EOF>>                 { parsererror("Unterminated string"); return TOK_ERROR; }
+\\                      { LOG(message_group::Warning, LOCATION(parserlloc), "", "Undefined escape sequence"); }
+
+%{/* Special characters */%}
+\n                      { LOCATION_ADD_LINES(parserlloc, yyleng); }
+
+%{/* Everything else */%}
+{UNICODE}               { /* parser_error_pos -= strlen(lexertext) - 1; */ stringcontents += lexertext; }
+.                       { stringcontents += lexertext; }
+
 }
 
 [\t ]                   { LOCATION_NEXT(parserlloc); }

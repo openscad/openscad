@@ -37,15 +37,15 @@ namespace libsvg {
 
 const std::string use::name("use");
 
-void
-use::set_attrs(attr_map_t& attrs, void *context)
+void use::set_attrs(attr_map_t& attrs, void *context)
 {
   shape::set_attrs(attrs, context);
   this->x = parse_double(attrs["x"]);
   this->y = parse_double(attrs["y"]);
 
-  //Note: width, and height have no effect on use elements, unless the element referenced has a viewbox - i.e. they only have an effect when use refers to a svg or symbol element.
-  //Lets store them, but I am not going to use them.
+  // Note: width, and height have no effect on use elements, unless the element referenced has a viewbox
+  // - i.e. they only have an effect when use refers to a svg or symbol element. Lets store them, but I
+  // am not going to use them.
   this->width = parse_double(attrs["width"]);
   this->height = parse_double(attrs["height"]);
 
@@ -57,27 +57,28 @@ use::set_attrs(attr_map_t& attrs, void *context)
   if (this->href != temp_href) {
     this->href = temp_href;
     if (href.rfind('#', 0) != 0) {
-      printf("<use> can only use references to ids in the href field (starting with #). Error in element type %s with id: %s\n", this->get_name().c_str(), this->get_id_or_default().c_str());
+      printf(
+        "<use> can only use references to ids in the href field (starting with #). Error in element "
+        "type %s with id: %s\n",
+        this->get_name().c_str(), this->get_id_or_default().c_str());
     }
   }
 
-  //apply the x/y coordinates to all the children by using a transform
+  // apply the x/y coordinates to all the children by using a transform
   std::stringstream s;
   s << this->transform << " translate(" << this->x << "," << this->y << ")";
   this->transform = s.str();
 }
 
-const std::string
-use::get_href_id() const
+const std::string use::get_href_id() const
 {
   if (href.rfind('#', 0) != 0) {
     return {};
   }
-  return href.substr(1); //remove the #
+  return href.substr(1);  // remove the #
 }
 
-std::vector<std::shared_ptr<shape>>
-use::set_clone_child(shape *child)
+std::vector<std::shared_ptr<shape>> use::set_clone_child(shape *child)
 {
   shape *copy = child->clone();
   copy->set_parent(this);
@@ -86,14 +87,11 @@ use::set_clone_child(shape *child)
   return cloned_objects;
 }
 
-const std::string
-use::dump() const
+const std::string use::dump() const
 {
   std::stringstream s;
-  s << get_name()
-    << ": x = " << this->x
-    << ": y = " << this->y;
+  s << get_name() << ": x = " << this->x << ": y = " << this->y;
   return s.str();
 }
 
-} // namespace libsvg
+}  // namespace libsvg

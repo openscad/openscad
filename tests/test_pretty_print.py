@@ -339,7 +339,7 @@ def to_html(project_name, startdate, tests, enddate, sysinfo, sysid, imgcomparer
     templates = Templates()
     for test in report_tests:
         # relative-output tests have no "type"
-        if test.type in ('txt', 'ast', 'csg', 'term', 'echo', 'stl', '3mf', 'off', 'obj', 'pov', ''):
+        if test.type in ('txt', 'ast', 'csg', 'term', 'echo', 'stl', '3mf', 'off', 'obj', 'pov', 'dxf', 'svg', ''):
             text_test_count += 1
             templates.add('text_template', 'text_tests',
                           test_name=test.fullname,

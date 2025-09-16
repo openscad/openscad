@@ -31,6 +31,7 @@
 #include <vector>
 
 #include "core/Children.h"
+#include "core/EvaluationSession.h"
 #include "core/module.h"
 #include "core/ModuleInstantiation.h"
 #include "core/Parameters.h"
@@ -40,17 +41,16 @@
 #include "core/FreetypeRenderer.h"
 
 #include <boost/assign/std/vector.hpp>
-using namespace boost::assign; // bring 'operator+=()' into scope
+using namespace boost::assign;  // bring 'operator+=()' into scope
 
 static std::shared_ptr<AbstractNode> builtin_text(const ModuleInstantiation *inst, Arguments arguments)
 {
   auto node = std::make_shared<TextNode>(inst);
 
   auto *session = arguments.session();
-  Parameters parameters = Parameters::parse(std::move(arguments), inst->location(),
-                                            {"text", "size", "font"},
-                                            {"direction", "language", "script", "halign", "valign", "spacing"}
-                                            );
+  Parameters parameters =
+    Parameters::parse(std::move(arguments), inst->location(), {"text", "size", "font"},
+                      {"direction", "language", "script", "halign", "valign", "spacing"});
   parameters.set_caller("text");
 
   node->params.set_loc(inst->location());
@@ -67,20 +67,15 @@ std::vector<std::shared_ptr<const Polygon2d>> TextNode::createPolygonList() cons
   return renderer.render(this->get_params());
 }
 
-FreetypeRenderer::Params TextNode::get_params() const
-{
-  return params;
-}
+FreetypeRenderer::Params TextNode::get_params() const { return params; }
 
-std::string TextNode::toString() const
-{
-  return STR(name(), "(", this->params, ")");
-}
+std::string TextNode::toString() const { return STR(name(), "(", this->params, ")"); }
 
 void register_builtin_text()
 {
-  Builtins::init("text", new BuiltinModule(builtin_text),
-  {
-    R"(text(text = "", size = 10, font = "", halign = "left", valign = "baseline", spacing = 1, direction = "ltr", language = "en", script = "latin"[, $fn]))",
-  });
+  Builtins::init(
+    "text", new BuiltinModule(builtin_text),
+    {
+      R"(text(text = "", size = 10, font = "", halign = "left", valign = "baseline", spacing = 1, direction = "ltr", language = "en", script = "latin"[, $fn]))",
+    });
 }

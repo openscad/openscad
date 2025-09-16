@@ -56,7 +56,8 @@ void JoystickInputDriver::run()
       InputDriverManager::instance()->sendEvent(new InputEventButtonChanged(js.number, js.value != 0));
       break;
     case JS_EVENT_AXIS:
-      InputDriverManager::instance()->sendEvent(new InputEventAxisChanged(js.number, js.value / 32767.0));
+      InputDriverManager::instance()->sendEvent(
+        new InputEventAxisChanged(js.number, js.value / 32767.0));
       break;
     }
   }
@@ -88,10 +89,7 @@ bool JoystickInputDriver::open()
   return true;
 }
 
-void JoystickInputDriver::close()
-{
-  stopRequest = true;
-}
+void JoystickInputDriver::close() { stopRequest = true; }
 
 const std::string& JoystickInputDriver::get_name() const
 {
@@ -101,15 +99,8 @@ const std::string& JoystickInputDriver::get_name() const
 
 std::string JoystickInputDriver::get_info() const
 {
-  return STR(
-    get_name(), " ", (isOpen() ? "open" : "not open"), " ",
-    "Name: ", name, " ",
-    "Axis: ", (int) axes, " ",
-    "Buttons: ", (int) buttons, " "
-    );
+  return STR(get_name(), " ", (isOpen() ? "open" : "not open"), " ", "Name: ", name, " ",
+             "Axis: ", (int)axes, " ", "Buttons: ", (int)buttons, " ");
 }
 
-void JoystickInputDriver::setJoystickNr(std::string jnr)
-{
-  this->nr = std::move(jnr);
-}
+void JoystickInputDriver::setJoystickNr(std::string jnr) { this->nr = std::move(jnr); }

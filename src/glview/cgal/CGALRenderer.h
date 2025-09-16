@@ -28,7 +28,10 @@ public:
 private:
   void addGeometry(const std::shared_ptr<const class Geometry>& geom);
 #ifdef ENABLE_CGAL
-  const std::vector<std::shared_ptr<class VBOPolyhedron>>& getPolyhedrons() const { return this->polyhedrons_; }
+  const std::vector<std::shared_ptr<class VBOPolyhedron>>& getPolyhedrons() const
+  {
+    return this->polyhedrons_;
+  }
   void createPolyhedrons();
 #endif
 

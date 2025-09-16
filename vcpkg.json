@@ -1,0 +1,20 @@
+{
+  "name": "openscad",
+  "version-string": "1.0.0",
+  "dependencies": [
+    "boost",
+    "eigen3",
+    "cgal",
+    "cairo",
+    "harfbuzz",
+    "fontconfig",
+    "double-conversion",
+    "opencsg",
+    "libxml2",
+    "libzip",
+    "glib",
+    "gperf",
+    "qscintilla",
+    "tbb"
+  ]
+}

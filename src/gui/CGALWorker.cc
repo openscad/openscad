@@ -26,10 +26,7 @@ CGALWorker::CGALWorker()
   moveToThread(this->thread);
 }
 
-CGALWorker::~CGALWorker()
-{
-  delete this->thread;
-}
+CGALWorker::~CGALWorker() { delete this->thread; }
 
 void CGALWorker::start(const Tree& tree)
 {
@@ -69,9 +66,9 @@ void CGALWorker::work()
   } catch (...) {
     LOG(message_group::Error, "Rendering cancelled by unknown exception.");
   }
- #ifdef ENABLE_PYTHON
+#ifdef ENABLE_PYTHON
   python_unlock();
- #endif
+#endif
   emit done(root_geom);
   thread->quit();
 }

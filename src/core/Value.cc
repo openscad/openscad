@@ -43,6 +43,7 @@
 
 #include "core/EvaluationSession.h"
 #include "io/fileutils.h"
+#include "utils/exceptions.h"
 #include "utils/printutils.h"
 #include "utils/StackCheck.h"
 #include "utils/boost-utils.h"
@@ -56,10 +57,11 @@ const Value Value::undefined;
 const VectorType VectorType::EMPTY(nullptr);
 const RangeType RangeType::EMPTY{0, 0, 0};
 
-
 /* Define values for double-conversion library. */
 #define DC_BUFFER_SIZE (128)
-#define DC_FLAGS (double_conversion::DoubleToStringConverter::UNIQUE_ZERO | double_conversion::DoubleToStringConverter::EMIT_POSITIVE_EXPONENT_SIGN)
+#define DC_FLAGS                                             \
+  (double_conversion::DoubleToStringConverter::UNIQUE_ZERO | \
+   double_conversion::DoubleToStringConverter::EMIT_POSITIVE_EXPONENT_SIGN)
 #define DC_INF "inf"
 #define DC_NAN "nan"
 #define DC_EXP 'e'
@@ -72,62 +74,69 @@ const RangeType RangeType::EMPTY{0, 0, 0};
  * conversion, defeating the purpose of using double-conversion library */
 #define DC_PRECISION_REQUESTED (6)
 
-//private definitions used by trimTrailingZeroesHelper
+// private definitions used by trimTrailingZeroesHelper
 #define TRIM_TRAILINGZEROES_DONE (0)
 #define TRIM_TRAILINGZEROES_CONTINUE (1)
 
-//process parameter buffer from the end to start to find out where the zeroes are located (if any).
-//parameter pos shall be the pos in buffer where '\0' is located.
-//parameter currentpos shall be set to end of buffer (where '\0' is located).
-//set parameters exppos and decimalpos when needed.
-//leave parameter zeropos as is.
-inline int trimTrailingZeroesHelper(char *buffer, const int pos, char *currentpos = nullptr, char *exppos = nullptr, char *decimalpos = nullptr, char *zeropos = nullptr) {
-
+// process parameter buffer from the end to start to find out where the zeroes are located (if any).
+// parameter pos shall be the pos in buffer where '\0' is located.
+// parameter currentpos shall be set to end of buffer (where '\0' is located).
+// set parameters exppos and decimalpos when needed.
+// leave parameter zeropos as is.
+inline int trimTrailingZeroesHelper(char *buffer, const int pos, char *currentpos = nullptr,
+                                    char *exppos = nullptr, char *decimalpos = nullptr,
+                                    char *zeropos = nullptr)
+{
   int cont = TRIM_TRAILINGZEROES_CONTINUE;
 
-  //we have exhausted all positions from end to start
+  // we have exhausted all positions from end to start
   if (currentpos <= buffer) return TRIM_TRAILINGZEROES_DONE;
 
-  //we do no need to process the terminator of string
+  // we do no need to process the terminator of string
   if (*currentpos == '\0') {
     currentpos--;
     cont = trimTrailingZeroesHelper(buffer, pos, currentpos, exppos, decimalpos, zeropos);
   }
 
-  //we have an exponent and jumps to the position before the exponent - no need to process the characters belonging to the exponent
+  // we have an exponent and jumps to the position before the exponent - no need to process the
+  // characters belonging to the exponent
   if (cont && exppos && currentpos >= exppos) {
     currentpos = exppos;
     currentpos--;
     cont = trimTrailingZeroesHelper(buffer, pos, currentpos, exppos, decimalpos, zeropos);
   }
 
-  //we are still on the right side of the decimal and still counting zeroes (keep track of) from the back to start
+  // we are still on the right side of the decimal and still counting zeroes (keep track of) from the
+  // back to start
   if (cont && currentpos && decimalpos < currentpos && *currentpos == '0') {
     zeropos = currentpos;
     currentpos--;
     cont = trimTrailingZeroesHelper(buffer, pos, currentpos, exppos, decimalpos, zeropos);
   }
 
-  //we have found the first occurrence of not a zero and have zeroes and exponent to take care of (move exponent to either the position of the zero or the decimal)
+  // we have found the first occurrence of not a zero and have zeroes and exponent to take care of (move
+  // exponent to either the position of the zero or the decimal)
   if (cont && zeropos && exppos) {
     int count = &buffer[pos] - exppos + 1;
     memmove(zeropos - 1 == decimalpos ? decimalpos : zeropos, exppos, count);
     return TRIM_TRAILINGZEROES_DONE;
   }
 
-  //we have found a zero and need to take care of (truncate the string to the position of either the zero or the decimal)
+  // we have found a zero and need to take care of (truncate the string to the position of either the
+  // zero or the decimal)
   if (cont && zeropos) {
     zeropos - 1 == decimalpos ? *decimalpos = '\0' : *zeropos = '\0';
     return TRIM_TRAILINGZEROES_DONE;
   }
 
-  //we have just another character (other than a zero) and are done
+  // we have just another character (other than a zero) and are done
   if (cont && !zeropos) return TRIM_TRAILINGZEROES_DONE;
 
   return TRIM_TRAILINGZEROES_DONE;
 }
 
-inline void trimTrailingZeroes(char *buffer, const int pos) {
+inline void trimTrailingZeroes(char *buffer, const int pos)
+{
   char *decimal = strchr(buffer, '.');
   if (decimal) {
     char *exppos = strchr(buffer, DC_EXP);
@@ -135,7 +144,8 @@ inline void trimTrailingZeroes(char *buffer, const int pos) {
   }
 }
 
-inline bool HandleSpecialValues(const double& value, double_conversion::StringBuilder& builder) {
+inline bool HandleSpecialValues(const double& value, double_conversion::StringBuilder& builder)
+{
   double_conversion::Double double_inspect(value);
   if (double_inspect.IsInfinite()) {
     if (value < 0) {
@@ -152,7 +162,9 @@ inline bool HandleSpecialValues(const double& value, double_conversion::StringBu
 }
 
 inline std::string DoubleConvert(const double& value, char *buffer,
-                                 double_conversion::StringBuilder& builder, const double_conversion::DoubleToStringConverter& dc) {
+                                 double_conversion::StringBuilder& builder,
+                                 const double_conversion::DoubleToStringConverter& dc)
+{
   builder.Reset();
   if (double_conversion::Double(value).IsSpecial()) {
     HandleSpecialValues(value, builder);
@@ -160,7 +172,7 @@ inline std::string DoubleConvert(const double& value, char *buffer,
     return buffer;
   }
   dc.ToPrecision(value, DC_PRECISION_REQUESTED, &builder);
-  int pos = builder.position(); // get position before Finalize destroys it
+  int pos = builder.position();  // get position before Finalize destroys it
   builder.Finalize();
   trimTrailingZeroes(buffer, pos);
   return buffer;
@@ -181,7 +193,7 @@ static uint32_t convert_to_uint32(const double d)
 
 std::ostream& operator<<(std::ostream& stream, const Filename& filename)
 {
-  fs::path fnpath{static_cast<std::string>(filename)}; // gcc-4.6
+  fs::path fnpath{static_cast<std::string>(filename)};  // gcc-4.6
   auto fpath = fs_uncomplete(fnpath, fs::current_path());
   stream << QuotedString(fpath.generic_string());
   return stream;
@@ -204,7 +216,8 @@ std::ostream& operator<<(std::ostream& stream, const QuotedString& s)
   return stream << '"';
 }
 
-Value Value::clone() const {
+Value Value::clone() const
+{
   switch (this->type()) {
   case Type::UNDEFINED: return {};
   case Type::BOOL:      return std::get<bool>(this->value);
@@ -214,14 +227,11 @@ Value Value::clone() const {
   case Type::VECTOR:    return std::get<VectorType>(this->value).clone();
   case Type::OBJECT:    return std::get<ObjectType>(this->value).clone();
   case Type::FUNCTION:  return std::get<FunctionPtr>(this->value).clone();
-  default: assert(false && "unknown Value variant type"); return {};
+  default:              assert(false && "unknown Value variant type"); return {};
   }
 }
 
-Value Value::undef(const std::string& why)
-{
-  return Value{UndefType{why}};
-}
+Value Value::undef(const std::string& why) { return Value{UndefType{why}}; }
 
 std::string Value::typeName(Type type)
 {
@@ -234,14 +244,11 @@ std::string Value::typeName(Type type)
   case Type::RANGE:     return "range";
   case Type::OBJECT:    return "object";
   case Type::FUNCTION:  return "function";
-  default: assert(false && "unknown Value variant type"); return "<unknown>";
+  default:              assert(false && "unknown Value variant type"); return "<unknown>";
   }
 }
 
-const std::string Value::typeName() const
-{
-  return typeName(this->type());
-}
+const std::string Value::typeName() const { return typeName(this->type()); }
 
 // free functions for use by static_visitor templated functions in creating undef messages.
 std::string getTypeName(const UndefType&) { return "undefined"; }
@@ -263,9 +270,9 @@ bool Value::toBool() const
   case Type::STRING:    return !std::get<str_utf8_wrapper>(this->value).empty();
   case Type::VECTOR:    return !std::get<VectorType>(this->value).empty();
   case Type::RANGE:     return true;
-  case Type::OBJECT:    return true;
+  case Type::OBJECT:    return !std::get<ObjectType>(this->value).empty();
   case Type::FUNCTION:  return true;
-  default: assert(false && "unknown Value variant type"); return false;
+  default:              assert(false && "unknown Value variant type"); return false;
   }
   // NOLINTEND(bugprone-branch-clone)
 }
@@ -273,15 +280,9 @@ bool Value::toBool() const
 // Convert the value to a double with an integer value, for use in bitwise operations.
 // Since there are several possible ways to do this (floor, ceil, round, trunc) this function
 // centralizes the choice for consistency.
-double Value::toInteger() const
-{
-  return trunc(this->toDouble());
-}
+double Value::toInteger() const { return trunc(this->toDouble()); }
 
-int64_t Value::toInt64() const
-{
-  return this->toInteger();
-}
+int64_t Value::toInt64() const { return this->toInteger(); }
 
 double Value::toDouble() const
 {
@@ -312,8 +313,7 @@ bool Value::getFiniteDouble(double& v) const
 bool Value::getUnsignedInt(unsigned int& v) const
 {
   double result;
-  if (getFiniteDouble(result) &&
-      result >= 0.0 && result <= std::numeric_limits<unsigned int>::max()) {
+  if (getFiniteDouble(result) && result >= 0.0 && result <= std::numeric_limits<unsigned int>::max()) {
     v = result;
     return true;
   }
@@ -323,20 +323,21 @@ bool Value::getUnsignedInt(unsigned int& v) const
 bool Value::getPositiveInt(unsigned int& v) const
 {
   double result;
-  if (getFiniteDouble(result) &&
-      result >= 1 && result <= std::numeric_limits<unsigned int>::max()) {
+  if (getFiniteDouble(result) && result >= 1 && result <= std::numeric_limits<unsigned int>::max()) {
     v = result;
     return true;
   }
   return false;
 }
 
-const str_utf8_wrapper& Value::toStrUtf8Wrapper() const {
+const str_utf8_wrapper& Value::toStrUtf8Wrapper() const
+{
   return std::get<str_utf8_wrapper>(this->value);
 }
 
 // Optimization to avoid multiple stream instantiations and copies to str for long vectors.
-// Functions identically to "class tostring_visitor", except outputting to stream and not returning strings
+// Functions identically to "class tostring_visitor", except outputting to stream and not returning
+// strings
 class tostream_visitor
 {
 public:
@@ -346,32 +347,33 @@ public:
   double_conversion::DoubleToStringConverter dc;
 
   tostream_visitor(std::ostringstream& stream)
-    : stream(stream), builder(buffer, DC_BUFFER_SIZE),
-    dc(DC_FLAGS, DC_INF, DC_NAN, DC_EXP, DC_DECIMAL_LOW_EXP, DC_DECIMAL_HIGH_EXP, DC_MAX_LEADING_ZEROES, DC_MAX_TRAILING_ZEROES)
-  {}
+    : stream(stream),
+      builder(buffer, DC_BUFFER_SIZE),
+      dc(DC_FLAGS, DC_INF, DC_NAN, DC_EXP, DC_DECIMAL_LOW_EXP, DC_DECIMAL_HIGH_EXP,
+         DC_MAX_LEADING_ZEROES, DC_MAX_TRAILING_ZEROES)
+  {
+  }
 
-  template <typename T> void operator()(const T& op1) const {
-    //std::cout << "[generic tostream_visitor]\n";
+  template <typename T>
+  void operator()(const T& op1) const
+  {
+    // std::cout << "[generic tostream_visitor]\n";
     stream << boost::lexical_cast<std::string>(op1);
   }
 
-  void operator()(const double& op1) const {
-    stream << DoubleConvert(op1, buffer, builder, dc);
-  }
+  void operator()(const double& op1) const { stream << DoubleConvert(op1, buffer, builder, dc); }
 
-  void operator()(const UndefType&) const {
-    stream << "undef";
-  }
+  void operator()(const UndefType&) const { stream << "undef"; }
 
-  void operator()(const bool& v) const {
-    stream << (v ? "true" : "false");
-  }
+  void operator()(const bool& v) const { stream << (v ? "true" : "false"); }
 
-  void operator()(const EmbeddedVectorType&) const {
+  void operator()(const EmbeddedVectorType&) const
+  {
     assert(false && "Error: unexpected visit to EmbeddedVectorType!");
   }
 
-  void operator()(const VectorType& v) const {
+  void operator()(const VectorType& v) const
+  {
     if (StackCheck::inst().check()) {
       throw VectorEchoStringException::create();
     }
@@ -387,53 +389,61 @@ public:
     stream << ']';
   }
 
-  void operator()(const str_utf8_wrapper& v) const {
-    stream << '"' << v.toString() << '"';
+  void operator()(const ObjectType& v) const
+  {
+    if (StackCheck::inst().check()) {
+      throw VectorEchoStringException::create();
+    }
+    stream << "{ ";
+    for (auto& key : v.keys()) {
+      stream << key << " = ";
+      std::visit(*this, v.get(key).getVariant());
+      stream << "; ";
+    }
+    stream << '}';
   }
 
-  void operator()(const RangePtr& v) const {
-    stream << *v;
-  }
+  void operator()(const str_utf8_wrapper& v) const { stream << '"' << v.toString() << '"'; }
 
-  void operator()(const FunctionPtr& v) const {
-    stream << *v;
-  }
+  void operator()(const RangePtr& v) const { stream << *v; }
+
+  void operator()(const FunctionPtr& v) const { stream << *v; }
 };
 
 class tostring_visitor
 {
 public:
-  template <typename T> std::string operator()(const T& op1) const {
+  template <typename T>
+  std::string operator()(const T& op1) const
+  {
     assert(false && "unhandled tostring_visitor type");
     return STR(op1);
   }
 
-  std::string operator()(const str_utf8_wrapper& op1) const {
-    return op1.toString();
-  }
+  std::string operator()(const str_utf8_wrapper& op1) const { return op1.toString(); }
 
-  std::string operator()(const double& op1) const {
+  std::string operator()(const double& op1) const
+  {
     char buffer[DC_BUFFER_SIZE];
     double_conversion::StringBuilder builder(buffer, DC_BUFFER_SIZE);
-    double_conversion::DoubleToStringConverter dc(DC_FLAGS, DC_INF, DC_NAN, DC_EXP,
-                                                  DC_DECIMAL_LOW_EXP, DC_DECIMAL_HIGH_EXP, DC_MAX_LEADING_ZEROES, DC_MAX_TRAILING_ZEROES);
+    double_conversion::DoubleToStringConverter dc(DC_FLAGS, DC_INF, DC_NAN, DC_EXP, DC_DECIMAL_LOW_EXP,
+                                                  DC_DECIMAL_HIGH_EXP, DC_MAX_LEADING_ZEROES,
+                                                  DC_MAX_TRAILING_ZEROES);
     return DoubleConvert(op1, buffer, builder, dc);
   }
 
-  std::string operator()(const UndefType&) const {
-    return "undef";
-  }
+  std::string operator()(const UndefType&) const { return "undef"; }
 
-  std::string operator()(const bool& v) const {
-    return v ? "true" : "false";
-  }
+  std::string operator()(const bool& v) const { return v ? "true" : "false"; }
 
-  std::string operator()(const EmbeddedVectorType&) const {
+  std::string operator()(const EmbeddedVectorType&) const
+  {
     assert(false && "Error: unexpected visit to EmbeddedVectorType!");
     return "";
   }
 
-  std::string operator()(const VectorType& v) const {
+  std::string operator()(const VectorType& v) const
+  {
     // Create a single stream and pass reference to it for list elements for optimization.
     std::ostringstream stream;
     try {
@@ -445,23 +455,24 @@ public:
     return stream.str();
   }
 
-  std::string operator()(const ObjectType& v) const {
-    return STR(v);
+  std::string operator()(const ObjectType& v) const
+  {
+    std::ostringstream stream;
+    try {
+      (tostream_visitor(stream))(v);
+    } catch (EvaluationException& e) {
+      LOG(message_group::Error, e.what());
+      throw;
+    }
+    return stream.str();
   }
 
-  std::string operator()(const RangePtr& v) const {
-    return STR(*v);
-  }
+  std::string operator()(const RangePtr& v) const { return STR(*v); }
 
-  std::string operator()(const FunctionPtr& v) const {
-    return STR(*v);
-  }
+  std::string operator()(const FunctionPtr& v) const { return STR(*v); }
 };
 
-std::string Value::toString() const
-{
-  return std::visit(tostring_visitor(), this->value);
-}
+std::string Value::toString() const { return std::visit(tostring_visitor(), this->value); }
 
 std::string Value::toEchoString() const
 {
@@ -475,7 +486,7 @@ std::string Value::toEchoString() const
 std::string Value::toEchoStringNoThrow() const
 {
   std::string ret;
-  try{
+  try {
     ret = toEchoString();
   } catch (EvaluationException& e) {
     ret = "...";
@@ -483,20 +494,15 @@ std::string Value::toEchoStringNoThrow() const
   return ret;
 }
 
-const UndefType& Value::toUndef() const
-{
-  return std::get<UndefType>(this->value);
-}
+const UndefType& Value::toUndef() const { return std::get<UndefType>(this->value); }
 
-std::string Value::toUndefString() const
-{
-  return std::get<UndefType>(this->value).toString();
-}
+std::string Value::toUndefString() const { return std::get<UndefType>(this->value).toString(); }
 
 class chr_visitor
 {
 public:
-  template <typename S> std::string operator()(const S&) const
+  template <typename S>
+  std::string operator()(const S&) const
   {
     return "";
   }
@@ -527,7 +533,8 @@ public:
   {
     const uint32_t steps = v->numValues();
     if (steps >= RangeType::MAX_RANGE_STEPS) {
-      LOG(message_group::Warning, "Bad range parameter in for statement: too many elements (%1$lu).", steps);
+      LOG(message_group::Warning, "Bad range parameter in for statement: too many elements (%1$lu).",
+          steps);
       return "";
     }
 
@@ -537,19 +544,16 @@ public:
   }
 };
 
-std::string Value::chrString() const
-{
-  return std::visit(chr_visitor(), this->value);
-}
+std::string Value::chrString() const { return std::visit(chr_visitor(), this->value); }
 
-VectorType::VectorType(EvaluationSession *session) :
-  ptr(std::shared_ptr<VectorObject>(new VectorObject(), VectorObjectDeleter() ))
+VectorType::VectorType(EvaluationSession *session)
+  : ptr(std::shared_ptr<VectorObject>(new VectorObject(), VectorObjectDeleter()))
 {
   ptr->evaluation_session = session;
 }
 
-VectorType::VectorType(class EvaluationSession *session, double x, double y, double z) :
-  ptr(std::shared_ptr<VectorObject>(new VectorObject(), VectorObjectDeleter() ))
+VectorType::VectorType(class EvaluationSession *session, double x, double y, double z)
+  : ptr(std::shared_ptr<VectorObject>(new VectorObject(), VectorObjectDeleter()))
 {
   ptr->evaluation_session = session;
   emplace_back(x);
@@ -574,7 +578,8 @@ void VectorType::emplace_back(EmbeddedVectorType&& mbed)
 {
   if (mbed.size() > 1) {
     // embed_excess represents how many to add to vec.size() to get the total elements after flattening,
-    // the embedded vector itself already counts towards an element in the parent's size, so subtract 1 from its size.
+    // the embedded vector itself already counts towards an element in the parent's size, so subtract 1
+    // from its size.
     ptr->embed_excess += mbed.size() - 1;
     ptr->vec.emplace_back(std::move(mbed));
     if (ptr->evaluation_session) {
@@ -628,7 +633,7 @@ void VectorType::VectorObjectDeleter::operator()(VectorObject *v)
       }
     }
     if (purge.empty()) break;
-    curr = std::move(purge.back()); // this should cause destruction of the *previous value* for curr
+    curr = std::move(purge.back());  // this should cause destruction of the *previous value* for curr
     v = curr.get();
     purge.pop_back();
   }
@@ -642,10 +647,7 @@ const VectorType& Value::toVector() const
   return v ? *v : empty;
 }
 
-VectorType& Value::toVectorNonConst()
-{
-  return std::get<VectorType>(this->value);
-}
+VectorType& Value::toVectorNonConst() { return std::get<VectorType>(this->value); }
 
 const ObjectType& Value::toObject() const
 {
@@ -670,9 +672,8 @@ bool Value::getVec2(double& x, double& y, bool ignoreInfinite) const
   const auto& v = this->toVector();
   if (v.size() != 2) return false;
   double rx, ry;
-  bool valid = ignoreInfinite
-    ? v[0].getFiniteDouble(rx) && v[1].getFiniteDouble(ry)
-    : v[0].getDouble(rx) && v[1].getDouble(ry);
+  bool valid = ignoreInfinite ? v[0].getFiniteDouble(rx) && v[1].getFiniteDouble(ry)
+                              : v[0].getDouble(rx) && v[1].getDouble(ry);
   if (valid) {
     x = rx;
     y = ry;
@@ -710,39 +711,63 @@ const RangeType& Value::toRange() const
   } else return RangeType::EMPTY;
 }
 
-const FunctionType& Value::toFunction() const
-{
-  return *std::get<FunctionPtr>(this->value);
-}
+const FunctionType& Value::toFunction() const { return *std::get<FunctionPtr>(this->value); }
 
 bool Value::isUncheckedUndef() const
 {
   return this->type() == Type::UNDEFINED && !std::get<UndefType>(this->value).empty();
 }
 
-Value ObjectType::operator==(const ObjectType& /*other*/) const {
-  return Value::undef("operation undefined (object == object)");
+Value ObjectType::operator==(const ObjectType& other) const
+{
+  if (other.ptr == this->ptr) {
+    return true;
+  }
+  if (other.ptr->values.size() != this->ptr->values.size()) {
+    return false;
+  }
+
+  for (size_t i = 0; i < this->ptr->values.size(); i++) {
+    auto key_the_same = this->ptr->keys[i] != other.ptr->keys[i];
+    if (key_the_same) {
+      return false;
+    }
+
+    auto value_the_same = this->ptr->values[i] != other.ptr->values[i];
+    if (value_the_same.toBool()) {
+      return false;
+    }
+  }
+  return true;
 }
-Value ObjectType::operator!=(const ObjectType& /*other*/) const {
-  return Value::undef("operation undefined (object != object)");
+Value ObjectType::operator!=(const ObjectType& other) const
+{
+  Value a = *this == other;
+  return !a.toBool();
 }
-Value ObjectType::operator<(const ObjectType& /*other*/) const {
+
+Value ObjectType::operator<(const ObjectType& /*other*/) const
+{
   return Value::undef("operation undefined (object < object)");
 }
-Value ObjectType::operator>(const ObjectType& /*other*/) const {
+Value ObjectType::operator>(const ObjectType& /*other*/) const
+{
   return Value::undef("operation undefined (object > object)");
 }
-Value ObjectType::operator<=(const ObjectType& /*other*/) const {
+Value ObjectType::operator<=(const ObjectType& /*other*/) const
+{
   return Value::undef("operation undefined (object <= object)");
 }
-Value ObjectType::operator>=(const ObjectType& /*other*/) const {
+Value ObjectType::operator>=(const ObjectType& /*other*/) const
+{
   return Value::undef("operation undefined (object >= object)");
 }
 
-Value VectorType::operator==(const VectorType& v) const {
+Value VectorType::operator==(const VectorType& v) const
+{
   size_t i = 0;
   auto first1 = this->begin(), last1 = this->end(), first2 = v.begin(), last2 = v.end();
-  for ( ; (first1 != last1) && (first2 != last2); ++first1, ++first2, ++i) {
+  for (; (first1 != last1) && (first2 != last2); ++first1, ++first2, ++i) {
     Value temp = *first1 == *first2;
     if (temp.isUndefined()) {
       temp.toUndef().append(STR("in vector comparison at index ", i));
@@ -753,17 +778,19 @@ Value VectorType::operator==(const VectorType& v) const {
   return (first1 == last1) && (first2 == last2);
 }
 
-Value VectorType::operator!=(const VectorType& v) const {
+Value VectorType::operator!=(const VectorType& v) const
+{
   Value temp = this->VectorType::operator==(v);
   if (temp.isUndefined()) return temp;
   return !temp.toBool();
 }
 
 // lexicographical compare with possible undef result
-Value VectorType::operator<(const VectorType& v) const {
+Value VectorType::operator<(const VectorType& v) const
+{
   auto first1 = this->begin(), last1 = this->end(), first2 = v.begin(), last2 = v.end();
   size_t i = 0;
-  for ( ; (first1 != last1) && (first2 != last2); ++first1, ++first2, ++i) {
+  for (; (first1 != last1) && (first2 != last2); ++first1, ++first2, ++i) {
     Value temp = *first1 < *first2;
     if (temp.isUndefined()) {
       temp.toUndef().append(STR("in vector comparison at index ", i));
@@ -775,17 +802,17 @@ Value VectorType::operator<(const VectorType& v) const {
   return (first1 == last1) && (first2 != last2);
 }
 
-Value VectorType::operator>(const VectorType& v) const {
-  return v.VectorType::operator<(*this);
-}
+Value VectorType::operator>(const VectorType& v) const { return v.VectorType::operator<(*this); }
 
-Value VectorType::operator<=(const VectorType& v) const {
+Value VectorType::operator<=(const VectorType& v) const
+{
   Value temp = this->VectorType::operator>(v);
   if (temp.isUndefined()) return temp;
   return !temp.toBool();
 }
 
-Value VectorType::operator>=(const VectorType& v) const {
+Value VectorType::operator>=(const VectorType& v) const
+{
   Value temp = this->VectorType::operator<(v);
   if (temp.isUndefined()) return temp;
   return !temp.toBool();
@@ -794,59 +821,123 @@ Value VectorType::operator>=(const VectorType& v) const {
 class notequal_visitor
 {
 public:
-  template <typename T, typename U> Value operator()(const T& /*op1*/, const U& /*op2*/) const { return true; }
-  template <typename T> Value operator()(const T& op1, const T& op2) const { return op1 != op2; }
+  template <typename T, typename U>
+  Value operator()(const T& /*op1*/, const U& /*op2*/) const
+  {
+    return true;
+  }
+  template <typename T>
+  Value operator()(const T& op1, const T& op2) const
+  {
+    return op1 != op2;
+  }
   Value operator()(const UndefType&, const UndefType&) const { return false; }
-  template <typename T> Value operator()(const ValuePtr<T>& op1, const ValuePtr<T>& op2) const { return *op1 != *op2; }
+  template <typename T>
+  Value operator()(const ValuePtr<T>& op1, const ValuePtr<T>& op2) const
+  {
+    return *op1 != *op2;
+  }
 };
 
 class equals_visitor
 {
 public:
-  template <typename T, typename U> Value operator()(const T& /*op1*/, const U& /*op2*/) const { return false; }
-  template <typename T> Value operator()(const T& op1, const T& op2) const { return op1 == op2; }
+  template <typename T, typename U>
+  Value operator()(const T& /*op1*/, const U& /*op2*/) const
+  {
+    return false;
+  }
+  template <typename T>
+  Value operator()(const T& op1, const T& op2) const
+  {
+    return op1 == op2;
+  }
   Value operator()(const UndefType&, const UndefType&) const { return true; }
-  template <typename T> Value operator()(const ValuePtr<T>& op1, const ValuePtr<T>& op2) const { return *op1 == *op2; }
+  template <typename T>
+  Value operator()(const ValuePtr<T>& op1, const ValuePtr<T>& op2) const
+  {
+    return *op1 == *op2;
+  }
 };
 
 class less_visitor
 {
 public:
-  template <typename T, typename U> Value operator()(const T& op1, const U& op2) const {
+  template <typename T, typename U>
+  Value operator()(const T& op1, const U& op2) const
+  {
     return Value::undef(STR("undefined operation (", getTypeName(op1), " < ", getTypeName(op2), ")"));
   }
-  template <typename T> Value operator()(const T& op1, const T& op2) const { return op1 < op2; }
-  template <typename T> Value operator()(const ValuePtr<T>& op1, const ValuePtr<T>& op2) const { return *op1 < *op2; }
+  template <typename T>
+  Value operator()(const T& op1, const T& op2) const
+  {
+    return op1 < op2;
+  }
+  template <typename T>
+  Value operator()(const ValuePtr<T>& op1, const ValuePtr<T>& op2) const
+  {
+    return *op1 < *op2;
+  }
 };
 
 class greater_visitor
 {
 public:
-  template <typename T, typename U> Value operator()(const T& op1, const U& op2) const {
+  template <typename T, typename U>
+  Value operator()(const T& op1, const U& op2) const
+  {
     return Value::undef(STR("undefined operation (", getTypeName(op1), " > ", getTypeName(op2), ")"));
   }
-  template <typename T> Value operator()(const T& op1, const T& op2) const { return op1 > op2; }
-  template <typename T> Value operator()(const ValuePtr<T>& op1, const ValuePtr<T>& op2) const { return *op1 > *op2; }
+  template <typename T>
+  Value operator()(const T& op1, const T& op2) const
+  {
+    return op1 > op2;
+  }
+  template <typename T>
+  Value operator()(const ValuePtr<T>& op1, const ValuePtr<T>& op2) const
+  {
+    return *op1 > *op2;
+  }
 };
 
 class lessequal_visitor
 {
 public:
-  template <typename T, typename U> Value operator()(const T& op1, const U& op2) const {
+  template <typename T, typename U>
+  Value operator()(const T& op1, const U& op2) const
+  {
     return Value::undef(STR("undefined operation (", getTypeName(op1), " <= ", getTypeName(op2), ")"));
   }
-  template <typename T> Value operator()(const T& op1, const T& op2) const { return op1 <= op2; }
-  template <typename T> Value operator()(const ValuePtr<T>& op1, const ValuePtr<T>& op2) const { return *op1 <= *op2; }
+  template <typename T>
+  Value operator()(const T& op1, const T& op2) const
+  {
+    return op1 <= op2;
+  }
+  template <typename T>
+  Value operator()(const ValuePtr<T>& op1, const ValuePtr<T>& op2) const
+  {
+    return *op1 <= *op2;
+  }
 };
 
 class greaterequal_visitor
 {
 public:
-  template <typename T, typename U> Value operator()(const T& op1, const U& op2) const {
+  template <typename T, typename U>
+  Value operator()(const T& op1, const U& op2) const
+  {
     return Value::undef(STR("undefined operation (", getTypeName(op1), " >= ", getTypeName(op2), ")"));
   }
-  template <typename T> Value operator()(const T& op1, const T& op2) const { return op1 >= op2; }
-  template <typename T> Value operator()(const ValuePtr<T>& op1, const ValuePtr<T>& op2) const { return *op1 >= *op2; }
+  template <typename T>
+  Value operator()(const T& op1, const T& op2) const
+  {
+    return op1 >= op2;
+  }
+  template <typename T>
+  Value operator()(const ValuePtr<T>& op1, const ValuePtr<T>& op2) const
+  {
+    return *op1 >= *op2;
+  }
 };
 
 Value Value::operator==(const Value& v) const
@@ -859,10 +950,7 @@ Value Value::operator!=(const Value& v) const
   return std::visit(notequal_visitor(), this->value, v.value);
 }
 
-Value Value::operator<(const Value& v) const
-{
-  return std::visit(less_visitor(), this->value, v.value);
-}
+Value Value::operator<(const Value& v) const { return std::visit(less_visitor(), this->value, v.value); }
 
 Value Value::operator>=(const Value& v) const
 {
@@ -879,53 +967,49 @@ Value Value::operator<=(const Value& v) const
   return std::visit(lessequal_visitor(), this->value, v.value);
 }
 
-bool Value::cmp_less(const Value& v1, const Value& v2) {
-  return v1.operator<(v2).toBool();
-}
+bool Value::cmp_less(const Value& v1, const Value& v2) { return v1.operator<(v2).toBool(); }
 
 class plus_visitor
 {
 public:
-  template <typename T, typename U> Value operator()(const T& op1, const U& op2) const {
+  template <typename T, typename U>
+  Value operator()(const T& op1, const U& op2) const
+  {
     return Value::undef(STR("undefined operation (", getTypeName(op1), " + ", getTypeName(op2), ")"));
   }
 
-  Value operator()(const double& op1, const double& op2) const {
-    return op1 + op2;
-  }
+  Value operator()(const double& op1, const double& op2) const { return op1 + op2; }
 
-  Value operator()(const VectorType& op1, const VectorType& op2) const {
+  Value operator()(const VectorType& op1, const VectorType& op2) const
+  {
     VectorType sum(op1.evaluation_session());
     sum.reserve(op1.size());
     // FIXME: should we really truncate to shortest vector here?
     //   Maybe better to either "add zeroes" and return longest
     //   and/or issue an warning/error about length mismatch.
     for (auto it1 = op1.begin(), end1 = op1.end(), it2 = op2.begin(), end2 = op2.end();
-         it1 != end1 && it2 != end2;
-         ++it1, ++it2) {
+         it1 != end1 && it2 != end2; ++it1, ++it2) {
       sum.emplace_back(*it1 + *it2);
     }
     return std::move(sum);
   }
 };
 
-Value Value::operator+(const Value& v) const
-{
-  return std::visit(plus_visitor(), this->value, v.value);
-}
+Value Value::operator+(const Value& v) const { return std::visit(plus_visitor(), this->value, v.value); }
 
 class minus_visitor
 {
 public:
-  template <typename T, typename U> Value operator()(const T& op1, const U& op2) const {
+  template <typename T, typename U>
+  Value operator()(const T& op1, const U& op2) const
+  {
     return Value::undef(STR("undefined operation (", getTypeName(op1), " - ", getTypeName(op2), ")"));
   }
 
-  Value operator()(const double& op1, const double& op2) const {
-    return op1 - op2;
-  }
+  Value operator()(const double& op1, const double& op2) const { return op1 - op2; }
 
-  Value operator()(const VectorType& op1, const VectorType& op2) const {
+  Value operator()(const VectorType& op1, const VectorType& op2) const
+  {
     VectorType sum(op1.evaluation_session());
     sum.reserve(op1.size());
     for (size_t i = 0; i < op1.size() && i < op2.size(); ++i) {
@@ -986,8 +1070,7 @@ Value multvecmat(const VectorType& vectorvec, const VectorType& matrixvec)
   for (size_t i = 0; i < firstRowSize; ++i) {
     double r_e = 0.0;
     for (size_t j = 0; j < vectorvec.size(); ++j) {
-      if (matrixvec[j].type() != Value::Type::VECTOR ||
-          matrixvec[j].toVector().size() != firstRowSize) {
+      if (matrixvec[j].type() != Value::Type::VECTOR || matrixvec[j].toVector().size() != firstRowSize) {
         LOG(message_group::Warning, "Matrix must be rectangular. Problem at row %1$lu", j);
         return Value::undef(STR("Matrix must be rectangular. Problem at row ", j));
       }
@@ -996,7 +1079,8 @@ Value multvecmat(const VectorType& vectorvec, const VectorType& matrixvec)
         return Value::undef(STR("Vector must contain only numbers. Problem at index ", j));
       }
       if (matrixvec[j].toVector()[i].type() != Value::Type::NUMBER) {
-        LOG(message_group::Warning, "Matrix must contain only numbers. Problem at row %1$lu, col %2$lu", j, i);
+        LOG(message_group::Warning, "Matrix must contain only numbers. Problem at row %1$lu, col %2$lu",
+            j, i);
         return Value::undef(STR("Matrix must contain only numbers. Problem at row ", j, ", col ", i));
       }
       r_e += vectorvec[j].toDouble() * matrixvec[j].toVector()[i].toDouble();
@@ -1006,12 +1090,14 @@ Value multvecmat(const VectorType& vectorvec, const VectorType& matrixvec)
   return {std::move(dstv)};
 }
 
-Value multvecvec(const VectorType& vec1, const VectorType& vec2) {
+Value multvecvec(const VectorType& vec1, const VectorType& vec2)
+{
   // Vector dot product.
   auto r = 0.0;
   for (size_t i = 0; i < vec1.size(); i++) {
     if (vec1[i].type() != Value::Type::NUMBER || vec2[i].type() != Value::Type::NUMBER) {
-      return Value::undef(STR("undefined operation (", vec1[i].typeName(), " * ", vec2[i].typeName(), ")"));
+      return Value::undef(
+        STR("undefined operation (", vec1[i].typeName(), " * ", vec2[i].typeName(), ")"));
     }
     r += vec1[i].toDouble() * vec2[i].toDouble();
   }
@@ -1021,29 +1107,38 @@ Value multvecvec(const VectorType& vec1, const VectorType& vec2) {
 class multiply_visitor
 {
 public:
-  template <typename T, typename U> Value operator()(const T& op1, const U& op2) const {
+  template <typename T, typename U>
+  Value operator()(const T& op1, const U& op2) const
+  {
     return Value::undef(STR("undefined operation (", getTypeName(op1), " * ", getTypeName(op2), ")"));
   }
   Value operator()(const double& op1, const double& op2) const { return op1 * op2; }
   Value operator()(const double& op1, const VectorType& op2) const { return multvecnum(op2, op1); }
   Value operator()(const VectorType& op1, const double& op2) const { return multvecnum(op1, op2); }
 
-  Value operator()(const VectorType& op1, const VectorType& op2) const {
+  Value operator()(const VectorType& op1, const VectorType& op2) const
+  {
     if (op1.empty() || op2.empty()) return Value::undef("Multiplication is undefined on empty vectors");
     auto first1 = op1.begin(), first2 = op2.begin();
     auto eltype1 = (*first1).type(), eltype2 = (*first2).type();
     if (eltype1 == Value::Type::NUMBER) {
       if (eltype2 == Value::Type::NUMBER) {
         if (op1.size() == op2.size()) return multvecvec(op1, op2);
-        else return Value::undef(STR("vector*vector requires matching lengths (", op1.size(), " != ", op2.size(), ')'));
+        else
+          return Value::undef(
+            STR("vector*vector requires matching lengths (", op1.size(), " != ", op2.size(), ')'));
       } else if (eltype2 == Value::Type::VECTOR) {
         if (op1.size() == op2.size()) return multvecmat(op1, op2);
-        else return Value::undef(STR("vector*matrix requires vector length to match matrix row count (", op1.size(), " != ", op2.size(), ')'));
+        else
+          return Value::undef(STR("vector*matrix requires vector length to match matrix row count (",
+                                  op1.size(), " != ", op2.size(), ')'));
       }
     } else if (eltype1 == Value::Type::VECTOR) {
       if (eltype2 == Value::Type::NUMBER) {
         if ((*first1).toVector().size() == op2.size()) return multmatvec(op1, op2);
-        else return Value::undef(STR("matrix*vector requires matrix column count to match vector length (", (*first1).toVector().size(), " != ", op2.size(), ')'));
+        else
+          return Value::undef(STR("matrix*vector requires matrix column count to match vector length (",
+                                  (*first1).toVector().size(), " != ", op2.size(), ')'));
       } else if (eltype2 == Value::Type::VECTOR) {
         if ((*first1).toVector().size() == op2.size()) {
           // Matrix * Matrix
@@ -1052,7 +1147,10 @@ public:
           size_t i = 0;
           for (const auto& srcrow : op1) {
             const auto& srcrowvec = srcrow.toVector();
-            if (srcrowvec.size() != op2.size()) return Value::undef(STR("matrix*matrix left operand row length does not match right operand row count (", srcrowvec.size(), " != ", op2.size(), ") at row ", i));
+            if (srcrowvec.size() != op2.size())
+              return Value::undef(
+                STR("matrix*matrix left operand row length does not match right operand row count (",
+                    srcrowvec.size(), " != ", op2.size(), ") at row ", i));
             auto temp = multvecmat(srcrowvec, op2);
             if (temp.isUndefined()) {
               temp.toUndef().append(STR("while processing left operand at row ", i));
@@ -1064,11 +1162,14 @@ public:
           }
           return {std::move(dstv)};
         } else {
-          return Value::undef(STR("matrix*matrix requires left operand column count to match right operand row count (", (*first1).toVector().size(), " != ", op2.size(), ')'));
+          return Value::undef(
+            STR("matrix*matrix requires left operand column count to match right operand row count (",
+                (*first1).toVector().size(), " != ", op2.size(), ')'));
         }
       }
     }
-    return Value::undef(STR("undefined vector*vector multiplication where first elements are types ", (*first1).typeName(), " and ", (*first2).typeName() ));
+    return Value::undef(STR("undefined vector*vector multiplication where first elements are types ",
+                            (*first1).typeName(), " and ", (*first2).typeName()));
   }
 };
 
@@ -1155,7 +1256,6 @@ Value Value::operator|(const Value& v) const
   return Value::undef(STR("undefined operation (", this->typeName(), " | ", v.typeName(), ")"));
 }
 
-
 Value Value::operator-() const
 {
   if (this->type() == Type::NUMBER) {
@@ -1189,13 +1289,14 @@ Value Value::operator^(const Value& v) const
 
 /*
  * bracket operation [] detecting multi-byte unicode.
- * If the string is multi-byte unicode then the index will offset to the character (2 or 4 byte) and not to the byte.
- * A 'normal' string with byte chars are a subset of unicode and still work.
+ * If the string is multi-byte unicode then the index will offset to the character (2 or 4 byte) and not
+ * to the byte. A 'normal' string with byte chars are a subset of unicode and still work.
  */
 class bracket_visitor
 {
 public:
-  Value operator()(const str_utf8_wrapper& str, const double& idx) const {
+  Value operator()(const str_utf8_wrapper& str, const double& idx) const
+  {
     const auto i = convert_to_uint32(idx);
     auto unichar = str[i];
     if (unichar.empty()) {
@@ -1204,17 +1305,17 @@ public:
     return unichar;
   }
 
-  Value operator()(const VectorType& vec, const double& idx) const {
+  Value operator()(const VectorType& vec, const double& idx) const
+  {
     const auto i = convert_to_uint32(idx);
     if (i < vec.size()) return vec[i].clone();
     return Value::undef(STR("index ", i, " out of bounds for vector of size ", vec.size()));
   }
 
-  Value operator()(const ObjectType& obj, const str_utf8_wrapper& key) const {
-    return obj[key].clone();
-  }
+  Value operator()(const ObjectType& obj, const str_utf8_wrapper& key) const { return obj[key].clone(); }
 
-  Value operator()(const RangePtr& range, const double& idx) const {
+  Value operator()(const RangePtr& range, const double& idx) const
+  {
     const auto i = convert_to_uint32(idx);
     switch (i) {
     case 0: return range->begin_value();
@@ -1224,8 +1325,10 @@ public:
     return Value::undef("subscript operator only defined for indices 0-2 on range (begin,step,end)");
   }
 
-  template <typename T, typename U> Value operator()(const T& op1, const U& op2) const {
-    //std::cout << "generic bracket_visitor " << getTypeName(op1) << " " << getTypeName(op2) << "\n";
+  template <typename T, typename U>
+  Value operator()(const T& op1, const U& op2) const
+  {
+    // std::cout << "generic bracket_visitor " << getTypeName(op1) << " " << getTypeName(op2) << "\n";
     return Value::undef(STR("undefined operation ", getTypeName(op1), "[", getTypeName(op2), "]"));
   }
 };
@@ -1245,57 +1348,34 @@ std::ostream& operator<<(std::ostream& stream, const RangeType& r)
 {
   char buffer[DC_BUFFER_SIZE];
   double_conversion::StringBuilder builder(buffer, DC_BUFFER_SIZE);
-  double_conversion::DoubleToStringConverter dc(DC_FLAGS, DC_INF,
-                                                DC_NAN, DC_EXP, DC_DECIMAL_LOW_EXP, DC_DECIMAL_HIGH_EXP,
-                                                DC_MAX_LEADING_ZEROES, DC_MAX_TRAILING_ZEROES);
-  return stream << "["
-                << DoubleConvert(r.begin_value(), buffer, builder, dc) << " : "
+  double_conversion::DoubleToStringConverter dc(DC_FLAGS, DC_INF, DC_NAN, DC_EXP, DC_DECIMAL_LOW_EXP,
+                                                DC_DECIMAL_HIGH_EXP, DC_MAX_LEADING_ZEROES,
+                                                DC_MAX_TRAILING_ZEROES);
+  return stream << "[" << DoubleConvert(r.begin_value(), buffer, builder, dc) << " : "
                 << DoubleConvert(r.step_value(), buffer, builder, dc) << " : "
-                << DoubleConvert(r.end_value(),   buffer, builder, dc) << "]";
+                << DoubleConvert(r.end_value(), buffer, builder, dc) << "]";
 }
 
 // called by clone()
-ObjectType::ObjectType(const std::shared_ptr<ObjectObject>& copy)
-  : ptr(copy)
-{
-}
+ObjectType::ObjectType(const std::shared_ptr<ObjectObject>& copy) : ptr(copy) {}
 
-ObjectType::ObjectType(EvaluationSession *session) :
-  ptr(std::make_shared<ObjectObject>())
+ObjectType::ObjectType(EvaluationSession *session) : ptr(std::make_shared<ObjectObject>())
 {
   ptr->evaluation_session = session;
 }
 
-const Value& ObjectType::get(const std::string& key) const
-{
-  auto result = ptr->map.find(key);
-  // NEEDSWORK it would be nice to have a "cause" for the undef, but Value::undef(...)
-  // does not appear compatible with Value&.
-  return result == ptr->map.end() ? Value::undefined : result->second;
-}
+const Value& ObjectType::get(const std::string& key) const { return ptr->get(key); }
+bool ObjectType::set(const std::string& key, Value value) { return ptr->set(key, std::move(value)); }
+bool ObjectType::del(const std::string& key) { return ptr->del(key) != NOINDEX; }
+bool ObjectType::contains(const std::string& key) const { return ptr->find(key) != NOINDEX; }
+bool ObjectType::empty() const { return ptr->values.empty(); }
+const std::vector<std::string>& ObjectType::keys() const { return ptr->keys; }
+const std::vector<Value>& ObjectType::values() const { return ptr->values; }
 
-void ObjectType::set(const std::string& key, Value&& value)
-{
-  ptr->map.emplace(key, value.clone());
-  ptr->keys.emplace_back(key);
-  ptr->values.emplace_back(std::move(value));
-}
-
-const std::vector<std::string>& ObjectType::keys() const
-{
-  return ptr->keys;
-}
-
-const Value& ObjectType::operator[](const str_utf8_wrapper& v) const
-{
-  return this->get(v.toString());
-}
+const Value& ObjectType::operator[](const str_utf8_wrapper& v) const { return this->get(v.toString()); }
 
 // Copy explicitly only when necessary
-ObjectType ObjectType::clone() const
-{
-  return ObjectType(this->ptr);
-}
+ObjectType ObjectType::clone() const { return ObjectType(this->ptr); }
 
 std::ostream& operator<<(std::ostream& stream, const ObjectType& v)
 {

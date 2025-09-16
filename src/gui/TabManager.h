@@ -7,7 +7,7 @@
 #include <QSet>
 #include "gui/Editor.h"
 
-class MainWindow; // for circular dependency
+class MainWindow;  // for circular dependency
 
 class TabManager : public QObject
 {
@@ -31,10 +31,9 @@ public:
   // the extra symbols used to indicate the file has changed.
   std::tuple<QString, QString> getEditorTabNameWithModifier(EditorInterface *edt);
 
-  void setEditorTabName(const QString& tabName,
-                        const QString& tabTooltip,
+  void setEditorTabName(const QString& tabName, const QString& tabTooltip,
                         EditorInterface *edt = nullptr);
-  bool refreshDocument(); // returns false if the file could not be opened
+  bool refreshDocument();  // returns false if the file could not be opened
   bool shouldClose();
   bool save(EditorInterface *edt);
   bool saveAs(EditorInterface *edt);
@@ -92,7 +91,7 @@ private slots:
 public slots:
   void actionNew();
   void copy();
-  void setContentRenderState(); // since last render
+  void setContentRenderState();  // since last render
   void onTabModified(EditorInterface *);
   bool saveAll();
   void closeCurrentTab();

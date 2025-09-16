@@ -118,7 +118,11 @@ set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/submodules/sanitizers-cmake/cmake" ${
 find_package(Sanitizers)
 
 # Strict c++17, e.g. no GNU extensions
-set_property(TARGET OpenSCAD PROPERTY CXX_STANDARD 17)
+if (MSVC) # For MSVC, errors show up when using c++ 17 for build.
+  set_property(TARGET OpenSCAD PROPERTY CXX_STANDARD 20)
+else()
+  set_property(TARGET OpenSCAD PROPERTY CXX_STANDARD 17)
+endif()
 set_property(TARGET OpenSCAD PROPERTY CXX_EXTENSIONS OFF)
 set_property(TARGET OpenSCAD PROPERTY CXX_STANDARD_REQUIRED ON)
 # Output compilation database (compile_commands.json), so we can e.g. run clang-tidy or other tools separately
@@ -330,13 +334,14 @@ if (MSVC)
   # Flex lexer options
   set(WINCOMPAT "--wincompat --nounistd")
   target_compile_definitions(OpenSCAD PRIVATE _USE_MATH_DEFINES)
+  target_compile_definitions(OpenSCAD PRIVATE NOMINMAX)
 
   find_package(Eigen3 CONFIG REQUIRED)
   target_link_libraries(OpenSCAD PRIVATE Eigen3::Eigen)
   message(STATUS "Eigen: ${Eigen3_VERSION}")
 
   set(Boost_USE_STATIC_LIBS TRUE)
-  find_package(Boost 1.70 REQUIRED COMPONENTS system regex program_options)
+  find_package(Boost 1.70 REQUIRED COMPONENTS regex program_options)
   message(STATUS "Boost: ${Boost_VERSION}")
   target_include_directories(OpenSCAD SYSTEM PRIVATE ${Boost_INCLUDE_DIRS})
   target_link_libraries(OpenSCAD PRIVATE ${Boost_LIBRARIES})
@@ -347,17 +352,16 @@ if (MSVC)
   target_include_directories(OpenSCAD SYSTEM PRIVATE ${HARFBUZZ_INCLUDE_DIRS}/harfbuzz)
   target_link_libraries(OpenSCAD PRIVATE harfbuzz::harfbuzz)
 
-  find_package(unofficial-fontconfig CONFIG REQUIRED)
-  target_link_libraries(OpenSCAD PRIVATE unofficial::fontconfig::fontconfig)
+  find_package(Fontconfig)
+  target_link_libraries(OpenSCAD PRIVATE Fontconfig::Fontconfig)
 
-  find_package(unofficial-glib CONFIG REQUIRED)
-  target_include_directories(OpenSCAD SYSTEM PRIVATE ${GLIB2_INCLUDE_DIRS})
-  target_link_libraries(OpenSCAD PRIVATE unofficial::glib::gio unofficial::glib::glib unofficial::glib::gmodule unofficial::glib::gobject)
+  pkg_check_modules(GLIB2 REQUIRED IMPORTED_TARGET glib-2.0)
+  target_link_libraries(OpenSCAD PRIVATE PkgConfig::GLIB2)
 
   find_package(double-conversion CONFIG REQUIRED)
   target_link_libraries(OpenSCAD PRIVATE double-conversion::double-conversion)
 
-  find_library(GETTEXT_LIBRARY libintl)
+  find_library(GETTEXT_LIBRARY intl)
   target_link_libraries(OpenSCAD PRIVATE ${GETTEXT_LIBRARY})
 
   # call before setting local CMAKE_MODULE_PATH so we use VCPKG version of FindGLEW
@@ -379,12 +383,12 @@ else()
     endif()
   endif()
 
-  find_package(Eigen3 REQUIRED)
+  find_package(Eigen3 3.0 REQUIRED QUIET)
   target_include_directories(OpenSCAD SYSTEM PRIVATE ${EIGEN3_INCLUDE_DIR})
   target_compile_definitions(OpenSCAD PRIVATE EIGEN_DONT_ALIGN)
-  message(STATUS "Eigen: ${Eigen3_VERSION}")
+  message(STATUS "Eigen: ${EIGEN3_VERSION}")
 
-  find_package(Boost 1.61 REQUIRED COMPONENTS system regex program_options)
+  find_package(Boost 1.70 REQUIRED QUIET COMPONENTS regex program_options)
   message(STATUS "Boost: ${Boost_VERSION}")
   target_include_directories(OpenSCAD SYSTEM PRIVATE ${Boost_INCLUDE_DIRS})
   target_link_libraries(OpenSCAD PRIVATE ${Boost_LIBRARIES})
@@ -469,18 +473,13 @@ target_link_libraries(OpenSCAD PRIVATE ${LIBXML2_LIBRARIES})
 
 if(ENABLE_PYTHON)
   find_package(Python REQUIRED COMPONENTS Interpreter Development)
-  find_package(Nettle 3.4)
-  if(NOT Nettle_FOUND)
-    message(WARNING "Nettle not found, disabling python support.")
-    set(ENABLE_PYTHON OFF CACHE BOOL "" FORCE)
-  else()
-    message(STATUS "Python ${Python_VERSION} enabled, using Nettle ${Nettle_VERSION}")
-    target_include_directories(OpenSCAD PRIVATE ${Python_INCLUDE_DIRS})
-    target_link_libraries(OpenSCAD PRIVATE ${Python_LIBRARIES})
-    target_include_directories(OpenSCAD PRIVATE ${Nettle_INCLUDE_DIRS})
-    target_link_libraries(OpenSCAD PRIVATE ${Nettle_LIBRARIES})
-    add_custom_target(OpenSCADPython ALL COMMAND ${CMAKE_COMMAND} -E create_symlink openscad${SUFFIX_WITH_DASH} "openscad-python")
-  endif()
+  find_package(Nettle 3.4 REQUIRED)
+  message(STATUS "Python ${Python_VERSION} enabled, using Nettle ${Nettle_VERSION}")
+  target_include_directories(OpenSCAD PRIVATE ${Python_INCLUDE_DIRS})
+  target_link_libraries(OpenSCAD PRIVATE ${Python_LIBRARIES})
+  target_include_directories(OpenSCAD PRIVATE ${Nettle_INCLUDE_DIRS})
+  target_link_libraries(OpenSCAD PRIVATE ${Nettle_LIBRARIES})
+  add_custom_target(OpenSCADPython ALL COMMAND ${CMAKE_COMMAND} -E create_symlink openscad${SUFFIX_WITH_DASH} "openscad-python")
 endif()
 
 if(ENABLE_HIDAPI)
@@ -520,14 +519,19 @@ if(ENABLE_SPNAV)
 endif()
 
 if(ENABLE_CAIRO)
-  find_package(Cairo 1.14 QUIET)
-  if (CAIRO_VERSION)
-    message(STATUS "Cairo: ${CAIRO_VERSION}")
-    target_include_directories(OpenSCAD SYSTEM PRIVATE ${CAIRO_INCLUDE_DIRS})
-    target_link_libraries(OpenSCAD PRIVATE ${CAIRO_LIBRARIES})
-    target_compile_definitions(OpenSCAD PRIVATE ENABLE_CAIRO)
+  if (MSVC)
+    find_package(PkgConfig REQUIRED)
+    pkg_check_modules(CAIRO REQUIRED cairo)
   else()
-    message(STATUS "Cairo: disabled")
+    find_package(Cairo 1.14 QUIET)
+    if (CAIRO_VERSION)
+      message(STATUS "Cairo: ${CAIRO_VERSION}")
+      target_include_directories(OpenSCAD SYSTEM PRIVATE ${CAIRO_INCLUDE_DIRS})
+      target_link_libraries(OpenSCAD PRIVATE ${CAIRO_LIBRARIES})
+      target_compile_definitions(OpenSCAD PRIVATE ENABLE_CAIRO)
+    else()
+      message(STATUS "Cairo: disabled")
+    endif()
   endif()
 else()
   message(STATUS "Cairo: disabled per user request")
@@ -539,21 +543,19 @@ message(STATUS "Flex: ${FLEX_VERSION}")
 find_package(BISON REQUIRED QUIET)
 message(STATUS "Bison: ${BISON_VERSION}")
 
-if(NOT MSVC)
-  find_package(Lib3MF)
-  if (Lib3MF_FOUND)
-    message(STATUS "lib3mf: ${Lib3MF_VERSION}")
-    target_link_libraries(OpenSCAD PRIVATE Lib3MF::Lib3MF)
-    target_compile_definitions(OpenSCAD PRIVATE ENABLE_LIB3MF)
-    if (Lib3MF_VERSION VERSION_GREATER_EQUAL 2)
-      set(LIB3MF_SOURCES src/io/export_3mf_v2.cc src/io/import_3mf_v2.cc)
-    else()
-      set(LIB3MF_SOURCES src/io/export_3mf_v1.cc src/io/import_3mf_v1.cc)
-    endif()
+find_package(Lib3MF)
+if (Lib3MF_FOUND)
+  message(STATUS "lib3mf: ${Lib3MF_VERSION}")
+  target_link_libraries(OpenSCAD PRIVATE Lib3MF::Lib3MF)
+  target_compile_definitions(OpenSCAD PRIVATE ENABLE_LIB3MF)
+  if (Lib3MF_VERSION VERSION_GREATER_EQUAL 2)
+    set(LIB3MF_SOURCES src/io/export_3mf_v2.cc src/io/import_3mf_v2.cc)
   else()
-    set(LIB3MF_SOURCES src/io/export_3mf_dummy.cc src/io/import_3mf_dummy.cc)
-    message(STATUS "lib3mf: disabled")
+    set(LIB3MF_SOURCES src/io/export_3mf_v1.cc src/io/import_3mf_v1.cc)
   endif()
+else()
+  set(LIB3MF_SOURCES src/io/export_3mf_dummy.cc src/io/import_3mf_dummy.cc)
+  message(STATUS "lib3mf: disabled")
 endif()
 
 # Automatically add the current source and build directories to the include path.
@@ -936,6 +938,7 @@ endif()
 set(CGAL_SOURCES
   src/geometry/cgal/cgalutils.cc
   src/geometry/cgal/cgalutils-applyops.cc
+  src/geometry/cgal/cgalutils-applyops-minkowski.cc
   src/geometry/cgal/cgalutils-closed.cc
   src/geometry/cgal/cgalutils-convex.cc
   src/geometry/cgal/cgalutils-kernel.cc
@@ -1013,10 +1016,10 @@ if(ENABLE_MANIFOLD)
     else()
       add_subdirectory(submodules/manifold EXCLUDE_FROM_ALL)
     endif()
-    message(STATUS "mainfold submodule: ${manifold_VERSION}")
+    message(STATUS "manifold submodule: ${MANIFOLD_VERSION}")
   else()
     find_package(manifold REQUIRED QUIET)
-    message(STATUS "mainfold: ${manifold_VERSION}")
+    message(STATUS "manifold: ${manifold_VERSION}")
   endif()
   target_link_libraries(OpenSCAD PRIVATE manifold::manifold)
   add_sanitizers(manifold)
@@ -1086,6 +1089,7 @@ set(GUI_SOURCES
   src/gui/EventFilter.h
   src/gui/Export3mfDialog.cc
   src/gui/ExportPdfDialog.cc
+  src/gui/ExportSvgDialog.cc
   src/gui/OctoPrintApiKeyDialog.cc
   src/gui/FontListDialog.cc
   src/gui/FontListTableView.cc
@@ -1121,6 +1125,7 @@ set(GUI_SOURCES
   src/gui/IgnoreWheelWhenNotFocused.cc
   src/gui/input/AxisConfigWidget.cc
   src/gui/input/ButtonConfigWidget.cc
+  src/gui/input/MouseConfigWidget.cc
   src/gui/input/InputDriver.cc
   src/gui/input/InputDriverManager.cc
   src/gui/input/InputEventMapper.cc
@@ -1156,6 +1161,7 @@ set(GUI_HEADERS
     src/gui/EventFilter.h
     src/gui/Export3mfDialog.h
     src/gui/ExportPdfDialog.h
+    src/gui/ExportSvgDialog.h
     src/gui/OctoPrintApiKeyDialog.h
     src/gui/FontList.h
     src/gui/FontListDialog.h
@@ -1211,6 +1217,7 @@ set(GUI_UIS
     src/gui/ErrorLog.ui
     src/gui/Export3mfDialog.ui
     src/gui/ExportPdfDialog.ui
+    src/gui/ExportSvgDialog.ui
     src/gui/OctoPrintApiKeyDialog.ui
     src/gui/FontList.ui
     src/gui/FontListDialog.ui
@@ -1224,6 +1231,7 @@ set(GUI_UIS
     src/gui/ViewportControl.ui
     src/gui/input/AxisConfigWidget.ui
     src/gui/input/ButtonConfigWidget.ui
+    src/gui/input/MouseConfigWidget.ui
     src/gui/parameter/ParameterCheckBox.ui
     src/gui/parameter/ParameterComboBox.ui
     src/gui/parameter/ParameterDescriptionWidget.ui
@@ -1357,13 +1365,16 @@ if(APPLE AND NOT APPLE_UNIX)
   file(COPY ${CMAKE_SOURCE_DIR}/color-schemes DESTINATION ${BUNDLE_RESOURCES_DIR})
   file(COPY ${CMAKE_SOURCE_DIR}/examples DESTINATION ${BUNDLE_RESOURCES_DIR})
   file(COPY ${CMAKE_SOURCE_DIR}/fonts DESTINATION ${BUNDLE_RESOURCES_DIR})
-  file(COPY ${CMAKE_SOURCE_DIR}/libraries DESTINATION ${BUNDLE_RESOURCES_DIR})
+  file(COPY ${CMAKE_SOURCE_DIR}/libraries DESTINATION ${BUNDLE_RESOURCES_DIR} PATTERN ".git*" EXCLUDE)
   file(COPY ${CMAKE_SOURCE_DIR}/locale DESTINATION ${BUNDLE_RESOURCES_DIR})
   file(COPY ${CMAKE_SOURCE_DIR}/shaders DESTINATION ${BUNDLE_RESOURCES_DIR})
   file(COPY ${CMAKE_SOURCE_DIR}/templates DESTINATION ${BUNDLE_RESOURCES_DIR})
 
   if(ENABLE_GUI_TESTS)
-    file(COPY ${CMAKE_SOURCE_DIR}/tests/data DESTINATION ${BUNDLE_RESOURCES_DIR}/tests)
+    file(COPY 
+         ${CMAKE_SOURCE_DIR}/tests/data/basic-ux
+         ${CMAKE_SOURCE_DIR}/tests/data/modulecache-tests
+         DESTINATION ${BUNDLE_RESOURCES_DIR}/tests)
   endif()
 
 elseif(MINGW)

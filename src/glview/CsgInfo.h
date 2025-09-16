@@ -11,7 +11,6 @@
 #include "glview/RenderSettings.h"
 #include "utils/printutils.h"
 
-
 /*
    Small helper class for compiling and normalizing node trees into CSG products
  */
@@ -23,7 +22,8 @@ public:
   std::shared_ptr<CSGProducts> highlights_products;
   std::shared_ptr<CSGProducts> background_products;
 
-  bool compile_products(const Tree& tree) {
+  bool compile_products(const Tree& tree)
+  {
     auto& root_node = tree.root();
     GeometryEvaluator geomevaluator(tree);
     CSGTreeEvaluator evaluator(tree, &geomevaluator);

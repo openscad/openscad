@@ -17,7 +17,6 @@ void AutoUpdater::init()
     this->connect(this->updateAction, &AutoUpdater::triggered, this, &AutoUpdater::checkForUpdates);
 
     this->updateMenu->addAction(this->updateAction);
-
   }
-#endif // ifdef OPENSCAD_UPDATER
+#endif  // ifdef OPENSCAD_UPDATER
 }

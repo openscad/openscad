@@ -66,10 +66,7 @@ static std::string getXdgUserDir(const std::string& dir)
   return "";
 }
 
-std::string PlatformUtils::pathSeparatorChar()
-{
-  return ":";
-}
+std::string PlatformUtils::pathSeparatorChar() { return ":"; }
 
 std::string PlatformUtils::userDocumentsPath()
 {
@@ -141,7 +138,7 @@ unsigned long PlatformUtils::stackLimit()
       return limit.rlim_max - STACK_BUFFER_SIZE;
     }
   }
-#endif // __EMSCRIPTEN__
+#endif  // __EMSCRIPTEN__
 
   return STACK_LIMIT_DEFAULT;
 }

@@ -3,9 +3,9 @@
 #include <QWidget>
 #include "gui/IgnoreWheelWhenNotFocused.h"
 
-ParameterComboBox::ParameterComboBox(QWidget *parent, EnumParameter *parameter, DescriptionStyle descriptionStyle) :
-  ParameterVirtualWidget(parent, parameter),
-  parameter(parameter)
+ParameterComboBox::ParameterComboBox(QWidget *parent, EnumParameter *parameter,
+                                     DescriptionStyle descriptionStyle)
+  : ParameterVirtualWidget(parent, parameter), parameter(parameter)
 {
   setupUi(this);
   descriptionWidget->setDescription(parameter, descriptionStyle);
@@ -29,7 +29,4 @@ void ParameterComboBox::onChanged(int index)
   }
 }
 
-void ParameterComboBox::setValue()
-{
-  comboBox->setCurrentIndex(parameter->valueIndex);
-}
+void ParameterComboBox::setValue() { comboBox->setCurrentIndex(parameter->valueIndex); }

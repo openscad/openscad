@@ -4,9 +4,9 @@
 #include <QWidget>
 #include <string>
 
-ParameterText::ParameterText(QWidget *parent, StringParameter *parameter, DescriptionStyle descriptionStyle) :
-  ParameterVirtualWidget(parent, parameter),
-  parameter(parameter)
+ParameterText::ParameterText(QWidget *parent, StringParameter *parameter,
+                             DescriptionStyle descriptionStyle)
+  : ParameterVirtualWidget(parent, parameter), parameter(parameter)
 {
   setupUi(this);
   descriptionWidget->setDescription(parameter, descriptionStyle);
@@ -20,9 +20,7 @@ ParameterText::ParameterText(QWidget *parent, StringParameter *parameter, Descri
   ParameterText::setValue();
 }
 
-void ParameterText::valueApplied() {
-  lastApplied = lastSent;
-}
+void ParameterText::valueApplied() { lastApplied = lastSent; }
 
 void ParameterText::onEdit(const QString& text)
 {
@@ -36,7 +34,8 @@ void ParameterText::onEdit(const QString& text)
   }
 }
 
-void ParameterText::onEditingFinished() {
+void ParameterText::onEditingFinished()
+{
 #ifdef DEBUG
   PRINTD("editing finished");
 #endif

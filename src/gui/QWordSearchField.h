@@ -33,4 +33,3 @@ private:
 };
 
 #endif /* QWORDSEARCHFIELD_H */
-

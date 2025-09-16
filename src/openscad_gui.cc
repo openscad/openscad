@@ -44,6 +44,7 @@
 #include <QStringList>
 #include <QtConcurrentRun>
 
+#include "Feature.h"
 #include "core/parsersettings.h"
 #include "core/Settings.h"
 #include "FontCache.h"
@@ -69,6 +70,7 @@
 #include "gui/MainWindow.h"
 #include "gui/OpenSCADApp.h"
 #include "gui/QSettingsCached.h"
+#include "gui/Preferences.h"
 #include "openscad.h"
 #include "platform/CocoaUtils.h"
 #include "utils/printutils.h"
@@ -94,7 +96,8 @@ namespace {
 // field, see:
 // UIUtils::blendForBackgroundColorStyleSheet(const QColor& input, const QColor& blend)
 
-bool isDarkMode() {
+bool isDarkMode()
+{
 #if QT_VERSION >= QT_VERSION_CHECK(6, 5, 0)
   const auto scheme = QGuiApplication::styleHints()->colorScheme();
   return scheme == Qt::ColorScheme::Dark;
@@ -103,16 +106,16 @@ bool isDarkMode() {
   const auto& text = defaultPalette.color(QPalette::WindowText);
   const auto& window = defaultPalette.color(QPalette::Window);
   return text.lightness() > window.lightness();
-#endif // QT_VERSION
+#endif  // QT_VERSION
 }
 
-}
+}  // namespace
 
 namespace {
 
 // Only if "fileName" is not absolute, prepend the "absoluteBase".
-QString assemblePath(const std::filesystem::path& absoluteBaseDir,
-                     const std::string& fileName) {
+QString assemblePath(const std::filesystem::path& absoluteBaseDir, const std::string& fileName)
+{
   if (fileName.empty()) return "";
   auto qsDir = QString::fromLocal8Bit(absoluteBaseDir.generic_string().c_str());
   auto qsFile = QString::fromLocal8Bit(fileName.c_str());
@@ -121,20 +124,15 @@ QString assemblePath(const std::filesystem::path& absoluteBaseDir,
   return fileInfo.absoluteFilePath();
 }
 
-
-void dialogThreadFunc(FontCacheInitializer *initializer)
-{
-  initializer->run();
-}
+void dialogThreadFunc(FontCacheInitializer *initializer) { initializer->run(); }
 
 void dialogInitHandler(FontCacheInitializer *initializer, void *)
 {
   QFutureWatcher<void> futureWatcher;
-  QObject::connect(&futureWatcher, &QFutureWatcher<void>::finished, scadApp, &OpenSCADApp::hideFontCacheDialog);
+  QObject::connect(&futureWatcher, &QFutureWatcher<void>::finished, scadApp,
+                   &OpenSCADApp::hideFontCacheDialog);
 
-  auto future = QtConcurrent::run([initializer] {
-    return dialogThreadFunc(initializer);
-  });
+  auto future = QtConcurrent::run([initializer] { return dialogThreadFunc(initializer); });
   futureWatcher.setFuture(future);
 
   // We don't always get the started() signal, so we start manually
@@ -149,16 +147,18 @@ void dialogInitHandler(FontCacheInitializer *initializer, void *)
 }
 
 #ifdef Q_OS_WIN
-void registerDefaultIcon(QString applicationFilePath) {
+void registerDefaultIcon(QString applicationFilePath)
+{
   // Not using cached instance here, so this needs to be in a
   // separate scope to ensure the QSettings instance is released
   // directly after use.
   QSettings reg_setting(QLatin1String("HKEY_CURRENT_USER"), QSettings::NativeFormat);
   auto appPath = QDir::toNativeSeparators(applicationFilePath + QLatin1String(",1"));
-  reg_setting.setValue(QLatin1String("Software/Classes/OpenSCAD_File/DefaultIcon/Default"), QVariant(appPath));
+  reg_setting.setValue(QLatin1String("Software/Classes/OpenSCAD_File/DefaultIcon/Default"),
+                       QVariant(appPath));
 }
 #else
-void registerDefaultIcon(const QString&) { }
+void registerDefaultIcon(const QString&) {}
 #endif
 
 }  // namespace
@@ -169,11 +169,10 @@ void registerDefaultIcon(const QString&) { }
 #define DESKTOP_FILENAME "openscad"
 #endif
 
-int gui(std::vector<std::string>& inputFiles, const std::filesystem::path& original_path, int argc, char **argv, const std::string& gui_test)
+int gui(std::vector<std::string>& inputFiles, const std::filesystem::path& original_path, int argc,
+        char **argv, const std::string& gui_test, const bool reset_window_settings)
 {
   OpenSCADApp app(argc, argv);
-  // remove ugly frames in the QStatusBar when using additional widgets
-  app.setStyleSheet("QStatusBar::item { border: 0px solid black; }");
   QIcon::setThemeName(isDarkMode() ? "chokusen-dark" : "chokusen");
 
   // set up groups for QSettings
@@ -183,7 +182,10 @@ int gui(std::vector<std::string>& inputFiles, const std::filesystem::path& origi
   QCoreApplication::setApplicationVersion(TOSTRING(OPENSCAD_VERSION));
   QGuiApplication::setApplicationDisplayName("OpenSCAD");
   QGuiApplication::setDesktopFileName(DESKTOP_FILENAME);
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
   QCoreApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
+#endif
+
 #ifdef Q_OS_MACOS
   app.setWindowIcon(QIcon(":/icon-macos.png"));
 #else
@@ -202,12 +204,42 @@ int gui(std::vector<std::string>& inputFiles, const std::filesystem::path& origi
   if (settings.value("advanced/localization", true).toBool()) {
     localization_init();
   }
+  if (reset_window_settings) {
+    const auto keys = std::array<std::string, 20>{
+      "editor/fontfamily",
+      "editor/fontsize",
+      "advanced/applicationFontSize",
+      "advanced/applicationFontFamily",
+      "advanced/consoleFontFamily",
+      "advanced/consoleFontSize",
+      "advanced/customizerFontFamily",
+      "advanced/customizerFontSize",
+      "advanced/undockableWindows",
+      "window/state",
+      "window/geometry",
+      "window/position",
+      "window/size",
+      "view/hideEditor",
+      "view/hideConsole",
+      "view/hideErrorLog",
+      "view/hideAnimate",
+      "view/hideCustomizer",
+      "view/hideFontList",
+      "view/hideViewportControl",
+    };
+    for (const auto& key : keys) {
+      settings.remove(QString::fromStdString(key));
+    }
+  }
 
 #ifdef Q_OS_MACOS
   installAppleEventHandlers();
 #endif
 
   registerDefaultIcon(app.applicationFilePath());
+  app.setApplicationFont(
+    GlobalPreferences::inst()->getValue("advanced/applicationFontFamily").toString(),
+    GlobalPreferences::inst()->getValue("advanced/applicationFontSize").toUInt());
 
 #ifdef OPENSCAD_UPDATER
   AutoUpdater *updater = new SparkleAutoUpdater;
@@ -215,6 +247,9 @@ int gui(std::vector<std::string>& inputFiles, const std::filesystem::path& origi
   if (updater->automaticallyChecksForUpdates()) updater->checkForUpdates();
   updater->init();
 #endif
+
+  QObject::connect(GlobalPreferences::inst(), &Preferences::applicationFontChanged, &app,
+                   &OpenSCADApp::setApplicationFont);
 
   set_render_color_scheme(arg_colorscheme, false);
   auto noInputFiles = false;
@@ -246,11 +281,11 @@ int gui(std::vector<std::string>& inputFiles, const std::filesystem::path& origi
   }
 
   QStringList inputFilesList;
-  for (const auto& infile: inputFiles) {
+  for (const auto& infile : inputFiles) {
     inputFilesList.append(assemblePath(original_path, infile));
   }
   new MainWindow(inputFilesList);
-  QObject::connect(&app, &QCoreApplication::aboutToQuit, [](){
+  QObject::connect(&app, &QCoreApplication::aboutToQuit, []() {
     QSettingsCached{}.release();
 #ifdef Q_OS_MACOS
     CocoaUtils::endApplication();
@@ -297,17 +332,16 @@ int gui(std::vector<std::string>& inputFiles, const std::filesystem::path& origi
 #ifdef ENABLE_GUI_TESTS
   // Adds a singleshot timer that will be executed when the application will be started.
   // the timer validates that each mainwindow respects the expected UX behavior.
-  if(gui_test != "none"){
-      QTimer::singleShot(0, [&]()
-      {
-          int failureCount=0;
-          for(auto w : app.windowManager.getWindows()){
-              failureCount+=runAllTest(w);
-          }
-          app.exit(failureCount);
-      });
+  if (gui_test != "none") {
+    QTimer::singleShot(0, [&]() {
+      int failureCount = 0;
+      for (auto w : app.windowManager.getWindows()) {
+        failureCount += runAllTest(w);
+      }
+      app.exit(failureCount);
+    });
   }
-#endif // ENABLE_GUI_TESTS
+#endif  // ENABLE_GUI_TESTS
 
   InputDriverManager::instance()->init();
   return app.exec();

@@ -35,8 +35,7 @@ namespace libsvg {
 
 const std::string ellipse::name("ellipse");
 
-void
-ellipse::set_attrs(attr_map_t& attrs, void *context)
+void ellipse::set_attrs(attr_map_t& attrs, void *context)
 {
   shape::set_attrs(attrs, context);
   this->x = parse_double(attrs["cx"]);
@@ -49,16 +48,12 @@ ellipse::set_attrs(attr_map_t& attrs, void *context)
   path_list.push_back(path);
 }
 
-const std::string
-ellipse::dump() const
+const std::string ellipse::dump() const
 {
   std::stringstream s;
-  s << get_name()
-    << ": x = " << this->x
-    << ": y = " << this->y
-    << ": rx = " << this->rx
+  s << get_name() << ": x = " << this->x << ": y = " << this->y << ": rx = " << this->rx
     << ": ry = " << this->ry;
   return s.str();
 }
 
-} // namespace libsvg
+}  // namespace libsvg

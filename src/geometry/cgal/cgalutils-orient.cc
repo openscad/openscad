@@ -14,5 +14,4 @@ void orientToBoundAVolume(SurfaceMesh& mesh)
 
 template void orientToBoundAVolume(CGAL_DoubleMesh& polyhedron);
 
-} // namespace CGALUtils
-
+}  // namespace CGALUtils

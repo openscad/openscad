@@ -11,24 +11,26 @@
 
 namespace ManifoldUtils {
 
-  const char* statusToString(manifold::Manifold::Error status);
+const char *statusToString(manifold::Manifold::Error status);
 
-  std::shared_ptr<ManifoldGeometry> createManifoldFromPolySet(const PolySet& ps);
-  std::shared_ptr<const ManifoldGeometry> createManifoldFromGeometry(const std::shared_ptr<const Geometry>& geom);
+std::shared_ptr<ManifoldGeometry> createManifoldFromPolySet(const PolySet& ps);
+std::shared_ptr<const ManifoldGeometry> createManifoldFromGeometry(
+  const std::shared_ptr<const Geometry>& geom);
 
-  template <class SurfaceMesh>
-  std::shared_ptr<ManifoldGeometry> createManifoldFromSurfaceMesh(const SurfaceMesh& mesh);
-  template <typename SurfaceMesh>
-  std::shared_ptr<SurfaceMesh> createSurfaceMeshFromManifold(const manifold::Manifold& mani);
-  
-  std::shared_ptr<ManifoldGeometry> applyOperator3DManifold(const Geometry::Geometries& children, OpenSCADOperator op);
+template <class SurfaceMesh>
+std::shared_ptr<ManifoldGeometry> createManifoldFromSurfaceMesh(const SurfaceMesh& mesh);
+template <typename SurfaceMesh>
+std::shared_ptr<SurfaceMesh> createSurfaceMeshFromManifold(const manifold::Manifold& mani);
 
-  Polygon2d polygonsToPolygon2d(const manifold::Polygons& polygons);
+std::shared_ptr<ManifoldGeometry> applyOperator3DManifold(const Geometry::Geometries& children,
+                                                          OpenSCADOperator op);
+
+Polygon2d polygonsToPolygon2d(const manifold::Polygons& polygons);
 
 #ifdef ENABLE_CGAL
-  // FIXME: This shouldn't return const, but it does due to internal implementation details.
-  std::shared_ptr<const Geometry> applyMinkowskiManifold(const Geometry::Geometries& children);
+// FIXME: This shouldn't return const, but it does due to internal implementation details.
+std::shared_ptr<const Geometry> applyMinkowski(const Geometry::Geometries& children);
 #endif
 
-  std::unique_ptr<PolySet> createTriangulatedPolySetFromPolygon2d(const Polygon2d& polygon2d);
-};
+std::unique_ptr<PolySet> createTriangulatedPolySetFromPolygon2d(const Polygon2d& polygon2d);
+};  // namespace ManifoldUtils

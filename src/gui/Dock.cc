@@ -4,7 +4,6 @@
 #include <QWidget>
 #include "gui/QSettingsCached.h"
 
-
 Dock::Dock(QWidget *parent) : QDockWidget(parent)
 {
   connect(this, &QDockWidget::topLevelChanged, this, &Dock::onTopLevelStatusChanged);
@@ -13,15 +12,9 @@ Dock::Dock(QWidget *parent) : QDockWidget(parent)
   dockTitleWidget = new QWidget();
 }
 
-Dock::~Dock()
-{
-  delete dockTitleWidget;
-}
+Dock::~Dock() { delete dockTitleWidget; }
 
-void Dock::disableSettingsUpdate()
-{
-  updateSettings = false;
-}
+void Dock::disableSettingsUpdate() { updateSettings = false; }
 
 void Dock::onVisibilityChanged(bool isDockVisible)
 {
@@ -33,15 +26,13 @@ void Dock::onVisibilityChanged(bool isDockVisible)
 
 void Dock::setTitleBarVisibility(bool isVisible)
 {
-  setTitleBarWidget(isVisible? dockTitleWidget : nullptr);
+  setTitleBarWidget(isVisible ? dockTitleWidget : nullptr);
 }
 
-void Dock::setConfigKey(const QString& configKey)
+void Dock::setConfigKey(const QString& configKey) { this->configKey = configKey; }
+
+void Dock::updateTitle()
 {
-  this->configKey = configKey;
-}
-
-void Dock::updateTitle(){
   QString title(name);
   if (isFloating() && !namesuffix.isEmpty()) {
     title += " (" + namesuffix + ")";
@@ -49,16 +40,16 @@ void Dock::updateTitle(){
   setWindowTitle(title);
 }
 
-void Dock::setName(const QString& name_) {
+void Dock::setName(const QString& name_)
+{
   name = name_;
   updateTitle();
 }
 
-QString Dock::getName() const {
-  return name;
-}
+QString Dock::getName() const { return name; }
 
-void Dock::setNameSuffix(const QString& namesuffix_) {
+void Dock::setNameSuffix(const QString& namesuffix_)
+{
   namesuffix = namesuffix_;
   updateTitle();
 }

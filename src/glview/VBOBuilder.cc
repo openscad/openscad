@@ -30,7 +30,7 @@ Vector3d uniqueMultiply(std::unordered_map<Vector3d, Vector3d>& vert_mult_map, c
   return entry->second;
 }
 
-}  // namespace 
+}  // namespace
 
 void addAttributeValues(IAttributeData&) {}
 
@@ -75,17 +75,18 @@ void VBOBuilder::addEdgeData()
 }
 
 void VBOBuilder::createVertex(const std::array<Vector3d, 3>& points,
-                               const std::array<Vector3d, 3>& normals,
-                               const Color4f& color,
-                               size_t active_point_index, size_t primitive_index,
-                               size_t shape_size, bool outlines, bool /*mirror*/)
+                              const std::array<Vector3d, 3>& normals, const Color4f& color,
+                              size_t active_point_index, size_t primitive_index, size_t shape_size,
+                              bool outlines, bool /*mirror*/)
 {
-  addAttributeValues(*(data()->positionData()), points[active_point_index][0], points[active_point_index][1], points[active_point_index][2]);
+  addAttributeValues(*(data()->positionData()), points[active_point_index][0],
+                     points[active_point_index][1], points[active_point_index][2]);
   if (data()->hasNormalData()) {
-    addAttributeValues(*(data()->normalData()), normals[active_point_index][0], normals[active_point_index][1], normals[active_point_index][2]);
+    addAttributeValues(*(data()->normalData()), normals[active_point_index][0],
+                       normals[active_point_index][1], normals[active_point_index][2]);
   }
   if (data()->hasColorData()) {
-    addAttributeValues(*(data()->colorData()), color[0], color[1], color[2], color[3]);
+    addAttributeValues(*(data()->colorData()), color.r(), color.g(), color.b(), color.a());
   }
 
   if (useElements()) {
@@ -97,7 +98,8 @@ void VBOBuilder::createVertex(const std::array<Vector3d, 3>& points,
     if (entry.first == elements_map_.end()) {
       // append vertex data if this is a new element
       if (!interleaved_buffer_.empty()) {
-        memcpy(interleaved_buffer_.data() + vertices_offset_, interleaved_vertex.data(), interleaved_vertex.size());
+        memcpy(interleaved_buffer_.data() + vertices_offset_, interleaved_vertex.data(),
+               interleaved_vertex.size());
         data()->clear();
       }
       vertices_offset_ += interleaved_vertex.size();
@@ -120,20 +122,21 @@ void VBOBuilder::createVertex(const std::array<Vector3d, 3>& points,
           i++;
         }
       }
-#endif // 0
+#endif  // 0
     }
 
     // append element data
     addAttributeValues(*elementsData(), entry.first->second);
     elements_offset_ += elementsData()->sizeofAttribute();
-  } else { // !useElements()
+  } else {  // !useElements()
     if (interleaved_buffer_.empty()) {
       vertices_offset_ = sizeInBytes();
     } else {
       std::vector<GLbyte> interleaved_vertex;
       interleaved_vertex.resize(data()->stride());
       data()->getLastVertex(interleaved_vertex);
-      memcpy(interleaved_buffer_.data() + vertices_offset_, interleaved_vertex.data(), interleaved_vertex.size());
+      memcpy(interleaved_buffer_.data() + vertices_offset_, interleaved_vertex.data(),
+             interleaved_vertex.size());
       vertices_offset_ += interleaved_vertex.size();
       data()->clear();
     }
@@ -167,14 +170,15 @@ void VBOBuilder::createInterleavedVBOs()
         if (src) {
           if (idx != 0) {
             if (last_size != data->size() / data->count()) {
-              PRINTDB("attribute data for vertex incorrect size at index %d = %d", idx % (data->size() / data->count()));
+              PRINTDB("attribute data for vertex incorrect size at index %d = %d",
+                      idx % (data->size() / data->count()));
               PRINTDB("last_size = %d", last_size);
               assert(false);
             }
           }
           last_size = data->size() / data->count();
           for (size_t i = 0; i < last_size; ++i) {
-	    // This path is chosen in vertex-object-renderers non-direct mode
+            // This path is chosen in vertex-object-renderers non-direct mode
             GL_TRACE("A glBufferSubData(GL_ARRAY_BUFFER, %p, %d, %p)", (void *)dst % size % (void *)src);
             GL_CHECKD(glBufferSubData(GL_ARRAY_BUFFER, dst, size, src));
             src += size;
@@ -192,8 +196,10 @@ void VBOBuilder::createInterleavedVBOs()
   } else if (!interleaved_buffer_.empty()) {
     GL_TRACE("glBindBuffer(GL_ARRAY_BUFFER, %d)", vertex_state_container_.verticesVBO());
     GL_CHECKD(glBindBuffer(GL_ARRAY_BUFFER, vertex_state_container_.verticesVBO()));
-    GL_TRACE("glBufferData(GL_ARRAY_BUFFER, %d, %p, GL_STATIC_DRAW)", interleaved_buffer_.size() % (void *)interleaved_buffer_.data());
-    GL_CHECKD(glBufferData(GL_ARRAY_BUFFER, interleaved_buffer_.size(), interleaved_buffer_.data(), GL_STATIC_DRAW));
+    GL_TRACE("glBufferData(GL_ARRAY_BUFFER, %d, %p, GL_STATIC_DRAW)",
+             interleaved_buffer_.size() % (void *)interleaved_buffer_.data());
+    GL_CHECKD(glBufferData(GL_ARRAY_BUFFER, interleaved_buffer_.size(), interleaved_buffer_.data(),
+                           GL_STATIC_DRAW));
     GL_TRACE0("glBindBuffer(GL_ARRAY_BUFFER, 0)");
     GL_CHECKD(glBindBuffer(GL_ARRAY_BUFFER, 0));
   }
@@ -203,12 +209,14 @@ void VBOBuilder::createInterleavedVBOs()
     GL_TRACE("glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, %d)", vertex_state_container_.elementsVBO());
     GL_CHECKD(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vertex_state_container_.elementsVBO()));
     if (elements_size_ == 0) {
-      GL_TRACE("glBufferData(GL_ELEMENT_ARRAY_BUFFER, %d, %p, GL_STATIC_DRAW)", elements_.sizeInBytes() % (void *)nullptr);
+      GL_TRACE("glBufferData(GL_ELEMENT_ARRAY_BUFFER, %d, %p, GL_STATIC_DRAW)",
+               elements_.sizeInBytes() % (void *)nullptr);
       GL_CHECKD(glBufferData(GL_ELEMENT_ARRAY_BUFFER, elements_.sizeInBytes(), nullptr, GL_STATIC_DRAW));
     }
     size_t last_size = 0;
     for (const auto& e : elements_.attributes()) {
-      GL_TRACE("glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, %d, %d, %p)", last_size % e->sizeInBytes() % (void *)e->toBytes());
+      GL_TRACE("glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, %d, %d, %p)",
+               last_size % e->sizeInBytes() % (void *)e->toBytes());
       GL_CHECKD(glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, last_size, e->sizeInBytes(), e->toBytes()));
       last_size += e->sizeInBytes();
     }
@@ -234,16 +242,17 @@ void VBOBuilder::addAttributePointers(size_t start_offset)
     GL_TRACE0("glEnableClientState(GL_VERTEX_ARRAY)");
     GL_CHECKD(glEnableClientState(GL_VERTEX_ARRAY));
   });
-  vertex_state->glBegin().emplace_back([count, type, stride, offset, vs_ptr = std::weak_ptr<VertexState>(vertex_state)]() {
-    auto vs = vs_ptr.lock();
-    if (vs) {
-      // NOLINTBEGIN(performance-no-int-to-ptr)
-      GL_TRACE("glVertexPointer(%d, %d, %d, %p)",
-               count % type % stride % (GLvoid *)(vs->drawOffset() + offset));
-      GL_CHECKD(glVertexPointer(count, type, stride, (GLvoid *)(vs->drawOffset() + offset)));
-      // NOLINTEND(performance-no-int-to-ptr)
-    }
-  });
+  vertex_state->glBegin().emplace_back(
+    [count, type, stride, offset, vs_ptr = std::weak_ptr<VertexState>(vertex_state)]() {
+      auto vs = vs_ptr.lock();
+      if (vs) {
+        // NOLINTBEGIN(performance-no-int-to-ptr)
+        GL_TRACE("glVertexPointer(%d, %d, %d, %p)",
+                 count % type % stride % (GLvoid *)(vs->drawOffset() + offset));
+        GL_CHECKD(glVertexPointer(count, type, stride, (GLvoid *)(vs->drawOffset() + offset)));
+        // NOLINTEND(performance-no-int-to-ptr)
+      }
+    });
   vertex_state->glEnd().emplace_back([]() {
     GL_TRACE0("glDisableClientState(GL_VERTEX_ARRAY)");
     GL_CHECKD(glDisableClientState(GL_VERTEX_ARRAY));
@@ -256,15 +265,16 @@ void VBOBuilder::addAttributePointers(size_t start_offset)
       GL_TRACE0("glEnableClientState(GL_NORMAL_ARRAY)");
       GL_CHECKD(glEnableClientState(GL_NORMAL_ARRAY));
     });
-    vertex_state->glBegin().emplace_back([type, stride, offset, vs_ptr = std::weak_ptr<VertexState>(vertex_state)]() {
-      auto vs = vs_ptr.lock();
-      if (vs) {
-        // NOLINTBEGIN(performance-no-int-to-ptr)
-        GL_TRACE("glNormalPointer(%d, %d, %p)", type % stride % (GLvoid *)(vs->drawOffset() + offset));
-        GL_CHECKD(glNormalPointer(type, stride, (GLvoid *)(vs->drawOffset() + offset)));
-        // NOLINTEND(performance-no-int-to-ptr)
-      }
-    });
+    vertex_state->glBegin().emplace_back(
+      [type, stride, offset, vs_ptr = std::weak_ptr<VertexState>(vertex_state)]() {
+        auto vs = vs_ptr.lock();
+        if (vs) {
+          // NOLINTBEGIN(performance-no-int-to-ptr)
+          GL_TRACE("glNormalPointer(%d, %d, %p)", type % stride % (GLvoid *)(vs->drawOffset() + offset));
+          GL_CHECKD(glNormalPointer(type, stride, (GLvoid *)(vs->drawOffset() + offset)));
+          // NOLINTEND(performance-no-int-to-ptr)
+        }
+      });
     vertex_state->glEnd().emplace_back([]() {
       GL_TRACE0("glDisableClientState(GL_NORMAL_ARRAY)");
       GL_CHECKD(glDisableClientState(GL_NORMAL_ARRAY));
@@ -278,15 +288,17 @@ void VBOBuilder::addAttributePointers(size_t start_offset)
       GL_TRACE0("glEnableClientState(GL_COLOR_ARRAY)");
       GL_CHECKD(glEnableClientState(GL_COLOR_ARRAY));
     });
-    vertex_state->glBegin().emplace_back([count, type, stride, offset, vs_ptr = std::weak_ptr<VertexState>(vertex_state)]() {
-      auto vs = vs_ptr.lock();
-      if (vs) {
-        // NOLINTBEGIN(performance-no-int-to-ptr)
-        GL_TRACE("glColorPointer(%d, %d, %d, %p)", count % type % stride % (GLvoid *)(vs->drawOffset() + offset));
-        GL_CHECKD(glColorPointer(count, type, stride, (GLvoid *)(vs->drawOffset() + offset)));
-        // NOLINTEND(performance-no-int-to-ptr)
-      }
-    });
+    vertex_state->glBegin().emplace_back(
+      [count, type, stride, offset, vs_ptr = std::weak_ptr<VertexState>(vertex_state)]() {
+        auto vs = vs_ptr.lock();
+        if (vs) {
+          // NOLINTBEGIN(performance-no-int-to-ptr)
+          GL_TRACE("glColorPointer(%d, %d, %d, %p)",
+                   count % type % stride % (GLvoid *)(vs->drawOffset() + offset));
+          GL_CHECKD(glColorPointer(count, type, stride, (GLvoid *)(vs->drawOffset() + offset)));
+          // NOLINTEND(performance-no-int-to-ptr)
+        }
+      });
     vertex_state->glEnd().emplace_back([]() {
       GL_TRACE0("glDisableClientState(GL_COLOR_ARRAY)");
       GL_CHECKD(glDisableClientState(GL_COLOR_ARRAY));
@@ -296,7 +308,8 @@ void VBOBuilder::addAttributePointers(size_t start_offset)
 
 // Allocates GPU memory for vertices (and elements if enabled)
 // for holding the given number of vertices.
-void VBOBuilder::allocateBuffers(size_t num_vertices) {
+void VBOBuilder::allocateBuffers(size_t num_vertices)
+{
   size_t vbo_buffer_size = num_vertices * stride();
   interleaved_buffer_.resize(vbo_buffer_size);
   GL_TRACE("glBindBuffer(GL_ARRAY_BUFFER, %d)", vertex_state_container_.verticesVBO());
@@ -318,7 +331,8 @@ void VBOBuilder::allocateBuffers(size_t num_vertices) {
     setElementsSize(elements_size);
     GL_TRACE("glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, %d)", vertex_state_container_.elementsVBO());
     GL_CHECKD(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vertex_state_container_.elementsVBO()));
-    GL_TRACE("glBufferData(GL_ELEMENT_ARRAY_BUFFER, %d, %p, GL_STATIC_DRAW)", elements_size % (void *)nullptr);
+    GL_TRACE("glBufferData(GL_ELEMENT_ARRAY_BUFFER, %d, %p, GL_STATIC_DRAW)",
+             elements_size % (void *)nullptr);
     GL_CHECKD(glBufferData(GL_ELEMENT_ARRAY_BUFFER, elements_size, nullptr, GL_STATIC_DRAW));
   }
 }
@@ -328,11 +342,12 @@ void VBOBuilder::addShaderData()
 {
   const std::shared_ptr<VertexData> vertex_data = data();
   shader_attributes_index_ = vertex_data->attributes().size();
-  vertex_data->addAttributeData(std::make_shared<AttributeData<GLubyte, 4, GL_UNSIGNED_BYTE>>()); // barycentric
+  vertex_data->addAttributeData(
+    std::make_shared<AttributeData<GLubyte, 4, GL_UNSIGNED_BYTE>>());  // barycentric
 }
 
-void VBOBuilder::add_barycentric_attribute(size_t active_point_index,
-                                            size_t primitive_index, size_t shape_size, bool outlines)
+void VBOBuilder::add_barycentric_attribute(size_t active_point_index, size_t primitive_index,
+                                           size_t shape_size, bool outlines)
 {
   const std::shared_ptr<VertexData> vertex_data = data();
 
@@ -364,14 +379,13 @@ void VBOBuilder::add_barycentric_attribute(size_t active_point_index,
 
   barycentric_flags[active_point_index] = 1;
 
-  addAttributeValues(
-    *(vertex_data->attributes()[shader_attributes_index_ + BARYCENTRIC_ATTRIB]),
-    barycentric_flags[0], barycentric_flags[1], barycentric_flags[2], 0);
+  addAttributeValues(*(vertex_data->attributes()[shader_attributes_index_ + BARYCENTRIC_ATTRIB]),
+                     barycentric_flags[0], barycentric_flags[1], barycentric_flags[2], 0);
 }
 
-void VBOBuilder::create_triangle(const Color4f& color, const Vector3d& p0,
-                                  const Vector3d& p1, const Vector3d& p2, size_t primitive_index,
-                                  size_t shape_size, bool outlines, bool enable_barycentric, bool mirror)
+void VBOBuilder::create_triangle(const Color4f& color, const Vector3d& p0, const Vector3d& p1,
+                                 const Vector3d& p2, size_t primitive_index, size_t shape_size,
+                                 bool outlines, bool enable_barycentric, bool mirror)
 {
   const double ax = p1[0] - p0[0], bx = p1[0] - p2[0];
   const double ay = p1[1] - p0[1], by = p1[1] - p2[1];
@@ -385,37 +399,33 @@ void VBOBuilder::create_triangle(const Color4f& color, const Vector3d& p0,
   if (!data()) return;
 
   if (enable_barycentric) {
-      add_barycentric_attribute(0, primitive_index, shape_size, outlines);
+    add_barycentric_attribute(0, primitive_index, shape_size, outlines);
   }
-  createVertex({p0, p1, p2}, {n, n, n}, color, 0, primitive_index, shape_size,
-                            outlines, mirror);
+  createVertex({p0, p1, p2}, {n, n, n}, color, 0, primitive_index, shape_size, outlines, mirror);
 
   if (!mirror) {
     if (enable_barycentric) {
       add_barycentric_attribute(1, primitive_index, shape_size, outlines);
     }
-    createVertex({p0, p1, p2}, {n, n, n}, color, 1, primitive_index, shape_size, outlines,
-                  mirror);
+    createVertex({p0, p1, p2}, {n, n, n}, color, 1, primitive_index, shape_size, outlines, mirror);
   }
   if (enable_barycentric) {
     add_barycentric_attribute(2, primitive_index, shape_size, outlines);
   }
-  createVertex({p0, p1, p2}, {n, n, n}, color, 2, primitive_index, shape_size, outlines,
-                mirror);
+  createVertex({p0, p1, p2}, {n, n, n}, color, 2, primitive_index, shape_size, outlines, mirror);
   if (mirror) {
     if (enable_barycentric) {
       add_barycentric_attribute(1, primitive_index, shape_size, outlines);
     }
-    createVertex({p0, p1, p2}, {n, n, n}, color, 1, primitive_index, shape_size, outlines,
-                  mirror);
+    createVertex({p0, p1, p2}, {n, n, n}, color, 1, primitive_index, shape_size, outlines, mirror);
   }
 }
 
 // Creates a VBO "surface" from the PolySet.
 // This will usually create a new VertexState and append it to our
 // vertex states
-void VBOBuilder::create_surface(const PolySet& ps, const Transform3d& m,
-                                 const Color4f& default_color, bool enable_barycentric, bool force_default_color)
+void VBOBuilder::create_surface(const PolySet& ps, const Transform3d& m, const Color4f& default_color,
+                                bool enable_barycentric, bool force_default_color)
 {
   const std::shared_ptr<VertexData> vertex_data = data();
 
@@ -437,9 +447,9 @@ void VBOBuilder::create_surface(const PolySet& ps, const Transform3d& m,
 
   auto has_colors = !ps.color_indices.empty();
 
-  for (int i = 0, n = ps.indices.size(); i < n; i++) {
+  for (size_t i = 0, n = ps.indices.size(); i < n; i++) {
     const auto& poly = ps.indices[i];
-    const auto color_index = has_colors && i < ps.color_indices.size() ? ps.color_indices[i] : -1;
+    const size_t color_index = has_colors && i < ps.color_indices.size() ? ps.color_indices[i] : -1;
     const auto& color = !force_default_color && color_index >= 0 && color_index < ps.colors.size() &&
                             ps.colors[color_index].isValid()
                           ? ps.colors[color_index]
@@ -479,15 +489,13 @@ void VBOBuilder::create_surface(const PolySet& ps, const Transform3d& m,
 
   GLenum elements_type = 0;
   if (useElements()) elements_type = elementsData()->glType();
-  std::shared_ptr<VertexState> vertex_state = createVertexState(
-    GL_TRIANGLES, triangle_count * 3, elements_type, writeIndex(), elements_offset);
+  std::shared_ptr<VertexState> vertex_state =
+    createVertexState(GL_TRIANGLES, triangle_count * 3, elements_type, writeIndex(), elements_offset);
   vertex_state_container_.states().emplace_back(std::move(vertex_state));
   addAttributePointers(last_size);
 }
 
-void VBOBuilder::create_edges(const Polygon2d& polygon,
-                               const Transform3d& m,
-                               const Color4f& color)
+void VBOBuilder::create_edges(const Polygon2d& polygon, const Transform3d& m, const Color4f& color)
 {
   const std::shared_ptr<VertexData> vertex_data = data();
 
@@ -511,8 +519,8 @@ void VBOBuilder::create_edges(const Polygon2d& polygon,
 
     GLenum elements_type = 0;
     if (useElements()) elements_type = elementsData()->glType();
-    std::shared_ptr<VertexState> line_loop = createVertexState(
-      GL_LINE_LOOP, o.vertices.size(), elements_type, writeIndex(), elements_offset);
+    std::shared_ptr<VertexState> line_loop =
+      createVertexState(GL_LINE_LOOP, o.vertices.size(), elements_type, writeIndex(), elements_offset);
     vertex_states.emplace_back(std::move(line_loop));
     addAttributePointers(last_size);
   }
@@ -577,9 +585,8 @@ void VBOBuilder::create_polygons(const PolySet& ps, const Transform3d& m, const 
 
   GLenum elements_type = 0;
   if (useElements()) elements_type = elementsData()->glType();
-  std::shared_ptr<VertexState> vs = createVertexState(
-    GL_TRIANGLES, triangle_count * 3, elements_type, writeIndex(), elements_offset);
+  std::shared_ptr<VertexState> vs =
+    createVertexState(GL_TRIANGLES, triangle_count * 3, elements_type, writeIndex(), elements_offset);
   vertex_states.emplace_back(std::move(vs));
   addAttributePointers(last_size);
 }
-

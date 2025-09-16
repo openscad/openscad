@@ -25,7 +25,7 @@
  */
 
 #include "PolySetRenderer.h"
- 
+
 #include <cassert>
 #include <cmath>
 #include <cstddef>
@@ -78,8 +78,7 @@ void PolySetRenderer::addGeometry(const std::shared_ptr<const Geometry>& geom)
     // See tests/data/scad/3D/features/polyhedron-concave-test.scad
     this->polysets_.push_back(PolySetUtils::tessellate_faces(*ps));
   } else if (const auto poly = std::dynamic_pointer_cast<const Polygon2d>(geom)) {
-    this->polygons_.emplace_back(
-        poly, std::shared_ptr<const PolySet>(poly->tessellate()));
+    this->polygons_.emplace_back(poly, std::shared_ptr<const PolySet>(poly->tessellate()));
 #ifdef ENABLE_MANIFOLD
   } else if (const auto mani = std::dynamic_pointer_cast<const ManifoldGeometry>(geom)) {
     this->polysets_.push_back(mani->toPolySet());
@@ -91,7 +90,7 @@ void PolySetRenderer::addGeometry(const std::shared_ptr<const Geometry>& geom)
     assert(N->getDimension() == 3);
     if (!N->isEmpty()) {
       if (auto ps = CGALUtils::createPolySetFromNefPolyhedron3(*N->p3)) {
-          ps->setConvexity(N->getConvexity());
+        ps->setConvexity(N->getConvexity());
         this->polysets_.push_back(std::shared_ptr<PolySet>(std::move(ps)));
       }
     }
@@ -111,22 +110,22 @@ void PolySetRenderer::setColorScheme(const ColorScheme& cs)
   colormap_[ColorMode::CGAL_EDGE_2D_COLOR] = ColorMap::getColor(cs, RenderColor::CGAL_EDGE_2D_COLOR);
 }
 
-
-void PolySetRenderer::createPolySetStates(const ShaderUtils::ShaderInfo *shaderinfo) {
-  VertexStateContainer &vertex_state_container = polyset_vertex_state_containers_.emplace_back();
+void PolySetRenderer::createPolySetStates(const ShaderUtils::ShaderInfo *shaderinfo)
+{
+  VertexStateContainer& vertex_state_container = polyset_vertex_state_containers_.emplace_back();
   VBOBuilder vbo_builder(std::make_unique<VertexStateFactory>(), vertex_state_container);
 
-  vbo_builder.addSurfaceData(); // position, normal, color
+  vbo_builder.addSurfaceData();  // position, normal, color
   vbo_builder.addShaderData();
   const bool enable_barycentric = true;
 
   size_t num_vertices = 0;
-  for (const auto &polyset : this->polysets_) {
+  for (const auto& polyset : this->polysets_) {
     num_vertices += calcNumVertices(*polyset);
   }
   vbo_builder.allocateBuffers(num_vertices);
 
-  for (const auto &polyset : this->polysets_) {
+  for (const auto& polyset : this->polysets_) {
     Color4f color;
     if (!polyset->colors.empty()) color = polyset->colors[0];
     getShaderColor(ColorMode::MATERIAL, color, color);
@@ -139,18 +138,20 @@ void PolySetRenderer::createPolySetStates(const ShaderUtils::ShaderInfo *shaderi
   vbo_builder.createInterleavedVBOs();
 }
 
-void PolySetRenderer::createPolygonStates() {
+void PolySetRenderer::createPolygonStates()
+{
   createPolygonSurfaceStates();
   createPolygonEdgeStates();
 }
 
-void PolySetRenderer::createPolygonSurfaceStates() {
-  VertexStateContainer &vertex_state_container = polygon_vertex_state_containers_.emplace_back();
+void PolySetRenderer::createPolygonSurfaceStates()
+{
+  VertexStateContainer& vertex_state_container = polygon_vertex_state_containers_.emplace_back();
   VBOBuilder vbo_builder(std::make_unique<VertexStateFactory>(), vertex_state_container);
   vbo_builder.addSurfaceData();
 
   size_t num_vertices = 0;
-  for (const auto &[_, polyset] : this->polygons_) {
+  for (const auto& [_, polyset] : this->polygons_) {
     num_vertices += calcNumVertices(*polyset);
   }
 
@@ -163,7 +164,7 @@ void PolySetRenderer::createPolygonSurfaceStates() {
   });
   vertex_state_container.states().emplace_back(std::move(init_state));
 
-  for (const auto &[polygon, polyset] : this->polygons_) {
+  for (const auto& [polygon, polyset] : this->polygons_) {
     Color4f color;
     getColorSchemeColor(ColorMode::CGAL_FACE_2D_COLOR, color);
     vbo_builder.create_polygons(*polyset, Transform3d::Identity(), color);
@@ -172,14 +173,15 @@ void PolySetRenderer::createPolygonSurfaceStates() {
   vbo_builder.createInterleavedVBOs();
 }
 
-void PolySetRenderer::createPolygonEdgeStates() {
-  VertexStateContainer &vertex_state_container = polygon_vertex_state_containers_.emplace_back();
+void PolySetRenderer::createPolygonEdgeStates()
+{
+  VertexStateContainer& vertex_state_container = polygon_vertex_state_containers_.emplace_back();
   VBOBuilder vbo_builder(std::make_unique<VertexStateFactory>(), vertex_state_container);
 
   vbo_builder.addEdgeData();
 
   size_t num_vertices = 0;
-  for (const auto &[polygon, _] : this->polygons_) {
+  for (const auto& [polygon, _] : this->polygons_) {
     num_vertices += calcNumEdgeVertices(*polygon);
   }
 
@@ -194,13 +196,13 @@ void PolySetRenderer::createPolygonEdgeStates() {
   });
   vertex_state_container.states().emplace_back(std::move(edge_state));
 
-  for (const auto &[polygon, _] : this->polygons_) {
+  for (const auto& [polygon, _] : this->polygons_) {
     Color4f color;
     getColorSchemeColor(ColorMode::CGAL_EDGE_2D_COLOR, color);
     vbo_builder.writeEdge();
     vbo_builder.create_edges(*polygon, Transform3d::Identity(), color);
   }
-  
+
   std::shared_ptr<VertexState> end_state = std::make_shared<VertexState>();
   end_state->glBegin().emplace_back([]() {
     GL_TRACE0("glEnable(GL_DEPTH_TEST)");
@@ -210,7 +212,6 @@ void PolySetRenderer::createPolygonEdgeStates() {
 
   vbo_builder.createInterleavedVBOs();
 }
-
 
 void PolySetRenderer::prepare(const ShaderUtils::ShaderInfo *shaderinfo)
 {
@@ -227,7 +228,6 @@ void PolySetRenderer::prepare(const ShaderUtils::ShaderInfo *shaderinfo)
 
 void PolySetRenderer::draw(bool showedges, const ShaderUtils::ShaderInfo *shaderinfo) const
 {
-
   drawPolySets(showedges, shaderinfo);
   drawPolygons();
 }
@@ -235,17 +235,17 @@ void PolySetRenderer::draw(bool showedges, const ShaderUtils::ShaderInfo *shader
 void PolySetRenderer::drawPolySets(bool showedges, const ShaderUtils::ShaderInfo *shaderinfo) const
 {
   // Only use shader if select rendering or showedges
-  const bool enable_shader = shaderinfo && (
-    shaderinfo->type == ShaderUtils::ShaderType::EDGE_RENDERING && showedges || 
-    shaderinfo->type == ShaderUtils::ShaderType::SELECT_RENDERING);
+  const bool enable_shader =
+    shaderinfo && ((shaderinfo->type == ShaderUtils::ShaderType::EDGE_RENDERING && showedges) ||
+                   shaderinfo->type == ShaderUtils::ShaderType::SELECT_RENDERING);
   if (enable_shader) {
     GL_TRACE("glUseProgram(%d)", shaderinfo->resource.shader_program);
     GL_CHECKD(glUseProgram(shaderinfo->resource.shader_program));
-    VBOUtils::shader_attribs_enable(*shaderinfo);   
+    VBOUtils::shader_attribs_enable(*shaderinfo);
   }
 
-  for (const auto &container : polyset_vertex_state_containers_) {
-    for (const auto &vertex_state : container.states()) {
+  for (const auto& container : polyset_vertex_state_containers_) {
+    for (const auto& vertex_state : container.states()) {
       const auto shader_vs = std::dynamic_pointer_cast<VBOShaderVertexState>(vertex_state);
       if (!shader_vs || (shader_vs && showedges)) {
         vertex_state->draw();
@@ -259,7 +259,8 @@ void PolySetRenderer::drawPolySets(bool showedges, const ShaderUtils::ShaderInfo
   }
 }
 
-void PolySetRenderer::drawPolygons() const {
+void PolySetRenderer::drawPolygons() const
+{
   // grab current state to restore after
   GLfloat current_point_size, current_line_width;
   const GLboolean origVBOBuilderState = glIsEnabled(GL_VERTEX_ARRAY);
@@ -269,10 +270,9 @@ void PolySetRenderer::drawPolygons() const {
   GL_CHECKD(glGetFloatv(GL_POINT_SIZE, &current_point_size));
   GL_CHECKD(glGetFloatv(GL_LINE_WIDTH, &current_line_width));
 
-  for (const auto &container : polygon_vertex_state_containers_) {
-    for (const auto &vertex_state : container.states()) {
-      if (vertex_state)
-        vertex_state->draw();
+  for (const auto& container : polygon_vertex_state_containers_) {
+    for (const auto& vertex_state : container.states()) {
+      if (vertex_state) vertex_state->draw();
     }
   }
 
@@ -294,51 +294,55 @@ BoundingBox PolySetRenderer::getBoundingBox() const
   for (const auto& ps : this->polysets_) {
     bbox.extend(ps->getBoundingBox());
   }
-  for (const auto &[polygon, polyset] : this->polygons_) {
+  for (const auto& [polygon, polyset] : this->polygons_) {
     bbox.extend(polygon->getBoundingBox());
   }
   return bbox;
 }
 
-std::vector<SelectedObject> PolySetRenderer::findModelObject(const Vector3d& near_pt, const Vector3d& far_pt, int /*mouse_x*/, int /*mouse_y*/, double tolerance) {
+std::vector<SelectedObject> PolySetRenderer::findModelObject(const Vector3d& near_pt,
+                                                             const Vector3d& far_pt, int /*mouse_x*/,
+                                                             int /*mouse_y*/, double tolerance)
+{
   std::vector<SelectedObject> results;
   double dist_near;
   double dist_nearest = NAN;
   Vector3d pt1_nearest;
   Vector3d pt2_nearest;
   for (const auto& ps : this->polysets_) {
-    for (const auto &pt: ps->vertices) {
-      const double dist_pt= calculateLinePointDistance(near_pt, far_pt, pt, dist_near);
+    for (const auto& pt : ps->vertices) {
+      const double dist_pt = calculateLinePointDistance(near_pt, far_pt, pt, dist_near);
       if (dist_pt < tolerance) {
         if (isnan(dist_nearest) || dist_near < dist_nearest) {
           dist_nearest = dist_near;
           pt1_nearest = pt;
-        }      
+        }
       }
     }
   }
   if (!isnan(dist_nearest)) {
     const SelectedObject obj = {
       .type = SelectionType::SELECTION_POINT,
-      .p1=pt1_nearest,
+      .p1 = pt1_nearest,
     };
     results.push_back(obj);
     return results;
   }
   for (const std::shared_ptr<const PolySet>& ps : this->polysets_) {
-    for(const auto &pol : ps->indices) {
+    for (const auto& pol : ps->indices) {
       const int n = pol.size();
-      for(int i=0;i<n;i++) {
+      for (int i = 0; i < n; i++) {
         const int ind1 = pol[i];
-        const int ind2 = pol[(i+1)%n];
+        const int ind2 = pol[(i + 1) % n];
         double dist_lat;
-        const double dist_norm = std::fabs(calculateLineLineDistance(ps->vertices[ind1], ps->vertices[ind2], near_pt, far_pt,dist_lat));
+        const double dist_norm = std::fabs(
+          calculateLineLineDistance(ps->vertices[ind1], ps->vertices[ind2], near_pt, far_pt, dist_lat));
         if (dist_lat >= 0 && dist_lat <= 1 && dist_norm < tolerance) {
           dist_nearest = dist_lat;
           pt1_nearest = ps->vertices[ind1];
           pt2_nearest = ps->vertices[ind2];
         }
-      }      
+      }
     }
   }
 

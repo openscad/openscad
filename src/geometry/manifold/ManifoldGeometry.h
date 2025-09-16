@@ -13,7 +13,7 @@
 #include <string>
 
 namespace manifold {
-  class Manifold;
+class Manifold;
 };
 
 /*! A mutable polyhedron backed by a manifold::Manifold
@@ -24,12 +24,10 @@ public:
   VISITABLE_GEOMETRY();
 
   ManifoldGeometry();
-  ManifoldGeometry(
-    manifold::Manifold object,
-    const std::set<uint32_t> & originalIDs = {},
-    const std::map<uint32_t, Color4f> & originalIDToColor = {},
-    const std::set<uint32_t> & subtractedIDs = {});
-   ManifoldGeometry(const ManifoldGeometry& other) = default;
+  ManifoldGeometry(manifold::Manifold object, const std::set<uint32_t>& originalIDs = {},
+                   const std::map<uint32_t, Color4f>& originalIDToColor = {},
+                   const std::set<uint32_t>& subtractedIDs = {});
+  ManifoldGeometry(const ManifoldGeometry& other) = default;
 
   [[nodiscard]] bool isEmpty() const override;
   [[nodiscard]] size_t numFacets() const override;
@@ -73,7 +71,8 @@ public:
   const manifold::Manifold& getManifold() const;
 
 private:
-  ManifoldGeometry binOp(const ManifoldGeometry& lhs, const ManifoldGeometry& rhs, manifold::OpType opType) const;
+  ManifoldGeometry binOp(const ManifoldGeometry& lhs, const ManifoldGeometry& rhs,
+                         manifold::OpType opType) const;
 
   manifold::Manifold manifold_;
   std::set<uint32_t> originalIDs_;

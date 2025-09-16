@@ -18,7 +18,8 @@ std::unique_ptr<CGALNefGeometry> import_nef3(const std::string& filename, const 
   // Open file and position at the end
   std::ifstream f(filename.c_str(), std::ios::in | std::ios::binary);
   if (!f.good()) {
-    LOG(message_group::Warning, "Can't open import file '%1$s', import() at line %2$d", filename, loc.firstLine());
+    LOG(message_group::Warning, "Can't open import file '%1$s', import() at line %2$d", filename,
+        loc.firstLine());
     return std::make_unique<CGALNefGeometry>();
   }
 
@@ -27,10 +28,11 @@ std::unique_ptr<CGALNefGeometry> import_nef3(const std::string& filename, const 
     f >> *nef;
     return std::make_unique<CGALNefGeometry>(nef);
   } catch (const CGAL::Failure_exception& e) {
-    LOG(message_group::Warning, "Failure trying to import '%1$s', import() at line %2$d", filename, loc.firstLine());
+    LOG(message_group::Warning, "Failure trying to import '%1$s', import() at line %2$d", filename,
+        loc.firstLine());
     LOG(e.what());
     return std::make_unique<CGALNefGeometry>();
   }
 }
 
-#endif // ENABLE_CGAL
+#endif  // ENABLE_CGAL

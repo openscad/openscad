@@ -43,13 +43,16 @@
 
 namespace {
 
-class OpenCSGVBOPrim : public OpenCSG::Primitive {
+class OpenCSGVBOPrim : public OpenCSG::Primitive
+{
 public:
   OpenCSGVBOPrim(OpenCSG::Operation operation, unsigned int convexity,
                  std::unique_ptr<VertexState> vertex_state)
-      : OpenCSG::Primitive(operation, convexity),
-        vertex_state(std::move(vertex_state)) {}
-  void render() override {
+    : OpenCSG::Primitive(operation, convexity), vertex_state(std::move(vertex_state))
+  {
+  }
+  void render() override
+  {
     if (vertex_state != nullptr) {
       vertex_state->draw();
     } else {
@@ -64,21 +67,18 @@ private:
 // Primitive for drawing using OpenCSG
 // Makes a copy of the given VertexState enabling just unlit/uncolored vertex
 // rendering
-OpenCSGVBOPrim *createVBOPrimitive(
-    const std::shared_ptr<OpenCSGVertexState> &vertex_state,
-    const OpenCSG::Operation operation, const unsigned int convexity) {
+OpenCSGVBOPrim *createVBOPrimitive(const std::shared_ptr<OpenCSGVertexState>& vertex_state,
+                                   const OpenCSG::Operation operation, const unsigned int convexity)
+{
   std::unique_ptr<VertexState> opencsg_vs = std::make_unique<VertexState>(
-      vertex_state->drawMode(), vertex_state->drawSize(),
-      vertex_state->drawType(), vertex_state->drawOffset(),
-      vertex_state->elementOffset(), vertex_state->verticesVBO(),
-      vertex_state->elementsVBO());
+    vertex_state->drawMode(), vertex_state->drawSize(), vertex_state->drawType(),
+    vertex_state->drawOffset(), vertex_state->elementOffset(), vertex_state->verticesVBO(),
+    vertex_state->elementsVBO());
   // First two glBegin entries are the vertex position calls
-  opencsg_vs->glBegin().insert(opencsg_vs->glBegin().begin(),
-                               vertex_state->glBegin().begin(),
+  opencsg_vs->glBegin().insert(opencsg_vs->glBegin().begin(), vertex_state->glBegin().begin(),
                                vertex_state->glBegin().begin() + 2);
   // First glEnd entry is the disable vertex position call
-  opencsg_vs->glEnd().insert(opencsg_vs->glEnd().begin(),
-                             vertex_state->glEnd().begin(),
+  opencsg_vs->glEnd().insert(opencsg_vs->glEnd().begin(), vertex_state->glEnd().begin(),
                              vertex_state->glEnd().begin() + 1);
 
   return new OpenCSGVBOPrim(operation, convexity, std::move(opencsg_vs));
@@ -86,19 +86,20 @@ OpenCSGVBOPrim *createVBOPrimitive(
 
 }  // namespace
 
-#endif // ENABLE_OPENCSG
+#endif  // ENABLE_OPENCSG
 
-OpenCSGRenderer::OpenCSGRenderer(
-    std::shared_ptr<CSGProducts> root_products,
-    std::shared_ptr<CSGProducts> highlights_products,
-    std::shared_ptr<CSGProducts> background_products)
-    : root_products_(std::move(root_products)),
-      highlights_products_(std::move(highlights_products)),
-      background_products_(std::move(background_products)) {
+OpenCSGRenderer::OpenCSGRenderer(std::shared_ptr<CSGProducts> root_products,
+                                 std::shared_ptr<CSGProducts> highlights_products,
+                                 std::shared_ptr<CSGProducts> background_products)
+  : root_products_(std::move(root_products)),
+    highlights_products_(std::move(highlights_products)),
+    background_products_(std::move(background_products))
+{
   opencsg_vertex_shader_code_ = ShaderUtils::loadShaderSource("OpenCSG.vert");
 }
 
-void OpenCSGRenderer::prepare(const ShaderUtils::ShaderInfo *shaderinfo) {
+void OpenCSGRenderer::prepare(const ShaderUtils::ShaderInfo *shaderinfo)
+{
   if (vertex_state_containers_.empty()) {
     if (root_products_) {
       createCSGVBOProducts(*root_products_, false, false, shaderinfo);
@@ -112,20 +113,19 @@ void OpenCSGRenderer::prepare(const ShaderUtils::ShaderInfo *shaderinfo) {
   }
 }
 
-void OpenCSGRenderer::draw(bool showedges, const ShaderUtils::ShaderInfo *shaderinfo) const {
+void OpenCSGRenderer::draw(bool showedges, const ShaderUtils::ShaderInfo *shaderinfo) const
+{
 #ifdef ENABLE_OPENCSG
   // Only use shader if select rendering or showedges
-  bool enable_shader = shaderinfo && (
-    shaderinfo->type == ShaderUtils::ShaderType::EDGE_RENDERING && showedges || 
-    shaderinfo->type == ShaderUtils::ShaderType::SELECT_RENDERING);
+  bool enable_shader =
+    shaderinfo && ((shaderinfo->type == ShaderUtils::ShaderType::EDGE_RENDERING && showedges) ||
+                   shaderinfo->type == ShaderUtils::ShaderType::SELECT_RENDERING);
 
   for (const auto& product : vertex_state_containers_) {
     if (product->primitives().size() > 1) {
 #if OPENCSG_VERSION >= 0x0180
-      if (enable_shader)
-          OpenCSG::setVertexShader(opencsg_vertex_shader_code_);
-      else
-          OpenCSG::setVertexShader({});
+      if (enable_shader) OpenCSG::setVertexShader(opencsg_vertex_shader_code_);
+      else OpenCSG::setVertexShader({});
 #endif
       GL_CHECKD(OpenCSG::render(product->primitives()));
       GL_TRACE0("glDepthFunc(GL_EQUAL)");
@@ -142,14 +142,15 @@ void OpenCSGRenderer::draw(bool showedges, const ShaderUtils::ShaderInfo *shader
       // Specify ID color if we're using select rendering
       if (shaderinfo && shaderinfo->type == ShaderUtils::ShaderType::SELECT_RENDERING) {
         if (const auto csg_vs = std::dynamic_pointer_cast<OpenCSGVertexState>(vertex_state)) {
-          GL_TRACE("glUniform3f(%d, %f, %f, %f)", shaderinfo->uniforms.at("frag_idcolor") %
-            (((csg_vs->csgObjectIndex() >> 0) & 0xff) / 255.0f) %
-            (((csg_vs->csgObjectIndex() >> 8) & 0xff) / 255.0f) %
-            (((csg_vs->csgObjectIndex() >> 16) & 0xff) / 255.0f));
+          GL_TRACE("glUniform3f(%d, %f, %f, %f)",
+                   shaderinfo->uniforms.at("frag_idcolor") %
+                     (((csg_vs->csgObjectIndex() >> 0) & 0xff) / 255.0f) %
+                     (((csg_vs->csgObjectIndex() >> 8) & 0xff) / 255.0f) %
+                     (((csg_vs->csgObjectIndex() >> 16) & 0xff) / 255.0f));
           GL_CHECKD(glUniform3f(shaderinfo->uniforms.at("frag_idcolor"),
-              ((csg_vs->csgObjectIndex() >> 0) & 0xff) / 255.0f,
-              ((csg_vs->csgObjectIndex() >> 8) & 0xff) / 255.0f,
-              ((csg_vs->csgObjectIndex() >> 16) & 0xff) / 255.0f));
+                                ((csg_vs->csgObjectIndex() >> 0) & 0xff) / 255.0f,
+                                ((csg_vs->csgObjectIndex() >> 8) & 0xff) / 255.0f,
+                                ((csg_vs->csgObjectIndex() >> 16) & 0xff) / 255.0f));
         }
       }
       const auto shader_vs = std::dynamic_pointer_cast<VBOShaderVertexState>(vertex_state);
@@ -166,7 +167,7 @@ void OpenCSGRenderer::draw(bool showedges, const ShaderUtils::ShaderInfo *shader
     GL_TRACE0("glDepthFunc(GL_LEQUAL)");
     GL_CHECKD(glDepthFunc(GL_LEQUAL));
   }
-#endif // ENABLE_OPENCSG
+#endif  // ENABLE_OPENCSG
 }
 
 // Turn the CSGProducts into VBOs
@@ -176,28 +177,30 @@ void OpenCSGRenderer::draw(bool showedges, const ShaderUtils::ShaderInfo *shader
 // reuse VBOs, but that requires some more careful state management.
 // Note: This function can be called multiple times for different products.
 // Each call will add to vbo_vertex_products_.
-void OpenCSGRenderer::createCSGVBOProducts(
-    const CSGProducts &products, bool highlight_mode, bool background_mode, const ShaderUtils::ShaderInfo *shaderinfo) {
+void OpenCSGRenderer::createCSGVBOProducts(const CSGProducts& products, bool highlight_mode,
+                                           bool background_mode,
+                                           const ShaderUtils::ShaderInfo *shaderinfo)
+{
 #ifdef ENABLE_OPENCSG
   bool enable_barycentric = true;
   for (const auto& product : products.products) {
     std::unique_ptr<OpenCSGVBOProduct> vertex_state_container = std::make_unique<OpenCSGVBOProduct>();
- 
+
     Color4f last_color;
     std::vector<OpenCSG::Primitive *>& primitives = vertex_state_container->primitives();
     auto& vertex_states = vertex_state_container->states();
     VBOBuilder vbo_builder(std::make_unique<OpenCSGVertexStateFactory>(), *vertex_state_container.get());
     vbo_builder.addSurfaceData();
     vbo_builder.writeSurface();
-    vbo_builder.addShaderData(); // Always enable barycentric coordinates
+    vbo_builder.addShaderData();  // Always enable barycentric coordinates
 
     size_t num_vertices = 0;
-    for (const auto &csgobj : product.intersections) {
+    for (const auto& csgobj : product.intersections) {
       if (csgobj.leaf->polyset) {
         num_vertices += calcNumVertices(csgobj);
       }
     }
-    for (const auto &csgobj : product.subtractions) {
+    for (const auto& csgobj : product.subtractions) {
       if (csgobj.leaf->polyset) {
         num_vertices += calcNumVertices(csgobj);
       }
@@ -205,10 +208,9 @@ void OpenCSGRenderer::createCSGVBOProducts(
 
     vbo_builder.allocateBuffers(num_vertices);
 
-    for (const auto &csgobj : product.intersections) {
+    for (const auto& csgobj : product.intersections) {
       if (csgobj.leaf->polyset) {
-        const Color4f &c = csgobj.leaf->color;
-        const auto csgmode = RendererUtils::getCsgMode(highlight_mode, background_mode);
+        const Color4f& c = csgobj.leaf->color;
 
         ColorMode colormode = ColorMode::NONE;
         bool override_color;
@@ -230,35 +232,33 @@ void OpenCSGRenderer::createCSGVBOProducts(
 
         add_shader_pointers(vbo_builder, shaderinfo);
 
-        if (color[3] == 1.0f) {
+        if (color.a() == 1.0f) {
           // object is opaque, draw normally
-          vbo_builder.create_surface(*csgobj.leaf->polyset, 
-                         csgobj.leaf->matrix, last_color, enable_barycentric, override_color);
-          if (const auto csg_vs = std::dynamic_pointer_cast<OpenCSGVertexState>(
-            vertex_states.back())) {
+          vbo_builder.create_surface(*csgobj.leaf->polyset, csgobj.leaf->matrix, last_color,
+                                     enable_barycentric, override_color);
+          if (const auto csg_vs = std::dynamic_pointer_cast<OpenCSGVertexState>(vertex_states.back())) {
             csg_vs->setCsgObjectIndex(csgobj.leaf->index);
             primitives.emplace_back(
-                createVBOPrimitive(csg_vs, OpenCSG::Intersection,
-                                   csgobj.leaf->polyset->getConvexity()));
+              createVBOPrimitive(csg_vs, OpenCSG::Intersection, csgobj.leaf->polyset->getConvexity()));
           }
         } else {
           // object is transparent, so draw rear faces first.  Issue #1496
           std::shared_ptr<VertexState> cull = std::make_shared<VertexState>();
           cull->glBegin().emplace_back([]() {
-            GL_TRACE0("glEnable(GL_CULL_FACE)"); glEnable(GL_CULL_FACE);
-            GL_TRACE0("glCullFace(GL_FRONT)"); glCullFace(GL_FRONT);
+            GL_TRACE0("glEnable(GL_CULL_FACE)");
+            glEnable(GL_CULL_FACE);
+            GL_TRACE0("glCullFace(GL_FRONT)");
+            glCullFace(GL_FRONT);
           });
           vertex_states.emplace_back(std::move(cull));
 
-          vbo_builder.create_surface(*csgobj.leaf->polyset, 
-                         csgobj.leaf->matrix, last_color, enable_barycentric, override_color);
-          if (const auto csg_vs = std::dynamic_pointer_cast<OpenCSGVertexState>(
-                  vertex_states.back())) {
+          vbo_builder.create_surface(*csgobj.leaf->polyset, csgobj.leaf->matrix, last_color,
+                                     enable_barycentric, override_color);
+          if (const auto csg_vs = std::dynamic_pointer_cast<OpenCSGVertexState>(vertex_states.back())) {
             csg_vs->setCsgObjectIndex(csgobj.leaf->index);
 
             primitives.emplace_back(
-                createVBOPrimitive(csg_vs, OpenCSG::Intersection,
-                                   csgobj.leaf->polyset->getConvexity()));
+              createVBOPrimitive(csg_vs, OpenCSG::Intersection, csgobj.leaf->polyset->getConvexity()));
 
             cull = std::make_shared<VertexState>();
             cull->glBegin().emplace_back([]() {
@@ -282,12 +282,9 @@ void OpenCSGRenderer::createCSGVBOProducts(
       }
     }
 
-    for (const auto &csgobj : product.subtractions) {
+    for (const auto& csgobj : product.subtractions) {
       if (csgobj.leaf->polyset) {
-        const Color4f &c = csgobj.leaf->color;
-        const auto csgmode = RendererUtils::getCsgMode(highlight_mode, background_mode,
-                                         OpenSCADOperator::DIFFERENCE);
-
+        const Color4f& c = csgobj.leaf->color;
         ColorMode colormode = ColorMode::NONE;
         bool override_color;
         if (highlight_mode) {
@@ -324,14 +321,12 @@ void OpenCSGRenderer::createCSGVBOProducts(
           // Scale 2D negative objects 10% in the Z direction to avoid z fighting
           tmp *= Eigen::Scaling(1.0, 1.0, 1.1);
         }
-        vbo_builder.create_surface(*csgobj.leaf->polyset, tmp,
-                       last_color, enable_barycentric, override_color);
-        if (const auto csg_vs = std::dynamic_pointer_cast<OpenCSGVertexState>(
-          vertex_states.back())) {
+        vbo_builder.create_surface(*csgobj.leaf->polyset, tmp, last_color, enable_barycentric,
+                                   override_color);
+        if (const auto csg_vs = std::dynamic_pointer_cast<OpenCSGVertexState>(vertex_states.back())) {
           csg_vs->setCsgObjectIndex(csgobj.leaf->index);
           primitives.emplace_back(
-              createVBOPrimitive(csg_vs, OpenCSG::Subtraction,
-                                 csgobj.leaf->polyset->getConvexity()));
+            createVBOPrimitive(csg_vs, OpenCSG::Subtraction, csgobj.leaf->polyset->getConvexity()));
         } else {
           assert(false && "Subtraction surface state was nullptr");
         }
@@ -354,12 +349,12 @@ void OpenCSGRenderer::createCSGVBOProducts(
 
     vbo_builder.createInterleavedVBOs();
     vertex_state_containers_.push_back(std::move(vertex_state_container));
-
   }
-#endif // ENABLE_OPENCSG
+#endif  // ENABLE_OPENCSG
 }
 
-BoundingBox OpenCSGRenderer::getBoundingBox() const {
+BoundingBox OpenCSGRenderer::getBoundingBox() const
+{
   BoundingBox bbox;
   if (root_products_) {
     bbox = root_products_->getBoundingBox();

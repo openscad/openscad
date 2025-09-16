@@ -52,23 +52,15 @@
 
  */
 
-PolySet::PolySet(unsigned int dim, boost::tribool convex)
- : dim_(dim), convex_(convex)
-{
-}
+PolySet::PolySet(unsigned int dim, boost::tribool convex) : dim_(dim), convex_(convex) {}
 
-std::unique_ptr<Geometry> PolySet::copy() const {
-  return std::make_unique<PolySet>(*this);
-}
+std::unique_ptr<Geometry> PolySet::copy() const { return std::make_unique<PolySet>(*this); }
 
 std::string PolySet::dump() const
 {
   std::ostringstream out;
-  out << "PolySet:"
-      << "\n dimensions:" << dim_
-      << "\n convexity:" << this->convexity
-      << "\n num polygons: " << indices.size()
-      << "\n polygons data:";
+  out << "PolySet:" << "\n dimensions:" << dim_ << "\n convexity:" << this->convexity
+      << "\n num polygons: " << indices.size() << "\n polygons data:";
   for (const auto& polygon : indices) {
     out << "\n  polygon begin:";
     for (auto v : polygon) {
@@ -102,22 +94,23 @@ void PolySet::transform(const Transform3d& mat)
   // If mirroring transform, flip faces to avoid the object to end up being inside-out
   bool mirrored = mat.matrix().determinant() < 0;
 
-  for (auto& v : this->vertices)
-      v = mat * v;
+  for (auto& v : this->vertices) v = mat * v;
 
-  if(mirrored)
+  if (mirrored)
     for (auto& p : this->indices) {
       std::reverse(p.begin(), p.end());
-  }
+    }
   bbox_.setNull();
 }
 
-void PolySet::setColor(const Color4f& c) {
+void PolySet::setColor(const Color4f& c)
+{
   colors = {c};
   color_indices.assign(indices.size(), 0);
 }
 
-bool PolySet::isConvex() const {
+bool PolySet::isConvex() const
+{
   if (convex_ || this->isEmpty()) return true;
   if (!convex_) return false;
   bool is_convex = PolySetUtils::is_approximately_convex(*this);
@@ -139,8 +132,8 @@ void PolySet::quantizeVertices(std::vector<Vector3d> *pPointsOut)
 {
   const bool has_colors = !this->color_indices.empty();
   Grid3d<unsigned int> grid(GRID_FINE);
-  std::vector<unsigned int> polygon_indices; // Vertex indices in one polygon
-  for (size_t i=0; i < this->indices.size();) {
+  std::vector<unsigned int> polygon_indices;  // Vertex indices in one polygon
+  for (size_t i = 0; i < this->indices.size();) {
     IndexedFace& ind_f = this->indices[i];
     polygon_indices.resize(ind_f.size());
     // Quantize all vertices. Build index list
@@ -160,8 +153,8 @@ void PolySet::quantizeVertices(std::vector<Vector3d> *pPointsOut)
     ind_f.erase(currp, ind_f.end());
     if (ind_f.size() < 3) {
       PRINTD("Removing collapsed polygon due to quantizing");
-      this->indices.erase(this->indices.begin()+i);
-      if (has_colors) this->color_indices.erase(this->color_indices.begin()+i);
+      this->indices.erase(this->indices.begin() + i);
+      if (has_colors) this->color_indices.erase(this->color_indices.begin() + i);
     } else {
       i++;
     }

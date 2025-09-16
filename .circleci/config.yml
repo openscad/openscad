@@ -94,7 +94,7 @@ jobs:
         type: string
     working_directory: ~/workspace
     docker:
-      - image: openscad/wasm-base:latest
+      - image: openscad/wasm-base-release:latest
     resource_class: large
     steps:
       - checkout
@@ -158,7 +158,7 @@ jobs:
   openscad-macos:
     resource_class: macos.m1.medium.gen1
     macos:
-      xcode: 15.3.0
+      xcode: 16.4.0
     environment:
       OPENSCAD_LIBRARIES: /Users/distiller/libraries/install
       PKG_CONFIG_PATH: /Users/distiller/libraries/install/lib/pkgconfig
@@ -175,6 +175,9 @@ jobs:
       - run:
           name: Install Homebrew packages
           command: |
+            brew analytics off
+            brew tap
+            brew uninstall -f --cask temurin17
             brew update
             brew install automake libtool cmake pkg-config wget meson python-packaging
       - restore_cache:

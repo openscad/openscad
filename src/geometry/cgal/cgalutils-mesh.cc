@@ -30,11 +30,11 @@ CGAL_DoubleMesh repairPolySet(const PolySet& ps)
   points.reserve(ps.indices.size() * 3);
   polygons.reserve(ps.indices.size());
   for (const auto& inds : ps.indices) {
-    std::vector<size_t> &polygon = polygons.emplace_back();
+    std::vector<size_t>& polygon = polygons.emplace_back();
     polygon.reserve(inds.size());
-    for (const auto &ind : inds) {
+    for (const auto& ind : inds) {
       polygon.push_back(points.size());
-      auto &pt = ps.vertices[ind];
+      auto& pt = ps.vertices[ind];
       points.emplace_back(pt[0], pt[1], pt[2]);
     }
   }
@@ -55,20 +55,22 @@ std::shared_ptr<SurfaceMesh> createSurfaceMeshFromPolySet(const PolySet& ps)
     mesh->add_vertex(typename SurfaceMesh::Point(v[0], v[1], v[2]));
   }
   for (const auto& face : ps.indices) {
-    mesh->add_face(face | boost::adaptors::transformed([](uint32_t i){ return typename SurfaceMesh::Vertex_index(i); }));
+    mesh->add_face(face | boost::adaptors::transformed(
+                            [](uint32_t i) { return typename SurfaceMesh::Vertex_index(i); }));
   }
   return mesh;
 }
 
-template std::shared_ptr<CGAL_DoubleMesh> createSurfaceMeshFromPolySet<CGAL_DoubleMesh>(const PolySet& ps);
-template std::shared_ptr<CGAL::Surface_mesh<CGAL::Point_3<CGAL_Kernel3>>> createSurfaceMeshFromPolySet(const PolySet& ps);
-
+template std::shared_ptr<CGAL_DoubleMesh> createSurfaceMeshFromPolySet<CGAL_DoubleMesh>(
+  const PolySet& ps);
+template std::shared_ptr<CGAL_Kernel3Mesh> createSurfaceMeshFromPolySet(const PolySet& ps);
 
 template <class SurfaceMesh>
 std::unique_ptr<PolySet> createPolySetFromSurfaceMesh(const SurfaceMesh& mesh)
 {
-  //  FIXME: We may want to convert directly, without PolySetBuilder here, to maintain manifoldness, if possible.
-  PolySetBuilder builder(0, mesh.number_of_faces()+ mesh.number_of_faces());
+  //  FIXME: We may want to convert directly, without PolySetBuilder here, to maintain manifoldness, if
+  //  possible.
+  PolySetBuilder builder(0, mesh.number_of_faces() + mesh.number_of_faces());
   for (const auto& f : mesh.faces()) {
     builder.beginPolygon(mesh.degree(f));
 
@@ -87,9 +89,8 @@ std::unique_ptr<PolySet> createPolySetFromSurfaceMesh(const SurfaceMesh& mesh)
 }
 
 template <class InputKernel, class OutputKernel>
-void copyMesh(
-  const CGAL::Surface_mesh<CGAL::Point_3<InputKernel>>& input,
-  CGAL::Surface_mesh<CGAL::Point_3<OutputKernel>>& output)
+void copyMesh(const CGAL::Surface_mesh<CGAL::Point_3<InputKernel>>& input,
+              CGAL::Surface_mesh<CGAL::Point_3<OutputKernel>>& output)
 {
   using InputMesh = CGAL::Surface_mesh<CGAL::Point_3<InputKernel>>;
   using OutputMesh = CGAL::Surface_mesh<CGAL::Point_3<OutputKernel>>;
@@ -104,10 +105,10 @@ void copyMesh(
   for (auto face : input.faces()) {
     polygon.clear();
 
-    CGAL::Vertex_around_face_iterator<typename CGAL::Surface_mesh<CGAL::Point_3<InputKernel>>>
-    vbegin, vend;
-    for (boost::tie(vbegin, vend) = vertices_around_face(input.halfedge(face), input);
-         vbegin != vend; ++vbegin) {
+    CGAL::Vertex_around_face_iterator<typename CGAL::Surface_mesh<CGAL::Point_3<InputKernel>>> vbegin,
+      vend;
+    for (boost::tie(vbegin, vend) = vertices_around_face(input.halfedge(face), input); vbegin != vend;
+         ++vbegin) {
       auto input_vertex = *vbegin;
       auto size_before = reindexer.size();
       auto& output_vertex = reindexer[input_vertex];
@@ -120,7 +121,7 @@ void copyMesh(
   }
 }
 
-template void copyMesh(const CGAL::Surface_mesh<CGAL::Point_3<CGAL::Epick>>& input, CGAL_DoubleMesh& output);
+template void copyMesh(const CGAL::Surface_mesh<CGAL::Point_3<CGAL::Epick>>& input,
+                       CGAL_DoubleMesh& output);
 
-
-} // namespace CGALUtils
+}  // namespace CGALUtils

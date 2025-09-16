@@ -32,12 +32,11 @@
 #include <cmath>
 #include <sstream>
 
-Measurement::Measurement()
-{
-}
+Measurement::Measurement() {}
 
-void Measurement::setView(QGLView *qglview) {
-  this->qglview=qglview;
+void Measurement::setView(QGLView *qglview)
+{
+  this->qglview = qglview;
   this->qglview->measure_state = MEASURE_IDLE;
 }
 
@@ -45,14 +44,14 @@ void Measurement::startMeasureDist(void)
 {
   this->qglview->selected_obj.clear();
   this->qglview->update();
-  this->qglview->measure_state=MEASURE_DIST1;
+  this->qglview->measure_state = MEASURE_DIST1;
 }
 
 void Measurement::startMeasureAngle(void)
 {
   this->qglview->selected_obj.clear();
   this->qglview->update();
-  this->qglview->measure_state=MEASURE_ANG1;
+  this->qglview->measure_state = MEASURE_ANG1;
 }
 
 void Measurement::stopMeasure()
@@ -65,92 +64,96 @@ void Measurement::stopMeasure()
 
 QString Measurement::statemachine(QPoint mouse)
 {
-  if(qglview->measure_state == MEASURE_IDLE) return "";
-  qglview->selectPoint(mouse.x(),mouse.y());
-  double ang=NAN;
-  double dist=NAN;
+  if (qglview->measure_state == MEASURE_IDLE) return "";
+  qglview->selectPoint(mouse.x(), mouse.y());
+  double ang = NAN;
+  double dist = NAN;
   SelectedObject obj1, obj2, obj3;
-  switch(qglview->measure_state) {
-      case MEASURE_DIST1:
-      if(qglview->selected_obj.size() == 1) qglview->measure_state = MEASURE_DIST2;
-      break;
-      case MEASURE_DIST2:
-      if(qglview->selected_obj.size() == 2)
-      {
-        double lat;
-        obj1=qglview->selected_obj[0];
-        obj2=qglview->selected_obj[1];
-        if(obj1.type == SelectionType::SELECTION_POINT && obj2.type == SelectionType::SELECTION_POINT) dist =(obj2.p1-obj1.p1).norm();
-        if(obj1.type == SelectionType::SELECTION_POINT && obj2.type == SelectionType::SELECTION_LINE) dist =calculateLinePointDistance(obj2.p1, obj2.p2,obj1.p1,lat);
-        if(obj1.type == SelectionType::SELECTION_LINE && obj2.type == SelectionType::SELECTION_POINT) dist =calculateLinePointDistance(obj1.p1, obj1.p2,obj2.p1,lat);
-        if(obj1.type == SelectionType::SELECTION_LINE && obj2.type == SelectionType::SELECTION_LINE) dist =calculateSegSegDistance(obj1.p1, obj1.p2,obj2.p1,obj2.p2,lat);
-        if(!std::isnan(dist)) {
-          return QString("Distance is %1").arg(fabs(dist));
-        }
-        stopMeasure();
+  switch (qglview->measure_state) {
+  case MEASURE_DIST1:
+    if (qglview->selected_obj.size() == 1) qglview->measure_state = MEASURE_DIST2;
+    break;
+  case MEASURE_DIST2:
+    if (qglview->selected_obj.size() == 2) {
+      double lat;
+      obj1 = qglview->selected_obj[0];
+      obj2 = qglview->selected_obj[1];
+      if (obj1.type == SelectionType::SELECTION_POINT && obj2.type == SelectionType::SELECTION_POINT)
+        dist = (obj2.p1 - obj1.p1).norm();
+      if (obj1.type == SelectionType::SELECTION_POINT && obj2.type == SelectionType::SELECTION_LINE)
+        dist = calculateLinePointDistance(obj2.p1, obj2.p2, obj1.p1, lat);
+      if (obj1.type == SelectionType::SELECTION_LINE && obj2.type == SelectionType::SELECTION_POINT)
+        dist = calculateLinePointDistance(obj1.p1, obj1.p2, obj2.p1, lat);
+      if (obj1.type == SelectionType::SELECTION_LINE && obj2.type == SelectionType::SELECTION_LINE)
+        dist = calculateSegSegDistance(obj1.p1, obj1.p2, obj2.p1, obj2.p2, lat);
+      if (!std::isnan(dist)) {
+        return QString("Distance is %1").arg(fabs(dist));
       }
-      break;
-      case MEASURE_ANG1:
-      if(qglview->selected_obj.size() == 1) qglview->measure_state = MEASURE_ANG2;
-      break;
-      case MEASURE_ANG2:
-      if(qglview->selected_obj.size() == 2)
-      {
-        obj1=qglview->selected_obj[0];
-        obj2=qglview->selected_obj[1];
-        Vector3d side1, side2;
-        if(obj1.type == SelectionType::SELECTION_LINE && obj2.type == SelectionType::SELECTION_POINT)
-        {
-          side1=(obj1.p2-obj1.p1).normalized();
-          side2=(obj1.p2-obj2.p1).normalized();
-          ang=acos(side1.dot(side2))*180.0/3.14159265359;
-          goto display_angle;
-        }
-        else if(obj1.type == SelectionType::SELECTION_POINT && obj2.type == SelectionType::SELECTION_LINE)
-        {
-          side1=(obj2.p2-obj2.p1).normalized();
-          side2=(obj2.p2-obj1.p1).normalized();
-          ang=acos(side1.dot(side2))*180.0/3.14159265359;
-          goto display_angle;
-        }
-        else if(obj1.type == SelectionType::SELECTION_LINE && obj2.type == SelectionType::SELECTION_LINE)
-        {
-          if(obj1.p2 == obj2.p1) {
-            side1=(obj2.p1-obj1.p1).normalized();
-            side2=(obj2.p1-obj2.p2).normalized();
+      stopMeasure();
+    }
+    break;
+  case MEASURE_ANG1:
+    if (qglview->selected_obj.size() == 1) qglview->measure_state = MEASURE_ANG2;
+    break;
+  case MEASURE_ANG2:
+    if (qglview->selected_obj.size() == 2) {
+      obj1 = qglview->selected_obj[0];
+      obj2 = qglview->selected_obj[1];
+      Vector3d side1, side2;
+      if (obj1.type == SelectionType::SELECTION_LINE && obj2.type == SelectionType::SELECTION_POINT) {
+        side1 = (obj1.p2 - obj1.p1).normalized();
+        side2 = (obj1.p2 - obj2.p1).normalized();
+        ang = acos(side1.dot(side2)) * 180.0 / 3.14159265359;
+        goto display_angle;
+      } else if (obj1.type == SelectionType::SELECTION_POINT &&
+                 obj2.type == SelectionType::SELECTION_LINE) {
+        side1 = (obj2.p2 - obj2.p1).normalized();
+        side2 = (obj2.p2 - obj1.p1).normalized();
+        ang = acos(side1.dot(side2)) * 180.0 / 3.14159265359;
+        goto display_angle;
+      } else if (obj1.type == SelectionType::SELECTION_LINE &&
+                 obj2.type == SelectionType::SELECTION_LINE) {
+        // Check all 4 permutations of the lines' directions and use the one where the starting points
+        // are closest to one another as the corner point for the angle
+        double nearestDist = INFINITY;
+        auto permutation = [&nearestDist, &side1, &side2](const Vector3d& s1s, const Vector3d& s1e,
+                                                          const Vector3d& s2s, const Vector3d& s2e) {
+          double dist = (s1s - s2s).squaredNorm();
+          if (dist < nearestDist) {
+            nearestDist = dist;
+            side1 = (s1e - s1s).normalized();
+            side2 = (s2e - s2s).normalized();
           }
-          else if(obj2.p2 == obj1.p1) {
-            side1=(obj1.p1-obj2.p1).normalized();
-            side2=(obj1.p1-obj1.p2).normalized();
-          } else {
-            side1=(obj1.p2-obj1.p1).normalized();
-            side2=(obj2.p2-obj2.p1).normalized();
-          }
-          ang=acos(side1.dot(side2))*180.0/3.14159265359;
-          goto display_angle;
-        } else
-          qglview->measure_state = MEASURE_ANG3;
+        };
+
+        permutation(obj1.p1, obj1.p2, obj2.p1, obj2.p2);
+        permutation(obj1.p2, obj1.p1, obj2.p1, obj2.p2);
+        permutation(obj1.p1, obj1.p2, obj2.p2, obj2.p1);
+        permutation(obj1.p2, obj1.p1, obj2.p2, obj2.p1);
+
+        ang = acos(side1.dot(side2)) * 180.0 / 3.14159265359;
+        goto display_angle;
+      } else qglview->measure_state = MEASURE_ANG3;
+    }
+    break;
+  case MEASURE_ANG3:
+    if (qglview->selected_obj.size() == 3) {
+      obj1 = qglview->selected_obj[0];
+      obj2 = qglview->selected_obj[1];
+      obj3 = qglview->selected_obj[2];
+      if (obj1.type == SelectionType::SELECTION_POINT && obj2.type == SelectionType::SELECTION_POINT &&
+          obj3.type == SelectionType::SELECTION_POINT) {
+        Vector3d side1 = (obj2.p1 - obj1.p1).normalized();
+        Vector3d side2 = (obj2.p1 - obj3.p1).normalized();
+        ang = acos(side1.dot(side2)) * 180.0 / 3.14159265359;
       }
-      break;
-      case MEASURE_ANG3:
-      if(qglview->selected_obj.size() == 3){
-        obj1=qglview->selected_obj[0];
-        obj2=qglview->selected_obj[1];
-        obj3=qglview->selected_obj[2];
-        if(obj1.type == SelectionType::SELECTION_POINT && obj2.type == SelectionType::SELECTION_POINT && obj3.type == SelectionType::SELECTION_POINT)
-        {
-          Vector3d side1=(obj2.p1-obj1.p1).normalized();
-          Vector3d side2=(obj2.p1-obj3.p1).normalized();
-          ang=acos(side1.dot(side2))*180.0/3.14159265359;
-        }
-display_angle:
-        if(!std::isnan(ang))
-        {
-          return QString("Angle  is %1 Degrees").arg(ang);
-        }
-        stopMeasure();
+    display_angle:
+      if (!std::isnan(ang)) {
+        return QString("Angle  is %1 Degrees").arg(ang);
       }
-      break;
+      stopMeasure();
+    }
+    break;
   }
   return "";
 }

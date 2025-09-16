@@ -34,7 +34,6 @@
 #include <memory>
 #include <QWidget>
 
-
 #include "gui/parameter/GroupWidget.h"
 #include "gui/parameter/ParameterSpinBox.h"
 #include "gui/parameter/ParameterComboBox.h"
@@ -62,12 +61,12 @@ ParameterWidget::ParameterWidget(QWidget *parent) : QWidget(parent)
   autoPreviewTimer.setSingleShot(true);
 
   connect(&autoPreviewTimer, &QTimer::timeout, this, &ParameterWidget::emitParametersChanged);
-  connect(checkBoxAutoPreview, &QCheckBox::toggled, [this]() {
-    this->autoPreview(true);
-  });
-  connect(comboBoxDetails, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &ParameterWidget::rebuildWidgets);
-  connect(comboBoxPreset, QOverload<int>::of(&QComboBox::activated), this, &ParameterWidget::onSetChanged);
-  //connect(comboBoxPreset, &QComboBox::editTextChanged, this, &ParameterWidget::onSetNameChanged);
+  connect(checkBoxAutoPreview, &QCheckBox::toggled, [this]() { this->autoPreview(true); });
+  connect(comboBoxDetails, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
+          &ParameterWidget::rebuildWidgets);
+  connect(comboBoxPreset, QOverload<int>::of(&QComboBox::activated), this,
+          &ParameterWidget::onSetChanged);
+  // connect(comboBoxPreset, &QComboBox::editTextChanged, this, &ParameterWidget::onSetNameChanged);
   connect(addButton, &QPushButton::clicked, this, &ParameterWidget::onSetAdd);
   connect(deleteButton, &QPushButton::clicked, this, &ParameterWidget::onSetDelete);
 
@@ -75,7 +74,8 @@ ParameterWidget::ParameterWidget(QWidget *parent) : QWidget(parent)
   uint fontsize = GlobalPreferences::inst()->getValue("advanced/customizerFontSize").toUInt();
   setFontFamilySize(fontfamily, fontsize);
 
-  connect(GlobalPreferences::inst(), &Preferences::customizerFontChanged, this, &ParameterWidget::setFontFamilySize);
+  connect(GlobalPreferences::inst(), &Preferences::customizerFontChanged, this,
+          &ParameterWidget::setFontFamilySize);
 }
 
 // Can only be called before the initial setParameters().
@@ -109,7 +109,8 @@ void ParameterWidget::saveFile(const QString& scadFile)
   if (jsonFile == this->invalidJsonFile) {
     QMessageBox msgBox;
     msgBox.setWindowTitle(_("Saving presets"));
-    msgBox.setText(QString(_("%1 was found, but was unreadable. Do you want to overwrite %1?")).arg(this->invalidJsonFile));
+    msgBox.setText(QString(_("%1 was found, but was unreadable. Do you want to overwrite %1?"))
+                     .arg(this->invalidJsonFile));
     msgBox.setStandardButtons(QMessageBox::Save | QMessageBox::Cancel);
     msgBox.setDefaultButton(QMessageBox::Cancel);
     if (msgBox.exec() == QMessageBox::Cancel) {
@@ -142,10 +143,7 @@ void ParameterWidget::setParameters(const SourceFile *sourceFile, const std::str
   loadSet(comboBoxPreset->currentIndex());
 }
 
-void ParameterWidget::applyParameters(SourceFile *sourceFile)
-{
-  this->parameters.apply(sourceFile);
-}
+void ParameterWidget::applyParameters(SourceFile *sourceFile) { this->parameters.apply(sourceFile); }
 
 bool ParameterWidget::childHasFocus()
 {
@@ -169,7 +167,8 @@ void ParameterWidget::setModified(bool modified)
   }
 }
 
-void ParameterWidget::emitParametersChanged() {
+void ParameterWidget::emitParametersChanged()
+{
   for (const auto& kvp : widgets) {
     for (ParameterVirtualWidget *widget : kvp.second) {
       widget->valueApplied();
@@ -207,14 +206,9 @@ void ParameterWidget::onSetNameChanged()
 void ParameterWidget::onSetAdd()
 {
   bool ok = true;
-  QString result = QInputDialog::getText(
-    this,
-    _("Create new set of parameter"),
-    _("Enter name of the parameter set"),
-    QLineEdit::Normal,
-    "",
-    &ok
-    );
+  QString result =
+    QInputDialog::getText(this, _("Create new set of parameter"), _("Enter name of the parameter set"),
+                          QLineEdit::Normal, "", &ok);
 
   if (ok) {
     createSet(result.trimmed());
@@ -254,7 +248,7 @@ void ParameterWidget::parameterModified(bool immediate)
     }
 
     QString name;
-    for (int i = 1; ; i++) {
+    for (int i = 1;; i++) {
       name = _("New set ") + QString::number(i);
       if (setNames.count(name.toStdString()) == 0) {
         break;
@@ -312,7 +306,8 @@ void ParameterWidget::updateSetEditability()
   } else {
     if (!comboBoxPreset->isEditable()) {
       comboBoxPreset->setEditable(true);
-      connect(comboBoxPreset->lineEdit(), &QLineEdit::textEdited, this, &ParameterWidget::onSetNameChanged);
+      connect(comboBoxPreset->lineEdit(), &QLineEdit::textEdited, this,
+              &ParameterWidget::onSetNameChanged);
     }
     deleteButton->setEnabled(true);
   }
@@ -339,7 +334,8 @@ void ParameterWidget::rebuildWidgets()
     auto *groupWidget = new GroupWidget(group.name);
     for (ParameterObject *parameter : group.parameters) {
       ParameterVirtualWidget *parameterWidget = createParameterWidget(parameter, descriptionStyle);
-      connect(parameterWidget, &ParameterVirtualWidget::changed, this, &ParameterWidget::parameterModified);
+      connect(parameterWidget, &ParameterVirtualWidget::changed, this,
+              &ParameterWidget::parameterModified);
       if (!widgets.count(parameter)) {
         widgets[parameter] = {};
       }
@@ -387,7 +383,8 @@ std::vector<ParameterWidget::ParameterGroup> ParameterWidget::getParameterGroups
   return output;
 }
 
-ParameterVirtualWidget *ParameterWidget::createParameterWidget(ParameterObject *parameter, DescriptionStyle descriptionStyle)
+ParameterVirtualWidget *ParameterWidget::createParameterWidget(ParameterObject *parameter,
+                                                               DescriptionStyle descriptionStyle)
 {
   if (parameter->type() == ParameterObject::ParameterType::Bool) {
     return new ParameterCheckBox(this, static_cast<BoolParameter *>(parameter), descriptionStyle);
@@ -440,7 +437,8 @@ void ParameterWidget::cleanSets()
   }
 }
 
-void ParameterWidget::setFontFamilySize(const QString &fontFamily, uint fontSize)
+void ParameterWidget::setFontFamilySize(const QString& fontFamily, uint fontSize)
 {
-  scrollArea->setStyleSheet(QString("font-family: \"%1\"; font-size: %2pt;").arg(fontFamily).arg(fontSize));
+  scrollArea->setStyleSheet(
+    QString("font-family: \"%1\"; font-size: %2pt;").arg(fontFamily).arg(fontSize));
 }

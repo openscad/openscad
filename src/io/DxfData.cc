@@ -69,18 +69,17 @@ namespace fs = std::filesystem;
  */
 
 struct Line {
-  int idx[2] = {-1, -1}; // indices into DxfData::points
+  int idx[2] = {-1, -1};  // indices into DxfData::points
   bool disabled{false};
   Line() = default;
-  Line(int i1, int i2) : idx{i1, i2} { }
+  Line(int i1, int i2) : idx{i1, i2} {}
 };
 
 /*!
    Reads a layer from the given file, or all layers if layername.empty()
  */
-DxfData::DxfData(double fn, double fs, double fa,
-                 const std::string& filename, const std::string& layername,
-                 double xorigin, double yorigin, double scale)
+DxfData::DxfData(double fn, double fs, double fa, const std::string& filename,
+                 const std::string& layername, double xorigin, double yorigin, double scale)
 {
   std::ifstream stream(filename.c_str());
   if (!stream.good()) {
@@ -89,35 +88,30 @@ DxfData::DxfData(double fn, double fs, double fa,
   }
 
   Grid2d<std::vector<int>> grid(GRID_COARSE);
-  std::vector<Line> lines;                 // Global lines
-  std::unordered_map<std::string, std::vector<Line>> blockdata; // Lines in blocks
+  std::vector<Line> lines;                                       // Global lines
+  std::unordered_map<std::string, std::vector<Line>> blockdata;  // Lines in blocks
 
   auto in_entities_section = false;
   auto in_blocks_section = false;
   std::string current_block;
 
-#define ADD_LINE(_x1, _y1, _x2, _y2) do {                   \
-          double _p1x = (_x1), _p1y = (_y1), _p2x = (_x2), _p2y = (_y2);\
-          if (!in_entities_section && !in_blocks_section)         \
-          break;                                                \
-          if (in_entities_section &&                              \
-              !(layername.empty() || layername == layer))         \
-          break;                                                \
-          grid.align(_p1x, _p1y);                                 \
-          grid.align(_p2x, _p2y);                                 \
-          grid.data(_p1x, _p1y).push_back(lines.size());          \
-          grid.data(_p2x, _p2y).push_back(lines.size());          \
-          if (in_entities_section)                                \
-          lines.emplace_back(                                   \
-            addPoint(_p1x, _p1y), addPoint(_p2x, _p2y));        \
-          if (in_blocks_section && !current_block.empty())        \
-          blockdata[current_block].emplace_back(                \
-            addPoint(_p1x, _p1y), addPoint(_p2x, _p2y));        \
-} while (0)
+#define ADD_LINE(_x1, _y1, _x2, _y2)                                                         \
+  do {                                                                                       \
+    double _p1x = (_x1), _p1y = (_y1), _p2x = (_x2), _p2y = (_y2);                           \
+    if (!in_entities_section && !in_blocks_section) break;                                   \
+    if (in_entities_section && !(layername.empty() || layername == layer)) break;            \
+    grid.align(_p1x, _p1y);                                                                  \
+    grid.align(_p2x, _p2y);                                                                  \
+    grid.data(_p1x, _p1y).push_back(lines.size());                                           \
+    grid.data(_p2x, _p2y).push_back(lines.size());                                           \
+    if (in_entities_section) lines.emplace_back(addPoint(_p1x, _p1y), addPoint(_p2x, _p2y)); \
+    if (in_blocks_section && !current_block.empty())                                         \
+      blockdata[current_block].emplace_back(addPoint(_p1x, _p1y), addPoint(_p2x, _p2y));     \
+  } while (0)
 
   std::string mode, layer, name, iddata;
   int dimtype = 0;
-  double coords[7][2]; // Used by DIMENSION entities
+  double coords[7][2];  // Used by DIMENSION entities
   std::vector<double> xverts;
   std::vector<double> yverts;
   double radius = 0;
@@ -185,10 +179,11 @@ DxfData::DxfData(double fn, double fs, double fa,
           // Get maximum to enforce managed exception if xverts.size() != yverts.size()
           const int numverts = std::max(xverts.size(), yverts.size());
           for (int i = 1; i < numverts; ++i) {
-            ADD_LINE(xverts.at(i - 1), yverts.at(i - 1), xverts.at(i % numverts), yverts.at(i % numverts));
+            ADD_LINE(xverts.at(i - 1), yverts.at(i - 1), xverts.at(i % numverts),
+                     yverts.at(i % numverts));
           }
           // polyline flag is stored in 'dimtype'
-          if (dimtype & 0x01) { // closed polyline
+          if (dimtype & 0x01) {  // closed polyline
             ADD_LINE(xverts.at(numverts - 1), yverts.at(numverts - 1), xverts.at(0), yverts.at(0));
           }
         } else if (mode == "CIRCLE") {
@@ -217,16 +212,16 @@ DxfData::DxfData(double fn, double fs, double fa,
         } else if (mode == "ELLIPSE") {
           // Commented code is meant as documentation of vector math
           while (ellipse_start_angle > ellipse_stop_angle) ellipse_stop_angle += 2 * M_PI;
-//				Vector2d center(xverts[0], yverts[0]);
+          //				Vector2d center(xverts[0], yverts[0]);
           Vector2d center(xverts.at(0), yverts.at(0));
-//				Vector2d ce(xverts[1], yverts[1]);
+          //				Vector2d ce(xverts[1], yverts[1]);
           Vector2d ce(xverts.at(1), yverts.at(1));
-//				double r_major = ce.length();
+          //				double r_major = ce.length();
           const double r_major = sqrt(ce[0] * ce[0] + ce[1] * ce[1]);
-//				double rot_angle = ce.angle();
+          //				double rot_angle = ce.angle();
           double rot_angle;
           {
-//					double dot = ce.dot(Vector2d(1.0, 0.0));
+            //					double dot = ce.dot(Vector2d(1.0, 0.0));
             const double dot = ce[0];
             double cosval = dot / r_major;
             if (cosval > 1.0) cosval = 1.0;
@@ -240,23 +235,23 @@ DxfData::DxfData(double fn, double fs, double fa,
           const double sweep_angle = ellipse_stop_angle - ellipse_start_angle;
           int n = Calc::get_fragments_from_r(r_major, fn, fs, fa);
           n = static_cast<int>(ceil(n * sweep_angle / (2 * M_PI)));
-//				Vector2d p1;
+          //				Vector2d p1;
           Vector2d p1{0.0, 0.0};
           for (int i = 0; i <= n; ++i) {
             const double a = (ellipse_start_angle + sweep_angle * i / n);
-//					Vector2d p2(cos(a)*r_major, sin(a)*r_minor);
+            //					Vector2d p2(cos(a)*r_major, sin(a)*r_minor);
             Vector2d p2(cos(a) * r_major, sin(a) * r_minor);
-//					p2.rotate(rot_angle);
+            //					p2.rotate(rot_angle);
             Vector2d p2_rot(cos(rot_angle) * p2[0] - sin(rot_angle) * p2[1],
                             sin(rot_angle) * p2[0] + cos(rot_angle) * p2[1]);
-//					p2 += center;
+            //					p2 += center;
             p2_rot[0] += center[0];
             p2_rot[1] += center[1];
             if (i > 0) {
-//            ADD_LINE(p1[0], p1[1], p2[0], p2[1]);
+              //            ADD_LINE(p1[0], p1[1], p2[0], p2[1]);
               ADD_LINE(p1[0], p1[1], p2_rot[0], p2_rot[1]);
             }
-//					p1 = p2;
+            //					p1 = p2;
             p1[0] = p2_rot[0];
             p1[1] = p2_rot[1];
           }
@@ -276,8 +271,7 @@ DxfData::DxfData(double fn, double fs, double fa,
             const double py2 = (sin_degrees(a) * lx2 + cos_degrees(a) * ly2) * scale + yverts.at(0);
             ADD_LINE(px1, py1, px2, py2);
           }
-        } else if (mode == "DIMENSION" &&
-                   (layername.empty() || layername == layer)) {
+        } else if (mode == "DIMENSION" && (layername.empty() || layername == layer)) {
           this->dims.emplace_back();
           this->dims.back().type = dimtype;
           for (int i = 0; i < 7; ++i) {
@@ -293,8 +287,8 @@ DxfData::DxfData(double fn, double fs, double fa,
         } else if (mode == "ENDBLK") {
           current_block.erase();
         } else if (mode == "ENDSEC") {
-        } else if (in_blocks_section || (in_entities_section &&
-                                         (layername.empty() || layername == layer))) {
+        } else if (in_blocks_section ||
+                   (in_entities_section && (layername.empty() || layername == layer))) {
           unsupported_entities_list[mode]++;
         }
         mode = data;
@@ -312,18 +306,12 @@ DxfData::DxfData(double fn, double fs, double fa,
         radius = arc_start_angle = arc_stop_angle = 0;
         ellipse_start_angle = ellipse_stop_angle = 0;
         if (mode == "INSERT") {
-          ellipse_start_angle = ellipse_stop_angle = 1.0; // scale
+          ellipse_start_angle = ellipse_stop_angle = 1.0;  // scale
         }
         break;
-      case 1:
-        name = data;
-        break;
-      case 2:
-        iddata = data;
-        break;
-      case 8:
-        layer = data;
-        break;
+      case 1:  name = data; break;
+      case 2:  iddata = data; break;
+      case 8:  layer = data; break;
       case 10: [[fallthrough]];
       case 11:
         if (in_blocks_section) {
@@ -363,7 +351,7 @@ DxfData::DxfData(double fn, double fs, double fa,
         // INSERT: Y scale
         ellipse_stop_angle = boost::lexical_cast<double>(data);
         break;
-      case 51: // ARC
+      case 51:  // ARC
         arc_stop_angle = boost::lexical_cast<double>(data);
         break;
       case 70:
@@ -381,11 +369,11 @@ DxfData::DxfData(double fn, double fs, double fa,
 
   for (const auto& i : unsupported_entities_list) {
     if (layername.empty()) {
-      LOG(message_group::Warning,
-          "Unsupported DXF Entity '%1$s' (%2$x) in %3$s.", i.first, i.second, QuotedString(fs_uncomplete(filename, fs::current_path()).generic_string()));
+      LOG(message_group::Warning, "Unsupported DXF Entity '%1$s' (%2$x) in %3$s.", i.first, i.second,
+          QuotedString(fs_uncomplete(filename, fs::current_path()).generic_string()));
     } else {
-      LOG(message_group::Warning,
-          "Unsupported DXF Entity '%1$s' (%2$x) in layer '%3$s' of %4$s", i.first, i.second, layername, fs_uncomplete(filename, fs::current_path()).generic_string());
+      LOG(message_group::Warning, "Unsupported DXF Entity '%1$s' (%2$x) in layer '%3$s' of %4$s",
+          i.first, i.second, layername, fs_uncomplete(filename, fs::current_path()).generic_string());
     }
   }
 
@@ -407,8 +395,8 @@ DxfData::DxfData(double fn, double fs, double fa,
         auto lv = grid.data(this->points[lines[idx].idx[j]][0], this->points[lines[idx].idx[j]][1]);
         for (const int k : lv) {
           if (k < 0 || static_cast<unsigned int>(k) >= lines.size()) {
-            LOG(message_group::Warning,
-                "Bad DXF line index in %1$s.", QuotedString(fs_uncomplete(filename, fs::current_path()).generic_string()));
+            LOG(message_group::Warning, "Bad DXF line index in %1$s.",
+                QuotedString(fs_uncomplete(filename, fs::current_path()).generic_string()));
             continue;
           }
           if (k == idx || lines[k].disabled) continue;
@@ -417,13 +405,13 @@ DxfData::DxfData(double fn, double fs, double fa,
         current_line = idx;
         current_point = j;
         goto create_open_path;
-next_open_path_j:;
+      next_open_path_j:;
       }
     }
 
     break;
 
-create_open_path:
+  create_open_path:
     this->paths.emplace_back();
     Path *this_path = &this->paths.back();
 
@@ -436,12 +424,12 @@ create_open_path:
       auto lv = grid.data(ref_point[0], ref_point[1]);
       for (const int k : lv) {
         if (k < 0 || static_cast<unsigned int>(k) >= lines.size()) {
-          LOG(message_group::Warning,
-              "Bad DXF line index in %1$s.", QuotedString(fs_uncomplete(filename, fs::current_path()).generic_string()));
+          LOG(message_group::Warning, "Bad DXF line index in %1$s.",
+              QuotedString(fs_uncomplete(filename, fs::current_path()).generic_string()));
           continue;
         }
         if (lines[k].disabled) continue;
-        auto idk0 = lines[k].idx[0]; // make it easier to read and debug
+        auto idk0 = lines[k].idx[0];  // make it easier to read and debug
         auto idk1 = lines[k].idx[1];
         if (grid.eq(ref_point[0], ref_point[1], this->points[idk0][0], this->points[idk0][1])) {
           current_line = k;
@@ -455,7 +443,7 @@ create_open_path:
         }
       }
       break;
-found_next_line_in_open_path:;
+    found_next_line_in_open_path:;
     }
   }
 
@@ -477,12 +465,12 @@ found_next_line_in_open_path:;
       auto lv = grid.data(ref_point[0], ref_point[1]);
       for (const int k : lv) {
         if (k < 0 || static_cast<unsigned int>(k) >= lines.size()) {
-          LOG(message_group::Warning,
-              "Bad DXF line index in %1$s.", QuotedString(fs_uncomplete(filename, fs::current_path()).generic_string()));
+          LOG(message_group::Warning, "Bad DXF line index in %1$s.",
+              QuotedString(fs_uncomplete(filename, fs::current_path()).generic_string()));
           continue;
         }
         if (lines[k].disabled) continue;
-        auto idk0 = lines[k].idx[0]; // make it easier to read and debug
+        auto idk0 = lines[k].idx[0];  // make it easier to read and debug
         auto idk1 = lines[k].idx[1];
         if (grid.eq(ref_point[0], ref_point[1], this->points[idk0][0], this->points[idk0][1])) {
           current_line = k;
@@ -496,7 +484,7 @@ found_next_line_in_open_path:;
         }
       }
       break;
-found_next_line_in_closed_path:;
+    found_next_line_in_closed_path:;
     }
   }
 
@@ -564,18 +552,14 @@ int DxfData::addPoint(double x, double y)
 std::string DxfData::dump() const
 {
   std::ostringstream out;
-  out << "DxfData"
-      << "\n num points: " << points.size()
-      << "\n num paths: " << paths.size()
-      << "\n num dims: " << dims.size()
-      << "\n points: ";
+  out << "DxfData" << "\n num points: " << points.size() << "\n num paths: " << paths.size()
+      << "\n num dims: " << dims.size() << "\n points: ";
   for (const auto& point : points) {
     out << "\n  x y: " << point.transpose();
   }
   out << "\n paths: ";
   for (size_t i = 0; i < paths.size(); ++i) {
-    out << "\n  path:" << i
-        << "\n  is_closed: " << paths[i].is_closed
+    out << "\n  path:" << i << "\n  is_closed: " << paths[i].is_closed
         << "\n  is_inner: " << paths[i].is_inner;
     DxfData::Path path = paths[i];
     for (size_t j = 0; j < path.indices.size(); ++j) {

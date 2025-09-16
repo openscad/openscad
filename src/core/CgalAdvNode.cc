@@ -26,18 +26,19 @@
 
 #include "core/CgalAdvNode.h"
 #include "core/module.h"
-#include "core/ModuleInstantiation.h"
 #include "core/Builtins.h"
 #include "core/Children.h"
+#include "core/ModuleInstantiation.h"
 #include "core/Parameters.h"
 #include <utility>
 #include <memory>
 #include <sstream>
 #include <cassert>
 #include <boost/assign/std/vector.hpp>
-using namespace boost::assign; // bring 'operator+=()' into scope
+using namespace boost::assign;  // bring 'operator+=()' into scope
 
-static std::shared_ptr<AbstractNode> builtin_minkowski(const ModuleInstantiation *inst, Arguments arguments, const Children& children)
+static std::shared_ptr<AbstractNode> builtin_minkowski(const ModuleInstantiation *inst,
+                                                       Arguments arguments, const Children& children)
 {
   auto node = std::make_shared<CgalAdvNode>(inst, CgalAdvType::MINKOWSKI);
 
@@ -47,7 +48,8 @@ static std::shared_ptr<AbstractNode> builtin_minkowski(const ModuleInstantiation
   return children.instantiate(node);
 }
 
-static std::shared_ptr<AbstractNode> builtin_hull(const ModuleInstantiation *inst, Arguments arguments, const Children& children)
+static std::shared_ptr<AbstractNode> builtin_hull(const ModuleInstantiation *inst, Arguments arguments,
+                                                  const Children& children)
 {
   auto node = std::make_shared<CgalAdvNode>(inst, CgalAdvType::HULL);
 
@@ -57,7 +59,8 @@ static std::shared_ptr<AbstractNode> builtin_hull(const ModuleInstantiation *ins
   return children.instantiate(node);
 }
 
-static std::shared_ptr<AbstractNode> builtin_fill(const ModuleInstantiation *inst, Arguments arguments, const Children& children)
+static std::shared_ptr<AbstractNode> builtin_fill(const ModuleInstantiation *inst, Arguments arguments,
+                                                  const Children& children)
 {
   auto node = std::make_shared<CgalAdvNode>(inst, CgalAdvType::FILL);
 
@@ -66,11 +69,13 @@ static std::shared_ptr<AbstractNode> builtin_fill(const ModuleInstantiation *ins
   return children.instantiate(node);
 }
 
-static std::shared_ptr<AbstractNode> builtin_resize(const ModuleInstantiation *inst, Arguments arguments, const Children& children)
+static std::shared_ptr<AbstractNode> builtin_resize(const ModuleInstantiation *inst, Arguments arguments,
+                                                    const Children& children)
 {
   auto node = std::make_shared<CgalAdvNode>(inst, CgalAdvType::RESIZE);
 
-  Parameters parameters = Parameters::parse(std::move(arguments), inst->location(), {"newsize", "auto", "convexity"});
+  Parameters parameters =
+    Parameters::parse(std::move(arguments), inst->location(), {"newsize", "auto", "convexity"});
   node->convexity = static_cast<int>(parameters["convexity"].toDouble());
   node->newsize << 0, 0, 0;
   if (parameters["newsize"].type() == Value::Type::VECTOR) {
@@ -96,20 +101,11 @@ static std::shared_ptr<AbstractNode> builtin_resize(const ModuleInstantiation *i
 std::string CgalAdvNode::name() const
 {
   switch (this->type) {
-  case CgalAdvType::MINKOWSKI:
-    return "minkowski";
-    break;
-  case CgalAdvType::HULL:
-    return "hull";
-    break;
-  case CgalAdvType::FILL:
-    return "fill";
-    break;
-  case CgalAdvType::RESIZE:
-    return "resize";
-    break;
-  default:
-    assert(false);
+  case CgalAdvType::MINKOWSKI: return "minkowski"; break;
+  case CgalAdvType::HULL:      return "hull"; break;
+  case CgalAdvType::FILL:      return "fill"; break;
+  case CgalAdvType::RESIZE:    return "resize"; break;
+  default:                     assert(false);
   }
   return "internal_error";
 }
@@ -120,23 +116,15 @@ std::string CgalAdvNode::toString() const
 
   stream << this->name();
   switch (type) {
-  case CgalAdvType::MINKOWSKI:
-    stream << "(convexity = " << this->convexity << ")";
-    break;
+  case CgalAdvType::MINKOWSKI: stream << "(convexity = " << this->convexity << ")"; break;
   case CgalAdvType::HULL:
-  case CgalAdvType::FILL:
-    stream << "()";
-    break;
+  case CgalAdvType::FILL:      stream << "()"; break;
   case CgalAdvType::RESIZE:
-    stream << "(newsize = ["
-           << this->newsize[0] << "," << this->newsize[1] << "," << this->newsize[2] << "]"
-           << ", auto = ["
-           << this->autosize[0] << "," << this->autosize[1] << "," << this->autosize[2] << "]"
-           << ", convexity = " << this->convexity
-           << ")";
+    stream << "(newsize = [" << this->newsize[0] << "," << this->newsize[1] << "," << this->newsize[2]
+           << "]" << ", auto = [" << this->autosize[0] << "," << this->autosize[1] << ","
+           << this->autosize[2] << "]" << ", convexity = " << this->convexity << ")";
     break;
-  default:
-    assert(false);
+  default: assert(false);
   }
 
   return stream.str();
@@ -145,25 +133,25 @@ std::string CgalAdvNode::toString() const
 void register_builtin_cgaladv()
 {
   Builtins::init("minkowski", new BuiltinModule(builtin_minkowski),
-  {
-    "minkowski(convexity = number)",
-  });
+                 {
+                   "minkowski(convexity = number)",
+                 });
 
   Builtins::init("hull", new BuiltinModule(builtin_hull),
-  {
-    "hull()",
-  });
+                 {
+                   "hull()",
+                 });
 
   Builtins::init("fill", new BuiltinModule(builtin_fill),
-  {
-    "fill()",
-  });
+                 {
+                   "fill()",
+                 });
 
   Builtins::init("resize", new BuiltinModule(builtin_resize),
-  {
-    "resize([x, y, z])",
-    "resize([x, y, z], boolean)",
-    "resize([x, y, z], [boolean, boolean, boolean])",
-    "resize([x, y, z], [boolean, boolean, boolean], convexity = number)",
-  });
+                 {
+                   "resize([x, y, z])",
+                   "resize([x, y, z], boolean)",
+                   "resize([x, y, z], [boolean, boolean, boolean])",
+                   "resize([x, y, z], [boolean, boolean, boolean], convexity = number)",
+                 });
 }

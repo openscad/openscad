@@ -26,8 +26,8 @@
 
 #pragma once
 
-#include "gui/qtgettext.h" // IWYU pragma: keep
-#include "ui_PrintInitDialog.h" // generated, but needs qtgettext.h
+#include "gui/qtgettext.h"       // IWYU pragma: keep
+#include "ui_PrintInitDialog.h"  // generated, but needs qtgettext.h
 
 #include <vector>
 
@@ -50,8 +50,9 @@ class PrintInitDialog : public QDialog, public Ui::PrintInitDialog, public InitC
   constexpr static auto urlLocalApp = "qrc:/html/LocalApplicationInfo.html";
 
   Q_OBJECT;
+
 public:
-  PrintInitDialog();  
+  PrintInitDialog();
   int exec() override;
 
   print_service_t getServiceType() const;
@@ -65,11 +66,11 @@ public slots:
   void on_checkBoxEnableRemotePrintServices_toggled(bool);
   void on_pushButtonOk_clicked();
   void on_pushButtonCancel_clicked();
+
 private:
   void resetSelection();
   void addRemotePrintServiceButtons();
-  void populateFileFormatComboBox(const std::vector<FileFormat> &fileFormats,
-                                  FileFormat currentFormat);
+  void populateFileFormatComboBox(const std::vector<FileFormat>& fileFormats, FileFormat currentFormat);
   void setFileFormat(const std::string& identifier);
 
   QString htmlTemplate;

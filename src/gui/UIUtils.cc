@@ -54,14 +54,14 @@ namespace {
 
 QString fileOpenFilter(const QString& pattern, QStringList extensions)
 {
-    if (extensions.isEmpty()) {
-        extensions << "scad" << "csg";
+  if (extensions.isEmpty()) {
+    extensions << "scad" << "csg";
 #ifdef ENABLE_PYTHON
-        extensions << "py";
+    extensions << "py";
 #endif
-    }
-    extensions.replaceInStrings(QRegularExpression("^"), "*.");
-    return pattern.arg(extensions.join(" "));
+  }
+  extensions.replaceInStrings(QRegularExpression("^"), "*.");
+  return pattern.arg(extensions.join(" "));
 }
 
 QList<UIUtils::ExampleCategory> _exampleCategories;
@@ -82,29 +82,29 @@ void readExamplesDir(const QJsonObject& obj, const fs::path& dir)
   QString name = obj["name"].toString(QString::fromStdString(dir.filename().generic_string()));
 
   if (!hasCategory(name)) {
-    _exampleCategories.append(UIUtils::ExampleCategory{
-      .sort = obj["sort"].toInt(UIUtils::ExampleCategory::DEFAULT_SORT),
-      .name = name,
-      .tooltip = obj["tooltip"].toString()});
+    _exampleCategories.append(
+      UIUtils::ExampleCategory{.sort = obj["sort"].toInt(UIUtils::ExampleCategory::DEFAULT_SORT),
+                               .name = name,
+                               .tooltip = obj["tooltip"].toString()});
   }
 
   auto& examples = _examples[name];
   for (const auto& entry : fs::directory_iterator{dir}) {
-      if (!entry.is_regular_file()) {
-        continue;
-      }
-      const auto& path = entry.path();
-      if (path.extension() != ".scad") {
-        continue;
-      }
-      examples.append(UIUtils::ExampleEntry{
-        .name = QString::fromStdString(path.filename().generic_string()),
-        .fileInfo = QFileInfo(QString::fromStdString(path.generic_string()))
-      });
+    if (!entry.is_regular_file()) {
+      continue;
+    }
+    const auto& path = entry.path();
+    if (path.extension() != ".scad") {
+      continue;
+    }
+    examples.append(
+      UIUtils::ExampleEntry{.name = QString::fromStdString(path.filename().generic_string()),
+                            .fileInfo = QFileInfo(QString::fromStdString(path.generic_string()))});
   }
-  std::sort(examples.begin(), examples.end(), [](const UIUtils::ExampleEntry& e1, const UIUtils::ExampleEntry& e2) -> bool {
-    return e1.name < e2.name;
-  });
+  std::sort(examples.begin(), examples.end(),
+            [](const UIUtils::ExampleEntry& e1, const UIUtils::ExampleEntry& e2) -> bool {
+              return e1.name < e2.name;
+            });
 }
 
 void enumerateExamples(const fs::path& dir)
@@ -116,7 +116,8 @@ void enumerateExamples(const fs::path& dir)
     if (!entry.is_directory()) {
       continue;
     }
-    auto fileInfo = QFileInfo{QDir{QString::fromStdString(entry.path().generic_string())}, "example-dir.json"};
+    auto fileInfo =
+      QFileInfo{QDir{QString::fromStdString(entry.path().generic_string())}, "example-dir.json"};
     QJsonObject obj;
     if (fileInfo.isReadable()) {
       QFile file;
@@ -126,9 +127,10 @@ void enumerateExamples(const fs::path& dir)
     }
     readExamplesDir(obj, entry.path());
   }
-  std::sort(_exampleCategories.begin(), _exampleCategories.end(), [](const UIUtils::ExampleCategory& c1, const UIUtils::ExampleCategory& c2) -> bool {
-    return c2.sort > c1.sort;
-  });
+  std::sort(_exampleCategories.begin(), _exampleCategories.end(),
+            [](const UIUtils::ExampleCategory& c1, const UIUtils::ExampleCategory& c2) -> bool {
+              return c2.sort > c1.sort;
+            });
 }
 
 const QList<UIUtils::ExampleCategory>& readExamples()
@@ -140,15 +142,14 @@ const QList<UIUtils::ExampleCategory>& readExamples()
   return _exampleCategories;
 }
 
-}
+}  // namespace
 
 QFileInfo UIUtils::openFile(QWidget *parent, QStringList extensions)
 {
   QSettingsCached settings;
   const auto last_dirname = settings.value("lastOpenDirName").toString();
   const auto filter = fileOpenFilter("OpenSCAD Designs (%1)", std::move(extensions));
-  const auto filename = QFileDialog::getOpenFileName(parent, "Open File",
-                                                     last_dirname, filter);
+  const auto filename = QFileDialog::getOpenFileName(parent, "Open File", last_dirname, filter);
 
   if (filename.isEmpty()) {
     return {};
@@ -164,11 +165,10 @@ QFileInfoList UIUtils::openFiles(QWidget *parent, QStringList extensions)
   QSettingsCached settings;
   const auto last_dirname = settings.value("lastOpenDirName").toString();
   const auto filter = fileOpenFilter("OpenSCAD Designs (%1)", std::move(extensions));
-  const auto filenames = QFileDialog::getOpenFileNames(parent, "Open File",
-                                                       last_dirname, filter);
+  const auto filenames = QFileDialog::getOpenFileNames(parent, "Open File", last_dirname, filter);
 
   QFileInfoList fileInfoList;
-  for (const QString& filename: filenames) {
+  for (const QString& filename : filenames) {
     if (filename.isEmpty()) {
       continue;
     }
@@ -185,7 +185,7 @@ QFileInfoList UIUtils::openFiles(QWidget *parent, QStringList extensions)
 
 QStringList UIUtils::recentFiles()
 {
-  QSettingsCached settings; // set up project and program properly in main.cpp
+  QSettingsCached settings;  // set up project and program properly in main.cpp
   QStringList files = settings.value("recentFileList").toStringList();
 
   // Remove any duplicate or empty entries from the list
@@ -205,10 +205,7 @@ QStringList UIUtils::recentFiles()
   return files;
 }
 
-const QList<UIUtils::ExampleCategory>& UIUtils::exampleCategories()
-{
-  return readExamples();
-}
+const QList<UIUtils::ExampleCategory>& UIUtils::exampleCategories() { return readExamples(); }
 
 QFileInfoList UIUtils::exampleFiles(const QString& category)
 {
@@ -222,15 +219,9 @@ QFileInfoList UIUtils::exampleFiles(const QString& category)
   return examples;
 }
 
-void UIUtils::openURL(const QString& url)
-{
-  QDesktopServices::openUrl(QUrl(url));
-}
+void UIUtils::openURL(const QString& url) { QDesktopServices::openUrl(QUrl(url)); }
 
-void UIUtils::openHomepageURL()
-{
-  QDesktopServices::openUrl(QUrl("https://www.openscad.org/"));
-}
+void UIUtils::openHomepageURL() { QDesktopServices::openUrl(QUrl("https://www.openscad.org/")); }
 
 static void openVersionedURL(const QString& url)
 {
@@ -245,7 +236,8 @@ void UIUtils::openUserManualURL()
 fs::path UIUtils::returnOfflineUserManualPath()
 {
   fs::path resPath = PlatformUtils::resourcePath("resources");
-  fs::path fullPath = resPath / "docs" / "OpenSCADUserDocs" / "openscad_docs" / "OpenSCAD_User_Manual.html";
+  fs::path fullPath =
+    resPath / "docs" / "OpenSCADUserDocs" / "openscad_docs" / "OpenSCAD_User_Manual.html";
   return fullPath;
 }
 
@@ -301,16 +293,17 @@ void UIUtils::openOfflineCheatSheet()
   }
 }
 
-QString UIUtils::getBackgroundColorStyleSheet(const QColor &color)
+QString UIUtils::getBackgroundColorStyleSheet(const QColor& color)
 {
   return QString("background-color:%1;").arg(color.toRgb().name());
 }
 
-QString UIUtils::blendForBackgroundColorStyleSheet(const QColor& input, const QColor& blend, float transparency)
+QString UIUtils::blendForBackgroundColorStyleSheet(const QColor& input, const QColor& blend,
+                                                   float transparency)
 {
-  const auto result = QColor(
-    255.0 * (transparency * blend.redF() + (1 - transparency) * input.redF()),
-    255.0 * (transparency * blend.greenF() + (1 - transparency) * input.greenF()),
-    255.0 * (transparency * blend.blueF() + (1 - transparency) * input.blueF()));
+  const auto result =
+    QColor(255.0 * (transparency * blend.redF() + (1 - transparency) * input.redF()),
+           255.0 * (transparency * blend.greenF() + (1 - transparency) * input.greenF()),
+           255.0 * (transparency * blend.blueF() + (1 - transparency) * input.blueF()));
   return getBackgroundColorStyleSheet(result);
 }

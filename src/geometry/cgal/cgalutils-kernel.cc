@@ -6,24 +6,21 @@
 namespace CGALUtils {
 
 template <>
-double KernelConverter<CGAL::Cartesian<CGAL::Gmpq>, CGAL::Epick>::operator()(
-  const CGAL::Gmpq& n) const
+double KernelConverter<CGAL::Cartesian<CGAL::Gmpq>, CGAL::Epick>::operator()(const CGAL::Gmpq& n) const
 {
   return CGAL::to_double(n);
 }
 
 template <>
-CGAL::Gmpq KernelConverter<CGAL::Epick, CGAL::Cartesian<CGAL::Gmpq>>::operator()(
-  const double& n) const
+CGAL::Gmpq KernelConverter<CGAL::Epick, CGAL::Cartesian<CGAL::Gmpq>>::operator()(const double& n) const
 {
   return n;
 }
 
 template <>
-double KernelConverter<CGAL::Epick, CGAL_DoubleKernel>::operator()(
-  const double& n) const
+double KernelConverter<CGAL::Epick, CGAL_DoubleKernel>::operator()(const double& n) const
 {
   return n;
 }
 
-} // namespace CGALUtils
+}  // namespace CGALUtils

@@ -27,7 +27,7 @@ inline constexpr size_t STL_FACET_NUMBYTES = 4ul * 3ul * 4ul + 2ul;
 // is a 'binary32' aka 'single' standard IEEE 32-bit floating point type
 union stl_facet {
   static_assert(sizeof(unsigned char) == sizeof(uint8_t), "existence check");
-  unsigned char data8[ STL_FACET_NUMBYTES ];
+  unsigned char data8[STL_FACET_NUMBYTES];
   struct facet_data {
     float i, j, k;
     float x1, y1, z1;
@@ -41,25 +41,25 @@ static_assert(offsetof(stl_facet::facet_data, attribute_byte_count) == 4ul * 3ul
               "Invalid padding in stl_facet");
 
 #if BOOST_ENDIAN_BIG_BYTE
-static void uint32_byte_swap(unsigned char *p) {
-# if (__GNUC__ >= 4 && __GNUC_MINOR__ >= 3) || defined(__clang__)
+static void uint32_byte_swap(unsigned char *p)
+{
+#if (__GNUC__ >= 4 && __GNUC_MINOR__ >= 3) || defined(__clang__)
   uint32_t& x = *reinterpret_cast<uint32_t *>(p);
   x = __builtin_bswap32(x);
-# elif defined(_MSC_VER)
+#elif defined(_MSC_VER)
   uint32_t& x = *reinterpret_cast<uint32_t *>(p);
   x = _byteswap_ulong(x);
-# else
+#else
   std::swap(*p, *(p + 3));
   std::swap(*(p + 1), *(p + 2));
-# endif
+#endif
 }
 
-static void uint32_byte_swap(uint32_t& x) {
-  uint32_byte_swap(reinterpret_cast<unsigned char *>(&x));
-}
-#endif // if BOOST_ENDIAN_BIG_BYTE
+static void uint32_byte_swap(uint32_t& x) { uint32_byte_swap(reinterpret_cast<unsigned char *>(&x)); }
+#endif  // if BOOST_ENDIAN_BIG_BYTE
 
-static void read_stl_facet(std::ifstream& f, stl_facet& facet) {
+static void read_stl_facet(std::ifstream& f, stl_facet& facet)
+{
   f.read((char *)facet.data8, STL_FACET_NUMBYTES);
   if (static_cast<size_t>(f.gcount()) < STL_FACET_NUMBYTES) {
     throw std::ios_base::failure("facet data truncated");
@@ -72,13 +72,13 @@ static void read_stl_facet(std::ifstream& f, stl_facet& facet) {
 #endif
 }
 
-std::unique_ptr<PolySet> import_stl(const std::string& filename, const Location& loc) {
+std::unique_ptr<PolySet> import_stl(const std::string& filename, const Location& loc)
+{
   // Open file and position at the end
   std::ifstream f(filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
   if (!f.good()) {
-    LOG(message_group::Warning,
-        "Can't open import file '%1$s', import() at line %2$d",
-        filename, loc.firstLine());
+    LOG(message_group::Warning, "Can't open import file '%1$s', import() at line %2$d", filename,
+        loc.firstLine());
     return PolySet::createEmpty();
   }
 
@@ -87,8 +87,7 @@ std::unique_ptr<PolySet> import_stl(const std::string& filename, const Location&
   const boost::regex ex_outer("^\\s*outer loop$");
   const boost::regex ex_loopend("^\\s*endloop$");
   const boost::regex ex_vertex("^\\s*vertex");
-  const boost::regex ex_vertices(
-    R"(^\s*vertex\s+([^\s]+)\s+([^\s]+)\s+([^\s]+)\s*$)");
+  const boost::regex ex_vertices(R"(^\s*vertex\s+([^\s]+)\s+([^\s]+)\s+([^\s]+)\s*$)");
   const boost::regex ex_endsolid("^\\s*endsolid");
 
   bool binary = false;
@@ -103,7 +102,7 @@ std::unique_ptr<PolySet> import_stl(const std::string& filename, const Location&
       binary = true;
     }
   }
-  if(!binary) facenum=0;
+  if (!binary) facenum = 0;
   PolySetBuilder builder(0, facenum);
   f.seekg(0);
 
@@ -115,11 +114,10 @@ std::unique_ptr<PolySet> import_stl(const std::string& filename, const Location&
     std::array<std::array<double, 3>, 3> vdata;
     std::string line;
 
-    auto AsciiError = [&](const auto& errstr){
-        LOG(message_group::Error, loc, "",
-            "STL line %1$s, %2$s line '%3$s' importing file '%4$s'",
-            lineno, errstr, line, filename);
-      };
+    auto AsciiError = [&](const auto& errstr) {
+      LOG(message_group::Error, loc, "", "STL line %1$s, %2$s line '%3$s' importing file '%4$s'", lineno,
+          errstr, line, filename);
+    };
 
     std::getline(f, line);
     bool reached_end = false;
@@ -145,15 +143,14 @@ std::unique_ptr<PolySet> import_stl(const std::string& filename, const Location&
       } else if (i >= 3) {
         AsciiError("extra vertex");
         return PolySet::createEmpty();
-      } else if (boost::regex_search(line, results, ex_vertices) &&
-                 results.size() >= 4) {
+      } else if (boost::regex_search(line, results, ex_vertices) && results.size() >= 4) {
         try {
           for (int v = 0; v < 3; ++v) {
             vdata.at(i).at(v) = boost::lexical_cast<double>(results[v + 1]);
           }
           if (++i == 3) {
             builder.beginPolygon(3);
-            for(int j=0;j<3;j++) {
+            for (int j = 0; j < 3; j++) {
               builder.addVertex(Vector3d(vdata[j][0], vdata[j][1], vdata[j][2]));
             }
           }
@@ -169,7 +166,7 @@ std::unique_ptr<PolySet> import_stl(const std::string& filename, const Location&
   } else if (binary && !f.eof() && f.good()) {
     try {
       f.ignore(80 - 5 + 4);
-      while (!f.eof() ) {
+      while (!f.eof()) {
         stl_facet facet;
         try {
           read_stl_facet(f, facet);
@@ -177,29 +174,26 @@ std::unique_ptr<PolySet> import_stl(const std::string& filename, const Location&
           if (f.eof()) break;
           throw;
         }
-        builder.appendPolygon({
-                Vector3d(facet.data.x1, facet.data.y1, facet.data.z1),
-                Vector3d(facet.data.x2, facet.data.y2, facet.data.z2),
-                Vector3d(facet.data.x3, facet.data.y3, facet.data.z3)
-        });
+        builder.appendPolygon({Vector3d(facet.data.x1, facet.data.y1, facet.data.z1),
+                               Vector3d(facet.data.x2, facet.data.y2, facet.data.z2),
+                               Vector3d(facet.data.x3, facet.data.y3, facet.data.z3)});
       }
     } catch (const std::ios_base::failure& ex) {
       int64_t offset = -1;
-      try { offset = f.tellg(); } catch (...) {}
+      try {
+        offset = f.tellg();
+      } catch (...) {
+      }
       if (offset < 0) {
-        LOG(message_group::Error, loc, "",
-            "Binary STL '%1$s' error: %3$s",
-            filename, ex.what());
+        LOG(message_group::Error, loc, "", "Binary STL '%1$s' error: %3$s", filename, ex.what());
       } else {
-        LOG(message_group::Error, loc, "",
-            "Binary STL '%1$s' error at byte %2$s: %3$s",
-            filename, offset, ex.what());
+        LOG(message_group::Error, loc, "", "Binary STL '%1$s' error at byte %2$s: %3$s", filename,
+            offset, ex.what());
       }
       return PolySet::createEmpty();
     }
   } else {
-    LOG(message_group::Error, loc, "",
-        "STL format not recognized in '%1$s'.", filename);
+    LOG(message_group::Error, loc, "", "STL format not recognized in '%1$s'.", filename);
     return PolySet::createEmpty();
   }
   return builder.build();

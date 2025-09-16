@@ -32,8 +32,9 @@ namespace {
     0 : if v1 ~= v2 (approximation to compoensate for floating point precision)
     1 : if v1  > v2
 */
-int sgn_vdiff(const Vector2d& v1, const Vector2d& v2) {
-  constexpr double ratio_threshold = 1e5; // 10ppm difference
+int sgn_vdiff(const Vector2d& v1, const Vector2d& v2)
+{
+  constexpr double ratio_threshold = 1e5;  // 10ppm difference
   double l1 = v1.norm();
   double l2 = v2.norm();
   // Compare the average and difference, to be independent of geometry scale.
@@ -46,7 +47,8 @@ int sgn_vdiff(const Vector2d& v1, const Vector2d& v2) {
 // Insert vertices for segments interpolated between v0 and v1.
 // The last vertex (t==1) is not added here to avoid duplicate vertices,
 // since it will be the first vertex of the *next* edge.
-void add_segmented_edge(Outline2d& o, const Vector2d& v0, const Vector2d& v1, unsigned int edge_segments) {
+void add_segmented_edge(Outline2d& o, const Vector2d& v0, const Vector2d& v1, unsigned int edge_segments)
+{
   for (unsigned int j = 0; j < edge_segments; ++j) {
     double t = static_cast<double>(j) / edge_segments;
     o.vertices.push_back((1 - t) * v0 + t * v1);
@@ -55,21 +57,19 @@ void add_segmented_edge(Outline2d& o, const Vector2d& v0, const Vector2d& v1, un
 
 // While total outline segments < fn, increment segment_count for edge with largest
 // (max_edge_length / segment_count).
-Outline2d splitOutlineByFn(
-  const Outline2d& o,
-  const double twist, const double scale_x, const double scale_y,
-  const double fn, unsigned int slices)
+Outline2d splitOutlineByFn(const Outline2d& o, const double twist, const double scale_x,
+                           const double scale_y, const double fn, unsigned int slices)
 {
-
   struct segment_tracker {
     size_t edge_index;
     double max_edgelen;
     unsigned int segment_count{1u};
-    segment_tracker(size_t i, double len) : edge_index(i), max_edgelen(len) { }
+    segment_tracker(size_t i, double len) : edge_index(i), max_edgelen(len) {}
     // metric for comparison: average between (max segment length, and max segment length after split)
     [[nodiscard]] double metric() const { return max_edgelen / (segment_count + 0.5); }
-    bool operator<(const segment_tracker& rhs) const { return this->metric() < rhs.metric();  }
-    [[nodiscard]] bool close_match(const segment_tracker& other) const {
+    bool operator<(const segment_tracker& rhs) const { return this->metric() < rhs.metric(); }
+    [[nodiscard]] bool close_match(const segment_tracker& other) const
+    {
       // Edges are grouped when metrics match by at least 99.9%
       constexpr double APPROX_EQ_RATIO = 0.999;
       double l1 = this->metric(), l2 = other.metric();
@@ -87,7 +87,7 @@ Outline2d splitOutlineByFn(
   if (scale_x != scale_y) {
     for (size_t i = 1; i <= num_vertices; ++i) {
       Vector2d v1 = o.vertices[i % num_vertices];
-      double max_edgelen = 0.0; // max length for single edge over all transformed slices
+      double max_edgelen = 0.0;  // max length for single edge over all transformed slices
       for (unsigned int j = 0; j <= slices; j++) {
         double t = static_cast<double>(j) / slices;
         Vector2d scale(Calc::lerp(1, scale_x, t), Calc::lerp(1, scale_y, t));
@@ -99,7 +99,7 @@ Outline2d splitOutlineByFn(
       q.emplace(i - 1, max_edgelen);
       v0 = v1;
     }
-  } else { // uniform scaling
+  } else {  // uniform scaling
     double max_scale = std::max(scale_x, 1.0);
     for (size_t i = 1; i <= num_vertices; ++i) {
       Vector2d v1 = o.vertices[i % num_vertices];
@@ -157,10 +157,8 @@ Outline2d splitOutlineByFn(
 
 // For each edge in original outline, find its max length over all slice transforms,
 // and divide into segments no longer than fs.
-Outline2d splitOutlineByFs(
-  const Outline2d& o,
-  const double twist, const double scale_x, const double scale_y,
-  const double fs, unsigned int slices)
+Outline2d splitOutlineByFs(const Outline2d& o, const double twist, const double scale_x,
+                           const double scale_y, const double fs, unsigned int slices)
 {
   const auto num_vertices = o.vertices.size();
 
@@ -173,7 +171,7 @@ Outline2d splitOutlineByFs(
   if (scale_x != scale_y) {
     for (size_t i = 1; i <= num_vertices; ++i) {
       Vector2d v1 = o.vertices[i % num_vertices];
-      double max_edgelen = 0.0; // max length for single edge over all transformed slices
+      double max_edgelen = 0.0;  // max length for single edge over all transformed slices
       for (unsigned int j = 0; j <= slices; j++) {
         double t = static_cast<double>(j) / slices;
         Vector2d scale(Calc::lerp(1, scale_x, t), Calc::lerp(1, scale_y, t));
@@ -186,11 +184,12 @@ Outline2d splitOutlineByFs(
       add_segmented_edge(o2, v0, v1, edge_segments);
       v0 = v1;
     }
-  } else { // uniform scaling
+  } else {  // uniform scaling
     double max_scale = std::max(scale_x, 1.0);
     for (size_t i = 1; i <= num_vertices; ++i) {
       Vector2d v1 = o.vertices[i % num_vertices];
-      unsigned int edge_segments = static_cast<unsigned int>(std::ceil((v1 - v0).norm() * max_scale / fs));
+      unsigned int edge_segments =
+        static_cast<unsigned int>(std::ceil((v1 - v0).norm() * max_scale / fs));
       add_segmented_edge(o2, v0, v1, edge_segments);
       v0 = v1;
     }
@@ -198,10 +197,11 @@ Outline2d splitOutlineByFs(
   return o2;
 }
 
-std::unique_ptr<PolySet> assemblePolySetForManifold(
-  const Polygon2d& polyref,
-  std::vector<Vector3d>& vertices, PolygonIndices& indices,
-  int convexity, boost::tribool isConvex, int index_offset) {
+std::unique_ptr<PolySet> assemblePolySetForManifold(const Polygon2d& polyref,
+                                                    std::vector<Vector3d>& vertices,
+                                                    PolygonIndices& indices, int convexity,
+                                                    boost::tribool isConvex, int index_offset)
+{
   auto final_polyset = std::make_unique<PolySet>(3, isConvex);
   final_polyset->setTriangular(true);
   final_polyset->setConvexity(convexity);
@@ -209,13 +209,13 @@ std::unique_ptr<PolySet> assemblePolySetForManifold(
   final_polyset->indices = std::move(indices);
 
   // Create top and bottom face.
-  auto ps_bottom = polyref.tessellate(); // bottom
+  auto ps_bottom = polyref.tessellate();  // bottom
   // Flip vertex ordering for bottom polygon
   for (auto& p : ps_bottom->indices) {
     std::reverse(p.begin(), p.end());
   }
   std::copy(ps_bottom->indices.begin(), ps_bottom->indices.end(),
-     std::back_inserter(final_polyset->indices));
+            std::back_inserter(final_polyset->indices));
 
   for (auto& p : ps_bottom->indices) {
     std::reverse(p.begin(), p.end());
@@ -224,7 +224,7 @@ std::unique_ptr<PolySet> assemblePolySetForManifold(
     }
   }
   std::copy(ps_bottom->indices.begin(), ps_bottom->indices.end(),
-     std::back_inserter(final_polyset->indices));
+            std::back_inserter(final_polyset->indices));
 
   // LOG(PolySetUtils::polySetToPolyhedronSource(*final_polyset));
 
@@ -232,15 +232,15 @@ std::unique_ptr<PolySet> assemblePolySetForManifold(
 }
 
 std::unique_ptr<PolySet> assemblePolySetForCGAL(const Polygon2d& polyref,
-  std::vector<Vector3d>& vertices, PolygonIndices& indices,
-  int convexity, boost::tribool isConvex,
-  double scale_x, double scale_y,
-  const Vector3d& h1, const Vector3d& h2, double twist) {
-
+                                                std::vector<Vector3d>& vertices, PolygonIndices& indices,
+                                                int convexity, boost::tribool isConvex, double scale_x,
+                                                double scale_y, const Vector3d& h1, const Vector3d& h2,
+                                                double twist)
+{
   PolySetBuilder builder(0, 0, 3, isConvex);
   builder.setConvexity(convexity);
 
-  for (const auto& poly: indices) {
+  for (const auto& poly : indices) {
     builder.beginPolygon(poly.size());
     for (const auto idx : poly) {
       builder.addVertex(vertices[idx]);
@@ -254,7 +254,7 @@ std::unique_ptr<PolySet> assemblePolySetForCGAL(const Polygon2d& polyref,
   };
 
   // Create bottom face.
-  auto ps_bottom = polyref.tessellate(); // bottom
+  auto ps_bottom = polyref.tessellate();  // bottom
   // Flip vertex ordering for bottom polygon
   for (auto& p : ps_bottom->indices) {
     std::reverse(p.begin(), p.end());
@@ -283,11 +283,10 @@ std::unique_ptr<PolySet> assemblePolySetForCGAL(const Polygon2d& polyref,
    Quads are triangulated across the shorter of the two diagonals, which works well in most cases.
    However, when diagonals are equal length, decision may flip depending on other factors.
  */
-void add_slice_indices(PolygonIndices &indices, int slice_idx, int slice_stride, const Polygon2d& poly,
-                              double rot1, double rot2,
-                              const Vector2d& scale1, const Vector2d& scale2)
+void add_slice_indices(PolygonIndices& indices, int slice_idx, int slice_stride, const Polygon2d& poly,
+                       double rot1, double rot2, const Vector2d& scale1, const Vector2d& scale2)
 {
-  int prev_slice = (slice_idx-1)*slice_stride;
+  int prev_slice = (slice_idx - 1) * slice_stride;
   int curr_slice = slice_idx * slice_stride;
 
   Eigen::Affine2d trans1(Eigen::Scaling(scale1) * Eigen::Affine2d(rotate_degrees(-rot1)));
@@ -311,7 +310,7 @@ void add_slice_indices(PolygonIndices &indices, int slice_idx, int slice_stride,
     // matched the direction of diagonal for neighboring edges (which did not exhibit "equal" diagonals).
     bool flip = ((!o.positive) xor (back_twist));
 
-    for (int i = 1; i <= o.vertices.size(); ++i) {
+    for (size_t i = 1; i <= o.vertices.size(); ++i) {
       // curr1: previous slice, current vertex
       // curr2: current slice, current vertex
       Vector2d curr1 = trans1 * o.vertices[i % o.vertices.size()];
@@ -354,21 +353,23 @@ void add_slice_indices(PolygonIndices &indices, int slice_idx, int slice_stride,
   }
 }
 
-size_t calc_num_slices(const LinearExtrudeNode& node, const Polygon2d& poly) {
+size_t calc_num_slices(const LinearExtrudeNode& node, const Polygon2d& poly)
+{
   size_t num_slices;
   if (node.has_slices) {
     num_slices = node.slices;
   } else if (node.has_twist) {
-    double max_r1_sqr = 0; // r1 is before scaling
+    double max_r1_sqr = 0;  // r1 is before scaling
     Vector2d scale(node.scale_x, node.scale_y);
     for (const auto& o : poly.outlines())
-      for (const auto& v : o.vertices)
-        max_r1_sqr = fmax(max_r1_sqr, v.squaredNorm());
+      for (const auto& v : o.vertices) max_r1_sqr = fmax(max_r1_sqr, v.squaredNorm());
     // Calculate Helical curve length for Twist with no Scaling
     if (node.scale_x == 1.0 && node.scale_y == 1.0) {
-      num_slices = (unsigned int)Calc::get_helix_slices(max_r1_sqr, node.height[2], node.twist, node.fn, node.fs, node.fa);
-    } else if (node.scale_x != node.scale_y) {  // non uniform scaling with twist using max slices from twist and non uniform scale
-      double max_delta_sqr = 0; // delta from before/after scaling
+      num_slices = (unsigned int)Calc::get_helix_slices(max_r1_sqr, node.height[2], node.twist, node.fn,
+                                                        node.fs, node.fa);
+    } else if (node.scale_x != node.scale_y) {  // non uniform scaling with twist using max slices from
+                                                // twist and non uniform scale
+      double max_delta_sqr = 0;                 // delta from before/after scaling
       Vector2d scale(node.scale_x, node.scale_y);
       for (const auto& o : poly.outlines()) {
         for (const auto& v : o.vertices) {
@@ -377,15 +378,18 @@ size_t calc_num_slices(const LinearExtrudeNode& node, const Polygon2d& poly) {
       }
       size_t slicesNonUniScale;
       size_t slicesTwist;
-      slicesNonUniScale = (unsigned int)Calc::get_diagonal_slices(max_delta_sqr, node.height[2], node.fn, node.fs);
-      slicesTwist = (unsigned int)Calc::get_helix_slices(max_r1_sqr, node.height[2], node.twist, node.fn, node.fs, node.fa);
+      slicesNonUniScale =
+        (unsigned int)Calc::get_diagonal_slices(max_delta_sqr, node.height[2], node.fn, node.fs);
+      slicesTwist = (unsigned int)Calc::get_helix_slices(max_r1_sqr, node.height[2], node.twist, node.fn,
+                                                         node.fs, node.fa);
       num_slices = std::max(slicesNonUniScale, slicesTwist);
-    } else { // uniform scaling with twist, use conical helix calculation
-      num_slices = (unsigned int)Calc::get_conical_helix_slices(max_r1_sqr, node.height[2], node.twist, node.scale_x, node.fn, node.fs, node.fa);
+    } else {  // uniform scaling with twist, use conical helix calculation
+      num_slices = (unsigned int)Calc::get_conical_helix_slices(max_r1_sqr, node.height[2], node.twist,
+                                                                node.scale_x, node.fn, node.fs, node.fa);
     }
   } else if (node.scale_x != node.scale_y) {
     // Non uniform scaling, w/o twist
-    double max_delta_sqr = 0; // delta from before/after scaling
+    double max_delta_sqr = 0;  // delta from before/after scaling
     Vector2d scale(node.scale_x, node.scale_y);
     for (const auto& o : poly.outlines()) {
       for (const auto& v : o.vertices) {
@@ -430,7 +434,8 @@ std::unique_ptr<Geometry> extrudePolygon(const LinearExtrudeNode& node, const Po
         if (o.vertices.size() >= node.segments) {
           seg_poly.addOutline(o);
         } else {
-          seg_poly.addOutline(splitOutlineByFn(o, node.twist, node.scale_x, node.scale_y, node.segments, num_slices));
+          seg_poly.addOutline(
+            splitOutlineByFn(o, node.twist, node.scale_x, node.scale_y, node.segments, num_slices));
         }
       }
       is_segmented = true;
@@ -441,19 +446,22 @@ std::unique_ptr<Geometry> extrudePolygon(const LinearExtrudeNode& node, const Po
         if (o.vertices.size() >= node.fn) {
           seg_poly.addOutline(o);
         } else {
-          seg_poly.addOutline(splitOutlineByFn(o, node.twist, node.scale_x, node.scale_y, node.fn, num_slices));
+          seg_poly.addOutline(
+            splitOutlineByFn(o, node.twist, node.scale_x, node.scale_y, node.fn, num_slices));
         }
       }
-    } else { // $fs and $fa based segmentation
+    } else {  // $fs and $fa based segmentation
       auto fa_segs = static_cast<unsigned int>(std::ceil(360.0 / node.fa));
       for (const auto& o : poly.outlines()) {
         if (o.vertices.size() >= fa_segs) {
           seg_poly.addOutline(o);
         } else {
           // try splitting by $fs, then check if $fa results in less segments
-          auto fsOutline = splitOutlineByFs(o, node.twist, node.scale_x, node.scale_y, node.fs, num_slices);
+          auto fsOutline =
+            splitOutlineByFs(o, node.twist, node.scale_x, node.scale_y, node.fs, num_slices);
           if (fsOutline.vertices.size() >= fa_segs) {
-            seg_poly.addOutline(splitOutlineByFn(o, node.twist, node.scale_x, node.scale_y, fa_segs, num_slices));
+            seg_poly.addOutline(
+              splitOutlineByFn(o, node.twist, node.scale_x, node.scale_y, fa_segs, num_slices));
           } else {
             seg_poly.addOutline(std::move(fsOutline));
           }
@@ -480,16 +488,15 @@ std::unique_ptr<Geometry> extrudePolygon(const LinearExtrudeNode& node, const Po
   std::vector<Vector3d> vertices;
   vertices.reserve(slice_stride * (num_slices + 1));
   PolygonIndices indices;
-  indices.reserve(slice_stride * (num_slices + 1) * 2); // sides + endcaps
+  indices.reserve(slice_stride * (num_slices + 1) * 2);  // sides + endcaps
 
   // Calculate all vertices
   Vector2d full_scale(1 - node.scale_x, 1 - node.scale_y);
   double full_rot = -node.twist;
   auto full_height = (h2 - h1);
   for (unsigned int slice_idx = 0; slice_idx <= num_slices; slice_idx++) {
-    Eigen::Affine2d trans(
-      Eigen::Scaling(Vector2d(1,1) - full_scale * slice_idx / num_slices) *
-      Eigen::Affine2d(rotate_degrees(full_rot * slice_idx / num_slices)));
+    Eigen::Affine2d trans(Eigen::Scaling(Vector2d(1, 1) - full_scale * slice_idx / num_slices) *
+                          Eigen::Affine2d(rotate_degrees(full_rot * slice_idx / num_slices)));
 
     for (const auto& o : polyref.outlines()) {
       for (const auto& v : o.vertices) {
@@ -501,15 +508,14 @@ std::unique_ptr<Geometry> extrudePolygon(const LinearExtrudeNode& node, const Po
 
   // Create indices for sides
   for (unsigned int slice_idx = 1; slice_idx <= num_slices; slice_idx++) {
-    double rot_prev = node.twist * (slice_idx -1)/ num_slices;
+    double rot_prev = node.twist * (slice_idx - 1) / num_slices;
     double rot_curr = node.twist * slice_idx / num_slices;
-    auto height_prev = h1 + (h2 - h1) * (slice_idx - 1) / num_slices;
-    auto height_curr = h1 + (h2 - h1) * slice_idx / num_slices;
     Vector2d scale_prev(1 - (1 - node.scale_x) * (slice_idx - 1) / num_slices,
-                    1 - (1 - node.scale_y) * (slice_idx - 1) / num_slices);
+                        1 - (1 - node.scale_y) * (slice_idx - 1) / num_slices);
     Vector2d scale_curr(1 - (1 - node.scale_x) * slice_idx / num_slices,
-                    1 - (1 - node.scale_y) * slice_idx / num_slices);
-    add_slice_indices(indices, slice_idx, slice_stride, polyref, rot_prev, rot_curr, scale_prev, scale_curr);
+                        1 - (1 - node.scale_y) * slice_idx / num_slices);
+    add_slice_indices(indices, slice_idx, slice_stride, polyref, rot_prev, rot_curr, scale_prev,
+                      scale_curr);
   }
 
   // For Manifold, we can tesselate the endcaps using existing vertices to build a manifold mesh.
@@ -518,13 +524,10 @@ std::unique_ptr<Geometry> extrudePolygon(const LinearExtrudeNode& node, const Po
 
 #ifdef ENABLE_MANIFOLD
   if (RenderSettings::inst()->backend3D == RenderBackend3D::ManifoldBackend) {
-    return assemblePolySetForManifold(polyref, vertices, indices,
-                                      node.convexity, isConvex, slice_stride * num_slices);
-  }
-  else
+    return assemblePolySetForManifold(polyref, vertices, indices, node.convexity, isConvex,
+                                      slice_stride * num_slices);
+  } else
 #endif
-  return assemblePolySetForCGAL(polyref, vertices, indices,
-                                node.convexity, isConvex,
-                                node.scale_x, node.scale_y,
-                                h1, h2, node.twist);
+    return assemblePolySetForCGAL(polyref, vertices, indices, node.convexity, isConvex, node.scale_x,
+                                  node.scale_y, h1, h2, node.twist);
 }

@@ -1,7 +1,6 @@
 #pragma once
 
 #include <memory>
-#include "core/enums.h"
 #include "geometry/PolySet.h"
 #include "geometry/Geometry.h"
 

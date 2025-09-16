@@ -2,14 +2,14 @@
 
 #include "UXTest.h"
 
-class TestModuleCache: public UXTest
+class TestModuleCache : public UXTest
 {
-    Q_OBJECT;
+  Q_OBJECT;
 
 private slots:
-    void testBasicCache();
-    void testMCAD();
+  void testBasicCache();
+  void testMCAD();
 
 private:
-    QStringList files;
+  QStringList files;
 };

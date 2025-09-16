@@ -74,7 +74,7 @@
 #include <QProcess>
 #include <QProgressDialog>
 #include <QScreen>
-#include <QSettings> //Include QSettings for direct operations on settings arrays
+#include <QSettings>  //Include QSettings for direct operations on settings arrays
 #include <QSignalMapper>
 #include <QSoundEffect>
 #include <QSplitter>
@@ -120,6 +120,7 @@
 #include "gui/Measurement.h"
 #include "gui/Export3mfDialog.h"
 #include "gui/ExportPdfDialog.h"
+#include "gui/ExportSvgDialog.h"
 #include "gui/ExternalToolInterface.h"
 #include "gui/FontListDialog.h"
 #include "gui/ImportUtils.h"
@@ -150,11 +151,11 @@
 #include "geometry/cgal/cgal.h"
 #include "geometry/cgal/CGALCache.h"
 #include "geometry/cgal/CGALNefGeometry.h"
-#endif // ENABLE_CGAL
+#endif  // ENABLE_CGAL
 #ifdef ENABLE_MANIFOLD
 #include "geometry/manifold/manifoldutils.h"
 #include "geometry/manifold/ManifoldGeometry.h"
-#endif // ENABLE_MANIFOLD
+#endif  // ENABLE_MANIFOLD
 #ifdef ENABLE_OPENCSG
 #include "core/CSGTreeEvaluator.h"
 #include "glview/preview/OpenCSGRenderer.h"
@@ -169,12 +170,13 @@
 #include "nettle/sha2.h"
 #include "nettle/base64.h"
 
-std::string SHA256HashString(std::string aString){
+std::string SHA256HashString(std::string aString)
+{
   uint8_t digest[SHA256_DIGEST_SIZE];
   sha256_ctx sha256_ctx;
 
   sha256_init(&sha256_ctx);
-  sha256_update(&sha256_ctx, aString.length(), (uint8_t *) aString.c_str());
+  sha256_update(&sha256_ctx, aString.length(), (uint8_t *)aString.c_str());
   sha256_digest(&sha256_ctx, SHA256_DIGEST_SIZE, digest);
 
   base64_encode_ctx base64_ctx;
@@ -187,10 +189,10 @@ std::string SHA256HashString(std::string aString){
   return digest_base64;
 }
 
-#endif // ifdef ENABLE_PYTHON
+#endif  // ifdef ENABLE_PYTHON
 
 #include "gui/PrintService.h"
-
+#include "input/MouseConfigWidget.h"
 
 // Global application state
 unsigned int GuiLocker::guiLocked = 0;
@@ -229,24 +231,27 @@ QAction *findAction(const QList<QAction *>& actions, const std::string& name)
   return nullptr;
 }
 
-void fileExportedMessage(const QString& format, const QString& filename) {
+void fileExportedMessage(const QString& format, const QString& filename)
+{
   LOG("%1$s export finished: %2$s", format.toUtf8().constData(), filename.toUtf8().constData());
 }
 
-void removeExportActions(QToolBar *toolbar, QAction *action) {
+void removeExportActions(QToolBar *toolbar, QAction *action)
+{
   int idx = toolbar->actions().indexOf(action);
   while (idx > 0) {
     QAction *a = toolbar->actions().at(idx - 1);
-    if (a->objectName().isEmpty())     // separator
+    if (a->objectName().isEmpty())  // separator
       break;
     toolbar->removeAction(a);
     idx--;
   }
 }
 
-void addExportActions(const MainWindow *mainWindow, QToolBar *toolbar, QAction *action) {
-  for (const std::string& identifier : {Settings::Settings::toolbarExport3D.value(),
-                                        Settings::Settings::toolbarExport2D.value()}) {
+void addExportActions(const MainWindow *mainWindow, QToolBar *toolbar, QAction *action)
+{
+  for (const std::string& identifier :
+       {Settings::Settings::toolbarExport3D.value(), Settings::Settings::toolbarExport2D.value()}) {
     FileFormat format;
     fileformat::fromIdentifier(identifier, format);
     const auto it = mainWindow->exportMap.find(format);
@@ -257,8 +262,9 @@ void addExportActions(const MainWindow *mainWindow, QToolBar *toolbar, QAction *
   }
 }
 
-std::unique_ptr<ExternalToolInterface> createExternalToolService(
-  print_service_t serviceType, const QString& serviceName, FileFormat fileFormat)
+std::unique_ptr<ExternalToolInterface> createExternalToolService(print_service_t serviceType,
+                                                                 const QString& serviceName,
+                                                                 FileFormat fileFormat)
 {
   switch (serviceType) {
   case print_service_t::NONE:
@@ -273,20 +279,15 @@ std::unique_ptr<ExternalToolInterface> createExternalToolService(
     return nullptr;
     break;
   }
-  case print_service_t::OCTOPRINT:
-    return createOctoPrintService(fileFormat);
-    break;
-  case print_service_t::LOCAL_APPLICATION:
-    return createLocalProgramService(fileFormat);
-    break;
+  case print_service_t::OCTOPRINT:         return createOctoPrintService(fileFormat); break;
+  case print_service_t::LOCAL_APPLICATION: return createLocalProgramService(fileFormat); break;
   }
   return {};
 }
 
-} // namespace
+}  // namespace
 
-MainWindow::MainWindow(const QStringList& filenames) :
-  rubberBandManager(this)
+MainWindow::MainWindow(const QStringList& filenames) : rubberBandManager(this)
 {
   installEventFilter(this);
   setupUi(this);
@@ -301,32 +302,20 @@ MainWindow::MainWindow(const QStringList& filenames) :
   this->addAction(editActionInsertTemplate);
   this->addAction(editActionFoldAll);
 
-  docks = {
-    {editorDock, QString(_("Editor"))},
-    {consoleDock, QString(_("Console"))},
-    {parameterDock, QString(_("Customizer"))},
-    {errorLogDock, QString(_("Error-Log"))},
-    {animateDock, QString(_("Animate"))},
-    {fontListDock, QString(_("Font Lists"))},
-    {viewportControlDock, QString(_("Viewport-Control"))}
-  };
+  docks = {{editorDock, _("Editor"), "view/hideEditor"},
+           {consoleDock, _("Console"), "view/hideConsole"},
+           {parameterDock, _("Customizer"), "view/hideCustomizer"},
+           {errorLogDock, _("Error-Log"), "view/hideErrorLog"},
+           {animateDock, _("Animate"), "view/hideAnimate"},
+           {fontListDock, _("Font Lists"), "view/hideFontList"},
+           {viewportControlDock, _("Viewport-Control"), "view/hideViewportControl"}};
 
-  this->editorDock->setConfigKey("view/hideEditor");
-  this->consoleDock->setConfigKey("view/hideConsole");
-  this->parameterDock->setConfigKey("view/hideCustomizer");
-  this->errorLogDock->setConfigKey("view/hideErrorLog");
-  this->animateDock->setConfigKey("view/hideAnimate");
-  this->fontListDock->setConfigKey("view/hideFontList");
-  this->viewportControlDock->setConfigKey("view/hideViewportControl");
-
-  this->versionLabel = nullptr;   // must be initialized before calling updateStatusBar()
+  this->versionLabel = nullptr;  // must be initialized before calling updateStatusBar()
   updateStatusBar(nullptr);
 
   renderCompleteSoundEffect = new QSoundEffect();
   renderCompleteSoundEffect->setSource(QUrl("qrc:/sounds/complete.wav"));
 
-  rootFile = nullptr;
-  parsedFile = nullptr;
   absoluteRootNode = nullptr;
 
   // Open Recent
@@ -359,33 +348,42 @@ MainWindow::MainWindow(const QStringList& filenames) :
   connect(this->editActionToggleBookmark, &QAction::triggered, tabManager, &TabManager::toggleBookmark);
   connect(this->editActionNextBookmark, &QAction::triggered, tabManager, &TabManager::nextBookmark);
   connect(this->editActionPrevBookmark, &QAction::triggered, tabManager, &TabManager::prevBookmark);
-  connect(this->editActionJumpToNextError, &QAction::triggered, tabManager, &TabManager::jumpToNextError);
+  connect(this->editActionJumpToNextError, &QAction::triggered, tabManager,
+          &TabManager::jumpToNextError);
 
-  connect(tabManager, &TabManager::editorAboutToClose, this, &MainWindow::onTabManagerAboutToCloseEditor);
+  connect(tabManager, &TabManager::editorAboutToClose, this,
+          &MainWindow::onTabManagerAboutToCloseEditor);
   connect(tabManager, &TabManager::currentEditorChanged, this, &MainWindow::onTabManagerEditorChanged);
-  connect(tabManager, &TabManager::editorContentReloaded, this, &MainWindow::onTabManagerEditorContentReloaded);
+  connect(tabManager, &TabManager::editorContentReloaded, this,
+          &MainWindow::onTabManagerEditorContentReloaded);
 
   connect(GlobalPreferences::inst(), &Preferences::consoleFontChanged, this->console, &Console::setFont);
+  this->console->setFont(GlobalPreferences::inst()->getValue("advanced/consoleFontFamily").toString(),
+                         GlobalPreferences::inst()->getValue("advanced/consoleFontSize").toUInt());
 
-  const QString version = QString("<b>OpenSCAD %1</b>").arg(QString::fromStdString(openscad_versionnumber));
+  const QString version =
+    QString("<b>OpenSCAD %1</b>").arg(QString::fromStdString(openscad_versionnumber));
   const QString weblink = "<a href=\"https://www.openscad.org/\">https://www.openscad.org/</a><br>";
-  this->console->setFont(
-    GlobalPreferences::inst()->getValue("advanced/consoleFontFamily").toString(),
-    GlobalPreferences::inst()->getValue("advanced/consoleFontSize").toUInt()
-    );
 
   consoleOutputRaw(version);
   consoleOutputRaw(weblink);
   consoleOutputRaw(copyrighttext);
-  this->consoleUpdater->start(0);   // Show "Loaded Design" message from TabManager
+  this->consoleUpdater->start(0);  // Show "Loaded Design" message from TabManager
 
   connect(this->errorLogWidget, &ErrorLog::openFile, this, &MainWindow::openFileFromPath);
   connect(this->console, &Console::openFile, this, &MainWindow::openFileFromPath);
 
-  connect(GlobalPreferences::inst()->ButtonConfig, &ButtonConfigWidget::inputMappingChanged, InputDriverManager::instance(), &InputDriverManager::onInputMappingUpdated, Qt::UniqueConnection);
-  connect(GlobalPreferences::inst()->AxisConfig, &AxisConfigWidget::inputMappingChanged, InputDriverManager::instance(), &InputDriverManager::onInputMappingUpdated, Qt::UniqueConnection);
-  connect(GlobalPreferences::inst()->AxisConfig, &AxisConfigWidget::inputCalibrationChanged, InputDriverManager::instance(), &InputDriverManager::onInputCalibrationUpdated, Qt::UniqueConnection);
-  connect(GlobalPreferences::inst()->AxisConfig, &AxisConfigWidget::inputGainChanged, InputDriverManager::instance(), &InputDriverManager::onInputGainUpdated, Qt::UniqueConnection);
+  connect(GlobalPreferences::inst()->ButtonConfig, &ButtonConfigWidget::inputMappingChanged,
+          InputDriverManager::instance(), &InputDriverManager::onInputMappingUpdated,
+          Qt::UniqueConnection);
+  connect(GlobalPreferences::inst()->AxisConfig, &AxisConfigWidget::inputMappingChanged,
+          InputDriverManager::instance(), &InputDriverManager::onInputMappingUpdated,
+          Qt::UniqueConnection);
+  connect(GlobalPreferences::inst()->AxisConfig, &AxisConfigWidget::inputCalibrationChanged,
+          InputDriverManager::instance(), &InputDriverManager::onInputCalibrationUpdated,
+          Qt::UniqueConnection);
+  connect(GlobalPreferences::inst()->AxisConfig, &AxisConfigWidget::inputGainChanged,
+          InputDriverManager::instance(), &InputDriverManager::onInputGainUpdated, Qt::UniqueConnection);
 
   setCorner(Qt::TopLeftCorner, Qt::LeftDockWidgetArea);
   setCorner(Qt::TopRightCorner, Qt::RightDockWidgetArea);
@@ -407,7 +405,7 @@ MainWindow::MainWindow(const QStringList& filenames) :
 
   const QSettingsCached settings;
   this->qglview->setMouseCentricZoom(Settings::Settings::mouseCentricZoom.value());
-  this->qglview->setMouseSwapButtons(Settings::Settings::mouseSwapButtons.value());
+  this->setAllMouseViewActions();
   this->meas.setView(qglview);
   this->designActionMeasureDist->setEnabled(false);
   this->designActionMeasureAngle->setEnabled(false);
@@ -419,16 +417,19 @@ MainWindow::MainWindow(const QStringList& filenames) :
 
   this->exportFormatMapper = new QSignalMapper(this);
 #if QT_VERSION >= QT_VERSION_CHECK(5, 15, 0)
-  connect(this->exportFormatMapper, &QSignalMapper::mappedInt, this, &MainWindow::actionExportFileFormat);
+  connect(this->exportFormatMapper, &QSignalMapper::mappedInt, this,
+          &MainWindow::actionExportFileFormat);
 #else
-  connect(this->exportFormatMapper, static_cast<void (QSignalMapper::*)(int)>(&QSignalMapper::mapped), this, &MainWindow::actionExportFileFormat);
+  connect(this->exportFormatMapper, static_cast<void (QSignalMapper::*)(int)>(&QSignalMapper::mapped),
+          this, &MainWindow::actionExportFileFormat);
 #endif
 
   waitAfterReloadTimer = new QTimer(this);
   waitAfterReloadTimer->setSingleShot(true);
   waitAfterReloadTimer->setInterval(autoReloadPollingPeriodMS);
   connect(waitAfterReloadTimer, &QTimer::timeout, this, &MainWindow::waitAfterReload);
-  connect(GlobalPreferences::inst(), &Preferences::ExperimentalChanged, this, &MainWindow::changeParameterWidget);
+  connect(GlobalPreferences::inst(), &Preferences::ExperimentalChanged, this,
+          &MainWindow::changeParameterWidget);
 
   progressThrottle->start();
 
@@ -452,9 +453,12 @@ MainWindow::MainWindow(const QStringList& filenames) :
   connect(this->fileShowLibraryFolder, &QAction::triggered, this, &MainWindow::actionShowLibraryFolder);
 
 #ifdef ENABLE_PYTHON
-  connect(this->fileActionPythonRevoke, &QAction::triggered, this, &MainWindow::actionPythonRevokeTrustedFiles);
-  connect(this->fileActionPythonCreateVenv, &QAction::triggered, this, &MainWindow::actionPythonCreateVenv);
-  connect(this->fileActionPythonSelectVenv, &QAction::triggered, this, &MainWindow::actionPythonSelectVenv);
+  connect(this->fileActionPythonRevoke, &QAction::triggered, this,
+          &MainWindow::actionPythonRevokeTrustedFiles);
+  connect(this->fileActionPythonCreateVenv, &QAction::triggered, this,
+          &MainWindow::actionPythonCreateVenv);
+  connect(this->fileActionPythonSelectVenv, &QAction::triggered, this,
+          &MainWindow::actionPythonSelectVenv);
 #else
   this->menuPython->menuAction()->setVisible(false);
 #endif
@@ -478,7 +482,8 @@ MainWindow::MainWindow(const QStringList& filenames) :
 
   connect(this->editActionCopy, &QAction::triggered, this, &MainWindow::copyText);
   connect(this->editActionCopyViewport, &QAction::triggered, this, &MainWindow::actionCopyViewport);
-  connect(this->editActionConvertTabsToSpaces, &QAction::triggered, this, &MainWindow::convertTabsToSpaces);
+  connect(this->editActionConvertTabsToSpaces, &QAction::triggered, this,
+          &MainWindow::convertTabsToSpaces);
   connect(this->editActionCopyVPT, &QAction::triggered, this, &MainWindow::copyViewportTranslation);
   connect(this->editActionCopyVPR, &QAction::triggered, this, &MainWindow::copyViewportRotation);
   connect(this->editActionCopyVPD, &QAction::triggered, this, &MainWindow::copyViewportDistance);
@@ -486,17 +491,20 @@ MainWindow::MainWindow(const QStringList& filenames) :
   connect(this->editActionPreferences, &QAction::triggered, this, &MainWindow::preferences);
   // Edit->Find
   connect(this->editActionFind, &QAction::triggered, this, &MainWindow::actionShowFind);
-  connect(this->editActionFindAndReplace, &QAction::triggered, this, &MainWindow::actionShowFindAndReplace);
+  connect(this->editActionFindAndReplace, &QAction::triggered, this,
+          &MainWindow::actionShowFindAndReplace);
 #ifdef Q_OS_WIN
   this->editActionFindAndReplace->setShortcut(QKeySequence("Ctrl+Shift+F"));
 #endif
   connect(this->editActionFindNext, &QAction::triggered, this, &MainWindow::findNext);
   connect(this->editActionFindPrevious, &QAction::triggered, this, &MainWindow::findPrev);
-  connect(this->editActionUseSelectionForFind, &QAction::triggered, this, &MainWindow::useSelectionForFind);
+  connect(this->editActionUseSelectionForFind, &QAction::triggered, this,
+          &MainWindow::useSelectionForFind);
 
   // Design menu
   connect(this->designActionAutoReload, &QAction::toggled, this, &MainWindow::autoReloadSet);
-  connect(this->designActionReloadAndPreview, &QAction::triggered, this, &MainWindow::actionReloadRenderPreview);
+  connect(this->designActionReloadAndPreview, &QAction::triggered, this,
+          &MainWindow::actionReloadRenderPreview);
   connect(this->designActionPreview, &QAction::triggered, this, &MainWindow::actionRenderPreview);
   connect(this->designActionRender, &QAction::triggered, this, &MainWindow::actionRender);
   connect(this->designActionMeasureDist, &QAction::triggered, this, &MainWindow::actionMeasureDistance);
@@ -504,8 +512,10 @@ MainWindow::MainWindow(const QStringList& filenames) :
   connect(this->designAction3DPrint, &QAction::triggered, this, &MainWindow::action3DPrint);
   connect(this->designCheckValidity, &QAction::triggered, this, &MainWindow::actionCheckValidity);
   connect(this->designActionDisplayAST, &QAction::triggered, this, &MainWindow::actionDisplayAST);
-  connect(this->designActionDisplayCSGTree, &QAction::triggered, this, &MainWindow::actionDisplayCSGTree);
-  connect(this->designActionDisplayCSGProducts, &QAction::triggered, this, &MainWindow::actionDisplayCSGProducts);
+  connect(this->designActionDisplayCSGTree, &QAction::triggered, this,
+          &MainWindow::actionDisplayCSGTree);
+  connect(this->designActionDisplayCSGProducts, &QAction::triggered, this,
+          &MainWindow::actionDisplayCSGProducts);
 
   exportMap[FileFormat::BINARY_STL] = this->fileActionExportBinarySTL;
   exportMap[FileFormat::ASCII_STL] = this->fileActionExportAsciiSTL;
@@ -544,11 +554,14 @@ MainWindow::MainWindow(const QStringList& filenames) :
   }
 
   connect(this->viewActionPreview, &QAction::triggered, this, &MainWindow::viewModePreview);
-  connect(this->viewActionThrownTogether, &QAction::triggered, this, &MainWindow::viewModeThrownTogether);
+  connect(this->viewActionThrownTogether, &QAction::triggered, this,
+          &MainWindow::viewModeThrownTogether);
   connect(this->viewActionShowEdges, &QAction::triggered, this, &MainWindow::viewModeShowEdges);
   connect(this->viewActionShowAxes, &QAction::triggered, this, &MainWindow::viewModeShowAxes);
-  connect(this->viewActionShowCrosshairs, &QAction::triggered, this, &MainWindow::viewModeShowCrosshairs);
-  connect(this->viewActionShowScaleProportional, &QAction::triggered, this, &MainWindow::viewModeShowScaleProportional);
+  connect(this->viewActionShowCrosshairs, &QAction::triggered, this,
+          &MainWindow::viewModeShowCrosshairs);
+  connect(this->viewActionShowScaleProportional, &QAction::triggered, this,
+          &MainWindow::viewModeShowScaleProportional);
   connect(this->viewActionTop, &QAction::triggered, this, &MainWindow::viewAngleTop);
   connect(this->viewActionBottom, &QAction::triggered, this, &MainWindow::viewAngleBottom);
   connect(this->viewActionLeft, &QAction::triggered, this, &MainWindow::viewAngleLeft);
@@ -566,18 +579,6 @@ MainWindow::MainWindow(const QStringList& filenames) :
   connect(this->viewActionHideEditorToolBar, &QAction::triggered, this, &MainWindow::hideEditorToolbar);
   connect(this->viewActionHide3DViewToolBar, &QAction::triggered, this, &MainWindow::hide3DViewToolbar);
 
-  // Create the docks and connect corresponding action
-  for (auto& [dock, title] : docks) {
-    dock->setName(title);
-    dock->setFocusPolicy(Qt::FocusPolicy::StrongFocus);
-
-    // It is neede to have the event filter installed in each dock so that the events are
-    // correctly processed when the dock are floating (is in a different window that the mainwindow)
-    dock->installEventFilter(this);
-
-    menuWindow->addAction(dock->toggleViewAction());
-  }
-
   // Help menu
   connect(this->helpActionAbout, &QAction::triggered, this, &MainWindow::helpAbout);
   connect(this->helpActionHomepage, &QAction::triggered, this, &MainWindow::helpHomepage);
@@ -593,7 +594,8 @@ MainWindow::MainWindow(const QStringList& filenames) :
     this->helpActionOfflineManual->setVisible(false);
   }
   if (UIUtils::hasOfflineCheatSheet()) {
-    connect(this->helpActionOfflineCheatSheet, &QAction::triggered, this, &MainWindow::helpOfflineCheatSheet);
+    connect(this->helpActionOfflineCheatSheet, &QAction::triggered, this,
+            &MainWindow::helpOfflineCheatSheet);
   } else {
     this->helpActionOfflineCheatSheet->setVisible(false);
   }
@@ -602,35 +604,46 @@ MainWindow::MainWindow(const QStringList& filenames) :
 #endif
 
   connect(this->qglview, &QGLView::cameraChanged, animateWidget, &Animate::cameraChanged);
-  connect(this->qglview, &QGLView::cameraChanged, viewportControlWidget, &ViewportControl::cameraChanged);
+  connect(this->qglview, &QGLView::cameraChanged, viewportControlWidget,
+          &ViewportControl::cameraChanged);
   connect(this->qglview, &QGLView::resized, viewportControlWidget, &ViewportControl::viewResized);
   connect(this->qglview, &QGLView::doRightClick, this, &MainWindow::rightClick);
   connect(this->qglview, &QGLView::doLeftClick, this, &MainWindow::leftClick);
 
-  connect(GlobalPreferences::inst(), &Preferences::requestRedraw, this->qglview, QOverload<>::of(&QGLView::update));
-  connect(GlobalPreferences::inst(), &Preferences::updateMouseCentricZoom, this->qglview, &QGLView::setMouseCentricZoom);
-  connect(GlobalPreferences::inst(), &Preferences::updateMouseSwapButtons, this->qglview, &QGLView::setMouseSwapButtons);
-  connect(GlobalPreferences::inst(), &Preferences::updateReorderMode, this, &MainWindow::updateReorderMode);
-  connect(GlobalPreferences::inst(), &Preferences::updateUndockMode, this, &MainWindow::updateUndockMode);
-  connect(GlobalPreferences::inst(), &Preferences::openCSGSettingsChanged, this, &MainWindow::openCSGSettingsChanged);
-  connect(GlobalPreferences::inst(), &Preferences::colorSchemeChanged, this, &MainWindow::setColorScheme);
-  connect(GlobalPreferences::inst(), &Preferences::toolbarExportChanged, this, &MainWindow::updateExportActions);
+  connect(GlobalPreferences::inst(), &Preferences::requestRedraw, this->qglview,
+          QOverload<>::of(&QGLView::update));
+  connect(GlobalPreferences::inst(), &Preferences::updateMouseCentricZoom, this->qglview,
+          &QGLView::setMouseCentricZoom);
+  connect(GlobalPreferences::inst()->MouseConfig, &MouseConfigWidget::updateMouseActions, this,
+          &MainWindow::setAllMouseViewActions);
+  connect(GlobalPreferences::inst(), &Preferences::updateReorderMode, this,
+          &MainWindow::updateReorderMode);
+  connect(GlobalPreferences::inst(), &Preferences::updateUndockMode, this,
+          &MainWindow::updateUndockMode);
+  connect(GlobalPreferences::inst(), &Preferences::openCSGSettingsChanged, this,
+          &MainWindow::openCSGSettingsChanged);
+  connect(GlobalPreferences::inst(), &Preferences::colorSchemeChanged, this,
+          &MainWindow::setColorScheme);
+  connect(GlobalPreferences::inst(), &Preferences::toolbarExportChanged, this,
+          &MainWindow::updateExportActions);
 
-  GlobalPreferences::inst()->apply_win();   // not sure if to be commented, checked must not be commented(done some changes in apply())
+  GlobalPreferences::inst()->apply_win();  // not sure if to be commented, checked must not be
+                                           // commented(done some changes in apply())
 
   const QString cs = GlobalPreferences::inst()->getValue("3dview/colorscheme").toString();
   this->setColorScheme(cs);
 
-  //find and replace panel
-  connect(this->findTypeComboBox, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &MainWindow::actionSelectFind);
+  // find and replace panel
+  connect(this->findTypeComboBox, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
+          &MainWindow::actionSelectFind);
   connect(this->findInputField, &QWordSearchField::textChanged, this, &MainWindow::findString);
-  connect(this->findInputField, &QWordSearchField::returnPressed, this->findNextButton, [this] {
-    this->findNextButton->animateClick();
-  });
+  connect(this->findInputField, &QWordSearchField::returnPressed, this->findNextButton,
+          [this] { this->findNextButton->animateClick(); });
   find_panel->installEventFilter(this);
   if (QApplication::clipboard()->supportsFindBuffer()) {
     connect(this->findInputField, &QWordSearchField::textChanged, this, &MainWindow::updateFindBuffer);
-    connect(QApplication::clipboard(), &QClipboard::findBufferChanged, this, &MainWindow::findBufferChanged);
+    connect(QApplication::clipboard(), &QClipboard::findBufferChanged, this,
+            &MainWindow::findBufferChanged);
     // With Qt 4.8.6, there seems to be a bug that often gives an incorrect findbuffer content when
     // the app receives focus for the first time
     this->findInputField->setText(QApplication::clipboard()->text(QClipboard::FindBuffer));
@@ -641,26 +654,20 @@ MainWindow::MainWindow(const QStringList& filenames) :
   connect(this->cancelButton, &QPushButton::clicked, this, &MainWindow::hideFind);
   connect(this->replaceButton, &QPushButton::clicked, this, &MainWindow::replace);
   connect(this->replaceAllButton, &QPushButton::clicked, this, &MainWindow::replaceAll);
-  connect(this->replaceInputField, &QLineEdit::returnPressed, this->replaceButton, [this] {
-    this->replaceButton->animateClick();
-  });
+  connect(this->replaceInputField, &QLineEdit::returnPressed, this->replaceButton,
+          [this] { this->replaceButton->animateClick(); });
   addKeyboardShortCut(this->viewerToolBar->actions());
   addKeyboardShortCut(this->editortoolbar->actions());
 
   Preferences *instance = GlobalPreferences::inst();
 
   InputDriverManager::instance()->registerActions(this->menuBar()->actions(), "", "");
-  InputDriverManager::instance()->registerActions(this->animateWidget->actions(), "animation", "animate");
+  InputDriverManager::instance()->registerActions(this->animateWidget->actions(), "animation",
+                                                  "animate");
   instance->ButtonConfig->init();
+  instance->MouseConfig->init();
 
   // fetch window states to be restored after restoreState() call
-  const bool isConsoldDockVisible = !settings.value("view/hideConsole").toBool();
-  const bool isEditorDockVisible = !settings.value("view/hideEditor").toBool();
-  bool isCustomizerDockVisible = !settings.value("view/hideCustomizer").toBool();
-  const bool isErrorLogVisible = !settings.value("view/hideErrorLog").toBool();
-  const bool isAnimateDockVisible = !settings.value("view/hideAnimate").toBool();
-  const bool isFontListDockVisible = !settings.value("view/hideFontList").toBool();
-  bool isViewportControlVisible = !settings.value("view/hideViewportControl").toBool();
   const bool isEditorToolbarVisible = !settings.value("view/hideEditorToolbar").toBool();
   const bool is3DViewToolbarVisible = !settings.value("view/hide3DViewToolbar").toBool();
 
@@ -696,8 +703,6 @@ MainWindow::MainWindow(const QStringList& filenames) :
     tabifyDockWidget(errorLogDock, fontListDock);
     tabifyDockWidget(fontListDock, animateDock);
     consoleDock->show();
-    isCustomizerDockVisible = true;
-    isViewportControlVisible = true;
   } else {
 #ifdef Q_OS_WIN
     // Try moving the main window into the display range, this
@@ -715,10 +720,10 @@ MainWindow::MainWindow(const QStringList& filenames) :
       move(windowRect.topLeft());
       resize(windowRect.size());
     }
-#endif // ifdef Q_OS_WIN
+#endif  // ifdef Q_OS_WIN
   }
 
-  updateWindowSettings(isConsoldDockVisible, isEditorDockVisible, isCustomizerDockVisible, isErrorLogVisible, isEditorToolbarVisible, is3DViewToolbarVisible, isAnimateDockVisible, isFontListDockVisible, isViewportControlVisible);
+  updateWindowSettings(isEditorToolbarVisible, is3DViewToolbarVisible);
 
   // Connect the menu "Windows/Navigation" to slot that process it by opening in a pop menu
   // the navigationMenu.
@@ -726,12 +731,26 @@ MainWindow::MainWindow(const QStringList& filenames) :
 
   // Create the popup menu to navigate between the docks by keyboard.
   navigationMenu = new QMenu();
-  for (auto& [dock, title] : docks) {
-    auto action2 = navigationMenu->addAction(title);
-    action2->setProperty("id", QVariant::fromValue(dock));
-    connect(action2, &QAction::triggered, this, &MainWindow::onNavigationTriggerContextMenuEntry);
-    connect(action2, &QAction::hovered, this, &MainWindow::onNavigationHoveredContextMenuEntry);
+
+  // Create the docks, connect corresponding action and install menu entries
+  for (auto& [dock, title, configKey] : docks) {
+    dock->setName(title);
+    dock->setConfigKey(configKey);
+    dock->setVisible(!GlobalPreferences::inst()->getValue(configKey).toBool());
+    dock->setFocusPolicy(Qt::FocusPolicy::StrongFocus);
+
+    // It is neede to have the event filter installed in each dock so that the events are
+    // correctly processed when the dock are floating (is in a different window that the mainwindow)
+    dock->installEventFilter(this);
+
+    menuWindow->addAction(dock->toggleViewAction());
+
+    auto dockAction = navigationMenu->addAction(title);
+    dockAction->setProperty("id", QVariant::fromValue(dock));
+    connect(dockAction, &QAction::triggered, this, &MainWindow::onNavigationTriggerContextMenuEntry);
+    connect(dockAction, &QAction::hovered, this, &MainWindow::onNavigationHoveredContextMenuEntry);
   }
+
   connect(navigationMenu, &QMenu::aboutToHide, this, &MainWindow::onNavigationCloseContextMenu);
   connect(menuWindow, &QMenu::aboutToHide, this, &MainWindow::onNavigationCloseContextMenu);
   windowActionJumpTo->setMenu(navigationMenu);
@@ -747,27 +766,27 @@ MainWindow::MainWindow(const QStringList& filenames) :
 
   // Adds shortcut for the prev/next window switching
   shortcutNextWindow = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_K), this);
-  QObject::connect(shortcutNextWindow,    &QShortcut::activated,
-                   this,        &MainWindow::onWindowShortcutNextPrevActivated);
+  QObject::connect(shortcutNextWindow, &QShortcut::activated, this,
+                   &MainWindow::onWindowShortcutNextPrevActivated);
   shortcutPreviousWindow = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_H), this);
-  QObject::connect(shortcutPreviousWindow,    &QShortcut::activated,
-                   this,        &MainWindow::onWindowShortcutNextPrevActivated);
+  QObject::connect(shortcutPreviousWindow, &QShortcut::activated, this,
+                   &MainWindow::onWindowShortcutNextPrevActivated);
 
   // Adds dock specific behavior on visibility change
-  QObject::connect(editorDock,  &Dock::visibilityChanged,
-                   this,        &MainWindow::onEditorDockVisibilityChanged);
-  QObject::connect(consoleDock,  &Dock::visibilityChanged,
-                   this,        &MainWindow::onConsoleDockVisibilityChanged);
-  QObject::connect(errorLogDock,  &Dock::visibilityChanged,
-                   this,        &MainWindow::onErrorLogDockVisibilityChanged);
-  QObject::connect(animateDock,  &Dock::visibilityChanged,
-                   this,        &MainWindow::onAnimateDockVisibilityChanged);
-  QObject::connect(fontListDock,  &Dock::visibilityChanged,
-                   this,        &MainWindow::onFontListDockVisibilityChanged);
-  QObject::connect(viewportControlDock,  &Dock::visibilityChanged,
-                   this,        &MainWindow::onViewportControlDockVisibilityChanged);
-  QObject::connect(parameterDock,  &Dock::visibilityChanged,
-                   this,        &MainWindow::onParametersDockVisibilityChanged);
+  QObject::connect(editorDock, &Dock::visibilityChanged, this,
+                   &MainWindow::onEditorDockVisibilityChanged);
+  QObject::connect(consoleDock, &Dock::visibilityChanged, this,
+                   &MainWindow::onConsoleDockVisibilityChanged);
+  QObject::connect(errorLogDock, &Dock::visibilityChanged, this,
+                   &MainWindow::onErrorLogDockVisibilityChanged);
+  QObject::connect(animateDock, &Dock::visibilityChanged, this,
+                   &MainWindow::onAnimateDockVisibilityChanged);
+  QObject::connect(fontListDock, &Dock::visibilityChanged, this,
+                   &MainWindow::onFontListDockVisibilityChanged);
+  QObject::connect(viewportControlDock, &Dock::visibilityChanged, this,
+                   &MainWindow::onViewportControlDockVisibilityChanged);
+  QObject::connect(parameterDock, &Dock::visibilityChanged, this,
+                   &MainWindow::onParametersDockVisibilityChanged);
 
   connect(this->activeEditor, &EditorInterface::escapePressed, this, &MainWindow::measureFinished);
   // display this window and check for OpenGL 2.0 (OpenCSG) support
@@ -787,8 +806,7 @@ MainWindow::MainWindow(const QStringList& filenames) :
   setAcceptDrops(true);
   clearCurrentOutput();
 
-  for (int i = 1; i < filenames.size(); ++i)
-    tabManager->createTab(filenames[i]);
+  for (int i = 1; i < filenames.size(); ++i) tabManager->createTab(filenames[i]);
 
   updateExportActions();
 
@@ -797,7 +815,7 @@ MainWindow::MainWindow(const QStringList& filenames) :
   // Configure the highlighting color scheme from the active editor one.
   // This is done only one time at creation of the first MainWindow instance
   auto preferences = GlobalPreferences::inst();
-  if(!preferences->hasHighlightingColorScheme())
+  if (!preferences->hasHighlightingColorScheme())
     preferences->setHighlightingColorSchemes(activeEditor->colorSchemes());
 
   onTabManagerEditorChanged(activeEditor);
@@ -806,15 +824,53 @@ MainWindow::MainWindow(const QStringList& filenames) :
   updateRecentFileActions();
 }
 
-void MainWindow::onNavigationOpenContextMenu() {
-  navigationMenu->exec(QCursor::pos());
+void MainWindow::setAllMouseViewActions()
+{
+  // Set the mouse actions to those held in the settings.
+  this->qglview->setMouseActions(MouseConfig::MouseAction::LEFT_CLICK,
+                                 MouseConfig::viewActionArrays.at(static_cast<MouseConfig::ViewAction>(
+                                   Settings::Settings::inputMouseLeftClick.value())));
+  this->qglview->setMouseActions(MouseConfig::MouseAction::MIDDLE_CLICK,
+                                 MouseConfig::viewActionArrays.at(static_cast<MouseConfig::ViewAction>(
+                                   Settings::Settings::inputMouseMiddleClick.value())));
+  this->qglview->setMouseActions(MouseConfig::MouseAction::RIGHT_CLICK,
+                                 MouseConfig::viewActionArrays.at(static_cast<MouseConfig::ViewAction>(
+                                   Settings::Settings::inputMouseRightClick.value())));
+  this->qglview->setMouseActions(MouseConfig::MouseAction::SHIFT_LEFT_CLICK,
+                                 MouseConfig::viewActionArrays.at(static_cast<MouseConfig::ViewAction>(
+                                   Settings::Settings::inputMouseShiftLeftClick.value())));
+  this->qglview->setMouseActions(MouseConfig::MouseAction::SHIFT_MIDDLE_CLICK,
+                                 MouseConfig::viewActionArrays.at(static_cast<MouseConfig::ViewAction>(
+                                   Settings::Settings::inputMouseShiftMiddleClick.value())));
+  this->qglview->setMouseActions(MouseConfig::MouseAction::SHIFT_RIGHT_CLICK,
+                                 MouseConfig::viewActionArrays.at(static_cast<MouseConfig::ViewAction>(
+                                   Settings::Settings::inputMouseShiftRightClick.value())));
+  this->qglview->setMouseActions(MouseConfig::MouseAction::CTRL_LEFT_CLICK,
+                                 MouseConfig::viewActionArrays.at(static_cast<MouseConfig::ViewAction>(
+                                   Settings::Settings::inputMouseCtrlLeftClick.value())));
+  this->qglview->setMouseActions(MouseConfig::MouseAction::CTRL_MIDDLE_CLICK,
+                                 MouseConfig::viewActionArrays.at(static_cast<MouseConfig::ViewAction>(
+                                   Settings::Settings::inputMouseCtrlMiddleClick.value())));
+  this->qglview->setMouseActions(MouseConfig::MouseAction::CTRL_RIGHT_CLICK,
+                                 MouseConfig::viewActionArrays.at(static_cast<MouseConfig::ViewAction>(
+                                   Settings::Settings::inputMouseCtrlRightClick.value())));
+  this->qglview->setMouseActions(MouseConfig::MouseAction::CTRL_SHIFT_LEFT_CLICK,
+                                 MouseConfig::viewActionArrays.at(static_cast<MouseConfig::ViewAction>(
+                                   Settings::Settings::inputMouseCtrlShiftLeftClick.value())));
+  this->qglview->setMouseActions(MouseConfig::MouseAction::CTRL_SHIFT_MIDDLE_CLICK,
+                                 MouseConfig::viewActionArrays.at(static_cast<MouseConfig::ViewAction>(
+                                   Settings::Settings::inputMouseCtrlShiftMiddleClick.value())));
+  this->qglview->setMouseActions(MouseConfig::MouseAction::CTRL_SHIFT_RIGHT_CLICK,
+                                 MouseConfig::viewActionArrays.at(static_cast<MouseConfig::ViewAction>(
+                                   Settings::Settings::inputMouseCtrlShiftRightClick.value())));
 }
 
-void MainWindow::onNavigationCloseContextMenu() {
-  rubberBandManager.hide();
-}
+void MainWindow::onNavigationOpenContextMenu() { navigationMenu->exec(QCursor::pos()); }
 
-void MainWindow::onNavigationTriggerContextMenuEntry(){
+void MainWindow::onNavigationCloseContextMenu() { rubberBandManager.hide(); }
+
+void MainWindow::onNavigationTriggerContextMenuEntry()
+{
   auto *action = qobject_cast<QAction *>(sender());
   if (!action || !action->property("id").isValid()) return;
 
@@ -831,7 +887,8 @@ void MainWindow::onNavigationTriggerContextMenuEntry(){
   }
 }
 
-void MainWindow::onNavigationHoveredContextMenuEntry(){
+void MainWindow::onNavigationHoveredContextMenuEntry()
+{
   auto *action = qobject_cast<QAction *>(sender());
   if (!action || !action->property("id").isValid()) return;
 
@@ -846,11 +903,12 @@ void MainWindow::onNavigationHoveredContextMenuEntry(){
   rubberBandManager.emphasize(dock);
 }
 
-void MainWindow::updateExportActions() {
+void MainWindow::updateExportActions()
+{
   removeExportActions(editortoolbar, this->designAction3DPrint);
   addExportActions(this, editortoolbar, this->designAction3DPrint);
 
-  //handle the hide/show of export action in view toolbar according to the visibility of editor dock
+  // handle the hide/show of export action in view toolbar according to the visibility of editor dock
   removeExportActions(viewerToolBar, this->viewActionViewAll);
   if (!editorDock->isVisible()) {
     addExportActions(this, viewerToolBar, this->viewActionViewAll);
@@ -880,7 +938,8 @@ void MainWindow::addKeyboardShortCut(const QList<QAction *>& actions)
       continue;
     }
 
-    const QString toolTip("%1 &nbsp;<span style=\"color: gray; font-size: small; font-style: italic\">%2</span>");
+    const QString toolTip(
+      "%1 &nbsp;<span style=\"color: gray; font-size: small; font-style: italic\">%2</span>");
     action->setToolTip(toolTip.arg(action->toolTip(), shortCut));
   }
 }
@@ -890,39 +949,17 @@ void MainWindow::addKeyboardShortCut(const QList<QAction *>& actions)
  * Qt call. So the values are loaded before the call and restored here
  * regardless of the (potential outdated) serialized state.
  */
-void MainWindow::updateWindowSettings(bool isConsoleVisible,
-                                      bool isEditorVisible,
-                                      bool isCustomizerVisible,
-                                      bool isErrorLogVisible,
-                                      bool isEditorToolbarVisible,
-                                      bool isViewToolbarVisible,
-                                      bool isAnimateVisible,
-                                      bool isFontListVisible,
-                                      bool isViewportControlVisible)
+void MainWindow::updateWindowSettings(bool isEditorToolbarVisible, bool isViewToolbarVisible)
 {
-  editorDock->setVisible(isEditorVisible);
-  consoleDock->setVisible(isConsoleVisible);
-  errorLogDock->setVisible(isErrorLogVisible);
-  parameterDock->setVisible(isCustomizerVisible);
-  animateDock->setVisible(isAnimateVisible);
-  fontListDock->setVisible(isFontListVisible);
-  viewportControlDock->setVisible(isViewportControlVisible);
-
   viewActionHideEditorToolBar->setChecked(!isEditorToolbarVisible);
   hideEditorToolbar();
   viewActionHide3DViewToolBar->setChecked(!isViewToolbarVisible);
   hide3DViewToolbar();
 }
 
-void MainWindow::onAxisChanged(InputEventAxisChanged *)
-{
+void MainWindow::onAxisChanged(InputEventAxisChanged *) {}
 
-}
-
-void MainWindow::onButtonChanged(InputEventButtonChanged *)
-{
-
-}
+void MainWindow::onButtonChanged(InputEventButtonChanged *) {}
 
 void MainWindow::onTranslateEvent(InputEventTranslate *event)
 {
@@ -965,12 +1002,10 @@ void MainWindow::onActionEvent(InputEventAction *event)
   }
 }
 
-void MainWindow::onZoomEvent(InputEventZoom *event)
-{
-  qglview->zoom(event->zoom, event->relative);
-}
+void MainWindow::onZoomEvent(InputEventZoom *event) { qglview->zoom(event->zoom, event->relative); }
 
-void MainWindow::loadViewSettings(){
+void MainWindow::loadViewSettings()
+{
   const QSettingsCached settings;
 
   if (settings.value("view/showEdges").toBool()) {
@@ -1009,8 +1044,10 @@ void MainWindow::loadDesignSettings()
   GeometryCache::instance()->setMaxSizeMB(polySetCacheSizeMB);
   auto cgalCacheSizeMB = GlobalPreferences::inst()->getValue("advanced/cgalCacheSizeMB").toUInt();
   CGALCache::instance()->setMaxSizeMB(cgalCacheSizeMB);
-  auto backend3D = GlobalPreferences::inst()->getValue("advanced/renderBackend3D").toString().toStdString();
-  RenderSettings::inst()->backend3D = renderBackend3DFromString(backend3D);
+  auto backend3D =
+    GlobalPreferences::inst()->getValue("advanced/renderBackend3D").toString().toStdString();
+  RenderSettings::inst()->backend3D =
+    renderBackend3DFromString(backend3D).value_or(DEFAULT_RENDERING_BACKEND_3D);
 }
 
 void MainWindow::updateUndockMode(bool undockMode)
@@ -1058,23 +1095,21 @@ void MainWindow::updateUndockMode(bool undockMode)
     if (viewportControlDock->isFloating()) {
       viewportControlDock->setFloating(false);
     }
-    viewportControlDock->setFeatures(viewportControlDock->features() & ~QDockWidget::DockWidgetFloatable);
+    viewportControlDock->setFeatures(viewportControlDock->features() &
+                                     ~QDockWidget::DockWidgetFloatable);
   }
 }
 
 void MainWindow::updateReorderMode(bool reorderMode)
 {
   MainWindow::reorderMode = reorderMode;
-  for (auto& [dock, name] : docks) {
+  for (auto& [dock, name, configKey] : docks) {
     dock->setTitleBarVisibility(!reorderMode);
   }
 }
 
 MainWindow::~MainWindow()
 {
-  // If root_file is not null then it will be the same as parsed_file,
-  // so no need to delete it.
-  delete parsedFile;
   scadApp->windowManager.remove(this);
   if (scadApp->windowManager.getWindows().empty()) {
     // Quit application even in case some other windows like
@@ -1083,10 +1118,7 @@ MainWindow::~MainWindow()
   }
 }
 
-void MainWindow::showProgress()
-{
-  updateStatusBar(qobject_cast<ProgressWidget *>(sender()));
-}
+void MainWindow::showProgress() { updateStatusBar(qobject_cast<ProgressWidget *>(sender())); }
 
 void MainWindow::report_func(const std::shared_ptr<const AbstractNode>&, void *vp, int mark)
 {
@@ -1111,7 +1143,8 @@ void MainWindow::report_func(const std::shared_ptr<const AbstractNode>&, void *v
 
 bool MainWindow::network_progress_func(const double permille)
 {
-  QMetaObject::invokeMethod(this->progresswidget, "setValue", Qt::QueuedConnection, Q_ARG(int, (int)permille));
+  QMetaObject::invokeMethod(this->progresswidget, "setValue", Qt::QueuedConnection,
+                            Q_ARG(int, (int)permille));
   return (progresswidget && progresswidget->wasCanceled());
 }
 
@@ -1119,7 +1152,7 @@ void MainWindow::updateRecentFiles(const QString& FileSavedOrOpened)
 {
   // Check that the canonical file path exists - only update recent files
   // if it does. Should prevent empty list items on initial open etc.
-  QSettingsCached settings;   // already set up properly via main.cpp
+  QSettingsCached settings;  // already set up properly via main.cpp
   auto files = settings.value("recentFileList").toStringList();
   files.removeAll(FileSavedOrOpened);
   files.prepend(FileSavedOrOpened);
@@ -1141,11 +1174,14 @@ void MainWindow::compile(bool reload, bool forcedone)
 {
   OpenSCAD::hardwarnings = GlobalPreferences::inst()->getValue("advanced/enableHardwarnings").toBool();
   OpenSCAD::traceDepth = GlobalPreferences::inst()->getValue("advanced/traceDepth").toUInt();
-  OpenSCAD::traceUsermoduleParameters = GlobalPreferences::inst()->getValue("advanced/enableTraceUsermoduleParameters").toBool();
-  OpenSCAD::parameterCheck = GlobalPreferences::inst()->getValue("advanced/enableParameterCheck").toBool();
-  OpenSCAD::rangeCheck = GlobalPreferences::inst()->getValue("advanced/enableParameterRangeCheck").toBool();
+  OpenSCAD::traceUsermoduleParameters =
+    GlobalPreferences::inst()->getValue("advanced/enableTraceUsermoduleParameters").toBool();
+  OpenSCAD::parameterCheck =
+    GlobalPreferences::inst()->getValue("advanced/enableParameterCheck").toBool();
+  OpenSCAD::rangeCheck =
+    GlobalPreferences::inst()->getValue("advanced/enableParameterRangeCheck").toBool();
 
-  try{
+  try {
     bool shouldcompiletoplevel = false;
     bool didcompile = false;
 
@@ -1158,8 +1194,10 @@ void MainWindow::compile(bool reload, bool forcedone)
     if (reload) {
       // Refresh files if it has changed on disk
       if (fileChangedOnDisk() && checkEditorModified()) {
-        shouldcompiletoplevel = tabManager->refreshDocument();         // don't compile if we couldn't open the file
-        if (shouldcompiletoplevel && GlobalPreferences::inst()->getValue("advanced/autoReloadRaise").toBool()) {
+        shouldcompiletoplevel =
+          tabManager->refreshDocument();  // don't compile if we couldn't open the file
+        if (shouldcompiletoplevel &&
+            GlobalPreferences::inst()->getValue("advanced/autoReloadRaise").toBool()) {
           // reloading the 'same' document brings the 'old' one to front.
           this->raise();
         }
@@ -1242,16 +1280,13 @@ void MainWindow::waitAfterReload()
   auto stop = would_have_thrown();
   if (mtime > this->depsMTime) this->depsMTime = mtime;
   else if (!stop) {
-    compile(true, true);     // In case file itself or top-level includes changed during dependency updates
+    compile(true, true);  // In case file itself or top-level includes changed during dependency updates
     return;
   }
   this->waitAfterReloadTimer->start();
 }
 
-void MainWindow::on_toolButtonCompileResultClose_clicked()
-{
-  frameCompileResult->hide();
-}
+void MainWindow::on_toolButtonCompileResultClose_clicked() { frameCompileResult->hide(); }
 
 void MainWindow::updateCompileResult()
 {
@@ -1272,11 +1307,14 @@ void MainWindow::updateCompileResult()
       const QFileInfo fileInfo(activeEditor->filepath);
       msg = QString(_("Error while compiling '%1'.")).arg(fileInfo.fileName());
     }
-    toolButtonCompileResultIcon->setIcon(QIcon(QString::fromUtf8(":/icons/information-icons-error.png")));
+    toolButtonCompileResultIcon->setIcon(
+      QIcon(QString::fromUtf8(":/icons/information-icons-error.png")));
   } else {
-    const char *fmt = ngettext("Compilation generated %1 warning.", "Compilation generated %1 warnings.", compileWarnings);
+    const char *fmt = ngettext("Compilation generated %1 warning.", "Compilation generated %1 warnings.",
+                               compileWarnings);
     msg = QString(fmt).arg(compileWarnings);
-    toolButtonCompileResultIcon->setIcon(QIcon(QString::fromUtf8(":/icons/information-icons-warning.png")));
+    toolButtonCompileResultIcon->setIcon(
+      QIcon(QString::fromUtf8(":/icons/information-icons-warning.png")));
   }
   const QFontMetrics fm(labelCompileResultMessage->font());
   const int sizeIcon = std::max(12, std::min(32, fm.height()));
@@ -1284,7 +1322,8 @@ void MainWindow::updateCompileResult()
   toolButtonCompileResultIcon->setIconSize(QSize(sizeIcon, sizeIcon));
   toolButtonCompileResultClose->setIconSize(QSize(sizeClose, sizeClose));
 
-  msg += _(R"( For details see the <a href="#errorlog">error log</a> and <a href="#console">console window</a>.)");
+  msg += _(
+    R"( For details see the <a href="#errorlog">error log</a> and <a href="#console">console window</a>.)");
   labelCompileResultMessage->setText(msg);
   frameCompileResult->show();
 }
@@ -1292,7 +1331,7 @@ void MainWindow::updateCompileResult()
 void MainWindow::compileDone(bool didchange)
 {
   OpenSCAD::hardwarnings = GlobalPreferences::inst()->getValue("advanced/enableHardwarnings").toBool();
-  try{
+  try {
     const char *callslot;
     if (didchange) {
       instantiateRoot();
@@ -1320,18 +1359,18 @@ void MainWindow::compileEnded()
 }
 
 #ifdef ENABLE_GUI_TESTS
-std::shared_ptr<AbstractNode> MainWindow::instantiateRootFromSource(SourceFile* file)
+std::shared_ptr<AbstractNode> MainWindow::instantiateRootFromSource(SourceFile *file)
 {
-    EvaluationSession session{file->getFullpath()};
-    ContextHandle<BuiltinContext> builtin_context{Context::create<BuiltinContext>(&session)};
-    setRenderVariables(builtin_context);
+  EvaluationSession session{file->getFullpath()};
+  ContextHandle<BuiltinContext> builtin_context{Context::create<BuiltinContext>(&session)};
+  setRenderVariables(builtin_context);
 
-    std::shared_ptr<const FileContext> file_context;
-    std::shared_ptr<AbstractNode> node = this->rootFile->instantiate(*builtin_context, &file_context);
+  std::shared_ptr<const FileContext> file_context;
+  std::shared_ptr<AbstractNode> node = this->rootFile->instantiate(*builtin_context, &file_context);
 
-    return node;
+  return node;
 }
-#endif
+#endif  // ifdef ENABLE_GUI_TESTS
 
 void MainWindow::instantiateRoot()
 {
@@ -1375,7 +1414,7 @@ void MainWindow::instantiateRoot()
     if (python_result_node != NULL && this->python_active) this->absoluteRootNode = python_result_node;
     else
 #endif
-    this->absoluteRootNode = this->rootFile->instantiate(*builtin_context, &file_context);
+      this->absoluteRootNode = this->rootFile->instantiate(*builtin_context, &file_context);
     if (file_context) {
       this->qglview->cam.updateView(file_context, false);
       viewportControlWidget->cameraChanged();
@@ -1388,10 +1427,12 @@ void MainWindow::instantiateRoot()
         this->rootNode = this->absoluteRootNode;
       }
       if (nextLocation) {
-        LOG(message_group::NONE, *nextLocation, builtin_context->documentRoot(), "More than one Root Modifier (!)");
+        LOG(message_group::NONE, *nextLocation, builtin_context->documentRoot(),
+            "More than one Root Modifier (!)");
       }
 
-      // FIXME: Consider giving away ownership of root_node to the Tree, or use reference counted pointers
+      // FIXME: Consider giving away ownership of root_node to the Tree, or use reference counted
+      // pointers
       this->tree.setRoot(this->rootNode);
     }
   }
@@ -1414,7 +1455,7 @@ void MainWindow::instantiateRoot()
 void MainWindow::compileCSG()
 {
   OpenSCAD::hardwarnings = GlobalPreferences::inst()->getValue("advanced/enableHardwarnings").toBool();
-  try{
+  try {
     assert(this->rootNode);
     LOG("Compiling design (CSG Products generation)...");
     this->processEvents();
@@ -1448,7 +1489,8 @@ void MainWindow::compileCSG()
     LOG("Compiling design (CSG Products normalization)...");
     this->processEvents();
 
-    const size_t normalizelimit = 2ul * GlobalPreferences::inst()->getValue("advanced/openCSGLimit").toUInt();
+    const size_t normalizelimit =
+      2ul * GlobalPreferences::inst()->getValue("advanced/openCSGLimit").toUInt();
     CSGTreeNormalizer normalizer(normalizelimit);
 
     if (this->csgRoot) {
@@ -1495,24 +1537,20 @@ void MainWindow::compileCSG()
       this->backgroundProducts.reset();
     }
 
-    if (this->rootProduct &&
-        (this->rootProduct->size() >
-         GlobalPreferences::inst()->getValue("advanced/openCSGLimit").toUInt())) {
+    if (this->rootProduct && (this->rootProduct->size() >
+                              GlobalPreferences::inst()->getValue("advanced/openCSGLimit").toUInt())) {
       LOG(message_group::UI_Warning, "Normalized tree has %1$d elements!", this->rootProduct->size());
       LOG(message_group::UI_Warning, "OpenCSG rendering has been disabled.");
     }
 #ifdef ENABLE_OPENCSG
     else {
-      LOG("Normalized tree has %1$d elements!",
-          (this->rootProduct ? this->rootProduct->size() : 0));
-      this->previewRenderer = std::make_shared<OpenCSGRenderer>(this->rootProduct,
-                                                                this->highlightsProducts,
-                                                                this->backgroundProducts);
+      LOG("Normalized tree has %1$d elements!", (this->rootProduct ? this->rootProduct->size() : 0));
+      this->previewRenderer = std::make_shared<OpenCSGRenderer>(
+        this->rootProduct, this->highlightsProducts, this->backgroundProducts);
     }
-#endif // ifdef ENABLE_OPENCSG
-    this->thrownTogetherRenderer = std::make_shared<ThrownTogetherRenderer>(this->rootProduct,
-                                                                            this->highlightsProducts,
-                                                                            this->backgroundProducts);
+#endif  // ifdef ENABLE_OPENCSG
+    this->thrownTogetherRenderer = std::make_shared<ThrownTogetherRenderer>(
+      this->rootProduct, this->highlightsProducts, this->backgroundProducts);
     LOG("Compile and preview finished.");
     renderStatistic.printRenderingTime();
     this->processEvents();
@@ -1532,10 +1570,7 @@ void MainWindow::actionOpen()
   }
 }
 
-void MainWindow::actionNewWindow()
-{
-  new MainWindow(QStringList());
-}
+void MainWindow::actionNewWindow() { new MainWindow(QStringList()); }
 
 void MainWindow::actionOpenWindow()
 {
@@ -1556,7 +1591,7 @@ void MainWindow::actionOpenRecent()
 
 void MainWindow::clearRecentFiles()
 {
-  QSettingsCached settings;   // already set up properly via main.cpp
+  QSettingsCached settings;  // already set up properly via main.cpp
   const QStringList files;
   settings.setValue("recentFileList", files);
 
@@ -1662,15 +1697,9 @@ void MainWindow::saveBackup()
   return writeBackup(this->tempFile);
 }
 
-void MainWindow::actionSave()
-{
-  tabManager->save(activeEditor);
-}
+void MainWindow::actionSave() { tabManager->save(activeEditor); }
 
-void MainWindow::actionSaveAs()
-{
-  tabManager->saveAs(activeEditor);
-}
+void MainWindow::actionSaveAs() { tabManager->saveAs(activeEditor); }
 
 void MainWindow::actionPythonRevokeTrustedFiles()
 {
@@ -1680,7 +1709,8 @@ void MainWindow::actionPythonRevokeTrustedFiles()
   this->trusted_edit_document_name = "";
 #endif
   settings.remove("python_hash");
-  QMessageBox::information(this, _("Trusted Files"), "All trusted python files revoked", QMessageBox::Ok);
+  QMessageBox::information(this, _("Trusted Files"), "All trusted python files revoked",
+                           QMessageBox::Ok);
 }
 
 void MainWindow::actionPythonCreateVenv()
@@ -1702,8 +1732,7 @@ void MainWindow::actionPythonCreateVenv()
 
   if (!venvDir.isEmpty()) {
     QMessageBox::critical(this, _("Create Virtual Environment"),
-                          "Directory is not empty. Can't create virtual environment.",
-                          QMessageBox::Ok);
+                          "Directory is not empty. Can't create virtual environment.", QMessageBox::Ok);
     return;
   }
 
@@ -1720,11 +1749,10 @@ void MainWindow::actionPythonCreateVenv()
                              QMessageBox::Ok);
   } else {
     LOG("Python virtual environment creation failed.");
-    QMessageBox::critical(this, _("Create Virtual Environment"),
-                          "Virtual environment creation failed.",
+    QMessageBox::critical(this, _("Create Virtual Environment"), "Virtual environment creation failed.",
                           QMessageBox::Ok);
   }
-#endif // ifdef ENABLE_PYTHON
+#endif  // ifdef ENABLE_PYTHON
 }
 
 void MainWindow::actionPythonSelectVenv()
@@ -1742,13 +1770,10 @@ void MainWindow::actionPythonSelectVenv()
                              "Virtual environment selected, please restart OpenSCAD to activate.",
                              QMessageBox::Ok);
   }
-#endif // ifdef ENABLE_PYTHON
+#endif  // ifdef ENABLE_PYTHON
 }
 
-void MainWindow::actionSaveACopy()
-{
-  tabManager->saveACopy(activeEditor);
-}
+void MainWindow::actionSaveACopy() { tabManager->saveACopy(activeEditor); }
 
 void MainWindow::actionShowLibraryFolder()
 {
@@ -1767,28 +1792,24 @@ void MainWindow::actionShowLibraryFolder()
 void MainWindow::actionReload()
 {
   if (checkEditorModified()) {
-    fileChangedOnDisk();     // force cached autoReloadId to update
-    (void)tabManager->refreshDocument();     // ignore errors opening the file
+    fileChangedOnDisk();                  // force cached autoReloadId to update
+    (void)tabManager->refreshDocument();  // ignore errors opening the file
   }
 }
 
 void MainWindow::copyViewportTranslation()
 {
   const auto vpt = qglview->cam.getVpt();
-  const QString txt = QString("[ %1, %2, %3 ]")
-    .arg(vpt.x(), 0, 'f', 2)
-    .arg(vpt.y(), 0, 'f', 2)
-    .arg(vpt.z(), 0, 'f', 2);
+  const QString txt =
+    QString("[ %1, %2, %3 ]").arg(vpt.x(), 0, 'f', 2).arg(vpt.y(), 0, 'f', 2).arg(vpt.z(), 0, 'f', 2);
   QApplication::clipboard()->setText(txt);
 }
 
 void MainWindow::copyViewportRotation()
 {
   const auto vpr = qglview->cam.getVpr();
-  const QString txt = QString("[ %1, %2, %3 ]")
-    .arg(vpr.x(), 0, 'f', 2)
-    .arg(vpr.y(), 0, 'f', 2)
-    .arg(vpr.z(), 0, 'f', 2);
+  const QString txt =
+    QString("[ %1, %2, %3 ]").arg(vpr.x(), 0, 'f', 2).arg(vpr.y(), 0, 'f', 2).arg(vpr.z(), 0, 'f', 2);
   QApplication::clipboard()->setText(txt);
 }
 
@@ -1828,7 +1849,8 @@ void MainWindow::hideFind()
   activeEditor->findState = TabManager::FIND_HIDDEN;
   editActionFindNext->setEnabled(false);
   editActionFindPrevious->setEnabled(false);
-  this->findInputField->setFindCount(activeEditor->updateFindIndicators(this->findInputField->text(), false));
+  this->findInputField->setFindCount(
+    activeEditor->updateFindIndicators(this->findInputField->text(), false));
   this->processEvents();
 }
 
@@ -1837,37 +1859,34 @@ void MainWindow::hideFind()
 // activeEditor to appropriate search mode.
 void MainWindow::showFind(bool doFindAndReplace)
 {
-    findInputField->setFindCount(activeEditor->updateFindIndicators(findInputField->text()));
-    processEvents();
+  findInputField->setFindCount(activeEditor->updateFindIndicators(findInputField->text()));
+  processEvents();
 
-    if(doFindAndReplace){
-        findTypeComboBox->setCurrentIndex(1);
-        replaceInputField->show();
-        replaceButton->show();
-        replaceAllButton->show();
-        activeEditor->findState = TabManager::FIND_REPLACE_VISIBLE;
-    }else{
-        findTypeComboBox->setCurrentIndex(0);
-        replaceInputField->hide();
-        replaceButton->hide();
-        replaceAllButton->hide();
-        activeEditor->findState = TabManager::FIND_VISIBLE;
-    }
+  if (doFindAndReplace) {
+    findTypeComboBox->setCurrentIndex(1);
+    replaceInputField->show();
+    replaceButton->show();
+    replaceAllButton->show();
+    activeEditor->findState = TabManager::FIND_REPLACE_VISIBLE;
+  } else {
+    findTypeComboBox->setCurrentIndex(0);
+    replaceInputField->hide();
+    replaceButton->hide();
+    replaceAllButton->hide();
+    activeEditor->findState = TabManager::FIND_VISIBLE;
+  }
 
-    find_panel->show();
-    editActionFindNext->setEnabled(true);
-    editActionFindPrevious->setEnabled(true);
-    if (!activeEditor->selectedText().isEmpty()) {
-      findInputField->setText(activeEditor->selectedText());
-    }
-    findInputField->setFocus();
-    findInputField->selectAll();
+  find_panel->show();
+  editActionFindNext->setEnabled(true);
+  editActionFindPrevious->setEnabled(true);
+  if (!activeEditor->selectedText().isEmpty()) {
+    findInputField->setText(activeEditor->selectedText());
+  }
+  findInputField->setFocus();
+  findInputField->selectAll();
 }
 
-void MainWindow::actionShowFind()
-{
-    showFind(false);
-}
+void MainWindow::actionShowFind() { showFind(false); }
 
 void MainWindow::findString(const QString& textToFind)
 {
@@ -1876,10 +1895,7 @@ void MainWindow::findString(const QString& textToFind)
   activeEditor->find(textToFind);
 }
 
-void MainWindow::actionShowFindAndReplace()
-{
-    showFind(true);
-}
+void MainWindow::actionShowFindAndReplace() { showFind(true); }
 
 void MainWindow::actionSelectFind(int type)
 {
@@ -1921,20 +1937,11 @@ void MainWindow::convertTabsToSpaces()
   activeEditor->setText(converted);
 }
 
-void MainWindow::findNext()
-{
-  activeEditor->find(this->findInputField->text(), true);
-}
+void MainWindow::findNext() { activeEditor->find(this->findInputField->text(), true); }
 
-void MainWindow::findPrev()
-{
-  activeEditor->find(this->findInputField->text(), true, true);
-}
+void MainWindow::findPrev() { activeEditor->find(this->findInputField->text(), true, true); }
 
-void MainWindow::useSelectionForFind()
-{
-  findInputField->setText(activeEditor->selectedText());
-}
+void MainWindow::useSelectionForFind() { findInputField->setText(activeEditor->selectedText()); }
 
 void MainWindow::updateFindBuffer(const QString& s)
 {
@@ -1950,7 +1957,8 @@ void MainWindow::findBufferChanged()
   }
 }
 
-bool MainWindow::event(QEvent *event) {
+bool MainWindow::event(QEvent *event)
+{
   if (event->type() == InputEvent::eventType) {
     auto *inputEvent = dynamic_cast<InputEvent *>(event);
     if (inputEvent) {
@@ -2024,7 +2032,8 @@ bool MainWindow::fileChangedOnDisk()
  */
 
 #ifdef ENABLE_PYTHON
-bool MainWindow::trust_python_file(const std::string& file,  const std::string& content) {
+bool MainWindow::trust_python_file(const std::string& file, const std::string& content)
+{
   QSettingsCached settings;
   char setting_key[256];
   if (python_trusted) return true;
@@ -2040,11 +2049,11 @@ bool MainWindow::trust_python_file(const std::string& file,  const std::string& 
     return true;
   }
 
-  if (content.size() <= 1) {   // 1st character already typed
+  if (content.size() <= 1) {  // 1st character already typed
     this->trusted_edit_document_name = file;
     return true;
   }
-  if (content.rfind("from openscad import", 0) == 0) {   // 1st character already typed
+  if (content.rfind("from openscad import", 0) == 0) {  // 1st character already typed
     this->trusted_edit_document_name = file;
     return true;
   }
@@ -2062,7 +2071,8 @@ bool MainWindow::trust_python_file(const std::string& file,  const std::string& 
 
   auto ret = QMessageBox::warning(this, "Application",
                                   _("Python files can potentially contain harmful stuff.\n"
-                                    "Do you trust this file ?\n"), QMessageBox::Yes | QMessageBox::YesAll | QMessageBox::No);
+                                    "Do you trust this file ?\n"),
+                                  QMessageBox::Yes | QMessageBox::YesAll | QMessageBox::No);
   if (ret == QMessageBox::YesAll) {
     python_trusted = true;
     return true;
@@ -2079,10 +2089,9 @@ bool MainWindow::trust_python_file(const std::string& file,  const std::string& 
   }
   return false;
 }
-#endif // ifdef ENABLE_PYTHON
+#endif  // ifdef ENABLE_PYTHON
 
-
-SourceFile *MainWindow::parseDocument(EditorInterface *editor)
+std::shared_ptr<SourceFile> MainWindow::parseDocument(EditorInterface *editor)
 {
   resetSuppressedMessages();
 
@@ -2090,22 +2099,21 @@ SourceFile *MainWindow::parseDocument(EditorInterface *editor)
   auto fulltext = std::string(document.toUtf8().constData()) + "\n\x03\n" + commandline_commands;
   auto fnameba = editor->filepath.toLocal8Bit();
 
-  const char *fname = editor->filepath.isEmpty() ? "" : fnameba;
+  const char *fname = editor->filepath.isEmpty() ? "" : fnameba.constData();
 #ifdef ENABLE_PYTHON
   this->python_active = false;
   if (fname != NULL) {
     if (boost::algorithm::ends_with(fname, ".py")) {
       std::string content = std::string(this->lastCompiledDoc.toUtf8().constData());
-      if (
-        Feature::ExperimentalPythonEngine.is_enabled()
-        && trust_python_file(std::string(fname), content)) this->python_active = true;
+      if (Feature::ExperimentalPythonEngine.is_enabled() &&
+          trust_python_file(std::string(fname), content))
+        this->python_active = true;
       else LOG(message_group::Warning, Location::NONE, "", "Python is not enabled");
     }
   }
 
   if (this->python_active) {
-    auto fulltext_py =
-      std::string(this->lastCompiledDoc.toUtf8().constData());
+    auto fulltext_py = std::string(this->lastCompiledDoc.toUtf8().constData());
 
     const auto& venv = venvBinDirFromSettings();
     const auto& binDir = venv.empty() ? PlatformUtils::applicationPath() : venv;
@@ -2121,14 +2129,14 @@ SourceFile *MainWindow::parseDocument(EditorInterface *editor)
     if (error.size() > 0) LOG(message_group::Error, Location::NONE, "", error.c_str());
     fulltext = "\n";
   }
-#endif // ifdef ENABLE_PYTHON
+#endif  // ifdef ENABLE_PYTHON
 
   SourceFile *sourceFile;
   sourceFile = parse(sourceFile, fulltext, fname, fname, false) ? sourceFile : nullptr;
 
   editor->resetHighlighting();
   if (sourceFile) {
-    //add parameters as annotation in AST
+    // add parameters as annotation in AST
     CommentParser::collectParameters(fulltext, sourceFile);
     editor->parameterWidget->setParameters(sourceFile, fulltext);
     editor->parameterWidget->applyParameters(sourceFile);
@@ -2138,7 +2146,7 @@ SourceFile *MainWindow::parseDocument(EditorInterface *editor)
     editor->parameterWidget->setEnabled(false);
   }
 
-  return sourceFile;
+  return std::shared_ptr<SourceFile>(sourceFile);
 }
 
 void MainWindow::parseTopLevelDocument()
@@ -2152,10 +2160,7 @@ void MainWindow::parseTopLevelDocument()
   this->parsedFile = this->rootFile;
 }
 
-void MainWindow::changeParameterWidget()
-{
-  parameterDock->setVisible(true);
-}
+void MainWindow::changeParameterWidget() { parameterDock->setVisible(true); }
 
 void MainWindow::checkAutoReload()
 {
@@ -2271,7 +2276,7 @@ void MainWindow::csgRender()
 #endif
   }
 
-  if (animateWidget->dumpPictures() ) {
+  if (animateWidget->dumpPictures()) {
     const int steps = animateWidget->nextFrame();
     const QImage img = this->qglview->grabFrame();
     const QString filename = QString("frame%1.png").arg(steps, 5, 10, QChar('0'));
@@ -2288,9 +2293,11 @@ void MainWindow::sendToExternalTool(ExternalToolInterface& externalToolService)
   if (activeFileName.isEmpty()) activeFileName = "Untitled.scad";
   // TODO: Replace suffix to match exported file format?
 
-  activeFileName = activeFileName + QString::fromStdString("." + fileformat::toSuffix(externalToolService.fileFormat()));
+  activeFileName = activeFileName +
+                   QString::fromStdString("." + fileformat::toSuffix(externalToolService.fileFormat()));
 
-  const bool export_status = externalToolService.exportTemporaryFile(rootGeom, activeFileName, &qglview->cam);
+  const bool export_status =
+    externalToolService.exportTemporaryFile(rootGeom, activeFileName, &qglview->cam);
   if (!export_status) {
     return;
   }
@@ -2298,9 +2305,8 @@ void MainWindow::sendToExternalTool(ExternalToolInterface& externalToolService)
   this->progresswidget = new ProgressWidget(this);
   connect(this->progresswidget, &ProgressWidget::requestShow, this, &MainWindow::showProgress);
 
-  const bool process_status = externalToolService.process(activeFileName.toStdString(), [this](double permille) {
-    return network_progress_func(permille);
-  });
+  const bool process_status = externalToolService.process(
+    activeFileName.toStdString(), [this](double permille) { return network_progress_func(permille); });
   updateStatusBar(nullptr);
   if (!process_status) {
     return;
@@ -2319,7 +2325,7 @@ void MainWindow::action3DPrint()
 
   setCurrentOutput();
 
-  //Make sure we can export:
+  // Make sure we can export:
   const unsigned int dim = 3;
   if (!canExport(dim)) return;
 
@@ -2336,7 +2342,8 @@ void MainWindow::action3DPrint()
     GlobalPreferences::inst()->updateGUI();
     const auto externalToolService = createExternalToolService(serviceType, serviceName, fileFormat);
     if (!externalToolService) {
-      LOG("Error: Unable to create service: %1$d %2$s %3$d", static_cast<int>(serviceType), serviceName.toStdString(), static_cast<int>(fileFormat));
+      LOG("Error: Unable to create service: %1$d %2$s %3$d", static_cast<int>(serviceType),
+          serviceName.toStdString(), static_cast<int>(fileFormat));
       return;
     }
     sendToExternalTool(*externalToolService);
@@ -2418,8 +2425,10 @@ void MainWindow::actionRenderDone(const std::shared_ptr<const Geometry>& root_ge
 
   updateStatusBar(nullptr);
 
-  const bool renderSoundEnabled = GlobalPreferences::inst()->getValue("advanced/enableSoundNotification").toBool();
-  const uint soundThreshold = GlobalPreferences::inst()->getValue("advanced/timeThresholdOnRenderCompleteSound").toUInt();
+  const bool renderSoundEnabled =
+    GlobalPreferences::inst()->getValue("advanced/enableSoundNotification").toBool();
+  const uint soundThreshold =
+    GlobalPreferences::inst()->getValue("advanced/timeThresholdOnRenderCompleteSound").toUInt();
   if (renderSoundEnabled && soundThreshold <= renderStatistic.ms().count() / 1000) {
     renderCompleteSoundEffect->play();
   }
@@ -2429,15 +2438,9 @@ void MainWindow::actionRenderDone(const std::shared_ptr<const Geometry>& root_ge
   compileEnded();
 }
 
-void MainWindow::actionMeasureDistance()
-{
-  meas.startMeasureDist();
-}
+void MainWindow::actionMeasureDistance() { meas.startMeasureDist(); }
 
-void MainWindow::actionMeasureAngle()
-{
-  meas.startMeasureAngle();
-}
+void MainWindow::actionMeasureAngle() { meas.startMeasureAngle(); }
 
 void MainWindow::leftClick(QPoint mouse)
 {
@@ -2484,28 +2487,31 @@ void MainWindow::rightClick(QPoint position)
       auto location = step->modinst->location();
       ss.str("");
 
-      // Remove the "module" prefix if any as it induce confusion between the module declaration and instanciation
-      const int first_position = (step->verbose_name().find("module") == std::string::npos)? 0 : 7;
+      // Remove the "module" prefix if any as it induce confusion between the module declaration and
+      // instanciation
+      const int first_position = (step->verbose_name().find("module") == std::string::npos) ? 0 : 7;
       std::string name = step->verbose_name().substr(first_position);
 
-      // It happens that the verbose_name is empty (eg: in for loops), when this happens instead of letting
-      // empty entry in the menu we prefer using the name in the modinstanciation.
+      // It happens that the verbose_name is empty (eg: in for loops), when this happens instead of
+      // letting empty entry in the menu we prefer using the name in the modinstanciation.
       if (step->verbose_name().empty()) name = step->modinst->name();
 
       // Check if the path is contained in a library (using parsersettings.h)
       const fs::path libpath = get_library_for_path(location.filePath());
       if (!libpath.empty()) {
         // Display the library (without making the window too wide!)
-        ss << name << " (library "
-           << location.fileName().substr(libpath.string().length() + 1) << ":"
+        ss << name << " (library " << location.fileName().substr(libpath.string().length() + 1) << ":"
            << location.firstLine() << ")";
       } else if (renderedEditor->filepath.toStdString() == location.fileName()) {
-        // removes the "module" prefix if any as it makes it not clear if it is module declaration or call.
-        ss << name << " (" << location.filePath().filename().string() << ":"
-           << location.firstLine() << ")";
+        // removes the "module" prefix if any as it makes it not clear if it is module declaration or
+        // call.
+        ss << name << " (" << location.filePath().filename().string() << ":" << location.firstLine()
+           << ")";
       } else {
-        auto relative_filename = fs_uncomplete(location.filePath(), fs::path(renderedEditor->filepath.toStdString()).parent_path())
-          .generic_string();
+        auto relative_filename =
+          fs_uncomplete(location.filePath(),
+                        fs::path(renderedEditor->filepath.toStdString()).parent_path())
+            .generic_string();
 
         // Set the displayed name relative to the active editor window
         ss << name << " (" << relative_filename << ":" << location.firstLine() << ")";
@@ -2523,7 +2529,7 @@ void MainWindow::rightClick(QPoint position)
     GuiLocker::lock();
 
     // Execute this lambda function when the selection menu is closing.
-    connect(&tracemenu, &QMenu::aboutToHide, [this](){
+    connect(&tracemenu, &QMenu::aboutToHide, [this]() {
       // remove the visual hints in the editor
       renderedEditor->clearAllSelectionIndicators();
       // unlock the GUI so the other part of the interface can now be updated.
@@ -2536,17 +2542,12 @@ void MainWindow::rightClick(QPoint position)
   }
 }
 
-void MainWindow::measureFinished()
-{
-    meas.stopMeasure();
-}
+void MainWindow::measureFinished() { meas.stopMeasure(); }
 
-void MainWindow::clearAllSelectionIndicators()
-{
-  this->activeEditor->clearAllSelectionIndicators();
-}
+void MainWindow::clearAllSelectionIndicators() { this->activeEditor->clearAllSelectionIndicators(); }
 
-void MainWindow::setSelectionIndicatorStatus(EditorInterface *editor, int nodeIndex, EditorSelectionIndicatorStatus status)
+void MainWindow::setSelectionIndicatorStatus(EditorInterface *editor, int nodeIndex,
+                                             EditorSelectionIndicatorStatus status)
 {
   std::deque<std::shared_ptr<const AbstractNode>> stack;
   this->rootNode->getNodeByID(nodeIndex, stack);
@@ -2556,7 +2557,7 @@ void MainWindow::setSelectionIndicatorStatus(EditorInterface *editor, int nodeIn
   // first we flags all the nodes in the stack of the provided index
   // ends at size - 1 because we are not doing anything for the root node.
   // starts at 1 because we will process this one after later
-  for (int i = 1; i < stack.size() - 1; i++) {
+  for (size_t i = 1; i < stack.size() - 1; i++) {
     const auto& node = stack[i];
 
     auto& location = node->modinst->location();
@@ -2566,9 +2567,9 @@ void MainWindow::setSelectionIndicatorStatus(EditorInterface *editor, int nodeIn
     }
 
     if (node->verbose_name().rfind("module", 0) == 0 || node->modinst->name() == "children") {
-      editor->setSelectionIndicatorStatus(
-        status, level,
-        location.firstLine() - 1, location.firstColumn() - 1, location.lastLine() - 1, location.lastColumn() - 1);
+      editor->setSelectionIndicatorStatus(status, level, location.firstLine() - 1,
+                                          location.firstColumn() - 1, location.lastLine() - 1,
+                                          location.lastColumn() - 1);
       level++;
     }
   }
@@ -2619,13 +2620,15 @@ void MainWindow::setSelection(int index)
   // highlight in the text editor all the text fragment of the hierarchy of object with same mode.
   for (const auto& element : nodesSameModule) {
     if (element->index() != currentlySelectedObject) {
-      setSelectionIndicatorStatus(renderedEditor, element->index(), EditorSelectionIndicatorStatus::IMPACTED);
+      setSelectionIndicatorStatus(renderedEditor, element->index(),
+                                  EditorSelectionIndicatorStatus::IMPACTED);
     }
   }
 
   // highlight in the text editor only the fragment correponding to the selected stack.
   // this step must be done after all the impacted element have been marked.
-  setSelectionIndicatorStatus(renderedEditor, currentlySelectedObject, EditorSelectionIndicatorStatus::SELECTED);
+  setSelectionIndicatorStatus(renderedEditor, currentlySelectedObject,
+                              EditorSelectionIndicatorStatus::SELECTED);
 
   renderedEditor->setCursorPosition(line - 1, column - 1);
 }
@@ -2644,9 +2647,7 @@ void MainWindow::onHoveredObjectInSelectionMenu()
   setSelection(action->property("id").toInt());
 }
 
-void MainWindow::setLastFocus(QWidget *widget) {
-  this->lastFocus = widget;
-}
+void MainWindow::setLastFocus(QWidget *widget) { this->lastFocus = widget; }
 
 /**
  * Switch version label and progress widget. When switching to the progress
@@ -2681,15 +2682,17 @@ void MainWindow::updateStatusBar(ProgressWidget *progressWidget)
   }
 }
 
-void MainWindow::exceptionCleanup(){
+void MainWindow::exceptionCleanup()
+{
   LOG("Execution aborted");
   LOG(" ");
   GuiLocker::unlock();
   if (designActionAutoReload->isChecked()) autoReloadTimer->start();
 }
 
-void MainWindow::UnknownExceptionCleanup(std::string msg){
-  setCurrentOutput();   // we need to show this error
+void MainWindow::UnknownExceptionCleanup(std::string msg)
+{
+  setCurrentOutput();  // we need to show this error
   if (msg.size() == 0) {
     LOG(message_group::Error, "Compilation aborted by unknown exception");
   } else {
@@ -2702,25 +2705,23 @@ void MainWindow::UnknownExceptionCleanup(std::string msg){
 
 void MainWindow::showTextInWindow(const QString& type, const QString& content)
 {
-    auto e = new QTextEdit(this);
-    e->setAttribute(Qt::WA_DeleteOnClose);
-    e->setWindowFlags(Qt::Window);
-    e->setTabStopDistance(tabStopWidth);
-    e->setWindowTitle(type+" Dump");
-    if(content.isEmpty())
-        e->setPlainText("No "+type+" to dump. Please try compiling first...");
-    else
-        e->setPlainText(content);
+  auto e = new QTextEdit(this);
+  e->setAttribute(Qt::WA_DeleteOnClose);
+  e->setWindowFlags(Qt::Window);
+  e->setTabStopDistance(tabStopWidth);
+  e->setWindowTitle(type + " Dump");
+  if (content.isEmpty()) e->setPlainText("No " + type + " to dump. Please try compiling first...");
+  else e->setPlainText(content);
 
-    e->setReadOnly(true);
-    e->resize(600, 400);
-    e->show();
+  e->setReadOnly(true);
+  e->resize(600, 400);
+  e->show();
 }
 
 void MainWindow::actionDisplayAST()
 {
   setCurrentOutput();
-  QString text = (rootFile)? QString::fromStdString(rootFile->dump("")) : "";
+  QString text = (rootFile) ? QString::fromStdString(rootFile->dump("")) : "";
   showTextInWindow("AST", text);
   clearCurrentOutput();
 }
@@ -2728,8 +2729,8 @@ void MainWindow::actionDisplayAST()
 void MainWindow::actionDisplayCSGTree()
 {
   setCurrentOutput();
-  QString text = (rootNode)? QString::fromStdString(tree.getString(*rootNode, "  ")) : "";
-  showTextInWindow("CGS", text);
+  QString text = (rootNode) ? QString::fromStdString(tree.getString(*rootNode, "  ")) : "";
+  showTextInWindow("CSG", text);
   clearCurrentOutput();
 }
 
@@ -2737,9 +2738,13 @@ void MainWindow::actionDisplayCSGProducts()
 {
   setCurrentOutput();
   // a small lambda to avoid code duplication
-  auto constexpr dump = [](auto node){ return QString::fromStdString(node? node->dump() : "N/A"); };
-  auto text = QString("\nCSG before normalization:\n%1\n\n\nCSG after normalization:\n%2\n\n\nCSG rendering chain:\n%3\n\n\nHighlights CSG rendering chain:\n%4\n\n\nBackground CSG rendering chain:\n%5\n")
-                  .arg(dump(csgRoot), dump(normalizedRoot), dump(rootProduct), dump(highlightsProducts), dump(backgroundProducts));
+  auto constexpr dump = [](auto node) { return QString::fromStdString(node ? node->dump() : "N/A"); };
+  auto text =
+    QString(
+      "\nCSG before normalization:\n%1\n\n\nCSG after normalization:\n%2\n\n\nCSG rendering "
+      "chain:\n%3\n\n\nHighlights CSG rendering chain:\n%4\n\n\nBackground CSG rendering chain:\n%5\n")
+      .arg(dump(csgRoot), dump(normalizedRoot), dump(rootProduct), dump(highlightsProducts),
+           dump(backgroundProducts));
   showTextInWindow("CSG Products Dump", text);
   clearCurrentOutput();
 }
@@ -2769,7 +2774,7 @@ void MainWindow::actionCheckValidity()
   } else
 #endif
 #ifdef ENABLE_MANIFOLD
-  if (auto mani = std::dynamic_pointer_cast<const ManifoldGeometry>(rootGeom)) {
+    if (auto mani = std::dynamic_pointer_cast<const ManifoldGeometry>(rootGeom)) {
     valid = mani->isValid();
   }
 #endif
@@ -2777,8 +2782,8 @@ void MainWindow::actionCheckValidity()
   clearCurrentOutput();
 }
 
-//Returns if we can export (true) or not(false) (bool)
-//Separated into it's own function for re-use.
+// Returns if we can export (true) or not(false) (bool)
+// Separated into it's own function for re-use.
 bool MainWindow::canExport(unsigned int dim)
 {
   if (!rootGeom) {
@@ -2824,14 +2829,18 @@ bool MainWindow::canExport(unsigned int dim)
 #ifdef ENABLE_CGAL
   auto N = dynamic_cast<const CGALNefGeometry *>(rootGeom.get());
   if (N && !N->p3->is_simple()) {
-    LOG(message_group::UI_Warning, "Object may not be a valid 2-manifold and may need repair! See https://en.wikibooks.org/wiki/OpenSCAD_User_Manual/STL_Import_and_Export");
+    LOG(message_group::UI_Warning,
+        "Object may not be a valid 2-manifold and may need repair! See "
+        "https://en.wikibooks.org/wiki/OpenSCAD_User_Manual/STL_Import_and_Export");
   }
 #endif
 #ifdef ENABLE_MANIFOLD
   auto manifold = dynamic_cast<const ManifoldGeometry *>(rootGeom.get());
-  if (manifold && !manifold->isValid() ) {
-    LOG(message_group::UI_Warning, "Object may not be a valid manifold and may need repair! "
-        "Error message: %1$s. See https://en.wikibooks.org/wiki/OpenSCAD_User_Manual/STL_Import_and_Export",
+  if (manifold && !manifold->isValid()) {
+    LOG(message_group::UI_Warning,
+        "Object may not be a valid manifold and may need repair! "
+        "Error message: %1$s. See "
+        "https://en.wikibooks.org/wiki/OpenSCAD_User_Manual/STL_Import_and_Export",
         ManifoldUtils::statusToString(manifold->getManifold().Status()));
   }
 #endif
@@ -2844,13 +2853,13 @@ void MainWindow::actionExport(unsigned int dim, ExportInfo& exportInfo)
   const auto type_name = QString::fromStdString(exportInfo.info.description);
   const auto suffix = QString::fromStdString(exportInfo.info.suffix);
 
-  //Setting filename skips the file selection dialog and uses the path provided instead.
+  // Setting filename skips the file selection dialog and uses the path provided instead.
   if (GuiLocker::isLocked()) return;
   const GuiLocker lock;
 
   setCurrentOutput();
 
-  //Return if something is wrong and we can't export.
+  // Return if something is wrong and we can't export.
   if (!canExport(dim)) return;
 
   auto title = QString(_("Export %1 File")).arg(type_name);
@@ -2873,11 +2882,11 @@ void MainWindow::actionExportFileFormat(int fmt)
   const auto format = static_cast<FileFormat>(fmt);
   const FileFormatInfo& info = fileformat::info(format);
 
-  ExportInfo exportInfo = createExportInfo(format, info, activeEditor->filepath.toStdString(), &qglview->cam, {});
+  ExportInfo exportInfo =
+    createExportInfo(format, info, activeEditor->filepath.toStdString(), &qglview->cam, {});
 
   switch (format) {
-  case FileFormat::PDF:
-  {
+  case FileFormat::PDF: {
     ExportPdfDialog exportPdfDialog;
     if (exportPdfDialog.exec() == QDialog::Rejected) {
       return;
@@ -2885,10 +2894,8 @@ void MainWindow::actionExportFileFormat(int fmt)
 
     exportInfo.optionsPdf = exportPdfDialog.getOptions();
     actionExport(2, exportInfo);
-  }
-  break;
-  case FileFormat::_3MF:
-  {
+  } break;
+  case FileFormat::_3MF: {
     Export3mfDialog export3mfDialog;
     if (export3mfDialog.exec() == QDialog::Rejected) {
       return;
@@ -2896,10 +2903,8 @@ void MainWindow::actionExportFileFormat(int fmt)
 
     exportInfo.options3mf = export3mfDialog.getOptions();
     actionExport(3, exportInfo);
-  }
-  break;
-  case FileFormat::CSG:
-  {
+  } break;
+  case FileFormat::CSG: {
     setCurrentOutput();
 
     if (!this->rootNode) {
@@ -2908,8 +2913,8 @@ void MainWindow::actionExportFileFormat(int fmt)
       return;
     }
     const QString suffix = "csg";
-    auto csg_filename = QFileDialog::getSaveFileName(this,
-                                                     _("Export CSG File"), exportPath(suffix), _("CSG Files (*.csg)"));
+    auto csg_filename = QFileDialog::getSaveFileName(this, _("Export CSG File"), exportPath(suffix),
+                                                     _("CSG Files (*.csg)"));
 
     if (csg_filename.isEmpty()) {
       clearCurrentOutput();
@@ -2927,14 +2932,13 @@ void MainWindow::actionExportFileFormat(int fmt)
     }
 
     clearCurrentOutput();
-  }      break;
-  case FileFormat::PNG:
-  {
+  } break;
+  case FileFormat::PNG: {
     // Grab first to make sure dialog box isn't part of the grabbed image
     qglview->grabFrame();
     const QString suffix = "png";
-    auto img_filename = QFileDialog::getSaveFileName(this,
-                                                     _("Export Image"), exportPath(suffix), _("PNG Files (*.png)"));
+    auto img_filename =
+      QFileDialog::getSaveFileName(this, _("Export Image"), exportPath(suffix), _("PNG Files (*.png)"));
     if (!img_filename.isEmpty()) {
       const bool saveResult = qglview->save(img_filename.toLocal8Bit().constData());
       if (saveResult) {
@@ -2946,10 +2950,16 @@ void MainWindow::actionExportFileFormat(int fmt)
         LOG("Can't open file \"%1$s\" for export image", img_filename.toLocal8Bit().constData());
       }
     }
-  }
-  break;
-  default:
-    actionExport(fileformat::is3D(format) ? 3 : fileformat::is2D(format) ? 2 : 0, exportInfo);
+  } break;
+  case FileFormat::SVG: {
+    ExportSvgDialog exportSvgDialog;
+    if (exportSvgDialog.exec() == QDialog::Rejected) {
+      return;
+    }
+    exportInfo.optionsSvg = std::make_shared<ExportSvgOptions>(exportSvgDialog.getOptions());
+    actionExport(2, exportInfo);
+  } break;
+  default: actionExport(fileformat::is3D(format) ? 3 : fileformat::is2D(format) ? 2 : 0, exportInfo);
   }
 }
 
@@ -3010,7 +3020,8 @@ void MainWindow::viewModePreview()
   if (this->qglview->hasOpenCSGSupport()) {
     viewActionPreview->setChecked(true);
     viewActionThrownTogether->setChecked(false);
-    this->qglview->setRenderer(this->previewRenderer ? this->previewRenderer : this->thrownTogetherRenderer);
+    this->qglview->setRenderer(this->previewRenderer ? this->previewRenderer
+                                                     : this->thrownTogetherRenderer);
     this->qglview->updateColorScheme();
     this->qglview->update();
   } else {
@@ -3065,10 +3076,7 @@ void MainWindow::viewModeShowScaleProportional()
   this->qglview->update();
 }
 
-bool MainWindow::isEmpty()
-{
-  return activeEditor->toPlainText().isEmpty();
-}
+bool MainWindow::isEmpty() { return activeEditor->toPlainText().isEmpty(); }
 
 void MainWindow::editorContentChanged()
 {
@@ -3134,30 +3142,24 @@ void MainWindow::viewCenter()
 
 void MainWindow::setProjectionType(ProjectionType mode)
 {
-    bool isOrthogonal = ProjectionType::ORTHOGONAL == mode;
-    QSettingsCached settings;
-    settings.setValue("view/orthogonalProjection", isOrthogonal);
-    viewActionPerspective->setChecked(!isOrthogonal);
-    viewActionOrthogonal->setChecked(isOrthogonal);
-    qglview->setOrthoMode(isOrthogonal);
-    qglview->update();
+  bool isOrthogonal = ProjectionType::ORTHOGONAL == mode;
+  QSettingsCached settings;
+  settings.setValue("view/orthogonalProjection", isOrthogonal);
+  viewActionPerspective->setChecked(!isOrthogonal);
+  viewActionOrthogonal->setChecked(isOrthogonal);
+  qglview->setOrthoMode(isOrthogonal);
+  qglview->update();
 }
 
-void MainWindow::viewPerspective()
-{
-    setProjectionType(ProjectionType::PERSPECTIVE);
-}
+void MainWindow::viewPerspective() { setProjectionType(ProjectionType::PERSPECTIVE); }
 
-void MainWindow::viewOrthogonal()
-{
-    setProjectionType(ProjectionType::ORTHOGONAL);
-}
+void MainWindow::viewOrthogonal() { setProjectionType(ProjectionType::ORTHOGONAL); }
 
 void MainWindow::viewTogglePerspective()
 {
   const QSettingsCached settings;
   bool isOrtho = settings.value("view/orthogonalProjection").toBool();
-  setProjectionType(isOrtho?ProjectionType::PERSPECTIVE:ProjectionType::ORTHOGONAL);
+  setProjectionType(isOrtho ? ProjectionType::PERSPECTIVE : ProjectionType::ORTHOGONAL);
 }
 
 void MainWindow::viewResetView()
@@ -3209,7 +3211,7 @@ void MainWindow::showLink(const QString& link)
 
 void MainWindow::onEditorDockVisibilityChanged(bool isVisible)
 {
-  auto e = (ScintillaEditor *) this->activeEditor;
+  auto e = (ScintillaEditor *)this->activeEditor;
   if (isVisible) {
     e->qsci->setReadOnly(false);
     e->setupAutoComplete(false);
@@ -3332,15 +3334,9 @@ void MainWindow::onWindowShortcutNextPrevActivated()
   rubberBandManager.emphasize(dock);
 }
 
-void MainWindow::on_editActionInsertTemplate_triggered()
-{
-  activeEditor->displayTemplates();
-}
+void MainWindow::on_editActionInsertTemplate_triggered() { activeEditor->displayTemplates(); }
 
-void MainWindow::on_editActionFoldAll_triggered()
-{
-  activeEditor->foldUnfold();
-}
+void MainWindow::on_editActionFoldAll_triggered() { activeEditor->foldUnfold(); }
 
 QString MainWindow::getCurrentFileName() const
 {
@@ -3361,9 +3357,9 @@ void MainWindow::onTabManagerAboutToCloseEditor(EditorInterface *closingEditor)
 
     // Invalidate renderers before we kill the CSG tree
     this->qglview->setRenderer(nullptr);
-       #ifdef ENABLE_OPENCSG
+#ifdef ENABLE_OPENCSG
     this->previewRenderer = nullptr;
-       #endif
+#endif
     this->thrownTogetherRenderer = nullptr;
 
     // Remove previous CSG tree
@@ -3417,8 +3413,9 @@ void MainWindow::onTabManagerEditorChanged(EditorInterface *newEditor)
   fontListDock->setNameSuffix(name);
   viewportControlDock->setNameSuffix(name);
 
-  // If there is no renderedEditor we request for a new preview.
-  if (renderedEditor == nullptr) {
+  // If there is no renderedEditor we request for a new preview if the
+  // auto-reload is enabled.
+  if (renderedEditor == nullptr && designActionAutoReload->isChecked()) {
     actionRenderPreview();
   }
 }
@@ -3446,7 +3443,7 @@ Dock *MainWindow::findVisibleDockToActivate(int offset) const
     focusedDockIndice = 0;
   }
 
-  for (int o = 1; o < dockCount; ++o) {
+  for (size_t o = 1; o < dockCount; ++o) {
     // starting from dockCount + focusedDockIndice move left or right (o*offset)
     // to find the first visible one. dockCount is there so there is no situation in which
     // (-1) % dockCount
@@ -3511,30 +3508,15 @@ void MainWindow::helpAbout()
   dialog->deleteLater();
 }
 
-void MainWindow::helpHomepage()
-{
-  UIUtils::openHomepageURL();
-}
+void MainWindow::helpHomepage() { UIUtils::openHomepageURL(); }
 
-void MainWindow::helpManual()
-{
-  UIUtils::openUserManualURL();
-}
+void MainWindow::helpManual() { UIUtils::openUserManualURL(); }
 
-void MainWindow::helpOfflineManual()
-{
-  UIUtils::openOfflineUserManual();
-}
+void MainWindow::helpOfflineManual() { UIUtils::openOfflineUserManual(); }
 
-void MainWindow::helpCheatSheet()
-{
-  UIUtils::openCheatSheetURL();
-}
+void MainWindow::helpCheatSheet() { UIUtils::openCheatSheetURL(); }
 
-void MainWindow::helpOfflineCheatSheet()
-{
-  UIUtils::openOfflineCheatSheet();
-}
+void MainWindow::helpOfflineCheatSheet() { UIUtils::openOfflineCheatSheet(); }
 
 void MainWindow::helpLibrary()
 {
@@ -3626,7 +3608,7 @@ void MainWindow::consoleOutput(const Message& msgObj)
   // Then processEvents should no longer be needed here.
   this->processEvents();
   if (consoleUpdater && !consoleUpdater->isActive()) {
-    consoleUpdater->start(50);     // Limit console updates to 20 FPS
+    consoleUpdater->start(50);  // Limit console updates to 20 FPS
   }
 }
 
@@ -3642,10 +3624,7 @@ void MainWindow::errorLogOutput(const Message& log_msg, void *userdata)
   QMetaObject::invokeMethod(thisp, "errorLogOutput", Q_ARG(Message, log_msg));
 }
 
-void MainWindow::errorLogOutput(const Message& log_msg)
-{
-  this->errorLogWidget->toErrorLog(log_msg);
-}
+void MainWindow::errorLogOutput(const Message& log_msg) { this->errorLogWidget->toErrorLog(log_msg); }
 
 void MainWindow::setCurrentOutput()
 {
@@ -3657,16 +3636,15 @@ void MainWindow::hideCurrentOutput()
   set_output_handler(&MainWindow::noOutputConsole, &MainWindow::noOutputErrorLog, this);
 }
 
-void MainWindow::clearCurrentOutput()
-{
-  set_output_handler(nullptr, nullptr, nullptr);
-}
+void MainWindow::clearCurrentOutput() { set_output_handler(nullptr, nullptr, nullptr); }
 
 void MainWindow::openCSGSettingsChanged()
 {
 #ifdef ENABLE_OPENCSG
-  OpenCSG::setOption(OpenCSG::AlgorithmSetting, GlobalPreferences::inst()->getValue("advanced/forceGoldfeather").toBool() ?
-                     OpenCSG::Goldfeather : OpenCSG::Automatic);
+  OpenCSG::setOption(OpenCSG::AlgorithmSetting,
+                     GlobalPreferences::inst()->getValue("advanced/forceGoldfeather").toBool()
+                       ? OpenCSG::Goldfeather
+                       : OpenCSG::Automatic);
 #endif
 }
 
@@ -3675,9 +3653,11 @@ void MainWindow::processEvents()
   if (this->procevents) QApplication::processEvents();
 }
 
-QString MainWindow::exportPath(const QString& suffix) {
+QString MainWindow::exportPath(const QString& suffix)
+{
   const auto path_it = this->exportPaths.find(suffix);
-  const auto basename = activeEditor->filepath.isEmpty() ? "Untitled" : QFileInfo(activeEditor->filepath).completeBaseName();
+  const auto basename =
+    activeEditor->filepath.isEmpty() ? "Untitled" : QFileInfo(activeEditor->filepath).completeBaseName();
   QString dir;
   if (path_it != exportPaths.end()) {
     dir = QFileInfo(path_it->second).absolutePath();
@@ -3689,7 +3669,4 @@ QString MainWindow::exportPath(const QString& suffix) {
   return QString("%1/%2.%3").arg(dir, basename, suffix);
 }
 
-void MainWindow::jumpToLine(int line, int col)
-{
-  this->activeEditor->setCursorPosition(line, col);
-}
+void MainWindow::jumpToLine(int line, int col) { this->activeEditor->setCursorPosition(line, col); }

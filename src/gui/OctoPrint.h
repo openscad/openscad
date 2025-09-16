@@ -49,8 +49,10 @@ public:
   const std::pair<int, QString> pollApiKeyApproval(const QString& token) const;
   const std::vector<std::pair<const QString, const QString>> getSlicers() const;
   const std::vector<std::pair<const QString, const QString>> getProfiles(const QString& slicer) const;
-  const QString upload(const QString& exportFileName, const QString& fileName, const network_progress_func_t& progress_func) const;
-  void slice(const QString& fileUrl, const QString& slicer, const QString& profile, const bool select, const bool print) const;
+  const QString upload(const QString& exportFileName, const QString& fileName,
+                       const network_progress_func_t& progress_func) const;
+  void slice(const QString& fileUrl, const QString& slicer, const QString& profile, const bool select,
+             const bool print) const;
 
 private:
   const QJsonDocument getJsonData(const QString& endpoint) const;

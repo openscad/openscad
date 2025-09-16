@@ -2,6 +2,8 @@
 .cache/
 .vs/
 .vscode/
+.idea/
+.clangd/
 /*.scad
 **/out*.*
 *.dmg
@@ -60,6 +62,7 @@ object_script.openscad.Release
 /locale/*.mo
 /locale/POTFILES
 /tmp
+/vcpkg_installed
 /nbproject
 /mingw32.*
 /mingw64.*
@@ -93,4 +96,9 @@ tests/data/scad/misc/use-tests.scad
 tests/data/svg/viewbox/viewbox_*.svg
 tests/regression/pdfexporttest/centered.pdf
 tests/regression/pdfexporttest/simple-pdf.pdf
+tests/regression/export-pdf-fill/centered.pdf
+tests/regression/export-pdf-fill/simple-pdf.pdf
+tests/regression/export-pdf/centered.pdf
+tests/regression/export-pdf/simple-pdf.pdf
 scripts/run-clang-tidy-cached
+.clangd

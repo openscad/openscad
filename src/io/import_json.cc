@@ -72,7 +72,7 @@ ObjectType to_obj(const json& j, EvaluationSession *session)
   return obj;
 }
 
-} // namespace
+}  // namespace
 
 Value import_json(const std::string& filename, EvaluationSession *session, const Location& loc)
 {

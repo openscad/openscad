@@ -24,18 +24,19 @@
 
 #include <vector>
 
-static void add_outline_to_poly(CGAL_Nef_polyhedron2::Explorer& explorer,
-                                CGAL_Nef_polyhedron2::Explorer::Halfedge_around_face_const_circulator circ,
-                                CGAL_Nef_polyhedron2::Explorer::Halfedge_around_face_const_circulator end,
-                                bool positive,
-                                Polygon2d &poly) {
+static void add_outline_to_poly(
+  CGAL_Nef_polyhedron2::Explorer& explorer,
+  CGAL_Nef_polyhedron2::Explorer::Halfedge_around_face_const_circulator circ,
+  CGAL_Nef_polyhedron2::Explorer::Halfedge_around_face_const_circulator end, bool positive,
+  Polygon2d& poly)
+{
   Outline2d outline;
 
-  CGAL_For_all(circ, end) {
+  CGAL_For_all(circ, end)
+  {
     if (explorer.is_standard(explorer.target(circ))) {
       CGAL_Nef_polyhedron2::Explorer::Point ep = explorer.point(explorer.target(circ));
-      outline.vertices.push_back(Vector2d(to_double(ep.x()),
-                                          to_double(ep.y())));
+      outline.vertices.push_back(Vector2d(to_double(ep.x()), to_double(ep.y())));
     }
   }
 
@@ -57,7 +58,8 @@ static std::unique_ptr<Polygon2d> convertToPolygon2d(const CGAL_Nef_polyhedron2&
     if (!fit->mark()) continue;
     heafcc_t fcirc(E.face_cycle(fit)), fend(fcirc);
     add_outline_to_poly(E, fcirc, fend, true, *poly);
-    for (CGAL_Nef_polyhedron2::Explorer::Hole_const_iterator j = E.holes_begin(fit); j != E.holes_end(fit); ++j) {
+    for (CGAL_Nef_polyhedron2::Explorer::Hole_const_iterator j = E.holes_begin(fit);
+         j != E.holes_end(fit); ++j) {
       CGAL_Nef_polyhedron2::Explorer::Halfedge_around_face_const_circulator hcirc(j), hend(hcirc);
       add_outline_to_poly(E, hcirc, hend, false, *poly);
     }
@@ -115,7 +117,6 @@ public:
   void visit(CGAL_Nef_polyhedron3::Halffacet_const_handle hfacet);
 };
 
-
 void ZRemover::visit(CGAL_Nef_polyhedron3::Halffacet_const_handle hfacet)
 {
   PRINTDB(" <!-- ZRemover Halffacet visit. Mark: %i --> ", hfacet->mark());
@@ -129,12 +130,14 @@ void ZRemover::visit(CGAL_Nef_polyhedron3::Halffacet_const_handle hfacet)
 
   CGAL_Nef_polyhedron3::Halffacet_cycle_const_iterator fci;
   int contour_counter = 0;
-  CGAL_forall_facet_cycles_of(fci, hfacet) {
+  CGAL_forall_facet_cycles_of(fci, hfacet)
+  {
     if (fci.is_shalfedge()) {
       PRINTD(" <!-- ZRemover Halffacet cycle begin -->");
       CGAL_Nef_polyhedron3::SHalfedge_around_facet_const_circulator c1(fci), cend(c1);
       std::vector<CGAL_Nef_polyhedron2::Explorer::Point> contour;
-      CGAL_For_all(c1, cend) {
+      CGAL_For_all(c1, cend)
+      {
         CGAL_Nef_polyhedron3::Point_3 point3d = c1->source()->target()->point();
         CGAL_Nef_polyhedron2::Explorer::Point point2d(CGAL::to_double(point3d.x()),
                                                       CGAL::to_double(point3d.y()));
@@ -142,7 +145,8 @@ void ZRemover::visit(CGAL_Nef_polyhedron3::Halffacet_const_handle hfacet)
       }
       if (contour.size() == 0) continue;
 
-      if (OpenSCAD::debug != "") PRINTDB(" <!-- is_simple_2: %i -->", CGAL::is_simple_2(contour.begin(), contour.end()));
+      if (OpenSCAD::debug != "")
+        PRINTDB(" <!-- is_simple_2: %i -->", CGAL::is_simple_2(contour.begin(), contour.end()));
 
       tmpnef2d = std::make_shared<CGAL_Nef_polyhedron2>(contour.begin(), contour.end(), boundary);
 
@@ -168,8 +172,6 @@ void ZRemover::visit(CGAL_Nef_polyhedron3::Halffacet_const_handle hfacet)
   PRINTD(" <!-- ZRemover Halffacet visit end -->");
 }
 
-
-
 namespace CGALUtils {
 
 std::unique_ptr<Polygon2d> project(const CGALNefGeometry& N, bool cut)
@@ -181,7 +183,8 @@ std::unique_ptr<Polygon2d> project(const CGALNefGeometry& N, bool cut)
   if (cut) {
     try {
       CGAL_Nef_polyhedron3::Plane_3 xy_plane = CGAL_Nef_polyhedron3::Plane_3(0, 0, 1, 0);
-      newN.p3 = std::make_shared<CGAL_Nef_polyhedron3>(N.p3->intersection(xy_plane, CGAL_Nef_polyhedron3::PLANE_ONLY));
+      newN.p3 = std::make_shared<CGAL_Nef_polyhedron3>(
+        N.p3->intersection(xy_plane, CGAL_Nef_polyhedron3::PLANE_ONLY));
     } catch (const CGAL::Failure_exception& e) {
       PRINTDB("CGALUtils::project during plane intersection: %s", e.what());
       try {
@@ -191,7 +194,7 @@ std::unique_ptr<Polygon2d> project(const CGALNefGeometry& N, bool cut)
         double inf = 1e8;
         double eps = 0.001;
         CGAL_Point_3 minpt(-inf, -inf, -eps);
-        CGAL_Point_3 maxpt(inf,  inf,  eps);
+        CGAL_Point_3 maxpt(inf, inf, eps);
         CGAL_Iso_cuboid_3 bigcuboid(minpt, maxpt);
         pts.reserve(8);
         for (int i = 0; i < 8; ++i) pts.push_back(bigcuboid.vertex(i));
@@ -200,8 +203,8 @@ std::unique_ptr<Polygon2d> project(const CGALNefGeometry& N, bool cut)
         CGAL_Nef_polyhedron3 nef_bigbox(bigbox);
         newN.p3 = std::make_shared<CGAL_Nef_polyhedron3>(nef_bigbox.intersection(*N.p3));
       } catch (const CGAL::Failure_exception& e) {
-        LOG(message_group::Error, " CGAL error in CGALUtils::project during bigbox intersection: %1$s", e.what());
-
+        LOG(message_group::Error, " CGAL error in CGALUtils::project during bigbox intersection: %1$s",
+            e.what());
       }
     }
 
@@ -237,8 +240,7 @@ std::unique_ptr<Polygon2d> project(const CGALNefGeometry& N, bool cut)
   else {
     if (auto ps = CGALUtils::createPolySetFromNefPolyhedron3(*N.p3)) {
       poly = PolySetUtils::project(*ps);
-    }
-    else {
+    } else {
       LOG(message_group::Error, "Nef->PolySet failed");
       return poly;
     }
@@ -246,6 +248,6 @@ std::unique_ptr<Polygon2d> project(const CGALNefGeometry& N, bool cut)
   return poly;
 }
 
-} // namespace
+}  // namespace CGALUtils
 
-#endif // ENABLE_CGAL
+#endif  // ENABLE_CGAL

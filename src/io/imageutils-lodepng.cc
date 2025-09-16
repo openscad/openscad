@@ -16,6 +16,6 @@ bool write_png(std::ostream& output, unsigned char *pixels, int width, int heigh
   const auto err = lodepng::encode(dataout, pixels, width, height, state);
   if (err) return false;
   output.write(reinterpret_cast<const char *>(&dataout[0]), dataout.size());
-  if (output.bad() ) std::cerr << "Error writing to ostream\n";
+  if (output.bad()) std::cerr << "Error writing to ostream\n";
   return output.good();
 }

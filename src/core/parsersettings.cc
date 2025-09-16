@@ -14,15 +14,9 @@ namespace fs = std::filesystem;
 
 std::vector<std::string> librarypath;
 
-static void add_librarydir(const std::string& libdir)
-{
-  librarypath.push_back(libdir);
-}
+static void add_librarydir(const std::string& libdir) { librarypath.push_back(libdir); }
 
-const std::vector<std::string>& get_library_path()
-{
-  return librarypath;
-}
+const std::vector<std::string>& get_library_path() { return librarypath; }
 
 /*!
    Searces for the given file in library paths and returns the full path if found.
@@ -82,9 +76,8 @@ static bool check_valid(const fs::path& p, const std::vector<std::string> *openf
    Returns the absolute path to a valid file, or an empty path if no
    valid files could be found.
  */
-inline fs::path find_valid_path_(const fs::path& sourcepath,
-                          const fs::path& localpath,
-                          const std::vector<std::string> *openfilenames)
+inline fs::path find_valid_path_(const fs::path& sourcepath, const fs::path& localpath,
+                                 const std::vector<std::string> *openfilenames)
 {
   if (localpath.is_absolute()) {
     if (check_valid(localpath, openfilenames)) {
@@ -106,13 +99,11 @@ inline fs::path find_valid_path_(const fs::path& sourcepath,
   return {};
 }
 
-fs::path find_valid_path(const fs::path& sourcepath,
-                         const fs::path& localpath,
+fs::path find_valid_path(const fs::path& sourcepath, const fs::path& localpath,
                          const std::vector<std::string> *openfilenames)
 {
   return {find_valid_path_(sourcepath, localpath, openfilenames).generic_string()};
 }
-
 
 static bool path_contains_file(fs::path dir, fs::path file)
 {
@@ -146,7 +137,6 @@ fs::path get_library_for_path(const fs::path& localpath)
   return {};
 }
 
-
 void parser_init()
 {
   // Add paths from OPENSCADPATH before adding built-in paths
@@ -155,7 +145,9 @@ void parser_init()
     std::string paths(openscadpaths);
     std::string sep = PlatformUtils::pathSeparatorChar();
     using string_split_iterator = boost::split_iterator<std::string::iterator>;
-    for (string_split_iterator it = boost::make_split_iterator(paths, boost::first_finder(sep, boost::is_iequal())); it != string_split_iterator(); ++it) {
+    for (string_split_iterator it =
+           boost::make_split_iterator(paths, boost::first_finder(sep, boost::is_iequal()));
+         it != string_split_iterator(); ++it) {
       auto str{boost::copy_range<std::string>(*it)};
       fs::path abspath = str.empty() ? fs::current_path() : fs::absolute(fs::path(str));
       add_librarydir(abspath.generic_string());

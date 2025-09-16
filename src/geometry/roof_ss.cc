@@ -29,7 +29,8 @@
 #include "geometry/PolySetBuilder.h"
 
 #define RAISE_ROOF_EXCEPTION(message) \
-        throw RoofNode::roof_exception((boost::format("%s line %d: %s") % __FILE__ % __LINE__ % (message)).str());
+  throw RoofNode::roof_exception(     \
+    (boost::format("%s line %d: %s") % __FILE__ % __LINE__ % (message)).str());
 
 namespace roof_ss {
 
@@ -61,26 +62,25 @@ CGAL_Polygon_2 to_cgal_polygon_2(const Clipper2Lib::Path64& path, int scale_bits
 }
 
 // break a list of outlines into polygons with holes
-std::vector<CGAL_Polygon_with_holes_2> polygons_with_holes(const Clipper2Lib::PolyTree64& polytree, int scale_bits)
+std::vector<CGAL_Polygon_with_holes_2> polygons_with_holes(const Clipper2Lib::PolyTree64& polytree,
+                                                           int scale_bits)
 {
   std::vector<CGAL_Polygon_with_holes_2> ret;
 
   // lambda for recursive walk through polytree
-  std::function<void (const Clipper2Lib::PolyPath64 &)> walk = [&](const Clipper2Lib::PolyPath64 &c) {
-      // outer path
-      CGAL_Polygon_with_holes_2 c_poly(to_cgal_polygon_2(c.Polygon(), scale_bits));
-      // holes
-      for (const auto& cc : c) {
-        c_poly.add_hole(to_cgal_polygon_2(cc->Polygon(), scale_bits));
-        for (const auto& ccc : *cc)
-          walk(*ccc);
-      }
-      ret.push_back(c_poly);
-      return;
-    };
+  std::function<void(const Clipper2Lib::PolyPath64&)> walk = [&](const Clipper2Lib::PolyPath64& c) {
+    // outer path
+    CGAL_Polygon_with_holes_2 c_poly(to_cgal_polygon_2(c.Polygon(), scale_bits));
+    // holes
+    for (const auto& cc : c) {
+      c_poly.add_hole(to_cgal_polygon_2(cc->Polygon(), scale_bits));
+      for (const auto& ccc : *cc) walk(*ccc);
+    }
+    ret.push_back(c_poly);
+    return;
+  };
 
-  for (const auto &root_node : polytree)
-    walk(*root_node);
+  for (const auto& root_node : polytree) walk(*root_node);
 
   return ret;
 }
@@ -101,8 +101,8 @@ std::unique_ptr<PolySet> straight_skeleton_roof(const Polygon2d& poly)
       const CGAL_SsPtr ss = CGAL::create_interior_straight_skeleton_2(shape);
       // store heights of vertices
       auto vector2d_comp = [](const Vector2d& a, const Vector2d& b) {
-          return (a[0] < b[0]) || (a[0] == b[0] && a[1] < b[1]);
-        };
+        return (a[0] < b[0]) || (a[0] == b[0] && a[1] < b[1]);
+      };
       std::map<Vector2d, double, decltype(vector2d_comp)> heights(vector2d_comp);
       for (auto v = ss->vertices_begin(); v != ss->vertices_end(); v++) {
         const Vector2d p(v->point().x(), v->point().y());
@@ -112,7 +112,7 @@ std::unique_ptr<PolySet> straight_skeleton_roof(const Polygon2d& poly)
       for (auto ss_face = ss->faces_begin(); ss_face != ss->faces_end(); ss_face++) {
         // convert ss_face to cgal polygon
         CGAL_Polygon_2 face;
-        for (auto h = ss_face->halfedge(); ;) {
+        for (auto h = ss_face->halfedge();;) {
           const CGAL_Point_2 pp = h->vertex()->point();
           face.push_back(pp);
           h = h->next();
@@ -121,7 +121,8 @@ std::unique_ptr<PolySet> straight_skeleton_roof(const Polygon2d& poly)
           }
         }
         if (!face.is_simple()) {
-          RAISE_ROOF_EXCEPTION("A non-simple face in straight skeleton, likely cause is cgal issue #5177");
+          RAISE_ROOF_EXCEPTION(
+            "A non-simple face in straight skeleton, likely cause is cgal issue #5177");
         }
 
         // do convex partition if necessary
@@ -162,4 +163,4 @@ std::unique_ptr<PolySet> straight_skeleton_roof(const Polygon2d& poly)
   }
 }
 
-} // roof_ss
+}  // namespace roof_ss

@@ -6,19 +6,13 @@
 #include "core/ModuleInstantiation.h"
 #include "geometry/linalg.h"
 
-enum class CgalAdvType {
-  MINKOWSKI,
-  HULL,
-  FILL,
-  RESIZE
-};
+enum class CgalAdvType { MINKOWSKI, HULL, FILL, RESIZE };
 
 class CgalAdvNode : public AbstractNode
 {
 public:
   VISITABLE();
-  CgalAdvNode(const ModuleInstantiation *mi, CgalAdvType type) : AbstractNode(mi), type(type) {
-  }
+  CgalAdvNode(const ModuleInstantiation *mi, CgalAdvType type) : AbstractNode(mi), type(type) {}
   std::string toString() const override;
   std::string name() const override;
 

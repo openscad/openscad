@@ -24,17 +24,27 @@ RenderColorScheme::RenderColorScheme() : _path("")
   _index = 1000;
   _show_in_gui = true;
 
-  _color_scheme.insert(ColorScheme::value_type(RenderColor::BACKGROUND_COLOR, Color4f(0xff, 0xff, 0xe5)));
-  _color_scheme.insert(ColorScheme::value_type(RenderColor::BACKGROUND_STOP_COLOR, Color4f(0xff, 0xff, 0xe5)));
+  _color_scheme.insert(
+    ColorScheme::value_type(RenderColor::BACKGROUND_COLOR, Color4f(0xff, 0xff, 0xe5)));
+  _color_scheme.insert(
+    ColorScheme::value_type(RenderColor::BACKGROUND_STOP_COLOR, Color4f(0xff, 0xff, 0xe5)));
   _color_scheme.insert(ColorScheme::value_type(RenderColor::AXES_COLOR, Color4f(0x00, 0x00, 0x00)));
-  _color_scheme.insert(ColorScheme::value_type(RenderColor::OPENCSG_FACE_FRONT_COLOR, Color4f(0xf9, 0xd7, 0x2c)));
-  _color_scheme.insert(ColorScheme::value_type(RenderColor::OPENCSG_FACE_BACK_COLOR, Color4f(0x9d, 0xcb, 0x51)));
-  _color_scheme.insert(ColorScheme::value_type(RenderColor::CGAL_FACE_FRONT_COLOR, Color4f(0xf9, 0xd7, 0x2c)));
-  _color_scheme.insert(ColorScheme::value_type(RenderColor::CGAL_FACE_2D_COLOR, Color4f(0x00, 0xbf, 0x99)));
-  _color_scheme.insert(ColorScheme::value_type(RenderColor::CGAL_FACE_BACK_COLOR, Color4f(0x9d, 0xcb, 0x51)));
-  _color_scheme.insert(ColorScheme::value_type(RenderColor::CGAL_EDGE_FRONT_COLOR, Color4f(0xff, 0xec, 0x5e)));
-  _color_scheme.insert(ColorScheme::value_type(RenderColor::CGAL_EDGE_BACK_COLOR, Color4f(0xab, 0xd8, 0x56)));
-  _color_scheme.insert(ColorScheme::value_type(RenderColor::CGAL_EDGE_2D_COLOR, Color4f(0xff, 0x00, 0x00)));
+  _color_scheme.insert(
+    ColorScheme::value_type(RenderColor::OPENCSG_FACE_FRONT_COLOR, Color4f(0xf9, 0xd7, 0x2c)));
+  _color_scheme.insert(
+    ColorScheme::value_type(RenderColor::OPENCSG_FACE_BACK_COLOR, Color4f(0x9d, 0xcb, 0x51)));
+  _color_scheme.insert(
+    ColorScheme::value_type(RenderColor::CGAL_FACE_FRONT_COLOR, Color4f(0xf9, 0xd7, 0x2c)));
+  _color_scheme.insert(
+    ColorScheme::value_type(RenderColor::CGAL_FACE_2D_COLOR, Color4f(0x00, 0xbf, 0x99)));
+  _color_scheme.insert(
+    ColorScheme::value_type(RenderColor::CGAL_FACE_BACK_COLOR, Color4f(0x9d, 0xcb, 0x51)));
+  _color_scheme.insert(
+    ColorScheme::value_type(RenderColor::CGAL_EDGE_FRONT_COLOR, Color4f(0xff, 0xec, 0x5e)));
+  _color_scheme.insert(
+    ColorScheme::value_type(RenderColor::CGAL_EDGE_BACK_COLOR, Color4f(0xab, 0xd8, 0x56)));
+  _color_scheme.insert(
+    ColorScheme::value_type(RenderColor::CGAL_EDGE_2D_COLOR, Color4f(0xff, 0x00, 0x00)));
   _color_scheme.insert(ColorScheme::value_type(RenderColor::CROSSHAIR_COLOR, Color4f(0x80, 0x00, 0x00)));
 }
 
@@ -57,7 +67,7 @@ RenderColorScheme::RenderColorScheme(const fs::path& path) : _path(path)
     addColor(RenderColor::CGAL_EDGE_BACK_COLOR, "cgal-edge-back");
     addColor(RenderColor::CGAL_EDGE_2D_COLOR, "cgal-edge-2d");
     addColor(RenderColor::CROSSHAIR_COLOR, "crosshair");
-    try{
+    try {
       addColor(RenderColor::BACKGROUND_STOP_COLOR, "background-stop");
     } catch (const std::exception& e) {
       addColor(RenderColor::BACKGROUND_STOP_COLOR, "background");
@@ -71,45 +81,21 @@ RenderColorScheme::RenderColorScheme(const fs::path& path) : _path(path)
   }
 }
 
-bool RenderColorScheme::valid() const
-{
-  return !_name.empty();
-}
+bool RenderColorScheme::valid() const { return !_name.empty(); }
 
-const std::string& RenderColorScheme::name() const
-{
-  return _name;
-}
+const std::string& RenderColorScheme::name() const { return _name; }
 
-int RenderColorScheme::index() const
-{
-  return _index;
-}
+int RenderColorScheme::index() const { return _index; }
 
-bool RenderColorScheme::showInGui() const
-{
-  return _show_in_gui;
-}
+bool RenderColorScheme::showInGui() const { return _show_in_gui; }
 
-std::string RenderColorScheme::path() const
-{
-  return _path.string();
-}
+std::string RenderColorScheme::path() const { return _path.string(); }
 
-std::string RenderColorScheme::error() const
-{
-  return _error;
-}
+std::string RenderColorScheme::error() const { return _error; }
 
-ColorScheme& RenderColorScheme::colorScheme()
-{
-  return _color_scheme;
-}
+ColorScheme& RenderColorScheme::colorScheme() { return _color_scheme; }
 
-const boost::property_tree::ptree& RenderColorScheme::propertyTree() const
-{
-  return pt;
-}
+const boost::property_tree::ptree& RenderColorScheme::propertyTree() const { return pt; }
 
 void RenderColorScheme::addColor(RenderColor colorKey, const std::string& key)
 {
@@ -123,7 +109,8 @@ void RenderColorScheme::addColor(RenderColor colorKey, const std::string& key)
     int b = val & 0xff;
     _color_scheme.insert(ColorScheme::value_type(colorKey, Color4f(r, g, b)));
   } else {
-    throw std::invalid_argument(std::string("invalid color value for key '") + key + "': '" + color + "'");
+    throw std::invalid_argument(std::string("invalid color value for key '") + key + "': '" + color +
+                                "'");
   }
 }
 
@@ -143,10 +130,7 @@ ColorMap::ColorMap()
   dump();
 }
 
-const char *ColorMap::defaultColorSchemeName() const
-{
-  return DEFAULT_COLOR_SCHEME_NAME;
-}
+const char *ColorMap::defaultColorSchemeName() const { return DEFAULT_COLOR_SCHEME_NAME; }
 
 const ColorScheme& ColorMap::defaultColorScheme() const
 {
@@ -178,9 +162,11 @@ void ColorMap::dump() const
     const RenderColorScheme *cs = item.second.get();
     const char gui = cs->showInGui() ? 'G' : '-';
     if (cs->path().empty()) {
-      PRINTDB("%6d:%c: %s (built-in)", cs->index() % gui % boost::io::group(std::setw(length), cs->name()));
+      PRINTDB("%6d:%c: %s (built-in)",
+              cs->index() % gui % boost::io::group(std::setw(length), cs->name()));
     } else {
-      PRINTDB("%6d:%c: %s from %s", cs->index() % gui % boost::io::group(std::setw(length), cs->name()) % cs->path());
+      PRINTDB("%6d:%c: %s from %s",
+              cs->index() % gui % boost::io::group(std::setw(length), cs->name()) % cs->path());
     }
   }
   PRINTD("done.");
@@ -202,7 +188,8 @@ std::list<std::string> ColorMap::colorSchemeNames(bool guiOnly) const
 Color4f ColorMap::getColor(const ColorScheme& cs, const RenderColor rc)
 {
   if (cs.count(rc)) return cs.at(rc);
-  if (ColorMap::inst()->defaultColorScheme().count(rc)) return ColorMap::inst()->defaultColorScheme().at(rc);
+  if (ColorMap::inst()->defaultColorScheme().count(rc))
+    return ColorMap::inst()->defaultColorScheme().at(rc);
   return {0, 0, 0, 127};
 }
 
@@ -227,7 +214,8 @@ void ColorMap::enumerateColorSchemesInPath(colorscheme_set_t& result_set, const 
 
       auto *colorScheme = new RenderColorScheme(path);
       if (colorScheme->valid() && (findColorScheme(colorScheme->name()) == nullptr)) {
-        result_set.insert(colorscheme_set_t::value_type(colorScheme->index(), std::shared_ptr<RenderColorScheme>(colorScheme)));
+        result_set.insert(colorscheme_set_t::value_type(
+          colorScheme->index(), std::shared_ptr<RenderColorScheme>(colorScheme)));
         PRINTDB("Found file '%s' with color scheme '%s' and index %d",
                 colorScheme->path() % colorScheme->name() % colorScheme->index());
       } else {
@@ -243,8 +231,8 @@ ColorMap::colorscheme_set_t ColorMap::enumerateColorSchemes()
   colorscheme_set_t result_set;
 
   auto *defaultColorScheme = new RenderColorScheme();
-  result_set.insert(colorscheme_set_t::value_type(defaultColorScheme->index(),
-                                                  std::shared_ptr<RenderColorScheme>(defaultColorScheme)));
+  result_set.insert(colorscheme_set_t::value_type(
+    defaultColorScheme->index(), std::shared_ptr<RenderColorScheme>(defaultColorScheme)));
   enumerateColorSchemesInPath(result_set, PlatformUtils::resourceBasePath());
   enumerateColorSchemesInPath(result_set, PlatformUtils::userConfigPath());
 

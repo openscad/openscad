@@ -22,9 +22,10 @@
 #include "utils/printutils.h"
 
 static std::unique_ptr<PolySet> assemblePolySetForManifold(const Polygon2d& polyref,
-                                                    std::vector<Vector3d>& vertices,
-                                                    PolygonIndices& indices, bool closed, int convexity,
-                                                    int index_offset, bool flip_faces)
+                                                           std::vector<Vector3d>& vertices,
+                                                           PolygonIndices& indices, bool closed,
+                                                           int convexity, int index_offset,
+                                                           bool flip_faces)
 {
   auto final_polyset = std::make_unique<PolySet>(3, false);
   final_polyset->setTriangular(true);
@@ -51,10 +52,10 @@ static std::unique_ptr<PolySet> assemblePolySetForManifold(const Polygon2d& poly
       }
     }
     std::copy(ps_bottom->indices.begin(), ps_bottom->indices.end(),
-      std::back_inserter(final_polyset->indices));
+              std::back_inserter(final_polyset->indices));
   }
 
-//  LOG(PolySetUtils::polySetToPolyhedronSource(*final_polyset));
+  //  LOG(PolySetUtils::polySetToPolyhedronSource(*final_polyset));
 
   return final_polyset;
 }
@@ -104,7 +105,7 @@ std::unique_ptr<Geometry> rotatePolygon(const RotateExtrudeNode& node, const Pol
     1));
   const bool closed = node.angle == 360;
   // # of rings of vertices
-  const int num_rings = num_sections + (closed ? 0 : 1);
+  const size_t num_rings = num_sections + (closed ? 0 : 1);
 
   const bool flip_faces = (min_x >= 0 && node.angle > 0) || (min_x < 0 && node.angle < 0);
 
@@ -136,7 +137,7 @@ std::unique_ptr<Geometry> rotatePolygon(const RotateExtrudeNode& node, const Pol
     int curr_outline = 0;
     for (const auto& outline : poly.outlines()) {
       assert(outline.vertices.size() > 2);
-      for (int i = 1; i <= outline.vertices.size(); ++i) {
+      for (size_t i = 1; i <= outline.vertices.size(); ++i) {
         const int curr_idx = curr_outline + (i % outline.vertices.size());
         const int prev_idx = curr_outline + i - 1;
         if (flip_faces) {
@@ -149,7 +150,7 @@ std::unique_ptr<Geometry> rotatePolygon(const RotateExtrudeNode& node, const Pol
             (curr_slice + curr_idx) % num_vertices,
             (prev_slice + prev_idx) % num_vertices,
             (curr_slice + prev_idx) % num_vertices,
-          });  
+          });
         } else {
           indices.push_back({
             (prev_slice + curr_idx) % num_vertices,
@@ -167,10 +168,10 @@ std::unique_ptr<Geometry> rotatePolygon(const RotateExtrudeNode& node, const Pol
     }
   }
 
-  // TODO(kintel): Without Manifold, we don't have such tessellator available which guarantees to not modify vertices, so we technically may end up with 
-  // broken end caps if we build OpenSCAD without ENABLE_MANIFOLD. Should be fixed, but it's low priority and it's not 
-  // trivial to come up with a test case for this.
-return assemblePolySetForManifold(poly, vertices, indices, closed, node.convexity,
+  // TODO(kintel): Without Manifold, we don't have such tessellator available which guarantees to not
+  // modify vertices, so we technically may end up with broken end caps if we build OpenSCAD without
+  // ENABLE_MANIFOLD. Should be fixed, but it's low priority and it's not trivial to come up with a test
+  // case for this.
+  return assemblePolySetForManifold(poly, vertices, indices, closed, node.convexity,
                                     slice_stride * num_sections, flip_faces);
-
 }

@@ -23,5 +23,5 @@ public:
 
 private:
   QRubberBand rubberBand;
-  Dock* emphasizedDock;
+  Dock *emphasizedDock;
 };

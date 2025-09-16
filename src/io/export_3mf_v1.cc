@@ -94,12 +94,8 @@ void export_3mf_error(std::string msg, PLib3MFModel *& model)
   }
 }
 
-BYTE get_color_channel(const Color4f& col, int idx)
+int count_mesh_objects(PLib3MFModel *& model)
 {
-  return std::clamp(static_cast<int>(255.0 * col[idx]), 0, 255);
-}
-
-int count_mesh_objects(PLib3MFModel *& model) {
   PLib3MFModelResourceIterator *it;
   if (lib3mf_model_getmeshobjects(model, &it) != LIB3MF_OK) {
     return 0;
@@ -120,7 +116,8 @@ int count_mesh_objects(PLib3MFModel *& model) {
   return count;
 }
 
-bool handle_triangle_color(PLib3MFPropertyHandler *propertyhandler, const std::unique_ptr<PolySet>& ps, int triangle_index, int color_index, ExportContext& ctx)
+bool handle_triangle_color(PLib3MFPropertyHandler *propertyhandler, const std::unique_ptr<PolySet>& ps,
+                           int triangle_index, int color_index, ExportContext& ctx)
 {
   if (color_index < 0) {
     return true;
@@ -136,13 +133,15 @@ bool handle_triangle_color(PLib3MFPropertyHandler *propertyhandler, const std::u
   }
 
   if (ctx.basematerial) {
-    if (lib3mf_propertyhandler_setbasematerial(propertyhandler, triangle_index, ctx.basematerialid, ctx.materialids[color_index]) != LIB3MF_OK) {
+    if (lib3mf_propertyhandler_setbasematerial(propertyhandler, triangle_index, ctx.basematerialid,
+                                               ctx.materialids[color_index]) != LIB3MF_OK) {
       export_3mf_error("Can't set triangle base material.", ctx.model);
       return false;
     }
   } else if (ctx.usecolors) {
     const auto& col = ps->colors[color_index];
-    if (lib3mf_propertyhandler_setsinglecolorfloatrgba(propertyhandler, triangle_index, col.r(), col.g(), col.b(), col.a()) != LIB3MF_OK) {
+    if (lib3mf_propertyhandler_setsinglecolorfloatrgba(propertyhandler, triangle_index, col.r(), col.g(),
+                                                       col.b(), col.a()) != LIB3MF_OK) {
       export_3mf_error("Can't set triangle color.", ctx.model);
       return false;
     }
@@ -150,7 +149,6 @@ bool handle_triangle_color(PLib3MFPropertyHandler *propertyhandler, const std::u
 
   return true;
 }
-
 
 /*
  * PolySet must be triangulated.
@@ -177,28 +175,27 @@ bool append_polyset(const std::shared_ptr<const PolySet>& ps, ExportContext& ctx
   }
 
   auto vertexFunc = [&](const Vector3d& coords) -> bool {
-      const auto f = coords.cast<float>();
-      MODELMESHVERTEX v{f[0], f[1], f[2]};
-      return lib3mf_meshobject_addvertex(mesh, &v, nullptr) == LIB3MF_OK;
-    };
+    const auto f = coords.cast<float>();
+    MODELMESHVERTEX v{f[0], f[1], f[2]};
+    return lib3mf_meshobject_addvertex(mesh, &v, nullptr) == LIB3MF_OK;
+  };
 
   auto triangleFunc = [&](const IndexedFace& indices) -> bool {
-      MODELMESHTRIANGLE t{(DWORD)indices[0], (DWORD)indices[1], (DWORD)indices[2]};
-      return lib3mf_meshobject_addtriangle(mesh, &t, nullptr) == LIB3MF_OK;
-    };
+    MODELMESHTRIANGLE t{(DWORD)indices[0], (DWORD)indices[1], (DWORD)indices[2]};
+    return lib3mf_meshobject_addtriangle(mesh, &t, nullptr) == LIB3MF_OK;
+  };
 
   auto materialFunc = [&](int idx, const Color4f& col) -> DWORD {
-      const auto colname = "Color " + std::to_string(idx);
+    const auto colname = "Color " + std::to_string(idx);
 
-      DWORD id = 0;
-      lib3mf_basematerial_addmaterialutf8(ctx.basematerial,
-                                          colname.c_str(),
-                                          get_color_channel(col, 0),
-                                          get_color_channel(col, 1),
-                                          get_color_channel(col, 2),
-                                          &id);
-      return id;
-    };
+    DWORD id = 0;
+    uint8_t r, g, b, a;
+    if (!col.getRgba(r, g, b, a)) {
+      LOG(message_group::Warning, "Invalid color in 3MF export");
+    }
+    lib3mf_basematerial_addmaterialutf8(ctx.basematerial, colname.c_str(), r, g, b, &id);
+    return id;
+  };
 
   auto sorted_ps = createSortedPolySet(*ps);
 
@@ -243,7 +240,7 @@ bool append_polyset(const std::shared_ptr<const PolySet>& ps, ExportContext& ctx
     }
 
     ctx.materialids.reserve(sorted_ps->colors.size());
-    for (int i = 0; i < sorted_ps->colors.size(); i++) {
+    for (size_t i = 0; i < sorted_ps->colors.size(); i++) {
       ctx.materialids.push_back(materialFunc(materials + i, sorted_ps->colors[i]));
     }
   }
@@ -254,7 +251,7 @@ bool append_polyset(const std::shared_ptr<const PolySet>& ps, ExportContext& ctx
     return false;
   }
 
-  for (int i = 0; i < sorted_ps->color_indices.size(); ++i) {
+  for (size_t i = 0; i < sorted_ps->color_indices.size(); ++i) {
     const int32_t idx = sorted_ps->color_indices[i];
     if (!handle_triangle_color(propertyhandler, sorted_ps, i, idx, ctx)) {
       return false;
@@ -270,13 +267,14 @@ bool append_polyset(const std::shared_ptr<const PolySet>& ps, ExportContext& ctx
   }
 
   if (ctx.basematerial) {
-    lib3mf_defaultpropertyhandler_setbasematerial(defaultpropertyhandler, ctx.basematerialid, ctx.defaultColorId);
+    lib3mf_defaultpropertyhandler_setbasematerial(defaultpropertyhandler, ctx.basematerialid,
+                                                  ctx.defaultColorId);
   } else if (ctx.usecolors) {
-    lib3mf_defaultpropertyhandler_setcolorrgba(defaultpropertyhandler,
-                                               get_color_channel(ctx.defaultColor, 0),
-                                               get_color_channel(ctx.defaultColor, 1),
-                                               get_color_channel(ctx.defaultColor, 2),
-                                               get_color_channel(ctx.defaultColor, 3));
+    uint8_t r, g, b, a;
+    if (!ctx.defaultColor.getRgba(r, g, b, a)) {
+      LOG(message_group::Warning, "Invalid color in 3MF export");
+    }
+    lib3mf_defaultpropertyhandler_setcolorrgba(defaultpropertyhandler, r, g, b, a);
   }
 
   lib3mf_release(defaultpropertyhandler);
@@ -286,7 +284,8 @@ bool append_polyset(const std::shared_ptr<const PolySet>& ps, ExportContext& ctx
     export_3mf_error("Can't add build item to 3MF model.", ctx.model);
     return false;
   }
-  if (!partname.empty() && lib3mf_builditem_setpartnumberutf8(builditem, partname.c_str()) != LIB3MF_OK) {
+  if (!partname.empty() &&
+      lib3mf_builditem_setpartnumberutf8(builditem, partname.c_str()) != LIB3MF_OK) {
     export_3mf_error("Can't set part name of build item.", ctx.model);
     return false;
   }
@@ -306,9 +305,9 @@ bool append_nef(const CGALNefGeometry& root_N, ExportContext& ctx)
   }
 
   if (!root_N.p3->is_simple()) {
-    LOG(message_group::Export_Warning, "Exported object may not be a valid 2-manifold and may need repair");
+    LOG(message_group::Export_Warning,
+        "Exported object may not be a valid 2-manifold and may need repair");
   }
-
 
   if (std::shared_ptr<PolySet> ps = CGALUtils::createPolySetFromNefPolyhedron3(*root_N.p3)) {
     return append_polyset(ps, ctx);
@@ -317,7 +316,7 @@ bool append_nef(const CGALNefGeometry& root_N, ExportContext& ctx)
   export_3mf_error("Error converting NEF Polyhedron.", ctx.model);
   return false;
 }
-#endif // ifdef ENABLE_CGAL
+#endif  // ifdef ENABLE_CGAL
 
 static bool append_3mf(const std::shared_ptr<const Geometry>& geom, ExportContext& ctx)
 {
@@ -336,16 +335,18 @@ static bool append_3mf(const std::shared_ptr<const Geometry>& geom, ExportContex
 #endif
   } else if (const auto ps = std::dynamic_pointer_cast<const PolySet>(geom)) {
     return append_polyset(PolySetUtils::tessellate_faces(*ps), ctx);
-  } else if (std::dynamic_pointer_cast<const Polygon2d>(geom)) { // NOLINT(bugprone-branch-clone)
+  } else if (std::dynamic_pointer_cast<const Polygon2d>(geom)) {  // NOLINT(bugprone-branch-clone)
     assert(false && "Unsupported file format");
-  } else { // NOLINT(bugprone-branch-clone)
+  } else {  // NOLINT(bugprone-branch-clone)
     assert(false && "Not implemented");
   }
 
   return true;
 }
 
-void add_meta_data(PLib3MFModelMeshObject *& model, const std::string& name, const std::string& value, const std::string& value2 = "") {
+void add_meta_data(PLib3MFModelMeshObject *& model, const std::string& name, const std::string& value,
+                   const std::string& value2 = "")
+{
   const std::string v = value.empty() ? value2 : value;
   if (v.empty()) {
     return;
@@ -354,23 +355,28 @@ void add_meta_data(PLib3MFModelMeshObject *& model, const std::string& name, con
   lib3mf_model_addmetadatautf8(model, name.c_str(), v.c_str());
 }
 
-} // namespace
+}  // namespace
 
 /*!
     Saves the current 3D Geometry as 3MF to the given file.
     The file must be open.
  */
-void export_3mf(const std::shared_ptr<const Geometry>& geom, std::ostream& output, const ExportInfo& exportInfo)
+void export_3mf(const std::shared_ptr<const Geometry>& geom, std::ostream& output,
+                const ExportInfo& exportInfo)
 {
   DWORD interfaceVersionMajor, interfaceVersionMinor, interfaceVersionMicro;
-  HRESULT result = lib3mf_getinterfaceversion(&interfaceVersionMajor, &interfaceVersionMinor, &interfaceVersionMicro);
+  HRESULT result =
+    lib3mf_getinterfaceversion(&interfaceVersionMajor, &interfaceVersionMinor, &interfaceVersionMicro);
   if (result != LIB3MF_OK) {
     LOG(message_group::Export_Error, "Error reading 3MF library version");
     return;
   }
 
   if ((interfaceVersionMajor != NMR_APIVERSION_INTERFACE_MAJOR)) {
-    LOG(message_group::Export_Error, "Invalid 3MF library major version %1$d.%2$d.%3$d, expected %4$d.%5$d.%6$d", interfaceVersionMajor, interfaceVersionMinor, interfaceVersionMicro, NMR_APIVERSION_INTERFACE_MAJOR, NMR_APIVERSION_INTERFACE_MINOR, NMR_APIVERSION_INTERFACE_MICRO);
+    LOG(message_group::Export_Error,
+        "Invalid 3MF library major version %1$d.%2$d.%3$d, expected %4$d.%5$d.%6$d",
+        interfaceVersionMajor, interfaceVersionMinor, interfaceVersionMicro,
+        NMR_APIVERSION_INTERFACE_MAJOR, NMR_APIVERSION_INTERFACE_MINOR, NMR_APIVERSION_INTERFACE_MICRO);
     return;
   }
 
@@ -380,27 +386,15 @@ void export_3mf(const std::shared_ptr<const Geometry>& geom, std::ostream& outpu
     LOG(message_group::Export_Error, "Can't create 3MF model.");
     return;
   }
-
-  const auto& options3mf = exportInfo.options3mf ? exportInfo.options3mf : std::make_shared<Export3mfOptions>();
+  const auto& options3mf =
+    exportInfo.options3mf ? exportInfo.options3mf : std::make_shared<Export3mfOptions>();
   switch (options3mf->unit) {
-  case Export3mfUnit::micron:
-    lib3mf_model_setunit(model, eModelUnit::MODELUNIT_MICROMETER);
-    break;
-  case Export3mfUnit::centimeter:
-    lib3mf_model_setunit(model, eModelUnit::MODELUNIT_CENTIMETER);
-    break;
-  case Export3mfUnit::meter:
-    lib3mf_model_setunit(model, eModelUnit::MODELUNIT_METER);
-    break;
-  case Export3mfUnit::inch:
-    lib3mf_model_setunit(model, eModelUnit::MODELUNIT_INCH);
-    break;
-  case Export3mfUnit::foot:
-    lib3mf_model_setunit(model, eModelUnit::MODELUNIT_FOOT);
-    break;
-  default:
-    lib3mf_model_setunit(model, eModelUnit::MODELUNIT_MILLIMETER);
-    break;
+  case Export3mfUnit::micron:     lib3mf_model_setunit(model, eModelUnit::MODELUNIT_MICROMETER); break;
+  case Export3mfUnit::centimeter: lib3mf_model_setunit(model, eModelUnit::MODELUNIT_CENTIMETER); break;
+  case Export3mfUnit::meter:      lib3mf_model_setunit(model, eModelUnit::MODELUNIT_METER); break;
+  case Export3mfUnit::inch:       lib3mf_model_setunit(model, eModelUnit::MODELUNIT_INCH); break;
+  case Export3mfUnit::foot:       lib3mf_model_setunit(model, eModelUnit::MODELUNIT_FOOT); break;
+  default:                        lib3mf_model_setunit(model, eModelUnit::MODELUNIT_MILLIMETER); break;
   }
 
   Color4f defaultColor;
@@ -425,11 +419,12 @@ void export_3mf(const std::shared_ptr<const Geometry>& geom, std::ostream& outpu
         export_3mf_error("Can't get base material resource id.", model);
         return;
       }
-      if (lib3mf_basematerial_addmaterialutf8(basematerial, "Default",
-                                              get_color_channel(defaultColor, 0),
-                                              get_color_channel(defaultColor, 1),
-                                              get_color_channel(defaultColor, 2),
-                                              &defaultColorId) != LIB3MF_OK) {
+      uint8_t r, g, b, a;
+      if (!defaultColor.getRgba(r, g, b, a)) {
+        LOG(message_group::Warning, "Invalid color in 3MF export");
+      }
+      if (lib3mf_basematerial_addmaterialutf8(basematerial, "Default", r, g, b, &defaultColorId) !=
+          LIB3MF_OK) {
         export_3mf_error("Can't add default material color.", model);
         return;
       }
@@ -449,20 +444,18 @@ void export_3mf(const std::shared_ptr<const Geometry>& geom, std::ostream& outpu
     add_meta_data(model, "Rating", options3mf->metaDataRating);
   }
 
-  ExportContext ctx{
-    .model = model,
-    .basematerial = basematerial,
-    .basematerialid = basematerialid,
-    .usecolors = usecolors,
-    .modelcount = 1,
-    .defaultColor = defaultColor,
-    .defaultColorId = defaultColorId,
-    .info = exportInfo,
-    .options = options3mf
-  };
+  ExportContext ctx{.model = model,
+                    .basematerial = basematerial,
+                    .basematerialid = basematerialid,
+                    .usecolors = usecolors,
+                    .modelcount = 1,
+                    .defaultColor = defaultColor,
+                    .defaultColorId = defaultColorId,
+                    .info = exportInfo,
+                    .options = options3mf};
 
   if (!append_3mf(geom, ctx)) {
-    if (model) lib3mf_release(model);
+    if (ctx.model) lib3mf_release(model);
     return;
   }
 
@@ -472,13 +465,12 @@ void export_3mf(const std::shared_ptr<const Geometry>& geom, std::ostream& outpu
     return;
   }
 
-  result = lib3mf_writer_writetocallback(writer, (void *)lib3mf_write_callback, (void *)lib3mf_seek_callback, &output);
+  result = lib3mf_writer_writetocallback(writer, (void *)lib3mf_write_callback,
+                                         (void *)lib3mf_seek_callback, &output);
   output.flush();
   lib3mf_release(writer);
   lib3mf_release(model);
   if (result != LIB3MF_OK) {
     LOG(message_group::Export_Error, "Error writing 3MF model.");
   }
-
-
 }

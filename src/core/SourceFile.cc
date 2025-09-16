@@ -25,13 +25,17 @@
  */
 
 #include "core/SourceFile.h"
-#include "core/SourceFileCache.h"
+
+#include "core/EvaluationSession.h"
 #include "core/node.h"
-#include "utils/printutils.h"
-#include "utils/exceptions.h"
 #include "core/ScopeContext.h"
+#include "core/SourceFileCache.h"
 #include "core/parsersettings.h"
 #include "core/StatCache.h"
+
+#include "utils/printutils.h"
+#include "utils/exceptions.h"
+
 #include <algorithm>
 #include <ctime>
 #include <ostream>
@@ -47,22 +51,23 @@ namespace fs = std::filesystem;
 #include <sys/stat.h>
 
 SourceFile::SourceFile(std::string path, std::string filename)
-  : ASTNode(Location::NONE), path(std::move(path)), filename(std::move(filename))
+  : ASTNode(Location::NONE),
+    path(std::move(path)),
+    filename(std::move(filename)),
+    scope(std::make_shared<LocalScope>())
 {
 }
 
 void SourceFile::print(std::ostream& stream, const std::string& indent) const
 {
-  scope.print(stream, indent);
+  scope->print(stream, indent);
 }
 
 void SourceFile::registerUse(const std::string& path, const Location& loc)
 {
-  PRINTDB("registerUse(): (%p) %d, %d - %d, %d (%s) -> %s", this %
-          loc.firstLine() % loc.firstColumn() %
-          loc.lastLine() % loc.lastColumn() %
-          loc.fileName() %
-          path);
+  PRINTDB("registerUse(): (%p) %d, %d - %d, %d (%s) -> %s", this % loc.firstLine() % loc.firstColumn() %
+                                                              loc.lastLine() % loc.lastColumn() %
+                                                              loc.fileName() % path);
 
   auto ext = fs::path(path).extension().generic_string();
 
@@ -77,22 +82,23 @@ void SourceFile::registerUse(const std::string& path, const Location& loc)
     if (pos != usedlibs.end()) usedlibs.erase(pos);
     usedlibs.insert(usedlibs.begin(), path);
     if (!loc.isNone()) {
-      indicatorData.emplace_back(loc.firstLine(), loc.firstColumn(), loc.lastLine(), loc.lastColumn(), path);
+      indicatorData.emplace_back(loc.firstLine(), loc.firstColumn(), loc.lastLine(), loc.lastColumn(),
+                                 path);
     }
   }
 }
 
-void SourceFile::registerInclude(const std::string& localpath, const std::string& fullpath, const Location& loc)
+void SourceFile::registerInclude(const std::string& localpath, const std::string& fullpath,
+                                 const Location& loc)
 {
-  PRINTDB("registerInclude(): (%p) %d, %d - %d, %d (%s) -> %s", this %
-          loc.firstLine() % loc.firstColumn() %
-          loc.lastLine() % loc.lastColumn() %
-          localpath %
-          fullpath);
+  PRINTDB("registerInclude(): (%p) %d, %d - %d, %d (%s) -> %s",
+          this % loc.firstLine() % loc.firstColumn() % loc.lastLine() % loc.lastColumn() % localpath %
+            fullpath);
 
   this->includes[localpath] = fullpath;
   if (!loc.isNone()) {
-    indicatorData.emplace_back(loc.firstLine(), loc.firstColumn(), loc.lastLine(), loc.lastColumn(), fullpath);
+    indicatorData.emplace_back(loc.firstLine(), loc.firstColumn(), loc.lastLine(), loc.lastColumn(),
+                               fullpath);
   }
 }
 
@@ -118,8 +124,8 @@ time_t SourceFile::include_modified(const std::string& filename) const
 }
 
 /*!
-   Check if any dependencies have been modified and recompile them.
-   Returns true if anything was recompiled.
+   Check if any dependencies have been modified and reparse them.
+   Returns true if anything was reparsed.
  */
 time_t SourceFile::handleDependencies(bool is_root)
 {
@@ -134,7 +140,6 @@ time_t SourceFile::handleDependencies(bool is_root)
   // as it will have a relative path.
   time_t latest = 0;
   for (auto filename : this->usedlibs) {
-
     auto found = true;
 
     // Get an absolute filename for the module
@@ -152,11 +157,11 @@ time_t SourceFile::handleDependencies(bool is_root)
     if (found) {
       auto oldmodule = SourceFileCache::instance()->lookup(filename);
       SourceFile *newmodule;
-      auto mtime = SourceFileCache::instance()->evaluate(this->getFullpath(), filename, newmodule);
+      auto mtime = SourceFileCache::instance()->process(this->getFullpath(), filename, newmodule);
       if (mtime > latest) latest = mtime;
       auto changed = newmodule && newmodule != oldmodule;
       // Detect appearance but not removal of files, and keep old module
-      // on compile errors (FIXME: Is this correct behavior?)
+      // on parse errors (FIXME: Is this correct behavior?)
       if (changed) {
         PRINTDB("  %s: %p -> %p", filename % oldmodule % newmodule);
       } else {
@@ -173,13 +178,15 @@ time_t SourceFile::handleDependencies(bool is_root)
   return latest;
 }
 
-std::shared_ptr<AbstractNode> SourceFile::instantiate(const std::shared_ptr<const Context>& context, std::shared_ptr<const FileContext> *resulting_file_context) const
+std::shared_ptr<AbstractNode> SourceFile::instantiate(
+  const std::shared_ptr<const Context>& context,
+  std::shared_ptr<const FileContext> *resulting_file_context) const
 {
   auto node = std::make_shared<RootNode>();
   try {
     ContextHandle<FileContext> file_context{Context::create<FileContext>(context, this)};
     *resulting_file_context = *file_context;
-    this->scope.instantiateModules(*file_context, node);
+    this->scope->instantiateModules(*file_context, node);
   } catch (HardWarningException& e) {
     throw;
   } catch (EvaluationException& e) {
@@ -189,10 +196,11 @@ std::shared_ptr<AbstractNode> SourceFile::instantiate(const std::shared_ptr<cons
   return node;
 }
 
-//please preferably use getFilename
-//if you compare filenames (which is the origin of this method),
-//please call getFilename first and use this method only as a fallback
-const std::string SourceFile::getFullpath() const {
+// please preferably use getFilename
+// if you compare filenames (which is the origin of this method),
+// please call getFilename first and use this method only as a fallback
+const std::string SourceFile::getFullpath() const
+{
   if (fs::path(this->filename).is_absolute()) {
     return this->filename;
   } else if (!this->path.empty()) {

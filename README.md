@@ -140,6 +140,16 @@ To pull the various submodules (incl. the [MCAD library](https://github.com/open
     cd openscad
     git submodule update --init --recursive
 
+### Contributing Changes
+
+You can create an issue to plan and discuss your change by visiting https://github.com/openscad/openscad/issues.
+
+If you want to work on an existing issue and plan to contribute changes via a PR later, you can assign the issue to yourself by commenting:
+
+`/assign-me`
+
+in a comment on the issue.
+
 ### Building for macOS
 
 Prerequisites:
@@ -214,6 +224,9 @@ A [development Nix shell](scripts/nix) is included for local, incremental compil
 OpenSCAD for Windows is usually cross-compiled from Linux. If you wish to
 attempt an MSVC build on Windows, please see this site:
 https://en.wikibooks.org/wiki/OpenSCAD_User_Manual/Building_on_Windows
+
+MSVC build support has been added to OpenSCAD. For instructions on how to build it,
+refer to [building with MSVC](doc/win-build.md).
 
 To cross-build, first make sure that you have all necessary dependencies 
 of the MXE project ( listed at https://mxe.cc/#requirements ). Don't install
