@@ -325,7 +325,6 @@ workflows:
               branches:
                   only:
                       - /.*-macos/
-                      - /macos-.*/
   scheduled:
     triggers:
       - schedule:
