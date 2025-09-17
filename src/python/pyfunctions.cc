@@ -1534,6 +1534,11 @@ PyObject *python_nb_sub_vec3(PyObject *arg1, PyObject *arg2,
         }
       }
       return pyresult;
+    } else {
+      auto node = std::make_shared<CsgOpNode>(instance, OpenSCADOperator::UNION);
+      DECLARE_INSTANCE
+      for (auto x : nodes) node->children.push_back(x);
+      return PyOpenSCADObjectFromNode(&PyOpenSCADType, node);
     }
   }
   PyErr_SetString(PyExc_TypeError, "invalid argument right to operator");
