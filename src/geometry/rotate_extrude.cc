@@ -93,7 +93,7 @@ std::unique_ptr<Geometry> rotatePolygon(const RotateExtrudeNode& node, const Pol
   if (max_x > 0 && min_x < 0) {
     LOG(
       message_group::Error,
-      "children of rotate_extrude() may not lie across the Y axis (child verticies' X coords in range [%1$.2f : %2$.2f] )",
+      "Children of rotate_extrude() may not lie across the Y axis (Range of X coords for all children [%1$.2f : %2$.2f] )",
       min_x, max_x);
     return nullptr;
   }
