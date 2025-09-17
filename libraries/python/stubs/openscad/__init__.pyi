@@ -506,11 +506,45 @@ class PyOpenSCAD:
     def __getitem__(self, name): ...
     def __setitem__(self, name, value): ...
 
+    # Operators:
+
+    def __or__(self, other: PyOPenSCADs) -> "PyOPenSCAD":
+        """Create a union of two objects"""
+        ...
+
+    def __and__(self, other: PyOPenSCADs) -> "PyOPenSCAD":
+        """Create an intersection of two objects"""
+        ...
+
+    @overload
+    def __sub__(self, other: PyOPenSCADs) -> "PyOPenSCAD":
+        """Create a difference of two objects"""
+        ...
+
+    def __add__(self, other: Vector3) -> "PyOPenSCAD":
+        """Create a new object by translating this object by a vector"""
+        ...
+
+    @overload
+    def __sub__(self, other: Vector3) -> "PyOPenSCAD":
+        """Create a new object by translating this object by the negative of a vector"""
+        ...
+
+    @overload
+    def __mul__(self, other: float) -> "PyOPenSCAD":
+        """Create a new object by scaling this object by a uniform factor in all directions"""
+        ...
+
+    @overload
+    def __mul__(self, other: Vector3) -> "PyOPenSCAD":
+        """Create a new object by scaling this object by a vector of factors in [x, y, z] directions"""
+        ...
 
 def square(
     dim: Optional[Union[float, list[float]]] = None, center: Optional[bool] = None
 ) -> PyOpenSCAD:
     """Create a square primitive.
+
     Args:
         dim: Dimensions of the square. Can be a single number for a square,
              or a sequence of 2 numbers [width, height] for a rectangle.
@@ -910,6 +944,50 @@ def color(obj: PyOpenSCADs, c: Color, alpha: float = 1.0) -> PyOpenSCAD:
     """
     ...
 
+def union(*objects: PyOpenSCADs) -> PyOpenSCAD:
+    """Create a union of multiple objects.
+
+    Args:
+        *objects: Variable number of OpenSCAD objects or lists of objects to union.
+
+    Returns:
+        A new object representing the union. The original object is unaffected.
+    """
+    ...
+
+def difference(*objects: PyOpenSCADs) -> PyOpenSCAD:
+    """Create a difference of multiple objects.
+
+    Args:
+        *objects: Variable number of OpenSCAD objects or lists of objects. The first object
+                 has all subsequent objects subtracted from it.
+
+    Returns:
+        A new object representing the difference. The original object is unaffected.
+    """
+    ...
+
+def intersection(*objects: PyOpenSCADs) -> PyOpenSCAD:
+    """Create an intersection of multiple objects.
+
+    Args:
+        *objects: Variable number of OpenSCAD objects or lists of objects to intersect.
+
+    Returns:
+        A new object representing the intersection. The original object is unaffected.
+    """
+    ...
+
+def hull(*objects: PyOpenSCADs) -> PyOpenSCAD:
+    """Create a convex hull of multiple objects.
+
+    Args:
+        *objects: Variable number of OpenSCAD objects or lists of objects.
+
+    Returns:
+        A new object. The original object is unaffected.
+    """
+    ...
 
 def linear_extrude(
     obj: PyOpenSCADs,
@@ -985,64 +1063,6 @@ def path_extrude(
     """
     ...
 
-def union(*objects: PyOpenSCADs) -> PyOpenSCAD:
-    """Create a union of multiple objects.
-
-    Args:
-        *objects: Variable number of OpenSCAD objects or lists of objects to union.
-
-    Returns:
-        A new object representing the union. The original object is unaffected.
-    """
-    ...
-
-def difference(*objects: PyOpenSCADs) -> PyOpenSCAD:
-    """Create a difference of multiple objects.
-
-    Args:
-        *objects: Variable number of OpenSCAD objects or lists of objects. The first object
-                 has all subsequent objects subtracted from it.
-
-    Returns:
-        A new object representing the difference. The original object is unaffected.
-    """
-    ...
-
-def intersection(*objects: PyOpenSCADs) -> PyOpenSCAD:
-    """Create an intersection of multiple objects.
-
-    Args:
-        *objects: Variable number of OpenSCAD objects or lists of objects to intersect.
-
-    Returns:
-        A new object representing the intersection. The original object is unaffected.
-    """
-    ...
-
-def hull(*objects: PyOpenSCADs) -> PyOpenSCAD:
-    """Create a convex hull of multiple objects.
-
-    Args:
-        *objects: Variable number of OpenSCAD objects or lists of objects.
-
-    Returns:
-        A new object. The original object is unaffected.
-    """
-    ...
-
-def minkowski(*objects: PyOpenSCADs, convexity: int = 2) -> PyOpenSCAD:
-    """Create a Minkowski sum of objects.
-
-    Args:
-        *objects: Objects or lists of objects to compute Minkowski sum of.
-        convexity: Convexity parameter for rendering. Defaults to 2.
-
-    Returns:
-        A new object representing the Minkowski sum. The original object is unaffected.
-    """
-    ...
-
-
 def offset(
     obj: PyOpenSCADs,
     r: Optional[float] = None,
@@ -1065,6 +1085,18 @@ def offset(
 
     Returns:
         The offset 2D object. The original object is unaffected.
+    """
+    ...
+
+def minkowski(*objects: PyOpenSCADs, convexity: int = 2) -> PyOpenSCAD:
+    """Create a Minkowski sum of objects.
+
+    Args:
+        *objects: Objects or lists of objects to compute Minkowski sum of.
+        convexity: Convexity parameter for rendering. Defaults to 2.
+
+    Returns:
+        A new object representing the Minkowski sum. The original object is unaffected.
     """
     ...
 
@@ -1107,6 +1139,18 @@ def show(obj: PyOpenSCADs) -> None:
 
     Args:
         obj: Object to mark for output.
+    """
+    ...
+
+def render(obj: PyOPenSCADs, convexity: int = 2) -> PyOPenSCAD:
+    """Force rendering an object.
+
+    Args:
+        obj: Object to render.
+        convexity: Convexity parameter for rendering. Defaults to 2.
+
+    Returns:
+        The object that will be forced to render. The original object is unaffected.
     """
     ...
 
