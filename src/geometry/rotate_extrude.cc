@@ -93,7 +93,7 @@ std::unique_ptr<Geometry> rotatePolygon(const RotateExtrudeNode& node, const Pol
   if (max_x > 0 && min_x < 0) {
     LOG(
       message_group::Error,
-      "all points for rotate_extrude() must have the same X coordinate sign (range is %1$.2f -> %2$.2f)",
+      "children of rotate_extrude() may not lie across the Y axis (child verticies' X coords in range [%1$.2f : %2$.2f] )",
       min_x, max_x);
     return nullptr;
   }
