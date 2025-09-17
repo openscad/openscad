@@ -302,10 +302,29 @@ class OpenSCADObject:
         """Create an intersection of two objects"""
         ...
 
+    @overload
     def __sub__(self, other: OpenSCADObjects) -> "OpenSCADObject":
         """Create a difference of two objects"""
         ...
-    # TODO: document __add__, __sub__ and __mul__ with a list of vectors
+
+    def __add__(self, other: Vector3) -> "OpenSCADObject":
+        """Create a new object by translating this object by a vector"""
+        ...
+
+    @overload
+    def __sub__(self, other: Vector3) -> "OpenSCADObject":
+        """Create a new object by translating this object by the negative of a vector"""
+        ...
+
+    @overload
+    def __mul__(self, other: float) -> "OpenSCADObject":
+        """Create a new object by scaling this object by a uniform factor in all directions"""
+        ...
+
+    @overload
+    def __mul__(self, other: Vector3) -> "OpenSCADObject":
+        """Create a new object by scaling this object by a vector of factors in [x, y, z] directions"""
+        ...
 
 def square(
     dim: Optional[Union[float, list[float]]] = None, center: Optional[bool] = None
