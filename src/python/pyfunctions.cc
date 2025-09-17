@@ -4026,20 +4026,30 @@ PyObject *python_nb_xor(PyObject *arg1, PyObject *arg2) {
 }
 
 PyObject *python_nb_remainder(PyObject *arg1, PyObject *arg2) {
-  PyObject *dummy_dict;
-  auto node1 = PyOpenSCADObjectToNode(arg1, &dummy_dict);
-  auto node2 = PyOpenSCADObjectToNode(arg2, &dummy_dict);
-  if(node1 == nullptr || node2 == nullptr) {
-    PyErr_SetString(PyExc_TypeError,
-     "Error during parsing hull. arguments must be solids.");
-    return nullptr;
+  if (PyObject_IsInstance(arg2, reinterpret_cast<PyObject *>(&PyOpenSCADType))) {
+    PyObject *dummy_dict;
+    auto node1 = PyOpenSCADObjectToNode(arg1, &dummy_dict);
+    auto node2 = PyOpenSCADObjectToNode(arg2, &dummy_dict);
+    if(node1 == nullptr || node2 == nullptr) {
+      PyErr_SetString(PyExc_TypeError,
+       "Error during parsing hull. arguments must be solids.");
+      return nullptr;
+    }
+    DECLARE_INSTANCE
+    std::shared_ptr<AbstractNode> child;
+    auto node = std::make_shared<CgalAdvNode>(instance, CgalAdvType::MINKOWSKI);
+    node->children.push_back(node1);
+    node->children.push_back(node2);
+    return PyOpenSCADObjectFromNode(&PyOpenSCADType, node);
   }
-  DECLARE_INSTANCE
-  std::shared_ptr<AbstractNode> child;
-  auto node = std::make_shared<CgalAdvNode>(instance, CgalAdvType::MINKOWSKI);
-  node->children.push_back(node1);
-  node->children.push_back(node2);
-  return PyOpenSCADObjectFromNode(&PyOpenSCADType, node);
+  Vector3d vec3(0,0,0);
+  if(! python_vectorval(arg2, 1, 3, &(vec3[0]), &(vec3[1]), &(vec3[2]), nullptr)) {
+    return python_rotate_sub(arg1, vec3, NAN, 0);
+  }
+
+  PyErr_SetString(PyExc_TypeError, "Unknown types for % oprator");
+  return nullptr;
+    
 }
 
 PyObject *python_nb_mul(PyObject *arg1, PyObject *arg2)
