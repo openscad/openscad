@@ -4,10 +4,14 @@
 #include <cstddef>
 #include <string>
 #include <vector>
+#include <boost/optional.hpp>
 
-#include "core/EvaluationSession.h"
 #include "core/AST.h"
+#include "core/callables.h"
 #include "core/ValueMap.h"
+
+class EvaluationSession;
+class Value;
 
 class ContextFrame
 {
@@ -45,7 +49,7 @@ public:
   static bool is_config_variable(const std::string& name);
 
   EvaluationSession *session() const { return evaluation_session; }
-  const std::string& documentRoot() const { return evaluation_session->documentRoot(); }
+  const std::string& documentRoot() const;
 
 protected:
   ValueMap lexical_variables;
@@ -65,10 +69,7 @@ public:
 class ContextFrameHandle
 {
 public:
-  ContextFrameHandle(ContextFrame *frame) : session(frame->session())
-  {
-    frame_index = session->push_frame(frame);
-  }
+  ContextFrameHandle(ContextFrame *frame);
   ~ContextFrameHandle() { release(); }
 
   ContextFrameHandle(const ContextFrameHandle&) = delete;
@@ -81,21 +82,10 @@ public:
     other.session = nullptr;
   }
 
-  ContextFrameHandle& operator=(ContextFrame *frame)
-  {
-    assert(session == frame->session());
-    session->replace_frame(frame_index, frame);
-    return *this;
-  }
+  ContextFrameHandle& operator=(ContextFrame *frame);
 
   // Valid only if handle is on the top of the stack.
-  void release()
-  {
-    if (session) {
-      session->pop_frame(frame_index);
-      session = nullptr;
-    }
-  }
+  void release();
 
 protected:
   EvaluationSession *session;

@@ -1026,7 +1026,13 @@ int main(int argc, char **argv)
   if (vm.count("version")) version();
   if (vm.count("info")) arg_info = true;
   if (vm.count("backend")) {
-    RenderSettings::inst()->backend3D = renderBackend3DFromString(vm["backend"].as<std::string>());
+    auto backend_string = vm["backend"].as<std::string>();
+    auto backend = renderBackend3DFromString(backend_string);
+    if (!backend) {
+      LOG(message_group::Error, "Unknown rendering backend '%1$s'.", backend_string.c_str());
+      return 1;
+    }
+    RenderSettings::inst()->backend3D = backend.value();
   }
 
   if (vm.count("preview")) {

@@ -1200,6 +1200,29 @@ PyObject *python_oo_scale(PyObject *obj, PyObject *args, PyObject *kwargs)
   return python_scale_core(obj, val_v);
 }
 
+PyObject *python_explode(PyObject *self, PyObject *args, PyObject *kwargs)
+{
+  char *kwlist[] = {"obj", "v", NULL};
+  PyObject *obj = NULL;
+  PyObject *val_v = NULL;
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "OO", kwlist, &obj, &val_v)) {
+    PyErr_SetString(PyExc_TypeError, "Error during parsing explode(object, list)");
+    return NULL;
+  }
+  return python_nb_sub_vec3(obj, val_v, 3); 
+}
+
+PyObject *python_oo_explode(PyObject *obj, PyObject *args, PyObject *kwargs)
+{
+  char *kwlist[] = {"v", NULL};
+  PyObject *val_v = NULL;
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O", kwlist, &val_v)) {
+    PyErr_SetString(PyExc_TypeError, "Error during parsing explode(object, list)");
+    return NULL;
+  }
+  return python_nb_sub_vec3(obj, val_v, 3); 
+}
+
 PyObject *python_number_rot(PyObject *mat, Matrix3d rotvec, int vecs)
 {
   Transform3d matrix = Transform3d::Identity();
@@ -3983,7 +4006,52 @@ PyObject *python_nb_add(PyObject *arg1, PyObject *arg2)
   return python_nb_sub_vec3(arg1, arg2, 0);
 }  // translate
 
-PyObject *python_nb_xor(PyObject *arg1, PyObject *arg2) { return python_nb_sub_vec3(arg1, arg2, 3); }
+PyObject *python_nb_xor(PyObject *arg1, PyObject *arg2) {
+  PyObject *dummy_dict;
+  if (PyObject_IsInstance(arg2, reinterpret_cast<PyObject *>(&PyOpenSCADType))) {
+    auto node1 = PyOpenSCADObjectToNode(arg1, &dummy_dict);
+    auto node2 = PyOpenSCADObjectToNode(arg2, &dummy_dict);
+    if(node1 == nullptr || node2 == nullptr) {
+      PyErr_SetString(PyExc_TypeError,
+       "Error during parsing hull. arguments must be solids.");
+      return nullptr;
+    }
+    DECLARE_INSTANCE
+    std::shared_ptr<AbstractNode> child;
+    auto node = std::make_shared<CgalAdvNode>(instance, CgalAdvType::HULL);
+    node->children.push_back(node1);
+    node->children.push_back(node2);
+    return PyOpenSCADObjectFromNode(&PyOpenSCADType, node);
+  }
+  return python_nb_sub_vec3(arg1, arg2, 3);
+}
+
+PyObject *python_nb_remainder(PyObject *arg1, PyObject *arg2) {
+  if (PyObject_IsInstance(arg2, reinterpret_cast<PyObject *>(&PyOpenSCADType))) {
+    PyObject *dummy_dict;
+    auto node1 = PyOpenSCADObjectToNode(arg1, &dummy_dict);
+    auto node2 = PyOpenSCADObjectToNode(arg2, &dummy_dict);
+    if(node1 == nullptr || node2 == nullptr) {
+      PyErr_SetString(PyExc_TypeError,
+       "Error during parsing hull. arguments must be solids.");
+      return nullptr;
+    }
+    DECLARE_INSTANCE
+    std::shared_ptr<AbstractNode> child;
+    auto node = std::make_shared<CgalAdvNode>(instance, CgalAdvType::MINKOWSKI);
+    node->children.push_back(node1);
+    node->children.push_back(node2);
+    return PyOpenSCADObjectFromNode(&PyOpenSCADType, node);
+  }
+  Vector3d vec3(0,0,0);
+  if(! python_vectorval(arg2, 1, 3, &(vec3[0]), &(vec3[1]), &(vec3[2]), nullptr)) {
+    return python_rotate_sub(arg1, vec3, NAN, 0);
+  }
+
+  PyErr_SetString(PyExc_TypeError, "Unknown types for % oprator");
+  return nullptr;
+    
+}
 
 PyObject *python_nb_mul(PyObject *arg1, PyObject *arg2)
 {
@@ -4010,6 +4078,10 @@ PyObject *python_nb_subtract(PyObject *arg1, PyObject *arg2)
 PyObject *python_nb_and(PyObject *arg1, PyObject *arg2)
 {
   return python_nb_sub(arg1, arg2, OpenSCADOperator::INTERSECTION);
+}
+
+PyObject *python_nb_matmult(PyObject *arg1, PyObject *arg2) {
+  return python_multmatrix_sub(arg1, arg2, 0);
 }
 
 PyObject *python_csg_adv_sub(PyObject *self, PyObject *args, PyObject *kwargs, CgalAdvType mode)
@@ -5275,7 +5347,7 @@ PyObject *python_osuse_include(int mode, PyObject *self, PyObject *args, PyObjec
     PyErr_SetString(PyExc_TypeError, "Error in SCAD code");
     return Py_None;
   }
-  if (mode == 0) source->scope.moduleInstantiations.clear();
+  if (mode == 0) source->scope->moduleInstantiations.clear();
   source->handleDependencies(true);
 
   EvaluationSession *session = new EvaluationSession("python");
@@ -5285,10 +5357,10 @@ PyObject *python_osuse_include(int mode, PyObject *self, PyObject *args, PyObjec
   std::shared_ptr<AbstractNode> resultnode =
     source->instantiate(*builtin_context, &osinclude_context);  // TODO keine globakle var, kollision!
 
-  LocalScope scope = source->scope;
+  auto scope = source->scope;
   PyOpenSCADObject *result = (PyOpenSCADObject *)PyOpenSCADObjectFromNode(&PyOpenSCADType, empty);
 
-  for (auto mod : source->scope.modules) {  // copy modules
+  for (auto mod : source->scope->modules) {  // copy modules
     std::shared_ptr<UserModule> usmod = mod.second;
     InstantiableModule m;
     //    m.defining_context=osinclude_context;
@@ -5298,7 +5370,7 @@ PyObject *python_osuse_include(int mode, PyObject *self, PyObject *args, PyObjec
                          PyDataObjectFromModule(&PyDataType, filename, mod.first));
   }
 
-  for (auto fun : source->scope.functions) {            // copy functions
+  for (auto fun : source->scope->functions) {            // copy functions
     std::shared_ptr<UserFunction> usfunc = fun.second;  // install lambda functions ?
                                                         //    printf("%s\n",fun.first.c_str());
                                                         //    InstantiableModule m;
@@ -5309,7 +5381,7 @@ PyObject *python_osuse_include(int mode, PyObject *self, PyObject *args, PyObjec
     //    ));
   }
 
-  for (auto ass : source->scope.assignments) {  // copy assignments
+  for (auto ass : source->scope->assignments) {  // copy assignments
                                                 //    printf("Var %s\n",ass->getName().c_str());
     const std::shared_ptr<Expression> expr = ass->getExpr();
     Value val = expr->evaluate(osinclude_context);
@@ -5568,15 +5640,12 @@ PyObject *python_memberfunction(PyObject *self, PyObject *args, PyObject *kwargs
     return NULL;
   }
   std::string member_name = membername;
-  if(std::find(python_member_names.begin(),python_member_names.end(), member_name) != python_member_names.end()) {
-    return Py_None;    
-  }
+  int curind = std::find(python_member_names.begin(),python_member_names.end(), member_name) - python_member_names.begin();
 
   if(memberdoc == nullptr) { memberdoc="Added by member function";
   }
-  int curind = python_member_callables.size();
 
-  if(curind == PYTHON_MAX_USERMEMBERS) {
+  if(curind >= PYTHON_MAX_USERMEMBERS) {
     PyErr_SetString(PyExc_TypeError, "Maximum user member amount reached");
     return NULL;
   }
@@ -5614,8 +5683,12 @@ PyObject *python_memberfunction(PyObject *self, PyObject *args, PyObject *kwargs
   if (type_add_method(&PyOpenSCADType, meth) < 0) return Py_None;
 
   Py_INCREF(memberfunc); // needed because pythons garbage collector eats it when not used.
-  python_member_names.push_back(member_name);
-  python_member_callables.push_back(memberfunc);
+  if(curind < python_member_names.size()) {
+    python_member_callables[curind] = memberfunc;
+  } else {
+    python_member_names.push_back(member_name);
+    python_member_callables.push_back(memberfunc);
+  }  
 
   return Py_None;
 }
@@ -5697,6 +5770,7 @@ PyMethodDef PyOpenSCADFunctions[] = {
   {"faces", (PyCFunction)python_faces, METH_VARARGS | METH_KEYWORDS, "exports a list of faces."},
   {"edges", (PyCFunction)python_edges, METH_VARARGS | METH_KEYWORDS,
    "exports a list of edges from a face."},
+  {"explode", (PyCFunction)python_explode, METH_VARARGS | METH_KEYWORDS, "explode a solid with a vector"},
   {"oversample", (PyCFunction)python_oversample, METH_VARARGS | METH_KEYWORDS, "oversample."},
   {"debug", (PyCFunction)python_debug, METH_VARARGS | METH_KEYWORDS, "debug a face."},
   {"repair", (PyCFunction)python_repair, METH_VARARGS | METH_KEYWORDS, "Make solid watertight."},
@@ -5765,6 +5839,7 @@ PyMethodDef PyOpenSCADMethods[] = {
                       OO_METHOD_ENTRY(rotate_extrude, "Rotate_extrude Object") OO_METHOD_ENTRY(
                         path_extrude, "Path_extrude Object") OO_METHOD_ENTRY(resize, "Resize Object")
 
+                        OO_METHOD_ENTRY(explode, "Explode a solid with a vector")   
                         OO_METHOD_ENTRY(mesh, "Mesh Object")
                           OO_METHOD_ENTRY(bbox, "Evaluate Bound Box of object") OO_METHOD_ENTRY(
                             faces, "Create Faces list") OO_METHOD_ENTRY(edges, "Create Edges list")
@@ -5787,7 +5862,7 @@ PyNumberMethods PyOpenSCADNumbers = {
   python_nb_add,       // binaryfunc nb_add
   python_nb_subtract,  // binaryfunc nb_subtract
   python_nb_mul,       // binaryfunc nb_multiply
-  0,                   // binaryfunc nb_remainder
+  python_nb_remainder, // binaryfunc nb_remainder
   0,                   // binaryfunc nb_divmod
   0,                   // ternaryfunc nb_power
   python_nb_neg,       // unaryfunc nb_negative
@@ -5822,7 +5897,7 @@ PyNumberMethods PyOpenSCADNumbers = {
 
   0,  // unaryfunc nb_index
 
-  0,  // binaryfunc nb_matrix_multiply
+  python_nb_matmult,  // binaryfunc nb_matrix_multiply
   0   // binaryfunc nb_inplace_matrix_multiply
 };
 

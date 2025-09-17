@@ -31,14 +31,15 @@
 #include <vector>
 
 #include "core/AST.h"
+#include "core/Arguments.h"
+#include "core/Expression.h"
 #include "core/ModuleInstantiation.h"
 #include "core/node.h"
-#include "utils/exceptions.h"
-#include "utils/StackCheck.h"
 #include "core/ScopeContext.h"
-#include "core/Expression.h"
-#include "utils/printutils.h"
 #include "utils/compiler_specific.h"
+#include "utils/exceptions.h"
+#include "utils/printutils.h"
+#include "utils/StackCheck.h"
 #include <cstddef>
 #include <sstream>
 #include <string>
@@ -97,7 +98,7 @@ std::shared_ptr<AbstractNode> UserModule::instantiate(
   StaticModuleNameStack name{inst->name()};  // push on static stack, pop at end of method!
   ContextHandle<UserModuleContext> module_context{Context::create<UserModuleContext>(
     defining_context, this, inst->location(), Arguments(inst->arguments, context),
-    Children(&inst->scope, context))};
+    Children(inst->scope, context))};
 #if 0 && DEBUG
   PRINTDB("UserModuleContext for module %s(%s):\n", this->name % STR(this->parameters));
   PRINTDB("%s", module_context->dump());
@@ -105,7 +106,7 @@ std::shared_ptr<AbstractNode> UserModule::instantiate(
 
   std::shared_ptr<AbstractNode> ret;
   try {
-    ret = this->body.instantiateModules(
+    ret = this->body->instantiateModules(
       *module_context, std::make_shared<GroupNode>(inst, std::string("module ") + this->name));
   } catch (EvaluationException& e) {
     if (OpenSCAD::traceUsermoduleParameters && e.traceDepth > 0) {
@@ -131,7 +132,7 @@ void UserModule::print(std::ostream& stream, const std::string& indent) const
     stream << ") {\n";
     tab = "\t";
   }
-  body.print(stream, indent + tab);
+  body->print(stream, indent + tab);
   if (!this->name.empty()) {
     stream << indent << "}\n";
   }
@@ -153,7 +154,7 @@ void UserModule::print_python(std::ostream& stream, std::ostream& stream_def,
     tab = "\t";
   }
   //  stream << "\t";
-  body.print_python(stream, stream_def, indent + tab, false, 1);
+  body->print_python(stream, stream_def, indent + tab, false, 1);
   stream << "\n\n";
   //  if (!this->name.empty()) {
   //    stream << indent << "}\n";

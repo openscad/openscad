@@ -205,6 +205,9 @@
        <property name="text">
         <string>OK</string>
        </property>
+       <property name="default">
+        <bool>true</bool>
+       </property>
       </widget>
      </item>
     </layout>

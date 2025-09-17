@@ -103,3 +103,4 @@ tests/regression/export-pdf/simple-pdf.pdf
 scripts/run-clang-tidy-cached
 resources/icons/pythonscad.desktop
 pythonscad.appdata.xml.in2
+.clangd

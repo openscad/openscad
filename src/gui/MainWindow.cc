@@ -253,6 +253,7 @@ namespace {
 const int autoReloadPollingPeriodMS = 200;
 const char copyrighttext[] =
   "<p>Copyright (C) 2009-2025 The OpenSCAD Developers</p>"
+  "<p>Copyright (C) 2024-2025 The PythonSCAD Developers</p>"
   "<p>This program is free software; you can redistribute it and/or modify "
   "it under the terms of the GNU General Public License as published by "
   "the Free Software Foundation; either version 2 of the License, or "
@@ -458,8 +459,6 @@ MainWindow::MainWindow(const QStringList& filenames) : rubberBandManager(this)
   renderCompleteSoundEffect = new QSoundEffect();
   renderCompleteSoundEffect->setSource(QUrl("qrc:/sounds/complete.wav"));
 
-  rootFile = nullptr;
-  parsedFile = nullptr;
   absoluteRootNode = nullptr;
 
   this->csgworker = new CSGWorker(this);
@@ -509,8 +508,8 @@ MainWindow::MainWindow(const QStringList& filenames) : rubberBandManager(this)
                          GlobalPreferences::inst()->getValue("advanced/consoleFontSize").toUInt());
 
   const QString version =
-    QString("<b>OpenSCAD %1</b>").arg(QString::fromStdString(openscad_versionnumber));
-  const QString weblink = "<a href=\"https://www.openscad.org/\">https://www.openscad.org/</a><br>";
+    QString("<b>PythonSCAD %1</b>").arg(QString::fromStdString(openscad_versionnumber));
+  const QString weblink = "<a href=\"https://www.pythonscad.org/\">https://www.pythonscad.org/</a><br>";
 
   consoleOutputRaw(version);
   consoleOutputRaw(weblink);
@@ -985,9 +984,6 @@ MainWindow::MainWindow(const QStringList& filenames) : rubberBandManager(this)
 
   // fills the content of the Recents Files menu.
   updateRecentFileActions();
-
-  // Kick the re-styling again, otherwise it does not catch menu items
-  GlobalPreferences::inst()->fireApplicationFontChanged();
 }
 
 void MainWindow::setAllMouseViewActions()
@@ -1365,7 +1361,8 @@ void MainWindow::loadDesignSettings()
   CGALCache::instance()->setMaxSizeMB(cgalCacheSizeMB);
   auto backend3D =
     GlobalPreferences::inst()->getValue("advanced/renderBackend3D").toString().toStdString();
-  RenderSettings::inst()->backend3D = renderBackend3DFromString(backend3D);
+  RenderSettings::inst()->backend3D =
+    renderBackend3DFromString(backend3D).value_or(DEFAULT_RENDERING_BACKEND_3D);
 }
 
 void MainWindow::updateUndockMode(bool undockMode)
@@ -1428,9 +1425,6 @@ void MainWindow::updateReorderMode(bool reorderMode)
 
 MainWindow::~MainWindow()
 {
-  // If root_file is not null then it will be the same as parsed_file,
-  // so no need to delete it.
-  delete parsedFile;
   scadApp->windowManager.remove(this);
   if (scadApp->windowManager.getWindows().empty()) {
     // Quit application even in case some other windows like
@@ -2479,7 +2473,7 @@ void MainWindow::recomputeLanguageActive()
 #endif
 }
 
-SourceFile *MainWindow::parseDocument(EditorInterface *editor)
+std::shared_ptr<SourceFile> MainWindow::parseDocument(EditorInterface *editor)
 {
   resetSuppressedMessages();
 
@@ -2515,15 +2509,15 @@ SourceFile *MainWindow::parseDocument(EditorInterface *editor)
       //
       // add parameters as annotation in AST
       auto error = evaluatePython(par_text, true);  // run dummy
-      this->rootFile->scope.assignments = customizer_parameters;
-      CommentParser::collectParameters(fulltext_py, this->rootFile, '#');        // add annotations
-      this->activeEditor->parameterWidget->setParameters(this->rootFile, "\n");  // set widgets values
-      this->activeEditor->parameterWidget->applyParameters(this->rootFile);      // use widget values
+      this->rootFile->scope->assignments = customizer_parameters;
+      CommentParser::collectParameters(fulltext_py, this->rootFile.get(), '#');        // add annotations
+      this->activeEditor->parameterWidget->setParameters(this->rootFile.get(), "\n");  // set widgets values
+      this->activeEditor->parameterWidget->applyParameters(this->rootFile.get());      // use widget values
       this->activeEditor->parameterWidget->setEnabled(true);
       this->activeEditor->setIndicator(this->rootFile->indicatorData);
     } while (0);
 
-    if (this->rootFile != nullptr) customizer_parameters_finished = this->rootFile->scope.assignments;
+    if (this->rootFile != nullptr) customizer_parameters_finished = this->rootFile->scope->assignments;
     customizer_parameters.clear();
     if (venv.empty()) {
       LOG("Running %1$s without venv.", python_version());
@@ -2554,7 +2548,7 @@ SourceFile *MainWindow::parseDocument(EditorInterface *editor)
       editor->parameterWidget->setEnabled(false);
     }
   }
-  return sourceFile;
+  return std::shared_ptr<SourceFile>(sourceFile);
 }
 
 void MainWindow::parseTopLevelDocument()
@@ -4075,8 +4069,9 @@ void MainWindow::onTabManagerEditorChanged(EditorInterface *newEditor)
   fontListDock->setNameSuffix(name);
   viewportControlDock->setNameSuffix(name);
 
-  // If there is no renderedEditor we request for a new preview.
-  if (renderedEditor == nullptr) {
+  // If there is no renderedEditor we request for a new preview if the
+  // auto-reload is enabled.
+  if (renderedEditor == nullptr && designActionAutoReload->isChecked()) {
     actionRenderPreview();
   }
 }

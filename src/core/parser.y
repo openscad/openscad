@@ -73,7 +73,7 @@ int lexerlex_destroy(void);
 int lexerlex(void);
 static void handle_assignment(const std::string token, Expression *expr, const Location loc);
 
-std::stack<LocalScope *> scope_stack;
+std::stack<std::shared_ptr<LocalScope>> scope_stack;
 SourceFile *rootfile;
 
 extern void lexerdestroy();
@@ -195,7 +195,7 @@ statement
               UserModule *newmodule = new UserModule($2, LOCD("module", @$));
               newmodule->parameters = *$4;
               auto top = scope_stack.top();
-              scope_stack.push(&newmodule->body);
+              scope_stack.push(newmodule->body);
               top->addModule(std::shared_ptr<UserModule>(newmodule));
               free($2);
               delete $4;
@@ -255,7 +255,7 @@ module_instantiation
         | single_module_instantiation
             {
                 $<inst>$ = $1;
-                scope_stack.push(&$1->scope);
+                scope_stack.push($1->scope);
             }
           child_statement
             {
@@ -288,7 +288,7 @@ if_statement
         : TOK_IF '(' expr ')'
             {
                 $<ifelse>$ = new IfElseModuleInstantiation(std::shared_ptr<Expression>($3), LOCD("if", @$));
-                scope_stack.push(&$<ifelse>$->scope);
+                scope_stack.push($<ifelse>$->scope);
             }
           child_statement
             {
@@ -820,13 +820,13 @@ bool parse(SourceFile *&file, const std::string& text, const std::string &filena
   fileEnded = false;
 
   rootfile = new SourceFile(parser_sourcefile.parent_path().string(), parser_sourcefile.filename().string());
-  scope_stack.push(&rootfile->scope);
+  scope_stack.push(rootfile->scope);
   //        PRINTB_NOCACHE("New module: %s %p", "root" % rootfile);
 
   parserdebug = debug;
   int parserretval = -1;
   try{
-     parserretval = parserparse();
+    parserretval = parserparse();
   }catch (const HardWarningException &e) {
     yyerror("stop on first warning");
   }
@@ -835,11 +835,16 @@ bool parse(SourceFile *&file, const std::string& text, const std::string &filena
   lexerlex_destroy();
 
   file = rootfile;
-  if (parserretval != 0) return false;
+  if (parserretval != 0) {
+    // Clear scope_stack when parsing aborted
+    scope_stack = {};
+    return false;
+  }
 
   parser_error_pos = -1;
   parser_input_buffer = nullptr;
   scope_stack.pop();
+  assert(scope_stack.size()==0);
 
   return true;
 }

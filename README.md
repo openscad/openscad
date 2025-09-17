@@ -12,7 +12,8 @@ target="_blank"> <img
 src="https://img.shields.io/badge/Reddit-FF4500?logo=reddit&logoColor=white"/>
 </a><a href="https://pythonscad.org" target="_blank"> <img
 src="https://img.shields.io/badge/Website-3776AB?logo=Python&logoColor=white"/>
-</a> </p>
+</a> <a href="https://deepwiki.com/pythonscad/pythonscad"><img src="https://deepwiki.com/badge.svg" alt="Ask DeepWiki"></a>
+</p>
 
 
 PythonSCAD is a programmatic 3D modeling application. It allows you to
@@ -212,14 +213,152 @@ Install git (https://git-scm.com/) onto your system. Then run a clone:
 This will download the latest sources into a directory named
 `pythonscad`.
 
+To pull the various submodules (incl. the [MCAD library](https://github.com/openscad/MCAD)), do the following:
+
 ```shell
 cd pythonscad
 git submodule update --init --recursive
+```
+
+
+### Contributing Changes
+
+You can create an issue to plan and discuss your change by visiting https://github.com/openscad/openscad/issues.
+
+If you want to work on an existing issue and plan to contribute changes via a PR later, you can assign the issue to yourself by commenting:
+
+`/assign-me`
+
+in a comment on the issue.
+
+### Building for macOS
+
+Prerequisites:
+
+* Xcode
+* automake, libtool, cmake, pkg-config, wget, meson, python-packaging (we recommend installing these using Homebrew)
+
+Install Dependencies:
+
+After building dependencies using one of the following options, follow the instructions in the *Compilation* section.
+
+1. **From source**
+
+    Run the script that sets up the environment variables:
+
+        source scripts/setenv-macos.sh
+
+    Then run the script to compile all the dependencies:
+
+        ./scripts/macosx-build-dependencies.sh
+
+2. **Homebrew** (assumes [Homebrew](https://brew.sh/) is already installed)
+
+        ./scripts/macosx-build-homebrew.sh
+
+### Building for Linux/BSD
+
+First, make sure that you have git installed (often packaged as 'git-core' 
+or 'scmgit'). Once you've cloned this git repository, download and install 
+the dependency packages listed above using your system's package 
+manager. A convenience script is provided that can help with this 
+process on some systems:
+
+```shell
 sudo ./scripts/uni-get-dependencies.sh
+```
+
+After installing dependencies, check their versions. You can run this 
+script to help you:
+
+```shell
+./scripts/check-dependencies.sh
+```
+
+Take care that you don't have old local copies anywhere (`/usr/local/`). 
+If all dependencies are present and of a high enough version, skip ahead 
+to the Compilation instructions. 
+
+### Building for Linux/BSD on systems with older or missing dependencies
+
+If some of your system dependency libraries are missing or old, then you 
+can download and build newer versions into `$HOME/openscad_deps` by 
+following this process. First, run the script that sets up the 
+environment variables. 
+
+    source ./scripts/setenv-unibuild.sh
+
+Then run the script to compile all the prerequisite libraries above:
+
+
+Note that huge dependencies like gcc, qt, or glib2 are not included 
+here, only the smaller ones (boost, CGAL, opencsg, etc). After the 
+build, again check dependencies.
+
+    ./scripts/check-dependencies.sh
+
+After that, follow the Compilation instructions below.
+
+### Building on Nix
+
+A [development Nix shell](scripts/nix) is included for local, incremental compilation.
+
+```shell
 mkdir build
 cd build
 cmake ..
 make
 make test
 sudo make install
+```
+
+### Building for Windows
+
+OpenSCAD for Windows is usually cross-compiled from Linux. If you wish to
+attempt an MSVC build on Windows, please see this site:
+https://en.wikibooks.org/wiki/OpenSCAD_User_Manual/Building_on_Windows
+
+MSVC build support has been added to OpenSCAD. For instructions on how to build it,
+refer to [building with MSVC](doc/win-build.md).
+
+To cross-build, first make sure that you have all necessary dependencies 
+of the MXE project ( listed at https://mxe.cc/#requirements ). Don't install
+MXE itself, the scripts below will do that for you under `$HOME/openscad_deps/mxe`
+
+Then get your development tools installed to get GCC. Then after you've 
+cloned this git repository, start a new clean bash shell and run the 
+script that sets up the environment variables.
+
+```bash
+    source ./scripts/setenv-mingw-xbuild.sh 64
+```
+
+Then run the script to download & compile all the prerequisite libraries above:
+
+```bash
+    ./scripts/mingw-x-build-dependencies.sh 64
+```
+
+Note that this process can take several hours, and tens of gigabytes of 
+disk space, as it uses the [https://mxe.cc](https://mxe.cc) system to cross-build many
+libraries. After it is complete, build OpenSCAD and package it to an 
+installer:
+
+```bash
+    ./scripts/release-common.sh mingw64
+```
+
+For a 32-bit Windows cross-build, replace 64 with 32 in the above instructions. 
+
+### Building for WebAssembly
+
+We support building OpenSCAD headless for WebAssembly w/ Emscripten, using a premade Docker image built in [openscad/openscad-wasm](https://github.com/openscad/openscad-wasm) (which also has usage examples)
+
+#### Browser
+
+The following command creates `build-web/openscad.wasm` & `build-web/openscad.js`:
+
+```bash
+./scripts/wasm-base-docker-run.sh emcmake cmake -B build-web -DCMAKE_BUILD_TYPE=Debug -DEXPERIMENTAL=1
+./scripts/wasm-base-docker-run.sh cmake --build build-web -j2
 ```

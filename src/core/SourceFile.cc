@@ -25,14 +25,16 @@
  */
 
 #include "core/SourceFile.h"
-#include "core/SourceFileCache.h"
+
+#include "core/EvaluationSession.h"
 #include "core/node.h"
-#include "utils/printutils.h"
-#include "utils/exceptions.h"
 #include "core/ScopeContext.h"
+#include "core/SourceFileCache.h"
 #include "core/parsersettings.h"
 #include "core/StatCache.h"
 #include "platform/PlatformUtils.h"
+#include "utils/printutils.h"
+#include "utils/exceptions.h"
 #include <algorithm>
 #include <ctime>
 #include <ostream>
@@ -54,19 +56,22 @@ namespace fs = std::filesystem;
 #endif
 
 SourceFile::SourceFile(std::string path, std::string filename)
-  : ASTNode(Location::NONE), path(std::move(path)), filename(std::move(filename))
+  : ASTNode(Location::NONE),
+    path(std::move(path)),
+    filename(std::move(filename)),
+    scope(std::make_shared<LocalScope>())
 {
 }
 
 void SourceFile::print(std::ostream& stream, const std::string& indent) const
 {
-  scope.print(stream, indent);
+  scope->print(stream, indent);
 }
 
 void SourceFile::print_python(std::ostream& stream, std::ostream& stream_def,
                               const std::string& indent) const
 {
-  scope.print_python(stream, stream_def, indent);
+  scope->print_python(stream, stream_def, indent);
 }
 
 void SourceFile::registerUse(const std::string& path, const Location& loc)
@@ -159,8 +164,8 @@ time_t SourceFile::include_modified(const std::string& filename) const
 }
 
 /*!
-   Check if any dependencies have been modified and recompile them.
-   Returns true if anything was recompiled.
+   Check if any dependencies have been modified and reparse them.
+   Returns true if anything was reparsed.
  */
 time_t SourceFile::handleDependencies(bool is_root)
 {
@@ -192,11 +197,11 @@ time_t SourceFile::handleDependencies(bool is_root)
     if (found) {
       auto oldmodule = SourceFileCache::instance()->lookup(filename);
       SourceFile *newmodule;
-      auto mtime = SourceFileCache::instance()->evaluate(this->getFullpath(), filename, newmodule);
+      auto mtime = SourceFileCache::instance()->process(this->getFullpath(), filename, newmodule);
       if (mtime > latest) latest = mtime;
       auto changed = newmodule && newmodule != oldmodule;
       // Detect appearance but not removal of files, and keep old module
-      // on compile errors (FIXME: Is this correct behavior?)
+      // on parse errors (FIXME: Is this correct behavior?)
       if (changed) {
         PRINTDB("  %s: %p -> %p", filename % oldmodule % newmodule);
       } else {
@@ -221,7 +226,7 @@ std::shared_ptr<AbstractNode> SourceFile::instantiate(
   try {
     ContextHandle<FileContext> file_context{Context::create<FileContext>(context, this)};
     *resulting_file_context = *file_context;
-    this->scope.instantiateModules(*file_context, node);
+    this->scope->instantiateModules(*file_context, node);
   } catch (HardWarningException& e) {
     throw;
   } catch (EvaluationException& e) {

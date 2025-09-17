@@ -1,7 +1,6 @@
-""" PythonSCAD Stub File for use in editors like Visual Studio Code """
 from typing import Union, Optional, overload
 
-PyOpenSCADs = Union["PyOpenSCAD", list["PyOpenSCAD"]]
+OpenSCADObjects = Union["OpenSCADObject", list["OpenSCADObject"]]
 """Type for functions that accept either a single OpenSCAD object or a list of objects."""
 
 Color = Union[str, list[float]]
@@ -16,100 +15,14 @@ Vector3 = list[float]
 Matrix4x4 = list[list[float]]
 """4x4 transformation matrix as a list of 4 lists of 4 floats."""
 
-
-
-class PyLibFive:
-    def __init__(self, x: float, y: float, z: float):
-        ...
-
-    def x(self) -> Self:
-        """Return X coordinate"""
-        ...
-
-    def y(self) -> Self:
-        """Return Y coordinate"""
-        ...
-
-    def z(self) -> Self:
-        """Return Z coordinate"""
-        ...
-
-    def sqrt(self, v) -> Self:
-        """Return Z coordinate"""
-        ...
-
-    def square(self, v) -> Self:
-        """Calculates the square of v"""
-        ...
-
-    def abs(self, v) -> Self:
-        """Calculates the absolute Value of v"""
-        ...
-
-    def max(self, a, b) -> Self:
-        """Calculates the maximum from a and b"""
-        ...
-
-    def min(self, a, b) -> Self:
-        """Calculates the minimum from a and b"""
-        ...
-
-    def sin(self, v) -> Self:
-        """Calculates the sine of v"""
-        ...
-
-    def cos(self, v) -> Self:
-        """Calculates the cosine of v"""
-        ...
-
-    def tan(self, v) -> Self:
-        """Calculates the tangents of v"""
-        ...
-
-    def asin(self, v) -> Self:
-        """Calculates the arc sine of v"""
-        ...
-
-    def acos(self, v) -> Self:
-        """Calculates the arc cosine of v"""
-        ...
-
-    def atan(self, v) -> Self:
-        """Calculates the arc tangent of v"""
-        ...
-
-    def exp(self, v) -> Self:
-        """Calculates the exponent of v"""
-        ...
-
-    def log(self, v) -> Self:
-        """Calculates the logarithm of v"""
-        ...
-
-    def pow(self, a, b) -> Self:
-        """Calculates the power from a over b"""
-        ...
-
-    def comp(self, a, b) -> Self:
-        """Calculates the libfive comparision of a and b"""
-        ...
-
-    def atan2(self, y, x) -> Self:
-        """Calculates aractangent from y/x"""
-        ...
-
-    def print(self) -> Self:
-        """Print the Tree for debugging"""
-        ...
-
-class PyOpenSCAD:
+class OpenSCADObject:
     """Base class for OpenSCAD objects."""
 
     origin: Matrix4x4
     """4x4 transformation matrix representing the object's origin. 
     Initialized as identity matrix."""
 
-    def translate(self, v: Vector3) -> "PyOpenSCAD":
+    def translate(self, v: Vector3) -> "OpenSCADObject":
         """Translate this object.
 
         Args:
@@ -120,45 +33,9 @@ class PyOpenSCAD:
         """
         ...
 
-    def right(self, v: List[float]) -> Self:
-        """Moves an Object to the right"""
-        ...
-
-    def left(self, v: List[float]) -> Self:
-        """Moves an Object to the left"""
-        ...
-
-    def back(self, v: List[float]) -> Self:
-        """Moves Object backwards"""
-        ...
-
-    def front(self, v: List[float]) -> Self:
-        """Moves Object frontwards"""
-        ...
-
-    def up(self, v: List[float]) -> Self:
-        """Move Object upwards"""
-        ...
-
-    def down(self, v: List[float]) -> Self:
-        """Move Object downwards"""
-        ...
-
-    def rotx(self, v: List[float]) -> Self:
-        """Rotate Object around X Axis"""
-        ...
-
-    def roty(self, v: List[float]) -> Self:
-        """Rotate Object around Y Axis"""
-        ...
-
-    def rotz(self, v: List[float]) -> Self:
-        """Rotate Object around Z Axis"""
-        ...
-
     def rotate(
         self, a: Union[float, Vector3], v: Optional[Vector3] = None
-    ) -> "PyOpenSCAD":
+    ) -> "OpenSCADObject":
         """Rotate this object.
 
         Args:
@@ -170,7 +47,7 @@ class PyOpenSCAD:
         """
         ...
 
-    def scale(self, v: Union[float, Vector3]) -> "PyOpenSCAD":
+    def scale(self, v: Union[float, Vector3]) -> "OpenSCADObject":
         """Scale this object.
 
         Args:
@@ -181,7 +58,7 @@ class PyOpenSCAD:
         """
         ...
 
-    def mirror(self, v: Vector3) -> "PyOpenSCAD":
+    def mirror(self, v: Vector3) -> "OpenSCADObject":
         """Mirror this object.
 
         Args:
@@ -192,7 +69,7 @@ class PyOpenSCAD:
         """
         ...
 
-    def multmatrix(self, m: Matrix4x4) -> "PyOpenSCAD":
+    def multmatrix(self, m: Matrix4x4) -> "OpenSCADObject":
         """Apply matrix transformation to this object.
 
         Args:
@@ -203,7 +80,7 @@ class PyOpenSCAD:
         """
         ...
 
-    def divmatrix(self, m: Matrix4x4) -> "PyOpenSCAD":
+    def divmatrix(self, m: Matrix4x4) -> "OpenSCADObject":
         """Apply inverse matrix transformation to this object.
 
         Args:
@@ -222,7 +99,7 @@ class PyOpenSCAD:
         fn: Optional[float] = None,
         fa: Optional[float] = None,
         fs: Optional[float] = None,
-    ) -> "PyOpenSCAD":
+    ) -> "OpenSCADObject":
         """Offset this 2D object.
 
         Args:
@@ -238,32 +115,7 @@ class PyOpenSCAD:
         """
         ...
 
-    class RoofMethod(Enum):
-        TOP = "top"
-        LOFT = "loft"
-    def roof(
-        self,
-        method: str = RoofMethod.TOP.name,
-        convexity: int = 2,
-        fn: int = FN,
-        fa: float = FA,
-        fs: float = FS,
-    ) -> Self:
-        """Create Roof from an 2D Shape"""
-        ...
-
-    def pull(
-        self, 
-        src: Self, 
-        dst: Self
-    ) -> Self:
-        """Pull apart Object, basically between src and dst it creates a prisma with the x-section
-        src: anchor
-        dst: how much to pull
-        """
-        ...
-
-    def color(self, c: Color, alpha: float = 1.0) -> "PyOpenSCAD":
+    def color(self, c: Color, alpha: float = 1.0) -> "OpenSCADObject":
         """Color this object.
 
         Args:
@@ -272,21 +124,6 @@ class PyOpenSCAD:
 
         Returns:
             A new object with the color set. The original object is unaffected.
-        """
-        ...
-
-    def output(self) -> None:
-        """sme as show"""
-        ...
-
-    def show(self) -> None:
-        """Mark this object for output/display."""
-        ...
-
-    def export(self, file: str) -> None:
-        """Export the result to a file
-        file: output file name, format is automatically detected from suffix
-        when obj is a dictionary, it allows 3mf export to export several paths
         """
         ...
 
@@ -302,7 +139,7 @@ class PyOpenSCAD:
         fn: Optional[float] = None,
         fa: Optional[float] = None,
         fs: Optional[float] = None,
-    ) -> "PyOpenSCAD":
+    ) -> "OpenSCADObject":
         """Linear extrude this 2D object to 3D.
 
         Args:
@@ -329,7 +166,7 @@ class PyOpenSCAD:
         fn: Optional[float] = None,
         fa: Optional[float] = None,
         fs: Optional[float] = None,
-    ) -> "PyOpenSCAD":
+    ) -> "OpenSCADObject":
         """Rotationally extrude this 2D object to 3D.
 
         Args:
@@ -344,25 +181,7 @@ class PyOpenSCAD:
         """
         ...
 
-    def path_extrude(
-        self,
-        path: List[float],
-        xdir: List[float],
-        convexity: int = 2,
-        origin: List[float] = [0, 0, 0],
-        scale: float = 1,
-        twist: float = 0,
-        closed: bool = False,
-        fn: int = FN,
-        fa: float = FA,
-        fs: float = FS,
-    ) -> Self:
-        """Path_extrude an 2D Object
-        xdir: initial vector of x axis
-        """
-        ...
-
-    def resize(self, newsize: Vector3, convexity: int = 2) -> "PyOpenSCAD":
+    def resize(self, newsize: Vector3, convexity: int = 2) -> "OpenSCADObject":
         """Modifies the size of the object to match the given x,y, and z sizes.
 
         Args:
@@ -371,32 +190,6 @@ class PyOpenSCAD:
 
         Returns:
             The transformed object. The original object is unaffected.
-        """
-        ...
-
-    def highlight(self) -> Self:
-        """Highlights Object"""
-        ...
-
-    def background(self) -> Self:
-        """Puts Object into background"""
-        ...
-
-    def only(self) -> Self:
-        """Shows only this object"""
-        ...
-
-    def projection(
-        self, cut: Optional[bool] = None, convexity: int = 2
-    ) -> "PyOpenSCAD":
-        """Create a 2D projection from this 3D object.
-
-        Args:
-            cut: If True, creates a cross-section at z=0.
-            convexity: Convexity parameter for rendering. Defaults to 2.
-
-        Returns:
-            The projected 2D object.
         """
         ...
 
@@ -418,33 +211,9 @@ class PyOpenSCAD:
         """
         ...
 
-    def oversample(
-        self, 
-        n: Optional[int] = None, 
-        round: Optional[bool] = None
-    ) -> Self:
-        """Create artificial intermediate points into straight lines
-        n: factor of the oversampling
-        round: whether to round the oversampling
-        """
-        ...
-
-    def fillet(
-        self, 
-        r: Optional[float] = None, 
-        sel: Optional[Self] = None, 
-        fn: Optional[int] = None
-    ) -> Self:
-        """Create nice roundings for sharp edges
-        r: radius of the fillet
-        sel: Object which overlaps the "selected" edges
-        fn: number of points for fillet x-section
-        """
-        ...
-
     def align(
         self, refmat: Matrix4x4, objmat: Optional[Matrix4x4] = None
-    ) -> "PyOpenSCAD":
+    ) -> "OpenSCADObject":
         """Align this object to a reference matrix.
 
         Args:
@@ -456,8 +225,25 @@ class PyOpenSCAD:
         """
         ...
 
+    def show(self) -> None:
+        """Mark this object for output/display."""
+        ...
 
-    def render(self, convexity: int = 2) -> "PyOpenSCAD":
+    def projection(
+        self, cut: Optional[bool] = None, convexity: int = 2
+    ) -> "OpenSCADObject":
+        """Create a 2D projection from this 3D object.
+
+        Args:
+            cut: If True, creates a cross-section at z=0.
+            convexity: Convexity parameter for rendering. Defaults to 2.
+
+        Returns:
+            The projected 2D object.
+        """
+        ...
+
+    def render(self, convexity: int = 2) -> "OpenSCADObject":
         """Force rendering this object.
 
         Args:
@@ -468,7 +254,7 @@ class PyOpenSCAD:
         """
         ...
 
-    def union(self, *others: PyOpenSCADs) -> "PyOpenSCAD":
+    def union(self, *others: OpenSCADObjects) -> "OpenSCADObject":
         """Create a union of this object with others.
 
         Args:
@@ -479,7 +265,7 @@ class PyOpenSCAD:
         """
         ...
 
-    def difference(self, *others: PyOpenSCADs) -> "PyOpenSCAD":
+    def difference(self, *others: OpenSCADObjects) -> "OpenSCADObject":
         """Create a difference by subtracting others from this object.
 
         Args:
@@ -490,7 +276,7 @@ class PyOpenSCAD:
         """
         ...
 
-    def intersection(self, *others: PyOpenSCADs) -> "PyOpenSCAD":
+    def intersection(self, *others: OpenSCADObjects) -> "OpenSCADObject":
         """Create an intersection of this object with others.
 
         Args:
@@ -508,41 +294,41 @@ class PyOpenSCAD:
 
     # Operators:
 
-    def __or__(self, other: PyOPenSCADs) -> "PyOPenSCAD":
+    def __or__(self, other: OpenSCADObjects) -> "OpenSCADObject":
         """Create a union of two objects"""
         ...
 
-    def __and__(self, other: PyOPenSCADs) -> "PyOPenSCAD":
+    def __and__(self, other: OpenSCADObjects) -> "OpenSCADObject":
         """Create an intersection of two objects"""
         ...
 
     @overload
-    def __sub__(self, other: PyOPenSCADs) -> "PyOPenSCAD":
+    def __sub__(self, other: OpenSCADObjects) -> "OpenSCADObject":
         """Create a difference of two objects"""
         ...
 
-    def __add__(self, other: Vector3) -> "PyOPenSCAD":
+    def __add__(self, other: Vector3) -> "OpenSCADObject":
         """Create a new object by translating this object by a vector"""
         ...
 
     @overload
-    def __sub__(self, other: Vector3) -> "PyOPenSCAD":
+    def __sub__(self, other: Vector3) -> "OpenSCADObject":
         """Create a new object by translating this object by the negative of a vector"""
         ...
 
     @overload
-    def __mul__(self, other: float) -> "PyOPenSCAD":
+    def __mul__(self, other: float) -> "OpenSCADObject":
         """Create a new object by scaling this object by a uniform factor in all directions"""
         ...
 
     @overload
-    def __mul__(self, other: Vector3) -> "PyOPenSCAD":
+    def __mul__(self, other: Vector3) -> "OpenSCADObject":
         """Create a new object by scaling this object by a vector of factors in [x, y, z] directions"""
         ...
 
 def square(
     dim: Optional[Union[float, list[float]]] = None, center: Optional[bool] = None
-) -> PyOpenSCAD:
+) -> OpenSCADObject:
     """Create a square primitive.
 
     Args:
@@ -563,7 +349,7 @@ def circle(
     fn: Optional[float] = None,
     fa: Optional[float] = None,
     fs: Optional[float] = None,
-) -> PyOpenSCAD:
+) -> OpenSCADObject:
     """Create a circle primitive.
 
     Args:
@@ -581,7 +367,7 @@ def circle(
 
 def polygon(
     points: Matrix4x4, paths: Optional[list[list[int]]] = None, convexity: int = 2
-) -> PyOpenSCAD:
+) -> OpenSCADObject:
     """Create a polygon primitive.
 
     Args:
@@ -612,7 +398,7 @@ def text(
     fn: Optional[float] = None,
     fa: Optional[float] = None,
     fs: Optional[float] = None,
-) -> PyOpenSCAD:
+) -> OpenSCADObject:
     """Create a text primitive.
 
     Args:
@@ -671,7 +457,7 @@ def textmetrics(
 
 def cube(
     size: Optional[Union[float, Vector3]] = None, center: Optional[bool] = None
-) -> PyOpenSCAD:
+) -> OpenSCADObject:
     """Create a cube primitive.
 
     Args:
@@ -698,7 +484,7 @@ def cylinder(
     fn: Optional[float] = None,
     fa: Optional[float] = None,
     fs: Optional[float] = None,
-) -> PyOpenSCAD:
+) -> OpenSCADObject:
     """Create a cylinder primitive.
 
     Args:
@@ -725,7 +511,7 @@ def sphere(
     fn: Optional[float] = None,
     fa: Optional[float] = None,
     fs: Optional[float] = None,
-) -> PyOpenSCAD:
+) -> OpenSCADObject:
     """Create a sphere primitive.
 
     Args:
@@ -745,7 +531,7 @@ def polyhedron(
     faces: list[list[int]],
     convexity: int = 2,
     triangles: Optional[list[list[int]]] = None,
-) -> PyOpenSCAD:
+) -> OpenSCADObject:
     """Create a polyhedron primitive.
 
     Args:
@@ -762,18 +548,8 @@ def polyhedron(
     """
     ...
 
-def frep(exp: PyLibFive, min: List[float], max: List[float], res: int) -> PyOpenSCAD:
-    """Create F-Rep (libfive)
-    exp : an SDF epression composed from SDF variables and operators, see tutorial
-    """
-    ...
-
-def ifrep(obj: PyOpenSCAD) -> PyLibFive:
-    """Create Inverse F-Rep(experimental)"""
-    ...
-
 @overload
-def translate(obj: PyOpenSCADs, v: Vector3) -> PyOpenSCAD:
+def translate(obj: OpenSCADObjects, v: Vector3) -> OpenSCADObject:
     """Translate an object or list of objects.
 
     Args:
@@ -798,35 +574,10 @@ def translate(matrix: Matrix4x4, v: Vector3) -> Matrix4x4:
     """
     ...
 
-
-def right(obj: PyOpenSCADType, v: List[float]) -> PyOpenSCAD:
-    """Moves an Object to the right"""
-    ...
-
-def left(obj: PyOpenSCADType, v: List[float]) -> PyOpenSCAD:
-    """Moves an Object to the left"""
-    ...
-
-def back(obj: PyOpenSCADType, v: List[float]) -> PyOpenSCAD:
-    """Moves Object backwards"""
-    ...
-
-def front(obj: PyOpenSCADType, v: List[float]) -> PyOpenSCAD:
-    """Moves Object frontwards"""
-    ...
-
-def up(obj: PyOpenSCADType, v: List[float]) -> PyOpenSCAD:
-    """Move Object upwards"""
-    ...
-
-def down(obj: PyOpenSCADType, v: List[float]) -> PyOpenSCAD:
-    """Move Object downwards"""
-    ...
-
 @overload
 def rotate(
-    obj: PyOpenSCADs, a: Union[float, Vector3], v: Optional[Vector3] = None
-) -> PyOpenSCAD:
+    obj: OpenSCADObjects, a: Union[float, Vector3], v: Optional[Vector3] = None
+) -> OpenSCADObject:
     """Rotate an object or list of objects.
 
     Args:
@@ -855,20 +606,8 @@ def rotate(
     """
     ...
 
-def rotx(obj: PyOpenSCADType, v: List[float]) -> PyOpenSCAD:
-    """Rotate Object around X Axis"""
-    ...
-
-def roty(obj: PyOpenSCADType, v: List[float]) -> PyOpenSCAD:
-    """Rotate Object around Y Axis"""
-    ...
-
-def rotz(obj: PyOpenSCADType, v: List[float]) -> PyOpenSCAD:
-    """Rotate Object around Z Axis"""
-    ...
-
 @overload
-def scale(obj: PyOpenSCADs, v: Union[float, Vector3]) -> PyOpenSCAD:
+def scale(obj: OpenSCADObjects, v: Union[float, Vector3]) -> OpenSCADObject:
     """Scale an object or list of objects.
 
     Args:
@@ -894,7 +633,7 @@ def scale(matrix: Matrix4x4, v: Union[float, Vector3]) -> Matrix4x4:
     ...
 
 @overload
-def mirror(obj: PyOpenSCADs, v: Vector3) -> PyOpenSCAD:
+def mirror(obj: OpenSCADObjects, v: Vector3) -> OpenSCADObject:
     """Mirror an object or list of objects.
 
     Args:
@@ -919,7 +658,7 @@ def mirror(matrix: Matrix4x4, v: Vector3) -> Matrix4x4:
     """
     ...
 
-def multmatrix(obj: PyOpenSCADs, m: Matrix4x4) -> PyOpenSCAD:
+def multmatrix(obj: OpenSCADObjects, m: Matrix4x4) -> OpenSCADObject:
     """Apply matrix transformation to an object.
 
     Args:
@@ -931,7 +670,7 @@ def multmatrix(obj: PyOpenSCADs, m: Matrix4x4) -> PyOpenSCAD:
     """
     ...
 
-def color(obj: PyOpenSCADs, c: Color, alpha: float = 1.0) -> PyOpenSCAD:
+def color(obj: OpenSCADObjects, c: Color, alpha: float = 1.0) -> OpenSCADObject:
     """Color an object.
 
     Args:
@@ -944,7 +683,7 @@ def color(obj: PyOpenSCADs, c: Color, alpha: float = 1.0) -> PyOpenSCAD:
     """
     ...
 
-def union(*objects: PyOpenSCADs) -> PyOpenSCAD:
+def union(*objects: OpenSCADObjects) -> OpenSCADObject:
     """Create a union of multiple objects.
 
     Args:
@@ -955,7 +694,7 @@ def union(*objects: PyOpenSCADs) -> PyOpenSCAD:
     """
     ...
 
-def difference(*objects: PyOpenSCADs) -> PyOpenSCAD:
+def difference(*objects: OpenSCADObjects) -> OpenSCADObject:
     """Create a difference of multiple objects.
 
     Args:
@@ -967,7 +706,7 @@ def difference(*objects: PyOpenSCADs) -> PyOpenSCAD:
     """
     ...
 
-def intersection(*objects: PyOpenSCADs) -> PyOpenSCAD:
+def intersection(*objects: OpenSCADObjects) -> OpenSCADObject:
     """Create an intersection of multiple objects.
 
     Args:
@@ -978,7 +717,7 @@ def intersection(*objects: PyOpenSCADs) -> PyOpenSCAD:
     """
     ...
 
-def hull(*objects: PyOpenSCADs) -> PyOpenSCAD:
+def hull(*objects: OpenSCADObjects) -> OpenSCADObject:
     """Create a convex hull of multiple objects.
 
     Args:
@@ -990,7 +729,7 @@ def hull(*objects: PyOpenSCADs) -> PyOpenSCAD:
     ...
 
 def linear_extrude(
-    obj: PyOpenSCADs,
+    obj: OpenSCADObjects,
     height: Optional[float] = None,
     convexity: int = 1,
     center: Optional[bool] = None,
@@ -1001,7 +740,7 @@ def linear_extrude(
     fn: Optional[float] = None,
     fa: Optional[float] = None,
     fs: Optional[float] = None,
-) -> PyOpenSCAD:
+) -> OpenSCADObject:
     """Linear extrude a 2D object to 3D.
 
     Args:
@@ -1023,13 +762,13 @@ def linear_extrude(
     ...
 
 def rotate_extrude(
-    obj: PyOpenSCADs,
+    obj: OpenSCADObjects,
     convexity: int = 1,
     angle: float = 360.0,
     fn: Optional[float] = None,
     fa: Optional[float] = None,
     fs: Optional[float] = None,
-) -> PyOpenSCAD:
+) -> OpenSCADObject:
     """Rotationally extrude a 2D object to 3D.
 
     Args:
@@ -1045,33 +784,15 @@ def rotate_extrude(
     """
     ...
 
-def path_extrude(
-    obj: PyOpenSCADType,
-    path: List[float],
-    xdir: List[float],
-    convexity: int,
-    origin: List[float],
-    scale: float,
-    twist: float,
-    closed: bool,
-    fn: int,
-    fa: float,
-    fs: float,
-) -> PyOpenSCAD:
-    """Path_extrude an 2D Object
-    xdir: intial vector of x axis
-    """
-    ...
-
 def offset(
-    obj: PyOpenSCADs,
+    obj: OpenSCADObjects,
     r: Optional[float] = None,
     delta: Optional[float] = None,
     chamfer: Optional[bool] = None,
     fn: Optional[float] = None,
     fa: Optional[float] = None,
     fs: Optional[float] = None,
-) -> PyOpenSCAD:
+) -> OpenSCADObject:
     """Offset a 2D object.
 
     Args:
@@ -1088,7 +809,7 @@ def offset(
     """
     ...
 
-def minkowski(*objects: PyOpenSCADs, convexity: int = 2) -> PyOpenSCAD:
+def minkowski(*objects: OpenSCADObjects, convexity: int = 2) -> OpenSCADObject:
     """Create a Minkowski sum of objects.
 
     Args:
@@ -1101,8 +822,8 @@ def minkowski(*objects: PyOpenSCADs, convexity: int = 2) -> PyOpenSCAD:
     ...
 
 def projection(
-    obj: PyOpenSCADs, cut: Optional[bool] = None, convexity: int = 2
-) -> PyOpenSCAD:
+    obj: OpenSCADObjects, cut: Optional[bool] = None, convexity: int = 2
+) -> OpenSCADObject:
     """Create a 2D projection from a 3D object.
 
     Args:
@@ -1120,7 +841,7 @@ def surface(
     center: Optional[bool] = None,
     convexity: int = 2,
     invert: Optional[bool] = None,
-) -> PyOpenSCAD:
+) -> OpenSCADObject:
     """Create a surface from a heightmap file.
 
     Args:
@@ -1134,7 +855,7 @@ def surface(
     """
     ...
 
-def show(obj: PyOpenSCADs) -> None:
+def show(obj: OpenSCADObjects) -> None:
     """Mark an object for output/display.
 
     Args:
@@ -1142,7 +863,7 @@ def show(obj: PyOpenSCADs) -> None:
     """
     ...
 
-def render(obj: PyOPenSCADs, convexity: int = 2) -> PyOPenSCAD:
+def render(obj: OpenSCADObjects, convexity: int = 2) -> OpenSCADObject:
     """Force rendering an object.
 
     Args:
@@ -1154,12 +875,9 @@ def render(obj: PyOPenSCADs, convexity: int = 2) -> PyOPenSCAD:
     """
     ...
 
-def output(obj: PyOpenSCADType) -> None:
-    """same as show"""
-    ...
 def resize(
-    obj: PyOpenSCADs, newsize: Vector3, convexity: int = 2
-) -> PyOpenSCAD:
+    obj: OpenSCADObjects, newsize: Vector3, convexity: int = 2
+) -> OpenSCADObject:
     """Modifies the size of an object to match the given x,y, and z sizes.
 
     Args:
@@ -1172,7 +890,7 @@ def resize(
     """
     ...
 
-def divmatrix(obj: PyOpenSCADs, m: Matrix4x4) -> PyOpenSCAD:
+def divmatrix(obj: OpenSCADObjects, m: Matrix4x4) -> OpenSCADObject:
     """Apply inverse matrix transformation to an object.
 
     Args:
@@ -1184,7 +902,7 @@ def divmatrix(obj: PyOpenSCADs, m: Matrix4x4) -> PyOpenSCAD:
     """
     ...
 
-def fill(*objects: PyOpenSCADs) -> PyOpenSCAD:
+def fill(*objects: OpenSCADObjects) -> OpenSCADObject:
     """Create a fill operation on objects.
 
     Args:
@@ -1195,30 +913,8 @@ def fill(*objects: PyOpenSCADs) -> PyOpenSCAD:
     """
     ...
 
-
-def roof(
-    obj: PyOpenSCADType, method: str, convexity: int, fn: int, fa: float, fs: float
-) -> PyOpenSCAD:
-    """Create Roof from an 2D Shape"""
-    ...
-
-def pull(obj: PyOpenSCADType, src: List[float], dst: List[float]) -> PyOpenSCAD:
-    """Pull apart Object, basically between src and dst it creates a prisma with the x-section
-    src: anchor
-    dst: how much to pull
-    """
-    ...
-
-
-def export(obj: PyOpenSCADType, file: str) -> None:
-    """Export the result to a file
-    file:  output file name, format is automatically detected from suffix
-    when obj is a dictionary, it allows 3mf export to export several paths
-    """
-    ...
-
 def mesh(
-    obj: PyOpenSCADs, triangulate: Optional[bool] = None
+    obj: OpenSCADObjects, triangulate: Optional[bool] = None
 ) -> Union[tuple[list[Vector3], list[list[int]]], list[list[Vector2]]]:
     """Export mesh representation of an object.
 
@@ -1234,90 +930,11 @@ def mesh(
         For 2D objects: A list of outlines where:
         - Each outline is a list of 2D vertex coordinates [[x, y], ...]
     """
-
-def highlight(obj: PyOpenSCAD) -> PyOpenSCAD:
-    """Highlights Object"""
     ...
-
-def background(obj: PyOpenSCAD) -> PyOpenSCAD:
-    """Puts Object into background"""
-    ...
-
-def only(obj: PyOpenSCAD) -> PyOpenSCAD:
-    """Shows only this object"""
-    ...
-
-
-
-def oversample(obj: PyOpenSCADType, n: int, round: bool) -> PyOpenSCAD:
-    """Create artificial intermediate points into straight lines
-    n: factor  of the oversampling
-    bool: whether to round the oversampling
-    """
-    ...
-
-def fillet(obj: PyOpenSCADType, r: float, sel: PyOpenSCADType, fn: int) -> PyOpenSCAD:
-    """Create nice roundings for sharp edges
-    r: radius of the fillet
-    sel: Object which overlaps the "selected" edges
-    fn: number of points for fillet x-section
-    """
-    ...
-
-def group(obj: PyOpenSCAD) -> PyOpenSCAD:
-    """Groups several Objects"""
-    ...
-
-
-def render(obj: PyOpenSCADs, convexity: int = 2) -> PyOpenSCAD:
-    """Force rendering an object.
-
-    Args:
-        obj: Object to render.
-        convexity: Convexity parameter for rendering. Defaults to 2.
-
-    Returns:
-        The object that will be forced to render. The original object is unaffected.
-    """
-    ...
-
-
-def osimport(
-    file: str,
-    layer: str,
-    convexity: int,
-    origin: List[float],
-    scale: float,
-    width: float,
-    height: float,
-    filename: str,
-    center: bool,
-    dpi: float,
-    id: int,
-) -> PyOpenSCAD:
-    """Imports Object from disc"""
-    ...
-
-def version() -> List[float]:
-    """Outputs pythonscad Version"""
-    ...
-
-def version_num() -> List[float]:
-    """Outputs pythoncad Version"""
-    ...
-
-def add_parameter(name: str, default) -> None:
-    """Adds Parameter for use in Customizer"""
-    ...
-
-def scad(code: str) -> PyOpenSCAD:
-    """Evaluate Code in SCAD syntax"""
-    ...
-
 
 def align(
-    obj: PyOpenSCAD, refmat: Matrix4x4, objmat: Optional[Matrix4x4] -> None
-) -> PyOpenSCAD:
+    obj: OpenSCADObjects, refmat: Matrix4x4, objmat: Optional[Matrix4x4] = None
+) -> OpenSCADObject:
     """Align an object to a reference matrix.
 
     Args:
