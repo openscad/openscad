@@ -72,7 +72,8 @@ std::shared_ptr<AbstractNode> builtin_rotate_extrude(const ModuleInstantiation *
   bool hasStart = parameters["start"].getFiniteDouble(node->start);
   if (!hasAngle && !hasStart && (int)node->fn % 2 != 0) {
     LOG(message_group::Deprecated,
-        "In future releases, with no given \"angle\" nor \"start\" params the extrusion will start at the +X axis and start=180 will have to be explicitly given to start on the -X axis.");
+        "In future releases, rotational extrusion without \"angle\" will start at zero, the +X axis.  "
+        "Set start=180 to explicitly start on the -X axis.");
   }
 
   children.instantiate(node);
