@@ -1361,7 +1361,8 @@ void MainWindow::loadDesignSettings()
   CGALCache::instance()->setMaxSizeMB(cgalCacheSizeMB);
   auto backend3D =
     GlobalPreferences::inst()->getValue("advanced/renderBackend3D").toString().toStdString();
-  RenderSettings::inst()->backend3D = renderBackend3DFromString(backend3D);
+  RenderSettings::inst()->backend3D =
+    renderBackend3DFromString(backend3D).value_or(DEFAULT_RENDERING_BACKEND_3D);
 }
 
 void MainWindow::updateUndockMode(bool undockMode)
