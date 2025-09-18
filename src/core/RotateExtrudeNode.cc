@@ -56,7 +56,7 @@ std::shared_ptr<AbstractNode> builtin_rotate_extrude(const ModuleInstantiation *
   node->fs = parameters["$fs"].toDouble();
   node->fa = parameters["$fa"].toDouble();
 
-  node->convexity = std::max( 2, static_cast<int>(parameters["convexity"].toDouble()) );
+  node->convexity = std::max(2,static_cast<int>(parameters["convexity"].toDouble()));
 
   // If an angle is specified, use it, defaulting to starting at zero.
   // If no angle is specified, use 360 and default to starting at 180.
