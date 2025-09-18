@@ -65,6 +65,7 @@ extern bool parse(SourceFile *& file, const std::string& text, const std::string
 #include "core/RoofNode.h"
 #include "core/RenderNode.h"
 #include "core/SurfaceNode.h"
+#include "core/SheetNode.h"
 #include "core/TextNode.h"
 #include "core/OffsetNode.h"
 #include <hash.h>
@@ -4401,6 +4402,288 @@ PyObject *python_surface(PyObject *self, PyObject *args, PyObject *kwargs)
   return python_surface_core(file, center, invert, color, convexity);
 }
 
+int sheetCalcIndInt(PyObject *func, double i, double j, Vector3d &pos)
+{
+  PyObject *args = PyTuple_Pack(2, PyFloat_FromDouble(i), PyFloat_FromDouble(j));
+  PyObject *pos_p = PyObject_CallObject(func, args);
+  if (pos_p == nullptr) {
+    std::string errorstr;
+    python_catch_error(errorstr);
+    PyErr_SetString(PyExc_TypeError, errorstr.c_str());
+    LOG(message_group::Error, errorstr.c_str());
+    return 1;
+  }
+  return python_vectorval(pos_p, 3, 3,&pos[0], &pos[1], &pos[2], nullptr, nullptr);
+}
+
+int sheetCalcInd(PolySetBuilder& builder, std::vector<Vector3d>& vertices, std::vector<double> &istore, std::vector<double> &jstore, PyObject *func, double i, double j)
+{
+  std::string errorstr;
+  Vector3d pos;
+  if (sheetCalcIndInt(func, i, j, pos)) return -1;
+//  printf("pos %g/%g/%g\n", pos[0], pos[1], pos[2]);
+  unsigned int ind = builder.vertexIndex(pos);
+  if (ind == vertices.size()) {
+    vertices.push_back(pos);
+    istore.push_back(i);
+    jstore.push_back(j);
+  }
+  return ind;
+}
+
+std::unique_ptr<const Geometry> sheetCreateFuncGeometry(void *funcptr, double imin, double imax, double jmin, double jmax, double fs, bool ispan, bool jspan)
+{
+  PyObject *func = (PyObject *)funcptr;
+  std::unordered_map<SphereEdgeDb, int, boost::hash<SphereEdgeDb>> edges;
+
+  PolySetBuilder builder;
+  std::vector<Vector3d> vertices;
+  std::vector<double> istore;
+  std::vector<double> jstore;
+// 
+  int ind11, ind21, ind12, ind22;
+
+  ind11 = sheetCalcInd(builder, vertices, istore, jstore, func, imin, jmin);
+  ind12 = sheetCalcInd(builder, vertices, istore, jstore, func, imin, jmax);
+  ind21 = sheetCalcInd(builder, vertices, istore, jstore, func, imax, jmin);
+  ind22 = sheetCalcInd(builder, vertices, istore, jstore, func, imax, jmax);
+  if (ind11 < 0 || ind12 < 0 || ind21 < 0 || ind22 < 0 ) return builder.build();
+
+  std::vector<IndexedTriangle> triangles;
+  std::vector<IndexedTriangle> tri_new;
+  tri_new.push_back(IndexedTriangle(ind11, ind21, ind22));
+  tri_new.push_back(IndexedTriangle(ind11, ind22, ind12));
+  int round = 0;
+  unsigned int i1, i2, imid;
+  Vector3d p1, p2, p3, pmin, pmax, pmid, pmid_test, dir1, dir2;
+  double dist, ang, ang_test;
+  do {
+    triangles = tri_new;
+    tri_new.clear();
+    std::vector<int> midinds;
+    for (const IndexedTriangle& tri : triangles) {
+      int zeroang = 0;
+      unsigned int midind = -1;
+      for (int i = 0; i < 3; i++) {
+        i1 = tri[i];
+        i2 = tri[(i + 1) % 3];
+        SphereEdgeDb edge(i1, i2);
+        if (edges.count(edge) > 0) continue;
+        dist = (vertices[i1] - vertices[i2]).norm();
+        if (dist < fs && round > 2) continue;
+        p1 = vertices[i1];
+        p2 = vertices[i2];
+	double i_mid=(istore[i1]+istore[i2])/2.0;
+	double j_mid=(jstore[i1]+jstore[i2])/2.0;
+        if (sheetCalcIndInt(func, i_mid, j_mid, pmid)) return builder.build();
+        dir1 = (pmid - p1).normalized();
+        dir2 = (p2 - pmid).normalized();
+        ang = acos(dir1.dot(dir2));
+        imid = builder.vertexIndex(pmid); 
+        if (imid == vertices.size()){
+          vertices.push_back(pmid);
+	  istore.push_back(i_mid);
+	  jstore.push_back(j_mid);
+	}  
+        if (ang < 0.001 && round > 2) {
+          zeroang++;
+          continue;
+        }
+        edges[edge] = imid;
+      }
+      if (zeroang == 3) {
+        p1 = vertices[tri[0]];
+        p2 = vertices[tri[1]];
+        p3 = vertices[tri[2]];
+	double i_mid=(istore[tri[0]]+istore[tri[1]]+istore[tri[2]])/3.0;
+	double j_mid=(jstore[tri[0]]+jstore[tri[1]]+jstore[tri[2]])/3.0;
+
+        if (sheetCalcIndInt(func, i_mid, j_mid, pmid)) return builder.build();
+        Vector4d norm = calcTriangleNormal(vertices, {tri[0], tri[1], tri[2]});
+        if (fabs(pmid.dot(norm.head<3>()) - norm[3]) > 1e-3) {
+          midind = builder.vertexIndex(pmid);
+          if (midind == vertices.size()){
+	      vertices.push_back(pmid);
+	      istore.push_back(i_mid);
+	      jstore.push_back(j_mid);
+            }  
+        }
+      }
+      midinds.push_back(midind);
+    }
+    // create new triangles from split edges
+    int ind = 0;
+    for (const IndexedTriangle& tri : triangles) {
+      int splitind[3];
+      for (int i = 0; i < 3; i++) {
+        SphereEdgeDb e(tri[i], tri[(i + 1) % 3]);
+        splitind[i] = edges.count(e) > 0 ? edges[e] : -1;
+      }
+
+      if (midinds[ind] != -1 ) {
+        for (int i = 0; i < 3; i++) {
+          if (splitind[i] == -1) {
+            tri_new.push_back(IndexedTriangle(tri[i], tri[(i + 1) % 3], midinds[ind]));
+          } else {
+            tri_new.push_back(IndexedTriangle(tri[i], splitind[i], midinds[ind]));
+            tri_new.push_back(IndexedTriangle(splitind[i], tri[(i + 1) % 3], midinds[ind]));
+          }
+        }
+        ind++;
+        continue;
+      }
+
+      int bucket =
+        ((splitind[0] != -1) ? 1 : 0) | ((splitind[1] != -1) ? 2 : 0) | ((splitind[2] != -1) ? 4 : 0);
+      switch (bucket) {
+      case 0: tri_new.push_back(IndexedTriangle(tri[0], tri[1], tri[2])); break;
+      case 1:
+        tri_new.push_back(IndexedTriangle(tri[0], splitind[0], tri[2]));
+        tri_new.push_back(IndexedTriangle(tri[2], splitind[0], tri[1]));
+        break;
+      case 2:
+        tri_new.push_back(IndexedTriangle(tri[1], splitind[1], tri[0]));
+        tri_new.push_back(IndexedTriangle(tri[0], splitind[1], tri[2]));
+        break;
+      case 3:
+        tri_new.push_back(IndexedTriangle(tri[0], splitind[0], tri[2]));
+        tri_new.push_back(IndexedTriangle(splitind[0], splitind[1], tri[2]));
+        tri_new.push_back(IndexedTriangle(splitind[0], tri[1], splitind[1]));
+        break;
+      case 4:
+        tri_new.push_back(IndexedTriangle(tri[2], splitind[2], tri[1]));
+        tri_new.push_back(IndexedTriangle(tri[1], splitind[2], tri[0]));
+        break;
+      case 5:
+        tri_new.push_back(IndexedTriangle(tri[0], splitind[0], splitind[2]));
+        tri_new.push_back(IndexedTriangle(splitind[0], tri[2], splitind[2]));
+        tri_new.push_back(IndexedTriangle(splitind[0], tri[1], tri[2]));
+        break;
+      case 6:
+        tri_new.push_back(IndexedTriangle(tri[0], tri[1], splitind[2]));
+        tri_new.push_back(IndexedTriangle(tri[1], splitind[1], splitind[2]));
+        tri_new.push_back(IndexedTriangle(splitind[1], tri[2], splitind[2]));
+        break;
+      case 7:
+        tri_new.push_back(IndexedTriangle(splitind[2], tri[0], splitind[0]));
+        tri_new.push_back(IndexedTriangle(splitind[0], tri[1], splitind[1]));
+        tri_new.push_back(IndexedTriangle(splitind[1], tri[2], splitind[2]));
+        tri_new.push_back(IndexedTriangle(splitind[0], splitind[1], splitind[2]));
+        break;
+      }
+      ind++;
+    }
+
+    round++;
+  } while (tri_new.size() != triangles.size());
+
+  // create point mapping
+  std::vector<int> mapping;
+  for(int i=0;i<istore.size();i++) mapping.push_back(i);
+
+
+  // now sewing ispan together
+  if(ispan) {
+    // collect low and high points
+    intList minList, maxList;
+    for(int i =0 ; i< istore.size();i++) {
+      if(istore[i] == imin)  minList.push_back(i);
+      if(istore[i] == imax)  maxList.push_back(i);
+    }
+
+    //now sort the list for acending jstore
+    std::sort(minList.begin(), minList.end(), [jstore](const int &a, const int &b) { return jstore[a] < jstore[b]; });
+    std::sort(maxList.begin(), maxList.end(), [jstore](const int &a, const int &b) { return jstore[a] < jstore[b]; });
+
+    // pair up min with max
+    int minptr=0, minlen=minList.size();
+    int maxptr=0, maxlen=minList.size();
+    while(minptr < minlen && maxptr < maxlen) { // if one hit the end, no matches meaningful
+      double diff = jstore[minList[minptr]] - jstore[maxList[maxptr]];
+      if(fabs(diff) < 1e-6){
+	int tgt=maxList[maxptr++];
+	int src=mapping[minList[minptr++]];
+        vertices[src] = (vertices[tgt]+vertices[src])/2.0;
+        mapping[tgt] = src;
+      }
+      else if(diff> 0) maxptr++;
+      else minptr++;
+    }
+  }
+
+  if(jspan) {
+    // collect low and high points
+    intList minList, maxList;
+    for(int i =0 ; i< jstore.size();i++) {
+      if(jstore[i] == jmin)  minList.push_back(i);
+      if(jstore[i] == jmax)  maxList.push_back(i);
+    }
+
+    //now sort the list for acending jstore
+    std::sort(minList.begin(), minList.end(), [istore](const int &a, const int &b) { return istore[a] < istore[b]; });
+    std::sort(maxList.begin(), maxList.end(), [istore](const int &a, const int &b) { return istore[a] < istore[b]; });
+
+    // pair up min with max
+    int minptr=0, minlen=minList.size();
+    int maxptr=0, maxlen=minList.size();
+    while(minptr < minlen && maxptr < maxlen) { // if one hit the end, no matches meaningful
+      double diff = istore[minList[minptr]] - istore[maxList[maxptr]];
+      if(fabs(diff) < 1e-6){
+	int tgt=maxList[maxptr++];
+	int src=mapping[minList[minptr++]];
+        vertices[src] = (vertices[tgt]+vertices[src])/2.0;
+        mapping[tgt] = src;
+      }
+      else if(diff> 0) maxptr++;
+      else minptr++;
+    }
+  }
+
+  for (const IndexedTriangle& tri : tri_new) {
+    builder.appendPolygon({mapping[tri[0]], mapping[tri[1]], mapping[tri[2]]});
+  }
+  return  builder.build();
+}
+
+PyObject *python_sheet_core(PyObject *func, double imin, double imax, double jmin, double jmax, double fs, PyObject *ispan, PyObject *jspan)
+{
+  DECLARE_INSTANCE
+  auto node = std::make_shared<SheetNode>(instance);
+  // TODO check type of func
+  node->func = (void *) func;
+  node->imin = imin;
+  node->imax = imax;
+  node->jmin = jmin;
+  node->jmax = jmax;
+  node->fs = fs;
+  node->ispan = (ispan == Py_True)?true:false;
+  node->jspan = (jspan == Py_True)?true:false;
+
+  return PyOpenSCADObjectFromNode(&PyOpenSCADType, node);
+}
+
+PyObject *python_sheet(PyObject *self, PyObject *args, PyObject *kwargs)
+{
+  char *kwlist[] = {"func", "imin", "imax", "jmin", "jmax", "fs","iclose","jclose", NULL};
+  PyObject *func = NULL;
+  double imin, imax, jmin, jmax;
+  PyObject *ispan = nullptr, *jspan = nullptr;
+  double dum1, dum2, fs;
+  get_fnas(dum1, dum2, fs);
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "Odddd|dOO", kwlist, &func, &imin, &imax, &jmin, &jmax,&fs,&ispan, &jspan)) {
+    PyErr_SetString(PyExc_TypeError,
+                    "Error during parsing sheet(func, imin, imax, jmin, jmax)");
+    return NULL;
+  }
+  if (func->ob_type != &PyFunction_Type){
+    PyErr_SetString(PyExc_TypeError,
+                    "must specify a function");
+    return NULL;
+  }
+
+  return python_sheet_core(func, imin, imax, jmin, jmax, fs, ispan, jspan);
+}
+
 PyObject *python_text(PyObject *self, PyObject *args, PyObject *kwargs)
 {
   DECLARE_INSTANCE
@@ -5449,6 +5732,7 @@ PyMethodDef PyOpenSCADFunctions[] = {
 
   {"projection", (PyCFunction)python_projection, METH_VARARGS | METH_KEYWORDS, "Projection Object."},
   {"surface", (PyCFunction)python_surface, METH_VARARGS | METH_KEYWORDS, "Surface Object."},
+  {"sheet", (PyCFunction)python_sheet, METH_VARARGS | METH_KEYWORDS, "Sheet Object."},
   {"mesh", (PyCFunction)python_mesh, METH_VARARGS | METH_KEYWORDS, "exports mesh."},
   {"bbox", (PyCFunction)python_bbox, METH_VARARGS | METH_KEYWORDS, "caluculate bbox of object."},
   {"faces", (PyCFunction)python_faces, METH_VARARGS | METH_KEYWORDS, "exports a list of faces."},

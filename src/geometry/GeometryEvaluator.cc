@@ -3234,7 +3234,7 @@ static std::unique_ptr<PolySet> repairObject(const RepairNode& node, const PolyS
       for (auto ind : fence) {
         const auto& pt = ps->vertices[ind];
         double dist = (p1 - pt).dot(n);
-        if (dist < -1e-3) {
+        if (dist > 1e-3) {
           valid = false;
           break;
         }
@@ -3262,6 +3262,43 @@ static std::unique_ptr<PolySet> repairObject(const RepairNode& node, const PolyS
         fence = fence_new;
         fence_new.clear();
       }
+    }
+    if(face.size() > 0) {
+      printf("Recovery\n");
+      //find smallest distance between 2 pts      
+      int imin=-1, jmin=-1;
+      double distmin=1e9;
+      for(int i=0;i<l-1;i++) {
+        const auto& p1 = ps->vertices[face[i]];
+        const auto& p1n = ps->vertices[face[(i+1)%l]];
+	const auto& p1d =(p1n-p1).normalized();
+        for(int j=i+1;j<l;j++) {
+          const auto& p2 = ps->vertices[face[j]];
+          const auto& p2n = ps->vertices[face[(j+1)%l]];
+	  const auto& p2d =(p2n-p2).normalized();
+	  double dist=(p1-p2).norm();
+	  if(fabs(p1d.dot((p2-p1).normalized())) > 0.5) continue; // shortcut must be somehow perpendicular
+	  if(fabs(p2d.dot((p2-p1).normalized())) > 0.5) continue; // shortcut must be somehow perpendicular
+	  if(dist < distmin) {
+            imin=i;
+            jmin=j;	    
+	    distmin=dist;
+	  }
+	}		
+      }
+      printf("min is %d/%d %g\n", imin, jmin, distmin);
+      // now build 2 parts
+      if(imin != -1) {
+        IndexedFace part1, part2;
+        for(int i=0;i<=imin;i++) part1.push_back(face[i]);
+        for(int i=jmin;i<l;i++) part1.push_back(face[i]);
+        for(int i=imin;i<jmin;i++) part2.push_back(face[i]);
+      // just skip the current one and schedule 2 new
+        defects.push_back(part1);
+        defects.push_back(part2);
+      }	
+
+
     }
   }
 
