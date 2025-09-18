@@ -4664,7 +4664,7 @@ PyObject *python_sheet_core(PyObject *func, double imin, double imax, double jmi
 
 PyObject *python_sheet(PyObject *self, PyObject *args, PyObject *kwargs)
 {
-  char *kwlist[] = {"func", "imin", "imax", "jmin", "jmax", "fs","ispan","jspan", NULL};
+  char *kwlist[] = {"func", "imin", "imax", "jmin", "jmax", "fs","iclose","jclose", NULL};
   PyObject *func = NULL;
   double imin, imax, jmin, jmax;
   PyObject *ispan = nullptr, *jspan = nullptr;
