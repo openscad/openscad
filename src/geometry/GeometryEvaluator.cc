@@ -3217,7 +3217,6 @@ static std::unique_ptr<PolySet> repairObject(const RepairNode& node, const PolyS
   }
 
   indexedFaceList defects = mergeTrianglesSub(ps->indices, ps->vertices);
-  printf("%d defects\n", defects.size());
   for (size_t i = 0; i < defects.size(); i++) {
     auto face = defects[i];
     auto fence = defects[i];
@@ -3264,7 +3263,6 @@ static std::unique_ptr<PolySet> repairObject(const RepairNode& node, const PolyS
         fence_new.clear();
       }
     }
-    printf("left with %d pts\n", face.size());
     if(face.size() > 0) {
       printf("Recovery\n");
       //find smallest distance between 2 pts      

@@ -52,7 +52,7 @@
 #include <vector>
 #include <unordered_map>
 
-std::unique_ptr<const Geometry> sheetCreateFuncGeometry(void *funcptr, double imin, double imax, double jmin, double jmax, double fs, double irange, double jrange);
+std::unique_ptr<const Geometry> sheetCreateFuncGeometry(void *funcptr, double imin, double imax, double jmin, double jmax, double fs, bool ispan, bool jspan);
 
 std::unique_ptr<const Geometry> SheetNode::createGeometry() const
 {
@@ -72,7 +72,9 @@ std::string SheetNode::toString() const
          << ", imin = " << (this->imin)
          << ", imax = " << (this->imax)
          << ", jmin = " << (this->jmin)
-         << ", jmax = " << (this->jmax) ;
+         << ", jmax = " << (this->jmax) 
+         << ", ispan = " << (this->ispan) 
+         << ", jspan = " << (this->jspan) ;
   return stream.str();
 }
 

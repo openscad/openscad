@@ -324,7 +324,7 @@ int sphereCalcSplitInd(/* PolySetBuilder &builder, */ std::vector<Vector3d>& ver
                        std::unordered_map<SphereEdgeDb, int /* , boost::hash<SphereEdgeDb> */>& edges,
                        PyObject *func, int ind1, int ind2);
 std::unique_ptr<const Geometry> sphereCreateFuncGeometry(void *funcptr, double fs, int n);
-std::unique_ptr<const Geometry> sheetCreateFuncGeometry(void *funcptr, double imin, double imax, double jmin, double jmax, double ispan, double jspan);
+std::unique_ptr<const Geometry> sheetCreateFuncGeometry(void *funcptr, double imin, double imax, double jmin, bool ispan, bool jspan);
 
 // Debug modifier functions
 PyObject *python_debug_modifier_func(PyObject *self, PyObject *args, PyObject *kwargs, int mode);
