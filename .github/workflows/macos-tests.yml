@@ -17,7 +17,7 @@ jobs:
   build_and_test:
     strategy:
       matrix:
-        os: [macos-13, macos-latest]
+        os: [macos-15-intel, macos-latest]
         qt: [qt5, qt6]
         exclude:
           # macos-latest runs on arm64, which has a broken SW renderer
