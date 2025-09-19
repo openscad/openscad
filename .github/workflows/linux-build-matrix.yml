@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - master
+      - cicd-pipeline-tests
   workflow_dispatch:
 
 jobs:
