@@ -4459,6 +4459,7 @@ std::unique_ptr<const Geometry> sheetCreateFuncGeometry(void *funcptr, double im
   double dist, ang, ang_test;
   do {
     triangles = tri_new;
+    if(round >= 15) break; // emergency stop for non-continous models
     tri_new.clear();
     std::vector<int> midinds;
     for (const IndexedTriangle& tri : triangles) {
