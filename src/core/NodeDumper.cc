@@ -120,6 +120,7 @@ Response NodeDumper::visit(State& state, const GroupNode& node)
  */
 Response NodeDumper::visit(State& state, const AbstractNode& node)
 {
+  if(cache.contains(node)) return Response::PruneTraversal;
   if (state.isPrefix()) {
     // For handling root modifier '!'
     // Check if we are processing the root of the current Tree and init cache
@@ -202,6 +203,7 @@ Response NodeDumper::visit(State& state, const AbstractNode& node)
  */
 Response NodeDumper::visit(State& state, const ListNode& node)
 {
+  if(cache.contains(node)) return Response::PruneTraversal;
   if (state.isPrefix()) {
     // For handling root modifier '!'
     if (this->root.get() == &node) {
@@ -227,6 +229,7 @@ Response NodeDumper::visit(State& state, const ListNode& node)
  */
 Response NodeDumper::visit(State& state, const RootNode& node)
 {
+  if(cache.contains(node)) return Response::PruneTraversal;
   if (isCached(node)) return Response::PruneTraversal;
 
   if (state.isPrefix()) {
