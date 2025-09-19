@@ -1537,7 +1537,7 @@ PyObject *python_nb_sub_vec3(PyObject *arg1, PyObject *arg2,
     } else {
       auto node = std::make_shared<CsgOpNode>(instance, OpenSCADOperator::UNION);
       DECLARE_INSTANCE
-      for (auto x : nodes) node->children.push_back(x);
+      for (auto x : nodes) node->children.push_back(x->clone());
       return PyOpenSCADObjectFromNode(&PyOpenSCADType, node);
     }
   }
