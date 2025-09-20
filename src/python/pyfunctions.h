@@ -50,7 +50,7 @@ PyObject *python_ifrep(PyObject *self, PyObject *args, PyObject *kwargs);
 PyObject *python_translate(PyObject *self, PyObject *args, PyObject *kwargs);
 PyObject *python_translate_core(PyObject *obj, PyObject *v);
 PyObject *python_rotate(PyObject *self, PyObject *args, PyObject *kwargs);
-PyObject *python_rotate_core(PyObject *obj, PyObject *val_a, PyObject *val_v);
+PyObject *python_rotate_core(PyObject *obj, PyObject *val_a, PyObject *val_v, PyObject *ref);
 PyObject *python_scale(PyObject *self, PyObject *args, PyObject *kwargs);
 PyObject *python_scale_core(PyObject *obj, PyObject *val_v);
 PyObject *python_mirror(PyObject *self, PyObject *args, PyObject *kwargs);
