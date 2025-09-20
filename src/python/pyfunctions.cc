@@ -1238,7 +1238,7 @@ PyObject *python_number_rot(PyObject *mat, Matrix3d rotvec, int vecs)
   return python_frommatrix(raw);
 }
 
-PyObject *python_rotate_sub(PyObject *obj, Vector3d vec3, double angle, int dragflags)
+PyObject *python_rotate_sub(PyObject *obj, Vector3d vec3, double angle, PyObject *ref, int dragflags)
 {
   Matrix3d M;
   if (isnan(angle)) {
@@ -1283,8 +1283,30 @@ PyObject *python_rotate_sub(PyObject *obj, Vector3d vec3, double angle, int drag
   node->matrix.rotate(M);
   node->setPyName(child->getPyName());
 
-  node->children.push_back(child);
-  PyObject *pyresult = PyOpenSCADObjectFromNode(type, node);
+  PyObject *pyresult;
+  if(ref == nullptr) {
+    node->children.push_back(child);
+    pyresult = PyOpenSCADObjectFromNode(type, node);
+  } else {
+    Vector3d vec3;	  
+    python_vectorval(ref, 1, 3, &(vec3[0]), &(vec3[1]), &(vec3[2]), nullptr, &dragflags);
+
+    std::shared_ptr<TransformNode> prenode, postnode;
+    {
+      DECLARE_INSTANCE
+      prenode = std::make_shared<TransformNode>(instance, "translate");
+      prenode->matrix.translate(-vec3);
+    }  
+    {
+      DECLARE_INSTANCE
+      postnode = std::make_shared<TransformNode>(instance, "translate");
+      postnode->matrix.translate(vec3);
+    }  
+    prenode->children.push_back(child);
+    node->children.push_back(prenode);
+    postnode->children.push_back(node);
+    pyresult = PyOpenSCADObjectFromNode(type, postnode);
+  }
   if (child_dict != nullptr) {
     PyObject *key, *value;
     Py_ssize_t pos = 0;
@@ -1297,20 +1319,20 @@ PyObject *python_rotate_sub(PyObject *obj, Vector3d vec3, double angle, int drag
   return pyresult;
 }
 
-PyObject *python_rotate_core(PyObject *obj, PyObject *val_a, PyObject *val_v)
+PyObject *python_rotate_core(PyObject *obj, PyObject *val_a, PyObject *val_v, PyObject *ref)
 {
   Vector3d vec3(0, 0, 0);
   double angle;
   int dragflags = 0;
   if (val_a != nullptr && PyList_Check(val_a) && val_v == nullptr) {
     python_vectorval(val_a, 1, 3, &(vec3[0]), &(vec3[1]), &(vec3[2]), nullptr, &dragflags);
-    return python_rotate_sub(obj, vec3, NAN, dragflags);
+    return python_rotate_sub(obj, vec3, NAN, ref,dragflags);
   } else if (val_a != nullptr && val_v != nullptr && !python_numberval(val_a, &angle) &&
              PyList_Check(val_v) && PyList_Size(val_v) == 3) {
     vec3[0] = PyFloat_AsDouble(PyList_GetItem(val_v, 0));
     vec3[1] = PyFloat_AsDouble(PyList_GetItem(val_v, 1));
     vec3[2] = PyFloat_AsDouble(PyList_GetItem(val_v, 2));
-    return python_rotate_sub(obj, vec3, angle, dragflags);
+    return python_rotate_sub(obj, vec3, angle, ref, dragflags);
   }
   PyErr_SetString(PyExc_TypeError, "Invalid arguments to rotate()");
   return nullptr;
@@ -1318,27 +1340,29 @@ PyObject *python_rotate_core(PyObject *obj, PyObject *val_a, PyObject *val_v)
 
 PyObject *python_rotate(PyObject *self, PyObject *args, PyObject *kwargs)
 {
-  char *kwlist[] = {"obj", "a", "v", nullptr};
+  char *kwlist[] = {"obj", "a", "v", "ref", nullptr};
   PyObject *val_a = nullptr;
   PyObject *val_v = nullptr;
   PyObject *obj = nullptr;
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "OO|O", kwlist, &obj, &val_a, &val_v)) {
+  PyObject *ref = nullptr;
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "OO|OO", kwlist, &obj, &val_a, &val_v), &ref) {
     PyErr_SetString(PyExc_TypeError, "Error during parsing rotate(object, vec3)");
     return NULL;
   }
-  return python_rotate_core(obj, val_a, val_v);
+  return python_rotate_core(obj, val_a, val_v, ref);
 }
 
 PyObject *python_oo_rotate(PyObject *obj, PyObject *args, PyObject *kwargs)
 {
-  char *kwlist[] = {"a", "v", nullptr};
+  char *kwlist[] = {"a", "v", "ref",nullptr};
   PyObject *val_a = nullptr;
   PyObject *val_v = nullptr;
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O|O", kwlist, &val_a, &val_v)) {
+  PyObject *ref = nullptr;
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O|OO", kwlist, &val_a, &val_v,&ref)) {
     PyErr_SetString(PyExc_TypeError, "Error during parsing rotate(object, vec3)");
     return NULL;
   }
-  return python_rotate_core(obj, val_a, val_v);
+  return python_rotate_core(obj, val_a, val_v, ref);
 }
 
 PyObject *python_number_mirror(PyObject *mat, Matrix4d m, int vecs)
@@ -1527,7 +1551,7 @@ PyObject *python_dir_sub_core(PyObject *obj, double arg, int mode)
     case 7: rot = Vector3d(0, arg, 0); break;
     case 8: rot = Vector3d(0, 0, arg); break;
     }
-    return python_rotate_sub(obj, rot, NAN, 0);
+    return python_rotate_sub(obj, rot, NAN, nullptr, 0);
   }
 }
 
@@ -4045,7 +4069,7 @@ PyObject *python_nb_remainder(PyObject *arg1, PyObject *arg2) {
   }
   Vector3d vec3(0,0,0);
   if(! python_vectorval(arg2, 1, 3, &(vec3[0]), &(vec3[1]), &(vec3[2]), nullptr)) {
-    return python_rotate_sub(arg1, vec3, NAN, 0);
+    return python_rotate_sub(arg1, vec3, NAN, nullptr, 0);
   }
 
   PyErr_SetString(PyExc_TypeError, "Unknown types for % oprator");
