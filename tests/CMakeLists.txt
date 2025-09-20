@@ -58,12 +58,12 @@ else() # !PROJECT_IS_TOP_LEVEL
   endif()
   list(APPEND CTEST_ENVIRONMENT "OPENSCADPATH=${LIBRARIES_DIR}")
 
-  find_package(Lib3MF QUIET)
+  find_package(Lib3MF)
   # Disable LIB3MF tests if library was disabled in build
   if(NOT LIB3MF_FOUND)
     # check again via pkgconfig
     if(NOT MSVC)
-      find_package(PkgConfig QUIET)
+      find_package(PkgConfig)
       if (PKG_CONFIG_FOUND)
         pkg_check_modules(LIB3MF lib3MF)
       endif()
@@ -134,7 +134,7 @@ set(TEST_CMDLINE_TOOL_PY     "${CCSD}/test_cmdline_tool.py")
 ######################
 
 
-find_package(Python3 3.4 COMPONENTS Interpreter REQUIRED QUIET)
+find_package(Python3 3.4 COMPONENTS Interpreter REQUIRED)
 message(STATUS "Found Python at ${Python3_EXECUTABLE}")
 
 include("cmake/ImageCompare.cmake")
