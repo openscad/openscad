@@ -38,6 +38,11 @@ leave the rest of the commandline in tact in a tail. Then we call
 stderr is used to support writing of STL/PNG etc. output to stdout.
 MS Windows API used instead of popen() to append stdout to stderr and
 avoid running cmd.exe (so save some resources).
+
+The Windows console that you get from CMD can be set to different encodings.
+SetConsoleOutputCP(CP_UTF8) will set it to support UTF-8, but that is a
+persistent setting and so seems rude.  Perhaps we should save its state,
+set it, and restore it when we're done.
 */
 
 #include <windows.h>
@@ -105,11 +110,6 @@ int main(int argc, char *argv[]) {
 	int result = 0;
 	register int i;
 	/*bool*/ int quote, preserve_stdout;
-
-        // Set console for this process to use UTF-8, not whatever it happens to be set to.
-        // This does not affect files.  They get UTF-8 (or, actually, whatever you write).
-	SetConsoleOutputCP(CP_UTF8);
-
 	register wchar_t *cmdline = GetCommandLineW();
 	// Look for the end of executable
 	// There is no need to check for escaped double quotes here
