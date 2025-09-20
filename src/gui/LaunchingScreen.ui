@@ -7,7 +7,7 @@
   </property>
   <property name="windowIcon">
    <iconset resource="../../resources/common.qrc">
-    <normaloff>:/icons/prefs3DView.png</normaloff>:/icons/prefs3DView.png</iconset>
+    <normaloff>:/logo.png</normaloff>:/logo.png</iconset>
   </property>
   <property name="sizeGripEnabled">
    <bool>true</bool>
