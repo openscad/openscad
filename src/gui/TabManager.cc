@@ -665,11 +665,39 @@ bool TabManager::saveAs(EditorInterface *edt, const QString& filepath)
   return saveOk;
 }
 
+/*
+ If the editor content has not yet been saved it will be saved
+ to Untitled.scad
+ Otherwise append  "_copy" to the base file name.
+ The QFileINfo does not provide a method to update only the file
+ name so the info needs to be broken down and reassembled.
+ The new name is then tested for existance and the save is
+ aborted if the user declines the save.
+ The operation of the file dialog could delete the .scad suffix
+ so it is checked a last time before the save operation.
+
+ The name of the editor tab should NOT be changed
+ */
 bool TabManager::saveACopy(EditorInterface *edt)
 {
   assert(edt != nullptr);
 
-  const auto dir = edt->filepath.isEmpty() ? _("Untitled.scad") : edt->filepath;
+  const auto dir;
+  if (edt->filepath.isEmpty()) dir = _("Untitled.scad");
+  else {
+    const QFileInfo info(edt->filepath);
+    info.setfile(info.absolutePath() % info.basename() % "_copy.scad");
+    if (info.exists()) {
+      const auto text =
+        QString(_("%1 already exists.\nDo you want to replace it?")).arg(info.fileName());
+      if (QMessageBox::warning(par, par->windowTitle(), text, QMessageBox::Yes | QMessageBox::No,
+                               QMessageBox::No) != QMessageBox::Yes) {
+        return false;
+      }
+    }
+    dir = info.filepath();  // FIXME does this need tobe _(info.filepath()) ?
+  }
+
   auto filename =
     QFileDialog::getSaveFileName(par, _("Save a Copy"), dir, _("OpenSCAD Designs (*.scad)"));
   if (filename.isEmpty()) {
