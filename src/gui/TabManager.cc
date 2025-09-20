@@ -683,20 +683,19 @@ bool TabManager::saveACopy(EditorInterface *edt)
   assert(edt != nullptr);
 
   const auto dir;
-  if( edt->filepath.isEmpty() )
-    dir = _("Untitled.scad");
+  if (edt->filepath.isEmpty()) dir = _("Untitled.scad");
   else {
     const QFileInfo info(edt->filepath);
-    info.setfile( info.absolutePath() % info.basename() % "_copy.scad" );
+    info.setfile(info.absolutePath() % info.basename() % "_copy.scad");
     if (info.exists()) {
-        const auto text =
-          QString(_("%1 already exists.\nDo you want to replace it?")).arg(info.fileName());
-        if (QMessageBox::warning(par, par->windowTitle(), text, QMessageBox::Yes | QMessageBox::No,
-                                QMessageBox::No) != QMessageBox::Yes) {
-          return false;
-        }
+      const auto text =
+        QString(_("%1 already exists.\nDo you want to replace it?")).arg(info.fileName());
+      if (QMessageBox::warning(par, par->windowTitle(), text, QMessageBox::Yes | QMessageBox::No,
+                               QMessageBox::No) != QMessageBox::Yes) {
+        return false;
       }
-    dir = info.filepath(); //FIXME does this need tobe _(info.filepath()) ?
+    }
+    dir = info.filepath();  // FIXME does this need tobe _(info.filepath()) ?
   }
 
   auto filename =
