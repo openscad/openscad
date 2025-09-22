@@ -157,13 +157,14 @@ class PyOpenSCAD:
         ...
 
     def rotate(
-        self, a: Union[float, Vector3], v: Optional[Vector3] = None
+        self, a: Union[float, Vector3], v: Optional[Vector3] = None, ref: Optional[Vector3] = None
     ) -> "PyOpenSCAD":
         """Rotate this object.
 
         Args:
             a: Rotation angle (degrees) or rotation vector [x, y, z].
             v: Optional rotation axis vector when a is a scalar angle.
+            ref: Optional specify center of rotation
 
         Returns:
             The transformed object. The original object is unaffected.
@@ -508,36 +509,56 @@ class PyOpenSCAD:
 
     # Operators:
 
-    def __or__(self, other: PyOPenSCADs) -> "PyOPenSCAD":
+    def __or__(self, other: PyOpenSCADs) -> "PyOpenSCAD":
         """Create a union of two objects"""
         ...
 
-    def __and__(self, other: PyOPenSCADs) -> "PyOPenSCAD":
+    def __and__(self, other: PyOpenSCADs) -> "PyOpenSCAD":
         """Create an intersection of two objects"""
         ...
 
     @overload
-    def __sub__(self, other: PyOPenSCADs) -> "PyOPenSCAD":
+    def __sub__(self, other: PyOpenSCADs) -> "PyOpenSCAD":
         """Create a difference of two objects"""
         ...
 
-    def __add__(self, other: Vector3) -> "PyOPenSCAD":
+    def __add__(self, other: Vector3) -> "PyOpenSCAD":
         """Create a new object by translating this object by a vector"""
         ...
 
     @overload
-    def __sub__(self, other: Vector3) -> "PyOPenSCAD":
+    def __sub__(self, other: Vector3) -> "PyOpenSCAD":
         """Create a new object by translating this object by the negative of a vector"""
         ...
 
     @overload
-    def __mul__(self, other: float) -> "PyOPenSCAD":
+    def __mul__(self, other: float) -> "PyOpenSCAD":
         """Create a new object by scaling this object by a uniform factor in all directions"""
         ...
 
     @overload
-    def __mul__(self, other: Vector3) -> "PyOPenSCAD":
+    def __mul__(self, other: Vector3) -> "PyOpenSCAD":
         """Create a new object by scaling this object by a vector of factors in [x, y, z] directions"""
+        ...
+
+    @overload
+    def __xor__(self, other: PyOpenSCAD) -> "PyOpenSCAD":
+        """Create the hull from self and other"""
+        ...
+
+    @overload
+    def __xor__(self, other: list[Vector3]) -> "PyOpenSCAD":
+        """Create the explosion object from self and the vector list"""
+        ...
+
+    @overload
+    def __mod__(self, other: PyOpenSCAD) -> "PyOpenSCAD":
+        """Create a new object from the minkowski sum from self and other"""
+        ...
+
+    @overload
+    def __mod__(self, other: Vector3) -> "PyOpenSCAD":
+        """Rotate object by the rotations given in x/y/z of the Vector"""
         ...
 
 def square(
@@ -1142,7 +1163,7 @@ def show(obj: PyOpenSCADs) -> None:
     """
     ...
 
-def render(obj: PyOPenSCADs, convexity: int = 2) -> PyOPenSCAD:
+def render(obj: PyOpenSCADs, convexity: int = 2) -> PyOpenSCAD:
     """Force rendering an object.
 
     Args:
