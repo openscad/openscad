@@ -104,30 +104,33 @@ get_debian_deps()
 {
  apt-get update
  apt-get -y install \
-  build-essential bison flex git curl cmake ninja-build libffi-dev \
+  bison build-essential cmake curl flex gettext git gtk-doc-tools imagemagick \
   libboost-program-options-dev libboost-regex-dev libboost-system-dev \
-  libmpfr-dev libglew-dev libcairo2-dev libharfbuzz-dev \
-  libeigen3-dev libcgal-dev libopencsg-dev libgmp-dev \
-  imagemagick libfreetype-dev libdouble-conversion-dev libxml2-dev \
-  gtk-doc-tools libglib2.0-dev gettext xvfb pkg-config ragel libtbb-dev \
-  libgl1-mesa-dev libxi-dev libxmu-dev libfontconfig-dev libzip-dev \
-  python3-venv
+  libcairo2-dev libcgal-dev libdouble-conversion-dev libeigen3-dev libffi-dev \
+  libfontconfig-dev libfreetype-dev libgl1-mesa-dev libglew-dev libglib2.0-dev \
+  libgmp-dev libharfbuzz-dev libmimalloc-dev libmpfr-dev libopencsg-dev \
+  libqt5gamepad5-dev libtbb-dev libxi-dev libxml2-dev libxmu-dev libzip-dev \
+  nettle-dev ninja-build pkg-config python3-dev python3-dev python3-setuptools \
+  python3-venv ragel xvfb
  get_qt5_deps_debian
 }
 
 get_qt5_deps_debian()
 {
- apt-get -y install qtbase5-dev libqscintilla2-qt5-dev libqt5opengl5-dev \
-  libqt5svg5-dev qtmultimedia5-dev libqt5multimedia5-plugins qt5-qmake
+ apt-get -y install \
+  libqscintilla2-qt5-dev libqt5multimedia5-plugins libqt5opengl5-dev \
+  libqt5svg5-dev qt5-qmake qtbase5-dev qtmultimedia5-dev
 }
 
 get_arch_deps()
 {
-  pacman -S --noconfirm \
-	base-devel gcc bison flex make libzip \
-	qt5 qscintilla-qt5 cgal gmp mpfr boost opencsg \
-	glew eigen glib2 fontconfig freetype2 harfbuzz \
-	double-conversion imagemagick tbb
+  pacman -Syu --noconfirm --needed \
+	base-devel boost cairo cgal cmake double-conversion eigen fontconfig \
+  freetype2 gcc-libs ghostscript glew glib2 glibc glu gmp harfbuzz \
+  hicolor-icon-theme hidapi imagemagick lib3mf libglvnd libspnav libx11 \
+  libxml2 libzip mimalloc mpfr nettle opencsg procps-ng python python-pip \
+  python-setuptools qscintilla-qt5 qt5-base qt5-multimedia qt5-svg tbb \
+  xorg-server-xvfb
 }
 
 get_solus_deps()
@@ -176,7 +179,7 @@ if [ -e /etc/issue ]; then
   get_mageia_deps
  elif [ "`grep -i qomo /etc/issue`" ]; then
   get_qomo_deps
- elif [ "`grep -i arch /etc/issue`" ]; then
+ elif test -r /etc/arch-release ; then
    get_arch_deps
  elif [ -e /etc/fedora-release ]; then
   if [ "`grep -i fedora.release /etc/fedora-release`" ]; then

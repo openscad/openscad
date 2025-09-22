@@ -13,455 +13,134 @@ option(USE_IMAGE_COMPARE_PY "Use built-in image_compare.py" ON)
 
 # Use variables for common paths, to reduce line lengths.
 
+project(OpenSCADTests)
+enable_testing()
+
 # Very commonly used cmake-provided paths
 set(CBD ${CMAKE_BINARY_DIR}) # build top level
 set(CSD ${CMAKE_SOURCE_DIR}) # project top level
 set(CCBD ${CMAKE_CURRENT_BINARY_DIR}) # tests build dir
 set(CCSD ${CMAKE_CURRENT_SOURCE_DIR}) # tests source dir
-# Project paths
-set(LIBRARIES_DIR       "${CSD}/libraries")
-set(EXAMPLES_DIR        "${CSD}/examples")
+
+# When configuring OpenSCADTests as a top-level project, we 
+# expect a self-contained OpenSCAD installation to exist.
+# The location can be specified via the OPENSCAD_BINARY CMake or
+# environment variable.
+if(PROJECT_IS_TOP_LEVEL)
+   message(STATUS "Configuring tests as a top-level project")
+  if(EXISTS "$ENV{OPENSCAD_BINARY}")
+    set(OPENSCAD_BINPATH "$ENV{OPENSCAD_BINARY}")
+  endif()
+
+  # Release builds are typically built against lib3mf and manifold
+  option(ENABLE_LIB3MF_TESTS "Enable lib3mf tests" ON)
+  option(ENABLE_MANIFOLD_TESTS "Enable manifold tests" ON)
+else() # !PROJECT_IS_TOP_LEVEL
+  message(STATUS "Configuring tests in a subdirectory")
+  # Very commonly used cmake-provided paths
+  set(CBD ${CMAKE_BINARY_DIR}) # build top level
+  set(CSD ${CMAKE_SOURCE_DIR}) # project top level
+  set(LIBRARIES_DIR "${CSD}/libraries")
+
+  if(APPLE)
+    set(OPENSCAD_BINPATH "${CBD}/OpenSCAD.app/Contents/MacOS/OpenSCAD")
+  elseif (WIN32 OR MXECROSS)
+    set(OPENSCAD_BINPATH "${CBD}/openscad.com")
+  elseif(EXISTS "${CBD}/bin/openscad${SUFFIX_WITH_DASH}")
+    set(OPENSCAD_BINPATH "${CBD}/bin/openscad${SUFFIX_WITH_DASH}")
+  else()
+    set(OPENSCAD_BINPATH "${CBD}/openscad${SUFFIX_WITH_DASH}")
+  endif()
+
+  # MCAD
+  if(NOT EXISTS ${LIBRARIES_DIR}/MCAD/__init__.py)
+    message(FATAL_ERROR "MCAD not found. You can install from the OpenSCAD root as follows: \n  git submodule update --init --recursive")
+  endif()
+  list(APPEND CTEST_ENVIRONMENT "OPENSCADPATH=${LIBRARIES_DIR}")
+
+  find_package(Lib3MF QUIET)
+  # Disable LIB3MF tests if library was disabled in build
+  if(NOT LIB3MF_FOUND)
+    # check again via pkgconfig
+    if(NOT MSVC)
+      find_package(PkgConfig QUIET)
+      if (PKG_CONFIG_FOUND)
+        pkg_check_modules(LIB3MF lib3MF)
+      endif()
+    endif()
+  endif()
+  if(LIB3MF_FOUND)
+    set(ENABLE_LIB3MF_TESTS TRUE)
+  endif()
+  if(ENABLE_MANIFOLD)
+    set(ENABLE_MANIFOLD_TESTS TRUE)
+  endif()
+endif(PROJECT_IS_TOP_LEVEL)
+
+if(PROJECT_IS_TOP_LEVEL)
+  if(NOT OPENSCAD_BINPATH)
+    message(FATAL_ERROR "OPENSCAD_BINPATH not set")
+  elseif(NOT EXISTS "${OPENSCAD_BINPATH}")
+    message(STATUS "Couldn't find the OpenSCAD binary: ${OPENSCAD_BINPATH}")
+    message(FATAL_ERROR "Please place an OpenSCAD binary at: ${OPENSCAD_BINPATH}")
+    unset(OPENSCAD_BINPATH)
+  else() 
+    message(STATUS "Found OpenSCAD binary: ${OPENSCAD_BINPATH}")
+  endif()
+endif()
+
+if(OPENSCAD_BINPATH)
+  list(APPEND CTEST_ENVIRONMENT "OPENSCAD_BINARY=${OPENSCAD_BINPATH}")
+  # Argument used for import/export tests
+  set(OPENSCAD_EXE_ARG "--openscad=${OPENSCAD_BINPATH}")
+endif()
+
+if(PROJECT_IS_TOP_LEVEL)
+  if(NOT EXAMPLES_DIR)
+    get_filename_component(OPENSCAD_EXE_DIR "${OPENSCAD_BINPATH}" DIRECTORY)
+    find_path(EXAMPLES_DIR
+      NAMES "Basics/logo.scad"
+      HINTS
+        "${OPENSCAD_EXE_DIR}/../Resources" # macOS app bundle
+        "${OPENSCAD_EXE_DIR}/../share/openscad" # (Linux) package install
+        "${OPENSCAD_EXE_DIR}" # Windows install
+      PATH_SUFFIXES "examples"
+      NO_DEFAULT_PATH
+    )
+  endif()
+else()
+  set(EXAMPLES_DIR "${CSD}/examples")
+endif()
+
+if (NOT EXISTS "${EXAMPLES_DIR}")
+  unset(EXAMPLES_DIR)
+  message(WARNING "Examples directory not found, disabling examples tests")
+endif()
+
 # Test Data paths
 set(TEST_DATA_DIR       "${CCSD}/data")
 set(TEST_SCAD_DIR       "${CCSD}/data/scad")
 set(TEST_CUSTOMIZER_DIR "${CCSD}/data/scad/customizer")
 set(TEST_PYTHON_DIR     "${CCSD}/data/python")
 # Test runner Python scripts
-set(STLEXPORTSANITYTEST_PY "${CCSD}/stlexportsanitytest.py")
-set(EXPORT_IMPORT_PNGTEST_PY     "${CCSD}/export_import_pngtest.py")
-set(EXPORT_PNGTEST_PY    "${CCSD}/export_pngtest.py")
-set(SHOULDFAIL_PY        "${CCSD}/shouldfail.py")
-set(TEST_CMDLINE_TOOL_PY "${CCSD}/test_cmdline_tool.py")
+set(STLEXPORTSANITYTEST_PY   "${CCSD}/stlexportsanitytest.py")
+set(EXPORT_IMPORT_PNGTEST_PY "${CCSD}/export_import_pngtest.py")
+set(EXPORT_PNGTEST_PY        "${CCSD}/export_pngtest.py")
+set(SHOULDFAIL_PY            "${CCSD}/shouldfail.py")
+set(TEST_CMDLINE_TOOL_PY     "${CCSD}/test_cmdline_tool.py")
 
 ######################
 # Check Dependencies #
 ######################
 
-# If ctest is run with no configuration specified, then force "Default"
-set_directory_properties(PROPERTIES TEST_INCLUDE_FILES "${CCSD}/EnforceConfig.cmake")
 
-# MCAD
-if(NOT EXISTS ${LIBRARIES_DIR}/MCAD/__init__.py)
-  message(FATAL_ERROR "MCAD not found. You can install from the OpenSCAD root as follows: \n  git submodule update --init --recursive")
-endif()
-list(APPEND CTEST_ENVIRONMENT "OPENSCADPATH=${LIBRARIES_DIR}")
-
-find_package(Python3 3.4 COMPONENTS Interpreter REQUIRED)
+find_package(Python3 3.4 COMPONENTS Interpreter REQUIRED QUIET)
 message(STATUS "Found Python at ${Python3_EXECUTABLE}")
 
-# Image comparison - expected test image vs actual generated image
-
-if(USE_IMAGE_COMPARE_PY)
-  set(VENV_DIR "${CCBD}/venv")
-  message(STATUS "Preparing image_compare.py for test suite image comparison: ${VENV_DIR}")
-
-  # Since msys2 on Windows prefers bin/ over Scripts, we need to look for the actual folder to determine
-  # how to utilize the venv
-  find_path(VENV_BIN_PATH activate PATHS "${VENV_DIR}/bin" "${VENV_DIR}/Scripts" NO_DEFAULT_PATH NO_CACHE)
-  if(WIN32)
-    set(IMAGE_COMPARE_EXE "${VENV_BIN_PATH}/python.exe")
-  else()
-    set(IMAGE_COMPARE_EXE "${VENV_BIN_PATH}/python")
-  endif()
-  if(EXISTS "${IMAGE_COMPARE_EXE}")
-    message(STATUS "venv found, testing libraries")
-    execute_process(
-      COMMAND "${IMAGE_COMPARE_EXE}" "${CCSD}/image_compare.py" "--status"
-      WORKING_DIRECTORY "${CCSD}" ERROR_QUIET RESULT_VARIABLE ret)
-    if(ret AND NOT ret EQUAL 0)
-      message(STATUS "venv libraries incomplete")
-      set(BUILD_VENV TRUE)
-    else()
-      message(STATUS "venv libraries complete")
-      set(BUILD_VENV FALSE)
-    endif()
-  else()
-    message(STATUS "venv not found")
-    set(BUILD_VENV TRUE)
-  endif()
-  if(BUILD_VENV)
-    message(STATUS "Setting up testing venv for image comparison")
-    execute_process(
-      COMMAND "${Python3_EXECUTABLE}" "-m" "venv" "venv" "--system-site-packages" "--without-pip"
-      WORKING_DIRECTORY "${CCBD}")
-    # Since msys2 on Windows prefers bin/ over Scripts, we need to look for the actual folder to determine
-    # how to utilize the venv
-    find_path(VENV_BIN_PATH activate PATHS "${VENV_DIR}/bin" "${VENV_DIR}/Scripts" NO_DEFAULT_PATH NO_CACHE)
-    if(WIN32)
-      set(IMAGE_COMPARE_EXE "${VENV_BIN_PATH}/python.exe")
-    else()
-      set(IMAGE_COMPARE_EXE "${VENV_BIN_PATH}/python")
-    endif()
-    execute_process(
-      COMMAND "${IMAGE_COMPARE_EXE}" "-m" "ensurepip"
-      WORKING_DIRECTORY "${CCBD}")
-    execute_process(
-      COMMAND "${IMAGE_COMPARE_EXE}" "-m" "pip" "install" "numpy" "Pillow"
-      WORKING_DIRECTORY "${CCBD}")
-  endif()
-  set(COMPARATOR "--comparator=image_compare")
-  if(BUILD_VENV)
-    execute_process(
-      COMMAND "${IMAGE_COMPARE_EXE}" "${CCSD}/image_compare.py" "--status"
-      WORKING_DIRECTORY "${CCSD}" RESULT_VARIABLE ret)
-    if(ret AND NOT ret EQUAL 0)
-      message(WARNING "Failed to setup the test suite venv for ${IMAGE_COMPARE_EXE}  See doc/testing.txt for dependency information.")
-    else()
-      message(STATUS "venv setup for ${IMAGE_COMPARE_EXE}")
-    endif()
-  else()
-    message(STATUS "venv already setup for ${IMAGE_COMPARE_EXE}")
-  endif()
-else()
-  # Imagemagick
-  find_package(ImageMagick COMPONENTS convert)
-  if(ImageMagick_convert_FOUND)
-    message(STATUS "ImageMagick convert executable found: " ${ImageMagick_convert_EXECUTABLE})
-    set(IMAGE_COMPARE_EXE ${ImageMagick_convert_EXECUTABLE})
-    if ("${ImageMagick_VERSION_STRING}" VERSION_LESS "6.5.9.4")
-      message(STATUS "ImageMagick version less than 6.5.9.4, cannot use -morphology comparison")
-      message(STATUS "ImageMagick Using older image comparison method")
-      set(COMPARATOR "--comparator=old")
-    endif()
-
-    execute_process(COMMAND ${IMAGE_COMPARE_EXE} --version OUTPUT_VARIABLE IM_OUT)
-    if (${IM_OUT} MATCHES "OpenMP")
-      # http://www.daniloaz.com/en/617/systems/high-cpu-load-when-converting-images-with-imagemagick
-      message(STATUS "ImageMagick: OpenMP bug workaround - setting MAGICK_THREAD_LIMIT=1")
-      list(APPEND CTEST_ENVIRONMENT "MAGICK_THREAD_LIMIT=1")
-    endif()
-
-    message(STATUS "Comparing magicktest1.png with magicktest2.png")
-    set(IM_TEST_FILES "${CCSD}/magicktest1.png" "${CCSD}/magicktest2.png")
-    set(COMPARE_ARGS ${IMAGE_COMPARE_EXE} ${IM_TEST_FILES} -alpha On -compose difference -composite -threshold 8% -morphology Erode Square -format %[fx:w*h*mean] info:)
-    # compare arguments taken from test_cmdline_tool.py
-    message(STATUS "Running ImageMagick compare: ${COMPARE_ARGS}")
-    execute_process(COMMAND ${COMPARE_ARGS} RESULT_VARIABLE IM_RESULT OUTPUT_VARIABLE IM_OUT)
-    if (IM_RESULT)
-      message(STATUS "ImageMagick failed to run")
-      message(STATUS "Using alternative image comparison")
-      set(DIFFPNG 1)
-    elif (${IM_OUT} STREQUAL "0")
-       message(STATUS "magicktest1.png and magicktest2.png were incorrectly detected as identical")
-       message(STATUS "Using alternative image comparison")
-       set(DIFFPNG 1)
-    else()
-      message(STATUS "ImageMagick OK: Detected pixel difference of ${IM_OUT}")
-    endif()
-  else()
-    message(STATUS "Couldn't find imagemagick 'convert' program")
-    set(DIFFPNG 1)
-  endif()
-  if (${DIFFPNG})
-    set(IMAGE_COMPARE_EXE ${CCBD}/diffpng)
-    set(COMPARATOR "--comparator=diffpng")
-    add_executable(diffpng diffpng.cpp ${CSD}/src/ext/lodepng/lodepng.cpp)
-    target_include_directories(diffpng PRIVATE ${CSD}/src/ext/lodepng)
-    message(STATUS "using diffpng for image comparison")
-  endif()
-endif()
-
-find_package(Lib3MF QUIET)
-# Disable LIB3MF tests if library was disabled in build
-if(NOT LIB3MF_FOUND)
-  # check again via pkgconfig
-  if(NOT MSVC)
-    find_package(PkgConfig QUIET)
-    if (PKG_CONFIG_FOUND)
-      pkg_check_modules(LIB3MF lib3MF)
-    endif()
-  endif()
-endif()
-
-####################################
-# Platform Specific Configurations #
-####################################
-
-# Workaround Gallium bugs
-if ( ${CMAKE_SYSTEM_PROCESSOR} MATCHES "ppc")
-  message(STATUS "Workaround PPC bug https://bugs.freedesktop.org/show_bug.cgi?id=42540")
-  list(APPEND CTEST_ENVIRONMENT "GALLIUM_DRIVER=softpipe")
-  list(APPEND CTEST_ENVIRONMENT "DRAW_USE_LLVM=no")
-endif()
-if ( ${CMAKE_SYSTEM_PROCESSOR} MATCHES "mips")
-  message(STATUS "Workaround MIPS bug https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=868745")
-  list(APPEND CTEST_ENVIRONMENT "GALLIUM_DRIVER=softpipe")
-  list(APPEND CTEST_ENVIRONMENT "DRAW_USE_LLVM=no")
-endif()
-
-# Determine path for openscad executable
-if(EXISTS "$ENV{OPENSCAD_BINARY}")
-  set(OPENSCAD_BINPATH "$ENV{OPENSCAD_BINARY}")
-elseif(APPLE)
-  set(OPENSCAD_BINPATH "${CBD}/OpenSCAD.app/Contents/MacOS/OpenSCAD")
-elseif (WIN32 OR MXECROSS)
-  set(OPENSCAD_BINPATH "${CBD}/openscad.com")
-elseif(EXISTS "${CBD}/bin/openscad${SUFFIX_WITH_DASH}")
-  set(OPENSCAD_BINPATH "${CBD}/bin/openscad${SUFFIX_WITH_DASH}")
-else()
-  set(OPENSCAD_BINPATH "${CBD}/openscad${SUFFIX_WITH_DASH}")
-endif()
-
-#if(EXISTS "${OPENSCAD_BINPATH}")
-#  message(STATUS "Found OpenSCAD binary: ${OPENSCAD_BINPATH}")
-#else()
-#  message(STATUS "Couldn't find the OpenSCAD binary: ${OPENSCAD_BINPATH}")
-#  message(FATAL_ERROR "Please build the OpenSCAD binary and place it here: ${OPENSCAD_BINPATH}")
-#endif()
-list(APPEND CTEST_ENVIRONMENT "OPENSCAD_BINARY=${OPENSCAD_BINPATH}")
-# Argument used for import/export tests
-set(OPENSCAD_EXE_ARG "--openscad=${OPENSCAD_BINPATH}")
-
-###############################
-# Define Macros and Functions #
-###############################
-
-#
-# Returns into the FULLNAME variable the global full test name (identifier)
-# given a test command and source filename
-#
-function(get_test_fullname TESTCMD FILENAME FULLNAME)
-  get_filename_component(TESTCMD_NAME ${TESTCMD} NAME_WE)
-  get_filename_component(TESTNAME ${FILENAME} NAME_WE)
-  string(REPLACE " " "_" TESTNAME ${TESTNAME}) # Test names cannot include spaces
-  set(${FULLNAME} ${TESTCMD_NAME}_${TESTNAME})
-  # Export to parent scope
-  set(${FULLNAME} ${${FULLNAME}} PARENT_SCOPE)
-endfunction()
-
-#
-# Tags the given tests as belonging to the given CONFIG, i.e. will
-# only be executed when run using ctest -C <CONFIG>
-#
-# Usage example: set_test_config(Heavy dump_testname preview_testname2)
-#
-function(set_test_config CONFIG)
-  cmake_parse_arguments(TESTCFG "" "" "FILES;PREFIXES" ${ARGN})
-   # Get fullnames for test files
-  if (TESTCFG_PREFIXES)
-    foreach(PREFIX ${TESTCFG_PREFIXES})
-      foreach(FILE ${TESTCFG_FILES})
-        get_test_fullname(${PREFIX} ${FILE} TESTCFG_FULLNAME)
-        list(APPEND FULLNAMES ${TESTCFG_FULLNAME})
-      endforeach()
-    endforeach()
-  else()
-    list(APPEND FULLNAMES ${TESTCFG_FILES})
-  endif()
-  # Set config on fullnames
-  list(APPEND ${CONFIG}_TEST_CONFIG ${FULLNAMES})
-  list(FIND TEST_CONFIGS ${CONFIG} FOUND)
-  if (FOUND EQUAL -1)
-    list(APPEND TEST_CONFIGS ${CONFIG})
-    list(SORT TEST_CONFIGS)
-    # Export to parent scope
-    set(TEST_CONFIGS ${TEST_CONFIGS} CACHE INTERNAL "")
-  endif()
-  # Export to parent scope
-  set(${CONFIG}_TEST_CONFIG ${${CONFIG}_TEST_CONFIG} CACHE INTERNAL "")
-endfunction(set_test_config)
-
-#
-# Removes a tag from the given tests
-#
-# Usage example: remove_test_config(Bugs FILES preview_testname2)
-#
-function(remove_test_config CONFIG)
-  cmake_parse_arguments(TESTCFG "" "" "FILES" ${ARGN})
-  list(APPEND FULLNAMES ${TESTCFG_FILES})
-  # Remove config from fullnames
-  list(REMOVE_ITEM ${CONFIG}_TEST_CONFIG ${FULLNAMES})
-  # Export to parent scope
-  set(${CONFIG}_TEST_CONFIG ${${CONFIG}_TEST_CONFIG} CACHE INTERNAL "")
-endfunction(remove_test_config)
-
-#
-# Returns a list of test configs
-#
-function(get_test_config TESTNAME OUTVAR)
-  unset(CONFIGS)
-  foreach(CONFIG ${TEST_CONFIGS})
-    list(FIND ${CONFIG}_TEST_CONFIG ${TESTNAME} IDX)
-    if (IDX GREATER -1)
-      list(APPEND CONFIGS ${CONFIG})
-    endif()
-  endforeach()
-  set(${OUTVAR} "${CONFIGS}" PARENT_SCOPE)
-endfunction()
-
-#
-# Check if a test file is a 2D test
-#
-function(is_2d FULLNAME RESULT)
-  list(FIND ALL_2D_FILES ${FULLNAME} IDX)
-  if (${IDX} GREATER -1)
-    set(${RESULT} 1 PARENT_SCOPE)
-  else()
-    set(${RESULT} PARENT_SCOPE)
-  endif()
-endfunction()
-
-#
-# This functions adds cmd-line tests given files.
-#
-# Usage add_cmdline_test(testbasename [EXE <executable>] [ARGS <args to exe>]
-#                        [SCRIPT <script>]
-#                        [EXPECTEDDIR <shared dir>] SUFFIX <suffix> FILES <test files>
-#                        [EXPERIMENTAL])
-#
-# EXPERIMENTAL: If set, tag all tests as experimental
-#
-function(add_cmdline_test TESTCMD_BASENAME)
-  cmake_parse_arguments(TESTCMD "OPENSCAD;STDIO;EXPERIMENTAL" "EXE;SCRIPT;SUFFIX;KERNEL;EXPECTEDDIR" "FILES;ARGS" ${ARGN})
-
-  set(EXTRA_OPTIONS "")
-
-  # If sharing results with another test, pass on this to the python script
-  if (TESTCMD_EXPECTEDDIR)
-    list(APPEND EXTRA_OPTIONS -e ${TESTCMD_EXPECTEDDIR})
-  endif()
-
-  if (TESTCMD_KERNEL)
-    list(APPEND EXTRA_OPTIONS -k ${TESTCMD_KERNEL})
-  endif()
-
-  if (TESTCMD_STDIO)
-    list(APPEND EXTRA_OPTIONS --stdin --stdout)
-  endif()
-
-  if ((TESTCMD_EXE OR TESTCMD_SCRIPT) AND TESTCMD_OPENSCAD)
-    message(FATAL_ERROR "add_cmdline_test() does not allow OPENSCAD flag alongside EXE or SCRIPT values")
-  endif()
-
-  # python script implies Python3_EXECUTABLE
-  if (TESTCMD_SCRIPT MATCHES \\.[Pp][Yy]$)
-    set(TESTCMD_EXE ${Python3_EXECUTABLE})
-  endif()
-  if (TESTCMD_OPENSCAD)
-    set(TESTCMD_EXE ${OPENSCAD_BINPATH})
-  endif()
-
-  if (TESTCMD_EXE)
-    set(TESTNAME_OPTION -t ${TESTCMD_BASENAME})
-  else()
-    # If no executable was specified, assume it was built by us and resides here
-    set(TESTCMD_EXE ${CCBD}/${TESTCMD_BASENAME})
-  endif()
-
-  # Add tests from args
-  foreach (SCADFILE ${TESTCMD_FILES})
-    get_filename_component(FILE_BASENAME ${SCADFILE} NAME_WE)
-    string(REPLACE " " "_" FILE_BASENAME ${FILE_BASENAME}) # Test names cannot include spaces
-    set(TEST_FULLNAME "${TESTCMD_BASENAME}_${FILE_BASENAME}")
-
-    if (TESTCMD_EXPERIMENTAL)
-      set(TEST_IS_EXPERIMENTAL true)
-    endif()
-
-    # add global experimental options here
-    set(EXPERIMENTAL_OPTION "")
-
-    # 2D tests should be viewed from the top, not an angle.
-    set(CAMERA_OPTION "")
-    is_2d(${SCADFILE} IS2D)
-    if (IS2D)
-      set(CAMERA_OPTION "--camera=0,0,100,0,0,0" "--viewall" "--autocenter" "--projection=ortho")
-    endif()
-
-    # Handle configurations
-    get_test_config(${TEST_FULLNAME} FOUNDCONFIGS)
-    if (NOT FOUNDCONFIGS)
-      set_test_config(Default FILES ${TEST_FULLNAME})
-    endif()
-    set_test_config(All FILES ${TEST_FULLNAME})
-    list(FIND FOUNDCONFIGS Bugs FOUND)
-    if (FOUND EQUAL -1)
-      set_test_config(Good FILES ${TEST_FULLNAME})
-    endif()
-    get_test_config(${TEST_FULLNAME} CONFVAL)
-
-    set(FILENAME_OPTION -f ${FILE_BASENAME})
-
-    # Apply lazy-union to *all* tests for comprehensive testing of this experimental feature.
-    # Would need all passing before making lazy-union non-experimental, but that's probably a long way off.
-    # Mostly just breaks issues that export non-manifold/intersecting geometry without explicit union.
-    #set(EXPERIMENTAL_OPTION ${EXPERIMENTAL_OPTION} "--enable=lazy-union")
-
-    # Enable vertex-object-renderers-indexing by default for all test if experimental build
-    # if (EXPERIMENTAL)
-    #   set(EXPERIMENTAL_OPTION ${EXPERIMENTAL_OPTION} "--enable=vertex-object-renderers-indexing")
-    # endif()
-
-    string(JOIN " " DBG_COMMAND_STR
-      "add_test(" ${TEST_FULLNAME} CONFIGURATIONS ${CONFVAL}
-      COMMAND ${Python3_EXECUTABLE}
-      ${TEST_CMDLINE_TOOL_PY} ${COMPARATOR} -c ${IMAGE_COMPARE_EXE}
-      -s ${TESTCMD_SUFFIX} ${EXTRA_OPTIONS} ${TESTNAME_OPTION} ${FILENAME_OPTION}
-      ${TESTCMD_EXE} ${TESTCMD_SCRIPT} ${SCADFILE} ${CAMERA_OPTION}
-      ${EXPERIMENTAL_OPTION} ${MANIFOLD_OPTION} ${TESTCMD_ARGS} ")"
-    )
-
-    # only add test if it is not experimental or if it is and experimental option is enabled
-    if (NOT TEST_IS_EXPERIMENTAL OR EXPERIMENTAL)
-      # Use cmake option "--log-level DEBUG" during top level config to see this
-      message(DEBUG "${DBG_COMMAND_STR}")
-      add_test(NAME ${TEST_FULLNAME} CONFIGURATIONS ${CONFVAL}
-        COMMAND ${Python3_EXECUTABLE}
-        ${TEST_CMDLINE_TOOL_PY} ${COMPARATOR} -c ${IMAGE_COMPARE_EXE}
-        -s ${TESTCMD_SUFFIX} ${EXTRA_OPTIONS} ${TESTNAME_OPTION} ${FILENAME_OPTION}
-        ${TESTCMD_EXE} ${TESTCMD_SCRIPT} "${SCADFILE}" ${CAMERA_OPTION}
-        ${EXPERIMENTAL_OPTION} ${MANIFOLD_OPTION} ${TESTCMD_ARGS}
-      )
-      set_property(TEST ${TEST_FULLNAME} PROPERTY ENVIRONMENT ${CTEST_ENVIRONMENT})
-    else()
-      message(DEBUG "Experimental Test not added: ${DBG_COMMAND_STR}")
-    endif()
-  endforeach()
-endfunction()
-
-# Usage add_failing_test(testbasename  RETVAL <expected return value>  SUFFIX <suffix>  FILES <test files>
-#                        [EXE <executable>] [SCRIPT <script>] [ARGS <args to exe>])
-#
-function(add_failing_test TESTCMD_BASENAME)
-  cmake_parse_arguments(TESTCMD "" "RETVAL;EXE;SCRIPT;SUFFIX" "FILES;ARGS" ${ARGN})
-
-  if ("${TESTCMD_SUFFIX}" STREQUAL "") # Suffix "off" counts as a false value, so check directly for empty string.
-    message(FATAL_ERROR "add_failing_test() requires SUFFIX to be set" )
-  endif()
-  if (NOT TESTCMD_EXE)
-    set(TESTCMD_EXE ${Python3_EXECUTABLE})
-  endif()
-  if (NOT TESTCMD_SCRIPT)
-    set(TESTCMD_SCRIPT ${SHOULDFAIL_PY})
-  endif()
-
-  set(TESTNAME_OPTION -t ${TESTCMD_BASENAME})
-
-  # Add tests from args
-  foreach (SCADFILE ${TESTCMD_FILES})
-    get_filename_component(FILE_BASENAME ${SCADFILE} NAME_WE)
-    string(REPLACE " " "_" FILE_BASENAME ${FILE_BASENAME}) # Test names cannot include spaces
-    set(TEST_FULLNAME "${TESTCMD_BASENAME}_${FILE_BASENAME}")
-    # Handle configurations
-    unset(FOUNDCONFIGS)
-    get_test_config(${TEST_FULLNAME} FOUNDCONFIGS)
-    if (NOT FOUNDCONFIGS)
-      set_test_config(Default FILES ${TEST_FULLNAME})
-    endif()
-    set_test_config(All FILES ${TEST_FULLNAME})
-    unset(FOUNDCONFIGS)
-    get_test_config(${TEST_FULLNAME} FOUNDCONFIGS)
-    set(CONFVAL ${FOUNDCONFIGS})
-
-    # The python script cannot extract the testname when given extra parameters
-    if (TESTCMD_ARGS)
-      set(FILENAME_OPTION -f ${FILE_BASENAME})
-    endif()
-
-    add_test(NAME ${TEST_FULLNAME} CONFIGURATIONS ${CONFVAL} COMMAND ${TESTCMD_EXE} ${TESTCMD_SCRIPT} "${SCADFILE}" -s ${TESTCMD_SUFFIX} ${TESTCMD_ARGS})
-    set_property(TEST ${TEST_FULLNAME} PROPERTY ENVIRONMENT "${CTEST_ENVIRONMENT}")
-  endforeach()
-endfunction()
+include("cmake/ImageCompare.cmake")
+include("cmake/GalliumFixes.cmake")
+include("cmake/TestFunctions.cmake")
+include("cmake/SetupCTestCustom.cmake")
 
 #################################################
 # Configure Templated Files and Generated Tests #
@@ -481,17 +160,6 @@ configure_file(${TEST_PYTHON_DIR}/gen_issue2342-template.py
                ${TEST_PYTHON_DIR}/gen_issue2342.py)
 configure_file(${TEST_PYTHON_DIR}/gen_svg_viewbox_tests-template.py
                ${TEST_PYTHON_DIR}/gen_svg_viewbox_tests.py)
-
-# Set up custom commands to run before & after Ctest run.
-# 1. Start/stop Virtual Framebuffer for linux/bsd. 2. Pretty Print
-# Please see the CTestCustom.template file for more info.
-message(STATUS "creating CTestCustom.cmake")
-set(TEMPLATE_HEADER "Generated by cmake from ${CCSD}/CTestCustom.template")
-set(UPLOADARG "")
-if ($ENV{OPENSCAD_UPLOAD_TESTS})
-  set(UPLOADARG "--upload")
-endif()
-configure_file(${CCSD}/CTestCustom.template ${CBD}/CTestCustom.cmake @ONLY)
 
 # generate a very large scad file which we would rather not commit to the source tree
 # this is for stress-testing the parser
@@ -529,13 +197,15 @@ file(GLOB SCAD_SVG_FILES      ${TEST_SCAD_DIR}/svg/svg-spec/*.scad
   ${TEST_SCAD_DIR}/svg/use-transform.scad
   ${TEST_SCAD_DIR}/svg/fill-rule.scad
   ${TEST_SCAD_DIR}/svg/size-percent.scad)
+if(EXAMPLES_DIR)
   list(APPEND EXAMPLE_2D_FILES
-  ${EXAMPLES_DIR}/Old/example015.scad
-  ${EXAMPLES_DIR}/Advanced/module_recursion.scad
-  ${EXAMPLES_DIR}/Functions/list_comprehensions.scad
-  ${EXAMPLES_DIR}/Functions/polygon_areas.scad
-  ${EXAMPLES_DIR}/Functions/recursion.scad
-)
+    ${EXAMPLES_DIR}/Old/example015.scad
+    ${EXAMPLES_DIR}/Advanced/module_recursion.scad
+    ${EXAMPLES_DIR}/Functions/list_comprehensions.scad
+    ${EXAMPLES_DIR}/Functions/polygon_areas.scad
+    ${EXAMPLES_DIR}/Functions/recursion.scad
+  )
+endif(EXAMPLES_DIR)
 
 file(GLOB FEATURES_3D_FILES   ${TEST_SCAD_DIR}/3D/features/*.scad)
 file(GLOB DEPRECATED_3D_FILES ${TEST_SCAD_DIR}/3D/deprecated/*.scad)
@@ -545,20 +215,21 @@ file(GLOB SCAD_NEF3_FILES          ${TEST_SCAD_DIR}/nef3/*.scad)
 file(GLOB FUNCTION_FILES           ${TEST_SCAD_DIR}/functions/*.scad)
 file(GLOB REDEFINITION_FILES       ${TEST_SCAD_DIR}/redefinition/*.scad)
 file(GLOB_RECURSE BUGS_FILES       ${TEST_SCAD_DIR}/bugs/*.scad)
-file(GLOB_RECURSE EXAMPLE_FILES    ${EXAMPLES_DIR}/*.scad)
-list(REMOVE_ITEM EXAMPLE_FILES
-  ${EXAMPLES_DIR}/Basics/roof.scad # -> EXPERIMENTAL_ROOF_FILES
-)
-
-list(APPEND EXAMPLE_3D_FILES ${EXAMPLE_FILES})
-# Remove 2D files from 3D examples
-list(REMOVE_ITEM EXAMPLE_3D_FILES
-  ${EXAMPLES_DIR}/Old/example015.scad
-  ${EXAMPLES_DIR}/Advanced/module_recursion.scad
-  ${EXAMPLES_DIR}/Functions/list_comprehensions.scad
-  ${EXAMPLES_DIR}/Functions/polygon_areas.scad
-  ${EXAMPLES_DIR}/Functions/recursion.scad
-)
+if(EXAMPLES_DIR)
+  file(GLOB_RECURSE EXAMPLE_FILES    ${EXAMPLES_DIR}/*.scad)
+  list(REMOVE_ITEM EXAMPLE_FILES
+    ${EXAMPLES_DIR}/Basics/roof.scad # -> EXPERIMENTAL_ROOF_FILES
+  )
+  list(APPEND EXAMPLE_3D_FILES ${EXAMPLE_FILES})
+  # Remove 2D files from 3D examples
+  list(REMOVE_ITEM EXAMPLE_3D_FILES
+    ${EXAMPLES_DIR}/Old/example015.scad
+    ${EXAMPLES_DIR}/Advanced/module_recursion.scad
+    ${EXAMPLES_DIR}/Functions/list_comprehensions.scad
+    ${EXAMPLES_DIR}/Functions/polygon_areas.scad
+    ${EXAMPLES_DIR}/Functions/recursion.scad
+  )
+endif(EXAMPLES_DIR)
 
 list(APPEND MISC_FILES
   ${TEST_SCAD_DIR}/misc/arg-permutations.scad
@@ -780,26 +451,30 @@ list(APPEND SVG_VIEWBOX_TESTS
 )
 
 # FIXME(kintel): Not in use anymore, but keep for reference?
+if(EXAMPLES_DIR)
+  list(APPEND SCADFILES_WITH_GREEN_FACES
+    ${EXAMPLES_DIR}/Advanced/children.scad
+    ${EXAMPLES_DIR}/Basics/CSG-modules.scad
+    ${EXAMPLES_DIR}/Basics/CSG.scad
+    ${EXAMPLES_DIR}/Basics/logo.scad
+    ${EXAMPLES_DIR}/Basics/LetterBlock.scad
+    ${EXAMPLES_DIR}/Basics/text_on_cube.scad
+    ${EXAMPLES_DIR}/Basics/logo_and_text.scad
+    ${EXAMPLES_DIR}/Parametric/sign.scad
+    ${EXAMPLES_DIR}/Parametric/candleStand.scad
+    ${EXAMPLES_DIR}/Old/example001.scad
+    ${EXAMPLES_DIR}/Old/example002.scad
+    ${EXAMPLES_DIR}/Old/example003.scad
+    ${EXAMPLES_DIR}/Old/example004.scad
+    ${EXAMPLES_DIR}/Old/example005.scad
+    ${EXAMPLES_DIR}/Old/example006.scad
+    ${EXAMPLES_DIR}/Old/example007.scad
+    ${EXAMPLES_DIR}/Old/example012.scad
+    ${EXAMPLES_DIR}/Old/example016.scad
+    ${EXAMPLES_DIR}/Old/example024.scad
+  )
+endif(EXAMPLES_DIR)
 list(APPEND SCADFILES_WITH_GREEN_FACES
-  ${EXAMPLES_DIR}/Advanced/children.scad
-  ${EXAMPLES_DIR}/Basics/CSG-modules.scad
-  ${EXAMPLES_DIR}/Basics/CSG.scad
-  ${EXAMPLES_DIR}/Basics/logo.scad
-  ${EXAMPLES_DIR}/Basics/LetterBlock.scad
-  ${EXAMPLES_DIR}/Basics/text_on_cube.scad
-  ${EXAMPLES_DIR}/Basics/logo_and_text.scad
-  ${EXAMPLES_DIR}/Parametric/sign.scad
-  ${EXAMPLES_DIR}/Parametric/candleStand.scad
-  ${EXAMPLES_DIR}/Old/example001.scad
-  ${EXAMPLES_DIR}/Old/example002.scad
-  ${EXAMPLES_DIR}/Old/example003.scad
-  ${EXAMPLES_DIR}/Old/example004.scad
-  ${EXAMPLES_DIR}/Old/example005.scad
-  ${EXAMPLES_DIR}/Old/example006.scad
-  ${EXAMPLES_DIR}/Old/example007.scad
-  ${EXAMPLES_DIR}/Old/example012.scad
-  ${EXAMPLES_DIR}/Old/example016.scad
-  ${EXAMPLES_DIR}/Old/example024.scad
   ${TEST_SCAD_DIR}/3D/features/difference-tests.scad
   ${TEST_SCAD_DIR}/3D/features/for-tests.scad
   ${TEST_SCAD_DIR}/3D/features/highlight-modifier2.scad
@@ -842,26 +517,29 @@ list(APPEND SCADFILES_WITH_COLOR
   ${TEST_SCAD_DIR}/3D/features/color-names-tests.scad
   ${TEST_SCAD_DIR}/3D/features/hex-colors-tests.scad
 
-  ${EXAMPLES_DIR}/Advanced/assert.scad
-  ${EXAMPLES_DIR}/Advanced/animation.scad
-  ${EXAMPLES_DIR}/Advanced/GEB.scad
-  ${EXAMPLES_DIR}/Advanced/children.scad
-  ${EXAMPLES_DIR}/Advanced/children_indexed.scad
-  ${EXAMPLES_DIR}/Basics/CSG-modules.scad
-  ${EXAMPLES_DIR}/Basics/linear_extrude.scad
-  ${EXAMPLES_DIR}/Basics/logo_and_text.scad
-  ${EXAMPLES_DIR}/Basics/projection.scad
-  ${EXAMPLES_DIR}/Basics/text_on_cube.scad
-  ${EXAMPLES_DIR}/Advanced/surface_image.scad
-  ${EXAMPLES_DIR}/Functions/functions.scad
-  ${EXAMPLES_DIR}/Basics/rotate_extrude.scad
-  ${EXAMPLES_DIR}/Old/example017.scad
-
   ${TEST_SCAD_DIR}/3D/issues/issue5217.scad
   ${TEST_SCAD_DIR}/3D/issues/issue5738.scad
 
   #${TEST_SCAD_DIR}/bugs/issue1000.scad
 )
+if(EXAMPLES_DIR)
+  list(APPEND SCADFILES_WITH_COLOR
+    ${EXAMPLES_DIR}/Advanced/assert.scad
+    ${EXAMPLES_DIR}/Advanced/animation.scad
+    ${EXAMPLES_DIR}/Advanced/GEB.scad
+    ${EXAMPLES_DIR}/Advanced/children.scad
+    ${EXAMPLES_DIR}/Advanced/children_indexed.scad
+    ${EXAMPLES_DIR}/Basics/CSG-modules.scad
+    ${EXAMPLES_DIR}/Basics/linear_extrude.scad
+    ${EXAMPLES_DIR}/Basics/logo_and_text.scad
+    ${EXAMPLES_DIR}/Basics/projection.scad
+    ${EXAMPLES_DIR}/Basics/text_on_cube.scad
+    ${EXAMPLES_DIR}/Advanced/surface_image.scad
+    ${EXAMPLES_DIR}/Functions/functions.scad
+    ${EXAMPLES_DIR}/Basics/rotate_extrude.scad
+    ${EXAMPLES_DIR}/Old/example017.scad
+  )
+endif(EXAMPLES_DIR)
 
 # Render in CGAL and Manifold should be the same, except for objects with color
 # ..but there are some exceptions.
@@ -878,11 +556,14 @@ list(APPEND RENDER_DIFFERENT_EXPECTATIONS
 
   # render() in manifold mode preserves colors
   ${TEST_SCAD_DIR}/3D/features/render-tests.scad
-  ${EXAMPLES_DIR}/Old/example016.scad
 
   # Manifold can represent the very thin slice
   ${TEST_SCAD_DIR}/3D/issues/issue1165.scad
 )
+if(EXAMPLES_DIR)
+  list(APPEND RENDER_DIFFERENT_EXPECTATIONS
+    ${EXAMPLES_DIR}/Old/example016.scad)
+endif(EXAMPLES_DIR)
 
 # Preview in CGAL and Manifold should be the same, except for objects with color
 # ..but there are some exceptions.
@@ -983,12 +664,17 @@ remove_test_config(Bugs FILES
 )
 
 # Examples
-set_test_config(Examples FILES ${EXAMPLE_FILES} PREFIXES
-  render-cgal render-manifold
-  preview-cgal preview-manifold preview-manifold preview throwntogether-cgal throwntogether-manifold 
-  render-csg-cgal render-monotone 
-  preview-off render-off dump-examples)
-set_test_config(Examples FILES ${EXAMPLE_2D_FILES} PREFIXES render-dxf)
+if(EXAMPLES_DIR)
+  set_test_config(Examples FILES ${EXAMPLE_FILES} PREFIXES
+    render-cgal render-manifold
+    preview-cgal preview-manifold preview-manifold preview throwntogether-cgal throwntogether-manifold 
+    render-csg-cgal render-monotone 
+    preview-off render-off dump-examples)
+  set_test_config(Examples FILES ${EXAMPLE_2D_FILES} PREFIXES render-dxf)
+endif(EXAMPLES_DIR)
+
+# If ctest is run with no configuration specified, then force "Default"
+set_directory_properties(PROPERTIES TEST_INCLUDE_FILES "${CCSD}/cmake/EnforceConfig.cmake")
 
 #############
 # Add tests #
@@ -1051,7 +737,9 @@ add_cmdline_test(echo         OPENSCAD SUFFIX echo FILES ${TEST_SCAD_DIR}/misc/b
 add_cmdline_test(echo         OPENSCAD SUFFIX echo FILES ${TEST_SCAD_DIR}/issues/issue4172-echo-vector-stack-exhaust.scad ARGS --quiet --trace-usermodule-parameters=false)
 
 add_cmdline_test(dump           OPENSCAD FILES ${FEATURES_2D_FILES} ${FEATURES_3D_FILES} ${DEPRECATED_3D_FILES} ${MISC_FILES} SUFFIX csg ARGS)
-add_cmdline_test(dump-examples  OPENSCAD FILES ${EXAMPLE_FILES} SUFFIX csg ARGS)
+if(EXAMPLES_DIR)
+  add_cmdline_test(dump-examples  OPENSCAD FILES ${EXAMPLE_FILES} SUFFIX csg ARGS)
+endif(EXAMPLES_DIR)
 # non-ASCII filenames
 add_cmdline_test(export-csg-nonascii  OPENSCAD FILES ${TEST_SCAD_DIR}/misc/sfære.scad SUFFIX csg)
 
@@ -1059,7 +747,7 @@ add_cmdline_test(render-cgal      OPENSCAD FILES ${RENDER_COMMON_FILES} EXPECTED
 add_cmdline_test(render-cgal      OPENSCAD FILES ${RENDER_DIFFERENT_EXPECTATIONS} SUFFIX png ARGS --render --backend=cgal)
 add_cmdline_test(render-force-cgal OPENSCAD SUFFIX png FILES ${RENDERFORCETEST_FILES} ARGS --render=force --backend=cgal)
 add_cmdline_test(render-stdio-cgal OPENSCAD SUFFIX png FILES ${RENDERSTDIOTEST_FILES} STDIO EXPECTEDDIR render ARGS --export-format png --render --backend=cgal)
-if (ENABLE_MANIFOLD)
+if (ENABLE_MANIFOLD_TESTS)
 add_cmdline_test(render-manifold OPENSCAD FILES ${RENDER_COMMON_FILES} EXPECTEDDIR render SUFFIX png ARGS --render --backend=manifold)
 add_cmdline_test(render-manifold OPENSCAD FILES ${RENDER_DIFFERENT_EXPECTATIONS} SUFFIX png ARGS --render --backend=manifold)
 add_cmdline_test(render-force-manifold      OPENSCAD SUFFIX png FILES ${RENDERFORCETEST_FILES} EXPECTEDDIR render ARGS --render=force --backend=manifold)
@@ -1069,7 +757,7 @@ endif()
 
 add_cmdline_test(preview-cgal    OPENSCAD FILES ${PREVIEW_COMMON_FILES} EXPECTEDDIR preview SUFFIX png ARGS --backend=cgal)
 add_cmdline_test(preview-cgal    OPENSCAD FILES ${PREVIEW_DIFFERENT_EXPECTATIONS} SUFFIX png ARGS --backend=cgal)
-if (ENABLE_MANIFOLD)
+if (ENABLE_MANIFOLD_TESTS)
 add_cmdline_test(preview-manifold OPENSCAD SUFFIX png FILES ${PREVIEW_COMMON_FILES} EXPECTEDDIR preview ARGS --backend=manifold)
 add_cmdline_test(preview-manifold OPENSCAD SUFFIX png FILES ${PREVIEW_DIFFERENT_EXPECTATIONS} ARGS --backend=manifold)
 endif()
@@ -1172,7 +860,7 @@ ${TEST_SCAD_DIR}/3D/features/polyhedron-tests.scad
 # Export tests (compare actually exported files)
 add_cmdline_test(export-stl              EXPERIMENTAL OPENSCAD SUFFIX stl FILES ${EXPORT_STL_TEST_FILES} ARGS --enable=predictible-output --render)
 add_cmdline_test(export-stl-stdout       EXPERIMENTAL OPENSCAD SUFFIX stl FILES ${EXPORT_STL_TEST_FILES} STDIO EXPECTEDDIR export-stl ARGS --enable=predictible-output --render --export-format asciistl)
-if (ENABLE_MANIFOLD)
+if (ENABLE_MANIFOLD_TESTS)
 add_cmdline_test(export-stl-manifold     EXPERIMENTAL OPENSCAD SUFFIX stl FILES ${EXPORT_STL_TEST_FILES} EXPECTEDDIR export-stl ARGS --enable=predictible-output --backend=manifold --render)
 endif()
 
@@ -1180,7 +868,7 @@ add_cmdline_test(export-binstl           EXPERIMENTAL OPENSCAD SUFFIX stl FILES 
 add_cmdline_test(export-binstl-stdout    EXPERIMENTAL OPENSCAD SUFFIX stl FILES ${EXPORT_STL_TEST_FILES} STDIO EXPECTEDDIR export-binstl ARGS --enable=predictible-output --render --export-format binstl)
 
 add_cmdline_test(export-obj              EXPERIMENTAL OPENSCAD SUFFIX obj FILES ${EXPORT_OBJ_TEST_FILES} ARGS --enable=predictible-output)
-if (LIB3MF_FOUND)
+if (ENABLE_LIB3MF_TESTS)
 add_cmdline_test(export-3mf              EXPERIMENTAL OPENSCAD SUFFIX 3mf FILES ${EXPORT_3MF_TEST_FILES} ARGS --enable=predictible-output)
 endif()
 add_cmdline_test(export-pov-as-is        EXPERIMENTAL OPENSCAD SUFFIX pov FILES ${EXPORT_POV_TEST_FILES} ARGS --enable=predictible-output --backend=manifold)
@@ -1247,7 +935,7 @@ add_cmdline_test(render-off-cgal SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png F
 add_cmdline_test(render-amf SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png FILES ${EXPORT_IMPORT_3D_RENDER_FILES} EXPECTEDDIR render-monotone ARGS ${OPENSCAD_EXE_ARG} --format=AMF --render=force)
 add_cmdline_test(render-obj SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png FILES ${EXPORT_IMPORT_3D_RENDER_FILES} EXPECTEDDIR render-monotone ARGS ${OPENSCAD_EXE_ARG} --format=OBJ --render=force)
 
-if (ENABLE_MANIFOLD)
+if (ENABLE_MANIFOLD_TESTS)
 set(render-off-manifold_FILES ${EXPORT_IMPORT_3D_RENDERMANIFOLD_FILES})
 list(REMOVE_ITEM render-off-manifold_FILES
  ${TEST_SCAD_DIR}/misc/cube10.scad
@@ -1265,9 +953,9 @@ add_cmdline_test(render-stl-manifold SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX p
 add_cmdline_test(render-amf-manifold SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png FILES ${EXPORT_IMPORT_3D_RENDERMANIFOLD_FILES} EXPECTEDDIR render-monotone ARGS ${OPENSCAD_EXE_ARG} --format=AMF --render=force --backend=manifold)
 add_cmdline_test(render-obj-manifold SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png FILES ${EXPORT_IMPORT_3D_RENDERMANIFOLD_FILES} EXPECTEDDIR render-monotone ARGS ${OPENSCAD_EXE_ARG} --format=OBJ --render=force --backend=manifold)
 add_cmdline_test(render-obj-manifold SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png FILES ${FILES_MANIFOLD_CORNER_CASES} EXPECTEDDIR render-off-manifold ARGS ${OPENSCAD_EXE_ARG} --format=OBJ --render=force --backend=manifold)
-endif(ENABLE_MANIFOLD)
+endif(ENABLE_MANIFOLD_TESTS)
 
-if (LIB3MF_FOUND)
+if (ENABLE_LIB3MF_TESTS)
 add_cmdline_test(preview-3mf         SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png FILES ${EXPORT_IMPORT_3D_PREVIEW_FILES} EXPECTEDDIR render-monotone ARGS ${OPENSCAD_EXE_ARG} --format=3MF)
 add_cmdline_test(render-3mf-cgal     SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png FILES ${EXPORT_IMPORT_3D_RENDER_FILES} EXPECTEDDIR render-monotone ARGS ${OPENSCAD_EXE_ARG} --format=3MF --render=force --backend=cgal)
 add_cmdline_test(render-3mf-cgal     SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png FILES ${EXPORT_IMPORT_3D_DIFFERENT_FILES} EXPECTEDDIR render-monotone ARGS ${OPENSCAD_EXE_ARG} --format=3MF --render=force --backend=cgal)
@@ -1403,15 +1091,17 @@ add_cmdline_test(render-view-edges-manifold OPENSCAD FILES ${VIEW_OPTIONS_EDGES_
 #
 # Colorscheme tests
 #
-set(LOGO_EXAMPLE ${EXAMPLES_DIR}/Basics/logo.scad)
-set(CSG_EXAMPLE  ${EXAMPLES_DIR}/Basics/CSG.scad)
-add_cmdline_test(openscad-colorscheme-cornfield       OPENSCAD FILES ${LOGO_EXAMPLE} SUFFIX png ARGS --colorscheme=Cornfield)
-add_cmdline_test(openscad-colorscheme-metallic        OPENSCAD FILES ${LOGO_EXAMPLE} SUFFIX png ARGS --colorscheme=Metallic)
-add_cmdline_test(openscad-colorscheme-sunset          OPENSCAD FILES ${LOGO_EXAMPLE} SUFFIX png ARGS --colorscheme=Sunset)
-add_cmdline_test(openscad-colorscheme-starnight       OPENSCAD FILES ${LOGO_EXAMPLE} SUFFIX png ARGS --colorscheme=Starnight)
-add_cmdline_test(openscad-colorscheme-monotone        OPENSCAD FILES ${LOGO_EXAMPLE} SUFFIX png ARGS --colorscheme=Monotone)
-add_cmdline_test(openscad-colorscheme-clearsky        OPENSCAD FILES ${LOGO_EXAMPLE} SUFFIX png ARGS --colorscheme=ClearSky)
-add_cmdline_test(openscad-colorscheme-metallic-render OPENSCAD FILES ${CSG_EXAMPLE}  SUFFIX png ARGS --colorscheme=Metallic --render)
+if(EXAMPLES_DIR)
+  set(LOGO_EXAMPLE ${EXAMPLES_DIR}/Basics/logo.scad)
+  set(CSG_EXAMPLE  ${EXAMPLES_DIR}/Basics/CSG.scad)
+  add_cmdline_test(openscad-colorscheme-cornfield       OPENSCAD FILES ${LOGO_EXAMPLE} SUFFIX png ARGS --colorscheme=Cornfield)
+  add_cmdline_test(openscad-colorscheme-metallic        OPENSCAD FILES ${LOGO_EXAMPLE} SUFFIX png ARGS --colorscheme=Metallic)
+  add_cmdline_test(openscad-colorscheme-sunset          OPENSCAD FILES ${LOGO_EXAMPLE} SUFFIX png ARGS --colorscheme=Sunset)
+  add_cmdline_test(openscad-colorscheme-starnight       OPENSCAD FILES ${LOGO_EXAMPLE} SUFFIX png ARGS --colorscheme=Starnight)
+  add_cmdline_test(openscad-colorscheme-monotone        OPENSCAD FILES ${LOGO_EXAMPLE} SUFFIX png ARGS --colorscheme=Monotone)
+  add_cmdline_test(openscad-colorscheme-clearsky        OPENSCAD FILES ${LOGO_EXAMPLE} SUFFIX png ARGS --colorscheme=ClearSky)
+  add_cmdline_test(openscad-colorscheme-metallic-render OPENSCAD FILES ${CSG_EXAMPLE}  SUFFIX png ARGS --colorscheme=Metallic --render)
+endif(EXAMPLES_DIR)
 
 ############################
 # Experimental tests       #
@@ -1430,14 +1120,16 @@ add_cmdline_test(lazyunion-render-svg  EXPERIMENTAL SCRIPT ${EXPORT_IMPORT_PNGTE
 #
 # --enable=roof tests
 #
-list(APPEND EXPERIMENTAL_ROOF_FILES ${EXAMPLES_DIR}/Basics/roof.scad)
-add_cmdline_test(dump-examples    EXPERIMENTAL OPENSCAD SUFFIX csg FILES ${EXPERIMENTAL_ROOF_FILES} ARGS --enable=roof)
-add_cmdline_test(render-cgal      EXPERIMENTAL OPENSCAD SUFFIX png FILES ${EXPERIMENTAL_ROOF_FILES} ARGS --render --enable=roof --backend=cgal)
-add_cmdline_test(render-manifold  EXPERIMENTAL OPENSCAD SUFFIX png FILES ${EXPERIMENTAL_ROOF_FILES} EXPECTEDDIR render ARGS --render --enable=roof --backend=manifold)
-add_cmdline_test(preview-cgal     EXPERIMENTAL OPENSCAD SUFFIX png FILES ${EXPERIMENTAL_ROOF_FILES} EXPECTEDDIR preview ARGS --enable=roof --backend=cgal)
-add_cmdline_test(preview-manifold EXPERIMENTAL OPENSCAD SUFFIX png FILES ${EXPERIMENTAL_ROOF_FILES} ARGS --enable=roof --backend=manifold)
-add_cmdline_test(throwntogether   EXPERIMENTAL OPENSCAD SUFFIX png FILES ${EXPERIMENTAL_ROOF_FILES} ARGS --preview=throwntogether --enable=roof)
-add_cmdline_test(render-csg-cgal        EXPERIMENTAL SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png FILES ${EXPERIMENTAL_ROOF_FILES} EXPECTEDDIR render ARGS ${OPENSCAD_EXE_ARG} --format=csg --render --enable=roof)
+if(EXAMPLES_DIR)
+  list(APPEND EXPERIMENTAL_ROOF_FILES ${EXAMPLES_DIR}/Basics/roof.scad)
+  add_cmdline_test(dump-examples    EXPERIMENTAL OPENSCAD SUFFIX csg FILES ${EXPERIMENTAL_ROOF_FILES} ARGS --enable=roof)
+  add_cmdline_test(render-cgal      EXPERIMENTAL OPENSCAD SUFFIX png FILES ${EXPERIMENTAL_ROOF_FILES} ARGS --render --enable=roof --backend=cgal)
+  add_cmdline_test(render-manifold  EXPERIMENTAL OPENSCAD SUFFIX png FILES ${EXPERIMENTAL_ROOF_FILES} EXPECTEDDIR render ARGS --render --enable=roof --backend=manifold)
+  add_cmdline_test(preview-cgal     EXPERIMENTAL OPENSCAD SUFFIX png FILES ${EXPERIMENTAL_ROOF_FILES} EXPECTEDDIR preview ARGS --enable=roof --backend=cgal)
+  add_cmdline_test(preview-manifold EXPERIMENTAL OPENSCAD SUFFIX png FILES ${EXPERIMENTAL_ROOF_FILES} ARGS --enable=roof --backend=manifold)
+  add_cmdline_test(throwntogether   EXPERIMENTAL OPENSCAD SUFFIX png FILES ${EXPERIMENTAL_ROOF_FILES} ARGS --preview=throwntogether --enable=roof)
+  add_cmdline_test(render-csg-cgal        EXPERIMENTAL SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png FILES ${EXPERIMENTAL_ROOF_FILES} EXPECTEDDIR render ARGS ${OPENSCAD_EXE_ARG} --format=csg --render --enable=roof)
+endif(EXAMPLES_DIR)
 
 #
 # --enable=import-function tests
@@ -1551,26 +1243,11 @@ set_tests_properties(
   render-view-edges-manifold_view-options-tests
   preview-view-axes-scales-edges_view-options-tests
 
-  # OpenCSG z fighting
-  preview-cgal_surface_image
-  throwntogether-cgal_surface_image
-
   # CGAL sometimes fail to union minkowski convex decompositions, causing visual differences
   # in rendering.
   render-cgal_minkowski3-difference-test
   render-csg-cgal_minkowski3-difference-test
   preview-cgal_minkowski3-difference-test
-
-  # https://github.com/openscad/openscad/issues/5159
-  render-cgal_projection
-  render-csg-cgal_projection
-
-  # https://github.com/openscad/openscad/issues/5158
-  #render-cgal_example017 
-  #throwntogether-cgal_example017
-  
-  # https://github.com/openscad/openscad/issues/4398
-  render-csg-cgal_logo_and_text
 
   # https://github.com/openscad/openscad/issues/909
   preview-amf_polyhedron-single-triangle
@@ -1604,44 +1281,78 @@ set_tests_properties(
   
   PROPERTIES DISABLED TRUE
 )
-if (ENABLE_MANIFOLD)
-set_tests_properties(
-  # z-fighting different on different machines
-  preview-manifold_issue1165
-  preview-manifold_issue1215
-  preview-cgal_example017
-  preview-manifold_example017
+if(EXAMPLES_DIR) 
+  set_tests_properties(
+    # OpenCSG z fighting
+    preview-cgal_surface_image
+    throwntogether-cgal_surface_image
 
-  # Manifold triangle order not stable, causes transparent
-  # objects to render differently on different machines
-  render-manifold_color-tests
-  render-manifold_hex-colors-tests
-  render-manifold_projection
+    # https://github.com/openscad/openscad/issues/5159
+    render-cgal_projection
+    render-csg-cgal_projection
 
-  # https://github.com/openscad/openscad/issues/909
-  render-amf-manifold_bad-stl-wing
-  render-amf-manifold_bad-stl-pcbvicebar
-  render-amf-manifold_bad-stl-tardis
+    # https://github.com/openscad/openscad/issues/5158
+    #render-cgal_example017 
+    #throwntogether-cgal_example017
+    
+    # https://github.com/openscad/openscad/issues/4398
+    render-csg-cgal_logo_and_text
 
-  # https://github.com/openscad/openscad/issues/2841
-  render-manifold_issue2841b
-  preview-manifold_issue2841b
+    PROPERTIES DISABLED TRUE
+  )
+endif(EXAMPLES_DIR)
 
-  # OpenCSG z fighting
-  preview-manifold_surface_image
-  throwntogether-manifold_surface_image
 
-  # https://github.com/openscad/openscad/issues/5135
-  render-force-manifold_issue5135-bad
+if (ENABLE_MANIFOLD_TESTS)
+  set_tests_properties(
+    # z-fighting different on different machines
+    preview-manifold_issue1165
+    preview-manifold_issue1215
 
-  # https://github.com/openscad/openscad/issues/5218
-  throwntogether-manifold_issue5218
-  throwntogether-manifold_issue913
-  throwntogether-manifold_example016
+    # Manifold triangle order not stable, causes transparent
+    # objects to render differently on different machines
+    render-manifold_color-tests
+    render-manifold_hex-colors-tests
 
-  PROPERTIES DISABLED TRUE
-)
-endif (ENABLE_MANIFOLD)
+    # https://github.com/openscad/openscad/issues/909
+    render-amf-manifold_bad-stl-wing
+    render-amf-manifold_bad-stl-pcbvicebar
+    render-amf-manifold_bad-stl-tardis
+
+    # https://github.com/openscad/openscad/issues/2841
+    render-manifold_issue2841b
+    preview-manifold_issue2841b
+
+    # https://github.com/openscad/openscad/issues/5135
+    render-force-manifold_issue5135-bad
+
+    # https://github.com/openscad/openscad/issues/5218
+    throwntogether-manifold_issue5218
+    throwntogether-manifold_issue913
+
+    PROPERTIES DISABLED TRUE
+  )
+  if(EXAMPLES_DIR)
+    set_tests_properties(
+      # z-fighting different on different machines
+      preview-cgal_example017
+      preview-manifold_example017
+
+      # OpenCSG z fighting
+      preview-manifold_surface_image
+      throwntogether-manifold_surface_image
+
+      # Manifold triangle order not stable, causes transparent
+      # objects to render differently on different machines
+      render-manifold_projection
+
+      # https://github.com/openscad/openscad/issues/5218
+      throwntogether-manifold_example016
+
+      PROPERTIES DISABLED TRUE
+    )
+  endif(EXAMPLES_DIR)
+endif (ENABLE_MANIFOLD_TESTS)
 
 if (EXPERIMENTAL)
 set_tests_properties(
@@ -1653,7 +1364,7 @@ set_tests_properties(
 )
 endif (EXPERIMENTAL)
 
-if (LIB3MF_FOUND)
+if (ENABLE_LIB3MF_TESTS)
   if (EXPERIMENTAL)
     set_tests_properties(
       # https://github.com/openscad/openscad/issues/5800
@@ -1662,7 +1373,7 @@ if (LIB3MF_FOUND)
       PROPERTIES DISABLED TRUE
     )
   endif (EXPERIMENTAL)
-  if (ENABLE_MANIFOLD)
+  if (ENABLE_MANIFOLD_TESTS)
     set_tests_properties(
       # https://github.com/openscad/openscad/issues/5966
      render-off-manifold_issue5216
@@ -1670,7 +1381,7 @@ if (LIB3MF_FOUND)
 
      PROPERTIES DISABLED TRUE
     )
-  endif (ENABLE_MANIFOLD)  
+  endif (ENABLE_MANIFOLD_TESTS)  
   set_tests_properties(
     # When exported from CGAL, the file cannot be re-imported
     render-3mf-cgal_bad-stl-wing
@@ -1689,7 +1400,7 @@ else()
     throwntogether-manifold_import_3mf-tests
     PROPERTIES DISABLED TRUE
   )
-endif(LIB3MF_FOUND)
+endif(ENABLE_LIB3MF_TESTS)
 
 list(APPEND NEF3_BROKEN_TESTS
   render-cgal_nef3_broken
@@ -1712,55 +1423,6 @@ elseif(WIN32 OR MXECROSS)
   )
 endif()
 
-##############################################
-# Test Installation and Packaging (Win only) #
-##############################################
-
-# Package Tests with Windows (.zip archive only)
-if(MXECROSS AND EXPERIMENTAL)
-  set(CPACK_ARCHIVE_COMPONENT_INSTALL ON)
-
-  include(CPackComponent)
-  cpack_add_component(Tests ARCHIVE_FILE OpenSCAD-Tests-${CPACK_PACKAGE_VERSION})
-
-  install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/
-    DESTINATION tests
-    USE_SOURCE_PERMISSIONS
-    COMPONENT Tests
-    PATTERN ".git*" EXCLUDE
-    PATTERN "OpenSCAD_Test_Console.py" EXCLUDE
-    PATTERN "WinReadme.txt" EXCLUDE
-    PATTERN "mingw_convert_ctest.py" EXCLUDE
-    PATTERN "mingwcon.bat" EXCLUDE
-  )
-  install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/
-    DESTINATION tests-build
-    USE_SOURCE_PERMISSIONS
-    COMPONENT Tests
-    PATTERN "venv" EXCLUDE
-    PATTERN "CMakeFiles" EXCLUDE
-    PATTERN "CMakeLists.txt" EXCLUDE
-    PATTERN "cmake_install.cmake" EXCLUDE
-  )
-
-  # Move files to top project dir for visibility
-  install(FILES OpenSCAD_Test_Console.py DESTINATION . COMPONENT Tests)
-  install(FILES WinReadme.txt DESTINATION . COMPONENT Tests RENAME "Windows_Test_Readme.txt")
-  # Move files to tests-build dir
-  install(FILES mingw_convert_ctest.py DESTINATION tests-build COMPONENT Tests)
-  install(FILES mingwcon.bat DESTINATION tests-build COMPONENT Tests)
-
-  file(GENERATE OUTPUT mingw_cross_info.py CONTENT
-"# created automatically during packaging by cmake from within linux
-linux_abs_basedir='${CMAKE_SOURCE_DIR}'
-linux_abs_builddir='${CMAKE_BINARY_DIR}'
-linux_python='${Python3_EXECUTABLE}'
-linux_convert='${IMAGE_COMPARE_EXE}'
-win_installdir='OpenSCAD-Tests-${CPACK_PACKAGE_VERSION}'
-" NEWLINE_STYLE WIN32)
-
-endif()
-
 ####################
 # Extra Debug Info #
 ####################
@@ -1771,4 +1433,3 @@ foreach(CONF ${TEST_CONFIGS})
   list(SORT ${CONF}_TEST_CONFIG)
   message(DEBUG "${CONF}: ${${CONF}_TEST_CONFIG}")
 endforeach()
-

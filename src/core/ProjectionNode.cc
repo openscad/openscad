@@ -25,11 +25,12 @@
  */
 
 #include "core/ProjectionNode.h"
+
+#include "core/Builtins.h"
+#include "core/Children.h"
 #include "core/module.h"
 #include "core/ModuleInstantiation.h"
-#include "core/Children.h"
 #include "core/Parameters.h"
-#include "core/Builtins.h"
 
 #include <utility>
 #include <memory>

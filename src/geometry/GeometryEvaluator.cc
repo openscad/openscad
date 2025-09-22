@@ -1,40 +1,46 @@
 #include "geometry/GeometryEvaluator.h"
-#include "geometry/Geometry.h"
+
+#include "Feature.h"
+#include "geometry/boolean_utils.h"
 #include "geometry/cgal/cgal.h"
+#include "geometry/ClipperUtils.h"
 #include "geometry/linalg.h"
-#include "core/Tree.h"
+#include "geometry/linear_extrude.h"
+#include "geometry/Geometry.h"
 #include "geometry/GeometryCache.h"
 #include "geometry/Polygon2d.h"
-#include "core/ModuleInstantiation.h"
-#include "core/State.h"
-#include "core/ColorNode.h"
-#include "core/OffsetNode.h"
-#include "core/TransformNode.h"
-#include "core/LinearExtrudeNode.h"
-#include "core/RoofNode.h"
-#include "geometry/roof_ss.h"
-#include "geometry/roof_vd.h"
-#include "core/RotateExtrudeNode.h"
-#include "core/CgalAdvNode.h"
-#include "core/ProjectionNode.h"
-#include "core/CsgOpNode.h"
-#include "core/TextNode.h"
-#include "core/RenderNode.h"
-#include "geometry/ClipperUtils.h"
 #include "geometry/PolySetUtils.h"
 #include "geometry/PolySet.h"
 #include "geometry/PolySetBuilder.h"
-#include "utils/calc.h"
-#include "utils/printutils.h"
-#include "utils/calc.h"
+#include "geometry/roof_ss.h"
+#include "geometry/roof_vd.h"
+#include "geometry/rotate_extrude.h"
+
 #include "glview/RenderSettings.h"
+
+#include "core/CgalAdvNode.h"
+#include "core/ColorNode.h"
+#include "core/CsgOpNode.h"
+#include "core/ModuleInstantiation.h"
+#include "core/LinearExtrudeNode.h"
+#include "core/OffsetNode.h"
+#include "core/ProjectionNode.h"
+#include "core/RenderNode.h"
+#include "core/RoofNode.h"
+#include "core/RotateExtrudeNode.h"
+#include "core/State.h"
+#include "core/TextNode.h"
+#include "core/TransformNode.h"
+#include "core/Tree.h"
+#include "utils/calc.h"
 #include "utils/degree_trig.h"
+#include "utils/printutils.h"
+
 #include <iterator>
 #include <cassert>
 #include <list>
 #include <utility>
 #include <memory>
-#include "geometry/boolean_utils.h"
 #ifdef ENABLE_CGAL
 #include "geometry/cgal/CGALCache.h"
 #include "geometry/cgal/cgalutils.h"
@@ -44,8 +50,6 @@
 #ifdef ENABLE_MANIFOLD
 #include "geometry/manifold/manifoldutils.h"
 #endif
-#include "geometry/linear_extrude.h"
-#include "geometry/rotate_extrude.h"
 
 #include <vector>
 

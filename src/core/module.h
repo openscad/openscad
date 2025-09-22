@@ -49,8 +49,3 @@ private:
                                               const std::shared_ptr<const Context>&)>
     do_instantiate;
 };
-
-struct InstantiableModule {
-  std::shared_ptr<const Context> defining_context;
-  const AbstractModule *module;
-};

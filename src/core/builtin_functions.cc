@@ -25,15 +25,18 @@
  */
 
 #include "core/function.h"
+
 #include "core/AST.h"
 #include "core/Arguments.h"
-#include "core/Expression.h"
 #include "core/Builtins.h"
-#include "utils/printutils.h"
-#include "core/UserModule.h"
-#include "utils/degree_trig.h"
+#include "core/Context.h"
+#include "core/EvaluationSession.h"
+#include "core/Expression.h"
 #include "core/FreetypeRenderer.h"
 #include "core/Parameters.h"
+#include "core/UserModule.h"
+#include "utils/printutils.h"
+#include "utils/degree_trig.h"
 #include "io/import.h"
 #include "io/fileutils.h"
 

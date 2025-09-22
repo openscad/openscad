@@ -101,3 +101,4 @@ tests/regression/export-pdf-fill/simple-pdf.pdf
 tests/regression/export-pdf/centered.pdf
 tests/regression/export-pdf/simple-pdf.pdf
 scripts/run-clang-tidy-cached
+.clangd

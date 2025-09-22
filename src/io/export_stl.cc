@@ -41,6 +41,7 @@
 
 #include <double-conversion/double-conversion.h>
 
+#include "Feature.h"
 #include "geometry/Geometry.h"
 #include "geometry/linalg.h"
 #include "geometry/PolySet.h"

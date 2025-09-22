@@ -38,8 +38,9 @@
 
 #include <lib3mf_implicit.hpp>
 
-#include "core/ColorUtil.h"
 #include "export_enums.h"
+#include "Feature.h"
+#include "core/ColorUtil.h"
 #include "geometry/Geometry.h"
 #include "geometry/GeometryUtils.h"
 #include "geometry/linalg.h"

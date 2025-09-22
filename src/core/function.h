@@ -43,10 +43,3 @@ public:
 
   void print(std::ostream& stream, const std::string& indent) const override;
 };
-
-struct CallableUserFunction {
-  std::shared_ptr<const Context> defining_context;
-  const UserFunction *function;
-};
-using CallableFunction =
-  std::variant<const BuiltinFunction *, CallableUserFunction, Value, const Value *>;

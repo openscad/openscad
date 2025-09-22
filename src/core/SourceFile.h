@@ -7,7 +7,6 @@
 #include <ctime>
 #include <vector>
 
-#include "core/module.h"
 #include "core/AST.h"
 #include "core/LocalScope.h"
 #include "core/IndicatorData.h"
@@ -36,7 +35,7 @@ public:
   const std::string& getFilename() const { return this->filename; }
   const std::string getFullpath() const;
 
-  LocalScope scope;
+  const std::shared_ptr<LocalScope> scope;
   std::vector<std::string> usedlibs;
 
   std::vector<IndicatorData> indicatorData;
