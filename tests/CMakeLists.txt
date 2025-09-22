@@ -2,7 +2,7 @@
 
 #set(DEBUG_OSCD 1) # print debug info during cmake
 
-cmake_minimum_required(VERSION 3.13)
+cmake_minimum_required(VERSION 3.21)
 # Explicitly use new include policy to avoid globally shadowing included modules
 # https://cmake.org/cmake/help/latest/policy/CMP0017.html
 cmake_policy(SET CMP0017 NEW)
