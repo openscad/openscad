@@ -159,7 +159,7 @@ Prerequisites:
 
 Install Dependencies:
 
-After building dependencies using one of the following options, follow the instructions in the *Compilation* section.
+There are two methods for building the dependencies: From Source OR Using Homebrew. 
 
 1. **From source**
 
@@ -174,6 +174,8 @@ After building dependencies using one of the following options, follow the instr
 2. **Homebrew** (assumes [Homebrew](https://brew.sh/) is already installed)
 
         ./scripts/macosx-build-homebrew.sh
+
+Finally follow the instructions in the *Compilation* section.
 
 ### Building for Linux/BSD
 
