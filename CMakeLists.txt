@@ -342,7 +342,8 @@ if (MSVC)
   target_compile_definitions(OpenSCAD PRIVATE _USE_MATH_DEFINES)
   target_compile_definitions(OpenSCAD PRIVATE NOMINMAX)
 
-  find_package(Eigen3 CONFIG REQUIRED)
+  # Our code is compatible with both V3 and V5, so for now, we accept any version.
+  find_package(Eigen3 REQUIRED QUIET)
   target_link_libraries(OpenSCAD PRIVATE Eigen3::Eigen)
   message(STATUS "Eigen: ${Eigen3_VERSION}")
 
@@ -389,10 +390,10 @@ else()
     endif()
   endif()
 
-  find_package(Eigen3 3.0 REQUIRED QUIET)
-  target_include_directories(OpenSCAD SYSTEM PRIVATE ${EIGEN3_INCLUDE_DIR})
-  target_compile_definitions(OpenSCAD PRIVATE EIGEN_DONT_ALIGN)
-  message(STATUS "Eigen: ${EIGEN3_VERSION}")
+  # Our code is compatible with both V3 and V5, so for now, we accept any version.
+  find_package(Eigen3 REQUIRED QUIET)
+  target_link_libraries(OpenSCAD PRIVATE Eigen3::Eigen)
+  message(STATUS "Eigen: ${Eigen3_VERSION}")
 
   find_package(Boost 1.70 REQUIRED QUIET COMPONENTS regex program_options)
   message(STATUS "Boost: ${Boost_VERSION}")
