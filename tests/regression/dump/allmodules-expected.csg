@@ -5,7 +5,7 @@ group();
 group();
 intersection();
 group() {
-	sphere($fn = 0, $fa = 12, $fs = 2, r = 1);
+	sphere($fn = 0, $fa = 12, $fs = 2, r = 1, style = "orig");
 }
 union();
 difference();
@@ -15,7 +15,7 @@ rotate_extrude(angle = 360, start = 180, convexity = 2, $fn = 0, $fa = 12, $fs =
 import(file = "", origin = [0, 0], scale = 1, center = false, convexity = 1, $fn = 0, $fa = 12, $fs = 2, timestamp = 0);
 group();
 cube(size = [1, 1, 1], center = false);
-sphere($fn = 0, $fa = 12, $fs = 2, r = 1);
+sphere($fn = 0, $fa = 12, $fs = 2, r = 1, style = "orig");
 cylinder($fn = 0, $fa = 12, $fs = 2, h = 1, r1 = 1, r2 = 1, center = false);
 polyhedron(points = [], faces = [], convexity = 1);
 square(size = [1, 1], center = false);
