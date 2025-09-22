@@ -17,7 +17,7 @@ jobs:
   build_and_test:
     strategy:
       matrix:
-        os: [macos-13, macos-latest]
+        os: [macos-15-intel, macos-latest]
         qt: [qt5, qt6]
         exclude:
           # macos-latest runs on arm64, which has a broken SW renderer
@@ -51,13 +51,6 @@ jobs:
       run: |
         brew unlink python3
         brew link --overwrite python3
-    - name: Workaround for https://github.com/actions/runner-images/pull/12791
-      run: |
-        if brew tap-info local/pinned; then
-          brew uninstall cmake
-          brew untap local/pinned
-          brew install cmake
-        fi
     - name: Install Homebrew packages
       env:
         HOMEBREW_NO_AUTO_UPDATE: 1

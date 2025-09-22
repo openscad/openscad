@@ -6,6 +6,8 @@
 #include "core/Expression.h"
 #include "core/SourceFile.h"
 
+#include "utils/printutils.h"
+
 #include <variant>
 #include <map>
 #include <utility>
@@ -531,7 +533,7 @@ std::unique_ptr<ParameterObject> ParameterObject::fromAssignment(const Assignmen
 ParameterObjects ParameterObjects::fromSourceFile(const SourceFile *sourceFile)
 {
   ParameterObjects output;
-  for (const auto& assignment : sourceFile->scope.assignments) {
+  for (const auto& assignment : sourceFile->scope->assignments) {
     std::unique_ptr<ParameterObject> parameter = ParameterObject::fromAssignment(assignment.get());
     if (parameter) {
       output.push_back(std::move(parameter));
@@ -576,7 +578,7 @@ void ParameterObjects::apply(SourceFile *sourceFile) const
     namedParameters[parameter->name()] = parameter.get();
   }
 
-  for (auto& assignment : sourceFile->scope.assignments) {
+  for (auto& assignment : sourceFile->scope->assignments) {
     if (namedParameters.count(assignment->getName())) {
       namedParameters[assignment->getName()]->apply(assignment.get());
     }

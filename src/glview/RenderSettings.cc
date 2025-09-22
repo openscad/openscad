@@ -12,7 +12,7 @@ std::string renderBackend3DToString(RenderBackend3D backend)
   }
 }
 
-RenderBackend3D renderBackend3DFromString(std::string backend)
+std::optional<RenderBackend3D> renderBackend3DFromString(std::string backend)
 {
   boost::algorithm::to_lower(backend);
   if (backend == "cgal") {
@@ -20,11 +20,7 @@ RenderBackend3D renderBackend3DFromString(std::string backend)
   } else if (backend == "manifold") {
     return RenderBackend3D::ManifoldBackend;
   } else {
-    if (!backend.empty()) {
-      LOG(message_group::Warning, "Unknown rendering backend '%1$s'. Using default '%2$s'.",
-          backend.c_str(), renderBackend3DToString(DEFAULT_RENDERING_BACKEND_3D).c_str());
-    }
-    return DEFAULT_RENDERING_BACKEND_3D;
+    return {};
   }
 }
 

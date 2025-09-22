@@ -5,17 +5,18 @@
 #include <memory>
 #include <vector>
 
-#include "core/Context.h"
-#include "core/LocalScope.h"
-
 class AbstractNode;
 class ScopeContext;
+template <typename T>
+class ContextHandle;
+class Context;
+class LocalScope;
 
 class Children
 {
 public:
-  Children(const LocalScope *children_scope, std::shared_ptr<const Context> context)
-    : children_scope(children_scope), context(std::move(context))
+  Children(std::shared_ptr<const LocalScope> children_scope, std::shared_ptr<const Context> context)
+    : children_scope(std::move(children_scope)), context(std::move(context))
   {
   }
 
@@ -32,12 +33,12 @@ public:
                                             const std::vector<size_t>& indices) const;
   // NOLINTEND(modernize-use-nodiscard)
 
-  [[nodiscard]] bool empty() const { return !children_scope->hasChildren(); }
-  [[nodiscard]] size_t size() const { return children_scope->moduleInstantiations.size(); }
+  bool empty() const;
+  size_t size() const;
   [[nodiscard]] const std::shared_ptr<const Context>& getContext() const { return context; }
 
 private:
-  const LocalScope *children_scope;
+  std::shared_ptr<const LocalScope> children_scope;
   std::shared_ptr<const Context> context;
 
   [[nodiscard]] ContextHandle<ScopeContext> scopeContext() const;

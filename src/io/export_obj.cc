@@ -30,6 +30,7 @@
 #include <ostream>
 #include <memory>
 
+#include "Feature.h"
 #include "geometry/Geometry.h"
 #include "geometry/PolySetUtils.h"
 #include "geometry/PolySet.h"

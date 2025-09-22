@@ -15,7 +15,10 @@ class ModuleInstantiation : public ASTNode
 public:
   ModuleInstantiation(std::string name, AssignmentList args = AssignmentList(),
                       const Location& loc = Location::NONE)
-    : ASTNode(loc), arguments(std::move(args)), modname(std::move(name))
+    : ASTNode(loc),
+      arguments(std::move(args)),
+      modname(std::move(name)),
+      scope(std::make_shared<LocalScope>())
   {
   }
 
@@ -32,7 +35,7 @@ public:
   bool isRoot() const { return this->tag_root; }
 
   AssignmentList arguments;
-  LocalScope scope;
+  const std::shared_ptr<LocalScope> scope;
 
   bool tag_root{false};
   bool tag_highlight{false};
@@ -50,10 +53,10 @@ public:
   {
   }
 
-  LocalScope *makeElseScope();
-  LocalScope *getElseScope() const { return this->else_scope.get(); }
+  std::shared_ptr<LocalScope> makeElseScope();
+  std::shared_ptr<LocalScope> getElseScope() const { return this->else_scope; }
   void print(std::ostream& stream, const std::string& indent, const bool inlined) const final;
 
 private:
-  std::unique_ptr<LocalScope> else_scope;
+  std::shared_ptr<LocalScope> else_scope;
 };

@@ -26,10 +26,11 @@
 
 #include <utility>
 #include <memory>
-#include "core/ModuleInstantiation.h"
-#include "core/node.h"
 #include "core/Builtins.h"
 #include "core/Children.h"
+#include "core/module.h"
+#include "core/ModuleInstantiation.h"
+#include "core/node.h"
 #include "core/Parameters.h"
 
 std::shared_ptr<AbstractNode> builtin_group(const ModuleInstantiation *inst, Arguments arguments,

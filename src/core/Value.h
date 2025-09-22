@@ -19,6 +19,7 @@
 
 class tostring_visitor;
 class tostream_visitor;
+class EvaluationSession;
 class Expression;
 class Value;
 

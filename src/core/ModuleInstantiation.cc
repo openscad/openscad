@@ -8,6 +8,7 @@
 #include "utils/compiler_specific.h"
 #include "core/Context.h"
 #include "core/Expression.h"
+#include "core/module.h"
 #include "utils/exceptions.h"
 #include "utils/printutils.h"
 
@@ -22,14 +23,14 @@ void ModuleInstantiation::print(std::ostream& stream, const std::string& indent,
     if (!arg->getName().empty()) stream << arg->getName() << " = ";
     stream << *arg->getExpr();
   }
-  if (scope.numElements() == 0) {
+  if (scope->numElements() == 0) {
     stream << ");\n";
-  } else if (scope.numElements() == 1) {
+  } else if (scope->numElements() == 1) {
     stream << ") ";
-    scope.print(stream, indent, true);
+    scope->print(stream, indent, true);
   } else {
     stream << ") {\n";
-    scope.print(stream, indent + "\t", false);
+    scope->print(stream, indent + "\t", false);
     stream << indent << "}\n";
   }
 }
@@ -88,8 +89,8 @@ std::shared_ptr<AbstractNode> ModuleInstantiation::evaluate(
   }
 }
 
-LocalScope *IfElseModuleInstantiation::makeElseScope()
+std::shared_ptr<LocalScope> IfElseModuleInstantiation::makeElseScope()
 {
-  this->else_scope = std::make_unique<LocalScope>();
-  return this->else_scope.get();
+  this->else_scope = std::make_shared<LocalScope>();
+  return this->else_scope;
 }

@@ -1,0 +1,11 @@
+# Workaround Gallium bugs
+if (${CMAKE_SYSTEM_PROCESSOR} MATCHES "ppc")
+  message(STATUS "Workaround PPC bug https://bugs.freedesktop.org/show_bug.cgi?id=42540")
+  list(APPEND CTEST_ENVIRONMENT "GALLIUM_DRIVER=softpipe")
+  list(APPEND CTEST_ENVIRONMENT "DRAW_USE_LLVM=no")
+endif()
+if (${CMAKE_SYSTEM_PROCESSOR} MATCHES "mips")
+  message(STATUS "Workaround MIPS bug https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=868745")
+  list(APPEND CTEST_ENVIRONMENT "GALLIUM_DRIVER=softpipe")
+  list(APPEND CTEST_ENVIRONMENT "DRAW_USE_LLVM=no")
+endif()

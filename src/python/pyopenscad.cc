@@ -276,8 +276,8 @@ void get_fnas(double& fn, double& fa, double& fs)
     }
   }
 
-  PyObjectUniquePtr varFs(PyObject_GetAttrString(mainModule, "fs"), PyObjectDeleter);
   if (PyObject_HasAttrString(mainModule, "fs")) {
+    PyObjectUniquePtr varFs(PyObject_GetAttrString(mainModule, "fs"), PyObjectDeleter);
     if (varFs.get() != nullptr) {
       fs = PyFloat_AsDouble(varFs.get());
     }

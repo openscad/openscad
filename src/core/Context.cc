@@ -33,6 +33,7 @@
 #include <vector>
 
 #include "core/AST.h"
+#include "core/EvaluationSession.h"
 #include "core/function.h"
 #include "utils/printutils.h"
 

@@ -25,13 +25,14 @@
  */
 
 #include "core/RotateExtrudeNode.h"
+
+#include "core/Builtins.h"
+#include "core/Children.h"
 #include "core/module.h"
 #include "core/ModuleInstantiation.h"
-#include "core/Children.h"
 #include "core/Parameters.h"
 #include "utils/printutils.h"
 #include "io/fileutils.h"
-#include "core/Builtins.h"
 #include "handle_dep.h"
 #include <ios>
 #include <utility>
@@ -55,7 +56,8 @@ std::shared_ptr<AbstractNode> builtin_rotate_extrude(const ModuleInstantiation *
   node->fs = parameters["$fs"].toDouble();
   node->fa = parameters["$fa"].toDouble();
 
-  node->convexity = static_cast<int>(parameters["convexity"].toDouble());
+  node->convexity = std::max(2, static_cast<int>(parameters["convexity"].toDouble()));
+
   // If an angle is specified, use it, defaulting to starting at zero.
   // If no angle is specified, use 360 and default to starting at 180.
   // Regardless, if a start angle is specified, use it.
@@ -73,8 +75,6 @@ std::shared_ptr<AbstractNode> builtin_rotate_extrude(const ModuleInstantiation *
         "In future releases, rotational extrusion without \"angle\" will start at zero, the +X axis.  "
         "Set start=180 to explicitly start on the -X axis.");
   }
-
-  if (node->convexity <= 0) node->convexity = 2;
 
   children.instantiate(node);
 
