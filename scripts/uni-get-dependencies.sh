@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 # auto-install dependency packages using the systems package manager.
 # after running this, run ./script/check-dependencies.sh. see README.md
@@ -113,7 +113,7 @@ get_debian_deps()
   libqt5gamepad5-dev libtbb-dev libxi-dev libxml2-dev libxmu-dev \
   libzip-dev nettle-dev ninja-build nodejs pkg-config python3-dev \
   python3-setuptools python3-venv ragel xvfb
- if [[ "$USE_QT6" == "1" ]]; then
+ if [ "$USE_QT6" = "1" ]; then
   get_qt6_deps_debian
  else
   get_qt5_deps_debian
