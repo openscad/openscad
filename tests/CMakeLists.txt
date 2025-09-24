@@ -2,7 +2,7 @@
 
 #set(DEBUG_OSCD 1) # print debug info during cmake
 
-cmake_minimum_required(VERSION 3.13)
+cmake_minimum_required(VERSION 3.21)
 # Explicitly use new include policy to avoid globally shadowing included modules
 # https://cmake.org/cmake/help/latest/policy/CMP0017.html
 cmake_policy(SET CMP0017 NEW)
@@ -21,6 +21,21 @@ set(CBD ${CMAKE_BINARY_DIR}) # build top level
 set(CSD ${CMAKE_SOURCE_DIR}) # project top level
 set(CCBD ${CMAKE_CURRENT_BINARY_DIR}) # tests build dir
 set(CCSD ${CMAKE_CURRENT_SOURCE_DIR}) # tests source dir
+
+function(disable_tests_safe)
+    # Only disable tests that actually exist
+    set(EXISTING_TESTS)
+    foreach(test_name IN LISTS ARGN)
+        if(TEST ${test_name})
+            list(APPEND EXISTING_TESTS ${test_name})
+        endif()
+    endforeach()
+
+    # Disable existing tests
+    if(EXISTING_TESTS)
+        set_tests_properties(${EXISTING_TESTS} PROPERTIES DISABLED TRUE)
+    endif()
+endfunction()
 
 # When configuring OpenSCADTests as a top-level project, we 
 # expect a self-contained OpenSCAD installation to exist.
