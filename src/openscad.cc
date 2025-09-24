@@ -838,7 +838,8 @@ int main(int argc, char **argv)
   // The original name as called, not resolving links and so on. This will
   // just forward everything to the python main.
   const auto applicationName = fs::path(argv[0]).filename().generic_string();
-  if (applicationName == PYTHON_EXECUTABLE_NAME) {
+  if (applicationName == "python" || applicationName == "python3" ||
+      applicationName.rfind("python3.", 0) == 0 || applicationName == "openscad-python") {
     return pythonRunArgs(argc, argv);
   }
 #endif
