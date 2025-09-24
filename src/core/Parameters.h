@@ -66,6 +66,9 @@ public:
   const std::string& documentRoot() const { return frame.documentRoot(); }
   const Location& location() const { return loc; }
 
+  static constexpr auto THIS_PARAMETER = "this";
+  static constexpr auto THIS_CONTEXT = "#THIS";
+
 private:
   Location loc;
   ContextFrame frame;
