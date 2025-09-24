@@ -1262,9 +1262,6 @@ add_output_file_test(relative-output FILE ${TEST_SCAD_DIR}/3D/features/cube-test
 add_output_file_test(relative-output FILE ${TEST_SCAD_DIR}/3D/features/cube-tests.scad FORMAT nef3)
 add_output_file_test(relative-output FILE ${TEST_SCAD_DIR}/3D/features/cube-tests.scad FORMAT nefdbg)
 
-  PROPERTIES DISABLED TRUE
-)
-
 if(NOT ENABLE_LIBFIVE)
   message(STATUS "LIBFIVE is not enabled. Skipping related tests.")
   disable_tests_safe(
