@@ -1,0 +1,101 @@
+extends:
+- base
+distros:
+  debian:
+    extends: null
+    packages:
+    - libqscintilla2-qt5-dev
+    - libqt5gamepad5-dev
+    - libqt5multimedia5-plugins
+    - libqt5opengl5-dev
+    - libqt5svg5-dev
+    - qt5-qmake
+    - qtbase5-dev
+    - qtmultimedia5-dev
+    - qttools5-dev
+  ubuntu:
+    extends: debian
+    packages: []
+  fedora:
+    extends: null
+    packages:
+    - qscintilla-qt5-devel
+    - qt5-qtbase-devel
+    - qt5-qtgamepad-devel
+    - qt5-qtmultimedia-devel
+    - qt5-qtsvg-devel
+    - qt5-qttools-devel
+  arch:
+    extends: null
+    packages:
+    - qscintilla-qt5
+    - qt5-base
+    - qt5-gamepad
+    - qt5-multimedia
+    - qt5-svg
+    - qt5-tools
+  opensuse:
+    extends: null
+    packages:
+    - libqscintilla_qt5-devel
+    - libQt5Core-devel
+    - libQt5Gamepad5-devel
+    - libQt5Multimedia5-devel
+    - libQt5OpenGL-devel
+    - libQt5Widgets-devel
+  gentoo:
+    extends: null
+    packages:
+    - x11-libs/qscintilla[qt5]
+    - dev-qt/qtcore:5
+    - dev-qt/qtgamepad:5
+    - dev-qt/qtgui:5
+    - dev-qt/qtmultimedia:5
+    - dev-qt/qtopengl:5
+    - dev-qt/qtwidgets:5
+  freebsd:
+    extends: null
+    packages:
+    - qt5-core
+    - qt5-gamepad
+    - qt5-multimedia
+    - qt5-opengl
+    - qt5-widgets
+  netbsd:
+    extends: null
+    packages:
+    - qt5-qtbase
+    - qt5-qtmultimedia
+  macos:
+    extends: null
+    packages:
+    - qt@5
+  mageia:
+    extends: null
+    packages:
+    - lib64qt5core-devel
+    - lib64qt5gamepad-devel
+    - lib64qt5multimedia-devel
+    - lib64qt5opengl-devel
+    - lib64qt5widgets-devel
+  solus:
+    extends: null
+    packages:
+    - qt5-base-devel
+    - qt5-multimedia-devel
+  altlinux:
+    extends: null
+    packages:
+    - libqt5-core
+    - qt5-gamepad-devel
+    - qt5-multimedia-devel
+    - qt5-opengl-devel
+    - qt5-widgets-devel
+  qomo:
+    extends: null
+    packages:
+    - qscintilla-qt5-devel
+    - qt5-qtbase-devel
+    - qt5-qtgamepad-devel
+    - qt5-qtmultimedia-devel
+    - qt5-qtsvg-devel
