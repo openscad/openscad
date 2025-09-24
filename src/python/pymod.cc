@@ -170,6 +170,7 @@ int pythonRunModule(const std::string& appPath, const std::string& module,
   if (PyStatus_Exception(status)) {
     goto done;
   }
+  PyConfig_Clear(&config);
 
   return Py_RunMain();
 
