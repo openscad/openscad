@@ -20,6 +20,7 @@ public:
   virtual int pointMember(std::vector<Vector3d>& vertices, Vector3d pt);
 
   double r;
+
 private:
   virtual int operator==(const Surface& other) { return 0; }
 };

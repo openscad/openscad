@@ -80,7 +80,7 @@ void PyOpenSCADObject_dealloc(PyOpenSCADObject *self)
 
 PyObject *PyOpenSCADObject_alloc(PyTypeObject *cls, Py_ssize_t nitems)
 {
-  PyOpenSCADObject *self = (PyOpenSCADObject *) PyType_GenericAlloc(cls, nitems);
+  PyOpenSCADObject *self = (PyOpenSCADObject *)PyType_GenericAlloc(cls, nitems);
   self->dict = PyDict_New();
   PyObject *origin = PyList_New(4);
   for (int i = 0; i < 4; i++) {
@@ -949,6 +949,8 @@ void finishPython(void)
   show_final();
 }
 
+int debug_num, debug_cnt;  // Hidden debug aid
+
 std::string evaluatePython(const std::string& code, bool dry_run)
 {
   std::string error;
@@ -1253,7 +1255,7 @@ int Py_RunMain_ipython(void)
   pymain_run_python_ipython(&exitcode);
 
   if (Py_FinalizeEx() < 0) {
-      exitcode = 120;
+    exitcode = 120;
   }
 
   //    pymain_free();

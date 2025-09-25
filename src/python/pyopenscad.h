@@ -67,3 +67,4 @@ extern PyMethodDef PyOpenSCADMethods[];
 
 extern PyObjectUniquePtr pythonInitDict;
 extern PyObjectUniquePtr pythonMainModule;
+extern int debug_num, debug_cnt;
