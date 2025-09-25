@@ -8,14 +8,15 @@ if(USE_IMAGE_COMPARE_PY)
   # how to utilize the venv
   find_path(VENV_BIN_PATH activate PATHS "${VENV_DIR}/bin" "${VENV_DIR}/Scripts" NO_DEFAULT_PATH NO_CACHE)
   if(WIN32)
-    set(IMAGE_COMPARE_EXE "${VENV_BIN_PATH}/python.exe -Xutf8=1")
+    set(IMAGE_COMPARE_EXE "${VENV_BIN_PATH}/python.exe")
   else()
-    set(IMAGE_COMPARE_EXE "${VENV_BIN_PATH}/python -Xutf8=1")
+    set(IMAGE_COMPARE_EXE "${VENV_BIN_PATH}/python")
   endif()
+  set(IMAGE_COMPARE_OPTS "-Xutf8=1")
   if(EXISTS "${IMAGE_COMPARE_EXE}")
     message(STATUS "venv found, testing libraries")
     execute_process(
-      COMMAND "${IMAGE_COMPARE_EXE}" "${CCSD}/image_compare.py" "--status"
+      COMMAND "${IMAGE_COMPARE_EXE}" ${IMAGE_COMPARE_OPTS} "${CCSD}/image_compare.py" "--status"
       WORKING_DIRECTORY "${CCSD}" ERROR_QUIET RESULT_VARIABLE ret)
     if(ret AND NOT ret EQUAL 0)
       message(STATUS "venv libraries incomplete")
@@ -38,17 +39,18 @@ if(USE_IMAGE_COMPARE_PY)
     # how to utilize the venv
     find_path(VENV_BIN_PATH activate PATHS "${VENV_DIR}/bin" "${VENV_DIR}/Scripts" NO_DEFAULT_PATH NO_CACHE)
     if(WIN32)
-      set(IMAGE_COMPARE_EXE "${VENV_BIN_PATH}/python.exe -Xutf8=1")
+      set(IMAGE_COMPARE_EXE "${VENV_BIN_PATH}/python.exe")
     else()
-      set(IMAGE_COMPARE_EXE "${VENV_BIN_PATH}/python -Xutf8=1")
+      set(IMAGE_COMPARE_EXE "${VENV_BIN_PATH}/python")
     endif()
+    set(IMAGE_COMPARE_OPTS "-Xutf8=1")
     execute_process(
-      COMMAND "${IMAGE_COMPARE_EXE}" "-m" "ensurepip"
+      COMMAND "${IMAGE_COMPARE_EXE}" ${IMAGE_COMPARE_OPTS} "-m" "ensurepip"
       WORKING_DIRECTORY "${CCBD}"
       OUTPUT_QUIET
       ERROR_QUIET)
     execute_process(
-      COMMAND "${IMAGE_COMPARE_EXE}" "-m" "pip" "install" "numpy" "Pillow"
+      COMMAND "${IMAGE_COMPARE_EXE}" ${IMAGE_COMPARE_OPTS} "-m" "pip" "install" "numpy" "Pillow"
       WORKING_DIRECTORY "${CCBD}"
       OUTPUT_QUIET
       ERROR_QUIET)
@@ -56,7 +58,7 @@ if(USE_IMAGE_COMPARE_PY)
   set(COMPARATOR "--comparator=image_compare")
   if(BUILD_VENV)
     execute_process(
-      COMMAND "${IMAGE_COMPARE_EXE}" "${CCSD}/image_compare.py" "--status"
+      COMMAND "${IMAGE_COMPARE_EXE}" ${IMAGE_COMPARE_OPTS} "${CCSD}/image_compare.py" "--status"
       WORKING_DIRECTORY "${CCSD}" RESULT_VARIABLE ret)
     if(ret AND NOT ret EQUAL 0)
       message(WARNING "Failed to setup the test suite venv for ${IMAGE_COMPARE_EXE}  See doc/testing.txt for dependency information.")
