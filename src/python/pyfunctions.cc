@@ -2377,6 +2377,29 @@ PyObject *python__getitem__(PyObject *obj, PyObject *key)
         return size_list;
       }
       return Py_None;
+    } else if (keystr == "position") {
+      PyObject *dummydict;
+      std::shared_ptr<AbstractNode> child = PyOpenSCADObjectToNodeMulti(obj, &dummydict);
+      if (child == NULL) {
+        return Py_None;
+      }
+      Tree tree(child, "");
+      GeometryEvaluator geomevaluator(tree);
+      std::shared_ptr<const Geometry> geom = geomevaluator.evaluateGeometry(*tree.root(), true);
+      std::shared_ptr<const PolySet> ps = PolySetUtils::getGeometryAsPolySet(geom);
+
+      if (ps != nullptr && ps->vertices.size() > 0) {
+        Vector3d pmin = ps->vertices[0];
+        for (const auto& pt : ps->vertices) {
+          for (int i = 0; i < 3; i++) {
+            if (pt[i] < pmin[i]) pmin[i] = pt[i];
+          }
+        }
+        PyObject *position_list = python_fromvector(pmin);
+        Py_INCREF(position_list);
+        return position_list;
+      }
+      return Py_None;
     }
   } else Py_INCREF(result);
   return result;
