@@ -2351,20 +2351,32 @@ PyObject *python__getitem__(PyObject *obj, PyObject *key)
       if (trans != nullptr) matrix = trans->matrix.matrix();
       result = python_frommatrix(matrix);
     } else if (keystr == "size") {
-      PyObject *bbox;
-      bbox = python_bbox_core(obj);
-      if (bbox == Py_None) {
+      PyObject *dummydict;
+      std::shared_ptr<AbstractNode> child = PyOpenSCADObjectToNodeMulti(obj, &dummydict);
+      if (child == NULL) {
         return Py_None;
       }
-      PyObject *negative_ones = Py_BuildValue("[f,f,f]", -1.0, -1.0, -1.0);
-      if (!negative_ones) {
-        return Py_None;
+      Tree tree(child, "");
+      GeometryEvaluator geomevaluator(tree);
+      std::shared_ptr<const Geometry> geom = geomevaluator.evaluateGeometry(*tree.root(), true);
+      std::shared_ptr<const PolySet> ps = PolySetUtils::getGeometryAsPolySet(geom);
+
+      if (ps != nullptr && ps->vertices.size() > 0) {
+        Vector3d pmin = ps->vertices[0];
+        Vector3d pmax = pmin;
+        for (const auto& pt : ps->vertices) {
+          for (int i = 0; i < 3; i++) {
+            if (pt[i] > pmax[i]) pmax[i] = pt[i];
+            if (pt[i] < pmin[i]) pmin[i] = pt[i];
+          }
+        }
+        // Calculate size directly
+        Vector3d size = pmax - pmin;
+        PyObject *size_list = python_fromvector(size);
+        Py_INCREF(size_list);
+        return size_list;
       }
-      PyObject *size = python_nb_sub_vec3(PyTuple_GetItem(bbox, 1),
-                                          python_scale_core(PyTuple_GetItem(bbox, 0), negative_ones), 0);
-      Py_DECREF(negative_ones);
-      Py_INCREF(size);
-      return size;
+      return Py_None;
     }
   } else Py_INCREF(result);
   return result;
