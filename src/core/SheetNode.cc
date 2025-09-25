@@ -52,12 +52,15 @@
 #include <vector>
 #include <unordered_map>
 
-std::unique_ptr<const Geometry> sheetCreateFuncGeometry(void *funcptr, double imin, double imax, double jmin, double jmax, double fs, bool ispan, bool jspan);
+std::unique_ptr<const Geometry> sheetCreateFuncGeometry(void *funcptr, double imin, double imax,
+                                                        double jmin, double jmax, double fs, bool ispan,
+                                                        bool jspan);
 
 std::unique_ptr<const Geometry> SheetNode::createGeometry() const
 {
 #ifdef ENABLE_PYTHON
-  return sheetCreateFuncGeometry(this->func, this->imin, this->imax, this->jmin, this->jmax, fs, this->ispan, this->jspan);
+  return sheetCreateFuncGeometry(this->func, this->imin, this->imax, this->jmin, this->jmax, fs,
+                                 this->ispan, this->jspan);
 #endif
   PolySetBuilder builder(0, 0);
   return builder.build();
@@ -67,14 +70,9 @@ std::string SheetNode::toString() const
 {
   std::ostringstream stream;
 
-  stream << this->name() << "(func = " << rand()
-         << ", fs = " << (this->fs)
-         << ", imin = " << (this->imin)
-         << ", imax = " << (this->imax)
-         << ", jmin = " << (this->jmin)
-         << ", jmax = " << (this->jmax) 
-         << ", ispan = " << (this->ispan) 
-         << ", jspan = " << (this->jspan) ;
+  stream << this->name() << "(func = " << rand() << ", fs = " << (this->fs)
+         << ", imin = " << (this->imin) << ", imax = " << (this->imax) << ", jmin = " << (this->jmin)
+         << ", jmax = " << (this->jmax) << ", ispan = " << (this->ispan)
+         << ", jspan = " << (this->jspan);
   return stream.str();
 }
-

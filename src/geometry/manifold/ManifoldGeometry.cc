@@ -83,8 +83,7 @@ std::string ManifoldGeometry::dump() const
   std::ostringstream out;
   auto& manifold = getManifold();
   auto meshgl = manifold.GetMeshGL64();
-  out << "Manifold:"
-      << "\n status: " << ManifoldUtils::statusToString(manifold.Status())
+  out << "Manifold:" << "\n status: " << ManifoldUtils::statusToString(manifold.Status())
       << "\n genus: " << manifold.Genus() << "\n num vertices: " << meshgl.NumVert()
       << "\n num polygons: " << meshgl.NumTri() << "\n polygons data:";
 

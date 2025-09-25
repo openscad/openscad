@@ -59,9 +59,9 @@ std::string RoofNode::toString() const
 {
   std::stringstream stream;
 
-  stream << "roof(method = \"" << this->method << "\""
-         << ", $fa = " << this->fa << ", $fs = " << this->fs << ", $fn = " << this->fn
-         << ", convexity = " << this->convexity << ")";
+  stream << "roof(method = \"" << this->method << "\"" << ", $fa = " << this->fa
+         << ", $fs = " << this->fs << ", $fn = " << this->fn << ", convexity = " << this->convexity
+         << ")";
 
   return stream.str();
 }

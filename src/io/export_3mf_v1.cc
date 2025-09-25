@@ -488,9 +488,9 @@ void export_3mf(const std::vector<struct Export3mfPartInfo>& infos, std::ostream
       if (ctx.model) lib3mf_release(model);
       return;
     }
-//  if (!append_3mf(geom, ctx)) {
-//    if (ctx.model) lib3mf_release(model);
-//    return;
+    //  if (!append_3mf(geom, ctx)) {
+    //    if (ctx.model) lib3mf_release(model);
+    //    return;
   }
 
   PLib3MFModelWriter *writer;

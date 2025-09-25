@@ -89,7 +89,7 @@ void export_wrl(const std::shared_ptr<const Geometry>& geom, std::ostream& outpu
       float r, g, b, a;
       if (!color.getRgba(r, g, b, a)) {
         LOG(message_group::Error, "Invalid color in WRL export");
-	return;
+        return;
       }
       // Alpha channel ignored as WRL colours are RGB not RGBA
       output << " " << r << " " << g << " " << b << ",\n";

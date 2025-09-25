@@ -1380,9 +1380,7 @@ std::ostream& operator<<(std::ostream& stream, const RangeType& r)
 
 std::ostream& operator<<(std::ostream& stream, const PythonClassType& r)
 {
-  return stream << "["
-                << "pythonclass"
-                << "]";
+  return stream << "[" << "pythonclass" << "]";
 }
 
 // called by clone()

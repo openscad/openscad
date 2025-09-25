@@ -949,6 +949,8 @@ void finishPython(void)
   show_final();
 }
 
+int debug_num, debug_cnt;  // Hidden debug aid
+
 std::string evaluatePython(const std::string& code, bool dry_run)
 {
   std::string error;
