@@ -7,3 +7,4 @@ echo(data["array-string"]); // ECHO: ["one", "two", "three"]
 echo(data.object.name); // ECHO: "The object name"
 echo(data.object.nested.value); // ECHO: 42
 
+echo(import("../../json/☠-data.json"));

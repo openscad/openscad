@@ -621,6 +621,10 @@ list(REMOVE_ITEM PREVIEW_COMMON_FILES
   ${PREVIEW_DIFFERENT_EXPECTATIONS}
 )
 
+list(APPEND PREVIEW_ERRORS
+  ${TEST_SCAD_DIR}/misc/utf8-import.scad
+)
+
 list(APPEND ALL_THROWNTOGETHER_FILES ${ALL_RENDER_FILES})
 list(REMOVE_ITEM ALL_THROWNTOGETHER_FILES
   ${PREVIEW_DIFFERENT_EXPECTATIONS}
@@ -781,6 +785,7 @@ endif()
 
 add_cmdline_test(preview-cgal    OPENSCAD FILES ${PREVIEW_COMMON_FILES} EXPECTEDDIR preview SUFFIX png ARGS --backend=cgal)
 add_cmdline_test(preview-cgal    OPENSCAD FILES ${PREVIEW_DIFFERENT_EXPECTATIONS} SUFFIX png ARGS --backend=cgal)
+add_cmdline_test(preview-cgal    OPENSCAD FILES ${PREVIEW_ERRORS} SUFFIX png ARGS --backend=cgal)
 if (ENABLE_MANIFOLD_TESTS)
 add_cmdline_test(preview-manifold OPENSCAD SUFFIX png FILES ${PREVIEW_COMMON_FILES} EXPECTEDDIR preview ARGS --backend=manifold)
 add_cmdline_test(preview-manifold OPENSCAD SUFFIX png FILES ${PREVIEW_DIFFERENT_EXPECTATIONS} ARGS --backend=manifold)
