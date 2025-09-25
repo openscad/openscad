@@ -2576,42 +2576,48 @@ PyObject *python_oo_mesh(PyObject *obj, PyObject *args, PyObject *kwargs)
 
 PyObject *python_bbox_core(PyObject *obj)
 {
-  PyObject *dummydict;
-  std::shared_ptr<AbstractNode> child = PyOpenSCADObjectToNodeMulti(obj, &dummydict);
-  if (child == NULL) {
-    PyErr_SetString(PyExc_TypeError, "Invalid type for  Object in bbox \n");
+  // Get position and size attributes from the object
+  PyObject *position_key = PyUnicode_FromString("position");
+  PyObject *size_key = PyUnicode_FromString("size");
+
+  PyObject *position = python__getitem__(obj, position_key);
+  PyObject *size = python__getitem__(obj, size_key);
+
+  Py_DECREF(position_key);
+  Py_DECREF(size_key);
+
+  if (position == Py_None || size == Py_None) {
+    if (position != Py_None) Py_DECREF(position);
+    if (size != Py_None) Py_DECREF(size);
+    return Py_None;
+  }
+
+  // Create cube with the size, not centered (starts at origin [0,0,0])
+  PyObject *cube_args = PyTuple_New(0);
+  PyObject *cube_kwargs = PyDict_New();
+  PyDict_SetItemString(cube_kwargs, "size", size);
+  PyDict_SetItemString(cube_kwargs, "center", Py_False);
+
+  PyObject *cube = python_cube(NULL, cube_args, cube_kwargs);
+  if (cube == NULL) {
+    Py_DECREF(position);
+    Py_DECREF(size);
+    Py_DECREF(cube_args);
+    Py_DECREF(cube_kwargs);
     return NULL;
   }
-  Tree tree(child, "");
-  GeometryEvaluator geomevaluator(tree);
-  std::shared_ptr<const Geometry> geom = geomevaluator.evaluateGeometry(*tree.root(), true);
-  std::shared_ptr<const PolySet> ps = PolySetUtils::getGeometryAsPolySet(geom);
 
-  if (ps != nullptr && ps->vertices.size() > 0) {
-    Vector3d pmin = ps->vertices[0];
-    Vector3d pmax = pmin;
-    for (const auto& pt : ps->vertices) {
-      for (int i = 0; i < 3; i++) {
-        if (pt[i] > pmax[i]) pmax[i] = pt[i];
-        if (pt[i] < pmin[i]) pmin[i] = pt[i];
-      }
-    }
-    // Now create Python Vectors
-    PyObject *ptmin = PyList_New(3);
-    PyObject *ptmax = PyList_New(3);
-    for (int i = 0; i < 3; i++) {
-      PyList_SetItem(ptmin, i, PyFloat_FromDouble(pmin[i]));
-      PyList_SetItem(ptmax, i, PyFloat_FromDouble(pmax[i]));
-    }
-    Py_XINCREF(ptmin);
-    Py_XINCREF(ptmax);
+  // Translate cube to the object's position
+  PyObject *bbox_box = python_translate_core(cube, position);
 
-    PyObject *result = PyTuple_New(2);
-    PyTuple_SetItem(result, 0, ptmin);
-    PyTuple_SetItem(result, 1, ptmax);
-    return result;
-  }
-  return Py_None;
+  // Clean up
+  Py_DECREF(position);
+  Py_DECREF(size);
+  Py_DECREF(cube_args);
+  Py_DECREF(cube_kwargs);
+  Py_DECREF(cube);
+
+  return bbox_box;
 }
 
 PyObject *python_bbox(PyObject *self, PyObject *args, PyObject *kwargs)
