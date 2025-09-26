@@ -1204,6 +1204,9 @@ int main(int argc, char **argv)
   return rc;
 }
 
+// C++ does not currently have a fully-endorsed way to translate UTF-16 wchar_t to UTF-8 std::string.
+// std::codevct is deprecated without a replacement, but still works.  We'll isolate it here in
+// this one function for easy replacement later, and suppress the deprecation warning.
 #ifdef _WIN32
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
@@ -1211,6 +1214,8 @@ static std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>, wchar_t> convert_w
 #pragma GCC diagnostic pop
 std::string wchar_to_string(wchar_t *wcp) { return convert_wchar.to_bytes(wcp); }
 
+// wmain gets arguments as wide character strings, which is the way that Windows likes to provide
+// non-ASCII arguments.  Convert them to UTF-8 strings and call the traditional main().
 int wmain(int argc, wchar_t **argv)
 {
   char *argv8[argc + 1];

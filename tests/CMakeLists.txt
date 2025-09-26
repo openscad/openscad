@@ -203,10 +203,17 @@ file(GLOB_RECURSE BUGS_2D_FILES    ${TEST_SCAD_DIR}/bugs2D/*.scad)
 file(GLOB SCAD_DXF_FILES      ${TEST_SCAD_DIR}/dxf/*.scad
   ${TEST_SCAD_DIR}/misc/utf8-☠-2D.scad
 )
-file(GLOB SCAD_PDF_FILES      ${TEST_SCAD_DIR}/pdf/*.scad
-  # GhostScript can't handle the names.
-  # ${TEST_SCAD_DIR}/misc/utf8-☠-2D.scad
-)
+
+file(GLOB SCAD_PDF_FILES      ${TEST_SCAD_DIR}/pdf/*.scad)
+#if(NOT MINGW)
+#   GhostScript on MSYS2/MINGW can't handle the names.
+#   It's probably OK on other platforms, but I can't conveniently create the
+#   "expected" file.
+#  list(APPEND SCAD_PDF_FILES
+#    ${TEST_SCAD_DIR}/misc/utf8-☠-2D.scad
+#  )
+#endif()
+
 file(GLOB SCAD_SVG_FILES      ${TEST_SCAD_DIR}/svg/svg-spec/*.scad
   ${TEST_SCAD_DIR}/svg/box-w-holes-2d.scad
   ${TEST_SCAD_DIR}/svg/display.scad
@@ -621,6 +628,9 @@ list(REMOVE_ITEM PREVIEW_COMMON_FILES
   ${PREVIEW_DIFFERENT_EXPECTATIONS}
 )
 
+# This is a list of tests that are expected to generate errors when the
+# geometry is actually evaluated (because files in the operations are
+# inaccessible).  It only needs to be tested against one preview variation.
 list(APPEND PREVIEW_ERRORS
   ${TEST_SCAD_DIR}/misc/utf8-import.scad
 )

@@ -1,3 +1,4 @@
+// Test various imports of files with non-ASCII names.
 // Note that the resulting image is actually of no interest.
 // However, any interesting errors in these imports happen
 // during geometry processing, so we can't just be an

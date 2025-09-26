@@ -42,7 +42,8 @@ avoid running cmd.exe (so save some resources).
 The Windows console that you get from CMD can be set to different encodings.
 SetConsoleOutputCP(CP_UTF8) will set it to support UTF-8, but that is a
 persistent setting and so seems rude.  Perhaps we should save its state,
-set it, and restore it when we're done.
+set it, and restore it when we're done.  You can manually set it to UTF-8
+using "chcp 65001".
 */
 
 #include <windows.h>
