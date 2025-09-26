@@ -1154,6 +1154,7 @@ PyObject *rotate_extrude_core(PyObject *obj, int convexity, double scale, double
   if (!isnan(fs)) node->fs = fs;
 
   node->convexity = convexity;
+  node->angle = angle;
 
   double dummy;
   Vector3d v(0, 0, 0);
