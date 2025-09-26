@@ -757,7 +757,7 @@ PyObject *python_polyhedron(PyObject *self, PyObject *args, PyObject *kwargs)
   }
 
   if (colors != NULL && PyList_Check(colors)) {
-    if ((size_t) PyList_Size(colors) != node->faces.size()) {
+    if ((size_t)PyList_Size(colors) != node->faces.size()) {
       PyErr_SetString(PyExc_TypeError, "when specified must match number of faces");
       return NULL;
     }
@@ -1208,7 +1208,7 @@ PyObject *python_explode(PyObject *self, PyObject *args, PyObject *kwargs)
     PyErr_SetString(PyExc_TypeError, "Error during parsing explode(object, list)");
     return NULL;
   }
-  return python_nb_sub_vec3(obj, val_v, 3); 
+  return python_nb_sub_vec3(obj, val_v, 3);
 }
 
 PyObject *python_oo_explode(PyObject *obj, PyObject *args, PyObject *kwargs)
@@ -1219,7 +1219,7 @@ PyObject *python_oo_explode(PyObject *obj, PyObject *args, PyObject *kwargs)
     PyErr_SetString(PyExc_TypeError, "Error during parsing explode(object, list)");
     return NULL;
   }
-  return python_nb_sub_vec3(obj, val_v, 3); 
+  return python_nb_sub_vec3(obj, val_v, 3);
 }
 
 PyObject *python_number_rot(PyObject *mat, Matrix3d rotvec, int vecs)
@@ -1680,9 +1680,7 @@ PyObject *python_math_sub2(PyObject *self, PyObject *args, PyObject *kwargs, int
 
   switch (mode) {
   case 0: return PyFloat_FromDouble(vec31.dot(vec32)); break;
-  case 1:
-    return python_fromvector(vec31.cross(vec32));
-    break;
+  case 1: return python_fromvector(vec31.cross(vec32)); break;
   }
   return Py_None;
 }
@@ -1973,11 +1971,11 @@ PyObject *python_show_core(PyObject *obj)
     PyErr_SetString(PyExc_TypeError, "Invalid type for Object in show");
     return NULL;
   }
-  if(child == void_node) {
-    return nullptr; 
+  if (child == void_node) {
+    return nullptr;
   }
 
-  if(child == full_node) {
+  if (child == full_node) {
     PyErr_SetString(PyExc_TypeError, "Cannot display infinite space");
     return nullptr;
   }
@@ -2094,8 +2092,9 @@ void python_export_obj_att(std::ostream& output)
 PyObject *python_export_core(PyObject *obj, char *file)
 {
   std::string filename;
-  if(python_scriptpath.string().size() > 0) filename  = lookup_file(file, python_scriptpath.parent_path().u8string(), "."); // TODO problem hbier
-  else filename = file;														   
+  if (python_scriptpath.string().size() > 0)
+    filename = lookup_file(file, python_scriptpath.parent_path().u8string(), ".");  // TODO problem hbier
+  else filename = file;
   const auto path = fs::path(filename);
   std::string suffix = path.has_extension() ? path.extension().generic_string().substr(1) : "";
   boost::algorithm::to_lower(suffix);
@@ -2855,7 +2854,7 @@ PyObject *python_faces_core(PyObject *obj, bool tessellate)
 
       // check if there are holes
       for (size_t k = 0; k < inds.size(); k++) {
-        if ((size_t) face_parents[k] == j) {
+        if ((size_t)face_parents[k] == j) {
           auto& hole = inds[k];
 
           std::vector<size_t> path;
@@ -3634,25 +3633,27 @@ PyObject *python_oo_path_extrude(PyObject *obj, PyObject *args, PyObject *kwargs
                            fa, fs);
 }
 
-PyObject *python_csg_core(std::shared_ptr<CsgOpNode> &node, const std::vector<std::shared_ptr<AbstractNode>> &childs)
+PyObject *python_csg_core(std::shared_ptr<CsgOpNode>& node,
+                          const std::vector<std::shared_ptr<AbstractNode>>& childs)
 {
   PyTypeObject *type = &PyOpenSCADType;
-  for(size_t i=0;i<childs.size();i++ ) {	
-    const auto &child = childs[i];	  
+  for (size_t i = 0; i < childs.size(); i++) {
+    const auto& child = childs[i];
     if (child.get() == void_node.get()) {
-      if(node->type == OpenSCADOperator::DIFFERENCE && i == 0) return PyOpenSCADObjectFromNode(type, void_node);
-      if(node->type == OpenSCADOperator::INTERSECTION) return PyOpenSCADObjectFromNode(type, void_node);
+      if (node->type == OpenSCADOperator::DIFFERENCE && i == 0)
+        return PyOpenSCADObjectFromNode(type, void_node);
+      if (node->type == OpenSCADOperator::INTERSECTION) return PyOpenSCADObjectFromNode(type, void_node);
     } else if (child.get() == full_node.get()) {
-      if(node->type == OpenSCADOperator::UNION) return PyOpenSCADObjectFromNode(type, full_node);
-      if(node->type == OpenSCADOperator::DIFFERENCE) { 
-        if(i == 0) return PyOpenSCADObjectFromNode(type, full_node); // eigentlich negativ
-	  else return PyOpenSCADObjectFromNode(type, void_node);
+      if (node->type == OpenSCADOperator::UNION) return PyOpenSCADObjectFromNode(type, full_node);
+      if (node->type == OpenSCADOperator::DIFFERENCE) {
+        if (i == 0) return PyOpenSCADObjectFromNode(type, full_node);  // eigentlich negativ
+        else return PyOpenSCADObjectFromNode(type, void_node);
       }
     } else node->children.push_back(child);
-  }  
+  }
   return PyOpenSCADObjectFromNode(type, node);
 }
-	
+
 PyObject *python_csg_sub(PyObject *self, PyObject *args, PyObject *kwargs, OpenSCADOperator mode)
 {
   DECLARE_INSTANCE
@@ -3696,26 +3697,26 @@ PyObject *python_csg_sub(PyObject *self, PyObject *args, PyObject *kwargs, OpenS
       child_solid.push_back(child);
     } else {
       switch (mode) {
-        case OpenSCADOperator::UNION:
-          PyErr_SetString(PyExc_TypeError,
+      case OpenSCADOperator::UNION:
+        PyErr_SetString(PyExc_TypeError,
                         "Error during parsing union. arguments must be solids or arrays.");
-          return nullptr;
-          break;
-        case OpenSCADOperator::DIFFERENCE:
-          PyErr_SetString(PyExc_TypeError,
+        return nullptr;
+        break;
+      case OpenSCADOperator::DIFFERENCE:
+        PyErr_SetString(PyExc_TypeError,
                         "Error during parsing difference. arguments must be solids or arrays.");
-          return nullptr;
-          break;
-        case OpenSCADOperator::INTERSECTION:
-          PyErr_SetString(PyExc_TypeError,
+        return nullptr;
+        break;
+      case OpenSCADOperator::INTERSECTION:
+        PyErr_SetString(PyExc_TypeError,
                         "Error during parsing intersection. arguments must be solids or arrays.");
-          return nullptr;
-          break;
-        case OpenSCADOperator::MINKOWSKI: break;
-        case OpenSCADOperator::HULL:      break;
-        case OpenSCADOperator::FILL:      break;
-        case OpenSCADOperator::RESIZE:    break;
-        case OpenSCADOperator::OFFSET:    break;
+        return nullptr;
+        break;
+      case OpenSCADOperator::MINKOWSKI: break;
+      case OpenSCADOperator::HULL:      break;
+      case OpenSCADOperator::FILL:      break;
+      case OpenSCADOperator::RESIZE:    break;
+      case OpenSCADOperator::OFFSET:    break;
       }
       return NULL;
     }
@@ -3798,7 +3799,7 @@ PyObject *python_oo_csg_sub(PyObject *self, PyObject *args, PyObject *kwargs, Op
     child = PyOpenSCADObjectToNodeMulti(obj, &dict);
     child_dict.push_back(dict);
     if (child != NULL) {
-      child_solid.push_back(child);   
+      child_solid.push_back(child);
     } else {
       switch (mode) {
       case OpenSCADOperator::UNION:
@@ -3862,13 +3863,12 @@ PyObject *python_nb_sub(PyObject *arg1, PyObject *arg2, OpenSCADOperator mode)
   if (arg2 == Py_None && mode == OpenSCADOperator::UNION) return arg1;
   if (arg2 == Py_None && mode == OpenSCADOperator::DIFFERENCE) return arg1;
 
-
   for (int i = 0; i < 2; i++) {
     PyObject *dict;
     dict = nullptr;
     auto solid = PyOpenSCADObjectToNodeMulti(i == 1 ? arg2 : arg1, &dict);
     child_dict.push_back(dict);
-    if(solid != nullptr) child.push_back(solid);
+    if (solid != nullptr) child.push_back(solid);
     else {
       PyErr_SetString(PyExc_TypeError, "invalid argument left to operator");
       return NULL;
@@ -3892,9 +3892,7 @@ PyObject *python_nb_sub(PyObject *arg1, PyObject *arg2, OpenSCADOperator mode)
             PyUnicode_FromStringAndSize(handle_name.c_str(), strlen(handle_name.c_str()));
           PyDict_SetItem(((PyOpenSCADObject *)pyresult)->dict, key_mod, value);
         } else PyDict_SetItem(((PyOpenSCADObject *)pyresult)->dict, key, value);
-
       }
-
     }
   }
   return pyresult;
@@ -4005,14 +4003,14 @@ PyObject *python_nb_add(PyObject *arg1, PyObject *arg2)
   return python_nb_sub_vec3(arg1, arg2, 0);
 }  // translate
 
-PyObject *python_nb_xor(PyObject *arg1, PyObject *arg2) {
+PyObject *python_nb_xor(PyObject *arg1, PyObject *arg2)
+{
   PyObject *dummy_dict;
   if (PyObject_IsInstance(arg2, reinterpret_cast<PyObject *>(&PyOpenSCADType))) {
     auto node1 = PyOpenSCADObjectToNode(arg1, &dummy_dict);
     auto node2 = PyOpenSCADObjectToNode(arg2, &dummy_dict);
-    if(node1 == nullptr || node2 == nullptr) {
-      PyErr_SetString(PyExc_TypeError,
-       "Error during parsing hull. arguments must be solids.");
+    if (node1 == nullptr || node2 == nullptr) {
+      PyErr_SetString(PyExc_TypeError, "Error during parsing hull. arguments must be solids.");
       return nullptr;
     }
     DECLARE_INSTANCE
@@ -4025,13 +4023,13 @@ PyObject *python_nb_xor(PyObject *arg1, PyObject *arg2) {
   return python_nb_sub_vec3(arg1, arg2, 3);
 }
 
-PyObject *python_nb_remainder(PyObject *arg1, PyObject *arg2) {
+PyObject *python_nb_remainder(PyObject *arg1, PyObject *arg2)
+{
   PyObject *dummy_dict;
   auto node1 = PyOpenSCADObjectToNode(arg1, &dummy_dict);
   auto node2 = PyOpenSCADObjectToNode(arg2, &dummy_dict);
-  if(node1 == nullptr || node2 == nullptr) {
-    PyErr_SetString(PyExc_TypeError,
-     "Error during parsing hull. arguments must be solids.");
+  if (node1 == nullptr || node2 == nullptr) {
+    PyErr_SetString(PyExc_TypeError, "Error during parsing hull. arguments must be solids.");
     return nullptr;
   }
   DECLARE_INSTANCE
@@ -4069,7 +4067,8 @@ PyObject *python_nb_and(PyObject *arg1, PyObject *arg2)
   return python_nb_sub(arg1, arg2, OpenSCADOperator::INTERSECTION);
 }
 
-PyObject *python_nb_matmult(PyObject *arg1, PyObject *arg2) {
+PyObject *python_nb_matmult(PyObject *arg1, PyObject *arg2)
+{
   return python_multmatrix_sub(arg1, arg2, 0);
 }
 
@@ -4901,7 +4900,7 @@ void python_str_sub(std::ostringstream& stream, const std::shared_ptr<AbstractNo
     break;
   default:
     stream << "{\n";
-    for (const auto &child : node->children) {
+    for (const auto& child : node->children) {
       python_str_sub(stream, child, ident + 1);
     }
     for (int i = 0; i < ident; i++) stream << "  ";
@@ -5045,7 +5044,7 @@ PyObject *python_osuse_include(int mode, PyObject *self, PyObject *args, PyObjec
                          PyDataObjectFromModule(&PyDataType, filename, mod.first));
   }
 
-  for (auto fun : source->scope->functions) {            // copy functions
+  for (auto fun : source->scope->functions) {           // copy functions
     std::shared_ptr<UserFunction> usfunc = fun.second;  // install lambda functions ?
                                                         //    printf("%s\n",fun.first.c_str());
                                                         //    InstantiableModule m;
@@ -5057,7 +5056,7 @@ PyObject *python_osuse_include(int mode, PyObject *self, PyObject *args, PyObjec
   }
 
   for (auto ass : source->scope->assignments) {  // copy assignments
-                                                //    printf("Var %s\n",ass->getName().c_str());
+                                                 //    printf("Var %s\n",ass->getName().c_str());
     const std::shared_ptr<Expression> expr = ass->getExpr();
     Value val = expr->evaluate(osinclude_context);
     if (val.isDefined()) {
@@ -5199,109 +5198,181 @@ PyObject *python_oo_dict(PyObject *self, PyObject *args, PyObject *kwargs)
   return dict;
 }
 
-
-int PyDict_SetDefaultRef(PyObject *d, PyObject *key, PyObject *default_value,
-                     PyObject **result)
+int PyDict_SetDefaultRef(PyObject *d, PyObject *key, PyObject *default_value, PyObject **result)
 {
-    PyDict_SetDefault(d, key, default_value);
-    return 0;
+  PyDict_SetDefault(d, key, default_value);
+  return 0;
 }
 
-int type_add_method(PyTypeObject *type, PyMethodDef *meth) // from typeobject.c
+int type_add_method(PyTypeObject *type, PyMethodDef *meth)  // from typeobject.c
 {
-    PyObject *descr;
-    int isdescr = 1;
-    if (meth->ml_flags & METH_CLASS) {
-        if (meth->ml_flags & METH_STATIC) {
-            PyErr_SetString(PyExc_ValueError,
-                    "method cannot be both class and static");
-            return -1;
-        }
-        descr = PyDescr_NewClassMethod(type, meth);
+  PyObject *descr;
+  int isdescr = 1;
+  if (meth->ml_flags & METH_CLASS) {
+    if (meth->ml_flags & METH_STATIC) {
+      PyErr_SetString(PyExc_ValueError, "method cannot be both class and static");
+      return -1;
     }
-    else if (meth->ml_flags & METH_STATIC) {
-        PyObject *cfunc = PyCFunction_NewEx(meth, (PyObject*)type, NULL);
-        if (cfunc == NULL) {
-            return -1;
-        }
-        descr = PyStaticMethod_New(cfunc);
-        isdescr = 0;  // PyStaticMethod is not PyDescrObject
-        Py_DECREF(cfunc);
+    descr = PyDescr_NewClassMethod(type, meth);
+  } else if (meth->ml_flags & METH_STATIC) {
+    PyObject *cfunc = PyCFunction_NewEx(meth, (PyObject *)type, NULL);
+    if (cfunc == NULL) {
+      return -1;
     }
-    else {
-        descr = PyDescr_NewMethod(type, meth);
-    }
-    if (descr == NULL) {
-        return -1;
-    }
+    descr = PyStaticMethod_New(cfunc);
+    isdescr = 0;  // PyStaticMethod is not PyDescrObject
+    Py_DECREF(cfunc);
+  } else {
+    descr = PyDescr_NewMethod(type, meth);
+  }
+  if (descr == NULL) {
+    return -1;
+  }
 
-    PyObject *name;
-    if (isdescr) {
-        name = PyDescr_NAME(descr);
+  PyObject *name;
+  if (isdescr) {
+    name = PyDescr_NAME(descr);
+  } else {
+    name = PyUnicode_FromString(meth->ml_name);
+    if (name == NULL) {
+      Py_DECREF(descr);
+      return -1;
     }
-    else {
-        name = PyUnicode_FromString(meth->ml_name);
-        if (name == NULL) {
-            Py_DECREF(descr);
-            return -1;
-        }
-    }
+  }
 
-    int err;
-    PyObject *dict = type->tp_dict;
-    if (!(meth->ml_flags & METH_COEXIST)) {
-        err = PyDict_SetDefaultRef(dict, name, descr, NULL) < 0;
-    }
-    else {
-        err = PyDict_SetItem(dict, name, descr) < 0;
-    }
-    if (!isdescr) {
-        Py_DECREF(name);
-    }
-    Py_DECREF(descr);
-    if (err) {
-        return -1; // return here
-    }
-    return 0;
+  int err;
+  PyObject *dict = type->tp_dict;
+  if (!(meth->ml_flags & METH_COEXIST)) {
+    err = PyDict_SetDefaultRef(dict, name, descr, NULL) < 0;
+  } else {
+    err = PyDict_SetItem(dict, name, descr) < 0;
+  }
+  if (!isdescr) {
+    Py_DECREF(name);
+  }
+  Py_DECREF(descr);
+  if (err) {
+    return -1;  // return here
+  }
+  return 0;
 }
 
 std::vector<PyObject *> python_member_callables;
-std::vector<std::string > python_member_names;
+std::vector<std::string> python_member_names;
 int python_member_callind;
 
 PyObject *python_member_trampoline(PyObject *self, PyObject *args, PyObject *kwargs)
 {
-	int n=  PyTuple_Size(args);
-	PyObject *newargs = PyTuple_New(n+1);
-	PyTuple_SetItem(newargs, 0, self);
-	for(int i=0;i<n;i++)
-		PyTuple_SetItem(newargs, i+1, PyTuple_GetItem(args,i));
+  int n = PyTuple_Size(args);
+  PyObject *newargs = PyTuple_New(n + 1);
+  PyTuple_SetItem(newargs, 0, self);
+  for (int i = 0; i < n; i++) PyTuple_SetItem(newargs, i + 1, PyTuple_GetItem(args, i));
 
-	return  PyObject_Call(python_member_callables[python_member_callind], newargs, kwargs);
+  return PyObject_Call(python_member_callables[python_member_callind], newargs, kwargs);
 }
 
 #define PYTHON_MAX_USERMEMBERS 20
 
-PyObject *python_member_trampoline_0(PyObject *self, PyObject *args, PyObject *kwargs) { python_member_callind=0; return python_member_trampoline(self, args, kwargs);	}
-PyObject *python_member_trampoline_1(PyObject *self, PyObject *args, PyObject *kwargs) { python_member_callind=1; return python_member_trampoline(self, args, kwargs);	}
-PyObject *python_member_trampoline_2(PyObject *self, PyObject *args, PyObject *kwargs) { python_member_callind=2; return python_member_trampoline(self, args, kwargs);	}
-PyObject *python_member_trampoline_3(PyObject *self, PyObject *args, PyObject *kwargs) { python_member_callind=3; return python_member_trampoline(self, args, kwargs);	}
-PyObject *python_member_trampoline_4(PyObject *self, PyObject *args, PyObject *kwargs) { python_member_callind=4; return python_member_trampoline(self, args, kwargs);	}
-PyObject *python_member_trampoline_5(PyObject *self, PyObject *args, PyObject *kwargs) { python_member_callind=5; return python_member_trampoline(self, args, kwargs);	}
-PyObject *python_member_trampoline_6(PyObject *self, PyObject *args, PyObject *kwargs) { python_member_callind=6; return python_member_trampoline(self, args, kwargs);	}
-PyObject *python_member_trampoline_7(PyObject *self, PyObject *args, PyObject *kwargs) { python_member_callind=7; return python_member_trampoline(self, args, kwargs);	}
-PyObject *python_member_trampoline_8(PyObject *self, PyObject *args, PyObject *kwargs) { python_member_callind=8; return python_member_trampoline(self, args, kwargs);	}
-PyObject *python_member_trampoline_9(PyObject *self, PyObject *args, PyObject *kwargs) { python_member_callind=9; return python_member_trampoline(self, args, kwargs);	}
-PyObject *python_member_trampoline_10(PyObject *self, PyObject *args, PyObject *kwargs) { python_member_callind=10; return python_member_trampoline(self, args, kwargs);	}
-PyObject *python_member_trampoline_11(PyObject *self, PyObject *args, PyObject *kwargs) { python_member_callind=11; return python_member_trampoline(self, args, kwargs);	}
-PyObject *python_member_trampoline_12(PyObject *self, PyObject *args, PyObject *kwargs) { python_member_callind=12; return python_member_trampoline(self, args, kwargs);	}
-PyObject *python_member_trampoline_13(PyObject *self, PyObject *args, PyObject *kwargs) { python_member_callind=13; return python_member_trampoline(self, args, kwargs);	}
-PyObject *python_member_trampoline_14(PyObject *self, PyObject *args, PyObject *kwargs) { python_member_callind=14; return python_member_trampoline(self, args, kwargs);	}
-PyObject *python_member_trampoline_15(PyObject *self, PyObject *args, PyObject *kwargs) { python_member_callind=15; return python_member_trampoline(self, args, kwargs);	}
-PyObject *python_member_trampoline_16(PyObject *self, PyObject *args, PyObject *kwargs) { python_member_callind=16; return python_member_trampoline(self, args, kwargs);	}
-PyObject *python_member_trampoline_17(PyObject *self, PyObject *args, PyObject *kwargs) { python_member_callind=17; return python_member_trampoline(self, args, kwargs);	}
-PyObject *python_member_trampoline_18(PyObject *self, PyObject *args, PyObject *kwargs) { python_member_callind=18; return python_member_trampoline(self, args, kwargs);	}
-PyObject *python_member_trampoline_19(PyObject *self, PyObject *args, PyObject *kwargs) { python_member_callind=19; return python_member_trampoline(self, args, kwargs);	}
+PyObject *python_member_trampoline_0(PyObject *self, PyObject *args, PyObject *kwargs)
+{
+  python_member_callind = 0;
+  return python_member_trampoline(self, args, kwargs);
+}
+PyObject *python_member_trampoline_1(PyObject *self, PyObject *args, PyObject *kwargs)
+{
+  python_member_callind = 1;
+  return python_member_trampoline(self, args, kwargs);
+}
+PyObject *python_member_trampoline_2(PyObject *self, PyObject *args, PyObject *kwargs)
+{
+  python_member_callind = 2;
+  return python_member_trampoline(self, args, kwargs);
+}
+PyObject *python_member_trampoline_3(PyObject *self, PyObject *args, PyObject *kwargs)
+{
+  python_member_callind = 3;
+  return python_member_trampoline(self, args, kwargs);
+}
+PyObject *python_member_trampoline_4(PyObject *self, PyObject *args, PyObject *kwargs)
+{
+  python_member_callind = 4;
+  return python_member_trampoline(self, args, kwargs);
+}
+PyObject *python_member_trampoline_5(PyObject *self, PyObject *args, PyObject *kwargs)
+{
+  python_member_callind = 5;
+  return python_member_trampoline(self, args, kwargs);
+}
+PyObject *python_member_trampoline_6(PyObject *self, PyObject *args, PyObject *kwargs)
+{
+  python_member_callind = 6;
+  return python_member_trampoline(self, args, kwargs);
+}
+PyObject *python_member_trampoline_7(PyObject *self, PyObject *args, PyObject *kwargs)
+{
+  python_member_callind = 7;
+  return python_member_trampoline(self, args, kwargs);
+}
+PyObject *python_member_trampoline_8(PyObject *self, PyObject *args, PyObject *kwargs)
+{
+  python_member_callind = 8;
+  return python_member_trampoline(self, args, kwargs);
+}
+PyObject *python_member_trampoline_9(PyObject *self, PyObject *args, PyObject *kwargs)
+{
+  python_member_callind = 9;
+  return python_member_trampoline(self, args, kwargs);
+}
+PyObject *python_member_trampoline_10(PyObject *self, PyObject *args, PyObject *kwargs)
+{
+  python_member_callind = 10;
+  return python_member_trampoline(self, args, kwargs);
+}
+PyObject *python_member_trampoline_11(PyObject *self, PyObject *args, PyObject *kwargs)
+{
+  python_member_callind = 11;
+  return python_member_trampoline(self, args, kwargs);
+}
+PyObject *python_member_trampoline_12(PyObject *self, PyObject *args, PyObject *kwargs)
+{
+  python_member_callind = 12;
+  return python_member_trampoline(self, args, kwargs);
+}
+PyObject *python_member_trampoline_13(PyObject *self, PyObject *args, PyObject *kwargs)
+{
+  python_member_callind = 13;
+  return python_member_trampoline(self, args, kwargs);
+}
+PyObject *python_member_trampoline_14(PyObject *self, PyObject *args, PyObject *kwargs)
+{
+  python_member_callind = 14;
+  return python_member_trampoline(self, args, kwargs);
+}
+PyObject *python_member_trampoline_15(PyObject *self, PyObject *args, PyObject *kwargs)
+{
+  python_member_callind = 15;
+  return python_member_trampoline(self, args, kwargs);
+}
+PyObject *python_member_trampoline_16(PyObject *self, PyObject *args, PyObject *kwargs)
+{
+  python_member_callind = 16;
+  return python_member_trampoline(self, args, kwargs);
+}
+PyObject *python_member_trampoline_17(PyObject *self, PyObject *args, PyObject *kwargs)
+{
+  python_member_callind = 17;
+  return python_member_trampoline(self, args, kwargs);
+}
+PyObject *python_member_trampoline_18(PyObject *self, PyObject *args, PyObject *kwargs)
+{
+  python_member_callind = 18;
+  return python_member_trampoline(self, args, kwargs);
+}
+PyObject *python_member_trampoline_19(PyObject *self, PyObject *args, PyObject *kwargs)
+{
+  python_member_callind = 19;
+  return python_member_trampoline(self, args, kwargs);
+}
 
 PyObject *python_memberfunction(PyObject *self, PyObject *args, PyObject *kwargs)
 {
@@ -5309,61 +5380,63 @@ PyObject *python_memberfunction(PyObject *self, PyObject *args, PyObject *kwargs
   char *membername = nullptr;
   PyObject *memberfunc = nullptr;
   char *memberdoc = nullptr;
-  
+
   if (!PyArg_ParseTupleAndKeywords(args, kwargs, "sO|s", kwlist, &membername, &memberfunc)) {
     PyErr_SetString(PyExc_TypeError, "Error during parsing member");
     return NULL;
   }
   std::string member_name = membername;
-  int curind = std::find(python_member_names.begin(),python_member_names.end(), member_name) - python_member_names.begin();
+  int curind = std::find(python_member_names.begin(), python_member_names.end(), member_name) -
+               python_member_names.begin();
 
-  if(memberdoc == nullptr) { memberdoc="Added by member function";
+  if (memberdoc == nullptr) {
+    memberdoc = "Added by member function";
   }
 
-  if(curind >= PYTHON_MAX_USERMEMBERS) {
+  if (curind >= PYTHON_MAX_USERMEMBERS) {
     PyErr_SetString(PyExc_TypeError, "Maximum user member amount reached");
     return NULL;
   }
 
   PyCFunction next_trampoline;
-  switch(curind){
-    case 0: next_trampoline = (PyCFunction) python_member_trampoline_0; break;
-    case 1: next_trampoline = (PyCFunction) python_member_trampoline_1; break;
-    case 2: next_trampoline = (PyCFunction) python_member_trampoline_2; break;
-    case 3: next_trampoline = (PyCFunction) python_member_trampoline_3; break;
-    case 4: next_trampoline = (PyCFunction) python_member_trampoline_4; break;
-    case 5: next_trampoline = (PyCFunction) python_member_trampoline_5; break;
-    case 6: next_trampoline = (PyCFunction) python_member_trampoline_6; break;
-    case 7: next_trampoline = (PyCFunction) python_member_trampoline_7; break;
-    case 8: next_trampoline = (PyCFunction) python_member_trampoline_8; break;
-    case 9: next_trampoline = (PyCFunction) python_member_trampoline_9; break;
-    case 10: next_trampoline = (PyCFunction) python_member_trampoline_10; break;
-    case 11: next_trampoline = (PyCFunction) python_member_trampoline_11; break;
-    case 12: next_trampoline = (PyCFunction) python_member_trampoline_12; break;
-    case 13: next_trampoline = (PyCFunction) python_member_trampoline_13; break;
-    case 14: next_trampoline = (PyCFunction) python_member_trampoline_14; break;
-    case 15: next_trampoline = (PyCFunction) python_member_trampoline_15; break;
-    case 16: next_trampoline = (PyCFunction) python_member_trampoline_16; break;
-    case 17: next_trampoline = (PyCFunction) python_member_trampoline_17; break;
-    case 18: next_trampoline = (PyCFunction) python_member_trampoline_18; break;
-    case 19: next_trampoline = (PyCFunction) python_member_trampoline_19; break;
-    default: next_trampoline = nullptr;	     
-  }	    
+  switch (curind) {
+  case 0:  next_trampoline = (PyCFunction)python_member_trampoline_0; break;
+  case 1:  next_trampoline = (PyCFunction)python_member_trampoline_1; break;
+  case 2:  next_trampoline = (PyCFunction)python_member_trampoline_2; break;
+  case 3:  next_trampoline = (PyCFunction)python_member_trampoline_3; break;
+  case 4:  next_trampoline = (PyCFunction)python_member_trampoline_4; break;
+  case 5:  next_trampoline = (PyCFunction)python_member_trampoline_5; break;
+  case 6:  next_trampoline = (PyCFunction)python_member_trampoline_6; break;
+  case 7:  next_trampoline = (PyCFunction)python_member_trampoline_7; break;
+  case 8:  next_trampoline = (PyCFunction)python_member_trampoline_8; break;
+  case 9:  next_trampoline = (PyCFunction)python_member_trampoline_9; break;
+  case 10: next_trampoline = (PyCFunction)python_member_trampoline_10; break;
+  case 11: next_trampoline = (PyCFunction)python_member_trampoline_11; break;
+  case 12: next_trampoline = (PyCFunction)python_member_trampoline_12; break;
+  case 13: next_trampoline = (PyCFunction)python_member_trampoline_13; break;
+  case 14: next_trampoline = (PyCFunction)python_member_trampoline_14; break;
+  case 15: next_trampoline = (PyCFunction)python_member_trampoline_15; break;
+  case 16: next_trampoline = (PyCFunction)python_member_trampoline_16; break;
+  case 17: next_trampoline = (PyCFunction)python_member_trampoline_17; break;
+  case 18: next_trampoline = (PyCFunction)python_member_trampoline_18; break;
+  case 19: next_trampoline = (PyCFunction)python_member_trampoline_19; break;
+  default: next_trampoline = nullptr;
+  }
 
-  PyMethodDef *meth = (PyMethodDef *) malloc(sizeof(PyMethodDef)); // never freed
+  PyMethodDef *meth = (PyMethodDef *)malloc(sizeof(PyMethodDef));  // never freed
   meth->ml_name = strdup(membername);
   meth->ml_meth = next_trampoline;
-  meth->ml_flags =   METH_VARARGS | METH_KEYWORDS;
-  meth->ml_doc =  memberdoc ;
+  meth->ml_flags = METH_VARARGS | METH_KEYWORDS;
+  meth->ml_doc = memberdoc;
   if (type_add_method(&PyOpenSCADType, meth) < 0) return Py_None;
 
-  Py_INCREF(memberfunc); // needed because pythons garbage collector eats it when not used.
-  if(curind < python_member_names.size()) {
+  Py_INCREF(memberfunc);  // needed because pythons garbage collector eats it when not used.
+  if (curind < python_member_names.size()) {
     python_member_callables[curind] = memberfunc;
   } else {
     python_member_names.push_back(member_name);
     python_member_callables.push_back(memberfunc);
-  }  
+  }
 
   return Py_None;
 }
@@ -5444,7 +5517,8 @@ PyMethodDef PyOpenSCADFunctions[] = {
   {"faces", (PyCFunction)python_faces, METH_VARARGS | METH_KEYWORDS, "exports a list of faces."},
   {"edges", (PyCFunction)python_edges, METH_VARARGS | METH_KEYWORDS,
    "exports a list of edges from a face."},
-  {"explode", (PyCFunction)python_explode, METH_VARARGS | METH_KEYWORDS, "explode a solid with a vector"},
+  {"explode", (PyCFunction)python_explode, METH_VARARGS | METH_KEYWORDS,
+   "explode a solid with a vector"},
   {"oversample", (PyCFunction)python_oversample, METH_VARARGS | METH_KEYWORDS, "oversample."},
   {"debug", (PyCFunction)python_debug, METH_VARARGS | METH_KEYWORDS, "debug a face."},
   {"repair", (PyCFunction)python_repair, METH_VARARGS | METH_KEYWORDS, "Make solid watertight."},
@@ -5471,7 +5545,8 @@ PyMethodDef PyOpenSCADFunctions[] = {
   {"model", (PyCFunction)python_model, METH_VARARGS | METH_KEYWORDS, "Yield Model"},
   {"modelpath", (PyCFunction)python_modelpath, METH_VARARGS | METH_KEYWORDS,
    "Returns absolute Path to script"},
-  {"memberfunction", (PyCFunction)python_memberfunction, METH_VARARGS | METH_KEYWORDS, "Registers additional openscad memberfunction functions"},
+  {"memberfunction", (PyCFunction)python_memberfunction, METH_VARARGS | METH_KEYWORDS,
+   "Registers additional openscad memberfunction functions"},
   {"marked", (PyCFunction)python_marked, METH_VARARGS | METH_KEYWORDS, "Create a marked value."},
   {"Sin", (PyCFunction)python_sin, METH_VARARGS | METH_KEYWORDS, "Calculate sin."},
   {"Cos", (PyCFunction)python_cos, METH_VARARGS | METH_KEYWORDS, "Calculate cos."},
@@ -5513,45 +5588,44 @@ PyMethodDef PyOpenSCADMethods[] = {
                       OO_METHOD_ENTRY(rotate_extrude, "Rotate_extrude Object") OO_METHOD_ENTRY(
                         path_extrude, "Path_extrude Object") OO_METHOD_ENTRY(resize, "Resize Object")
 
-                        OO_METHOD_ENTRY(explode, "Explode a solid with a vector")   
-                        OO_METHOD_ENTRY(mesh, "Mesh Object")
-                          OO_METHOD_ENTRY(bbox, "Evaluate Bound Box of object") OO_METHOD_ENTRY(
-                            faces, "Create Faces list") OO_METHOD_ENTRY(edges, "Create Edges list")
-                            OO_METHOD_ENTRY(oversample, "Oversample Object")
-                              OO_METHOD_ENTRY(debug, "Debug Object Faces") OO_METHOD_ENTRY(
-                                repair, "Make solid watertight") OO_METHOD_ENTRY(fillet, "Fillet Object")
-                                OO_METHOD_ENTRY(align, "Align Object to another")
+                        OO_METHOD_ENTRY(explode, "Explode a solid with a vector") OO_METHOD_ENTRY(
+                          mesh, "Mesh Object") OO_METHOD_ENTRY(bbox, "Evaluate Bound Box of object")
+                          OO_METHOD_ENTRY(faces, "Create Faces list") OO_METHOD_ENTRY(
+                            edges, "Create Edges list") OO_METHOD_ENTRY(oversample, "Oversample Object")
+                            OO_METHOD_ENTRY(debug, "Debug Object Faces") OO_METHOD_ENTRY(
+                              repair, "Make solid watertight") OO_METHOD_ENTRY(fillet, "Fillet Object")
+                              OO_METHOD_ENTRY(align, "Align Object to another")
 
-                                  OO_METHOD_ENTRY(highlight, "Highlight Object") OO_METHOD_ENTRY(
-                                    background, "Background Object") OO_METHOD_ENTRY(only, "Only Object")
-                                    OO_METHOD_ENTRY(show, "Show Object")
-                                      OO_METHOD_ENTRY(projection, "Projection Object")
-                                        OO_METHOD_ENTRY(pull, "Pull Obejct apart")
-                                          OO_METHOD_ENTRY(wrap, "Wrap Object around Cylinder")
-                                            OO_METHOD_ENTRY(render, "Render Object")
-                                              OO_METHOD_ENTRY(clone, "Clone Object") OO_METHOD_ENTRY(
-                                                dict, "return all dictionary"){NULL, NULL, 0, NULL}};
+                                OO_METHOD_ENTRY(highlight, "Highlight Object") OO_METHOD_ENTRY(
+                                  background, "Background Object") OO_METHOD_ENTRY(only, "Only Object")
+                                  OO_METHOD_ENTRY(show, "Show Object")
+                                    OO_METHOD_ENTRY(projection, "Projection Object")
+                                      OO_METHOD_ENTRY(pull, "Pull Obejct apart")
+                                        OO_METHOD_ENTRY(wrap, "Wrap Object around Cylinder")
+                                          OO_METHOD_ENTRY(render, "Render Object")
+                                            OO_METHOD_ENTRY(clone, "Clone Object") OO_METHOD_ENTRY(
+                                              dict, "return all dictionary"){NULL, NULL, 0, NULL}};
 
 PyNumberMethods PyOpenSCADNumbers = {
-  python_nb_add,       // binaryfunc nb_add
-  python_nb_subtract,  // binaryfunc nb_subtract
-  python_nb_mul,       // binaryfunc nb_multiply
-  python_nb_remainder, // binaryfunc nb_remainder
-  0,                   // binaryfunc nb_divmod
-  0,                   // ternaryfunc nb_power
-  python_nb_neg,       // unaryfunc nb_negative
-  python_nb_pos,       // unaryfunc nb_positive
-  0,                   // unaryfunc nb_absolute
-  0,                   // inquiry nb_bool
-  python_nb_invert,    // unaryfunc nb_invert
-  0,                   // binaryfunc nb_lshift
-  0,                   // binaryfunc nb_rshift
-  python_nb_and,       // binaryfunc nb_and
-  python_nb_xor,       // binaryfunc nb_xor
-  python_nb_or,        // binaryfunc nb_or
-  0,                   // unaryfunc nb_int
-  0,                   // void *nb_reserved
-  0,                   // unaryfunc nb_float
+  python_nb_add,        // binaryfunc nb_add
+  python_nb_subtract,   // binaryfunc nb_subtract
+  python_nb_mul,        // binaryfunc nb_multiply
+  python_nb_remainder,  // binaryfunc nb_remainder
+  0,                    // binaryfunc nb_divmod
+  0,                    // ternaryfunc nb_power
+  python_nb_neg,        // unaryfunc nb_negative
+  python_nb_pos,        // unaryfunc nb_positive
+  0,                    // unaryfunc nb_absolute
+  0,                    // inquiry nb_bool
+  python_nb_invert,     // unaryfunc nb_invert
+  0,                    // binaryfunc nb_lshift
+  0,                    // binaryfunc nb_rshift
+  python_nb_and,        // binaryfunc nb_and
+  python_nb_xor,        // binaryfunc nb_xor
+  python_nb_or,         // binaryfunc nb_or
+  0,                    // unaryfunc nb_int
+  0,                    // void *nb_reserved
+  0,                    // unaryfunc nb_float
 
   0,  // binaryfunc nb_inplace_add
   0,  // binaryfunc nb_inplace_subtract
@@ -5572,7 +5646,7 @@ PyNumberMethods PyOpenSCADNumbers = {
   0,  // unaryfunc nb_index
 
   python_nb_matmult,  // binaryfunc nb_matrix_multiply
-  0   // binaryfunc nb_inplace_matrix_multiply
+  0                   // binaryfunc nb_inplace_matrix_multiply
 };
 
 PyMappingMethods PyOpenSCADMapping = {0, python__getitem__, python__setitem__};
