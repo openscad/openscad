@@ -2,7 +2,7 @@
 
 #set(DEBUG_OSCD 1) # print debug info during cmake
 
-cmake_minimum_required(VERSION 3.13)
+cmake_minimum_required(VERSION 3.21)
 # Explicitly use new include policy to avoid globally shadowing included modules
 # https://cmake.org/cmake/help/latest/policy/CMP0017.html
 cmake_policy(SET CMP0017 NEW)
@@ -21,6 +21,21 @@ set(CBD ${CMAKE_BINARY_DIR}) # build top level
 set(CSD ${CMAKE_SOURCE_DIR}) # project top level
 set(CCBD ${CMAKE_CURRENT_BINARY_DIR}) # tests build dir
 set(CCSD ${CMAKE_CURRENT_SOURCE_DIR}) # tests source dir
+
+function(disable_tests_safe)
+    # Only disable tests that actually exist
+    set(EXISTING_TESTS)
+    foreach(test_name IN LISTS ARGN)
+        if(TEST ${test_name})
+            list(APPEND EXISTING_TESTS ${test_name})
+        endif()
+    endforeach()
+
+    # Disable existing tests
+    if(EXISTING_TESTS)
+        set_tests_properties(${EXISTING_TESTS} PROPERTIES DISABLED TRUE)
+    endif()
+endfunction()
 
 # When configuring OpenSCADTests as a top-level project, we 
 # expect a self-contained OpenSCAD installation to exist.
@@ -1190,20 +1205,17 @@ add_output_file_test(relative-output FILE ${TEST_SCAD_DIR}/3D/features/cube-test
 add_output_file_test(relative-output FILE ${TEST_SCAD_DIR}/3D/features/cube-tests.scad FORMAT nef3)
 add_output_file_test(relative-output FILE ${TEST_SCAD_DIR}/3D/features/cube-tests.scad FORMAT nefdbg)
 
-# Disable tests failing due to https://github.com/openscad/openscad/issues/4632
-set_tests_properties(
+disable_tests_safe(
+  # Disable tests failing due to https://github.com/openscad/openscad/issues/4632
   relative-output_csg_run
   relative-output_csg_check
   relative-output_ast_run 
   relative-output_ast_check
-  PROPERTIES DISABLED TRUE
-)
 
 ###################################
 # Disable Tests with Known Issues #
 ###################################
 
-set_tests_properties(
   # These don't output anything
   render-dxf_text-empty-tests
   render-dxf_nothing-decimal-comma-separated
@@ -1279,128 +1291,85 @@ set_tests_properties(
   preview-cgal_issue2841b
   render-csg-cgal_issue2841b
   
-  PROPERTIES DISABLED TRUE
-)
-if(EXAMPLES_DIR) 
-  set_tests_properties(
-    # OpenCSG z fighting
-    preview-cgal_surface_image
-    throwntogether-cgal_surface_image
+  # OpenCSG z fighting
+  preview-cgal_surface_image
+  throwntogether-cgal_surface_image
 
-    # https://github.com/openscad/openscad/issues/5159
-    render-cgal_projection
-    render-csg-cgal_projection
+  # https://github.com/openscad/openscad/issues/5159
+  render-cgal_projection
+  render-csg-cgal_projection
 
-    # https://github.com/openscad/openscad/issues/5158
-    #render-cgal_example017 
-    #throwntogether-cgal_example017
-    
-    # https://github.com/openscad/openscad/issues/4398
-    render-csg-cgal_logo_and_text
+  # https://github.com/openscad/openscad/issues/5158
+  #render-cgal_example017 
+  #throwntogether-cgal_example017
+  
+  # https://github.com/openscad/openscad/issues/4398
+  render-csg-cgal_logo_and_text
 
-    PROPERTIES DISABLED TRUE
-  )
-endif(EXAMPLES_DIR)
+  # z-fighting different on different machines
+  preview-manifold_issue1165
+  preview-manifold_issue1215
 
+  # Manifold triangle order not stable, causes transparent
+  # objects to render differently on different machines
+  render-manifold_color-tests
+  render-manifold_hex-colors-tests
 
-if (ENABLE_MANIFOLD_TESTS)
-  set_tests_properties(
-    # z-fighting different on different machines
-    preview-manifold_issue1165
-    preview-manifold_issue1215
+  # https://github.com/openscad/openscad/issues/909
+  render-amf-manifold_bad-stl-wing
+  render-amf-manifold_bad-stl-pcbvicebar
+  render-amf-manifold_bad-stl-tardis
 
-    # Manifold triangle order not stable, causes transparent
-    # objects to render differently on different machines
-    render-manifold_color-tests
-    render-manifold_hex-colors-tests
+  # https://github.com/openscad/openscad/issues/2841
+  render-manifold_issue2841b
+  preview-manifold_issue2841b
 
-    # https://github.com/openscad/openscad/issues/909
-    render-amf-manifold_bad-stl-wing
-    render-amf-manifold_bad-stl-pcbvicebar
-    render-amf-manifold_bad-stl-tardis
+  # https://github.com/openscad/openscad/issues/5135
+  render-force-manifold_issue5135-bad
 
-    # https://github.com/openscad/openscad/issues/2841
-    render-manifold_issue2841b
-    preview-manifold_issue2841b
+  # https://github.com/openscad/openscad/issues/5218
+  throwntogether-manifold_issue5218
+  throwntogether-manifold_issue913
 
-    # https://github.com/openscad/openscad/issues/5135
-    render-force-manifold_issue5135-bad
+  # z-fighting different on different machines
+  preview-cgal_example017
+  preview-manifold_example017
 
-    # https://github.com/openscad/openscad/issues/5218
-    throwntogether-manifold_issue5218
-    throwntogether-manifold_issue913
+  # OpenCSG z fighting
+  preview-manifold_surface_image
+  throwntogether-manifold_surface_image
 
-    PROPERTIES DISABLED TRUE
-  )
-  if(EXAMPLES_DIR)
-    set_tests_properties(
-      # z-fighting different on different machines
-      preview-cgal_example017
-      preview-manifold_example017
+  # Manifold triangle order not stable, causes transparent
+  # objects to render differently on different machines
+  render-manifold_projection
 
-      # OpenCSG z fighting
-      preview-manifold_surface_image
-      throwntogether-manifold_surface_image
+  # https://github.com/openscad/openscad/issues/5218
+  throwntogether-manifold_example016
 
-      # Manifold triangle order not stable, causes transparent
-      # objects to render differently on different machines
-      render-manifold_projection
-
-      # https://github.com/openscad/openscad/issues/5218
-      throwntogether-manifold_example016
-
-      PROPERTIES DISABLED TRUE
-    )
-  endif(EXAMPLES_DIR)
-endif (ENABLE_MANIFOLD_TESTS)
-
-if (EXPERIMENTAL)
-set_tests_properties(
   # https://github.com/openscad/openscad/issues/5220
   render-cgal_roof
   render-csg-cgal_roof
 
-  PROPERTIES DISABLED TRUE
+  # https://github.com/openscad/openscad/issues/5966
+  render-off-manifold_issue5216
+
+  # For some reason, only failing on Linux
+  render-manifold_import_3mf-tests
+  preview-cgal_3mf-import-centered
+  preview-manifold_3mf-import-centered
+  preview-manifold_import_3mf-tests
+  render-off-manifold_issue5216
+  export-3mf_3mf-export
+  render-3mf-cgal_bad-stl-tardis
+  render-3mf-cgal_bad-stl-wing
+  render-3mf-manifold_issue5216
+
+  preview-cgal_import_3mf-tests
+  render-cgal_import_3mf-tests
+  render-csg-cgal_import_3mf-tests
+  throwntogether-cgal_import_3mf-tests
+  throwntogether-manifold_import_3mf-tests
 )
-endif (EXPERIMENTAL)
-
-if (ENABLE_LIB3MF_TESTS)
-  if (EXPERIMENTAL)
-    set_tests_properties(
-      # https://github.com/openscad/openscad/issues/5800
-      export-3mf_3mf-export
-
-      PROPERTIES DISABLED TRUE
-    )
-  endif (EXPERIMENTAL)
-  if (ENABLE_MANIFOLD_TESTS)
-    set_tests_properties(
-      # https://github.com/openscad/openscad/issues/5966
-     render-off-manifold_issue5216
-     render-3mf-manifold_issue5216
-
-     PROPERTIES DISABLED TRUE
-    )
-  endif (ENABLE_MANIFOLD_TESTS)  
-  set_tests_properties(
-    # When exported from CGAL, the file cannot be re-imported
-    render-3mf-cgal_bad-stl-wing
-
-    # For some reason, only failing on Linux
-    render-3mf-cgal_bad-stl-tardis
-    
-    PROPERTIES DISABLED TRUE
-  )
-else()
-  set_tests_properties(
-    preview-cgal_import_3mf-tests
-    render-cgal_import_3mf-tests
-    render-csg-cgal_import_3mf-tests
-    throwntogether-cgal_import_3mf-tests
-    throwntogether-manifold_import_3mf-tests
-    PROPERTIES DISABLED TRUE
-  )
-endif(ENABLE_LIB3MF_TESTS)
 
 list(APPEND NEF3_BROKEN_TESTS
   render-cgal_nef3_broken
