@@ -132,7 +132,7 @@ jobs:
       with:
         submodules: 'recursive'
     - name: Install dependencies
-      run: ./scripts/github-ci-linux-get-dependencies.sh
+      run: ./scripts/uni-get-dependencies.sh
     - uses: actions/setup-python@v5
       with:
         python-version: '3.11'
