@@ -60,7 +60,22 @@ def _create_wrapper_function(func_name):
     original_func = getattr(_openscad, func_name)
 
     def wrapper(*args, **kwargs):
-        result = original_func(*args, **kwargs)
+        # Unwrap OpenSCADWrapper objects in arguments
+        unwrapped_args = []
+        for arg in args:
+            if isinstance(arg, OpenSCADWrapper):
+                unwrapped_args.append(arg._obj)
+            else:
+                unwrapped_args.append(arg)
+
+        unwrapped_kwargs = {}
+        for key, value in kwargs.items():
+            if isinstance(value, OpenSCADWrapper):
+                unwrapped_kwargs[key] = value._obj
+            else:
+                unwrapped_kwargs[key] = value
+
+        result = original_func(*unwrapped_args, **unwrapped_kwargs)
         # Check if result is a PyOpenSCAD object that should be wrapped
         if hasattr(result, '__class__') and result.__class__.__name__ == 'PyOpenSCAD':
             return OpenSCADWrapper(result)
