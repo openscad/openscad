@@ -161,6 +161,8 @@ PyObject *python_oo_bbox(PyObject *obj, PyObject *args, PyObject *kwargs);
 PyObject *python_size(PyObject *self, PyObject *args, PyObject *kwargs);
 PyObject *python_size_core(PyObject *obj);
 PyObject *python_oo_size(PyObject *obj, PyObject *args, PyObject *kwargs);
+PyObject *python_position(PyObject *self, PyObject *args, PyObject *kwargs);
+PyObject *python_position_core(PyObject *obj);
 PyObject *python_separate(PyObject *self, PyObject *args, PyObject *kwargs);
 PyObject *python_separate_core(PyObject *obj);
 PyObject *python_oo_separate(PyObject *obj, PyObject *args, PyObject *kwargs);
