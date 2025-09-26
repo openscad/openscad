@@ -48,17 +48,24 @@ std::unique_ptr<CGALNefGeometry> createNefPolyhedronFromPolySet(const PolySet& p
   assert(ps.getDimension() == 3);
 
   // Since is_convex doesn't work well with non-planar faces,
-  // we tessellate the polyset before checking.
-  PolySet psq(ps);
-  std::vector<Vector3d> points3d;
-  psq.quantizeVertices(&points3d);
-  auto ps_tri = PolySetUtils::tessellate_faces(psq);
-  if (ps_tri->isConvex()) {
+  // we tessellate the polyset first, if necessary.
+  std::unique_ptr<PolySet> tmp;
+  const PolySet& triangle_set = [&tmp](const PolySet& ps) {
+    if (ps.isTriangular()) {
+      return ps;
+    }
+    PolySet psq(ps);
+    psq.quantizeVertices();
+    tmp = PolySetUtils::tessellate_faces(psq);
+    return *tmp;
+  }(ps);
+
+  if (triangle_set.isConvex()) {
     using Hull_kernel = CGAL::Epick;
     // Collect point cloud
-    std::vector<Hull_kernel::Point_3> points(points3d.size());
-    for (size_t i = 0, n = points3d.size(); i < n; i++) {
-      points[i] = vector_convert<Hull_kernel::Point_3>(points3d[i]);
+    std::vector<Hull_kernel::Point_3> points(triangle_set.vertices.size());
+    for (size_t i = 0, n = triangle_set.vertices.size(); i < n; i++) {
+      points[i] = vector_convert<Hull_kernel::Point_3>(triangle_set.vertices[i]);
     }
 
     if (points.size() <= 3) return std::make_unique<CGALNefGeometry>();
@@ -75,7 +82,7 @@ std::unique_ptr<CGALNefGeometry> createNefPolyhedronFromPolySet(const PolySet& p
   auto plane_error = false;
   try {
     CGAL_Polyhedron P;
-    auto err = CGALUtils::createPolyhedronFromPolySet(psq, P);
+    auto err = CGALUtils::createPolyhedronFromPolySet(triangle_set, P);
     if (!err) {
       if (!P.is_closed()) {
         LOG(message_group::Error, "The given mesh is not closed! Unable to convert to CGALNefGeometry.");
@@ -99,7 +106,7 @@ std::unique_ptr<CGALNefGeometry> createNefPolyhedronFromPolySet(const PolySet& p
   }
   if (plane_error) try {
       CGAL_Polyhedron P;
-      auto err = CGALUtils::createPolyhedronFromPolySet(*ps_tri, P);
+      auto err = CGALUtils::createPolyhedronFromPolySet(triangle_set, P);
       if (!err) {
         PRINTDB("Polyhedron is closed: %d", P.is_closed());
         PRINTDB("Polyhedron is valid: %d", P.is_valid(false, 0));
