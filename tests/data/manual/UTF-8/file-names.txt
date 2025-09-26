@@ -1,3 +1,8 @@
+Test cases and last-known results for UTF-8 file names.
+
+This list is not fully up to date, and also needs annotation to show which
+cases are covered by automated tests.
+
         MSYS2   MXE     Description
 1       -       -       Main file
 1a      -       -       - Pass on .exe command line
