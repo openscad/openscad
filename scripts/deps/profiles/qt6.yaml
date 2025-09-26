@@ -1,0 +1,83 @@
+extends:
+- base
+distros:
+  debian:
+    extends: null
+    packages:
+    - libqscintilla2-qt6-dev
+    - libqt6core5compat6-dev
+    - libqt6svg6-dev
+    - qt6-base-dev
+    - qt6-multimedia-dev
+    - qt6-tools-dev
+  ubuntu:
+    extends: debian
+    packages: []
+  fedora:
+    extends: null
+    packages:
+    - qscintilla-qt6-devel
+    - qt6-qtbase-devel
+    - qt6-qtmultimedia-devel
+    - qt6-qttools-devel
+  arch:
+    extends: null
+    packages:
+    - qscintilla-qt6
+    - qt6-base
+    - qt6-multimedia
+    - qt6-tools
+  opensuse:
+    extends: null
+    packages:
+    - libqscintilla_qt6-devel
+    - qt6-base-devel
+    - qt6-multimedia-devel
+    - qt6-tools-devel
+  gentoo:
+    extends: null
+    packages:
+    - x11-libs/qscintilla[qt6]
+    - dev-qt/qtbase:6
+    - dev-qt/qtmultimedia:6
+    - dev-qt/qttools:6
+  freebsd:
+    extends: null
+    packages:
+    - qt6-base
+    - qt6-multimedia
+    - qt6-tools
+  netbsd:
+    extends: null
+    packages:
+    - qt6-qtbase
+    - qt6-qtmultimedia
+  macos:
+    extends: null
+    packages:
+    - qt
+  mageia:
+    extends: null
+    packages:
+    - lib64qt6core-devel
+    - lib64qt6multimedia-devel
+    - lib64qt6widgets-devel
+  solus:
+    extends: null
+    packages:
+    - qt6-base-devel
+    - qt6-multimedia-devel
+  altlinux:
+    extends: null
+    packages:
+    - libqt6-core
+    - qt6-multimedia-devel
+    - qt6-widgets-devel
+  qomo:
+    extends: null
+    packages:
+    - qscintilla-qt6-devel
+    - qt6-qtbase-devel
+    - qt6-qt5compat-devel
+    - qt6-qtmultimedia-devel
+    - qt6-qtsvg-devel
