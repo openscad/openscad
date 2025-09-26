@@ -273,14 +273,57 @@ void convertNefToSurfaceMesh(const CGAL_Nef_polyhedron3& nef, SurfaceMesh& mesh)
 }
 
 template <typename SurfaceMesh>
-CGAL_Nef_polyhedron3 convertSurfaceMeshToNef(const SurfaceMesh& mesh)
+CGAL_Nef_polyhedron3 convertSurfaceMeshToNef(const SurfaceMesh& inputMesh)
 {
-  if constexpr (std::is_same<SurfaceMesh, CGAL_Kernel3Mesh>::value) {
+  const CGAL_Kernel3Mesh& mesh = [](const SurfaceMesh& inputMesh) {
+    if constexpr (std::is_same<SurfaceMesh, CGAL_Kernel3Mesh>::value) {
+      return inputMesh;
+    } else {
+      CGAL_Kernel3Mesh tempMesh;
+      copy_face_graph(inputMesh, tempMesh);
+      return tempMesh;
+    }
+  }(inputMesh);
+
+  // Note: The CGAL_Nef_polyhedron3 constructor may throw an exception if the input mesh is
+  // self-intersecting, e.g. if a very thin part of an object collapses into one
+  // floating point coordinate, but the vertices are still distinct, it's
+  // considered a self-intersection. This is valid in e.g. Manifold, but invalid
+  // in SurfaceMesh -> Nef.
+  // If this happens, we fall back to unioning all faces, which is slower but more
+  // robust.
+  try {
     return CGAL_Nef_polyhedron3(mesh);
-  } else {
-    CGAL_Kernel3Mesh tempMesh;
-    copy_face_graph(mesh, tempMesh);
-    return CGAL_Nef_polyhedron3(tempMesh);
+  } catch (const CGAL::Assertion_exception& e) {
+    std::cerr << "Warning: CGAL error in CGAL_Nef_polyhedron3(): Attempting union..." << std::endl;
+
+    CGAL::Nef_nary_union_3<CGAL_Nef_polyhedron3> nary_union;
+    int discarded_facets = 0;
+    for (const auto face : mesh.faces()) {
+      std::vector<CGAL::Point_3<CGAL_Kernel3>> vertices;
+      for (auto vd : CGAL::vertices_around_face(mesh.halfedge(face), mesh)) {
+        vertices.push_back(mesh.point(vd));
+      }
+
+      bool is_nef = false;
+      if (vertices.size() >= 1) {
+        CGAL_Nef_polyhedron3 nef(vertices.begin(), vertices.end());
+        if (!nef.is_empty()) {
+          nary_union.add_polyhedron(nef);
+          is_nef = true;
+        }
+      }
+      if (!is_nef) {
+        discarded_facets++;
+      }
+    }
+    if (discarded_facets > 0) {
+      std::cerr << "Discarded " << discarded_facets << " facets." << std::endl;
+    }
+    CGAL_Nef_polyhedron3 nef_union = nary_union.get_union();
+    CGAL::Mark_bounded_volumes<CGAL_Nef_polyhedron3> mbv(true);
+    nef_union.delegate(mbv);
+    return nef_union;
   }
 }
 template CGAL_Nef_polyhedron3 convertSurfaceMeshToNef(const CGAL_Kernel3Mesh& mesh);
