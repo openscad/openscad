@@ -33,6 +33,7 @@ option(INFO "Display build configuration info at end of cmake config" ON)
 option(ENABLE_TESTS "Run testsuite after building." ON)
 option(ENABLE_GUI_TESTS "Compile a special version of the openscad gui with feature for testing." OFF)
 option(EXPERIMENTAL "Enable Experimental Features" OFF)
+option(VERBOSE_FIND_PACKAGE "Enable verbose output for find_package calls" OFF)
 option(USE_MANIFOLD_TRIANGULATOR "Use Manifold's triangulator instead of CGAL's" ON)
 option(USE_BUILTIN_MANIFOLD "Use manifold from submodule" ON)
 option(USE_BUILTIN_CLIPPER2 "Use Clipper2 from submodule" ON)
@@ -68,8 +69,14 @@ include(CMakeDependentOption)
 cmake_dependent_option(APPLE_UNIX "Build OpenSCAD in Unix mode in MacOS X instead of an Apple Bundle" OFF "APPLE" OFF)
 cmake_dependent_option(ENABLE_QTDBUS "Enable DBus input driver for Qt." ON "NOT HEADLESS" OFF)
 cmake_dependent_option(ENABLE_GAMEPAD "Enable Qt5Gamepad input driver." ON "NOT HEADLESS;NOT USE_QT6" OFF)
-set(WASM_BUILD_TYPE "web" CACHE STRING 
+set(WASM_BUILD_TYPE "web" CACHE STRING
   "WebAssembly build type. Support web (builds an OpenSCAD module) or node (standalone .js executable)")
+
+# Enable verbose find_package output if requested
+if(VERBOSE_FIND_PACKAGE)
+  set(CMAKE_FIND_DEBUG_MODE TRUE)
+  message(STATUS "Verbose find_package output enabled")
+endif()
 
 if (USE_QT6)
   # Minimum version required for Qt-6.5
