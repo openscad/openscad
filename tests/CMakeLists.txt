@@ -662,6 +662,7 @@ set(FILES_MANIFOLD_CORNER_CASES
 
 # Manifoldness corner cases
 set(FILES_CGAL_CORNER_CASES
+  ${TEST_SCAD_DIR}/3D/misc/minkowski-cubes-touch-edge.scad
   ${TEST_SCAD_DIR}/3D/features/rotate_extrude-touch-edge.scad
 )
 
