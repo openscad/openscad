@@ -3118,7 +3118,7 @@ void MainWindow::updateStatusBar(ProgressWidget *progressWidget)
       this->progresswidget = nullptr;
     }
     if (versionLabel == nullptr) {
-      versionLabel = new QLabel("OpenSCAD " + QString::fromStdString(openscad_displayversionnumber));
+      versionLabel = new QLabel("PythonSCAD " + QString::fromStdString(openscad_displayversionnumber));
       sb->addPermanentWidget(this->versionLabel);
     }
   } else {
