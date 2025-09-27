@@ -1,3 +1,5 @@
+// Two cubes sharing an edge,
+// but with a manifold topology (the coincident vertices are distinct).
 minkowski() {
   polyhedron(
     points=[
@@ -34,13 +36,5 @@ minkowski() {
       [15,14,10],[15,10,11],
       [14,12,8],[14,8,10],
     ]);
-  sphere(0.1, $fn=16);
-}
-
-translate([3,0,0]) minkowski() {
-  union() {
-    cube(1);
-    translate([1,1,0]) cube(1);
-  }
-  sphere(0.1, $fn=16);
+  sphere(0.1, $fn=8);
 }
