@@ -1,6 +1,8 @@
 #include "gui/TabManager.h"
 
 #include <QApplication>
+#include <QStringBuilder>
+#include <QKeyCombination>
 #include <QPoint>
 #include <QTabBar>
 #include <QWidget>
@@ -10,6 +12,8 @@
 #include <QFileInfo>
 #include <QFile>
 #include <QDir>
+#include <QByteArray>
+#include <QStringList>
 #include <QSaveFile>
 #include <QShortcut>
 #include <QTextStream>
@@ -167,9 +171,11 @@ void TabManager::createTab(const QString& filename)
 
   // clearing default mapping of keyboard shortcut for font size
   QsciCommandSet *qcmdset = scintillaEditor->qsci->standardCommands();
-  QsciCommand *qcmd = qcmdset->boundTo(Qt::ControlModifier | Qt::Key_Plus);
+  QKeyCombination ctrlplus(Qt::ControlModifier | Qt::Key_Plus);
+  QsciCommand *qcmd = qcmdset->boundTo(ctrlplus.toCombined());
   qcmd->setKey(0);
-  qcmd = qcmdset->boundTo(Qt::ControlModifier | Qt::Key_Minus);
+  QKeyCombination ctrlmin(Qt::ControlModifier | Qt::Key_Minus);
+  qcmd = qcmdset->boundTo(ctrlmin.toCombined());
   qcmd->setKey(0);
 
   connect(scintillaEditor, &ScintillaEditor::uriDropped, par, &MainWindow::handleFileDrop);
@@ -665,22 +671,85 @@ bool TabManager::saveAs(EditorInterface *edt, const QString& filepath)
   return saveOk;
 }
 
+/*
+ If the editor content has not yet been saved it will be saved
+ to Untitled.scad in the application root directory.
+ Otherwise append  "_copy" to the base file name.
+ The QFileINfo does not provide a method to update only the file
+ name so the info needs to be broken down and reassembled.
+ The new name is then tested for existance and the save is
+ aborted if the user declines the save.
+ The file dialog is set to append the .scad suffix.
+
+ The name of the editor tab should NOT be changed
+ */
 bool TabManager::saveACopy(EditorInterface *edt)
 {
   assert(edt != nullptr);
 
-  const auto dir = edt->filepath.isEmpty() ? _("Untitled.scad") : edt->filepath;
-  auto filename =
-    QFileDialog::getSaveFileName(par, _("Save a Copy"), dir, _("OpenSCAD Designs (*.scad)"));
-  if (filename.isEmpty()) {
+  const QString path = edt->filepath;
+  // LOG("%1$s %2$s", _("dir path on entry "), path.toStdString().data());
+
+  QDir dir(path.isEmpty() ? _("Untitled.scad") : path);
+
+  QFileDialog saveCopyDialog;
+  saveCopyDialog.setAcceptMode(QFileDialog::AcceptSave);  // Set the dialog to "Save" mode.
+  saveCopyDialog.setWindowTitle("Save A Copy");
+  saveCopyDialog.setNameFilter("OpenSCAD Designs (*.scad)");
+  saveCopyDialog.setDefaultSuffix("scad");
+  saveCopyDialog.setViewMode(QFileDialog::List);
+  saveCopyDialog.setDirectory(dir);
+
+  if (!path.isEmpty()) {
+    QFileInfo info(path);
+    QString filecopy(info.absolutePath() % "/" % info.baseName() % "_copy.scad");
+    info.setFile(filecopy);
+
+    // LOG("%1$s %2$s", _("filename copy "), info.filePath().toUtf8().data());
+
+    if (info.exists()) {  // this is checking for filename_copy.scad
+      const auto text =
+        QString(_("%1 already exists.\nDo you want to replace it?")).arg(info.fileName());
+      if (QMessageBox::warning(par, par->windowTitle(), text, QMessageBox::Yes | QMessageBox::No,
+                               QMessageBox::No) != QMessageBox::Yes) {
+        return false;
+      }
+    }
+    dir.setPath(info.filePath());
+  }
+
+  // LOG("%1$s %2$s", _("dir after "), dir.absolutePath().toUtf8().data()  );
+
+  saveCopyDialog.setDirectory(dir.absolutePath());
+  if (saveCopyDialog.exec() != QDialog::Accepted) return false;
+
+  QStringList selectedFiles = saveCopyDialog.selectedFiles();
+  if (selectedFiles.isEmpty()) return false;
+
+  QString savefile = selectedFiles.first();
+
+  if (savefile.isEmpty()) return false;
+
+  QSaveFile file(savefile);
+  if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate | QIODevice::Text)) {
+    saveError(file, _("Failed to open file for writing"), path);
     return false;
   }
+  QTextStream writer(&file);
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+  writer.setCodec("UTF-8");
+#endif
+  writer << edt->toPlainText();
+  writer.flush();
 
-  if (QFileInfo(filename).suffix().isEmpty()) {
-    filename.append(".scad");
+  bool saveOk = writer.status() == QTextStream::Ok;
+  if (!saveOk) file.cancelWriting();
+  else {
+    saveOk = file.commit();
+    if (!saveOk) saveError(file, _("Error saving design"), savefile);
+    else LOG("Saved design '%1$s'.", savefile.toLocal8Bit().constData());
   }
-
-  return save(edt, filename);
+  return saveOk;
 }
 
 bool TabManager::saveAll()
