@@ -660,6 +660,11 @@ set(FILES_MANIFOLD_CORNER_CASES
   ${TEST_SCAD_DIR}/3D/features/rotate_extrude-touch-vertex.scad
 )
 
+# Manifoldness corner cases
+set(FILES_CGAL_CORNER_CASES
+  ${TEST_SCAD_DIR}/3D/features/rotate_extrude-touch-edge.scad
+)
+
 ##############################
 # Define test configurations #
 ##############################
@@ -784,7 +789,7 @@ add_cmdline_test(export-csg-nonascii  OPENSCAD FILES ${TEST_SCAD_DIR}/misc/sfær
 
 add_cmdline_test(render-cgal      OPENSCAD FILES ${RENDER_COMMON_FILES} EXPECTEDDIR render SUFFIX png ARGS --render --backend=cgal)
 add_cmdline_test(render-cgal      OPENSCAD FILES ${RENDER_DIFFERENT_EXPECTATIONS} SUFFIX png ARGS --render --backend=cgal)
-add_cmdline_test(render-force-cgal OPENSCAD SUFFIX png FILES ${RENDERFORCETEST_FILES} ${FILES_MANIFOLD_CORNER_CASES} ARGS --render=force --backend=cgal)
+add_cmdline_test(render-force-cgal OPENSCAD SUFFIX png FILES ${RENDERFORCETEST_FILES} ${FILES_CGAL_CORNER_CASES} ARGS --render=force --backend=cgal)
 add_cmdline_test(render-stdio-cgal OPENSCAD SUFFIX png FILES ${RENDERSTDIOTEST_FILES} STDIO EXPECTEDDIR render ARGS --export-format png --render --backend=cgal)
 if (ENABLE_MANIFOLD_TESTS)
 add_cmdline_test(render-manifold OPENSCAD FILES ${RENDER_COMMON_FILES} EXPECTEDDIR render SUFFIX png ARGS --render --backend=manifold)
