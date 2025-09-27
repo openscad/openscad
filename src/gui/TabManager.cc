@@ -690,7 +690,14 @@ bool TabManager::saveACopy(EditorInterface *edt)
   const QString path = edt->filepath;
   // LOG("%1$s %2$s", _("dir path on entry "), path.toStdString().data());
 
-  QDir dir(path.isEmpty() ? _("Untitled.scad") : path);
+  QDir dir(_("Untitled.scad"));
+
+  if (path.isEmpty()) {
+    QFileInfo info(path);
+    QString filecopy(info.absolutePath() % "/" % info.baseName() % "_copy.scad");
+    // LOG("%1$s %2$s", _("filename copy "), info.filePath().toUtf8().data());
+    dir.setPath(filecopy);
+  }
 
   QFileDialog saveCopyDialog;
   saveCopyDialog.setAcceptMode(QFileDialog::AcceptSave);  // Set the dialog to "Save" mode.
@@ -700,27 +707,8 @@ bool TabManager::saveACopy(EditorInterface *edt)
   saveCopyDialog.setViewMode(QFileDialog::List);
   saveCopyDialog.setDirectory(dir);
 
-  if (!path.isEmpty()) {
-    QFileInfo info(path);
-    QString filecopy(info.absolutePath() % "/" % info.baseName() % "_copy.scad");
-    info.setFile(filecopy);
-
-    // LOG("%1$s %2$s", _("filename copy "), info.filePath().toUtf8().data());
-
-    if (info.exists()) {  // this is checking for filename_copy.scad
-      const auto text =
-        QString(_("%1 already exists.\nDo you want to replace it?")).arg(info.fileName());
-      if (QMessageBox::warning(par, par->windowTitle(), text, QMessageBox::Yes | QMessageBox::No,
-                               QMessageBox::No) != QMessageBox::Yes) {
-        return false;
-      }
-    }
-    dir.setPath(info.filePath());
-  }
-
   // LOG("%1$s %2$s", _("dir after "), dir.absolutePath().toUtf8().data()  );
 
-  saveCopyDialog.setDirectory(dir.absolutePath());
   if (saveCopyDialog.exec() != QDialog::Accepted) return false;
 
   QStringList selectedFiles = saveCopyDialog.selectedFiles();
@@ -730,6 +718,15 @@ bool TabManager::saveACopy(EditorInterface *edt)
 
   if (savefile.isEmpty()) return false;
 
+  QFileInfo saveInfo(saveFile);
+  if (saveInfo.exists()) {  // checking for whatever file was given in the dialog
+      const auto text =
+        QString(_("%1 already exists.\nDo you want to replace it?")).arg(saveInfo.filePath());
+      if (QMessageBox::warning(par, par->windowTitle(), text, QMessageBox::Yes | QMessageBox::No,
+                               QMessageBox::No) != QMessageBox::Yes) {
+        return false;
+      }
+    }
   QSaveFile file(savefile);
   if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate | QIODevice::Text)) {
     saveError(file, _("Failed to open file for writing"), path);
