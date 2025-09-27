@@ -692,7 +692,7 @@ bool TabManager::saveACopy(EditorInterface *edt)
 
   QDir dir(_("Untitled.scad"));
 
-  if (path.isEmpty()) {
+  if (!path.isEmpty()) {
     QFileInfo info(path);
     QString filecopy(info.absolutePath() % "/" % info.baseName() % "_copy.scad");
     // LOG("%1$s %2$s", _("filename copy "), info.filePath().toUtf8().data());
@@ -718,15 +718,6 @@ bool TabManager::saveACopy(EditorInterface *edt)
 
   if (savefile.isEmpty()) return false;
 
-  QFileInfo saveInfo(saveFile);
-  if (saveInfo.exists()) {  // checking for whatever file was given in the dialog
-      const auto text =
-        QString(_("%1 already exists.\nDo you want to replace it?")).arg(saveInfo.filePath());
-      if (QMessageBox::warning(par, par->windowTitle(), text, QMessageBox::Yes | QMessageBox::No,
-                               QMessageBox::No) != QMessageBox::Yes) {
-        return false;
-      }
-    }
   QSaveFile file(savefile);
   if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate | QIODevice::Text)) {
     saveError(file, _("Failed to open file for writing"), path);
