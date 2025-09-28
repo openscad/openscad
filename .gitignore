@@ -1,5 +1,7 @@
 .uuid
 .cache/
+__pycache__/
+*.pyc
 .vs/
 .vscode/
 .idea/
