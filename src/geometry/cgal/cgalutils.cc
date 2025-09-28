@@ -17,6 +17,7 @@
 #include <utility>
 #include <memory>
 #include <CGAL/Aff_transformation_3.h>
+#include <CGAL/Polygon_mesh_processing/repair_polygon_soup.h>
 #include <CGAL/normal_vector_newell_3.h>
 #include <CGAL/Handle_hash_function.h>
 #include <CGAL/Surface_mesh.h>
@@ -25,6 +26,16 @@
 #include <CGAL/version.h>
 
 #include <CGAL/convex_hull_3.h>
+
+#include <CGAL/Polygon_mesh_processing/repair.h>
+#include <CGAL/Polygon_mesh_processing/polygon_soup_to_polygon_mesh.h>
+#include <CGAL/Polygon_mesh_processing/polygon_mesh_to_polygon_soup.h>
+#include <CGAL/Polygon_mesh_processing/connected_components.h>
+#include <CGAL/Polygon_mesh_processing/triangulate_faces.h>
+#include <CGAL/Polygon_mesh_processing/measure.h>
+#include <CGAL/Polygon_mesh_processing/compute_normal.h>
+#include <CGAL/Polygon_mesh_processing/orient_polygon_soup.h>
+namespace PMP = CGAL::Polygon_mesh_processing;
 
 #include "geometry/Reindexer.h"
 #include "geometry/GeometryUtils.h"
@@ -69,6 +80,13 @@ std::unique_ptr<CGALNefGeometry> createNefPolyhedronFromPolySet(const PolySet& p
     CGAL_Polyhedron r_exact;
     CGALUtils::copyPolyhedron(r, r_exact);
     return std::make_unique<CGALNefGeometry>(std::make_shared<CGAL_Nef_polyhedron3>(r_exact));
+  }
+
+  if (ps_tri->isManifold()) {
+    auto mesh = createSurfaceMeshFromPolySet<CGAL_DoubleMesh>(*ps_tri);
+    assert(mesh->is_valid() && CGAL::is_closed(*mesh));
+    auto nef = convertSurfaceMeshToNef(*mesh);
+    return std::make_unique<CGALNefGeometry>(std::make_shared<CGAL_Nef_polyhedron3>(std::move(nef)));
   }
 
   std::shared_ptr<CGAL_Nef_polyhedron3> N;
