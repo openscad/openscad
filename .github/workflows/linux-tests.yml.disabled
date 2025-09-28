@@ -31,7 +31,9 @@ jobs:
       env:
         DEBIAN_FRONTEND: noninteractive
         TZ: Etc/UTC
-      run: sudo ./scripts/uni-get-dependencies.sh ${{ matrix.qt }}
+      run: |
+        which sudo || apt install -y sudo
+        sudo ./scripts/uni-get-dependencies.sh ${{ matrix.qt }}
     - uses: actions/setup-python@v5
       with:
         python-version: '3.x'
