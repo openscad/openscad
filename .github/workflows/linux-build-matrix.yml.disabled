@@ -25,9 +25,7 @@ jobs:
       with:
         submodules: 'recursive'
     - name: Install dependencies
-      run: |
-        which sudo || apt install -y sudo
-        sudo ./scripts/uni-get-dependencies.sh
+      run: sudo ./scripts/uni-get-dependencies.sh
     - name: Run CMake
       run: >
         cmake -S . -B build -GNinja \

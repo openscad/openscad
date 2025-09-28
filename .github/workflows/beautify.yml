@@ -18,7 +18,6 @@ jobs:
 
     - name: Install dependencies
       run: |
-        which sudo || apt install -y sudo
         sudo apt update
         sudo apt -qq -y install clang-format
 

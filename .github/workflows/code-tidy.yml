@@ -20,7 +20,6 @@ jobs:
 
     - name: Install dependencies
       run: |
-        which sudo || apt install -y sudo
         sudo ./scripts/uni-get-dependencies.sh
         sudo apt -qq -y install clang-tidy
 
