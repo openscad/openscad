@@ -939,6 +939,7 @@ int cut_face_line(Vector3d fp, Vector3d fn, Vector3d lp, Vector3d ld, Vector3d& 
   return 0;
 }
 
+#ifdef ENABLE_MANIFOLD
 std::shared_ptr<Geometry> union_geoms(std::vector<std::shared_ptr<PolySet>> parts)  // TODO use widely
 {
   std::shared_ptr<ManifoldGeometry> result = nullptr;
@@ -961,6 +962,7 @@ std::shared_ptr<Geometry> difference_geoms(
   }
   return result;
 }
+#endif
 
 class Offset3D_CornerContext
 {
@@ -3186,10 +3188,13 @@ Response GeometryEvaluator::visit(State& state, const DebugNode& node)
   std::shared_ptr<const Geometry> geom = applyToChildren3D(node, OpenSCADOperator::UNION).constptr();
   if (geom) {
     std::shared_ptr<const PolySet> ps = nullptr;
+#ifdef ENABLE_MANIFOLD
     if (std::shared_ptr<const ManifoldGeometry> mani =
           std::dynamic_pointer_cast<const ManifoldGeometry>(geom))
       ps = mani->toPolySet();
-    else ps = std::dynamic_pointer_cast<const PolySet>(geom);
+    else
+#endif
+      ps = std::dynamic_pointer_cast<const PolySet>(geom);
     if (ps != nullptr) {
       std::unique_ptr<Geometry> ps_pulled = debugObject(node, ps.get());
       newgeom = std::move(ps_pulled);
@@ -3311,10 +3316,13 @@ Response GeometryEvaluator::visit(State& state, const RepairNode& node)
   std::shared_ptr<const Geometry> geom = applyToChildren3D(node, OpenSCADOperator::UNION).constptr();
   if (geom) {
     std::shared_ptr<const PolySet> ps = nullptr;
+#ifdef ENABLE_MANIFOLD
     if (std::shared_ptr<const ManifoldGeometry> mani =
           std::dynamic_pointer_cast<const ManifoldGeometry>(geom))
       ps = mani->toPolySet();
-    else ps = std::dynamic_pointer_cast<const PolySet>(geom);
+    else
+#endif
+      ps = std::dynamic_pointer_cast<const PolySet>(geom);
     if (ps != nullptr) {
       std::unique_ptr<Geometry> ps_pulled = repairObject(node, ps.get());
       newgeom = std::move(ps_pulled);
