@@ -31,9 +31,7 @@
 #include <filesystem>
 
 #include "core/Settings.h"
-#ifndef OPENSCAD_NOGUI
 #include "executable.h"
-#endif
 #include "platform/PlatformUtils.h"
 
 #include "pyopenscad.h"
