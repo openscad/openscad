@@ -1679,8 +1679,6 @@ if(NOT APPLE OR APPLE_UNIX)
   install(TARGETS OpenSCAD RUNTIME DESTINATION "${OPENSCAD_BINDIR}")
   if(ENABLE_PYTHON)
     install(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/pythonscad-python DESTINATION "${OPENSCAD_BINDIR}")
-    # Install Python wrapper module
-    install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/src/python/openscad.py DESTINATION "${OPENSCAD_INSTALL_RESOURCEDIR}/libraries/python")
   endif()
   if(WIN32)
     if(ENABLE_PYTHON)

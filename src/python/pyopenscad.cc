@@ -43,7 +43,7 @@
 namespace fs = std::filesystem;
 
 // #define HAVE_PYTHON_YIELD
-extern "C" PyObject *PyInit__openscad(void);
+extern "C" PyObject *PyInit_openscad(void);
 PyMODINIT_FUNC PyInit_PyOpenSCAD(void);
 
 bool python_active;
@@ -851,7 +851,7 @@ void initPython(const std::string& binDir, const std::string& scriptpath, double
 #ifdef HAVE_PYTHON_YIELD
     set_object_callback(openscad_object_callback);
 #endif
-    PyImport_AppendInittab("_openscad", &PyInit_PyOpenSCAD);
+    PyImport_AppendInittab("openscad", &PyInit_PyOpenSCAD);
     PyImport_AppendInittab("libfive", &PyInit_data);
     PyConfig config;
     PyConfig_InitPythonConfig(&config);
@@ -862,18 +862,16 @@ void initPython(const std::string& binDir, const std::string& scriptpath, double
     char sepchar = ';';
     sep = sepchar;
     stream << PlatformUtils::applicationPath() << "\\..\\libraries\\python";
-    stream << sep << PlatformUtils::applicationPath() << "\\python";
 #else
     char sepchar = ':';
     const auto pythonXY =
       "python" + std::to_string(PY_MAJOR_VERSION) + "." + std::to_string(PY_MINOR_VERSION);
-    const std::array<std::string, 6> paths = {
+    const std::array<std::string, 5> paths = {
       "../libraries/python",
       "../lib/" + pythonXY,
       "../python/lib/" + pythonXY,
       "../Frameworks/" + pythonXY,
       "../Frameworks/" + pythonXY + "/site-packages",
-      std::string("../share/") + EXECUTABLE_NAME + "/python",
     };
     for (const auto& path : paths) {
       const auto p = fs::path(PlatformUtils::applicationPath() + fs::path::preferred_separator + path);
@@ -908,9 +906,6 @@ void initPython(const std::string& binDir, const std::string& scriptpath, double
     pythonRuntimeInitialized = pythonInitDict != nullptr;
     PyInit_PyData();
     PyRun_String("from builtins import *\n", Py_file_input, pythonInitDict.get(), pythonInitDict.get());
-    // Import the openscad wrapper module to make it available as 'openscad'
-    PyRun_String("try:\n    import openscad\nexcept ImportError:\n    pass\n", Py_file_input,
-                 pythonInitDict.get(), pythonInitDict.get());
     PyObject *key, *value;
     Py_ssize_t pos = 0;
     PyObject *maindict = PyModule_GetDict(pythonMainModule.get());
@@ -1169,7 +1164,7 @@ PyTypeObject PyOpenSCADType = {
 };
 
 static PyModuleDef OpenSCADModule = {PyModuleDef_HEAD_INIT,
-                                     "_openscad",
+                                     "openscad",
                                      "OpenSCAD Python Module",
                                      -1,
                                      PyOpenSCADFunctions,
@@ -1178,7 +1173,7 @@ static PyModuleDef OpenSCADModule = {PyModuleDef_HEAD_INIT,
                                      NULL,
                                      NULL};
 
-extern "C" PyObject *PyInit__openscad(void) { return PyModule_Create(&OpenSCADModule); }
+extern "C" PyObject *PyInit_openscad(void) { return PyModule_Create(&OpenSCADModule); }
 
 PyMODINIT_FUNC PyInit_PyOpenSCAD(void)
 {
@@ -1186,7 +1181,7 @@ PyMODINIT_FUNC PyInit_PyOpenSCAD(void)
 
   if (PyType_Ready(&PyOpenSCADType) < 0) return NULL;
 
-  m = PyInit__openscad();
+  m = PyInit_openscad();
   if (m == NULL) return NULL;
 
   Py_INCREF(&PyOpenSCADType);
