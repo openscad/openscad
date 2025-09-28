@@ -17,7 +17,9 @@ jobs:
       with:
         submodules: 'recursive'
     - name: Install dependencies
-      run: ./scripts/uni-get-dependencies.sh
+      run: |
+        which sudo || apt install -y sudo
+        sudo ./scripts/uni-get-dependencies.sh
     - uses: actions/setup-python@v5
       with:
         python-version: '3.x'
