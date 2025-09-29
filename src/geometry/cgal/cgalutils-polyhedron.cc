@@ -272,10 +272,19 @@ void convertNefToSurfaceMesh(const CGAL_Nef_polyhedron3& nef, SurfaceMesh& mesh)
   CGAL::convert_nef_polyhedron_to_polygon_mesh(nef, mesh, triangulate);
 }
 
-CGAL_Nef_polyhedron3 convertSurfaceMeshToNef(const CGAL_Kernel3Mesh& mesh)
+template <typename SurfaceMesh>
+CGAL_Nef_polyhedron3 convertSurfaceMeshToNef(const SurfaceMesh& mesh)
 {
-  return CGAL_Nef_polyhedron3(mesh);
+  if constexpr (std::is_same<SurfaceMesh, CGAL_Kernel3Mesh>::value) {
+    return CGAL_Nef_polyhedron3(mesh);
+  } else {
+    CGAL_Kernel3Mesh tempMesh;
+    copy_face_graph(mesh, tempMesh);
+    return CGAL_Nef_polyhedron3(tempMesh);
+  }
 }
+template CGAL_Nef_polyhedron3 convertSurfaceMeshToNef(const CGAL_Kernel3Mesh& mesh);
+template CGAL_Nef_polyhedron3 convertSurfaceMeshToNef(const CGAL_DoubleMesh& mesh);
 
 template <typename Polyhedron>
 bool createPolyhedronFromPolySet(const PolySet& ps, Polyhedron& p)
