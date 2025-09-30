@@ -37,7 +37,10 @@ jobs:
         # queries: ./path/to/local/query, your-org/your-repo/queries@main
 
     - name: Install dependencies
-      run: ./scripts/github-ci-linux-get-dependencies.sh
+      run: |
+        which sudo || apt install -y sudo
+        sudo ./scripts/uni-get-dependencies.sh
+
     - name: Build
       run: ./scripts/github-ci.sh experimental build
 
