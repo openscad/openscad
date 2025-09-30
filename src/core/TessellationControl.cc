@@ -33,13 +33,15 @@ TessellationControl::TessellationControl(const Parameters& parameters, const Mod
    Returns the number of subdivision of a whole circle, given radius and
    the three special variables $fn, $fs and $fa
  */
-std::optional<int> TessellationControl::circular_segments(double r) const
+std::optional<int> TessellationControl::circular_segments(double r, double angle_degrees) const
 {
   // FIXME: It would be better to refuse to create an object. Let's do more strict error handling
   // in future versions of OpenSCAD
   if (r < GRID_FINE || std::isinf(fn) || std::isnan(fn)) return {};
-  if (fn > 0.0) return static_cast<int>(fn >= 3 ? fn : 3);
-  return static_cast<int>(ceil(fmax(fmin(360.0 / fa, r * 2 * M_PI / fs), 5)));
+  if (fn > 0.0) return max(static_cast<int>(ceil((fn >= 3 ? fn : 3) * abs(angle_degrees) / 360.0)), 1);
+  return max(
+    static_cast<int>(ceil(fmax(fmin(360.0 / fa, r * 2 * M_PI / fs), 5) * abs(angle_degrees) / 360.0)),
+    1);
 }
 
 std::ostream& operator<<(std::ostream& stream, const TessellationControl& f)

@@ -11,7 +11,7 @@ class TessellationControl
 {
 public:
   TessellationControl(const Parameters& parameters, const ModuleInstantiation *inst = nullptr);
-  std::optional<int> circular_segments(double r) const;
+  std::optional<int> circular_segments(double r, double angle_degrees = 360.0) const;
   friend std::ostream& operator<<(std::ostream& stream, const TessellationControl& f);
 
 private:

@@ -5,6 +5,7 @@
 #include "core/node.h"
 #include "core/ModuleInstantiation.h"
 #include "core/Value.h"
+#include "core/TessellationControl.h"
 
 class RotateExtrudeNode : public AbstractPolyNode
 {
@@ -13,7 +14,6 @@ public:
   RotateExtrudeNode(const ModuleInstantiation *mi) : AbstractPolyNode(mi)
   {
     convexity = 0;
-    fn = fs = fa = 0;
     angle = 360;
     start = 0;
   }
@@ -21,6 +21,6 @@ public:
   std::string name() const override { return "rotate_extrude"; }
 
   int convexity;
-  double fn, fs, fa;
+  TessellationControl tess;
   double angle, start;
 };
