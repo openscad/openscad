@@ -27,6 +27,7 @@
 #include "core/primitives.h"
 
 #include "geometry/Geometry.h"
+#include "geometry/Grid.h"
 #include "geometry/linalg.h"
 #include "geometry/PolySet.h"
 #include "geometry/Polygon2d.h"
@@ -94,25 +95,6 @@ static Value lookup_radius(const Parameters& parameters, const ModuleInstantiati
     return r.clone();
   } else {
     return Value::undefined.clone();
-  }
-}
-
-static void set_fragments(const Parameters& parameters, const ModuleInstantiation *inst, double& fn,
-                          double& fs, double& fa)
-{
-  fn = parameters["$fn"].toDouble();
-  fs = parameters["$fs"].toDouble();
-  fa = parameters["$fa"].toDouble();
-
-  if (fs < F_MINIMUM) {
-    LOG(message_group::Warning, inst->location(), parameters.documentRoot(),
-        "$fs too small - clamping to %1$f", F_MINIMUM);
-    fs = F_MINIMUM;
-  }
-  if (fa < F_MINIMUM) {
-    LOG(message_group::Warning, inst->location(), parameters.documentRoot(),
-        "$fa too small - clamping to %1$f", F_MINIMUM);
-    fa = F_MINIMUM;
   }
 }
 
@@ -192,7 +174,7 @@ std::unique_ptr<const Geometry> SphereNode::createGeometry() const
     return PolySet::createEmpty();
   }
 
-  auto num_fragments = Calc::get_fragments_from_r(r, fn, fs, fa);
+  int num_fragments = fragments.subdivisions_from_r(r).value_or(3);
   auto num_rings = (num_fragments + 1) / 2;
   // Uncomment the following three lines to enable experimental sphere
   // tessellation
@@ -236,11 +218,10 @@ std::unique_ptr<const Geometry> SphereNode::createGeometry() const
 
 static std::shared_ptr<AbstractNode> builtin_sphere(const ModuleInstantiation *inst, Arguments arguments)
 {
-  auto node = std::make_shared<SphereNode>(inst);
-
   Parameters parameters = Parameters::parse(std::move(arguments), inst->location(), {"r"}, {"d"});
 
-  set_fragments(parameters, inst, node->fn, node->fs, node->fa);
+  auto node = std::make_shared<SphereNode>(inst, Fragments(parameters, inst));
+
   const auto r = lookup_radius(parameters, inst, "d", "r");
   if (r.type() == Value::Type::NUMBER) {
     node->r = r.toDouble();
@@ -260,8 +241,7 @@ std::unique_ptr<const Geometry> CylinderNode::createGeometry() const
     return PolySet::createEmpty();
   }
 
-  auto num_fragments =
-    Calc::get_fragments_from_r(std::fmax(this->r1, this->r2), this->fn, this->fs, this->fa);
+  int num_fragments = fragments.subdivisions_from_r(std::fmax(this->r1, this->r2)).value_or(3);
 
   double z1, z2;
   if (this->center) {
@@ -316,12 +296,10 @@ std::unique_ptr<const Geometry> CylinderNode::createGeometry() const
 static std::shared_ptr<AbstractNode> builtin_cylinder(const ModuleInstantiation *inst,
                                                       Arguments arguments)
 {
-  auto node = std::make_shared<CylinderNode>(inst);
-
   Parameters parameters = Parameters::parse(std::move(arguments), inst->location(),
                                             {"h", "r1", "r2", "center"}, {"r", "d", "d1", "d2"});
+  auto node = std::make_shared<CylinderNode>(inst, Fragments(parameters, inst));
 
-  set_fragments(parameters, inst, node->fn, node->fs, node->fa);
   if (parameters["h"].type() == Value::Type::NUMBER) {
     node->h = parameters["h"].toDouble();
   }
@@ -564,11 +542,11 @@ std::unique_ptr<const Geometry> CircleNode::createGeometry() const
     return std::make_unique<Polygon2d>();
   }
 
-  auto fragments = Calc::get_fragments_from_r(this->r, this->fn, this->fs, this->fa);
+  int num_fragments = fragments.subdivisions_from_r(this->r).value_or(3);
   Outline2d o;
-  o.vertices.resize(fragments);
-  for (int i = 0; i < fragments; ++i) {
-    double phi = (360.0 * i) / fragments;
+  o.vertices.resize(num_fragments);
+  for (int i = 0; i < num_fragments; ++i) {
+    double phi = (360.0 * i) / num_fragments;
     o.vertices[i] = {this->r * cos_degrees(phi), this->r * sin_degrees(phi)};
   }
   return std::make_unique<Polygon2d>(o);
@@ -576,11 +554,9 @@ std::unique_ptr<const Geometry> CircleNode::createGeometry() const
 
 static std::shared_ptr<AbstractNode> builtin_circle(const ModuleInstantiation *inst, Arguments arguments)
 {
-  auto node = std::make_shared<CircleNode>(inst);
-
   Parameters parameters = Parameters::parse(std::move(arguments), inst->location(), {"r"}, {"d"});
+  auto node = std::make_shared<CircleNode>(inst, Fragments(parameters, inst));
 
-  set_fragments(parameters, inst, node->fn, node->fs, node->fa);
   const auto r = lookup_radius(parameters, inst, "d", "r");
   if (r.type() == Value::Type::NUMBER) {
     node->r = r.toDouble();
@@ -784,4 +760,45 @@ void register_builtin_primitives()
                    "polygon([points])",
                    "polygon([points], [paths])",
                  });
+}
+
+Fragments::Fragments(const Parameters& parameters, const ModuleInstantiation *inst)
+{
+  fn = parameters["$fn"].toDouble();
+  fs = parameters["$fs"].toDouble();
+  fa = parameters["$fa"].toDouble();
+
+  if (fs < F_MINIMUM) {
+    if (inst) {
+      LOG(message_group::Warning, inst->location(), parameters.documentRoot(),
+          "$fs too small - clamping to %1$f", F_MINIMUM);
+    }
+    fs = F_MINIMUM;
+  }
+  if (fa < F_MINIMUM) {
+    if (inst) {
+      LOG(message_group::Warning, inst->location(), parameters.documentRoot(),
+          "$fa too small - clamping to %1$f", F_MINIMUM);
+    }
+    fa = F_MINIMUM;
+  }
+}
+
+/*!
+   Returns the number of subdivision of a whole circle, given radius and
+   the three special variables $fn, $fs and $fa
+ */
+std::optional<int> Fragments::subdivisions_from_r(double r) const
+{
+  // FIXME: It would be better to refuse to create an object. Let's do more strict error handling
+  // in future versions of OpenSCAD
+  if (r < GRID_FINE || std::isinf(fn) || std::isnan(fn)) return {};
+  if (fn > 0.0) return static_cast<int>(fn >= 3 ? fn : 3);
+  return static_cast<int>(ceil(fmax(fmin(360.0 / fa, r * 2 * M_PI / fs), 5)));
+}
+
+std::ostream& operator<<(std::ostream& stream, const Fragments& f)
+{
+  stream << "$fn = " << f.fn << ", $fa = " << f.fa << ", $fs = " << f.fs;
+  return stream;
 }

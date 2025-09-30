@@ -36,6 +36,19 @@
 #include <string>
 #include <vector>
 
+class Parameters;
+class Fragments
+{
+public:
+  Fragments(const Parameters& parameters, const ModuleInstantiation *inst = nullptr);
+  std::optional<int> subdivisions_from_r(double r) const;
+  friend std::ostream& operator<<(std::ostream& stream, const Fragments& f);
+
+private:
+  double fn, fs, fa;
+};
+std::ostream& operator<<(std::ostream& stream, const Fragments& f);
+
 class CubeNode : public LeafNode
 {
 public:
@@ -57,36 +70,41 @@ public:
 class SphereNode : public LeafNode
 {
 public:
-  SphereNode(const ModuleInstantiation *mi) : LeafNode(mi) {}
+  SphereNode(const ModuleInstantiation *mi, Fragments&& fragments)
+    : LeafNode(mi), fragments(std::move(fragments))
+  {
+  }
   std::string toString() const override
   {
     std::ostringstream stream;
-    stream << "sphere" << "($fn = " << fn << ", $fa = " << fa << ", $fs = " << fs << ", r = " << r
-           << ")";
+    stream << "sphere(" << fragments << ", r = " << r << ")";
     return stream.str();
   }
   std::string name() const override { return "sphere"; }
   std::unique_ptr<const Geometry> createGeometry() const override;
 
-  double fn, fs, fa;
+  Fragments fragments;
   double r = 1;
 };
 
 class CylinderNode : public LeafNode
 {
 public:
-  CylinderNode(const ModuleInstantiation *mi) : LeafNode(mi) {}
+  CylinderNode(const ModuleInstantiation *mi, Fragments&& fragments)
+    : LeafNode(mi), fragments(std::move(fragments))
+  {
+  }
   std::string toString() const override
   {
     std::ostringstream stream;
-    stream << "cylinder" << "($fn = " << fn << ", $fa = " << fa << ", $fs = " << fs << ", h = " << h
-           << ", r1 = " << r1 << ", r2 = " << r2 << ", center = " << (center ? "true" : "false") << ")";
+    stream << "cylinder(" << fragments << ", h = " << h << ", r1 = " << r1 << ", r2 = " << r2
+           << ", center = " << (center ? "true" : "false") << ")";
     return stream.str();
   }
   std::string name() const override { return "cylinder"; }
   std::unique_ptr<const Geometry> createGeometry() const override;
 
-  double fn, fs, fa;
+  Fragments fragments;
   double r1 = 1, r2 = 1, h = 1;
   bool center = false;
 };
@@ -125,18 +143,20 @@ public:
 class CircleNode : public LeafNode
 {
 public:
-  CircleNode(const ModuleInstantiation *mi) : LeafNode(mi) {}
+  CircleNode(const ModuleInstantiation *mi, Fragments&& fragments)
+    : LeafNode(mi), fragments(std::move(fragments))
+  {
+  }
   std::string toString() const override
   {
     std::ostringstream stream;
-    stream << "circle" << "($fn = " << fn << ", $fa = " << fa << ", $fs = " << fs << ", r = " << r
-           << ")";
+    stream << "circle(" << fragments << ", r = " << r << ")";
     return stream.str();
   }
   std::string name() const override { return "circle"; }
   std::unique_ptr<const Geometry> createGeometry() const override;
 
-  double fn, fs, fa;
+  Fragments fragments;
   double r = 1;
 };
 
