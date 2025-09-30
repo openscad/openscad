@@ -29,25 +29,13 @@
 #include "geometry/Geometry.h"
 #include "geometry/linalg.h"
 #include "core/node.h"
+#include "core/TessellationControl.h"
 
 #include <memory>
 #include <cstddef>
 #include <sstream>
 #include <string>
 #include <vector>
-
-class Parameters;
-class Fragments
-{
-public:
-  Fragments(const Parameters& parameters, const ModuleInstantiation *inst = nullptr);
-  std::optional<int> subdivisions_from_r(double r) const;
-  friend std::ostream& operator<<(std::ostream& stream, const Fragments& f);
-
-private:
-  double fn, fs, fa;
-};
-std::ostream& operator<<(std::ostream& stream, const Fragments& f);
 
 class CubeNode : public LeafNode
 {
@@ -70,7 +58,7 @@ public:
 class SphereNode : public LeafNode
 {
 public:
-  SphereNode(const ModuleInstantiation *mi, Fragments&& fragments)
+  SphereNode(const ModuleInstantiation *mi, TessellationControl&& fragments)
     : LeafNode(mi), fragments(std::move(fragments))
   {
   }
@@ -83,14 +71,14 @@ public:
   std::string name() const override { return "sphere"; }
   std::unique_ptr<const Geometry> createGeometry() const override;
 
-  Fragments fragments;
+  TessellationControl fragments;
   double r = 1;
 };
 
 class CylinderNode : public LeafNode
 {
 public:
-  CylinderNode(const ModuleInstantiation *mi, Fragments&& fragments)
+  CylinderNode(const ModuleInstantiation *mi, TessellationControl&& fragments)
     : LeafNode(mi), fragments(std::move(fragments))
   {
   }
@@ -104,7 +92,7 @@ public:
   std::string name() const override { return "cylinder"; }
   std::unique_ptr<const Geometry> createGeometry() const override;
 
-  Fragments fragments;
+  TessellationControl fragments;
   double r1 = 1, r2 = 1, h = 1;
   bool center = false;
 };
@@ -143,7 +131,7 @@ public:
 class CircleNode : public LeafNode
 {
 public:
-  CircleNode(const ModuleInstantiation *mi, Fragments&& fragments)
+  CircleNode(const ModuleInstantiation *mi, TessellationControl&& fragments)
     : LeafNode(mi), fragments(std::move(fragments))
   {
   }
@@ -156,7 +144,7 @@ public:
   std::string name() const override { return "circle"; }
   std::unique_ptr<const Geometry> createGeometry() const override;
 
-  Fragments fragments;
+  TessellationControl fragments;
   double r = 1;
 };
 
