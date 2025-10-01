@@ -60,5 +60,7 @@ private:
 
   // Sometimes it's useful to know whether a PolySet was created from a source guaranteed to be manifold
   // (e.g. ManifoldGeometry), as that can make conversion and repair more convenient.
+  // "Manifold" is defined as an ε-valid mesh, see
+  // https://github.com/elalish/manifold/wiki/Manifold-Library#definition-of-%CE%B5-valid
   bool is_manifold_ = false;  // false means "unknown"
 };
