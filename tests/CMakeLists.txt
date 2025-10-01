@@ -1392,6 +1392,47 @@ elseif(WIN32 OR MXECROSS)
   )
 endif()
 
+if(NOT ENABLE_MANIFOLD)
+  disable_tests_safe(
+    throwntogether-manifold_issue2301
+    export-pov-as-is_pov-export
+    export-pov-translate-1_pov-export
+    export-pov-translate-2_pov-export
+    export-pov-translate-3_pov-export
+    export-pov-translate-4_pov-export
+    export-pov-rotate-1_pov-export
+    export-pov-rotate-2_pov-export
+    export-pov-rotate-3_pov-export
+    export-pov-distance-1_pov-export
+    export-pov-all_pov-export
+    render-3mf-manifold_bad-stl-tardis
+    render-3mf-manifold_bad-stl-wing
+    render-3mf-manifold_issue904
+    render-3mf-manifold_issue1105
+    render-3mf-manifold_issue1105b
+    render-3mf-manifold_issue1105d
+    render-3mf-manifold_issue1215c
+    render-3mf-manifold_internal-cavity
+    render-3mf-manifold_internal-cavity-polyhedron
+    render-3mf-manifold_rotate_extrude-hole
+    render-3mf-manifold_polyhedron-tests
+    offcolorpngtest_color-cubes
+    offcolorpngtest_color-tests3
+    offcolorpngtest_linear_extrude-parameter-tests
+    offcolorpngtest_resize-tests
+    3mfcolorpngtest_color-cubes
+    3mfcolorpngtest_color-tests3
+    3mfcolorpngtest_linear_extrude-parameter-tests
+    3mfcolorpngtest_resize-tests
+    render-view-crosshairs_view-options-tests
+    preview-view-edges-manifold_render-preserve-colors
+    render-view-edges-manifold_render-preserve-colors
+    openscad-colorscheme-metallic-render_CSG
+    lazyunion-render_lazyunion-difference-for
+    render-manifold_roof
+  ) 
+endif()
+
 ####################
 # Extra Debug Info #
 ####################
