@@ -1438,6 +1438,7 @@ elseif(MINGW)
   set_target_properties(OpenSCAD PROPERTIES
     LINK_FLAGS "-Wl,--stack,${STACKSIZE}"
   )
+  set_property(TARGET OpenSCAD APPEND_STRING PROPERTY LINK_FLAGS " -municode")
 elseif(MSVC)
   set_target_properties(OpenSCAD PROPERTIES
     LINK_FLAGS "-subsystem:windows -ENTRY:mainCRTStartup -stack:${STACKSIZE}"

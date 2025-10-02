@@ -117,7 +117,7 @@ function(add_cmdline_test TESTCMD_BASENAME)
 
   # python script implies Python3_EXECUTABLE
   if (TESTCMD_SCRIPT MATCHES \\.[Pp][Yy]$)
-    set(TESTCMD_EXE ${Python3_EXECUTABLE})
+    set(TESTCMD_EXE ${Python3_EXECUTABLE} -Xutf8=1)
   endif()
   if (TESTCMD_OPENSCAD)
     set(TESTCMD_EXE ${OPENSCAD_BINPATH})
@@ -176,7 +176,7 @@ function(add_cmdline_test TESTCMD_BASENAME)
 
     string(JOIN " " DBG_COMMAND_STR
       "add_test(" ${TEST_FULLNAME} CONFIGURATIONS ${CONFVAL}
-      COMMAND ${Python3_EXECUTABLE}
+      COMMAND ${Python3_EXECUTABLE} -Xutf8=1
       ${TEST_CMDLINE_TOOL_PY} ${COMPARATOR} -c ${IMAGE_COMPARE_EXE}
       -s ${TESTCMD_SUFFIX} ${EXTRA_OPTIONS} ${TESTNAME_OPTION} ${FILENAME_OPTION}
       ${TESTCMD_EXE} ${TESTCMD_SCRIPT} ${SCADFILE} ${CAMERA_OPTION}
@@ -188,7 +188,7 @@ function(add_cmdline_test TESTCMD_BASENAME)
       # Use cmake option "--log-level DEBUG" during top level config to see this
       message(DEBUG "${DBG_COMMAND_STR}")      
       add_test(NAME ${TEST_FULLNAME} CONFIGURATIONS ${CONFVAL}
-        COMMAND ${Python3_EXECUTABLE}
+        COMMAND ${Python3_EXECUTABLE} -Xutf8=1
         ${TEST_CMDLINE_TOOL_PY} ${COMPARATOR} -c ${IMAGE_COMPARE_EXE}
         -s ${TESTCMD_SUFFIX} ${EXTRA_OPTIONS} ${TESTNAME_OPTION} ${FILENAME_OPTION}
         ${TESTCMD_EXE} ${TESTCMD_SCRIPT} "${SCADFILE}" ${CAMERA_OPTION}
