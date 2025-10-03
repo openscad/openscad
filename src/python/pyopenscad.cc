@@ -140,7 +140,7 @@ std::shared_ptr<AbstractNode> PyOpenSCADObjectToNodeMulti(PyObject *objs, PyObje
     }
     *dict = ((PyOpenSCADObject *)objs)->dict;
   } else if (PyList_Check(objs)) {
-    DECLARE_INSTANCE
+    DECLARE_INSTANCE();
     auto node = std::make_shared<CsgOpNode>(instance, OpenSCADOperator::UNION);
 
     int n = PyList_Size(objs);
@@ -256,6 +256,7 @@ std::vector<Vector3d> python_vectors(PyObject *vec, int mindim, int maxdim)
 
 void get_fnas(double& fn, double& fa, double& fs)
 {
+  // TODO: coryrc - Delete this function
   PyObject *mainModule = PyImport_AddModule("__main__");
   if (mainModule == nullptr) return;
   fn = 0;

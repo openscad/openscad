@@ -11,7 +11,8 @@ class RotateExtrudeNode : public AbstractPolyNode
 {
 public:
   VISITABLE();
-  RotateExtrudeNode(const ModuleInstantiation *mi) : AbstractPolyNode(mi)
+  RotateExtrudeNode(const ModuleInstantiation *mi, TessellationControl&& tess)
+    : AbstractPolyNode(mi), tess(tess)
   {
     convexity = 0;
     angle = 360;
