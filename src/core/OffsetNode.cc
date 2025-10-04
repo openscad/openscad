@@ -26,11 +26,11 @@
 
 #include "core/OffsetNode.h"
 
+#include "core/Builtins.h"
 #include "core/Children.h"
 #include "core/module.h"
 #include "core/ModuleInstantiation.h"
 #include "core/Parameters.h"
-#include "core/Builtins.h"
 
 #include <clipper2/clipper.offset.h>
 #include <ios>
@@ -43,14 +43,9 @@ using namespace boost::assign;  // bring 'operator+=()' into scope
 static std::shared_ptr<AbstractNode> builtin_offset(const ModuleInstantiation *inst, Arguments arguments,
                                                     const Children& children)
 {
-  auto node = std::make_shared<OffsetNode>(inst);
-
   Parameters parameters =
     Parameters::parse(std::move(arguments), inst->location(), {"r"}, {"delta", "chamfer"});
-
-  node->fn = parameters["$fn"].toDouble();
-  node->fs = parameters["$fs"].toDouble();
-  node->fa = parameters["$fa"].toDouble();
+  auto node = std::make_shared<OffsetNode>(inst, TessellationControl(parameters));
 
   // default with no argument at all is (r = 1, chamfer = false)
   // radius takes precedence if both r and delta are given.
@@ -82,7 +77,7 @@ std::string OffsetNode::toString() const
   if (!isRadius) {
     stream << ", chamfer = " << (this->chamfer ? "true" : "false");
   }
-  stream << ", $fn = " << this->fn << ", $fa = " << this->fa << ", $fs = " << this->fs << ")";
+  stream << ", " << this->tess << ")";
 
   return stream.str();
 }

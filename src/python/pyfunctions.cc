@@ -1967,11 +1967,11 @@ PyObject *python_textmetrics(PyObject *self, PyObject *args, PyObject *kwargs)
   return (PyObject *)dict;
 }
 
-PyObject *python_offset_core(PyObject *obj, double r, double delta, PyObject *chamfer, double fn,
-                             double fa, double fs)
+PyObject *python_offset_core(PyObject *obj, double r, double delta, PyObject *chamfer,
+                             TessellationControl&& tess)
 {
   DECLARE_INSTANCE();
-  auto node = std::make_shared<OffsetNode>(instance);
+  auto node = std::make_shared<OffsetNode>(instance, std::move(tess));
 
   PyObject *dummydict;
   std::shared_ptr<AbstractNode> child = PyOpenSCADObjectToNodeMulti(obj, &dummydict);
@@ -1979,11 +1979,6 @@ PyObject *python_offset_core(PyObject *obj, double r, double delta, PyObject *ch
     PyErr_SetString(PyExc_TypeError, "Invalid type for Object in offset");
     return NULL;
   }
-
-  get_fnas(node->fn, node->fa, node->fs);
-  if (!isnan(fn)) node->fn = fn;
-  if (!isnan(fa)) node->fa = fa;
-  if (!isnan(fs)) node->fs = fs;
 
   node->delta = 1;
   node->chamfer = false;
@@ -2008,31 +2003,27 @@ PyObject *python_offset_core(PyObject *obj, double r, double delta, PyObject *ch
 
 PyObject *python_offset(PyObject *self, PyObject *args, PyObject *kwargs)
 {
-  char *kwlist[] = {"obj", "r", "delta", "chamfer", "fn", "fa", "fs", NULL};
+  char *kwlist[] = {"obj", "r", "delta", "chamfer", NULL};
   PyObject *obj = NULL;
   double r = NAN, delta = NAN;
   PyObject *chamfer = NULL;
-  double fn = NAN, fa = NAN, fs = NAN;
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O|ddOddd", kwlist, &obj, &r, &delta, &chamfer, &fn,
-                                   &fa, &fs)) {
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O|ddO", kwlist, &obj, &r, &delta, &chamfer)) {
     PyErr_SetString(PyExc_TypeError, "Error during parsing offset(object,r,delta)");
     return NULL;
   }
-  return python_offset_core(obj, r, delta, chamfer, fn, fa, fs);
+  return python_offset_core(obj, r, delta, chamfer, TessellationControl(kwargs));
 }
 
 PyObject *python_oo_offset(PyObject *obj, PyObject *args, PyObject *kwargs)
 {
-  char *kwlist[] = {"r", "delta", "chamfer", "fn", "fa", "fs", NULL};
+  char *kwlist[] = {"r", "delta", "chamfer", NULL};
   double r = NAN, delta = NAN;
   PyObject *chamfer = NULL;
-  double fn = NAN, fa = NAN, fs = NAN;
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|ddOddd", kwlist, &r, &delta, &chamfer, &fn, &fa,
-                                   &fs)) {
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|ddO", kwlist, &r, &delta, &chamfer)) {
     PyErr_SetString(PyExc_TypeError, "Error during parsing offset(object,r,delta)");
     return NULL;
   }
-  return python_offset_core(obj, r, delta, chamfer, fn, fa, fs);
+  return python_offset_core(obj, r, delta, chamfer, TessellationControl(kwargs));
 }
 
 PyObject *python_projection_core(PyObject *obj, const char *cutmode, int convexity)
