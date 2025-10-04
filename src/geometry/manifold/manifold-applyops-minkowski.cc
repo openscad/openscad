@@ -101,10 +101,11 @@ std::shared_ptr<const Geometry> applyMinkowski(const Geometry::Geometries& child
           } else {
             // The CGAL_Nef_polyhedron3 constructor can crash on bad polyhedron, so don't try
             if (!mesh->is_valid()) throw 0;
-            CGAL_Nef_polyhedron3 decomposed_nef;
-            CGALUtils::convertSurfaceMeshToNef(*mesh, decomposed_nef);
+            CGAL_Nef_polyhedron3 decomposed_nef = CGALUtils::convertSurfaceMeshToNef(*mesh);
             CGAL::Timer t;
             t.start();
+            // TODO(kintel): If !decomposed_nef.is_valid(), we probably should not continue. When will
+            // this happen though?
             CGAL::convex_decomposition_3(decomposed_nef);
 
             // the first volume is the outer volume, which ignored in the decomposition

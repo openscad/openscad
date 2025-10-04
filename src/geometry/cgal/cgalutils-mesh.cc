@@ -61,8 +61,7 @@ std::shared_ptr<SurfaceMesh> createSurfaceMeshFromPolySet(const PolySet& ps)
   return mesh;
 }
 
-template std::shared_ptr<CGAL_DoubleMesh> createSurfaceMeshFromPolySet<CGAL_DoubleMesh>(
-  const PolySet& ps);
+template std::shared_ptr<CGAL_DoubleMesh> createSurfaceMeshFromPolySet(const PolySet& ps);
 template std::shared_ptr<CGAL_Kernel3Mesh> createSurfaceMeshFromPolySet(const PolySet& ps);
 
 template <class SurfaceMesh>

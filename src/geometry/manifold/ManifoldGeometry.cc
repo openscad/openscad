@@ -106,6 +106,7 @@ std::shared_ptr<PolySet> ManifoldGeometry::toPolySet() const
   ps->vertices.reserve(mesh.NumVert());
   ps->indices.reserve(mesh.NumTri());
   ps->setConvexity(convexity);
+  ps->setManifold(true);
 
   // first 3 channels are xyz coordinate
   for (size_t i = 0; i < mesh.vertProperties.size(); i += mesh.numProp)
