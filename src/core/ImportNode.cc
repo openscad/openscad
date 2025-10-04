@@ -93,11 +93,7 @@ static std::shared_ptr<AbstractNode> do_import(const ModuleInstantiation *inst, 
     else if (ext == ".obj") actualtype = ImportType::OBJ;
   }
 
-  auto node = std::make_shared<ImportNode>(inst, actualtype);
-
-  node->fn = parameters["$fn"].toDouble();
-  node->fs = parameters["$fs"].toDouble();
-  node->fa = parameters["$fa"].toDouble();
+  auto node = std::make_shared<ImportNode>(inst, actualtype, TessellationControl(parameters, inst));
 
   node->filename = filename;
   const auto& layerval = parameters["layer"];
@@ -220,13 +216,12 @@ std::unique_ptr<const Geometry> ImportNode::createGeometry() const
     break;
   }
   case ImportType::SVG: {
-    g = import_svg(this->fn, this->fs, this->fa, this->filename, this->id, this->layer, this->dpi,
-                   this->center, loc);
+    g = import_svg(this->tess, this->filename, this->id, this->layer, this->dpi, this->center, loc);
     break;
   }
   case ImportType::DXF: {
-    DxfData dd(this->fn, this->fs, this->fa, this->filename, this->layer.value_or(""), this->origin_x,
-               this->origin_y, this->scale);
+    DxfData dd(this->tess, this->filename, this->layer.value_or(""), this->origin_x, this->origin_y,
+               this->scale);
     g = optionally_center(dd.toPolygon2d(), this->center);
     break;
   }
@@ -265,8 +260,8 @@ std::string ImportNode::toString() const
     stream << ", dpi = " << this->dpi;
   }
   stream << ", scale = " << this->scale << ", center = " << (this->center ? "true" : "false")
-         << ", convexity = " << this->convexity << ", $fn = " << this->fn << ", $fa = " << this->fa
-         << ", $fs = " << this->fs << ", timestamp = " << fs_timestamp(path) << ")";
+         << ", convexity = " << this->convexity << ", " << this->tess
+         << ", timestamp = " << fs_timestamp(path) << ")";
 
   return stream.str();
 }

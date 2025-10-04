@@ -78,7 +78,7 @@ struct Line {
 /*!
    Reads a layer from the given file, or all layers if layername.empty()
  */
-DxfData::DxfData(double fn, double fs, double fa, const std::string& filename,
+DxfData::DxfData(const TessellationControl& tessFIXME, const std::string& filename,
                  const std::string& layername, double xorigin, double yorigin, double scale)
 {
   std::ifstream stream(filename.c_str());
@@ -187,7 +187,7 @@ DxfData::DxfData(double fn, double fs, double fa, const std::string& filename,
             ADD_LINE(xverts.at(numverts - 1), yverts.at(numverts - 1), xverts.at(0), yverts.at(0));
           }
         } else if (mode == "CIRCLE") {
-          const int n = Calc::get_fragments_from_r(radius, fn, fs, fa);
+          const int n = tessFIXME.circular_segments(radius).value_or(3);
           Vector2d center(xverts.at(0), yverts.at(0));
           for (int i = 0; i < n; ++i) {
             const double a1 = (360.0 * i) / n;
@@ -197,12 +197,11 @@ DxfData::DxfData(double fn, double fs, double fa, const std::string& filename,
           }
         } else if (mode == "ARC") {
           Vector2d center(xverts.at(0), yverts.at(0));
-          int n = Calc::get_fragments_from_r(radius, fn, fs, fa);
           while (arc_start_angle > arc_stop_angle) {
             arc_stop_angle += 360.0;
           }
           const double arc_angle = arc_stop_angle - arc_start_angle;
-          n = static_cast<int>(ceil(n * arc_angle / 360));
+          const int n = tessFIXME.circular_segments(radius, arc_angle).value_or(1);
           for (int i = 0; i < n; ++i) {
             const double a1 = arc_start_angle + arc_angle * i / n;
             const double a2 = arc_start_angle + arc_angle * (i + 1) / n;
@@ -233,8 +232,8 @@ DxfData::DxfData(double fn, double fs, double fa, const std::string& filename,
           // the ratio stored in 'radius; due to the parser code not checking entity type
           const double r_minor = r_major * radius;
           const double sweep_angle = ellipse_stop_angle - ellipse_start_angle;
-          int n = Calc::get_fragments_from_r(r_major, fn, fs, fa);
-          n = static_cast<int>(ceil(n * sweep_angle / (2 * M_PI)));
+          const int n =
+            tessFIXME.circular_segments(r_major, sweep_angle / (2 * M_PI) * 360.0).value_or(1);
           //				Vector2d p1;
           Vector2d p1{0.0, 0.0};
           for (int i = 0; i <= n; ++i) {

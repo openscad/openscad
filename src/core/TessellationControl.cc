@@ -140,9 +140,9 @@ std::optional<int> TessellationControl::circular_segments(double r, double angle
   // in future versions of OpenSCAD
   if (r < GRID_FINE || std::isinf(fn) || std::isnan(fn)) return {};
   if (fn > 0.0)
-    return std::max(static_cast<int>(std::ceil((fn >= 3 ? fn : 3) * std::abs(angle_degrees) / 360.0)),
+    return std::max(static_cast<int>(std::ceil((fn >= 3 ? fn : 3) * std::fabs(angle_degrees) / 360.0)),
                     1);
-  return std::max(static_cast<int>(std::ceil(std::abs(angle_degrees) / 360.0 *
+  return std::max(static_cast<int>(std::ceil(std::fabs(angle_degrees) / 360.0 *
                                              std::max(std::min(360.0 / fa, r * 2 * M_PI / fs), 5.0))),
                   1);
 }

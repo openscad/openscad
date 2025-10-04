@@ -94,7 +94,7 @@ static Value builtin_dxf_dim(Arguments arguments, const Location& loc)
   auto result = dxf_dim_cache.find(key);
   if (result != dxf_dim_cache.end()) return {result->second};
   handle_dep(filepath.string());
-  DxfData dxf(36, 0, 0, filename, layername, xorigin, yorigin, scale);
+  DxfData dxf(TessellationControl::DefaultForDxf(), filename, layername, xorigin, yorigin, scale);
 
   for (auto& dim : dxf.dims) {
     if (!name.empty() && dim.name != name) continue;
@@ -207,7 +207,7 @@ static Value builtin_dxf_cross(Arguments arguments, const Location& loc)
     return {std::move(ret)};
   }
   handle_dep(filepath.string());
-  DxfData dxf(36, 0, 0, filename, layername, xorigin, yorigin, scale);
+  DxfData dxf(TessellationControl::DefaultForDxf(), filename, layername, xorigin, yorigin, scale);
 
   double coords[4][2];
 

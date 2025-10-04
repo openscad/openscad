@@ -40,7 +40,6 @@
 #include "core/TextNode.h"
 #include "core/OffsetNode.h"
 #include "core/ProjectionNode.h"
-#include "core/ImportNode.h"
 #include "core/Tree.h"
 #include "geometry/PolySet.h"
 #include "geometry/PolySetUtils.h"
