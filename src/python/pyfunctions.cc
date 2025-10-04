@@ -1117,11 +1117,11 @@ PyObject *python_oo_mesh(PyObject *obj, PyObject *args, PyObject *kwargs)
 
 PyObject *rotate_extrude_core(PyObject *obj, int convexity, double scale, double angle, PyObject *twist,
                               PyObject *origin, PyObject *offset, PyObject *vp, char *method,
-                              TessellationControl&& tess)
+                              TessellationControl&& tessFIXME)
 {
   DECLARE_INSTANCE();
   std::shared_ptr<AbstractNode> child;
-  auto node = std::make_shared<RotateExtrudeNode>(instance, std::move(tess));
+  auto node = std::make_shared<RotateExtrudeNode>(instance, std::make_shared<TessellationControl>(std::move(tessFIXME)));
   if (1) {
     PyObject *dummydict;
     child = PyOpenSCADObjectToNodeMulti(obj, &dummydict);
@@ -1967,10 +1967,10 @@ PyObject *python_textmetrics(PyObject *self, PyObject *args, PyObject *kwargs)
 }
 
 PyObject *python_offset_core(PyObject *obj, double r, double delta, PyObject *chamfer,
-                             TessellationControl&& tess)
+                             TessellationControl&& tessFIXME)
 {
   DECLARE_INSTANCE();
-  auto node = std::make_shared<OffsetNode>(instance, std::move(tess));
+  auto node = std::make_shared<OffsetNode>(instance, std::make_shared<TessellationControl>(std::move(tessFIXME)));
 
   PyObject *dummydict;
   std::shared_ptr<AbstractNode> child = PyOpenSCADObjectToNodeMulti(obj, &dummydict);

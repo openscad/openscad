@@ -1,27 +1,30 @@
 #pragma once
 
+#include <memory>
 #include <string>
 
 #include "core/node.h"
 #include "core/ModuleInstantiation.h"
 #include "core/Value.h"
-#include "core/TessellationControl.h"
+
+class TessellationControl;
 
 class RotateExtrudeNode : public AbstractPolyNode
 {
 public:
   VISITABLE();
-  RotateExtrudeNode(const ModuleInstantiation *mi, TessellationControl&& tess)
-    : AbstractPolyNode(mi), tess(tess)
+  RotateExtrudeNode(const ModuleInstantiation *mi, std::shared_ptr<TessellationControl> tessFIXME)
+    : AbstractPolyNode(mi), tessFIXME(std::move(tessFIXME))
   {
     convexity = 0;
     angle = 360;
     start = 0;
   }
+  ~RotateExtrudeNode();
   std::string toString() const override;
   std::string name() const override { return "rotate_extrude"; }
 
   int convexity;
-  TessellationControl tess;
+  std::shared_ptr<TessellationControl> tessFIXME;
   double angle, start;
 };
