@@ -10,6 +10,7 @@
 #include <string>
 #include <tuple>
 #include <utility>
+#include <optional>
 
 #include <libintl.h>
 // Undefine some defines from libintl.h to presolve
@@ -82,6 +83,11 @@ struct Message {
     : msg(std::move(msg)), loc(std::move(loc)), docPath(std::move(docPath)), group(group)
   {
   }
+
+  Message(Message const &) = default;
+  Message& operator=(Message const&) = default;
+  Message(Message&&) = default;
+  Message& operator=(Message&&) = default;
 
   [[nodiscard]] std::string str() const
   {
@@ -245,7 +251,7 @@ public:
 extern std::set<std::string> printedDeprecations;
 
 template <typename... Args>
-void LOG(const message_group& msgGroup, Location loc, std::string docPath, std::string&& f,
+std::optional<Message> make_message_obj(const message_group& msgGroup, Location loc, std::string docPath, std::string&& f,
          Args&&...args)
 {
   auto formatted = MessageClass<Args...>{std::move(f), std::forward<Args>(args)...}.format();
@@ -253,23 +259,29 @@ void LOG(const message_group& msgGroup, Location loc, std::string docPath, std::
   // check for deprecations
   if (msgGroup == message_group::Deprecated &&
       printedDeprecations.find(formatted + loc.toRelativeString(docPath)) != printedDeprecations.end())
-    return;
+    return {};
   if (msgGroup == message_group::Deprecated)
     printedDeprecations.insert(formatted + loc.toRelativeString(docPath));
 
-  Message msgObj{std::move(formatted), msgGroup, std::move(loc), std::move(docPath)};
-
-  PRINT(msgObj);
+  return std::make_optional<Message>(std::move(formatted), msgGroup, std::move(loc), std::move(docPath));
 }
 
 template <typename... Args>
-void LOG(const message_group& msgGroup, std::string&& f, Args&&...args)
+std::optional<Message> make_message_obj(const message_group& msgGroup, std::string&& f, Args&&...args)
 {
-  LOG(msgGroup, Location::NONE, "", std::move(f), std::forward<Args>(args)...);
+  return make_message_obj(msgGroup, Location::NONE, "", std::move(f), std::forward<Args>(args)...);
 }
 
 template <typename... Args>
-void LOG(std::string&& f, Args&&...args)
+std::optional<Message> make_message_obj(std::string&& f, Args&&...args)
 {
-  LOG(message_group::NONE, Location::NONE, "", std::move(f), std::forward<Args>(args)...);
+  return make_message_obj(message_group::NONE, Location::NONE, "", std::move(f), std::forward<Args>(args)...);
+}
+
+template <typename... Args>
+void LOG(Args&&...args)
+{
+  std::optional<Message> msg = make_message_obj(std::forward<Args>(args)...);
+  if (msg)
+    PRINT(*msg);
 }
