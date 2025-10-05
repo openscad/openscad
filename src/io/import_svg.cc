@@ -36,6 +36,7 @@
 #include <clipper2/clipper.h>
 
 #include "core/AST.h"
+#include "core/TessellationControl.h"
 #include "geometry/ClipperUtils.h"
 #include "geometry/Polygon2d.h"
 #include "libsvg/libsvg.h"
@@ -81,7 +82,8 @@ double calc_alignment(const libsvg::align_t alignment, double page_mm, double sc
 
 }  // namespace
 
-std::unique_ptr<Polygon2d> import_svg(const TessellationControl& tessFIXME, const std::string& filename,
+std::unique_ptr<Polygon2d> import_svg(std::shared_ptr<TessellationControl> tessFIXME,
+                                      const std::string& filename,
                                       const boost::optional<std::string>& id,
                                       const boost::optional<std::string>& layer, const double dpi,
                                       const bool center, const Location& loc)

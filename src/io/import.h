@@ -6,7 +6,8 @@
 #include <boost/optional.hpp>
 
 #include "core/AST.h"
-#include "core/TessellationControl.h"
+
+class TessellationControl;
 
 std::unique_ptr<class PolySet> import_stl(const std::string& filename, const Location& loc);
 std::unique_ptr<class PolySet> import_obj(const std::string& filename, const Location& loc);
@@ -14,7 +15,7 @@ std::unique_ptr<class PolySet> import_off(const std::string& filename, const Loc
 std::unique_ptr<class PolySet> import_amf(const std::string&, const Location& loc);
 std::unique_ptr<class PolySet> import_3mf(const std::string&, const Location& loc);
 
-std::unique_ptr<class Polygon2d> import_svg(const TessellationControl& tessFIXME,
+std::unique_ptr<class Polygon2d> import_svg(std::shared_ptr<TessellationControl> tessFIXME,
                                             const std::string& filename,
                                             const boost::optional<std::string>& id,
                                             const boost::optional<std::string>& layer, const double dpi,

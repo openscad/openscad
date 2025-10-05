@@ -39,7 +39,8 @@
 #include <boost/optional.hpp>
 
 #include "clipper2/clipper.h"
-#include "core/TessellationControl.h"
+
+class TessellationControl;
 
 namespace libsvg {
 class shape;
@@ -48,7 +49,7 @@ class shape;
 // ccox - I don't like putting this here, but the svg library code did not plan ahead for app
 // customization. And this is one of the few sensible places to put it without adding new header files.
 struct fnContext {
-  fnContext(const TessellationControl& tessFIXME) : tessFIXME(tessFIXME) {}
+  fnContext(std::shared_ptr<TessellationControl> tessFIXME) : tessFIXME(std::move(tessFIXME)) {}
   bool match(bool val)
   {
     if (val) matches++;
@@ -56,7 +57,7 @@ struct fnContext {
   }
   bool has_matches() { return matches.load() > 0; }
 
-  const TessellationControl& tessFIXME;
+  std::shared_ptr<TessellationControl> tessFIXME;
   std::function<bool(const libsvg::shape *)> selector;
 
 private:

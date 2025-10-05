@@ -5,7 +5,6 @@
 #include <boost/optional.hpp>
 
 #include "core/node.h"
-#include "core/TessellationControl.h"
 #include "core/ModuleInstantiation.h"
 #include "core/Value.h"
 
@@ -21,14 +20,17 @@ enum class ImportType {
   OBJ,
 };
 
+class TessellationControl;
+
 class ImportNode : public LeafNode
 {
 public:
   constexpr static double SVG_DEFAULT_DPI = 72.0;
 
   VISITABLE();
-  ImportNode(const ModuleInstantiation *mi, ImportType type, TessellationControl&& tess)
-    : LeafNode(mi), type(type), tess(tess)
+  ImportNode(const ModuleInstantiation *mi, ImportType type,
+             std::shared_ptr<TessellationControl> tessFIXME)
+    : LeafNode(mi), type(type), tessFIXME(tessFIXME)
   {
   }
   std::string toString() const override;
@@ -41,7 +43,7 @@ public:
   int convexity;
   bool center;
   double dpi;
-  TessellationControl tess;
+  std::shared_ptr<TessellationControl> tessFIXME;
   double origin_x, origin_y, scale;
   double width, height;
   std::unique_ptr<const class Geometry> createGeometry() const override;

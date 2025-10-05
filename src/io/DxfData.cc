@@ -42,6 +42,7 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/lexical_cast.hpp>
 
+#include "core/TessellationControl.h"
 #include "core/Value.h"
 #include "geometry/Grid.h"
 #include "geometry/linalg.h"
@@ -78,7 +79,7 @@ struct Line {
 /*!
    Reads a layer from the given file, or all layers if layername.empty()
  */
-DxfData::DxfData(const TessellationControl& tessFIXME, const std::string& filename,
+DxfData::DxfData(std::shared_ptr<TessellationControl> tessFIXME, const std::string& filename,
                  const std::string& layername, double xorigin, double yorigin, double scale)
 {
   std::ifstream stream(filename.c_str());
@@ -187,7 +188,7 @@ DxfData::DxfData(const TessellationControl& tessFIXME, const std::string& filena
             ADD_LINE(xverts.at(numverts - 1), yverts.at(numverts - 1), xverts.at(0), yverts.at(0));
           }
         } else if (mode == "CIRCLE") {
-          const int n = tessFIXME.circular_segments(radius).value_or(3);
+          const int n = tessFIXME->circular_segments(radius).value_or(3);
           Vector2d center(xverts.at(0), yverts.at(0));
           for (int i = 0; i < n; ++i) {
             const double a1 = (360.0 * i) / n;
@@ -201,7 +202,7 @@ DxfData::DxfData(const TessellationControl& tessFIXME, const std::string& filena
             arc_stop_angle += 360.0;
           }
           const double arc_angle = arc_stop_angle - arc_start_angle;
-          const int n = tessFIXME.circular_segments(radius, arc_angle).value_or(1);
+          const int n = tessFIXME->circular_segments(radius, arc_angle).value_or(1);
           for (int i = 0; i < n; ++i) {
             const double a1 = arc_start_angle + arc_angle * i / n;
             const double a2 = arc_start_angle + arc_angle * (i + 1) / n;
@@ -233,7 +234,7 @@ DxfData::DxfData(const TessellationControl& tessFIXME, const std::string& filena
           const double r_minor = r_major * radius;
           const double sweep_angle = ellipse_stop_angle - ellipse_start_angle;
           const int n =
-            tessFIXME.circular_segments(r_major, sweep_angle / (2 * M_PI) * 360.0).value_or(1);
+            tessFIXME->circular_segments(r_major, sweep_angle / (2 * M_PI) * 360.0).value_or(1);
           //				Vector2d p1;
           Vector2d p1{0.0, 0.0};
           for (int i = 0; i <= n; ++i) {

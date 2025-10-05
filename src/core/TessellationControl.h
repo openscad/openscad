@@ -16,26 +16,29 @@ class TessellationControl
 public:
   TessellationControl(const Parameters& parameters, const ModuleInstantiation *inst = nullptr);
 #ifdef ENABLE_PYTHON
-  /*
+  /**
    * Extract discretization values from environment if possible,
    * then override any which are explicitly set as keyword arguments.
    */
   TessellationControl(PyObject *kwargs);
 #endif
 
-  /*
+  /**
    * Create a TessellationControl for a spot in dxfdim.cc that used a hardcoded value.
    * These values of 36,0,0 go back to the first commit in Github.
    * Unknown why it is that.
    */
-  static TessellationControl DefaultForDxf() { return TessellationControl(36, 0, 0); }
+  static std::shared_ptr<TessellationControl> DefaultForDxf()
+  {
+    return std::make_shared<TessellationControl>(std::move(TessellationControl(36, 0, 0)));
+  }
 
-  /*
+  /**
    * Calculate segments for a circle or circular arc.
    */
   std::optional<int> circular_segments(double r, double angle_degrees = 360.0) const;
 
-  /*
+  /**
    * @brief Calculate segments for a path.
    * Currently only uses $fn. Won't use $fs or $fa, but future variables could be used.
    */

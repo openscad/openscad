@@ -39,6 +39,7 @@
 #include "core/Builtins.h"
 #include "core/function.h"
 #include "core/Parameters.h"
+#include "core/TessellationControl.h"
 #include "core/Value.h"
 #include "handle_dep.h"
 #include "io/DxfData.h"
