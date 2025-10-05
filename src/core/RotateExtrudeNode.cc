@@ -97,7 +97,7 @@ std::string RotateExtrudeNode::toString() const
          << this->start
          << ", "
             "convexity = "
-         << this->convexity << ", " << *tessFIXME << ")";
+         << this->convexity << ", " << tessFIXME << ")";
 
   return stream.str();
 }

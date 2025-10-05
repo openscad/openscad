@@ -81,7 +81,7 @@ std::string OffsetNode::toString() const
   if (!isRadius) {
     stream << ", chamfer = " << (this->chamfer ? "true" : "false");
   }
-  stream << ", " << *this->tessFIXME << ")";
+  stream << ", " << this->tessFIXME << ")";
 
   return stream.str();
 }

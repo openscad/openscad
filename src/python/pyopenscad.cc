@@ -256,7 +256,7 @@ std::vector<Vector3d> python_vectors(PyObject *vec, int mindim, int maxdim)
 
 void get_fnas(double& fn, double& fa, double& fs)
 {
-  // TODO: coryrc - Delete this function
+  // TODO: github.com/openscad/openscad/issues/4246 - Delete this function
   PyObject *mainModule = PyImport_AddModule("__main__");
   if (mainModule == nullptr) return;
   fn = 0;

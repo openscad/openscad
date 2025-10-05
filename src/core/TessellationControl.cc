@@ -43,11 +43,10 @@ TessellationControl::TessellationControl(const Parameters& parameters, const Mod
 
 #ifdef ENABLE_PYTHON
 /**
- * Attempts to set a variable from a Python dictionary, handling
- * double* (direct assignment) and int* (rounding) targets.
+ * Attempts to set a variable from a Python dictionary.
  * On any error, target unchanged.
- * @param kwargs The Python dict (PyObject*) to look up the value in.
- * @param string_input The key (const char*) to search for.
+ * @param kwargs The Python dict to look up the value in.
+ * @param string_input The key to search for.
  * @param var_ptr A pointer to the variable to set on success.
  */
 void trySetVariable(PyObject *kwargs, const char *string_input, double *var_ptr)
@@ -145,12 +144,6 @@ std::optional<int> TessellationControl::circular_segments(double r, double angle
   return std::max(static_cast<int>(std::ceil(std::fabs(angle_degrees) / 360.0 *
                                              std::max(std::min(360.0 / fa, r * 2 * M_PI / fs), 5.0))),
                   1);
-}
-
-std::ostream& operator<<(std::ostream& stream, const TessellationControl& f)
-{
-  stream << "$fn = " << f.fn << ", $fa = " << f.fa << ", $fs = " << f.fs;
-  return stream;
 }
 
 std::ostream& operator<<(std::ostream& stream, const std::shared_ptr<TessellationControl>& f)

@@ -48,7 +48,6 @@ public:
     return std::max(result, minimum);
   }
 
-  friend std::ostream& operator<<(std::ostream& stream, const TessellationControl& f);
   friend std::ostream& operator<<(std::ostream& stream, const std::shared_ptr<TessellationControl>& f);
   bool IsFnSpecifiedAndOdd() { return static_cast<int>(fn) & 1; }
 
@@ -59,5 +58,4 @@ private:
   void setValuesFromPyMain();
 #endif
 };
-std::ostream& operator<<(std::ostream& stream, const TessellationControl& f);  // TODO: coryrc - Remove
 std::ostream& operator<<(std::ostream& stream, const std::shared_ptr<TessellationControl>& f);
