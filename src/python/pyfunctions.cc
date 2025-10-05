@@ -38,7 +38,7 @@
 #include "core/RenderNode.h"
 #include "core/SurfaceNode.h"
 #include "core/TextNode.h"
-#include "core/TessellationControl.h"
+#include "core/CurveDiscretizer.h"
 #include "core/OffsetNode.h"
 #include "core/ProjectionNode.h"
 #include "core/Tree.h"
@@ -123,7 +123,7 @@ PyObject *python_sphere(PyObject *self, PyObject *args, PyObject *kwargs)
     vr = d / 2.0;
   }
 
-  auto node = std::make_shared<SphereNode>(instance, std::make_shared<TessellationControl>(kwargs));
+  auto node = std::make_shared<SphereNode>(instance, std::make_shared<CurveDiscretizer>(kwargs));
 
   node->r = vr;
 
@@ -196,7 +196,7 @@ PyObject *python_cylinder(PyObject *self, PyObject *args, PyObject *kwargs)
     vr2 = d / 2.0;
   }
 
-  auto node = std::make_shared<CylinderNode>(instance, std::make_shared<TessellationControl>(kwargs));
+  auto node = std::make_shared<CylinderNode>(instance, std::make_shared<CurveDiscretizer>(kwargs));
 
   node->r1 = vr1;
   node->r2 = vr2;
@@ -365,7 +365,7 @@ PyObject *python_circle(PyObject *self, PyObject *args, PyObject *kwargs)
     vr = d / 2.0;
   }
 
-  auto node = std::make_shared<CircleNode>(instance, std::make_shared<TessellationControl>(kwargs));
+  auto node = std::make_shared<CircleNode>(instance, std::make_shared<CurveDiscretizer>(kwargs));
 
   node->r = vr;
 
@@ -1118,12 +1118,12 @@ PyObject *python_oo_mesh(PyObject *obj, PyObject *args, PyObject *kwargs)
 
 PyObject *rotate_extrude_core(PyObject *obj, int convexity, double scale, double angle, PyObject *twist,
                               PyObject *origin, PyObject *offset, PyObject *vp, char *method,
-                              TessellationControl&& tessFIXME)
+                              CurveDiscretizer&& discretizer)
 {
   DECLARE_INSTANCE();
   std::shared_ptr<AbstractNode> child;
   auto node = std::make_shared<RotateExtrudeNode>(
-    instance, std::make_shared<TessellationControl>(std::move(tessFIXME)));
+    instance, std::make_shared<CurveDiscretizer>(std::move(discretizer)));
   if (1) {
     PyObject *dummydict;
     child = PyOpenSCADObjectToNodeMulti(obj, &dummydict);
@@ -1167,7 +1167,7 @@ PyObject *python_rotate_extrude(PyObject *self, PyObject *args, PyObject *kwargs
     return NULL;
   }
   return rotate_extrude_core(obj, convexity, scale, angle, twist, origin, offset, v, method,
-                             TessellationControl(kwargs));
+                             CurveDiscretizer(kwargs));
 }
 
 PyObject *python_oo_rotate_extrude(PyObject *obj, PyObject *args, PyObject *kwargs)
@@ -1187,7 +1187,7 @@ PyObject *python_oo_rotate_extrude(PyObject *obj, PyObject *args, PyObject *kwar
     return NULL;
   }
   return rotate_extrude_core(obj, convexity, scale, angle, twist, origin, offset, v, method,
-                             TessellationControl(kwargs));
+                             CurveDiscretizer(kwargs));
 }
 
 PyObject *linear_extrude_core(PyObject *obj, PyObject *height, int convexity, PyObject *origin,
@@ -1961,11 +1961,11 @@ PyObject *python_textmetrics(PyObject *self, PyObject *args, PyObject *kwargs)
 }
 
 PyObject *python_offset_core(PyObject *obj, double r, double delta, PyObject *chamfer,
-                             TessellationControl&& tessFIXME)
+                             CurveDiscretizer&& discretizer)
 {
   DECLARE_INSTANCE();
   auto node =
-    std::make_shared<OffsetNode>(instance, std::make_shared<TessellationControl>(std::move(tessFIXME)));
+    std::make_shared<OffsetNode>(instance, std::make_shared<CurveDiscretizer>(std::move(discretizer)));
 
   PyObject *dummydict;
   std::shared_ptr<AbstractNode> child = PyOpenSCADObjectToNodeMulti(obj, &dummydict);
@@ -2005,7 +2005,7 @@ PyObject *python_offset(PyObject *self, PyObject *args, PyObject *kwargs)
     PyErr_SetString(PyExc_TypeError, "Error during parsing offset(object,r,delta)");
     return NULL;
   }
-  return python_offset_core(obj, r, delta, chamfer, TessellationControl(kwargs));
+  return python_offset_core(obj, r, delta, chamfer, CurveDiscretizer(kwargs));
 }
 
 PyObject *python_oo_offset(PyObject *obj, PyObject *args, PyObject *kwargs)
@@ -2017,7 +2017,7 @@ PyObject *python_oo_offset(PyObject *obj, PyObject *args, PyObject *kwargs)
     PyErr_SetString(PyExc_TypeError, "Error during parsing offset(object,r,delta)");
     return NULL;
   }
-  return python_offset_core(obj, r, delta, chamfer, TessellationControl(kwargs));
+  return python_offset_core(obj, r, delta, chamfer, CurveDiscretizer(kwargs));
 }
 
 PyObject *python_projection_core(PyObject *obj, const char *cutmode, int convexity)

@@ -6,7 +6,7 @@
 
 #include "geometry/linalg.h"
 
-class TessellationControl;
+class CurveDiscretizer;
 
 class DxfData
 {
@@ -40,7 +40,7 @@ public:
   std::vector<Dim> dims;
 
   DxfData() = default;
-  DxfData(std::shared_ptr<TessellationControl> tessFIXME, const std::string& filename,
+  DxfData(std::shared_ptr<CurveDiscretizer> discretizer, const std::string& filename,
           const std::string& layername = "", double xorigin = 0.0, double yorigin = 0.0,
           double scale = 1.0);
 

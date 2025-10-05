@@ -853,6 +853,7 @@ set(CORE_SOURCES
   src/core/ContextFrame.cc
   src/core/ContextMemoryManager.cc
   src/core/CsgOpNode.cc
+  src/core/CurveDiscretizer.cc
   src/core/DrawingCallback.cc
   src/core/EvaluationSession.cc
   src/core/Expression.cc
@@ -878,7 +879,6 @@ set(CORE_SOURCES
   src/core/SourceFileCache.cc
   src/core/StatCache.cc
   src/core/SurfaceNode.cc
-  src/core/TessellationControl.cc
   src/core/TextNode.cc
   src/core/TransformNode.cc
   src/core/Tree.cc

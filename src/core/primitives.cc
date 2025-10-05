@@ -36,7 +36,7 @@
 #include "core/ModuleInstantiation.h"
 #include "core/node.h"
 #include "core/Parameters.h"
-#include "core/TessellationControl.h"
+#include "core/CurveDiscretizer.h"
 #include "utils/calc.h"
 #include "utils/degree_trig.h"
 #include "utils/printutils.h"
@@ -169,7 +169,7 @@ static std::shared_ptr<AbstractNode> builtin_cube(const ModuleInstantiation *ins
 std::string SphereNode::toString() const
 {
   std::ostringstream stream;
-  stream << "sphere(" << tessFIXME << ", r = " << r << ")";
+  stream << "sphere(" << discretizer << ", r = " << r << ")";
   return stream.str();
 }
 
@@ -179,7 +179,7 @@ std::unique_ptr<const Geometry> SphereNode::createGeometry() const
     return PolySet::createEmpty();
   }
 
-  int num_fragments = tessFIXME->circular_segments(r).value_or(3);
+  int num_fragments = discretizer->GetCircularSegmentCount(r).value_or(3);
   auto num_rings = (num_fragments + 1) / 2;
   // Uncomment the following three lines to enable experimental sphere
   // tessellation
@@ -225,8 +225,7 @@ static std::shared_ptr<AbstractNode> builtin_sphere(const ModuleInstantiation *i
 {
   Parameters parameters = Parameters::parse(std::move(arguments), inst->location(), {"r"}, {"d"});
 
-  auto node =
-    std::make_shared<SphereNode>(inst, std::make_shared<TessellationControl>(parameters, inst));
+  auto node = std::make_shared<SphereNode>(inst, std::make_shared<CurveDiscretizer>(parameters, inst));
 
   const auto r = lookup_radius(parameters, inst, "d", "r");
   if (r.type() == Value::Type::NUMBER) {
@@ -243,7 +242,7 @@ static std::shared_ptr<AbstractNode> builtin_sphere(const ModuleInstantiation *i
 std::string CylinderNode::toString() const
 {
   std::ostringstream stream;
-  stream << "cylinder(" << tessFIXME << ", h = " << h << ", r1 = " << r1 << ", r2 = " << r2
+  stream << "cylinder(" << discretizer << ", h = " << h << ", r1 = " << r1 << ", r2 = " << r2
          << ", center = " << (center ? "true" : "false") << ")";
   return stream.str();
 }
@@ -255,7 +254,7 @@ std::unique_ptr<const Geometry> CylinderNode::createGeometry() const
     return PolySet::createEmpty();
   }
 
-  int num_fragments = tessFIXME->circular_segments(std::fmax(this->r1, this->r2)).value_or(3);
+  int num_fragments = discretizer->GetCircularSegmentCount(std::fmax(this->r1, this->r2)).value_or(3);
 
   double z1, z2;
   if (this->center) {
@@ -312,8 +311,7 @@ static std::shared_ptr<AbstractNode> builtin_cylinder(const ModuleInstantiation 
 {
   Parameters parameters = Parameters::parse(std::move(arguments), inst->location(),
                                             {"h", "r1", "r2", "center"}, {"r", "d", "d1", "d2"});
-  auto node =
-    std::make_shared<CylinderNode>(inst, std::make_shared<TessellationControl>(parameters, inst));
+  auto node = std::make_shared<CylinderNode>(inst, std::make_shared<CurveDiscretizer>(parameters, inst));
 
   if (parameters["h"].type() == Value::Type::NUMBER) {
     node->h = parameters["h"].toDouble();
@@ -554,7 +552,7 @@ static std::shared_ptr<AbstractNode> builtin_square(const ModuleInstantiation *i
 std::string CircleNode::toString() const
 {
   std::ostringstream stream;
-  stream << "circle(" << tessFIXME << ", r = " << r << ")";
+  stream << "circle(" << discretizer << ", r = " << r << ")";
   return stream.str();
 }
 
@@ -564,7 +562,7 @@ std::unique_ptr<const Geometry> CircleNode::createGeometry() const
     return std::make_unique<Polygon2d>();
   }
 
-  int num_fragments = tessFIXME->circular_segments(this->r).value_or(3);
+  int num_fragments = discretizer->GetCircularSegmentCount(this->r).value_or(3);
   Outline2d o;
   o.vertices.resize(num_fragments);
   for (int i = 0; i < num_fragments; ++i) {
@@ -577,8 +575,7 @@ std::unique_ptr<const Geometry> CircleNode::createGeometry() const
 static std::shared_ptr<AbstractNode> builtin_circle(const ModuleInstantiation *inst, Arguments arguments)
 {
   Parameters parameters = Parameters::parse(std::move(arguments), inst->location(), {"r"}, {"d"});
-  auto node =
-    std::make_shared<CircleNode>(inst, std::make_shared<TessellationControl>(parameters, inst));
+  auto node = std::make_shared<CircleNode>(inst, std::make_shared<CurveDiscretizer>(parameters, inst));
 
   const auto r = lookup_radius(parameters, inst, "d", "r");
   if (r.type() == Value::Type::NUMBER) {

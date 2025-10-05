@@ -7,14 +7,14 @@
 #include "core/ModuleInstantiation.h"
 #include "core/Value.h"
 
-class TessellationControl;
+class CurveDiscretizer;
 
 class RotateExtrudeNode : public AbstractPolyNode
 {
 public:
   VISITABLE();
-  RotateExtrudeNode(const ModuleInstantiation *mi, std::shared_ptr<TessellationControl> tessFIXME)
-    : AbstractPolyNode(mi), tessFIXME(std::move(tessFIXME))
+  RotateExtrudeNode(const ModuleInstantiation *mi, std::shared_ptr<CurveDiscretizer> discretizer)
+    : AbstractPolyNode(mi), discretizer(std::move(discretizer))
   {
     convexity = 0;
     angle = 360;
@@ -25,6 +25,6 @@ public:
   std::string name() const override { return "rotate_extrude"; }
 
   int convexity;
-  std::shared_ptr<TessellationControl> tessFIXME;
+  std::shared_ptr<CurveDiscretizer> discretizer;
   double angle, start;
 };

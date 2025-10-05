@@ -41,7 +41,7 @@
 #include FT_FREETYPE_H
 #include FT_GLYPH_H
 
-class TessellationControl;
+class CurveDiscretizer;
 
 class FreetypeRenderer
 {
@@ -71,7 +71,7 @@ public:
 
   private:
     double size, spacing;
-    std::shared_ptr<TessellationControl> tessFIXME;
+    std::shared_ptr<CurveDiscretizer> discretizer;
     unsigned int segments;
     std::string text, font, direction, language, script, halign, valign;
     Location loc = Location::NONE;

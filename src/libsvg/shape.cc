@@ -37,7 +37,7 @@
 
 #include <clipper2/clipper.offset.h>
 
-#include "core/TessellationControl.h"
+#include "core/CurveDiscretizer.h"
 #include "geometry/ClipperUtils.h"
 #include "libsvg/circle.h"
 #include "libsvg/ellipse.h"
@@ -303,7 +303,7 @@ void shape::draw_ellipse(path_t& path, double x, double y, double rx, double ry,
 {
   const auto *fValues = reinterpret_cast<const fnContext *>(context);
   double rmax = fmax(rx, ry);
-  unsigned long fn = fValues->tessFIXME->circular_segments(rmax).value_or(3);
+  unsigned long fn = fValues->discretizer->GetCircularSegmentCount(rmax).value_or(3);
   if (fn < 40) fn = 40;  // preserve the old minimum value
   for (unsigned long idx = 1; idx <= fn; ++idx) {
     const double a = idx * 360.0 / fn;

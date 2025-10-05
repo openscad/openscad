@@ -36,7 +36,7 @@
 #include <string>
 #include <vector>
 
-class TessellationControl;
+class CurveDiscretizer;
 
 class CubeNode : public LeafNode
 {
@@ -59,30 +59,30 @@ public:
 class SphereNode : public LeafNode
 {
 public:
-  SphereNode(const ModuleInstantiation *mi, std::shared_ptr<TessellationControl> tessFIXME)
-    : LeafNode(mi), tessFIXME(std::move(tessFIXME))
+  SphereNode(const ModuleInstantiation *mi, std::shared_ptr<CurveDiscretizer> discretizer)
+    : LeafNode(mi), discretizer(std::move(discretizer))
   {
   }
   std::string toString() const override;
   std::string name() const override { return "sphere"; }
   std::unique_ptr<const Geometry> createGeometry() const override;
 
-  std::shared_ptr<TessellationControl> tessFIXME;
+  std::shared_ptr<CurveDiscretizer> discretizer;
   double r = 1;
 };
 
 class CylinderNode : public LeafNode
 {
 public:
-  CylinderNode(const ModuleInstantiation *mi, std::shared_ptr<TessellationControl> tessFIXME)
-    : LeafNode(mi), tessFIXME(std::move(tessFIXME))
+  CylinderNode(const ModuleInstantiation *mi, std::shared_ptr<CurveDiscretizer> discretizer)
+    : LeafNode(mi), discretizer(std::move(discretizer))
   {
   }
   std::string toString() const override;
   std::string name() const override { return "cylinder"; }
   std::unique_ptr<const Geometry> createGeometry() const override;
 
-  std::shared_ptr<TessellationControl> tessFIXME;
+  std::shared_ptr<CurveDiscretizer> discretizer;
   double r1 = 1, r2 = 1, h = 1;
   bool center = false;
 };
@@ -121,15 +121,15 @@ public:
 class CircleNode : public LeafNode
 {
 public:
-  CircleNode(const ModuleInstantiation *mi, std::shared_ptr<TessellationControl> tessFIXME)
-    : LeafNode(mi), tessFIXME(std::move(tessFIXME))
+  CircleNode(const ModuleInstantiation *mi, std::shared_ptr<CurveDiscretizer> discretizer)
+    : LeafNode(mi), discretizer(std::move(discretizer))
   {
   }
   std::string toString() const override;
   std::string name() const override { return "circle"; }
   std::unique_ptr<const Geometry> createGeometry() const override;
 
-  std::shared_ptr<TessellationControl> tessFIXME;
+  std::shared_ptr<CurveDiscretizer> discretizer;
   double r = 1;
 };
 

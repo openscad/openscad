@@ -1,4 +1,4 @@
-#include "core/TessellationControl.h"
+#include "core/CurveDiscretizer.h"
 
 #ifdef ENABLE_PYTHON
 #include "python/pyopenscad.h"
@@ -12,7 +12,7 @@
 
 #define F_MINIMUM 0.01
 
-TessellationControl::TessellationControl(const Parameters& parameters, const ModuleInstantiation *inst)
+CurveDiscretizer::CurveDiscretizer(const Parameters& parameters, const ModuleInstantiation *inst)
 {
   fn = parameters["$fn"].toDouble();
   fs = parameters["$fs"].toDouble();
@@ -74,7 +74,7 @@ void trySetVariable(PyObject *kwargs, const char *string_input, double *var_ptr)
   }
 }
 
-TessellationControl::TessellationControl(PyObject *kwargs)
+CurveDiscretizer::CurveDiscretizer(PyObject *kwargs)
 {
   setValuesFromPyMain();
   if (kwargs == nullptr || !PyDict_Check(kwargs)) {
@@ -86,7 +86,7 @@ TessellationControl::TessellationControl(PyObject *kwargs)
   trySetVariable(kwargs, "fa", &this->fa);
 }
 
-void TessellationControl::setValuesFromPyMain()
+void CurveDiscretizer::setValuesFromPyMain()
 {
   PyObject *mainModule = PyImport_AddModule("__main__");
   if (mainModule == nullptr) {
@@ -133,7 +133,7 @@ void TessellationControl::setValuesFromPyMain()
    Returns the number of subdivision of a whole circle, given radius and
    the three special variables $fn, $fs and $fa
  */
-std::optional<int> TessellationControl::circular_segments(double r, double angle_degrees) const
+std::optional<int> CurveDiscretizer::GetCircularSegmentCount(double r, double angle_degrees) const
 {
   // FIXME: It would be better to refuse to create an object. Let's do more strict error handling
   // in future versions of OpenSCAD
@@ -146,10 +146,10 @@ std::optional<int> TessellationControl::circular_segments(double r, double angle
                   1);
 }
 
-std::ostream& operator<<(std::ostream& stream, const std::shared_ptr<TessellationControl>& f)
+std::ostream& operator<<(std::ostream& stream, const std::shared_ptr<CurveDiscretizer>& f)
 {
   if (!f) {
-    return stream << "[null TessellationControl]";
+    return stream << "[null CurveDiscretizer]";
   }
   stream << "$fn = " << f->fn << ", $fa = " << f->fa << ", $fs = " << f->fs;
   return stream;

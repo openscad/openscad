@@ -41,7 +41,7 @@
 
 #include "FontCache.h"
 #include "core/DrawingCallback.h"
-#include "core/TessellationControl.h"
+#include "core/CurveDiscretizer.h"
 #include "utils/calc.h"
 
 #include FT_OUTLINE_H
@@ -251,7 +251,7 @@ void FreetypeRenderer::Params::detect_properties()
   hb_direction_t hbdirection = detect_direction(hbscript);
   set_direction(hb_direction_to_string(hbdirection));
 
-  auto segments = tessFIXME->circular_segments(size).value_or(3);
+  auto segments = discretizer->GetCircularSegmentCount(size).value_or(3);
   // The curved segments of most fonts are relatively short, so
   // by using a fraction of the number of full circle segments
   // the resolution will be better matching the detail level of
@@ -266,7 +266,7 @@ std::ostream& operator<<(std::ostream& stream, const FreetypeRenderer::Params& p
                 << ", spacing = " << params.spacing << ", font = \"" << params.font
                 << "\", direction = \"" << params.direction << "\", language = \"" << params.language
                 << (params.script.empty() ? "" : "\", script = \"") << params.script << "\", halign = \""
-                << params.halign << "\", valign = \"" << params.valign << "\", " << params.tessFIXME;
+                << params.halign << "\", valign = \"" << params.valign << "\", " << params.discretizer;
 }
 
 const FontFacePtr FreetypeRenderer::Params::get_font_face() const
@@ -309,7 +309,7 @@ void FreetypeRenderer::Params::set(Parameters& parameters)
   (void)parameters.valid("halign", Value::Type::STRING);
   (void)parameters.valid("valign", Value::Type::STRING);
 
-  tessFIXME = std::make_shared<TessellationControl>(parameters);
+  discretizer = std::make_shared<CurveDiscretizer>(parameters);
 
   set_size(parameters.get("size", 10.0));
   set_text(parameters.get("text", ""));
@@ -325,7 +325,7 @@ void FreetypeRenderer::Params::set(Parameters& parameters)
 #ifdef ENABLE_PYTHON
 void FreetypeRenderer::Params::set(PyObject *kwargs)
 {
-  tessFIXME = std::make_shared<TessellationControl>(kwargs);
+  discretizer = std::make_shared<CurveDiscretizer>(kwargs);
 
   set_size(10.0);
   set_text("");

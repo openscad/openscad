@@ -20,7 +20,7 @@ enum class ImportType {
   OBJ,
 };
 
-class TessellationControl;
+class CurveDiscretizer;
 
 class ImportNode : public LeafNode
 {
@@ -29,8 +29,8 @@ public:
 
   VISITABLE();
   ImportNode(const ModuleInstantiation *mi, ImportType type,
-             std::shared_ptr<TessellationControl> tessFIXME)
-    : LeafNode(mi), type(type), tessFIXME(tessFIXME)
+             std::shared_ptr<CurveDiscretizer> discretizer)
+    : LeafNode(mi), type(type), discretizer(discretizer)
   {
   }
   std::string toString() const override;
@@ -43,7 +43,7 @@ public:
   int convexity;
   bool center;
   double dpi;
-  std::shared_ptr<TessellationControl> tessFIXME;
+  std::shared_ptr<CurveDiscretizer> discretizer;
   double origin_x, origin_y, scale;
   double width, height;
   std::unique_ptr<const class Geometry> createGeometry() const override;
