@@ -46,32 +46,29 @@ CurveDiscretizer::CurveDiscretizer(const Parameters& parameters, const ModuleIns
  * Attempts to set a variable from a Python dictionary.
  * On any error, target unchanged.
  * @param kwargs The Python dict to look up the value in.
- * @param string_input The key to search for.
+ * @param key The key to search for.
  * @param var_ptr A pointer to the variable to set on success.
+ * @param minimum Only set if the new value is >= this number
  */
-void trySetVariable(PyObject *kwargs, const char *string_input, double *var_ptr)
+void trySetVariable(PyObject *kwargs, const char *key, double *var_ptr, double minimum = F_MINIMUM)
 {
-  if (!kwargs || !string_input || !var_ptr) {
+  if (!PyDict_Check(kwargs) || !key || !var_ptr) {
     return;
   }
 
-  PyObject *value = nullptr;
+  PyObject *value = PyDict_GetItemString(kwargs, key);
 
-  // PyDict_GetItemStringRef returns 1 (found), 0 (missing), or -1 (error).
-  int res = PyDict_GetItemStringRef(kwargs, string_input, &value);
-
-  if (res == 1) {
+  if (PyFloat_Check(value)) {
     double result = PyFloat_AsDouble(value);
-    Py_DECREF(value);
-
-    if (PyErr_Occurred()) {
-      PyErr_Clear();
-    } else {
+    if (result == -1.0 && PyErr_Occurred()) {
+      // Pass on an exception:
+      return;
+    }
+    if (result >= minimum) {
       *var_ptr = result;
     }
-  } else if (res == -1) {
-    PyErr_Clear();
   }
+  // else pass on exception (if any), but usually just not present.
 }
 
 CurveDiscretizer::CurveDiscretizer(PyObject *kwargs)
@@ -81,7 +78,7 @@ CurveDiscretizer::CurveDiscretizer(PyObject *kwargs)
     return;
   }
 
-  trySetVariable(kwargs, "fn", &this->fn);
+  trySetVariable(kwargs, "fn", &this->fn, 0);
   trySetVariable(kwargs, "fs", &this->fs);
   trySetVariable(kwargs, "fa", &this->fa);
 }
@@ -101,7 +98,7 @@ void CurveDiscretizer::setValuesFromPyMain()
     PyObjectUniquePtr varFn(PyObject_GetAttrString(mainModule, "fn"), PyObjectDeleter);
     if (varFn.get() != nullptr) {
       fn = PyFloat_AsDouble(varFn.get());
-      if (isnan(fn)) {
+      if (isnan(fn) || fn < 0) {
         fn = 0;
       }
     }
@@ -111,8 +108,8 @@ void CurveDiscretizer::setValuesFromPyMain()
     PyObjectUniquePtr varFa(PyObject_GetAttrString(mainModule, "fa"), PyObjectDeleter);
     if (varFa.get() != nullptr) {
       fa = PyFloat_AsDouble(varFa.get());
-      if (isnan(fa)) {
-        fa = 0;
+      if (isnan(fa) || fa < F_MINIMUM) {
+        fa = F_MINIMUM;
       }
     }
   }
@@ -121,8 +118,8 @@ void CurveDiscretizer::setValuesFromPyMain()
     PyObjectUniquePtr varFs(PyObject_GetAttrString(mainModule, "fs"), PyObjectDeleter);
     if (varFs.get() != nullptr) {
       fs = PyFloat_AsDouble(varFs.get());
-      if (isnan(fs)) {
-        fs = 0;
+      if (isnan(fs) || fs < F_MINIMUM) {
+        fs = F_MINIMUM;
       }
     }
   }
