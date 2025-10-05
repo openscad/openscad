@@ -15,7 +15,7 @@ jobs:
         os: [ ubuntu-latest ]
         headless: [ ON, OFF ]
         enable_tests: [ ON, OFF ]
-        enable_manifold: [ ON, OFF ]
+        enable_manifold: [ ON ]
 
     runs-on: ${{ matrix.os }}
 
