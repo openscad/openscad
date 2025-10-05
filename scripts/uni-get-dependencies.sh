@@ -125,6 +125,10 @@ get_qt5_deps_debian()
  apt-get -y install \
   libqscintilla2-qt5-dev libqt5multimedia5-plugins libqt5opengl5-dev \
   libqt5svg5-dev qt5-qmake qtbase5-dev qtmultimedia5-dev
+ # Install libqt5gamepad5-dev if available (not present on older releases)
+ if apt-cache show libqt5gamepad5-dev >/dev/null 2>&1; then
+  apt-get -y install libqt5gamepad5-dev
+ fi
 }
 
 get_qt6_deps_debian()

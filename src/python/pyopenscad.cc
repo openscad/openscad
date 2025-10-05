@@ -31,9 +31,7 @@
 #include "pydata.h"
 #include "core/CsgOpNode.h"
 #include "Value.h"
-#ifndef OPENSCAD_NOGUI
 #include "executable.h"
-#endif
 #include "Expression.h"
 #include "PlatformUtils.h"
 #include <Context.h>
