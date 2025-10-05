@@ -29,6 +29,9 @@
 #include <string>
 #include <vector>
 #include <ostream>
+#ifdef ENABLE_PYTHON
+#include <Python.h>
+#endif
 
 #include "core/AST.h"
 #include "core/Parameters.h"
@@ -38,6 +41,8 @@
 #include FT_FREETYPE_H
 #include FT_GLYPH_H
 
+class TessellationControl;
+
 class FreetypeRenderer
 {
 public:
@@ -46,9 +51,6 @@ public:
   public:
     void set_size(double size) { this->size = size; }
     void set_spacing(double spacing) { this->spacing = spacing; }
-    void set_fn(double fn) { this->fn = fn; }
-    void set_fa(double fa) { this->fa = fa; }
-    void set_fs(double fs) { this->fs = fs; }
     void set_segments(unsigned int segments) { this->segments = segments; }
     void set_text(const std::string& text) { this->text = text; }
     void set_font(const std::string& font) { this->font = font; }
@@ -60,20 +62,16 @@ public:
     void set_loc(const Location& loc) { this->loc = loc; }
     void set_documentPath(const std::string& path) { this->documentPath = path; }
     void set(Parameters& parameters);
+#ifdef ENABLE_PYTHON
+    void set(PyObject *kwargs);
+#endif
     [[nodiscard]] const FontFacePtr get_font_face() const;
     void detect_properties();
-    friend std::ostream& operator<<(std::ostream& stream, const FreetypeRenderer::Params& params)
-    {
-      return stream << "text = \"" << params.text << "\", size = " << params.size
-                    << ", spacing = " << params.spacing << ", font = \"" << params.font
-                    << "\", direction = \"" << params.direction << "\", language = \"" << params.language
-                    << (params.script.empty() ? "" : "\", script = \"") << params.script
-                    << "\", halign = \"" << params.halign << "\", valign = \"" << params.valign
-                    << "\", $fn = " << params.fn << ", $fa = " << params.fa << ", $fs = " << params.fs;
-    }
+    friend std::ostream& operator<<(std::ostream& stream, const FreetypeRenderer::Params& params);
 
   private:
-    double size, spacing, fn, fa, fs;
+    double size, spacing;
+    std::shared_ptr<TessellationControl> tessFIXME;
     unsigned int segments;
     std::string text, font, direction, language, script, halign, valign;
     Location loc = Location::NONE;

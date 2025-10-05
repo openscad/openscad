@@ -1862,28 +1862,22 @@ PyObject *python_surface(PyObject *self, PyObject *args, PyObject *kwargs)
 PyObject *python_text(PyObject *self, PyObject *args, PyObject *kwargs)
 {
   DECLARE_INSTANCE();
-  auto node = std::make_shared<TextNode>(instance);
-
-  char *kwlist[] = {"text",   "size",   "font", "spacing", "direction", "language", "script",
-                    "halign", "valign", "fn",   "fa",      "fs",        NULL};
+  char *kwlist[] = {"text",     "size",   "font",   "spacing", "direction",
+                    "language", "script", "halign", "valign",  NULL};
 
   double size = 1.0, spacing = 1.0;
-  double fn = NAN, fa = NAN, fs = NAN;
-
-  get_fnas(fn, fa, fs);
 
   const char *text = "", *font = NULL, *direction = "ltr", *language = "en", *script = "latin",
              *valign = "baseline", *halign = "left";
 
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "s|dsdsssssddd", kwlist, &text, &size, &font, &spacing,
-                                   &direction, &language, &script, &halign, &valign, &fn, &fa, &fs)) {
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "s|dsdsssss", kwlist, &text, &size, &font, &spacing,
+                                   &direction, &language, &script, &halign, &valign)) {
     PyErr_SetString(PyExc_TypeError, "Error during parsing text(string, ...))");
     return NULL;
   }
 
-  node->params.set_fn(fn);
-  node->params.set_fa(fa);
-  node->params.set_fs(fs);
+  auto node = std::make_shared<TextNode>(instance);
+  node->params.set(kwargs);
   node->params.set_size(size);
   if (text != NULL) node->params.set_text(text);
   node->params.set_spacing(spacing);
@@ -1907,8 +1901,6 @@ PyObject *python_text(PyObject *self, PyObject *args, PyObject *kwargs)
 PyObject *python_textmetrics(PyObject *self, PyObject *args, PyObject *kwargs)
 {
   DECLARE_INSTANCE();
-  auto node = std::make_shared<TextNode>(instance);
-
   char *kwlist[] = {"text",     "size",   "font",   "spacing", "direction",
                     "language", "script", "halign", "valign",  NULL};
 
