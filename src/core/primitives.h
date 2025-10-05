@@ -29,13 +29,14 @@
 #include "geometry/Geometry.h"
 #include "geometry/linalg.h"
 #include "core/node.h"
-#include "core/TessellationControl.h"
 
 #include <memory>
 #include <cstddef>
 #include <sstream>
 #include <string>
 #include <vector>
+
+class TessellationControl;
 
 class CubeNode : public LeafNode
 {
@@ -58,41 +59,30 @@ public:
 class SphereNode : public LeafNode
 {
 public:
-  SphereNode(const ModuleInstantiation *mi, TessellationControl&& fragments)
-    : LeafNode(mi), fragments(std::move(fragments))
+  SphereNode(const ModuleInstantiation *mi, std::shared_ptr<TessellationControl> tessFIXME)
+    : LeafNode(mi), tessFIXME(std::move(tessFIXME))
   {
   }
-  std::string toString() const override
-  {
-    std::ostringstream stream;
-    stream << "sphere(" << fragments << ", r = " << r << ")";
-    return stream.str();
-  }
+  std::string toString() const override;
   std::string name() const override { return "sphere"; }
   std::unique_ptr<const Geometry> createGeometry() const override;
 
-  TessellationControl fragments;
+  std::shared_ptr<TessellationControl> tessFIXME;
   double r = 1;
 };
 
 class CylinderNode : public LeafNode
 {
 public:
-  CylinderNode(const ModuleInstantiation *mi, TessellationControl&& fragments)
-    : LeafNode(mi), fragments(std::move(fragments))
+  CylinderNode(const ModuleInstantiation *mi, std::shared_ptr<TessellationControl> tessFIXME)
+    : LeafNode(mi), tessFIXME(std::move(tessFIXME))
   {
   }
-  std::string toString() const override
-  {
-    std::ostringstream stream;
-    stream << "cylinder(" << fragments << ", h = " << h << ", r1 = " << r1 << ", r2 = " << r2
-           << ", center = " << (center ? "true" : "false") << ")";
-    return stream.str();
-  }
+  std::string toString() const override;
   std::string name() const override { return "cylinder"; }
   std::unique_ptr<const Geometry> createGeometry() const override;
 
-  TessellationControl fragments;
+  std::shared_ptr<TessellationControl> tessFIXME;
   double r1 = 1, r2 = 1, h = 1;
   bool center = false;
 };
@@ -131,20 +121,15 @@ public:
 class CircleNode : public LeafNode
 {
 public:
-  CircleNode(const ModuleInstantiation *mi, TessellationControl&& fragments)
-    : LeafNode(mi), fragments(std::move(fragments))
+  CircleNode(const ModuleInstantiation *mi, std::shared_ptr<TessellationControl> tessFIXME)
+    : LeafNode(mi), tessFIXME(std::move(tessFIXME))
   {
   }
-  std::string toString() const override
-  {
-    std::ostringstream stream;
-    stream << "circle(" << fragments << ", r = " << r << ")";
-    return stream.str();
-  }
+  std::string toString() const override;
   std::string name() const override { return "circle"; }
   std::unique_ptr<const Geometry> createGeometry() const override;
 
-  TessellationControl fragments;
+  std::shared_ptr<TessellationControl> tessFIXME;
   double r = 1;
 };
 

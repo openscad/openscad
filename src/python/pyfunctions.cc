@@ -38,6 +38,7 @@
 #include "core/RenderNode.h"
 #include "core/SurfaceNode.h"
 #include "core/TextNode.h"
+#include "core/TessellationControl.h"
 #include "core/OffsetNode.h"
 #include "core/ProjectionNode.h"
 #include "core/Tree.h"
@@ -122,7 +123,7 @@ PyObject *python_sphere(PyObject *self, PyObject *args, PyObject *kwargs)
     vr = d / 2.0;
   }
 
-  auto node = std::make_shared<SphereNode>(instance, TessellationControl(kwargs));
+  auto node = std::make_shared<SphereNode>(instance, std::make_shared<TessellationControl>(kwargs));
 
   node->r = vr;
 
@@ -195,7 +196,7 @@ PyObject *python_cylinder(PyObject *self, PyObject *args, PyObject *kwargs)
     vr2 = d / 2.0;
   }
 
-  auto node = std::make_shared<CylinderNode>(instance, TessellationControl(kwargs));
+  auto node = std::make_shared<CylinderNode>(instance, std::make_shared<TessellationControl>(kwargs));
 
   node->r1 = vr1;
   node->r2 = vr2;
@@ -364,7 +365,7 @@ PyObject *python_circle(PyObject *self, PyObject *args, PyObject *kwargs)
     vr = d / 2.0;
   }
 
-  auto node = std::make_shared<CircleNode>(instance, TessellationControl(kwargs));
+  auto node = std::make_shared<CircleNode>(instance, std::make_shared<TessellationControl>(kwargs));
 
   node->r = vr;
 
@@ -1121,7 +1122,8 @@ PyObject *rotate_extrude_core(PyObject *obj, int convexity, double scale, double
 {
   DECLARE_INSTANCE();
   std::shared_ptr<AbstractNode> child;
-  auto node = std::make_shared<RotateExtrudeNode>(instance, std::make_shared<TessellationControl>(std::move(tessFIXME)));
+  auto node = std::make_shared<RotateExtrudeNode>(
+    instance, std::make_shared<TessellationControl>(std::move(tessFIXME)));
   if (1) {
     PyObject *dummydict;
     child = PyOpenSCADObjectToNodeMulti(obj, &dummydict);
@@ -1970,7 +1972,8 @@ PyObject *python_offset_core(PyObject *obj, double r, double delta, PyObject *ch
                              TessellationControl&& tessFIXME)
 {
   DECLARE_INSTANCE();
-  auto node = std::make_shared<OffsetNode>(instance, std::make_shared<TessellationControl>(std::move(tessFIXME)));
+  auto node =
+    std::make_shared<OffsetNode>(instance, std::make_shared<TessellationControl>(std::move(tessFIXME)));
 
   PyObject *dummydict;
   std::shared_ptr<AbstractNode> child = PyOpenSCADObjectToNodeMulti(obj, &dummydict);

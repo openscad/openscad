@@ -152,3 +152,12 @@ std::ostream& operator<<(std::ostream& stream, const TessellationControl& f)
   stream << "$fn = " << f.fn << ", $fa = " << f.fa << ", $fs = " << f.fs;
   return stream;
 }
+
+std::ostream& operator<<(std::ostream& stream, const std::shared_ptr<TessellationControl>& f)
+{
+  if (!f) {
+    return stream << "[null TessellationControl]";
+  }
+  stream << "$fn = " << f->fn << ", $fa = " << f->fa << ", $fs = " << f->fs;
+  return stream;
+}
