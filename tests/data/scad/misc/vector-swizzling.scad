@@ -46,4 +46,3 @@ echo(v.xyxyx);
 echo(v.r);
 echo(v[0]);
 echo(v["r"]);
-

@@ -466,4 +466,3 @@ int gladLoaderLoadWGL(HDC hdc) {
 #endif
 
 #endif /* GLAD_WGL_IMPLEMENTATION */
-

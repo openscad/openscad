@@ -40,4 +40,3 @@ module hull3null() {
   }
 }
 hull3null();
-

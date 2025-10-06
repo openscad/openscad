@@ -949,4 +949,3 @@ void gladLoaderUnloadGLX() {
 #endif
 
 #endif /* GLAD_GLX_IMPLEMENTATION */
-

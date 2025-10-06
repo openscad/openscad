@@ -11,4 +11,3 @@ translate([100, 0]) render() {
     else
         cube(50);
 }
-

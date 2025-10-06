@@ -7,5 +7,3 @@ function add_up_to(n) = (
 
 echo(sum10=add_up_to(10));
 echo(sum=add_up_to(-1));
-
-

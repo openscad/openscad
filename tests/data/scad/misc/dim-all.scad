@@ -7,4 +7,3 @@ echo(ordinateY=dxf_dim(file=dxf, name="ordinateY"));
 echo(radius=dxf_dim(file=dxf, name="radius"));
 echo(diameter=dxf_dim(file=dxf, name="diameter"));
 echo(arc=dxf_dim(file=dxf, name="arc"));
-

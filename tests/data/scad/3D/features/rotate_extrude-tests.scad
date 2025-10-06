@@ -34,4 +34,3 @@ translate([0,-60,0]) rotate_extrude($fn=1) translate([20,0,0]) circle(r=10,$fn=1
 
 // Object in negative X
 translate([0,60,0]) rotate_extrude() translate([-20,0]) square(10);
-

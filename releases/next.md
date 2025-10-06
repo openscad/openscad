@@ -123,4 +123,3 @@
 
 Stats:
 * ~800 pull requests merged
-

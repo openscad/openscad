@@ -1618,4 +1618,3 @@ void gladLoaderUnloadEGL() {
 #endif
 
 #endif /* GLAD_EGL_IMPLEMENTATION */
-

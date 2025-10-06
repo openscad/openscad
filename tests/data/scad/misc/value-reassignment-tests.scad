@@ -6,4 +6,3 @@ myval = 2;
 i = 2;
 myval = i * 2; // This is not (yet) allowed as it will be evaluates in place of the first assignment
 echo(myval, i); // Should output undef, 2
-

@@ -13,4 +13,3 @@ difference() {
     translate([0,0,13.3]) rotate([0,0,30]) cylinder(r=3.115,h=2.4,$fn=6);
   }
 }
-

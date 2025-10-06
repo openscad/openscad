@@ -12,4 +12,3 @@ for f in tests/data/dxf/*.dxf; do
 EOF
   "$cmd" -x output/`basename $f` tmp.scad
 done
-

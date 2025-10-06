@@ -204,4 +204,3 @@ int main(int argc, char *argv[]) {
 	// closed automatically upon the process termination.
 	return result;
 }
-

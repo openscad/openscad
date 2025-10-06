@@ -1308,4 +1308,3 @@ int main(int argc, char **argv)
 }
 
 #endif // ifndef HEADERONLY
-

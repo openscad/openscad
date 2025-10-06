@@ -160,4 +160,3 @@ if [ $isrunning_result ]; then
 else
   start
 fi
-

@@ -120,4 +120,3 @@ fi
 if [ "`echo $PATH | grep anaconda.*bin`" ]; then
   echo please remove python anaconda/bin from your PATH, exit, and rerun this
 fi
-
