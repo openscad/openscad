@@ -28,11 +28,16 @@ repos:
     rev: v5.0.0
     hooks:
     -   id: trailing-whitespace
+        exclude: ^(tests/data/svg/svg-spec/|submodules/|patches/|.*\.patch|tests/regression/)
     -   id: end-of-file-fixer
+        exclude: ^(tests/data/svg/svg-spec/|submodules/|patches/|.*\.patch|tests/regression/)
     -   id: check-yaml
+        exclude: ^(submodules/|patches/)
     -   id: detect-private-key
+        exclude: ^(submodules/|patches/)
 -   repo: https://github.com/pre-commit/mirrors-clang-format
     rev: 'HEAD'
     hooks:
     -   id: clang-format
         args: ['--style=file']
+        exclude: ^submodules/
