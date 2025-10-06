@@ -4,7 +4,7 @@ echo(version=version());
 
 difference() {
   sphere(20);
-  
+
   translate([ -2.92, 0.5, +20 ])
     rotate([180, 0, 180])
       import("example012.stl", convexity = 5);

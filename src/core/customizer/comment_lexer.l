@@ -43,12 +43,12 @@ UNICODE {U2}{U}|{U3}{U}{U}|{U4}{U}{U}{U}
                         return NUM;
                     } catch (boost::bad_lexical_cast&) {}
                 }
-                
+
 "[" { return yytext[0];}
 "]" { return yytext[0];}
 "," { return yytext[0];}
 ":" { return yytext[0];}
-  
+
 [ \t]
 
 \"			{ BEGIN(cond_string); stringcon.clear(); }
@@ -68,7 +68,7 @@ UNICODE {U2}{U}|{U3}{U}{U}|{U4}{U}{U}{U}
 			return WORD; }
 }
 
-   
+
 [^(\[ \] \, \" \:)]* { comment_parserlval.text=strdup(yytext); return WORD;}
 
 . { }

@@ -1,13 +1,13 @@
 // First example of parameteric model
-//   
-//    syntax: 
+//
+//    syntax:
 //        //Description
 //        variable=value; //Parameter
-//        
+//
 //        This type of comment tells the name of group to which parameters below
-//        this comment will belong 
-//    
-//       /*[ group name ]*/ 
+//        this comment will belong
+//
+//       /*[ group name ]*/
 //
 
 
@@ -25,7 +25,7 @@ height = 2;//[1 : 10]
 
 /*[ Content To be written ] */
 
-//Message to be write 
+//Message to be write
 Message = "Welcome to..."; //["Welcome to...", "Happy Birthday!", "Happy Anniversary", "Congratulations", "Thank You"]
 
 //Name of Person, company etc.

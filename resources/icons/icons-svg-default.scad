@@ -639,7 +639,7 @@ module orthogonal() {
 
 module axes() {
     p = [ for (r = [10, 40], a = [0, -90, 135]) r * [-sin(a), cos(a) ] ];
-    
+
     translate([width / 2, height / 2]) {
         connect_points(2, function(i) [p[i], p[i + 3]]) circle(d = thin);
         connect_points_dotted(1, function(i) [p[i + 2], p[i + 5]], 1.2 * thin) circle(d = 0.8 * thin);
@@ -743,7 +743,7 @@ module wireframe() {
 
 module throwntogether() {
     module c() translate([10, 50]) preview_cube(15) line(15);
-    
+
     translate([width / 2, 10]) {
         difference() {
             preview_cube(35) line(35);

@@ -69,7 +69,7 @@ def find_dependencies(file):
     if DEBUG: print("Executing " + " ".join(args))
     p = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
     output,err = p.communicate()
-    if p.returncode != 0: 
+    if p.returncode != 0:
         print("Failed with return code " + str(p.returncode) + ":")
         print(err)
         return None
@@ -151,7 +151,7 @@ if __name__ == '__main__':
     # Find the Runpath search path (LC_RPATH)
     p  = subprocess.Popen(["otool", "-l", executable], stdout=subprocess.PIPE, universal_newlines=True)
     output = p.communicate()[0]
-    if p.returncode != 0: 
+    if p.returncode != 0:
         print('Error otool -l failed on main executable')
         sys.exit(1)
     # Check deployment target
@@ -181,7 +181,7 @@ if __name__ == '__main__':
                 sys.exit(1)
             if absfile in processed:
                 processed[absfile].append(dep)
-            else: 
+            else:
                 processed[absfile] = [dep]
                 if DEBUG: print("Pending: " + absfile)
                 pending.append(absfile)

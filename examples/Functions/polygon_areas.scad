@@ -1,4 +1,4 @@
-// polygon_areas.scad: Another recursion example 
+// polygon_areas.scad: Another recursion example
 
 // Draw all geometry
 translate([0,20]) color("Red") text("Areas:", size=8, halign="center");
@@ -11,13 +11,13 @@ translate([44,0]) shapeWithArea(360, 10);
 // One shape with corresponding text
 module shapeWithArea(num, r) {
     polygon(ngon(num, r));
-    translate([0,-20]) 
-        color("Cyan") 
+    translate([0,-20])
+        color("Cyan")
             text(str(round(area(ngon(num, r)))), halign="center", size=8);
 }
 
 // Simple list comprehension for creating N-gon vertices
-function ngon(num, r) = 
+function ngon(num, r) =
   [for (i=[0:num-1], a=i*360/num) [ r*cos(a), r*sin(a) ]];
 
 // Area of a triangle with the 3rd vertex in the origin
@@ -26,7 +26,7 @@ function triarea(v0, v1) = cross(v0, v1) / 2;
 // Area of a polygon using the Shoelace formula
 function area(vertices) =
   let (areas = [let (num=len(vertices))
-                  for (i=[0:num-1]) 
+                  for (i=[0:num-1])
                     triarea(vertices[i], vertices[(i+1)%num])
                ])
       sum(areas);

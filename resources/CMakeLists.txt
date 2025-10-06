@@ -34,7 +34,7 @@ else()
             ${CMAKE_DOCS_DIRECTORY}/openscad_docs
             ${CMAKE_DOCS_DIRECTORY}/openscad_docs_pdf
         COMMAND "${PYTHON_EXECUTABLE}" "${CMAKE_SOURCE_DIR}/resources/docs/docs_downloader.py"
-        COMMENT "Running docs_downloader.py"                                                                                                                       
+        COMMENT "Running docs_downloader.py"
         WORKING_DIRECTORY ${CMAKE_DOCS_DIRECTORY} DEPENDS ${CMAKE_SOURCE_DIR}/resources/docs/docs_downloader.py
     )
 endif()

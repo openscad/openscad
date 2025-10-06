@@ -38,8 +38,8 @@ std::string PlatformUtils::userConfigPath()
 
 unsigned long PlatformUtils::stackLimit()
 {
-  struct rlimit limit;        
-  
+  struct rlimit limit;
+
   int ret = getrlimit(RLIMIT_STACK, &limit);
   if (ret == 0) {
     if (limit.rlim_cur > STACK_BUFFER_SIZE) {
@@ -49,7 +49,7 @@ unsigned long PlatformUtils::stackLimit()
       return limit.rlim_max - STACK_BUFFER_SIZE;
     }
   }
-  
+
   return STACK_LIMIT_DEFAULT;
 }
 
@@ -66,7 +66,7 @@ const std::string PlatformUtils::user_agent()
 const std::string PlatformUtils::sysinfo(bool extended)
 {
   std::ostringstream result;
-  
+
   NSOperatingSystemVersion version = [[NSProcessInfo processInfo] operatingSystemVersion];
   struct utsname name;
   uname(&name);
@@ -89,9 +89,9 @@ const std::string PlatformUtils::sysinfo(bool extended)
     int64_t physical_memory;
     size_t length64 = sizeof(int64_t);
     sysctlbyname("hw.memsize", &physical_memory, &length64, nullptr, 0);
-  
+
     result << " " << numcpu << " CPU";
-    if (numcpu > 1) result << "s"; 
+    if (numcpu > 1) result << "s";
     result << " " << PlatformUtils::toMemorySizeString(physical_memory, 2) << " RAM ";
   }
 

@@ -10,7 +10,7 @@ rotate_extrude() translate([20,0,0]) circle(r=10);
 
 // Sweep of polygon with hole
 translate([50,-20,0]) {
-  difference() { 
+  difference() {
     rotate_extrude(convexity=4) translate([20,0,0]) difference() {
       circle(r=10); circle(r=8);
     }
@@ -20,7 +20,7 @@ translate([50,-20,0]) {
 
 // Alternative, difference between two solid sweeps
 translate([50,50,0]) {
-  difference() { 
+  difference() {
     difference() {
       rotate_extrude(convexity=2) translate([20,0,0]) circle(r=10);
       rotate_extrude(convexity=2) translate([20,0,0]) circle(r=8);

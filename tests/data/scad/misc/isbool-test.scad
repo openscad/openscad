@@ -12,7 +12,7 @@ echo(is_bool(0/0)); //nan
 echo(is_bool((1/0)/(1/0)));  //nan
 echo(is_bool(1/0));  //inf
 echo(is_bool(-1/0));  //-inf
-echo(is_bool(undef)); 
+echo(is_bool(undef));
 echo("resulting in warnings:");
-echo(is_bool(1,2,3)); 
-echo(is_bool()); 
+echo(is_bool(1,2,3));
+echo(is_bool());

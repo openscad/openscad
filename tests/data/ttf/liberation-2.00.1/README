@@ -1,7 +1,7 @@
    1. What's this?
   =================
 
-  The Liberation Fonts is font collection which aims to provide document 
+  The Liberation Fonts is font collection which aims to provide document
   layout compatibility as usage of Times New Roman, Arial, Courier New.
 
 
@@ -23,7 +23,7 @@
 
   3.2 Build from the source
 
-    Change into directory liberation-fonts-[VERSION]/ and build from sources by 
+    Change into directory liberation-fonts-[VERSION]/ and build from sources by
     following commands:
 
       $ cd liberation-fonts-[VERSION]
@@ -33,8 +33,8 @@
 
   3.3 Install to system
 
-    For Fedora, you could manually install the fonts by copying the TTFs to 
-    ~/.fonts for user wide usage, or to /usr/share/fonts/truetype/liberation 
+    For Fedora, you could manually install the fonts by copying the TTFs to
+    ~/.fonts for user wide usage, or to /usr/share/fonts/truetype/liberation
     for system-wide availability. Then, run "fc-cache" to let that cached.
 
     For other distributions, please check out corresponding documentation.
@@ -64,7 +64,7 @@
     VER = [VERSION]
 
   Make sure that the defined version corresponds to the font software metadata
-  which you can check with ftinfo/otfinfo or fontforge itself. It is highly 
+  which you can check with ftinfo/otfinfo or fontforge itself. It is highly
   recommended that file 'ChangeLog' is updated to reflect changes.
 
   Create a tarball with the following command:

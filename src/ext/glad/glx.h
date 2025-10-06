@@ -817,7 +817,7 @@ int gladLoadGLX(Display *display, int screen, GLADloadfunc load) {
     return gladLoadGLXUserPtr(display, screen, glad_glx_get_proc_from_userptr, GLAD_GNUC_EXTENSION (void*) load);
 }
 
- 
+
 
 #ifdef GLAD_GLX
 

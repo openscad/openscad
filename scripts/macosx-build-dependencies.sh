@@ -85,7 +85,7 @@ PACKAGES=(
     # https://gitlab.freedesktop.org/pixman/pixman/-/tags
     "pixman 0.46.0"
 
-    # https://www.cairographics.org/news/ 
+    # https://www.cairographics.org/news/
     "cairo 1.18.0"
 
     # https://github.com/CGAL/cgal/releases
@@ -467,7 +467,7 @@ build_onetbb()
   tar xzf oneTBB-$version.tar.gz
   cd oneTBB-$version
   mkdir build
-  cd build  
+  cd build
   cmake .. -DCMAKE_INSTALL_PREFIX=$DEPLOYDIR -DCMAKE_BUILD_TYPE=Release -DTBB_TEST=OFF -DTBB_DISABLE_HWLOC_AUTOMATIC_SEARCH=ON -DCMAKE_OSX_DEPLOYMENT_TARGET="$MAC_OSX_VERSION_MIN" -DCMAKE_OSX_ARCHITECTURES="$ARCHS_COMBINED"
   make -j"$NUMCPU" install
 }
@@ -551,7 +551,7 @@ build_sparkle()
 #  xcodebuild clean
 #  xcodebuild -arch x86_64
 #  rm -rf $DEPLOYDIR/lib/Sparkle.framework
-#  cp -Rf build/Release/Sparkle.framework $DEPLOYDIR/lib/ 
+#  cp -Rf build/Release/Sparkle.framework $DEPLOYDIR/lib/
 #  Install_name_tool -id $DEPLOYDIR/lib/Sparkle.framework/Versions/A/Sparkle $DEPLOYDIR/lib/Sparkle.framework/Sparkle
 }
 
@@ -895,11 +895,11 @@ build_cairo()
 
   # FIXME: Cairo cannot disable lzo2, so we patch it
   patch -p1 < $OPENSCADDIR/patches/cairo-lzo2-macos.patch
-  
+
   # Fix for cairo-1.18 build issue against freetype-2.13
   # https://lore.kernel.org/buildroot/20231116145113.1828682-1-thomas.devoogdt@barco.com/T/
   patch -p1 < $OPENSCADDIR/patches/cairo-ft-private.h-fix-missing-FT_Color-error.patch
-  
+
   # Build each arch separately
   for arch in ${ARCHS[*]}; do
     sed -e "s,@MAC_OSX_VERSION_MIN@,$MAC_OSX_VERSION_MIN,g" -e "s,@DEPLOYDIR@,$DEPLOYDIR,g" $OPENSCADDIR/scripts/macos-$arch.txt.in > macos-$arch.txt

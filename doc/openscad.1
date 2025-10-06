@@ -57,7 +57,7 @@ invoke \fImake_command missing_file\fP to create the missing file, and then
 read it again.
 .TP
 \fB-O\fP \fIsection/key=val\fP
-Pass settings value to the file export using the format section/key=value, e.g 
+Pass settings value to the file export using the format section/key=value, e.g
 export-pdf/paper-size=a3. Use --help-export to list all available settings.
 More than one \fB-O\fP option can be given.
 .TP
@@ -98,15 +98,15 @@ View options
 If exporting an image as an OpenCSG preview, stop rendering after encountering \fIlimit\fP elements to avoid runaway resource usage.
 .TP
 .B \-\-camera=transx,transy,transz,rotx,roty,rotz,distance
-If exporting an image, use a Gimbal camera with the given parameters. 
-Rot is rotation around the x, y, and z axis, trans is the distance to 
-move the object in the x, y, and z directions, and distance is the 
+If exporting an image, use a Gimbal camera with the given parameters.
+Rot is rotation around the x, y, and z axis, trans is the distance to
+move the object in the x, y, and z directions, and distance is the
 distance between the camera and the center of the object.
 .TP
 .B \-\-camera=eyex,eyey,eyez,centerx,centery,centerz
-If exporting an image, use a Vector camera with the given parameters. 
-The first three are for the Eye position, while the next three are for 
-the Center (or target) that the camera will look at. The 'up' vector is 
+If exporting an image, use a Vector camera with the given parameters.
+The first three are for the Eye position, while the next three are for
+the Center (or target) that the camera will look at. The 'up' vector is
 not currently supported.
 .TP
 .B \-\-viewall
@@ -116,10 +116,10 @@ If exporting an image, adjust camera distance to fit the whole design in the fra
 If exporting an image, center the design in the frame
 .TP
 .B \-\-imgsize=width,height
-If exporting an image, specify the pixel width and height 
+If exporting an image, specify the pixel width and height
 .TP
 .B \-\-projection=[o|ortho|p|perspective]
-If exporting an image, specify whether to use orthographic or perspective 
+If exporting an image, specify whether to use orthographic or perspective
 projection
 .TP
 .B \-\-colorscheme=\fIscheme
@@ -148,12 +148,12 @@ Render example001.scad into the .stl format (raw triangle data):
 .PP
 .B openscad -o example001.stl examples/example001.scad
 .PP
-Compile a 2d image using a camera rotated 25 degrees in x and 35 in z, 
+Compile a 2d image using a camera rotated 25 degrees in x and 35 in z,
 distance 500, with orthographic projection:
 .PP
 .B openscad -o o.png o.scad --camera=0,0,0,25,0,35,500 --projection=ortho
 .PP
-Set the 'mode' variable in example017 so that it will render only the 
+Set the 'mode' variable in example017 so that it will render only the
 parts of the shape. Export to a .dxf file.
 .PP
 .B openscad -o example017.dxf -D'mode="parts"' examples/example017.scad
@@ -162,5 +162,5 @@ parts of the shape. Export to a .dxf file.
 OpenSCAD was written by Claire 'Clifford' Wolf, Marius Kintel, and others.
 .PP
 This manual page was written by chrysn <chrysn@fsfe.org>,
-for the Debian project (and may be used by others). Updated by 
+for the Debian project (and may be used by others). Updated by
 the OpenSCAD team.

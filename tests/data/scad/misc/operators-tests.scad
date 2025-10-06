@@ -16,7 +16,7 @@ for (lhs = [false,true,-1,0,1,nan,inf,"alpha","beta",[1,2,3],[1,2,4],[0:3],[0:1]
 ranges = [
   [ 1:-1: 3], // empty ranges should compare equally
   [-1:-1: 1], // regardless of difference in "parameters"
-  [ 1:-1:-1], 
+  [ 1:-1:-1],
   [ 1: 1: 3],
   [ 1:-1:-2],
   [ 1: 1: 4],

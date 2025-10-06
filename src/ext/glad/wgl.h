@@ -445,7 +445,7 @@ int gladLoadWGLUserPtr(HDC hdc, GLADuserptrloadfunc load, void *userptr) {
 int gladLoadWGL(HDC hdc, GLADloadfunc load) {
     return gladLoadWGLUserPtr(hdc, glad_wgl_get_proc_from_userptr, GLAD_GNUC_EXTENSION (void*) load);
 }
- 
+
 
 #ifdef GLAD_WGL
 

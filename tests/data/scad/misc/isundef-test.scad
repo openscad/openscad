@@ -12,7 +12,7 @@ echo(c);
 echo("Test with scopes");
 if(true){
     echo(is_undef(b));
-    
+
     d=true;
     echo(is_undef(c));
     echo(d);

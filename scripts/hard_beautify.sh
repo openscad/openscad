@@ -18,11 +18,11 @@ ZIP_FILE="$ARTIFACTS_DIR/1/beautify-patch/beautify-patch.zip"
 act -j Beautify -P ubuntu-latest=ghcr.io/catthehacker/ubuntu:act-24.04 --artifact-server-path "$ROOT_DIR/build/artifacts/" || true
 
 if [ -f "$ZIP_FILE" ]; then
-  ( 
-    cd "$ARTIFACTS_DIR" 
+  (
+    cd "$ARTIFACTS_DIR"
     unzip "$ZIP_FILE"
   )
-  ( 
+  (
     cd "$ROOT_DIR"
     git apply "$ARTIFACTS_DIR/beautify.patch"
   )

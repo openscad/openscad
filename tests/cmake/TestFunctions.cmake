@@ -186,7 +186,7 @@ function(add_cmdline_test TESTCMD_BASENAME)
     # only add test if it is not experimental or if it is and experimental option is enabled
     if (NOT TEST_IS_EXPERIMENTAL OR EXPERIMENTAL)
       # Use cmake option "--log-level DEBUG" during top level config to see this
-      message(DEBUG "${DBG_COMMAND_STR}")      
+      message(DEBUG "${DBG_COMMAND_STR}")
       add_test(NAME ${TEST_FULLNAME} CONFIGURATIONS ${CONFVAL}
         COMMAND ${Python3_EXECUTABLE}
         ${TEST_CMDLINE_TOOL_PY} ${COMPARATOR} -c ${IMAGE_COMPARE_EXE}

@@ -10,7 +10,7 @@ $fn=20;
 /* donut (r1, r2, t) {{{
   r1 = radius of torus
   r2 = radius of torus cross section (circle)
-  t  = thickness of shell (t == 0 is 
+  t  = thickness of shell (t == 0 is
 */
 module donut (r1, r2, t=0) {
   difference() {
@@ -19,7 +19,7 @@ module donut (r1, r2, t=0) {
         circle( r = r2 );
       }
     }
-    // (t == 0 ? solid : hollow ) 
+    // (t == 0 ? solid : hollow )
     if (t > 0) {
       rotate_extrude( convexity=6 ) {
         translate([r1, 0, 0]) {
@@ -68,7 +68,7 @@ module donut_flange (r1, r2, a1, a2, a_step=1, t=0, round=false) {
           half_donut( r1, r2, round );
       }
     }
-    // (t == 0 ? solid : hollow ) 
+    // (t == 0 ? solid : hollow )
     if (t > 0) {
       union() {
         for (a = [a1:a_step:a2]) {

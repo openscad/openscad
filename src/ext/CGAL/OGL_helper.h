@@ -13,7 +13,7 @@
 //
 // $URL: svn+ssh://scm.gforge.inria.fr/svn/cgal/trunk/Nef_3/include/CGAL/Nef_3/OGL_helper.h $
 // $Id: OGL_helper.h 56667 2010-06-09 07:37:13Z sloriot $
-// 
+//
 //
 // Author(s)     : Peter Hachenberger <hachenberger@mpi-sb.mpg.de>
 
@@ -45,7 +45,7 @@
 #include <windows.h> // For the CALLBACK macro
 #define CGAL_GLU_TESS_CALLBACK CALLBACK
 #else
-#define CGAL_GLU_TESS_CALLBACK 
+#define CGAL_GLU_TESS_CALLBACK
 #endif
 
 #ifdef __APPLE__
@@ -67,7 +67,7 @@ namespace OGL {
 // Drawable double types:
 // ----------------------------------------------------------------------------
 
-  typedef CGAL::Simple_cartesian<double> DKernel;  
+  typedef CGAL::Simple_cartesian<double> DKernel;
   typedef DKernel::Point_3               Double_point;
   typedef DKernel::Vector_3              Double_vector;
   typedef DKernel::Segment_3             Double_segment;
@@ -105,7 +105,7 @@ namespace OGL {
     typedef const double* const_double_ptr;
     double coords_[3];
   public:
-    Double_triple() 
+    Double_triple()
     { coords_[0]=coords_[1]=coords_[2]=0.0; }
     Double_triple(double x, double y, double z)
     { coords_[0]=x; coords_[1]=y; coords_[2]=z; }
@@ -119,9 +119,9 @@ namespace OGL {
       coords_[1]=t.coords_[1];
       coords_[2]=t.coords_[2];
       return *this; }
-    operator double_ptr() const 
+    operator double_ptr() const
     { return const_cast<Double_triple&>(*this).coords_; }
-    double operator[](unsigned i) 
+    double operator[](unsigned i)
     { CGAL_assertion(i<3); return coords_[i]; }
   }; // Double_triple
 
@@ -151,19 +151,19 @@ namespace OGL {
     void push_back_vertex(double x, double y, double z)
     { coords_.push_back(Double_triple(x,y,z)); }
 
-    DFacet(const DFacet& f) 
+    DFacet(const DFacet& f)
     { coords_  = f.coords_;
       fc_ends_ = f.fc_ends_;
       normal_  = f.normal_;
       mark_    = f.mark_;
     }
 
-    DFacet& operator=(const DFacet& f) 
+    DFacet& operator=(const DFacet& f)
     { coords_ =  f.coords_;
       fc_ends_ = f.fc_ends_;
       normal_ =  f.normal_;
       mark_    = f.mark_;
-      return *this; 
+      return *this;
     }
 
     ~DFacet()
@@ -171,7 +171,7 @@ namespace OGL {
 
     void push_back_vertex(const Double_point& p)
     { push_back_vertex(p.x(),p.y(),p.z()); }
-   
+
     void set_normal(double x, double y, double z, bool m)
     { double l = sqrt(x*x + y*y + z*z);
       normal_ = Double_triple(x/l,y/l,z/l); mark_ = m; }
@@ -180,21 +180,21 @@ namespace OGL {
     double dy() const { return normal_[1]; }
     double dz() const { return normal_[2]; }
     bool mark() const { return mark_; }
-    double* normal() const 
+    double* normal() const
     { return static_cast<double*>(normal_); }
 
     void new_facet_cycle()
     { fc_ends_.push_back(coords_.size()); }
-    
+
     unsigned number_of_facet_cycles() const
     { return fc_ends_.size(); }
 
-    Coord_iterator facet_cycle_begin(unsigned i) 
+    Coord_iterator facet_cycle_begin(unsigned i)
     { CGAL_assertion(i<number_of_facet_cycles());
       if (i==0) return coords_.begin();
       else return coords_.begin()+fc_ends_[i]; }
 
-    Coord_iterator facet_cycle_end(unsigned i) 
+    Coord_iterator facet_cycle_end(unsigned i)
     { CGAL_assertion(i<number_of_facet_cycles());
       if (i<fc_ends_.size()-1) return coords_.begin()+fc_ends_[i+1];
       else return coords_.end(); }
@@ -220,7 +220,7 @@ namespace OGL {
 	os << std::endl;
       }
     }
-    
+
   }; // DFacet
 
 
@@ -248,7 +248,7 @@ namespace OGL {
     //    CGAL_NEF_TRACEN("vertexCallback coord  "<<pc[0]<<","<<pc[1]<<","<<pc[2]);
     //    CGAL_NEF_TRACEN("vertexCallback normal "<<pu[0]<<","<<pu[1]<<","<<pu[2]);
     glNormal3dv(pu);
-    glVertex3dv(pc); 
+    glVertex3dv(pc);
   }
 
   inline void CGAL_GLU_TESS_CALLBACK combineCallback(GLdouble coords[3], GLvoid *[4], GLfloat [4], GLvoid **dataOut)
@@ -269,7 +269,7 @@ namespace OGL {
 
 
  enum { SNC_AXES};
- 
+
  class Polyhedron : public OGL_base_object {
  protected:
     std::list<DPoint>    vertices_;
@@ -288,27 +288,27 @@ namespace OGL {
     typedef std::list<DFacet>::const_iterator   Halffacet_iterator;
 
   public:
-    Polyhedron() : bbox_(-1,-1,-1,1,1,1), switches(1) { 
+    Polyhedron() : bbox_(-1,-1,-1,1,1,1), switches(1) {
       object_list_ = 0;
       init_ = false;
-      switches[SNC_AXES] = false; 
+      switches[SNC_AXES] = false;
     }
 
-    ~Polyhedron() 
+    ~Polyhedron()
     { if (object_list_) glDeleteLists(object_list_, 4); }
 
     void push_back(const Double_point& p, bool m) {
         vertices_.push_back(DPoint(p,m));
     }
-    void push_back(const Double_segment& s, bool m) 
+    void push_back(const Double_segment& s, bool m)
     { edges_.push_back(DSegment(s,m)); }
-    void push_back(const DFacet& f) 
+    void push_back(const DFacet& f)
     { halffacets_.push_back(f); }
- 
-    void toggle(int index) override { 
-      switches[index] = !switches[index]; 
+
+    void toggle(int index) override {
+      switches[index] = !switches[index];
     }
-    
+
     void set_style(int index) override {
     }
 
@@ -357,7 +357,7 @@ namespace OGL {
       os << "OGL::Polyhedron" << std::endl;
       os << "Vertices:" << std::endl;
       Vertex_iterator v;
-      for(v=vertices_.begin();v!=vertices_.end();++v) 
+      for(v=vertices_.begin();v!=vertices_.end();++v)
 	os << "  "<<*v<<", mark="<<v->mark()<<std::endl;
       os << "Edges:" << std::endl;
       Edge_iterator e;
@@ -374,58 +374,58 @@ namespace OGL {
   }; // Polyhedron
 
   template<typename Nef_polyhedron>
-  class Nef3_Converter { 
+  class Nef3_Converter {
     typedef typename Nef_polyhedron::SNC_structure           SNC_structure;
     typedef CGAL::SNC_decorator<SNC_structure>               Base;
-    
+
     public:
-    typedef typename SNC_structure::Vertex_const_iterator Vertex_const_iterator; 
-    typedef typename SNC_structure::Halfedge_const_iterator Halfedge_const_iterator; 
-    typedef typename SNC_structure::Halffacet_const_iterator Halffacet_const_iterator; 
+    typedef typename SNC_structure::Vertex_const_iterator Vertex_const_iterator;
+    typedef typename SNC_structure::Halfedge_const_iterator Halfedge_const_iterator;
+    typedef typename SNC_structure::Halffacet_const_iterator Halffacet_const_iterator;
     typedef typename SNC_structure::Halffacet_cycle_const_iterator Halffacet_cycle_const_iterator;
-    
+
     typedef typename SNC_structure::Object_const_handle Object_const_handle;
-    typedef typename SNC_structure::SHalfedge_const_handle SHalfedge_const_handle; 
-    typedef typename SNC_structure::SHalfloop_const_handle SHalfloop_const_handle; 
-    
-    typedef typename SNC_structure::Vertex_const_handle Vertex_const_handle; 
-    typedef typename SNC_structure::Halfedge_const_handle Halfedge_const_handle; 
+    typedef typename SNC_structure::SHalfedge_const_handle SHalfedge_const_handle;
+    typedef typename SNC_structure::SHalfloop_const_handle SHalfloop_const_handle;
+
+    typedef typename SNC_structure::Vertex_const_handle Vertex_const_handle;
+    typedef typename SNC_structure::Halfedge_const_handle Halfedge_const_handle;
     typedef typename SNC_structure::Halffacet_const_handle Halffacet_const_handle;
-    
+
     typedef typename SNC_structure::Point_3 Point_3;
     typedef typename SNC_structure::Vector_3 Vector_3;
     typedef typename SNC_structure::Segment_3 Segment_3;
     typedef typename SNC_structure::Plane_3 Plane_3;
     typedef typename SNC_structure::Mark Mark;
-    typedef typename SNC_structure::SHalfedge_around_facet_const_circulator 
+    typedef typename SNC_structure::SHalfedge_around_facet_const_circulator
       SHalfedge_around_facet_const_circulator;
-    
+
   private:
     static OGL::Double_point double_point(const Point_3& p)
       { return OGL::Double_point(CGAL::to_double(p.x()),
 				 CGAL::to_double(p.y()),
 				 CGAL::to_double(p.z())); }
-    
+
     static OGL::Double_segment double_segment(const Segment_3& s)
       { return OGL::Double_segment(double_point(s.source()),
 				   double_point(s.target())); }
-    
-    static void draw(Vertex_const_handle v, const Nef_polyhedron& , 
-		     CGAL::OGL::Polyhedron& P) { 
+
+    static void draw(Vertex_const_handle v, const Nef_polyhedron& ,
+		     CGAL::OGL::Polyhedron& P) {
       Point_3 bp = v->point();
       //    CGAL_NEF_TRACEN("vertex " << bp);
-      P.push_back(double_point(bp), v->mark()); 
+      P.push_back(double_point(bp), v->mark());
     }
-    
+
     static void draw(Halfedge_const_handle e, const Nef_polyhedron& ,
-		     CGAL::OGL::Polyhedron& P) { 
+		     CGAL::OGL::Polyhedron& P) {
       Vertex_const_handle s = e->source();
       Vertex_const_handle t = e->twin()->source();
       Segment_3 seg(s->point(),t->point());
       //    CGAL_NEF_TRACEN("edge " << seg);
-      P.push_back(double_segment(seg), e->mark()); 
+      P.push_back(double_segment(seg), e->mark());
     }
-    
+
     static bool same_orientation(Plane_3 p1, Plane_3 p2) {
       if(p1.a() != 0)
         return CGAL::sign(p1.a()) == CGAL::sign(p2.a());
@@ -435,7 +435,7 @@ namespace OGL {
     }
 
     static void draw(Halffacet_const_handle f, const Nef_polyhedron& ,
-		     CGAL::OGL::Polyhedron& P) { 
+		     CGAL::OGL::Polyhedron& P) {
 
       if (f->incident_volume()->mark()) return; // Skip halffaces facing solid volume
       OGL::DFacet g;
@@ -452,16 +452,16 @@ namespace OGL {
 	  }
 	}
       Vector_3 v = f->plane().orthogonal_vector();
-      g.set_normal(CGAL::to_double(v.x()), 
-		   CGAL::to_double(v.y()), 
-		   CGAL::to_double(v.z()), 
+      g.set_normal(CGAL::to_double(v.x()),
+		   CGAL::to_double(v.y()),
+		   CGAL::to_double(v.z()),
 		   f->mark());
       P.push_back(g);
     }
-    
+
     // Returns the bounding box of the finite vertices of the polyhedron.
     // Returns $[-1,+1]^3$ as bounding box if no finite vertex exists.
-    
+
     static Bbox_3  bounded_bbox(const Nef_polyhedron& N) {
       bool first_vertex = true;
       Bbox_3 bbox( -1.0, -1.0, -1.0, 1.0, 1.0, 1.0);
@@ -483,8 +483,8 @@ namespace OGL {
 	}
       }
       return bbox;
-    }  
-    
+    }
+
     static void set_R(Bbox_3& bbox, const Nef_polyhedron& N) {
       if(N.is_standard_kernel()) return;
       double size = abs(bbox.xmin());
@@ -503,10 +503,10 @@ namespace OGL {
 		    bbox.xmax()*10,bbox.ymax()*10,bbox.zmax()*10);
     }
   public:
-    static void convert_to_OGLPolyhedron(const Nef_polyhedron& N, CGAL::OGL::Polyhedron* P) { 
+    static void convert_to_OGLPolyhedron(const Nef_polyhedron& N, CGAL::OGL::Polyhedron* P) {
       Bbox_3 bbox(bounded_bbox(N));
       set_R(bbox,N);
-      P->bbox() = bbox;    
+      P->bbox() = bbox;
       Vertex_const_iterator v;
       CGAL_forall_vertices(v,*N.sncp()) draw(v,N,*P);
       Halfedge_const_iterator e;
@@ -514,7 +514,7 @@ namespace OGL {
       Halffacet_const_iterator f;
       CGAL_forall_halffacets(f,*N.sncp()) draw(f,N,*P);
     }
-    
+
   }; // Nef3_Converter
 
 } // namespace OGL

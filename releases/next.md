@@ -20,7 +20,7 @@
   * a= is an alias for angle= #5572
   * When specifying an angle, rotation starts on angle= instead of angle=180 #5553
 * import()
-  * Added center= parameter 
+  * Added center= parameter
   * Added support for .json import #3891
   * Improved SVG import
     * Support $fn, $fs, $fa #3994
@@ -45,7 +45,7 @@
   * Better behavior for deep recursions #3671 #3730
 
 * Geometry
-  * 2D precision issues #3794 
+  * 2D precision issues #3794
   * Round up number of fragments in rotate_extrude #4540
 
 * Misc
@@ -61,7 +61,7 @@
   * SVG import: Respect "display: none" #4041
   * SVG scaling wrong with width/height given as percentage #4096
   * VRML export #3883
-  * OBJ import and export #4197 
+  * OBJ import and export #4197
   * PovRay export, with color support #5288
 
 * GUI

@@ -1,5 +1,5 @@
 /*
-** SGI FREE SOFTWARE LICENSE B (Version 2.0, Sept. 18, 2008) 
+** SGI FREE SOFTWARE LICENSE B (Version 2.0, Sept. 18, 2008)
 ** Copyright (C) [dates of first publication] Silicon Graphics, Inc.
 ** All Rights Reserved.
 **
@@ -9,10 +9,10 @@
 ** to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies
 ** of the Software, and to permit persons to whom the Software is furnished to do so,
 ** subject to the following conditions:
-** 
+**
 ** The above copyright notice including the dates of first publication and either this
 ** permission notice or a reference to http://oss.sgi.com/projects/FreeB/ shall be
-** included in all copies or substantial portions of the Software. 
+** included in all copies or substantial portions of the Software.
 **
 ** THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
 ** INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
@@ -20,7 +20,7 @@
 ** BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
 ** TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE
 ** OR OTHER DEALINGS IN THE SOFTWARE.
-** 
+**
 ** Except as contained in this notice, the name of Silicon Graphics, Inc. shall not
 ** be used in advertising or otherwise to promote the sale, use or other dealings in
 ** this Software without prior written authorization from Silicon Graphics, Inc.
@@ -117,7 +117,7 @@ static void Splice( TESShalfEdge *a, TESShalfEdge *b )
 * the new vertex *before* vNext so that algorithms which walk the vertex
 * list will not see the newly created vertices.
 */
-static void MakeVertex( TESSvertex *newVertex, 
+static void MakeVertex( TESSvertex *newVertex,
 					   TESShalfEdge *eOrig, TESSvertex *vNext )
 {
 	TESShalfEdge *e;
@@ -156,7 +156,7 @@ static void MakeFace( TESSface *newFace, TESShalfEdge *eOrig, TESSface *fNext )
 	TESSface *fPrev;
 	TESSface *fNew = newFace;
 
-	assert(fNew != NULL); 
+	assert(fNew != NULL);
 
 	/* insert in circular doubly-linked list before fNext */
 	fPrev = fNext->prev;
@@ -267,9 +267,9 @@ TESShalfEdge *tessMeshMakeEdge( TESSmesh *mesh )
 	if (newVertex1 == NULL || newVertex2 == NULL || newFace == NULL) {
 		if (newVertex1 != NULL) bucketFree( mesh->vertexBucket, newVertex1 );
 		if (newVertex2 != NULL) bucketFree( mesh->vertexBucket, newVertex2 );
-		if (newFace != NULL) bucketFree( mesh->faceBucket, newFace );     
+		if (newFace != NULL) bucketFree( mesh->faceBucket, newFace );
 		return NULL;
-	} 
+	}
 
 	e = MakeEdge( mesh, &mesh->eHead );
 	if (e == NULL) return NULL;
@@ -336,7 +336,7 @@ int tessMeshSplice( TESSmesh* mesh, TESShalfEdge *eOrg, TESShalfEdge *eDst )
 		eOrg->Org->anEdge = eOrg;
 	}
 	if( ! joiningLoops ) {
-		TESSface *newFace = (TESSface*)bucketAlloc( mesh->faceBucket );  
+		TESSface *newFace = (TESSface*)bucketAlloc( mesh->faceBucket );
 		if (newFace == NULL) return 0;
 
 		/* We split one loop into two -- the new loop is eDst->Lface.
@@ -384,7 +384,7 @@ int tessMeshDelete( TESSmesh *mesh, TESShalfEdge *eDel )
 		Splice( eDel, eDel->Oprev );
 		if( ! joiningLoops ) {
 			TESSface *newFace= (TESSface*)bucketAlloc( mesh->faceBucket );
-			if (newFace == NULL) return 0; 
+			if (newFace == NULL) return 0;
 
 			/* We are splitting one loop into two -- create a new loop for eDel. */
 			MakeFace( newFace, eDel, eDel->Lface );
@@ -487,7 +487,7 @@ TESShalfEdge *tessMeshSplitEdge( TESSmesh *mesh, TESShalfEdge *eOrg )
 TESShalfEdge *tessMeshConnect( TESSmesh *mesh, TESShalfEdge *eOrg, TESShalfEdge *eDst )
 {
 	TESShalfEdge *eNewSym;
-	int joiningLoops = FALSE;  
+	int joiningLoops = FALSE;
 	TESShalfEdge *eNew = MakeEdge( mesh, eOrg );
 	if (eNew == NULL) return NULL;
 
@@ -589,17 +589,17 @@ TESSmesh *tessMeshNewMesh( TESSalloc* alloc )
 	if (mesh == NULL) {
 		return NULL;
 	}
-	
+
 	if (alloc->meshEdgeBucketSize < 16)
 		alloc->meshEdgeBucketSize = 16;
 	if (alloc->meshEdgeBucketSize > 4096)
 		alloc->meshEdgeBucketSize = 4096;
-	
+
 	if (alloc->meshVertexBucketSize < 16)
 		alloc->meshVertexBucketSize = 16;
 	if (alloc->meshVertexBucketSize > 4096)
 		alloc->meshVertexBucketSize = 4096;
-	
+
 	if (alloc->meshFaceBucketSize < 16)
 		alloc->meshFaceBucketSize = 16;
 	if (alloc->meshFaceBucketSize > 4096)
@@ -703,7 +703,7 @@ int tessMeshMergeConvexFaces( TESSmesh *mesh, int maxVertsPerFace )
 	TESShalfEdge *eCur, *eNext, *eSym;
 	TESSvertex *vStart;
 	int curNv, symNv;
-	
+
 	for( f = mesh->fHead.next; f != &mesh->fHead; f = f->next )
 	{
 		// Skip faces which are outside the result.
@@ -712,7 +712,7 @@ int tessMeshMergeConvexFaces( TESSmesh *mesh, int maxVertsPerFace )
 
 		eCur = f->anEdge;
 		vStart = eCur->Org;
-			
+
 		while (1)
 		{
 			eNext = eCur->Lnext;
@@ -738,15 +738,15 @@ int tessMeshMergeConvexFaces( TESSmesh *mesh, int maxVertsPerFace )
 					}
 				}
 			}
-			
+
 			if( eCur && eCur->Lnext->Org == vStart )
 				break;
-				
+
 			// Continue to next edge.
 			eCur = eNext;
 		}
 	}
-	
+
 	return 1;
 }
 

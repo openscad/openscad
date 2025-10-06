@@ -4,11 +4,11 @@
 #
 # This template enables ctest to do things before and after the test runs.
 # In our case, 1. Setup a virtual framebuffer, 2. pretty-print results
-# 
+#
 # As a template, this file is read inside of CMakeList.txt and certain
 # words (__word__) are replaced with the cmake build dir/etc, at the time that
 # cmake itself is run. Typically these are signified by two underscores (__)
-# before and after the word in smallcase. 
+# before and after the word in smallcase.
 
 # Part 0. Finding MCAD
 
@@ -18,8 +18,8 @@ cmake_policy(SET CMP0012 NEW)
 set(ENV{OPENSCADPATH} "@CMAKE_SOURCE_DIR@/libraries")
 
 #
-# Part 1. X11 and Virtual Framebuffer, for headless Linux/BSD systems. 
-# This is not used by Windows or macOS because they have alternate means 
+# Part 1. X11 and Virtual Framebuffer, for headless Linux/BSD systems.
+# This is not used by Windows or macOS because they have alternate means
 # of accessing OpenGL.
 #
 
@@ -49,7 +49,7 @@ if(@CMAKE_SYSTEM_NAME@ MATCHES "Linux|BSD")
     string(REGEX MATCH ":[0-9.]*" VFB_DISPLAY "${VFB_DISPLAY_STR}")
     string(REGEX MATCH "PID=[0-9.]*" VFB_PID_STR "${SVFB_OUT}")
     string(REPLACE "PID=" "" VFB_PID "${VFB_PID_STR}")
-  
+
     if (debug_openscad_template)
       message("Output from virtualfb.sh script: ${SVFB_OUT}")
       message("Display: ${VFB_DISPLAY}")
@@ -63,14 +63,14 @@ if(@CMAKE_SYSTEM_NAME@ MATCHES "Linux|BSD")
     else()
       message("Virtual framebuffer started. DISPLAY=${VFB_DISPLAY}, PID=${VFB_PID}")
     endif()
-  
-  
-    # This line is the heart of the mechanism by which ctest is able to take 
-    # the DISPLAY env variable of the Virtual Framebuffer it just started, and 
-    # pass it on to its child processes (the tests from CTestTestfile.cmake 
+
+
+    # This line is the heart of the mechanism by which ctest is able to take
+    # the DISPLAY env variable of the Virtual Framebuffer it just started, and
+    # pass it on to its child processes (the tests from CTestTestfile.cmake
     # in the build directory).
     set(ENV{DISPLAY} "${VFB_DISPLAY}")
-  
+
     set(CTEST_CUSTOM_POST_TEST "@CMAKE_CURRENT_SOURCE_DIR@/virtualfb.sh")
    endif()
   endif()

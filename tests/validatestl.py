@@ -27,7 +27,7 @@ def read_stl(filename):
             stl_type = 'ascii'
         else:
             stl_type = 'binary'
-  
+
     print(start)
 
     if stl_type == 'ascii':
@@ -119,7 +119,7 @@ def validateSTL(filename):
     if len(mesh.triangles) < 1:
         print("No triangles found")
         return False
-    
+
     if len([n[i] for i in range(0,3) for n in mesh.points if math.isinf(n[i]) or math.isnan(n[i])]):
         print("NaN of Inf vertices found")
         return False

@@ -54,10 +54,10 @@ translate([-6,0,0])
 
     rotate(45,[0,1,0,0])
     cube(s);
-    
+
     rotate(v=[1,0,0])
     cube(s);
-    
+
     rotate("a","v")
     sphere();
 

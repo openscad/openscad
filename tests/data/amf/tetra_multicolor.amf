@@ -11,7 +11,7 @@
         <vertex><coordinates><x>0.4</x><y>0.4</y><z>0.5</z></coordinates></vertex>
       </vertices>
       <volume>
-        <metadata type="name">Hard side</metadata> 
+        <metadata type="name">Hard side</metadata>
         <triangle><v1>2</v1><v2>1</v2><v3>0</v3><color><r>1</r><g>0</g><b>0</b></color></triangle>
         <triangle><v1>0</v1><v2>1</v2><v3>3</v3><color><r>0</r><g>1</g><b>0</b></color></triangle>
         <triangle><v1>3</v1><v2>1</v2><v3>2</v3><color><r>0</r><g>0</g><b>1</b></color></triangle>

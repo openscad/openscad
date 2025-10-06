@@ -275,7 +275,7 @@ if [ -n $FONTDIR ]; then
   cp -a fonts/10-liberation.conf $FONTDIR
   cp -a fonts/Liberation-2.00.1 $FONTDIR
   case $OS in
-    MACOSX) 
+    MACOSX)
       cp -a fonts/05-osx-fonts.conf $FONTDIR
       cp -a fonts-osx/* $FONTDIR
       ;;

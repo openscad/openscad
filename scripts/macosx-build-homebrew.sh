@@ -55,7 +55,7 @@ for formula in pkg-config boost eigen cgal glew glib opencsg freetype libzip lib
   time brew install $formula
 done
 
-if [[ $USE_QT6 == 1 ]]; then 
+if [[ $USE_QT6 == 1 ]]; then
   for formula in qt qscintilla2; do
     log "Installing formula $formula"
     brew ls --versions $formula

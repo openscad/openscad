@@ -18,8 +18,8 @@ module roundedBox(size, radius, sidesonly)
     for (axis = [0:2]) {
       for (x = [radius-size[axis]/2, -radius+size[axis]/2],
           y = [radius-size[(axis+1)%3]/2, -radius+size[(axis+1)%3]/2]) {
-        rotate(rot[axis]) 
-          translate([x,y,0]) 
+        rotate(rot[axis])
+          translate([x,y,0])
           cylinder(h=size[(axis+2)%3]-2*radius, r=radius, center=true);
       }
     }

@@ -51,7 +51,7 @@ if(centerCandle){
         sphere(CenterCandleWidth);
 }
 
-//make ring 
+//make ring
 translate([0,0,length-candleSize/2]){
     make(radius, count,candleSize,length);
     //make bottom cover for candle holders
@@ -64,34 +64,34 @@ translate([0,0,length-candleSize/2]){
 //Base of candle stand
 for (a = [0 : count - 1]) {
     rotate(a*360/count) {
-    translate([0, -width/2, 0]) 
+    translate([0, -width/2, 0])
         cube([radius, widthOfSupport, heightOfSupport]);
     }
 }
 
 //make ring with candle holders
 module make(radius, count,candleSize,length){
-    
+
     $fa = 0.5;
     $fs = 0.5;
     difference(){
         union(){
              //making holders
-            make_ring_of(radius, count){ 
+            make_ring_of(radius, count){
                 cylinder(candleSize,r=width);
             }
-            
+
             //Attaching holders to stand
             for (a = [0 : count - 1]) {
                 rotate(a*360/count) {
-                translate([0, -width/2, 0]) 
+                translate([0, -width/2, 0])
                     cube([radius, widthOfSupport, heightOfSupport]);
                 }
             }
-            
+
             // make ring
             linear_extrude(heightOfRing, convexity=2)
-            difference(){    
+            difference(){
                 circle(radius);
                 circle(widthOfRing);
             }

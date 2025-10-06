@@ -1,5 +1,5 @@
 Part of OpenSCAD is copied from Python (linalg.cc/hash_floating_point()),
-so the python license is included below. 
+so the python license is included below.
 
 ----
 

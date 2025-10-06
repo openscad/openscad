@@ -1,19 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
-<!-- 
+<!--
 	(cc) Michael Thomson <openscad.org@m-thomson.net>
-	
-	OpenSCAD syntax highlights in BBEdit/TextWrangler by Michael Thomson 
+
+	OpenSCAD syntax highlights in BBEdit/TextWrangler by Michael Thomson
 	is licensed under a Creative Commons Attribution 4.0 International License.
 		http://creativecommons.org/licenses/by/4.0/
-	
+
 	Master copy in OpenSCAD Distribution:
 		https://github.com/openscad/openscad/tree/master/contrib
-	
+
 	Also Published on Thingiverse:
 		http://www.thingiverse.com/thing:15244/
-		
+
 	Based on OpenSCAD 2015.03, documented here:
 		http://www.openscad.org/cheatsheet/
 		http://en.wikibooks.org/wiki/OpenSCAD_User_Manual/The_OpenSCAD_Language
@@ -80,7 +80,7 @@
 
 	<key>BBLMKeywordList</key>
 	<array>
-		<!--	
+		<!--
 			Based on OpenSCAD 2015.3, documented here:
 			http://www.openscad.org/cheatsheet/
 		 -->
@@ -175,11 +175,11 @@
 		<string>render</string>
 
 		<!--	Offset	 -->
-		<string>offset</string>		
+		<string>offset</string>
 
 		<!--	Surface	 -->
 		<string>surface</string>
-		
+
 		<!--	Search	 -->
 		<string>search</string>
 

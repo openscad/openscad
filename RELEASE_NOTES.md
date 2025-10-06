@@ -140,7 +140,7 @@
    * Added each keyword
    * Added C-style for loop
    * Now allows looping over characters of a string
-* rotate_extrude(): Added angle parameter to 
+* rotate_extrude(): Added angle parameter to
 * import() now supports SVG, 3MF and AMF
 * color() now supports hex color codes
 * Removed glide() and subdiv() which were never implemented
@@ -303,14 +303,14 @@
   https://github.com/openscad/openscad/blob/master/examples/example024.scad
 * Parameter list values can now depend on earlier values, e.g. for (i=[0:2], j=[0:i]) ..
 * value assignments in parameters can now depend on already declared parameters
-* Added resize() module: 
+* Added resize() module:
   http://en.wikibooks.org/wiki/OpenSCAD_User_Manual/Transformations#resize
 
 **Program Features:**
 * Added basic syntax highlighting in the editor
 * There is now a built-in library path in user-space:
   http://en.wikibooks.org/wiki/OpenSCAD_User_Manual/Libraries#Library_Locations
-* Commandline output to PNG, with various camera and rendering settings.        
+* Commandline output to PNG, with various camera and rendering settings.
   Run openscad -h to see usage info or see the OpenSCAD wiki user manual.
 * Attempting to open dxf, off or stl files in the GUI will now create an import statement.
 * The preview operator (%) will now preserve any manually set color
@@ -342,7 +342,7 @@
 * Windows: We now have a 64-bit version
 
 **Known Bugs:**
-* Linux: command-line png rendering on Gallium is flaky. 
+* Linux: command-line png rendering on Gallium is flaky.
   Workaround: use CGAL --render or hardware rendering.
 
 # OpenSCAD 2013.01

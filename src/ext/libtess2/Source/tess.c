@@ -1,5 +1,5 @@
 /*
-** SGI FREE SOFTWARE LICENSE B (Version 2.0, Sept. 18, 2008) 
+** SGI FREE SOFTWARE LICENSE B (Version 2.0, Sept. 18, 2008)
 ** Copyright (C) [dates of first publication] Silicon Graphics, Inc.
 ** All Rights Reserved.
 **
@@ -9,10 +9,10 @@
 ** to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies
 ** of the Software, and to permit persons to whom the Software is furnished to do so,
 ** subject to the following conditions:
-** 
+**
 ** The above copyright notice including the dates of first publication and either this
 ** permission notice or a reference to http://oss.sgi.com/projects/FreeB/ shall be
-** included in all copies or substantial portions of the Software. 
+** included in all copies or substantial portions of the Software.
 **
 ** THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
 ** INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
@@ -20,7 +20,7 @@
 ** BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
 ** TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE
 ** OR OTHER DEALINGS IN THE SOFTWARE.
-** 
+**
 ** Except as contained in this notice, the name of Silicon Graphics, Inc. shall not
 ** be used in advertising or otherwise to promote the sale, use or other dealings in
 ** this Software without prior written authorization from Silicon Graphics, Inc.
@@ -186,7 +186,7 @@ extern int RandomSweep;
 #define S_UNIT_X	(RandomSweep ? (2*drand48()-1) : 1.0)
 #define S_UNIT_Y	(RandomSweep ? (2*drand48()-1) : 0.0)
 #else
-#if defined(SLANTED_SWEEP) 
+#if defined(SLANTED_SWEEP)
 /* The "feature merging" is not intended to be complete.  There are
 * special cases where edges are nearly parallel to the sweep line
 * which are not implemented.  The algorithm should still behave
@@ -295,7 +295,7 @@ void tessProjectPolygon( TESStesselator *tess )
 * (what else would it do??)  The region must consist of a single
 * loop of half-edges (see mesh.h) oriented CCW.  "Monotone" in this
 * case means that any vertical line intersects the interior of the
-* region in a single interval.  
+* region in a single interval.
 *
 * Tessellation consists of adding interior edges (actually pairs of
 * half-edges), to split the region into non-overlapping triangles.
@@ -474,7 +474,7 @@ int tessMeshRefineDelaunay( TESSmesh *mesh, TESSalloc *alloc )
 			} while (e != f->anEdge);
 		}
 	}
-	
+
 	// Pop stack until we find a reversed edge
 	// Flip the reversed edge, and insert any of the four opposite edges
 	// which are internal and not already in the stack (!marked)
@@ -497,7 +497,7 @@ int tessMeshRefineDelaunay( TESSmesh *mesh, TESSalloc *alloc )
 			}
 		}
 	}
-	
+
 	stackDelete(&stack);
 
 	return 1;
@@ -593,7 +593,7 @@ TESStesselator* tessNewTess( TESSalloc* alloc )
 
 	if (alloc == NULL)
 		alloc = &defaulAlloc;
-	
+
 	/* Only initialize fields which can be changed by the api.  Other fields
 	* are initialized where they are used.
 	*/
@@ -614,7 +614,7 @@ TESStesselator* tessNewTess( TESSalloc* alloc )
 		tess->alloc.dictNodeBucketSize = 512;
 	if (tess->alloc.regionBucketSize == 0)
 		tess->alloc.regionBucketSize = 256;
-	
+
 	tess->normal[0] = 0;
 	tess->normal[1] = 0;
 	tess->normal[2] = 0;
@@ -638,7 +638,7 @@ TESStesselator* tessNewTess( TESSalloc* alloc )
 
 	tess->outOfMemory = 0;
 	tess->vertexIndexCounter = 0;
-	
+
 	tess->vertices = 0;
 	tess->vertexIndices = 0;
 	tess->vertexCount = 0;
@@ -650,9 +650,9 @@ TESStesselator* tessNewTess( TESSalloc* alloc )
 
 void tessDeleteTess( TESStesselator *tess )
 {
-	
+
 	struct TESSalloc alloc = tess->alloc;
-	
+
 	deleteBucketAlloc( tess->regionPool );
 
 	if( tess->mesh != NULL ) {
@@ -731,7 +731,7 @@ void OutputPolymesh( TESStesselator *tess, TESSmesh *mesh, int elementType, int 
 			edge = edge->Lnext;
 		}
 		while (edge != f->anEdge);
-		
+
 		assert( faceVerts <= polySize );
 
 		f->n = maxFaceCount;
@@ -748,7 +748,7 @@ void OutputPolymesh( TESStesselator *tess, TESSmesh *mesh, int elementType, int 
 		tess->outOfMemory = 1;
 		return;
 	}
-	
+
 	tess->vertexCount = maxVertexCount;
 	tess->vertices = (TESSreal*)tess->alloc.memalloc( tess->alloc.userData,
 													 sizeof(TESSreal) * tess->vertexCount * vertexSize );
@@ -765,7 +765,7 @@ void OutputPolymesh( TESStesselator *tess, TESSmesh *mesh, int elementType, int 
 		tess->outOfMemory = 1;
 		return;
 	}
-	
+
 	// Output vertices.
 	for ( v = mesh->vHead.next; v != &mesh->vHead; v = v->next )
 	{
@@ -787,7 +787,7 @@ void OutputPolymesh( TESStesselator *tess, TESSmesh *mesh, int elementType, int 
 	for ( f = mesh->fHead.next; f != &mesh->fHead; f = f->next )
 	{
 		if ( !f->inside ) continue;
-		
+
 		// Store polygon
 		edge = f->anEdge;
 		faceVerts = 0;
@@ -856,7 +856,7 @@ void OutputContours( TESStesselator *tess, TESSmesh *mesh, int vertexSize )
 		tess->outOfMemory = 1;
 		return;
 	}
-	
+
 	tess->vertices = (TESSreal*)tess->alloc.memalloc( tess->alloc.userData,
 													  sizeof(TESSreal) * tess->vertexCount * vertexSize );
 	if (!tess->vertices)
@@ -872,7 +872,7 @@ void OutputContours( TESStesselator *tess, TESSmesh *mesh, int vertexSize )
 		tess->outOfMemory = 1;
 		return;
 	}
-	
+
 	verts = tess->vertices;
 	elements = tess->elements;
 	vertInds = tess->vertexIndices;
@@ -993,7 +993,7 @@ int tessTesselate( TESStesselator *tess, int windingRule, int elementType,
 	}
 
 	tess->vertexIndexCounter = 0;
-	
+
 	if (normal)
 	{
 		tess->normal[0] = normal[0];
@@ -1008,7 +1008,7 @@ int tessTesselate( TESStesselator *tess, int windingRule, int elementType,
 	if (vertexSize > 3)
 		vertexSize = 3;
 
-	if (setjmp(tess->env) != 0) { 
+	if (setjmp(tess->env) != 0) {
 		/* come back here if out of memory */
 		return 0;
 	}
@@ -1042,7 +1042,7 @@ int tessTesselate( TESStesselator *tess, int windingRule, int elementType,
 	if (elementType == TESS_BOUNDARY_CONTOURS) {
 		rc = tessMeshSetWindingNumber( mesh, 1, TRUE );
 	} else {
-		rc = tessMeshTessellateInterior( mesh ); 
+		rc = tessMeshTessellateInterior( mesh );
 		if (elementType == TESS_CONSTRAINED_DELAUNAY_TRIANGLES) {
 			rc = tessMeshRefineDelaunay( mesh, &tess->alloc );
 			elementType = TESS_POLYGONS;

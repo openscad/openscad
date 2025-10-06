@@ -145,7 +145,7 @@ jobs:
         echo "Build exit code: $?"
     - name: Test
       run: ./scripts/github-ci.sh test
-      if: ${{ ! inputs.enable_wasm }} 
+      if: ${{ ! inputs.enable_wasm }}
     - name: Upload Test Result Report
       uses: actions/upload-artifact@v4
       if: ${{ always() }}

@@ -12,7 +12,7 @@ o Update VERSION and VERSIONDATE in
   scripts/release-common.sh
   scripts/publish-mingw-x.sh
   tests/CMakeLists.txt
-  
+
 o git tag "openscad-$VERSION"
 o ./scripts/git-archive-all.py --prefix=openscad-$VERSION/ openscad-$VERSION.src.tar.gz
 o git push --tags

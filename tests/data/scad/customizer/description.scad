@@ -7,23 +7,23 @@ x=50;
 x2=45;
 
 //         normal starting tab spaces description
-x3=3; 
+x3=3;
 
 
    //         normal comment starting with space before //
-x4=3; 
+x4=3;
 
         //         normal comment starting with tab before //
 x5=3;
 
-// double description  
+// double description
 x5=3;
 
 //
 x6=12;
 
 x7=12;
-// comment 
+// comment
 
 x8=12;
 // description sandwiched between two assignments
@@ -41,7 +41,7 @@ x12=23;
         //         normal comment starting with tab before //
 x13=3;
 
-// double description  
+// double description
 x13=7;
 
 // double description  //         normal comment starting with tab before //

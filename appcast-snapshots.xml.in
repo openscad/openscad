@@ -13,7 +13,7 @@
                  sparkle:version="@VERSIONDATE@"
                  sparkle:shortVersionString="@VERSION@"
                  sparkle:dsaSignature="@DSASIGNATURE@"
-                 length="@FILESIZE@" 
+                 length="@FILESIZE@"
                  type="application/octet-stream"/>
     </item>
   </channel>

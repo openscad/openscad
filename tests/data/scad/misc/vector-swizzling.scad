@@ -18,7 +18,7 @@ echo(v.bag);
 echo(v.rgba);
 echo(v.rgrg);
 
-// Indices between the xyzw and rgba sets can be mixed 
+// Indices between the xyzw and rgba sets can be mixed
 echo(v.xr);
 
 // For vectors of length < 4, indices out of range will return undef

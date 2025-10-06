@@ -1,5 +1,5 @@
 //Various lengths
-cube();  //I'm fine 
+cube();  //I'm fine
 cube(2); //I'm fine
 cube([1]);
 cube([1,2]);
@@ -8,9 +8,9 @@ cube([1,2,3,4]);
 cube([[1],2,3]);
 
 //not numbers
-cube([1,"test",3]); 
+cube([1,"test",3]);
 cube([1,"2",3]);
-cube(["1.2","2",3]); 
+cube(["1.2","2",3]);
 cube("[1,2,3]");
 
 square();
@@ -37,5 +37,5 @@ scale("[1,2]")
 cube([3,2,1]); //I'm fine
 
 //here we have to decide how to handle it:
-cube([1,-2,3]); 
-cube([1/0,2,3]); 
+cube([1,-2,3]);
+cube([1/0,2,3]);

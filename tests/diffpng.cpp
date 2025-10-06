@@ -206,7 +206,7 @@ public:
 			return NULL;
 		}
 
-		//the pixels are now in the vector "image", 4 bytes per pixel, 
+		//the pixels are now in the vector "image", 4 bytes per pixel,
 		//ordered RGBARGBA..., use it as texture, draw it, ...
 		cout << "width " << width << ", height " << height << "\n";
 

@@ -16,8 +16,8 @@ echo(is_num([]));
 echo(is_num([1]));
 echo(is_num("test"));
 echo(is_num(false));
-echo(is_num(undef)); 
+echo(is_num(undef));
 
 echo("resulting in warnings:");
-echo(is_num(1,2,3)); 
-echo(is_num()); 
+echo(is_num(1,2,3));
+echo(is_num());
