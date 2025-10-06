@@ -293,11 +293,8 @@ const FontFacePtr FreetypeRenderer::Params::get_font_face() const
 
 void FreetypeRenderer::Params::set(Parameters& parameters)
 {
-  // Note:
-  // This populates all of the Params entries that text() populates.
-  // Probably some of them are not needed by some callers.
-  // However, we populate them here rather than "knowing" which
-  // ones are and are not needed.
+  // Having these prints a warning if any of these parameters is not
+  // the expected type.
 
   (void)parameters.valid("size", Value::Type::NUMBER);
   (void)parameters.valid("text", Value::Type::STRING);
@@ -310,7 +307,6 @@ void FreetypeRenderer::Params::set(Parameters& parameters)
   (void)parameters.valid("valign", Value::Type::STRING);
 
   discretizer = std::make_shared<CurveDiscretizer>(parameters);
-
   set_size(parameters.get("size", 10.0));
   set_text(parameters.get("text", ""));
   set_spacing(parameters.get("spacing", 1.0));
@@ -322,10 +318,9 @@ void FreetypeRenderer::Params::set(Parameters& parameters)
   set_valign(parameters.get("valign", "default"));
 }
 
-#ifdef ENABLE_PYTHON
-void FreetypeRenderer::Params::set(PyObject *kwargs)
+void FreetypeRenderer::Params::set(std::shared_ptr<CurveDiscretizer> c)
 {
-  discretizer = std::make_shared<CurveDiscretizer>(kwargs);
+  discretizer = c;
 
   set_size(10.0);
   set_text("");
@@ -337,7 +332,6 @@ void FreetypeRenderer::Params::set(PyObject *kwargs)
   set_halign("default");
   set_valign("default");
 }
-#endif
 
 FreetypeRenderer::ShapeResults::ShapeResults(const FreetypeRenderer::Params& params)
 {

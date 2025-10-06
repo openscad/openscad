@@ -28,6 +28,7 @@
 
 #include "pyopenscad.h"
 #include "core/CsgOpNode.h"
+#include "core/CurveDiscretizer.h"
 #include "platform/PlatformUtils.h"
 
 namespace fs = std::filesystem;
@@ -283,6 +284,40 @@ void get_fnas(double& fn, double& fa, double& fs)
       fs = PyFloat_AsDouble(varFs.get());
     }
   }
+}
+
+/**
+ * Create a CurveDiscretizer by extracting parameters from __main__ and kwargs
+ */
+std::shared_ptr<CurveDiscretizer> CreateCurveDiscretizer(PyObject *kwargs)
+{
+  PyObject *mainModule = PyImport_AddModule("__main__");
+
+  return std::make_shared<CurveDiscretizer>(
+    [kwargs, mainModule](const char *key) -> std::optional<double> {
+      if (PyDict_Check(kwargs)) {
+        PyObject *value = PyDict_GetItemString(kwargs, key);
+
+        if (PyFloat_Check(value)) {
+          double result = PyFloat_AsDouble(value);
+          if (!(result == -1.0 && PyErr_Occurred())) {
+            return result;
+          }
+        }
+      }
+      if (mainModule != nullptr) {
+        if (PyObject_HasAttrString(mainModule, key)) {
+          PyObjectUniquePtr var(PyObject_GetAttrString(mainModule, key), PyObjectDeleter);
+          if (var.get() != nullptr) {
+            double val = PyFloat_AsDouble(var.get());
+            if (!isnan(val) && val >= 0) {
+              return val;
+            }
+          }
+        }
+      }
+      return {};
+    });
 }
 
 /*

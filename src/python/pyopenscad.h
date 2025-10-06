@@ -9,6 +9,8 @@
 
 #pragma GCC diagnostic ignored "-Wwrite-strings"
 
+class CurveDiscretizer;
+
 #define DECLARE_INSTANCE()     \
   std::string instance_name;   \
   AssignmentList inst_asslist; \
@@ -38,6 +40,7 @@ extern std::string untrusted_edit_document_name;
 std::vector<Vector3d> python_vectors(PyObject *vec, int mindim, int maxdim);
 int python_numberval(PyObject *number, double *result);
 void get_fnas(double& fn, double& fa, double& fs);
+std::shared_ptr<CurveDiscretizer> CreateCurveDiscretizer(PyObject *kwargs);
 PyObject *python_str(PyObject *self);
 
 extern PyNumberMethods PyOpenSCADNumbers;

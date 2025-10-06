@@ -1,13 +1,11 @@
 #pragma once
 
+#include <functional>
 #include <memory>
 #include <optional>
 #include <sstream>
 #include <string>
 
-#ifdef ENABLE_PYTHON
-#include <Python.h>
-#endif
 class Parameters;
 class ModuleInstantiation;
 
@@ -15,13 +13,13 @@ class CurveDiscretizer
 {
 public:
   CurveDiscretizer(const Parameters& parameters, const ModuleInstantiation *inst = nullptr);
-#ifdef ENABLE_PYTHON
+
   /**
-   * Extract discretization values from environment if possible,
-   * then override any which are explicitly set as keyword arguments.
+   * @brief Provide a function which returns the value for any named special.
+   * Should work on "fn" and not "$fn".
+   * Will not hold a reference to valueLookup after object constructed.
    */
-  CurveDiscretizer(PyObject *kwargs);
-#endif
+  CurveDiscretizer(std::function<std::optional<double>(const char *)> valueLookup);
 
   /**
    * Create a CurveDiscretizer for a spot in dxfdim.cc that used a hardcoded value.
@@ -54,8 +52,5 @@ public:
 private:
   CurveDiscretizer(double fn, double fs, double fa) : fn(fn), fs(fs), fa(fa) {}
   double fn, fs, fa;
-#ifdef ENABLE_PYTHON
-  void setValuesFromPyMain();
-#endif
 };
 std::ostream& operator<<(std::ostream& stream, const std::shared_ptr<CurveDiscretizer>& f);

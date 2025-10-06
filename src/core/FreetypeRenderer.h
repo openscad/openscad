@@ -29,9 +29,6 @@
 #include <string>
 #include <vector>
 #include <ostream>
-#ifdef ENABLE_PYTHON
-#include <Python.h>
-#endif
 
 #include "core/AST.h"
 #include "core/Parameters.h"
@@ -61,10 +58,14 @@ public:
     void set_valign(const std::string& valign) { this->valign = valign; }
     void set_loc(const Location& loc) { this->loc = loc; }
     void set_documentPath(const std::string& path) { this->documentPath = path; }
+    /**
+     * Initialize values from parameters if it exists, otherwise with a default.
+     */
     void set(Parameters& parameters);
-#ifdef ENABLE_PYTHON
-    void set(PyObject *kwargs);
-#endif
+    /**
+     * Set defaults and discretizer. Intended for calling from Python.
+     */
+    void set(std::shared_ptr<CurveDiscretizer> c);
     [[nodiscard]] const FontFacePtr get_font_face() const;
     void detect_properties();
     friend std::ostream& operator<<(std::ostream& stream, const FreetypeRenderer::Params& params);

@@ -123,7 +123,7 @@ PyObject *python_sphere(PyObject *self, PyObject *args, PyObject *kwargs)
     vr = d / 2.0;
   }
 
-  auto node = std::make_shared<SphereNode>(instance, std::make_shared<CurveDiscretizer>(kwargs));
+  auto node = std::make_shared<SphereNode>(instance, CreateCurveDiscretizer(kwargs));
 
   node->r = vr;
 
@@ -196,7 +196,7 @@ PyObject *python_cylinder(PyObject *self, PyObject *args, PyObject *kwargs)
     vr2 = d / 2.0;
   }
 
-  auto node = std::make_shared<CylinderNode>(instance, std::make_shared<CurveDiscretizer>(kwargs));
+  auto node = std::make_shared<CylinderNode>(instance, CreateCurveDiscretizer(kwargs));
 
   node->r1 = vr1;
   node->r2 = vr2;
@@ -365,7 +365,7 @@ PyObject *python_circle(PyObject *self, PyObject *args, PyObject *kwargs)
     vr = d / 2.0;
   }
 
-  auto node = std::make_shared<CircleNode>(instance, std::make_shared<CurveDiscretizer>(kwargs));
+  auto node = std::make_shared<CircleNode>(instance, CreateCurveDiscretizer(kwargs));
 
   node->r = vr;
 
@@ -1118,12 +1118,11 @@ PyObject *python_oo_mesh(PyObject *obj, PyObject *args, PyObject *kwargs)
 
 PyObject *rotate_extrude_core(PyObject *obj, int convexity, double scale, double angle, PyObject *twist,
                               PyObject *origin, PyObject *offset, PyObject *vp, char *method,
-                              CurveDiscretizer&& discretizer)
+                              std::shared_ptr<CurveDiscretizer>&& discretizer)
 {
   DECLARE_INSTANCE();
   std::shared_ptr<AbstractNode> child;
-  auto node = std::make_shared<RotateExtrudeNode>(
-    instance, std::make_shared<CurveDiscretizer>(std::move(discretizer)));
+  auto node = std::make_shared<RotateExtrudeNode>(instance, discretizer);
   if (1) {
     PyObject *dummydict;
     child = PyOpenSCADObjectToNodeMulti(obj, &dummydict);
@@ -1167,7 +1166,7 @@ PyObject *python_rotate_extrude(PyObject *self, PyObject *args, PyObject *kwargs
     return NULL;
   }
   return rotate_extrude_core(obj, convexity, scale, angle, twist, origin, offset, v, method,
-                             CurveDiscretizer(kwargs));
+                             CreateCurveDiscretizer(kwargs));
 }
 
 PyObject *python_oo_rotate_extrude(PyObject *obj, PyObject *args, PyObject *kwargs)
@@ -1187,7 +1186,7 @@ PyObject *python_oo_rotate_extrude(PyObject *obj, PyObject *args, PyObject *kwar
     return NULL;
   }
   return rotate_extrude_core(obj, convexity, scale, angle, twist, origin, offset, v, method,
-                             CurveDiscretizer(kwargs));
+                             CreateCurveDiscretizer(kwargs));
 }
 
 PyObject *linear_extrude_core(PyObject *obj, PyObject *height, int convexity, PyObject *origin,
@@ -1877,7 +1876,7 @@ PyObject *python_text(PyObject *self, PyObject *args, PyObject *kwargs)
   }
 
   auto node = std::make_shared<TextNode>(instance);
-  node->params.set(kwargs);
+  node->params.set(CreateCurveDiscretizer(kwargs));
   node->params.set_size(size);
   if (text != NULL) node->params.set_text(text);
   node->params.set_spacing(spacing);
@@ -1961,11 +1960,10 @@ PyObject *python_textmetrics(PyObject *self, PyObject *args, PyObject *kwargs)
 }
 
 PyObject *python_offset_core(PyObject *obj, double r, double delta, PyObject *chamfer,
-                             CurveDiscretizer&& discretizer)
+                             std::shared_ptr<CurveDiscretizer>&& discretizer)
 {
   DECLARE_INSTANCE();
-  auto node =
-    std::make_shared<OffsetNode>(instance, std::make_shared<CurveDiscretizer>(std::move(discretizer)));
+  auto node = std::make_shared<OffsetNode>(instance, discretizer);
 
   PyObject *dummydict;
   std::shared_ptr<AbstractNode> child = PyOpenSCADObjectToNodeMulti(obj, &dummydict);
@@ -2005,7 +2003,7 @@ PyObject *python_offset(PyObject *self, PyObject *args, PyObject *kwargs)
     PyErr_SetString(PyExc_TypeError, "Error during parsing offset(object,r,delta)");
     return NULL;
   }
-  return python_offset_core(obj, r, delta, chamfer, CurveDiscretizer(kwargs));
+  return python_offset_core(obj, r, delta, chamfer, CreateCurveDiscretizer(kwargs));
 }
 
 PyObject *python_oo_offset(PyObject *obj, PyObject *args, PyObject *kwargs)
@@ -2017,7 +2015,7 @@ PyObject *python_oo_offset(PyObject *obj, PyObject *args, PyObject *kwargs)
     PyErr_SetString(PyExc_TypeError, "Error during parsing offset(object,r,delta)");
     return NULL;
   }
-  return python_offset_core(obj, r, delta, chamfer, CurveDiscretizer(kwargs));
+  return python_offset_core(obj, r, delta, chamfer, CreateCurveDiscretizer(kwargs));
 }
 
 PyObject *python_projection_core(PyObject *obj, const char *cutmode, int convexity)
