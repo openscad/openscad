@@ -943,11 +943,11 @@ std::unique_ptr<Geometry> union_geoms(std::vector<std::shared_ptr<PolySet>> part
 {
 #ifdef ENABLE_MANIFOLD
   if (RenderSettings::inst()->backend3D == RenderBackend3D::ManifoldBackend) {
-    std::shared_ptr<ManifoldGeometry> result = nullptr;
+    std::unique_ptr<ManifoldGeometry> result = nullptr;
     for (auto part : parts) {
       std::shared_ptr<const ManifoldGeometry> part_mani =
         ManifoldUtils::createManifoldFromGeometry(part);
-      if (result == nullptr) result = std::make_shared<ManifoldGeometry>(*part_mani);
+      if (result == nullptr) result = std::make_unique<ManifoldGeometry>(*part_mani);
       else *result = *result + *part_mani;
     }
     return result;
@@ -971,11 +971,11 @@ std::unique_ptr<Geometry> difference_geoms(
 {
 #ifdef ENABLE_MANIFOLD
   if (RenderSettings::inst()->backend3D == RenderBackend3D::ManifoldBackend) {
-    std::shared_ptr<ManifoldGeometry> result = nullptr;
+    std::unique_ptr<ManifoldGeometry> result = nullptr;
     for (auto part : parts) {
       std::shared_ptr<const ManifoldGeometry> part_mani =
         ManifoldUtils::createManifoldFromGeometry(part);
-      if (result == nullptr) result = std::make_shared<ManifoldGeometry>(*part_mani);
+      if (result == nullptr) result = std::make_unique<ManifoldGeometry>(*part_mani);
       else *result = *result - *part_mani;
     }
     return result;
