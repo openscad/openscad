@@ -33,6 +33,7 @@ extern bool pythonRuntimeInitialized;
 extern bool pythonDryRun;
 extern std::shared_ptr<AbstractNode> genlang_result_node;
 extern std::vector<SelectedObject> python_result_handle;
+extern std::string commandline_commands;
 
 int pythonRunArgs(int argc, char **argv);
 int pythonCreateVenv(const std::string& path);
