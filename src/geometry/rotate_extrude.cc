@@ -12,7 +12,6 @@
 #include "core/RotateExtrudeNode.h"
 #include "geometry/GeometryUtils.h"
 #include "geometry/Geometry.h"
-#include "geometry/GeometryEvaluator.h"
 #include "geometry/PolySetBuilder.h"
 #include "geometry/PolySetUtils.h"
 #include "geometry/Polygon2d.h"
@@ -21,11 +20,8 @@
 #include "utils/calc.h"
 #include "utils/degree_trig.h"
 #include "utils/printutils.h"
-#ifdef ENABLE_MANIFOLD
 #include "src/geometry/manifold/manifoldutils.h"
-#endif
 
-#ifdef ENABLE_MANIFOLD
 static std::unique_ptr<PolySet> assemblePolySetForManifold(const Polygon2d& polyref,
                                                            std::vector<Vector3d>& vertices,
                                                            PolygonIndices& indices, bool closed,
@@ -64,46 +60,6 @@ static std::unique_ptr<PolySet> assemblePolySetForManifold(const Polygon2d& poly
 
   return final_polyset;
 }
-#else
-// Version when Manifold is not available - provides basic functionality
-static std::unique_ptr<PolySet> assemblePolySetForManifold(const Polygon2d& polyref,
-                                                           std::vector<Vector3d>& vertices,
-                                                           PolygonIndices& indices, bool closed,
-                                                           int convexity, int index_offset,
-                                                           bool flip_faces)
-{
-  auto final_polyset = std::make_unique<PolySet>(3, false);
-  final_polyset->setTriangular(true);
-  final_polyset->setConvexity(convexity);
-  final_polyset->vertices = std::move(vertices);
-  final_polyset->indices = std::move(indices);
-
-  if (!closed) {
-    // Create top and bottom face using basic tessellation
-    // This provides basic functionality without Manifold
-    auto ps_bottom = polyref.tessellate();  // bottom
-    // Flip vertex ordering for bottom polygon unless flip_faces is true
-    if (!flip_faces) {
-      for (auto& p : ps_bottom->indices) {
-        std::reverse(p.begin(), p.end());
-      }
-    }
-    std::copy(ps_bottom->indices.begin(), ps_bottom->indices.end(),
-              std::back_inserter(final_polyset->indices));
-
-    for (auto& p : ps_bottom->indices) {
-      std::reverse(p.begin(), p.end());
-      for (auto& i : p) {
-        i += index_offset;
-      }
-    }
-    std::copy(ps_bottom->indices.begin(), ps_bottom->indices.end(),
-              std::back_inserter(final_polyset->indices));
-  }
-
-  return final_polyset;
-}
-#endif
 
 /*!
    Input to extrude should be clean. This means non-intersecting, correct winding order
@@ -125,9 +81,9 @@ static std::unique_ptr<PolySet> assemblePolySetForManifold(const Polygon2d& poly
 VectorOfVector2d alterprofile(VectorOfVector2d vertices, double scalex, double scaley, double origin_x,
                               double origin_y, double offset_x, double offset_y, double rot);
 
-std::unique_ptr<PolySet> rotatePolygonSub(const RotateExtrudeNode& node, const Polygon2d& poly,
-                                          int fragments, size_t fragstart, size_t fragend,
-                                          bool flip_faces)
+std::unique_ptr<Geometry> rotatePolygonSub(const RotateExtrudeNode& node, const Polygon2d& poly,
+                                           int fragments, size_t fragstart, size_t fragend,
+                                           bool flip_faces)
 {
   double fact = (node.v[2] / node.angle) * (180.0 / G_PI);
 
@@ -296,15 +252,18 @@ std::unique_ptr<Geometry> rotatePolygon(const RotateExtrudeNode& node, const Pol
   size_t splits = ceil(node.angle / 300.0);
   fragments = num_sections;
   size_t fragstart = 0, fragend;
-  std::vector<std::shared_ptr<PolySet>> result_s;
+  std::unique_ptr<ManifoldGeometry> result = nullptr;
+
   for (size_t i = 0; i < splits; i++) {
     fragend = fragstart + (fragments / splits) + 1;
     if (fragend > fragments) fragend = fragments;
-    std::unique_ptr<PolySet> part_u =
+    std::unique_ptr<Geometry> part_u =
       rotatePolygonSub(node, poly, fragments, fragstart, fragend, flip_faces);
-    std::shared_ptr<PolySet> part_s = std::move(part_u);
-    result_s.push_back(part_s);
+    std::shared_ptr<Geometry> part_s = std::move(part_u);
+    std::shared_ptr<const ManifoldGeometry> term = ManifoldUtils::createManifoldFromGeometry(part_s);
+    if (result == nullptr) result = std::make_unique<ManifoldGeometry>(*term);
+    else *result = *result + *term;
     fragstart = fragend - 1;
   }
-  return union_geoms(result_s);
+  return result;
 }
