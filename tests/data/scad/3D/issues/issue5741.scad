@@ -1,4 +1,4 @@
-// This test contains a manually extruded shape where the 
+// This test contains a manually extruded shape where the
 // start and end vertices touches with identical coordinates.
 polyhedron(points = [
   [2.02196e-17, 19.8, 1],

@@ -1,4 +1,4 @@
-// recursionscad:  Basic recursion example 
+// recursionscad:  Basic recursion example
 
 // Recursive functions are very powerful for calculating values.
 // A good number of algorithms make use of recursive definitions,

@@ -11,7 +11,7 @@ color([1,0,0]) translate([0,0,0]) /*render()*/ intersection() {
   translate([0,0,10]) cube([20,20,20],center=true);
 }
 
-color([0,0,1]) /*render()*/ difference() { 
+color([0,0,1]) /*render()*/ difference() {
   sphere(10);
   translate([0,0,10]) cube([20,20,20],center=true);
 }

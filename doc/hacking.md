@@ -29,7 +29,7 @@ To deal with version conflicts the workflow generates a patch that can be used t
     unzip build/artifacts/1/beautify-patch/beautify-patch.zip
     git apply beautify.patch
 
-This can be done automatically using `./scripts/hard_beautify.sh`, which also functions as a git hook. 
+This can be done automatically using `./scripts/hard_beautify.sh`, which also functions as a git hook.
 
 ## pre-commit
 

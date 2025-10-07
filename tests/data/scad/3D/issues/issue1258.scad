@@ -7,4 +7,3 @@ translate([-0.25, -19, 33])
  rotate([0, 90, 0])
   rotate([0, 0, -45])
    cube(size = [15, 15, 3], center = false);
-

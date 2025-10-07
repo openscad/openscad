@@ -186,7 +186,7 @@ def load_makefiles(builddir):
     filelist = []
     for root, dirs, files in os.walk(builddir):
         for fname in files: filelist += [ os.path.join(root, fname) ]
-    files = [file for file in filelist if 'build.make' in os.path.basename(file) 
+    files = [file for file in filelist if 'build.make' in os.path.basename(file)
              or 'flags.make' in os.path.basename(file)]
     files = [file for file in files if 'esting' not in file and 'emporary' not in file]
     result = {}

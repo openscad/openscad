@@ -36,16 +36,16 @@ public:
 namespace offscreen_old {
 
 std::shared_ptr<OffscreenContext> CreateOffscreenContextNSOpenGL(
-  uint32_t width, uint32_t height, uint32_t majorGLVersion, 
-  uint32_t minorGLVersion)   
+  uint32_t width, uint32_t height, uint32_t majorGLVersion,
+  uint32_t minorGLVersion)
 {
   auto ctx = std::make_shared<OffscreenContextNSOpenGL>(width, height);
 
   ctx->pool = [NSAutoreleasePool new];
 
-  // Create an OpenGL context just so that OpenGL calls will work. 
+  // Create an OpenGL context just so that OpenGL calls will work.
   // Will not be used for actual rendering.
-                                   
+
   NSOpenGLPixelFormatAttribute attributes[] = {
     NSOpenGLPFANoRecovery,
     NSOpenGLPFADepthSize, 24,

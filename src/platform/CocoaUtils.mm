@@ -9,6 +9,6 @@ void CocoaUtils::endApplication()
 }
 
 void CocoaUtils::nslog(const std::string &str, void * /* userdata */)
-{       
+{
   NSLog(@"%s", str.c_str());
 }

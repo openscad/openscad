@@ -172,7 +172,7 @@ build_qt5scintilla2()
   fi
 
   if [ ! -e $DEPLOYDIR/include/Qsci ]; then
-    # workaround numerous bugs in qscintilla build system, see 
+    # workaround numerous bugs in qscintilla build system, see
     # ../qscintilla2.prf and ../scintilla.pri for more info
     qsci_staticlib=`find $tmpinstalldir -name libqscintilla2.a`
     qsci_include=`find $tmpinstalldir -name Qsci`
@@ -316,7 +316,7 @@ build_boost()
     curl -LO https://downloads.sourceforge.net/project/boost/boost/$version/boost_$bversion.tar.bz2
   fi
   if [ ! $? -eq 0 ]; then
-    echo download failed. 
+    echo download failed.
     exit 1
   fi
   tar xjf boost_$bversion.tar.bz2
@@ -830,7 +830,7 @@ fi
 # This is only for libraries most systems won't have new enough versions of.
 # For big things like Qt5, see the notes at the head of this file on
 # building individual dependencies.
-# 
+#
 # Some of these are defined in scripts/common-build-dependencies.sh
 
 build_eigen 3.3.7

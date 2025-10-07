@@ -32,7 +32,7 @@ pkgs.mkShell {
     wayland
     wayland-protocols
 
-    # QT5 
+    # QT5
     # libsForQt5.full
     # qscintilla
 

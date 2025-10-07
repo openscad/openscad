@@ -14,4 +14,3 @@ minkowski(convexity = 0) {
 	}
 	cube(size = [1, 1, 1], center = false);
 }
-

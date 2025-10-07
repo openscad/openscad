@@ -58,13 +58,13 @@ translate([0,36]) difference() {
 }
 
 // Subtracting from empty union should be empty
-translate([0,48]) difference() { 
-  union() {} 
-  square(10, center=true); 
+translate([0,48]) difference() {
+  union() {}
+  square(10, center=true);
 }
 
 // Subtracting from empty difference should be empty
-translate([0,60]) difference() { 
-  difference() {} 
-  square(10, center=true); 
+translate([0,60]) difference() {
+  difference() {}
+  square(10, center=true);
 }

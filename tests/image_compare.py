@@ -93,4 +93,3 @@ if __name__ == '__main__':
     # Return 0 if images compared equivalent, or 1 if a difference was
     # identified.
     sys.exit(0 if outcome else 1)
-

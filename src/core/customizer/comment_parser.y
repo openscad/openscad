@@ -49,7 +49,7 @@ params:
         }
     ;
 
-expr: 
+expr:
     '[' values ']'
     {
         $$ = $2;
@@ -107,7 +107,7 @@ values:
     }
     ;
 
-labeled_vectors: 
+labeled_vectors:
     num ':' num
     {
         $$ = new Vector(Location::NONE);
@@ -145,7 +145,7 @@ wordexpr:
 word:
     WORD
     {
-        $$=$1;    
+        $$=$1;
     }
     | word NUM
     {
@@ -177,7 +177,7 @@ int comment_parserlex(void)
 }
 
 void yyerror(const char * /*msg*/) {
-    PRINTD("ERROR IN PARAMETER: Parser error in comments of file \n "); 
+    PRINTD("ERROR IN PARAMETER: Parser error in comments of file \n ");
     params = NULL;
 }
 

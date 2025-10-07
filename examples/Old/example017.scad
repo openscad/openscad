@@ -25,14 +25,14 @@ module shape_tripod()
   x8 = x7 - thickness;
   x9 = x8 - thickness;
   x10 = x9 - thickness;
-  
+
   y1 = 0;
   y2 = y1 + thickness;
   y3 = y2 + thickness;
   y4 = y3 + thickness;
   y5 = y3 + total_height - 3*thickness;
   y6 = y5 + thickness;
-  
+
   union() {
     difference() {
       polygon([
@@ -49,16 +49,16 @@ module shape_tripod()
       translate([ x10, y4 ]) circle(thickness);
       translate([ x5 + thickness, y4 ]) circle(thickness);
     }
-  
+
     translate([ x5, y1 ]) square([ boltlen - thickness, thickness*2 ]);
-  
+
     translate([ x5 + boltlen - thickness, y2 ]) circle(thickness);
-  
+
     translate([ x2, y2 ]) intersection() {
       circle(thickness);
       translate([ -thickness*2, 0 ]) square(thickness*2);
     }
-  
+
     translate([ x8, y5 ]) intersection() {
       circle(thickness);
       translate([ -thickness*2, 0 ]) square(thickness*2);

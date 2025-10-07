@@ -34,7 +34,7 @@ cube("line 33");
 
 function line35() =
     line36;
-    
+
 cube("line 38");
 
 /* line 40

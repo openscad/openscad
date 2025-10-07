@@ -1,5 +1,5 @@
 translate([-5,0,0]) hull() {
-  union() { 
+  union() {
     rotate([90,0,0]) {
       translate([0,0,0]) {
         cylinder(r=2, h=4, $fn=4, center=true);
@@ -14,7 +14,7 @@ translate([-5,0,0]) hull() {
 }
 
 hull() {
-  intersection() { 
+  intersection() {
     rotate([90,0,0]) {
       translate([0,0,0]) {
         cylinder(r=2, h=4, $fn=4, center=true);
@@ -29,7 +29,7 @@ hull() {
 }
 
 translate([5,0,0]) hull() {
-  difference() { 
+  difference() {
     rotate([90,0,0]) {
       translate([0,0,0]) {
         cylinder(r=2, h=4, $fn=4, center=true);

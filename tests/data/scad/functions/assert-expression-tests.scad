@@ -29,4 +29,3 @@ echo(t7 = t7);
 
 t8 = assert(true) [for (i=[1:a]) [i,b]];
 echo(t8 = t8);
-

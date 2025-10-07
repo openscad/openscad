@@ -19,7 +19,7 @@ class OpenSCADObject:
     """Base class for OpenSCAD objects."""
 
     origin: Matrix4x4
-    """4x4 transformation matrix representing the object's origin. 
+    """4x4 transformation matrix representing the object's origin.
     Initialized as identity matrix."""
 
     def translate(self, v: Vector3) -> "OpenSCADObject":

@@ -117,7 +117,7 @@ stop()
   if [ -e $LOCKFILE ]; then
     rm $LOCKFILE
   fi
-# Very verbose debug output:  
+# Very verbose debug output:
 #  cat virtualfb1.log
 #  cat virtualfb2.log
   echo 'dump ~/.xession-errors:'
@@ -160,4 +160,3 @@ if [ $isrunning_result ]; then
 else
   start
 fi
-

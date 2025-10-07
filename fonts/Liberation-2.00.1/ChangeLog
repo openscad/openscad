@@ -11,4 +11,3 @@
 - Update Copyright and License file
 - set fsType bit to 0, Installable Embedding is allowed.
 - Absolute value in HHeadAscent/Descent values for maintaining Metric compatibility.
-

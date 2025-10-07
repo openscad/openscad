@@ -45,7 +45,7 @@ def createImport(inputfile, scadfile):
                 f.close()
         except:
                 failquit('failure while opening/writing ' + scadfile + ': ' + str(sys.exc_info()))
-        
+
 
 #
 # Parse arguments

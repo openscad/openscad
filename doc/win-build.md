@@ -28,7 +28,7 @@ Follow these steps to build OpenSCAD with Microsoft Visual Studio:
     ```
 - Clone the OpenSCAD repo somewhere (in this example, d:\openscad) and run
   scripts\win-msvc-build.bat in it:
-  
+
     ```
     git clone https://github.com/openscad/openscad.git
     cd openscad

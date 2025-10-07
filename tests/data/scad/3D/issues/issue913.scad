@@ -12,4 +12,3 @@ module erode(r) {
 }
 
 erode(2) cube(10, center=true);
-

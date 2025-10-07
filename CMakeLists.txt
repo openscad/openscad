@@ -75,7 +75,7 @@ cmake_dependent_option(APPLE_UNIX "Build OpenSCAD in Unix mode in MacOS X instea
 cmake_dependent_option(ENABLE_QTDBUS "Enable DBus input driver for Qt." ON "NOT HEADLESS" OFF)
 set(ENABLE_GAMEPAD "AUTO" CACHE STRING "Enable Qt5Gamepad input driver")
 set_property(CACHE ENABLE_GAMEPAD PROPERTY STRINGS "AUTO" "ON" "OFF")
-set(WASM_BUILD_TYPE "web" CACHE STRING 
+set(WASM_BUILD_TYPE "web" CACHE STRING
   "WebAssembly build type. Support web (builds an OpenSCAD module) or node (standalone .js executable)")
 
 if (USE_QT6)
@@ -163,7 +163,7 @@ if (CMAKE_SYSTEM_NAME STREQUAL Emscripten)
   set(ENV{PKG_CONFIG_PATH} "/emsdk/upstream/emscripten/cache/sysroot/lib/pkgconfig")
   target_compile_definitions(OpenSCAD PRIVATE CGAL_DISABLE_ROUNDING_MATH_CHECK)
   target_link_libraries(OpenSCAD PRIVATE /emsdk/upstream/emscripten/cache/sysroot/lib/libz.a)
-  
+
   # https://emscripten.org/docs/tools_reference/emcc.html
   # https://emscripten.org/docs/tools_reference/settings_reference.html
   target_compile_options(OpenSCAD PRIVATE -fexceptions)
@@ -175,7 +175,7 @@ if (CMAKE_SYSTEM_NAME STREQUAL Emscripten)
     -sEXIT_RUNTIME=1
     -sEXPORTED_RUNTIME_METHODS=['ENV','ERRNO_CODES','FS','PATH','callMain']
     -sMAXIMUM_MEMORY=4GB
-    
+
     # -g produces DWARF debug info, which is quite large and may need debugger extensions.
     # Alternatively, can pass -gsource-map -sLOAD_SOURCE_MAP but then variable debugging isn't possible
     $<$<CONFIG:Debug>:-g -O0>
@@ -194,8 +194,8 @@ if (CMAKE_SYSTEM_NAME STREQUAL Emscripten)
       -sNODERAWFS
 
       # Single .js (more elegant for CLI release) is larger than separate .js & .wasm (preferred for web)
-      $<$<CONFIG:Release>:-sSINGLE_FILE> 
-      
+      $<$<CONFIG:Release>:-sSINGLE_FILE>
+
       # Alternatively to single-file mode, code caching could make repeated runs faster:
       # -sNODE_CODE_CACHING -sWASM_ASYNC_COMPILATION=0
     )
@@ -979,7 +979,7 @@ set(CORE_SOURCES
 if(ENABLE_PYTHON)
 	list(APPEND CORE_SOURCES
 		    src/python/pymod.cc
-		    src/python/pyopenscad.cc 
+		    src/python/pyopenscad.cc
 		    src/python/pyfunctions.cc )
 	target_compile_definitions(OpenSCAD PRIVATE ENABLE_PYTHON)
 endif()
@@ -1428,7 +1428,7 @@ if(APPLE AND NOT APPLE_UNIX)
   file(COPY ${CMAKE_SOURCE_DIR}/templates DESTINATION ${BUNDLE_RESOURCES_DIR})
 
   if(ENABLE_GUI_TESTS)
-    file(COPY 
+    file(COPY
          ${CMAKE_SOURCE_DIR}/tests/data/basic-ux
          ${CMAKE_SOURCE_DIR}/tests/data/modulecache-tests
          DESTINATION ${BUNDLE_RESOURCES_DIR}/tests)

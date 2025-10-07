@@ -16,21 +16,21 @@ module linear_extrudes_of_different_shapes(a=a,b=b,c=c,x=x,y=y) {
     difference() {
       square(2,true); square(1,true);
     }
-  
+
   translate(01*[4,0,0])
   // linear_extrude of disjoint polygons shapes
   linear_extrude(height=a, slices=b, twist=c, scale=[x,y]) {
     translate([1,0,0]) square(1,true);
     translate([-1,0,0]) square(1,true);
   }
-  
+
   translate(02*[4,0,0])
   // linear_extrude with a coplanar face
   linear_extrude(height=a, slices=b, twist=c, scale=[x,y]) {
     translate([.5,0,0])square();
     translate([-.5,0,0])square();
   }
-  
+
   translate(03*[4,0,0])
   // linear_extrude with internal hole and one coplanar edge
   linear_extrude(height=a, slices=b, twist=c, scale=[x,y])

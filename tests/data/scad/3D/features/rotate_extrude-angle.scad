@@ -9,7 +9,7 @@ module face(x) {
 }
 
 module face2() {
-  translate([5,0]) square(5); 
+  translate([5,0]) square(5);
 }
 
 // test negative partial angles and geometries on -X side
@@ -25,9 +25,9 @@ rotate_extrude(angle=-45, a=10) face(-21);
 
 // test small angles, angle < $fa, render a single segment
 rotate([0,0,90]) {
-  rotate_extrude(angle=5) face(10); 
-  rotate_extrude(angle=5) face(-10); 
-  rotate_extrude(angle=-5) face(21); 
+  rotate_extrude(angle=5) face(10);
+  rotate_extrude(angle=5) face(-10);
+  rotate_extrude(angle=-5) face(21);
   rotate_extrude(angle=-5) face(-21);
 }
 

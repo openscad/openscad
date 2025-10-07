@@ -100,14 +100,14 @@ EOF
 done
 
 function execute() {
-    # Execute function with done message, version, and preserved return value 
+    # Execute function with done message, version, and preserved return value
     local FUNCTION MESSAGE RETURN_VALUE
     FUNCTION=$1
     MESSAGE=$2
 
     echo "$MESSAGE"
     $VERSION_CMD
-    
+
     "$FUNCTION"
     RETURN_VALUE=$?
 

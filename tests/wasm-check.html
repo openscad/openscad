@@ -1,11 +1,11 @@
 <html>
   <body>
     <pre id="output"></pre>
-    <script type="module"> 
+    <script type="module">
       import OpenSCAD from "../../build/openscad.js";
-      
+
       const instance = await OpenSCAD({ noInitialRun: true });
-      
+
       instance.FS.mkdir("/fonts");
       instance.FS.writeFile("/fonts/fonts.conf",
         `<?xml version="1.0" encoding="UTF-8"?>
@@ -27,7 +27,7 @@
             sphere(r=10);
         }
       `);
-      
+
       const code = instance.callMain(['input.scad', "--backend=manifold", "-o", "out.stl"]);
       if (code !== 0) throw new Error(`Exit code: ${code}`);
 

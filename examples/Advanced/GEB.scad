@@ -11,10 +11,10 @@ $fn=64;
 module GEB() {
 intersection() {
     linear_extrude(height = 20, convexity = 3, center=true) B();
-    
+
     rotate([90, 0, 0])
       linear_extrude(height = 20, convexity = 3, center=true) E();
-    
+
     rotate([90, 0, 90])
       linear_extrude(height = 20, convexity = 3, center=true) G();
   }
@@ -22,25 +22,25 @@ intersection() {
 
 color("Ivory") GEB();
 
-color("MediumOrchid") 
+color("MediumOrchid")
   translate([0,0,-20])
-    linear_extrude(1) 
+    linear_extrude(1)
       difference() {
         square(40, center=true);
         projection() GEB();
       }
 
 color("DarkMagenta")
-  rotate([90,0,0]) 
+  rotate([90,0,0])
     translate([0,0,-20])
-      linear_extrude(1) 
+      linear_extrude(1)
         difference() {
           translate([0,0.5]) square([40,39], center=true);
           projection() rotate([-90,0,0]) GEB();
         }
 
 color("MediumSlateBlue")
-  rotate([90,0,90]) 
+  rotate([90,0,90])
     translate([0,0,-20])
       linear_extrude(1)
         difference() {

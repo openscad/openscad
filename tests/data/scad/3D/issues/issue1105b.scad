@@ -1,4 +1,4 @@
-translate([54.5, -10, 2]) 
+translate([54.5, -10, 2])
     rotate(90)
 	translate([2,30,26]) {
 	    difference() {

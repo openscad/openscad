@@ -22,7 +22,7 @@ fanrot = dxf_dim(file = "example009.dxf", name = "fanrot");
 intersection() {
   linear_extrude(height = fanwidth, center = true, convexity = 10, twist = -fanrot)
     import(file = "example009.dxf", layer = "fan_top");
-    
+
   rotate_extrude(convexity = 10)
     import(file = "example009.dxf", layer = "fan_side", origin = [0, -40]);
 }

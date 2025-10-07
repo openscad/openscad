@@ -28,4 +28,3 @@ for (a = halign) {
 		text(text = t, font = "Liberation Sans:style=Regular", size = 20, halign = a[1], direction="btt");
 	}
 }
-

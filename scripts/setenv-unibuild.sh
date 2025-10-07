@@ -45,9 +45,9 @@ setenv_common()
 
 setenv_freebsd()
 {
- echo .... freebsd detected. 
+ echo .... freebsd detected.
  echo .... if you have freebsd >9, it is advisable to install
- echo .... the clang compiler and re-run this script as 
+ echo .... the clang compiler and re-run this script as
  echo .... '. ./scripts/setenv-unibuild.sh clang'
  setenv_common
  QMAKESPEC=freebsd-g++
@@ -60,7 +60,7 @@ setenv_netbsd()
 {
  setenv_common
  echo --- netbsd build situation is complex. it comes with gcc4.5
- echo --- which is incompatible with updated CGAL. 
+ echo --- which is incompatible with updated CGAL.
  echo --- you may need to hack with newer gcc to make it work
  QMAKESPEC=netbsd-g++
  QTDIR=/usr/pkg/qt5

@@ -12,7 +12,7 @@ module LetterBlock(letter, size=30) {
             // convexity is needed for correct preview
             // since characters can be highly concave
             linear_extrude(height=size, convexity=4)
-                text(letter, 
+                text(letter,
                      size=size*22/30,
                      font="Liberation Sans:style=bold",
                      halign="center",

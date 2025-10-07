@@ -1,5 +1,5 @@
 MarVoSym.ttf unterliegt der SIL Open Font Lizenz, Version 1.1.
-Die Bedingungen dieser Lizenz sind einsehbar unter 
+Die Bedingungen dieser Lizenz sind einsehbar unter
 http://scripts.sil.org/OFL
 
 Die wichtigsten Punkte aus dieser Lizenz:

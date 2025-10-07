@@ -10,4 +10,3 @@ GPL.
 
 2. An author of commercial closed-source software would likely use HIDAPI
 under the terms of the BSD-style license or the original HIDAPI license.
-

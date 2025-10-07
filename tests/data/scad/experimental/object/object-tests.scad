@@ -23,7 +23,7 @@ test( function() o1.a==1,                           "o1.a' must be 1");
 test( function() o1.c==[3],                         "o1.c must be [3]");
 test(function() is_function(o1["f"]),               "o1['f'] must be a function");
 test(function() is_function(o1.f),                  "o1.f must be a function");
-test( function() [for (i=o1) has_key(o1, i)] 
+test( function() [for (i=o1) has_key(o1, i)]
     ==  [true, true, true, true],                   "all keys must be present");
 test( function() len([for (i=o1) i]) == 4,          "check we have 4 keys");
 
@@ -45,7 +45,7 @@ testEq( len( object()), 0,                     "len of empty object must be 0");
 testEq( len( object(a=1,b=2,c=3)), 3,          "len of object with 3 entries must be 3");
 testEq( len( object(a=1,b=2,c=3, f=function() 1)), 4, "len of object with 4 entries must be 4");
 
-// equality 
+// equality
 testEq( o1, o1,                                     "same object must be equal");
 testEq( all, all,                                   "same object with all types must be equal");
 testEq( o1, object(o1),                             "copy must be equal");
@@ -98,18 +98,18 @@ module test( f, s ) {
     if ( !f()) {
         echo("FAIL:", f, s );
     } else
-        echo("PASS:", s );            
+        echo("PASS:", s );
 }
 
 module testEq( a, b, s) {
     if ( a != b) {
         echo("FAIL:", a, "==", b, s );
     } else
-        echo("PASS:", s );            
+        echo("PASS:", s );
 }
 module testNEq( a, b, s) {
     if ( a == b) {
         echo("FAIL:", a, "==", b, s );
     } else
-        echo("PASS:", s );            
+        echo("PASS:", s );
 }

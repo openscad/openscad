@@ -6,4 +6,3 @@ color("green") difference() {
     cube([25, 25, 0.2], center = true);
     cube([23, 23, 1], center = true);
 }
-

@@ -21,6 +21,6 @@ echo("[b11] ----- [3:-.5:-3]"); for (a = [3:-.5:-3]) echo ("[b11] ", a);
 
 // Check precision of fractional step sizes
 // Could check up to 9999 (max allowable range size), but takes >10s
-for (d=[1:1000]) 
-  let(l=len([for(x=[0:1/d:1]) 0])) 
+for (d=[1:1000])
+  let(l=len([for(x=[0:1/d:1]) 0]))
     if (l != d+1) echo(d,l);

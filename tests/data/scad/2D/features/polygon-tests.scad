@@ -56,5 +56,5 @@ translate([2,2,0]) polygon([[0,0],[1,1],[2,2]]);
 polyhedron(points = undef, paths = [[1, 2, 3]]);
 polyhedron(points = [[0,0,0],[1,1,1]], paths = undef);
 polyhedron(points=[0], paths = [[0]]);
-    
+
 // FIXME: convexity

@@ -15,7 +15,7 @@ if (window.Rainbow) window.Rainbow.linenumbers = (function(Rainbow) {
         // Otherwise, we need to split up the HTML
         var sourceLines = elem.innerHTML.split('\n');
         var lines = [];
-        
+
         // Wraps each chunk in the parent element. For example:
         // <b>foo\nbar</b> -> [<b>foo</b>, <b>bar</b>]
         for (var i = 0; i < sourceLines.length; i++) {
@@ -49,7 +49,7 @@ if (window.Rainbow) window.Rainbow.linenumbers = (function(Rainbow) {
         for (var i = 0; i < block.childNodes.length; i++) {
             var elemLines = splitElement(block.childNodes[i]);
 
-            // The first element in elemLines is 
+            // The first element in elemLines is
             // a continuation of the previous line
             lines[lines.length - 1] += elemLines[0];
 
@@ -62,7 +62,7 @@ if (window.Rainbow) window.Rainbow.linenumbers = (function(Rainbow) {
         // Returns the array of lines
         return lines;
     };
-    
+
     // Callback is called when Rainbow has highlighted a block
     Rainbow.onHighlight(function(block) {
         // This addresses an issue when Rainbow.color() is called multiple times.
@@ -76,24 +76,24 @@ if (window.Rainbow) window.Rainbow.linenumbers = (function(Rainbow) {
         var table = document.createElement('table');
         table.className = 'rainbow';
         table.setAttribute('data-language', block.getAttribute('data-language'));
-        
+
         // Split up the lines of the block
         var lines = splitLines(block);
-        
+
         // For each line
         for (var i = 0; i < lines.length; i++) {
             var line = lines[i];
             var index = i + 1;
-            
+
             // Create a row
             var row = table.insertRow(-1);
             row.className = 'line line-' + index;
-            
+
             // Create a cell which displays the line number with CSS
             var lineNumber = row.insertCell(-1);
             lineNumber.className = 'line-number';
             lineNumber.setAttribute('data-line-number', index);
-            
+
             // Add in the actual line of source code
             var code = row.insertCell(-1);
             code.className = 'line-code';

@@ -51,4 +51,3 @@ translate([-20,20,0]) #difference() {
     }
     cylinder(h=20, r=5, center=true);
 }
-

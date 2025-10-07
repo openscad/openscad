@@ -41,4 +41,3 @@ echo( "Past end of unicode only 4-byte ", text_4bytes[len(text_4bytes)]  );
 //Test past the last element of (x-byte unicode). Outside both lengths.
 echo( "Past end of both 2-byte ", text_2bytes[ len(text_2bytes) * 2 ]   );
 echo( "Past end of both 4-byte ", text_4bytes[ len(text_4bytes) * 4 ]   );
-

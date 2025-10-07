@@ -6,7 +6,7 @@ module print_results(testname, results) {
     echo(str(testname, " FAILED at these angles: ", results));
   else
     echo(str(testname, " PASSED"));
-} 
+}
 
 echo("***Test special angles***");
 echo("sin(  0) == 0          ", sin(  0) == 0);

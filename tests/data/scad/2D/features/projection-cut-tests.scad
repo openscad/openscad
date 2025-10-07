@@ -26,5 +26,3 @@ minkowski() {
 	}
 	square(1);
 }
-
-

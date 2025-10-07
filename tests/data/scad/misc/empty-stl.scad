@@ -3,4 +3,3 @@
 import("../../stl/empty.stl");
 import("../../stl/empty2.stl");
 echo("empty stl test ok");
-
