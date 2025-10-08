@@ -56,12 +56,16 @@ std::optional<int> CurveDiscretizer::GetCircularSegmentCount(double r, double an
   // FIXME: It would be better to refuse to create an object. Let's do more strict error handling
   // in future versions of OpenSCAD
   if (r < GRID_FINE || std::isinf(fn) || std::isnan(fn)) return {};
-  if (fn > 0.0)
-    return std::max(static_cast<int>(std::ceil((fn >= 3 ? fn : 3) * std::fabs(angle_degrees) / 360.0)),
-                    1);
-  return std::max(static_cast<int>(std::ceil(std::fabs(angle_degrees) / 360.0 *
-                                             std::max(std::min(360.0 / fa, r * 2 * M_PI / fs), 5.0))),
-                  1);
+
+  // We continue to separately call `ceil()` before angle calculations to preserve backward compatibility
+  double result;
+  if (fn > 0.0) {
+    result = std::ceil(fn >= 3 ? fn : 3) * std::fabs(angle_degrees) / 360.0;
+  } else {
+    result = std::ceil(std::max(std::min(360.0 / fa, r * 2 * M_PI / fs), 5.0)) *
+             std::fabs(angle_degrees) / 360.0;
+  }
+  return std::max(1, static_cast<int>(std::ceil(result)));
 }
 
 std::ostream& operator<<(std::ostream& stream, const std::shared_ptr<CurveDiscretizer>& f)
