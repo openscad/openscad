@@ -36,6 +36,7 @@
 #include "core/ModuleInstantiation.h"
 #include "core/node.h"
 #include "core/Parameters.h"
+#include "core/CurveDiscretizer.h"
 #include "utils/calc.h"
 #include "utils/degree_trig.h"
 #include "utils/printutils.h"
@@ -52,8 +53,6 @@
 #include <vector>
 
 using namespace boost::assign;  // bring 'operator+=()' into scope
-
-#define F_MINIMUM 0.01
 
 template <class InsertIterator>
 static void generate_circle(InsertIterator iter, double r, double z, int fragments)
@@ -94,25 +93,6 @@ static Value lookup_radius(const Parameters& parameters, const ModuleInstantiati
     return r.clone();
   } else {
     return Value::undefined.clone();
-  }
-}
-
-static void set_fragments(const Parameters& parameters, const ModuleInstantiation *inst, double& fn,
-                          double& fs, double& fa)
-{
-  fn = parameters["$fn"].toDouble();
-  fs = parameters["$fs"].toDouble();
-  fa = parameters["$fa"].toDouble();
-
-  if (fs < F_MINIMUM) {
-    LOG(message_group::Warning, inst->location(), parameters.documentRoot(),
-        "$fs too small - clamping to %1$f", F_MINIMUM);
-    fs = F_MINIMUM;
-  }
-  if (fa < F_MINIMUM) {
-    LOG(message_group::Warning, inst->location(), parameters.documentRoot(),
-        "$fa too small - clamping to %1$f", F_MINIMUM);
-    fa = F_MINIMUM;
   }
 }
 
@@ -186,13 +166,20 @@ static std::shared_ptr<AbstractNode> builtin_cube(const ModuleInstantiation *ins
   return node;
 }
 
+std::string SphereNode::toString() const
+{
+  std::ostringstream stream;
+  stream << "sphere(" << discretizer << ", r = " << r << ")";
+  return stream.str();
+}
+
 std::unique_ptr<const Geometry> SphereNode::createGeometry() const
 {
   if (this->r <= 0 || !std::isfinite(this->r)) {
     return PolySet::createEmpty();
   }
 
-  auto num_fragments = Calc::get_fragments_from_r(r, fn, fs, fa);
+  int num_fragments = discretizer->GetCircularSegmentCount(r).value_or(3);
   auto num_rings = (num_fragments + 1) / 2;
   // Uncomment the following three lines to enable experimental sphere
   // tessellation
@@ -236,11 +223,10 @@ std::unique_ptr<const Geometry> SphereNode::createGeometry() const
 
 static std::shared_ptr<AbstractNode> builtin_sphere(const ModuleInstantiation *inst, Arguments arguments)
 {
-  auto node = std::make_shared<SphereNode>(inst);
-
   Parameters parameters = Parameters::parse(std::move(arguments), inst->location(), {"r"}, {"d"});
 
-  set_fragments(parameters, inst, node->fn, node->fs, node->fa);
+  auto node = std::make_shared<SphereNode>(inst, std::make_shared<CurveDiscretizer>(parameters, inst));
+
   const auto r = lookup_radius(parameters, inst, "d", "r");
   if (r.type() == Value::Type::NUMBER) {
     node->r = r.toDouble();
@@ -253,6 +239,14 @@ static std::shared_ptr<AbstractNode> builtin_sphere(const ModuleInstantiation *i
   return node;
 }
 
+std::string CylinderNode::toString() const
+{
+  std::ostringstream stream;
+  stream << "cylinder(" << discretizer << ", h = " << h << ", r1 = " << r1 << ", r2 = " << r2
+         << ", center = " << (center ? "true" : "false") << ")";
+  return stream.str();
+}
+
 std::unique_ptr<const Geometry> CylinderNode::createGeometry() const
 {
   if (this->h <= 0 || !std::isfinite(this->h) || this->r1 < 0 || !std::isfinite(this->r1) ||
@@ -260,8 +254,7 @@ std::unique_ptr<const Geometry> CylinderNode::createGeometry() const
     return PolySet::createEmpty();
   }
 
-  auto num_fragments =
-    Calc::get_fragments_from_r(std::fmax(this->r1, this->r2), this->fn, this->fs, this->fa);
+  int num_fragments = discretizer->GetCircularSegmentCount(std::fmax(this->r1, this->r2)).value_or(3);
 
   double z1, z2;
   if (this->center) {
@@ -316,12 +309,10 @@ std::unique_ptr<const Geometry> CylinderNode::createGeometry() const
 static std::shared_ptr<AbstractNode> builtin_cylinder(const ModuleInstantiation *inst,
                                                       Arguments arguments)
 {
-  auto node = std::make_shared<CylinderNode>(inst);
-
   Parameters parameters = Parameters::parse(std::move(arguments), inst->location(),
                                             {"h", "r1", "r2", "center"}, {"r", "d", "d1", "d2"});
+  auto node = std::make_shared<CylinderNode>(inst, std::make_shared<CurveDiscretizer>(parameters, inst));
 
-  set_fragments(parameters, inst, node->fn, node->fs, node->fa);
   if (parameters["h"].type() == Value::Type::NUMBER) {
     node->h = parameters["h"].toDouble();
   }
@@ -558,17 +549,24 @@ static std::shared_ptr<AbstractNode> builtin_square(const ModuleInstantiation *i
   return node;
 }
 
+std::string CircleNode::toString() const
+{
+  std::ostringstream stream;
+  stream << "circle(" << discretizer << ", r = " << r << ")";
+  return stream.str();
+}
+
 std::unique_ptr<const Geometry> CircleNode::createGeometry() const
 {
   if (this->r <= 0 || !std::isfinite(this->r)) {
     return std::make_unique<Polygon2d>();
   }
 
-  auto fragments = Calc::get_fragments_from_r(this->r, this->fn, this->fs, this->fa);
+  int num_fragments = discretizer->GetCircularSegmentCount(this->r).value_or(3);
   Outline2d o;
-  o.vertices.resize(fragments);
-  for (int i = 0; i < fragments; ++i) {
-    double phi = (360.0 * i) / fragments;
+  o.vertices.resize(num_fragments);
+  for (int i = 0; i < num_fragments; ++i) {
+    double phi = (360.0 * i) / num_fragments;
     o.vertices[i] = {this->r * cos_degrees(phi), this->r * sin_degrees(phi)};
   }
   return std::make_unique<Polygon2d>(o);
@@ -576,11 +574,9 @@ std::unique_ptr<const Geometry> CircleNode::createGeometry() const
 
 static std::shared_ptr<AbstractNode> builtin_circle(const ModuleInstantiation *inst, Arguments arguments)
 {
-  auto node = std::make_shared<CircleNode>(inst);
-
   Parameters parameters = Parameters::parse(std::move(arguments), inst->location(), {"r"}, {"d"});
+  auto node = std::make_shared<CircleNode>(inst, std::make_shared<CurveDiscretizer>(parameters, inst));
 
-  set_fragments(parameters, inst, node->fn, node->fs, node->fa);
   const auto r = lookup_radius(parameters, inst, "d", "r");
   if (r.type() == Value::Type::NUMBER) {
     node->r = r.toDouble();

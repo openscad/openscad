@@ -41,6 +41,7 @@
 
 #include "FontCache.h"
 #include "core/DrawingCallback.h"
+#include "core/CurveDiscretizer.h"
 #include "utils/calc.h"
 
 #include FT_OUTLINE_H
@@ -250,13 +251,22 @@ void FreetypeRenderer::Params::detect_properties()
   hb_direction_t hbdirection = detect_direction(hbscript);
   set_direction(hb_direction_to_string(hbdirection));
 
-  auto segments = Calc::get_fragments_from_r(size, fn, fs, fa);
+  auto segments = discretizer->GetCircularSegmentCount(size).value_or(3);
   // The curved segments of most fonts are relatively short, so
   // by using a fraction of the number of full circle segments
   // the resolution will be better matching the detail level of
   // other objects.
   auto text_segments = std::max(segments / 8 + 1, 2);
   set_segments(text_segments);
+}
+
+std::ostream& operator<<(std::ostream& stream, const FreetypeRenderer::Params& params)
+{
+  return stream << "text = \"" << params.text << "\", size = " << params.size
+                << ", spacing = " << params.spacing << ", font = \"" << params.font
+                << "\", direction = \"" << params.direction << "\", language = \"" << params.language
+                << (params.script.empty() ? "" : "\", script = \"") << params.script << "\", halign = \""
+                << params.halign << "\", valign = \"" << params.valign << "\", " << params.discretizer;
 }
 
 const FontFacePtr FreetypeRenderer::Params::get_font_face() const
@@ -283,11 +293,8 @@ const FontFacePtr FreetypeRenderer::Params::get_font_face() const
 
 void FreetypeRenderer::Params::set(Parameters& parameters)
 {
-  // Note:
-  // This populates all of the Params entries that text() populates.
-  // Probably some of them are not needed by some callers.
-  // However, we populate them here rather than "knowing" which
-  // ones are and are not needed.
+  // Having these prints a warning if any of these parameters is not
+  // the expected type.
 
   (void)parameters.valid("size", Value::Type::NUMBER);
   (void)parameters.valid("text", Value::Type::STRING);
@@ -299,10 +306,7 @@ void FreetypeRenderer::Params::set(Parameters& parameters)
   (void)parameters.valid("halign", Value::Type::STRING);
   (void)parameters.valid("valign", Value::Type::STRING);
 
-  set_fn(parameters["$fn"].toDouble());
-  set_fa(parameters["$fa"].toDouble());
-  set_fs(parameters["$fs"].toDouble());
-
+  discretizer = std::make_shared<CurveDiscretizer>(parameters);
   set_size(parameters.get("size", 10.0));
   set_text(parameters.get("text", ""));
   set_spacing(parameters.get("spacing", 1.0));
@@ -312,6 +316,21 @@ void FreetypeRenderer::Params::set(Parameters& parameters)
   set_script(parameters.get("script", ""));
   set_halign(parameters.get("halign", "default"));
   set_valign(parameters.get("valign", "default"));
+}
+
+void FreetypeRenderer::Params::set(std::shared_ptr<CurveDiscretizer> c)
+{
+  discretizer = c;
+
+  set_size(10.0);
+  set_text("");
+  set_spacing(1.0);
+  set_font("");
+  set_direction("");
+  set_language("en");
+  set_script("");
+  set_halign("default");
+  set_valign("default");
 }
 
 FreetypeRenderer::ShapeResults::ShapeResults(const FreetypeRenderer::Params& params)

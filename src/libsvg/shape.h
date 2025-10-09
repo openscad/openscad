@@ -40,6 +40,8 @@
 
 #include "clipper2/clipper.h"
 
+class CurveDiscretizer;
+
 namespace libsvg {
 class shape;
 }
@@ -47,7 +49,7 @@ class shape;
 // ccox - I don't like putting this here, but the svg library code did not plan ahead for app
 // customization. And this is one of the few sensible places to put it without adding new header files.
 struct fnContext {
-  fnContext(double fNN, double fSS, double fAA) : fn(fNN), fs(fSS), fa(fAA) {}
+  fnContext(std::shared_ptr<CurveDiscretizer> discretizer) : discretizer(std::move(discretizer)) {}
   bool match(bool val)
   {
     if (val) matches++;
@@ -55,9 +57,7 @@ struct fnContext {
   }
   bool has_matches() { return matches.load() > 0; }
 
-  double fn;
-  double fs;
-  double fa;
+  std::shared_ptr<CurveDiscretizer> discretizer;
   std::function<bool(const libsvg::shape *)> selector;
 
 private:
