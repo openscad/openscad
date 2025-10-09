@@ -1,25 +1,25 @@
 #include "utils/printutils.h"
-#include <exception>
+
 #include <cassert>
-#include <set>
-#include <list>
-#include <iostream>
-#include <string>
 #include <cstdio>
+#include <exception>
+#include <filesystem>
+#include <iostream>
+#include <list>
+#include <set>
+#include <string>
+
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/predicate.hpp>
 #include <boost/circular_buffer.hpp>
-#include <filesystem>
-#include "utils/exceptions.h"
 
+#include "utils/exceptions.h"
 
 namespace fs = std::filesystem;
 
 std::set<std::string> printedDeprecations;
 std::list<std::string> print_messages_stack;
-std::list<struct Message> log_messages_stack;
 OutputHandlerFunc *outputhandler = nullptr;
-OutputHandlerFunc2 *outputhandler2 = nullptr;
 void *outputhandler_data = nullptr;
 std::string OpenSCAD::debug("");
 bool OpenSCAD::quiet = false;
@@ -29,15 +29,17 @@ bool OpenSCAD::traceUsermoduleParameters = true;
 bool OpenSCAD::parameterCheck = true;
 bool OpenSCAD::rangeCheck = false;
 
+namespace {
+
+std::list<struct Message> log_messages_stack;
+OutputHandlerFunc2 *outputhandler2 = nullptr;
 boost::circular_buffer<std::string> lastmessages(5);
 boost::circular_buffer<struct Message> lastlogmessages(5);
 
-int count = 0;
-
-namespace {
 bool no_throw;
 bool deferred;
-}
+
+}  // namespace
 
 void set_output_handler(OutputHandlerFunc *newhandler, OutputHandlerFunc2 *newhandler2, void *userdata)
 {
@@ -60,14 +62,11 @@ bool would_have_thrown()
   return would_throw;
 }
 
-void print_messages_push()
-{
-  print_messages_stack.emplace_back();
-}
+void print_messages_push() { print_messages_stack.emplace_back(); }
 
 void print_messages_pop()
 {
-  std::string msg = print_messages_stack.back();
+  const std::string msg = print_messages_stack.back();
   print_messages_stack.pop_back();
   if (print_messages_stack.size() > 0 && !msg.empty()) {
     if (!print_messages_stack.back().empty()) {
@@ -90,10 +89,9 @@ void PRINT(const Message& msgObj)
 
   PRINT_NOCACHE(msgObj);
 
-  //to error log
-  if (outputhandler2 &&
-      !(msgObj.group == message_group::NONE || msgObj.group == message_group::Echo || msgObj.group == message_group::Trace)) {
-
+  // to error log
+  if (outputhandler2 && !(msgObj.group == message_group::NONE || msgObj.group == message_group::Echo ||
+                          msgObj.group == message_group::Trace)) {
     outputhandler2(msgObj, outputhandler_data);
   }
 }
@@ -104,12 +102,13 @@ void PRINT_NOCACHE(const Message& msgObj)
 
   const auto msg = msgObj.str();
 
-  if (msgObj.group == message_group::Warning || msgObj.group == message_group::Error || msgObj.group == message_group::Trace) {
+  if (msgObj.group == message_group::Warning || msgObj.group == message_group::Error ||
+      msgObj.group == message_group::Trace) {
     size_t i;
     for (i = 0; i < lastmessages.size(); ++i) {
       if (lastmessages[i] != msg) break;
     }
-    if (i == 5) return; // Suppress output after 5 equal ERROR or WARNING outputs.
+    if (i == 5) return;  // Suppress output after 5 equal ERROR or WARNING outputs.
     lastmessages.push_back(msg);
   }
   if (!deferred)
@@ -121,7 +120,8 @@ void PRINT_NOCACHE(const Message& msgObj)
       }
     }
   if (!std::current_exception()) {
-    if ((OpenSCAD::hardwarnings && msgObj.group == message_group::Warning) || (no_throw && msgObj.group == message_group::Error)) {
+    if ((OpenSCAD::hardwarnings && msgObj.group == message_group::Warning) ||
+        (no_throw && msgObj.group == message_group::Error)) {
       if (no_throw) deferred = true;
       else throw HardWarningException(msgObj.msg);
     }
@@ -132,14 +132,13 @@ void PRINTDEBUG(const std::string& filename, const std::string& msg)
 {
   // see printutils.h for usage instructions
   if (OpenSCAD::debug == "") return;
-  std::string shortfname = fs::path(filename).stem().generic_string();
+  const std::string shortfname = fs::path(filename).stem().generic_string();
   std::string lowshortfname(shortfname);
   boost::algorithm::to_lower(lowshortfname);
   std::string lowdebug(OpenSCAD::debug);
   boost::algorithm::to_lower(lowdebug);
-  if (OpenSCAD::debug == "all" ||
-      lowdebug.find(lowshortfname) != std::string::npos) {
-    Message msgObj{shortfname + ": " + msg, message_group::NONE, Location::NONE, ""};
+  if (OpenSCAD::debug == "all" || lowdebug.find(lowshortfname) != std::string::npos) {
+    const Message msgObj{shortfname + ": " + msg, message_group::NONE, Location::NONE, ""};
     PRINT_NOCACHE(msgObj);
   }
 }
@@ -164,10 +163,7 @@ std::string two_digit_exp_format(std::string doublestr)
   return doublestr;
 }
 
-std::string two_digit_exp_format(double x)
-{
-  return two_digit_exp_format(std::to_string(x));
-}
+std::string two_digit_exp_format(double x) { return two_digit_exp_format(std::to_string(x)); }
 
 void resetSuppressedMessages()
 {
@@ -180,28 +176,17 @@ std::string getGroupName(const enum message_group& group)
   switch (group) {
   case message_group::NONE:
   case message_group::Warning:
-  case message_group::UI_Warning:
-    return "WARNING";
+  case message_group::UI_Warning:     return "WARNING";
   case message_group::Error:
-  case message_group::UI_Error:
-    return "ERROR";
-  case message_group::Font_Warning:
-    return "FONT-WARNING";
-  case message_group::Export_Warning:
-    return "EXPORT-WARNING";
-  case message_group::Export_Error:
-    return "EXPORT-ERROR";
-  case message_group::Parser_Error:
-    return "PARSER-ERROR";
-  case message_group::Trace:
-    return "TRACE";
-  case message_group::Deprecated:
-    return "DEPRECATED";
-  case message_group::Echo:
-    return "ECHO";
-  default:
-    assert(false && "Unhandled message group name");
-    return "";
+  case message_group::UI_Error:       return "ERROR";
+  case message_group::Font_Warning:   return "FONT-WARNING";
+  case message_group::Export_Warning: return "EXPORT-WARNING";
+  case message_group::Export_Error:   return "EXPORT-ERROR";
+  case message_group::Parser_Error:   return "PARSER-ERROR";
+  case message_group::Trace:          return "TRACE";
+  case message_group::Deprecated:     return "DEPRECATED";
+  case message_group::Echo:           return "ECHO";
+  default:                            assert(false && "Unhandled message group name"); return "";
   }
 }
 
@@ -211,17 +196,13 @@ std::string getGroupColor(const enum message_group& group)
   case message_group::Warning:
   case message_group::Deprecated:
   case message_group::UI_Warning:
-  case message_group::Font_Warning:
-    return "#ffffb0";
+  case message_group::Font_Warning: return "#ffffb0";
   case message_group::Error:
   case message_group::UI_Error:
   case message_group::Export_Error:
-  case message_group::Parser_Error:
-    return "#ffb0b0";
-  case message_group::Trace:
-    return "#d0d0ff";
-  default:
-    return "transparent";
+  case message_group::Parser_Error: return "#ffb0b0";
+  case message_group::Trace:        return "#d0d0ff";
+  default:                          return "transparent";
   }
 }
 
@@ -229,3 +210,5 @@ bool getGroupTextPlain(const enum message_group& group)
 {
   return group == message_group::NONE || group == message_group::Echo;
 }
+
+std::string quoteVar(const std::string& varname) { return '"' + varname + '"'; }

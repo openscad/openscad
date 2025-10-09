@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 #
 # Regression test driver for cmd-line tools
 #
@@ -33,30 +33,17 @@ import shutil
 import platform
 import string
 import difflib
+from pathlib import Path
 
 #_debug_tcct = True
 _debug_tcct = False
 
 # Path from the build/tests to the tests source dir
+# when test goldens were created
 build_to_test_sources = "../../tests"
 
 def get_runtime_to_test_sources():
-    """Path from the tests install/working dir to the tests source dir.
-       Tests are usually run from the build dir so no issue, however with mingw cross builds,
-       the tests are installed to openscad/tests-build which is only one directory deeper than the top level.
-       Expected outputs that reference use/include files will need their relative paths adjusted."""
-    cwd = os.getcwd()
-    up_one = os.path.normpath(os.path.join(cwd, ".."))
-    parent_dir = os.path.basename(up_one)
-    if (parent_dir != "build"):
-        # only check binary path if NOT within a build tree.
-        OPENSCAD_BINARY = os.getenv('OPENSCAD_BINARY')
-        if (OPENSCAD_BINARY is not None):
-            project_dir = os.path.dirname(OPENSCAD_BINARY)
-            test_cmake_dir = os.path.join(project_dir, "CMakeFiles")
-            if (not os.path.exists(test_cmake_dir)):
-                return os.path.relpath(project_dir, cwd) + "/tests"
-    return build_to_test_sources
+    return Path(os.path.relpath(os.path.dirname(__file__))).as_posix()
 
 def debug(*args):
     global _debug_tcct

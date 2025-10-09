@@ -1,6 +1,7 @@
 #pragma once
 
 #include "glview/system-gl.h"
+#include "gui/MouseSelector.h"
 
 #include <QImage>
 #include <QMouseEvent>
@@ -16,11 +17,11 @@
 #include <Eigen/Core>
 #include <Eigen/Geometry>
 #include "glview/GLView.h"
+#include "../core/MouseConfig.h"
 
 class QGLView : public QOpenGLWidget, public GLView
 {
   Q_OBJECT
-  Q_PROPERTY(bool showFaces READ showFaces WRITE setShowFaces);
   Q_PROPERTY(bool showEdges READ showEdges WRITE setShowEdges);
   Q_PROPERTY(bool showAxes READ showAxes WRITE setShowAxes);
   Q_PROPERTY(bool showCrosshairs READ showCrosshairs WRITE setShowCrosshairs);
@@ -29,6 +30,7 @@ class QGLView : public QOpenGLWidget, public GLView
 
 public:
   QGLView(QWidget *parent = nullptr);
+  ~QGLView() override;
 #ifdef ENABLE_OPENCSG
   bool hasOpenCSGSupport() { return this->is_opencsg_capable; }
 #endif
@@ -48,14 +50,18 @@ public:
   std::vector<SelectedObject> findObject(int x, int y);
   int measure_state;
 
+  int pickObject(QPoint position);
+
 public slots:
   void ZoomIn();
   void ZoomOut();
-  void setMouseCentricZoom(bool var){
-    this->mouseCentricZoom = var;
-  }
-  void setMouseSwapButtons(bool var){
-    this->mouseSwapButtons = var;
+  void setMouseCentricZoom(bool var) { this->mouseCentricZoom = var; }
+  void setMouseActions(int mouseAction, std::array<float, MouseConfig::ACTION_DIMENSION> var)
+  {
+    // Load an array defining the behaviour for a single mouse action.
+    for (int i = 0; i < MouseConfig::ACTION_DIMENSION; i++) {
+      this->mouseActions[MouseConfig::ACTION_DIMENSION * mouseAction + i] = var[i];
+    }
   }
 
 public:
@@ -74,9 +80,11 @@ private:
   bool mouse_drag_active;
   bool mouse_drag_moved = true;
   bool mouseCentricZoom = true;
-  bool mouseSwapButtons = false;
+  // Information held for each mouse action is a 3x2 rotation matrix, a 3x2 translation matrix, and a
+  // zoom 2-vector.
+  float mouseActions[MouseConfig::MouseAction::NUM_MOUSE_ACTIONS * MouseConfig::ACTION_DIMENSION];
   QPoint last_mouse;
-  QImage frame; // Used by grabFrame() and save()
+  QImage frame;  // Used by grabFrame() and save()
 
   void wheelEvent(QWheelEvent *event) override;
   void mousePressEvent(QMouseEvent *event) override;
@@ -92,6 +100,7 @@ private:
 
 #ifdef ENABLE_OPENCSG
   void display_opencsg_warning() override;
+  std::unique_ptr<MouseSelector> selector;
 private slots:
   void display_opencsg_warning_dialog();
 #endif

@@ -1,0 +1,9 @@
+DEPRECATED: child() will be removed in future releases. Use children() instead.
+ECHO: 
+DEPRECATED: The assign() module will be removed in future releases. Use a regular assignment instead. in file allmodules.scad, line 6
+ERROR: Unable to convert points = undef to a vector of coordinates in file allmodules.scad, line 20
+ERROR: Unable to convert points = undef to a vector of coordinates in file allmodules.scad, line 23
+WARNING: Unable to convert scale(undef) parameter to a number, a vec3 or vec2 of numbers or a number in file allmodules.scad, line 27
+WARNING: Problem converting rotate(a=undef) parameter in file allmodules.scad, line 28
+WARNING: Unable to convert mirror(undef) parameter to a vec3 or vec2 of numbers in file allmodules.scad, line 29
+WARNING: Unable to convert translate(undef) parameter to a vec3 or vec2 of numbers in file allmodules.scad, line 30

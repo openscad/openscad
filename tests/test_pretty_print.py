@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 
 # test_pretty_print by don bright 2012. Copyright assigned to Marius Kintel and
 # Clifford Wolf 2012. Released under the GPL 2, or later, as described in
@@ -28,7 +28,7 @@
 # 1. why is hash differing
 
 
-import string, sys, re, os, hashlib, subprocess, time, platform, html, base64
+import pathlib, string, sys, re, os, hashlib, subprocess, time, platform, html, base64
 
 from urllib.error import URLError
 from urllib.request import urlopen
@@ -207,13 +207,13 @@ def png_encode64(fname, width=512, data=None, alt=''):
 
 def findlogfile(builddir):
     logpath = os.path.join(builddir, 'Testing', 'Temporary')
-    logfilename = os.path.join(logpath, 'LastTest.log.tmp')
-    if not os.path.isfile(logfilename):
-        logfilename = os.path.join(logpath, 'LastTest.log')
+    # The ctest command may not finish before the LastTest.log.tmp* is flushed,
+    # so read that file if it exists.
+    logfilename = next(pathlib.Path(logpath).glob('LastTest.log*'), None)
     if not os.path.isfile(logfilename):
         print('can\'t find and/or open logfile', logfilename)
         sys.exit()
-    return logfilename
+    return str(logfilename)
 
 # --- Templating ---
 
@@ -339,7 +339,7 @@ def to_html(project_name, startdate, tests, enddate, sysinfo, sysid, imgcomparer
     templates = Templates()
     for test in report_tests:
         # relative-output tests have no "type"
-        if test.type in ('txt', 'ast', 'csg', 'term', 'echo', 'stl', '3mf', 'off', 'obj', 'pov', ''):
+        if test.type in ('txt', 'ast', 'csg', 'term', 'echo', 'stl', '3mf', 'off', 'obj', 'pov', 'dxf', 'svg', ''):
             text_test_count += 1
             templates.add('text_template', 'text_tests',
                           test_name=test.fullname,

@@ -35,28 +35,26 @@
 #include <cstddef>
 #include <string>
 
-
-#include "gui/Settings.h"
+#include "core/Settings.h"
 #include "gui/input/InputDriverManager.h"
 #include "gui/SettingsWriter.h"
 #include "gui/IgnoreWheelWhenNotFocused.h"
 #include "gui/InitConfigurator.h"
+#include "gui/input/InputEventMapper.h"
 
-AxisConfigWidget::AxisConfigWidget(QWidget *parent) : QWidget(parent)
+AxisConfigWidget::AxisConfigWidget(QWidget *parent) : QWidget(parent) { setupUi(this); }
+
+void AxisConfigWidget::AxesChanged(int nr, double val) const
 {
-  setupUi(this);
-}
-
-void AxisConfigWidget::AxesChanged(int nr, double val) const {
   auto *progressBar = this->findChild<QProgressBar *>(QString("progressBarAxis%1").arg(nr));
   if (progressBar == nullptr) return;
 
   int value = val * 100;
-  progressBar->setValue(value); //set where the bar is
+  progressBar->setValue(value);  // set where the bar is
 
-  //QProgressBar generates the shown string from the format string.
-  //By setting a format string without a place holder,
-  //we can set arbitrary text, like a custom formatted double.
+  // QProgressBar generates the shown string from the format string.
+  // By setting a format string without a place holder,
+  // we can set arbitrary text, like a custom formatted double.
   //(Note: QProgressBar internally works on int, so has no formatting for double values)
   //(Note: The text of a QProgressBar can not be set directly)
   QString s = QString::number(val, 'f', 2);
@@ -75,10 +73,12 @@ void AxisConfigWidget::AxesChanged(int nr, double val) const {
   }
 }
 
-void AxisConfigWidget::init() {
-  connect(this->pushButtonAxisTrim, SIGNAL(clicked()), this, SLOT(on_AxisTrim()));
-  connect(this->pushButtonAxisTrimReset, SIGNAL(clicked()), this, SLOT(on_AxisTrimReset()));
-  connect(this->pushButtonUpdate, SIGNAL(clicked()), this, SLOT(updateStates()));
+void AxisConfigWidget::init()
+{
+  connect(this->pushButtonAxisTrim, &QPushButton::clicked, this, &AxisConfigWidget::on_AxisTrim);
+  connect(this->pushButtonAxisTrimReset, &QPushButton::clicked, this,
+          &AxisConfigWidget::on_AxisTrimReset);
+  connect(this->pushButtonUpdate, &QPushButton::clicked, this, &AxisConfigWidget::updateStates);
 
   initComboBox(this->comboBoxTranslationX, Settings::Settings::inputTranslationX);
   initComboBox(this->comboBoxTranslationY, Settings::Settings::inputTranslationY);
@@ -130,33 +130,34 @@ void AxisConfigWidget::init() {
   this->checkBoxDBus->setToolTip(DBusInputDriverDescription + "\n\r" + NotEnabledDuringBuild);
 #endif
 
-  initUpdateCheckBox(this->checkBoxHIDAPI,   Settings::Settings::inputEnableDriverHIDAPI);
+  initUpdateCheckBox(this->checkBoxHIDAPI, Settings::Settings::inputEnableDriverHIDAPI);
   initUpdateCheckBox(this->checkBoxSpaceNav, Settings::Settings::inputEnableDriverSPNAV);
   initUpdateCheckBox(this->checkBoxJoystick, Settings::Settings::inputEnableDriverJOYSTICK);
   initUpdateCheckBox(this->checkBoxQGamepad, Settings::Settings::inputEnableDriverQGAMEPAD);
-  initUpdateCheckBox(this->checkBoxDBus,     Settings::Settings::inputEnableDriverDBUS);
+  initUpdateCheckBox(this->checkBoxDBus, Settings::Settings::inputEnableDriverDBUS);
 
   installIgnoreWheelWhenNotFocused(this);
 
   for (size_t i = 0; i < InputEventMapper::getMaxAxis(); ++i) {
     auto spinTrim = this->findChild<QDoubleSpinBox *>(QString("doubleSpinBoxTrim%1").arg(i));
     if (spinTrim) {
-      initUpdateDoubleSpinBox(spinTrim, Settings::Settings::axisTrim(i));
+      initUpdateDoubleSpinBox(spinTrim, InputEventMapper::axisTrimSettings(i));
     }
     auto spinDeadZone = this->findChild<QDoubleSpinBox *>(QString("doubleSpinBoxDeadzone%1").arg(i));
     if (spinDeadZone) {
-      initUpdateDoubleSpinBox(spinDeadZone, Settings::Settings::axisDeadzone(i));
+      initUpdateDoubleSpinBox(spinDeadZone, InputEventMapper::axisDeadzoneSettings(i));
     }
   }
 
   initUpdateDoubleSpinBox(this->doubleSpinBoxTranslationGain, Settings::Settings::inputTranslationGain);
-  initUpdateDoubleSpinBox(this->doubleSpinBoxTranslationVPRelGain, Settings::Settings::inputTranslationVPRelGain);
+  initUpdateDoubleSpinBox(this->doubleSpinBoxTranslationVPRelGain,
+                          Settings::Settings::inputTranslationVPRelGain);
   initUpdateDoubleSpinBox(this->doubleSpinBoxRotateGain, Settings::Settings::inputRotateGain);
   initUpdateDoubleSpinBox(this->doubleSpinBoxRotateVPRelGain, Settings::Settings::inputRotateVPRelGain);
   initUpdateDoubleSpinBox(this->doubleSpinBoxZoomGain, Settings::Settings::inputZoomGain);
 
-  //use a custom style for the axis indicators,
-  //to prevent getting operating system specific
+  // use a custom style for the axis indicators,
+  // to prevent getting operating system specific
   //(potentially animated) ProgressBars
   int textLightness = this->progressBarAxis0->palette().text().color().lightness();
   this->darkModeDetected = textLightness > 165;
@@ -422,7 +423,7 @@ void AxisConfigWidget::on_AxisTrim()
   for (size_t i = 0; i < InputEventMapper::getMaxAxis(); ++i) {
     auto spin = this->findChild<QDoubleSpinBox *>(QString("doubleSpinBoxTrim%1").arg(i));
     if (spin) {
-      spin->setValue(Settings::Settings::axisTrim(i).value());
+      spin->setValue(InputEventMapper::axisTrimSettings(i).value());
     }
   }
   emit inputCalibrationChanged();
@@ -435,7 +436,7 @@ void AxisConfigWidget::on_AxisTrimReset()
   for (size_t i = 0; i < InputEventMapper::getMaxAxis(); ++i) {
     auto spin = this->findChild<QDoubleSpinBox *>(QString("doubleSpinBoxTrim%1").arg(i));
     if (spin) {
-      Settings::Settings::axisTrim(i).setValue(0.00);
+      InputEventMapper::axisTrimSettings(i).setValue(0.00);
       spin->setValue(0.00);
     }
   }
@@ -499,19 +500,17 @@ void AxisConfigWidget::on_checkBoxDBus_toggled(bool val)
   }
 }
 
-void AxisConfigWidget::applyComboBox(QComboBox * /*comboBox*/, int val, Settings::SettingsEntryEnum& entry)
+void AxisConfigWidget::applyComboBox(QComboBox * /*comboBox*/, int val,
+                                     Settings::SettingsEntryEnum<std::string>& entry)
 {
   entry.setIndex(val);
   writeSettings();
 }
 
-void AxisConfigWidget::writeSettings()
+void AxisConfigWidget::writeSettings() { Settings::Settings::visit(SettingsWriter()); }
+
+void AxisConfigWidget::updateStates()
 {
-  Settings::Settings::visit(SettingsWriter());
-}
-
-
-void AxisConfigWidget::updateStates(){
   if (!initialized) return;
 
   size_t cnt = InputDriverManager::instance()->getAxisCount();

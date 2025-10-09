@@ -6,6 +6,8 @@
 #include <string>
 #include <memory>
 
+#include "geometry/Geometry.h"
+#include "geometry/linalg.h"
 #include "utils/printutils.h"
 #ifdef ENABLE_MANIFOLD
 #include "geometry/manifold/manifoldutils.h"
@@ -15,17 +17,12 @@
 #include "geometry/PolySet.h"
 #include "glview/RenderSettings.h"
 
+Polygon2d::Polygon2d(Outline2d outline) : sanitized(true) { addOutline(std::move(outline)); }
 
-Polygon2d::Polygon2d(Outline2d outline) : sanitized(true) {
-  addOutline(std::move(outline));
-}
+std::unique_ptr<Geometry> Polygon2d::copy() const { return std::make_unique<Polygon2d>(*this); }
 
-std::unique_ptr<Geometry> Polygon2d::copy() const
+BoundingBox Outline2d::getBoundingBox() const
 {
-  return std::make_unique<Polygon2d>(*this);
-}
-
-BoundingBox Outline2d::getBoundingBox() const {
   BoundingBox bbox;
   for (const auto& v : this->vertices) {
     bbox.extend(Vector3d(v[0], v[1], 0));
@@ -80,10 +77,7 @@ std::string Polygon2d::dump() const
   return out.str();
 }
 
-bool Polygon2d::isEmpty() const
-{
-  return this->theoutlines.empty();
-}
+bool Polygon2d::isEmpty() const { return this->theoutlines.empty(); }
 
 void Polygon2d::transform(const Transform2d& mat)
 {
@@ -116,10 +110,7 @@ void Polygon2d::resize(const Vector2d& newsize, const Eigen::Matrix<bool, 2, 1>&
                     !autosize[1] || (newsize[1] > 0) ? scale[1] : autoscale);
 
   Transform2d t;
-  t.matrix() <<
-    newscale[0], 0, 0,
-    0, newscale[1], 0,
-    0, 0, 1;
+  t.matrix() << newscale[0], 0, 0, 0, newscale[1], 0, 0, 0, 1;
 
   this->transform(t);
 }
@@ -154,10 +145,7 @@ double Polygon2d::area() const
     const auto& v1 = ps->vertices[poly[0]];
     const auto& v2 = ps->vertices[poly[1]];
     const auto& v3 = ps->vertices[poly[2]];
-    area += 0.5 * (
-      v1.x() * (v2.y() - v3.y())
-      + v2.x() * (v3.y() - v1.y())
-      + v3.x() * (v1.y() - v2.y()));
+    area += 0.5 * (v1.x() * (v2.y() - v3.y()) + v2.x() * (v3.y() - v1.y()) + v3.x() * (v1.y() - v2.y()));
   }
   return area;
 }
@@ -180,8 +168,7 @@ std::unique_ptr<PolySet> Polygon2d::tessellate() const
 #if defined(ENABLE_MANIFOLD) && defined(USE_MANIFOLD_TRIANGULATOR)
   if (RenderSettings::inst()->backend3D == RenderBackend3D::ManifoldBackend) {
     return ManifoldUtils::createTriangulatedPolySetFromPolygon2d(*this);
-  }
-  else
+  } else
 #endif
-  return CGALUtils::createTriangulatedPolySetFromPolygon2d(*this);
+    return CGALUtils::createTriangulatedPolySetFromPolygon2d(*this);
 }

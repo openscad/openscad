@@ -26,15 +26,21 @@
 
 #include "core/ContextFrame.h"
 
+#include "core/AST.h"
+#include "core/callables.h"
+#include "core/EvaluationSession.h"
+#include "core/Value.h"
+
+#ifdef DEBUG
+#include <boost/format.hpp>
+#include <sstream>
+#endif
 #include <utility>
 #include <cstddef>
 #include <string>
 #include <vector>
 
-
-ContextFrame::ContextFrame(EvaluationSession *session) :
-  evaluation_session(session)
-{}
+ContextFrame::ContextFrame(EvaluationSession *session) : evaluation_session(session) {}
 
 boost::optional<const Value&> ContextFrame::lookup_local_variable(const std::string& name) const
 {
@@ -52,7 +58,8 @@ boost::optional<const Value&> ContextFrame::lookup_local_variable(const std::str
   return boost::none;
 }
 
-boost::optional<CallableFunction> ContextFrame::lookup_local_function(const std::string& name, const Location& /*loc*/) const
+boost::optional<CallableFunction> ContextFrame::lookup_local_function(const std::string& name,
+                                                                      const Location& /*loc*/) const
 {
   boost::optional<const Value&> value = lookup_local_variable(name);
   if (value && value->type() == Value::Type::FUNCTION) {
@@ -61,7 +68,8 @@ boost::optional<CallableFunction> ContextFrame::lookup_local_function(const std:
   return boost::none;
 }
 
-boost::optional<InstantiableModule> ContextFrame::lookup_local_module(const std::string& /*name*/, const Location& /*loc*/) const
+boost::optional<InstantiableModule> ContextFrame::lookup_local_module(const std::string& /*name*/,
+                                                                      const Location& /*loc*/) const
 {
   return boost::none;
 }
@@ -141,6 +149,8 @@ bool ContextFrame::is_config_variable(const std::string& name)
   return name[0] == '$' && name != "$children";
 }
 
+const std::string& ContextFrame::documentRoot() const { return evaluation_session->documentRoot(); }
+
 #ifdef DEBUG
 std::string ContextFrame::dumpFrame() const
 {
@@ -154,4 +164,25 @@ std::string ContextFrame::dumpFrame() const
   }
   return s.str();
 }
-#endif // ifdef DEBUG
+#endif  // ifdef DEBUG
+
+ContextFrameHandle::ContextFrameHandle(ContextFrame *frame) : session(frame->session())
+{
+  frame_index = session->push_frame(frame);
+}
+
+ContextFrameHandle& ContextFrameHandle::operator=(ContextFrame *frame)
+{
+  assert(session == frame->session());
+  session->replace_frame(frame_index, frame);
+  return *this;
+}
+
+// Valid only if handle is on the top of the stack.
+void ContextFrameHandle::release()
+{
+  if (session) {
+    session->pop_frame(frame_index);
+    session = nullptr;
+  }
+}

@@ -26,15 +26,21 @@
 
 #pragma once
 
-#include <QJsonObject>
+#include <memory>
+#include <unordered_map>
+#include <string>
+#include <vector>
 #include <mutex>
 
 #include <QString>
 #include <QStringList>
+#include <QJsonObject>
 #include <QJsonDocument>
 
 #include "io/export.h"
 #include "gui/Network.h"
+
+using PrintServices = std::unordered_map<std::string, std::unique_ptr<class PrintService>>;
 
 class PrintService
 {
@@ -48,15 +54,15 @@ public:
   const QString getInfoUrl() const { return infoUrl; }
   const std::vector<FileFormat> getFileFormats() const { return fileFormats; }
 
-  const QString upload(const QString& exportFileName, const QString& fileName, const network_progress_func_t& progress_func) const;
+  const QString upload(const QString& exportFileName, const QString& fileName,
+                       const network_progress_func_t& progress_func) const;
 
   bool init(const QJsonObject& serviceObject);
 
   static const PrintService *getPrintService(const std::string& name);
-  static const std::unordered_map<std::string, std::unique_ptr<PrintService>> &getPrintServices();
+  static const PrintServices& getPrintServices();
 
 private:
-
   QString service;
   QString displayName;
   QString apiUrl;
@@ -66,4 +72,5 @@ private:
   std::vector<FileFormat> fileFormats;
 
   static std::mutex printServiceMutex;
+  static PrintServices printServices;
 };

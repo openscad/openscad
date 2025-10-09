@@ -10,9 +10,7 @@
 #include <list>
 #include <QStandardItemModel>
 
-enum errorLog_column {
-  group = 0, file, lineNo, message
-};
+enum errorLog_column { group = 0, file, lineNo, message };
 
 class ErrorLog : public QWidget, public Ui::errorLogWidget
 {
@@ -26,8 +24,8 @@ public:
   ErrorLog& operator=(ErrorLog&& source) = delete;
   ~ErrorLog() override = default;
   void initGUI();
-  void toErrorLog(const Message& log_msg);
-  void showtheErrorInGUI(const Message& log_msg);
+  void toErrorLog(const Message& logMsg);
+  void showtheErrorInGUI(const Message& logMsg);
   void clearModel();
   int getLine(int row, int col);
   QStandardItemModel *errorLogModel;

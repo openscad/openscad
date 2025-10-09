@@ -64,7 +64,7 @@
         <x>0</x>
         <y>0</y>
         <width>879</width>
-        <height>148</height>
+        <height>143</height>
        </rect>
       </property>
       <property name="sizePolicy">
@@ -90,6 +90,9 @@
            <widget class="QLabel" name="label_time">
             <property name="text">
              <string>Time:</string>
+            </property>
+            <property name="buddy">
+             <cstring>e_tval</cstring>
             </property>
            </widget>
           </item>
@@ -127,6 +130,9 @@
             <property name="text">
              <string>FPS:</string>
             </property>
+            <property name="buddy">
+             <cstring>e_fps</cstring>
+            </property>
            </widget>
           </item>
           <item>
@@ -162,6 +168,9 @@
            <widget class="QLabel" name="label_steps">
             <property name="text">
              <string>Steps:</string>
+            </property>
+            <property name="buddy">
+             <cstring>e_fsteps</cstring>
             </property>
            </widget>
           </item>
@@ -248,8 +257,7 @@
              <string/>
             </property>
             <property name="icon">
-             <iconset resource="../../resources/common.qrc">
-              <normaloff>:/icons/svg-default/vcr-control-start.svg</normaloff>:/icons/svg-default/vcr-control-start.svg</iconset>
+             <iconset theme="chokusen-vcr-control-start"/>
             </property>
             <property name="iconSize">
              <size>
@@ -265,8 +273,7 @@
              <string/>
             </property>
             <property name="icon">
-             <iconset resource="../../resources/common.qrc">
-              <normaloff>:/icons/svg-default/vcr-control-step-back.svg</normaloff>:/icons/svg-default/vcr-control-step-back.svg</iconset>
+             <iconset theme="chokusen-vcr-control-step-back"/>
             </property>
             <property name="iconSize">
              <size>
@@ -282,8 +289,7 @@
              <string/>
             </property>
             <property name="icon">
-             <iconset resource="../../resources/common.qrc">
-              <normaloff>:/icons/svg-default/animate.svg</normaloff>:/icons/svg-default/animate.svg</iconset>
+             <iconset theme="chokusen-vcr-control-play"/>
             </property>
             <property name="iconSize">
              <size>
@@ -299,8 +305,7 @@
              <string/>
             </property>
             <property name="icon">
-             <iconset resource="../../resources/common.qrc">
-              <normaloff>:/icons/svg-default/vcr-control-step-forward.svg</normaloff>:/icons/svg-default/vcr-control-step-forward.svg</iconset>
+             <iconset theme="chokusen-vcr-control-step-forward"/>
             </property>
             <property name="iconSize">
              <size>
@@ -316,8 +321,7 @@
              <string/>
             </property>
             <property name="icon">
-             <iconset resource="../../resources/common.qrc">
-              <normaloff>:/icons/svg-default/vcr-control-end.svg</normaloff>:/icons/svg-default/vcr-control-end.svg</iconset>
+             <iconset theme="chokusen-vcr-control-end"/>
             </property>
             <property name="iconSize">
              <size>
@@ -351,12 +355,59 @@
     </widget>
    </item>
   </layout>
-  <action name="actionRowSelected">
-   <property name="text">
-    <string>RowSelected</string>
+  <action name="actionAnimationPauseUnpause">
+   <property name="icon">
+    <iconset theme="chokusen-vcr-control-play"/>
    </property>
-   <property name="shortcut">
-    <string>Return</string>
+   <property name="text">
+    <string>Toggle animation pause/unpause</string>
+   </property>
+   <property name="toolTip">
+    <string>Toggle animation pause/unpause</string>
+   </property>
+  </action>
+  <action name="actionAnimationStart">
+   <property name="icon">
+    <iconset theme="chokusen-vcr-control-start"/>
+   </property>
+   <property name="text">
+    <string>Move to beginning (first frame)</string>
+   </property>
+   <property name="toolTip">
+    <string>Move to beginning (first frame)</string>
+   </property>
+  </action>
+  <action name="actionAnimationStepBack">
+   <property name="icon">
+    <iconset theme="chokusen-vcr-control-step-back"/>
+   </property>
+   <property name="text">
+    <string>Step one frame back</string>
+   </property>
+   <property name="toolTip">
+    <string>Step one frame back</string>
+   </property>
+  </action>
+  <action name="actionAnimationStepForward">
+   <property name="icon">
+    <iconset theme="chokusen-vcr-control-step-forward"/>
+   </property>
+   <property name="text">
+    <string>Step one frame forward</string>
+   </property>
+   <property name="toolTip">
+    <string>Step one frame forward</string>
+   </property>
+  </action>
+  <action name="actionAnimationEnd">
+   <property name="icon">
+    <iconset theme="chokusen-vcr-control-end"/>
+   </property>
+   <property name="text">
+    <string>Move to end (last frame)</string>
+   </property>
+   <property name="toolTip">
+    <string>Move to end (last frame)</string>
    </property>
   </action>
  </widget>

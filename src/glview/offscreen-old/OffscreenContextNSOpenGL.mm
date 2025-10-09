@@ -3,8 +3,8 @@
 #include <iostream>
 #include <sstream>
 
-#include "imageutils.h"
-#include "system-gl.h"
+#include "io/imageutils.h"
+#include "glview/system-gl.h"
 #import <AppKit/AppKit.h>   // for NSOpenGL...
 
 class OffscreenContextNSOpenGL : public OffscreenContext

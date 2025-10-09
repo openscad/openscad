@@ -19,7 +19,7 @@ jobs:
         language: ['cpp']
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
       with:
         submodules: 'recursive'
         # We must fetch at least the immediate parents so that if this is
@@ -37,7 +37,10 @@ jobs:
         # queries: ./path/to/local/query, your-org/your-repo/queries@main
 
     - name: Install dependencies
-      run: ./scripts/github-ci-linux-get-dependencies.sh
+      run: |
+        which sudo || apt install -y sudo
+        sudo ./scripts/uni-get-dependencies.sh
+
     - name: Build
       run: ./scripts/github-ci.sh experimental build
 

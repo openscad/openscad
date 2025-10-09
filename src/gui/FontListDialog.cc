@@ -40,7 +40,7 @@ FontListDialog::FontListDialog()
   model = nullptr;
   proxy = nullptr;
   setupUi(this);
-  connect(this->okButton, SIGNAL(clicked()), this, SLOT(accept()));
+  connect(this->okButton, &QPushButton::clicked, this, &FontListDialog::accept);
 }
 
 void FontListDialog::on_copyButton_clicked()
@@ -72,7 +72,7 @@ void FontListDialog::selection_changed(const QItemSelection& current, const QIte
   tableView->setDragText(selection);
 }
 
-void FontListDialog::update_font_list()
+void FontListDialog::updateFontList()
 {
   copyButton->setEnabled(false);
 
@@ -115,7 +115,8 @@ void FontListDialog::update_font_list()
   this->tableView->resizeColumnsToContents();
   this->tableView->setSortingEnabled(true);
 
-  connect(tableView->selectionModel(), SIGNAL(selectionChanged(const QItemSelection&,const QItemSelection&)), this, SLOT(selection_changed(const QItemSelection&,const QItemSelection&)));
+  connect(tableView->selectionModel(), &QItemSelectionModel::selectionChanged, this,
+          &FontListDialog::selection_changed);
 
   delete list;
 }
@@ -137,10 +138,10 @@ QString FontListDialog::quote(const QString& text)
 {
   QString result = text;
   result.replace('\\', R"(\\\\)")
-  .replace('-', "\\\\-")
-  .replace(':', "\\\\:")
-  .replace(',', "\\\\,")
-  .replace('=', "\\\\=")
-  .replace('_', "\\\\_");
+    .replace('-', "\\\\-")
+    .replace(':', "\\\\:")
+    .replace(',', "\\\\,")
+    .replace('=', "\\\\=")
+    .replace('_', "\\\\_");
   return result;
 }

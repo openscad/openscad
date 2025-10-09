@@ -1,0 +1,664 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>Export3mfDialog</class>
+ <widget class="QDialog" name="Export3mfDialog">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>701</width>
+    <height>730</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Export 3MF Options</string>
+  </property>
+  <property name="autoFillBackground">
+   <bool>true</bool>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout_3">
+   <property name="leftMargin">
+    <number>9</number>
+   </property>
+   <property name="topMargin">
+    <number>9</number>
+   </property>
+   <property name="rightMargin">
+    <number>9</number>
+   </property>
+   <property name="bottomMargin">
+    <number>9</number>
+   </property>
+   <item>
+    <widget class="QScrollArea" name="scrollArea">
+     <property name="frameShape">
+      <enum>QFrame::NoFrame</enum>
+     </property>
+     <property name="widgetResizable">
+      <bool>true</bool>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+     </property>
+     <widget class="QWidget" name="scrollAreaWidgetContents">
+      <property name="geometry">
+       <rect>
+        <x>0</x>
+        <y>0</y>
+        <width>683</width>
+        <height>669</height>
+       </rect>
+      </property>
+      <layout class="QGridLayout" name="gridLayout_4" rowstretch="0,0,0,1" columnstretch="1,1">
+       <property name="leftMargin">
+        <number>0</number>
+       </property>
+       <property name="topMargin">
+        <number>0</number>
+       </property>
+       <property name="rightMargin">
+        <number>0</number>
+       </property>
+       <property name="bottomMargin">
+        <number>0</number>
+       </property>
+       <item row="0" column="1">
+        <widget class="QGroupBox" name="groupUnit">
+         <property name="toolTip">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Set the PDF page (paper) size.  &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         </property>
+         <property name="title">
+          <string>Unit</string>
+         </property>
+         <layout class="QGridLayout" name="gridLayout">
+          <item row="0" column="0">
+           <layout class="QVBoxLayout" name="vLayoutUnit">
+            <item>
+             <widget class="QRadioButton" name="radioButtonUnitMicron">
+              <property name="text">
+               <string>Micron</string>
+              </property>
+              <property name="checked">
+               <bool>true</bool>
+              </property>
+              <property name="_settings_value" stdset="0">
+               <string>micron</string>
+              </property>
+              <attribute name="buttonGroup">
+               <string notr="true">buttonGroupUnit</string>
+              </attribute>
+             </widget>
+            </item>
+            <item>
+             <widget class="QRadioButton" name="radioButtonUnitMillimeter">
+              <property name="text">
+               <string>Millimeter (default)</string>
+              </property>
+              <property name="_settings_value" stdset="0">
+               <string>millimeter</string>
+              </property>
+              <attribute name="buttonGroup">
+               <string notr="true">buttonGroupUnit</string>
+              </attribute>
+             </widget>
+            </item>
+            <item>
+             <widget class="QRadioButton" name="radioButtonUnitCentimeter">
+              <property name="text">
+               <string>Centimeter</string>
+              </property>
+              <property name="_settings_value" stdset="0">
+               <string>centimeter</string>
+              </property>
+              <attribute name="buttonGroup">
+               <string notr="true">buttonGroupUnit</string>
+              </attribute>
+             </widget>
+            </item>
+            <item>
+             <widget class="QRadioButton" name="radioButtonUnitMeter">
+              <property name="text">
+               <string>Meter</string>
+              </property>
+              <property name="_settings_value" stdset="0">
+               <string>meter</string>
+              </property>
+              <attribute name="buttonGroup">
+               <string notr="true">buttonGroupUnit</string>
+              </attribute>
+             </widget>
+            </item>
+            <item>
+             <widget class="QRadioButton" name="radioButtonUnitInch">
+              <property name="text">
+               <string>Inch</string>
+              </property>
+              <property name="_settings_value" stdset="0">
+               <string>inch</string>
+              </property>
+              <attribute name="buttonGroup">
+               <string notr="true">buttonGroupUnit</string>
+              </attribute>
+             </widget>
+            </item>
+            <item>
+             <widget class="QRadioButton" name="radioButtonUnitFoot">
+              <property name="text">
+               <string>Foot</string>
+              </property>
+              <property name="_settings_value" stdset="0">
+               <string>foot</string>
+              </property>
+              <attribute name="buttonGroup">
+               <string notr="true">buttonGroupUnit</string>
+              </attribute>
+             </widget>
+            </item>
+           </layout>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item row="0" column="0">
+        <widget class="QGroupBox" name="groupColor">
+         <property name="toolTip">
+          <string/>
+         </property>
+         <property name="title">
+          <string>Colors</string>
+         </property>
+         <layout class="QGridLayout" name="gridLayout_2">
+          <item row="0" column="0">
+           <layout class="QVBoxLayout" name="verticalLayoutColors">
+            <item>
+             <widget class="QRadioButton" name="radioButtonColorsModel">
+              <property name="text">
+               <string>Use colors from model and color scheme</string>
+              </property>
+              <property name="_settings_value" stdset="0">
+               <string>model</string>
+              </property>
+              <attribute name="buttonGroup">
+               <string notr="true">buttonGroupColors</string>
+              </attribute>
+             </widget>
+            </item>
+            <item>
+             <widget class="QRadioButton" name="radioButtonColorsNone">
+              <property name="text">
+               <string>No colors</string>
+              </property>
+              <property name="checked">
+               <bool>true</bool>
+              </property>
+              <property name="_settings_value" stdset="0">
+               <string>none</string>
+              </property>
+              <attribute name="buttonGroup">
+               <string notr="true">buttonGroupColors</string>
+              </attribute>
+             </widget>
+            </item>
+            <item>
+             <widget class="QRadioButton" name="radioButtonColorsUseForAll">
+              <property name="text">
+               <string>Use selected color for all objects</string>
+              </property>
+              <property name="_settings_value" stdset="0">
+               <string>selected-only</string>
+              </property>
+              <attribute name="buttonGroup">
+               <string notr="true">buttonGroupColors</string>
+              </attribute>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item row="2" column="0">
+           <layout class="QHBoxLayout" name="horizontalLayoutColorsSelected">
+            <property name="topMargin">
+             <number>9</number>
+            </property>
+            <item>
+             <widget class="QLabel" name="labelColorsSelected">
+              <property name="minimumSize">
+               <size>
+                <width>100</width>
+                <height>0</height>
+               </size>
+              </property>
+              <property name="frameShape">
+               <enum>QFrame::Box</enum>
+              </property>
+              <property name="lineWidth">
+               <number>2</number>
+              </property>
+              <property name="text">
+               <string/>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QToolButton" name="toolButtonColorsSelectedReset">
+              <property name="text">
+               <string>...</string>
+              </property>
+              <property name="icon">
+               <iconset theme="chokusen-undo">
+                <normaloff>.</normaloff>.</iconset>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QToolButton" name="toolButtonColorsSelected">
+              <property name="text">
+               <string>...</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item row="1" column="0">
+           <spacer name="verticalSpacerColors">
+            <property name="orientation">
+             <enum>Qt::Vertical</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>20</width>
+              <height>40</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item row="2" column="0" colspan="2">
+        <widget class="QGroupBox" name="groupMetaData">
+         <property name="title">
+          <string>Meta data</string>
+         </property>
+         <property name="checkable">
+          <bool>true</bool>
+         </property>
+         <layout class="QVBoxLayout" name="verticalLayout_2">
+          <item>
+           <widget class="QLabel" name="labelMetaData">
+            <property name="text">
+             <string>The fields Title, Application and CreationDate are always filled in the exported file when meta data is enabled.</string>
+            </property>
+            <property name="textFormat">
+             <enum>Qt::PlainText</enum>
+            </property>
+            <property name="wordWrap">
+             <bool>true</bool>
+            </property>
+            <property name="textInteractionFlags">
+             <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByMouse</set>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <layout class="QGridLayout" name="gridLayoutMetaData">
+            <property name="horizontalSpacing">
+             <number>16</number>
+            </property>
+            <property name="verticalSpacing">
+             <number>8</number>
+            </property>
+            <item row="4" column="1">
+             <widget class="QLineEdit" name="lineEditMetaDataCopyright">
+              <property name="enabled">
+               <bool>true</bool>
+              </property>
+              <property name="toolTip">
+               <string>A copyright associated with this document</string>
+              </property>
+              <property name="placeholderText">
+               <string>Copyright</string>
+              </property>
+              <property name="clearButtonEnabled">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="1">
+             <widget class="QLineEdit" name="lineEditMetaDataTitle">
+              <property name="enabled">
+               <bool>true</bool>
+              </property>
+              <property name="placeholderText">
+               <string>Title, leave empty to use the file name</string>
+              </property>
+              <property name="clearButtonEnabled">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+            <item row="3" column="1">
+             <widget class="QLineEdit" name="lineEditMetaDataDescription">
+              <property name="enabled">
+               <bool>true</bool>
+              </property>
+              <property name="placeholderText">
+               <string>Description</string>
+              </property>
+              <property name="clearButtonEnabled">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="1">
+             <widget class="QLineEdit" name="lineEditMetaDataDesigner">
+              <property name="enabled">
+               <bool>true</bool>
+              </property>
+              <property name="placeholderText">
+               <string>Designer</string>
+              </property>
+              <property name="clearButtonEnabled">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+            <item row="5" column="1">
+             <widget class="QLineEdit" name="lineEditMetaDataLicenseTerms">
+              <property name="enabled">
+               <bool>true</bool>
+              </property>
+              <property name="placeholderText">
+               <string>License terms</string>
+              </property>
+              <property name="clearButtonEnabled">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+            <item row="6" column="0">
+             <widget class="QCheckBox" name="checkBoxMetaDataRating">
+              <property name="enabled">
+               <bool>true</bool>
+              </property>
+              <property name="toolTip">
+               <string>An industry rating associated with this document</string>
+              </property>
+              <property name="text">
+               <string/>
+              </property>
+             </widget>
+            </item>
+            <item row="4" column="0">
+             <widget class="QCheckBox" name="checkBoxMetaDataCopyright">
+              <property name="enabled">
+               <bool>true</bool>
+              </property>
+              <property name="text">
+               <string/>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="0">
+             <widget class="QCheckBox" name="checkBoxMetaDataDesigner">
+              <property name="enabled">
+               <bool>true</bool>
+              </property>
+              <property name="toolTip">
+               <string>A name for a designer of this document</string>
+              </property>
+              <property name="text">
+               <string/>
+              </property>
+             </widget>
+            </item>
+            <item row="6" column="1">
+             <widget class="QLineEdit" name="lineEditMetaDataRating">
+              <property name="enabled">
+               <bool>true</bool>
+              </property>
+              <property name="inputMask">
+               <string/>
+              </property>
+              <property name="placeholderText">
+               <string>Rating</string>
+              </property>
+              <property name="clearButtonEnabled">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+            <item row="5" column="0">
+             <widget class="QCheckBox" name="checkBoxMetaDataLicenseTerms">
+              <property name="enabled">
+               <bool>true</bool>
+              </property>
+              <property name="toolTip">
+               <string>License information associated with this document</string>
+              </property>
+              <property name="text">
+               <string/>
+              </property>
+             </widget>
+            </item>
+            <item row="3" column="0">
+             <widget class="QCheckBox" name="checkBoxMetaDataDescription">
+              <property name="enabled">
+               <bool>true</bool>
+              </property>
+              <property name="toolTip">
+               <string>A description of the document</string>
+              </property>
+              <property name="text">
+               <string/>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item row="1" column="0" colspan="2">
+        <widget class="QGroupBox" name="groupBox">
+         <property name="title">
+          <string>Format</string>
+         </property>
+         <layout class="QGridLayout" name="gridLayout_3">
+          <item row="1" column="0">
+           <widget class="QLabel" name="labelDecimalPrecision">
+            <property name="text">
+             <string>Decimal precision</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="QComboBox" name="comboBoxMaterialType"/>
+          </item>
+          <item row="0" column="0">
+           <widget class="QLabel" name="labelExportColorsAs">
+            <property name="text">
+             <string>Export colors as</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="QSpinBox" name="spinBoxDecimalPrecision">
+            <property name="alignment">
+             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+            </property>
+            <property name="minimum">
+             <number>1</number>
+            </property>
+            <property name="maximum">
+             <number>16</number>
+            </property>
+            <property name="value">
+             <number>6</number>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="3">
+           <spacer name="horizontalSpacer">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>40</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item row="1" column="2">
+           <widget class="QToolButton" name="toolButtonDecimalPrecisionReset">
+            <property name="toolTip">
+             <string>Reset value to the default decimal precision value.</string>
+            </property>
+            <property name="text">
+             <string>...</string>
+            </property>
+            <property name="icon">
+             <iconset theme="chokusen-undo">
+              <normaloff>.</normaloff>.</iconset>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item row="3" column="0" colspan="2">
+        <spacer name="verticalSpacer">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>0</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+      </layout>
+     </widget>
+    </widget>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout">
+     <property name="topMargin">
+      <number>9</number>
+     </property>
+     <item>
+      <widget class="QCheckBox" name="checkBoxAlwaysShowDialog">
+       <property name="text">
+        <string>Always show dialog</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <spacer name="horizontalSpacerButtons">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="QPushButton" name="pushButtonCancel">
+       <property name="text">
+        <string>Cancel</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="pushButtonOk">
+       <property name="text">
+        <string>OK</string>
+       </property>
+       <property name="default">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+  </layout>
+ </widget>
+ <tabstops>
+  <tabstop>pushButtonOk</tabstop>
+  <tabstop>pushButtonCancel</tabstop>
+  <tabstop>scrollArea</tabstop>
+  <tabstop>radioButtonColorsModel</tabstop>
+  <tabstop>radioButtonColorsNone</tabstop>
+  <tabstop>radioButtonColorsUseForAll</tabstop>
+  <tabstop>toolButtonColorsSelectedReset</tabstop>
+  <tabstop>toolButtonColorsSelected</tabstop>
+  <tabstop>radioButtonUnitMicron</tabstop>
+  <tabstop>radioButtonUnitMillimeter</tabstop>
+  <tabstop>radioButtonUnitCentimeter</tabstop>
+  <tabstop>radioButtonUnitMeter</tabstop>
+  <tabstop>radioButtonUnitInch</tabstop>
+  <tabstop>radioButtonUnitFoot</tabstop>
+  <tabstop>comboBoxMaterialType</tabstop>
+  <tabstop>spinBoxDecimalPrecision</tabstop>
+  <tabstop>toolButtonDecimalPrecisionReset</tabstop>
+  <tabstop>groupMetaData</tabstop>
+  <tabstop>lineEditMetaDataTitle</tabstop>
+  <tabstop>checkBoxMetaDataDesigner</tabstop>
+  <tabstop>lineEditMetaDataDesigner</tabstop>
+  <tabstop>checkBoxMetaDataDescription</tabstop>
+  <tabstop>lineEditMetaDataDescription</tabstop>
+  <tabstop>checkBoxMetaDataCopyright</tabstop>
+  <tabstop>lineEditMetaDataCopyright</tabstop>
+  <tabstop>checkBoxMetaDataLicenseTerms</tabstop>
+  <tabstop>lineEditMetaDataLicenseTerms</tabstop>
+  <tabstop>checkBoxMetaDataRating</tabstop>
+  <tabstop>lineEditMetaDataRating</tabstop>
+  <tabstop>checkBoxAlwaysShowDialog</tabstop>
+ </tabstops>
+ <resources/>
+ <connections>
+  <connection>
+   <sender>pushButtonOk</sender>
+   <signal>clicked()</signal>
+   <receiver>Export3mfDialog</receiver>
+   <slot>accept()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>650</x>
+     <y>683</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>350</x>
+     <y>369</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>pushButtonCancel</sender>
+   <signal>clicked()</signal>
+   <receiver>Export3mfDialog</receiver>
+   <slot>reject()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>564</x>
+     <y>683</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>350</x>
+     <y>369</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+ <buttongroups>
+  <buttongroup name="buttonGroupUnit"/>
+  <buttongroup name="buttonGroupColors"/>
+ </buttongroups>
+</ui>

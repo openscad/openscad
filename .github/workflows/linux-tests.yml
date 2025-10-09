@@ -12,12 +12,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ ubuntu-20.04, ubuntu-22.04, ubuntu-24.04 ]
+        os: [ ubuntu-22.04, ubuntu-24.04 ]
         qt: [ qt5, qt6 ]
         exclude:
-          - os: ubuntu-20.04
-            # Qt 6 not packaged
-            qt: qt6
           - os: ubuntu-22.04
             # libqscintilla2-qt6-dev not packaged
             qt: qt6
@@ -27,12 +24,17 @@ jobs:
     name: ${{ matrix.os }} ${{ matrix.qt }}
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
       with:
         submodules: 'recursive'
     - name: Install dependencies
-      run: ./scripts/github-ci-linux-get-dependencies.sh ${{ matrix.qt }}
-    - uses: actions/setup-python@v5
+      env:
+        DEBIAN_FRONTEND: noninteractive
+        TZ: Etc/UTC
+      run: |
+        which sudo || apt install -y sudo
+        sudo ./scripts/uni-get-dependencies.sh ${{ matrix.qt }}
+    - uses: actions/setup-python@v6
       with:
         python-version: '3.x'
     - name: Install gcovr

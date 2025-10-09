@@ -1,6 +1,9 @@
 Taken from http://tango.freedesktop.org/Tango_Icon_Library, version 0.8.90 / public domain:
+https://web.archive.org/web/20160120233412/http://tango.freedesktop.org/Tango_Icon_Library
+http://tango.freedesktop.org/releases/tango-icon-theme-0.8.90.tar.gz
 
-- prefsFeatures.png (converted from preferences-system.svg)
+- prefsFeatures.png (converted from categories/preferences-system.svg)
+- prefsDialogs.png (converted from actions/window-new.svg)
 
 https://openclipart.org/detail/35425/tango-desktop-peripherals / Tango Icon Library / public domain:
 

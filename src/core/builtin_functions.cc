@@ -25,14 +25,18 @@
  */
 
 #include "core/function.h"
+
+#include "core/AST.h"
 #include "core/Arguments.h"
-#include "core/Expression.h"
 #include "core/Builtins.h"
-#include "utils/printutils.h"
-#include "core/UserModule.h"
-#include "utils/degree_trig.h"
+#include "core/Context.h"
+#include "core/EvaluationSession.h"
+#include "core/Expression.h"
 #include "core/FreetypeRenderer.h"
 #include "core/Parameters.h"
+#include "core/UserModule.h"
+#include "utils/printutils.h"
+#include "utils/degree_trig.h"
 #include "io/import.h"
 #include "io/fileutils.h"
 
@@ -48,6 +52,7 @@
 #include <vector>
 
 #include "utils/boost-utils.h"
+#include <boost/format.hpp>
 // hash double
 #include "geometry/linalg.h"
 
@@ -61,7 +66,8 @@ int process_id = getpid();
 #endif
 
 std::mt19937 deterministic_rng(std::time(nullptr) + process_id);
-void initialize_rng() {
+void initialize_rng()
+{
   static uint64_t seed_val = 0;
   seed_val ^= uint64_t(std::time(nullptr) + process_id);
   deterministic_rng.seed(seed_val);
@@ -69,12 +75,13 @@ void initialize_rng() {
   seed_val ^= distributor(deterministic_rng);
 }
 
-
-static inline bool check_arguments(const char *function_name, const Arguments& arguments, const Location& loc, unsigned int expected_count, bool warn = true)
+static inline bool check_arguments(const char *function_name, const Arguments& arguments,
+                                   const Location& loc, unsigned int expected_count, bool warn = true)
 {
   if (arguments.size() != expected_count) {
     if (warn) {
-      print_argCnt_warning(function_name, arguments.size(), STR(expected_count), loc, arguments.documentRoot());
+      print_argCnt_warning(function_name, arguments.size(), STR(expected_count), loc,
+                           arguments.documentRoot());
     }
     return false;
   }
@@ -87,7 +94,9 @@ static inline bool check_arguments(const char *function_name, const Arguments& a
    }
  */
 template <size_t N>
-static inline bool check_arguments(const char *function_name, const Arguments& arguments, const Location& loc, const Value::Type (& expected_types) [N], bool warn = true)
+static inline bool check_arguments(const char *function_name, const Arguments& arguments,
+                                   const Location& loc, const Value::Type (&expected_types)[N],
+                                   bool warn = true)
 {
   if (!check_arguments(function_name, arguments, loc, N, warn)) {
     return false;
@@ -95,7 +104,8 @@ static inline bool check_arguments(const char *function_name, const Arguments& a
   for (size_t i = 0; i < N; i++) {
     if (arguments[i]->type() != expected_types[i]) {
       if (warn) {
-        print_argConvert_positioned_warning(function_name, "argument " + STR(i), arguments[i]->clone(), {expected_types[i]}, loc, arguments.documentRoot());
+        print_argConvert_positioned_warning(function_name, "argument " + STR(i), arguments[i]->clone(),
+                                            {expected_types[i]}, loc, arguments.documentRoot());
       }
       return false;
     }
@@ -104,14 +114,15 @@ static inline bool check_arguments(const char *function_name, const Arguments& a
 }
 
 template <size_t N>
-static inline bool try_check_arguments(const Arguments& arguments, const Value::Type (& expected_types) [N])
+static inline bool try_check_arguments(const Arguments& arguments,
+                                       const Value::Type (&expected_types)[N])
 {
   return check_arguments(nullptr, arguments, Location::NONE, expected_types, false);
 }
 
 Value builtin_abs(Arguments arguments, const Location& loc)
 {
-  if (!check_arguments("abs", arguments, loc, { Value::Type::NUMBER })) {
+  if (!check_arguments("abs", arguments, loc, {Value::Type::NUMBER})) {
     return Value::undefined.clone();
   }
   return {std::fabs(arguments[0]->toDouble())};
@@ -119,7 +130,7 @@ Value builtin_abs(Arguments arguments, const Location& loc)
 
 Value builtin_sign(Arguments arguments, const Location& loc)
 {
-  if (!check_arguments("sign", arguments, loc, { Value::Type::NUMBER })) {
+  if (!check_arguments("sign", arguments, loc, {Value::Type::NUMBER})) {
     return Value::undefined.clone();
   }
   double x = arguments[0]->toDouble();
@@ -132,11 +143,14 @@ Value builtin_rands(Arguments arguments, const Location& loc)
     print_argCnt_warning("rands", arguments.size(), "3 or 4", loc, arguments.documentRoot());
     return Value::undefined.clone();
   } else if (arguments.size() == 3) {
-    if (!check_arguments("rands", arguments, loc, { Value::Type::NUMBER, Value::Type::NUMBER, Value::Type::NUMBER })) {
+    if (!check_arguments("rands", arguments, loc,
+                         {Value::Type::NUMBER, Value::Type::NUMBER, Value::Type::NUMBER})) {
       return Value::undefined.clone();
     }
   } else {
-    if (!check_arguments("rands", arguments, loc, { Value::Type::NUMBER, Value::Type::NUMBER, Value::Type::NUMBER, Value::Type::NUMBER })) {
+    if (!check_arguments(
+          "rands", arguments, loc,
+          {Value::Type::NUMBER, Value::Type::NUMBER, Value::Type::NUMBER, Value::Type::NUMBER})) {
       return Value::undefined.clone();
     }
   }
@@ -149,33 +163,35 @@ Value builtin_rands(Arguments arguments, const Location& loc)
   }
 
   double max = arguments[1]->toDouble();
-  if (std::isinf(max)  || std::isnan(max)) {
+  if (std::isinf(max) || std::isnan(max)) {
     LOG(message_group::Warning, loc, arguments.documentRoot(), "rands() range max cannot be infinite");
     max = std::numeric_limits<double>::max() / 2;
     LOG(message_group::Warning, "resetting to %1f", max);
   }
   if (max < min) {
-    double tmp = min; min = max; max = tmp;
+    double tmp = min;
+    min = max;
+    max = tmp;
   }
 
-  double numresultsd = std::abs(arguments[2]->toDouble() );
+  double numresultsd = std::abs(arguments[2]->toDouble());
   if (std::isinf(numresultsd) || std::isnan(numresultsd)) {
-    LOG(message_group::Warning, loc, arguments.documentRoot(), "rands() cannot create an infinite number of results");
+    LOG(message_group::Warning, loc, arguments.documentRoot(),
+        "rands() cannot create an infinite number of results");
     LOG(message_group::Warning, "resetting number of results to 1");
     numresultsd = 1;
   }
   auto numresults = boost_numeric_cast<size_t, double>(numresultsd);
 
   if (arguments.size() > 3) {
-    auto seed = static_cast<uint32_t>(hash_floating_point(arguments[3]->toDouble() ));
+    auto seed = static_cast<uint32_t>(hash_floating_point(arguments[3]->toDouble()));
     deterministic_rng.seed(seed);
   }
 
   VectorType vec(arguments.session());
   vec.reserve(numresults);
-  if (min >= max) { // uniform_real_distribution doesn't allow min == max
-    for (size_t i = 0; i < numresults; ++i)
-      vec.emplace_back(min);
+  if (min >= max) {  // uniform_real_distribution doesn't allow min == max
+    for (size_t i = 0; i < numresults; ++i) vec.emplace_back(min);
   } else {
     std::uniform_real_distribution<> distributor(min, max);
     for (size_t i = 0; i < numresults; ++i) {
@@ -185,7 +201,8 @@ Value builtin_rands(Arguments arguments, const Location& loc)
   return std::move(vec);
 }
 
-static std::vector<double> min_max_arguments(const Arguments& arguments, const Location& loc, const char *function_name)
+static std::vector<double> min_max_arguments(const Arguments& arguments, const Location& loc,
+                                             const char *function_name)
 {
   std::vector<double> output;
   // preserve special handling of the first argument
@@ -196,7 +213,8 @@ static std::vector<double> min_max_arguments(const Arguments& arguments, const L
   } else if (arguments.size() == 1 && arguments[0]->type() == Value::Type::VECTOR) {
     const auto& elements = arguments[0]->toVector();
     if (elements.size() == 0) {
-      print_argCnt_warning(function_name, elements.size(), "at least 1 vector element", loc, arguments.documentRoot());
+      print_argCnt_warning(function_name, elements.size(), "at least 1 vector element", loc,
+                           arguments.documentRoot());
       return {};
     }
     for (size_t i = 0; i < elements.size(); i++) {
@@ -204,7 +222,8 @@ static std::vector<double> min_max_arguments(const Arguments& arguments, const L
       // 4/20/14 semantic change per discussion:
       // break on any non-number
       if (element.type() != Value::Type::NUMBER) {
-        print_argConvert_positioned_warning(function_name, "vector element " + STR(i), element, {Value::Type::NUMBER}, loc, arguments.documentRoot());
+        print_argConvert_positioned_warning(function_name, "vector element " + STR(i), element,
+                                            {Value::Type::NUMBER}, loc, arguments.documentRoot());
         return {};
       }
       output.push_back(element.toDouble());
@@ -215,7 +234,8 @@ static std::vector<double> min_max_arguments(const Arguments& arguments, const L
       // 4/20/14 semantic change per discussion:
       // break on any non-number
       if (argument->type() != Value::Type::NUMBER) {
-        print_argConvert_positioned_warning(function_name, "argument " + STR(i), argument->clone(), {Value::Type::NUMBER}, loc, arguments.documentRoot());
+        print_argConvert_positioned_warning(function_name, "argument " + STR(i), argument->clone(),
+                                            {Value::Type::NUMBER}, loc, arguments.documentRoot());
         return {};
       }
       output.push_back(argument->toDouble());
@@ -244,7 +264,7 @@ Value builtin_max(Arguments arguments, const Location& loc)
 
 Value builtin_sin(Arguments arguments, const Location& loc)
 {
-  if (!check_arguments("sin", arguments, loc, { Value::Type::NUMBER })) {
+  if (!check_arguments("sin", arguments, loc, {Value::Type::NUMBER})) {
     return Value::undefined.clone();
   }
   return {sin_degrees(arguments[0]->toDouble())};
@@ -252,7 +272,7 @@ Value builtin_sin(Arguments arguments, const Location& loc)
 
 Value builtin_cos(Arguments arguments, const Location& loc)
 {
-  if (!check_arguments("cos", arguments, loc, { Value::Type::NUMBER })) {
+  if (!check_arguments("cos", arguments, loc, {Value::Type::NUMBER})) {
     return Value::undefined.clone();
   }
   return {cos_degrees(arguments[0]->toDouble())};
@@ -260,7 +280,7 @@ Value builtin_cos(Arguments arguments, const Location& loc)
 
 Value builtin_asin(Arguments arguments, const Location& loc)
 {
-  if (!check_arguments("asin", arguments, loc, { Value::Type::NUMBER })) {
+  if (!check_arguments("asin", arguments, loc, {Value::Type::NUMBER})) {
     return Value::undefined.clone();
   }
   return {asin_degrees(arguments[0]->toDouble())};
@@ -268,7 +288,7 @@ Value builtin_asin(Arguments arguments, const Location& loc)
 
 Value builtin_acos(Arguments arguments, const Location& loc)
 {
-  if (!check_arguments("acos", arguments, loc, { Value::Type::NUMBER })) {
+  if (!check_arguments("acos", arguments, loc, {Value::Type::NUMBER})) {
     return Value::undefined.clone();
   }
   return {acos_degrees(arguments[0]->toDouble())};
@@ -276,7 +296,7 @@ Value builtin_acos(Arguments arguments, const Location& loc)
 
 Value builtin_tan(Arguments arguments, const Location& loc)
 {
-  if (!check_arguments("tan", arguments, loc, { Value::Type::NUMBER })) {
+  if (!check_arguments("tan", arguments, loc, {Value::Type::NUMBER})) {
     return Value::undefined.clone();
   }
   return {tan_degrees(arguments[0]->toDouble())};
@@ -284,7 +304,7 @@ Value builtin_tan(Arguments arguments, const Location& loc)
 
 Value builtin_atan(Arguments arguments, const Location& loc)
 {
-  if (!check_arguments("atan", arguments, loc, { Value::Type::NUMBER })) {
+  if (!check_arguments("atan", arguments, loc, {Value::Type::NUMBER})) {
     return Value::undefined.clone();
   }
   return {atan_degrees(arguments[0]->toDouble())};
@@ -292,7 +312,7 @@ Value builtin_atan(Arguments arguments, const Location& loc)
 
 Value builtin_atan2(Arguments arguments, const Location& loc)
 {
-  if (!check_arguments("atan2", arguments, loc, { Value::Type::NUMBER, Value::Type::NUMBER })) {
+  if (!check_arguments("atan2", arguments, loc, {Value::Type::NUMBER, Value::Type::NUMBER})) {
     return Value::undefined.clone();
   }
   return {atan2_degrees(arguments[0]->toDouble(), arguments[1]->toDouble())};
@@ -300,7 +320,7 @@ Value builtin_atan2(Arguments arguments, const Location& loc)
 
 Value builtin_pow(Arguments arguments, const Location& loc)
 {
-  if (!check_arguments("pow", arguments, loc, { Value::Type::NUMBER, Value::Type::NUMBER })) {
+  if (!check_arguments("pow", arguments, loc, {Value::Type::NUMBER, Value::Type::NUMBER})) {
     return Value::undefined.clone();
   }
   return {pow(arguments[0]->toDouble(), arguments[1]->toDouble())};
@@ -308,7 +328,7 @@ Value builtin_pow(Arguments arguments, const Location& loc)
 
 Value builtin_round(Arguments arguments, const Location& loc)
 {
-  if (!check_arguments("round", arguments, loc, { Value::Type::NUMBER })) {
+  if (!check_arguments("round", arguments, loc, {Value::Type::NUMBER})) {
     return Value::undefined.clone();
   }
   return {round(arguments[0]->toDouble())};
@@ -316,7 +336,7 @@ Value builtin_round(Arguments arguments, const Location& loc)
 
 Value builtin_ceil(Arguments arguments, const Location& loc)
 {
-  if (!check_arguments("ceil", arguments, loc, { Value::Type::NUMBER })) {
+  if (!check_arguments("ceil", arguments, loc, {Value::Type::NUMBER})) {
     return Value::undefined.clone();
   }
   return {ceil(arguments[0]->toDouble())};
@@ -324,7 +344,7 @@ Value builtin_ceil(Arguments arguments, const Location& loc)
 
 Value builtin_floor(Arguments arguments, const Location& loc)
 {
-  if (!check_arguments("floor", arguments, loc, { Value::Type::NUMBER })) {
+  if (!check_arguments("floor", arguments, loc, {Value::Type::NUMBER})) {
     return Value::undefined.clone();
   }
   return {floor(arguments[0]->toDouble())};
@@ -332,7 +352,7 @@ Value builtin_floor(Arguments arguments, const Location& loc)
 
 Value builtin_sqrt(Arguments arguments, const Location& loc)
 {
-  if (!check_arguments("sqrt", arguments, loc, { Value::Type::NUMBER })) {
+  if (!check_arguments("sqrt", arguments, loc, {Value::Type::NUMBER})) {
     return Value::undefined.clone();
   }
   return {sqrt(arguments[0]->toDouble())};
@@ -340,7 +360,7 @@ Value builtin_sqrt(Arguments arguments, const Location& loc)
 
 Value builtin_exp(Arguments arguments, const Location& loc)
 {
-  if (!check_arguments("exp", arguments, loc, { Value::Type::NUMBER })) {
+  if (!check_arguments("exp", arguments, loc, {Value::Type::NUMBER})) {
     return Value::undefined.clone();
   }
   return {exp(arguments[0]->toDouble())};
@@ -348,27 +368,30 @@ Value builtin_exp(Arguments arguments, const Location& loc)
 
 Value builtin_length(Arguments arguments, const Location& loc)
 {
-  if (try_check_arguments(arguments, { Value::Type::VECTOR })) {
+  if (try_check_arguments(arguments, {Value::Type::VECTOR})) {
     return {double(arguments[0]->toVector().size())};
   }
-  if (!check_arguments("len", arguments, loc, { Value::Type::STRING })) {
+  if (try_check_arguments(arguments, {Value::Type::OBJECT})) {
+    return double(arguments[0]->toObject().values().size());
+  }
+  if (!check_arguments("len", arguments, loc, {Value::Type::STRING})) {
     return Value::undefined.clone();
   }
-  //Unicode glyph count for the length -- rather than the string (num. of bytes) length.
-  return {double( arguments[0]->toStrUtf8Wrapper().get_utf8_strlen() )};
+  // Unicode glyph count for the length -- rather than the string (num. of bytes) length.
+  return {double(arguments[0]->toStrUtf8Wrapper().get_utf8_strlen())};
 }
 
 Value builtin_log(Arguments arguments, const Location& loc)
 {
   double x, y;
   if (arguments.size() == 1) {
-    if (!check_arguments("log", arguments, loc, { Value::Type::NUMBER })) {
+    if (!check_arguments("log", arguments, loc, {Value::Type::NUMBER})) {
       return Value::undefined.clone();
     }
     x = 10.0;
     y = arguments[0]->toDouble();
   } else {
-    if (!check_arguments("log", arguments, loc, { Value::Type::NUMBER, Value::Type::NUMBER })) {
+    if (!check_arguments("log", arguments, loc, {Value::Type::NUMBER, Value::Type::NUMBER})) {
       return Value::undefined.clone();
     }
     x = arguments[0]->toDouble();
@@ -379,7 +402,7 @@ Value builtin_log(Arguments arguments, const Location& loc)
 
 Value builtin_ln(Arguments arguments, const Location& loc)
 {
-  if (!check_arguments("ln", arguments, loc, { Value::Type::NUMBER })) {
+  if (!check_arguments("ln", arguments, loc, {Value::Type::NUMBER})) {
     return Value::undefined.clone();
   }
   return {log(arguments[0]->toDouble())};
@@ -405,12 +428,13 @@ Value builtin_chr(Arguments arguments, const Location& /*loc*/)
 
 Value builtin_ord(Arguments arguments, const Location& loc)
 {
-  if (!check_arguments("ord", arguments, loc, { Value::Type::STRING })) {
+  if (!check_arguments("ord", arguments, loc, {Value::Type::STRING})) {
     return Value::undefined.clone();
   }
   const str_utf8_wrapper& arg_str = arguments[0]->toStrUtf8Wrapper();
   if (!arg_str.utf8_validate()) {
-    LOG(message_group::Warning, loc, arguments.documentRoot(), "ord() argument '%1$s' is not a valid utf8 string", arg_str.toString());
+    LOG(message_group::Warning, loc, arguments.documentRoot(),
+        "ord() argument '%1$s' is not a valid utf8 string", arg_str.toString());
     return Value::undefined.clone();
   }
 
@@ -435,14 +459,126 @@ Value builtin_concat(Arguments arguments, const Location& /*loc*/)
   return std::move(result);
 }
 
+#define OBJECT_HELP                                                                             \
+  "In an unnamed list, entries must be [key,value] to set or [key] to delete. The key must be " \
+  "<string>."
+
+static std::string builtin_object_unnamed(ObjectType& result, const Value& value, int arg_index)
+{
+  std::string prior_args = "Argument " + std::to_string(arg_index) + " ";
+
+  switch (value.type()) {
+  case Value::Type::OBJECT: {
+    const auto& obj = value.toObject();
+    for (const auto& key : obj.keys()) {
+      result.set(key, obj.get(key).clone());
+    }
+    return "";
+  }
+  case Value::Type::VECTOR: {
+    const VectorType& vector = value.toVector();
+    int element = 0;
+    for (const auto& member : vector) {
+      std::string prior_entries = "Element " + std::to_string(element++) + " ";
+
+      if (member.type() != Value::Type::VECTOR) {
+        return str(
+          boost::format("object( %s[%s<%s>] ) Entry type is not a list, it is <%s>. " OBJECT_HELP) %
+          prior_args.c_str() % prior_entries.c_str() % Value::typeName(member.type()) %
+          Value::typeName(member.type()));
+      }
+
+      const auto& entry = member.toVector();
+      switch (entry.size()) {
+      case 2:
+      case 1: {
+        if (entry[0].type() != Value::Type::STRING) {
+          const char *es = entry.size() == 1 ? "" : ",value";
+          return str(
+            boost::format(
+              "object(%s[%s[<%s>%s]]) The key of the entry is not <string> but <%s>. " OBJECT_HELP) %
+            prior_args % prior_entries % Value::typeName(entry[0].type()) % es %
+            Value::typeName(entry[0].type()));
+        }
+        const auto& key = entry[0].toString();
+        if (entry.size() == 1) {
+          result.del(key);
+        } else {
+          result.set(key, entry[1].clone());
+        }
+        break;
+      };
+
+      case 0:
+        return str(boost::format("object(%s[%s[]]) Entry is empty. " OBJECT_HELP) % prior_args.c_str() %
+                   prior_entries.c_str());
+
+      default:
+        return str(
+          boost::format(
+            "object(%s[%s[...]]) Entry length is %d, must be 1 [key] or 2 [key,value]. " OBJECT_HELP) %
+          prior_args % prior_entries % entry.size());
+      }
+    }
+    return "";
+  }
+  default:
+    return str(boost::format(
+                 "object(%s<%s>) An unnamed argument must be either <object> or <list>, it is <%s>. ") %
+               prior_args % Value::typeName(value.type()) % Value::typeName(value.type()));
+  }
+}
+/**
+    The builtin_object function takes either a named or unnamed argument.
+    A named argument is assigned with name=value to the result object. An unnamed
+    argument is either an object or a vector. An object will have its
+    entries copied, potentially overwriting earlier entries. A vector
+    must be of vectors. It can contain as member vectors:
+
+        ["k"]       deletes key k
+        ["k", v]    sets key k=v
+
+    Any other values are incorrect and will return undef and be logged as warning.
+*/
+Value builtin_object(const std::shared_ptr<const Context>& context, const FunctionCall *call)
+{
+  ObjectType result(context->session());
+  int n = 0;
+  for (const auto& argument : call->arguments) {
+    Value value = argument->getExpr()->evaluate(context);
+    if (argument->getName().empty()) {
+      const auto error = builtin_object_unnamed(result, value, n);
+      if (!error.empty()) {
+        LOG(message_group::Warning, call->location(), context->documentRoot(), error.c_str());
+        return Value::undef(error);
+      }
+    } else {
+      result.set(argument->getName(), std::move(value));
+    }
+    n++;
+  }
+  return result;
+}
+
+Value builtin_has_key(Arguments arguments, const Location& loc)
+{
+  if (!check_arguments("has_key", arguments, loc, {Value::Type::OBJECT, Value::Type::STRING})) {
+    return Value::undefined.clone();
+  }
+  const auto& obj = arguments[0]->toObject();
+  const auto& key = arguments[1]->toString();
+  return obj.contains(key);
+}
+
 Value builtin_lookup(Arguments arguments, const Location& loc)
 {
-  if (!check_arguments("lookup", arguments, loc, { Value::Type::NUMBER, Value::Type::VECTOR })) {
+  if (!check_arguments("lookup", arguments, loc, {Value::Type::NUMBER, Value::Type::VECTOR})) {
     return Value::undefined.clone();
   }
   double p = arguments[0]->toDouble();
   if (!std::isfinite(p)) {
-    LOG(message_group::Warning, loc, arguments.documentRoot(), "lookup(%1$s, ...) first argument is not a number", arguments[0]->toEchoStringNoThrow());
+    LOG(message_group::Warning, loc, arguments.documentRoot(),
+        "lookup(%1$s, ...) first argument is not a number", arguments[0]->toEchoStringNoThrow());
     return Value::undefined.clone();
   }
 
@@ -473,7 +609,7 @@ Value builtin_lookup(Arguments arguments, const Location& loc)
   if (p <= low_p) return {high_v};
   if (p >= high_p) return {low_v};
   double f = (p - low_p) / (high_p - low_p);
-  return {high_v *f + low_v * (1 - f)};
+  return {high_v * f + low_v * (1 - f)};
 }
 
 /*
@@ -526,14 +662,11 @@ Value builtin_lookup(Arguments arguments, const Location& loc)
 
  */
 
-static VectorType search(
-  const str_utf8_wrapper& find,
-  const str_utf8_wrapper& table,
-  unsigned int num_returns_per_match,
-  EvaluationSession *session
-  ) {
+static VectorType search(const str_utf8_wrapper& find, const str_utf8_wrapper& table,
+                         unsigned int num_returns_per_match, EvaluationSession *session)
+{
   VectorType returnvec(session);
-  //Unicode glyph count for the length
+  // Unicode glyph count for the length
   size_t findThisSize = find.get_utf8_strlen();
   size_t searchTableSize = table.get_utf8_strlen();
   for (size_t i = 0; i < findThisSize; ++i) {
@@ -562,16 +695,12 @@ static VectorType search(
   return returnvec;
 }
 
-static VectorType search(
-  const str_utf8_wrapper& find,
-  const VectorType& table,
-  unsigned int num_returns_per_match,
-  unsigned int index_col_num,
-  const Location& loc,
-  EvaluationSession *session
-  ) {
+static VectorType search(const str_utf8_wrapper& find, const VectorType& table,
+                         unsigned int num_returns_per_match, unsigned int index_col_num,
+                         const Location& loc, EvaluationSession *session)
+{
   VectorType returnvec(session);
-  //Unicode glyph count for the length
+  // Unicode glyph count for the length
   unsigned int findThisSize = find.get_utf8_strlen();
   unsigned int searchTableSize = table.size();
   for (size_t i = 0; i < findThisSize; ++i) {
@@ -581,10 +710,14 @@ static VectorType search(
     for (size_t j = 0; j < searchTableSize; ++j) {
       const auto& entryVec = table[j].toVector();
       if (entryVec.size() <= index_col_num) {
-        LOG(message_group::Warning, loc, session->documentRoot(), "Invalid entry in search vector at index %1$d, required number of values in the entry: %2$d. Invalid entry: %3$s", j, (index_col_num + 1), table[j].toEchoStringNoThrow());
+        LOG(message_group::Warning, loc, session->documentRoot(),
+            "Invalid entry in search vector at index %1$d, required number of values in the entry: "
+            "%2$d. Invalid entry: %3$s",
+            j, (index_col_num + 1), table[j].toEchoStringNoThrow());
         return {session};
       }
-      if (!ft.empty() && ft.get_utf8_char() == entryVec[index_col_num].toStrUtf8Wrapper().get_utf8_char()) {
+      if (!ft.empty() &&
+          ft.get_utf8_char() == entryVec[index_col_num].toStrUtf8Wrapper().get_utf8_char()) {
         matchCount++;
         if (num_returns_per_match == 1) {
           returnvec.emplace_back(double(j));
@@ -613,7 +746,8 @@ Value builtin_search(Arguments arguments, const Location& loc)
 
   const Value& findThis = arguments[0].value;
   const Value& searchTable = arguments[1].value;
-  unsigned int num_returns_per_match = (arguments.size() > 2) ? (unsigned int)arguments[2]->toDouble() : 1;
+  unsigned int num_returns_per_match =
+    (arguments.size() > 2) ? (unsigned int)arguments[2]->toDouble() : 1;
   unsigned int index_col_num = (arguments.size() > 3) ? (unsigned int)arguments[3]->toDouble() : 0;
 
   VectorType returnvec(arguments.session());
@@ -633,9 +767,11 @@ Value builtin_search(Arguments arguments, const Location& loc)
     }
   } else if (findThis.type() == Value::Type::STRING) {
     if (searchTable.type() == Value::Type::STRING) {
-      returnvec = search(findThis.toStrUtf8Wrapper(), searchTable.toStrUtf8Wrapper(), num_returns_per_match, arguments.session());
+      returnvec = search(findThis.toStrUtf8Wrapper(), searchTable.toStrUtf8Wrapper(),
+                         num_returns_per_match, arguments.session());
     } else {
-      returnvec = search(findThis.toStrUtf8Wrapper(), searchTable.toVector(), num_returns_per_match, index_col_num, loc, arguments.session());
+      returnvec = search(findThis.toStrUtf8Wrapper(), searchTable.toVector(), num_returns_per_match,
+                         index_col_num, loc, arguments.session());
     }
   } else if (findThis.type() == Value::Type::VECTOR) {
     const auto& findVec = findThis.toVector();
@@ -659,8 +795,7 @@ Value builtin_search(Arguments arguments, const Location& loc)
         }
         ++j;
       }
-      if ((num_returns_per_match == 1 && matchCount == 0) ||
-          num_returns_per_match == 0 ||
+      if ((num_returns_per_match == 1 && matchCount == 0) || num_returns_per_match == 0 ||
           num_returns_per_match > 1) {
         returnvec.emplace_back(std::move(resultvec));
       }
@@ -671,7 +806,7 @@ Value builtin_search(Arguments arguments, const Location& loc)
   return std::move(returnvec);
 }
 
-#define QUOTE(x__) # x__
+#define QUOTE(x__) #x__
 #define QUOTED(x__) QUOTE(x__)
 
 Value builtin_version(Arguments arguments, const Location& /*loc*/)
@@ -687,7 +822,8 @@ Value builtin_version(Arguments arguments, const Location& /*loc*/)
 
 Value builtin_version_num(Arguments arguments, const Location& loc)
 {
-  Value val = (arguments.size() == 0) ? builtin_version(std::move(arguments), loc) : std::move(arguments[0].value);
+  Value val =
+    (arguments.size() == 0) ? builtin_version(std::move(arguments), loc) : std::move(arguments[0].value);
   double y, m, d;
   if (!val.getVec3(y, m, d, 0)) {
     return Value::undefined.clone();
@@ -700,7 +836,7 @@ Value builtin_parent_module(Arguments arguments, const Location& loc)
   double d;
   if (arguments.size() == 0) {
     d = 1;
-  } else if (!check_arguments("parent_module", arguments, loc, { Value::Type::NUMBER })) {
+  } else if (!check_arguments("parent_module", arguments, loc, {Value::Type::NUMBER})) {
     return Value::undefined.clone();
   } else {
     d = arguments[0]->toDouble();
@@ -709,11 +845,13 @@ Value builtin_parent_module(Arguments arguments, const Location& loc)
   int n = trunc(d);
   int s = UserModule::stack_size();
   if (n < 0) {
-    LOG(message_group::Warning, loc, arguments.documentRoot(), "Negative parent module index (%1$d) not allowed", n);
+    LOG(message_group::Warning, loc, arguments.documentRoot(),
+        "Negative parent module index (%1$d) not allowed", n);
     return Value::undefined.clone();
   }
   if (n >= s) {
-    LOG(message_group::Warning, loc, arguments.documentRoot(), "Parent module index (%1$d) greater than the number of modules on the stack", n);
+    LOG(message_group::Warning, loc, arguments.documentRoot(),
+        "Parent module index (%1$d) greater than the number of modules on the stack", n);
     return Value::undefined.clone();
   }
   return {UserModule::stack_element(s - 1 - n)};
@@ -721,7 +859,7 @@ Value builtin_parent_module(Arguments arguments, const Location& loc)
 
 Value builtin_norm(Arguments arguments, const Location& loc)
 {
-  if (!check_arguments("norm", arguments, loc, { Value::Type::VECTOR })) {
+  if (!check_arguments("norm", arguments, loc, {Value::Type::VECTOR})) {
     return Value::undefined.clone();
   }
   double sum = 0;
@@ -739,7 +877,7 @@ Value builtin_norm(Arguments arguments, const Location& loc)
 
 Value builtin_cross(Arguments arguments, const Location& loc)
 {
-  if (!check_arguments("cross", arguments, loc, { Value::Type::VECTOR, Value::Type::VECTOR })) {
+  if (!check_arguments("cross", arguments, loc, {Value::Type::VECTOR, Value::Type::VECTOR})) {
     return Value::undefined.clone();
   }
 
@@ -750,22 +888,26 @@ Value builtin_cross(Arguments arguments, const Location& loc)
   }
 
   if ((v0.size() != 3) || (v1.size() != 3)) {
-    LOG(message_group::Warning, loc, arguments.documentRoot(), "Invalid vector size of parameter for cross()");
+    LOG(message_group::Warning, loc, arguments.documentRoot(),
+        "Invalid vector size of parameter for cross()");
     return Value::undefined.clone();
   }
   for (unsigned int a = 0; a < 3; ++a) {
     if ((v0[a].type() != Value::Type::NUMBER) || (v1[a].type() != Value::Type::NUMBER)) {
-      LOG(message_group::Warning, loc, arguments.documentRoot(), "Invalid value in parameter vector for cross()");
+      LOG(message_group::Warning, loc, arguments.documentRoot(),
+          "Invalid value in parameter vector for cross()");
       return Value::undefined.clone();
     }
     double d0 = v0[a].toDouble();
     double d1 = v1[a].toDouble();
     if (std::isnan(d0) || std::isnan(d1)) {
-      LOG(message_group::Warning, loc, arguments.documentRoot(), "Invalid value (NaN) in parameter vector for cross()");
+      LOG(message_group::Warning, loc, arguments.documentRoot(),
+          "Invalid value (NaN) in parameter vector for cross()");
       return Value::undefined.clone();
     }
     if (std::isinf(d0) || std::isinf(d1)) {
-      LOG(message_group::Warning, loc, arguments.documentRoot(), "Invalid value (INF) in parameter vector for cross()");
+      LOG(message_group::Warning, loc, arguments.documentRoot(),
+          "Invalid value (INF) in parameter vector for cross()");
       return Value::undefined.clone();
     }
   }
@@ -780,10 +922,9 @@ Value builtin_cross(Arguments arguments, const Location& loc)
 Value builtin_textmetrics(Arguments arguments, const Location& loc)
 {
   auto *session = arguments.session();
-  Parameters parameters = Parameters::parse(std::move(arguments), loc,
-                                            { "text", "size", "font" },
-                                            { "direction", "language", "script", "halign", "valign", "spacing" }
-                                            );
+  Parameters parameters =
+    Parameters::parse(std::move(arguments), loc, {"text", "size", "font"},
+                      {"direction", "language", "script", "halign", "valign", "spacing"});
   parameters.set_caller("textmetrics");
 
   FreetypeRenderer::Params ftparams;
@@ -834,9 +975,7 @@ Value builtin_textmetrics(Arguments arguments, const Location& loc)
 Value builtin_fontmetrics(Arguments arguments, const Location& loc)
 {
   auto *session = arguments.session();
-  Parameters parameters = Parameters::parse(std::move(arguments), loc,
-                                            { "size", "font" }
-                                            );
+  Parameters parameters = Parameters::parse(std::move(arguments), loc, {"size", "font"});
   parameters.set_caller("fontmetrics");
 
   FreetypeRenderer::Params ftparams;
@@ -874,7 +1013,8 @@ Value builtin_fontmetrics(Arguments arguments, const Location& loc)
 Value builtin_is_undef(const std::shared_ptr<const Context>& context, const FunctionCall *call)
 {
   if (call->arguments.size() != 1) {
-    print_argCnt_warning("is_undef", call->arguments.size(), "1", call->location(), context->documentRoot());
+    print_argCnt_warning("is_undef", call->arguments.size(), "1", call->location(),
+                         context->documentRoot());
     return Value::undefined.clone();
   }
   if (auto lookup = std::dynamic_pointer_cast<Lookup>(call->arguments[0]->getExpr())) {
@@ -938,230 +1078,240 @@ Value builtin_import(Arguments arguments, const Location& loc)
   auto session = arguments.session();
   const Parameters parameters = Parameters::parse(std::move(arguments), loc, {}, {"file"});
   std::string raw_filename = parameters.get("file", "");
-  std::string file = lookup_file(raw_filename, loc.filePath().parent_path().string(), parameters.documentRoot());
+  std::string file =
+    lookup_file(raw_filename, loc.filePath().parent_path().string(), parameters.documentRoot());
   return import_json(file, session, loc);
 }
 
 void register_builtin_functions()
 {
   Builtins::init("abs", new BuiltinFunction(&builtin_abs),
-  {
-    "abs(number) -> number",
-  });
+                 {
+                   "abs(number) -> number",
+                 });
 
   Builtins::init("sign", new BuiltinFunction(&builtin_sign),
-  {
-    "sign(number) -> -1, 0 or 1",
-  });
+                 {
+                   "sign(number) -> -1, 0 or 1",
+                 });
 
   Builtins::init("rands", new BuiltinFunction(&builtin_rands),
-  {
-    "rands(min, max, num_results) -> vector",
-    "rands(min, max, num_results, seed) -> vector",
-  });
+                 {
+                   "rands(min, max, num_results) -> vector",
+                   "rands(min, max, num_results, seed) -> vector",
+                 });
 
   Builtins::init("min", new BuiltinFunction(&builtin_min),
-  {
-    "min(number, number, ...) -> number",
-    "min(vector) -> number",
-  });
+                 {
+                   "min(number, number, ...) -> number",
+                   "min(vector) -> number",
+                 });
 
   Builtins::init("max", new BuiltinFunction(&builtin_max),
-  {
-    "max(number, number, ...) -> number",
-    "max(vector) -> number",
-  });
+                 {
+                   "max(number, number, ...) -> number",
+                   "max(vector) -> number",
+                 });
 
   Builtins::init("sin", new BuiltinFunction(&builtin_sin),
-  {
-    "sin(degrees) -> number",
-  });
+                 {
+                   "sin(degrees) -> number",
+                 });
 
   Builtins::init("cos", new BuiltinFunction(&builtin_cos),
-  {
-    "cos(degrees) -> number",
-  });
+                 {
+                   "cos(degrees) -> number",
+                 });
 
   Builtins::init("asin", new BuiltinFunction(&builtin_asin),
-  {
-    "asin(number) -> degrees",
-  });
+                 {
+                   "asin(number) -> degrees",
+                 });
 
   Builtins::init("acos", new BuiltinFunction(&builtin_acos),
-  {
-    "acos(number) -> degrees",
-  });
+                 {
+                   "acos(number) -> degrees",
+                 });
 
   Builtins::init("tan", new BuiltinFunction(&builtin_tan),
-  {
-    "tan(degrees) -> number",
-  });
+                 {
+                   "tan(degrees) -> number",
+                 });
 
   Builtins::init("atan", new BuiltinFunction(&builtin_atan),
-  {
-    "atan(number) -> degrees",
-  });
+                 {
+                   "atan(number) -> degrees",
+                 });
 
   Builtins::init("atan2", new BuiltinFunction(&builtin_atan2),
-  {
-    "atan2(number, number) -> degrees",
-  });
+                 {
+                   "atan2(number, number) -> degrees",
+                 });
 
   Builtins::init("round", new BuiltinFunction(&builtin_round),
-  {
-    "round(number) -> number",
-  });
+                 {
+                   "round(number) -> number",
+                 });
 
   Builtins::init("ceil", new BuiltinFunction(&builtin_ceil),
-  {
-    "ceil(number) -> number",
-  });
+                 {
+                   "ceil(number) -> number",
+                 });
 
   Builtins::init("floor", new BuiltinFunction(&builtin_floor),
-  {
-    "floor(number) -> number",
-  });
+                 {
+                   "floor(number) -> number",
+                 });
 
   Builtins::init("pow", new BuiltinFunction(&builtin_pow),
-  {
-    "pow(base, exponent) -> number",
-  });
+                 {
+                   "pow(base, exponent) -> number",
+                 });
 
   Builtins::init("sqrt", new BuiltinFunction(&builtin_sqrt),
-  {
-    "sqrt(number) -> number",
-  });
+                 {
+                   "sqrt(number) -> number",
+                 });
 
   Builtins::init("exp", new BuiltinFunction(&builtin_exp),
-  {
-    "exp(number) -> number",
-  });
+                 {
+                   "exp(number) -> number",
+                 });
 
   Builtins::init("len", new BuiltinFunction(&builtin_length),
-  {
-    "len(string) -> number",
-    "len(vector) -> number",
-  });
+                 {
+                   "len(string) -> number",
+                   "len(vector) -> number",
+                 });
 
   Builtins::init("log", new BuiltinFunction(&builtin_log),
-  {
-    "log(number) -> number",
-  });
+                 {
+                   "log(number) -> number",
+                 });
 
   Builtins::init("ln", new BuiltinFunction(&builtin_ln),
-  {
-    "ln(number) -> number",
-  });
+                 {
+                   "ln(number) -> number",
+                 });
 
   Builtins::init("str", new BuiltinFunction(&builtin_str),
-  {
-    "str(number or string, ...) -> string",
-  });
+                 {
+                   "str(number or string, ...) -> string",
+                 });
 
   Builtins::init("chr", new BuiltinFunction(&builtin_chr),
-  {
-    "chr(number) -> string",
-    "chr(vector) -> string",
-    "chr(range) -> string",
-  });
+                 {
+                   "chr(number) -> string",
+                   "chr(vector) -> string",
+                   "chr(range) -> string",
+                 });
 
-  Builtins::init("textmetrics",
-                 new BuiltinFunction(&builtin_textmetrics,
-                                     &Feature::ExperimentalTextMetricsFunctions),
-  {
-    "textmetrics(text, size, font, direction, language, script, halign, valign, spacing) -> object",
-  });
+  Builtins::init(
+    "textmetrics", new BuiltinFunction(&builtin_textmetrics, &Feature::ExperimentalTextMetricsFunctions),
+    {
+      "textmetrics(text, size, font, direction, language, script, halign, valign, spacing) -> object",
+    });
 
   Builtins::init("fontmetrics",
-                 new BuiltinFunction(&builtin_fontmetrics,
-                                     &Feature::ExperimentalTextMetricsFunctions),
-  {
-    "fontmetrics(size, font) -> object",
-  });
+                 new BuiltinFunction(&builtin_fontmetrics, &Feature::ExperimentalTextMetricsFunctions),
+                 {
+                   "fontmetrics(size, font) -> object",
+                 });
 
   Builtins::init("ord", new BuiltinFunction(&builtin_ord),
-  {
-    "ord(string) -> number",
-  });
+                 {
+                   "ord(string) -> number",
+                 });
 
   Builtins::init("concat", new BuiltinFunction(&builtin_concat),
-  {
-    "concat(number or string or vector, ...) -> vector",
-  });
+                 {
+                   "concat(number or string or vector, ...) -> vector",
+                 });
 
   Builtins::init("lookup", new BuiltinFunction(&builtin_lookup),
-  {
-    "lookup(key, <key,value> vector) -> value",
-  });
+                 {
+                   "lookup(key, <key,value> vector) -> value",
+                 });
 
-  Builtins::init("search", new BuiltinFunction(&builtin_search),
-  {
-    "search(string , string or vector [, num_returns_per_match [, index_col_num ] ] ) -> vector",
-  });
+  Builtins::init(
+    "search", new BuiltinFunction(&builtin_search),
+    {
+      "search(string , string or vector [, num_returns_per_match [, index_col_num ] ] ) -> vector",
+    });
 
   Builtins::init("version", new BuiltinFunction(&builtin_version),
-  {
-    "version() -> vector",
-  });
+                 {
+                   "version() -> vector",
+                 });
 
   Builtins::init("version_num", new BuiltinFunction(&builtin_version_num),
-  {
-    "version_num() -> number",
-  });
+                 {
+                   "version_num() -> number",
+                 });
 
   Builtins::init("norm", new BuiltinFunction(&builtin_norm),
-  {
-    "norm(vector) -> number",
-  });
+                 {
+                   "norm(vector) -> number",
+                 });
 
   Builtins::init("cross", new BuiltinFunction(&builtin_cross),
-  {
-    "cross(vector, vector) -> vector",
-  });
+                 {
+                   "cross(vector, vector) -> vector",
+                 });
 
   Builtins::init("parent_module", new BuiltinFunction(&builtin_parent_module),
-  {
-    "parent_module(number) -> string",
-  });
+                 {
+                   "parent_module(number) -> string",
+                 });
 
   Builtins::init("is_undef", new BuiltinFunction(&builtin_is_undef),
-  {
-    "is_undef(arg) -> boolean",
-  });
+                 {
+                   "is_undef(arg) -> boolean",
+                 });
 
   Builtins::init("is_list", new BuiltinFunction(&builtin_is_list),
-  {
-    "is_list(arg) -> boolean",
-  });
+                 {
+                   "is_list(arg) -> boolean",
+                 });
 
   Builtins::init("is_num", new BuiltinFunction(&builtin_is_num),
-  {
-    "is_num(arg) -> boolean",
-  });
+                 {
+                   "is_num(arg) -> boolean",
+                 });
 
   Builtins::init("is_bool", new BuiltinFunction(&builtin_is_bool),
-  {
-    "is_bool(arg) -> boolean",
-  });
+                 {
+                   "is_bool(arg) -> boolean",
+                 });
 
   Builtins::init("is_string", new BuiltinFunction(&builtin_is_string),
-  {
-    "is_string(arg) -> boolean",
-  });
+                 {
+                   "is_string(arg) -> boolean",
+                 });
 
   Builtins::init("is_function", new BuiltinFunction(&builtin_is_function),
-  {
-    "is_function(arg) -> boolean",
-  });
+                 {
+                   "is_function(arg) -> boolean",
+                 });
 
-  Builtins::init("is_object", new BuiltinFunction(&builtin_is_object,
-                                                  &Feature::ExperimentalTextMetricsFunctions),
-  {
-    "is_object(arg) -> boolean",
-  });
+  Builtins::init("is_object",
+                 new BuiltinFunction(&builtin_is_object, &Feature::ExperimentalTextMetricsFunctions),
+                 {
+                   "is_object(arg) -> boolean",
+                 });
+
+  Builtins::init("object", new BuiltinFunction(&builtin_object, &Feature::ExperimentalObjectFunction),
+                 {
+                   "object([ object, ] [ key-val list, ] key=value, ...) -> object",
+                 });
+
+  Builtins::init("has_key", new BuiltinFunction(&builtin_has_key, &Feature::ExperimentalObjectFunction),
+                 {
+                   "has_key(object, key) -> boolean",
+                 });
 
   Builtins::init("import", new BuiltinFunction(&builtin_import, &Feature::ExperimentalImportFunction),
-  {
-    "import(file) -> object",
-  });
+                 {
+                   "import(file) -> object",
+                 });
 }

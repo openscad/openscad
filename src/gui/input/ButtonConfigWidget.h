@@ -4,7 +4,7 @@
 #include <QComboBox>
 #include <QWidget>
 #include "ui_ButtonConfigWidget.h"
-#include "gui/Settings.h"
+#include "core/Settings.h"
 
 class ButtonConfigWidget : public QWidget, public Ui::Button
 {

@@ -32,23 +32,22 @@
 #include <string>
 #include <vector>
 
+#include "core/AST.h"
+#include "core/EvaluationSession.h"
 #include "core/function.h"
 #include "utils/printutils.h"
 
-Context::Context(EvaluationSession *session) :
-  ContextFrame(session),
-  parent(nullptr)
-{}
+Context::Context(EvaluationSession *session) : ContextFrame(session), parent(nullptr) {}
 
-Context::Context(const std::shared_ptr<const Context>& parent) :
-  ContextFrame(parent->evaluation_session),
-  parent(parent)
-{}
+Context::Context(const std::shared_ptr<const Context>& parent)
+  : ContextFrame(parent->evaluation_session), parent(parent)
+{
+}
 
 Context::~Context()
 {
   Context::clear();
-  if (accountingAdded)   // avoiding bad accounting where exception threw in constructor issue #3871
+  if (accountingAdded)  // avoiding bad accounting where exception threw in constructor issue #3871
     session()->contextMemoryManager().releaseContext();
 }
 
@@ -88,13 +87,14 @@ const Value& Context::lookup_variable(const std::string& name, const Location& l
 {
   boost::optional<const Value&> result = try_lookup_variable(name);
   if (!result) {
-    LOG(message_group::Warning, loc, documentRoot(), "Ignoring unknown variable '%1$s'", name);
+    LOG(message_group::Warning, loc, documentRoot(), "Ignoring unknown variable %1$s", quoteVar(name));
     return Value::undefined;
   }
   return *result;
 }
 
-boost::optional<CallableFunction> Context::lookup_function(const std::string& name, const Location& loc) const
+boost::optional<CallableFunction> Context::lookup_function(const std::string& name,
+                                                           const Location& loc) const
 {
   if (is_config_variable(name)) {
     return session()->lookup_special_function(name, loc);
@@ -109,7 +109,8 @@ boost::optional<CallableFunction> Context::lookup_function(const std::string& na
   return boost::none;
 }
 
-boost::optional<InstantiableModule> Context::lookup_module(const std::string& name, const Location& loc) const
+boost::optional<InstantiableModule> Context::lookup_module(const std::string& name,
+                                                           const Location& loc) const
 {
   if (is_config_variable(name)) {
     return session()->lookup_special_module(name, loc);
@@ -152,4 +153,4 @@ std::string Context::dump() const
   }
   return s.str();
 }
-#endif // ifdef DEBUG
+#endif  // ifdef DEBUG

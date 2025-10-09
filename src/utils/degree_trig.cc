@@ -25,22 +25,20 @@
  */
 #include "utils/degree_trig.h"
 
-//
-// Trigonometry function taking degrees, accurate for 30, 45, 60 and 90, etc.
-//
 #include <cmath>
 #include <limits>
 
+#include <Eigen/Core>
 
-static inline double rad2deg(double x)
-{
-  return x * M_RAD2DEG;
-}
+#include "geometry/linalg.h"
 
-static inline double deg2rad(double x)
-{
-  return x * M_DEG2RAD;
-}
+//
+// Trigonometry function taking degrees, accurate for 30, 45, 60 and 90, etc.
+//
+
+static inline double rad2deg(double x) { return x * M_RAD2DEG; }
+
+static inline double deg2rad(double x) { return x * M_DEG2RAD; }
 
 // this limit assumes 26+26=52 bits mantissa
 // comment/undefine it to disable domain check
@@ -53,10 +51,10 @@ double sin_degrees(double x)
     // Ok for now
   } else
 #ifdef TRIG_HUGE_VAL
-  if (x < TRIG_HUGE_VAL && x > -TRIG_HUGE_VAL)
+    if (x < TRIG_HUGE_VAL && x > -TRIG_HUGE_VAL)
 #endif
   {
-    double revolutions = floor(x / 360.0);
+    const double revolutions = floor(x / 360.0);
     x -= 360.0 * revolutions;
   }
 #ifdef TRIG_HUGE_VAL
@@ -66,7 +64,7 @@ double sin_degrees(double x)
     return std::numeric_limits<double>::quiet_NaN();
   }
 #endif
-  bool oppose = x >= 180.0;
+  const bool oppose = x >= 180.0;
   if (oppose) x -= 180.0;
   if (x > 90.0) x = 180.0 - x;
   if (x < 45.0) {
@@ -76,7 +74,7 @@ double sin_degrees(double x)
     x = M_SQRT1_2;
   } else if (x == 60.0) {
     x = M_SQRT3_4;
-  } else { // Inf/Nan would fall here
+  } else {  // Inf/Nan would fall here
     x = cos(deg2rad(90.0 - x));
   }
   return oppose ? -x : x;
@@ -89,10 +87,10 @@ double cos_degrees(double x)
     // Ok for now
   } else
 #ifdef TRIG_HUGE_VAL
-  if (x < TRIG_HUGE_VAL && x > -TRIG_HUGE_VAL)
+    if (x < TRIG_HUGE_VAL && x > -TRIG_HUGE_VAL)
 #endif
   {
-    double revolutions = floor(x / 360.0);
+    const double revolutions = floor(x / 360.0);
     x -= 360.0 * revolutions;
   }
 #ifdef TRIG_HUGE_VAL
@@ -115,7 +113,7 @@ double cos_degrees(double x)
     x = M_SQRT1_2;
   } else if (x == 30.0) {
     x = M_SQRT3_4;
-  } else { // Inf/Nan would fall here
+  } else {  // Inf/Nan would fall here
     x = cos(deg2rad(x));
   }
   return oppose ? -x : x;
@@ -123,13 +121,13 @@ double cos_degrees(double x)
 
 double tan_degrees(double x)
 {
-  int cycles = floor((x) / 180.0);
+  const int cycles = floor((x) / 180.0);
   // use positive tests because of possible Inf/NaN
   if (x < 180.0 && x >= 0.0) {
     // Ok for now
   } else
 #ifdef TRIG_HUGE_VAL
-  if (x < TRIG_HUGE_VAL && x > -TRIG_HUGE_VAL)
+    if (x < TRIG_HUGE_VAL && x > -TRIG_HUGE_VAL)
 #endif
   {
     x -= 180.0 * cycles;
@@ -141,7 +139,7 @@ double tan_degrees(double x)
     return std::numeric_limits<double>::quiet_NaN();
   }
 #endif
-  bool oppose = x > 90.0;
+  const bool oppose = x > 90.0;
   if (oppose) x = 180.0 - x;
   if (x == 0.0) {
     x = (cycles % 2) == 0 ? 0.0 : -0.0;
@@ -152,9 +150,8 @@ double tan_degrees(double x)
   } else if (x == 60.0) {
     x = M_SQRT3;
   } else if (x == 90.0) {
-    x = (cycles % 2) == 0 ?
-      std::numeric_limits<double>::infinity() :
-      -std::numeric_limits<double>::infinity();
+    x = (cycles % 2) == 0 ? std::numeric_limits<double>::infinity()
+                          : -std::numeric_limits<double>::infinity();
   } else {
     x = tan(deg2rad(x));
   }
@@ -206,9 +203,11 @@ Matrix3d angle_axis_degrees(double a, Vector3d v)
   if (m > 0) {
     const Vector3d Cv = v * ((1 - c) / m);
     const Vector3d us = v.normalized() * s;
+    // clang-format off
     M << Cv[0] * v[0] + c,     Cv[1] * v[0] - us[2], Cv[2] * v[0] + us[1],
-      Cv[0] * v[1] + us[2], Cv[1] * v[1] + c,     Cv[2] * v[1] - us[0],
-      Cv[0] * v[2] - us[1], Cv[1] * v[2] + us[0], Cv[2] * v[2] + c;
+         Cv[0] * v[1] + us[2], Cv[1] * v[1] + c,     Cv[2] * v[1] - us[0],
+         Cv[0] * v[2] - us[1], Cv[1] * v[2] + us[0], Cv[2] * v[2] + c;
+    // clang-format on
   }
   return M;
 }
@@ -220,9 +219,11 @@ Matrix3d rotate_degrees(double angle)
   Eigen::Matrix3d m;
   const auto s = sin_degrees(angle);
   const auto c = cos_degrees(angle);
+  // clang-format off
   m <<
     c, -s,  0,
     s,  c,  0,
     0,  0,  1;
+  // clang-format on
   return m;
 }

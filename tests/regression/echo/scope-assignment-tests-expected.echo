@@ -1,0 +1,43 @@
+WARNING: "e" was assigned on line 49 but was overwritten in file scope-assignment-tests.scad, line 52
+WARNING: "f" was assigned on line 58 but was overwritten in file scope-assignment-tests.scad, line 61
+WARNING: "g" was assigned on line 67 but was overwritten in file scope-assignment-tests.scad, line 69
+WARNING: "h" was assigned on line 73 but was overwritten in file scope-assignment-tests.scad, line 75
+WARNING: Ignoring unknown variable "h" in file scope-assignment-tests.scad, line 75
+WARNING: undefined operation (undefined * number) in file scope-assignment-tests.scad, line 75
+ECHO: "union scope"
+ECHO: "local a (5):", 5
+ECHO: "global a (4):", 4
+ECHO: "module scope:"
+WARNING: Parameter "b" is overwritten with a literal in file scope-assignment-tests.scad, line 12
+ECHO: "local b (7)", 7
+WARNING: Parameter "b" is overwritten with a literal in file scope-assignment-tests.scad, line 12
+ECHO: "local b (7)", 7
+ECHO: "module children scope:"
+WARNING: Parameter "b2" is overwritten with a literal in file scope-assignment-tests.scad, line 20
+ECHO: "b2 (3)", 3
+ECHO: "for loop (c = 0,1,25):"
+ECHO: "c", 0
+ECHO: "c", 1
+ECHO: "c", 25
+ECHO: "if scope:"
+ECHO: "d (8)", 8
+ECHO: "else scope:"
+ECHO: "d (9)", 9
+ECHO: "anonymous inner scope (scope ignored):"
+ECHO: "outer e (3)", 3
+ECHO: "inner e (3)", 3
+ECHO: "anonymous scope (scope ignored):"
+ECHO: "outer f (2)", 2
+ECHO: "inner f (2)", 2
+ECHO: "anonymous scope reassign:"
+ECHO: "g (2)", 2
+ECHO: "anonymous reassign using outer (scope ignored)", undef
+ECHO: "h (undef)", undef
+ECHO: "override variable in assign scope:"
+DEPRECATED: The assign() module will be removed in future releases. Use a regular assignment instead. in file scope-assignment-tests.scad, line 80
+ECHO: "i (10)", 10
+ECHO: "group scope:"
+ECHO: "local a (11)", 11
+ECHO: "legimate case for module parameter overwrite: (see #2628)"
+ECHO: "parameter a(20)", 20
+ECHO: "local a(10)", 10

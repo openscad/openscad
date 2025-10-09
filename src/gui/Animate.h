@@ -31,12 +31,12 @@ public:
   bool dumpPictures();
   int nextFrame();
 
-  QTimer *animate_timer;
+  QTimer *animateTimer;
 
   void setMainWindow(MainWindow *mainWindow);
 
   const QList<QAction *>& actions();
-  double getAnim_tval();
+  double getAnimTval();
 
 public slots:
   void animateUpdate();
@@ -53,29 +53,29 @@ public slots:
 protected:
   void resizeEvent(QResizeEvent *event) override;
 
-
 private:
   MainWindow *mainWindow;
 
   void updatePauseButtonIcon();
-  void initVCR();
+  void connectAction(QAction *, QPushButton *);
 
-  double anim_tval;
-  bool anim_dumping;
-  int anim_dump_start_step;
-  int anim_step;
-  int anim_numsteps;
+  double animTVal;
+  bool animDumping;
+  int animDumpStartStep;
+  int animStep;
+  int animNumSteps;
 
-  bool isLightTheme();
-
-  bool fps_ok;
-  bool t_ok;
+  bool fpsOK;
+  bool tOK;
   bool steps_ok;
 
   int initMinWidth;
 
-  QList<QAction *> action_list;
-  void createActionAndPrepareButton(const QIcon& icon, const QString& description, const std::string& actionName, QPushButton *button);
+  QIcon iconRun;
+  QIcon iconPause;
+  QIcon iconDisabled;
+  QList<QAction *> actionList;
+  QColor errorBlendColor{"red"};
 
 signals:
 

@@ -44,12 +44,13 @@ private:
   std::mutex resizeMutex;
   QString yellowHintBackground();
   QString redHintBackground();
+  QColor warnBlendColor{"yellow"};
+  QColor errorBlendColor{"red"};
 
 signals:
   void openFile(const QString, int);
 
 private:
-  bool isLightTheme();
   void resizeToRatio();
   int maxH;
   int maxW;

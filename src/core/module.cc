@@ -26,26 +26,57 @@
 
 #include "core/module.h"
 
+#include <utility>
+#include <string>
 #include <memory>
 #include "core/Arguments.h"
 #include "core/Children.h"
 #include "core/Context.h"
 #include "core/ModuleInstantiation.h"
 
-BuiltinModule::BuiltinModule(std::shared_ptr<AbstractNode>(*instantiate)(const ModuleInstantiation *, const std::shared_ptr<const Context>&), const Feature *feature) :
-  AbstractModule(feature),
-  do_instantiate(instantiate)
-{}
-
-BuiltinModule::BuiltinModule(std::shared_ptr<AbstractNode>(*instantiate)(const ModuleInstantiation *, Arguments, const Children&), const Feature *feature) :
-  AbstractModule(feature)
+BuiltinModule::BuiltinModule(std::shared_ptr<AbstractNode> (*instantiate)(
+                               const ModuleInstantiation *, const std::shared_ptr<const Context>&),
+                             const Feature *feature)
+  : AbstractModule(feature), do_instantiate(instantiate)
 {
-  do_instantiate = [instantiate](const ModuleInstantiation *inst, const std::shared_ptr<const Context>& context) {
-      return instantiate(inst, Arguments(inst->arguments, context), Children(&inst->scope, context));
-    };
 }
 
-std::shared_ptr<AbstractNode> BuiltinModule::instantiate(const std::shared_ptr<const Context>& /*defining_context*/, const ModuleInstantiation *inst, const std::shared_ptr<const Context>& context) const
+BuiltinModule::BuiltinModule(std::shared_ptr<AbstractNode> (*instantiate)(const ModuleInstantiation *,
+                                                                          Arguments, const Children&),
+                             const Feature *feature)
+  : AbstractModule(feature)
+{
+  do_instantiate = [instantiate](const ModuleInstantiation *inst,
+                                 const std::shared_ptr<const Context>& context) {
+    return instantiate(inst, Arguments(inst->arguments, context), Children(inst->scope, context));
+  };
+}
+
+BuiltinModule::BuiltinModule(std::shared_ptr<AbstractNode> (*instantiate)(const ModuleInstantiation *,
+                                                                          Arguments),
+                             const Feature *feature)
+  : AbstractModule(feature)
+{
+  do_instantiate = [instantiate](const ModuleInstantiation *inst,
+                                 const std::shared_ptr<const Context>& context) {
+    Arguments arguments(inst->arguments, context);
+    noChildren(inst, arguments);
+    return instantiate(inst, std::move(arguments));
+  };
+}
+
+std::shared_ptr<AbstractNode> BuiltinModule::instantiate(
+  const std::shared_ptr<const Context>& /*defining_context*/, const ModuleInstantiation *inst,
+  const std::shared_ptr<const Context>& context) const
 {
   return do_instantiate(inst, context);
+}
+
+void BuiltinModule::noChildren(const ModuleInstantiation *inst, Arguments& arguments, std::string auxmsg)
+{
+  if (inst->scope->hasChildren()) {
+    LOG(message_group::Warning, inst->location(), arguments.documentRoot(),
+        "module %1$s() does not support child modules%2$s%3$s", inst->name(),
+        auxmsg.size() != 0 ? " " : "", auxmsg);
+  }
 }

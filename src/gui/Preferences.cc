@@ -26,10 +26,13 @@
 
 #include "gui/Preferences.h"
 
+#include <unordered_map>
+#include <vector>
 #include <QFont>
 #include <QFontComboBox>
 #include <QMainWindow>
 #include <QObject>
+#include <QDialog>
 #include <QSizePolicy>
 #include <QSpacerItem>
 #include <QString>
@@ -38,6 +41,7 @@
 #include <tuple>
 #include <cassert>
 #include <list>
+#include <QMenu>
 #include <QActionGroup>
 #include <QMessageBox>
 #include <QFontDatabase>
@@ -48,11 +52,15 @@
 #include <QStatusBar>
 #include <QSettings>
 #include <QTextDocument>
+#include <QListWidget>
+#include <QListWidgetItem>
 #include <boost/algorithm/string.hpp>
+#include "OctoPrintApiKeyDialog.h"
 #include "geometry/GeometryCache.h"
 #include "gui/AutoUpdater.h"
 #include "Feature.h"
-#include "gui/Settings.h"
+#include "core/Settings.h"
+#include "utils/printutils.h"
 #ifdef ENABLE_CGAL
 #include "geometry/cgal/CGALCache.h"
 #endif
@@ -66,21 +74,22 @@
 
 #include <string>
 
-Preferences *Preferences::instance = nullptr;
+static const char *featurePropertyName = "FeatureProperty";
 
-const char *Preferences::featurePropertyName = "FeatureProperty";
+using S = Settings::Settings;
+
 Q_DECLARE_METATYPE(Feature *);
 
 class SettingsReader : public Settings::SettingsVisitor
 {
   QSettingsCached settings;
 
-  void handle(Settings::SettingsEntry& entry) const override
+  void handle(Settings::SettingsEntryBase& entry) const override
   {
     if (settings.contains(QString::fromStdString(entry.key()))) {
       std::string value = settings.value(QString::fromStdString(entry.key())).toString().toStdString();
       PRINTDB("SettingsReader R: %s = '%s'", entry.key() % value);
-      entry.decode(value);
+      entry.set(value);
     }
   }
 };
@@ -88,9 +97,23 @@ class SettingsReader : public Settings::SettingsVisitor
 Preferences::Preferences(QWidget *parent) : QMainWindow(parent)
 {
   setupUi(this);
+
+  std::list<std::string> names = ColorMap::inst()->colorSchemeNames(true);
+  QStringList renderColorSchemes;
+  for (const auto& name : names) renderColorSchemes << name.c_str();
+
+  syntaxHighlight->clear();
+  colorSchemeChooser->clear();
+  colorSchemeChooser->addItems(renderColorSchemes);
+  init();
+  AxisConfig->init();
+  setupFeaturesPage();
+  setup3DPrintPage();
+  updateGUI();
 }
 
-void Preferences::init() {
+void Preferences::init()
+{
   // Editor pane
   // Setup default font (Try to use a nice monospace font)
   const QFont font = QFontDatabase::systemFont(QFontDatabase::FixedFont);
@@ -99,14 +122,17 @@ void Preferences::init() {
   this->defaultmap["editor/fontsize"] = 12;
   this->defaultmap["editor/syntaxhighlight"] = "For Light Background";
 
+  const QFont applicationFont = QTextDocument().defaultFont();
+  this->defaultmap["advanced/applicationFontFamily"] = applicationFont.family();
+  this->defaultmap["advanced/applicationFontSize"] = applicationFont.pointSize();
+
   // Leave Console font with default if user has not chosen another.
-  const QFont font2 = QTextDocument().defaultFont();
-  this->defaultmap["advanced/consoleFontFamily"] = font2.family();
-  this->defaultmap["advanced/consoleFontSize"] = font2.pointSize();
+  this->defaultmap["advanced/consoleFontFamily"] = applicationFont.family();
+  this->defaultmap["advanced/consoleFontSize"] = applicationFont.pointSize();
 
   // Leave Customizer font with default if user has not chosen another.
-  this->defaultmap["advanced/customizerFontFamily"] = font2.family();
-  this->defaultmap["advanced/customizerFontSize"] = font2.pointSize();
+  this->defaultmap["advanced/customizerFontFamily"] = applicationFont.family();
+  this->defaultmap["advanced/customizerFontSize"] = applicationFont.pointSize();
 
 #ifdef Q_OS_MACOS
   this->defaultmap["editor/ctrlmousewheelzoom"] = false;
@@ -115,20 +141,28 @@ void Preferences::init() {
 #endif
 
   createFontSizeMenu(fontSize, "editor/fontsize");
+  createFontSizeMenu(comboBoxApplicationFontSize, "advanced/applicationFontSize");
   createFontSizeMenu(consoleFontSize, "advanced/consoleFontSize");
   createFontSizeMenu(customizerFontSize, "advanced/customizerFontSize");
 
   // Setup default settings
   this->defaultmap["advanced/opencsg_show_warning"] = true;
-  this->defaultmap["advanced/polysetCacheSize"] = qulonglong(GeometryCache::instance()->maxSizeMB()) * 1024ul * 1024ul;
-  this->defaultmap["advanced/polysetCacheSizeMB"] = getValue("advanced/polysetCacheSize").toULongLong() / (1024ul * 1024ul); // carry over old settings if they exist
-  this->defaultmap["advanced/cgalCacheSize"] = qulonglong(CGALCache::instance()->maxSizeMB()) * 1024ul * 1024ul;
-  this->defaultmap["advanced/cgalCacheSizeMB"] = getValue("advanced/cgalCacheSize").toULongLong() / (1024ul * 1024ul); // carry over old settings if they exist
+  this->defaultmap["advanced/polysetCacheSize"] =
+    qulonglong(GeometryCache::instance()->maxSizeMB()) * 1024ul * 1024ul;
+  this->defaultmap["advanced/polysetCacheSizeMB"] =
+    getValue("advanced/polysetCacheSize").toULongLong() /
+    (1024ul * 1024ul);  // carry over old settings if they exist
+  this->defaultmap["advanced/cgalCacheSize"] =
+    qulonglong(CGALCache::instance()->maxSizeMB()) * 1024ul * 1024ul;
+  this->defaultmap["advanced/cgalCacheSizeMB"] =
+    getValue("advanced/cgalCacheSize").toULongLong() /
+    (1024ul * 1024ul);  // carry over old settings if they exist
   this->defaultmap["advanced/openCSGLimit"] = RenderSettings::inst()->openCSGTermLimit;
   this->defaultmap["advanced/forceGoldfeather"] = false;
   this->defaultmap["advanced/undockableWindows"] = false;
   this->defaultmap["advanced/reorderWindows"] = true;
-  this->defaultmap["advanced/renderBackend3D"] = QString::fromStdString(renderBackend3DToString(RenderSettings::inst()->backend3D));
+  this->defaultmap["advanced/renderBackend3D"] =
+    QString::fromStdString(renderBackend3DToString(RenderSettings::inst()->backend3D));
   this->defaultmap["launcher/showOnStartup"] = true;
   this->defaultmap["advanced/localization"] = true;
   this->defaultmap["advanced/autoReloadRaise"] = false;
@@ -141,11 +175,12 @@ void Preferences::init() {
   this->defaultmap["advanced/enableTraceUsermoduleParameters"] = true;
   this->defaultmap["advanced/enableParameterCheck"] = true;
   this->defaultmap["advanced/enableParameterRangeCheck"] = false;
-  this->defaultmap["view/hideConsole"] = false;
   this->defaultmap["view/hideEditor"] = false;
-  this->defaultmap["view/hideErrorLog"] = false;
-  this->defaultmap["view/hideAnimate"] = false;
+  this->defaultmap["view/hideConsole"] = false;
+  this->defaultmap["view/hideErrorLog"] = true;
+  this->defaultmap["view/hideAnimate"] = true;
   this->defaultmap["view/hideCustomizer"] = true;
+  this->defaultmap["view/hideFontList"] = true;
   this->defaultmap["view/hideViewportControl"] = true;
   this->defaultmap["editor/enableAutocomplete"] = true;
   this->defaultmap["editor/characterThreshold"] = 1;
@@ -168,9 +203,11 @@ void Preferences::init() {
 #endif
   addPrefPage(group, prefsActionInput, pageInput);
   addPrefPage(group, prefsActionInputButton, pageInputButton);
+  addPrefPage(group, prefsActionMouse, pageMouse);
   addPrefPage(group, prefsActionAdvanced, pageAdvanced);
+  addPrefPage(group, prefsActionDialogs, pageDialogs);
 
-  connect(group, SIGNAL(triggered(QAction*)), this, SLOT(actionTriggered(QAction*)));
+  connect(group, &QActionGroup::triggered, this, &Preferences::actionTriggered);
 
   prefsAction3DView->setChecked(true);
   this->actionTriggered(this->prefsAction3DView);
@@ -179,11 +216,12 @@ void Preferences::init() {
   this->defaultmap["3dview/colorscheme"] = "Cornfield";
 
   // Advanced pane
-  const int absolute_max = (sizeof(void *) == 8) ? 1024 * 1024 : 2048; // 1TB for 64bit or 2GB for 32bit
+  const int absolute_max = (sizeof(void *) == 8) ? 1024 * 1024 : 2048;  // 1TB for 64bit or 2GB for 32bit
   QValidator *memvalidator = new QIntValidator(1, absolute_max, this);
   auto *uintValidator = new QIntValidator(this);
   uintValidator->setBottom(0);
-  QValidator *validator1 = new QRegularExpressionValidator(QRegularExpression("[1-9][0-9]{0,1}"), this); // range between 1-99 both inclusive
+  QValidator *validator1 = new QRegularExpressionValidator(QRegularExpression("[1-9][0-9]{0,1}"),
+                                                           this);  // range between 1-99 both inclusive
 #ifdef ENABLE_CGAL
   this->cgalCacheSizeMBEdit->setValidator(memvalidator);
 #endif
@@ -194,6 +232,14 @@ void Preferences::init() {
   this->lineEditCharacterThreshold->setValidator(validator1);
   this->lineEditStepSize->setValidator(validator1);
   this->traceDepthEdit->setValidator(uintValidator);
+
+  auto menu = new QMenu();
+  menu->addAction(actionLocalAppParameterFile);
+  menu->addAction(actionLocalAppParameterDir);
+  menu->addAction(actionLocalAppParameterExtension);
+  menu->addAction(actionLocalAppParameterSource);
+  menu->addAction(actionLocalAppParameterSourceDir);
+  toolButtonLocalAppParameterAddFile->setMenu(menu);
 
   Settings::Settings::visit(SettingsReader());
 
@@ -211,18 +257,31 @@ void Preferences::init() {
 
   initComboBox(this->comboBoxOctoPrintFileFormat, Settings::Settings::octoPrintFileFormat);
   initComboBox(this->comboBoxOctoPrintAction, Settings::Settings::octoPrintAction);
-  initComboBox(this->comboBoxLocalSlicerFileFormat, Settings::Settings::localSlicerFileFormat);
+  initComboBox(this->comboBoxLocalAppFileFormat, Settings::Settings::localAppFileFormat);
   initComboBox(this->comboBoxRenderBackend3D, Settings::Settings::renderBackend3D);
   initComboBox(this->comboBoxToolbarExport3D, Settings::Settings::toolbarExport3D);
   initComboBox(this->comboBoxToolbarExport2D, Settings::Settings::toolbarExport2D);
 
+  initListBox(this->listWidgetLocalAppParams, Settings::Settings::localAppParameterList);
+  connect(this->listWidgetLocalAppParams->model(), &QAbstractItemModel::dataChanged, this,
+          &Preferences::listWidgetLocalAppParamsModelDataChanged);
+  connect(this->listWidgetLocalAppParams->model(), &QAbstractItemModel::rowsInserted, this,
+          &Preferences::listWidgetLocalAppParamsModelDataChanged);
+  connect(this->listWidgetLocalAppParams->model(), &QAbstractItemModel::rowsRemoved, this,
+          &Preferences::listWidgetLocalAppParamsModelDataChanged);
+
   installIgnoreWheelWhenNotFocused(this);
 
   const QString slicer = QString::fromStdString(Settings::Settings::octoPrintSlicerEngine.value());
-  const QString slicerDesc = QString::fromStdString(Settings::Settings::octoPrintSlicerEngineDesc.value());
+  const QString slicerDesc =
+    QString::fromStdString(Settings::Settings::octoPrintSlicerEngineDesc.value());
   const QString profile = QString::fromStdString(Settings::Settings::octoPrintSlicerProfile.value());
-  const QString profileDesc = QString::fromStdString(Settings::Settings::octoPrintSlicerProfileDesc.value());
-  BlockSignals<QLineEdit *>(this->lineEditLocalSlicer)->setText(QString::fromStdString(Settings::Settings::localSlicerExecutable.value()));
+  const QString profileDesc =
+    QString::fromStdString(Settings::Settings::octoPrintSlicerProfileDesc.value());
+  BlockSignals<QLineEdit *>(this->lineEditLocalAppExecutable)
+    ->setText(QString::fromStdString(Settings::Settings::localAppExecutable.value()));
+  BlockSignals<QLineEdit *>(this->lineEditLocalAppTempDir)
+    ->setText(QString::fromStdString(Settings::Settings::localAppTempDir.value()));
   this->comboBoxOctoPrintSlicingEngine->clear();
   this->comboBoxOctoPrintSlicingEngine->addItem(_("<Default>"), QVariant{""});
   if (!slicer.isEmpty()) {
@@ -237,10 +296,16 @@ void Preferences::init() {
   emit editorConfigChanged();
 }
 
-Preferences::~Preferences()
+Preferences::~Preferences() { removeDefaultSettings(); }
+
+void Preferences::update()
 {
-  removeDefaultSettings();
-  instance = nullptr;
+  this->checkBoxAlwaysShowExportPdfDialog->setChecked(
+    Settings::SettingsExportPdf::exportPdfAlwaysShowDialog.value());
+  this->checkBoxAlwaysShowExport3mfDialog->setChecked(
+    Settings::SettingsExport3mf::export3mfAlwaysShowDialog.value());
+  this->checkBoxAlwaysShowPrintServiceDialog->setChecked(
+    Settings::Settings::printServiceAlwaysShowDialog.value());
 }
 
 /**
@@ -329,7 +394,8 @@ void Preferences::setupFeaturesPage()
     this->defaultmap[featurekey] = false;
 
     // spacer item between the features, just for some optical separation
-    gridLayoutExperimentalFeatures->addItem(new QSpacerItem(1, 8, QSizePolicy::Expanding, QSizePolicy::Fixed), row, 1, 1, 1, Qt::AlignCenter);
+    gridLayoutExperimentalFeatures->addItem(
+      new QSpacerItem(1, 8, QSizePolicy::Expanding, QSizePolicy::Fixed), row, 1, 1, 1, Qt::AlignCenter);
     row++;
 
     auto *cb = new QCheckBox(QString::fromStdString(feature->get_name()), pageFeatures);
@@ -341,7 +407,7 @@ void Preferences::setupFeaturesPage()
     feature->enable(value);
     cb->setChecked(value);
     cb->setProperty(featurePropertyName, QVariant::fromValue<Feature *>(feature));
-    connect(cb, SIGNAL(toggled(bool)), this, SLOT(featuresCheckBoxToggled(bool)));
+    connect(cb, &QCheckBox::toggled, this, &Preferences::featuresCheckBoxToggled);
     gridLayoutExperimentalFeatures->addWidget(cb, row, 0, 1, 2, Qt::AlignLeading);
     row++;
 
@@ -354,44 +420,41 @@ void Preferences::setupFeaturesPage()
   // first row is not constrained in size by the visible controls. The
   // fixed size space essentially gives the first row the width of the
   // spacer item itself.
-  gridLayoutExperimentalFeatures->addItem(new QSpacerItem(20, 0, QSizePolicy::Fixed, QSizePolicy::Fixed), 1, 0, 1, 1, Qt::AlignLeading);
+  gridLayoutExperimentalFeatures->addItem(new QSpacerItem(20, 0, QSizePolicy::Fixed, QSizePolicy::Fixed),
+                                          1, 0, 1, 1, Qt::AlignLeading);
 }
 
 void Preferences::setup3DPrintPage()
 {
   const auto& currentPrintService = Settings::Settings::defaultPrintService.value();
   const auto currentPrintServiceName =
-      QString::fromStdString(Settings::Settings::printServiceName.value());
-
-  instance->comboBoxDefaultPrintService->clear();
+    QString::fromStdString(Settings::Settings::printServiceName.value());
+  checkBoxEnableRemotePrintServices->setChecked(Settings::Settings::enableRemotePrintServices.value());
+  comboBoxDefaultPrintService->clear();
   const std::unordered_map<std::string, QString> services = {
-      {"NONE", _("NONE")},
-      {"OCTOPRINT", _("OctoPrint")},
-      {"LOCALSLICER", _("Local Slicer")},
+    {"NONE", _("NONE")},
+    {"OCTOPRINT", _("OctoPrint")},
+    {"LOCAL_APPLICATION", _("Local Application")},
   };
 
-  instance->comboBoxDefaultPrintService->addItem(services.at("NONE"),
-                                                 QStringList{"NONE", ""});
-  for (const auto &printServiceItem : PrintService::getPrintServices()) {
-    const auto &key = printServiceItem.first;
-    const auto &printService = printServiceItem.second;
-    const auto settingValue =
-        QStringList{"PRINT_SERVICE", QString::fromStdString(key)};
+  comboBoxDefaultPrintService->addItem(services.at("NONE"), QStringList{"NONE", ""});
+  for (const auto& printServiceItem : PrintService::getPrintServices()) {
+    const auto& key = printServiceItem.first;
+    const auto& printService = printServiceItem.second;
+    const auto settingValue = QStringList{"PRINT_SERVICE", QString::fromStdString(key)};
     const auto displayName = QString(printService->getDisplayName());
-    instance->comboBoxDefaultPrintService->addItem(displayName, settingValue);
+    comboBoxDefaultPrintService->addItem(displayName, settingValue);
     if (key == currentPrintServiceName.toStdString()) {
-      instance->comboBoxDefaultPrintService->setCurrentText(
-          QString(printService->getDisplayName()));
+      comboBoxDefaultPrintService->setCurrentText(QString(printService->getDisplayName()));
     }
   }
-  instance->comboBoxDefaultPrintService->addItem(services.at("OCTOPRINT"),
-                                                 QStringList{"OCTOPRINT", ""});
-  instance->comboBoxDefaultPrintService->addItem(services.at("LOCALSLICER"),
-                                                 QStringList{"LOCALSLICER", ""});
+  comboBoxDefaultPrintService->addItem(services.at("OCTOPRINT"), QStringList{"OCTOPRINT", ""});
+  comboBoxDefaultPrintService->addItem(services.at("LOCAL_APPLICATION"),
+                                       QStringList{"LOCAL_APPLICATION", ""});
 
   auto it = services.find(currentPrintService);
   if (it != services.end()) {
-    instance->comboBoxDefaultPrintService->setCurrentText(it->second);
+    comboBoxDefaultPrintService->setCurrentText(it->second);
   }
 }
 
@@ -459,8 +522,7 @@ void Preferences::on_checkNowButton_clicked()
   }
 }
 
-void
-Preferences::on_reorderCheckBox_toggled(bool state)
+void Preferences::on_reorderCheckBox_toggled(bool state)
 {
   if (!state) {
     undockCheckBox->setChecked(false);
@@ -471,16 +533,14 @@ Preferences::on_reorderCheckBox_toggled(bool state)
   emit updateReorderMode(state);
 }
 
-void
-Preferences::on_undockCheckBox_toggled(bool state)
+void Preferences::on_undockCheckBox_toggled(bool state)
 {
   QSettingsCached settings;
   settings.setValue("advanced/undockableWindows", state);
   emit updateUndockMode(state);
 }
 
-void
-Preferences::on_openCSGWarningBox_toggled(bool state)
+void Preferences::on_openCSGWarningBox_toggled(bool state)
 {
   QSettingsCached settings;
   settings.setValue("advanced/opencsg_show_warning", state);
@@ -551,13 +611,6 @@ void Preferences::on_checkBoxMouseCentricZoom_toggled(bool val)
   emit updateMouseCentricZoom(val);
 }
 
-void Preferences::on_checkBoxMouseSwapButtons_toggled(bool val)
-{
-  Settings::Settings::mouseSwapButtons.setValue(val);
-  writeSettings();
-  emit updateMouseSwapButtons(val);
-}
-
 void Preferences::on_spinBoxIndentationWidth_valueChanged(int val)
 {
   Settings::Settings::indentationWidth.setValue(val);
@@ -577,8 +630,11 @@ void Preferences::on_comboBoxLineWrap_activated(int val)
 
 void Preferences::on_comboBoxLineWrapIndentationStyle_activated(int val)
 {
-  //Next Line disables the Indent Spin-Box when 'Same' or 'Indented' is chosen from LineWrapIndentationStyle Combo-Box.
-  spinBoxLineWrapIndentationIndent->setDisabled(comboBoxLineWrapIndentationStyle->currentData() == "Same" || comboBoxLineWrapIndentationStyle->currentData() == "Indented");
+  // Next Line disables the Indent Spin-Box when 'Same' or 'Indented' is chosen from
+  // LineWrapIndentationStyle Combo-Box.
+  spinBoxLineWrapIndentationIndent->setDisabled(
+    comboBoxLineWrapIndentationStyle->currentData() == "Same" ||
+    comboBoxLineWrapIndentationStyle->currentData() == "Indented");
 
   applyComboBox(comboBoxLineWrapIndentationStyle, val, Settings::Settings::lineWrapIndentationStyle);
 }
@@ -684,6 +740,28 @@ void Preferences::on_consoleMaxLinesEdit_textChanged(const QString& text)
   settings.setValue("advanced/consoleMaxLines", text);
 }
 
+void Preferences::fireApplicationFontChanged() const
+{
+  const auto family = getValue("advanced/applicationFontFamily").toString();
+  const auto size = getValue("advanced/applicationFontSize").toUInt();
+  emit applicationFontChanged(family, size);
+}
+
+void Preferences::on_fontComboBoxApplicationFontFamily_currentFontChanged(const QFont& font)
+{
+  QSettingsCached settings;
+  settings.setValue("advanced/applicationFontFamily", font.family());
+  fireApplicationFontChanged();
+}
+
+void Preferences::on_comboBoxApplicationFontSize_currentIndexChanged(int index)
+{
+  uint intsize = this->comboBoxApplicationFontSize->itemText(index).toUInt();
+  QSettingsCached settings;
+  settings.setValue("advanced/applicationFontSize", intsize);
+  fireApplicationFontChanged();
+}
+
 void Preferences::on_consoleFontChooser_currentFontChanged(const QFont& font)
 {
   QSettingsCached settings;
@@ -772,12 +850,12 @@ void Preferences::on_enableRangeCheckBox_toggled(bool state)
   settings.setValue("advanced/enableParameterRangeCheck", state);
 }
 
-void
-Preferences::on_comboBoxRenderBackend3D_activated(int val)
+void Preferences::on_comboBoxRenderBackend3D_activated(int val)
 {
   applyComboBox(this->comboBoxRenderBackend3D, val, Settings::Settings::renderBackend3D);
   RenderSettings::inst()->backend3D =
-    renderBackend3DFromString(Settings::Settings::renderBackend3D.value());
+    renderBackend3DFromString(Settings::Settings::renderBackend3D.value())
+      .value_or(DEFAULT_RENDERING_BACKEND_3D);
 }
 
 void Preferences::on_comboBoxToolbarExport3D_activated(int val)
@@ -816,6 +894,12 @@ void Preferences::on_enableHidapiTraceCheckBox_toggled(bool checked)
   writeSettings();
 }
 
+void Preferences::on_checkBoxEnableRemotePrintServices_toggled(bool checked)
+{
+  S::enableRemotePrintServices.setValue(checked);
+  writeSettings();
+}
+
 void Preferences::on_comboBoxDefaultPrintService_activated(int)
 {
   QStringList currentPrintServiceList = comboBoxDefaultPrintService->currentData().toStringList();
@@ -843,7 +927,20 @@ void Preferences::on_lineEditOctoPrintApiKey_editingFinished()
 
 void Preferences::on_pushButtonOctoPrintApiKey_clicked()
 {
-  this->lineEditOctoPrintApiKey->setEchoMode(this->pushButtonOctoPrintApiKey->isChecked() ? QLineEdit::EchoMode::Normal : QLineEdit::EchoMode::PasswordEchoOnEdit);
+  this->lineEditOctoPrintApiKey->setEchoMode(this->pushButtonOctoPrintApiKey->isChecked()
+                                               ? QLineEdit::EchoMode::Normal
+                                               : QLineEdit::EchoMode::PasswordEchoOnEdit);
+}
+
+void Preferences::on_pushButtonOctoPrintRequestApiKey_clicked()
+{
+  OctoPrintApiKeyDialog dialog;
+  if (dialog.exec() == QDialog::Accepted) {
+    const auto& apiKey = dialog.getApiKey();
+    this->lineEditOctoPrintApiKey->setText(apiKey);
+    S::octoPrintApiKey.setValue(apiKey.toStdString());
+    writeSettings();
+  }
 }
 
 void Preferences::on_comboBoxOctoPrintFileFormat_activated(int val)
@@ -851,27 +948,178 @@ void Preferences::on_comboBoxOctoPrintFileFormat_activated(int val)
   applyComboBox(this->comboBoxOctoPrintFileFormat, val, Settings::Settings::octoPrintFileFormat);
 }
 
-void Preferences::on_pushButtonSelectLocalSlicerPath_clicked()
+void Preferences::on_comboBoxLocalAppFileFormat_activated(int val)
+{
+  applyComboBox(this->comboBoxLocalAppFileFormat, val, Settings::Settings::localAppFileFormat);
+  writeSettings();
+}
+
+void Preferences::on_lineEditLocalAppExecutable_editingFinished()
+{
+  Settings::Settings::localAppExecutable.setValue(
+    this->lineEditLocalAppExecutable->text().toStdString());
+  writeSettings();
+}
+
+void Preferences::on_toolButtonLocalAppSelectExecutable_clicked()
 {
   const QString fileName = QFileDialog::getOpenFileName(this, "Select application");
   if (fileName.isEmpty()) {
     return;
   }
 
-  this->lineEditLocalSlicer->setText(fileName);
-  on_lineEditLocalSlicer_editingFinished();
+  this->lineEditLocalAppExecutable->setText(fileName);
+  on_lineEditLocalAppExecutable_editingFinished();
 }
 
-void Preferences::on_comboBoxLocalSlicerFileFormat_activated(int val)
+void Preferences::on_lineEditLocalAppTempDir_editingFinished()
 {
-  applyComboBox(this->comboBoxLocalSlicerFileFormat, val, Settings::Settings::localSlicerFileFormat);
+  Settings::Settings::localAppTempDir.setValue(this->lineEditLocalAppTempDir->text().toStdString());
   writeSettings();
 }
 
-void Preferences::on_lineEditLocalSlicer_editingFinished()
+void Preferences::on_toolButtonLocalAppSelectTempDir_clicked()
 {
-  Settings::Settings::localSlicerExecutable.setValue(this->lineEditLocalSlicer->text().toStdString());
+  const QString tempDir = QFileDialog::getExistingDirectory(this, "Select temporary directory");
+  if (tempDir.isEmpty()) {
+    return;
+  }
+
+  this->lineEditLocalAppTempDir->setText(tempDir);
+  on_lineEditLocalAppTempDir_editingFinished();
+}
+
+void Preferences::moveListBoxRow(QListWidget *listBox, int offset)
+{
+  const auto& index = listBox->selectionModel()->currentIndex();
+  int newRow = index.row() + offset;
+  if (newRow >= 0 && newRow <= listBox->count()) {
+    auto item = listBox->takeItem(index.row());
+    listBox->insertItem(newRow, item);
+    listBox->setCurrentRow(newRow);
+  }
+}
+
+void Preferences::on_toolButtonLocalAppParameterUp_clicked()
+{
+  moveListBoxRow(this->listWidgetLocalAppParams, -1);
+}
+
+void Preferences::on_toolButtonLocalAppParameterDown_clicked()
+{
+  moveListBoxRow(this->listWidgetLocalAppParams, 1);
+}
+
+void Preferences::on_toolButtonLocalAppParameterRemove_clicked()
+{
+  const auto& index = this->listWidgetLocalAppParams->selectionModel()->currentIndex();
+  if (index.row() >= 0) {
+    auto item = this->listWidgetLocalAppParams->takeItem(index.row());
+    delete item;
+  }
+}
+
+void Preferences::insertListItem(QListWidget *listBox, QListWidgetItem *listItem)
+{
+  const auto hasSelection = listBox->selectionModel()->hasSelection();
+  const auto pos = hasSelection ? listBox->selectionModel()->currentIndex().row() + 1 : listBox->count();
+  listBox->insertItem(pos, listItem);
+  listBox->setCurrentRow(pos);
+  listBox->editItem(listItem);
+}
+
+void Preferences::on_toolButtonLocalAppParameterAdd_clicked()
+{
+  auto listItem =
+    createListItem(Settings::LocalAppParameterType(Settings::LocalAppParameterType::string), "", true);
+  insertListItem(this->listWidgetLocalAppParams, listItem);
+}
+
+void Preferences::addLocalAppParameter(const Settings::LocalAppParameterType& type)
+{
+  auto listItem = createListItem(Settings::LocalAppParameterType(type));
+  insertListItem(this->listWidgetLocalAppParams, listItem);
+}
+
+void Preferences::on_toolButtonLocalAppParameterAddFile_clicked()
+{
+  addLocalAppParameter(Settings::LocalAppParameterType::file);
+}
+
+void Preferences::on_listWidgetLocalAppParams_itemSelectionChanged()
+{
+  const auto hasSelection = this->listWidgetLocalAppParams->selectionModel()->hasSelection();
+  const auto& index = this->listWidgetLocalAppParams->selectionModel()->currentIndex();
+  this->toolButtonLocalAppParameterRemove->setEnabled(hasSelection);
+  this->toolButtonLocalAppParameterUp->setEnabled(hasSelection && index.row() > 0);
+  this->toolButtonLocalAppParameterDown->setEnabled(
+    hasSelection && index.row() < this->listWidgetLocalAppParams->count() - 1);
+}
+
+void Preferences::updateLocalAppParams()
+{
+  std::vector<Settings::LocalAppParameter> items;
+  for (int idx = 0; idx < this->listWidgetLocalAppParams->count(); ++idx) {
+    const auto item = this->listWidgetLocalAppParams->item(idx);
+    if (item->type() == static_cast<int>(QListWidgetItem::UserType) +
+                          static_cast<int>(Settings::LocalAppParameterType::string)) {
+      items.emplace_back(Settings::LocalAppParameterType::string, item->text().toStdString());
+    } else if (item->type() == static_cast<int>(QListWidgetItem::UserType) +
+                                 static_cast<int>(Settings::LocalAppParameterType::file)) {
+      items.emplace_back(Settings::LocalAppParameterType::file, std::string{});
+    } else if (item->type() == static_cast<int>(QListWidgetItem::UserType) +
+                                 static_cast<int>(Settings::LocalAppParameterType::dir)) {
+      items.emplace_back(Settings::LocalAppParameterType::dir, std::string{});
+    } else if (item->type() == static_cast<int>(QListWidgetItem::UserType) +
+                                 static_cast<int>(Settings::LocalAppParameterType::extension)) {
+      items.emplace_back(Settings::LocalAppParameterType::extension, std::string{});
+    } else if (item->type() == static_cast<int>(QListWidgetItem::UserType) +
+                                 static_cast<int>(Settings::LocalAppParameterType::source)) {
+      items.emplace_back(Settings::LocalAppParameterType::source, std::string{});
+    } else if (item->type() == static_cast<int>(QListWidgetItem::UserType) +
+                                 static_cast<int>(Settings::LocalAppParameterType::sourcedir)) {
+      items.emplace_back(Settings::LocalAppParameterType::sourcedir, std::string{});
+    }
+  }
+  Settings::Settings::localAppParameterList.setValue(items);
   writeSettings();
+}
+
+void Preferences::on_listWidgetLocalAppParams_itemChanged(QListWidgetItem *)
+{
+  // called when parameter values are edited
+  updateLocalAppParams();
+}
+
+void Preferences::listWidgetLocalAppParamsModelDataChanged()
+{
+  // called when rows are added or removed
+  updateLocalAppParams();
+}
+
+void Preferences::on_actionLocalAppParameterFile_triggered()
+{
+  addLocalAppParameter(Settings::LocalAppParameterType::file);
+}
+
+void Preferences::on_actionLocalAppParameterDir_triggered()
+{
+  addLocalAppParameter(Settings::LocalAppParameterType::dir);
+}
+
+void Preferences::on_actionLocalAppParameterExtension_triggered()
+{
+  addLocalAppParameter(Settings::LocalAppParameterType::extension);
+}
+
+void Preferences::on_actionLocalAppParameterSource_triggered()
+{
+  addLocalAppParameter(Settings::LocalAppParameterType::source);
+}
+
+void Preferences::on_actionLocalAppParameterSourceDir_triggered()
+{
+  addLocalAppParameter(Settings::LocalAppParameterType::sourcedir);
 }
 
 void Preferences::on_pushButtonOctoPrintCheckConnection_clicked()
@@ -882,9 +1130,11 @@ void Preferences::on_pushButtonOctoPrintCheckConnection_clicked()
     QString api_version;
     QString server_version;
     std::tie(api_version, server_version) = octoPrint.getVersion();
-    this->labelOctoPrintCheckConnection->setText(QString{_("Success: Server Version = %2, API Version = %1")}.arg(api_version).arg(server_version));
+    this->labelOctoPrintCheckConnection->setText(
+      QString{_("Success: Server Version = %2, API Version = %1")}.arg(api_version).arg(server_version));
   } catch (const NetworkException& e) {
-    QMessageBox::critical(this, _("Error"), QString::fromStdString(e.getErrorMessage()), QMessageBox::Ok);
+    QMessageBox::critical(this, _("Error"), QString::fromStdString(e.getErrorMessage()),
+                          QMessageBox::Ok);
     this->labelOctoPrintCheckConnection->setText("");
   }
 }
@@ -908,7 +1158,8 @@ void Preferences::on_pushButtonOctoPrintSlicingEngine_clicked()
       this->comboBoxOctoPrintSlicingEngine->setCurrentIndex(idx);
     }
   } catch (const NetworkException& e) {
-    QMessageBox::critical(this, _("Error"), QString::fromStdString(e.getErrorMessage()), QMessageBox::Ok);
+    QMessageBox::critical(this, _("Error"), QString::fromStdString(e.getErrorMessage()),
+                          QMessageBox::Ok);
   }
 }
 
@@ -929,7 +1180,9 @@ void Preferences::on_pushButtonOctoPrintSlicingProfile_clicked()
   OctoPrint octoPrint;
 
   const QString selection = this->comboBoxOctoPrintSlicingProfile->currentText();
-  const QString slicer = this->comboBoxOctoPrintSlicingEngine->itemData(this->comboBoxOctoPrintSlicingEngine->currentIndex()).toString();
+  const QString slicer =
+    this->comboBoxOctoPrintSlicingEngine->itemData(this->comboBoxOctoPrintSlicingEngine->currentIndex())
+      .toString();
 
   try {
     const auto profiles = octoPrint.getProfiles(slicer);
@@ -944,7 +1197,8 @@ void Preferences::on_pushButtonOctoPrintSlicingProfile_clicked()
       this->comboBoxOctoPrintSlicingProfile->setCurrentIndex(idx);
     }
   } catch (const NetworkException& e) {
-    QMessageBox::critical(this, _("Error"), QString::fromStdString(e.getErrorMessage()), QMessageBox::Ok);
+    QMessageBox::critical(this, _("Error"), QString::fromStdString(e.getErrorMessage()),
+                          QMessageBox::Ok);
   }
 }
 
@@ -957,16 +1211,31 @@ void Preferences::on_comboBoxOctoPrintSlicingProfile_activated(int val)
   writeSettings();
 }
 
+void Preferences::on_checkBoxAlwaysShowExportPdfDialog_toggled(bool state)
+{
+  Settings::SettingsExportPdf::exportPdfAlwaysShowDialog.setValue(state);
+  writeSettings();
+}
+
+void Preferences::on_checkBoxAlwaysShowExport3mfDialog_toggled(bool state)
+{
+  Settings::SettingsExport3mf::export3mfAlwaysShowDialog.setValue(state);
+  writeSettings();
+}
+
+void Preferences::on_checkBoxAlwaysShowPrintServiceDialog_toggled(bool state)
+{
+  Settings::Settings::printServiceAlwaysShowDialog.setValue(state);
+  writeSettings();
+}
+
 void Preferences::writeSettings()
 {
   Settings::Settings::visit(SettingsWriter());
   fireEditorConfigChanged();
 }
 
-void Preferences::fireEditorConfigChanged() const
-{
-  emit editorConfigChanged();
-}
+void Preferences::fireEditorConfigChanged() const { emit editorConfigChanged(); }
 
 void Preferences::keyPressEvent(QKeyEvent *e)
 {
@@ -975,8 +1244,7 @@ void Preferences::keyPressEvent(QKeyEvent *e)
     close();
   } else
 #endif
-  if ((e->modifiers() == Qt::ControlModifier && e->key() == Qt::Key_W) ||
-      e->key() == Qt::Key_Escape) {
+    if ((e->modifiers() == Qt::ControlModifier && e->key() == Qt::Key_W) || e->key() == Qt::Key_Escape) {
     close();
   }
 }
@@ -1001,8 +1269,7 @@ void Preferences::removeDefaultSettings()
 {
   QSettingsCached settings;
   for (QSettings::SettingsMap::const_iterator iter = this->defaultmap.begin();
-       iter != this->defaultmap.end();
-       iter++) {
+       iter != this->defaultmap.end(); iter++) {
     if (settings.value(iter.key()) == iter.value()) {
       settings.remove(iter.key());
     }
@@ -1018,8 +1285,10 @@ QVariant Preferences::getValue(const QString& key) const
 
 void Preferences::updateGUI()
 {
-  const auto found = this->colorSchemeChooser->findItems(getValue("3dview/colorscheme").toString(), Qt::MatchExactly);
-  if (!found.isEmpty()) BlockSignals<QListWidget *>(this->colorSchemeChooser)->setCurrentItem(found.first());
+  const auto found =
+    this->colorSchemeChooser->findItems(getValue("3dview/colorscheme").toString(), Qt::MatchExactly);
+  if (!found.isEmpty())
+    BlockSignals<QListWidget *>(this->colorSchemeChooser)->setCurrentItem(found.first());
 
   updateGUIFontFamily(fontChooser, "editor/fontfamily");
   updateGUIFontSize(fontSize, "editor/fontsize");
@@ -1031,28 +1300,46 @@ void Preferences::updateGUI()
     BlockSignals<QComboBox *>(this->syntaxHighlight)->setCurrentIndex(sheffidx);
   }
 
-  BlockSignals<QCheckBox *>(this->mouseWheelZoomBox)->setChecked(getValue("editor/ctrlmousewheelzoom").toBool());
+  BlockSignals<QCheckBox *>(this->mouseWheelZoomBox)
+    ->setChecked(getValue("editor/ctrlmousewheelzoom").toBool());
 
   if (AutoUpdater *updater = AutoUpdater::updater()) {
-    BlockSignals<QCheckBox *>(this->updateCheckBox)->setChecked(updater->automaticallyChecksForUpdates());
+    BlockSignals<QCheckBox *>(this->updateCheckBox)
+      ->setChecked(updater->automaticallyChecksForUpdates());
     BlockSignals<QCheckBox *>(this->snapshotCheckBox)->setChecked(updater->enableSnapshots());
     BlockSignals<QLabel *>(this->lastCheckedLabel)->setText(updater->lastUpdateCheckDate());
   }
 
-  BlockSignals<QCheckBox *>(this->openCSGWarningBox)->setChecked(getValue("advanced/opencsg_show_warning").toBool());
-  BlockSignals<QLineEdit *>(this->cgalCacheSizeMBEdit)->setText(getValue("advanced/cgalCacheSizeMB").toString());
-  BlockSignals<QLineEdit *>(this->polysetCacheSizeMBEdit)->setText(getValue("advanced/polysetCacheSizeMB").toString());
-  BlockSignals<QLineEdit *>(this->opencsgLimitEdit)->setText(getValue("advanced/openCSGLimit").toString());
-  BlockSignals<QCheckBox *>(this->localizationCheckBox)->setChecked(getValue("advanced/localization").toBool());
-  BlockSignals<QCheckBox *>(this->autoReloadRaiseCheckBox)->setChecked(getValue("advanced/autoReloadRaise").toBool());
-  BlockSignals<QCheckBox *>(this->forceGoldfeatherBox)->setChecked(getValue("advanced/forceGoldfeather").toBool());
-  BlockSignals<QCheckBox *>(this->reorderCheckBox)->setChecked(getValue("advanced/reorderWindows").toBool());
-  BlockSignals<QCheckBox *>(this->undockCheckBox)->setChecked(getValue("advanced/undockableWindows").toBool());
+  BlockSignals<QCheckBox *>(this->openCSGWarningBox)
+    ->setChecked(getValue("advanced/opencsg_show_warning").toBool());
+  BlockSignals<QLineEdit *>(this->cgalCacheSizeMBEdit)
+    ->setText(getValue("advanced/cgalCacheSizeMB").toString());
+  BlockSignals<QLineEdit *>(this->polysetCacheSizeMBEdit)
+    ->setText(getValue("advanced/polysetCacheSizeMB").toString());
+  BlockSignals<QLineEdit *>(this->opencsgLimitEdit)
+    ->setText(getValue("advanced/openCSGLimit").toString());
+  BlockSignals<QCheckBox *>(this->localizationCheckBox)
+    ->setChecked(getValue("advanced/localization").toBool());
+  BlockSignals<QCheckBox *>(this->autoReloadRaiseCheckBox)
+    ->setChecked(getValue("advanced/autoReloadRaise").toBool());
+  BlockSignals<QCheckBox *>(this->forceGoldfeatherBox)
+    ->setChecked(getValue("advanced/forceGoldfeather").toBool());
+  BlockSignals<QCheckBox *>(this->reorderCheckBox)
+    ->setChecked(getValue("advanced/reorderWindows").toBool());
+  BlockSignals<QCheckBox *>(this->undockCheckBox)
+    ->setChecked(getValue("advanced/undockableWindows").toBool());
   BlockSignals<QCheckBox *>(this->launcherBox)->setChecked(getValue("launcher/showOnStartup").toBool());
-  BlockSignals<QCheckBox *>(this->enableSoundOnRenderCompleteCheckBox)->setChecked(getValue("advanced/enableSoundNotification").toBool());
-  BlockSignals<QLineEdit *>(this->timeThresholdOnRenderCompleteSoundEdit)->setText(getValue("advanced/timeThresholdOnRenderCompleteSound").toString());
-  BlockSignals<QCheckBox *>(this->enableClearConsoleCheckBox)->setChecked(getValue("advanced/consoleAutoClear").toBool());
-  BlockSignals<QLineEdit *>(this->consoleMaxLinesEdit)->setText(getValue("advanced/consoleMaxLines").toString());
+  BlockSignals<QCheckBox *>(this->enableSoundOnRenderCompleteCheckBox)
+    ->setChecked(getValue("advanced/enableSoundNotification").toBool());
+  BlockSignals<QLineEdit *>(this->timeThresholdOnRenderCompleteSoundEdit)
+    ->setText(getValue("advanced/timeThresholdOnRenderCompleteSound").toString());
+  BlockSignals<QCheckBox *>(this->enableClearConsoleCheckBox)
+    ->setChecked(getValue("advanced/consoleAutoClear").toBool());
+  BlockSignals<QLineEdit *>(this->consoleMaxLinesEdit)
+    ->setText(getValue("advanced/consoleMaxLines").toString());
+
+  updateGUIFontFamily(fontComboBoxApplicationFontFamily, "advanced/applicationFontFamily");
+  updateGUIFontSize(comboBoxApplicationFontSize, "advanced/applicationFontSize");
 
   updateGUIFontFamily(consoleFontChooser, "advanced/consoleFontFamily");
   updateGUIFontSize(consoleFontSize, "advanced/consoleFontSize");
@@ -1060,27 +1347,39 @@ void Preferences::updateGUI()
   updateGUIFontFamily(customizerFontChooser, "advanced/customizerFontFamily");
   updateGUIFontSize(customizerFontSize, "advanced/customizerFontSize");
 
-  BlockSignals<QCheckBox *>(this->enableHardwarningsCheckBox)->setChecked(getValue("advanced/enableHardwarnings").toBool());
+  BlockSignals<QCheckBox *>(this->enableHardwarningsCheckBox)
+    ->setChecked(getValue("advanced/enableHardwarnings").toBool());
   BlockSignals<QLineEdit *>(this->traceDepthEdit)->setText(getValue("advanced/traceDepth").toString());
-  BlockSignals<QCheckBox *>(this->enableTraceUsermoduleParametersCheckBox)->setChecked(getValue("advanced/enableTraceUsermoduleParameters").toBool());
-  BlockSignals<QCheckBox *>(this->enableParameterCheckBox)->setChecked(getValue("advanced/enableParameterCheck").toBool());
-  BlockSignals<QCheckBox *>(this->enableRangeCheckBox)->setChecked(getValue("advanced/enableParameterRangeCheck").toBool());
+  BlockSignals<QCheckBox *>(this->enableTraceUsermoduleParametersCheckBox)
+    ->setChecked(getValue("advanced/enableTraceUsermoduleParameters").toBool());
+  BlockSignals<QCheckBox *>(this->enableParameterCheckBox)
+    ->setChecked(getValue("advanced/enableParameterCheck").toBool());
+  BlockSignals<QCheckBox *>(this->enableRangeCheckBox)
+    ->setChecked(getValue("advanced/enableParameterRangeCheck").toBool());
   updateComboBox(this->comboBoxToolbarExport3D, Settings::Settings::toolbarExport3D);
   updateComboBox(this->comboBoxToolbarExport2D, Settings::Settings::toolbarExport2D);
 
-  BlockSignals<QCheckBox *>(this->checkBoxSummaryCamera)->setChecked(Settings::Settings::summaryCamera.value());
-  BlockSignals<QCheckBox *>(this->checkBoxSummaryArea)->setChecked(Settings::Settings::summaryArea.value());
-  BlockSignals<QCheckBox *>(this->checkBoxSummaryBoundingBox)->setChecked(Settings::Settings::summaryBoundingBox.value());
+  BlockSignals<QCheckBox *>(this->checkBoxSummaryCamera)
+    ->setChecked(Settings::Settings::summaryCamera.value());
+  BlockSignals<QCheckBox *>(this->checkBoxSummaryArea)
+    ->setChecked(Settings::Settings::summaryArea.value());
+  BlockSignals<QCheckBox *>(this->checkBoxSummaryBoundingBox)
+    ->setChecked(Settings::Settings::summaryBoundingBox.value());
 
-  BlockSignals<QCheckBox *>(this->enableHidapiTraceCheckBox)->setChecked(Settings::Settings::inputEnableDriverHIDAPILog.value());
-  BlockSignals<QCheckBox *>(this->checkBoxEnableAutocomplete)->setChecked(getValue("editor/enableAutocomplete").toBool());
-  BlockSignals<QLineEdit *>(this->lineEditCharacterThreshold)->setText(getValue("editor/characterThreshold").toString());
+  BlockSignals<QCheckBox *>(this->enableHidapiTraceCheckBox)
+    ->setChecked(Settings::Settings::inputEnableDriverHIDAPILog.value());
+  BlockSignals<QCheckBox *>(this->checkBoxEnableAutocomplete)
+    ->setChecked(getValue("editor/enableAutocomplete").toBool());
+  BlockSignals<QLineEdit *>(this->lineEditCharacterThreshold)
+    ->setText(getValue("editor/characterThreshold").toString());
   BlockSignals<QLineEdit *>(this->lineEditStepSize)->setText(getValue("editor/stepSize").toString());
 
   this->secLabelOnRenderCompleteSound->setEnabled(getValue("advanced/enableSoundNotification").toBool());
   this->undockCheckBox->setEnabled(this->reorderCheckBox->isChecked());
-  this->timeThresholdOnRenderCompleteSoundLabel->setEnabled(getValue("advanced/enableSoundNotification").toBool());
-  this->timeThresholdOnRenderCompleteSoundEdit->setEnabled(getValue("advanced/enableSoundNotification").toBool());
+  this->timeThresholdOnRenderCompleteSoundLabel->setEnabled(
+    getValue("advanced/enableSoundNotification").toBool());
+  this->timeThresholdOnRenderCompleteSoundEdit->setEnabled(
+    getValue("advanced/enableSoundNotification").toBool());
   this->labelCharacterThreshold->setEnabled(getValue("editor/enableAutocomplete").toBool());
   this->lineEditCharacterThreshold->setEnabled(getValue("editor/enableAutocomplete").toBool());
   this->lineEditStepSize->setEnabled(getValue("editor/stepSize").toBool());
@@ -1088,7 +1387,8 @@ void Preferences::updateGUI()
   updateComboBox(this->comboBoxRenderBackend3D, Settings::Settings::renderBackend3D);
   updateComboBox(this->comboBoxLineWrap, Settings::Settings::lineWrap);
   updateComboBox(this->comboBoxLineWrapIndentationStyle, Settings::Settings::lineWrapIndentationStyle);
-  updateComboBox(this->comboBoxLineWrapVisualizationStart, Settings::Settings::lineWrapVisualizationBegin);
+  updateComboBox(this->comboBoxLineWrapVisualizationStart,
+                 Settings::Settings::lineWrapVisualizationBegin);
   updateComboBox(this->comboBoxLineWrapVisualizationEnd, Settings::Settings::lineWrapVisualizationEnd);
   updateComboBox(this->comboBoxShowWhitespace, Settings::Settings::showWhitespace);
   updateComboBox(this->comboBoxIndentUsing, Settings::Settings::indentStyle);
@@ -1105,25 +1405,32 @@ void Preferences::updateGUI()
   initUpdateCheckBox(this->checkBoxEnableNumberScrollWheel, Settings::Settings::enableNumberScrollWheel);
   initUpdateCheckBox(this->checkBoxShowWarningsIn3dView, Settings::Settings::showWarningsIn3dView);
   initUpdateCheckBox(this->checkBoxMouseCentricZoom, Settings::Settings::mouseCentricZoom);
-  initUpdateCheckBox(this->checkBoxMouseSwapButtons, Settings::Settings::mouseSwapButtons);
   initUpdateCheckBox(this->checkBoxEnableLineNumbers, Settings::Settings::enableLineNumbers);
 
-
-
-  /* Next Line disables the Indent Spin-Box,for 'Same' and 'Indented' LineWrapStyle selection from LineWrapIndentationStyle Combo-box, just after launching the openscad application.
-     Removing this line will cause misbehaviour, and will not disable the Indent spin-box until you interact with the LineWrapStyle Combo-Box first-time and choose a style for which disabling has been handled.
-     For normal cases, a similar line, inside the function 'on_comboBoxLineWrapIndentationStyle_activated()' handles the disabling functionality.
+  /* Next Line disables the Indent Spin-Box,for 'Same' and 'Indented' LineWrapStyle selection from
+     LineWrapIndentationStyle Combo-box, just after launching the openscad application. Removing this
+     line will cause misbehaviour, and will not disable the Indent spin-box until you interact with the
+     LineWrapStyle Combo-Box first-time and choose a style for which disabling has been handled. For
+     normal cases, a similar line, inside the function 'on_comboBoxLineWrapIndentationStyle_activated()'
+     handles the disabling functionality.
    */
-  this->spinBoxLineWrapIndentationIndent->setDisabled(comboBoxLineWrapIndentationStyle->currentData() == "Same" || comboBoxLineWrapIndentationStyle->currentData() == "Indented");
+  this->spinBoxLineWrapIndentationIndent->setDisabled(
+    comboBoxLineWrapIndentationStyle->currentData() == "Same" ||
+    comboBoxLineWrapIndentationStyle->currentData() == "Indented");
   this->comboBoxModifierNumberScrollWheel->setDisabled(!checkBoxEnableNumberScrollWheel->isChecked());
-  BlockSignals<QLineEdit *>(this->lineEditOctoPrintURL)->setText(QString::fromStdString(Settings::Settings::octoPrintUrl.value()));
-  BlockSignals<QLineEdit *>(this->lineEditOctoPrintApiKey)->setText(QString::fromStdString(Settings::Settings::octoPrintApiKey.value()));
+  BlockSignals<QLineEdit *>(this->lineEditOctoPrintURL)
+    ->setText(QString::fromStdString(Settings::Settings::octoPrintUrl.value()));
+  BlockSignals<QLineEdit *>(this->lineEditOctoPrintApiKey)
+    ->setText(QString::fromStdString(Settings::Settings::octoPrintApiKey.value()));
   updateComboBox(this->comboBoxOctoPrintAction, Settings::Settings::octoPrintAction);
-  updateComboBox(this->comboBoxOctoPrintSlicingEngine, Settings::Settings::octoPrintSlicerEngine.value());
-  updateComboBox(this->comboBoxOctoPrintSlicingProfile, Settings::Settings::octoPrintSlicerProfile.value());
+  updateComboBox(this->comboBoxOctoPrintSlicingEngine,
+                 Settings::Settings::octoPrintSlicerEngine.value());
+  updateComboBox(this->comboBoxOctoPrintSlicingProfile,
+                 Settings::Settings::octoPrintSlicerProfile.value());
 }
 
-void Preferences::applyComboBox(QComboBox * /*comboBox*/, int val, Settings::SettingsEntryEnum& entry)
+void Preferences::applyComboBox(QComboBox * /*comboBox*/, int val,
+                                Settings::SettingsEntryEnum<std::string>& entry)
 {
   entry.setIndex(val);
   writeSettings();
@@ -1135,36 +1442,19 @@ void Preferences::apply_win() const
   emit openCSGSettingsChanged();
 }
 
-void Preferences::create(const QStringList& colorSchemes)
+bool Preferences::hasHighlightingColorScheme() const
 {
-  if (instance != nullptr) {
-    return;
-  }
-
-  std::list<std::string> names = ColorMap::inst()->colorSchemeNames(true);
-  QStringList renderColorSchemes;
-  for (const auto& name : names) renderColorSchemes << name.c_str();
-
-  instance = new Preferences();
-  instance->syntaxHighlight->clear();
-  BlockSignals<QComboBox *>(instance->syntaxHighlight)->addItems(colorSchemes);
-  instance->colorSchemeChooser->clear();
-  instance->colorSchemeChooser->addItems(renderColorSchemes);
-  instance->init();
-  instance->AxisConfig->init();
-  instance->setupFeaturesPage();
-  instance->setup3DPrintPage();
-  instance->updateGUI();
+  return BlockSignals<QComboBox *>(syntaxHighlight)->count() != 0;
 }
 
-Preferences *Preferences::inst() {
-  assert(instance != nullptr);
-
-  return instance;
+void Preferences::setHighlightingColorSchemes(const QStringList& colorSchemes)
+{
+  auto combobox = BlockSignals<QComboBox *>(syntaxHighlight);
+  combobox->clear();
+  combobox->addItems(colorSchemes);
 }
 
-
-void Preferences::createFontSizeMenu(QComboBox *boxarg, const QString &setting)
+void Preferences::createFontSizeMenu(QComboBox *boxarg, const QString& setting)
 {
   uint savedsize = getValue(setting).toUInt();
   const QFontDatabase db;
@@ -1176,19 +1466,19 @@ void Preferences::createFontSizeMenu(QComboBox *boxarg, const QString &setting)
     }
   }
   // reset GUI fontsize if fontSize->addItem emitted signals that changed it.
-  box->setEditText(QString("%1").arg(savedsize) );
+  box->setEditText(QString("%1").arg(savedsize));
 }
 
-void Preferences::updateGUIFontFamily(QFontComboBox *ffSelector, const QString &setting)
+void Preferences::updateGUIFontFamily(QFontComboBox *ffSelector, const QString& setting)
 {
-    const auto fontfamily = getValue(setting).toString();
-    const auto fidx = ffSelector->findText(fontfamily, Qt::MatchContains);
-    if (fidx >= 0) {
-      BlockSignals<QFontComboBox *>(ffSelector)->setCurrentIndex(fidx);
-    }
+  const auto fontfamily = getValue(setting).toString();
+  const auto fidx = ffSelector->findText(fontfamily, Qt::MatchContains);
+  if (fidx >= 0) {
+    BlockSignals<QFontComboBox *>(ffSelector)->setCurrentIndex(fidx);
+  }
 }
 
-void Preferences::updateGUIFontSize(QComboBox *fsSelector, const QString &setting)
+void Preferences::updateGUIFontSize(QComboBox *fsSelector, const QString& setting)
 {
   const auto fontsize = getValue(setting).toString();
   const auto sidx = fsSelector->findText(fontsize);
@@ -1198,3 +1488,9 @@ void Preferences::updateGUIFontSize(QComboBox *fsSelector, const QString &settin
     BlockSignals<QComboBox *>(fsSelector)->setEditText(fontsize);
   }
 }
+
+Preferences *GlobalPreferences::inst()
+{
+  static auto *instance = new Preferences();
+  return instance;
+};

@@ -1,0 +1,24 @@
+<?xml version="1.0" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg width="174mm" height="134mm" viewBox="0 -418 174 134" xmlns="http://www.w3.org/2000/svg" version="1.1">
+<title>OpenSCAD Model</title>
+<path d="
+M 12,-416 L 2,-416 L 2,-406 L 12,-406 z
+M 32,-416 L 22,-416 L 22,-406 L 32,-406 z
+M 72,-416 L 62,-416 L 62,-406 L 72,-406 z
+M 132,-416 L 122,-416 L 122,-406 L 132,-406 z
+M 12,-396 L 2,-396 L 2,-386 L 12,-386 z
+M 32,-396 L 22,-396 L 22,-386 L 32,-386 z
+M 72,-396 L 62,-396 L 62,-386 L 72,-386 z
+M 132,-396 L 122,-396 L 122,-386 L 132,-386 z
+M 172,-376 L 162,-376 L 162,-361 L 172,-361 z
+M 12,-356 L 2,-356 L 2,-346 L 12,-346 z
+M 32,-356 L 22,-356 L 22,-346 L 32,-346 z
+M 72,-356 L 62,-356 L 62,-346 L 72,-346 z
+M 132,-356 L 122,-356 L 122,-346 L 132,-346 z
+M 12,-296 L 2,-296 L 2,-286 L 12,-286 z
+M 32,-296 L 22,-296 L 22,-286 L 32,-286 z
+M 72,-296 L 62,-296 L 62,-286 L 72,-286 z
+M 132,-296 L 122,-296 L 122,-286 L 132,-286 z
+" stroke="magenta" fill="cyan" stroke-width="3"/>
+</svg>

@@ -14,8 +14,9 @@
  #endif
    //*/
 
-#include "CGAL/CGAL_workaround_Mark_bounded_volumes.h" // This file must be included prior to CGAL/Nef_polyhedron_3.h
 #include <vector>
+
+#include "CGAL/CGAL_workaround_Mark_bounded_volumes.h"  // This file must be included prior to CGAL/Nef_polyhedron_3.h
 #include <CGAL/Gmpq.h>
 #include <CGAL/Extended_cartesian.h>
 #include <CGAL/Nef_polyhedron_2.h>
@@ -24,6 +25,7 @@
 #include <CGAL/Nef_polyhedron_3.h>
 #include <CGAL/Surface_mesh.h>
 #include <CGAL/IO/Polyhedron_iostream.h>
+#include <CGAL/IO/Nef_polyhedron_iostream_3.h>  // for dumping .nef3
 #include <CGAL/Exact_predicates_exact_constructions_kernel.h>
 #include <CGAL/Polygon_2.h>
 #include <CGAL/Polygon_with_holes_2.h>
@@ -36,37 +38,29 @@
 #include <CGAL/assertions_behaviour.h>
 #include <CGAL/exceptions.h>
 
+// 2D
+
 using NT2 = CGAL::Gmpq;
 using CGAL_Kernel2 = CGAL::Extended_cartesian<NT2>;
 using CGAL_Nef_polyhedron2 = CGAL::Nef_polyhedron_2<CGAL_Kernel2>;
-using CGAL_Aff_transformation2 = CGAL_Kernel2::Aff_transformation_2;
 
-using CGAL_ExactKernel2 = CGAL::Exact_predicates_exact_constructions_kernel;
-using CGAL_Poly2 = CGAL::Polygon_2<CGAL_ExactKernel2>;
-using CGAL_Poly2h = CGAL::Polygon_with_holes_2<CGAL_ExactKernel2>;
+using CGAL_Point_2e = CGAL_Nef_polyhedron2::Explorer::Point;
+using CGAL_Iso_rectangle_2e = CGAL::Iso_rectangle_2<CGAL::Simple_cartesian<NT2>>;
+
+// 3D
 
 using NT3 = CGAL::Gmpq;
 using CGAL_Kernel3 = CGAL::Cartesian<NT3>;
-//using NT3 = CGAL::Exact_predicates_exact_constructions_kernel::FT;
-//using CGAL_Kernel3 = CGAL::Exact_predicates_exact_constructions_kernel;
 using CGAL_Nef_polyhedron3 = CGAL::Nef_polyhedron_3<CGAL_Kernel3>;
-using CGAL_Aff_transformation = CGAL_Nef_polyhedron3::Aff_transformation_3;
 
 using CGAL_Polyhedron = CGAL::Polyhedron_3<CGAL_Kernel3>;
 
 using CGAL_Point_3 = CGAL::Point_3<CGAL_Kernel3>;
-using CGAL_Triangle_3 = CGAL::Triangle_3<CGAL_Kernel3>;
 using CGAL_Iso_cuboid_3 = CGAL::Iso_cuboid_3<CGAL_Kernel3>;
 using CGAL_Polygon_3 = std::vector<CGAL_Point_3>;
+using CGAL_Kernel3Mesh = CGAL::Surface_mesh<CGAL_Point_3>;
 
-// CGAL_Nef_polyhedron2 uses CGAL_Kernel2, but Iso_rectangle_2 needs to match
-// CGAL_Nef_polyhedron2::Explorer::Point which is different than
-// CGAL_Kernel2::Point. Hence the suffix 'e'
-using CGAL_Point_2e = CGAL_Nef_polyhedron2::Explorer::Point;
-using CGAL_Iso_rectangle_2e = CGAL::Iso_rectangle_2<CGAL::Simple_cartesian<NT2>>;
-
-using CGAL_DoubleKernel = CGAL::Cartesian<double>;
-using CGAL_DoublePoint3 = CGAL_DoubleKernel::Point_3;
-using CGAL_DoubleMesh = CGAL::Surface_mesh<CGAL_DoublePoint3>;
+using CGAL_DoubleKernel = CGAL::Simple_cartesian<double>;
+using CGAL_DoubleMesh = CGAL::Surface_mesh<CGAL::Point_3<CGAL_DoubleKernel>>;
 
 #endif /* ENABLE_CGAL */

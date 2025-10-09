@@ -209,7 +209,7 @@
      <x>0</x>
      <y>0</y>
      <width>1354</width>
-     <height>29</height>
+     <height>24</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu_File">
@@ -245,6 +245,15 @@
      <addaction name="separator"/>
      <addaction name="fileActionExportImage"/>
     </widget>
+    <widget class="QMenu" name="menuPython">
+     <property name="title">
+      <string>Python</string>
+     </property>
+     <addaction name="fileActionPythonRevoke"/>
+     <addaction name="separator"/>
+     <addaction name="fileActionPythonSelectVenv"/>
+     <addaction name="fileActionPythonCreateVenv"/>
+    </widget>
     <addaction name="fileActionNew"/>
     <addaction name="fileActionOpen"/>
     <addaction name="menuOpenRecent"/>
@@ -253,7 +262,6 @@
     <addaction name="separator"/>
     <addaction name="fileActionNewWindow"/>
     <addaction name="fileActionOpenWindow"/>
-    <addaction name="fileActionRevoke"/>
     <addaction name="fileActionClose"/>
     <addaction name="separator"/>
     <addaction name="fileActionSave"/>
@@ -262,6 +270,8 @@
     <addaction name="fileActionSaveAll"/>
     <addaction name="separator"/>
     <addaction name="menuExport"/>
+    <addaction name="separator"/>
+    <addaction name="menuPython"/>
     <addaction name="separator"/>
     <addaction name="fileShowLibraryFolder"/>
     <addaction name="separator"/>
@@ -332,8 +342,6 @@
      <string>&amp;View</string>
     </property>
     <addaction name="viewActionPreview"/>
-    <addaction name="viewActionSurfaces"/>
-    <addaction name="viewActionWireframe"/>
     <addaction name="viewActionThrownTogether"/>
     <addaction name="separator"/>
     <addaction name="viewActionShowEdges"/>
@@ -378,24 +386,11 @@
     <property name="title">
      <string>&amp;Window</string>
     </property>
-    <addaction name="windowActionSelectEditor"/>
-    <addaction name="windowActionSelectConsole"/>
-    <addaction name="windowActionSelectErrorLog"/>
-    <addaction name="windowActionSelectFontList"/>
-    <addaction name="windowActionSelectCustomizer"/>
-    <addaction name="windowActionSelectAnimate"/>
-    <addaction name="windowActionSelectViewportControl"/>
     <addaction name="separator"/>
     <addaction name="windowActionNextWindow"/>
     <addaction name="windowActionPreviousWindow"/>
     <addaction name="separator"/>
-    <addaction name="windowActionHideEditor"/>
-    <addaction name="windowActionHideConsole"/>
-    <addaction name="windowActionHideErrorLog"/>
-    <addaction name="windowActionHideCustomizer"/>
-    <addaction name="windowActionHideAnimate"/>
-    <addaction name="windowActionHideViewportControl"/>
-    <addaction name="windowActionHideFontList"/>
+    <addaction name="windowActionJumpTo"/>
    </widget>
    <addaction name="menu_File"/>
    <addaction name="menu_Edit"/>
@@ -404,55 +399,7 @@
    <addaction name="menuWindow"/>
    <addaction name="menuHelp"/>
   </widget>
-  <widget class="QToolBar" name="tabToolBar">
-   <property name="windowTitle">
-    <string>Tabs</string>
-   </property>
-   <property name="movable">
-    <bool>false</bool>
-   </property>
-   <property name="floatable">
-    <bool>false</bool>
-   </property>
-   <attribute name="toolBarArea">
-    <enum>TopToolBarArea</enum>
-   </attribute>
-   <attribute name="toolBarBreak">
-    <bool>false</bool>
-   </attribute>
-   <widget class="QWidget" name="tabToolBarContents">
-    <property name="sizePolicy">
-     <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-      <horstretch>0</horstretch>
-      <verstretch>0</verstretch>
-     </sizepolicy>
-    </property>
-    <layout class="QVBoxLayout" name="verticalLayout_1">
-     <property name="spacing">
-      <number>0</number>
-     </property>
-     <property name="leftMargin">
-      <number>0</number>
-     </property>
-     <property name="topMargin">
-      <number>0</number>
-     </property>
-     <property name="rightMargin">
-      <number>0</number>
-     </property>
-     <property name="bottomMargin">
-      <number>0</number>
-     </property>
-   </layout>
-   </widget>
-  </widget>
   <widget class="QStatusBar" name="statusbar">
-   <property name="maximumSize">
-    <size>
-     <width>16777215</width>
-     <height>23</height>
-    </size>
-   </property>
   </widget>
   <widget class="Dock" name="editorDock">
    <attribute name="dockWidgetArea">
@@ -741,6 +688,10 @@
    </widget>
   </widget>
   <action name="fileActionNew">
+   <property name="icon">
+    <iconset theme="chokusen-new">
+     <normaloff>.</normaloff>.</iconset>
+   </property>
    <property name="text">
     <string>&amp;New File</string>
    </property>
@@ -754,6 +705,10 @@
    </property>
   </action>
   <action name="fileActionOpen">
+   <property name="icon">
+    <iconset theme="chokusen-open">
+     <normaloff>.</normaloff>.</iconset>
+   </property>
    <property name="text">
     <string>&amp;Open File</string>
    </property>
@@ -767,6 +722,10 @@
    </property>
   </action>
   <action name="fileActionSave">
+   <property name="icon">
+    <iconset theme="chokusen-save">
+     <normaloff>.</normaloff>.</iconset>
+   </property>
    <property name="text">
     <string>&amp;Save</string>
    </property>
@@ -815,6 +774,10 @@
    <property name="enabled">
     <bool>false</bool>
    </property>
+   <property name="icon">
+    <iconset theme="chokusen-undo">
+     <normaloff>.</normaloff>.</iconset>
+   </property>
    <property name="text">
     <string>&amp;Undo</string>
    </property>
@@ -826,6 +789,10 @@
    </property>
   </action>
   <action name="editActionRedo">
+   <property name="icon">
+    <iconset theme="chokusen-redo">
+     <normaloff>.</normaloff>.</iconset>
+   </property>
    <property name="text">
     <string>&amp;Redo</string>
    </property>
@@ -878,6 +845,10 @@
    </property>
   </action>
   <action name="editActionIndent">
+   <property name="icon">
+    <iconset theme="chokusen-indent">
+     <normaloff>.</normaloff>.</iconset>
+   </property>
    <property name="text">
     <string>&amp;Indent</string>
    </property>
@@ -949,6 +920,10 @@
    </property>
   </action>
   <action name="editActionZoomTextIn">
+   <property name="icon">
+    <iconset theme="chokusen-zoom-text-in">
+     <normaloff>.</normaloff>.</iconset>
+   </property>
    <property name="text">
     <string>Increase Font &amp;Size</string>
    </property>
@@ -957,19 +932,15 @@
    </property>
   </action>
   <action name="editActionZoomTextOut">
+   <property name="icon">
+    <iconset theme="chokusen-zoom-text-out">
+     <normaloff>.</normaloff>.</iconset>
+   </property>
    <property name="text">
     <string>Decrease Font Si&amp;ze</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+-</string>
-   </property>
-  </action>
-  <action name="windowActionHideEditor">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>Hide Editor</string>
    </property>
   </action>
   <action name="designActionReloadAndPreview">
@@ -981,6 +952,10 @@
    </property>
   </action>
   <action name="designActionPreview">
+   <property name="icon">
+    <iconset theme="chokusen-preview">
+     <normaloff>.</normaloff>.</iconset>
+   </property>
    <property name="text">
     <string>&amp;Preview</string>
    </property>
@@ -989,6 +964,10 @@
    </property>
   </action>
   <action name="designActionRender">
+   <property name="icon">
+    <iconset theme="chokusen-render">
+     <normaloff>.</normaloff>.</iconset>
+   </property>
    <property name="text">
     <string>R&amp;ender</string>
    </property>
@@ -997,6 +976,10 @@
    </property>
   </action>
   <action name="designAction3DPrint">
+   <property name="icon">
+    <iconset theme="chokusen-send">
+     <normaloff>.</normaloff>.</iconset>
+   </property>
    <property name="text">
     <string>&amp;3D Print</string>
    </property>
@@ -1005,6 +988,10 @@
    </property>
   </action>
   <action name="designActionMeasureDist">
+   <property name="icon">
+    <iconset theme="chokusen-measure-distance">
+     <normaloff>.</normaloff>.</iconset>
+   </property>
    <property name="text">
     <string>Measure &amp;Distance</string>
    </property>
@@ -1013,6 +1000,10 @@
    </property>
   </action>
   <action name="designActionMeasureAngle">
+   <property name="icon">
+    <iconset theme="chokusen-measure-angle">
+     <normaloff>.</normaloff>.</iconset>
+   </property>
    <property name="text">
     <string>Measure &amp;Angle</string>
    </property>
@@ -1041,6 +1032,10 @@
    </property>
   </action>
   <action name="fileActionExportBinarySTL">
+   <property name="icon">
+    <iconset theme="chokusen-export-stl">
+     <normaloff>.</normaloff>.</iconset>
+   </property>
    <property name="text">
     <string>Export as &amp;STL (binary)...</string>
    </property>
@@ -1049,26 +1044,46 @@
    </property>
   </action>
   <action name="fileActionExportAsciiSTL">
+   <property name="icon">
+    <iconset theme="chokusen-export-stl">
+     <normaloff>.</normaloff>.</iconset>
+   </property>
    <property name="text">
     <string>Export as &amp;STL (ascii)...</string>
    </property>
   </action>
   <action name="fileActionExportOBJ">
+   <property name="icon">
+    <iconset theme="chokusen-export-obj">
+     <normaloff>.</normaloff>.</iconset>
+   </property>
    <property name="text">
     <string>Export as &amp;OBJ...</string>
    </property>
   </action>
   <action name="fileActionExportPOV">
+   <property name="icon">
+    <iconset theme="chokusen-export-pov">
+     <normaloff>.</normaloff>.</iconset>
+   </property>
    <property name="text">
     <string>Export as &amp;POV...</string>
    </property>
   </action>
   <action name="fileActionExportOFF">
+   <property name="icon">
+    <iconset theme="chokusen-export-off">
+     <normaloff>.</normaloff>.</iconset>
+   </property>
    <property name="text">
     <string>Export as &amp;OFF...</string>
    </property>
   </action>
   <action name="fileActionExportWRL">
+   <property name="icon">
+    <iconset theme="chokusen-export-wrl">
+     <normaloff>.</normaloff>.</iconset>
+   </property>
    <property name="text">
     <string>Export as &amp;WRL...</string>
    </property>
@@ -1077,6 +1092,10 @@
    <property name="checkable">
     <bool>true</bool>
    </property>
+   <property name="icon">
+    <iconset theme="chokusen-surface">
+     <normaloff>.</normaloff>.</iconset>
+   </property>
    <property name="text">
     <string>Preview</string>
    </property>
@@ -1084,31 +1103,13 @@
     <string>F9</string>
    </property>
   </action>
-  <action name="viewActionSurfaces">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>Surfaces</string>
-   </property>
-   <property name="shortcut">
-    <string>F10</string>
-   </property>
-  </action>
-  <action name="viewActionWireframe">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>Wireframe</string>
-   </property>
-   <property name="shortcut">
-    <string>F11</string>
-   </property>
-  </action>
   <action name="viewActionThrownTogether">
    <property name="checkable">
     <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset theme="chokusen-throwntogether">
+     <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
     <string>Thrown Together</string>
@@ -1121,6 +1122,10 @@
    <property name="checkable">
     <bool>true</bool>
    </property>
+   <property name="icon">
+    <iconset theme="chokusen-show-edges">
+     <normaloff>.</normaloff>.</iconset>
+   </property>
    <property name="text">
     <string>Show Edges</string>
    </property>
@@ -1131,6 +1136,10 @@
   <action name="viewActionShowAxes">
    <property name="checkable">
     <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset theme="chokusen-axes">
+     <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
     <string>Show Axes</string>
@@ -1143,6 +1152,10 @@
    <property name="checkable">
     <bool>true</bool>
    </property>
+   <property name="icon">
+    <iconset theme="chokusen-crosshairs">
+     <normaloff>.</normaloff>.</iconset>
+   </property>
    <property name="text">
     <string>Show Crosshairs</string>
    </property>
@@ -1154,11 +1167,19 @@
    <property name="checkable">
     <bool>true</bool>
    </property>
+   <property name="icon">
+    <iconset theme="chokusen-scalemarkers">
+     <normaloff>.</normaloff>.</iconset>
+   </property>
    <property name="text">
     <string>Show Scale Markers</string>
    </property>
   </action>
   <action name="viewActionTop">
+   <property name="icon">
+    <iconset theme="chokusen-view-top">
+     <normaloff>.</normaloff>.</iconset>
+   </property>
    <property name="text">
     <string>&amp;Top</string>
    </property>
@@ -1167,6 +1188,10 @@
    </property>
   </action>
   <action name="viewActionBottom">
+   <property name="icon">
+    <iconset theme="chokusen-view-bottom">
+     <normaloff>.</normaloff>.</iconset>
+   </property>
    <property name="text">
     <string>&amp;Bottom</string>
    </property>
@@ -1175,6 +1200,10 @@
    </property>
   </action>
   <action name="viewActionLeft">
+   <property name="icon">
+    <iconset theme="chokusen-view-left">
+     <normaloff>.</normaloff>.</iconset>
+   </property>
    <property name="text">
     <string>&amp;Left</string>
    </property>
@@ -1183,6 +1212,10 @@
    </property>
   </action>
   <action name="viewActionRight">
+   <property name="icon">
+    <iconset theme="chokusen-view-right">
+     <normaloff>.</normaloff>.</iconset>
+   </property>
    <property name="text">
     <string>&amp;Right</string>
    </property>
@@ -1191,6 +1224,10 @@
    </property>
   </action>
   <action name="viewActionFront">
+   <property name="icon">
+    <iconset theme="chokusen-view-front">
+     <normaloff>.</normaloff>.</iconset>
+   </property>
    <property name="text">
     <string>&amp;Front</string>
    </property>
@@ -1199,6 +1236,10 @@
    </property>
   </action>
   <action name="viewActionBack">
+   <property name="icon">
+    <iconset theme="chokusen-view-back">
+     <normaloff>.</normaloff>.</iconset>
+   </property>
    <property name="text">
     <string>Bac&amp;k</string>
    </property>
@@ -1226,6 +1267,10 @@
    <property name="checkable">
     <bool>true</bool>
    </property>
+   <property name="icon">
+    <iconset theme="chokusen-perspective">
+     <normaloff>.</normaloff>.</iconset>
+   </property>
    <property name="text">
     <string>&amp;Perspective</string>
    </property>
@@ -1234,16 +1279,12 @@
    <property name="checkable">
     <bool>true</bool>
    </property>
+   <property name="icon">
+    <iconset theme="chokusen-orthogonal">
+     <normaloff>.</normaloff>.</iconset>
+   </property>
    <property name="text">
     <string>&amp;Orthogonal</string>
-   </property>
-  </action>
-  <action name="windowActionHideConsole">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>Hide Console</string>
    </property>
   </action>
   <action name="helpActionAbout">
@@ -1278,13 +1319,20 @@
    </property>
   </action>
   <action name="fileActionExportDXF">
+   <property name="icon">
+    <iconset theme="chokusen-export-dxf">
+     <normaloff>.</normaloff>.</iconset>
+   </property>
    <property name="text">
     <string>Export as &amp;DXF...</string>
    </property>
   </action>
-  <action name="fileActionRevoke">
+  <action name="fileActionPythonRevoke">
    <property name="text">
-    <string>Revoke trusted python Files</string>
+    <string>Revoke Trusted Python Files</string>
+   </property>
+   <property name="toolTip">
+    <string>Revoke Trusted Python Files</string>
    </property>
   </action>
   <action name="fileActionClose">
@@ -1370,11 +1418,19 @@
    </property>
   </action>
   <action name="fileActionExportImage">
+   <property name="icon">
+    <iconset theme="chokusen-export-png">
+     <normaloff>.</normaloff>.</iconset>
+   </property>
    <property name="text">
     <string>Export as &amp;Image...</string>
    </property>
   </action>
   <action name="fileActionExportCSG">
+   <property name="icon">
+    <iconset theme="chokusen-export-csg">
+     <normaloff>.</normaloff>.</iconset>
+   </property>
    <property name="text">
     <string>Export as &amp;CSG...</string>
    </property>
@@ -1390,6 +1446,10 @@
    </property>
   </action>
   <action name="viewActionResetView">
+   <property name="icon">
+    <iconset theme="chokusen-reset-view">
+     <normaloff>.</normaloff>.</iconset>
+   </property>
    <property name="text">
     <string>Reset View</string>
    </property>
@@ -1400,21 +1460,37 @@
    </property>
   </action>
   <action name="fileActionExportSVG">
+   <property name="icon">
+    <iconset theme="chokusen-export-svg">
+     <normaloff>.</normaloff>.</iconset>
+   </property>
    <property name="text">
     <string>Export as S&amp;VG...</string>
    </property>
   </action>
   <action name="fileActionExportAMF">
+   <property name="icon">
+    <iconset theme="chokusen-export-amf">
+     <normaloff>.</normaloff>.</iconset>
+   </property>
    <property name="text">
     <string>Export as &amp;AMF...</string>
    </property>
   </action>
   <action name="fileActionExport3MF">
+   <property name="icon">
+    <iconset theme="chokusen-export-3mf">
+     <normaloff>.</normaloff>.</iconset>
+   </property>
    <property name="text">
     <string>Export as &amp;3MF...</string>
    </property>
   </action>
   <action name="viewActionZoomIn">
+   <property name="icon">
+    <iconset theme="chokusen-zoom-in">
+     <normaloff>.</normaloff>.</iconset>
+   </property>
    <property name="text">
     <string>Zoom In</string>
    </property>
@@ -1423,6 +1499,10 @@
    </property>
   </action>
   <action name="viewActionZoomOut">
+   <property name="icon">
+    <iconset theme="chokusen-zoom-out">
+     <normaloff>.</normaloff>.</iconset>
+   </property>
    <property name="text">
     <string>Zoom Out</string>
    </property>
@@ -1431,6 +1511,10 @@
    </property>
   </action>
   <action name="viewActionViewAll">
+   <property name="icon">
+    <iconset theme="chokusen-zoom-all">
+     <normaloff>.</normaloff>.</iconset>
+   </property>
    <property name="text">
     <string>View All</string>
    </property>
@@ -1476,6 +1560,10 @@
    </property>
   </action>
   <action name="editActionUnindent">
+   <property name="icon">
+    <iconset theme="chokusen-unindent">
+     <normaloff>.</normaloff>.</iconset>
+   </property>
    <property name="text">
     <string>U&amp;nindent</string>
    </property>
@@ -1488,18 +1576,11 @@
     <string>&amp;Cheat Sheet</string>
    </property>
   </action>
-  <action name="windowActionHideCustomizer">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="checked">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>Hide Customizer</string>
-   </property>
-  </action>
   <action name="fileActionExportPDF">
+   <property name="icon">
+    <iconset theme="chokusen-export-pdf">
+     <normaloff>.</normaloff>.</iconset>
+   </property>
    <property name="text">
     <string>Export as PDF...</string>
    </property>
@@ -1512,86 +1593,14 @@
     <string>Hide 3D View toolbar</string>
    </property>
   </action>
-  <action name="windowActionHideErrorLog">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="checked">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>Hide Error Log</string>
-   </property>
-   <property name="toolTip">
-    <string>Hide ErrorLog</string>
-   </property>
-  </action>
-  <action name="windowActionHideAnimate">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="checked">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>Hide Animation Toolbar/Window</string>
-   </property>
-   <property name="toolTip">
-    <string>Hide Animation Toolbar/Window</string>
-   </property>
-  </action>
-  <action name="windowActionHideViewportControl">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="checked">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>Hide Viewport-Control</string>
-   </property>
-   <property name="toolTip">
-    <string>Hide Viewport-Control</string>
-   </property>
-  </action>
-  <action name="windowActionSelectEditor">
-   <property name="text">
-    <string>&amp;Editor</string>
-   </property>
-  </action>
-  <action name="windowActionSelectConsole">
-   <property name="text">
-    <string>&amp;Console</string>
-   </property>
-  </action>
-  <action name="windowActionSelectCustomizer">
-   <property name="text">
-    <string>C&amp;ustomizer</string>
-   </property>
-  </action>
-  <action name="windowActionSelectErrorLog">
-   <property name="text">
-    <string>Error &amp;Log</string>
-   </property>
-  </action>
-  <action name="windowActionSelectAnimate">
-   <property name="text">
-    <string>&amp;Animate</string>
-   </property>
-  </action>
-  <action name="windowActionSelectViewportControl">
-   <property name="text">
-    <string>Viewport-Control</string>
-   </property>
-  </action>
   <action name="windowActionNextWindow">
    <property name="text">
-    <string>&amp;Next Window</string>
+    <string>&amp;Next Window	Ctrl+K</string>
    </property>
   </action>
   <action name="windowActionPreviousWindow">
    <property name="text">
-    <string>&amp;Previous Window</string>
+    <string>&amp;Previous Window	Ctrl+H</string>
    </property>
   </action>
   <action name="editActionInsertTemplate">
@@ -1607,20 +1616,22 @@
     <string>Fold/Unfoll All</string>
    </property>
   </action>
-  <action name="windowActionHideFontList">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="checked">
-    <bool>true</bool>
-   </property>
+  <action name="windowActionJumpTo">
    <property name="text">
-    <string>Hide Font List</string>
+    <string>Jump To ...</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+J</string>
    </property>
   </action>
-  <action name="windowActionSelectFontList">
+  <action name="fileActionPythonCreateVenv">
    <property name="text">
-    <string>Font List</string>
+    <string>Create Virtual Environment</string>
+   </property>
+  </action>
+  <action name="fileActionPythonSelectVenv">
+   <property name="text">
+    <string>Select Virtual Environment</string>
    </property>
   </action>
  </widget>

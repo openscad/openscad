@@ -38,8 +38,8 @@ private:
 public:
   line() = default;
 
-  [[nodiscard]] double get_x2() const { return x2; } // NOLINT(bugprone-virtual-near-miss)
-  [[nodiscard]] double get_y2() const { return y2; } // NOLINT(bugprone-virtual-near-miss)
+  [[nodiscard]] double get_x2() const { return x2; }  // NOLINT(bugprone-virtual-near-miss)
+  [[nodiscard]] double get_y2() const { return y2; }  // NOLINT(bugprone-virtual-near-miss)
 
   void set_attrs(attr_map_t& attrs, void *context) override;
   [[nodiscard]] const std::string dump() const override;
@@ -50,4 +50,4 @@ public:
   [[nodiscard]] shape *clone() const override { return new line(*this); }
 };
 
-}
+}  // namespace libsvg

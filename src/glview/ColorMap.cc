@@ -1,4 +1,5 @@
 #include "glview/ColorMap.h"
+#include "core/ColorUtil.h"
 #include "utils/printutils.h"
 #include "platform/PlatformUtils.h"
 
@@ -17,44 +18,33 @@ namespace fs = std::filesystem;
 
 static const char *DEFAULT_COLOR_SCHEME_NAME = "Cornfield";
 
-// See http://lolengine.net/blog/2013/01/13/fast-rgb-to-hsv
-static void rgbtohsv(float r, float g, float b, float& h, float& s, float& v)
-{
-  float K = 0.f;
-
-  if (g < b) {
-    std::swap(g, b);
-    K = -1.f;
-  }
-
-  if (r < g) {
-    std::swap(r, g);
-    K = -2.f / 6.f - K;
-  }
-
-  float chroma = r - std::min(g, b);
-  h = std::fabs(K + (g - b) / (6.f * chroma + 1e-20f));
-  s = chroma / (r + 1e-20f);
-  v = r;
-}
-
 RenderColorScheme::RenderColorScheme() : _path("")
 {
   _name = DEFAULT_COLOR_SCHEME_NAME;
   _index = 1000;
   _show_in_gui = true;
 
-  _color_scheme.insert(ColorScheme::value_type(RenderColor::BACKGROUND_COLOR, Color4f(0xff, 0xff, 0xe5)));
-  _color_scheme.insert(ColorScheme::value_type(RenderColor::BACKGROUND_STOP_COLOR, Color4f(0xff, 0xff, 0xe5)));
+  _color_scheme.insert(
+    ColorScheme::value_type(RenderColor::BACKGROUND_COLOR, Color4f(0xff, 0xff, 0xe5)));
+  _color_scheme.insert(
+    ColorScheme::value_type(RenderColor::BACKGROUND_STOP_COLOR, Color4f(0xff, 0xff, 0xe5)));
   _color_scheme.insert(ColorScheme::value_type(RenderColor::AXES_COLOR, Color4f(0x00, 0x00, 0x00)));
-  _color_scheme.insert(ColorScheme::value_type(RenderColor::OPENCSG_FACE_FRONT_COLOR, Color4f(0xf9, 0xd7, 0x2c)));
-  _color_scheme.insert(ColorScheme::value_type(RenderColor::OPENCSG_FACE_BACK_COLOR, Color4f(0x9d, 0xcb, 0x51)));
-  _color_scheme.insert(ColorScheme::value_type(RenderColor::CGAL_FACE_FRONT_COLOR, Color4f(0xf9, 0xd7, 0x2c)));
-  _color_scheme.insert(ColorScheme::value_type(RenderColor::CGAL_FACE_2D_COLOR, Color4f(0x00, 0xbf, 0x99)));
-  _color_scheme.insert(ColorScheme::value_type(RenderColor::CGAL_FACE_BACK_COLOR, Color4f(0x9d, 0xcb, 0x51)));
-  _color_scheme.insert(ColorScheme::value_type(RenderColor::CGAL_EDGE_FRONT_COLOR, Color4f(0xff, 0xec, 0x5e)));
-  _color_scheme.insert(ColorScheme::value_type(RenderColor::CGAL_EDGE_BACK_COLOR, Color4f(0xab, 0xd8, 0x56)));
-  _color_scheme.insert(ColorScheme::value_type(RenderColor::CGAL_EDGE_2D_COLOR, Color4f(0xff, 0x00, 0x00)));
+  _color_scheme.insert(
+    ColorScheme::value_type(RenderColor::OPENCSG_FACE_FRONT_COLOR, Color4f(0xf9, 0xd7, 0x2c)));
+  _color_scheme.insert(
+    ColorScheme::value_type(RenderColor::OPENCSG_FACE_BACK_COLOR, Color4f(0x9d, 0xcb, 0x51)));
+  _color_scheme.insert(
+    ColorScheme::value_type(RenderColor::CGAL_FACE_FRONT_COLOR, Color4f(0xf9, 0xd7, 0x2c)));
+  _color_scheme.insert(
+    ColorScheme::value_type(RenderColor::CGAL_FACE_2D_COLOR, Color4f(0x00, 0xbf, 0x99)));
+  _color_scheme.insert(
+    ColorScheme::value_type(RenderColor::CGAL_FACE_BACK_COLOR, Color4f(0x9d, 0xcb, 0x51)));
+  _color_scheme.insert(
+    ColorScheme::value_type(RenderColor::CGAL_EDGE_FRONT_COLOR, Color4f(0xff, 0xec, 0x5e)));
+  _color_scheme.insert(
+    ColorScheme::value_type(RenderColor::CGAL_EDGE_BACK_COLOR, Color4f(0xab, 0xd8, 0x56)));
+  _color_scheme.insert(
+    ColorScheme::value_type(RenderColor::CGAL_EDGE_2D_COLOR, Color4f(0xff, 0x00, 0x00)));
   _color_scheme.insert(ColorScheme::value_type(RenderColor::CROSSHAIR_COLOR, Color4f(0x80, 0x00, 0x00)));
 }
 
@@ -77,7 +67,7 @@ RenderColorScheme::RenderColorScheme(const fs::path& path) : _path(path)
     addColor(RenderColor::CGAL_EDGE_BACK_COLOR, "cgal-edge-back");
     addColor(RenderColor::CGAL_EDGE_2D_COLOR, "cgal-edge-2d");
     addColor(RenderColor::CROSSHAIR_COLOR, "crosshair");
-    try{
+    try {
       addColor(RenderColor::BACKGROUND_STOP_COLOR, "background-stop");
     } catch (const std::exception& e) {
       addColor(RenderColor::BACKGROUND_STOP_COLOR, "background");
@@ -91,45 +81,21 @@ RenderColorScheme::RenderColorScheme(const fs::path& path) : _path(path)
   }
 }
 
-bool RenderColorScheme::valid() const
-{
-  return !_name.empty();
-}
+bool RenderColorScheme::valid() const { return !_name.empty(); }
 
-const std::string& RenderColorScheme::name() const
-{
-  return _name;
-}
+const std::string& RenderColorScheme::name() const { return _name; }
 
-int RenderColorScheme::index() const
-{
-  return _index;
-}
+int RenderColorScheme::index() const { return _index; }
 
-bool RenderColorScheme::showInGui() const
-{
-  return _show_in_gui;
-}
+bool RenderColorScheme::showInGui() const { return _show_in_gui; }
 
-std::string RenderColorScheme::path() const
-{
-  return _path.string();
-}
+std::string RenderColorScheme::path() const { return _path.string(); }
 
-std::string RenderColorScheme::error() const
-{
-  return _error;
-}
+std::string RenderColorScheme::error() const { return _error; }
 
-ColorScheme& RenderColorScheme::colorScheme()
-{
-  return _color_scheme;
-}
+ColorScheme& RenderColorScheme::colorScheme() { return _color_scheme; }
 
-const boost::property_tree::ptree& RenderColorScheme::propertyTree() const
-{
-  return pt;
-}
+const boost::property_tree::ptree& RenderColorScheme::propertyTree() const { return pt; }
 
 void RenderColorScheme::addColor(RenderColor colorKey, const std::string& key)
 {
@@ -143,7 +109,8 @@ void RenderColorScheme::addColor(RenderColor colorKey, const std::string& key)
     int b = val & 0xff;
     _color_scheme.insert(ColorScheme::value_type(colorKey, Color4f(r, g, b)));
   } else {
-    throw std::invalid_argument(std::string("invalid color value for key '") + key + "': '" + color + "'");
+    throw std::invalid_argument(std::string("invalid color value for key '") + key + "': '" + color +
+                                "'");
   }
 }
 
@@ -163,10 +130,7 @@ ColorMap::ColorMap()
   dump();
 }
 
-const char *ColorMap::defaultColorSchemeName() const
-{
-  return DEFAULT_COLOR_SCHEME_NAME;
-}
+const char *ColorMap::defaultColorSchemeName() const { return DEFAULT_COLOR_SCHEME_NAME; }
 
 const ColorScheme& ColorMap::defaultColorScheme() const
 {
@@ -198,9 +162,11 @@ void ColorMap::dump() const
     const RenderColorScheme *cs = item.second.get();
     const char gui = cs->showInGui() ? 'G' : '-';
     if (cs->path().empty()) {
-      PRINTDB("%6d:%c: %s (built-in)", cs->index() % gui % boost::io::group(std::setw(length), cs->name()));
+      PRINTDB("%6d:%c: %s (built-in)",
+              cs->index() % gui % boost::io::group(std::setw(length), cs->name()));
     } else {
-      PRINTDB("%6d:%c: %s from %s", cs->index() % gui % boost::io::group(std::setw(length), cs->name()) % cs->path());
+      PRINTDB("%6d:%c: %s from %s",
+              cs->index() % gui % boost::io::group(std::setw(length), cs->name()) % cs->path());
     }
   }
   PRINTD("done.");
@@ -222,44 +188,9 @@ std::list<std::string> ColorMap::colorSchemeNames(bool guiOnly) const
 Color4f ColorMap::getColor(const ColorScheme& cs, const RenderColor rc)
 {
   if (cs.count(rc)) return cs.at(rc);
-  if (ColorMap::inst()->defaultColorScheme().count(rc)) return ColorMap::inst()->defaultColorScheme().at(rc);
+  if (ColorMap::inst()->defaultColorScheme().count(rc))
+    return ColorMap::inst()->defaultColorScheme().at(rc);
   return {0, 0, 0, 127};
-}
-
-Color4f ColorMap::getColorHSV(const Color4f& col)
-{
-  float h, s, v;
-  rgbtohsv(col[0], col[1], col[2], h, s, v);
-  return {h, s, v, col[3]};
-}
-
-/**
- * Calculate contrast color. Based on the article
- * http://gamedev.stackexchange.com/questions/38536/given-a-rgb-color-x-how-to-find-the-most-contrasting-color-y
- *
- * @param col the input color
- * @return a color with high contrast to the input color
- */
-Color4f ColorMap::getContrastColor(const Color4f& col)
-{
-  Color4f hsv = ColorMap::getColorHSV(col);
-  float Y = 0.2126f * col[0] + 0.7152f * col[1] + 0.0722f * col[2];
-  float S = hsv[1];
-
-  if (S < 0.5) {
-    // low saturation, choose between black / white based on luminance Y
-    float val = Y > 0.5 ? 0.0f : 1.0f;
-    return {val, val, val, 1.0f};
-  } else {
-    float H = 360 * hsv[0];
-    if ((H < 60) || (H > 300)) {
-      return {0.0f, 1.0f, 1.0f, 1.0f}; // red -> cyan
-    } else if (H < 180) {
-      return {1.0f, 0.0f, 1.0f, 1.0f}; // green -> magenta
-    } else {
-      return {1.0f, 1.0f, 0.0f, 1.0f}; // blue -> yellow
-    }
-  }
 }
 
 void ColorMap::enumerateColorSchemesInPath(colorscheme_set_t& result_set, const fs::path& basePath)
@@ -283,7 +214,8 @@ void ColorMap::enumerateColorSchemesInPath(colorscheme_set_t& result_set, const 
 
       auto *colorScheme = new RenderColorScheme(path);
       if (colorScheme->valid() && (findColorScheme(colorScheme->name()) == nullptr)) {
-        result_set.insert(colorscheme_set_t::value_type(colorScheme->index(), std::shared_ptr<RenderColorScheme>(colorScheme)));
+        result_set.insert(colorscheme_set_t::value_type(
+          colorScheme->index(), std::shared_ptr<RenderColorScheme>(colorScheme)));
         PRINTDB("Found file '%s' with color scheme '%s' and index %d",
                 colorScheme->path() % colorScheme->name() % colorScheme->index());
       } else {
@@ -299,8 +231,8 @@ ColorMap::colorscheme_set_t ColorMap::enumerateColorSchemes()
   colorscheme_set_t result_set;
 
   auto *defaultColorScheme = new RenderColorScheme();
-  result_set.insert(colorscheme_set_t::value_type(defaultColorScheme->index(),
-                                                  std::shared_ptr<RenderColorScheme>(defaultColorScheme)));
+  result_set.insert(colorscheme_set_t::value_type(
+    defaultColorScheme->index(), std::shared_ptr<RenderColorScheme>(defaultColorScheme)));
   enumerateColorSchemesInPath(result_set, PlatformUtils::resourceBasePath());
   enumerateColorSchemesInPath(result_set, PlatformUtils::userConfigPath());
 

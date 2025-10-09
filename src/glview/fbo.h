@@ -1,22 +1,35 @@
 #pragma once
 
+#include <cstddef>
+#include <memory>
+
 #include "glview/system-gl.h"
-#include <cstddef> // size_t
 
-struct fbo_t
+class FBO
 {
-  GLuint fbo_id;
-  GLuint old_fbo_id;
+public:
+  FBO(int width, int height, bool useEXT);
+  ~FBO() { destroy(); };
 
-  GLuint renderbuf_id;
-  GLuint depthbuf_id;
+  int width() const { return this->width_; }
+  int height() const { return this->height_; }
+  bool isComplete() const { return this->complete_; }
+
+  bool resize(size_t width, size_t height);
+  GLuint bind();
+  void unbind();
+
+private:
+  void destroy();
+
+  int width_ = 0;
+  int height_ = 0;
+  bool use_ext_;
+  GLuint fbo_id_ = 0;
+  GLuint old_fbo_id_ = 0;
+  GLuint renderbuf_id_ = 0;
+  GLuint depthbuf_id_ = 0;
+  bool complete_ = false;
 };
 
-fbo_t *fbo_new();
-bool fbo_init(fbo_t *fbo, size_t width, size_t height);
-bool fbo_resize(fbo_t *fbo, size_t width, size_t height);
-void fbo_delete(fbo_t *fbo);
-GLuint fbo_bind(fbo_t *fbo);
-void fbo_unbind(fbo_t *fbo);
-
-bool REPORTGLERROR(const char *task);
+std::unique_ptr<FBO> createFBO(int width, int height);

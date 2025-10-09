@@ -51,7 +51,7 @@
 
 namespace fs = std::filesystem;
 
-#define YYMAXDEPTH 20000
+#define YYMAXDEPTH 200000
 #define LOC(loc) Location(loc.first_line, loc.first_column, loc.last_line, loc.last_column, sourcefile())
 #ifdef DEBUG
 static Location debug_location(const std::string& info, const struct YYLTYPE& loc);
@@ -73,7 +73,7 @@ int lexerlex_destroy(void);
 int lexerlex(void);
 static void handle_assignment(const std::string token, Expression *expr, const Location loc);
 
-std::stack<LocalScope *> scope_stack;
+std::stack<std::shared_ptr<LocalScope>> scope_stack;
 SourceFile *rootfile;
 
 extern void lexerdestroy();
@@ -127,7 +127,7 @@ bool fileEnded=false;
 %token TOK_FALSE
 %token TOK_UNDEF
 
-%token LE GE EQ NEQ AND OR
+%token LE GE EQ NEQ AND OR LSH RSH
 
 %nonassoc NO_ELSE
 %nonassoc TOK_ELSE
@@ -138,6 +138,9 @@ bool fileEnded=false;
 %type <expr> logic_and
 %type <expr> equality
 %type <expr> comparison
+%type <expr> binaryor
+%type <expr> binaryand
+%type <expr> shift
 %type <expr> addition
 %type <expr> multiplication
 %type <expr> exponent
@@ -192,7 +195,7 @@ statement
               UserModule *newmodule = new UserModule($2, LOCD("module", @$));
               newmodule->parameters = *$4;
               auto top = scope_stack.top();
-              scope_stack.push(&newmodule->body);
+              scope_stack.push(newmodule->body);
               top->addModule(std::shared_ptr<UserModule>(newmodule));
               free($2);
               delete $4;
@@ -252,7 +255,7 @@ module_instantiation
         | single_module_instantiation
             {
                 $<inst>$ = $1;
-                scope_stack.push(&$1->scope);
+                scope_stack.push($1->scope);
             }
           child_statement
             {
@@ -285,7 +288,7 @@ if_statement
         : TOK_IF '(' expr ')'
             {
                 $<ifelse>$ = new IfElseModuleInstantiation(std::shared_ptr<Expression>($3), LOCD("if", @$));
-                scope_stack.push(&$<ifelse>$->scope);
+                scope_stack.push($<ifelse>$->scope);
             }
           child_statement
             {
@@ -385,24 +388,52 @@ equality
 		;
 
 comparison
-        : addition
-        | comparison '>' addition
+        : binaryor
+        | comparison '>' binaryor
             {
               $$ = new BinaryOp($1, BinaryOp::Op::Greater, $3, LOCD("greater", @$));
             }
-        | comparison GE addition
+        | comparison GE binaryor
             {
               $$ = new BinaryOp($1, BinaryOp::Op::GreaterEqual, $3, LOCD("greaterequal", @$));
             }
-        | comparison '<' addition
+        | comparison '<' binaryor
             {
               $$ = new BinaryOp($1, BinaryOp::Op::Less, $3, LOCD("less", @$));
             }
-        | comparison LE addition
+        | comparison LE binaryor
             {
               $$ = new BinaryOp($1, BinaryOp::Op::LessEqual, $3, LOCD("lessequal", @$));
             }
 		;
+
+binaryor
+        : binaryand
+        | binaryor '|' binaryand
+            {
+              $$ = new BinaryOp($1, BinaryOp::Op::BinaryOr, $3, LOCD("binary-or", @$));
+            }
+        ;
+
+binaryand
+        : shift
+        | binaryand '&' shift
+            {
+              $$ = new BinaryOp($1, BinaryOp::Op::BinaryAnd, $3, LOCD("binary-and", @$));
+            }
+        ;
+
+shift
+        : addition
+        | shift LSH addition
+            {
+              $$ = new BinaryOp($1, BinaryOp::Op::ShiftLeft, $3, LOCD("shift-left", @$));
+            }
+        | shift RSH addition
+            {
+              $$ = new BinaryOp($1, BinaryOp::Op::ShiftRight, $3, LOCD("shift-right", @$));
+            }
+        ;
 
 addition
         : multiplication
@@ -453,6 +484,10 @@ unary
         | '!' unary
             {
               $$ = new UnaryOp(UnaryOp::Op::Not, $2, LOCD("not", @$));
+            }
+        | '~' unary
+            {
+              $$ = new UnaryOp(UnaryOp::Op::BinaryNot, $2, LOCD("binary-not", @$));
             }
 		;
 
@@ -703,7 +738,7 @@ static void warn_reassignment(const Location& loc, const std::shared_ptr<Assignm
 			loc,
 			path.parent_path().generic_string(),
 			"%1$s was assigned on line %2$i but was overwritten",
-			assignment->getName(),
+			quoteVar(assignment->getName()),
 			assignment->location().firstLine());
 
 }
@@ -714,7 +749,7 @@ static void warn_reassignment(const Location& loc, const std::shared_ptr<Assignm
 			loc,
 			path1.parent_path().generic_string(),
 			"%1$s was assigned on line %2$i of %3$s but was overwritten",
-			assignment->getName(),
+			quoteVar(assignment->getName()),
 			assignment->location().firstLine(),
 			path2);
 }
@@ -762,6 +797,9 @@ bool parse(SourceFile *&file, const std::string& text, const std::string &filena
   try {
     filepath = filename.empty() ? fs::current_path() : fs::absolute(fs::path{filename});
     mainFilePath = mainFile.empty() ? fs::current_path() : fs::absolute(fs::path{mainFile});
+  } catch (const std::filesystem::filesystem_error& fs_err) {
+    LOG(message_group::Error, "Parser error: file system error: %1$s", fs_err.what());
+    return false;
   } catch (...) {
     // yyerror tries to print the file path, which throws again, and we can't do that
     LOG(message_group::Error, "Parser error: file access denied");
@@ -778,13 +816,13 @@ bool parse(SourceFile *&file, const std::string& text, const std::string &filena
   fileEnded = false;
 
   rootfile = new SourceFile(parser_sourcefile.parent_path().string(), parser_sourcefile.filename().string());
-  scope_stack.push(&rootfile->scope);
+  scope_stack.push(rootfile->scope);
   //        PRINTB_NOCACHE("New module: %s %p", "root" % rootfile);
 
   parserdebug = debug;
   int parserretval = -1;
   try{
-     parserretval = parserparse();
+    parserretval = parserparse();
   }catch (const HardWarningException &e) {
     yyerror("stop on first warning");
   }
@@ -793,11 +831,16 @@ bool parse(SourceFile *&file, const std::string& text, const std::string &filena
   lexerlex_destroy();
 
   file = rootfile;
-  if (parserretval != 0) return false;
+  if (parserretval != 0) {
+    // Clear scope_stack when parsing aborted
+    scope_stack = {};
+    return false;
+  }
 
   parser_error_pos = -1;
   parser_input_buffer = nullptr;
   scope_stack.pop();
+  assert(scope_stack.size()==0);
 
   return true;
 }

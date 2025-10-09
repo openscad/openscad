@@ -19,7 +19,8 @@ ErrorLog::ErrorLog(QWidget *parent) : QWidget(parent)
 void ErrorLog::initGUI()
 {
   row = 0;
-  QList<QString> labels = QList<QString>() << QString("Group") << QString("File") << QString("Line") << QString("Info");
+  QList<QString> labels = QList<QString>()
+                          << QString("Group") << QString("File") << QString("Line") << QString("Info");
 
   const int numColumns = labels.count();
   this->errorLogModel = new QStandardItemModel(row, numColumns, logTable);
@@ -32,37 +33,40 @@ void ErrorLog::initGUI()
   logTable->setColumnWidth(errorLog_column::file, 200);
   logTable->setColumnWidth(errorLog_column::lineNo, 80);
   logTable->addAction(actionRowSelected);
-  //last column will stretch itself
+  // last column will stretch itself
 
-  connect(logTable->horizontalHeader(), SIGNAL(sectionResized(int,int,int)), this, SLOT(onSectionResized(int,int,int)));
+  connect(logTable->horizontalHeader(), &QHeaderView::sectionResized, this, &ErrorLog::onSectionResized);
 }
 
-void ErrorLog::toErrorLog(const Message& log_msg)
+void ErrorLog::toErrorLog(const Message& logMsg)
 {
-  lastMessages.push_back(log_msg);
+  lastMessages.push_back(logMsg);
   QString currGroup = errorLogComboBox->currentText();
 
-  //handle combobox
-  if (errorLogComboBox->currentIndex() == 0);
-  else if (currGroup.toStdString() != getGroupName(log_msg.group)) return;
+  // handle combobox
+  if (errorLogComboBox->currentIndex() == 0)
+    ;
+  else if (currGroup.toStdString() != getGroupName(logMsg.group)) return;
 
-  showtheErrorInGUI(log_msg);
+  showtheErrorInGUI(logMsg);
 }
 
-void ErrorLog::showtheErrorInGUI(const Message& log_msg)
+void ErrorLog::showtheErrorInGUI(const Message& logMsg)
 {
-  auto *groupName = new QStandardItem(QString::fromStdString(getGroupName(log_msg.group)));
+  auto *groupName = new QStandardItem(QString::fromStdString(getGroupName(logMsg.group)));
   groupName->setEditable(false);
 
-  if (log_msg.group == message_group::Error) groupName->setForeground(QColor::fromRgb(255, 0, 0)); //make this item red.
-  else if (log_msg.group == message_group::Warning) groupName->setForeground(QColor::fromRgb(252, 211, 3)); //make this item yellow
+  if (logMsg.group == message_group::Error)
+    groupName->setForeground(QColor::fromRgb(255, 0, 0));  // make this item red.
+  else if (logMsg.group == message_group::Warning)
+    groupName->setForeground(QColor::fromRgb(252, 211, 3));  // make this item yellow
 
   errorLogModel->setItem(row, errorLog_column::group, groupName);
 
   QStandardItem *fileName;
   QStandardItem *lineNo;
-  if (!log_msg.loc.isNone()) {
-    const auto& filePath = log_msg.loc.filePath();
+  if (!logMsg.loc.isNone()) {
+    const auto& filePath = logMsg.loc.filePath();
     if (is_regular_file(filePath)) {
       const auto path = QString::fromStdString(filePath.generic_string());
       fileName = new QStandardItem(QString::fromStdString(filePath.filename().generic_string()));
@@ -71,7 +75,7 @@ void ErrorLog::showtheErrorInGUI(const Message& log_msg)
     } else {
       fileName = new QStandardItem(QString());
     }
-    lineNo = new QStandardItem(QString::number(log_msg.loc.firstLine()));
+    lineNo = new QStandardItem(QString::number(logMsg.loc.firstLine()));
   } else {
     fileName = new QStandardItem(QString());
     lineNo = new QStandardItem(QString());
@@ -82,7 +86,7 @@ void ErrorLog::showtheErrorInGUI(const Message& log_msg)
   errorLogModel->setItem(row, errorLog_column::file, fileName);
   errorLogModel->setItem(row, errorLog_column::lineNo, lineNo);
 
-  auto *msg = new QStandardItem(QString::fromStdString(log_msg.msg));
+  auto *msg = new QStandardItem(QString::fromStdString(logMsg.msg));
   msg->setEditable(false);
   errorLogModel->setItem(row, errorLog_column::message, msg);
   errorLogModel->setRowCount(++row);
@@ -94,12 +98,10 @@ void ErrorLog::showtheErrorInGUI(const Message& log_msg)
   }
 }
 
-void ErrorLog::resize()
-{
-  logTable->resizeRowsToContents();
-}
+void ErrorLog::resize() { logTable->resizeRowsToContents(); }
 
-void ErrorLog::onSectionResized(int /*logicalIndex*/, int /*oldSize*/, int /*newSize*/){
+void ErrorLog::onSectionResized(int /*logicalIndex*/, int /*oldSize*/, int /*newSize*/)
+{
   this->resize();
 }
 
@@ -116,10 +118,7 @@ void ErrorLog::clearModel()
   lastMessages.clear();
 }
 
-int ErrorLog::getLine(int row, int col)
-{
-  return logTable->model()->index(row, col).data().toInt();
-}
+int ErrorLog::getLine(int row, int col) { return logTable->model()->index(row, col).data().toInt(); }
 
 void ErrorLog::on_errorLogComboBox_currentTextChanged(const QString& group)
 {
@@ -133,10 +132,7 @@ void ErrorLog::on_errorLogComboBox_currentTextChanged(const QString& group)
   }
 }
 
-void ErrorLog::on_logTable_doubleClicked(const QModelIndex& index)
-{
-  onIndexSelected(index);
-}
+void ErrorLog::on_logTable_doubleClicked(const QModelIndex& index) { onIndexSelected(index); }
 
 void ErrorLog::on_actionRowSelected_triggered(bool)
 {

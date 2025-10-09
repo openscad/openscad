@@ -25,10 +25,11 @@
  */
 #include "gui/input/InputEventMapper.h"
 #include "gui/input/InputDriverManager.h"
-#include "gui/Settings.h"
+#include "core/Settings.h"
 #include "gui/Preferences.h"
 #include "gui/input/AxisConfigWidget.h"
 #include "gui/input/ButtonConfigWidget.h"
+#include <array>
 #include <QMetaObject>
 #include <QTimer>
 #include <cstddef>
@@ -36,18 +37,20 @@
 #include <cmath>
 #include <QSettings>
 
+using S = Settings::Settings;
+
 InputEventMapper *InputEventMapper::self = nullptr;
 
 InputEventMapper::InputEventMapper()
 {
   stopRequest = false;
 
-  for (size_t a = 0; a < InputDriver::max_axis; ++a) {
+  for (size_t a = 0; a < getMaxAxis(); ++a) {
     axisRawValue[a] = 0.0;
     axisTrimValue[a] = 0.0;
     axisDeadzone[a] = 0.1;
   }
-  for (size_t a = 0; a < InputDriver::max_buttons; ++a) {
+  for (size_t a = 0; a < getMaxButtons(); ++a) {
     button_state[a] = false;
     button_state_last[a] = false;
   }
@@ -59,7 +62,7 @@ InputEventMapper::InputEventMapper()
   zoomGain = 1.00;
 
   timer = new QTimer(this);
-  connect(timer, SIGNAL(timeout()), this, SLOT(onTimer()));
+  connect(timer, &QTimer::timeout, this, &InputEventMapper::onTimer);
   timer->start(30);
 
   onInputMappingUpdated();
@@ -77,14 +80,6 @@ InputEventMapper *InputEventMapper::instance()
   return self;
 }
 
-size_t InputEventMapper::getMaxButtons(){
-  return InputDriver::max_buttons;
-}
-
-size_t InputEventMapper::getMaxAxis(){
-  return InputDriver::max_axis;
-}
-
 /*
     -1 -> 0.196
     0 -> 0
@@ -99,17 +94,17 @@ double InputEventMapper::scale(double val)
 
 double InputEventMapper::getAxisValue(int config)
 {
-  if (config == 0)    // avoid indexing by -1 when using default settings (and causing bizarre behavior)
+  if (config == 0)  // avoid indexing by -1 when using default settings (and causing bizarre behavior)
     return scale(0);
 
   int idx = abs(config) - 1;
-  if (idx > 8)        // avoid reading over end of arrays (and causing segfaults)
+  if (idx > 8)  // avoid reading over end of arrays (and causing segfaults)
     return scale(0);
 
   bool neg = config < 0;
   double trimmedVal = axisRawValue[idx] + axisTrimValue[idx];
   double val = neg ? -trimmedVal : trimmedVal;
-  if (val < axisDeadzone[idx] and - val < axisDeadzone[idx]) {
+  if (val < axisDeadzone[idx] and -val < axisDeadzone[idx]) {
     val = 0;
   }
   return scale(val);
@@ -177,15 +172,15 @@ void InputEventMapper::onTimer()
 {
   bool generated_any_events = generateDeferredEvents();
 
-  //update the UI on time, NOT on event as a joystick can fire a high rate of events
-  for (size_t i = 0; i < InputDriver::max_buttons; ++i) {
+  // update the UI on time, NOT on event as a joystick can fire a high rate of events
+  for (size_t i = 0; i < getMaxButtons(); ++i) {
     if (button_state[i] != button_state_last[i]) {
       button_state_last[i] = button_state[i];
-      Preferences::inst()->ButtonConfig->updateButtonState(i, button_state[i]);
+      GlobalPreferences::inst()->ButtonConfig->updateButtonState(i, button_state[i]);
     }
   }
-  for (size_t i = 0; i < InputDriver::max_axis; ++i) {
-    Preferences::inst()->AxisConfig->AxesChanged(i, axisRawValue[i] + axisTrimValue[i]);
+  for (size_t i = 0; i < getMaxAxis(); ++i) {
+    GlobalPreferences::inst()->AxisConfig->AxesChanged(i, axisRawValue[i] + axisTrimValue[i]);
   }
 
   if (!generated_any_events) {
@@ -205,7 +200,7 @@ void InputEventMapper::onButtonChanged(InputEventButtonChanged *event)
 {
   unsigned int button = event->button;
 
-  if (button < InputDriver::max_buttons) {
+  if (button < getMaxButtons()) {
     if (event->down) {
       this->button_state[button] = true;
     } else {
@@ -260,8 +255,8 @@ int InputEventMapper::parseSettingValue(const std::string& val)
 
 void InputEventMapper::onInputMappingUpdated()
 {
-  for (size_t i = 0; i < InputDriver::max_buttons; ++i) {
-    actions[i] = QString::fromStdString(Settings::Settings::inputButton(i).value());
+  for (size_t i = 0; i < getMaxButtons(); ++i) {
+    actions[i] = QString::fromStdString(inputButtonSettings(i).value());
   }
 
   translate[0] = parseSettingValue(Settings::Settings::inputTranslationX.value());
@@ -294,32 +289,63 @@ void InputEventMapper::onInputGainUpdated()
 
 void InputEventMapper::onInputCalibrationUpdated()
 {
-  for (size_t i = 0; i < InputDriver::max_axis; ++i) {
-    axisTrimValue[i] = Settings::Settings::axisTrim(i).value();
-    axisDeadzone[i] = Settings::Settings::axisDeadzone(i).value();
+  for (size_t i = 0; i < getMaxAxis(); ++i) {
+    axisTrimValue[i] = axisTrimSettings(i).value();
+    axisDeadzone[i] = axisDeadzoneSettings(i).value();
   }
   considerGeneratingDeferredEvents();
 }
 
 void InputEventMapper::onAxisAutoTrim()
 {
-  for (size_t i = 0; i < InputDriver::max_axis; ++i) {
+  for (size_t i = 0; i < getMaxAxis(); ++i) {
     axisTrimValue[i] = -axisRawValue[i];
-    Settings::Settings::axisTrim(i).setValue(axisTrimValue[i]);
+    axisTrimSettings(i).setValue(axisTrimValue[i]);
   }
   considerGeneratingDeferredEvents();
 }
 
 void InputEventMapper::onAxisTrimReset()
 {
-  for (size_t i = 0; i < InputDriver::max_axis; ++i) {
+  for (size_t i = 0; i < getMaxAxis(); ++i) {
     axisTrimValue[i] = 0.00;
-    Settings::Settings::axisTrim(i).setValue(axisTrimValue[i]);
+    axisTrimSettings(i).setValue(axisTrimValue[i]);
   }
   considerGeneratingDeferredEvents();
 }
 
-void InputEventMapper::stop(){
+void InputEventMapper::stop()
+{
   stopRequest = true;
   timer->stop();
+}
+
+Settings::SettingsEntryString& InputEventMapper::inputButtonSettings(size_t id)
+{
+  const std::array<Settings::SettingsEntryString *, getMaxButtons()> entries{
+    &S::inputButton0,  &S::inputButton1,  &S::inputButton2,  &S::inputButton3,  &S::inputButton4,
+    &S::inputButton5,  &S::inputButton6,  &S::inputButton7,  &S::inputButton8,  &S::inputButton9,
+    &S::inputButton10, &S::inputButton11, &S::inputButton12, &S::inputButton13, &S::inputButton14,
+    &S::inputButton15, &S::inputButton16, &S::inputButton17, &S::inputButton18, &S::inputButton19,
+    &S::inputButton20, &S::inputButton21, &S::inputButton22, &S::inputButton23};
+  assert(id >= 0 && id < entries.size());
+  return *entries[id];
+}
+
+Settings::SettingsEntryDouble& InputEventMapper::axisTrimSettings(size_t id)
+{
+  const std::array<Settings::SettingsEntryDouble *, getMaxAxis()> entries{
+    &S::axisTrim0, &S::axisTrim1, &S::axisTrim2, &S::axisTrim3, &S::axisTrim4,
+    &S::axisTrim5, &S::axisTrim6, &S::axisTrim7, &S::axisTrim8};
+  assert(id >= 0 && id < entries.size());
+  return *entries[id];
+}
+
+Settings::SettingsEntryDouble& InputEventMapper::axisDeadzoneSettings(size_t id)
+{
+  const std::array<Settings::SettingsEntryDouble *, getMaxAxis()> entries{
+    &S::axisDeadzone0, &S::axisDeadzone1, &S::axisDeadzone2, &S::axisDeadzone3, &S::axisDeadzone4,
+    &S::axisDeadzone5, &S::axisDeadzone6, &S::axisDeadzone7, &S::axisDeadzone8};
+  assert(id >= 0 && id < entries.size());
+  return *entries[id];
 }

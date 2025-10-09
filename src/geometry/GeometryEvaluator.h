@@ -1,6 +1,7 @@
 #pragma once
 
 #include "core/NodeVisitor.h"
+#include "geometry/linalg.h"
 #include "core/enums.h"
 #include "geometry/Geometry.h"
 
@@ -10,7 +11,7 @@
 #include <vector>
 #include <map>
 
-class CGAL_Nef_polyhedron;
+class CGALNefGeometry;
 class Polygon2d;
 class Tree;
 
@@ -50,30 +51,51 @@ public:
 private:
   class ResultObject
   {
-public:
+  public:
     // This makes it explicit if we want a const vs. non-const result.
     // This is important to avoid inadvertently tagging a geometry as const when
-    // the underlying geometry is actually mutable. 
+    // the underlying geometry is actually mutable.
     // The template trick, combined with private constructors, makes it possible
     // to create a ResultObject containing a const, _only_ from const objects
     // (i.e. no implicit conversion from non-const to const).
-    template<class T> static ResultObject constResult(std::shared_ptr<const T> geom) {return {geom};}
-    template<class T> static ResultObject mutableResult(std::shared_ptr<T> geom) {return {geom};}
+    template <class T>
+    static ResultObject constResult(std::shared_ptr<const T> geom)
+    {
+      return {geom};
+    }
+    template <class T>
+    static ResultObject mutableResult(std::shared_ptr<T> geom)
+    {
+      return {geom};
+    }
 
     // Default constructor with nullptr can be used to represent empty geometry,
     // for example union() with no children, etc.
     ResultObject() : is_const(true) {}
-    std::shared_ptr<Geometry> ptr() { assert(!is_const); return pointer; }
-    [[nodiscard]] std::shared_ptr<const Geometry> constptr() const {
+    std::shared_ptr<Geometry> ptr()
+    {
+      assert(!is_const);
+      return pointer;
+    }
+    [[nodiscard]] std::shared_ptr<const Geometry> constptr() const
+    {
       return is_const ? const_pointer : std::static_pointer_cast<const Geometry>(pointer);
     }
-    std::shared_ptr<Geometry> asMutableGeometry() {
+    std::shared_ptr<Geometry> asMutableGeometry()
+    {
       if (is_const) return {constptr() ? constptr()->copy() : nullptr};
       else return ptr();
     }
-private:
-    template<class T> ResultObject(std::shared_ptr<const T> g) : is_const(true), const_pointer(std::move(g)) {}
-    template<class T> ResultObject(std::shared_ptr<T> g) : is_const(false), pointer(std::move(g)) {}
+
+  private:
+    template <class T>
+    ResultObject(std::shared_ptr<const T> g) : is_const(true), const_pointer(std::move(g))
+    {
+    }
+    template <class T>
+    ResultObject(std::shared_ptr<T> g) : is_const(false), pointer(std::move(g))
+    {
+    }
 
     bool is_const;
     std::shared_ptr<Geometry> pointer;
@@ -90,14 +112,16 @@ private:
   std::unique_ptr<Polygon2d> applyHull2D(const AbstractNode& node);
   std::unique_ptr<Polygon2d> applyFill2D(const AbstractNode& node);
   std::unique_ptr<Geometry> applyHull3D(const AbstractNode& node);
-  void applyResize3D(CGAL_Nef_polyhedron& N, const Vector3d& newsize, const Eigen::Matrix<bool, 3, 1>& autosize);
+  void applyResize3D(CGALNefGeometry& N, const Vector3d& newsize,
+                     const Eigen::Matrix<bool, 3, 1>& autosize);
   std::unique_ptr<Polygon2d> applyToChildren2D(const AbstractNode& node, OpenSCADOperator op);
   ResultObject applyToChildren3D(const AbstractNode& node, OpenSCADOperator op);
   ResultObject applyToChildren(const AbstractNode& node, OpenSCADOperator op);
   std::shared_ptr<const Geometry> projectionCut(const ProjectionNode& node);
   std::shared_ptr<const Geometry> projectionNoCut(const ProjectionNode& node);
 
-  void addToParent(const State& state, const AbstractNode& node, const std::shared_ptr<const Geometry>& geom);
+  void addToParent(const State& state, const AbstractNode& node,
+                   const std::shared_ptr<const Geometry>& geom);
   Response lazyEvaluateRootNode(State& state, const AbstractNode& node);
 
   std::map<int, Geometry::Geometries> visitedchildren;

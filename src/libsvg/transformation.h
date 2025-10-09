@@ -38,11 +38,12 @@ class transformation
 private:
   const std::string op;
   const std::string name;
+
 protected:
   std::vector<double> args;
 
 public:
-  transformation(std::string op, std::string name) : op(std::move(op)), name(std::move(name)) { }
+  transformation(std::string op, std::string name) : op(std::move(op)), name(std::move(name)) {}
   virtual ~transformation() = default;
 
   [[nodiscard]] const std::string& get_op() const { return op; }
@@ -101,4 +102,4 @@ public:
   std::vector<Eigen::Matrix3d> get_matrices() override;
 };
 
-} // namespace libsvg
+}  // namespace libsvg

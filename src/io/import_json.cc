@@ -23,16 +23,19 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  */
+#include "io/import.h"
 
 #include <exception>
-#include <utility>
 #include <fstream>
 #include <string>
+#include <utility>
+
 #include "json/json.hpp"
 
+#include "core/AST.h"
+#include "core/EvaluationSession.h"
 #include "core/Value.h"
 #include "utils/printutils.h"
-#include "core/EvaluationSession.h"
 
 using json = nlohmann::json;
 
@@ -69,7 +72,7 @@ ObjectType to_obj(const json& j, EvaluationSession *session)
   return obj;
 }
 
-} // namespace
+}  // namespace
 
 Value import_json(const std::string& filename, EvaluationSession *session, const Location& loc)
 {

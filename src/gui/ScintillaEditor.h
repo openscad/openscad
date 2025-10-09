@@ -1,6 +1,7 @@
 #pragma once
 
 #include <QStringList>
+#include <filesystem>
 #include <map>
 #include <functional>
 #include <memory>
@@ -15,7 +16,6 @@
 #include <QString>
 #include <QWidget>
 #include <QVBoxLayout>
-#include <QVBoxLayout>
 #include <Qsci/qsciscintilla.h>
 
 #include "gui/Editor.h"
@@ -25,8 +25,7 @@
 class ScadLexer;
 class ScadLexer2;
 
-#define ENABLE_LEXERTL  1
-
+#define ENABLE_LEXERTL 1
 
 class EditorColorScheme
 {
@@ -74,7 +73,8 @@ public:
   QPoint mapToGlobal(const QPoint&) override;
 
   void setCursorPosition(int line, int col) override;
-  void setSelectionIndicatorStatus(EditorSelectionIndicatorStatus satuts, int level, int lineFrom, int colFrom, int lineTo, int colTo) override;
+  void setSelectionIndicatorStatus(EditorSelectionIndicatorStatus satuts, int level, int lineFrom,
+                                   int colFrom, int lineTo, int colTo) override;
   void clearAllSelectionIndicators() override;
   void clearSelectionIndicators(int lineFrom, int colFrom, int lineTo, int colTo);
 
@@ -84,8 +84,7 @@ public:
 private:
   void getRange(int *lineFrom, int *lineTo);
   void setColormap(const EditorColorScheme *colorScheme);
-  int readInt(const boost::property_tree::ptree& pt, const std::string& name,
-              const int defaultValue);
+  int readInt(const boost::property_tree::ptree& pt, const std::string& name, const int defaultValue);
   std::string readString(const boost::property_tree::ptree& pt, const std::string& name,
                          const std::string& defaultValue);
   QColor readColor(const boost::property_tree::ptree& pt, const std::string& name,
@@ -144,35 +143,32 @@ public slots:
   void nextBookmark() override;
   void prevBookmark() override;
   void jumpToNextError() override;
+  void applySettings();
+  void onAutocompleteChanged(bool state);
+  void onCharacterThresholdChanged(int val);
 
 private slots:
   void onTextChanged();
   void onUserListSelected(const int id, const QString& text);
-  void applySettings();
-  void onAutocompleteChanged(bool state);
-  void onCharacterThresholdChanged(int val);
   void fireModificationChanged();
   void onIndicatorClicked(int line, int col, Qt::KeyboardModifiers state);
   void onIndicatorReleased(int line, int col, Qt::KeyboardModifiers state);
-signals:
-  void escapePressed(void);
-
-public:
-  void public_applySettings();
 
 private:
   QVBoxLayout *scintillaLayout;
   static const int symbolMargin = 1;
   static const int numberMargin = 0;
-  static const int errorIndicatorNumber = 8; // first 8 are used by lexers
+  static const int errorIndicatorNumber = 8;  // first 8 are used by lexers
   static const int findIndicatorNumber = 9;
   static const int hyperlinkIndicatorNumber = 10;
   static const int hyperlinkIndicatorOffset = 100;
   static const int errMarkerNumber = 2;
   static const int bmMarkerNumber = 3;
-  static const int selectionMarkerLevelNumber = 20; //20 - 25, there is at max 5 level of depth
-  static const int selectionIndicatorIsActiveNumber = 11; //Represents the active selected area text 11 - 12
-  static const int selectionIndicatorIsImpactedNumber = 14; //Represents the impacted selected area text 14-15-16
+  static const int selectionMarkerLevelNumber = 20;  // 20 - 25, there is at max 5 level of depth
+  static const int selectionIndicatorIsActiveNumber =
+    11;  // Represents the active selected area text 11 - 12
+  static const int selectionIndicatorIsImpactedNumber =
+    14;  // Represents the impacted selected area text 14-15-16
 
   bool indicatorsActive = false;
 

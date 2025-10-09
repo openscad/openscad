@@ -25,10 +25,10 @@
  */
 #pragma once
 
-#include "gui/Settings.h"
+#include "core/Settings.h"
 
 class SettingsWriter : public Settings::SettingsVisitor
 {
 public:
-  void handle(Settings::SettingsEntry& entry) const override;
+  void handle(Settings::SettingsEntryBase& entry) const override;
 };

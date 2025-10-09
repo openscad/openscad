@@ -8,7 +8,7 @@
 
 namespace hershey {
 
-// Determine the width of the text if drawn with DrawText()
+// Determine the width of the text if drawn with DrawTextHershey()
 float TextWidth(std::string_view str, float size);
 
 // Horizontal alignment
@@ -20,7 +20,6 @@ enum class TextAlign { kLeft, kCenter, kRight };
 //   "x", "y"   - the position to moveto/lineto
 // The function makes it independent of any output device and easy to
 // adapt in any environment including 3D projection.
-void DrawText(std::string_view str, float tx, float ty, TextAlign align,
-              float size,
-              const std::function<void(bool pen_down, float x, float y)>& draw);
+void DrawTextHershey(std::string_view str, float tx, float ty, TextAlign align, float size,
+                     const std::function<void(bool pen_down, float x, float y)>& draw);
 }  // namespace hershey

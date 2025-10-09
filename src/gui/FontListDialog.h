@@ -12,10 +12,11 @@
 class FontListDialog : public QDialog, public Ui::FontListDialog
 {
   Q_OBJECT;
+
 public:
   FontListDialog();
 
-  void update_font_list();
+  void updateFontList();
 
 public slots:
   void on_copyButton_clicked();

@@ -1,0 +1,52 @@
+name: Code Format Check
+
+on:
+  push:
+    branches:
+    - master
+  pull_request:
+    branches:
+    - master
+
+jobs:
+  Beautify:
+    runs-on: ubuntu-24.04
+    steps:
+
+    - name: Checkout code
+      uses: actions/checkout@v5
+
+    - name: Install dependencies
+      run: |
+        which sudo || apt install -y sudo
+        sudo apt update
+        sudo apt -qq -y install clang-format
+
+    - name: Run check
+      id: check
+      run: ./scripts/beautify.sh --check
+      continue-on-error: true
+
+    - name: Generate patch
+      if: steps.check.outcome == 'failure'
+      run: |
+        cp -r . ${{ runner.temp }}/a
+        cp -r . ${{ runner.temp }}/b
+        cd ${{ runner.temp }}/b
+        ./scripts/beautify.sh --all
+        cd ${{ runner.temp }}
+        diff -ruN a b | tee ${{ runner.temp }}/beautify.patch
+
+    - name: Upload patch artifact
+      if: steps.check.outcome == 'failure'
+      uses: actions/upload-artifact@v4
+      with:
+        name: beautify-patch
+        path: ${{ runner.temp }}/beautify.patch
+
+    - name: Raise failure
+      if: steps.check.outcome == 'failure'
+      run: |
+        echo "Code is improperly formatted. Check steps above and see https://github.com/openscad/openscad/blob/master/doc/hacking.md for more information."
+        clang-format --version
+        exit 1

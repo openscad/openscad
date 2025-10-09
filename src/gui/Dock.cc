@@ -4,34 +4,67 @@
 #include <QWidget>
 #include "gui/QSettingsCached.h"
 
-
 Dock::Dock(QWidget *parent) : QDockWidget(parent)
 {
+  connect(this, &QDockWidget::topLevelChanged, this, &Dock::onTopLevelStatusChanged);
+  connect(this, &QDockWidget::visibilityChanged, this, &Dock::onVisibilityChanged);
+
+  dockTitleWidget = new QWidget();
 }
 
-void Dock::disableSettingsUpdate()
-{
-  updateSettings = false;
-}
+Dock::~Dock() { delete dockTitleWidget; }
 
-void Dock::setVisible(bool visible)
+void Dock::disableSettingsUpdate() { updateSettings = false; }
+
+void Dock::onVisibilityChanged(bool isDockVisible)
 {
   if (updateSettings) {
     QSettingsCached settings;
-    settings.setValue(configKey, !visible);
+    settings.setValue(configKey, !isVisible());
   }
-  if (action != nullptr) {
-    action->setChecked(!visible);
-  }
-  QDockWidget::setVisible(visible);
 }
 
-void Dock::setConfigKey(const QString& configKey)
+void Dock::setTitleBarVisibility(bool isVisible)
 {
-  this->configKey = configKey;
+  setTitleBarWidget(isVisible ? dockTitleWidget : nullptr);
 }
 
-void Dock::setAction(QAction *action)
+void Dock::setConfigKey(const QString& configKey) { this->configKey = configKey; }
+
+void Dock::updateTitle()
 {
-  this->action = action;
+  QString title(name);
+  if (isFloating() && !namesuffix.isEmpty()) {
+    title += " (" + namesuffix + ")";
+  }
+  setWindowTitle(title);
+}
+
+void Dock::setName(const QString& name_)
+{
+  name = name_;
+  updateTitle();
+}
+
+QString Dock::getName() const { return name; }
+
+void Dock::setNameSuffix(const QString& namesuffix_)
+{
+  namesuffix = namesuffix_;
+  updateTitle();
+}
+
+void Dock::onTopLevelStatusChanged(bool isTopLevel)
+{
+  // update the title of the window so it contains the title suffix (in general filename)
+  // also update the flags and visibility to provide interactive feedback on the user action
+  // while it is moving the dock in topLevel=true state. The purpose of such setting
+  // on Qt::Window flag is to allow the dock to be floating behind the main window,
+  // something which isn't supported for regular QDockWidgets.
+  Qt::WindowFlags flags = (windowFlags() & ~Qt::WindowType_Mask) | Qt::Window;
+  if (isTopLevel) {
+    setWindowFlags(flags);
+    show();
+  }
+  updateTitle();
 }

@@ -1,0 +1,2 @@
+ERROR: Assertion '((a < 20) && (b < 20))' failed: "Test! <html>&</html>" in file assert-expression-fail2-test.scad, line 3
+TRACE: assignment to "v" in file assert-expression-fail2-test.scad, line 3

@@ -1,0 +1,15 @@
+[Icon Theme]
+Name=svg-default-dark
+Comment=OpenSCAD SVG icons, dark theme
+
+PanelDefault=48
+PanelSizes=48
+
+Directories=svg
+
+[svg]
+Size=48
+Context=Applications
+MinSize=16
+MaxSize=512
+Type=Scalable

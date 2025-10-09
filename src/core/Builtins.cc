@@ -5,6 +5,7 @@
 #include <string>
 #include <vector>
 
+#include "core/AST.h"
 #include "core/function.h"
 #include "core/module.h"
 #include "core/Expression.h"
@@ -29,7 +30,8 @@ void Builtins::init(const std::string& name, class AbstractModule *module)
   Builtins::instance()->modules.emplace(name, module);
 }
 
-void Builtins::init(const std::string& name, AbstractModule *module, const std::vector<std::string>& calltipList)
+void Builtins::init(const std::string& name, AbstractModule *module,
+                    const std::vector<std::string>& calltipList)
 {
 #ifndef ENABLE_EXPERIMENTAL
   if (module->is_experimental()) return;
@@ -38,7 +40,8 @@ void Builtins::init(const std::string& name, AbstractModule *module, const std::
   Builtins::keywordList.insert({name, calltipList});
 }
 
-void Builtins::init(const std::string& name, BuiltinFunction *function, const std::vector<std::string>& calltipList)
+void Builtins::init(const std::string& name, BuiltinFunction *function,
+                    const std::vector<std::string>& calltipList)
 {
 #ifndef ENABLE_EXPERIMENTAL
   if (function->is_experimental()) return;
@@ -60,8 +63,8 @@ extern void register_builtin_import();
 extern void register_builtin_projection();
 extern void register_builtin_cgaladv();
 extern void register_builtin_offset();
-extern void register_builtin_dxf_linear_extrude();
-extern void register_builtin_dxf_rotate_extrude();
+extern void register_builtin_linear_extrude();
+extern void register_builtin_rotate_extrude();
 #if defined(ENABLE_EXPERIMENTAL) && defined(ENABLE_CGAL)
 extern void register_builtin_roof();
 #endif
@@ -91,18 +94,13 @@ void Builtins::initialize()
   register_builtin_projection();
   register_builtin_cgaladv();
   register_builtin_offset();
-  register_builtin_dxf_linear_extrude();
-  register_builtin_dxf_rotate_extrude();
+  register_builtin_linear_extrude();
+  register_builtin_rotate_extrude();
 #if defined(ENABLE_EXPERIMENTAL) && defined(ENABLE_CGAL)
   register_builtin_roof();
 #endif
   register_builtin_text();
 
-  this->deprecations.emplace("dxf_linear_extrude", "linear_extrude()");
-  this->deprecations.emplace("dxf_rotate_extrude", "rotate_extrude()");
-  this->deprecations.emplace("import_stl", "import()");
-  this->deprecations.emplace("import_dxf", "import()");
-  this->deprecations.emplace("import_off", "import()");
   this->deprecations.emplace("assign", "a regular assignment");
 }
 
@@ -116,19 +114,20 @@ std::string Builtins::isDeprecated(const std::string& name) const
 
 Builtins::Builtins()
 {
-  this->assignments.emplace_back(new Assignment("$fn", std::make_shared<Literal>(0.0)) );
-  this->assignments.emplace_back(new Assignment("$fs", std::make_shared<Literal>(2.0)) );
-  this->assignments.emplace_back(new Assignment("$fa", std::make_shared<Literal>(12.0)) );
-  this->assignments.emplace_back(new Assignment("$t", std::make_shared<Literal>(0.0)) );
-  this->assignments.emplace_back(new Assignment("$preview", std::make_shared<Literal>()) ); //undef as should always be overwritten.
+  this->assignments.emplace_back(new Assignment("$fn", std::make_shared<Literal>(0.0)));
+  this->assignments.emplace_back(new Assignment("$fs", std::make_shared<Literal>(2.0)));
+  this->assignments.emplace_back(new Assignment("$fa", std::make_shared<Literal>(12.0)));
+  this->assignments.emplace_back(new Assignment("$t", std::make_shared<Literal>(0.0)));
+  this->assignments.emplace_back(
+    new Assignment("$preview", std::make_shared<Literal>()));  // undef as should always be overwritten.
   auto zeroVector = std::make_shared<Vector>(Location::NONE);
   zeroVector->emplace_back(new Literal(0.0));
   zeroVector->emplace_back(new Literal(0.0));
   zeroVector->emplace_back(new Literal(0.0));
-  this->assignments.emplace_back(new Assignment("$vpt", zeroVector) );
-  this->assignments.emplace_back(new Assignment("$vpr", zeroVector) );
-  this->assignments.emplace_back(new Assignment("$vpd", std::make_shared<Literal>(500.0)) );
-  this->assignments.emplace_back(new Assignment("$vpf", std::make_shared<Literal>(22.5)) );
+  this->assignments.emplace_back(new Assignment("$vpt", zeroVector));
+  this->assignments.emplace_back(new Assignment("$vpr", zeroVector));
+  this->assignments.emplace_back(new Assignment("$vpd", std::make_shared<Literal>(500.0)));
+  this->assignments.emplace_back(new Assignment("$vpf", std::make_shared<Literal>(22.5)));
 }
 
 void Builtins::initKeywordList()

@@ -26,38 +26,45 @@
 
 #pragma once
 
-#include "gui/qtgettext.h"
+#include <memory>
 #include <QDialog>
+#include <QColor>
+
+#include "gui/qtgettext.h"  // IWYU pragma: keep
 #include "io/export.h"
 #include "ui_ExportPdfDialog.h"
+#include "gui/InitConfigurator.h"
 
-class ExportPdfDialog : public QDialog, public Ui::ExportPdfDialog
+class ExportPdfDialog : public QDialog, public Ui::ExportPdfDialog, public InitConfigurator
 {
   Q_OBJECT;
 
 public:
   ExportPdfDialog();
-  
-  double getGridSize();
-  paperSizes getPaperSize();
-  paperOrientations getOrientation();
-  bool getShowScale();
-  bool getShowScaleMsg();
-  bool getShowDesignFilename();
-  bool getShowGrid();
-  
-  void setShowScale(bool state);
-  void setShowScaleMsg(bool state); 
-  void setShowDesignFilename(bool state); 
-  void setShowGrid(bool state);
-  
-  void setPaperSize(paperSizes paper);  
-  void setOrientation(paperOrientations orient);  
+
+  int exec() override;
+
+  double getGridSize() const;
   void setGridSize(double value);
-  
+
+  std::shared_ptr<const ExportPdfOptions> getOptions() const { return ExportPdfOptions::fromSettings(); }
+
+private slots:
+  void on_toolButtonFillColor_clicked();
+  void on_toolButtonFillColorReset_clicked();
+  void on_checkBoxEnableFill_toggled(bool checked);
+  void on_toolButtonStrokeColor_clicked();
+  void on_toolButtonStrokeColorReset_clicked();
+  void on_checkBoxEnableStroke_toggled(bool checked);
+  void on_toolButtonStrokeWidthReset_clicked();
+
+private:
+  void updateFillColor(const QColor& color);
+  void updateFillControlsEnabled();
+  void updateStrokeColor(const QColor& color);
+  void updateStrokeControlsEnabled();
+
+  QColor fillColor;
+  QColor strokeColor;
+  double defaultStrokeWidth = 0.35;
 };
-
-
-
-
-

@@ -29,6 +29,7 @@
 #include <vector>
 #include <cmath>
 #include <Eigen/Core>
+#include "geometry/linalg.h"
 #include "geometry/Polygon2d.h"
 
 class Polygon2d;
@@ -50,6 +51,7 @@ public:
   void line_to(const Vector2d& to);
   void curve_to(const Vector2d& c1, const Vector2d& to);
   void curve_to(const Vector2d& c1, const Vector2d& c2, const Vector2d& to);
+
 private:
   Vector2d pen;
   Vector2d offset;

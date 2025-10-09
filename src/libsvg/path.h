@@ -36,14 +36,15 @@ protected:
   std::string data;
 
 private:
-  [[nodiscard]] inline double t(double t, int exp) const {
-    return std::pow(1.0 - t, exp);
-  }
+  [[nodiscard]] inline double t(double t, int exp) const { return std::pow(1.0 - t, exp); }
 
   bool is_open_path(path_t& path) const;
-  void arc_to(path_t& path, double x, double y, double rx, double ry, double x2, double y2, double angle, bool large, bool sweep, void *context);
-  void curve_to(path_t& path, double x, double y, double cx1, double cy1, double x2, double y2, void *context);
-  void curve_to(path_t& path, double x, double y, double cx1, double cy1, double cx2, double cy2, double x2, double y2, void *context);
+  void arc_to(path_t& path, double x, double y, double rx, double ry, double x2, double y2, double angle,
+              bool large, bool sweep, void *context);
+  void curve_to(path_t& path, double x, double y, double cx1, double cy1, double x2, double y2,
+                void *context);
+  void curve_to(path_t& path, double x, double y, double cx1, double cy1, double cx2, double cy2,
+                double x2, double y2, void *context);
 
 public:
   path() = default;
@@ -57,4 +58,4 @@ public:
   [[nodiscard]] shape *clone() const override { return new path(*this); }
 };
 
-} // namespace libsvg
+}  // namespace libsvg

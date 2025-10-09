@@ -3,7 +3,8 @@
 #include "gui/qtgettext.h"
 #include <QComboBox>
 #include <QWidget>
-#include "gui/Settings.h"
+#include <string>
+#include "core/Settings.h"
 #include "ui_AxisConfigWidget.h"
 #include "gui/InitConfigurator.h"
 
@@ -77,18 +78,24 @@ signals:
 
 private:
   /** Set value from combobox to settings */
-  void applyComboBox(QComboBox *comboBox, int val, Settings::SettingsEntryEnum& entry);
+  void applyComboBox(QComboBox *comboBox, int val, Settings::SettingsEntryEnum<std::string>& entry);
   void writeSettings();
 
   bool initialized = false;
 
-  QString NotEnabledDuringBuild = _("This driver was not enabled during build time and is thus not available.");
+  QString NotEnabledDuringBuild =
+    _("This driver was not enabled during build time and is thus not available.");
 
-  QString DBusInputDriverDescription = _("The DBUS driver is not for actual devices but for remote control, Linux only.");
-  QString HidApiInputDriverDescription = _("The HIDAPI driver communicates directly with the 3D mice, Windows and macOS.");
-  QString SpaceNavInputDriverDescription = _("The SpaceNav driver enables 3D-input-devices using the spacenavd daemon, Linux only.");
-  QString JoystickInputDriverDescription = _("The Joystick driver uses the Linux joystick device (fixed to /dev/input/js0), Linux only.");
-  QString QGamepadInputDriverDescription = _("The QGAMEPAD driver is for multiplattform Gamepad Support.");
+  QString DBusInputDriverDescription =
+    _("The DBUS driver is not for actual devices but for remote control, Linux only.");
+  QString HidApiInputDriverDescription =
+    _("The HIDAPI driver communicates directly with the 3D mice, Windows and macOS.");
+  QString SpaceNavInputDriverDescription =
+    _("The SpaceNav driver enables 3D-input-devices using the spacenavd daemon, Linux only.");
+  QString JoystickInputDriverDescription =
+    _("The Joystick driver uses the Linux joystick device (fixed to /dev/input/js0), Linux only.");
+  QString QGamepadInputDriverDescription =
+    _("The QGAMEPAD driver is for multiplattform Gamepad Support.");
 
   bool darkModeDetected = false;
 

@@ -287,8 +287,7 @@
   </layout>
   <action name="actionResetSampleText">
    <property name="icon">
-    <iconset resource="../../resources/common.qrc">
-     <normaloff>:/icons/svg-default/undo.svg</normaloff>:/icons/svg-default/undo.svg</iconset>
+    <iconset theme="chokusen-undo"/>
    </property>
    <property name="text">
     <string>ResetSampleText</string>
@@ -296,8 +295,7 @@
   </action>
   <action name="actionOpenFolder">
    <property name="icon">
-    <iconset resource="../../resources/common.qrc">
-     <normaloff>:/icons/svg-default/open.svg</normaloff>:/icons/svg-default/open.svg</iconset>
+    <iconset theme="chokusen-open"/>
    </property>
    <property name="text">
     <string>Open Font Folder</string>
@@ -305,8 +303,7 @@
   </action>
   <action name="actionCopyFolder">
    <property name="icon">
-    <iconset resource="../../resources/common.qrc">
-     <normaloff>:/icons/svg-default/edit-copy.svg</normaloff>:/icons/svg-default/edit-copy.svg</iconset>
+    <iconset theme="chokusen-edit-copy"/>
    </property>
    <property name="text">
     <string>Copy Font Folder</string>
@@ -314,8 +311,7 @@
   </action>
   <action name="actionCopyFullPath">
    <property name="icon">
-    <iconset resource="../../resources/common.qrc">
-     <normaloff>:/icons/svg-default/edit-copy.svg</normaloff>:/icons/svg-default/edit-copy.svg</iconset>
+    <iconset theme="chokusen-edit-copy"/>
    </property>
    <property name="text">
     <string>Copy Full Path to Font</string>
@@ -323,8 +319,7 @@
   </action>
   <action name="actionCopyStyle">
    <property name="icon">
-    <iconset resource="../../resources/common.qrc">
-     <normaloff>:/icons/svg-default/edit-copy.svg</normaloff>:/icons/svg-default/edit-copy.svg</iconset>
+    <iconset theme="chokusen-edit-copy"/>
    </property>
    <property name="text">
     <string>Copy Font Style</string>
@@ -332,8 +327,7 @@
   </action>
   <action name="actionCopyFontName">
    <property name="icon">
-    <iconset resource="../../resources/common.qrc">
-     <normaloff>:/icons/svg-default/edit-copy.svg</normaloff>:/icons/svg-default/edit-copy.svg</iconset>
+    <iconset theme="chokusen-edit-copy"/>
    </property>
    <property name="text">
     <string>Copy Font Name</string>
@@ -389,8 +383,7 @@
   </action>
   <action name="actionResetColumns">
    <property name="icon">
-    <iconset resource="../../resources/common.qrc">
-     <normaloff>:/icons/svg-default/undo.svg</normaloff>:/icons/svg-default/undo.svg</iconset>
+    <iconset theme="chokusen-undo"/>
    </property>
    <property name="text">
     <string>Reset Columns</string>

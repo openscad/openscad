@@ -13,11 +13,15 @@ color("yellow") linear_extrude(height = 10, convexity = undef, scale = 1, twist 
 for (a = params) translate([0, 0, oz * a[0]])
 color("gray") linear_extrude(height = 10, convexity = undef, scale = 1, twist = 0, slices = a[1]) square(20);
 
+// Test that when both height and h are specified there's a warning and height wins.
+// Specify height first.
 for (a = params) translate([ox, 0, oz * a[0]])
-color("purple") linear_extrude(height = 10, convexity = undef, scale = 1, twist = 30, slices = a[1]) square(20);
+color("purple") linear_extrude(height = 10, h=27, convexity = undef, scale = 1, twist = 30, slices = a[1]) square(20);
 
+// Test that when both height and h are specified there's a warning and height wins.
+// Specify h first.
 for (a = params) translate([2*ox, 0, oz * a[0]])
-color("blue") linear_extrude(height = 10, convexity = 2, scale = a[1]) square(20);
+color("blue") linear_extrude(h=27, height = 10, convexity = 2, scale = a[1]) square(20);
 
 for (a = params) translate([(a[0] - 3) * 30, -138, 0])
 color("green") linear_extrude(height = a[1]) square(20);

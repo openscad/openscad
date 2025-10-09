@@ -14,10 +14,9 @@ void AutoUpdater::init()
     // Add to application menu
     this->updateAction->setMenuRole(QAction::ApplicationSpecificRole);
     this->updateAction->setEnabled(true);
-    this->connect(this->updateAction, SIGNAL(triggered()), this, SLOT(checkForUpdates()));
+    this->connect(this->updateAction, &AutoUpdater::triggered, this, &AutoUpdater::checkForUpdates);
 
     this->updateMenu->addAction(this->updateAction);
-
   }
-#endif // ifdef OPENSCAD_UPDATER
+#endif  // ifdef OPENSCAD_UPDATER
 }

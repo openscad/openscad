@@ -1,6 +1,6 @@
 /*
  *  OpenSCAD (www.openscad.org)
- *  Copyright (C) 2009-2019 Clifford Wolf <clifford@clifford.at> and
+ *  Copyright (C) 2009-2025 Clifford Wolf <clifford@clifford.at> and
  *                          Marius Kintel <marius@kintel.net>
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -27,172 +27,169 @@
 #include "gui/ExportPdfDialog.h"
 
 #include <QString>
+#include <QDialog>
+#include <QColorDialog>
+
+#include "io/export.h"
+#include "core/Settings.h"
+#include "gui/UIUtils.h"
+#include "gui/SettingsWriter.h"
+
+using S = Settings::SettingsExportPdf;
 
 ExportPdfDialog::ExportPdfDialog()
 {
   setupUi(this);
+  this->checkBoxAlwaysShowDialog->setChecked(S::exportPdfAlwaysShowDialog.value());
+
+  initButtonGroup(this->buttonGroupPaperSize, S::exportPdfPaperSize);
+  initButtonGroup(this->buttonGroupOrientation, S::exportPdfOrientation);
+
+  // Get current settings or defaults
+  this->checkBoxShowFilename->setChecked(S::exportPdfShowFilename.value());
+  this->groupScale->setChecked(S::exportPdfShowScale.value());
+  this->checkBoxShowScaleMessage->setChecked(S::exportPdfShowScaleMessage.value());
+  this->groupGrid->setChecked(S::exportPdfShowGrid.value());
+
+  // Initialize grid size from settings
+  const auto gridSize = S::exportPdfGridSize.value();
+  for (auto *button : buttonGroupGridSize->buttons()) {
+    if (button->property("_selected_value").toDouble() == gridSize) {
+      button->setChecked(true);
+      break;
+    }
+  }
+
+  // Fill settings
+  this->checkBoxEnableFill->setChecked(S::exportPdfFill.value());
+  this->fillColor = QColor(QString::fromStdString(S::exportPdfFillColor.value()));
+  updateFillColor(this->fillColor);
+  updateFillControlsEnabled();
+
+  // Stroke settings
+  this->checkBoxEnableStroke->setChecked(S::exportPdfStroke.value());
+  this->strokeColor = QColor(QString::fromStdString(S::exportPdfStrokeColor.value()));
+  this->doubleSpinBoxStrokeWidth->setValue(S::exportPdfStrokeWidth.value());
+  updateStrokeColor(this->strokeColor);
+  updateStrokeControlsEnabled();
+
+  groupMetaData->setChecked(S::exportPdfAddMetaData.value());
+  initMetaData(nullptr, this->lineEditMetaDataTitle, nullptr, S::exportPdfMetaDataTitle);
+  initMetaData(this->checkBoxMetaDataAuthor, this->lineEditMetaDataAuthor,
+               &S::exportPdfAddMetaDataAuthor, S::exportPdfMetaDataAuthor);
+  initMetaData(this->checkBoxMetaDataSubject, this->lineEditMetaDataSubject,
+               &S::exportPdfAddMetaDataSubject, S::exportPdfMetaDataSubject);
+  initMetaData(this->checkBoxMetaDataKeywords, this->lineEditMetaDataKeywords,
+               &S::exportPdfAddMetaDataKeywords, S::exportPdfMetaDataKeywords);
 }
-// Getters
 
- 
-  double ExportPdfDialog::getGridSize() {
-  	//  5 values are coded:  2, 2.5, 4, 5, 10; All are integer divisors of 20.
-  	switch (gridButtonGroup->checkedId()) {
-  		case -2:
-			return 2.;
-			break;
-  		case -3:
-			return 2.5;
-			break;
-  		case -4:
-			return 4.;
-			break;
-		case -5:
-			return 5.;
-			break;
-		case -6:
-			return 10.;
-			break;
-		default:  // Always return a valid value.
-		  	//LOG(error);
-		  	return 5;
-			break;
-
-	}
-  	
+int ExportPdfDialog::exec()
+{
+  bool showDialog = this->checkBoxAlwaysShowDialog->isChecked();
+  if ((QApplication::keyboardModifiers() & Qt::ShiftModifier) != 0) {
+    showDialog = true;
   }
 
-  
-  paperOrientations ExportPdfDialog::getOrientation() {
-  	  	switch (orientButtonGroup->checkedId()) {
-  		case -2:
-			return paperOrientations::PORTRAIT;
-			break;
-  		case -3:
-			return paperOrientations::LANDSCAPE;
-			break;
-  		case -4:
-			return paperOrientations::AUTO;
-			break;
-		  default:  // Always return a valid value.
-		  	//LOG(error);
-			return paperOrientations::AUTO;
-			break;
+  const auto result = showDialog ? QDialog::exec() : QDialog::Accepted;
 
-	}
- }
-    		
-  paperSizes ExportPdfDialog::getPaperSize() {
-  	switch (sizeButtonGroup->checkedId()) {
-  		case -2:
-			return paperSizes::A4;
-			break;
-  		case -3:
-			return paperSizes::A3;
-			break;
-  		case -4:
-			return paperSizes::LETTER;
-			break;
-		  case -5:
-			return paperSizes::LEGAL;
-			break;
-		  case -6:
-			return paperSizes::TABLOID;
-			break;
-		  default:  // Always return a valid value.  Matches default.
-		  	//LOG(error);
-		  	return paperSizes::A4;
-			break;
-
-	}
-  }
-    		
-  bool ExportPdfDialog::getShowScale()  {
-  	return groupScale->isChecked();
-  	}
-  bool ExportPdfDialog::getShowScaleMsg() {
-  	return cbScaleUsg->isChecked();
-  	}
-  bool ExportPdfDialog::getShowDesignFilename() {
-  	return cbDsnFn->isChecked();
-  	}
-  bool ExportPdfDialog::getShowGrid()  {
-  	return groupGrid->isChecked();
-  	}
-
-// Setters
- void  ExportPdfDialog::setShowScale(bool state) {
-  	        groupScale->setChecked(state);
-  }
- void  ExportPdfDialog::setShowScaleMsg(bool state) {
-  	        cbScaleUsg->setChecked(state);
-  }
- void  ExportPdfDialog::setShowDesignFilename(bool state) {
-  	        cbDsnFn->setChecked(state);
-  }  
- void ExportPdfDialog::setShowGrid(bool state) {
-  	        groupGrid->setChecked(state);
+  if (result == QDialog::Accepted) {
+    S::exportPdfAlwaysShowDialog.setValue(this->checkBoxAlwaysShowDialog->isChecked());
+    applyButtonGroup(this->buttonGroupPaperSize, S::exportPdfPaperSize);
+    applyButtonGroup(this->buttonGroupOrientation, S::exportPdfOrientation);
+    S::exportPdfShowFilename.setValue(this->checkBoxShowFilename->isChecked());
+    S::exportPdfShowScale.setValue(this->groupScale->isChecked());
+    S::exportPdfShowScaleMessage.setValue(this->checkBoxShowScaleMessage->isChecked());
+    S::exportPdfShowGrid.setValue(this->groupGrid->isChecked());
+    S::exportPdfGridSize.setValue(getGridSize());
+    S::exportPdfFill.setValue(this->checkBoxEnableFill->isChecked());
+    S::exportPdfFillColor.setValue(this->fillColor.name().toStdString());
+    S::exportPdfStroke.setValue(this->checkBoxEnableStroke->isChecked());
+    S::exportPdfStrokeColor.setValue(this->strokeColor.name().toStdString());
+    S::exportPdfStrokeWidth.setValue(this->doubleSpinBoxStrokeWidth->value());
+    S::exportPdfAddMetaData.setValue(this->groupMetaData->isChecked());
+    applyMetaData(nullptr, this->lineEditMetaDataTitle, nullptr, S::exportPdfMetaDataTitle);
+    applyMetaData(this->checkBoxMetaDataAuthor, this->lineEditMetaDataAuthor,
+                  &S::exportPdfAddMetaDataAuthor, S::exportPdfMetaDataAuthor);
+    applyMetaData(this->checkBoxMetaDataSubject, this->lineEditMetaDataSubject,
+                  &S::exportPdfAddMetaDataSubject, S::exportPdfMetaDataSubject);
+    applyMetaData(this->checkBoxMetaDataKeywords, this->lineEditMetaDataKeywords,
+                  &S::exportPdfAddMetaDataKeywords, S::exportPdfMetaDataKeywords);
+    Settings::Settings::visit(SettingsWriter());
   }
 
- 
+  return result;
+}
 
-  void ExportPdfDialog::setPaperSize(paperSizes paper){
-      //setButtonInGroup(sizeButtonGroup, paper2buttons[paper]);
-      switch (paper) {
-  	case paperSizes::A4:
-		rbS_A4->setChecked(TRUE);
-		break;
-  	case paperSizes::A3:
-		rbS_A3->setChecked(TRUE);
-		break;
-  	case paperSizes::LETTER:
-		rbS_Ltr->setChecked(TRUE);
-		break;
-  	case paperSizes::LEGAL:
-		rbS_Leg->setChecked(TRUE);
-		break;
-  	case paperSizes::TABLOID:
-		rbS_Tab->setChecked(TRUE);
-		break;
-	default:   // provide a sane default.  Shouldn't execute, but needed at least to compile.
-		rbS_A4->setChecked(TRUE);
-		//  LOG(message_group::Export_Warning, "Export Paper Size Unknon( %1$8c )", paper);
-  	}	
+double ExportPdfDialog::getGridSize() const
+{
+  const auto button = buttonGroupGridSize->checkedButton();
+  return button ? button->property("_selected_value").toDouble() : 10.0;
+}
+
+void ExportPdfDialog::updateFillColor(const QColor& color)
+{
+  this->fillColor = color;
+  QString styleSheet = QString("QLabel { background-color: %1; }").arg(color.name());
+  this->labelFillColor->setStyleSheet(styleSheet);
+}
+
+void ExportPdfDialog::updateStrokeColor(const QColor& color)
+{
+  this->strokeColor = color;
+  QString styleSheet = QString("QLabel { background-color: %1; }").arg(color.name());
+  this->labelStrokeColor->setStyleSheet(styleSheet);
+}
+
+void ExportPdfDialog::updateFillControlsEnabled()
+{
+  bool enabled = this->checkBoxEnableFill->isChecked();
+  this->labelFillColor->setEnabled(enabled);
+  this->toolButtonFillColor->setEnabled(enabled);
+  this->toolButtonFillColorReset->setEnabled(enabled);
+}
+
+void ExportPdfDialog::updateStrokeControlsEnabled()
+{
+  bool enabled = this->checkBoxEnableStroke->isChecked();
+  this->labelStrokeColor->setEnabled(enabled);
+  this->toolButtonStrokeColor->setEnabled(enabled);
+  this->toolButtonStrokeColorReset->setEnabled(enabled);
+  this->labelStrokeWidth->setEnabled(enabled);
+  this->doubleSpinBoxStrokeWidth->setEnabled(enabled);
+  this->toolButtonStrokeWidthReset->setEnabled(enabled);
+}
+
+void ExportPdfDialog::on_toolButtonFillColor_clicked()
+{
+  QColor color = QColorDialog::getColor(this->fillColor, this);
+  if (color.isValid()) {
+    updateFillColor(color);
   }
+}
 
-  void ExportPdfDialog::setOrientation(paperOrientations orient){
-      switch (orient) {
-  	case paperOrientations::PORTRAIT:
-		rbOPort->setChecked(TRUE);
-		break;
-  	case paperOrientations::LANDSCAPE:
-		rbOLand->setChecked(TRUE);
-		break;
-  	case paperOrientations::AUTO:
-		rbOAuto->setChecked(TRUE);
-		break;
-	default:   // provide a sane default.  Shouldn't execute, but needed at least to compile.
-		//  LOG(message_group::Export_Warning, "Export Paper Size Unknon( %1$8c )", paper);
-		rbOAuto->setChecked(TRUE);
-		break;
-  	}	
-      
+void ExportPdfDialog::on_toolButtonStrokeColor_clicked()
+{
+  QColor color = QColorDialog::getColor(this->strokeColor, this);
+  if (color.isValid()) {
+    updateStrokeColor(color);
   }
-  void ExportPdfDialog::setGridSize(double value){
-        //  need to bin to match enums, but tolerate numerical error.
-        //  5 values are coded:  2, 2.5, 4, 5, 10; All are integer divisors of 20.
-        if (value<2.24) {  // match 2
-        	rbGs_2mm->setChecked(TRUE);
-        } else if (value<3.1) { // match 2.5
-        	rbGs_2r5mm->setChecked(TRUE);     
-        } else if (value<4.4) { // match 4 
-		rbGs_4mm->setChecked(TRUE);
-	} else if (value<7.5) { // match 5
-		rbGs_5mm->setChecked(TRUE);
-	} else { // match 10
-		rbGs_10mm->setChecked(TRUE);
-	};
-  }
- 
+}
 
+void ExportPdfDialog::on_toolButtonFillColorReset_clicked()
+{
+  updateFillColor(QColor(QString::fromStdString(S::exportPdfFillColor.defaultValue())));
+}
 
+void ExportPdfDialog::on_toolButtonStrokeColorReset_clicked()
+{
+  updateStrokeColor(QColor(QString::fromStdString(S::exportPdfStrokeColor.defaultValue())));
+}
+
+void ExportPdfDialog::on_toolButtonStrokeWidthReset_clicked()
+{
+  this->doubleSpinBoxStrokeWidth->setValue(this->defaultStrokeWidth);
+}
+
+void ExportPdfDialog::on_checkBoxEnableFill_toggled(bool checked) { updateFillControlsEnabled(); }
+
+void ExportPdfDialog::on_checkBoxEnableStroke_toggled(bool checked) { updateStrokeControlsEnabled(); }
