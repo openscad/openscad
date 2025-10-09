@@ -119,7 +119,8 @@ template <typename K>
 void convertNefToPolyhedron(const CGAL::Nef_polyhedron_3<K>& nef, CGAL::Polyhedron_3<K>& polyhedron);
 
 void convertNefToSurfaceMesh(const CGAL_Nef_polyhedron3& nef, CGAL_Kernel3Mesh& mesh);
-void convertSurfaceMeshToNef(const CGAL_Kernel3Mesh& mesh, CGAL_Nef_polyhedron3& nef);
+template <typename SurfaceMesh>
+CGAL_Nef_polyhedron3 convertSurfaceMeshToNef(const SurfaceMesh& mesh);
 
 #endif
 std::unique_ptr<PolySet> createTriangulatedPolySetFromPolygon2d(const Polygon2d& polygon2d, bool in3d);

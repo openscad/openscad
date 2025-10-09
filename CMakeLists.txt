@@ -76,9 +76,10 @@ option(BUILD_SHARED_LIBS "Build shared library" OFF)
 include(CMakeDependentOption)
 cmake_dependent_option(APPLE_UNIX "Build PythonSCAD in Unix mode in MacOS X instead of an Apple Bundle" OFF "APPLE" OFF)
 cmake_dependent_option(ENABLE_QTDBUS "Enable DBus input driver for Qt." ON "NOT HEADLESS" OFF)
-cmake_dependent_option(ENABLE_GAMEPAD "Enable Qt5Gamepad input driver." ON "NOT HEADLESS;NOT USE_QT6" OFF)
+set(ENABLE_GAMEPAD "AUTO" CACHE STRING "Enable Qt5Gamepad input driver")
+set_property(CACHE ENABLE_GAMEPAD PROPERTY STRINGS "AUTO" "ON" "OFF")
 set(WASM_BUILD_TYPE "web" CACHE STRING
-  "WebAssembly build type. Support web (builds a PythonSCAD module) or node (standalone .js executable)")
+  "WebAssembly build type. Support web (builds an OpenSCAD module) or node (standalone .js executable)")
 
 if (USE_QT6)
   # Minimum version required for Qt-6.5
@@ -777,7 +778,7 @@ if (Lib3MF_FOUND)
   endif()
 else()
   set(LIB3MF_SOURCES src/io/export_3mf_dummy.cc src/io/import_3mf_dummy.cc)
-  message(STATUS "lib3mf: disabled")
+  message(STATUS "lib3mf: disabled (not found)")
 endif()
 
 # Automatically add the current source and build directories to the include path.
@@ -841,7 +842,12 @@ if(NOT HEADLESS)
   endif()
 
   if (USE_QT6)
-    find_package(Qt6 COMPONENTS Core Core5Compat Widgets Multimedia OpenGL OpenGLWidgets Concurrent Network Svg ${QT_TEST_IF_ANY} REQUIRED)
+  # Validate Qt6 compatibility
+  if(ENABLE_GAMEPAD STREQUAL "ON")
+    message(FATAL_ERROR "Qt5Gamepad is not available when using Qt6. Set ENABLE_GAMEPAD to OFF or AUTO.")
+  endif()
+
+  find_package(Qt6 COMPONENTS Core Core5Compat Widgets Multimedia OpenGL OpenGLWidgets Concurrent Network Svg ${QT_TEST_IF_ANY} REQUIRED QUIET)
     message(STATUS "Qt6: ${Qt6_VERSION}")
 
     if (Qt6_POSITION_INDEPENDENT_CODE)
@@ -895,17 +901,25 @@ if(NOT HEADLESS)
       message(STATUS "DBus input driver disabled per user request.")
     endif()
 
-    if(ENABLE_GAMEPAD)
-      find_package(Qt5Gamepad)
+    if(ENABLE_GAMEPAD STREQUAL "AUTO")
+      # AUTO: try to find, fallback gracefully if not found
+      find_package(Qt5Gamepad QUIET)
       if (Qt5Gamepad_FOUND)
         message(STATUS "Qt5Gamepad input driver enabled")
         set(GUI_SOURCES ${GUI_SOURCES} src/gui/input/QGamepadInputDriver.cc)
         target_compile_definitions(OpenSCAD PRIVATE ENABLE_QGAMEPAD)
       else()
-        message(STATUS "Qt5Gamepad input driver disabled as the Qt5Gamepad module could not be found.")
+        message(STATUS "Qt5Gamepad input driver disabled (not found)")
       endif()
+    elseif(ENABLE_GAMEPAD)
+      # Explicit ON: fail if not found
+      find_package(Qt5Gamepad REQUIRED)
+      message(STATUS "Qt5Gamepad input driver enabled")
+      set(GUI_SOURCES ${GUI_SOURCES} src/gui/input/QGamepadInputDriver.cc)
+      target_compile_definitions(OpenSCAD PRIVATE ENABLE_QGAMEPAD)
     else()
-      message(STATUS "Qt5Gamepad input driver disabled per user request.")
+      # OFF: explicitly disabled
+      message(STATUS "Qt5Gamepad input driver disabled per user request")
     endif()
   endif()
 endif()
@@ -1053,6 +1067,7 @@ set(CORE_SOURCES
   src/core/SourceFileCache.cc
   src/core/StatCache.cc
   src/core/SurfaceNode.cc
+  src/core/SheetNode.cc
   src/core/TextNode.cc
   src/core/TransformNode.cc
   src/core/Tree.cc

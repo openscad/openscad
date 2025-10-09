@@ -50,7 +50,7 @@ PyObject *python_ifrep(PyObject *self, PyObject *args, PyObject *kwargs);
 PyObject *python_translate(PyObject *self, PyObject *args, PyObject *kwargs);
 PyObject *python_translate_core(PyObject *obj, PyObject *v);
 PyObject *python_rotate(PyObject *self, PyObject *args, PyObject *kwargs);
-PyObject *python_rotate_core(PyObject *obj, PyObject *val_a, PyObject *val_v);
+PyObject *python_rotate_core(PyObject *obj, PyObject *val_a, PyObject *val_v, PyObject *ref);
 PyObject *python_scale(PyObject *self, PyObject *args, PyObject *kwargs);
 PyObject *python_scale_core(PyObject *obj, PyObject *val_v);
 PyObject *python_mirror(PyObject *self, PyObject *args, PyObject *kwargs);
@@ -161,6 +161,8 @@ PyObject *python_oo_bbox(PyObject *obj, PyObject *args, PyObject *kwargs);
 PyObject *python_size(PyObject *self, PyObject *args, PyObject *kwargs);
 PyObject *python_size_core(PyObject *obj);
 PyObject *python_oo_size(PyObject *obj, PyObject *args, PyObject *kwargs);
+PyObject *python_position(PyObject *self, PyObject *args, PyObject *kwargs);
+PyObject *python_position_core(PyObject *obj);
 PyObject *python_separate(PyObject *self, PyObject *args, PyObject *kwargs);
 PyObject *python_separate_core(PyObject *obj);
 PyObject *python_oo_separate(PyObject *obj, PyObject *args, PyObject *kwargs);
@@ -324,6 +326,8 @@ int sphereCalcSplitInd(/* PolySetBuilder &builder, */ std::vector<Vector3d>& ver
                        std::unordered_map<SphereEdgeDb, int /* , boost::hash<SphereEdgeDb> */>& edges,
                        PyObject *func, int ind1, int ind2);
 std::unique_ptr<const Geometry> sphereCreateFuncGeometry(void *funcptr, double fs, int n);
+std::unique_ptr<const Geometry> sheetCreateFuncGeometry(void *funcptr, double imin, double imax,
+                                                        double jmin, bool ispan, bool jspan);
 
 // Debug modifier functions
 PyObject *python_debug_modifier_func(PyObject *self, PyObject *args, PyObject *kwargs, int mode);

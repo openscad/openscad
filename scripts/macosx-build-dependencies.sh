@@ -74,7 +74,7 @@ PACKAGES=(
     "hidapi 0.15.0"
 
     # https://github.com/3MFConsortium/lib3mf/releases
-    "lib3mf 2.4.1"
+    "lib3mf 2.4.1 1"
 
     # https://github.com/PCRE2Project/pcre2/releases
     "pcre2 10.45"
@@ -89,7 +89,7 @@ PACKAGES=(
     "cairo 1.18.0"
 
     # https://github.com/CGAL/cgal/releases
-    "cgal 6.0.1"
+    "cgal 6.0.2"
 
     # Using Qt6 going forward, leaving Qt5 config just in case
     # "qt5 5.15.16"
@@ -837,7 +837,7 @@ build_lib3mf()
  tar xzf lib3mf-$version.tar.gz
   cd lib3mf-$version
   patch -p1 < $OPENSCADDIR/patches/lib3mf-macos.patch
-  cmake -DLIB3MF_TESTS=false -DCMAKE_PREFIX_PATH=$DEPLOYDIR -DCMAKE_INSTALL_PREFIX=$DEPLOYDIR -DCMAKE_INSTALL_INCLUDEDIR=include/lib3mf -DUSE_INCLUDED_ZLIB=OFF -DUSE_INCLUDED_LIBZIP=OFF -DCMAKE_OSX_DEPLOYMENT_TARGET="$MAC_OSX_VERSION_MIN" -DCMAKE_OSX_ARCHITECTURES="$ARCHS_COMBINED" .
+  cmake -DLIB3MF_TESTS=false -DCMAKE_PREFIX_PATH=$DEPLOYDIR -DCMAKE_INSTALL_PREFIX=$DEPLOYDIR -DUSE_INCLUDED_ZLIB=OFF -DUSE_INCLUDED_LIBZIP=OFF -DCMAKE_OSX_DEPLOYMENT_TARGET="$MAC_OSX_VERSION_MIN" -DCMAKE_OSX_ARCHITECTURES="$ARCHS_COMBINED" .
   make -j"$NUMCPU" VERBOSE=1
   make -j"$NUMCPU" install
 }

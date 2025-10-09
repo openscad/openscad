@@ -112,7 +112,7 @@ get_debian_deps()
   libharfbuzz-dev libmimalloc-dev libmpfr-dev libopencsg-dev \
   libqt5gamepad5-dev libtbb-dev libxi-dev libxml2-dev libxmu-dev \
   libzip-dev nettle-dev ninja-build nodejs pkg-config python3-dev \
-  python3-setuptools python3-venv ragel xvfb
+  python3-setuptools python3-venv ragel xvfb libcurl4-openssl-dev
  if [ "$USE_QT6" = "1" ]; then
   get_qt6_deps_debian
  else
@@ -125,6 +125,10 @@ get_qt5_deps_debian()
  apt-get -y install \
   libqscintilla2-qt5-dev libqt5multimedia5-plugins libqt5opengl5-dev \
   libqt5svg5-dev qt5-qmake qtbase5-dev qtmultimedia5-dev
+ # Install libqt5gamepad5-dev if available (not present on older releases)
+ if apt-cache show libqt5gamepad5-dev >/dev/null 2>&1; then
+  apt-get -y install libqt5gamepad5-dev
+ fi
 }
 
 get_qt6_deps_debian()
@@ -140,7 +144,7 @@ get_arch_deps()
   base-devel gcc bison flex make libzip cairo \
   qt5 qscintilla-qt5 cgal gmp mpfr boost opencsg \
   glew eigen glib2 fontconfig freetype2 harfbuzz \
-  double-conversion imagemagick tbb curl cmake freetype2 gcc-libs ghostscript  \
+  double-conversion imagemagick tbb curl libcurl-openssl cmake freetype2 gcc-libs ghostscript  \
   glibc glu  hicolor-icon-themes hicolor-icon-themes  hidapi lib3mf libglvnd \
   libspnav  libx11 libxml2 mimalloc nettle procps-ng python python-pip python-setuptools \
   qt5-base qt5-multimedia qt5-svg  xorg-server-xvfb

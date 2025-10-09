@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - master
+      - cicd-pipeline-tests
   workflow_dispatch:
 
 jobs:
@@ -14,7 +15,7 @@ jobs:
         os: [ ubuntu-latest ]
         headless: [ ON, OFF ]
         enable_tests: [ ON, OFF ]
-        enable_manifold: [ ON, OFF ]
+        enable_manifold: [ ON ]
 
     runs-on: ${{ matrix.os }}
 
@@ -25,7 +26,9 @@ jobs:
       with:
         submodules: 'recursive'
     - name: Install dependencies
-      run: sudo ./scripts/uni-get-dependencies.sh
+      run: |
+        which sudo || apt install -y sudo
+        sudo ./scripts/uni-get-dependencies.sh
     - name: Run CMake
       run: >
         cmake -S . -B build -GNinja \

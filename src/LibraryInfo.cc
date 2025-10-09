@@ -130,7 +130,7 @@ std::string LibraryInfo::info()
   const char *env_path = getenv("OPENSCADPATH");
   const char *env_font_path = getenv("OPENSCAD_FONT_PATH");
 
-  s << "OpenSCAD Version: " << openscad_detailedversionnumber
+  s << "PythonSCAD Version: " << openscad_detailedversionnumber
     << "\nSystem information: " << PlatformUtils::sysinfo()
     << "\nUser Agent: " << PlatformUtils::user_agent() << "\nCompiler: " << compiler_info
     << "\nMinGW build: " << mingwstatus << "\nDebug build: " << debugstatus

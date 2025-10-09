@@ -132,8 +132,10 @@ jobs:
       with:
         submodules: 'recursive'
     - name: Install dependencies
-      run: ./scripts/github-ci-linux-get-dependencies.sh
-    - uses: actions/setup-python@v5
+      run: |
+        which sudo || apt install -y sudo
+        sudo ./scripts/uni-get-dependencies.sh
+    - uses: actions/setup-python@v6
       with:
         python-version: '3.11'
     - name: Build
@@ -143,7 +145,7 @@ jobs:
         echo "Build exit code: $?"
     - name: Test
       run: ./scripts/github-ci.sh test
-      if: ${{ ! inputs.enable_wasm }} 
+      if: ${{ ! inputs.enable_wasm }}
     - name: Upload Test Result Report
       uses: actions/upload-artifact@v4
       if: ${{ always() }}

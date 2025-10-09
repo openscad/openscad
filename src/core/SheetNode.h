@@ -24,16 +24,29 @@
  *
  */
 
-#include "WrapNode.h"
+#include <cstdint>
+#include <memory>
+#include <cstddef>
+#include <string>
+#include <vector>
 
-std::string WrapNode::toString() const
+#include "core/node.h"
+#include "core/ModuleInstantiation.h"
+#include "core/Value.h"
+
+class SheetNode : public LeafNode
 {
-  std::ostringstream stream;
-  stream << "wrap" << "(" << "($fn = " << fn << ", $fa = " << fa << ", $fs = " << fs;
-  if (shape != nullptr) {
-    stream << ", shape = " << shape->toString();
-  } else stream << ", r = " << r;
-  stream << ")";
-
-  return stream.str();
-}
+public:
+  VISITABLE();
+  SheetNode(const ModuleInstantiation *mi) : LeafNode(mi) {}
+  std::string toString() const override;
+  std::string name() const override { return "sheet"; }
+#ifdef ENABLE_PYTHON
+  void *func = nullptr;
+#endif
+  double imin, imax, jmin, jmax;
+  bool ispan, jspan;
+  int convexity{1};
+  std::unique_ptr<const Geometry> createGeometry() const override;
+  double fs;
+};

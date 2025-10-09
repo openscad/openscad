@@ -59,9 +59,9 @@ std::unique_ptr<Geometry> PolySet::copy() const { return std::make_unique<PolySe
 std::string PolySet::dump() const
 {
   std::ostringstream out;
-  out << "PolySet:"
-      << "\n dimensions:" << dim_ << "\n convexity:" << this->convexity
-      << "\n num polygons: " << indices.size() << "\n polygons data:";
+  out << "PolySet:" << "\n dimensions:" << dim_ << "\n convexity:" << this->convexity
+      << "\n manifold: " << this->is_manifold_ << "\n num polygons: " << indices.size()
+      << "\n polygons data:";
   for (const auto& polygon : indices) {
     out << "\n  polygon begin:";
     for (auto v : polygon) {
@@ -114,7 +114,7 @@ bool PolySet::isConvex() const
 {
   if (convex_ || this->isEmpty()) return true;
   if (!convex_) return false;
-  bool is_convex = PolySetUtils::is_approximately_convex(*this);
+  const bool is_convex = PolySetUtils::is_approximately_convex(*this);
   convex_ = is_convex;
   return is_convex;
 }

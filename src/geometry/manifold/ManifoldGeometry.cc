@@ -83,8 +83,7 @@ std::string ManifoldGeometry::dump() const
   std::ostringstream out;
   auto& manifold = getManifold();
   auto meshgl = manifold.GetMeshGL64();
-  out << "Manifold:"
-      << "\n status: " << ManifoldUtils::statusToString(manifold.Status())
+  out << "Manifold:" << "\n status: " << ManifoldUtils::statusToString(manifold.Status())
       << "\n genus: " << manifold.Genus() << "\n num vertices: " << meshgl.NumVert()
       << "\n num polygons: " << meshgl.NumTri() << "\n polygons data:";
 
@@ -107,6 +106,7 @@ std::shared_ptr<PolySet> ManifoldGeometry::toPolySet() const
   ps->vertices.reserve(mesh.NumVert());
   ps->indices.reserve(mesh.NumTri());
   ps->setConvexity(convexity);
+  ps->setManifold(true);
 
   // first 3 channels are xyz coordinate
   for (size_t i = 0; i < mesh.vertProperties.size(); i += mesh.numProp)

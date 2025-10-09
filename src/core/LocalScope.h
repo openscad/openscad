@@ -46,8 +46,8 @@ public:
   // FIXME: Should we split this class into an ASTNode and a run-time support class?
   std::unordered_map<std::string, std::shared_ptr<UserFunction>> functions;
   std::unordered_map<std::string, std::shared_ptr<UserModule>> modules;
-private:
 
+private:
   // All below only used for printing:
   std::vector<std::pair<std::string, std::shared_ptr<UserModule>>> astModules;
   std::vector<std::pair<std::string, std::shared_ptr<UserFunction>>> astFunctions;

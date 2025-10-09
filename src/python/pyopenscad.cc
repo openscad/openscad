@@ -31,9 +31,7 @@
 #include "pydata.h"
 #include "core/CsgOpNode.h"
 #include "Value.h"
-#ifndef OPENSCAD_NOGUI
 #include "executable.h"
-#endif
 #include "Expression.h"
 #include "PlatformUtils.h"
 #include <Context.h>
@@ -80,7 +78,7 @@ void PyOpenSCADObject_dealloc(PyOpenSCADObject *self)
 
 PyObject *PyOpenSCADObject_alloc(PyTypeObject *cls, Py_ssize_t nitems)
 {
-  PyOpenSCADObject *self = (PyOpenSCADObject *) PyType_GenericAlloc(cls, nitems);
+  PyOpenSCADObject *self = (PyOpenSCADObject *)PyType_GenericAlloc(cls, nitems);
   self->dict = PyDict_New();
   PyObject *origin = PyList_New(4);
   for (int i = 0; i < 4; i++) {
@@ -916,7 +914,7 @@ void initPython(const std::string& binDir, const std::string& scriptpath, double
     }
   }
   std::ostringstream stream;
-  stream << "t=" << time << "\nphi=" << 2 * G_PI * time;
+  stream << "t=" << time << "\nphi=" << 2 * G_PI * time << "\n" << commandline_commands << "\n";
   PyRun_String(stream.str().c_str(), Py_file_input, pythonInitDict.get(), pythonInitDict.get());
   customizer_parameters_finished = customizer_parameters;
   customizer_parameters.clear();
@@ -948,6 +946,8 @@ void finishPython(void)
 #endif
   show_final();
 }
+
+int debug_num, debug_cnt;  // Hidden debug aid
 
 std::string evaluatePython(const std::string& code, bool dry_run)
 {
@@ -1253,7 +1253,7 @@ int Py_RunMain_ipython(void)
   pymain_run_python_ipython(&exitcode);
 
   if (Py_FinalizeEx() < 0) {
-      exitcode = 120;
+    exitcode = 120;
   }
 
   //    pymain_free();

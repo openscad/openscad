@@ -2510,9 +2510,10 @@ std::shared_ptr<SourceFile> MainWindow::parseDocument(EditorInterface *editor)
       // add parameters as annotation in AST
       auto error = evaluatePython(par_text, true);  // run dummy
       this->rootFile->scope->assignments = customizer_parameters;
-      CommentParser::collectParameters(fulltext_py, this->rootFile.get(), '#');        // add annotations
-      this->activeEditor->parameterWidget->setParameters(this->rootFile.get(), "\n");  // set widgets values
-      this->activeEditor->parameterWidget->applyParameters(this->rootFile.get());      // use widget values
+      CommentParser::collectParameters(fulltext_py, this->rootFile.get(), '#');  // add annotations
+      this->activeEditor->parameterWidget->setParameters(this->rootFile.get(),
+                                                         "\n");                    // set widgets values
+      this->activeEditor->parameterWidget->applyParameters(this->rootFile.get());  // use widget values
       this->activeEditor->parameterWidget->setEnabled(true);
       this->activeEditor->setIndicator(this->rootFile->indicatorData);
     } while (0);
@@ -3117,7 +3118,7 @@ void MainWindow::updateStatusBar(ProgressWidget *progressWidget)
       this->progresswidget = nullptr;
     }
     if (versionLabel == nullptr) {
-      versionLabel = new QLabel("OpenSCAD " + QString::fromStdString(openscad_displayversionnumber));
+      versionLabel = new QLabel("PythonSCAD " + QString::fromStdString(openscad_displayversionnumber));
       sb->addPermanentWidget(this->versionLabel);
     }
   } else {

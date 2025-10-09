@@ -78,8 +78,7 @@ public:
   std::string toString() const override
   {
     std::ostringstream stream;
-    stream << "sphere"
-           << "($fn = " << fn << ", $fa = " << fa << ", $fs = " << fs;
+    stream << "sphere" << "($fn = " << fn << ", $fa = " << fa << ", $fs = " << fs;
 #ifdef ENABLE_PYTHON
     if (r_func != nullptr) stream << ", r_func = " << rand();
     else
@@ -108,9 +107,8 @@ public:
   std::string toString() const override
   {
     std::ostringstream stream;
-    stream << "cylinder"
-           << "($fn = " << fn << ", $fa = " << fa << ", $fs = " << fs << ", h = " << h << ", r1 = " << r1
-           << ", r2 = " << r2;
+    stream << "cylinder" << "($fn = " << fn << ", $fa = " << fa << ", $fs = " << fs << ", h = " << h
+           << ", r1 = " << r1 << ", r2 = " << r2;
     if (angle != 360) stream << ", angle = " << angle;
     stream << ", center = " << (center ? "true" : "false") << ")";
     return stream.str();
@@ -184,8 +182,7 @@ public:
   std::string toString() const override
   {
     std::ostringstream stream;
-    stream << "circle"
-           << "($fn = " << fn << ", $fa = " << fa << ", $fs = " << fs << ", r = " << r;
+    stream << "circle" << "($fn = " << fn << ", $fa = " << fa << ", $fs = " << fs << ", r = " << r;
     if (angle != 360) stream << ", angle = " << angle;
     stream << ")";
     return stream.str();

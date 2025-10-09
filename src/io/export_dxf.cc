@@ -56,7 +56,8 @@ static void export_dxf_header(std::ostream& output, double xMin, double yMin, do
   // - https://sharecad.org
   // - generic cutters
 
-  output << "999\n" << "DXF from OpenSCAD\n";
+  output << "999\n"
+         << "DXF from OpenSCAD\n";
 
   //
   // SECTION 1
@@ -109,15 +110,18 @@ static void export_dxf_header(std::ostream& output, double xMin, double yMin, do
          << " 20\n"
          << yMax << "\n";
 
-  output << "  0\n" << "ENDSEC\n";
+  output << "  0\n"
+         << "ENDSEC\n";
 
   //
   // SECTION 2
   //
 
-  output << "  0\n" << "SECTION\n";
+  output << "  0\n"
+         << "SECTION\n";
 
-  output << "  2\n" << "TABLES\n";
+  output << "  2\n"
+         << "TABLES\n";
 
   /* --- LINETYPE --- */
 
@@ -180,7 +184,8 @@ static void export_dxf_header(std::ostream& output, double xMin, double yMin, do
          << "  0\n"
          << "ENDTAB\n";
 
-  output << "  0\n" << "ENDSEC\n";
+  output << "  0\n"
+         << "ENDSEC\n";
 
   //
   // SECTION 3

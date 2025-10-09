@@ -135,7 +135,7 @@ const std::string PlatformUtils::user_agent()
 {
   std::string result;
 
-  result += "OpenSCAD/";
+  result += "PythonSCAD/";
   result += openscad_detailedversionnumber;
   result += " (";
   result += sysinfo(false);

@@ -37,7 +37,7 @@ function(disable_tests_safe)
     endif()
 endfunction()
 
-# When configuring OpenSCADTests as a top-level project, we 
+# When configuring OpenSCADTests as a top-level project, we
 # expect a self-contained OpenSCAD installation to exist.
 # The location can be specified via the OPENSCAD_BINARY CMake or
 # environment variable.
@@ -99,7 +99,7 @@ if(PROJECT_IS_TOP_LEVEL)
     message(STATUS "Couldn't find the OpenSCAD binary: ${OPENSCAD_BINPATH}")
     message(FATAL_ERROR "Please place an OpenSCAD binary at: ${OPENSCAD_BINPATH}")
     unset(OPENSCAD_BINPATH)
-  else() 
+  else()
     message(STATUS "Found OpenSCAD binary: ${OPENSCAD_BINPATH}")
   endif()
 endif()
@@ -193,8 +193,10 @@ configure_file(${TEST_SCAD_DIR}/templates/use-tests-template.scad
                ${TEST_SCAD_DIR}/misc/use-tests.scad)
 configure_file(${TEST_SCAD_DIR}/templates/import_stl-tests-template.scad
                ${TEST_SCAD_DIR}/3D/features/import_stl-tests.scad)
-configure_file(${TEST_SCAD_DIR}/templates/import_3mf-tests-template.scad
-               ${TEST_SCAD_DIR}/3D/features/import_3mf-tests.scad)
+if (ENABLE_LIB3MF_TESTS)
+  configure_file(${TEST_SCAD_DIR}/templates/import_3mf-tests-template.scad
+                 ${TEST_SCAD_DIR}/3D/features/import_3mf-tests.scad)
+endif()
 configure_file(${TEST_SCAD_DIR}/templates/import_dxf-tests-template.scad
                ${TEST_SCAD_DIR}/2D/features/import_dxf-tests.scad)
 configure_file(${TEST_PYTHON_DIR}/gen_issue2342-template.py
@@ -429,7 +431,9 @@ list(APPEND STL_IMPORT_FILES
 )
 
 list(APPEND OBJ_IMPORT_FILES ${TEST_SCAD_DIR}/obj/obj-import-centered.scad)
-list(APPEND 3MF_IMPORT_FILES ${TEST_SCAD_DIR}/3mf/3mf-import-centered.scad)
+if (ENABLE_LIB3MF_TESTS)
+  list(APPEND 3MF_IMPORT_FILES ${TEST_SCAD_DIR}/3mf/3mf-import-centered.scad)
+endif()
 list(APPEND OFF_IMPORT_FILES ${TEST_SCAD_DIR}/off/off-import-centered.scad)
 
 list(GET RENDER_2D_FILES 0 1 2 RENDERSTDIOTEST_FILES)
@@ -456,7 +460,10 @@ list(APPEND RENDERFORCETEST_FILES
 )
 
 set(PRUNE_TEST ${TEST_SCAD_DIR}/misc/intersection-prune-test.scad)
-list(APPEND ALL_PREVIEW_FILES ${3MF_IMPORT_FILES} ${OBJ_IMPORT_FILES} ${OFF_IMPORT_FILES} ${STL_IMPORT_FILES} ${ALL_RENDER_FILES} ${PRUNE_TEST} ${PREVIEW_ONLY_FILES})
+list(APPEND ALL_PREVIEW_FILES ${OBJ_IMPORT_FILES} ${OFF_IMPORT_FILES} ${STL_IMPORT_FILES} ${ALL_RENDER_FILES} ${PRUNE_TEST} ${PREVIEW_ONLY_FILES})
+if (ENABLE_LIB3MF_TESTS)
+  list(APPEND ALL_PREVIEW_FILES ${3MF_IMPORT_FILES})
+endif()
 
 list(APPEND COLOR_3D_TEST_FILES
   ${TEST_SCAD_DIR}/misc/color-cubes.scad
@@ -718,8 +725,8 @@ remove_test_config(Bugs FILES
 if(EXAMPLES_DIR)
   set_test_config(Examples FILES ${EXAMPLE_FILES} PREFIXES
     render-cgal render-manifold
-    preview-cgal preview-manifold preview-manifold preview throwntogether-cgal throwntogether-manifold 
-    render-csg-cgal render-monotone 
+    preview-cgal preview-manifold preview-manifold preview throwntogether-cgal throwntogether-manifold
+    render-csg-cgal render-monotone
     preview-off render-off dump-examples)
   set_test_config(Examples FILES ${EXAMPLE_2D_FILES} PREFIXES render-dxf)
 endif(EXAMPLES_DIR)
@@ -852,7 +859,9 @@ list(APPEND EXPORT_OBJ_TEST_FILES ${TEST_SCAD_DIR}/obj/obj-import-export_dodecah
 list(APPEND EXPORT_OBJ_TEST_FILES ${TEST_SCAD_DIR}/obj/obj-import-export_cube.scad)
 list(APPEND EXPORT_OBJ_TEST_FILES ${TEST_SCAD_DIR}/3D/features/polyhedron-cube.scad)
 
-list(APPEND EXPORT_3MF_TEST_FILES ${TEST_SCAD_DIR}/3mf/3mf-export.scad)
+if (ENABLE_LIB3MF_TESTS)
+  list(APPEND EXPORT_3MF_TEST_FILES ${TEST_SCAD_DIR}/3mf/3mf-export.scad)
+endif()
 
 list(APPEND EXPORT_POV_TEST_FILES ${TEST_SCAD_DIR}/pov/pov-export.scad)
 
@@ -992,7 +1001,9 @@ list(REMOVE_ITEM render-off-manifold_FILES
  ${TEST_SCAD_DIR}/misc/cube10.scad
  ${TEST_SCAD_DIR}/3D/features/polyhedron-tests.scad
 )
-set(render-3mf-manifold_FILES ${render-off-manifold_FILES})
+if (ENABLE_LIB3MF_TESTS)
+  set(render-3mf-manifold_FILES ${render-off-manifold_FILES})
+endif()
 add_cmdline_test(render-off-manifold SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png FILES ${EXPORT_IMPORT_3D_RENDER_FILES} EXPECTEDDIR render-monotone ARGS ${OPENSCAD_EXE_ARG} --format=OFF --render=force --backend=manifold)
 add_cmdline_test(render-off-manifold SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png FILES ${EXPORT_IMPORT_3D_DIFFERENT_FILES} EXPECTEDDIR render ARGS ${OPENSCAD_EXE_ARG} --format=OFF --render=force --backend=manifold)
 add_cmdline_test(render-off-manifold SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png FILES ${EXPORT_IMPORT_3D_DIFFERENT_MANIFOLD_FILES} EXPECTEDDIR render-manifold ARGS ${OPENSCAD_EXE_ARG} --format=OFF --render=force --backend=manifold)
@@ -1029,7 +1040,9 @@ add_cmdline_test(export-stl-sanitytest  SCRIPT ${STLEXPORTSANITYTEST_PY} SUFFIX 
 
 # Export/import color support
 add_cmdline_test(offcolorpngtest EXPERIMENTAL SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png FILES ${COLOR_3D_TEST_FILES} EXPECTEDDIR render-manifold ARGS ${OPENSCAD_EXE_ARG} --format=OFF --backend=manifold --render)
-add_cmdline_test(3mfcolorpngtest EXPERIMENTAL SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png FILES ${COLOR_3D_TEST_FILES} EXPECTEDDIR render-manifold ARGS ${OPENSCAD_EXE_ARG} --format=3MF --backend=manifold --render)
+if (ENABLE_LIB3MF_TESTS)
+  add_cmdline_test(3mfcolorpngtest EXPERIMENTAL SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png FILES ${COLOR_3D_TEST_FILES} EXPECTEDDIR render-manifold ARGS ${OPENSCAD_EXE_ARG} --format=3MF --backend=manifold --render)
+endif()
 
 # PDF Export
 add_cmdline_test(export-pdf SCRIPT ${EXPORT_PNGTEST_PY} SUFFIX png FILES ${SCAD_PDF_FILES} ARGS ${OPENSCAD_EXE_ARG} --format=PDF -O export-pdf/show-scale=false KERNEL Square:2)
@@ -1250,7 +1263,9 @@ add_output_file_test(relative-output FILE ${TEST_SCAD_DIR}/3D/features/cube-test
 add_output_file_test(relative-output FILE ${TEST_SCAD_DIR}/3D/features/cube-tests.scad FORMAT off)
 add_output_file_test(relative-output FILE ${TEST_SCAD_DIR}/3D/features/cube-tests.scad FORMAT wrl)
 add_output_file_test(relative-output FILE ${TEST_SCAD_DIR}/3D/features/cube-tests.scad FORMAT amf)
-add_output_file_test(relative-output FILE ${TEST_SCAD_DIR}/3D/features/cube-tests.scad FORMAT 3mf)
+if (ENABLE_LIB3MF_TESTS)
+  add_output_file_test(relative-output FILE ${TEST_SCAD_DIR}/3D/features/cube-tests.scad FORMAT 3mf)
+endif()
 add_output_file_test(relative-output FILE ${TEST_SCAD_DIR}/3D/features/cube-tests.scad FORMAT csg)
 add_output_file_test(relative-output FILE ${TEST_SCAD_DIR}/2D/features/square-tests.scad FORMAT dxf)
 add_output_file_test(relative-output FILE ${TEST_SCAD_DIR}/2D/features/square-tests.scad FORMAT svg)
@@ -1262,20 +1277,10 @@ add_output_file_test(relative-output FILE ${TEST_SCAD_DIR}/3D/features/cube-test
 add_output_file_test(relative-output FILE ${TEST_SCAD_DIR}/3D/features/cube-tests.scad FORMAT nef3)
 add_output_file_test(relative-output FILE ${TEST_SCAD_DIR}/3D/features/cube-tests.scad FORMAT nefdbg)
 
-# Disable tests failing due to https://github.com/openscad/openscad/issues/4632
-set_tests_properties(
-  relative-output_csg_run
-  relative-output_csg_check
-  relative-output_ast_run
-  relative-output_ast_check
-  PROPERTIES DISABLED TRUE
-)
-
 if(NOT ENABLE_LIBFIVE)
   message(STATUS "LIBFIVE is not enabled. Skipping related tests.")
-  set_tests_properties(
+  disable_tests_safe(
     pythonscad_sdf
-    PROPERTIES DISABLED TRUE
   )
 endif()
 
@@ -1283,7 +1288,13 @@ endif()
 # Disable Tests with Known Issues #
 ###################################
 
-set_tests_properties(
+disable_tests_safe(
+  # Disable tests failing due to https://github.com/openscad/openscad/issues/4632
+  relative-output_csg_run
+  relative-output_csg_check
+  relative-output_ast_run
+  relative-output_ast_check
+
   # These don't output anything
   render-dxf_text-empty-tests
   render-dxf_nothing-decimal-comma-separated
@@ -1359,128 +1370,84 @@ set_tests_properties(
   preview-cgal_issue2841b
   render-csg-cgal_issue2841b
 
-  PROPERTIES DISABLED TRUE
-)
-if(EXAMPLES_DIR) 
-  set_tests_properties(
-    # OpenCSG z fighting
-    preview-cgal_surface_image
-    throwntogether-cgal_surface_image
+  # OpenCSG z fighting
+  preview-cgal_surface_image
+  throwntogether-cgal_surface_image
 
-    # https://github.com/openscad/openscad/issues/5159
-    render-cgal_projection
-    render-csg-cgal_projection
+  # https://github.com/openscad/openscad/issues/5159
+  render-cgal_projection
+  render-csg-cgal_projection
 
-    # https://github.com/openscad/openscad/issues/5158
-    #render-cgal_example017 
-    #throwntogether-cgal_example017
-    
-    # https://github.com/openscad/openscad/issues/4398
-    render-csg-cgal_logo_and_text
+  # https://github.com/openscad/openscad/issues/5158
+  #render-cgal_example017
+  #throwntogether-cgal_example017
 
-    PROPERTIES DISABLED TRUE
-  )
-endif(EXAMPLES_DIR)
+  # https://github.com/openscad/openscad/issues/4398
+  render-csg-cgal_logo_and_text
 
+  # z-fighting different on different machines
+  preview-manifold_issue1165
+  preview-manifold_issue1215
 
-if (ENABLE_MANIFOLD_TESTS)
-  set_tests_properties(
-    # z-fighting different on different machines
-    preview-manifold_issue1165
-    preview-manifold_issue1215
+  # Manifold triangle order not stable, causes transparent
+  # objects to render differently on different machines
+  render-manifold_color-tests
+  render-manifold_hex-colors-tests
 
-    # Manifold triangle order not stable, causes transparent
-    # objects to render differently on different machines
-    render-manifold_color-tests
-    render-manifold_hex-colors-tests
+  # https://github.com/openscad/openscad/issues/909
+  render-amf-manifold_bad-stl-wing
+  render-amf-manifold_bad-stl-pcbvicebar
+  render-amf-manifold_bad-stl-tardis
 
-    # https://github.com/openscad/openscad/issues/909
-    render-amf-manifold_bad-stl-wing
-    render-amf-manifold_bad-stl-pcbvicebar
-    render-amf-manifold_bad-stl-tardis
+  # https://github.com/openscad/openscad/issues/2841
+  render-manifold_issue2841b
+  preview-manifold_issue2841b
 
-    # https://github.com/openscad/openscad/issues/2841
-    render-manifold_issue2841b
-    preview-manifold_issue2841b
+  # https://github.com/openscad/openscad/issues/5135
+  render-force-manifold_issue5135-bad
 
-    # https://github.com/openscad/openscad/issues/5135
-    render-force-manifold_issue5135-bad
+  # https://github.com/openscad/openscad/issues/5218
+  throwntogether-manifold_issue5218
+  throwntogether-manifold_issue913
 
-    # https://github.com/openscad/openscad/issues/5218
-    throwntogether-manifold_issue5218
-    throwntogether-manifold_issue913
+  # z-fighting different on different machines
+  preview-cgal_example017
+  preview-manifold_example017
 
-    PROPERTIES DISABLED TRUE
-  )
-  if(EXAMPLES_DIR)
-    set_tests_properties(
-      # z-fighting different on different machines
-      preview-cgal_example017
-      preview-manifold_example017
+  # OpenCSG z fighting
+  preview-manifold_surface_image
+  throwntogether-manifold_surface_image
 
-      # OpenCSG z fighting
-      preview-manifold_surface_image
-      throwntogether-manifold_surface_image
+  # Manifold triangle order not stable, causes transparent
+  # objects to render differently on different machines
+  render-manifold_projection
 
-      # Manifold triangle order not stable, causes transparent
-      # objects to render differently on different machines
-      render-manifold_projection
+  # https://github.com/openscad/openscad/issues/5218
+  throwntogether-manifold_example016
 
-      # https://github.com/openscad/openscad/issues/5218
-      throwntogether-manifold_example016
-
-      PROPERTIES DISABLED TRUE
-    )
-  endif(EXAMPLES_DIR)
-endif (ENABLE_MANIFOLD_TESTS)
-
-if (EXPERIMENTAL)
-set_tests_properties(
   # https://github.com/openscad/openscad/issues/5220
   render-cgal_roof
   render-csg-cgal_roof
 
-  PROPERTIES DISABLED TRUE
+  render-off-manifold_issue5216
+
+  # For some reason, only failing on Linux
+  render-manifold_import_3mf-tests
+  preview-cgal_3mf-import-centered
+  preview-manifold_3mf-import-centered
+  preview-manifold_import_3mf-tests
+  render-off-manifold_issue5216
+  export-3mf_3mf-export
+  render-3mf-cgal_bad-stl-tardis
+  render-3mf-cgal_bad-stl-wing
+  render-3mf-manifold_issue5216
+
+  preview-cgal_import_3mf-tests
+  render-cgal_import_3mf-tests
+  render-csg-cgal_import_3mf-tests
+  throwntogether-cgal_import_3mf-tests
+  throwntogether-manifold_import_3mf-tests
 )
-endif (EXPERIMENTAL)
-
-if (ENABLE_LIB3MF_TESTS)
-  if (EXPERIMENTAL)
-    set_tests_properties(
-      # https://github.com/openscad/openscad/issues/5800
-      export-3mf_3mf-export
-
-      PROPERTIES DISABLED TRUE
-    )
-  endif (EXPERIMENTAL)
-  if (ENABLE_MANIFOLD_TESTS)
-    set_tests_properties(
-      # https://github.com/openscad/openscad/issues/5966
-     render-off-manifold_issue5216
-     render-3mf-manifold_issue5216
-
-     PROPERTIES DISABLED TRUE
-    )
-  endif (ENABLE_MANIFOLD_TESTS)  
-  set_tests_properties(
-    # When exported from CGAL, the file cannot be re-imported
-    render-3mf-cgal_bad-stl-wing
-
-    # For some reason, only failing on Linux
-    render-3mf-cgal_bad-stl-tardis
-
-    PROPERTIES DISABLED TRUE
-  )
-else()
-  set_tests_properties(
-    preview-cgal_import_3mf-tests
-    render-cgal_import_3mf-tests
-    render-csg-cgal_import_3mf-tests
-    throwntogether-cgal_import_3mf-tests
-    throwntogether-manifold_import_3mf-tests
-    PROPERTIES DISABLED TRUE
-  )
-endif(ENABLE_LIB3MF_TESTS)
 
 list(APPEND NEF3_BROKEN_TESTS
   render-cgal_nef3_broken
@@ -1500,6 +1467,47 @@ elseif(WIN32 OR MXECROSS)
     export-pdf_centered
     export-pdf_simple-pdf
     PROPERTIES DISABLED TRUE
+  )
+endif()
+
+if(NOT ENABLE_MANIFOLD)
+  disable_tests_safe(
+    throwntogether-manifold_issue2301
+    export-pov-as-is_pov-export
+    export-pov-translate-1_pov-export
+    export-pov-translate-2_pov-export
+    export-pov-translate-3_pov-export
+    export-pov-translate-4_pov-export
+    export-pov-rotate-1_pov-export
+    export-pov-rotate-2_pov-export
+    export-pov-rotate-3_pov-export
+    export-pov-distance-1_pov-export
+    export-pov-all_pov-export
+    render-3mf-manifold_bad-stl-tardis
+    render-3mf-manifold_bad-stl-wing
+    render-3mf-manifold_issue904
+    render-3mf-manifold_issue1105
+    render-3mf-manifold_issue1105b
+    render-3mf-manifold_issue1105d
+    render-3mf-manifold_issue1215c
+    render-3mf-manifold_internal-cavity
+    render-3mf-manifold_internal-cavity-polyhedron
+    render-3mf-manifold_rotate_extrude-hole
+    render-3mf-manifold_polyhedron-tests
+    offcolorpngtest_color-cubes
+    offcolorpngtest_color-tests3
+    offcolorpngtest_linear_extrude-parameter-tests
+    offcolorpngtest_resize-tests
+    3mfcolorpngtest_color-cubes
+    3mfcolorpngtest_color-tests3
+    3mfcolorpngtest_linear_extrude-parameter-tests
+    3mfcolorpngtest_resize-tests
+    render-view-crosshairs_view-options-tests
+    preview-view-edges-manifold_render-preserve-colors
+    render-view-edges-manifold_render-preserve-colors
+    openscad-colorscheme-metallic-render_CSG
+    lazyunion-render_lazyunion-difference-for
+    render-manifold_roof
   )
 endif()
 

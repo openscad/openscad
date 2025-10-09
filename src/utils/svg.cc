@@ -60,8 +60,7 @@ std::string svg_border()
   std::ostringstream out;
   out << " <!-- border -->\n";
   out << "  <polyline points='0,0 " << svg_px_width << ",0 " << svg_px_width << "," << svg_px_height
-      << " 0," << svg_px_height << "'"
-      << " style='fill:none;stroke:black' />\n";
+      << " 0," << svg_px_height << "'" << " style='fill:none;stroke:black' />\n";
   out << " <!-- /border -->";
   return out.str();
 }

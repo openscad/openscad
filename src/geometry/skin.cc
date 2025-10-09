@@ -228,7 +228,7 @@ static std::vector<std::vector<AlignmentPoint>> findAlignmentPoints(
 
       // Then we only care about the pairs which straddle the desired angle
       AlignmentPoint point;
-      point.vertex_index=0;
+      point.vertex_index = 0;
       point.distance_from_centre = -1;
       point.intersect_point = Vector2d(0, 0);
       double prev_angle = *angles.rbegin();
@@ -280,8 +280,7 @@ static std::vector<std::shared_ptr<const Polygon2d>> interpolateVertices(
   std::vector<std::vector<AlignmentPoint>>& alignmentPoints)
 {
   std::vector<std::shared_ptr<Polygon2d>> slicesadj;
-  for (size_t i =0; i< slicesin.size();i++) 
-    slicesadj.push_back(std::make_shared<Polygon2d>());
+  for (size_t i = 0; i < slicesin.size(); i++) slicesadj.push_back(std::make_shared<Polygon2d>());
 
   // Calculate the distance round each contour and the fraction of each edge
   // Also adds a new vertex at the alignmentPoint
@@ -397,8 +396,7 @@ static std::vector<std::shared_ptr<const Polygon2d>> spinPolygons(
   std::vector<std::vector<AlignmentPoint>>& alignmentPoints)
 {
   std::vector<std::shared_ptr<Polygon2d>> slicesadj;
-  for (auto const& slice : slicesin) 
-    slicesadj.push_back(std::make_shared<Polygon2d>());
+  for (auto const& slice : slicesin) slicesadj.push_back(std::make_shared<Polygon2d>());
 
   int outlines_count = slicesin[0]->untransformedOutlines().size();
   for (int o_i = 0, o_end = outlines_count; o_i != o_end; ++o_i) {

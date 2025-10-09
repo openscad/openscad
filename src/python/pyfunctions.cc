@@ -65,6 +65,7 @@ extern bool parse(SourceFile *& file, const std::string& text, const std::string
 #include "core/RoofNode.h"
 #include "core/RenderNode.h"
 #include "core/SurfaceNode.h"
+#include "core/SheetNode.h"
 #include "core/TextNode.h"
 #include "core/OffsetNode.h"
 #include <hash.h>
@@ -1237,7 +1238,7 @@ PyObject *python_number_rot(PyObject *mat, Matrix3d rotvec, int vecs)
   return python_frommatrix(raw);
 }
 
-PyObject *python_rotate_sub(PyObject *obj, Vector3d vec3, double angle, int dragflags)
+PyObject *python_rotate_sub(PyObject *obj, Vector3d vec3, double angle, PyObject *ref, int dragflags)
 {
   Matrix3d M;
   if (isnan(angle)) {
@@ -1282,8 +1283,30 @@ PyObject *python_rotate_sub(PyObject *obj, Vector3d vec3, double angle, int drag
   node->matrix.rotate(M);
   node->setPyName(child->getPyName());
 
-  node->children.push_back(child);
-  PyObject *pyresult = PyOpenSCADObjectFromNode(type, node);
+  PyObject *pyresult;
+  if (ref == nullptr) {
+    node->children.push_back(child);
+    pyresult = PyOpenSCADObjectFromNode(type, node);
+  } else {
+    Vector3d vec3;
+    python_vectorval(ref, 1, 3, &(vec3[0]), &(vec3[1]), &(vec3[2]), nullptr, &dragflags);
+
+    std::shared_ptr<TransformNode> prenode, postnode;
+    {
+      DECLARE_INSTANCE
+      prenode = std::make_shared<TransformNode>(instance, "translate");
+      prenode->matrix.translate(-vec3);
+    }
+    {
+      DECLARE_INSTANCE
+      postnode = std::make_shared<TransformNode>(instance, "translate");
+      postnode->matrix.translate(vec3);
+    }
+    prenode->children.push_back(child);
+    node->children.push_back(prenode);
+    postnode->children.push_back(node);
+    pyresult = PyOpenSCADObjectFromNode(type, postnode);
+  }
   if (child_dict != nullptr) {
     PyObject *key, *value;
     Py_ssize_t pos = 0;
@@ -1296,20 +1319,20 @@ PyObject *python_rotate_sub(PyObject *obj, Vector3d vec3, double angle, int drag
   return pyresult;
 }
 
-PyObject *python_rotate_core(PyObject *obj, PyObject *val_a, PyObject *val_v)
+PyObject *python_rotate_core(PyObject *obj, PyObject *val_a, PyObject *val_v, PyObject *ref)
 {
   Vector3d vec3(0, 0, 0);
   double angle;
   int dragflags = 0;
   if (val_a != nullptr && PyList_Check(val_a) && val_v == nullptr) {
     python_vectorval(val_a, 1, 3, &(vec3[0]), &(vec3[1]), &(vec3[2]), nullptr, &dragflags);
-    return python_rotate_sub(obj, vec3, NAN, dragflags);
+    return python_rotate_sub(obj, vec3, NAN, ref, dragflags);
   } else if (val_a != nullptr && val_v != nullptr && !python_numberval(val_a, &angle) &&
              PyList_Check(val_v) && PyList_Size(val_v) == 3) {
     vec3[0] = PyFloat_AsDouble(PyList_GetItem(val_v, 0));
     vec3[1] = PyFloat_AsDouble(PyList_GetItem(val_v, 1));
     vec3[2] = PyFloat_AsDouble(PyList_GetItem(val_v, 2));
-    return python_rotate_sub(obj, vec3, angle, dragflags);
+    return python_rotate_sub(obj, vec3, angle, ref, dragflags);
   }
   PyErr_SetString(PyExc_TypeError, "Invalid arguments to rotate()");
   return nullptr;
@@ -1317,27 +1340,29 @@ PyObject *python_rotate_core(PyObject *obj, PyObject *val_a, PyObject *val_v)
 
 PyObject *python_rotate(PyObject *self, PyObject *args, PyObject *kwargs)
 {
-  char *kwlist[] = {"obj", "a", "v", nullptr};
+  char *kwlist[] = {"obj", "a", "v", "ref", nullptr};
   PyObject *val_a = nullptr;
   PyObject *val_v = nullptr;
   PyObject *obj = nullptr;
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "OO|O", kwlist, &obj, &val_a, &val_v)) {
+  PyObject *ref = nullptr;
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "OO|OO", kwlist, &obj, &val_a, &val_v), &ref) {
     PyErr_SetString(PyExc_TypeError, "Error during parsing rotate(object, vec3)");
     return NULL;
   }
-  return python_rotate_core(obj, val_a, val_v);
+  return python_rotate_core(obj, val_a, val_v, ref);
 }
 
 PyObject *python_oo_rotate(PyObject *obj, PyObject *args, PyObject *kwargs)
 {
-  char *kwlist[] = {"a", "v", nullptr};
+  char *kwlist[] = {"a", "v", "ref", nullptr};
   PyObject *val_a = nullptr;
   PyObject *val_v = nullptr;
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O|O", kwlist, &val_a, &val_v)) {
+  PyObject *ref = nullptr;
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O|OO", kwlist, &val_a, &val_v, &ref)) {
     PyErr_SetString(PyExc_TypeError, "Error during parsing rotate(object, vec3)");
     return NULL;
   }
-  return python_rotate_core(obj, val_a, val_v);
+  return python_rotate_core(obj, val_a, val_v, ref);
 }
 
 PyObject *python_number_mirror(PyObject *mat, Matrix4d m, int vecs)
@@ -1526,7 +1551,7 @@ PyObject *python_dir_sub_core(PyObject *obj, double arg, int mode)
     case 7: rot = Vector3d(0, arg, 0); break;
     case 8: rot = Vector3d(0, 0, arg); break;
     }
-    return python_rotate_sub(obj, rot, NAN, 0);
+    return python_rotate_sub(obj, rot, NAN, nullptr, 0);
   }
 }
 
@@ -2326,20 +2351,11 @@ PyObject *python__getitem__(PyObject *obj, PyObject *key)
       if (trans != nullptr) matrix = trans->matrix.matrix();
       result = python_frommatrix(matrix);
     } else if (keystr == "size") {
-      PyObject *bbox;
-      bbox = python_bbox_core(obj);
-      if (bbox == Py_None) {
-        return Py_None;
-      }
-      PyObject *negative_ones = Py_BuildValue("[f,f,f]", -1.0, -1.0, -1.0);
-      if (!negative_ones) {
-        return Py_None;
-      }
-      PyObject *size = python_nb_sub_vec3(PyTuple_GetItem(bbox, 1),
-                                          python_scale_core(PyTuple_GetItem(bbox, 0), negative_ones), 0);
-      Py_DECREF(negative_ones);
-      Py_INCREF(size);
-      return size;
+      return python_size_core(obj);
+    } else if (keystr == "position") {
+      return python_position_core(obj);
+    } else if (keystr == "bbox") {
+      return python_bbox_core(obj);
     }
   } else Py_INCREF(result);
   return result;
@@ -2516,42 +2532,48 @@ PyObject *python_oo_mesh(PyObject *obj, PyObject *args, PyObject *kwargs)
 
 PyObject *python_bbox_core(PyObject *obj)
 {
-  PyObject *dummydict;
-  std::shared_ptr<AbstractNode> child = PyOpenSCADObjectToNodeMulti(obj, &dummydict);
-  if (child == NULL) {
-    PyErr_SetString(PyExc_TypeError, "Invalid type for  Object in bbox \n");
+  // Get position and size attributes from the object
+  PyObject *position_key = PyUnicode_FromString("position");
+  PyObject *size_key = PyUnicode_FromString("size");
+
+  PyObject *position = python__getitem__(obj, position_key);
+  PyObject *size = python__getitem__(obj, size_key);
+
+  Py_DECREF(position_key);
+  Py_DECREF(size_key);
+
+  if (position == Py_None || size == Py_None) {
+    if (position != Py_None) Py_DECREF(position);
+    if (size != Py_None) Py_DECREF(size);
+    return Py_None;
+  }
+
+  // Create cube with the size, not centered (starts at origin [0,0,0])
+  PyObject *cube_args = PyTuple_New(0);
+  PyObject *cube_kwargs = PyDict_New();
+  PyDict_SetItemString(cube_kwargs, "size", size);
+  PyDict_SetItemString(cube_kwargs, "center", Py_False);
+
+  PyObject *cube = python_cube(NULL, cube_args, cube_kwargs);
+  if (cube == NULL) {
+    Py_DECREF(position);
+    Py_DECREF(size);
+    Py_DECREF(cube_args);
+    Py_DECREF(cube_kwargs);
     return NULL;
   }
-  Tree tree(child, "");
-  GeometryEvaluator geomevaluator(tree);
-  std::shared_ptr<const Geometry> geom = geomevaluator.evaluateGeometry(*tree.root(), true);
-  std::shared_ptr<const PolySet> ps = PolySetUtils::getGeometryAsPolySet(geom);
 
-  if (ps != nullptr && ps->vertices.size() > 0) {
-    Vector3d pmin = ps->vertices[0];
-    Vector3d pmax = pmin;
-    for (const auto& pt : ps->vertices) {
-      for (int i = 0; i < 3; i++) {
-        if (pt[i] > pmax[i]) pmax[i] = pt[i];
-        if (pt[i] < pmin[i]) pmin[i] = pt[i];
-      }
-    }
-    // Now create Python Vectors
-    PyObject *ptmin = PyList_New(3);
-    PyObject *ptmax = PyList_New(3);
-    for (int i = 0; i < 3; i++) {
-      PyList_SetItem(ptmin, i, PyFloat_FromDouble(pmin[i]));
-      PyList_SetItem(ptmax, i, PyFloat_FromDouble(pmax[i]));
-    }
-    Py_XINCREF(ptmin);
-    Py_XINCREF(ptmax);
+  // Translate cube to the object's position
+  PyObject *bbox_box = python_translate_core(cube, position);
 
-    PyObject *result = PyTuple_New(2);
-    PyTuple_SetItem(result, 0, ptmin);
-    PyTuple_SetItem(result, 1, ptmax);
-    return result;
-  }
-  return Py_None;
+  // Clean up
+  Py_DECREF(position);
+  Py_DECREF(size);
+  Py_DECREF(cube_args);
+  Py_DECREF(cube_kwargs);
+  Py_DECREF(cube);
+
+  return bbox_box;
 }
 
 PyObject *python_bbox(PyObject *self, PyObject *args, PyObject *kwargs)
@@ -2573,6 +2595,84 @@ PyObject *python_oo_bbox(PyObject *obj, PyObject *args, PyObject *kwargs)
     return NULL;
   }
   return python_bbox_core(obj);
+}
+
+PyObject *python_size_core(PyObject *obj)
+{
+  PyObject *dummydict;
+  std::shared_ptr<AbstractNode> child = PyOpenSCADObjectToNodeMulti(obj, &dummydict);
+  if (child == NULL) {
+    return Py_None;
+  }
+  Tree tree(child, "");
+  GeometryEvaluator geomevaluator(tree);
+  std::shared_ptr<const Geometry> geom = geomevaluator.evaluateGeometry(*tree.root(), true);
+  std::shared_ptr<const PolySet> ps = PolySetUtils::getGeometryAsPolySet(geom);
+
+  if (ps != nullptr && ps->vertices.size() > 0) {
+    Vector3d pmin = ps->vertices[0];
+    Vector3d pmax = pmin;
+    for (const auto& pt : ps->vertices) {
+      for (int i = 0; i < 3; i++) {
+        if (pt[i] > pmax[i]) pmax[i] = pt[i];
+        if (pt[i] < pmin[i]) pmin[i] = pt[i];
+      }
+    }
+    // Calculate size directly
+    Vector3d size = pmax - pmin;
+    PyObject *size_list = python_fromvector(size);
+    Py_INCREF(size_list);
+    return size_list;
+  }
+  return Py_None;
+}
+
+PyObject *python_position_core(PyObject *obj)
+{
+  PyObject *dummydict;
+  std::shared_ptr<AbstractNode> child = PyOpenSCADObjectToNodeMulti(obj, &dummydict);
+  if (child == NULL) {
+    return Py_None;
+  }
+  Tree tree(child, "");
+  GeometryEvaluator geomevaluator(tree);
+  std::shared_ptr<const Geometry> geom = geomevaluator.evaluateGeometry(*tree.root(), true);
+  std::shared_ptr<const PolySet> ps = PolySetUtils::getGeometryAsPolySet(geom);
+
+  if (ps != nullptr && ps->vertices.size() > 0) {
+    Vector3d pmin = ps->vertices[0];
+    for (const auto& pt : ps->vertices) {
+      for (int i = 0; i < 3; i++) {
+        if (pt[i] < pmin[i]) pmin[i] = pt[i];
+      }
+    }
+    PyObject *position_list = python_fromvector(pmin);
+    Py_INCREF(position_list);
+    return position_list;
+  }
+  return Py_None;
+}
+
+PyObject *python_size(PyObject *self, PyObject *args, PyObject *kwargs)
+{
+  char *kwlist[] = {"obj", NULL};
+  PyObject *obj = NULL;
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O", kwlist, &obj)) {
+    PyErr_SetString(PyExc_TypeError, "error during parsing size(obj)\n");
+    return NULL;
+  }
+  return python_size_core(obj);
+}
+
+PyObject *python_position(PyObject *self, PyObject *args, PyObject *kwargs)
+{
+  char *kwlist[] = {"obj", NULL};
+  PyObject *obj = NULL;
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O", kwlist, &obj)) {
+    PyErr_SetString(PyExc_TypeError, "error during parsing position(obj)\n");
+    return NULL;
+  }
+  return python_position_core(obj);
 }
 
 PyObject *python_separate_core(PyObject *obj)
@@ -4025,19 +4125,28 @@ PyObject *python_nb_xor(PyObject *arg1, PyObject *arg2)
 
 PyObject *python_nb_remainder(PyObject *arg1, PyObject *arg2)
 {
-  PyObject *dummy_dict;
-  auto node1 = PyOpenSCADObjectToNode(arg1, &dummy_dict);
-  auto node2 = PyOpenSCADObjectToNode(arg2, &dummy_dict);
-  if (node1 == nullptr || node2 == nullptr) {
-    PyErr_SetString(PyExc_TypeError, "Error during parsing hull. arguments must be solids.");
-    return nullptr;
+  if (PyObject_IsInstance(arg2, reinterpret_cast<PyObject *>(&PyOpenSCADType))) {
+    PyObject *dummy_dict;
+    auto node1 = PyOpenSCADObjectToNode(arg1, &dummy_dict);
+    auto node2 = PyOpenSCADObjectToNode(arg2, &dummy_dict);
+    if (node1 == nullptr || node2 == nullptr) {
+      PyErr_SetString(PyExc_TypeError, "Error during parsing hull. arguments must be solids.");
+      return nullptr;
+    }
+    DECLARE_INSTANCE
+    std::shared_ptr<AbstractNode> child;
+    auto node = std::make_shared<CgalAdvNode>(instance, CgalAdvType::MINKOWSKI);
+    node->children.push_back(node1);
+    node->children.push_back(node2);
+    return PyOpenSCADObjectFromNode(&PyOpenSCADType, node);
   }
-  DECLARE_INSTANCE
-  std::shared_ptr<AbstractNode> child;
-  auto node = std::make_shared<CgalAdvNode>(instance, CgalAdvType::MINKOWSKI);
-  node->children.push_back(node1);
-  node->children.push_back(node2);
-  return PyOpenSCADObjectFromNode(&PyOpenSCADType, node);
+  Vector3d vec3(0, 0, 0);
+  if (!python_vectorval(arg2, 1, 3, &(vec3[0]), &(vec3[1]), &(vec3[2]), nullptr)) {
+    return python_rotate_sub(arg1, vec3, NAN, nullptr, 0);
+  }
+
+  PyErr_SetString(PyExc_TypeError, "Unknown types for % oprator");
+  return nullptr;
 }
 
 PyObject *python_nb_mul(PyObject *arg1, PyObject *arg2)
@@ -4388,6 +4497,293 @@ PyObject *python_surface(PyObject *self, PyObject *args, PyObject *kwargs)
   }
 
   return python_surface_core(file, center, invert, color, convexity);
+}
+
+int sheetCalcIndInt(PyObject *func, double i, double j, Vector3d& pos)
+{
+  PyObject *args = PyTuple_Pack(2, PyFloat_FromDouble(i), PyFloat_FromDouble(j));
+  PyObject *pos_p = PyObject_CallObject(func, args);
+  if (pos_p == nullptr) {
+    std::string errorstr;
+    python_catch_error(errorstr);
+    PyErr_SetString(PyExc_TypeError, errorstr.c_str());
+    LOG(message_group::Error, errorstr.c_str());
+    return 1;
+  }
+  return python_vectorval(pos_p, 3, 3, &pos[0], &pos[1], &pos[2], nullptr, nullptr);
+}
+
+int sheetCalcInd(PolySetBuilder& builder, std::vector<Vector3d>& vertices, std::vector<double>& istore,
+                 std::vector<double>& jstore, PyObject *func, double i, double j)
+{
+  std::string errorstr;
+  Vector3d pos;
+  if (sheetCalcIndInt(func, i, j, pos)) return -1;
+  //  printf("pos %g/%g/%g\n", pos[0], pos[1], pos[2]);
+  unsigned int ind = builder.vertexIndex(pos);
+  if (ind == vertices.size()) {
+    vertices.push_back(pos);
+    istore.push_back(i);
+    jstore.push_back(j);
+  }
+  return ind;
+}
+
+std::unique_ptr<const Geometry> sheetCreateFuncGeometry(void *funcptr, double imin, double imax,
+                                                        double jmin, double jmax, double fs, bool ispan,
+                                                        bool jspan)
+{
+  PyObject *func = (PyObject *)funcptr;
+  std::unordered_map<SphereEdgeDb, int, boost::hash<SphereEdgeDb>> edges;
+
+  PolySetBuilder builder;
+  std::vector<Vector3d> vertices;
+  std::vector<double> istore;
+  std::vector<double> jstore;
+  //
+  int ind11, ind21, ind12, ind22;
+
+  ind11 = sheetCalcInd(builder, vertices, istore, jstore, func, imin, jmin);
+  ind12 = sheetCalcInd(builder, vertices, istore, jstore, func, imin, jmax);
+  ind21 = sheetCalcInd(builder, vertices, istore, jstore, func, imax, jmin);
+  ind22 = sheetCalcInd(builder, vertices, istore, jstore, func, imax, jmax);
+  if (ind11 < 0 || ind12 < 0 || ind21 < 0 || ind22 < 0) return builder.build();
+
+  std::vector<IndexedTriangle> triangles;
+  std::vector<IndexedTriangle> tri_new;
+  tri_new.push_back(IndexedTriangle(ind11, ind21, ind22));
+  tri_new.push_back(IndexedTriangle(ind11, ind22, ind12));
+  int round = 0;
+  unsigned int i1, i2, imid;
+  Vector3d p1, p2, p3, pmin, pmax, pmid, pmid_test, dir1, dir2;
+  double dist, ang, ang_test;
+  do {
+    triangles = tri_new;
+    if (round >= 15) break;  // emergency stop for non-continous models
+    tri_new.clear();
+    std::vector<int> midinds;
+    for (const IndexedTriangle& tri : triangles) {
+      int zeroang = 0;
+      unsigned int midind = -1;
+      for (int i = 0; i < 3; i++) {
+        i1 = tri[i];
+        i2 = tri[(i + 1) % 3];
+        SphereEdgeDb edge(i1, i2);
+        if (edges.count(edge) > 0) continue;
+        dist = (vertices[i1] - vertices[i2]).norm();
+        if (dist < fs && round > 2) continue;
+        p1 = vertices[i1];
+        p2 = vertices[i2];
+        double i_mid = (istore[i1] + istore[i2]) / 2.0;
+        double j_mid = (jstore[i1] + jstore[i2]) / 2.0;
+        if (sheetCalcIndInt(func, i_mid, j_mid, pmid)) return builder.build();
+        dir1 = (pmid - p1).normalized();
+        dir2 = (p2 - pmid).normalized();
+        ang = acos(dir1.dot(dir2));
+        imid = builder.vertexIndex(pmid);
+        if (imid == vertices.size()) {
+          vertices.push_back(pmid);
+          istore.push_back(i_mid);
+          jstore.push_back(j_mid);
+        }
+        if (ang < 0.001 && round > 2) {
+          zeroang++;
+          continue;
+        }
+        edges[edge] = imid;
+      }
+      if (zeroang == 3) {
+        p1 = vertices[tri[0]];
+        p2 = vertices[tri[1]];
+        p3 = vertices[tri[2]];
+        double i_mid = (istore[tri[0]] + istore[tri[1]] + istore[tri[2]]) / 3.0;
+        double j_mid = (jstore[tri[0]] + jstore[tri[1]] + jstore[tri[2]]) / 3.0;
+
+        if (sheetCalcIndInt(func, i_mid, j_mid, pmid)) return builder.build();
+        Vector4d norm = calcTriangleNormal(vertices, {tri[0], tri[1], tri[2]});
+        if (fabs(pmid.dot(norm.head<3>()) - norm[3]) > 1e-3) {
+          midind = builder.vertexIndex(pmid);
+          if (midind == vertices.size()) {
+            vertices.push_back(pmid);
+            istore.push_back(i_mid);
+            jstore.push_back(j_mid);
+          }
+        }
+      }
+      midinds.push_back(midind);
+    }
+    // create new triangles from split edges
+    int ind = 0;
+    for (const IndexedTriangle& tri : triangles) {
+      int splitind[3];
+      for (int i = 0; i < 3; i++) {
+        SphereEdgeDb e(tri[i], tri[(i + 1) % 3]);
+        splitind[i] = edges.count(e) > 0 ? edges[e] : -1;
+      }
+
+      if (midinds[ind] != -1) {
+        for (int i = 0; i < 3; i++) {
+          if (splitind[i] == -1) {
+            tri_new.push_back(IndexedTriangle(tri[i], tri[(i + 1) % 3], midinds[ind]));
+          } else {
+            tri_new.push_back(IndexedTriangle(tri[i], splitind[i], midinds[ind]));
+            tri_new.push_back(IndexedTriangle(splitind[i], tri[(i + 1) % 3], midinds[ind]));
+          }
+        }
+        ind++;
+        continue;
+      }
+
+      int bucket =
+        ((splitind[0] != -1) ? 1 : 0) | ((splitind[1] != -1) ? 2 : 0) | ((splitind[2] != -1) ? 4 : 0);
+      switch (bucket) {
+      case 0: tri_new.push_back(IndexedTriangle(tri[0], tri[1], tri[2])); break;
+      case 1:
+        tri_new.push_back(IndexedTriangle(tri[0], splitind[0], tri[2]));
+        tri_new.push_back(IndexedTriangle(tri[2], splitind[0], tri[1]));
+        break;
+      case 2:
+        tri_new.push_back(IndexedTriangle(tri[1], splitind[1], tri[0]));
+        tri_new.push_back(IndexedTriangle(tri[0], splitind[1], tri[2]));
+        break;
+      case 3:
+        tri_new.push_back(IndexedTriangle(tri[0], splitind[0], tri[2]));
+        tri_new.push_back(IndexedTriangle(splitind[0], splitind[1], tri[2]));
+        tri_new.push_back(IndexedTriangle(splitind[0], tri[1], splitind[1]));
+        break;
+      case 4:
+        tri_new.push_back(IndexedTriangle(tri[2], splitind[2], tri[1]));
+        tri_new.push_back(IndexedTriangle(tri[1], splitind[2], tri[0]));
+        break;
+      case 5:
+        tri_new.push_back(IndexedTriangle(tri[0], splitind[0], splitind[2]));
+        tri_new.push_back(IndexedTriangle(splitind[0], tri[2], splitind[2]));
+        tri_new.push_back(IndexedTriangle(splitind[0], tri[1], tri[2]));
+        break;
+      case 6:
+        tri_new.push_back(IndexedTriangle(tri[0], tri[1], splitind[2]));
+        tri_new.push_back(IndexedTriangle(tri[1], splitind[1], splitind[2]));
+        tri_new.push_back(IndexedTriangle(splitind[1], tri[2], splitind[2]));
+        break;
+      case 7:
+        tri_new.push_back(IndexedTriangle(splitind[2], tri[0], splitind[0]));
+        tri_new.push_back(IndexedTriangle(splitind[0], tri[1], splitind[1]));
+        tri_new.push_back(IndexedTriangle(splitind[1], tri[2], splitind[2]));
+        tri_new.push_back(IndexedTriangle(splitind[0], splitind[1], splitind[2]));
+        break;
+      }
+      ind++;
+    }
+
+    round++;
+  } while (tri_new.size() != triangles.size());
+
+  // create point mapping
+  std::vector<int> mapping;
+  for (int i = 0; i < istore.size(); i++) mapping.push_back(i);
+
+  // now sewing ispan together
+  if (ispan) {
+    // collect low and high points
+    intList minList, maxList;
+    for (int i = 0; i < istore.size(); i++) {
+      if (istore[i] == imin) minList.push_back(i);
+      if (istore[i] == imax) maxList.push_back(i);
+    }
+
+    // now sort the list for acending jstore
+    std::sort(minList.begin(), minList.end(),
+              [jstore](const int& a, const int& b) { return jstore[a] < jstore[b]; });
+    std::sort(maxList.begin(), maxList.end(),
+              [jstore](const int& a, const int& b) { return jstore[a] < jstore[b]; });
+
+    // pair up min with max
+    int minptr = 0, minlen = minList.size();
+    int maxptr = 0, maxlen = minList.size();
+    while (minptr < minlen && maxptr < maxlen) {  // if one hit the end, no matches meaningful
+      double diff = jstore[minList[minptr]] - jstore[maxList[maxptr]];
+      if (fabs(diff) < 1e-6) {
+        int tgt = maxList[maxptr++];
+        int src = mapping[minList[minptr++]];
+        vertices[src] = (vertices[tgt] + vertices[src]) / 2.0;
+        mapping[tgt] = src;
+      } else if (diff > 0) maxptr++;
+      else minptr++;
+    }
+  }
+
+  if (jspan) {
+    // collect low and high points
+    intList minList, maxList;
+    for (int i = 0; i < jstore.size(); i++) {
+      if (jstore[i] == jmin) minList.push_back(i);
+      if (jstore[i] == jmax) maxList.push_back(i);
+    }
+
+    // now sort the list for acending jstore
+    std::sort(minList.begin(), minList.end(),
+              [istore](const int& a, const int& b) { return istore[a] < istore[b]; });
+    std::sort(maxList.begin(), maxList.end(),
+              [istore](const int& a, const int& b) { return istore[a] < istore[b]; });
+
+    // pair up min with max
+    int minptr = 0, minlen = minList.size();
+    int maxptr = 0, maxlen = minList.size();
+    while (minptr < minlen && maxptr < maxlen) {  // if one hit the end, no matches meaningful
+      double diff = istore[minList[minptr]] - istore[maxList[maxptr]];
+      if (fabs(diff) < 1e-6) {
+        int tgt = maxList[maxptr++];
+        int src = mapping[minList[minptr++]];
+        vertices[src] = (vertices[tgt] + vertices[src]) / 2.0;
+        mapping[tgt] = src;
+      } else if (diff > 0) maxptr++;
+      else minptr++;
+    }
+  }
+
+  for (const IndexedTriangle& tri : tri_new) {
+    builder.appendPolygon({mapping[tri[0]], mapping[tri[1]], mapping[tri[2]]});
+  }
+  return builder.build();
+}
+
+PyObject *python_sheet_core(PyObject *func, double imin, double imax, double jmin, double jmax,
+                            double fs, PyObject *ispan, PyObject *jspan)
+{
+  DECLARE_INSTANCE
+  auto node = std::make_shared<SheetNode>(instance);
+  // TODO check type of func
+  node->func = (void *)func;
+  node->imin = imin;
+  node->imax = imax;
+  node->jmin = jmin;
+  node->jmax = jmax;
+  node->fs = fs;
+  node->ispan = (ispan == Py_True) ? true : false;
+  node->jspan = (jspan == Py_True) ? true : false;
+
+  return PyOpenSCADObjectFromNode(&PyOpenSCADType, node);
+}
+
+PyObject *python_sheet(PyObject *self, PyObject *args, PyObject *kwargs)
+{
+  char *kwlist[] = {"func", "imin", "imax", "jmin", "jmax", "fs", "iclose", "jclose", NULL};
+  PyObject *func = NULL;
+  double imin, imax, jmin, jmax;
+  PyObject *ispan = nullptr, *jspan = nullptr;
+  double dum1, dum2, fs;
+  get_fnas(dum1, dum2, fs);
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "Odddd|dOO", kwlist, &func, &imin, &imax, &jmin, &jmax,
+                                   &fs, &ispan, &jspan)) {
+    PyErr_SetString(PyExc_TypeError, "Error during parsing sheet(func, imin, imax, jmin, jmax)");
+    return NULL;
+  }
+  if (func->ob_type != &PyFunction_Type) {
+    PyErr_SetString(PyExc_TypeError, "must specify a function");
+    return NULL;
+  }
+
+  return python_sheet_core(func, imin, imax, jmin, jmax, fs, ispan, jspan);
 }
 
 PyObject *python_text(PyObject *self, PyObject *args, PyObject *kwargs)
@@ -5512,8 +5908,12 @@ PyMethodDef PyOpenSCADFunctions[] = {
 
   {"projection", (PyCFunction)python_projection, METH_VARARGS | METH_KEYWORDS, "Projection Object."},
   {"surface", (PyCFunction)python_surface, METH_VARARGS | METH_KEYWORDS, "Surface Object."},
+  {"sheet", (PyCFunction)python_sheet, METH_VARARGS | METH_KEYWORDS, "Sheet Object."},
   {"mesh", (PyCFunction)python_mesh, METH_VARARGS | METH_KEYWORDS, "exports mesh."},
   {"bbox", (PyCFunction)python_bbox, METH_VARARGS | METH_KEYWORDS, "caluculate bbox of object."},
+  {"size", (PyCFunction)python_size, METH_VARARGS | METH_KEYWORDS, "get size dimensions of object."},
+  {"position", (PyCFunction)python_position, METH_VARARGS | METH_KEYWORDS,
+   "get position (minimum coordinates) of object."},
   {"faces", (PyCFunction)python_faces, METH_VARARGS | METH_KEYWORDS, "exports a list of faces."},
   {"edges", (PyCFunction)python_edges, METH_VARARGS | METH_KEYWORDS,
    "exports a list of edges from a face."},

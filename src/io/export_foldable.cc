@@ -372,7 +372,8 @@ void debug_conn(std::vector<connS>& con, std::vector<IndexedFace>& faces,
     auto& a = con[i];
     int n = faces[a.p1].size();
     double da = (vertices[faces[a.p1][a.f1]] - vertices[faces[a.p1][(a.f1 + 1) % n]]).norm();
-   printf("Con %d:done=%d length=%g  %d:%d ->%d:%d \n",i,con[i].done, da, con[i].p1, con[i].f1, con[i].p2, con[i].f2);
+    printf("Con %d:done=%d length=%g  %d:%d ->%d:%d \n", i, con[i].done, da, con[i].p1, con[i].f1,
+           con[i].p2, con[i].f2);
   }
 }
 std::vector<sheetS> fold_3d(std::shared_ptr<const PolySet> ps, const plotSettingsS& plot_s)
@@ -456,7 +457,7 @@ std::vector<sheetS> fold_3d(std::shared_ptr<const PolySet> ps, const plotSetting
 
   //  std::vector<lineS> lines,linesorg; // final postscript lines
 
-  Vector2d px, py, p1(0,0), p2, pm;
+  Vector2d px, py, p1(0, 0), p2, pm;
   std::vector<plateS> plate;  // faces in final placement
                               //  int polybesttouch;
 

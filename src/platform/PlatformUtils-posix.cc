@@ -230,7 +230,7 @@ const std::string PlatformUtils::user_agent()
   std::lock_guard<std::mutex> lock(user_agent_mutex);
 
   if (result.empty()) {
-    result += "OpenSCAD/";
+    result += "PythonSCAD/";
     result += openscad_detailedversionnumber;
     result += " (";
     result += get_system_info(false);
