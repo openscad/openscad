@@ -309,6 +309,8 @@ build_qt6()
   tar xjf qt-everywhere-opensource-src-$version.tar.xz
   cd qt-everywhere-src-$version
 
+  patch -p1 < $OPENSCADDIR/patches/qt6/qt-6.5.5-AGL-macos.patch
+
   mkdir build
   cd build
   ../configure -prefix $DEPLOYDIR -release -opensource -confirm-license -nomake tests -nomake examples \
