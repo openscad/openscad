@@ -539,6 +539,11 @@ static std::string builtin_object_unnamed(ObjectType& result, const Value& value
         ["k", v]    sets key k=v
 
     Any other values are incorrect and will return undef and be logged as warning.
+
+    If a value is a function and takes a "this" argument, then the function
+    is converted to a method by creating a new context for it with "this"
+    set to the object being created. When we parse the parameters in Parameters
+    we will skip the this when the context already has it.
 */
 Value builtin_object(const std::shared_ptr<const Context>& context, const FunctionCall *call)
 {
@@ -557,7 +562,29 @@ Value builtin_object(const std::shared_ptr<const Context>& context, const Functi
     }
     n++;
   }
-  return result;
+  std::vector<Context *> contexts;
+  for (Value& value : result.ptr->values) {
+    if (value.type() == Value::Type::FUNCTION) {
+      auto& function = value.toFunction();
+      auto it = function.findAssignmentByName(Parameters::THIS_PARAMETER);
+      if (!it) continue;
+
+      auto parent = function.getContext();
+      if (parent->lookup_local_variable(Parameters::THIS_CONTEXT)) {
+        // function is already a method, so take the parent context
+        parent = parent->getParent();
+      }
+      ContextHandle<Context> ctx = Context::create<Context>(parent);
+      contexts.push_back(ctx.operator->());
+      Value method(FunctionType(*ctx, function.getExpr(), function.getParameters()));
+      value = std::move(method);
+    }
+  }
+  Value object(result);
+  for (Context *c : contexts) {
+    c->set_variable(Parameters::THIS_CONTEXT, object.clone());
+  }
+  return std::move(object);
 }
 
 Value builtin_has_key(Arguments arguments, const Location& loc)
