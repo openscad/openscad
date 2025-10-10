@@ -795,7 +795,6 @@ public:
     double length;
     Direction *dir;
   };
-  // new stuff starts here
   class ProductDefinition : public Entity
   {
   public:
@@ -919,8 +918,6 @@ public:
     ShapeRepresentation *shape_repr;
     AdvancesBrepRepresentation *adv_brep;
   };
-
-  // new stuff ends here
 
   class Line : public RoundType
   {

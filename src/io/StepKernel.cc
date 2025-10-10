@@ -152,17 +152,15 @@ void StepKernel::build_tri_body(const char *name, std::vector<Vector3d> vertices
   auto closed_shell = new Shell(entities, sfaces);
   closed_shell->isOpen = false;
 
-  auto manif_solid = new ManifoldSolid(entities, 0, closed_shell);  // #182
+  auto manif_solid = new ManifoldSolid(entities, 0, closed_shell);
 
-  auto shape_repr = new ShapeRepresentation(entities, name);                               // #201
-  auto adv_brep_shape_pres = new AdvancesBrepRepresentation(entities, name, manif_solid);  // #202
-  auto shape_repr_rel =
-    new ShapeRepresentationRelationShip(entities, shape_repr, adv_brep_shape_pres);  // # 200
+  auto shape_repr = new ShapeRepresentation(entities, name);
+  auto adv_brep_shape_pres = new AdvancesBrepRepresentation(entities, name, manif_solid);
+  auto shape_repr_rel = new ShapeRepresentationRelationShip(entities, shape_repr, adv_brep_shape_pres);
 
-  auto product_def = new ProductDefinition(entities);                          // #205
-  auto product_def_shape = new ProductDefinitionShape(entities, product_def);  // #204
-  auto shape_def_repr =
-    new ShapeDefinition_Representation(entities, product_def_shape, shape_repr);  // #203
+  auto product_def = new ProductDefinition(entities);
+  auto product_def_shape = new ProductDefinitionShape(entities, product_def);
+  auto shape_def_repr = new ShapeDefinition_Representation(entities, product_def_shape, shape_repr);
 }
 
 StepKernel::EdgeCurve *StepKernel::get_line_from_map(
