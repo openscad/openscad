@@ -6,17 +6,45 @@
 
 #include "core/AST.h"
 #include "utils/printutils.h"
+#include "ring_queue.hpp"
 
 class EvaluationException : public std::runtime_error
 {
 public:
   EvaluationException(const std::string& what_arg)
-    : std::runtime_error(what_arg), traceDepth(OpenSCAD::traceDepth)
+    : std::runtime_error(what_arg)
+    , traceDepth(OpenSCAD::traceDepth)
+    , tail_msgs(OpenSCAD::traceDepth+1)
   {
   }
 
+  template<typename...Ts>
+  void LOG(Ts&&...args) {
+    if (traceDepth > 0) {
+      ::LOG(std::forward<Ts>(args)...);
+    } else {
+      if (auto m = make_message_obj(std::forward<Ts>(args)...)) {
+        // conditional move because there is a path which doesn't return a Message.
+        tail_msgs.emplace_back(std::move(*m));
+      }
+    }
+  }
+
+  ~EvaluationException() {
+    int frames_skipped = -(traceDepth+tail_msgs.size());
+    if (frames_skipped > 0) {
+      ::PRINT(Message(std::string{"*** Excluding "} + std::to_string(frames_skipped) + " frames ***",
+        message_group::Trace));
+    }
+
+    while(!tail_msgs.empty()) {
+      ::PRINT(tail_msgs.front());
+      tail_msgs.pop_front();
+    }
+  }
 public:
   int traceDepth = 0;
+  ring<Message> tail_msgs;
 };
 
 class AssertionFailedException : public EvaluationException

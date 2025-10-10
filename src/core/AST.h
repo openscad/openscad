@@ -21,6 +21,11 @@ public:
   {
   }
 
+  Location(Location const&) = default;
+  Location& operator=(Location const&) = default;
+  Location(Location&&) = default;
+  Location& operator=(Location&&) = default;
+
   [[nodiscard]] std::string fileName() const { return path ? path->generic_string() : ""; }
   [[nodiscard]] const fs::path& filePath() const { return *path; }
   [[nodiscard]] int firstLine() const { return first_line; }
