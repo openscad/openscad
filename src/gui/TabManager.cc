@@ -678,6 +678,16 @@ bool TabManager::saveACopy(EditorInterface *edt)
 
   if (QFileInfo(filename).suffix().isEmpty()) {
     filename.append(".scad");
+
+    // Manual overwrite check since Qt doesn't do it, when using the
+    // defaultSuffix property
+    const QFileInfo info(filename);
+    if (info.exists()) {
+        const auto text = QString(_("%1 already exists.\nDo you want to replace it?")).arg(info.fileName());
+        if (QMessageBox::warning(par, par->windowTitle(), text, QMessageBox::Yes | QMessageBox::No, QMessageBox::No) != QMessageBox::Yes) {
+        return false;
+        }
+    }
   }
 
   return save(edt, filename);
