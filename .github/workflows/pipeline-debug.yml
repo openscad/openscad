@@ -27,9 +27,33 @@ jobs:
     - uses: actions/checkout@v5
       with:
         submodules: 'recursive'
+    - name: Check python-versions pre install dependencies
+      run: |
+        which python || true
+        which python3 || true
+        find / -name "python" -executable ! -path "*snap*" ! -path "*flatpak*" ! -path "*venv*" ! -path "*gnu*" ! -type d -print -exec {} --version \; 2>/dev/null
+        find / -name "python3" -executable ! -path "*snap*" ! -path "*flatpak*" ! -path "*venv*" ! -path "*gnu*" ! -type d -print -exec {} --version \; 2>/dev/null
     - name: Install dependencies
       env:
         DEBIAN_FRONTEND: noninteractive
         TZ: Etc/UTC
       run: |
         which sudo || ( apt update && apt install -y sudo )
+        find / -name "python3" -executable ! -path "*snap*" ! -path "*flatpak*" ! -path "*venv*" ! -path "*gnu*" ! -type d -print -exec {} --version \; 2>/dev/null
+        sudo -E apt install -y python3 python3-yaml libpython3-dev
+        sudo -E ./scripts/uni-get-dependencies.py --yes --profile pythonscad-${{ matrix.qt }}
+    - name: Check python-versions post install dependencies
+      run: |
+        which python || true
+        which python3 || true
+        find / -name "python" -executable ! -path "*snap*" ! -path "*flatpak*" ! -path "*venv*" ! -path "*gnu*" ! -type d -print -exec {} --version \; 2>/dev/null
+        find / -name "python3" -executable ! -path "*snap*" ! -path "*flatpak*" ! -path "*venv*" ! -path "*gnu*" ! -type d -print -exec {} --version \; 2>/dev/null
+    - uses: actions/setup-python@v6
+      with:
+        python-version: '3.x'
+    - name: Check python-versions post setup python
+      run: |
+        which python || true
+        which python3 || true
+        find / -name "python" -executable ! -path "*snap*" ! -path "*flatpak*" ! -path "*venv*" ! -path "*gnu*" ! -type d -print -exec {} --version \; 2>/dev/null
+        find / -name "python3" -executable ! -path "*snap*" ! -path "*flatpak*" ! -path "*venv*" ! -path "*gnu*" ! -type d -print -exec {} --version \; 2>/dev/null
