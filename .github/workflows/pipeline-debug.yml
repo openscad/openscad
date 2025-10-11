@@ -1,0 +1,35 @@
+name: Linux Experimental Tests
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ ubuntu-22.04, ubuntu-24.04 ]
+        qt: [ qt5, qt6 ]
+        exclude:
+          - os: ubuntu-22.04
+            # libqscintilla2-qt6-dev not packaged
+            qt: qt6
+
+    runs-on: ${{ matrix.os }}
+
+    name: ${{ matrix.os }} ${{ matrix.qt }}
+
+    steps:
+    - uses: actions/checkout@v5
+      with:
+        submodules: 'recursive'
+    - name: Install dependencies
+      env:
+        DEBIAN_FRONTEND: noninteractive
+        TZ: Etc/UTC
+      run: |
+        which sudo || ( apt update && apt install -y sudo )
