@@ -17,11 +17,12 @@ jobs:
       with:
         submodules: 'recursive'
     - name: Install dependencies
-        which sudo || apt install -y sudo
-        sudo ./scripts/uni-get-dependencies.sh
-    - uses: actions/setup-python@v6
-      with:
-        python-version: '3.x'
+      env:
+        DEBIAN_FRONTEND: noninteractive
+        TZ: Etc/UTC
+      run: |
+        which sudo || ( apt update && apt install -y sudo )
+        sudo -E ./scripts/uni-get-dependencies.py --yes --profile pythonscad-qt5
     - name: Install gcovr
       run: python -m pip install -U gcovr
     - name: Build and test

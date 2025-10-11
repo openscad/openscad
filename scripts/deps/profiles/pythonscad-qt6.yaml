@@ -1,0 +1,4 @@
+extends:
+- qt6
+- pythonscad
+distros: {}

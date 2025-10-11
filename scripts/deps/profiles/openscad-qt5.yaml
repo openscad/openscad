@@ -1,0 +1,4 @@
+extends:
+- qt5
+- openscad
+distros: {}

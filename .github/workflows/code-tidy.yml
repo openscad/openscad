@@ -19,10 +19,13 @@ jobs:
         submodules: 'recursive'
 
     - name: Install dependencies
+      env:
+        DEBIAN_FRONTEND: noninteractive
+        TZ: Etc/UTC
       run: |
-        which sudo || apt install -y sudo
-        sudo ./scripts/uni-get-dependencies.sh
-        sudo apt -qq -y install clang-tidy
+        which sudo || ( apt update && apt install -y sudo )
+        sudo -E ./scripts/uni-get-dependencies.py --yes --profile pythonscad-qt5
+        sudo -E apt -qq -y install clang-tidy
 
     - name: Run CMake
       run: cmake -S . -B build -GNinja
