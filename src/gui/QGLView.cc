@@ -203,7 +203,7 @@ void QGLView::mousePressEvent(QMouseEvent *event)
   }
 
   mouse_drag_active = true;
-  last_mouse = event->globalPos();
+  last_mouse = event->globalPosition();
 }
 
 /*
@@ -301,7 +301,7 @@ void QGLView::normalizeAngle(GLdouble& angle)
 
 void QGLView::mouseMoveEvent(QMouseEvent *event)
 {
-  auto this_mouse = event->globalPos();
+  auto this_mouse = event->globalPosition();
   if (measure_state != MEASURE_IDLE) {
     QPoint pt = event->pos();
     this->shown_obj = findObject(pt.x(), pt.y());
