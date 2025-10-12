@@ -4,6 +4,7 @@
 #include <QCursor>
 #include <QEvent>
 #include <QGuiApplication>
+#include <QKeyCombination>
 #include <QMenu>
 #include <QObject>
 #include <QTimer>
@@ -142,18 +143,18 @@ ScintillaEditor::ScintillaEditor(QWidget *parent) : EditorInterface(parent)
 #ifdef Q_OS_MACOS
   // Alt-Backspace should delete left word (Alt-Delete already deletes right word)
   c = qsci->standardCommands()->find(QsciCommand::DeleteWordLeft);
-  c->setKey(Qt::Key_Backspace | Qt::ALT);
+  c->setKey((Qt::Key_Backspace | Qt::ALT).toCombined());
 #endif
   // Cmd/Ctrl-T is handled by the menu
-  c = qsci->standardCommands()->boundTo(Qt::Key_T | Qt::CTRL);
+  c = qsci->standardCommands()->boundTo((Qt::Key_T | Qt::CTRL).toCombined());
   c->setKey(0);
   // Cmd/Ctrl-D is handled by the menu
-  c = qsci->standardCommands()->boundTo(Qt::Key_D | Qt::CTRL);
+  c = qsci->standardCommands()->boundTo((Qt::Key_D | Qt::CTRL).toCombined());
   c->setKey(0);
   // Ctrl-Shift-Z should redo on all platforms
   c = qsci->standardCommands()->find(QsciCommand::Redo);
-  c->setKey(Qt::Key_Z | Qt::CTRL | Qt::SHIFT);
-  c->setAlternateKey(Qt::Key_Y | Qt::CTRL);
+  c->setKey(QKeyCombination(Qt::CTRL | Qt::SHIFT, Qt::Key_Z).toCombined());
+  c->setAlternateKey((Qt::Key_Y | Qt::CTRL).toCombined());
 
 #ifdef Q_OS_MACOS
   const unsigned long modifier = Qt::META;
