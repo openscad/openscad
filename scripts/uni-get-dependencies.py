@@ -26,7 +26,7 @@ Usage examples:
   scripts/uni-get-dependencies.py --dry-run                           # show commands only
   scripts/uni-get-dependencies.py --distro fedora --version 42 --yes
 
-Config schema (profiles/*.yaml):
+Config schema (profiles/*.json):
   distros: {
     "ubuntu": { "extends": "debian", "manager": "apt", "packages": [...],
               "pre_commands": ["command1", "command2"],
@@ -40,13 +40,13 @@ Version resolution order: exact VERSION_ID -> major.minor -> major.
 from __future__ import annotations
 
 import argparse
+import json
 import os
 import platform
 import re
 import shutil
 import subprocess
 import sys
-import yaml
 from typing import Dict, List, Optional, Set
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -146,7 +146,7 @@ def detect_distro() -> DistroInfo:
 
 def load_config(path: str) -> dict:
     with open(path) as fh:
-        return yaml.safe_load(fh)
+        return json.load(fh)
 
 
 def resolve_packages(cfg: dict, distro: DistroInfo) -> List[str]:
@@ -289,7 +289,7 @@ def load_profile_with_inheritance(profile_name: str, loaded_profiles: set = None
     if profile_name in loaded_profiles:
         raise SystemExit(f"Circular inheritance detected: {profile_name} already loaded")
 
-    profile_path = os.path.join(SCRIPT_DIR, "deps", "profiles", f"{profile_name.lower()}.yaml")
+    profile_path = os.path.join(SCRIPT_DIR, "deps", "profiles", f"{profile_name.lower()}.json")
     if not os.path.exists(profile_path):
         raise SystemExit(f"Profile not found: {profile_path}")
 

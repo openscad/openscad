@@ -1,4 +1,0 @@
-extends:
-- qt6
-- openscad
-distros: {}
