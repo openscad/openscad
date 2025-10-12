@@ -41,5 +41,5 @@ VS_VERSION_INFO VERSIONINFO
 	END
 /* End of Version info */
 
-IDI_ICON1   ICON    DISCARDABLE "resources/icons/pythonscad.ico"
-IDI_ICON2   ICON    DISCARDABLE "resources/icons/pythonscad.ico"
+IDI_ICON1   ICON    DISCARDABLE "resources/icons/openscad-nightly.ico"
+IDI_ICON2   ICON    DISCARDABLE "resources/icons/openscad_doc.ico"
