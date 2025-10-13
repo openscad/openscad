@@ -3698,7 +3698,8 @@ void MainWindow::resetMeasurementsState(bool enable, const QString& tooltipMessa
 {
   if (RenderSettings::inst()->backend3D != RenderBackend3D::ManifoldBackend) {
     enable = false;
-    static const auto noCGALMessage = "Measurements only work with Manifold backend; Preferences->Advanced->3D Rendering->Backend";
+    static const auto noCGALMessage =
+      "Measurements only work with Manifold backend; Preferences->Advanced->3D Rendering->Backend";
     this->designActionMeasureDist->setToolTip(noCGALMessage);
     this->designActionMeasureAngle->setToolTip(noCGALMessage);
   } else {
