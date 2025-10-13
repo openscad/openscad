@@ -86,9 +86,9 @@ std::vector<QString> Measurement::statemachine(QPoint mouse)
       obj1 = qglview->selected_obj[0];
       obj2 = qglview->selected_obj[1];
       if (obj1.type == SelectionType::SELECTION_POINT && obj2.type == SelectionType::SELECTION_POINT) {
-        auto diff = obj2.p1 - obj1.p1;
+        const auto diff = obj2.p1 - obj1.p1;
         dist = diff.norm();
-        ret.push_back(QStringLiteral(" dx: %1  dy: %2  dz: %3").arg(diff[0]).arg(diff[1]).arg(diff[2]));
+        ret.push_back(QStringLiteral("dx: %1  dy: %2  dz: %3").arg(diff[0]).arg(diff[1]).arg(diff[2]));
       } else if ((obj1.type == SelectionType::SELECTION_POINT &&
                   obj2.type == SelectionType::SELECTION_LINE) ||
                  (obj2.type == SelectionType::SELECTION_POINT &&
@@ -208,7 +208,7 @@ std::vector<QString> Measurement::statemachine(QPoint mouse)
         stopMeasure();
         return {};
       }
-      ret.push_back(QStringLiteral("Angle  is %1 Degrees").arg(ang));
+      ret.push_back(QStringLiteral("Angle is %1 Degrees").arg(ang));
     }
     break;
   }
