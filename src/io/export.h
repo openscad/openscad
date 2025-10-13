@@ -390,3 +390,4 @@ bool export_png(const OffscreenView& glview, std::ostream& output);
 bool export_param(SourceFile *root, const fs::path& path, std::ostream& output);
 
 std::unique_ptr<PolySet> createSortedPolySet(const PolySet& ps);
+void export_debug_polyset(const PolySet& ps);
