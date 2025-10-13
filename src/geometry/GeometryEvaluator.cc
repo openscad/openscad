@@ -194,9 +194,11 @@ bool pointInPolygon(const std::vector<Vector3d>& vert, const IndexedFace& bnd, i
   Vector3d res;
   if (n < 3) return false;
   Vector3d raydir = vert[bnd[1]] - vert[bnd[0]];
-  Vector3d fn = raydir.cross(vert[bnd[1]] - vert[bnd[2]]).normalized();
+  Vector3d raydir2 = vert[bnd[1]] - vert[bnd[2]];
+  Vector3d fn = raydir.cross(raydir2).normalized();
   // check, how many times the ray crosses the 3D fence, classical algorithm in 3D
-  for (i = 1; i < n; i++) {  // 0 is always parallel
+  raydir = (raydir * 0.371 + raydir2 * 0.712).normalized();
+  for (i = 0; i < n; i++) {
     // build fence side
     const Vector3d& p1 = vert[bnd[i]];
     const Vector3d& p2 = vert[bnd[(i + 1) % n]];
@@ -589,15 +591,20 @@ std::vector<IndexedFace> mergeTriangles(const std::vector<IndexedFace> polygons,
             par = k;
           }
         }
-        if (par == -1) printf("par not found here\n");
-        // assert(par != -1); TODO fix
-        faceParents.push_back(par + off);
+        if (par != -1) faceParents.push_back(par + off);
+        else {
+          faceParents.push_back(-1);
+          printf("par not found here 1\n");
+        }
       }
     }
   }
 
   return indices;
 }
+
+void export_debug_polyset(const PolySet& ps);
+
 std::vector<IndexedColorFace> mergeTriangles(const std::vector<IndexedColorFace> polygons,
                                              const std::vector<Vector4d> normals,
                                              std::vector<Vector4d>& newNormals,
