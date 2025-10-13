@@ -1203,3 +1203,511 @@ int main(int argc, char **argv)
 
   return rc;
 }
+
+//-----------------------------------------------------------------------------------------
+// OpenSCAD
+int jna_call(int argc, char **argv)
+{
+  int rc = 0;
+  StackCheck::inst();
+#ifdef Q_OS_MACOS
+  bool isGuiLaunched = getenv("GUI_LAUNCHED") != nullptr;
+  auto nslog = [](const Message& msg, void *userdata) { CocoaUtils::nslog(msg.msg, userdata); };
+  if (isGuiLaunched) set_output_handler(nslog, nullptr, nullptr);
+#else
+  PlatformUtils::ensureStdIO();
+#endif
+
+#ifndef __EMSCRIPTEN__
+  const auto applicationPath =
+    weakly_canonical(boost::dll::program_location()).parent_path().generic_string();
+#else
+  const auto applicationPath = boost::dll::fs::current_path();
+#endif
+//  PlatformUtils::registerApplicationPath(applicationPath);
+
+#ifdef ENABLE_PYTHON
+  // The original name as called, not resolving links and so on. This will
+  // just forward everything to the python main.
+  const auto applicationName = fs::path(argv[0]).filename().generic_string();
+  if (applicationName == "python" || applicationName == "python3" ||
+      applicationName.rfind("python3.", 0) == 0 || applicationName == "openscad-python") {
+    return pythonRunArgs(argc, argv);
+  }
+#endif
+
+//#ifdef ENABLE_CGAL
+//  // Always throw exceptions from CGAL, so we can catch instead of crashing on bad geometry.
+//  CGAL::set_error_behaviour(CGAL::THROW_EXCEPTION);
+//  CGAL::set_warning_behaviour(CGAL::THROW_EXCEPTION);
+//#endif
+//  Builtins::instance()->initialize();
+
+  auto original_path = fs::current_path();
+
+  std::vector<std::string> output_files;
+  const char *deps_output_file = nullptr;
+  boost::optional<FileFormat> export_format;
+
+  ViewOptions viewOptions{};
+  po::options_description desc("Allowed options");
+  desc.add_options()(
+    "export-format", po::value<std::string>(),
+    "overrides format of exported scad file when using option '-o', arg can be any of its supported "
+    "file extensions.  For ASCII stl export, specify 'asciistl', and for binary stl export, specify "
+    "'binstl'.  ASCII export is the current stl default, but binary stl is planned as the future "
+    "default so asciistl should be explicitly specified in scripts when needed.\n")(
+    "o,o", po::value<std::vector<std::string>>(),
+    "output specified file instead of running the GUI. The file extension specifies the type: stl, off, "
+    "wrl, amf, 3mf, csg, dxf, svg, pdf, png, echo, ast, term, nef3, nefdbg, param, pov. May be used "
+    "multiple times for different exports. Use '-' for stdout.\n")(
+    "O,O", po::value<std::vector<std::string>>(),
+    "pass settings value to the file export using the format section/key=value, e.g "
+    "export-pdf/paper-size=a3. Use --help-export to list all available settings.")(
+    "D,D", po::value<std::vector<std::string>>(), "var=val -pre-define variables")(
+    "p,p", po::value<std::string>(), "customizer parameter file")("P,P", po::value<std::string>(),
+                                                                  "customizer parameter set")
+#ifdef ENABLE_EXPERIMENTAL
+    ("enable", po::value<std::vector<std::string>>(),
+     ("enable experimental features (specify 'all' for enabling all available features): " +
+      str_join(boost::make_iterator_range(Feature::begin(), Feature::end()), " | ",
+               [](const Feature *feature) { return feature->get_name(); }) +
+      "\n")
+       .c_str())
+#endif
+      ("help,h", "print this help message and exit")(
+        "help-export", "print list of export parameters and values that can be set via -O")(
+        "version,v", "print the version")("info", "print information about the build process\n")
+
+        ("camera", po::value<std::string>(),
+         "camera parameters when exporting png: =translate_x,y,z,rot_x,y,z,dist or "
+         "=eye_x,y,z,center_x,y,z")("autocenter", "adjust camera to look at object's center")(
+          "viewall", "adjust camera to fit object")(
+          "backend", po::value<std::string>(),
+          "3D rendering backend to use: 'CGAL' (old/slow) [default] or 'Manifold' (new/fast)")(
+          "imgsize", po::value<std::string>(), "=width,height of exported png")(
+          "render", po::value<std::string>()->implicit_value(""),
+          "for full geometry evaluation when exporting png")(
+          "preview", po::value<std::string>()->implicit_value(""),
+          "[=throwntogether] -for ThrownTogether preview png")("animate", po::value<unsigned>(),
+                                                               "export N animated frames")(
+          "animate_sharding", po::value<std::string>(),
+          "Parameter <shard>/<num_shards> - Divide work into <num_shards> and only output frames for "
+          "<shard>. E.g. 2/5 only outputs the second 1/5 of frames. Use to parallelize work on multiple "
+          "cores or machines.")(
+          "view", po::value<CommaSeparatedVector>(),
+          ("=view options: " + boost::algorithm::join(viewOptions.names(), " | ")).c_str())(
+          "projection", po::value<std::string>(), "=(o)rtho or (p)erspective when exporting png")(
+          "csglimit", po::value<unsigned int>(),
+          "=n -stop rendering at n CSG elements when exporting png")(
+          "summary", po::value<std::vector<std::string>>(),
+          "enable additional render summary and statistics: all | cache | time | camera | geometry | "
+          "bounding-box | area")(
+          "summary-file", po::value<std::string>(),
+          "output summary information in JSON format to the given file, using '-' outputs to stdout")(
+          "colorscheme", po::value<std::string>(),
+          ("=colorscheme: " +
+           str_join(ColorMap::inst()->colorSchemeNames(), " | ",
+                    [](const std::string& colorScheme) {
+                      return (colorScheme == ColorMap::inst()->defaultColorSchemeName() ? "*" : "") +
+                             colorScheme;
+                    }) +
+           "\n")
+            .c_str())("d,d", po::value<std::string>(), "deps_file -generate a dependency file for make")(
+          "m,m", po::value<std::string>(), "make_cmd -runs make_cmd file if file is missing")(
+          "quiet,q", "quiet mode (don't print anything *except* errors)")(
+          "reset-window-settings", "Reset GUI settings for window placement and fonts.")(
+          "hardwarnings", "Stop on the first warning")("trace-depth", po::value<unsigned int>(),
+                                                       "=n, maximum number of trace messages")(
+          "trace-usermodule-parameters", po::value<std::string>(),
+          "=true/false, configure the output of user module parameters in a trace")(
+          "check-parameters", po::value<std::string>(),
+          "=true/false, configure the parameter check for user modules and functions")(
+          "check-parameter-ranges", po::value<std::string>(),
+          "=true/false, configure the parameter range check for builtin modules")(
+          "debug", po::value<std::string>(),
+          "special debug info - specify 'all' or a set of source file names")
+#ifdef ENABLE_PYTHON
+          ("trust-python", "Trust python")("python-module", po::value<std::string>(),
+                                           "=module Call pip python module")
+#endif
+    ;
+
+#ifdef ENABLE_GUI_TESTS
+  desc.add_options()("run-all-gui-tests", "special gui testing mode - run all the tests");
+#endif
+
+  po::options_description hidden("Hidden options");
+  hidden.add_options()
+#ifdef Q_OS_MACOS
+    ("psn", po::value<std::string>(), "process serial number")
+#endif
+      ("input-file", po::value<std::vector<std::string>>(), "input file");
+
+  po::positional_options_description p;
+  p.add("input-file", -1);
+
+  po::options_description all_options;
+  all_options.add(desc).add(hidden);
+
+  po::variables_map vm;
+  try {
+    po::store(po::command_line_parser(argc, argv)
+                .options(all_options)
+                .positional(p)
+                .extra_parser(customSyntax)
+                .run(),
+              vm);
+  } catch (const std::exception& e) {  // Catches e.g. unknown options
+    LOG("%1$s\n", e.what());
+    help(argv[0], desc, true);
+  }
+// 打印 variables_map 中的所有键值对
+  for (const auto& item : vm) {
+      std::cout << "Key: " << item.first << "\n";
+      if (item.second.empty()) {
+          std::cout << "  No value set\n";
+      } else {
+          try {
+              // 尝试以 string 类型输出值
+              std::cout << "  Value: " << item.second.as<std::string>() << "\n";
+          } catch (const boost::bad_any_cast&) {
+              // 如果不是 string 类型，则输出类型信息
+              std::cout << "  Non-string value stored, cannot display directly.\n";
+          }
+      }
+  }
+
+
+  OpenSCAD::debug = "";
+  if (vm.count("debug")) {
+    OpenSCAD::debug = vm["debug"].as<std::string>();
+    LOG("Debug on. --debug=%1$s", OpenSCAD::debug);
+  }
+#ifdef ENABLE_PYTHON
+  if (vm.count("trust-python")) {
+    LOG("Python Engine enabled", OpenSCAD::debug);
+    python_trusted = true;
+  }
+
+  const auto pymod = "python-module";
+  if (vm.count(pymod)) {
+    PRINTDB("Running Python Module %s", pymod);
+    std::vector<std::string> args;
+    if (vm.count("input-file")) {
+      args = vm["input-file"].as<std::vector<std::string>>();
+    }
+    return pythonRunModule(applicationPath, vm[pymod].as<std::string>(), args);
+  }
+#endif  // ifdef ENABLE_PYTHON
+  if (vm.count("quiet")) {
+    OpenSCAD::quiet = true;
+  }
+
+  if (vm.count("hardwarnings")) {
+    OpenSCAD::hardwarnings = true;
+  }
+
+  if (vm.count("traceDepth")) {
+    OpenSCAD::traceDepth = vm["traceDepth"].as<unsigned int>();
+  }
+  std::map<std::string, bool *> flags;
+  flags.insert(std::make_pair("trace-usermodule-parameters", &OpenSCAD::traceUsermoduleParameters));
+  flags.insert(std::make_pair("check-parameters", &OpenSCAD::parameterCheck));
+  flags.insert(std::make_pair("check-parameter-ranges", &OpenSCAD::rangeCheck));
+  for (const auto& flag : flags) {
+    std::string name = flag.first;
+    if (vm.count(name)) {
+      std::string opt = vm[name].as<std::string>();
+      try {
+        (*(flag.second) = flagConvert(opt));
+      } catch (const std::runtime_error& e) {
+        LOG("Could not parse '--%1$s %2$s' as flag", name, opt);
+      }
+    }
+  }
+
+  if (vm.count("help")) help(argv[0], desc);
+  if (vm.count("help-export")) help_export();
+  if (vm.count("version")) version();
+  if (vm.count("info")) arg_info = true;
+  if (vm.count("backend")) {
+    auto backend_string = vm["backend"].as<std::string>();
+    auto backend = renderBackend3DFromString(backend_string);
+    if (!backend) {
+      LOG(message_group::Error, "Unknown rendering backend '%1$s'.", backend_string.c_str());
+      return 1;
+    }
+    RenderSettings::inst()->backend3D = backend.value();
+  }
+
+  if (vm.count("preview")) {
+    if (vm["preview"].as<std::string>() == "throwntogether")
+      viewOptions.renderer = RenderType::THROWNTOGETHER;
+  } else if (vm.count("render")) {
+    // Note: "cgal" is here for backwards compatibility, can probably be removed soon
+    if (vm["render"].as<std::string>() == "cgal" || vm["render"].as<std::string>() == "force") {
+      viewOptions.renderer = RenderType::BACKEND_SPECIFIC;
+    } else {
+      viewOptions.renderer = RenderType::GEOMETRY;
+    }
+  }
+
+  viewOptions.previewer = (viewOptions.renderer == RenderType::THROWNTOGETHER)
+                            ? Previewer::THROWNTOGETHER
+                            : Previewer::OPENCSG;
+  if (vm.count("view")) {
+    const auto& viewOptionValues = vm["view"].as<CommaSeparatedVector>();
+
+    for (const auto& option : viewOptionValues.values) {
+      try {
+        viewOptions[option] = true;
+      } catch (const std::out_of_range& e) {
+        LOG("Unknown --view option '%1$s' ignored. Use -h to list available options.", option);
+      }
+    }
+  }
+
+  if (vm.count("csglimit")) {
+    RenderSettings::inst()->openCSGTermLimit = vm["csglimit"].as<unsigned int>();
+  }
+
+  if (vm.count("o")) {
+    output_files = vm["o"].as<std::vector<std::string>>();
+  }
+  for (const auto &file : output_files) {
+      std::cout << file << std::endl;
+  }
+
+  if (vm.count("d")) {
+    if (deps_output_file) help(argv[0], desc, true);
+    deps_output_file = vm["d"].as<std::string>().c_str();
+  }
+  if (vm.count("m")) {
+    if (make_command) help(argv[0], desc, true);
+    make_command = vm["m"].as<std::string>().c_str();
+  }
+
+  if (vm.count("D")) {
+    for (const auto& cmd : vm["D"].as<std::vector<std::string>>()) {
+      commandline_commands += cmd;
+      commandline_commands += ";\n";
+    }
+  }
+  if (vm.count("enable")) {
+    for (const auto& feature : vm["enable"].as<std::vector<std::string>>()) {
+      if (feature == "all") {
+        Feature::enable_all();
+        break;
+      }
+      Feature::enable_feature(feature);
+    }
+  }
+
+  std::string parameterFile;
+  if (vm.count("p")) {
+    if (!parameterFile.empty()) {
+      help(argv[0], desc, true);
+    }
+    parameterFile = vm["p"].as<std::string>().c_str();
+  }
+
+  std::string parameterSet;
+  if (vm.count("P")) {
+    if (!parameterSet.empty()) {
+      help(argv[0], desc, true);
+    }
+    parameterSet = vm["P"].as<std::string>().c_str();
+  }
+
+  std::vector<std::string> inputFiles;
+  if (vm.count("input-file")) {
+    inputFiles = vm["input-file"].as<std::vector<std::string>>();
+  }
+
+  if (vm.count("colorscheme")) {
+    arg_colorscheme = vm["colorscheme"].as<std::string>();
+  }
+
+  if (vm.count("export-format")) {
+    const auto format_str = vm["export-format"].as<std::string>();
+    FileFormat format;
+    if (fileformat::fromIdentifier(format_str, format)) {
+      export_format.emplace(format);
+
+    } else {
+      LOG("Unknown --export-format option '%1$s'.  Use -h to list available options.", format_str);
+      return 1;
+    }
+  }
+
+  AnimateArgs const animate = get_animate(vm);
+  const Camera camera = get_camera(vm);
+
+  if (animate.frames) {
+    for (const auto& filename : output_files) {
+      if (filename == "-") {
+        LOG("Option --animate is not supported when exporting to stdout.");
+        return 1;
+      }
+    }
+    if (output_files.empty()) {
+      output_files.emplace_back("frame.png");
+    }
+  }
+
+  auto cmdlinemode = false;
+  if (!output_files.empty()) {  // cmd-line mode
+    cmdlinemode = true;
+    if (!inputFiles.size()) help(argv[0], desc, true);
+  }
+  if (arg_info || cmdlinemode) {
+    if (inputFiles.size() > 1) help(argv[0], desc, true);
+    try {
+      parser_init();
+      localization_init();
+      if (arg_info) {
+        rc = info();
+      } else {
+        for (const auto& filename : output_files) {
+          const bool is_stdin = inputFiles[0] == "-";
+          const std::string input_file = is_stdin ? "<stdin>" : inputFiles[0];
+          const bool is_stdout = filename == "-";
+          const std::string output_file = is_stdout ? "<stdout>" : filename;
+          const auto export_options = convert_export_options(vm);
+          const CommandLine cmd{is_stdin,
+                                input_file,
+                                is_stdout,
+                                output_file,
+                                original_path,
+                                parameterFile,
+                                parameterSet,
+                                viewOptions,
+                                camera,
+                                export_format,
+                                export_options,
+                                animate,
+                                vm.count("summary") ? vm["summary"].as<std::vector<std::string>>()
+                                                    : std::vector<std::string>{},
+                                vm.count("summary-file") ? vm["summary-file"].as<std::string>() : ""};
+          rc |= cmdline(cmd);
+        }
+      }
+    } catch (const HardWarningException&) {
+      rc = 1;
+    }
+
+    if (deps_output_file) {
+      std::string const deps_out(deps_output_file);
+      const std::vector<std::string>& geom_out(output_files);
+      if (!write_deps(deps_out, geom_out)) {
+        LOG("Error writing deps");
+        return 1;
+      }
+    }
+#ifndef OPENSCAD_NOGUI
+  } else if (useGUI()) {
+    if (vm.count("export-format")) {
+      LOG("Ignoring --export-format option");
+    }
+    std::string gui_test = "none";
+    if (vm.count("run-all-gui-tests")) {
+      gui_test = "all";
+    }
+    auto reset_window_settings = vm.count("reset-window-settings") > 0;
+    rc = gui(inputFiles, original_path, argc, argv, gui_test, reset_window_settings);
+#endif
+  } else {
+    LOG("Requested GUI mode but can't open display!\n");
+    return 1;
+  }
+
+//  Builtins::instance(true);
+
+  return rc;
+}
+// 全局初始化状态
+static bool g_initialized = false;
+
+OPENSCAD_API int openscad_init()
+{
+    if (g_initialized) {
+        return 0;
+    }
+
+    try {
+        // 初始化 mimalloc（如果启用）
+#if defined(ENABLE_CGAL) && defined(USE_MIMALLOC)
+        init_mimalloc();
+#endif
+
+        // 注册应用程序路径
+        #ifndef __EMSCRIPTEN__
+          const auto applicationPath =
+            weakly_canonical(boost::dll::program_location()).parent_path().generic_string();
+        #else
+          const auto applicationPath = boost::dll::fs::current_path();
+        #endif
+        PlatformUtils::registerApplicationPath(applicationPath);
+
+#ifdef ENABLE_CGAL
+        // CGAL 异常设置
+        CGAL::set_error_behaviour(CGAL::THROW_EXCEPTION);
+        CGAL::set_warning_behaviour(CGAL::THROW_EXCEPTION);
+#endif
+
+        // 初始化内置函数
+        Builtins::instance()->initialize();
+
+        g_initialized = true;
+        return 0;
+    } catch (const std::exception& e) {
+        LOG("Initialization failed: %1$s", e.what());
+        return -1;
+    }
+}
+
+OPENSCAD_API void openscad_cleanup()
+{
+    if (g_initialized) {
+        Builtins::instance(true);
+        g_initialized = false;
+    }
+}
+
+OPENSCAD_API int openscad_cmdline(int argc, const char** argv)
+{
+    if (!g_initialized) {
+        if (openscad_init() != 0) {
+            return -1;
+        }
+    }
+
+    try {
+        // 转换参数格式
+        std::vector<std::string> args;
+        std::vector<char*> arg_ptrs;
+        for (int i = 0; i < argc; ++i) {
+            std::cout << argv[i] << std::endl;
+            args.push_back(argv[i]);
+        }
+        for (auto& arg : args) {
+            arg_ptrs.push_back(&arg[0]);
+        }
+
+        // 保存原始路径
+//        auto original_path = fs::current_path();
+
+        // 调用主函数
+        int result = jna_call(argc, arg_ptrs.data());
+
+        // 恢复路径
+//        fs::current_path(original_path);
+
+        return result;
+
+    } catch (const std::exception& e) {
+        LOG("Command line execution failed: %1$s", e.what());
+        return -1;
+    }
+}

@@ -29,6 +29,33 @@
 #include <string>
 #include <utility>
 
+#ifdef _WIN32
+    #ifdef OPENSCAD_LIB_EXPORT
+        #define OPENSCAD_API __declspec(dllexport)
+    #else
+        #define OPENSCAD_API __declspec(dllimport)
+    #endif
+#else
+    #define OPENSCAD_API __attribute__((visibility("default")))
+#endif
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+// 命令行执行函数
+OPENSCAD_API int openscad_cmdline(int argc, const char* argv[]);
+
+// 初始化函数
+OPENSCAD_API int openscad_init();
+
+// 清理函数
+OPENSCAD_API void openscad_cleanup();
+
+#ifdef __cplusplus
+}
+#endif
+
 extern bool parse(class SourceFile *& file, const std::string& text, const std::string& filename,
                   const std::string& mainFile, int debug);
 
