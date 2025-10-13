@@ -2,8 +2,7 @@
 
 #include <QApplication>
 #include <QStringBuilder>
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-#else
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 #include <QKeyCombination>
 #endif
 #include <QPoint>
@@ -685,11 +684,6 @@ bool TabManager::saveAs(EditorInterface *edt, const QString& filepath)
  If the editor content has not yet been saved it will be saved
  to Untitled.scad in the application root directory.
  Otherwise append  "_copy" to the base file name.
- The QFileINfo does not provide a method to update only the file
- name so the info needs to be broken down and reassembled.
- The new name is then tested for existance and the save is
- aborted if the user declines the save.
- The file dialog is set to append the .scad suffix.
 
  The name of the editor tab should NOT be changed
  */
@@ -698,14 +692,12 @@ bool TabManager::saveACopy(EditorInterface *edt)
   assert(edt != nullptr);
 
   const QString path = edt->filepath;
-  // LOG("%1$s %2$s", _("dir path on entry "), path.toStdString().data());
 
   QDir dir(_("Untitled.scad"));
 
   if (!path.isEmpty()) {
     QFileInfo info(path);
     QString filecopy(info.absolutePath() % "/" % info.baseName() % "_copy.scad");
-    // LOG("%1$s %2$s", _("filename copy "), info.filePath().toUtf8().data());
     dir.setPath(filecopy);
   }
 
@@ -716,8 +708,6 @@ bool TabManager::saveACopy(EditorInterface *edt)
   saveCopyDialog.setDefaultSuffix("scad");
   saveCopyDialog.setViewMode(QFileDialog::List);
   saveCopyDialog.setDirectory(dir);
-
-  // LOG("%1$s %2$s", _("dir after "), dir.absolutePath().toUtf8().data()  );
 
   if (saveCopyDialog.exec() != QDialog::Accepted) return false;
 
