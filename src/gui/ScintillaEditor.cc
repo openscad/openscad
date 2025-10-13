@@ -123,13 +123,14 @@ int EditorColorScheme::index() const { return _index; }
 
 const boost::property_tree::ptree& EditorColorScheme::propertyTree() const { return pt; }
 
-ScintillaEditor::ScintillaEditor(QWidget *parent, MainWindow& mainWindow)
-  : EditorInterface(parent), mainWindow(mainWindow)
+ScintillaEditor::ScintillaEditor(QWidget *parent) : EditorInterface(parent)
 {
   api = nullptr;
+  printf("set lexer 0\n");
   lexer = nullptr;
   scintillaLayout = new QVBoxLayout(this);
   qsci = new QsciScintilla(this);
+  recomputeLanguageActive();
 
   contentsRendered = false;
   findState = 0;  // FIND_HIDDEN
@@ -263,11 +264,6 @@ ScintillaEditor::ScintillaEditor(QWidget *parent, MainWindow& mainWindow)
 
   // Disabling buffered drawing resolves non-integer HiDPI scaling.
   qsci->SendScintilla(QsciScintillaBase::SCI_SETBUFFEREDDRAW, false);
-
-#ifdef ENABLE_PYTHON
-  connect(&this->mainWindow, &MainWindow::pythonActiveChanged, this,
-          &ScintillaEditor::onPythonActiveChanged);
-#endif
 }
 
 QPoint ScintillaEditor::mapToGlobal(const QPoint& pos) { return qsci->mapToGlobal(pos); }
@@ -455,6 +451,7 @@ void ScintillaEditor::setLexer(ScadLexer2 *newLexer)
   this->qsci->setLexer(newLexer);
   this->api = new ScadApi(this, newLexer);
   delete this->lexer;
+  printf("set lexer\n");
   this->lexer = newLexer;
 }
 #else
@@ -464,26 +461,33 @@ void ScintillaEditor::setLexer(ScadLexer *newLexer)
   this->qsci->setLexer(newLexer);
   this->api = new ScadApi(this, newLexer);
   delete this->lexer;
+  printf("set lexer2\n");
   this->lexer = newLexer;
 }
 #endif  // if ENABLE_LEXERTL
 
 void ScintillaEditor::setColormap(const EditorColorScheme *colorScheme)
 {
+  printf("aa\n");
   const auto& pt = colorScheme->propertyTree();
 
   try {
+    printf("aaa %p\n", this->lexer);
     auto font = this->lexer->font(this->lexer->defaultStyle());
+    printf("aab\n");
     const QColor textColor(pt.get<std::string>("text").c_str());
+    printf("aac\n");
     const QColor paperColor(pt.get<std::string>("paper").c_str());
 
 #if ENABLE_LEXERTL
 
+    printf("aad\n");
     /// See original attempt at https://github.com/openscad/openscad/tree/lexertl/src
 
     auto *newLexer = new ScadLexer2(this);
 
     // Custom keywords must be set before the lexer is constructed/finalized
+    printf("aae\n");
     boost::optional<const boost::property_tree::ptree&> keywords = pt.get_child_optional("keywords");
     if (keywords.is_initialized()) {
       newLexer->addKeywords(readString(keywords.get(), "keyword-custom1", ""), ScadLexer2::Custom1);
@@ -498,14 +502,17 @@ void ScintillaEditor::setColormap(const EditorColorScheme *colorScheme)
       newLexer->addKeywords(readString(keywords.get(), "keyword-custom10", ""), ScadLexer2::Custom10);
     }
 
+    printf("aaf\n");
     newLexer->finalizeLexer();
 #ifdef ENABLE_PYTHON
+    printf("aag\n");
     if (language == LANG_SCAD) {
       setLexer(newLexer);
     }
 #else
     setLexer(newLexer);
 #endif
+    printf("aa1\n");
 
     // All other properties must be set after attaching to QSCintilla so
     // the editor gets the change events and updates itself to match
@@ -548,6 +555,7 @@ void ScintillaEditor::setColormap(const EditorColorScheme *colorScheme)
     newLexer->setColor(readColor(colors, "keyword-custom8", textColor), ScadLexer2::Custom8);
     newLexer->setColor(readColor(colors, "keyword-custom9", textColor), ScadLexer2::Custom9);
     newLexer->setColor(readColor(colors, "keyword-custom10", textColor), ScadLexer2::Custom10);
+    printf("aa2\n");
 
 #else
     auto *newLexer = new ScadLexer(this);
@@ -574,6 +582,7 @@ void ScintillaEditor::setColormap(const EditorColorScheme *colorScheme)
 #else
     setLexer(newLexer);
 #endif
+    printf("aa3\n");
 
     // All other properties must be set after attaching to QSCintilla so
     // the editor gets the change events and updates itself to match
@@ -585,6 +594,7 @@ void ScintillaEditor::setColormap(const EditorColorScheme *colorScheme)
     this->pythonLexer->setColor(textColor);
     this->pythonLexer->setPaper(paperColor);
 #endif
+    printf("aa4\n");
 
     const auto& colors = pt.get_child("colors");
     newLexer->setColor(readColor(colors, "keyword1", textColor), QsciLexerCPP::Keyword);
@@ -600,6 +610,7 @@ void ScintillaEditor::setColormap(const EditorColorScheme *colorScheme)
     newLexer->setColor(readColor(colors, "commentdockeyword", textColor),
                        QsciLexerCPP::CommentDocKeyword);
 
+    printf("aa5\n");
 #endif  // ENABLE_LEXERTL
 
 #ifdef ENABLE_PYTHON
@@ -654,6 +665,7 @@ void ScintillaEditor::setColormap(const EditorColorScheme *colorScheme)
                                    selectionMarkerLevelNumber + 5);
     qsci->setMarkerBackgroundColor(readColor(colors, "bookmark-marker", QColor(150, 200, 255, 50)),
                                    bmMarkerNumber);  // light blue
+    printf("aa6\n");
     qsci->setIndicatorForegroundColor(
       readColor(colors, "selected-highlight-indicator", QColor(11, 156, 49, 100)),
       selectionIndicatorIsActiveNumber);  // light green
@@ -713,9 +725,11 @@ void ScintillaEditor::setColormap(const EditorColorScheme *colorScheme)
     qsci->setSelectionForegroundColor(readColor(colors, "selection-foreground", paperColor));
     qsci->setSelectionBackgroundColor(readColor(colors, "selection-background", textColor));
     qsci->setEdgeColor(readColor(colors, "edge", textColor));
+    printf("77\n");
   } catch (const std::exception& e) {
     noColor();
   }
+  printf("bb\n");
 }
 
 void ScintillaEditor::noColor()
@@ -1556,9 +1570,9 @@ void ScintillaEditor::onIndicatorReleased(int line, int col, Qt::KeyboardModifie
 }
 
 #ifdef ENABLE_PYTHON
-void ScintillaEditor::onPythonActiveChanged(bool pythonActive)
+void ScintillaEditor::onLanguageActiveChanged(int language)
 {
-  if (pythonActive) {
+  if (language == LANG_PYTHON) {
     this->qsci->setLexer(this->pythonLexer);
   } else {
     this->qsci->setLexer(this->lexer);

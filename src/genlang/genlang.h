@@ -19,7 +19,6 @@ extern std::vector<std::string> mapping_name;
 extern std::vector<std::string> mapping_code;
 extern std::vector<int> mapping_level;
 
-extern int language;
 void show_final(void);  // this is called when the new language terminates
 extern std::vector<std::shared_ptr<AbstractNode>> shows;
 extern std::shared_ptr<AbstractNode> genlang_result_node;

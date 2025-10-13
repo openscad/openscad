@@ -6,7 +6,6 @@ std::vector<int> mapping_level;
 
 std::vector<std::shared_ptr<AbstractNode>> shows;
 std::shared_ptr<AbstractNode> genlang_result_node = nullptr;
-int language = LANG_SCAD;
 void show_final(void)
 {
   mapping_name.clear();

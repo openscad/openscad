@@ -20,7 +20,6 @@
 #include <Qsci/qscilexerpython.h>
 
 #include "gui/Editor.h"
-#include "gui/MainWindow.h"
 #include "gui/ScadApi.h"
 
 // don't need the full definition, because it confuses Qt
@@ -55,7 +54,7 @@ class ScintillaEditor : public EditorInterface
   using colorscheme_set_t = std::multimap<int, std::shared_ptr<EditorColorScheme>, std::less<>>;
 
 public:
-  ScintillaEditor(QWidget *parent, MainWindow& mainWindow);
+  ScintillaEditor(QWidget *parent);
   QsciScintilla *qsci;
   QString toPlainText() override;
   void initMargin();
@@ -156,7 +155,7 @@ private slots:
   void onIndicatorClicked(int line, int col, Qt::KeyboardModifiers state);
   void onIndicatorReleased(int line, int col, Qt::KeyboardModifiers state);
 #ifdef ENABLE_PYTHON
-  void onPythonActiveChanged(bool pythonActive);
+  void onLanguageActiveChanged(int lang);
 #endif
 signals:
   void escapePressed(void);
@@ -195,5 +194,4 @@ private:
   QStringList userList;
   QMap<QString, ScadTemplate> templateMap;
   static const QString cursorPlaceHolder;
-  MainWindow& mainWindow;
 };
