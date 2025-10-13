@@ -1,7 +1,9 @@
 #include "gui/TabManager.h"
 
 #include <QApplication>
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 #include <QKeyCombination>
+#endif
 #include <QPoint>
 #include <QTabBar>
 #include <QWidget>
@@ -168,10 +170,17 @@ void TabManager::createTab(const QString& filename)
 
   // clearing default mapping of keyboard shortcut for font size
   QsciCommandSet *qcmdset = scintillaEditor->qsci->standardCommands();
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
   QsciCommand *qcmd = qcmdset->boundTo((Qt::ControlModifier | Qt::Key_Plus).toCombined());
   qcmd->setKey(0);
   qcmd = qcmdset->boundTo((Qt::ControlModifier | Qt::Key_Minus).toCombined());
   qcmd->setKey(0);
+#else
+  QsciCommand *qcmd = qcmdset->boundTo(Qt::ControlModifier | Qt::Key_Plus);
+  qcmd->setKey(0);
+  qcmd = qcmdset->boundTo(Qt::ControlModifier | Qt::Key_Minus);
+  qcmd->setKey(0);
+#endif
 
   connect(scintillaEditor, &ScintillaEditor::uriDropped, par, &MainWindow::handleFileDrop);
   connect(scintillaEditor, &ScintillaEditor::previewRequest, par, &MainWindow::actionRenderPreview);

@@ -4,7 +4,9 @@
 #include <QCursor>
 #include <QEvent>
 #include <QGuiApplication>
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 #include <QKeyCombination>
+#endif
 #include <QMenu>
 #include <QObject>
 #include <QTimer>
@@ -143,18 +145,35 @@ ScintillaEditor::ScintillaEditor(QWidget *parent) : EditorInterface(parent)
 #ifdef Q_OS_MACOS
   // Alt-Backspace should delete left word (Alt-Delete already deletes right word)
   c = qsci->standardCommands()->find(QsciCommand::DeleteWordLeft);
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
   c->setKey((Qt::Key_Backspace | Qt::ALT).toCombined());
+#else
+  c->setKey(Qt::Key_Backspace | Qt::ALT);
+#endif
 #endif
   // Cmd/Ctrl-T is handled by the menu
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
   c = qsci->standardCommands()->boundTo((Qt::Key_T | Qt::CTRL).toCombined());
+#else
+  c = qsci->standardCommands()->boundTo(Qt::Key_T | Qt::CTRL);
+#endif
   c->setKey(0);
   // Cmd/Ctrl-D is handled by the menu
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
   c = qsci->standardCommands()->boundTo((Qt::Key_D | Qt::CTRL).toCombined());
+#else
+  c = qsci->standardCommands()->boundTo(Qt::Key_D | Qt::CTRL);
+#endif
   c->setKey(0);
   // Ctrl-Shift-Z should redo on all platforms
   c = qsci->standardCommands()->find(QsciCommand::Redo);
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
   c->setKey(QKeyCombination(Qt::CTRL | Qt::SHIFT, Qt::Key_Z).toCombined());
   c->setAlternateKey((Qt::Key_Y | Qt::CTRL).toCombined());
+#else
+  c->setKey(Qt::Key_Z | Qt::CTRL | Qt::SHIFT);
+  c->setAlternateKey(Qt::Key_Y | Qt::CTRL);
+#endif
 
 #ifdef Q_OS_MACOS
   const unsigned long modifier = Qt::META;
