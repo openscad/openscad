@@ -388,34 +388,6 @@ void initPython(const std::string& binDir, double time)
     PyConfig config;
     PyConfig_InitPythonConfig(&config);
 
-    std::string sep = "";
-    std::ostringstream stream;
-#ifdef _WIN32
-    char sepchar = ':';
-    sep = sepchar;
-    stream << PlatformUtils::applicationPath() << "\\..\\libraries\\python";
-#else
-    char sepchar = ':';
-    const auto pythonXY =
-      "python" + std::to_string(PY_MAJOR_VERSION) + "." + std::to_string(PY_MINOR_VERSION);
-    const std::array<std::string, 5> paths = {
-      "../libraries/python",
-      "../lib/" + pythonXY,
-      "../python/lib/" + pythonXY,
-      "../Frameworks/" + pythonXY,
-      "../Frameworks/" + pythonXY + "/site-packages",
-    };
-    for (const auto& path : paths) {
-      const auto p = fs::path(PlatformUtils::applicationPath() + fs::path::preferred_separator + path);
-      if (fs::is_directory(p)) {
-        stream << sep << fs::absolute(p).generic_string();
-        sep = sepchar;
-      }
-    }
-#endif
-    stream << sep << PlatformUtils::userLibraryPath();
-    stream << sepchar << ".";
-
     if (!binDir.empty()) {
       PyConfig_SetBytesString(&config, &config.executable, (binDir + "/python").c_str());
     }
