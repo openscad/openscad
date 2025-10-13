@@ -2491,7 +2491,7 @@ std::shared_ptr<SourceFile> MainWindow::parseDocument(EditorInterface *editor)
 
     const auto& venv = venvBinDirFromSettings();
     const auto& binDir = venv.empty() ? PlatformUtils::applicationPath() : venv;
-    initPython(binDir, fnameba.constData(), this->animateWidget->getAnimTval());
+    initPython(venv, fnameba.constData(), this->animateWidget->getAnimTval());
     this->activeEditor->resetHighlighting();
     this->activeEditor->parameterWidget->setEnabled(false);
     do {
