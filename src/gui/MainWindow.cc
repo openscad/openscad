@@ -2469,9 +2469,9 @@ std::shared_ptr<SourceFile> MainWindow::parseDocument(EditorInterface *editor)
   const char *fname = editor->filepath.isEmpty() ? "" : fnameba.constData();
   SourceFile *sourceFile;
 #ifdef ENABLE_PYTHON
-  if (currentLanguage == LANG_PYTHON) {
-    auto fulltext_py = std::string(this->lastCompiledDoc.toUtf8().constData());
-
+  if (currentLanguage == LANG_PYTHON && !trust_python_file(std::string(fname), fulltext_py)) {
+    LOG(message_group::Warning, Location::NONE, "", "Python is not enabled");
+  } else if (currentLanguage == LANG_PYTHON) {
     const auto& venv = venvBinDirFromSettings();
     const auto& binDir = venv.empty() ? PlatformUtils::applicationPath() : venv;
     initPython(venv, fnameba.constData(), this->animateWidget->getAnimTval());

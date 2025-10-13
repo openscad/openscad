@@ -368,11 +368,7 @@ public:
   QList<double> getRotation() const;
   QSignalMapper *addmenu_mapper;
   std::unordered_map<FileFormat, QAction *> exportMap;
-  void onLanguageActiveChanged(int language)
-  {
-    currentLanguage = language;
-    printf("lang is %d\n", currentLanguage);
-  }
+  void onLanguageActiveChanged(int language) { currentLanguage = language; }
   int currentLanguage;
 
 public slots:

@@ -45,7 +45,7 @@ public:
   virtual QPoint mapToGlobal(const QPoint&) = 0;
   virtual void setCursorPosition(int /*line*/, int /*col*/) {}
   virtual void setFocus() = 0;
-  virtual void onLanguageActiveChanged(int lang) = 0;
+  virtual void onLanguageChanged(int lang) = 0;
   void recomputeLanguageActive(void);
 
 signals:

@@ -155,7 +155,7 @@ private slots:
   void onIndicatorClicked(int line, int col, Qt::KeyboardModifiers state);
   void onIndicatorReleased(int line, int col, Qt::KeyboardModifiers state);
 #ifdef ENABLE_PYTHON
-  void onLanguageActiveChanged(int lang);
+  void onLanguageChanged(int lang);
 #endif
 signals:
   void escapePressed(void);
