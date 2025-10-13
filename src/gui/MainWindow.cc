@@ -927,10 +927,10 @@ MainWindow::MainWindow(const QStringList& filenames) : rubberBandManager(this)
   }
 
   // Adds shortcut for the prev/next window switching
-  shortcutNextWindow = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_K), this);
+  shortcutNextWindow = new QShortcut(QKeySequence(Qt::CTRL | Qt::Key_K), this);
   QObject::connect(shortcutNextWindow, &QShortcut::activated, this,
                    &MainWindow::onWindowShortcutNextPrevActivated);
-  shortcutPreviousWindow = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_H), this);
+  shortcutPreviousWindow = new QShortcut(QKeySequence(Qt::CTRL | Qt::Key_H), this);
   QObject::connect(shortcutPreviousWindow, &QShortcut::activated, this,
                    &MainWindow::onWindowShortcutNextPrevActivated);
 
