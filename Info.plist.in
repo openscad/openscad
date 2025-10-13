@@ -3,7 +3,7 @@
 <plist version="0.9">
 <dict>
 	<key>CFBundleName</key>
-	<string>OpenSCAD</string>
+	<string>PythonSCAD</string>
 	<key>CFBundleIconFile</key>
 	<string>${MACOSX_BUNDLE_ICON_FILE}</string>
 	<key>CFBundlePackageType</key>
@@ -11,9 +11,9 @@
 	<key>CFBundleSignature</key>
 	<string>????</string>
 	<key>CFBundleExecutable</key>
-	<string>OpenSCAD</string>
+	<string>pythonscad</string>
 	<key>CFBundleIdentifier</key>
-	<string>org.openscad.OpenSCAD</string>
+	<string>org.pythonscad.PythonSCAD</string>
 	<key>CFBundleVersion</key>
 	<string>${MACOSX_BUNDLE_BUNDLE_VERSION}</string>
 	<key>CFBundleShortVersionString</key>
@@ -35,7 +35,7 @@
 				<string>text/plain</string>
 			</array>
 			<key>CFBundleTypeName</key>
-			<string>OpenSCAD Design</string>
+			<string>PythonSCAD Design</string>
 			<key>CFBundleTypeRole</key>
 			<string>Editor</string>
 			<key>CFBundleTypeIconSystemGenerated</key>
@@ -101,10 +101,10 @@
 	<key>NSPrincipalClass</key>
 	<string>NSApplication</string>
 	<key>OSAScriptingDefinition</key>
-	<string>OpenSCAD.sdef</string>
+	<string>PythonSCAD.sdef</string>
 	<key>SUPublicDSAKeyFile</key>
 	<string>dsa_pub.pem</string>
 	<key>SUFeedURL</key>
-	<string>https://files.openscad.org/appcast.xml</string>
+	<string>https://files.pythonscad.org/appcast.xml</string>
 </dict>
 </plist>
