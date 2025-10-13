@@ -83,7 +83,11 @@ private:
   QPoint mouseDraggedPoint;
   std::shared_ptr<SelectedObject> mouseDraggedSel = nullptr;
   float mouseActions[MouseConfig::MouseAction::NUM_MOUSE_ACTIONS * MouseConfig::ACTION_DIMENSION];
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+  QPointF last_mouse;
+#else
   QPoint last_mouse;
+#endif
   QImage frame;  // Used by grabFrame() and save()
 
   void wheelEvent(QWheelEvent *event) override;
