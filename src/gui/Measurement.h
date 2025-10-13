@@ -28,10 +28,22 @@ class Measurement
 public:
   Measurement(void);
   void setView(QGLView *qglview);
+
+  /**
+   * Advance the Measurement state machine.
+   * @return When non-empty, is reverse-ordered list of responses. Errors always produce response(s).
+   */
   std::vector<QString> statemachine(QPoint mouse);
+
   void startMeasureDist(void);
   void startMeasureAngle(void);
-  void stopMeasure();
+
+  /**
+   * Stops and cleans up measurement, if any in progress.
+   * Safe to call multiple times.
+   * @return True if measurement was in progress.
+   */
+  bool stopMeasure();
 
 private:
   QGLView *qglview;
