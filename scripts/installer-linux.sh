@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/bash -e
 
 # change to the install source directory
 cd "$( dirname "$( type -p $0 )" )"

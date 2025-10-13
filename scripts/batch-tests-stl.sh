@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash -e
 
 cmd="openscad"
 [ -x "./openscad" ] && cmd="./openscad"

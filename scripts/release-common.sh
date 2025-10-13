@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/bash -e
 #
 # This script creates a binary release of OpenSCAD. This should work
 # under Mac OS X, Linux 32bit, Linux 64bit, and Linux->Win32 MXE cross-build.

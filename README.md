@@ -284,6 +284,10 @@ build-node/openscad.js --help
 
 ### Compilation
 
+cmake -B build-lib -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_BUILD_TYPE=Release -DUSE_BUILTIN_OPENCSG=ON -DMANIFOLD_PYBIND=OFF -DMANIFOLD_TEST=OFF -DENABLE_PYTHON=OFF -DENABLE_TESTS=OFF -DEXPERIMENTAL=ON -DSNAPSHOT=ON -DBUILD_SHARED_LIBS=ON
+
+cmake -B build -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_BUILD_TYPE=Release -DUSE_BUILTIN_OPENCSG=ON -DMANIFOLD_PYBIND=OFF -DMANIFOLD_TEST=OFF -DENABLE_PYTHON=OFF -DENABLE_TESTS=OFF -DEXPERIMENTAL=ON -DSNAPSHOT=ON -DBUILD_SHARED_LIBS=OFF
+
 First, run `cmake -B build -DEXPERIMENTAL=1` to generate a Makefile in the `build` folder.
 
 Then run `cmake --build build`. Finally, on Linux you might run `cmake --install build` as root.

@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/bash -e
 set -euo pipefail
 # Reformat C++ code using clang-format
 

@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash -e
 
 # Script for use from the build system to generate the translation
 # related files.

@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash -e
 
 echo "" > RELEASE_NOTES.md
 for v in `ls -r releases/*.md`; do

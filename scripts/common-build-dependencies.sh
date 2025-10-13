@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash -e
 
 #
 # This script contains functions for building various libraries

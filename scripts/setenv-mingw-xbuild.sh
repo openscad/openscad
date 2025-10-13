@@ -1,4 +1,4 @@
-#!/bin/sh -e
+#!/bin/bash -e -e
 #
 # set environment variables for mingw/mxe cross-build
 #

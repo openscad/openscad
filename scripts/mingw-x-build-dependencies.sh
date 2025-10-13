@@ -1,4 +1,4 @@
-#!/bin/sh -e
+#!/bin/bash -e -e
 #
 # This script builds all library dependencies of OpenSCAD for cross-compilation
 # from linux to mingw32/64 for windows, using the MXE cross build system.

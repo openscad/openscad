@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/bash -e
 
 # build&upload script for linux & windows snapshot binaries
 #

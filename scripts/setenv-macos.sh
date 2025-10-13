@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash -e
 
 export OPENSCAD_LIBRARIES=$PWD/../libraries/install
 export PKG_CONFIG_PATH=$OPENSCAD_LIBRARIES/lib/pkgconfig

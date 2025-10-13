@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash -e
 #
 # Usage:
 #   ./scripts/publish-macosx.sh [buildonly]

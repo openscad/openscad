@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/bash -e
 #
 # Sorts the CMake-style file list(s) given as arguments by most recently
 # modified first.

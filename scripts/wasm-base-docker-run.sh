@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/bash -e
 #
 # Runs a command in the OpenSCAD Base Wasm Docker image for Emscripten builds.
 # (mounts $PWD as readwrite and sets up ccache)

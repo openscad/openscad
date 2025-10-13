@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash -e
 
 # see doc/translation.txt for more info
 BASEDIR=$PWD

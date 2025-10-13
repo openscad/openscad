@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash -e
 
 # This is run as part of the checklist in docs/release-checklist.txt
 #

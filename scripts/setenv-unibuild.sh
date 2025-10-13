@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash -e
 
 # setup environment variables for building OpenSCAD against custom built
 # dependency libraries. works on Linux/BSD.

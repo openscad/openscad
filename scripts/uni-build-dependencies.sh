@@ -1,4 +1,4 @@
-#!/bin/sh -e
+#!/bin/bash -e -e
 
 # uni-build-dependencies by don bright 2012. copyright assigned to
 # Marius Kintel and Clifford Wolf, 2012. released under the GPL 2, or

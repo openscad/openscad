@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash -e
 
 if [ $# != 2 ]; then
   echo "Usage: $0 scad-file stl-file"

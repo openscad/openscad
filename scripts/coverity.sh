@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/bash -e
 
 UPLOAD_DIR=coverity
 UPLOAD_HOST=openscad@files.openscad.org

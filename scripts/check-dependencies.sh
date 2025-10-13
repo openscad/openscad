@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/bash -e
 # Parse the minimum versions of dependencies from README.md, and compare
 # with what is found on the system. Print results.
 #
