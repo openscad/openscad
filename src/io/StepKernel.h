@@ -795,6 +795,129 @@ public:
     double length;
     Direction *dir;
   };
+  class ProductDefinition : public Entity
+  {
+  public:
+    ProductDefinition(std::vector<Entity *>& ent_list) : Entity(ent_list) {}
+    virtual ~ProductDefinition() {}
+
+    virtual void serialize(std::ostream& stream_in)
+    {
+      stream_in << "#" << id << " = PRODUCT_DEFINITION('', '');\n";
+    }
+
+    virtual void parse_args(std::map<int, Entity *>& ent_map, std::string args) {}
+  };
+  class ProductDefinitionShape : public Entity
+  {
+  public:
+    ProductDefinitionShape(std::vector<Entity *>& ent_list, ProductDefinition *prod_in)
+      : Entity(ent_list)
+    {
+      prod = prod_in;
+    }
+    virtual ~ProductDefinitionShape() {}
+
+    virtual void serialize(std::ostream& stream_in)
+    {
+      stream_in << "#" << id << " = PRODUCT_DEFINITION_SHAPE('', '', #" << prod->id << ");\n";
+    }
+
+    virtual void parse_args(std::map<int, Entity *>& ent_map, std::string args) {}
+
+    ProductDefinition *prod;
+  };
+
+  class ShapeRepresentation : public Entity
+  {
+  public:
+    ShapeRepresentation(std::vector<Entity *>& ent_list, const char *name_in) : Entity(ent_list)
+    {
+      name = strdup(name_in);
+    }
+    virtual ~ShapeRepresentation() {}
+
+    virtual void serialize(std::ostream& stream_in)
+    {
+      stream_in << "#" << id << " = SHAPE_REPRESENTATION('" << name << "');\n";
+    }
+
+    virtual void parse_args(std::map<int, Entity *>& ent_map, std::string args) {}
+
+    char *name;
+  };
+  class ShapeDefinition_Representation : public Entity
+  {
+  public:
+    ShapeDefinition_Representation(std::vector<Entity *>& ent_list,
+                                   ProductDefinitionShape *prod_shape_in, ShapeRepresentation *repr_in)
+      : Entity(ent_list)
+    {
+      repr = repr_in;
+      prod_shape = prod_shape_in;
+    }
+    virtual ~ShapeDefinition_Representation() {}
+
+    virtual void serialize(std::ostream& stream_in)
+    {
+      stream_in << "#" << id << " = SHAPE_DEFINITION_REPRESENTATION(#" << prod_shape->id << " ,#"
+                << repr->id << ");\n";
+    }
+
+    virtual void parse_args(std::map<int, Entity *>& ent_map, std::string args) {}
+    ProductDefinitionShape *prod_shape;
+    ShapeRepresentation *repr;
+
+    double length;
+    Direction *dir;
+  };
+
+  class AdvancesBrepRepresentation : public Entity
+  {
+  public:
+    AdvancesBrepRepresentation(std::vector<Entity *>& ent_list, const char *name_in,
+                               ManifoldSolid *solid_in)
+      : Entity(ent_list)
+    {
+      name = strdup(name_in);
+      solid = solid_in;
+    }
+    virtual ~AdvancesBrepRepresentation() {}
+
+    virtual void serialize(std::ostream& stream_in)
+    {
+      stream_in << "#" << id << " = ADVANCED_BREP_SHAPE_REPRESENTATION('" << name << "',(#" << solid->id
+                << "),);\n";
+    }
+
+    virtual void parse_args(std::map<int, Entity *>& ent_map, std::string args) {}
+    char *name;
+    ManifoldSolid *solid;
+    double length;
+  };
+
+  class ShapeRepresentationRelationShip : public Entity
+  {
+  public:
+    ShapeRepresentationRelationShip(std::vector<Entity *>& ent_list, ShapeRepresentation *shape_repr_in,
+                                    AdvancesBrepRepresentation *adv_brep_in)
+      : Entity(ent_list)
+    {
+      shape_repr = shape_repr_in;
+      adv_brep = adv_brep_in;
+    }
+    virtual ~ShapeRepresentationRelationShip() {}
+
+    virtual void serialize(std::ostream& stream_in)
+    {
+      stream_in << "#" << id << " = SHAPE_REPRESENTATION_RELATIONSHIP('', '', #" << shape_repr->id
+                << ", #" << adv_brep->id << ");\n";
+    }
+
+    virtual void parse_args(std::map<int, Entity *>& ent_map, std::string args) {}
+    ShapeRepresentation *shape_repr;
+    AdvancesBrepRepresentation *adv_brep;
+  };
 
   class Line : public RoundType
   {
@@ -844,9 +967,10 @@ public:
   StepKernel::EdgeCurve *create_arc_edge_curve(StepKernel::Vertex *vert1, StepKernel::Vertex *vert2,
                                                bool dir);
 
-  void build_tri_body(std::vector<Vector3d> tris, std::vector<IndexedFace> faces,
+  void build_tri_body(const char *name, std::vector<Vector3d> tris, std::vector<IndexedFace> faces,
                       const std::vector<std::shared_ptr<Curve>>& curves,
-                      const std::vector<std::shared_ptr<Surface>> surfaces, double tol);
+                      const std::vector<std::shared_ptr<Surface>> surfaces,
+                      const std::vector<int>& faceParents, double tol);
   EdgeCurve *get_line_from_map(Vector3d p0, Vector3d p1,
                                std::map<std::tuple<double, double, double, double, double, double>,
                                         StepKernel::EdgeCurve *>& edge_map,

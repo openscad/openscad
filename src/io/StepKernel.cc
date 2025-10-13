@@ -47,18 +47,16 @@ StepKernel::EdgeCurve *StepKernel::create_line_edge_curve(StepKernel::Vertex *ve
   auto line_dir1 = new Direction(entities, v);
   auto line_vector1 = new Vector(entities, line_dir1, 1.0);
   auto line1 = new Line(entities, line_point1, line_vector1);
-  auto surf_curve1 = new SurfaceCurve(entities, line1);
-  return new EdgeCurve(entities, vert1, vert2, surf_curve1, dir);
+  //  auto surf_curve1 = new SurfaceCurve(entities, line1);
+  return new EdgeCurve(entities, vert1, vert2, line1, dir);
 }
 
-void StepKernel::build_tri_body(std::vector<Vector3d> vertices, std::vector<IndexedFace> faces,
+void StepKernel::build_tri_body(const char *name, std::vector<Vector3d> vertices,
+                                std::vector<IndexedFace> faces,
                                 const std::vector<std::shared_ptr<Curve>>& curves,
-                                const std::vector<std::shared_ptr<Surface>> surfaces, double tol)
+                                const std::vector<std::shared_ptr<Surface>> surfaces,
+                                const std::vector<int>& faceParents, double tol)
 {
-  //	auto point = new Point(entities, Vector3d(0.0, 0.0, 0.0));
-  //	auto dir_1 = new Direction(entities, Vector3d(0.0, 0.0, 1.0));
-  //	auto dir_2 = new Direction(entities, Vector3d(1.0, 0.0, 0.0));
-
   //	auto base_axis = new Axis2Placement(entities, dir_1, dir_2, point);
   std::vector<Face *> sfaces;
   std::map<std::tuple<double, double, double, double, double, double>, EdgeCurve *> edge_map;
@@ -94,6 +92,8 @@ void StepKernel::build_tri_body(std::vector<Vector3d> vertices, std::vector<Inde
     //	  printf("\n");
   }
 
+  std::vector<FaceBound *> face_bounds;
+  std::vector<Plane *> planes;
   for (std::size_t i = 0; i < faces.size(); i++) {
     Vector3d p0 = vertices[faces[i][0]];
     Vector3d p1 = vertices[faces[i][1]];
@@ -103,7 +103,7 @@ void StepKernel::build_tri_body(std::vector<Vector3d> vertices, std::vector<Inde
     Vector3d d1 = (p2 - p0).normalized();
     Vector3d d2 = d0.cross(d1).normalized();
 
-    int merged_edge_cnt;
+    int merged_edge_cnt;  // TODO faceNormal verwenden
 
     IndexedFace perimeter_points = faces[i];  // TODO fix
 
@@ -138,19 +138,38 @@ void StepKernel::build_tri_body(std::vector<Vector3d> vertices, std::vector<Inde
     auto plane_dir_2 = new Direction(entities, d0);
     auto plane_axis = new Axis2Placement(entities, plane_dir_1, plane_dir_2, plane_point);
     auto plane = new Plane(entities, plane_axis);
+    planes.push_back(plane);
 
     // build the faces
 
     auto edge_loop = new EdgeLoop(entities, oriented_edges);
-    std::vector<FaceBound *> face_bounds;
-    face_bounds.push_back(new FaceBound(entities, edge_loop, true));
-    sfaces.push_back(new Face(entities, face_bounds, plane, true));
+    face_bounds.push_back(new FaceBound(entities, edge_loop, true));  // TODO hier mehr edgelops dazu
+  }
+
+  for (std::size_t i = 0; i < faces.size(); i++) {
+    if (faceParents[i] != -1) continue;
+    std::vector<FaceBound *> singface;
+    singface.push_back(face_bounds[i]);
+    for (std::size_t j = 0; j < faces.size(); j++) {
+      if (faceParents[j] == i) singface.push_back(face_bounds[j]);
+    }
+
+    sfaces.push_back(new Face(entities, singface, planes[i], true));
   }
 
   // build the model
   auto closed_shell = new Shell(entities, sfaces);
   closed_shell->isOpen = false;
-  (void)new ManifoldSolid(entities, 0, closed_shell);
+
+  auto manif_solid = new ManifoldSolid(entities, 0, closed_shell);
+
+  auto shape_repr = new ShapeRepresentation(entities, name);
+  auto adv_brep_shape_pres = new AdvancesBrepRepresentation(entities, name, manif_solid);
+  auto shape_repr_rel = new ShapeRepresentationRelationShip(entities, shape_repr, adv_brep_shape_pres);
+
+  auto product_def = new ProductDefinition(entities);
+  auto product_def_shape = new ProductDefinitionShape(entities, product_def);
+  auto shape_def_repr = new ShapeDefinition_Representation(entities, product_def_shape, shape_repr);
 }
 
 StepKernel::EdgeCurve *StepKernel::get_line_from_map(

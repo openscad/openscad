@@ -1,6 +1,5 @@
 #! /bin/sh
 
-git pull --all
 git checkout sync_openscad
-git merge origin/master
+git pull --all
 git merge upstream/master

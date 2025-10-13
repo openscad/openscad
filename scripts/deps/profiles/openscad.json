@@ -1,0 +1,6 @@
+{
+  "extends": [
+    "base"
+  ],
+  "distros": {}
+}

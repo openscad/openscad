@@ -36,6 +36,13 @@ features and improves existing ones.
 - [Building PythonSCAD from source](#building-pythonscad-from-source)
     - [Prerequisites](#prerequisites)
     - [Getting the source code](#getting-the-source-code)
+    - [Contributing Changes](#contributing-changes)
+    - [Building for macOS](#building-for-macos)
+    - [Building for Linux/BSD](#building-for-linuxbsd)
+    - [Building for Linux/BSD on systems with older or missing dependencies](#building-for-linuxbsd-on-systems-with-older-or-missing-dependencies)
+    - [Building on Nix](#building-on-nix)
+    - [Building for Windows](#building-for-windows)
+    - [Building for WebAssembly](#building-for-webassembly)
 
 
 # When to not use PythonSCAD
@@ -258,41 +265,41 @@ After building dependencies using one of the following options, follow the instr
 
 ### Building for Linux/BSD
 
-First, make sure that you have git installed (often packaged as 'git-core' 
-or 'scmgit'). Once you've cloned this git repository, download and install 
-the dependency packages listed above using your system's package 
-manager. A convenience script is provided that can help with this 
+First, make sure that you have git installed (often packaged as 'git-core'
+or 'scmgit'). Once you've cloned this git repository, download and install
+the dependency packages listed above using your system's package
+manager. A convenience script is provided that can help with this
 process on some systems:
 
 ```shell
-sudo ./scripts/uni-get-dependencies.sh
+sudo ./scripts/uni-get-dependencies.py --profile pythonscad-qt5
 ```
 
-After installing dependencies, check their versions. You can run this 
+After installing dependencies, check their versions. You can run this
 script to help you:
 
 ```shell
 ./scripts/check-dependencies.sh
 ```
 
-Take care that you don't have old local copies anywhere (`/usr/local/`). 
-If all dependencies are present and of a high enough version, skip ahead 
-to the Compilation instructions. 
+Take care that you don't have old local copies anywhere (`/usr/local/`).
+If all dependencies are present and of a high enough version, skip ahead
+to the Compilation instructions.
 
 ### Building for Linux/BSD on systems with older or missing dependencies
 
-If some of your system dependency libraries are missing or old, then you 
-can download and build newer versions into `$HOME/openscad_deps` by 
-following this process. First, run the script that sets up the 
-environment variables. 
+If some of your system dependency libraries are missing or old, then you
+can download and build newer versions into `$HOME/openscad_deps` by
+following this process. First, run the script that sets up the
+environment variables.
 
     source ./scripts/setenv-unibuild.sh
 
 Then run the script to compile all the prerequisite libraries above:
 
 
-Note that huge dependencies like gcc, qt, or glib2 are not included 
-here, only the smaller ones (boost, CGAL, opencsg, etc). After the 
+Note that huge dependencies like gcc, qt, or glib2 are not included
+here, only the smaller ones (boost, CGAL, opencsg, etc). After the
 build, again check dependencies.
 
     ./scripts/check-dependencies.sh
@@ -321,12 +328,12 @@ https://en.wikibooks.org/wiki/OpenSCAD_User_Manual/Building_on_Windows
 MSVC build support has been added to OpenSCAD. For instructions on how to build it,
 refer to [building with MSVC](doc/win-build.md).
 
-To cross-build, first make sure that you have all necessary dependencies 
+To cross-build, first make sure that you have all necessary dependencies
 of the MXE project ( listed at https://mxe.cc/#requirements ). Don't install
 MXE itself, the scripts below will do that for you under `$HOME/openscad_deps/mxe`
 
-Then get your development tools installed to get GCC. Then after you've 
-cloned this git repository, start a new clean bash shell and run the 
+Then get your development tools installed to get GCC. Then after you've
+cloned this git repository, start a new clean bash shell and run the
 script that sets up the environment variables.
 
 ```bash
@@ -339,16 +346,16 @@ Then run the script to download & compile all the prerequisite libraries above:
     ./scripts/mingw-x-build-dependencies.sh 64
 ```
 
-Note that this process can take several hours, and tens of gigabytes of 
+Note that this process can take several hours, and tens of gigabytes of
 disk space, as it uses the [https://mxe.cc](https://mxe.cc) system to cross-build many
-libraries. After it is complete, build OpenSCAD and package it to an 
+libraries. After it is complete, build OpenSCAD and package it to an
 installer:
 
 ```bash
     ./scripts/release-common.sh mingw64
 ```
 
-For a 32-bit Windows cross-build, replace 64 with 32 in the above instructions. 
+For a 32-bit Windows cross-build, replace 64 with 32 in the above instructions.
 
 ### Building for WebAssembly
 

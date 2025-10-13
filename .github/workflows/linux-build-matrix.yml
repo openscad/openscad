@@ -26,9 +26,12 @@ jobs:
       with:
         submodules: 'recursive'
     - name: Install dependencies
+      env:
+        DEBIAN_FRONTEND: noninteractive
+        TZ: Etc/UTC
       run: |
-        which sudo || apt install -y sudo
-        sudo ./scripts/uni-get-dependencies.sh
+        which sudo || ( apt update && apt install -y sudo )
+        sudo -E ./scripts/uni-get-dependencies.py --yes --profile pythonscad-qt5
     - name: Run CMake
       run: >
         cmake -S . -B build -GNinja \
