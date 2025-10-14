@@ -281,7 +281,6 @@ std::optional<Message> make_message_obj(std::string&& f, Args&&...args)
 template <typename... Args>
 void LOG(Args&&...args)
 {
-  std::optional<Message> msg = make_message_obj(std::forward<Args>(args)...);
-  if (msg)
+  if (auto msg = make_message_obj(std::forward<Args>(args)...))
     PRINT(*msg);
 }

@@ -6,7 +6,7 @@
 
 #include "core/AST.h"
 #include "utils/printutils.h"
-#include "ring_queue.hpp"
+#include "boost/circular_buffer.hpp"
 
 class EvaluationException : public std::runtime_error
 {
@@ -14,7 +14,7 @@ public:
   EvaluationException(const std::string& what_arg)
     : std::runtime_error(what_arg)
     , traceDepth(OpenSCAD::traceDepth)
-    , tail_msgs(OpenSCAD::traceDepth+1)
+    , tail_msgs(OpenSCAD::traceDepth)
   {
   }
 
@@ -24,8 +24,7 @@ public:
       ::LOG(std::forward<Ts>(args)...);
     } else {
       if (auto m = make_message_obj(std::forward<Ts>(args)...)) {
-        // conditional move because there is a path which doesn't return a Message.
-        tail_msgs.emplace_back(std::move(*m));
+        tail_msgs.push_back(std::move(*m));
       }
     }
   }
@@ -33,7 +32,7 @@ public:
   ~EvaluationException() {
     int frames_skipped = -(traceDepth+tail_msgs.size());
     if (frames_skipped > 0) {
-      ::PRINT(Message(std::string{"*** Excluding "} + std::to_string(frames_skipped) + " frames ***",
+      ::PRINT(Message(std::string{"  *** Excluding "} + std::to_string(frames_skipped) + " frames ***",
         message_group::Trace));
     }
 
@@ -44,7 +43,7 @@ public:
   }
 public:
   int traceDepth = 0;
-  ring<Message> tail_msgs;
+  boost::circular_buffer<Message> tail_msgs;
 };
 
 class AssertionFailedException : public EvaluationException
