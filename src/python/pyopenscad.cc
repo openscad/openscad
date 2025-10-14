@@ -39,14 +39,14 @@ bool python_trusted;
 
 void PyObjectDeleter(PyObject *pObject) { Py_XDECREF(pObject); };
 
+PyThreadState *globalInterpreterThreadState = NULL;
+PyThreadState *subInterpreterThreadState = NULL;
+
 PyObjectUniquePtr pythonInitDict(nullptr, PyObjectDeleter);
 PyObjectUniquePtr pythonMainModule(nullptr, PyObjectDeleter);
-std::list<std::string> pythonInventory;
 bool pythonDryRun = false;
 std::shared_ptr<AbstractNode> python_result_node =
   nullptr; /* global result veriable containing the python created result */
-PyObject *python_result_obj = nullptr;
-bool pythonMainModuleInitialized = false;
 
 void PyOpenSCADObject_dealloc(PyOpenSCADObject *self)
 {
@@ -322,103 +322,55 @@ void python_catch_error(std::string& errorstr)
   }
 }
 
+void initGlobalInterpreter(const std::string& binDir)
+{
+  PyPreConfig preconfig;
+  PyPreConfig_InitPythonConfig(&preconfig);
+  Py_PreInitialize(&preconfig);
+
+  PyImport_AppendInittab("openscad", &PyInit_openscad);
+  PyConfig config;
+  PyConfig_InitPythonConfig(&config);
+
+  if (!binDir.empty()) {
+    PyConfig_SetBytesString(&config, &config.executable, (binDir + "/python").c_str());
+  }
+
+  PyStatus status = Py_InitializeFromConfig(&config);
+  if (PyStatus_Exception(status)) {
+    LOG(message_group::Error, "Python not found. Is it installed ?");
+    return;
+  }
+  PyConfig_Clear(&config);
+
+  globalInterpreterThreadState = PyEval_SaveThread();
+}
+
 void initPython(const std::string& binDir, double time)
 {
-  if (pythonInitDict) { /* If already initialized, undo to reinitialize after */
-    PyObject *key, *value;
-    Py_ssize_t pos = 0;
-    PyObject *maindict = PyModule_GetDict(pythonMainModule.get());
-    while (PyDict_Next(maindict, &pos, &key, &value)) {
-      PyObjectUniquePtr key_(PyUnicode_AsEncodedString(key, "utf-8", "~"), PyObjectDeleter);
-      if (key_ == nullptr) continue;
-      const char *key_str = PyBytes_AS_STRING(key_.get());
-      if (key_str == nullptr) continue;
-      if (std::find(std::begin(pythonInventory), std::end(pythonInventory), key_str) ==
-          std::end(pythonInventory)) {
-        if (strlen(key_str) < 4 || strncmp(key_str, "stat", 4) != 0) {
-          PyDict_DelItemString(maindict, key_str);
-        }
-      }
-      // bug in  PyDict_GetItemString, thus iterating
-      if (strcmp(key_str, "sys") == 0) {
-        PyObject *sysdict = PyModule_GetDict(value);
-        if (sysdict == nullptr) continue;
-        // get builtin_module_names
-        PyObject *key1, *value1;
-        Py_ssize_t pos1 = 0;
-        while (PyDict_Next(sysdict, &pos1, &key1, &value1)) {
-          PyObjectUniquePtr key1_(PyUnicode_AsEncodedString(key1, "utf-8", "~"), PyObjectDeleter);
-          if (key1_ == nullptr) continue;
-          const char *key1_str = PyBytes_AS_STRING(key1_.get());
-          if (strcmp(key1_str, "modules") == 0) {
-            PyObject *key2, *value2;
-            Py_ssize_t pos2 = 0;
-            while (PyDict_Next(value1, &pos2, &key2, &value2)) {
-              PyObjectUniquePtr key2_(PyUnicode_AsEncodedString(key2, "utf-8", "~"), PyObjectDeleter);
-              if (key2_ == nullptr) continue;
-              const char *key2_str = PyBytes_AS_STRING(key2_.get());
-              if (key2_str == nullptr) continue;
-              if (!PyModule_Check(value2)) continue;
-
-              PyObject *modrepr = PyObject_Repr(value2);
-              PyObject *modreprobj = PyUnicode_AsEncodedString(modrepr, "utf-8", "~");
-              const char *modreprstr = PyBytes_AS_STRING(modreprobj);
-              if (modreprstr == nullptr) continue;
-              if (strstr(modreprstr, "(frozen)") != nullptr) continue;
-              if (strstr(modreprstr, "(built-in)") != nullptr) continue;
-              if (strstr(modreprstr, "/encodings/") != nullptr) continue;
-              if (strstr(modreprstr, "_frozen_") != nullptr) continue;
-              if (strstr(modreprstr, "site-packages") != nullptr) continue;
-              if (strstr(modreprstr, "usr/lib") != nullptr) continue;
-
-              PyDict_DelItem(value1, key2);
-            }
-          }
-        }
-      }
-    }
-  } else {
-    PyPreConfig preconfig;
-    PyPreConfig_InitPythonConfig(&preconfig);
-    Py_PreInitialize(&preconfig);
-    //    PyEval_InitThreads(); //
-    //    https://stackoverflow.com/questions/47167251/pygilstate-ensure-causing-deadlock
-
-    PyImport_AppendInittab("openscad", &PyInit_openscad);
-    PyConfig config;
-    PyConfig_InitPythonConfig(&config);
-
-    if (!binDir.empty()) {
-      PyConfig_SetBytesString(&config, &config.executable, (binDir + "/python").c_str());
-    }
-
-    PyStatus status = Py_InitializeFromConfig(&config);
-    if (PyStatus_Exception(status)) {
-      LOG(message_group::Error, "Python not found. Is it installed ?");
-      return;
-    }
-    PyConfig_Clear(&config);
-
-    pythonMainModule.reset(PyImport_AddModule("__main__"));
-    pythonMainModuleInitialized = pythonMainModule != nullptr;
-    pythonInitDict.reset(PyModule_GetDict(pythonMainModule.get()));
-    PyInit_PyOpenSCAD();
-    PyRun_String("from builtins import *\n", Py_file_input, pythonInitDict.get(), pythonInitDict.get());
-    PyObject *key, *value;
-    Py_ssize_t pos = 0;
-    PyObject *maindict = PyModule_GetDict(pythonMainModule.get());
-    while (PyDict_Next(maindict, &pos, &key, &value)) {
-      PyObjectUniquePtr key1(PyUnicode_AsEncodedString(key, "utf-8", "~"), PyObjectDeleter);
-      const char *key_str = PyBytes_AsString(key1.get());
-      if (key_str != NULL) pythonInventory.push_back(key_str);
-    }
+  if (!globalInterpreterThreadState) {
+    initGlobalInterpreter(binDir);
   }
+
+  subInterpreterThreadState = Py_NewInterpreter();
+
+  pythonMainModule.reset(PyImport_AddModule("__main__"));
+  pythonInitDict.reset(PyModule_GetDict(pythonMainModule.get()));
+  PyInit_PyOpenSCAD();
+
   std::ostringstream stream;
   stream << "t=" << time;
   PyRun_String(stream.str().c_str(), Py_file_input, pythonInitDict.get(), pythonInitDict.get());
 }
 
-void finishPython(void) {}
+void finishPython(void)
+{
+  if (!subInterpreterThreadState) return;
+
+  pythonMainModule.release();
+  Py_EndInterpreter(subInterpreterThreadState);
+  subInterpreterThreadState = NULL;
+}
 
 std::string evaluatePython(const std::string& code, bool dry_run)
 {
@@ -429,7 +381,7 @@ std::string evaluatePython(const std::string& code, bool dry_run)
   /* special python code to catch errors from stdout and stderr and make them available in OpenSCAD
    * console */
   pythonDryRun = dry_run;
-  if (!pythonMainModuleInitialized) return "Python not initialized";
+  if (!subInterpreterThreadState) return "Python not initialized";
   const char *python_init_code =
     "\
 import sys\n\
