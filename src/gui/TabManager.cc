@@ -684,7 +684,6 @@ bool TabManager::saveAs(EditorInterface *edt, const QString& filepath)
  If the editor content has not yet been saved it will be saved
  to Untitled.scad in the application root directory.
  Otherwise append  "_copy" to the base file name.
-
  The name of the editor tab should NOT be changed
  */
 bool TabManager::saveACopy(EditorInterface *edt)
