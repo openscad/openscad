@@ -3,6 +3,7 @@
 #include <stdexcept>
 #include <utility>
 #include <string>
+#include <functional>
 
 #include "core/AST.h"
 #include "utils/printutils.h"
@@ -19,31 +20,33 @@ public:
   }
 
   template<typename...Ts>
-  void LOG(Ts&&...args) {
+  void LOG(const message_group& msgGroup, Ts&&...args) {
     if (traceDepth > 0) {
-      ::LOG(std::forward<Ts>(args)...);
+      ::LOG(msgGroup, std::forward<Ts>(args)...);
     } else {
-      if (auto m = make_message_obj(std::forward<Ts>(args)...)) {
-        tail_msgs.push_back(std::move(*m));
-      }
+      tail_msgs.push_back([=]() {
+        return make_message_obj(msgGroup, args...);
+      });
     }
   }
 
   ~EvaluationException() {
-    int frames_skipped = -(traceDepth+tail_msgs.size());
+    int frames_skipped = -(traceDepth + tail_msgs.size());
     if (frames_skipped > 0) {
       ::PRINT(Message(std::string{"  *** Excluding "} + std::to_string(frames_skipped) + " frames ***",
         message_group::Trace));
     }
 
     while(!tail_msgs.empty()) {
-      ::PRINT(tail_msgs.front());
+      if (auto msg = tail_msgs.front()()) {
+        ::PRINT(*msg);
+      }
       tail_msgs.pop_front();
     }
   }
 public:
   int traceDepth = 0;
-  boost::circular_buffer<Message> tail_msgs;
+  boost::circular_buffer<std::function<std::optional<Message>()>> tail_msgs;
 };
 
 class AssertionFailedException : public EvaluationException
