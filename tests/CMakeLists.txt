@@ -983,9 +983,9 @@ add_cmdline_test(render-dxf  SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png FILES
 add_cmdline_test(render-svg  SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png FILES ${EXPORT_IMPORT_2D_RENDER_FILES} ${SCAD_SVG_FILES} EXPECTEDDIR render ARGS ${OPENSCAD_EXE_ARG} --format=SVG --render=force)
 
 # SVG Export
-add_cmdline_test(export-svg SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX svg FILES ${SCAD_SVG_FILES} ARGS ${OPENSCAD_EXE_ARG} --format=SVG)
-add_cmdline_test(export-svg-fill-stroke SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX svg FILES ${SCAD_SVG_FILES} ARGS ${OPENSCAD_EXE_ARG} --format=SVG -O export-svg/fill=true -O export-svg/fill-color=cyan -O export-svg/stroke-color=magenta -O export-svg/stroke-width=3)
-add_cmdline_test(export-svg-fill-only SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX svg FILES ${SCAD_SVG_FILES} ARGS ${OPENSCAD_EXE_ARG} --format=SVG -O export-svg/fill=true -O export-svg/fill-color=blue -O export-svg/stroke=false)
+add_cmdline_test(export-svg SCRIPT ${EXPORT_PNGTEST_PY} SUFFIX png FILES ${SCAD_SVG_FILES} ARGS ${OPENSCAD_EXE_ARG} --format=SVG)
+add_cmdline_test(export-svg-fill-stroke SCRIPT ${EXPORT_PNGTEST_PY} SUFFIX png FILES ${SCAD_SVG_FILES} ARGS ${OPENSCAD_EXE_ARG} --format=SVG -O export-svg/fill=true -O export-svg/fill-color=cyan -O export-svg/stroke-color=magenta -O export-svg/stroke-width=3)
+add_cmdline_test(export-svg-fill-only SCRIPT ${EXPORT_PNGTEST_PY} SUFFIX png FILES ${SCAD_SVG_FILES} ARGS ${OPENSCAD_EXE_ARG} --format=SVG -O export-svg/fill=true -O export-svg/fill-color=blue -O export-svg/stroke=false)
 
 # FIXME: We don't actually need to compare the output of cgalstlsanitytest
 # with anything. It's self-contained and returns != 0 on error
