@@ -144,7 +144,7 @@ void Lex::default_rules()
   std::string operators(R"(\+ - \* \/ % \^ < <= >= == != >= > && \|\| ! = #)");
   defineRules(operators, eoperator);
 
-  rules_.push(R"(["](([\\]["])|[^"])*["])", eQuotedString);
+  rules_.push(R"(["](([\\].)|[^\\"])*["])", eQuotedString);
 
   std::string values("true false undef PI");
   defineRules(values, enumber);

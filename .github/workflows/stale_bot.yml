@@ -1,7 +1,7 @@
 name: OpenSCAD Stale bot
 on:
   schedule:
-    - cron: "0 0 * * *"
+    - cron: "10 * * * *"
   workflow_dispatch:
     inputs:
       logLevel:
@@ -15,11 +15,12 @@ jobs:
     permissions:
       issues: write
       pull-requests: write
+      actions: write
     steps:
       - uses: actions/stale@v9
         with:
           # Max number of operations per run
-          operations-per-run: 1000
+          operations-per-run: 10
           # Order to get issues/PRs
           ascending: true
 
@@ -27,7 +28,7 @@ jobs:
           # Do not auto-close an issue if it is assigned to a milestone
           exempt-all-issue-milestones: true
           # Exempt feature requests
-          exempt-issue-labels: "Type: Enhancement"
+          exempt-issue-labels: "Type: Enhancement,Tag: Good First Issue"
           # Idle number of days before marking issues stale
           days-before-issue-stale: 360
           # Idle number of days before marking issues close after stale label
