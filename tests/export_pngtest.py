@@ -30,7 +30,7 @@ gs_cmd = [
 
 
 def convert_svg_to_png(svg_file, png_file):
-    convert_cmd = ["convert", svg_file, "-alpha", "set", f"PNG32:{png_file}"]
+    convert_cmd = ["convert", svg_file, "-type", "TrueColor", png_file]
     print("Running SVG Converter:", " ".join(convert_cmd), file=sys.stderr)
     result = subprocess.call(convert_cmd)
     if result == 0:
