@@ -2,7 +2,8 @@
   "name": "openscad",
   "version-string": "1.0.0",
   "dependencies": [
-    "boost",
+    "boost-regex",
+    "boost-program-options",
     "eigen3",
     "cgal",
     "cairo",
