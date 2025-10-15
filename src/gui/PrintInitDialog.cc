@@ -251,8 +251,12 @@ void PrintInitDialog::on_pushButtonCancel_clicked() { reject(); }
 int PrintInitDialog::exec()
 {
   bool showDialog = this->checkBoxAlwaysShowDialog->isChecked();
+
+  // Show the dialog if icon was shift-clicked, if no print service is selected,
+  // or if the selected print service is not available.
   if ((QApplication::keyboardModifiers() & Qt::ShiftModifier) != 0 ||
-      this->selectedPrintService == print_service_t::NONE) {
+      this->selectedPrintService == print_service_t::NONE ||
+      !PrintService::getPrintService(this->selectedServiceName.toStdString())) {
     showDialog = true;
   }
 
