@@ -2833,33 +2833,10 @@ void MainWindow::actionRenderDone(const std::shared_ptr<const Geometry>& root_ge
   compileEnded();
 }
 
-void MainWindow::actionMeasureDistance()
-{
-  if (this->designActionMeasureDistance->isChecked()) {
-    this->qglview->handle_mode = false;
-    meas.stopMeasure();
-    this->designActionMeasureAngle->setChecked(false);
-    this->designActionFindHandle->setChecked(false);
-    meas.startMeasureDist();
-  } else {
-    this->qglview->handle_mode = false;
-    meas.stopMeasure();
-  }
-}
+void MainWindow::actionMeasureDistance() { meas.startMeasureDist(); }
 
-void MainWindow::actionMeasureAngle()
-{
-  if (this->designActionMeasureAngle->isChecked()) {
-    this->qglview->handle_mode = false;
-    meas.stopMeasure();
-    this->designActionMeasureDistance->setChecked(false);
-    this->designActionFindHandle->setChecked(false);
-    meas.startMeasureAngle();
-  } else {
-    this->qglview->handle_mode = false;
-    meas.stopMeasure();
-  }
-}
+void MainWindow::actionMeasureAngle() { meas.startMeasureAngle(); }
+
 void MainWindow::actionFindHandle()
 {
   if (this->designActionFindHandle->isChecked()) {
@@ -2877,9 +2854,14 @@ void MainWindow::actionFindHandle()
 
 void MainWindow::leftClick(QPoint mouse)
 {
-  QString str = meas.statemachine(mouse);
-  if (!str.isEmpty()) {
-    this->qglview->measure_state = MEASURE_IDLE;
+  std::vector<QString> strs = meas.statemachine(mouse);
+  QMenu resultmenu(this);
+  // Ensures we clean the display regardless of how menu gets closed.
+  connect(&resultmenu, &QMenu::aboutToHide, this, &MainWindow::measureFinished);
+
+  // Can eventually be replaced with C++20 std::views::reverse
+  for (const auto& str : strs) {
+    this->qglview->measure_state = MEASURE_DIRTY;
     if (str.startsWith("I:")) {
       this->activeEditor->insert(QString(str.toStdString().c_str() + 2));
       this->qglview->selected_obj.clear();
@@ -2889,9 +2871,12 @@ void MainWindow::leftClick(QPoint mouse)
       this->qglview->handle_mode = false;
       return;
     }
-    QMenu resultmenu(this);
+    // Ensures we clean the display regardless of how menu gets closed.
     auto action = resultmenu.addAction(str);
-    connect(action, &QAction::triggered, this, &MainWindow::measureFinished);
+    connect(action, &QAction::triggered, this, [str]() { QApplication::clipboard()->setText(str); });
+  }
+  if (strs.size() > 0) {
+    resultmenu.addAction("Click any above to copy its text to the clipboard");
     resultmenu.exec(qglview->mapToGlobal(mouse));
   }
 }

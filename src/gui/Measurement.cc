@@ -56,25 +56,31 @@ void Measurement::startMeasureAngle(void)
 
 void Measurement::stopMeasure()
 {
+  //  if (qglview->measure_state == MEASURE_IDLE) return;
   qglview->selected_obj.clear();
   qglview->shown_obj = nullptr;
   qglview->update();
   qglview->measure_state = MEASURE_IDLE;
 }
 
+/**
+ * Advance the Measurement state machine.
+ * @return When non-empty, is reverse-ordered list of responses
+ */
 void Measurement::startFindHandle(void)
 {
   this->qglview->selected_obj.clear();
   this->qglview->update();
   this->qglview->measure_state = MEASURE_HANDLE1;
 }
-QString Measurement::statemachine(QPoint mouse)
+std::vector<QString> Measurement::statemachine(QPoint mouse)
 {
-  if (qglview->measure_state == MEASURE_IDLE) return {};
+  if (qglview->measure_state == MEASURE_IDLE || qglview->measure_state == MEASURE_DIRTY) return {};
   qglview->selectPoint(mouse.x(), mouse.y());
   double ang = NAN;
   double dist = NAN;
   SelectedObject obj1, obj2, obj3;
+  std::vector<QString> ret;
   SelectedObject ruler = {.type = SelectionType::SELECTION_INVALID};
   auto display_angle = [this](Vector3d p1, Vector3d p2, Vector3d p3, Vector3d p4) {
     SelectedObject ruler;
@@ -113,6 +119,7 @@ QString Measurement::statemachine(QPoint mouse)
   case MEASURE_DIST2:
     if (qglview->selected_obj.size() == 2) {
       double lat;
+      QString extra;
       ruler.type = SelectionType::SELECTION_INVALID;
       obj1 = qglview->selected_obj[0];
       obj2 = qglview->selected_obj[1];
@@ -142,14 +149,18 @@ QString Measurement::statemachine(QPoint mouse)
       if (obj1.type == SelectionType::SELECTION_FACE && obj2.type == SelectionType::SELECTION_FACE) {
         Vector3d n1 = (obj1.pt[1] - obj1.pt[0]).cross(obj1.pt[2] - obj1.pt[0]).normalized();
         Vector3d n2 = (obj2.pt[1] - obj2.pt[0]).cross(obj2.pt[2] - obj2.pt[0]).normalized();
-        if (fabs(n1.dot(n2)) < 0.999) return QString("Faces are not parallel");
+        if (fabs(n1.dot(n2)) < 0.999) {
+          ret.push_back(QString("Faces are not parallel"));
+          break;
+        }
         ruler = calculatePointFaceDistance(obj1.pt[0], obj2.pt[0], obj2.pt[1], obj2.pt[2]);
       }
 
       if (ruler.type != SelectionType::SELECTION_INVALID) {
         dist = (ruler.pt[1] - ruler.pt[0]).norm();
         qglview->selected_obj.push_back(ruler);
-        return QString("Distance is %1").arg(fabs(dist));
+        ret.push_back(QString("Distance is %1").arg(fabs(dist)));
+        break;
       }
       stopMeasure();
     }
@@ -210,12 +221,14 @@ QString Measurement::statemachine(QPoint mouse)
         ang = acos(side1.dot(side2)) * 180.0 / 3.14159265359;
       }
     display_angle:
-      if (!std::isnan(ang)) {
-        return QString("Angle  is %1 Degrees").arg(ang);
+      if (std::isnan(ang)) {
+        stopMeasure();
+        return {};
       }
-      stopMeasure();
+      ret.push_back(QStringLiteral("Angle is %1 Degrees").arg(ang));
+      return ret;
     }
     break;
   }
-  return "";
+  return ret;
 }
