@@ -173,10 +173,10 @@ void TabManager::createTab(const QString& filename)
 
   // clearing default mapping of keyboard shortcut for font size
   QsciCommandSet *qcmdset = scintillaEditor->qsci->standardCommands();
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-  QsciCommand *qcmd = qcmdset->boundTo(Qt::ControlModifier | Qt::Key_Plus);
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+  QsciCommand *qcmd = qcmdset->boundTo((Qt::ControlModifier | Qt::Key_Plus).toCombined());
   qcmd->setKey(0);
-  qcmd = qcmdset->boundTo(Qt::ControlModifier | Qt::Key_Minus);
+  qcmd = qcmdset->boundTo((Qt::ControlModifier | Qt::Key_Minus).toCombined());
   qcmd->setKey(0);
 #else
   QKeyCombination ctrlplus(Qt::ControlModifier | Qt::Key_Plus);
