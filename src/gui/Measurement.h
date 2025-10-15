@@ -13,7 +13,8 @@ enum {
   MEASURE_ANG1,
   MEASURE_ANG2,
   MEASURE_ANG3,
-  MEASURE_HANDLE1
+  MEASURE_HANDLE1,
+  MEASURE_DIRTY
 };
 
 extern SelectedObject calculateLinePointDistance(const Vector3d& l1, const Vector3d& l2,
@@ -30,7 +31,7 @@ class Measurement
 public:
   Measurement(void);
   void setView(QGLView *qglview);
-  QString statemachine(QPoint mouse);
+  std::vector<QString> statemachine(QPoint mouse);
   void startMeasureDist(void);
   void startMeasureAngle(void);
   void startFindHandle(void);
