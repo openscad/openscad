@@ -84,11 +84,6 @@ struct Message {
   {
   }
 
-  Message(Message const &) = default;
-  Message& operator=(Message const&) = default;
-  Message(Message&&) = default;
-  Message& operator=(Message&&) = default;
-
   [[nodiscard]] std::string str() const
   {
     const auto g = group == message_group::NONE ? "" : getGroupName(group) + ": ";
