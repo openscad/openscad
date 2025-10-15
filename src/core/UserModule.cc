@@ -53,8 +53,7 @@ static void NOINLINE print_err(std::string name, const Location& loc,
       name);
 }
 
-static void NOINLINE print_trace(EvaluationException& e,
-                                 const UserModule *mod,
+static void NOINLINE print_trace(EvaluationException& e, const UserModule *mod,
                                  const std::shared_ptr<const UserModuleContext>& context,
                                  const AssignmentList& parameters)
 {
@@ -82,8 +81,8 @@ static void NOINLINE print_trace(EvaluationException& e,
       }
     }
   }
-  e.LOG(message_group::Trace, mod->location(), context->documentRoot(), "call of '%1$s(%2$s)'", mod->name,
-      stream.str());
+  e.LOG(message_group::Trace, mod->location(), context->documentRoot(), "call of '%1$s(%2$s)'",
+        mod->name, stream.str());
 }
 
 std::shared_ptr<AbstractNode> UserModule::instantiate(

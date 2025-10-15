@@ -22,16 +22,16 @@ void ScopeContext::init()
     } catch (EvaluationException& e) {
       if (assignment->locationOfOverwrite().isNone()) {
         e.LOG(message_group::Trace, assignment->location(), this->documentRoot(), "assignment to %1$s",
-            quoteVar(assignment->getName()));
+              quoteVar(assignment->getName()));
       } else {
         e.LOG(message_group::Trace, assignment->location(), this->documentRoot(),
-            "overwritten assignment to %1$s (this is where the assignment is evaluated)",
-            quoteVar(assignment->getName()));
+              "overwritten assignment to %1$s (this is where the assignment is evaluated)",
+              quoteVar(assignment->getName()));
         e.LOG(message_group::Trace, assignment->locationOfOverwrite(), this->documentRoot(),
-            "overwriting assignment to %1$s", quoteVar(assignment->getName()));
+              "overwriting assignment to %1$s", quoteVar(assignment->getName()));
       }
       e.traceDepth--;
-    
+
       throw;
     }
   }

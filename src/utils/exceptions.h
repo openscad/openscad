@@ -13,37 +13,36 @@ class EvaluationException : public std::runtime_error
 {
 public:
   EvaluationException(const std::string& what_arg)
-    : std::runtime_error(what_arg)
-    , traceDepth(OpenSCAD::traceDepth)
-    , tail_msgs(OpenSCAD::traceDepth)
+    : std::runtime_error(what_arg), traceDepth(OpenSCAD::traceDepth), tail_msgs(OpenSCAD::traceDepth)
   {
   }
 
-  template<typename...Ts>
-  void LOG(const message_group& msgGroup, Ts&&...args) {
+  template <typename... Ts>
+  void LOG(const message_group& msgGroup, Ts&&...args)
+  {
     if (traceDepth > 0) {
       ::LOG(msgGroup, std::forward<Ts>(args)...);
     } else {
-      tail_msgs.push_back([=]() {
-        return make_message_obj(msgGroup, args...);
-      });
+      tail_msgs.push_back([=]() { return make_message_obj(msgGroup, args...); });
     }
   }
 
-  ~EvaluationException() {
+  ~EvaluationException()
+  {
     int frames_skipped = -(traceDepth + tail_msgs.size());
     if (frames_skipped > 0) {
       ::PRINT(Message(std::string{"  *** Excluding "} + std::to_string(frames_skipped) + " frames ***",
-        message_group::Trace));
+                      message_group::Trace));
     }
 
-    while(!tail_msgs.empty()) {
+    while (!tail_msgs.empty()) {
       if (auto msg = tail_msgs.front()()) {
         ::PRINT(*msg);
       }
       tail_msgs.pop_front();
     }
   }
+
 public:
   int traceDepth = 0;
   boost::circular_buffer<std::function<std::optional<Message>()>> tail_msgs;

@@ -246,8 +246,8 @@ public:
 extern std::set<std::string> printedDeprecations;
 
 template <typename... Args>
-std::optional<Message> make_message_obj(const message_group& msgGroup, Location loc, std::string docPath, std::string&& f,
-         Args&&...args)
+std::optional<Message> make_message_obj(const message_group& msgGroup, Location loc, std::string docPath,
+                                        std::string&& f, Args&&...args)
 {
   auto formatted = MessageClass<Args...>{std::move(f), std::forward<Args>(args)...}.format();
 
@@ -270,12 +270,14 @@ std::optional<Message> make_message_obj(const message_group& msgGroup, std::stri
 template <typename... Args>
 std::optional<Message> make_message_obj(std::string&& f, Args&&...args)
 {
-  return make_message_obj(message_group::NONE, Location::NONE, "", std::move(f), std::forward<Args>(args)...);
+  return make_message_obj(message_group::NONE, Location::NONE, "", std::move(f),
+                          std::forward<Args>(args)...);
 }
 
 template <typename... Args>
 void LOG(Args&&...args)
 {
-  if (auto msg = make_message_obj(std::forward<Args>(args)...))
+  if (auto msg = make_message_obj(std::forward<Args>(args)...)) {
     PRINT(*msg);
+  }
 }

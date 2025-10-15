@@ -440,10 +440,11 @@ static void NOINLINE print_err(const char *name, const Location& loc,
  * noinline is required, as we here specifically optimize for stack usage
  * during normal operating, not runtime during error handling.
  */
-static void NOINLINE print_trace(EvaluationException& e, const FunctionCall *val, const std::shared_ptr<const Context>& context)
+static void NOINLINE print_trace(EvaluationException& e, const FunctionCall *val,
+                                 const std::shared_ptr<const Context>& context)
 {
   e.LOG(message_group::Trace, val->location(), context->documentRoot(), "called by '%1$s'",
-      val->get_name());
+        val->get_name());
 }
 
 FunctionCall::FunctionCall(Expression *expr, AssignmentList args, const Location& loc)
