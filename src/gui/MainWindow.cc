@@ -26,27 +26,24 @@
 
 #include "gui/MainWindow.h"
 
-#include <cstring>
-#include <filesystem>
-#include <deque>
+#include <algorithm>
 #include <cassert>
-#include <functional>
+#include <cstring>
+#include <deque>
 #include <exception>
-#include <sstream>
+#include <filesystem>
+#include <fstream>
+#include <functional>
 #include <iostream>
 #include <memory>
+#include <sstream>
 #include <string>
-#include <vector>
-#include <cstdio>
-#include <memory>
 #include <utility>
-#include <memory>
-#include <string>
-#include <fstream>
-#include <algorithm>
+#include <vector>
 #include <sys/stat.h>
 
 #include <boost/version.hpp>
+#include <boost/range/adaptor/reversed.hpp>
 #include <QApplication>
 #include <QClipboard>
 #include <QDesktopServices>
@@ -765,10 +762,10 @@ MainWindow::MainWindow(const QStringList& filenames) : rubberBandManager(this)
   }
 
   // Adds shortcut for the prev/next window switching
-  shortcutNextWindow = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_K), this);
+  shortcutNextWindow = new QShortcut(QKeySequence(Qt::CTRL | Qt::Key_K), this);
   QObject::connect(shortcutNextWindow, &QShortcut::activated, this,
                    &MainWindow::onWindowShortcutNextPrevActivated);
-  shortcutPreviousWindow = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_H), this);
+  shortcutPreviousWindow = new QShortcut(QKeySequence(Qt::CTRL | Qt::Key_H), this);
   QObject::connect(shortcutPreviousWindow, &QShortcut::activated, this,
                    &MainWindow::onWindowShortcutNextPrevActivated);
 
@@ -2116,8 +2113,7 @@ std::shared_ptr<SourceFile> MainWindow::parseDocument(EditorInterface *editor)
     auto fulltext_py = std::string(this->lastCompiledDoc.toUtf8().constData());
 
     const auto& venv = venvBinDirFromSettings();
-    const auto& binDir = venv.empty() ? PlatformUtils::applicationPath() : venv;
-    initPython(binDir, this->animateWidget->getAnimTval());
+    initPython(venv, this->animateWidget->getAnimTval());
 
     if (venv.empty()) {
       LOG("Running %1$s without venv.", python_version());
@@ -2444,12 +2440,19 @@ void MainWindow::actionMeasureAngle() { meas.startMeasureAngle(); }
 
 void MainWindow::leftClick(QPoint mouse)
 {
-  const QString str = meas.statemachine(mouse);
-  if (str.size() > 0) {
-    this->qglview->measure_state = MEASURE_IDLE;
+  std::vector<QString> strs = meas.statemachine(mouse);
+  if (strs.size() > 0) {
+    this->qglview->measure_state = MEASURE_DIRTY;
     QMenu resultmenu(this);
-    auto action = resultmenu.addAction(str);
-    connect(action, &QAction::triggered, this, &MainWindow::measureFinished);
+    // Ensures we clean the display regardless of how menu gets closed.
+    connect(&resultmenu, &QMenu::aboutToHide, this, &MainWindow::measureFinished);
+
+    // Can eventually be replaced with C++20 std::views::reverse
+    for (const auto& str : boost::adaptors::reverse(strs)) {
+      auto action = resultmenu.addAction(str);
+      connect(action, &QAction::triggered, this, [str]() { QApplication::clipboard()->setText(str); });
+    }
+    resultmenu.addAction("Click any above to copy its text to the clipboard");
     resultmenu.exec(qglview->mapToGlobal(mouse));
   }
 }
