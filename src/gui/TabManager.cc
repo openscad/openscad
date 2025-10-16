@@ -612,7 +612,6 @@ bool TabManager::save(EditorInterface *edt, const QString& path)
   QSaveFile file(path);
   if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate | QIODevice::Text)) {
     saveError(file, _("Failed to open file for writing"), path);
-    LOG("Failed to open for write '%1$s'.", path.toLocal8Bit().constData());
     return false;
   }
 
