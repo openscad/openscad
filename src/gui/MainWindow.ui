@@ -994,6 +994,9 @@
    </property>
   </action>
   <action name="designActionMeasureDistance">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="icon">
     <iconset theme="chokusen-measure-distance">
      <normaloff>.</normaloff>.</iconset>
@@ -1006,6 +1009,9 @@
    </property>
   </action>
   <action name="designActionMeasureAngle">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="icon">
     <iconset theme="chokusen-measure-angle">
      <normaloff>.</normaloff>.</iconset>
@@ -1018,6 +1024,9 @@
    </property>
   </action>
   <action name="designActionFindHandle">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="icon">
     <iconset theme="chokusen-find-handle"/>
    </property>

@@ -40,27 +40,32 @@ void Measurement::setView(QGLView *qglview)
   this->qglview->measure_state = MEASURE_IDLE;
 }
 
-void Measurement::startMeasureDist(void)
+void Measurement::startMeasureDistance(void)
 {
   this->qglview->selected_obj.clear();
-  this->qglview->update();
   this->qglview->measure_state = MEASURE_DIST1;
+  this->qglview->handle_mode = false;
+  this->qglview->update();
 }
 
 void Measurement::startMeasureAngle(void)
 {
   this->qglview->selected_obj.clear();
-  this->qglview->update();
   this->qglview->measure_state = MEASURE_ANG1;
+  this->qglview->handle_mode = false;
+  this->qglview->update();
 }
 
-void Measurement::stopMeasure()
+bool Measurement::stopMeasure()
 {
   //  if (qglview->measure_state == MEASURE_IDLE) return;
+  // if (qglview->measure_state == MEASURE_IDLE) return false;
+  bool ret = qglview->measure_state != MEASURE_DIRTY;
   qglview->selected_obj.clear();
   qglview->shown_obj = nullptr;
   qglview->update();
   qglview->measure_state = MEASURE_IDLE;
+  return ret;
 }
 
 /**
@@ -70,8 +75,9 @@ void Measurement::stopMeasure()
 void Measurement::startFindHandle(void)
 {
   this->qglview->selected_obj.clear();
-  this->qglview->update();
   this->qglview->measure_state = MEASURE_HANDLE1;
+  this->qglview->handle_mode = true;
+  this->qglview->update();
 }
 std::vector<QString> Measurement::statemachine(QPoint mouse)
 {
@@ -219,11 +225,14 @@ std::vector<QString> Measurement::statemachine(QPoint mouse)
         Vector3d side1 = (obj2.pt[0] - obj1.pt[0]).normalized();
         Vector3d side2 = (obj2.pt[0] - obj3.pt[0]).normalized();
         ang = acos(side1.dot(side2)) * 180.0 / 3.14159265359;
+      } else {
+        ret.push_back("If selecting three things, they must all be points");
+        return ret;
       }
     display_angle:
       if (std::isnan(ang)) {
-        stopMeasure();
-        return {};
+        ret.push_back("Got Not-a-Number when calculating angle; sorry");
+        return ret;
       }
       ret.push_back(QStringLiteral("Angle is %1 Degrees").arg(ang));
       return ret;
