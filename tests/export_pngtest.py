@@ -31,7 +31,7 @@ gs_cmd = [
 
 def convert_svg_to_png(svg_file, png_file):
     convert_cmd = [
-        "magick",
+        "convert",
         "-define",
         "svg:renderer=rsvg",
         svg_file,
