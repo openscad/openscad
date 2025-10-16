@@ -1,0 +1,6 @@
+{
+  "stubPath": "libraries/python/stubs",
+  "extraPaths": [
+    "libraries/python/stubs"
+  ]
+}
