@@ -50,14 +50,14 @@ get_freebsd_deps()
   xorg libGLU libXmu libXi xorg-vfbserver glew \
   qt5-core qt5-gui qt5-buildtools qt5-opengl qt5-qmake \
   opencsg cgal curl imagemagick glib2-devel gettext libdouble-conversion-3.0.0 \
-  devel/onetbb
+  devel/onetbb librsvg2
 }
 
 get_netbsd_deps()
 {
  pkgin install bison boost cmake git bash eigen3 flex gmake gmp mpfr \
   qt5 glew cgal opencsg python27 curl \
-  ImageMagick glib2 gettext threadingbuildingblocks
+  ImageMagick glib2 gettext threadingbuildingblocks librsvg
 }
 
 get_opensuse_deps()
@@ -71,7 +71,7 @@ get_opensuse_deps()
   libboost_program_options-devel tbb-devel
  # qscintilla-qt5-devel replaces libqscintilla_qt5-devel
  # but openscad compiles with both
- zypper install libeigen3-devel
+ zypper install libeigen3-devel rsvg-convert
  if [ $? -ne 0 ]; then
   zypper install libeigen3
  fi
@@ -97,7 +97,7 @@ get_mageia_deps()
  urpmi task-c-devel task-c++-devel libqt5-devel libgmp-devel \
   libmpfr-devel libboost-devel eigen3-devel libglew-devel bison flex \
   cmake imagemagick glib2-devel python curl git x11-server-xvfb gettext \
-  double-conversion-devel tbb
+  double-conversion-devel tbb librsvg
 }
 
 get_debian_deps()
@@ -142,7 +142,7 @@ get_arch_deps()
   hicolor-icon-theme hidapi imagemagick lib3mf libglvnd libspnav libx11 \
   libxml2 libzip mimalloc mpfr nettle opencsg procps-ng python python-pip \
   python-setuptools qscintilla-qt5 qt5-base qt5-multimedia qt5-svg tbb \
-  xorg-server-xvfb
+  xorg-server-xvfb librsvg
 }
 
 get_solus_deps()
@@ -153,7 +153,7 @@ get_solus_deps()
 	opencsg-devel glew-devel eigen3 \
 	fontconfig-devel freetype2-devel harfbuzz-devel libzip-devel \
 	double-conversion-devel \
-	bison flex intel-tbb-devel
+	bison flex intel-tbb-devel rsvg-convert
 }
 
 unknown()
