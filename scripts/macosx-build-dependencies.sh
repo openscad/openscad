@@ -37,6 +37,9 @@ OPTION_ARM64=false
 OPTION_X86_64=false
 
 PACKAGES=(
+    # https://github.com/GNOME/librsvg/tags
+    "librsvg 2.52.12"
+
     # https://github.com/google/double-conversion/releases
     "double_conversion 3.3.1"
 
@@ -705,6 +708,22 @@ build_pcre2()
   cmake . -DCMAKE_INSTALL_PREFIX=$DEPLOYDIR -DBUILD_SHARED_LIBS=ON -DBUILD_STATIC_LIBS=OFF -DPCRE2_BUILD_PCRE2GREP=OFF -DPCRE2_BUILD_TESTS=OFF -DCMAKE_OSX_DEPLOYMENT_TARGET="$MAC_OSX_VERSION_MIN" -DCMAKE_OSX_ARCHITECTURES="$ARCHS_COMBINED"
   make -j"$NUMCPU" install
   make install
+}
+
+build_librsvg()
+{
+  version="$1"
+  cd "$BASEDIR"/src
+  rm -rf "librsvg-$version"
+  if [ ! -f "$version.tar.gz" ]; then
+      curl -LO "https://github.com/GNOME/librsvg/archive/refs/tags/$version.tar.gz"
+  fi
+  tar -xf "$version.tar.gz"
+  cd "librsvg-$version"
+  mkdir -p _build
+  meson setup _build -Ddocs=enabled -Dintrospection=enabled -Dvala=enabled
+  meson compile -C _build
+  meson install -C _build
 }
 
 build_glib2()
