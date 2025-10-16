@@ -1599,7 +1599,6 @@ int jna_call(int argc, char **argv)
   }
   return rc;
 }
-// 全局初始化状态
 static bool g_initialized = false;
 OPENSCAD_API int openscad_init()
 {
@@ -1607,12 +1606,10 @@ OPENSCAD_API int openscad_init()
         return 0;
     }
     try {
-        // 初始化 mimalloc（如果启用）
 #if defined(ENABLE_CGAL) && defined(USE_MIMALLOC)
         init_mimalloc();
 #endif
 
-// 注册应用程序路径
 #ifndef __EMSCRIPTEN__
   const auto applicationPath =
     weakly_canonical(boost::dll::program_location()).parent_path().generic_string();
@@ -1622,20 +1619,18 @@ OPENSCAD_API int openscad_init()
 PlatformUtils::registerApplicationPath(applicationPath);
 
 #ifdef ENABLE_CGAL
-        // CGAL 异常设置
         CGAL::set_error_behaviour(CGAL::THROW_EXCEPTION);
         CGAL::set_warning_behaviour(CGAL::THROW_EXCEPTION);
 #endif
 
-        // 初始化内置函数
-        Builtins::instance()->initialize();
+          Builtins::instance()->initialize();
 
-        g_initialized = true;
-        return 0;
-    } catch (const std::exception& e) {
-        LOG("Initialization failed: %1$s", e.what());
-        return -1;
-    }
+          g_initialized = true;
+          return 0;
+      } catch (const std::exception& e) {
+          LOG("Initialization failed: %1$s", e.what());
+          return -1;
+      }
 }
 
 OPENSCAD_API int openscad_cmdline(int argc, const char** argv)
@@ -1647,7 +1642,6 @@ OPENSCAD_API int openscad_cmdline(int argc, const char** argv)
     }
 
     try {
-        // 转换参数格式
         std::vector<std::string> args;
         std::vector<char*> arg_ptrs;
         for (int i = 0; i < argc; ++i) {
@@ -1658,11 +1652,8 @@ OPENSCAD_API int openscad_cmdline(int argc, const char** argv)
             arg_ptrs.push_back(&arg[0]);
         }
 
-        // 保存原始路径
         auto original_path = fs::current_path();
-        // 调用主函数
         int result = jna_call(argc, arg_ptrs.data());
-        // 恢复路径
         fs::current_path(original_path);
 
         return result;

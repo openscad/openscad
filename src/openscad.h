@@ -39,10 +39,8 @@
 extern "C" {
 #endif
 
-  // 命令行执行函数
   OPENSCAD_API int openscad_cmdline(int argc, const char* argv[]);
 
-  // 初始化函数
   OPENSCAD_API int openscad_init();
 
 
