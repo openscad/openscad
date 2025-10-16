@@ -30,11 +30,7 @@
 #include <utility>
 
 #ifdef _WIN32
-    #ifdef OPENSCAD_LIB_EXPORT
-        #define OPENSCAD_API __declspec(dllexport)
-    #else
-        #define OPENSCAD_API __declspec(dllimport)
-    #endif
+    #define OPENSCAD_API __declspec(dllexport)
 #else
     #define OPENSCAD_API __attribute__((visibility("default")))
 #endif
