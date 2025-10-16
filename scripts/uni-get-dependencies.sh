@@ -38,7 +38,7 @@ get_qomo_deps()
 
 get_altlinux_deps()
 {
- for i in boost-devel gcc4.5 gcc4.5-c++ boost-program-options-devel \
+ for i in boost-devel gcc4.5 gcc4.5-c++ boost-program_options-devel \
   boost-thread-devel boost-system-devel boost-regex-devel eigen3 \
   libmpfr libgmp libgmp_cxx-devel qt5-devel libcgal-devel git-core tbb-devel \
   libglew-devel flex bison curl imagemagick gettext glib2-devel rsvg-convert; do apt-get install $i; done
