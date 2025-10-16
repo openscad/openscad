@@ -179,11 +179,9 @@ void TabManager::createTab(const QString& filename)
   qcmd = qcmdset->boundTo((Qt::ControlModifier | Qt::Key_Minus).toCombined());
   qcmd->setKey(0);
 #else
-  QKeyCombination ctrlplus(Qt::ControlModifier | Qt::Key_Plus);
-  QsciCommand *qcmd = qcmdset->boundTo(ctrlplus.toCombined());
+  QsciCommand *qcmd = qcmdset->boundTo(Qt::ControlModifier | Qt::Key_Plus);
   qcmd->setKey(0);
-  QKeyCombination ctrlmin(Qt::ControlModifier | Qt::Key_Minus);
-  qcmd = qcmdset->boundTo(ctrlmin.toCombined());
+  qcmd = qcmdset->boundTo(Qt::ControlModifier | Qt::Key_Minus);
   qcmd->setKey(0);
 #endif
 
