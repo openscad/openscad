@@ -31,16 +31,9 @@ gs_cmd = [
 
 def convert_svg_to_png(svg_file, png_file):
     convert_cmd = [
-        "convert",
-        "-define",
-        "svg:renderer=rsvg",
+        "rsvg-convert",
         svg_file,
-        "-density",
-        "300",
-        "-colorspace",
-        "rgb",
-        "-type",
-        "TrueColor",
+        "--output",
         png_file,
     ]
     print("Running SVG Converter:", " ".join(convert_cmd), file=sys.stderr)
