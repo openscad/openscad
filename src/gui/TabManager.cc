@@ -609,7 +609,8 @@ bool TabManager::save(EditorInterface *edt, const QString& path)
   // full properly and happily commits a 0 byte file.
   // Checking the QTextStream status flag after flush() seems to catch
   // this condition.
-  // FIXME jeff hayes - i have recently seen a better way to handle this, when i have found that note again i will revist this
+  // FIXME jeff hayes - i have recently seen a better way to handle this, when i have found that note
+  // again i will revist this
   QSaveFile file(path);
   if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate | QIODevice::Text)) {
     saveError(file, _("Failed to open file for writing"), path);
