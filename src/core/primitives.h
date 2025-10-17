@@ -36,6 +36,8 @@
 #include <string>
 #include <vector>
 
+class CurveDiscretizer;
+
 class CubeNode : public LeafNode
 {
 public:
@@ -57,36 +59,30 @@ public:
 class SphereNode : public LeafNode
 {
 public:
-  SphereNode(const ModuleInstantiation *mi) : LeafNode(mi) {}
-  std::string toString() const override
+  SphereNode(const ModuleInstantiation *mi, std::shared_ptr<CurveDiscretizer> discretizer)
+    : LeafNode(mi), discretizer(std::move(discretizer))
   {
-    std::ostringstream stream;
-    stream << "sphere" << "($fn = " << fn << ", $fa = " << fa << ", $fs = " << fs << ", r = " << r
-           << ")";
-    return stream.str();
   }
+  std::string toString() const override;
   std::string name() const override { return "sphere"; }
   std::unique_ptr<const Geometry> createGeometry() const override;
 
-  double fn, fs, fa;
+  std::shared_ptr<CurveDiscretizer> discretizer;
   double r = 1;
 };
 
 class CylinderNode : public LeafNode
 {
 public:
-  CylinderNode(const ModuleInstantiation *mi) : LeafNode(mi) {}
-  std::string toString() const override
+  CylinderNode(const ModuleInstantiation *mi, std::shared_ptr<CurveDiscretizer> discretizer)
+    : LeafNode(mi), discretizer(std::move(discretizer))
   {
-    std::ostringstream stream;
-    stream << "cylinder" << "($fn = " << fn << ", $fa = " << fa << ", $fs = " << fs << ", h = " << h
-           << ", r1 = " << r1 << ", r2 = " << r2 << ", center = " << (center ? "true" : "false") << ")";
-    return stream.str();
   }
+  std::string toString() const override;
   std::string name() const override { return "cylinder"; }
   std::unique_ptr<const Geometry> createGeometry() const override;
 
-  double fn, fs, fa;
+  std::shared_ptr<CurveDiscretizer> discretizer;
   double r1 = 1, r2 = 1, h = 1;
   bool center = false;
 };
@@ -125,18 +121,15 @@ public:
 class CircleNode : public LeafNode
 {
 public:
-  CircleNode(const ModuleInstantiation *mi) : LeafNode(mi) {}
-  std::string toString() const override
+  CircleNode(const ModuleInstantiation *mi, std::shared_ptr<CurveDiscretizer> discretizer)
+    : LeafNode(mi), discretizer(std::move(discretizer))
   {
-    std::ostringstream stream;
-    stream << "circle" << "($fn = " << fn << ", $fa = " << fa << ", $fs = " << fs << ", r = " << r
-           << ")";
-    return stream.str();
   }
+  std::string toString() const override;
   std::string name() const override { return "circle"; }
   std::unique_ptr<const Geometry> createGeometry() const override;
 
-  double fn, fs, fa;
+  std::shared_ptr<CurveDiscretizer> discretizer;
   double r = 1;
 };
 

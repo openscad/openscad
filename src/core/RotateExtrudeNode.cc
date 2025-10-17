@@ -31,12 +31,12 @@
 #include "core/module.h"
 #include "core/ModuleInstantiation.h"
 #include "core/Parameters.h"
+#include "core/CurveDiscretizer.h"
 #include "utils/printutils.h"
 #include "io/fileutils.h"
 #include "handle_dep.h"
 #include <ios>
 #include <utility>
-#include <memory>
 #include <cmath>
 #include <sstream>
 #include <boost/assign/std/vector.hpp>
@@ -47,14 +47,11 @@ namespace {
 std::shared_ptr<AbstractNode> builtin_rotate_extrude(const ModuleInstantiation *inst,
                                                      Arguments arguments, const Children& children)
 {
-  auto node = std::make_shared<RotateExtrudeNode>(inst);
-
   const Parameters parameters =
     Parameters::parse(std::move(arguments), inst->location(), {"angle", "start"}, {"convexity", "a"});
 
-  node->fn = parameters["$fn"].toDouble();
-  node->fs = parameters["$fs"].toDouble();
-  node->fa = parameters["$fa"].toDouble();
+  auto node =
+    std::make_shared<RotateExtrudeNode>(inst, std::make_shared<CurveDiscretizer>(parameters, inst));
 
   node->convexity = std::max(2, static_cast<int>(parameters["convexity"].toDouble()));
 
@@ -70,7 +67,7 @@ std::shared_ptr<AbstractNode> builtin_rotate_extrude(const ModuleInstantiation *
     node->start = 180;
   }
   bool hasStart = parameters["start"].getFiniteDouble(node->start);
-  if (!hasAngle && !hasStart && (int)node->fn % 2 != 0) {
+  if (!hasAngle && !hasStart && node->discretizer->IsFnSpecifiedAndOdd()) {
     LOG(message_group::Deprecated,
         "In future releases, rotational extrusion without \"angle\" will start at zero, the +X axis.  "
         "Set start=180 to explicitly start on the -X axis.");
@@ -82,6 +79,10 @@ std::shared_ptr<AbstractNode> builtin_rotate_extrude(const ModuleInstantiation *
 }
 
 }  // namespace
+
+// Needs the full definition of CurveDiscretizer
+// to generate the code to delete.
+RotateExtrudeNode::~RotateExtrudeNode() = default;
 
 std::string RotateExtrudeNode::toString() const
 {
@@ -96,16 +97,7 @@ std::string RotateExtrudeNode::toString() const
          << this->start
          << ", "
             "convexity = "
-         << this->convexity
-         << ", "
-            "$fn = "
-         << this->fn
-         << ", "
-            "$fa = "
-         << this->fa
-         << ", "
-            "$fs = "
-         << this->fs << ")";
+         << this->convexity << ", " << discretizer << ")";
 
   return stream.str();
 }
