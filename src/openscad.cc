@@ -793,13 +793,12 @@ struct CommaSeparatedVector {
   }
 };
 
-// main
+// OpenSCAD
 int main(int argc, char **argv)
 {
   return openscad_main(argc, argv, false);
 }
 
-// OpenSCAD
 int openscad_main(int argc, char **argv, bool is_lib)
 {
 #if defined(ENABLE_CGAL) && defined(USE_MIMALLOC)

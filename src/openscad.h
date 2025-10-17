@@ -1,5 +1,5 @@
 /*
-*  OpenSCAD (www.openscad.org)
+ *  OpenSCAD (www.openscad.org)
  *  Copyright (C) 2009-2011 Clifford Wolf <clifford@clifford.at> and
  *                          Marius Kintel <marius@kintel.net>
  *
