@@ -2,6 +2,7 @@
 
 #include "geometry/linalg.h"
 
+// Would be nice if someone documented what `dist_lat` is
 double calculateLinePointDistance(const Vector3d& l1, const Vector3d& l2, const Vector3d& pt,
                                   double& dist_lat);
 double calculateLineLineDistance(const Vector3d& l1b, const Vector3d& l1e, const Vector3d& l2b,
