@@ -4,6 +4,7 @@ from PIL import Image
 import numpy as np
 import os
 import sys
+import io
 
 PIXEL_TOLERANCE = 8
 
@@ -63,8 +64,10 @@ def Compare3x3(img1, img2):
 def CompareImageFiles(path1, path2):
     print(f"Path 1: {path1}")
     print(f"Path 2: {path2}")
-    img1 = Image.open(path1)
-    img2 = Image.open(path2)
+    with open(path1, "rb") as file:
+        img1 = Image.open(io.BytesIO(file.read()))
+    with open(path2, "rb") as file:
+        img2 = Image.open(io.BytesIO(file.read()))
     split = os.path.splitext(path2)
     maskpath = f"{split[0]}_mask{split[1]}"
 
