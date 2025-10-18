@@ -29,16 +29,14 @@
  *   `std::decay_t<Args>` are copyable (relevant if storing in `std::function`).
  */
 template <class F, class... Args>
-auto defer_call(F&& f, Args&&... args)
+auto defer_call(F&& f, Args&&...args)
 {
-  using Params = std::tuple<std::decay_t<Args>...>; // copy lvalues, move rvalues
-  using Fn     = std::decay_t<F>;                   // own a copy of the callable
+  using Params = std::tuple<std::decay_t<Args>...>;  // copy lvalues, move rvalues
+  using Fn = std::decay_t<F>;                        // own a copy of the callable
 
   // Lambda is mutable to be able to move the callable and params out of the closure.
   return [params = Params(std::forward<Args>(args)...),
-          fn     = Fn(std::forward<F>(f))]() mutable
-    -> std::invoke_result_t<Fn&&, std::decay_t<Args>&&...>
-  {
+          fn = Fn(std::forward<F>(f))]() mutable -> std::invoke_result_t<Fn&&, std::decay_t<Args>&&...> {
     // Move the stored callable and the stored values into the call.
     return std::apply(std::move(fn), std::move(params));
   };

@@ -25,10 +25,8 @@ public:
       ::LOG(msgGroup, std::forward<Args>(args)...);
     } else {
       tail_msgs.push_back(
-        defer_call(
-          [](auto&&...args) {
-            return make_message_obj(std::forward<decltype(args)>(args)...);
-          }, msgGroup, std::forward<Args>(args)...));
+        defer_call([](auto&&...args) { return make_message_obj(std::forward<decltype(args)>(args)...); },
+                   msgGroup, std::forward<Args>(args)...));
     }
   }
 
