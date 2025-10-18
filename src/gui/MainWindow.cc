@@ -295,20 +295,6 @@ void removeExportActions(QToolBar *toolbar, QAction *action)
   }
 }
 
-void addExportActions(const MainWindow *mainWindow, QToolBar *toolbar, QAction *action)
-{
-  for (const std::string& identifier :
-       {Settings::Settings::toolbarExport3D.value(), Settings::Settings::toolbarExport2D.value()}) {
-    FileFormat format;
-    fileformat::fromIdentifier(identifier, format);
-    const auto it = mainWindow->exportMap.find(format);
-    // FIXME: Allow turning off the toolbar entry?
-    if (it != mainWindow->exportMap.end()) {
-      toolbar->insertAction(action, it->second);
-    }
-  }
-}
-
 std::unique_ptr<ExternalToolInterface> createExternalToolService(print_service_t serviceType,
                                                                  const QString& serviceName,
                                                                  FileFormat fileFormat)
@@ -933,6 +919,10 @@ MainWindow::MainWindow(const QStringList& filenames) : rubberBandManager(this)
   QObject::connect(shortcutPreviousWindow, &QShortcut::activated, this,
                    &MainWindow::onWindowShortcutNextPrevActivated);
 
+  auto shortcutExport3D = new QShortcut(QKeySequence("F7"), this);
+  QObject::connect(shortcutExport3D, &QShortcut::activated, this,
+                   &MainWindow::onWindowShortcutExport3DActivated);
+
   // Adds dock specific behavior on visibility change
   QObject::connect(editorDock, &Dock::visibilityChanged, this,
                    &MainWindow::onEditorDockVisibilityChanged);
@@ -1064,15 +1054,26 @@ void MainWindow::onNavigationHoveredContextMenuEntry()
   rubberBandManager.emphasize(dock);
 }
 
+void MainWindow::addExportActions(QToolBar *toolbar, QAction *action) const
+{
+  for (const std::string& identifier :
+       {Settings::Settings::toolbarExport3D.value(), Settings::Settings::toolbarExport2D.value()}) {
+    QAction *exportAction = formatIdentifierToAction(identifier);
+    if (exportAction) {
+      toolbar->insertAction(action, exportAction);
+    }
+  }
+}
+
 void MainWindow::updateExportActions()
 {
   removeExportActions(editortoolbar, this->designAction3DPrint);
-  addExportActions(this, editortoolbar, this->designAction3DPrint);
+  addExportActions(editortoolbar, this->designAction3DPrint);
 
   // handle the hide/show of export action in view toolbar according to the visibility of editor dock
   removeExportActions(viewerToolBar, this->viewActionViewAll);
   if (!editorDock->isVisible()) {
-    addExportActions(this, viewerToolBar, this->viewActionViewAll);
+    addExportActions(viewerToolBar, this->viewActionViewAll);
   }
 }
 
@@ -3983,6 +3984,26 @@ void MainWindow::onWindowShortcutNextPrevActivated()
 
   activateDock(dock);
   rubberBandManager.emphasize(dock);
+}
+
+QAction *MainWindow::formatIdentifierToAction(const std::string& identifier) const
+{
+  FileFormat format;
+  if (fileformat::fromIdentifier(identifier, format)) {
+    const auto it = exportMap.find(format);
+    if (it != exportMap.end()) {
+      return it->second;
+    }
+  }
+  return nullptr;
+}
+
+void MainWindow::onWindowShortcutExport3DActivated()
+{
+  QAction *action = formatIdentifierToAction(Settings::Settings::toolbarExport3D.value());
+  if (action) {
+    action->trigger();
+  }
 }
 
 void MainWindow::on_editActionInsertTemplate_triggered() { activeEditor->displayTemplates(); }

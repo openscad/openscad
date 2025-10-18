@@ -39,7 +39,7 @@
 #include <cstddef>
 #include <string>
 #include <vector>
-
+#include <boost/format.hpp>
 ContextFrame::ContextFrame(EvaluationSession *session) : evaluation_session(session) {}
 
 boost::optional<const Value&> ContextFrame::lookup_local_variable(const std::string& name) const

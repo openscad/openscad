@@ -1077,9 +1077,6 @@
    <property name="text">
     <string>Export as &amp;STL (binary)...</string>
    </property>
-   <property name="shortcut">
-    <string>F7</string>
-   </property>
   </action>
   <action name="fileActionExportAsciiSTL">
    <property name="icon">
