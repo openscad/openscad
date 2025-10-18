@@ -23,7 +23,7 @@ test( function() o1.a==1,                           "o1.a' must be 1");
 test( function() o1.c==[3],                         "o1.c must be [3]");
 test(function() is_function(o1["f"]),               "o1['f'] must be a function");
 test(function() is_function(o1.f),                  "o1.f must be a function");
-test( function() [for (i=o1) has_key(o1, i)] 
+test( function() [for (i=o1) has_key(o1, i)]
     ==  [true, true, true, true],                   "all keys must be present");
 test( function() len([for (i=o1) i]) == 4,          "check we have 4 keys");
 
@@ -45,10 +45,10 @@ testEq( len( object()), 0,                     "len of empty object must be 0");
 testEq( len( object(a=1,b=2,c=3)), 3,          "len of object with 3 entries must be 3");
 testEq( len( object(a=1,b=2,c=3, f=function() 1)), 4, "len of object with 4 entries must be 4");
 
-// equality 
+// equality
 testEq( o1, o1,                                     "same object must be equal");
 testEq( all, all,                                   "same object with all types must be equal");
-testEq( o1, object(o1),                             "copy must be equal");
+testEq( object(o1,[["f"]]), object(o1,[["f"]]),     "copy must be equal");
 testNEq( o1, object(o1,[["f"]]),                    "copy must not be equal when f removed");
 testNEq( all, object(all,[["o"]]),                  "copy must not be equal when o removed for all types");
 
@@ -94,22 +94,74 @@ Betty = object(
 );
 echo( Betty  = Betty );
 
+// tests if we handle the opt-in (this as parameter) correctly
+
+optin = object( a=42, fin=function(this) this.a, fout=function() this.a);
+test( function() optin.fin() == 42, "optin gets this");
+test( function() optin.fout() == undef, "optout does not get this");
+
+
+
+// Tests to check the implicit scope for functions in objects
+osc = object( a=42, f=function(this) this.a );
+test( function() osc.f() == 42, "check referring to other field");
+fsc = osc.f;
+test( function() fsc() == 42,   "check referring from copied field");
+
+fsc1 = object(a=42, f=function(this) this.a).f;
+test( function() fsc1() == 42,  "function stored from orphaned object");
+
+osc1 = object( a=42, f=function(this) this.a );
+test( function() osc1.f() == 42, "using this");
+
+osc2 = object( $this=42, f=function(this) this );
+test( function() osc2.f() == osc2, "this cannot be a field and used");
+
+top = object( level = "top", f = function(this) let(_=assert( this.level == "top")) 42);
+mid = object( level = "mid", f = function(this) let(_=assert( this.level == "mid")) top.f());
+bot = object( level = "bot", f = function(this) let(_=assert( this.level == "bot")) mid.f());
+test( function() bot.f() == 42, "verify that the this when recursively called stays separate");
+
+osc3 = object(osc, [["a",43]]);
+testNEq( osc3.f, osc.f, "functions are not equal");
+testEq( osc3.f(), 43, "access copied object");
+testEq( osc.f(), 42, "access original object");
+
+Y = object( f=function(n,this) n> 1 ? n*this.f(n-1) : 1).f;
+testEq( Y(5), 120, "recursively calling a function in an object");
+
+testEq( object( $fs = 42 ).$fs, 42, "using config names as field is ok");
+testEq( object( this = 42 ).this, 42, "also this");
+testEq( object( this = 42, f=function(this) this.this ).f(), 42, "but functions see the this object");
+
+{
+    this = 42;
+    fthis = function(this) this;
+    test( function() is_undef(fthis()), "global 'this' must not leak in functions when not a method");
+    test( function() !is_undef(object(f=fthis).f()), "must work as method");
+}
+{
+    p=object( f = function(child,this) child());
+    c=function(this) this;
+    test( function() is_undef(p.f( c )),"leaks from nested invocation" );
+}
+
 module test( f, s ) {
     if ( !f()) {
         echo("FAIL:", f, s );
     } else
-        echo("PASS:", s );            
+        echo("PASS:", s );
 }
 
 module testEq( a, b, s) {
     if ( a != b) {
         echo("FAIL:", a, "==", b, s );
     } else
-        echo("PASS:", s );            
+        echo("PASS:", s );
 }
 module testNEq( a, b, s) {
     if ( a == b) {
         echo("FAIL:", a, "==", b, s );
     } else
-        echo("PASS:", s );            
+        echo("PASS:", s );
 }
