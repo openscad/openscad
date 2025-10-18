@@ -16,7 +16,7 @@ DOALL=0
 CHECKALL=0
 DOSTAGED=0
 
-FORMAT_CMD="clang-format -i --style file:$ROOT_DIR/.clang-format"
+FORMAT_CMD="clang-format -i --style=file"
 CHECK_CMD="$FORMAT_CMD --dry-run --Werror"
 VERSION_CMD="clang-format --version"
 STAGED_FILES_CMD="git diff --name-only --cached"

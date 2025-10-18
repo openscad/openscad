@@ -53,7 +53,7 @@ static void NOINLINE print_err(std::string name, const Location& loc,
       name);
 }
 
-static void NOINLINE print_trace(const UserModule *mod,
+static void NOINLINE print_trace(EvaluationException& e, const UserModule *mod,
                                  const std::shared_ptr<const UserModuleContext>& context,
                                  const AssignmentList& parameters)
 {
@@ -81,8 +81,8 @@ static void NOINLINE print_trace(const UserModule *mod,
       }
     }
   }
-  LOG(message_group::Trace, mod->location(), context->documentRoot(), "call of '%1$s(%2$s)'", mod->name,
-      stream.str());
+  e.LOG(message_group::Trace, mod->location(), context->documentRoot(), "call of '%1$s(%2$s)'",
+        mod->name, stream.str());
 }
 
 std::shared_ptr<AbstractNode> UserModule::instantiate(
@@ -109,8 +109,8 @@ std::shared_ptr<AbstractNode> UserModule::instantiate(
     ret = this->body->instantiateModules(
       *module_context, std::make_shared<GroupNode>(inst, std::string("module ") + this->name));
   } catch (EvaluationException& e) {
-    if (OpenSCAD::traceUsermoduleParameters && e.traceDepth > 0) {
-      print_trace(this, *module_context, this->parameters);
+    if (OpenSCAD::traceUsermoduleParameters) {
+      print_trace(e, this, *module_context, this->parameters);
       e.traceDepth--;
     }
     throw;
