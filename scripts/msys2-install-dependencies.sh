@@ -54,6 +54,7 @@ pacboy --noconfirm --sync --needed \
     python:p \
     python-pip:p \
     python-numpy:p \
-    python-pillow:p
+    python-pillow:p \
+    librsvg:p
 
 date "+### %Y-%m-%d %T msys2-install-dependencies finished"

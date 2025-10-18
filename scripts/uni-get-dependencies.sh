@@ -13,7 +13,7 @@ get_fedora_deps_yum()
   boost-devel mpfr-devel gmp-devel glew-devel CGAL-devel gcc gcc-c++ pkgconfig \
   opencsg-devel git libXmu-devel curl imagemagick ImageMagick glib2-devel make \
   xorg-x11-server-Xvfb gettext qscintilla-qt5-devel \
-  mesa-dri-drivers double-conversion-devel tbb-devel
+  mesa-dri-drivers double-conversion-devel tbb-devel librsvg2-tools
 }
 
 get_fedora_deps_dnf()
@@ -24,7 +24,7 @@ get_fedora_deps_dnf()
   opencsg-devel git libXmu-devel curl ImageMagick glib2-devel make \
   xorg-x11-server-Xvfb gettext qscintilla-qt5-devel \
   mesa-dri-drivers libzip-devel ccache qt5-qtmultimedia-devel qt5-qtsvg-devel \
-  double-conversion-devel tbb-devel
+  double-conversion-devel tbb-devel librsvg2-tools
  dnf -y install libxml2-devel
  dnf -y install libffi-devel
  dnf -y install redhat-rpm-config
@@ -41,7 +41,7 @@ get_altlinux_deps()
  for i in boost-devel gcc4.5 gcc4.5-c++ boost-program_options-devel \
   boost-thread-devel boost-system-devel boost-regex-devel eigen3 \
   libmpfr libgmp libgmp_cxx-devel qt5-devel libcgal-devel git-core tbb-devel \
-  libglew-devel flex bison curl imagemagick gettext glib2-devel; do apt-get install $i; done
+  libglew-devel flex bison curl imagemagick gettext glib2-devel librsvg2-bin; do apt-get install $i; done
 }
 
 get_freebsd_deps()
@@ -50,14 +50,14 @@ get_freebsd_deps()
   xorg libGLU libXmu libXi xorg-vfbserver glew \
   qt5-core qt5-gui qt5-buildtools qt5-opengl qt5-qmake \
   opencsg cgal curl imagemagick glib2-devel gettext libdouble-conversion-3.0.0 \
-  devel/onetbb
+  devel/onetbb librsvg2
 }
 
 get_netbsd_deps()
 {
  pkgin install bison boost cmake git bash eigen3 flex gmake gmp mpfr \
   qt5 glew cgal opencsg python27 curl \
-  ImageMagick glib2 gettext threadingbuildingblocks
+  ImageMagick glib2 gettext threadingbuildingblocks librsvg
 }
 
 get_opensuse_deps()
@@ -71,7 +71,7 @@ get_opensuse_deps()
   libboost_program_options-devel tbb-devel
  # qscintilla-qt5-devel replaces libqscintilla_qt5-devel
  # but openscad compiles with both
- zypper install libeigen3-devel
+ zypper install libeigen3-devel rsvg-convert
  if [ $? -ne 0 ]; then
   zypper install libeigen3
  fi
@@ -97,7 +97,7 @@ get_mageia_deps()
  urpmi task-c-devel task-c++-devel libqt5-devel libgmp-devel \
   libmpfr-devel libboost-devel eigen3-devel libglew-devel bison flex \
   cmake imagemagick glib2-devel python curl git x11-server-xvfb gettext \
-  double-conversion-devel tbb
+  double-conversion-devel tbb librsvg
 }
 
 get_debian_deps()
@@ -112,7 +112,7 @@ get_debian_deps()
   libharfbuzz-dev libmimalloc-dev libmpfr-dev libopencsg-dev \
   libqt5gamepad5-dev libtbb-dev libxi-dev libxml2-dev libxmu-dev \
   libzip-dev nettle-dev ninja-build nodejs pkg-config python3-dev \
-  python3-setuptools python3-venv ragel xvfb
+  python3-setuptools python3-venv ragel xvfb librsvg2-bin
  if [ "$USE_QT6" = "1" ]; then
   get_qt6_deps_debian
  else
@@ -124,14 +124,14 @@ get_qt5_deps_debian()
 {
  apt-get -y install \
   libqscintilla2-qt5-dev libqt5multimedia5-plugins libqt5opengl5-dev \
-  libqt5svg5-dev qt5-qmake qtbase5-dev qtmultimedia5-dev
+  libqt5svg5-dev qt5-qmake qtbase5-dev qtmultimedia5-dev librsvg2-bin
 }
 
 get_qt6_deps_debian()
 {
  apt-get -y install \
   libqscintilla2-qt6-dev libqt6core5compat6-dev libqt6svg6-dev \
-  qt6-base-dev qt6-multimedia-dev
+  qt6-base-dev qt6-multimedia-dev librsvg2-bin
 }
 
 get_arch_deps()
@@ -142,7 +142,7 @@ get_arch_deps()
   hicolor-icon-theme hidapi imagemagick lib3mf libglvnd libspnav libx11 \
   libxml2 libzip mimalloc mpfr nettle opencsg procps-ng python python-pip \
   python-setuptools qscintilla-qt5 qt5-base qt5-multimedia qt5-svg tbb \
-  xorg-server-xvfb
+  xorg-server-xvfb librsvg
 }
 
 get_solus_deps()
@@ -153,7 +153,7 @@ get_solus_deps()
 	opencsg-devel glew-devel eigen3 \
 	fontconfig-devel freetype2-devel harfbuzz-devel libzip-devel \
 	double-conversion-devel \
-	bison flex intel-tbb-devel
+	bison flex intel-tbb-devel rsvg-convert
 }
 
 unknown()
