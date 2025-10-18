@@ -8,6 +8,7 @@
 #include "core/AST.h"
 #include "utils/printutils.h"
 #include "boost/circular_buffer.hpp"
+#include "defer_call.hpp"
 
 class EvaluationException : public std::runtime_error
 {
@@ -17,13 +18,17 @@ public:
   {
   }
 
-  template <typename... Ts>
-  void LOG(const message_group& msgGroup, Ts&&...args)
+  template <typename... Args>
+  void LOG(const message_group& msgGroup, Args&&...args)
   {
     if (traceDepth > 0) {
-      ::LOG(msgGroup, std::forward<Ts>(args)...);
+      ::LOG(msgGroup, std::forward<Args>(args)...);
     } else {
-      tail_msgs.push_back([=]() { return make_message_obj(msgGroup, args...); });
+      tail_msgs.push_back(
+        defer_call(
+          [](auto&&...args) {
+            return make_message_obj(std::forward<decltype(args)>(args)...);
+          }, msgGroup, std::forward<Args>(args)...));
     }
   }
 
