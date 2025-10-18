@@ -54,20 +54,6 @@ def failquit(*args):
     sys.exit(1)
 
 
-def createImport(inputfile, scadfile):
-    inputfilename = os.path.split(inputfile)[1]
-    print("createImport: " + inputfile + " " + scadfile)
-    outputdir = os.path.dirname(scadfile)
-    try:
-        if outputdir and not os.path.exists(outputdir):
-            os.mkdir(outputdir)
-        f = open(scadfile, "w")
-        f.write('import("' + inputfilename + '");' + os.linesep)
-        f.close()
-    except:
-        failquit("failure while opening/writing " + scadfile + ": " + str(sys.exc_info()))
-
-
 #
 # Parse arguments
 #
@@ -97,6 +83,9 @@ inputpath, inputfilename = os.path.split(inputfile)
 inputbasename, inputsuffix = os.path.splitext(inputfilename)
 
 exportfile = os.path.join(outputdir, os.path.splitext(inputfilename)[0] + "." + args.format)
+
+if outputdir and not os.path.exists(outputdir):
+    os.mkdir(outputdir)
 
 fontdir = os.path.abspath(os.path.join(os.path.dirname(__file__), "data/ttf"))
 fontenv = os.environ.copy()
