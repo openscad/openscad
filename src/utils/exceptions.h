@@ -6,9 +6,9 @@
 #include <functional>
 
 #include "core/AST.h"
+#include "utils/defer_call.h"
 #include "utils/printutils.h"
 #include "boost/circular_buffer.hpp"
-#include "defer_call.hpp"
 
 class EvaluationException : public std::runtime_error
 {
