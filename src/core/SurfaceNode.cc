@@ -156,7 +156,7 @@ img_data_t SurfaceNode::read_png_or_dat(std::string filename) const
 img_data_t SurfaceNode::read_dat(std::string filename) const
 {
   img_data_t data;
-  std::ifstream stream(filename.c_str());
+  std::ifstream stream(fs::u8path(filename));
 
   if (!stream.good()) {
     LOG(message_group::Warning, "Can't open DAT file '%1$s'.", filename);

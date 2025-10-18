@@ -76,7 +76,7 @@ ObjectType to_obj(const json& j, EvaluationSession *session)
 
 Value import_json(const std::string& filename, EvaluationSession *session, const Location& loc)
 {
-  std::ifstream i(filename);
+  std::ifstream i(std::filesystem::u8path(filename));
 
   try {
     if (i) {
