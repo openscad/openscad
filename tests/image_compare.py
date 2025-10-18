@@ -61,6 +61,8 @@ def Compare3x3(img1, img2):
 
 
 def CompareImageFiles(path1, path2):
+    print(f"Path 1: {path1}")
+    print(f"Path 2: {path2}")
     img1 = Image.open(path1)
     img2 = Image.open(path2)
     split = os.path.splitext(path2)
