@@ -102,9 +102,10 @@ get_mageia_deps()
 
 get_debian_deps()
 {
+ set +x
  apt-get update
  apt-get -y install \
-  bison build-essential cmake curl flex gettext ghostscript git \
+  bison build-essential catch2 cmake curl flex gettext ghostscript git \
   gtk-doc-tools imagemagick lib3mf-dev libboost-program-options-dev \
   libboost-regex-dev libboost-system-dev libcairo2-dev libcatch2-dev libcgal-dev \
   libdouble-conversion-dev libeigen3-dev libffi-dev libfontconfig-dev \
@@ -118,6 +119,7 @@ get_debian_deps()
  else
   get_qt5_deps_debian
  fi
+ set -x
 }
 
 get_qt5_deps_debian()
