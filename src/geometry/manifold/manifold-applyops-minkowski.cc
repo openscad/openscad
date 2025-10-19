@@ -106,7 +106,7 @@ std::shared_ptr<const Geometry> applyMinkowski(const Geometry::Geometries& child
             CGAL_Nef_polyhedron3 decomposed_nef = CGALUtils::convertSurfaceMeshToNef(*mesh);
             convert_timer.stop();
             PRINTDB("Minkowski: Nef conversion took %.2f s", convert_timer.time());
-            
+
             // TODO(kintel): If !decomposed_nef.is_valid(), we probably should not continue. When will
             // this happen though?
             CGAL::Timer t;

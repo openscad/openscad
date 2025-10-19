@@ -290,8 +290,8 @@ CGAL_Nef_polyhedron3 convertSurfaceMeshToNef(const SurfaceMesh& inputMesh)
   // floating point coordinate, but the vertices are still distinct, it's
   // considered a self-intersection. This is valid in e.g. Manifold, but invalid
   // in SurfaceMesh -> Nef.
-  // If this happens, we fall back to unioning all faces, which is slower but more
-  // robust.
+  // If this happens, we fall back to unioning all faces.
+  // Note: The alternative construction by union all faces can be extremely slow.
   try {
     return CGAL_Nef_polyhedron3(mesh);
   } catch (const CGAL::Assertion_exception& e) {
