@@ -642,7 +642,12 @@ if(ENABLE_PYTHON)
   endif() # endif MXE
   target_include_directories(OpenSCADPy PRIVATE ${Nettle_INCLUDE_DIRS})
   target_link_libraries(OpenSCADPy PRIVATE ${Nettle_LIBRARIES})
-  add_custom_target(OpenSCADPython ALL COMMAND ${CMAKE_COMMAND} -E create_symlink ${EXECUTABLE_NAME} ${PYTHON_EXECUTABLE_NAME})
+  # Create pythonscad-python symlink
+  # On macOS bundles, this will be created via POST_BUILD command
+  # On other platforms, create it in the build directory
+  if(NOT (APPLE AND NOT APPLE_UNIX))
+    add_custom_target(OpenSCADPython ALL COMMAND ${CMAKE_COMMAND} -E create_symlink ${EXECUTABLE_NAME} ${PYTHON_EXECUTABLE_NAME})
+  endif()
   target_include_directories(OpenSCADPy SYSTEM PRIVATE ${FREETYPE_INCLUDE_DIRS})
   if(MSVC)
     target_include_directories(OpenSCADPy SYSTEM PRIVATE ${HARFBUZZ_INCLUDE_DIRS}/harfbuzz)
@@ -1671,6 +1676,12 @@ if(APPLE AND NOT APPLE_UNIX)
     RESOURCE "${RESOURCE_FILES}"
   )
   set(BUNDLE_RESOURCES_DIR ${CMAKE_CURRENT_BINARY_DIR}/${EXECUTABLE_NAME}.app/Contents/Resources)
+  # Create pythonscad-python symlink inside the macOS bundle
+  add_custom_command(TARGET OpenSCAD POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E create_symlink ${EXECUTABLE_NAME} ${PYTHON_EXECUTABLE_NAME}
+    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${EXECUTABLE_NAME}.app/Contents/MacOS
+    COMMENT "Creating ${PYTHON_EXECUTABLE_NAME} symlink in macOS bundle"
+  )
   file(COPY ${CMAKE_SOURCE_DIR}/color-schemes DESTINATION ${BUNDLE_RESOURCES_DIR})
   file(COPY ${CMAKE_SOURCE_DIR}/examples DESTINATION ${BUNDLE_RESOURCES_DIR})
   file(COPY ${CMAKE_SOURCE_DIR}/fonts DESTINATION ${BUNDLE_RESOURCES_DIR})
