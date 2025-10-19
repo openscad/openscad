@@ -1586,19 +1586,24 @@ set(CPACK_PROJECT_CONFIG_FILE "${CMAKE_BINARY_DIR}/openscad_cpack.cmake")
 set(CPACK_THREADS 0)
 
 if(ENABLE_TESTS)
-  find_package(Catch2 3 REQUIRED)
+  find_package(Catch2 3)
   enable_testing()
-  message(STATUS "Configuring OpenSCAD Unit Tests")
 
-  # If you see a line like this:
-  # /usr/bin/ld: error in /usr/lib/libCatch2.a(catch_approx.cpp.o)(.sframe); no .sframe will be created
-  # You can ignore it. Something about incompatibility with POSITION_INDEPENDENT_CODE
-  # and how the system Catch2 static library is compiled. It should be fine.
+  if (CATCH2_FOUND)
+    message(STATUS "Configuring OpenSCAD Unit Tests")
 
-  add_executable(OpenSCADUnitTests ${TEST_SOURCES})
-  target_link_libraries(OpenSCADUnitTests PRIVATE Catch2::Catch2WithMain OpenSCAD)
-  include(CTest)
-  catch_discover_tests(OpenSCADUnitTests)
+    # If you see a line like this:
+    # /usr/bin/ld: error in /usr/lib/libCatch2.a(catch_approx.cpp.o)(.sframe); no .sframe will be created
+    # You can ignore it. Something about incompatibility with POSITION_INDEPENDENT_CODE
+    # and how the system Catch2 static library is compiled. It should be fine.
+
+    add_executable(OpenSCADUnitTests ${TEST_SOURCES})
+    target_link_libraries(OpenSCADUnitTests PRIVATE Catch2::Catch2WithMain OpenSCAD)
+    include(CTest)
+    catch_discover_tests(OpenSCADUnitTests)
+  else()
+    message(WARNING "Catch2 3 was not found. OpenSCADUnitTests will not be built.")
+  endif()
 
   add_subdirectory(tests)
 endif()
