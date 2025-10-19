@@ -105,15 +105,17 @@ get_debian_deps()
  set -x
  apt-get update
  apt-get -y install \
-  bison build-essential catch2 cmake curl flex gettext ghostscript git \
+  bison build-essential cmake curl flex gettext ghostscript git \
   gtk-doc-tools imagemagick lib3mf-dev libboost-program-options-dev \
-  libboost-regex-dev libboost-system-dev libcairo2-dev libcatch2-dev libcgal-dev \
+  libboost-regex-dev libboost-system-dev libcairo2-dev libcgal-dev \
   libdouble-conversion-dev libeigen3-dev libffi-dev libfontconfig-dev \
   libfreetype-dev libgl1-mesa-dev libglew-dev libglib2.0-dev libgmp-dev \
   libharfbuzz-dev libmimalloc-dev libmpfr-dev libopencsg-dev \
   libqt5gamepad5-dev libtbb-dev libxi-dev libxml2-dev libxmu-dev \
   libzip-dev nettle-dev ninja-build nodejs pkg-config python3-dev \
   python3-setuptools python3-venv ragel xvfb
+ apt-get -y install catch2 || echo "catch2 pkg deprecated on Debian, so if you're seeing this, it's probably been removed from the repo"
+ apt-get -y install libcatch2-dev || echo "libcatch2-dev package not found on ubuntu or older Debian, so ignoring."
  if [ "$USE_QT6" = "1" ]; then
   get_qt6_deps_debian
  else
