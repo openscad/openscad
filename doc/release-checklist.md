@@ -53,3 +53,4 @@ reference, announce the new release:
     - Arch Linux: Kyle Keen <keenerd@gmail.com>
     - MacPorts: https://svn.macports.org/repository/macports/trunk/dports/science/openscad/Portfile
     - Homebrew: https://github.com/caskroom/homebrew-cask/blob/master/Casks/openscad.rb
+- Make & merge PRs to the Flatpak and Snap repos bumping the version number
