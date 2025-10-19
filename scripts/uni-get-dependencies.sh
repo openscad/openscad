@@ -102,7 +102,7 @@ get_mageia_deps()
 
 get_debian_deps()
 {
- set +x
+ set -x
  apt-get update
  apt-get -y install \
   bison build-essential catch2 cmake curl flex gettext ghostscript git \
@@ -119,7 +119,7 @@ get_debian_deps()
  else
   get_qt5_deps_debian
  fi
- set -x
+ set +x
 }
 
 get_qt5_deps_debian()
