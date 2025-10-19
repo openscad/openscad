@@ -42,15 +42,16 @@
 #include <filesystem>
 namespace fs = std::filesystem;
 
-//isatty for visual c++ and mingw-cross-env
-#if defined __WIN32__ && ! defined _MSC_VER
-#include "unistd.h"
-#endif
-#if defined __WIN32__ || defined _MSC_VER
-extern "C" int __cdecl _isatty(int _FileHandle);
-#define isatty _isatty
-#define strdup _strdup
-#define fileno _fileno
+// Windows: get correct declarations from headers; avoid redeclaring _isatty.
+#if defined(_WIN32)
+#  include <io.h>
+#  ifdef _MSC_VER
+#    define isatty  _isatty
+#    define strdup  _strdup
+#    define fileno  _fileno
+#  endif
+#else
+#  include <unistd.h> // isatty on POSIX
 #endif
 
 std::string stringcontents;
