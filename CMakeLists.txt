@@ -968,6 +968,7 @@ set(CORE_SOURCES
   src/utils/hash.cc
   src/utils/printutils.cc
   src/utils/svg.cc
+  src/utils/vector_math.cc
   src/utils/version_check.h
   src/version.cc
   ${LIB3MF_SOURCES}
@@ -1112,7 +1113,6 @@ else()
     src/glview/hershey.cc
     src/glview/OffscreenView.cc
     src/glview/cgal/CGALRenderer.cc
-    src/glview/cgal/CGALRenderUtils.cc
     src/glview/PolySetRenderer.cc
     src/glview/preview/OpenCSGRenderer.cc
     src/glview/preview/ThrownTogetherRenderer.cc
@@ -1395,6 +1395,12 @@ elseif(WIN32)
   list(APPEND RESOURCE_FILES ${WINDOWS_RESOURCE_PATH})
 endif()
 
+file(GLOB_RECURSE TEST_SOURCES
+  "src/*_test.cc"
+)
+list(FILTER Sources EXCLUDE REGEX ".*_test[.]cc")
+list(REMOVE_ITEM Sources "src/main_wrapper.cc")
+
 if (SORT_BUILD)
   # Build the last modified sources first (to fail fast during development)
   execute_process(
@@ -1573,7 +1579,20 @@ set(CPACK_PROJECT_CONFIG_FILE "${CMAKE_BINARY_DIR}/openscad_cpack.cmake")
 set(CPACK_THREADS 0)
 
 if(ENABLE_TESTS)
+  find_package(Catch2 3 REQUIRED)
   enable_testing()
+  message(STATUS "Configuring OpenSCAD Unit Tests")
+
+  # If you see a line like this:
+  # /usr/bin/ld: error in /usr/lib/libCatch2.a(catch_approx.cpp.o)(.sframe); no .sframe will be created
+  # You can ignore it. Something about incompatibility with POSITION_INDEPENDENT_CODE
+  # and how the system Catch2 static library is compiled. It should be fine.
+
+  add_executable(OpenSCADUnitTests ${TEST_SOURCES})
+  target_link_libraries(OpenSCADUnitTests PRIVATE Catch2::Catch2WithMain OpenSCAD)
+  include(CTest)
+  catch_discover_tests(OpenSCADUnitTests)
+
   add_subdirectory(tests)
 endif()
 

@@ -26,6 +26,7 @@
 
 #include "geometry/linalg.h"
 #include "gui/Measurement.h"
+#include "utils/vector_math.h"
 
 #include <QPoint>
 #include <QString>
