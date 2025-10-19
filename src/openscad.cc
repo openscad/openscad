@@ -794,7 +794,7 @@ struct CommaSeparatedVector {
 };
 
 // OpenSCAD
-int main(int argc, char **argv)
+int openscad_main(int argc, char **argv)
 {
 #if defined(ENABLE_CGAL) && defined(USE_MIMALLOC)
   // call init_mimalloc before any GMP variables are initialized. (defined in src/openscad_mimalloc.h)
