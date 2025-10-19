@@ -1589,7 +1589,7 @@ if(ENABLE_TESTS)
   find_package(Catch2 3)
   enable_testing()
 
-  if (CATCH2_FOUND)
+  if(Catch2_FOUND)
     message(STATUS "Configuring OpenSCAD Unit Tests")
 
     # If you see a line like this:
@@ -1600,6 +1600,7 @@ if(ENABLE_TESTS)
     add_executable(OpenSCADUnitTests ${TEST_SOURCES})
     target_link_libraries(OpenSCADUnitTests PRIVATE Catch2::Catch2WithMain OpenSCAD)
     include(CTest)
+    include(Catch)
     catch_discover_tests(OpenSCADUnitTests)
   else()
     message(WARNING "Catch2 3 was not found. OpenSCADUnitTests will not be built.")
