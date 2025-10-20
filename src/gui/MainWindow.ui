@@ -994,6 +994,7 @@
    </property>
   </action>
   <action name="designActionMeasureDistance">
+
    <property name="checkable">
     <bool>true</bool>
    </property>

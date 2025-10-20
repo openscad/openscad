@@ -335,6 +335,7 @@ private slots:
   void actionLoadShareDesignSelect();
   void actionShareDesign();
   void actionLoadShareDesign();
+
   void handleMeasurementClicked(QAction *clickedAction);
   void actionCheckValidity();
   void actionDisplayAST();
@@ -459,6 +460,7 @@ private:
   QSoundEffect *renderCompleteSoundEffect;
   std::vector<std::unique_ptr<QTemporaryFile>> allTempFiles;
   void resetMeasurementsState(bool enable, const QString& tooltipMessage);
+
   QActionGroup *measurementGroup;
   QAction *activeMeasurement = nullptr;
 
