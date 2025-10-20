@@ -2979,6 +2979,7 @@ void MainWindow::rightClick(QPoint position)
   }
 }
 
+
 void MainWindow::measureFinished()
 {
   this->qglview->handle_mode = false;

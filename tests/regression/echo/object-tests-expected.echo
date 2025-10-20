@@ -58,4 +58,8 @@ ECHO: "PASS:", "also this"
 ECHO: "PASS:", "but functions see the this object"
 ECHO: "PASS:", "global 'this' must not leak in functions when not a method"
 ECHO: "PASS:", "must work as method"
+<<<<<<< HEAD
 ECHO: "PASS:", "leaks from nested invocation"
+=======
+ECHO: "PASS:", "leaks from nested invocation"
+>>>>>>> upstream/master
