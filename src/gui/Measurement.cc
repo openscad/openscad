@@ -58,8 +58,6 @@ void Measurement::startMeasureAngle(void)
 
 bool Measurement::stopMeasure()
 {
-  //  if (qglview->measure_state == MEASURE_IDLE) return;
-  // if (qglview->measure_state == MEASURE_IDLE) return false;
   bool ret = qglview->measure_state != MEASURE_DIRTY;
   qglview->selected_obj.clear();
   qglview->shown_obj = nullptr;

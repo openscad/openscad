@@ -2811,13 +2811,11 @@ void MainWindow::actionRenderDone(const std::shared_ptr<const Geometry>& root_ge
 
     // Go to CGAL view mode
     viewModeRender();
+    resetMeasurementsState(true, "Click to start measuring");
     this->designActionMeasureDistance->setEnabled(true);
     this->designActionMeasureAngle->setEnabled(true);
-    resetMeasurementsState(true, "Click to start measuring");
   } else {
     resetMeasurementsState(false, "No top level geometry; render something to enable measurements");
-    this->designActionMeasureDistance->setEnabled(false);
-    this->designActionMeasureAngle->setEnabled(false);
     LOG(message_group::UI_Warning, "No top level geometry to render");
   }
 
