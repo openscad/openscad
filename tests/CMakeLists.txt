@@ -272,7 +272,7 @@ list(APPEND FAILING_FILES
 )
 
 # Set the baseline exclude regex for all tests
-set(_base_ex [[\*\*\* Excluding \d+ frames \*\*\*]])
+set(_base_ex [[^TRACE:\s+\*\*\* Excluding \d+ frames \*\*\*$]])
 list(APPEND CTEST_ENVIRONMENT "OPENSCAD_TEST_EXCLUDE_LINE=${_base_ex}")
 
 list(APPEND ECHO_FILES ${FUNCTION_FILES} ${MISC_FILES} ${REDEFINITION_FILES}
