@@ -1674,14 +1674,46 @@ if(APPLE AND NOT APPLE_UNIX)
     MACOSX_BUNDLE_BUNDLE_VERSION ${OPENSCAD_YEAR}.${OPENSCAD_MONTH}.${OPENSCAD_DAY}
     MACOSX_BUNDLE_SHORT_VERSION_STRING ${OPENSCAD_YEAR}.${OPENSCAD_MONTH}
     RESOURCE "${RESOURCE_FILES}"
+    BUILD_WITH_INSTALL_RPATH TRUE
+    INSTALL_RPATH "@executable_path/../Frameworks"
   )
   set(BUNDLE_RESOURCES_DIR ${CMAKE_CURRENT_BINARY_DIR}/${EXECUTABLE_NAME}.app/Contents/Resources)
+  set(BUNDLE_FRAMEWORKS_DIR ${CMAKE_CURRENT_BINARY_DIR}/${EXECUTABLE_NAME}.app/Contents/Frameworks)
+
   # Create pythonscad-python symlink inside the macOS bundle
   add_custom_command(TARGET OpenSCAD POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E create_symlink ${EXECUTABLE_NAME} ${PYTHON_EXECUTABLE_NAME}
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${EXECUTABLE_NAME}.app/Contents/MacOS
     COMMENT "Creating ${PYTHON_EXECUTABLE_NAME} symlink in macOS bundle"
   )
+
+  # Bundle Python framework for portability (if Python is enabled)
+  if(ENABLE_PYTHON AND Python_FOUND)
+    # Get the Python framework path
+    get_filename_component(PYTHON_FRAMEWORK_DIR "${Python_LIBRARIES}" DIRECTORY)
+    get_filename_component(PYTHON_FRAMEWORK_DIR "${PYTHON_FRAMEWORK_DIR}" DIRECTORY)
+    get_filename_component(PYTHON_FRAMEWORK_DIR "${PYTHON_FRAMEWORK_DIR}" DIRECTORY)
+
+    message(STATUS "Bundling Python framework from: ${PYTHON_FRAMEWORK_DIR}")
+
+    # Copy Python.framework into the app bundle
+    add_custom_command(TARGET OpenSCAD POST_BUILD
+      COMMAND ${CMAKE_COMMAND} -E make_directory ${BUNDLE_FRAMEWORKS_DIR}
+      COMMAND ${CMAKE_COMMAND} -E copy_directory
+        ${PYTHON_FRAMEWORK_DIR}
+        ${BUNDLE_FRAMEWORKS_DIR}/Python.framework
+      COMMENT "Bundling Python.framework into app bundle for portability"
+    )
+
+    # Fix the install name to use @rpath instead of absolute path
+    add_custom_command(TARGET OpenSCAD POST_BUILD
+      COMMAND install_name_tool -change
+        ${Python_LIBRARIES}
+        @rpath/Python.framework/Versions/${Python_VERSION_MAJOR}.${Python_VERSION_MINOR}/Python
+        ${CMAKE_CURRENT_BINARY_DIR}/${EXECUTABLE_NAME}.app/Contents/MacOS/${EXECUTABLE_NAME}
+      COMMENT "Updating Python library reference to use @rpath"
+    )
+  endif()
   file(COPY ${CMAKE_SOURCE_DIR}/color-schemes DESTINATION ${BUNDLE_RESOURCES_DIR})
   file(COPY ${CMAKE_SOURCE_DIR}/examples DESTINATION ${BUNDLE_RESOURCES_DIR})
   file(COPY ${CMAKE_SOURCE_DIR}/fonts DESTINATION ${BUNDLE_RESOURCES_DIR})

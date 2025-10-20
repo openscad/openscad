@@ -64,6 +64,21 @@ jobs:
         cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_UNITY_BUILD=OFF -DEXPERIMENTAL=ON -DSNAPSHOT=ON -DUSE_CCACHE=OFF -DUSE_BUILTIN_OPENCSG=ON $CMAKE_OPTIONS
         export NUMCPU=$(($(sysctl -n hw.ncpu) * 3 / 2))
         make -j$NUMCPU
+    - name: Verify Python setup
+      run: |
+        echo "=== Checking pythonscad-python symlink ==="
+        ls -l build/pythonscad.app/Contents/MacOS/pythonscad-python
+        echo ""
+        echo "=== Verifying bundled Python framework ==="
+        if [ -d build/pythonscad.app/Contents/Frameworks/Python.framework ]; then
+          echo "✓ Python.framework is bundled in app"
+        else
+          echo "✗ Python.framework NOT bundled - app won't be portable!"
+        fi
+        echo ""
+        echo "=== Testing simple Python execution ==="
+        echo 'from openscad import *; print("Python module loaded"); cube(10).show()' > /tmp/test.py
+        build/pythonscad.app/Contents/MacOS/pythonscad /tmp/test.py -o /tmp/test.png --render --trust-python
     - name: Run Test Suite
       # Disable pdf export test on macOS because Cairo >= 1.18 on Homebrew uses the
       # Quartz backend which doesn't have the Liberation Sans font we use.
