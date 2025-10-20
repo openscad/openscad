@@ -5,3 +5,11 @@ TRACE: called by 'add_up_to' in file recursion-test-function3.scad, line 5
 TRACE: called by 'add_up_to' in file recursion-test-function3.scad, line 5
 TRACE: called by 'add_up_to' in file recursion-test-function3.scad, line 5
 TRACE: called by 'add_up_to' in file recursion-test-function3.scad, line 5
+TRACE:   *** Excluding 2410 frames ***
+TRACE: called by 'add_up_to' in file recursion-test-function3.scad, line 5
+TRACE: called by 'add_up_to' in file recursion-test-function3.scad, line 5
+TRACE: called by 'add_up_to' in file recursion-test-function3.scad, line 5
+TRACE: called by 'add_up_to' in file recursion-test-function3.scad, line 5
+TRACE: called by 'add_up_to' in file recursion-test-function3.scad, line 5
+TRACE: called by 'add_up_to' in file recursion-test-function3.scad, line 9
+TRACE: called by 'echo' in file recursion-test-function3.scad, line 9

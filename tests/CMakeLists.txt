@@ -271,6 +271,10 @@ list(APPEND FAILING_FILES
   ${TEST_SCAD_DIR}/issues/issue1890-use.scad
 )
 
+# Set the baseline exclude regex for all tests
+set(_base_ex [[\*\*\* Excluding \d+ frames \*\*\*]])
+list(APPEND CTEST_ENVIRONMENT "OPENSCAD_TEST_EXCLUDE_LINE=${_base_ex}")
+
 list(APPEND ECHO_FILES ${FUNCTION_FILES} ${MISC_FILES} ${REDEFINITION_FILES}
   ${TEST_SCAD_DIR}/3D/features/for-tests.scad
   ${TEST_SCAD_DIR}/3D/features/rotate-parameters.scad
@@ -740,6 +744,16 @@ add_cmdline_test(csgterm      OPENSCAD SUFFIX term FILES
 )
 
 add_cmdline_test(echo         OPENSCAD SUFFIX echo FILES ${ECHO_FILES})
+
+# Add specific file exclude line regexes after call to add_cmdline_test with
+# same test base name:
+#
+# Example:
+#
+# # Add "*** Excluding N frames ***" to that one test's exclude regex
+# add_line_exclusion_for_test(
+#   echo recursion-test-function3 [[\*\*\* EXCLUDING \d+ FRAMES \*\*\*]])
+
 # trace-usermodule-parameters is on by default,
 # but can generate very long outputs and potentially
 # unstable outputs, when combined with recursive tests.
