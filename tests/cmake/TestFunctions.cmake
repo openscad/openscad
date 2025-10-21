@@ -211,6 +211,72 @@ function(append_to_value OUT KEY VALUE KEY_VALUES MERGE_FN)
 endfunction()
 
 #[=[
+.. function:: ctest_env_append_value(KEY VALUE [MERGE_FN])
+
+  Merge ``VALUE`` into the ``KEY`` entry of the global ``CTEST_ENVIRONMENT``
+  list, producing the baseline environment that will be copied to **every**
+  test created thereafter.
+
+  Synopsis
+    ctest_env_append_value(<key> <value> [<merge-fn>])
+
+  Arguments
+    - KEY       : Environment variable name to modify (e.g., ``OPENSCADPATH``,
+                  ``OPENSCAD_TEST_EXCLUDE_LINE``).
+    - VALUE     : String to merge into the existing value for ``KEY``. Quote
+                  it; for regex, prefer bracket quotes like ``[[...]]``.
+    - MERGE_FN  : Optional merge function name (default: ``regex_alt``) with
+                  signature ``(OUT, OLD, NEW)``. Common choices:
+                  ``regex_alt`` (non-capturing alternation) or
+                  ``str_concat`` (plain concatenation).
+
+  Behaviour
+    - Reads the current ``CTEST_ENVIRONMENT`` (a CMake list of ``KEY=VALUE``
+      strings) from the caller's scope.
+    - Uses ``append_to_value`` with ``MERGE_FN`` to combine the existing value
+      for ``KEY`` (if any) with ``VALUE``.
+    - Escapes semicolons in the merged value and writes the updated list back
+      to ``CTEST_ENVIRONMENT`` (parent scope).
+    - If ``KEY`` was not present, a new ``KEY=VALUE`` entry is appended.
+      If multiple entries existed, they are collapsed into a single merged
+      entry at the end (CTest uses the **last** assignment for a given key).
+
+  Notes
+    - Call this **before** invoking functions that create tests (e.g.,
+      ``add_test(...)`` / ``add_cmdline_test(...)``) so all tests inherit the
+      baseline. For one-off, per-test changes use
+      ``test_env_append_value(TEST_NAME KEY VALUE MERGE_FN)`` instead.
+    - Keep regex/text values quoted to avoid list splitting; bracket quotes
+      like ``[[...]]`` are convenient for regex.
+
+  Examples
+    # Set common paths for all tests
+    ctest_env_append_value(OPENSCADPATH    "${LIBRARIES_DIR}" str_concat)
+    ctest_env_append_value(OPENSCAD_BINARY "${OPENSCAD_BINPATH}" str_concat)
+
+    # Provide a base ignore pattern for all text comparisons (regex OR)
+    ctest_env_append_value(OPENSCAD_TEST_EXCLUDE_LINE
+      [[^TRACE:.*\((?:\d+)\s+frames\s+(?:omitted|skipped)\).*$]]
+      regex_alt)
+]=]
+function(ctest_env_append_value KEY VALUE)
+  # default merger if not provided
+  set(MERGE_FN regex_alt)
+  if(ARGC GREATER 2)
+    set(MERGE_FN "${ARGV2}")
+  endif()
+
+  # Current baseline (may be empty)
+  set(_env "${CTEST_ENVIRONMENT}")
+
+  # Use your existing pure helper
+  append_to_value(_env2 "${KEY}" "${VALUE}" "${_env}" ${MERGE_FN})
+
+  # Write back to the caller's scope
+  set(CTEST_ENVIRONMENT "${_env2}" PARENT_SCOPE)
+endfunction()
+
+#[=[
 .. function:: test_env_append_value(TEST_NAME KEY VALUE MERGE_FN)
 
   Append/merge ``VALUE`` into the ``KEY`` entry of a test's CTest

@@ -156,7 +156,17 @@ def get_normalized_text(filename, replace_paths=False):
 
     if options.exclude_line_re is None:
         return [ line for line in text.splitlines() ]
-    return [ line for line in text.splitlines() if not options.exclude_line_re.search(line) ]
+    
+    def include_line(line):
+        include = not options.exclude_line_re.search(line)
+        if options.exclude_debug:
+            if include:
+                print(f" : {line}", file=sys.stderr)
+            else:
+                print(f"X: {line}", file=sys.stderr)
+        return include
+    
+    return [ line for line in text.splitlines() if include_line(line) ]
 
 def compare_default(resultfilename):
     print('text comparison: ', file=sys.stderr)
@@ -348,6 +358,7 @@ def usage():
     print("  -f, --file=<name>          Specify test file instead of deducting it from the argument (default to basename <first arg>)", file=sys.stderr)
     print("  -c, --convexec=<name>      Path to ImageMagick 'convert' executable", file=sys.stderr)
     print("  -x, --exclude-line=<regex> Ignore lines matching <regex> in text comparisons", file=sys.stderr)
+    print("  -X, --exclude-debug        Show what lines have been included/excluded from text comparison", file=sys.stderr)
     print("      --stdin                Pipe input file to <cmdline-tool> by stdin, replacing input file name with '-' when calling <cmdline-tool>", file=sys.stderr)
     print("      --stdout               Pipe output of <cmdline-tool> to output file, replacing output file name with '-' when calling <cmdline-tool>", file=sys.stderr)
 
@@ -355,9 +366,10 @@ if __name__ == '__main__':
     # Handle command-line arguments
     try:
         debug('args:'+str(sys.argv))
-        opts, args = getopt.getopt(sys.argv[1:], "gs:k:e:c:t:f:m:x:", [
+        opts, args = getopt.getopt(sys.argv[1:], "gs:k:e:c:t:f:m:x:X", [
             "generate", "convexec=", "suffix=", "kernel=", "expected-dir=",
-            "test=", "file=", "comparator=", "stdin", "stdout", "exclude-line="])
+            "test=", "file=", "comparator=", "stdin", "stdout", "exclude-line=",
+            "exclude-debug"])
         debug('getopt args:'+str(sys.argv))
     except (getopt.GetoptError) as err:
         usage()
@@ -368,6 +380,7 @@ if __name__ == '__main__':
     global options
     options = Options()
     options.exclude_line_re = None
+    options.exclude_debug = os.getenv("OPENSCAD_TEST_EXCLUDE_DEBUG", "False") not in ("False", "0", "")
     options.regressiondir = os.path.join(os.path.split(sys.argv[0])[0], "regression")
     options.generate = False
     options.suffix = "txt"
@@ -381,9 +394,11 @@ if __name__ == '__main__':
             options.generate = True
         elif o in ("-x", "--exclude-line"):
             if exclude_line:
-                exclude_line = f'{a}|(?:{exclude_line})'
+                exclude_line = f'({a})|(?:{exclude_line})'
             else:
                 exclude_line = a
+        elif o in ("-X", "--exclude-debug"):
+            options.exclude_debug = True
         elif o in ("-s", "--suffix"):
             if a[0] == '.': options.suffix = a[1:]
             else: options.suffix = a
@@ -412,7 +427,7 @@ if __name__ == '__main__':
 
     if exclude_line:
         try:
-            print(f"Excluding lines based on regex {exclude_line}", file=sys.stderr)
+            print(f"Excluding lines based on regex {exclude_line!r}", file=sys.stderr)
             options.exclude_line_re = re.compile(exclude_line)
         except Exception as e:
             print(f"Invalid regex: {exclude_line}\n  {e}", file=sys.stderr)

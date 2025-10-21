@@ -11,7 +11,7 @@ TRACE: called by 'crash' in file recursion-test-module.scad, line 2
 TRACE: call of 'crash()' in file recursion-test-module.scad, line 2
 TRACE: called by 'crash' in file recursion-test-module.scad, line 2
 TRACE: call of 'crash()' in file recursion-test-module.scad, line 2
-TRACE:   *** Excluding 15145 frames ***
+TRACE:   *** Excluding 1 frames ***
 TRACE: call of 'crash()' in file recursion-test-module.scad, line 2
 TRACE: called by 'crash' in file recursion-test-module.scad, line 2
 TRACE: call of 'crash()' in file recursion-test-module.scad, line 2

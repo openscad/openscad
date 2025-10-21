@@ -189,6 +189,32 @@ add_custom_target(svg_viewbox_tests ALL
   COMMENT "Generating svg viewbox tests"
 )
 
+#######################################
+# Define Test Output Lines to Exclude #
+#######################################
+
+# Ignore "TRACE:   *** Excluding N frames ***" lines globally
+ctest_env_append_value(
+  OPENSCAD_TEST_EXCLUDE_LINE [[^TRACE:\s*\*\*\* Excluding \d+ frames \*\*\*\s*$]])
+# Can add another `ctest_env_append_value(OPENSCAD_TEST_EXCLUDE_LINE ...)` call
+# to add another regex to match.
+
+# To debug exclude lines in test, uncomment the following line:
+# ctest_env_append_value(OPENSCAD_TEST_EXCLUDE_DEBUG True)
+
+# To tell a specific test to exclude lines that match a regex, call
+# add_line_exclusion_for_test after calling add_cmdline_test with same test base
+# name. E.g.
+#
+# # Base name group is foo:
+# add_cmdline_test(foo         OPENSCAD SUFFIX foo FILES ${FOO_FILES})
+#
+# # Assume that FOO_FILES contains a test function bar.
+# add_line_exclusion_for_test(foo bar [[regex that matches line(s) to exclude]])
+#
+# Can add another `add_line_exclusion_for_test(foo bar [[another regex]])` call
+# to add another regex to match for same test function.
+
 ##################################
 # Define Various Test File Lists #
 ##################################
@@ -270,10 +296,6 @@ list(APPEND FAILING_FILES
   ${TEST_SCAD_DIR}/issues/issue1890-string.scad
   ${TEST_SCAD_DIR}/issues/issue1890-use.scad
 )
-
-# Set the baseline exclude regex for all tests
-set(_base_ex [[^TRACE:\s+\*\*\* Excluding \d+ frames \*\*\*$]])
-list(APPEND CTEST_ENVIRONMENT "OPENSCAD_TEST_EXCLUDE_LINE=${_base_ex}")
 
 list(APPEND ECHO_FILES ${FUNCTION_FILES} ${MISC_FILES} ${REDEFINITION_FILES}
   ${TEST_SCAD_DIR}/3D/features/for-tests.scad
@@ -744,15 +766,6 @@ add_cmdline_test(csgterm      OPENSCAD SUFFIX term FILES
 )
 
 add_cmdline_test(echo         OPENSCAD SUFFIX echo FILES ${ECHO_FILES})
-
-# Add specific file exclude line regexes after call to add_cmdline_test with
-# same test base name:
-#
-# Example:
-#
-# # Add "*** Excluding N frames ***" to that one test's exclude regex
-# add_line_exclusion_for_test(
-#   echo recursion-test-function3 [[\*\*\* EXCLUDING \d+ FRAMES \*\*\*]])
 
 # trace-usermodule-parameters is on by default,
 # but can generate very long outputs and potentially
