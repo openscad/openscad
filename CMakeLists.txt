@@ -67,7 +67,6 @@ set(ENABLE_HIDAPI "AUTO" CACHE STRING "Enable support for HIDAPI input driver")
 set_property(CACHE ENABLE_HIDAPI PROPERTY STRINGS "AUTO" "ON" "OFF")
 option(ENABLE_CGAL "Enable CGAL." ON)
 option(ENABLE_MANIFOLD "Enable Manifold." ON)
-option(CMAKE_REQUIRE_FIND_PACKAGE_Lib3MF "Require Lib3MF." ON)
 option(ALLOW_BUNDLED_HIDAPI "Allow usage of bundled HIDAPI library (Windows only)." OFF)
 option(ENABLE_PYTHON "Enable experimental Python Interpreter" ON)
 option(PYTHON_VERSION "Specify Exact Python Version" "")
@@ -124,55 +123,6 @@ if(CLANG_TIDY)
 endif(CLANG_TIDY)
 
 add_executable(OpenSCAD)
-
-if (MINGW)
-  # Configure Debug flags (MinGW) to keep rich symbols and avoid PE/COFF
-  # RIP-relative relocation overflows in large template-heavy builds.
-  if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-    target_compile_options(OpenSCAD PRIVATE
-      $<$<CONFIG:Debug>:
-        -O0;                      # No optimisation → preserves locals
-        -g2;                      # Full debug info (types/locals)
-        -gsplit-dwarf;            # Put most DWARF in .dwo side files
-        -fno-omit-frame-pointer;  # Better backtraces
-        -fdebug-types-section;    # GCC-only: deduplicate type info
-        -Wa,-mbig-obj;            # COFF bigobj (many sections) on MinGW
-        -ffunction-sections;      # One function per section (enables GC)
-        -fdata-sections;          # One data per section (enables GC)
-      >
-    )
-    target_link_options(OpenSCAD PRIVATE
-      $<$<CONFIG:Debug>:
-        -Wl,--gc-sections;        # Linker: drop unused sections
-      >
-    )
-  elseif (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-    include(CheckCXXCompilerFlag)
-    check_cxx_compiler_flag("-gz=zlib" HAS_GZ_ZLIB)
-
-    target_compile_options(OpenSCAD PRIVATE
-      $<$<CONFIG:Debug>:
-        -O0;                      # No optimisation → preserves locals
-        -g2;                      # Full debug info (types/locals)
-        -fstandalone-debug;       # Emit complete type info for headers/templates
-        -fno-omit-frame-pointer;  # Better backtraces
-        -gsplit-dwarf;            # Put most DWARF in .dwo side files
-        -Wa,-mbig-obj;            # COFF bigobj (many sections) on MinGW
-        $<$<BOOL:${HAS_GZ_ZLIB}>:
-          -gz=zlib>;              # Compress debug sections (zlib)
-        -ffunction-sections;      # One function per section (enables GC)
-        -fdata-sections;          # One data per section (enables GC)
-      >
-    )
-    target_link_options(OpenSCAD PRIVATE
-      $<$<CONFIG:Debug>:
-        -Wl,--gc-sections;        # Linker: drop unused sections
-        -Wl,--icf=all;            # ICF: fold identical code/data (effective with lld)
-        -fuse-ld=lld;             # Use LLVM lld (robust with huge C++/COFF debug)
-      >
-    )
-  endif()
-endif()
 
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/submodules/sanitizers-cmake/cmake" ${CMAKE_MODULE_PATH})
 find_package(Sanitizers)
@@ -617,28 +567,28 @@ if(ENABLE_PYTHON)
     target_include_directories(OpenSCADPy SYSTEM PRIVATE ${FREETYPE_INCLUDE_DIRS})
   else() #MXE
 	  if (${PYTHON_VERSION}  STREQUAL "OFF")
-      find_package(Python  REQUIRED COMPONENTS Development)
+      find_package(Python3  REQUIRED COMPONENTS Development)
     else()
-      find_package(Python  ${PYTHON_VERSION} EXACT REQUIRED COMPONENTS Development)
+      find_package(Python3  ${PYTHON_VERSION} EXACT REQUIRED COMPONENTS Development)
     endif()
     if(NOT Nettle_FOUND)
       message(WARNING "Nettle not found, disabling python support.")
       set(ENABLE_PYTHON OFF CACHE BOOL "" FORCE)
     endif()
-    if(NOT Python_FOUND  AND NOT WIN32)
+    if(NOT Python3_FOUND  AND NOT WIN32)
       if(ENABLE_PYTHON)
         message(WARNING "Python not found, disabling python support.")
         set(ENABLE_PYTHON OFF CACHE BOOL "" FORCE)
       endif()
     endif()
-    SET(Python_Eff_LIBRARIES ${Python_LIBRARIES} )
-    SET(Python_Eff_INCLUDE_DIRS ${Python_INCLUDE_DIRS} )
+    SET(Python_Eff_LIBRARIES ${Python3_LIBRARIES} )
+    SET(Python_Eff_INCLUDE_DIRS ${Python3_INCLUDE_DIRS} )
     target_link_libraries(OpenSCADPy PRIVATE ${Python_Eff_LIBRARIES})
     target_include_directories(OpenSCADPy PRIVATE ${Python_Eff_INCLUDE_DIRS})
     target_include_directories(OpenSCADPy PRIVATE "${CMAKE_SOURCE_DIR}/submodules/Clipper2/CPP/Clipper2Lib/include")
     message(STATUS "Python enabled")
     target_include_directories(OpenSCADPy SYSTEM PRIVATE ${FREETYPE_INCLUDE_DIRS})
-    target_link_libraries(OpenSCADPy PRIVATE ${Python_LIBRARIES})
+    target_link_libraries(OpenSCADPy PRIVATE ${Python3_LIBRARIES})
   endif() # endif MXE
   target_include_directories(OpenSCADPy PRIVATE ${Nettle_INCLUDE_DIRS})
   target_link_libraries(OpenSCADPy PRIVATE ${Nettle_LIBRARIES})
@@ -1688,13 +1638,20 @@ if(APPLE AND NOT APPLE_UNIX)
   )
 
   # Bundle Python framework for portability (if Python is enabled)
-  if(ENABLE_PYTHON AND Python_FOUND)
+  if(ENABLE_PYTHON AND Python3_FOUND)
     # Get the Python framework path
-    get_filename_component(PYTHON_FRAMEWORK_DIR "${Python_LIBRARIES}" DIRECTORY)
-    get_filename_component(PYTHON_FRAMEWORK_DIR "${PYTHON_FRAMEWORK_DIR}" DIRECTORY)
-    get_filename_component(PYTHON_FRAMEWORK_DIR "${PYTHON_FRAMEWORK_DIR}" DIRECTORY)
+    # Python3_LIBRARIES is typically: .../Python.framework/Versions/X.Y/lib/libpython.dylib
+    # We need to get to: .../Python.framework
+    get_filename_component(PYTHON_FRAMEWORK_DIR "${Python3_LIBRARIES}" DIRECTORY)  # .../lib
+    get_filename_component(PYTHON_FRAMEWORK_DIR "${PYTHON_FRAMEWORK_DIR}" DIRECTORY)  # .../3.14
+    get_filename_component(PYTHON_FRAMEWORK_DIR "${PYTHON_FRAMEWORK_DIR}" DIRECTORY)  # .../Versions
+    get_filename_component(PYTHON_FRAMEWORK_DIR "${PYTHON_FRAMEWORK_DIR}" DIRECTORY)  # .../Python.framework
+
+    # The actual framework library file that the binary links to
+    set(PYTHON_FRAMEWORK_LIB "${PYTHON_FRAMEWORK_DIR}/Versions/${Python3_VERSION_MAJOR}.${Python3_VERSION_MINOR}/Python")
 
     message(STATUS "Bundling Python framework from: ${PYTHON_FRAMEWORK_DIR}")
+    message(STATUS "Python framework library: ${PYTHON_FRAMEWORK_LIB}")
 
     # Copy Python.framework into the app bundle
     add_custom_command(TARGET OpenSCAD POST_BUILD
@@ -1706,9 +1663,10 @@ if(APPLE AND NOT APPLE_UNIX)
     )
 
     # Fix the install name to use @rpath instead of absolute path
+    # We need to use the exact path as it appears in the binary (the framework Python file, not libpython.dylib)
     add_custom_command(TARGET OpenSCAD POST_BUILD
       COMMAND install_name_tool -change
-        ${Python_LIBRARIES}
+        ${PYTHON_FRAMEWORK_LIB}
         @rpath/Python.framework/Versions/${Python_VERSION_MAJOR}.${Python_VERSION_MINOR}/Python
         ${CMAKE_CURRENT_BINARY_DIR}/${EXECUTABLE_NAME}.app/Contents/MacOS/${EXECUTABLE_NAME}
       COMMENT "Updating Python library reference to use @rpath"
