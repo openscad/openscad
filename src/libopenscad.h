@@ -27,17 +27,17 @@
 #pragma once
 
 #ifdef _WIN32
-    #define OPENSCAD_API __declspec(dllexport)
+#define OPENSCAD_API __declspec(dllexport)
 #else
-    #define OPENSCAD_API __attribute__((visibility("default")))
+#define OPENSCAD_API __attribute__((visibility("default")))
 #endif
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-  // Extern "C" function for initializing and running OpenSCAD from a Native C API.
-  OPENSCAD_API int lib_openscad(int argc, const char* argv[]);
+// Extern "C" function for initializing and running OpenSCAD from a Native C API.
+OPENSCAD_API int lib_openscad(int argc, const char *argv[]);
 
 #ifdef __cplusplus
 }

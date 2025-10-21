@@ -38,14 +38,13 @@
 
 #include "utils/printutils.h"
 
-
 // Extern "C" function for initializing and running OpenSCAD from a Native C API.
-OPENSCAD_API int lib_openscad(int argc, const char** argv)
+OPENSCAD_API int lib_openscad(int argc, const char **argv)
 {
   try {
-    std::vector<char*> arg_ptrs;
+    std::vector<char *> arg_ptrs;
     for (int i = 0; i < argc; ++i) {
-      arg_ptrs.push_back(const_cast<char*>(argv[i]));
+      arg_ptrs.push_back(const_cast<char *>(argv[i]));
     }
 
     // Store the original current working directory.

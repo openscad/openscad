@@ -794,10 +794,7 @@ struct CommaSeparatedVector {
 };
 
 // OpenSCAD
-int main(int argc, char **argv)
-{
-  return openscad_main(argc, argv, false);
-}
+int main(int argc, char **argv) { return openscad_main(argc, argv, false); }
 
 static bool initialized = false;
 
