@@ -993,8 +993,8 @@
     <string>F8</string>
    </property>
   </action>
-  <action name="designActionMeasureDistance">
 
+  <action name="designActionMeasureDistance">
    <property name="checkable">
     <bool>true</bool>
    </property>

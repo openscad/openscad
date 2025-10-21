@@ -765,6 +765,7 @@ bool TabManager::saveACopy(EditorInterface *edt)
   QFileDialog saveCopyDialog;
   saveCopyDialog.setAcceptMode(QFileDialog::AcceptSave);  // Set the dialog to "Save" mode.
   saveCopyDialog.setWindowTitle("Save A Copy");
+
   saveCopyDialog.setNameFilter("PythonSCAD Designs (*.py, *.scad)");
 
   saveCopyDialog.setDefaultSuffix("scad");
