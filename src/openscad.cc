@@ -799,12 +799,15 @@ int main(int argc, char **argv)
   return openscad_main(argc, argv, false);
 }
 
+static bool initialized = false;
+
 int openscad_main(int argc, char **argv, bool is_lib)
 {
 #if defined(ENABLE_CGAL) && defined(USE_MIMALLOC)
-  if (!is_lib) {
+  if (!initialized || !is_lib) {
     // call init_mimalloc before any GMP variables are initialized. (defined in src/openscad_mimalloc.h)
     init_mimalloc();
+    initialized = true;
   }
 #endif
 
@@ -825,9 +828,7 @@ int openscad_main(int argc, char **argv, bool is_lib)
 #else
   const auto applicationPath = boost::dll::fs::current_path();
 #endif
-  if (!is_lib) {
-    PlatformUtils::registerApplicationPath(applicationPath);
-  }
+  PlatformUtils::registerApplicationPath(applicationPath);
 
 #ifdef ENABLE_PYTHON
   // The original name as called, not resolving links and so on. This will
@@ -840,15 +841,11 @@ int openscad_main(int argc, char **argv, bool is_lib)
 #endif
 
 #ifdef ENABLE_CGAL
-  if (!is_lib) {
-    // Always throw exceptions from CGAL, so we can catch instead of crashing on bad geometry.
-    CGAL::set_error_behaviour(CGAL::THROW_EXCEPTION);
-    CGAL::set_warning_behaviour(CGAL::THROW_EXCEPTION);
-  }
+  // Always throw exceptions from CGAL, so we can catch instead of crashing on bad geometry.
+  CGAL::set_error_behaviour(CGAL::THROW_EXCEPTION);
+  CGAL::set_warning_behaviour(CGAL::THROW_EXCEPTION);
 #endif
-  if (!is_lib) {
-    Builtins::instance()->initialize();
-  }
+  Builtins::instance()->initialize();
 
   auto original_path = fs::current_path();
 
