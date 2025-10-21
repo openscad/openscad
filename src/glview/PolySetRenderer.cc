@@ -45,12 +45,12 @@
 #include "geometry/PolySet.h"
 #include "geometry/PolySetUtils.h"
 #include "glview/ColorMap.h"
-#include "glview/cgal/CGALRenderUtils.h"
 #include "glview/VBORenderer.h"
 #include "glview/Renderer.h"
 #include "glview/ShaderUtils.h"
 #include "glview/VBOBuilder.h"
 #include "glview/VertexState.h"
+#include "utils/vector_math.h"
 
 #ifdef ENABLE_CGAL
 #include "geometry/cgal/CGALNefGeometry.h"
