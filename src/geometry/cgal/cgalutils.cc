@@ -17,7 +17,6 @@
 #include <utility>
 #include <memory>
 #include <CGAL/Aff_transformation_3.h>
-#include <CGAL/Polygon_mesh_processing/repair_polygon_soup.h>
 #include <CGAL/normal_vector_newell_3.h>
 #include <CGAL/Handle_hash_function.h>
 #include <CGAL/Surface_mesh.h>
@@ -26,16 +25,6 @@
 #include <CGAL/version.h>
 
 #include <CGAL/convex_hull_3.h>
-
-#include <CGAL/Polygon_mesh_processing/repair.h>
-#include <CGAL/Polygon_mesh_processing/polygon_soup_to_polygon_mesh.h>
-#include <CGAL/Polygon_mesh_processing/polygon_mesh_to_polygon_soup.h>
-#include <CGAL/Polygon_mesh_processing/connected_components.h>
-#include <CGAL/Polygon_mesh_processing/triangulate_faces.h>
-#include <CGAL/Polygon_mesh_processing/measure.h>
-#include <CGAL/Polygon_mesh_processing/compute_normal.h>
-#include <CGAL/Polygon_mesh_processing/orient_polygon_soup.h>
-namespace PMP = CGAL::Polygon_mesh_processing;
 
 #include "geometry/Reindexer.h"
 #include "geometry/GeometryUtils.h"
@@ -53,6 +42,15 @@ namespace CGALUtils {
 // TODO: We could rewrite this to use PolygonMeshProcessing concepts, similar to how
 // we create Manifold geometries from PolySet; convert via Surface_mesh, check if it's closed,
 // use repair|orient_polygon_soup, etc.
+//
+// Overall approach:
+// 1. If the PolySet is convex, create the convex hull from its vertices. The idea is that this is is
+//    more likely to result in a good Nef Polyhedron than evaluating the faces.
+// 2. If the PolySet is known to be an epsilon-valid manifold, we can go through the new
+//    Surface_mesh-to-Nef path, which allows us to create Nef polyhedrons which are technically
+//    non-manifold (as that's a valid intermediate state).
+// 3. Otherwise, we try to create the Nef Polyhedron via the old Polyhedron_3 route, which requires the
+//    input to be manifold.
 std::unique_ptr<CGALNefGeometry> createNefPolyhedronFromPolySet(const PolySet& ps)
 {
   if (ps.isEmpty()) return std::make_unique<CGALNefGeometry>();
