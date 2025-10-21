@@ -134,7 +134,7 @@ def normalize_string(s):
 
     return s
 
-def get_normalized_text(filename, replace_paths=False):
+def get_normalized_lines(filename, replace_paths=False):
     try:
         f = open(filename)
         text = f.read()
@@ -155,7 +155,7 @@ def get_normalized_text(filename, replace_paths=False):
             text = text.replace(build_to_test_sources, runtime_to_test_sources)
 
     if options.exclude_line_re is None:
-        return [ line for line in text.splitlines() ]
+        return text.splitlines()
     
     def include_line(line):
         include = not options.exclude_line_re.search(line)
@@ -172,8 +172,8 @@ def compare_default(resultfilename):
     print('text comparison: ', file=sys.stderr)
     print(' expected textfile: ', expectedfilename, file=sys.stderr)
     print(' actual textfile: ', resultfilename, file=sys.stderr)
-    expected_lines = get_normalized_text(expectedfilename, True)
-    actual_lines   = get_normalized_text(resultfilename)
+    expected_lines = get_normalized_lines(expectedfilename, True)
+    actual_lines   = get_normalized_lines(resultfilename)
     if not expected_lines == actual_lines:
         if resultfilename:
             differences = difflib.unified_diff(
@@ -427,7 +427,7 @@ if __name__ == '__main__':
 
     if exclude_line:
         try:
-            print(f"Excluding lines based on regex {exclude_line!r}", file=sys.stderr)
+            print(f"Excluding lines based on regex: {exclude_line}", file=sys.stderr)
             options.exclude_line_re = re.compile(exclude_line)
         except Exception as e:
             print(f"Invalid regex: {exclude_line}\n  {e}", file=sys.stderr)
