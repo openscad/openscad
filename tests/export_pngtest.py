@@ -83,9 +83,10 @@ parser.add_argument(
 args, remaining_args = parser.parse_known_args()
 
 args.format = args.format.lower()
-inputfile = clean_path(remaining_args[0])
-
-pngfile = clean_path(remaining_args[-1])
+# inputfile = clean_path(remaining_args[0])
+# pngfile = clean_path(remaining_args[-1])
+inputfile = remaining_args[0]
+pngfile = remaining_args[-1]
 remaining_args = remaining_args[1:-1]  # Passed on to the OpenSCAD executable
 
 if not os.path.exists(inputfile):
