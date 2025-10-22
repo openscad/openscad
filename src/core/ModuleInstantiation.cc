@@ -114,10 +114,10 @@ void IfElseModuleInstantiation::print_python(std::ostream& stream, std::ostream&
  * noinline is required, as we here specifically optimize for stack usage
  * during normal operating, not runtime during error handling.
  */
-static void NOINLINE print_trace(const ModuleInstantiation *mod,
+static void NOINLINE print_trace(EvaluationException& e, const ModuleInstantiation *mod,
                                  const std::shared_ptr<const Context>& context)
 {
-  LOG(message_group::Trace, mod->location(), context->documentRoot(), "called by '%1$s'", mod->name());
+  e.LOG(message_group::Trace, mod->location(), context->documentRoot(), "called by '%1$s'", mod->name());
 }
 
 std::shared_ptr<AbstractNode> ModuleInstantiation::evaluate(
@@ -144,10 +144,8 @@ std::shared_ptr<AbstractNode> ModuleInstantiation::evaluate(
     auto node = module->module->instantiate(module->defining_context, this, context);
     return node;
   } catch (EvaluationException& e) {
-    if (e.traceDepth > 0) {
-      print_trace(this, context);
-      e.traceDepth--;
-    }
+    print_trace(e, this, context);
+    e.traceDepth--;
     throw;
   }
 }

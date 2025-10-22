@@ -16,7 +16,7 @@ DOALL=0
 CHECKALL=0
 DOSTAGED=0
 
-FORMAT_CMD="clang-format -i --style file:$ROOT_DIR/.clang-format"
+FORMAT_CMD="clang-format -i --style=file"
 CHECK_CMD="$FORMAT_CMD --dry-run --Werror"
 VERSION_CMD="clang-format --version"
 STAGED_FILES_CMD="git diff --name-only --cached"
@@ -100,13 +100,13 @@ EOF
 done
 
 function execute() {
-    # Execute function with done message, version, and preserved return value 
+    # Execute function with done message, version, and preserved return value
     local FUNCTION MESSAGE RETURN_VALUE
     FUNCTION=$1
     MESSAGE=$2
 
     echo "$MESSAGE"
-    
+
     "$FUNCTION"
     RETURN_VALUE=$?
 

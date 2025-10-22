@@ -42,6 +42,15 @@ namespace CGALUtils {
 // TODO: We could rewrite this to use PolygonMeshProcessing concepts, similar to how
 // we create Manifold geometries from PolySet; convert via Surface_mesh, check if it's closed,
 // use repair|orient_polygon_soup, etc.
+//
+// Overall approach:
+// 1. If the PolySet is convex, create the convex hull from its vertices. The idea is that this is is
+//    more likely to result in a good Nef Polyhedron than evaluating the faces.
+// 2. If the PolySet is known to be an epsilon-valid manifold, we can go through the new
+//    Surface_mesh-to-Nef path, which allows us to create Nef polyhedrons which are technically
+//    non-manifold (as that's a valid intermediate state).
+// 3. Otherwise, we try to create the Nef Polyhedron via the old Polyhedron_3 route, which requires the
+//    input to be manifold.
 std::unique_ptr<CGALNefGeometry> createNefPolyhedronFromPolySet(const PolySet& ps)
 {
   if (ps.isEmpty()) return std::make_unique<CGALNefGeometry>();
@@ -69,6 +78,13 @@ std::unique_ptr<CGALNefGeometry> createNefPolyhedronFromPolySet(const PolySet& p
     CGAL_Polyhedron r_exact;
     CGALUtils::copyPolyhedron(r, r_exact);
     return std::make_unique<CGALNefGeometry>(std::make_shared<CGAL_Nef_polyhedron3>(r_exact));
+  }
+
+  if (ps_tri->isManifold()) {
+    auto mesh = createSurfaceMeshFromPolySet<CGAL_DoubleMesh>(*ps_tri);
+    assert(mesh->is_valid() && CGAL::is_closed(*mesh));
+    auto nef = convertSurfaceMeshToNef(*mesh);
+    return std::make_unique<CGALNefGeometry>(std::make_shared<CGAL_Nef_polyhedron3>(std::move(nef)));
   }
 
   std::shared_ptr<CGAL_Nef_polyhedron3> N;
