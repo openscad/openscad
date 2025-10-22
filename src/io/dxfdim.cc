@@ -76,7 +76,7 @@ static Value builtin_dxf_dim(Arguments arguments, const Location& loc)
   const double scale = parameters.get("scale", 1);
   std::string name = parameters.get("name", "");
 
-  const fs::path filepath(filename);
+  const fs::path filepath(std::filesystem::u8path(filename));
   uintmax_t filesize = -1;
   int64_t lastwritetime = -1;
   if (fs::exists(filepath)) {
@@ -180,7 +180,7 @@ static Value builtin_dxf_cross(Arguments arguments, const Location& loc)
   std::string layername = parameters.get("layer", "");
   const double scale = parameters.get("scale", 1);
 
-  const fs::path filepath(filename);
+  const fs::path filepath(std::filesystem::u8path(filename));
   uintmax_t filesize = -1;
   int64_t lastwritetime = -1;
   if (fs::exists(filepath)) {
