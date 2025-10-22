@@ -93,3 +93,24 @@ void OpenSCADApp::setApplicationFont(const QString& family, uint size)
   )");
   scadApp->setStyleSheet(stylesheet.arg(family, QString::number(size)));
 }
+
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+// https://doc.qt.io/qt-6/qtcore-changes-qt6.html#other-classes
+//
+//     In Qt 5, QCoreApplication::quit() was equivalent to calling QCoreApplication::exit().
+//     This just exited the main event loop.
+//
+//     In Qt 6, the method will instead try to close all top-level windows by posting a close
+//     event. The windows are free to cancel the shutdown process by ignoring the event.
+//
+// For Qt5, simulate the Qt6 behavior.
+void OpenSCADApp::quit()
+{
+  for (MainWindow *mw : scadApp->windowManager.getWindows()) {
+    if (!mw->close()) {
+      return;
+    }
+  }
+  QApplication::quit();
+}
+#endif
