@@ -29,13 +29,21 @@ gs_cmd = [
 ]
 
 
+def list_files(file):
+    print(os.listdir(os.path.dirname(file)))
+
+
 def convert_svg_to_png(svg_file, png_file):
+    print("before convert")
+    list_files(png_file)
     convert_cmd = [
         "rsvg-convert",
         svg_file,
         "--output",
         png_file,
     ]
+    print("after convert")
+    list_files(png_file)
     print("Running SVG Converter:", " ".join(convert_cmd), file=sys.stderr)
     result = subprocess.call(convert_cmd)
     if result == 0:
