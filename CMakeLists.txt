@@ -954,6 +954,8 @@ endif()
 
 # Stack size 8MB; github issue 116
 target_compile_definitions(OpenSCAD PRIVATE "STACKSIZE=${STACKSIZE}") # used as default in src/platform/PlatformUtils.h
+# Disable Eigen alignment to prevent memory corruption on macOS where alignment differs between modules
+target_compile_definitions(OpenSCAD PRIVATE EIGEN_DONT_ALIGN)
 
 if(NULLGL)
   set(OFFSCREEN_METHOD "NULLGL")
