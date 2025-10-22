@@ -42,19 +42,19 @@
 OPENSCAD_API int lib_openscad(int argc, const char **argv)
 {
   try {
+    std::vector<std::string> arg_strings;
     std::vector<char *> arg_ptrs;
+
     for (int i = 0; i < argc; ++i) {
-      arg_ptrs.push_back(const_cast<char *>(argv[i]));
+      arg_strings.push_back(argv[i]);
     }
 
-    // Store the original current working directory.
-    const auto original_path = fs::current_path();
+    for (auto& str : arg_strings) {
+      arg_ptrs.push_back(&str[0]);
+    }
 
     // Execute the main OpenSCAD functionality with the prepared arguments.
     const int result = openscad_main(argc, arg_ptrs.data(), true);
-
-    // Restore the original working directory after execution.
-    fs::current_path(original_path);
 
     // Return the result of the OpenSCAD execution.
     return result;
