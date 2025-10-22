@@ -28,9 +28,11 @@ pkgs.mkShell {
     pkg-config
     python3
     python3Packages.numpy
+    python3Packages.pillow
     tbb
     wayland
     wayland-protocols
+    librsvg
 
     # QT5 
     # libsForQt5.full
