@@ -71,6 +71,7 @@ std::unique_ptr<PolySet> tessellate_faces(const PolySet& polyset)
   result->setTriangular(true);
   result->curves = polyset.curves;
   result->surfaces = polyset.surfaces;
+  result->setManifold(polyset.isManifold());
   // ideally this should not require a copy...
   if (polyset.isTriangular()) {
     result->vertices = polyset.vertices;
