@@ -38,6 +38,8 @@
 #include FT_FREETYPE_H
 #include FT_GLYPH_H
 
+class CurveDiscretizer;
+
 class FreetypeRenderer
 {
 public:
@@ -46,9 +48,6 @@ public:
   public:
     void set_size(double size) { this->size = size; }
     void set_spacing(double spacing) { this->spacing = spacing; }
-    void set_fn(double fn) { this->fn = fn; }
-    void set_fa(double fa) { this->fa = fa; }
-    void set_fs(double fs) { this->fs = fs; }
     void set_segments(unsigned int segments) { this->segments = segments; }
     void set_text(const std::string& text) { this->text = text; }
     void set_font(const std::string& font) { this->font = font; }
@@ -59,21 +58,21 @@ public:
     void set_valign(const std::string& valign) { this->valign = valign; }
     void set_loc(const Location& loc) { this->loc = loc; }
     void set_documentPath(const std::string& path) { this->documentPath = path; }
+    /**
+     * Initialize values from parameters if it exists, otherwise with a default.
+     */
     void set(Parameters& parameters);
+    /**
+     * Set defaults and discretizer. Intended for calling from Python.
+     */
+    void set(std::shared_ptr<CurveDiscretizer> c);
     [[nodiscard]] const FontFacePtr get_font_face() const;
     void detect_properties();
-    friend std::ostream& operator<<(std::ostream& stream, const FreetypeRenderer::Params& params)
-    {
-      return stream << "text = \"" << params.text << "\", size = " << params.size
-                    << ", spacing = " << params.spacing << ", font = \"" << params.font
-                    << "\", direction = \"" << params.direction << "\", language = \"" << params.language
-                    << (params.script.empty() ? "" : "\", script = \"") << params.script
-                    << "\", halign = \"" << params.halign << "\", valign = \"" << params.valign
-                    << "\", $fn = " << params.fn << ", $fa = " << params.fa << ", $fs = " << params.fs;
-    }
+    friend std::ostream& operator<<(std::ostream& stream, const FreetypeRenderer::Params& params);
 
   private:
-    double size, spacing, fn, fa, fs;
+    double size, spacing;
+    std::shared_ptr<CurveDiscretizer> discretizer;
     unsigned int segments;
     std::string text, font, direction, language, script, halign, valign;
     Location loc = Location::NONE;
