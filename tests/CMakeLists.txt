@@ -367,7 +367,6 @@ list(APPEND ECHO_FILES ${FUNCTION_FILES} ${MISC_FILES} ${REDEFINITION_FILES}
   ${TEST_SCAD_DIR}/misc/root-modifiers.scad
   ${TEST_SCAD_DIR}/misc/root-modifier-for.scad
   ${TEST_DATA_DIR}/use-order-test/use-order-test.scad
-  ${TEST_SCAD_DIR}/misc/vector-swizzling.scad
   ${TEST_SCAD_DIR}/misc/linenumber.scad
 )
 
@@ -1212,6 +1211,10 @@ add_cmdline_test(render-cgal    EXPERIMENTAL OPENSCAD SUFFIX png FILES ${EXPERIM
 add_cmdline_test(render-dxf      EXPERIMENTAL SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png ARGS ${OPENSCAD_EXE_ARG} --format=DXF --render=force --enable=textmetrics EXPECTEDDIR render FILES ${EXPERIMENTAL_TEXTMETRICS_FILES})
 add_cmdline_test(render-svg      EXPERIMENTAL SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png ARGS ${OPENSCAD_EXE_ARG} --format=SVG --render=force --enable=textmetrics EXPECTEDDIR render FILES ${EXPERIMENTAL_TEXTMETRICS_FILES})
 
+#
+# --enable=vector-swizzle tests
+#
+add_cmdline_test(echo EXPERIMENTAL OPENSCAD SUFFIX echo FILES ${TEST_SCAD_DIR}/misc/vector-swizzling.scad ARGS --enable=vector-swizzle)
 
 ############################
 # Relative filenames tests #
