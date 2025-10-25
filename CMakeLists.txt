@@ -239,6 +239,9 @@ else()
   set(SUFFIX_WITH_DASH "")
 endif()
 
+set(EXECUTABLE_NAME pythonscad${SUFFIX_WITH_DASH})
+set(PYTHON_EXECUTABLE_NAME pythonscad-python${SUFFIX_WITH_DASH})
+
 if (MXECROSS OR WIN32)
   add_subdirectory(winconsole)
   set_property(TARGET OpenSCAD PROPERTY WIN32_EXECUTABLE ON)
@@ -483,9 +486,6 @@ find_package(LibXml2 2.9 REQUIRED)
 message(STATUS "LibXml2: ${LIBXML2_VERSION_STRING}")
 target_include_directories(OpenSCAD SYSTEM PRIVATE ${LIBXML2_INCLUDE_DIR})
 target_link_libraries(OpenSCAD PRIVATE ${LIBXML2_LIBRARIES})
-
-set(EXECUTABLE_NAME pythonscad${SUFFIX_WITH_DASH})
-set(PYTHON_EXECUTABLE_NAME pythonscad-python${SUFFIX_WITH_DASH})
 
 configure_file(
   "${CMAKE_CURRENT_SOURCE_DIR}/src/executable.h.in"
