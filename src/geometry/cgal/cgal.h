@@ -50,7 +50,7 @@ using CGAL_Iso_rectangle_2e = CGAL::Iso_rectangle_2<CGAL::Simple_cartesian<NT2>>
 // 3D
 
 using NT3 = CGAL::Gmpq;
-using CGAL_Kernel3 = CGAL::Cartesian<NT3>;
+using CGAL_Kernel3 = CGAL::Epeck;
 using CGAL_Nef_polyhedron3 = CGAL::Nef_polyhedron_3<CGAL_Kernel3>;
 
 using CGAL_Polyhedron = CGAL::Polyhedron_3<CGAL_Kernel3>;
