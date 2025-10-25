@@ -1669,7 +1669,7 @@ if(APPLE AND NOT APPLE_UNIX)
     add_custom_command(TARGET OpenSCAD POST_BUILD
       COMMAND install_name_tool -change
         ${PYTHON_FRAMEWORK_LIB}
-        @rpath/Python.framework/Versions/${Python_VERSION_MAJOR}.${Python_VERSION_MINOR}/Python
+        @rpath/Python.framework/Versions/${Python3_VERSION_MAJOR}.${Python3_VERSION_MINOR}/Python
         ${CMAKE_CURRENT_BINARY_DIR}/${EXECUTABLE_NAME}.app/Contents/MacOS/${EXECUTABLE_NAME}
       COMMENT "Updating Python library reference to use @rpath"
     )
