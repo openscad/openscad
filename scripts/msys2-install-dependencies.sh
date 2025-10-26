@@ -35,6 +35,7 @@ pacboy --noconfirm --sync --needed \
     make: \
     bison: \
     flex: \
+    bsdiff: \
     toolchain:p \
     cmake:p \
     ninja:p \
