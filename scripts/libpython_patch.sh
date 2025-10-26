@@ -35,4 +35,5 @@ fi
 mv ${OBJFILE}.tmp ${OBJFILE}
 
 #pack again
-ar -rc ${STUBFILE} *.o
+# Use find with xargs to avoid "Argument list too long" error on Windows
+find . -name '*.o' -print0 | xargs -0 ar -rc ${STUBFILE}
