@@ -565,6 +565,7 @@ if(ENABLE_PYTHON)
     target_link_libraries(OpenSCADPy PRIVATE "${PYTHON_MINGW_ARCHIVE}")
     target_include_directories(OpenSCADPy SYSTEM PRIVATE ${HARFBUZZ_INCLUDE_DIRS})
     target_include_directories(OpenSCADPy SYSTEM PRIVATE ${FREETYPE_INCLUDE_DIRS})
+    target_include_directories(OpenSCADPy PRIVATE "${CMAKE_SOURCE_DIR}/submodules/Clipper2/CPP/Clipper2Lib/include")
   else() #MXE
 	  if (${PYTHON_VERSION}  STREQUAL "OFF")
       find_package(Python3  REQUIRED COMPONENTS Development)
