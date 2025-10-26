@@ -29,10 +29,12 @@ jobs:
         with:
           submodules: 'recursive'
       - name: Setup (detached) tmate session if enabled
-        uses: mxschmitt/action-tmate@v3
         if: ${{ github.event_name == 'workflow_dispatch' && inputs.debug_enabled }}
+        uses: mxschmitt/action-tmate@v3
+        timeout-minutes: 5
         with:
           detached: true
+          limit-access-to-actor: true
       - name: Setup MSYS2 Environment
         uses: msys2/setup-msys2@v2
         with:
