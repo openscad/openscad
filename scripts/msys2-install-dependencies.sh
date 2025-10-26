@@ -35,7 +35,6 @@ pacboy --noconfirm --sync --needed \
     make: \
     bison: \
     flex: \
-    bsdiff: \
     toolchain:p \
     cmake:p \
     ninja:p \
@@ -56,5 +55,8 @@ pacboy --noconfirm --sync --needed \
     python-pip:p \
     python-numpy:p \
     python-pillow:p
+
+# Install bsdiff from base MSYS2 repository for libpython_patch.sh
+pacman --noconfirm --sync --needed bsdiff
 
 date "+### %Y-%m-%d %T msys2-install-dependencies finished"
