@@ -156,9 +156,9 @@ jobs:
           path: /tmp/out
           destination: wasm
   openscad-macos:
-    resource_class: macos.m1.medium.gen1
+    resource_class: m4pro.medium
     macos:
-      xcode: 16.4.0
+      xcode: 26.0
     environment:
       OPENSCAD_LIBRARIES: /Users/distiller/libraries/install
       PKG_CONFIG_PATH: /Users/distiller/libraries/install/lib/pkgconfig
