@@ -1,6 +1,10 @@
 function addSubmenu(menu, name, files) {
     var ul = document.createElement('ul');
-    ul.appendChild(document.createElement('h3'));
+    var li = document.createElement('li');
+    var h3 = document.createElement('h3');
+    h3.appendChild(document.createTextNode(name));
+    li.appendChild(h3);
+    ul.appendChild(li);
     for (var a = 0; a < files.length; a++) {
         var menulink = document.createElement('a');
         menulink.href = "../" + name + "/" + files[a] + ".html";
