@@ -21,6 +21,7 @@ public:
   static const Feature ExperimentalImportFunction;
   static const Feature ExperimentalObjectFunction;
   static const Feature ExperimentalPredictibleOutput;
+  static const Feature ExperimentalWrapPolygon;
 
 #ifdef ENABLE_GUI_TESTS
   static constexpr bool HasGuiTesting{true};

@@ -3049,6 +3049,85 @@ std::vector<std::vector<IndexedColorTriangle>> wrapSlice(PolySetBuilder& builder
 
 static std::unique_ptr<PolySet> wrapObject(const WrapNode& node, const PolySet *ps)
 {
+  if (!Feature::ExperimentalWrapPolygon.is_enabled()) {
+    PolySetBuilder builder(0, 0, 3, true);
+    int segments1 = 360.0 / node.fa;
+    int segments2 = 2 * G_PI * node.r / node.fs;
+    int segments = segments1 > segments2 ? segments1 : segments2;
+    if (node.fn > 0) segments = node.fn;
+    double arclen = 2 * G_PI * node.r / segments;
+
+    for (const auto& p : ps->indices) {
+      // find leftmost point
+      int n = p.size();
+      int minind = 0;
+      for (size_t j = 1; j < p.size(); j++) {
+        if (ps->vertices[p[j]][0] < ps->vertices[p[minind]][0]) minind = j;
+      }
+      int forw_ind = minind;
+      int back_ind = minind;
+      double xcur, xnext;
+
+      xcur = ps->vertices[p[minind]][0];
+      std::vector<Vector3d> curslice;
+      curslice.push_back(ps->vertices[p[minind]]);
+
+      int end = 0;
+      do {
+        if (xcur >= 0) xnext = ceil((xcur + 1e-6) / arclen) * arclen;
+        else xnext = -floor((-xcur + 1e-6) / arclen) * arclen;
+        while (ps->vertices[p[(forw_ind + 1) % n]][0] <= xnext && ((forw_ind + 1) % n) != back_ind) {
+          forw_ind = (forw_ind + 1) % n;
+          curslice.push_back(ps->vertices[p[forw_ind]]);
+        }
+        while (ps->vertices[p[(back_ind + n - 1) % n]][0] <= xnext &&
+               ((back_ind + n - 1) % n) != forw_ind) {
+          back_ind = (back_ind + n - 1) % n;
+          curslice.insert(curslice.begin(), ps->vertices[p[back_ind]]);
+        }
+
+        Vector3d forw_pt, back_pt;
+        if (back_ind == ((forw_ind + 1) % n)) {
+          end = 1;
+        } else {
+          // calculate intermediate forward point
+          Vector3d tmp1, tmp2;
+
+          tmp1 = ps->vertices[p[forw_ind]];
+          tmp2 = ps->vertices[p[(forw_ind + 1) % n]];
+          forw_pt = tmp1 + (tmp2 - tmp1) * (xnext - tmp1[0]) / (tmp2[0] - tmp1[0]);
+          curslice.push_back(forw_pt);
+          tmp1 = ps->vertices[p[back_ind]];
+          tmp2 = ps->vertices[p[(back_ind + n - 1) % n]];
+          back_pt = tmp1 + (tmp2 - tmp1) * (xnext - tmp1[0]) / (tmp2[0] - tmp1[0]);
+          curslice.insert(curslice.begin(), back_pt);
+        }
+
+        double ang, rad;
+
+        for (size_t j = 0; j < curslice.size(); j++) {
+          auto& pt = curslice[j];
+          ang = pt[0] / node.r;
+          rad = node.r - pt[1];
+          pt = Vector3d(rad * cos(ang), rad * sin(ang), pt[2]);
+        }
+        for (size_t j = 0; j < curslice.size() - 2; j++) {
+          builder.beginPolygon(curslice.size());
+          builder.addVertex(curslice[0]);
+          builder.addVertex(curslice[j + 1]);
+          builder.addVertex(curslice[j + 2]);
+          builder.endPolygon();
+        }
+        // TODO color alpha
+        curslice.clear();
+        xcur = xnext;
+        curslice.push_back(back_pt);
+        curslice.push_back(forw_pt);
+      } while (end == 0);
+    }
+    auto ps1 = builder.build();
+    return ps1;
+  }
   PolySetBuilder builder(0, 0, 3, true);
 
   // find maxmal xrange

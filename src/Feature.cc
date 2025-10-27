@@ -44,6 +44,9 @@ const Feature Feature::ExperimentalPredictibleOutput(
   "Attempt to produce predictible, diffable outputs (e.g. sorting the STL, or remeshing in a determined "
   "order)");
 
+const Feature Feature::ExperimentalWrapPolygon("wrap-polygon",
+                                               "New Wrap feature which can wrap shapes around polygon");
+
 Feature::Feature(const std::string& name, std::string description, bool hidden)
   : name(name), description(std::move(description))
 {
