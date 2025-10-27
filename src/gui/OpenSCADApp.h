@@ -18,6 +18,10 @@ public:
 
   bool notify(QObject *object, QEvent *event) override;
   void requestOpenFile(const QString& filename);
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+  // See comments in OpenSCADApp.cc.
+  static void quit();
+#endif
 
 public slots:
   void showFontCacheDialog();

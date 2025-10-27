@@ -71,6 +71,8 @@ private:
   void setTabsCloseButtonVisibility(int tabIndice, bool isVisible);
 
   QTabBar::ButtonPosition getClosingButtonPosition();
+  void zoomIn();
+  void zoomOut();
 
 private slots:
   void tabSwitched(int);
