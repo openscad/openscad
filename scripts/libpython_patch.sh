@@ -21,13 +21,19 @@ ar x ${STUBFILE}
 # xxd  libpython3_12_dll_d001737.o > tmpfile
 # edit tmpfile
 # xxd -r tmpfile > libpython3_12_dll_d001737.o.tmp
-# then  bsdiff  libpython3_12_dll_d001737.o libpython3_12_dll_d001737.o.tmp ../../scripts/libpython3_12_dll_d001737.o.diff 
+# then  bsdiff  libpython3_12_dll_d001737.o libpython3_12_dll_d001737.o.tmp ../../scripts/libpython3_12_dll_d001737.o.diff
 #
-bspatch ${OBJFILE} ${OBJFILE}.tmp ../../scripts/${OBJFILE}.diff
+# Use bspatch4 (from Python's bsdiff4 package) if bspatch is not available
+if command -v bspatch >/dev/null 2>&1; then
+    bspatch ${OBJFILE} ${OBJFILE}.tmp ../../scripts/${OBJFILE}.diff
+elif command -v bspatch4 >/dev/null 2>&1; then
+    bspatch4 ${OBJFILE} ${OBJFILE}.tmp ../../scripts/${OBJFILE}.diff
+else
+    echo "Error: Neither bspatch nor bspatch4 found"
+    exit 1
+fi
 mv ${OBJFILE}.tmp ${OBJFILE}
 
 #pack again
-ar -rc ${STUBFILE} *.o
-
-
- 
+# Use find with xargs to avoid "Argument list too long" error on Windows
+find . -name '*.o' -print0 | xargs -0 ar -rc ${STUBFILE}

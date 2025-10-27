@@ -56,4 +56,8 @@ pacboy --noconfirm --sync --needed \
     python-numpy:p \
     python-pillow:p
 
+# Install bsdiff4 via pip for libpython_patch.sh (provides bspatch4 command)
+date "+### %Y-%m-%d %T install bsdiff4 via pip"
+pip install bsdiff4
+
 date "+### %Y-%m-%d %T msys2-install-dependencies finished"
