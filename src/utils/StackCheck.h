@@ -3,10 +3,6 @@
 #include <cstdlib>
 #include "platform/PlatformUtils.h"
 
-#if defined(__GNUC__) && !defined(__clang__)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wdangling-pointer"
-#endif  // defined(__GNUC__) && !defined(__clang__)
 #if defined(_MSC_VER)
 #pragma warning(push)
 #pragma warning(disable : 26486)  // Disable warning for dangling pointers
@@ -38,9 +34,6 @@ private:
   unsigned long limit;
   unsigned char *ptr;
 };
-#if defined(__GNUC__) && !defined(__clang__)
-#pragma GCC diagnostic pop
-#endif  // defined(__GNUC__) && !defined(__clang__)
 #if defined(_MSC_VER)
 #pragma warning(pop)
 #endif  // defined(_MSC_VER)
