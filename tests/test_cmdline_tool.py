@@ -134,7 +134,7 @@ def normalize_string(s):
 
     return s
 
-def get_normalized_text(filename, replace_paths=False):
+def get_normalized_lines(filename, replace_paths=False):
     try:
         f = open(filename)
         text = f.read()
@@ -145,33 +145,41 @@ def get_normalized_text(filename, replace_paths=False):
         # best effort is acceptable".
         f = open(filename, encoding="latin-1")
         text = f.read()
-      except:
+      except Exception as err:
         # do not fail silently
         text = "could not read " + "\n" + filename + "\n" + repr(err)
     text = normalize_string(text).strip("\r\n").replace("\r\n", "\n") + "\n"
     if replace_paths:
         runtime_to_test_sources = get_runtime_to_test_sources()
         if runtime_to_test_sources != build_to_test_sources:
-            return text.replace(build_to_test_sources, runtime_to_test_sources)
-        else:
-            return text
-    else:
-        return text
+            text = text.replace(build_to_test_sources, runtime_to_test_sources)
+
+    if options.exclude_line_re is None:
+        return text.splitlines()
+    
+    def include_line(line):
+        include = not options.exclude_line_re.search(line)
+        if options.exclude_debug:
+            if include:
+                print(f" : {line}", file=sys.stderr)
+            else:
+                print(f"X: {line}", file=sys.stderr)
+        return include
+    
+    return [ line for line in text.splitlines() if include_line(line) ]
 
 def compare_default(resultfilename):
     print('text comparison: ', file=sys.stderr)
     print(' expected textfile: ', expectedfilename, file=sys.stderr)
     print(' actual textfile: ', resultfilename, file=sys.stderr)
-    expected_text = get_normalized_text(expectedfilename, True)
-    actual_text = get_normalized_text(resultfilename)
-    if not expected_text == actual_text:
+    expected_lines = get_normalized_lines(expectedfilename, True)
+    actual_lines   = get_normalized_lines(resultfilename)
+    if not expected_lines == actual_lines:
         if resultfilename:
             differences = difflib.unified_diff(
-                [line for line in expected_text.splitlines()],
-                [line for line in actual_text.splitlines()])
-            line = None
+                [ line for line in expected_lines ],
+                [ line for line in actual_lines   ])
             for line in differences: sys.stderr.write(line + '\n')
-            if not line: return True
         return False
     return True
 
@@ -342,28 +350,37 @@ class Options:
 def usage():
     print("Usage: " + sys.argv[0] + " [<options>] <cmdline-tool> <argument>", file=sys.stderr)
     print("Options:", file=sys.stderr)
-    print("  -g, --generate           Generate expected output for the given tests", file=sys.stderr)
-    print("  -s, --suffix=<suffix>    Write -expected and -actual files with the given suffix instead of .txt", file=sys.stderr)
-    print("  -k, --kernel=<name[:n]>  Define kernel name and optionally size for morphology processing, default is Square:1", file=sys.stderr)
-    print("  -e, --expected-dir=<dir> Use -expected files from the given dir (to share files between test drivers)", file=sys.stderr)
-    print("  -t, --test=<name>        Specify test name instead of deducting it from the argument (defaults to basename <exe>)", file=sys.stderr)
-    print("  -f, --file=<name>        Specify test file instead of deducting it from the argument (default to basename <first arg>)", file=sys.stderr)
-    print("  -c, --convexec=<name>    Path to ImageMagick 'convert' executable", file=sys.stderr)
-    print("      --stdin              Pipe input file to <cmdline-tool> by stdin, replacing input file name with '-' when calling <cmdline-tool>", file=sys.stderr)
-    print("      --stdout             Pipe output of <cmdline-tool> to output file, replacing output file name with '-' when calling <cmdline-tool>", file=sys.stderr)
+    print("  -g, --generate             Generate expected output for the given tests", file=sys.stderr)
+    print("  -s, --suffix=<suffix>      Write -expected and -actual files with the given suffix instead of .txt", file=sys.stderr)
+    print("  -k, --kernel=<name[:n]>    Define kernel name and optionally size for morphology processing, default is Square:1", file=sys.stderr)
+    print("  -e, --expected-dir=<dir>   Use -expected files from the given dir (to share files between test drivers)", file=sys.stderr)
+    print("  -t, --test=<name>          Specify test name instead of deducting it from the argument (defaults to basename <exe>)", file=sys.stderr)
+    print("  -f, --file=<name>          Specify test file instead of deducting it from the argument (default to basename <first arg>)", file=sys.stderr)
+    print("  -c, --convexec=<name>      Path to ImageMagick 'convert' executable", file=sys.stderr)
+    print("  -x, --exclude-line=<regex> Ignore lines matching <regex> in text comparisons", file=sys.stderr)
+    print("  -X, --exclude-debug        Show what lines have been included/excluded from text comparison", file=sys.stderr)
+    print("      --stdin                Pipe input file to <cmdline-tool> by stdin, replacing input file name with '-' when calling <cmdline-tool>", file=sys.stderr)
+    print("      --stdout               Pipe output of <cmdline-tool> to output file, replacing output file name with '-' when calling <cmdline-tool>", file=sys.stderr)
 
 if __name__ == '__main__':
     # Handle command-line arguments
     try:
         debug('args:'+str(sys.argv))
-        opts, args = getopt.getopt(sys.argv[1:], "gs:k:e:c:t:f:m", ["generate", "convexec=", "suffix=", "kernel=", "expected_dir=", "test=", "file=", "comparator=", "stdin", "stdout"])
+        opts, args = getopt.getopt(sys.argv[1:], "gs:k:e:c:t:f:m:x:X", [
+            "generate", "convexec=", "suffix=", "kernel=", "expected-dir=",
+            "test=", "file=", "comparator=", "stdin", "stdout", "exclude-line=",
+            "exclude-debug"])
         debug('getopt args:'+str(sys.argv))
     except (getopt.GetoptError) as err:
         usage()
         sys.exit(2)
 
+    exclude_line = os.getenv("OPENSCAD_TEST_EXCLUDE_LINE")
+
     global options
     options = Options()
+    options.exclude_line_re = None
+    options.exclude_debug = os.getenv("OPENSCAD_TEST_EXCLUDE_DEBUG", "False") not in ("False", "0", "")
     options.regressiondir = os.path.join(os.path.split(sys.argv[0])[0], "regression")
     options.generate = False
     options.suffix = "txt"
@@ -373,7 +390,15 @@ if __name__ == '__main__':
     options.stdout = False
 
     for o, a in opts:
-        if o in ("-g", "--generate"): options.generate = True
+        if o in ("-g", "--generate"):
+            options.generate = True
+        elif o in ("-x", "--exclude-line"):
+            if exclude_line:
+                exclude_line = f'({a})|(?:{exclude_line})'
+            else:
+                exclude_line = a
+        elif o in ("-X", "--exclude-debug"):
+            options.exclude_debug = True
         elif o in ("-s", "--suffix"):
             if a[0] == '.': options.suffix = a[1:]
             else: options.suffix = a
@@ -385,7 +410,7 @@ if __name__ == '__main__':
             options.testname = a
         elif o in ("-f", "--file"):
             options.filename = a
-        elif o in ("-c", "--compare-exec"):
+        elif o in ("-c", "--convexec"):
             options.comparison_exec = os.path.normpath( a )
         elif o in ("-m", "--comparator"):
             options.comparator = a
@@ -399,6 +424,14 @@ if __name__ == '__main__':
         usage()
         sys.exit(2)
     options.cmd = args[0]
+
+    if exclude_line:
+        try:
+            print(f"Excluding lines based on regex: {exclude_line}", file=sys.stderr)
+            options.exclude_line_re = re.compile(exclude_line)
+        except Exception as e:
+            print(f"Invalid regex: {exclude_line}\n  {e}", file=sys.stderr)
+            sys.exit(3)
 
     # If only one test file, we can usually deduct the test name from the file
     if len(args) == 2:

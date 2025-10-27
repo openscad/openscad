@@ -42,18 +42,6 @@
 #include <filesystem>
 namespace fs = std::filesystem;
 
-// Windows: get correct declarations from headers; avoid redeclaring _isatty.
-#if defined(_WIN32)
-#  include <io.h>
-#  ifdef _MSC_VER
-#    define isatty  _isatty
-#    define strdup  _strdup
-#    define fileno  _fileno
-#  endif
-#else
-#  include <unistd.h> // isatty on POSIX
-#endif
-
 std::string stringcontents;
 int lexerget_lineno(void);
 extern const char *parser_input_buffer;
