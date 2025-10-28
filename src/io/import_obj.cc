@@ -22,7 +22,7 @@ std::unique_ptr<PolySet> import_obj(const std::string& filename, const Location&
 {
   PolySetBuilder builder;
 
-  std::ifstream f(filename.c_str(), std::ios::in | std::ios::binary);
+  std::ifstream f(std::filesystem::u8path(filename), std::ios::in | std::ios::binary);
   if (!f.good()) {
     LOG(message_group::Warning, "Can't open import file '%1$s', import() at line %2$d", filename,
         loc.firstLine());
