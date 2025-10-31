@@ -3,6 +3,7 @@ from setuptools.command.build import build
 import subprocess
 import sys
 import os
+import shutil
 
 class BuildWithLexYacc(build):
     """Custom build_py command to run lex/yacc before building Python modules."""
@@ -11,12 +12,12 @@ class BuildWithLexYacc(build):
         print(">>> Running lex/yacc...")
 
 from setuptools import setup
-from setuptools.command.build_py import build_py
+from setuptools.command.build import build
 import subprocess
 import os
 import time
 
-class BuildWithLexYacc(build_py):
+class BuildWithLexYacc(build):
     """Nur Flex/Bison ausführen, wenn Quell- oder Ausgabedateien neuer/älter sind."""
 
     def run(self):
@@ -37,9 +38,9 @@ class BuildWithLexYacc(build_py):
 
         if needs_rebuild(yacc_src, [yacc_out, yacc_hdr]):
             print(f"→ Generiere Yacc: {yacc_src}")
-            subprocess.run(["bison", "-d", yacc_src], check=True)
             subprocess.run(["bison", "-d", "-p", "parser", yacc_src], check=True)
             os.rename("parser.tab.c", yacc_out)
+            shutil.copyfile("parser.tab.h", "src/core/parser.hxx")
             os.rename("parser.tab.h", yacc_hdr)
         else:
             print(f"✓ {yacc_src} is recent")
@@ -311,6 +312,7 @@ def main():
                   "fontconfig",
                   "double-conversion",
                   "gmp",
+                  "harfbuzz",
                   "mpfr"
                 ],define_macros=[
                   ("ENABLE_PYTHON","1"),
@@ -339,8 +341,8 @@ def main():
           classifiers=[
             "Programming Language :: Python :: 3",
             "Programming Language :: Python :: 3.11" ],
+          cmdclass={"build": BuildWithLexYacc},
           ext_modules=[ pythonscad_ext ]
-#          cmdclass={"build": BuildWithLexYacc}
           )
 
 if __name__ == "__main__":
