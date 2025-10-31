@@ -32,7 +32,7 @@ public:
 
   boost::optional<size_t> findAssignmentByName(const std::string& name) const
   {
-    for (int i = 0; i < parameters->size(); i++) {
+    for (size_t i = 0; i < parameters->size(); i++) {
       if ((*parameters)[i] && (*parameters)[i]->getName() == name) {
         return i;
       }
