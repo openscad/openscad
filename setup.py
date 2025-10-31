@@ -1,11 +1,64 @@
 from distutils.core import setup, Extension
+from setuptools.command.build import build
+import subprocess
+import sys
+import os
+
+class BuildWithLexYacc(build):
+    """Custom build_py command to run lex/yacc before building Python modules."""
+
+    def run(self):
+        print(">>> Running lex/yacc...")
+
+from setuptools import setup
+from setuptools.command.build_py import build_py
+import subprocess
+import os
+import time
+
+class BuildWithLexYacc(build_py):
+    """Nur Flex/Bison ausführen, wenn Quell- oder Ausgabedateien neuer/älter sind."""
+
+    def run(self):
+
+        yacc_src = "src/core/parser.y"
+        lex_src = "src/core/lexer.l"
+
+        yacc_out = "src/core/parser.cc"
+        yacc_hdr = "src/core/parser.tab.h"
+        lex_out = "src/core/lexer.cc"
+
+        def needs_rebuild(src, targets):
+            if not all(os.path.exists(t) for t in targets):
+                return True
+            src_time = os.path.getmtime(src)
+            target_time = min(os.path.getmtime(t) for t in targets)
+            return src_time > target_time
+
+        if needs_rebuild(yacc_src, [yacc_out, yacc_hdr]):
+            print(f"→ Generiere Yacc: {yacc_src}")
+            subprocess.run(["bison", "-d", yacc_src], check=True)
+            subprocess.run(["bison", "-d", "-p", "parser", yacc_src], check=True)
+            os.rename("parser.tab.c", yacc_out)
+            os.rename("parser.tab.h", yacc_hdr)
+        else:
+            print(f"✓ {yacc_src} is recent")
+
+        if needs_rebuild(lex_src, [lex_out]):
+            print(f"→ Generiere Lex: {lex_src}")
+            subprocess.run(["lex",  "-o", lex_out,  lex_src], check=True)
+        else:
+            print(f"✓ {lex_src} is recent")
+
+        super().run()
+
 
 def main():
     root =  [
               "src/Feature.cc",
               "src/FontCache.cc",
               "src/version.cc",
-              "src/handle_dep.cc" 
+              "src/handle_dep.cc"
             ]
 
     python =[
@@ -15,7 +68,7 @@ def main():
               "src/python/pyopenscad.cc",
               "src/python/pymod.cc",
               "src/python/pip_fixer.cc"
-            ] 
+            ]
     geometry = [
               "src/geometry/GeometryEvaluator.cc",
               "src/geometry/rotate_extrude.cc",
@@ -71,6 +124,7 @@ def main():
               "src/core/PullNode.cc",
               "src/core/TextNode.cc",
               "src/core/ConcatNode.cc",
+              "src/core/SheetNode.cc",
               "src/core/LinearExtrudeNode.cc",
               "src/core/RotateExtrudeNode.cc",
               "src/core/RenderNode.cc",
@@ -149,7 +203,7 @@ def main():
               "src/io/export_obj.cc",
               "src/io/export_step.cc"
             ]
-    io_import = [            
+    io_import = [
               "src/io/import_json.cc",
               "src/io/import_obj.cc",
               "src/io/import_step.cc",
@@ -178,7 +232,7 @@ def main():
               "src/libsvg/rect.cc",
               "src/libsvg/tspan.cc"
               ]
-    io = [              
+    io = [
               "src/io/export.cc",
               "src/io/DxfData.cc",
               "src/io/fileutils.cc",
@@ -228,7 +282,7 @@ def main():
     lodepng = [ "src/ext/lodepng/lodepng.cpp" ]
 
     pythonscad_ext = Extension("openscad"
-        , sources = root + python + geometry + ext + io + libsvg + core +  manifold + 
+        , sources = root + python + geometry + ext + io + libsvg + core +  manifold +
         clipper + utils + platform  + glview + lex_yacc + lodepng
         ,include_dirs = [
                   ".",
@@ -271,12 +325,12 @@ def main():
                   ("STACKSIZE","524288")
                 ],undef_macros=[
                 ], extra_link_args=[
-                        "-l", "glib-2.0" 
+                        "-l", "glib-2.0"
                 ],  extra_compile_args=[
                 ])
 
     setup(name="pythonscad",
-          version="2025.2.2",
+          version="2025.10.31",
           description="Python interface to openscad",
           url="https://pythonscad.org",
           author="Guenther Sohler",
@@ -286,11 +340,8 @@ def main():
             "Programming Language :: Python :: 3",
             "Programming Language :: Python :: 3.11" ],
           ext_modules=[ pythonscad_ext ]
+#          cmdclass={"build": BuildWithLexYacc}
           )
 
 if __name__ == "__main__":
     main()
-
-
-'''
-'''

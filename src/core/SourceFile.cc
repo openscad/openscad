@@ -57,9 +57,9 @@ namespace fs = std::filesystem;
 
 SourceFile::SourceFile(std::string path, std::string filename)
   : ASTNode(Location::NONE),
+    scope(std::make_shared<LocalScope>()),
     path(std::move(path)),
-    filename(std::move(filename)),
-    scope(std::make_shared<LocalScope>())
+    filename(std::move(filename))
 {
 }
 

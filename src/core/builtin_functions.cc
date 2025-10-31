@@ -584,7 +584,7 @@ Value builtin_object(const std::shared_ptr<const Context>& context, const Functi
   for (Context *c : contexts) {
     c->set_variable(Parameters::THIS_CONTEXT, object.clone());
   }
-  return std::move(object);
+  return object;
 }
 
 Value builtin_has_key(Arguments arguments, const Location& loc)
