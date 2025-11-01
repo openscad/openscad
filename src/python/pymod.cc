@@ -31,7 +31,7 @@
 #include <filesystem>
 
 #include "core/Settings.h"
-#ifndef OPENSCAD_NOGUI
+#ifndef PYTHON_EXECUTABLE_NAME
 #include "executable.h"
 #endif
 #include "platform/PlatformUtils.h"
