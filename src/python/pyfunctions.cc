@@ -2034,12 +2034,12 @@ PyObject *python_show_core(PyObject *obj)
 PyObject *python_show(PyObject *self, PyObject *args, PyObject *kwargs)
 {
   PyObject *obj = NULL;
-  char *kwlist[] = {"obj", NULL};
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O", kwlist, &obj)) {
-    PyErr_SetString(PyExc_TypeError, "Error during parsing output(object)");
-    return NULL;
+  PyObject *result = Py_None;
+  if (args == nullptr) return result;
+  for (int i = 0; i < PyTuple_Size(args); i++) {
+    result = python_show_core(PyTuple_GetItem(args, i));
   }
-  return python_show_core(obj);
+  return result;
 }
 
 PyObject *python_oo_show(PyObject *obj, PyObject *args, PyObject *kwargs)
