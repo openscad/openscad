@@ -51,6 +51,8 @@ using CGAL_Iso_rectangle_2e = CGAL::Iso_rectangle_2<CGAL::Simple_cartesian<NT2>>
 
 using NT3 = CGAL::Gmpq;
 using CGAL_Kernel3 = CGAL::Cartesian<NT3>;
+// sloriot: This is really slow - you should use CGAL::Epeck_kernel
+
 using CGAL_Nef_polyhedron3 = CGAL::Nef_polyhedron_3<CGAL_Kernel3>;
 
 using CGAL_Polyhedron = CGAL::Polyhedron_3<CGAL_Kernel3>;

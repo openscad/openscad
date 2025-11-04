@@ -1,5 +1,9 @@
 // this file is split into many separate cgalutils* files
 // in order to workaround gcc 4.9.1 crashing on systems with only 2GB of RAM
+#include <CGAL/Named_function_parameters.h>
+#include <CGAL/Polygon_mesh_processing/repair_degeneracies.h>
+#include <CGAL/Polygon_mesh_processing/self_intersections.h>
+#include <iomanip>
 #include "geometry/cgal/cgal.h"
 #include "geometry/Geometry.h"
 #include "geometry/cgal/cgalutils.h"
@@ -27,6 +31,9 @@
 
 #include "geometry/Reindexer.h"
 #include "geometry/GeometryUtils.h"
+#include "utils/printutils.h"
+
+#include "geometry/cgal/cgalutils.h"
 
 #include <cstddef>
 #include <memory>
@@ -52,7 +59,23 @@ std::unique_ptr<const Geometry> applyUnion3D(Geometry::Geometries::iterator chbe
 
   try {
     // sort children by fewest faces
+    int i = 0;
     for (auto it = chbegin; it != chend; ++it) {
+//      CGAL::Polyhedron_3<CGAL::Exact_predicates_inexact_constructions_kernel> poly;
+//      CGALUtils::createPolyhedronFromPolySet(*dynamic_pointer_cast<const PolySet>(it->second), poly);
+//      auto copy = poly;
+//      CGAL::Polygon_mesh_processing::remove_almost_degenerate_faces(
+//        poly, CGAL::parameters::collapse_length_threshold(0.0001).flip_triangle_height_threshold(0.0001));
+//      if (CGAL::Polygon_mesh_processing::does_self_intersect(poly)) {
+//        std::cout << "CGALUtils::applyUnion3D: child geometry has self-intersections, skipping"
+//                  << std::endl;
+//        std::ofstream("geom" + std::to_string(i) + ".off") << std::setprecision(17) << poly;
+//        std::ofstream("orig" + std::to_string(i++) + ".off") << std::setprecision(17) << copy;
+//        continue;
+//      }
+
+      // build a Polyhedron_3 from the child geometry
+      // mpm::does_self_intersect() -> if yes, we need to use off_to_nef
       auto curChild = getNefPolyhedronFromGeometry(it->second);
       if (curChild && !curChild->isEmpty()) {
         int node_mark = -1;
