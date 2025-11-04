@@ -183,7 +183,11 @@ std::shared_ptr<const Geometry> applyMinkowski3D(const Geometry::Geometries& chi
         PRINTDB("Minkowski: Computing union of %d parts", result_parts.size());
         Geometry::Geometries fake_children;
         for (const auto& part : result_parts) {
-          fake_children.emplace_back(std::shared_ptr<const AbstractNode>(), partToGeom(part));
+          CGAL_Polyhedron exact;
+          CGALUtils::copyPolyhedron(part, exact);
+          fake_children.emplace_back(
+            std::shared_ptr<const AbstractNode>(),
+            std::make_shared<CGALNefGeometry>(std::make_shared<CGAL_Nef_polyhedron3>(exact)));
         }
         auto N = CGALUtils::applyUnion3D(fake_children.begin(), fake_children.end());
         // FIXME: This should really never throw.
