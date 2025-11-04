@@ -54,19 +54,17 @@ void Measurement::startMeasureAngle(void)
   this->qglview->measure_state = MEASURE_ANG1;
 }
 
-void Measurement::stopMeasure()
+bool Measurement::stopMeasure()
 {
-  if (qglview->measure_state == MEASURE_IDLE) return;
+  if (qglview->measure_state == MEASURE_IDLE) return false;
+  bool ret = qglview->measure_state != MEASURE_DIRTY;
   qglview->selected_obj.clear();
   qglview->shown_obj.clear();
   qglview->update();
   qglview->measure_state = MEASURE_IDLE;
+  return ret;
 }
 
-/**
- * Advance the Measurement state machine.
- * @return When non-empty, is reverse-ordered list of responses
- */
 std::vector<QString> Measurement::statemachine(QPoint mouse)
 {
   if (qglview->measure_state == MEASURE_IDLE || qglview->measure_state == MEASURE_DIRTY) return {};
@@ -140,10 +138,12 @@ std::vector<QString> Measurement::statemachine(QPoint mouse)
       } else if (obj1.type == SelectionType::SELECTION_LINE &&
                  obj2.type == SelectionType::SELECTION_LINE) {
         dist = calculateSegSegDistance(obj1.p1, obj1.p2, obj2.p1, obj2.p2);
+      } else {
+        ret.push_back("Only coded to handle lines and points; sorry");
       }
       if (std::isnan(dist)) {
-        stopMeasure();
-        return {};
+        ret.push_back("Got Not-a-Number when calculating distance; sorry");
+        return ret;
       }
       ret.push_back(QStringLiteral("Distance is %1").arg(std::fabs(dist)));
     }
@@ -202,11 +202,14 @@ std::vector<QString> Measurement::statemachine(QPoint mouse)
         Vector3d side1 = (obj2.p1 - obj1.p1).normalized();
         Vector3d side2 = (obj2.p1 - obj3.p1).normalized();
         ang = acos(side1.dot(side2)) * 180.0 / 3.14159265359;
+      } else {
+        ret.push_back("If selecting three things, they must all be points");
+        return ret;
       }
     display_angle:
       if (std::isnan(ang)) {
-        stopMeasure();
-        return {};
+        ret.push_back("Got Not-a-Number when calculating angle; sorry");
+        return ret;
       }
       ret.push_back(QStringLiteral("Angle is %1 Degrees").arg(ang));
     }

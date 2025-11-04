@@ -985,6 +985,9 @@
    </property>
   </action>
   <action name="designActionMeasureDist">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="icon">
     <iconset theme="chokusen-measure-distance">
      <normaloff>.</normaloff>.</iconset>
@@ -997,6 +1000,9 @@
    </property>
   </action>
   <action name="designActionMeasureAngle">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="icon">
     <iconset theme="chokusen-measure-angle">
      <normaloff>.</normaloff>.</iconset>
@@ -1035,9 +1041,6 @@
    </property>
    <property name="text">
     <string>Export as &amp;STL (binary)...</string>
-   </property>
-   <property name="shortcut">
-    <string>F7</string>
    </property>
   </action>
   <action name="fileActionExportAsciiSTL">

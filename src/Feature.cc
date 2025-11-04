@@ -42,6 +42,9 @@ const Feature Feature::ExperimentalPredictibleOutput(
   "predictible-output",
   "Attempt to produce predictible, diffable outputs (e.g. sorting the STL, or remeshing in a determined "
   "order)");
+const Feature Feature::ExperimentalVectorSwizzle(
+  "vector-swizzle", "Enable vector swizzling (e.g. <code>vec4.zyx</code> to reverse a 3D vector).");
+
 #ifdef ENABLE_PYTHON
 const Feature Feature::ExperimentalPythonEngine(
   "python-engine", "Enable experimental Python Engine (implies risk of malicious scripts downloaded).");
