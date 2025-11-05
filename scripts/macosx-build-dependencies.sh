@@ -89,7 +89,7 @@ PACKAGES=(
     "cairo 1.18.0"
 
     # https://github.com/CGAL/cgal/releases
-    "cgal 6.0.2"
+    "cgal 6.1"
 
     # Using Qt6 going forward, leaving Qt5 config just in case
     # "qt5 5.15.16"

@@ -189,6 +189,32 @@ add_custom_target(svg_viewbox_tests ALL
   COMMENT "Generating svg viewbox tests"
 )
 
+#######################################
+# Define Test Output Lines to Exclude #
+#######################################
+
+# Ignore "TRACE:   *** Excluding N frames ***" lines globally
+ctest_env_append_value(
+  OPENSCAD_TEST_EXCLUDE_LINE [[^TRACE:\s*\*\*\* Excluding \d+ frames \*\*\*\s*$]])
+# Can add another `ctest_env_append_value(OPENSCAD_TEST_EXCLUDE_LINE ...)` call
+# to add another regex to match.
+
+# To debug exclude lines in test, uncomment the following line:
+# ctest_env_append_value(OPENSCAD_TEST_EXCLUDE_DEBUG True)
+
+# To tell a specific test to exclude lines that match a regex, call
+# add_line_exclusion_for_test after calling add_cmdline_test with same test base
+# name. E.g.
+#
+# # Base name group is foo:
+# add_cmdline_test(foo         OPENSCAD SUFFIX foo FILES ${FOO_FILES})
+#
+# # Assume that FOO_FILES contains a test function bar.
+# add_line_exclusion_for_test(foo bar [[regex that matches line(s) to exclude]])
+#
+# Can add another `add_line_exclusion_for_test(foo bar [[another regex]])` call
+# to add another regex to match for same test function.
+
 ##################################
 # Define Various Test File Lists #
 ##################################
@@ -356,7 +382,6 @@ list(APPEND ECHO_FILES ${FUNCTION_FILES} ${MISC_FILES} ${REDEFINITION_FILES}
   ${TEST_SCAD_DIR}/misc/root-modifiers.scad
   ${TEST_SCAD_DIR}/misc/root-modifier-for.scad
   ${TEST_DATA_DIR}/use-order-test/use-order-test.scad
-  ${TEST_SCAD_DIR}/misc/vector-swizzling.scad
   ${TEST_SCAD_DIR}/misc/linenumber.scad
 )
 
@@ -659,6 +684,40 @@ list(APPEND MANIFOLDHARDWARNING_FILES
   ${TEST_SCAD_DIR}/3D/issues/issue5135-good.scad
 )
 
+# Manifoldness corner cases
+set(FILES_MANIFOLD_CORNER_CASES
+  ${TEST_SCAD_DIR}/3D/misc/tetracyl-slim.scad
+  ${TEST_SCAD_DIR}/3D/misc/tetracyl-touch-edge.scad
+  ${TEST_SCAD_DIR}/3D/misc/tetracyl-touch-edge-nonmanifold.scad
+  ${TEST_SCAD_DIR}/3D/misc/tetracyl-touch-vertex.scad
+  ${TEST_SCAD_DIR}/3D/misc/tetracyl-touch-vertex-nonmanifold.scad
+  ${TEST_SCAD_DIR}/3D/misc/polyhedrons-touch-edge-nonmanifold.scad
+  ${TEST_SCAD_DIR}/3D/misc/polyhedrons-touch-edge.scad
+  ${TEST_SCAD_DIR}/3D/misc/polyhedrons-touch-vertex-nonmanifold.scad
+  ${TEST_SCAD_DIR}/3D/misc/polyhedrons-touch-vertex.scad
+  ${TEST_SCAD_DIR}/3D/misc/polyhedrons-touch-face-nonmanifold.scad
+  ${TEST_SCAD_DIR}/3D/misc/polyhedrons-touch-face.scad
+  ${TEST_SCAD_DIR}/3D/misc/polyhedron-self-touch-edge-nonmanifold.scad
+  ${TEST_SCAD_DIR}/3D/misc/polyhedron-self-touch-edge.scad
+  ${TEST_SCAD_DIR}/3D/misc/polyhedron-self-touch-face-nonmanifold.scad
+  ${TEST_SCAD_DIR}/3D/misc/polyhedron-self-touch-face.scad
+  ${TEST_SCAD_DIR}/3D/misc/polyhedron-self-touch-vertex-nonmanifold.scad
+  ${TEST_SCAD_DIR}/3D/misc/polyhedron-self-touch-vertex.scad
+  ${TEST_SCAD_DIR}/3D/misc/minkowski-cubes-touch-edge.scad
+  ${TEST_SCAD_DIR}/3D/misc/minkowski-cubes-touch-vertex.scad
+  ${TEST_SCAD_DIR}/3D/misc/minkowski-polyhedrons-touch-edge.scad
+  ${TEST_SCAD_DIR}/3D/features/rotate_extrude-touch-edge.scad
+  ${TEST_SCAD_DIR}/3D/features/rotate_extrude-touch-vertex.scad
+)
+
+# Manifoldness corner cases
+set(FILES_CGAL_CORNER_CASES
+  ${TEST_SCAD_DIR}/3D/misc/minkowski-cubes-touch-edge.scad
+  ${TEST_SCAD_DIR}/3D/misc/minkowski-cubes-touch-vertex.scad
+  ${TEST_SCAD_DIR}/3D/misc/minkowski-polyhedrons-touch-edge.scad
+  ${TEST_SCAD_DIR}/3D/features/rotate_extrude-touch-edge.scad
+)
+
 ##############################
 # Define test configurations #
 ##############################
@@ -763,6 +822,7 @@ add_cmdline_test(csgterm      OPENSCAD SUFFIX term FILES
 )
 
 add_cmdline_test(echo         OPENSCAD SUFFIX echo FILES ${ECHO_FILES})
+
 # trace-usermodule-parameters is on by default,
 # but can generate very long outputs and potentially
 # unstable outputs, when combined with recursive tests.
@@ -783,12 +843,12 @@ add_cmdline_test(export-csg-nonascii  OPENSCAD FILES ${TEST_SCAD_DIR}/misc/sfær
 
 add_cmdline_test(render-cgal      OPENSCAD FILES ${RENDER_COMMON_FILES} EXPECTEDDIR render SUFFIX png ARGS --render --backend=cgal)
 add_cmdline_test(render-cgal      OPENSCAD FILES ${RENDER_DIFFERENT_EXPECTATIONS} SUFFIX png ARGS --render --backend=cgal)
-add_cmdline_test(render-force-cgal OPENSCAD SUFFIX png FILES ${RENDERFORCETEST_FILES} ARGS --render=force --backend=cgal)
+add_cmdline_test(render-force-cgal OPENSCAD SUFFIX png FILES ${RENDERFORCETEST_FILES} ${FILES_CGAL_CORNER_CASES} ARGS --render=force --backend=cgal)
 add_cmdline_test(render-stdio-cgal OPENSCAD SUFFIX png FILES ${RENDERSTDIOTEST_FILES} STDIO EXPECTEDDIR render ARGS --export-format png --render --backend=cgal)
 if (ENABLE_MANIFOLD_TESTS)
 add_cmdline_test(render-manifold OPENSCAD FILES ${RENDER_COMMON_FILES} EXPECTEDDIR render SUFFIX png ARGS --render --backend=manifold)
 add_cmdline_test(render-manifold OPENSCAD FILES ${RENDER_DIFFERENT_EXPECTATIONS} SUFFIX png ARGS --render --backend=manifold)
-add_cmdline_test(render-force-manifold      OPENSCAD SUFFIX png FILES ${RENDERFORCETEST_FILES} EXPECTEDDIR render ARGS --render=force --backend=manifold)
+add_cmdline_test(render-force-manifold      OPENSCAD SUFFIX png FILES ${RENDERFORCETEST_FILES} ${FILES_MANIFOLD_CORNER_CASES} EXPECTEDDIR render ARGS --render=force --backend=manifold)
 # This tests that no warnings are issued when using Manifold for converting or processing geometry
 add_cmdline_test(render-force-manifold-hardwarnings OPENSCAD SUFFIX png FILES ${MANIFOLDHARDWARNING_FILES} EXPECTEDDIR render ARGS --render=force --backend=manifold --hardwarnings)
 endif()
@@ -936,29 +996,6 @@ list(REMOVE_ITEM EXPORT_IMPORT_3D_RENDER_FILES
   ${TEST_SCAD_DIR}/misc/nonmanifold-polyhedron.scad
 )
 set(EXPORT_IMPORT_3D_RENDERMANIFOLD_FILES ${EXPORT_IMPORT_3D_RENDER_FILES})
-
-# Manifoldness corner cases
-set(FILES_MANIFOLD_CORNER_CASES
-  ${TEST_SCAD_DIR}/3D/misc/tetracyl-slim.scad
-  ${TEST_SCAD_DIR}/3D/misc/tetracyl-touch-edge.scad
-  ${TEST_SCAD_DIR}/3D/misc/tetracyl-touch-edge-nonmanifold.scad
-  ${TEST_SCAD_DIR}/3D/misc/tetracyl-touch-vertex.scad
-  ${TEST_SCAD_DIR}/3D/misc/tetracyl-touch-vertex-nonmanifold.scad
-  ${TEST_SCAD_DIR}/3D/misc/polyhedrons-touch-edge-nonmanifold.scad
-  ${TEST_SCAD_DIR}/3D/misc/polyhedrons-touch-edge.scad
-  ${TEST_SCAD_DIR}/3D/misc/polyhedrons-touch-vertex-nonmanifold.scad
-  ${TEST_SCAD_DIR}/3D/misc/polyhedrons-touch-vertex.scad
-  ${TEST_SCAD_DIR}/3D/misc/polyhedrons-touch-face-nonmanifold.scad
-  ${TEST_SCAD_DIR}/3D/misc/polyhedrons-touch-face.scad
-  ${TEST_SCAD_DIR}/3D/misc/polyhedron-self-touch-edge-nonmanifold.scad
-  ${TEST_SCAD_DIR}/3D/misc/polyhedron-self-touch-edge.scad
-  ${TEST_SCAD_DIR}/3D/misc/polyhedron-self-touch-face-nonmanifold.scad
-  ${TEST_SCAD_DIR}/3D/misc/polyhedron-self-touch-face.scad
-  ${TEST_SCAD_DIR}/3D/misc/polyhedron-self-touch-vertex-nonmanifold.scad
-  ${TEST_SCAD_DIR}/3D/misc/polyhedron-self-touch-vertex.scad
-  ${TEST_SCAD_DIR}/3D/features/rotate_extrude-touch-edge.scad
-  ${TEST_SCAD_DIR}/3D/features/rotate_extrude-touch-vertex.scad
-)
 
 # Export-import tests
 add_cmdline_test(render-monotone OPENSCAD SUFFIX png FILES ${EXPORT_IMPORT_3D_PREVIEW_FILES} ${SIMPLE_EXPORT_IMPORT_2D_FILES} ARGS --colorscheme=Monotone --render)
@@ -1199,6 +1236,10 @@ add_cmdline_test(render-cgal    EXPERIMENTAL OPENSCAD SUFFIX png FILES ${EXPERIM
 add_cmdline_test(render-dxf      EXPERIMENTAL SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png ARGS ${OPENSCAD_EXE_ARG} --format=DXF --render=force --enable=textmetrics EXPECTEDDIR render FILES ${EXPERIMENTAL_TEXTMETRICS_FILES})
 add_cmdline_test(render-svg      EXPERIMENTAL SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png ARGS ${OPENSCAD_EXE_ARG} --format=SVG --render=force --enable=textmetrics EXPECTEDDIR render FILES ${EXPERIMENTAL_TEXTMETRICS_FILES})
 
+#
+# --enable=vector-swizzle tests
+#
+add_cmdline_test(echo EXPERIMENTAL OPENSCAD SUFFIX echo FILES ${TEST_SCAD_DIR}/misc/vector-swizzling.scad ARGS --enable=vector-swizzle)
 
 ############################
 # Relative filenames tests #
