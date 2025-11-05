@@ -49,11 +49,6 @@ const Feature Feature::ExperimentalWrapPolygon("wrap-polygon",
 const Feature Feature::ExperimentalVectorSwizzle(
   "vector-swizzle", "Enable vector swizzling (e.g. <code>vec4.zyx</code> to reverse a 3D vector).");
 
-#ifdef ENABLE_PYTHON
-const Feature Feature::ExperimentalPythonEngine(
-  "python-engine", "Enable experimental Python Engine (implies risk of malicious scripts downloaded).");
-#endif
-
 Feature::Feature(const std::string& name, std::string description, bool hidden)
   : name(name), description(std::move(description))
 {

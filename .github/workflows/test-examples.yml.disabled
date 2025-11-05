@@ -27,7 +27,7 @@ jobs:
     - name: Build and test
       run: ./scripts/github-ci.sh ${{ matrix.experimental && 'experimental' || ''}} enable_python build test_examples test
     - name: Upload Test Result Report
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v5
       if: ${{ always() }}
       with:
         name: Test Result Report (Test examples ${{ matrix.experimental && 'experimental' || 'non-experimental' }})
