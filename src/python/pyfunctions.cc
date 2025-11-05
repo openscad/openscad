@@ -1111,10 +1111,10 @@ PyObject *python_number_scale(PyObject *pynum, Vector3d scalevec, int vecs)
     Transform3d matrix = Transform3d::Identity();
     matrix.scale(scalevec);
     Vector3d n;
-    for (int i = 0; i < vecs; i++) {
-      n = Vector3d(mat(0, i), mat(1, i), mat(2, i));
-      n = matrix * n;
-      for (int j = 0; j < 3; j++) mat(j, i) = n[j];
+    for (int i = 0; i < 3; i++) { // row
+      for(int j=0;j<4;j++) { // col
+        mat(j, i) = mat(j,i) * scalevec[i];
+      }	
     }
     return python_frommatrix(mat);
   }
@@ -2027,7 +2027,6 @@ PyObject *python_show_core(PyObject *obj)
     }
   }
   shows.push_back(child);
-  Py_INCREF(obj);
   return obj;
 }
 
@@ -2039,6 +2038,7 @@ PyObject *python_show(PyObject *self, PyObject *args, PyObject *kwargs)
   for (int i = 0; i < PyTuple_Size(args); i++) {
     result = python_show_core(PyTuple_GetItem(args, i));
   }
+  if (result != Py_None) Py_INCREF(result);
   return result;
 }
 
@@ -2049,7 +2049,9 @@ PyObject *python_oo_show(PyObject *obj, PyObject *args, PyObject *kwargs)
     PyErr_SetString(PyExc_TypeError, "Error during parsing output(object)");
     return NULL;
   }
-  return python_show_core(obj);
+  auto res = python_show_core(obj);
+  Py_INCREF(res);
+  return res;
 }
 
 PyObject *python_output(PyObject *obj, PyObject *args, PyObject *kwargs)
@@ -4260,9 +4262,9 @@ PyObject *python_resize_core(PyObject *obj, PyObject *newsize, PyObject *autosiz
   std::shared_ptr<AbstractNode> child;
 
   auto node = std::make_shared<CgalAdvNode>(instance, CgalAdvType::RESIZE);
-  PyObject *dummydict;
+  PyObject *child_dict;
   PyTypeObject *type = PyOpenSCADObjectType(obj);
-  child = PyOpenSCADObjectToNodeMulti(obj, &dummydict);
+  child = PyOpenSCADObjectToNodeMulti(obj, &child_dict);
   if (child == NULL) {
     PyErr_SetString(PyExc_TypeError, "Invalid type for Object in resize");
     return NULL;
@@ -4295,7 +4297,15 @@ PyObject *python_resize_core(PyObject *obj, PyObject *newsize, PyObject *autosiz
   node->children.push_back(child);
   node->convexity = convexity;
 
-  return PyOpenSCADObjectFromNode(type, node);
+  auto pyresult = PyOpenSCADObjectFromNode(type, node);
+  if (child_dict != nullptr) {
+    PyObject *key, *value;
+    Py_ssize_t pos = 0;
+    while (PyDict_Next(child_dict, &pos, &key, &value)) {
+      PyDict_SetItem(((PyOpenSCADObject *)pyresult)->dict, key, value);
+    }
+  }
+  return pyresult;
 }
 
 PyObject *python_resize(PyObject *self, PyObject *args, PyObject *kwargs)
