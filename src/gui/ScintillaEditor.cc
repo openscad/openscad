@@ -1341,7 +1341,6 @@ bool ScintillaEditor::modifyNumber(int key)
 
 void ScintillaEditor::onUserListSelected(const int, const QString& text)
 {
-fprintf(stderr, "%s %d %s\n", __FILE__, __LINE__, __func__); fflush(stderr);
   if (!templateMap.contains(text)) {
     return;
   }
@@ -1357,9 +1356,7 @@ fprintf(stderr, "%s %d %s\n", __FILE__, __LINE__, __func__); fflush(stderr);
   int cursor_offset = t.get_cursor_offset();
   QString fileFilter = t.get_fileFilter();
 
-fprintf(stderr, "%s %d %s\n", __FILE__, __LINE__, __func__); fflush(stderr);
   if (!fileFilter.isEmpty()) {
-fprintf(stderr, "%s %d %s\n", __FILE__, __LINE__, __func__); fflush(stderr);
     // NEEDSWORK probably shouldn't be nullptr
     QString filename = QFileDialog::getOpenFileName(nullptr, _("Select file"), "", fileFilter);
     if (filename.isEmpty()) {
@@ -1368,7 +1365,6 @@ fprintf(stderr, "%s %d %s\n", __FILE__, __LINE__, __func__); fflush(stderr);
     content.replace(ScintillaEditor::cursorPlaceHolder, filename);
     cursor_offset = 0;
   } else if (cursor_offset < 0) {
-fprintf(stderr, "%s %d %s\n", __FILE__, __LINE__, __func__); fflush(stderr);
     if (tabReplace.size() != 0) content.replace("\t", tabReplace);
 
     cursor_offset = content.indexOf(ScintillaEditor::cursorPlaceHolder);
