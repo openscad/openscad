@@ -1,0 +1,5 @@
+{
+    "key" : "Import shape",
+    "content" : "import(\"^~^\");",
+    "fileFilter": "Common (*.stl *.3mf *.obj *.off *.dxf *.svg *.amf);;3D (*.stl *.3mf *.obj *.off *.amf);;2D files (*.dxf *.svg);;All (*.*)"
+}

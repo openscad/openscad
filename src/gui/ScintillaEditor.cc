@@ -294,7 +294,7 @@ void ScintillaEditor::addTemplate(const fs::path& path)
         const QString key = QString::fromStdString(pt.get<std::string>("key"));
         const QString content = QString::fromStdString(pt.get<std::string>("content"));
         const int cursor_offset = pt.get<int>("offset", -1);
-        const QString fileFilter = QString::fromStdString(pt.get<std::string>("fileFormat", ""));
+        const QString fileFilter = QString::fromStdString(pt.get<std::string>("fileFilter", ""));
 
         templateMap.insert(key, ScadTemplate(content, cursor_offset, fileFilter));
       } catch (const std::exception& e) {

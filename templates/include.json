@@ -1,0 +1,5 @@
+{
+    "key" : "include <>",
+    "content" : "include <^~^>",
+    "fileFilter": "OpenSCAD (*.scad *.csg);;All (*.*)"
+}
