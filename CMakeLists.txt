@@ -1510,8 +1510,10 @@ if (USE_QT6)
 else()
   if(NOT HEADLESS)
     target_link_libraries(OpenSCAD PRIVATE
+      -static
       Qt5::Core Qt5::Widgets Qt5::Multimedia Qt5::OpenGL Qt5::Concurrent Qt5::Network Qt5::Svg
       ${QT5QSCINTILLA_LIBRARY} ${Qt5DBus_LIBRARIES} ${Qt5Gamepad_LIBRARIES}
+      -pie
     )
   endif()
   if(ENABLE_GUI_TESTS)
