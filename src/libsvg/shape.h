@@ -39,8 +39,7 @@
 #include <boost/optional.hpp>
 
 #include "clipper2/clipper.h"
-
-class CurveDiscretizer;
+#include "core/CurveDiscretizer.h"
 
 namespace libsvg {
 class shape;

@@ -30,6 +30,7 @@
 #include "core/CsgOpNode.h"
 #include "core/ColorNode.h"
 #include "core/ColorUtil.h"
+#include "core/FreetypeRenderer.h"
 #include "core/TransformNode.h"
 #include "core/LinearExtrudeNode.h"
 #include "core/RotateExtrudeNode.h"
@@ -1858,6 +1859,14 @@ PyObject *python_surface(PyObject *self, PyObject *args, PyObject *kwargs)
   return python_surface_core(file, center, invert, convexity);
 }
 
+std::optional<std::string> to_optional_string(const char *ptr)
+{
+  if (ptr != nullptr) {
+    return std::string(ptr);
+  }
+  return {};
+}
+
 PyObject *python_text(PyObject *self, PyObject *args, PyObject *kwargs)
 {
   DECLARE_INSTANCE();
@@ -1875,23 +1884,21 @@ PyObject *python_text(PyObject *self, PyObject *args, PyObject *kwargs)
     return NULL;
   }
 
-  auto node = std::make_shared<TextNode>(instance);
-  node->params.set(CreateCurveDiscretizer(kwargs));
-  node->params.set_size(size);
-  if (text != NULL) node->params.set_text(text);
-  node->params.set_spacing(spacing);
-  if (font != NULL) node->params.set_font(font);
-  if (direction != NULL) node->params.set_direction(direction);
-  if (language != NULL) node->params.set_language(language);
-  if (script != NULL) node->params.set_script(script);
-  if (valign != NULL) node->params.set_halign(halign);
-  if (halign != NULL) node->params.set_valign(valign);
-  node->params.set_loc(instance->location());
+  auto node = std::make_shared<TextNode>(
+    instance, FreetypeRenderer::Params(FreetypeRenderer::Params::ParamsOptions{
+                .curve_discretizer = std::make_shared<CurveDiscretizer>(CreateCurveDiscretizer(kwargs)),
+                .size = size,
+                .spacing = spacing,
+                .text = to_optional_string(text),
+                .font = to_optional_string(font),
+                .direction = to_optional_string(direction),
+                .language = to_optional_string(language),
+                .script = to_optional_string(script),
+                .halign = to_optional_string(halign),
+                .valign = to_optional_string(valign),
+                .loc = instance->location(),
+              }));
 
-  /*
-     node->params.set_documentPath(session->documentRoot());
-     }
-   */
   node->params.detect_properties();
 
   return PyOpenSCADObjectFromNode(&PyOpenSCADType, node);
@@ -1914,18 +1921,19 @@ PyObject *python_textmetrics(PyObject *self, PyObject *args, PyObject *kwargs)
     return NULL;
   }
 
-  FreetypeRenderer::Params ftparams;
-
-  ftparams.set_size(size);
-  if (text != NULL) ftparams.set_text(text);
-  ftparams.set_spacing(spacing);
-  if (font != NULL) ftparams.set_font(font);
-  if (direction != NULL) ftparams.set_direction(direction);
-  if (language != NULL) ftparams.set_language(language);
-  if (script != NULL) ftparams.set_script(script);
-  if (valign != NULL) ftparams.set_halign(halign);
-  if (halign != NULL) ftparams.set_valign(valign);
-  ftparams.set_loc(instance->location());
+  FreetypeRenderer::Params ftparams(FreetypeRenderer::Params::ParamsOptions{
+    .curve_discretizer = {},
+    .size = size,
+    .spacing = spacing,
+    .text = to_optional_string(text),
+    .font = to_optional_string(font),
+    .direction = to_optional_string(direction),
+    .language = to_optional_string(language),
+    .script = to_optional_string(script),
+    .halign = to_optional_string(halign),
+    .valign = to_optional_string(valign),
+    .loc = instance->location(),
+  });
 
   FreetypeRenderer::TextMetrics metrics(ftparams);
   if (!metrics.ok) {

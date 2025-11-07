@@ -250,7 +250,8 @@ void FreetypeRenderer::Params::detect_properties()
   hb_direction_t hbdirection = detect_direction(hbscript);
   set_direction(hb_direction_to_string(hbdirection));
 
-  auto segments = discretizer.getCircularSegmentCount(size).value_or(3);
+  int segments = 3;
+  if (discretizer) segments = discretizer->getCircularSegmentCount(size).value_or(segments);
   // The curved segments of most fonts are relatively short, so
   // by using a fraction of the number of full circle segments
   // the resolution will be better matching the detail level of
@@ -261,11 +262,13 @@ void FreetypeRenderer::Params::detect_properties()
 
 std::ostream& operator<<(std::ostream& stream, const FreetypeRenderer::Params& params)
 {
-  return stream << "text = \"" << params.text << "\", size = " << params.size
-                << ", spacing = " << params.spacing << ", font = \"" << params.font
-                << "\", direction = \"" << params.direction << "\", language = \"" << params.language
-                << (params.script.empty() ? "" : "\", script = \"") << params.script << "\", halign = \""
-                << params.halign << "\", valign = \"" << params.valign << "\", " << params.discretizer;
+  stream << "text = \"" << params.text << "\", size = " << params.size
+         << ", spacing = " << params.spacing << ", font = \"" << params.font << "\", direction = \""
+         << params.direction << "\", language = \"" << params.language
+         << (params.script.empty() ? "" : "\", script = \"") << params.script << "\", halign = \""
+         << params.halign << "\", valign = \"" << params.valign;
+  if (params.discretizer) stream << "\", " << *(params.discretizer);
+  return stream;
 }
 
 const FontFacePtr FreetypeRenderer::Params::get_font_face() const
@@ -290,7 +293,8 @@ const FontFacePtr FreetypeRenderer::Params::get_font_face() const
   return face;
 }
 
-void FreetypeRenderer::Params::set(Parameters& parameters)
+FreetypeRenderer::Params::Params(Parameters& parameters)
+  : discretizer(std::make_shared<CurveDiscretizer>(parameters))
 {
   // Having these prints a warning if any of these parameters is not
   // the expected type.
@@ -305,10 +309,9 @@ void FreetypeRenderer::Params::set(Parameters& parameters)
   (void)parameters.valid("halign", Value::Type::STRING);
   (void)parameters.valid("valign", Value::Type::STRING);
 
-  discretizer = CurveDiscretizer(parameters);
-  set_size(parameters.get("size", 10.0));
+  size = parameters.get("size", 10.0);
   set_text(parameters.get("text", ""));
-  set_spacing(parameters.get("spacing", 1.0));
+  spacing = parameters.get("spacing", 1.0);
   set_font(parameters.get("font", ""));
   set_direction(parameters.get("direction", ""));
   set_language(parameters.get("language", "en"));
@@ -317,19 +320,16 @@ void FreetypeRenderer::Params::set(Parameters& parameters)
   set_valign(parameters.get("valign", "default"));
 }
 
-void FreetypeRenderer::Params::set(CurveDiscretizer c)
+FreetypeRenderer::Params::Params(const ParamsOptions& opts)
+  : discretizer(opts.curve_discretizer), loc(opts.loc), size(opts.size), spacing(opts.spacing)
 {
-  discretizer = c;
-
-  set_size(10.0);
-  set_text("");
-  set_spacing(1.0);
-  set_font("");
-  set_direction("");
-  set_language("en");
-  set_script("");
-  set_halign("default");
-  set_valign("default");
+  set_text(opts.text.value_or(""));
+  set_font(opts.font.value_or(""));
+  set_direction(opts.direction.value_or(""));
+  set_language(opts.language.value_or("en"));
+  set_script(opts.script.value_or(""));
+  set_halign(opts.halign.value_or("default"));
+  set_valign(opts.valign.value_or("default"));
 }
 
 FreetypeRenderer::ShapeResults::ShapeResults(const FreetypeRenderer::Params& params)
