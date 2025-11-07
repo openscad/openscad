@@ -50,8 +50,8 @@ std::shared_ptr<AbstractNode> builtin_rotate_extrude(const ModuleInstantiation *
   const Parameters parameters =
     Parameters::parse(std::move(arguments), inst->location(), {"angle", "start"}, {"convexity", "a"});
 
-  auto node =
-    std::make_shared<RotateExtrudeNode>(inst, std::make_shared<CurveDiscretizer>(parameters, inst));
+  auto node = std::make_shared<RotateExtrudeNode>(
+    inst, std::make_shared<CurveDiscretizer>(parameters, inst->location()));
 
   node->convexity = std::max(2, static_cast<int>(parameters["convexity"].toDouble()));
 
@@ -79,10 +79,6 @@ std::shared_ptr<AbstractNode> builtin_rotate_extrude(const ModuleInstantiation *
 }
 
 }  // namespace
-
-// Needs the full definition of CurveDiscretizer
-// to generate the code to delete.
-RotateExtrudeNode::~RotateExtrudeNode() = default;
 
 std::string RotateExtrudeNode::toString() const
 {

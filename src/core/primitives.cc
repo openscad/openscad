@@ -225,7 +225,8 @@ static std::shared_ptr<AbstractNode> builtin_sphere(const ModuleInstantiation *i
 {
   Parameters parameters = Parameters::parse(std::move(arguments), inst->location(), {"r"}, {"d"});
 
-  auto node = std::make_shared<SphereNode>(inst, std::make_shared<CurveDiscretizer>(parameters, inst));
+  auto node =
+    std::make_shared<SphereNode>(inst, std::make_shared<CurveDiscretizer>(parameters, inst->location()));
 
   const auto r = lookup_radius(parameters, inst, "d", "r");
   if (r.type() == Value::Type::NUMBER) {
@@ -311,7 +312,8 @@ static std::shared_ptr<AbstractNode> builtin_cylinder(const ModuleInstantiation 
 {
   Parameters parameters = Parameters::parse(std::move(arguments), inst->location(),
                                             {"h", "r1", "r2", "center"}, {"r", "d", "d1", "d2"});
-  auto node = std::make_shared<CylinderNode>(inst, std::make_shared<CurveDiscretizer>(parameters, inst));
+  auto node = std::make_shared<CylinderNode>(
+    inst, std::make_shared<CurveDiscretizer>(parameters, inst->location()));
 
   if (parameters["h"].type() == Value::Type::NUMBER) {
     node->h = parameters["h"].toDouble();
@@ -575,7 +577,8 @@ std::unique_ptr<const Geometry> CircleNode::createGeometry() const
 static std::shared_ptr<AbstractNode> builtin_circle(const ModuleInstantiation *inst, Arguments arguments)
 {
   Parameters parameters = Parameters::parse(std::move(arguments), inst->location(), {"r"}, {"d"});
-  auto node = std::make_shared<CircleNode>(inst, std::make_shared<CurveDiscretizer>(parameters, inst));
+  auto node =
+    std::make_shared<CircleNode>(inst, std::make_shared<CurveDiscretizer>(parameters, inst->location()));
 
   const auto r = lookup_radius(parameters, inst, "d", "r");
   if (r.type() == Value::Type::NUMBER) {

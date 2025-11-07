@@ -6,30 +6,27 @@
 #include <sstream>
 #include <string>
 
-class Parameters;
+class Location;
 class ModuleInstantiation;
+class Parameters;
 
 class CurveDiscretizer
 {
 public:
-  CurveDiscretizer(const Parameters& parameters, const ModuleInstantiation *inst = nullptr);
+  CurveDiscretizer(const Parameters& parameters);
+
+  CurveDiscretizer(const Parameters& parameters, const Location& loc);
+
+  CurveDiscretizer(double segmentsPerCircle);
 
   /**
-   * @brief Provide a function which returns the value for any named special.
-   * Should work on "fn" and not "$fn".
+   * @brief Initialize with a variable-lookup callback
+   * Provide a function which returns the value for any named special.
+   * Must work with "fn" (i.e. string will not have `$` in it).
    * Will not hold a reference to valueLookup after object constructed.
+   * @param valueLookup Return the double value for a given named special when it's defined.
    */
   CurveDiscretizer(std::function<std::optional<double>(const char *)> valueLookup);
-
-  /**
-   * Create a CurveDiscretizer for a spot in dxfdim.cc that used a hardcoded value.
-   * These values of 36,0,0 go back to the first commit in Github.
-   * Unknown why it is that.
-   */
-  static std::shared_ptr<CurveDiscretizer> DefaultForDxf()
-  {
-    return std::make_shared<CurveDiscretizer>(std::move(CurveDiscretizer(36, 0, 0)));
-  }
 
   /**
    * Calculate segments for a circle or circular arc.

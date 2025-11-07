@@ -20,7 +20,7 @@ public:
     angle = 360;
     start = 0;
   }
-  ~RotateExtrudeNode();
+
   std::string toString() const override;
   std::string name() const override { return "rotate_extrude"; }
 

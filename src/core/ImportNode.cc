@@ -95,8 +95,8 @@ static std::shared_ptr<AbstractNode> do_import(const ModuleInstantiation *inst, 
     else if (ext == ".obj") actualtype = ImportType::OBJ;
   }
 
-  auto node =
-    std::make_shared<ImportNode>(inst, actualtype, std::make_shared<CurveDiscretizer>(parameters, inst));
+  auto node = std::make_shared<ImportNode>(
+    inst, actualtype, std::make_shared<CurveDiscretizer>(parameters, inst->location()));
 
   node->filename = filename;
   const auto& layerval = parameters["layer"];

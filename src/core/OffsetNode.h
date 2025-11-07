@@ -18,8 +18,6 @@ public:
   {
   }
 
-  ~OffsetNode();
-
   std::string toString() const override;
   std::string name() const override { return "offset"; }
 

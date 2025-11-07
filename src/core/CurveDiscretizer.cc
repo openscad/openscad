@@ -2,39 +2,50 @@
 
 #include <algorithm>
 
-#include "core/ModuleInstantiation.h"
+#include "core/AST.h"  // for Location
 #include "core/Parameters.h"
 #include "geometry/Grid.h"
 #include "utils/printutils.h"
 
 #define F_MINIMUM 0.01
 
-CurveDiscretizer::CurveDiscretizer(const Parameters& parameters, const ModuleInstantiation *inst)
+CurveDiscretizer::CurveDiscretizer(const Parameters& parameters, const Location& loc)
 {
   fn = parameters["$fn"].toDouble();
   fs = parameters["$fs"].toDouble();
   fa = parameters["$fa"].toDouble();
 
   if (fn < 0.0) {
-    if (inst) {
-      LOG(message_group::Warning, inst->location(), parameters.documentRoot(),
-          "$fn negative - setting to 0");
-    }
+    LOG(message_group::Warning, loc, parameters.documentRoot(), "$fn negative - setting to 0");
     fn = 0.0;
   }
   if (fs < F_MINIMUM) {
-    if (inst) {
-      LOG(message_group::Warning, inst->location(), parameters.documentRoot(),
-          "$fs too small - clamping to %1$f", F_MINIMUM);
-    }
+    LOG(message_group::Warning, loc, parameters.documentRoot(), "$fs too small - clamping to %1$f",
+        F_MINIMUM);
     fs = F_MINIMUM;
   }
   if (fa < F_MINIMUM) {
-    if (inst) {
-      LOG(message_group::Warning, inst->location(), parameters.documentRoot(),
-          "$fa too small - clamping to %1$f", F_MINIMUM);
-    }
+    LOG(message_group::Warning, loc, parameters.documentRoot(), "$fa too small - clamping to %1$f",
+        F_MINIMUM);
     fa = F_MINIMUM;
+  }
+}
+
+CurveDiscretizer::CurveDiscretizer(const Parameters& parameters)
+{
+  fn = std::max(parameters["$fn"].toDouble(), 0.0);
+  fs = std::max(parameters["$fs"].toDouble(), F_MINIMUM);
+  fa = std::max(parameters["$fa"].toDouble(), F_MINIMUM);
+}
+
+CurveDiscretizer::CurveDiscretizer(double segmentsPerCircle)
+{
+  fn = segmentsPerCircle;
+  fs = 0;
+  fa = 0;
+
+  if (fn < 5.0) {
+    fn = 5.0;
   }
 }
 

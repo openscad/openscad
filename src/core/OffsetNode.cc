@@ -41,9 +41,6 @@
 #include <boost/assign/std/vector.hpp>
 using namespace boost::assign;  // bring 'operator+=()' into scope
 
-// Needed here for full definition of CurveDiscretizer.
-OffsetNode::~OffsetNode() = default;
-
 static std::shared_ptr<AbstractNode> builtin_offset(const ModuleInstantiation *inst, Arguments arguments,
                                                     const Children& children)
 {
