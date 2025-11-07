@@ -70,7 +70,8 @@ void MouseSelector::setupFramebuffer(int width, int height)
       this->framebuffer->height() != height) {
     this->framebuffer = createFBO(width, height);
     if (!this->framebuffer) {
-      LOG(message_group::Error, "MouseSelector: Failed to create framebuffer; disabling mouse selection.");
+      LOG(message_group::Error,
+          "MouseSelector: Failed to create framebuffer; disabling mouse selection.");
       return;
     }
     // We bind the framebuffer before initializing shaders since
