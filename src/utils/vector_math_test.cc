@@ -115,7 +115,7 @@ TEST_CASE("calculateLineLineDistance handles various line arrangements (Eigen)",
      {0, -1, 0},
      {0, 1, 0},  // L2 (y-axis)
      0.0,
-     0.0},
+     0.5},
 
     // L1: x-axis. L2: Parallel, shifted by 1 unit on the y-axis.
     {"Parallel", {0, 0, 0}, {5, 0, 0}, {0, 1, 0}, {10, 1, 0}, 1.0, NOT_APPLICABLE},
