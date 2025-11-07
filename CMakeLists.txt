@@ -169,6 +169,10 @@ if (MINGW)
       >
     )
   endif()
+  if (MXECROSS)
+    message(FATAL_ERROR "Hey, wait, MINGW and MXECROSS both defined")
+  endif()
+  target_compile_definitions(OpenSCAD PRIVATE QSCINTILLA_DLL)
 endif()
 
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/submodules/sanitizers-cmake/cmake" ${CMAKE_MODULE_PATH})
