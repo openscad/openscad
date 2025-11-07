@@ -4,9 +4,8 @@
 #include <string>
 #include <vector>
 
+#include "core/CurveDiscretizer.h"
 #include "geometry/linalg.h"
-
-class CurveDiscretizer;
 
 class DxfData
 {
@@ -16,6 +15,7 @@ public:
     bool is_closed{false}, is_inner{false};
     Path() = default;
   };
+
   struct Dim {
     unsigned int type;
     double coords[7][2];
@@ -40,9 +40,8 @@ public:
   std::vector<Dim> dims;
 
   DxfData() = default;
-  DxfData(std::shared_ptr<CurveDiscretizer> discretizer, const std::string& filename,
-          const std::string& layername = "", double xorigin = 0.0, double yorigin = 0.0,
-          double scale = 1.0);
+  DxfData(CurveDiscretizer discretizer, const std::string& filename, const std::string& layername = "",
+          double xorigin = 0.0, double yorigin = 0.0, double scale = 1.0);
 
   int addPoint(double x, double y);
 

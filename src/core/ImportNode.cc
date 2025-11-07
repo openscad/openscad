@@ -39,7 +39,6 @@
 #include "core/module.h"
 #include "core/ModuleInstantiation.h"
 #include "core/Parameters.h"
-#include "core/CurveDiscretizer.h"
 #include "io/DxfData.h"
 #include "io/fileutils.h"
 #include "utils/printutils.h"
@@ -95,8 +94,8 @@ static std::shared_ptr<AbstractNode> do_import(const ModuleInstantiation *inst, 
     else if (ext == ".obj") actualtype = ImportType::OBJ;
   }
 
-  auto node = std::make_shared<ImportNode>(
-    inst, actualtype, std::make_shared<CurveDiscretizer>(parameters, inst->location()));
+  auto node =
+    std::make_shared<ImportNode>(inst, actualtype, CurveDiscretizer(parameters, inst->location()));
 
   node->filename = filename;
   const auto& layerval = parameters["layer"];

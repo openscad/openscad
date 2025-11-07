@@ -79,11 +79,8 @@ std::optional<int> CurveDiscretizer::getCircularSegmentCount(double r, double an
   return std::max(1, static_cast<int>(std::ceil(result)));
 }
 
-std::ostream& operator<<(std::ostream& stream, const std::shared_ptr<CurveDiscretizer>& f)
+std::ostream& operator<<(std::ostream& stream, const CurveDiscretizer& f)
 {
-  if (!f) {
-    return stream << "[null CurveDiscretizer]";
-  }
-  stream << "$fn = " << f->fn << ", $fa = " << f->fa << ", $fs = " << f->fs;
+  stream << "$fn = " << f.fn << ", $fa = " << f.fa << ", $fs = " << f.fs;
   return stream;
 }

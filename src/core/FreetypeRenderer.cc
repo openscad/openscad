@@ -41,7 +41,6 @@
 
 #include "FontCache.h"
 #include "core/DrawingCallback.h"
-#include "core/CurveDiscretizer.h"
 #include "utils/calc.h"
 
 #include FT_OUTLINE_H
@@ -251,7 +250,7 @@ void FreetypeRenderer::Params::detect_properties()
   hb_direction_t hbdirection = detect_direction(hbscript);
   set_direction(hb_direction_to_string(hbdirection));
 
-  auto segments = discretizer->getCircularSegmentCount(size).value_or(3);
+  auto segments = discretizer.getCircularSegmentCount(size).value_or(3);
   // The curved segments of most fonts are relatively short, so
   // by using a fraction of the number of full circle segments
   // the resolution will be better matching the detail level of
@@ -306,7 +305,7 @@ void FreetypeRenderer::Params::set(Parameters& parameters)
   (void)parameters.valid("halign", Value::Type::STRING);
   (void)parameters.valid("valign", Value::Type::STRING);
 
-  discretizer = std::make_shared<CurveDiscretizer>(parameters);
+  discretizer = CurveDiscretizer(parameters);
   set_size(parameters.get("size", 10.0));
   set_text(parameters.get("text", ""));
   set_spacing(parameters.get("spacing", 1.0));
@@ -318,7 +317,7 @@ void FreetypeRenderer::Params::set(Parameters& parameters)
   set_valign(parameters.get("valign", "default"));
 }
 
-void FreetypeRenderer::Params::set(std::shared_ptr<CurveDiscretizer> c)
+void FreetypeRenderer::Params::set(CurveDiscretizer c)
 {
   discretizer = c;
 

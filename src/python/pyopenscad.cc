@@ -289,35 +289,34 @@ void get_fnas(double& fn, double& fa, double& fs)
 /**
  * Create a CurveDiscretizer by extracting parameters from __main__ and kwargs
  */
-std::shared_ptr<CurveDiscretizer> CreateCurveDiscretizer(PyObject *kwargs)
+CurveDiscretizer CreateCurveDiscretizer(PyObject *kwargs)
 {
   PyObject *mainModule = PyImport_AddModule("__main__");
 
-  return std::make_shared<CurveDiscretizer>(
-    [kwargs, mainModule](const char *key) -> std::optional<double> {
-      if (PyDict_Check(kwargs)) {
-        PyObject *value = PyDict_GetItemString(kwargs, key);
+  return CurveDiscretizer([kwargs, mainModule](const char *key) -> std::optional<double> {
+    if (PyDict_Check(kwargs)) {
+      PyObject *value = PyDict_GetItemString(kwargs, key);
 
-        if (PyFloat_Check(value)) {
-          double result = PyFloat_AsDouble(value);
-          if (!(result == -1.0 && PyErr_Occurred())) {
-            return result;
+      if (PyFloat_Check(value)) {
+        double result = PyFloat_AsDouble(value);
+        if (!(result == -1.0 && PyErr_Occurred())) {
+          return result;
+        }
+      }
+    }
+    if (mainModule != nullptr) {
+      if (PyObject_HasAttrString(mainModule, key)) {
+        PyObjectUniquePtr var(PyObject_GetAttrString(mainModule, key), PyObjectDeleter);
+        if (var.get() != nullptr) {
+          double val = PyFloat_AsDouble(var.get());
+          if (!isnan(val) && val >= 0) {
+            return val;
           }
         }
       }
-      if (mainModule != nullptr) {
-        if (PyObject_HasAttrString(mainModule, key)) {
-          PyObjectUniquePtr var(PyObject_GetAttrString(mainModule, key), PyObjectDeleter);
-          if (var.get() != nullptr) {
-            double val = PyFloat_AsDouble(var.get());
-            if (!isnan(val) && val >= 0) {
-              return val;
-            }
-          }
-        }
-      }
-      return {};
-    });
+    }
+    return {};
+  });
 }
 
 /*

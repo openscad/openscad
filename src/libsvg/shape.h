@@ -49,7 +49,7 @@ class shape;
 // ccox - I don't like putting this here, but the svg library code did not plan ahead for app
 // customization. And this is one of the few sensible places to put it without adding new header files.
 struct fnContext {
-  fnContext(std::shared_ptr<CurveDiscretizer> discretizer) : discretizer(std::move(discretizer)) {}
+  fnContext(CurveDiscretizer discretizer) : discretizer(std::move(discretizer)) {}
   bool match(bool val)
   {
     if (val) matches++;
@@ -57,7 +57,7 @@ struct fnContext {
   }
   bool has_matches() { return matches.load() > 0; }
 
-  std::shared_ptr<CurveDiscretizer> discretizer;
+  CurveDiscretizer discretizer;
   std::function<bool(const libsvg::shape *)> selector;
 
 private:

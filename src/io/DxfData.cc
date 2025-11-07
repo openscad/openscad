@@ -42,7 +42,6 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/lexical_cast.hpp>
 
-#include "core/CurveDiscretizer.h"
 #include "core/Value.h"
 #include "geometry/Grid.h"
 #include "geometry/linalg.h"
@@ -79,8 +78,8 @@ struct Line {
 /*!
    Reads a layer from the given file, or all layers if layername.empty()
  */
-DxfData::DxfData(std::shared_ptr<CurveDiscretizer> discretizer, const std::string& filename,
-                 const std::string& layername, double xorigin, double yorigin, double scale)
+DxfData::DxfData(CurveDiscretizer discretizer, const std::string& filename, const std::string& layername,
+                 double xorigin, double yorigin, double scale)
 {
   std::ifstream stream(filename.c_str());
   if (!stream.good()) {
@@ -188,7 +187,7 @@ DxfData::DxfData(std::shared_ptr<CurveDiscretizer> discretizer, const std::strin
             ADD_LINE(xverts.at(numverts - 1), yverts.at(numverts - 1), xverts.at(0), yverts.at(0));
           }
         } else if (mode == "CIRCLE") {
-          const int n = discretizer->getCircularSegmentCount(radius).value_or(3);
+          const int n = discretizer.getCircularSegmentCount(radius).value_or(3);
           Vector2d center(xverts.at(0), yverts.at(0));
           for (int i = 0; i < n; ++i) {
             const double a1 = (360.0 * i) / n;
@@ -202,7 +201,7 @@ DxfData::DxfData(std::shared_ptr<CurveDiscretizer> discretizer, const std::strin
             arc_stop_angle += 360.0;
           }
           const double arc_angle = arc_stop_angle - arc_start_angle;
-          const int n = discretizer->getCircularSegmentCount(radius, arc_angle).value_or(1);
+          const int n = discretizer.getCircularSegmentCount(radius, arc_angle).value_or(1);
           for (int i = 0; i < n; ++i) {
             const double a1 = arc_start_angle + arc_angle * i / n;
             const double a2 = arc_start_angle + arc_angle * (i + 1) / n;
@@ -234,7 +233,7 @@ DxfData::DxfData(std::shared_ptr<CurveDiscretizer> discretizer, const std::strin
           const double r_minor = r_major * radius;
           const double sweep_angle = ellipse_stop_angle - ellipse_start_angle;
           const int n =
-            discretizer->getCircularSegmentCount(r_major, sweep_angle / (2 * M_PI) * 360.0).value_or(1);
+            discretizer.getCircularSegmentCount(r_major, sweep_angle / (2 * M_PI) * 360.0).value_or(1);
           //				Vector2d p1;
           Vector2d p1{0.0, 0.0};
           for (int i = 0; i <= n; ++i) {

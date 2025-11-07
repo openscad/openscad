@@ -31,14 +31,13 @@
 #include <ostream>
 
 #include "core/AST.h"
+#include "core/CurveDiscretizer.h"
 #include "core/Parameters.h"
 #include "FontCache.h"
 #include <hb.h>
 #include <ft2build.h>
 #include FT_FREETYPE_H
 #include FT_GLYPH_H
-
-class CurveDiscretizer;
 
 class FreetypeRenderer
 {
@@ -65,14 +64,14 @@ public:
     /**
      * Set defaults and discretizer. Intended for calling from Python.
      */
-    void set(std::shared_ptr<CurveDiscretizer> c);
+    void set(CurveDiscretizer c);
     [[nodiscard]] const FontFacePtr get_font_face() const;
     void detect_properties();
     friend std::ostream& operator<<(std::ostream& stream, const FreetypeRenderer::Params& params);
 
   private:
     double size, spacing;
-    std::shared_ptr<CurveDiscretizer> discretizer;
+    CurveDiscretizer discretizer;
     unsigned int segments;
     std::string text, font, direction, language, script, halign, valign;
     Location loc = Location::NONE;

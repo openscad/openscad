@@ -1118,7 +1118,7 @@ PyObject *python_oo_mesh(PyObject *obj, PyObject *args, PyObject *kwargs)
 
 PyObject *rotate_extrude_core(PyObject *obj, int convexity, double scale, double angle, PyObject *twist,
                               PyObject *origin, PyObject *offset, PyObject *vp, char *method,
-                              std::shared_ptr<CurveDiscretizer>&& discretizer)
+                              CurveDiscretizer&& discretizer)
 {
   DECLARE_INSTANCE();
   std::shared_ptr<AbstractNode> child;
@@ -1960,7 +1960,7 @@ PyObject *python_textmetrics(PyObject *self, PyObject *args, PyObject *kwargs)
 }
 
 PyObject *python_offset_core(PyObject *obj, double r, double delta, PyObject *chamfer,
-                             std::shared_ptr<CurveDiscretizer>&& discretizer)
+                             CurveDiscretizer&& discretizer)
 {
   DECLARE_INSTANCE();
   auto node = std::make_shared<OffsetNode>(instance, discretizer);

@@ -31,7 +31,6 @@
 #include "core/module.h"
 #include "core/ModuleInstantiation.h"
 #include "core/Parameters.h"
-#include "core/CurveDiscretizer.h"
 
 #include <clipper2/clipper.offset.h>
 #include <ios>
@@ -46,7 +45,7 @@ static std::shared_ptr<AbstractNode> builtin_offset(const ModuleInstantiation *i
 {
   Parameters parameters =
     Parameters::parse(std::move(arguments), inst->location(), {"r"}, {"delta", "chamfer"});
-  auto node = std::make_shared<OffsetNode>(inst, std::make_shared<CurveDiscretizer>(parameters));
+  auto node = std::make_shared<OffsetNode>(inst, CurveDiscretizer(parameters));
 
   // default with no argument at all is (r = 1, chamfer = false)
   // radius takes precedence if both r and delta are given.

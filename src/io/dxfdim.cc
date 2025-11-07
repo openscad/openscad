@@ -97,7 +97,7 @@ static Value builtin_dxf_dim(Arguments arguments, const Location& loc)
   handle_dep(filepath.string());
   // The value of 36 for fn go back to the first commit in Github.
   // Unknown why it is that.
-  DxfData dxf(std::make_shared<CurveDiscretizer>(36), filename, layername, xorigin, yorigin, scale);
+  DxfData dxf(CurveDiscretizer(36), filename, layername, xorigin, yorigin, scale);
 
   for (auto& dim : dxf.dims) {
     if (!name.empty() && dim.name != name) continue;
@@ -210,7 +210,7 @@ static Value builtin_dxf_cross(Arguments arguments, const Location& loc)
     return {std::move(ret)};
   }
   handle_dep(filepath.string());
-  DxfData dxf(std::make_shared<CurveDiscretizer>(36), filename, layername, xorigin, yorigin, scale);
+  DxfData dxf(CurveDiscretizer(36), filename, layername, xorigin, yorigin, scale);
 
   double coords[4][2];
 

@@ -43,11 +43,11 @@ public:
     return std::max(result, minimum);
   }
 
-  friend std::ostream& operator<<(std::ostream& stream, const std::shared_ptr<CurveDiscretizer>& f);
+  friend std::ostream& operator<<(std::ostream& stream, const CurveDiscretizer& f);
   bool isFnSpecifiedAndOdd() { return static_cast<int>(fn) & 1; }
 
 private:
   CurveDiscretizer(double fn, double fs, double fa) : fn(fn), fs(fs), fa(fa) {}
   double fn, fs, fa;
 };
-std::ostream& operator<<(std::ostream& stream, const std::shared_ptr<CurveDiscretizer>& f);
+std::ostream& operator<<(std::ostream& stream, const CurveDiscretizer& f);

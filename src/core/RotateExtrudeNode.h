@@ -3,6 +3,7 @@
 #include <memory>
 #include <string>
 
+#include "core/CurveDiscretizer.h"
 #include "core/node.h"
 #include "core/ModuleInstantiation.h"
 #include "core/Value.h"
@@ -13,7 +14,7 @@ class RotateExtrudeNode : public AbstractPolyNode
 {
 public:
   VISITABLE();
-  RotateExtrudeNode(const ModuleInstantiation *mi, std::shared_ptr<CurveDiscretizer> discretizer)
+  RotateExtrudeNode(const ModuleInstantiation *mi, CurveDiscretizer discretizer)
     : AbstractPolyNode(mi), discretizer(std::move(discretizer))
   {
     convexity = 0;
@@ -25,6 +26,6 @@ public:
   std::string name() const override { return "rotate_extrude"; }
 
   int convexity;
-  std::shared_ptr<CurveDiscretizer> discretizer;
+  CurveDiscretizer discretizer;
   double angle, start;
 };
