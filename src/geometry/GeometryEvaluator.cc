@@ -603,7 +603,7 @@ Response GeometryEvaluator::visit(State& state, const OffsetNode& node)
       if (const auto polygon = applyToChildren2D(node, OpenSCADOperator::UNION)) {
         // ClipperLib documentation: The formula for the number of steps in a full
         // circular arc is ... Pi / acos(1 - arc_tolerance / abs(delta))
-        double n = node.discretizer->GetCircularSegmentCount(std::abs(node.delta)).value_or(3);
+        double n = node.discretizer->getCircularSegmentCount(std::abs(node.delta)).value_or(3);
         double arc_tolerance = std::abs(node.delta) * (1 - cos_degrees(180 / n));
         geom = ClipperUtils::applyOffset(*polygon, node.delta, node.join_type, node.miter_limit,
                                          arc_tolerance);

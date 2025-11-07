@@ -251,7 +251,7 @@ void FreetypeRenderer::Params::detect_properties()
   hb_direction_t hbdirection = detect_direction(hbscript);
   set_direction(hb_direction_to_string(hbdirection));
 
-  auto segments = discretizer->GetCircularSegmentCount(size).value_or(3);
+  auto segments = discretizer->getCircularSegmentCount(size).value_or(3);
   // The curved segments of most fonts are relatively short, so
   // by using a fraction of the number of full circle segments
   // the resolution will be better matching the detail level of

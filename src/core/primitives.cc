@@ -179,7 +179,7 @@ std::unique_ptr<const Geometry> SphereNode::createGeometry() const
     return PolySet::createEmpty();
   }
 
-  int num_fragments = discretizer->GetCircularSegmentCount(r).value_or(3);
+  int num_fragments = discretizer->getCircularSegmentCount(r).value_or(3);
   auto num_rings = (num_fragments + 1) / 2;
   // Uncomment the following three lines to enable experimental sphere
   // tessellation
@@ -255,7 +255,7 @@ std::unique_ptr<const Geometry> CylinderNode::createGeometry() const
     return PolySet::createEmpty();
   }
 
-  int num_fragments = discretizer->GetCircularSegmentCount(std::fmax(this->r1, this->r2)).value_or(3);
+  int num_fragments = discretizer->getCircularSegmentCount(std::fmax(this->r1, this->r2)).value_or(3);
 
   double z1, z2;
   if (this->center) {
@@ -564,7 +564,7 @@ std::unique_ptr<const Geometry> CircleNode::createGeometry() const
     return std::make_unique<Polygon2d>();
   }
 
-  int num_fragments = discretizer->GetCircularSegmentCount(this->r).value_or(3);
+  int num_fragments = discretizer->getCircularSegmentCount(this->r).value_or(3);
   Outline2d o;
   o.vertices.resize(num_fragments);
   for (int i = 0; i < num_fragments; ++i) {

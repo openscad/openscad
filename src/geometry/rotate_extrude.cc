@@ -102,7 +102,7 @@ std::unique_ptr<Geometry> rotatePolygon(const RotateExtrudeNode& node, const Pol
   // # of sections. For closed rotations, # vertices is thus fragments*outline_size. For open
   // rotations # vertices is (fragments+1)*outline_size.
   const int num_sections =
-    node.discretizer->GetCircularSegmentCount(max_x - min_x, node.angle).value_or(5);
+    node.discretizer->getCircularSegmentCount(max_x - min_x, node.angle).value_or(5);
   const bool closed = node.angle == 360;
   // # of rings of vertices
   const size_t num_rings = num_sections + (closed ? 0 : 1);

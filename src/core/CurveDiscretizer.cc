@@ -62,7 +62,7 @@ CurveDiscretizer::CurveDiscretizer(std::function<std::optional<double>(const cha
    Returns the number of subdivision of a whole circle, given radius and
    the three special variables $fn, $fs and $fa
  */
-std::optional<int> CurveDiscretizer::GetCircularSegmentCount(double r, double angle_degrees) const
+std::optional<int> CurveDiscretizer::getCircularSegmentCount(double r, double angle_degrees) const
 {
   // FIXME: It would be better to refuse to create an object. Let's do more strict error handling
   // in future versions of OpenSCAD
