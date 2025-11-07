@@ -83,7 +83,11 @@ private:
   // Information held for each mouse action is a 3x2 rotation matrix, a 3x2 translation matrix, and a
   // zoom 2-vector.
   float mouseActions[MouseConfig::MouseAction::NUM_MOUSE_ACTIONS * MouseConfig::ACTION_DIMENSION];
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+  QPointF last_mouse;
+#else
   QPoint last_mouse;
+#endif
   QImage frame;  // Used by grabFrame() and save()
 
   void wheelEvent(QWheelEvent *event) override;

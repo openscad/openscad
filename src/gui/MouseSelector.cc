@@ -69,6 +69,11 @@ void MouseSelector::setupFramebuffer(int width, int height)
   if (!this->framebuffer || this->framebuffer->width() != width ||
       this->framebuffer->height() != height) {
     this->framebuffer = createFBO(width, height);
+    if (!this->framebuffer) {
+      LOG(message_group::Error,
+          "MouseSelector: Failed to create framebuffer; disabling mouse selection.");
+      return;
+    }
     // We bind the framebuffer before initializing shaders since
     // shader validation requires a valid framebuffer.
     this->framebuffer->bind();
@@ -86,6 +91,8 @@ void MouseSelector::setupFramebuffer(int width, int height)
  */
 int MouseSelector::select(const Renderer *renderer, int x, int y)
 {
+  if (!this->framebuffer) return -1;
+
   // This function should render a frame, as usual, with the following changes:
   // * Render to as custom framebuffer
   // * The shader should be the selector shader

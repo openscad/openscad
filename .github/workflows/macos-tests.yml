@@ -27,9 +27,9 @@ jobs:
           - qt: qt5
     runs-on:  ${{ matrix.os }}
     name: ${{ matrix.os }} ${{ matrix.qt }}
-    # If it's not done in 60 minutes, something is wrong.
+    # If it's not done in 90 minutes, something is wrong.
     # Default is 6 hours, which is a bit long to wait.
-    timeout-minutes: 60
+    timeout-minutes: 90
     steps:
     - name: Set Qt version
       run: |
@@ -72,7 +72,7 @@ jobs:
         export NUMCPU=$(($(sysctl -n hw.ncpu) * 3 / 2))
         ctest -j$NUMCPU -E pdfexporttest
     - name: Upload Test Result Report
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v5
       if: ${{ always() }}
       with:
         name: Test Result Report (MacOS ${{ matrix.qt }})

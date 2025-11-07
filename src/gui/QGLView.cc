@@ -118,6 +118,9 @@ void QGLView::initializeGL()
   }
   PRINTDB("GLAD: Loaded OpenGL %d.%d", GLAD_VERSION_MAJOR(version) % GLAD_VERSION_MINOR(version));
 #endif  // ifdef USE_GLAD
+
+  PRINTD(gl_dump());
+
   GLView::initializeGL();
 
   this->selector = std::make_unique<MouseSelector>(this);
@@ -203,7 +206,11 @@ void QGLView::mousePressEvent(QMouseEvent *event)
   }
 
   mouse_drag_active = true;
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+  last_mouse = event->globalPosition();
+#else
   last_mouse = event->globalPos();
+#endif
 }
 
 /*
@@ -301,7 +308,11 @@ void QGLView::normalizeAngle(GLdouble& angle)
 
 void QGLView::mouseMoveEvent(QMouseEvent *event)
 {
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+  auto this_mouse = event->globalPosition();
+#else
   auto this_mouse = event->globalPos();
+#endif
   if (measure_state != MEASURE_IDLE) {
     QPoint pt = event->pos();
     this->shown_obj = findObject(pt.x(), pt.y());

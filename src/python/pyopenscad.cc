@@ -360,8 +360,6 @@ void python_catch_error(std::string& errorstr)
 
 void initPython(const std::string& binDir, double time)
 {
-  const auto name = "openscad-python";
-  const auto exe = binDir + "/" + name;
   if (pythonInitDict) { /* If already initialized, undo to reinitialize after */
     PyObject *key, *value;
     Py_ssize_t pos = 0;
@@ -454,8 +452,9 @@ void initPython(const std::string& binDir, double time)
     stream << sep << PlatformUtils::userLibraryPath();
     stream << sepchar << ".";
 
-    PyConfig_SetBytesString(&config, &config.program_name, name);
-    PyConfig_SetBytesString(&config, &config.executable, exe.c_str());
+    if (!binDir.empty()) {
+      PyConfig_SetBytesString(&config, &config.executable, (binDir + "/python").c_str());
+    }
 
     PyStatus status = Py_InitializeFromConfig(&config);
     if (PyStatus_Exception(status)) {

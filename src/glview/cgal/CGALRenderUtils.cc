@@ -59,8 +59,9 @@ double calculateLineLineDistance(const Vector3d& l1b, const Vector3d& l1e, const
   return d;
 }
 
+// Is this calculating midpoint-to-midpoint? Would be nice if someone documented it.
 double calculateSegSegDistance(const Vector3d& l1b, const Vector3d& l1e, const Vector3d& l2b,
-                               const Vector3d& l2e, double& dist_lat)
+                               const Vector3d& l2e)
 {
   double d;
   Vector3d v1 = l1e - l1b;

@@ -26,27 +26,24 @@
 
 #include "gui/MainWindow.h"
 
-#include <cstring>
-#include <filesystem>
-#include <deque>
+#include <algorithm>
 #include <cassert>
-#include <functional>
+#include <cstring>
+#include <deque>
 #include <exception>
-#include <sstream>
+#include <filesystem>
+#include <fstream>
+#include <functional>
 #include <iostream>
 #include <memory>
+#include <sstream>
 #include <string>
-#include <vector>
-#include <cstdio>
-#include <memory>
 #include <utility>
-#include <memory>
-#include <string>
-#include <fstream>
-#include <algorithm>
+#include <vector>
 #include <sys/stat.h>
 
 #include <boost/version.hpp>
+#include <boost/range/adaptor/reversed.hpp>
 #include <QApplication>
 #include <QClipboard>
 #include <QDesktopServices>
@@ -248,20 +245,6 @@ void removeExportActions(QToolBar *toolbar, QAction *action)
   }
 }
 
-void addExportActions(const MainWindow *mainWindow, QToolBar *toolbar, QAction *action)
-{
-  for (const std::string& identifier :
-       {Settings::Settings::toolbarExport3D.value(), Settings::Settings::toolbarExport2D.value()}) {
-    FileFormat format;
-    fileformat::fromIdentifier(identifier, format);
-    const auto it = mainWindow->exportMap.find(format);
-    // FIXME: Allow turning off the toolbar entry?
-    if (it != mainWindow->exportMap.end()) {
-      toolbar->insertAction(action, it->second);
-    }
-  }
-}
-
 std::unique_ptr<ExternalToolInterface> createExternalToolService(print_service_t serviceType,
                                                                  const QString& serviceName,
                                                                  FileFormat fileFormat)
@@ -407,8 +390,7 @@ MainWindow::MainWindow(const QStringList& filenames) : rubberBandManager(this)
   this->qglview->setMouseCentricZoom(Settings::Settings::mouseCentricZoom.value());
   this->setAllMouseViewActions();
   this->meas.setView(qglview);
-  this->designActionMeasureDist->setEnabled(false);
-  this->designActionMeasureAngle->setEnabled(false);
+  resetMeasurementsState(false, "Render (not preview) to enable measurements");
 
   autoReloadTimer = new QTimer(this);
   autoReloadTimer->setSingleShot(false);
@@ -502,13 +484,15 @@ MainWindow::MainWindow(const QStringList& filenames) : rubberBandManager(this)
           &MainWindow::useSelectionForFind);
 
   // Design menu
+  measurementGroup = new QActionGroup(this);
+  measurementGroup->addAction(designActionMeasureDist);
+  measurementGroup->addAction(designActionMeasureAngle);
   connect(this->designActionAutoReload, &QAction::toggled, this, &MainWindow::autoReloadSet);
   connect(this->designActionReloadAndPreview, &QAction::triggered, this,
           &MainWindow::actionReloadRenderPreview);
   connect(this->designActionPreview, &QAction::triggered, this, &MainWindow::actionRenderPreview);
   connect(this->designActionRender, &QAction::triggered, this, &MainWindow::actionRender);
-  connect(this->designActionMeasureDist, &QAction::triggered, this, &MainWindow::actionMeasureDistance);
-  connect(this->designActionMeasureAngle, &QAction::triggered, this, &MainWindow::actionMeasureAngle);
+  connect(this->measurementGroup, &QActionGroup::triggered, this, &MainWindow::handleMeasurementClicked);
   connect(this->designAction3DPrint, &QAction::triggered, this, &MainWindow::action3DPrint);
   connect(this->designCheckValidity, &QAction::triggered, this, &MainWindow::actionCheckValidity);
   connect(this->designActionDisplayAST, &QAction::triggered, this, &MainWindow::actionDisplayAST);
@@ -765,12 +749,16 @@ MainWindow::MainWindow(const QStringList& filenames) : rubberBandManager(this)
   }
 
   // Adds shortcut for the prev/next window switching
-  shortcutNextWindow = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_K), this);
+  shortcutNextWindow = new QShortcut(QKeySequence(Qt::CTRL | Qt::Key_K), this);
   QObject::connect(shortcutNextWindow, &QShortcut::activated, this,
                    &MainWindow::onWindowShortcutNextPrevActivated);
-  shortcutPreviousWindow = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_H), this);
+  shortcutPreviousWindow = new QShortcut(QKeySequence(Qt::CTRL | Qt::Key_H), this);
   QObject::connect(shortcutPreviousWindow, &QShortcut::activated, this,
                    &MainWindow::onWindowShortcutNextPrevActivated);
+
+  auto shortcutExport3D = new QShortcut(QKeySequence("F7"), this);
+  QObject::connect(shortcutExport3D, &QShortcut::activated, this,
+                   &MainWindow::onWindowShortcutExport3DActivated);
 
   // Adds dock specific behavior on visibility change
   QObject::connect(editorDock, &Dock::visibilityChanged, this,
@@ -903,15 +891,26 @@ void MainWindow::onNavigationHoveredContextMenuEntry()
   rubberBandManager.emphasize(dock);
 }
 
+void MainWindow::addExportActions(QToolBar *toolbar, QAction *action) const
+{
+  for (const std::string& identifier :
+       {Settings::Settings::toolbarExport3D.value(), Settings::Settings::toolbarExport2D.value()}) {
+    QAction *exportAction = formatIdentifierToAction(identifier);
+    if (exportAction) {
+      toolbar->insertAction(action, exportAction);
+    }
+  }
+}
+
 void MainWindow::updateExportActions()
 {
   removeExportActions(editortoolbar, this->designAction3DPrint);
-  addExportActions(this, editortoolbar, this->designAction3DPrint);
+  addExportActions(editortoolbar, this->designAction3DPrint);
 
   // handle the hide/show of export action in view toolbar according to the visibility of editor dock
   removeExportActions(viewerToolBar, this->viewActionViewAll);
   if (!editorDock->isVisible()) {
-    addExportActions(this, viewerToolBar, this->viewActionViewAll);
+    addExportActions(viewerToolBar, this->viewActionViewAll);
   }
 }
 
@@ -2116,8 +2115,7 @@ std::shared_ptr<SourceFile> MainWindow::parseDocument(EditorInterface *editor)
     auto fulltext_py = std::string(this->lastCompiledDoc.toUtf8().constData());
 
     const auto& venv = venvBinDirFromSettings();
-    const auto& binDir = venv.empty() ? PlatformUtils::applicationPath() : venv;
-    initPython(binDir, this->animateWidget->getAnimTval());
+    initPython(venv, this->animateWidget->getAnimTval());
 
     if (venv.empty()) {
       LOG("Running %1$s without venv.", python_version());
@@ -2246,8 +2244,7 @@ void MainWindow::actionRenderPreview()
   GuiLocker::lock();
   preview_requested = false;
 
-  this->designActionMeasureDist->setEnabled(false);
-  this->designActionMeasureAngle->setEnabled(false);
+  resetMeasurementsState(false, "Render (not preview) to enable measurements");
 
   prepareCompile("csgRender", !animateDock->isVisible(), true);
   compile(false, false);
@@ -2415,11 +2412,9 @@ void MainWindow::actionRenderDone(const std::shared_ptr<const Geometry>& root_ge
 
     // Go to CGAL view mode
     viewModeRender();
-    this->designActionMeasureDist->setEnabled(true);
-    this->designActionMeasureAngle->setEnabled(true);
+    resetMeasurementsState(true, "Click to start measuring");
   } else {
-    this->designActionMeasureDist->setEnabled(false);
-    this->designActionMeasureAngle->setEnabled(false);
+    resetMeasurementsState(false, "No top level geometry; render something to enable measurements");
     LOG(message_group::UI_Warning, "No top level geometry to render");
   }
 
@@ -2438,19 +2433,43 @@ void MainWindow::actionRenderDone(const std::shared_ptr<const Geometry>& root_ge
   compileEnded();
 }
 
-void MainWindow::actionMeasureDistance() { meas.startMeasureDist(); }
+void MainWindow::handleMeasurementClicked(QAction *clickedAction)
+{
+  // If we're unchecking, just stop.
+  if (activeMeasurement == clickedAction) {
+    resetMeasurementsState(true, "Click to start measuring");
+    return;
+  }
 
-void MainWindow::actionMeasureAngle() { meas.startMeasureAngle(); }
+  resetMeasurementsState(true, "Click to start measuring");
+  clickedAction->setToolTip("Click to cancel measurement");
+  clickedAction->setChecked(true);
+  activeMeasurement = clickedAction;
+
+  if (clickedAction == designActionMeasureDist) {
+    meas.startMeasureDist();
+  } else if (clickedAction == designActionMeasureAngle) {
+    meas.startMeasureAngle();
+  }
+}
 
 void MainWindow::leftClick(QPoint mouse)
 {
-  const QString str = meas.statemachine(mouse);
-  if (str.size() > 0) {
-    this->qglview->measure_state = MEASURE_IDLE;
+  std::vector<QString> strs = meas.statemachine(mouse);
+  if (strs.size() > 0) {
+    this->qglview->measure_state = MEASURE_DIRTY;
     QMenu resultmenu(this);
-    auto action = resultmenu.addAction(str);
-    connect(action, &QAction::triggered, this, &MainWindow::measureFinished);
+    // Ensures we clean the display regardless of how menu gets closed.
+    connect(&resultmenu, &QMenu::aboutToHide, this, &MainWindow::measureFinished);
+
+    // Can eventually be replaced with C++20 std::views::reverse
+    for (const auto& str : boost::adaptors::reverse(strs)) {
+      auto action = resultmenu.addAction(str);
+      connect(action, &QAction::triggered, this, [str]() { QApplication::clipboard()->setText(str); });
+    }
+    resultmenu.addAction("Click any above to copy its text to the clipboard");
     resultmenu.exec(qglview->mapToGlobal(mouse));
+    resetMeasurementsState(true, "Click to start measuring");
   }
 }
 
@@ -2542,7 +2561,11 @@ void MainWindow::rightClick(QPoint position)
   }
 }
 
-void MainWindow::measureFinished() { meas.stopMeasure(); }
+void MainWindow::measureFinished()
+{
+  auto didSomething = meas.stopMeasure();
+  if (didSomething) resetMeasurementsState(true, "Click to start measuring");
+}
 
 void MainWindow::clearAllSelectionIndicators() { this->activeEditor->clearAllSelectionIndicators(); }
 
@@ -3334,6 +3357,26 @@ void MainWindow::onWindowShortcutNextPrevActivated()
   rubberBandManager.emphasize(dock);
 }
 
+QAction *MainWindow::formatIdentifierToAction(const std::string& identifier) const
+{
+  FileFormat format;
+  if (fileformat::fromIdentifier(identifier, format)) {
+    const auto it = exportMap.find(format);
+    if (it != exportMap.end()) {
+      return it->second;
+    }
+  }
+  return nullptr;
+}
+
+void MainWindow::onWindowShortcutExport3DActivated()
+{
+  QAction *action = formatIdentifierToAction(Settings::Settings::toolbarExport3D.value());
+  if (action) {
+    action->trigger();
+  }
+}
+
 void MainWindow::on_editActionInsertTemplate_triggered() { activeEditor->displayTemplates(); }
 
 void MainWindow::on_editActionFoldAll_triggered() { activeEditor->foldUnfold(); }
@@ -3670,3 +3713,25 @@ QString MainWindow::exportPath(const QString& suffix)
 }
 
 void MainWindow::jumpToLine(int line, int col) { this->activeEditor->setCursorPosition(line, col); }
+
+void MainWindow::resetMeasurementsState(bool enable, const QString& tooltipMessage)
+{
+  if (RenderSettings::inst()->backend3D != RenderBackend3D::ManifoldBackend) {
+    enable = false;
+    static const auto noCGALMessage =
+      "Measurements only work with Manifold backend; Preferences->Advanced->3D Rendering->Backend";
+    this->designActionMeasureDist->setToolTip(noCGALMessage);
+    this->designActionMeasureAngle->setToolTip(noCGALMessage);
+  } else {
+    this->designActionMeasureDist->setToolTip(tooltipMessage);
+    this->designActionMeasureAngle->setToolTip(tooltipMessage);
+  }
+
+  this->designActionMeasureDist->setEnabled(enable);
+  this->designActionMeasureDist->setChecked(false);
+  this->designActionMeasureAngle->setEnabled(enable);
+  this->designActionMeasureAngle->setChecked(false);
+
+  (void)meas.stopMeasure();
+  activeMeasurement = nullptr;
+}
