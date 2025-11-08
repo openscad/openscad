@@ -154,8 +154,8 @@ void path::curve_to(path_t& path, double x, double y, double cx1, double cy1, do
   // NOTE - this could be done better using a chord length iteration (uniform in space) to implement $fa
   // (lot of work, little gain)
   const auto *fValues = reinterpret_cast<const fnContext *>(context);
-  unsigned long fn = fValues->discretizer.getPathSegmentCount(20);  // preserve the old minimum
-  for (unsigned long idx = 1; idx <= fn; ++idx) {
+  int fn = fValues->discretizer.getPathSegmentCount();
+  for (int idx = 1; idx <= fn; ++idx) {
     const double a = idx * (1.0 / (double)fn);
     const double xx = x * t(a, 2) + cx1 * 2 * t(a, 1) * a + x2 * a * a;
     const double yy = y * t(a, 2) + cy1 * 2 * t(a, 1) * a + y2 * a * a;
@@ -169,8 +169,8 @@ void path::curve_to(path_t& path, double x, double y, double cx1, double cy1, do
   // NOTE - this could be done better using a chord length iteration (uniform in space) to implement $fa
   // (lot of work, little gain)
   const auto *fValues = reinterpret_cast<const fnContext *>(context);
-  unsigned long fn = fValues->discretizer.getPathSegmentCount(20);  // preserve the old minimum
-  for (unsigned long idx = 1; idx <= fn; ++idx) {
+  int fn = fValues->discretizer.getPathSegmentCount();
+  for (int idx = 1; idx <= fn; ++idx) {
     const double a = idx * (1.0 / (double)fn);
     const double xx = x * t(a, 3) + cx1 * 3 * t(a, 2) * a + cx2 * 3 * t(a, 1) * a * a + x2 * a * a * a;
     const double yy = y * t(a, 3) + cy1 * 3 * t(a, 2) * a + cy2 * 3 * t(a, 1) * a * a + y2 * a * a * a;

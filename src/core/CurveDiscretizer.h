@@ -35,12 +35,14 @@ public:
 
   /**
    * @brief Calculate segments for a path.
-   * Currently only uses $fn. Won't use $fs or $fa, but future variables could be used.
+   * Currently only uses $fn.
    */
-  unsigned long getPathSegmentCount(unsigned long minimum) const
+  int getPathSegmentCount() const
   {
-    unsigned long result = (fn > 3.0) ? static_cast<unsigned long>(fn) : 3;
-    return std::max(result, minimum);
+    // Prior to https://github.com/openscad/openscad/commit/f5816258db263408a7aa2feec1fafffe77644662
+    // fn was set to a fixed value of 20 where this is now used.
+    // The author decided it should never be smaller than this original value.
+    return std::max(static_cast<int>(fn), 20);
   }
 
   friend std::ostream& operator<<(std::ostream& stream, const CurveDiscretizer& f);
