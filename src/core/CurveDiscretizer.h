@@ -39,10 +39,7 @@ public:
    */
   int getPathSegmentCount() const
   {
-    // Prior to https://github.com/openscad/openscad/commit/f5816258db263408a7aa2feec1fafffe77644662
-    // fn was set to a fixed value of 20 where this is now used.
-    // The author decided it should never be smaller than this original value.
-    return std::max(static_cast<int>(fn), 20);
+    return std::max(static_cast<int>(fn), 3);
   }
 
   friend std::ostream& operator<<(std::ostream& stream, const CurveDiscretizer& f);
