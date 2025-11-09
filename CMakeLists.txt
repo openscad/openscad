@@ -169,6 +169,9 @@ if (MINGW)
       >
     )
   endif()
+  if (NOT MXECROSS)
+    target_compile_definitions(OpenSCAD PRIVATE QSCINTILLA_DLL)
+  endif()
 endif()
 
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/submodules/sanitizers-cmake/cmake" ${CMAKE_MODULE_PATH})
