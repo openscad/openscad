@@ -37,10 +37,7 @@ public:
    * @brief Calculate segments for a path.
    * Currently only uses $fn.
    */
-  int getPathSegmentCount() const
-  {
-    return std::max(static_cast<int>(fn), 3);
-  }
+  int getPathSegmentCount() const { return std::max(static_cast<int>(fn), 3); }
 
   friend std::ostream& operator<<(std::ostream& stream, const CurveDiscretizer& f);
   bool isFnSpecifiedAndOdd() { return static_cast<int>(fn) & 1; }
