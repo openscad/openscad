@@ -60,8 +60,7 @@ static std::shared_ptr<AbstractNode> builtin_offset(const ModuleInstantiation *i
   if (parameters["r"].isDefinedAs(Value::Type::NUMBER)) {
     if (parameters["delta"].isDefinedAs(Value::Type::NUMBER)) {
       LOG(message_group::Warning, inst->location(), parameters.documentRoot(),
-          "Ignoring %1$s argument as %2$s is defined too.", quoteVar("delta"),
-          quoteVar("r"));
+          "Ignoring %1$s argument as %2$s is defined too.", quoteVar("delta"), quoteVar("r"));
     }
     node->delta = parameters["r"].toDouble();
   } else if (parameters["delta"].isDefinedAs(Value::Type::NUMBER)) {
