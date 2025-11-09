@@ -864,13 +864,11 @@ void ScintillaEditor::replaceAll(const QString& findText, const QString& replace
   // We need to issue a Select All first due to a bug in QScintilla:
   // It doesn't update the find range when just doing findFirst() + findNext() causing the search
   // to end prematurely if the replaced string is larger than the selected string.
-fprintf(stderr, "QSCINTILLA_VERSION 0x%6.6x\n", QSCINTILLA_VERSION); fflush(stderr);
-#if QSCINTILLA_VERSION >= 0x020e01
+#if QSCINTILLA_VERSION >= 0x020903
   // QScintilla bug seems to be fixed in 2.9.3
   if (qsci->findFirst(findText, false /*re*/, false /*cs*/, false /*wo*/, false /*wrap*/,
                       true /*forward*/, 0, 0)) {
 #elif QSCINTILLA_VERSION >= 0x020700
-fprintf(stderr, "find/replace workaround enabled\n"); fflush(stderr);
   qsci->selectAll();
   if (qsci->findFirstInSelection(findText, false /*re*/, false /*cs*/, false /*wo*/, false /*wrap*/,
                                  true /*forward*/)) {
