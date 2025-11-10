@@ -48,7 +48,7 @@ class shape;
 // customization. And this is one of the few sensible places to put it without adding new header files.
 struct fnContext {
   fnContext(std::function<std::optional<int>(double, double)> getCircularSegmentCount_fn,
-            int pathSegmentCount, )
+            int pathSegmentCount)
     : getCircularSegmentCount(getCircularSegmentCount_fn), pathSegmentCount(pathSegmentCount)
   {
   }
@@ -59,7 +59,6 @@ struct fnContext {
   }
   bool has_matches() { return matches.load() > 0; }
 
-  CurveDiscretizer discretizer;
   std::function<bool(const libsvg::shape *)> selector;
   std::function<std::optional<int>(double, double)> getCircularSegmentCount;
   const int pathSegmentCount;

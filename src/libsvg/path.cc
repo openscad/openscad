@@ -156,7 +156,7 @@ void path::curve_to(path_t& path, double x, double y, double cx1, double cy1, do
   // Prior to https://github.com/openscad/openscad/commit/f5816258db263408a7aa2feec1fafffe77644662
   // fn was set to a fixed value of 20 where this is now used.
   // The author decided it should never be smaller than this original value.
-  int fn = std::max(fValues->getPathSegmentCount, 20);
+  int fn = std::max(fValues->pathSegmentCount, 20);
   for (int idx = 1; idx <= fn; ++idx) {
     const double a = idx * (1.0 / (double)fn);
     const double xx = x * t(a, 2) + cx1 * 2 * t(a, 1) * a + x2 * a * a;
@@ -174,7 +174,7 @@ void path::curve_to(path_t& path, double x, double y, double cx1, double cy1, do
   // Prior to https://github.com/openscad/openscad/commit/f5816258db263408a7aa2feec1fafffe77644662
   // fn was set to a fixed value of 20 where this is now used.
   // The author decided it should never be smaller than this original value.
-  int fn = std::max(fValues->getPathSegmentCount, 20);
+  int fn = std::max(fValues->pathSegmentCount, 20);
   for (int idx = 1; idx <= fn; ++idx) {
     const double a = idx * (1.0 / (double)fn);
     const double xx = x * t(a, 3) + cx1 * 3 * t(a, 2) * a + cx2 * 3 * t(a, 1) * a * a + x2 * a * a * a;
