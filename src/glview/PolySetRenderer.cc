@@ -45,12 +45,12 @@
 #include "geometry/PolySet.h"
 #include "geometry/PolySetUtils.h"
 #include "glview/ColorMap.h"
-#include "glview/cgal/CGALRenderUtils.h"
 #include "glview/VBORenderer.h"
 #include "glview/Renderer.h"
 #include "glview/ShaderUtils.h"
 #include "glview/VBOBuilder.h"
 #include "glview/VertexState.h"
+#include "utils/vector_math.h"
 
 #ifdef ENABLE_CGAL
 #include "geometry/cgal/CGALNefGeometry.h"
@@ -309,6 +309,8 @@ std::vector<SelectedObject> PolySetRenderer::findModelObject(const Vector3d& nea
   double dist_nearest = NAN;
   Vector3d pt1_nearest;
   Vector3d pt2_nearest;
+
+  // This only considers vertices near the line from near_pt to far_pt, and chooses either the first one it iterates past which is on the near side of `near_pt` (due to clamping of dist_near) or the one with the closest tangent intersection to `near_pt`, if none are on the near side.
   for (const auto& ps : this->polysets_) {
     for (const auto& pt : ps->vertices) {
       const double dist_pt = calculateLinePointDistance(near_pt, far_pt, pt, dist_near);
