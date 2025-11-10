@@ -66,7 +66,9 @@ std::optional<int> CurveDiscretizer::getCircularSegmentCount(double r, double an
 {
   // FIXME: It would be better to refuse to create an object. Let's do more strict error handling
   // in future versions of OpenSCAD
-  if (r < GRID_FINE || std::isinf(fn) || std::isnan(fn)) return {};
+  if (r < GRID_FINE || std::isinf(fn) || std::isnan(fn) || std::isinf(angle_degrees) ||
+      std::isnan(angle_degrees))
+    return {};
 
   // We continue to separately call `ceil()` before angle calculations to preserve backward compatibility
   double result;
