@@ -123,6 +123,9 @@ void QGLView::initializeGL()
   }
   PRINTDB("GLAD: Loaded OpenGL %d.%d", GLAD_VERSION_MAJOR(version) % GLAD_VERSION_MINOR(version));
 #endif  // ifdef USE_GLAD
+
+  PRINTD(gl_dump());
+
   GLView::initializeGL();
 
   this->selector = std::make_unique<MouseSelector>(this);

@@ -124,6 +124,58 @@ endif(CLANG_TIDY)
 
 add_executable(OpenSCAD)
 
+if (MINGW)
+  # Configure Debug flags (MinGW) to keep rich symbols and avoid PE/COFF
+  # RIP-relative relocation overflows in large template-heavy builds.
+  if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+    target_compile_options(OpenSCAD PRIVATE
+      $<$<CONFIG:Debug>:
+        -O0;                      # No optimisation → preserves locals
+        -g2;                      # Full debug info (types/locals)
+        -gsplit-dwarf;            # Put most DWARF in .dwo side files
+        -fno-omit-frame-pointer;  # Better backtraces
+        -fdebug-types-section;    # GCC-only: deduplicate type info
+        -Wa,-mbig-obj;            # COFF bigobj (many sections) on MinGW
+        -ffunction-sections;      # One function per section (enables GC)
+        -fdata-sections;          # One data per section (enables GC)
+      >
+    )
+    target_link_options(OpenSCAD PRIVATE
+      $<$<CONFIG:Debug>:
+        -Wl,--gc-sections;        # Linker: drop unused sections
+      >
+    )
+  elseif (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+    include(CheckCXXCompilerFlag)
+    check_cxx_compiler_flag("-gz=zlib" HAS_GZ_ZLIB)
+
+    target_compile_options(OpenSCAD PRIVATE
+      $<$<CONFIG:Debug>:
+        -O0;                      # No optimisation → preserves locals
+        -g2;                      # Full debug info (types/locals)
+        -fstandalone-debug;       # Emit complete type info for headers/templates
+        -fno-omit-frame-pointer;  # Better backtraces
+        -gsplit-dwarf;            # Put most DWARF in .dwo side files
+        -Wa,-mbig-obj;            # COFF bigobj (many sections) on MinGW
+        $<$<BOOL:${HAS_GZ_ZLIB}>:
+          -gz=zlib>;              # Compress debug sections (zlib)
+        -ffunction-sections;      # One function per section (enables GC)
+        -fdata-sections;          # One data per section (enables GC)
+      >
+    )
+    target_link_options(OpenSCAD PRIVATE
+      $<$<CONFIG:Debug>:
+        -Wl,--gc-sections;        # Linker: drop unused sections
+        -Wl,--icf=all;            # ICF: fold identical code/data (effective with lld)
+        -fuse-ld=lld;             # Use LLVM lld (robust with huge C++/COFF debug)
+      >
+    )
+  endif()
+  if (NOT MXECROSS)
+    target_compile_definitions(OpenSCAD PRIVATE QSCINTILLA_DLL)
+  endif()
+endif()
+
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/submodules/sanitizers-cmake/cmake" ${CMAKE_MODULE_PATH})
 find_package(Sanitizers)
 
