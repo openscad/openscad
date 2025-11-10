@@ -39,7 +39,6 @@
 #include <boost/optional.hpp>
 
 #include "clipper2/clipper.h"
-#include "core/CurveDiscretizer.h"
 
 namespace libsvg {
 class shape;
@@ -48,7 +47,11 @@ class shape;
 // ccox - I don't like putting this here, but the svg library code did not plan ahead for app
 // customization. And this is one of the few sensible places to put it without adding new header files.
 struct fnContext {
-  fnContext(CurveDiscretizer discretizer) : discretizer(std::move(discretizer)) {}
+  fnContext(std::function<std::optional<int>(double, double)> getCircularSegmentCount_fn,
+            int pathSegmentCount, )
+    : getCircularSegmentCount(getCircularSegmentCount_fn), pathSegmentCount(pathSegmentCount)
+  {
+  }
   bool match(bool val)
   {
     if (val) matches++;
@@ -58,6 +61,8 @@ struct fnContext {
 
   CurveDiscretizer discretizer;
   std::function<bool(const libsvg::shape *)> selector;
+  std::function<std::optional<int>(double, double)> getCircularSegmentCount;
+  const int pathSegmentCount;
 
 private:
   std::atomic<int> matches{0};

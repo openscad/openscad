@@ -87,7 +87,9 @@ std::unique_ptr<Polygon2d> import_svg(CurveDiscretizer discretizer, const std::s
                                       const bool center, const Location& loc)
 {
   try {
-    fnContext scadContext(discretizer);
+    fnContext scadContext(
+      [&discretizer](double r, double angle) { return discretizer.getCircularSegmentCount(r, angle); },
+      discretizer.getPathSegmentCount());
     if (id) {
       scadContext.selector = [&scadContext, id, layer](const libsvg::shape *s) {
         bool layer_match = true;
