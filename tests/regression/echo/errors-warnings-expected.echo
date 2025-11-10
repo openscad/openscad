@@ -47,6 +47,7 @@ ECHO: undef
 ECHO: "dim-all.dxf"
 WARNING: module cube() does not support child modules in file errors-warnings.scad, line 96
 WARNING: module sphere() does not support child modules in file errors-warnings.scad, line 99
+WARNING: Ignoring "delta" argument as "r" is defined too. in file errors-warnings.scad, line 103
 WARNING: Unable to convert $vpr="[1,2,3]" to a vec3 or vec2 of numbers
 WARNING: Unable to convert $vpt=[1, 2, 3, 4] to a vec3 or vec2 of numbers
 WARNING: Unable to convert $vpd=[1] to a number

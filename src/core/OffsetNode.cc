@@ -58,6 +58,10 @@ static std::shared_ptr<AbstractNode> builtin_offset(const ModuleInstantiation *i
   node->chamfer = false;
   node->join_type = Clipper2Lib::JoinType::Round;
   if (parameters["r"].isDefinedAs(Value::Type::NUMBER)) {
+    if (parameters["delta"].isDefinedAs(Value::Type::NUMBER)) {
+      LOG(message_group::Warning, inst->location(), parameters.documentRoot(),
+          "Ignoring %1$s argument as %2$s is defined too.", quoteVar("delta"), quoteVar("r"));
+    }
     node->delta = parameters["r"].toDouble();
   } else if (parameters["delta"].isDefinedAs(Value::Type::NUMBER)) {
     node->delta = parameters["delta"].toDouble();
