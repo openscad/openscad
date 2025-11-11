@@ -26,7 +26,6 @@ translate([36,22]) rounded_ngon(10, 6, 3);
 // Gear/star generator
 // Uses a list comprehension taking a list of radii to generate a star shape
 module star(num, radii) {
-  function r(a) = (floor(a / 10) % 2) ? 10 : 8;
   polygon([for (i=[0:num-1], a=i*360/num, r=radii[i%len(radii)]) [ r*cos(a), r*sin(a) ]]);
 }
 
