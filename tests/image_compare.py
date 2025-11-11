@@ -4,6 +4,7 @@ from PIL import Image
 import numpy as np
 import os
 import sys
+import re
 
 PIXEL_TOLERANCE = 8
 
@@ -24,6 +25,7 @@ def Compare3x3(img1, img2):
     """
     a1 = np.array(img1, dtype=float)
     a2 = np.array(img2, dtype=float)
+    # [:, :, :3]
 
     d = a1 - a2
     # Truncate pixel-to-pixel differences less than 3 to 0.
@@ -51,12 +53,28 @@ def Compare3x3(img1, img2):
         gray_s = s
     for i in range(3):
         for j in range(3):
-            mask_a[i : mask_a.shape[0] - 2 + i, j : mask_a.shape[1] - 2 + j][gray_s] = [255, 40, 40]
+            slice = mask_a[i : mask_a.shape[0] - 2 + i, j : mask_a.shape[1] - 2 + j][gray_s]
+            if slice.shape == (0, 4):
+                slice = [255, 40, 40, 255]
+            slice = [255, 40, 40]
 
     return a, mask_a
 
 
+def clean_path(path):
+    # Modify windows paths to work in Msys2
+    # Ex: D:\ to /d/
+    return re.sub(r"^([A-Z]):\\", lambda m: f"/{m.group(1).lower()}/", path).replace("\\", "/")
+
+
 def CompareImageFiles(path1, path2):
+    print(f"Path 1: {path1}")
+    print(f"Path 2: {path2}")
+    path1 = clean_path(path1)
+    path2 = clean_path(path2)
+    print(f"Path 1: {path1}")
+    print(f"Path 2: {path2}")
+
     img1 = Image.open(path1)
     img2 = Image.open(path2)
     split = os.path.splitext(path2)
