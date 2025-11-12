@@ -38,8 +38,6 @@
 #include <utility>
 #include <cmath>
 #include <sstream>
-#include <boost/assign/std/vector.hpp>
-using namespace boost::assign;  // bring 'operator+=()' into scope
 
 namespace {
 

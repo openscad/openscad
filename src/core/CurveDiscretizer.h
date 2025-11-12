@@ -9,6 +9,7 @@
 class Location;
 class ModuleInstantiation;
 class Parameters;
+struct Outline2d;
 
 class CurveDiscretizer
 {
@@ -39,8 +40,38 @@ public:
    */
   int getPathSegmentCount() const { return std::max(static_cast<int>(fn), 3); }
 
+  /**
+   * Returns the number of slices for a linear_extrude with twist.
+   */
+  std::optional<int> getHelixSlices(double r_sqr, double h, double twist_degrees) const;
+
+  std::optional<int> getConicalHelixSlices(double r_sqr, double height, double twist_degrees,
+                                           double scale) const;
+
+  /**
+   * For linear_extrude with non-uniform scale and no twist.
+   * Either use $fn directly as slices,
+   * or divide the longest diagonal vertex extrude path by $fs.
+
+   * dr_sqr - the largest 2D delta (before/after scaling) for all vertices, squared.
+   * note: $fa is not considered since no twist
+   * scale is not passed in since it was already used to calculate the largest delta.
+  */
+  std::optional<int> getDiagonalSlices(double delta_sqr, double height) const;
+
+  /**
+   * Possibly add more segments to an outline for extruding more precisely.
+   * If segments is specified, then it is the only segmentation done; then if
+   * $fn is non-zero, it is the only segmentation done. Finally, use $fa and/or $fs.
+   *
+   * @param slices The number of volumetric slices.
+   * @param segments If non-zero, then add vertices until outline has this many vertices.
+   */
+  Outline2d splitOutline(const Outline2d& o, double twist, double scale_x, double scale_y,
+                         unsigned int slices, unsigned int segments) const;
+
   friend std::ostream& operator<<(std::ostream& stream, const CurveDiscretizer& f);
-  bool isFnSpecifiedAndOdd() { return static_cast<int>(fn) & 1; }
+  bool isFnSpecifiedAndOdd() const { return static_cast<int>(fn) & 1; }
 
 private:
   CurveDiscretizer(double fn, double fs, double fa) : fn(fn), fs(fs), fa(fa) {}
