@@ -17,12 +17,17 @@
 CurveDiscretizer::CurveDiscretizer(const Parameters& parameters, const Location& loc)
 {
   fn = parameters["$fn"].toDouble();
+  fe = parameters["$fe"].toDouble();
   fs = parameters["$fs"].toDouble();
   fa = parameters["$fa"].toDouble();
 
   if (fn < 0.0) {
     LOG(message_group::Warning, loc, parameters.documentRoot(), "$fn negative - setting to 0");
     fn = 0.0;
+  }
+  if (fe < 0.0) {
+    LOG(message_group::Warning, loc, parameters.documentRoot(), "$fe negative - setting to 0");
+    fe = 0.0;
   }
   if (fs < F_MINIMUM) {
     LOG(message_group::Warning, loc, parameters.documentRoot(), "$fs too small - clamping to %1$f",
@@ -39,6 +44,7 @@ CurveDiscretizer::CurveDiscretizer(const Parameters& parameters, const Location&
 CurveDiscretizer::CurveDiscretizer(const Parameters& parameters)
 {
   fn = std::max(parameters["$fn"].toDouble(), 0.0);
+  fe = std::max(parameters["$fe"].toDouble(), 0.0);
   fs = std::max(parameters["$fs"].toDouble(), F_MINIMUM);
   fa = std::max(parameters["$fa"].toDouble(), F_MINIMUM);
 }
@@ -46,6 +52,7 @@ CurveDiscretizer::CurveDiscretizer(const Parameters& parameters)
 CurveDiscretizer::CurveDiscretizer(double segmentsPerCircle)
 {
   fn = segmentsPerCircle;
+  fe = 0;
   fs = 0;
   fa = 0;
 
@@ -59,9 +66,14 @@ CurveDiscretizer::CurveDiscretizer(std::function<std::optional<double>(const cha
   // These defaults were what the Python code was using.
   // Don't know why it differs from OpenSCAD language.
   fn = std::max(valueLookup("fn").value_or(0.0), 0.0);
+  fe = std::max(valueLookup("fe").value_or(0.0), 0.0);
   fa = std::max(valueLookup("fa").value_or(12.0), F_MINIMUM);
   fs = std::max(valueLookup("fs").value_or(2.0), F_MINIMUM);
 }
+
+double segments_given_fa(double r, double fa) { return 360.0 / fa; }
+
+double segments_given_fs(double r, double fs) { return r * 2 * M_PI / fs; }
 
 /*!
    Returns the number of subdivision of a whole circle, given radius and
@@ -75,13 +87,48 @@ std::optional<int> CurveDiscretizer::getCircularSegmentCount(double r, double an
       std::isnan(angle_degrees))
     return {};
 
-  // We continue to separately call `ceil()` before angle calculations to preserve backward compatibility
   double result;
   if (fn > 0.0) {
+    // If $fn is supplied, the other parameters are not used.
+    // We continue to separately call `ceil()` before angle calculations to preserve backward
+    // compatibility
     result = std::ceil(fn >= 3 ? fn : 3) * std::fabs(angle_degrees) / 360.0;
   } else {
-    result = std::ceil(std::max(std::min(360.0 / fa, r * 2 * M_PI / fs), 5.0)) *
-             std::fabs(angle_degrees) / 360.0;
+    if (std::isinf(fe) || std::isnan(fe)) return {};
+    // $fe measures "the most allowed error from the platonic circle to the discretized circle".
+    // Which is the distance along a radius from the circumference to the midpoint of an edge
+    // of the inscribed regular polygon we create when discretizing a circle.
+    // $fe respects the minimums for $fa and $fs, but ignores their dynamic values.
+    // aka specifying $fe means $fa/$fs are not used.
+    if (fe >= GRID_FINE) {
+      double max_segments =
+        std::max(std::min(segments_given_fa(r, F_MINIMUM), segments_given_fs(r, F_MINIMUM)), 5.0);
+
+      // Apothem = line from the center to the midpoint of an inscribed regular polygon
+      // Apothem = `r-fe`
+      // Circumradius (r) = apothem * sec(Pi/n)
+      // Which we can rework to r*cos(Pi/n) = r-fe
+      // then invcos(1-(fe/r)) = Pi/n
+      // then n = Pi/invcos(1-(fe/r))
+      // Which looks like the kind of formula you need to sanitize your inputs for.
+
+      double ratio = fe / r;
+
+      // We want 5 to be our minimum number of segments, so we can combine the
+      // min segments and if ratio >= 1 into one check:
+      if (ratio >= 0.1909830056) {
+        result = 5.0;
+      } else {
+        result = M_PI / std::acos(1 - ratio);
+        // NaN is given for domain error for acos, but our input must be between 0 and 1
+        // because we checked fe>0 and r>0, NaN-ness, and their ratio<1.
+        // So we do not need to check for NaN.
+        result = std::min(max_segments, result);
+      }
+    } else {
+      result = std::ceil(std::max(std::min(segments_given_fa(r, fa), segments_given_fs(r, fs)), 5.0));
+    }
+    result *= std::fabs(angle_degrees) / 360.0;
   }
   return std::max(1, static_cast<int>(std::ceil(result)));
 }
@@ -382,7 +429,7 @@ Outline2d CurveDiscretizer::splitOutline(const Outline2d& o, double twist, doubl
 
 std::ostream& operator<<(std::ostream& stream, const CurveDiscretizer& f)
 {
-  stream << "$fn = " << f.fn << ", $fa = " << f.fa << ", $fs = " << f.fs;
+  stream << "$fn = " << f.fn << ", $fe = " << f.fe << ", $fa = " << f.fa << ", $fs = " << f.fs;
   return stream;
 }
 
