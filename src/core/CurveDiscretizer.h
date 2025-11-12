@@ -79,7 +79,7 @@ private:
 
 protected:
   friend class RoofDiscretizer;
-  double fn, fs, fa;
+  double fn, fs, fa, fe;
 };
 std::ostream& operator<<(std::ostream& stream, const CurveDiscretizer& f);
 
