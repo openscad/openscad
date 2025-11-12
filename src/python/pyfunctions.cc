@@ -1111,10 +1111,10 @@ PyObject *python_number_scale(PyObject *pynum, Vector3d scalevec, int vecs)
     Transform3d matrix = Transform3d::Identity();
     matrix.scale(scalevec);
     Vector3d n;
-    for (int i = 0; i < 3; i++) { // row
-      for(int j=0;j<4;j++) { // col
-        mat(j, i) = mat(j,i) * scalevec[i];
-      }	
+    for (int i = 0; i < 3; i++) {    // row
+      for (int j = 0; j < 4; j++) {  // col
+        mat(j, i) = mat(j, i) * scalevec[i];
+      }
     }
     return python_frommatrix(mat);
   }
@@ -5148,8 +5148,8 @@ PyObject *python_oo_align(PyObject *obj, PyObject *args, PyObject *kwargs)
 PyObject *do_import_python(PyObject *self, PyObject *args, PyObject *kwargs, ImportType type)
 {
   DECLARE_INSTANCE
-  char *kwlist[] = {"file",   "layer",    "convexity", "origin", "scale", "width",
-                    "height", "filename", "center",    "dpi",    "id",    NULL};
+  char *kwlist[] = {"file",   "layer", "convexity", "origin", "scale", "width", "height",
+                    "center", "dpi",   "id",        "fn",     "fa",    "fs",    NULL};
   double fn = NAN, fa = NAN, fs = NAN;
 
   std::string filename;
@@ -5158,8 +5158,8 @@ PyObject *do_import_python(PyObject *self, PyObject *args, PyObject *kwargs, Imp
   int convexity = 2;
   double scale = 1.0, width = 1, height = 1, dpi = 1.0;
   PyObject *origin = NULL;
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "s|slO!dddsfOddd", kwlist, &v, &layer, &convexity,
-                                   &PyList_Type, origin, &scale, &width, &height, &center, &dpi, &id,
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "s|siO!dddOdsddd", kwlist, &v, &layer, &convexity,
+                                   &PyList_Type, &origin, &scale, &width, &height, &center, &dpi, &id,
                                    &fn, &fa, &fs
 
                                    )) {
