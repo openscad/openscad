@@ -357,7 +357,7 @@ Outline2d CurveDiscretizer::splitOutline(const Outline2d& o, double twist, doubl
                                          double scale_y, unsigned int slices,
                                          unsigned int segments) const
 {
-  if (segments > 0 || fn >= 0.0) {
+  if (segments > 0 || fn > 0.0) {
     unsigned int min_vertices = segments > 0 ? segments : static_cast<unsigned int>(std::max(fn, 3.0));
     if (o.vertices.size() >= min_vertices) {
       return o;
