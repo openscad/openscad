@@ -166,10 +166,18 @@ int python_more_obj(std::vector<std::shared_ptr<AbstractNode>>& children, PyObje
 std::shared_ptr<AbstractNode> PyOpenSCADObjectToNode(PyObject *obj, PyObject **dict)
 {
   std::shared_ptr<AbstractNode> result = ((PyOpenSCADObject *)obj)->node;
-  if (result.use_count() > 2 && result != void_node && result != full_node) {
-    result = result->clone();
-  }
-  *dict = ((PyOpenSCADObject *)obj)->dict;
+  if(result != nullptr){
+    if (result.use_count() > 2 && result != void_node && result != full_node) {
+      result = result->clone();
+    }
+    *dict = ((PyOpenSCADObject *)obj)->dict;
+  } else if (obj == Py_None || obj == Py_False) {
+    result = void_node;
+    *dict = nullptr;
+  } else if (obj == Py_True) {
+    result = full_node;
+    *dict = nullptr;
+  } else result = nullptr;
   return result;
 }
 
@@ -222,11 +230,10 @@ std::shared_ptr<AbstractNode> PyOpenSCADObjectToNodeMulti(PyObject *objs, PyObje
     PyObject *subdict;
     for (int i = 0; i < n; i++) {
       PyObject *obj = PyList_GetItem(objs, i);
-      if (PyObject_IsInstance(obj, reinterpret_cast<PyObject *>(&PyOpenSCADType))) {
-        std::shared_ptr<AbstractNode> child = PyOpenSCADObjectToNode(obj, &subdict);
-        node->children.push_back(child);
-        child_dict.push_back(subdict);
-      } else return nullptr;
+      std::shared_ptr<AbstractNode> child = PyOpenSCADObjectToNode(obj, &subdict);
+      if(child == nullptr) return nullptr;
+      node->children.push_back(child);
+      child_dict.push_back(subdict);
     }
     result = node;
 

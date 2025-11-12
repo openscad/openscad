@@ -1345,7 +1345,7 @@ PyObject *python_rotate(PyObject *self, PyObject *args, PyObject *kwargs)
   PyObject *val_v = nullptr;
   PyObject *obj = nullptr;
   PyObject *ref = nullptr;
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "OO|OO", kwlist, &obj, &val_a, &val_v), &ref) {
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "OO|OO", kwlist, &obj, &val_a, &val_v, &ref)) {
     PyErr_SetString(PyExc_TypeError, "Error during parsing rotate(object, vec3)");
     return NULL;
   }
@@ -1997,12 +1997,12 @@ PyObject *python_show_core(PyObject *obj)
     return NULL;
   }
   if (child == void_node) {
-    return nullptr;
+    return Py_None;
   }
 
   if (child == full_node) {
     PyErr_SetString(PyExc_TypeError, "Cannot display infinite space");
-    return nullptr;
+    return Py_True;
   }
 
   PyObject *key, *value;
