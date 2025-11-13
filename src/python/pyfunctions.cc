@@ -1784,7 +1784,7 @@ PyObject *python_multmatrix_sub(PyObject *pyobj, PyObject *pymat, int div)
 
   Matrix4d objmat;
   if (!python_tomatrix(pyobj, objmat)) {
-    objmat = mat * objmat;
+    objmat = objmat * mat;
     return python_frommatrix(objmat);
   }
 
