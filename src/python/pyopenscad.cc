@@ -251,41 +251,6 @@ std::vector<Vector3d> python_vectors(PyObject *vec, int mindim, int maxdim)
   return results;  // Error
 }
 
-/*
- * Helper function to extract actual values for fn, fa and fs
- */
-
-void get_fnas(double& fn, double& fa, double& fs)
-{
-  // TODO: github.com/openscad/openscad/issues/4246 - Delete this function
-  PyObject *mainModule = PyImport_AddModule("__main__");
-  if (mainModule == nullptr) return;
-  fn = 0;
-  fa = 12;
-  fs = 2;
-
-  if (PyObject_HasAttrString(mainModule, "fn")) {
-    PyObjectUniquePtr varFn(PyObject_GetAttrString(mainModule, "fn"), PyObjectDeleter);
-    if (varFn.get() != nullptr) {
-      fn = PyFloat_AsDouble(varFn.get());
-    }
-  }
-
-  if (PyObject_HasAttrString(mainModule, "fa")) {
-    PyObjectUniquePtr varFa(PyObject_GetAttrString(mainModule, "fa"), PyObjectDeleter);
-    if (varFa.get() != nullptr) {
-      fa = PyFloat_AsDouble(varFa.get());
-    }
-  }
-
-  if (PyObject_HasAttrString(mainModule, "fs")) {
-    PyObjectUniquePtr varFs(PyObject_GetAttrString(mainModule, "fs"), PyObjectDeleter);
-    if (varFs.get() != nullptr) {
-      fs = PyFloat_AsDouble(varFs.get());
-    }
-  }
-}
-
 /**
  * Create a CurveDiscretizer by extracting parameters from __main__ and kwargs
  */

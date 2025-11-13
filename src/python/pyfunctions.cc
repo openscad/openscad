@@ -1698,12 +1698,12 @@ PyObject *python_oo_resize(PyObject *obj, PyObject *args, PyObject *kwargs)
 }
 
 #if defined(ENABLE_EXPERIMENTAL) && defined(ENABLE_CGAL)
-PyObject *python_roof_core(PyObject *obj, const char *method, int convexity, double fn, double fa,
-                           double fs)
+PyObject *python_roof_core(PyObject *obj, const char *method, int convexity,
+                           CurveDiscretizer&& discretizer)
 {
   DECLARE_INSTANCE();
   std::shared_ptr<AbstractNode> child;
-  auto node = std::make_shared<RoofNode>(instance);
+  auto node = std::make_shared<RoofNode>(instance, discretizer);
   PyObject *dummydict;
   child = PyOpenSCADObjectToNodeMulti(obj, &dummydict);
   if (child == NULL) {
@@ -1711,24 +1711,11 @@ PyObject *python_roof_core(PyObject *obj, const char *method, int convexity, dou
     return NULL;
   }
 
-  get_fnas(node->fn, node->fa, node->fs);
-  if (!isnan(fn)) node->fn = fn;
-  if (!isnan(fa)) node->fa = fa;
-  if (!isnan(fs)) node->fs = fs;
-
-  node->fa = std::max(node->fa, 0.01);
-  node->fs = std::max(node->fs, 0.01);
-  if (node->fn > 0) {
-    node->fa = 360.0 / node->fn;
-    node->fs = 0.0;
-  }
-
   if (method == NULL) {
     node->method = "voronoi";
   } else {
     node->method = method;
-    // method can only be one of...
-    if (node->method != "voronoi" && node->method != "straight") {
+    if (!RoofNode::knownMethods.count(node->method)) {
       //      LOG(message_group::Warning, inst->location(), parameters.documentRoot(),
       //          "Unknown roof method '" + node->method + "'. Using 'voronoi'.");
       node->method = "voronoi";
@@ -1746,29 +1733,28 @@ PyObject *python_roof_core(PyObject *obj, const char *method, int convexity, dou
 PyObject *python_roof(PyObject *self, PyObject *args, PyObject *kwargs)
 {
   double fn = NAN, fa = NAN, fs = NAN;
-  char *kwlist[] = {"obj", "method", "convexity", "fn", "fa", "fs", NULL};
+  char *kwlist[] = {"obj", "method", "convexity", NULL};
   PyObject *obj = NULL;
   const char *method = NULL;
   int convexity = 2;
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O|sdddd", kwlist, &obj, &method, convexity, &fn, &fa,
-                                   &fs)) {
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O|sd", kwlist, &obj, &method, convexity)) {
     PyErr_SetString(PyExc_TypeError, "Error during parsing roof(object)");
     return NULL;
   }
-  return python_roof_core(obj, method, convexity, fn, fa, fs);
+  return python_roof_core(obj, method, convexity, CreateCurveDiscretizer(kwargs));
 }
 
 PyObject *python_oo_roof(PyObject *obj, PyObject *args, PyObject *kwargs)
 {
   double fn = NAN, fa = NAN, fs = NAN;
-  char *kwlist[] = {"method", "convexity", "fn", "fa", "fs", NULL};
+  char *kwlist[] = {"method", "convexity", NULL};
   const char *method = NULL;
   int convexity = 2;
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|sdddd", kwlist, &method, convexity, &fn, &fa, &fs)) {
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|sd", kwlist, &method, convexity)) {
     PyErr_SetString(PyExc_TypeError, "Error during parsing roof(object)");
     return NULL;
   }
-  return python_roof_core(obj, method, convexity, fn, fa, fs);
+  return python_roof_core(obj, method, convexity, CreateCurveDiscretizer(kwargs));
 }
 #endif
 

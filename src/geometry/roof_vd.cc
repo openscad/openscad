@@ -109,12 +109,9 @@ double distance_to_point(const Vector2d& vertex, const Point& point)
 }
 
 std::vector<Vector2d> discretize_arc(const Point& point, const Segment& segment, const Vector2d& v0,
-                                     const Vector2d& v1, double fa, double fs)
+                                     const Vector2d& v1, const RoofDiscretizer& discretizer)
 {
   std::vector<Vector2d> ret;
-
-  const double max_angle_deviation = M_PI / 180.0 * fa / 2.0;
-  const double max_segment_sqr_length = fs * fs;
 
   const Vector2d p(point.a, point.b);
   const Vector2d p0(segment.p0.a, segment.p0.b);
@@ -168,8 +165,9 @@ std::vector<Vector2d> discretize_arc(const Point& point, const Segment& segment,
   for (;;) {
     double x1 = transformed_points_x.end()[-2];
     double x2 = transformed_points_x.end()[-1];
-    if (segment_angle(x1, x2) > max_angle_deviation ||
-        (max_segment_sqr_length > 0 && segment_sqr_length(x1, x2) > max_segment_sqr_length)) {
+    if (discretizer.overMaxAngle(segment_angle(x1, x2)) ||
+        (discretizer.hasMaxSegmentSqrLength() &&
+         discretizer.overMaxSegmentSqrLength(segment_sqr_length(x1, x2)))) {
       transformed_points_x.end()[-1] = 0.5 * x1 + 0.5 * x2;
     } else {
       if (x2 == transformed_v1_x) {
@@ -205,8 +203,8 @@ struct Faces_2_plus_1 {
   std::map<Vector2d, double, Vector2d_comp> heights;
 };
 
-Faces_2_plus_1 vd_inner_faces(const voronoi_diagram& vd, const std::vector<Segment>& segments, double fa,
-                              double fs)
+Faces_2_plus_1 vd_inner_faces(const voronoi_diagram& vd, const std::vector<Segment>& segments,
+                              const RoofDiscretizer& discretizer)
 {
   Faces_2_plus_1 ret;
 
@@ -264,7 +262,7 @@ Faces_2_plus_1 vd_inner_faces(const voronoi_diagram& vd, const std::vector<Segme
               : twin_segment.p1;
           Vector2d v0(edge->vertex0()->x(), edge->vertex0()->y()),
             v1(edge->vertex1()->x(), edge->vertex1()->y());
-          std::vector<Vector2d> discr = discretize_arc(twin_point, segment, v1, v0, fa, fs);
+          std::vector<Vector2d> discr = discretize_arc(twin_point, segment, v1, v0, discretizer);
           std::reverse(discr.begin(), discr.end());
           for (std::size_t k = 1; k < discr.size(); k++) {
             ret.faces.back().push_back(discr[k]);
@@ -316,7 +314,7 @@ Faces_2_plus_1 vd_inner_faces(const voronoi_diagram& vd, const std::vector<Segme
               v1(edge->vertex1()->x(), edge->vertex1()->y());
             if (edge->is_curved()) {
               Segment twin_segment = segments[edge->twin()->cell()->source_index()];
-              std::vector<Vector2d> discr = discretize_arc(point, twin_segment, v0, v1, fa, fs);
+              std::vector<Vector2d> discr = discretize_arc(point, twin_segment, v0, v1, discretizer);
               for (std::size_t k = 1; k < discr.size(); k++) {
                 add_triangle(discr[k - 1], discr[k]);
               }
@@ -331,7 +329,7 @@ Faces_2_plus_1 vd_inner_faces(const voronoi_diagram& vd, const std::vector<Segme
   return ret;
 }
 
-std::unique_ptr<PolySet> voronoi_diagram_roof(const Polygon2d& poly, double fa, double fs)
+std::unique_ptr<PolySet> voronoi_diagram_roof(const Polygon2d& poly, const CurveDiscretizer& discretizer)
 {
   PolySetBuilder hatbuilder = PolySetBuilder();
 
@@ -357,7 +355,7 @@ std::unique_ptr<PolySet> voronoi_diagram_roof(const Polygon2d& poly, double fa, 
 
     voronoi_diagram vd;
     ::boost::polygon::construct_voronoi(segments.begin(), segments.end(), &vd);
-    Faces_2_plus_1 inner_faces = vd_inner_faces(vd, segments, fa, scale * fs);
+    Faces_2_plus_1 inner_faces = vd_inner_faces(vd, segments, RoofDiscretizer(discretizer, scale));
 
     // roof
     for (const std::vector<Vector2d>& face : inner_faces.faces) {

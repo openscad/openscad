@@ -998,7 +998,7 @@ static std::unique_ptr<Geometry> roofOverPolygon(const RoofNode& node, const Pol
 {
   std::unique_ptr<PolySet> roof;
   if (node.method == "voronoi") {
-    roof = roof_vd::voronoi_diagram_roof(poly, node.fa, node.fs);
+    roof = roof_vd::voronoi_diagram_roof(poly, node.discretizer);
     roof->setConvexity(node.convexity);
   } else if (node.method == "straight") {
     roof = roof_ss::straight_skeleton_roof(poly);

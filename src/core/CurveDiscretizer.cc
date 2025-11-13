@@ -385,3 +385,16 @@ std::ostream& operator<<(std::ostream& stream, const CurveDiscretizer& f)
   stream << "$fn = " << f.fn << ", $fa = " << f.fa << ", $fs = " << f.fs;
   return stream;
 }
+
+RoofDiscretizer::RoofDiscretizer(const CurveDiscretizer& d, double scale)
+  : max_angle_deviation(M_PI / 180.0 * (d.fn > 0.0 ? 360.0 / d.fn : d.fa) / 2.0),
+    max_segment_sqr_length(d.fn > 0.0 ? 0.0 : d.fs * d.fs * scale * scale)
+{
+}
+
+bool RoofDiscretizer::overMaxAngle(double radians) const { return radians > max_angle_deviation; }
+
+bool RoofDiscretizer::overMaxSegmentSqrLength(double segment_sqr_length) const
+{
+  return segment_sqr_length > max_segment_sqr_length;
+}

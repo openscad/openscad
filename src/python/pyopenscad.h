@@ -39,7 +39,6 @@ extern std::string trusted_edit_document_name;
 extern std::string untrusted_edit_document_name;
 std::vector<Vector3d> python_vectors(PyObject *vec, int mindim, int maxdim);
 int python_numberval(PyObject *number, double *result);
-void get_fnas(double& fn, double& fa, double& fs);
 CurveDiscretizer CreateCurveDiscretizer(PyObject *kwargs);
 PyObject *python_str(PyObject *self);
 

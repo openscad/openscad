@@ -10,6 +10,7 @@ class Location;
 class ModuleInstantiation;
 class Parameters;
 struct Outline2d;
+class RoofDiscretizer;
 
 class CurveDiscretizer
 {
@@ -75,6 +76,22 @@ public:
 
 private:
   CurveDiscretizer(double fn, double fs, double fa) : fn(fn), fs(fs), fa(fa) {}
+
+protected:
+  friend class RoofDiscretizer;
   double fn, fs, fa;
 };
 std::ostream& operator<<(std::ostream& stream, const CurveDiscretizer& f);
+
+class RoofDiscretizer
+{
+public:
+  RoofDiscretizer(const CurveDiscretizer& d, double scale);
+  bool overMaxAngle(double radians) const;
+  inline bool hasMaxSegmentSqrLength() const { return max_segment_sqr_length > 0.0; }
+  bool overMaxSegmentSqrLength(double segment_sqr_length) const;
+
+private:
+  const double max_angle_deviation;
+  const double max_segment_sqr_length;
+};
