@@ -24,7 +24,6 @@
  *
  */
 #include <Python.h>
-#include "genlang/genlang.h"
 #include <filesystem>
 
 #include "pyopenscad.h"
