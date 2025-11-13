@@ -54,7 +54,7 @@ PyObject *python_cube(PyObject *self, PyObject *args, PyObject *kwargs)
   DECLARE_INSTANCE
   auto node = std::make_shared<CubeNode>(instance);
 
-  char *kwlist[] = {"size", "center", NULL};
+  const char *kwlist[] = {"size", "center", NULL};
   PyObject *size = NULL;
 
   PyObject *center = NULL;
@@ -91,7 +91,7 @@ PyObject *python_sphere(PyObject *self, PyObject *args, PyObject *kwargs)
   DECLARE_INSTANCE
   auto node = std::make_shared<SphereNode>(instance);
 
-  char *kwlist[] = {"r", "d", "fn", "fa", "fs", NULL};
+  const char *kwlist[] = {"r", "d", "fn", "fa", "fs", NULL};
   double r = NAN;
   PyObject *rp = nullptr;
   double d = NAN;
@@ -140,7 +140,7 @@ PyObject *python_cylinder(PyObject *self, PyObject *args, PyObject *kwargs)
   DECLARE_INSTANCE
   auto node = std::make_shared<CylinderNode>(instance);
 
-  char *kwlist[] = {"h", "r1", "r2", "center", "r", "d", "d1", "d2", "fn", "fa", "fs", NULL};
+  const char *kwlist[] = {"h", "r1", "r2", "center", "r", "d", "d1", "d2", "fn", "fa", "fs", NULL};
   double h = NAN;
   double r = NAN;
   double r1 = NAN;
@@ -229,7 +229,7 @@ PyObject *python_polyhedron(PyObject *self, PyObject *args, PyObject *kwargs)
   unsigned int i, j, pointIndex;
   auto node = std::make_shared<PolyhedronNode>(instance);
 
-  char *kwlist[] = {"points", "faces", "convexity", "triangles", NULL};
+  const char *kwlist[] = {"points", "faces", "convexity", "triangles", NULL};
   PyObject *points = NULL;
   PyObject *faces = NULL;
   int convexity = 2;
@@ -317,7 +317,7 @@ PyObject *python_square(PyObject *self, PyObject *args, PyObject *kwargs)
   DECLARE_INSTANCE
   auto node = std::make_shared<SquareNode>(instance);
 
-  char *kwlist[] = {"dim", "center", NULL};
+  const char *kwlist[] = {"dim", "center", NULL};
   PyObject *dim = NULL;
 
   PyObject *center = NULL;
@@ -347,7 +347,7 @@ PyObject *python_circle(PyObject *self, PyObject *args, PyObject *kwargs)
   DECLARE_INSTANCE
   auto node = std::make_shared<CircleNode>(instance);
 
-  char *kwlist[] = {"r", "d", "fn", "fa", "fs", NULL};
+  const char *kwlist[] = {"r", "d", "fn", "fa", "fs", NULL};
   double r = NAN;
   double d = NAN;
   double fn = NAN, fa = NAN, fs = NAN;
@@ -393,7 +393,7 @@ PyObject *python_polygon(PyObject *self, PyObject *args, PyObject *kwargs)
   unsigned int i, j, pointIndex;
   auto node = std::make_shared<PolygonNode>(instance);
 
-  char *kwlist[] = {"points", "paths", "convexity", NULL};
+  const char *kwlist[] = {"points", "paths", "convexity", NULL};
   PyObject *points = NULL;
   PyObject *paths = NULL;
   int convexity = 2;
@@ -556,7 +556,7 @@ PyObject *python_scale_core(PyObject *obj, PyObject *val_v)
 
 PyObject *python_scale(PyObject *self, PyObject *args, PyObject *kwargs)
 {
-  char *kwlist[] = {"obj", "v", NULL};
+  const char *kwlist[] = {"obj", "v", NULL};
   PyObject *obj = NULL;
   PyObject *val_v = NULL;
   if (!PyArg_ParseTupleAndKeywords(args, kwargs, "OO", kwlist, &obj, &val_v)) {
@@ -568,7 +568,7 @@ PyObject *python_scale(PyObject *self, PyObject *args, PyObject *kwargs)
 
 PyObject *python_oo_scale(PyObject *obj, PyObject *args, PyObject *kwargs)
 {
-  char *kwlist[] = {"v", NULL};
+  const char *kwlist[] = {"v", NULL};
   PyObject *val_v = NULL;
   if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O", kwlist, &val_v)) {
     PyErr_SetString(PyExc_TypeError, "Error during parsing scale(object, scale)");
@@ -671,7 +671,7 @@ PyObject *python_rotate_core(PyObject *obj, PyObject *val_a, PyObject *val_v)
 
 PyObject *python_rotate(PyObject *self, PyObject *args, PyObject *kwargs)
 {
-  char *kwlist[] = {"obj", "a", "v", nullptr};
+  const char *kwlist[] = {"obj", "a", "v", nullptr};
   PyObject *val_a = nullptr;
   PyObject *val_v = nullptr;
   PyObject *obj = nullptr;
@@ -684,7 +684,7 @@ PyObject *python_rotate(PyObject *self, PyObject *args, PyObject *kwargs)
 
 PyObject *python_oo_rotate(PyObject *obj, PyObject *args, PyObject *kwargs)
 {
-  char *kwlist[] = {"a", "v", nullptr};
+  const char *kwlist[] = {"a", "v", nullptr};
   PyObject *val_a = nullptr;
   PyObject *val_v = nullptr;
   if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O|O", kwlist, &val_a, &val_v)) {
@@ -761,7 +761,7 @@ PyObject *python_mirror_core(PyObject *obj, PyObject *val_v)
 
 PyObject *python_mirror(PyObject *self, PyObject *args, PyObject *kwargs)
 {
-  char *kwlist[] = {"obj", "v", NULL};
+  const char *kwlist[] = {"obj", "v", NULL};
 
   PyObject *obj = NULL;
   PyObject *val_v = NULL;
@@ -774,7 +774,7 @@ PyObject *python_mirror(PyObject *self, PyObject *args, PyObject *kwargs)
 
 PyObject *python_oo_mirror(PyObject *obj, PyObject *args, PyObject *kwargs)
 {
-  char *kwlist[] = {"v", NULL};
+  const char *kwlist[] = {"v", NULL};
 
   PyObject *val_v = NULL;
   if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O", kwlist, &val_v)) {
@@ -801,7 +801,7 @@ PyObject *python_translate_core(PyObject *obj, PyObject *v)
 
 PyObject *python_translate(PyObject *self, PyObject *args, PyObject *kwargs)
 {
-  char *kwlist[] = {"obj", "v", NULL};
+  const char *kwlist[] = {"obj", "v", NULL};
   PyObject *obj = NULL;
   PyObject *v = NULL;
   if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O|O", kwlist, &obj, &v)) {
@@ -813,7 +813,7 @@ PyObject *python_translate(PyObject *self, PyObject *args, PyObject *kwargs)
 
 PyObject *python_oo_translate(PyObject *obj, PyObject *args, PyObject *kwargs)
 {
-  char *kwlist[] = {"v", NULL};
+  const char *kwlist[] = {"v", NULL};
   PyObject *v = NULL;
   if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|O", kwlist, &v)) {
     PyErr_SetString(PyExc_TypeError, "Error during parsing translate(object,vec3)");
@@ -872,7 +872,7 @@ PyObject *python_multmatrix_sub(PyObject *pyobj, PyObject *pymat, int div)
 
 PyObject *python_multmatrix(PyObject *self, PyObject *args, PyObject *kwargs)
 {
-  char *kwlist[] = {"obj", "m", NULL};
+  const char *kwlist[] = {"obj", "m", NULL};
   PyObject *obj = NULL;
   PyObject *mat = NULL;
   if (!PyArg_ParseTupleAndKeywords(args, kwargs, "OO!", kwlist, &obj, &PyList_Type, &mat)) {
@@ -884,7 +884,7 @@ PyObject *python_multmatrix(PyObject *self, PyObject *args, PyObject *kwargs)
 
 PyObject *python_oo_multmatrix(PyObject *obj, PyObject *args, PyObject *kwargs)
 {
-  char *kwlist[] = {"m", NULL};
+  const char *kwlist[] = {"m", NULL};
   PyObject *mat = NULL;
   if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O!", kwlist, &PyList_Type, &mat)) {
     PyErr_SetString(PyExc_TypeError, "Error during parsing multmatrix(object, vec16)");
@@ -895,7 +895,7 @@ PyObject *python_oo_multmatrix(PyObject *obj, PyObject *args, PyObject *kwargs)
 
 PyObject *python_divmatrix(PyObject *self, PyObject *args, PyObject *kwargs)
 {
-  char *kwlist[] = {"obj", "m", NULL};
+  const char *kwlist[] = {"obj", "m", NULL};
   PyObject *obj = NULL;
   PyObject *mat = NULL;
   if (!PyArg_ParseTupleAndKeywords(args, kwargs, "OO!", kwlist, &obj, &PyList_Type, &mat)) {
@@ -907,7 +907,7 @@ PyObject *python_divmatrix(PyObject *self, PyObject *args, PyObject *kwargs)
 
 PyObject *python_oo_divmatrix(PyObject *obj, PyObject *args, PyObject *kwargs)
 {
-  char *kwlist[] = {"m", NULL};
+  const char *kwlist[] = {"m", NULL};
   PyObject *mat = NULL;
   if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O!", kwlist, &PyList_Type, &mat)) {
     PyErr_SetString(PyExc_TypeError, "Error during parsing divmatrix(object, vec16)");
@@ -931,7 +931,7 @@ PyObject *python_show_core(PyObject *obj)
 PyObject *python_show(PyObject *self, PyObject *args, PyObject *kwargs)
 {
   PyObject *obj = NULL;
-  char *kwlist[] = {"obj", NULL};
+  const char *kwlist[] = {"obj", NULL};
   if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O", kwlist, &obj)) {
     PyErr_SetString(PyExc_TypeError, "Error during parsing output(object)");
     return NULL;
@@ -941,7 +941,7 @@ PyObject *python_show(PyObject *self, PyObject *args, PyObject *kwargs)
 
 PyObject *python_oo_show(PyObject *obj, PyObject *args, PyObject *kwargs)
 {
-  char *kwlist[] = {NULL};
+  const char *kwlist[] = {NULL};
   if (!PyArg_ParseTupleAndKeywords(args, kwargs, "", kwlist)) {
     PyErr_SetString(PyExc_TypeError, "Error during parsing output(object)");
     return NULL;
@@ -1023,7 +1023,7 @@ PyObject *python_color_core(PyObject *obj, PyObject *color, double alpha)
 
 PyObject *python_color(PyObject *self, PyObject *args, PyObject *kwargs)
 {
-  char *kwlist[] = {"obj", "c", "alpha", NULL};
+  const char *kwlist[] = {"obj", "c", "alpha", NULL};
   PyObject *obj = NULL;
   PyObject *color = NULL;
   double alpha = 1.0;
@@ -1036,7 +1036,7 @@ PyObject *python_color(PyObject *self, PyObject *args, PyObject *kwargs)
 
 PyObject *python_oo_color(PyObject *obj, PyObject *args, PyObject *kwargs)
 {
-  char *kwlist[] = {"c", "alpha", NULL};
+  const char *kwlist[] = {"c", "alpha", NULL};
   PyObject *color = NULL;
   double alpha = 1.0;
   if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|Od", kwlist, &color, &alpha)) {
@@ -1110,7 +1110,7 @@ PyObject *python_mesh_core(PyObject *obj, bool tessellate)
 
 PyObject *python_mesh(PyObject *self, PyObject *args, PyObject *kwargs)
 {
-  char *kwlist[] = {"obj", "triangulate", NULL};
+  const char *kwlist[] = {"obj", "triangulate", NULL};
   PyObject *obj = NULL;
   PyObject *tess = NULL;
   if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O|O", kwlist, &obj, &tess)) {
@@ -1122,7 +1122,7 @@ PyObject *python_mesh(PyObject *self, PyObject *args, PyObject *kwargs)
 
 PyObject *python_oo_mesh(PyObject *obj, PyObject *args, PyObject *kwargs)
 {
-  char *kwlist[] = {"triangulate", NULL};
+  const char *kwlist[] = {"triangulate", NULL};
   PyObject *tess = NULL;
   if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|O", kwlist, &tess)) {
     PyErr_SetString(PyExc_TypeError, "error during parsing\n");
@@ -1180,8 +1180,8 @@ PyObject *python_rotate_extrude(PyObject *self, PyObject *args, PyObject *kwargs
   PyObject *offset = NULL;
   double fn = NAN, fa = NAN, fs = NAN;
   get_fnas(fn, fa, fs);
-  char *kwlist[] = {"obj", "convexity", "scale", "angle", "twist", "origin", "offset",
-                    "v",   "method",    "fn",    "fa",    "fs",    NULL};
+  const char *kwlist[] = {"obj", "convexity", "scale", "angle", "twist", "origin", "offset",
+                          "v",   "method",    "fn",    "fa",    "fs",    NULL};
   if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O|iddOOOOsddd", kwlist, &obj, &convexity, &scale,
                                    &angle, &twist, &origin, &offset, &v, &method, &fn, &fa, &fs)) {
     PyErr_SetString(PyExc_TypeError, "Error during parsing rotate_extrude(object,...)");
@@ -1202,8 +1202,8 @@ PyObject *python_oo_rotate_extrude(PyObject *obj, PyObject *args, PyObject *kwar
   get_fnas(fn, fa, fs);
   PyObject *v = NULL;
   char *method = NULL;
-  char *kwlist[] = {"convexity", "scale",  "angle", "twist", "origin", "offset",
-                    "v",         "method", "fn",    "fa",    "fs",     NULL};
+  const char *kwlist[] = {"convexity", "scale",  "angle", "twist", "origin", "offset",
+                          "v",         "method", "fn",    "fa",    "fs",     NULL};
   if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|iddOOOOsddd", kwlist, &convexity, &scale, &angle,
                                    &twist, &origin, &offset, &v, &method, &fn, &fa, &fs)) {
     PyErr_SetString(PyExc_TypeError, "error during parsing\n");
@@ -1285,8 +1285,8 @@ PyObject *python_linear_extrude(PyObject *self, PyObject *args, PyObject *kwargs
   PyObject *twist = NULL;
   double fn = NAN, fa = NAN, fs = NAN;
 
-  char *kwlist[] = {"obj",      "height", "convexity", "origin", "scale", "center", "slices",
-                    "segments", "twist",  "fn",        "fa",     "fs",    NULL};
+  const char *kwlist[] = {"obj",      "height", "convexity", "origin", "scale", "center", "slices",
+                          "segments", "twist",  "fn",        "fa",     "fs",    NULL};
   if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O|OiOOOiiOddd", kwlist, &obj, &height, &convexity,
                                    &origin, &scale, &center, &slices, &segments, &twist, &fn, &fs,
                                    &fs)) {
@@ -1310,8 +1310,8 @@ PyObject *python_oo_linear_extrude(PyObject *obj, PyObject *args, PyObject *kwar
   PyObject *twist = NULL;
   double fn = NAN, fa = NAN, fs = NAN;
 
-  char *kwlist[] = {"height",   "convexity", "origin", "scale", "center", "slices",
-                    "segments", "twist",     "fn",     "fa",    "fs",     NULL};
+  const char *kwlist[] = {"height",   "convexity", "origin", "scale", "center", "slices",
+                          "segments", "twist",     "fn",     "fa",    "fs",     NULL};
   if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|OiOOOiiOddd", kwlist, &height, &convexity, &origin,
                                    &scale, &center, &slices, &segments, &twist, &fn, &fs, &fs)) {
     PyErr_SetString(PyExc_TypeError, "error during parsing\n");
@@ -1617,7 +1617,7 @@ PyObject *python_minkowski(PyObject *self, PyObject *args, PyObject *kwargs)
   int convexity = 2;
 
   auto node = std::make_shared<CgalAdvNode>(instance, CgalAdvType::MINKOWSKI);
-  char *kwlist[] = {"obj", "convexity", NULL};
+  const char *kwlist[] = {"obj", "convexity", NULL};
   PyObject *objs = NULL;
   PyObject *obj;
   PyObject *dummydict;
@@ -1697,7 +1697,7 @@ PyObject *python_resize_core(PyObject *obj, PyObject *newsize, PyObject *autosiz
 
 PyObject *python_resize(PyObject *self, PyObject *args, PyObject *kwargs)
 {
-  char *kwlist[] = {"obj", "newsize", "auto", "convexity", NULL};
+  const char *kwlist[] = {"obj", "newsize", "auto", "convexity", NULL};
   PyObject *obj;
   PyObject *newsize = NULL;
   PyObject *autosize = NULL;
@@ -1713,7 +1713,7 @@ PyObject *python_resize(PyObject *self, PyObject *args, PyObject *kwargs)
 
 PyObject *python_oo_resize(PyObject *obj, PyObject *args, PyObject *kwargs)
 {
-  char *kwlist[] = {"newsize", "auto", "convexity", NULL};
+  const char *kwlist[] = {"newsize", "auto", "convexity", NULL};
   PyObject *newsize = NULL;
   PyObject *autosize = NULL;
   int convexity = 2;
@@ -1775,7 +1775,7 @@ PyObject *python_roof_core(PyObject *obj, const char *method, int convexity, dou
 PyObject *python_roof(PyObject *self, PyObject *args, PyObject *kwargs)
 {
   double fn = NAN, fa = NAN, fs = NAN;
-  char *kwlist[] = {"obj", "method", "convexity", "fn", "fa", "fs", NULL};
+  const char *kwlist[] = {"obj", "method", "convexity", "fn", "fa", "fs", NULL};
   PyObject *obj = NULL;
   const char *method = NULL;
   int convexity = 2;
@@ -1790,7 +1790,7 @@ PyObject *python_roof(PyObject *self, PyObject *args, PyObject *kwargs)
 PyObject *python_oo_roof(PyObject *obj, PyObject *args, PyObject *kwargs)
 {
   double fn = NAN, fa = NAN, fs = NAN;
-  char *kwlist[] = {"method", "convexity", "fn", "fa", "fs", NULL};
+  const char *kwlist[] = {"method", "convexity", "fn", "fa", "fs", NULL};
   const char *method = NULL;
   int convexity = 2;
   if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|sdddd", kwlist, &method, convexity, &fn, &fa, &fs)) {
@@ -1815,7 +1815,7 @@ PyObject *python_render_core(PyObject *obj, int convexity)
 
 PyObject *python_render(PyObject *self, PyObject *args, PyObject *kwargs)
 {
-  char *kwlist[] = {"obj", "convexity", NULL};
+  const char *kwlist[] = {"obj", "convexity", NULL};
   PyObject *obj = NULL;
   long convexity = 2;
   if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O!|i", kwlist, &PyOpenSCADType, &obj, &convexity)) {
@@ -1827,7 +1827,7 @@ PyObject *python_render(PyObject *self, PyObject *args, PyObject *kwargs)
 
 PyObject *python_oo_render(PyObject *obj, PyObject *args, PyObject *kwargs)
 {
-  char *kwlist[] = {"convexity", NULL};
+  const char *kwlist[] = {"convexity", NULL};
   long convexity = 2;
   if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|i", kwlist, &convexity)) {
     PyErr_SetString(PyExc_TypeError, "Error during parsing render(object)");
@@ -1868,7 +1868,7 @@ PyObject *python_surface_core(const char *file, PyObject *center, PyObject *inve
 
 PyObject *python_surface(PyObject *self, PyObject *args, PyObject *kwargs)
 {
-  char *kwlist[] = {"file", "center", "convexity", "invert", NULL};
+  const char *kwlist[] = {"file", "center", "convexity", "invert", NULL};
   const char *file = NULL;
   PyObject *center = NULL;
   PyObject *invert = NULL;
@@ -1886,8 +1886,8 @@ PyObject *python_text(PyObject *self, PyObject *args, PyObject *kwargs)
   DECLARE_INSTANCE
   auto node = std::make_shared<TextNode>(instance);
 
-  char *kwlist[] = {"text",   "size",   "font", "spacing", "direction", "language", "script",
-                    "halign", "valign", "fn",   "fa",      "fs",        NULL};
+  const char *kwlist[] = {"text",   "size",   "font", "spacing", "direction", "language", "script",
+                          "halign", "valign", "fn",   "fa",      "fs",        NULL};
 
   double size = 1.0, spacing = 1.0;
   double fn = NAN, fa = NAN, fs = NAN;
@@ -1931,8 +1931,8 @@ PyObject *python_textmetrics(PyObject *self, PyObject *args, PyObject *kwargs)
   DECLARE_INSTANCE
   auto node = std::make_shared<TextNode>(instance);
 
-  char *kwlist[] = {"text",     "size",   "font",   "spacing", "direction",
-                    "language", "script", "halign", "valign",  NULL};
+  const char *kwlist[] = {"text",     "size",   "font",   "spacing", "direction",
+                          "language", "script", "halign", "valign",  NULL};
 
   double size = 1.0, spacing = 1.0;
 
@@ -2031,7 +2031,7 @@ PyObject *python_offset_core(PyObject *obj, double r, double delta, PyObject *ch
 
 PyObject *python_offset(PyObject *self, PyObject *args, PyObject *kwargs)
 {
-  char *kwlist[] = {"obj", "r", "delta", "chamfer", "fn", "fa", "fs", NULL};
+  const char *kwlist[] = {"obj", "r", "delta", "chamfer", "fn", "fa", "fs", NULL};
   PyObject *obj = NULL;
   double r = NAN, delta = NAN;
   PyObject *chamfer = NULL;
@@ -2046,7 +2046,7 @@ PyObject *python_offset(PyObject *self, PyObject *args, PyObject *kwargs)
 
 PyObject *python_oo_offset(PyObject *obj, PyObject *args, PyObject *kwargs)
 {
-  char *kwlist[] = {"r", "delta", "chamfer", "fn", "fa", "fs", NULL};
+  const char *kwlist[] = {"r", "delta", "chamfer", "fn", "fa", "fs", NULL};
   double r = NAN, delta = NAN;
   PyObject *chamfer = NULL;
   double fn = NAN, fa = NAN, fs = NAN;
@@ -2079,7 +2079,7 @@ PyObject *python_projection_core(PyObject *obj, const char *cutmode, int convexi
 
 PyObject *python_projection(PyObject *self, PyObject *args, PyObject *kwargs)
 {
-  char *kwlist[] = {"obj", "cut", "convexity", NULL};
+  const char *kwlist[] = {"obj", "cut", "convexity", NULL};
   PyObject *obj = NULL;
   const char *cutmode = NULL;
   long convexity = 2;
@@ -2092,7 +2092,7 @@ PyObject *python_projection(PyObject *self, PyObject *args, PyObject *kwargs)
 
 PyObject *python_oo_projection(PyObject *obj, PyObject *args, PyObject *kwargs)
 {
-  char *kwlist[] = {"cut", "convexity", NULL};
+  const char *kwlist[] = {"cut", "convexity", NULL};
   const char *cutmode = NULL;
   long convexity = 2;
   if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|sl", kwlist, &cutmode, &convexity)) {
@@ -2109,7 +2109,7 @@ PyObject *python_group(PyObject *self, PyObject *args, PyObject *kwargs)
 
   auto node = std::make_shared<GroupNode>(instance);
 
-  char *kwlist[] = {"obj", NULL};
+  const char *kwlist[] = {"obj", NULL};
   PyObject *obj = NULL;
   PyObject *dummydict;
   if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O!", kwlist, &PyOpenSCADType, &obj)) {
@@ -2161,7 +2161,7 @@ PyObject *python_align_core(PyObject *obj, PyObject *pyrefmat, PyObject *pydstma
 
 PyObject *python_align(PyObject *self, PyObject *args, PyObject *kwargs)
 {
-  char *kwlist[] = {"obj", "refmat", "objmat", NULL};
+  const char *kwlist[] = {"obj", "refmat", "objmat", NULL};
   PyObject *obj = NULL;
   PyObject *pyrefmat = NULL;
   PyObject *pyobjmat = NULL;
@@ -2174,7 +2174,7 @@ PyObject *python_align(PyObject *self, PyObject *args, PyObject *kwargs)
 
 PyObject *python_oo_align(PyObject *obj, PyObject *args, PyObject *kwargs)
 {
-  char *kwlist[] = {"refmat", "objmat", NULL};
+  const char *kwlist[] = {"refmat", "objmat", NULL};
   PyObject *pyrefmat = NULL;
   PyObject *pyobjmat = NULL;
   if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O|O", kwlist, &pyrefmat, &pyobjmat)) {
