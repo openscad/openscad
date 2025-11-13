@@ -741,6 +741,21 @@ if(NOT HEADLESS)
     find_package(Qt6QScintilla 2.8.0 REQUIRED QUIET)
     message(STATUS "QScintilla: ${QT6QSCINTILLA_VERSION_STRING}")
 
+    # On MSVC, manually create the imported target for QScintilla since it's built from source
+    if(MSVC AND DEFINED ENV{Qt6_DIR} AND NOT TARGET Qt6QScintilla::Qt6QScintilla)
+      message(STATUS "Creating Qt6QScintilla::Qt6QScintilla imported target for MSVC")
+      add_library(Qt6QScintilla::Qt6QScintilla SHARED IMPORTED)
+      set_target_properties(Qt6QScintilla::Qt6QScintilla PROPERTIES
+        IMPORTED_CONFIGURATIONS "RELEASE;DEBUG"
+        IMPORTED_LOCATION_RELEASE "$ENV{Qt6_DIR}/lib/qscintilla2_qt6.dll"
+        IMPORTED_IMPLIB_RELEASE "${QT6QSCINTILLA_LIBRARY}"
+        IMPORTED_LOCATION_DEBUG "$ENV{Qt6_DIR}/lib/qscintilla2_qt6.dll"
+        IMPORTED_IMPLIB_DEBUG "${QT6QSCINTILLA_LIBRARY}"
+        INTERFACE_INCLUDE_DIRECTORIES "${QT6QSCINTILLA_INCLUDE_DIR}"
+        INTERFACE_COMPILE_DEFINITIONS "QSCINTILLA_DLL"
+      )
+    endif()
+
     if(ENABLE_QTDBUS)
       find_package(Qt6DBus QUIET)
       if (Qt6DBus_FOUND)
