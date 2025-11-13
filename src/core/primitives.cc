@@ -30,10 +30,6 @@
 #include "geometry/linalg.h"
 #include "geometry/PolySet.h"
 #include "geometry/Polygon2d.h"
-#include "geometry/Barcode1d.h"
-#include "utils/calc.h"
-#include "core/node.h"
-#include "utils/degree_trig.h"
 #include "core/Builtins.h"
 #include "core/Children.h"
 #include "core/module.h"
@@ -60,16 +56,10 @@ using namespace boost::assign;  // bring 'operator+=()' into scope
 #define F_MINIMUM 0.01
 
 template <class InsertIterator>
-static void generate_circle(InsertIterator iter, double r, double z, double angle, int fragments)
+static void generate_circle(InsertIterator iter, double r, double z, int fragments)
 {
-  int fragments_div = fragments;
-  if (angle < 360) {
-    *(iter++) = {0, 0, z};
-    fragments--;
-    fragments_div -= 2;
-  }
   for (int i = 0; i < fragments; ++i) {
-    double phi = (angle * i) / fragments_div;
+    double phi = (360.0 * i) / fragments;
     *(iter++) = {r * cos_degrees(phi), r * sin_degrees(phi), z};
   }
 }
@@ -128,33 +118,28 @@ static void set_fragments(const Parameters& parameters, const ModuleInstantiatio
 
 std::unique_ptr<const Geometry> CubeNode::createGeometry() const
 {
-  if (this->dim[0] <= 0 || !std::isfinite(this->dim[0]) || this->dim[1] <= 0 ||
-      !std::isfinite(this->dim[1]) || this->dim[2] <= 0 || !std::isfinite(this->dim[2])) {
+  if (this->x <= 0 || !std::isfinite(this->x) || this->y <= 0 || !std::isfinite(this->y) ||
+      this->z <= 0 || !std::isfinite(this->z)) {
     return PolySet::createEmpty();
   }
 
-  double coord1[3], coord2[3], size;
-  for (int i = 0; i < 3; i++) {
-    switch (i) {
-    case 0: size = this->dim[0]; break;
-    case 1: size = this->dim[1]; break;
-    case 2: size = this->dim[2]; break;
-    }
-    if (this->center[i] > 0) {
-      coord1[i] = 0;
-      coord2[i] = size;
-    } else if (this->center[i] < 0) {
-      coord1[i] = -size;
-      coord2[i] = 0;
-    } else {
-      coord1[i] = -size / 2;
-      coord2[i] = size / 2;
-    }
+  double x1, x2, y1, y2, z1, z2;
+  if (this->center) {
+    x1 = -this->x / 2;
+    x2 = +this->x / 2;
+    y1 = -this->y / 2;
+    y2 = +this->y / 2;
+    z1 = -this->z / 2;
+    z2 = +this->z / 2;
+  } else {
+    x1 = y1 = z1 = 0;
+    x2 = this->x;
+    y2 = this->y;
+    z2 = this->z;
   }
   auto ps = std::make_unique<PolySet>(3, /*convex*/ true);
   for (int i = 0; i < 8; i++) {
-    ps->vertices.emplace_back(i & 1 ? coord2[0] : coord1[0], i & 2 ? coord2[1] : coord1[1],
-                              i & 4 ? coord2[2] : coord1[2]);
+    ps->vertices.emplace_back(i & 1 ? x2 : x1, i & 2 ? y2 : y1, i & 4 ? z2 : z1);
   }
   ps->indices = {
     {4, 5, 7, 6},  // top
@@ -168,36 +153,6 @@ std::unique_ptr<const Geometry> CubeNode::createGeometry() const
   return ps;
 }
 
-std::shared_ptr<const Geometry> CubeNode::dragPoint(const Vector3d& pt, const Vector3d& newpt,
-                                                    DragResult& result)
-{
-  if (dim_[0] == 0) {
-    dim_[0] = dim[0];
-    dim_[1] = dim[1];
-    dim_[2] = dim[2];
-  }
-  if (dragflags) {
-    result.modname = "cube";
-    result.mods.clear();
-  }
-  for (int i = 0; i < 3; i++) {
-    if (dragflags & (1 << i)) {
-      if (center[i] == 1 && fabs(pt[i] - dim_[i]) < 1e-3) {
-        this->dim[i] = newpt[i];
-        DragMod mod;
-        mod.index = 0;
-        mod.name = "size";
-        mod.arrinfo.push_back(i);
-        mod.value = newpt[i];
-        result.mods.push_back(mod);
-      }
-    }
-    if (dragflags & (1 << i) && pt[i] != 0) result.anchor[i] = newpt[i];
-    else result.anchor[i] = pt[i];
-  }
-  return std::shared_ptr<const Geometry>(std::move(createGeometry()));
-}
-
 static std::shared_ptr<AbstractNode> builtin_cube(const ModuleInstantiation *inst, Arguments arguments)
 {
   auto node = std::make_shared<CubeNode>(inst);
@@ -207,17 +162,17 @@ static std::shared_ptr<AbstractNode> builtin_cube(const ModuleInstantiation *ins
   const auto& size = parameters["size"];
   if (size.isDefined()) {
     bool converted = false;
-    converted |= size.getDouble(node->dim[0]);
-    converted |= size.getDouble(node->dim[1]);
-    converted |= size.getDouble(node->dim[2]);
-    converted |= size.getVec3(node->dim[0], node->dim[1], node->dim[2]);
+    converted |= size.getDouble(node->x);
+    converted |= size.getDouble(node->y);
+    converted |= size.getDouble(node->z);
+    converted |= size.getVec3(node->x, node->y, node->z);
     if (!converted) {
       LOG(message_group::Warning, inst->location(), parameters.documentRoot(),
           "Unable to convert cube(size=%1$s, ...) parameter to a number or a vec3 of numbers",
           size.toEchoStringNoThrow());
     } else if (OpenSCAD::rangeCheck) {
-      bool ok = (node->dim[0] > 0) && (node->dim[1] > 0) && (node->dim[2] > 0);
-      ok &= std::isfinite(node->dim[0]) && std::isfinite(node->dim[1]) && std::isfinite(node->dim[2]);
+      bool ok = (node->x > 0) && (node->y > 0) && (node->z > 0);
+      ok &= std::isfinite(node->x) && std::isfinite(node->y) && std::isfinite(node->z);
       if (!ok) {
         LOG(message_group::Warning, inst->location(), parameters.documentRoot(), "cube(size=%1$s, ...)",
             size.toEchoStringNoThrow());
@@ -225,8 +180,7 @@ static std::shared_ptr<AbstractNode> builtin_cube(const ModuleInstantiation *ins
     }
   }
   if (parameters["center"].type() == Value::Type::BOOL) {
-    bool cent = parameters["center"].toBool();
-    for (int i = 0; i < 3; i++) node->center[i] = cent ? 0 : 1;
+    node->center = parameters["center"].toBool();
   }
 
   return node;
@@ -237,12 +191,8 @@ std::unique_ptr<const Geometry> SphereNode::createGeometry() const
   if (this->r <= 0 || !std::isfinite(this->r)) {
     return PolySet::createEmpty();
   }
-  auto num_fragments = Calc::get_fragments_from_r(r, 360.0, fn, fs, fa);
-#ifdef ENABLE_PYTHON
-  if (this->r_func != nullptr) {
-    return sphereCreateFuncGeometry(this->r_func, fs, fn);
-  }
-#endif
+
+  auto num_fragments = Calc::get_fragments_from_r(r, fn, fs, fa);
   auto num_rings = (num_fragments + 1) / 2;
   // Uncomment the following three lines to enable experimental sphere
   // tessellation
@@ -257,8 +207,7 @@ std::unique_ptr<const Geometry> SphereNode::createGeometry() const
     //                double phi = (180.0 * (i + offset)) / (fragments/2);
     const double phi = (180.0 * (i + 0.5)) / num_rings;
     const double radius = r * sin_degrees(phi);
-    generate_circle(std::back_inserter(polyset->vertices), radius, r * cos_degrees(phi), 360.0,
-                    num_fragments);
+    generate_circle(std::back_inserter(polyset->vertices), radius, r * cos_degrees(phi), num_fragments);
   }
 
   polyset->indices.push_back({});
@@ -285,15 +234,6 @@ std::unique_ptr<const Geometry> SphereNode::createGeometry() const
   return polyset;
 }
 
-std::shared_ptr<const Geometry> SphereNode::dragPoint(const Vector3d& pt, const Vector3d& newpt,
-                                                      DragResult& result)
-{
-  if (dragflags & 1) {
-    r = newpt.norm();
-  }
-  return std::shared_ptr<const Geometry>(std::move(createGeometry()));
-}
-
 static std::shared_ptr<AbstractNode> builtin_sphere(const ModuleInstantiation *inst, Arguments arguments)
 {
   auto node = std::make_shared<SphereNode>(inst);
@@ -316,14 +256,13 @@ static std::shared_ptr<AbstractNode> builtin_sphere(const ModuleInstantiation *i
 std::unique_ptr<const Geometry> CylinderNode::createGeometry() const
 {
   if (this->h <= 0 || !std::isfinite(this->h) || this->r1 < 0 || !std::isfinite(this->r1) ||
-      this->r2 < 0 || !std::isfinite(this->r2) || (this->r1 <= 0 && this->r2 <= 0) ||
-      (this->angle <= 0 || this->angle > 360)) {
+      this->r2 < 0 || !std::isfinite(this->r2) || (this->r1 <= 0 && this->r2 <= 0)) {
     return PolySet::createEmpty();
   }
 
   auto num_fragments =
-    Calc::get_fragments_from_r(std::fmax(this->r1, this->r2), 360.0, this->fn, this->fs, this->fa);
-  if (this->angle < 360) num_fragments++;
+    Calc::get_fragments_from_r(std::fmax(this->r1, this->r2), this->fn, this->fs, this->fa);
+
   double z1, z2;
   if (this->center) {
     z1 = -this->h / 2;
@@ -342,12 +281,12 @@ std::unique_ptr<const Geometry> CylinderNode::createGeometry() const
   if (inverted_cone) {
     polyset->vertices.emplace_back(0.0, 0.0, z1);
   } else {
-    generate_circle(std::back_inserter(polyset->vertices), r1, z1, this->angle, num_fragments);
+    generate_circle(std::back_inserter(polyset->vertices), r1, z1, num_fragments);
   }
   if (cone) {
     polyset->vertices.emplace_back(0.0, 0.0, z2);
   } else {
-    generate_circle(std::back_inserter(polyset->vertices), r2, z2, this->angle, num_fragments);
+    generate_circle(std::back_inserter(polyset->vertices), r2, z2, num_fragments);
   }
 
   for (int i = 0; i < num_fragments; ++i) {
@@ -374,29 +313,13 @@ std::unique_ptr<const Geometry> CylinderNode::createGeometry() const
   return polyset;
 }
 
-std::shared_ptr<const Geometry> CylinderNode::dragPoint(const Vector3d& pt, const Vector3d& newpt,
-                                                        DragResult& result)
-{
-  Vector3d x_ = newpt;
-  if (dragflags & 2) {
-    h = x_[2];
-  }
-  x_[2] = 0;
-  if (dragflags & 1) {
-    r1 = x_.norm();
-    r2 = x_.norm();
-  }
-  return std::shared_ptr<const Geometry>(std::move(createGeometry()));
-}
-
 static std::shared_ptr<AbstractNode> builtin_cylinder(const ModuleInstantiation *inst,
                                                       Arguments arguments)
 {
   auto node = std::make_shared<CylinderNode>(inst);
 
-  Parameters parameters =
-    Parameters::parse(std::move(arguments), inst->location(), {"h", "r1", "r2", "center"},
-                      {"r", "d", "d1", "d2", "angle"});
+  Parameters parameters = Parameters::parse(std::move(arguments), inst->location(),
+                                            {"h", "r1", "r2", "center"}, {"r", "d", "d1", "d2"});
 
   set_fragments(parameters, inst, node->fn, node->fs, node->fa);
   if (parameters["h"].type() == Value::Type::NUMBER) {
@@ -477,32 +400,6 @@ std::string PolyhedronNode::toString() const
     }
     stream << "]";
   }
-  if (this->colors.size() > 0) {
-    stream << "], colors = [";
-    bool firstColor = true;
-    for (const auto& color : this->colors) {
-      if (firstColor) {
-        firstColor = false;
-      } else {
-        stream << ", ";
-      }
-      stream << "[" << color.r() << ", " << color.g() << ", " << color.b() << "]";
-    }
-  }
-
-  if (this->color_indices.size() > 0) {
-    stream << "], color_indices = [";
-    bool firstColInd = true;
-    for (const auto& colind : this->color_indices) {
-      if (firstColInd) {
-        firstColInd = false;
-      } else {
-        stream << ", ";
-      }
-
-      stream << colind;
-    }
-  }
   stream << "], convexity = " << this->convexity << ")";
   return stream.str();
 }
@@ -521,8 +418,6 @@ std::unique_ptr<const Geometry> PolyhedronNode::createGeometry() const
     }
   }
   p->setTriangular(is_triangular);
-  p->colors = this->colors;
-  p->color_indices = this->color_indices;
   return p;
 }
 
@@ -612,25 +507,6 @@ static std::shared_ptr<AbstractNode> builtin_polyhedron(const ModuleInstantiatio
   return node;
 }
 
-std::unique_ptr<const Geometry> EdgeNode::createGeometry() const
-{
-  if (this->size <= 0) return std::make_unique<Polygon2d>();
-
-  double beg = 0;
-  double end = size;
-  if (center) {
-    beg = -size / 2;
-    end = size / 2;
-  } else {
-    beg = 0;
-    end = size;
-  }
-
-  Edge1d e(beg, end);
-  Barcode1d b(e);
-  return std::make_unique<Barcode1d>(b);
-}
-
 std::unique_ptr<const Geometry> SquareNode::createGeometry() const
 {
   if (this->x <= 0 || !std::isfinite(this->x) || this->y <= 0 || !std::isfinite(this->y)) {
@@ -684,20 +560,15 @@ static std::shared_ptr<AbstractNode> builtin_square(const ModuleInstantiation *i
 
 std::unique_ptr<const Geometry> CircleNode::createGeometry() const
 {
-  if (this->r <= 0 || !std::isfinite(this->r) || angle <= 0 || angle > 360.0) {
+  if (this->r <= 0 || !std::isfinite(this->r)) {
     return std::make_unique<Polygon2d>();
   }
 
-  auto fragments = Calc::get_fragments_from_r(this->r, this->angle, this->fn, this->fs, this->fa);
+  auto fragments = Calc::get_fragments_from_r(this->r, this->fn, this->fs, this->fa);
   Outline2d o;
-  int fragments_div = fragments;
-  if (this->angle < 360.0) {
-    o.vertices.resize(fragments + 1);
-    o.vertices[fragments] = {0, 0};
-    fragments_div--;
-  } else o.vertices.resize(fragments);
+  o.vertices.resize(fragments);
   for (int i = 0; i < fragments; ++i) {
-    double phi = (this->angle * i) / fragments_div;
+    double phi = (360.0 * i) / fragments;
     o.vertices[i] = {this->r * cos_degrees(phi), this->r * sin_degrees(phi)};
   }
   return std::make_unique<Polygon2d>(o);
@@ -707,8 +578,7 @@ static std::shared_ptr<AbstractNode> builtin_circle(const ModuleInstantiation *i
 {
   auto node = std::make_shared<CircleNode>(inst);
 
-  Parameters parameters =
-    Parameters::parse(std::move(arguments), inst->location(), {"r"}, {"d", "angle"});
+  Parameters parameters = Parameters::parse(std::move(arguments), inst->location(), {"r"}, {"d"});
 
   set_fragments(parameters, inst, node->fn, node->fs, node->fa);
   const auto r = lookup_radius(parameters, inst, "d", "r");
@@ -734,9 +604,7 @@ std::string PolygonNode::toString() const
     } else {
       stream << ", ";
     }
-    stream << "[" << point[0] << ", " << point[1];
-    if (point[2] != 0) stream << ", " << point[2];
-    stream << "]";
+    stream << "[" << point[0] << ", " << point[1] << "]";
   }
   stream << "], paths = ";
   if (this->paths.empty()) {
@@ -768,75 +636,25 @@ std::string PolygonNode::toString() const
   return stream.str();
 }
 
-void get_fnas(double& fn, double& fa, double& fs);
-
-VectorOfVector2d PolygonNode::createGeometry_sub(const std::vector<Vector3d>& points,
-                                                 const std::vector<size_t>& path, double fn, double fa,
-                                                 double fs) const
-{
-  VectorOfVector2d result;
-  int n = path.size();
-  for (int i = 0; i < n; i++) {
-    const auto& ptprev = points[path[(i + n - 1) % n]];
-    const auto& ptcur = points[path[i]];
-    const auto& ptnext = points[path[(i + 1) % n]];
-    if (ptcur[2] == 0) result.push_back(ptcur.head<2>());  // normal point without radius
-    else {
-      double r = ptcur[2];  // do the corner calculations
-      Vector3d dir1 = ptcur - ptprev;
-      dir1[2] = 0;
-      Vector3d dir2 = ptnext - ptcur;
-      dir2[2] = 0;
-      Vector3d cr = dir1.cross(dir2);
-      Vector3d n1 = Vector3d(-dir1[1], dir1[0], 0).normalized();
-      Vector3d n2 = Vector3d(-dir2[1], dir2[0], 0).normalized();
-      if (cr[2] < 0) {
-        n1 = -n1;
-        n2 = -n2;
-      }  // concave corner
-      Vector3d res;
-      linsystem(dir1, cr, dir2, ptnext + n2 * r - ptprev - n1 * r, res, nullptr);
-      Vector3d st = ptprev + dir1 * res[0];
-      st[2] = 0;
-      Vector3d cent = st + r * n1;
-      Vector3d en = cent - r * n2;
-      double ang_st = atan2(-n1[1], -n1[0]);
-      double ang_en = atan2(-n2[1], -n2[0]);
-      result.push_back(st.head<2>());
-      if (ang_en - ang_st > M_PI) ang_en -= 2 * M_PI;
-      if (ang_st - ang_en > M_PI) ang_st -= 2 * M_PI;
-
-      int segs = (fabs(ang_en - ang_st) * 180 / M_PI) / (double)fa;
-      if (fn != 0) segs = fn;
-      for (int j = 0; j < segs; j++) {
-        double ang = ang_st + (ang_en - ang_st) * (j + 1) / (segs + 1);
-        result.push_back(Vector2d(cent[0] + r * cos(ang), cent[1] + r * sin(ang)));
-      }
-      result.push_back(en.head<2>());
-    }
-  }  // for
-  return result;
-}
-extern bool pythonMainModuleInitialized;
 std::unique_ptr<const Geometry> PolygonNode::createGeometry() const
 {
   auto p = std::make_unique<Polygon2d>();
-  double fn = 2, fa = 12, fs = 2;
-#ifdef ENABLE_PYTHON
-  if (pythonMainModuleInitialized) get_fnas(fn, fa, fs);
-#endif
   if (this->paths.empty() && this->points.size() > 2) {
     Outline2d outline;
-    std::vector<size_t> path;
-    for (size_t i = 0; i < this->points.size(); i++) path.push_back(i);
-    outline.vertices = createGeometry_sub(this->points, path, fn, fa, fs);
+    for (const auto& point : this->points) {
+      outline.vertices.push_back(point);
+    }
     p->addOutline(outline);
   } else {
     bool positive = true;  // First outline is positive
     for (const auto& path : this->paths) {
       Outline2d outline;
+      for (const auto& index : path) {
+        assert(index < this->points.size());
+        const auto& point = points[index];
+        outline.vertices.push_back(point);
+      }
       outline.positive = positive;
-      outline.vertices = createGeometry_sub(this->points, path, fn, fa, fs);
       p->addOutline(outline);
       positive = false;  // Subsequent outlines are holes
     }
@@ -844,110 +662,6 @@ std::unique_ptr<const Geometry> PolygonNode::createGeometry() const
   if (p->outlines().size() > 0) {
     p->setConvexity(convexity);
   }
-  return p;
-}
-
-std::string SplineNode::toString() const
-{
-  std::ostringstream stream;
-  stream << "polygon(points = [";
-  bool firstPoint = true;
-  for (const auto& point : this->points) {
-    if (firstPoint) {
-      firstPoint = false;
-    } else {
-      stream << ", ";
-    }
-    stream << "[" << point[0] << ", " << point[1] << "]";
-  }
-  stream << "], fn = " << this->fn << "fa = " << this->fa << ", fs = " << this->fs << ")";
-  return stream.str();
-}
-
-VectorOfVector2d SplineNode::draw_arc(int fn, const Vector2d& tang1, double l1, const Vector2d& tang2,
-                                      double l2, const Vector2d& cornerpt) const
-{
-  VectorOfVector2d result;
-  if (fn == 1) result.push_back(cornerpt);
-  else {
-    // estimate ellipsis circumfence
-    double l = (l1 - l2) / (l1 + l2);
-    double circ = (l1 + l2) * M_PI * (1 + (3 * l * l) / (10 + sqrt(4 - 3 * l * l)));
-    Vector2d vx = -tang1 * (l1 - circ / (8 * fn));
-    Vector2d vy = tang2 * (l2 - circ / (8 * fn));
-    //        printf("i=%d vx %g/%g vy %g/%g\n",i,vx[0], vx[1], vy[0], vy[1]);
-    for (int j = 0; j <= fn - 1; j++) {
-      double ang = M_PI / 2.0 * j / (fn - 1);
-      Vector2d pt = cornerpt + vx * (1 - sin(ang)) + vy * (1 - cos(ang));
-      result.push_back(pt);
-    }
-  }
-  return result;
-}
-std::unique_ptr<const Geometry> SplineNode::createGeometry() const
-{
-  auto p = std::make_unique<Polygon2d>();
-  Outline2d result;
-  Vector3d dirz(0, 0, 1);
-  Vector3d res;
-
-  std::vector<Vector3d> tangent;
-  int n = this->points.size();
-  for (int i = 0; i < n; i++) {
-    Vector2d dir = (this->points[(i + 1) % n] - this->points[(i + n - 1) % n]).normalized();
-    tangent.push_back(Vector3d(dir[0], dir[1], 0));
-  }
-  for (int i = 0; i < n; i++) {
-    // point at corner
-    int fn = 1;
-    if (this->fn > 0 && this->fn > fn) fn = this->fn;
-    if (this->fa > 0 && 90.0 / this->fa > fn) fn = 90.0 / this->fa;
-
-    bool convex = true;
-    Vector2d diff = this->points[(i + 1) % n] - this->points[i];
-    if (linsystem(tangent[i], tangent[(i + 1) % n], dirz, Vector3d(diff[0], diff[1], 0), res, nullptr))
-      convex = false;
-    if (res[0] < -1e-6 || res[1] < -1e-6) convex = false;
-    if (convex) {
-      Vector2d cornerpt = this->points[i] + res[0] * tangent[i].head<2>();
-      auto pts =
-        draw_arc(fn, tangent[i].head<2>(), res[0], tangent[(i + 1) % n].head<2>(), res[1], cornerpt);
-      for (const Vector2d& pt : pts) result.vertices.push_back(pt);
-
-    } else {
-      // create midpoint
-      Vector2d midpt = (this->points[i] + this->points[(i + 1) % n]) / 2.0;
-      Vector2d dir = (this->points[(i + 1) % n] - this->points[i]).normalized();
-
-      // Mid tangent
-      Vector2d midtang = (tangent[i] + tangent[(i + 1) % n]).normalized().head<2>().normalized();
-
-      // flip mid tangent
-      double l = midtang.dot(dir);
-      midtang = 2 * dir * l - midtang;
-
-      Vector2d diff = midpt - this->points[i];
-
-      // 1st arc
-      if (linsystem(tangent[i], Vector3d(midtang[0], midtang[1], 0), dirz, Vector3d(diff[0], diff[1], 0),
-                    res, nullptr))
-        printf("prog errr\n");
-      Vector2d cornerpt1 = this->points[i] + res[0] * tangent[i].head<2>();
-      auto pts = draw_arc(fn, tangent[i].head<2>(), res[0], midtang, res[1], cornerpt1);
-      for (const Vector2d& pt : pts) result.vertices.push_back(pt);
-
-      // 2nd arc
-      if (linsystem(Vector3d(midtang[0], midtang[1], 0), tangent[(i + 1) % n], dirz,
-                    Vector3d(diff[0], diff[1], 0), res, nullptr))
-        printf("prog errr\n");
-      Vector2d cornerpt2 = this->points[(i + 1) % n] - res[1] * tangent[(i + 1) % n].head<2>();
-      auto pts2 = draw_arc(fn, midtang, res[0], tangent[(i + 1) % n].head<2>(), res[1], cornerpt2);
-      for (const Vector2d& pt : pts2) result.vertices.push_back(pt);
-
-      //      result.vertices.push_back(this->points[i]); // Debug pt
-    }
-  }
-  p->addOutline(result);
   return p;
 }
 
@@ -966,13 +680,13 @@ static std::shared_ptr<AbstractNode> builtin_polygon(const ModuleInstantiation *
     return node;
   }
   for (const Value& pointValue : parameters["points"].toVector()) {
-    Vector3d point(0, 0, 0);
+    Vector2d point;
     if (!pointValue.getVec2(point[0], point[1]) || !std::isfinite(point[0]) ||
         !std::isfinite(point[1])) {
       LOG(message_group::Error, inst->location(), parameters.documentRoot(),
           "Unable to convert points[%1$d] = %2$s to a vec2 of numbers", node->points.size(),
           pointValue.toEchoStringNoThrow());
-      node->points.push_back({0, 0, 0});
+      node->points.push_back({0, 0});
     } else {
       node->points.push_back(point);
     }

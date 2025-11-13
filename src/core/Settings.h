@@ -421,7 +421,6 @@ public:
   static SettingsEntryString octoPrintSlicerProfile;
   static SettingsEntryString octoPrintSlicerProfileDesc;
 
-  static SettingsEntryString pythonNetworkImportList;
   static SettingsEntryString localAppExecutable;
   static SettingsEntryString localAppTempDir;
   static SettingsEntryList<LocalAppParameter> localAppParameterList;
@@ -434,7 +433,6 @@ public:
 
   static SettingsEntryBool summaryCamera;
   static SettingsEntryBool summaryArea;
-  static SettingsEntryBool summaryVolume;
   static SettingsEntryBool summaryBoundingBox;
 
   static SettingsEntryBool inputEnableDriverHIDAPI;

@@ -89,7 +89,6 @@
 #include "core/RenderVariables.h"
 #include "core/ScopeContext.h"
 #include "core/Settings.h"
-#include "executable.h"
 #include "Feature.h"
 #include "geometry/Geometry.h"
 #include "geometry/GeometryEvaluator.h"
@@ -113,7 +112,6 @@
 #ifdef ENABLE_PYTHON
 #include "python/python_public.h"
 #endif
-#include "genlang/genlang.h"
 
 namespace po = boost::program_options;
 namespace fs = std::filesystem;
@@ -410,8 +408,8 @@ int do_export(const CommandLine& cmd, const RenderVariables& render_variables, F
   std::shared_ptr<AbstractNode> absolute_root_node;
 
 #ifdef ENABLE_PYTHON
-  if (genlang_result_node != NULL && python_active) {
-    absolute_root_node = genlang_result_node;
+  if (python_result_node != NULL && python_active) {
+    absolute_root_node = python_result_node;
   } else {
 #endif
     absolute_root_node = root_file->instantiate(*builtin_context, &file_context);
@@ -601,15 +599,11 @@ int cmdline(const CommandLine& cmd)
     }
   }
 
-  std::string text_py = text;
   if (python_active) {
-    if (cmd.animate.frames == 0) {
-      initPython("", cmd.filename, 0.0);
-      auto error = evaluatePython(commandline_commands);
-      error += evaluatePython(text_py);
-      finishPython();
-      if (error.size() > 0) LOG(error.c_str());
-    }
+    auto fulltext_py = text;
+    initPython("", 0.0);
+    auto error = evaluatePython(fulltext_py, false);
+    if (error.size() > 0) LOG(error.c_str());
     text = "\n";
   }
 #endif  // ifdef ENABLE_PYTHON
@@ -626,7 +620,7 @@ int cmdline(const CommandLine& cmd)
   }
 
   // add parameter to AST
-  CommentParser::collectParameters(text.c_str(), root_file, '/');
+  CommentParser::collectParameters(text.c_str(), root_file);
   if (!cmd.parameterFile.empty() && !cmd.setName.empty()) {
     ParameterObjects parameters = ParameterObjects::fromSourceFile(root_file);
     ParameterSets sets;
@@ -659,14 +653,6 @@ int cmdline(const CommandLine& cmd)
     const unsigned limit_frame = (cmd.animate.shard * cmd.animate.frames) / cmd.animate.num_shards;
     for (unsigned frame = start_frame; frame < limit_frame; ++frame) {
       render_variables.time = frame * (1.0 / cmd.animate.frames);
-#ifdef ENABLE_PYTHON
-      if (python_active) {
-        initPython(PlatformUtils::applicationPath(), cmd.filename, render_variables.time);
-        auto error = evaluatePython(text_py);
-        if (error.size() > 0) LOG(error.c_str());
-        finishPython();
-      }
-#endif
 
       std::ostringstream oss;
       oss << std::setw(5) << std::setfill('0') << frame;
@@ -837,21 +823,9 @@ int main(int argc, char **argv)
 #ifdef ENABLE_PYTHON
   // The original name as called, not resolving links and so on. This will
   // just forward everything to the python main.
-  const auto applicationEntry = fs::path(argv[0]).filename();
-  const auto applicationStem = applicationEntry.stem().generic_string();
-  const auto applicationName = applicationEntry.generic_string();
-  const std::string pythonExecutableName = PYTHON_EXECUTABLE_NAME;
-
-  const auto isPythonAlias = [](const std::string& name) {
-    return name == "python" || name == "python3" || name.rfind("python3.", 0) == 0;
-  };
-
-  const auto isProjectPythonLauncher = [&](const std::string& name) {
-    return name == "openscad-python" || name == pythonExecutableName;
-  };
-
-  if (isPythonAlias(applicationStem) || isPythonAlias(applicationName) ||
-      isProjectPythonLauncher(applicationStem) || isProjectPythonLauncher(applicationName)) {
+  const auto applicationName = fs::path(argv[0]).filename().generic_string();
+  if (applicationName == "python" || applicationName == "python3" ||
+      applicationName.rfind("python3.", 0) == 0 || applicationName == "openscad-python") {
     return pythonRunArgs(argc, argv);
   }
 #endif
@@ -948,8 +922,8 @@ int main(int argc, char **argv)
           "debug", po::value<std::string>(),
           "special debug info - specify 'all' or a set of source file names")
 #ifdef ENABLE_PYTHON
-          ("trust-python", "Trust python")("ipython", "Run ipython Interpreter")(
-            "python-module", po::value<std::string>(), "=module Call pip python module")
+          ("trust-python", "Trust python")("python-module", po::value<std::string>(),
+                                           "=module Call pip python module")
 #endif
     ;
 
@@ -990,13 +964,10 @@ int main(int argc, char **argv)
   }
 #ifdef ENABLE_PYTHON
   if (vm.count("trust-python")) {
-    LOG("Python Code globally trusted", OpenSCAD::debug);
+    LOG("Python Engine enabled", OpenSCAD::debug);
     python_trusted = true;
   }
-  if (vm.count("ipython")) {
-    LOG("Running ipython interpreter", OpenSCAD::debug);
-    python_runipython = true;
-  }
+
   const auto pymod = "python-module";
   if (vm.count(pymod)) {
     PRINTDB("Running Python Module %s", pymod);
@@ -1160,12 +1131,6 @@ int main(int argc, char **argv)
   }
 
   PRINTDB("Application location detected as %s", applicationPath);
-#ifdef ENABLE_PYTHON
-  if (python_runipython) {
-    ipython();
-    exit(0);
-  }
-#endif
 
   auto cmdlinemode = false;
   if (!output_files.empty()) {  // cmd-line mode

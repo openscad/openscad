@@ -315,10 +315,6 @@ child_statement
 // "for", "let" and "each" are valid module identifiers
 module_id
         : TOK_ID  { $$ = $1; }
-        | TOK_ID '.' TOK_ID  {
-		char tmp[100];
-                snprintf(tmp,sizeof(tmp), "(%s.%s)",$1,$3);
-                $$ = strdup(tmp); }
         | TOK_FOR { $$ = strdup("for"); }
         | TOK_LET { $$ = strdup("let"); }
         | TOK_ASSERT { $$ = strdup("assert"); }

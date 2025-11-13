@@ -1,8 +1,5 @@
 #include "geometry/cgal/cgalutils.h"
 
-#include "core/ModuleInstantiation.h"
-#include "core/node.h"
-
 #include <memory>
 
 #include <CGAL/Timer.h>
@@ -19,10 +16,6 @@ std::shared_ptr<const Geometry> applyMinkowski3D(const Geometry::Geometries& chi
   CGAL::Timer t;
   CGAL::Timer t_tot;
   t_tot.start();
-  AssignmentList inst_asslist;
-  std::string instance_name;
-  ModuleInstantiation *instance = new ModuleInstantiation(instance_name, inst_asslist, Location::NONE);
-  CsgOpNode node(instance, OpenSCADOperator::UNION);
 
   auto it = children.begin();
   std::shared_ptr<const Geometry> operands[2] = {it->second, std::shared_ptr<const Geometry>()};
