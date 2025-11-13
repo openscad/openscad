@@ -950,7 +950,7 @@ PyObject *python_show(PyObject *self, PyObject *args, PyObject *kwargs)
 PyObject *python_oo_show(PyObject *obj, PyObject *args, PyObject *kwargs)
 {
   const char *kwlist[] = {NULL};
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "", kwlist)) {
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "", const_cast<char **>(kwlist))) {
     PyErr_SetString(PyExc_TypeError, "Error during parsing output(object)");
     return NULL;
   }
