@@ -27,7 +27,6 @@
 #include <filesystem>
 
 #include "pyopenscad.h"
-#include "pydata.h"
 #include "core/CsgOpNode.h"
 #include "Value.h"
 #ifndef PYTHON_EXECUTABLE_NAME
