@@ -22,7 +22,15 @@
 
 #define RAISE_ROOF_EXCEPTION(message) \
   throw RoofNode::roof_exception(     \
-    (boost::format("%s line %d: %s") % __FILE__ % __LINE__ % (message)).str());
+    (boost::format("%s line %d: %s") % __FILE__ % __LINE__ % (message)).str())
+
+#define SAFE_VERTEX_MSG(edge, numeral, msg) \
+  (edge->vertex##numeral() == nullptr ? (RAISE_ROOF_EXCEPTION(msg), nullptr) : edge->vertex##numeral())
+
+#define SAFE_VERTEX(edge, numeral)                                                                      \
+  SAFE_VERTEX_MSG(edge, numeral,                                                                        \
+                  "Voronoi error: there's probably a zero-thickness wall causing a discontinuity. For " \
+                  "now, you must shift things so this can't occur")
 
 namespace roof_vd {
 
@@ -238,8 +246,9 @@ Faces_2_plus_1 vd_inner_faces(const voronoi_diagram& vd, const std::vector<Segme
           RAISE_ROOF_EXCEPTION("Voronoi error");
         }
       }
+
       // add all inside edges
-      ret.faces.emplace_back();
+      ret.faces.emplace_back();  // Puts a new empty vector<Vector2d> at the end of ret.faces.
       {
         Vector2d p(segment.p1.a, segment.p1.b);
         ret.faces.back().push_back(p);
@@ -247,7 +256,8 @@ Faces_2_plus_1 vd_inner_faces(const voronoi_diagram& vd, const std::vector<Segme
       }
       do {
         if (edge->is_linear()) {  // linear edge is simple
-          Vector2d p(edge->vertex1()->x(), edge->vertex1()->y());
+          auto vtx1 = SAFE_VERTEX(edge, 1);
+          Vector2d p(vtx1->x(), vtx1->y());
           ret.faces.back().push_back(p);
           ret.heights[p] = distance_to_segment(p, segment);
         } else {  // discretize a parabolic edge
@@ -260,8 +270,9 @@ Faces_2_plus_1 vd_inner_faces(const voronoi_diagram& vd, const std::vector<Segme
             (twin_cell->source_category() == ::boost::polygon::SOURCE_CATEGORY_SEGMENT_START_POINT)
               ? twin_segment.p0
               : twin_segment.p1;
-          Vector2d v0(edge->vertex0()->x(), edge->vertex0()->y()),
-            v1(edge->vertex1()->x(), edge->vertex1()->y());
+          auto vtx0 = SAFE_VERTEX(edge, 0), vtx1 = SAFE_VERTEX(edge, 1);
+          Vector2d v0(vtx0->x(), vtx0->y()), v1(vtx1->x(), vtx1->y());
+
           std::vector<Vector2d> discr = discretize_arc(twin_point, segment, v1, v0, discretizer);
           std::reverse(discr.begin(), discr.end());
           for (std::size_t k = 1; k < discr.size(); k++) {
@@ -310,8 +321,8 @@ Faces_2_plus_1 vd_inner_faces(const voronoi_diagram& vd, const std::vector<Segme
           if (edge->is_secondary()) {
             break;
           } else {
-            Vector2d v0(edge->vertex0()->x(), edge->vertex0()->y()),
-              v1(edge->vertex1()->x(), edge->vertex1()->y());
+            auto vtx0 = SAFE_VERTEX(edge, 0), vtx1 = SAFE_VERTEX(edge, 1);
+            Vector2d v0(vtx0->x(), vtx0->y()), v1(vtx1->x(), vtx1->y());
             if (edge->is_curved()) {
               Segment twin_segment = segments[edge->twin()->cell()->source_index()];
               std::vector<Vector2d> discr = discretize_arc(point, twin_segment, v0, v1, discretizer);
