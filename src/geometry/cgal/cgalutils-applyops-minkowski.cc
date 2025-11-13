@@ -1,5 +1,8 @@
 #include "geometry/cgal/cgalutils.h"
 
+#include "core/ModuleInstantiation.h"
+#include "core/node.h"
+
 #include <memory>
 
 #include <CGAL/Timer.h>
