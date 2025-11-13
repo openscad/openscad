@@ -44,10 +44,6 @@ const char *opToString(OpenSCADOperator op)
   case OpenSCADOperator::INTERSECTION: return "intersection";
   case OpenSCADOperator::DIFFERENCE:   return "difference";
   case OpenSCADOperator::MINKOWSKI:    return "minkowski";
-  case OpenSCADOperator::HULL:         return "hull";
-  case OpenSCADOperator::FILL:         return "fill";
-  case OpenSCADOperator::RESIZE:       return "resize";
-  case OpenSCADOperator::OFFSET:       return "offset";
   }
   return "UNKNOWN";
 }
