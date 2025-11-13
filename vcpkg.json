@@ -6,6 +6,8 @@
   "dependencies": [
     "boost-regex",
     "boost-program-options",
+    "boost-dll",
+    "boost-assign",
     "eigen3",
     "cgal",
     "harfbuzz",
