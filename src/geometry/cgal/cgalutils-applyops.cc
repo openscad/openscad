@@ -54,8 +54,7 @@ const char *opToString(OpenSCADOperator op)
 
 }  // namespace
 
-std::unique_ptr<const Geometry> applyUnion3D(const CsgOpNode& node,
-                                             Geometry::Geometries::iterator chbegin,
+std::unique_ptr<const Geometry> applyUnion3D(Geometry::Geometries::iterator chbegin,
                                              Geometry::Geometries::iterator chend)
 {
   using QueueConstItem = std::pair<std::shared_ptr<const CGALNefGeometry>, int>;
@@ -112,8 +111,7 @@ std::unique_ptr<const Geometry> applyUnion3D(const CsgOpNode& node,
 std::unique_ptr<const Geometry> addFillets(std::shared_ptr<const Geometry> result,
                                            const Geometry::Geometries& children, double r, int fn);
 
-std::shared_ptr<const Geometry> applyOperator3D(const CsgOpNode& node,
-                                                const Geometry::Geometries& children,
+std::shared_ptr<const Geometry> applyOperator3D(const Geometry::Geometries& children,
                                                 OpenSCADOperator op)
 {
   std::shared_ptr<CGALNefGeometry> N;
@@ -188,12 +186,6 @@ std::shared_ptr<const Geometry> applyOperator3D(const CsgOpNode& node,
   catch (const std::exception& e) {
     LOG(message_group::Error, "exception in CGALUtils::applyOperator3D %1$s: %2$s", opToString(op),
         e.what());
-  }
-  //
-  if (node.r != 0) {
-    //    std::unique_ptr<const Geometry> geom_u = addFillets(N, children, node.r, node.fn);
-    //    std::shared_ptr<const Geometry> geom_s(geom_u.release());
-    //    N=geom_s; //  = ManifoldUtils::createManifoldFromGeometry(geom_s);
   }
 
   return N;

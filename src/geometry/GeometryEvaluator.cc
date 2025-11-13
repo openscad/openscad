@@ -1519,7 +1519,7 @@ GeometryEvaluator::ResultObject GeometryEvaluator::applyToChildren3D(const Abstr
 #endif
 #ifdef ENABLE_CGAL
     return ResultObject::constResult(std::shared_ptr<const Geometry>(
-      CGALUtils::applyUnion3D(*csgOpNode, actualchildren.begin(), actualchildren.end())));
+      CGALUtils::applyUnion3D(actualchildren.begin(), actualchildren.end())));
 #else
     assert(false && "No boolean backend available");
 #endif
@@ -1542,7 +1542,7 @@ GeometryEvaluator::ResultObject GeometryEvaluator::applyToChildren3D(const Abstr
     case 1: geom = {actualchildren.front().second}; break;
     default:
 #ifdef ENABLE_CGAL
-      geom = {CGALUtils::applyUnion3D(*node1, actualchildren.begin(), actualchildren.end())};
+      geom = {CGALUtils::applyUnion3D(actualchildren.begin(), actualchildren.end())};
 #endif
       break;
     }
@@ -1574,8 +1574,7 @@ GeometryEvaluator::ResultObject GeometryEvaluator::applyToChildren3D(const Abstr
     }
 #endif
 #ifdef ENABLE_CGAL
-    const CsgOpNode *csgOpNode = dynamic_cast<const CsgOpNode *>(&node);
-    return ResultObject::constResult(CGALUtils::applyOperator3D(*csgOpNode, children, op));
+    return ResultObject::constResult(CGALUtils::applyOperator3D(children, op));
 #else
     assert(false && "No boolean backend available");
 #endif

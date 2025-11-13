@@ -237,7 +237,7 @@ std::shared_ptr<const Geometry> applyMinkowski3D(const Geometry::Geometries& chi
         for (const auto& part : result_parts) {
           fake_children.emplace_back(std::shared_ptr<const AbstractNode>(), partToGeom(part));
         }
-        auto N = CGALUtils::applyUnion3D(node, fake_children.begin(), fake_children.end());
+        auto N = CGALUtils::applyUnion3D(fake_children.begin(), fake_children.end());
         // FIXME: This should really never throw.
         // Assert once we figured out what went wrong with issue #1069?
         if (!N) throw 0;
@@ -258,8 +258,8 @@ std::shared_ptr<const Geometry> applyMinkowski3D(const Geometry::Geometries& chi
     // If anything throws we simply fall back to Nef Minkowski
     PRINTD("Minkowski: Falling back to Nef Minkowski");
 
-    auto N = std::shared_ptr<const Geometry>(
-      CGALUtils::applyOperator3D(node, children, OpenSCADOperator::MINKOWSKI));
+    auto N =
+      std::shared_ptr<const Geometry>(CGALUtils::applyOperator3D(children, OpenSCADOperator::MINKOWSKI));
     return N;
   }
 }
