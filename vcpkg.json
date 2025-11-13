@@ -11,6 +11,7 @@
     "eigen3",
     "cgal",
     "harfbuzz",
+    "freetype",
     "fontconfig",
     "double-conversion",
     "libxml2",
