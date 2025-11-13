@@ -193,6 +193,55 @@ void PolySetBuilder::appendPolySet(const PolySet& ps)
   }
 }
 
+void PolySetBuilder::copyVertices(std::vector<Vector3d>& vertices)
+{
+  vertices.clear();
+  vertices_.copy(std::back_inserter(vertices));
+}
+
+void PolySetBuilder::copyVertices(std::vector<Vector3f>& vertices)
+{
+  std::vector<Vector3d> verticesD;
+  copyVertices(verticesD);
+
+  vertices.clear();
+  vertices.reserve(vertices_.size());
+  for (const Vector3d& f : verticesD) vertices.push_back(Vector3f(f[0], f[1], f[2]));
+}
+
+void PolySetBuilder::addCurve(std::shared_ptr<Curve> new_curve)
+{
+  if (new_curve->start > new_curve->end) new_curve->reverse();
+  auto arc_new_curve = std::dynamic_pointer_cast<ArcCurve>(new_curve);
+  if (arc_new_curve != nullptr) {
+    for (auto& curve : curves) {
+      auto arc_curve = std::dynamic_pointer_cast<ArcCurve>(curve);
+      if (arc_curve != nullptr) {
+        if (arc_curve->operator==(*arc_new_curve)) return;  // duplicate
+      }
+    }
+  }
+  for (auto& curve : curves)
+    if (curve->operator==(*new_curve)) return;  // duplicate
+  curves.push_back(new_curve);
+}
+
+void PolySetBuilder::addSurface(std::shared_ptr<Surface> new_surface)
+{
+  auto cyl_new_surface = std::dynamic_pointer_cast<CylinderSurface>(new_surface);
+  if (cyl_new_surface != nullptr) {
+    for (auto& surface : surfaces) {
+      auto cyl_surface = std::dynamic_pointer_cast<CylinderSurface>(surface);
+      if (cyl_surface != nullptr) {
+        if (cyl_surface->operator==(*cyl_new_surface)) return;  // duplicate
+      }
+    }
+  }
+  for (auto& surface : surfaces)
+    if (surface->operator==(*new_surface)) return;  // duplicate
+  surfaces.push_back(new_surface);
+}
+
 std::unique_ptr<PolySet> PolySetBuilder::build()
 {
   endPolygon();
@@ -202,6 +251,8 @@ std::unique_ptr<PolySet> PolySetBuilder::build()
   polyset->indices = std::move(indices_);
   polyset->color_indices = std::move(color_indices_);
   polyset->colors = std::move(colors_);
+  polyset->curves = std::move(curves);
+  polyset->surfaces = std::move(surfaces);
   polyset->setConvexity(convexity_);
   bool is_triangular = true;
   for (const auto& face : polyset->indices) {

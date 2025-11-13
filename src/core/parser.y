@@ -315,6 +315,10 @@ child_statement
 // "for", "let" and "each" are valid module identifiers
 module_id
         : TOK_ID  { $$ = $1; }
+        | TOK_ID '.' TOK_ID  {
+		char tmp[100];
+                snprintf(tmp,sizeof(tmp), "(%s.%s)",$1,$3);
+                $$ = strdup(tmp); }
         | TOK_FOR { $$ = strdup("for"); }
         | TOK_LET { $$ = strdup("let"); }
         | TOK_ASSERT { $$ = strdup("assert"); }
@@ -759,7 +763,7 @@ void handle_assignment(const std::string token, Expression *expr, const Location
 	bool found = false;
 	for (auto &assignment : scope_stack.top()->assignments) {
 		if (assignment->getName() == token) {
-			auto mainFile = mainFilePath.string();
+			auto mainFile = mainFilePath.generic_string();
 			auto prevFile = assignment->location().fileName();
 			auto currFile = loc.fileName();
 

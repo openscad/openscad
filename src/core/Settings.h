@@ -335,6 +335,10 @@ struct LocalAppParameter {
   operator bool() const { return type != LocalAppParameterType::invalid; }
 };
 
+// Forward declarations for stream operators
+std::ostream& operator<<(std::ostream& stream, const LocalAppParameter& param);
+std::istream& operator>>(std::istream& stream, LocalAppParameter& param);
+
 template <typename item_type>
 class SettingsEntryList : public SettingsEntry<std::vector<item_type>>
 {
@@ -417,6 +421,7 @@ public:
   static SettingsEntryString octoPrintSlicerProfile;
   static SettingsEntryString octoPrintSlicerProfileDesc;
 
+  static SettingsEntryString pythonNetworkImportList;
   static SettingsEntryString localAppExecutable;
   static SettingsEntryString localAppTempDir;
   static SettingsEntryList<LocalAppParameter> localAppParameterList;
@@ -429,6 +434,7 @@ public:
 
   static SettingsEntryBool summaryCamera;
   static SettingsEntryBool summaryArea;
+  static SettingsEntryBool summaryVolume;
   static SettingsEntryBool summaryBoundingBox;
 
   static SettingsEntryBool inputEnableDriverHIDAPI;
