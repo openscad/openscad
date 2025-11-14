@@ -286,12 +286,11 @@ jobs:
           echo "PATH updated for subsequent steps"
 
       - name: Run Tests
-        env:
-          PYTHONHOME: '${{ github.workspace }}\build\${{ matrix.cmake_preset }}\vcpkg_installed\x64-windows\tools\python3'
-          PYTHONPATH: '${{ github.workspace }}\build\${{ matrix.cmake_preset }}\vcpkg_installed\x64-windows\tools\python3\Lib;${{ github.workspace }}\build\${{ matrix.cmake_preset }}\vcpkg_installed\x64-windows\tools\python3\Lib\site-packages'
         shell: bash
         run: |
           cd build/windows-msvc-release
+          # Use vcpkg's Python for tests to avoid module mismatch with system Python
+          export PATH="${{ github.workspace }}/build/${{ matrix.cmake_preset }}/vcpkg_installed/x64-windows/tools/python3:$PATH"
           ctest -C Release -j2
 
       - name: Upload Test Results
