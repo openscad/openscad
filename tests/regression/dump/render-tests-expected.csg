@@ -9,7 +9,7 @@ group() {
 					difference() {
 						cube(size = [20, 20, 150], center = true);
 						multmatrix([[1, 0, 0, -10], [0, 1, 0, -10], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-							cylinder($fn = 0, $fa = 12, $fs = 2, h = 80, r1 = 10, r2 = 10, center = true);
+							cylinder($fn = 0, $fe = 0, $fa = 12, $fs = 2, h = 80, r1 = 10, r2 = 10, center = true);
 						}
 					}
 				}
@@ -21,7 +21,7 @@ group() {
 					difference() {
 						cube(size = [20, 20, 150], center = true);
 						multmatrix([[1, 0, 0, -10], [0, 1, 0, -10], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-							cylinder($fn = 0, $fa = 12, $fs = 2, h = 80, r1 = 10, r2 = 10, center = true);
+							cylinder($fn = 0, $fe = 0, $fa = 12, $fs = 2, h = 80, r1 = 10, r2 = 10, center = true);
 						}
 					}
 				}
@@ -41,7 +41,7 @@ multmatrix([[1, 0, 0, 110], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 								difference() {
 									cube(size = [20, 20, 150], center = true);
 									multmatrix([[1, 0, 0, -10], [0, 1, 0, -10], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-										cylinder($fn = 0, $fa = 12, $fs = 2, h = 80, r1 = 10, r2 = 10, center = true);
+										cylinder($fn = 0, $fe = 0, $fa = 12, $fs = 2, h = 80, r1 = 10, r2 = 10, center = true);
 									}
 								}
 							}
@@ -57,7 +57,7 @@ multmatrix([[1, 0, 0, 110], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 								difference() {
 									cube(size = [20, 20, 150], center = true);
 									multmatrix([[1, 0, 0, -10], [0, 1, 0, -10], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-										cylinder($fn = 0, $fa = 12, $fs = 2, h = 80, r1 = 10, r2 = 10, center = true);
+										cylinder($fn = 0, $fe = 0, $fa = 12, $fs = 2, h = 80, r1 = 10, r2 = 10, center = true);
 									}
 								}
 							}
@@ -73,7 +73,7 @@ multmatrix([[1, 0, 0, -110], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 		render(convexity = 2) {
 			difference() {
 				cube(size = [100, 100, 100], center = true);
-				cylinder($fn = 0, $fa = 12, $fs = 2, h = 110, r1 = 30, r2 = 30, center = true);
+				cylinder($fn = 0, $fe = 0, $fa = 12, $fs = 2, h = 110, r1 = 30, r2 = 30, center = true);
 			}
 		}
 		multmatrix([[1, 0, 0, -55], [0, 1, 0, -55], [0, 0, 1, 45], [0, 0, 0, 1]]) {
