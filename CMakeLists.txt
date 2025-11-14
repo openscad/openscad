@@ -1537,9 +1537,15 @@ endif()
 
 if (USE_QT6)
   if(NOT HEADLESS)
+    # Use the imported target if available (MSVC), otherwise fall back to the library path
+    if(TARGET Qt6QScintilla::Qt6QScintilla)
+      set(_QSCINTILLA_LIB Qt6QScintilla::Qt6QScintilla)
+    else()
+      set(_QSCINTILLA_LIB ${QT6QSCINTILLA_LIBRARY})
+    endif()
     target_link_libraries(OpenSCAD PRIVATE
       Qt6::Core Qt6::Core5Compat Qt6::Widgets Qt6::Multimedia Qt6::OpenGL Qt6::OpenGLWidgets Qt6::Concurrent Qt6::Network Qt6::Svg
-      ${QT6QSCINTILLA_LIBRARY} ${Qt6DBus_LIBRARIES} ${Qt6Gamepad_LIBRARIES}
+      ${_QSCINTILLA_LIB} ${Qt6DBus_LIBRARIES} ${Qt6Gamepad_LIBRARIES}
     )
   endif()
   if(ENABLE_GUI_TESTS)
