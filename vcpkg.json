@@ -24,6 +24,10 @@
     "python3",
     "cairo",
     "pkgconf",
-    "lib3mf"
+    "lib3mf",
+    {
+      "name": "mesa",
+      "platform": "windows"
+    }
   ]
 }
