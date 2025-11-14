@@ -1,6 +1,6 @@
 difference() {
-	sphere($fn = 0, $fa = 12, $fs = 2, r = 10);
-#	cylinder($fn = 0, $fa = 12, $fs = 2, h = 30, r1 = 6, r2 = 6, center = true);
+	sphere($fn = 0, $fe = 0, $fa = 12, $fs = 2, r = 10);
+#	cylinder($fn = 0, $fe = 0, $fa = 12, $fs = 2, h = 30, r1 = 6, r2 = 6, center = true);
 }
 #group() {
 	cube(size = [25, 6, 3], center = true);
@@ -12,7 +12,7 @@ difference() {
 		}
 		color([1, 0, 0, 1]) {
 			multmatrix([[1, 0, 0, 0], [0, 1, 0, -2], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-				sphere($fn = 0, $fa = 12, $fs = 2, r = 3);
+				sphere($fn = 0, $fe = 0, $fa = 12, $fs = 2, r = 3);
 			}
 		}
 	}

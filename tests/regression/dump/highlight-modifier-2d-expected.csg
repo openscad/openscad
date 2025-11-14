@@ -1,6 +1,6 @@
 difference() {
 	square(size = [10, 10], center = true);
-#	circle($fn = 0, $fa = 12, $fs = 2, r = 3);
+#	circle($fn = 0, $fe = 0, $fa = 12, $fs = 2, r = 3);
 }
 #group() {
 	square(size = [11, 12], center = false);
