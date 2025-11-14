@@ -115,7 +115,8 @@ std::optional<int> CurveDiscretizer::getCircularSegmentCount(double r, double an
       double ratio = fe / r;
 
       // We want 5 to be our minimum number of segments, so we can combine the
-      // min segments and if ratio >= 1 into one check:
+      // min segments and if ratio >= 1 into one check for the value of
+      // ratio which creates n==5.0000:
       if (ratio >= 0.1909830056) {
         result = 5.0;
       } else {
@@ -124,6 +125,7 @@ std::optional<int> CurveDiscretizer::getCircularSegmentCount(double r, double an
         // because we checked fe>0 and r>0, NaN-ness, and their ratio<1.
         // So we do not need to check for NaN.
         result = std::min(max_segments, result);
+        // result gets ceil() applied to it below, so we don't need to do it here.
       }
     } else {
       result = std::ceil(std::max(std::min(segments_given_fa(r, fa), segments_given_fs(r, fs)), 5.0));
