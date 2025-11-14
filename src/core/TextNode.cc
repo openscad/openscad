@@ -40,34 +40,28 @@
 
 #include "core/FreetypeRenderer.h"
 
-#include <boost/assign/std/vector.hpp>
-using namespace boost::assign;  // bring 'operator+=()' into scope
-
 static std::shared_ptr<AbstractNode> builtin_text(const ModuleInstantiation *inst, Arguments arguments)
 {
-  auto node = std::make_shared<TextNode>(inst);
-
   auto *session = arguments.session();
   Parameters parameters =
     Parameters::parse(std::move(arguments), inst->location(), {"text", "size", "font"},
                       {"direction", "language", "script", "halign", "valign", "spacing"});
   parameters.set_caller("text");
 
-  node->params.set_loc(inst->location());
-  node->params.set_documentPath(session->documentRoot());
-  node->params.set(parameters);
-  node->params.detect_properties();
+  auto p = FreetypeRenderer::Params(parameters);
 
-  return node;
+  p.set_loc(inst->location());
+  p.set_documentPath(session->documentRoot());
+  p.detect_properties();
+
+  return std::make_shared<TextNode>(inst, std::move(p));
 }
 
 std::vector<std::shared_ptr<const Polygon2d>> TextNode::createPolygonList() const
 {
   FreetypeRenderer renderer;
-  return renderer.render(this->get_params());
+  return renderer.render(params);
 }
-
-FreetypeRenderer::Params TextNode::get_params() const { return params; }
 
 std::string TextNode::toString() const { return STR(name(), "(", this->params, ")"); }
 
