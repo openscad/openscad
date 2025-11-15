@@ -48,6 +48,7 @@ ECHO: undef
 ECHO: "dim-all.dxf"
 WARNING: module cube() does not support child modules in file errors-warnings.scad, line 96
 WARNING: module sphere() does not support child modules in file errors-warnings.scad, line 99
+WARNING: Ignoring "delta" argument as "r" is defined too. in file errors-warnings.scad, line 103
 WARNING: begin is greater than the end, but step is positive in file ../3D/features/for-tests.scad, line 19
 WARNING: begin is greater than the end, but step is positive in file ../3D/features/for-tests.scad, line 31
 WARNING: Bad range parameter in for statement: too many elements (4294967295) in file ../3D/features/for-tests.scad, line 35
