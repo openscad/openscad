@@ -1,0 +1,88 @@
+Test cases and last-known results for UTF-8 file names.
+
+This list is not fully up to date, and also needs annotation to show which
+cases are covered by automated tests.
+
+        MSYS2   MXE     Description
+1       -       -       Main file
+1a      -       -       - Pass on .exe command line
+1a1             m       - - CMD
+1a2     OK      OK      - - bash
+1b      -       -       - Pass on .com command line
+1b1             OK      - - CMD
+1b2     OK      OK      - - bash
+1c      x       OK      - double-click
+1d      -       -       - Drag-and-drop
+1d1             OK      - - on icon
+1d2     OK      OK      - - on mainwin
+1e      -       -       - Launch Screen
+1e1     OK      OK      - - Open recent
+1e2     OK      OK      - - Open
+1f      -       -       - mainwin
+1f1     OK      - - Open recent
+1f2     OK      OK      - - File->Open
+2       j               include<>
+3       k               use<>
+4                       Fonts
+4a      e       e       - use<>
+4b      f               - from normal font directories
+4c                      - Help/Font list
+4d                      - Window/Font list
+5                       import() module / function
+5a      OK      OK      - dxf
+5b      OK      OK      - stl
+5c      OK      OK      - off
+5d      OK      OK      - JSON
+5e      OK      OK      - obj
+6                       surface()
+6a      c       c       - dat
+6b      c       c       - png
+7                       GUI export
+7a      OK      OK      - dxf
+7b      OK      OK      - svg
+7c      OK      OK      - stl
+7d      OK      OK      - off
+7e      OK      OK      - amf
+7f      OK      OK      - csg
+7g      OK      OK      - obj
+7h      OK      OK      - pov
+7i      OK      OK      - wrl
+7j      OK      OK      - 3mf
+7k      OK      OK      - pdf
+7L      OK      OK      - png
+8                       cmd-line export
+8a      OK      OK      - dxf
+8b      OK      OK      - svg
+8c      OK      OK      - stl
+8d      OK      OK      - off
+8e      OK      OK      - amf
+8f      OK      OK      - echo
+8g      OK      OK      - ast
+8h      OK      OK      - term
+8i      OK      OK      - csg
+8j      OK      OK      - png
+8k      OK      OK      - 3mf
+9       OK      OK      Save: utf8-☠.scad -> utf8-☠.scad
+10      OK      OK      Save As: utf8-☠.scad -> utf8-☠.scad
+11                      Non-ASCII directory
+11a     n       -       - Open in GUI from command line
+11b     n       -       - Process from command line
+11c     n       -       - -o target from command line
+
+Code    Description
+-       Not yet tested
+OK      OK
+a       loaded OK, windows OK, but stdout "Loaded design" message corrupt
+b       failed to load, title corrupt
+c       failed to import, failure is in lodepng.cpp; it seems that fopen() can't handle UTF-8 paths.
+d       failed to load associated JSON file
+e       failed to load in FcConfigAppFontAddFile().
+f       Limited, maybe only 8859-1 compatible names, rest silently ignored
+g       Failed to write
+h       Failed to import
+i       Primary file OK, name of associated JSON file corrupted
+j       Failed to read include file, fopen() failed
+k       Silently fails(!); modules are just not found, because stat() fails.
+m       Load OK, corrupt console message
+n       Various "is not a directory" errors
+x       have not been able to test
