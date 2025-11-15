@@ -29,8 +29,10 @@
 #include <string>
 #include <vector>
 #include <ostream>
+#include <optional>
 
 #include "core/AST.h"
+#include "core/CurveDiscretizer.h"
 #include "core/Parameters.h"
 #include "FontCache.h"
 #include <hb.h>
@@ -44,11 +46,37 @@ public:
   class Params
   {
   public:
-    void set_size(double size) { this->size = size; }
-    void set_spacing(double spacing) { this->spacing = spacing; }
-    void set_fn(double fn) { this->fn = fn; }
-    void set_fa(double fa) { this->fa = fa; }
-    void set_fs(double fs) { this->fs = fs; }
+    /**
+     * Initialize values from parameters if present, otherwise with a default.
+     */
+    Params(Parameters& parameters);
+
+    struct ParamsOptions {
+      std::shared_ptr<const CurveDiscretizer> curve_discretizer = nullptr;
+      double size = 10.0;
+      double spacing = 1.0;
+      std::optional<std::string> text = std::nullopt;
+      std::optional<std::string> font = std::nullopt;
+      std::optional<std::string> direction = std::nullopt;
+      std::optional<std::string> language = std::nullopt;
+      std::optional<std::string> script = std::nullopt;
+      std::optional<std::string> halign = std::nullopt;
+      std::optional<std::string> valign = std::nullopt;
+      Location loc = Location::NONE;
+    };
+    /**
+     * Set defaults and discretizer. Intended for calling from Python.
+     */
+    Params(const ParamsOptions& opts);
+
+    void set_loc(const Location& loc) { this->loc = loc; }
+    void set_documentPath(const std::string& path) { this->documentPath = path; }
+    [[nodiscard]] const FontFacePtr get_font_face() const;
+    void detect_properties();
+    friend std::ostream& operator<<(std::ostream& stream, const FreetypeRenderer::Params& params);
+
+  private:
+    // Left in these methods in case an actual need arises to have different checks than !NULL
     void set_segments(unsigned int segments) { this->segments = segments; }
     void set_text(const std::string& text) { this->text = text; }
     void set_font(const std::string& font) { this->font = font; }
@@ -57,23 +85,10 @@ public:
     void set_script(const std::string& script) { this->script = script; }
     void set_halign(const std::string& halign) { this->halign = halign; }
     void set_valign(const std::string& valign) { this->valign = valign; }
-    void set_loc(const Location& loc) { this->loc = loc; }
-    void set_documentPath(const std::string& path) { this->documentPath = path; }
-    void set(Parameters& parameters);
-    [[nodiscard]] const FontFacePtr get_font_face() const;
-    void detect_properties();
-    friend std::ostream& operator<<(std::ostream& stream, const FreetypeRenderer::Params& params)
-    {
-      return stream << "text = \"" << params.text << "\", size = " << params.size
-                    << ", spacing = " << params.spacing << ", font = \"" << params.font
-                    << "\", direction = \"" << params.direction << "\", language = \"" << params.language
-                    << (params.script.empty() ? "" : "\", script = \"") << params.script
-                    << "\", halign = \"" << params.halign << "\", valign = \"" << params.valign
-                    << "\", $fn = " << params.fn << ", $fa = " << params.fa << ", $fs = " << params.fs;
-    }
 
-  private:
-    double size, spacing, fn, fa, fs;
+    double size, spacing;
+    // shared_ptr used to allow naive cloning and not initialize unless given an input.
+    std::shared_ptr<const CurveDiscretizer> discretizer;
     unsigned int segments;
     std::string text, font, direction, language, script, halign, valign;
     Location loc = Location::NONE;

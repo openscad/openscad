@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "core/RotateExtrudeNode.h"
+#include "core/CurveDiscretizer.h"
 #include "geometry/GeometryUtils.h"
 #include "geometry/Geometry.h"
 #include "geometry/PolySetBuilder.h"
@@ -100,9 +101,8 @@ std::unique_ptr<Geometry> rotatePolygon(const RotateExtrudeNode& node, const Pol
 
   // # of sections. For closed rotations, # vertices is thus fragments*outline_size. For open
   // rotations # vertices is (fragments+1)*outline_size.
-  const auto num_sections = (unsigned int)std::ceil(fmax(
-    Calc::get_fragments_from_r(max_x - min_x, node.fn, node.fs, node.fa) * std::abs(node.angle) / 360,
-    1));
+  const int num_sections = node.discretizer.getCircularSegmentCount(max_x - min_x, node.angle)
+                             .value_or(std::max(1, static_cast<int>(std::fabs(node.angle) / 360 * 3)));
   const bool closed = node.angle == 360;
   // # of rings of vertices
   const size_t num_rings = num_sections + (closed ? 0 : 1);
