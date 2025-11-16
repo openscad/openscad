@@ -168,9 +168,9 @@ inline int helix_slices_given_fe(double fe, double r_sqr, double twist_degrees, 
   //  will have more error from the helix path than any other point you could pick on the shape.
   // So we should have all the information we need to make the best decision.
 
-  // First, bounds checking. The domain for our equations requires fe<=r.
+  // First, bounds checking. The domain for our equations requires fe<r.
   const double r = sqrt(r_sqr);
-  if (fe <= r) return min_slices;
+  if (fe >= r) return min_slices;
 
   // Again we'll pretend we already know the number of slices, n.
   // For one step:
