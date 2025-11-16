@@ -247,6 +247,7 @@ size_t calc_num_slices(const LinearExtrudeNode& node, const Polygon2d& poly)
     // uniform or [1,1] scaling w/o twist needs only one slice
     num_slices = 1;
   }
+  // std::cerr << "calc_num_slices() = "<< num_slices << "\n";
   return num_slices;
 }
 
