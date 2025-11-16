@@ -6,19 +6,12 @@
 
 namespace CGALUtils {
 
-template <typename Polyhedron>
-void orientToBoundAVolume(Polyhedron& polyhedron)
+template <typename SurfaceMesh>
+void orientToBoundAVolume(SurfaceMesh& mesh)
 {
-  CGAL::Polygon_mesh_processing::orient_to_bound_a_volume(polyhedron);
-}
-
-template <typename Polyhedron>
-void reverseFaceOrientations(Polyhedron& polyhedron)
-{
-  CGAL::Polygon_mesh_processing::reverse_face_orientations(polyhedron);
+  CGAL::Polygon_mesh_processing::orient_to_bound_a_volume(mesh);
 }
 
 template void orientToBoundAVolume(CGAL_DoubleMesh& polyhedron);
 
-} // namespace CGALUtils
-
+}  // namespace CGALUtils

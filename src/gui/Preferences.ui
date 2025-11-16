@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>643</width>
-    <height>636</height>
+    <width>865</width>
+    <height>860</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -27,7 +27,7 @@
     <item row="0" column="0">
      <widget class="QStackedWidget" name="stackedWidget">
       <property name="currentIndex">
-       <number>8</number>
+       <number>7</number>
       </property>
       <widget class="QWidget" name="page3DView">
        <layout class="QVBoxLayout" name="verticalLayout_4">
@@ -107,16 +107,6 @@
           </property>
          </widget>
         </item>
-        <item>
-         <widget class="QCheckBox" name="checkBoxMouseSwapButtons">
-          <property name="text">
-           <string>Swap Mouse Buttons</string>
-          </property>
-          <property name="checked">
-           <bool>false</bool>
-          </property>
-         </widget>
-        </item>
        </layout>
       </widget>
       <widget class="QWidget" name="pageEditor">
@@ -146,7 +136,7 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>576</width>
+             <width>668</width>
              <height>953</height>
             </rect>
            </property>
@@ -1359,8 +1349,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>584</width>
-             <height>679</height>
+             <width>701</width>
+             <height>710</height>
             </rect>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_9">
@@ -1370,17 +1360,10 @@
                <string>General</string>
               </property>
               <layout class="QGridLayout" name="gridLayout_10">
-               <item row="0" column="0">
-                <widget class="QLabel" name="labelDefaultPrintService">
-                 <property name="text">
-                  <string>Default Print Service</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="0" column="1">
+               <item row="1" column="1">
                 <widget class="QComboBox" name="comboBoxDefaultPrintService"/>
                </item>
-               <item row="0" column="2">
+               <item row="1" column="2">
                 <spacer name="horizontalSpacerDefaultPrintService">
                  <property name="orientation">
                   <enum>Qt::Horizontal</enum>
@@ -1392,6 +1375,20 @@
                   </size>
                  </property>
                 </spacer>
+               </item>
+               <item row="1" column="0">
+                <widget class="QLabel" name="labelDefaultPrintService">
+                 <property name="text">
+                  <string>Default Print Service</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="0" colspan="3">
+                <widget class="QCheckBox" name="checkBoxEnableRemotePrintServices">
+                 <property name="text">
+                  <string>Enable remote print services</string>
+                 </property>
+                </widget>
                </item>
               </layout>
              </widget>
@@ -1638,6 +1635,13 @@
                    </property>
                    <property name="clearButtonEnabled">
                     <bool>true</bool>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QPushButton" name="pushButtonOctoPrintRequestApiKey">
+                   <property name="text">
+                    <string>Request</string>
                    </property>
                   </widget>
                  </item>
@@ -1946,8 +1950,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>587</width>
-             <height>1436</height>
+             <width>699</width>
+             <height>1471</height>
             </rect>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_12">
@@ -2154,6 +2158,40 @@
                <string>User Interface</string>
               </property>
               <layout class="QVBoxLayout" name="verticalLayout_13">
+               <item>
+                <layout class="QHBoxLayout" name="horizontalLayoutApplicationFont">
+                 <item>
+                  <widget class="QLabel" name="labelApplicationFont">
+                   <property name="text">
+                    <string>Font</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QFontComboBox" name="fontComboBoxApplicationFontFamily"/>
+                 </item>
+                 <item>
+                  <widget class="QComboBox" name="comboBoxApplicationFontSize">
+                   <property name="editable">
+                    <bool>true</bool>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <spacer name="horizontalSpacerApplicationFont">
+                   <property name="orientation">
+                    <enum>Qt::Horizontal</enum>
+                   </property>
+                   <property name="sizeHint" stdset="0">
+                    <size>
+                     <width>40</width>
+                     <height>20</height>
+                    </size>
+                   </property>
+                  </spacer>
+                 </item>
+                </layout>
+               </item>
                <item>
                 <widget class="QCheckBox" name="reorderCheckBox">
                  <property name="text">
@@ -2684,7 +2722,7 @@
          <number>0</number>
         </property>
         <item row="0" column="0">
-         <widget class="QScrollArea" name="scrollArea_InputAxis">
+         <widget class="QScrollArea" name="scrollAreaInputAxis">
           <property name="widgetResizable">
            <bool>true</bool>
           </property>
@@ -2693,8 +2731,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>98</width>
-             <height>28</height>
+             <width>845</width>
+             <height>770</height>
             </rect>
            </property>
           </widget>
@@ -2717,7 +2755,7 @@
          <number>0</number>
         </property>
         <item row="3" column="1">
-         <widget class="QScrollArea" name="scrollArea_InputButton">
+         <widget class="QScrollArea" name="scrollAreaInputButton">
           <property name="widgetResizable">
            <bool>true</bool>
           </property>
@@ -2726,8 +2764,44 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>98</width>
-             <height>28</height>
+             <width>845</width>
+             <height>770</height>
+            </rect>
+           </property>
+          </widget>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QWidget" name="pageMouse">
+       <layout class="QGridLayout" name="gridLayoutPageMouse">
+        <property name="leftMargin">
+         <number>0</number>
+        </property>
+        <property name="topMargin">
+         <number>0</number>
+        </property>
+        <property name="rightMargin">
+         <number>0</number>
+        </property>
+        <property name="bottomMargin">
+         <number>0</number>
+        </property>
+        <property name="spacing">
+         <number>0</number>
+        </property>
+        <item row="0" column="0">
+         <widget class="QScrollArea" name="scrollAreaMouseConfig">
+          <property name="widgetResizable">
+           <bool>true</bool>
+          </property>
+          <widget class="MouseConfigWidget" name="MouseConfig">
+           <property name="geometry">
+            <rect>
+             <x>0</x>
+             <y>0</y>
+             <width>845</width>
+             <height>770</height>
             </rect>
            </property>
           </widget>
@@ -2766,6 +2840,13 @@
             <widget class="QCheckBox" name="checkBoxAlwaysShowExport3mfDialog">
              <property name="text">
               <string>Always show 3MF export dialog</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QCheckBox" name="checkBoxAlwaysShowPrintServiceDialog">
+             <property name="text">
+              <string>Always show Print Service dialog</string>
              </property>
             </widget>
            </item>
@@ -2824,6 +2905,7 @@
    <addaction name="prefsActionAdvanced"/>
    <addaction name="prefsActionInput"/>
    <addaction name="prefsActionInputButton"/>
+   <addaction name="prefsActionMouse"/>
    <addaction name="prefsActionDialogs"/>
   </widget>
   <action name="prefsAction3DView">
@@ -2916,6 +2998,18 @@
     <string>Buttons</string>
    </property>
   </action>
+  <action name="prefsActionMouse">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="../../resources/common.qrc">
+     <normaloff>:/icons/prefsInput.png</normaloff>:/icons/prefsInput.png</iconset>
+   </property>
+   <property name="text">
+    <string>Mouse</string>
+   </property>
+  </action>
   <action name="prefsAction3DPrint">
    <property name="checkable">
     <bool>true</bool>
@@ -3000,6 +3094,12 @@
    <class>ButtonConfigWidget</class>
    <extends>QWidget</extends>
    <header>gui/input/ButtonConfigWidget.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>MouseConfigWidget</class>
+   <extends>QWidget</extends>
+   <header>gui/input/MouseConfigWidget.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

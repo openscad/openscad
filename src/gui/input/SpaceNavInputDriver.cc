@@ -100,22 +100,46 @@ bool SpaceNavInputDriver::spnav_input()
         if (abs(m) < abs(ev.motion.rz)) m = ev.motion.rz;
 
         if (ev.motion.x == m) {
-          ev.motion.y = 0; ev.motion.z = 0; ev.motion.rx = 0; ev.motion.ry = 0; ev.motion.rz = 0;
+          ev.motion.y = 0;
+          ev.motion.z = 0;
+          ev.motion.rx = 0;
+          ev.motion.ry = 0;
+          ev.motion.rz = 0;
         }
         if (ev.motion.y == m) {
-          ev.motion.x = 0;                ev.motion.z = 0; ev.motion.rx = 0; ev.motion.ry = 0; ev.motion.rz = 0;
+          ev.motion.x = 0;
+          ev.motion.z = 0;
+          ev.motion.rx = 0;
+          ev.motion.ry = 0;
+          ev.motion.rz = 0;
         }
         if (ev.motion.z == m) {
-          ev.motion.x = 0; ev.motion.y = 0;                ev.motion.rx = 0; ev.motion.ry = 0; ev.motion.rz = 0;
+          ev.motion.x = 0;
+          ev.motion.y = 0;
+          ev.motion.rx = 0;
+          ev.motion.ry = 0;
+          ev.motion.rz = 0;
         }
         if (ev.motion.rx == m) {
-          ev.motion.x = 0; ev.motion.y = 0; ev.motion.z = 0;                 ev.motion.ry = 0; ev.motion.rz = 0;
+          ev.motion.x = 0;
+          ev.motion.y = 0;
+          ev.motion.z = 0;
+          ev.motion.ry = 0;
+          ev.motion.rz = 0;
         }
         if (ev.motion.ry == m) {
-          ev.motion.x = 0; ev.motion.y = 0; ev.motion.z = 0; ev.motion.rx = 0;                 ev.motion.rz = 0;
+          ev.motion.x = 0;
+          ev.motion.y = 0;
+          ev.motion.z = 0;
+          ev.motion.rx = 0;
+          ev.motion.rz = 0;
         }
         if (ev.motion.rz == m) {
-          ev.motion.x = 0; ev.motion.y = 0; ev.motion.z = 0; ev.motion.rx = 0; ev.motion.ry = 0;
+          ev.motion.x = 0;
+          ev.motion.y = 0;
+          ev.motion.z = 0;
+          ev.motion.rx = 0;
+          ev.motion.ry = 0;
         }
       }
 
@@ -156,14 +180,9 @@ bool SpaceNavInputDriver::open()
   return true;
 }
 
-void SpaceNavInputDriver::close()
-{
+void SpaceNavInputDriver::close() {}
 
-}
-
-void SpaceNavInputDriver::setDominantAxisOnly(bool var){
-  this->dominantAxisOnly = var;
-}
+void SpaceNavInputDriver::setDominantAxisOnly(bool var) { this->dominantAxisOnly = var; }
 
 const std::string& SpaceNavInputDriver::get_name() const
 {

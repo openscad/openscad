@@ -3,7 +3,8 @@
 
 #include <GL/glew.h>
 
-bool initializeGlew() {
+bool initializeGlew()
+{
   auto err = glewInit();
   if (err != GLEW_OK) {
     fprintf(stderr, "GLEW Error: %s\n", glewGetErrorString(err));

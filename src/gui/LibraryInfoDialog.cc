@@ -9,17 +9,17 @@
 LibraryInfoDialog::LibraryInfoDialog(const QString& rendererInfo)
 {
   setupUi(this);
-  connect(this->okButton, SIGNAL(clicked()), this, SLOT(accept()));
+  connect(this->okButton, &QPushButton::clicked, this, &LibraryInfoDialog::accept);
   updateLibraryInfo(rendererInfo);
 }
 
 void LibraryInfoDialog::updateLibraryInfo(const QString& rendererInfo)
 {
-  //Get library infos
+  // Get library infos
   QString info(LibraryInfo::info().c_str());
   info += rendererInfo;
 
-  //Parse infos and make it html
+  // Parse infos and make it html
   info = info.replace("<", "&lt;").replace(">", "&gt;").replace("\n", "<br/>");
 
   auto end = false;
@@ -27,13 +27,13 @@ void LibraryInfoDialog::updateLibraryInfo(const QString& rendererInfo)
   while (!end) {
     int endIndex = info.indexOf(":", startIndex);
     if (endIndex != -1) {
-      //add bold to property name
+      // add bold to property name
       info = info.insert(startIndex, "<b>");
       endIndex += 3;
       info = info.replace(endIndex, 1, ":</b>");
       startIndex = info.indexOf("<br/>", endIndex);
 
-      //handle property with multiple lines
+      // handle property with multiple lines
       auto endInd = info.indexOf(":", startIndex);
       if (endInd != -1) {
         QStringRef lines(&info, startIndex, endInd - startIndex);

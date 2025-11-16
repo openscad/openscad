@@ -3,13 +3,15 @@
 #include <string>
 
 #include "core/node.h"
+#include "core/ModuleInstantiation.h"
 #include "core/Value.h"
 
 class RotateExtrudeNode : public AbstractPolyNode
 {
 public:
   VISITABLE();
-  RotateExtrudeNode(const ModuleInstantiation *mi) : AbstractPolyNode(mi) {
+  RotateExtrudeNode(const ModuleInstantiation *mi) : AbstractPolyNode(mi)
+  {
     convexity = 0;
     fn = fs = fa = 0;
     angle = 360;

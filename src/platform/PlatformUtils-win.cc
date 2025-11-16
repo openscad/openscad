@@ -13,7 +13,7 @@
 #undef NOGDI
 #include <windows.h>
 #ifndef _WIN32_IE
-#define _WIN32_IE 0x0501 // SHGFP_TYPE_CURRENT
+#define _WIN32_IE 0x0501  // SHGFP_TYPE_CURRENT
 #endif
 
 // Ugly hack to disable definitions in shobjidl.h which use unavailable
@@ -24,10 +24,7 @@
 
 #include "version.h"
 
-std::string PlatformUtils::pathSeparatorChar()
-{
-  return ";";
-}
+std::string PlatformUtils::pathSeparatorChar() { return ";"; }
 
 // convert from windows api w_char strings (usually utf16) to utf8 std::string
 std::string winapi_wstr_to_utf8(std::wstring wstr)
@@ -41,8 +38,8 @@ std::string winapi_wstr_to_utf8(std::wstring wstr)
   LPCSTR lpDefaultChar = nullptr;
   LPBOOL lpUsedDefaultChar = nullptr;
 
-  int numbytes = WideCharToMultiByte(CodePage, dwFlags, lpWideCharStr,
-                                     cchWideChar, lpMultiByteStr, cbMultiByte, lpDefaultChar, lpUsedDefaultChar);
+  int numbytes = WideCharToMultiByte(CodePage, dwFlags, lpWideCharStr, cchWideChar, lpMultiByteStr,
+                                     cbMultiByte, lpDefaultChar, lpUsedDefaultChar);
 
   // LOG(message_group::NONE,,"utf16 to utf8 conversion: numbytes %1$i",numbytes);
 
@@ -50,8 +47,8 @@ std::string winapi_wstr_to_utf8(std::wstring wstr)
   lpMultiByteStr = &utf8_str[0];
   cbMultiByte = numbytes;
 
-  int result = WideCharToMultiByte(CodePage, dwFlags, lpWideCharStr,
-                                   cchWideChar, lpMultiByteStr, cbMultiByte, lpDefaultChar, lpUsedDefaultChar);
+  int result = WideCharToMultiByte(CodePage, dwFlags, lpWideCharStr, cchWideChar, lpMultiByteStr,
+                                   cbMultiByte, lpDefaultChar, lpUsedDefaultChar);
 
   if (result != numbytes) {
     DWORD errcode = GetLastError();
@@ -75,7 +72,7 @@ static const std::string getFolderPath(int nFolder)
   int result = SHGetFolderPathW(hwndOwner, nFolder, hToken, dwFlags, pszPath);
 
   if (result == S_OK) {
-    path = std::wstring(path.c_str() ); // strip extra nullptrs
+    path = std::wstring(path.c_str());  // strip extra nullptrs
     // Use std::filesystem to decide how to convert from wstring
     // to string. Normally the path encoding is system local and
     // we don't want to force conversion to UTF-8.
@@ -85,10 +82,7 @@ static const std::string getFolderPath(int nFolder)
   return "";
 }
 
-std::string PlatformUtils::userDocumentsPath()
-{
-  return documentsPath();
-}
+std::string PlatformUtils::userDocumentsPath() { return documentsPath(); }
 
 // retrieve the path to 'My Documents' for the current user under windows
 // In XP this is 'c:\documents and settings\username\my documents'
@@ -113,23 +107,21 @@ std::string PlatformUtils::userConfigPath()
   return retval + std::string("/") + PlatformUtils::OPENSCAD_FOLDER_NAME;
 }
 
-unsigned long PlatformUtils::stackLimit()
-{
-  return STACK_LIMIT_DEFAULT;
-}
+unsigned long PlatformUtils::stackLimit() { return STACK_LIMIT_DEFAULT; }
 
 // NOLINTNEXTLINE(modernize-use-using)
-typedef BOOL (WINAPI *LPFN_ISWOW64PROCESS)(HANDLE, PBOOL);
+typedef BOOL(WINAPI *LPFN_ISWOW64PROCESS)(HANDLE, PBOOL);
 
 // see http://msdn.microsoft.com/en-us/library/windows/desktop/ms684139%28v=vs.85%29.aspx
 static BOOL IsWow64()
 {
   BOOL bIsWow64 = FALSE;
 
-  //IsWow64Process is not available on all supported versions of Windows.
-  //Use GetModuleHandle to get a handle to the DLL that contains the function
-  //and GetProcAddress to get a pointer to the function if available.
-  LPFN_ISWOW64PROCESS fnIsWow64Process = (LPFN_ISWOW64PROCESS)GetProcAddress(GetModuleHandle(TEXT("kernel32")), "IsWow64Process");
+  // IsWow64Process is not available on all supported versions of Windows.
+  // Use GetModuleHandle to get a handle to the DLL that contains the function
+  // and GetProcAddress to get a pointer to the function if available.
+  LPFN_ISWOW64PROCESS fnIsWow64Process =
+    (LPFN_ISWOW64PROCESS)GetProcAddress(GetModuleHandle(TEXT("kernel32")), "IsWow64Process");
 
   if (nullptr != fnIsWow64Process) {
     if (!fnIsWow64Process(GetCurrentProcess(), &bIsWow64)) {
@@ -177,7 +169,8 @@ const std::string PlatformUtils::sysinfo(bool extended)
       majorVersion = 11;
     }
     boost::format fmt("Microsoft Windows %d (%d.%d.%d) %s");
-    fmt % majorVersion % osinfo.dwMajorVersion % osinfo.dwMinorVersion % osinfo.dwBuildNumber % archs[si.wProcessorArchitecture];
+    fmt % majorVersion % osinfo.dwMajorVersion % osinfo.dwMinorVersion % osinfo.dwBuildNumber %
+      archs[si.wProcessorArchitecture];
     result += fmt.str();
   }
 
@@ -213,9 +206,7 @@ const std::string PlatformUtils::sysinfo(bool extended)
 #ifdef USE_MIMALLOC
 #include <mimalloc.h>
 // mimalloc needs an output handler that references stderr after we mess with it.
-static void mi_output( const char* msg, void* arg ) {
-  fputs(msg, stderr);
-}
+static void mi_output(const char *msg, void *arg) { fputs(msg, stderr); }
 #endif
 
 // attach to parent console if standard IO handles not available
@@ -227,15 +218,14 @@ void PlatformUtils::ensureStdIO(void)
   HANDLE hWrite = (HANDLE)_get_osfhandle(_fileno(stdout));
   HANDLE hError = (HANDLE)_get_osfhandle(_fileno(stderr));
 
-  if (/* INVALID_HANDLE_VALUE == hRead || */ INVALID_HANDLE_VALUE == hWrite || INVALID_HANDLE_VALUE == hError) {
-
+  if (/* INVALID_HANDLE_VALUE == hRead || */ INVALID_HANDLE_VALUE == hWrite ||
+      INVALID_HANDLE_VALUE == hError) {
     // I see nothing to do about error(s) here.
     if (AttachConsole(ATTACH_PARENT_PROCESS)) {
-
       // Let CRT machinery performs proper setup.
       // if (INVALID_HANDLE_VALUE == hRead) (void)_wfreopen(L"CONIN$",  L"rt", stdin);
-      if (INVALID_HANDLE_VALUE == hWrite) (void)_wfreopen(L"CONOUT$",  L"wt", stdout);
-      if (INVALID_HANDLE_VALUE == hError) (void)_wfreopen(L"CONOUT$",  L"wt", stderr);
+      if (INVALID_HANDLE_VALUE == hWrite) (void)_wfreopen(L"CONOUT$", L"wt", stdout);
+      if (INVALID_HANDLE_VALUE == hError) (void)_wfreopen(L"CONOUT$", L"wt", stderr);
 
       std::ios_base::sync_with_stdio();
     }

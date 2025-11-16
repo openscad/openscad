@@ -27,14 +27,10 @@
 #pragma once
 #include "geometry/linalg.h"
 
-enum class SelectionType {
-	SELECTION_POINT, 
-	SELECTION_LINE
-};
+enum class SelectionType { SELECTION_POINT, SELECTION_LINE };
 
 struct SelectedObject {
-	SelectionType type;
-	Vector3d p1;
-	Vector3d p2;
+  SelectionType type;
+  Vector3d p1;
+  Vector3d p2;
 };
-

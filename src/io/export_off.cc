@@ -26,23 +26,16 @@
  */
 
 #include "io/export.h"
-#include "geometry/linalg.h"
-#include "Feature.h"
-#include "geometry/Reindexer.h"
-#include "geometry/PolySet.h"
-#include "geometry/PolySetUtils.h"
 
 #include <ostream>
 #include <memory>
 #include <cstddef>
 #include <cstdint>
 
-uint8_t clamp_color_channel(float value)
-{
-  if (value < 0) return 0;
-  if (value > 1) return 255;
-  return (uint8_t)(value * 255);
-}
+#include "Feature.h"
+#include "geometry/Geometry.h"
+#include "geometry/PolySet.h"
+#include "geometry/PolySetUtils.h"
 
 void export_off(const std::shared_ptr<const Geometry>& geom, std::ostream& output)
 {
@@ -51,8 +44,7 @@ void export_off(const std::shared_ptr<const Geometry>& geom, std::ostream& outpu
     ps = createSortedPolySet(*ps);
   }
   const auto& v = ps->vertices;
-  size_t numverts = v.size();
-
+  const size_t numverts = v.size();
 
   output << "OFF " << numverts << " " << ps->indices.size() << " 0\n";
   for (size_t i = 0; i < numverts; ++i) {
@@ -60,22 +52,22 @@ void export_off(const std::shared_ptr<const Geometry>& geom, std::ostream& outpu
   }
 
   auto has_color = !ps->color_indices.empty();
-  
+
   for (size_t i = 0; i < ps->indices.size(); ++i) {
-    int nverts = ps->indices[i].size();
+    const size_t nverts = ps->indices[i].size();
     output << nverts;
     for (size_t n = 0; n < nverts; ++n) output << " " << ps->indices[i][n];
     if (has_color) {
       auto color_index = ps->color_indices[i];
       if (color_index >= 0) {
         auto color = ps->colors[color_index];
-        auto r = clamp_color_channel(color[0]);
-        auto g = clamp_color_channel(color[1]);
-        auto b = clamp_color_channel(color[2]);
-        auto a = clamp_color_channel(color[3]);
-        output << " " << (int)r << " " << (int)g << " " << (int)b;
+        int r, g, b, a;
+        if (!color.getRgba(r, g, b, a)) {
+          LOG(message_group::Warning, "Invalid color in OFF export");
+        }
+        output << " " << r << " " << g << " " << b;
         // Alpha channel is read by apps like MeshLab.
-        if (a != 255) output << " " << (int)a;
+        if (a != 255) output << " " << a;
       }
     }
     output << "\n";

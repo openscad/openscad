@@ -34,8 +34,7 @@ namespace libsvg {
 
 const std::string polygon::name("polygon");
 
-void
-polygon::set_attrs(attr_map_t& attrs, void *context)
+void polygon::set_attrs(attr_map_t& attrs, void *context)
 {
   shape::set_attrs(attrs, context);
   this->points = attrs["points"];
@@ -63,4 +62,4 @@ polygon::set_attrs(attr_map_t& attrs, void *context)
   path_list.push_back(path);
 }
 
-} // namespace libsvg
+}  // namespace libsvg

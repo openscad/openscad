@@ -49,4 +49,4 @@ public:
   [[nodiscard]] shape *clone() const override { return new data(*this); }
 };
 
-}
+}  // namespace libsvg

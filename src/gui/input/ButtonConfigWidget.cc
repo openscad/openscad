@@ -38,12 +38,10 @@
 #include "gui/IgnoreWheelWhenNotFocused.h"
 #include "gui/input/InputEventMapper.h"
 
-ButtonConfigWidget::ButtonConfigWidget(QWidget *parent) : QWidget(parent)
-{
-  setupUi(this);
-}
+ButtonConfigWidget::ButtonConfigWidget(QWidget *parent) : QWidget(parent) { setupUi(this); }
 
-void ButtonConfigWidget::updateButtonState(int nr, bool pressed) const {
+void ButtonConfigWidget::updateButtonState(int nr, bool pressed) const
+{
   QString style = pressed ? ButtonConfigWidget::ActiveStyleString : ButtonConfigWidget::EmptyString;
 
   auto label = this->findChild<QLabel *>(QString("labelInputButton%1").arg(nr));
@@ -51,7 +49,8 @@ void ButtonConfigWidget::updateButtonState(int nr, bool pressed) const {
   label->setStyleSheet(style);
 }
 
-void ButtonConfigWidget::init() {
+void ButtonConfigWidget::init()
+{
   for (size_t i = 0; i < InputEventMapper::getMaxButtons(); ++i) {
     auto box = this->findChild<QComboBox *>(QString("comboBoxButton%1").arg(i));
     if (box) {
@@ -208,7 +207,8 @@ void ButtonConfigWidget::on_comboBoxButton23_activated(int val)
   emit inputMappingChanged();
 }
 
-void ButtonConfigWidget::applyComboBox(QComboBox *comboBox, int val, Settings::SettingsEntryString& entry)
+void ButtonConfigWidget::applyComboBox(QComboBox *comboBox, int val,
+                                       Settings::SettingsEntryString& entry)
 {
   entry.setValue(comboBox->itemData(val).toString().toStdString());
   writeSettings();
@@ -226,12 +226,10 @@ void ButtonConfigWidget::updateComboBox(QComboBox *comboBox, const Settings::Set
   }
 }
 
-void ButtonConfigWidget::writeSettings()
-{
-  Settings::Settings::visit(SettingsWriter());
-}
+void ButtonConfigWidget::writeSettings() { Settings::Settings::visit(SettingsWriter()); }
 
-void ButtonConfigWidget::initActionComboBox(QComboBox *comboBox, const Settings::SettingsEntryString& entry)
+void ButtonConfigWidget::initActionComboBox(QComboBox *comboBox,
+                                            const Settings::SettingsEntryString& entry)
 {
   comboBox->clear();
 
@@ -241,7 +239,8 @@ void ButtonConfigWidget::initActionComboBox(QComboBox *comboBox, const Settings:
   const QIcon emptyIcon = QIcon(map);
 
   comboBox->addItem(emptyIcon, QString::fromStdString(_("None")), "");
-  comboBox->addItem(emptyIcon, QString::fromStdString(_("Toggle Perspective")), "viewActionTogglePerspective");
+  comboBox->addItem(emptyIcon, QString::fromStdString(_("Toggle Perspective")),
+                    "viewActionTogglePerspective");
 
   for (const auto& action : InputDriverManager::instance()->getActions()) {
     const auto icon = action.icon;
@@ -253,14 +252,16 @@ void ButtonConfigWidget::initActionComboBox(QComboBox *comboBox, const Settings:
   updateComboBox(comboBox, entry);
 }
 
-void ButtonConfigWidget::updateStates(){
+void ButtonConfigWidget::updateStates()
+{
   if (!initialized) return;
 
   size_t cnt = InputDriverManager::instance()->getButtonCount();
   for (size_t i = 0; i < InputEventMapper::getMaxButtons(); ++i) {
     auto label = this->findChild<QLabel *>(QString("labelInputButton%1").arg(i));
     if (label) {
-      QString style = (cnt <= i) ? ButtonConfigWidget::DisabledStyleString : ButtonConfigWidget::EmptyString;
+      QString style =
+        (cnt <= i) ? ButtonConfigWidget::DisabledStyleString : ButtonConfigWidget::EmptyString;
       label->setStyleSheet(style);
     }
   }

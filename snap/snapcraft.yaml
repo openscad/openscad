@@ -56,7 +56,7 @@ parts:
     - libboost-thread-dev
 
   lib3mf2:
-    source: https://github.com/3MFConsortium/lib3mf/archive/refs/tags/v2.3.1.tar.gz
+    source: https://github.com/3MFConsortium/lib3mf/archive/refs/tags/v2.4.1.tar.gz
     plugin: cmake
     cmake-parameters: [
       "-DCMAKE_BUILD_TYPE=RelWithDebInfo",
@@ -65,25 +65,56 @@ parts:
       "-DLIB3MF_TESTS=OFF",
       "-DUSE_INCLUDED_ZLIB=OFF",
       "-DUSE_INCLUDED_LIBZIP=OFF",
+      "-DCMAKE_POLICY_VERSION_MINIMUM=3.5",
+    ]
+
+  harfbuzz:
+    source: https://github.com/harfbuzz/harfbuzz/releases/download/11.4.1/harfbuzz-11.4.1.tar.xz
+    plugin: meson
+    build-packages:
+      - meson
+      - libgraphite2-dev
+    meson-parameters: [
+      "--prefix=/usr",
+      "-Dcpp_args=-fno-exceptions",
+      "-Dgraphite2=enabled",
+      "-Dgobject=disabled",
+      "-Dutilities=disabled",
+      "-Dtests=disabled",
+      "-Dbenchmark=disabled",
+      "-Ddocs=disabled"
     ]
 
   openscad-nightly:
     source: .
+    source-type: git
     build-snaps: [cmake]
     plugin: cmake
     override-build: |
-        CC=clang CXX=clang++ cmake ${SNAPCRAFT_PART_SRC} \
+        export CC="clang"
+        export CXX="clang++"
+        export OPENSCAD_COMMIT="$(GIT_DIR=$SNAPCRAFT_PART_SRC/.git git rev-parse --short HEAD)"
+        export OPENSCAD_VERSION="$(GIT_DIR=$SNAPCRAFT_PART_SRC/.git git log -1 --format=%at | xargs -I{} date -d @{} +%Y.%m.%d.snap)"
+        cmake ${SNAPCRAFT_PART_SRC} \
             -G 'Unix Makefiles' \
             -DCMAKE_PREFIX_PATH="${SNAPCRAFT_STAGE}/usr" \
+            -DOPENSCAD_VERSION="${OPENSCAD_VERSION}" \
+            -DOPENSCAD_COMMIT="${OPENSCAD_COMMIT}" \
             -DCMAKE_INSTALL_PREFIX=/usr \
             -DCMAKE_BUILD_TYPE=Release \
-            -DSUFFIX=nightly \
+            -DUSE_BUILTIN_OPENCSG=ON \
+            -DMANIFOLD_PYBIND=OFF \
+            -DMANIFOLD_TEST=OFF \
+            -DENABLE_PYTHON=ON \
+            -DENABLE_TESTS=OFF \
             -DEXPERIMENTAL=ON \
-            -DSNAPSHOT=ON \
-            -DUSE_BUILTIN_OPENCSG=ON
+            -DSUFFIX=nightly \
+            -DSNAPSHOT=ON
         cmake --build .
         cmake --install . --prefix "${SNAPCRAFT_PART_INSTALL}/usr"
-    after: [ desktop-qt5, cgal, lib3mf2 ]
+    after: [ desktop-qt5, cgal, lib3mf2, harfbuzz ]
+    stage:
+    - -usr/lib/*/libharfbuzz*
     build-packages:
     - git
     - clang
@@ -101,12 +132,13 @@ parts:
     - libgmp-dev
     - libmpfr-dev
     - libcairo2-dev
-    - python3
     - libboost-dev
     - libboost-regex-dev
     - libboost-system-dev
     - libboost-program-options-dev
     - libdouble-conversion-dev
+    - python3-dev
+    - nettle-dev
     - chrpath
     - gettext
     - pkg-config
@@ -115,8 +147,6 @@ parts:
     - libzip-dev
     - libgl-dev
     - libxml2-dev
-    - libharfbuzz-dev
-    - libfreetype6-dev
     - libfontconfig1-dev
     - libqscintilla2-qt5-dev
     stage-packages:
@@ -148,6 +178,7 @@ parts:
     - libzip4t64
     - libtbb12
     - libatomic1
+    - libpython3.12t64
 
   # https://github.com/ubuntu/snapcraft-desktop-helpers/blob/master/snapcraft.yaml
   desktop-qt5:
@@ -155,6 +186,8 @@ parts:
     source-subdir: qt
     plugin: make
     make-parameters: ["FLAVOR=qt5"]
+    stage:
+    - -usr/lib/*/libharfbuzz*
     build-packages:
       - build-essential
       - qtbase5-dev

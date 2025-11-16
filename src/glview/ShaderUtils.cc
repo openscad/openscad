@@ -6,31 +6,10 @@
 
 #include "platform/PlatformUtils.h"
 
-namespace {
-
-GLuint compileShader(const std::string& name, GLuint shader_type) {
-  auto shader_source = ShaderUtils::loadShaderSource(name);
-  const GLuint shader = glCreateShader(shader_type);
-  auto *c_source = shader_source.c_str();
-  glShaderSource(shader, 1, (const GLchar **)&c_source, nullptr);
-  glCompileShader(shader);
-  GLint status;
-  glGetShaderiv(shader, GL_COMPILE_STATUS, &status);
-  if (!status) {
-    int loglen;
-    char logbuffer[1000];
-    glGetShaderInfoLog(shader, sizeof(logbuffer), &loglen, logbuffer);
-    PRINTDB("OpenGL shader compilation error:\n%s", logbuffer);
-    return 0;
-  }
-  return shader;
-}
-
-}  // namespace
-
 namespace ShaderUtils {
 
-std::string loadShaderSource(const std::string& name) {
+std::string loadShaderSource(const std::string& name)
+{
   std::string shaderPath = (PlatformUtils::resourcePath("shaders") / name).string();
   std::ostringstream buffer;
   const std::ifstream f(shaderPath);
@@ -42,7 +21,8 @@ std::string loadShaderSource(const std::string& name) {
   return buffer.str();
 }
 
-ShaderResource compileShaderProgram(const std::string& vs_str, const std::string& fs_str) {
+ShaderResource compileShaderProgram(const std::string& vs_str, const std::string& fs_str)
+{
   int shaderstatus;
   const char *vs_source = vs_str.c_str();
   const char *fs_source = fs_str.c_str();

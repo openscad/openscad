@@ -5,9 +5,9 @@
 #include <limits>
 #include "gui/IgnoreWheelWhenNotFocused.h"
 
-ParameterSlider::ParameterSlider(QWidget *parent, NumberParameter *parameter, DescriptionStyle descriptionStyle) :
-  ParameterVirtualWidget(parent, parameter),
-  parameter(parameter)
+ParameterSlider::ParameterSlider(QWidget *parent, NumberParameter *parameter,
+                                 DescriptionStyle descriptionStyle)
+  : ParameterVirtualWidget(parent, parameter), parameter(parameter)
 {
   setupUi(this);
   descriptionWidget->setDescription(parameter, descriptionStyle);
@@ -24,21 +24,15 @@ ParameterSlider::ParameterSlider(QWidget *parent, NumberParameter *parameter, De
   this->minimum = *parameter->minimum;
   if (parameter->step) {
     this->step = *parameter->step;
-    decimals = decimalsRequired({
-      this->minimum,
-      parameter->defaultValue,
-      this->step
-    });
+    decimals = decimalsRequired({this->minimum, parameter->defaultValue, this->step});
   } else {
-    decimals = decimalsRequired({
-      this->minimum,
-      parameter->defaultValue
-    });
+    decimals = decimalsRequired({this->minimum, parameter->defaultValue});
     this->step = pow(0.1, decimals);
   }
 
   static constexpr auto maxSteps = static_cast<double>(std::numeric_limits<int>::max());
-  // Use nextafter to compensate for possible floating point inaccurary where result is just below a whole number.
+  // Use nextafter to compensate for possible floating point inaccurary where result is just below a
+  // whole number.
   double tempSteps = std::nextafter((*parameter->maximum - this->minimum) / this->step, maxSteps) + 1.0;
   int numSteps = tempSteps >= maxSteps ? std::numeric_limits<int>::max() : static_cast<int>(tempSteps);
   // Truncate end value to full steps, same as Thingiverse customizer.
@@ -52,31 +46,26 @@ ParameterSlider::ParameterSlider(QWidget *parent, NumberParameter *parameter, De
   doubleSpinBox->setRange(this->minimum, maximumValue);
   doubleSpinBox->setSingleStep(this->step);
 
-  //connect(slider, SIGNAL(sliderPressed()), this, SLOT(onSliderPressed()));
-  connect(slider, SIGNAL(sliderReleased()), this, SLOT(onSliderReleased()));
-  connect(slider, SIGNAL(sliderMoved(int)), this, SLOT(onSliderMoved(int)));
-  connect(slider, SIGNAL(valueChanged(int)), this, SLOT(onSliderChanged(int)));
+  // connect(slider, &QSlider::sliderPressed, this, &ParameterSlider::onSliderPressed);
+  connect(slider, &QSlider::sliderReleased, this, &ParameterSlider::onSliderReleased);
+  connect(slider, &QSlider::sliderMoved, this, &ParameterSlider::onSliderMoved);
+  connect(slider, &QSlider::valueChanged, this, &ParameterSlider::onSliderChanged);
 
-  connect(doubleSpinBox, SIGNAL(valueChanged(double)), this, SLOT(onSpinBoxChanged(double)));
-  connect(doubleSpinBox, SIGNAL(editingFinished()), this, SLOT(onSpinBoxEditingFinished()));
+  connect(doubleSpinBox, QOverload<double>::of(&QDoubleSpinBox::valueChanged), this,
+          &ParameterSlider::onSpinBoxChanged);
+  connect(doubleSpinBox, &QDoubleSpinBox::editingFinished, this,
+          &ParameterSlider::onSpinBoxEditingFinished);
 
   ParameterSlider::setValue();
 }
 
-void ParameterSlider::valueApplied() {
-  lastApplied = lastSent;
-}
+void ParameterSlider::valueApplied() { lastApplied = lastSent; }
 
 // slider handle grabbed
-void ParameterSlider::onSliderPressed()
-{
-}
+void ParameterSlider::onSliderPressed() {}
 
 // slider handle released
-void ParameterSlider::onSliderReleased()
-{
-  this->commitChange(true);
-}
+void ParameterSlider::onSliderReleased() { this->commitChange(true); }
 
 // slider handle dragged
 void ParameterSlider::onSliderMoved(int position)
@@ -109,17 +98,16 @@ void ParameterSlider::onSpinBoxChanged(double value)
 }
 
 // Enter key pressed or spinbox focus lost
-void ParameterSlider::onSpinBoxEditingFinished()
-{
-  commitChange(true);
-}
+void ParameterSlider::onSpinBoxEditingFinished() { commitChange(true); }
 
-void ParameterSlider::commitChange(bool immediate) {
+void ParameterSlider::commitChange(bool immediate)
+{
   double value = parameterValue(slider->sliderPosition());
 #ifdef DEBUG
-  PRINTD(STR("[commit] value=", value, ", parameter->value=", parameter->value, ", lastSent=", lastSent, ", lastApplied=", lastApplied));
+  PRINTD(STR("[commit] value=", value, ", parameter->value=", parameter->value, ", lastSent=", lastSent,
+             ", lastApplied=", lastApplied));
 #endif
-  if ((immediate && lastApplied != value) || (!immediate && lastSent != value) ) {
+  if ((immediate && lastApplied != value) || (!immediate && lastSent != value)) {
     lastSent = parameter->value = value;
     emit changed(immediate);
   }
@@ -129,7 +117,8 @@ void ParameterSlider::commitChange(bool immediate) {
 void ParameterSlider::setValue()
 {
 #ifdef DEBUG
-  PRINTD(STR("[setValue] parameter->value=", parameter->value, ", lastSent=", lastSent, ", lastApplied=", lastApplied));
+  PRINTD(STR("[setValue] parameter->value=", parameter->value, ", lastSent=", lastSent,
+             ", lastApplied=", lastApplied));
 #endif
   int position = sliderPosition(parameter->value);
   lastApplied = lastSent = parameter->value;

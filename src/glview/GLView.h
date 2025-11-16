@@ -46,7 +46,7 @@ public:
   virtual void paintGL();
 
   void setCamera(const Camera& cam);
-  void setupCamera() ;
+  void setupCamera();
 
   void setColorScheme(const ColorScheme& cs);
   void setColorScheme(const std::string& cs);
@@ -87,7 +87,8 @@ public:
   virtual void display_opencsg_warning() = 0;
   int opencsg_id;
 #endif
-  void showObject(const SelectedObject &pt,const Vector3d &eyedir);
+  void showObject(const SelectedObject& pt, const Vector3d& eyedir);
+
 private:
   void showCrosshairs(const Color4f& col);
   void showAxes(const Color4f& col);

@@ -1,0 +1,17 @@
+group() {
+	multmatrix([[1, 0, 0, 160], [0, 1, 0, 100], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+		text(text = "+liga:", size = 50, spacing = 1, font = "Amiri:style=Regular", direction = "ltr", language = "en", script = "Latn", halign = "right", valign = "default", $fn = 0, $fa = 12, $fs = 2);
+	}
+	multmatrix([[1, 0, 0, 200], [0, 1, 0, 100], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+		text(text = "fi fl fj ff", size = 50, spacing = 1, font = "Amiri:style=Regular:fontfeatures=+liga", direction = "ltr", language = "en", script = "Latn", halign = "default", valign = "default", $fn = 0, $fa = 12, $fs = 2);
+	}
+}
+group() {
+	multmatrix([[1, 0, 0, 160], [0, 1, 0, 20], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+		text(text = "-liga:", size = 50, spacing = 1, font = "Amiri:style=Regular", direction = "ltr", language = "en", script = "Latn", halign = "right", valign = "default", $fn = 0, $fa = 12, $fs = 2);
+	}
+	multmatrix([[1, 0, 0, 200], [0, 1, 0, 20], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+		text(text = "fi fl fj ff", size = 50, spacing = 1, font = "Amiri:style=Regular:fontfeatures=-liga", direction = "ltr", language = "en", script = "Latn", halign = "default", valign = "default", $fn = 0, $fa = 12, $fs = 2);
+	}
+}
+

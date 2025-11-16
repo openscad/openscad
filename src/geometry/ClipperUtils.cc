@@ -17,9 +17,8 @@ namespace ClipperUtils {
 
 namespace {
 
-Clipper2Lib::Paths64 process(const Clipper2Lib::Paths64& polygons,
-                          Clipper2Lib::ClipType cliptype,
-                          Clipper2Lib::FillRule polytype)
+Clipper2Lib::Paths64 process(const Clipper2Lib::Paths64& polygons, Clipper2Lib::ClipType cliptype,
+                             Clipper2Lib::FillRule polytype)
 {
   Clipper2Lib::Paths64 result;
   Clipper2Lib::Clipper64 clipper;
@@ -30,9 +29,9 @@ Clipper2Lib::Paths64 process(const Clipper2Lib::Paths64& polygons,
 }
 
 // This is a copy-paste from Clipper2Lib with the modification that the union operation is not performed
-// The reason is numeric robustness. With the insides missing, the intersection points created by the union operation may
-// (due to rounding) be located at slightly different locations than the original geometry and this
-// can give rise to cracks
+// The reason is numeric robustness. With the insides missing, the intersection points created by the
+// union operation may (due to rounding) be located at slightly different locations than the original
+// geometry and this can give rise to cracks
 void minkowski_outline(const Clipper2Lib::Path64& poly, const Clipper2Lib::Path64& path,
                        Clipper2Lib::Paths64& quads, bool isSum, bool isClosed)
 {
@@ -78,14 +77,13 @@ void minkowski_outline(const Clipper2Lib::Path64& poly, const Clipper2Lib::Path6
 // Ideally, we would translate to the midpoint of component b, but the point can
 // be chosen arbitrarily since the translated object would always stay inside
 // the minkowski sum.
-void fill_minkowski_insides(const Clipper2Lib::Paths64& a,
-                            const Clipper2Lib::Paths64& b,
+void fill_minkowski_insides(const Clipper2Lib::Paths64& a, const Clipper2Lib::Paths64& b,
                             Clipper2Lib::Paths64& target)
 {
   for (const auto& b_path : b) {
     // We only need to add for positive components of b
     if (!b_path.empty() && Clipper2Lib::IsPositive(b_path) == 1) {
-      const auto& delta = b_path[0]; // arbitrary point
+      const auto& delta = b_path[0];  // arbitrary point
       for (const auto& path : a) {
         target.push_back(path);
         for (auto& point : target.back()) {
@@ -97,9 +95,12 @@ void fill_minkowski_insides(const Clipper2Lib::Paths64& a,
   }
 }
 
-void SimplifyPolyTree(const Clipper2Lib::PolyPath64& polytree, double epsilon, Clipper2Lib::PolyPath64& result) {
+void SimplifyPolyTree(const Clipper2Lib::PolyPath64& polytree, double epsilon,
+                      Clipper2Lib::PolyPath64& result)
+{
   for (const auto& child : polytree) {
-    Clipper2Lib::PolyPath64 *newchild = result.AddChild(Clipper2Lib::SimplifyPath(child->Polygon(), epsilon));
+    Clipper2Lib::PolyPath64 *newchild =
+      result.AddChild(Clipper2Lib::SimplifyPath(child->Polygon(), epsilon));
     SimplifyPolyTree(*child, epsilon, *newchild);
   }
 }
@@ -108,24 +109,18 @@ void SimplifyPolyTree(const Clipper2Lib::PolyPath64& polytree, double epsilon, C
 
 // Using 1 bit less precision than the maximum possible, to limit the chance
 // of data loss when converting back to double (see https://github.com/openscad/openscad/issues/5253).
-const int CLIPPER_BITS{ std::ilogb( 0x3FFFFFFFFFFFFFFFLL) };
+const int CLIPPER_BITS{std::ilogb(0x3FFFFFFFFFFFFFFFLL)};
 
 int scaleBitsFromBounds(const BoundingBox& bounds, int total_bits)
 {
-  const double maxCoeff = std::max({
-      bounds.min().cwiseAbs().maxCoeff(),
-      bounds.max().cwiseAbs().maxCoeff(),
-      bounds.sizes().maxCoeff()
-    });
+  const double maxCoeff = std::max(
+    {bounds.min().cwiseAbs().maxCoeff(), bounds.max().cwiseAbs().maxCoeff(), bounds.sizes().maxCoeff()});
   const int exp = std::ilogb(maxCoeff) + 1;
   const int actual_bits = (total_bits == 0) ? CLIPPER_BITS : total_bits;
   return (actual_bits - 1) - exp;
 }
 
-int scaleBitsFromPrecision(int precision)
-{
- return std::ilogb(std::pow(10, precision)) + 1;
-}
+int scaleBitsFromPrecision(int precision) { return std::ilogb(std::pow(10, precision)) + 1; }
 
 Clipper2Lib::Paths64 fromPolygon2d(const Polygon2d& poly, int scale_bits)
 {
@@ -186,13 +181,14 @@ std::unique_ptr<Polygon2d> toPolygon2d(const Clipper2Lib::PolyTree64& polytree, 
 {
   auto result = std::make_unique<Polygon2d>();
   const double scale = std::ldexp(1.0, -scale_bits);
-  auto processChildren = [scale, &result](auto&& processChildren, const Clipper2Lib::PolyPath64& node) -> void {
+  auto processChildren = [scale, &result](auto&& processChildren,
+                                          const Clipper2Lib::PolyPath64& node) -> void {
     Outline2d outline;
     // When using offset, clipper can get the hole status wrong.
     // IsPositive() calculates the area of the polygon, and if it's negative, it's a hole.
     outline.positive = IsPositive(node.Polygon());
 
-    constexpr double epsilon = 1.1415; // Epsilon taken from Clipper1's default epsilon.
+    constexpr double epsilon = 1.1415;  // Epsilon taken from Clipper1's default epsilon.
     const auto cleaned_path = Clipper2Lib::SimplifyPath(node.Polygon(), epsilon);
 
     // SimplifyPath can potentially reduce the polygon down to no vertices
@@ -219,7 +215,7 @@ std::unique_ptr<Polygon2d> toPolygon2d(const Clipper2Lib::PolyTree64& polytree, 
    May return an empty Polygon2d, but will not return nullptr.
  */
 std::unique_ptr<Polygon2d> apply(const std::vector<Clipper2Lib::Paths64>& pathsvector,
-				 Clipper2Lib::ClipType clipType, int scale_bits)
+                                 Clipper2Lib::ClipType clipType, int scale_bits)
 {
   Clipper2Lib::Clipper64 clipper;
   clipper.PreserveCollinear(false);
@@ -245,8 +241,7 @@ std::unique_ptr<Polygon2d> apply(const std::vector<Clipper2Lib::Paths64>& pathsv
     if (first) {
       clipper.AddSubject(paths);
       first = false;
-    }
-    else {
+    } else {
       clipper.AddClip(paths);
     }
   }
@@ -264,7 +259,7 @@ std::unique_ptr<Polygon2d> apply(const std::vector<Clipper2Lib::Paths64>& pathsv
    May return an empty Polygon2d, but will not return nullptr.
  */
 std::unique_ptr<Polygon2d> apply(const std::vector<std::shared_ptr<const Polygon2d>>& polygons,
-				 Clipper2Lib::ClipType clipType)
+                                 Clipper2Lib::ClipType clipType)
 {
   const int scale_bits = scaleBitsFromPrecision();
 
@@ -289,7 +284,7 @@ std::unique_ptr<Polygon2d> apply(const std::vector<std::shared_ptr<const Polygon
 std::unique_ptr<Polygon2d> applyMinkowski(const std::vector<std::shared_ptr<const Polygon2d>>& polygons)
 {
   if (polygons.size() == 1) {
-    return polygons[0] ? std::make_unique<Polygon2d>(*polygons[0]) : nullptr; // Just copy
+    return polygons[0] ? std::make_unique<Polygon2d>(*polygons[0]) : nullptr;  // Just copy
   }
 
   auto it = polygons.begin();
@@ -334,17 +329,16 @@ std::unique_ptr<Polygon2d> applyMinkowski(const std::vector<std::shared_ptr<cons
   return toPolygon2d(polytree, scale_bits);
 }
 
-std::unique_ptr<Polygon2d> applyOffset(const Polygon2d& poly, double offset, Clipper2Lib::JoinType joinType,
-				       double miter_limit, double arc_tolerance)
+std::unique_ptr<Polygon2d> applyOffset(const Polygon2d& poly, double offset,
+                                       Clipper2Lib::JoinType joinType, double miter_limit,
+                                       double arc_tolerance)
 {
   const bool isMiter = joinType == Clipper2Lib::JoinType::Miter;
   const bool isRound = joinType == Clipper2Lib::JoinType::Round;
   const int scale_bits = scaleBitsFromPrecision();
-  Clipper2Lib::ClipperOffset co(
-    isMiter ? miter_limit : 2.0,
-    isRound ? std::ldexp(arc_tolerance, scale_bits) : 1.0
-    );
-  auto p = ClipperUtils::fromPolygon2d(poly, scale_bits); 
+  Clipper2Lib::ClipperOffset co(isMiter ? miter_limit : 2.0,
+                                isRound ? std::ldexp(arc_tolerance, scale_bits) : 1.0);
+  auto p = ClipperUtils::fromPolygon2d(poly, scale_bits);
   co.AddPaths(p, joinType, Clipper2Lib::EndType::Polygon);
   Clipper2Lib::PolyTree64 result;
   co.Execute(std::ldexp(offset, scale_bits), result);
@@ -357,7 +351,7 @@ std::unique_ptr<Polygon2d> applyProjection(const std::vector<std::shared_ptr<con
 
   Clipper2Lib::Clipper64 sumclipper;
   sumclipper.PreserveCollinear(false);
-  for (const auto &poly : polygons) {
+  for (const auto& poly : polygons) {
     Clipper2Lib::Paths64 result = ClipperUtils::fromPolygon2d(*poly, scale_bits);
     // Using NonZero ensures that we don't create holes from polygons sharing
     // edges since we're unioning a mesh
@@ -377,4 +371,4 @@ std::unique_ptr<Polygon2d> applyProjection(const std::vector<std::shared_ptr<con
   return {};
 }
 
-} // namespace ClipperUtils
+}  // namespace ClipperUtils

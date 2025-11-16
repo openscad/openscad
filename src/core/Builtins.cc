@@ -30,7 +30,8 @@ void Builtins::init(const std::string& name, class AbstractModule *module)
   Builtins::instance()->modules.emplace(name, module);
 }
 
-void Builtins::init(const std::string& name, AbstractModule *module, const std::vector<std::string>& calltipList)
+void Builtins::init(const std::string& name, AbstractModule *module,
+                    const std::vector<std::string>& calltipList)
 {
 #ifndef ENABLE_EXPERIMENTAL
   if (module->is_experimental()) return;
@@ -39,7 +40,8 @@ void Builtins::init(const std::string& name, AbstractModule *module, const std::
   Builtins::keywordList.insert({name, calltipList});
 }
 
-void Builtins::init(const std::string& name, BuiltinFunction *function, const std::vector<std::string>& calltipList)
+void Builtins::init(const std::string& name, BuiltinFunction *function,
+                    const std::vector<std::string>& calltipList)
 {
 #ifndef ENABLE_EXPERIMENTAL
   if (function->is_experimental()) return;
@@ -112,19 +114,20 @@ std::string Builtins::isDeprecated(const std::string& name) const
 
 Builtins::Builtins()
 {
-  this->assignments.emplace_back(new Assignment("$fn", std::make_shared<Literal>(0.0)) );
-  this->assignments.emplace_back(new Assignment("$fs", std::make_shared<Literal>(2.0)) );
-  this->assignments.emplace_back(new Assignment("$fa", std::make_shared<Literal>(12.0)) );
-  this->assignments.emplace_back(new Assignment("$t", std::make_shared<Literal>(0.0)) );
-  this->assignments.emplace_back(new Assignment("$preview", std::make_shared<Literal>()) ); //undef as should always be overwritten.
+  this->assignments.emplace_back(new Assignment("$fn", std::make_shared<Literal>(0.0)));
+  this->assignments.emplace_back(new Assignment("$fs", std::make_shared<Literal>(2.0)));
+  this->assignments.emplace_back(new Assignment("$fa", std::make_shared<Literal>(12.0)));
+  this->assignments.emplace_back(new Assignment("$t", std::make_shared<Literal>(0.0)));
+  this->assignments.emplace_back(
+    new Assignment("$preview", std::make_shared<Literal>()));  // undef as should always be overwritten.
   auto zeroVector = std::make_shared<Vector>(Location::NONE);
   zeroVector->emplace_back(new Literal(0.0));
   zeroVector->emplace_back(new Literal(0.0));
   zeroVector->emplace_back(new Literal(0.0));
-  this->assignments.emplace_back(new Assignment("$vpt", zeroVector) );
-  this->assignments.emplace_back(new Assignment("$vpr", zeroVector) );
-  this->assignments.emplace_back(new Assignment("$vpd", std::make_shared<Literal>(500.0)) );
-  this->assignments.emplace_back(new Assignment("$vpf", std::make_shared<Literal>(22.5)) );
+  this->assignments.emplace_back(new Assignment("$vpt", zeroVector));
+  this->assignments.emplace_back(new Assignment("$vpr", zeroVector));
+  this->assignments.emplace_back(new Assignment("$vpd", std::make_shared<Literal>(500.0)));
+  this->assignments.emplace_back(new Assignment("$vpf", std::make_shared<Literal>(22.5)));
 }
 
 void Builtins::initKeywordList()

@@ -37,22 +37,25 @@
 #include <cassert>
 #include <sstream>
 #include <string>
-#include <sys/utsname.h> // for uname
+#include <sys/utsname.h>  // for uname
 
 #include "glview/OffscreenContext.h"
 
 namespace {
 
-class OffscreenContextEGL : public OffscreenContext {
+class OffscreenContextEGL : public OffscreenContext
+{
 public:
   OffscreenContextEGL(uint32_t width, uint32_t height) : OffscreenContext(width, height) {}
-  ~OffscreenContextEGL() {
+  ~OffscreenContextEGL()
+  {
     if (this->display != nullptr) {
       eglTerminate(this->display);
     }
   }
 
-  std::string getInfo() const override {
+  std::string getInfo() const override
+  {
     if (!this->context) {
       return {"No GL Context initialized. No information to report\n"};
     }
@@ -63,13 +66,14 @@ public:
     const char *version = eglQueryString(display, EGL_VERSION);
 
     result << "GL context creator: EGL (old)\n"
-    << "EGL version: " << version << " (" << vendor << ")\n"
-    << "PNG generator: lodepng\n";
+           << "EGL version: " << version << " (" << vendor << ")\n"
+           << "PNG generator: lodepng\n";
 
     return result.str();
   }
-  
-  bool makeCurrent() const override {
+
+  bool makeCurrent() const override
+  {
     return eglMakeCurrent(this->display, this->surface, this->surface, this->context);
   }
 
@@ -80,25 +84,23 @@ public:
 
 static bool create_egl_dummy_context(OffscreenContextEGL& ctx)
 {
-  static const EGLint configAttribs[] = {
-    EGL_SURFACE_TYPE, EGL_PBUFFER_BIT,
-    EGL_BLUE_SIZE, 8,
-    EGL_GREEN_SIZE, 8,
-    EGL_RED_SIZE, 8,
-    EGL_ALPHA_SIZE, 8,
-    EGL_DEPTH_SIZE, 24,
-    EGL_CONFORMANT, EGL_OPENGL_BIT,
-    EGL_NONE
-  };
+  static const EGLint configAttribs[] = {EGL_SURFACE_TYPE, EGL_PBUFFER_BIT,
+                                         EGL_BLUE_SIZE,    8,
+                                         EGL_GREEN_SIZE,   8,
+                                         EGL_RED_SIZE,     8,
+                                         EGL_ALPHA_SIZE,   8,
+                                         EGL_DEPTH_SIZE,   24,
+                                         EGL_CONFORMANT,   EGL_OPENGL_BIT,
+                                         EGL_NONE};
 
   const EGLint pbufferAttribs[] = {
-    EGL_WIDTH, static_cast<EGLint>(ctx.width()),
-    EGL_HEIGHT, static_cast<EGLint>(ctx.height()),
-    EGL_NONE,
+    EGL_WIDTH, static_cast<EGLint>(ctx.width()), EGL_HEIGHT, static_cast<EGLint>(ctx.height()), EGL_NONE,
   };
 
-  PFNEGLQUERYDEVICESEXTPROC eglQueryDevicesEXT = (PFNEGLQUERYDEVICESEXTPROC) eglGetProcAddress("eglQueryDevicesEXT");
-  PFNEGLGETPLATFORMDISPLAYEXTPROC eglGetPlatformDisplayEXT = (PFNEGLGETPLATFORMDISPLAYEXTPROC) eglGetProcAddress("eglGetPlatformDisplayEXT");
+  PFNEGLQUERYDEVICESEXTPROC eglQueryDevicesEXT =
+    (PFNEGLQUERYDEVICESEXTPROC)eglGetProcAddress("eglQueryDevicesEXT");
+  PFNEGLGETPLATFORMDISPLAYEXTPROC eglGetPlatformDisplayEXT =
+    (PFNEGLGETPLATFORMDISPLAYEXTPROC)eglGetProcAddress("eglGetPlatformDisplayEXT");
   if (eglQueryDevicesEXT && eglGetPlatformDisplayEXT) {
     const int MAX_DEVICES = 10;
     EGLDeviceEXT eglDevs[MAX_DEVICES];
@@ -123,7 +125,8 @@ static bool create_egl_dummy_context(OffscreenContextEGL& ctx)
     return false;
   }
 
-  PFNEGLGETDISPLAYDRIVERNAMEPROC eglGetDisplayDriverName = (PFNEGLGETDISPLAYDRIVERNAMEPROC) eglGetProcAddress("eglGetDisplayDriverName");
+  PFNEGLGETDISPLAYDRIVERNAMEPROC eglGetDisplayDriverName =
+    (PFNEGLGETDISPLAYDRIVERNAMEPROC)eglGetProcAddress("eglGetDisplayDriverName");
   if (eglGetDisplayDriverName) {
     const char *name = eglGetDisplayDriverName(ctx.display);
     PRINTDB("Got EGL display with driver name '%s'", name);
@@ -153,12 +156,13 @@ static bool create_egl_dummy_context(OffscreenContextEGL& ctx)
     return false;
   }
 
-  EGLint ctxattr[] = {
-    EGL_CONTEXT_MAJOR_VERSION, 2,
-    EGL_CONTEXT_MINOR_VERSION, 0,
-    EGL_CONTEXT_OPENGL_PROFILE_MASK, EGL_CONTEXT_OPENGL_COMPATIBILITY_PROFILE_BIT,
-    EGL_NONE
-  };
+  EGLint ctxattr[] = {EGL_CONTEXT_MAJOR_VERSION,
+                      2,
+                      EGL_CONTEXT_MINOR_VERSION,
+                      0,
+                      EGL_CONTEXT_OPENGL_PROFILE_MASK,
+                      EGL_CONTEXT_OPENGL_COMPATIBILITY_PROFILE_BIT,
+                      EGL_NONE};
   ctx.context = eglCreateContext(ctx.display, config, EGL_NO_CONTEXT, ctxattr);
   if (ctx.context == EGL_NO_CONTEXT) {
     std::cerr << "Unable to create EGL context (eglError: " << eglGetError() << ")" << std::endl;
@@ -172,9 +176,10 @@ static bool create_egl_dummy_context(OffscreenContextEGL& ctx)
 
 namespace offscreen_old {
 
-std::shared_ptr<OffscreenContext> CreateOffscreenContextEGL(
-    uint32_t width, uint32_t height, uint32_t majorGLVersion, 
-    uint32_t minorGLVersion, bool gles, bool compatibilityProfile)
+std::shared_ptr<OffscreenContext> CreateOffscreenContextEGL(uint32_t width, uint32_t height,
+                                                            uint32_t majorGLVersion,
+                                                            uint32_t minorGLVersion, bool gles,
+                                                            bool compatibilityProfile)
 {
   auto ctx = std::make_shared<OffscreenContextEGL>(width, height);
 

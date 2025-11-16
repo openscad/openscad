@@ -1,7 +1,7 @@
 #pragma once
 
-#include "geometry/cgal/CGAL_Nef_polyhedron.h"
+#include "geometry/cgal/CGALNefGeometry.h"
 
 namespace Polygon2DCGAL {
-CGAL_Nef_polyhedron toNefPolyhedron();
+CGALNefGeometry toNefPolyhedron();
 }

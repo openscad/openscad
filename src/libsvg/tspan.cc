@@ -33,8 +33,7 @@ namespace libsvg {
 
 const std::string tspan::name("tspan");
 
-void
-tspan::set_attrs(attr_map_t& attrs, void *context)
+void tspan::set_attrs(attr_map_t& attrs, void *context)
 {
   shape::set_attrs(attrs, context);
   this->x = parse_double(attrs["x"]);
@@ -43,16 +42,12 @@ tspan::set_attrs(attr_map_t& attrs, void *context)
   this->dy = parse_double(attrs["dy"]);
 }
 
-const std::string
-tspan::dump() const
+const std::string tspan::dump() const
 {
   std::stringstream s;
-  s << get_name()
-    << ": x = " << this->x
-    << ": y = " << this->y
-    << ": dx = " << this->dx
+  s << get_name() << ": x = " << this->x << ": y = " << this->y << ": dx = " << this->dx
     << ": dy = " << this->dy;
   return s.str();
 }
 
-} // namespace libsvg
+}  // namespace libsvg

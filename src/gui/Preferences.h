@@ -17,12 +17,13 @@
 #include <QSettings>
 #include <string>
 
-#include "gui/qtgettext.h" // IWYU pragma: keep
+#include "gui/qtgettext.h"  // IWYU pragma: keep
 #include "openscad_gui.h"
 #include "ui_Preferences.h"
 #include "core/Settings.h"
 #include "gui/InitConfigurator.h"
 
+class GlobalPreferences;
 class Preferences : public QMainWindow, public Ui::Preferences, public InitConfigurator
 {
   Q_OBJECT;
@@ -30,29 +31,20 @@ class Preferences : public QMainWindow, public Ui::Preferences, public InitConfi
 public:
   ~Preferences() override;
 
-  static void create(const QStringList& colorSchemes);
-  static Preferences *inst();
-
   QVariant getValue(const QString& key) const;
   void init();
+  void update();
   void apply_win() const;
   void updateGUI();
   void fireEditorConfigChanged() const;
+  void fireApplicationFontChanged() const;
   void insertListItem(QListWidget *listBox, QListWidgetItem *listItem);
 
-  template<typename item_type>
-  QListWidgetItem * createListItem(const item_type& itemType, const QString& text = "", bool editable = false) {
-    const auto icon = QIcon::fromTheme(QString::fromStdString(itemType.icon()));
-    std::string description = itemType.description();
-    const auto itemText = description.empty() ? text : QString::fromStdString(description);
-    const auto listItem = new QListWidgetItem(icon, itemText,
-      nullptr,
-      static_cast<int>(QListWidgetItem::UserType) + static_cast<int>(itemType));
-    if (editable) {
-      listItem->setFlags(listItem->flags() | Qt::ItemIsEditable);
-    }
-    return listItem;
-  }
+  // Returns true if there is an higlightling color scheme configured.
+  bool hasHighlightingColorScheme() const;
+
+  // Set a new colorScheme.
+  void setHighlightingColorSchemes(const QStringList& colorSchemes);
 
 public slots:
   void actionTriggered(class QAction *);
@@ -91,10 +83,11 @@ public slots:
   void on_enableHidapiTraceCheckBox_toggled(bool);
   void on_checkBoxShowWarningsIn3dView_toggled(bool);
   void on_checkBoxMouseCentricZoom_toggled(bool);
-  void on_checkBoxMouseSwapButtons_toggled(bool);
   void on_timeThresholdOnRenderCompleteSoundEdit_textChanged(const QString&);
   void on_enableClearConsoleCheckBox_toggled(bool);
   void on_consoleMaxLinesEdit_textChanged(const QString&);
+  void on_fontComboBoxApplicationFontFamily_currentFontChanged(const QFont&);
+  void on_comboBoxApplicationFontSize_currentIndexChanged(int);
   void on_consoleFontChooser_currentFontChanged(const QFont&);
   void on_consoleFontSize_currentIndexChanged(int);
   void on_customizerFontChooser_currentFontChanged(const QFont&);
@@ -123,13 +116,13 @@ public slots:
   void on_comboBoxLineWrapVisualizationEnd_activated(int);
   void on_comboBoxModifierNumberScrollWheel_activated(int);
 
-
   // Display
   void on_checkBoxHighlightCurrentLine_toggled(bool);
   void on_checkBoxEnableBraceMatching_toggled(bool);
   void on_checkBoxEnableLineNumbers_toggled(bool);
 
   // Print
+  void on_checkBoxEnableRemotePrintServices_toggled(bool);
   void on_comboBoxDefaultPrintService_activated(int);
   void on_pushButtonOctoPrintCheckConnection_clicked();
   void on_pushButtonOctoPrintSlicingEngine_clicked();
@@ -141,6 +134,7 @@ public slots:
   void on_lineEditOctoPrintURL_editingFinished();
   void on_lineEditOctoPrintApiKey_editingFinished();
   void on_pushButtonOctoPrintApiKey_clicked();
+  void on_pushButtonOctoPrintRequestApiKey_clicked();
   void on_lineEditLocalAppExecutable_editingFinished();
   void on_toolButtonLocalAppSelectExecutable_clicked();
   void on_lineEditLocalAppTempDir_editingFinished();
@@ -163,12 +157,14 @@ public slots:
   // Dialogs
   void on_checkBoxAlwaysShowExportPdfDialog_toggled(bool);
   void on_checkBoxAlwaysShowExport3mfDialog_toggled(bool);
+  void on_checkBoxAlwaysShowPrintServiceDialog_toggled(bool);
 
 signals:
   void requestRedraw() const;
   void updateUndockMode(bool undockMode) const;
   void updateReorderMode(bool undockMode) const;
   void fontChanged(const QString& family, uint size) const;
+  void applicationFontChanged(const QString& family, uint size) const;
   void consoleFontChanged(const QString& family, uint size) const;
   void customizerFontChanged(const QString& family, uint size) const;
   void colorSchemeChanged(const QString& scheme) const;
@@ -177,7 +173,6 @@ signals:
   void editorConfigChanged() const;
   void ExperimentalChanged() const;
   void updateMouseCentricZoom(bool state) const;
-  void updateMouseSwapButtons(bool state) const;
   void autocompleteChanged(bool status) const;
   void characterThresholdChanged(int val) const;
   void stepSizeChanged(int val) const;
@@ -189,6 +184,7 @@ private slots:
   void on_checkBoxEnableNumberScrollWheel_toggled(bool checked);
 
 private:
+  friend GlobalPreferences;
   Preferences(QWidget *parent = nullptr);
   void keyPressEvent(QKeyEvent *e) override;
   void showEvent(QShowEvent *e) override;
@@ -199,9 +195,9 @@ private:
   void writeSettings();
   void hidePasswords();
   void addPrefPage(QActionGroup *group, QAction *action, QWidget *widget);
-  void createFontSizeMenu(QComboBox *box, const QString &setting);
-  void updateGUIFontFamily(QFontComboBox *fontSelector, const QString &setting);
-  void updateGUIFontSize(QComboBox *fsSelector, const QString &setting);
+  void createFontSizeMenu(QComboBox *box, const QString& setting);
+  void updateGUIFontFamily(QFontComboBox *fontSelector, const QString& setting);
+  void updateGUIFontSize(QComboBox *fsSelector, const QString& setting);
   void updateLocalAppParams();
   void addLocalAppParameter(const Settings::LocalAppParameterType&);
   void moveListBoxRow(QListWidget *listBox, int offset);
@@ -211,7 +207,10 @@ private:
 
   QSettings::SettingsMap defaultmap;
   QHash<const QAction *, QWidget *> prefPages;
+};
 
-  static Preferences *instance;
-  static const char *featurePropertyName;
+class GlobalPreferences
+{
+public:
+  static Preferences *inst();
 };

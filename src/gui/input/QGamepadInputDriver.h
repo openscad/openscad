@@ -44,12 +44,8 @@ public:
   const std::string& get_name() const override;
   std::string get_info() const override;
 
-  size_t getButtonCount() const override {
-    return Settings::max_buttons;
-  }
-  size_t getAxisCount() const override {
-    return Settings::max_axis;
-  }
+  size_t getButtonCount() const override { return Settings::max_buttons; }
+  size_t getAxisCount() const override { return Settings::max_axis; }
 
 private:
   std::unique_ptr<QGamepad> gamepad;

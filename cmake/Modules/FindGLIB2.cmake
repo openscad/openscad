@@ -1,6 +1,6 @@
 find_package(PkgConfig REQUIRED QUIET)
 
-pkg_search_module(GLIB2 glib-2.0)
+pkg_search_module(GLIB2 glib-2.0 QUIET)
 set(GLIB2_DEFINITIONS ${GLIB2_CFLAGS_OTHER})
 set(GLIB2_LIBRARY_NAMES ${GLIB2_LIBRARIES})
 set(GLIB2_LIBRARIES "")

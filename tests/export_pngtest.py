@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 # Export test
 #
@@ -22,44 +22,53 @@ gs_cmd = [
     "-dSAFER",
     "-dNOPAUSE",
     "-dBATCH",
-    "-sDEVICE=pnggray",
-    "-dTextAlphaBits=1",
-    "-dGraphicsAlphaBits=1",
-    "-r300"
+    "-sDEVICE=png16m",
+    "-dTextAlphaBits=4",
+    "-dGraphicsAlphaBits=4",
+    "-r300",
 ]
 
+
 def failquit(*args):
-    if len(args)!=0: print(args)
-    print('export_import_pngtest args:',str(sys.argv))
-    print('exiting export_import_pngtest.py with failure')
+    if len(args) != 0:
+        print(args)
+    print("export_import_pngtest args:", str(sys.argv))
+    print("exiting export_import_pngtest.py with failure")
     sys.exit(1)
 
+
 def createImport(inputfile, scadfile):
-        inputfilename = os.path.split(inputfile)[1]
-        print ('createImport: ' + inputfile + " " + scadfile)
-        outputdir = os.path.dirname(scadfile)
-        try:
-                if outputdir and not os.path.exists(outputdir): os.mkdir(outputdir)
-                f = open(scadfile,'w')
-                f.write('import("'+inputfilename+'");'+os.linesep)
-                f.close()
-        except:
-                failquit('failure while opening/writing ' + scadfile + ': ' + str(sys.exc_info()))
-        
+    inputfilename = os.path.split(inputfile)[1]
+    print("createImport: " + inputfile + " " + scadfile)
+    outputdir = os.path.dirname(scadfile)
+    try:
+        if outputdir and not os.path.exists(outputdir):
+            os.mkdir(outputdir)
+        f = open(scadfile, "w")
+        f.write('import("' + inputfilename + '");' + os.linesep)
+        f.close()
+    except:
+        failquit("failure while opening/writing " + scadfile + ": " + str(sys.exc_info()))
+
 
 #
 # Parse arguments
 #
-formats = ['pdf']
+formats = ["pdf"]
 parser = argparse.ArgumentParser()
-parser.add_argument('--openscad', required=True, help='Specify OpenSCAD executable')
-parser.add_argument('--format', required=True, choices=[item for sublist in [(f,f.upper()) for f in formats] for item in sublist], help='Specify export format')
+parser.add_argument("--openscad", required=True, help="Specify OpenSCAD executable")
+parser.add_argument(
+    "--format",
+    required=True,
+    choices=[item for sublist in [(f, f.upper()) for f in formats] for item in sublist],
+    help="Specify export format",
+)
 args, remaining_args = parser.parse_known_args()
 
 args.format = args.format.lower()
 inputfile = remaining_args[0]
 pngfile = remaining_args[-1]
-remaining_args = remaining_args[1:-1] # Passed on to the OpenSCAD executable
+remaining_args = remaining_args[1:-1]  # Passed on to the OpenSCAD executable
 
 if not os.path.exists(inputfile):
     failquit("can't find input file named: " + inputfile)
@@ -68,24 +77,24 @@ if not os.path.exists(args.openscad):
 
 outputdir = os.path.dirname(pngfile)
 inputpath, inputfilename = os.path.split(inputfile)
-inputbasename,inputsuffix = os.path.splitext(inputfilename)
+inputbasename, inputsuffix = os.path.splitext(inputfilename)
 
-exportfile = os.path.join(outputdir, os.path.splitext(inputfilename)[0] + '.' + args.format)
+exportfile = os.path.join(outputdir, os.path.splitext(inputfilename)[0] + "." + args.format)
 
 fontdir = os.path.abspath(os.path.join(os.path.dirname(__file__), "data/ttf"))
-fontenv = os.environ.copy();
-fontenv["OPENSCAD_FONT_PATH"] = fontdir;
-export_cmd = [args.openscad, inputfile, '-o', exportfile] + remaining_args
-print('Running OpenSCAD:', ' '.join(export_cmd), file=sys.stderr)
-result = subprocess.call(export_cmd, env = fontenv)
+fontenv = os.environ.copy()
+fontenv["OPENSCAD_FONT_PATH"] = fontdir
+export_cmd = [args.openscad, inputfile, "-o", exportfile] + remaining_args
+print("Running OpenSCAD:", " ".join(export_cmd), file=sys.stderr)
+result = subprocess.call(export_cmd, env=fontenv)
 if result != 0:
-    failquit('OpenSCAD failed with return code ' + str(result))
+    failquit("OpenSCAD failed with return code " + str(result))
 
 convert_cmd = gs_cmd + ["-sOutputFile=" + pngfile, exportfile]
-print('Running Converter:', ' '.join(convert_cmd), file=sys.stderr)
+print("Running Converter:", " ".join(convert_cmd), file=sys.stderr)
 result = subprocess.call(convert_cmd)
 if result != 0:
-    failquit('Converter failed with return code ' + str(result))
+    failquit("Converter failed with return code " + str(result))
 
-#try:    os.remove(exportfile)
-#except: failquit('failure at os.remove('+exportfile+')')
+# try:    os.remove(exportfile)
+# except: failquit('failure at os.remove('+exportfile+')')

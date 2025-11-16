@@ -25,26 +25,38 @@
  *
  */
 
-#include <ostream>
-#include <memory>
 #include "io/export.h"
 
+#include <ostream>
+#include <memory>
+
+#include "Feature.h"
+#include "geometry/Geometry.h"
 #include "geometry/PolySetUtils.h"
 #include "geometry/PolySet.h"
 
 void export_obj(const std::shared_ptr<const Geometry>& geom, std::ostream& output)
 {
   // FIXME: In lazy union mode, should we export multiple objects?
-  
+
   std::shared_ptr<const PolySet> out = PolySetUtils::getGeometryAsPolySet(geom);
+  if (!out->isTriangular()) {
+    // While the OBJ format allows for faces to have more than 3
+    // vertices, this seems to confuse a number of applications
+    // we care about, so for now this will just always tesselate
+    // faces to be composed of triangles only.
+    //
+    // See: https://github.com/openscad/openscad/issues/5993
+    out = PolySetUtils::tessellate_faces(*out);
+  }
   if (Feature::ExperimentalPredictibleOutput.is_enabled()) {
     out = createSortedPolySet(*out);
   }
 
   output << "# OpenSCAD obj exporter\n";
 
-  for (const auto &v : out->vertices) {
-    output << "v " <<v[0] << " " << v[1] << " " << v[2] << "\n";
+  for (const auto& v : out->vertices) {
+    output << "v " << v[0] << " " << v[1] << " " << v[2] << "\n";
   }
 
   for (const auto& poly : out->indices) {

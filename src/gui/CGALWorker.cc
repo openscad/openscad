@@ -13,22 +13,26 @@
 #include "utils/printutils.h"
 #include "utils/exceptions.h"
 
+#ifdef ENABLE_PYTHON
+#include "python/python_public.h"
+#endif
+
 CGALWorker::CGALWorker()
 {
   this->tree = nullptr;
   this->thread = new QThread();
   if (this->thread->stackSize() < 1024 * 1024) this->thread->setStackSize(1024 * 1024);
-  connect(this->thread, SIGNAL(started()), this, SLOT(work()));
+  connect(this->thread, &QThread::started, this, &CGALWorker::work);
   moveToThread(this->thread);
 }
 
-CGALWorker::~CGALWorker()
-{
-  delete this->thread;
-}
+CGALWorker::~CGALWorker() { delete this->thread; }
 
 void CGALWorker::start(const Tree& tree)
 {
+#ifdef ENABLE_PYTHON
+  python_unlock();
+#endif
   this->tree = &tree;
   this->thread->start();
 }
@@ -36,6 +40,9 @@ void CGALWorker::start(const Tree& tree)
 void CGALWorker::work()
 {
   // this is a worker thread: we don't want any exceptions escaping and crashing the app.
+#ifdef ENABLE_PYTHON
+  python_lock();
+#endif
   std::shared_ptr<const Geometry> root_geom;
   try {
     GeometryEvaluator evaluator(*this->tree);
@@ -59,7 +66,9 @@ void CGALWorker::work()
   } catch (...) {
     LOG(message_group::Error, "Rendering cancelled by unknown exception.");
   }
-
+#ifdef ENABLE_PYTHON
+  python_unlock();
+#endif
   emit done(root_geom);
   thread->quit();
 }

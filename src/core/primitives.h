@@ -25,6 +25,8 @@
  */
 
 #include "geometry/GeometryUtils.h"
+#include "core/ModuleInstantiation.h"
+#include "geometry/Geometry.h"
 #include "geometry/linalg.h"
 #include "core/node.h"
 
@@ -41,11 +43,8 @@ public:
   std::string toString() const override
   {
     std::ostringstream stream;
-    stream << "cube(size = ["
-           << x << ", "
-           << y << ", "
-           << z << "], center = "
-           << (center ? "true" : "false") << ")";
+    stream << "cube(size = [" << x << ", " << y << ", " << z
+           << "], center = " << (center ? "true" : "false") << ")";
     return stream.str();
   }
   std::string name() const override { return "cube"; }
@@ -55,7 +54,6 @@ public:
   bool center = false;
 };
 
-
 class SphereNode : public LeafNode
 {
 public:
@@ -63,11 +61,7 @@ public:
   std::string toString() const override
   {
     std::ostringstream stream;
-    stream << "sphere"
-           << "($fn = " << fn
-           << ", $fa = " << fa
-           << ", $fs = " << fs
-           << ", r = " << r
+    stream << "sphere" << "($fn = " << fn << ", $fa = " << fa << ", $fs = " << fs << ", r = " << r
            << ")";
     return stream.str();
   }
@@ -78,7 +72,6 @@ public:
   double r = 1;
 };
 
-
 class CylinderNode : public LeafNode
 {
 public:
@@ -86,15 +79,8 @@ public:
   std::string toString() const override
   {
     std::ostringstream stream;
-    stream << "cylinder"
-           << "($fn = " << fn
-           << ", $fa = " << fa
-           << ", $fs = " << fs
-           << ", h = " << h
-           << ", r1 = " << r1
-           << ", r2 = " << r2
-           << ", center = " << (center ? "true" : "false")
-           << ")";
+    stream << "cylinder" << "($fn = " << fn << ", $fa = " << fa << ", $fs = " << fs << ", h = " << h
+           << ", r1 = " << r1 << ", r2 = " << r2 << ", center = " << (center ? "true" : "false") << ")";
     return stream.str();
   }
   std::string name() const override { return "cylinder"; }
@@ -105,11 +91,10 @@ public:
   bool center = false;
 };
 
-
 class PolyhedronNode : public LeafNode
 {
 public:
-  PolyhedronNode (const ModuleInstantiation *mi) : LeafNode(mi) {}
+  PolyhedronNode(const ModuleInstantiation *mi) : LeafNode(mi) {}
   std::string toString() const override;
   std::string name() const override { return "polyhedron"; }
   std::unique_ptr<const Geometry> createGeometry() const override;
@@ -119,7 +104,6 @@ public:
   int convexity = 1;
 };
 
-
 class SquareNode : public LeafNode
 {
 public:
@@ -127,10 +111,8 @@ public:
   std::string toString() const override
   {
     std::ostringstream stream;
-    stream << "square(size = ["
-           << x << ", "
-           << y << "], center = "
-           << (center ? "true" : "false") << ")";
+    stream << "square(size = [" << x << ", " << y << "], center = " << (center ? "true" : "false")
+           << ")";
     return stream.str();
   }
   std::string name() const override { return "square"; }
@@ -140,7 +122,6 @@ public:
   bool center = false;
 };
 
-
 class CircleNode : public LeafNode
 {
 public:
@@ -148,11 +129,7 @@ public:
   std::string toString() const override
   {
     std::ostringstream stream;
-    stream << "circle"
-           << "($fn = " << fn
-           << ", $fa = " << fa
-           << ", $fs = " << fs
-           << ", r = " << r
+    stream << "circle" << "($fn = " << fn << ", $fa = " << fa << ", $fs = " << fs << ", r = " << r
            << ")";
     return stream.str();
   }
@@ -163,11 +140,10 @@ public:
   double r = 1;
 };
 
-
 class PolygonNode : public LeafNode
 {
 public:
-  PolygonNode (const ModuleInstantiation *mi) : LeafNode(mi) {}
+  PolygonNode(const ModuleInstantiation *mi) : LeafNode(mi) {}
   std::string toString() const override;
   std::string name() const override { return "polygon"; }
   std::unique_ptr<const Geometry> createGeometry() const override;

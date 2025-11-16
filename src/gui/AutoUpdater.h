@@ -26,7 +26,6 @@ public:
 public slots:
   virtual void checkForUpdates() = 0;
 
-
 public:
   QAction *updateAction{nullptr};
   QMenu *updateMenu{nullptr};

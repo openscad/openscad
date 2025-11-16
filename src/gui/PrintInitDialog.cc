@@ -1,6 +1,6 @@
 /*
  *  OpenSCAD (www.openscad.org)
- *  Copyright (C) 2009-2019 Clifford Wolf <clifford@clifford.at> and
+ *  Copyright (C) 2009-2025 Clifford Wolf <clifford@clifford.at> and
  *                          Marius Kintel <marius@kintel.net>
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -27,233 +27,254 @@
 #include "gui/PrintInitDialog.h"
 
 #include <vector>
+#include <string>
+
 #include <QDialog>
 #include <QString>
+#include <QPushButton>
 
 #include "io/export.h"
-#include "gui/PrintService.h"
-#include "gui/QSettingsCached.h"
 #include "core/Settings.h"
+#include "gui/PrintService.h"
+
+using S = Settings::Settings;
 
 namespace {
 
-QString toString(print_service_t printServiceType) {
+QString toString(print_service_t printServiceType)
+{
   switch (printServiceType) {
-  case print_service_t::PRINT_SERVICE:
-    return "PRINT_SERVICE";
-  case print_service_t::OCTOPRINT:
-    return "OCTOPRINT";
-  case print_service_t::LOCAL_APPLICATION:
-    return "LOCALSLICER";
-  default:
-    return "NONE";
+  case print_service_t::PRINT_SERVICE:     return "PRINT_SERVICE";
+  case print_service_t::OCTOPRINT:         return "OCTOPRINT";
+  case print_service_t::LOCAL_APPLICATION: return "LOCAL_APPLICATION";
+  default:                                 return "NONE";
   }
 }
 
-print_service_t fromString(const QString &printServiceType) {
+print_service_t fromString(const std::string& printServiceType)
+{
   if (printServiceType == "PRINT_SERVICE") {
     return print_service_t::PRINT_SERVICE;
   } else if (printServiceType == "OCTOPRINT") {
     return print_service_t::OCTOPRINT;
-  } else if (printServiceType == "LOCALSLICER") {
+  } else if (printServiceType == "LOCAL_APPLICATION") {
     return print_service_t::LOCAL_APPLICATION;
-  } else
-    return print_service_t::NONE;
+  } else return print_service_t::NONE;
 }
 
-} // namespace
+}  // namespace
 
-void PrintInitDialog::populateFileFormatComboBox(
-    const std::vector<FileFormat> &fileFormats, FileFormat currentFormat) {
-  this->fileFormatComboBox->clear();
-  for (const auto &fileFormat : fileFormats) {
-    const FileFormatInfo &info = fileformat::info(fileFormat);
-    this->fileFormatComboBox->addItem(QString::fromStdString(info.description),
+void PrintInitDialog::populateFileFormatComboBox(const std::vector<FileFormat>& fileFormats,
+                                                 FileFormat currentFormat)
+{
+  this->comboBoxFileFormat->clear();
+  for (const auto& fileFormat : fileFormats) {
+    const FileFormatInfo& info = fileformat::info(fileFormat);
+    this->comboBoxFileFormat->addItem(QString::fromStdString(info.description),
                                       QString::fromStdString(info.identifier));
     if (fileFormat == currentFormat) {
-      this->fileFormatComboBox->setCurrentIndex(
-          this->fileFormatComboBox->count() - 1);
+      this->comboBoxFileFormat->setCurrentIndex(this->comboBoxFileFormat->count() - 1);
     }
   }
 }
 
-PrintInitDialog::PrintInitDialog() {
+PrintInitDialog::PrintInitDialog()
+{
   setupUi(this);
 
-  this->textBrowser->setSource(QUrl{"qrc:/html/PrintInitDialog.html"});
-  this->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(false);
-  this->fileFormatComboBox->setEnabled(false);
+  resetSelection();
 
-  for (const auto &printServiceItem : PrintService::getPrintServices()) {
-    const auto &key = printServiceItem.first;
-    const auto &printService = printServiceItem.second;
-    auto button = new QPushButton(printService->getDisplayName(), this);
-    button->setCheckable(true);
-    button->setAutoExclusive(true);
-    this->printServiceLayout->insertWidget(0, button);
-    connect(button, &QPushButton::clicked, this, [&]() {
-      const QSettingsCached settings;
-      FileFormat currentFormat = FileFormat::ASCII_STL;
-      fileformat::fromIdentifier(
-          settings.value("printing/printServiceFileFormat")
-              .toString()
-              .toStdString(),
-          currentFormat);
+  this->checkBoxAlwaysShowDialog->setChecked(S::printServiceAlwaysShowDialog.value());
 
-      this->textBrowser->setHtml(printService->getInfoHtml());
-      this->populateFileFormatComboBox(printService->getFileFormats(),
-                                       currentFormat);
+  // triggers addRemotePrintServiceButtons() if config value is "true"
+  const auto remoteServicesEnabled = S::enableRemotePrintServices.value();
+  this->checkBoxEnableRemotePrintServices->setChecked(remoteServicesEnabled);
 
-      this->selectedPrintService = print_service_t::PRINT_SERVICE;
-      this->selectedServiceName = QString::fromStdString(key);
-      this->fileFormatComboBox->setEnabled(true);
-      this->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(true);
-    });
+  if (remoteServicesEnabled && PrintService::getPrintServices().empty()) {
+    LOG(message_group::UI_Warning, "No external print services found");
   }
 
-  if (PrintService::getPrintServices().empty()) {
-    LOG(message_group::UI_Warning, "No external print services found");
+  const auto& service = S::defaultPrintService.value();
+  const print_service_t printService = fromString(service);
+  if (printService != print_service_t::NONE) {
+    this->selectedPrintService = printService;
+    const auto& printServiceName = S::printServiceName.value();
+    this->selectedServiceName = QString::fromStdString(printServiceName);
+
+    switch (printService) {
+    case print_service_t::PRINT_SERVICE: {
+      for (const auto& button : this->buttonGroup->buttons()) {
+        const auto& name = button->property(PROPERTY_NAME);
+        if (this->selectedServiceName == name.toString()) {
+          button->click();
+          break;
+        }
+      }
+    } break;
+    case print_service_t::OCTOPRINT:         on_pushButtonOctoPrint_clicked(); break;
+    case print_service_t::LOCAL_APPLICATION: on_pushButtonLocalApplication_clicked(); break;
+    default:                                 break;
+    }
   }
 }
 
-void PrintInitDialog::on_octoPrintButton_clicked() {
-  const QSettingsCached settings;
+void PrintInitDialog::resetSelection()
+{
+  this->textBrowser->setSource(QUrl{urlDialog});
+  this->pushButtonOk->setEnabled(false);
+  this->comboBoxFileFormat->setEnabled(false);
+  this->comboBoxFileFormat->setCurrentIndex(-1);
+  this->buttonGroup->setExclusive(false);
+  for (auto button : this->buttonGroup->buttons()) {
+    button->setChecked(false);
+  }
+  this->buttonGroup->setExclusive(true);
+}
 
-  this->textBrowser->setSource(QUrl{"qrc:/html/OctoPrintInfo.html"});
-  initComboBox(this->fileFormatComboBox,
-               Settings::Settings::octoPrintFileFormat);
-  this->on_fileFormatComboBox_currentIndexChanged(
-      this->fileFormatComboBox->currentIndex());
+void PrintInitDialog::addRemotePrintServiceButtons()
+{
+  for (const auto& printServiceItem : PrintService::getPrintServices()) {
+    const auto& key = printServiceItem.first;
+    const auto& printService = printServiceItem.second;
+    auto button = new QPushButton(printService->getDisplayName(), this);
+    remoteServiceButtons.push_back(button);
+    button->setCheckable(true);
+    button->setAutoDefault(false);
+    button->setFocusPolicy(Qt::FocusPolicy::TabFocus);
+    button->setProperty(PROPERTY_NAME, QVariant(QString::fromStdString(key)));
+    buttonGroup->addButton(button);
+    this->printServiceLayout->insertWidget(this->printServiceLayout->count(), button);
+    connect(button, &QPushButton::clicked, this, [&]() {
+      FileFormat currentFormat = FileFormat::ASCII_STL;
+      fileformat::fromIdentifier(S::printServiceFileFormat.value(), currentFormat);
+      this->textBrowser->setHtml(printService->getInfoHtml());
+      this->populateFileFormatComboBox(printService->getFileFormats(), currentFormat);
+      this->selectedPrintService = print_service_t::PRINT_SERVICE;
+      this->selectedServiceName = QString::fromStdString(key);
+      this->comboBoxFileFormat->setEnabled(true);
+      this->pushButtonOk->setEnabled(true);
+    });
+  }
+}
+
+void PrintInitDialog::on_checkBoxEnableRemotePrintServices_toggled(bool checked)
+{
+  S::enableRemotePrintServices.setValue(checked);
+  writeSettings();
+
+  if (checked) {
+    if (remoteServiceButtons.empty()) {
+      addRemotePrintServiceButtons();
+    }
+  } else {
+    for (const auto button : remoteServiceButtons) {
+      this->buttonGroup->removeButton(button);
+      this->printServiceLayout->removeWidget(button);
+      button->deleteLater();
+    }
+    remoteServiceButtons.clear();
+  }
+
+  resetSelection();
+}
+
+void PrintInitDialog::on_pushButtonOctoPrint_clicked()
+{
+  this->textBrowser->setSource(QUrl{urlOctoPrint});
+  initComboBox(this->comboBoxFileFormat, S::octoPrintFileFormat);
+  this->on_comboBoxFileFormat_currentIndexChanged(this->comboBoxFileFormat->currentIndex());
 
   this->selectedPrintService = print_service_t::OCTOPRINT;
   this->selectedServiceName = "";
 
-  this->fileFormatComboBox->setEnabled(true);
-  this->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(true);
-  PRINTD("OCTOPRINT");
+  this->comboBoxFileFormat->setEnabled(true);
+  this->pushButtonOk->setEnabled(true);
+  const auto fileFormatIdentifier = fileformat::info(this->getFileFormat()).identifier;
+  PRINTDB("OCTOPRINT: %s", fileFormatIdentifier);
 }
 
-void PrintInitDialog::on_LocalSlicerButton_clicked() {
-  const QSettingsCached settings;
-
+void PrintInitDialog::on_pushButtonLocalApplication_clicked()
+{
   // TODO: Instead of forcing people to use Preferences, we should add UI here
   // to select external program.
-  this->textBrowser->setSource(QUrl{"qrc:/html/LocalSlicerInfo.html"});
+  this->textBrowser->setSource(QUrl{urlLocalApp});
 
-  initComboBox(this->fileFormatComboBox,
-               Settings::Settings::localAppFileFormat);
-  this->on_fileFormatComboBox_currentIndexChanged(
-      this->fileFormatComboBox->currentIndex());
-
+  initComboBox(this->comboBoxFileFormat, S::localAppFileFormat);
+  this->on_comboBoxFileFormat_currentIndexChanged(this->comboBoxFileFormat->currentIndex());
   this->selectedPrintService = print_service_t::LOCAL_APPLICATION;
   this->selectedServiceName = "";
 
-  this->fileFormatComboBox->setEnabled(true);
-  this->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(true);
-  PRINTD("LOCALSLICER");
+  this->comboBoxFileFormat->setEnabled(true);
+  this->pushButtonOk->setEnabled(true);
+  const auto fileFormatIdentifier = fileformat::info(this->getFileFormat()).identifier;
+  PRINTDB("LOCAL_APPLICATION: %s", fileFormatIdentifier);
 }
 
-void PrintInitDialog::on_fileFormatComboBox_currentIndexChanged(int index) {
+void PrintInitDialog::setFileFormat(const std::string& id)
+{
+  FileFormat fileFormat = FileFormat::ASCII_STL;
+  if (!fileformat::fromIdentifier(id, fileFormat)) {
+    // FIXME: When would this error happen? Do we need to handle it?
+    LOG("fileformat::fromIdentifier error: id '%1$s' not recognized", id);
+  }
+  this->selectedFileFormat = fileFormat;
+}
+
+void PrintInitDialog::on_comboBoxFileFormat_currentIndexChanged(int index)
+{
   if (index >= 0) {
-    FileFormat fileFormat = FileFormat::ASCII_STL;
-    std::string identifier =
-        this->fileFormatComboBox->currentData().toString().toStdString();
-    if (!fileformat::fromIdentifier(identifier, fileFormat)) {
-      // FIXME: When would this error happen? Do we need to handle it?
-      LOG("fileformat::fromIdentifier error: identifier '%2$s' not recognized "
-          "(combobox index %2$d)",
-          identifier, index);
-    }
-    this->selectedFileFormat = fileFormat;
+    const auto id = this->comboBoxFileFormat->currentData().toString().toStdString();
+    this->setFileFormat(id);
   }
 }
 
-void PrintInitDialog::on_buttonBox_accepted() {
-  if (this->checkBoxRememberSelection->isChecked()) {
-    QSettingsCached settings;
+void PrintInitDialog::on_pushButtonOk_clicked()
+{
+  const QString defaultPrintServiceString = toString(this->selectedPrintService);
+  S::defaultPrintService.setValue(defaultPrintServiceString.toStdString());
+  S::printServiceName.setValue(this->selectedServiceName.toStdString());
 
-    const QString defaultPrintServiceString =
-        toString(this->selectedPrintService);
-    settings.setValue(
-        QString::fromStdString(Settings::Settings::defaultPrintService.key()),
-        defaultPrintServiceString);
-
-    settings.setValue(
-        QString::fromStdString(Settings::Settings::printServiceName.key()),
-        this->selectedServiceName);
-
-    const QString fileFormatIdentifier = QString::fromStdString(
-        fileformat::info(this->getFileFormat()).identifier);
-    switch (this->selectedPrintService) {
-    case print_service_t::PRINT_SERVICE:
-      settings.setValue(QString::fromStdString(
-                            Settings::Settings::printServiceFileFormat.key()),
-                        fileFormatIdentifier);
-      break;
-    case print_service_t::OCTOPRINT:
-      settings.setValue(
-          QString::fromStdString(Settings::Settings::octoPrintFileFormat.key()),
-          fileFormatIdentifier);
-    case print_service_t::LOCAL_APPLICATION:
-      settings.setValue(QString::fromStdString(
-                            Settings::Settings::localAppFileFormat.key()),
-                        fileFormatIdentifier);
-    default:
-      break;
-    }
-    // FIXME: Add support for executable selection
-    // * localSlicerExecutable
+  const auto fileFormatIdentifier = fileformat::info(this->getFileFormat()).identifier;
+  switch (this->selectedPrintService) {
+  case print_service_t::PRINT_SERVICE:     S::printServiceFileFormat.setValue(fileFormatIdentifier); break;
+  case print_service_t::OCTOPRINT:         S::octoPrintFileFormat.setValue(fileFormatIdentifier); break;
+  case print_service_t::LOCAL_APPLICATION: S::localAppFileFormat.setValue(fileFormatIdentifier); break;
+  default:                                 break;
   }
+  // FIXME: Add support for executable selection
+  writeSettings();
   accept();
 }
 
-void PrintInitDialog::on_buttonBox_rejected() { reject(); }
+void PrintInitDialog::on_pushButtonCancel_clicked() { reject(); }
 
-int PrintInitDialog::exec() {
-  const QSettingsCached settings;
-  const QString service = settings.value("printing/printService").toString();
-  const print_service_t printService = fromString(service);
-  if (printService != print_service_t::NONE) {
-    this->selectedPrintService = printService;
-    this->selectedServiceName =
-        settings.value("printing/printServiceName").toString();
+int PrintInitDialog::exec()
+{
+  bool showDialog = this->checkBoxAlwaysShowDialog->isChecked();
 
-    QString fileFormatString;
-    switch (printService) {
-    case print_service_t::PRINT_SERVICE:
-      fileFormatString =
-          settings.value("printing/printServiceFileFormat").toString();
-      break;
-    case print_service_t::OCTOPRINT:
-      fileFormatString =
-          settings.value("printing/octoPrintFileFormat").toString();
-      break;
-    case print_service_t::LOCAL_APPLICATION:
-      fileFormatString =
-          settings.value("printing/localSlicerFileFormat").toString();
-      break;
-    default:
-      break;
-    }
-    if (!fileformat::fromIdentifier(fileFormatString.toStdString(),
-                                    this->selectedFileFormat)) {
-      LOG("TODO: Error unsupported file format");
-    }
-
-    return QDialog::Accepted;
+  // Show the dialog if icon was shift-clicked, if no print service is selected,
+  // or if the selected print service is not available.
+  const bool isShiftKeyModifier = (QApplication::keyboardModifiers() & Qt::ShiftModifier) != 0;
+  const bool isNoPrintService = this->selectedPrintService == print_service_t::NONE;
+  const bool isRemotePrintService = this->selectedPrintService == print_service_t::PRINT_SERVICE;
+  const auto printService = PrintService::getPrintService(this->selectedServiceName.toStdString());
+  const bool noRemotePrintServiceSelected = isRemotePrintService && !printService;
+  if (isShiftKeyModifier || isNoPrintService || noRemotePrintServiceSelected) {
+    showDialog = true;
   }
 
-  return QDialog::exec();
+  const auto result = showDialog ? QDialog::exec() : QDialog::Accepted;
+
+  if (showDialog && result == QDialog::Accepted) {
+    S::printServiceAlwaysShowDialog.setValue(this->checkBoxAlwaysShowDialog->isChecked());
+    writeSettings();
+  }
+
+  return result;
 }
 
-print_service_t PrintInitDialog::getServiceType() const {
-  return this->selectedPrintService;
-}
+print_service_t PrintInitDialog::getServiceType() const { return this->selectedPrintService; }
 
-QString PrintInitDialog::getServiceName() const {
-  return this->selectedServiceName;
-}
+QString PrintInitDialog::getServiceName() const { return this->selectedServiceName; }
 
-FileFormat PrintInitDialog::getFileFormat() const {
-  return this->selectedFileFormat;
-}
+FileFormat PrintInitDialog::getFileFormat() const { return this->selectedFileFormat; }

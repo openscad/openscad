@@ -8,13 +8,17 @@
 #include <boost/optional.hpp>
 
 #include "core/Assignment.h"
-#include "core/Context.h"
+#include "core/Value.h"
+
+class EvaluationSession;
 
 struct Argument {
   boost::optional<std::string> name;
   Value value;
 
-  Argument(boost::optional<std::string> name, Value value) : name(std::move(name)), value(std::move(value)) {
+  Argument(boost::optional<std::string> name, Value value)
+    : name(std::move(name)), value(std::move(value))
+  {
   }
   Argument(Argument&& other) = default;
   Argument& operator=(Argument&& other) = default;
@@ -43,7 +47,7 @@ public:
   [[nodiscard]] Arguments clone() const;
 
   [[nodiscard]] EvaluationSession *session() const { return evaluation_session; }
-  [[nodiscard]] const std::string& documentRoot() const { return evaluation_session->documentRoot(); }
+  const std::string& documentRoot() const;
 
 private:
   EvaluationSession *evaluation_session;

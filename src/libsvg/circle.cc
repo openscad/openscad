@@ -32,8 +32,7 @@ namespace libsvg {
 
 const std::string circle::name("circle");
 
-void
-circle::set_attrs(attr_map_t& attrs, void *context)
+void circle::set_attrs(attr_map_t& attrs, void *context)
 {
   shape::set_attrs(attrs, context);
   this->x = parse_double(attrs["cx"]);
@@ -45,15 +44,11 @@ circle::set_attrs(attr_map_t& attrs, void *context)
   path_list.push_back(path);
 }
 
-const std::string
-circle::dump() const
+const std::string circle::dump() const
 {
   std::stringstream s;
-  s << get_name()
-    << ": x = " << this->x
-    << ": y = " << this->y
-    << ": r = " << this->r;
+  s << get_name() << ": x = " << this->x << ": y = " << this->y << ": r = " << this->r;
   return s.str();
 }
 
-} // namespace libsvg
+}  // namespace libsvg

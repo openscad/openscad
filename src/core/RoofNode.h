@@ -7,6 +7,7 @@
 #include <string>
 #include <utility>
 
+#include "core/ModuleInstantiation.h"
 #include "core/node.h"
 
 class RoofNode : public AbstractPolyNode
@@ -23,10 +24,11 @@ public:
 
   class roof_exception : public std::exception
   {
-public:
+  public:
     roof_exception(std::string message) : m(std::move(message)) {}
-    std::string message() {return m;}
-private:
+    std::string message() { return m; }
+
+  private:
     std::string m;
   };
 };

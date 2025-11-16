@@ -1,3 +1,5 @@
+#!/bin/sh
+
 #
 # This script contains functions for building various libraries
 # used by OpenSCAD.

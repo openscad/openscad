@@ -19,7 +19,6 @@ namespace PMP = CGAL::Polygon_mesh_processing;
 template <typename TriangleMesh>
 class TriangleMeshEdits
 {
-
 private:
   using GT = boost::graph_traits<TriangleMesh>;
   using face_descriptor = typename GT::face_descriptor;
@@ -33,34 +32,26 @@ private:
   std::unordered_map<vertex_descriptor, vertex_descriptor> vertexReplacements;
 
 public:
-
-  bool isEmpty() {
-    return facesToRemove.empty() &&
-           verticesToRemove.empty() &&
-           facesToAdd.empty() &&
+  bool isEmpty()
+  {
+    return facesToRemove.empty() && verticesToRemove.empty() && facesToAdd.empty() &&
            vertexReplacements.empty();
   }
 
-  void removeFace(const face_descriptor& f) {
-    facesToRemove.insert(f);
-  }
+  void removeFace(const face_descriptor& f) { facesToRemove.insert(f); }
 
-  void removeVertex(const vertex_descriptor& v) {
-    verticesToRemove.insert(v);
-  }
+  void removeVertex(const vertex_descriptor& v) { verticesToRemove.insert(v); }
 
-  void addFace(const std::vector<vertex_descriptor>& vertices) {
-    facesToAdd.push_back(vertices);
-  }
+  void addFace(const std::vector<vertex_descriptor>& vertices) { facesToAdd.push_back(vertices); }
 
-  void replaceVertex(const vertex_descriptor& original, const vertex_descriptor& replacement) {
+  void replaceVertex(const vertex_descriptor& original, const vertex_descriptor& replacement)
+  {
     vertexReplacements[original] = replacement;
   }
 
-  static bool findCollapsibleVertices(
-    const std::vector<vertex_descriptor>& path,
-    const TriangleMesh& tm,
-    const std::function<void(size_t, vertex_descriptor)>& sinkFn) {
+  static bool findCollapsibleVertices(const std::vector<vertex_descriptor>& path, const TriangleMesh& tm,
+                                      const std::function<void(size_t, vertex_descriptor)>& sinkFn)
+  {
     if (path.size() <= 3) {
       return false;
     }
@@ -95,62 +86,64 @@ public:
     for (auto& vs : facesToAdd) edgesAdded += vs.size();
 
     auto projectedVertexCount = src.number_of_vertices() - verticesToRemove.size();
-    auto projectedHalfedgeCount = src.number_of_halfedges() + edgesAdded * 2; // This is crude
+    auto projectedHalfedgeCount = src.number_of_halfedges() + edgesAdded * 2;  // This is crude
     auto projectedFaceCount = src.number_of_faces() - facesToRemove.size() + facesToAdd.size();
     copy.reserve(copy.number_of_vertices() + projectedVertexCount,
                  copy.number_of_halfedges() + projectedHalfedgeCount,
                  copy.number_of_faces() + projectedFaceCount);
 
-    // TODO(ochafik): Speed up with a lookup vector : std::vector<vertex_descriptor> vertexMap(src.number_of_vertices());
+    // TODO(ochafik): Speed up with a lookup vector : std::vector<vertex_descriptor>
+    // vertexMap(src.number_of_vertices());
     std::unordered_map<vertex_descriptor, vertex_descriptor> vertexMap;
     vertexMap.reserve(projectedVertexCount);
 
     auto getDestinationVertex = [&](auto srcVertex) {
-        auto repIt = vertexReplacements.find(srcVertex);
-        if (repIt != vertexReplacements.end()) {
-          srcVertex = repIt->second;
-        }
-        auto it = vertexMap.find(srcVertex);
-        if (it == vertexMap.end()) {
-          auto v = copy.add_vertex(src.point(srcVertex));
-          vertexMap[srcVertex] = v;
-          return v;
-        }
-        return it->second;
-      };
+      auto repIt = vertexReplacements.find(srcVertex);
+      if (repIt != vertexReplacements.end()) {
+        srcVertex = repIt->second;
+      }
+      auto it = vertexMap.find(srcVertex);
+      if (it == vertexMap.end()) {
+        auto v = copy.add_vertex(src.point(srcVertex));
+        vertexMap[srcVertex] = v;
+        return v;
+      }
+      return it->second;
+    };
 
     std::vector<vertex_descriptor> polygon;
 
     auto addFace = [&](auto& polygon) {
-        auto face = copy.add_face(polygon);
-        if (face.is_valid()) {
-          if (polygon.size() > 3) {
-            PMP::triangulate_face(face, copy);
-          }
-          return true;
-        } else {
-          LOG(message_group::Warning, "Failed to add face with %1$lu vertices!", polygon.size());
-          return false;
+      auto face = copy.add_face(polygon);
+      if (face.is_valid()) {
+        if (polygon.size() > 3) {
+          PMP::triangulate_face(face, copy);
         }
-      };
+        return true;
+      } else {
+        LOG(message_group::Warning, "Failed to add face with %1$lu vertices!", polygon.size());
+        return false;
+      }
+    };
     auto copyFace = [&](auto& f) {
-        polygon.clear();
+      polygon.clear();
 
-        CGAL::Vertex_around_face_iterator<TriangleMesh> vit, vend;
-        for (boost::tie(vit, vend) = vertices_around_face(src.halfedge(f), src); vit != vend; ++vit) {
-          auto v = *vit;
-          if (verticesToRemove.find(v) != verticesToRemove.end()) {
-            continue;
-          }
-          polygon.push_back(getDestinationVertex(v));
+      CGAL::Vertex_around_face_iterator<TriangleMesh> vit, vend;
+      for (boost::tie(vit, vend) = vertices_around_face(src.halfedge(f), src); vit != vend; ++vit) {
+        auto v = *vit;
+        if (verticesToRemove.find(v) != verticesToRemove.end()) {
+          continue;
         }
-        if (polygon.size() < 3) {
-          LOG(message_group::Warning, "Attempted to remove too many vertices around this copied face, remesh aborted!");
-          return false;
-        }
+        polygon.push_back(getDestinationVertex(v));
+      }
+      if (polygon.size() < 3) {
+        LOG(message_group::Warning,
+            "Attempted to remove too many vertices around this copied face, remesh aborted!");
+        return false;
+      }
 
-        return addFace(polygon);
-      };
+      return addFace(polygon);
+    };
 
     for (auto f : src.faces()) {
       if (src.is_removed(f)) {
@@ -174,7 +167,8 @@ public:
         polygon.push_back(getDestinationVertex(v));
       }
       if (polygon.size() < 3) {
-        LOG(message_group::Warning, "Attempted to remove too many vertices around this added face, remesh aborted!");
+        LOG(message_group::Warning,
+            "Attempted to remove too many vertices around this added face, remesh aborted!");
         return false;
       }
       if (!addFace(polygon)) {
@@ -197,4 +191,4 @@ public:
   }
 };
 
-} // namespace CGALUtils
+}  // namespace CGALUtils

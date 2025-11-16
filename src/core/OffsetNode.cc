@@ -26,9 +26,9 @@
 
 #include "core/OffsetNode.h"
 
+#include "core/Children.h"
 #include "core/module.h"
 #include "core/ModuleInstantiation.h"
-#include "core/Children.h"
 #include "core/Parameters.h"
 #include "core/Builtins.h"
 
@@ -38,13 +38,15 @@
 #include <memory>
 #include <sstream>
 #include <boost/assign/std/vector.hpp>
-using namespace boost::assign; // bring 'operator+=()' into scope
+using namespace boost::assign;  // bring 'operator+=()' into scope
 
-static std::shared_ptr<AbstractNode> builtin_offset(const ModuleInstantiation *inst, Arguments arguments, const Children& children)
+static std::shared_ptr<AbstractNode> builtin_offset(const ModuleInstantiation *inst, Arguments arguments,
+                                                    const Children& children)
 {
   auto node = std::make_shared<OffsetNode>(inst);
 
-  Parameters parameters = Parameters::parse(std::move(arguments), inst->location(), {"r"}, {"delta", "chamfer"});
+  Parameters parameters =
+    Parameters::parse(std::move(arguments), inst->location(), {"r"}, {"delta", "chamfer"});
 
   node->fn = parameters["$fn"].toDouble();
   node->fs = parameters["$fs"].toDouble();
@@ -56,6 +58,10 @@ static std::shared_ptr<AbstractNode> builtin_offset(const ModuleInstantiation *i
   node->chamfer = false;
   node->join_type = Clipper2Lib::JoinType::Round;
   if (parameters["r"].isDefinedAs(Value::Type::NUMBER)) {
+    if (parameters["delta"].isDefinedAs(Value::Type::NUMBER)) {
+      LOG(message_group::Warning, inst->location(), parameters.documentRoot(),
+          "Ignoring %1$s argument as %2$s is defined too.", quoteVar("delta"), quoteVar("r"));
+    }
     node->delta = parameters["r"].toDouble();
   } else if (parameters["delta"].isDefinedAs(Value::Type::NUMBER)) {
     node->delta = parameters["delta"].toDouble();
@@ -80,9 +86,7 @@ std::string OffsetNode::toString() const
   if (!isRadius) {
     stream << ", chamfer = " << (this->chamfer ? "true" : "false");
   }
-  stream << ", $fn = " << this->fn
-         << ", $fa = " << this->fa
-         << ", $fs = " << this->fs << ")";
+  stream << ", $fn = " << this->fn << ", $fa = " << this->fa << ", $fs = " << this->fs << ")";
 
   return stream.str();
 }
@@ -90,9 +94,9 @@ std::string OffsetNode::toString() const
 void register_builtin_offset()
 {
   Builtins::init("offset", new BuiltinModule(builtin_offset),
-  {
-    "offset(r = number)",
-    "offset(delta = number)",
-    "offset(delta = number, chamfer = false)",
-  });
+                 {
+                   "offset(r = number)",
+                   "offset(delta = number)",
+                   "offset(delta = number, chamfer = false)",
+                 });
 }

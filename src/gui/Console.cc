@@ -49,9 +49,9 @@
 Console::Console(QWidget *parent) : QPlainTextEdit(parent)
 {
   setupUi(this);
-  connect(this->actionClear, SIGNAL(triggered()), this, SLOT(actionClearConsole_triggered()));
-  connect(this->actionSaveAs, SIGNAL(triggered()), this, SLOT(actionSaveAs_triggered()));
-  connect(this, SIGNAL(linkActivated(QString)), this, SLOT(hyperlinkClicked(const QString&)));
+  connect(this->actionClear, &QAction::triggered, this, &Console::actionClearConsole_triggered);
+  connect(this->actionSaveAs, &QAction::triggered, this, &Console::actionSaveAs_triggered);
+  connect(this, &Console::linkActivated, this, &Console::hyperlinkClicked);
   this->setUndoRedoEnabled(false);
   this->appendCursor = this->textCursor();
 }
@@ -75,20 +75,17 @@ void Console::addMessage(const Message& msg)
   // But if no link, and matching colors, then concat message strings with newline in between.
   // This results in less calls to insertText in Console::update(), and much better performance.
   if (!this->msgBuffer.empty() && msg.loc.isNone() && this->msgBuffer.back().link.isEmpty() &&
-      (getGroupColor(msg.group) == getGroupColor(this->msgBuffer.back().group)) ) {
+      (getGroupColor(msg.group) == getGroupColor(this->msgBuffer.back().group))) {
     auto& lastmsg = this->msgBuffer.back().message;
     lastmsg += QChar('\n');
     lastmsg += QString::fromStdString(msg.str());
   } else {
     this->msgBuffer.push_back(
-    {
-      QString::fromStdString(msg.str()),
-      (getGroupTextPlain(msg.group) || msg.loc.isNone()) ?
-      QString() :
-      QString("%1,%2").arg(msg.loc.firstLine()).arg(QString::fromStdString(msg.loc.fileName())),
-      msg.group
-    }
-      );
+      {QString::fromStdString(msg.str()),
+       (getGroupTextPlain(msg.group) || msg.loc.isNone())
+         ? QString()
+         : QString("%1,%2").arg(msg.loc.firstLine()).arg(QString::fromStdString(msg.loc.fileName())),
+       msg.group});
   }
 }
 
@@ -100,8 +97,15 @@ void Console::addHtml(const QString& html)
   this->setTextCursor(this->appendCursor);
 }
 
-void Console::setFont(const QString& fontFamily, uint ptSize) {
-  this->document()->setDefaultFont(QFont(fontFamily, ptSize));
+void Console::setFont(const QString& fontFamily, uint ptSize)
+{
+  const auto stylesheet = QString(R"(
+    QPlainTextEdit {
+        font-family: '%1';
+        font-size: %2pt;
+    }
+  )");
+  this->setStyleSheet(stylesheet.arg(fontFamily, QString::number(ptSize)));
 }
 
 void Console::update()
@@ -110,7 +114,8 @@ void Console::update()
   this->setMaximumBlockCount(0);
   for (const auto& line : this->msgBuffer) {
     QTextCharFormat charFormat;
-    if (line.group != message_group::NONE && line.group != message_group::Echo) charFormat.setForeground(QBrush(QColor("#000000")));
+    if (line.group != message_group::NONE && line.group != message_group::Echo)
+      charFormat.setForeground(QBrush(QColor("#000000")));
     charFormat.setBackground(QBrush(QColor(getGroupColor(line.group).c_str())));
     if (!line.link.isEmpty()) {
       charFormat.setAnchor(true);
@@ -120,14 +125,14 @@ void Console::update()
     // TODO insert timestamp as tooltip? (see #3570)
     //   may have to get rid of concatenation feature of Console::addMessage,
     //   or just live with grouped messages using the same timestamp
-    //charFormat.setToolTip(timestr);
+    // charFormat.setToolTip(timestr);
 
     appendCursor.insertBlock();
     appendCursor.insertText(line.message, charFormat);
   }
   msgBuffer.clear();
   this->setTextCursor(appendCursor);
-  this->setMaximumBlockCount(Preferences::inst()->getValue("advanced/consoleMaxLines").toUInt());
+  this->setMaximumBlockCount(GlobalPreferences::inst()->getValue("advanced/consoleMaxLines").toUInt());
 }
 
 void Console::actionClearConsole_triggered()

@@ -21,5 +21,4 @@ private:
   NumberParameter *parameter;
   boost::optional<double> lastSent;
   boost::optional<double> lastApplied;
-
 };

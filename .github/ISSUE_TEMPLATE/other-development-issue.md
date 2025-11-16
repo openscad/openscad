@@ -14,3 +14,5 @@ Which environment is the issue about, e.g. Compiling with MSYS2 on Windows
 
 **Issue**
 Explain what the issue is, add code, logs, screenshots as needed
+
+<!-- If you want to assign this issue to yourself, write /assign-me on its own line -->

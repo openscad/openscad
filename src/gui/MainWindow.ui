@@ -85,6 +85,7 @@
             </property>
             <property name="font">
              <font>
+              <weight>75</weight>
               <bold>true</bold>
              </font>
             </property>
@@ -205,7 +206,7 @@
      <x>0</x>
      <y>0</y>
      <width>1354</width>
-     <height>22</height>
+     <height>24</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu_File">
@@ -241,6 +242,15 @@
      <addaction name="separator"/>
      <addaction name="fileActionExportImage"/>
     </widget>
+    <widget class="QMenu" name="menuPython">
+     <property name="title">
+      <string>Python</string>
+     </property>
+     <addaction name="fileActionPythonRevoke"/>
+     <addaction name="separator"/>
+     <addaction name="fileActionPythonSelectVenv"/>
+     <addaction name="fileActionPythonCreateVenv"/>
+    </widget>
     <addaction name="fileActionNew"/>
     <addaction name="fileActionOpen"/>
     <addaction name="menuOpenRecent"/>
@@ -249,7 +259,6 @@
     <addaction name="separator"/>
     <addaction name="fileActionNewWindow"/>
     <addaction name="fileActionOpenWindow"/>
-    <addaction name="fileActionRevoke"/>
     <addaction name="fileActionClose"/>
     <addaction name="separator"/>
     <addaction name="fileActionSave"/>
@@ -258,6 +267,8 @@
     <addaction name="fileActionSaveAll"/>
     <addaction name="separator"/>
     <addaction name="menuExport"/>
+    <addaction name="separator"/>
+    <addaction name="menuPython"/>
     <addaction name="separator"/>
     <addaction name="fileShowLibraryFolder"/>
     <addaction name="separator"/>
@@ -372,24 +383,11 @@
     <property name="title">
      <string>&amp;Window</string>
     </property>
-    <addaction name="windowActionSelectEditor"/>
-    <addaction name="windowActionSelectConsole"/>
-    <addaction name="windowActionSelectErrorLog"/>
-    <addaction name="windowActionSelectFontList"/>
-    <addaction name="windowActionSelectCustomizer"/>
-    <addaction name="windowActionSelectAnimate"/>
-    <addaction name="windowActionSelectViewportControl"/>
     <addaction name="separator"/>
     <addaction name="windowActionNextWindow"/>
     <addaction name="windowActionPreviousWindow"/>
     <addaction name="separator"/>
-    <addaction name="windowActionHideEditor"/>
-    <addaction name="windowActionHideConsole"/>
-    <addaction name="windowActionHideErrorLog"/>
-    <addaction name="windowActionHideCustomizer"/>
-    <addaction name="windowActionHideAnimate"/>
-    <addaction name="windowActionHideViewportControl"/>
-    <addaction name="windowActionHideFontList"/>
+    <addaction name="windowActionJumpTo"/>
    </widget>
    <addaction name="menu_File"/>
    <addaction name="menu_Edit"/>
@@ -399,12 +397,6 @@
    <addaction name="menuHelp"/>
   </widget>
   <widget class="QStatusBar" name="statusbar">
-   <property name="maximumSize">
-    <size>
-     <width>16777215</width>
-     <height>23</height>
-    </size>
-   </property>
   </widget>
   <widget class="Dock" name="editorDock">
    <attribute name="dockWidgetArea">
@@ -948,14 +940,6 @@
     <string>Ctrl+-</string>
    </property>
   </action>
-  <action name="windowActionHideEditor">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>Hide Editor</string>
-   </property>
-  </action>
   <action name="designActionReloadAndPreview">
    <property name="text">
     <string>&amp;Reload and Preview</string>
@@ -1001,6 +985,9 @@
    </property>
   </action>
   <action name="designActionMeasureDist">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="icon">
     <iconset theme="chokusen-measure-distance">
      <normaloff>.</normaloff>.</iconset>
@@ -1013,6 +1000,9 @@
    </property>
   </action>
   <action name="designActionMeasureAngle">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="icon">
     <iconset theme="chokusen-measure-angle">
      <normaloff>.</normaloff>.</iconset>
@@ -1051,9 +1041,6 @@
    </property>
    <property name="text">
     <string>Export as &amp;STL (binary)...</string>
-   </property>
-   <property name="shortcut">
-    <string>F7</string>
    </property>
   </action>
   <action name="fileActionExportAsciiSTL">
@@ -1300,14 +1287,6 @@
     <string>&amp;Orthogonal</string>
    </property>
   </action>
-  <action name="windowActionHideConsole">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>Hide Console</string>
-   </property>
-  </action>
   <action name="helpActionAbout">
    <property name="enabled">
     <bool>true</bool>
@@ -1348,9 +1327,12 @@
     <string>Export as &amp;DXF...</string>
    </property>
   </action>
-  <action name="fileActionRevoke">
+  <action name="fileActionPythonRevoke">
    <property name="text">
-    <string>Revoke trusted python Files</string>
+    <string>Revoke Trusted Python Files</string>
+   </property>
+   <property name="toolTip">
+    <string>Revoke Trusted Python Files</string>
    </property>
   </action>
   <action name="fileActionClose">
@@ -1594,17 +1576,6 @@
     <string>&amp;Cheat Sheet</string>
    </property>
   </action>
-  <action name="windowActionHideCustomizer">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="checked">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>Hide Customizer</string>
-   </property>
-  </action>
   <action name="fileActionExportPDF">
    <property name="icon">
     <iconset theme="chokusen-export-pdf">
@@ -1622,86 +1593,14 @@
     <string>Hide 3D View toolbar</string>
    </property>
   </action>
-  <action name="windowActionHideErrorLog">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="checked">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>Hide Error Log</string>
-   </property>
-   <property name="toolTip">
-    <string>Hide ErrorLog</string>
-   </property>
-  </action>
-  <action name="windowActionHideAnimate">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="checked">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>Hide Animation Toolbar/Window</string>
-   </property>
-   <property name="toolTip">
-    <string>Hide Animation Toolbar/Window</string>
-   </property>
-  </action>
-  <action name="windowActionHideViewportControl">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="checked">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>Hide Viewport-Control</string>
-   </property>
-   <property name="toolTip">
-    <string>Hide Viewport-Control</string>
-   </property>
-  </action>
-  <action name="windowActionSelectEditor">
-   <property name="text">
-    <string>&amp;Editor</string>
-   </property>
-  </action>
-  <action name="windowActionSelectConsole">
-   <property name="text">
-    <string>&amp;Console</string>
-   </property>
-  </action>
-  <action name="windowActionSelectCustomizer">
-   <property name="text">
-    <string>C&amp;ustomizer</string>
-   </property>
-  </action>
-  <action name="windowActionSelectErrorLog">
-   <property name="text">
-    <string>Error &amp;Log</string>
-   </property>
-  </action>
-  <action name="windowActionSelectAnimate">
-   <property name="text">
-    <string>&amp;Animate</string>
-   </property>
-  </action>
-  <action name="windowActionSelectViewportControl">
-   <property name="text">
-    <string>Viewport-Control</string>
-   </property>
-  </action>
   <action name="windowActionNextWindow">
    <property name="text">
-    <string>&amp;Next Window</string>
+    <string>&amp;Next Window	Ctrl+K</string>
    </property>
   </action>
   <action name="windowActionPreviousWindow">
    <property name="text">
-    <string>&amp;Previous Window</string>
+    <string>&amp;Previous Window	Ctrl+H</string>
    </property>
   </action>
   <action name="editActionInsertTemplate">
@@ -1717,20 +1616,22 @@
     <string>Fold/Unfoll All</string>
    </property>
   </action>
-  <action name="windowActionHideFontList">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="checked">
-    <bool>true</bool>
-   </property>
+  <action name="windowActionJumpTo">
    <property name="text">
-    <string>Hide Font List</string>
+    <string>Jump To ...</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+J</string>
    </property>
   </action>
-  <action name="windowActionSelectFontList">
+  <action name="fileActionPythonCreateVenv">
    <property name="text">
-    <string>Font List</string>
+    <string>Create Virtual Environment</string>
+   </property>
+  </action>
+  <action name="fileActionPythonSelectVenv">
+   <property name="text">
+    <string>Select Virtual Environment</string>
    </property>
   </action>
  </widget>

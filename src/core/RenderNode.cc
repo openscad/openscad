@@ -25,18 +25,20 @@
  */
 
 #include "core/RenderNode.h"
-#include "core/module.h"
-#include "core/ModuleInstantiation.h"
+
 #include "core/Builtins.h"
 #include "core/Children.h"
+#include "core/module.h"
+#include "core/ModuleInstantiation.h"
 #include "core/Parameters.h"
 
 #include <utility>
 #include <memory>
 #include <boost/assign/std/vector.hpp>
-using namespace boost::assign; // bring 'operator+=()' into scope
+using namespace boost::assign;  // bring 'operator+=()' into scope
 
-static std::shared_ptr<AbstractNode> builtin_render(const ModuleInstantiation *inst, Arguments arguments, const Children& children)
+static std::shared_ptr<AbstractNode> builtin_render(const ModuleInstantiation *inst, Arguments arguments,
+                                                    const Children& children)
 {
   auto node = std::make_shared<RenderNode>(inst);
 
@@ -48,15 +50,12 @@ static std::shared_ptr<AbstractNode> builtin_render(const ModuleInstantiation *i
   return children.instantiate(node);
 }
 
-std::string RenderNode::toString() const
-{
-  return STR(this->name(), "(convexity = ", convexity, ")");
-}
+std::string RenderNode::toString() const { return STR(this->name(), "(convexity = ", convexity, ")"); }
 
 void register_builtin_render()
 {
   Builtins::init("render", new BuiltinModule(builtin_render),
-  {
-    "render(convexity = 1)",
-  });
+                 {
+                   "render(convexity = 1)",
+                 });
 }

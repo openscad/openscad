@@ -12,6 +12,7 @@
 class FontListDialog : public QDialog, public Ui::FontListDialog
 {
   Q_OBJECT;
+
 public:
   FontListDialog();
 

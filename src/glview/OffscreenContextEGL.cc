@@ -15,10 +15,11 @@
 
 namespace {
 
-#define CASE_STR(value) case value: return #value;
-const char* eglGetErrorString(EGLint error)
+#define CASE_STR(value) \
+  case value: return #value;
+const char *eglGetErrorString(EGLint error)
 {
-  switch(error) {
+  switch (error) {
     CASE_STR(EGL_SUCCESS)
     CASE_STR(EGL_NOT_INITIALIZED)
     CASE_STR(EGL_BAD_ACCESS)
@@ -34,43 +35,47 @@ const char* eglGetErrorString(EGLint error)
     CASE_STR(EGL_BAD_NATIVE_PIXMAP)
     CASE_STR(EGL_BAD_NATIVE_WINDOW)
     CASE_STR(EGL_CONTEXT_LOST)
-    default: return "Unknown";
+  default: return "Unknown";
   }
 }
 #undef CASE_STR
 
-} // namespace
+}  // namespace
 
-class OffscreenContextEGL : public OffscreenContext {
-
+class OffscreenContextEGL : public OffscreenContext
+{
 public:
   EGLDisplay eglDisplay;
   EGLSurface eglSurface;
   EGLContext eglContext;
 
   OffscreenContextEGL(int width, int height) : OffscreenContext(width, height) {}
-  ~OffscreenContextEGL() {
+  ~OffscreenContextEGL()
+  {
     if (this->eglSurface) eglDestroySurface(this->eglDisplay, this->eglSurface);
     if (this->eglDisplay) eglTerminate(this->eglDisplay);
   }
 
-  std::string getInfo() const override {
+  std::string getInfo() const override
+  {
     std::ostringstream result;
 
     const char *eglVersion = eglQueryString(this->eglDisplay, EGL_VERSION);
 
     result << "GL context creator: EGL (new)\n"
-	   << "EGL version: " << eglVersion << "\n"
-	   << "PNG generator: lodepng\n";
+           << "EGL version: " << eglVersion << "\n"
+           << "PNG generator: lodepng\n";
 
     return result.str();
   }
 
-  bool makeCurrent() const override {
+  bool makeCurrent() const override
+  {
     return eglMakeCurrent(this->eglDisplay, this->eglSurface, this->eglSurface, this->eglContext);
   }
 
-  void findPlatformDisplay() {
+  void findPlatformDisplay()
+  {
     std::set<std::string> clientExtensions;
     std::string ext = eglQueryString(EGL_NO_DISPLAY, EGL_EXTENSIONS);
     std::istringstream iss(ext);
@@ -89,17 +94,16 @@ public:
       EGLint numDevices = 0;
       eglQueryDevicesEXT(1, &eglDevice, &numDevices);
       if (numDevices > 0) {
-	// FIXME: Attribs
+        // FIXME: Attribs
         this->eglDisplay = eglGetPlatformDisplayEXT(EGL_PLATFORM_DEVICE_EXT, eglDevice, nullptr);
       }
     }
   }
 
-  void createSurface(const EGLConfig& config,size_t width, size_t height) {
+  void createSurface(const EGLConfig& config, size_t width, size_t height)
+  {
     const EGLint pbufferAttribs[] = {
-      EGL_WIDTH, static_cast<EGLint>(width),
-      EGL_HEIGHT, static_cast<EGLint>(height),
-      EGL_NONE,
+      EGL_WIDTH, static_cast<EGLint>(width), EGL_HEIGHT, static_cast<EGLint>(height), EGL_NONE,
     };
     this->eglSurface = eglCreatePbufferSurface(this->eglDisplay, config, pbufferAttribs);
   }
@@ -110,8 +114,8 @@ public:
 // OpenGL compatibility major.minor
 // OpenGL ES major.minor
 std::shared_ptr<OffscreenContext> CreateOffscreenContextEGL(size_t width, size_t height,
-							    size_t majorGLVersion, size_t minorGLVersion,
-							    bool gles, bool compatibilityProfile)
+                                                            size_t majorGLVersion, size_t minorGLVersion,
+                                                            bool gles, bool compatibilityProfile)
 {
   auto ctx = std::make_shared<OffscreenContextEGL>(width, height);
 
@@ -121,7 +125,7 @@ std::shared_ptr<OffscreenContext> CreateOffscreenContextEGL(size_t width, size_t
     return nullptr;
   }
   PRINTDB("GLAD: Loaded EGL %d.%d on first load",
-	  GLAD_VERSION_MAJOR(initialEglVersion) % GLAD_VERSION_MINOR(initialEglVersion));
+          GLAD_VERSION_MAJOR(initialEglVersion) % GLAD_VERSION_MINOR(initialEglVersion));
 
   EGLint conformant;
   if (!gles) conformant = EGL_OPENGL_BIT;
@@ -129,18 +133,16 @@ std::shared_ptr<OffscreenContext> CreateOffscreenContextEGL(size_t width, size_t
   else if (majorGLVersion >= 2) conformant = EGL_OPENGL_ES2_BIT;
   else conformant = EGL_OPENGL_ES_BIT;
 
-  const EGLint configAttribs[] = {
-    EGL_SURFACE_TYPE, EGL_PBUFFER_BIT,
-    EGL_BLUE_SIZE, 8,
-    EGL_GREEN_SIZE, 8,
-    EGL_RED_SIZE, 8,
-    EGL_ALPHA_SIZE, 8,
-    EGL_DEPTH_SIZE, 24,
-    EGL_STENCIL_SIZE, 8,
-    EGL_CONFORMANT, conformant,
-    EGL_CONFIG_CAVEAT, EGL_NONE,
-    EGL_NONE
-  };
+  const EGLint configAttribs[] = {EGL_SURFACE_TYPE,  EGL_PBUFFER_BIT,
+                                  EGL_BLUE_SIZE,     8,
+                                  EGL_GREEN_SIZE,    8,
+                                  EGL_RED_SIZE,      8,
+                                  EGL_ALPHA_SIZE,    8,
+                                  EGL_DEPTH_SIZE,    24,
+                                  EGL_STENCIL_SIZE,  8,
+                                  EGL_CONFORMANT,    conformant,
+                                  EGL_CONFIG_CAVEAT, EGL_NONE,
+                                  EGL_NONE};
 
   // FIXME: Should we try default display first?
   // If so, we also have to try initializing it
@@ -160,14 +162,16 @@ std::shared_ptr<OffscreenContext> CreateOffscreenContextEGL(size_t width, size_t
     return nullptr;
   }
 
-  PRINTDB("Initialized EGL version: %d.%d (%s)", major % minor % eglQueryString(ctx->eglDisplay, EGL_VENDOR));
+  PRINTDB("Initialized EGL version: %d.%d (%s)",
+          major % minor % eglQueryString(ctx->eglDisplay, EGL_VENDOR));
 
   const auto eglVersion = gladLoaderLoadEGL(ctx->eglDisplay);
   if (!eglVersion) {
     LOG("gladLoaderLoadEGL(eglDisplay): Unable to reload EGL");
     return nullptr;
   }
-  PRINTDB("GLAD: Loaded EGL %d.%d after reload", GLAD_VERSION_MAJOR(eglVersion) %GLAD_VERSION_MINOR(eglVersion));
+  PRINTDB("GLAD: Loaded EGL %d.%d after reload",
+          GLAD_VERSION_MAJOR(eglVersion) % GLAD_VERSION_MINOR(eglVersion));
 
   EGLint numConfigs;
   EGLConfig config;
@@ -188,12 +192,15 @@ std::shared_ptr<OffscreenContext> CreateOffscreenContextEGL(size_t width, size_t
   }
 
   std::vector<EGLint> ctxattr = {
-    EGL_CONTEXT_MAJOR_VERSION, static_cast<EGLint>(majorGLVersion),
-    EGL_CONTEXT_MINOR_VERSION, static_cast<EGLint>(minorGLVersion),
+    EGL_CONTEXT_MAJOR_VERSION,
+    static_cast<EGLint>(majorGLVersion),
+    EGL_CONTEXT_MINOR_VERSION,
+    static_cast<EGLint>(minorGLVersion),
   };
   if (!gles) {
     ctxattr.push_back(EGL_CONTEXT_OPENGL_PROFILE_MASK);
-    ctxattr.push_back(compatibilityProfile ? EGL_CONTEXT_OPENGL_COMPATIBILITY_PROFILE_BIT : EGL_CONTEXT_OPENGL_CORE_PROFILE_BIT);
+    ctxattr.push_back(compatibilityProfile ? EGL_CONTEXT_OPENGL_COMPATIBILITY_PROFILE_BIT
+                                           : EGL_CONTEXT_OPENGL_CORE_PROFILE_BIT);
   }
   ctxattr.push_back(EGL_NONE);
   ctx->eglContext = eglCreateContext(ctx->eglDisplay, config, EGL_NO_CONTEXT, ctxattr.data());
