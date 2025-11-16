@@ -19,7 +19,7 @@ translate([-19,21,0]) linear_extrude(height=20, twist=30, slices=2, segments=0) 
 }
 translate([-1,20,0]) linear_extrude(height=20, twist=45, slices=10) square([10,10]);
 
-// Testing $fe
+// Testing $fe. The further the farthest vertex from the axis, the more slices.
 translate([20,25,0]) linear_extrude(height=20, twist=-90, $fe=0.1) square([10,10]);
 translate([40,20,0]) linear_extrude(height=20, twist=90, $fe=0.1) translate([-5,-5,0]) square([10,10]);
 
