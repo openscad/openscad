@@ -2,16 +2,18 @@
 #include "utils/printutils.h"
 #include <list>
 #include <cstddef>
-//#include "geometry/cgal/cgal.h"
-//#include "libtess2/Source/tess.h"
+// #include "geometry/cgal/cgal.h"
+// #include "libtess2/Source/tess.h"
 
 #include <CGAL/Constrained_Delaunay_triangulation_2.h>
 #if CGAL_VERSION_NR < CGAL_VERSION_NUMBER(5, 4, 0)
 #include <CGAL/Triangulation_2_projection_traits_3.h>
-using Projection = CGAL::Triangulation_2_filtered_projection_traits_3<K>;
+using Tess_kernel = CGAL::Epick;
+using Projection = CGAL::Triangulation_2_filtered_projection_traits_3<Tess_kernel>;
 #else
 #include <CGAL/Projection_traits_3.h>
-using Projection = CGAL::Filtered_projection_traits_3<K>;
+using Tess_kernel = CGAL::Epick;
+using Projection = CGAL::Filtered_projection_traits_3<Tess_kernel>;
 #endif
 #include <CGAL/Triangulation_face_base_with_info_2.h>
 
@@ -20,15 +22,13 @@ struct FaceInfo {
   bool in_domain() { return nesting_level % 2 == 1; }
 };
 
-using Fbb = CGAL::Triangulation_face_base_with_info_2<FaceInfo, K>;
-using Tds = CGAL::Triangulation_data_structure_2<CGAL::Triangulation_vertex_base_2<Projection>, CGAL::Constrained_triangulation_face_base_2<Projection, Fbb>>;
+using Fbb = CGAL::Triangulation_face_base_with_info_2<FaceInfo, Tess_kernel>;
+using Tds =
+  CGAL::Triangulation_data_structure_2<CGAL::Triangulation_vertex_base_2<Projection>,
+                                       CGAL::Constrained_triangulation_face_base_2<Projection, Fbb>>;
 using CDT = CGAL::Constrained_Delaunay_triangulation_2<Projection, Tds, CGAL::Exact_predicates_tag>;
 
-
-static void mark_domains(CDT& ct,
-                         CDT::Face_handle start,
-                         int index,
-                         std::list<CDT::Edge>& border)
+static void mark_domains(CDT& ct, CDT::Face_handle start, int index, std::list<CDT::Edge>& border)
 {
   if (start->info().nesting_level != -1) return;
   std::list<CDT::Face_handle> queue;
@@ -50,13 +50,12 @@ static void mark_domains(CDT& ct,
   }
 }
 
-
-//explore set of facets connected with non constrained edges,
-//and attribute to each such set a nesting level.
-//We start from facets incident to the infinite vertex, with a nesting
-//level of 0. Then we recursively consider the non-explored facets incident
-//to constrained edges bounding the former set and increase the nesting level by 1.
-//Facets in the domain are those with an odd nesting level.
+// explore set of facets connected with non constrained edges,
+// and attribute to each such set a nesting level.
+// We start from facets incident to the infinite vertex, with a nesting
+// level of 0. Then we recursively consider the non-explored facets incident
+// to constrained edges bounding the former set and increase the nesting level by 1.
+// Facets in the domain are those with an odd nesting level.
 static void mark_domains(CDT& cdt)
 {
   for (CDT::All_faces_iterator it = cdt.all_faces_begin(); it != cdt.all_faces_end(); ++it) {
@@ -85,9 +84,8 @@ namespace CGALUtils {
 
    The resulting triangles is added to the given triangles vector.
  */
-bool tessellatePolygonWithHoles(const PolyholeK& polygons,
-                                Polygons& triangles,
-                                const K::Vector_3 *normal)
+bool tessellatePolygonWithHoles(const std::vector<std::vector<CGAL::Point_3<CGAL::Epick>>>& polygons,
+                                Polygons& triangles, const CGAL::Vector_3<CGAL::Epick> *normal)
 {
   // No polygon. FIXME: Will this ever happen or can we assert here?
   if (polygons.empty()) return false;
@@ -95,7 +93,7 @@ bool tessellatePolygonWithHoles(const PolyholeK& polygons,
   // No hole
   if (polygons.size() == 1) return tessellatePolygon(polygons.front(), triangles, normal);
 
-  K::Vector_3 normalvec;
+  CGAL::Vector_3<CGAL::Epick> normalvec;
   if (normal) {
     normalvec = *normal;
   } else {
@@ -118,16 +116,15 @@ bool tessellatePolygonWithHoles(const PolyholeK& polygons,
     }
   }
 
-  //Mark facets that are inside the domain bounded by the polygon
+  // Mark facets that are inside the domain bounded by the polygon
   mark_domains(cdt);
 
   // Iterate over the resulting faces
-  for (CDT::Finite_faces_iterator fit = cdt.finite_faces_begin();
-       fit != cdt.finite_faces_end(); fit++) {
+  for (CDT::Finite_faces_iterator fit = cdt.finite_faces_begin(); fit != cdt.finite_faces_end(); fit++) {
     if (fit->info().in_domain()) {
       Polygon tri;
       for (int i = 0; i < 3; ++i) {
-        Vertex3K v = cdt.triangle(fit)[i];
+        CGAL::Point_3<CGAL::Epick> v = cdt.triangle(fit)[i];
         tri.push_back(Vector3d(v.x(), v.y(), v.z()));
       }
       triangles.push_back(tri);
@@ -137,9 +134,8 @@ bool tessellatePolygonWithHoles(const PolyholeK& polygons,
   return false;
 }
 
-bool tessellatePolygon(const PolygonK& polygon,
-                       Polygons& triangles,
-                       const K::Vector_3 *normal)
+bool tessellatePolygon(const std::vector<CGAL::Point_3<CGAL::Epick>>& polygon, Polygons& triangles,
+                       const CGAL::Vector_3<CGAL::Epick> *normal)
 {
   if (polygon.size() == 3) {
     PRINTD("input polygon has 3 points. shortcut tessellation.");
@@ -151,7 +147,7 @@ bool tessellatePolygon(const PolygonK& polygon,
     return false;
   }
 
-  K::Vector_3 normalvec;
+  CGAL::Vector_3<CGAL::Epick> normalvec;
   if (normal) {
     normalvec = *normal;
   } else {
@@ -172,7 +168,7 @@ bool tessellatePolygon(const PolygonK& polygon,
     cdt.insert_constraint(polygon[i], polygon[(i + 1) % polygon.size()]);
   }
 
-  //Mark facets that are inside the domain bounded by the polygon
+  // Mark facets that are inside the domain bounded by the polygon
   mark_domains(cdt);
 
   // Iterate over the resulting faces
@@ -181,7 +177,7 @@ bool tessellatePolygon(const PolygonK& polygon,
     if (fit->info().in_domain()) {
       Polygon tri;
       for (int i = 0; i < 3; ++i) {
-        K::Point_3 v = cdt.triangle(fit)[i];
+        Tess_kernel::Point_3 v = cdt.triangle(fit)[i];
         tri.push_back(Vector3d(v.x(), v.y(), v.z()));
       }
       triangles.push_back(tri);

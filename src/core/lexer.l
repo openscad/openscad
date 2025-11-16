@@ -42,17 +42,6 @@
 #include <filesystem>
 namespace fs = std::filesystem;
 
-//isatty for visual c++ and mingw-cross-env
-#if defined __WIN32__ && ! defined _MSC_VER
-#include "unistd.h"
-#endif
-#if defined __WIN32__ || defined _MSC_VER
-extern "C" int __cdecl _isatty(int _FileHandle);
-#define isatty _isatty
-#define strdup _strdup
-#define fileno _fileno
-#endif
-
 std::string stringcontents;
 int lexerget_lineno(void);
 extern const char *parser_input_buffer;
@@ -131,6 +120,9 @@ U3      [\xe0-\xef]
 U4      [\xf0-\xf4]
 UNICODE {U2}{U}|{U3}{U}{U}|{U4}{U}{U}{U}
 
+IDSTART [a-zA-Z_$]
+IDREST  [a-zA-Z0-9_]
+
 %%
 
 %{
@@ -176,18 +168,27 @@ use[ \t\r\n]*"<"        { BEGIN(cond_use); LOCATION_COUNT_LINES(parserlloc, yyte
 
 \"                      { BEGIN(cond_string); stringcontents.clear(); }
 <cond_string>{
+%{/* Termination */%}
+\"                      { BEGIN(INITIAL); parserlval.text = strdup(stringcontents.c_str()); return TOK_STRING; }
+<<EOF>>                 { parsererror("Unterminated string"); return TOK_ERROR; }
+
+%{/* Escape sequences */%}
 \\n                     { stringcontents += '\n'; }
 \\t                     { stringcontents += '\t'; }
 \\r                     { stringcontents += '\r'; }
 \\\\                    { stringcontents += '\\'; }
 \\\"                    { stringcontents += '"'; }
-{UNICODE}               { /* parser_error_pos -= strlen(lexertext) - 1; */ stringcontents += lexertext; }
 \\x[0-7]{H}             { unsigned long i = strtoul(lexertext + 2, NULL, 16); stringcontents += (i == 0 ? ' ' : (unsigned char)(i & 0xff)); }
 \\u{H}{4}|\\U{H}{6}     { const auto c = strtoul(lexertext + 2, NULL, 16); stringcontents += str_utf8_wrapper(c).toString(); }
-[^\\\n\"]               { stringcontents += lexertext; }
-[\n\r]                  { LOCATION_ADD_LINES(parserlloc, yyleng); }
-\"                      { BEGIN(INITIAL); parserlval.text = strdup(stringcontents.c_str()); return TOK_STRING; }
-<<EOF>>                 { parsererror("Unterminated string"); return TOK_ERROR; }
+\\                      { LOG(message_group::Warning, LOCATION(parserlloc), "", "Undefined escape sequence"); }
+
+%{/* Special characters */%}
+\n                      { LOCATION_ADD_LINES(parserlloc, yyleng); }
+
+%{/* Everything else */%}
+{UNICODE}               { /* parser_error_pos -= strlen(lexertext) - 1; */ stringcontents += lexertext; }
+.                       { stringcontents += lexertext; }
+
 }
 
 [\t ]                   { LOCATION_NEXT(parserlloc); }
@@ -253,7 +254,21 @@ use[ \t\r\n]*"<"        { BEGIN(cond_use); LOCATION_COUNT_LINES(parserlloc, yyte
 
 {UNICODE}+              { parser_error_pos -= strlen(yytext); return TOK_ERROR; }
 
-{D}+{E}? |
+0x{H}+                  {
+                            errno = 0;  // strtoxxx have crummy error semantics
+                            unsigned long long ull = strtoull(yytext + 2, NULL, 16);
+                            parserlval.number = ull;
+                            if (errno != 0) {
+                                LOG(message_group::Warning, LOCATION(parserlloc), "",
+                                    "Hexadecimal constant \"%1$s\" too large", yytext);
+                            } else if ((unsigned long long)parserlval.number != ull) {
+                                LOG(message_group::Warning, LOCATION(parserlloc), "",
+                                    "Integer \"%1$s\" cannot be represented precisely",
+                                    yytext);
+                            }
+                            return TOK_NUMBER;
+                        }
+{D}+{E} |
 {D}*\.{D}+{E}? |
 {D}+\.{D}*{E}?          {
                             try {
@@ -261,7 +276,28 @@ use[ \t\r\n]*"<"        { BEGIN(cond_use); LOCATION_COUNT_LINES(parserlloc, yyte
                                 return TOK_NUMBER;
                             } catch (boost::bad_lexical_cast&) {}
                         }
-"$"?[a-zA-Z0-9_]+       { parserlval.text = strdup(yytext); return TOK_ID; }
+{D}+                    {
+                            errno = 0;  // strtoxxx have crummy error semantics
+                            unsigned long long ull = strtoull(yytext, NULL, 10);
+                            parserlval.number = ull;
+                            if (errno != 0 || (unsigned long long)parserlval.number != ull) {
+                                LOG(message_group::Warning, LOCATION(parserlloc), "",
+                                    "Integer \"%1$s\" cannot be represented precisely",
+                                    yytext);
+                                try {
+                                    parserlval.number = boost::lexical_cast<double>(yytext);
+                                } catch (boost::bad_lexical_cast&) {}
+                            }
+                            return TOK_NUMBER;
+                        }
+
+{IDSTART}{IDREST}*      { parserlval.text = strdup(yytext); return TOK_ID; }
+{D}{IDREST}*            {
+                            LOG(message_group::Deprecated, LOCATION(parserlloc), "",
+                                "Variable names starting with digits (%1$s)"
+                                " will be removed in future releases.", quoteVar(yytext));
+                            parserlval.text = strdup(yytext); return TOK_ID;
+                        }
 
 "<="                    return LE;
 ">="                    return GE;
@@ -269,6 +305,8 @@ use[ \t\r\n]*"<"        { BEGIN(cond_use); LOCATION_COUNT_LINES(parserlloc, yyte
 "!="                    return NEQ;
 "&&"                    return AND;
 "||"                    return OR;
+"<<"                    return LSH;
+">>"                    return RSH;
 
 .                       { return yytext[0]; }
 

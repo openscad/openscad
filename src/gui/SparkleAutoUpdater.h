@@ -11,6 +11,7 @@
 class SparkleAutoUpdater : public AutoUpdater
 {
   Q_OBJECT;
+
 public:
   SparkleAutoUpdater();
   ~SparkleAutoUpdater();

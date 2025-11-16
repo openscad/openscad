@@ -18,7 +18,7 @@ Response NodeVisitor::traverse(const AbstractNode& node, const State& state)
     newstate.setParent(node.shared_from_this());
     for (const auto& chnode : node.getChildren()) {
       response = this->traverse(*chnode, newstate);
-      if (response == Response::AbortTraversal) return response; // Abort immediately
+      if (response == Response::AbortTraversal) return response;  // Abort immediately
     }
   }
 

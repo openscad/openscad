@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 #
 # Runs a command in the OpenSCAD Base Wasm Docker image for Emscripten builds.
 # (mounts $PWD as readwrite and sets up ccache)
@@ -38,6 +38,7 @@ echo "
 
 docker run --rm -it \
   --platform=linux/amd64 \
+  -w /src \
   -v "$PWD:/src:rw" \
   -v $CCACHE_DIR:/root/.ccache:rw \
   openscad-wasm-ccache:local \

@@ -22,32 +22,32 @@
 #include <sstream>
 #include "utils/printutils.h"
 #include "glview/system-gl.h"
-#include <GL/gl.h> // must be included after glew.h
-
+#include <GL/gl.h>  // must be included after glew.h
 
 namespace {
 
-class OffscreenContextWGL : public OffscreenContext {
+class OffscreenContextWGL : public OffscreenContext
+{
 public:
   OffscreenContextWGL(uint32_t width, uint32_t height) : OffscreenContext(width, height) {}
-  ~OffscreenContextWGL() {
+  ~OffscreenContextWGL()
+  {
     wglMakeCurrent(nullptr, nullptr);
     wglDeleteContext(this->openGLContext);
     ReleaseDC(this->window, this->dev_context);
   }
 
-  std::string getInfo() const override {
-  std::stringstream result;
-  // should probably get some info from WGL context here?
-  result << "GL context creator: WGL (old)\n"
-      	 << "PNG generator: lodepng\n";
+  std::string getInfo() const override
+  {
+    std::stringstream result;
+    // should probably get some info from WGL context here?
+    result << "GL context creator: WGL (old)\n"
+           << "PNG generator: lodepng\n";
 
-  return result.str();
-}
-
-  bool makeCurrent() const override {
-    return wglMakeCurrent(this->dev_context, this->openGLContext);
+    return result.str();
   }
+
+  bool makeCurrent() const override { return wglMakeCurrent(this->dev_context, this->openGLContext); }
 
   HWND window{nullptr};
   HDC dev_context{nullptr};
@@ -69,7 +69,7 @@ bool create_wgl_dummy_context(OffscreenContextWGL& ctx)
 
   HINSTANCE inst = GetModuleHandleW(0);
   WNDCLASSW wc;
-  ZeroMemory(&wc, sizeof(wc) );
+  ZeroMemory(&wc, sizeof(wc));
   wc.style = CS_OWNDC;
   wc.lpfnWndProc = WndProc;
   wc.hInstance = inst;
@@ -86,7 +86,7 @@ bool create_wgl_dummy_context(OffscreenContextWGL& ctx)
   }
 
   LPCWSTR lpWindowName = L"OpenSCAD";
-  DWORD dwStyle = WS_CAPTION | WS_POPUPWINDOW; // | WS_VISIBLE
+  DWORD dwStyle = WS_CAPTION | WS_POPUPWINDOW;  // | WS_VISIBLE
   int x = 0;
   int y = 0;
   int nWidth = ctx.width();
@@ -96,8 +96,8 @@ bool create_wgl_dummy_context(OffscreenContextWGL& ctx)
   HINSTANCE hInstance = inst;
   LPVOID lpParam = nullptr;
 
-  HWND window = CreateWindowW(lpClassName, lpWindowName, dwStyle, x, y,
-                              nWidth, nHeight, hWndParent, hMenu, hInstance, lpParam);
+  HWND window = CreateWindowW(lpClassName, lpWindowName, dwStyle, x, y, nWidth, nHeight, hWndParent,
+                              hMenu, hInstance, lpParam);
 
   if (window == nullptr) {
     std::cerr << "MS GDI - CreateWindow failed\n";
@@ -116,7 +116,7 @@ bool create_wgl_dummy_context(OffscreenContextWGL& ctx)
     return false;
   }
 
-  ZeroMemory(&pixformat, sizeof(pixformat) );
+  ZeroMemory(&pixformat, sizeof(pixformat));
   pixformat.nSize = sizeof(pixformat);
   pixformat.nVersion = 1;
   pixformat.dwFlags = PFD_DRAW_TO_WINDOW | PFD_SUPPORT_OPENGL | PFD_DOUBLEBUFFER;
@@ -161,9 +161,10 @@ bool create_wgl_dummy_context(OffscreenContextWGL& ctx)
 
 namespace offscreen_old {
 
-std::shared_ptr<OffscreenContext> CreateOffscreenContextWGL(
-  uint32_t width, uint32_t height, uint32_t majorGLVersion, 
-  uint32_t minorGLVersion, bool compatibilityProfile)   
+std::shared_ptr<OffscreenContext> CreateOffscreenContextWGL(uint32_t width, uint32_t height,
+                                                            uint32_t majorGLVersion,
+                                                            uint32_t minorGLVersion,
+                                                            bool compatibilityProfile)
 {
   auto ctx = std::make_shared<OffscreenContextWGL>(width, height);
 

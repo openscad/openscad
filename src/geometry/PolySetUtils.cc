@@ -9,6 +9,7 @@
 
 #include <boost/range/adaptor/reversed.hpp>
 
+#include "geometry/Geometry.h"
 #include "geometry/linalg.h"
 #include "geometry/PolySet.h"
 #include "geometry/PolySetBuilder.h"
@@ -27,14 +28,15 @@ namespace PolySetUtils {
 // Project all polygons (also back-facing) into a Polygon2d instance.
 // It is important to select all faces, since filtering by normal vector here
 // will trigger floating point incertainties and cause problems later.
-std::unique_ptr<Polygon2d> project(const PolySet& ps) {
+std::unique_ptr<Polygon2d> project(const PolySet& ps)
+{
   auto poly = std::make_unique<Polygon2d>();
 
   Vector3d pt;
   for (const auto& p : ps.indices) {
     Outline2d outline;
     for (const auto& v : p) {
-      pt=ps.vertices[v];
+      pt = ps.vertices[v];
       outline.vertices.emplace_back(pt[0], pt[1]);
     }
     poly->addOutline(outline);
@@ -67,6 +69,7 @@ std::unique_ptr<PolySet> tessellate_faces(const PolySet& polyset)
   auto result = std::make_unique<PolySet>(3, polyset.convexValue());
   result->setConvexity(polyset.getConvexity());
   result->setTriangular(true);
+  result->setManifold(polyset.isManifold());
   // ideally this should not require a copy...
   if (polyset.isTriangular()) {
     result->vertices = polyset.vertices;
@@ -111,8 +114,7 @@ std::unique_ptr<PolySet> tessellate_faces(const PolySet& polyset)
     if (has_colors) {
       polygon_color_indices.push_back(polyset.color_indices[i]);
     }
-    for (const auto& ind : currface)
-      used[ind] = true;
+    for (const auto& ind : currface) used[ind] = true;
   }
   // remove unreferenced vertices
   std::vector<Vector3f> verts;
@@ -128,8 +130,7 @@ std::unique_ptr<PolySet> tessellate_faces(const PolySet& polyset)
   if (verts.size() != polyset.vertices.size()) {
     // only remap indices when some vertices are really removed
     for (auto& face : polygons) {
-      for (auto& ind : face)
-        ind = indexMap[ind];
+      for (auto& ind : face) ind = indexMap[ind];
     }
   }
 
@@ -140,9 +141,8 @@ std::unique_ptr<PolySet> tessellate_faces(const PolySet& polyset)
     const auto& face = polygons[i];
     if (face.size() == 3) {
       // trivial case - triangles cannot be concave or have holes
-       result->indices.push_back({face[0],face[1],face[2]});
-       if (has_colors)
-         result->color_indices.push_back(polygon_color_indices[i]);
+      result->indices.push_back({face[0], face[1], face[2]});
+      if (has_colors) result->color_indices.push_back(polygon_color_indices[i]);
     }
     // Quads seem trivial, but can be concave, and can have degenerate cases.
     // So everything more complex than triangles goes into the general case.
@@ -152,9 +152,8 @@ std::unique_ptr<PolySet> tessellate_faces(const PolySet& polyset)
       auto err = GeometryUtils::tessellatePolygonWithHoles(verts, facesBuffer, triangles, nullptr);
       if (!err) {
         for (const auto& t : triangles) {
-          result->indices.push_back({t[0],t[1],t[2]});
-          if (has_colors)
-            result->color_indices.push_back(polygon_color_indices[i]);
+          result->indices.push_back({t[0], t[1], t[2]});
+          if (has_colors) result->color_indices.push_back(polygon_color_indices[i]);
         }
       }
     }
@@ -165,7 +164,8 @@ std::unique_ptr<PolySet> tessellate_faces(const PolySet& polyset)
   return result;
 }
 
-bool is_approximately_convex(const PolySet& ps) {
+bool is_approximately_convex(const PolySet& ps)
+{
 #ifdef ENABLE_CGAL
   return CGALUtils::is_approximately_convex(ps);
 #else
@@ -184,7 +184,7 @@ std::shared_ptr<const PolySet> getGeometryAsPolySet(const std::shared_ptr<const 
     return ps;
   }
 #ifdef ENABLE_CGAL
-  if (auto N = std::dynamic_pointer_cast<const CGAL_Nef_polyhedron>(geom)) {
+  if (auto N = std::dynamic_pointer_cast<const CGALNefGeometry>(geom)) {
     if (!N->isEmpty()) {
       if (auto ps = CGALUtils::createPolySetFromNefPolyhedron3(*N->p3)) {
         ps->setConvexity(N->getConvexity());
@@ -202,7 +202,6 @@ std::shared_ptr<const PolySet> getGeometryAsPolySet(const std::shared_ptr<const 
 #endif
   return nullptr;
 }
-
 
 std::string polySetToPolyhedronSource(const PolySet& ps)
 {
@@ -226,4 +225,4 @@ std::string polySetToPolyhedronSource(const PolySet& ps)
   return sstr.str();
 }
 
-} // namespace PolySetUtils
+}  // namespace PolySetUtils

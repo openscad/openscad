@@ -20,9 +20,7 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/format.hpp>
 
-#include "utils/printutils.h"
-
-double gl_version()
+static double gl_version()
 {
   std::string tmp((const char *)glGetString(GL_VERSION));
   std::vector<std::string> strs;
@@ -45,11 +43,11 @@ std::string gl_extensions_dump()
     GLint numexts = 0;
     glGetIntegerv(GL_NUM_EXTENSIONS, &numexts);
     for (int i = 0; i < numexts; ++i) {
-      tmp += (const char *) glGetStringi(GL_EXTENSIONS, i);
+      tmp += (const char *)glGetStringi(GL_EXTENSIONS, i);
       tmp += " ";
     }
   } else {
-    tmp = (const char *) glGetString(GL_EXTENSIONS);
+    tmp = (const char *)glGetString(GL_EXTENSIONS);
   }
   std::vector<std::string> extensions;
   boost::split(extensions, tmp, boost::is_any_of(" "));
@@ -82,14 +80,11 @@ std::string gl_dump()
   out << "\nOpenGL Version: " << (const char *)glGetString(GL_VERSION)
       << "\nGL Renderer: " << (const char *)glGetString(GL_RENDERER)
       << "\nGL Vendor: " << (const char *)glGetString(GL_VENDOR)
-      << boost::format("\nRGBA(%d%d%d%d), depth(%d), stencil(%d)") %
-    rbits % gbits % bbits % abits % dbits % sbits;
-  out << "\nGL_ARB_framebuffer_object: "
-      << (hasGLExtension(ARB_framebuffer_object) ? "yes" : "no")
-      << "\nGL_EXT_framebuffer_object: "
-      << (hasGLExtension(EXT_framebuffer_object) ? "yes" : "no")
-      << "\nGL_EXT_packed_depth_stencil: "
-      << (hasGLExtension(EXT_packed_depth_stencil) ? "yes" : "no")
+      << boost::format("\nRGBA(%d%d%d%d), depth(%d), stencil(%d)") % rbits % gbits % bbits % abits %
+           dbits % sbits;
+  out << "\nGL_ARB_framebuffer_object: " << (hasGLExtension(ARB_framebuffer_object) ? "yes" : "no")
+      << "\nGL_EXT_framebuffer_object: " << (hasGLExtension(EXT_framebuffer_object) ? "yes" : "no")
+      << "\nGL_EXT_packed_depth_stencil: " << (hasGLExtension(EXT_packed_depth_stencil) ? "yes" : "no")
       << "\n";
   return out.str();
 }

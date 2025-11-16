@@ -1,3 +1,5 @@
+#!/bin/sh
+
 mkdir icon.iconset
 sips -z 16 16     ../openscad-macos.png --out icon.iconset/icon_16x16.png
 sips -z 32 32     ../openscad-macos.png --out icon.iconset/icon_16x16@2x.png

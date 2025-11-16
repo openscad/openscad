@@ -24,7 +24,6 @@
  *
  */
 
-
 #include "core/customizer/Annotation.h"
 
 #include <ostream>

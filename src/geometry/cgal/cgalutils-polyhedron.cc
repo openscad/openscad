@@ -1,22 +1,22 @@
-#ifdef ENABLE_CGAL
-
+#include "geometry/cgal/cgal.h"
 #include "geometry/cgal/cgalutils.h"
-#include "geometry/linalg.h"
-#include "geometry/PolySet.h"
-#include "geometry/PolySetBuilder.h"
-#include "utils/printutils.h"
-#include "geometry/Grid.h"
 
 #include <algorithm>
 #include <iterator>
 #include <ostream>
 #include <memory>
-#include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
-
-#include <boost/range/adaptor/reversed.hpp>
-
 #include <cstddef>
 #include <vector>
+
+#include <boost/range/adaptor/reversed.hpp>
+#include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
+#include <CGAL/boost/graph/convert_nef_polyhedron_to_polygon_mesh.h>
+
+#include "geometry/linalg.h"
+#include "geometry/PolySet.h"
+#include "geometry/PolySetBuilder.h"
+#include "utils/printutils.h"
+#include "geometry/Grid.h"
 
 #undef GEN_SURFACE_DEBUG
 namespace /* anonymous */ {
@@ -26,11 +26,12 @@ class CGAL_Build_PolySet : public CGAL::Modifier_base<typename Polyhedron::Halfe
 {
   using HDS = typename Polyhedron::HalfedgeDS;
   using CGAL_Polybuilder = CGAL::Polyhedron_incremental_builder_3<typename Polyhedron::HalfedgeDS>;
+
 public:
   using CGALPoint = typename CGAL_Polybuilder::Point_3;
 
   const PolySet& ps;
-  CGAL_Build_PolySet(const PolySet& ps) : ps(ps) { }
+  CGAL_Build_PolySet(const PolySet& ps) : ps(ps) {}
 
 /*
    Using Grid here is important for performance reasons. See following model.
@@ -46,8 +47,9 @@ public:
    rotate([0,90,0]) cylinder($fn = 8, h = 1, r = 8.36, center = true);
    }
  */
-#if 1 // Use Grid
-  void operator()(HDS& hds) override {
+#if 1  // Use Grid
+  void operator()(HDS& hds) override
+  {
     CGAL_Polybuilder B(hds, true);
 
     Grid3d<int> grid(GRID_FINE);
@@ -60,7 +62,7 @@ public:
       indices.back().reserve(p.size());
       for (auto ind : boost::adaptors::reverse(p)) {
         // align v to the grid; the CGALPoint will receive the aligned vertex
-	Vector3d v=ps.vertices[ind];
+        Vector3d v = ps.vertices[ind];
         size_t idx = grid.align(v);
         if (idx == vertices.size()) {
           CGALPoint p(v[0], v[1], v[2]);
@@ -87,7 +89,7 @@ public:
       // Polyhedron_incremental_builder_3::test_facet() which fails to detect this
       auto last = std::unique(pindices.begin(), pindices.end());
       std::advance(last, -1);
-      if (*last != pindices.front()) last++; // In case the first & last are equal
+      if (*last != pindices.front()) last++;  // In case the first & last are equal
       pindices.erase(last, pindices.end());
       if (pindices.size() >= 3 && B.test_facet(pindices.begin(), pindices.end())) {
         B.add_facet(pindices.begin(), pindices.end());
@@ -116,7 +118,7 @@ public:
     printf("]);\n");
 #endif
   }
-#else // Don't use Grid
+#else  // Don't use Grid
   void operator()(HDS& hds)
   {
     CGAL_Polybuilder B(hds, true);
@@ -134,7 +136,7 @@ public:
       if (pidx++ > 0) printf(",");
 #endif
       indices.clear();
-      for (const auto& v: boost::adaptors::reverse(p)) {
+      for (const auto& v : boost::adaptors::reverse(p)) {
         size_t s = vertices.size();
         size_t idx = vertices.lookup(v);
         // If we added a vertex, also add it to the CGAL builder
@@ -180,12 +182,12 @@ public:
     printf("]);\n");
 #endif
   }
-#endif // if 1
+#endif  // if 1
 };
 
 template <class InputKernel, class OutputKernel>
-struct Copy_polyhedron_to : public CGAL::Modifier_base<typename CGAL::Polyhedron_3<OutputKernel>::HalfedgeDS>
-{
+struct Copy_polyhedron_to
+  : public CGAL::Modifier_base<typename CGAL::Polyhedron_3<OutputKernel>::HalfedgeDS> {
   using Polyhedron_output = CGAL::Polyhedron_3<OutputKernel>;
   using Polyhedron_input = CGAL::Polyhedron_3<InputKernel>;
 
@@ -201,16 +203,13 @@ struct Copy_polyhedron_to : public CGAL::Modifier_base<typename CGAL::Polyhedron
     using Facet_const_iterator = typename Polyhedron_input::Facet_const_iterator;
     using HFCC = typename Polyhedron_input::Halfedge_around_facet_const_circulator;
 
-    builder.begin_surface(in_poly.size_of_vertices(),
-                          in_poly.size_of_facets(),
+    builder.begin_surface(in_poly.size_of_vertices(), in_poly.size_of_facets(),
                           in_poly.size_of_halfedges());
 
     auto converter = CGALUtils::getCartesianConverter<InputKernel, OutputKernel>();
-    for (Vertex_const_iterator
-         vi = in_poly.vertices_begin(), end = in_poly.vertices_end();
-         vi != end; ++vi) {
-      typename Polyhedron_output::Point_3 p(converter(vi->point().x()),
-                                            converter(vi->point().y()),
+    for (Vertex_const_iterator vi = in_poly.vertices_begin(), end = in_poly.vertices_end(); vi != end;
+         ++vi) {
+      typename Polyhedron_output::Point_3 p(converter(vi->point().x()), converter(vi->point().y()),
                                             converter(vi->point().z()));
       builder.add_vertex(p);
     }
@@ -218,9 +217,7 @@ struct Copy_polyhedron_to : public CGAL::Modifier_base<typename CGAL::Polyhedron
     using Index = CGAL::Inverse_index<Vertex_const_iterator>;
     Index index(in_poly.vertices_begin(), in_poly.vertices_end());
 
-    for (Facet_const_iterator
-         fi = in_poly.facets_begin(), end = in_poly.facets_end();
-         fi != end; ++fi) {
+    for (Facet_const_iterator fi = in_poly.facets_begin(), end = in_poly.facets_end(); fi != end; ++fi) {
       HFCC hc = fi->facet_begin();
       HFCC hc_end = hc;
       //     std::size_t n = circulator_size(hc);
@@ -233,39 +230,107 @@ struct Copy_polyhedron_to : public CGAL::Modifier_base<typename CGAL::Polyhedron
       builder.end_facet();
     }
     builder.end_surface();
-  } // end operator()(..)
+  }  // end operator()(..)
 private:
   const Polyhedron_input& in_poly;
-};   // end Copy_polyhedron_to<>
+};  // end Copy_polyhedron_to<>
 
-} // namespace
+}  // namespace
 
 namespace CGALUtils {
 
 template <class InputKernel, class OutputKernel>
-void copyPolyhedron(const CGAL::Polyhedron_3<InputKernel>& poly_a, CGAL::Polyhedron_3<OutputKernel>& poly_b)
+void copyPolyhedron(const CGAL::Polyhedron_3<InputKernel>& poly_a,
+                    CGAL::Polyhedron_3<OutputKernel>& poly_b)
 {
   // Copy is also used in "append" cases.
-  poly_b.reserve(
-    poly_b.size_of_vertices() + poly_a.size_of_vertices(),
-    poly_b.size_of_halfedges() + poly_a.size_of_halfedges(),
-    poly_b.size_of_facets() + poly_a.size_of_facets());
+  poly_b.reserve(poly_b.size_of_vertices() + poly_a.size_of_vertices(),
+                 poly_b.size_of_halfedges() + poly_a.size_of_halfedges(),
+                 poly_b.size_of_facets() + poly_a.size_of_facets());
 
   Copy_polyhedron_to<InputKernel, OutputKernel> modifier(poly_a);
   poly_b.delegate(modifier);
 }
 
-template void copyPolyhedron<CGAL::Epick, CGAL_Kernel3>(const CGAL::Polyhedron_3<CGAL::Epick>&, CGAL_Polyhedron&);
-template void copyPolyhedron<CGAL_Kernel3, CGAL::Epick>(const CGAL_Polyhedron&, CGAL::Polyhedron_3<CGAL::Epick>&);
+template void copyPolyhedron<CGAL::Epick, CGAL_Kernel3>(const CGAL::Polyhedron_3<CGAL::Epick>&,
+                                                        CGAL_Polyhedron&);
+template void copyPolyhedron<CGAL_Kernel3, CGAL::Epick>(const CGAL_Polyhedron&,
+                                                        CGAL::Polyhedron_3<CGAL::Epick>&);
 
 template <typename K>
-void convertNefToPolyhedron(
-  const CGAL::Nef_polyhedron_3<K>& nef, CGAL::Polyhedron_3<K>& polyhedron)
+void convertNefToPolyhedron(const CGAL::Nef_polyhedron_3<K>& nef, CGAL::Polyhedron_3<K>& polyhedron)
 {
   nef.convert_to_polyhedron(polyhedron);
 }
 
 template void convertNefToPolyhedron(const CGAL_Nef_polyhedron3& nef, CGAL_Polyhedron& polyhedron);
+
+template <typename SurfaceMesh>
+void convertNefToSurfaceMesh(const CGAL_Nef_polyhedron3& nef, SurfaceMesh& mesh)
+{
+  constexpr bool triangulate = false;
+  CGAL::convert_nef_polyhedron_to_polygon_mesh(nef, mesh, triangulate);
+}
+
+template <typename SurfaceMesh>
+CGAL_Nef_polyhedron3 convertSurfaceMeshToNef(const SurfaceMesh& inputMesh)
+{
+  const CGAL_Kernel3Mesh& mesh = [](const SurfaceMesh& inputMesh) {
+    if constexpr (std::is_same<SurfaceMesh, CGAL_Kernel3Mesh>::value) {
+      return inputMesh;
+    } else {
+      CGAL_Kernel3Mesh tempMesh;
+      copy_face_graph(inputMesh, tempMesh);
+      return tempMesh;
+    }
+  }(inputMesh);
+
+  // Note: The CGAL_Nef_polyhedron3 constructor may throw an exception if the input mesh is
+  // self-intersecting, e.g. if a very thin part of an object collapses into one
+  // floating point coordinate, but the vertices are still distinct, it's
+  // considered a self-intersection. This is valid in e.g. Manifold, but invalid
+  // in SurfaceMesh -> Nef.
+  // If this happens, we fall back to unioning all faces.
+  // Note: The alternative construction by union all faces can be extremely slow.
+  try {
+    return CGAL_Nef_polyhedron3(mesh);
+  } catch (const CGAL::Assertion_exception& e) {
+    LOG(message_group::Warning, "CGAL error in CGAL_Nef_polyhedron3(): %1$s. Attempting union...",
+        e.what());
+
+    CGAL::Nef_nary_union_3<CGAL_Nef_polyhedron3> nary_union;
+    int discarded_facets = 0;
+    for (const auto face : mesh.faces()) {
+      std::vector<CGAL::Point_3<CGAL_Kernel3>> vertices;
+      for (auto vd : CGAL::vertices_around_face(mesh.halfedge(face), mesh)) {
+        vertices.push_back(mesh.point(vd));
+      }
+
+      bool is_nef = false;
+      if (vertices.size() >= 1) {
+        CGAL_Nef_polyhedron3 nef(vertices.begin(), vertices.end());
+        if (!nef.is_empty()) {
+          nary_union.add_polyhedron(nef);
+          is_nef = true;
+        }
+      }
+      if (!is_nef) {
+        discarded_facets++;
+      }
+    }
+    if (discarded_facets > 0) {
+      LOG(message_group::Warning,
+          "CGALUtils::convertSurfaceMeshToNef: Discarded %1$d facets during Nef conversion.",
+          discarded_facets);
+    }
+    CGAL_Nef_polyhedron3 nef_union = nary_union.get_union();
+    CGAL::Mark_bounded_volumes<CGAL_Nef_polyhedron3> mbv(true);
+    nef_union.delegate(mbv);
+    return nef_union;
+  }
+}
+template CGAL_Nef_polyhedron3 convertSurfaceMeshToNef(const CGAL_Kernel3Mesh& mesh);
+template CGAL_Nef_polyhedron3 convertSurfaceMeshToNef(const CGAL_DoubleMesh& mesh);
 
 template <typename Polyhedron>
 bool createPolyhedronFromPolySet(const PolySet& ps, Polyhedron& p)
@@ -283,7 +348,6 @@ bool createPolyhedronFromPolySet(const PolySet& ps, Polyhedron& p)
 
 template bool createPolyhedronFromPolySet(const PolySet& ps, CGAL_Polyhedron& p);
 template bool createPolyhedronFromPolySet(const PolySet& ps, CGAL::Polyhedron_3<CGAL::Epick>& p);
-template bool createPolyhedronFromPolySet(const PolySet& ps, CGAL::Polyhedron_3<CGAL::Epeck>& p);
 
 template <typename Polyhedron>
 std::unique_ptr<PolySet> createPolySetFromPolyhedron(const Polyhedron& p)
@@ -311,44 +375,43 @@ std::unique_ptr<PolySet> createPolySetFromPolyhedron(const Polyhedron& p)
 
 template std::unique_ptr<PolySet> createPolySetFromPolyhedron(const CGAL_Polyhedron& p);
 template std::unique_ptr<PolySet> createPolySetFromPolyhedron(const CGAL::Polyhedron_3<CGAL::Epick>& p);
-template std::unique_ptr<PolySet> createPolySetFromPolyhedron(const CGAL::Polyhedron_3<CGAL::Simple_cartesian<long>>& p);
 
 class Polyhedron_writer
 {
   std::ostream *out{nullptr};
   bool firstv{true};
   std::vector<int> indices;
+
 public:
   Polyhedron_writer() = default;
-  void write_header(std::ostream& stream,
-                    std::size_t /*vertices*/,
-                    std::size_t /*halfedges*/,
+  void write_header(std::ostream& stream, std::size_t /*vertices*/, std::size_t /*halfedges*/,
                     std::size_t /*facets*/
-                    /*bool normals = false*/) {
+                    /*bool normals = false*/)
+  {
     this->out = &stream;
     *out << "polyhedron(points=[";
     firstv = true;
   }
-  void write_footer() {
-    *out << "]);" << std::endl;
-  }
-  void write_vertex(const double& x, const double& y, const double& z) {
+  void write_footer() { *out << "]);" << std::endl; }
+  void write_vertex(const double& x, const double& y, const double& z)
+  {
     *out << (firstv ? "" : ",") << '[' << x << ',' << y << ',' << z << ']';
     firstv = false;
   }
-  void write_facet_header() {
+  void write_facet_header()
+  {
     *out << "], faces=[";
     firstv = true;
   }
-  void write_facet_begin(std::size_t /*no*/) {
+  void write_facet_begin(std::size_t /*no*/)
+  {
     *out << (firstv ? "" : ",") << '[';
     indices.clear();
     firstv = false;
   }
-  void write_facet_vertex_index(std::size_t index) {
-    indices.push_back(index);
-  }
-  void write_facet_end() {
+  void write_facet_vertex_index(std::size_t index) { indices.push_back(index); }
+  void write_facet_end()
+  {
     bool firsti = true;
     for (auto i : boost::adaptors::reverse(indices)) {
       *out << (firsti ? "" : ",") << i;
@@ -359,5 +422,3 @@ public:
 };
 
 }  // namespace CGALUtils
-
-#endif /* ENABLE_CGAL */

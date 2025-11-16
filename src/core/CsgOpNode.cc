@@ -26,10 +26,10 @@
 
 #include "core/CsgOpNode.h"
 
-#include "core/module.h"
-#include "core/ModuleInstantiation.h"
 #include "core/Builtins.h"
 #include "core/Children.h"
+#include "core/module.h"
+#include "core/ModuleInstantiation.h"
 #include "core/Parameters.h"
 
 #include <utility>
@@ -37,43 +37,36 @@
 #include <string>
 #include <cassert>
 
-static std::shared_ptr<AbstractNode> builtin_union(const ModuleInstantiation *inst, Arguments arguments, const Children& children)
+static std::shared_ptr<AbstractNode> builtin_union(const ModuleInstantiation *inst, Arguments arguments,
+                                                   const Children& children)
 {
   Parameters parameters = Parameters::parse(std::move(arguments), inst->location(), {});
   return children.instantiate(std::make_shared<CsgOpNode>(inst, OpenSCADOperator::UNION));
 }
 
-static std::shared_ptr<AbstractNode> builtin_difference(const ModuleInstantiation *inst, Arguments arguments, const Children& children)
+static std::shared_ptr<AbstractNode> builtin_difference(const ModuleInstantiation *inst,
+                                                        Arguments arguments, const Children& children)
 {
   Parameters parameters = Parameters::parse(std::move(arguments), inst->location(), {});
   return children.instantiate(std::make_shared<CsgOpNode>(inst, OpenSCADOperator::DIFFERENCE));
 }
 
-static std::shared_ptr<AbstractNode> builtin_intersection(const ModuleInstantiation *inst, Arguments arguments, const Children& children)
+static std::shared_ptr<AbstractNode> builtin_intersection(const ModuleInstantiation *inst,
+                                                          Arguments arguments, const Children& children)
 {
   Parameters parameters = Parameters::parse(std::move(arguments), inst->location(), {});
   return children.instantiate(std::make_shared<CsgOpNode>(inst, OpenSCADOperator::INTERSECTION));
 }
 
-std::string CsgOpNode::toString() const
-{
-  return this->name() + "()";
-}
+std::string CsgOpNode::toString() const { return this->name() + "()"; }
 
 std::string CsgOpNode::name() const
 {
   switch (this->type) {
-  case OpenSCADOperator::UNION:
-    return "union";
-    break;
-  case OpenSCADOperator::DIFFERENCE:
-    return "difference";
-    break;
-  case OpenSCADOperator::INTERSECTION:
-    return "intersection";
-    break;
-  default:
-    assert(false);
+  case OpenSCADOperator::UNION:        return "union"; break;
+  case OpenSCADOperator::DIFFERENCE:   return "difference"; break;
+  case OpenSCADOperator::INTERSECTION: return "intersection"; break;
+  default:                             assert(false);
   }
   return "internal_error";
 }
@@ -81,17 +74,17 @@ std::string CsgOpNode::name() const
 void register_builtin_csgops()
 {
   Builtins::init("union", new BuiltinModule(builtin_union),
-  {
-    "union()",
-  });
+                 {
+                   "union()",
+                 });
 
   Builtins::init("difference", new BuiltinModule(builtin_difference),
-  {
-    "difference()",
-  });
+                 {
+                   "difference()",
+                 });
 
   Builtins::init("intersection", new BuiltinModule(builtin_intersection),
-  {
-    "intersection()",
-  });
+                 {
+                   "intersection()",
+                 });
 }

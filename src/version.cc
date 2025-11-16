@@ -28,7 +28,7 @@
 
 #include <string>
 
-#define QUOTE(x__) # x__
+#define QUOTE(x__) #x__
 #define QUOTED(x__) QUOTE(x__)
 
 std::string openscad_shortversionnumber = QUOTED(OPENSCAD_SHORTVERSION);
@@ -36,8 +36,7 @@ std::string openscad_versionnumber = QUOTED(OPENSCAD_VERSION);
 
 std::string openscad_displayversionnumber =
 #ifdef OPENSCAD_COMMIT
-  QUOTED(OPENSCAD_VERSION)
-  " (git " QUOTED(OPENSCAD_COMMIT) ")";
+  QUOTED(OPENSCAD_VERSION) " (git " QUOTED(OPENSCAD_COMMIT) ")";
 #else
   QUOTED(OPENSCAD_SHORTVERSION);
 #endif

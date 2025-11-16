@@ -33,7 +33,7 @@
 #include <string>
 #include <vector>
 
-#include "gui/qtgettext.h" // IWYU pragma: keep
+#include "gui/qtgettext.h"  // IWYU pragma: keep
 #include "ui_ParameterWidget.h"
 #include "core/customizer/ParameterObject.h"
 #include "core/customizer/ParameterSet.h"
@@ -48,7 +48,7 @@ private:
   ParameterObjects parameters;
   std::map<ParameterObject *, std::vector<ParameterVirtualWidget *>> widgets;
 
-  QString invalidJsonFile; // set if a json file was read that could not be parsed
+  QString invalidJsonFile;  // set if a json file was read that could not be parsed
   QTimer autoPreviewTimer;
   bool modified = false;
 
@@ -64,7 +64,7 @@ public:
 
 public slots:
   void setModified(bool modified = true);
-  void setFontFamilySize(const QString &fontfamily, uint fontsize);
+  void setFontFamilySize(const QString& fontfamily, uint fontsize);
 
 protected slots:
   void autoPreview(bool immediate = false);
@@ -88,13 +88,13 @@ signals:
   void modificationChanged();
 
 protected:
-  struct ParameterGroup
-  {
+  struct ParameterGroup {
     QString name;
     std::vector<ParameterObject *> parameters;
   };
   std::vector<ParameterGroup> getParameterGroups();
-  ParameterVirtualWidget *createParameterWidget(ParameterObject *parameter, DescriptionStyle descriptionStyle);
+  ParameterVirtualWidget *createParameterWidget(ParameterObject *parameter,
+                                                DescriptionStyle descriptionStyle);
   QString getJsonFile(const QString& scadFile);
   void cleanSets();
 };

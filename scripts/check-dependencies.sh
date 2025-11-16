@@ -1,5 +1,4 @@
-#!/bin/bash
-
+#!/usr/bin/env bash
 # Parse the minimum versions of dependencies from README.md, and compare
 # with what is found on the system. Print results.
 #
@@ -684,4 +683,3 @@ main()
 checkargs $*
 main
 exit 0
-

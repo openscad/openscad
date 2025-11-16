@@ -33,8 +33,7 @@ namespace libsvg {
 
 const std::string polyline::name("polyline");
 
-void
-polyline::set_attrs(attr_map_t& attrs, void *context)
+void polyline::set_attrs(attr_map_t& attrs, void *context)
 {
   shape::set_attrs(attrs, context);
   this->points = attrs["points"];
@@ -60,4 +59,4 @@ polyline::set_attrs(attr_map_t& attrs, void *context)
   offset_path(path_list, path, get_stroke_width(), get_stroke_linecap());
 }
 
-} // namespace libsvg
+}  // namespace libsvg

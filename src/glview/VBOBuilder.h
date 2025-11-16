@@ -18,14 +18,13 @@
 #include "Feature.h"
 #include "glview/VertexState.h"
 
-enum ShaderAttribIndex {
-  BARYCENTRIC_ATTRIB
-};
+enum ShaderAttribIndex { BARYCENTRIC_ATTRIB };
 
 // Hash function for opengl vertex data.
 template <typename T>
 struct vertex_hash {
-  std::size_t operator()(T const& vertex) const {
+  std::size_t operator()(T const& vertex) const
+  {
     size_t seed = 0;
     for (size_t i = 0; i < vertex.size(); ++i) boost::hash_combine(seed, vertex.data()[i]);
     return seed;
@@ -73,19 +72,21 @@ public:
 // Helper function to finish recursion in addAttributeValues call
 void addAttributeValues(IAttributeData&);
 // Template helper function to load multiple attribute values in one call
-template <typename T, typename ... Args>
-void addAttributeValues(IAttributeData& attrib, T value, Args... values) {
+template <typename T, typename... Args>
+void addAttributeValues(IAttributeData& attrib, T value, Args... values)
+{
   attrib.addData(value);
-  addAttributeValues(attrib, values ...);
+  addAttributeValues(attrib, values...);
 }
 
 // Template helper function to load multiple copies of the same multiple attribute values in one call.
 // Used to add the same normal and colors to multiple triangle points.
-template <typename T, typename ... Args>
-void addAttributeValues(size_t copies, IAttributeData& attrib, T value, Args... values) {
+template <typename T, typename... Args>
+void addAttributeValues(size_t copies, IAttributeData& attrib, T value, Args... values)
+{
   if (copies > 0) {
-    addAttributeValues(attrib, value, values ...);
-    addAttributeValues(copies - 1, attrib, value, values ...);
+    addAttributeValues(attrib, value, values...);
+    addAttributeValues(copies - 1, attrib, value, values...);
   }
 }
 
@@ -115,7 +116,10 @@ public:
   inline void addData(GLdouble value) override { add_data((T)value); }
 
   // Return the template type element vector
-  [[nodiscard]] inline std::shared_ptr<std::vector<T>> getData() const { return std::shared_ptr<std::vector<T>>(data_); }
+  [[nodiscard]] inline std::shared_ptr<std::vector<T>> getData() const
+  {
+    return std::shared_ptr<std::vector<T>>(data_);
+  }
 
 private:
   // Internal method to add data of template type to element vector
@@ -160,16 +164,29 @@ public:
     color_data_ = attributes_.emplace_back(std::move(data));
   }
 
-  void clear() { for (auto& a : attributes_) a->clear(); }
+  void clear()
+  {
+    for (auto& a : attributes_) a->clear();
+  }
   // Remove the last n interleaved vertices
   void remove(size_t count = 1);
 
   // Return reference to internal IAttributeData vector
-  [[nodiscard]] inline const std::vector<std::shared_ptr<IAttributeData>>& attributes() const { return attributes_; }
+  [[nodiscard]] inline const std::vector<std::shared_ptr<IAttributeData>>& attributes() const
+  {
+    return attributes_;
+  }
   // Return reference to the last added IAttributeData. This is typically where elements data is stored.
-  [[nodiscard]] inline const std::shared_ptr<IAttributeData> attributeData() const { if (attributes_.size()) return attributes_.back(); else return nullptr; }
+  [[nodiscard]] inline const std::shared_ptr<IAttributeData> attributeData() const
+  {
+    if (attributes_.size()) return attributes_.back();
+    else return nullptr;
+  }
   // Return reference to position attribute data
-  [[nodiscard]] inline const std::shared_ptr<IAttributeData>& positionData() const { return position_data_; }
+  [[nodiscard]] inline const std::shared_ptr<IAttributeData>& positionData() const
+  {
+    return position_data_;
+  }
   // Return reference to normal attribute data
   [[nodiscard]] inline const std::shared_ptr<IAttributeData>& normalData() const { return normal_data_; }
   // Return reference to color data
@@ -190,7 +207,8 @@ public:
   [[nodiscard]] inline size_t stride() const { return stride_; }
 
   // Calculate the offset of interleaved attribute data based on VertexData index
-  [[nodiscard]] size_t interleavedOffset(size_t index) const {
+  [[nodiscard]] size_t interleavedOffset(size_t index) const
+  {
     if (index && attributes_.size()) {
       --index;
       return (attributes_[index]->sizeofAttribute() + interleavedOffset(index));
@@ -198,13 +216,21 @@ public:
     return 0;
   }
   // Calculate the total size of the buffer in bytes
-  [[nodiscard]] size_t sizeInBytes() const { size_t size = 0; for (const auto& data : attributes_) size += data->sizeInBytes(); return size; }
+  [[nodiscard]] size_t sizeInBytes() const
+  {
+    size_t size = 0;
+    for (const auto& data : attributes_) size += data->sizeInBytes();
+    return size;
+  }
   // Calculate the total number of items in buffer
-  [[nodiscard]] inline size_t size() const {
+  [[nodiscard]] inline size_t size() const
+  {
     if (stride_) {
       return sizeInBytes() / stride();
     } else {
-      size_t size = 0; for (const auto& data : attributes_) size += data->size(); return size;
+      size_t size = 0;
+      for (const auto& data : attributes_) size += data->size();
+      return size;
     }
   }
   [[nodiscard]] inline bool empty() const { return attributes_.empty(); }
@@ -237,7 +263,8 @@ public:
   {
   }
 
-  virtual ~VBOBuilder() {
+  virtual ~VBOBuilder()
+  {
     if (Feature::ExperimentalVxORenderersIndexing.is_enabled()) {
       GL_TRACE0("glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0)");
       GL_CHECKD(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0));
@@ -251,22 +278,23 @@ public:
   // Add common edge data vertex layout PC
   void addEdgeData();
   // Add elements data to VertexArray
-  void addElementsData(std::shared_ptr<IAttributeData> data) {
+  void addElementsData(std::shared_ptr<IAttributeData> data)
+  {
     elements_.addAttributeData(std::move(data));
   }
 
   // Clear all data from the VertexArray
-  void clear() { for (auto& v : vertices_) v->clear(); }
+  void clear()
+  {
+    for (auto& v : vertices_) v->clear();
+  }
 
   // Create a single vertex in the VertexArray
   // The method parameters provide a common interface to pass all data
   // necessary to create a complete vertex
-  void createVertex(const std::array<Vector3d, 3>& points,
-                    const std::array<Vector3d, 3>& normals,
-                    const Color4f& color,
-                    size_t active_point_index = 0, size_t primitive_index = 0,
-                    size_t shape_size = 0,
-                    bool outlines = false, bool mirror = false);
+  void createVertex(const std::array<Vector3d, 3>& points, const std::array<Vector3d, 3>& normals,
+                    const Color4f& color, size_t active_point_index = 0, size_t primitive_index = 0,
+                    size_t shape_size = 0, bool outlines = false, bool mirror = false);
 
   // Return reference to the VertexStates
   inline std::vector<std::shared_ptr<VertexState>>& states() { return vertex_state_container_.states(); }
@@ -279,7 +307,12 @@ public:
   // Return the number of VertexData in the array
   inline size_t size() const { return vertices_.size(); }
   // Calculate the total size of the buffer in bytes
-  inline size_t sizeInBytes() const { size_t size = 0; for (const auto& data : vertices_) size += data->sizeInBytes(); return size; }
+  inline size_t sizeInBytes() const
+  {
+    size_t size = 0;
+    for (const auto& data : vertices_) size += data->sizeInBytes();
+    return size;
+  }
   // Return the current internal write index
   inline size_t writeIndex() const { return write_index_; }
   // Set the internal write index to the surface index
@@ -287,15 +320,18 @@ public:
   // Set the internal write index to the edge index
   inline void writeEdge() { write_index_ = edge_index_; }
   // Return the total stride for all buffers
-  inline size_t stride() const {
-    size_t stride = 0; for (const auto& v : vertices_) {
+  inline size_t stride() const
+  {
+    size_t stride = 0;
+    for (const auto& v : vertices_) {
       stride += v->stride();
     }
     return stride;
   }
 
   // Calculate and return the offset in bytes of a given index
-  size_t indexOffset(size_t index) const {
+  size_t indexOffset(size_t index) const
+  {
     if (index) {
       --index;
       return vertices_[index]->sizeInBytes() + indexOffset(index);
@@ -304,9 +340,12 @@ public:
   }
 
   // Use VertexStateFactory to create a new VertexState object
-  std::shared_ptr<VertexState> createVertexState(GLenum draw_mode, size_t draw_size, GLenum draw_type, size_t draw_offset, size_t element_offset) const {
-    return factory_->createVertexState(draw_mode, draw_size, draw_type, draw_offset, element_offset, 
-                                       vertex_state_container_.verticesVBO(), vertex_state_container_.elementsVBO());
+  std::shared_ptr<VertexState> createVertexState(GLenum draw_mode, size_t draw_size, GLenum draw_type,
+                                                 size_t draw_offset, size_t element_offset) const
+  {
+    return factory_->createVertexState(draw_mode, draw_size, draw_type, draw_offset, element_offset,
+                                       vertex_state_container_.verticesVBO(),
+                                       vertex_state_container_.elementsVBO());
   }
 
   void allocateBuffers(size_t num_vertices);
@@ -332,13 +371,13 @@ public:
   size_t shader_attributes_index_{0};
   void addShaderData();
 
-  void add_barycentric_attribute(size_t active_point_index,
-                                 size_t primitive_index, size_t shape_size, bool outlines);
-  void create_triangle(const Color4f& color, const Vector3d& p0,
-                       const Vector3d& p1, const Vector3d& p2, size_t primitive_index,
-                       size_t shape_size, bool outlines, bool enable_barycentric, bool mirror);
-  void create_surface(const PolySet& ps, const Transform3d& m,
-                      const Color4f& default_color, bool enable_barycentric, bool force_default_color=false);
+  void add_barycentric_attribute(size_t active_point_index, size_t primitive_index, size_t shape_size,
+                                 bool outlines);
+  void create_triangle(const Color4f& color, const Vector3d& p0, const Vector3d& p1, const Vector3d& p2,
+                       size_t primitive_index, size_t shape_size, bool outlines, bool enable_barycentric,
+                       bool mirror);
+  void create_surface(const PolySet& ps, const Transform3d& m, const Color4f& default_color,
+                      bool enable_barycentric, bool force_default_color = false);
   void create_edges(const Polygon2d& polygon, const Transform3d& m, const Color4f& color);
   void create_polygons(const PolySet& ps, const Transform3d& m, const Color4f& color);
 

@@ -44,8 +44,8 @@ public:
 
   [[nodiscard]] bool is_container() const override { return true; }
 
-  [[nodiscard]] double get_dx() const { return dx; } // NOLINT(bugprone-virtual-near-miss)
-  [[nodiscard]] double get_dy() const { return dy; } // NOLINT(bugprone-virtual-near-miss)
+  [[nodiscard]] double get_dx() const { return dx; }  // NOLINT(bugprone-virtual-near-miss)
+  [[nodiscard]] double get_dy() const { return dy; }  // NOLINT(bugprone-virtual-near-miss)
   [[nodiscard]] double get_rotate() const { return rotate; }
   [[nodiscard]] double get_text_length() const { return text_length; }
   [[nodiscard]] const std::string& get_font_family() const { return font_family; }
@@ -60,4 +60,4 @@ public:
   [[nodiscard]] shape *clone() const override { return new tspan(*this); }
 };
 
-} // namespace libsvg
+}  // namespace libsvg

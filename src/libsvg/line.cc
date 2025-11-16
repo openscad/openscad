@@ -32,8 +32,7 @@ namespace libsvg {
 
 const std::string line::name("line");
 
-void
-line::set_attrs(attr_map_t& attrs, void *context)
+void line::set_attrs(attr_map_t& attrs, void *context)
 {
   shape::set_attrs(attrs, context);
   this->x = parse_double(attrs["x1"]);
@@ -47,16 +46,12 @@ line::set_attrs(attr_map_t& attrs, void *context)
   offset_path(path_list, path, get_stroke_width(), get_stroke_linecap());
 }
 
-const std::string
-line::dump() const
+const std::string line::dump() const
 {
   std::stringstream s;
-  s << get_name()
-    << ": x1 = " << this->x
-    << ": y1 = " << this->y
-    << ": x2 = " << this->x2
+  s << get_name() << ": x1 = " << this->x << ": y1 = " << this->y << ": x2 = " << this->x2
     << ": y2 = " << this->y2;
   return s.str();
 }
 
-} // namespace libsvg
+}  // namespace libsvg

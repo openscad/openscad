@@ -32,15 +32,18 @@ void ViewportControl::initGUI()
   for (auto spinDoubleBox : spinDoubleBoxes) {
     spinDoubleBox->setMinimum(-DBL_MAX);
     spinDoubleBox->setMaximum(+DBL_MAX);
-    connect(spinDoubleBox, SIGNAL(valueChanged(double)), this, SLOT(updateCamera()));
+    connect(spinDoubleBox, QOverload<double>::of(&QDoubleSpinBox::valueChanged), this,
+            &ViewportControl::updateCamera);
   }
 
   spinBoxWidth->setMinimum(1);
   spinBoxHeight->setMinimum(1);
   spinBoxWidth->setMaximum(8192);
   spinBoxHeight->setMaximum(8192);
-  connect(spinBoxWidth, SIGNAL(valueChanged(int)), this, SLOT(requestResize()));
-  connect(spinBoxHeight, SIGNAL(valueChanged(int)), this, SLOT(requestResize()));
+  connect(spinBoxWidth, QOverload<int>::of(&QSpinBox::valueChanged), this,
+          &ViewportControl::requestResize);
+  connect(spinBoxHeight, QOverload<int>::of(&QSpinBox::valueChanged), this,
+          &ViewportControl::requestResize);
 }
 
 void ViewportControl::setMainWindow(MainWindow *mainWindow)
@@ -78,17 +81,17 @@ void ViewportControl::resizeEvent(QResizeEvent *event)
         while ((child = gridLayout->takeAt(0)) != nullptr) {
           delete child;
         }
-        gridLayout->addWidget(labelTranslation , 0, 0, 1, 1);
-        gridLayout->addWidget(doubleSpinBox_tx , 1, 0, 1, 1);
-        gridLayout->addWidget(doubleSpinBox_ty , 2, 0, 1, 1);
-        gridLayout->addWidget(doubleSpinBox_tz , 3, 0, 1, 1);
-        gridLayout->addWidget(labelRotation    , 4, 0, 1, 1);
-        gridLayout->addWidget(doubleSpinBox_rx , 5, 0, 1, 1);
-        gridLayout->addWidget(doubleSpinBox_ry , 6, 0, 1, 1);
-        gridLayout->addWidget(doubleSpinBox_rz , 7, 0, 1, 1);
-        gridLayout->addWidget(labelDistance    , 8, 0, 1, 1);
-        gridLayout->addWidget(doubleSpinBox_d  , 9, 0, 1, 1);
-        gridLayout->addWidget(labelFOV         , 10, 0, 1, 1);
+        gridLayout->addWidget(labelTranslation, 0, 0, 1, 1);
+        gridLayout->addWidget(doubleSpinBox_tx, 1, 0, 1, 1);
+        gridLayout->addWidget(doubleSpinBox_ty, 2, 0, 1, 1);
+        gridLayout->addWidget(doubleSpinBox_tz, 3, 0, 1, 1);
+        gridLayout->addWidget(labelRotation, 4, 0, 1, 1);
+        gridLayout->addWidget(doubleSpinBox_rx, 5, 0, 1, 1);
+        gridLayout->addWidget(doubleSpinBox_ry, 6, 0, 1, 1);
+        gridLayout->addWidget(doubleSpinBox_rz, 7, 0, 1, 1);
+        gridLayout->addWidget(labelDistance, 8, 0, 1, 1);
+        gridLayout->addWidget(doubleSpinBox_d, 9, 0, 1, 1);
+        gridLayout->addWidget(labelFOV, 10, 0, 1, 1);
         gridLayout->addWidget(doubleSpinBox_fov, 11, 0, 1, 1);
         scrollAreaWidgetContents->layout()->invalidate();
       }
@@ -114,7 +117,7 @@ void ViewportControl::resizeEvent(QResizeEvent *event)
       } else {
         const auto width = scrollAreaWidgetContents->minimumSizeHint().width();
         if (scrollArea->minimumSize().width() != width) {
-          scrollArea->setMinimumSize(QSize(width,0));
+          scrollArea->setMinimumSize(QSize(width, 0));
         }
       }
     }
@@ -122,7 +125,8 @@ void ViewportControl::resizeEvent(QResizeEvent *event)
   QWidget::resizeEvent(event);
 }
 
-void ViewportControl::cameraChanged(){
+void ViewportControl::cameraChanged()
+{
   if (!inputMutex.try_lock()) return;
 
   const auto vpt = qglview->cam.getVpt();
@@ -142,28 +146,21 @@ void ViewportControl::cameraChanged(){
   inputMutex.unlock();
 }
 
-void ViewportControl::updateCamera(){
+void ViewportControl::updateCamera()
+{
   if (!inputMutex.try_lock()) return;
 
-  //viewport translation
-  qglview->cam.setVpt(
-    doubleSpinBox_tx->value(),
-    doubleSpinBox_ty->value(),
-    doubleSpinBox_tz->value()
-    );
+  // viewport translation
+  qglview->cam.setVpt(doubleSpinBox_tx->value(), doubleSpinBox_ty->value(), doubleSpinBox_tz->value());
 
-  //viewport rotation angles in degrees
-  qglview->cam.setVpr(
-    doubleSpinBox_rx->value(),
-    doubleSpinBox_ry->value(),
-    doubleSpinBox_rz->value()
-    );
+  // viewport rotation angles in degrees
+  qglview->cam.setVpr(doubleSpinBox_rx->value(), doubleSpinBox_ry->value(), doubleSpinBox_rz->value());
 
-  //viewport camera field of view
+  // viewport camera field of view
   double fov = doubleSpinBox_fov->value();
   qglview->cam.setVpf(fov);
 
-  //camera distance
+  // camera distance
   double d = doubleSpinBox_d->value();
   qglview->cam.setVpd(d);
 
@@ -172,8 +169,9 @@ void ViewportControl::updateCamera(){
   inputMutex.unlock();
 }
 
-void ViewportControl::updateViewportControlHints(){
-  //viewport camera field of view
+void ViewportControl::updateViewportControlHints()
+{
+  // viewport camera field of view
   double fov = doubleSpinBox_fov->value();
   if (fov < 0 || fov > 180) {
     doubleSpinBox_fov->setToolTip(_("extreme values might may lead to strange behavior"));
@@ -186,7 +184,7 @@ void ViewportControl::updateViewportControlHints(){
     doubleSpinBox_fov->setStyleSheet("");
   }
 
-  //camera distance
+  // camera distance
   double d = doubleSpinBox_d->value();
   if (d < 0) {
     doubleSpinBox_d->setToolTip(_("negative distances are not supported"));
@@ -198,10 +196,10 @@ void ViewportControl::updateViewportControlHints(){
     doubleSpinBox_d->setToolTip("");
     doubleSpinBox_d->setStyleSheet("");
   }
-
 }
 
-void ViewportControl::resizeToRatio(){
+void ViewportControl::resizeToRatio()
+{
   int w0 = spinBoxWidth->value();
   int h0 = spinBoxHeight->value();
 
@@ -216,7 +214,8 @@ void ViewportControl::resizeToRatio(){
   }
 }
 
-void ViewportControl::viewResized(){
+void ViewportControl::viewResized()
+{
   if (!resizeMutex.try_lock()) return;
 
   this->maxW = qglview->size().rwidth();
@@ -231,7 +230,8 @@ void ViewportControl::viewResized(){
   resizeMutex.unlock();
 }
 
-void ViewportControl::requestResize(){
+void ViewportControl::requestResize()
+{
   if (!resizeMutex.try_lock()) return;
 
   resizeToRatio();
@@ -239,8 +239,9 @@ void ViewportControl::requestResize(){
   resizeMutex.unlock();
 }
 
-bool ViewportControl::focusNextPrevChild(bool next){
-  QWidget::focusNextPrevChild(next);   //tab order is set in the UI File
+bool ViewportControl::focusNextPrevChild(bool next)
+{
+  QWidget::focusNextPrevChild(next);  // tab order is set in the UI File
 
   bool bChildHasFocus = false;
   for (auto child : QObject::findChildren<QWidget *>()) {
@@ -248,7 +249,7 @@ bool ViewportControl::focusNextPrevChild(bool next){
       bChildHasFocus = true;
     }
   }
-  //do not let the focus leave this widget
+  // do not let the focus leave this widget
   if (!bChildHasFocus) {
     if (next) {
       spinBoxWidth->setFocus();

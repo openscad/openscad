@@ -20,17 +20,17 @@
 
 namespace {
 
-  /*!
-   Capture framebuffer from OpenGL and write it to the given ostream.
-   Called by save_framebuffer() from platform-specific code.
- */
+/*!
+ Capture framebuffer from OpenGL and write it to the given ostream.
+ Called by save_framebuffer() from platform-specific code.
+*/
 bool save_framebuffer(const OpenGLContext *ctx, std::ostream& output)
 {
   if (!ctx) return false;
 
   const auto pixels = ctx->getFramebuffer();
 
-  const size_t samplesPerPixel = 4; // R, G, B and A
+  const size_t samplesPerPixel = 4;  // R, G, B and A
   // Flip it vertically - images read from OpenGL buffers are upside-down
   std::vector<uint8_t> flippedBuffer(samplesPerPixel * ctx->height() * ctx->width());
   flip_image(&pixels[0], flippedBuffer.data(), samplesPerPixel, ctx->width(), ctx->height());
@@ -74,7 +74,7 @@ OffscreenView::OffscreenView(uint32_t width, uint32_t height)
   if (!initializeGlew()) {
     throw OffscreenViewException("Unable to initialize Glew");
   }
-#endif // USE_GLEW
+#endif  // USE_GLEW
 #ifdef USE_GLAD
   // We could ask for gladLoadGLES2UserPtr() here if we want to use GLES2+
   const auto version = gladLoaderLoadGL();
@@ -82,9 +82,9 @@ OffscreenView::OffscreenView(uint32_t width, uint32_t height)
     throw OffscreenViewException("Unable to initialize GLAD");
   }
   PRINTDB("GLAD: Loaded OpenGL %d.%d", GLAD_VERSION_MAJOR(version) % GLAD_VERSION_MINOR(version));
-#endif // USE_GLAD
+#endif  // USE_GLAD
 
-#endif // NULLGL
+#endif  // NULLGL
 
   PRINTD(gl_dump());
 
@@ -96,16 +96,10 @@ OffscreenView::OffscreenView(uint32_t width, uint32_t height)
   GLView::resizeGL(width, height);
 }
 
-OffscreenView::~OffscreenView()
-{
-  fbo.reset();
-}
+OffscreenView::~OffscreenView() { fbo.reset(); }
 
 #ifdef ENABLE_OPENCSG
-void OffscreenView::display_opencsg_warning()
-{
-  LOG("OpenSCAD recommended OpenGL version is 2.0.");
-}
+void OffscreenView::display_opencsg_warning() { LOG("OpenSCAD recommended OpenGL version is 2.0."); }
 #endif
 
 bool OffscreenView::save(const char *filename) const

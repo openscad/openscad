@@ -32,12 +32,10 @@ public:
   [[nodiscard]] unsigned int getDimension() const override { return 2; }
   [[nodiscard]] bool isEmpty() const override;
   [[nodiscard]] std::unique_ptr<Geometry> copy() const override;
-  [[nodiscard]] size_t numFacets() const override {
+  [[nodiscard]] size_t numFacets() const override
+  {
     return std::accumulate(theoutlines.begin(), theoutlines.end(), 0,
-                           [](size_t a, const Outline2d& b) {
-      return a + b.vertices.size();
-    }
-                           );
+                           [](size_t a, const Outline2d& b) { return a + b.vertices.size(); });
   }
   void addOutline(Outline2d outline) { this->theoutlines.push_back(std::move(outline)); }
   [[nodiscard]] std::unique_ptr<PolySet> tessellate() const;
@@ -53,13 +51,15 @@ public:
 
   void transform(const Transform2d& mat);
   void resize(const Vector2d& newsize, const Eigen::Matrix<bool, 2, 1>& autosize);
-  void resize(const Vector3d& newsize, const Eigen::Matrix<bool, 3, 1>& autosize) override {
+  void resize(const Vector3d& newsize, const Eigen::Matrix<bool, 3, 1>& autosize) override
+  {
     resize(Vector2d(newsize[0], newsize[1]), Eigen::Matrix<bool, 2, 1>(autosize[0], autosize[1]));
   }
 
   [[nodiscard]] bool isSanitized() const { return this->sanitized; }
   void setSanitized(bool s) { this->sanitized = s; }
   [[nodiscard]] bool is_convex() const;
+
 private:
   Outlines2d theoutlines;
   bool sanitized{false};

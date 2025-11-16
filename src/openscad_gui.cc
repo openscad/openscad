@@ -25,32 +25,31 @@
  */
 
 #include "openscad_gui.h"
-
 #include <memory>
 #include <filesystem>
 #include <string>
 #include <vector>
+
+#include <QtGlobal>
+#include <Qt>
+#include <QDialog>
 #include <QDir>
-#include <QIcon>
 #include <QFileInfo>
 #include <QFutureWatcher>
-#include <QtConcurrentRun>
 #include <QGuiApplication>
+#include <QIcon>
+#include <QObject>
 #include <QPalette>
 #include <QStyleHints>
+#include <QStringList>
+#include <QtConcurrentRun>
 
+#include "Feature.h"
 #include "core/parsersettings.h"
+#include "core/Settings.h"
 #include "FontCache.h"
 #include "geometry/Geometry.h"
 #include "gui/AppleEvents.h"
-#include "gui/LaunchingScreen.h"
-#include "gui/MainWindow.h"
-#include "gui/OpenSCADApp.h"
-#include "gui/QSettingsCached.h"
-#include "core/Settings.h"
-#include "openscad.h"
-#include "utils/printutils.h"
-
 #include "gui/input/InputDriverManager.h"
 #ifdef ENABLE_HIDAPI
 #include "gui/input/HidApiInputDriver.h"
@@ -66,6 +65,18 @@
 #endif
 #ifdef ENABLE_QGAMEPAD
 #include "gui/input/QGamepadInputDriver.h"
+#endif
+#include "gui/LaunchingScreen.h"
+#include "gui/MainWindow.h"
+#include "gui/OpenSCADApp.h"
+#include "gui/QSettingsCached.h"
+#include "gui/Preferences.h"
+#include "openscad.h"
+#include "platform/CocoaUtils.h"
+#include "utils/printutils.h"
+
+#ifdef ENABLE_GUI_TESTS
+#include "guitests/guitests.h"
 #endif
 
 Q_DECLARE_METATYPE(Message);
@@ -85,7 +96,8 @@ namespace {
 // field, see:
 // UIUtils::blendForBackgroundColorStyleSheet(const QColor& input, const QColor& blend)
 
-bool isDarkMode() {
+bool isDarkMode()
+{
 #if QT_VERSION >= QT_VERSION_CHECK(6, 5, 0)
   const auto scheme = QGuiApplication::styleHints()->colorScheme();
   return scheme == Qt::ColorScheme::Dark;
@@ -94,39 +106,33 @@ bool isDarkMode() {
   const auto& text = defaultPalette.color(QPalette::WindowText);
   const auto& window = defaultPalette.color(QPalette::Window);
   return text.lightness() > window.lightness();
-#endif // QT_VERSION
-}
-
-}
-
-namespace {
-
-// Only if "fileName" is not absolute, prepend the "absoluteBase".
-QString assemblePath(const std::filesystem::path& absoluteBaseDir,
-                     const std::string& fileName) {
-  if (fileName.empty()) return "";
-  auto qsDir = QString::fromLocal8Bit(absoluteBaseDir.generic_string().c_str());
-  auto qsFile = QString::fromLocal8Bit(fileName.c_str());
-  // if qsfile is absolute, dir is ignored. (see documentation of QFileInfo)
-  QFileInfo fileInfo(qsDir, qsFile);
-  return fileInfo.absoluteFilePath();
+#endif  // QT_VERSION
 }
 
 }  // namespace
 
-void dialogThreadFunc(FontCacheInitializer *initializer)
+namespace {
+
+// Only if "fileName" is not absolute, prepend the "absoluteBase".
+QString assemblePath(const std::filesystem::path& absoluteBaseDir, const std::string& fileName)
 {
-  initializer->run();
+  if (fileName.empty()) return "";
+  auto qsDir = QString::fromLocal8Bit(absoluteBaseDir.generic_string().c_str());
+  auto qsFile = QString::fromLocal8Bit(fileName.c_str());
+  // if qsfile is absolute, dir is ignored. (see documentation of QFileInfo)
+  const QFileInfo fileInfo(qsDir, qsFile);
+  return fileInfo.absoluteFilePath();
 }
+
+void dialogThreadFunc(FontCacheInitializer *initializer) { initializer->run(); }
 
 void dialogInitHandler(FontCacheInitializer *initializer, void *)
 {
   QFutureWatcher<void> futureWatcher;
-  QObject::connect(&futureWatcher, SIGNAL(finished()), scadApp, SLOT(hideFontCacheDialog()));
+  QObject::connect(&futureWatcher, &QFutureWatcher<void>::finished, scadApp,
+                   &OpenSCADApp::hideFontCacheDialog);
 
-  auto future = QtConcurrent::run([initializer] {
-    return dialogThreadFunc(initializer);
-  });
+  auto future = QtConcurrent::run([initializer] { return dialogThreadFunc(initializer); });
   futureWatcher.setFuture(future);
 
   // We don't always get the started() signal, so we start manually
@@ -141,17 +147,21 @@ void dialogInitHandler(FontCacheInitializer *initializer, void *)
 }
 
 #ifdef Q_OS_WIN
-void registerDefaultIcon(QString applicationFilePath) {
+void registerDefaultIcon(QString applicationFilePath)
+{
   // Not using cached instance here, so this needs to be in a
   // separate scope to ensure the QSettings instance is released
   // directly after use.
   QSettings reg_setting(QLatin1String("HKEY_CURRENT_USER"), QSettings::NativeFormat);
   auto appPath = QDir::toNativeSeparators(applicationFilePath + QLatin1String(",1"));
-  reg_setting.setValue(QLatin1String("Software/Classes/OpenSCAD_File/DefaultIcon/Default"), QVariant(appPath));
+  reg_setting.setValue(QLatin1String("Software/Classes/OpenSCAD_File/DefaultIcon/Default"),
+                       QVariant(appPath));
 }
 #else
-void registerDefaultIcon(const QString&) { }
+void registerDefaultIcon(const QString&) {}
 #endif
+
+}  // namespace
 
 #ifdef OPENSCAD_SUFFIX
 #define DESKTOP_FILENAME "openscad" OPENSCAD_SUFFIX
@@ -159,11 +169,10 @@ void registerDefaultIcon(const QString&) { }
 #define DESKTOP_FILENAME "openscad"
 #endif
 
-int gui(std::vector<std::string>& inputFiles, const std::filesystem::path& original_path, int argc, char **argv)
+int gui(std::vector<std::string>& inputFiles, const std::filesystem::path& original_path, int argc,
+        char **argv, const std::string& gui_test, const bool reset_window_settings)
 {
   OpenSCADApp app(argc, argv);
-  // remove ugly frames in the QStatusBar when using additional widgets
-  app.setStyleSheet("QStatusBar::item { border: 0px solid black; }");
   QIcon::setThemeName(isDarkMode() ? "chokusen-dark" : "chokusen");
 
   // set up groups for QSettings
@@ -173,7 +182,10 @@ int gui(std::vector<std::string>& inputFiles, const std::filesystem::path& origi
   QCoreApplication::setApplicationVersion(TOSTRING(OPENSCAD_VERSION));
   QGuiApplication::setApplicationDisplayName("OpenSCAD");
   QGuiApplication::setDesktopFileName(DESKTOP_FILENAME);
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
   QCoreApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
+#endif
+
 #ifdef Q_OS_MACOS
   app.setWindowIcon(QIcon(":/icon-macos.png"));
 #else
@@ -192,12 +204,42 @@ int gui(std::vector<std::string>& inputFiles, const std::filesystem::path& origi
   if (settings.value("advanced/localization", true).toBool()) {
     localization_init();
   }
+  if (reset_window_settings) {
+    const auto keys = std::array<std::string, 20>{
+      "editor/fontfamily",
+      "editor/fontsize",
+      "advanced/applicationFontSize",
+      "advanced/applicationFontFamily",
+      "advanced/consoleFontFamily",
+      "advanced/consoleFontSize",
+      "advanced/customizerFontFamily",
+      "advanced/customizerFontSize",
+      "advanced/undockableWindows",
+      "window/state",
+      "window/geometry",
+      "window/position",
+      "window/size",
+      "view/hideEditor",
+      "view/hideConsole",
+      "view/hideErrorLog",
+      "view/hideAnimate",
+      "view/hideCustomizer",
+      "view/hideFontList",
+      "view/hideViewportControl",
+    };
+    for (const auto& key : keys) {
+      settings.remove(QString::fromStdString(key));
+    }
+  }
 
 #ifdef Q_OS_MACOS
   installAppleEventHandlers();
 #endif
 
   registerDefaultIcon(app.applicationFilePath());
+  app.setApplicationFont(
+    GlobalPreferences::inst()->getValue("advanced/applicationFontFamily").toString(),
+    GlobalPreferences::inst()->getValue("advanced/applicationFontSize").toUInt());
 
 #ifdef OPENSCAD_UPDATER
   AutoUpdater *updater = new SparkleAutoUpdater;
@@ -205,6 +247,9 @@ int gui(std::vector<std::string>& inputFiles, const std::filesystem::path& origi
   if (updater->automaticallyChecksForUpdates()) updater->checkForUpdates();
   updater->init();
 #endif
+
+  QObject::connect(GlobalPreferences::inst(), &Preferences::applicationFontChanged, &app,
+                   &OpenSCADApp::setApplicationFont);
 
   set_render_color_scheme(arg_colorscheme, false);
   auto noInputFiles = false;
@@ -216,13 +261,12 @@ int gui(std::vector<std::string>& inputFiles, const std::filesystem::path& origi
 
   auto showOnStartup = settings.value("launcher/showOnStartup");
   if (noInputFiles && (showOnStartup.isNull() || showOnStartup.toBool())) {
-    auto launcher = new LaunchingScreen();
-    auto dialogResult = launcher->exec();
-    if (dialogResult == QDialog::Accepted) {
-      if (launcher->isForceShowEditor()) {
+    LaunchingScreen launcher;
+    if (launcher.exec() == QDialog::Accepted) {
+      if (launcher.isForceShowEditor()) {
         settings.setValue("view/hideEditor", false);
       }
-      auto files = launcher->selectedFiles();
+      const QStringList files = launcher.selectedFiles();
       // If nothing is selected in the launching screen, leave
       // the "" dummy in inputFiles to open an empty MainWindow.
       if (!files.empty()) {
@@ -231,19 +275,22 @@ int gui(std::vector<std::string>& inputFiles, const std::filesystem::path& origi
           inputFiles.push_back(f.toStdString());
         }
       }
-      delete launcher;
     } else {
       return 0;
     }
   }
 
   QStringList inputFilesList;
-  for (const auto& infile: inputFiles) {
+  for (const auto& infile : inputFiles) {
     inputFilesList.append(assemblePath(original_path, infile));
   }
   new MainWindow(inputFilesList);
-  app.connect(&app, SIGNAL(lastWindowClosed()), &app, SLOT(releaseQSettingsCached()));
-  app.connect(&app, SIGNAL(lastWindowClosed()), &app, SLOT(quit()));
+  QObject::connect(&app, &QCoreApplication::aboutToQuit, []() {
+    QSettingsCached{}.release();
+#ifdef Q_OS_MACOS
+    CocoaUtils::endApplication();
+#endif
+  });
 
 #ifdef ENABLE_HIDAPI
   if (Settings::Settings::inputEnableDriverHIDAPI.value()) {
@@ -282,9 +329,20 @@ int gui(std::vector<std::string>& inputFiles, const std::filesystem::path& origi
   }
 #endif
 
+#ifdef ENABLE_GUI_TESTS
+  // Adds a singleshot timer that will be executed when the application will be started.
+  // the timer validates that each mainwindow respects the expected UX behavior.
+  if (gui_test != "none") {
+    QTimer::singleShot(0, [&]() {
+      int failureCount = 0;
+      for (auto w : app.windowManager.getWindows()) {
+        failureCount += runAllTest(w);
+      }
+      app.exit(failureCount);
+    });
+  }
+#endif  // ENABLE_GUI_TESTS
+
   InputDriverManager::instance()->init();
-  int rc = app.exec();
-  const auto& windows = scadApp->windowManager.getWindows();
-  while (!windows.empty()) delete *windows.begin();
-  return rc;
+  return app.exec();
 }

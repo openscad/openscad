@@ -41,12 +41,8 @@ public:
   std::string get_info() const override;
   void setJoystickNr(std::string jnr);
 
-  size_t getButtonCount() const override {
-    return buttons;
-  }
-  size_t getAxisCount() const override {
-    return axes;
-  }
+  size_t getButtonCount() const override { return buttons; }
+  size_t getAxisCount() const override { return axes; }
 
 private:
   int fd{-1};

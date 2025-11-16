@@ -14,12 +14,13 @@ jobs:
     steps:
 
     - name: Checkout code
-      uses: actions/checkout@v4
+      uses: actions/checkout@v5
       with:
         submodules: 'recursive'
 
     - name: Install dependencies
       run: |
+        which sudo || apt install -y sudo
         sudo ./scripts/uni-get-dependencies.sh
         sudo apt -qq -y install clang-tidy
 
@@ -77,3 +78,11 @@ jobs:
         mkdir -p ${BASE_DIR}
         cp OpenSCAD_clang-tidy.out ${BASE_DIR}/${{ github.sha }}.out
         cp OpenSCAD_clang-tidy.summary ${BASE_DIR}/${{ github.sha }}.summary
+
+    - name: Upload clang-tidy Results
+      uses: actions/upload-artifact@v5
+      with:
+        name: clang-tidy Results
+        path: |
+          OpenSCAD_clang-tidy.out
+          OpenSCAD_clang-tidy.summary

@@ -3,13 +3,14 @@
 #include <memory>
 #include <string>
 #include <vector>
+
 #include "geometry/linalg.h"
 
 class DxfData
 {
 public:
   struct Path {
-    std::vector<int> indices; // indices into DxfData::points
+    std::vector<int> indices;  // indices into DxfData::points
     bool is_closed{false}, is_inner{false};
     Path() = default;
   };
@@ -19,7 +20,8 @@ public:
     double angle;
     double length;
     std::string name;
-    Dim() {
+    Dim()
+    {
       for (auto& coord : coords) {
         for (double& j : coord) {
           j = 0;
@@ -36,9 +38,9 @@ public:
   std::vector<Dim> dims;
 
   DxfData() = default;
-  DxfData(double fn, double fs, double fa,
-          const std::string& filename, const std::string& layername = "",
-          double xorigin = 0.0, double yorigin = 0.0, double scale = 1.0);
+  DxfData(double fn, double fs, double fa, const std::string& filename,
+          const std::string& layername = "", double xorigin = 0.0, double yorigin = 0.0,
+          double scale = 1.0);
 
   int addPoint(double x, double y);
 

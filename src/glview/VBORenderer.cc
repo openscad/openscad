@@ -61,35 +61,8 @@ void shader_attribs_disable(const ShaderUtils::ShaderInfo& shaderinfo)
 
 VBORenderer::VBORenderer() : Renderer() {}
 
-// TODO: Move to Renderer?
-bool VBORenderer::getShaderColor(Renderer::ColorMode colormode, const Color4f& color,
-                                 Color4f& outcolor) const
-{
-  if ((colormode != ColorMode::BACKGROUND) && (colormode != ColorMode::HIGHLIGHT) && color.isValid()) {
-    outcolor = color;
-    return true;
-  }
-  Color4f basecol;
-  if (Renderer::getColor(colormode, basecol)) {
-    if (colormode == ColorMode::BACKGROUND || colormode != ColorMode::HIGHLIGHT) {
-      basecol = Color4f(color[0] >= 0 ? color[0] : basecol[0], color[1] >= 0 ? color[1] : basecol[1],
-                        color[2] >= 0 ? color[2] : basecol[2], color[3] >= 0 ? color[3] : basecol[3]);
-    }
-    Color4f col;
-    Renderer::getColor(ColorMode::MATERIAL, col);
-    outcolor = basecol;
-    if (outcolor[0] < 0) outcolor[0] = col[0];
-    if (outcolor[1] < 0) outcolor[1] = col[1];
-    if (outcolor[2] < 0) outcolor[2] = col[2];
-    if (outcolor[3] < 0) outcolor[3] = col[3];
-    return true;
-  }
-
-  return false;
-}
-
 size_t VBORenderer::calcNumVertices(const std::shared_ptr<CSGProducts>& products,
-                                         bool unique_geometry) const
+                                    bool unique_geometry) const
 {
   size_t buffer_size = 0;
   if (unique_geometry) this->geom_visit_mark_.clear();
@@ -192,24 +165,4 @@ void VBORenderer::add_shader_pointers(VBOBuilder& vbo_builder, const ShaderUtils
   }
 
   vbo_builder.states().emplace_back(std::move(ss));
-}
-
-// This will set the `color_area` and `color_edge` shader uniforms.
-// ..meaning it will only be applicable to shaders using those uniforms, i.e. the edge shader
-void VBORenderer::add_color(VBOBuilder& vbo_builder, const Color4f& color, const ShaderUtils::ShaderInfo *shaderinfo)
-{
-  if (!shaderinfo) return;
-  add_shader_pointers(vbo_builder, shaderinfo);
-  std::shared_ptr<VertexState> color_state =
-    std::make_shared<VBOShaderVertexState>(0, 0, vbo_builder.verticesVBO(), vbo_builder.elementsVBO());
-  color_state->glBegin().emplace_back([shaderinfo, color]() {
-    GL_TRACE("glUniform4f(%d, %.2f, %.2f, %.2f, %.2f)", shaderinfo->uniforms.at("color_area") % color[0] % color[1] % color[2] % color[3]);
-    GL_CHECKD(
-      glUniform4f(shaderinfo->uniforms.at("color_area"), color[0], color[1], color[2], color[3]));
-    GL_TRACE("glUniform4f(%d, %.2f, %.2f, %.2f, %.2f)", shaderinfo->uniforms.at("color_edge") % ((color[0] + 1) / 2) % ((color[1] + 1) / 2) %
-                          ((color[2] + 1) / 2) % 1.0);
-    GL_CHECKD(glUniform4f(shaderinfo->uniforms.at("color_edge"), (color[0] + 1) / 2, (color[1] + 1) / 2,
-                          (color[2] + 1) / 2, 1.0));
-  });
-  vbo_builder.states().emplace_back(std::move(color_state));
 }

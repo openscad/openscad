@@ -49,21 +49,31 @@ jobs:
           name: Build OpenSCAD AppImage (64bit)
           no_output_timeout: 18000
           command: |
-              set +e
-              . /opt/qt5*/bin/qt5*-env.sh
-              set -e
               export OPENSCAD_COMMIT=$(git log -1 --pretty=format:%h)
               export OPENSCAD_VERSION="$(date +%Y.%m.%d).ai${CIRCLE_BUILD_NUM}"
               if [ x"${CIRCLE_BRANCH}" = xmaster ]; then export SUFFIX=""; else export SUFFIX="_$(echo ${CIRCLE_BRANCH} | sed -e 's,pull/,PR,; s,/head,h,; s,/merge,m,; s,/,.,g')"; fi
               git submodule update --init --recursive
               mkdir build && cd build
-              cmake .. -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_BUILD_TYPE=Release -DEXPERIMENTAL=ON -DSNAPSHOT=ON -DOPENSCAD_VERSION="$OPENSCAD_VERSION" -DOPENSCAD_COMMIT="$OPENSCAD_COMMIT"
+              cmake .. \
+                  -DOPENSCAD_VERSION="$OPENSCAD_VERSION" \
+                  -DOPENSCAD_COMMIT="$OPENSCAD_COMMIT" \
+                  -DCMAKE_INSTALL_PREFIX=/usr \
+                  -DCMAKE_BUILD_TYPE=Release \
+                  -DUSE_BUILTIN_OPENCSG=ON \
+                  -DMANIFOLD_PYBIND=OFF \
+                  -DMANIFOLD_TEST=OFF \
+                  -DENABLE_PYTHON=ON \
+                  -DENABLE_TESTS=OFF \
+                  -DEXPERIMENTAL=ON \
+                  -DSNAPSHOT=ON
               make -j4
               make install DESTDIR=../AppDir
               cd ..
               export PATH=/appimage/usr/bin:"$PATH"
               export EXTRA_QT_PLUGINS=svg
-              VERSION="${OPENSCAD_VERSION}${SUFFIX}" linuxdeploy --plugin qt --output appimage --appdir AppDir
+              export PYTHON_VERSION=$(python3 -c "import sys; v=sys.version_info; print(f'{v.major}.{v.minor}.{v.micro}')")
+              export LINUXDEPLOY_OUTPUT_VERSION="${OPENSCAD_VERSION}${SUFFIX}"
+              linuxdeploy --plugin python --plugin qt --output appimage --appdir AppDir
               mkdir -p /tmp/out
               cp -iv OpenSCAD-*.AppImage /tmp/out
               if [ -n "${CODE_SIGNING_KEY}" ]; then
@@ -84,7 +94,7 @@ jobs:
         type: string
     working_directory: ~/workspace
     docker:
-      - image: openscad/wasm-base:latest
+      - image: openscad/wasm-base-release:latest
     resource_class: large
     steps:
       - checkout
@@ -148,7 +158,7 @@ jobs:
   openscad-macos:
     resource_class: macos.m1.medium.gen1
     macos:
-      xcode: 15.3.0
+      xcode: 16.4.0
     environment:
       OPENSCAD_LIBRARIES: /Users/distiller/libraries/install
       PKG_CONFIG_PATH: /Users/distiller/libraries/install/lib/pkgconfig
@@ -165,6 +175,9 @@ jobs:
       - run:
           name: Install Homebrew packages
           command: |
+            brew analytics off
+            brew tap
+            brew uninstall -f --cask temurin17
             brew update
             brew install automake libtool cmake pkg-config wget meson python-packaging
       - restore_cache:

@@ -25,12 +25,14 @@
 
 #include "io/export.h"
 
-#include "geometry/PolySet.h"
-#include "geometry/PolySetUtils.h"
-
 #include <ostream>
 #include <memory>
 #include <cstddef>
+
+#include "Feature.h"
+#include "geometry/Geometry.h"
+#include "geometry/PolySet.h"
+#include "geometry/PolySetUtils.h"
 
 void export_wrl(const std::shared_ptr<const Geometry>& geom, std::ostream& output)
 {
@@ -70,14 +72,36 @@ void export_wrl(const std::shared_ptr<const Geometry>& geom, std::ostream& outpu
   output << "coordIndex [\n";
   const size_t numindices = ps->indices.size();
   for (size_t i = 0; i < numindices; ++i) {
-    const auto &poly=ps->indices[i];
-    for(size_t j=0;j<poly.size();j++) {
+    const auto& poly = ps->indices[i];
+    for (size_t j = 0; j < poly.size(); j++) {
       output << poly[j];
-        if (j < poly.size() - 1) output << ",";
-      output << "\n";
+      output << ",";
     }
+    output << "-1\n";
   }
   output << "]\n\n";
+
+  if (!ps->color_indices.empty()) {
+    output << "colorPerVertex FALSE\n\n";
+    output << "color Color { color [\n";
+    for (size_t i = 0; i < ps->colors.size(); ++i) {
+      auto color = ps->colors[i];
+      float r, g, b, a;
+      if (!color.getRgba(r, g, b, a)) {
+        LOG(message_group::Warning, "Invalid color in WRL export");
+      }
+      // Alpha channel ignored as WRL colours are RGB not RGBA
+      output << " " << r << " " << g << " " << b << ",\n";
+    }
+    output << " 0.976471 0.843137 0.172549, # default colour\n";
+    output << "] }\n\n";
+    output << "colorIndex [\n";
+    for (size_t i = 0; i < ps->indices.size(); ++i) {
+      auto color_index = ps->color_indices[i];
+      output << ((color_index >= 0) ? color_index : ps->colors.size()) << " ";
+    }
+    output << "]\n\n";
+  }
 
   output << "}\n\n";
 

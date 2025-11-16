@@ -1,0 +1,14 @@
+group() {
+	linear_extrude(height = 100, $fn = 0, $fa = 12, $fs = 2) {
+		import(file = "localfile.dxf", origin = [0, 0], scale = 1, center = false, convexity = 1, $fn = 0, $fa = 12, $fs = 2, timestamp = -4727561290);
+	}
+	multmatrix([[1, 0, 0, 250], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+		multmatrix([[200, 0, 0, 0], [0, 200, 0, 0], [0, 0, 50, 0], [0, 0, 0, 1]]) {
+			surface(file = "localfile.dat", center = false, invert = false, timestamp = -4727561290);
+		}
+	}
+	multmatrix([[1, 0, 0, 0], [0, 1, 0, -200], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+		sphere($fn = 0, $fa = 12, $fs = 2, r = 100);
+	}
+}
+

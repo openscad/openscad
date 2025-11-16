@@ -26,9 +26,9 @@
 
 #include "core/LinearExtrudeNode.h"
 
+#include "core/Children.h"
 #include "core/module.h"
 #include "core/ModuleInstantiation.h"
-#include "core/Children.h"
 #include "core/Parameters.h"
 #include "utils/printutils.h"
 #include "io/fileutils.h"
@@ -40,18 +40,19 @@
 #include <cmath>
 #include <sstream>
 #include <boost/assign/std/vector.hpp>
-using namespace boost::assign; // bring 'operator+=()' into scope
+using namespace boost::assign;  // bring 'operator+=()' into scope
 
 #include <filesystem>
 
 namespace {
-std::shared_ptr<AbstractNode> builtin_linear_extrude(const ModuleInstantiation *inst, Arguments arguments, const Children& children)
+std::shared_ptr<AbstractNode> builtin_linear_extrude(const ModuleInstantiation *inst,
+                                                     Arguments arguments, const Children& children)
 {
   auto node = std::make_shared<LinearExtrudeNode>(inst);
 
-  Parameters parameters = Parameters::parse(std::move(arguments), inst->location(),
-                                            {"height", "v", "scale", "center", "twist", "slices", "segments"},
-                                            {"convexity", "h"});
+  Parameters parameters = Parameters::parse(
+    std::move(arguments), inst->location(),
+    {"height", "v", "scale", "center", "twist", "slices", "segments"}, {"convexity", "h"});
   parameters.set_caller("linear_extrude");
 
   node->fn = parameters["$fn"].toDouble();
@@ -61,7 +62,7 @@ std::shared_ptr<AbstractNode> builtin_linear_extrude(const ModuleInstantiation *
   double height = 100.0;
 
   if (parameters["v"].isDefined()) {
-    if(!parameters["v"].getVec3(node->height[0], node->height[1], node->height[2])) {
+    if (!parameters["v"].getVec3(node->height[0], node->height[1], node->height[2])) {
       LOG(message_group::Error, "v when specified should be a 3d vector.");
     }
     height = 1.0;
@@ -69,8 +70,8 @@ std::shared_ptr<AbstractNode> builtin_linear_extrude(const ModuleInstantiation *
   const Value& heightValue = parameters[{"height", "h"}];
   if (heightValue.isDefined()) {
     if (!heightValue.getFiniteDouble(height)) {
-        LOG(message_group::Error, "height when specified should be a number.");
-        height = 100.0;
+      LOG(message_group::Error, "height when specified should be a number.");
+      height = 100.0;
     }
     node->height.normalize();
   }
@@ -82,8 +83,11 @@ std::shared_ptr<AbstractNode> builtin_linear_extrude(const ModuleInstantiation *
   bool scaleOK = parameters["scale"].getFiniteDouble(node->scale_x);
   scaleOK &= parameters["scale"].getFiniteDouble(node->scale_y);
   scaleOK |= parameters["scale"].getVec2(node->scale_x, node->scale_y, true);
-  if ((parameters["scale"].isDefined()) && (!scaleOK || !std::isfinite(node->scale_x) || !std::isfinite(node->scale_y))) {
-    LOG(message_group::Warning, inst->location(), parameters.documentRoot(), "linear_extrude(..., scale=%1$s) could not be converted", parameters["scale"].toEchoStringNoThrow());
+  if ((parameters["scale"].isDefined()) &&
+      (!scaleOK || !std::isfinite(node->scale_x) || !std::isfinite(node->scale_y))) {
+    LOG(message_group::Warning, inst->location(), parameters.documentRoot(),
+        "linear_extrude(..., scale=%1$s) could not be converted",
+        parameters["scale"].toEchoStringNoThrow());
   }
 
   if (parameters["center"].type() == Value::Type::BOOL) node->center = parameters["center"].toBool();
@@ -107,19 +111,19 @@ std::shared_ptr<AbstractNode> builtin_linear_extrude(const ModuleInstantiation *
   return node;
 }
 
-} // namespace
+}  // namespace
 
 std::string LinearExtrudeNode::toString() const
 {
   std::ostringstream stream;
 
   stream << this->name() << "(";
-  double height=this->height.norm();
+  double height = this->height.norm();
   stream << "height = " << height;
-  if(height > 0) {
-    Vector3d v=this->height/height;
-    if(v[2] < 1) {
-      stream << ", v = [ " <<  v[0] << ", " << v[1] << ", " << v[2] << "]" ;
+  if (height > 0) {
+    Vector3d v = this->height / height;
+    if (v[2] < 1) {
+      stream << ", v = [ " << v[0] << ", " << v[1] << ", " << v[2] << "]";
     }
   }
   if (this->center) {
@@ -154,7 +158,8 @@ std::string LinearExtrudeNode::toString() const
 void register_builtin_linear_extrude()
 {
   Builtins::init("linear_extrude", new BuiltinModule(builtin_linear_extrude),
-  {
-    "linear_extrude(height = 100, center = false, convexity = 1, twist = 0, scale = 1.0, [slices, segments, v, $fn, $fs, $fa])",
-  });
+                 {
+                   "linear_extrude(height = 100, center = false, convexity = 1, twist = 0, scale = 1.0, "
+                   "[slices, segments, v, $fn, $fs, $fa])",
+                 });
 }

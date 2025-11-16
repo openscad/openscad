@@ -19,7 +19,8 @@ extern const HersheyGlyph hershey_simplex[];
 }  // namespace
 
 namespace hershey {
-float TextWidth(std::string_view str, float size) {
+float TextWidth(std::string_view str, float size)
+{
   float longest_line = 0;
   size /= 25.0f;  // The actual coordinates are roughly in the range 0..25
 
@@ -36,12 +37,12 @@ float TextWidth(std::string_view str, float size) {
   return std::max(longest_line, w);
 }
 
-void DrawText(std::string_view str, float tx, float ty, TextAlign align,
-              float size,
-              const std::function<void(bool do_line, float x, float y)>& draw) {
+void DrawTextHershey(std::string_view str, float tx, float ty, TextAlign align, float size,
+                     const std::function<void(bool do_line, float x, float y)>& draw)
+{
   float dx = 0;
-  if (align == TextAlign::kRight)dx = -TextWidth(str, size);
-  else if (align == TextAlign::kCenter)dx = -TextWidth(str, size) / 2;
+  if (align == TextAlign::kRight) dx = -TextWidth(str, size);
+  else if (align == TextAlign::kCenter) dx = -TextWidth(str, size) / 2;
   size /= 25.0f;  // The actual coordinates are roughly in the range 0..25
   float x = 0, y = 0;
   for (char c : str) {
@@ -64,7 +65,7 @@ void DrawText(std::string_view str, float tx, float ty, TextAlign align,
     x += size * glyph.width;
   }
 }
-} // namespace hershey
+}  // namespace hershey
 
 /*
  * This is a transcoding of the Simplex Hershey Font glyphys into a C-struct.

@@ -30,12 +30,14 @@ public:
   void setFontSize(int fontSize);
   QString text() const;
   void setText(const QString&);
-  QSize sizeHint(const QStyleOptionViewItem &option, const QModelIndex &index) const override;
-  void paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const override;
+  QSize sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const override;
+  void paint(QPainter *painter, const QStyleOptionViewItem& option,
+             const QModelIndex& index) const override;
 
 protected:
-  void initStyleOption(QStyleOptionViewItem *option, const QModelIndex &index) const override;
-  QWidget *createEditor(QWidget *parent, const QStyleOptionViewItem &option, const QModelIndex &index) const override;
+  void initStyleOption(QStyleOptionViewItem *option, const QModelIndex& index) const override;
+  QWidget *createEditor(QWidget *parent, const QStyleOptionViewItem& option,
+                        const QModelIndex& index) const override;
 
 private:
   int _fontSize;
@@ -44,19 +46,19 @@ private:
 
 class FontSortFilterProxyModel : public QSortFilterProxyModel
 {
-    Q_OBJECT
+  Q_OBJECT
 
 public:
-    FontSortFilterProxyModel(QObject *parent = nullptr);
+  FontSortFilterProxyModel(QObject *parent = nullptr);
 
-    void clearFilter();
-    void appendFilterHashes(const std::vector<uint32_t>&);
+  void clearFilter();
+  void appendFilterHashes(const std::vector<uint32_t>&);
 
 protected:
-    bool filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) const override;
+  bool filterAcceptsRow(int sourceRow, const QModelIndex& sourceParent) const override;
 
 private:
-    QSet<QString> filterHashes;
+  QSet<QString> filterHashes;
 };
 
 class FontList : public QWidget, public Ui::FontListWidget

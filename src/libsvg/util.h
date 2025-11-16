@@ -79,4 +79,4 @@ std::ostream& operator<<(std::ostream& stream, const unit_t& unit);
 std::ostream& operator<<(std::ostream& stream, const length_t& length);
 std::ostream& operator<<(std::ostream& stream, const align_t& align);
 
-} // namespace libsvg
+}  // namespace libsvg

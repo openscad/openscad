@@ -44,18 +44,22 @@ namespace libsvg {
 class shape;
 }
 
-// ccox - I don't like putting this here, but the svg library code did not plan ahead for app customization.
-// And this is one of the few sensible places to put it without adding new header files.
+// ccox - I don't like putting this here, but the svg library code did not plan ahead for app
+// customization. And this is one of the few sensible places to put it without adding new header files.
 struct fnContext {
-  fnContext(double fNN, double fSS, double fAA) : fn(fNN), fs(fSS), fa(fAA) {
+  fnContext(double fNN, double fSS, double fAA) : fn(fNN), fs(fSS), fa(fAA) {}
+  bool match(bool val)
+  {
+    if (val) matches++;
+    return val;
   }
-  bool match(bool val) { if (val) matches++; return val; }
   bool has_matches() { return matches.load() > 0; }
 
   double fn;
   double fs;
   double fa;
-  std::function<bool (const libsvg::shape *)> selector;
+  std::function<bool(const libsvg::shape *)> selector;
+
 private:
   std::atomic<int> matches{0};
 };
@@ -91,7 +95,8 @@ protected:
   [[nodiscard]] Clipper2Lib::JoinType get_stroke_linejoin() const;
   [[nodiscard]] const std::string get_style(const std::string& name) const;
   void draw_ellipse(path_t& path, double x, double y, double rx, double ry, void *context);
-  void offset_path(path_list_t& path_list, path_t& path, double stroke_width, Clipper2Lib::EndType stroke_linecap);
+  void offset_path(path_list_t& path_list, path_t& path, double stroke_width,
+                   Clipper2Lib::EndType stroke_linecap);
   void collect_transform_matrices(std::vector<Eigen::Matrix3d>& matrices, shape *s);
 
 public:
@@ -100,12 +105,19 @@ public:
 
   [[nodiscard]] virtual shape *get_parent() const { return parent; }
   virtual void set_parent(shape *s) { parent = s; }
-  virtual void add_child(shape *s) { children.push_back(s); s->set_parent(this); }
+  virtual void add_child(shape *s)
+  {
+    children.push_back(s);
+    s->set_parent(this);
+  }
   [[nodiscard]] virtual const std::vector<shape *>& get_children() const { return children; }
 
   [[nodiscard]] virtual bool has_id() const { return id.is_initialized(); }
   [[nodiscard]] virtual const std::string& get_id() const { return id.get(); }
-  [[nodiscard]] virtual const std::string get_id_or_default(const std::string& def = "") const { return id.get_value_or(def); }
+  [[nodiscard]] virtual const std::string get_id_or_default(const std::string& def = "") const
+  {
+    return id.get_value_or(def);
+  }
   [[nodiscard]] virtual bool has_layer() const { return layer.is_initialized(); }
   [[nodiscard]] virtual const std::string& get_layer() const { return layer.get(); }
   [[nodiscard]] virtual double get_x() const { return x; }
@@ -131,4 +143,4 @@ private:
   friend std::ostream& operator<<(std::ostream& os, const shape& s);
 };
 
-} // namespace libsvg
+}  // namespace libsvg

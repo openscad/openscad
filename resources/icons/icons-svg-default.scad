@@ -78,6 +78,9 @@ icons = [
     ["add"],
     ["remove"],
     ["parameter"],
+    ["loading"],
+    ["circle-checkmark"],
+    ["circle-error"],
 ];
 
 icon(selected_icon) {
@@ -143,6 +146,9 @@ icon(selected_icon) {
 	add();
 	remove();
 	parameter();
+	loading();
+	circle_checkmark();
+    circle_error();
 }
 
 if (list_icons) {
@@ -899,4 +905,48 @@ module parameter() {
 			offset(-thin) gear(r);
 		}
 	}
+}
+
+module loading() {
+    n = 12;
+    translate([width / 2, height / 2]) {
+        for (a = [0:n-2]) {
+            rotate(-a * 360 / n)
+                translate([width / 3, 0])
+                    circle(2 + a / 3 * 2);
+        }
+	}
+}
+
+module circle_checkmark() {
+    r = 0.3 * width;
+    translate([width / 2, height / 2]) {
+        outline(thin) circle(r = r - thin / 2);
+        translate([-2, -r / 2]) {
+            hull() {
+                circle(d = thick);
+                translate([35, 35]) circle(d = thick);
+            }
+            hull() {
+                circle(d = thick);
+                translate([-15, 15]) circle(d = thick);
+            }
+        }
+    }
+}
+
+module circle_error() {
+    l = 28;
+    r = 0.3 * width;
+    translate([width / 2, height / 2]) {
+        outline(thin) circle(r = r - thin / 2);
+        for (a = [0, 90]) {
+            rotate(a) {
+                hull() {
+                    translate([l, l]) circle(d = thick);
+                    translate([-l, -l]) circle(d = thick);
+                }
+            }
+        }
+    }
 }

@@ -1,0 +1,35 @@
+minkowski(convexity = 0);
+hull();
+resize(newsize = [0,0,0], auto = [0,0,0], convexity = 0);
+group();
+group();
+intersection();
+group() {
+	sphere($fn = 0, $fa = 12, $fs = 2, r = 1);
+}
+union();
+difference();
+intersection();
+linear_extrude(height = 100, $fn = 0, $fa = 12, $fs = 2);
+rotate_extrude(angle = 360, start = 180, convexity = 2, $fn = 0, $fa = 12, $fs = 2);
+import(file = "", origin = [0, 0], scale = 1, center = false, convexity = 1, $fn = 0, $fa = 12, $fs = 2, timestamp = 0);
+group();
+cube(size = [1, 1, 1], center = false);
+sphere($fn = 0, $fa = 12, $fs = 2, r = 1);
+cylinder($fn = 0, $fa = 12, $fs = 2, h = 1, r1 = 1, r2 = 1, center = false);
+polyhedron(points = [], faces = [], convexity = 1);
+square(size = [1, 1], center = false);
+circle($fn = 0, $fa = 12, $fs = 2, r = 1);
+polygon(points = [], paths = undef, convexity = 1);
+projection(cut = false, convexity = 0);
+render(convexity = 1);
+surface(file = "", center = false, invert = false, timestamp = 0);
+multmatrix([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]);
+multmatrix([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]);
+multmatrix([[-1, -0, -0, 0], [-0, 1, -0, 0], [-0, -0, 1, 0], [0, 0, 0, 1]]);
+multmatrix([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]);
+multmatrix([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]);
+color([-1, -1, -1, -1]);
+offset(r = 1, $fn = 0, $fa = 12, $fs = 2);
+text(text = "", size = 10, spacing = 1, font = "", direction = "ltr", language = "en", halign = "default", valign = "default", $fn = 0, $fa = 12, $fs = 2);
+

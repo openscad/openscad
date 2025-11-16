@@ -1,34 +1,37 @@
 #include "LibraryInfo.h"
+
+#include <cstdlib>
 #include <sstream>
-#include <glib.h>
 #include <string>
 #include <vector>
 
-#include "utils/version_check.h"
-#include "platform/PlatformUtils.h"
-#include "version.h"
-#include "Feature.h"
 #include <clipper2/clipper.version.h>
+#include <Eigen/Core>
+#include <glib.h>
 
-#define STRINGIFY(x) #x
-#define TOSTRING(x) STRINGIFY(x)
+#include "io/lib3mf_utils.h"
 
 #ifndef OPENSCAD_NOGUI
+#include <QtGlobal>
 #include <Qsci/qsciglobal.h>
 #include "gui/input/InputDriverManager.h"
 #endif
 
 #ifdef ENABLE_CGAL
-#include "geometry/cgal/cgal.h"
+#include <CGAL/version.h>
 #include <boost/algorithm/string.hpp>
+#include "geometry/cgal/cgal.h"
 #if defined(__GNUG__)
 #define GCC_INT_VERSION (__GNUC__ * 10000 + __GNUC_MINOR__ * 100)
 #if GCC_INT_VERSION > 40600 || defined(__clang__)
 #include <cxxabi.h>
 #define openscad_info_demangle_ 1
-#endif // GCC_INT_VERSION
-#endif // GNUG
-#endif // ENABLE_CGAL
+#endif  // GCC_INT_VERSION
+#endif  // GNUG
+#endif  // ENABLE_CGAL
+#ifdef ENABLE_PYTHON
+#include "python/python_public.h"
+#endif
 
 #ifdef ENABLE_LIBZIP
 #include <zip.h>
@@ -45,23 +48,26 @@
 #define OPENCSG_VERSION_STRING "<not enabled>"
 #endif
 
+#define STRINGIFY(x) #x
+#define TOSTRING(x) STRINGIFY(x)
+
 #ifdef ENABLE_MANIFOLD
 #include <manifold/version.h>  // if it is new enough for us, it has version.h
-#define MANIFOLD_VERSION_STRING \
-  TOSTRING(MANIFOLD_VERSION_MAJOR) "." \
-  TOSTRING(MANIFOLD_VERSION_MINOR) "." \
-  TOSTRING(MANIFOLD_VERSION_PATCH)
+#define MANIFOLD_VERSION_STRING    \
+  TOSTRING(MANIFOLD_VERSION_MAJOR) \
+  "." TOSTRING(MANIFOLD_VERSION_MINOR) "." TOSTRING(MANIFOLD_VERSION_PATCH)
 #else
 #define MANIFOLD_VERSION_STRING "<not enabled>"
 #endif
 
+#include "platform/PlatformUtils.h"
+#include "version.h"
+#include "Feature.h"
+#include "FontCache.h"
+
 extern std::vector<std::string> librarypath;
 extern std::vector<std::string> fontpath;
 extern const std::string get_cairo_version();
-extern const std::string get_lib3mf_version();
-extern const std::string get_fontconfig_version();
-extern const std::string get_harfbuzz_version();
-extern const std::string get_freetype_version();
 extern const char *LODEPNG_VERSION_STRING;
 
 std::string LibraryInfo::info()
@@ -69,91 +75,85 @@ std::string LibraryInfo::info()
   std::ostringstream s;
 
 #if defined(__x86_64__) || defined(_M_X64)
-  std::string bits(" 64bit");
+  const std::string bits(" 64bit");
 #elif defined(__i386) || defined(_M_IX86)
-  std::string bits(" 32bit");
+  const std::string bits(" 32bit");
 #else
-  std::string bits("");
+  const std::string bits("");
 #endif
 
 #if defined(__GNUG__) && !defined(__clang__)
-  std::string compiler_info("GCC " + std::string(TOSTRING(__VERSION__)) + bits);
+  const std::string compiler_info("GCC " + std::string(TOSTRING(__VERSION__)) + bits);
 #elif defined(_MSC_VER)
-  std::string compiler_info("MSVC " + std::string(TOSTRING(_MSC_FULL_VER)) + bits);
+  const std::string compiler_info("MSVC " + std::string(TOSTRING(_MSC_FULL_VER)) + bits);
 #elif defined(__clang__)
-  std::string compiler_info("Clang " + std::string(TOSTRING(__clang_version__)) + bits);
+  const std::string compiler_info("Clang " + std::string(TOSTRING(__clang_version__)) + bits);
 #else
-  std::string compiler_info("unknown compiler");
+  const std::string compiler_info("unknown compiler");
 #endif
 
 #if defined(__MINGW64__)
-  std::string mingwstatus("MingW64");
+  const std::string mingwstatus("MingW64");
 #elif defined(__MINGW32__)
-  std::string mingwstatus("MingW32");
+  const std::string mingwstatus("MingW32");
 #else
-  std::string mingwstatus("No");
+  const std::string mingwstatus("No");
 #endif
 
 #ifdef DEBUG
-  std::string debugstatus("Yes");
+  const std::string debugstatus("Yes");
 #else
-  std::string debugstatus("No");
+  const std::string debugstatus("No");
 #endif
 
 #ifdef QT_VERSION
-  std::string qtVersion = qVersion();
+  const std::string qtVersion = qVersion();
 #else
-  std::string qtVersion = "Qt disabled - Commandline Test Version";
+  const std::string qtVersion = "Qt disabled - Commandline Test Version";
 #endif
 
 #ifdef ENABLE_CGAL
   std::string cgal_3d_kernel = typeid(CGAL_Kernel3).name();
   std::string cgal_2d_kernel = typeid(CGAL_Kernel2).name();
-  std::string cgal_2d_kernelEx = typeid(CGAL_ExactKernel2).name();
 #if defined(openscad_info_demangle_)
   int status;
-  cgal_3d_kernel = std::string(abi::__cxa_demangle(cgal_3d_kernel.c_str(), nullptr, nullptr, &status) );
-  cgal_2d_kernel = std::string(abi::__cxa_demangle(cgal_2d_kernel.c_str(), nullptr, nullptr, &status) );
-  cgal_2d_kernelEx = std::string(abi::__cxa_demangle(cgal_2d_kernelEx.c_str(), nullptr, nullptr, &status) );
-#endif // demangle
+  cgal_3d_kernel = std::string(abi::__cxa_demangle(cgal_3d_kernel.c_str(), nullptr, nullptr, &status));
+  cgal_2d_kernel = std::string(abi::__cxa_demangle(cgal_2d_kernel.c_str(), nullptr, nullptr, &status));
+#endif  // demangle
   boost::replace_all(cgal_3d_kernel, "CGAL::", "");
   boost::replace_all(cgal_2d_kernel, "CGAL::", "");
-  boost::replace_all(cgal_2d_kernelEx, "CGAL::", "");
-#else // ENABLE_CGAL
+#else   // ENABLE_CGAL
   std::string cgal_3d_kernel = "";
   std::string cgal_2d_kernel = "";
-  std::string cgal_2d_kernelEx = "";
-#endif // ENABLE_CGAL
+#endif  // ENABLE_CGAL
 
   const char *env_path = getenv("OPENSCADPATH");
   const char *env_font_path = getenv("OPENSCAD_FONT_PATH");
 
   s << "OpenSCAD Version: " << openscad_detailedversionnumber
     << "\nSystem information: " << PlatformUtils::sysinfo()
-    << "\nUser Agent: " << PlatformUtils::user_agent()
-    << "\nCompiler: " << compiler_info
-    << "\nMinGW build: " << mingwstatus
-    << "\nDebug build: " << debugstatus
-    << "\nBoost version: " << BOOST_LIB_VERSION
-    << "\nEigen version: " << EIGEN_WORLD_VERSION << "." << EIGEN_MAJOR_VERSION << "." << EIGEN_MINOR_VERSION
+    << "\nUser Agent: " << PlatformUtils::user_agent() << "\nCompiler: " << compiler_info
+    << "\nMinGW build: " << mingwstatus << "\nDebug build: " << debugstatus
+    << "\nBoost version: " << BOOST_LIB_VERSION << "\nEigen version: " << EIGEN_WORLD_VERSION << "."
+    << EIGEN_MAJOR_VERSION << "." << EIGEN_MINOR_VERSION
 #ifdef ENABLE_CGAL
-    << "\nCGAL version, kernels: " << TOSTRING(CGAL_VERSION) << ", " << cgal_3d_kernel << ", " << cgal_2d_kernel << ", " << cgal_2d_kernelEx
+    << "\nCGAL version, kernels: " << TOSTRING(CGAL_VERSION) << ", " << cgal_3d_kernel << ", "
+    << cgal_2d_kernel
 #endif
-    << "\nOpenCSG version: " << OPENCSG_VERSION_STRING
-    << "\nClipper2 version: " << CLIPPER2_VERSION
-    << "\nManifold version: " << MANIFOLD_VERSION_STRING
-    << "\nQt version: " << qtVersion
+#ifdef ENABLE_PYTHON
+    << "\nPython Version: " << python_version()
+#endif
+    << "\nOpenCSG version: " << OPENCSG_VERSION_STRING << "\nClipper2 version: " << CLIPPER2_VERSION
+    << "\nManifold version: " << MANIFOLD_VERSION_STRING << "\nQt version: " << qtVersion
 #ifndef OPENSCAD_NOGUI
     << "\nQScintilla version: " << QSCINTILLA_VERSION_STR
     << "\nInputDrivers: " << InputDriverManager::instance()->listDrivers()
 #endif
     << "\nGLib version: " << GLIB_MAJOR_VERSION << "." << GLIB_MINOR_VERSION << "." << GLIB_MICRO_VERSION
-    << "\nlodepng version: " << LODEPNG_VERSION_STRING
-    << "\nlibzip version: " << LIBZIP_VERSION
+    << "\nlodepng version: " << LODEPNG_VERSION_STRING << "\nlibzip version: " << LIBZIP_VERSION
     << "\nfontconfig version: " << get_fontconfig_version()
     << "\nfreetype version: " << get_freetype_version()
-    << "\nharfbuzz version: " << get_harfbuzz_version()
-    << "\ncairo version: " << get_cairo_version()
+    << "\nharfbuzz version: " << get_harfbuzz_version() << "\ncairo version: " << get_cairo_version()
     << "\nlib3mf version: " << get_lib3mf_version()
 #ifdef ENABLE_EXPERIMENTAL
     << "\nFeatures: " << Feature::features()
@@ -163,6 +163,7 @@ std::string LibraryInfo::info()
     << "\nUser Documents Path: " << PlatformUtils::userDocumentsPath()
     << "\nResource Path: " << PlatformUtils::resourceBasePath()
     << "\nUser Library Path: " << PlatformUtils::userLibraryPath()
+    << "\nUser Examples Path: " << PlatformUtils::userExamplesPath()
     << "\nUser Config Path: " << PlatformUtils::userConfigPath()
     << "\nBackup Path: " << PlatformUtils::backupPath()
     << "\nOPENSCADPATH: " << (env_path == nullptr ? "<not set>" : env_path)

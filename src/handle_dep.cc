@@ -1,27 +1,37 @@
 #include "handle_dep.h"
-#include "utils/printutils.h"
+
+#include <cerrno>
+#include <cstdio>
+#include <cstdlib>
+#include <filesystem>
 #include <iostream>
 #include <string>
-#include <cstdlib> // for system()
 #include <unordered_set>
 #include <vector>
+#ifndef _WIN32
+#include <sys/wait.h>
+#endif
+
 #include <boost/regex.hpp>
-#include <filesystem>
+
+#include "utils/printutils.h"
+
 namespace fs = std::filesystem;
 
-#ifndef _WIN32 // NOT _WIN32
-#include <sys/wait.h>
-#endif // NOT _WIN32
+const char *make_command = nullptr;
+
+namespace {
 
 std::unordered_set<std::string> dependencies;
-const char *make_command = nullptr;
+
+}  // namespace
 
 void handle_dep(const std::string& filename)
 {
-  fs::path filepath(filename);
-  std::string dep = boost::regex_replace(filepath.generic_string(), boost::regex("\\ "), "\\\\ ");
+  const fs::path filepath(filename);
+  const std::string dep = boost::regex_replace(filepath.generic_string(), boost::regex("\\ "), "\\\\ ");
   if (dependencies.find(dep) != dependencies.end()) {
-    return; // included and used files are very likely to be added many times by the parser
+    return;  // included and used files are very likely to be added many times by the parser
   }
   dependencies.insert(dep);
 
@@ -35,28 +45,25 @@ void handle_dep(const std::string& filename)
     // Could not launch system() correctly
 #ifdef _WIN32
     if ((res == 0 || res == -1) && errno != 0) {
-#else // NOT _WIN32
+#else   // NOT _WIN32
     if (res == -1 && errno != 0) {
-#endif // _WIN32 / NOT _WIN32
+#endif  // _WIN32 / NOT _WIN32
       perror("ERROR: system(make_cmd) failed");
     }
-
-#ifndef _WIN32 // NOT _WIN32
+#ifndef _WIN32  // NOT _WIN32
     // Abnormal process failure (e.g., segfault, killed, etc)
     else if (!WIFEXITED(res)) {
-      std::cerr << "ERROR: " << cmd.c_str()
-                << ": Process terminated abnormally!" << std::endl;
+      std::cerr << "ERROR: " << cmd.c_str() << ": Process terminated abnormally!" << std::endl;
     }
-#endif // NOT _WIN32
+#endif  // NOT _WIN32
 
     // Error code from process.
 #ifdef _WIN32
     else if (0 != res) {
-#else // NOT _WIN32
+#else   // NOT _WIN32
     else if (0 != (res = WEXITSTATUS(res))) {
-#endif // _WIN32 / NOT _WIN32
-      std::cerr << "ERROR: " << cmd.c_str() << ": Exit status "
-                << res << std::endl;
+#endif  // _WIN32 / NOT _WIN32
+      std::cerr << "ERROR: " << cmd.c_str() << ": Exit status " << res << std::endl;
     }
 
     // Otherwise, success!

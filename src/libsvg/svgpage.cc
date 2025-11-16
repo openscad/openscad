@@ -29,17 +29,13 @@
 #include <string>
 #include <iostream>
 
-
 namespace libsvg {
 
 const std::string svgpage::name("svg");
 
-svgpage::svgpage() : width({0.0, unit_t::UNDEFINED}), height({0.0, unit_t::UNDEFINED})
-{
-}
+svgpage::svgpage() : width({0.0, unit_t::UNDEFINED}), height({0.0, unit_t::UNDEFINED}) {}
 
-void
-svgpage::set_attrs(attr_map_t& attrs, void *context)
+void svgpage::set_attrs(attr_map_t& attrs, void *context)
 {
   this->x = 0;
   this->y = 0;
@@ -52,24 +48,15 @@ svgpage::set_attrs(attr_map_t& attrs, void *context)
   selected = (ctx->selector) ? ctx->selector(this) : false;
 }
 
-const std::string
-svgpage::dump() const
+const std::string svgpage::dump() const
 {
   std::stringstream s;
-  s << get_name()
-    << ": x = " << this->x
-    << ": y = " << this->y
-    << ": width = " << this->width
-    << ": height = " << this->height
-    << ": viewbox = " << this->viewbox.x
-    << "," << this->viewbox.y
-    << "," << this->viewbox.width
-    << "," << this->viewbox.height
-    << (this->viewbox.is_valid ? " (valid)" : " (invalid)")
-    << ": alignment = " << this->alignment.x
-    << "," << this->alignment.y
-    << (this->alignment.meet ? " meet" : " slice");
+  s << get_name() << ": x = " << this->x << ": y = " << this->y << ": width = " << this->width
+    << ": height = " << this->height << ": viewbox = " << this->viewbox.x << "," << this->viewbox.y
+    << "," << this->viewbox.width << "," << this->viewbox.height
+    << (this->viewbox.is_valid ? " (valid)" : " (invalid)") << ": alignment = " << this->alignment.x
+    << "," << this->alignment.y << (this->alignment.meet ? " meet" : " slice");
   return s.str();
 }
 
-} // namespace libsvg
+}  // namespace libsvg

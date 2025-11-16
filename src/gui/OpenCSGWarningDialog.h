@@ -8,6 +8,7 @@
 class OpenCSGWarningDialog : public QDialog, public Ui::OpenCSGWarningDialog
 {
   Q_OBJECT;
+
 public:
   OpenCSGWarningDialog(QWidget *parent);
 

@@ -1,6 +1,6 @@
 /*
  *  OpenSCAD (www.openscad.org)
- *  Copyright (C) 2009-2019 Clifford Wolf <clifford@clifford.at> and
+ *  Copyright (C) 2009-2025 Clifford Wolf <clifford@clifford.at> and
  *                          Marius Kintel <marius@kintel.net>
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -26,21 +26,33 @@
 
 #pragma once
 
+#include "gui/qtgettext.h"       // IWYU pragma: keep
+#include "ui_PrintInitDialog.h"  // generated, but needs qtgettext.h
+
 #include <vector>
+
+#include <QList>
 #include <QDialog>
-#include "gui/InitConfigurator.h"
-#include "gui/qtgettext.h"
-#include "ui_PrintInitDialog.h"
+#include <QPushButton>
 
 #include "io/export.h"
+#include "gui/InitConfigurator.h"
 
-enum class print_service_t { NONE, PRINT_SERVICE, OCTOPRINT, LOCAL_APPLICATION };
+// Property name for remote print servive buttons
+constexpr inline auto PROPERTY_NAME = "printServiceName";
+
+enum class print_service_t : std::uint8_t { NONE, PRINT_SERVICE, OCTOPRINT, LOCAL_APPLICATION };
 
 class PrintInitDialog : public QDialog, public Ui::PrintInitDialog, public InitConfigurator
 {
+  constexpr static auto urlDialog = "qrc:/html/PrintInitDialog.html";
+  constexpr static auto urlOctoPrint = "qrc:/html/OctoPrintInfo.html";
+  constexpr static auto urlLocalApp = "qrc:/html/LocalApplicationInfo.html";
+
   Q_OBJECT;
+
 public:
-  PrintInitDialog();  
+  PrintInitDialog();
   int exec() override;
 
   print_service_t getServiceType() const;
@@ -48,17 +60,22 @@ public:
   FileFormat getFileFormat() const;
 
 public slots:
-  void on_octoPrintButton_clicked();
-  void on_LocalSlicerButton_clicked();
-  void on_fileFormatComboBox_currentIndexChanged(int);
-  void on_buttonBox_accepted();
-  void on_buttonBox_rejected();
-private:
-  void populateFileFormatComboBox(const std::vector<FileFormat> &fileFormats,
-                                  FileFormat currentFormat);
+  void on_pushButtonOctoPrint_clicked();
+  void on_pushButtonLocalApplication_clicked();
+  void on_comboBoxFileFormat_currentIndexChanged(int);
+  void on_checkBoxEnableRemotePrintServices_toggled(bool);
+  void on_pushButtonOk_clicked();
+  void on_pushButtonCancel_clicked();
 
-    QString htmlTemplate;
-    print_service_t selectedPrintService = print_service_t::NONE;
-    QString selectedServiceName = "";
-    FileFormat selectedFileFormat = FileFormat::ASCII_STL;
-  };
+private:
+  void resetSelection();
+  void addRemotePrintServiceButtons();
+  void populateFileFormatComboBox(const std::vector<FileFormat>& fileFormats, FileFormat currentFormat);
+  void setFileFormat(const std::string& identifier);
+
+  QString htmlTemplate;
+  print_service_t selectedPrintService = print_service_t::NONE;
+  QString selectedServiceName = "";
+  FileFormat selectedFileFormat = FileFormat::ASCII_STL;
+  QList<QPushButton *> remoteServiceButtons;
+};
