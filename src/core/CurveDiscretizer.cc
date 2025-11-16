@@ -151,6 +151,88 @@ static double helix_arc_length(double r_sqr, double height, double twist_degrees
   return T * sqrt(r_sqr + c * c);
 }
 
+inline int helix_slices_given_fe(double fe, double r_sqr, double twist_degrees, int min_slices)
+{
+  // What does $fe mean in this context?
+  // The return value will be the number of pieces stacked vertically on each other.
+  // Say we're taking a centered square, twist=180, h=10.
+  // If we had ten slices, each slice would be 1 unit tall, and its top vertices would be rotated 18
+  // degrees from the bottom vertices. That also means there's a square of 4 vertices at z=0, 1, 2...10
+  // The stacked vertices are always precisely on the arc, but the line between them is a straight edge.
+  // So we could calculate the error from that straight edge to the helix arc.
+  // The larger the radius of the furthest point, the larger that error will be.
+  // This function could be changed, but all it currently knows about the vertices is the distance of the
+  // furthest vertex from the axis of rotation. No edge could stick out further than that vertex, because
+  // then it would need to terminate in a vertex, which would instead be the furthest vertex. So it seems
+  // reasonable that edges between this vertex in each level
+  //  will have more error from the helix path than any other point you could pick on the shape.
+  // So we should have all the information we need to make the best decision.
+
+  // First, bounds checking. The domain for our equations requires fe<=r.
+  const double r = sqrt(r_sqr);
+  if (fe <= r) return min_slices;
+
+  // Again we'll pretend we already know the number of slices, n.
+  // For one step:
+  // * Rotation around the central axis will be θ=twist_degrees/n degrees, no more than 120.
+  // * dz=height/n
+  // * Assuming x0=r and y0=0, then x1=r*cos(θ), y1=r*sin(θ)
+  // The point with the largest error will be at the midpoint of the line segment from
+  // (x0,0,0)->(x1,y1,dz) And we know the true arc point by substituting in θ/2 using the same equations
+  // we used for x1&y1. Midpoint (mp) will be ((x0-x1)/2 + x1, y1/2, dz/2)
+  //                   aka (x0/2+x1/2, y1/2, dz/2)
+  // True arc midpoint (am) is (r*cos(θ/2), r*sin(θ/2), dz/2)
+  // $fe will then be the distance between those two points.
+
+  // Initially I approached this as a difference of two vectors symbolically, which is very complicated:
+  // Of course, now we must work backward to make `n` the independent variable.
+  // fe = (am-mp).norm() = sqrt((am.x-mp.x)^2+(am.y-mp.y)^2+(am.z-mp.z)^2)
+  //   am.x-mp.x = r*cos(θ/2)-(r/2+r*cos(θ)/2)
+  //   am.x-mp.x = r*(cos(θ/2)-(1+cos(θ))/2)
+  //   am.y-mp.y = r*sin(θ/2) - r/2*sin(θ)
+  //   am.y-mp.y = r*(sin(θ/2) - sin(θ)/2)
+  //   am.z-mp.z = dz/2 - dz/2 = 0
+  // fe = sqrt((r*(cos(θ/2)-(1+cos(θ))/2))^2 + (r*(sin(θ/2) - sin(θ)/2))^2)
+  // The next steps to solve for θ are a bit complicated.
+  // The following was used in Maxima; some of it may be redundant and many dead-ends excised:
+  // assume(θ > 0, θ <= %pi/2);
+  // eq: fe = sqrt( (r*(cos(θ/2) - (1+cos(θ))/2))^2 + (r*(sin(θ/2) - sin(θ)/2))^2 )
+  // eq_sq: fe^2 = rhs(eq)^2;
+  // eq_reduce: trigreduce(eq_sq);
+  // eq_simp: fe^2 = trigsimp(rhs(eq_reduce));
+  // expand(eq_simp);
+  // eq_simp2: subst(2*cos(θ/2)^2-1, cos(θ), eq_simp);
+  // eq_simp3: subst(c,cos(θ/2),eq_simp2);
+  // eq_simp4: expand(eq_simp3);
+  // s1: solve(eq_simp4, c);
+  // eq2: subst(cos(θ/2),c,s1);
+  // s2_1: solve(eq2[1], θ);
+  // Which finally gives θ=2*%pi-2*acos(fe/r-1)
+
+  // Easier is to measure the distance from the origin at height dz/2.
+  // The arc distance is always r.
+  // The midpoint distance is sqrt(mp.x^2+mp.y^2). Switching to Maxima syntax:
+  // mp_d: sqrt((r/2+r*cos(θ)/2)^2+(r*sin(θ)/2)^2);
+  // mp_dr: radcan(mp_d);
+  // mp_ds: trigsimp(mp_dr);
+  // mp_dr: (sqrt(sin(θ)^2+cos(θ)^2+2*cos(θ)+1)*r)/2
+  // mp_ds: (sqrt(2*cos(θ)+2)*r)/2
+  // err1: r-mp_d;
+  // assume(r>0);
+  // s3: solve(fe=err1,r);
+  // s4: trigsimp(s3[1]);
+  // s5: solve(s4,θ);
+  // s5_s: trigsimp(s5[1]);
+  // Which yields θ=acos((r^2-4*fe*r+2*fe^2)/r^2)
+  // Fortunately that graphs to the same thing as θ=2(pi-acos(fe/r-1)) over the domain of interest (r>fe,
+  // 0<theta<120deg). So use the simpler equation.
+
+  double theta = 2 * (M_PI - acos(fe / r - 1));
+  int fe_slices = static_cast<int>(std::ceil(twist_degrees * M_DEG2RAD / theta));
+  // min_slices already handles the requirement to not exceed 120 degrees per step.
+  return std::max(fe_slices, min_slices);
+}
+
 std::optional<int> CurveDiscretizer::getHelixSlices(double r_sqr, double height,
                                                     double twist_degrees) const
 {
@@ -165,6 +247,10 @@ std::optional<int> CurveDiscretizer::getHelixSlices(double r_sqr, double height,
     const int fn_slices = static_cast<int>(std::ceil(twist_degrees / 360.0 * fn));
     return std::max(fn_slices, min_slices);
   }
+  if (fe > 0.0) {
+    return helix_slices_given_fe(fe, r_sqr, twist_degrees, min_slices);
+  }
+
   const int fa_slices = static_cast<int>(std::ceil(twist_degrees / fa));
   const int fs_slices = static_cast<int>(std::ceil(helix_arc_length(r_sqr, height, twist_degrees) / fs));
   return std::max(std::min(fa_slices, fs_slices), min_slices);
