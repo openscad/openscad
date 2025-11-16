@@ -51,6 +51,9 @@ TabManager::TabManager(MainWindow *o, const QString& filename)
   connect(tabWidget, &QTabWidget::currentChanged, this, &TabManager::updateFindState);
   connect(tabWidget, &QTabWidget::currentChanged, this, &TabManager::tabSwitched);
 
+  connect(par->editActionZoomTextIn, &QAction::triggered, this, &TabManager::zoomIn);
+  connect(par->editActionZoomTextOut, &QAction::triggered, this, &TabManager::zoomOut);
+
   createTab(filename);
 
   // Disable the closing button for the first tabbar
@@ -198,9 +201,6 @@ void TabManager::createTab(const QString& filename)
           &ScintillaEditor::onCharacterThresholdChanged);
   scintillaEditor->applySettings();
   editor->addTemplate();
-
-  connect(par->editActionZoomTextIn, &QAction::triggered, editor, &EditorInterface::zoomIn);
-  connect(par->editActionZoomTextOut, &QAction::triggered, editor, &EditorInterface::zoomOut);
 
   connect(editor, &EditorInterface::contentsChanged, this, &TabManager::updateActionUndoState);
   connect(editor, &EditorInterface::contentsChanged, par, &MainWindow::editorContentChanged);
@@ -749,4 +749,18 @@ bool TabManager::saveAll()
     }
   }
   return true;
+}
+
+void TabManager::zoomIn()
+{
+  if (editor) {
+    editor->zoomIn();
+  }
+}
+
+void TabManager::zoomOut()
+{
+  if (editor) {
+    editor->zoomOut();
+  }
 }

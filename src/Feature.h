@@ -20,6 +20,7 @@ public:
   static const Feature ExperimentalImportFunction;
   static const Feature ExperimentalObjectFunction;
   static const Feature ExperimentalPredictibleOutput;
+  static const Feature ExperimentalVectorSwizzle;
 #ifdef ENABLE_PYTHON
   static const Feature ExperimentalPythonEngine;
 #endif
