@@ -84,47 +84,47 @@ color([0, 0, 1, 1]) {
 	}
 	multmatrix([[1, 0, 0, 2.5], [0, 1, 0, 10.5], [0, 0, 1, 10], [0, 0, 0, 1]]) {
 		resize(newsize = [5,0,0], auto = [0,0,0], convexity = 0) {
-			sphere($fn = 8, $fa = 12, $fs = 2, r = 0.5);
+			sphere($fn = 8, $fa = 12, $fs = 2, r = 0.5, style = "orig");
 		}
 	}
 	multmatrix([[1, 0, 0, 0.5], [0, 1, 0, 23], [0, 0, 1, 10], [0, 0, 0, 1]]) {
 		resize(newsize = [0,6,0], auto = [0,0,0], convexity = 0) {
-			sphere($fn = 8, $fa = 12, $fs = 2, r = 0.5);
+			sphere($fn = 8, $fa = 12, $fs = 2, r = 0.5, style = "orig");
 		}
 	}
 	multmatrix([[1, 0, 0, 0.5], [0, 1, 0, 30.5], [0, 0, 1, 10], [0, 0, 0, 1]]) {
 		resize(newsize = [0,0,7], auto = [0,0,0], convexity = 0) {
-			sphere($fn = 8, $fa = 12, $fs = 2, r = 0.5);
+			sphere($fn = 8, $fa = 12, $fs = 2, r = 0.5, style = "orig");
 		}
 	}
 	multmatrix([[1, 0, 0, 2.5], [0, 1, 0, 43], [0, 0, 1, 10], [0, 0, 0, 1]]) {
 		resize(newsize = [5,6,0], auto = [0,0,0], convexity = 0) {
-			sphere($fn = 8, $fa = 12, $fs = 2, r = 0.5);
+			sphere($fn = 8, $fa = 12, $fs = 2, r = 0.5, style = "orig");
 		}
 	}
 	multmatrix([[1, 0, 0, 2.5], [0, 1, 0, 50.5], [0, 0, 1, 10], [0, 0, 0, 1]]) {
 		resize(newsize = [5,0,7], auto = [0,0,0], convexity = 0) {
-			sphere($fn = 8, $fa = 12, $fs = 2, r = 0.5);
+			sphere($fn = 8, $fa = 12, $fs = 2, r = 0.5, style = "orig");
 		}
 	}
 	multmatrix([[1, 0, 0, 0.5], [0, 1, 0, 63], [0, 0, 1, 10], [0, 0, 0, 1]]) {
 		resize(newsize = [0,6,7], auto = [0,0,0], convexity = 0) {
-			sphere($fn = 8, $fa = 12, $fs = 2, r = 0.5);
+			sphere($fn = 8, $fa = 12, $fs = 2, r = 0.5, style = "orig");
 		}
 	}
 	multmatrix([[1, 0, 0, 4], [0, 1, 0, 74.5], [0, 0, 1, 10], [0, 0, 0, 1]]) {
 		resize(newsize = [8,9,0], auto = [0,0,0], convexity = 0) {
-			sphere($fn = 8, $fa = 12, $fs = 2, r = 0.5);
+			sphere($fn = 8, $fa = 12, $fs = 2, r = 0.5, style = "orig");
 		}
 	}
 	multmatrix([[1, 0, 0, 4.5], [0, 1, 0, 80.5], [0, 0, 1, 10], [0, 0, 0, 1]]) {
 		resize(newsize = [9,0,0], auto = [0,0,0], convexity = 0) {
-			sphere($fn = 8, $fa = 12, $fs = 2, r = 0.5);
+			sphere($fn = 8, $fa = 12, $fs = 2, r = 0.5, style = "orig");
 		}
 	}
 	multmatrix([[1, 0, 0, 2.5], [0, 1, 0, 93], [0, 0, 1, 10], [0, 0, 0, 1]]) {
 		resize(newsize = [5,6,7], auto = [0,0,0], convexity = 0) {
-			sphere($fn = 8, $fa = 12, $fs = 2, r = 0.5);
+			sphere($fn = 8, $fa = 12, $fs = 2, r = 0.5, style = "orig");
 		}
 	}
 }
@@ -194,7 +194,7 @@ color([0.501961, 0, 0.501961, 1]) {
 	}
 	multmatrix([[1, 0, 0, 13.5], [0, 1, 0, 33.5], [0, 0, 1, 10], [0, 0, 0, 1]]) {
 		resize(newsize = [7,0,0], auto = [1,0,0], convexity = 0) {
-			sphere($fn = 8, $fa = 12, $fs = 2, r = 1);
+			sphere($fn = 8, $fa = 12, $fs = 2, r = 1, style = "orig");
 		}
 	}
 	multmatrix([[1, 0, 0, 10], [0, 1, 0, 40], [0, 0, 1, 10], [0, 0, 0, 1]]) {
@@ -209,7 +209,7 @@ color([0.501961, 0, 0.501961, 1]) {
 	}
 	multmatrix([[1, 0, 0, 13.5], [0, 1, 0, 63.5], [0, 0, 1, 10], [0, 0, 0, 1]]) {
 		resize(newsize = [7,0,0], auto = [0,1,0], convexity = 0) {
-			sphere($fn = 8, $fa = 12, $fs = 2, r = 1);
+			sphere($fn = 8, $fa = 12, $fs = 2, r = 1, style = "orig");
 		}
 	}
 	multmatrix([[1, 0, 0, 10], [0, 1, 0, 70], [0, 0, 1, 10], [0, 0, 0, 1]]) {

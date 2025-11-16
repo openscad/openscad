@@ -96,28 +96,28 @@ multmatrix([[1, 0, 0, 15], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 			}
 			group() {
 				multmatrix([[1, 0, 0, -5], [0, 1, 0, -10], [0, 0, 1, -15], [0, 0, 0, 1]]) {
-					sphere($fn = 0, $fa = 12, $fs = 2, r = 5);
+					sphere($fn = 0, $fa = 12, $fs = 2, r = 5, style = "orig");
 				}
 				multmatrix([[1, 0, 0, -5], [0, 1, 0, -10], [0, 0, 1, 15], [0, 0, 0, 1]]) {
-					sphere($fn = 0, $fa = 12, $fs = 2, r = 5);
+					sphere($fn = 0, $fa = 12, $fs = 2, r = 5, style = "orig");
 				}
 				multmatrix([[1, 0, 0, -5], [0, 1, 0, 10], [0, 0, 1, -15], [0, 0, 0, 1]]) {
-					sphere($fn = 0, $fa = 12, $fs = 2, r = 5);
+					sphere($fn = 0, $fa = 12, $fs = 2, r = 5, style = "orig");
 				}
 				multmatrix([[1, 0, 0, -5], [0, 1, 0, 10], [0, 0, 1, 15], [0, 0, 0, 1]]) {
-					sphere($fn = 0, $fa = 12, $fs = 2, r = 5);
+					sphere($fn = 0, $fa = 12, $fs = 2, r = 5, style = "orig");
 				}
 				multmatrix([[1, 0, 0, 5], [0, 1, 0, -10], [0, 0, 1, -15], [0, 0, 0, 1]]) {
-					sphere($fn = 0, $fa = 12, $fs = 2, r = 5);
+					sphere($fn = 0, $fa = 12, $fs = 2, r = 5, style = "orig");
 				}
 				multmatrix([[1, 0, 0, 5], [0, 1, 0, -10], [0, 0, 1, 15], [0, 0, 0, 1]]) {
-					sphere($fn = 0, $fa = 12, $fs = 2, r = 5);
+					sphere($fn = 0, $fa = 12, $fs = 2, r = 5, style = "orig");
 				}
 				multmatrix([[1, 0, 0, 5], [0, 1, 0, 10], [0, 0, 1, -15], [0, 0, 0, 1]]) {
-					sphere($fn = 0, $fa = 12, $fs = 2, r = 5);
+					sphere($fn = 0, $fa = 12, $fs = 2, r = 5, style = "orig");
 				}
 				multmatrix([[1, 0, 0, 5], [0, 1, 0, 10], [0, 0, 1, 15], [0, 0, 0, 1]]) {
-					sphere($fn = 0, $fa = 12, $fs = 2, r = 5);
+					sphere($fn = 0, $fa = 12, $fs = 2, r = 5, style = "orig");
 				}
 			}
 		}

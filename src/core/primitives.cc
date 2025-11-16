@@ -192,6 +192,15 @@ std::unique_ptr<const Geometry> SphereNode::createGeometry() const
     return PolySet::createEmpty();
   }
 
+  if (this->style == "octa") {
+    return this->createGeometryOcta();
+  } else {
+    return this->createGeometryOrig();
+  }
+}
+
+std::unique_ptr<const Geometry> SphereNode::createGeometryOrig() const
+{
   auto num_fragments = Calc::get_fragments_from_r(r, fn, fs, fa);
   auto num_rings = (num_fragments + 1) / 2;
   // Uncomment the following three lines to enable experimental sphere
@@ -234,20 +243,141 @@ std::unique_ptr<const Geometry> SphereNode::createGeometry() const
   return polyset;
 }
 
+static Vector3d spherical_to_xyz(double r, double theta, double phi)
+{
+  return {r * cos_degrees(theta) * sin_degrees(phi), r * sin_degrees(theta) * sin_degrees(phi),
+          r * cos_degrees(phi)};
+}
+
+static std::vector<int> cumsum(std::vector<int> a)
+{
+  std::vector<int> result;
+
+  int t = 0;
+  for (int v : a) {
+    t += v;
+    result.push_back(t);
+  }
+  return result;
+}
+
+std::unique_ptr<const Geometry> SphereNode::createGeometryOcta() const
+{
+  auto num_fragments = Calc::get_fragments_from_r(r, fn, fs, fa);
+  auto octa_steps = (std::max(4, num_fragments) + 2) / 4;
+
+  int nverts = 0;
+
+  std::vector<int> meridians1;
+  meridians1.push_back(1);
+  nverts++;
+  for (int i = 1; i <= octa_steps; i++) {
+    meridians1.push_back(i * 4);
+    nverts += i * 4;
+  }
+  for (int i = octa_steps - 1; i >= 1; i--) {
+    meridians1.push_back(i * 4);
+    nverts += i * 4;
+  }
+  meridians1.push_back(1);
+  auto nmeridians1 = meridians1.size();
+  nverts++;
+
+  auto polyset = std::make_unique<PolySet>(3, /*convex*/ true);
+  polyset->vertices.reserve(nverts);
+  for (int i = 0; i < nmeridians1; i++) {
+    for (int j = 0; j < meridians1[i]; j++) {
+      polyset->vertices.push_back(
+        spherical_to_xyz(r, j * 360 / meridians1[i], i * 180 / (nmeridians1 - 1)));
+    }
+  }
+  assert(polysets->vertices.size() == nverts);
+
+  std::vector<int> meridians2;
+  meridians2.push_back(0);
+  meridians2.push_back(1);
+  for (int i = 1; i <= octa_steps; i++) {
+    meridians2.push_back(i * 4);
+  }
+  for (int i = octa_steps - 1; i >= 1; i--) {
+    meridians2.push_back(i * 4);
+  }
+  meridians2.push_back(1);
+  auto nmeridians2 = meridians2.size();
+
+  auto offs = cumsum(meridians2);
+  int pc = offs[offs.size() - 1] - 1;
+  int os = octa_steps * 2;
+
+  for (int i = 0; i <= 3; i++) {
+    polyset->indices.push_back({0, 1 + (i + 1) % 4, 1 + i});
+  }
+  for (int i = 0; i <= 3; i++) {
+    polyset->indices.push_back({pc - 0, pc - (1 + (i + 1) % 4), pc - (1 + i)});
+  }
+  for (int i = 1; i <= octa_steps - 1; i++) {
+    int m = meridians2[i + 2] / 4;
+    for (int j = 0; j <= 3; j++) {
+      for (int k = 0; k <= m - 1; k++) {
+        int m1 = meridians2[i + 1];
+        int m2 = meridians2[i + 2];
+        int p1 = offs[i + 0] + (j * m1 / 4 + k + 0) % m1;
+        int p2 = offs[i + 0] + (j * m1 / 4 + k + 1) % m1;
+        int p3 = offs[i + 1] + (j * m2 / 4 + k + 0) % m2;
+        int p4 = offs[i + 1] + (j * m2 / 4 + k + 1) % m2;
+        int p5 = offs[os - i + 0] + (j * m1 / 4 + k + 0) % m1;
+        int p6 = offs[os - i + 0] + (j * m1 / 4 + k + 1) % m1;
+        int p7 = offs[os - i - 1] + (j * m2 / 4 + k + 0) % m2;
+        int p8 = offs[os - i - 1] + (j * m2 / 4 + k + 1) % m2;
+        polyset->indices.push_back({p1, p4, p3});
+        if (k < m - 1) {
+          polyset->indices.push_back({p1, p2, p4});
+        }
+        polyset->indices.push_back({p5, p7, p8});
+        if (k < m - 1) {
+          polyset->indices.push_back({p5, p8, p6});
+        }
+      }
+    }
+  }
+
+  // The algorithm above is taken from BOSL2, where the results are intended
+  // to be fed into polyhedron().  polyhedron() wants its vertices clockwise
+  // when viewed from the outside - left-hand rule.  On the other hand,
+  // internal processing wants them counter-clockwise - right-hand rule.
+  for (auto& poly : polyset->indices) {
+    std::reverse(poly.begin(), poly.end());
+  }
+
+  return polyset;
+}
+
 static std::shared_ptr<AbstractNode> builtin_sphere(const ModuleInstantiation *inst, Arguments arguments)
 {
   auto node = std::make_shared<SphereNode>(inst);
-
-  Parameters parameters = Parameters::parse(std::move(arguments), inst->location(), {"r"}, {"d"});
+  Parameters parameters =
+    Parameters::parse(std::move(arguments), inst->location(), {"r"}, {"d", "style"});
 
   set_fragments(parameters, inst, node->fn, node->fs, node->fa);
+
   const auto r = lookup_radius(parameters, inst, "d", "r");
-  if (r.type() == Value::Type::NUMBER) {
-    node->r = r.toDouble();
-    if (OpenSCAD::rangeCheck && (node->r <= 0 || !std::isfinite(node->r))) {
-      LOG(message_group::Warning, inst->location(), parameters.documentRoot(), "sphere(r=%1$s)",
-          r.toEchoStringNoThrow());
-    }
+  if (r.type() != Value::Type::NUMBER) {
+    return node;
+  }
+
+  node->r = r.toDouble();
+  if (OpenSCAD::rangeCheck && (node->r <= 0 || !std::isfinite(node->r))) {
+    LOG(message_group::Warning, inst->location(), parameters.documentRoot(), "sphere(r=%1$s)",
+        r.toEchoStringNoThrow());
+  }
+
+  (void)parameters.valid("style", Value::Type::STRING);
+  node->style = parameters.get("style", "orig");
+
+  if (!(node->style == "orig" || node->style == "octa")) {
+    LOG(message_group::Warning, inst->location(), parameters.documentRoot(), "bad style value \"%1$s\"",
+        node->style);
+    node->style = "orig";
   }
 
   return node;

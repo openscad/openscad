@@ -26,7 +26,7 @@ group() {
 					}
 				}
 			}
-			sphere($fn = 12, $fa = 12, $fs = 2, r = 1);
+			sphere($fn = 12, $fa = 12, $fs = 2, r = 1, style = "orig");
 		}
 	}
 }

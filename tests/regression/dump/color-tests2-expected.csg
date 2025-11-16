@@ -4,7 +4,7 @@ multmatrix([[-0, 1, 0, 0], [-1, 0, 0, 0], [-0, 0, 1, 0], [0, 0, 0, 1]]) {
 			render(convexity = 1) {
 				difference() {
 					color([1, 0, 0, 1]) {
-						sphere($fn = 0, $fa = 12, $fs = 2, r = 10);
+						sphere($fn = 0, $fa = 12, $fs = 2, r = 10, style = "orig");
 					}
 					color([0, 0, 1, 1]) {
 						cube(size = [10, 10, 10], center = false);
