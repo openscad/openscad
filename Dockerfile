@@ -1,6 +1,6 @@
 # docker buildx build --platform linux/amd64,linux/arm64,linux/riscv64 -t gounthar/openscad:latest --output type=local,dest=./output .
 # Use the slim version of Debian Bookworm as the base image
-FROM debian:unstable-20250113-slim
+FROM debian:unstable-20250428-slim
 
 # Install necessary packages and libraries
 RUN apt-get update && apt-get install -y --no-install-recommends \
