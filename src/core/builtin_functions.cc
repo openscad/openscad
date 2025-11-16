@@ -954,10 +954,9 @@ Value builtin_textmetrics(Arguments arguments, const Location& loc)
                       {"direction", "language", "script", "halign", "valign", "spacing"});
   parameters.set_caller("textmetrics");
 
-  FreetypeRenderer::Params ftparams;
+  FreetypeRenderer::Params ftparams(parameters);
   ftparams.set_loc(loc);
   ftparams.set_documentPath(session->documentRoot());
-  ftparams.set(parameters);
   ftparams.detect_properties();
 
   FreetypeRenderer::TextMetrics metrics(ftparams);
@@ -1005,10 +1004,9 @@ Value builtin_fontmetrics(Arguments arguments, const Location& loc)
   Parameters parameters = Parameters::parse(std::move(arguments), loc, {"size", "font"});
   parameters.set_caller("fontmetrics");
 
-  FreetypeRenderer::Params ftparams;
+  FreetypeRenderer::Params ftparams(parameters);
   ftparams.set_loc(loc);
   ftparams.set_documentPath(session->documentRoot());
-  ftparams.set(parameters);
   ftparams.detect_properties();
 
   FreetypeRenderer::FontMetrics metrics(ftparams);

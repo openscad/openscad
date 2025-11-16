@@ -8,7 +8,7 @@ group() {
 				square(size = [1, 135], center = false);
 			}
 		}
-		text(text = "OpenSCAD", size = 20, spacing = 1, font = "Liberation Sans:style=Regular", direction = "btt", language = "en", script = "Latn", halign = "default", valign = "top", $fn = 0, $fa = 12, $fs = 2);
+		text(text = "OpenSCAD", size = 20, spacing = 1, font = "Liberation Sans:style=Regular", direction = "btt", language = "en", script = "Latn", halign = "default", valign = "top", $fn = 0, $fe = 0, $fa = 12, $fs = 2);
 	}
 	multmatrix([[1, 0, 0, 50], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 		color([1, 0, 0, 1]) {
@@ -19,7 +19,7 @@ group() {
 				square(size = [1, 135], center = false);
 			}
 		}
-		text(text = "OpenSCAD", size = 20, spacing = 1, font = "Liberation Sans:style=Regular", direction = "btt", language = "en", script = "Latn", halign = "default", valign = "center", $fn = 0, $fa = 12, $fs = 2);
+		text(text = "OpenSCAD", size = 20, spacing = 1, font = "Liberation Sans:style=Regular", direction = "btt", language = "en", script = "Latn", halign = "default", valign = "center", $fn = 0, $fe = 0, $fa = 12, $fs = 2);
 	}
 	multmatrix([[1, 0, 0, 100], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 		color([1, 0, 0, 1]) {
@@ -30,7 +30,7 @@ group() {
 				square(size = [1, 135], center = false);
 			}
 		}
-		text(text = "OpenSCAD", size = 20, spacing = 1, font = "Liberation Sans:style=Regular", direction = "btt", language = "en", script = "Latn", halign = "default", valign = "bottom", $fn = 0, $fa = 12, $fs = 2);
+		text(text = "OpenSCAD", size = 20, spacing = 1, font = "Liberation Sans:style=Regular", direction = "btt", language = "en", script = "Latn", halign = "default", valign = "bottom", $fn = 0, $fe = 0, $fa = 12, $fs = 2);
 	}
 }
 group() {
@@ -43,7 +43,7 @@ group() {
 				square(size = [1, 135], center = false);
 			}
 		}
-		text(text = "OpenSCAD", size = 20, spacing = 1, font = "Liberation Sans:style=Regular", direction = "btt", language = "en", script = "Latn", halign = "left", valign = "default", $fn = 0, $fa = 12, $fs = 2);
+		text(text = "OpenSCAD", size = 20, spacing = 1, font = "Liberation Sans:style=Regular", direction = "btt", language = "en", script = "Latn", halign = "left", valign = "default", $fn = 0, $fe = 0, $fa = 12, $fs = 2);
 	}
 	multmatrix([[1, 0, 0, 260], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 		color([1, 0, 0, 1]) {
@@ -54,7 +54,7 @@ group() {
 				square(size = [1, 135], center = false);
 			}
 		}
-		text(text = "OpenSCAD", size = 20, spacing = 1, font = "Liberation Sans:style=Regular", direction = "btt", language = "en", script = "Latn", halign = "center", valign = "default", $fn = 0, $fa = 12, $fs = 2);
+		text(text = "OpenSCAD", size = 20, spacing = 1, font = "Liberation Sans:style=Regular", direction = "btt", language = "en", script = "Latn", halign = "center", valign = "default", $fn = 0, $fe = 0, $fa = 12, $fs = 2);
 	}
 	multmatrix([[1, 0, 0, 320], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 		color([1, 0, 0, 1]) {
@@ -65,7 +65,7 @@ group() {
 				square(size = [1, 135], center = false);
 			}
 		}
-		text(text = "OpenSCAD", size = 20, spacing = 1, font = "Liberation Sans:style=Regular", direction = "btt", language = "en", script = "Latn", halign = "right", valign = "default", $fn = 0, $fa = 12, $fs = 2);
+		text(text = "OpenSCAD", size = 20, spacing = 1, font = "Liberation Sans:style=Regular", direction = "btt", language = "en", script = "Latn", halign = "right", valign = "default", $fn = 0, $fe = 0, $fa = 12, $fs = 2);
 	}
 }
 
