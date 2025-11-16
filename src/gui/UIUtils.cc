@@ -119,10 +119,8 @@ void enumerateExamples(const fs::path& dir)
     auto fileInfo =
       QFileInfo{QDir{QString::fromStdString(entry.path().generic_string())}, "example-dir.json"};
     QJsonObject obj;
-    if (fileInfo.isReadable()) {
-      QFile file;
-      file.setFileName(fileInfo.filePath());
-      file.open(QIODevice::ReadOnly);
+    QFile file(fileInfo.filePath());
+    if (file.open(QIODevice::ReadOnly)) {
       obj = QJsonDocument::fromJson(file.readAll()).object();
     }
     readExamplesDir(obj, entry.path());
