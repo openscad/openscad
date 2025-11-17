@@ -161,6 +161,7 @@ public slots:
   void on_checkBoxAlwaysShowExportPdfDialog_toggled(bool);
   void on_checkBoxAlwaysShowExport3mfDialog_toggled(bool);
   void on_checkBoxAlwaysShowPrintServiceDialog_toggled(bool);
+  void on_checkBoxGlobalTrustPython_toggled(bool);
 
 signals:
   void requestRedraw() const;

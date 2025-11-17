@@ -31,6 +31,7 @@
 #include "gui/ScintillaEditor.h"
 #include "gui/Preferences.h"
 #include "gui/MainWindow.h"
+#include <genlang/genlang.h>
 
 #include <cstddef>
 
@@ -452,7 +453,7 @@ void TabManager::openTabFile(const QString& filename)
 #ifdef ENABLE_PYTHON
   if (boost::algorithm::ends_with(filename, ".py")) {
     std::string templ = "from openscad import *\n";
-    std::string libs = Settings::Settings::pythonNetworkImportList.value();
+    std::string libs = Settings::SettingsPython::pythonNetworkImportList.value();
     std::stringstream ss(libs);
     std::string word;
     while (std::getline(ss, word, '\n')) {
@@ -543,6 +544,8 @@ bool TabManager::refreshDocument()
         editor->setPlainText(text);
         setContentRenderState();  // since last render
       }
+      if (language == LANG_PYTHON)
+        par->trust_python_file(editor->filepath.toStdString(), text.toStdString());
       file_opened = true;
     }
   }

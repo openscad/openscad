@@ -2789,6 +2789,20 @@
            <widget class="QTextEdit" name="textEditPythonImportList">
            </widget>
           </item>
+	  <item row="1" column="1">
+           <widget class="QLabel" name="labelGlobalTrustPython">
+            <property name="text">
+             <string>Globally trust Python</string>
+            </property>
+           </widget>
+          </item>
+	  <item row="1" column="2">
+            <widget class="QCheckBox" name="checkBoxGlobalTrustPython">
+             <property name="text">
+              <string>Really (very dangerous)</string>
+             </property>
+            </widget>
+          </item>
          </layout>
         </item>
        </layout>

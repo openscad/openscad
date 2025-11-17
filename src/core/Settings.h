@@ -417,7 +417,6 @@ public:
   static SettingsEntryString octoPrintSlicerProfile;
   static SettingsEntryString octoPrintSlicerProfileDesc;
 
-  static SettingsEntryString pythonNetworkImportList;
   static SettingsEntryString localAppExecutable;
   static SettingsEntryString localAppTempDir;
   static SettingsEntryList<LocalAppParameter> localAppParameterList;
@@ -524,6 +523,8 @@ class SettingsPython
 public:
   static SettingsEntryString pythonTrustedFiles;
   static SettingsEntryString pythonVirtualEnv;
+  static SettingsEntryString pythonNetworkImportList;
+  static SettingsEntryBool globalTrustPython;
 };
 
 class SettingsExportPdf
