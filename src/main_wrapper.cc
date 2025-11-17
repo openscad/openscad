@@ -4,7 +4,8 @@ extern int qInitResources_icons_chokusen();
 extern int qInitResources_icons_chokusen_dark();
 extern int qInitResources_mac();
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
 #ifndef OPENSCAD_NOGUI
   (void)qInitResources_common();
   (void)qInitResources_icons_chokusen();
