@@ -384,6 +384,47 @@ if (Test-Path $msys2Path) {
 }
 Write-Host ""
 
+# Install Mesa for software OpenGL rendering
+Write-Host "Setting up Mesa (software OpenGL)..." -ForegroundColor Yellow
+$mesaVersion = "24.2.7"
+$mesaInstallDir = "$env:LOCALAPPDATA\mesa"
+$mesaUrl = "https://github.com/pal1000/mesa-dist-win/releases/download/$mesaVersion/mesa3d-$mesaVersion-release-msvc.7z"
+$mesaArchive = "$env:TEMP\mesa.7z"
+
+if (-not (Test-Path "$mesaInstallDir\x64\opengl32.dll")) {
+    Write-Host "  Downloading Mesa $mesaVersion..."
+    Invoke-WebRequest -Uri $mesaUrl -OutFile $mesaArchive
+
+    Write-Host "  Extracting Mesa..."
+    if (-not (Test-Path $mesaInstallDir)) {
+        New-Item -ItemType Directory -Path $mesaInstallDir -Force | Out-Null
+    }
+
+    # Use 7z if available, otherwise use tar
+    if (Test-Command 7z) {
+        7z x $mesaArchive -o"$mesaInstallDir" -y
+    } else {
+        # Extract using PowerShell's Expand-Archive (requires .zip format)
+        Write-Host "  Note: 7z not found. Attempting to use built-in extraction..." -ForegroundColor Yellow
+        Write-Host "  You may want to install 7-Zip for better .7z support" -ForegroundColor Yellow
+        # Try to use tar which supports 7z on newer Windows
+        tar -xf $mesaArchive -C $mesaInstallDir
+    }
+
+    if ($LASTEXITCODE -ne 0 -and $LASTEXITCODE -ne $null) {
+        Write-Host "WARNING: Mesa extraction may have failed. Continuing anyway..." -ForegroundColor Yellow
+    }
+
+    Remove-Item -Force $mesaArchive -ErrorAction SilentlyContinue
+    Write-Host "✓ Mesa installed to $mesaInstallDir" -ForegroundColor Green
+} else {
+    Write-Host "✓ Mesa already installed at $mesaInstallDir" -ForegroundColor Green
+}
+
+# Add Mesa to PATH for runtime
+$env:PATH = "$mesaInstallDir\x64;$env:PATH"
+Write-Host ""
+
 # Install Python dependencies
 Write-Host "Installing Python dependencies..." -ForegroundColor Yellow
 
@@ -551,6 +592,12 @@ if (-not $SkipBuild) {
         Copy-Item "$vcpkgBinDir\*.dll" -Destination $releaseDir -ErrorAction SilentlyContinue
     }
 
+    # Copy Mesa DLLs for software OpenGL rendering
+    $mesaInstallDir = "$env:LOCALAPPDATA\mesa"
+    if (Test-Path "$mesaInstallDir\x64") {
+        Copy-Item "$mesaInstallDir\x64\*.dll" -Destination $releaseDir -ErrorAction SilentlyContinue
+    }
+
     Write-Host "✓ Runtime DLLs copied" -ForegroundColor Green
     Write-Host ""
 }
@@ -566,8 +613,9 @@ if ($RunTests) {
         $env:PYTHONPATH = "$pythonToolsDir\Lib;$pythonToolsDir\Lib\site-packages"
     }
 
-    # Add Qt to PATH for tests
-    $env:PATH = "$Qt6Path\bin;$Qt6Path\lib;$env:PATH"
+    # Add Qt and Mesa to PATH for tests
+    $mesaInstallDir = "$env:LOCALAPPDATA\mesa"
+    $env:PATH = "$Qt6Path\bin;$Qt6Path\lib;$mesaInstallDir\x64;$env:PATH"
 
     Push-Location $BuildDir
     try {

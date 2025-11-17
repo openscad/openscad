@@ -24,12 +24,6 @@
     "python3",
     "cairo",
     "pkgconf",
-    "lib3mf",
-    {
-      "name": "mesa",
-      "platform": "windows",
-      "default-features": false,
-      "features": ["gles1", "gles2"]
-    }
+    "lib3mf"
   ]
 }
