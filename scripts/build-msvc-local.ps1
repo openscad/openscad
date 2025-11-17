@@ -384,6 +384,37 @@ if (Test-Path $msys2Path) {
 }
 Write-Host ""
 
+# Install 7-Zip if not available (needed for Mesa extraction)
+if (-not (Test-Command 7z)) {
+    Write-Host "Installing 7-Zip..." -ForegroundColor Yellow
+    $7zipInstaller = "$env:TEMP\7z-install.exe"
+    $7zipUrl = "https://www.7-zip.org/a/7z2408-x64.exe"
+
+    Invoke-WebRequest -Uri $7zipUrl -OutFile $7zipInstaller
+
+    # Install silently
+    Start-Process -FilePath $7zipInstaller -ArgumentList "/S" -Wait -NoNewWindow
+
+    # Add 7-Zip to PATH for this session
+    $7zipPath = "${env:ProgramFiles}\7-Zip"
+    if (Test-Path $7zipPath) {
+        $env:PATH = "$7zipPath;$env:PATH"
+    }
+
+    Remove-Item -Force $7zipInstaller -ErrorAction SilentlyContinue
+
+    # Verify installation
+    if (Test-Command 7z) {
+        Write-Host "✓ 7-Zip installed successfully" -ForegroundColor Green
+    } else {
+        Write-Host "ERROR: Failed to install 7-Zip" -ForegroundColor Red
+        exit 1
+    }
+} else {
+    Write-Host "✓ 7-Zip already installed" -ForegroundColor Green
+}
+Write-Host ""
+
 # Install Mesa for software OpenGL rendering
 Write-Host "Setting up Mesa (software OpenGL)..." -ForegroundColor Yellow
 $mesaVersion = "24.2.7"
@@ -394,25 +425,27 @@ $mesaArchive = "$env:TEMP\mesa.7z"
 if (-not (Test-Path "$mesaInstallDir\x64\opengl32.dll")) {
     Write-Host "  Downloading Mesa $mesaVersion..."
     Invoke-WebRequest -Uri $mesaUrl -OutFile $mesaArchive
+    if ($LASTEXITCODE -ne 0) {
+        Write-Host "ERROR: Failed to download Mesa" -ForegroundColor Red
+        exit 1
+    }
 
     Write-Host "  Extracting Mesa..."
     if (-not (Test-Path $mesaInstallDir)) {
         New-Item -ItemType Directory -Path $mesaInstallDir -Force | Out-Null
     }
 
-    # Use 7z if available, otherwise use tar
-    if (Test-Command 7z) {
-        7z x $mesaArchive -o"$mesaInstallDir" -y
-    } else {
-        # Extract using PowerShell's Expand-Archive (requires .zip format)
-        Write-Host "  Note: 7z not found. Attempting to use built-in extraction..." -ForegroundColor Yellow
-        Write-Host "  You may want to install 7-Zip for better .7z support" -ForegroundColor Yellow
-        # Try to use tar which supports 7z on newer Windows
-        tar -xf $mesaArchive -C $mesaInstallDir
+    # Extract using 7-Zip
+    & 7z x $mesaArchive "-o$mesaInstallDir" -y | Out-Null
+    if ($LASTEXITCODE -ne 0) {
+        Write-Host "ERROR: Failed to extract Mesa archive" -ForegroundColor Red
+        exit 1
     }
 
-    if ($LASTEXITCODE -ne 0 -and $LASTEXITCODE -ne $null) {
-        Write-Host "WARNING: Mesa extraction may have failed. Continuing anyway..." -ForegroundColor Yellow
+    # Verify extraction succeeded
+    if (-not (Test-Path "$mesaInstallDir\x64\opengl32.dll")) {
+        Write-Host "ERROR: Mesa extraction failed - opengl32.dll not found" -ForegroundColor Red
+        exit 1
     }
 
     Remove-Item -Force $mesaArchive -ErrorAction SilentlyContinue
