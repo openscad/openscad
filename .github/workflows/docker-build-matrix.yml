@@ -1,0 +1,128 @@
+name: Build and Push Docker Image (Multi-Platform)
+
+on:
+  push:
+    branches:
+      - multiplatform
+  pull_request:
+    branches:
+      - multiplatform
+
+env:
+  DOCKER_HUB_REPO: gounthar/openscad
+  GITHUB_PACKAGES_REPO: ghcr.io/gounthar/openscad
+  VERSION: latest
+
+jobs:
+  # Build each architecture in parallel
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false  # Continue other builds even if one fails
+      matrix:
+        platform:
+          - linux/amd64
+          - linux/arm64
+          - linux/riscv64
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Prepare platform tag
+        id: prep
+        run: |
+          PLATFORM_PAIR=$(echo ${{ matrix.platform }} | tr / -)
+          echo "platform-tag=${PLATFORM_PAIR}" >> $GITHUB_OUTPUT
+          echo "cache-key=openscad-${PLATFORM_PAIR}-$(date +%Y%m%d)" >> $GITHUB_OUTPUT
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_TOKEN }}
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push by digest
+        id: build
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          platforms: ${{ matrix.platform }}
+          cache-from: type=gha,scope=${{ steps.prep.outputs.cache-key }}
+          cache-to: type=gha,mode=max,scope=${{ steps.prep.outputs.cache-key }}
+          outputs: type=image,name=${{ env.DOCKER_HUB_REPO }},push-by-digest=true,name-canonical=true,push=true
+
+      - name: Export digest
+        run: |
+          mkdir -p /tmp/digests
+          digest="${{ steps.build.outputs.digest }}"
+          touch "/tmp/digests/${digest#sha256:}"
+
+      - name: Upload digest
+        uses: actions/upload-artifact@v4
+        with:
+          name: digests-${{ steps.prep.outputs.platform-tag }}
+          path: /tmp/digests/*
+          if-no-files-found: error
+          retention-days: 1
+
+  # Merge all architecture images into multi-platform manifests
+  merge:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Download digests
+        uses: actions/download-artifact@v4
+        with:
+          path: /tmp/digests
+          pattern: digests-*
+          merge-multiple: true
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_TOKEN }}
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create manifest list and push to Docker Hub
+        working-directory: /tmp/digests
+        run: |
+          docker buildx imagetools create \
+            --tag ${{ env.DOCKER_HUB_REPO }}:${{ env.VERSION }} \
+            $(printf '${{ env.DOCKER_HUB_REPO }}@sha256:%s ' *)
+
+      - name: Create manifest list and push to GitHub Packages
+        working-directory: /tmp/digests
+        run: |
+          docker buildx imagetools create \
+            --tag ${{ env.GITHUB_PACKAGES_REPO }}:${{ env.VERSION }} \
+            $(printf '${{ env.DOCKER_HUB_REPO }}@sha256:%s ' *)
+
+      - name: Inspect images
+        run: |
+          docker buildx imagetools inspect ${{ env.DOCKER_HUB_REPO }}:${{ env.VERSION }}
+          docker buildx imagetools inspect ${{ env.GITHUB_PACKAGES_REPO }}:${{ env.VERSION }}
