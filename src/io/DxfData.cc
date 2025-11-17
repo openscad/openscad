@@ -51,6 +51,7 @@
 #include "utils/degree_trig.h"
 #include "utils/printutils.h"
 #include "utils/printutils.h"
+#include "src/core/ColorUtil.h"
 
 namespace fs = std::filesystem;
 
@@ -586,5 +587,6 @@ std::unique_ptr<Polygon2d> DxfData::toPolygon2d() const
     }
     poly->addOutline(outline);
   }
+  poly->setColor(*OpenSCAD::parse_color("#f9d72c"));
   return poly;
 }

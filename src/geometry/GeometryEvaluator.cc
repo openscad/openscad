@@ -1594,7 +1594,7 @@ std::unique_ptr<Polygon2d> GeometryEvaluator::applyHull2D(const AbstractNode& no
 {
   auto children = collectChildren2D(node);
   auto geometry = std::make_unique<Polygon2d>();
-
+  Color4f resultcolor;
 #ifdef ENABLE_CGAL
   using CGALPoint2 = CGAL::Point_2<CGAL_DoubleKernel>;
   // Collect point cloud
@@ -1602,6 +1602,7 @@ std::unique_ptr<Polygon2d> GeometryEvaluator::applyHull2D(const AbstractNode& no
   for (const auto& p : children) {
     if (p) {
       for (const auto& o : p->outlines()) {
+        if (resultcolor.r() < 0) resultcolor = o.color;
         for (const auto& v : o.vertices) {
           points.emplace_back(v[0], v[1]);
         }
@@ -1618,6 +1619,7 @@ std::unique_ptr<Polygon2d> GeometryEvaluator::applyHull2D(const AbstractNode& no
       for (const auto& p : result) {
         outline.vertices.emplace_back(p[0], p[1]);
       }
+      outline.color = resultcolor;
       geometry->addOutline(outline);
       geometry->setSanitized(true);
     } catch (const CGAL::Failure_exception& e) {

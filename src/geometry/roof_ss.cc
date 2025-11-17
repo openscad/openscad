@@ -90,7 +90,7 @@ std::unique_ptr<PolySet> straight_skeleton_roof(const Polygon2d& poly)
   PolySetBuilder hatbuilder;
 
   const int scale_bits = ClipperUtils::scaleBitsFromPrecision();
-  const Clipper2Lib::Paths64 paths = ClipperUtils::fromPolygon2d(poly, scale_bits);
+  const Clipper2Lib::Paths64 paths = ClipperUtils::fromPolygon2d(poly, scale_bits, nullptr);
   const std::unique_ptr<Clipper2Lib::PolyTree64> polytree = ClipperUtils::sanitize(paths);
   auto poly_sanitized = ClipperUtils::toPolygon2d(*polytree, scale_bits);
 

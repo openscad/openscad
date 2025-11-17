@@ -220,12 +220,35 @@ static std::vector<std::string> split_dots(const std::string& str)
   return result;
 }
 
+std::vector<std::string> split(std::string str, char c)
+{
+  std::stringstream ss(str);
+  std::string word;
+  std::vector<std::string> words;
+
+  while (std::getline(ss, word, c)) words.push_back(word);
+  return words;
+}
 void path::set_attrs(attr_map_t& attrs, void *context)
 {
   std::string commands = "-zmlcqahvstZMLCQAHVST";
 
   shape::set_attrs(attrs, context);
   this->data = attrs["d"];
+  std::string fill = attrs["fill"];
+  if (fill.size() > 0) this->fill = fill;
+  else {
+    std::string style = attrs["style"];
+    if (style.size() > 0) {
+      auto words = split(style, ';');
+      for (auto& word : words) {
+        auto att = split(word, ':');
+        if (att.size() == 2 && att[0] == "fill") {
+          this->fill = att[1];
+        }
+      }
+    }
+  }
 
   boost::char_separator<char> sep(" ,", commands.c_str());
   tokenizer tokens(this->data, sep);

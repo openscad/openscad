@@ -15,6 +15,7 @@
 
 #include "geometry/PolySetBuilder.h"
 #include "geometry/Polygon2d.h"
+#include "src/core/ColorUtil.h"
 
 namespace CGALUtils {
 
@@ -151,6 +152,14 @@ std::unique_ptr<PolySet> createTriangulatedPolySetFromPolygon2d(const Polygon2d&
         {fit->vertex(0)->info().id, fit->vertex(1)->info().id, fit->vertex(2)->info().id});
     }
   }
+
+  Color4f color = *OpenSCAD::parse_color("#f9d72c");
+  polyset->colors.clear();
+
+  int colorind = polyset->colors.size();  // 0
+  polyset->colors.push_back(color);
+  for (int i = 0; i < polyset->indices.size(); i++)  // create a set of undefined color
+    polyset->color_indices.push_back(colorind);
   return polyset;
 }
 

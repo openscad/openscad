@@ -300,8 +300,8 @@ def run_test(testname, cmd, args, redirect_stdin=False, redirect_stdout=False):
         infile = None
 
     if redirect_stdin:
-        if not args[0].endswith('.scad'):
-            print("Error, expecting to replace input file with '-' to run a stdin test but first arg was not a .scad file")
+        if not args[0].endswith('.scad') and not args[0].endswith('.py'):
+            print("Error, expecting to replace input file with '-' to run a stdin test but first arg was not a .scad file nor a .py file")
             return None
         args[0] = "-"
 

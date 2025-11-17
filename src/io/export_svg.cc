@@ -38,37 +38,62 @@
 
 static void append_svg(const Polygon2d& poly, std::ostream& output, const ExportInfo& exportInfo)
 {
-  const ExportSvgOptions *options;
-  const ExportSvgOptions defaultSvgOptions;
+  // sort outlines by color
+  std::vector<Outline2d> out_work = poly.outlines();
+  while (out_work.size() > 0) {
+    std::vector<Outline2d> out_remain;
+    Color4f col = out_work[0].color;
 
-  if (exportInfo.optionsSvg) {
-    options = exportInfo.optionsSvg.get();
-  } else {
-    options = &defaultSvgOptions;
-  }
+    const ExportSvgOptions *options;
+    const ExportSvgOptions defaultSvgOptions;
 
-  const std::string stroke = options->stroke ? options->strokeColor : "none";
-  const std::string fill = options->fill ? options->fillColor : "none";
-  const double strokeWidth = options->strokeWidth;
-  output << "<path d=\"\n";
-  for (const auto& o : poly.outlines()) {
-    if (o.vertices.empty()) {
-      continue;
+    if (exportInfo.optionsSvg) {
+      options = exportInfo.optionsSvg.get();
+    } else {
+      options = &defaultSvgOptions;
     }
 
-    const Eigen::Vector2d& p0 = o.vertices[0];
-    output << "M " << p0.x() << "," << -p0.y();
-    for (unsigned int idx = 1; idx < o.vertices.size(); ++idx) {
-      const Eigen::Vector2d& p = o.vertices[idx];
-      output << " L " << p.x() << "," << -p.y();
-      if ((idx % 6) == 5) {
-        output << "\n";
+    const std::string stroke = options->stroke ? options->strokeColor : "none";
+    const std::string fill = options->fill ? options->fillColor : "none";
+    const double strokeWidth = options->strokeWidth;
+    output << "<path d=\"\n";
+    for (const auto& o : out_work) {
+      if (o.vertices.empty()) {
+        continue;
+      }
+      if (o.color != col) {
+        out_remain.push_back(o);
+        continue;
+      }
+
+      const Eigen::Vector2d& p0 = o.vertices[0];
+      output << "M " << p0.x() << "," << -p0.y();
+      for (unsigned int idx = 1; idx < o.vertices.size(); ++idx) {
+        const Eigen::Vector2d& p = o.vertices[idx];
+        output << " L " << p.x() << "," << -p.y();
+        if ((idx % 6) == 5) {
+          output << "\n";
+        }
+      }
+      output << " z\n";
+    }
+    std::string color_str;
+    if (col.r() < 0) {
+      color_str = fill;
+    } else {
+      std::stringstream ss;
+      if (col.a() == 0) color_str = "none";
+      else {
+        ss << "#" << std::hex << std::setfill('0') << std::setw(2) << (int)(col.r() * 255)
+           << std::setfill('0') << std::setw(2) << (int)(col.g() * 255) << std::setfill('0')
+           << std::setw(2) << (int)(col.b() * 255);
+        color_str = ss.str();
       }
     }
-    output << " z\n";
+    output << "\" stroke=\"" << stroke << "\" fill=\"" << color_str << "\" stroke-width=\""
+           << strokeWidth << "\"/>\n";
+    out_work = out_remain;
   }
-  output << "\" stroke=\"" << stroke << "\" fill=\"" << fill << "\" stroke-width=\"" << strokeWidth
-         << "\"/>\n";
 }
 
 static void append_svg(const std::shared_ptr<const Geometry>& geom, std::ostream& output,

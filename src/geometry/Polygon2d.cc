@@ -17,6 +17,10 @@
 #include "Feature.h"
 #include "geometry/PolySet.h"
 #include "glview/RenderSettings.h"
+#include "utils/hash.h"
+#include "clipper2/clipper.h"
+#include <clipper2/clipper.engine.h>
+#include <locale.h>
 
 Polygon2d::Polygon2d(Outline2d outline) : sanitized(true) { addOutline(std::move(outline)); }
 
@@ -278,4 +282,153 @@ void Polygon2d::reverse(void)
 {
   for (auto& o : theoutlines) std::reverse(o.vertices.begin(), o.vertices.end());
   for (auto& o : trans3dOutlines) std::reverse(o.vertices.begin(), o.vertices.end());
+}
+
+void Polygon2d::setColor(const Color4f& c)
+{
+  for (auto& o : theoutlines) o.color = c;
+  for (auto& o : trans3dOutlines) o.color = c;
+}
+
+void Polygon2d::setColorUndef(const Color4f& c)
+{
+  for (auto& o : theoutlines)
+    if (o.color.r() < 0) o.color = c;
+  for (auto& o : trans3dOutlines)
+    if (o.color.r() < 0) o.color = c;
+}
+
+Vector2d pt_round(const Vector2d& pt)
+{
+  Vector2d r;
+  r[0] = int(pt[0] * 1000) / 1000.0;
+  r[1] = int(pt[1] * 1000) / 1000.0;
+  return r;
+}
+
+int scaleBitsFromPrecision(int precision) { return std::ilogb(std::pow(10, precision)) + 1; }
+
+Clipper2Lib::Paths64 fromPolygon2d(const Polygon2d& poly, int scale_bits)
+{
+  const bool keep_orientation = poly.isSanitized();
+  const double scale = std::ldexp(1.0, scale_bits);
+  Clipper2Lib::Paths64 result;
+  for (const auto& outline : poly.transformedOutlines()) {
+    Clipper2Lib::Path64 p;
+    for (const auto& v : outline.vertices) {
+      p.emplace_back(v[0] * scale, v[1] * scale);
+    }
+    if (!keep_orientation && !Clipper2Lib::IsPositive(p)) std::reverse(p.begin(), p.end());
+    result.push_back(std::move(p));
+  }
+  return result;
+}
+
+extern int debug_cnt, debug_num;
+
+double outline_area(const Outline2d o)
+{
+  double area = 0;
+  int n = o.vertices.size();
+  for (int i = 0; i < n; i++) {
+    area += o.vertices[i][0] * o.vertices[(i + 1) % n][1];
+    area -= o.vertices[i][1] * o.vertices[(i + 1) % n][0];
+  }
+  return area / 2.0;
+}
+
+int point_in_polygon(const std::vector<Vector2d>& pol, const Vector2d& pt);  // TODO move
+
+void Polygon2d::stamp_color(const Polygon2d& src)
+{
+  int scale_bits = scaleBitsFromPrecision(8);
+
+  std::vector<Clipper2Lib::Paths64> self_o, src_o;
+  std::vector<BoundingBox> self_b, src_b;
+  //  std::vector<double> self_a, src_a;
+
+  for (auto& o : theoutlines) {
+    self_o.push_back(fromPolygon2d(o, scale_bits));
+    self_b.push_back(o.getBoundingBox());
+    //    self_a.push_back(outline_area(o));
+  }
+
+  for (auto& o : src.theoutlines) {
+    src_o.push_back(fromPolygon2d(o, scale_bits));
+    src_b.push_back(o.getBoundingBox());
+    //    src_a.push_back(outline_area(o));
+  }
+  for (int i = 0; i < theoutlines.size(); i++) {
+    //  if (self_a[i] < 0) continue;  // negative area cannot have color
+    for (int j = 0; j < src.theoutlines.size(); j++) {
+      if (src.theoutlines[j].color.r() < 0) continue;
+      if (self_b[i].min()[0] > src_b[j].max()[0]) continue;
+      if (self_b[i].max()[0] < src_b[j].min()[0]) continue;
+      if (self_b[i].min()[1] > src_b[j].max()[1]) continue;
+      if (self_b[i].max()[1] < src_b[j].min()[1]) continue;
+
+      //  if (src_a[j] < 0) continue;  // negative area cannot stamp color
+
+      Clipper2Lib::Clipper64 clipper;
+      Clipper2Lib::PolyTree64 result;
+      clipper.PreserveCollinear(false);
+
+      clipper.AddSubject(self_o[i]);
+      clipper.AddClip(src_o[j]);
+
+      clipper.Execute(Clipper2Lib::ClipType::Intersection, Clipper2Lib::FillRule::NonZero, result);
+      auto res = Clipper2Lib::PolyTreeToPaths64(result);
+      if (res.size() >= 1) {
+        theoutlines[i].color = src.theoutlines[j].color;
+        for (int k = 0; k < theoutlines.size(); k++) {
+          if (k == i) continue;
+          Vector2d pt = theoutlines[k].vertices[0];
+          if (!point_in_polygon(theoutlines[i].vertices, pt)) continue;
+          theoutlines[k].color = src.theoutlines[j].color;
+        }
+      }
+    }
+  }
+}
+
+void Polygon2d::stamp_color(const Outline2d& src)
+{
+  int scale_bits = scaleBitsFromPrecision(8);
+
+  std::vector<Clipper2Lib::Paths64> self_o;
+  std::vector<BoundingBox> self_b;
+  std::vector<double> self_a;
+
+  for (auto& o : theoutlines) {
+    self_o.push_back(fromPolygon2d(o, scale_bits));
+    self_b.push_back(o.getBoundingBox());
+    self_a.push_back(outline_area(o));
+  }
+
+  Clipper2Lib::Paths64 src_o = fromPolygon2d(src, scale_bits);
+  BoundingBox src_b = src.getBoundingBox();
+  double src_a = outline_area(src);
+
+  for (int i = 0; i < theoutlines.size(); i++) {
+    if (self_a[i] < 0) continue;  // negative area cannot have color
+    if (self_b[i].min()[0] > src_b.max()[0]) continue;
+    if (self_b[i].max()[0] < src_b.min()[0]) continue;
+    if (self_b[i].min()[1] > src_b.max()[1]) continue;
+    if (self_b[i].max()[1] < src_b.min()[1]) continue;
+
+    if (src_a < 0) continue;  // negative area cannot stamp color
+
+    Clipper2Lib::Clipper64 clipper;
+    Clipper2Lib::PolyTree64 result;
+    clipper.PreserveCollinear(false);
+
+    clipper.AddSubject(self_o[i]);
+    clipper.AddClip(src_o);
+
+    clipper.Execute(Clipper2Lib::ClipType::Intersection, Clipper2Lib::FillRule::NonZero, result);
+    auto res = Clipper2Lib::PolyTreeToPaths64(result);
+    if (res.size() >= 1) {
+      theoutlines[i].color = src.color;
+    }
+  }
 }

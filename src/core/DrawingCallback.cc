@@ -30,6 +30,7 @@
 #include <vector>
 
 #include "geometry/Polygon2d.h"
+#include "src/core/ColorUtil.h"
 
 DrawingCallback::DrawingCallback(unsigned long fn, double size)
   : pen(Vector2d(0, 0)), offset(Vector2d(0, 0)), advance(Vector2d(0, 0)), fn(fn), size(size)
@@ -56,6 +57,8 @@ void DrawingCallback::finish_glyph()
     this->polygon = nullptr;
   }
   if (this->polygon) {
+    Color4f col = *OpenSCAD::parse_color("#f9d72c");
+    polygon->setColor(col);
     this->polygons.push_back(this->polygon);
     this->polygon = nullptr;
   }

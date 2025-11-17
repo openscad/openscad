@@ -546,13 +546,17 @@ void VBOBuilder::create_polygons(const PolySet& ps, const Transform3d& m, const 
     elementsMap().clear();
   }
 
-  for (const auto& poly : ps.indices) {
+  for (int i = 0; i < ps.indices.size(); i++) {
+    const auto& poly = ps.indices[i];
+    Color4f tcolor;
+    if (i < ps.color_indices.size() && ps.colors.size() > 0) tcolor = ps.colors[ps.color_indices[i]];
+    else tcolor = color;
     if (poly.size() == 3) {
       const Vector3d p0 = uniqueMultiply(vert_mult_map, ps.vertices[poly.at(0)], m);
       const Vector3d p1 = uniqueMultiply(vert_mult_map, ps.vertices[poly.at(1)], m);
       const Vector3d p2 = uniqueMultiply(vert_mult_map, ps.vertices[poly.at(2)], m);
 
-      create_triangle(color, p0, p1, p2, 0, poly.size(), false, false, mirrored);
+      create_triangle(tcolor, p0, p1, p2, 0, poly.size(), false, false, mirrored);
       triangle_count++;
     } else if (poly.size() == 4) {
       const Vector3d p0 = uniqueMultiply(vert_mult_map, ps.vertices[poly.at(0)], m);
@@ -560,8 +564,8 @@ void VBOBuilder::create_polygons(const PolySet& ps, const Transform3d& m, const 
       const Vector3d p2 = uniqueMultiply(vert_mult_map, ps.vertices[poly.at(2)], m);
       const Vector3d p3 = uniqueMultiply(vert_mult_map, ps.vertices[poly.at(3)], m);
 
-      create_triangle(color, p0, p1, p3, 0, poly.size(), false, false, mirrored);
-      create_triangle(color, p2, p3, p1, 1, poly.size(), false, false, mirrored);
+      create_triangle(tcolor, p0, p1, p3, 0, poly.size(), false, false, mirrored);
+      create_triangle(tcolor, p2, p3, p1, 1, poly.size(), false, false, mirrored);
       triangle_count += 2;
     } else {
       Vector3d center = Vector3d::Zero();
@@ -577,7 +581,7 @@ void VBOBuilder::create_polygons(const PolySet& ps, const Transform3d& m, const 
         const Vector3d p1 = uniqueMultiply(vert_mult_map, ps.vertices[poly.at(i % poly.size())], m);
         const Vector3d p2 = uniqueMultiply(vert_mult_map, ps.vertices[poly.at(i - 1)], m);
 
-        create_triangle(color, p0, p2, p1, i - 1, poly.size(), false, false, mirrored);
+        create_triangle(tcolor, p0, p2, p1, i - 1, poly.size(), false, false, mirrored);
         triangle_count++;
       }
     }

@@ -51,5 +51,5 @@ M 12,-1096 L 2,-1096 L 2,-1086 L 12,-1086 z
 M 32,-1096 L 22,-1096 L 22,-1086 L 32,-1086 z
 M 72,-1096 L 62,-1096 L 62,-1086 L 72,-1086 z
 M 132,-1096 L 122,-1096 L 122,-1086 L 132,-1086 z
-" stroke="magenta" fill="cyan" stroke-width="3"/>
+" stroke="magenta" fill="#f9d72c" stroke-width="3"/>
 </svg>

@@ -82,6 +82,7 @@ protected:
   double x{0};
   double y{0};
   path_list_t path_list;
+  std::string fill;
   std::string transform;
   std::string stroke_width;
   std::string stroke_linecap;
@@ -124,6 +125,7 @@ public:
   [[nodiscard]] virtual double get_y() const { return y; }
 
   [[nodiscard]] virtual const path_list_t& get_path_list() const { return path_list; }
+  [[nodiscard]] virtual const std::string& get_fill() const { return fill; }
 
   [[nodiscard]] virtual bool is_excluded() const;
   [[nodiscard]] virtual bool is_container() const { return false; }

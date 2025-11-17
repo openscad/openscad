@@ -28,6 +28,7 @@
 #ifdef ENABLE_CGAL
 #include "geometry/cgal/cgalutils.h"
 #endif
+#include "src/core/ColorUtil.h"
 
 using Error = manifold::Manifold::Error;
 
@@ -214,6 +215,7 @@ Polygon2d polygonsToPolygon2d(const manifold::Polygons& polygons)
     for (const auto& v : polygon) {
       outline.vertices.emplace_back(v[0], v[1]);
     }
+    outline.color = *OpenSCAD::parse_color("#f9d72c");
     poly2d.addOutline(std::move(outline));
   }
   return poly2d;
@@ -224,20 +226,52 @@ std::unique_ptr<PolySet> createTriangulatedPolySetFromPolygon2d(const Polygon2d&
   auto polyset = std::make_unique<PolySet>(2);
   polyset->setTriangular(true);
 
-  manifold::Polygons polygons;
-  for (const auto& outline : in3d ? polygon2d.untransformedOutlines() : polygon2d.outlines()) {
-    manifold::SimplePolygon simplePolygon;
-    for (const auto& vertex : outline.vertices) {
-      polyset->vertices.emplace_back(vertex[0], vertex[1], 0.0);
-      simplePolygon.emplace_back(vertex[0], vertex[1]);
+  std::vector<Outline2d> outline_work = in3d ? polygon2d.untransformedOutlines() : polygon2d.outlines();
+  /*
+    std::vector<Outline2d> outline_work ;
+    std::vector<Outline2d> holes ;
+    for(const auto & o : in3d ? polygon2d.untransformedOutlines() : polygon2d.outlines()) {
+      if(outline_area(o) > 0 || true)   outline_work.push_back(o);
+      else holes.push_back(o);
     }
-    polygons.push_back(std::move(simplePolygon));
-  }
+  */
+  while (outline_work.size() > 0) {
+    std::vector<Outline2d> outline_next;
+    int v_off = polyset->vertices.size();
+    int c_off = polyset->colors.size();
+    manifold::Polygons polygons;
+    manifold::SimplePolygon simplePolygon;
 
-  const auto triangles = manifold::Triangulate(polygons);
+    Color4f col = outline_work[0].color;
+    polyset->colors.push_back(col);
+    for (const auto& outline : outline_work) {
+      if (outline.color != col) {
+        outline_next.push_back(outline);
+        continue;
+      }
+      for (const auto& vertex : outline.vertices) {
+        polyset->vertices.emplace_back(vertex[0], vertex[1], 0.0);
+        simplePolygon.emplace_back(vertex[0], vertex[1]);
+      }
+      polygons.push_back(std::move(simplePolygon));
+    }
+    /*
+        for (const auto& outline : holes) {
+          for (const auto& vertex : outline.vertices) {
+            polyset->vertices.emplace_back(vertex[0], vertex[1], 0.0);
+            simplePolygon.emplace_back(vertex[0], vertex[1]);
+          }
+          polygons.push_back(std::move(simplePolygon));
+        }
+    */
 
-  for (const auto& triangle : triangles) {
-    polyset->indices.push_back({triangle[0], triangle[1], triangle[2]});
+    const auto triangles = manifold::Triangulate(polygons);
+
+    for (const auto& triangle : triangles) {
+      polyset->indices.push_back({v_off + triangle[0], v_off + triangle[1], v_off + triangle[2]});
+      polyset->color_indices.push_back(c_off);
+    }
+    outline_work = outline_next;
   }
   return polyset;
 }
