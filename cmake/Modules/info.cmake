@@ -1,5 +1,5 @@
-get_target_property(DEFINES OpenSCAD COMPILE_DEFINITIONS)
-get_target_property(LINK_OPTS OpenSCAD LINK_OPTIONS)
+get_target_property(DEFINES OpenSCADLib COMPILE_DEFINITIONS)
+get_target_property(LINK_OPTS OpenSCADLib LINK_OPTIONS)
 
 message(STATUS " ")
 message(STATUS "====================================")
