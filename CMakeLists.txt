@@ -1409,6 +1409,7 @@ if(HEADLESS)
   target_compile_definitions(OpenSCAD PUBLIC OPENSCAD_NOGUI)
   set(ENABLE_GUI_TESTS OFF)
 else()
+  # Every qrc file added to RESOURCE_FILES must have a matching qInitResources_ call in main_wrapper.cc
   list(APPEND RESOURCE_FILES
     ${RESOURCE_DIR}/common.qrc
     ${RESOURCE_DIR}/icons-chokusen.qrc
@@ -1468,15 +1469,16 @@ if (SORT_BUILD)
     OUTPUT_VARIABLE Sources)
 endif()
 
-target_sources(OpenSCAD PRIVATE ${Sources} ${RESOURCE_FILES})
+target_sources(OpenSCAD PUBLIC ${RESOURCE_FILES})
+target_sources(OpenSCAD PRIVATE ${Sources})
 find_program(SHELL_EXE NAMES sh bash $ENV{SHELL})
-add_custom_command(TARGET OpenSCAD POST_BUILD
+add_custom_command(TARGET OpenSCADExe POST_BUILD
     COMMAND "${SHELL_EXE}"
     ARGS "${CMAKE_CURRENT_LIST_DIR}/scripts/translation-make.sh" "${SUFFIX_WITH_DASH}"
     COMMENT "Compiling language files")
 
 if(APPLE AND NOT APPLE_UNIX)
-  set_target_properties(OpenSCAD PROPERTIES
+  set_target_properties(OpenSCADExe PROPERTIES
     MACOSX_BUNDLE_INFO_PLIST ${CMAKE_SOURCE_DIR}/Info.plist.in
     MACOSX_BUNDLE TRUE
     MACOSX_BUNDLE_ICON_FILE ${MACOSX_BUNDLE_ICON_FILE}
@@ -1501,11 +1503,15 @@ if(APPLE AND NOT APPLE_UNIX)
   endif()
 
 elseif(MINGW)
+  # Not sure about this doubling
   set_target_properties(OpenSCAD PROPERTIES
     LINK_FLAGS "-Wl,--stack,${STACKSIZE}"
   )
+  set_target_properties(OpenSCADExe PROPERTIES
+    LINK_FLAGS "-Wl,--stack,${STACKSIZE}"
+  )
 elseif(MSVC)
-  set_target_properties(OpenSCAD PROPERTIES
+  set_target_properties(OpenSCADExe PROPERTIES
     LINK_FLAGS "-subsystem:windows -ENTRY:mainCRTStartup -stack:${STACKSIZE}"
   )
 endif()
