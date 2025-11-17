@@ -127,6 +127,9 @@ set_target_properties(OpenSCADExe PROPERTIES
 
 add_library(OpenSCADLib STATIC)
 target_link_libraries(OpenSCADExe PUBLIC OpenSCADLib)
+set_target_properties(OpenSCADLib PROPERTIES
+    OUTPUT_NAME "openscad" # results in `libopenscad`
+)
 
 add_library(svg STATIC)
 target_link_libraries(OpenSCADExe PUBLIC svg)
