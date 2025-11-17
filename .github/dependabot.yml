@@ -1,18 +1,43 @@
 version: 2
 updates:
+  # Docker base image updates
   - package-ecosystem: "docker"
     directory: "/"
     schedule:
       interval: "weekly"
+      day: "monday"
+      time: "06:00"
+      timezone: "UTC"
+    labels:
+      - "dependencies"
+      - "docker"
     commit-message:
-      prefix: "deps"
-    open-pull-requests-limit: 10
-    target-branch: multiplatform
+      prefix: "chore(deps)"
+      include: "scope"
+    open-pull-requests-limit: 5
+    target-branch: "multiplatform"
+    reviewers:
+      - "gounthar"
+    pull-request-branch-name:
+      separator: "/"
 
+  # GitHub Actions workflow updates
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
       interval: "weekly"
+      day: "monday"
+      time: "06:00"
+      timezone: "UTC"
+    labels:
+      - "dependencies"
+      - "github-actions"
     commit-message:
-      prefix: "deps"
-    open-pull-requests-limit: 10
+      prefix: "chore(deps)"
+      include: "scope"
+    open-pull-requests-limit: 5
+    target-branch: "multiplatform"
+    reviewers:
+      - "gounthar"
+    pull-request-branch-name:
+      separator: "/"
