@@ -27,7 +27,9 @@
     "lib3mf",
     {
       "name": "mesa",
-      "platform": "windows"
+      "platform": "windows",
+      "default-features": false,
+      "features": ["gles1", "gles2"]
     }
   ]
 }

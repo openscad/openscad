@@ -207,7 +207,29 @@ if (-not (Test-Command git)) {
     exit 1
 }
 
-if (-not (Test-Command python)) {
+# Check for Python (ignore virtual environments)
+$pythonFound = $false
+$pythonCmd = Get-Command python -ErrorAction SilentlyContinue
+if ($pythonCmd -and $pythonCmd.Source -notmatch '\.venv') {
+    $pythonFound = $true
+} else {
+    # Try to find system Python in common locations
+    $pythonPaths = @(
+        "$env:LOCALAPPDATA\Programs\Python\Python*\python.exe",
+        "C:\Python*\python.exe",
+        "${env:ProgramFiles}\Python*\python.exe"
+    )
+
+    foreach ($pattern in $pythonPaths) {
+        $found = Get-Item $pattern -ErrorAction SilentlyContinue | Select-Object -First 1
+        if ($found) {
+            $pythonFound = $true
+            break
+        }
+    }
+}
+
+if (-not $pythonFound) {
     Write-Host "ERROR: Python not found. Please install Python 3.11+" -ForegroundColor Red
     exit 1
 }
@@ -218,6 +240,10 @@ Write-Host ""
 # Initialize submodules
 Write-Host "Initializing Git submodules..." -ForegroundColor Yellow
 git submodule update --init --recursive
+if ($LASTEXITCODE -ne 0) {
+    Write-Host "ERROR: Git submodule initialization failed" -ForegroundColor Red
+    exit 1
+}
 Write-Host "✓ Submodules initialized" -ForegroundColor Green
 Write-Host ""
 
@@ -300,15 +326,32 @@ if (-not $SkipQScintilla) {
 
         Write-Host "  Extracting QScintilla..."
         tar -xzf $qsciArchive -C $env:TEMP
+        if ($LASTEXITCODE -ne 0) {
+            Write-Host "ERROR: Failed to extract QScintilla archive" -ForegroundColor Red
+            exit 1
+        }
 
         Push-Location "$env:TEMP\QScintilla_src-2.14.1\src"
         try {
             Write-Host "  Building QScintilla..."
             qmake qscintilla.pro
+            if ($LASTEXITCODE -ne 0) {
+                Write-Host "ERROR: QScintilla qmake failed" -ForegroundColor Red
+                exit 1
+            }
+
             nmake
+            if ($LASTEXITCODE -ne 0) {
+                Write-Host "ERROR: QScintilla build failed" -ForegroundColor Red
+                exit 1
+            }
 
             Write-Host "  Installing QScintilla..."
             nmake install
+            if ($LASTEXITCODE -ne 0) {
+                Write-Host "ERROR: QScintilla installation failed" -ForegroundColor Red
+                exit 1
+            }
 
             Write-Host "✓ QScintilla built and installed successfully" -ForegroundColor Green
         } finally {
@@ -329,6 +372,10 @@ if (Test-Path $msys2Path) {
     if (-not (Test-Path "$msys2Path\flex.exe") -or -not (Test-Path "$msys2Path\bison.exe")) {
         Write-Host "  Installing flex and bison via pacman..."
         & C:\msys64\usr\bin\pacman.exe -Sy --noconfirm flex bison
+        if ($LASTEXITCODE -ne 0) {
+            Write-Host "ERROR: Failed to install flex and bison via pacman" -ForegroundColor Red
+            exit 1
+        }
     }
     Write-Host "✓ MSYS2 configured (flex and bison available)" -ForegroundColor Green
 } else {
@@ -339,8 +386,52 @@ Write-Host ""
 
 # Install Python dependencies
 Write-Host "Installing Python dependencies..." -ForegroundColor Yellow
-python -m pip install --upgrade pip
-pip install bsdiff4 numpy pillow
+
+# Deactivate any active virtual environment to use system Python
+if ($env:VIRTUAL_ENV) {
+    Write-Host "  Deactivating virtual environment to use system Python..." -ForegroundColor Gray
+    $env:VIRTUAL_ENV = $null
+    # Remove virtual env paths from PATH
+    $env:PATH = ($env:PATH -split ';' | Where-Object { $_ -notmatch '\.venv' -and $_ -notmatch 'virtual' }) -join ';'
+}
+
+# Use system Python explicitly
+$systemPython = (Get-Command python -ErrorAction SilentlyContinue).Source
+if (-not $systemPython -or $systemPython -match '\.venv') {
+    # Try to find system Python in common locations
+    $pythonPaths = @(
+        "$env:LOCALAPPDATA\Programs\Python\Python*\python.exe",
+        "C:\Python*\python.exe",
+        "${env:ProgramFiles}\Python*\python.exe"
+    )
+
+    foreach ($pattern in $pythonPaths) {
+        $found = Get-Item $pattern -ErrorAction SilentlyContinue | Select-Object -First 1
+        if ($found) {
+            $systemPython = $found.FullName
+            break
+        }
+    }
+}
+
+if (-not $systemPython) {
+    Write-Host "ERROR: Could not find system Python installation" -ForegroundColor Red
+    exit 1
+}
+
+Write-Host "  Using Python: $systemPython" -ForegroundColor Gray
+
+& $systemPython -m pip install --upgrade pip
+if ($LASTEXITCODE -ne 0) {
+    Write-Host "ERROR: Failed to upgrade pip" -ForegroundColor Red
+    exit 1
+}
+
+& $systemPython -m pip install bsdiff4 numpy pillow
+if ($LASTEXITCODE -ne 0) {
+    Write-Host "ERROR: Failed to install Python dependencies" -ForegroundColor Red
+    exit 1
+}
 Write-Host "✓ Python dependencies installed" -ForegroundColor Green
 Write-Host ""
 
@@ -355,11 +446,19 @@ if (-not $SkipVcpkg) {
     if (-not (Test-Path $vcpkgDir)) {
         Write-Host "  Cloning vcpkg from GitHub..."
         git clone https://github.com/Microsoft/vcpkg.git $vcpkgDir
+        if ($LASTEXITCODE -ne 0) {
+            Write-Host "ERROR: Failed to clone vcpkg repository" -ForegroundColor Red
+            exit 1
+        }
 
         # Checkout specific commit used in CI (optional but ensures consistency)
         Push-Location $vcpkgDir
         try {
             git checkout 74e6536215718009aae747d86d84b78376bf9e09
+            if ($LASTEXITCODE -ne 0) {
+                Write-Host "ERROR: Failed to checkout vcpkg commit" -ForegroundColor Red
+                exit 1
+            }
         } finally {
             Pop-Location
         }
@@ -371,6 +470,10 @@ if (-not $SkipVcpkg) {
         Push-Location $vcpkgDir
         try {
             .\bootstrap-vcpkg.bat -disableMetrics
+            if ($LASTEXITCODE -ne 0) {
+                Write-Host "ERROR: vcpkg bootstrap failed" -ForegroundColor Red
+                exit 1
+            }
         } finally {
             Pop-Location
         }
@@ -383,6 +486,10 @@ if (-not $SkipVcpkg) {
     Push-Location $SourceDir
     try {
         & $vcpkgExe install --triplet x64-windows
+        if ($LASTEXITCODE -ne 0) {
+            Write-Host "ERROR: vcpkg dependency installation failed" -ForegroundColor Red
+            exit 1
+        }
     } finally {
         Pop-Location
     }
@@ -408,12 +515,20 @@ if (-not $SkipBuild) {
     }
 
     cmake --preset windows-msvc-release
+    if ($LASTEXITCODE -ne 0) {
+        Write-Host "ERROR: CMake configuration failed" -ForegroundColor Red
+        exit 1
+    }
 
     Write-Host "✓ CMake configuration complete" -ForegroundColor Green
     Write-Host ""
 
     Write-Host "Building OpenSCAD..." -ForegroundColor Yellow
     cmake --build --preset windows-msvc-release --verbose
+    if ($LASTEXITCODE -ne 0) {
+        Write-Host "ERROR: Build failed" -ForegroundColor Red
+        exit 1
+    }
 
     Write-Host "✓ Build complete" -ForegroundColor Green
     Write-Host ""
@@ -457,6 +572,10 @@ if ($RunTests) {
     Push-Location $BuildDir
     try {
         ctest -C Release -j2
+        if ($LASTEXITCODE -ne 0) {
+            Write-Host "ERROR: Tests failed" -ForegroundColor Red
+            exit 1
+        }
         Write-Host "✓ Tests complete" -ForegroundColor Green
     } finally {
         Pop-Location
