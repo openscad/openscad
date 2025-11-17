@@ -399,12 +399,6 @@ add_subdirectory(submodules)
 # The submodules will set up mimalloc if needed, and we need to defer any
 # target_link_libraries() calls until after that.
 
-if (MXECROSS)
-  target_compile_definitions(OpenSCADLib PUBLIC LIBXML_STATIC STATIC_QT_SVG_PLUGIN)
-  target_compile_definitions(OpenSCADLib PUBLIC GLEW_STATIC)
-  target_link_libraries(OpenSCADLib PUBLIC bcrypt)
-endif()
-
 macro(find_graphics)
   # NULLGL - Allow us to build without OpenGL(TM). run 'cmake .. -DNULLGL=1'
   # Most tests will fail, but it can be used for testing/experiments
@@ -739,6 +733,14 @@ if(USE_GLAD)
   target_compile_definitions(OpenSCADLib PUBLIC USE_GLAD)
 else()
   target_compile_definitions(OpenSCADLib PUBLIC USE_GLEW)
+endif()
+
+if (MXECROSS)
+  target_compile_definitions(OpenSCADLib PUBLIC LIBXML_STATIC STATIC_QT_SVG_PLUGIN)
+  target_compile_definitions(OpenSCADLib PUBLIC GLEW_STATIC)
+  target_link_libraries(OpenSCADLib PUBLIC bcrypt)
+  # Without this next line, got lots of lines like "undefined reference to `BCryptGenRandom'"
+  target_link_libraries(OpenSCADExe PRIVATE bcrypt ${LIBZIP_LIBRARY} svg)
 endif()
 
 target_include_directories(OpenSCADLib PUBLIC
