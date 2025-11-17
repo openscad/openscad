@@ -4,45 +4,11 @@ This guide explains how to run OpenSCAD tests on Windows with MSVC builds.
 
 ## Prerequisites
 
-### 1. Mesa Software OpenGL Renderer
-
-OpenSCAD tests require OpenGL support with Framebuffer Objects (FBO). On Windows systems without GPU access or when running headless, you need Mesa's software renderer.
-
-#### Automatic Installation (Recommended)
-
-Mesa is now included as a vcpkg dependency and will be automatically installed when you build OpenSCAD:
-
-1. Rebuild with vcpkg to install Mesa:
-   ```powershell
-   # Clean build to ensure Mesa is installed
-   .\scripts\build-msvc-local.ps1 -CleanBuild
-   ```
-
-2. Verify Mesa DLL was copied to Release directory:
-   ```powershell
-   Test-Path "build\windows-msvc-release\Release\opengl32.dll"
-   ```
-
-#### Manual Installation (Alternative)
-
-If you prefer to install Mesa manually or the vcpkg version doesn't work:
-
-1. Download Mesa from: https://github.com/pal1000/mesa-dist-win/releases
-   - Recommended version: **24.2.3** or newer
-   - Download the **release-msvc** build (not mingw)
-
-2. Extract the archive
-
-3. Copy `opengl32.dll` from the `x64` folder to your OpenSCAD Release directory:
-   ```powershell
-   Copy-Item "path\to\mesa\x64\opengl32.dll" -Destination "build\windows-msvc-release\Release\"
-   ```
-
-### 2. Qt Platform Plugins
+### 1. Qt Platform Plugins
 
 Qt needs platform plugins to initialize properly. These are automatically copied by the setup script.
 
-### 3. Fontconfig Configuration
+### 2. Fontconfig Configuration
 
 Fontconfig needs to know where to find its configuration files. This is handled by environment variables.
 
