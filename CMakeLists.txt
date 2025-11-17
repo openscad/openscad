@@ -128,6 +128,32 @@ set_target_properties(OpenSCADExe PROPERTIES
 add_library(OpenSCADLib STATIC)
 target_link_libraries(OpenSCADExe PUBLIC OpenSCADLib)
 
+add_library(svg STATIC)
+target_link_libraries(OpenSCADExe PUBLIC svg)
+# TODO: https://github.com/openscad/openscad/issues/6369 - Update includes so we don't need this, which also prevents trivially including other parts of OpenSCAD.
+target_include_directories(svg PUBLIC
+  "src"
+)
+target_sources(svg PRIVATE
+  src/libsvg/circle.cc
+  src/libsvg/data.cc
+  src/libsvg/ellipse.cc
+  src/libsvg/group.cc
+  src/libsvg/libsvg.cc
+  src/libsvg/line.cc
+  src/libsvg/path.cc
+  src/libsvg/polygon.cc
+  src/libsvg/polyline.cc
+  src/libsvg/rect.cc
+  src/libsvg/shape.cc
+  src/libsvg/svgpage.cc
+  src/libsvg/text.cc
+  src/libsvg/transformation.cc
+  src/libsvg/tspan.cc
+  src/libsvg/use.cc
+  src/libsvg/util.cc
+)
+
 if (MINGW)
   # Configure Debug flags (MinGW) to keep rich symbols and avoid PE/COFF
   # RIP-relative relocation overflows in large template-heavy builds.
@@ -151,6 +177,12 @@ if (MINGW)
     )
     # Unsure if it helps to double this
     target_link_options(OpenSCADExe PRIVATE
+      $<$<CONFIG:Debug>:
+        -Wl,--gc-sections;        # Linker: drop unused sections
+      >
+    )
+    # Unsure if it helps to triple this
+    target_link_options(svg PRIVATE
       $<$<CONFIG:Debug>:
         -Wl,--gc-sections;        # Linker: drop unused sections
       >
@@ -188,6 +220,14 @@ if (MINGW)
         -fuse-ld=lld;             # Use LLVM lld (robust with huge C++/COFF debug)
       >
     )
+    # Unsure if it helps to triple this
+    target_link_options(svg PRIVATE
+      $<$<CONFIG:Debug>:
+        -Wl,--gc-sections;        # Linker: drop unused sections
+        -Wl,--icf=all;            # ICF: fold identical code/data (effective with lld)
+        -fuse-ld=lld;             # Use LLVM lld (robust with huge C++/COFF debug)
+      >
+    )
   endif()
   if (NOT MXECROSS)
     target_compile_definitions(OpenSCADLib PRIVATE QSCINTILLA_DLL)
@@ -200,17 +240,24 @@ find_package(Sanitizers)
 # Strict c++17, e.g. no GNU extensions
 if (MSVC) # For MSVC, errors show up when using c++ 17 for build.
   set_property(TARGET OpenSCADLib PROPERTY CXX_STANDARD 20)
+  set_property(TARGET svg PROPERTY CXX_STANDARD 20)
 else()
   set_property(TARGET OpenSCADLib PROPERTY CXX_STANDARD 17)
+  set_property(TARGET svg PROPERTY CXX_STANDARD 17)
 endif()
 set_property(TARGET OpenSCADLib PROPERTY CXX_EXTENSIONS OFF)
 set_property(TARGET OpenSCADLib PROPERTY CXX_STANDARD_REQUIRED ON)
 # Output compilation database (compile_commands.json), so we can e.g. run clang-tidy or other tools separately
 set_property(TARGET OpenSCADLib PROPERTY EXPORT_COMPILE_COMMANDS ON)
 set_property(TARGET OpenSCADLib PROPERTY LINKER_LANGUAGE CXX)
+set_property(TARGET OpenSCADExe PROPERTY EXPORT_COMPILE_COMMANDS ON)
+set_property(TARGET OpenSCADExe PROPERTY LINKER_LANGUAGE CXX)
+set_property(TARGET svg PROPERTY EXPORT_COMPILE_COMMANDS ON)
+set_property(TARGET svg PROPERTY LINKER_LANGUAGE CXX)
 # Verbose link step
 if(("${CMAKE_CXX_COMPILER_FRONTEND_VARIANT}" STREQUAL "GNU") OR
    ("${CMAKE_CXX_COMPILER_ID}" MATCHES "AppleClang|Clang|GNU"))
+  target_link_options(svg BEFORE PUBLIC "-v")
   target_link_options(OpenSCADLib BEFORE PUBLIC "-v")
   target_link_options(OpenSCADExe BEFORE PUBLIC "-v")
 endif()
@@ -310,7 +357,7 @@ endif()
 
 if (MXECROSS OR WIN32)
   add_subdirectory(winconsole)
-  set_property(TARGET OpenSCADLib PROPERTY WIN32_EXECUTABLE ON)
+  set_property(TARGET OpenSCADExe PROPERTY WIN32_EXECUTABLE ON)
 endif()
 
 set(OPENSCAD_LIB_OUTPUT_DIR "${CMAKE_CURRENT_BINARY_DIR}/objects")
@@ -326,6 +373,8 @@ file(MAKE_DIRECTORY ${OPENSCAD_LIB_OUTPUT_DIR})
 #endif()
 
 target_compile_options(OpenSCADLib PUBLIC "$<$<CONFIG:DEBUG>:-DDEBUG>")
+target_compile_options(OpenSCADExe PUBLIC "$<$<CONFIG:DEBUG>:-DDEBUG>")
+target_compile_options(svg PUBLIC "$<$<CONFIG:DEBUG>:-DDEBUG>")
 
 target_compile_definitions(OpenSCADLib PUBLIC
   _REENTRANT
@@ -420,6 +469,7 @@ if (MSVC)
   # Our code is compatible with both V3 and V5, so for now, we accept any version.
   find_package(Eigen3 REQUIRED QUIET)
   target_link_libraries(OpenSCADLib PUBLIC Eigen3::Eigen)
+  target_link_libraries(svg PUBLIC Eigen3::Eigen)
   message(STATUS "Eigen: ${Eigen3_VERSION}")
 
   set(Boost_USE_STATIC_LIBS TRUE)
@@ -468,6 +518,7 @@ else()
   # Our code is compatible with both V3 and V5, so for now, we accept any version.
   find_package(Eigen3 REQUIRED QUIET)
   target_link_libraries(OpenSCADLib PUBLIC Eigen3::Eigen)
+  target_link_libraries(svg PUBLIC Eigen3::Eigen)
   message(STATUS "Eigen: ${Eigen3_VERSION}")
 
   find_package(Boost 1.70 REQUIRED QUIET COMPONENTS regex program_options)
@@ -551,7 +602,9 @@ target_link_libraries(OpenSCADLib PUBLIC ${FREETYPE_LIBRARIES})
 find_package(LibXml2 2.9 REQUIRED QUIET)
 message(STATUS "LibXml2: ${LIBXML2_VERSION_STRING}")
 target_include_directories(OpenSCADLib SYSTEM PUBLIC ${LIBXML2_INCLUDE_DIR})
+target_include_directories(svg SYSTEM PUBLIC ${LIBXML2_INCLUDE_DIR})
 target_link_libraries(OpenSCADLib PUBLIC ${LIBXML2_LIBRARIES})
+target_link_libraries(svg PUBLIC ${LIBXML2_LIBRARIES})
 
 if(ENABLE_PYTHON)
   find_package(Python REQUIRED COMPONENTS Interpreter Development)
@@ -1018,23 +1071,6 @@ set(CORE_SOURCES
   src/io/import_off.cc
   src/io/import_stl.cc
   src/io/import_svg.cc
-  src/libsvg/circle.cc
-  src/libsvg/data.cc
-  src/libsvg/ellipse.cc
-  src/libsvg/group.cc
-  src/libsvg/libsvg.cc
-  src/libsvg/line.cc
-  src/libsvg/path.cc
-  src/libsvg/polygon.cc
-  src/libsvg/polyline.cc
-  src/libsvg/rect.cc
-  src/libsvg/shape.cc
-  src/libsvg/svgpage.cc
-  src/libsvg/text.cc
-  src/libsvg/transformation.cc
-  src/libsvg/tspan.cc
-  src/libsvg/use.cc
-  src/libsvg/util.cc
   src/platform/PlatformUtils.cc
   src/utils/StackCheck.h
   src/utils/calc.cc
@@ -1112,6 +1148,7 @@ else()
   message(STATUS "Clipper2: ${Clipper2_VERSION}")
 endif()
 target_link_libraries(OpenSCADLib PUBLIC Clipper2::Clipper2)
+target_link_libraries(svg PUBLIC Clipper2::Clipper2)
 
 if(ENABLE_MANIFOLD)
   if(NOT DEFINED MANIFOLD_PAR)
@@ -1574,8 +1611,8 @@ else()
 endif()
 
 if(NOT APPLE OR APPLE_UNIX)
-  set_target_properties(OpenSCADLib PROPERTIES OUTPUT_NAME openscad${SUFFIX_WITH_DASH})
-  install(TARGETS OpenSCADLib RUNTIME DESTINATION "${OPENSCAD_BINDIR}")
+  set_target_properties(OpenSCADExe PROPERTIES OUTPUT_NAME openscad${SUFFIX_WITH_DASH})
+  install(TARGETS OpenSCADExe RUNTIME DESTINATION "${OPENSCAD_BINDIR}")
   if(ENABLE_PYTHON)
     install(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/openscad-python DESTINATION "${OPENSCAD_BINDIR}")
   endif()
@@ -1671,7 +1708,7 @@ if(ENABLE_TESTS)
     # and how the system Catch2 static library is compiled. It should be fine.
 
     add_executable(OpenSCADUnitTests ${TEST_SOURCES})
-    target_link_libraries(OpenSCADUnitTests PRIVATE Catch2::Catch2WithMain OpenSCADLib)
+    target_link_libraries(OpenSCADUnitTests PRIVATE Catch2::Catch2WithMain OpenSCADLib svg)
     include(CTest)
     include(Catch)
     catch_discover_tests(OpenSCADUnitTests)
