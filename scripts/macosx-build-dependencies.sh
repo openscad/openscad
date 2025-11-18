@@ -94,7 +94,7 @@ PACKAGES=(
     # Using Qt6 going forward, leaving Qt5 config just in case
     # "qt5 5.15.16"
     # https://download.qt.io/official_releases/qt/6.5/
-    "qt6 6.5.5"
+    "qt6 6.5.7"
 
     # https://opencsg.org/news.html
     "opencsg 1.8.1"
