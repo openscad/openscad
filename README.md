@@ -4,6 +4,39 @@
 
 [![Visit our IRC channel](https://kiwiirc.com/buttons/irc.libera.chat/openscad.png)](https://kiwiirc.com/client/irc.libera.chat/#openscad)
 
+## Multi-Platform Docker Images (Fork)
+
+[![Docker Build](https://img.shields.io/github/actions/workflow/status/gounthar/openscad/docker-build-matrix.yml?branch=multiplatform&logo=docker&label=docker%20build&style=plastic)](https://github.com/gounthar/openscad/actions/workflows/docker-build-matrix.yml)
+[![Dependabot](https://img.shields.io/badge/dependabot-enabled-025E8C?logo=dependabot&style=plastic)](https://github.com/gounthar/openscad/network/updates)
+[![Docker Hub](https://img.shields.io/docker/pulls/gounthar/openscad?logo=docker&style=plastic)](https://hub.docker.com/r/gounthar/openscad)
+
+This fork provides **multi-architecture Docker images** for OpenSCAD, supporting:
+- `linux/amd64` (x86_64)
+- `linux/arm64` (Apple Silicon, Raspberry Pi 4+)
+- `linux/riscv64` (RISC-V boards)
+
+### Quick Start with Docker
+
+```bash
+# Pull the multi-arch image (automatically selects your architecture)
+docker pull gounthar/openscad:latest
+
+# Run OpenSCAD
+docker run --rm -v $(pwd):/work gounthar/openscad:latest /work/model.scad -o /work/output.stl
+
+# Or use GitHub Container Registry
+docker pull ghcr.io/gounthar/openscad:latest
+```
+
+### Automated Updates
+
+This fork uses automated dependency management:
+- **Dependabot**: Weekly updates for Docker base images and GitHub Actions
+- **UpdateCLI**: Advanced dependency tracking (coming soon)
+- **Auto-merge**: Minor/patch updates merged automatically after CI passes
+
+---
+
 # What is OpenSCAD?
 <p><a href="https://opencollective.com/openscad/donate"><img align="right" src="https://opencollective.com/openscad/donate/button@2x.png?color=white" width="200"/></a>
 

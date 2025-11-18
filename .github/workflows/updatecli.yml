@@ -1,0 +1,46 @@
+name: UpdateCLI
+
+on:
+  schedule:
+    # Run weekly on Tuesdays at 06:00 UTC (one day after Dependabot)
+    - cron: '0 6 * * 2'
+  workflow_dispatch:
+    inputs:
+      dry-run:
+        description: 'Run in dry-run mode (no PRs created)'
+        required: false
+        default: 'false'
+        type: boolean
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  updatecli:
+    name: Run UpdateCLI
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install UpdateCLI
+        uses: updatecli/updatecli-action@v2
+
+      - name: Run UpdateCLI (Diff)
+        if: github.event.inputs.dry-run == 'true'
+        run: |
+          updatecli diff \
+            --config .updatecli/updatecli.d/ \
+            --values .updatecli/values.yaml
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Run UpdateCLI (Apply)
+        if: github.event.inputs.dry-run != 'true'
+        run: |
+          updatecli apply \
+            --config .updatecli/updatecli.d/ \
+            --values .updatecli/values.yaml
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
