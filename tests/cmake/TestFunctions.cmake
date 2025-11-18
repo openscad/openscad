@@ -392,6 +392,7 @@ endfunction()
 #
 function(add_cmdline_test TESTCMD_BASENAME)
   cmake_parse_arguments(TESTCMD "OPENSCAD;STDIO;EXPERIMENTAL" "EXE;SCRIPT;SUFFIX;KERNEL;EXPECTEDDIR" "FILES;ARGS" ${ARGN})
+  list(LENGTH TESTCMD_FILES FILES_COUNT)
 
   set(EXTRA_OPTIONS "")
 
@@ -483,14 +484,27 @@ function(add_cmdline_test TESTCMD_BASENAME)
     # only add test if it is not experimental or if it is and experimental option is enabled
     if (NOT TEST_IS_EXPERIMENTAL OR EXPERIMENTAL)
       # Use cmake option "--log-level DEBUG" during top level config to see this
-      message(DEBUG "${DBG_COMMAND_STR}")      
-      add_test(NAME ${TEST_FULLNAME} CONFIGURATIONS ${CONFVAL}
-        COMMAND ${Python3_EXECUTABLE}
-        ${TEST_CMDLINE_TOOL_PY} ${COMPARATOR} -c ${IMAGE_COMPARE_EXE}
-        -s ${TESTCMD_SUFFIX} ${EXTRA_OPTIONS} ${TESTNAME_OPTION} ${FILENAME_OPTION}
-        ${TESTCMD_EXE} ${TESTCMD_SCRIPT} "${SCADFILE}" ${CAMERA_OPTION}
-        ${EXPERIMENTAL_OPTION} ${MANIFOLD_OPTION} ${TESTCMD_ARGS}
-      )
+      message(DEBUG "${DBG_COMMAND_STR}")
+      # For multi-config generators (Visual Studio, Xcode), don't specify CONFIGURATIONS
+      # as it conflicts with build configurations (Debug, Release, etc.)
+      get_property(IS_MULTI_CONFIG GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
+      if(IS_MULTI_CONFIG)
+        add_test(NAME ${TEST_FULLNAME}
+          COMMAND ${Python3_EXECUTABLE}
+          ${TEST_CMDLINE_TOOL_PY} ${COMPARATOR} -c ${IMAGE_COMPARE_EXE}
+          -s ${TESTCMD_SUFFIX} ${EXTRA_OPTIONS} ${TESTNAME_OPTION} ${FILENAME_OPTION}
+          ${TESTCMD_EXE} ${TESTCMD_SCRIPT} "${SCADFILE}" ${CAMERA_OPTION}
+          ${EXPERIMENTAL_OPTION} ${MANIFOLD_OPTION} ${TESTCMD_ARGS}
+        )
+      else()
+        add_test(NAME ${TEST_FULLNAME} CONFIGURATIONS ${CONFVAL}
+          COMMAND ${Python3_EXECUTABLE}
+          ${TEST_CMDLINE_TOOL_PY} ${COMPARATOR} -c ${IMAGE_COMPARE_EXE}
+          -s ${TESTCMD_SUFFIX} ${EXTRA_OPTIONS} ${TESTNAME_OPTION} ${FILENAME_OPTION}
+          ${TESTCMD_EXE} ${TESTCMD_SCRIPT} "${SCADFILE}" ${CAMERA_OPTION}
+          ${EXPERIMENTAL_OPTION} ${MANIFOLD_OPTION} ${TESTCMD_ARGS}
+        )
+      endif()
       set_property(TEST ${TEST_FULLNAME} PROPERTY ENVIRONMENT ${CTEST_ENVIRONMENT})
     else()
       message(DEBUG "Experimental Test not added: ${DBG_COMMAND_STR}")
@@ -535,7 +549,14 @@ function(add_failing_test TESTCMD_BASENAME)
       set(FILENAME_OPTION -f ${FILE_BASENAME})
     endif()
 
-    add_test(NAME ${TEST_FULLNAME} CONFIGURATIONS ${CONFVAL} COMMAND ${TESTCMD_EXE} ${TESTCMD_SCRIPT} "${SCADFILE}" -s ${TESTCMD_SUFFIX} ${TESTCMD_ARGS})
+    # For multi-config generators (Visual Studio, Xcode), don't specify CONFIGURATIONS
+    # as it conflicts with build configurations (Debug, Release, etc.)
+    get_property(IS_MULTI_CONFIG GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
+    if(IS_MULTI_CONFIG)
+      add_test(NAME ${TEST_FULLNAME} COMMAND ${TESTCMD_EXE} ${TESTCMD_SCRIPT} "${SCADFILE}" -s ${TESTCMD_SUFFIX} ${TESTCMD_ARGS})
+    else()
+      add_test(NAME ${TEST_FULLNAME} CONFIGURATIONS ${CONFVAL} COMMAND ${TESTCMD_EXE} ${TESTCMD_SCRIPT} "${SCADFILE}" -s ${TESTCMD_SUFFIX} ${TESTCMD_ARGS})
+    endif()
     set_property(TEST ${TEST_FULLNAME} PROPERTY ENVIRONMENT "${CTEST_ENVIRONMENT}")
   endforeach()
 endfunction()
