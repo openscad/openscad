@@ -1,1 +1,0 @@
-text(text = "T-X-U", size = 40, spacing = 1, font = "Liberation Sans:style=Regular", direction = "ltr", language = "en", script = "Latn", halign = "default", valign = "default", $fn = 2, $fa = 12, $fs = 2);

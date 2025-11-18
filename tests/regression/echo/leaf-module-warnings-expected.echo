@@ -1,6 +1,0 @@
-WARNING: module children() does not support child modules in file leaf-module-warnings.scad, line 4
-DEPRECATED: child() will be removed in future releases. Use children() instead.
-WARNING: module child() does not support child modules in file leaf-module-warnings.scad, line 9
-WARNING: module import() does not support child modules in file leaf-module-warnings.scad, line 13
-WARNING: module surface() does not support child modules in file leaf-module-warnings.scad, line 15
-WARNING: module text() does not support child modules in file leaf-module-warnings.scad, line 17

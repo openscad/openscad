@@ -1,4 +1,0 @@
-union() {
-  polyhedron();
-  polyhedron();
-}

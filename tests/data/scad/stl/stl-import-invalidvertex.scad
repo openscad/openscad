@@ -1,1 +1,0 @@
-import("../../stl/invalidvertex.stl");

@@ -1,2 +1,0 @@
-echo("after");
-after = true;

@@ -1,1 +1,0 @@
-import("../../dxf/lwpolyline.dxf");

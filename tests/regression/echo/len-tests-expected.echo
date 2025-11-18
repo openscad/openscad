@@ -1,8 +1,0 @@
-ECHO: 4
-ECHO: 4
-ECHO: 0
-ECHO: 0
-ECHO: 2
-ECHO: 3
-WARNING: len() parameter could not be converted: argument 0: expected string, found undefined (undef) in file len-tests.scad, line 12
-ECHO: undef

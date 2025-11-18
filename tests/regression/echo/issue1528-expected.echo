@@ -1,2 +1,0 @@
-WARNING: lookup() parameter could not be converted: argument 1: expected vector, found undefined (undef) in file issue1528.scad, line 1
-ECHO: undef

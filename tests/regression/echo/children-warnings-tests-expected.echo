@@ -1,6 +1,0 @@
-DEPRECATED: child() will be removed in future releases. Use children() instead.
-WARNING: module child() does not support child modules in file children-warnings-tests.scad, line 1
-WARNING: Children index (5) out of bounds (1 children) in file children-warnings-tests.scad, line 4
-WARNING: Children index (5) out of bounds (2 children) in file children-warnings-tests.scad, line 4
-WARNING: Bad range parameter for children: too many elements (10001) in file children-warnings-tests.scad, line 15
-WARNING: Bad parameter type ("test") for children, only accept: empty, number, vector, range in file children-warnings-tests.scad, line 19

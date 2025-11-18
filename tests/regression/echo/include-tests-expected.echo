@@ -1,6 +1,0 @@
-WARNING: Can't open include file 'not_exist.scad'. in file ../../tests/data/scad/misc/sub1/included.scad, line 3
-WARNING: Can't open include file 'non/existent/path/non-file'. in file ../../tests/data/scad/misc/include-tests.scad, line 8
-WARNING: Can't open include file 'test/'. in file ../../tests/data/scad/misc/include-tests.scad, line 20
-WARNING: Can't open include file '/'. in file ../../tests/data/scad/misc/include-tests.scad, line 23
-ECHO: "included.scad"
-ECHO: "included2.scad"

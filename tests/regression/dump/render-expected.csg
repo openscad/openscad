@@ -1,3 +1,0 @@
-group() {
-	render(convexity = 1);
-}

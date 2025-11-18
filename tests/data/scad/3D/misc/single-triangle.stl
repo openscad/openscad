@@ -1,9 +1,0 @@
-solid OpenSCAD_Model
-  facet normal 1 -0 0
-    outer loop
-      vertex 1 0 1
-      vertex 1 1 0
-      vertex 1 1 1
-    endloop
-  endfacet
-endsolid OpenSCAD_Model

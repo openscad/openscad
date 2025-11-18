@@ -35,7 +35,7 @@ targets:
     name: Update Dockerfile base image
     kind: file
     spec:
-      file: Dockerfile
+      file: docker/Dockerfile
       matchpattern: 'FROM debian:trixie-\d{8}-slim'
       replacepattern: 'FROM debian:{{ source "debian-trixie" }}'
     scmid: default
@@ -55,7 +55,7 @@ actions:
         Updates the Docker base image to the latest Debian Trixie release.
 
         **Changes:**
-        - Dockerfile: `FROM debian:{{ source "debian-trixie" }}`
+        - docker/Dockerfile: `FROM debian:{{ source "debian-trixie" }}`
 
         **Verification Checklist:**
         - [ ] Docker build completes for all architectures (amd64, arm64, riscv64)

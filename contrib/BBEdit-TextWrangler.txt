@@ -1,5 +1,0 @@
-BBEdit:
-Install OpenSCAD.plist into ~/Library/Application Support/BBEdit/Language Modules
-
-TextWrangler:
-Install OpenSCAD.plist into ~/Library/Application Support/TextWrangler/Language Modules

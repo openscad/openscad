@@ -1,3 +1,0 @@
-group() {
-	projection(cut = false, convexity = 0);
-}

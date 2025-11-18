@@ -1,2 +1,0 @@
-ERROR: Assertion failed in file assert-fail4-test.scad, line 1
-TRACE: called by 'assert' in file assert-fail4-test.scad, line 1

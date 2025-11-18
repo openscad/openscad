@@ -1,3 +1,0 @@
-include <file.scad
-
-sphere();

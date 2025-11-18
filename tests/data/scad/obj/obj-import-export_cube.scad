@@ -1,1 +1,0 @@
-import("../../obj/cube.obj");

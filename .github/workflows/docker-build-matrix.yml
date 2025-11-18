@@ -61,6 +61,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: .
+          file: docker/Dockerfile
           platforms: ${{ matrix.platform }}
           cache-from: type=gha,scope=${{ steps.prep.outputs.cache-key }}
           cache-to: type=gha,mode=max,scope=${{ steps.prep.outputs.cache-key }}

@@ -1,2 +1,0 @@
-use<mainincludingerror.scad>
-errmod();

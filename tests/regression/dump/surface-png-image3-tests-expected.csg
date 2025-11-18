@@ -1,3 +1,0 @@
-multmatrix([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 0.2, 0], [0, 0, 0, 1]]) {
-	surface(file = "../../../image/smiley.png", center = false, invert = true, timestamp = 1403381744);
-}

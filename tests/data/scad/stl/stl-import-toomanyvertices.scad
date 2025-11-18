@@ -1,1 +1,0 @@
-import("../../stl/toomanyvertices.stl");

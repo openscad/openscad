@@ -1,3 +1,0 @@
-use <modulewithinclude.scad>
-
-mymodule();

@@ -1,2 +1,0 @@
-ERROR: Assertion 'false' failed in file assert-expression-fail1-test.scad, line 1
-TRACE: assignment to "v" in file assert-expression-fail1-test.scad, line 1

@@ -1,3 +1,0 @@
-a = assert(b);
-//Parameter("")
-b = true;
