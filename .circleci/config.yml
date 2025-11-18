@@ -28,6 +28,9 @@ exectutors:
     docker:
       - image: openscad/wasm-base-release:latest
     resource_class: large
+  python-executor:
+    docker:
+      - image: cimg/python:latest
 
 jobs:
   openscad-mxe-64bit:
@@ -255,6 +258,38 @@ jobs:
             cp -v OpenSCAD-$VERSIONDATE.dmg* /tmp/out/
       - store_artifacts:
           path: /tmp/out
+  create-tarball:
+    executor: python-executor
+    steps:
+      - checkout
+      - run:
+          name: "Checkout submodules"
+          command: |
+            git submodule sync
+            git submodule update --init
+      - run:
+          name: "Extract version"
+          command: echo "export VERSION=${CIRCLE_TAG#openscad-}" >> $BASH_ENV
+      - run:
+          name: "Create VERSION file"
+          command: echo "$VERSION" > VERSION
+      - run:
+          name: "Install git-archive-all"
+          command: pip install git-archive-all
+      - run:
+          name: "Create source tarball"
+          command: |
+            mkdir -p /tmp/artifacts
+            git-archive-all --force-submodules --prefix=openscad-${VERSION}/ /tmp/artifacts/openscad-${VERSION}.tar.gz
+      - persist_to_workspace:
+          root: /tmp/artifacts
+          paths:
+            - openscad-*.tar.gz
+            # TODO: checksums
+
+filters: &release-filters
+  tags:
+    only: /^openscad-.*$/
 
 workflows:
   version: 2
@@ -319,6 +354,22 @@ workflows:
               branches:
                   only:
                       - /.*-macos/
+  "CircleCI release build":
+    jobs:
+      - create-tarball:
+          filters: *release-filters
+      # - openscad-macos-release:
+      #     filters: *release-filters
+      # - openscad-mxe-64bit-release:
+      #     filters: *release-filters
+      # - openscad-appimage-64bit-release:
+      #     filters: *release-filters
+      # - openscad-wasm-release:
+      #     filters: *release-filters
+      #     matrix:
+      #       parameters:
+      #         wasm-type: [web, node]
+
   scheduled:
     triggers:
       - schedule:
