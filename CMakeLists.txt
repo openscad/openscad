@@ -120,7 +120,12 @@ if(CLANG_TIDY)
   #  append ";--fix" to arguments above to apply automatic fix (if the given checks support it)
 endif(CLANG_TIDY)
 
-add_executable(OpenSCAD)
+if(BUILD_SHARED_LIBS)
+  set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+  add_library(OpenSCAD)
+else ()
+  add_executable(OpenSCAD)
+endif()
 
 if (MINGW)
   # Configure Debug flags (MinGW) to keep rich symbols and avoid PE/COFF
@@ -1363,7 +1368,7 @@ endif()
 if (ENABLE_MANIFOLD AND ENABLE_CGAL)
   list(APPEND Sources ${MANIFOLD_CGAL_SOURCES})
 endif()
-list(APPEND Sources src/openscad.cc ${CORE_SOURCES} ${OFFSCREEN_SOURCES})
+list(APPEND Sources src/openscad.cc src/libopenscad.cc ${CORE_SOURCES} ${OFFSCREEN_SOURCES})
 
 set_source_files_properties(
   # flex and bison tends to generate many macros, which does not work well with

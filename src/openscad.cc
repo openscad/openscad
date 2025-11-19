@@ -794,11 +794,18 @@ struct CommaSeparatedVector {
 };
 
 // OpenSCAD
-int main(int argc, char **argv)
+int main(int argc, char **argv) { return openscad_main(argc, argv, false); }
+
+static bool initialized = false;
+
+int openscad_main(int argc, char **argv, bool is_lib)
 {
 #if defined(ENABLE_CGAL) && defined(USE_MIMALLOC)
-  // call init_mimalloc before any GMP variables are initialized. (defined in src/openscad_mimalloc.h)
-  init_mimalloc();
+  if (!initialized || !is_lib) {
+    // call init_mimalloc before any GMP variables are initialized. (defined in src/openscad_mimalloc.h)
+    init_mimalloc();
+    initialized = true;
+  }
 #endif
 
   int rc = 0;
@@ -1199,7 +1206,9 @@ int main(int argc, char **argv)
     return 1;
   }
 
-  Builtins::instance(true);
+  if (!is_lib) {
+    Builtins::instance(true);
+  }
 
   return rc;
 }

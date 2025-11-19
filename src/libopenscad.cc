@@ -20,23 +20,47 @@
  *
  *  You should have received a copy of the GNU General Public License
  *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  021111307  USA
  *
  */
 
-#pragma once
+#include "openscad.h"
+#include "libopenscad.h"
 
+#ifdef _WIN32
+#include <io.h>
+#include <fcntl.h>
+#endif
+#include <exception>
+#include <filesystem>
 #include <string>
-#include <utility>
+#include <vector>
 
-extern bool parse(class SourceFile *& file, const std::string& text, const std::string& filename,
-                  const std::string& mainFile, int debug);
+#include "utils/printutils.h"
 
-extern std::string commandline_commands;
+// Extern "C" function for initializing and running OpenSCAD from a Native C API.
+OPENSCAD_API int lib_openscad(int argc, const char **argv)
+{
+  try {
+    std::vector<std::string> arg_strings;
+    std::vector<char *> arg_ptrs;
 
-// Custom argument parser
-std::pair<std::string, std::string> customSyntax(const std::string& s);
+    for (int i = 0; i < argc; ++i) {
+      arg_strings.push_back(argv[i]);
+    }
 
-void localization_init();
-void set_render_color_scheme(const std::string& color_scheme, const bool exit_if_not_found);
-int openscad_main(int argc, char **argv, bool is_jna_call);
+    for (auto& str : arg_strings) {
+      arg_ptrs.push_back(&str[0]);
+    }
+
+    // Execute the main OpenSCAD functionality with the prepared arguments.
+    const int result = openscad_main(argc, arg_ptrs.data(), true);
+
+    // Return the result of the OpenSCAD execution.
+    return result;
+  } catch (const std::exception& e) {
+    // Log any exception that occurs during command line execution and return 1 to indicate failure.
+    LOG("Command line execution failed: %1$s", e.what());
+    return 1;
+  }
+}
