@@ -255,15 +255,14 @@ std::vector<Vector3d> python_vectors(PyObject *vec, int mindim, int maxdim)
  * Create a CurveDiscretizer by extracting parameters from __main__ and kwargs
  */
 
-
 CurveDiscretizer CreateCurveDiscretizer(PyObject *kwargs)
 {
   PyObject *mainModule = pythonMainModule.get();
   return CurveDiscretizer([kwargs, mainModule](const char *key) -> std::optional<double> {
     double result;
-    if (kwargs != nullptr && PyDict_Check(kwargs)) { // kwargs can be nullptr
+    if (kwargs != nullptr && PyDict_Check(kwargs)) {  // kwargs can be nullptr
       PyObject *value = PyDict_GetItemString(kwargs, key);
-      if (!(python_numberval(value, &result))) return result; // value an be Integer, Number, ...
+      if (!(python_numberval(value, &result))) return result;  // value an be Integer, Number, ...
     }
     if (mainModule != nullptr) {
       if (PyObject_HasAttrString(mainModule, key)) {
