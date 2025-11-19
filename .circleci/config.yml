@@ -3,7 +3,22 @@ version: 2.1
 orbs:
   macos: circleci/macos@2.5.1
   
-exectutors:
+executors:
+  mxe64-executor:
+    working_directory: ~/workspace
+    docker:
+      - image: openscad/mxe-x86_64-gui:latest
+    resource_class: large
+  appimage-executor:
+    working_directory: ~/workspace
+    docker:
+      - image: openscad/appimage-x86_64-base:latest
+    resource_class: large
+  wasm-executor:
+    working_directory: ~/workspace
+    docker:
+      - image: openscad/wasm-base-release:latest
+    resource_class: large
   macos-executor:
     resource_class: m4pro.medium
     macos:
@@ -13,21 +28,6 @@ exectutors:
       PKG_CONFIG_PATH: /Users/distiller/libraries/install/lib/pkgconfig
       DYLD_LIBRARY_PATH: /Users/distiller/libraries/install/lib
       DYLD_FRAMEWORK_PATH: /Users/distiller/libraries/install/lib
-  appimage-executor:
-    working_directory: ~/workspace
-    docker:
-      - image: openscad/appimage-x86_64-base:latest
-    resource_class: large
-  mxe64-executor:
-    working_directory: ~/workspace
-    docker:
-      - image: openscad/mxe-x86_64-gui:latest
-    resource_class: large
-  wasm-executorr:
-    working_directory: ~/workspace
-    docker:
-      - image: openscad/wasm-base-release:latest
-    resource_class: large
   python-executor:
     docker:
       - image: cimg/python:latest
