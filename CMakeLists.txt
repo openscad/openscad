@@ -743,7 +743,7 @@ if (MXECROSS)
   # ld: libsvg.a(libsvg.cc.obj): ... undefined reference to `__imp_xmlFreeTextReader'
   # ld: .../libxml2.a(libxml2_la-xmlIO.o): in function `xmlGzfileRead': ...xmlIO.c:851: undefined reference to `gzread'
   # ld: .../libzip.a(zip_crypto_win.c.obj):zip_crypto_win:(.text+0x1074): undefined reference to `BCryptGenRandom'
-  target_link_libraries(svg PRIVATE ${LIBZIP_LIBRARY} bcrypt)
+  target_link_libraries(svg PRIVATE bcrypt)
 endif()
 
 target_include_directories(OpenSCADLibInternal PUBLIC
