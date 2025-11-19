@@ -531,15 +531,14 @@ PyObject *python_sphere(PyObject *self, PyObject *args, PyObject *kwargs)
   DECLARE_INSTANCE();
   auto node = std::make_shared<SphereNode>(instance, CreateCurveDiscretizer(kwargs));
 
-  char *kwlist[] = {"r", "d", "fn", "fa", "fs", NULL};
+  char *kwlist[] = {"r", "d", NULL};
   double r = NAN;
   PyObject *rp = nullptr;
   double d = NAN;
-  double fn = NAN, fa = NAN, fs = NAN;
 
   double vr = 1;
 
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|Odddd", kwlist, &rp, &d, &fn, &fa, &fs)) {
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|Od", kwlist, &rp, &d)) {
     PyErr_SetString(PyExc_TypeError, "Error during parsing sphere(r|d)");
     return NULL;
   }
@@ -585,8 +584,6 @@ PyObject *python_cylinder(PyObject *self, PyObject *args, PyObject *kwargs)
   double d1 = NAN;
   double d2 = NAN;
   double angle = NAN;
-
-  double fn = NAN, fa = NAN, fs = NAN;
 
   PyObject *center = NULL;
   double vr1 = 1, vr2 = 1, vh = 1;
@@ -3307,10 +3304,9 @@ PyObject *python_oo_rotate_extrude(PyObject *obj, PyObject *args, PyObject *kwar
   double fn = NAN, fa = NAN, fs = NAN;
   PyObject *v = NULL;
   char *method = NULL;
-  char *kwlist[] = {"convexity", "scale",  "angle", "twist", "origin", "offset",
-                    "v",         "method", "fn",    "fa",    "fs",     NULL};
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|iddOOOOsddd", kwlist, &convexity, &scale, &angle,
-                                   &twist, &origin, &offset, &v, &method, &fn, &fa, &fs)) {
+  char *kwlist[] = {"convexity", "scale", "angle", "twist", "origin", "offset", "v", "method", NULL};
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|iddOOOOs", kwlist, &convexity, &scale, &angle, &twist,
+                                   &origin, &offset, &v, &method)) {
     PyErr_SetString(PyExc_TypeError, "error during parsing\n");
     return NULL;
   }
@@ -4742,6 +4738,14 @@ PyObject *python_sheet(PyObject *self, PyObject *args, PyObject *kwargs)
   }
 
   return python_sheet_core(func, imin, imax, jmin, jmax, fs, ispan, jspan);
+}
+
+std::optional<std::string> to_optional_string(const char *ptr)
+{
+  if (ptr != nullptr) {
+    return std::string(ptr);
+  }
+  return {};
 }
 
 std::optional<std::string> to_optional_string(const char *ptr)

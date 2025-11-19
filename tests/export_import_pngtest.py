@@ -55,7 +55,11 @@ def createImport(inputfile, scadfile):
 #
 # Parse arguments
 #
+<<<<<<< HEAD
 formats = ["csg", "asciistl", "binstl", "stl", "off", "amf", "3mf", "obj", "dxf", "svg", "py"]
+=======
+formats = ["csg", "asciistl", "binstl", "stl", "off", "amf", "3mf", "obj", "dxf", "svg"]
+>>>>>>> upstream/master
 parser = argparse.ArgumentParser()
 parser.add_argument(
     "--openscad",
@@ -107,7 +111,11 @@ else:
         exportfile += "." + args.format
 
 # If we're not reading an .scad or .csg file, we need to import it.
+<<<<<<< HEAD
 if inputsuffix != ".scad" and inputsuffix != ".csg" and inputsuffix != ".py":
+=======
+if inputsuffix != ".scad" and inputsuffix != ".csg":
+>>>>>>> upstream/master
     # FIXME: Remove tempfile if created
     tempfile = os.path.join(outputdir, inputfilename + ".scad")
     createImport(inputfile, tempfile)
