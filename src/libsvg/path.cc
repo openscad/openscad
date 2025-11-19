@@ -81,15 +81,6 @@ static double vector_angle(double ux, double uy, double vx, double vy)
   return angle;
 }
 
-static inline unsigned long CalcFn(double fn, unsigned long minimum)
-{
-  unsigned long result = 3;
-  if (fn > 3.0)  // > 0.0 && > 3
-    result = static_cast<unsigned long>(fn);
-  if (result < minimum) result = minimum;
-  return result;
-}
-
 void path::arc_to(path_t& path, double x1, double y1, double rx, double ry, double x2, double y2,
                   double angle, bool large, bool sweep, void *context)
 {
@@ -141,13 +132,11 @@ void path::arc_to(path_t& path, double x1, double y1, double rx, double ry, doub
     delta -= 360;
   }
 
-  double rmax = fmax(rx, ry);
-  unsigned long fn = Calc::get_fragments_from_r(rmax, 360.0, fValues->fn, fValues->fs, fValues->fa);
-  fn = (unsigned long)ceil(
-    fn * fabs(delta) / 360.0);  // because we are creating a section of an ellipse, not the full ellipse
-  unsigned int steps = (std::fabs(delta) * 10.0 / 180) + 4;
-  if (steps < fn)  // use the maximum of calculated steps and user specified steps
-    steps = fn;
+  double rmax = std::max(rx, ry);
+  unsigned int fn =
+    fValues->getCircularSegmentCount(rmax, delta)
+      .value_or(3);  // because we are creating a section of an ellipse, not the full ellipse
+  unsigned int steps = std::max(fn, static_cast<unsigned int>((std::fabs(delta) * 10.0 / 180) + 4));
   for (unsigned int a = 0; a <= steps; ++a) {
     double phi = theta + delta * a / steps;
 
@@ -164,8 +153,11 @@ void path::curve_to(path_t& path, double x, double y, double cx1, double cy1, do
   // NOTE - this could be done better using a chord length iteration (uniform in space) to implement $fa
   // (lot of work, little gain)
   const auto *fValues = reinterpret_cast<const fnContext *>(context);
-  unsigned long fn = CalcFn(fValues->fn, 20);  // preserve the old minimum
-  for (unsigned long idx = 1; idx <= fn; ++idx) {
+  // Prior to https://github.com/openscad/openscad/commit/f5816258db263408a7aa2feec1fafffe77644662
+  // fn was set to a fixed value of 20 where this is now used.
+  // The author decided it should never be smaller than this original value.
+  int fn = std::max(fValues->pathSegmentCount, 20);
+  for (int idx = 1; idx <= fn; ++idx) {
     const double a = idx * (1.0 / (double)fn);
     const double xx = x * t(a, 2) + cx1 * 2 * t(a, 1) * a + x2 * a * a;
     const double yy = y * t(a, 2) + cy1 * 2 * t(a, 1) * a + y2 * a * a;
@@ -179,8 +171,11 @@ void path::curve_to(path_t& path, double x, double y, double cx1, double cy1, do
   // NOTE - this could be done better using a chord length iteration (uniform in space) to implement $fa
   // (lot of work, little gain)
   const auto *fValues = reinterpret_cast<const fnContext *>(context);
-  unsigned long fn = CalcFn(fValues->fn, 20);  // preserve the old minimum
-  for (unsigned long idx = 1; idx <= fn; ++idx) {
+  // Prior to https://github.com/openscad/openscad/commit/f5816258db263408a7aa2feec1fafffe77644662
+  // fn was set to a fixed value of 20 where this is now used.
+  // The author decided it should never be smaller than this original value.
+  int fn = std::max(fValues->pathSegmentCount, 20);
+  for (int idx = 1; idx <= fn; ++idx) {
     const double a = idx * (1.0 / (double)fn);
     const double xx = x * t(a, 3) + cx1 * 3 * t(a, 2) * a + cx2 * 3 * t(a, 1) * a * a + x2 * a * a * a;
     const double yy = y * t(a, 3) + cy1 * 3 * t(a, 2) * a + cy2 * 3 * t(a, 1) * a * a + y2 * a * a * a;

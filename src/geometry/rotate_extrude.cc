@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "core/RotateExtrudeNode.h"
+#include "core/CurveDiscretizer.h"
 #include "geometry/GeometryUtils.h"
 #include "geometry/Geometry.h"
 #include "geometry/GeometryEvaluator.h"
@@ -155,7 +156,7 @@ std::unique_ptr<PolySet> rotatePolygonSub(const RotateExtrudeNode& node, const P
   int num_vertices = 0;
 #ifdef ENABLE_PYTHON
   if (node.profile_func != NULL) {
-    Outline2d outl = python_getprofile(node.profile_func, node.fn, 0);
+    Outline2d outl = python_getprofile(node.profile_func, 3, 0);
     slice_stride += outl.vertices.size();
   } else
 #endif
@@ -184,7 +185,7 @@ std::unique_ptr<PolySet> rotatePolygonSub(const RotateExtrudeNode& node, const P
       if (node.profile_func != NULL) {
         Outline2d lastFace;
         Outline2d curFace;
-        Outline2d outl = python_getprofile(node.profile_func, node.fn, j / (double)fragments);
+        Outline2d outl = python_getprofile(node.profile_func, 3, j / (double)fragments);
         vertices2d = outl.vertices;
       } else
 #endif
@@ -294,10 +295,11 @@ std::unique_ptr<Geometry> rotatePolygon(const RotateExtrudeNode& node, const Pol
         min_x, max_x);
     return nullptr;
   }
-  const auto num_sections = (unsigned int)std::ceil(
-    fmax(Calc::get_fragments_from_r(max_x - min_x, 360.0, node.fn, node.fs, node.fa) *
-           std::abs(node.angle) / 360,
-         1));
+
+  const int num_sections = node.discretizer.getCircularSegmentCount(max_x - min_x, node.angle)
+                             .value_or(std::max(1, static_cast<int>(std::fabs(node.angle) / 360 * 3)));
+  const bool closed = node.angle == 360;
+
   bool flip_faces = (min_x >= 0 && node.angle > 0) || (min_x < 0 && node.angle < 0);
 
   // check if its save to extrude

@@ -14,7 +14,7 @@ void show_final(void)
   mapping_level.clear();
   if (shows.size() == 1) genlang_result_node = shows[0];
   else {
-    DECLARE_INSTANCE
+    DECLARE_INSTANCE();
     genlang_result_node = std::make_shared<CsgOpNode>(instance, OpenSCADOperator::UNION);
     genlang_result_node->children = shows;
   }

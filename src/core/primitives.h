@@ -25,9 +25,10 @@
  */
 
 #include "geometry/GeometryUtils.h"
-#include "core/ModuleInstantiation.h"
 #include "geometry/Geometry.h"
 #include "geometry/linalg.h"
+#include "core/CurveDiscretizer.h"
+#include "core/ModuleInstantiation.h"
 #include "core/node.h"
 
 #include <memory>
@@ -74,25 +75,17 @@ std::unique_ptr<const Geometry> sphereCreateFuncGeometry(void *funcptr, double f
 class SphereNode : public LeafNode
 {
 public:
-  SphereNode(const ModuleInstantiation *mi) : LeafNode(mi) {}
-  std::string toString() const override
+  SphereNode(const ModuleInstantiation *mi, CurveDiscretizer discretizer)
+    : LeafNode(mi), discretizer(std::move(discretizer))
   {
-    std::ostringstream stream;
-    stream << "sphere" << "($fn = " << fn << ", $fa = " << fa << ", $fs = " << fs;
-#ifdef ENABLE_PYTHON
-    if (r_func != nullptr) stream << ", r_func = " << rand();
-    else
-#endif
-      stream << ", r = " << r;
-    stream << ")";
-    return stream.str();
   }
+  std::string toString() const override;
   std::string name() const override { return "sphere"; }
   std::unique_ptr<const Geometry> createGeometry() const override;
   virtual std::shared_ptr<const Geometry> dragPoint(const Vector3d& pt, const Vector3d& delta,
                                                     DragResult& result) override;
 
-  double fn, fs, fa;
+  CurveDiscretizer discretizer;
   double r = 1;
 #ifdef ENABLE_PYTHON
   void *r_func = nullptr;
@@ -103,22 +96,17 @@ public:
 class CylinderNode : public LeafNode
 {
 public:
-  CylinderNode(const ModuleInstantiation *mi) : LeafNode(mi) {}
-  std::string toString() const override
+  CylinderNode(const ModuleInstantiation *mi, CurveDiscretizer discretizer)
+    : LeafNode(mi), discretizer(std::move(discretizer))
   {
-    std::ostringstream stream;
-    stream << "cylinder" << "($fn = " << fn << ", $fa = " << fa << ", $fs = " << fs << ", h = " << h
-           << ", r1 = " << r1 << ", r2 = " << r2;
-    if (angle != 360) stream << ", angle = " << angle;
-    stream << ", center = " << (center ? "true" : "false") << ")";
-    return stream.str();
   }
+  std::string toString() const override;
   std::string name() const override { return "cylinder"; }
   std::unique_ptr<const Geometry> createGeometry() const override;
   virtual std::shared_ptr<const Geometry> dragPoint(const Vector3d& pt, const Vector3d& delta,
                                                     DragResult& result) override;
 
-  double fn, fs, fa;
+  CurveDiscretizer discretizer;
   double r1 = 1, r2 = 1, h = 1;
   double angle = 360;
   bool center = false;
@@ -178,19 +166,15 @@ public:
 class CircleNode : public LeafNode
 {
 public:
-  CircleNode(const ModuleInstantiation *mi) : LeafNode(mi) {}
-  std::string toString() const override
+  CircleNode(const ModuleInstantiation *mi, CurveDiscretizer discretizer)
+    : LeafNode(mi), discretizer(std::move(discretizer))
   {
-    std::ostringstream stream;
-    stream << "circle" << "($fn = " << fn << ", $fa = " << fa << ", $fs = " << fs << ", r = " << r;
-    if (angle != 360) stream << ", angle = " << angle;
-    stream << ")";
-    return stream.str();
   }
+  std::string toString() const override;
   std::string name() const override { return "circle"; }
   std::unique_ptr<const Geometry> createGeometry() const override;
 
-  double fn, fs, fa;
+  CurveDiscretizer discretizer;
   double r = 1;
   double angle = 360;
 };
@@ -198,7 +182,10 @@ public:
 class PolygonNode : public LeafNode
 {
 public:
-  PolygonNode(const ModuleInstantiation *mi) : LeafNode(mi) {}
+  PolygonNode(const ModuleInstantiation *mi, CurveDiscretizer discretizer)
+    : LeafNode(mi), discretizer(std::move(discretizer))
+  {
+  }
   std::string toString() const override;
   std::string name() const override { return "polygon"; }
   std::unique_ptr<const Geometry> createGeometry() const override;
@@ -207,8 +194,8 @@ public:
   std::vector<std::vector<size_t>> paths;
   int convexity = 1;
   VectorOfVector2d createGeometry_sub(const std::vector<Vector3d>& points,
-                                      const std::vector<size_t>& path, double fn, double fa,
-                                      double fs) const;
+                                      const std::vector<size_t>& path) const;
+  CurveDiscretizer discretizer;
 };
 
 class SplineNode : public LeafNode

@@ -1,13 +1,12 @@
 #include "geometry/linear_extrude.h"
 
 #include <algorithm>
-#include <cmath>
 #include <iterator>
 #include <cassert>
+#include <cmath>
 #include <utility>
 #include <memory>
 #include <cstddef>
-#include <queue>
 #include <vector>
 
 #include <boost/logic/tribool.hpp>
@@ -21,7 +20,6 @@
 #include "geometry/Barcode1d.h"
 #include "geometry/PolySetBuilder.h"
 #include "geometry/PolySetUtils.h"
-#include "utils/calc.h"
 #include "utils/degree_trig.h"
 
 namespace {
@@ -43,159 +41,6 @@ int sgn_vdiff(const Vector2d& v1, const Vector2d& v2)
   double scale = (l1 + l2);
   double diff = 2 * std::fabs(l1 - l2) * ratio_threshold;
   return diff > scale ? (l1 < l2 ? -1 : 1) : 0;
-}
-
-// Insert vertices for segments interpolated between v0 and v1.
-// The last vertex (t==1) is not added here to avoid duplicate vertices,
-// since it will be the first vertex of the *next* edge.
-void add_segmented_edge(Outline2d& o, const Vector2d& v0, const Vector2d& v1, unsigned int edge_segments)
-{
-  for (unsigned int j = 0; j < edge_segments; ++j) {
-    double t = static_cast<double>(j) / edge_segments;
-    o.vertices.push_back((1 - t) * v0 + t * v1);
-  }
-}
-
-// While total outline segments < fn, increment segment_count for edge with largest
-// (max_edge_length / segment_count).
-Outline2d splitOutlineByFn(const Outline2d& o, const double twist, const double scale_x,
-                           const double scale_y, const double fn, unsigned int slices)
-{
-  struct segment_tracker {
-    size_t edge_index;
-    double max_edgelen;
-    unsigned int segment_count{1u};
-    segment_tracker(size_t i, double len) : edge_index(i), max_edgelen(len) {}
-    // metric for comparison: average between (max segment length, and max segment length after split)
-    [[nodiscard]] double metric() const { return max_edgelen / (segment_count + 0.5); }
-    bool operator<(const segment_tracker& rhs) const { return this->metric() < rhs.metric(); }
-    [[nodiscard]] bool close_match(const segment_tracker& other) const
-    {
-      // Edges are grouped when metrics match by at least 99.9%
-      constexpr double APPROX_EQ_RATIO = 0.999;
-      double l1 = this->metric(), l2 = other.metric();
-      return std::min(l1, l2) / std::max(l1, l2) >= APPROX_EQ_RATIO;
-    }
-  };
-
-  const auto num_vertices = o.vertices.size();
-  std::vector<unsigned int> segment_counts(num_vertices, 1);
-  std::priority_queue<segment_tracker, std::vector<segment_tracker>> q;
-
-  Vector2d v0 = o.vertices[0];
-  // non-uniform scaling requires iterating over each slice transform
-  // to find maximum length of a given edge.
-  if (scale_x != scale_y) {
-    for (size_t i = 1; i <= num_vertices; ++i) {
-      Vector2d v1 = o.vertices[i % num_vertices];
-      double max_edgelen = 0.0;  // max length for single edge over all transformed slices
-      for (unsigned int j = 0; j <= slices; j++) {
-        double t = static_cast<double>(j) / slices;
-        Vector2d scale(Calc::lerp(1, scale_x, t), Calc::lerp(1, scale_y, t));
-        double rot = twist * t;
-        Eigen::Affine2d trans(Eigen::Scaling(scale) * Eigen::Affine2d(rotate_degrees(-rot)));
-        double edgelen = (trans * v1 - trans * v0).norm();
-        max_edgelen = std::max(max_edgelen, edgelen);
-      }
-      q.emplace(i - 1, max_edgelen);
-      v0 = v1;
-    }
-  } else {  // uniform scaling
-    double max_scale = std::max(scale_x, 1.0);
-    for (size_t i = 1; i <= num_vertices; ++i) {
-      Vector2d v1 = o.vertices[i % num_vertices];
-      double max_edgelen = (v1 - v0).norm() * max_scale;
-      q.emplace(i - 1, max_edgelen);
-      v0 = v1;
-    }
-  }
-
-  std::vector<segment_tracker> tmp_q;
-  // Process priority_queue until number of segments is reached.
-  size_t seg_total = num_vertices;
-  while (seg_total < fn) {
-    auto current = q.top();
-
-    // Group similar length segmented edges to keep result roughly symmetrical.
-    while (!q.empty() && (tmp_q.empty() || q.top().close_match(tmp_q.front()))) {
-      tmp_q.push_back(q.top());
-      q.pop();
-    }
-
-    if (seg_total + tmp_q.size() <= fn) {
-      while (!tmp_q.empty()) {
-        current = tmp_q.back();
-        tmp_q.pop_back();
-        ++current.segment_count;
-        ++segment_counts[current.edge_index];
-        ++seg_total;
-        q.push(current);
-      }
-    } else {
-      // fn too low to segment last group, push back onto queue without change.
-      while (!tmp_q.empty()) {
-        current = tmp_q.back();
-        tmp_q.pop_back();
-        q.push(current);
-      }
-      break;
-    }
-  }
-
-  // Create final segmented edges.
-  Outline2d o2;
-  o2.positive = o.positive;
-  v0 = o.vertices[0];
-  for (size_t i = 1; i <= num_vertices; ++i) {
-    Vector2d v1 = o.vertices[i % num_vertices];
-    add_segmented_edge(o2, v0, v1, segment_counts[i - 1]);
-    v0 = v1;
-  }
-
-  assert(o2.vertices.size() <= fn);
-  return o2;
-}
-
-// For each edge in original outline, find its max length over all slice transforms,
-// and divide into segments no longer than fs.
-Outline2d splitOutlineByFs(const Outline2d& o, const double twist, const double scale_x,
-                           const double scale_y, const double fs, unsigned int slices)
-{
-  const auto num_vertices = o.vertices.size();
-
-  Vector2d v0 = o.vertices[0];
-  Outline2d o2;
-  o2.positive = o.positive;
-
-  // non-uniform scaling requires iterating over each slice transform
-  // to find maximum length of a given edge.
-  if (scale_x != scale_y) {
-    for (size_t i = 1; i <= num_vertices; ++i) {
-      Vector2d v1 = o.vertices[i % num_vertices];
-      double max_edgelen = 0.0;  // max length for single edge over all transformed slices
-      for (unsigned int j = 0; j <= slices; j++) {
-        double t = static_cast<double>(j) / slices;
-        Vector2d scale(Calc::lerp(1, scale_x, t), Calc::lerp(1, scale_y, t));
-        double rot = twist * t;
-        Eigen::Affine2d trans(Eigen::Scaling(scale) * Eigen::Affine2d(rotate_degrees(-rot)));
-        double edgelen = (trans * v1 - trans * v0).norm();
-        max_edgelen = std::max(max_edgelen, edgelen);
-      }
-      auto edge_segments = static_cast<unsigned int>(std::ceil(max_edgelen / fs));
-      add_segmented_edge(o2, v0, v1, edge_segments);
-      v0 = v1;
-    }
-  } else {  // uniform scaling
-    double max_scale = std::max(scale_x, 1.0);
-    for (size_t i = 1; i <= num_vertices; ++i) {
-      Vector2d v1 = o.vertices[i % num_vertices];
-      unsigned int edge_segments =
-        static_cast<unsigned int>(std::ceil((v1 - v0).norm() * max_scale / fs));
-      add_segmented_edge(o2, v0, v1, edge_segments);
-      v0 = v1;
-    }
-  }
-  return o2;
 }
 
 std::unique_ptr<PolySet> assemblePolySetForManifold(const Polygon2d& polyref,
@@ -339,8 +184,8 @@ size_t calc_num_slices(const LinearExtrudeNode& node, const Polygon2d& poly)
       for (const auto& v : o.vertices) max_r1_sqr = fmax(max_r1_sqr, v.squaredNorm());
     // Calculate Helical curve length for Twist with no Scaling
     if (node.scale_x == 1.0 && node.scale_y == 1.0) {
-      num_slices = (unsigned int)Calc::get_helix_slices(max_r1_sqr, node.height[2], node.twist, node.fn,
-                                                        node.fs, node.fa);
+      num_slices = (unsigned int)node.discretizer.getHelixSlices(max_r1_sqr, node.height[2], node.twist)
+                     .value_or(std::max(static_cast<int>(std::ceil(node.twist / 120.0)), 1));
     } else if (node.scale_x != node.scale_y) {  // non uniform scaling with twist using max slices from
                                                 // twist and non uniform scale
       double max_delta_sqr = 0;                 // delta from before/after scaling
@@ -353,13 +198,14 @@ size_t calc_num_slices(const LinearExtrudeNode& node, const Polygon2d& poly)
       size_t slicesNonUniScale;
       size_t slicesTwist;
       slicesNonUniScale =
-        (unsigned int)Calc::get_diagonal_slices(max_delta_sqr, node.height[2], node.fn, node.fs);
-      slicesTwist = (unsigned int)Calc::get_helix_slices(max_r1_sqr, node.height[2], node.twist, node.fn,
-                                                         node.fs, node.fa);
+        (unsigned int)node.discretizer.getDiagonalSlices(max_delta_sqr, node.height[2]).value_or(1);
+      slicesTwist = (unsigned int)node.discretizer.getHelixSlices(max_r1_sqr, node.height[2], node.twist)
+                      .value_or(std::max(static_cast<int>(std::ceil(node.twist / 120.0)), 1));
       num_slices = std::max(slicesNonUniScale, slicesTwist);
     } else {  // uniform scaling with twist, use conical helix calculation
-      num_slices = (unsigned int)Calc::get_conical_helix_slices(max_r1_sqr, node.height[2], node.twist,
-                                                                node.scale_x, node.fn, node.fs, node.fa);
+      num_slices = (unsigned int)node.discretizer
+                     .getConicalHelixSlices(max_r1_sqr, node.height[2], node.twist, node.scale_x)
+                     .value_or(std::max(static_cast<int>(std::ceil(node.twist / 120.0)), 1));
     }
   } else if (node.scale_x != node.scale_y) {
     // Non uniform scaling, w/o twist
@@ -370,7 +216,7 @@ size_t calc_num_slices(const LinearExtrudeNode& node, const Polygon2d& poly)
         max_delta_sqr = fmax(max_delta_sqr, (v - v.cwiseProduct(scale)).squaredNorm());
       }
     }
-    num_slices = Calc::get_diagonal_slices(max_delta_sqr, node.height[2], node.fn, node.fs);
+    num_slices = node.discretizer.getDiagonalSlices(max_delta_sqr, node.height[2]).value_or(1);
   } else {
     // uniform or [1,1] scaling w/o twist needs only one slice
     num_slices = 1;
@@ -384,12 +230,6 @@ size_t calc_num_slices(const LinearExtrudeNode& node, const Polygon2d& poly)
    Input to extrude should be sanitized. This means non-intersecting, correct winding order
    etc., the input coming from a library like Clipper.
  */
-/*!
-   Input to extrude should be sanitized. This means non-intersecting, correct winding order
-   etc., the input coming from a library like Clipper.
- */
-// FIXME: What happens if the input Polygon isn't manifold, or has coincident vertices?
-
 std::unique_ptr<Geometry> extrudePolygon(const LinearExtrudeNode& node, const Polygon2d& poly)
 {
   assert(poly.isSanitized());
@@ -406,66 +246,32 @@ std::unique_ptr<Geometry> extrudePolygon(const LinearExtrudeNode& node, const Po
 
   // Calculate outline segments if appropriate.
   Polygon2d seg_poly;
-  bool is_segmented = false;
-  if (node.has_segments) {
-    // Set segments = 0 to disable
-    if (node.segments > 0) {
-      for (const auto& o : poly.outlines()) {
-        if (o.vertices.size() >= node.segments) {
-          seg_poly.addOutline(o);
-        } else {
-          seg_poly.addOutline(
-            splitOutlineByFn(o, node.twist, node.scale_x, node.scale_y, node.segments, num_slices));
-        }
-      }
-      is_segmented = true;
-    }
-  } else if (non_linear) {
-    if (node.fn > 0.0) {
-      for (const auto& o : poly.outlines()) {
-        if (o.vertices.size() >= node.fn) {
-          seg_poly.addOutline(o);
-        } else {
-          seg_poly.addOutline(
-            splitOutlineByFn(o, node.twist, node.scale_x, node.scale_y, node.fn, num_slices));
-        }
-      }
-    } else {  // $fs and $fa based segmentation
-      auto fa_segs = static_cast<unsigned int>(std::ceil(360.0 / node.fa));
-      for (const auto& o : poly.outlines()) {
-        if (o.vertices.size() >= fa_segs) {
-          seg_poly.addOutline(o);
-        } else {
-          // try splitting by $fs, then check if $fa results in less segments
-          auto fsOutline =
-            splitOutlineByFs(o, node.twist, node.scale_x, node.scale_y, node.fs, num_slices);
-          if (fsOutline.vertices.size() >= fa_segs) {
-            seg_poly.addOutline(
-              splitOutlineByFn(o, node.twist, node.scale_x, node.scale_y, fa_segs, num_slices));
-          } else {
-            seg_poly.addOutline(std::move(fsOutline));
-          }
-        }
-      }
-    }
-    is_segmented = true;
-  }
+  seg_poly.transform3d(poly.getTransform3d());
 
+  // We skip segmentation if the user passed in segments=0
+  if (!(node.has_segments && node.segments == 0)) {
+    // A straight evenly-scaled linear extrusion doesn't lose detail, so we
+    // only segment if the user requests it or we're doing something funky.
+    if (node.segments > 0 || non_linear) {
+      for (const auto& o : poly.outlines()) {
+        seg_poly.addOutline(node.discretizer.splitOutline(o, node.twist, node.scale_x, node.scale_y,
+                                                          num_slices, node.segments));
+      }
+    }
+  }
 #ifdef ENABLE_PYTHON
   if (node.profile_func != nullptr) {
-    is_segmented = true;
-    seg_poly = python_getprofile(node.profile_func, node.fn, 0);
+    seg_poly = python_getprofile(node.profile_func, 3, 0);
   }
 #endif
-
-  Polygon2d polyref = is_segmented ? seg_poly : poly;
 
   Vector3d height(0, 0, 1);
   if (node.has_heightvector) height = node.height;
   else {
-    auto mat = polyref.getTransform3d();
+    auto mat = seg_poly.getTransform3d();
     height = Vector3d(mat(0, 2), mat(1, 2), mat(2, 2)).normalized() * node.height[2];
   }
+  Polygon2d polyref = seg_poly.isEmpty() ? poly : seg_poly;
   if (node.height[2] < 0) {
     // reverse points, to not get a left system
     polyref.reverse();
@@ -533,7 +339,7 @@ std::unique_ptr<Geometry> extrudePolygon(const LinearExtrudeNode& node, const Po
 
       Eigen::Affine2d trans(Eigen::Scaling(Vector2d(1, 1) - full_scale * slice_idx / num_slices) *
                             Eigen::Affine2d(rotate_degrees(act_rot)));
-      auto prof = python_getprofile(node.profile_func, node.fn, full_height[2] * slice_idx / num_slices);
+      auto prof = python_getprofile(node.profile_func, 3, full_height[2] * slice_idx / num_slices);
       std::vector<Vector3d> topvertices;
       for (const auto& v : prof.vertices) {
         auto tmp = trans * v;

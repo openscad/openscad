@@ -2,7 +2,7 @@ version: 2.1
 
 orbs:
   macos: circleci/macos@2.5.1
-  
+
 jobs:
   openscad-mxe-64bit:
     working_directory: ~/workspace
@@ -22,7 +22,7 @@ jobs:
               ln -sf /usr/bin/python{3,}
               if [ x"${CIRCLE_BRANCH}" = xmaster ]; then export SUFFIX=""; else export SUFFIX="_$(echo ${CIRCLE_BRANCH} | sed -e 's,pull/,PR,; s,/head,h,; s,/merge,m,; s,/,.,g')"; fi
               export OPENSCAD_VERSION="$(date +%Y.%m.%d).ci${CIRCLE_BUILD_NUM}"
-              
+
               ./scripts/release-common.sh snapshot mingw64 -v "$OPENSCAD_VERSION"
               mkdir -p /tmp/out
               for f in mingw*/*.zip mingw*/*.exe; do N=$(basename "$f" | sed -e "s/\\(-x86-[36][24]\\)/\\1${SUFFIX}/;"); cp -iv "$f" /tmp/out/"$N"; done
@@ -173,9 +173,9 @@ jobs:
           path: /tmp/out
           destination: wasm
   openscad-macos:
-    resource_class: macos.m1.medium.gen1
+    resource_class: m4pro.medium
     macos:
-      xcode: 16.4.0
+      xcode: 26.1
     environment:
       OPENSCAD_LIBRARIES: /Users/distiller/libraries/install
       PKG_CONFIG_PATH: /Users/distiller/libraries/install/lib/pkgconfig
@@ -199,7 +199,7 @@ jobs:
             brew install automake libtool cmake pkg-config wget meson python-packaging
       - restore_cache:
           keys:
-            # CircleCI library caching. If we ever need invalidate the cache (e.g. to remove any old files 
+            # CircleCI library caching. If we ever need invalidate the cache (e.g. to remove any old files
             # from a library cache), the safest, change the MACOS_CACHE_VERSION variable to a random value at
             # https://app.circleci.com/settings/project/github/openscad/openscad/environment-variables.
             - macos-libraries-{{ .Environment.MACOS_CACHE_VERSION }}-{{ checksum "scripts/macosx-build-dependencies.sh" }}-{{ checksum ".circleci/config.yml" }}
@@ -247,7 +247,7 @@ jobs:
             security -v set-key-partition-list -S apple-tool:,apple: -s -k "" OpenSCAD.keychain
             codesign --options=runtime --keychain OpenSCAD.keychain -s "Marius Kintel" --force --deep build/OpenSCAD.app
 
-            hdiutil create -volname "OpenSCAD" -srcfolder build/OpenSCAD.app -ov -format UDZO "OpenSCAD-$VERSIONDATE.dmg"  
+            hdiutil create -volname "OpenSCAD" -srcfolder build/OpenSCAD.app -ov -format UDZO "OpenSCAD-$VERSIONDATE.dmg"
             codesign --keychain OpenSCAD.keychain -s "Marius Kintel" --force OpenSCAD-$VERSIONDATE.dmg
 
             xcrun notarytool submit OpenSCAD-$VERSIONDATE.dmg --wait --apple-id $APPLE_NOTARIZATION_ACCOUNT --team-id $APPLE_NOTARIZATION_TEAM --password $APPLE_NOTARIZATION_PASSWORD

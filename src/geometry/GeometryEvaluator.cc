@@ -56,6 +56,7 @@
 #include "core/State.h"
 #include "core/TextNode.h"
 #include "core/TransformNode.h"
+#include "core/CurveDiscretizer.h"
 #include "core/Tree.h"
 #include "utils/calc.h"
 #include "utils/degree_trig.h"
@@ -1056,8 +1057,8 @@ bool offset3D_inside(Offset3D_CornerContext& cxt, const Vector3d& pt, double del
   return result;
 }
 
-std::shared_ptr<const Geometry> offset3D(const std::shared_ptr<const PolySet>& ps, double off, int fn,
-                                         double fa, double fs)
+std::shared_ptr<const Geometry> offset3D(const std::shared_ptr<const PolySet>& ps, double off,
+                                         const CurveDiscretizer& discretizer)
 {
   std::vector<std::shared_ptr<PolySet>> subgeoms;
   std::shared_ptr<PolySet> inner = std::make_shared<PolySet>(*ps);
@@ -1157,12 +1158,7 @@ std::shared_ptr<const Geometry> offset3D(const std::shared_ptr<const PolySet>& p
     startarc.push_back(p1 + off * fan);
     endarc.push_back(p2 + off * fan);
 
-    int fn_a = totang * 180.0 / (3.14 * fa);
-    int fn_s = totang * off / fs;
-    int eff_fn = fn_a;
-    if (fn_s > eff_fn) eff_fn = fn_s;
-    if (fn != 0) eff_fn = fn;
-    if (eff_fn > abs_eff_fn) abs_eff_fn = eff_fn;
+    int eff_fn = discretizer.getCircularSegmentCount(off, totang).value_or(3);
 
     for (int i = 1; i < eff_fn - 1; i++) {
       Transform3d matrix = Transform3d::Identity();
@@ -1549,7 +1545,7 @@ GeometryEvaluator::ResultObject GeometryEvaluator::applyToChildren3D(const Abstr
 
     std::shared_ptr<const PolySet> ps = PolySetUtils::getGeometryAsPolySet(geom);
     if (ps != nullptr) {
-      auto ps_offset = offset3D(ps, offNode->delta, offNode->fn, offNode->fa, offNode->fs);
+      auto ps_offset = offset3D(ps, offNode->delta, offNode->discretizer);
 
       geom = std::move(ps_offset);
       return ResultObject::mutableResult(geom);
@@ -1869,8 +1865,7 @@ std::unique_ptr<Polygon2d> GeometryEvaluator::applyToChildren2D(const AbstractNo
     const OffsetNode *offNode = dynamic_cast<const OffsetNode *>(&node);
     // ClipperLib documentation: The formula for the number of steps in a full
     // circular arc is ... Pi / acos(1 - arc_tolerance / abs(delta))
-    double n =
-      Calc::get_fragments_from_r(std::abs(offNode->delta), 360.0, offNode->fn, offNode->fs, offNode->fa);
+    double n = offNode->discretizer.getCircularSegmentCount(offNode->delta).value_or(3);
     double arc_tolerance = std::abs(offNode->delta) * (1 - cos_degrees(180 / n));
     auto r1 = ClipperUtils::applyOffset(*pol, offNode->delta, offNode->join_type, offNode->miter_limit,
                                         arc_tolerance);
@@ -3641,7 +3636,7 @@ static std::unique_ptr<Geometry> roofOverPolygon(const RoofNode& node, const Pol
 {
   std::unique_ptr<PolySet> roof;
   if (node.method == "voronoi") {
-    roof = roof_vd::voronoi_diagram_roof(poly, node.fa, node.fs);
+    roof = roof_vd::voronoi_diagram_roof(poly, node.discretizer);
     roof->setConvexity(node.convexity);
   } else if (node.method == "straight") {
     roof = roof_ss::straight_skeleton_roof(poly);

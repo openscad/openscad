@@ -39,8 +39,6 @@
 #include <memory>
 #include <cmath>
 #include <sstream>
-#include <boost/assign/std/vector.hpp>
-using namespace boost::assign;  // bring 'operator+=()' into scope
 
 #include <filesystem>
 
@@ -48,20 +46,16 @@ namespace {
 std::shared_ptr<AbstractNode> builtin_linear_extrude(const ModuleInstantiation *inst,
                                                      Arguments arguments, const Children& children)
 {
-  auto node = std::make_shared<LinearExtrudeNode>(inst);
-
-#ifdef ENABLE_PYTHON
-  node->profile_func = NULL;
-  node->twist_func = NULL;
-#endif
   Parameters parameters = Parameters::parse(
     std::move(arguments), inst->location(),
     {"height", "v", "scale", "center", "twist", "slices", "segments"}, {"convexity", "h"});
   parameters.set_caller("linear_extrude");
 
-  node->fn = parameters["$fn"].toDouble();
-  node->fs = parameters["$fs"].toDouble();
-  node->fa = parameters["$fa"].toDouble();
+  auto node = std::make_shared<LinearExtrudeNode>(inst, CurveDiscretizer(parameters, inst->location()));
+#ifdef ENABLE_PYTHON
+  node->profile_func = NULL;
+  node->twist_func = NULL;
+#endif
 
   double height = 100.0;
 
@@ -151,7 +145,7 @@ std::string LinearExtrudeNode::toString() const
   }
 
   if (!(this->has_slices && this->has_segments)) {
-    stream << ", $fn = " << this->fn << ", $fa = " << this->fa << ", $fs = " << this->fs;
+    stream << ", " << this->discretizer;
   }
   if (this->convexity > 1) {
     stream << ", convexity = " << this->convexity;
@@ -173,6 +167,6 @@ void register_builtin_linear_extrude()
   Builtins::init("linear_extrude", new BuiltinModule(builtin_linear_extrude),
                  {
                    "linear_extrude(height = 100, center = false, convexity = 1, twist = 0, scale = 1.0, "
-                   "[slices, segments, v, $fn, $fs, $fa])",
+                   "[slices, segments, v])",
                  });
 }

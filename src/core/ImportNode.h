@@ -4,6 +4,7 @@
 #include <string>
 #include <boost/optional.hpp>
 
+#include "core/CurveDiscretizer.h"
 #include "core/node.h"
 #include "core/ModuleInstantiation.h"
 #include "core/Value.h"
@@ -27,7 +28,10 @@ public:
   constexpr static double SVG_DEFAULT_DPI = 72.0;
 
   VISITABLE();
-  ImportNode(const ModuleInstantiation *mi, ImportType type) : LeafNode(mi), type(type) {}
+  ImportNode(const ModuleInstantiation *mi, ImportType type, CurveDiscretizer discretizer)
+    : LeafNode(mi), type(type), discretizer(discretizer)
+  {
+  }
   std::string toString() const override;
   std::string name() const override;
 
@@ -38,7 +42,7 @@ public:
   int convexity;
   bool center;
   double dpi;
-  double fn, fs, fa;
+  CurveDiscretizer discretizer;
   double origin_x, origin_y, scale;
   double width, height;
   std::unique_ptr<const class Geometry> createGeometry() const override;

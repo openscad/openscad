@@ -892,7 +892,7 @@ int main(int argc, char **argv)
          "=eye_x,y,z,center_x,y,z")("autocenter", "adjust camera to look at object's center")(
           "viewall", "adjust camera to fit object")(
           "backend", po::value<std::string>(),
-          "3D rendering backend to use: 'CGAL' (old/slow) [default] or 'Manifold' (new/fast)")(
+          "3D rendering backend to use: 'CGAL' (old/slow) or 'Manifold' (new/fast) [default]")(
           "imgsize", po::value<std::string>(), "=width,height of exported png")(
           "render", po::value<std::string>()->implicit_value(""),
           "for full geometry evaluation when exporting png")(

@@ -9,7 +9,7 @@
 
 enum { LANG_NONE = -1, LANG_SCAD = 0, LANG_PYTHON = 1, LANG_JS = 2, LANG_LUA = 3 };
 
-#define DECLARE_INSTANCE                                                                                \
+#define DECLARE_INSTANCE()                                                                              \
   std::string instance_name;                                                                            \
   AssignmentList inst_asslist;                                                                          \
   ModuleInstantiation *instance = new ModuleInstantiation(instance_name, inst_asslist, Location::NONE); \

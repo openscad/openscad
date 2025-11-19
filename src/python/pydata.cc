@@ -431,7 +431,7 @@ extern bool parse(SourceFile *& file, const std::string& text, const std::string
 PyObject *PyDataObject_call(PyObject *self, PyObject *args, PyObject *kwargs)
 {
   if (pythonDryRun) {
-    DECLARE_INSTANCE
+    DECLARE_INSTANCE();
     auto empty = std::make_shared<CubeNode>(instance);
     return PyOpenSCADObjectFromNode(&PyOpenSCADType, empty);
   }
