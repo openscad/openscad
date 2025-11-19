@@ -269,7 +269,9 @@ jobs:
             git submodule update --init
       - run:
           name: "Extract version"
-          command: echo "export VERSION=${CIRCLE_TAG#openscad-}" >> $BASH_ENV
+          command: |
+            echo "export VERSION=${CIRCLE_TAG#openscad-}" >> $BASH_ENV
+            echo "OpenSCAD version: ${CIRCLE_TAG#openscad-}"
       - run:
           name: "Create VERSION file"
           command: echo "$VERSION" > VERSION
@@ -286,10 +288,15 @@ jobs:
           paths:
             - openscad-*.tar.gz
             # TODO: checksums
+      - store_artifacts:
+          path: /tmp/artifacts
+          destination: source-tarball
 
 filters: &release-filters
   tags:
     only: /^openscad-.*$/
+  branches:
+    ignore: /.*/
 
 workflows:
   version: 2
