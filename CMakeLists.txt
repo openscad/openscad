@@ -1660,7 +1660,7 @@ if(NOT APPLE OR APPLE_UNIX)
   endif()
 
 else()
-  install(TARGETS ${CMAKE_PROJECT_NAME}
+  install(TARGETS OpenSCADExe
       BUNDLE DESTINATION ${CMAKE_INSTALL_BINDIR}
   )
 endif()
