@@ -38,13 +38,6 @@ From your build directory:
   * There will be a script called `OpenSCAD-Test-Console.py` in the parent folder.
   * Double-click it, and it will open a console, from which you can type the `ctest` commands listed above.
 
-### Automatically Upload Test Results (Experimental)
-
-  * It's possible to automatically upload tests results to an external server.
-  * This is good for CI, as well as being able to easily report bugs.
-  * To enable this feature, add `-DOPENSCAD_UPLOAD_TESTS=1` to the cmake cmd-line.
-      * Example: `cmake -DOPENSCAD_UPLOAD_TESTS=1.`.
-
 ## Running Unit Tests
 
 Unit tests are built when the binary is built. `ctest` when used for regression also runs the unit tests. The binary `OpenSCADUnitTests` also exists next to `openscad` in the build directory.
