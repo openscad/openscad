@@ -743,7 +743,7 @@ if (MXECROSS)
   # ld: .../libxml2.a(libxml2_la-xmlIO.o): in function `xmlGzfileRead': ...xmlIO.c:851: undefined reference to `gzread'
   # ld: .../libzip.a(zip_crypto_win.c.obj):zip_crypto_win:(.text+0x1074): undefined reference to `BCryptGenRandom'
   # I guess before separate libraries, something transitively included zlib and that was good enough.
-  target_compile_definitions(svg LIBXML_STATIC)
+  target_compile_definitions(svg PUBLIC LIBXML_STATIC)
   find_package(ZLIB REQUIRED)
   target_link_libraries(svg PRIVATE ZLIB::ZLIB)
   target_link_libraries(OpenSCADLibInternal PUBLIC bcrypt)
