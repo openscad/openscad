@@ -106,7 +106,6 @@ Follow the instructions for the platform you're compiling on below.
 * [cmake (3.5 ->)](https://cmake.org/)
 * [Qt (5.12 ->)](https://qt.io/)
 * [QScintilla2 (2.9 ->)](https://riverbankcomputing.com/software/qscintilla/)
-* [Catch2 (3.0 ->)](https://github.com/catchorg/Catch2)
 * [CGAL (5.4 ->)](https://www.cgal.org/)
  * [GMP (5.x)](https://gmplib.org/)
  * [MPFR (3.x)](https://www.mpfr.org/)
@@ -127,6 +126,7 @@ Follow the instructions for the platform you're compiling on below.
 For the test suite, additional requirements are:
 * Python3 (3.8 -> )
 * [Ghostscript (10.x ->)](https://www.ghostscript.com/index.html)
+* [Catch2 (3.0 ->)](https://github.com/catchorg/Catch2)
 
 ### Getting the source code
 
