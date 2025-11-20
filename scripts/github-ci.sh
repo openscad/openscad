@@ -49,7 +49,7 @@ do_test() {
 
 	(
 		cd "$BUILDDIR"
-		ctest $PARALLEL_CTEST $CTEST_ARGS
+		ctest --output-on-failure $PARALLEL_CTEST $CTEST_ARGS
 		if [[ $? != 0 ]]; then
 			exit 1
 		fi
