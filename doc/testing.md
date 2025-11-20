@@ -45,6 +45,10 @@ From your build directory:
   * To enable this feature, add `-DOPENSCAD_UPLOAD_TESTS=1` to the cmake cmd-line.
       * Example: `cmake -DOPENSCAD_UPLOAD_TESTS=1.`.
 
+## Running Unit Tests
+
+Unit tests are built when the binary is built. `ctest` when used for regression also runs the unit tests. The binary `OpenSCADUnitTests` also exists next to `openscad` in the build directory.
+
 ## Adding a New Test
 
 1.  Create a test file at an appropriate location under `tests/data/`.
