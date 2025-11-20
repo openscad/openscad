@@ -24,6 +24,9 @@ int main(int argc, char **argv)
 
 #ifdef _WIN32
 
+#include <cstddef>
+#include <string>
+
 extern std::string winapi_wstr_to_utf8(std::wstring wstr);
 
 // wmain gets arguments as wide character strings, which is the way that Windows likes to provide
