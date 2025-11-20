@@ -549,7 +549,16 @@ if(ENABLE_PYTHON)
   target_link_libraries(OpenSCAD PRIVATE ${Python_LIBRARIES})
   target_include_directories(OpenSCAD PRIVATE ${Nettle_INCLUDE_DIRS})
   target_link_libraries(OpenSCAD PRIVATE ${Nettle_LIBRARIES})
-  add_custom_target(OpenSCADPython ALL COMMAND ${CMAKE_COMMAND} -E create_symlink openscad${SUFFIX_WITH_DASH} "openscad-python")
+  # On Windows, copy the executable instead of creating a symlink (requires special privileges)
+  if(WIN32)
+    add_custom_target(OpenSCADPython ALL 
+      COMMAND ${CMAKE_COMMAND} -E copy "$<TARGET_FILE:OpenSCAD>" "${CMAKE_BINARY_DIR}/openscad-python${CMAKE_EXECUTABLE_SUFFIX}"
+      DEPENDS OpenSCAD
+      COMMENT "Creating openscad-python executable copy for Windows"
+    )
+  else()
+    add_custom_target(OpenSCADPython ALL COMMAND ${CMAKE_COMMAND} -E create_symlink openscad${SUFFIX_WITH_DASH} "openscad-python")
+  endif()
 endif()
 
 if(ENABLE_HIDAPI STREQUAL "AUTO")
