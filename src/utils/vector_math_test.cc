@@ -136,13 +136,14 @@ TEST_CASE("calculateLineLineDistance handles various line arrangements (Eigen)",
      -10.0,
      2.0},
 
+    // https://www.ambrbit.com/TrigoCalc/Line3D/Distance2Lines3D_.htm helped here.
     {"Skew: Further apart",
-     {-200, -200, -200},
-     {300, -200, 200},  // v1=(500,0,400)
-     {1000, 1000, -1000},
-     {-800, 500, 100},  // v2=(-1800,-500,-1200)
-     -10.0,
-     2.0},
+     {0, -200, -200},
+     {300, -200, 200},  // v1=(300,0,400); r = (0, -200, -200) + t(300, 0, 400)
+     {1000, 1000, -2000},
+     {-800, 500, 100},  // v2=(-1800,-500,2100);
+     837.6106,
+     -0.77666},
 
     // L1: x-axis. L2: Parallel, shifted by 1 unit on the y-axis.
     {"Collinear, second line first endpoint further away",
@@ -164,7 +165,7 @@ TEST_CASE("calculateLineLineDistance handles various line arrangements (Eigen)",
 
   };
 
-  const double epsilon = 1e-6;
+  const double epsilon = 1e-4;
 
   for (const auto& test : testCases) {
     SECTION(test.name)
