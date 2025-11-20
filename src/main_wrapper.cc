@@ -4,6 +4,7 @@ extern int qInitResources_icons_chokusen();
 extern int qInitResources_icons_chokusen_dark();
 extern int qInitResources_mac();
 
+// Windows note:  wmain() is called first, translates from UTF-16 to UTF-8, and calls main().
 int main(int argc, char **argv)
 {
 #ifndef OPENSCAD_NOGUI
