@@ -231,14 +231,12 @@ file(GLOB SCAD_DXF_FILES      ${TEST_SCAD_DIR}/dxf/*.scad
 )
 
 file(GLOB SCAD_PDF_FILES      ${TEST_SCAD_DIR}/pdf/*.scad)
-#if(NOT MINGW)
-#   GhostScript on MSYS2/MINGW can't handle the names.
-#   It's probably OK on other platforms, but I can't conveniently create the
-#   "expected" file.
-#  list(APPEND SCAD_PDF_FILES
-#    ${TEST_SCAD_DIR}/misc/utf8-☠-2D.scad
-#  )
-#endif()
+if(NOT MINGW)
+  # GhostScript on MSYS2/MINGW can't handle the names.
+  list(APPEND SCAD_PDF_FILES
+    ${TEST_SCAD_DIR}/misc/utf8-☠-2D.scad
+  )
+endif()
 
 file(GLOB SCAD_SVG_FILES      ${TEST_SCAD_DIR}/svg/svg-spec/*.scad
   ${TEST_SCAD_DIR}/svg/box-w-holes-2d.scad
