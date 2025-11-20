@@ -9,7 +9,7 @@ import("../../stl/☠-3D.stl");
 import("../../off/☠-3D.off");
 import("../../obj/☠-3D.obj");
 
-// These fail because Windows fopen() can't handle UTF-8 paths.
+// These fail on the MXE-MINGW64 build because its fopen() can't handle UTF-8 paths.
 surface("../../image/☠.dat");
 surface("../../image/☠-2D.png");
 
