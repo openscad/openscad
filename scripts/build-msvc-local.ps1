@@ -98,13 +98,6 @@ if ($InstallPrerequisites) {
         Write-Host "✓ CMake already installed" -ForegroundColor Green
     }
 
-    # Install Python
-    if (-not (Test-Command python)) {
-        Install-WithWinget -PackageId "Python.Python.3.11" -PackageName "Python 3.11"
-    } else {
-        Write-Host "✓ Python already installed" -ForegroundColor Green
-    }
-
     # Install Visual Studio Build Tools (or check if VS is installed)
     $vsPath = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
     $vsInstalled = $false
@@ -204,33 +197,6 @@ if (-not (Test-Command cmake)) {
 
 if (-not (Test-Command git)) {
     Write-Host "ERROR: Git not found. Please install Git" -ForegroundColor Red
-    exit 1
-}
-
-# Check for Python (ignore virtual environments)
-$pythonFound = $false
-$pythonCmd = Get-Command python -ErrorAction SilentlyContinue
-if ($pythonCmd -and $pythonCmd.Source -notmatch '\.venv') {
-    $pythonFound = $true
-} else {
-    # Try to find system Python in common locations
-    $pythonPaths = @(
-        "$env:LOCALAPPDATA\Programs\Python\Python*\python.exe",
-        "C:\Python*\python.exe",
-        "${env:ProgramFiles}\Python*\python.exe"
-    )
-
-    foreach ($pattern in $pythonPaths) {
-        $found = Get-Item $pattern -ErrorAction SilentlyContinue | Select-Object -First 1
-        if ($found) {
-            $pythonFound = $true
-            break
-        }
-    }
-}
-
-if (-not $pythonFound) {
-    Write-Host "ERROR: Python not found. Please install Python 3.11+" -ForegroundColor Red
     exit 1
 }
 
@@ -458,57 +424,6 @@ if (-not (Test-Path "$mesaInstallDir\x64\opengl32.dll")) {
 $env:PATH = "$mesaInstallDir\x64;$env:PATH"
 Write-Host ""
 
-# Install Python dependencies
-Write-Host "Installing Python dependencies..." -ForegroundColor Yellow
-
-# Deactivate any active virtual environment to use system Python
-if ($env:VIRTUAL_ENV) {
-    Write-Host "  Deactivating virtual environment to use system Python..." -ForegroundColor Gray
-    $env:VIRTUAL_ENV = $null
-    # Remove virtual env paths from PATH
-    $env:PATH = ($env:PATH -split ';' | Where-Object { $_ -notmatch '\.venv' -and $_ -notmatch 'virtual' }) -join ';'
-}
-
-# Use system Python explicitly
-$systemPython = (Get-Command python -ErrorAction SilentlyContinue).Source
-if (-not $systemPython -or $systemPython -match '\.venv') {
-    # Try to find system Python in common locations
-    $pythonPaths = @(
-        "$env:LOCALAPPDATA\Programs\Python\Python*\python.exe",
-        "C:\Python*\python.exe",
-        "${env:ProgramFiles}\Python*\python.exe"
-    )
-
-    foreach ($pattern in $pythonPaths) {
-        $found = Get-Item $pattern -ErrorAction SilentlyContinue | Select-Object -First 1
-        if ($found) {
-            $systemPython = $found.FullName
-            break
-        }
-    }
-}
-
-if (-not $systemPython) {
-    Write-Host "ERROR: Could not find system Python installation" -ForegroundColor Red
-    exit 1
-}
-
-Write-Host "  Using Python: $systemPython" -ForegroundColor Gray
-
-& $systemPython -m pip install --upgrade pip
-if ($LASTEXITCODE -ne 0) {
-    Write-Host "ERROR: Failed to upgrade pip" -ForegroundColor Red
-    exit 1
-}
-
-& $systemPython -m pip install bsdiff4 numpy pillow
-if ($LASTEXITCODE -ne 0) {
-    Write-Host "ERROR: Failed to install Python dependencies" -ForegroundColor Red
-    exit 1
-}
-Write-Host "✓ Python dependencies installed" -ForegroundColor Green
-Write-Host ""
-
 # Setup vcpkg
 if (-not $SkipVcpkg) {
     Write-Host "Setting up vcpkg..." -ForegroundColor Yellow
@@ -569,6 +484,32 @@ if (-not $SkipVcpkg) {
     }
 
     Write-Host "✓ vcpkg dependencies installed" -ForegroundColor Green
+    Write-Host ""
+
+    # Install Python dependencies using vcpkg Python
+    Write-Host "Installing Python dependencies..." -ForegroundColor Yellow
+    $vcpkgPython = "$vcpkgDir\installed\x64-windows\tools\python3\python.exe"
+
+    if (-not (Test-Path $vcpkgPython)) {
+        Write-Host "ERROR: vcpkg Python not found at $vcpkgPython" -ForegroundColor Red
+        Write-Host "       Make sure 'python3' is in vcpkg.json dependencies" -ForegroundColor Red
+        exit 1
+    }
+
+    Write-Host "  Using Python: $vcpkgPython" -ForegroundColor Gray
+
+    & $vcpkgPython -m pip install --upgrade pip
+    if ($LASTEXITCODE -ne 0) {
+        Write-Host "ERROR: Failed to upgrade pip" -ForegroundColor Red
+        exit 1
+    }
+
+    & $vcpkgPython -m pip install bsdiff4 numpy pillow
+    if ($LASTEXITCODE -ne 0) {
+        Write-Host "ERROR: Failed to install Python dependencies" -ForegroundColor Red
+        exit 1
+    }
+    Write-Host "✓ Python dependencies installed" -ForegroundColor Green
     Write-Host ""
 }
 
