@@ -16,6 +16,9 @@ include<include-test5.scad>
 //Test that filenames with spaces work
 include <include test6.scad>
 
+//Test UTF-8 file name
+include <include-☠.scad>
+
 //Test with empty file
 include<test/>
 

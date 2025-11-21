@@ -221,7 +221,7 @@ void FontCache::registerProgressHandler(InitHandlerFunc *handler, void *userdata
 void FontCache::register_font_file(const std::string& path)
 {
   if (!FcConfigAppFontAddFile(this->config, reinterpret_cast<const FcChar8 *>(path.c_str()))) {
-    LOG("Can't register font '%1$s'", path);
+    LOG(message_group::Warning, Location::NONE, "", "Can't register font '%1$s'", path);
   }
 }
 
@@ -231,7 +231,7 @@ void FontCache::add_font_dir(const std::string& path)
     return;
   }
   if (!FcConfigAppFontAddDir(this->config, reinterpret_cast<const FcChar8 *>(path.c_str()))) {
-    LOG("Can't register font directory '%1$s'", path);
+    LOG(message_group::Warning, Location::NONE, "", "Can't register font directory '%1$s'", path);
   }
 }
 

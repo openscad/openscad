@@ -539,7 +539,7 @@ bool TabManager::refreshDocument()
       reader.setCodec("UTF-8");
 #endif
       auto text = reader.readAll();
-      LOG("Loaded design '%1$s'.", editor->filepath.toLocal8Bit().constData());
+      LOG("Loaded design '%1$s'.", editor->filepath.toStdString());
       if (editor->toPlainText() != text) {
         editor->setPlainText(text);
         setContentRenderState();  // since last render
@@ -671,7 +671,7 @@ bool TabManager::save(EditorInterface *edt, const QString& path)
     file.cancelWriting();
   }
   if (saveOk) {
-    LOG("Saved design '%1$s'.", path.toLocal8Bit().constData());
+    LOG("Saved design '%1$s'.", path.toStdString());
     edt->parameterWidget->saveFile(path);
     edt->setContentModified(false);
     edt->parameterWidget->setModified(false);

@@ -254,7 +254,10 @@ list(REMOVE_ITEM FEATURES_2D_FILES
 )
 file(GLOB ISSUES_2D_FILES     ${TEST_SCAD_DIR}/2D/issues/*.scad)
 file(GLOB_RECURSE BUGS_2D_FILES    ${TEST_SCAD_DIR}/bugs2D/*.scad)
-file(GLOB SCAD_DXF_FILES      ${TEST_SCAD_DIR}/dxf/*.scad)
+file(GLOB SCAD_DXF_FILES      ${TEST_SCAD_DIR}/dxf/*.scad
+  ${TEST_SCAD_DIR}/misc/utf8-☠-2D.scad
+)
+
 file(GLOB SCAD_PDF_FILES      ${TEST_SCAD_DIR}/pdf/*.scad)
 file(GLOB PYTHONSCAD_FILES    ${TEST_PYTHONSCAD_DIR}/*.py)
 file(GLOB PYTHONSCAD_ECHO_FILES    ${TEST_PYTHONSCAD_ECHO_DIR}/*.py)
@@ -267,7 +270,9 @@ file(GLOB SCAD_SVG_FILES      ${TEST_SCAD_DIR}/svg/svg-spec/*.scad
   ${TEST_SCAD_DIR}/svg/simple-center-2d.scad
   ${TEST_SCAD_DIR}/svg/use-transform.scad
   ${TEST_SCAD_DIR}/svg/fill-rule.scad
-  ${TEST_SCAD_DIR}/svg/size-percent.scad)
+  ${TEST_SCAD_DIR}/svg/size-percent.scad
+  ${TEST_SCAD_DIR}/misc/utf8-☠-2D.scad
+  )
 if(EXAMPLES_DIR)
   list(APPEND EXAMPLE_2D_FILES
     ${EXAMPLES_DIR}/Old/example015.scad
@@ -325,6 +330,7 @@ list(APPEND MISC_FILES
   ${TEST_SCAD_DIR}/misc/allfunctions.scad
   ${TEST_SCAD_DIR}/misc/allmodules.scad
   ${TEST_SCAD_DIR}/misc/special-consts.scad
+  ${TEST_SCAD_DIR}/misc/utf8-☠-3D.scad
   ${TEST_SCAD_DIR}/misc/variable-overwrite.scad
 )
 
@@ -470,6 +476,7 @@ list(APPEND PREVIEW_ONLY_FILES
   ${TEST_SCAD_DIR}/3D/features/highlight-modifier2.scad
   ${TEST_SCAD_DIR}/3D/features/background-modifier2.scad
   ${TEST_SCAD_DIR}/2D/issues/issue5574.scad
+  ${TEST_SCAD_DIR}/misc/utf8-☠-3D.scad
 )
 
 list(REMOVE_ITEM ALL_RENDER_FILES
@@ -678,6 +685,13 @@ list(REMOVE_ITEM RENDER_COMMON_FILES
 list(APPEND PREVIEW_COMMON_FILES ${ALL_PREVIEW_FILES})
 list(REMOVE_ITEM PREVIEW_COMMON_FILES
   ${PREVIEW_DIFFERENT_EXPECTATIONS}
+)
+
+# This is a list of tests that are expected to generate errors when the
+# geometry is actually evaluated (because files in the operations are
+# inaccessible).  It only needs to be tested against one preview variation.
+list(APPEND PREVIEW_ERRORS
+  ${TEST_SCAD_DIR}/misc/utf8-import.scad
 )
 
 list(APPEND ALL_THROWNTOGETHER_FILES ${ALL_RENDER_FILES})
@@ -907,6 +921,7 @@ add_cmdline_test(echo EXPERIMENTAL OPENSCAD SUFFIX echo FILES ${OBJECT_TEST} ARG
 
 list(APPEND EXPORT_STL_TEST_FILES
   ${TEST_SCAD_DIR}/stl/stl-export.scad
+  ${TEST_SCAD_DIR}/misc/utf8-☠-3D.scad
 )
 
 # FIXME: Reintroduce
