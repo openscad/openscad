@@ -115,4 +115,5 @@ PI = (TAU / 2);
 mm_per_inch = 25.4;
 echo("included.scad");
 echo("included2.scad");
+echo("Included UTF-8 name");
 test1();

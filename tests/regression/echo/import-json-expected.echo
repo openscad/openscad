@@ -4,3 +4,4 @@ ECHO: [0, 1, 2, 3, 5]
 ECHO: ["one", "two", "three"]
 ECHO: "The object name"
 ECHO: 42
+ECHO: 0
