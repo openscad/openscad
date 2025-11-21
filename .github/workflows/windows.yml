@@ -57,7 +57,6 @@ jobs:
           # but also don't want to eventually have every version of every package.
           key: ${{ runner.os }}-msys2-${{ env.YEAR_MONTH }}-${{ hashFiles('scripts/msys2-install-dependencies.sh', '.github/workflows/windows.yml') }}-${{ matrix.qt }}
       - name: Manual MSYS2 Update
-        if: "!${{ restore.outputs.cache-hit }}"
         shell: cmd # Run from Windows host to allow taskkill
         # This stuff copied from setup-msys2 update step.
         # If you move the package list out of the script into "Setup MSYS2 Environment"
