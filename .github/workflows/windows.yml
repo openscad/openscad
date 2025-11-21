@@ -40,13 +40,12 @@ jobs:
           detached: true
       - name: Setup MSYS2 Environment
         uses: msys2/setup-msys2@v2
-        if: "!${{ restore.outputs.cache-hit }}"
         with:
           location: ${{ env.MSYS_DIR }}
           msystem: UCRT64
           update: false
           # setup-msys2 caches the downloaded packages
-          # ... if you pass them with `pacboy`
+          # ... if you pass them with `install` or `pacboy`
           # We could do that if nobody needs to run the script.
           # Otherwise it's better to have a single source of truth.
       - name: Restore MSYS2 package cache
