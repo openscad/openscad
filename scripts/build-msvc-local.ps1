@@ -664,9 +664,52 @@ if ($RunTests) {
     $mesaInstallDir = "$env:LOCALAPPDATA\mesa"
     $env:PATH = "$Qt6Path\bin;$Qt6Path\lib;$mesaInstallDir\x64;$env:PATH"
 
+    # Create a test runner that suppresses Windows error dialogs
+    # This only affects test processes, not the entire system
+    Write-Information "Configuring error handling to suppress crash dialog boxes..."
+    
+    # Use a simpler P/Invoke approach directly in PowerShell
+    $setErrorModeSource = @"
+using System;
+using System.Runtime.InteropServices;
+
+public class ErrorMode {
+    [DllImport("kernel32.dll")]
+    public static extern uint SetErrorMode(uint uMode);
+    
+    [DllImport("kernel32.dll")]
+    public static extern uint GetErrorMode();
+}
+"@
+    
+    $errorModeLoaded = $false
+    try {
+        Add-Type -TypeDefinition $setErrorModeSource
+        # Set error mode flags:
+        # SEM_FAILCRITICALERRORS (0x0001) - No critical error handler
+        # SEM_NOGPFAULTERRORBOX (0x0002) - No GP fault error box
+        # SEM_NOOPENFILEERRORBOX (0x8000) - No open file error box
+        $flags = 0x0001 -bor 0x0002 -bor 0x8000
+        $oldMode = [ErrorMode]::SetErrorMode($flags)
+        $errorModeLoaded = $true
+        Write-Information "✓ Error mode set to 0x$($flags.ToString('X4')) (was 0x$($oldMode.ToString('X4')))"
+        Write-Information "✓ Crash dialogs suppressed for test processes"
+    } catch {
+        Write-Warning "Could not set error mode, crash dialogs may appear: $_"
+    }
+
     Push-Location $BuildDir
     try {
-        ctest -C Release -j2
+        $env:CTEST_OUTPUT_ON_FAILURE = 1
+        
+        # Verify error mode is still set
+        if ($errorModeLoaded) {
+            $currentMode = [ErrorMode]::GetErrorMode()
+            Write-Information "Current error mode: 0x$($currentMode.ToString('X4'))"
+        }
+        
+        ctest -C Release -j2 --output-on-failure
+        
         if ($LASTEXITCODE -ne 0) {
             Write-Error "Tests failed"
             exit 1
