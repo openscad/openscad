@@ -28,7 +28,9 @@ jobs:
     steps:
       - name: Get Date
         shell: bash
-        run: echo "CACHE_DATE=$(date +'%Y-%m-%d')" >> $GITHUB_ENV
+        run: |
+          echo "YEAR_MONTH=$(date +'%Y-%m')" >> $GITHUB_ENV
+          echo "CACHE_DATE=$(date +'%Y-%m-%d')" >> $GITHUB_ENV
       - name: Checkout
         uses: actions/checkout@v5
         with:
@@ -41,7 +43,7 @@ jobs:
       - name: Setup MSYS2 Environment
         uses: msys2/setup-msys2@v2
         with:
-          location: ${{ env.MSYS_DIR }}
+          location: ${{ env.MSYS_DIR }} # By setting this, we know where it's going to be.
           msystem: UCRT64
           update: false
           # setup-msys2 caches the downloaded packages
@@ -53,15 +55,18 @@ jobs:
         uses: actions/cache/restore@v4
         with:
           path: '${{ env.MSYS_DIR }}/msys64/var/cache/pacman/pkg'
-          # Caches are immutable. We use CACHE_DATE so cache gets refreshed once a day.
-          # We don't use restore-keys because we don't prune old packages.
-          # But you could.
+          # Caches are immutable. We make one new cache a day because CACHE_DATE uses today's day.
+          # restore-keys only pulls from the current month because we don't prune old packages.
+          # But you could add that if you want. It was easier to start a new cache once a month.
           key: ${{ runner.os }}-msys2-pkg-cache-${{ matrix.qt }}-${{ hashFiles('scripts/msys2-install-dependencies.sh', '.github/workflows/windows.yml') }}-${{ env.CACHE_DATE }}
+          restore-keys: |
+            ${{ runner.os }}-msys2-pkg-cache-${{ matrix.qt }}-${{ hashFiles('scripts/msys2-install-dependencies.sh', '.github/workflows/windows.yml') }}-${{ env.YEAR_MONTH }}
       - name: Manual MSYS2 Update
         shell: cmd # Run from Windows host to allow taskkill
         # This stuff copied from setup-msys2 update step.
         # If you move the package list out of the script into "Setup MSYS2 Environment"
         # then delete this step and set `update: true`.
+        # We must do this *after* restore to use the cached packages.
         run: |
           echo "Updating packages (ignoring return code)..."
           msys2 -c "pacman -Syuu --overwrite '*' --noconfirm" || verify >nul
@@ -81,7 +86,7 @@ jobs:
       - name: Save MSYS2 package cache
         id: save
         uses: actions/cache/save@v4
-        # Only run if the cache was NOT found during restore to avoid "Cache already exists" warning.
+        # Only run if the cache was NOT found during restore to mostly avoid the "Cache already exists" warning.
         if: ${{ steps.restore.outputs.cache-hit != 'true' }}
         with:
           path: '${{ env.MSYS_DIR }}/msys64/var/cache/pacman/pkg'
