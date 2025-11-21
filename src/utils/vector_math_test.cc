@@ -25,6 +25,8 @@ TEST_CASE("calculateLinePointDistance calculates distance to infinite line", "[G
 
     {"Projection Negative (t=-1)", {0, 0, 0}, {1, 0, 0}, {-1, 1, 0}, 1.41421356237309515, 0},
 
+    {"Function documentation", {1, 1, 1}, {-4, 1, 1}, {0, 0, 0}, 1.41421356237309515, 1.0},
+
     // Closest point is (2,0,0)
     {"3D Offset (t=2/3)", {0, 0, 0}, {3, 0, 0}, {2, 4, 3}, 5.0, 2.0},
 
@@ -92,6 +94,8 @@ TEST_CASE("calculateSegSegDistance handles standard geometry", "[vector_math][se
   }
 }
 
+const auto NaN = std::numeric_limits<double>::quiet_NaN();
+
 TEST_CASE("calculateLineLineDistance handles various line arrangements (Eigen)", "[Geometry][Line]")
 {
   struct LineLineTestData {
@@ -101,7 +105,7 @@ TEST_CASE("calculateLineLineDistance handles various line arrangements (Eigen)",
     Vector3d l2b;
     Vector3d l2e;
     double expected_dist;  // The signed shortest distance (returned 'd')
-    double expected_lat;   // The lateral distance ('dist_lat')
+    double expected_t;     // The `t` or `s` from the parametric line equations ('parametric_t')
   };
 
   const LineLineTestData testCases[] = {
@@ -118,10 +122,10 @@ TEST_CASE("calculateLineLineDistance handles various line arrangements (Eigen)",
      0.5},
 
     // L1: x-axis. L2: Parallel, shifted by 1 unit on the y-axis.
-    {"Parallel", {0, 0, 0}, {5, 0, 0}, {0, 1, 0}, {10, 1, 0}, 1.0, NOT_APPLICABLE},
+    {"Parallel", {0, 0, 0}, {5, 0, 0}, {0, 1, 0}, {10, 1, 0}, 1.0, NaN},
 
     // L1: x-axis. L2: Parallel, shifted by 1 unit on the y-axis.
-    {"Parallel reversed second line", {0, 0, 0}, {1, 0, 0}, {10, 1, 0}, {0, 1, 0}, 1.0, NOT_APPLICABLE},
+    {"Parallel reversed second line", {0, 0, 0}, {1, 0, 0}, {10, 1, 0}, {0, 1, 0}, 1.0, NaN},
 
     // L1: x-axis (0,0,0) to (1,0,0). v1=(1,0,0)
     // L2: Parallel to z-axis, shifted by (1,1,0). (1,1,1) to (1,1,2). v2=(0,0,1)
@@ -152,7 +156,7 @@ TEST_CASE("calculateLineLineDistance handles various line arrangements (Eigen)",
      {3, 0, 0},
      {2, 0, 0},
      0.0,
-     NOT_APPLICABLE},
+     NaN},
 
     // L1: x-axis. L2: Parallel, shifted by 1 unit on the y-axis.
     {"Collinear, overlapping, second line first endpoint further away",
@@ -161,7 +165,7 @@ TEST_CASE("calculateLineLineDistance handles various line arrangements (Eigen)",
      {3, 0, 0},
      {0.5, 0, 0},
      0.0,
-     NOT_APPLICABLE},
+     NaN},
 
   };
 
@@ -170,15 +174,15 @@ TEST_CASE("calculateLineLineDistance handles various line arrangements (Eigen)",
   for (const auto& test : testCases) {
     SECTION(test.name)
     {
-      double actual_lat;
-      double actual_dist = calculateLineLineDistance(test.l1b, test.l1e, test.l2b, test.l2e, actual_lat);
+      double actual_t;
+      double actual_dist = calculateLineLineDistance(test.l1b, test.l1e, test.l2b, test.l2e, actual_t);
 
       CHECK(actual_dist == Catch::Approx(test.expected_dist).margin(epsilon));
 
-      Vector3d v1 = test.l1e - test.l1b;
-      Vector3d v2 = test.l2e - test.l2b;
-      if (v1.cross(v2).norm() != 0) {
-        CHECK(actual_lat == Catch::Approx(test.expected_lat).margin(epsilon));
+      if (std::isnan(test.expected_t)) {
+        CHECK(std::isnan(actual_t));
+      } else {
+        CHECK(actual_t == Catch::Approx(test.expected_t).margin(epsilon));
       }
     }
   }

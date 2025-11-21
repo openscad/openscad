@@ -1,4 +1,5 @@
 #include "utils/vector_math.h"
+#include "geometry/Grid.h"
 
 #include <algorithm>
 
@@ -42,7 +43,7 @@ double calculateLinePointDistance(const Vector3d& l1b, const Vector3d& l1e, cons
 }
 
 double calculateLineLineDistance(const Vector3d& l1b, const Vector3d& l1e, const Vector3d& l2b,
-                                 const Vector3d& l2e, double& dist_lat)
+                                 const Vector3d& l2e, double& parametric_t)
 {
   double d;
   Vector3d v1 = l1e - l1b;
@@ -50,16 +51,19 @@ double calculateLineLineDistance(const Vector3d& l1b, const Vector3d& l1e, const
   Vector3d n = v1.cross(v2);
   double t = n.norm();
 
-  if (t < 1e-6) {
+  if (t < GRID_FINE) {
+    // Lines are parallel (or collinear). `parametric_t` makes no sense.
+    parametric_t = std::numeric_limits<double>::quiet_NaN();
     Vector3d c = l2b - l1b;
     Vector3d cross_c_v1 = c.cross(v1);
 
     double dist_numerator = cross_c_v1.norm();
     double v1_norm = v1.norm();
-    if (v1_norm < 1e-6) {
-      // Line 1 is a point. This handles both line 2 is point and line 2 is a line:
-      auto ret = calculateLinePointDistance(l2b, l2e, l1b, dist_lat);
-      // TODO: coryrc - dist_lat is wrong: LinePoint returns ratio, this returns actual distance
+    if (v1_norm < GRID_FINE) {
+      // Line 1 is a point. This handles both line 2 is point and line 2 is a line.
+      // Leave parametric_t as NaN because it's meaningless.
+      double dummy;
+      auto ret = calculateLinePointDistance(l2b, l2e, l1b, dummy);
       return ret;
     }
     // This handles line 2 being a point or line:
@@ -67,7 +71,7 @@ double calculateLineLineDistance(const Vector3d& l1b, const Vector3d& l1e, const
   }
   n.normalize();
   d = n.dot(l1b - l2b);
-  dist_lat = (v2.cross(n)).dot(l2b - l1b) / t;
+  parametric_t = (v2.cross(n)).dot(l2b - l1b) / t;
   return d;
 }
 
@@ -82,7 +86,7 @@ double calculateSegSegDistance(const Vector3d& l1b, const Vector3d& l1e, const V
   // This applies both when segments are parallel, but also when the segments are collinear.
   // For the latter case in particular, not checking the correct endpoint yields the wrong answer.
   // There might be a smarter solution, but checking both works.
-  if (n.norm() < 1e-6) {
+  if (n.norm() < GRID_FINE) {
     double ret1 = calculateLinePointDistance(l1b, l1e, l2b, d),
            ret2 = calculateLinePointDistance(l1b, l1e, l2e, d);
     if (std::isnan(ret1)) return ret2;
