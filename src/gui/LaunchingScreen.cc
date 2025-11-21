@@ -35,7 +35,8 @@ LaunchingScreen::LaunchingScreen(QWidget *parent) : QDialog(parent)
   this->setStyleSheet(
     "QDialog {background-image:url(':/icons/background.png')} QPushButton {color:white;}");
 
-  this->versionNumberLabel->setText("OpenSCAD " + QString::fromStdString(openscad_displayversionnumber));
+  this->versionNumberLabel->setText("OpenSCAD " +
+                                    QString::fromStdString(std::string(openscad_displayversionnumber)));
 
   QStringList recentFiles = UIUtils::recentFiles();
   for (const auto& recentFile : recentFiles) {
