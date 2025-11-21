@@ -20,8 +20,6 @@ jobs:
         qt: [ qt5, qt6 ]
     runs-on: windows-latest
     name: windows-latest ${{ matrix.qt }}
-    env:
-      MSYS_DIR: 'C:/openscad'
     defaults:
       run:
         shell: msys2 {0}
@@ -42,19 +40,20 @@ jobs:
           detached: true
       - name: Setup MSYS2 Environment
         uses: msys2/setup-msys2@v2
+        id: msys2
         with:
-          location: ${{ env.MSYS_DIR }} # By setting this, we know where it's going to be.
           msystem: UCRT64
           update: false
           # setup-msys2 caches the downloaded packages
           # ... if you pass them with `install` or `pacboy`
           # We could do that if nobody needs to run the script.
           # Otherwise it's better to have a single source of truth.
+          # You could have the script write to $GITHUB_ENV when present instead of executing pacboy.
       - name: Restore MSYS2 package cache
         id: restore
         uses: actions/cache/restore@v4
         with:
-          path: '${{ env.MSYS_DIR }}/msys64/var/cache/pacman/pkg'
+          path: '${{ steps.msys2.outputs.msys2-location }}\var\cache\pacman\pkg'
           # Caches are immutable. We make one new cache a day because CACHE_DATE uses today's day.
           # restore-keys only pulls from the current month because we don't prune old packages.
           # But you could add that if you want. It was easier to start a new cache once a month.
@@ -89,7 +88,7 @@ jobs:
         # Only run if the cache was NOT found during restore to mostly avoid the "Cache already exists" warning.
         if: ${{ steps.restore.outputs.cache-hit != 'true' }}
         with:
-          path: '${{ env.MSYS_DIR }}/msys64/var/cache/pacman/pkg'
+          path: '${{ steps.msys2.outputs.msys2-location }}\var\cache\pacman\pkg'
           key: ${{ steps.restore.outputs.cache-primary-key }}
       - name: Install Mesa
         uses: ssciwr/setup-mesa-dist-win@v2
