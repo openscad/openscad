@@ -20,10 +20,15 @@ jobs:
         qt: [ qt5, qt6 ]
     runs-on: windows-latest
     name: windows-latest ${{ matrix.qt }}
+    env:
+      MSYS_DIR: 'C:/openscad'
     defaults:
       run:
         shell: msys2 {0}
     steps:
+      - name: Get Date
+        shell: bash
+        run: echo "YEAR_MONTH=$(date +'%Y-%m')" >> $GITHUB_ENV
       - name: Checkout
         uses: actions/checkout@v5
         with:
@@ -35,13 +40,51 @@ jobs:
           detached: true
       - name: Setup MSYS2 Environment
         uses: msys2/setup-msys2@v2
+        if: "!${{ restore.outputs.cache-hit }}"
         with:
+          location: ${{ env.MSYS_DIR }}
           msystem: UCRT64
-          update: true
+          update: false
+          # setup-msys2 caches the downloaded packages
+          # ... if you pass them with `pacboy`
+          # We could do that if nobody needs to run the script.
+          # Otherwise it's better to have a single source of truth.
+      - name: Restore MSYS2 package cache
+        id: restore
+        uses: actions/cache/restore@v4
+        with:
+          path: '${{ env.MSYS_DIR }}/msys64/var/cache/pacman/pkg'
+          # We use YEAR_MONTH in key because we don't want to prune packages,
+          # but also don't want to eventually have every version of every package.
+          key: ${{ runner.os }}-msys2-${{ env.YEAR_MONTH }}-${{ hashFiles('scripts/msys2-install-dependencies.sh', '.github/workflows/windows.yml') }}-${{ matrix.qt }}
+      - name: Manual MSYS2 Update
+        if: "!${{ restore.outputs.cache-hit }}"
+        shell: cmd # Run from Windows host to allow taskkill
+        # This stuff copied from setup-msys2 update step.
+        # If you move the package list out of the script into "Setup MSYS2 Environment"
+        # then delete this step and set `update: true`.
+        run: |
+          echo "Updating packages (ignoring return code)..."
+          msys2 -c "pacman -Syuu --overwrite '*' --noconfirm" || verify >nul
+
+          echo "Replacing pacman config (ignoring return code)..."
+          msys2 -c "mv -f /etc/pacman.conf.pacnew /etc/pacman.conf" || verify >nul
+
+          echo "Killing remaining tasks..."
+          taskkill /F /FI "MODULES eq msys-2.0.dll" || verify >nul
+
+          echo "Final system upgrade..."
+          msys2 -c "pacman -Syuu --overwrite '*' --noconfirm"
       - name: Install MSYS2 Dependencies
         run: |
           pwd
           ./scripts/msys2-install-dependencies.sh ${{ matrix.qt }}
+      - name: Save MSYS2 package cache
+        id: save
+        uses: actions/cache/save@v4
+        with:
+          path: '${{ env.MSYS_DIR }}/msys64/var/cache/pacman/pkg'
+          key: ${{ runner.os }}-msys2-${{ env.YEAR_MONTH }}-${{ hashFiles('scripts/msys2-install-dependencies.sh', '.github/workflows/windows.yml') }}-${{ matrix.qt }}
       - name: Install Mesa
         uses: ssciwr/setup-mesa-dist-win@v2
         with:
