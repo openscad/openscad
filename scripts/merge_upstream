@@ -2,5 +2,5 @@
 
 git fetch --all
 git checkout sync_openscad
-git merge upstream/master
+git merge -X ours upstream/master
 git rebase master
