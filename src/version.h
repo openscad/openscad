@@ -28,7 +28,8 @@
 
 #include <string_view>
 
-#define QUOTED_(x) #x
+#define QUOTE_(x_) #x_
+#define QUOTED_(x__) QUOTE_(x__)
 
 // Version number without any patch level indicator
 inline constexpr std::string_view openscad_shortversionnumber = QUOTED_(OPENSCAD_SHORTVERSION);
@@ -54,3 +55,4 @@ inline constexpr std::string_view openscad_detailedversionnumber =
 #endif
 
 #undef QUOTED_
+#undef QUOTE_
