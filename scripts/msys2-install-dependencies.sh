@@ -3,19 +3,19 @@ set -e
 
 QT="$1"
 
-if [ -z $MSYSTEM ]; then
-  MSYSTEM_DEFAULT=UCRT64
-  # Possible values: (MSYS|UCRT64|CLANG64|CLANGARM64|CLANG32|MINGW64|MINGW32)
-  # For explanation of options see: https://www.msys2.org/docs/environments/
-  echo "MSYSTEM is unset or blank, defaulting to '${MSYSTEM_DEFAULT}'";
-  export MSYSTEM=$MSYSTEM_DEFAULT
-else
-  echo "MSYSTEM is set to '$MSYSTEM'";
-fi
-
 date "+### %Y-%m-%d %T msys2-install-dependencies started"
 
 if [[ -z "${GITHUB_RUN_ID}" ]]; then
+    if [ -z $MSYSTEM ]; then
+	MSYSTEM_DEFAULT=UCRT64
+	# Possible values: (MSYS|UCRT64|CLANG64|CLANGARM64|CLANG32|MINGW64|MINGW32)
+	# For explanation of options see: https://www.msys2.org/docs/environments/
+	echo "MSYSTEM is unset or blank, defaulting to '${MSYSTEM_DEFAULT}'";
+	export MSYSTEM=$MSYSTEM_DEFAULT
+    else
+	echo "MSYSTEM is set to '$MSYSTEM'";
+    fi
+
     pacman --query --explicit
 
     date "+### %Y-%m-%d %T install pactoys (for pacboy)"
