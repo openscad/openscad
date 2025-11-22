@@ -16,6 +16,7 @@ on:
 jobs:
   build:
     strategy:
+      fail-fast: false
       matrix:
         qt: [ qt5, qt6 ]
     runs-on: windows-latest
