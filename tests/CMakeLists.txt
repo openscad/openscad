@@ -1,4 +1,4 @@
-# instructions - see ../doc/testing.txt
+# instructions - see ../doc/testing.md
 
 #set(DEBUG_OSCD 1) # print debug info during cmake
 

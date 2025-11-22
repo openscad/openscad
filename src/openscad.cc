@@ -794,8 +794,7 @@ struct CommaSeparatedVector {
 };
 
 // OpenSCAD
-// Windows note:  wmain() is called first, translates from UTF-16 to UTF-8, and calls main().
-int main(int argc, char **argv)
+int openscad_main(int argc, char **argv)
 {
 #if defined(ENABLE_CGAL) && defined(USE_MIMALLOC)
   // call init_mimalloc before any GMP variables are initialized. (defined in src/openscad_mimalloc.h)

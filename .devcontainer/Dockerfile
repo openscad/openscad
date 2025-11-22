@@ -10,5 +10,5 @@ RUN /tmp/uni-get-dependencies.sh
 # Debuggers.
 RUN apt-get -y install gdb lldb
 
-# Dependencies for tests (as documented in `doc/testing.txt`).
+# Dependencies for tests (as documented in `doc/testing.md`).
 RUN apt-get -y install cmake python3 python3-venv python3-pip

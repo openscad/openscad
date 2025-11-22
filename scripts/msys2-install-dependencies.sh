@@ -41,6 +41,7 @@ PACKAGE_LIST=(
     "cmake:p"
     "ninja:p"
     "boost:p"
+    "catch:p"
     "cgal:p"
     "eigen3:p"
     "glew:p"

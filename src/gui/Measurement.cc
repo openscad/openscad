@@ -26,6 +26,7 @@
 
 #include "geometry/linalg.h"
 #include "gui/Measurement.h"
+#include "utils/vector_math.h"
 
 #include <QPoint>
 #include <QString>
@@ -79,7 +80,6 @@ std::vector<QString> Measurement::statemachine(QPoint mouse)
     break;
   case MEASURE_DIST2:
     if (qglview->selected_obj.size() == 2) {
-      double lat;
       QString extra;
       obj1 = qglview->selected_obj[0];
       obj2 = qglview->selected_obj[1];
@@ -124,7 +124,8 @@ std::vector<QString> Measurement::statemachine(QPoint mouse)
           // perp_dist = V_dist.norm();
         }
 
-        dist = calculateLinePointDistance(A, B, P, lat);
+        double dont_care;
+        dist = calculateLinePointDistance(A, B, P, dont_care);
         auto diff = B - P;
         ret.push_back(QStringLiteral("Point to Line Endpoint2: dx: %1  dy: %2  dz: %3")
                         .arg(diff[0])
