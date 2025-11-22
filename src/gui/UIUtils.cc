@@ -223,7 +223,7 @@ void UIUtils::openHomepageURL() { QDesktopServices::openUrl(QUrl("https://www.op
 
 static void openVersionedURL(const QString& url)
 {
-  QDesktopServices::openUrl(QUrl(url.arg(openscad_shortversionnumber.c_str())));
+  QDesktopServices::openUrl(QUrl(url.arg(openscad_shortversionnumber.data())));
 }
 
 void UIUtils::openUserManualURL()

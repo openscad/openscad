@@ -1023,7 +1023,6 @@ set(CORE_SOURCES
   src/utils/printutils.cc
   src/utils/svg.cc
   src/utils/version_check.h
-  src/version.cc
   ${LIB3MF_SOURCES}
   ${PLATFORM_SOURCES}
   ${FLEX_openscad_lexer_OUTPUTS}
