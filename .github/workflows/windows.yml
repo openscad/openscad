@@ -24,11 +24,6 @@ jobs:
       run:
         shell: msys2 {0}
     steps:
-      - name: Get Date
-        shell: bash
-        run: |
-          echo "YEAR_MONTH=$(date +'%Y-%m')" >> $GITHUB_ENV
-          echo "CACHE_DATE=$(date +'%Y-%m-%d')" >> $GITHUB_ENV
       - name: Checkout
         uses: actions/checkout@v5
         with:
@@ -38,58 +33,18 @@ jobs:
         if: ${{ github.event_name == 'workflow_dispatch' && inputs.debug_enabled }}
         with:
           detached: true
+      - name: Calculate PACBOY_PACKAGES
+        run: |
+          pwd
+          ./scripts/msys2-install-dependencies.sh ${{ matrix.qt }}
       - name: Setup MSYS2 Environment
         uses: msys2/setup-msys2@v2
         id: msys2
         with:
           msystem: UCRT64
-          update: false
-          # setup-msys2 caches the downloaded packages
-          # ... if you pass them with `install` or `pacboy`
-          # We could do that if nobody needs to run the script.
-          # Otherwise it's better to have a single source of truth.
-          # You could have the script write to $GITHUB_ENV when present instead of executing pacboy.
-      - name: Restore MSYS2 package cache
-        id: restore
-        uses: actions/cache/restore@v4
-        with:
-          path: '${{ steps.msys2.outputs.msys2-location }}\var\cache\pacman\pkg'
-          # Caches are immutable. We make one new cache a day because CACHE_DATE uses today's day.
-          # restore-keys only pulls from the current month because we don't prune old packages.
-          # But you could add that if you want. It was easier to start a new cache once a month.
-          key: ${{ runner.os }}-msys2-pkg-cache-${{ matrix.qt }}-${{ hashFiles('scripts/msys2-install-dependencies.sh', '.github/workflows/windows.yml') }}-${{ env.CACHE_DATE }}
-          restore-keys: |
-            ${{ runner.os }}-msys2-pkg-cache-${{ matrix.qt }}-${{ hashFiles('scripts/msys2-install-dependencies.sh', '.github/workflows/windows.yml') }}-${{ env.YEAR_MONTH }}
-      - name: Manual MSYS2 Update
-        shell: cmd # Run from Windows host to allow taskkill
-        # This stuff copied from setup-msys2 update step.
-        # If you move the package list out of the script into "Setup MSYS2 Environment"
-        # then delete this step and set `update: true`.
-        # We must do this *after* restore to use the cached packages.
-        run: |
-          echo "Updating packages (ignoring return code)..."
-          msys2 -c "pacman -Syuu --overwrite '*' --noconfirm" || verify >nul
-
-          echo "Replacing pacman config (ignoring return code)..."
-          msys2 -c "mv -f /etc/pacman.conf.pacnew /etc/pacman.conf" || verify >nul
-
-          echo "Killing remaining tasks..."
-          taskkill /F /FI "MODULES eq msys-2.0.dll" || verify >nul
-
-          echo "Final system upgrade..."
-          msys2 -c "pacman -Syuu --overwrite '*' --noconfirm"
-      - name: Install MSYS2 Dependencies
-        run: |
-          pwd
-          ./scripts/msys2-install-dependencies.sh ${{ matrix.qt }}
-      - name: Save MSYS2 package cache
-        id: save
-        uses: actions/cache/save@v4
-        # Only run if the cache was NOT found during restore to mostly avoid the "Cache already exists" warning.
-        if: ${{ steps.restore.outputs.cache-hit != 'true' }}
-        with:
-          path: '${{ steps.msys2.outputs.msys2-location }}\var\cache\pacman\pkg'
-          key: ${{ steps.restore.outputs.cache-primary-key }}
+          update: true
+          install: libxml2
+          pacboy: ${{ env.PACBOY_PACKAGES }}
       - name: Install Mesa
         uses: ssciwr/setup-mesa-dist-win@v2
         with:
