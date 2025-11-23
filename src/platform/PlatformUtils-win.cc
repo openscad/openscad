@@ -28,15 +28,15 @@
 std::string PlatformUtils::pathSeparatorChar() { return ";"; }
 
 // Use boost::nowide::narrow to convert wide strings
-std::string winapi_wstr_to_utf8(const std::wstring &wstr)
+std::string winapi_wstr_to_utf8(const std::wstring& wstr)
 {
-    try {
-        return boost::nowide::narrow(wstr);
-    } catch(const std::exception &e) {
-        LOG(message_group::Error, "Error converting w_char str to utf8 string");
-        LOG(message_group::Error, "exception: %1$s", e.what());
-        return {};
-    }
+  try {
+    return boost::nowide::narrow(wstr);
+  } catch (const std::exception& e) {
+    LOG(message_group::Error, "Error converting w_char str to utf8 string");
+    LOG(message_group::Error, "exception: %1$s", e.what());
+    return {};
+  }
 }
 
 // see http://msdn.microsoft.com/en-us/library/windows/desktop/bb762494%28v=vs.85%29.aspx
