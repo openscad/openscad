@@ -132,7 +132,7 @@ public:
   {
     set_output_handler(&Echostream::output, nullptr, this);
   }
-  Echostream(const std::string& filename) : fstream(filename), stream(fstream)
+  Echostream(const std::string& filename) : fstream(std::filesystem::u8path(filename)), stream(fstream)
   {
     set_output_handler(&Echostream::output, nullptr, this);
   }
@@ -279,7 +279,7 @@ bool with_output(const bool is_stdout, const std::string& filename, const F& f,
     f(std::cout);
     return true;
   }
-  std::ofstream fstream(filename, mode);
+  std::ofstream fstream(std::filesystem::u8path(filename), mode);
   if (!fstream.is_open()) {
     LOG("Can't open file \"%1$s\" for export", filename);
     return false;
@@ -581,7 +581,7 @@ int cmdline(const CommandLine& cmd)
   if (cmd.is_stdin) {
     text = std::string((std::istreambuf_iterator<char>(std::cin)), std::istreambuf_iterator<char>());
   } else {
-    std::ifstream ifs(cmd.filename);
+    std::ifstream ifs(std::filesystem::u8path(cmd.filename));
     if (!ifs.is_open()) {
       LOG("Can't open input file '%1$s'!\n", cmd.filename);
       return 1;
@@ -794,6 +794,7 @@ struct CommaSeparatedVector {
 };
 
 // OpenSCAD
+// Windows note:  wmain() is called first, translates from UTF-16 to UTF-8, and calls main().
 int main(int argc, char **argv)
 {
 #if defined(ENABLE_CGAL) && defined(USE_MIMALLOC)
@@ -878,7 +879,7 @@ int main(int argc, char **argv)
          "=eye_x,y,z,center_x,y,z")("autocenter", "adjust camera to look at object's center")(
           "viewall", "adjust camera to fit object")(
           "backend", po::value<std::string>(),
-          "3D rendering backend to use: 'CGAL' (old/slow) [default] or 'Manifold' (new/fast)")(
+          "3D rendering backend to use: 'CGAL' (old/slow) or 'Manifold' (new/fast) [default]")(
           "imgsize", po::value<std::string>(), "=width,height of exported png")(
           "render", po::value<std::string>()->implicit_value(""),
           "for full geometry evaluation when exporting png")(
