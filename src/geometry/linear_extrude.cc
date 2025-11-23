@@ -201,7 +201,7 @@ void add_slice_indices(PolygonIndices& indices, int slice_idx, int slice_stride,
 /**
  *  max(2Ddistance(vertex->scaled_vertex)^2 of all vertices).
  */
-inline double calc_max_delta_sqr(const Outlines2d& outlines, const Vector2d& scale)
+inline double calc_max_delta_sqr(const std::vector<Outline2d>& outlines, const Vector2d& scale)
 {
   double max_delta_sqr = 0;
   for (const auto& o : outlines) {
