@@ -1086,16 +1086,19 @@ bool ScintillaEditor::eventFilter(QObject *obj, QEvent *e)
     }
   }
 
-  bool enableNumberScrollWheel = Settings::Settings::enableNumberScrollWheel.value();
-
-  if (obj == qsci->viewport() && enableNumberScrollWheel) {
+  if (obj == qsci->viewport()) {
     if (e->type() == QEvent::Wheel) {
       auto *wheelEvent = static_cast<QWheelEvent *>(e);
       PRINTDB("%s - modifier: %s",
               (e->type() == QEvent::Wheel ? "Wheel Event" : "") %
                 (wheelEvent->modifiers() & Qt::AltModifier ? "Alt" : "Other Button"));
-      if (handleWheelEventNavigateNumber(wheelEvent)) {
+      bool enableNumberScrollWheel = Settings::Settings::enableNumberScrollWheel.value();
+      if (enableNumberScrollWheel && handleWheelEventNavigateNumber(wheelEvent)) {
         qsci->SendScintilla(QsciScintilla::SCI_SETCARETWIDTH, 1);
+        return true;
+      }
+      bool wheelzoom_enabled = GlobalPreferences::inst()->getValue("editor/ctrlmousewheelzoom").toBool();
+      if ((wheelEvent->modifiers() == Qt::ControlModifier) && !wheelzoom_enabled) {
         return true;
       }
     }
