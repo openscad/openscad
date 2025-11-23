@@ -4,6 +4,7 @@
 #include <ios>
 #include <string>
 #include <map>
+#include <boost/nowide/convert.hpp>
 
 #include "utils/printutils.h"
 #include "utils/findversion.h"
@@ -26,37 +27,16 @@
 
 std::string PlatformUtils::pathSeparatorChar() { return ";"; }
 
-// convert from windows api w_char strings (usually utf16) to utf8 std::string
-std::string winapi_wstr_to_utf8(std::wstring wstr)
+// Use boost::nowide::narrow
+std::string winapi_wstr_to_utf8(const std::wstring &wstr)
 {
-  UINT CodePage = CP_UTF8;
-  DWORD dwFlags = 0;
-  LPCWSTR lpWideCharStr = &wstr[0];
-  int cchWideChar = static_cast<int>(wstr.size());
-  LPSTR lpMultiByteStr = nullptr;
-  int cbMultiByte = 0;
-  LPCSTR lpDefaultChar = nullptr;
-  LPBOOL lpUsedDefaultChar = nullptr;
-
-  int numbytes = WideCharToMultiByte(CodePage, dwFlags, lpWideCharStr, cchWideChar, lpMultiByteStr,
-                                     cbMultiByte, lpDefaultChar, lpUsedDefaultChar);
-
-  // LOG(message_group::NONE,,"utf16 to utf8 conversion: numbytes %1$i",numbytes);
-
-  std::string utf8_str(numbytes, 0);
-  lpMultiByteStr = &utf8_str[0];
-  cbMultiByte = numbytes;
-
-  int result = WideCharToMultiByte(CodePage, dwFlags, lpWideCharStr, cchWideChar, lpMultiByteStr,
-                                   cbMultiByte, lpDefaultChar, lpUsedDefaultChar);
-
-  if (result != numbytes) {
-    DWORD errcode = GetLastError();
-    LOG(message_group::Error, "Error converting w_char str to utf8 string");
-    LOG(message_group::Error, "error code %1$i", errcode);
-  }
-
-  return utf8_str;
+    try {
+        return boost::nowide::narrow(wstr);
+    } catch(const std::exception &e) {
+        LOG(message_group::Error, "Error converting w_char str to utf8 string");
+        LOG(message_group::Error, "exception: %1$s", e.what());
+        return {};
+    }
 }
 
 // see http://msdn.microsoft.com/en-us/library/windows/desktop/bb762494%28v=vs.85%29.aspx
