@@ -273,8 +273,11 @@ jobs:
             echo "export VERSION=${CIRCLE_TAG#openscad-}" >> $BASH_ENV
             echo "OpenSCAD version: ${CIRCLE_TAG#openscad-}"
       - run:
-          name: "Create VERSION file"
-          command: echo "$VERSION" > VERSION
+          name: "Create VERSION.txt file"
+          command: echo "$VERSION" > VERSION.txt
+      - run:
+          name: "Create COMMIT.txt file"
+          command: git log -1 --pretty=format:%h > COMMIT.txt
       - run:
           name: "Install git-archive-all"
           command: pip install git-archive-all
