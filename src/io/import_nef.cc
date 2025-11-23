@@ -16,7 +16,7 @@
 std::unique_ptr<CGALNefGeometry> import_nef3(const std::string& filename, const Location& loc)
 {
   // Open file and position at the end
-  std::ifstream f(filename.c_str(), std::ios::in | std::ios::binary);
+  std::ifstream f(std::filesystem::u8path(filename), std::ios::in | std::ios::binary);
   if (!f.good()) {
     LOG(message_group::Warning, "Can't open import file '%1$s', import() at line %2$d", filename,
         loc.firstLine());

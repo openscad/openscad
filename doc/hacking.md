@@ -55,7 +55,7 @@ though.
 
 # Regression Tests
 
-See `testing.txt`
+See `testing.md`
 
 # How to add new function/module
 

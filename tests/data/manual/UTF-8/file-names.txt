@@ -1,0 +1,109 @@
+Test cases and last-known results for UTF-8 file names.
+
+This list is not fully up to date, and also needs annotation to show which
+cases are covered by automated tests.
+
+LEGEND
+
+Code    Description
+-       Heading, not a test
+X       Not yet tested
+?       Not easily tested
+OK      OK
+a       mojibake on console
+b       can't open include file
+c       "use" silently ignored, can't find module
+d       Can't register font
+e       font not found
+f       Bad char in displayed file name
+g       could not read file
+h       couldn't be opened
+i       Failed to open file <dir>/☠C:/msys64/☠.scad: The filename,
+        directory name, or volume label syntax is incorrect.
+        (Yes, the path is mangled.)
+j       Can't open input file '☠C:/msys64/☠.scad'!
+        (Yes, the path is mangled.)
+k       '☠C:/msys64' is not a directory for output file ☠C:/msys64/☠.echo - Skipping
+        (Yes, the path is mangled.)
+L       Mojibake on the console with default CHCP 437, not with CHCP 65001
+
+           MSYS2        MXE     Description
+           UCRT64       MINGW64
+        Qt5     Qt6     Qt5
+1       -       -       -       Main file
+1a      -       -       -       - Pass on .exe command line
+1a1     L       L       L       - - CMD
+1a2     OK      OK      OK      - - bash
+1b      -       -       -       - Pass on .com command line
+1b1     L       L       L       - - CMD
+1b2     a       a       a       - - bash
+1c      ?       ?       OK      - double-click
+1d      -       -       -       - Drag-and-drop
+1d1     ?       ?       OK      - - on icon
+1d2     OK      OK      OK      - - on mainwin
+1e      -       -       -       - Launch Screen
+1e1     OK      OK      OK      - - Open recent
+1e2     OK      OK      OK      - - Open
+1f      -       -       -       - mainwin
+1f1     OK      OK      OK      - - Open recent
+1f2     OK      OK      OK      - - File->Open
+2       OK      OK      b       include<>
+3       OK      OK      c       use<>
+4       -       -       -       Fonts
+4a      d       d       d       - use<>
+4b      e       e       OK??    - from normal font directories
+4c      e       e       f       - Help/Font list
+4d      e       e       f       - Window/Font list
+5       -       -       -       import() module / function
+5a      -       -       -       - 2D
+5a1     OK      OK      OK      - - dxf
+5a2     OK      OK      OK      - - svg
+5b      -       -       -       - 3D
+5b1     OK      OK      OK      - - stl
+5b2     OK      OK      OK      - - off
+5b3     OK      OK      OK      - - obj
+5b4     OK      OK      g       - - 3mf
+5b5     OK      OK      OK      - - amf
+5b6     OK      OK      OK      - - off
+5c      -       -       -       - Data
+5c1     OK      OK      OK      - - JSON
+6       -       -       -       surface()
+6a      OK      OK      h       - dat
+6b      OK      OK      h       - png
+7       -       -       -       GUI export
+7a      -       -       -       - 2D
+7a1     OK      OK      OK      - - dxf
+7a2     OK      OK      OK      - - svg
+7a3     OK      OK      OK      - - pdf
+7b      -       -       -       - 3D
+7b1     OK      OK      OK      - - stl
+7b2     OK      OK      OK      - - off
+7b3     OK      OK      OK      - - amf
+7b4     OK      OK      OK      - - obj
+7b5     OK      OK      OK      - - pov
+7b6     OK      OK      OK      - - wrl
+7b7     OK      OK      OK      - - 3mf
+7c      -       -       -       - Other
+7c1     OK      OK      OK      - - csg
+7c2     OK      OK      OK      - - png
+8       -       -       -       cmd-line export
+8a      -       -       -       - 2D
+8a1     OK      OK      OK      - - dxf
+8a2     OK      OK      OK      - - svg
+8b      -       -       -       - 3D
+8b1     OK      OK      OK      - - stl
+8b2     OK      OK      OK      - - off
+8b3     OK      OK      OK      - - amf
+8b4     OK      OK      OK      - - 3mf
+8c      -       -       -       - Other
+8c1     OK      OK      OK      - - csg
+8c2     OK      OK      OK      - - png
+8c3     OK      OK      OK      - - echo
+8c4     OK      OK      OK      - - ast
+8c5     OK      OK      OK      - - term
+9       OK      OK      OK      Save: utf8-☠.scad -> utf8-☠.scad
+10      OK      OK      OK      Save As: utf8-☠.scad -> utf8-☠.scad
+11      -       -       -       Non-ASCII directory
+11a     i       i       i       - Open in GUI from command line
+11b     j       j       j       - Process from command line
+11c     k       k       k       - -o target from command line

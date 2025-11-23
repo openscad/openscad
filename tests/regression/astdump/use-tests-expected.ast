@@ -10,4 +10,5 @@ module test1() {
 	translate([-2, -4, 0]) cube([(deg(0.5) / 20), 0.5, 0.5], center = true);
 	translate([2, -4, -0.5]) scale(0.05) alignds420([0, 0, 0], [0, 0, 0]);
 }
+utf8_module();
 test1();

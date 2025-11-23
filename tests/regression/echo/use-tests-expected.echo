@@ -1,7 +1,8 @@
 WARNING: Can't open library ''. in file ../../tests/data/scad/misc/use-tests.scad, line 2
 WARNING: Can't open library 'non/existent/path/non-file'. in file ../../tests/data/scad/misc/use-tests.scad, line 8
-WARNING: Can't open library 'test/'. in file ../../tests/data/scad/misc/use-tests.scad, line 20
-WARNING: Can't open library '/'. in file ../../tests/data/scad/misc/use-tests.scad, line 23
-WARNING: Ignoring unknown module 'test3' in file use-tests.scad, line 42
-WARNING: Ignoring unknown module 'test4' in file use-tests.scad, line 43
-WARNING: Ignoring unknown variable "test2_variable" in file use-tests.scad, line 49
+WARNING: Can't open library 'test/'. in file ../../tests/data/scad/misc/use-tests.scad, line 24
+WARNING: Can't open library '/'. in file ../../tests/data/scad/misc/use-tests.scad, line 27
+ECHO: "Hello from a file with a UTF-8 name"
+WARNING: Ignoring unknown module 'test3' in file use-tests.scad, line 46
+WARNING: Ignoring unknown module 'test4' in file use-tests.scad, line 47
+WARNING: Ignoring unknown variable "test2_variable" in file use-tests.scad, line 53

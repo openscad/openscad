@@ -81,7 +81,7 @@ struct Line {
 DxfData::DxfData(CurveDiscretizer discretizer, const std::string& filename, const std::string& layername,
                  double xorigin, double yorigin, double scale)
 {
-  std::ifstream stream(filename.c_str());
+  std::ifstream stream(std::filesystem::u8path(filename));
   if (!stream.good()) {
     LOG(message_group::Warning, "Can't open DXF file '%1$s'.", filename);
     return;
