@@ -1,4 +1,4 @@
-extern int openscad_main(int argc, char **argv);
+#include "openscad.h"
 
 // Note: when compiled directly into an executable, the static assignment causes these to be initialized.
 // But that doesn't get called when included in a library.
