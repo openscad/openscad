@@ -41,4 +41,3 @@ void localization_init();
 std::pair<std::string, std::string> customSyntax(const std::string& s);
 
 int openscad_main(int argc, char **argv);
-
