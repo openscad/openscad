@@ -105,11 +105,15 @@ jobs:
           update: false
 
       - name: Install flex, bison, and ghostscript via pacman
-        run: /c/msys64/usr/bin/pacman -Sy --noconfirm flex bison ghostscript
+        run: /c/msys64/usr/bin/pacman -Sy --noconfirm flex bison mingw-w64-x86_64-ghostscript
         shell: bash
 
       - name: Add MSYS2 to PATH
         run: echo "C:/msys64/usr/bin" >> $GITHUB_PATH
+        shell: bash
+
+      - name: Add MinGW64 to PATH (for ghostscript)
+        run: echo "C:/msys64/mingw64/bin" >> $GITHUB_PATH
         shell: bash
 
       - name: Create bsdtar symlink

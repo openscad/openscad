@@ -162,8 +162,12 @@ message(STATUS "Found Python at ${Python3_EXECUTABLE}")
 if(WIN32)
   get_filename_component(Python3_DIR "${Python3_EXECUTABLE}" DIRECTORY)
   file(TO_CMAKE_PATH "$ENV{PATH}" ORIGINAL_PATH)
-  list(APPEND CTEST_ENVIRONMENT "PATH=${Python3_DIR};${ORIGINAL_PATH}")
+  
+  # Add MinGW64 bin directory for Ghostscript (used in PDF export tests)
+  set(MINGW64_BIN "C:/msys64/mingw64/bin")
+  list(APPEND CTEST_ENVIRONMENT "PATH=${Python3_DIR};${MINGW64_BIN};${ORIGINAL_PATH}")
   message(STATUS "Adding Python directory to test PATH: ${Python3_DIR}")
+  message(STATUS "Adding MinGW64 directory to test PATH: ${MINGW64_BIN}")
 endif()
 
 include("cmake/ImageCompare.cmake")

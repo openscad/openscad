@@ -343,11 +343,12 @@ if (-not $SkipQScintilla) {
 # Setup MSYS2 (for flex, bison, and ghostscript)
 Write-Information "Checking MSYS2..."
 $msys2Path = "C:\msys64\usr\bin"
+$mingw64Path = "C:\msys64\mingw64\bin"
 if (Test-Path $msys2Path) {
-    $env:PATH = "$msys2Path;$env:PATH"
+    $env:PATH = "$msys2Path;$mingw64Path;$env:PATH"
 
     Write-Information "  Installing/updating flex, bison, and ghostscript via pacman..."
-    & C:\msys64\usr\bin\pacman.exe -S --noconfirm --needed flex bison ghostscript
+    & C:\msys64\usr\bin\pacman.exe -S --noconfirm --needed flex bison mingw-w64-x86_64-ghostscript
     if ($LASTEXITCODE -ne 0) {
         Write-Error "Failed to install MSYS2 packages via pacman"
         exit 1
