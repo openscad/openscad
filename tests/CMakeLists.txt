@@ -158,6 +158,14 @@ set(TEST_CMDLINE_TOOL_PY     "${CCSD}/test_cmdline_tool.py")
 find_package(Python3 3.4 COMPONENTS Interpreter REQUIRED QUIET)
 message(STATUS "Found Python at ${Python3_EXECUTABLE}")
 
+# Add Python directory to PATH for tests on Windows to ensure the correct python DLL is loaded
+if(WIN32)
+  get_filename_component(Python3_DIR "${Python3_EXECUTABLE}" DIRECTORY)
+  file(TO_CMAKE_PATH "$ENV{PATH}" ORIGINAL_PATH)
+  list(APPEND CTEST_ENVIRONMENT "PATH=${Python3_DIR};${ORIGINAL_PATH}")
+  message(STATUS "Adding Python directory to test PATH: ${Python3_DIR}")
+endif()
+
 include("cmake/ImageCompare.cmake")
 include("cmake/GalliumFixes.cmake")
 include("cmake/TestFunctions.cmake")

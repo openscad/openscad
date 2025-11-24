@@ -29,7 +29,7 @@ if(USE_IMAGE_COMPARE_PY)
   if(BUILD_VENV)
     message(STATUS "Setting up testing venv for image comparison")
     execute_process(
-      COMMAND "${Python3_EXECUTABLE}" "-m" "venv" "venv" "--system-site-packages" "--without-pip"
+      COMMAND "${Python3_EXECUTABLE}" "-m" "venv" "venv" "--without-pip"
       WORKING_DIRECTORY "${CCBD}"
       OUTPUT_QUIET
       ERROR_QUIET)
