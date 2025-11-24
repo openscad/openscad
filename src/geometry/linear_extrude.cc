@@ -228,7 +228,7 @@ size_t calc_num_slices(const LinearExtrudeNode& node, const Polygon2d& poly)
     if (node.scale_x == 1.0 && node.scale_y == 1.0) {
       // Calculate Helical curve length for Twist with no Scaling
       num_slices = (unsigned int)node.discretizer.getHelixSlices(max_r1_sqr, node.height[2], node.twist)
-        .value_or(std::max(static_cast<int>(std::ceil(node.twist / 120.0)), 1));
+                     .value_or(std::max(static_cast<int>(std::ceil(node.twist / 120.0)), 1));
     } else if (node.scale_x != node.scale_y) {
       // Non-uniform scaling with twist.
 
@@ -246,8 +246,9 @@ size_t calc_num_slices(const LinearExtrudeNode& node, const Polygon2d& poly)
 
       size_t slicesNonUniScale =
         (unsigned int)node.discretizer.getDiagonalSlices(max_delta_sqr, node.height[2]).value_or(1);
-      size_t slicesTwist = (unsigned int)node.discretizer.getHelixSlices(max_r1_sqr, node.height[2], node.twist)
-        .value_or(std::max(static_cast<int>(std::ceil(node.twist / 120.0)), 1));
+      size_t slicesTwist =
+        (unsigned int)node.discretizer.getHelixSlices(max_r1_sqr, node.height[2], node.twist)
+          .value_or(std::max(static_cast<int>(std::ceil(node.twist / 120.0)), 1));
       num_slices = std::max(slicesNonUniScale, slicesTwist);
     } else {
       // uniform scaling with twist, use conical helix calculation
@@ -262,9 +263,8 @@ size_t calc_num_slices(const LinearExtrudeNode& node, const Polygon2d& poly)
     // because the line between the same 2d vertex is exactly straight.
     // But the faces will have error.
     // To see, animate this with fps=4 and steps=10:
-    // module s(s) linear_extrude(h=30, scale=[1/20,20], slices=s) scale([1,0.1]) rotate(45) square(10, center=true);
-    // steps=10;
-    // linear_extrude(h=1) projection(cut=true)
+    // module s(s) linear_extrude(h=30, scale=[1/20,20], slices=s) scale([1,0.1]) rotate(45) square(10,
+    // center=true); steps=10; linear_extrude(h=1) projection(cut=true)
     // {
     //   low_slices=($t*steps)+1;
     //   translate([0,0,low_slices%2==1? -15 : -15+30/low_slices/2]) union() {
@@ -277,15 +277,15 @@ size_t calc_num_slices(const LinearExtrudeNode& node, const Polygon2d& poly)
     // and the rest is correct, we can measure the largest error at a given slice count > 1:
     // for ( every vertex ) {
     //   for ( every slice ) {
-    //     Get the formula for the line from this vertex on low end of the slice to the next vertex on the top end of the slice.
-    //     Invent a new vertex half-way between the two vertices on the original polygon.
-    //     Get the formula for that new vertex projection from the bottom of the slice to the top.
-    //     Calculate the xy-difference between the two formulas when z is at the center of the chosen slice.
-    //     error=max(error,calculation)
+    //     Get the formula for the line from this vertex on low end of the slice to the next vertex on
+    //     the top end of the slice. Invent a new vertex half-way between the two vertices on the
+    //     original polygon. Get the formula for that new vertex projection from the bottom of the slice
+    //     to the top. Calculate the xy-difference between the two formulas when z is at the center of
+    //     the chosen slice. error=max(error,calculation)
     //   }
     // }
 
-    double max_delta_sqr = calc_max_delta_sqr(poly.outlines(),Vector2d(node.scale_x, node.scale_y));
+    double max_delta_sqr = calc_max_delta_sqr(poly.outlines(), Vector2d(node.scale_x, node.scale_y));
     num_slices = node.discretizer.getDiagonalSlices(max_delta_sqr, node.height[2]).value_or(1);
   } else {
     // uniform scaling w/o twist needs only one slice
