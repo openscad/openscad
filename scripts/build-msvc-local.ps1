@@ -340,24 +340,22 @@ if (-not $SkipQScintilla) {
     Write-Output ""
 }
 
-# Setup MSYS2 (for flex and bison)
+# Setup MSYS2 (for flex, bison, and ghostscript)
 Write-Information "Checking MSYS2..."
 $msys2Path = "C:\msys64\usr\bin"
 if (Test-Path $msys2Path) {
     $env:PATH = "$msys2Path;$env:PATH"
 
-    if (-not (Test-Path "$msys2Path\flex.exe") -or -not (Test-Path "$msys2Path\bison.exe")) {
-        Write-Information "  Installing flex and bison via pacman..."
-        & C:\msys64\usr\bin\pacman.exe -Sy --noconfirm flex bison
-        if ($LASTEXITCODE -ne 0) {
-            Write-Error "Failed to install flex and bison via pacman"
-            exit 1
-        }
+    Write-Information "  Installing/updating flex, bison, and ghostscript via pacman..."
+    & C:\msys64\usr\bin\pacman.exe -S --noconfirm --needed flex bison ghostscript
+    if ($LASTEXITCODE -ne 0) {
+        Write-Error "Failed to install MSYS2 packages via pacman"
+        exit 1
     }
-    Write-Information "✓ MSYS2 configured (flex and bison available)"
+    Write-Information "✓ MSYS2 configured (flex, bison, and ghostscript available)"
 } else {
     Write-Warning " MSYS2 not found at $msys2Path"
-    Write-Information "         You may need to install flex and bison manually"
+    Write-Information "         You may need to install flex, bison, and ghostscript manually"
 }
 Write-Output ""
 
