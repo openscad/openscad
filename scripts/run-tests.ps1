@@ -40,7 +40,7 @@ Push-Location $BuildDir
 
 try {
     # Build ctest command
-    $ctestArgs = @("-C", "Release", "--output-on-failure", "-j", $Jobs)
+    $ctestArgs = @("-C", "Release", "-L", "Default", "--output-on-failure", "-j", $Jobs)
 
     if ($Verbose) {
         $ctestArgs += "-V"

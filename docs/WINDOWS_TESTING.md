@@ -53,7 +53,7 @@ $env:PATH = "C:\Qt\6.10.0\msvc2022_64\bin;C:\Qt\6.10.0\msvc2022_64\lib;$env:PATH
 
 # 4. Run tests
 cd build\windows-msvc-release
-ctest -C Release --output-on-failure -j $env:NUMBER_OF_PROCESSORS
+ctest -C Release -L Default --output-on-failure -j $env:NUMBER_OF_PROCESSORS
 ```
 
 ## Troubleshooting

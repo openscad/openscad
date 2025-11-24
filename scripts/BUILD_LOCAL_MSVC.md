@@ -127,13 +127,13 @@ After a successful build, you can run tests manually:
 
 ```powershell
 cd build\windows-msvc-release\tests
-ctest -C Release --output-on-failure
+ctest -C Release -L Default --output-on-failure
 ```
 
 Or run a single test:
 
 ```powershell
-ctest -C Release -R astdump_arg-permutations --output-on-failure -V
+ctest -C Release -L Default -R astdump_arg-permutations --output-on-failure -V
 ```
 
 ## Running OpenSCAD

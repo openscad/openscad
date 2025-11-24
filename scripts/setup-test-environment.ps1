@@ -81,5 +81,5 @@ Write-Host "========================================" -ForegroundColor Cyan
 Write-Host ""
 Write-Host "You can now run tests with:" -ForegroundColor Yellow
 Write-Host "  cd $BuildDir" -ForegroundColor Gray
-Write-Host "  ctest -C Release --output-on-failure -j `$env:NUMBER_OF_PROCESSORS" -ForegroundColor Gray
+Write-Host "  ctest -C Release -L Default --output-on-failure -j `$env:NUMBER_OF_PROCESSORS" -ForegroundColor Gray
 Write-Host ""

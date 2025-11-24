@@ -12,10 +12,14 @@ function(get_test_fullname TESTCMD FILENAME FULLNAME)
 endfunction()
 
 #
-# Tags the given tests as belonging to the given CONFIG, i.e. will
-# only be executed when run using ctest -C <CONFIG>
+# Tags the given tests as belonging to the given CONFIG.
+# This sets both the legacy CONFIGURATIONS property (for non-multi-config generators)
+# and the LABELS property (for use with ctest -L <CONFIG>).
 #
 # Usage example: set_test_config(Heavy dump_testname preview_testname2)
+#
+# Users should run tests with: ctest -L <CONFIG> (e.g., ctest -L Default, ctest -L Examples)
+# On MSVC and other multi-config generators: ctest -C Release -L Default
 #
 function(set_test_config CONFIG)
   cmake_parse_arguments(TESTCFG "" "" "FILES;PREFIXES" ${ARGN})
@@ -41,6 +45,9 @@ function(set_test_config CONFIG)
   endif()
   # Export to parent scope
   set(${CONFIG}_TEST_CONFIG ${${CONFIG}_TEST_CONFIG} CACHE INTERNAL "")
+  
+  # Note: LABELS property is set at test creation time in add_cmdline_test() and add_failing_test()
+  # This ensures labels are available immediately for filtering with ctest -L
 endfunction(set_test_config)
 
 #
@@ -55,6 +62,9 @@ function(remove_test_config CONFIG)
   list(REMOVE_ITEM ${CONFIG}_TEST_CONFIG ${FULLNAMES})
   # Export to parent scope
   set(${CONFIG}_TEST_CONFIG ${${CONFIG}_TEST_CONFIG} CACHE INTERNAL "")
+  
+  # Note: This modifies the configuration before tests are created,
+  # so labels will be set correctly at test creation time
 endfunction(remove_test_config)
 
 #
@@ -506,6 +516,8 @@ function(add_cmdline_test TESTCMD_BASENAME)
         )
       endif()
       set_property(TEST ${TEST_FULLNAME} PROPERTY ENVIRONMENT ${CTEST_ENVIRONMENT})
+      # Set LABELS property to enable filtering with ctest -L
+      set_property(TEST ${TEST_FULLNAME} PROPERTY LABELS ${CONFVAL})
     else()
       message(DEBUG "Experimental Test not added: ${DBG_COMMAND_STR}")
     endif()
@@ -558,5 +570,7 @@ function(add_failing_test TESTCMD_BASENAME)
       add_test(NAME ${TEST_FULLNAME} CONFIGURATIONS ${CONFVAL} COMMAND ${TESTCMD_EXE} ${TESTCMD_SCRIPT} "${SCADFILE}" -s ${TESTCMD_SUFFIX} ${TESTCMD_ARGS})
     endif()
     set_property(TEST ${TEST_FULLNAME} PROPERTY ENVIRONMENT "${CTEST_ENVIRONMENT}")
+    # Set LABELS property to enable filtering with ctest -L
+    set_property(TEST ${TEST_FULLNAME} PROPERTY LABELS ${CONFVAL})
   endforeach()
 endfunction()

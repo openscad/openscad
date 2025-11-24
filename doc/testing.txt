@@ -29,13 +29,18 @@ Linux, Mac:
 From your build directory
 $ ctest -j8           Runs tests enabled by default using 8 parallel processes.
 $ ctest -R <regex>    Runs only matching tests, e.g. ctest -R dxf
-$ ctest -C <configs>  Adds extended tests belonging to configs.
-                      Valid configs:
+$ ctest -L <label>    Run tests with specific label (RECOMMENDED).
+                      Valid labels:
                       Default  - Run default tests
                       Heavy    - Run more time consuming tests (> ~10 seconds)
                       Examples - test all examples
                       Bugs     - test known bugs (tests will fail)
                       All      - test everything
+                      Good     - All tests except Bugs
+$ ctest -LE Bugs      Exclude tests with Bugs label (run everything except bugs)
+
+Note: The legacy -C flag still works on single-config generators but -L is preferred.
+      On MSVC/Xcode (multi-config), use both: ctest -C Release -L Default
 
 Win:
 
@@ -74,11 +79,11 @@ Adding a new example:
 This is almost the same as adding a new regression test:
 1) Create the example under examples/
 2) run the test with the environment variable TEST_GENERATE=1, e.g.:
-   $ TEST_GENERATE=1 ctest -C Examples -R exampleNNN
+   $ TEST_GENERATE=1 ctest -L Examples -R exampleNNN
    (this will generate a exampleNNN-expected.txt file which is used for regression testing)
 3) manually verify that the output is correct (tests/regression/<testapp>/exampleNNN.<suffix>)
 4) run the test normally and verify that it passes:
-  $ ctest -C Examples -R exampleNNN
+  $ ctest -L Examples -R exampleNNN
 
 Troubleshooting:
 ------------------------------

@@ -708,7 +708,7 @@ public class ErrorMode {
             Write-Information "Current error mode: 0x$($currentMode.ToString('X4'))"
         }
         
-        ctest -C Release -j2 --output-on-failure
+        ctest -C Release -L Default -j2 --output-on-failure
         
         if ($LASTEXITCODE -ne 0) {
             Write-Error "Tests failed"
@@ -739,13 +739,8 @@ if (Test-Path "$BuildDir\Release\openscad.exe") {
 Write-Output ""
 Write-Information "To run tests manually:"
 Write-Information "  cd $BuildDir\tests"
-Write-Information "  ctest -C Release --output-on-failure"
+Write-Information "  ctest -C Release -L Default --output-on-failure"
 Write-Output ""
 Write-Information "To run OpenSCAD:"
 Write-Information "  $BuildDir\Release\openscad.exe"
 Write-Output ""
-
-
-
-
-
