@@ -284,7 +284,17 @@ script to help you:
 
 Take care that you don't have old local copies anywhere (`/usr/local/`).
 If all dependencies are present and of a high enough version, skip ahead
-to the Compilation instructions.
+to the Compilation instructions. These are as simple as:
+
+
+```shell
+mkdir build
+cd build
+cmake ..
+make
+make test
+sudo make install
+```
 
 ### Building for Linux/BSD on systems with older or missing dependencies
 

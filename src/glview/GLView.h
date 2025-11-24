@@ -51,7 +51,6 @@ public:
   void setColorScheme(const ColorScheme& cs);
   void setColorScheme(const std::string& cs);
   void updateColorScheme();
-  void loadTextures(void);
 
   [[nodiscard]] bool showAxes() const { return this->showaxes; }
   void setShowAxes(bool enabled) { this->showaxes = enabled; }
