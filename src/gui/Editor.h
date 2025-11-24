@@ -4,7 +4,6 @@
 #include <QObject>
 #include <QString>
 #include <QWidget>
-#include <QWheelEvent>
 #include <QScrollBar>
 #include <QTextEdit>
 #include "core/IndicatorData.h"
@@ -26,7 +25,6 @@ public:
     return size;
   }
   virtual void setInitialSizeHint(const QSize&) {}
-  void wheelEvent(QWheelEvent *) override;
   virtual QString toPlainText() = 0;
   virtual QTextDocument *document()
   {
