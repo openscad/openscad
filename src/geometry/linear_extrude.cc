@@ -218,13 +218,15 @@ size_t calc_num_slices(const LinearExtrudeNode& node, const Polygon2d& poly)
 {
   size_t num_slices;
   if (node.has_slices) {
-    num_slices = node.slices;
-  } else if (node.has_twist) {
+    return node.slices;
+  }
+
+  if (node.has_twist) {
     double max_r1_sqr = 0;  // r1 is before scaling
     for (const auto& o : poly.outlines())
       for (const auto& v : o.vertices) max_r1_sqr = fmax(max_r1_sqr, v.squaredNorm());
-    // Calculate Helical curve length for Twist with no Scaling
     if (node.scale_x == 1.0 && node.scale_y == 1.0) {
+      // Calculate Helical curve length for Twist with no Scaling
       num_slices = (unsigned int)node.discretizer.getHelixSlices(max_r1_sqr, node.height[2], node.twist)
         .value_or(std::max(static_cast<int>(std::ceil(node.twist / 120.0)), 1));
     } else if (node.scale_x != node.scale_y) {
@@ -232,7 +234,16 @@ size_t calc_num_slices(const LinearExtrudeNode& node, const Polygon2d& poly)
 
       Vector2d scale(node.scale_x, node.scale_y);
       double max_delta_sqr = calc_max_delta_sqr(poly.outlines(), scale);
-      // FIXME: why would this ever be less than getHelixSlices???
+
+      // Why would we not find the furthest *scaled* max_r1_sqr and use getHelixSlices on that?
+      // Because it scales non-uniformly and so you need a formula for the
+      // length of a non-uniformly scaled helix.
+      // And you would need to check every vertex, because the vertex that's furthest away
+      // before you start twisting may not be the furthest throughout the twist.
+      // Consider vertices at (3.99,2) and (4,-2), and a scale=(1,2).
+      // If you rotate 90 degrees ACW, the first vertex will be further away,
+      // but the second vertex starts and ends out further.
+
       size_t slicesNonUniScale =
         (unsigned int)node.discretizer.getDiagonalSlices(max_delta_sqr, node.height[2]).value_or(1);
       size_t slicesTwist = (unsigned int)node.discretizer.getHelixSlices(max_r1_sqr, node.height[2], node.twist)
@@ -259,6 +270,18 @@ size_t calc_num_slices(const LinearExtrudeNode& node, const Polygon2d& poly)
     //   translate([0,0,low_slices%2==1? -15 : -15+30/low_slices/2]) union() {
     //     difference() { s(low_slices); s(40);}
     //     difference() { s(40); s(low_slices);}
+    //   }
+    // }
+
+    // If https://github.com/openscad/openscad/issues/6366#issuecomment-3550792215
+    // and the rest is correct, we can measure the largest error at a given slice count > 1:
+    // for ( every vertex ) {
+    //   for ( every slice ) {
+    //     Get the formula for the line from this vertex on low end of the slice to the next vertex on the top end of the slice.
+    //     Invent a new vertex half-way between the two vertices on the original polygon.
+    //     Get the formula for that new vertex projection from the bottom of the slice to the top.
+    //     Calculate the xy-difference between the two formulas when z is at the center of the chosen slice.
+    //     error=max(error,calculation)
     //   }
     // }
 
