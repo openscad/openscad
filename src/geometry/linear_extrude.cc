@@ -273,25 +273,12 @@ size_t calc_num_slices(const LinearExtrudeNode& node, const Polygon2d& poly)
     //   }
     // }
 
-    // If https://github.com/openscad/openscad/issues/6366#issuecomment-3550792215
-    // and the rest is correct, we can measure the largest error at a given slice count > 1:
-    // for ( every vertex ) {
-    //   for ( every slice ) {
-    //     Get the formula for the line from this vertex on low end of the slice to the next vertex on
-    //     the top end of the slice. Invent a new vertex half-way between the two vertices on the
-    //     original polygon. Get the formula for that new vertex projection from the bottom of the slice
-    //     to the top. Calculate the xy-difference between the two formulas when z is at the center of
-    //     the chosen slice. error=max(error,calculation)
-    //   }
-    // }
-
     double max_delta_sqr = calc_max_delta_sqr(poly.outlines(), Vector2d(node.scale_x, node.scale_y));
     num_slices = node.discretizer.getDiagonalSlices(max_delta_sqr, node.height[2]).value_or(1);
   } else {
     // uniform scaling w/o twist needs only one slice
     num_slices = 1;
   }
-  // std::cerr << "calc_num_slices() = "<< num_slices << "\n";
   return num_slices;
 }
 
