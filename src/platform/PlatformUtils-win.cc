@@ -27,9 +27,6 @@
 
 std::string PlatformUtils::pathSeparatorChar() { return ";"; }
 
-// Use boost::nowide::narrow to convert wide strings
-std::string winapi_wstr_to_utf8(const std::wstring& wstr) { return boost::nowide::narrow(wstr); }
-
 // see http://msdn.microsoft.com/en-us/library/windows/desktop/bb762494%28v=vs.85%29.aspx
 static const std::string getFolderPath(int nFolder)
 {
@@ -215,7 +212,7 @@ int wmain(int argc, wchar_t **argv)
   std::string argvString[argc];
 
   for (int i = 0; i < argc; i++) {
-    argvString[i] = winapi_wstr_to_utf8(argv[i]);
+    argvString[i] = boost::nowide::narrow(argv[i]);
     argv8[i] = argvString[i].data();
   }
   argv8[argc] = NULL;
