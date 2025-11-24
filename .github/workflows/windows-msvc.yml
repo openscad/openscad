@@ -104,8 +104,8 @@ jobs:
           msystem: MSYS
           update: false
 
-      - name: Install flex and bison via pacman
-        run: /c/msys64/usr/bin/pacman -Sy --noconfirm flex bison
+      - name: Install flex, bison, and ghostscript via pacman
+        run: /c/msys64/usr/bin/pacman -Sy --noconfirm flex bison ghostscript
         shell: bash
 
       - name: Add MSYS2 to PATH
@@ -129,10 +129,6 @@ jobs:
         with:
           version: '24.2.3'
           build-type: 'release-msvc'
-
-      - name: Install Ghostscript for PDF export tests
-        run: choco install ghostscript -y
-        shell: cmd
 
       - name: Restore vcpkg binary cache
         id: vcpkg-cache
