@@ -1,23 +1,22 @@
 #include "openscad.h"
 
-// Note: when compiled directly into an executable, the static assignment causes these to be initialized.
-// But that doesn't get called when included in a library.
-// So we must manually add an entry for every qrc added as a target library.
-extern int qInitResources_common();
-extern int qInitResources_icons_chokusen();
-extern int qInitResources_icons_chokusen_dark();
-extern int qInitResources_mac();
+#ifndef OPENSCAD_NOGUI
+#include <QtResource>
+#endif
 
 // Windows note:  wmain() is called first, translates from UTF-16 to UTF-8, and calls main().
 int main(int argc, char **argv)
 {
+// Note: when compiled directly into an executable, the static assignment causes these to be initialized.
+// But that doesn't get called when included in a library.
+// So we must manually add an entry for every qrc added as a target library.
 #ifndef OPENSCAD_NOGUI
-  (void)qInitResources_common();
-  (void)qInitResources_icons_chokusen();
-  (void)qInitResources_icons_chokusen_dark();
-#endif
+  Q_INIT_RESOURCE(common);
+  Q_INIT_RESOURCE(icons_chokusen);
+  Q_INIT_RESOURCE(icons_chokusen_dark);
 #ifdef __APPLE__
-  (void)qInitResources_mac();
+  Q_INIT_RESOURCE(mac);
+#endif
 #endif
   return openscad_main(argc, argv);
 }
