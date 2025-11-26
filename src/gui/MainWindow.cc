@@ -2400,6 +2400,11 @@ bool MainWindow::trust_python_file(const std::string& file, const std::string& c
   if (python_trusted) return true;
   if (Settings::SettingsPython::globalTrustPython.value() == true) return true;
 
+  // Trust unsaved files (empty filepath) - they're created by the user, not loaded from disk
+  if (file.empty()) {
+    return true;
+  }
+
   std::string act_hash, ref_hash;
   snprintf(setting_key, sizeof(setting_key) - 1, "python_hash/%s", file.c_str());
   act_hash = SHA256HashString(content);
