@@ -6,6 +6,8 @@
 
 void EditorInterface::recomputeLanguageActive()
 {
+  if (languageManuallySet) return;  // Don't override manual selection
+
   auto fnameba = filepath.toLocal8Bit();
   const char *fname = filepath.isEmpty() ? "" : fnameba;
 
@@ -24,4 +26,19 @@ void EditorInterface::recomputeLanguageActive()
     onLanguageChanged(language);
   }
 #endif
+}
+
+void EditorInterface::setLanguageManually(int lang)
+{
+  languageManuallySet = true;
+  if (language != lang) {
+    language = lang;
+    onLanguageChanged(lang);
+  }
+}
+
+void EditorInterface::resetLanguageDetection()
+{
+  languageManuallySet = false;
+  recomputeLanguageActive();
 }

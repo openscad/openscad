@@ -439,8 +439,10 @@ MainWindow::MainWindow(const QStringList& filenames) : rubberBandManager(this)
            {fontListDock, _("Font Lists"), "view/hideFontList"},
            {viewportControlDock, _("Viewport-Control"), "view/hideViewportControl"}};
 
-  this->versionLabel = nullptr;  // must be initialized before calling updateStatusBar()
+  this->versionLabel = nullptr;   // must be initialized before calling updateStatusBar()
+  this->languageLabel = nullptr;  // must be initialized before calling updateLanguageLabel()
   updateStatusBar(nullptr);
+  updateLanguageLabel();
 
   renderCompleteSoundEffect = new QSoundEffect();
   renderCompleteSoundEffect->setSource(QUrl("qrc:/sounds/complete.wav"));
@@ -2321,6 +2323,11 @@ bool MainWindow::event(QEvent *event)
 
 bool MainWindow::eventFilter(QObject *obj, QEvent *event)
 {
+  if (obj == languageLabel && event->type() == QEvent::MouseButtonPress) {
+    showLanguageMenu();
+    return true;
+  }
+
   if (rubberBandManager.isVisible()) {
     if (event->type() == QEvent::KeyRelease) {
       auto keyEvent = static_cast<QKeyEvent *>(event);
@@ -2469,9 +2476,9 @@ std::shared_ptr<SourceFile> MainWindow::parseDocument(EditorInterface *editor)
   const char *fname = editor->filepath.isEmpty() ? "" : fnameba.constData();
   SourceFile *sourceFile;
 #ifdef ENABLE_PYTHON
-  if (currentLanguage == LANG_PYTHON && !trust_python_file(std::string(fname), fulltext_py)) {
+  if (editor->language == LANG_PYTHON && !trust_python_file(std::string(fname), fulltext_py)) {
     LOG(message_group::Warning, Location::NONE, "", "Python is not enabled");
-  } else if (currentLanguage == LANG_PYTHON) {
+  } else if (editor->language == LANG_PYTHON) {
     const auto& venv = venvBinDirFromSettings();
     const auto& binDir = venv.empty() ? PlatformUtils::applicationPath() : venv;
     initPython(venv, fnameba.constData(), this->animateWidget->getAnimTval());
@@ -3104,6 +3111,70 @@ void MainWindow::updateStatusBar(ProgressWidget *progressWidget)
       this->versionLabel = nullptr;
     }
     sb->addPermanentWidget(progressWidget);
+  }
+}
+
+void MainWindow::updateLanguageLabel()
+{
+  auto sb = this->statusBar();
+
+  if (languageLabel == nullptr) {
+    languageLabel = new QLabel();
+    languageLabel->setCursor(Qt::PointingHandCursor);
+    languageLabel->installEventFilter(this);
+    languageLabel->setToolTip(_("Click to change language"));
+    sb->addPermanentWidget(this->languageLabel);
+  }
+
+  QString languageText;
+  switch (currentLanguage) {
+  case LANG_SCAD:   languageText = "OpenSCAD"; break;
+  case LANG_PYTHON: languageText = "Python"; break;
+  case LANG_JS:     languageText = "JavaScript"; break;
+  case LANG_LUA:    languageText = "Lua"; break;
+  default:          languageText = "Unknown"; break;
+  }
+
+  languageLabel->setText(languageText);
+}
+
+void MainWindow::showLanguageMenu()
+{
+  if (!activeEditor) return;
+
+  QMenu menu(this);
+
+  QAction *scadAction = menu.addAction("OpenSCAD");
+  scadAction->setCheckable(true);
+  scadAction->setChecked(activeEditor->language == LANG_SCAD);
+
+#ifdef ENABLE_PYTHON
+  QAction *pythonAction = menu.addAction("Python");
+  pythonAction->setCheckable(true);
+  pythonAction->setChecked(activeEditor->language == LANG_PYTHON);
+#endif
+
+  menu.addSeparator();
+
+  QAction *autoDetectAction = menu.addAction(_("Auto-detect from file extension"));
+  autoDetectAction->setCheckable(true);
+  autoDetectAction->setChecked(!activeEditor->languageManuallySet);
+
+  QAction *selected = menu.exec(QCursor::pos());
+
+  if (selected == scadAction) {
+    activeEditor->setLanguageManually(LANG_SCAD);
+    onLanguageActiveChanged(LANG_SCAD);
+  }
+#ifdef ENABLE_PYTHON
+  else if (selected == pythonAction) {
+    activeEditor->setLanguageManually(LANG_PYTHON);
+    onLanguageActiveChanged(LANG_PYTHON);
+  }
+#endif
+  else if (selected == autoDetectAction) {
+    activeEditor->resetLanguageDetection();
+    onLanguageActiveChanged(activeEditor->language);
   }
 }
 

@@ -185,6 +185,8 @@ void TabManager::open(const QString& filename)
   if (editor->filepath.isEmpty() && !editor->isContentModified() &&
       !editor->parameterWidget->isModified()) {
     openTabFile(filename);
+    editor->recomputeLanguageActive();
+    par->onLanguageActiveChanged(editor->language);
     emit editorContentReloaded(editor);
   } else {
     createTab(filename);
