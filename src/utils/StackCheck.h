@@ -28,7 +28,8 @@ private:
   inline unsigned long size()
   {
     unsigned char c;
-    return std::abs(ptr - &c);
+    auto diff = ptr - &c;
+    return diff > 0 ? diff : -diff;
   }
 
   unsigned long limit;
