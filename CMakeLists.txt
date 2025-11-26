@@ -737,6 +737,7 @@ endif()
 if (MXECROSS)
   target_compile_definitions(OpenSCADLibInternal PUBLIC STATIC_QT_SVG_PLUGIN)
   target_compile_definitions(OpenSCADLibInternal PUBLIC GLEW_STATIC)
+  target_link_libraries(OpenSCADLibInternal PUBLIC bcrypt)
 endif()
 
 target_include_directories(OpenSCADLibInternal PUBLIC
