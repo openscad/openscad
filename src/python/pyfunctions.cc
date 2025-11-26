@@ -1043,13 +1043,12 @@ int python_tomatrix(PyObject *pyt, Matrix4d& mat)
   if (pyt == nullptr) return 1;
   PyObject *row, *cell;
   double val;
+  mat = Matrix4d::Identity();
   if (!PyList_Check(pyt)) return 1;
-  if (PyList_Size(pyt) != 4) return 1;
-  for (int i = 0; i < 4; i++) {
+  for (int i = 0; i < std::min(4, (int)PyList_Size(pyt)); i++) {
     row = PyList_GetItem(pyt, i);
     if (!PyList_Check(row)) return 1;
-    if (PyList_Size(row) != 4) return 1;
-    for (int j = 0; j < 4; j++) {
+    for (int j = 0; j < std::min(4, (int)PyList_Size(row)); j++) {
       cell = PyList_GetItem(row, j);
       if (python_numberval(cell, &val)) return 1;
       mat(i, j) = val;
@@ -5017,7 +5016,7 @@ PyObject *python_group(PyObject *self, PyObject *args, PyObject *kwargs)
   return PyOpenSCADObjectFromNode(type, node);
 }
 
-PyObject *python_align_core(PyObject *obj, PyObject *pyrefmat, PyObject *pydstmat)
+PyObject *python_align_core(PyObject *obj, PyObject *pyrefmat, PyObject *pydstmat, PyObject *flip)
 {
   if (!PyObject_IsInstance(obj, reinterpret_cast<PyObject *>(&PyOpenSCADType))) {
     PyErr_SetString(PyExc_TypeError, "Must specify Object as 1st parameter");
@@ -5037,7 +5036,13 @@ PyObject *python_align_core(PyObject *obj, PyObject *pyrefmat, PyObject *pydstma
   Matrix4d MT = Matrix4d::Identity();
 
   if (!python_tomatrix(pyrefmat, mat)) MT = MT * mat;
-  if (!python_tomatrix(pydstmat, mat)) MT = MT * mat.inverse();
+  if (!python_tomatrix(pydstmat, mat)) {
+    if (flip == Py_True) {
+      for (int j = 0; j < 3; j++)
+        for (int i = 0; i < 3; i++) mat(j, i) = -mat(j, i);
+    }
+    MT = MT * mat.inverse();
+  }
 
   multmatnode->matrix = MT;
   multmatnode->setPyName(dstnode->getPyName());
@@ -5060,27 +5065,29 @@ PyObject *python_align_core(PyObject *obj, PyObject *pyrefmat, PyObject *pydstma
 
 PyObject *python_align(PyObject *self, PyObject *args, PyObject *kwargs)
 {
-  char *kwlist[] = {"obj", "refmat", "objmat", NULL};
+  char *kwlist[] = {"obj", "refmat", "objmat", "flip", NULL};
   PyObject *obj = NULL;
   PyObject *pyrefmat = NULL;
   PyObject *pyobjmat = NULL;
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "OO|O", kwlist, &obj, &pyrefmat, &pyobjmat)) {
+  PyObject *flip = Py_False;
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "OO|OO", kwlist, &obj, &pyrefmat, &pyobjmat, &flip)) {
     PyErr_SetString(PyExc_TypeError, "Error during align");
     return NULL;
   }
-  return python_align_core(obj, pyrefmat, pyobjmat);
+  return python_align_core(obj, pyrefmat, pyobjmat, flip);
 }
 
 PyObject *python_oo_align(PyObject *obj, PyObject *args, PyObject *kwargs)
 {
-  char *kwlist[] = {"refmat", "objmat", NULL};
+  char *kwlist[] = {"refmat", "objmat", "flip", NULL};
   PyObject *pyrefmat = NULL;
   PyObject *pyobjmat = NULL;
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O|O", kwlist, &pyrefmat, &pyobjmat)) {
+  PyObject *flip = Py_False;
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O|OO", kwlist, &pyrefmat, &pyobjmat, &flip)) {
     PyErr_SetString(PyExc_TypeError, "Error during align");
     return NULL;
   }
-  return python_align_core(obj, pyrefmat, pyobjmat);
+  return python_align_core(obj, pyrefmat, pyobjmat, flip);
 }
 
 PyObject *do_import_python(PyObject *self, PyObject *args, PyObject *kwargs, ImportType type)

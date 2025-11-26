@@ -230,10 +230,12 @@ std::shared_ptr<AbstractNode> PyOpenSCADObjectToNodeMulti(PyObject *objs, PyObje
     PyObject *subdict;
     for (int i = 0; i < n; i++) {
       PyObject *obj = PyList_GetItem(objs, i);
-      std::shared_ptr<AbstractNode> child = PyOpenSCADObjectToNode(obj, &subdict);
-      if (child == nullptr) return nullptr;
-      node->children.push_back(child);
-      child_dict.push_back(subdict);
+      if (PyObject_IsInstance(obj, reinterpret_cast<PyObject *>(&PyOpenSCADType))) {
+        std::shared_ptr<AbstractNode> child = PyOpenSCADObjectToNode(obj, &subdict);
+        if (child == nullptr) continue;
+        node->children.push_back(child);
+        child_dict.push_back(subdict);
+      } else return nullptr;
     }
     result = node;
 
