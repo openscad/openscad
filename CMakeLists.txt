@@ -598,10 +598,8 @@ target_link_libraries(OpenSCADLibInternal PUBLIC ${FREETYPE_LIBRARIES})
 
 find_package(LibXml2 2.9 REQUIRED QUIET)
 message(STATUS "LibXml2: ${LIBXML2_VERSION_STRING}")
-target_include_directories(OpenSCADLibInternal SYSTEM PUBLIC ${LIBXML2_INCLUDE_DIR})
-target_include_directories(svg SYSTEM PUBLIC ${LIBXML2_INCLUDE_DIR})
-target_link_libraries(OpenSCADLibInternal PUBLIC ${LIBXML2_LIBRARIES})
-target_link_libraries(svg PUBLIC ${LIBXML2_LIBRARIES})
+target_link_libraries(OpenSCADLibInternal PUBLIC LibXml2::LibXml2)
+target_link_libraries(svg PUBLIC LibXml2::LibXml2)
 
 if(ENABLE_PYTHON)
   find_package(Python REQUIRED COMPONENTS Interpreter Development)
@@ -736,14 +734,12 @@ else()
 endif()
 
 if (MXECROSS)
-  target_compile_definitions(OpenSCADLibInternal PUBLIC LIBXML_STATIC STATIC_QT_SVG_PLUGIN)
+  target_compile_definitions(OpenSCADLibInternal PUBLIC STATIC_QT_SVG_PLUGIN)
   target_compile_definitions(OpenSCADLibInternal PUBLIC GLEW_STATIC)
   # Without these the rest of these, get errors when trying to link _OpenSCADExe_.
-  # ld: libsvg.a(libsvg.cc.obj): ... undefined reference to `__imp_xmlFreeTextReader'
   # ld: .../libxml2.a(libxml2_la-xmlIO.o): in function `xmlGzfileRead': ...xmlIO.c:851: undefined reference to `gzread'
   # ld: .../libzip.a(zip_crypto_win.c.obj):zip_crypto_win:(.text+0x1074): undefined reference to `BCryptGenRandom'
   # I guess before separate libraries, something transitively included zlib and that was good enough.
-  target_compile_definitions(svg PUBLIC LIBXML_STATIC)
   find_package(ZLIB REQUIRED)
   target_link_libraries(svg PRIVATE ZLIB::ZLIB)
   target_link_libraries(OpenSCADLibInternal PUBLIC bcrypt)
