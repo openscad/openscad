@@ -242,21 +242,22 @@ find_package(Sanitizers)
 
 # Strict c++17, e.g. no GNU extensions
 if (MSVC) # For MSVC, errors show up when using c++ 17 for build.
-  set_property(TARGET OpenSCADLibInternal PROPERTY CXX_STANDARD 20)
-  set_property(TARGET svg PROPERTY CXX_STANDARD 20)
+  set_target_properties(OpenSCADLibInternal svg OpenSCADExe PROPERTIES
+    CXX_STANDARD 20
+  )
 else()
-  set_property(TARGET OpenSCADLibInternal PROPERTY CXX_STANDARD 17)
-  set_property(TARGET svg PROPERTY CXX_STANDARD 17)
+  set_target_properties(OpenSCADLibInternal svg OpenSCADExe PROPERTIES
+    CXX_STANDARD 17
+  )
 endif()
-set_property(TARGET OpenSCADLibInternal PROPERTY CXX_EXTENSIONS OFF)
-set_property(TARGET OpenSCADLibInternal PROPERTY CXX_STANDARD_REQUIRED ON)
-# Output compilation database (compile_commands.json), so we can e.g. run clang-tidy or other tools separately
-set_property(TARGET OpenSCADLibInternal PROPERTY EXPORT_COMPILE_COMMANDS ON)
-set_property(TARGET OpenSCADLibInternal PROPERTY LINKER_LANGUAGE CXX)
-set_property(TARGET OpenSCADExe PROPERTY EXPORT_COMPILE_COMMANDS ON)
-set_property(TARGET OpenSCADExe PROPERTY LINKER_LANGUAGE CXX)
-set_property(TARGET svg PROPERTY EXPORT_COMPILE_COMMANDS ON)
-set_property(TARGET svg PROPERTY LINKER_LANGUAGE CXX)
+set_target_properties(OpenSCADLibInternal svg OpenSCADExe PROPERTIES
+  # Output compilation database (compile_commands.json), so we can e.g. run clang-tidy or other tools separately
+  EXPORT_COMPILE_COMMANDS ON
+  LINKER_LANGUAGE CXX
+  CXX_EXTENSIONS OFF
+  CXX_STANDARD_REQUIRED ON
+)
+
 # Verbose link step
 if(("${CMAKE_CXX_COMPILER_FRONTEND_VARIANT}" STREQUAL "GNU") OR
    ("${CMAKE_CXX_COMPILER_ID}" MATCHES "AppleClang|Clang|GNU"))
@@ -783,9 +784,11 @@ if(NOT HEADLESS)
   if("${CMAKE_VERSION}" VERSION_GREATER_EQUAL "3.14")
     set_property(TARGET OpenSCADLibInternal PROPERTY AUTOGEN_ORIGIN_DEPENDS OFF)
   endif()
-  set_property(TARGET OpenSCADLibInternal PROPERTY AUTOMOC ON)
-  set_property(TARGET OpenSCADLibInternal PROPERTY AUTOUIC ON)
-  set_property(TARGET OpenSCADLibInternal PROPERTY AUTORCC ON)
+  set_target_properties(OpenSCADLibInternal PROPERTIES
+    AUTOMOC ON
+    AUTOUIC ON
+    AUTORCC ON
+  )
   set_property(TARGET OpenSCADLibInternal PROPERTY AUTOUIC_OPTIONS --tr q_)
   set_property(TARGET OpenSCADLibInternal PROPERTY AUTORCC_OPTIONS --threshold 10 --compress 9)
 
@@ -805,7 +808,9 @@ if(NOT HEADLESS)
     message(STATUS "Qt6: ${Qt6_VERSION}")
 
     if (Qt6_POSITION_INDEPENDENT_CODE)
-      set_property(TARGET OpenSCADLibInternal PROPERTY POSITION_INDEPENDENT_CODE ON)
+      set_target_properties(OpenSCADLibInternal svg OpenSCADExe PROPERTIES
+	POSITION_INDEPENDENT_CODE ON
+      )
     endif()
 
     find_package(Qt6QScintilla 2.8.0 REQUIRED QUIET)
@@ -830,7 +835,9 @@ if(NOT HEADLESS)
     message(STATUS "Qt5: ${Qt5_VERSION}")
 
     if (Qt5_POSITION_INDEPENDENT_CODE)
-      set_property(TARGET OpenSCADLibInternal PROPERTY POSITION_INDEPENDENT_CODE ON)
+      set_target_properties(OpenSCADLibInternal svg OpenSCADExe PROPERTIES
+	POSITION_INDEPENDENT_CODE ON
+      )
     endif()
 
     if (("${Qt5_VERSION}" VERSION_GREATER_EQUAL "5.4"))
