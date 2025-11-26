@@ -1566,10 +1566,6 @@ if(APPLE AND NOT APPLE_UNIX)
   endif()
 
 elseif(MINGW)
-  # Not sure about this doubling
-  set_target_properties(OpenSCADLibInternal PROPERTIES
-    LINK_FLAGS "-Wl,--stack,${STACKSIZE}"
-  )
   set_target_properties(OpenSCADExe PROPERTIES
     LINK_FLAGS "-Wl,--stack,${STACKSIZE}"
   )
