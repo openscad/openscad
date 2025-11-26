@@ -4,6 +4,7 @@
 #include <ios>
 #include <string>
 #include <map>
+#include <boost/nowide/convert.hpp>
 
 #include "utils/printutils.h"
 #include "utils/findversion.h"

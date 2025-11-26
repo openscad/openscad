@@ -52,13 +52,7 @@ void GLView::setupShader()
   edge_shader = std::make_unique<ShaderUtils::ShaderInfo>(ShaderUtils::ShaderInfo{
     .resource = resource,
     .type = ShaderUtils::ShaderType::EDGE_RENDERING,
-    .uniforms =
-      {
-        {"color_area", glGetUniformLocation(resource.shader_program, "color_area")},
-        {"color_edge", glGetUniformLocation(resource.shader_program, "color_edge")},
-        {"tex1", glGetUniformLocation(resource.shader_program, "tex1")},
-        {"texturefactor", glGetUniformLocation(resource.shader_program, "texturefactor")},
-      },
+    .uniforms = {},
     .attributes =
       {
         {"barycentric", glGetAttribLocation(resource.shader_program, "barycentric")},
@@ -352,7 +346,9 @@ void GLView::showSmallaxes(const Color4f& col)
   auto scale = 90.0;
   glOrtho(-scale * dpi * aspectratio, scale * dpi * aspectratio, -scale * dpi, scale * dpi, -scale * dpi,
           scale * dpi);
-  gluLookAt(0.0, -1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0);
+  gluLookAt(0.0, -1.0, 0.0,  // eye
+            0.0, 0.0, 0.0,   // center
+            0.0, 0.0, 1.0);  // up
 
   glMatrixMode(GL_MODELVIEW);
   glLoadIdentity();
@@ -475,7 +471,7 @@ void GLView::showCrosshairs(const Color4f& col)
 void GLView::showObject(const SelectedObject& obj, const Vector3d& eyedir)
 {
   auto dpi = this->getDPI();
-  auto vd = cam.zoomValue() / 100.0;
+  auto vd = cam.zoomValue() / 200.0;
   switch (obj.type) {
   case SelectionType::SELECTION_POINT:
   case SelectionType::SELECTION_HANDLE: {
@@ -503,7 +499,6 @@ void GLView::showObject(const SelectedObject& obj, const Vector3d& eyedir)
     }
     glEnd();
     if (obj.type != SelectionType::SELECTION_HANDLE) break;
-    glLineWidth(dpi);
     glBegin(GL_LINES);
     for (int i = 0; i < 3; i++) {
       switch (i) {
