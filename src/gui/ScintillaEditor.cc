@@ -1550,19 +1550,21 @@ void ScintillaEditor::onIndicatorReleased(int line, int col, Qt::KeyboardModifie
   }
 }
 
-#ifdef ENABLE_PYTHON
 void ScintillaEditor::onLanguageChanged(int lang)
 {
+#ifdef ENABLE_PYTHON
   if (language == LANG_PYTHON) {
     this->qsci->setLexer(this->pythonLexer);
   } else {
     this->qsci->setLexer(this->lexer);
   }
+#else
+  this->qsci->setLexer(this->lexer);
+#endif
   this->qsci->update();
   // This is needed otherwise the sidebar with line numbers has the wrong size and bg color
   this->setHighlightScheme(GlobalPreferences::inst()->getValue("editor/syntaxhighlight").toString());
 }
-#endif
 
 void ScintillaEditor::setCursorPosition(int line, int col)
 {

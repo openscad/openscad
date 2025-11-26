@@ -549,8 +549,10 @@ bool TabManager::refreshDocument()
         setContentRenderState();  // since last render
         editor->recomputeLanguageActive();
       }
-      if (language == LANG_PYTHON)
+#ifdef ENABLE_PYTHON
+      if (editor->language == LANG_PYTHON)
         par->trust_python_file(editor->filepath.toStdString(), text.toStdString());
+#endif
       file_opened = true;
     }
   }
