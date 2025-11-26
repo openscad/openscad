@@ -1710,7 +1710,22 @@ set(CPACK_PROJECT_CONFIG_FILE "${CMAKE_BINARY_DIR}/openscad_cpack.cmake")
 set(CPACK_THREADS 0)
 
 if(ENABLE_TESTS)
-  find_package(Catch2 3)
+  find_package(Catch2 3 QUIET)
+
+  # Note: Since Catch2 is only used for testing, we install it via Homebrew.
+  # However, we need to temporarily re-enable searching in Homebrew for this to work.
+  if(NOT Catch2_FOUND AND APPLE)
+    set(CMAKE_IGNORE_PREFIX_PATH_BACKUP "${CMAKE_IGNORE_PREFIX_PATH}")
+    set(CMAKE_IGNORE_PREFIX_PATH "")
+    list(APPEND CMAKE_PREFIX_PATH "/opt/homebrew")
+    find_package(Catch2 3 QUIET)
+    set(CMAKE_IGNORE_PREFIX_PATH "${CMAKE_IGNORE_PREFIX_PATH_BACKUP}")
+  endif()
+
+  if(NOT Catch2_FOUND)
+    find_package(Catch2 3)
+  endif()
+
   enable_testing()
 
   if(Catch2_FOUND)
