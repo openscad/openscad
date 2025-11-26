@@ -480,6 +480,12 @@ if (-not $SkipVcpkg) {
 
     Write-Information "  Installing vcpkg dependencies from vcpkg.json..."
     $env:VCPKG_ROOT = $vcpkgDir
+    
+    # Set concurrency for parallel builds (use all available processors)
+    if (-not $env:VCPKG_CONCURRENCY) {
+        $env:VCPKG_CONCURRENCY = $env:NUMBER_OF_PROCESSORS
+        Write-Information "  Set VCPKG_CONCURRENCY to $env:VCPKG_CONCURRENCY"
+    }
 
     # Change to source directory so vcpkg can find vcpkg.json
     Push-Location $SourceDir
