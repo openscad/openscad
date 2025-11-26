@@ -1,15 +1,15 @@
 #include "openscad.h"
 
 #ifndef OPENSCAD_NOGUI
-#include <QtResource>
+#include <QtCore/qresource.h>  // Bring in Q_INIT_RESOURCE
 #endif
 
 // Windows note:  wmain() is called first, translates from UTF-16 to UTF-8, and calls main().
 int main(int argc, char **argv)
 {
-// Note: when compiled directly into an executable, the static assignment causes these to be initialized.
-// But that doesn't get called when included in a library.
-// So we must manually add an entry for every qrc added as a target library.
+  // Note: when compiled directly into an executable, the static assignment causes these to be
+  // initialized. But that doesn't get called when included in a library. So we must manually add an
+  // entry for every qrc added as a target library.
 #ifndef OPENSCAD_NOGUI
   Q_INIT_RESOURCE(common);
   Q_INIT_RESOURCE(icons_chokusen);
