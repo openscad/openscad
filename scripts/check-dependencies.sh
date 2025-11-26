@@ -66,6 +66,15 @@ opencsg_sysver()
   opencsg_sysver_result=$ocsgver
 }
 
+catch2_sysver()
+{
+  catch2path=$1/include/catch2/catch_version_macros.hpp
+  if [ ! -e $catch2path ]; then return; fi
+  catch2maj=`grep "define  *CATCH_VERSION_MAJOR  *[0-9]*" $catch2path | awk '{print $3}'`
+  catch2min=`grep "define  *CATCH_VERSION_MINOR  *[0-9]*" $catch2path | awk '{print $3}'`
+  catch2_sysver_result="$catch2maj.$catch2min"
+}
+
 cgal_sysver()
 {
   cgalpath=$1/include/CGAL/version.h
@@ -330,7 +339,7 @@ curl_sysver()
 cmake_sysver()
 {
   if [ ! -x $1/bin/cmake ]; then return ; fi
-  cmake_sysver_result=`$1/bin/cmake --version | grep cmake | sed s/"[^0-9.]"/" "/g | awk '{ print $1 }'`
+  cmake_sysver_result="$($1/bin/cmake --version | grep -m 1 cmake | sed s/"[^0-9.]"/" "/g | awk '{ print $1 }')"
 }
 
 make_sysver()
@@ -472,8 +481,8 @@ vers_to_int()
 
 version_less_than_or_equal()
 {
-  if [ ! $1 ]; then return; fi
-  if [ ! $2 ]; then return; fi
+  if [ ! "$1" ]; then return; fi
+  if [ ! "$2" ]; then return; fi
   v1=$1
   v2=$2
   vers_to_int $v1
@@ -498,12 +507,12 @@ compare_version()
 {
   debug compare_version $*
   compare_version_result="NotOK"
-  if [ ! $1 ] ; then return; fi
-  if [ ! $2 ] ; then return; fi
-  cvminver=$1
-  cvinstver=$2
+  if [ ! "$1" ] ; then return; fi
+  if [ ! "$2" ] ; then return; fi
+  cvminver="$1"
+  cvinstver="$2"
   cvtmp=
-  version_less_than_or_equal $cvminver $cvinstver
+  version_less_than_or_equal "$cvminver" "$cvinstver"
   if [ $? = 0 ]; then
     cvtmp="OK"
   else
@@ -537,15 +546,15 @@ pretty_print()
   ppstr="%s%-18s"
   pp_format='{printf("'$ppstr$ppstr$ppstr$ppstr$nocolor'\n",$1,$2,$3,$4,$5,$6,$7,$8)}'
   pp_title="$gray depname $gray minimum $gray found $gray OKness"
-  if [ $1 ]; then pp_depname=$1; fi
+  if [ "$1" ]; then pp_depname=$1; fi
   if [ $pp_depname = "title" ]; then
     echo -e $pp_title | awk $pp_format
     return ;
   fi
 
-  if [ $2 ]; then pp_minver=$2; else pp_minver="unknown"; fi
-  if [ $3 ]; then pp_foundver=$3; else pp_foundver="unknown"; fi
-  if [ $4 ]; then pp_okness=$4; else pp_okness="NotOK"; fi
+  if [ "$2" ]; then pp_minver=$2; else pp_minver="unknown"; fi
+  if [ "$3" ]; then pp_foundver=$3; else pp_foundver="unknown"; fi
+  if [ "$4" ]; then pp_okness=$4; else pp_okness="NotOK"; fi
 
   if [ $pp_okness = "NotOK" ]; then
     pp_foundcolor=$purple;
@@ -570,21 +579,21 @@ find_installed_version()
 
   # try to find/parse headers and/or binary output
   # break on the first match. (change the order to change precedence)
-  if [ ! $fsv_tmp ]; then
+  if [ ! "${fsv_tmp}" ]; then
     for syspath in $OPENSCAD_LIBRARIES "/usr/local" "/opt/local" "/usr/pkg" "/usr"; do
-      if [ -e $syspath ]; then
+      if [ -e "${syspath}" ]; then
         # strip hyphens from dependency name
         depnameclean=`echo $depname | sed s/-//g`
-        debug $depnameclean"_sysver" $syspath
-        eval $depnameclean"_sysver" $syspath
+        debug $depnameclean"_sysver" "${syspath}"
+        eval $depnameclean"_sysver" "${syspath}"
         fsv_tmp=`eval echo "$"$depnameclean"_sysver_result"`
-        if [ $fsv_tmp ]; then break; fi
+        if [ "${fsv_tmp}" ]; then break; fi
       fi
     done
   fi
 
   # use pkg-config to search
-  if [ ! $fsv_tmp ]; then
+  if [ ! "${fsv_tmp}" ]; then
     if [ "`command -v pkg-config`" ]; then
       debug plain search failed. trying pkg_config...
       pkg_config_search $depname
@@ -592,8 +601,8 @@ find_installed_version()
     fi
   fi
 
-  if [ $fsv_tmp ]; then
-    find_installed_version_result=$fsv_tmp
+  if [ "${fsv_tmp}" ]; then
+    find_installed_version_result="${fsv_tmp}"
   else
     debug all searches failed. unknown version.
   fi
@@ -661,9 +670,9 @@ checkargs()
 
 main()
 {
-  deps="qt qscintilla2 cgal gmp mpfr boost opencsg glew eigen glib2 fontconfig freetype2 harfbuzz libzip bison flex make double-conversion"
+  deps="qt qscintilla2 cmake catch2 cgal gmp mpfr boost opencsg glew eigen glib2 fontconfig freetype2 harfbuzz libzip bison flex make double-conversion"
   #deps="$deps curl git" # not technically necessary for build
-  #deps="$deps python cmake imagemagick" # only needed for tests
+  #deps="$deps python imagemagick" # only needed for tests
   #deps="cgal"
   pretty_print title
   for depname in $deps; do
@@ -672,9 +681,9 @@ main()
     dep_sysver=$find_installed_version_result
     find_min_version $depname
     dep_minver=$find_min_version_result
-    compare_version $dep_minver $dep_sysver
-    dep_compare=$compare_version_result
-    pretty_print $depname "$dep_minver" "$dep_sysver" $dep_compare
+    compare_version "$dep_minver" "$dep_sysver"
+    dep_compare="$compare_version_result"
+    pretty_print "$depname" "$dep_minver" "$dep_sysver" "$dep_compare"
   done
   check_old_local
   check_misc

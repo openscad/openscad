@@ -4,7 +4,6 @@
 #include <ios>
 #include <string>
 #include <map>
-#include <boost/nowide/convert.hpp>
 
 #include "utils/printutils.h"
 #include "utils/findversion.h"
@@ -202,21 +201,4 @@ void PlatformUtils::ensureStdIO(void)
 #ifdef USE_MIMALLOC
   mi_register_output(&mi_output, nullptr);
 #endif
-}
-
-// wmain gets arguments as wide character strings, which is the way that Windows likes to provide
-// non-ASCII arguments.  Convert them to UTF-8 strings and call the traditional main().
-int wmain(int argc, wchar_t **argv)
-{
-  char *argv8[argc + 1];
-  std::string argvString[argc];
-
-  for (int i = 0; i < argc; i++) {
-    argvString[i] = boost::nowide::narrow(argv[i]);
-    argv8[i] = argvString[i].data();
-  }
-  argv8[argc] = NULL;
-
-  extern int main(int argc, char **argv);
-  return (main(argc, argv8));
 }

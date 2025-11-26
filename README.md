@@ -126,6 +126,7 @@ Follow the instructions for the platform you're compiling on below.
 For the test suite, additional requirements are:
 * Python3 (3.8 -> )
 * [Ghostscript (10.x ->)](https://www.ghostscript.com/index.html)
+* [Catch2 (3.0 ->)](https://github.com/catchorg/Catch2)
 
 ### Getting the source code
 
