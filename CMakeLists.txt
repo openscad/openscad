@@ -1472,7 +1472,7 @@ if(HEADLESS)
   target_compile_definitions(OpenSCADLibInternal PUBLIC OPENSCAD_NOGUI)
   set(ENABLE_GUI_TESTS OFF)
 else()
-  # Every qrc file added to RESOURCE_FILES must have a matching qInitResources_ call in main_wrapper.cc
+  # Every qrc file added to RESOURCE_FILES must have a matching Q_INIT_RESOURCE() call in main_wrapper.cc
   list(APPEND RESOURCE_FILES
     ${RESOURCE_DIR}/common.qrc
     ${RESOURCE_DIR}/icons-chokusen.qrc
