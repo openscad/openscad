@@ -3,12 +3,38 @@ version: 2.1
 orbs:
   macos: circleci/macos@2.5.1
   
-jobs:
-  openscad-mxe-64bit:
+executors:
+  mxe64-executor:
     working_directory: ~/workspace
     docker:
       - image: openscad/mxe-x86_64-gui:latest
     resource_class: large
+  appimage-executor:
+    working_directory: ~/workspace
+    docker:
+      - image: openscad/appimage-x86_64-base:latest
+    resource_class: large
+  wasm-executor:
+    working_directory: ~/workspace
+    docker:
+      - image: openscad/wasm-base-release:latest
+    resource_class: large
+  macos-executor:
+    resource_class: m4pro.medium
+    macos:
+      xcode: 26.1
+    environment:
+      OPENSCAD_LIBRARIES: /Users/distiller/libraries/install
+      PKG_CONFIG_PATH: /Users/distiller/libraries/install/lib/pkgconfig
+      DYLD_LIBRARY_PATH: /Users/distiller/libraries/install/lib
+      DYLD_FRAMEWORK_PATH: /Users/distiller/libraries/install/lib
+  python-executor:
+    docker:
+      - image: cimg/python:latest
+
+jobs:
+  openscad-mxe-64bit:
+    executor: mxe64-executor
     steps:
       - checkout
       - run:
@@ -39,10 +65,7 @@ jobs:
           path: /tmp/out
           destination: 64-bit
   openscad-appimage-64bit:
-    working_directory: ~/workspace
-    docker:
-      - image: openscad/appimage-x86_64-base:latest
-    resource_class: large
+    executor: appimage-executor
     steps:
       - checkout
       - run:
@@ -89,13 +112,10 @@ jobs:
           path: /tmp/out
           destination: 64-bit
   openscad-wasm:
+    executor: wasm-executor
     parameters:
       wasm-type:
         type: string
-    working_directory: ~/workspace
-    docker:
-      - image: openscad/wasm-base-release:latest
-    resource_class: large
     steps:
       - checkout
       - run:
@@ -156,14 +176,7 @@ jobs:
           path: /tmp/out
           destination: wasm
   openscad-macos:
-    resource_class: m4pro.medium
-    macos:
-      xcode: 26.1
-    environment:
-      OPENSCAD_LIBRARIES: /Users/distiller/libraries/install
-      PKG_CONFIG_PATH: /Users/distiller/libraries/install/lib/pkgconfig
-      DYLD_LIBRARY_PATH: /Users/distiller/libraries/install/lib
-      DYLD_FRAMEWORK_PATH: /Users/distiller/libraries/install/lib
+    executor: macos-executor
     steps:
       - macos/install-rosetta
       - checkout
@@ -245,6 +258,53 @@ jobs:
             cp -v OpenSCAD-$VERSIONDATE.dmg* /tmp/out/
       - store_artifacts:
           path: /tmp/out
+  create-tarball:
+    executor: python-executor
+    steps:
+      - checkout
+      - run:
+          name: "Checkout submodules"
+          command: |
+            git submodule sync
+            git submodule update --init
+      - run:
+          name: "Extract version"
+          command: |
+            echo "export OPENSCAD_VERSION=${CIRCLE_TAG#openscad-}" >> $BASH_ENV
+            echo "OpenSCAD version: ${CIRCLE_TAG#openscad-}"
+      - run:
+          name: "Create VERSION.txt file"
+          command: echo "$OPENSCAD_VERSION" > VERSION.txt
+      - run:
+          name: "Create COMMIT.txt file"
+          command: git log -1 --pretty=format:%h > COMMIT.txt
+      - run:
+          name: "Install git-archive-all"
+          command: pip install git-archive-all
+      - run:
+          name: "Create source tarball"
+          command: |
+            mkdir -p /tmp/artifacts
+            git-archive-all --force-submodules --prefix=openscad-${VERSION}/ /tmp/artifacts/openscad-${VERSION}.tar.gz
+            cd /tmp/artifacts
+            sha256sum openscad-${VERSION}.tar.gz > openscad-${VERSION}.tar.gz.sha256
+            sha512sum openscad-${VERSION}.tar.gz > openscad-${VERSION}.tar.gz.sha512
+      - persist_to_workspace:
+          root: /tmp/artifacts
+          paths:
+            - openscad-*.tar.gz
+            - openscad-*.tar.gz.sha256
+            - openscad-*.tar.gz.sha512
+      - store_artifacts:
+          path: /tmp/artifacts
+          destination: source-tarball
+
+filters: &release-filters
+  tags:
+    only: /^openscad-.*$/
+  branches:
+    ignore: /.*/
+
 workflows:
   version: 2
   "CircleCI master build":
@@ -308,6 +368,11 @@ workflows:
               branches:
                   only:
                       - /.*-macos/
+  "CircleCI release build":
+    jobs:
+      - create-tarball:
+          filters: *release-filters
+
   scheduled:
     triggers:
       - schedule:
