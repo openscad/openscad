@@ -61,7 +61,7 @@ if(USE_IMAGE_COMPARE_PY)
       COMMAND "${IMAGE_COMPARE_EXE}" ${IMAGE_COMPARE_OPTS} "${CCSD}/image_compare.py" "--status"
       WORKING_DIRECTORY "${CCSD}" RESULT_VARIABLE ret)
     if(ret AND NOT ret EQUAL 0)
-      message(WARNING "Failed to setup the test suite venv for ${IMAGE_COMPARE_EXE}  See doc/testing.txt for dependency information.")
+      message(WARNING "Failed to setup the test suite venv for ${IMAGE_COMPARE_EXE}  See doc/testing.md for dependency information.")
     else()
       message(STATUS "venv setup for ${IMAGE_COMPARE_EXE}")
     endif()
