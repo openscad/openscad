@@ -242,21 +242,22 @@ find_package(Sanitizers)
 
 # Strict c++17, e.g. no GNU extensions
 if (MSVC) # For MSVC, errors show up when using c++ 17 for build.
-  set_property(TARGET OpenSCADLibInternal PROPERTY CXX_STANDARD 20)
-  set_property(TARGET svg PROPERTY CXX_STANDARD 20)
+  set_target_properties(OpenSCADLibInternal svg OpenSCADExe PROPERTIES
+    CXX_STANDARD 20
+  )
 else()
-  set_property(TARGET OpenSCADLibInternal PROPERTY CXX_STANDARD 17)
-  set_property(TARGET svg PROPERTY CXX_STANDARD 17)
+  set_target_properties(OpenSCADLibInternal svg OpenSCADExe PROPERTIES
+    CXX_STANDARD 17
+  )
 endif()
-set_property(TARGET OpenSCADLibInternal PROPERTY CXX_EXTENSIONS OFF)
-set_property(TARGET OpenSCADLibInternal PROPERTY CXX_STANDARD_REQUIRED ON)
-# Output compilation database (compile_commands.json), so we can e.g. run clang-tidy or other tools separately
-set_property(TARGET OpenSCADLibInternal PROPERTY EXPORT_COMPILE_COMMANDS ON)
-set_property(TARGET OpenSCADLibInternal PROPERTY LINKER_LANGUAGE CXX)
-set_property(TARGET OpenSCADExe PROPERTY EXPORT_COMPILE_COMMANDS ON)
-set_property(TARGET OpenSCADExe PROPERTY LINKER_LANGUAGE CXX)
-set_property(TARGET svg PROPERTY EXPORT_COMPILE_COMMANDS ON)
-set_property(TARGET svg PROPERTY LINKER_LANGUAGE CXX)
+set_target_properties(OpenSCADLibInternal svg OpenSCADExe PROPERTIES
+  # Output compilation database (compile_commands.json), so we can e.g. run clang-tidy or other tools separately
+  EXPORT_COMPILE_COMMANDS ON
+  LINKER_LANGUAGE CXX
+  CXX_EXTENSIONS OFF
+  CXX_STANDARD_REQUIRED ON
+)
+
 # Verbose link step
 if(("${CMAKE_CXX_COMPILER_FRONTEND_VARIANT}" STREQUAL "GNU") OR
    ("${CMAKE_CXX_COMPILER_ID}" MATCHES "AppleClang|Clang|GNU"))
@@ -472,9 +473,9 @@ if (MSVC)
   set(Boost_USE_STATIC_LIBS TRUE)
   find_package(Boost 1.70 REQUIRED COMPONENTS regex program_options)
   message(STATUS "Boost: ${Boost_VERSION}")
-  target_include_directories(OpenSCADLibInternal SYSTEM PUBLIC ${Boost_INCLUDE_DIRS})
-  target_link_libraries(OpenSCADLibInternal PUBLIC ${Boost_LIBRARIES})
-  target_compile_definitions(OpenSCADLibInternal PUBLIC BOOST_DLL_USE_STD_FS)
+  target_compile_definitions(OpenSCADLibInternal PRIVATE BOOST_DLL_USE_STD_FS)
+  target_link_libraries(OpenSCADLibInternal PUBLIC Boost::headers Boost::regex Boost::program_options)
+  target_link_libraries(svg PUBLIC Boost::headers)
 
   find_package(harfbuzz CONFIG REQUIRED)
   find_path(HARFBUZZ_INCLUDE_DIRS harfbuzz)
@@ -520,9 +521,9 @@ else()
 
   find_package(Boost 1.70 REQUIRED QUIET COMPONENTS regex program_options)
   message(STATUS "Boost: ${Boost_VERSION}")
-  target_include_directories(OpenSCADLibInternal SYSTEM PUBLIC ${Boost_INCLUDE_DIRS})
-  target_link_libraries(OpenSCADLibInternal PUBLIC ${Boost_LIBRARIES})
-  target_compile_definitions(OpenSCADLibInternal PUBLIC BOOST_DLL_USE_STD_FS)
+  target_compile_definitions(OpenSCADLibInternal PRIVATE BOOST_DLL_USE_STD_FS)
+  target_link_libraries(OpenSCADLibInternal PUBLIC Boost::headers Boost::regex Boost::program_options)
+  target_link_libraries(svg PUBLIC Boost::headers)
 
   find_package(HarfBuzz 0.9.19 REQUIRED QUIET)
   message(STATUS "Harfbuzz: ${HARFBUZZ_VERSION}")
@@ -598,10 +599,8 @@ target_link_libraries(OpenSCADLibInternal PUBLIC ${FREETYPE_LIBRARIES})
 
 find_package(LibXml2 2.9 REQUIRED QUIET)
 message(STATUS "LibXml2: ${LIBXML2_VERSION_STRING}")
-target_include_directories(OpenSCADLibInternal SYSTEM PUBLIC ${LIBXML2_INCLUDE_DIR})
-target_include_directories(svg SYSTEM PUBLIC ${LIBXML2_INCLUDE_DIR})
-target_link_libraries(OpenSCADLibInternal PUBLIC ${LIBXML2_LIBRARIES})
-target_link_libraries(svg PUBLIC ${LIBXML2_LIBRARIES})
+target_link_libraries(OpenSCADLibInternal PUBLIC LibXml2::LibXml2)
+target_link_libraries(svg PUBLIC LibXml2::LibXml2)
 
 if(ENABLE_PYTHON)
   find_package(Python REQUIRED COMPONENTS Interpreter Development)
@@ -736,14 +735,12 @@ else()
 endif()
 
 if (MXECROSS)
-  target_compile_definitions(OpenSCADLibInternal PUBLIC LIBXML_STATIC STATIC_QT_SVG_PLUGIN)
+  target_compile_definitions(OpenSCADLibInternal PUBLIC STATIC_QT_SVG_PLUGIN)
   target_compile_definitions(OpenSCADLibInternal PUBLIC GLEW_STATIC)
   # Without these the rest of these, get errors when trying to link _OpenSCADExe_.
-  # ld: libsvg.a(libsvg.cc.obj): ... undefined reference to `__imp_xmlFreeTextReader'
   # ld: .../libxml2.a(libxml2_la-xmlIO.o): in function `xmlGzfileRead': ...xmlIO.c:851: undefined reference to `gzread'
   # ld: .../libzip.a(zip_crypto_win.c.obj):zip_crypto_win:(.text+0x1074): undefined reference to `BCryptGenRandom'
   # I guess before separate libraries, something transitively included zlib and that was good enough.
-  target_compile_definitions(svg PUBLIC LIBXML_STATIC)
   find_package(ZLIB REQUIRED)
   target_link_libraries(svg PRIVATE ZLIB::ZLIB)
   target_link_libraries(OpenSCADLibInternal PUBLIC bcrypt)
@@ -787,9 +784,11 @@ if(NOT HEADLESS)
   if("${CMAKE_VERSION}" VERSION_GREATER_EQUAL "3.14")
     set_property(TARGET OpenSCADLibInternal PROPERTY AUTOGEN_ORIGIN_DEPENDS OFF)
   endif()
-  set_property(TARGET OpenSCADLibInternal PROPERTY AUTOMOC ON)
-  set_property(TARGET OpenSCADLibInternal PROPERTY AUTOUIC ON)
-  set_property(TARGET OpenSCADLibInternal PROPERTY AUTORCC ON)
+  set_target_properties(OpenSCADLibInternal PROPERTIES
+    AUTOMOC ON
+    AUTOUIC ON
+    AUTORCC ON
+  )
   set_property(TARGET OpenSCADLibInternal PROPERTY AUTOUIC_OPTIONS --tr q_)
   set_property(TARGET OpenSCADLibInternal PROPERTY AUTORCC_OPTIONS --threshold 10 --compress 9)
 
@@ -809,7 +808,9 @@ if(NOT HEADLESS)
     message(STATUS "Qt6: ${Qt6_VERSION}")
 
     if (Qt6_POSITION_INDEPENDENT_CODE)
-      set_property(TARGET OpenSCADLibInternal PROPERTY POSITION_INDEPENDENT_CODE ON)
+      set_target_properties(OpenSCADLibInternal svg OpenSCADExe PROPERTIES
+	POSITION_INDEPENDENT_CODE ON
+      )
     endif()
 
     find_package(Qt6QScintilla 2.8.0 REQUIRED QUIET)
@@ -834,7 +835,9 @@ if(NOT HEADLESS)
     message(STATUS "Qt5: ${Qt5_VERSION}")
 
     if (Qt5_POSITION_INDEPENDENT_CODE)
-      set_property(TARGET OpenSCADLibInternal PROPERTY POSITION_INDEPENDENT_CODE ON)
+      set_target_properties(OpenSCADLibInternal svg OpenSCADExe PROPERTIES
+	POSITION_INDEPENDENT_CODE ON
+      )
     endif()
 
     if (("${Qt5_VERSION}" VERSION_GREATER_EQUAL "5.4"))
@@ -1472,7 +1475,7 @@ if(HEADLESS)
   target_compile_definitions(OpenSCADLibInternal PUBLIC OPENSCAD_NOGUI)
   set(ENABLE_GUI_TESTS OFF)
 else()
-  # Every qrc file added to RESOURCE_FILES must have a matching qInitResources_ call in main_wrapper.cc
+  # Every qrc file added to RESOURCE_FILES must have a matching Q_INIT_RESOURCE() call in main_wrapper.cc
   list(APPEND RESOURCE_FILES
     ${RESOURCE_DIR}/common.qrc
     ${RESOURCE_DIR}/icons-chokusen.qrc
@@ -1566,10 +1569,6 @@ if(APPLE AND NOT APPLE_UNIX)
   endif()
 
 elseif(MINGW)
-  # Not sure about this doubling
-  set_target_properties(OpenSCADLibInternal PROPERTIES
-    LINK_FLAGS "-Wl,--stack,${STACKSIZE}"
-  )
   set_target_properties(OpenSCADExe PROPERTIES
     LINK_FLAGS "-Wl,--stack,${STACKSIZE}"
   )
@@ -1710,7 +1709,22 @@ set(CPACK_PROJECT_CONFIG_FILE "${CMAKE_BINARY_DIR}/openscad_cpack.cmake")
 set(CPACK_THREADS 0)
 
 if(ENABLE_TESTS)
-  find_package(Catch2 3)
+  find_package(Catch2 3 QUIET)
+
+  # Note: Since Catch2 is only used for testing, we install it via Homebrew.
+  # However, we need to temporarily re-enable searching in Homebrew for this to work.
+  if(NOT Catch2_FOUND AND APPLE)
+    set(CMAKE_IGNORE_PREFIX_PATH_BACKUP "${CMAKE_IGNORE_PREFIX_PATH}")
+    set(CMAKE_IGNORE_PREFIX_PATH "")
+    list(APPEND CMAKE_PREFIX_PATH "/opt/homebrew")
+    find_package(Catch2 3 QUIET)
+    set(CMAKE_IGNORE_PREFIX_PATH "${CMAKE_IGNORE_PREFIX_PATH_BACKUP}")
+  endif()
+
+  if(NOT Catch2_FOUND)
+    find_package(Catch2 3)
+  endif()
+
   enable_testing()
 
   if(Catch2_FOUND)
@@ -1725,7 +1739,7 @@ if(ENABLE_TESTS)
     target_link_libraries(OpenSCADUnitTests PRIVATE Catch2::Catch2WithMain OpenSCADLibInternal svg)
     include(CTest)
     include(Catch)
-    catch_discover_tests(OpenSCADUnitTests)
+    catch_discover_tests(OpenSCADUnitTests ADD_TAGS_AS_LABELS)
   else()
     message(WARNING "Catch2 3 was not found. OpenSCADUnitTests will not be built.")
   endif()

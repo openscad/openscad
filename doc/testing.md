@@ -42,6 +42,24 @@ From your build directory:
 
 Unit tests are built when the binary is built. `ctest` when used for regression also runs the unit tests. The binary `OpenSCADUnitTests` also exists next to `openscad` in the build directory.
 
+### Running Only Some Unit Tests
+
+The most flexible way of filtering unit tests is by running the unit test binary directly and [using its command-line options](https://github.com/catchorg/Catch2/blob/devel/docs/command-line.md). The most common to use is:
+
+```
+./OpenSCADUnitTests "Full test name"
+./OpenSCADUnitTests "*test names containing this phrase*"
+./OpenSCADUnitTests "[having_this_label]"
+```
+
+### Running tests for a given file
+
+If you know there are tests in file `vector_math_test.cc`, then you can run them with:
+
+```
+./OpenSCADUnitTests -# #vector_math_test
+```
+
 ## Adding a New Test
 
 1.  Create a test file at an appropriate location under `tests/data/`.
