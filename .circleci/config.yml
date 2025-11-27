@@ -270,11 +270,11 @@ jobs:
       - run:
           name: "Extract version"
           command: |
-            echo "export VERSION=${CIRCLE_TAG#openscad-}" >> $BASH_ENV
+            echo "export OPENSCAD_VERSION=${CIRCLE_TAG#openscad-}" >> $BASH_ENV
             echo "OpenSCAD version: ${CIRCLE_TAG#openscad-}"
       - run:
           name: "Create VERSION.txt file"
-          command: echo "$VERSION" > VERSION.txt
+          command: echo "$OPENSCAD_VERSION" > VERSION.txt
       - run:
           name: "Create COMMIT.txt file"
           command: git log -1 --pretty=format:%h > COMMIT.txt
@@ -286,11 +286,15 @@ jobs:
           command: |
             mkdir -p /tmp/artifacts
             git-archive-all --force-submodules --prefix=openscad-${VERSION}/ /tmp/artifacts/openscad-${VERSION}.tar.gz
+            cd /tmp/artifacts
+            sha256sum openscad-${VERSION}.tar.gz > openscad-${VERSION}.tar.gz.sha256
+            sha512sum openscad-${VERSION}.tar.gz > openscad-${VERSION}.tar.gz.sha512
       - persist_to_workspace:
           root: /tmp/artifacts
           paths:
             - openscad-*.tar.gz
-            # TODO: checksums
+            - openscad-*.tar.gz.sha256
+            - openscad-*.tar.gz.sha512
       - store_artifacts:
           path: /tmp/artifacts
           destination: source-tarball
@@ -368,17 +372,6 @@ workflows:
     jobs:
       - create-tarball:
           filters: *release-filters
-      # - openscad-macos-release:
-      #     filters: *release-filters
-      # - openscad-mxe-64bit-release:
-      #     filters: *release-filters
-      # - openscad-appimage-64bit-release:
-      #     filters: *release-filters
-      # - openscad-wasm-release:
-      #     filters: *release-filters
-      #     matrix:
-      #       parameters:
-      #         wasm-type: [web, node]
 
   scheduled:
     triggers:
