@@ -30,7 +30,7 @@ executors:
       DYLD_FRAMEWORK_PATH: /Users/distiller/libraries/install/lib
   python-executor:
     docker:
-      - image: cimg/python:latest
+      - image: cimg/python:3.14
 
 jobs:
   openscad-mxe-64bit:
