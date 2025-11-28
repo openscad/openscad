@@ -289,8 +289,10 @@ jobs:
           name: "Create source tarball"
           command: |
             mkdir -p /tmp/artifacts
-            git-archive-all --force-submodules --prefix=openscad-${OPENSCAD_VERSION}/ /tmp/artifacts/openscad-${OPENSCAD_VERSION}.tar.gz
-            cd /tmp/artifacts
+            git-archive-all --force-submodules --prefix=openscad-${OPENSCAD_VERSION}/ /tmp/artifacts/openscad-${OPENSCAD_VERSION}.tar
+            # git-archive-all only archives versioned files. Amending VERSION.txt and COMMIT.txt to the archive
+            tar -rf /tmp/artifacts/openscad-${OPENSCAD_VERSION}.tar --transform "s|^|openscad-${OPENSCAD_VERSION}/|" VERSION.txt COMMIT.txt
+            gzip /tmp/artifacts/openscad-${OPENSCAD_VERSION}.tar
             sha256sum openscad-${OPENSCAD_VERSION}.tar.gz > openscad-${OPENSCAD_VERSION}.tar.gz.sha256
             sha512sum openscad-${OPENSCAD_VERSION}.tar.gz > openscad-${OPENSCAD_VERSION}.tar.gz.sha512
             ls -l openscad-${OPENSCAD_VERSION}.*
