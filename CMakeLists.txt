@@ -1095,7 +1095,6 @@ set(CORE_SOURCES
   src/utils/svg.cc
   src/utils/vector_math.cc
   src/utils/version_check.h
-  src/version.cc
   ${LIB3MF_SOURCES}
   ${PLATFORM_SOURCES}
   ${FLEX_openscad_lexer_OUTPUTS}
