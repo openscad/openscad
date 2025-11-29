@@ -281,7 +281,7 @@ bool with_output(const bool is_stdout, const std::string& filename, const F& f,
   }
   std::ofstream fstream(filename, mode);
   if (!fstream.is_open()) {
-    LOG("Can't open file \"%1$s\" for export", filename);
+    LOG("Can't open file \"%1$s\" for export: %2$s [%3$i], working directory is %4$s", filename, strerror(errno), errno, fs::current_path());
     return false;
   } else {
     f(fstream);
