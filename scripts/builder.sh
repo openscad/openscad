@@ -36,8 +36,6 @@
 # requirements -
 # see http://mxe.cc for required tools (scons, perl, yasm, etc etc etc)
 #
-# todo - can we build 32 bit linux from within 64 bit linux?
-#
 # todo - make linux work
 #
 # todo - detect failure and stop
@@ -181,25 +179,6 @@ get_openscad_source_code()
 	git submodule update --init # MCAD
 }
 
-build_win32()
-{
-	. ./scripts/setenv-mingw-xbuild.sh clean
-	. ./scripts/setenv-mingw-xbuild.sh
-	./scripts/mingw-x-build-dependencies.sh
-	if [ $DOSNAPSHOT ] ; then
-		./scripts/release-common.sh snapshot mingw32 tests
-	else
-		echo "this script can't yet build releases, only snapshots"
-		exit 1
-	fi
-	if [ $? -eq 0 ]; then
-		echo build of win32 stage over
-	else
-		echo build of win32 failed. exiting
-		exit 1
-	fi
-}
-
 build_win64()
 {
 	. ./scripts/setenv-mingw-xbuild.sh clean
@@ -215,18 +194,6 @@ build_win64()
 		echo build of win64 stage over
 	else
 		echo build of win64 failed. exiting
-		exit 1
-	fi
-}
-
-build_lin32()
-{
-	. ./scripts/setenv-unibuild.sh
-	./scripts/uni-build-dependencies.sh
-	if [ $DOSNAPSHOT ] ; then
-		./scripts/release-common.sh snapshot
-	else
-		echo "this script can't yet build releases, only snapshots"
 		exit 1
 	fi
 }
@@ -256,32 +223,6 @@ upload_win_common()
 	else
 		scp -v -l $RATELIMIT $filename openscad@files.openscad.org:$remotepath
 	fi
-}
-
-upload_win32()
-{
-	SUMMARY1="Windows x86-32 Snapshot Installer"
-	SUMMARY2="Windows x86-32 Snapshot Zipfile"
-	SUMMARY3="Windows x86-32 Snapshot Tests"
-	BASEDIR=./mingw32.static/
-	WIN32_PACKAGEFILE1=OpenSCAD-$DATECODE-x86-32-Installer.exe
-	WIN32_PACKAGEFILE2=OpenSCAD-$DATECODE-x86-32.zip
-	WIN32_PACKAGEFILE3=OpenSCAD-Tests-$DATECODE-x86-32.zip
-	upload_win_common "$SUMMARY1" $USERNAME $BASEDIR/$WIN32_PACKAGEFILE1
-	upload_win_common "$SUMMARY2" $USERNAME $BASEDIR/$WIN32_PACKAGEFILE2
-	upload_win_common "$SUMMARY3" $USERNAME $BASEDIR/$WIN32_PACKAGEFILE3
-	export WIN32_PACKAGEFILE1
-	export WIN32_PACKAGEFILE2
-	export WIN32_PACKAGEFILE3
-	WIN32_PACKAGEFILE1_SIZE=`ls -sh $BASEDIR/$WIN32_PACKAGEFILE1 | awk ' {print $1} ';`
-	WIN32_PACKAGEFILE2_SIZE=`ls -sh $BASEDIR/$WIN32_PACKAGEFILE2 | awk ' {print $1} ';`
-	WIN32_PACKAGEFILE3_SIZE=`ls -sh $BASEDIR/$WIN32_PACKAGEFILE3 | awk ' {print $1} ';`
-	WIN32_PACKAGEFILE1_SIZE=`echo "$WIN32_PACKAGEFILE1_SIZE""B"`
-	WIN32_PACKAGEFILE2_SIZE=`echo "$WIN32_PACKAGEFILE2_SIZE""B"`
-	WIN32_PACKAGEFILE3_SIZE=`echo "$WIN32_PACKAGEFILE3_SIZE""B"`
-	export WIN32_PACKAGEFILE1_SIZE
-	export WIN32_PACKAGEFILE2_SIZE
-	export WIN32_PACKAGEFILE3_SIZE
 }
 
 upload_win64()
@@ -372,15 +313,6 @@ update_win_www_download_links()
 	echo "fileinfo['WIN64_SNAPSHOT2_SIZE'] = '$WIN64_PACKAGEFILE2_SIZE'" >> win_snapshot_links.js
 	echo "fileinfo['WIN64_SNAPSHOT3_SIZE'] = '$WIN64_PACKAGEFILE3_SIZE'" >> win_snapshot_links.js
 
-	echo "fileinfo['WIN32_SNAPSHOT1_URL'] = '$BASEURL$WIN32_PACKAGEFILE1'" >> win_snapshot_links.js
-	echo "fileinfo['WIN32_SNAPSHOT2_URL'] = '$BASEURL$WIN32_PACKAGEFILE2'" >> win_snapshot_links.js
-	echo "fileinfo['WIN32_SNAPSHOT3_URL'] = '$BASEURL$WIN32_PACKAGEFILE3'" >> win_snapshot_links.js
-	echo "fileinfo['WIN32_SNAPSHOT1_NAME'] = 'OpenSCAD $DATECODE'" >> win_snapshot_links.js
-	echo "fileinfo['WIN32_SNAPSHOT2_NAME'] = 'OpenSCAD $DATECODE'" >> win_snapshot_links.js
-	echo "fileinfo['WIN32_SNAPSHOT3_NAME'] = 'OpenSCAD Tests $DATECODE'" >> win_snapshot_links.js
-	echo "fileinfo['WIN32_SNAPSHOT1_SIZE'] = '$WIN32_PACKAGEFILE1_SIZE'" >> win_snapshot_links.js
-	echo "fileinfo['WIN32_SNAPSHOT2_SIZE'] = '$WIN32_PACKAGEFILE2_SIZE'" >> win_snapshot_links.js
-	echo "fileinfo['WIN32_SNAPSHOT3_SIZE'] = '$WIN32_PACKAGEFILE3_SIZE'" >> win_snapshot_links.js
 	echo 'modified win_snapshot_links.js'
 
 	PAGER=cat git diff
@@ -426,11 +358,9 @@ main()
 	read_password_from_user
 	get_openscad_source_code
 	if [ $DOBUILD ]; then
-		build_win32
 		build_win64
 	fi
 	if [ $DOUPLOAD ]; then
-		upload_win32
 		upload_win64
 		update_win_www_download_links
 	fi
