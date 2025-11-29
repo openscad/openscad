@@ -1,5 +1,4 @@
 from openscad import *
-import math
 
 def create_polygon(r,n):
     ang=180/n

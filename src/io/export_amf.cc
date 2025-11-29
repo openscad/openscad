@@ -27,6 +27,7 @@
 #include "io/export.h"
 
 #include "geometry/Geometry.h"
+#include "version.h"
 
 #ifdef ENABLE_CGAL
 #include "geometry/cgal/cgal.h"
@@ -43,9 +44,6 @@
 #include <cstddef>
 #include <string>
 #include <vector>
-
-#define QUOTE(x__) #x__
-#define QUOTED(x__) QUOTE(x__)
 
 struct vertex_str {
   std::string x, y, z;
@@ -177,10 +175,7 @@ void export_amf(const std::shared_ptr<const Geometry>& geom, std::ostream& outpu
 
   output << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n"
          << "<amf unit=\"millimeter\">\r\n"
-         << " <metadata type=\"producer\">OpenSCAD " << QUOTED(OPENSCAD_VERSION)
-#ifdef OPENSCAD_COMMIT
-         << " (git " << QUOTED(OPENSCAD_COMMIT) << ")"
-#endif
+         << " <metadata type=\"producer\">OpenSCAD " << openscad_detailedversionnumber
          << "</metadata>\r\n";
 
   objectid = 0;

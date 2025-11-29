@@ -494,7 +494,7 @@ MainWindow::MainWindow(const QStringList& filenames) : rubberBandManager(this)
                          GlobalPreferences::inst()->getValue("advanced/consoleFontSize").toUInt());
 
   const QString version =
-    QString("<b>PythonSCAD %1</b>").arg(QString::fromStdString(openscad_versionnumber));
+    QString("<b>PythonSCAD %1</b>").arg(QString::fromStdString(std::string(openscad_versionnumber)));
   const QString weblink = "<a href=\"https://www.pythonscad.org/\">https://www.pythonscad.org/</a><br>";
 
   consoleOutputRaw(version);
@@ -3112,7 +3112,8 @@ void MainWindow::updateStatusBar(ProgressWidget *progressWidget)
       this->progresswidget = nullptr;
     }
     if (versionLabel == nullptr) {
-      versionLabel = new QLabel("PythonSCAD " + QString::fromStdString(openscad_displayversionnumber));
+      versionLabel =
+        new QLabel("PythonSCAD " + QString::fromStdString(std::string(openscad_displayversionnumber)));
       sb->addPermanentWidget(this->versionLabel);
     }
   } else {

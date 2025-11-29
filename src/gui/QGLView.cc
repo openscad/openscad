@@ -65,6 +65,7 @@
 #include <sstream>
 #include <string>
 #include <vector>
+#include "utils/vector_math.h"
 
 #ifdef ENABLE_OPENCSG
 #include <opencsg.h>
@@ -354,13 +355,13 @@ void QGLView::normalizeAngle(GLdouble& angle)
 
 void QGLView::mouseMoveEvent(QMouseEvent *event)
 {
-  QPoint pt = event->pos();
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
   auto this_mouse = event->globalPosition();
 #else
   auto this_mouse = event->globalPos();
 #endif
   if (measure_state != MEASURE_IDLE) {
+    QPoint pt = event->pos();
     this->shown_obj = findObject(pt.x(), pt.y());
     update();
   }
@@ -420,7 +421,7 @@ void QGLView::mouseMoveEvent(QMouseEvent *event)
       if (modifierIndex == 1) {
         modifierIndex = 3;  // Ctrl + Shift
       } else {
-        modifierIndex = 2;  // Ctrl
+        modifierIndex = 2;
       }
     }
 
@@ -574,7 +575,12 @@ void QGLView::translate(double x, double y, double z, bool relative, bool viewPo
   }
 
   Matrix4d vec;
-  vec << 0, 0, 0, x, 0, 0, 0, y, 0, 0, 0, z, 0, 0, 0, 1;
+  // clang-format off
+  vec << 0, 0, 0, x,
+         0, 0, 0, y,
+         0, 0, 0, z,
+         0, 0, 0, 1;
+  // clang-format on
   tm = tm * vec;
   double f = relative ? 1 : 0;
   cam.object_trans.x() = f * cam.object_trans.x() + tm(0, 3);

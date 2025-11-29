@@ -36,7 +36,7 @@ LaunchingScreen::LaunchingScreen(QWidget *parent) : QDialog(parent)
     "QDialog {background-image:url(':/icons/background.png')} QPushButton {color:white;}");
 
   this->versionNumberLabel->setText("PythonSCAD " +
-                                    QString::fromStdString(openscad_displayversionnumber));
+                                    QString::fromStdString(std::string(openscad_displayversionnumber)));
 
   QStringList recentFiles = UIUtils::recentFiles();
   for (const auto& recentFile : recentFiles) {

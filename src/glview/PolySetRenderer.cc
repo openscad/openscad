@@ -45,12 +45,12 @@
 #include "geometry/PolySet.h"
 #include "geometry/PolySetUtils.h"
 #include "glview/ColorMap.h"
-#include "glview/cgal/CGALRenderUtils.h"
 #include "glview/VBORenderer.h"
 #include "glview/Renderer.h"
 #include "glview/ShaderUtils.h"
 #include "glview/VBOBuilder.h"
 #include "glview/VertexState.h"
+#include "utils/vector_math.h"
 
 #ifdef ENABLE_CGAL
 #include "geometry/cgal/CGALNefGeometry.h"
@@ -304,73 +304,62 @@ std::shared_ptr<SelectedObject> PolySetRenderer::findModelObject(const Vector3d&
                                                                  const Vector3d& far_pt, int /*mouse_x*/,
                                                                  int /*mouse_y*/, double tolerance)
 {
-  double dist_near;
-  double dist_nearest = std::numeric_limits<double>::max();
+  double dist_nearest = NAN;
   Vector3d pt1_nearest;
   Vector3d pt2_nearest;
-  Vector3d pt3_nearest;
-  int ind_nearest = -1;
-  std::vector<Vector3d> pts_nearest;
-  const auto find_nearest_point = [&](const std::vector<Vector3d>& vertices) {
-    for (int i = 0; i < vertices.size(); i++) {
-      const Vector3d& pt = vertices[i];
+
+  // This only considers vertices near the line containing near_pt and far_pt, and chooses either the
+  // first one it iterates past which is on the near side of `near_pt` (due to clamping of dist_near) or
+  // the one with the closest tangent intersection to `near_pt`, if none are on the near side.
+  for (const auto& ps : this->polysets_) {
+    for (const auto& pt : ps->vertices) {
+      double dist_near;
       SelectedObject ruler = calculateLinePointDistance(near_pt, far_pt, pt, dist_near);
-      double dist_pt = (ruler.pt[0] - ruler.pt[1]).norm();
-      if (dist_pt < tolerance && dist_near < dist_nearest) {
-        dist_nearest = dist_near;
-        pt1_nearest = pt;
-        ind_nearest = i;
-      }
-    }
-  };
-  for (const std::shared_ptr<const PolySet>& ps : this->polysets_) {
-    find_nearest_point(ps->vertices);
-  }
-  for (const auto& [polygon, ps] : this->polygons_) {
-    find_nearest_point(ps->vertices);
-  }
-  if (dist_nearest < std::numeric_limits<double>::max()) {
-    SelectedObject obj = {
-      .type = SelectionType::SELECTION_POINT,
-    };
-    obj.pt.push_back(pt1_nearest);
-    obj.ind = ind_nearest;
-
-    return std::make_shared<SelectedObject>(obj);
-  }
-
-  const auto find_nearest_line = [&](const std::vector<Vector3d>& vertices,
-                                     const PolygonIndices& indices) {
-    for (const auto& poly : indices) {
-      for (int i = 0; i < poly.size(); i++) {
-        int ind1 = poly[i];
-        int ind2 = poly[(i + 1) % poly.size()];
-        double dist_lat;
-        double dist_norm = fabs(calculateLineLineDistance(
-          vertices[ind1], vertices[ind2], near_pt, far_pt, dist_lat));  // TODO naehcstgelegene line
-        if (dist_lat >= 0 && dist_lat <= 1 && dist_norm < tolerance) {
-          dist_nearest = dist_lat;
-          pt1_nearest = vertices[ind1];
-          pt2_nearest = vertices[ind2];
+      const double dist_pt = (ruler.pt[0] - ruler.pt[1]).norm();
+      if (dist_pt < tolerance) {
+        if (isnan(dist_nearest) || dist_near < dist_nearest) {
+          dist_nearest = dist_near;
+          pt1_nearest = pt;
         }
       }
     }
-  };
+  }
+  if (!isnan(dist_nearest)) {
+    // We found an acceptable vertex.
+    const SelectedObject obj = {.type = SelectionType::SELECTION_POINT, .pt = {pt1_nearest}};
+    return std::make_shared<SelectedObject>(obj);
+  }
   for (const std::shared_ptr<const PolySet>& ps : this->polysets_) {
-    find_nearest_line(ps->vertices, ps->indices);
+    for (const auto& pol : ps->indices) {
+      const int n = pol.size();
+      for (int i = 0; i < n; i++) {
+        const int ind1 = pol[i];
+        const int ind2 = pol[(i + 1) % n];
+        double parametric_t;
+        const double dist_norm = std::fabs(calculateLineLineDistance(
+          ps->vertices[ind1], ps->vertices[ind2], near_pt, far_pt, parametric_t));
+        if (parametric_t >= 0 && parametric_t <= 1 && dist_norm < tolerance) {
+          // The closest point falls on the line segment from
+          // ps->vertices[ind1] to ps->vertices[ind2],
+          // and it's less than tolerance away.
+          dist_nearest = parametric_t;
+          pt1_nearest = ps->vertices[ind1];
+          pt2_nearest = ps->vertices[ind2];
+          // I don't know why we don't break out of the top for loop.
+          // Is there anything special about picking the last answer instead of the first?
+        }
+      }
+    }
   }
-  for (const auto& [polygon, ps] : this->polygons_) {
-    find_nearest_line(ps->vertices, ps->indices);
-  }
-  if (dist_nearest < std::numeric_limits<double>::max()) {
-    SelectedObject obj = {
-      .type = SelectionType::SELECTION_SEGMENT,
-    };
-    obj.pt.push_back(pt1_nearest);
-    obj.pt.push_back(pt2_nearest);
+
+  if (!isnan(dist_nearest)) {
+    // We found an acceptable line segment.
+    const SelectedObject obj = {.type = SelectionType::SELECTION_SEGMENT,
+                                .pt = {pt1_nearest, pt2_nearest}};
     return std::make_shared<SelectedObject>(obj);
   }
 
+  std::vector<Vector3d> pts_nearest;
   const auto find_nearest_face = [&](const std::vector<Vector3d>& vertices,
                                      const PolygonIndices& indices) {
     Vector3d v1 = near_pt - far_pt;
@@ -410,7 +399,7 @@ std::shared_ptr<SelectedObject> PolySetRenderer::findModelObject(const Vector3d&
     SelectedObject obj = {
       .type = SelectionType::SELECTION_FACE,
     };
-    obj.pt = pts_nearest;
+    obj.pt = {pts_nearest};
     return std::make_shared<SelectedObject>(obj);
   }
   return nullptr;

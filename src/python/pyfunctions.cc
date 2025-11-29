@@ -2431,7 +2431,7 @@ PyObject *python_oo_color(PyObject *obj, PyObject *args, PyObject *kwargs)
 
 typedef std::vector<int> intList;
 
-PyObject *python_mesh_core(PyObject *obj, bool tessellate)
+PyObject *python_mesh_core(PyObject *obj, bool tessellate, bool color)
 {
   PyObject *dummydict;
   std::shared_ptr<AbstractNode> child = PyOpenSCADObjectToNodeMulti(obj, &dummydict);
@@ -2479,12 +2479,23 @@ PyObject *python_mesh_core(PyObject *obj, bool tessellate)
     PyObject *pyth_outlines = PyList_New(outlines.size());
     for (unsigned int i = 0; i < outlines.size(); i++) {
       const Outline2d& outline = outlines[i];
-      PyObject *pyth_outline = PyList_New(outline.vertices.size());
+      int items = outline.vertices.size();
+      if (color) items++;
+      PyObject *pyth_outline = PyList_New(items);
+      int ind = 0;
+      if (color) {
+        PyObject *pyth_col = PyList_New(4);
+        PyList_SetItem(pyth_col, 0, PyFloat_FromDouble(outline.color.r()));
+        PyList_SetItem(pyth_col, 1, PyFloat_FromDouble(outline.color.g()));
+        PyList_SetItem(pyth_col, 2, PyFloat_FromDouble(outline.color.b()));
+        PyList_SetItem(pyth_col, 3, PyFloat_FromDouble(outline.color.a()));
+        PyList_SetItem(pyth_outline, ind++, pyth_col);
+      }
       for (unsigned int j = 0; j < outline.vertices.size(); j++) {
         Vector2d pt = outline.vertices[j];
         PyObject *pyth_pt = PyList_New(2);
         for (int k = 0; k < 2; k++) PyList_SetItem(pyth_pt, k, PyFloat_FromDouble(pt[k]));
-        PyList_SetItem(pyth_outline, j, pyth_pt);
+        PyList_SetItem(pyth_outline, ind++, pyth_pt);
       }
       PyList_SetItem(pyth_outlines, i, pyth_outline);
     }
@@ -2495,25 +2506,27 @@ PyObject *python_mesh_core(PyObject *obj, bool tessellate)
 
 PyObject *python_mesh(PyObject *self, PyObject *args, PyObject *kwargs)
 {
-  char *kwlist[] = {"obj", "triangulate", NULL};
+  char *kwlist[] = {"obj", "triangulate", "color", NULL};
   PyObject *obj = NULL;
   PyObject *tess = NULL;
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O|O", kwlist, &obj, &tess)) {
+  PyObject *color = Py_False;
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O|OO", kwlist, &obj, &tess, &color)) {
     PyErr_SetString(PyExc_TypeError, "error during parsing\n");
     return NULL;
   }
-  return python_mesh_core(obj, tess == Py_True);
+  return python_mesh_core(obj, tess == Py_True, color == Py_True);
 }
 
 PyObject *python_oo_mesh(PyObject *obj, PyObject *args, PyObject *kwargs)
 {
-  char *kwlist[] = {"triangulate", NULL};
+  char *kwlist[] = {"triangulate", "color", NULL};
   PyObject *tess = NULL;
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|O", kwlist, &tess)) {
+  PyObject *color = Py_False;
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|OO", kwlist, &tess, &color)) {
     PyErr_SetString(PyExc_TypeError, "error during parsing\n");
     return NULL;
   }
-  return python_mesh_core(obj, tess == Py_True);
+  return python_mesh_core(obj, tess == Py_True, color == Py_True);
 }
 
 PyObject *python_bbox_core(PyObject *obj)

@@ -26,6 +26,7 @@
 
 #include "geometry/linalg.h"
 #include "gui/Measurement.h"
+#include "utils/vector_math.h"
 
 #include <QPoint>
 #include <QString>
@@ -122,51 +123,91 @@ std::vector<QString> Measurement::statemachine(QPoint mouse)
     break;
   case MEASURE_DIST2:
     if (qglview->selected_obj.size() == 2) {
-      double lat;
       QString extra;
       ruler.type = SelectionType::SELECTION_INVALID;
       obj1 = qglview->selected_obj[0];
       obj2 = qglview->selected_obj[1];
       if (obj1.type == SelectionType::SELECTION_POINT && obj2.type == SelectionType::SELECTION_POINT) {
-        ruler = {
-          .type = SelectionType::SELECTION_SEGMENT,
-        };
-        ruler.pt.push_back(obj1.pt[0]);
-        ruler.pt.push_back(obj2.pt[0]);
-      }
-      if (obj1.type == SelectionType::SELECTION_POINT && obj2.type == SelectionType::SELECTION_SEGMENT) {
-        ruler = calculateLinePointDistance(obj2.pt[0], obj2.pt[1], obj1.pt[0], lat);
-      }
-      if (obj1.type == SelectionType::SELECTION_SEGMENT && obj2.type == SelectionType::SELECTION_POINT) {
-        ruler = calculateLinePointDistance(obj1.pt[0], obj1.pt[1], obj2.pt[0], lat);
-      }
-      if (obj1.type == SelectionType::SELECTION_SEGMENT &&
-          obj2.type == SelectionType::SELECTION_SEGMENT) {
+        const auto diff = obj2.pt[0] - obj1.pt[0];
+        dist = diff.norm();
+        ret.push_back(QStringLiteral("dx: %1  dy: %2  dz: %3").arg(diff[0]).arg(diff[1]).arg(diff[2]));
+      } else if ((obj1.type == SelectionType::SELECTION_POINT &&
+                  obj2.type == SelectionType::SELECTION_SEGMENT) ||
+                 (obj2.type == SelectionType::SELECTION_POINT &&
+                  obj1.type == SelectionType::SELECTION_SEGMENT)) {
+        SelectedObject pt = obj1.type == SelectionType::SELECTION_POINT ? obj1 : obj2;
+        SelectedObject ln = obj1.type == SelectionType::SELECTION_SEGMENT ? obj1 : obj2;
+        const Eigen::Vector3d& P = pt.pt[0];
+        const Eigen::Vector3d& A = ln.pt[0];
+        const Eigen::Vector3d& B = ln.pt[1];
+
+        // 1. Line direction vector D
+        Eigen::Vector3d D = B - A;
+
+        // 2. Vector from A to P (V)
+        Eigen::Vector3d V = P - A;
+
+        // Calculate components for projection
+        double D_squared_norm = D.squaredNorm();
+
+        if (D_squared_norm > 1e-6) {  // Check if line is not a single point
+          // 3. Scalar projection parameter 't'
+          double t = V.dot(D) / D_squared_norm;
+
+          // 4. Projection vector V_proj (from A to the closest point C on the line)
+          Eigen::Vector3d V_proj = t * D;
+
+          // 5. Shortest distance vector V_dist (P - C)
+          Eigen::Vector3d V_dist = V - V_proj;
+          ret.push_back(
+            QStringLiteral("Perpendicular distance to (infinite) line: dx: %1  dy: %2  dz: %3")
+              .arg(V_dist.x())
+              .arg(V_dist.y())
+              .arg(V_dist.z()));
+
+          // perp_dist = V_dist.norm();
+        }
+
+        double dont_care;
+        SelectedObject ruler = calculateLinePointDistance(A, B, P, dont_care);
+        dist = (ruler.pt[0] - ruler.pt[1]).norm();
+        auto diff = B - P;
+        ret.push_back(QStringLiteral("Point to Line Endpoint2: dx: %1  dy: %2  dz: %3")
+                        .arg(diff[0])
+                        .arg(diff[1])
+                        .arg(diff[2]));
+        auto diff2 = A - P;
+        ret.push_back(QStringLiteral("Point to Line Endpoint1: dx: %1  dy: %2  dz: %3")
+                        .arg(diff2[0])
+                        .arg(diff2[1])
+                        .arg(diff2[2]));
+
+      } else if (obj1.type == SelectionType::SELECTION_SEGMENT &&
+                 obj2.type == SelectionType::SELECTION_SEGMENT) {
         ruler = calculateSegSegDistance(obj1.pt[0], obj1.pt[1], obj2.pt[0], obj2.pt[1]);
-      }
-      if (obj1.type == SelectionType::SELECTION_POINT && obj2.type == SelectionType::SELECTION_FACE) {
+        dist = (ruler.pt[0] - ruler.pt[1]).norm();
+      } else if (obj1.type == SelectionType::SELECTION_POINT &&
+                 obj2.type == SelectionType::SELECTION_FACE) {
         ruler = calculatePointFaceDistance(obj1.pt[0], obj2.pt[0], obj2.pt[1], obj2.pt[2]);
-      }
-      if (obj1.type == SelectionType::SELECTION_FACE && obj2.type == SelectionType::SELECTION_POINT) {
+      } else if (obj1.type == SelectionType::SELECTION_FACE &&
+                 obj2.type == SelectionType::SELECTION_POINT) {
         ruler = calculatePointFaceDistance(obj2.pt[0], obj1.pt[0], obj1.pt[1], obj1.pt[2]);
-      }
-      if (obj1.type == SelectionType::SELECTION_FACE && obj2.type == SelectionType::SELECTION_FACE) {
+      } else if (obj1.type == SelectionType::SELECTION_FACE &&
+                 obj2.type == SelectionType::SELECTION_FACE) {
         Vector3d n1 = (obj1.pt[1] - obj1.pt[0]).cross(obj1.pt[2] - obj1.pt[0]).normalized();
         Vector3d n2 = (obj2.pt[1] - obj2.pt[0]).cross(obj2.pt[2] - obj2.pt[0]).normalized();
         if (fabs(n1.dot(n2)) < 0.999) {
           ret.push_back(QString("Faces are not parallel"));
           break;
+        } else {
+          ret.push_back("Only coded to handle lines and points; sorry");
         }
-        ruler = calculatePointFaceDistance(obj1.pt[0], obj2.pt[0], obj2.pt[1], obj2.pt[2]);
       }
-
-      if (ruler.type != SelectionType::SELECTION_INVALID) {
-        dist = (ruler.pt[1] - ruler.pt[0]).norm();
-        qglview->selected_obj.push_back(ruler);
-        ret.push_back(QString("Distance is %1").arg(fabs(dist)));
-        break;
+      if (std::isnan(dist)) {
+        ret.push_back("Got Not-a-Number when calculating distance; sorry");
+        return ret;
       }
-      stopMeasure();
+      ret.push_back(QStringLiteral("Distance is %1").arg(std::fabs(dist)));
     }
     break;
   case MEASURE_ANG1:
@@ -233,7 +274,6 @@ std::vector<QString> Measurement::statemachine(QPoint mouse)
         return ret;
       }
       ret.push_back(QStringLiteral("Angle is %1 Degrees").arg(ang));
-      return ret;
     }
     break;
   }

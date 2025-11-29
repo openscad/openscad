@@ -205,11 +205,13 @@ Follow the instructions for the platform you're compiling on below.
 * [libzip (0.10.1 -> )](https://libzip.org/)
 * [Bison (2.4 -> )](https://www.gnu.org/software/bison/)
 * [Flex (2.5.35 -> )](http://flex.sourceforge.net/)
-* [pkg-config (0.26 ->
-  )](https://www.freedesktop.org/wiki/Software/pkg-config/)
-* [double-conversion (2.0.1 ->
-  )](https://github.com/google/double-conversion/)
-* [python (3.8 -> )](https://github.com/python/cpython/)
+* [pkg-config (0.26 -> )](https://www.freedesktop.org/wiki/Software/pkg-config/)
+* [double-conversion (2.0.1 -> )](https://github.com/google/double-conversion/)
+
+For the test suite, additional requirements are:
+* Python3 (3.8 -> )
+* [Ghostscript (10.x ->)](https://www.ghostscript.com/index.html)
+* [Catch2 (3.0 ->)](https://github.com/catchorg/Catch2)
 
 ### Getting the source code
 

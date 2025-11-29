@@ -14,9 +14,10 @@ public:
   AboutDialog(QWidget *)
   {
     setupUi(this);
-    this->setWindowTitle(QString(_("About PythonSCAD")) + " " + openscad_shortversionnumber.c_str());
+    this->setWindowTitle(QString(_("About PythonSCAD")) + " " +
+                         QString::fromStdString(std::string(openscad_shortversionnumber)));
     QString tmp = this->aboutText->toHtml();
-    tmp.replace("__VERSION__", openscad_detailedversionnumber.c_str());
+    tmp.replace("__VERSION__", QString::fromStdString(std::string(openscad_detailedversionnumber)));
     this->aboutText->setHtml(tmp);
   }
 

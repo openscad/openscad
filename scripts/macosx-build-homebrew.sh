@@ -49,13 +49,13 @@ then
 fi
 $TAP tap openscad/homebrew-tap
 
-for formula in pkg-config boost eigen cgal glew glib opencsg freetype libzip libxml2 fontconfig harfbuzz lib3mf double-conversion imagemagick ccache ghostscript tbb; do
+for formula in pkg-config boost eigen cgal glew glib opencsg freetype libzip libxml2 fontconfig harfbuzz lib3mf double-conversion imagemagick ccache ghostscript tbb catch2; do
   log "Installing formula $formula"
   brew ls --versions $formula
   time brew install $formula
 done
 
-if [[ $USE_QT6 == 1 ]]; then 
+if [[ $USE_QT6 == 1 ]]; then
   for formula in qt qscintilla2; do
     log "Installing formula $formula"
     brew ls --versions $formula

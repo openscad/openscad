@@ -21,7 +21,7 @@ All pull requests must pass `./scripts/beautify.sh --check` . In rare cases beau
     unzip build/artifacts/1/beautify-patch/beautify-patch.zip
     git apply beautify.patch
 
-This can be done automatically using `./scripts/hard_beautify.sh`, which also functions as a git hook. 
+This can be done automatically using `./scripts/hard_beautify.sh`, which also functions as a git hook.
 
 ## pre-commit
 
@@ -47,7 +47,7 @@ though.
 
 # Regression Tests
 
-See `testing.txt`
+See `testing.md`
 
 # How to add new function/module
 
