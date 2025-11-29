@@ -25,6 +25,7 @@
  */
 
 #include "openscad.h"
+#include "version.h"
 
 #ifdef _WIN32
 #include <io.h>
@@ -132,7 +133,7 @@ public:
   {
     set_output_handler(&Echostream::output, nullptr, this);
   }
-  Echostream(const std::string& filename) : fstream(filename), stream(fstream)
+  Echostream(const std::string& filename) : fstream(std::filesystem::u8path(filename)), stream(fstream)
   {
     set_output_handler(&Echostream::output, nullptr, this);
   }
@@ -175,9 +176,6 @@ struct CommandLine {
 };
 
 namespace {
-
-#define STRINGIFY(x) #x
-#define TOSTRING(x) STRINGIFY(x)
 
 #ifndef OPENSCAD_NOGUI
 bool useGUI()
@@ -235,7 +233,7 @@ void help_export(const std::array<const Settings::SettingsEntryBase *, size>& op
 
 void help_export()
 {
-  LOG("OpenSCAD version %1$s\n", TOSTRING(OPENSCAD_VERSION));
+  LOG("OpenSCAD version %1$s\n", openscad_versionnumber);
   LOG("List of settings that can be given using the -O option using the");
   LOG("format '<section>/<key>=value', e.g.:");
   LOG("openscad -O export-pdf/paper-size=a6 -O export-pdf/show-grid=false\n");
@@ -247,7 +245,7 @@ void help_export()
 
 void version()
 {
-  LOG("OpenSCAD version %1$s", TOSTRING(OPENSCAD_VERSION));
+  LOG("OpenSCAD version %1$s", openscad_versionnumber);
   exit(0);
 }
 
@@ -279,7 +277,7 @@ bool with_output(const bool is_stdout, const std::string& filename, const F& f,
     f(std::cout);
     return true;
   }
-  std::ofstream fstream(filename, mode);
+  std::ofstream fstream(std::filesystem::u8path(filename), mode);
   if (!fstream.is_open()) {
     LOG("Can't open file \"%1$s\" for export: %2$s [%3$i], working directory is %4$s", filename,
         strerror(errno), errno, fs::current_path());
@@ -582,7 +580,7 @@ int cmdline(const CommandLine& cmd)
   if (cmd.is_stdin) {
     text = std::string((std::istreambuf_iterator<char>(std::cin)), std::istreambuf_iterator<char>());
   } else {
-    std::ifstream ifs(cmd.filename);
+    std::ifstream ifs(std::filesystem::u8path(cmd.filename));
     if (!ifs.is_open()) {
       LOG("Can't open input file '%1$s'!\n", cmd.filename);
       return 1;
@@ -795,7 +793,7 @@ struct CommaSeparatedVector {
 };
 
 // OpenSCAD
-int main(int argc, char **argv)
+int openscad_main(int argc, char **argv)
 {
 #if defined(ENABLE_CGAL) && defined(USE_MIMALLOC)
   // call init_mimalloc before any GMP variables are initialized. (defined in src/openscad_mimalloc.h)

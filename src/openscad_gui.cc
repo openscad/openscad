@@ -25,6 +25,7 @@
  */
 
 #include "openscad_gui.h"
+#include <QtCore/qstringliteral.h>
 #include <memory>
 #include <filesystem>
 #include <string>
@@ -51,6 +52,7 @@
 #include "geometry/Geometry.h"
 #include "gui/AppleEvents.h"
 #include "gui/input/InputDriverManager.h"
+#include "version.h"
 #ifdef ENABLE_HIDAPI
 #include "gui/input/HidApiInputDriver.h"
 #endif
@@ -84,9 +86,6 @@ Q_DECLARE_METATYPE(std::shared_ptr<const Geometry>);
 
 extern std::string arg_colorscheme;
 
-#define STRINGIFY(x) #x
-#define TOSTRING(x) STRINGIFY(x)
-
 namespace {
 
 // Check if running with light or dark theme. This should really just be used
@@ -117,8 +116,8 @@ namespace {
 QString assemblePath(const std::filesystem::path& absoluteBaseDir, const std::string& fileName)
 {
   if (fileName.empty()) return "";
-  auto qsDir = QString::fromLocal8Bit(absoluteBaseDir.generic_string().c_str());
-  auto qsFile = QString::fromLocal8Bit(fileName.c_str());
+  auto qsDir = QString::fromStdString(absoluteBaseDir.generic_string());
+  auto qsFile = QString::fromStdString(fileName);
   // if qsfile is absolute, dir is ignored. (see documentation of QFileInfo)
   const QFileInfo fileInfo(qsDir, qsFile);
   return fileInfo.absoluteFilePath();
@@ -179,7 +178,7 @@ int gui(std::vector<std::string>& inputFiles, const std::filesystem::path& origi
   QCoreApplication::setOrganizationName("OpenSCAD");
   QCoreApplication::setOrganizationDomain("openscad.org");
   QCoreApplication::setApplicationName("OpenSCAD");
-  QCoreApplication::setApplicationVersion(TOSTRING(OPENSCAD_VERSION));
+  QCoreApplication::setApplicationVersion(QString::fromStdString(std::string(openscad_versionnumber)));
   QGuiApplication::setApplicationDisplayName("OpenSCAD");
   QGuiApplication::setDesktopFileName(DESKTOP_FILENAME);
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
