@@ -345,7 +345,7 @@ MainWindow::MainWindow(const QStringList& filenames) : rubberBandManager(this)
                          GlobalPreferences::inst()->getValue("advanced/consoleFontSize").toUInt());
 
   const QString version =
-    QString("<b>OpenSCAD %1</b>").arg(QString::fromStdString(openscad_versionnumber));
+    QString("<b>OpenSCAD %1</b>").arg(QString::fromStdString(std::string(openscad_versionnumber)));
   const QString weblink = "<a href=\"https://www.openscad.org/\">https://www.openscad.org/</a><br>";
 
   consoleOutputRaw(version);
@@ -2058,9 +2058,7 @@ bool MainWindow::trust_python_file(const std::string& file, const std::string& c
   }
 
   if (settings.contains(setting_key)) {
-    QString str = settings.value(setting_key).toString();
-    QByteArray ba = str.toLocal8Bit();
-    ref_hash = std::string(ba.data());
+    ref_hash = settings.value(setting_key).toString().toStdString();
   }
 
   if (act_hash == ref_hash) {
@@ -2096,19 +2094,15 @@ std::shared_ptr<SourceFile> MainWindow::parseDocument(EditorInterface *editor)
 
   auto document = editor->toPlainText();
   auto fulltext = std::string(document.toUtf8().constData()) + "\n\x03\n" + commandline_commands;
-  auto fnameba = editor->filepath.toLocal8Bit();
 
-  const char *fname = editor->filepath.isEmpty() ? "" : fnameba.constData();
+  const std::string fname = editor->filepath.isEmpty() ? "" : editor->filepath.toStdString();
 #ifdef ENABLE_PYTHON
   this->python_active = false;
-  if (fname != NULL) {
-    if (boost::algorithm::ends_with(fname, ".py")) {
-      std::string content = std::string(this->lastCompiledDoc.toUtf8().constData());
-      if (Feature::ExperimentalPythonEngine.is_enabled() &&
-          trust_python_file(std::string(fname), content))
-        this->python_active = true;
-      else LOG(message_group::Warning, Location::NONE, "", "Python is not enabled");
-    }
+  if (boost::algorithm::ends_with(fname, ".py")) {
+    std::string content = std::string(this->lastCompiledDoc.toUtf8().constData());
+    if (Feature::ExperimentalPythonEngine.is_enabled() && trust_python_file(fname, content))
+      this->python_active = true;
+    else LOG(message_group::Warning, Location::NONE, "", "Python is not enabled");
   }
 
   if (this->python_active) {
@@ -2692,7 +2686,8 @@ void MainWindow::updateStatusBar(ProgressWidget *progressWidget)
       this->progresswidget = nullptr;
     }
     if (versionLabel == nullptr) {
-      versionLabel = new QLabel("OpenSCAD " + QString::fromStdString(openscad_displayversionnumber));
+      versionLabel =
+        new QLabel("OpenSCAD " + QString::fromStdString(std::string(openscad_displayversionnumber)));
       sb->addPermanentWidget(this->versionLabel);
     }
   } else {
@@ -2944,9 +2939,9 @@ void MainWindow::actionExportFileFormat(int fmt)
       return;
     }
 
-    std::ofstream fstream(csg_filename.toLocal8Bit());
+    std::ofstream fstream(std::filesystem::u8path(csg_filename.toStdString()));
     if (!fstream.is_open()) {
-      LOG("Can't open file \"%1$s\" for export", csg_filename.toLocal8Bit().constData());
+      LOG("Can't open file \"%1$s\" for export", csg_filename.toStdString());
     } else {
       fstream << this->tree.getString(*this->rootNode, "\t") << "\n";
       fstream.close();
@@ -2963,14 +2958,14 @@ void MainWindow::actionExportFileFormat(int fmt)
     auto img_filename =
       QFileDialog::getSaveFileName(this, _("Export Image"), exportPath(suffix), _("PNG Files (*.png)"));
     if (!img_filename.isEmpty()) {
-      const bool saveResult = qglview->save(img_filename.toLocal8Bit().constData());
+      const bool saveResult = qglview->save(img_filename.toStdString().c_str());
       if (saveResult) {
         this->exportPaths[suffix] = img_filename;
         setCurrentOutput();
         fileExportedMessage("PNG", img_filename);
         clearCurrentOutput();
       } else {
-        LOG("Can't open file \"%1$s\" for export image", img_filename.toLocal8Bit().constData());
+        LOG("Can't open file \"%1$s\" for export image", img_filename.toStdString());
       }
     }
   } break;

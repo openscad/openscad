@@ -9,7 +9,8 @@
  */
 
 #include "SparkleAutoUpdater.h"
-#include "PlatformUtils.h"
+#include "platform/PlatformUtils.h"
+#include "version.h"
 
 #include <Cocoa/Cocoa.h>
 #include <Sparkle/Sparkle.h>
@@ -71,13 +72,10 @@ QString SparkleAutoUpdater::lastUpdateCheckDate()
   return QString::fromUtf8([datestring UTF8String]);
 }
 
-#define STRINGIFY(x) #x
-#define TOSTRING(x) STRINGIFY(x)
-
 void SparkleAutoUpdater::updateFeed()
 {
   NSString *urlstring = [NSString stringWithFormat:@"https://files.openscad.org/appcast%@.xml", enableSnapshots() ? @"-snapshots" : @""];
   [d->updater setFeedURL:[NSURL URLWithString:urlstring]];
-  NSString *userAgent = [NSString stringWithFormat:@"OpenSCAD %s %s", TOSTRING(OPENSCAD_VERSION), PlatformUtils::sysinfo(false).c_str()];
+  NSString *userAgent = [NSString stringWithFormat:@"OpenSCAD %s %s", openscad_versionnumber.c_str(), PlatformUtils::sysinfo(false).c_str()];
   [d->updater setUserAgentString: userAgent];
 }
