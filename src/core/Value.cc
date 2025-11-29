@@ -163,15 +163,20 @@ inline bool HandleSpecialValues(const double& value, double_conversion::StringBu
 
 inline std::string DoubleConvert(const double& value, char *buffer,
                                  double_conversion::StringBuilder& builder,
-                                 const double_conversion::DoubleToStringConverter& dc)
+                                 const double_conversion::DoubleToStringConverter& dc,
+                                 int precision = DC_PRECISION_REQUESTED)
 {
+  // The translation from requested output precision to the actual precision
+  // used occurs here.  If no precision is explicitly specified then the default
+  // OpenSCAD precision is used (defined with DC_PRECISION_REQUESTED, currently
+  // this precision is 6).
   builder.Reset();
   if (double_conversion::Double(value).IsSpecial()) {
     HandleSpecialValues(value, builder);
     builder.Finalize();
     return buffer;
   }
-  dc.ToPrecision(value, DC_PRECISION_REQUESTED, &builder);
+  dc.ToPrecision(value, precision, &builder);
   int pos = builder.position();  // get position before Finalize destroys it
   builder.Finalize();
   trimTrailingZeroes(buffer, pos);
@@ -361,7 +366,12 @@ public:
     stream << boost::lexical_cast<std::string>(op1);
   }
 
-  void operator()(const double& op1) const { stream << DoubleConvert(op1, buffer, builder, dc); }
+  // The number output precision is picked up from the current output stream;
+  // from this point on it is passed via function arguments.
+  void operator()(const double& op1) const
+  {
+    stream << DoubleConvert(op1, buffer, builder, dc, stream.precision());
+  }
 
   void operator()(const UndefType&) const { stream << "undef"; }
 
@@ -413,6 +423,17 @@ public:
 class tostring_visitor
 {
 public:
+  tostring_visitor() : precision(DC_PRECISION_REQUESTED) {}
+  tostring_visitor(int precision) : precision(precision) {}
+
+protected:
+  // Stores the precision requested (made via a Value.toString() call) so that
+  // it can later be passed to the DoubleConvert() function.  (This class and
+  // all code that it calls have no access to the context in which they are
+  // being run.)
+  int precision;
+
+public:
   template <typename T>
   std::string operator()(const T& op1) const
   {
@@ -429,7 +450,11 @@ public:
     double_conversion::DoubleToStringConverter dc(DC_FLAGS, DC_INF, DC_NAN, DC_EXP, DC_DECIMAL_LOW_EXP,
                                                   DC_DECIMAL_HIGH_EXP, DC_MAX_LEADING_ZEROES,
                                                   DC_MAX_TRAILING_ZEROES);
-    return DoubleConvert(op1, buffer, builder, dc);
+    // The number output precision used is the one that stored within the Value
+    // being output (which was set within the tostring_visitor object when the
+    // toString() method was called); from this point on it is passed via
+    // function arguments.
+    return DoubleConvert(op1, buffer, builder, dc, precision);
   }
 
   std::string operator()(const UndefType&) const { return "undef"; }
@@ -472,7 +497,17 @@ public:
   std::string operator()(const FunctionPtr& v) const { return STR(*v); }
 };
 
-std::string Value::toString() const { return std::visit(tostring_visitor(), this->value); }
+std::string Value::toString() const
+{
+  // Outputs Value with the default output precision explicitly specified.
+  return std::visit(tostring_visitor(DC_PRECISION_REQUESTED), this->value);
+}
+
+std::string Value::toString(int precision) const
+{
+  // Outputs Value with the requested output precision explicitly specified.
+  return std::visit(tostring_visitor(precision), this->value);
+}
 
 std::string Value::toEchoString() const
 {
@@ -969,6 +1004,15 @@ Value Value::operator<=(const Value& v) const
 
 bool Value::cmp_less(const Value& v1, const Value& v2) { return v1.operator<(v2).toBool(); }
 
+std::ostream& operator<<(std::ostream& stream, const Value& value)
+{
+  // Number output precision is picked up from the current output stream.
+  int precision = stream.precision();
+  if (value.type() == Value::Type::STRING) stream << QuotedString(value.toString(precision));
+  else stream << value.toString(precision);
+  return stream;
+}
+
 class plus_visitor
 {
 public:
@@ -1351,9 +1395,10 @@ std::ostream& operator<<(std::ostream& stream, const RangeType& r)
   double_conversion::DoubleToStringConverter dc(DC_FLAGS, DC_INF, DC_NAN, DC_EXP, DC_DECIMAL_LOW_EXP,
                                                 DC_DECIMAL_HIGH_EXP, DC_MAX_LEADING_ZEROES,
                                                 DC_MAX_TRAILING_ZEROES);
-  return stream << "[" << DoubleConvert(r.begin_value(), buffer, builder, dc) << " : "
-                << DoubleConvert(r.step_value(), buffer, builder, dc) << " : "
-                << DoubleConvert(r.end_value(), buffer, builder, dc) << "]";
+  std::streamsize precision = stream.precision();
+  return stream << "[" << DoubleConvert(r.begin_value(), buffer, builder, dc, precision) << " : "
+                << DoubleConvert(r.step_value(), buffer, builder, dc, precision) << " : "
+                << DoubleConvert(r.end_value(), buffer, builder, dc, precision) << "]";
 }
 
 // called by clone()

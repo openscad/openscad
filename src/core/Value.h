@@ -369,6 +369,7 @@ public:
   bool getUnsignedInt(unsigned int& v) const;
   bool getPositiveInt(unsigned int& v) const;
   [[nodiscard]] std::string toString() const;
+  [[nodiscard]] std::string toString(int precision) const;
   [[nodiscard]] std::string toEchoString() const;
   [[nodiscard]] std::string toEchoStringNoThrow() const;  // use this for warnings
   [[nodiscard]] const UndefType& toUndef() const;
@@ -403,12 +404,7 @@ public:
 
   static bool cmp_less(const Value& v1, const Value& v2);
 
-  friend std::ostream& operator<<(std::ostream& stream, const Value& value)
-  {
-    if (value.type() == Value::Type::STRING) stream << QuotedString(value.toString());
-    else stream << value.toString();
-    return stream;
-  }
+  friend std::ostream& operator<<(std::ostream& stream, const Value& value);
 
   using Variant = std::variant<UndefType, bool, double, str_utf8_wrapper, VectorType, EmbeddedVectorType,
                                RangePtr, FunctionPtr, ObjectType>;
