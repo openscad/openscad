@@ -54,6 +54,29 @@ commands:
               
               echo "export OPENSCAD_COMMIT=$OPENSCAD_COMMIT" >> $BASH_ENV
               echo "export OPENSCAD_VERSION=$OPENSCAD_VERSION" >> $BASH_ENV
+  get_source:
+    parameters:
+      method:
+        type: string
+        default: "git"
+    steps:
+      - when:
+          condition:
+            equal: [ git, << parameters.method >> ]
+          steps:
+            - checkout
+            - run: git submodule update --init --recursive
+      - when:
+          condition:
+            not:
+              equal: [ git, << parameters.method >> ]
+          steps:
+            - attach_workspace:
+                at: /tmp/artifacts
+            - establish_version
+            - run:
+                name: "Unpack tarball"
+                command: tar -xzf /tmp/artifacts/openscad-${OPENSCAD_VERSION}.tar.gz --strip-components=1
 
 jobs:
   openscad-mxe-64bit:
@@ -199,12 +222,22 @@ jobs:
       - store_artifacts:
           path: /tmp/out
           destination: wasm
+  # We essentially want to run this job in multiple modes
+  # * Source from tarball vs. source from git
+  # * Snapshot vs. release build
   openscad-macos:
     executor: macos-executor
+    parameters:
+      openscad_build_type:
+        type: string
+        default: snapshot
+      source_method:
+        type: string
+        default: git
     steps:
       - macos/install-rosetta
-      - checkout
-      - run: git submodule update --init --recursive
+      - get_source:
+          method: << parameters.source_method >>
       - run:
           name: System Info
           command: |
@@ -249,7 +282,7 @@ jobs:
           name: Build OpenSCAD
           command: |
             export NUMCPU=$(($(sysctl -n hw.ncpu) * 3 / 2))
-            time ./scripts/release-common.sh -v "$OPENSCAD_VERSION" -c "$OPENSCAD_COMMIT" snapshot
+            time ./scripts/release-common.sh -v "$OPENSCAD_VERSION" -c "$OPENSCAD_COMMIT" << parameters.openscad_build_type >>
       - run:
           name: Verify OpenSCAD binary
           command: |
@@ -403,6 +436,13 @@ workflows:
     jobs:
       - create-tarball:
           filters: *release-filters
+      - openscad-macos:
+          filters: *release-filters
+          openscad_build_type: ""
+          source_method: tarball
+          context: secret-context
+          requires:
+            - create-tarball
 
   scheduled:
     triggers:
