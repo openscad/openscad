@@ -73,10 +73,9 @@ commands:
           steps:
             - attach_workspace:
                 at: /tmp/artifacts
-            - establish_version
             - run:
                 name: "Unpack tarball"
-                command: tar -xzf /tmp/artifacts/openscad-${OPENSCAD_VERSION}.tar.gz --strip-components=1
+                command: tar -xzf /tmp/artifacts/openscad-*.tar.gz --strip-components=1
 
 jobs:
   openscad-mxe-64bit:
