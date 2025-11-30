@@ -12,6 +12,7 @@
 
 #include <boost/logic/tribool.hpp>
 #ifdef ENABLE_CGAL
+#include <CGAL/config.h>
 // I think this is correct; see https://github.com/openscad/openscad/pull/6407#issuecomment-3593484960
 #if (CGAL_VERSION_NR >= CGAL_VERSION_NUMBER(5, 6, 0)) && (CGAL_VERSION_NR < CGAL_VERSION_NUMBER(5, 6, 2))
 // This must precede including measure.h
