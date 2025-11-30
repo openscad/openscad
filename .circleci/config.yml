@@ -70,7 +70,7 @@ commands:
                 command: tar -xzf /tmp/artifacts/openscad-*.tar.gz --strip-components=1
 
 jobs:
-  openscad-mxe-64bit:
+  openscad-mxe:
     executor: mxe-executor
     parameters:
       openscad_platform:
@@ -96,15 +96,18 @@ jobs:
               export MXEDIR=/mxe
               export PKG_CONFIG_PATH=/mxe/usr/x86_64-w64-mingw32.static.posix/lib/pkgconfig
               ln -sf /usr/bin/python{3,}
-              if [ x"${CIRCLE_BRANCH}" = xmaster ]; then
+              if [ x"${CIRCLE_BRANCH}" = xmaster ] || [ "<< parameters.openscad_build_type >>" != "snapshot" ]
+              then
                 export SUFFIX=""
-              else
+              else 
                 export SUFFIX="_$(echo ${CIRCLE_BRANCH} | sed -e 's,pull/,PR,; s,/head,h,; s,/merge,m,; s,/,.,g')"
               fi
-              ./scripts/release-common.sh snapshot mingw64 -v "$OPENSCAD_VERSION" -c "$OPENSCAD_COMMIT"
+              
+              ./scripts/release-common.sh mingw64 -v "$OPENSCAD_VERSION" -c "$OPENSCAD_COMMIT" << parameters.openscad_build_type >>
               mkdir -p /tmp/out
               for f in mingw*/*.zip mingw*/*.exe; do N=$(basename "$f" | sed -e "s/\\(-x86-[36][24]\\)/\\1${SUFFIX}/;"); cp -iv "$f" /tmp/out/"$N"; done
-              if [ -n "${CODE_SIGNING_KEY}" ]; then
+              if [ -n "${CODE_SIGNING_KEY}" ]
+              then
                   cd /tmp/out
                   echo $CODE_SIGNING_DATA | base64 -d | gzip -d | gpg --import --allow-secret-key-import --pinentry-mode loopback --passphrase-file <(echo $CODE_SIGNING_PW)
                   export GPG_ARGS="--batch --yes --passphrase-fd 0 --pinentry-mode loopback --detach-sign --armor"
@@ -116,7 +119,7 @@ jobs:
       - store_artifacts:
           path: /tmp/out
           destination: MXE
-  openscad-appimage-64bit:
+  openscad-appimage:
     executor: appimage-executor
     parameters:
       openscad_platform:
@@ -177,11 +180,59 @@ jobs:
       - store_artifacts:
           path: /tmp/out
           destination: AppImage
+  openscad-appimage-release:
+    executor: appimage-executor
+    parameters:
+      source_method:
+        type: string
+        default: git
+    steps:
+      - get_source:
+          method: << parameters.source_method >>
+      - establish_version:
+          build_id: "ai${CIRCLE_BUILD_NUM}"
+      - run:
+          name: Build OpenSCAD AppImage
+          no_output_timeout: 18000
+          command: |
+              mkdir build && cd build
+              cmake .. \
+                  -DOPENSCAD_VERSION="$OPENSCAD_VERSION" \
+                  -DOPENSCAD_COMMIT="$OPENSCAD_COMMIT" \
+                  -DCMAKE_INSTALL_PREFIX=/usr \
+                  -DCMAKE_BUILD_TYPE=Release \
+                  -DUSE_BUILTIN_OPENCSG=ON \
+                  -DMANIFOLD_PYBIND=OFF \
+                  -DMANIFOLD_TEST=OFF \
+                  -DENABLE_PYTHON=ON \
+                  -DENABLE_TESTS=OFF
+              make -j4
+              make install DESTDIR=../AppDir
+              cd ..
+              export PATH=/appimage/usr/bin:"$PATH"
+              export EXTRA_QT_PLUGINS=svg
+              export LINUXDEPLOY_OUTPUT_VERSION="${OPENSCAD_VERSION}"
+              linuxdeploy --plugin qt --output appimage --appdir AppDir
+              mkdir -p /tmp/out
+              cp -iv OpenSCAD-*.AppImage /tmp/out
+              if [ -n "${CODE_SIGNING_KEY}" ]; then
+                  cd /tmp/out
+                  echo $CODE_SIGNING_DATA | base64 -d | gzip -d | gpg --import --allow-secret-key-import --pinentry-mode loopback --passphrase-file <(echo $CODE_SIGNING_PW)
+                  export GPG_ARGS="--batch --yes --passphrase-fd 0 --pinentry-mode loopback --detach-sign --armor"
+                  for a in *.AppImage; do echo "$CODE_SIGNING_PW" | gpg -u "$CODE_SIGNING_KEY" $GPG_ARGS "$a"; sha256sum "$a" | tee "${a}.sha256"; sha512sum "$a" | tee "${a}.sha512"; done
+                  rm -rf ~/.gnupg
+              else
+                  echo "Skipping code signing."
+              fi
+      - store_artifacts:
+          path: /tmp/out
+          destination: AppImage
   openscad-wasm:
     executor: wasm-executor
     parameters:
       openscad_platform:
         type: string
+        default: ""
       openscad_build_type:
         type: string
         default: snapshot
@@ -218,18 +269,22 @@ jobs:
           no_output_timeout: 18000
           command: |
               export WASM_TYPE=$(echo "<< parameters.openscad_platform >>" | sed 's/^wasm-//')
-              if [ x"${CIRCLE_BRANCH}" = xmaster ]; then
+              if [ x"${CIRCLE_BRANCH}" = xmaster ] || [ "<< parameters.openscad_build_type >>" != "snapshot" ]
+              then
                 export SUFFIX=""
-              else
+              else 
                 export SUFFIX="_$(echo ${CIRCLE_BRANCH} | sed -e 's,pull/,PR,; s,/head,h,; s,/merge,m,; s,/,.,g')"
               fi
+              if [ "<< parameters.openscad_build_type >>" == "snapshot" ]
+              then
+                export CMAKE_EXTRA_ARGS="-DSNAPSHOT=ON -DEXPERIMENTAL=ON"
+              fi
               emcmake cmake -B ../build . \
-                  -DSNAPSHOT=ON \
-                  -DEXPERIMENTAL=ON \
                   -DCMAKE_BUILD_TYPE=Release \
                   -DWASM_BUILD_TYPE=$WASM_TYPE \
                   -DOPENSCAD_COMMIT="$OPENSCAD_COMMIT" \
-                  -DOPENSCAD_VERSION="$OPENSCAD_VERSION"
+                  -DOPENSCAD_VERSION="$OPENSCAD_VERSION" \
+                  $CMAKE_EXTRA_ARGS
               cd ../build
               make -j4 VERBOSE=1
               mkdir -p /tmp/out
@@ -349,12 +404,19 @@ jobs:
 
             security -v delete-keychain OpenSCAD.keychain
             rm OpenSCAD.p12
-            cp -R OpenSCAD-$OPENSCAD_VERSION.dmg /tmp/out/
+            cp -R OpenSCAD-$OPENSCAD_VERSION.dmg /tmp/artifacts/
             shasum -a 256 OpenSCAD-$OPENSCAD_VERSION.dmg > OpenSCAD-$OPENSCAD_VERSION.dmg.sha256
             shasum -a 512 OpenSCAD-$OPENSCAD_VERSION.dmg > OpenSCAD-$OPENSCAD_VERSION.dmg.sha512
-            cp -v OpenSCAD-$OPENSCAD_VERSION.dmg* /tmp/out/
+            cp -v OpenSCAD-$OPENSCAD_VERSION.dmg* /tmp/artifacts/
+      - persist_to_workspace:
+          root: /tmp/artifacts
+          paths:
+            - OpenSCAD-*.dmg
+            - OpenSCAD-*.dmg.sha256
+            - OpenSCAD-*.dmg.sha512
       - store_artifacts:
-          path: /tmp/out
+          path: /tmp/artifacts
+          destination: macOS
   create-tarball:
     executor: python-executor
     steps:
@@ -399,6 +461,16 @@ jobs:
       - store_artifacts:
           path: /tmp/artifacts
           destination: source-tarball
+  openscad-deploy-release:
+    executor: python-executor
+    steps:
+      - attach_workspace:
+          at: /tmp/artifacts
+      - run:
+          name: "Deploy release artifacts"
+          command: |
+            cd /tmp/artifacts
+            ls -l
 
 filters: &release-filters
   tags:
@@ -410,13 +482,13 @@ workflows:
   version: 2
   "CircleCI snapshot build (master)":
     jobs:
-      - openscad-mxe-64bit:
+      - openscad-mxe:
           context: secret-context
           filters:
               branches:
                   only:
                       - master
-      - openscad-appimage-64bit:
+      - openscad-appimage:
           context: secret-context
           filters:
               branches:
@@ -439,14 +511,14 @@ workflows:
                       - master
   "CircleCI branch build (PR)":
     jobs:
-      - openscad-mxe-64bit:
+      - openscad-mxe:
           filters:
               branches:
                   ignore:
                       - master
                       - coverity_scan
                       - /^(?i:continuous)$/
-      - openscad-appimage-64bit:
+      - openscad-appimage:
           filters:
               branches:
                   ignore:
@@ -480,3 +552,31 @@ workflows:
           context: secret-context
           requires:
             - create-tarball
+#      - openscad-appimage-release:
+#          filters: *release-filters
+#          source_method: tarball
+#          context: secret-context
+#          requires:
+#            - create-tarball
+#      - openscad-mxe:
+#          filters: *release-filters
+#          openscad_build_type: ""
+#          source_method: tarball
+#          context: secret-context
+#          requires:
+#            - create-tarball
+#      - openscad-wasm:
+#          filters: *release-filters
+#          matrix:
+#            parameters:
+#              wasm-type: [web, node]
+#          openscad_build_type: ""
+#          source_method: tarball
+#          context: secret-context
+#          requires:
+#            - create-tarball
+      - openscad-deploy-release:
+          filters: *release-filters
+          context: secret-context
+          requires:
+            - openscad-macos
