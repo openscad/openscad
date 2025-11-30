@@ -10,7 +10,7 @@ group() {
 				group() {
 					group() {
 						group() {
-							text(text = "OpenSCAD", size = 10, spacing = 1, font = "Liberation Sans", direction = "ltr", language = "en", script = "Latn", halign = "default", valign = "default", $fn = 0, $fa = 12, $fs = 2);
+							text(text = "OpenSCAD", size = 10, spacing = 1, font = "Liberation Sans", direction = "ltr", language = "en", script = "Latn", halign = "default", valign = "default", $fn = 0, $fe = 0, $fa = 12, $fs = 2);
 						}
 					}
 				}
@@ -106,7 +106,7 @@ group() {
 		difference() {
 			group() {
 				group() {
-					text(text = "OpenSCAD", size = 10, spacing = 1, font = "Liberation Sans", direction = "ltr", language = "en", script = "Latn", halign = "default", valign = "default", $fn = 0, $fa = 12, $fs = 2);
+					text(text = "OpenSCAD", size = 10, spacing = 1, font = "Liberation Sans", direction = "ltr", language = "en", script = "Latn", halign = "default", valign = "default", $fn = 0, $fe = 0, $fa = 12, $fs = 2);
 				}
 			}
 			group() {
@@ -303,7 +303,7 @@ group() {
 				group() {
 					group() {
 						group() {
-							text(text = "OpenSCAD", size = 10, spacing = 1, font = "Liberation Sans", direction = "ltr", language = "en", script = "Latn", halign = "default", valign = "default", $fn = 0, $fa = 12, $fs = 2);
+							text(text = "OpenSCAD", size = 10, spacing = 1, font = "Liberation Sans", direction = "ltr", language = "en", script = "Latn", halign = "default", valign = "default", $fn = 0, $fe = 0, $fa = 12, $fs = 2);
 						}
 					}
 				}

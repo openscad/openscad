@@ -12,7 +12,7 @@ group() {
 				polygon(points = [[18.7661, 2.97225], [16.7907, 2.65939], [16.5303, 3.96857]], paths = undef, convexity = 1);
 				polygon(points = [[18.7661, 2.97225], [16.5303, 3.96857], [18.475, 4.43546]], paths = undef, convexity = 1);
 			}
-			circle($fn = 0, $fa = 12, $fs = 1, r = 20);
+			circle($fn = 0, $fe = 0, $fa = 12, $fs = 1, r = 20);
 		}
 	}
 }}
