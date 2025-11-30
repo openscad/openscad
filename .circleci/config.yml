@@ -82,6 +82,7 @@ jobs:
     executor: mxe64-executor
     steps:
       - checkout
+      - run: git submodule update --init --recursive
       - establish_version:
           build_id: "ci${CIRCLE_BUILD_NUM}"
       - run:
@@ -114,6 +115,7 @@ jobs:
     executor: appimage-executor
     steps:
       - checkout
+      - run: git submodule update --init --recursive
       - establish_version:
           build_id: "ai${CIRCLE_BUILD_NUM}"
       - run:
@@ -164,6 +166,7 @@ jobs:
         type: string
     steps:
       - checkout
+      - run: git submodule update --init --recursive
       - run:
           name: Install latest node.js
           command: |
@@ -317,11 +320,7 @@ jobs:
     executor: python-executor
     steps:
       - checkout
-      - run:
-          name: "Checkout submodules"
-          command: |
-            git submodule sync
-            git submodule update --init
+      - run: git submodule update --init --recursive
       - run:
           name: "Extract version"
           command: |
