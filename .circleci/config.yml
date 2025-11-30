@@ -111,19 +111,22 @@ jobs:
       - store_artifacts:
           path: /tmp/out
           destination: 64-bit
-  openscad-appimage-64bit:
+  openscad-appimage:
     executor: appimage-executor
+    parameters:
+      source_method:
+        type: string
+        default: git
     steps:
-      - checkout
-      - run: git submodule update --init --recursive
+      - get_source:
+          method: << parameters.source_method >>
       - establish_version:
           build_id: "ai${CIRCLE_BUILD_NUM}"
       - run:
-          name: Build OpenSCAD AppImage (64bit)
+          name: Build OpenSCAD AppImage
           no_output_timeout: 18000
           command: |
               if [ x"${CIRCLE_BRANCH}" = xmaster ]; then export SUFFIX=""; else export SUFFIX="_$(echo ${CIRCLE_BRANCH} | sed -e 's,pull/,PR,; s,/head,h,; s,/merge,m,; s,/,.,g')"; fi
-              git submodule update --init --recursive
               mkdir build && cd build
               cmake .. \
                   -DOPENSCAD_VERSION="$OPENSCAD_VERSION" \
@@ -145,6 +148,53 @@ jobs:
               export PYTHON_VERSION=$(python3 -c "import sys; v=sys.version_info; print(f'{v.major}.{v.minor}.{v.micro}')")
               export LINUXDEPLOY_OUTPUT_VERSION="${OPENSCAD_VERSION}${SUFFIX}"
               linuxdeploy --plugin python --plugin qt --output appimage --appdir AppDir
+              mkdir -p /tmp/out
+              cp -iv OpenSCAD-*.AppImage /tmp/out
+              if [ -n "${CODE_SIGNING_KEY}" ]; then
+                  cd /tmp/out
+                  echo $CODE_SIGNING_DATA | base64 -d | gzip -d | gpg --import --allow-secret-key-import --pinentry-mode loopback --passphrase-file <(echo $CODE_SIGNING_PW)
+                  export GPG_ARGS="--batch --yes --passphrase-fd 0 --pinentry-mode loopback --detach-sign --armor"
+                  for a in *.AppImage; do echo "$CODE_SIGNING_PW" | gpg -u "$CODE_SIGNING_KEY" $GPG_ARGS "$a"; sha256sum "$a" | tee "${a}.sha256"; sha512sum "$a" | tee "${a}.sha512"; done
+                  rm -rf ~/.gnupg
+              else
+                  echo "Skipping code signing."
+              fi
+      - store_artifacts:
+          path: /tmp/out
+          destination: 64-bit
+  openscad-appimage-release:
+    executor: appimage-executor
+    parameters:
+      source_method:
+        type: string
+        default: git
+    steps:
+      - get_source:
+          method: << parameters.source_method >>
+      - establish_version:
+          build_id: "ai${CIRCLE_BUILD_NUM}"
+      - run:
+          name: Build OpenSCAD AppImage
+          no_output_timeout: 18000
+          command: |
+              mkdir build && cd build
+              cmake .. \
+                  -DOPENSCAD_VERSION="$OPENSCAD_VERSION" \
+                  -DOPENSCAD_COMMIT="$OPENSCAD_COMMIT" \
+                  -DCMAKE_INSTALL_PREFIX=/usr \
+                  -DCMAKE_BUILD_TYPE=Release \
+                  -DUSE_BUILTIN_OPENCSG=ON \
+                  -DMANIFOLD_PYBIND=OFF \
+                  -DMANIFOLD_TEST=OFF \
+                  -DENABLE_PYTHON=ON \
+                  -DENABLE_TESTS=OFF
+              make -j4
+              make install DESTDIR=../AppDir
+              cd ..
+              export PATH=/appimage/usr/bin:"$PATH"
+              export EXTRA_QT_PLUGINS=svg
+              export LINUXDEPLOY_OUTPUT_VERSION="${OPENSCAD_VERSION}"
+              linuxdeploy --plugin qt --output appimage --appdir AppDir
               mkdir -p /tmp/out
               cp -iv OpenSCAD-*.AppImage /tmp/out
               if [ -n "${CODE_SIGNING_KEY}" ]; then
@@ -224,9 +274,6 @@ jobs:
       - store_artifacts:
           path: /tmp/out
           destination: wasm
-  # We essentially want to run this job in multiple modes
-  # * Source from tarball vs. source from git
-  # * Snapshot vs. release build
   openscad-macos:
     executor: macos-executor
     parameters:
@@ -377,7 +424,7 @@ workflows:
               branches:
                   only:
                       - master
-      - openscad-appimage-64bit:
+      - openscad-appimage:
           context: secret-context
           filters:
               branches:
@@ -407,7 +454,7 @@ workflows:
                       - master
                       - coverity_scan
                       - /^(?i:continuous)$/
-      - openscad-appimage-64bit:
+      - openscad-appimage:
           filters:
               branches:
                   ignore:
@@ -437,6 +484,12 @@ workflows:
       - openscad-macos:
           filters: *release-filters
           openscad_build_type: ""
+          source_method: tarball
+          context: secret-context
+          requires:
+            - create-tarball
+      - openscad-appimage-release:
+          filters: *release-filters
           source_method: tarball
           context: secret-context
           requires:
