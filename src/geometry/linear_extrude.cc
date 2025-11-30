@@ -52,8 +52,7 @@ int sgn_vdiff(const Vector2d& v1, const Vector2d& v2)
 std::unique_ptr<PolySet> assemblePolySetForManifold(const Polygon2d& polyref,
                                                     std::vector<Vector3d>&& vertices,
                                                     PolygonIndices&& indices, int convexity,
-                                                    boost::tribool isConvex, int index_offset,
-                                                    bool use_alternative_copy = true)
+                                                    boost::tribool isConvex, int index_offset)
 {
   auto final_polyset = std::make_unique<PolySet>(3, isConvex);
   final_polyset->setTriangular(true);
@@ -67,42 +66,23 @@ std::unique_ptr<PolySet> assemblePolySetForManifold(const Polygon2d& polyref,
   // Manifold tessellating doesn't add vertices (at least in this case? ever? not sure), so the indices
   // remain valid.
 
-  if (use_alternative_copy) {
-    // Copy indices for the top face, with appropriate offset.
-    for (const auto& p_original : ps_topbottom->indices) {
-      final_polyset->indices.emplace_back();
-      auto& p_offset = final_polyset->indices.back();
+  // Copy indices for the top face, with appropriate offset.
+  for (const auto& p_original : ps_topbottom->indices) {
+    final_polyset->indices.emplace_back();
+    auto& p_offset = final_polyset->indices.back();
 
-      for (int index : p_original) {
-        p_offset.push_back(index + index_offset);
-      }
+    for (int index : p_original) {
+      p_offset.push_back(index + index_offset);
     }
-
-    // Flip vertex ordering for bottom polygon and move it.
-    for (auto& p : ps_topbottom->indices) {
-      std::reverse(p.begin(), p.end());
-    }
-    std::copy(std::make_move_iterator(ps_topbottom->indices.begin()),
-              std::make_move_iterator(ps_topbottom->indices.end()),
-              std::back_inserter(final_polyset->indices));
-  } else {
-    // Flip vertex ordering for bottom polygon
-    for (auto& p : ps_topbottom->indices) {
-      std::reverse(p.begin(), p.end());
-    }
-    std::copy(ps_topbottom->indices.begin(), ps_topbottom->indices.end(),
-              std::back_inserter(final_polyset->indices));
-
-    // Flip vertex ordering back for top polygon,
-    for (auto& p : ps_topbottom->indices) {
-      std::reverse(p.begin(), p.end());
-      for (auto& i : p) {
-        i += index_offset;
-      }
-    }
-    std::copy(ps_topbottom->indices.begin(), ps_topbottom->indices.end(),
-              std::back_inserter(final_polyset->indices));
   }
+
+  // Flip vertex ordering for bottom polygon and move it.
+  for (auto& p : ps_topbottom->indices) {
+    std::reverse(p.begin(), p.end());
+  }
+  std::copy(std::make_move_iterator(ps_topbottom->indices.begin()),
+            std::make_move_iterator(ps_topbottom->indices.end()),
+            std::back_inserter(final_polyset->indices));
 
   // LOG(PolySetUtils::polySetToPolyhedronSource(*final_polyset));
 

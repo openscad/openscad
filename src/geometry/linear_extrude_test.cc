@@ -44,8 +44,7 @@ namespace LinearExtrudeInternals {
 std::unique_ptr<PolySet> assemblePolySetForManifold(const Polygon2d& polyref,
                                                     std::vector<Vector3d>&& vertices,
                                                     PolygonIndices&& indices, int convexity,
-                                                    boost::tribool isConvex, int index_offset,
-                                                    bool use_alternative_copy = false);
+                                                    boost::tribool isConvex, int index_offset);
 
 void prepareVerticesAndIndices(const Polygon2d& polyref, Vector3d h1, Vector3d h2, int num_slices,
                                double scale_x, double scale_y, double twist,
@@ -93,21 +92,12 @@ TEST_CASE("assemblePolySetForManifold passes some basic checks")
   LinearExtrudeInternals::prepareVerticesAndIndices(polyref, h1, h2, num_slices, 1.0, 1.0, twist,
                                                     vertices, indices, slice_stride);
 
-  SECTION("both copy algorithms make the same shape")
+  SECTION("Volume is as expected")
   {
-    std::vector<Vector3d> vertices_copy = vertices;
-    PolygonIndices indices_copy = indices;
-    auto ps1 = LinearExtrudeInternals::assemblePolySetForManifold(
-      polyref, std::move(vertices), std::move(indices), 1, unknown, slice_stride * num_slices, false);
-    auto ps2 = LinearExtrudeInternals::assemblePolySetForManifold(polyref, std::move(vertices_copy),
-                                                                  std::move(indices_copy), 1, unknown,
-                                                                  slice_stride * num_slices, true);
-    auto geom1 = ManifoldUtils::createManifoldFromPolySet(*ps1)->getManifold();
-    auto geom2 = ManifoldUtils::createManifoldFromPolySet(*ps2)->getManifold();
-    CHECK((geom1 - geom2).Volume() == 0);
-    CHECK((geom2 - geom1).Volume() == 0);
-    CHECK((geom1 ^ geom1).Volume() == geom1.Volume());
-    CHECK(geom1.Volume() == geom2.Volume());
+    auto ps = LinearExtrudeInternals::assemblePolySetForManifold(
+      polyref, std::move(vertices), std::move(indices), 1, unknown, slice_stride * num_slices);
+    auto geom = ManifoldUtils::createManifoldFromPolySet(*ps)->getManifold();
+    CHECK(geom.Volume() == 22.5);
   }
 }
 
