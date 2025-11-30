@@ -124,13 +124,13 @@ endif(CLANG_TIDY)
 
 add_executable(OpenSCADExe src/main_wrapper.cc)
 set_target_properties(OpenSCADExe PROPERTIES
-    OUTPUT_NAME "openscad"
+    OUTPUT_NAME "pythonscad"
 )
 
 add_library(OpenSCADLibInternal STATIC)
 target_link_libraries(OpenSCADExe PUBLIC OpenSCADLibInternal)
 set_target_properties(OpenSCADLibInternal PROPERTIES
-    OUTPUT_NAME "openscadinternal" # results in `libopenscadinternal`
+    OUTPUT_NAME "OpenSCADLibInternal" # results in `libopenscadinternal`
 )
 
 if (MINGW)
@@ -668,8 +668,6 @@ if(ENABLE_PYTHON)
 	      COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:OpenSCADLibInternal> ${CMAKE_CURRENT_BINARY_DIR}/${PYTHON_EXECUTABLE_NAME}.exe
 	      DEPENDS OpenSCADLibInternal
       )
-    else()
-      add_custom_target(OpenSCADPython ALL COMMAND ${CMAKE_COMMAND} -E create_symlink ${EXECUTABLE_NAME} ${PYTHON_EXECUTABLE_NAME})
     endif()
   endif()
   target_include_directories(OpenSCADPy SYSTEM PRIVATE ${FREETYPE_INCLUDE_DIRS})
@@ -681,7 +679,9 @@ if(ENABLE_PYTHON)
   if(APPLE) # Nettle
     target_include_directories(OpenSCADPy PRIVATE "/usr/local/include")
     target_link_directories(OpenSCADPy PRIVATE "/usr/local/lib")
+    target_link_directories(OpenSCADExe PRIVATE "/usr/local/lib")
     target_link_libraries(OpenSCADPy PRIVATE "libnettle.a")
+    target_link_libraries(OpenSCADExe PRIVATE "libnettle.a")
   endif()
   target_link_libraries(OpenSCADPy PRIVATE Eigen3::Eigen)
   target_link_libraries(OpenSCADPy PRIVATE ${GETTEXT_LIBRARY})
@@ -1734,7 +1734,7 @@ set_target_properties(OpenSCADExe PROPERTIES
   set(BUNDLE_FRAMEWORKS_DIR ${CMAKE_CURRENT_BINARY_DIR}/${EXECUTABLE_NAME}.app/Contents/Frameworks)
 
   # Create pythonscad-python symlink inside the macOS bundle
-  add_custom_command(TARGET OpenSCADLibInternal POST_BUILD
+  add_custom_command(TARGET OpenSCADExe POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E create_symlink ${EXECUTABLE_NAME} ${PYTHON_EXECUTABLE_NAME}
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${EXECUTABLE_NAME}.app/Contents/MacOS
     COMMENT "Creating ${PYTHON_EXECUTABLE_NAME} symlink in macOS bundle"
@@ -1757,7 +1757,7 @@ set_target_properties(OpenSCADExe PROPERTIES
     message(STATUS "Python framework library: ${PYTHON_FRAMEWORK_LIB}")
 
     # Copy Python.framework into the app bundle
-    add_custom_command(TARGET OpenSCADLibInternal POST_BUILD
+    add_custom_command(TARGET OpenSCADExe POST_BUILD
       COMMAND ${CMAKE_COMMAND} -E make_directory ${BUNDLE_FRAMEWORKS_DIR}
       COMMAND rm -rf ${BUNDLE_FRAMEWORKS_DIR}/Python.framework
       COMMAND cp -a  ${PYTHON_FRAMEWORK_DIR} ${BUNDLE_FRAMEWORKS_DIR}/Python.framework
@@ -1766,7 +1766,7 @@ set_target_properties(OpenSCADExe PROPERTIES
 
     # Fix the install name to use @rpath instead of absolute path
     # We need to use the exact path as it appears in the binary (the framework Python file, not libpython.dylib)
-    add_custom_command(TARGET OpenSCADLibInternal POST_BUILD
+    add_custom_command(TARGET OpenSCADExe POST_BUILD
       COMMAND install_name_tool -change
         ${PYTHON_FRAMEWORK_LIB}
         @rpath/Python.framework/Versions/${Python3_VERSION_MAJOR}.${Python3_VERSION_MINOR}/Python

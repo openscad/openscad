@@ -5,17 +5,16 @@
 # Windows under msys has not been tested recently.
 #
 # The script will create a file called openscad-<versionstring>.<extension> in
-# the current directory (or under ./mingw32 or ./mingw64)
+# the current directory (or under ./mingw64)
 #
-# Usage: release-common.sh [-v <versionstring>] [-c] [-mingw[32|64]]
+# Usage: release-common.sh [-v <versionstring>] [-c <commit>] [mingw64] [shared] [snapshot]
 #  -v       Version string (e.g. -v 2010.01)
-#  -d       Version date (e.g. -d 2010.01.23)
-#  mingw32 Cross-compile for win32 using MXE
-#  mingw64 Cross-compile for win64 using MXE
-#  snapshot Build a snapshot binary (make e.g. experimental features available, build with commit info)
+#           Version can be YYYY.MM[.DD][-patch][.build_id]
+#  mingw64  Cross-compile for win64 using MXE
+#  shared   Use shared libs for mingw build
+#  snapshot Build a snapshot binary (make e.g. experimental features available)
 #
-# If no version string or version date is given, today's date will be used (YYYY-MM-DD)
-# If only version date is given, it will be used also as version string.
+# If no version string is given, today's date will be used (YYYY.MM.DD)
 # If no make target is given, release will be used on Windows, none one Mac OS X
 #
 # The mingw cross compile depends on the MXE cross-build tools. Please
@@ -46,13 +45,12 @@ lf2crlf()
 
 printUsage()
 {
-  echo "Usage: $0 -v <versionstring> -d <versiondate> [mingw32|mingw64] [shared] [snapshot]"
+  echo "Usage: $0 -v <versionstring> [mingw64] [shared] [snapshot]"
   echo
-  echo "  -d <versiondate>: YYYY.MM.DD format; defaults to today\'s date"
-  echo "  -v <versionstring>: YYYY.MM format; defaults to <versiondate>"
-  echo "  mingw32|mingw64: Override \$OSTYPE"
-  echo "  shared:          Use shared libraries for mingw build"
-  echo "  snapshot:        Build a development snapshot (-DSNAPSHOT=ON -DEXPERIMENTAL=ON)"
+  echo "  -v <versionstring>: YYYY.MM[.DD][-patch][.build_id] format; defaults to YYYY.MM.DD"
+  echo "  mingw64:   Override \$OSTYPE"
+  echo "  shared:    Use shared libraries for mingw build"
+  echo "  snapshot:  Build a development snapshot (-DSNAPSHOT=ON -DEXPERIMENTAL=ON)"
   echo
   echo "  Example: $0 -v 2021.01"
 }
@@ -132,28 +130,28 @@ esac
 if [ "`echo $* | grep snapshot`" ]; then
   CMAKE_CONFIG="$CMAKE_CONFIG -DSNAPSHOT=ON -DEXPERIMENTAL=ON"
   BUILD_TYPE="Release"
-  OPENSCAD_COMMIT=`git log -1 --pretty=format:"%h"`
 else
   BUILD_TYPE="Release"
 fi
 
-while getopts 'v:d:' c
+while getopts 'v:c:' c
 do
   case $c in
     v) VERSION=$OPTARG;;
-    d) VERSIONDATE=$OPTARG;;
+    c) COMMIT=$OPTARG;;
   esac
 done
 
-if test -z "$VERSIONDATE"; then
-    VERSIONDATE=`date "+%Y.%m.%d"`
-fi
 if test -z "$VERSION"; then
-    VERSION=$VERSIONDATE
+    VERSION=`date "+%Y.%m.%d"`
 fi
 
-export VERSIONDATE
+if test -z "$COMMIT"; then
+    COMMIT=`git log -1 --pretty=format:"%h"`
+fi
+
 export VERSION
+export COMMIT
 
 if [ $FAKEMAKE ]; then
   echo 'fake make on:' $FAKEMAKE
@@ -174,7 +172,7 @@ echo "Checking pre-requisites..."
 
 git submodule update --init --recursive
 
-echo "Building openscad-$VERSION ($VERSIONDATE)"
+echo "Building openscad-$VERSION"
 echo "  CMake args: $CMAKE_CONFIG"
 echo "  DEPLOYDIR: " $DEPLOYDIR
 
@@ -193,12 +191,12 @@ CMAKE_CONFIG="${CMAKE_CONFIG}\
  -DENABLE_PYTHON=ON\
  -DENABLE_LIBFIVE=OFF\
  -DENABLE_GAMEPAD=OFF\
- -DOPENSCAD_COMMIT=${OPENSCAD_COMMIT}"
+ -DOPENSCAD_COMMIT=${COMMIT}"
 
 echo "Running CMake from ${DEPLOYDIR}"
 echo "${CMAKE}  ${CMAKE_CONFIG}" ..
 
-"${CMAKE}"  ${CMAKE_CONFIG}  .. 
+"${CMAKE}"  ${CMAKE_CONFIG}  ..
 cd $OPENSCADDIR
 
 echo "Building Project..."
@@ -286,7 +284,7 @@ if [ -n $FONTDIR ]; then
   cp -a fonts/10-liberation.conf $FONTDIR
   cp -a fonts/Liberation-2.00.1 $FONTDIR
   case $OS in
-    MACOSX) 
+    MACOSX)
       cp -a fonts/05-osx-fonts.conf $FONTDIR
       cp -a fonts-osx/* $FONTDIR
       ;;
@@ -333,7 +331,7 @@ fi
 case $OS in
     MACOSX)
         cd $DEPLOYDIR
-        /usr/libexec/PlistBuddy -c "Set :CFBundleVersion $VERSIONDATE" OpenSCAD.app/Contents/Info.plist
+        /usr/libexec/PlistBuddy -c "Set :CFBundleVersion $VERSION" OpenSCAD.app/Contents/Info.plist
         macdeployqt OpenSCAD.app -no-strip
         echo "Binary created: OpenSCAD.app"
         cd $OPENSCADDIR
