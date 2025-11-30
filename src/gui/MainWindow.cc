@@ -2941,8 +2941,8 @@ void MainWindow::actionExportFileFormat(int fmt)
 
     std::ofstream fstream(std::filesystem::u8path(csg_filename.toStdString()));
     if (!fstream.is_open()) {
-      LOG(_("Can't open file \"%1$s\" for export: %2$s [%3$i], working directory is %4$s"), csg_filename.toStdString(),
-          strerror(errno), errno, fs::current_path());
+      LOG(_("Can't open file \"%1$s\" for export: %2$s [%3$i], working directory is %4$s"),
+          csg_filename.toStdString(), strerror(errno), errno, fs::current_path());
     } else {
       fstream << this->tree.getString(*this->rootNode, "\t") << "\n";
       fstream.close();

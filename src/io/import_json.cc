@@ -84,8 +84,9 @@ Value import_json(const std::string& filename, EvaluationSession *session, const
       i >> j;
       return Value{to_value(j, session)};
     } else {
-      LOG(message_group::Warning, loc, "", _("Could not read file \"%1$s\": %2$s [%3$i], working directory is %4$s"), std::filesystem::u8path(filename),
-          strerror(errno), errno, fs::current_path());
+      LOG(message_group::Warning, loc, "",
+          _("Could not read file \"%1$s\": %2$s [%3$i], working directory is %4$s"),
+          std::filesystem::u8path(filename), strerror(errno), errno, fs::current_path());
     }
   } catch (const std::exception& e) {
     LOG(message_group::Warning, loc, "", "Failed to parse file '%1$s': %s", filename, e.what());

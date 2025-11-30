@@ -36,8 +36,8 @@ std::unique_ptr<PolySet> import_off(const std::string& filename, const Location&
 
   std::ifstream f(std::filesystem::u8path(filename), std::ios::in | std::ios::binary);
   if (!f.is_open()) {
-    LOG(_("Can't open file \"%1$s\": %2$s [%3$i], working directory is %4$s"), std::filesystem::u8path(filename),
-        strerror(errno), errno, fs::current_path());
+    LOG(_("Can't open file \"%1$s\": %2$s [%3$i], working directory is %4$s"),
+        std::filesystem::u8path(filename), strerror(errno), errno, fs::current_path());
     return 0;
   }
 

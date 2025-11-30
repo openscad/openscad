@@ -584,7 +584,7 @@ int cmdline(const CommandLine& cmd)
     if (!ifs.is_open()) {
       LOG(_("Can't open input file \"%1$s\": %2$s [%3$i], working directory is %4$s"), cmd.filename,
           strerror(errno), errno, fs::current_path());
-     return 1;
+      return 1;
     }
     handle_dep(cmd.filename);
     text = std::string((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());

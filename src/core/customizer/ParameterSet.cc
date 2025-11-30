@@ -14,8 +14,9 @@ bool ParameterSets::readFile(const std::string& filename)
 
   std::ifstream f(std::filesystem::u8path(filename));
   if (!f.good()) {
-    LOG(message_group::Error, _("Cannot open Parameter Set \"%1$s\" for reading: %2$s [%3$i], working directory is %4$s"), filename,
-        strerror(errno), errno, fs::current_path());
+    LOG(message_group::Error,
+        _("Cannot open Parameter Set \"%1$s\" for reading: %2$s [%3$i], working directory is %4$s"),
+        filename, strerror(errno), errno, fs::current_path());
     return false;
   }
   try {
@@ -58,8 +59,9 @@ void ParameterSets::writeFile(const std::string& filename) const
 
   std::ofstream f(std::filesystem::u8path(filename));
   if (!f.good()) {
-    LOG(message_group::Error, _("Cannot open Parameter Set \"%1$s\" for writing: %2$s [%3$i], working directory is %4$s"), filename,
-        strerror(errno), errno, fs::current_path());
+    LOG(message_group::Error,
+        _("Cannot open Parameter Set \"%1$s\" for writing: %2$s [%3$i], working directory is %4$s"),
+        filename, strerror(errno), errno, fs::current_path());
     return;
   }
   try {

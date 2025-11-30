@@ -97,7 +97,8 @@ std::time_t SourceFileCache::process(const std::string& mainFile, const std::str
     {
       std::ifstream ifs(filename.c_str());
       if (!ifs.is_open()) {
-        LOG(message_group::Warning, _("Can't open library file \"%1$s\": %2$s [%3$i], working directory is %4$s"), filename,
+        LOG(message_group::Warning,
+            _("Can't open library file \"%1$s\": %2$s [%3$i], working directory is %4$s"), filename,
             strerror(errno), errno, fs::current_path());
         return 0;
       }
