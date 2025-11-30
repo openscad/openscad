@@ -121,9 +121,15 @@ if(CLANG_TIDY)
 endif(CLANG_TIDY)
 
 add_executable(OpenSCADExe src/main_wrapper.cc)
-set_target_properties(OpenSCADExe PROPERTIES
-    OUTPUT_NAME "openscad"
-)
+if (APPLE)
+  set_target_properties(OpenSCADExe PROPERTIES
+      OUTPUT_NAME "OpenSCAD"
+  )
+else()
+  set_target_properties(OpenSCADExe PROPERTIES
+      OUTPUT_NAME "openscad"
+  )
+endif()
 
 add_library(OpenSCADLibInternal STATIC)
 target_link_libraries(OpenSCADExe PUBLIC OpenSCADLibInternal)
