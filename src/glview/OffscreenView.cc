@@ -106,7 +106,8 @@ bool OffscreenView::save(const char *filename) const
 {
   std::ofstream fstream(filename, std::ios::out | std::ios::binary);
   if (!fstream.is_open()) {
-    std::cerr << "Can't open file " << filename << " for writing";
+    LOG(_("Can't open file \"%1$s\" for writing: %2$s [%3$i], working directory is %4$s"), filename,
+        strerror(errno), errno, fs::current_path());
     return false;
   } else {
     save_framebuffer(this->ctx.get(), fstream);

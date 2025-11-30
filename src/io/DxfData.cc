@@ -83,7 +83,8 @@ DxfData::DxfData(CurveDiscretizer discretizer, const std::string& filename, cons
 {
   std::ifstream stream(std::filesystem::u8path(filename));
   if (!stream.good()) {
-    LOG(message_group::Warning, "Can't open DXF file '%1$s'.", filename);
+    LOG(message_group::Warning, _("Can't open DXF file \"%1$s\": %2$s [%3$i], working directory is %4$s"), filename,
+        strerror(errno), errno, fs::current_path());
     return;
   }
 

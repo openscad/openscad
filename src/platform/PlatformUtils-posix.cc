@@ -13,6 +13,7 @@
 
 #include "version.h"
 #include "platform/PlatformUtils.h"
+#include "utils/printutils.h"
 
 namespace fs = std::filesystem;
 
@@ -21,6 +22,11 @@ static std::mutex user_agent_mutex;
 static std::string readText(const std::string& path)
 {
   std::ifstream s{path.c_str()};
+  if (!s.is_open()) {
+    LOG(_("Can't open file \"%1$s\": %2$s [%3$i], working directory is %4$s"), path.c_str(),
+        strerror(errno), errno, fs::current_path());
+    return "";
+  }
   s.seekg(0, std::ios::end);
   if (s.fail() || s.tellg() > 4096) {
     return "";

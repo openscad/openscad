@@ -24,8 +24,8 @@ std::unique_ptr<PolySet> import_obj(const std::string& filename, const Location&
 
   std::ifstream f(std::filesystem::u8path(filename), std::ios::in | std::ios::binary);
   if (!f.good()) {
-    LOG(message_group::Warning, "Can't open import file '%1$s', import() at line %2$d", filename,
-        loc.firstLine());
+    LOG(message_group::Warning, _("Can't open import file \"%1$s\", import() at line %2$d: %3$s [%4$i], working directory is %5$s"), std::filesystem::u8path(filename),
+         loc.firstLine(), strerror(errno), errno, fs::current_path());
     return PolySet::createEmpty();
   }
   const boost::regex ex_comment(R"(^\s*#)");

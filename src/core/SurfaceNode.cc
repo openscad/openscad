@@ -159,7 +159,8 @@ img_data_t SurfaceNode::read_dat(std::string filename) const
   std::ifstream stream(fs::u8path(filename));
 
   if (!stream.good()) {
-    LOG(message_group::Warning, "Can't open DAT file '%1$s'.", filename);
+    LOG(message_group::Warning, _("Can't open DAT file \"%1$s\": %2$s [%3$i], working directory is %4$s"), filename,
+        strerror(errno), errno, fs::current_path());
     return data;
   }
 

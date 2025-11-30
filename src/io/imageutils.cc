@@ -4,6 +4,7 @@
 #include <cassert>
 #include <cstring>
 #include <fstream>
+#include "utils/printutils.h"
 
 void flip_image(const unsigned char *src, unsigned char *dst, size_t pixelsize, size_t width,
                 size_t height)
@@ -24,7 +25,8 @@ bool write_png(const char *filename, unsigned char *pixels, int width, int heigh
     fstream.close();
     return true;
   } else {
-    std::cerr << "Can't open file " << filename << " for export.";
+    LOG(_("Can't open file \"%1$s\" for PNG export: %2$s [%3$i], working directory is %4$s"), filename,
+        strerror(errno), errno, fs::current_path());
     return false;
   }
 }
