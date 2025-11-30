@@ -61,7 +61,7 @@ if [ ! -f $OPENSCADDIR/src/openscad.cc ]; then
   exit 1
 fi
 
-CMAKE_CONFIG=
+CMAKE_CONFIG="-DCMAKE_BUILD_TYPE=Release -DENABLE_TESTS=OFF"
 
 if [[ "$OSTYPE" =~ "darwin" ]]; then
   OS=MACOSX
@@ -126,9 +126,6 @@ esac
 
 if [ "`echo $* | grep snapshot`" ]; then
   CMAKE_CONFIG="$CMAKE_CONFIG -DSNAPSHOT=ON -DEXPERIMENTAL=ON"
-  BUILD_TYPE="Release"
-else
-  BUILD_TYPE="Release"
 fi
 
 while getopts 'v:c:' c
@@ -139,12 +136,14 @@ do
   esac
 done
 
+. ./scripts/establish_version.sh
+
 if test -z "$VERSION"; then
-    VERSION=`date "+%Y.%m.%d"`
+    VERSION=$(openscad_version)
 fi
 
 if test -z "$COMMIT"; then
-    COMMIT=`git log -1 --pretty=format:"%h"`
+    COMMIT=$(openscad_commit)
 fi
 
 export VERSION
@@ -165,10 +164,6 @@ case $OS in
     ;;
 esac
 
-echo "Checking pre-requisites..."
-
-git submodule update --init --recursive
-
 echo "Building openscad-$VERSION"
 echo "  CMake args: $CMAKE_CONFIG"
 echo "  DEPLOYDIR: " $DEPLOYDIR
@@ -180,9 +175,8 @@ fi
 echo "  NUMCPU: $NUMCPU"
 
 cd $DEPLOYDIR
-CMAKE_CONFIG="${CMAKE_CONFIG}\
- -DCMAKE_BUILD_TYPE=${BUILD_TYPE}\
- -DOPENSCAD_VERSION=${VERSION}\
+CMAKE_CONFIG="${CMAKE_CONFIG} \
+ -DOPENSCAD_VERSION=${VERSION} \
  -DOPENSCAD_COMMIT=${COMMIT}"
 
 echo "Running CMake from ${DEPLOYDIR}"
