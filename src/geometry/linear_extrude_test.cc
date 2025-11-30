@@ -12,12 +12,20 @@
 
 #include <boost/logic/tribool.hpp>
 #ifdef ENABLE_CGAL
+// I think this is correct; see https://github.com/openscad/openscad/pull/6407#issuecomment-3593484960
+#if (CGAL_VERSION_NR >= CGAL_VERSION_NUMBER(5, 6, 0)) && (CGAL_VERSION_NR < CGAL_VERSION_NUMBER(5, 6, 2))
+// This must precede including measure.h
+#include <CGAL/Gmpq.h>
+namespace CGAL {
+inline const CGAL::Gmpq& exact(const CGAL::Gmpq& d) { return d; }
+}  // namespace CGAL
+#endif
 #include <CGAL/boost/graph/convert_nef_polyhedron_to_polygon_mesh.h>
 #include <CGAL/Polygon_mesh_processing/measure.h>
 #include <CGAL/Polygon_mesh_processing/orientation.h>
 #include <CGAL/Polygon_mesh_processing/triangulate_faces.h>
 #include <CGAL/Surface_mesh.h>
-#endif
+#endif  // ENABLE_CGAL
 
 #include "geometry/Geometry.h"
 #include "geometry/linalg.h"
