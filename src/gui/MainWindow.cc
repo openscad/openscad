@@ -1408,6 +1408,20 @@ void MainWindow::instantiateRoot()
     ContextHandle<BuiltinContext> builtin_context{Context::create<BuiltinContext>(&session)};
     setRenderVariables(builtin_context);
 
+    // The default number output precision when running via the GUI is picked
+    // up from the GUI preferences here.
+    //
+    // Initially the precision is propagated via the evaluation context but when
+    // necessary will be transfered to (and propagated onwards via) the Value
+    // objects, output streams, etc.
+    //
+    // (The output precision used when displaying the AST is handled separately
+    // by MainWindow::actionDisplayAST(), defined below.  When running in CLI
+    // mode a different method is used for setting the defaults; see do_export()
+    // in openscad.cc.)
+    int precision = GlobalPreferences::inst()->getValue("advanced/precisionGlobal").toUInt();
+    builtin_context->set_variable("$fp", precision);
+
     std::shared_ptr<const FileContext> file_context;
 #ifdef ENABLE_PYTHON
     if (python_result_node != NULL && this->python_active) this->absoluteRootNode = python_result_node;
@@ -2743,8 +2757,21 @@ void MainWindow::showTextInWindow(const QString& type, const QString& content)
 
 void MainWindow::actionDisplayAST()
 {
+  // The default number output precision when displaying the AST via the GUI is
+  // picked up from the GUI preferences here.
+  //
+  // Initially the precision is propagated via the evaluation context but when
+  // necessary will be transfered to (and propagated onwards via) the Value
+  // objects, output streams, etc.
+  //
+  // (The output precision used when generating output is handled separately
+  // by MainWindow::instantiateRoot(), defined above.  When running in CLI mode
+  // a different method is used for setting the defaults; see do_export() in
+  // openscad.cc.)
+  int precision = GlobalPreferences::inst()->getValue("advanced/precisionAST").toUInt();
+
   setCurrentOutput();
-  QString text = (rootFile) ? QString::fromStdString(rootFile->dump("")) : "";
+  QString text = (rootFile) ? QString::fromStdString(rootFile->dump("", precision)) : "";
   showTextInWindow("AST", text);
   clearCurrentOutput();
 }

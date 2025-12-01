@@ -55,11 +55,21 @@
 #include <boost/regex.hpp>
 #include <boost/assign/std/vector.hpp>
 using namespace boost::assign;  // bring 'operator+=()' into scope
+#include <boost/optional/optional_io.hpp>
 
 Value Expression::checkUndef(Value&& val, const std::shared_ptr<const Context>& context) const
 {
   if (val.isUncheckedUndef())
     LOG(message_group::Warning, loc, context->documentRoot(), "%1$s", val.toUndefString());
+
+  // The number output precision ($fp) active for the current function's
+  // context is applied to the return value.  This precision (stored
+  // within each Value) is later used by the various toString() methods.
+  if (val.getPrecision() == Value::UNINITIALIZED_PRECISION) {
+    boost::optional<const Value&> fp = context->try_lookup_variable("$fp");
+    val.setPrecision(fp->toInt64());
+  }
+
   return std::move(val);
 }
 
@@ -525,10 +535,13 @@ static SimplificationResult simplify_function_body(const Expression *expression,
       if (!f) {
         return Value::undefined.clone();
       } else {
-        auto index = f->index();
+        auto index = f->index();  // FIXME: Index contains a magic number; what does it indicate?
+                                  // FIXME: Where and how is this value set?
         if (index == 0) {
+          // BuiltinFunction, e.g. v=pow(1,2);
           return std::get<const BuiltinFunction *>(*f)->evaluate(context, call);
         } else if (index == 1) {
+          // CallableUserFunction, e.g. function f(x)=x+1; v=f(3);
           CallableUserFunction callable = std::get<CallableUserFunction>(*f);
           function_body = callable.function->expr.get();
           required_parameters = &callable.function->parameters;
@@ -536,8 +549,10 @@ static SimplificationResult simplify_function_body(const Expression *expression,
         } else {
           const FunctionType *function;
           if (index == 2) {
+            // FIXME: When does this occur?
             function = &std::get<Value>(*f).toFunction();
           } else if (index == 3) {
+            // Function bound to variable, e.g. f=function (x) x+1; v=f(2);
             function = &std::get<const Value *>(*f)->toFunction();
           } else {
             assert(false);
@@ -582,6 +597,12 @@ Value FunctionCall::evaluate(const std::shared_ptr<const Context>& context) cons
     try {
       auto result = simplify_function_body(expression, *expression_context);
       if (Value *value = std::get_if<Value>(&result)) {
+        // The number output precision ($fp) active for the current function's
+        // context is applied to the return value.  This precision (stored
+        // within each Value) is later used by the various toString() methods.
+        boost::optional<const Value&> fp = context->try_lookup_variable("$fp");
+        value->setPrecision(fp->toInt64());
+
         return std::move(*value);
       }
 

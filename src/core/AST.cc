@@ -32,9 +32,20 @@ std::ostream& operator<<(std::ostream& stream, const ASTNode& ast)
   return stream;
 }
 
-std::string ASTNode::dump(const std::string& indent) const
+std::string ASTNode::dump(const std::string& indent, int precision /* = 0 */) const
 {
+  // The precision parameter specifies the desired number of significant digits
+  // to display for numbers within the AST.  The maximum allowed precision, 17,
+  // is sufficient to losslessly represent any value stored in the IEEE 754
+  // 64-bit floating point format used by OpenSCAD to store the numeric values
+  // of numbers stored in Value objects.
   std::ostringstream stream;
+  if (precision >= 1 && precision <= 17) {
+    stream << std::setprecision(precision);
+  } else {
+    // Use OpenSCAD default precision (defined by DC_PRECISION_REQUESTED in Value.cc)
+    stream << std::setprecision(0);
+  }
   print(stream, indent);
   return stream.str();
 }
