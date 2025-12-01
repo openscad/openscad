@@ -30,6 +30,7 @@ enum ViewAction {
   ZOOM,
   ROTATE_ALT_AZ,
   ROTATE_PITCH_ROLL,
+  DRAG_POINT,
   NUM_VIEW_ACTIONS
 };
 
@@ -42,7 +43,7 @@ inline static std::map<Preset, std::map<MouseAction, ViewAction>> presetSettings
      {SHIFT_LEFT_CLICK, ROTATE_PITCH_ROLL},
      {SHIFT_MIDDLE_CLICK, ZOOM},
      {SHIFT_RIGHT_CLICK, ZOOM},
-     {CTRL_LEFT_CLICK, ROTATE_ALT_AZ},
+     {CTRL_LEFT_CLICK, DRAG_POINT},
      {CTRL_MIDDLE_CLICK, PAN_FORE_BACK},
      {CTRL_RIGHT_CLICK, PAN_LR_UD},
      {CTRL_SHIFT_LEFT_CLICK, ROTATE_PITCH_ROLL},
@@ -109,45 +110,59 @@ static std::map<ViewAction, std::string> viewActionNames = {
   {ZOOM, "Zoom"},
   {ROTATE_ALT_AZ, "Rotate in altitude/azimuth"},
   {ROTATE_PITCH_ROLL, "Rotate in pitch/roll"},
+  {DRAG_POINT, "Drag Point"},
 };
 
-const static int ACTION_DIMENSION = 14;
+const static int ACTION_DIMENSION = 15;
 static std::map<ViewAction, std::array<float, ACTION_DIMENSION>> viewActionArrays = {
   {NONE,
    {
      0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f,  // Rotation
      0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f,  // Translation
      0.0f, 0.0f,                          // Zoom
+     0                                    // Special Function
    }},
   {PAN_LR_UD,
    {
      0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f,   // Rotation
      1.0f, 0.0f, 0.0f, 0.0f, 0.0f, -1.0f,  // Translation
      0.0f, 0.0f,                           // Zoom
+     0                                     // Special Function
    }},
   {PAN_FORE_BACK,
    {
      0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f,   // Rotation
      0.0f, 0.0f, 0.0f, -1.0f, 0.0f, 0.0f,  // Translation
      0.0f, 0.0f,                           // Zoom
+     0                                     // Special Function
    }},
   {ZOOM,
    {
      0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f,  // Rotation
      0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f,  // Translation
      0.0f, -1.0f,                         // Zoom
+     0                                    // Special Function
    }},
   {ROTATE_ALT_AZ,
    {
      0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f,  // Rotation
      0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f,  // Translation
      0.0f, 0.0f,                          // Zoom
+     0                                    // Special Function
    }},
   {ROTATE_PITCH_ROLL,
    {
      0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f,  // Rotation
      0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f,  // Translation
      0.0f, 0.0f,                          // Zoom
+     0                                    // Special Function
+   }},
+  {DRAG_POINT,
+   {
+     0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f,  // Rotation
+     0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f,  // Translation
+     0.0f, 0.0f,                          // Zoom
+     1                                    // Special Function Drag Point
    }},
 };
 };  // namespace MouseConfig

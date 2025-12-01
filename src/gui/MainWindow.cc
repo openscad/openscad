@@ -1226,6 +1226,7 @@ void MainWindow::dragPointEnd(Vector3d pt)
           std::string arg = sourcecode.substr(parstart - sourcecode_c, parend - parstart);
           // created patched sourcecode
           std::stringstream ss;
+          setlocale(LC_ALL, "C");
           std::string newval = boost::lexical_cast<std::string>(mod.value);
           ss << sourcecode.substr(0, parstart - sourcecode_c) << "\"" << newval << "\""
              << sourcecode.substr(parend - sourcecode_c);
