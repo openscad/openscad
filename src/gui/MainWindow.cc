@@ -3165,16 +3165,19 @@ void MainWindow::showLanguageMenu()
   if (selected == scadAction) {
     activeEditor->setLanguageManually(LANG_SCAD);
     onLanguageActiveChanged(LANG_SCAD);
+    tabManager->updateTabIcon(activeEditor);
   }
 #ifdef ENABLE_PYTHON
   else if (selected == pythonAction) {
     activeEditor->setLanguageManually(LANG_PYTHON);
     onLanguageActiveChanged(LANG_PYTHON);
+    tabManager->updateTabIcon(activeEditor);
   }
 #endif
   else if (selected == autoDetectAction) {
     activeEditor->resetLanguageDetection();
     onLanguageActiveChanged(activeEditor->language);
+    tabManager->updateTabIcon(activeEditor);
   }
 }
 

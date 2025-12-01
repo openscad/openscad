@@ -29,5 +29,7 @@
     <file>icons/background-welcome-screen.svg</file>
     <file>icons/stopbutton.png</file>
     <file>icons/background.png</file>
+    <file>icons/file-type-openscad.svg</file>
+    <file>icons/filetype-python.svg</file>
   </qresource>
 </RCC>

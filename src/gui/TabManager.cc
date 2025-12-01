@@ -187,6 +187,7 @@ void TabManager::open(const QString& filename)
     openTabFile(filename);
     editor->recomputeLanguageActive();
     par->onLanguageActiveChanged(editor->language);
+    updateTabIcon(editor);
     emit editorContentReloaded(editor);
   } else {
     createTab(filename);
@@ -270,6 +271,7 @@ void TabManager::createTab(const QString& filename)
 
   editor->recomputeLanguageActive();
   par->onLanguageActiveChanged(editor->language);
+  updateTabIcon(editor);
 
   emit tabCountChanged(editorList.size());
 }
@@ -527,6 +529,23 @@ void TabManager::setEditorTabName(const QString& tabName, const QString& tabTool
   int index = tabWidget->indexOf(edt);
   tabWidget->setTabText(index, QString(tabName).replace("&", "&&"));
   tabWidget->setTabToolTip(index, tabToolTip);
+}
+
+void TabManager::updateTabIcon(EditorInterface *edt)
+{
+  if (!edt) return;
+
+  int index = tabWidget->indexOf(edt);
+  if (index < 0) return;
+
+  QIcon icon;
+  switch (edt->language) {
+  case LANG_PYTHON: icon = QIcon(":/icons/filetype-python.svg"); break;
+  case LANG_SCAD:
+  default:          icon = QIcon(":/icons/file-type-openscad.svg"); break;
+  }
+
+  tabWidget->setTabIcon(index, icon);
 }
 
 bool TabManager::refreshDocument()
