@@ -542,7 +542,7 @@ void TabManager::updateTabIcon(EditorInterface *edt)
   switch (edt->language) {
   case LANG_PYTHON: icon = QIcon(":/icons/filetype-python.svg"); break;
   case LANG_SCAD:
-  default:          icon = QIcon(":/icons/file-type-openscad.svg"); break;
+  default:          icon = QIcon(":/icons/filetype-openscad.svg"); break;
   }
 
   tabWidget->setTabIcon(index, icon);
