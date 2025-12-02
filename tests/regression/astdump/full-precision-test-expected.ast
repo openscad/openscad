@@ -1,0 +1,61 @@
+module simple_tests() {
+	echo(a, b, c);
+	echo(a = a);
+	echo(b = b);
+	echo(c = c);
+	echo(d = d);
+	echo(v = v);
+	echo(r = r);
+	echo(f = f);
+	echo(o = o);
+	echo(str("PI = ", PI));
+	echo(str("PI - 123456789.987654321 = ", (PI - 123456789.98765433)));
+}
+//Parameter("")
+a = 1234512345.0987611;
+//Parameter("")
+b = 123456789.98765433;
+//Parameter("")
+c = 1.2345678998765432e+18;
+//Parameter("")
+d = 0.10000000000000001;
+//Parameter("")
+i = 55555555555.555557;
+v = [1234512345.678968, 7, "fnord", (PI - 333.44444440000001), b];
+r = [1.1111111111111112 : i : 20.202020202020201];
+f = function(a, b, c) ((a * 55555.555549999997) + pow(b, c));
+o = object(a = 1, b = "hello", c = true, d = a);
+echo(str("Top-level precision: $fp = ", $fp));
+echo();
+echo(str("Default precision (currently set to ", $fp, ")"));
+simple_tests();
+echo();
+echo("Explicit OpenSCAD default precision (0 ⇒ 6)");
+union() {
+	$fp = 0;
+	simple_tests();
+}
+echo();
+echo("Explicit minimum precision (1)");
+union() {
+	$fp = 1;
+	simple_tests();
+}
+echo();
+echo("Explicit full precision (17)");
+union() {
+	$fp = 17;
+	simple_tests();
+}
+echo();
+echo("Explicit \"pretty\" precision (16)");
+union() {
+	$fp = 16;
+	simple_tests();
+}
+echo();
+echo("Mixed precision within a single level") echo(1111111111.1111112, let($fp = 2) str(2222222222.2222223), let($fp = 17) str(3333333333.3333335), let($fp = 0) str(4444444444.4444447));
+let($fp = 4) echo(1111111111.1111112, let($fp = 2) str(2222222222.2222223), let($fp = 17) str(3333333333.3333335), let($fp = 0) str(4444444444.4444447));
+echo();
+echo("Mixed precisions within evaluation tree");
+let($fp = 1) echo(a, let($fp = 0) str(a), str(let($fp = 2) str(a), " ", let($fp = 4) str(a, " ", let($fp = 17) str(a)), " ", a, " ", let($fp = 0) str(a)));

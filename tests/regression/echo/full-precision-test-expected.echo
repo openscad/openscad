@@ -1,0 +1,73 @@
+ECHO: "Top-level precision: $fp = 3"
+ECHO: 
+ECHO: "Default precision (currently set to 3)"
+ECHO: 1.23e+9, 1.23e+8, 1.23e+18
+ECHO: a = 1.23e+9
+ECHO: b = 1.23e+8
+ECHO: c = 1.23e+18
+ECHO: d = 0.1
+ECHO: v = [1.23e+9, 7, "fnord", -330, 1.23e+8]
+ECHO: r = [1.11 : 5.56e+10 : 20.2]
+ECHO: f = function(a, b, c) ((a * 5.56e+4) + pow(b, c))
+ECHO: o = { a = 1; b = "hello"; c = true; d = 1.23e+9; }
+ECHO: "PI = 3.14"
+ECHO: "PI - 123456789.987654321 = -1.23e+8"
+ECHO: 
+ECHO: "Explicit OpenSCAD default precision (0 ⇒ 6)"
+ECHO: 1.23451e+9, 1.23457e+8, 1.23457e+18
+ECHO: a = 1.23451e+9
+ECHO: b = 1.23457e+8
+ECHO: c = 1.23457e+18
+ECHO: d = 0.1
+ECHO: v = [1.23451e+9, 7, "fnord", -330.303, 1.23457e+8]
+ECHO: r = [1.11111 : 5.55556e+10 : 20.202]
+ECHO: f = function(a, b, c) ((a * 55555.6) + pow(b, c))
+ECHO: o = { a = 1; b = "hello"; c = true; d = 1.23451e+9; }
+ECHO: "PI = 3.14159"
+ECHO: "PI - 123456789.987654321 = -1.23457e+8"
+ECHO: 
+ECHO: "Explicit minimum precision (1)"
+ECHO: 1e+9, 1e+8, 1e+18
+ECHO: a = 1e+9
+ECHO: b = 1e+8
+ECHO: c = 1e+18
+ECHO: d = 0.1
+ECHO: v = [1e+9, 7, "fnord", -3e+2, 1e+8]
+ECHO: r = [1 : 6e+10 : 2e+1]
+ECHO: f = function(a, b, c) ((a * 6e+4) + pow(b, c))
+ECHO: o = { a = 1; b = "hello"; c = true; d = 1e+9; }
+ECHO: "PI = 3"
+ECHO: "PI - 123456789.987654321 = -1e+8"
+ECHO: 
+ECHO: "Explicit full precision (17)"
+ECHO: 1234512345.0987611, 123456789.98765433, 1.2345678998765432e+18
+ECHO: a = 1234512345.0987611
+ECHO: b = 123456789.98765433
+ECHO: c = 1.2345678998765432e+18
+ECHO: d = 0.10000000000000001
+ECHO: v = [1234512345.678968, 7, "fnord", -330.30285174641023, 123456789.98765433]
+ECHO: r = [1.1111111111111112 : 55555555555.555557 : 20.202020202020201]
+ECHO: f = function(a, b, c) ((a * 55555.555549999997) + pow(b, c))
+ECHO: o = { a = 1; b = "hello"; c = true; d = 1234512345.0987611; }
+ECHO: "PI = 3.1415926535897931"
+ECHO: "PI - 123456789.987654321 = -123456786.84606168"
+ECHO: 
+ECHO: "Explicit "pretty" precision (16)"
+ECHO: 1234512345.098761, 123456789.9876543, 1.234567899876543e+18
+ECHO: a = 1234512345.098761
+ECHO: b = 123456789.9876543
+ECHO: c = 1.234567899876543e+18
+ECHO: d = 0.1
+ECHO: v = [1234512345.678968, 7, "fnord", -330.3028517464102, 123456789.9876543]
+ECHO: r = [1.111111111111111 : 55555555555.55556 : 20.2020202020202]
+ECHO: f = function(a, b, c) ((a * 55555.55555) + pow(b, c))
+ECHO: o = { a = 1; b = "hello"; c = true; d = 1234512345.098761; }
+ECHO: "PI = 3.141592653589793"
+ECHO: "PI - 123456789.987654321 = -123456786.8460617"
+ECHO: 
+ECHO: "Mixed precision within a single level"
+ECHO: 1.11e+9, "2.2e+9", "3333333333.3333335", "4.44444e+9"
+ECHO: 1.111e+9, "2.2e+9", "3333333333.3333335", "4.44444e+9"
+ECHO: 
+ECHO: "Mixed precisions within evaluation tree"
+ECHO: 1e+9, "1.23451e+9", "1.2e+9 1.235e+9 1234512345.0987611 1e+9 1.23451e+9"

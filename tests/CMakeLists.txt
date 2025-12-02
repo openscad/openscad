@@ -800,6 +800,9 @@ add_cmdline_test(csgterm      OPENSCAD SUFFIX term FILES
 
 add_cmdline_test(echo         OPENSCAD SUFFIX echo FILES ${ECHO_FILES})
 
+add_cmdline_test(echo         OPENSCAD SUFFIX echo FILES ${TEST_SCAD_DIR}/misc/full-precision-test.scad ARGS --enable object-function -O advanced/numberOutputPrecision=3 --trace-usermodule-parameters=false)
+add_cmdline_test(astdump-stdio OPENSCAD SUFFIX ast FILES ${TEST_SCAD_DIR}/misc/full-precision-test.scad STDIO EXPECTEDDIR astdump ARGS --enable object-function -O advanced/numberOutputPrecision=17 --export-format ast)
+
 # trace-usermodule-parameters is on by default,
 # but can generate very long outputs and potentially
 # unstable outputs, when combined with recursive tests.
