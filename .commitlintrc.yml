@@ -1,0 +1,58 @@
+# Commitlint configuration for PythonSCAD
+# Enforces Conventional Commits specification
+# See: https://www.conventionalcommits.org/
+
+extends:
+  - '@commitlint/config-conventional'
+
+rules:
+  # Type enum - allowed commit types
+  type-enum:
+    - 2  # level: error
+    - always
+    - - build      # Changes to build system or dependencies
+      - chore      # Other changes that don't modify src or test files
+      - ci         # Changes to CI configuration files and scripts
+      - docs       # Documentation only changes
+      - feat       # A new feature
+      - fix        # A bug fix
+      - perf       # A code change that improves performance
+      - refactor   # A code change that neither fixes a bug nor adds a feature
+      - revert     # Reverts a previous commit
+      - style      # Changes that don't affect the meaning of the code
+      - test       # Adding missing tests or correcting existing tests
+
+  # Scope is optional but recommended
+  scope-empty:
+    - 0  # level: disabled
+
+  # Subject must not be empty
+  subject-empty:
+    - 2  # level: error
+    - never
+
+  # Subject must not end with period
+  subject-full-stop:
+    - 2
+    - never
+    - '.'
+
+  # Subject must be lowercase (disabled to allow flexibility)
+  subject-case:
+    - 0
+
+  # Header (first line) max length
+  header-max-length:
+    - 2
+    - always
+    - 100
+
+  # Body should have blank line after subject
+  body-leading-blank:
+    - 1  # level: warning
+    - always
+
+  # Footer should have blank line before it
+  footer-leading-blank:
+    - 1
+    - always
