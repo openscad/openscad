@@ -1,0 +1,31 @@
+name: Commit Message Lint
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize, reopened]
+
+jobs:
+  commitlint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install commitlint
+        run: |
+          npm install --save-dev @commitlint/config-conventional@19 @commitlint/cli@19
+
+      - name: Validate PR commits
+        run: |
+          # Get all commits in the PR
+          npx commitlint --from ${{ github.event.pull_request.base.sha }} --to ${{ github.event.pull_request.head.sha }} --verbose
+
+      - name: Validate PR title
+        run: |
+          echo "${{ github.event.pull_request.title }}" | npx commitlint --verbose
