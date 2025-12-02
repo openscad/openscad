@@ -399,7 +399,7 @@ int do_export(const CommandLine& cmd, const RenderVariables& render_variables, F
   ContextHandle<BuiltinContext> builtin_context{Context::create<BuiltinContext>(&session)};
   render_variables.applyToContext(builtin_context);
 
-  // Pick up optional numeric output precision used both when running scripts 
+  // Pick up optional numeric output precision used both when running scripts
   // and when displaying their AST.  This is specifiable from the CLI with
   //   -O advanced/numberOutputPrecision=N
   // where N is the desired precision (1 through 17, inclusive).
