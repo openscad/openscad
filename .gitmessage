@@ -1,0 +1,35 @@
+# <type>[optional scope]: <description>
+# |<----  Using a Maximum Of 50 Characters  ---->|
+
+# Explain why this change is being made
+# |<----   Try To Limit Each Line to a Maximum Of 72 Characters   ---->|
+
+# Provide links or keys to any relevant tickets, articles or other resources
+# Example: fixes #23
+
+# --- COMMIT END ---
+# Type can be:
+#   feat     - A new feature
+#   fix      - A bug fix
+#   docs     - Documentation only changes
+#   style    - Changes that don't affect code meaning (whitespace, formatting)
+#   refactor - Code change that neither fixes a bug nor adds a feature
+#   perf     - A code change that improves performance
+#   test     - Adding missing tests or correcting existing tests
+#   build    - Changes to build system or dependencies
+#   ci       - Changes to CI configuration files and scripts
+#   chore    - Other changes that don't modify src or test files
+#   revert   - Reverts a previous commit
+# --------------------
+# Remember to:
+#   - Use the imperative mood in the subject line (e.g., "add" not "added")
+#   - Do not end the subject line with a period
+#   - Separate subject from body with a blank line
+#   - Use the body to explain what and why (not how)
+#   - For breaking changes, add ! after type or include "BREAKING CHANGE:" in footer
+# --------------------
+# Examples:
+#   feat: add GPU-accelerated rendering
+#   fix: resolve memory leak in CGAL renderer
+#   docs: update installation instructions
+#   feat!: remove deprecated coordinate API
