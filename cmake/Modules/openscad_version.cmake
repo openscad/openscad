@@ -48,25 +48,36 @@ if ("${OPENSCAD_COMMIT}" STREQUAL "")
 endif()
 
 # Split OPENSCAD_VERSION into components
-# YYYY.MM[.DD][-PPP][.build]
-string(REGEX MATCH "^(([0-9]+)\\.([0-9]+)(\\.([0-9]+))?)(-([^\\.]+))?(\\.(.*))?$" MATCH "${OPENSCAD_VERSION}")
+# Supports both semantic versioning (X.Y.Z) and old date format (YYYY.MM.DD)
+# Format: MAJOR.MINOR[.PATCH][-PRERELEASE][+BUILD]
+string(REGEX MATCH "^(([0-9]+)\\.([0-9]+)(\\.([0-9]+))?)(-([^\\.\\+]+))?(\\+(.*))?$" MATCH "${OPENSCAD_VERSION}")
 
 set(OPENSCAD_SHORTVERSION ${CMAKE_MATCH_1})
-set(OPENSCAD_YEAR ${CMAKE_MATCH_2})
-set(OPENSCAD_MONTH ${CMAKE_MATCH_3})
-math(EXPR OPENSCAD_MONTH ${OPENSCAD_MONTH}) # get rid of leading zero
-set(OPENSCAD_DAY ${CMAKE_MATCH_5})
-if (DEFINED OPENSCAD_DAY)
-  math(EXPR OPENSCAD_DAY ${OPENSCAD_DAY}) # get rid of leading zero
-endif()
-set(OPENSCAD_PATCH ${CMAKE_MATCH_7})
+set(OPENSCAD_MAJOR ${CMAKE_MATCH_2})
+set(OPENSCAD_MINOR ${CMAKE_MATCH_3})
+set(OPENSCAD_PATCH ${CMAKE_MATCH_5})
+set(OPENSCAD_PRERELEASE ${CMAKE_MATCH_7})
 set(OPENSCAD_BUILD ${CMAKE_MATCH_9})
+
+# For backward compatibility, also set YEAR/MONTH/DAY
+# If using semantic versioning (e.g., 0.6.0), these will be the version components
+# If using date format (e.g., 2025.12.02), these will be the date components
+set(OPENSCAD_YEAR ${OPENSCAD_MAJOR})
+set(OPENSCAD_MONTH ${OPENSCAD_MINOR})
+if (DEFINED OPENSCAD_PATCH AND NOT "${OPENSCAD_PATCH}" STREQUAL "")
+  set(OPENSCAD_DAY ${OPENSCAD_PATCH})
+else()
+  # Patch version is optional (e.g., 0.6 instead of 0.6.0)
+  set(OPENSCAD_DAY 0)
+endif()
 
 set(PROJECT_VERSION ${OPENSCAD_SHORTVERSION})
 
- message(STATUS "OPENSCAD_SHORTVERSION: ${OPENSCAD_SHORTVERSION}")
- message(STATUS "OPENSCAD_YEAR: ${OPENSCAD_YEAR}")
- message(STATUS "OPENSCAD_MONTH: ${OPENSCAD_MONTH}")
- message(STATUS "OPENSCAD_DAY: ${OPENSCAD_DAY}")
- message(STATUS "OPENSCAD_PATCH: ${OPENSCAD_PATCH}")
- message(STATUS "OPENSCAD_BUILD: ${OPENSCAD_BUILD}")
+message(STATUS "OPENSCAD_VERSION: ${OPENSCAD_VERSION}")
+message(STATUS "OPENSCAD_SHORTVERSION: ${OPENSCAD_SHORTVERSION}")
+message(STATUS "OPENSCAD_MAJOR: ${OPENSCAD_MAJOR}")
+message(STATUS "OPENSCAD_MINOR: ${OPENSCAD_MINOR}")
+message(STATUS "OPENSCAD_PATCH: ${OPENSCAD_PATCH}")
+message(STATUS "OPENSCAD_PRERELEASE: ${OPENSCAD_PRERELEASE}")
+message(STATUS "OPENSCAD_BUILD: ${OPENSCAD_BUILD}")
+message(STATUS "Backward compat - YEAR: ${OPENSCAD_YEAR}, MONTH: ${OPENSCAD_MONTH}, DAY: ${OPENSCAD_DAY}")
