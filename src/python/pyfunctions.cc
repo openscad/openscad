@@ -149,8 +149,8 @@ PyObject *python_cylinder(PyObject *self, PyObject *args, PyObject *kwargs)
   double vr1 = 1, vr2 = 1, vh = 1;
 
   auto discretizer = CreateCurveDiscretizer(kwargs);
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|dddOdddd", const_cast<char **>(kwlist), &h, &r1, &r2, &center, &r, &d, &d1,
-                                   &d2)) {
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|dddOdddd", const_cast<char **>(kwlist), &h, &r1, &r2,
+                                   &center, &r, &d, &d1, &d2)) {
     PyErr_SetString(PyExc_TypeError, "Error during parsing cylinder(h,r|r1+r2|d1+d2)");
     return NULL;
   }
@@ -230,8 +230,9 @@ PyObject *python_polyhedron(PyObject *self, PyObject *args, PyObject *kwargs)
   PyObject *element;
   Vector3d point;
 
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O!O!|iO!", const_cast<char **>(kwlist), &PyList_Type, &points, &PyList_Type,
-                                   &faces, &convexity, &PyList_Type, &triangles)) {
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O!O!|iO!", const_cast<char **>(kwlist), &PyList_Type,
+                                   &points, &PyList_Type, &faces, &convexity, &PyList_Type,
+                                   &triangles)) {
     PyErr_SetString(PyExc_TypeError, "Error during parsing polyhedron(points, faces)");
     return NULL;
   }
@@ -390,8 +391,8 @@ PyObject *python_polygon(PyObject *self, PyObject *args, PyObject *kwargs)
   PyObject *element;
   Vector2d point;
 
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O!|O!i", const_cast<char **>(kwlist), &PyList_Type, &points, &PyList_Type,
-                                   &paths, &convexity)) {
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O!|O!i", const_cast<char **>(kwlist), &PyList_Type,
+                                   &points, &PyList_Type, &paths, &convexity)) {
     PyErr_SetString(PyExc_TypeError, "Error during parsing polygon(points,paths)");
     return NULL;
   }
@@ -664,7 +665,8 @@ PyObject *python_rotate(PyObject *self, PyObject *args, PyObject *kwargs)
   PyObject *val_a = nullptr;
   PyObject *val_v = nullptr;
   PyObject *obj = nullptr;
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "OO|O", const_cast<char **>(kwlist), &obj, &val_a, &val_v)) {
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "OO|O", const_cast<char **>(kwlist), &obj, &val_a,
+                                   &val_v)) {
     PyErr_SetString(PyExc_TypeError, "Error during parsing rotate(object, vec3)");
     return NULL;
   }
@@ -864,7 +866,8 @@ PyObject *python_multmatrix(PyObject *self, PyObject *args, PyObject *kwargs)
   const char *kwlist[] = {"obj", "m", NULL};
   PyObject *obj = NULL;
   PyObject *mat = NULL;
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "OO!", const_cast<char **>(kwlist), &obj, &PyList_Type, &mat)) {
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "OO!", const_cast<char **>(kwlist), &obj, &PyList_Type,
+                                   &mat)) {
     PyErr_SetString(PyExc_TypeError, "Error during parsing multmatrix(object, vec16)");
     return NULL;
   }
@@ -875,7 +878,8 @@ PyObject *python_oo_multmatrix(PyObject *obj, PyObject *args, PyObject *kwargs)
 {
   const char *kwlist[] = {"m", NULL};
   PyObject *mat = NULL;
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O!", const_cast<char **>(kwlist), &PyList_Type, &mat)) {
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O!", const_cast<char **>(kwlist), &PyList_Type,
+                                   &mat)) {
     PyErr_SetString(PyExc_TypeError, "Error during parsing multmatrix(object, vec16)");
     return NULL;
   }
@@ -887,7 +891,8 @@ PyObject *python_divmatrix(PyObject *self, PyObject *args, PyObject *kwargs)
   const char *kwlist[] = {"obj", "m", NULL};
   PyObject *obj = NULL;
   PyObject *mat = NULL;
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "OO!", const_cast<char **>(kwlist), &obj, &PyList_Type, &mat)) {
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "OO!", const_cast<char **>(kwlist), &obj, &PyList_Type,
+                                   &mat)) {
     PyErr_SetString(PyExc_TypeError, "Error during parsing divmatrix(object, vec16)");
     return NULL;
   }
@@ -898,7 +903,8 @@ PyObject *python_oo_divmatrix(PyObject *obj, PyObject *args, PyObject *kwargs)
 {
   const char *kwlist[] = {"m", NULL};
   PyObject *mat = NULL;
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O!", const_cast<char **>(kwlist), &PyList_Type, &mat)) {
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O!", const_cast<char **>(kwlist), &PyList_Type,
+                                   &mat)) {
     PyErr_SetString(PyExc_TypeError, "Error during parsing divmatrix(object, vec16)");
     return NULL;
   }
@@ -1016,7 +1022,8 @@ PyObject *python_color(PyObject *self, PyObject *args, PyObject *kwargs)
   PyObject *obj = NULL;
   PyObject *color = NULL;
   double alpha = 1.0;
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O|Od", const_cast<char **>(kwlist), &obj, &color, &alpha)) {
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O|Od", const_cast<char **>(kwlist), &obj, &color,
+                                   &alpha)) {
     PyErr_SetString(PyExc_TypeError, "error during parsing color");
     return NULL;
   }
@@ -1163,10 +1170,10 @@ PyObject *python_rotate_extrude(PyObject *self, PyObject *args, PyObject *kwargs
   PyObject *origin = NULL;
   PyObject *offset = NULL;
   const char *kwlist[] = {"obj",    "convexity", "scale", "angle",  "twist",
-                    "origin", "offset",    "v",     "method", NULL};
+                          "origin", "offset",    "v",     "method", NULL};
   auto discretizer = CreateCurveDiscretizer(kwargs);
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O|iddOOOOs", const_cast<char **>(kwlist), &obj, &convexity, &scale, &angle,
-                                   &twist, &origin, &offset, &v, &method)) {
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O|iddOOOOs", const_cast<char **>(kwlist), &obj,
+                                   &convexity, &scale, &angle, &twist, &origin, &offset, &v, &method)) {
     PyErr_SetString(PyExc_TypeError, "Error during parsing rotate_extrude(object,...)");
     return NULL;
   }
@@ -1184,10 +1191,11 @@ PyObject *python_oo_rotate_extrude(PyObject *obj, PyObject *args, PyObject *kwar
   PyObject *offset = NULL;
   PyObject *v = NULL;
   char *method = NULL;
-  const char *kwlist[] = {"convexity", "scale", "angle", "twist", "origin", "offset", "v", "method", NULL};
+  const char *kwlist[] = {"convexity", "scale", "angle",  "twist", "origin",
+                          "offset",    "v",     "method", NULL};
   auto discretizer = CreateCurveDiscretizer(kwargs);
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|iddOOOOs", const_cast<char **>(kwlist), &convexity, &scale, &angle, &twist,
-                                   &origin, &offset, &v, &method)) {
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|iddOOOOs", const_cast<char **>(kwlist), &convexity,
+                                   &scale, &angle, &twist, &origin, &offset, &v, &method)) {
     PyErr_SetString(PyExc_TypeError, "error during parsing\n");
     return NULL;
   }
@@ -1263,10 +1271,11 @@ PyObject *python_linear_extrude(PyObject *self, PyObject *args, PyObject *kwargs
   PyObject *twist = NULL;
 
   const char *kwlist[] = {"obj",    "height", "convexity", "origin", "scale",
-                    "center", "slices", "segments",  "twist",  NULL};
+                          "center", "slices", "segments",  "twist",  NULL};
   auto discretizer = CreateCurveDiscretizer(kwargs);
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O|OiOOOiiO", const_cast<char **>(kwlist), &obj, &height, &convexity,
-                                   &origin, &scale, &center, &slices, &segments, &twist)) {
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O|OiOOOiiO", const_cast<char **>(kwlist), &obj,
+                                   &height, &convexity, &origin, &scale, &center, &slices, &segments,
+                                   &twist)) {
     PyErr_SetString(PyExc_TypeError, "error during parsing\n");
     return NULL;
   }
@@ -1287,10 +1296,10 @@ PyObject *python_oo_linear_extrude(PyObject *obj, PyObject *args, PyObject *kwar
   PyObject *twist = NULL;
 
   const char *kwlist[] = {"height", "convexity", "origin", "scale", "center",
-                    "slices", "segments",  "twist",  NULL};
+                          "slices", "segments",  "twist",  NULL};
   auto discretizer = CreateCurveDiscretizer(kwargs);
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|OiOOOiiO", const_cast<char **>(kwlist), &height, &convexity, &origin,
-                                   &scale, &center, &slices, &segments, &twist)) {
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|OiOOOiiO", const_cast<char **>(kwlist), &height,
+                                   &convexity, &origin, &scale, &center, &slices, &segments, &twist)) {
     PyErr_SetString(PyExc_TypeError, "error during parsing\n");
     return NULL;
   }
@@ -1600,7 +1609,8 @@ PyObject *python_minkowski(PyObject *self, PyObject *args, PyObject *kwargs)
   PyObject *obj;
   PyObject *dummydict;
 
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O!|i", const_cast<char **>(kwlist), &PyList_Type, &objs, &convexity)) {
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O!|i", const_cast<char **>(kwlist), &PyList_Type,
+                                   &objs, &convexity)) {
     PyErr_SetString(PyExc_TypeError, "Error during parsing minkowski(object)");
     return NULL;
   }
@@ -1681,8 +1691,8 @@ PyObject *python_resize(PyObject *self, PyObject *args, PyObject *kwargs)
   PyObject *autosize = NULL;
   int convexity = 2;
 
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O|O!O!i", const_cast<char **>(kwlist), &obj, &PyList_Type, &newsize,
-                                   &PyList_Type, &autosize, &convexity)) {
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O|O!O!i", const_cast<char **>(kwlist), &obj,
+                                   &PyList_Type, &newsize, &PyList_Type, &autosize, &convexity)) {
     PyErr_SetString(PyExc_TypeError, "Error during parsing resize(object,vec3)");
     return NULL;
   }
@@ -1696,8 +1706,8 @@ PyObject *python_oo_resize(PyObject *obj, PyObject *args, PyObject *kwargs)
   PyObject *autosize = NULL;
   int convexity = 2;
 
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|O!O!i", const_cast<char **>(kwlist), &PyList_Type, &newsize, &PyList_Type,
-                                   &autosize, &convexity)) {
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|O!O!i", const_cast<char **>(kwlist), &PyList_Type,
+                                   &newsize, &PyList_Type, &autosize, &convexity)) {
     PyErr_SetString(PyExc_TypeError, "Error during parsing resize(object,vec3)");
     return NULL;
   }
@@ -1744,8 +1754,13 @@ PyObject *python_roof(PyObject *self, PyObject *args, PyObject *kwargs)
   PyObject *obj = NULL;
   const char *method = NULL;
   int convexity = 2;
+<<<<<<< HEAD
   auto discretizer = CreateCurveDiscretizer(kwargs);
   if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O|sd", const_cast<char **>(kwlist), &obj, &method, convexity)) {
+=======
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O|sd", const_cast<char **>(kwlist), &obj, &method,
+                                   convexity)) {
+>>>>>>> 959fc01e4 (Apply clang-format and fix MSYS2 PATH priority)
     PyErr_SetString(PyExc_TypeError, "Error during parsing roof(object)");
     return NULL;
   }
@@ -1758,8 +1773,13 @@ PyObject *python_oo_roof(PyObject *obj, PyObject *args, PyObject *kwargs)
   const char *kwlist[] = {"method", "convexity", NULL};
   const char *method = NULL;
   int convexity = 2;
+<<<<<<< HEAD
   auto discretizer = CreateCurveDiscretizer(kwargs);
   if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|sd", const_cast<char **>(kwlist), &method, convexity)) {
+=======
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|sd", const_cast<char **>(kwlist), &method,
+                                   convexity)) {
+>>>>>>> 959fc01e4 (Apply clang-format and fix MSYS2 PATH priority)
     PyErr_SetString(PyExc_TypeError, "Error during parsing roof(object)");
     return NULL;
   }
@@ -1784,7 +1804,8 @@ PyObject *python_render(PyObject *self, PyObject *args, PyObject *kwargs)
   const char *kwlist[] = {"obj", "convexity", NULL};
   PyObject *obj = NULL;
   long convexity = 2;
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O!|i", const_cast<char **>(kwlist), &PyOpenSCADType, &obj, &convexity)) {
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O!|i", const_cast<char **>(kwlist), &PyOpenSCADType,
+                                   &obj, &convexity)) {
     PyErr_SetString(PyExc_TypeError, "Error during parsing render(object)");
     return NULL;
   }
@@ -1839,7 +1860,8 @@ PyObject *python_surface(PyObject *self, PyObject *args, PyObject *kwargs)
   PyObject *center = NULL;
   PyObject *invert = NULL;
   long convexity = 2;
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "s|OlO", const_cast<char **>(kwlist), &file, &center, &convexity)) {
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "s|OlO", const_cast<char **>(kwlist), &file, &center,
+                                   &convexity)) {
     PyErr_SetString(PyExc_TypeError, "Error during parsing surface(object)");
     return NULL;
   }
@@ -1859,16 +1881,21 @@ PyObject *python_text(PyObject *self, PyObject *args, PyObject *kwargs)
 {
   DECLARE_INSTANCE();
   const char *kwlist[] = {"text",     "size",   "font",   "spacing", "direction",
-                    "language", "script", "halign", "valign",  NULL};
+                          "language", "script", "halign", "valign",  NULL};
 
   double size = 1.0, spacing = 1.0;
 
   const char *text = "", *font = NULL, *direction = "ltr", *language = "en", *script = "latin",
              *valign = "baseline", *halign = "left";
 
+<<<<<<< HEAD
   auto discretizer = CreateCurveDiscretizer(kwargs);
   if (!PyArg_ParseTupleAndKeywords(args, kwargs, "s|dsdsssss", const_cast<char **>(kwlist), &text, &size, &font, &spacing,
                                    &direction, &language, &script, &halign, &valign)) {
+=======
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "s|dsdsssss", const_cast<char **>(kwlist), &text, &size,
+                                   &font, &spacing, &direction, &language, &script, &halign, &valign)) {
+>>>>>>> 959fc01e4 (Apply clang-format and fix MSYS2 PATH priority)
     PyErr_SetString(PyExc_TypeError, "Error during parsing text(string, ...))");
     return NULL;
   }
@@ -1897,15 +1924,15 @@ PyObject *python_textmetrics(PyObject *self, PyObject *args, PyObject *kwargs)
 {
   DECLARE_INSTANCE();
   const char *kwlist[] = {"text",     "size",   "font",   "spacing", "direction",
-                    "language", "script", "halign", "valign",  NULL};
+                          "language", "script", "halign", "valign",  NULL};
 
   double size = 1.0, spacing = 1.0;
 
   const char *text = "", *font = NULL, *direction = "ltr", *language = "en", *script = "latin",
              *valign = "baseline", *halign = "left";
 
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "s|dsdsssss", const_cast<char **>(kwlist), &text, &size, &font, &spacing,
-                                   &direction, &language, &script, &valign, &halign)) {
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "s|dsdsssss", const_cast<char **>(kwlist), &text, &size,
+                                   &font, &spacing, &direction, &language, &script, &valign, &halign)) {
     PyErr_SetString(PyExc_TypeError, "Error during parsing textmetrics");
     return NULL;
   }
@@ -1996,8 +2023,13 @@ PyObject *python_offset(PyObject *self, PyObject *args, PyObject *kwargs)
   PyObject *obj = NULL;
   double r = NAN, delta = NAN;
   PyObject *chamfer = NULL;
+<<<<<<< HEAD
   auto discretizer = CreateCurveDiscretizer(kwargs);
   if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O|ddO", const_cast<char **>(kwlist), &obj, &r, &delta, &chamfer)) {
+=======
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O|ddO", const_cast<char **>(kwlist), &obj, &r, &delta,
+                                   &chamfer)) {
+>>>>>>> 959fc01e4 (Apply clang-format and fix MSYS2 PATH priority)
     PyErr_SetString(PyExc_TypeError, "Error during parsing offset(object,r,delta)");
     return NULL;
   }
@@ -2009,8 +2041,13 @@ PyObject *python_oo_offset(PyObject *obj, PyObject *args, PyObject *kwargs)
   const char *kwlist[] = {"r", "delta", "chamfer", NULL};
   double r = NAN, delta = NAN;
   PyObject *chamfer = NULL;
+<<<<<<< HEAD
   auto discretizer = CreateCurveDiscretizer(kwargs);
   if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|ddO", const_cast<char **>(kwlist), &r, &delta, &chamfer)) {
+=======
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|ddO", const_cast<char **>(kwlist), &r, &delta,
+                                   &chamfer)) {
+>>>>>>> 959fc01e4 (Apply clang-format and fix MSYS2 PATH priority)
     PyErr_SetString(PyExc_TypeError, "Error during parsing offset(object,r,delta)");
     return NULL;
   }
@@ -2042,7 +2079,8 @@ PyObject *python_projection(PyObject *self, PyObject *args, PyObject *kwargs)
   PyObject *obj = NULL;
   const char *cutmode = NULL;
   long convexity = 2;
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O|sl", const_cast<char **>(kwlist), &obj, &cutmode, &convexity)) {
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O|sl", const_cast<char **>(kwlist), &obj, &cutmode,
+                                   &convexity)) {
     PyErr_SetString(PyExc_TypeError, "Error during parsing projection(object)");
     return NULL;
   }
@@ -2054,7 +2092,8 @@ PyObject *python_oo_projection(PyObject *obj, PyObject *args, PyObject *kwargs)
   const char *kwlist[] = {"cut", "convexity", NULL};
   const char *cutmode = NULL;
   long convexity = 2;
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|sl", const_cast<char **>(kwlist), &cutmode, &convexity)) {
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|sl", const_cast<char **>(kwlist), &cutmode,
+                                   &convexity)) {
     PyErr_SetString(PyExc_TypeError, "Error during parsing projection(object)");
     return NULL;
   }
@@ -2071,7 +2110,8 @@ PyObject *python_group(PyObject *self, PyObject *args, PyObject *kwargs)
   const char *kwlist[] = {"obj", NULL};
   PyObject *obj = NULL;
   PyObject *dummydict;
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O!", const_cast<char **>(kwlist), &PyOpenSCADType, &obj)) {
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O!", const_cast<char **>(kwlist), &PyOpenSCADType,
+                                   &obj)) {
     PyErr_SetString(PyExc_TypeError, "Error during parsing group(group)");
     return NULL;
   }
@@ -2124,7 +2164,8 @@ PyObject *python_align(PyObject *self, PyObject *args, PyObject *kwargs)
   PyObject *obj = NULL;
   PyObject *pyrefmat = NULL;
   PyObject *pyobjmat = NULL;
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "OO|O", const_cast<char **>(kwlist), &obj, &pyrefmat, &pyobjmat)) {
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "OO|O", const_cast<char **>(kwlist), &obj, &pyrefmat,
+                                   &pyobjmat)) {
     PyErr_SetString(PyExc_TypeError, "Error during align");
     return NULL;
   }
@@ -2136,7 +2177,8 @@ PyObject *python_oo_align(PyObject *obj, PyObject *args, PyObject *kwargs)
   const char *kwlist[] = {"refmat", "objmat", NULL};
   PyObject *pyrefmat = NULL;
   PyObject *pyobjmat = NULL;
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O|O", const_cast<char **>(kwlist), &pyrefmat, &pyobjmat)) {
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O|O", const_cast<char **>(kwlist), &pyrefmat,
+                                   &pyobjmat)) {
     PyErr_SetString(PyExc_TypeError, "Error during align");
     return NULL;
   }
