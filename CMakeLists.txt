@@ -76,7 +76,7 @@ cmake_dependent_option(APPLE_UNIX "Build OpenSCAD in Unix mode in MacOS X instea
 cmake_dependent_option(ENABLE_QTDBUS "Enable DBus input driver for Qt." ON "NOT HEADLESS" OFF)
 set(ENABLE_GAMEPAD "AUTO" CACHE STRING "Enable Qt5Gamepad input driver")
 set_property(CACHE ENABLE_GAMEPAD PROPERTY STRINGS "AUTO" "ON" "OFF")
-set(WASM_BUILD_TYPE "web" CACHE STRING 
+set(WASM_BUILD_TYPE "web" CACHE STRING
   "WebAssembly build type. Support web (builds an OpenSCAD module) or node (standalone .js executable)")
 
 if (USE_QT6)
@@ -294,7 +294,7 @@ if (CMAKE_SYSTEM_NAME STREQUAL Emscripten)
   set(ENV{PKG_CONFIG_PATH} "/emsdk/upstream/emscripten/cache/sysroot/lib/pkgconfig")
   target_compile_definitions(OpenSCADLibInternal PUBLIC CGAL_DISABLE_ROUNDING_MATH_CHECK)
   target_link_libraries(OpenSCADLibInternal PUBLIC /emsdk/upstream/emscripten/cache/sysroot/lib/libz.a)
-  
+
   # https://emscripten.org/docs/tools_reference/emcc.html
   # https://emscripten.org/docs/tools_reference/settings_reference.html
   target_compile_options(OpenSCADLibInternal PUBLIC -fexceptions)
@@ -306,7 +306,7 @@ if (CMAKE_SYSTEM_NAME STREQUAL Emscripten)
     -sEXIT_RUNTIME=1
     -sEXPORTED_RUNTIME_METHODS=['ENV','ERRNO_CODES','FS','PATH','callMain']
     -sMAXIMUM_MEMORY=4GB
-    
+
     # -g produces DWARF debug info, which is quite large and may need debugger extensions.
     # Alternatively, can pass -gsource-map -sLOAD_SOURCE_MAP but then variable debugging isn't possible
     $<$<CONFIG:Debug>:-g -O0>
@@ -325,8 +325,8 @@ if (CMAKE_SYSTEM_NAME STREQUAL Emscripten)
       -sNODERAWFS
 
       # Single .js (more elegant for CLI release) is larger than separate .js & .wasm (preferred for web)
-      $<$<CONFIG:Release>:-sSINGLE_FILE> 
-      
+      $<$<CONFIG:Release>:-sSINGLE_FILE>
+
       # Alternatively to single-file mode, code caching could make repeated runs faster:
       # -sNODE_CODE_CACHING -sWASM_ASYNC_COMPILATION=0
     )
@@ -368,6 +368,10 @@ endif()
 if (MXECROSS OR WIN32)
   add_subdirectory(winconsole)
   set_property(TARGET OpenSCADExe PROPERTY WIN32_EXECUTABLE ON)
+  # Disable auto-generation of manifest for MSVC to avoid conflict with embedded manifest in .rc file
+  if(MSVC)
+    target_link_options(OpenSCADExe PRIVATE /MANIFEST:NO)
+  endif()
 endif()
 
 set(OPENSCAD_LIB_OUTPUT_DIR "${CMAKE_CURRENT_BINARY_DIR}/objects")
@@ -469,6 +473,10 @@ if (MSVC)
   set(WINCOMPAT "--wincompat --nounistd")
   target_compile_definitions(OpenSCADLibInternal PUBLIC _USE_MATH_DEFINES)
   target_compile_definitions(OpenSCADLibInternal PUBLIC NOMINMAX)
+
+  # Enable parallel compilation
+  target_compile_options(OpenSCADLibInternal PRIVATE /MP)
+  target_compile_options(OpenSCADExe PRIVATE /MP)
 
   # Our code is compatible with both V3 and V5, so for now, we accept any version.
   find_package(Eigen3 REQUIRED QUIET)
@@ -616,7 +624,16 @@ if(ENABLE_PYTHON)
   target_link_libraries(OpenSCADLibInternal PUBLIC ${Python_LIBRARIES})
   target_include_directories(OpenSCADLibInternal PUBLIC ${Nettle_INCLUDE_DIRS})
   target_link_libraries(OpenSCADLibInternal PUBLIC ${Nettle_LIBRARIES})
-  add_custom_target(OpenSCADLibInternalPython ALL COMMAND ${CMAKE_COMMAND} -E create_symlink openscad${SUFFIX_WITH_DASH} "openscad-python")
+  # On Windows, copy the executable instead of creating a symlink (requires special privileges)
+  if(WIN32)
+    add_custom_target(OpenSCADPython ALL
+      COMMAND ${CMAKE_COMMAND} -E copy "$<TARGET_FILE:OpenSCADExe>" "${CMAKE_BINARY_DIR}/openscad-python${CMAKE_EXECUTABLE_SUFFIX}"
+      DEPENDS OpenSCADExe
+      COMMENT "Creating openscad-python executable copy for Windows"
+    )
+  else()
+    add_custom_target(OpenSCADPython ALL COMMAND ${CMAKE_COMMAND} -E create_symlink openscad${SUFFIX_WITH_DASH} "openscad-python")
+  endif()
 endif()
 
 if(ENABLE_HIDAPI STREQUAL "AUTO")
@@ -688,6 +705,7 @@ if(ENABLE_CAIRO STREQUAL "AUTO")
   if(CAIRO_VERSION OR CAIRO_FOUND)
     message(STATUS "Cairo: ${CAIRO_VERSION}")
     target_include_directories(OpenSCADLibInternal SYSTEM PUBLIC ${CAIRO_INCLUDE_DIRS})
+    target_link_directories(OpenSCADLibInternal PUBLIC ${CAIRO_LIBRARY_DIRS})
     target_link_libraries(OpenSCADLibInternal PUBLIC ${CAIRO_LIBRARIES})
     target_compile_definitions(OpenSCADLibInternal PUBLIC ENABLE_CAIRO)
   else()
@@ -703,6 +721,7 @@ elseif(ENABLE_CAIRO)
   endif()
   message(STATUS "Cairo: ${CAIRO_VERSION}")
   target_include_directories(OpenSCADLibInternal SYSTEM PUBLIC ${CAIRO_INCLUDE_DIRS})
+  target_link_directories(OpenSCADLibInternal PUBLIC ${CAIRO_LIBRARY_DIRS})
   target_link_libraries(OpenSCADLibInternal PUBLIC ${CAIRO_LIBRARIES})
   target_compile_definitions(OpenSCADLibInternal PUBLIC ENABLE_CAIRO)
 else()
@@ -821,6 +840,21 @@ if(NOT HEADLESS)
 
     find_package(Qt6QScintilla 2.8.0 REQUIRED QUIET)
     message(STATUS "QScintilla: ${QT6QSCINTILLA_VERSION_STRING}")
+
+    # On MSVC, manually create the imported target for QScintilla since it's built from source
+    if(MSVC AND DEFINED ENV{QT_ROOT_DIR} AND NOT TARGET Qt6QScintilla::Qt6QScintilla)
+      message(STATUS "Creating Qt6QScintilla::Qt6QScintilla imported target for MSVC")
+      add_library(Qt6QScintilla::Qt6QScintilla SHARED IMPORTED)
+      set_target_properties(Qt6QScintilla::Qt6QScintilla PROPERTIES
+        IMPORTED_CONFIGURATIONS "RELEASE;DEBUG"
+        IMPORTED_LOCATION_RELEASE "$ENV{QT_ROOT_DIR}/lib/qscintilla2_qt6.dll"
+        IMPORTED_IMPLIB_RELEASE "${QT6QSCINTILLA_LIBRARY}"
+        IMPORTED_LOCATION_DEBUG "$ENV{QT_ROOT_DIR}/lib/qscintilla2_qt6.dll"
+        IMPORTED_IMPLIB_DEBUG "${QT6QSCINTILLA_LIBRARY}"
+        INTERFACE_INCLUDE_DIRECTORIES "${QT6QSCINTILLA_INCLUDE_DIR}"
+        INTERFACE_COMPILE_DEFINITIONS "QSCINTILLA_DLL"
+      )
+    endif()
 
     if(ENABLE_QTDBUS)
       find_package(Qt6DBus QUIET)
@@ -1110,7 +1144,7 @@ set(CORE_SOURCES
 if(ENABLE_PYTHON)
 	list(APPEND CORE_SOURCES
 		    src/python/pymod.cc
-		    src/python/pyopenscad.cc 
+		    src/python/pyopenscad.cc
 		    src/python/pyfunctions.cc )
 	target_compile_definitions(OpenSCADLibInternal PUBLIC ENABLE_PYTHON)
 endif()
@@ -1567,7 +1601,7 @@ if(APPLE AND NOT APPLE_UNIX)
   file(COPY ${CMAKE_SOURCE_DIR}/templates DESTINATION ${BUNDLE_RESOURCES_DIR})
 
   if(ENABLE_GUI_TESTS)
-    file(COPY 
+    file(COPY
          ${CMAKE_SOURCE_DIR}/tests/data/basic-ux
          ${CMAKE_SOURCE_DIR}/tests/data/modulecache-tests
          DESTINATION ${BUNDLE_RESOURCES_DIR}/tests)
@@ -1585,11 +1619,29 @@ elseif(MSVC)
   )
 endif()
 
+# Copy resource files to build directory for Windows (MINGW/MSVC)
+# These are needed for the application to run from the build directory during development and testing
+if(WIN32 AND NOT APPLE)
+  set(WIN_RESOURCES_DIR ${CMAKE_CURRENT_BINARY_DIR})
+  file(COPY ${CMAKE_SOURCE_DIR}/color-schemes DESTINATION ${WIN_RESOURCES_DIR})
+  file(COPY ${CMAKE_SOURCE_DIR}/fonts DESTINATION ${WIN_RESOURCES_DIR})
+  file(COPY ${CMAKE_SOURCE_DIR}/libraries DESTINATION ${WIN_RESOURCES_DIR} PATTERN ".git*" EXCLUDE)
+  file(COPY ${CMAKE_SOURCE_DIR}/locale DESTINATION ${WIN_RESOURCES_DIR})
+  file(COPY ${CMAKE_SOURCE_DIR}/shaders DESTINATION ${WIN_RESOURCES_DIR})
+  file(COPY ${CMAKE_SOURCE_DIR}/templates DESTINATION ${WIN_RESOURCES_DIR})
+endif()
+
 if (USE_QT6)
   if(NOT HEADLESS)
+    # Use the imported target if available (MSVC), otherwise fall back to the library path
+    if(TARGET Qt6QScintilla::Qt6QScintilla)
+      set(_QSCINTILLA_LIB Qt6QScintilla::Qt6QScintilla)
+    else()
+      set(_QSCINTILLA_LIB ${QT6QSCINTILLA_LIBRARY})
+    endif()
     target_link_libraries(OpenSCADLibInternal PUBLIC
       Qt6::Core Qt6::Core5Compat Qt6::Widgets Qt6::Multimedia Qt6::OpenGL Qt6::OpenGLWidgets Qt6::Concurrent Qt6::Network Qt6::Svg
-      ${QT6QSCINTILLA_LIBRARY} ${Qt6DBus_LIBRARIES} ${Qt6Gamepad_LIBRARIES}
+      ${_QSCINTILLA_LIB} ${Qt6DBus_LIBRARIES} ${Qt6Gamepad_LIBRARIES}
     )
   endif()
   if(ENABLE_GUI_TESTS)
