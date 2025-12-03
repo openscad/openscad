@@ -15,10 +15,27 @@
 # Authors: Torsten Paul, Don Bright, Marius Kintel
 
 
-import sys, os, re, subprocess, argparse
+import sys, os, re, subprocess, argparse, shutil
+
+# Find gs executable (Ghostscript) - use shutil.which to find it in PATH
+gs_executable = shutil.which("gs")
+if gs_executable is None:
+    # Fallback to common locations if not in PATH
+    common_locations = [
+        "C:\\msys64\\mingw64\\bin\\gs.exe",
+        "C:\\Program Files\\gs\\gs10.06.0\\bin\\gswin64c.exe",
+        "C:\\Program Files (x86)\\gs\\gs10.06.0\\bin\\gswin32c.exe",
+    ]
+    for location in common_locations:
+        if os.path.exists(location):
+            gs_executable = location
+            break
+
+if gs_executable is None:
+    gs_executable = "gs"  # Fall back to "gs" and let it fail with a clear error
 
 gs_cmd = [
-    "gs",
+    gs_executable,
     "-dSAFER",
     "-dNOPAUSE",
     "-dBATCH",
