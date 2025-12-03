@@ -473,7 +473,9 @@ endmacro(find_graphics)
 
 if (MSVC)
   # Flex lexer options
-  set(WINCOMPAT "--wincompat --nounistd")
+  # Note: MSYS2's flex doesn't support --wincompat, and doesn't need --nounistd
+  # If using native Windows flex, you may need to set: set(WINCOMPAT "--nounistd")
+  set(WINCOMPAT "")
   target_compile_definitions(OpenSCADLibInternal PUBLIC _USE_MATH_DEFINES)
   target_compile_definitions(OpenSCADLibInternal PUBLIC NOMINMAX)
 
