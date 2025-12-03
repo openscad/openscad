@@ -32,10 +32,17 @@
 #include <sstream>
 #include <string>
 
+#include "python/pyopenscad.h"
+#include "core/primitives.h"
+#include "core/CsgOpNode.h"
+
+// MSVC doesn't have strcasecmp, use _stricmp instead
+#ifdef _MSC_VER
+#define strcasecmp _stricmp
+#endif
 #include "core/CgalAdvNode.h"
 #include "core/ColorNode.h"
 #include "core/ColorUtil.h"
-#include "core/CsgOpNode.h"
 #include "core/CurveDiscretizer.h"
 #include "core/FreetypeRenderer.h"
 #include "core/LinearExtrudeNode.h"
