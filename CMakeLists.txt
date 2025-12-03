@@ -1795,6 +1795,10 @@ if(ENABLE_TESTS)
 
     add_executable(OpenSCADUnitTests ${TEST_SOURCES})
     target_link_libraries(OpenSCADUnitTests PRIVATE Catch2::Catch2WithMain OpenSCADLibInternal svg)
+    # Disable auto-generation of manifest for MSVC to avoid duplicate manifest error
+    if(MSVC)
+      target_link_options(OpenSCADUnitTests PRIVATE /MANIFEST:NO)
+    endif()
     include(CTest)
     include(Catch)
     catch_discover_tests(OpenSCADUnitTests ADD_TAGS_AS_LABELS)
