@@ -1,3 +1,5 @@
+/build*
+.venv
 .uuid
 .cache/
 .vs/
