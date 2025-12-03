@@ -26,20 +26,22 @@ int main(int argc, char **argv)
 #include <boost/nowide/convert.hpp>
 #include <cstddef>
 #include <string>
+#include <vector>
 
 // wmain gets arguments as wide character strings, which is the way that Windows likes to provide
 // non-ASCII arguments.  Convert them to UTF-8 strings and call the traditional main().
 int wmain(int argc, wchar_t **argv)
 {
-  char *argv8[argc + 1];
-  std::string argvString[argc];
+  // MSVC doesn't support variable-length arrays, so use std::vector
+  std::vector<std::string> argvString(argc);
+  std::vector<char *> argv8(argc + 1);
 
   for (int i = 0; i < argc; i++) {
     argvString[i] = boost::nowide::narrow(argv[i]);
     argv8[i] = argvString[i].data();
   }
-  argv8[argc] = NULL;
+  argv8[argc] = nullptr;
 
-  return (main(argc, argv8));
+  return (main(argc, argv8.data()));
 }
 #endif
