@@ -759,7 +759,7 @@ void handle_assignment(const std::string token, Expression *expr, const Location
 	bool found = false;
 	for (auto &assignment : scope_stack.top()->assignments) {
 		if (assignment->getName() == token) {
-			auto mainFile = mainFilePath.string();
+			auto mainFile = mainFilePath.generic_string();
 			auto prevFile = assignment->location().fileName();
 			auto currFile = loc.fileName();
 
