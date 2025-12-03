@@ -25,6 +25,7 @@
  */
 
 #include "gui/MainWindow.h"
+#include "gui/ChatWidget.h"
 
 #include <algorithm>
 #include <cassert>
@@ -290,8 +291,9 @@ MainWindow::MainWindow(const QStringList& filenames) : rubberBandManager(this)
            {parameterDock, _("Customizer"), "view/hideCustomizer"},
            {errorLogDock, _("Error-Log"), "view/hideErrorLog"},
            {animateDock, _("Animate"), "view/hideAnimate"},
-           {fontListDock, _("Font Lists"), "view/hideFontList"},
-           {viewportControlDock, _("Viewport-Control"), "view/hideViewportControl"}};
+           {fontListDock, _("Font List"), "view/hideFontList"},
+           {viewportControlDock, _("Viewport"), "view/hideViewportControl"},
+           {chatDock, _("GPT Chat"), "view/hideChat"}};
 
   this->versionLabel = nullptr;  // must be initialized before calling updateStatusBar()
   updateStatusBar(nullptr);
@@ -326,6 +328,19 @@ MainWindow::MainWindow(const QStringList& filenames) : rubberBandManager(this)
   connect(this->editActionIndent, &QAction::triggered, tabManager, &TabManager::indentSelection);
   connect(this->editActionUnindent, &QAction::triggered, tabManager, &TabManager::unindentSelection);
   connect(this->editActionComment, &QAction::triggered, tabManager, &TabManager::commentSelection);
+
+  // Replace the placeholder QWidget with actual ChatWidget
+  QWidget *oldChatWidget = this->chatWidget;
+  this->chatWidget = new ChatWidget(this);
+  this->chatWidget->setObjectName("chatWidget");
+  this->chatWidget->setMinimumSize(250, 200);
+
+  // Replace in the layout
+  QLayout *chatLayout = oldChatWidget->parentWidget()->layout();
+  if (chatLayout) {
+    chatLayout->replaceWidget(oldChatWidget, this->chatWidget);
+    delete oldChatWidget;
+  }
   connect(this->editActionUncomment, &QAction::triggered, tabManager, &TabManager::uncommentSelection);
 
   connect(this->editActionToggleBookmark, &QAction::triggered, tabManager, &TabManager::toggleBookmark);
@@ -1060,6 +1075,7 @@ void MainWindow::updateUndockMode(bool undockMode)
     animateDock->setFeatures(animateDock->features() | QDockWidget::DockWidgetFloatable);
     fontListDock->setFeatures(fontListDock->features() | QDockWidget::DockWidgetFloatable);
     viewportControlDock->setFeatures(viewportControlDock->features() | QDockWidget::DockWidgetFloatable);
+    chatDock->setFeatures(chatDock->features() | QDockWidget::DockWidgetFloatable);
   } else {
     if (editorDock->isFloating()) {
       editorDock->setFloating(false);
@@ -1096,6 +1112,11 @@ void MainWindow::updateUndockMode(bool undockMode)
     }
     viewportControlDock->setFeatures(viewportControlDock->features() &
                                      ~QDockWidget::DockWidgetFloatable);
+
+    if (chatDock->isFloating()) {
+      chatDock->setFloating(false);
+    }
+    chatDock->setFeatures(chatDock->features() & ~QDockWidget::DockWidgetFloatable);
   }
 }
 
@@ -3450,6 +3471,8 @@ void MainWindow::onTabManagerEditorChanged(EditorInterface *newEditor)
   animateDock->setNameSuffix(name);
   fontListDock->setNameSuffix(name);
   viewportControlDock->setNameSuffix(name);
+  parameterDock->setNameSuffix(name);
+  chatDock->setNameSuffix(name);
 
   // If there is no renderedEditor we request for a new preview if the
   // auto-reload is enabled.
