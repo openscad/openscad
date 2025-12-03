@@ -168,11 +168,21 @@ if(WIN32)
     list(APPEND CTEST_ENVIRONMENT "PATH=${Python3_DIR};${ORIGINAL_PATH}")
     message(STATUS "Adding Python directory to test PATH: ${Python3_DIR}")
   else()
-    # MinGW/MSYS2 builds: Put MinGW64 bin directory FIRST to ensure MinGW DLLs are found
+    # MinGW/MSYS2 builds: Put MSYS2 bin directory FIRST to ensure MinGW DLLs are found
     # (Ghostscript and openscad.com itself need MinGW DLLs)
-    set(MINGW64_BIN "C:/msys64/mingw64/bin")
-    list(APPEND CTEST_ENVIRONMENT "PATH=${MINGW64_BIN};${ORIGINAL_PATH}")
-    message(STATUS "Adding MinGW64 directory to test PATH: ${MINGW64_BIN}")
+    # Detect MSYS2 msystem (MINGW64, UCRT64, CLANG64, etc.)
+    if(DEFINED ENV{MSYSTEM_PREFIX})
+      set(MSYS2_BIN "$ENV{MSYSTEM_PREFIX}/bin")
+    elseif(DEFINED ENV{MSYSTEM})
+      # MSYSTEM is set (e.g., UCRT64), construct the path
+      string(TOLOWER "$ENV{MSYSTEM}" MSYSTEM_LOWER)
+      set(MSYS2_BIN "C:/msys64/${MSYSTEM_LOWER}/bin")
+    else()
+      # Fallback to MINGW64 if no MSYS2 environment is detected
+      set(MSYS2_BIN "C:/msys64/mingw64/bin")
+    endif()
+    list(APPEND CTEST_ENVIRONMENT "PATH=${MSYS2_BIN};${ORIGINAL_PATH}")
+    message(STATUS "Adding MSYS2 bin directory to test PATH: ${MSYS2_BIN}")
   endif()
 endif()
 
