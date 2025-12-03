@@ -28,6 +28,11 @@
 #include "python/pyopenscad.h"
 #include "core/primitives.h"
 #include "core/CsgOpNode.h"
+
+// MSVC doesn't have strcasecmp, use _stricmp instead
+#ifdef _MSC_VER
+#define strcasecmp _stricmp
+#endif
 #include "core/ColorNode.h"
 #include "core/ColorUtil.h"
 #include "core/FreetypeRenderer.h"
