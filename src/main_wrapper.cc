@@ -28,10 +28,43 @@ int main(int argc, char **argv)
 #include <string>
 #include <vector>
 
+#ifdef _MSC_VER
+#include <windows.h>
+
+// RAII class to temporarily set console code page to UTF-8 and restore on exit
+class ConsoleUTF8Mode
+{
+  UINT oldOutputCP;
+  UINT oldInputCP;
+
+public:
+  ConsoleUTF8Mode()
+  {
+    // Save original code pages
+    oldOutputCP = GetConsoleOutputCP();
+    oldInputCP = GetConsoleCP();
+    // Set to UTF-8
+    SetConsoleOutputCP(CP_UTF8);
+    SetConsoleCP(CP_UTF8);
+  }
+  ~ConsoleUTF8Mode()
+  {
+    // Restore original code pages
+    SetConsoleOutputCP(oldOutputCP);
+    SetConsoleCP(oldInputCP);
+  }
+};
+#endif
+
 // wmain gets arguments as wide character strings, which is the way that Windows likes to provide
 // non-ASCII arguments.  Convert them to UTF-8 strings and call the traditional main().
 int wmain(int argc, wchar_t **argv)
 {
+#ifdef _MSC_VER
+  // Temporarily set console to UTF-8 mode (will restore on exit)
+  ConsoleUTF8Mode utf8Console;
+#endif
+
   // MSVC doesn't support variable-length arrays, so use std::vector
   std::vector<std::string> argvString(argc);
   std::vector<char *> argv8(argc + 1);
