@@ -6,7 +6,12 @@
 #include <string>
 namespace fs = std::filesystem;
 
+// MSVC seems to need a larger buffer to catch stack overflow before it happens
+#if defined(_MSC_VER)
+static constexpr size_t STACK_BUFFER_SIZE = 512ul * 1024ul;
+#else
 static constexpr size_t STACK_BUFFER_SIZE = 128ul * 1024ul;
+#endif
 static constexpr size_t STACK_LIMIT_DEFAULT = size_t{STACKSIZE} - STACK_BUFFER_SIZE;
 
 namespace PlatformUtils {
