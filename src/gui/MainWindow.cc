@@ -2092,6 +2092,9 @@ std::shared_ptr<SourceFile> MainWindow::parseDocument(EditorInterface *editor)
 {
   resetSuppressedMessages();
 
+  // Report any JSON parsing errors from the parameter set file
+  editor->parameterWidget->reportJsonErrors();
+
   auto document = editor->toPlainText();
   auto fulltext = std::string(document.toUtf8().constData()) + "\n\x03\n" + commandline_commands;
 

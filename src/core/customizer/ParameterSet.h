@@ -15,9 +15,24 @@ private:
   std::string _name;
 };
 
+// Structure to hold JSON parsing error details
+struct JsonErrorInfo {
+  std::string message;     // The error message (e.g., "expected '}' or ','")
+  std::string filename;    // The JSON file path
+  unsigned long line = 0;  // Line number where error occurred (0 if unknown)
+
+  bool hasError() const { return !message.empty(); }
+  void clear()
+  {
+    message.clear();
+    filename.clear();
+    line = 0;
+  }
+};
+
 class ParameterSets : public std::vector<ParameterSet>
 {
 public:
-  bool readFile(const std::string& filename);
+  bool readFile(const std::string& filename, JsonErrorInfo& errorInfo);
   void writeFile(const std::string& filename) const;
 };

@@ -42,6 +42,7 @@
 #include "gui/parameter/ParameterText.h"
 #include "gui/parameter/ParameterVector.h"
 #include "gui/Preferences.h"
+#include "utils/printutils.h"
 
 #include <filesystem>
 
@@ -86,10 +87,12 @@ void ParameterWidget::readFile(const QString& scadFile)
   assert(widgets.empty());
 
   QString jsonFile = getJsonFile(scadFile);
-  if (!std::filesystem::exists(jsonFile.toStdString()) || this->sets.readFile(jsonFile.toStdString())) {
-    this->invalidJsonFile = QString();
+  JsonErrorInfo errorInfo;
+  if (!std::filesystem::exists(jsonFile.toStdString()) ||
+      this->sets.readFile(jsonFile.toStdString(), errorInfo)) {
+    this->jsonError.clear();
   } else {
-    this->invalidJsonFile = jsonFile;
+    this->jsonError = errorInfo;
   }
 
   for (const auto& set : this->sets) {
@@ -106,11 +109,11 @@ void ParameterWidget::saveFile(const QString& scadFile)
   }
 
   QString jsonFile = getJsonFile(scadFile);
-  if (jsonFile == this->invalidJsonFile) {
+  if (this->jsonError.hasError() && jsonFile.toStdString() == this->jsonError.filename) {
     QMessageBox msgBox;
     msgBox.setWindowTitle(_("Saving presets"));
     msgBox.setText(QString(_("%1 was found, but was unreadable. Do you want to overwrite %1?"))
-                     .arg(this->invalidJsonFile));
+                     .arg(QString::fromStdString(this->jsonError.filename)));
     msgBox.setStandardButtons(QMessageBox::Save | QMessageBox::Cancel);
     msgBox.setDefaultButton(QMessageBox::Cancel);
     if (msgBox.exec() == QMessageBox::Cancel) {
@@ -144,6 +147,29 @@ void ParameterWidget::setParameters(const SourceFile *sourceFile, const std::str
 }
 
 void ParameterWidget::applyParameters(SourceFile *sourceFile) { this->parameters.apply(sourceFile); }
+
+void ParameterWidget::reportJsonErrors()
+{
+  // Only report once
+  if (!this->jsonError.hasError()) {
+    return;
+  }
+
+  // Create a Location object so the error appears in the Error Log with file/line info
+  // The ErrorLog can then allow clicking to open the JSON file at the error line
+  Location loc = Location::NONE;
+  if (this->jsonError.line > 0) {
+    loc = Location(static_cast<int>(this->jsonError.line), 0, static_cast<int>(this->jsonError.line), 0,
+                   std::make_shared<fs::path>(this->jsonError.filename));
+  }
+
+  // Log with location info for the Error Log window
+  LOG(message_group::Error, loc, "", "Cannot open Parameter Set '%1$s': %2$s", this->jsonError.filename,
+      this->jsonError.message);
+
+  // Clear so we don't report again
+  this->jsonError.clear();
+}
 
 bool ParameterWidget::childHasFocus()
 {
