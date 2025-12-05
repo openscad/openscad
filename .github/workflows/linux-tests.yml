@@ -24,7 +24,7 @@ jobs:
     name: ${{ matrix.os }} ${{ matrix.qt }}
 
     steps:
-    - uses: actions/checkout@v5
+    - uses: actions/checkout@v6
       with:
         submodules: 'recursive'
     - name: Install dependencies

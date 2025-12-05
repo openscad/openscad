@@ -14,10 +14,6 @@
 #endif
 class CurveDiscretizer;
 
-class CurveDiscretizer;
-
-class CurveDiscretizer;
-
 class RotateExtrudeNode : public AbstractPolyNode
 {
 public:
