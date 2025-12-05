@@ -16,7 +16,9 @@ std::string loadShaderSource(const std::string& name)
   if (f.is_open()) {
     buffer << f.rdbuf();
   } else {
-    LOG(message_group::UI_Error, "Cannot open shader source file: '%1$s'", shaderPath);
+    LOG(message_group::UI_Error,
+        _("Cannot open shader source file\"%1$s\": %2$s [%3$i], working directory is %4$s"), shaderPath,
+        strerror(errno), errno, fs::current_path());
   }
   return buffer.str();
 }
