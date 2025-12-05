@@ -31,7 +31,7 @@ jobs:
           submodules: 'recursive'
 
       - name: Debug - Setup tmate session (7 min timeout)
-        if: ${{ github.event_name == 'workflow_dispatch' && inputs.debug_enabled }}
+        # if: ${{ github.event_name == 'workflow_dispatch' && inputs.debug_enabled }}
         uses: mxschmitt/action-tmate@v3
         timeout-minutes: 7
         with:
