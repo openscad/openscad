@@ -15,7 +15,9 @@
 # Authors: Torsten Paul, Don Bright, Marius Kintel
 
 
-import sys, os, re, subprocess, argparse, shutil
+import sys, os, re, subprocess, argparse, shutil, tempfile, locale
+if os.name == "nt":
+    import ctypes
 
 # Find gs executable (Ghostscript) - use shutil.which to find it in PATH
 gs_executable = shutil.which("gs")
@@ -44,6 +46,36 @@ gs_cmd = [
     "-dGraphicsAlphaBits=4",
     "-r300",
 ]
+
+if os.name == "nt":
+    preferred_encoding = f"cp{ctypes.windll.kernel32.GetACP()}"
+else:
+    preferred_encoding = locale.getpreferredencoding(False) or "utf-8"
+
+
+def ensure_codepage_safe_path(path, suffix, *, needs_existing_file):
+    """Return a filesystem path that can be represented in the current codepage.
+
+    Some Windows builds of Ghostscript still rely on the active ANSI codepage when
+    parsing CLI arguments. If the generated PDF/PNG path contains characters that
+    cannot be encoded (for example the UTF-8 sample names in export tests),
+    Ghostscript fails with /undefinedfilename. To work around this we copy the
+    problematic file to a temporary path that only uses codepage-safe characters
+    before invoking Ghostscript, then map the results back afterwards.
+    """
+
+    if os.name != "nt":
+        return path, None
+    try:
+        path.encode(preferred_encoding)
+        return path, None
+    except UnicodeEncodeError:
+        tmp = tempfile.NamedTemporaryFile(delete=False, suffix=suffix)
+        tmp.close()
+        safe_path = tmp.name
+        if needs_existing_file:
+            shutil.copy2(path, safe_path)
+        return safe_path, safe_path
 
 
 def failquit(*args):
@@ -108,10 +140,26 @@ if result != 0:
     failquit("OpenSCAD failed with return code " + str(result))
 
 convert_cmd = gs_cmd + ["-sOutputFile=" + pngfile, exportfile]
+gs_input, temp_input = ensure_codepage_safe_path(exportfile, "." + args.format, needs_existing_file=True)
+gs_output, temp_output = ensure_codepage_safe_path(
+    pngfile, os.path.splitext(pngfile)[1] or ".png", needs_existing_file=False
+)
+
+convert_cmd = gs_cmd + ["-sOutputFile=" + gs_output, gs_input]
 print("Running Converter:", " ".join(convert_cmd), file=sys.stderr)
-result = subprocess.call(convert_cmd)
-if result != 0:
-    failquit("Converter failed with return code " + str(result))
+try:
+    result = subprocess.call(convert_cmd)
+    if result != 0:
+        failquit("Converter failed with return code " + str(result))
+    if temp_output and os.path.exists(temp_output):
+        shutil.copy2(temp_output, pngfile)
+finally:
+    for temp_path in (temp_input, temp_output):
+        if temp_path and os.path.exists(temp_path):
+            try:
+                os.remove(temp_path)
+            except OSError:
+                pass
 
 # try:    os.remove(exportfile)
 # except: failquit('failure at os.remove('+exportfile+')')
