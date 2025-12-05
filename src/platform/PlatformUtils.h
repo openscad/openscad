@@ -9,9 +9,10 @@ namespace fs = std::filesystem;
 // MSVC seems to need a larger buffer to catch stack overflow before it happens.
 // Module instantiation and complex function evaluation use more stack per frame
 // on Windows/MSVC compared to GCC/Clang, requiring a significantly larger buffer.
-// With 8MB stack, a 4MB buffer leaves 4MB for actual use which should be sufficient.
+// With 8MB stack, a 5MB buffer leaves 3MB for actual use. The extra margin ensures
+// the StackCheck mechanism triggers before a real stack overflow occurs.
 #if defined(_MSC_VER)
-static constexpr size_t STACK_BUFFER_SIZE = 4ul * 1024ul * 1024ul;  // 4MB buffer for MSVC
+static constexpr size_t STACK_BUFFER_SIZE = 5ul * 1024ul * 1024ul;  // 5MB buffer for MSVC
 #else
 static constexpr size_t STACK_BUFFER_SIZE = 128ul * 1024ul;
 #endif
