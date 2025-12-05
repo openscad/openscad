@@ -1,0 +1,404 @@
+[  1%] [FLEX][comment_lexer] Building scanner with flex 2.6.4
+[  2%] Generating svg viewbox tests
+[  2%] [FLEX][openscad_lexer] Building scanner with flex 2.6.4
+[  2%] [BISON][comment_parser] Building parser with bison 3.8.2
+[  2%] Generating issue2342.scad
+[  3%] [BISON][openscad_parser] Building parser with bison 3.8.2
+[  4%] Built target Clipper2
+[  4%] Built target svg_viewbox_tests
+[  4%] Built target OpenSCAD_autogen_timestamp_deps
+[  4%] Built target issue2342
+[  4%] Automatic MOC and UIC for target OpenSCAD
+[  4%] Built target OpenSCAD_autogen
+[  4%] Automatic RCC for resources/common.qrc
+[  4%] Building CXX object CMakeFiles/OpenSCAD.dir/OpenSCAD_autogen/3YJK5W5UP7/qrc_common.cpp.o
+[  4%] Building CXX object CMakeFiles/OpenSCAD.dir/OpenSCAD_autogen/3YJK5W5UP7/qrc_icons-chokusen.cpp.o
+[  5%] Building CXX object CMakeFiles/OpenSCAD.dir/OpenSCAD_autogen/3YJK5W5UP7/qrc_icons-chokusen-dark.cpp.o
+[  5%] Building CXX object CMakeFiles/OpenSCAD.dir/OpenSCAD_autogen/mocs_compilation.cpp.o
+[  5%] Building CXX object CMakeFiles/OpenSCAD.dir/objects/comment_lexer.cxx.o
+[  5%] Building CXX object CMakeFiles/OpenSCAD.dir/objects/parser.cxx.o
+[  6%] Building CXX object CMakeFiles/OpenSCAD.dir/objects/lexer.cxx.o
+[  6%] Building CXX object CMakeFiles/OpenSCAD.dir/openscad_interface.cpp.o
+[  6%] Building CXX object CMakeFiles/OpenSCAD.dir/src/Feature.cc.o
+[  7%] Building CXX object CMakeFiles/OpenSCAD.dir/openscad_adaptor.cpp.o
+[  8%] Building CXX object CMakeFiles/OpenSCAD.dir/objects/comment_parser.cxx.o
+[  9%] Building CXX object CMakeFiles/OpenSCAD.dir/src/FontCache.cc.o
+[  9%] Building CXX object CMakeFiles/OpenSCAD.dir/src/LibraryInfo.cc.o
+[  9%] Building CXX object CMakeFiles/OpenSCAD.dir/src/RenderStatistic.cc.o
+[ 10%] Building CXX object CMakeFiles/OpenSCAD.dir/src/core/AST.cc.o
+[ 10%] Building CXX object CMakeFiles/OpenSCAD.dir/src/core/Arguments.cc.o
+[ 11%] Building CXX object CMakeFiles/OpenSCAD.dir/src/core/Assignment.cc.o
+[ 11%] Building CXX object CMakeFiles/OpenSCAD.dir/src/core/BuiltinContext.cc.o
+[ 11%] Building CXX object CMakeFiles/OpenSCAD.dir/src/core/Builtins.cc.o
+[ 12%] Building CXX object CMakeFiles/OpenSCAD.dir/src/core/CSGNode.cc.o
+[ 12%] Building CXX object CMakeFiles/OpenSCAD.dir/src/core/CSGTreeEvaluator.cc.o
+[ 12%] Building CXX object CMakeFiles/OpenSCAD.dir/src/core/CgalAdvNode.cc.o
+[ 13%] Building CXX object CMakeFiles/OpenSCAD.dir/src/core/Children.cc.o
+[ 13%] Building CXX object CMakeFiles/OpenSCAD.dir/src/core/ColorNode.cc.o
+[ 13%] Building CXX object CMakeFiles/OpenSCAD.dir/src/core/ColorUtil.cc.o
+[ 14%] Building CXX object CMakeFiles/OpenSCAD.dir/src/core/Context.cc.o
+[ 14%] Building CXX object CMakeFiles/OpenSCAD.dir/src/core/ContextMemoryManager.cc.o
+[ 14%] Building CXX object CMakeFiles/OpenSCAD.dir/src/core/ContextFrame.cc.o
+[ 15%] Building CXX object CMakeFiles/OpenSCAD.dir/src/core/CsgOpNode.cc.o
+[ 15%] Building CXX object CMakeFiles/OpenSCAD.dir/src/core/DrawingCallback.cc.o
+[ 16%] Building CXX object CMakeFiles/OpenSCAD.dir/src/core/Expression.cc.o
+[ 16%] Building CXX object CMakeFiles/OpenSCAD.dir/src/core/EvaluationSession.cc.o
+[ 16%] Building CXX object CMakeFiles/OpenSCAD.dir/src/core/FreetypeRenderer.cc.o
+[ 17%] Building CXX object CMakeFiles/OpenSCAD.dir/src/core/FunctionType.cc.o
+[ 17%] Building CXX object CMakeFiles/OpenSCAD.dir/src/core/GroupModule.cc.o
+[ 17%] Building CXX object CMakeFiles/OpenSCAD.dir/src/core/ImportNode.cc.o
+[ 18%] Building CXX object CMakeFiles/OpenSCAD.dir/src/core/LinearExtrudeNode.cc.o
+[ 18%] Building CXX object CMakeFiles/OpenSCAD.dir/src/core/LocalScope.cc.o
+[ 19%] Building CXX object CMakeFiles/OpenSCAD.dir/src/core/ModuleInstantiation.cc.o
+[ 19%] Building CXX object CMakeFiles/OpenSCAD.dir/src/core/NodeDumper.cc.o
+[ 19%] Building CXX object CMakeFiles/OpenSCAD.dir/src/core/NodeVisitor.cc.o
+[ 20%] Building CXX object CMakeFiles/OpenSCAD.dir/src/core/OffsetNode.cc.o
+[ 20%] Building CXX object CMakeFiles/OpenSCAD.dir/src/core/Parameters.cc.o
+[ 20%] Building CXX object CMakeFiles/OpenSCAD.dir/src/core/ProjectionNode.cc.o
+[ 21%] Building CXX object CMakeFiles/OpenSCAD.dir/src/core/RenderNode.cc.o
+[ 21%] Building CXX object CMakeFiles/OpenSCAD.dir/src/core/RenderVariables.cc.o
+[ 21%] Building CXX object CMakeFiles/OpenSCAD.dir/src/core/RoofNode.cc.o
+[ 22%] Building CXX object CMakeFiles/OpenSCAD.dir/src/core/RotateExtrudeNode.cc.o
+[ 22%] Building CXX object CMakeFiles/OpenSCAD.dir/src/core/ScopeContext.cc.o
+[ 22%] Building CXX object CMakeFiles/OpenSCAD.dir/src/core/Settings.cc.o
+[ 23%] Building CXX object CMakeFiles/OpenSCAD.dir/src/core/SourceFile.cc.o
+[ 23%] Building CXX object CMakeFiles/OpenSCAD.dir/src/core/SourceFileCache.cc.o
+[ 23%] Building CXX object CMakeFiles/OpenSCAD.dir/src/core/StatCache.cc.o
+[ 24%] Building CXX object CMakeFiles/OpenSCAD.dir/src/core/SurfaceNode.cc.o
+[ 24%] Building CXX object CMakeFiles/OpenSCAD.dir/src/core/TextNode.cc.o
+[ 24%] Building CXX object CMakeFiles/OpenSCAD.dir/src/core/TransformNode.cc.o
+[ 25%] Building CXX object CMakeFiles/OpenSCAD.dir/src/core/Tree.cc.o
+[ 25%] Building CXX object CMakeFiles/OpenSCAD.dir/src/core/UndefType.cc.o
+[ 25%] Building CXX object CMakeFiles/OpenSCAD.dir/src/core/UserModule.cc.o
+[ 26%] Building CXX object CMakeFiles/OpenSCAD.dir/src/core/Value.cc.o
+[ 26%] Building CXX object CMakeFiles/OpenSCAD.dir/src/core/builtin_functions.cc.o
+[ 27%] Building CXX object CMakeFiles/OpenSCAD.dir/src/core/control.cc.o
+[ 27%] Building CXX object CMakeFiles/OpenSCAD.dir/src/core/customizer/Annotation.cc.o
+[ 27%] Building CXX object CMakeFiles/OpenSCAD.dir/src/core/customizer/CommentParser.cc.o
+[ 28%] Building CXX object CMakeFiles/OpenSCAD.dir/src/core/customizer/ParameterObject.cc.o
+[ 28%] Building CXX object CMakeFiles/OpenSCAD.dir/src/core/customizer/ParameterSet.cc.o
+[ 28%] Building CXX object CMakeFiles/OpenSCAD.dir/src/core/function.cc.o
+[ 29%] Building CXX object CMakeFiles/OpenSCAD.dir/src/core/module.cc.o
+[ 29%] Building CXX object CMakeFiles/OpenSCAD.dir/src/core/node.cc.o
+[ 29%] Building CXX object CMakeFiles/OpenSCAD.dir/src/core/node_clone.cc.o
+[ 29%] Building CXX object CMakeFiles/OpenSCAD.dir/src/core/parsersettings.cc.o
+[ 30%] Building CXX object CMakeFiles/OpenSCAD.dir/src/core/primitives.cc.o
+[ 30%] Building CXX object CMakeFiles/OpenSCAD.dir/src/core/progress.cc.o
+[ 30%] Building C object CMakeFiles/OpenSCAD.dir/src/ext/libtess2/Source/bucketalloc.c.o
+[ 31%] Building C object CMakeFiles/OpenSCAD.dir/src/ext/libtess2/Source/dict.c.o
+[ 31%] Building C object CMakeFiles/OpenSCAD.dir/src/ext/libtess2/Source/geom.c.o
+[ 32%] Building C object CMakeFiles/OpenSCAD.dir/src/ext/libtess2/Source/mesh.c.o
+[ 32%] Building C object CMakeFiles/OpenSCAD.dir/src/ext/libtess2/Source/priorityq.c.o
+[ 32%] Building C object CMakeFiles/OpenSCAD.dir/src/ext/libtess2/Source/sweep.c.o
+[ 33%] Building C object CMakeFiles/OpenSCAD.dir/src/ext/libtess2/Source/tess.c.o
+[ 33%] Building CXX object CMakeFiles/OpenSCAD.dir/src/ext/lodepng/lodepng.cpp.o
+[ 34%] Building CXX object CMakeFiles/OpenSCAD.dir/src/geometry/Geometry.cc.o
+[ 34%] Building CXX object CMakeFiles/OpenSCAD.dir/src/geometry/ClipperUtils.cc.o
+[ 34%] Building CXX object CMakeFiles/OpenSCAD.dir/src/geometry/GeometryCache.cc.o
+[ 34%] Building CXX object CMakeFiles/OpenSCAD.dir/src/geometry/GeometryEvaluator.cc.o
+[ 35%] Building CXX object CMakeFiles/OpenSCAD.dir/src/geometry/GeometryUtils.cc.o
+[ 35%] Building CXX object CMakeFiles/OpenSCAD.dir/src/geometry/PolySet.cc.o
+[ 35%] Building CXX object CMakeFiles/OpenSCAD.dir/src/geometry/PolySetBuilder.cc.o
+[ 36%] Building CXX object CMakeFiles/OpenSCAD.dir/src/geometry/PolySetUtils.cc.o
+[ 36%] Building CXX object CMakeFiles/OpenSCAD.dir/src/geometry/Polygon2d.cc.o
+[ 36%] Building CXX object CMakeFiles/OpenSCAD.dir/src/geometry/boolean_utils.cc.o
+[ 36%] Building CXX object CMakeFiles/OpenSCAD.dir/src/geometry/cgal/CGALCache.cc.o
+[ 37%] Building CXX object CMakeFiles/OpenSCAD.dir/src/geometry/cgal/CGALNefGeometry.cc.o
+[ 37%] Building CXX object CMakeFiles/OpenSCAD.dir/src/geometry/cgal/cgalutils-applyops-minkowski.cc.o
+[ 38%] Building CXX object CMakeFiles/OpenSCAD.dir/src/geometry/cgal/cgalutils-applyops.cc.o
+[ 38%] Building CXX object CMakeFiles/OpenSCAD.dir/src/geometry/cgal/cgalutils-closed.cc.o
+[ 39%] Building CXX object CMakeFiles/OpenSCAD.dir/src/geometry/cgal/cgalutils-convex.cc.o
+[ 39%] Building CXX object CMakeFiles/OpenSCAD.dir/src/geometry/cgal/cgalutils-kernel.cc.o
+[ 39%] Building CXX object CMakeFiles/OpenSCAD.dir/src/geometry/cgal/cgalutils-mesh.cc.o
+[ 40%] Building CXX object CMakeFiles/OpenSCAD.dir/src/geometry/cgal/cgalutils-orient.cc.o
+[ 40%] Building CXX object CMakeFiles/OpenSCAD.dir/src/geometry/cgal/cgalutils-polyhedron.cc.o
+[ 41%] Building CXX object CMakeFiles/OpenSCAD.dir/src/geometry/cgal/cgalutils-project.cc.o
+[ 41%] Building CXX object CMakeFiles/OpenSCAD.dir/src/geometry/cgal/cgalutils-tess.cc.o
+[ 41%] Building CXX object CMakeFiles/OpenSCAD.dir/src/geometry/cgal/cgalutils-triangulate.cc.o
+[ 41%] Building CXX object CMakeFiles/OpenSCAD.dir/src/geometry/cgal/cgalutils.cc.o
+[ 42%] Building CXX object CMakeFiles/OpenSCAD.dir/src/geometry/linalg.cc.o
+[ 42%] Building CXX object CMakeFiles/OpenSCAD.dir/src/geometry/linear_extrude.cc.o
+[ 42%] Building CXX object CMakeFiles/OpenSCAD.dir/src/geometry/roof_ss.cc.o
+[ 43%] Building CXX object CMakeFiles/OpenSCAD.dir/src/geometry/roof_vd.cc.o
+[ 44%] Building CXX object CMakeFiles/OpenSCAD.dir/src/geometry/rotate_extrude.cc.o
+[ 44%] Building CXX object CMakeFiles/OpenSCAD.dir/src/glview/Camera.cc.o
+[ 44%] Building CXX object CMakeFiles/OpenSCAD.dir/src/glview/ColorMap.cc.o
+[ 44%] Building CXX object CMakeFiles/OpenSCAD.dir/src/glview/GLView.cc.o
+[ 44%] Building CXX object CMakeFiles/OpenSCAD.dir/src/glview/OffscreenContextEGL.cc.o
+[ 45%] Building CXX object CMakeFiles/OpenSCAD.dir/src/glview/OffscreenContextFactory.cc.o
+[ 45%] Building CXX object CMakeFiles/OpenSCAD.dir/src/glview/OffscreenContextGLX.cc.o
+[ 46%] Building CXX object CMakeFiles/OpenSCAD.dir/src/glview/OffscreenView.cc.o
+[ 46%] Building CXX object CMakeFiles/OpenSCAD.dir/src/glview/OpenGLContext.cc.o
+[ 47%] Building CXX object CMakeFiles/OpenSCAD.dir/src/glview/PolySetRenderer.cc.o
+[ 47%] Building CXX object CMakeFiles/OpenSCAD.dir/src/glview/RenderSettings.cc.o
+[ 48%] Building CXX object CMakeFiles/OpenSCAD.dir/src/glview/Renderer.cc.o
+[ 48%] Building CXX object CMakeFiles/OpenSCAD.dir/src/glview/ShaderUtils.cc.o
+[ 49%] Building CXX object CMakeFiles/OpenSCAD.dir/src/glview/VBOBuilder.cc.o
+[ 50%] Building CXX object CMakeFiles/OpenSCAD.dir/src/glview/VBORenderer.cc.o
+[ 50%] Building CXX object CMakeFiles/OpenSCAD.dir/src/glview/VertexState.cc.o
+[ 50%] Building CXX object CMakeFiles/OpenSCAD.dir/src/glview/cgal/CGALRenderUtils.cc.o
+[ 50%] Building CXX object CMakeFiles/OpenSCAD.dir/src/glview/cgal/CGALRenderer.cc.o
+[ 50%] Building CXX object CMakeFiles/OpenSCAD.dir/src/glview/fbo.cc.o
+[ 50%] Building CXX object CMakeFiles/OpenSCAD.dir/src/glview/glew-utils.cc.o
+[ 50%] Building CXX object CMakeFiles/OpenSCAD.dir/src/glview/hershey.cc.o
+[ 50%] Building CXX object CMakeFiles/OpenSCAD.dir/src/glview/offscreen-old/OffscreenContextEGL.cc.o
+[ 51%] Building CXX object CMakeFiles/OpenSCAD.dir/src/glview/offscreen-old/OffscreenContextGLX.cc.o
+[ 51%] Building CXX object CMakeFiles/OpenSCAD.dir/src/glview/preview/CSGTreeNormalizer.cc.o
+[ 51%] Building CXX object CMakeFiles/OpenSCAD.dir/src/glview/preview/OpenCSGRenderer.cc.o
+[ 51%] Building CXX object CMakeFiles/OpenSCAD.dir/src/glview/preview/ThrownTogetherRenderer.cc.o
+[ 51%] Building CXX object CMakeFiles/OpenSCAD.dir/src/glview/system-gl.cc.o
+[ 51%] Building CXX object CMakeFiles/OpenSCAD.dir/src/gui/Animate.cc.o
+[ 52%] Building CXX object CMakeFiles/OpenSCAD.dir/src/gui/CGALWorker.cc.o
+[ 52%] Building CXX object CMakeFiles/OpenSCAD.dir/src/gui/AutoUpdater.cc.o
+[ 52%] Building CXX object CMakeFiles/OpenSCAD.dir/src/gui/Console.cc.o
+[ 53%] Building CXX object CMakeFiles/OpenSCAD.dir/src/gui/Dock.cc.o
+[ 53%] Building CXX object CMakeFiles/OpenSCAD.dir/src/gui/Editor.cc.o
+[ 53%] Building CXX object CMakeFiles/OpenSCAD.dir/src/gui/ErrorLog.cc.o
+[ 54%] Building CXX object CMakeFiles/OpenSCAD.dir/src/gui/Export3mfDialog.cc.o
+[ 54%] Building CXX object CMakeFiles/OpenSCAD.dir/src/gui/ExportPdfDialog.cc.o
+[ 54%] Building CXX object CMakeFiles/OpenSCAD.dir/src/gui/ExportSvgDialog.cc.o
+[ 54%] Building CXX object CMakeFiles/OpenSCAD.dir/src/gui/ExternalToolInterface.cc.o
+[ 54%] Building CXX object CMakeFiles/OpenSCAD.dir/src/gui/FontList.cc.o
+[ 54%] Building CXX object CMakeFiles/OpenSCAD.dir/src/gui/FontListDialog.cc.o
+[ 54%] Building CXX object CMakeFiles/OpenSCAD.dir/src/gui/FontListTableView.cc.o
+[ 54%] Building CXX object CMakeFiles/OpenSCAD.dir/src/gui/IgnoreWheelWhenNotFocused.cc.o
+[ 54%] Building CXX object CMakeFiles/OpenSCAD.dir/src/gui/ImportUtils.cc.o
+[ 55%] Building CXX object CMakeFiles/OpenSCAD.dir/src/gui/InitConfigurator.cc.o
+[ 56%] Building CXX object CMakeFiles/OpenSCAD.dir/src/gui/LaunchingScreen.cc.o
+[ 56%] Building CXX object CMakeFiles/OpenSCAD.dir/src/gui/LibraryInfoDialog.cc.o
+[ 56%] Building CXX object CMakeFiles/OpenSCAD.dir/src/gui/MainWindow.cc.o
+[ 57%] Building CXX object CMakeFiles/OpenSCAD.dir/src/gui/Measurement.cc.o
+[ 58%] Building CXX object CMakeFiles/OpenSCAD.dir/src/gui/MouseSelector.cc.o
+[ 58%] Building CXX object CMakeFiles/OpenSCAD.dir/src/gui/OctoPrint.cc.o
+[ 59%] Building CXX object CMakeFiles/OpenSCAD.dir/src/gui/OctoPrintApiKeyDialog.cc.o
+[ 59%] Building CXX object CMakeFiles/OpenSCAD.dir/src/gui/OpenCSGWarningDialog.cc.o
+[ 60%] Building CXX object CMakeFiles/OpenSCAD.dir/src/gui/OpenSCADApp.cc.o
+[ 60%] Building CXX object CMakeFiles/OpenSCAD.dir/src/gui/Preferences.cc.o
+[ 60%] Building CXX object CMakeFiles/OpenSCAD.dir/src/gui/PrintInitDialog.cc.o
+[ 61%] Building CXX object CMakeFiles/OpenSCAD.dir/src/gui/PrintService.cc.o
+[ 61%] Building CXX object CMakeFiles/OpenSCAD.dir/src/gui/ProgressWidget.cc.o
+[ 61%] Building CXX object CMakeFiles/OpenSCAD.dir/src/gui/QGLView.cc.o
+[ 62%] Building CXX object CMakeFiles/OpenSCAD.dir/src/gui/QGLView2.cc.o
+[ 62%] Building CXX object CMakeFiles/OpenSCAD.dir/src/gui/QSettingsCached.cc.o
+[ 62%] Building CXX object CMakeFiles/OpenSCAD.dir/src/gui/QWordSearchField.cc.o
+[ 63%] Building CXX object CMakeFiles/OpenSCAD.dir/src/gui/RubberBandManager.cc.o
+[ 64%] Building CXX object CMakeFiles/OpenSCAD.dir/src/gui/ScadApi.cc.o
+[ 64%] Building CXX object CMakeFiles/OpenSCAD.dir/src/gui/ScadLexer.cc.o
+[ 64%] Building CXX object CMakeFiles/OpenSCAD.dir/src/gui/ScintillaEditor.cc.o
+[ 65%] Building CXX object CMakeFiles/OpenSCAD.dir/src/gui/SettingsWriter.cc.o
+/home/nomike/coding/openscad/src/gui/QGLView.cc: In member function ‘virtual void QGLView::mousePressEvent(QMouseEvent*)’:
+/home/nomike/coding/openscad/src/gui/QGLView.cc:206:32: warning: ‘QPoint QMouseEvent::globalPos() const’ is deprecated: Use globalPosition() [-Wdeprecated-declarations]
+  206 |   last_mouse = event->globalPos();
+      |                ~~~~~~~~~~~~~~~~^~
+In file included from /usr/include/x86_64-linux-gnu/qt6/QtGui/QMouseEvent:1,
+                 from /home/nomike/coding/openscad/src/gui/QGLView.h:7,
+                 from /home/nomike/coding/openscad/src/gui/QGLView.cc:27:
+/usr/include/x86_64-linux-gnu/qt6/QtGui/qevent.h:225:19: note: declared here
+  225 |     inline QPoint globalPos() const { return globalPosition().toPoint(); }
+      |                   ^~~~~~~~~
+/home/nomike/coding/openscad/src/gui/QGLView.cc: In member function ‘virtual void QGLView::mouseMoveEvent(QMouseEvent*)’:
+/home/nomike/coding/openscad/src/gui/QGLView.cc:304:37: warning: ‘QPoint QMouseEvent::globalPos() const’ is deprecated: Use globalPosition() [-Wdeprecated-declarations]
+  304 |   auto this_mouse = event->globalPos();
+      |                     ~~~~~~~~~~~~~~~~^~
+/usr/include/x86_64-linux-gnu/qt6/QtGui/qevent.h:225:19: note: declared here
+  225 |     inline QPoint globalPos() const { return globalPosition().toPoint(); }
+      |                   ^~~~~~~~~
+[ 65%] Building CXX object CMakeFiles/OpenSCAD.dir/src/gui/TabManager.cc.o
+[ 65%] Building CXX object CMakeFiles/OpenSCAD.dir/src/gui/UIUtils.cc.o
+[ 65%] Building CXX object CMakeFiles/OpenSCAD.dir/src/gui/ViewportControl.cc.o
+[ 66%] Building CXX object CMakeFiles/OpenSCAD.dir/src/gui/WindowManager.cc.o
+[ 66%] Building CXX object CMakeFiles/OpenSCAD.dir/src/gui/input/AxisConfigWidget.cc.o
+[ 67%] Building CXX object CMakeFiles/OpenSCAD.dir/src/gui/input/ButtonConfigWidget.cc.o
+[ 67%] Building CXX object CMakeFiles/OpenSCAD.dir/src/gui/input/DBusInputDriver.cc.o
+/home/nomike/coding/openscad/src/gui/ScintillaEditor.cc: In constructor ‘ScintillaEditor::ScintillaEditor(QWidget*)’:
+/home/nomike/coding/openscad/src/gui/ScintillaEditor.cc:148:40: warning: ‘constexpr QKeyCombination::operator int() const’ is deprecated: Use QKeyCombination instead of int [-Wdeprecated-declarations]
+  148 |   c = qsci->standardCommands()->boundTo(Qt::Key_T | Qt::CTRL);
+      |       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~
+In file included from /usr/include/x86_64-linux-gnu/qt6/QtCore/qarraydataops.h:10,
+                 from /usr/include/x86_64-linux-gnu/qt6/QtCore/qarraydatapointer.h:7,
+                 from /usr/include/x86_64-linux-gnu/qt6/QtCore/qlist.h:8,
+                 from /usr/include/x86_64-linux-gnu/qt6/QtCore/qstringlist.h:5,
+                 from /usr/include/x86_64-linux-gnu/qt6/QtCore/QStringList:1,
+                 from /home/nomike/coding/openscad/src/gui/ScintillaEditor.h:3,
+                 from /home/nomike/coding/openscad/src/gui/ScintillaEditor.cc:1:
+/usr/include/x86_64-linux-gnu/qt6/QtCore/qnamespace.h:1912:26: note: declared here
+ 1912 |     constexpr Q_IMPLICIT operator int() const noexcept
+      |                          ^~~~~~~~
+/home/nomike/coding/openscad/src/gui/ScintillaEditor.cc:151:40: warning: ‘constexpr QKeyCombination::operator int() const’ is deprecated: Use QKeyCombination instead of int [-Wdeprecated-declarations]
+  151 |   c = qsci->standardCommands()->boundTo(Qt::Key_D | Qt::CTRL);
+      |       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~
+/usr/include/x86_64-linux-gnu/qt6/QtCore/qnamespace.h:1912:26: note: declared here
+ 1912 |     constexpr Q_IMPLICIT operator int() const noexcept
+      |                          ^~~~~~~~
+/home/nomike/coding/openscad/src/gui/ScintillaEditor.cc:155:40: warning: ‘constexpr QKeyCombination::operator int() const’ is deprecated: Use QKeyCombination instead of int [-Wdeprecated-declarations]
+  155 |   c->setKey(Qt::Key_Z | Qt::CTRL | Qt::SHIFT);
+      |                                        ^~~~~
+/usr/include/x86_64-linux-gnu/qt6/QtCore/qnamespace.h:1912:26: note: declared here
+ 1912 |     constexpr Q_IMPLICIT operator int() const noexcept
+      |                          ^~~~~~~~
+/home/nomike/coding/openscad/src/gui/ScintillaEditor.cc:156:21: warning: ‘constexpr QKeyCombination::operator int() const’ is deprecated: Use QKeyCombination instead of int [-Wdeprecated-declarations]
+  156 |   c->setAlternateKey(Qt::Key_Y | Qt::CTRL);
+      |   ~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~
+/usr/include/x86_64-linux-gnu/qt6/QtCore/qnamespace.h:1912:26: note: declared here
+ 1912 |     constexpr Q_IMPLICIT operator int() const noexcept
+      |                          ^~~~~~~~
+[ 67%] Building CXX object CMakeFiles/OpenSCAD.dir/src/gui/input/HidApiInputDriver.cc.o
+[ 68%] Building CXX object CMakeFiles/OpenSCAD.dir/src/gui/input/InputDriver.cc.o
+/home/nomike/coding/openscad/src/gui/TabManager.cc: In member function ‘void TabManager::createTab(const QString&)’:
+/home/nomike/coding/openscad/src/gui/TabManager.cc:170:39: warning: ‘constexpr QKeyCombination::operator int() const’ is deprecated: Use QKeyCombination instead of int [-Wdeprecated-declarations]
+  170 |   QsciCommand *qcmd = qcmdset->boundTo(Qt::ControlModifier | Qt::Key_Plus);
+      |                       ~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+In file included from /usr/include/x86_64-linux-gnu/qt6/QtCore/qobjectdefs.h:12,
+                 from /usr/include/x86_64-linux-gnu/qt6/QtCore/qobject.h:10,
+                 from /usr/include/x86_64-linux-gnu/qt6/QtCore/QObject:1,
+                 from /home/nomike/coding/openscad/src/gui/TabManager.h:6,
+                 from /home/nomike/coding/openscad/src/gui/TabManager.cc:1:
+/usr/include/x86_64-linux-gnu/qt6/QtCore/qnamespace.h:1912:26: note: declared here
+ 1912 |     constexpr Q_IMPLICIT operator int() const noexcept
+      |                          ^~~~~~~~
+/home/nomike/coding/openscad/src/gui/TabManager.cc:172:26: warning: ‘constexpr QKeyCombination::operator int() const’ is deprecated: Use QKeyCombination instead of int [-Wdeprecated-declarations]
+  172 |   qcmd = qcmdset->boundTo(Qt::ControlModifier | Qt::Key_Minus);
+      |          ~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/usr/include/x86_64-linux-gnu/qt6/QtCore/qnamespace.h:1912:26: note: declared here
+ 1912 |     constexpr Q_IMPLICIT operator int() const noexcept
+      |                          ^~~~~~~~
+[ 68%] Building CXX object CMakeFiles/OpenSCAD.dir/src/gui/input/InputDriverManager.cc.o
+[ 68%] Building CXX object CMakeFiles/OpenSCAD.dir/src/gui/input/InputEventMapper.cc.o
+[ 69%] Building CXX object CMakeFiles/OpenSCAD.dir/src/gui/input/JoystickInputDriver.cc.o
+[ 69%] Building CXX object CMakeFiles/OpenSCAD.dir/src/gui/input/MouseConfigWidget.cc.o
+[ 70%] Building CXX object CMakeFiles/OpenSCAD.dir/src/gui/input/SpaceNavInputDriver.cc.o
+[ 71%] Building CXX object CMakeFiles/OpenSCAD.dir/src/gui/parameter/GroupWidget.cc.o
+[ 71%] Building CXX object CMakeFiles/OpenSCAD.dir/src/gui/parameter/ParameterCheckBox.cc.o
+[ 71%] Building CXX object CMakeFiles/OpenSCAD.dir/src/gui/parameter/ParameterComboBox.cc.o
+[ 72%] Building CXX object CMakeFiles/OpenSCAD.dir/src/gui/parameter/ParameterSlider.cc.o
+[ 72%] Building CXX object CMakeFiles/OpenSCAD.dir/src/gui/parameter/ParameterSpinBox.cc.o
+[ 72%] Building CXX object CMakeFiles/OpenSCAD.dir/src/gui/parameter/ParameterText.cc.o
+[ 73%] Building CXX object CMakeFiles/OpenSCAD.dir/src/gui/parameter/ParameterVector.cc.o
+[ 73%] Building CXX object CMakeFiles/OpenSCAD.dir/src/gui/parameter/ParameterVirtualWidget.cc.o
+[ 73%] Building CXX object CMakeFiles/OpenSCAD.dir/src/gui/parameter/ParameterWidget.cc.o
+[ 74%] Building CXX object CMakeFiles/OpenSCAD.dir/src/handle_dep.cc.o
+[ 74%] Building CXX object CMakeFiles/OpenSCAD.dir/src/io/DxfData.cc.o
+[ 74%] Building CXX object CMakeFiles/OpenSCAD.dir/src/io/dxfdim.cc.o
+[ 75%] Building CXX object CMakeFiles/OpenSCAD.dir/src/io/export.cc.o
+[ 76%] Building CXX object CMakeFiles/OpenSCAD.dir/src/io/export_3mf_v1.cc.o
+[ 76%] Building CXX object CMakeFiles/OpenSCAD.dir/src/io/export_amf.cc.o
+[ 76%] Building CXX object CMakeFiles/OpenSCAD.dir/src/io/export_dxf.cc.o
+[ 76%] Building CXX object CMakeFiles/OpenSCAD.dir/src/io/export_nef.cc.o
+[ 77%] Building CXX object CMakeFiles/OpenSCAD.dir/src/io/export_obj.cc.o
+[ 77%] Building CXX object CMakeFiles/OpenSCAD.dir/src/io/export_off.cc.o
+[ 78%] Building CXX object CMakeFiles/OpenSCAD.dir/src/io/export_param.cc.o
+[ 78%] Building CXX object CMakeFiles/OpenSCAD.dir/src/io/export_pdf.cc.o
+[ 79%] Building CXX object CMakeFiles/OpenSCAD.dir/src/io/export_png.cc.o
+[ 79%] Building CXX object CMakeFiles/OpenSCAD.dir/src/io/export_pov.cc.o
+[ 79%] Building CXX object CMakeFiles/OpenSCAD.dir/src/io/export_stl.cc.o
+[ 80%] Building CXX object CMakeFiles/OpenSCAD.dir/src/io/export_svg.cc.o
+[ 80%] Building CXX object CMakeFiles/OpenSCAD.dir/src/io/export_wrl.cc.o
+[ 81%] Building CXX object CMakeFiles/OpenSCAD.dir/src/io/fileutils.cc.o
+[ 81%] Building CXX object CMakeFiles/OpenSCAD.dir/src/io/imageutils-lodepng.cc.o
+[ 81%] Building CXX object CMakeFiles/OpenSCAD.dir/src/io/imageutils.cc.o
+[ 81%] Building CXX object CMakeFiles/OpenSCAD.dir/src/io/import_3mf_v1.cc.o
+[ 81%] Building CXX object CMakeFiles/OpenSCAD.dir/src/io/import_amf.cc.o
+[ 81%] Building CXX object CMakeFiles/OpenSCAD.dir/src/io/import_json.cc.o
+[ 82%] Building CXX object CMakeFiles/OpenSCAD.dir/src/io/import_nef.cc.o
+[ 83%] Building CXX object CMakeFiles/OpenSCAD.dir/src/io/import_obj.cc.o
+[ 83%] Building CXX object CMakeFiles/OpenSCAD.dir/src/io/import_off.cc.o
+[ 83%] Building CXX object CMakeFiles/OpenSCAD.dir/src/io/import_stl.cc.o
+[ 84%] Building CXX object CMakeFiles/OpenSCAD.dir/src/io/import_svg.cc.o
+[ 84%] Building CXX object CMakeFiles/OpenSCAD.dir/src/libsvg/circle.cc.o
+[ 85%] Building CXX object CMakeFiles/OpenSCAD.dir/src/libsvg/data.cc.o
+[ 85%] Building CXX object CMakeFiles/OpenSCAD.dir/src/libsvg/ellipse.cc.o
+[ 85%] Building CXX object CMakeFiles/OpenSCAD.dir/src/libsvg/group.cc.o
+[ 86%] Building CXX object CMakeFiles/OpenSCAD.dir/src/libsvg/libsvg.cc.o
+[ 86%] Building CXX object CMakeFiles/OpenSCAD.dir/src/libsvg/line.cc.o
+[ 86%] Building CXX object CMakeFiles/OpenSCAD.dir/src/libsvg/path.cc.o
+[ 87%] Building CXX object CMakeFiles/OpenSCAD.dir/src/libsvg/polygon.cc.o
+[ 87%] Building CXX object CMakeFiles/OpenSCAD.dir/src/libsvg/polyline.cc.o
+[ 87%] Building CXX object CMakeFiles/OpenSCAD.dir/src/libsvg/rect.cc.o
+[ 88%] Building CXX object CMakeFiles/OpenSCAD.dir/src/libsvg/shape.cc.o
+[ 88%] Building CXX object CMakeFiles/OpenSCAD.dir/src/libsvg/svgpage.cc.o
+[ 88%] Building CXX object CMakeFiles/OpenSCAD.dir/src/libsvg/text.cc.o
+[ 89%] Building CXX object CMakeFiles/OpenSCAD.dir/src/libsvg/transformation.cc.o
+[ 89%] Building CXX object CMakeFiles/OpenSCAD.dir/src/libsvg/tspan.cc.o
+[ 90%] Building CXX object CMakeFiles/OpenSCAD.dir/src/libsvg/use.cc.o
+[ 90%] Building CXX object CMakeFiles/OpenSCAD.dir/src/libsvg/util.cc.o
+[ 90%] Building CXX object CMakeFiles/OpenSCAD.dir/src/openscad.cc.o
+[ 91%] Building CXX object CMakeFiles/OpenSCAD.dir/src/openscad_gui.cc.o
+[ 92%] Building CXX object CMakeFiles/OpenSCAD.dir/src/platform/PlatformUtils-posix.cc.o
+[ 92%] Building CXX object CMakeFiles/OpenSCAD.dir/src/platform/PlatformUtils.cc.o
+[ 93%] Building CXX object CMakeFiles/OpenSCAD.dir/src/utils/calc.cc.o
+[ 93%] Building CXX object CMakeFiles/OpenSCAD.dir/src/utils/degree_trig.cc.o
+[ 93%] Building CXX object CMakeFiles/OpenSCAD.dir/src/utils/hash.cc.o
+[ 94%] Building CXX object CMakeFiles/OpenSCAD.dir/src/utils/printutils.cc.o
+[ 94%] Building CXX object CMakeFiles/OpenSCAD.dir/src/utils/svg.cc.o
+[ 94%] Building CXX object CMakeFiles/OpenSCAD.dir/src/version.cc.o
+/home/nomike/coding/openscad/src/gui/MainWindow.cc: In constructor ‘MainWindow::MainWindow(const QStringList&)’:
+/home/nomike/coding/openscad/src/gui/MainWindow.cc:768: warning: ‘constexpr QKeyCombination Qt::operator+(Modifier, Key)’ is deprecated: Use operator| instead [-Wdeprecated-declarations]
+  768 |   shortcutNextWindow = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_K), this);
+In file included from /usr/include/x86_64-linux-gnu/qt6/QtCore/qbytearray.h:9,
+                 from /usr/include/x86_64-linux-gnu/qt6/QtCore/qstringview.h:10,
+                 from /usr/include/x86_64-linux-gnu/qt6/QtCore/qchar.h:670,
+                 from /usr/include/x86_64-linux-gnu/qt6/QtCore/qstring.h:14,
+                 from /usr/include/x86_64-linux-gnu/qt6/QtGui/qkeysequence.h:8,
+                 from /usr/include/x86_64-linux-gnu/qt6/QtGui/qaction.h:9,
+                 from /usr/include/x86_64-linux-gnu/qt6/QtGui/QAction:1,
+                 from /home/nomike/coding/openscad/src/gui/MainWindow.h:10,
+                 from /home/nomike/coding/openscad/src/gui/MainWindow.cc:27:
+/usr/include/x86_64-linux-gnu/qt6/QtCore/qnamespace.h:1972:27: note: declared here
+ 1972 | constexpr QKeyCombination operator+(Qt::Modifier modifier, Qt::Key key) noexcept
+      |                           ^~~~~~~~
+/home/nomike/coding/openscad/src/gui/MainWindow.cc:771: warning: ‘constexpr QKeyCombination Qt::operator+(Modifier, Key)’ is deprecated: Use operator| instead [-Wdeprecated-declarations]
+  771 |   shortcutPreviousWindow = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_H), this);
+/usr/include/x86_64-linux-gnu/qt6/QtCore/qnamespace.h:1972:27: note: declared here
+ 1972 | constexpr QKeyCombination operator+(Qt::Modifier modifier, Qt::Key key) noexcept
+      |                           ^~~~~~~~
+[ 94%] Linking CXX executable openscad
+Using built-in specs.
+COLLECT_GCC=/usr/bin/c++
+COLLECT_LTO_WRAPPER=/usr/libexec/gcc/x86_64-linux-gnu/14/lto-wrapper
+OFFLOAD_TARGET_NAMES=nvptx-none:amdgcn-amdhsa
+OFFLOAD_TARGET_DEFAULT=1
+Target: x86_64-linux-gnu
+Configured with: ../src/configure -v --with-pkgversion='Ubuntu 14.2.0-19ubuntu2' --with-bugurl=file:///usr/share/doc/gcc-14/README.Bugs --enable-languages=c,ada,c++,go,d,fortran,objc,obj-c++,m2,rust --prefix=/usr --with-gcc-major-version-only --program-suffix=-14 --program-prefix=x86_64-linux-gnu- --enable-shared --enable-linker-build-id --libexecdir=/usr/libexec --without-included-gettext --enable-threads=posix --libdir=/usr/lib --enable-nls --enable-bootstrap --enable-clocale=gnu --enable-libstdcxx-debug --enable-libstdcxx-time=yes --with-default-libstdcxx-abi=new --enable-libstdcxx-backtrace --enable-gnu-unique-object --disable-vtable-verify --enable-plugin --enable-default-pie --with-system-zlib --enable-libphobos-checking=release --with-target-system-zlib=auto --enable-objc-gc=auto --enable-multiarch --disable-werror --enable-cet --with-arch-32=i686 --with-abi=m64 --with-multilib-list=m32,m64,mx32 --enable-multilib --with-tune=generic --enable-offload-targets=nvptx-none=/build/gcc-14-C86vgL/gcc-14-14.2.0/debian/tmp-nvptx/usr,amdgcn-amdhsa=/build/gcc-14-C86vgL/gcc-14-14.2.0/debian/tmp-gcn/usr --enable-offload-defaulted --without-cuda-driver --enable-checking=release --build=x86_64-linux-gnu --host=x86_64-linux-gnu --target=x86_64-linux-gnu --with-build-config=bootstrap-lto-lean --enable-link-serialization=2
+Thread model: posix
+Supported LTO compression algorithms: zlib zstd
+gcc version 14.2.0 (Ubuntu 14.2.0-19ubuntu2) 
+COMPILER_PATH=/usr/libexec/gcc/x86_64-linux-gnu/14/:/usr/libexec/gcc/x86_64-linux-gnu/14/:/usr/libexec/gcc/x86_64-linux-gnu/:/usr/lib/gcc/x86_64-linux-gnu/14/:/usr/lib/gcc/x86_64-linux-gnu/
+LIBRARY_PATH=/usr/lib/gcc/x86_64-linux-gnu/14/:/usr/lib/gcc/x86_64-linux-gnu/14/../../../x86_64-linux-gnu/:/usr/lib/gcc/x86_64-linux-gnu/14/../../../../lib/:/lib/x86_64-linux-gnu/:/lib/../lib/:/usr/lib/x86_64-linux-gnu/:/usr/lib/../lib/:/usr/lib/gcc/x86_64-linux-gnu/14/../../../:/lib/:/usr/lib/
+COLLECT_GCC_OPTIONS='-frounding-math' '-v' '-o' 'openscad' '-foffload-options=-l_GCC_m' '-shared-libgcc' '-mtune=generic' '-march=x86-64' '-dumpdir' 'openscad.'
+ /usr/libexec/gcc/x86_64-linux-gnu/14/collect2 -plugin /usr/libexec/gcc/x86_64-linux-gnu/14/liblto_plugin.so -plugin-opt=/usr/libexec/gcc/x86_64-linux-gnu/14/lto-wrapper -plugin-opt=-fresolution=/tmp/cc3Uglpo.res -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lc -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lgcc --build-id --eh-frame-hdr -m elf_x86_64 --hash-style=gnu --as-needed -dynamic-linker /lib64/ld-linux-x86-64.so.2 -pie -z now -z relro -o openscad /usr/lib/gcc/x86_64-linux-gnu/14/../../../x86_64-linux-gnu/Scrt1.o /usr/lib/gcc/x86_64-linux-gnu/14/../../../x86_64-linux-gnu/crti.o /usr/lib/gcc/x86_64-linux-gnu/14/crtbeginS.o -L/usr/lib/gcc/x86_64-linux-gnu/14 -L/usr/lib/gcc/x86_64-linux-gnu/14/../../../x86_64-linux-gnu -L/usr/lib/gcc/x86_64-linux-gnu/14/../../../../lib -L/lib/x86_64-linux-gnu -L/lib/../lib -L/usr/lib/x86_64-linux-gnu -L/usr/lib/../lib -L/usr/lib/gcc/x86_64-linux-gnu/14/../../.. --dependency-file=CMakeFiles/OpenSCAD.dir/link.d CMakeFiles/OpenSCAD.dir/OpenSCAD_autogen/mocs_compilation.cpp.o CMakeFiles/OpenSCAD.dir/src/geometry/cgal/cgalutils.cc.o CMakeFiles/OpenSCAD.dir/src/geometry/cgal/cgalutils-applyops.cc.o CMakeFiles/OpenSCAD.dir/src/geometry/cgal/cgalutils-applyops-minkowski.cc.o CMakeFiles/OpenSCAD.dir/src/geometry/cgal/cgalutils-closed.cc.o CMakeFiles/OpenSCAD.dir/src/geometry/cgal/cgalutils-convex.cc.o CMakeFiles/OpenSCAD.dir/src/geometry/cgal/cgalutils-kernel.cc.o CMakeFiles/OpenSCAD.dir/src/geometry/cgal/cgalutils-mesh.cc.o CMakeFiles/OpenSCAD.dir/src/geometry/cgal/cgalutils-orient.cc.o CMakeFiles/OpenSCAD.dir/src/geometry/cgal/cgalutils-polyhedron.cc.o CMakeFiles/OpenSCAD.dir/src/geometry/cgal/cgalutils-project.cc.o CMakeFiles/OpenSCAD.dir/src/geometry/cgal/cgalutils-tess.cc.o CMakeFiles/OpenSCAD.dir/src/geometry/cgal/cgalutils-triangulate.cc.o CMakeFiles/OpenSCAD.dir/src/geometry/cgal/CGALNefGeometry.cc.o CMakeFiles/OpenSCAD.dir/src/geometry/cgal/CGALCache.cc.o CMakeFiles/OpenSCAD.dir/src/io/export_nef.cc.o CMakeFiles/OpenSCAD.dir/src/io/import_nef.cc.o CMakeFiles/OpenSCAD.dir/src/openscad.cc.o CMakeFiles/OpenSCAD.dir/src/Feature.cc.o CMakeFiles/OpenSCAD.dir/src/FontCache.cc.o CMakeFiles/OpenSCAD.dir/src/LibraryInfo.cc.o CMakeFiles/OpenSCAD.dir/src/RenderStatistic.cc.o CMakeFiles/OpenSCAD.dir/src/core/AST.cc.o CMakeFiles/OpenSCAD.dir/src/core/Arguments.cc.o CMakeFiles/OpenSCAD.dir/src/core/Assignment.cc.o CMakeFiles/OpenSCAD.dir/src/core/BuiltinContext.cc.o CMakeFiles/OpenSCAD.dir/src/core/Builtins.cc.o CMakeFiles/OpenSCAD.dir/src/core/CSGNode.cc.o CMakeFiles/OpenSCAD.dir/src/core/CSGTreeEvaluator.cc.o CMakeFiles/OpenSCAD.dir/src/core/CgalAdvNode.cc.o CMakeFiles/OpenSCAD.dir/src/core/Children.cc.o CMakeFiles/OpenSCAD.dir/src/core/ColorNode.cc.o CMakeFiles/OpenSCAD.dir/src/core/ColorUtil.cc.o CMakeFiles/OpenSCAD.dir/src/core/Context.cc.o CMakeFiles/OpenSCAD.dir/src/core/ContextFrame.cc.o CMakeFiles/OpenSCAD.dir/src/core/ContextMemoryManager.cc.o CMakeFiles/OpenSCAD.dir/src/core/CsgOpNode.cc.o CMakeFiles/OpenSCAD.dir/src/core/DrawingCallback.cc.o CMakeFiles/OpenSCAD.dir/src/core/EvaluationSession.cc.o CMakeFiles/OpenSCAD.dir/src/core/Expression.cc.o CMakeFiles/OpenSCAD.dir/src/core/FreetypeRenderer.cc.o CMakeFiles/OpenSCAD.dir/src/core/FunctionType.cc.o CMakeFiles/OpenSCAD.dir/src/core/GroupModule.cc.o CMakeFiles/OpenSCAD.dir/src/core/ImportNode.cc.o CMakeFiles/OpenSCAD.dir/src/core/LinearExtrudeNode.cc.o CMakeFiles/OpenSCAD.dir/src/core/LocalScope.cc.o CMakeFiles/OpenSCAD.dir/src/core/node_clone.cc.o CMakeFiles/OpenSCAD.dir/src/core/ModuleInstantiation.cc.o CMakeFiles/OpenSCAD.dir/src/core/NodeDumper.cc.o CMakeFiles/OpenSCAD.dir/src/core/NodeVisitor.cc.o CMakeFiles/OpenSCAD.dir/src/core/OffsetNode.cc.o CMakeFiles/OpenSCAD.dir/src/core/Parameters.cc.o CMakeFiles/OpenSCAD.dir/src/core/ProjectionNode.cc.o CMakeFiles/OpenSCAD.dir/src/core/RenderNode.cc.o CMakeFiles/OpenSCAD.dir/src/core/RenderVariables.cc.o CMakeFiles/OpenSCAD.dir/src/core/RotateExtrudeNode.cc.o CMakeFiles/OpenSCAD.dir/src/core/ScopeContext.cc.o CMakeFiles/OpenSCAD.dir/src/core/Settings.cc.o CMakeFiles/OpenSCAD.dir/src/core/SourceFile.cc.o CMakeFiles/OpenSCAD.dir/src/core/SourceFileCache.cc.o CMakeFiles/OpenSCAD.dir/src/core/StatCache.cc.o CMakeFiles/OpenSCAD.dir/src/core/SurfaceNode.cc.o CMakeFiles/OpenSCAD.dir/src/core/TextNode.cc.o CMakeFiles/OpenSCAD.dir/src/core/TransformNode.cc.o CMakeFiles/OpenSCAD.dir/src/core/Tree.cc.o CMakeFiles/OpenSCAD.dir/src/core/UndefType.cc.o CMakeFiles/OpenSCAD.dir/src/core/UserModule.cc.o CMakeFiles/OpenSCAD.dir/src/core/Value.cc.o CMakeFiles/OpenSCAD.dir/src/core/builtin_functions.cc.o CMakeFiles/OpenSCAD.dir/src/core/control.cc.o CMakeFiles/OpenSCAD.dir/src/core/customizer/Annotation.cc.o CMakeFiles/OpenSCAD.dir/src/core/customizer/CommentParser.cc.o CMakeFiles/OpenSCAD.dir/src/core/customizer/ParameterObject.cc.o CMakeFiles/OpenSCAD.dir/src/core/customizer/ParameterSet.cc.o CMakeFiles/OpenSCAD.dir/src/core/function.cc.o CMakeFiles/OpenSCAD.dir/src/core/module.cc.o CMakeFiles/OpenSCAD.dir/src/core/node.cc.o CMakeFiles/OpenSCAD.dir/src/core/parsersettings.cc.o CMakeFiles/OpenSCAD.dir/src/core/primitives.cc.o CMakeFiles/OpenSCAD.dir/src/core/progress.cc.o CMakeFiles/OpenSCAD.dir/src/ext/libtess2/Source/bucketalloc.c.o CMakeFiles/OpenSCAD.dir/src/ext/libtess2/Source/dict.c.o CMakeFiles/OpenSCAD.dir/src/ext/libtess2/Source/geom.c.o CMakeFiles/OpenSCAD.dir/src/ext/libtess2/Source/mesh.c.o CMakeFiles/OpenSCAD.dir/src/ext/libtess2/Source/priorityq.c.o CMakeFiles/OpenSCAD.dir/src/ext/libtess2/Source/sweep.c.o CMakeFiles/OpenSCAD.dir/src/ext/libtess2/Source/tess.c.o CMakeFiles/OpenSCAD.dir/src/ext/lodepng/lodepng.cpp.o CMakeFiles/OpenSCAD.dir/src/geometry/ClipperUtils.cc.o CMakeFiles/OpenSCAD.dir/src/geometry/Geometry.cc.o CMakeFiles/OpenSCAD.dir/src/geometry/GeometryCache.cc.o CMakeFiles/OpenSCAD.dir/src/geometry/GeometryEvaluator.cc.o CMakeFiles/OpenSCAD.dir/src/geometry/GeometryUtils.cc.o CMakeFiles/OpenSCAD.dir/src/geometry/PolySet.cc.o CMakeFiles/OpenSCAD.dir/src/geometry/PolySetBuilder.cc.o CMakeFiles/OpenSCAD.dir/src/geometry/PolySetUtils.cc.o CMakeFiles/OpenSCAD.dir/src/geometry/Polygon2d.cc.o CMakeFiles/OpenSCAD.dir/src/geometry/boolean_utils.cc.o CMakeFiles/OpenSCAD.dir/src/geometry/linalg.cc.o CMakeFiles/OpenSCAD.dir/src/geometry/linear_extrude.cc.o CMakeFiles/OpenSCAD.dir/src/geometry/rotate_extrude.cc.o CMakeFiles/OpenSCAD.dir/src/glview/Camera.cc.o CMakeFiles/OpenSCAD.dir/src/glview/ColorMap.cc.o CMakeFiles/OpenSCAD.dir/src/glview/OffscreenContextFactory.cc.o CMakeFiles/OpenSCAD.dir/src/glview/RenderSettings.cc.o CMakeFiles/OpenSCAD.dir/src/glview/preview/CSGTreeNormalizer.cc.o CMakeFiles/OpenSCAD.dir/src/handle_dep.cc.o CMakeFiles/OpenSCAD.dir/src/io/DxfData.cc.o CMakeFiles/OpenSCAD.dir/src/io/dxfdim.cc.o CMakeFiles/OpenSCAD.dir/src/io/export.cc.o CMakeFiles/OpenSCAD.dir/src/io/export_amf.cc.o CMakeFiles/OpenSCAD.dir/src/io/export_dxf.cc.o CMakeFiles/OpenSCAD.dir/src/io/export_obj.cc.o CMakeFiles/OpenSCAD.dir/src/io/export_off.cc.o CMakeFiles/OpenSCAD.dir/src/io/export_param.cc.o CMakeFiles/OpenSCAD.dir/src/io/export_pdf.cc.o CMakeFiles/OpenSCAD.dir/src/io/export_stl.cc.o CMakeFiles/OpenSCAD.dir/src/io/export_svg.cc.o CMakeFiles/OpenSCAD.dir/src/io/export_pov.cc.o CMakeFiles/OpenSCAD.dir/src/io/export_wrl.cc.o CMakeFiles/OpenSCAD.dir/src/io/fileutils.cc.o CMakeFiles/OpenSCAD.dir/src/io/import_amf.cc.o CMakeFiles/OpenSCAD.dir/src/io/import_json.cc.o CMakeFiles/OpenSCAD.dir/src/io/import_obj.cc.o CMakeFiles/OpenSCAD.dir/src/io/import_off.cc.o CMakeFiles/OpenSCAD.dir/src/io/import_stl.cc.o CMakeFiles/OpenSCAD.dir/src/io/import_svg.cc.o CMakeFiles/OpenSCAD.dir/src/libsvg/circle.cc.o CMakeFiles/OpenSCAD.dir/src/libsvg/data.cc.o CMakeFiles/OpenSCAD.dir/src/libsvg/ellipse.cc.o CMakeFiles/OpenSCAD.dir/src/libsvg/group.cc.o CMakeFiles/OpenSCAD.dir/src/libsvg/libsvg.cc.o CMakeFiles/OpenSCAD.dir/src/libsvg/line.cc.o CMakeFiles/OpenSCAD.dir/src/libsvg/path.cc.o CMakeFiles/OpenSCAD.dir/src/libsvg/polygon.cc.o CMakeFiles/OpenSCAD.dir/src/libsvg/polyline.cc.o CMakeFiles/OpenSCAD.dir/src/libsvg/rect.cc.o CMakeFiles/OpenSCAD.dir/src/libsvg/shape.cc.o CMakeFiles/OpenSCAD.dir/src/libsvg/svgpage.cc.o CMakeFiles/OpenSCAD.dir/src/libsvg/text.cc.o CMakeFiles/OpenSCAD.dir/src/libsvg/transformation.cc.o CMakeFiles/OpenSCAD.dir/src/libsvg/tspan.cc.o CMakeFiles/OpenSCAD.dir/src/libsvg/use.cc.o CMakeFiles/OpenSCAD.dir/src/libsvg/util.cc.o CMakeFiles/OpenSCAD.dir/src/platform/PlatformUtils.cc.o CMakeFiles/OpenSCAD.dir/src/utils/calc.cc.o CMakeFiles/OpenSCAD.dir/src/utils/degree_trig.cc.o CMakeFiles/OpenSCAD.dir/src/utils/hash.cc.o CMakeFiles/OpenSCAD.dir/src/utils/printutils.cc.o CMakeFiles/OpenSCAD.dir/src/utils/svg.cc.o CMakeFiles/OpenSCAD.dir/src/version.cc.o CMakeFiles/OpenSCAD.dir/src/io/export_3mf_v1.cc.o CMakeFiles/OpenSCAD.dir/src/io/import_3mf_v1.cc.o CMakeFiles/OpenSCAD.dir/src/io/imageutils-lodepng.cc.o CMakeFiles/OpenSCAD.dir/src/platform/PlatformUtils-posix.cc.o CMakeFiles/OpenSCAD.dir/src/glview/offscreen-old/OffscreenContextEGL.cc.o CMakeFiles/OpenSCAD.dir/src/glview/OffscreenContextEGL.cc.o CMakeFiles/OpenSCAD.dir/src/glview/offscreen-old/OffscreenContextGLX.cc.o CMakeFiles/OpenSCAD.dir/src/glview/OffscreenContextGLX.cc.o CMakeFiles/OpenSCAD.dir/objects/lexer.cxx.o CMakeFiles/OpenSCAD.dir/objects/parser.cxx.o CMakeFiles/OpenSCAD.dir/objects/comment_lexer.cxx.o CMakeFiles/OpenSCAD.dir/objects/comment_parser.cxx.o CMakeFiles/OpenSCAD.dir/src/core/RoofNode.cc.o CMakeFiles/OpenSCAD.dir/src/geometry/roof_ss.cc.o CMakeFiles/OpenSCAD.dir/src/geometry/roof_vd.cc.o CMakeFiles/OpenSCAD.dir/src/glview/OpenGLContext.cc.o CMakeFiles/OpenSCAD.dir/src/glview/fbo.cc.o CMakeFiles/OpenSCAD.dir/src/glview/Renderer.cc.o CMakeFiles/OpenSCAD.dir/src/glview/ShaderUtils.cc.o CMakeFiles/OpenSCAD.dir/src/glview/system-gl.cc.o CMakeFiles/OpenSCAD.dir/src/glview/VBOBuilder.cc.o CMakeFiles/OpenSCAD.dir/src/glview/VertexState.cc.o CMakeFiles/OpenSCAD.dir/src/glview/VBORenderer.cc.o CMakeFiles/OpenSCAD.dir/src/glview/GLView.cc.o CMakeFiles/OpenSCAD.dir/src/glview/hershey.cc.o CMakeFiles/OpenSCAD.dir/src/glview/OffscreenView.cc.o CMakeFiles/OpenSCAD.dir/src/glview/cgal/CGALRenderer.cc.o CMakeFiles/OpenSCAD.dir/src/glview/cgal/CGALRenderUtils.cc.o CMakeFiles/OpenSCAD.dir/src/glview/PolySetRenderer.cc.o CMakeFiles/OpenSCAD.dir/src/glview/preview/OpenCSGRenderer.cc.o CMakeFiles/OpenSCAD.dir/src/glview/preview/ThrownTogetherRenderer.cc.o CMakeFiles/OpenSCAD.dir/src/io/export_png.cc.o CMakeFiles/OpenSCAD.dir/src/io/imageutils.cc.o CMakeFiles/OpenSCAD.dir/src/glview/glew-utils.cc.o CMakeFiles/OpenSCAD.dir/src/openscad_gui.cc.o CMakeFiles/OpenSCAD.dir/src/gui/AutoUpdater.cc.o CMakeFiles/OpenSCAD.dir/src/gui/CGALWorker.cc.o CMakeFiles/OpenSCAD.dir/src/gui/ViewportControl.cc.o CMakeFiles/OpenSCAD.dir/src/gui/Console.cc.o CMakeFiles/OpenSCAD.dir/src/gui/Dock.cc.o CMakeFiles/OpenSCAD.dir/src/gui/Editor.cc.o CMakeFiles/OpenSCAD.dir/src/gui/ErrorLog.cc.o CMakeFiles/OpenSCAD.dir/src/gui/Export3mfDialog.cc.o CMakeFiles/OpenSCAD.dir/src/gui/ExportPdfDialog.cc.o CMakeFiles/OpenSCAD.dir/src/gui/ExportSvgDialog.cc.o CMakeFiles/OpenSCAD.dir/src/gui/OctoPrintApiKeyDialog.cc.o CMakeFiles/OpenSCAD.dir/src/gui/FontListDialog.cc.o CMakeFiles/OpenSCAD.dir/src/gui/FontListTableView.cc.o CMakeFiles/OpenSCAD.dir/src/gui/InitConfigurator.cc.o CMakeFiles/OpenSCAD.dir/src/gui/ImportUtils.cc.o CMakeFiles/OpenSCAD.dir/src/gui/LaunchingScreen.cc.o CMakeFiles/OpenSCAD.dir/src/gui/LibraryInfoDialog.cc.o CMakeFiles/OpenSCAD.dir/src/gui/MainWindow.cc.o CMakeFiles/OpenSCAD.dir/src/gui/Measurement.cc.o CMakeFiles/OpenSCAD.dir/src/gui/Animate.cc.o CMakeFiles/OpenSCAD.dir/src/gui/FontList.cc.o CMakeFiles/OpenSCAD.dir/src/gui/MouseSelector.cc.o CMakeFiles/OpenSCAD.dir/src/gui/OctoPrint.cc.o CMakeFiles/OpenSCAD.dir/src/gui/OpenCSGWarningDialog.cc.o CMakeFiles/OpenSCAD.dir/src/gui/OpenSCADApp.cc.o CMakeFiles/OpenSCAD.dir/src/gui/Preferences.cc.o CMakeFiles/OpenSCAD.dir/src/gui/PrintInitDialog.cc.o CMakeFiles/OpenSCAD.dir/src/gui/PrintService.cc.o CMakeFiles/OpenSCAD.dir/src/gui/ExternalToolInterface.cc.o CMakeFiles/OpenSCAD.dir/src/gui/ProgressWidget.cc.o CMakeFiles/OpenSCAD.dir/src/gui/RubberBandManager.cc.o CMakeFiles/OpenSCAD.dir/src/gui/QGLView.cc.o CMakeFiles/OpenSCAD.dir/src/gui/QGLView2.cc.o CMakeFiles/OpenSCAD.dir/src/gui/QSettingsCached.cc.o CMakeFiles/OpenSCAD.dir/src/gui/QWordSearchField.cc.o CMakeFiles/OpenSCAD.dir/src/gui/ScadApi.cc.o CMakeFiles/OpenSCAD.dir/src/gui/ScadLexer.cc.o CMakeFiles/OpenSCAD.dir/src/gui/ScintillaEditor.cc.o CMakeFiles/OpenSCAD.dir/src/gui/SettingsWriter.cc.o CMakeFiles/OpenSCAD.dir/src/gui/TabManager.cc.o CMakeFiles/OpenSCAD.dir/src/gui/UIUtils.cc.o CMakeFiles/OpenSCAD.dir/src/gui/WindowManager.cc.o CMakeFiles/OpenSCAD.dir/src/gui/IgnoreWheelWhenNotFocused.cc.o CMakeFiles/OpenSCAD.dir/src/gui/input/AxisConfigWidget.cc.o CMakeFiles/OpenSCAD.dir/src/gui/input/ButtonConfigWidget.cc.o CMakeFiles/OpenSCAD.dir/src/gui/input/MouseConfigWidget.cc.o CMakeFiles/OpenSCAD.dir/src/gui/input/InputDriver.cc.o CMakeFiles/OpenSCAD.dir/src/gui/input/InputDriverManager.cc.o CMakeFiles/OpenSCAD.dir/src/gui/input/InputEventMapper.cc.o CMakeFiles/OpenSCAD.dir/src/gui/parameter/GroupWidget.cc.o CMakeFiles/OpenSCAD.dir/src/gui/parameter/ParameterCheckBox.cc.o CMakeFiles/OpenSCAD.dir/src/gui/parameter/ParameterComboBox.cc.o CMakeFiles/OpenSCAD.dir/src/gui/parameter/ParameterSlider.cc.o CMakeFiles/OpenSCAD.dir/src/gui/parameter/ParameterSpinBox.cc.o CMakeFiles/OpenSCAD.dir/src/gui/parameter/ParameterText.cc.o CMakeFiles/OpenSCAD.dir/src/gui/parameter/ParameterVector.cc.o CMakeFiles/OpenSCAD.dir/src/gui/parameter/ParameterVirtualWidget.cc.o CMakeFiles/OpenSCAD.dir/src/gui/parameter/ParameterWidget.cc.o CMakeFiles/OpenSCAD.dir/src/gui/input/JoystickInputDriver.cc.o CMakeFiles/OpenSCAD.dir/src/gui/input/HidApiInputDriver.cc.o CMakeFiles/OpenSCAD.dir/src/gui/input/SpaceNavInputDriver.cc.o CMakeFiles/OpenSCAD.dir/src/gui/input/DBusInputDriver.cc.o CMakeFiles/OpenSCAD.dir/openscad_interface.cpp.o CMakeFiles/OpenSCAD.dir/openscad_adaptor.cpp.o CMakeFiles/OpenSCAD.dir/OpenSCAD_autogen/3YJK5W5UP7/qrc_common.cpp.o CMakeFiles/OpenSCAD.dir/OpenSCAD_autogen/3YJK5W5UP7/qrc_icons-chokusen.cpp.o CMakeFiles/OpenSCAD.dir/OpenSCAD_autogen/3YJK5W5UP7/qrc_icons-chokusen-dark.cpp.o /usr/lib/x86_64-linux-gnu/libmimalloc.so.3.0 /usr/lib/x86_64-linux-gnu/libboost_regex.so.1.83.0 /usr/lib/x86_64-linux-gnu/libboost_program_options.so.1.83.0 /usr/lib/x86_64-linux-gnu/libharfbuzz.so /usr/lib/x86_64-linux-gnu/libfontconfig.so /usr/lib/x86_64-linux-gnu/libglib-2.0.so /usr/lib/x86_64-linux-gnu/libdouble-conversion.so /usr/lib/x86_64-linux-gnu/libopencsg.so /usr/lib/x86_64-linux-gnu/libGLEW.so /usr/lib/x86_64-linux-gnu/libOpenGL.so /usr/lib/x86_64-linux-gnu/libGLX.so /usr/lib/x86_64-linux-gnu/libGLU.so /usr/lib/x86_64-linux-gnu/libzip.so /usr/lib/x86_64-linux-gnu/libfreetype.so /usr/lib/x86_64-linux-gnu/libxml2.so /usr/lib/x86_64-linux-gnu/libhidapi-libusb.so /usr/lib/libspnav.so -lcairo /usr/lib/x86_64-linux-gnu/lib3MF.so /usr/lib/x86_64-linux-gnu/libEGL.so /usr/lib/x86_64-linux-gnu/libX11.so -ldl submodules/Clipper2/CPP/libClipper2.a /usr/lib/x86_64-linux-gnu/libQt6Core5Compat.so.6.8.3 /usr/lib/x86_64-linux-gnu/libQt6Multimedia.so.6.8.3 /usr/lib/x86_64-linux-gnu/libQt6OpenGLWidgets.so.6.8.3 /usr/lib/x86_64-linux-gnu/libQt6Concurrent.so.6.8.3 /usr/lib/x86_64-linux-gnu/libQt6Network.so.6.8.3 /usr/lib/x86_64-linux-gnu/libQt6Svg.so.6.8.3 /usr/lib/x86_64-linux-gnu/libqscintilla2_qt6.so /usr/lib/x86_64-linux-gnu/libgmpxx.so /usr/lib/x86_64-linux-gnu/libmpfr.so /usr/lib/x86_64-linux-gnu/libgmp.so /usr/lib/x86_64-linux-gnu/libQt6Widgets.so.6.8.3 /usr/lib/x86_64-linux-gnu/libQt6OpenGL.so.6.8.3 /usr/lib/x86_64-linux-gnu/libQt6Gui.so.6.8.3 /usr/lib/x86_64-linux-gnu/libQt6DBus.so.6.8.3 /usr/lib/x86_64-linux-gnu/libQt6Core.so.6.8.3 /usr/lib/x86_64-linux-gnu/libGLX.so /usr/lib/x86_64-linux-gnu/libOpenGL.so -lstdc++ -lm -lgcc_s -lgcc -lc -lgcc_s -lgcc /usr/lib/gcc/x86_64-linux-gnu/14/crtendS.o /usr/lib/gcc/x86_64-linux-gnu/14/../../../x86_64-linux-gnu/crtn.o
+COLLECT_GCC_OPTIONS='-frounding-math' '-v' '-o' 'openscad' '-foffload-options=-l_GCC_m' '-shared-libgcc' '-mtune=generic' '-march=x86-64' '-dumpdir' 'openscad.'
+Compiling language files
+Compiling language files (CWD = /home/nomike/coding/openscad)...
+msgfmt -c -v -o ./locale/cs/LC_MESSAGES/openscad.mo ./locale/cs.po
+231 translated messages, 118 fuzzy translations, 317 untranslated messages.
+msgfmt -c -v -o ./locale/de/LC_MESSAGES/openscad.mo ./locale/de.po
+446 translated messages, 70 fuzzy translations, 150 untranslated messages.
+msgfmt -c -v -o ./locale/es/LC_MESSAGES/openscad.mo ./locale/es.po
+261 translated messages, 33 fuzzy translations, 372 untranslated messages.
+msgfmt -c -v -o ./locale/fr/LC_MESSAGES/openscad.mo ./locale/fr.po
+363 translated messages, 114 fuzzy translations, 189 untranslated messages.
+msgfmt -c -v -o ./locale/hy/LC_MESSAGES/openscad.mo ./locale/hy.po
+365 translated messages, 110 fuzzy translations, 191 untranslated messages.
+msgfmt -c -v -o ./locale/it/LC_MESSAGES/openscad.mo ./locale/it.po
+./locale/it.po:8: warning: header field 'Project-Id-Version' still has the initial default value
+./locale/it.po:8: warning: header field 'PO-Revision-Date' still has the initial default value
+./locale/it.po:8: warning: header field 'Language-Team' still has the initial default value
+493 translated messages, 52 fuzzy translations, 121 untranslated messages.
+msgfmt -c -v -o ./locale/ka/LC_MESSAGES/openscad.mo ./locale/ka.po
+456 translated messages, 61 fuzzy translations, 149 untranslated messages.
+msgfmt -c -v -o ./locale/pl/LC_MESSAGES/openscad.mo ./locale/pl.po
+389 translated messages, 121 fuzzy translations, 156 untranslated messages.
+msgfmt -c -v -o ./locale/pt_BR/LC_MESSAGES/openscad.mo ./locale/pt_BR.po
+402 translated messages, 69 fuzzy translations, 195 untranslated messages.
+msgfmt -c -v -o ./locale/ru/LC_MESSAGES/openscad.mo ./locale/ru.po
+456 translated messages, 59 fuzzy translations, 151 untranslated messages.
+msgfmt -c -v -o ./locale/tr/LC_MESSAGES/openscad.mo ./locale/tr.po
+439 translated messages, 71 fuzzy translations, 156 untranslated messages.
+msgfmt -c -v -o ./locale/uk/LC_MESSAGES/openscad.mo ./locale/uk.po
+268 translated messages, 113 fuzzy translations, 285 untranslated messages.
+msgfmt -c -v -o ./locale/zh_CN/LC_MESSAGES/openscad.mo ./locale/zh_CN.po
+417 translated messages, 77 fuzzy translations, 172 untranslated messages.
+msgfmt -c -v -o ./locale/zh_TW/LC_MESSAGES/openscad.mo ./locale/zh_TW.po
+388 translated messages, 109 fuzzy translations, 169 untranslated messages.
+itstool missing, won't apply translations to openscad.appdata.xml
+[100%] Built target OpenSCAD

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdlib>
+#include <cstdint>
 #include "platform/PlatformUtils.h"
 
 #if defined(_MSC_VER)
@@ -23,16 +24,22 @@ private:
   StackCheck() : limit(PlatformUtils::stackLimit())
   {
     unsigned char c;
-    ptr = &c;  // NOLINT(*StackAddressEscape)
-  }
-  inline unsigned long size()
-  {
-    unsigned char c;
-    return std::abs(ptr - &c);
+    base = reinterpret_cast<std::uintptr_t>(&c);  // NOLINT(*reinterpret-cast, *StackAddressEscape)
   }
 
-  unsigned long limit;
-  unsigned char *ptr;
+  // Use size_t instead of unsigned long to avoid truncation on Windows x64
+  // where unsigned long is 32-bit but pointers are 64-bit.
+  inline size_t size() const
+  {
+    unsigned char c;
+    const auto current = reinterpret_cast<std::uintptr_t>(&c);
+    // Stack grows downward on x86/x64, so base > current during normal execution
+    return (base > current) ? static_cast<size_t>(base - current)
+                            : static_cast<size_t>(current - base);
+  }
+
+  size_t limit;
+  std::uintptr_t base;
 };
 #if defined(_MSC_VER)
 #pragma warning(pop)
