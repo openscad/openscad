@@ -227,9 +227,15 @@ jobs:
     parameters:
       wasm-type:
         type: string
+      openscad_build_type:
+        type: string
+        default: snapshot
+      source_method:
+        type: string
+        default: git
     steps:
-      - checkout
-      - run: git submodule update --init --recursive
+      - get_source:
+          method: << parameters.source_method >>
       - run:
           name: Install latest node.js
           command: |
@@ -256,15 +262,22 @@ jobs:
           name: Build OpenSCAD WASM (<< parameters.wasm-type >>)
           no_output_timeout: 18000
           command: |
-              if [ x"${CIRCLE_BRANCH}" = xmaster ]; then export SUFFIX=""; else export SUFFIX="_$(echo ${CIRCLE_BRANCH} | sed -e 's,pull/,PR,; s,/head,h,; s,/merge,m,; s,/,.,g')"; fi
-              git submodule update --init --recursive
+              if [ x"${CIRCLE_BRANCH}" = xmaster ] || [ "<< parameters.openscad_build_type >>" != "snapshot" ]
+              then
+                export SUFFIX=""
+              else 
+                export SUFFIX="_$(echo ${CIRCLE_BRANCH} | sed -e 's,pull/,PR,; s,/head,h,; s,/merge,m,; s,/,.,g')"
+              fi
+              if [ "<< parameters.openscad_build_type >>" == "snapshot" ]
+              then
+                export CMAKE_EXTRA_ARGS="-DSNAPSHOT=ON -DEXPERIMENTAL=ON"
+              fi
               emcmake cmake -B ../build . \
-                  -DSNAPSHOT=ON \
-                  -DEXPERIMENTAL=ON \
                   -DCMAKE_BUILD_TYPE=Release \
                   -DWASM_BUILD_TYPE=<< parameters.wasm-type >> \
                   -DOPENSCAD_COMMIT="$OPENSCAD_COMMIT" \
-                  -DOPENSCAD_VERSION="$OPENSCAD_VERSION"
+                  -DOPENSCAD_VERSION="$OPENSCAD_VERSION" \
+                  $CMAKE_EXTRA_ARGS
               cd ../build
               make -j4 VERBOSE=1
               mkdir -p /tmp/out
@@ -510,6 +523,16 @@ workflows:
             - create-tarball
       - openscad-mxe:
           filters: *release-filters
+          openscad_build_type: ""
+          source_method: tarball
+          context: secret-context
+          requires:
+            - create-tarball
+      - openscad-wasm:
+          filters: *release-filters
+          matrix:
+            parameters:
+              wasm-type: [web, node]
           openscad_build_type: ""
           source_method: tarball
           context: secret-context
