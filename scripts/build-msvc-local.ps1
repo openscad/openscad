@@ -24,7 +24,8 @@ param(
     [switch]$SkipVcpkg,
     [switch]$SkipBuild,
     [switch]$RunTests,
-    [switch]$CleanBuild
+    [switch]$CleanBuild,
+    [switch]$RerunFailedTests  # When combined with -RunTests, only reruns tests that previously failed
 )
 
 $ErrorActionPreference = "Stop"
@@ -712,8 +713,22 @@ public class ErrorMode {
             $currentMode = [ErrorMode]::GetErrorMode()
             Write-Information "Current error mode: 0x$($currentMode.ToString('X4'))"
         }
-        
-        ctest -C Release -L Default -j2 --output-on-failure
+
+        $ctestArgs = "-C Release -L Default -j2 --output-on-failure"
+        $ctestDescription = "full Default test suite"
+        if ($RerunFailedTests) {
+            $lastFailedLog = Join-Path $BuildDir "Testing/Temporary/LastTestsFailed.log"
+            if ((Test-Path $lastFailedLog) -and ((Get-Content $lastFailedLog | Where-Object { $_.Trim().Length -gt 0 }).Count -gt 0)) {
+                $ctestArgs = "-C Release --rerun-failed -j2 --output-on-failure"
+                $ctestDescription = "previously failed tests"
+                Write-Information "Detected LastTestsFailed.log. Rerunning only previously failed tests."
+            } else {
+                Write-Warning "No record of failed tests found. Running full suite instead."
+            }
+        }
+
+        Write-Information "Invoking: ctest $ctestArgs ($ctestDescription)"
+        Invoke-Expression "ctest $ctestArgs"
         
         if ($LASTEXITCODE -ne 0) {
             Write-Error "Tests failed"
