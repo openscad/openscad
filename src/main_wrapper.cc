@@ -4,6 +4,56 @@
 #include <QtCore/qresource.h>  // Bring in Q_INIT_RESOURCE
 #endif
 
+#if defined(_WIN32) && defined(_MSC_VER)
+#include <windows.h>
+#include <cstdio>
+#include <cstring>
+
+// Global flag to track if we've handled a stack overflow
+static volatile bool g_stackOverflowHandled = false;
+
+// Vectored Exception Handler for stack overflow
+// This runs before any frame-based handlers and can catch stack overflow
+// even when the normal exception handling machinery can't run.
+static LONG WINAPI StackOverflowVectoredHandler(EXCEPTION_POINTERS *ExceptionInfo)
+{
+  if (ExceptionInfo->ExceptionRecord->ExceptionCode == EXCEPTION_STACK_OVERFLOW) {
+    g_stackOverflowHandled = true;
+    
+    // Try to output an error message
+    // We can't use iostream here because we have no stack space
+    const char* msg = "FATAL ERROR: Stack overflow detected. The operation required too much recursion.\n";
+    HANDLE hStderr = GetStdHandle(STD_ERROR_HANDLE);
+    if (hStderr != INVALID_HANDLE_VALUE) {
+      DWORD written;
+      WriteFile(hStderr, msg, (DWORD)strlen(msg), &written, NULL);
+    }
+    
+    // Exit the process - we can't safely continue after stack overflow
+    ExitProcess(1);
+  }
+  return EXCEPTION_CONTINUE_SEARCH;
+}
+
+// RAII class to install/remove the vectored exception handler
+class StackOverflowGuard
+{
+  PVOID m_handler;
+public:
+  StackOverflowGuard() : m_handler(nullptr)
+  {
+    // Install as first handler (1 = first in chain)
+    m_handler = AddVectoredExceptionHandler(1, StackOverflowVectoredHandler);
+  }
+  ~StackOverflowGuard()
+  {
+    if (m_handler) {
+      RemoveVectoredExceptionHandler(m_handler);
+    }
+  }
+};
+#endif
+
 // Windows note:  wmain() is called first, translates from UTF-16 to UTF-8, and calls main().
 int main(int argc, char **argv)
 {
@@ -18,6 +68,13 @@ int main(int argc, char **argv)
   Q_INIT_RESOURCE(mac);
 #endif
 #endif
+
+#if defined(_WIN32) && defined(_MSC_VER)
+  // Install vectored exception handler to catch stack overflow
+  // This is a safety net in case the StackCheck mechanism doesn't catch it in time
+  StackOverflowGuard stackGuard;
+#endif
+
   return openscad_main(argc, argv);
 }
 
