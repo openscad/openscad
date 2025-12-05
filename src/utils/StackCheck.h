@@ -2,7 +2,6 @@
 
 #include <cstdlib>
 #include <cstdint>
-#include <cstdio>  // DEBUG: for fprintf
 #include "platform/PlatformUtils.h"
 
 #if defined(_MSC_VER)
@@ -19,29 +18,13 @@ public:
     return instance;
   }
 
-  inline bool check() {
-    const size_t currentSize = size();
-    // DEBUG: Print stack usage periodically (every ~1MB of growth)
-    static size_t lastReportedMB = 0;
-    const size_t currentMB = currentSize / (1024 * 1024);
-    if (currentMB > lastReportedMB) {
-      lastReportedMB = currentMB;
-      std::fprintf(stderr, "DEBUG StackCheck: used=%zu bytes (%.2f MB), limit=%zu bytes (%.2f MB), remaining=%zu bytes\n",
-                   currentSize, currentSize / (1024.0 * 1024.0),
-                   limit, limit / (1024.0 * 1024.0),
-                   (limit > currentSize) ? (limit - currentSize) : 0);
-    }
-    return currentSize >= limit;
-  }
+  inline bool check() { return size() >= limit; }
 
 private:
   StackCheck() : limit(PlatformUtils::stackLimit())
   {
     unsigned char c;
     base = reinterpret_cast<std::uintptr_t>(&c);  // NOLINT(*reinterpret-cast, *StackAddressEscape)
-    // DEBUG: Print initial stack configuration
-    std::fprintf(stderr, "DEBUG StackCheck initialized: base=%p, limit=%zu bytes (%.2f MB), STACK_BUFFER_SIZE=%zu bytes\n",
-                 reinterpret_cast<void*>(base), limit, limit / (1024.0 * 1024.0), static_cast<size_t>(STACK_BUFFER_SIZE));
   }
 
   // Use size_t instead of unsigned long to avoid truncation on Windows x64
