@@ -363,6 +363,7 @@ jobs:
             cp -v OpenSCAD-$OPENSCAD_VERSION.dmg* /tmp/out/
       - store_artifacts:
           path: /tmp/out
+          destination: macOS
   create-tarball:
     executor: python-executor
     steps:
