@@ -1,3 +1,6 @@
+#include "platform/PlatformUtils.h"
+
+#include <cstdio>  // DEBUG: for fprintf
 #include <filesystem>
 #include <ios>
 #include <map>
@@ -79,8 +82,38 @@ std::string PlatformUtils::userConfigPath()
   return retval + std::string("/") + PlatformUtils::OPENSCAD_FOLDER_NAME;
 }
 
-unsigned long PlatformUtils::stackLimit()
+size_t PlatformUtils::stackLimit()
 {
+  // Use Windows API to get actual stack limits for the current thread.
+  // This is more accurate than using compile-time constants because it
+  // reflects the actual stack configuration at runtime.
+  ULONG_PTR lowLimit = 0;
+  ULONG_PTR highLimit = 0;
+  GetCurrentThreadStackLimits(&lowLimit, &highLimit);
+  
+  // DEBUG: Print stack limit information
+  std::fprintf(stderr, "DEBUG stackLimit: GetCurrentThreadStackLimits returned lowLimit=%p, highLimit=%p\n",
+               reinterpret_cast<void*>(lowLimit), reinterpret_cast<void*>(highLimit));
+  std::fprintf(stderr, "DEBUG stackLimit: Total stack size=%zu bytes (%.2f MB), STACK_BUFFER_SIZE=%zu bytes (%.2f MB)\n",
+               static_cast<size_t>(highLimit - lowLimit), (highLimit - lowLimit) / (1024.0 * 1024.0),
+               static_cast<size_t>(STACK_BUFFER_SIZE), STACK_BUFFER_SIZE / (1024.0 * 1024.0));
+  std::fprintf(stderr, "DEBUG stackLimit: STACKSIZE compile constant=%zu bytes (%.2f MB)\n",
+               static_cast<size_t>(STACKSIZE), STACKSIZE / (1024.0 * 1024.0));
+  
+  if (highLimit > lowLimit) {
+    // Calculate the actual stack size and subtract the buffer
+    const size_t stackSize = static_cast<size_t>(highLimit - lowLimit);
+    if (stackSize > STACK_BUFFER_SIZE) {
+      const size_t result = stackSize - STACK_BUFFER_SIZE;
+      std::fprintf(stderr, "DEBUG stackLimit: Returning limit=%zu bytes (%.2f MB)\n",
+                   result, result / (1024.0 * 1024.0));
+      return result;
+    }
+  }
+  
+  // Fallback to default if API fails or returns invalid values
+  std::fprintf(stderr, "DEBUG stackLimit: Using fallback STACK_LIMIT_DEFAULT=%zu bytes\n",
+               static_cast<size_t>(STACK_LIMIT_DEFAULT));
   return STACK_LIMIT_DEFAULT;
 }
 
