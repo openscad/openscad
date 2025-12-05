@@ -4,7 +4,7 @@ orbs:
   macos: circleci/macos@2.5.1
   
 executors:
-  mxe64-executor:
+  mxe-executor:
     working_directory: ~/workspace
     docker:
       - image: openscad/mxe-x86_64-gui:latest
@@ -78,11 +78,18 @@ commands:
                 command: tar -xzf /tmp/artifacts/openscad-*.tar.gz --strip-components=1
 
 jobs:
-  openscad-mxe-64bit:
-    executor: mxe64-executor
+  openscad-mxe:
+    executor: mxe-executor
+    parameters:
+      openscad_build_type:
+        type: string
+        default: snapshot
+      source_method:
+        type: string
+        default: git
     steps:
-      - checkout
-      - run: git submodule update --init --recursive
+      - get_source:
+          method: << parameters.source_method >>
       - establish_version:
           build_id: "ci${CIRCLE_BUILD_NUM}"
       - run:
@@ -94,12 +101,18 @@ jobs:
               export MXEDIR=/mxe
               export PKG_CONFIG_PATH=/mxe/usr/x86_64-w64-mingw32.static.posix/lib/pkgconfig
               ln -sf /usr/bin/python{3,}
-              if [ x"${CIRCLE_BRANCH}" = xmaster ]; then export SUFFIX=""; else export SUFFIX="_$(echo ${CIRCLE_BRANCH} | sed -e 's,pull/,PR,; s,/head,h,; s,/merge,m,; s,/,.,g')"; fi
+              if [ x"${CIRCLE_BRANCH}" = xmaster ] || [ "<< parameters.openscad_build_type >>" != "snapshot" ]
+              then
+                export SUFFIX=""
+              else 
+                export SUFFIX="_$(echo ${CIRCLE_BRANCH} | sed -e 's,pull/,PR,; s,/head,h,; s,/merge,m,; s,/,.,g')"
+              fi
               
-              ./scripts/release-common.sh snapshot mingw64 -v "$OPENSCAD_VERSION" -c "$OPENSCAD_COMMIT"
+              ./scripts/release-common.sh mingw64 -v "$OPENSCAD_VERSION" -c "$OPENSCAD_COMMIT" << parameters.openscad_build_type >>
               mkdir -p /tmp/out
               for f in mingw*/*.zip mingw*/*.exe; do N=$(basename "$f" | sed -e "s/\\(-x86-[36][24]\\)/\\1${SUFFIX}/;"); cp -iv "$f" /tmp/out/"$N"; done
-              if [ -n "${CODE_SIGNING_KEY}" ]; then
+              if [ -n "${CODE_SIGNING_KEY}" ]
+              then
                   cd /tmp/out
                   echo $CODE_SIGNING_DATA | base64 -d | gzip -d | gpg --import --allow-secret-key-import --pinentry-mode loopback --passphrase-file <(echo $CODE_SIGNING_PW)
                   export GPG_ARGS="--batch --yes --passphrase-fd 0 --pinentry-mode loopback --detach-sign --armor"
@@ -110,7 +123,7 @@ jobs:
               fi
       - store_artifacts:
           path: /tmp/out
-          destination: 64-bit
+          destination: MXE
   openscad-appimage:
     executor: appimage-executor
     parameters:
@@ -161,7 +174,7 @@ jobs:
               fi
       - store_artifacts:
           path: /tmp/out
-          destination: 64-bit
+          destination: AppImage
   openscad-appimage-release:
     executor: appimage-executor
     parameters:
@@ -208,7 +221,7 @@ jobs:
               fi
       - store_artifacts:
           path: /tmp/out
-          destination: 64-bit
+          destination: AppImage
   openscad-wasm:
     executor: wasm-executor
     parameters:
@@ -419,7 +432,7 @@ workflows:
   version: 2
   "CircleCI master build":
     jobs:
-      - openscad-mxe-64bit:
+      - openscad-mxe:
           context: secret-context
           filters:
               branches:
@@ -448,7 +461,7 @@ workflows:
                       - master
   "CircleCI branch build":
     jobs:
-      - openscad-mxe-64bit:
+      - openscad-mxe:
           filters:
               branches:
                   ignore:
@@ -491,6 +504,13 @@ workflows:
             - create-tarball
       - openscad-appimage-release:
           filters: *release-filters
+          source_method: tarball
+          context: secret-context
+          requires:
+            - create-tarball
+      - openscad-mxe:
+          filters: *release-filters
+          openscad_build_type: ""
           source_method: tarball
           context: secret-context
           requires:
