@@ -1,5 +1,5 @@
 module transparent() {
- %child();
+ %children();
 }
 
 difference() {
