@@ -2,7 +2,7 @@ $fn=16;
 
 module parent(range=[0:2]) {
   for (i=range) {
-    translate([2.5*i,0,0]) child(i);
+    translate([2.5*i,0,0]) children(i);
   }
 }
 
@@ -21,14 +21,14 @@ translate([0,3,0]) parent() { sphere(); }
 
 // No parameter to child
 module parent2() {
-  child();
+  children();
 }
 
 translate([2.5,3,0]) parent2() { cylinder(h=2, center=true); sphere(); }
 
 // Negative parameter to child
 module parent3() {
-  child(-1);
+  children(-1);
 }
 
 translate([5,3,0]) parent3() { cube(); sphere(); }

@@ -1,7 +1,7 @@
-child(-1)test();
+children(-1)test();
 
 module childOutRange(num){
-    child(5);
+    children(5);
 }
 
 childOutRange(5)cube();

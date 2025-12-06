@@ -76,8 +76,8 @@ h=5;
     echo("h (undef)", h); 
 } 
 
-echo("override variable in assign scope:");
-assign(i=9) {
+echo("override variable in let scope:");
+let(i=9) {
     i=10;
     echo("i (10)", i);
 }
