@@ -1,9 +1,9 @@
 module up() {
-  translate([0,0,1]) child(0);
+  translate([0,0,1]) children(0);
 }
 
 module red() {
-  color("Red") child(0);
+  color("Red") children(0);
 }
 
 up() cylinder(r=5);
