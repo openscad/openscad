@@ -397,6 +397,28 @@ int do_export(const CommandLine& cmd, const RenderVariables& render_variables, F
   ContextHandle<BuiltinContext> builtin_context{Context::create<BuiltinContext>(&session)};
   render_variables.applyToContext(builtin_context);
 
+  // Pick up optional numeric output precision used both when running scripts
+  // and when displaying their AST.  This is specifiable from the CLI with
+  //   -O advanced/numberOutputPrecision=N
+  // where N is the desired precision (1 through 17, inclusive).
+  //
+  // Initially the precision is propagated via the evaluation context but when
+  // necessary will be transfered to (and propagated onwards via) the Value
+  // objects, output streams, etc.
+  //
+  // (When running in GUI mode a different method is used for setting the
+  // defaults; see MainWindow::instantiateRoot() [used when generating output]
+  // and MainWindow::actionDisplayAST() [used when displaying the AST], both in
+  // core/MainWindow.cc.)
+  int precision = 0;
+  if (cmd.exportOptions.count("advanced") != 0) {
+    const auto& o = cmd.exportOptions.at("advanced");
+    if (o.count("numberOutputPrecision") != 0) {
+      precision = std::stoi(o.at("numberOutputPrecision"));
+    }
+  }
+  builtin_context->set_variable("$fp", precision);
+
 #ifdef DEBUG
   PRINTDB("BuiltinContext:\n%s", builtin_context->dump());
 #endif
@@ -448,8 +470,15 @@ int do_export(const CommandLine& cmd, const RenderVariables& render_variables, F
     fs::current_path(cmd.original_path);
   } else if (export_format == FileFormat::AST) {
     fs::current_path(fparent);  // Force exported filenames to be relative to document path
-    with_output(cmd.is_stdout, filename_str,
-                [root_file](std::ostream& stream) { stream << root_file->dump(""); });
+    // The precision parameter specifies the number of significant digits to
+    // display when outputting numbers.  The precision N (between 1 and 17,
+    // inclusive) can be specified on the command line using:
+    //   -O advanced/numberOutputPrecision=N
+    // If not specified (or set to 0) then the OpenSCAD default of 6 is used.
+    // FIXME: It may be desirable to default to a precision of 17 for AST dumps.
+    with_output(cmd.is_stdout, filename_str, [root_file, precision](std::ostream& stream) {
+      stream << root_file->dump("", precision);
+    });
     fs::current_path(cmd.original_path);
   } else if (export_format == FileFormat::PARAM) {
     with_output(cmd.is_stdout, filename_str,
