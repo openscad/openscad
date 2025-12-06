@@ -383,12 +383,18 @@ jobs:
 
             security -v delete-keychain OpenSCAD.keychain
             rm OpenSCAD.p12
-            cp -R OpenSCAD-$OPENSCAD_VERSION.dmg /tmp/out/
+            cp -R OpenSCAD-$OPENSCAD_VERSION.dmg /tmp/artifacts/
             shasum -a 256 OpenSCAD-$OPENSCAD_VERSION.dmg > OpenSCAD-$OPENSCAD_VERSION.dmg.sha256
             shasum -a 512 OpenSCAD-$OPENSCAD_VERSION.dmg > OpenSCAD-$OPENSCAD_VERSION.dmg.sha512
-            cp -v OpenSCAD-$OPENSCAD_VERSION.dmg* /tmp/out/
+            cp -v OpenSCAD-$OPENSCAD_VERSION.dmg* /tmp/artifacts/
+      - persist_to_workspace:
+          root: /tmp/artifacts
+          paths:
+            - OpenSCAD-*.dmg
+            - OpenSCAD-*.dmg.sha256
+            - OpenSCAD-*.dmg.sha512
       - store_artifacts:
-          path: /tmp/out
+          path: /tmp/artifacts
           destination: macOS
   create-tarball:
     executor: python-executor
@@ -434,6 +440,16 @@ jobs:
       - store_artifacts:
           path: /tmp/artifacts
           destination: source-tarball
+  openscad-deploy-release:
+    executor: python-executor
+    steps:
+      - attach_workspace:
+          at: /tmp/artifacts
+      - run:
+          name: "Deploy release artifacts"
+          command: |
+            cd /tmp/artifacts
+            ls -l
 
 filters: &release-filters
   tags:
@@ -515,29 +531,34 @@ workflows:
           context: secret-context
           requires:
             - create-tarball
-      - openscad-appimage-release:
+#      - openscad-appimage-release:
+#          filters: *release-filters
+#          source_method: tarball
+#          context: secret-context
+#          requires:
+#            - create-tarball
+#      - openscad-mxe:
+#          filters: *release-filters
+#          openscad_build_type: ""
+#          source_method: tarball
+#          context: secret-context
+#          requires:
+#            - create-tarball
+#      - openscad-wasm:
+#          filters: *release-filters
+#          matrix:
+#            parameters:
+#              wasm-type: [web, node]
+#          openscad_build_type: ""
+#          source_method: tarball
+#          context: secret-context
+#          requires:
+#            - create-tarball
+      - openscad-deploy-release:
           filters: *release-filters
-          source_method: tarball
           context: secret-context
           requires:
-            - create-tarball
-      - openscad-mxe:
-          filters: *release-filters
-          openscad_build_type: ""
-          source_method: tarball
-          context: secret-context
-          requires:
-            - create-tarball
-      - openscad-wasm:
-          filters: *release-filters
-          matrix:
-            parameters:
-              wasm-type: [web, node]
-          openscad_build_type: ""
-          source_method: tarball
-          context: secret-context
-          requires:
-            - create-tarball
+            - openscad-macos
 
   scheduled:
     triggers:
