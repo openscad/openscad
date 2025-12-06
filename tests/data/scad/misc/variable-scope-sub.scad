@@ -8,9 +8,9 @@ module submodule() {
     echo($children);
     subsubmodule_var = 17;
     echo(subsubmodule_var);
-    child(0);
+    children(0);
   }
-  subsubmodule() {child(0); sphere();}
+  subsubmodule() {children(0); sphere();}
 }
 
 module submodule2() {

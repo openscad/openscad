@@ -4,11 +4,9 @@ hull();//parameter
 //description
 resize();//parameter
 //description
-child();//parameter
+children();//parameter
 //description
 echo();//parameter
-//description
-assign();//parameter
 //description
 for();//parameter
 //description

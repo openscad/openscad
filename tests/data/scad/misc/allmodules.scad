@@ -1,9 +1,8 @@
 minkowski();
 hull();
 resize();
-child();
+children();
 echo();
-assign();
 for();
 intersection_for();
 if(false) { cube(); } else { sphere(); }
