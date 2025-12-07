@@ -37,9 +37,9 @@ int sgn_vdiff(const Vector2d& v1, const Vector2d& v2)
   double l2 = v2.norm();
   // Compare the average and difference, to be independent of geometry scale.
   // If the difference is within ratio_threshold of the avg, treat as equal.
-  double scale = (l1 + l2);
-  double diff = 2 * std::fabs(l1 - l2) * ratio_threshold;
-  return diff > scale ? (l1 < l2 ? -1 : 1) : 0;
+  double scale = (l1 + l2) * ratio_threshold;
+  double diff = 2 * std::fabs(l1 - l2);
+  return scale < diff ? (l1 < l2 ? -1 : 1) : 0;
 }
 
 /**
