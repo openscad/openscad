@@ -55,6 +55,7 @@ std::unique_ptr<PolySet> assemblePolySetForCGAL(const Polygon2d& polyref,
                                                 int convexity, boost::tribool isConvex, double scale_x,
                                                 double scale_y, const Vector3d& h1, const Vector3d& h2,
                                                 double twist);
+int sgn_vdiff(const Vector2d& v1, const Vector2d& v2);
 }  // namespace LinearExtrudeInternals
 
 Polygon2d makeSquare(double s)
@@ -73,6 +74,26 @@ Polygon2d makeCross(double s)
   o.vertices = {{0, 0}, {s / 2, s / 4},     {s, 0}, {s * 3 / 4, s / 2},
                 {s, s}, {s / 2, s * 3 / 4}, {0, s}, {s / 4, s / 2}};
   return std::move(Polygon2d(o));
+}
+
+TEST_CASE("sgn_vdiff basic functionality")
+{
+  SECTION("Approximately the same vector")
+  {
+    // I did not think deeply about the exact orders of magnitude.
+    for (double i = 0.01; i > 0.0000001; i /= 2.0) {
+      CAPTURE(i);
+      CHECK(LinearExtrudeInternals::sgn_vdiff({10 + i, 10.0}, {10.0, 10.0}) == 0);
+    }
+  }
+  SECTION("v1 less than v2")
+  {
+    CHECK(LinearExtrudeInternals::sgn_vdiff({9.00001, 10.0}, {10.0, 10.0}) == 0);
+  }
+  SECTION("v1 greater than v2")
+  {
+    CHECK(LinearExtrudeInternals::sgn_vdiff({11.00001, 10.0}, {10.0, 10.0}) == 0);
+  }
 }
 
 #ifdef ENABLE_MANIFOLD
