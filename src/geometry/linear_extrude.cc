@@ -134,32 +134,38 @@ std::unique_ptr<PolySet> assemblePolySetForCGAL(const Polygon2d& polyref,
   return builder.build();
 }
 
-/*
-   Attempt to triangulate quads in an ideal way.
-   Each quad is composed of two adjacent outline vertices: (prev1, curr1)
-   and their corresponding transformed points one step up: (prev2, curr2).
-   Quads are triangulated across the shorter of the two diagonals, which works well in most cases.
-   However, when diagonals are equal length, decision may flip depending on other factors.
+/**
+ * Attempt to triangulate quads in an ideal way.
+ * Each quad is composed of two adjacent outline vertices: (prev_vtx_bot, vtx_bot)
+ * and their corresponding transformed points one step up: (prev_vtx_top, vtx_top).
+ * Quads are triangulated across the shorter of the two diagonals, which works well in most cases.
+ * However, when diagonals are equal length, decision may flip depending on other factors.
+ * @param indices All faces for this slice are added to this.
+ * @param slice_idx Which slice is currently having faces added **1-indexed** not 0-indexed.
+ * @param slice_stride Total count of vertices in all polygons being extruded.
+ * @param poly The polygon being extruded.
+ * @param rotation_slice_bottom The degrees(?) of rotation for the polygon at the bottom of this slice.
+ * @param scale_slice_top The vector of scaling applied to the polygon at the top of this slice.
  */
 void add_slice_indices(PolygonIndices& indices, int slice_idx, int slice_stride, const Polygon2d& poly,
-                       double rot1, double rot2, const Vector2d& scale1, const Vector2d& scale2)
+                       double rotation_slice_bottom, double rotation_slice_top, const Vector2d& scale_slice_bottom, const Vector2d& scale_slice_top)
 {
-  int prev_slice = (slice_idx - 1) * slice_stride;
-  int curr_slice = slice_idx * slice_stride;
+  int bottom_offset = (slice_idx - 1) * slice_stride;
+  int top_offset = slice_idx * slice_stride;
 
-  Eigen::Affine2d trans1(Eigen::Scaling(scale1) * Eigen::Affine2d(rotate_degrees(-rot1)));
-  Eigen::Affine2d trans2(Eigen::Scaling(scale2) * Eigen::Affine2d(rotate_degrees(-rot2)));
+  Eigen::Affine2d trans_bot(Eigen::Scaling(scale_slice_bottom) * Eigen::Affine2d(rotate_degrees(-rotation_slice_bottom)));
+  Eigen::Affine2d trans_top(Eigen::Scaling(scale_slice_top) * Eigen::Affine2d(rotate_degrees(-rotation_slice_top)));
 
-  bool any_zero = scale2[0] == 0 || scale2[1] == 0;
+  bool any_zero = scale_slice_top[0] == 0 || scale_slice_top[1] == 0;
   // setting back_twist true helps keep diagonals same as previous builds.
-  bool back_twist = rot2 <= rot1;
+  bool back_twist = rotation_slice_top <= rotation_slice_bottom;
 
   int curr_outline = 0;
   for (const auto& o : poly.outlines()) {
-    // prev1: previous slice, previous vertex
-    // prev2: current slice, previous vertex
-    Vector2d prev1 = trans1 * o.vertices[0];
-    Vector2d prev2 = trans2 * o.vertices[0];
+    // prev_vtx_bot: previous vertex, on the bottom of this slice
+    // prev_vtx_top: previous vertex, on the top of this slice
+    Vector2d prev_vtx_bot = trans_bot * o.vertices[0];
+    Vector2d prev_vtx_top = trans_top * o.vertices[0];
 
     // For equal length diagonals, flip selected choice depending on direction of twist and
     // whether the outline is negative (eg circle hole inside a larger circle).
@@ -169,43 +175,45 @@ void add_slice_indices(PolygonIndices& indices, int slice_idx, int slice_stride,
     bool flip = ((!o.positive) xor (back_twist));
 
     for (size_t i = 1; i <= o.vertices.size(); ++i) {
-      // curr1: previous slice, current vertex
-      // curr2: current slice, current vertex
-      Vector2d curr1 = trans1 * o.vertices[i % o.vertices.size()];
-      Vector2d curr2 = trans2 * o.vertices[i % o.vertices.size()];
-      int curr_idx = curr_outline + (i % o.vertices.size());
+      auto o_vertices_idx = i % o.vertices.size();
+      // vtx_bot: current vertex, on the bottom of this slice
+      // vtx_top: current vertex, on the top of this slice
+      Vector2d vtx_bot = trans_bot * o.vertices[o_vertices_idx];
+      Vector2d vtx_top = trans_top * o.vertices[o_vertices_idx];
+      int idx = curr_outline + o_vertices_idx;
       int prev_idx = curr_outline + i - 1;
 
-      int diff_sign = sgn_vdiff(prev1 - curr2, curr1 - prev2);
+      // -1 if diagonal from current-slice-current-vertex to previous-slice-previous-vertex is smaller
+      int diff_sign = sgn_vdiff(prev_vtx_bot - vtx_top, vtx_bot - prev_vtx_top);
       bool splitfirst = diff_sign == -1 || (diff_sign == 0 && !flip);
 
       // Split along shortest diagonal,
       // unless at top for a 0-scaled axis (which can create 0 thickness "ears")
       if (splitfirst xor any_zero) {
         indices.push_back({
-          prev_slice + curr_idx,
-          curr_slice + curr_idx,
-          prev_slice + prev_idx,
+          bottom_offset + idx,
+          top_offset + idx,
+          bottom_offset + prev_idx,
         });
         indices.push_back({
-          curr_slice + prev_idx,
-          prev_slice + prev_idx,
-          curr_slice + curr_idx,
+          top_offset + prev_idx,
+          bottom_offset + prev_idx,
+          top_offset + idx,
         });
       } else {
         indices.push_back({
-          prev_slice + curr_idx,
-          curr_slice + prev_idx,
-          prev_slice + prev_idx,
+          bottom_offset + idx,
+          top_offset + prev_idx,
+          bottom_offset + prev_idx,
         });
         indices.push_back({
-          prev_slice + curr_idx,
-          curr_slice + curr_idx,
-          curr_slice + prev_idx,
+          bottom_offset + idx,
+          top_offset + idx,
+          top_offset + prev_idx,
         });
       }
-      prev1 = curr1;
-      prev2 = curr2;
+      prev_vtx_bot = vtx_bot;
+      prev_vtx_top = vtx_top;
     }
     curr_outline += o.vertices.size();
   }
@@ -330,14 +338,14 @@ void prepareVerticesAndIndices(const Polygon2d& polyref, Vector3d h1, Vector3d h
 
   // Create indices for sides
   for (unsigned int slice_idx = 1; slice_idx <= num_slices; slice_idx++) {
-    double rot_prev = twist * (slice_idx - 1) / num_slices;
-    double rot_curr = twist * slice_idx / num_slices;
-    Vector2d scale_prev(1 - (1 - scale_x) * (slice_idx - 1) / num_slices,
-                        1 - (1 - scale_y) * (slice_idx - 1) / num_slices);
-    Vector2d scale_curr(1 - (1 - scale_x) * slice_idx / num_slices,
-                        1 - (1 - scale_y) * slice_idx / num_slices);
-    add_slice_indices(indices, slice_idx, slice_stride, polyref, rot_prev, rot_curr, scale_prev,
-                      scale_curr);
+    double rot_bot = twist * (slice_idx - 1) / num_slices;
+    double rot_top = twist * slice_idx / num_slices;
+    Vector2d scale_bot(1 - (1 - scale_x) * (slice_idx - 1) / num_slices,
+                       1 - (1 - scale_y) * (slice_idx - 1) / num_slices);
+    Vector2d scale_top(1 - (1 - scale_x) * slice_idx / num_slices,
+                       1 - (1 - scale_y) * slice_idx / num_slices);
+    add_slice_indices(indices, slice_idx, slice_stride, polyref, rot_bot, rot_top, scale_bot,
+                      scale_top);
   }
 }
 
