@@ -55,6 +55,7 @@ std::unique_ptr<PolySet> assemblePolySetForCGAL(const Polygon2d& polyref,
                                                 int convexity, boost::tribool isConvex, double scale_x,
                                                 double scale_y, const Vector3d& h1, const Vector3d& h2,
                                                 double twist);
+extern const double sgn_vdiff_ratio_threshold;
 int sgn_vdiff(const Vector2d& v1, const Vector2d& v2);
 }  // namespace LinearExtrudeInternals
 
@@ -80,19 +81,24 @@ TEST_CASE("sgn_vdiff basic functionality")
 {
   SECTION("Approximately the same vector")
   {
-    // I did not think deeply about the exact orders of magnitude.
-    for (double i = 0.01; i > 0.0000001; i /= 2.0) {
+    // Just picked some values near an arbitrary threshold.
+    // Chesterton's fence is less a fence and more a broken tree branch.
+    for (double i = 0.01; i > 0.0002; i /= 2.0) {
+      CAPTURE(i);
+      CHECK(LinearExtrudeInternals::sgn_vdiff({10 + i, 10.0}, {10.0, 10.0}) == 1);
+    }
+    for (double i = 0.0001; i > 0.000000001; i /= 2.0) {
       CAPTURE(i);
       CHECK(LinearExtrudeInternals::sgn_vdiff({10 + i, 10.0}, {10.0, 10.0}) == 0);
     }
   }
   SECTION("v1 less than v2")
   {
-    CHECK(LinearExtrudeInternals::sgn_vdiff({9.00001, 10.0}, {10.0, 10.0}) == 0);
+    CHECK(LinearExtrudeInternals::sgn_vdiff({9.00001, 10.0}, {10.0, 10.0}) == -1);
   }
   SECTION("v1 greater than v2")
   {
-    CHECK(LinearExtrudeInternals::sgn_vdiff({11.00001, 10.0}, {10.0, 10.0}) == 0);
+    CHECK(LinearExtrudeInternals::sgn_vdiff({11.00001, 10.0}, {10.0, 10.0}) == 1);
   }
 }
 

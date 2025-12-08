@@ -27,19 +27,19 @@ namespace LinearExtrudeInternals {
   Compare Euclidean length of vectors
   Return:
    -1 : if v1  < v2
-    0 : if v1 ~= v2 (approximation to compoensate for floating point precision)
+    0 : if v1 ~= v2 (approximation to compensate for floating point precision)
     1 : if v1  > v2
 */
 int sgn_vdiff(const Vector2d& v1, const Vector2d& v2)
 {
-  constexpr double ratio_threshold = 1e5;  // 10ppm difference
+  constexpr double ratio_threshold = 1e5;  // 5 orders-of-magnitude difference
   double l1 = v1.norm();
   double l2 = v2.norm();
   // Compare the average and difference, to be independent of geometry scale.
   // If the difference is within ratio_threshold of the avg, treat as equal.
-  double scale = (l1 + l2) * ratio_threshold;
-  double diff = 2 * std::fabs(l1 - l2);
-  return scale < diff ? (l1 < l2 ? -1 : 1) : 0;
+  double scale = (l1 + l2);
+  double diff = 2 * std::fabs(l1 - l2) * ratio_threshold;
+  return diff > scale ? (l1 < l2 ? -1 : 1) : 0;
 }
 
 /**
