@@ -55,7 +55,6 @@ std::unique_ptr<PolySet> assemblePolySetForCGAL(const Polygon2d& polyref,
                                                 int convexity, boost::tribool isConvex, double scale_x,
                                                 double scale_y, const Vector3d& h1, const Vector3d& h2,
                                                 double twist);
-extern const double sgn_vdiff_ratio_threshold;
 int sgn_vdiff(const Vector2d& v1, const Vector2d& v2);
 }  // namespace LinearExtrudeInternals
 
