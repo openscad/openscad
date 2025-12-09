@@ -4,6 +4,7 @@
 #include "utils/printutils.h"
 #include "core/SourceFileCache.h"
 #include "core/UserModule.h"
+#include "utils/CallTraceStack.h"
 
 #include <utility>
 #include <memory>
@@ -17,23 +18,13 @@ void ScopeContext::init()
       LOG(message_group::Warning, assignment->location(), this->documentRoot(),
           "Parameter %1$s is overwritten with a literal", quoteVar(assignment->getName()));
     }
-    try {
-      set_variable(assignment->getName(), assignment->getExpr()->evaluate(get_shared_ptr()));
-    } catch (EvaluationException& e) {
-      if (assignment->locationOfOverwrite().isNone()) {
-        e.LOG(message_group::Trace, assignment->location(), this->documentRoot(), "assignment to %1$s",
-              quoteVar(assignment->getName()));
-      } else {
-        e.LOG(message_group::Trace, assignment->location(), this->documentRoot(),
-              "overwritten assignment to %1$s (this is where the assignment is evaluated)",
-              quoteVar(assignment->getName()));
-        e.LOG(message_group::Trace, assignment->locationOfOverwrite(), this->documentRoot(),
-              "overwriting assignment to %1$s", quoteVar(assignment->getName()));
-      }
-      e.traceDepth--;
-
-      throw;
-    }
+    // Use CallTraceStack::Guard instead of try/catch to avoid expensive exception unwinding
+    CallTraceStack::Guard trace_guard = CallTraceStack::assignment(
+        assignment->getName(), 
+        assignment->location(), 
+        get_shared_ptr(),
+        assignment->locationOfOverwrite());
+    set_variable(assignment->getName(), assignment->getExpr()->evaluate(get_shared_ptr()));
   }
 }
 
