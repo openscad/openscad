@@ -6,16 +6,10 @@
 #include <string>
 namespace fs = std::filesystem;
 
-// MSVC seems to need a larger buffer to catch stack overflow before it happens.
-// Module instantiation and complex function evaluation use more stack per frame
-// on Windows/MSVC compared to GCC/Clang, requiring a significantly larger buffer.
-// With 8MB stack, a 5MB buffer leaves 3MB for actual use. The extra margin ensures
-// the StackCheck mechanism triggers before a real stack overflow occurs.
-#if defined(_MSC_VER)
-static constexpr size_t STACK_BUFFER_SIZE = 5ul * 1024ul * 1024ul;  // 5MB buffer for MSVC
-#else
-static constexpr size_t STACK_BUFFER_SIZE = 128ul * 1024ul;
+#ifndef STACK_SAFETY_MARGIN
+#define STACK_SAFETY_MARGIN (128ul * 1024ul)
 #endif
+static constexpr size_t STACK_BUFFER_SIZE = STACK_SAFETY_MARGIN;
 static constexpr size_t STACK_LIMIT_DEFAULT = size_t{STACKSIZE} - STACK_BUFFER_SIZE;
 
 namespace PlatformUtils {
@@ -107,7 +101,7 @@ int setenv(const char *name, const char *value, int overwrite);
  *
  * @return maximum usable stack size in bytes (total stack minus safety buffer).
  */
-size_t stackLimit();
+unsigned long stackLimit();
 
 /**
  * Single character separating path specifications in a list

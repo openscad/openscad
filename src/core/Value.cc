@@ -411,7 +411,8 @@ public:
 
   void operator()(const VectorType& v) const
   {
-    if (StackCheck::inst().check()) {
+    StackCheck::RecursionLimitGuard recursion_guard;
+    if (recursion_guard.limitReached() || StackCheck::inst().check()) {
       throw VectorEchoStringException::create();
     }
     stream << '[';
@@ -428,7 +429,8 @@ public:
 
   void operator()(const ObjectType& v) const
   {
-    if (StackCheck::inst().check()) {
+    StackCheck::RecursionLimitGuard recursion_guard;
+    if (recursion_guard.limitReached() || StackCheck::inst().check()) {
       throw VectorEchoStringException::create();
     }
     stream << "{ ";
@@ -483,24 +485,16 @@ public:
   {
     // Create a single stream and pass reference to it for list elements for optimization.
     std::ostringstream stream;
-    try {
-      (tostream_visitor(stream))(v);
-    } catch (EvaluationException& e) {
-      e.LOG(message_group::Error, e.what());
-      throw;
-    }
+    // Let exceptions propagate - catching here adds to stack unwind cost
+    (tostream_visitor(stream))(v);
     return stream.str();
   }
 
   std::string operator()(const ObjectType& v) const
   {
     std::ostringstream stream;
-    try {
-      (tostream_visitor(stream))(v);
-    } catch (EvaluationException& e) {
-      e.LOG(message_group::Error, e.what());
-      throw;
-    }
+    // Let exceptions propagate - catching here adds to stack unwind cost
+    (tostream_visitor(stream))(v);
     return stream.str();
   }
 

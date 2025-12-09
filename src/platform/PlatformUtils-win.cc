@@ -1,5 +1,6 @@
 #include "platform/PlatformUtils.h"
 
+#include <algorithm>
 #include <filesystem>
 #include <ios>
 #include <map>
@@ -81,26 +82,7 @@ std::string PlatformUtils::userConfigPath()
   return retval + std::string("/") + PlatformUtils::OPENSCAD_FOLDER_NAME;
 }
 
-size_t PlatformUtils::stackLimit()
-{
-  // Use Windows API to get actual stack limits for the current thread.
-  // This is more accurate than using compile-time constants because it
-  // reflects the actual stack configuration at runtime.
-  ULONG_PTR lowLimit = 0;
-  ULONG_PTR highLimit = 0;
-  GetCurrentThreadStackLimits(&lowLimit, &highLimit);
-  
-  if (highLimit > lowLimit) {
-    // Calculate the actual stack size and subtract the buffer
-    const size_t stackSize = static_cast<size_t>(highLimit - lowLimit);
-    if (stackSize > STACK_BUFFER_SIZE) {
-      return stackSize - STACK_BUFFER_SIZE;
-    }
-  }
-  
-  // Fallback to default if API fails or returns invalid values
-  return STACK_LIMIT_DEFAULT;
-}
+unsigned long PlatformUtils::stackLimit() { return STACK_LIMIT_DEFAULT; }
 
 // NOLINTNEXTLINE(modernize-use-using)
 typedef BOOL(WINAPI *LPFN_ISWOW64PROCESS)(HANDLE, PBOOL);

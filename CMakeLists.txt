@@ -82,6 +82,8 @@ set_property(CACHE ENABLE_GAMEPAD PROPERTY STRINGS "AUTO" "ON" "OFF")
 set(WASM_BUILD_TYPE "web" CACHE STRING
   "WebAssembly build type. Support web (builds an OpenSCAD module) or node (standalone .js executable)")
 
+set(OPENSCAD_MSVC_RECURSION_LIMIT "400" CACHE STRING "Maximum recursion depth allowed on MSVC builds before aborting recursion")
+
 if (USE_QT6)
   # Minimum version required for Qt-6.8
   set(DEPLOYMENT_TARGET "12.0")
@@ -139,6 +141,10 @@ target_link_libraries(OpenSCADExe PUBLIC OpenSCADLibInternal)
 set_target_properties(OpenSCADLibInternal PROPERTIES
     OUTPUT_NAME "openscadinternal" # results in `libopenscadinternal`
 )
+
+if (MSVC)
+  target_compile_definitions(OpenSCADLibInternal PUBLIC OPENSCAD_MSVC_RECURSION_LIMIT=${OPENSCAD_MSVC_RECURSION_LIMIT})
+endif()
 
 add_library(svg STATIC)
 target_link_libraries(OpenSCADExe PUBLIC svg)
@@ -277,6 +283,7 @@ endif()
 
 set(SUFFIX "" CACHE STRING "Installation suffix for binary (e.g. 'nightly')")
 set(STACKSIZE 8388608 CACHE STRING "Stack size (default is 8MB)")
+set(STACK_SAFETY_MARGIN 131072 CACHE STRING "Stack safety margin (128KB)")
 
 if(PROFILE)
   SET(GCC_COVERAGE_COMPILE_FLAGS "-g -O0 --coverage -fprofile-arcs -ftest-coverage -fprofile-dir=.gcov")
@@ -956,6 +963,7 @@ endif()
 
 # Stack size 8MB; github issue 116
 target_compile_definitions(OpenSCADLibInternal PUBLIC "STACKSIZE=${STACKSIZE}") # used as default in src/platform/PlatformUtils.h
+target_compile_definitions(OpenSCADLibInternal PUBLIC "STACK_SAFETY_MARGIN=${STACK_SAFETY_MARGIN}") # used in src/platform/PlatformUtils.h
 
 if(NULLGL)
   set(OFFSCREEN_METHOD "NULLGL")

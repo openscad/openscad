@@ -54,6 +54,9 @@
 #include "utils/compiler_specific.h"
 #include "utils/exceptions.h"
 #include "utils/printutils.h"
+#include "utils/CallTraceStack.h"
+#include <boost/regex.hpp>
+#include <boost/assign/std/vector.hpp>
 using namespace boost::assign;  // bring 'operator+=()' into scope
 
 Value Expression::checkUndef(Value&& val, const std::shared_ptr<const Context>& context) const
@@ -593,10 +596,22 @@ static SimplificationResult simplify_function_body(const Expression *expression,
 Value FunctionCall::evaluate(const std::shared_ptr<const Context>& context) const
 {
   const auto& name = get_name();
-  if (StackCheck::inst().check()) {
+  StackCheck::RecursionLimitGuard recursion_guard;
+  bool recursionLimitHit = recursion_guard.limitReached();
+  bool stackCheckHit = StackCheck::inst().check();
+  
+  if (recursionLimitHit || stackCheckHit) {
     print_err(name.c_str(), loc, context);
     throw RecursionException::create("function", name, this->loc);
   }
+
+  // Use CallTraceStack guard for this function call
+  // This will be automatically popped when we return or throw
+  CallTraceStack::Guard trace_guard(
+    CallTraceStack::Entry::Type::FunctionCall,
+    name,
+    this->loc,
+    context);
 
   // Repeatedly simplify expr until it reduces to either a tail call,
   // or an expression that cannot be simplified in-place. If the latter,
@@ -608,31 +623,26 @@ Value FunctionCall::evaluate(const std::shared_ptr<const Context>& context) cons
   ContextHandle<Context> expression_context{Context::create<Context>(context)};
   const Expression *expression = this;
   while (true) {
-    try {
-      auto result = simplify_function_body(expression, *expression_context);
-      if (Value *value = std::get_if<Value>(&result)) {
-        return std::move(*value);
-      }
+    // No try/catch needed - exception propagates directly, trace is in CallTraceStack
+    auto result = simplify_function_body(expression, *expression_context);
+    if (Value *value = std::get_if<Value>(&result)) {
+      return std::move(*value);
+    }
 
-      SimplifiedExpression *simplified_expression = std::get_if<SimplifiedExpression>(&result);
-      assert(simplified_expression);
+    SimplifiedExpression *simplified_expression = std::get_if<SimplifiedExpression>(&result);
+    assert(simplified_expression);
 
-      expression = simplified_expression->expression;
-      if (simplified_expression->new_context) {
-        expression_context = std::move(*simplified_expression->new_context);
+    expression = simplified_expression->expression;
+    if (simplified_expression->new_context) {
+      expression_context = std::move(*simplified_expression->new_context);
+    }
+    if (simplified_expression->new_active_function_call) {
+      current_call = *simplified_expression->new_active_function_call;
+      if (recursion_depth++ == 1000000) {
+        LOG(message_group::Error, expression->location(), expression_context->documentRoot(),
+            "Recursion detected calling function '%1$s'", current_call->name);
+        throw RecursionException::create("function", current_call->name, current_call->location());
       }
-      if (simplified_expression->new_active_function_call) {
-        current_call = *simplified_expression->new_active_function_call;
-        if (recursion_depth++ == 1000000) {
-          LOG(message_group::Error, expression->location(), expression_context->documentRoot(),
-              "Recursion detected calling function '%1$s'", current_call->name);
-          throw RecursionException::create("function", current_call->name, current_call->location());
-        }
-      }
-    } catch (EvaluationException& e) {
-      print_trace(e, current_call, *expression_context);
-      e.traceDepth--;
-      throw;
     }
   }
 }

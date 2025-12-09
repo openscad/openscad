@@ -17,13 +17,14 @@ static volatile bool g_stackOverflowHandled = false;
 // even when the normal exception handling machinery can't run.
 static LONG WINAPI StackOverflowVectoredHandler(EXCEPTION_POINTERS *ExceptionInfo)
 {
-  if (ExceptionInfo->ExceptionRecord->ExceptionCode == EXCEPTION_STACK_OVERFLOW) {
+  DWORD code = ExceptionInfo->ExceptionRecord->ExceptionCode;
+  
+  if (code == EXCEPTION_STACK_OVERFLOW) {
     g_stackOverflowHandled = true;
     
-    // Try to output an error message
-    // We can't use iostream here because we have no stack space
-    const char* msg = "FATAL ERROR: Stack overflow detected. The operation required too much recursion.\n";
+    // Output error message to stderr
     HANDLE hStderr = GetStdHandle(STD_ERROR_HANDLE);
+    const char* msg = "FATAL ERROR: Stack overflow detected. The operation required too much recursion.\n";
     if (hStderr != INVALID_HANDLE_VALUE) {
       DWORD written;
       WriteFile(hStderr, msg, (DWORD)strlen(msg), &written, NULL);
@@ -32,6 +33,7 @@ static LONG WINAPI StackOverflowVectoredHandler(EXCEPTION_POINTERS *ExceptionInf
     // Exit the process - we can't safely continue after stack overflow
     ExitProcess(1);
   }
+  
   return EXCEPTION_CONTINUE_SEARCH;
 }
 
