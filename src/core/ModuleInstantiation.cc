@@ -67,11 +67,8 @@ std::shared_ptr<AbstractNode> ModuleInstantiation::evaluate(
   }
 
   // Use CallTraceStack guard instead of try/catch
-  CallTraceStack::Guard trace_guard(
-    CallTraceStack::Entry::Type::ModuleInstantiation,
-    this->name(),
-    this->loc,
-    context);
+  CallTraceStack::Guard trace_guard(CallTraceStack::Entry::Type::ModuleInstantiation, this->name(),
+                                    this->loc, context);
 
   // No try/catch needed - exception propagates directly, trace is in CallTraceStack
   return module->module->instantiate(module->defining_context, this, context);
