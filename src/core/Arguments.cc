@@ -28,6 +28,7 @@
 
 #include <ostream>
 #include <memory>
+#include <boost/optional/optional_io.hpp>
 #include "core/Context.h"
 #include "core/Expression.h"
 #include "core/EvaluationSession.h"
@@ -36,11 +37,21 @@ Arguments::Arguments(const AssignmentList& argument_expressions,
                      const std::shared_ptr<const Context>& context)
   : evaluation_session(context->session())
 {
+  // The number output precision ($fp) active for the current function's block
+  // is applied to each of its arguments.  This precision (stored within each
+  // Value) is later used by the various toString() methods.
+  boost::optional<const Value&> fp = context->try_lookup_variable("$fp");
   for (const auto& argument_expression : argument_expressions) {
-    emplace_back(argument_expression->getName().empty()
-                   ? boost::none
-                   : boost::optional<std::string>(argument_expression->getName()),
-                 argument_expression->getExpr()->evaluate(context));
+    if (argument_expression->getName().empty()) {
+      Value v = argument_expression->getExpr()->evaluate(context);
+      v.setPrecision(fp->toInt64());
+      emplace_back(boost::none, std::move(v));
+    } else {
+      auto n = argument_expression->getName();
+      Value v = argument_expression->getExpr()->evaluate(context);
+      v.setPrecision(fp->toInt64());
+      emplace_back(boost::optional<std::string>(n), std::move(v));
+    }
   }
 }
 
