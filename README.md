@@ -256,7 +256,7 @@ For a 32-bit Windows cross-build, replace 64 with 32 in the above instructions.
 
 We support building OpenSCAD headless for WebAssembly w/ Emscripten, using a premade Docker image built in [openscad/openscad-wasm](https://github.com/openscad/openscad-wasm) (which also has usage examples)
 
-#### Browser
+#### Browser
 
 The following command creates `build-web/openscad.wasm` & `build-web/openscad.js`:
 
