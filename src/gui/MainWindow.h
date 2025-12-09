@@ -84,6 +84,7 @@ public:
 
   QTimer *autoReloadTimer;
   QTimer *waitAfterReloadTimer;
+  QTimer *autoPreviewTimer;
   RenderStatistic renderStatistic;
 
   std::shared_ptr<SourceFile> rootFile;            // Result of parsing
@@ -246,6 +247,7 @@ private slots:
   void actionPythonSelectVenv();
   void actionSaveACopy();
   void actionReload();
+  void renderPreviewIfNeeded();
   void actionShowLibraryFolder();
   void convertTabsToSpaces();
   void copyText();
@@ -434,6 +436,11 @@ private:
   QMenu *navigationMenu{nullptr};
   QSoundEffect *renderCompleteSoundEffect;
   std::vector<std::unique_ptr<QTemporaryFile>> allTempFiles;
+
+  // Auto preview on edit
+  bool autoPreviewEnabled = false;
+  int autoPreviewDelayMs = 0;
+  void loadAutoPreviewConfig();
 
   void resetMeasurementsState(bool enable, const QString& tooltipMessage);
   QActionGroup *measurementGroup;
