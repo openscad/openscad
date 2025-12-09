@@ -29,7 +29,9 @@ public:
 
   // Move constructor: take ownership of tail_msgs
   EvaluationException(EvaluationException&& other) noexcept
-    : std::runtime_error(std::move(other)), traceDepth(other.traceDepth), tail_msgs(std::move(other.tail_msgs))
+    : std::runtime_error(std::move(other)),
+      traceDepth(other.traceDepth),
+      tail_msgs(std::move(other.tail_msgs))
   {
   }
 
@@ -47,49 +49,49 @@ public:
 
   // Print the call trace from CallTraceStack
   // This should be called at the TOP-LEVEL catch site only
-  void printCallTrace() const {
+  void printCallTrace() const
+  {
     const auto& stack = CallTraceStack::getStack();
     int depth = traceDepth;
-    
+
     // Print from most recent (top of stack) down
     for (auto it = stack.rbegin(); it != stack.rend(); ++it) {
       auto ctx = it->context.lock();
       std::string docRoot = ctx ? ctx->documentRoot() : "";
-      
+
       if (depth > 0) {
         // Print immediately
         switch (it->type) {
-          case CallTraceStack::Entry::Type::FunctionCall:
-            ::LOG(message_group::Trace, it->location, docRoot, "called by '%1$s'", it->name);
-            break;
-          case CallTraceStack::Entry::Type::ModuleInstantiation:
-            ::LOG(message_group::Trace, it->location, docRoot, "called by '%1$s'", it->name);
-            break;
-          case CallTraceStack::Entry::Type::UserModuleCall:
-            if (it->getParameterString) {
-              ::LOG(message_group::Trace, it->location, docRoot, "call of '%1$s(%2$s)'",
-                    it->name, it->getParameterString());
-            } else {
-              ::LOG(message_group::Trace, it->location, docRoot, "call of '%1$s'", it->name);
-            }
-            break;
-          case CallTraceStack::Entry::Type::Assignment:
-            if (it->overwriteLocation.isNone()) {
-              ::LOG(message_group::Trace, it->location, docRoot, "assignment to %1$s", 
-                    quoteVar(it->name));
-            } else {
-              ::LOG(message_group::Trace, it->location, docRoot, 
-                    "overwritten assignment to %1$s (this is where the assignment is evaluated)",
-                    quoteVar(it->name));
-              ::LOG(message_group::Trace, it->overwriteLocation, docRoot,
-                    "overwriting assignment to %1$s", quoteVar(it->name));
-            }
-            break;
+        case CallTraceStack::Entry::Type::FunctionCall:
+          ::LOG(message_group::Trace, it->location, docRoot, "called by '%1$s'", it->name);
+          break;
+        case CallTraceStack::Entry::Type::ModuleInstantiation:
+          ::LOG(message_group::Trace, it->location, docRoot, "called by '%1$s'", it->name);
+          break;
+        case CallTraceStack::Entry::Type::UserModuleCall:
+          if (it->getParameterString) {
+            ::LOG(message_group::Trace, it->location, docRoot, "call of '%1$s(%2$s)'", it->name,
+                  it->getParameterString());
+          } else {
+            ::LOG(message_group::Trace, it->location, docRoot, "call of '%1$s'", it->name);
+          }
+          break;
+        case CallTraceStack::Entry::Type::Assignment:
+          if (it->overwriteLocation.isNone()) {
+            ::LOG(message_group::Trace, it->location, docRoot, "assignment to %1$s", quoteVar(it->name));
+          } else {
+            ::LOG(message_group::Trace, it->location, docRoot,
+                  "overwritten assignment to %1$s (this is where the assignment is evaluated)",
+                  quoteVar(it->name));
+            ::LOG(message_group::Trace, it->overwriteLocation, docRoot, "overwriting assignment to %1$s",
+                  quoteVar(it->name));
+          }
+          break;
         }
         depth--;
       }
     }
-    
+
     // Report excluded frames
     int frames_skipped = static_cast<int>(stack.size()) - traceDepth;
     if (frames_skipped > 0) {

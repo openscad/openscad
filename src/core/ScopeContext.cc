@@ -29,11 +29,9 @@ void ScopeContext::init()
           "Parameter %1$s is overwritten with a literal", quoteVar(assignment->getName()));
     }
     // Use CallTraceStack::Guard instead of try/catch to avoid expensive exception unwinding
-    CallTraceStack::Guard trace_guard = CallTraceStack::assignment(
-        assignment->getName(), 
-        assignment->location(), 
-        get_shared_ptr(),
-        assignment->locationOfOverwrite());
+    CallTraceStack::Guard trace_guard =
+      CallTraceStack::assignment(assignment->getName(), assignment->location(), get_shared_ptr(),
+                                 assignment->locationOfOverwrite());
     set_variable(assignment->getName(), assignment->getExpr()->evaluate(get_shared_ptr()));
   }
 }

@@ -599,7 +599,7 @@ Value FunctionCall::evaluate(const std::shared_ptr<const Context>& context) cons
   StackCheck::RecursionLimitGuard recursion_guard;
   bool recursionLimitHit = recursion_guard.limitReached();
   bool stackCheckHit = StackCheck::inst().check();
-  
+
   if (recursionLimitHit || stackCheckHit) {
     print_err(name.c_str(), loc, context);
     throw RecursionException::create("function", name, this->loc);
@@ -607,11 +607,7 @@ Value FunctionCall::evaluate(const std::shared_ptr<const Context>& context) cons
 
   // Use CallTraceStack guard for this function call
   // This will be automatically popped when we return or throw
-  CallTraceStack::Guard trace_guard(
-    CallTraceStack::Entry::Type::FunctionCall,
-    name,
-    this->loc,
-    context);
+  CallTraceStack::Guard trace_guard(CallTraceStack::Entry::Type::FunctionCall, name, this->loc, context);
 
   // Repeatedly simplify expr until it reduces to either a tail call,
   // or an expression that cannot be simplified in-place. If the latter,

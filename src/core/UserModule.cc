@@ -60,7 +60,7 @@ static void NOINLINE print_err(std::string name, const Location& loc,
 }
 
 // Helper to build parameter string for trace
-static std::string buildParameterString(const UserModule* mod,
+static std::string buildParameterString(const UserModule *mod,
                                         const std::shared_ptr<const UserModuleContext>& context,
                                         const AssignmentList& parameters)
 {
@@ -71,7 +71,7 @@ static std::string buildParameterString(const UserModule* mod,
   if (StackCheck::inst().check()) {
     return "...";
   }
-  
+
   bool first = true;
   for (const auto& assignment : parameters) {
     if (first) {
@@ -99,7 +99,7 @@ std::shared_ptr<AbstractNode> UserModule::instantiate(
   StackCheck::RecursionLimitGuard recursion_guard;
   const bool recursion_limit_reached = recursion_guard.limitReached();
   const bool stack_check_triggered = StackCheck::inst().check();
-  
+
   if (recursion_limit_reached || stack_check_triggered) {
     print_err(inst->name(), loc, context);
     throw RecursionException::create("module", inst->name(), loc);
@@ -110,7 +110,7 @@ std::shared_ptr<AbstractNode> UserModule::instantiate(
   ContextHandle<UserModuleContext> module_context{Context::create<UserModuleContext>(
     defining_context, this, inst->location(), Arguments(inst->arguments, context),
     Children(inst->scope, context))};
-    
+
 #if 0 && DEBUG
   PRINTDB("UserModuleContext for module %s(%s):\n", this->name % STR(this->parameters));
   PRINTDB("%s", module_context->dump());
@@ -119,16 +119,14 @@ std::shared_ptr<AbstractNode> UserModule::instantiate(
   // Use CallTraceStack guard instead of try/catch for trace collection
   // This avoids the expensive stack unwind during exception propagation
   CallTraceStack::Guard trace_guard(
-    CallTraceStack::Entry::Type::UserModuleCall, 
-    this->name, 
-    this->loc, 
+    CallTraceStack::Entry::Type::UserModuleCall, this->name, this->loc,
     std::const_pointer_cast<Context>(std::static_pointer_cast<const Context>(*module_context)));
-  
+
   if (OpenSCAD::traceUsermoduleParameters) {
     // Capture parameters for trace - use weak refs to avoid lifetime issues
     std::weak_ptr<const UserModuleContext> weak_ctx = *module_context;
-    const UserModule* mod = this;
-    const AssignmentList* params = &this->parameters;
+    const UserModule *mod = this;
+    const AssignmentList *params = &this->parameters;
     trace_guard.setParameterStringGenerator([weak_ctx, mod, params]() -> std::string {
       auto ctx = weak_ctx.lock();
       if (!ctx) return "...";
