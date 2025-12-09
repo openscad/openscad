@@ -94,6 +94,7 @@ public slots:
   void on_customizerFontSize_currentIndexChanged(int);
   void on_checkBoxEnableAutocomplete_toggled(bool);
   void on_lineEditCharacterThreshold_textChanged(const QString&);
+  void on_autoPreviewDelayEdit_textChanged(const QString&);
   //
   // editor settings
   //
@@ -176,6 +177,7 @@ signals:
   void autocompleteChanged(bool status) const;
   void characterThresholdChanged(int val) const;
   void stepSizeChanged(int val) const;
+  void autoPreviewDelayChanged() const;
   void toolbarExportChanged() const;
 
 private slots:
