@@ -596,11 +596,9 @@ static SimplificationResult simplify_function_body(const Expression *expression,
 Value FunctionCall::evaluate(const std::shared_ptr<const Context>& context) const
 {
   const auto& name = get_name();
-  StackCheck::RecursionLimitGuard recursion_guard;
-  bool recursionLimitHit = recursion_guard.limitReached();
   bool stackCheckHit = StackCheck::inst().check();
 
-  if (recursionLimitHit || stackCheckHit) {
+  if (stackCheckHit) {
     print_err(name.c_str(), loc, context);
     throw RecursionException::create("function", name, this->loc);
   }

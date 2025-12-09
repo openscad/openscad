@@ -7,9 +7,6 @@
 
 #if defined(_MSC_VER)
 #include <windows.h>
-#ifndef OPENSCAD_MSVC_RECURSION_LIMIT
-#define OPENSCAD_MSVC_RECURSION_LIMIT 1000
-#endif
 #pragma warning(push)
 #pragma warning(disable : 26486)  // Disable warning for dangling pointers
 #endif                            // defined(_MSC_VER)
@@ -124,67 +121,6 @@ public:
 #endif
   }
 
-  class RecursionLimitGuard
-  {
-  public:
-    RecursionLimitGuard() = default;
-
-    RecursionLimitGuard(const RecursionLimitGuard&) = delete;
-    RecursionLimitGuard& operator=(const RecursionLimitGuard&) = delete;
-
-    inline bool limitReached()
-    {
-#if defined(_MSC_VER)
-      if (limit_reached) {
-        return true;
-      }
-      if (recursion_depth >= OPENSCAD_MSVC_RECURSION_LIMIT) {
-        limit_reached = true;
-        STACKCHECK_LOG("RecursionLimitGuard: LIMIT REACHED at depth %zu (limit=%d)", recursion_depth,
-                       OPENSCAD_MSVC_RECURSION_LIMIT);
-        StackCheck::inst().logStackInfo("RecursionLimit", recursion_depth);
-        return true;
-      }
-      ++recursion_depth;
-
-#if STACKCHECK_DEBUG
-      // Log at certain depths to track progress - MORE FREQUENT now
-      if (recursion_depth <= 5 || recursion_depth % 50 == 0) {
-        StackCheck::inst().logStackInfo("RecursionGuard++", recursion_depth);
-      }
-#endif
-#endif
-      return false;
-    }
-
-    ~RecursionLimitGuard()
-    {
-#if defined(_MSC_VER)
-      if (!limit_reached && recursion_depth > 0) {
-#if STACKCHECK_DEBUG
-        // Log unwinding at certain depths - MORE FREQUENT now
-        if (recursion_depth <= 5 || recursion_depth % 50 == 0) {
-          StackCheck::inst().logStackInfo("RecursionGuard--", recursion_depth);
-        }
-#endif
-        --recursion_depth;
-      }
-#endif
-    }
-
-#if defined(_MSC_VER)
-    static size_t getCurrentDepth() { return recursion_depth; }
-#else
-    static size_t getCurrentDepth() { return 0; }
-#endif
-
-  private:
-#if defined(_MSC_VER)
-    static inline thread_local size_t recursion_depth = 0;
-    bool limit_reached = false;
-#endif
-  };
-
 private:
   StackCheck() : limit(PlatformUtils::stackLimit())
   {
@@ -198,7 +134,6 @@ private:
                    (unsigned long long)lowLimit, (unsigned long long)highLimit,
                    (unsigned long long)((highLimit - lowLimit) / 1024),
                    (unsigned long long)(STACK_BUFFER_SIZE / 1024));
-    STACKCHECK_LOG("INIT: OPENSCAD_MSVC_RECURSION_LIMIT=%d", OPENSCAD_MSVC_RECURSION_LIMIT);
 #endif
   }
 

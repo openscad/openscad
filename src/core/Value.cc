@@ -411,8 +411,7 @@ public:
 
   void operator()(const VectorType& v) const
   {
-    StackCheck::RecursionLimitGuard recursion_guard;
-    if (recursion_guard.limitReached() || StackCheck::inst().check()) {
+    if (StackCheck::inst().check()) {
       throw VectorEchoStringException::create();
     }
     stream << '[';
@@ -429,8 +428,7 @@ public:
 
   void operator()(const ObjectType& v) const
   {
-    StackCheck::RecursionLimitGuard recursion_guard;
-    if (recursion_guard.limitReached() || StackCheck::inst().check()) {
+    if (StackCheck::inst().check()) {
       throw VectorEchoStringException::create();
     }
     stream << "{ ";

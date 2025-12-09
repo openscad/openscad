@@ -96,11 +96,9 @@ std::shared_ptr<AbstractNode> UserModule::instantiate(
   const std::shared_ptr<const Context>& defining_context, const ModuleInstantiation *inst,
   const std::shared_ptr<const Context>& context) const
 {
-  StackCheck::RecursionLimitGuard recursion_guard;
-  const bool recursion_limit_reached = recursion_guard.limitReached();
   const bool stack_check_triggered = StackCheck::inst().check();
 
-  if (recursion_limit_reached || stack_check_triggered) {
+  if (stack_check_triggered) {
     print_err(inst->name(), loc, context);
     throw RecursionException::create("module", inst->name(), loc);
     return nullptr;
