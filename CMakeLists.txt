@@ -82,8 +82,6 @@ set_property(CACHE ENABLE_GAMEPAD PROPERTY STRINGS "AUTO" "ON" "OFF")
 set(WASM_BUILD_TYPE "web" CACHE STRING
   "WebAssembly build type. Support web (builds an OpenSCAD module) or node (standalone .js executable)")
 
-set(OPENSCAD_MSVC_RECURSION_LIMIT "400" CACHE STRING "Maximum recursion depth allowed on MSVC builds before aborting recursion")
-
 if (USE_QT6)
   # Minimum version required for Qt-6.8
   set(DEPLOYMENT_TARGET "12.0")
@@ -141,10 +139,6 @@ target_link_libraries(OpenSCADExe PUBLIC OpenSCADLibInternal)
 set_target_properties(OpenSCADLibInternal PROPERTIES
     OUTPUT_NAME "openscadinternal" # results in `libopenscadinternal`
 )
-
-if (MSVC)
-  target_compile_definitions(OpenSCADLibInternal PUBLIC OPENSCAD_MSVC_RECURSION_LIMIT=${OPENSCAD_MSVC_RECURSION_LIMIT})
-endif()
 
 add_library(svg STATIC)
 target_link_libraries(OpenSCADExe PUBLIC svg)
