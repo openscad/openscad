@@ -2023,6 +2023,7 @@ PyObject *python_show(PyObject *self, PyObject *args, PyObject *kwargs)
   if (args == nullptr) return result;
   for (int i = 0; i < PyTuple_Size(args); i++) {
     result = python_show_core(PyTuple_GetItem(args, i));
+    if (result == nullptr) return result;
   }
   if (result != Py_None) Py_INCREF(result);
   return result;
