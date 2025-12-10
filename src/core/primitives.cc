@@ -629,6 +629,7 @@ std::unique_ptr<const Geometry> EdgeNode::createGeometry() const
   }
 
   Edge1d e(beg, end);
+  e.color = *OpenSCAD::parse_color("#f9d72c");
   Barcode1d b(e);
   return std::make_unique<Barcode1d>(b);
 }

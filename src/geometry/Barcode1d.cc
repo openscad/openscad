@@ -101,11 +101,26 @@ void Barcode1d::transform(const Transform2d& mat)
   }
   if (trans3dState != Transform3dState::NONE) mergeTrans3d();
   for (auto& o : this->theedges) {
-    o.begin = mat(0, 0) * o.begin;
-    o.end = mat(0, 0) * o.end;
+    o.begin = mat(0, 0) * o.begin + mat(0, 2);
+    o.end = mat(0, 0) * o.end + mat(0, 2);
   }
 }
+std::shared_ptr<Polygon2d> Barcode1d::to2d(void) const
+{
+  Polygon2d result;
+  for (auto e : untransformedEdges()) {
+    Vector2d v1(e.begin, -0.25);
+    Vector2d v2(e.begin, 0.25);
+    Vector2d v3(e.end, 0.25);
+    Vector2d v4(e.end, -0.25);
 
+    Outline2d o;
+    o.color = e.color;
+    o.vertices = {v1, v2, v3, v4};
+    result.addOutline(o);
+  }
+  return std::make_shared<Polygon2d>(result);
+}
 void Barcode1d::resize(const Vector2d& newsize, const Eigen::Matrix<bool, 2, 1>& autosize)
 {
   auto bbox = this->getBoundingBox();
@@ -174,6 +189,13 @@ void Barcode1d::transform3d(const Transform3d& mat)
     }
     trans3d = (trans3dState == Transform3dState::NONE) ? mat : mat * trans3d;
     trans3dState = Transform3dState::PENDING;
+  }
+}
+
+void Barcode1d::setColor(const Color4f& c)
+{
+  for (auto& e : this->theedges) {
+    e.color = c;
   }
 }
 

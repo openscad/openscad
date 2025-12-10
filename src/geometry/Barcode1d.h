@@ -21,6 +21,7 @@ struct Edge1d {
     this->end = end;
   }
   double begin, end;
+  Color4f color;
   bool positive{true};
   [[nodiscard]] BoundingBox getBoundingBox() const;
 };
@@ -47,6 +48,7 @@ public:
   }
   [[nodiscard]] std::unique_ptr<PolySet> tessellate(bool in3d = false) const;
   [[nodiscard]] double area() const;
+  void setColor(const Color4f& c) override;
 
   using Edges1d = std::vector<Edge1d>;
   //// Note: The "using" here is a kludge to avoid a compiler warning.
@@ -64,6 +66,7 @@ public:
   void transform(const Transform2d& mat);
   void transform3d(const Transform3d& mat);
   bool hasTransform3d() const { return trans3dState != Transform3dState::NONE; }
+  std::shared_ptr<Polygon2d> to2d(void) const;
   const Transform3d& getTransform3d() const
   {
     // lazy initialization doesn't actually violate 'const'

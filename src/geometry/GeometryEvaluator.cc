@@ -1883,9 +1883,13 @@ std::unique_ptr<Barcode1d> GeometryEvaluator::applyToChildren1D(const AbstractNo
   if (children.empty()) {
     return nullptr;
   }
-
-  auto result = std::make_unique<Barcode1d>(*children[0]);
-  return result;
+  Barcode1d result;
+  for (auto child : children) {
+    for (const auto& e : child->edges()) {
+      result.addEdge(e);
+    }
+  }
+  return std::make_unique<Barcode1d>(result);
 }
 
 /*!
@@ -2676,10 +2680,14 @@ Response GeometryEvaluator::visit(State& state, const RotateExtrudeNode& node)
   if (state.isPostfix()) {
     std::shared_ptr<const Geometry> geom;
     if (!isSmartCached(node)) {
-      const std::shared_ptr<const Polygon2d> geometry = applyToChildren2D(node, OpenSCADOperator::UNION);
-      if (geometry) {
-        geom = rotatePolygon(node, *geometry);
-      }
+      ResultObject res = applyToChildren(node, OpenSCADOperator::UNION);
+      const std::shared_ptr<const Geometry> geometry = res.constptr();
+      const auto polygons = std::dynamic_pointer_cast<const Polygon2d>(geometry);
+      const auto barcode1d = std::dynamic_pointer_cast<const Barcode1d>(geometry);
+
+      if (polygons != nullptr) geom = rotatePolygon(node, *polygons);
+      if (barcode1d != nullptr) geom = rotateBarcode(node, *barcode1d);
+      if (geom == nullptr) geom = {};
     } else {
       geom = smartCacheGet(node, false);
     }

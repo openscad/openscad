@@ -432,6 +432,7 @@ std::unique_ptr<Geometry> extrudeBarcode(const LinearExtrudeNode& node, const Ba
     Vector2d v4(e.end, 0);
 
     Outline2d o;
+    o.color = e.color;
     o.vertices = {v1, v2, v3, v4};
     p.addOutline(o);
   }

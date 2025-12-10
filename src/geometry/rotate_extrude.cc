@@ -17,6 +17,7 @@
 #include "geometry/PolySetBuilder.h"
 #include "geometry/PolySetUtils.h"
 #include "geometry/Polygon2d.h"
+#include "geometry/Barcode1d.h"
 #include "geometry/linalg.h"
 #include "geometry/PolySet.h"
 #include "utils/calc.h"
@@ -328,4 +329,42 @@ std::unique_ptr<Geometry> rotatePolygon(const RotateExtrudeNode& node, const Pol
     fragstart = fragend - 1;
   }
   return union_geoms(result_s);
+}
+
+std::unique_ptr<Geometry> rotateBarcode(const RotateExtrudeNode& node, const Barcode1d& barcode)
+{
+  Polygon2d p;
+  for (auto e : barcode.untransformedEdges()) {
+    if (node.angle == 360 && node.v.norm() < 1e-6) {
+      for (int j = 0; j < 2; j++) {
+        double d = (j == 0) ? e.end : e.begin;
+        int fragments = node.discretizer.getCircularSegmentCount(d, 360).value_or(3);
+        Outline2d o;
+        o.color = e.color;
+        o.vertices.resize(fragments);
+        for (int i = 0; i < fragments; ++i) {
+          double phi = (360 * ((j == 0) ? i : (fragments - 1 - i))) / fragments;
+          o.vertices[i] = {d * cos_degrees(phi), d * sin_degrees(phi)};
+        }
+        p.addOutline(o);
+      }
+    } else {
+      double v = node.v.norm();
+      int fragments = node.discretizer.getCircularSegmentCount(e.end, node.angle).value_or(3);
+      Outline2d o;
+      o.color = e.color;
+      o.vertices.resize(2 * fragments);
+      for (int i = 0; i < fragments; ++i) {
+        double vext = v * i / (fragments + 1);
+        double phi = node.angle * i / (fragments - 1);
+        o.vertices[i] = {(e.end + vext) * cos_degrees(phi), (e.end + vext) * sin_degrees(phi)};
+        o.vertices[2 * fragments - 1 - i] = {(e.begin + vext) * cos_degrees(phi),
+                                             (e.begin + vext) * sin_degrees(phi)};
+      }
+      p.addOutline(o);
+    }
+  }
+  p.transform3d(barcode.getTransform3d());
+  p.setSanitized(true);
+  return std::make_unique<Polygon2d>(p);
 }
