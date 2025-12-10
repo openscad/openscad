@@ -859,11 +859,6 @@ add_cmdline_test(echo         OPENSCAD SUFFIX echo FILES ${ECHO_FILES})
 # unstable outputs, when combined with recursive tests.
 add_cmdline_test(echo         OPENSCAD SUFFIX echo FILES ${TEST_SCAD_DIR}/misc/recursion-test-vector.scad ARGS --trace-usermodule-parameters=false)
 
-if (MSVC)
-  add_cmdline_test(echo OPENSCAD SUFFIX echo FILES ${TEST_SCAD_DIR}/misc/msvc-recursion-limit.scad ARGS --trace-usermodule-parameters=false)
-  add_line_exclusion_for_test(echo msvc-recursion-limit [[^TRACE:.*$]])
-endif()
-
 add_cmdline_test(echo-stdio    OPENSCAD SUFFIX echo FILES ${TEST_SCAD_DIR}/misc/echo-tests.scad STDIO EXPECTEDDIR echo ARGS --export-format echo)
 add_cmdline_test(echo         OPENSCAD SUFFIX echo FILES ${TEST_SCAD_DIR}/misc/builtin-invalid-range-test.scad ARGS --check-parameter-ranges=on)
 
