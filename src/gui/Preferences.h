@@ -159,6 +159,12 @@ public slots:
   void on_checkBoxAlwaysShowExport3mfDialog_toggled(bool);
   void on_checkBoxAlwaysShowPrintServiceDialog_toggled(bool);
 
+  // AI
+  void on_lineEditAIApiUrl_editingFinished();
+  void on_lineEditAIApiKey_editingFinished();
+  void on_pushButtonAIModelLoad_clicked();
+  void on_comboBoxAIModel_activated(int);
+
 signals:
   void requestRedraw() const;
   void updateUndockMode(bool undockMode) const;
