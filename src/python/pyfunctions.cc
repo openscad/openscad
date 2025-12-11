@@ -2038,8 +2038,13 @@ PyObject *python_offset(PyObject *self, PyObject *args, PyObject *kwargs)
     PyErr_SetString(PyExc_TypeError, "Error during parsing offset(object,r,delta)");
     return NULL;
   }
+  return python_offset_core(obj, r, delta, chamfer, std::move(discretizer));
 }
 
+PyObject *python_oo_offset(PyObject *obj, PyObject *args, PyObject *kwargs)
+{
+  const char *kwlist[] = {"r", "delta", "chamfer", NULL};
+  double r = NAN, delta = NAN;
   PyObject *chamfer = NULL;
   auto discretizer = CreateCurveDiscretizer(kwargs);
   if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|ddO", const_cast<char **>(kwlist), &r, &delta, &chamfer)) {
@@ -2051,8 +2056,13 @@ PyObject *python_offset(PyObject *self, PyObject *args, PyObject *kwargs)
 
 PyObject *python_projection_core(PyObject *obj, const char *cutmode, int convexity)
 {
+  DECLARE_INSTANCE();
   auto node = std::make_shared<ProjectionNode>(instance);
   PyObject *dummydict;
+  std::shared_ptr<AbstractNode> child = PyOpenSCADObjectToNodeMulti(obj, &dummydict);
+  if (child == NULL) {
+    PyErr_SetString(PyExc_TypeError, "Invalid type for Object in projection");
+    return NULL;
   }
 
   node->convexity = convexity;
