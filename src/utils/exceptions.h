@@ -52,47 +52,69 @@ public:
   void printCallTrace() const
   {
     const auto& stack = CallTraceStack::getStack();
-    int depth = traceDepth;
+    const int stackSize = static_cast<int>(stack.size());
 
-    // Print from most recent (top of stack) down
-    for (auto it = stack.rbegin(); it != stack.rend(); ++it) {
-      auto ctx = it->context.lock();
+    // Helper lambda to print a single trace entry
+    auto printEntry = [](const CallTraceStack::Entry& entry) {
+      auto ctx = entry.context.lock();
       std::string docRoot = ctx ? ctx->documentRoot() : "";
 
-      if (depth > 0) {
-        // Print immediately
-        switch (it->type) {
-        case CallTraceStack::Entry::Type::FunctionCall:
-          ::LOG(message_group::Trace, it->location, docRoot, "called by '%1$s'", it->name);
-          break;
-        case CallTraceStack::Entry::Type::ModuleInstantiation:
-          ::LOG(message_group::Trace, it->location, docRoot, "called by '%1$s'", it->name);
-          break;
-        case CallTraceStack::Entry::Type::UserModuleCall:
-          ::LOG(message_group::Trace, it->location, docRoot, "call of '%1$s(%2$s)'", it->name,
-                it->parameterString);
-          break;
-        case CallTraceStack::Entry::Type::Assignment:
-          if (it->overwriteLocation.isNone()) {
-            ::LOG(message_group::Trace, it->location, docRoot, "assignment to %1$s", quoteVar(it->name));
-          } else {
-            ::LOG(message_group::Trace, it->location, docRoot,
-                  "overwritten assignment to %1$s (this is where the assignment is evaluated)",
-                  quoteVar(it->name));
-            ::LOG(message_group::Trace, it->overwriteLocation, docRoot, "overwriting assignment to %1$s",
-                  quoteVar(it->name));
-          }
-          break;
+      switch (entry.type) {
+      case CallTraceStack::Entry::Type::FunctionCall:
+        ::LOG(message_group::Trace, entry.location, docRoot, "called by '%1$s'", entry.name);
+        break;
+      case CallTraceStack::Entry::Type::ModuleInstantiation:
+        ::LOG(message_group::Trace, entry.location, docRoot, "called by '%1$s'", entry.name);
+        break;
+      case CallTraceStack::Entry::Type::UserModuleCall:
+        ::LOG(message_group::Trace, entry.location, docRoot, "call of '%1$s(%2$s)'", entry.name,
+              entry.parameterString);
+        break;
+      case CallTraceStack::Entry::Type::Assignment:
+        if (entry.overwriteLocation.isNone()) {
+          ::LOG(message_group::Trace, entry.location, docRoot, "assignment to %1$s",
+                quoteVar(entry.name));
+        } else {
+          ::LOG(message_group::Trace, entry.location, docRoot,
+                "overwritten assignment to %1$s (this is where the assignment is evaluated)",
+                quoteVar(entry.name));
+          ::LOG(message_group::Trace, entry.overwriteLocation, docRoot, "overwriting assignment to %1$s",
+                quoteVar(entry.name));
         }
-        depth--;
+        break;
       }
-    }
+    };
 
-    // Report excluded frames
-    int frames_skipped = static_cast<int>(stack.size()) - traceDepth;
-    if (frames_skipped > 0) {
-      ::PRINT(Message(std::string{"  *** Excluding "} + std::to_string(frames_skipped) + " frames ***",
-                      message_group::Trace));
+    if (stackSize <= traceDepth * 2) {
+      // Print all entries - no need to skip any
+      for (auto it = stack.rbegin(); it != stack.rend(); ++it) {
+        printEntry(*it);
+      }
+    } else {
+      // Need to skip middle frames, like the original behavior:
+      // Original behavior: print up to traceDepth head entries, then up to traceDepth tail entries
+      // Total output can be up to 2*traceDepth entries
+      int headCount = traceDepth;
+      int tailCount = traceDepth;
+      int frames_skipped = stackSize - headCount - tailCount;
+
+      // Print head entries (from top of stack = most recent)
+      int printed = 0;
+      for (auto it = stack.rbegin(); it != stack.rend() && printed < headCount; ++it, ++printed) {
+        printEntry(*it);
+      }
+
+      // Print excluded frames message
+      if (frames_skipped > 0) {
+        ::PRINT(Message(std::string{"  *** Excluding "} + std::to_string(frames_skipped) + " frames ***",
+                        message_group::Trace));
+      }
+
+      // Print tail entries (from bottom of stack = oldest, but in reverse order for correct trace
+      // output) These are the last tailCount entries, printed from most recent to oldest
+      for (int i = tailCount - 1; i >= 0; --i) {
+        printEntry(stack[i]);
+      }
     }
   }
 

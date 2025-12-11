@@ -28,6 +28,7 @@
 
 #include <cstddef>
 #include <memory>
+#include <optional>
 #include <ostream>
 #include <sstream>
 #include <string>
@@ -46,9 +47,6 @@
 #include "utils/exceptions.h"
 #include "utils/printutils.h"
 #include "utils/CallTraceStack.h"
-#include <cstddef>
-#include <sstream>
-#include <string>
 
 std::vector<std::string> StaticModuleNameStack::stack;
 
@@ -114,15 +112,18 @@ std::shared_ptr<AbstractNode> UserModule::instantiate(
   PRINTDB("%s", module_context->dump());
 #endif
 
-  // Use CallTraceStack guard instead of try/catch for trace collection
-  // This avoids the expensive stack unwind during exception propagation
-  CallTraceStack::Guard trace_guard(
-    CallTraceStack::Entry::Type::UserModuleCall, this->name, this->loc,
-    std::const_pointer_cast<Context>(std::static_pointer_cast<const Context>(*module_context)));
-
+  // Only create trace guard when traceUsermoduleParameters is enabled
+  // This matches the original behavior where trace entries were only added
+  // in the catch block when catching exceptions from body->instantiateModules()
+  // The guard must be AFTER the stack check so we don't add a trace entry for
+  // exceptions thrown by this function itself (stack overflow detection)
+  std::optional<CallTraceStack::Guard> trace_guard;
   if (OpenSCAD::traceUsermoduleParameters) {
+    trace_guard.emplace(
+      CallTraceStack::Entry::Type::UserModuleCall, this->name, this->loc,
+      std::const_pointer_cast<Context>(std::static_pointer_cast<const Context>(*module_context)));
     // Compute parameter string immediately while context is still valid
-    trace_guard.setParameterString(buildParameterString(this, *module_context, this->parameters));
+    trace_guard->setParameterString(buildParameterString(this, *module_context, this->parameters));
   }
 
   // No try/catch needed - exception propagates directly, trace is in CallTraceStack

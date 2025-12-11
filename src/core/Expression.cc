@@ -596,16 +596,18 @@ static SimplificationResult simplify_function_body(const Expression *expression,
 Value FunctionCall::evaluate(const std::shared_ptr<const Context>& context) const
 {
   const auto& name = get_name();
+
+  // Use CallTraceStack guard for this function call
+  // This will be automatically popped when we return or throw
+  // NOTE: Must be created BEFORE the stack check so this frame is included in the trace
+  CallTraceStack::Guard trace_guard(CallTraceStack::Entry::Type::FunctionCall, name, this->loc, context);
+
   bool stackCheckHit = StackCheck::inst().check();
 
   if (stackCheckHit) {
     print_err(name.c_str(), loc, context);
     throw RecursionException::create("function", name, this->loc);
   }
-
-  // Use CallTraceStack guard for this function call
-  // This will be automatically popped when we return or throw
-  CallTraceStack::Guard trace_guard(CallTraceStack::Entry::Type::FunctionCall, name, this->loc, context);
 
   // Repeatedly simplify expr until it reduces to either a tail call,
   // or an expression that cannot be simplified in-place. If the latter,
