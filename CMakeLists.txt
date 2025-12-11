@@ -603,6 +603,55 @@ if(ENABLE_CGAL)
   #  set(CMAKE_MODULE_PATH ${OPENSCAD_ORIGINAL_CMAKE_MODULE_PATH})
   #endif()
   set(CMAKE_MODULE_PATH ${OPENSCAD_ORIGINAL_CMAKE_MODULE_PATH})
+
+  # CGAL sets /fp:strict on MSVC which causes geometry assertions to fail
+  # (e.g., "e_below != SHalfedge_handle()" in SNC_FM_decorator.h).
+  # We must use /fp:precise instead to match GCC/Clang behavior.
+  if(MSVC)
+    # Helper function to resolve ALIAS targets recursively
+    function(resolve_alias_target target_name out_var)
+      set(current_target ${target_name})
+      # Resolve up to 10 levels of ALIAS indirection (should be more than enough)
+      foreach(i RANGE 10)
+        if(TARGET ${current_target})
+          get_target_property(aliased_target ${current_target} ALIASED_TARGET)
+          if(aliased_target)
+            set(current_target ${aliased_target})
+          else()
+            # Not an ALIAS, we found the real target
+            set(${out_var} ${current_target} PARENT_SCOPE)
+            return()
+          endif()
+        else()
+          # Target doesn't exist
+          set(${out_var} "" PARENT_SCOPE)
+          return()
+        endif()
+      endforeach()
+      # If we get here, we have too many ALIAS levels or infinite loop
+      message(WARNING "Could not resolve ALIAS target ${target_name} after 10 iterations")
+      set(${out_var} "" PARENT_SCOPE)
+    endfunction()
+
+    # Remove /fp:strict and /fp:except- from CGAL targets
+    foreach(cgal_target CGAL::CGAL CGAL::CGAL_Core)
+      if(TARGET ${cgal_target})
+        resolve_alias_target(${cgal_target} real_target)
+        if(real_target)
+          get_target_property(compile_options ${real_target} INTERFACE_COMPILE_OPTIONS)
+          if(compile_options)
+            list(FILTER compile_options EXCLUDE REGEX "/fp:(strict|except-)")
+            set_target_properties(${real_target} PROPERTIES INTERFACE_COMPILE_OPTIONS "${compile_options}")
+            message(STATUS "Removed /fp:strict and /fp:except- from ${cgal_target} (real target: ${real_target})")
+          endif()
+        endif()
+      endif()
+    endforeach()
+
+    # Add /fp:precise to our target for consistent floating-point behavior
+    target_compile_options(OpenSCADLibInternal PRIVATE /fp:precise)
+    message(STATUS "Using /fp:precise for MSVC (matching MinGW/GCC behavior)")
+  endif()
 else()
   message(WARNING "\n"
 	  "*** Configuration with ENABLE_CGAL=OFF ***\n"
