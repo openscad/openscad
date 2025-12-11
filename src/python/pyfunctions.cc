@@ -1760,7 +1760,8 @@ PyObject *python_roof(PyObject *self, PyObject *args, PyObject *kwargs)
   const char *method = NULL;
   int convexity = 2;
   auto discretizer = CreateCurveDiscretizer(kwargs);
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O|sd", const_cast<char **>(kwlist), &obj, &method, convexity)) {
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O|sd", const_cast<char **>(kwlist), &obj, &method,
+                                   convexity)) {
     PyErr_SetString(PyExc_TypeError, "Error during parsing roof(object)");
     return NULL;
   }
@@ -1774,7 +1775,8 @@ PyObject *python_oo_roof(PyObject *obj, PyObject *args, PyObject *kwargs)
   const char *method = NULL;
   int convexity = 2;
   auto discretizer = CreateCurveDiscretizer(kwargs);
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|sd", const_cast<char **>(kwlist), &method, convexity)) {
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|sd", const_cast<char **>(kwlist), &method,
+                                   convexity)) {
     PyErr_SetString(PyExc_TypeError, "Error during parsing roof(object)");
     return NULL;
   }
@@ -1884,8 +1886,8 @@ PyObject *python_text(PyObject *self, PyObject *args, PyObject *kwargs)
              *valign = "baseline", *halign = "left";
 
   auto discretizer = CreateCurveDiscretizer(kwargs);
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "s|dsdsssss", const_cast<char **>(kwlist), &text, &size, &font, &spacing,
-                                   &direction, &language, &script, &halign, &valign)) {
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "s|dsdsssss", const_cast<char **>(kwlist), &text, &size,
+                                   &font, &spacing, &direction, &language, &script, &halign, &valign)) {
     PyErr_SetString(PyExc_TypeError, "Error during parsing text(string, ...))");
     return NULL;
   }
@@ -2014,7 +2016,8 @@ PyObject *python_offset(PyObject *self, PyObject *args, PyObject *kwargs)
   double r = NAN, delta = NAN;
   PyObject *chamfer = NULL;
   auto discretizer = CreateCurveDiscretizer(kwargs);
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O|ddO", const_cast<char **>(kwlist), &obj, &r, &delta, &chamfer)) {
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O|ddO", const_cast<char **>(kwlist), &obj, &r, &delta,
+                                   &chamfer)) {
     PyErr_SetString(PyExc_TypeError, "Error during parsing offset(object,r,delta)");
     return NULL;
   }
@@ -2027,7 +2030,8 @@ PyObject *python_oo_offset(PyObject *obj, PyObject *args, PyObject *kwargs)
   double r = NAN, delta = NAN;
   PyObject *chamfer = NULL;
   auto discretizer = CreateCurveDiscretizer(kwargs);
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|ddO", const_cast<char **>(kwlist), &r, &delta, &chamfer)) {
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|ddO", const_cast<char **>(kwlist), &r, &delta,
+                                   &chamfer)) {
     PyErr_SetString(PyExc_TypeError, "Error during parsing offset(object,r,delta)");
     return NULL;
   }
