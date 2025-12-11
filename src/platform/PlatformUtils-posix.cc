@@ -272,3 +272,5 @@ const std::string PlatformUtils::sysinfo(bool extended)
 }
 
 void PlatformUtils::ensureStdIO() {}
+
+void PlatformUtils::dumpArgs(int argc, char **argv) {}
