@@ -69,9 +69,9 @@ public:
           ::LOG(message_group::Trace, it->location, docRoot, "called by '%1$s'", it->name);
           break;
         case CallTraceStack::Entry::Type::UserModuleCall:
-          if (it->getParameterString) {
+          if (!it->parameterString.empty()) {
             ::LOG(message_group::Trace, it->location, docRoot, "call of '%1$s(%2$s)'", it->name,
-                  it->getParameterString());
+                  it->parameterString);
           } else {
             ::LOG(message_group::Trace, it->location, docRoot, "call of '%1$s'", it->name);
           }
