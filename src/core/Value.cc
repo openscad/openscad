@@ -483,16 +483,26 @@ public:
   {
     // Create a single stream and pass reference to it for list elements for optimization.
     std::ostringstream stream;
-    // Let exceptions propagate - catching here adds to stack unwind cost
-    (tostream_visitor(stream))(v);
+    try {
+      (tostream_visitor(stream))(v);
+    } catch (EvaluationException& e) {
+      // Log the error message - this is essential for VectorEchoStringException
+      e.LOG(message_group::Error, e.what());
+      throw;
+    }
     return stream.str();
   }
 
   std::string operator()(const ObjectType& v) const
   {
     std::ostringstream stream;
-    // Let exceptions propagate - catching here adds to stack unwind cost
-    (tostream_visitor(stream))(v);
+    try {
+      (tostream_visitor(stream))(v);
+    } catch (EvaluationException& e) {
+      // Log the error message - this is essential for VectorEchoStringException
+      e.LOG(message_group::Error, e.what());
+      throw;
+    }
     return stream.str();
   }
 
