@@ -115,6 +115,15 @@ public:
       }
     }
 
+    // Update the location of the current entry (for tail-call optimization)
+    void updateLocation(const Location& loc)
+    {
+      auto& stack = CallTraceStack::getStack();
+      if (!stack.empty()) {
+        stack.back().location = loc;
+      }
+    }
+
     ~Guard()
     {
       if (active_) {

@@ -632,6 +632,8 @@ Value FunctionCall::evaluate(const std::shared_ptr<const Context>& context) cons
     }
     if (simplified_expression->new_active_function_call) {
       current_call = *simplified_expression->new_active_function_call;
+      // Update trace location to reflect the current recursive call site
+      trace_guard.updateLocation(current_call->location());
       if (recursion_depth++ == 1000000) {
         LOG(message_group::Error, expression->location(), expression_context->documentRoot(),
             "Recursion detected calling function '%1$s'", current_call->name);
