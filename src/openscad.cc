@@ -791,6 +791,17 @@ struct CommaSeparatedVector {
   }
 };
 
+void
+dumpArgs(int argc, char **argv)
+{
+  PlatformUtils::dumpArgs(argc, argv);
+
+  for (int i = 0; i < argc; i++) {
+    std::cout << "argv[" << i << "] = >" << argv[i] << "<\n";
+  }
+  std::cout << "\n";
+}
+
 // OpenSCAD
 int openscad_main(int argc, char **argv)
 {
@@ -918,7 +929,8 @@ int openscad_main(int argc, char **argv)
           "check-parameter-ranges", po::value<std::string>(),
           "=true/false, configure the parameter range check for builtin modules")(
           "debug", po::value<std::string>(),
-          "special debug info - specify 'all' or a set of source file names")
+          "special debug info - specify 'all' or a set of source file names")(
+          "args", "dump command-line arguments")
 #ifdef ENABLE_PYTHON
           ("trust-python", "Trust python")("python-module", po::value<std::string>(),
                                            "=module Call pip python module")
@@ -960,6 +972,11 @@ int openscad_main(int argc, char **argv)
     OpenSCAD::debug = vm["debug"].as<std::string>();
     LOG("Debug on. --debug=%1$s", OpenSCAD::debug);
   }
+
+  if (vm.count("args")) {
+    dumpArgs(argc, argv);
+  }
+
 #ifdef ENABLE_PYTHON
   if (vm.count("trust-python")) {
     LOG("Python Engine enabled", OpenSCAD::debug);
