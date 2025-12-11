@@ -285,10 +285,35 @@ jobs:
           echo "${{ env.QT_ROOT_DIR }}/lib" >> $GITHUB_PATH
           echo "PATH updated for subsequent steps"
 
+      - name: Configure error handling for tests
+        shell: powershell
+        run: |
+          $setErrorModeSource = @"
+          using System;
+          using System.Runtime.InteropServices;
+
+          public class ErrorMode {
+              [DllImport("kernel32.dll")]
+              public static extern uint SetErrorMode(uint uMode);
+          }
+          "@
+
+          Add-Type -TypeDefinition $setErrorModeSource
+          # SEM_FAILCRITICALERRORS (0x0001) | SEM_NOGPFAULTERRORBOX (0x0002) | SEM_NOOPENFILEERRORBOX (0x8000)
+          $flags = 0x0001 -bor 0x0002 -bor 0x8000
+          $oldMode = [ErrorMode]::SetErrorMode($flags)
+          Write-Host "Error mode set to 0x$($flags.ToString('X4')) to suppress crash dialogs (was: 0x$($oldMode.ToString('X4')))"
+
       - name: Run Tests
         shell: bash
         run: |
           cd build/windows-msvc-release
+          # Set Python environment variables for test consistency
+          pythonToolsDir="${{ github.workspace }}/build/${{ matrix.cmake_preset }}/vcpkg_installed/x64-windows/tools/python3"
+          if [ -d "$pythonToolsDir" ]; then
+            export PYTHONHOME="$pythonToolsDir"
+            export PYTHONPATH="$pythonToolsDir/Lib:$pythonToolsDir/Lib/site-packages"
+          fi
           # Use vcpkg's Python for tests to avoid module mismatch with system Python
           export PATH="${{ github.workspace }}/build/${{ matrix.cmake_preset }}/vcpkg_installed/x64-windows/tools/python3:$PATH"
           ctest -C Release -L Default -j2
