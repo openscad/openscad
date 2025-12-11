@@ -55,9 +55,9 @@ public:
     // Optional: for Assignment entries, store overwrite location if present
     Location overwriteLocation;
 
-    // Optional: for UserModule, we might want to capture parameter info
-    // We use a callback to generate the parameter string lazily
-    std::function<std::string()> getParameterString;
+    // Optional: for UserModule, store pre-computed parameter string
+    // Must be computed eagerly while context is still valid
+    std::string parameterString;
 
     Entry(Type t, std::string n, Location loc, std::shared_ptr<const Context> ctx)
       : type(t),
@@ -105,12 +105,13 @@ public:
       CallTraceStack::push(Entry(type, name, loc, ctx));
     }
 
-    // Allow setting parameter string generator (for UserModule)
-    void setParameterStringGenerator(std::function<std::string()> gen)
+    // Allow setting parameter string (for UserModule)
+    // Must be called immediately while context is valid
+    void setParameterString(std::string params)
     {
       auto& stack = CallTraceStack::getStack();
       if (!stack.empty()) {
-        stack.back().getParameterString = std::move(gen);
+        stack.back().parameterString = std::move(params);
       }
     }
 

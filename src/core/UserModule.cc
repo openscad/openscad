@@ -121,15 +121,8 @@ std::shared_ptr<AbstractNode> UserModule::instantiate(
     std::const_pointer_cast<Context>(std::static_pointer_cast<const Context>(*module_context)));
 
   if (OpenSCAD::traceUsermoduleParameters) {
-    // Capture parameters for trace - use weak refs to avoid lifetime issues
-    std::weak_ptr<const UserModuleContext> weak_ctx = *module_context;
-    const UserModule *mod = this;
-    const AssignmentList *params = &this->parameters;
-    trace_guard.setParameterStringGenerator([weak_ctx, mod, params]() -> std::string {
-      auto ctx = weak_ctx.lock();
-      if (!ctx) return "...";
-      return buildParameterString(mod, ctx, *params);
-    });
+    // Compute parameter string immediately while context is still valid
+    trace_guard.setParameterString(buildParameterString(this, *module_context, this->parameters));
   }
 
   // No try/catch needed - exception propagates directly, trace is in CallTraceStack
