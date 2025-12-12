@@ -668,6 +668,8 @@ if(ENABLE_PYTHON)
 	      COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:OpenSCADLibInternal> ${CMAKE_CURRENT_BINARY_DIR}/${PYTHON_EXECUTABLE_NAME}.exe
 	      DEPENDS OpenSCADLibInternal
       )
+      else()
+        add_custom_target(OpenSCADPython ALL COMMAND ${CMAKE_COMMAND} -E create_symlink ${EXECUTABLE_NAME} ${PYTHON_EXECUTABLE_NAME})
     endif()
   endif()
   target_include_directories(OpenSCADPy SYSTEM PRIVATE ${FREETYPE_INCLUDE_DIRS})
