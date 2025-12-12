@@ -35,6 +35,11 @@ std::ostream& operator<<(std::ostream& stream, const ASTNode& ast)
 std::string ASTNode::dump(const std::string& indent) const
 {
   std::ostringstream stream;
+  // All constants output in the AST dump are shown with full precision (17
+  // significant digits).  This precision is sufficient to losslessly represent
+  // any value stored in the IEEE 754 64-bit floating point format used by
+  // OpenSCAD to store the numeric values of numbers stored in Value objects.
+  stream << std::setprecision(17);
   print(stream, indent);
   return stream.str();
 }
