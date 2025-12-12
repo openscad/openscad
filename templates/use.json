@@ -1,0 +1,5 @@
+{
+    "key" : "use <>",
+    "content" : "use <^~^>",
+    "fileFilter": "Common (*.scad *.otf *.ttf);;OpenSCAD (*.scad);;Fonts (*.otf *.ttf);;All (*.*)"
+}
