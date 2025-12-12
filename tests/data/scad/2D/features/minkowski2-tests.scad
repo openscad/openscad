@@ -39,8 +39,8 @@ translate([-20,-20,0]) minkowski() {
     circle(1);
 }
 
-module invert() render() difference() { square(1e6,center=true); child(); }
-module erode(d=.3) invert() minkowski() { circle(d); invert() child(); }
+module invert() render() difference() { square(1e6,center=true); children(); }
+module erode(d=.3) invert() minkowski() { circle(d); invert() children(); }
 
 // This particular combination created a hairline crack inside the resulting polygon
 translate([-5,-45]) scale(4) erode() minkowski() {
