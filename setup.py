@@ -4,7 +4,7 @@ import subprocess
 import sys
 import os
 import shutil
-
+# rm build/lib.linux-x86_64-cpython-312/openscad.cpython-312-x86_64-linux-gnu.so
 class BuildWithLexYacc(build):
     """Custom build_py command to run lex/yacc before building Python modules."""
 
@@ -58,7 +58,6 @@ def main():
     root =  [
               "src/Feature.cc",
               "src/FontCache.cc",
-              "src/version.cc",
               "src/handle_dep.cc"
             ]
 
@@ -174,6 +173,7 @@ def main():
               "src/core/function.cc"
             ]
     core = [
+              "src/core/CurveDiscretizer.cc",
               "src/core/FreetypeRenderer.cc",
               "src/core/DrawingCallback.cc",
               "src/core/customizer/Annotation.cc",
@@ -266,6 +266,7 @@ def main():
               "src/utils/degree_trig.cc",
               "src/utils/hash.cc",
               "src/utils/svg.cc",
+              "src/utils/vector_math.cc",
               "src/utils/calc.cc" ]
     platform = [
               "src/platform/PlatformUtils.cc",
