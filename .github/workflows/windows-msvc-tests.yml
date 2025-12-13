@@ -346,6 +346,16 @@ jobs:
             build/${{ matrix.cmake_preset }}/Testing/Temporary/LastTest.log
           if-no-files-found: warn
 
+      - name: Upload CMake Cache for Debugging
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: CMake Cache (Windows MSVC ${{ matrix.build_type }})
+          path: |
+            build/${{ matrix.cmake_preset }}/CMakeCache.txt
+            build/${{ matrix.cmake_preset }}/CMakeFiles/*.log
+          if-no-files-found: warn
+
       - name: Upload Build Artifacts
         if: success()
         uses: actions/upload-artifact@v4
