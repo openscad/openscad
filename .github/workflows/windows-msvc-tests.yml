@@ -240,10 +240,35 @@ jobs:
             ${{ github.workspace }}/vcpkg-cache
           key: ${{ steps.vcpkg-cache.outputs.cache-primary-key }}
 
-      - name: Configure and Build with CMake
+      - name: Configure CMake (initial - tests disabled)
+        shell: bash
+        run: |
+          cmake --preset windows-msvc-release -DENABLE_TESTS=OFF
+        env:
+          VCPKG_BINARY_SOURCES: 'clear;files,${{ github.workspace }}/vcpkg-cache,readwrite'
+
+      - name: Reconfigure CMake with vcpkg Python for tests
+        shell: bash
+        run: |
+          vcpkg_python_dir="${{ github.workspace }}/build/windows-msvc-release/vcpkg_installed/x64-windows/tools/python3"
+          if [ -f "$vcpkg_python_dir/python.exe" ]; then
+            echo "Found vcpkg Python at: $vcpkg_python_dir/python.exe"
+            python_version=$("$vcpkg_python_dir/python.exe" --version)
+            echo "vcpkg Python version: $python_version"
+            cmake --preset windows-msvc-release \
+              -DENABLE_TESTS=ON \
+              -DPython3_ROOT_DIR="$vcpkg_python_dir" \
+              -DPython3_EXECUTABLE="$vcpkg_python_dir/python.exe"
+          else
+            echo "ERROR: vcpkg Python not found at $vcpkg_python_dir/python.exe"
+            exit 1
+          fi
+        env:
+          VCPKG_BINARY_SOURCES: 'clear;files,${{ github.workspace }}/vcpkg-cache,readwrite'
+
+      - name: Build with CMake
         uses: lukka/run-cmake@v10
         with:
-          configurePreset: 'windows-msvc-release'
           buildPreset: 'windows-msvc-release'
         env:
           VCPKG_BINARY_SOURCES: 'clear;files,${{ github.workspace }}/vcpkg-cache,readwrite'
@@ -308,14 +333,7 @@ jobs:
         shell: bash
         run: |
           cd build/windows-msvc-release
-          # Set Python environment variables for test consistency
-          pythonToolsDir="${{ github.workspace }}/build/${{ matrix.cmake_preset }}/vcpkg_installed/x64-windows/tools/python3"
-          if [ -d "$pythonToolsDir" ]; then
-            export PYTHONHOME="$pythonToolsDir"
-            export PYTHONPATH="$pythonToolsDir/Lib:$pythonToolsDir/Lib/site-packages"
-          fi
-          # Use vcpkg's Python for tests to avoid module mismatch with system Python
-          export PATH="${{ github.workspace }}/build/${{ matrix.cmake_preset }}/vcpkg_installed/x64-windows/tools/python3:$PATH"
+          # CMake is configured to use vcpkg's Python, so no env vars needed
           ctest -C Release -L Default -j2
 
       - name: Upload Test Results
