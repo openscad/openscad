@@ -76,7 +76,7 @@ cmake_dependent_option(APPLE_UNIX "Build OpenSCAD in Unix mode in MacOS X instea
 cmake_dependent_option(ENABLE_QTDBUS "Enable DBus input driver for Qt." ON "NOT HEADLESS" OFF)
 set(ENABLE_GAMEPAD "AUTO" CACHE STRING "Enable Qt5Gamepad input driver")
 set_property(CACHE ENABLE_GAMEPAD PROPERTY STRINGS "AUTO" "ON" "OFF")
-set(WASM_BUILD_TYPE "web" CACHE STRING 
+set(WASM_BUILD_TYPE "web" CACHE STRING
   "WebAssembly build type. Support web (builds an OpenSCAD module) or node (standalone .js executable)")
 
 if (USE_QT6)
@@ -274,6 +274,7 @@ endif()
 
 set(SUFFIX "" CACHE STRING "Installation suffix for binary (e.g. 'nightly')")
 set(STACKSIZE 8388608 CACHE STRING "Stack size (default is 8MB)")
+set(STACK_SAFETY_MARGIN 131072 CACHE STRING "Stack safety margin (128KB)")
 
 if(PROFILE)
   SET(GCC_COVERAGE_COMPILE_FLAGS "-g -O0 --coverage -fprofile-arcs -ftest-coverage -fprofile-dir=.gcov")
@@ -294,7 +295,7 @@ if (CMAKE_SYSTEM_NAME STREQUAL Emscripten)
   set(ENV{PKG_CONFIG_PATH} "/emsdk/upstream/emscripten/cache/sysroot/lib/pkgconfig")
   target_compile_definitions(OpenSCADLibInternal PUBLIC CGAL_DISABLE_ROUNDING_MATH_CHECK)
   target_link_libraries(OpenSCADLibInternal PUBLIC /emsdk/upstream/emscripten/cache/sysroot/lib/libz.a)
-  
+
   # https://emscripten.org/docs/tools_reference/emcc.html
   # https://emscripten.org/docs/tools_reference/settings_reference.html
   target_compile_options(OpenSCADLibInternal PUBLIC -fexceptions)
@@ -306,7 +307,7 @@ if (CMAKE_SYSTEM_NAME STREQUAL Emscripten)
     -sEXIT_RUNTIME=1
     -sEXPORTED_RUNTIME_METHODS=['ENV','ERRNO_CODES','FS','PATH','callMain']
     -sMAXIMUM_MEMORY=4GB
-    
+
     # -g produces DWARF debug info, which is quite large and may need debugger extensions.
     # Alternatively, can pass -gsource-map -sLOAD_SOURCE_MAP but then variable debugging isn't possible
     $<$<CONFIG:Debug>:-g -O0>
@@ -325,8 +326,8 @@ if (CMAKE_SYSTEM_NAME STREQUAL Emscripten)
       -sNODERAWFS
 
       # Single .js (more elegant for CLI release) is larger than separate .js & .wasm (preferred for web)
-      $<$<CONFIG:Release>:-sSINGLE_FILE> 
-      
+      $<$<CONFIG:Release>:-sSINGLE_FILE>
+
       # Alternatively to single-file mode, code caching could make repeated runs faster:
       # -sNODE_CODE_CACHING -sWASM_ASYNC_COMPILATION=0
     )
@@ -368,6 +369,10 @@ endif()
 if (MXECROSS OR WIN32)
   add_subdirectory(winconsole)
   set_property(TARGET OpenSCADExe PROPERTY WIN32_EXECUTABLE ON)
+  # Disable auto-generation of manifest for MSVC to avoid conflict with embedded manifest in .rc file
+  if(MSVC)
+    target_link_options(OpenSCADExe PRIVATE /MANIFEST:NO)
+  endif()
 endif()
 
 set(OPENSCAD_LIB_OUTPUT_DIR "${CMAKE_CURRENT_BINARY_DIR}/objects")
@@ -466,9 +471,14 @@ endmacro(find_graphics)
 
 if (MSVC)
   # Flex lexer options
-  set(WINCOMPAT "--wincompat --nounistd")
+  # MSYS2's flex doesn't support --wincompat, but needs --nounistd to avoid unistd.h
+  set(WINCOMPAT "--nounistd")
   target_compile_definitions(OpenSCADLibInternal PUBLIC _USE_MATH_DEFINES)
   target_compile_definitions(OpenSCADLibInternal PUBLIC NOMINMAX)
+
+  # Enable parallel compilation
+  target_compile_options(OpenSCADLibInternal PRIVATE /MP)
+  target_compile_options(OpenSCADExe PRIVATE /MP)
 
   # Our code is compatible with both V3 and V5, so for now, we accept any version.
   find_package(Eigen3 REQUIRED QUIET)
@@ -590,6 +600,96 @@ if(ENABLE_CGAL)
   #  set(CMAKE_MODULE_PATH ${OPENSCAD_ORIGINAL_CMAKE_MODULE_PATH})
   #endif()
   set(CMAKE_MODULE_PATH ${OPENSCAD_ORIGINAL_CMAKE_MODULE_PATH})
+
+  # CGAL sets /fp:strict on MSVC which causes geometry assertions to fail
+  # (e.g., "e_below != SHalfedge_handle()" in SNC_FM_decorator.h).
+  # We must use /fp:precise instead to match GCC/Clang behavior.
+  if(MSVC)
+    # Helper function to resolve ALIAS targets recursively
+    function(resolve_alias_target target_name out_var)
+      set(current_target ${target_name})
+      # Resolve up to 10 levels of ALIAS indirection (should be more than enough)
+      foreach(i RANGE 10)
+        if(TARGET ${current_target})
+          get_target_property(aliased_target ${current_target} ALIASED_TARGET)
+          if(aliased_target)
+            set(current_target ${aliased_target})
+          else()
+            # Not an ALIAS, we found the real target
+            set(${out_var} ${current_target} PARENT_SCOPE)
+            return()
+          endif()
+        else()
+          # Target doesn't exist
+          set(${out_var} "" PARENT_SCOPE)
+          return()
+        endif()
+      endforeach()
+      # If we get here, we have too many ALIAS levels or infinite loop
+      message(WARNING "Could not resolve ALIAS target ${target_name} after 10 iterations")
+      set(${out_var} "" PARENT_SCOPE)
+    endfunction()
+
+    # Remove /fp:strict and /fp:except- from CGAL targets
+    foreach(cgal_target CGAL::CGAL CGAL::CGAL_Core)
+      if(TARGET ${cgal_target})
+        resolve_alias_target(${cgal_target} real_target)
+        message(STATUS "Processing ${cgal_target} -> real target: ${real_target}")
+        if(real_target)
+          # Debug: check what type of target this is
+          get_target_property(target_type ${real_target} TYPE)
+          message(STATUS "  Target type: ${target_type}")
+
+          # Remove from INTERFACE_COMPILE_OPTIONS
+          get_target_property(compile_options ${real_target} INTERFACE_COMPILE_OPTIONS)
+          message(STATUS "  INTERFACE_COMPILE_OPTIONS: ${compile_options}")
+          if(compile_options AND NOT compile_options STREQUAL "compile_options-NOTFOUND")
+            string(REGEX MATCH "/fp:(strict|except-)" has_fp_flags "${compile_options}")
+            if(has_fp_flags)
+              list(FILTER compile_options EXCLUDE REGEX "/fp:(strict|except-)")
+              set_target_properties(${real_target} PROPERTIES INTERFACE_COMPILE_OPTIONS "${compile_options}")
+              message(STATUS "  ✓ Removed /fp:strict from INTERFACE_COMPILE_OPTIONS of ${cgal_target}")
+            else()
+              message(STATUS "  No /fp:strict in INTERFACE_COMPILE_OPTIONS")
+            endif()
+          else()
+            message(STATUS "  INTERFACE_COMPILE_OPTIONS not set or empty")
+          endif()
+
+          # Also check and remove from INTERFACE_LINK_OPTIONS
+          get_target_property(link_options ${real_target} INTERFACE_LINK_OPTIONS)
+          if(link_options AND NOT link_options STREQUAL "link_options-NOTFOUND")
+            string(REGEX MATCH "/fp:(strict|except-)" has_fp_link "${link_options}")
+            if(has_fp_link)
+              list(FILTER link_options EXCLUDE REGEX "/fp:(strict|except-)")
+              set_target_properties(${real_target} PROPERTIES INTERFACE_LINK_OPTIONS "${link_options}")
+              message(STATUS "  ✓ Removed /fp:strict from INTERFACE_LINK_OPTIONS of ${cgal_target}")
+            endif()
+          endif()
+
+          # Also check COMPILE_OPTIONS (non-interface)
+          get_target_property(compile_opts_private ${real_target} COMPILE_OPTIONS)
+          if(compile_opts_private AND NOT compile_opts_private STREQUAL "compile_opts_private-NOTFOUND")
+            string(REGEX MATCH "/fp:(strict|except-)" has_fp_private "${compile_opts_private}")
+            if(has_fp_private)
+              list(FILTER compile_opts_private EXCLUDE REGEX "/fp:(strict|except-)")
+              set_target_properties(${real_target} PROPERTIES COMPILE_OPTIONS "${compile_opts_private}")
+              message(STATUS "  ✓ Removed /fp:strict from COMPILE_OPTIONS of ${cgal_target}")
+            endif()
+          endif()
+        else()
+          message(WARNING "Could not resolve ${cgal_target} to a real target")
+        endif()
+      else()
+        message(WARNING "Target ${cgal_target} does not exist")
+      endif()
+    endforeach()
+
+    # Add /fp:precise to our target for consistent floating-point behavior
+    # Use PUBLIC so it propagates to OpenSCADExe and any other targets linking to us
+    target_compile_options(OpenSCADLibInternal PUBLIC /fp:precise)
+    message(STATUS "Using /fp:precise for MSVC (matching MinGW/GCC behavior)")
+  endif()
 endif(ENABLE_CGAL)
 
 find_package(LibZip REQUIRED QUIET)
@@ -616,7 +716,16 @@ if(ENABLE_PYTHON)
   target_link_libraries(OpenSCADLibInternal PUBLIC ${Python_LIBRARIES})
   target_include_directories(OpenSCADLibInternal PUBLIC ${Nettle_INCLUDE_DIRS})
   target_link_libraries(OpenSCADLibInternal PUBLIC ${Nettle_LIBRARIES})
-  add_custom_target(OpenSCADLibInternalPython ALL COMMAND ${CMAKE_COMMAND} -E create_symlink openscad${SUFFIX_WITH_DASH} "openscad-python")
+  # On Windows, copy the executable instead of creating a symlink (requires special privileges)
+  if(WIN32)
+    add_custom_target(OpenSCADPython ALL
+      COMMAND ${CMAKE_COMMAND} -E copy "$<TARGET_FILE:OpenSCADExe>" "${CMAKE_BINARY_DIR}/openscad-python${CMAKE_EXECUTABLE_SUFFIX}"
+      DEPENDS OpenSCADExe
+      COMMENT "Creating openscad-python executable copy for Windows"
+    )
+  else()
+    add_custom_target(OpenSCADPython ALL COMMAND ${CMAKE_COMMAND} -E create_symlink openscad${SUFFIX_WITH_DASH} "openscad-python")
+  endif()
 endif()
 
 if(ENABLE_HIDAPI STREQUAL "AUTO")
@@ -688,6 +797,7 @@ if(ENABLE_CAIRO STREQUAL "AUTO")
   if(CAIRO_VERSION OR CAIRO_FOUND)
     message(STATUS "Cairo: ${CAIRO_VERSION}")
     target_include_directories(OpenSCADLibInternal SYSTEM PUBLIC ${CAIRO_INCLUDE_DIRS})
+    target_link_directories(OpenSCADLibInternal PUBLIC ${CAIRO_LIBRARY_DIRS})
     target_link_libraries(OpenSCADLibInternal PUBLIC ${CAIRO_LIBRARIES})
     target_compile_definitions(OpenSCADLibInternal PUBLIC ENABLE_CAIRO)
   else()
@@ -703,6 +813,7 @@ elseif(ENABLE_CAIRO)
   endif()
   message(STATUS "Cairo: ${CAIRO_VERSION}")
   target_include_directories(OpenSCADLibInternal SYSTEM PUBLIC ${CAIRO_INCLUDE_DIRS})
+  target_link_directories(OpenSCADLibInternal PUBLIC ${CAIRO_LIBRARY_DIRS})
   target_link_libraries(OpenSCADLibInternal PUBLIC ${CAIRO_LIBRARIES})
   target_compile_definitions(OpenSCADLibInternal PUBLIC ENABLE_CAIRO)
 else()
@@ -822,6 +933,21 @@ if(NOT HEADLESS)
     find_package(Qt6QScintilla 2.8.0 REQUIRED QUIET)
     message(STATUS "QScintilla: ${QT6QSCINTILLA_VERSION_STRING}")
 
+    # On MSVC, manually create the imported target for QScintilla since it's built from source
+    if(MSVC AND DEFINED ENV{QT_ROOT_DIR} AND NOT TARGET Qt6QScintilla::Qt6QScintilla)
+      message(STATUS "Creating Qt6QScintilla::Qt6QScintilla imported target for MSVC")
+      add_library(Qt6QScintilla::Qt6QScintilla SHARED IMPORTED)
+      set_target_properties(Qt6QScintilla::Qt6QScintilla PROPERTIES
+        IMPORTED_CONFIGURATIONS "RELEASE;DEBUG"
+        IMPORTED_LOCATION_RELEASE "$ENV{QT_ROOT_DIR}/lib/qscintilla2_qt6.dll"
+        IMPORTED_IMPLIB_RELEASE "${QT6QSCINTILLA_LIBRARY}"
+        IMPORTED_LOCATION_DEBUG "$ENV{QT_ROOT_DIR}/lib/qscintilla2_qt6.dll"
+        IMPORTED_IMPLIB_DEBUG "${QT6QSCINTILLA_LIBRARY}"
+        INTERFACE_INCLUDE_DIRECTORIES "${QT6QSCINTILLA_INCLUDE_DIR}"
+        INTERFACE_COMPILE_DEFINITIONS "QSCINTILLA_DLL"
+      )
+    endif()
+
     if(ENABLE_QTDBUS)
       find_package(Qt6DBus QUIET)
       if (Qt6DBus_FOUND)
@@ -916,6 +1042,7 @@ endif()
 
 # Stack size 8MB; github issue 116
 target_compile_definitions(OpenSCADLibInternal PUBLIC "STACKSIZE=${STACKSIZE}") # used as default in src/platform/PlatformUtils.h
+target_compile_definitions(OpenSCADLibInternal PUBLIC "STACK_SAFETY_MARGIN=${STACK_SAFETY_MARGIN}") # used in src/platform/PlatformUtils.h
 
 if(NULLGL)
   set(OFFSCREEN_METHOD "NULLGL")
@@ -1110,7 +1237,7 @@ set(CORE_SOURCES
 if(ENABLE_PYTHON)
 	list(APPEND CORE_SOURCES
 		    src/python/pymod.cc
-		    src/python/pyopenscad.cc 
+		    src/python/pyopenscad.cc
 		    src/python/pyfunctions.cc )
 	target_compile_definitions(OpenSCADLibInternal PUBLIC ENABLE_PYTHON)
 endif()
@@ -1567,7 +1694,7 @@ if(APPLE AND NOT APPLE_UNIX)
   file(COPY ${CMAKE_SOURCE_DIR}/templates DESTINATION ${BUNDLE_RESOURCES_DIR})
 
   if(ENABLE_GUI_TESTS)
-    file(COPY 
+    file(COPY
          ${CMAKE_SOURCE_DIR}/tests/data/basic-ux
          ${CMAKE_SOURCE_DIR}/tests/data/modulecache-tests
          DESTINATION ${BUNDLE_RESOURCES_DIR}/tests)
@@ -1585,11 +1712,29 @@ elseif(MSVC)
   )
 endif()
 
+# Copy resource files to build directory for Windows (MINGW/MSVC)
+# These are needed for the application to run from the build directory during development and testing
+if(WIN32 AND NOT APPLE)
+  set(WIN_RESOURCES_DIR ${CMAKE_CURRENT_BINARY_DIR})
+  file(COPY ${CMAKE_SOURCE_DIR}/color-schemes DESTINATION ${WIN_RESOURCES_DIR})
+  file(COPY ${CMAKE_SOURCE_DIR}/fonts DESTINATION ${WIN_RESOURCES_DIR})
+  file(COPY ${CMAKE_SOURCE_DIR}/libraries DESTINATION ${WIN_RESOURCES_DIR} PATTERN ".git*" EXCLUDE)
+  file(COPY ${CMAKE_SOURCE_DIR}/locale DESTINATION ${WIN_RESOURCES_DIR})
+  file(COPY ${CMAKE_SOURCE_DIR}/shaders DESTINATION ${WIN_RESOURCES_DIR})
+  file(COPY ${CMAKE_SOURCE_DIR}/templates DESTINATION ${WIN_RESOURCES_DIR})
+endif()
+
 if (USE_QT6)
   if(NOT HEADLESS)
+    # Use the imported target if available (MSVC), otherwise fall back to the library path
+    if(TARGET Qt6QScintilla::Qt6QScintilla)
+      set(_QSCINTILLA_LIB Qt6QScintilla::Qt6QScintilla)
+    else()
+      set(_QSCINTILLA_LIB ${QT6QSCINTILLA_LIBRARY})
+    endif()
     target_link_libraries(OpenSCADLibInternal PUBLIC
       Qt6::Core Qt6::Core5Compat Qt6::Widgets Qt6::Multimedia Qt6::OpenGL Qt6::OpenGLWidgets Qt6::Concurrent Qt6::Network Qt6::Svg
-      ${QT6QSCINTILLA_LIBRARY} ${Qt6DBus_LIBRARIES} ${Qt6Gamepad_LIBRARIES}
+      ${_QSCINTILLA_LIB} ${Qt6DBus_LIBRARIES} ${Qt6Gamepad_LIBRARIES}
     )
   endif()
   if(ENABLE_GUI_TESTS)
@@ -1742,6 +1887,10 @@ if(ENABLE_TESTS)
 
     add_executable(OpenSCADUnitTests ${TEST_SOURCES})
     target_link_libraries(OpenSCADUnitTests PRIVATE Catch2::Catch2WithMain OpenSCADLibInternal svg)
+    # Disable auto-generation of manifest for MSVC to avoid duplicate manifest error
+    if(MSVC)
+      target_link_options(OpenSCADUnitTests PRIVATE /MANIFEST:NO)
+    endif()
     include(CTest)
     include(Catch)
     catch_discover_tests(OpenSCADUnitTests ADD_TAGS_AS_LABELS)
