@@ -4,6 +4,7 @@ name: CGAL Minimal Test
 # on GitHub Actions but not on local Windows 11 VMs.
 
 on:
+  pull_request:
   workflow_dispatch:
     inputs:
       debug_enabled:
