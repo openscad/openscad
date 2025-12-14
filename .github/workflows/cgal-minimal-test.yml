@@ -281,7 +281,7 @@ jobs:
         shell: cmd
         run: |
           cd cgal-test
-          cmake -B build -S . -DCMAKE_TOOLCHAIN_FILE="${{ github.workspace }}/vcpkg/scripts/buildsystems/vcpkg.cmake" -DCMAKE_BUILD_TYPE=Release
+          cmake -B build -S . -DCMAKE_TOOLCHAIN_FILE="${{ github.workspace }}/vcpkg/scripts/buildsystems/vcpkg.cmake" -DVCPKG_INSTALLED_DIR="${{ github.workspace }}/vcpkg_installed" -DCMAKE_BUILD_TYPE=Release
 
       - name: Build minimal CGAL test
         shell: cmd
