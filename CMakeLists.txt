@@ -645,13 +645,17 @@ if(ENABLE_CGAL)
 
           # Remove from INTERFACE_COMPILE_OPTIONS
           get_target_property(compile_options ${real_target} INTERFACE_COMPILE_OPTIONS)
-          message(STATUS "  INTERFACE_COMPILE_OPTIONS: ${compile_options}")
+          message(STATUS "  INTERFACE_COMPILE_OPTIONS (before): ${compile_options}")
           if(compile_options AND NOT compile_options STREQUAL "compile_options-NOTFOUND")
             string(REGEX MATCH "/fp:(strict|except-)" has_fp_flags "${compile_options}")
             if(has_fp_flags)
-              list(FILTER compile_options EXCLUDE REGEX "/fp:(strict|except-)")
+              # Remove entire generator expressions containing /fp:strict or /fp:except-
+              # Pattern matches: $<...:/fp:strict> or $<...:/fp:except-> or plain /fp:strict or /fp:except-
+              list(FILTER compile_options EXCLUDE REGEX "\\$<[^>]*:/fp:(strict|except-)>|/fp:(strict|except-)")
               set_target_properties(${real_target} PROPERTIES INTERFACE_COMPILE_OPTIONS "${compile_options}")
-              message(STATUS "  ✓ Removed /fp:strict from INTERFACE_COMPILE_OPTIONS of ${cgal_target}")
+              get_target_property(compile_options_after ${real_target} INTERFACE_COMPILE_OPTIONS)
+              message(STATUS "  INTERFACE_COMPILE_OPTIONS (after):  ${compile_options_after}")
+              message(STATUS "  ✓ Removed /fp:strict generator expressions from ${cgal_target}")
             else()
               message(STATUS "  No /fp:strict in INTERFACE_COMPILE_OPTIONS")
             endif()
