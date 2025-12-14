@@ -295,6 +295,74 @@ jobs:
           cd cgal-test\build\Release
           cgal_test.exe
 
+      - name: Build minimal OpenSCAD with debug logging
+        shell: cmd
+        run: |
+          mkdir openscad-test-build
+          cd openscad-test-build
+          cmake -B . -S .. -DCMAKE_TOOLCHAIN_FILE="${{ github.workspace }}/vcpkg/scripts/buildsystems/vcpkg.cmake" -DVCPKG_INSTALLED_DIR="${{ github.workspace }}/vcpkg_installed" -DCMAKE_BUILD_TYPE=Release -DENABLE_TESTS=OFF -DENABLE_CGAL=ON
+          cmake --build . --config Release --target openscad --verbose
+        continue-on-error: true
+
+      - name: Create test OpenSCAD files
+        shell: bash
+        run: |
+          mkdir -p scad-tests
+
+          # Create for-nested-tests.scad (simplified version)
+          cat > scad-tests/for-nested-simple.scad << 'EOF'
+          // Simplified version of for-nested-tests
+          for(x=[0:1], y=[0:0.5:1], z=[0,2]) {
+            translate(10*[x,y,z]) sphere(r=3);
+          }
+          EOF
+
+          # Create exact copy of for-nested-tests.scad
+          cat > scad-tests/for-nested-tests.scad << 'EOF'
+          for(x=[0:3], y=[0:0.5:1], z=[0,2,3]) {
+            translate(10*[x,y,z]) sphere(r=3);
+          }
+          EOF
+
+          # Create a very simple test
+          cat > scad-tests/simple-sphere.scad << 'EOF'
+          sphere(5);
+          EOF
+
+          echo "Created test files"
+
+      - name: Test 1 - Simple sphere
+        shell: cmd
+        continue-on-error: true
+        run: |
+          echo Running simple sphere test...
+          openscad-test-build\Release\openscad.exe scad-tests\simple-sphere.scad -o scad-tests\simple-sphere.stl --render
+          echo Exit code: %ERRORLEVEL%
+
+      - name: Test 2 - Simplified for-nested test
+        shell: cmd
+        continue-on-error: true
+        run: |
+          echo Running simplified for-nested test...
+          openscad-test-build\Release\openscad.exe scad-tests\for-nested-simple.scad -o scad-tests\for-nested-simple.stl --render
+          echo Exit code: %ERRORLEVEL%
+
+      - name: Test 3 - Full for-nested test
+        shell: cmd
+        continue-on-error: true
+        run: |
+          echo Running full for-nested test...
+          openscad-test-build\Release\openscad.exe scad-tests\for-nested-tests.scad -o scad-tests\for-nested-tests.stl --render
+          echo Exit code: %ERRORLEVEL%
+
+      - name: Upload test outputs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: openscad-test-outputs
+          path: scad-tests/
+          if-no-files-found: ignore
+
       - name: Upload crash dumps
         if: always()
         uses: actions/upload-artifact@v4

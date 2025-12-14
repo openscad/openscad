@@ -177,10 +177,16 @@ static std::shared_ptr<AbstractNode> builtin_for(const ModuleInstantiation *inst
 {
   auto node = lazyUnionNode(inst);
   if (!inst->arguments.empty()) {
+    LOG(message_group::None, "DEBUG: builtin_for starting, arguments count: %1$d", inst->arguments.size());
+    size_t iteration_count = 0;
     LcFor::forEach(inst->arguments, inst->location(), context,
-                   [inst, node](const std::shared_ptr<const Context>& iterationContext) {
+                   [inst, node, &iteration_count](const std::shared_ptr<const Context>& iterationContext) {
+                     iteration_count++;
+                     LOG(message_group::None, "DEBUG: builtin_for iteration %1$d starting", iteration_count);
                      Children(inst->scope, iterationContext).instantiate(node);
+                     LOG(message_group::None, "DEBUG: builtin_for iteration %1$d completed", iteration_count);
                    });
+    LOG(message_group::None, "DEBUG: builtin_for completed, total iterations: %1$d", iteration_count);
   }
   return node;
 }
