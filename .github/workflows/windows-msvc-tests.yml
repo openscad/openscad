@@ -30,6 +30,41 @@ jobs:
         with:
           submodules: 'recursive'
 
+      - name: System Information (for debugging)
+        shell: powershell
+        run: |
+          Write-Output "=== Windows Version ==="
+          (Get-CimInstance Win32_OperatingSystem).Caption
+          (Get-CimInstance Win32_OperatingSystem).Version
+          (Get-CimInstance Win32_OperatingSystem).BuildNumber
+          Write-Output "=== CPU Info ==="
+          $cpu = Get-CimInstance Win32_Processor
+          $cpu.Name
+          $cpu.Caption
+          $cpu.NumberOfCores
+          $cpu.NumberOfLogicalProcessors
+          Write-Output "=== Memory ==="
+          $mem = Get-CimInstance Win32_ComputerSystem
+          "$([math]::Round($mem.TotalPhysicalMemory/1GB, 2)) GB"
+          Write-Output "=== Environment ==="
+          Write-Output "Runner: $env:RUNNER_OS $env:RUNNER_ARCH"
+          Write-Output "Image: $env:ImageOS $env:ImageVersion"
+
+      - name: Enable Windows Error Reporting crash dumps
+        shell: powershell
+        run: |
+          # Enable local crash dumps for all applications
+          $dumpFolder = "${{ github.workspace }}\CrashDumps"
+          New-Item -ItemType Directory -Force -Path $dumpFolder
+          $regPath = "HKLM:\SOFTWARE\Microsoft\Windows\Windows Error Reporting\LocalDumps"
+          if (-not (Test-Path $regPath)) {
+            New-Item -Path $regPath -Force
+          }
+          Set-ItemProperty -Path $regPath -Name "DumpFolder" -Value $dumpFolder -Type ExpandString
+          Set-ItemProperty -Path $regPath -Name "DumpType" -Value 2 -Type DWord  # Full dump
+          Set-ItemProperty -Path $regPath -Name "DumpCount" -Value 10 -Type DWord
+          Write-Output "Crash dumps will be saved to: $dumpFolder"
+
       - name: Debug - Setup tmate session (7 min timeout)
         if: ${{ github.event_name == 'workflow_dispatch' && inputs.debug_enabled }}
         uses: mxschmitt/action-tmate@v3
@@ -329,12 +364,26 @@ jobs:
           $oldMode = [ErrorMode]::SetErrorMode($flags)
           Write-Host "Error mode set to 0x$($flags.ToString('X4')) to suppress crash dialogs (was: 0x$($oldMode.ToString('X4')))"
 
+      - name: Debug - Run single failing test with verbose output
+        shell: bash
+        continue-on-error: true
+        run: |
+          cd build/windows-msvc-release
+          echo "=== Running single CGAL test with verbose output for debugging ==="
+          echo "=== Test: render-cgal_sphere-tests ==="
+          # Run a single known-failing test with maximum verbosity
+          ctest -C Release -R "render-cgal_sphere-tests" -V --output-on-failure --timeout 120 || true
+          echo ""
+          echo "=== Exit code: $? ==="
+          echo "=== Checking for crash dumps ==="
+          ls -la "${{ github.workspace }}/CrashDumps/" 2>/dev/null || echo "No crash dumps directory"
+
       - name: Run Tests
         shell: bash
         run: |
           cd build/windows-msvc-release
           # CMake is configured to use vcpkg's Python, so no env vars needed
-          ctest -C Release -L Default -j2
+          ctest -C Release -L Default -j2 --output-on-failure
 
       - name: Upload Test Results
         if: always()
@@ -346,15 +395,26 @@ jobs:
             build/${{ matrix.cmake_preset }}/Testing/Temporary/LastTest.log
           if-no-files-found: warn
 
-      - name: Upload CMake Cache for Debugging
-        if: failure()
+      - name: Upload CMake Cache and Build Info for Debugging
+        if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: CMake Cache (Windows MSVC ${{ matrix.build_type }})
+          name: cmake-and-build-info-${{ matrix.build_type }}
           path: |
             build/${{ matrix.cmake_preset }}/CMakeCache.txt
             build/${{ matrix.cmake_preset }}/CMakeFiles/*.log
+            build/${{ matrix.cmake_preset }}/OpenSCADLibInternal.vcxproj
+            build/${{ matrix.cmake_preset }}/compile_commands.json
           if-no-files-found: warn
+
+      - name: Upload Crash Dumps
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: crash-dumps-${{ matrix.build_type }}
+          path: |
+            ${{ github.workspace }}/CrashDumps/
+          if-no-files-found: ignore
 
       - name: Upload Build Artifacts
         if: success()
