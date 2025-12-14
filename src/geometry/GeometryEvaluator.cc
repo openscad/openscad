@@ -177,20 +177,20 @@ GeometryEvaluator::ResultObject GeometryEvaluator::applyToChildren3D(const Abstr
     for (const auto& item : children) {
       if (item.second && !item.second->isEmpty()) actualchildren.push_back(item);
     }
-    LOG(message_group::None, "DEBUG: UNION operation, total children: %1$d, non-empty children: %2$d", children.size(), actualchildren.size());
+    LOG(message_group::NONE, "DEBUG: UNION operation, total children: %1$d, non-empty children: %2$d", children.size(), actualchildren.size());
     if (actualchildren.empty()) return {};
     if (actualchildren.size() == 1) return ResultObject::constResult(actualchildren.front().second);
 #ifdef ENABLE_MANIFOLD
     if (RenderSettings::inst()->backend3D == RenderBackend3D::ManifoldBackend) {
-      LOG(message_group::None, "DEBUG: Using Manifold backend for UNION");
+      LOG(message_group::NONE, "DEBUG: Using Manifold backend for UNION");
       return ResultObject::mutableResult(ManifoldUtils::applyOperator3DManifold(actualchildren, op));
     }
 #endif
 #ifdef ENABLE_CGAL
-    LOG(message_group::None, "DEBUG: Calling CGALUtils::applyUnion3D with %1$d children", actualchildren.size());
+    LOG(message_group::NONE, "DEBUG: Calling CGALUtils::applyUnion3D with %1$d children", actualchildren.size());
     auto result = ResultObject::constResult(std::shared_ptr<const Geometry>(
       CGALUtils::applyUnion3D(actualchildren.begin(), actualchildren.end())));
-    LOG(message_group::None, "DEBUG: CGALUtils::applyUnion3D completed");
+    LOG(message_group::NONE, "DEBUG: CGALUtils::applyUnion3D completed");
     return result;
 #else
     assert(false && "No boolean backend available");
