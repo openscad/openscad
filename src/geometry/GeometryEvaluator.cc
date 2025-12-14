@@ -195,7 +195,7 @@ GeometryEvaluator::ResultObject GeometryEvaluator::applyToChildren3D(const Abstr
           cgal_result->isEmpty() ? "true" : "false");
     }
 
-    auto result = ResultObject::constResult(std::shared_ptr<const Geometry>(cgal_result));
+    auto result = ResultObject::constResult(std::shared_ptr<const Geometry>(std::move(cgal_result)));
     LOG(message_group::NONE, "DEBUG: ResultObject created, returning from UNION operation");
     return result;
 #else
