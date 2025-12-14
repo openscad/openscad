@@ -108,11 +108,11 @@ jobs:
         run: mkdir -p ${{ github.workspace }}/vcpkg-cache
         shell: bash
 
-      - name: Install minimal CGAL dependencies
+      - name: Install dependencies from vcpkg.json manifest
         shell: cmd
         run: |
-          echo Installing CGAL and dependencies via vcpkg...
-          .\vcpkg\vcpkg.exe install cgal:x64-windows gmp:x64-windows mpfr:x64-windows --triplet x64-windows
+          echo Installing dependencies from vcpkg.json manifest...
+          .\vcpkg\vcpkg.exe install --triplet x64-windows
         env:
           VCPKG_BINARY_SOURCES: 'clear;files,${{ github.workspace }}/vcpkg-cache,readwrite'
 
