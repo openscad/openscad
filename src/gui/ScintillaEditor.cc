@@ -820,8 +820,8 @@ int ScintillaEditor::updateFindIndicators(const QString& findText, bool visibili
   qsci->SendScintilla(QsciScintilla::SCI_SETINDICATORCURRENT, findIndicatorNumber);
   qsci->SendScintilla(qsci->SCI_INDICATORCLEARRANGE, 0, qsci->length());
 
-  const auto txt = qsci->text().toUtf8();
-  const auto findTextUtf8 = findText.toUtf8();
+  const auto txt = qsci->text().toUtf8().toLower();
+  const auto findTextUtf8 = findText.toUtf8().toLower();
   auto pos = txt.indexOf(findTextUtf8);
   auto len = findTextUtf8.length();
   if (visibility && len > 0) {
