@@ -382,9 +382,8 @@ jobs:
         shell: bash
         run: |
           cd build/windows-msvc-release
-          # Temporarily run only specific failing tests for debugging
-          # Regular expression matches the exact tests we're investigating
-          ctest -C Release -R "render-cgal_for-nested-tests|render-cgal_sphere-tests|render-csg-cgal_for-nested-tests" -V --output-on-failure --timeout 120
+          # CMake is configured to use vcpkg's Python, so no env vars needed
+          ctest -C Release -L Default -j2 --output-on-failure
 
       - name: Upload Test Results
         if: always()
