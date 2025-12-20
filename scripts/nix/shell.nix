@@ -1,14 +1,19 @@
-{ pkgs ? import <nixpkgs> {} }:
+{ pkgs ? import <nixpkgs> { } }:
 pkgs.mkShell {
-  buildInputs = with pkgs; [
+  nativeBuildInputs = with pkgs; [
     bison
+    cmake
+    flex
+    pkg-config
+    qt6.wrapQtAppsHook
+  ];
+
+  buildInputs = with pkgs; [
     boost
     cairo
     cgal
-    cmake
     double-conversion
     eigen
-    flex
     fontconfig
     freetype
     gettext
@@ -25,7 +30,6 @@ pkgs.mkShell {
     manifold
     mpfr
     opencsg
-    pkg-config
     python3
     python3Packages.numpy
     tbb
@@ -36,14 +40,13 @@ pkgs.mkShell {
     # libsForQt5.full
     # qscintilla
 
-    #QT6
+    # QT6
     qt6.qt5compat
     qt6.qtbase
     qt6.qtmultimedia
     qt6.qtsvg
     qt6.qttools
     qt6.qtwayland
-    qt6.wrapQtAppsHook
     qt6Packages.qscintilla
 
     # used by the automated tests
