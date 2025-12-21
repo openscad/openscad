@@ -44,6 +44,7 @@
 #include <QStyleHints>
 #include <QStringList>
 #include <QtConcurrentRun>
+#include <QSslConfiguration>
 
 #include "Feature.h"
 #include "core/parsersettings.h"
@@ -196,6 +197,10 @@ int gui(std::vector<std::string>& inputFiles, const std::filesystem::path& origi
   qRegisterMetaType<std::shared_ptr<const Geometry>>();
 
   FontCache::registerProgressHandler(dialogInitHandler);
+
+  auto sslConfig = QSslConfiguration::defaultConfiguration();
+  sslConfig.addCaCertificates(QSslConfiguration::systemCaCertificates());
+  QSslConfiguration::setDefaultConfiguration(sslConfig);
 
   parser_init();
 
