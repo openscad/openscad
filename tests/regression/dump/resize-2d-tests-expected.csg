@@ -8,7 +8,7 @@ color([1, 0, 0, 1]) {
 						square(size = [1, 1], center = false);
 					}
 					multmatrix([[1, 0, 0, 3], [0, 1, 0, 3], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-						circle($fn = 10, $fa = 12, $fs = 2, r = 1);
+						circle($fn = 10, $fe = 0, $fa = 12, $fs = 2, r = 1);
 					}
 				}
 			}
@@ -51,7 +51,7 @@ multmatrix([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 					square(size = [1, 1], center = false);
 				}
 				multmatrix([[1, 0, 0, 3], [0, 1, 0, 3], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-					circle($fn = 10, $fa = 12, $fs = 2, r = 1);
+					circle($fn = 10, $fe = 0, $fa = 12, $fs = 2, r = 1);
 				}
 			}
 		}
@@ -95,7 +95,7 @@ color([0, 0.501961, 0, 1]) {
 							square(size = [1, 1], center = false);
 						}
 						multmatrix([[1, 0, 0, 3], [0, 1, 0, 3], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-							circle($fn = 10, $fa = 12, $fs = 2, r = 1);
+							circle($fn = 10, $fe = 0, $fa = 12, $fs = 2, r = 1);
 						}
 					}
 				}
@@ -142,7 +142,7 @@ color([1, 0.752941, 0.796078, 1]) {
 						square(size = [1, 1], center = false);
 					}
 					multmatrix([[1, 0, 0, 3], [0, 1, 0, 3], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-						circle($fn = 10, $fa = 12, $fs = 2, r = 1);
+						circle($fn = 10, $fe = 0, $fa = 12, $fs = 2, r = 1);
 					}
 				}
 			}
@@ -187,7 +187,7 @@ color([0, 0, 1, 1]) {
 							square(size = [1, 1], center = false);
 						}
 						multmatrix([[1, 0, 0, 3], [0, 1, 0, 3], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-							circle($fn = 10, $fa = 12, $fs = 2, r = 1);
+							circle($fn = 10, $fe = 0, $fa = 12, $fs = 2, r = 1);
 						}
 					}
 				}

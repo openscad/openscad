@@ -9,7 +9,7 @@ group() {
 						square(size = [6, 6], center = false);
 					}
 				}
-				circle($fn = 0, $fa = 12, $fs = 1, r = 2);
+				circle($fn = 0, $fe = 0, $fa = 12, $fs = 1, r = 2);
 			}
 		}
 	}
@@ -20,7 +20,7 @@ group() {
 					square(size = [10, 10], center = false);
 					square(size = [5, 5], center = false);
 				}
-				circle($fn = 0, $fa = 12, $fs = 1, r = 5);
+				circle($fn = 0, $fe = 0, $fa = 12, $fs = 1, r = 5);
 			}
 		}
 	}
@@ -28,7 +28,7 @@ group() {
 		group() {
 			minkowski(convexity = 0) {
 				square(size = [10, 10], center = false);
-				circle($fn = 0, $fa = 12, $fs = 1, r = 5);
+				circle($fn = 0, $fe = 0, $fa = 12, $fs = 1, r = 5);
 			}
 		}
 	}
@@ -41,7 +41,7 @@ group() {
 						cube(size = [6, 6, 10], center = false);
 					}
 				}
-				cylinder($fn = 0, $fa = 12, $fs = 1, h = 1, r1 = 2, r2 = 2, center = false);
+				cylinder($fn = 0, $fe = 0, $fa = 12, $fs = 1, h = 1, r1 = 2, r2 = 2, center = false);
 			}
 		}
 	}
@@ -52,7 +52,7 @@ group() {
 					cube(size = [10, 10, 5], center = false);
 					cube(size = [5, 5, 5], center = false);
 				}
-				cylinder($fn = 0, $fa = 12, $fs = 1, h = 5, r1 = 5, r2 = 5, center = false);
+				cylinder($fn = 0, $fe = 0, $fa = 12, $fs = 1, h = 5, r1 = 5, r2 = 5, center = false);
 			}
 		}
 	}
@@ -60,7 +60,7 @@ group() {
 		group() {
 			minkowski(convexity = 0) {
 				cube(size = [10, 10, 5], center = false);
-				cylinder($fn = 0, $fa = 12, $fs = 1, h = 5, r1 = 5, r2 = 5, center = false);
+				cylinder($fn = 0, $fe = 0, $fa = 12, $fs = 1, h = 5, r1 = 5, r2 = 5, center = false);
 			}
 		}
 	}
