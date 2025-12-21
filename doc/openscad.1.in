@@ -1,5 +1,4 @@
 .TH OPENSCAD 1 "@OPENSCAD_VERSION@"
-.\" Please adjust this date whenever revising the manpage.
 .SH NAME
 openscad \- script file based graphical CAD environment
 .SH SYNOPSIS
