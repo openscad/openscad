@@ -2,7 +2,7 @@ version: 2.1
 
 orbs:
   macos: circleci/macos@2.5.1
-  
+
 executors:
   mxe64-executor:
     working_directory: ~/workspace
@@ -79,6 +79,13 @@ commands:
 
 jobs:
   openscad-mxe-64bit:
+    parameters:
+      openscad_platform:
+        type: string
+        default: "windows"
+      openscad_build_type:
+        type: string
+        default: "snapshot"
     executor: mxe64-executor
     steps:
       - checkout
@@ -112,6 +119,13 @@ jobs:
           path: /tmp/out
           destination: 64-bit
   openscad-appimage-64bit:
+    parameters:
+      openscad_platform:
+        type: string
+        default: "linux-appimage"
+      openscad_build_type:
+        type: string
+        default: "snapshot"
     executor: appimage-executor
     steps:
       - checkout
@@ -162,8 +176,11 @@ jobs:
   openscad-wasm:
     executor: wasm-executor
     parameters:
-      wasm-type:
+      openscad_platform:
         type: string
+      openscad_build_type:
+        type: string
+        default: "snapshot"
     steps:
       - checkout
       - run: git submodule update --init --recursive
@@ -174,7 +191,7 @@ jobs:
               n latest
       - when:
           condition:
-            equal: [ web, << parameters.wasm-type >> ]
+            equal: [ wasm-web, << parameters.openscad_platform >> ]
           steps:
             - run:
                 name: Install Puppeteer
@@ -190,22 +207,23 @@ jobs:
       - establish_version:
           build_id: "wasm${CIRCLE_BUILD_NUM}"
       - run:
-          name: Build OpenSCAD WASM (<< parameters.wasm-type >>)
+          name: Build OpenSCAD WASM (<< parameters.openscad_platform >>)
           no_output_timeout: 18000
           command: |
+              export WASM_TYPE=$(echo "<< parameters.openscad_platform >>" | sed 's/^wasm-//')
               if [ x"${CIRCLE_BRANCH}" = xmaster ]; then export SUFFIX=""; else export SUFFIX="_$(echo ${CIRCLE_BRANCH} | sed -e 's,pull/,PR,; s,/head,h,; s,/merge,m,; s,/,.,g')"; fi
               git submodule update --init --recursive
               emcmake cmake -B ../build . \
                   -DSNAPSHOT=ON \
                   -DEXPERIMENTAL=ON \
                   -DCMAKE_BUILD_TYPE=Release \
-                  -DWASM_BUILD_TYPE=<< parameters.wasm-type >> \
+                  -DWASM_BUILD_TYPE=$WASM_TYPE \
                   -DOPENSCAD_COMMIT="$OPENSCAD_COMMIT" \
                   -DOPENSCAD_VERSION="$OPENSCAD_VERSION"
               cd ../build
               make -j4 VERBOSE=1
               mkdir -p /tmp/out
-              zip -9r "/tmp/out/OpenSCAD-${OPENSCAD_VERSION}${SUFFIX}-WebAssembly-<< parameters.wasm-type >>.zip" openscad.*
+              zip -9r "/tmp/out/OpenSCAD-${OPENSCAD_VERSION}${SUFFIX}-WebAssembly-$WASM_TYPE.zip" openscad.*
               if [ -n "${CODE_SIGNING_KEY}" ]; then
                   cd /tmp/out
                   echo $CODE_SIGNING_DATA | base64 -d | gzip -d | gpg --import --allow-secret-key-import --pinentry-mode loopback --passphrase-file <(echo $CODE_SIGNING_PW)
@@ -218,9 +236,10 @@ jobs:
       - run:
           name: Verify OpenSCAD WASM build
           command: |
+              export WASM_TYPE=$(echo "<< parameters.openscad_platform >>" | sed 's/^wasm-//')
               # node in the path (from emsdk) is too old to run the wasm build, use the one installed by n.
               export PATH="/usr/local/bin:$PATH"
-              ./tests/wasm-check.sh << parameters.wasm-type >>
+              ./tests/wasm-check.sh $WASM_TYPE
       - store_artifacts:
           path: /tmp/out
           destination: wasm
@@ -230,9 +249,12 @@ jobs:
   openscad-macos:
     executor: macos-executor
     parameters:
+      openscad_platform:
+        type: string
+        default: "macos"
       openscad_build_type:
         type: string
-        default: snapshot
+        default: "snapshot"
       source_method:
         type: string
         default: git
@@ -386,7 +408,7 @@ workflows:
       - openscad-wasm:
           matrix:
             parameters:
-              wasm-type: [web, node]
+              openscad_platform: [wasm-web, wasm-node]
           context: secret-context
           filters:
               branches:
@@ -417,7 +439,7 @@ workflows:
       - openscad-wasm:
           matrix:
             parameters:
-              wasm-type: [web, node]
+              openscad_platform: [wasm-web, wasm-node]
           filters:
               branches:
                   ignore:
