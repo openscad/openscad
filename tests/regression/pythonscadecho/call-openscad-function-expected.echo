@@ -1,0 +1,7 @@
+no_parameter(): 10.0
+parameter(1): 1.0
+parameter(2.0): 2.0
+add(1, 2): 3.0
+vector(1, 2, 3): [1.0, 2.0, 3.0]
+default_value(): 11.0
+override_default_value(10): 2.0

@@ -3300,8 +3300,8 @@ PyObject *python_rotate_extrude(PyObject *self, PyObject *args, PyObject *kwargs
   PyObject *origin = NULL;
   PyObject *offset = NULL;
   double fn = NAN, fa = NAN, fs = NAN;
-  char *kwlist[] = {"obj", "convexity", "scale", "angle", "twist", "origin", "offset",
-                    "v",   "method",      NULL};
+  char *kwlist[] = {"obj",    "convexity", "scale", "angle",  "twist",
+                    "origin", "offset",    "v",     "method", NULL};
   auto discretizer = CreateCurveDiscretizer(kwargs);
   if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O|iddOOOOsddd", kwlist, &obj, &convexity, &scale,
                                    &angle, &twist, &origin, &offset, &v, &method, &fn, &fa, &fs)) {
@@ -3326,8 +3326,8 @@ PyObject *python_oo_rotate_extrude(PyObject *obj, PyObject *args, PyObject *kwar
   char *kwlist[] = {"convexity", "scale",  "angle", "twist", "origin", "offset",
                     "v",         "method", "fn",    "fa",    "fs",     NULL};
   auto discretizer = CreateCurveDiscretizer(kwargs);
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|iddOOOOs", kwlist, &convexity, &scale, &angle,
-                                   &twist, &origin, &offset, &v, &method)) {
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|iddOOOOs", kwlist, &convexity, &scale, &angle, &twist,
+                                   &origin, &offset, &v, &method)) {
     PyErr_SetString(PyExc_TypeError, "error during parsing\n");
     return NULL;
   }
@@ -5415,15 +5415,10 @@ PyObject *python_osuse_include(int mode, PyObject *self, PyObject *args, PyObjec
                          PyDataObjectFromModule(&PyDataType, filename, mod.first));
   }
 
-  for (auto fun : source->scope->functions) {           // copy functions
-    std::shared_ptr<UserFunction> usfunc = fun.second;  // install lambda functions ?
-                                                        //    printf("%s\n",fun.first.c_str());
-                                                        //    InstantiableModule m;
-                                                        //    m.defining_context=osinclude_context;
-                                                        //    m.module=mod.second.get();
-                                                        //    boost::optional<InstantiableModule> res(m);
-    //    PyDict_SetItemString(result->dict, mod.first.c_str(),PyDataObjectFromModule(&PyDataType, res
-    //    ));
+  for (auto fun : source->scope->functions) {  // copy functions
+    std::shared_ptr<UserFunction> usfunc = fun.second;
+    PyDict_SetItemString(result->dict, fun.first.c_str(),
+                         PyDataObjectFromFunction(&PyDataType, filename, fun.first));
   }
 
   for (auto ass : source->scope->assignments) {  // copy assignments
