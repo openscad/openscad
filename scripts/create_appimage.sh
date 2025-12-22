@@ -72,24 +72,25 @@ if ! command_exists make; then
     die "make not found. Please install make."
 fi
 
+# Check for appimagetool (replacement for linuxdeploy for final packaging)
 if ! command_exists linuxdeploy; then
-    error "linuxdeploy not found."
-    echo ""
-    echo "To install linuxdeploy and appimagetool, run:"
-    echo "  # Install linuxdeploy"
-    echo "  wget https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage"
-    echo "  chmod +x linuxdeploy-x86_64.AppImage"
-    echo "  sudo mv linuxdeploy-x86_64.AppImage /usr/local/bin/linuxdeploy"
-    echo ""
-    echo "  # Install appimagetool"
-    echo "  wget https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage"
-    echo "  chmod +x appimagetool-x86_64.AppImage"
-    echo "  sudo mv appimagetool-x86_64.AppImage /usr/local/bin/appimagetool"
-    echo ""
-    echo "Or place them in your PATH with any name you prefer."
-    echo "Note: appimagetool will be downloaded automatically if not found."
-    exit 1
+    warn "linuxdeploy not found, will download it..."
+    mkdir -p "${TOOLS_DIR}"
+    LINUXDEPLOY_PATH="${TOOLS_DIR}/linuxdeploy-x86_64.AppImage"
+
+    if [ ! -f "${LINUXDEPLOY_PATH}" ]; then
+        info "Downloading linuxdeploy..."
+        wget -O "${LINUXDEPLOY_PATH}" \
+            "https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage" \
+            || die "Failed to download linuxdeploy"
+        chmod +x "${LINUXDEPLOY_PATH}"
+    fi
+    # Make tools directory available in PATH
+    export PATH="${TOOLS_DIR}:${PATH}"
+else
+    info "Found linuxdeploy"
 fi
+
 
 # Check for appimagetool (replacement for linuxdeploy for final packaging)
 if ! command_exists appimagetool; then
