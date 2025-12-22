@@ -167,10 +167,10 @@ jobs:
               export PYTHON_VERSION=$(python3 -c "import sys; v=sys.version_info; print(f'{v.major}.{v.minor}.{v.micro}')")
               export LINUXDEPLOY_OUTPUT_VERSION="${OPENSCAD_VERSION}${SUFFIX}"
               linuxdeploy --plugin python --plugin qt --output appimage --appdir AppDir
-              mkdir -p /tmp/out
-              cp -iv OpenSCAD-*.AppImage /tmp/out
+              mkdir -p /tmp/artifacts
+              cp -iv OpenSCAD-*.AppImage /tmp/artifacts
               if [ -n "${CODE_SIGNING_KEY}" ]; then
-                  cd /tmp/out
+                  cd /tmp/artifacts
                   echo $CODE_SIGNING_DATA | base64 -d | gzip -d | gpg --import --allow-secret-key-import --pinentry-mode loopback --passphrase-file <(echo $CODE_SIGNING_PW)
                   export GPG_ARGS="--batch --yes --passphrase-fd 0 --pinentry-mode loopback --detach-sign --armor"
                   for a in *.AppImage; do echo "$CODE_SIGNING_PW" | gpg -u "$CODE_SIGNING_KEY" $GPG_ARGS "$a"; sha256sum "$a" | tee "${a}.sha256"; sha512sum "$a" | tee "${a}.sha512"; done
@@ -179,7 +179,7 @@ jobs:
                   echo "Skipping code signing."
               fi
       - store_artifacts:
-          path: /tmp/out
+          path: /tmp/artifacts
           destination: AppImage
   openscad-wasm:
     executor: wasm-executor
@@ -239,10 +239,10 @@ jobs:
                   $CMAKE_EXTRA_ARGS
               cd ../build
               make -j4 VERBOSE=1
-              mkdir -p /tmp/out
-              zip -9r "/tmp/out/OpenSCAD-${OPENSCAD_VERSION}${SUFFIX}-WebAssembly-$WASM_TYPE.zip" openscad.*
+              mkdir -p /tmp/artifacts
+              zip -9r "/tmp/artifacts/OpenSCAD-${OPENSCAD_VERSION}${SUFFIX}-WebAssembly-$WASM_TYPE.zip" openscad.*
               if [ -n "${CODE_SIGNING_KEY}" ]; then
-                  cd /tmp/out
+                  cd /tmp/artifacts
                   echo $CODE_SIGNING_DATA | base64 -d | gzip -d | gpg --import --allow-secret-key-import --pinentry-mode loopback --passphrase-file <(echo $CODE_SIGNING_PW)
                   export GPG_ARGS="--batch --yes --passphrase-fd 0 --pinentry-mode loopback --detach-sign --armor"
                   for a in *.zip; do echo "$CODE_SIGNING_PW" | gpg -u "$CODE_SIGNING_KEY" $GPG_ARGS "$a"; sha256sum "$a" | tee "${a}.sha256"; sha512sum "$a" | tee "${a}.sha512"; done
@@ -258,7 +258,7 @@ jobs:
               export PATH="/usr/local/bin:$PATH"
               ./tests/wasm-check.sh $WASM_TYPE
       - store_artifacts:
-          path: /tmp/out
+          path: /tmp/artifacts
           destination: wasm
   openscad-macos:
     executor: macos-executor
@@ -313,9 +313,9 @@ jobs:
       - run:
           name: Package Dependencies as an artifact
           command: |
-            mkdir -p /tmp/out
-            tar cz -C "$OPENSCAD_LIBRARIES" -f /tmp/out/libraries.tar.bz2 .
-            shasum -a 512 /tmp/out/libraries.tar.bz2 > /tmp/out/libraries.tar.bz2.sha512
+            mkdir -p /tmp/artifacts
+            tar cz -C "$OPENSCAD_LIBRARIES" -f /tmp/artifacts/libraries.tar.bz2 .
+            shasum -a 512 /tmp/artifacts/libraries.tar.bz2 > /tmp/artifacts/libraries.tar.bz2.sha512
       - save_cache:
           # Make sure to create a new cache entry, needed for incremental library builds and also
           # preventing full cache drop after 15 days.
@@ -520,16 +520,16 @@ workflows:
          context: secret-context
          requires:
            - create-tarball
-#      - openscad-wasm:
-#          filters: *release-filters
-#          matrix:
-#            parameters:
-#              wasm-type: [web, node]
-#          openscad_build_type: ""
-#          source_method: tarball
-#          context: secret-context
-#          requires:
-#            - create-tarball
+      - openscad-wasm:
+         filters: *release-filters
+         matrix:
+           parameters:
+             wasm-type: [web, node]
+         openscad_build_type: release
+         source_method: tarball
+         context: secret-context
+         requires:
+           - create-tarball
       - openscad-deploy-release:
           filters: *release-filters
           context: secret-context
@@ -537,3 +537,4 @@ workflows:
             - openscad-macos
             - openscad-appimage
             - openscad-mxe
+            - openscad-wasm
