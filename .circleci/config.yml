@@ -70,7 +70,7 @@ commands:
                 command: tar -xzf /tmp/artifacts/openscad-*.tar.gz --strip-components=1
 
 jobs:
-  openscad-mxe-64bit:
+  openscad-mxe:
     parameters:
       openscad_platform:
         type: string
@@ -116,7 +116,7 @@ jobs:
       - store_artifacts:
           path: /tmp/out
           destination: MXE
-  openscad-appimage-64bit:
+  openscad-appimage:
     parameters:
       openscad_platform:
         type: string
@@ -410,13 +410,13 @@ workflows:
   version: 2
   "CircleCI snapshot build (master)":
     jobs:
-      - openscad-mxe-64bit:
+      - openscad-mxe:
           context: secret-context
           filters:
               branches:
                   only:
                       - master
-      - openscad-appimage-64bit:
+      - openscad-appimage:
           context: secret-context
           filters:
               branches:
@@ -441,14 +441,14 @@ workflows:
                       - master
   "CircleCI branch build (PR)":
     jobs:
-      - openscad-mxe-64bit:
+      - openscad-mxe:
           filters:
               branches:
                   ignore:
                       - master
                       - coverity_scan
                       - /^(?i:continuous)$/
-      - openscad-appimage-64bit:
+      - openscad-appimage:
           filters:
               branches:
                   ignore:
