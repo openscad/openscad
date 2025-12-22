@@ -1,0 +1,61 @@
+name: Build and Upload AppImage
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      upload_to_release:
+        description: 'Upload to latest release (leave empty for test builds)'
+        required: false
+        default: ''
+
+jobs:
+  build-appimage:
+    runs-on: ubuntu-22.04
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        submodules: 'recursive'
+
+    - name: Install dependencies
+      env:
+        DEBIAN_FRONTEND: noninteractive
+        TZ: Etc/UTC
+      run: |
+        which sudo || ( apt update && apt install -y sudo )
+        sudo -E ./scripts/uni-get-dependencies.py --yes --profile pythonscad-qt6
+
+    - name: Install additional AppImage dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y wget file
+
+    - name: Build AppImage
+      run: |
+        chmod +x ./scripts/create_appimage.sh
+        ./scripts/create_appimage.sh
+
+    - name: Get AppImage filename
+      id: appimage
+      run: |
+        APPIMAGE_FILE=$(ls dist/PythonSCAD-*.AppImage | head -1)
+        echo "filename=$(basename ${APPIMAGE_FILE})" >> $GITHUB_OUTPUT
+        echo "filepath=${APPIMAGE_FILE}" >> $GITHUB_OUTPUT
+
+    - name: Upload AppImage as artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ steps.appimage.outputs.filename }}
+        path: ${{ steps.appimage.outputs.filepath }}
+        retention-days: 30
+
+    - name: Upload AppImage to release
+      if: github.event_name == 'release' || github.event.inputs.upload_to_release != ''
+      uses: softprops/action-gh-release@v2
+      with:
+        files: ${{ steps.appimage.outputs.filepath }}
+        tag_name: ${{ github.event.release.tag_name || github.event.inputs.upload_to_release }}
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
