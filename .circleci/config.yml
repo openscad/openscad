@@ -140,10 +140,13 @@ jobs:
           name: Build OpenSCAD AppImage
           no_output_timeout: 18000
           command: |
-              if [ x"${CIRCLE_BRANCH}" = xmaster ]; then
+              if [ x"${CIRCLE_BRANCH}" = xmaster ] || [ "<< parameters.openscad_build_type >>" != "snapshot" ]; then
                 export SUFFIX=""
               else
                 export SUFFIX="_$(echo ${CIRCLE_BRANCH} | sed -e 's,pull/,PR,; s,/head,h,; s,/merge,m,; s,/,.,g')"
+              fi
+              if [ "<< parameters.openscad_build_type >>" == "snapshot" ]; then
+                export CMAKE_EXTRA_ARGS="-DSNAPSHOT=ON -DEXPERIMENTAL=ON"
               fi
               mkdir build && cd build
               cmake .. \
@@ -156,8 +159,7 @@ jobs:
                   -DMANIFOLD_TEST=OFF \
                   -DENABLE_PYTHON=ON \
                   -DENABLE_TESTS=OFF \
-                  -DEXPERIMENTAL=ON \
-                  -DSNAPSHOT=ON
+                  $CMAKE_EXTRA_ARGS
               make -j4
               make install DESTDIR=../AppDir
               cd ..
@@ -166,53 +168,6 @@ jobs:
               export PYTHON_VERSION=$(python3 -c "import sys; v=sys.version_info; print(f'{v.major}.{v.minor}.{v.micro}')")
               export LINUXDEPLOY_OUTPUT_VERSION="${OPENSCAD_VERSION}${SUFFIX}"
               linuxdeploy --plugin python --plugin qt --output appimage --appdir AppDir
-              mkdir -p /tmp/out
-              cp -iv OpenSCAD-*.AppImage /tmp/out
-              if [ -n "${CODE_SIGNING_KEY}" ]; then
-                  cd /tmp/out
-                  echo $CODE_SIGNING_DATA | base64 -d | gzip -d | gpg --import --allow-secret-key-import --pinentry-mode loopback --passphrase-file <(echo $CODE_SIGNING_PW)
-                  export GPG_ARGS="--batch --yes --passphrase-fd 0 --pinentry-mode loopback --detach-sign --armor"
-                  for a in *.AppImage; do echo "$CODE_SIGNING_PW" | gpg -u "$CODE_SIGNING_KEY" $GPG_ARGS "$a"; sha256sum "$a" | tee "${a}.sha256"; sha512sum "$a" | tee "${a}.sha512"; done
-                  rm -rf ~/.gnupg
-              else
-                  echo "Skipping code signing."
-              fi
-      - store_artifacts:
-          path: /tmp/out
-          destination: AppImage
-  openscad-appimage-release:
-    executor: appimage-executor
-    parameters:
-      source_method:
-        type: string
-        default: git
-    steps:
-      - get_source:
-          method: << parameters.source_method >>
-      - establish_version:
-          build_id: "ai${CIRCLE_BUILD_NUM}"
-      - run:
-          name: Build OpenSCAD AppImage
-          no_output_timeout: 18000
-          command: |
-              mkdir build && cd build
-              cmake .. \
-                  -DOPENSCAD_VERSION="$OPENSCAD_VERSION" \
-                  -DOPENSCAD_COMMIT="$OPENSCAD_COMMIT" \
-                  -DCMAKE_INSTALL_PREFIX=/usr \
-                  -DCMAKE_BUILD_TYPE=Release \
-                  -DUSE_BUILTIN_OPENCSG=ON \
-                  -DMANIFOLD_PYBIND=OFF \
-                  -DMANIFOLD_TEST=OFF \
-                  -DENABLE_PYTHON=ON \
-                  -DENABLE_TESTS=OFF
-              make -j4
-              make install DESTDIR=../AppDir
-              cd ..
-              export PATH=/appimage/usr/bin:"$PATH"
-              export EXTRA_QT_PLUGINS=svg
-              export LINUXDEPLOY_OUTPUT_VERSION="${OPENSCAD_VERSION}"
-              linuxdeploy --plugin qt --output appimage --appdir AppDir
               mkdir -p /tmp/out
               cp -iv OpenSCAD-*.AppImage /tmp/out
               if [ -n "${CODE_SIGNING_KEY}" ]; then
@@ -269,14 +224,12 @@ jobs:
           no_output_timeout: 18000
           command: |
               export WASM_TYPE=$(echo "<< parameters.openscad_platform >>" | sed 's/^wasm-//')
-              if [ x"${CIRCLE_BRANCH}" = xmaster ] || [ "<< parameters.openscad_build_type >>" != "snapshot" ]
-              then
+              if [ x"${CIRCLE_BRANCH}" = xmaster ] || [ "<< parameters.openscad_build_type >>" != "snapshot" ]; then
                 export SUFFIX=""
               else 
                 export SUFFIX="_$(echo ${CIRCLE_BRANCH} | sed -e 's,pull/,PR,; s,/head,h,; s,/merge,m,; s,/,.,g')"
               fi
-              if [ "<< parameters.openscad_build_type >>" == "snapshot" ]
-              then
+              if [ "<< parameters.openscad_build_type >>" == "snapshot" ]; then
                 export CMAKE_EXTRA_ARGS="-DSNAPSHOT=ON -DEXPERIMENTAL=ON"
               fi
               emcmake cmake -B ../build . \
@@ -552,17 +505,18 @@ workflows:
       - openscad-macos:
           name: openscad-macos-release
           filters: *release-filters
-          openscad_build_type: ""
+          openscad_build_type: release
           source_method: tarball
           context: secret-context
           requires:
             - create-tarball
-#      - openscad-appimage-release:
-#          filters: *release-filters
-#          source_method: tarball
-#          context: secret-context
-#          requires:
-#            - create-tarball
+      - openscad-appimage:
+         filters: *release-filters
+         openscad_build_type: release
+         source_method: tarball
+         context: secret-context
+         requires:
+           - create-tarball
 #      - openscad-mxe:
 #          filters: *release-filters
 #          openscad_build_type: ""
@@ -585,3 +539,4 @@ workflows:
           context: secret-context
           requires:
             - openscad-macos
+            - openscad-appimage
