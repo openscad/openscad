@@ -4,18 +4,15 @@ orbs:
   macos: circleci/macos@2.5.1
 
 executors:
-  mxe64-executor:
-    working_directory: ~/workspace
+  mxe-executor:
     docker:
       - image: openscad/mxe-x86_64-gui:latest
     resource_class: large
   appimage-executor:
-    working_directory: ~/workspace
     docker:
       - image: openscad/appimage-x86_64-base:latest
     resource_class: large
   wasm-executor:
-    working_directory: ~/workspace
     docker:
       - image: openscad/wasm-base-release:latest
     resource_class: large
@@ -23,11 +20,6 @@ executors:
     resource_class: m4pro.medium
     macos:
       xcode: 26.1
-    environment:
-      OPENSCAD_LIBRARIES: /Users/distiller/libraries/install
-      PKG_CONFIG_PATH: /Users/distiller/libraries/install/lib/pkgconfig
-      DYLD_LIBRARY_PATH: /Users/distiller/libraries/install/lib
-      DYLD_FRAMEWORK_PATH: /Users/distiller/libraries/install/lib
   python-executor:
     docker:
       - image: cimg/python:3.14
@@ -58,7 +50,7 @@ commands:
     parameters:
       method:
         type: string
-        default: "git"
+        default: git
     steps:
       - when:
           condition:
@@ -86,10 +78,13 @@ jobs:
       openscad_build_type:
         type: string
         default: "snapshot"
-    executor: mxe64-executor
+      source_method:
+        type: string
+        default: git
+    executor: mxe-executor
     steps:
-      - checkout
-      - run: git submodule update --init --recursive
+      - get_source:
+          method: << parameters.source_method >>
       - establish_version:
           build_id: "ci${CIRCLE_BUILD_NUM}"
       - run:
@@ -101,8 +96,11 @@ jobs:
               export MXEDIR=/mxe
               export PKG_CONFIG_PATH=/mxe/usr/x86_64-w64-mingw32.static.posix/lib/pkgconfig
               ln -sf /usr/bin/python{3,}
-              if [ x"${CIRCLE_BRANCH}" = xmaster ]; then export SUFFIX=""; else export SUFFIX="_$(echo ${CIRCLE_BRANCH} | sed -e 's,pull/,PR,; s,/head,h,; s,/merge,m,; s,/,.,g')"; fi
-              
+              if [ x"${CIRCLE_BRANCH}" = xmaster ]; then
+                export SUFFIX=""
+              else
+                export SUFFIX="_$(echo ${CIRCLE_BRANCH} | sed -e 's,pull/,PR,; s,/head,h,; s,/merge,m,; s,/,.,g')"
+              fi
               ./scripts/release-common.sh snapshot mingw64 -v "$OPENSCAD_VERSION" -c "$OPENSCAD_COMMIT"
               mkdir -p /tmp/out
               for f in mingw*/*.zip mingw*/*.exe; do N=$(basename "$f" | sed -e "s/\\(-x86-[36][24]\\)/\\1${SUFFIX}/;"); cp -iv "$f" /tmp/out/"$N"; done
@@ -117,27 +115,33 @@ jobs:
               fi
       - store_artifacts:
           path: /tmp/out
-          destination: 64-bit
+          destination: MXE
   openscad-appimage-64bit:
     parameters:
       openscad_platform:
         type: string
-        default: "linux-appimage"
+        default: linux-appimage
       openscad_build_type:
         type: string
-        default: "snapshot"
+        default: snapshot
+      source_method:
+        type: string
+        default: git
     executor: appimage-executor
     steps:
-      - checkout
-      - run: git submodule update --init --recursive
+      - get_source:
+          method: << parameters.source_method >>
       - establish_version:
           build_id: "ai${CIRCLE_BUILD_NUM}"
       - run:
-          name: Build OpenSCAD AppImage (64bit)
+          name: Build OpenSCAD AppImage
           no_output_timeout: 18000
           command: |
-              if [ x"${CIRCLE_BRANCH}" = xmaster ]; then export SUFFIX=""; else export SUFFIX="_$(echo ${CIRCLE_BRANCH} | sed -e 's,pull/,PR,; s,/head,h,; s,/merge,m,; s,/,.,g')"; fi
-              git submodule update --init --recursive
+              if [ x"${CIRCLE_BRANCH}" = xmaster ]; then
+                export SUFFIX=""
+              else
+                export SUFFIX="_$(echo ${CIRCLE_BRANCH} | sed -e 's,pull/,PR,; s,/head,h,; s,/merge,m,; s,/,.,g')"
+              fi
               mkdir build && cd build
               cmake .. \
                   -DOPENSCAD_VERSION="$OPENSCAD_VERSION" \
@@ -172,7 +176,7 @@ jobs:
               fi
       - store_artifacts:
           path: /tmp/out
-          destination: 64-bit
+          destination: AppImage
   openscad-wasm:
     executor: wasm-executor
     parameters:
@@ -180,10 +184,13 @@ jobs:
         type: string
       openscad_build_type:
         type: string
-        default: "snapshot"
+        default: snapshot
+      source_method:
+        type: string
+        default: git
     steps:
-      - checkout
-      - run: git submodule update --init --recursive
+      - get_source:
+          method: << parameters.source_method >>
       - run:
           name: Install latest node.js
           command: |
@@ -211,8 +218,11 @@ jobs:
           no_output_timeout: 18000
           command: |
               export WASM_TYPE=$(echo "<< parameters.openscad_platform >>" | sed 's/^wasm-//')
-              if [ x"${CIRCLE_BRANCH}" = xmaster ]; then export SUFFIX=""; else export SUFFIX="_$(echo ${CIRCLE_BRANCH} | sed -e 's,pull/,PR,; s,/head,h,; s,/merge,m,; s,/,.,g')"; fi
-              git submodule update --init --recursive
+              if [ x"${CIRCLE_BRANCH}" = xmaster ]; then
+                export SUFFIX=""
+              else
+                export SUFFIX="_$(echo ${CIRCLE_BRANCH} | sed -e 's,pull/,PR,; s,/head,h,; s,/merge,m,; s,/,.,g')"
+              fi
               emcmake cmake -B ../build . \
                   -DSNAPSHOT=ON \
                   -DEXPERIMENTAL=ON \
@@ -251,10 +261,10 @@ jobs:
     parameters:
       openscad_platform:
         type: string
-        default: "macos"
+        default: macos
       openscad_build_type:
         type: string
-        default: "snapshot"
+        default: snapshot
       source_method:
         type: string
         default: git
@@ -262,6 +272,13 @@ jobs:
       - macos/install-rosetta
       - get_source:
           method: << parameters.source_method >>
+      - run:
+          name: Set environment variables
+          command: |
+            echo "export OPENSCAD_LIBRARIES=$HOME/libraries/install" >> $BASH_ENV
+            echo "export PKG_CONFIG_PATH=$HOME/libraries/install/lib/pkgconfig" >> $BASH_ENV
+            echo "export DYLD_LIBRARY_PATH=$HOME/libraries/install/lib" >> $BASH_ENV
+            echo "export DYLD_FRAMEWORK_PATH=$HOME/libraries/install/lib" >> $BASH_ENV
       - run:
           name: System Info
           command: |
@@ -300,7 +317,7 @@ jobs:
           # preventing full cache drop after 15 days.
           key: macos-libraries-{{ .Environment.MACOS_CACHE_VERSION }}-{{ checksum "scripts/macosx-build-dependencies.sh" }}-{{ checksum ".circleci/config.yml" }}-{{ .BuildNum }}
           paths:
-            - /Users/distiller/libraries/install
+            - ~/libraries/install
       - establish_version
       - run:
           name: Build OpenSCAD
@@ -391,7 +408,7 @@ filters: &release-filters
 
 workflows:
   version: 2
-  "CircleCI master build":
+  "CircleCI snapshot build (master)":
     jobs:
       - openscad-mxe-64bit:
           context: secret-context
@@ -420,7 +437,7 @@ workflows:
               branches:
                   only:
                       - master
-  "CircleCI branch build":
+  "CircleCI branch build (PR)":
     jobs:
       - openscad-mxe-64bit:
           filters:
@@ -452,7 +469,7 @@ workflows:
               branches:
                   only:
                       - /.*-macos/
-  "CircleCI release build":
+  "CircleCI release build (tag)":
     jobs:
       - create-tarball:
           filters: *release-filters
@@ -463,15 +480,3 @@ workflows:
           context: secret-context
           requires:
             - create-tarball
-
-  scheduled:
-    triggers:
-      - schedule:
-          cron: "30 6 * * 0,1,5"
-          filters:
-              branches:
-                  only:
-                      - master
-    jobs:
-      - openscad-macos:
-          context: secret-context
