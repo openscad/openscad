@@ -96,8 +96,7 @@ jobs:
               export MXEDIR=/mxe
               export PKG_CONFIG_PATH=/mxe/usr/x86_64-w64-mingw32.static.posix/lib/pkgconfig
               ln -sf /usr/bin/python{3,}
-              if [ x"${CIRCLE_BRANCH}" = xmaster ] || [ "<< parameters.openscad_build_type >>" != "snapshot" ]
-              then
+              if [ x"${CIRCLE_BRANCH}" = xmaster ] || [ "<< parameters.openscad_build_type >>" != "snapshot" ]; then
                 export SUFFIX=""
               else 
                 export SUFFIX="_$(echo ${CIRCLE_BRANCH} | sed -e 's,pull/,PR,; s,/head,h,; s,/merge,m,; s,/,.,g')"
@@ -261,9 +260,6 @@ jobs:
       - store_artifacts:
           path: /tmp/out
           destination: wasm
-  # We essentially want to run this job in multiple modes
-  # * Source from tarball vs. source from git
-  # * Snapshot vs. release build
   openscad-macos:
     executor: macos-executor
     parameters:
@@ -517,13 +513,13 @@ workflows:
          context: secret-context
          requires:
            - create-tarball
-#      - openscad-mxe:
-#          filters: *release-filters
-#          openscad_build_type: ""
-#          source_method: tarball
-#          context: secret-context
-#          requires:
-#            - create-tarball
+      - openscad-mxe:
+         filters: *release-filters
+         openscad_build_type: release
+         source_method: tarball
+         context: secret-context
+         requires:
+           - create-tarball
 #      - openscad-wasm:
 #          filters: *release-filters
 #          matrix:
@@ -540,3 +536,4 @@ workflows:
           requires:
             - openscad-macos
             - openscad-appimage
+            - openscad-mxe
