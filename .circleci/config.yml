@@ -4,7 +4,7 @@ orbs:
   macos: circleci/macos@2.5.1
 
 executors:
-  mxe64-executor:
+  mxe-executor:
     working_directory: ~/workspace
     docker:
       - image: openscad/mxe-x86_64-gui:latest
@@ -58,7 +58,7 @@ commands:
     parameters:
       method:
         type: string
-        default: "git"
+        default: git
     steps:
       - when:
           condition:
@@ -78,7 +78,7 @@ commands:
                 command: tar -xzf /tmp/artifacts/openscad-*.tar.gz --strip-components=1
 
 jobs:
-  openscad-mxe-64bit:
+  openscad-mxe:
     parameters:
       openscad_platform:
         type: string
@@ -86,10 +86,13 @@ jobs:
       openscad_build_type:
         type: string
         default: "snapshot"
-    executor: mxe64-executor
+      source_method:
+        type: string
+        default: git
+    executor: mxe-executor
     steps:
-      - checkout
-      - run: git submodule update --init --recursive
+      - get_source:
+          method: << parameters.source_method >>
       - establish_version:
           build_id: "ci${CIRCLE_BUILD_NUM}"
       - run:
@@ -101,8 +104,11 @@ jobs:
               export MXEDIR=/mxe
               export PKG_CONFIG_PATH=/mxe/usr/x86_64-w64-mingw32.static.posix/lib/pkgconfig
               ln -sf /usr/bin/python{3,}
-              if [ x"${CIRCLE_BRANCH}" = xmaster ]; then export SUFFIX=""; else export SUFFIX="_$(echo ${CIRCLE_BRANCH} | sed -e 's,pull/,PR,; s,/head,h,; s,/merge,m,; s,/,.,g')"; fi
-              
+              if [ x"${CIRCLE_BRANCH}" = xmaster ]; then
+                export SUFFIX=""
+              else
+                export SUFFIX="_$(echo ${CIRCLE_BRANCH} | sed -e 's,pull/,PR,; s,/head,h,; s,/merge,m,; s,/,.,g')"
+              fi
               ./scripts/release-common.sh snapshot mingw64 -v "$OPENSCAD_VERSION" -c "$OPENSCAD_COMMIT"
               mkdir -p /tmp/out
               for f in mingw*/*.zip mingw*/*.exe; do N=$(basename "$f" | sed -e "s/\\(-x86-[36][24]\\)/\\1${SUFFIX}/;"); cp -iv "$f" /tmp/out/"$N"; done
@@ -117,27 +123,33 @@ jobs:
               fi
       - store_artifacts:
           path: /tmp/out
-          destination: 64-bit
-  openscad-appimage-64bit:
+          destination: MXE
+  openscad-appimage:
     parameters:
       openscad_platform:
         type: string
-        default: "linux-appimage"
+        default: linux-appimage
       openscad_build_type:
         type: string
-        default: "snapshot"
+        default: snapshot
+      source_method:
+        type: string
+        default: git
     executor: appimage-executor
     steps:
-      - checkout
-      - run: git submodule update --init --recursive
+      - get_source:
+          method: << parameters.source_method >>
       - establish_version:
           build_id: "ai${CIRCLE_BUILD_NUM}"
       - run:
-          name: Build OpenSCAD AppImage (64bit)
+          name: Build OpenSCAD AppImage
           no_output_timeout: 18000
           command: |
-              if [ x"${CIRCLE_BRANCH}" = xmaster ]; then export SUFFIX=""; else export SUFFIX="_$(echo ${CIRCLE_BRANCH} | sed -e 's,pull/,PR,; s,/head,h,; s,/merge,m,; s,/,.,g')"; fi
-              git submodule update --init --recursive
+              if [ x"${CIRCLE_BRANCH}" = xmaster ]; then
+                export SUFFIX=""
+              else
+                export SUFFIX="_$(echo ${CIRCLE_BRANCH} | sed -e 's,pull/,PR,; s,/head,h,; s,/merge,m,; s,/,.,g')"
+              fi
               mkdir build && cd build
               cmake .. \
                   -DOPENSCAD_VERSION="$OPENSCAD_VERSION" \
@@ -172,7 +184,7 @@ jobs:
               fi
       - store_artifacts:
           path: /tmp/out
-          destination: 64-bit
+          destination: AppImage
   openscad-wasm:
     executor: wasm-executor
     parameters:
@@ -180,10 +192,13 @@ jobs:
         type: string
       openscad_build_type:
         type: string
-        default: "snapshot"
+        default: snapshot
+      source_method:
+        type: string
+        default: git
     steps:
-      - checkout
-      - run: git submodule update --init --recursive
+      - get_source:
+          method: << parameters.source_method >>
       - run:
           name: Install latest node.js
           command: |
@@ -211,8 +226,11 @@ jobs:
           no_output_timeout: 18000
           command: |
               export WASM_TYPE=$(echo "<< parameters.openscad_platform >>" | sed 's/^wasm-//')
-              if [ x"${CIRCLE_BRANCH}" = xmaster ]; then export SUFFIX=""; else export SUFFIX="_$(echo ${CIRCLE_BRANCH} | sed -e 's,pull/,PR,; s,/head,h,; s,/merge,m,; s,/,.,g')"; fi
-              git submodule update --init --recursive
+              if [ x"${CIRCLE_BRANCH}" = xmaster ]; then
+                export SUFFIX=""
+              else
+                export SUFFIX="_$(echo ${CIRCLE_BRANCH} | sed -e 's,pull/,PR,; s,/head,h,; s,/merge,m,; s,/,.,g')"
+              fi
               emcmake cmake -B ../build . \
                   -DSNAPSHOT=ON \
                   -DEXPERIMENTAL=ON \
@@ -251,10 +269,10 @@ jobs:
     parameters:
       openscad_platform:
         type: string
-        default: "macos"
+        default: macos
       openscad_build_type:
         type: string
-        default: "snapshot"
+        default: snapshot
       source_method:
         type: string
         default: git
@@ -393,13 +411,13 @@ workflows:
   version: 2
   "CircleCI master build":
     jobs:
-      - openscad-mxe-64bit:
+      - openscad-mxe:
           context: secret-context
           filters:
               branches:
                   only:
                       - master
-      - openscad-appimage-64bit:
+      - openscad-appimage:
           context: secret-context
           filters:
               branches:
@@ -422,14 +440,14 @@ workflows:
                       - master
   "CircleCI branch build":
     jobs:
-      - openscad-mxe-64bit:
+      - openscad-mxe:
           filters:
               branches:
                   ignore:
                       - master
                       - coverity_scan
                       - /^(?i:continuous)$/
-      - openscad-appimage-64bit:
+      - openscad-appimage:
           filters:
               branches:
                   ignore:
