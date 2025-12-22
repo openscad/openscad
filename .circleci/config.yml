@@ -5,17 +5,14 @@ orbs:
 
 executors:
   mxe-executor:
-    working_directory: ~/workspace
     docker:
       - image: openscad/mxe-x86_64-gui:latest
     resource_class: large
   appimage-executor:
-    working_directory: ~/workspace
     docker:
       - image: openscad/appimage-x86_64-base:latest
     resource_class: large
   wasm-executor:
-    working_directory: ~/workspace
     docker:
       - image: openscad/wasm-base-release:latest
     resource_class: large
@@ -23,11 +20,6 @@ executors:
     resource_class: m4pro.medium
     macos:
       xcode: 26.1
-    environment:
-      OPENSCAD_LIBRARIES: /Users/distiller/libraries/install
-      PKG_CONFIG_PATH: /Users/distiller/libraries/install/lib/pkgconfig
-      DYLD_LIBRARY_PATH: /Users/distiller/libraries/install/lib
-      DYLD_FRAMEWORK_PATH: /Users/distiller/libraries/install/lib
   python-executor:
     docker:
       - image: cimg/python:3.14
@@ -281,6 +273,13 @@ jobs:
       - get_source:
           method: << parameters.source_method >>
       - run:
+          name: Set environment variables
+          command: |
+            echo "export OPENSCAD_LIBRARIES=$HOME/libraries/install" >> $BASH_ENV
+            echo "export PKG_CONFIG_PATH=$HOME/libraries/install/lib/pkgconfig" >> $BASH_ENV
+            echo "export DYLD_LIBRARY_PATH=$HOME/libraries/install/lib" >> $BASH_ENV
+            echo "export DYLD_FRAMEWORK_PATH=$HOME/libraries/install/lib" >> $BASH_ENV
+      - run:
           name: System Info
           command: |
             system_profiler SPHardwareDataType SPSoftwareDataType SPStorageDataType SPDeveloperToolsDataType
@@ -318,7 +317,7 @@ jobs:
           # preventing full cache drop after 15 days.
           key: macos-libraries-{{ .Environment.MACOS_CACHE_VERSION }}-{{ checksum "scripts/macosx-build-dependencies.sh" }}-{{ checksum ".circleci/config.yml" }}-{{ .BuildNum }}
           paths:
-            - /Users/distiller/libraries/install
+            - ~/libraries/install
       - establish_version
       - run:
           name: Build OpenSCAD
@@ -409,7 +408,7 @@ filters: &release-filters
 
 workflows:
   version: 2
-  "CircleCI master build":
+  "CircleCI snapshot build (master)":
     jobs:
       - openscad-mxe:
           context: secret-context
@@ -438,7 +437,7 @@ workflows:
               branches:
                   only:
                       - master
-  "CircleCI branch build":
+  "CircleCI branch build (PR)":
     jobs:
       - openscad-mxe:
           filters:
@@ -470,7 +469,7 @@ workflows:
               branches:
                   only:
                       - /.*-macos/
-  "CircleCI release build":
+  "CircleCI release build (tag)":
     jobs:
       - create-tarball:
           filters: *release-filters
@@ -481,15 +480,3 @@ workflows:
           context: secret-context
           requires:
             - create-tarball
-
-  scheduled:
-    triggers:
-      - schedule:
-          cron: "30 6 * * 0,1,5"
-          filters:
-              branches:
-                  only:
-                      - master
-    jobs:
-      - openscad-macos:
-          context: secret-context
