@@ -106,7 +106,7 @@ class PyOpenSCAD:
     """Base class for OpenSCAD objects."""
 
     origin: Matrix4x4
-    """4x4 transformation matrix representing the object's origin. 
+    """4x4 transformation matrix representing the object's origin.
     Initialized as identity matrix."""
 
     def translate(self, v: Vector3) -> "PyOpenSCAD":
@@ -254,8 +254,8 @@ class PyOpenSCAD:
         ...
 
     def pull(
-        self, 
-        src: Self, 
+        self,
+        src: Self,
         dst: Self
     ) -> Self:
         """Pull apart Object, basically between src and dst it creates a prisma with the x-section
@@ -420,8 +420,8 @@ class PyOpenSCAD:
         ...
 
     def oversample(
-        self, 
-        n: Optional[int] = None, 
+        self,
+        n: Optional[int] = None,
         round: Optional[bool] = None
     ) -> Self:
         """Create artificial intermediate points into straight lines
@@ -431,9 +431,9 @@ class PyOpenSCAD:
         ...
 
     def fillet(
-        self, 
-        r: Optional[float] = None, 
-        sel: Optional[Self] = None, 
+        self,
+        r: Optional[float] = None,
+        sel: Optional[Self] = None,
         fn: Optional[int] = None
     ) -> Self:
         """Create nice roundings for sharp edges
@@ -1319,6 +1319,27 @@ def osimport(
     """Imports Object from disc"""
     ...
 
+def osuse(path: str) -> PyOpenSCAD:
+    """Import an OpenSCAD library, exposing its modules and functions.
+
+    Args:
+        path: Path to the OpenSCAD (.scad) file to import.
+
+    Returns:
+        An object with the library's modules and functions as attributes.
+        Modules can be called to create geometry, functions can be called
+        to compute and return values.
+
+    Example:
+        >>> lib = osuse("mylib.scad")
+        >>> # Call a module to create geometry
+        >>> obj = lib.my_module(r=10, h=20)
+        >>> # Call a function to compute a value
+        >>> width = lib.get_width()
+        >>> area = lib.calculate_area(width=5, height=10)
+    """
+    ...
+
 def version() -> List[float]:
     """Outputs pythonscad Version"""
     ...
@@ -1348,5 +1369,392 @@ def align(
 
     Returns:
         A new object after alignment. The original object is unaffected.
+    """
+    ...
+
+def edge(size: Optional[Union[float, Vector2]] = None, center: Optional[bool] = None) -> PyOpenSCAD:
+    """Create a 1D edge primitive.
+
+    Args:
+        size: Length of the edge. Can be a single number or [length].
+        center: If True, centers the edge at the origin.
+
+    Returns:
+        A 1D geometric object.
+    """
+    ...
+
+def spline(points: list[Vector2], fn: Optional[int] = None, fa: Optional[float] = None, fs: Optional[float] = None) -> PyOpenSCAD:
+    """Create a spline curve from points.
+
+    Args:
+        points: List of 2D control points.
+        fn: Number of fragments for curve approximation.
+        fa: Minimum angle for each fragment.
+        fs: Minimum size for each fragment.
+
+    Returns:
+        A 2D geometric object representing the spline.
+    """
+    ...
+
+def wrap(
+    obj: PyOpenSCADs,
+    target: Optional[PyOpenSCAD] = None,
+    r: Optional[float] = None,
+    d: Optional[float] = None,
+    fn: Optional[float] = None,
+    fa: Optional[float] = None,
+    fs: Optional[float] = None,
+) -> PyOpenSCAD:
+    """Wrap an object around a cylinder.
+
+    Args:
+        obj: Object to wrap.
+        target: Optional target object to wrap around.
+        r: Radius of the cylinder.
+        d: Diameter of the cylinder.
+        fn: Number of fragments for circle approximation.
+        fa: Minimum angle for each fragment.
+        fs: Minimum size for each fragment.
+
+    Returns:
+        The wrapped object.
+    """
+    ...
+
+def separate(obj: PyOpenSCADs) -> list[PyOpenSCAD]:
+    """Split an object into separate parts.
+
+    Args:
+        obj: Object to split into parts.
+
+    Returns:
+        A list of separate objects, one for each connected component.
+    """
+    ...
+
+def find_face(obj: PyOpenSCADs, vec: Vector3) -> PyOpenSCAD:
+    """Find a face on an object facing a given direction.
+
+    Args:
+        obj: Object to search for faces.
+        vec: Direction vector to find face normal.
+
+    Returns:
+        Information about the found face.
+    """
+    ...
+
+def sitonto(
+    obj: PyOpenSCADs,
+    vecz: Vector3,
+    vecx: Optional[Vector3] = None,
+    vecy: Optional[Vector3] = None,
+) -> PyOpenSCAD:
+    """Position an object with specified orientation vectors.
+
+    Args:
+        obj: Object to position.
+        vecz: Z-axis direction vector.
+        vecx: Optional X-axis direction vector.
+        vecy: Optional Y-axis direction vector.
+
+    Returns:
+        The positioned object.
+    """
+    ...
+
+def skin(*objects: PyOpenSCADs, convexity: int = 2) -> PyOpenSCAD:
+    """Create a skin surface connecting multiple 2D cross-sections.
+
+    Args:
+        *objects: Multiple 2D cross-section objects to connect.
+        convexity: Convexity parameter for rendering. Defaults to 2.
+
+    Returns:
+        A 3D object skinned across the cross-sections.
+    """
+    ...
+
+def concat(*objects: PyOpenSCADs) -> PyOpenSCAD:
+    """Concatenate multiple objects into a single object.
+
+    Args:
+        *objects: Variable number of objects to concatenate.
+
+    Returns:
+        A single object containing all input objects.
+    """
+    ...
+
+def sheet(
+    func,
+    imin: float,
+    imax: float,
+    jmin: float,
+    jmax: float,
+    fs: Optional[float] = None,
+    iclose: Optional[bool] = None,
+    jclose: Optional[bool] = None,
+) -> PyOpenSCAD:
+    """Create a parametric surface sheet.
+
+    Args:
+        func: Function that takes (i, j) and returns a 3D point.
+        imin: Minimum value for first parameter.
+        imax: Maximum value for first parameter.
+        jmin: Minimum value for second parameter.
+        jmax: Maximum value for second parameter.
+        fs: Fragment size for tesselation.
+        iclose: If True, closes the surface in the i direction.
+        jclose: If True, closes the surface in the j direction.
+
+    Returns:
+        A 3D parametric surface object.
+    """
+    ...
+
+def bbox(obj: PyOpenSCADs) -> list[Vector3]:
+    """Calculate the bounding box of an object.
+
+    Args:
+        obj: Object to calculate bounding box for.
+
+    Returns:
+        A list of two 3D vectors: [[min_x, min_y, min_z], [max_x, max_y, max_z]].
+    """
+    ...
+
+def size(obj: PyOpenSCADs) -> Vector3:
+    """Get the size dimensions of an object's bounding box.
+
+    Args:
+        obj: Object to measure.
+
+    Returns:
+        A 3D vector [width, height, depth] representing the object's dimensions.
+    """
+    ...
+
+def position(obj: PyOpenSCADs) -> Vector3:
+    """Get the position (minimum coordinates) of an object's bounding box.
+
+    Args:
+        obj: Object to get position from.
+
+    Returns:
+        A 3D vector [min_x, min_y, min_z] representing the minimum corner.
+    """
+    ...
+
+def faces(obj: PyOpenSCADs, triangulate: Optional[bool] = None) -> list:
+    """Export a list of faces from an object.
+
+    Args:
+        obj: Object to extract faces from.
+        triangulate: If True, triangulates the faces.
+
+    Returns:
+        A list of face definitions.
+    """
+    ...
+
+def edges(obj: PyOpenSCADs) -> list:
+    """Export a list of edges from an object or face.
+
+    Args:
+        obj: Object or face to extract edges from.
+
+    Returns:
+        A list of edges.
+    """
+    ...
+
+def explode(obj: PyOpenSCADs, v: list[Vector3]) -> PyOpenSCAD:
+    """Explode a solid with a vector list.
+
+    Args:
+        obj: Object to explode.
+        v: List of vectors for explosion directions.
+
+    Returns:
+        The exploded object.
+    """
+    ...
+
+def debug(obj: PyOpenSCADs, faces: Optional[list] = None) -> PyOpenSCAD:
+    """Debug an object or specific faces.
+
+    Args:
+        obj: Object to debug.
+        faces: Optional list of specific faces to debug.
+
+    Returns:
+        Debug visualization of the object.
+    """
+    ...
+
+def repair(obj: PyOpenSCADs, color: Optional[Color] = None) -> PyOpenSCAD:
+    """Repair an object to make it watertight.
+
+    Args:
+        obj: Object to repair.
+        color: Optional color for repaired areas.
+
+    Returns:
+        The repaired object.
+    """
+    ...
+
+def osinclude(path: str) -> PyOpenSCAD:
+    """Include an OpenSCAD library (deprecated - use osuse instead).
+
+    Args:
+        path: Path to the OpenSCAD (.scad) file to include.
+
+    Returns:
+        An object with the library's modules and functions as attributes.
+
+    Note:
+        This function is deprecated. Use osuse() instead.
+    """
+    ...
+
+def model() -> PyOpenSCAD:
+    """Yield the current model.
+
+    Returns:
+        The current model object.
+    """
+    ...
+
+def modelpath() -> str:
+    """Get the absolute path to the current script.
+
+    Returns:
+        Absolute path to the script file.
+    """
+    ...
+
+def memberfunction(membername: str, memberfunc, docstring: str) -> None:
+    """Register an additional OpenSCAD member function.
+
+    Args:
+        membername: Name of the member function.
+        memberfunc: Python function to register.
+        docstring: Documentation string for the function.
+    """
+    ...
+
+def marked(value: Union[float, Vector3, PyOpenSCAD]) -> PyOpenSCAD:
+    """Create a marked value for special processing.
+
+    Args:
+        value: Value to mark (number, vector, or object).
+
+    Returns:
+        A marked value object.
+    """
+    ...
+
+def Sin(value: float) -> float:
+    """Calculate sine of an angle in degrees.
+
+    Args:
+        value: Angle in degrees.
+
+    Returns:
+        Sine of the angle.
+    """
+    ...
+
+def Cos(value: float) -> float:
+    """Calculate cosine of an angle in degrees.
+
+    Args:
+        value: Angle in degrees.
+
+    Returns:
+        Cosine of the angle.
+    """
+    ...
+
+def Tan(value: float) -> float:
+    """Calculate tangent of an angle in degrees.
+
+    Args:
+        value: Angle in degrees.
+
+    Returns:
+        Tangent of the angle.
+    """
+    ...
+
+def Asin(value: float) -> float:
+    """Calculate arcsine in degrees.
+
+    Args:
+        value: Value between -1 and 1.
+
+    Returns:
+        Arcsine in degrees.
+    """
+    ...
+
+def Acos(value: float) -> float:
+    """Calculate arccosine in degrees.
+
+    Args:
+        value: Value between -1 and 1.
+
+    Returns:
+        Arccosine in degrees.
+    """
+    ...
+
+def Atan(value: float) -> float:
+    """Calculate arctangent in degrees.
+
+    Args:
+        value: Value to calculate arctangent for.
+
+    Returns:
+        Arctangent in degrees.
+    """
+    ...
+
+def norm(vec: Vector3) -> float:
+    """Calculate the length/magnitude of a vector.
+
+    Args:
+        vec: 3D vector [x, y, z].
+
+    Returns:
+        The length of the vector.
+    """
+    ...
+
+def dot(vec1: Vector3, vec2: Vector3) -> float:
+    """Calculate the dot product of two vectors.
+
+    Args:
+        vec1: First 3D vector [x, y, z].
+        vec2: Second 3D vector [x, y, z].
+
+    Returns:
+        The dot product of the two vectors.
+    """
+    ...
+
+def cross(vec1: Vector3, vec2: Vector3) -> Vector3:
+    """Calculate the cross product of two vectors.
+
+    Args:
+        vec1: First 3D vector [x, y, z].
+        vec2: Second 3D vector [x, y, z].
+
+    Returns:
+        The cross product as a 3D vector.
     """
     ...
