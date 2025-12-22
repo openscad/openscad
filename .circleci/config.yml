@@ -71,17 +71,17 @@ commands:
 
 jobs:
   openscad-mxe-64bit:
+    executor: mxe-executor
     parameters:
       openscad_platform:
         type: string
-        default: "windows"
+        default: windows
       openscad_build_type:
         type: string
-        default: "snapshot"
+        default: snapshot
       source_method:
         type: string
         default: git
-    executor: mxe-executor
     steps:
       - get_source:
           method: << parameters.source_method >>
@@ -117,6 +117,7 @@ jobs:
           path: /tmp/out
           destination: MXE
   openscad-appimage-64bit:
+    executor: appimage-executor
     parameters:
       openscad_platform:
         type: string
@@ -127,7 +128,6 @@ jobs:
       source_method:
         type: string
         default: git
-    executor: appimage-executor
     steps:
       - get_source:
           method: << parameters.source_method >>
