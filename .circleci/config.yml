@@ -64,10 +64,10 @@ commands:
               equal: [ git, << parameters.method >> ]
           steps:
             - attach_workspace:
-                at: /tmp/artifacts
+                at: /tmp/workspace
             - run:
                 name: "Unpack tarball"
-                command: tar -xzf /tmp/artifacts/openscad-*.tar.gz --strip-components=1
+                command: tar -xzf /tmp/workspace/openscad-*.tar.gz --strip-components=1
 
 jobs:
   openscad-mxe:
@@ -357,17 +357,18 @@ jobs:
             shasum -a 256 OpenSCAD-$OPENSCAD_VERSION.dmg > OpenSCAD-$OPENSCAD_VERSION.dmg.sha256
             shasum -a 512 OpenSCAD-$OPENSCAD_VERSION.dmg > OpenSCAD-$OPENSCAD_VERSION.dmg.sha512
             cp -v OpenSCAD-$OPENSCAD_VERSION.dmg* /tmp/artifacts/
-      - persist_to_workspace:
-          root: /tmp/artifacts
-          paths:
-            - OpenSCAD-*.dmg
-            - OpenSCAD-*.dmg.sha256
-            - OpenSCAD-*.dmg.sha512
       - store_artifacts:
           path: /tmp/artifacts
           destination: macOS
   create-tarball:
     executor: python-executor
+    parameters:
+      openscad_platform:
+        type: string
+        default: src
+      openscad_build_type:
+        type: string
+        default: release
     steps:
       - checkout
       - run: git submodule update --init --recursive
@@ -392,34 +393,24 @@ jobs:
       - run:
           name: "Create source tarball"
           command: |
-            mkdir -p /tmp/artifacts
-            git-archive-all --force-submodules --prefix=openscad-${OPENSCAD_VERSION}/ /tmp/artifacts/openscad-${OPENSCAD_VERSION}.tar
+            mkdir -p /tmp/workspace
+            git-archive-all --force-submodules --prefix=openscad-${OPENSCAD_VERSION}/ /tmp/workspace/openscad-${OPENSCAD_VERSION}.tar
             # git-archive-all only archives versioned files. Amending VERSION.txt and COMMIT.txt to the archive
-            tar -rf /tmp/artifacts/openscad-${OPENSCAD_VERSION}.tar --transform "s|^|openscad-${OPENSCAD_VERSION}/|" VERSION.txt COMMIT.txt
-            gzip /tmp/artifacts/openscad-${OPENSCAD_VERSION}.tar
-            cd /tmp/artifacts
+            tar -rf /tmp/workspace/openscad-${OPENSCAD_VERSION}.tar --transform "s|^|openscad-${OPENSCAD_VERSION}/|" VERSION.txt COMMIT.txt
+            gzip /tmp/workspace/openscad-${OPENSCAD_VERSION}.tar
+            cd /tmp/workspace
             sha256sum openscad-${OPENSCAD_VERSION}.tar.gz > openscad-${OPENSCAD_VERSION}.tar.gz.sha256
             sha512sum openscad-${OPENSCAD_VERSION}.tar.gz > openscad-${OPENSCAD_VERSION}.tar.gz.sha512
             ls -l openscad-${OPENSCAD_VERSION}.*
       - persist_to_workspace:
-          root: /tmp/artifacts
+          root: /tmp/workspace
           paths:
             - openscad-*.tar.gz
             - openscad-*.tar.gz.sha256
             - openscad-*.tar.gz.sha512
       - store_artifacts:
-          path: /tmp/artifacts
+          path: /tmp/workspace
           destination: source-tarball
-  openscad-deploy-release:
-    executor: python-executor
-    steps:
-      - attach_workspace:
-          at: /tmp/artifacts
-      - run:
-          name: "Deploy release artifacts"
-          command: |
-            cd /tmp/artifacts
-            ls -l
 
 filters: &release-filters
   tags:
@@ -530,11 +521,14 @@ workflows:
           context: secret-context
           requires:
             - create-tarball
-      - openscad-deploy-release:
-          filters: *release-filters
-          context: secret-context
-          requires:
-            - openscad-macos
-            - openscad-appimage
-            - openscad-mxe
-            - openscad-wasm
+      # We may want to run a job _after_ all binary builds, e.g.
+      # to manage artifact collection, GitHub release creations, or other global tasks.
+      # We need, however, to deal with (transient) build failures.
+      # - openscad-deploy-release:
+      #     filters: *release-filters
+      #     context: secret-context
+      #     requires:
+      #       - openscad-macos
+      #       - openscad-appimage
+      #       - openscad-mxe
+      #       - openscad-wasm
