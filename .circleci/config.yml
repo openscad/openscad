@@ -507,29 +507,29 @@ workflows:
           requires:
             - create-tarball
       - openscad-appimage:
-         filters: *release-filters
-         openscad_build_type: release
-         source_method: tarball
-         context: secret-context
-         requires:
-           - create-tarball
+          filters: *release-filters
+          openscad_build_type: release
+          source_method: tarball
+          context: secret-context
+          requires:
+            - create-tarball
       - openscad-mxe:
-         filters: *release-filters
-         openscad_build_type: release
-         source_method: tarball
-         context: secret-context
-         requires:
-           - create-tarball
+          filters: *release-filters
+          openscad_build_type: release
+          source_method: tarball
+          context: secret-context
+          requires:
+            - create-tarball
       - openscad-wasm:
-         filters: *release-filters
-         matrix:
-           parameters:
-             wasm-type: [web, node]
-         openscad_build_type: release
-         source_method: tarball
-         context: secret-context
-         requires:
-           - create-tarball
+          filters: *release-filters
+          matrix:
+            parameters:
+              openscad_platform: [wasm-web, wasm-node]
+          openscad_build_type: release
+          source_method: tarball
+          context: secret-context
+          requires:
+            - create-tarball
       - openscad-deploy-release:
           filters: *release-filters
           context: secret-context
