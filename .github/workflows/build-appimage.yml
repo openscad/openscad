@@ -30,7 +30,7 @@ jobs:
     - name: Install additional AppImage dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install -y wget file
+        sudo apt-get install -y wget file libfuse2
 
     - name: Build AppImage
       run: |

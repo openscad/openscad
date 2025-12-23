@@ -228,6 +228,13 @@ if [ -d "${PYTHON_O_DIR}" ]; then
     info "Cleaned up python.o files"
 fi
 
+# Set the desktop file path for linuxdeploy
+DESKTOP_FILE="${APPDIR}/usr/share/applications/pythonscad.desktop"
+if [ ! -f "${DESKTOP_FILE}" ]; then
+    die "Desktop file not found at ${DESKTOP_FILE}"
+fi
+info "Using desktop file: ${DESKTOP_FILE}"
+
 # Bundle dependencies with linuxdeploy
 info "Bundling Qt dependencies with linuxdeploy..."
 
@@ -242,11 +249,13 @@ export LD_LIBRARY_PATH="${APPDIR}/usr/lib:${LD_LIBRARY_PATH:-}"
 if command_exists linuxdeploy; then
     linuxdeploy \
         --appdir "${APPDIR}" \
+        --desktop-file "${DESKTOP_FILE}" \
         --plugin qt \
         || die "Failed to bundle Qt dependencies"
 elif [ -f "${LINUXDEPLOY_PATH}" ]; then
     "${LINUXDEPLOY_PATH}" \
         --appdir "${APPDIR}" \
+        --desktop-file "${DESKTOP_FILE}" \
         --plugin qt \
         || die "Failed to bundle Qt dependencies"
 else
@@ -281,13 +290,7 @@ fi
 # Set up proper AppDir structure for appimagetool
 info "Setting up AppDir structure..."
 
-# Find the desktop file
-DESKTOP_FILE=$(find "${APPDIR}" -name "*.desktop" -type f | head -1)
-if [ -z "${DESKTOP_FILE}" ]; then
-    die "No desktop file found in AppDir"
-fi
-
-info "Found desktop file: ${DESKTOP_FILE}"
+# Desktop file was already found earlier for linuxdeploy
 
 # Find the main executable
 MAIN_EXEC=$(find "${APPDIR}/usr/bin" -type f -executable | head -1)
