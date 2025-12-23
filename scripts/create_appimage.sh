@@ -72,7 +72,6 @@ if ! command_exists make; then
     die "make not found. Please install make."
 fi
 
-# Check for appimagetool (replacement for linuxdeploy for final packaging)
 if ! command_exists linuxdeploy; then
     warn "linuxdeploy not found, will download it..."
     mkdir -p "${TOOLS_DIR}"
@@ -90,7 +89,6 @@ if ! command_exists linuxdeploy; then
 else
     info "Found linuxdeploy"
 fi
-
 
 # Check for appimagetool (replacement for linuxdeploy for final packaging)
 if ! command_exists appimagetool; then
@@ -241,10 +239,19 @@ export DEPLOY_PLATFORM_THEMES=1
 # Add AppDir/usr/lib to LD_LIBRARY_PATH so linuxdeploy can find custom libraries like libfive.so
 export LD_LIBRARY_PATH="${APPDIR}/usr/lib:${LD_LIBRARY_PATH:-}"
 
-linuxdeploy \
-    --appdir "${APPDIR}" \
-    --plugin qt \
-    || die "Failed to bundle Qt dependencies"
+if command_exists linuxdeploy; then
+    linuxdeploy \
+        --appdir "${APPDIR}" \
+        --plugin qt \
+        || die "Failed to bundle Qt dependencies"
+elif [ -f "${LINUXDEPLOY_PATH}" ]; then
+    "${LINUXDEPLOY_PATH}" \
+        --appdir "${APPDIR}" \
+        --plugin qt \
+        || die "Failed to bundle Qt dependencies"
+else
+    die "linuxdeploy not found"
+fi
 
 # Bundle Python runtime and libraries
 info "Bundling Python runtime..."
