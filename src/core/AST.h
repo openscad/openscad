@@ -52,7 +52,7 @@ public:
 
   virtual void print(std::ostream& stream, const std::string& indent) const = 0;
 
-  [[nodiscard]] std::string dump(const std::string& indent) const;
+  [[nodiscard]] std::string dump(const std::string& indent, int precision = 0) const;
   [[nodiscard]] const Location& location() const { return loc; }
   void setLocation(const Location& loc) { this->loc = loc; }
 
