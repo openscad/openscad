@@ -603,6 +603,7 @@ int cmdline(const CommandLine& cmd)
     auto error = evaluatePython(fulltext_py, false);
     if (error.size() > 0) LOG(error.c_str());
     text = "\n";
+    finishPython();
   }
 #endif  // ifdef ENABLE_PYTHON
   text += "\n\x03\n" + commandline_commands;

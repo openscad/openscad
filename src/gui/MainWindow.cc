@@ -2120,6 +2120,7 @@ std::shared_ptr<SourceFile> MainWindow::parseDocument(EditorInterface *editor)
     auto error = evaluatePython(fulltext_py, false);
     if (error.size() > 0) LOG(message_group::Error, Location::NONE, "", error.c_str());
     fulltext = "\n";
+    finishPython();
   }
 #endif  // ifdef ENABLE_PYTHON
 
