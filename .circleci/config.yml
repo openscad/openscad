@@ -10,8 +10,18 @@ executors:
     resource_class: large
   appimage-executor:
     docker:
-      - image: openscad/appimage-x86_64-base:latest
+      - image: ${CIRCLE_PROJECT_USERNAME}/appimage-base:${CIRCLE_SHA1}
     resource_class: large
+  docker-x86_64:
+    machine:
+      image: ubuntu-2204:current
+      docker_layer_caching: true
+    resource_class: large
+  docker-arm64:
+    machine:
+      image: ubuntu-2204:current
+      docker_layer_caching: true
+    resource_class: arm.large
   wasm-executor:
     docker:
       - image: openscad/wasm-base-release:latest
@@ -207,6 +217,47 @@ jobs:
       - store_artifacts:
           path: /tmp/artifacts
           destination: AppImage
+  publish-docker:
+    parameters:
+      arch_suffix:
+        type: string
+      image:
+        type: string
+      executor:
+        type: executor
+    executor: << parameters.executor >>
+    steps:
+      - checkout
+      - run:
+          name: Build and push appimage base (<< parameters.arch_suffix >>)
+          command: |
+              # Name the builder so DLC can retain its cache volume across runs.
+              docker buildx create --name builder --use
+              echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
+              docker buildx build \
+                --progress=plain \
+                --file scripts/docker/<< parameters.image >>/Dockerfile \
+                --target << parameters.image >> \
+                --tag "${CIRCLE_PROJECT_USERNAME}/<< parameters.image >>:${CIRCLE_SHA1}-<< parameters.arch_suffix >>" \
+                --push \
+                .
+  publish-multiarch-manifest:
+    parameters:
+      image:
+        type: string
+    executor: docker-x86_64
+    steps:
+      - run:
+          name: Create multi-arch manifest
+          command: |
+              # Name the builder so DLC can retain its cache volume across runs.
+              docker buildx create --name builder --use
+              echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
+              docker buildx imagetools create \
+                --progress=plain \
+                --tag "${CIRCLE_PROJECT_USERNAME}/<< parameters.image >>:${CIRCLE_SHA1}" \
+                "${CIRCLE_PROJECT_USERNAME}/<< parameters.image >>:${CIRCLE_SHA1}-x86_64" \
+                "${CIRCLE_PROJECT_USERNAME}/<< parameters.image >>:${CIRCLE_SHA1}-arm64"
   openscad-wasm:
     executor: wasm-executor
     parameters:
@@ -444,63 +495,56 @@ jobs:
           path: /tmp/workspace
           destination: source-tarball
 
-filters: &release-filters
-  tags:
-    only: /^openscad-.*$/
-  branches:
-    ignore: /.*/
-
 workflows:
   version: 2
   "CircleCI snapshot build (master)":
+    when:
+      equal: [ master, << pipeline.git.branch >> ]
     jobs:
       - openscad-mxe:
-          # Legacy name
+          # Legacy name, for openscad-ansible/.../circleci-download-artifacts.py
           name: openscad-mxe-64bit
           context: secret-context
-          filters:
-              branches:
-                  only:
-                      - master
-      - openscad-appimage:
-          # Legacy name
-          name: openscad-appimage-64bit
-          context: secret-context
-          filters:
-              branches:
-                  only:
-                      - master
       - openscad-wasm:
-          # Legacy name
+          # Legacy name, for openscad-ansible/.../circleci-download-artifacts.py
           name: openscad-<< matrix.openscad_platform >>
           matrix:
             parameters:
               openscad_platform: [wasm-web, wasm-node]
           context: secret-context
-          filters:
-              branches:
-                  only:
-                      - master
       - openscad-macos:
-          # Legacy name
+          # Legacy name, for openscad-ansible/.../circleci-download-artifacts.py
           name: openscad-macos
           context: secret-context
-          filters:
-              branches:
-                  only:
-                      - master
+      - publish-docker:
+          name: publish-appimage-base-x86_64
+          context: secret-context
+          arch_suffix: x86_64
+          image: appimage-base
+          executor: docker-x86_64
+      - publish-docker:
+          name: publish-appimage-base-arm64
+          context: secret-context
+          arch_suffix: arm64
+          image: appimage-base
+          executor: docker-arm64
+      - publish-multiarch-manifest:
+          name: publish-appimage-base-manifest
+          context: secret-context
+          image: appimage-base
+          requires:
+            - publish-appimage-base-x86_64
+            - publish-appimage-base-arm64
+      - openscad-appimage:
+          # Legacy name, for openscad-ansible/.../circleci-download-artifacts.py
+          name: openscad-appimage-64bit
+          context: secret-context
+          requires:
+            - publish-appimage-base-manifest
   "CircleCI branch build (PR)":
     jobs:
       - openscad-mxe:
           name: openscad-mxe-pr
-          filters:
-              branches:
-                  ignore:
-                      - master
-                      - coverity_scan
-                      - /^(?i:continuous)$/
-      - openscad-appimage:
-          name: openscad-appimage-pr
           filters:
               branches:
                   ignore:
@@ -525,30 +569,99 @@ workflows:
               branches:
                   only:
                       - /.*-macos/
+      - publish-docker:
+          name: publish-appimage-base-x86_64
+          # TODO: avoid needing this secret in PRs
+          context: secret-context
+          arch_suffix: x86_64
+          image: appimage-base
+          executor: docker-x86_64
+          filters:
+              branches:
+                  ignore:
+                      - master
+                      - coverity_scan
+                      - /^(?i:continuous)$/
+      - publish-docker:
+          name: publish-appimage-base-arm64
+          # TODO: avoid needing this secret in PRs
+          context: secret-context
+          arch_suffix: arm64
+          image: appimage-base
+          executor: docker-arm64
+          filters:
+              branches:
+                  ignore:
+                      - master
+                      - coverity_scan
+                      - /^(?i:continuous)$/
+      - publish-multiarch-manifest:
+          name: publish-appimage-base-manifest
+          # TODO: avoid needing this secret in PRs
+          context: secret-context
+          image: appimage-base
+          requires:
+            - publish-appimage-base-x86_64
+            - publish-appimage-base-arm64
+          filters:
+              branches:
+                  ignore:
+                      - master
+                      - coverity_scan
+                      - /^(?i:continuous)$/
+      - openscad-appimage:
+          requires:
+            - publish-appimage-base-manifest
+          filters:
+              branches:
+                  ignore:
+                      - master
+                      - coverity_scan
+                      - /^(?i:continuous)$/
   "CircleCI release build (tag)":
+    when:
+      matches:
+        pattern: "^openscad-.*$"
+        value: << pipeline.git.tag >>
     jobs:
       - openscad-tarball:
           name: openscad-tarball-release
-          filters: *release-filters
       - openscad-mxe:
           name: openscad-mxe-release
-          filters: *release-filters
           openscad_build_type: release
           source_method: tarball
           context: secret-context
           requires:
             - openscad-tarball-release
+      - publish-docker:
+          name: publish-appimage-base-x86_64
+          context: secret-context
+          arch_suffix: x86_64
+          image: appimage-base
+          executor: docker-x86_64
+      - publish-docker:
+          name: publish-appimage-base-arm64
+          context: secret-context
+          arch_suffix: arm64
+          image: appimage-base
+          executor: docker-arm64
+      - publish-multiarch-manifest:
+          name: publish-appimage-base-manifest
+          context: secret-context
+          image: appimage-base
+          requires:
+            - publish-appimage-base-x86_64
+            - publish-appimage-base-arm64
       - openscad-appimage:
           name: openscad-appimage-release
-          filters: *release-filters
           openscad_build_type: release
           source_method: tarball
           context: secret-context
           requires:
             - openscad-tarball-release
+            - publish-appimage-base-manifest
       - openscad-wasm:
           name: openscad-<< matrix.openscad_platform >>-release
-          filters: *release-filters
           matrix:
             parameters:
               openscad_platform: [wasm-web, wasm-node]
@@ -559,7 +672,6 @@ workflows:
             - openscad-tarball-release
       - openscad-macos:
           name: openscad-macos-release
-          filters: *release-filters
           openscad_build_type: release
           source_method: tarball
           context: secret-context
