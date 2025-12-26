@@ -367,6 +367,8 @@ MainWindow::MainWindow(const QStringList& filenames) : rubberBandManager(this)
           Qt::UniqueConnection);
   connect(GlobalPreferences::inst()->AxisConfig, &AxisConfigWidget::inputGainChanged,
           InputDriverManager::instance(), &InputDriverManager::onInputGainUpdated, Qt::UniqueConnection);
+  connect(GlobalPreferences::inst(), &Preferences::autoPreviewDelayChanged, this,
+          &MainWindow::loadAutoPreviewConfig);
 
   setCorner(Qt::TopLeftCorner, Qt::LeftDockWidgetArea);
   setCorner(Qt::TopRightCorner, Qt::RightDockWidgetArea);
@@ -410,6 +412,13 @@ MainWindow::MainWindow(const QStringList& filenames) : rubberBandManager(this)
   waitAfterReloadTimer->setSingleShot(true);
   waitAfterReloadTimer->setInterval(autoReloadPollingPeriodMS);
   connect(waitAfterReloadTimer, &QTimer::timeout, this, &MainWindow::waitAfterReload);
+
+  loadAutoPreviewConfig();
+  autoPreviewTimer = new QTimer(this);
+  autoPreviewTimer->setSingleShot(true);
+  autoPreviewTimer->setInterval(autoPreviewDelayMs);
+  connect(autoPreviewTimer, &QTimer::timeout, this, &MainWindow::renderPreviewIfNeeded);
+
   connect(GlobalPreferences::inst(), &Preferences::ExperimentalChanged, this,
           &MainWindow::changeParameterWidget);
 
@@ -3102,11 +3111,46 @@ void MainWindow::editorContentChanged()
   // it rely on the activeEditor member to pick the new data.
 
   auto current_doc = activeEditor->toPlainText();
-  if (current_doc != lastCompiledDoc) {
+  const bool docChanged = current_doc != lastCompiledDoc;
+  if (docChanged) {
     animateWidget->editorContentChanged();
 
     // removes the live selection feedbacks in both the 3d view and editor.
     clearAllSelectionIndicators();
+  }
+
+  if (autoPreviewEnabled && autoPreviewTimer && docChanged) {
+    autoPreviewTimer->stop();
+    autoPreviewTimer->setInterval(autoPreviewDelayMs);
+    autoPreviewTimer->start(autoPreviewDelayMs);
+  }
+}
+
+void MainWindow::renderPreviewIfNeeded()
+{
+  if (!autoPreviewEnabled || !tabManager || !activeEditor) return;
+
+  if (!activeEditor->parameterWidget) return;
+
+  auto current_doc = activeEditor->toPlainText();
+  if (current_doc == lastCompiledDoc && !activeEditor->parameterWidget->isModified()) return;
+
+  actionRenderPreview();
+}
+
+void MainWindow::loadAutoPreviewConfig()
+{
+  autoPreviewEnabled = false;
+  autoPreviewDelayMs = 0;
+
+  QSettingsCached settings;
+  const QString key("editor/autoPreviewDelayMs");
+  if (!settings.contains(key)) return;
+
+  auto parsedDelay = settings.value(key, QVariant::fromValue(-1)).toInt();
+  if (parsedDelay >= 0) {
+    autoPreviewDelayMs = parsedDelay;
+    autoPreviewEnabled = true;
   }
 }
 
