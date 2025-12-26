@@ -8,10 +8,20 @@ executors:
     docker:
       - image: openscad/mxe-x86_64-gui:latest
     resource_class: large
-  appimage-executor:
+  appimage-build-executor:
     docker:
-      - image: openscad/appimage-x86_64-base:latest
+      - image: ${CIRCLE_PROJECT_USERNAME}/appimage-base:<< pipeline.git.revision >>
     resource_class: large
+  docker-x86_64:
+    machine:
+      image: ubuntu-2204:current
+      docker_layer_caching: true
+    resource_class: large
+  docker-aarch64:
+    machine:
+      image: ubuntu-2204:current
+      docker_layer_caching: true
+    resource_class: arm.medium
   wasm-executor:
     docker:
       - image: openscad/wasm-base-release:latest
@@ -119,7 +129,7 @@ jobs:
           path: /tmp/artifacts
           destination: MXE
   openscad-appimage:
-    executor: appimage-executor
+    executor: appimage-build-executor
     parameters:
       openscad_platform:
         type: string
@@ -159,8 +169,8 @@ jobs:
                   -DENABLE_PYTHON=ON \
                   -DENABLE_TESTS=OFF \
                   $CMAKE_EXTRA_ARGS
-              make -j4
-              make install DESTDIR=../AppDir
+              cmake --build . -j 2  # using all 4 cores OOMs
+              DESTDIR=../AppDir cmake --install .
               cd ..
               export PATH=/appimage/usr/bin:"$PATH"
               export EXTRA_QT_PLUGINS=svg
@@ -169,6 +179,23 @@ jobs:
               linuxdeploy --plugin python --plugin qt --output appimage --appdir AppDir
               mkdir -p /tmp/artifacts
               cp -iv OpenSCAD-*.AppImage /tmp/artifacts
+      - persist_to_workspace:
+          root: /tmp/artifacts
+          paths:
+            - OpenSCAD-*.AppImage
+      - store_artifacts:
+          path: /tmp/artifacts
+          destination: AppImage
+  openscad-appimage-sign:
+    executor: appimage-build-executor
+    steps:
+      - attach_workspace:
+          at: /tmp/workspace
+      - run:
+          name: Sign OpenSCAD AppImage
+          command: |
+              mkdir -p /tmp/artifacts
+              cp -iv /tmp/workspace/OpenSCAD-*.AppImage /tmp/artifacts
               if [ -n "${CODE_SIGNING_KEY}" ]; then
                   cd /tmp/artifacts
                   echo $CODE_SIGNING_DATA | base64 -d | gzip -d | gpg --import --allow-secret-key-import --pinentry-mode loopback --passphrase-file <(echo $CODE_SIGNING_PW)
@@ -181,6 +208,54 @@ jobs:
       - store_artifacts:
           path: /tmp/artifacts
           destination: AppImage
+  publish-appimage-base-x86_64:
+    executor: docker-x86_64
+    steps:
+      - checkout
+      - run:
+          name: Build and push appimage base (x86_64)
+          command: |
+              # Name the builder so DLC can retain its cache volume across runs.
+              docker buildx create --name builder --use
+              echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
+              docker buildx build \
+                --progress=plain \
+                --file scripts/appimage.Dockerfile \
+                --target openscad-appimage-base \
+                --tag "${CIRCLE_PROJECT_USERNAME}/appimage-base:${CIRCLE_SHA1}-x86_64" \
+                --push \
+                .
+  publish-appimage-base-aarch64:
+    executor: docker-aarch64
+    steps:
+      - checkout
+      - run:
+          name: Build and push appimage base (aarch64)
+          command: |
+              # Name the builder so DLC can retain its cache volume across runs.
+              docker buildx create --name builder --use
+              echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
+              docker buildx build \
+                --progress=plain \
+                --file scripts/appimage.Dockerfile \
+                --target openscad-appimage-base \
+                --tag "${CIRCLE_PROJECT_USERNAME}/appimage-base:${CIRCLE_SHA1}-aarch64" \
+                --push \
+                .
+  publish-appimage-base-manifest:
+    executor: docker-x86_64
+    steps:
+      - run:
+          name: Create multi-arch manifest
+          command: |
+              # Name the builder so DLC can retain its cache volume across runs.
+              docker buildx create --name builder --use
+              echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
+              docker buildx imagetools create \
+                --progress=plain \
+                --tag "${CIRCLE_PROJECT_USERNAME}/appimage-base:${CIRCLE_SHA1}" \
+                "${CIRCLE_PROJECT_USERNAME}/appimage-base:${CIRCLE_SHA1}-x86_64" \
+                "${CIRCLE_PROJECT_USERNAME}/appimage-base:${CIRCLE_SHA1}-aarch64"
   openscad-wasm:
     executor: wasm-executor
     parameters:
@@ -238,7 +313,7 @@ jobs:
                   -DOPENSCAD_VERSION="$OPENSCAD_VERSION" \
                   $CMAKE_EXTRA_ARGS
               cd ../build
-              make -j4 VERBOSE=1
+              cmake --build .
               mkdir -p /tmp/artifacts
               zip -9r "/tmp/artifacts/OpenSCAD-${OPENSCAD_VERSION}${SUFFIX}-WebAssembly-$WASM_TYPE.zip" openscad.*
               if [ -n "${CODE_SIGNING_KEY}" ]; then
@@ -434,6 +509,8 @@ workflows:
               branches:
                   only:
                       - master
+          requires:
+            - publish-appimage-base-manifest
       - openscad-wasm:
           matrix:
             parameters:
@@ -449,6 +526,27 @@ workflows:
               branches:
                   only:
                       - master
+      - publish-appimage-base-x86_64:
+          context: secret-context
+          filters:
+              branches:
+                  only:
+                      - master
+      - publish-appimage-base-aarch64:
+          context: secret-context
+          filters:
+              branches:
+                  only:
+                      - master
+      - publish-appimage-base-manifest:
+          context: secret-context
+          filters:
+              branches:
+                  only:
+                      - master
+          requires:
+            - publish-appimage-base-x86_64
+            - publish-appimage-base-aarch64
   "CircleCI branch build (PR)":
     jobs:
       - openscad-mxe:
@@ -499,6 +597,12 @@ workflows:
           context: secret-context
           requires:
             - create-tarball
+            - publish-appimage-base-manifest
+      - openscad-appimage-sign:
+          filters: *release-filters
+          context: secret-context
+          requires:
+            - openscad-appimage
       - openscad-mxe:
           filters: *release-filters
           openscad_build_type: release
@@ -516,6 +620,18 @@ workflows:
           context: secret-context
           requires:
             - create-tarball
+      - publish-appimage-base-x86_64:
+          filters: *release-filters
+          context: secret-context
+      - publish-appimage-base-aarch64:
+          filters: *release-filters
+          context: secret-context
+      - publish-appimage-base-manifest:
+          filters: *release-filters
+          context: secret-context
+          requires:
+            - publish-appimage-base-x86_64
+            - publish-appimage-base-aarch64
       # We may want to run a job _after_ all binary builds, e.g.
       # to manage artifact collection, GitHub release creations, or other global tasks.
       # We need, however, to deal with (transient) build failures.
