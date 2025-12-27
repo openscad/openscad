@@ -495,6 +495,22 @@ filters: &release-filters
 
 workflows:
   version: 2
+  "Infra & snapshot build":
+    jobs:
+      - publish-appimage-base-x86_64:
+          context: secret-context
+      - publish-appimage-base-aarch64:
+          context: secret-context
+      - publish-appimage-base-manifest:
+          context: secret-context
+          requires:
+            - publish-appimage-base-x86_64
+            - publish-appimage-base-aarch64
+      - openscad-appimage:
+          context: secret-context
+          requires:
+            - publish-appimage-base-manifest
+
   "CircleCI snapshot build (master)":
     jobs:
       - openscad-mxe:
@@ -503,14 +519,6 @@ workflows:
               branches:
                   only:
                       - master
-      - openscad-appimage:
-          context: secret-context
-          filters:
-              branches:
-                  only:
-                      - master
-          requires:
-            - publish-appimage-base-manifest
       - openscad-wasm:
           matrix:
             parameters:
@@ -526,37 +534,9 @@ workflows:
               branches:
                   only:
                       - master
-      - publish-appimage-base-x86_64:
-          context: secret-context
-          filters:
-              branches:
-                  only:
-                      - master
-      - publish-appimage-base-aarch64:
-          context: secret-context
-          filters:
-              branches:
-                  only:
-                      - master
-      - publish-appimage-base-manifest:
-          context: secret-context
-          filters:
-              branches:
-                  only:
-                      - master
-          requires:
-            - publish-appimage-base-x86_64
-            - publish-appimage-base-aarch64
   "CircleCI branch build (PR)":
     jobs:
       - openscad-mxe:
-          filters:
-              branches:
-                  ignore:
-                      - master
-                      - coverity_scan
-                      - /^(?i:continuous)$/
-      - openscad-appimage:
           filters:
               branches:
                   ignore:
@@ -620,18 +600,6 @@ workflows:
           context: secret-context
           requires:
             - create-tarball
-      - publish-appimage-base-x86_64:
-          filters: *release-filters
-          context: secret-context
-      - publish-appimage-base-aarch64:
-          filters: *release-filters
-          context: secret-context
-      - publish-appimage-base-manifest:
-          filters: *release-filters
-          context: secret-context
-          requires:
-            - publish-appimage-base-x86_64
-            - publish-appimage-base-aarch64
       # We may want to run a job _after_ all binary builds, e.g.
       # to manage artifact collection, GitHub release creations, or other global tasks.
       # We need, however, to deal with (transient) build failures.
