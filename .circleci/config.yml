@@ -475,6 +475,12 @@ workflows:
               branches:
                   only:
                       - master
+      - openscad-appimage:
+          context: secret-context
+          filters:
+              branches:
+                  only:
+                      - master
       - openscad-wasm:
           matrix:
             parameters:
@@ -493,6 +499,13 @@ workflows:
   "CircleCI branch build (PR)":
     jobs:
       - openscad-mxe:
+          filters:
+              branches:
+                  ignore:
+                      - master
+                      - coverity_scan
+                      - /^(?i:continuous)$/
+      - openscad-appimage:
           filters:
               branches:
                   ignore:
