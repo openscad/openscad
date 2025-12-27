@@ -570,6 +570,18 @@ workflows:
           context: secret-context
           requires:
             - create-tarball
+      - publish-appimage-base-x86_64:
+          filters: *release-filters
+          context: secret-context
+      - publish-appimage-base-aarch64:
+          filters: *release-filters
+          context: secret-context
+      - publish-appimage-base-manifest:
+          filters: *release-filters
+          context: secret-context
+          requires:
+            - publish-appimage-base-x86_64
+            - publish-appimage-base-aarch64
       - openscad-appimage:
           filters: *release-filters
           openscad_build_type: release
