@@ -68,6 +68,33 @@ commands:
             - run:
                 name: "Unpack tarball"
                 command: tar -xzf /tmp/workspace/openscad-*.tar.gz --strip-components=1
+  setup-sccache:
+    steps:
+      - run:
+          name: Install sccache
+          command: |
+              SCCACHE_VERSION=0.12.0
+              SCCACHE_TGZ="sccache-v${SCCACHE_VERSION}-x86_64-unknown-linux-musl.tar.gz"
+              curl -fsSL -o "/tmp/${SCCACHE_TGZ}" \
+                "https://github.com/mozilla/sccache/releases/download/v${SCCACHE_VERSION}/${SCCACHE_TGZ}"
+              tar -xzf "/tmp/${SCCACHE_TGZ}" -C /tmp
+              install -m 0755 "/tmp/sccache-v${SCCACHE_VERSION}-x86_64-unknown-linux-musl/sccache" /usr/local/bin/sccache
+  restore-sccache-cache:
+    steps:
+      - restore_cache:
+          name: Restore sccache cache
+          key: sccache-cache-stable-{{ arch }}-{{ .Environment.CIRCLE_JOB }}
+  save-sccache-cache:
+    steps:
+      - save_cache:
+          name: Save sccache cache
+          # We use {{ epoch }} to always upload a fresh cache:
+          # Of course, restore_cache will not find this exact key,
+          # but it will fall back to the closest key (aka the most recent).
+          # See https://discuss.circleci.com/t/add-mechanism-to-update-existing-cache-key/9014/13
+          key: sccache-cache-stable-{{ arch }}-{{ .Environment.CIRCLE_JOB }}-{{ epoch }}
+          paths:
+            - "~/.cache/sccache"
 
 jobs:
   openscad-mxe:
@@ -85,16 +112,20 @@ jobs:
     steps:
       - get_source:
           method: << parameters.source_method >>
+      - setup-sccache
+      - restore-sccache-cache
       - establish_version:
           build_id: "ci${CIRCLE_BUILD_NUM}"
       - run:
           name: Build OpenSCAD Windows Application (64bit)
           no_output_timeout: 18000
           command: |
+              sccache --start-server
               export NUMCPU=4
               export LC_ALL=C.UTF-8
               export MXEDIR=/mxe
               export PKG_CONFIG_PATH=/mxe/usr/x86_64-w64-mingw32.static.posix/lib/pkgconfig
+              export USE_SCCACHE=1
               ln -sf /usr/bin/python{3,}
               if [ x"${CIRCLE_BRANCH}" = xmaster ] || [ "<< parameters.openscad_build_type >>" != "snapshot" ]; then
                 export SUFFIX=""
@@ -103,6 +134,7 @@ jobs:
               fi
               
               ./scripts/release-common.sh mingw64 -v "$OPENSCAD_VERSION" -c "$OPENSCAD_COMMIT" << parameters.openscad_build_type >>
+              sccache --show-stats
               mkdir -p /tmp/artifacts
               for f in mingw*/*.zip mingw*/*.exe; do N=$(basename "$f" | sed -e "s/\\(-x86-[36][24]\\)/\\1${SUFFIX}/;"); cp -iv "$f" /tmp/artifacts/"$N"; done
               if [ -n "${CODE_SIGNING_KEY}" ]
@@ -115,6 +147,7 @@ jobs:
               else
                   echo "Skipping code signing."
               fi
+      - save-sccache-cache
       - store_artifacts:
           path: /tmp/artifacts
           destination: MXE
@@ -133,12 +166,15 @@ jobs:
     steps:
       - get_source:
           method: << parameters.source_method >>
+      - setup-sccache
+      - restore-sccache-cache
       - establish_version:
-          build_id: "ai${CIRCLE_BUILD_NUM}"
+          build_id: "ai"
       - run:
           name: Build OpenSCAD AppImage
           no_output_timeout: 18000
           command: |
+              sccache --start-server
               if [ x"${CIRCLE_BRANCH}" = xmaster ] || [ "<< parameters.openscad_build_type >>" != "snapshot" ]; then
                 export SUFFIX=""
               else
@@ -153,20 +189,23 @@ jobs:
                   -DOPENSCAD_COMMIT="$OPENSCAD_COMMIT" \
                   -DCMAKE_INSTALL_PREFIX=/usr \
                   -DCMAKE_BUILD_TYPE=Release \
+                  -DCMAKE_C_COMPILER_LAUNCHER=sccache \
+                  -DCMAKE_CXX_COMPILER_LAUNCHER=sccache \
                   -DUSE_BUILTIN_OPENCSG=ON \
                   -DMANIFOLD_PYBIND=OFF \
                   -DMANIFOLD_TEST=OFF \
                   -DENABLE_PYTHON=ON \
                   -DENABLE_TESTS=OFF \
                   $CMAKE_EXTRA_ARGS
-              make -j4
-              make install DESTDIR=../AppDir
+              cmake --build . -j 2  # using all 4 cores OOMs
+              DESTDIR=../AppDir cmake --install .
               cd ..
               export PATH=/appimage/usr/bin:"$PATH"
               export EXTRA_QT_PLUGINS=svg
               export PYTHON_VERSION=$(python3 -c "import sys; v=sys.version_info; print(f'{v.major}.{v.minor}.{v.micro}')")
               export LINUXDEPLOY_OUTPUT_VERSION="${OPENSCAD_VERSION}${SUFFIX}"
               linuxdeploy --plugin python --plugin qt --output appimage --appdir AppDir
+              sccache --show-stats
               mkdir -p /tmp/artifacts
               cp -iv OpenSCAD-*.AppImage /tmp/artifacts
               if [ -n "${CODE_SIGNING_KEY}" ]; then
@@ -178,6 +217,7 @@ jobs:
               else
                   echo "Skipping code signing."
               fi
+      - save-sccache-cache
       - store_artifacts:
           path: /tmp/artifacts
           destination: AppImage
@@ -196,6 +236,8 @@ jobs:
     steps:
       - get_source:
           method: << parameters.source_method >>
+      - setup-sccache
+      - restore-sccache-cache
       - run:
           name: Install latest node.js
           command: |
@@ -217,11 +259,12 @@ jobs:
                     npm i puppeteer
                     npx puppeteer browsers install chrome
       - establish_version:
-          build_id: "wasm${CIRCLE_BUILD_NUM}"
+          build_id: "wasm"
       - run:
           name: Build OpenSCAD WASM (<< parameters.openscad_platform >>)
           no_output_timeout: 18000
           command: |
+              sccache --start-server
               export WASM_TYPE=$(echo "<< parameters.openscad_platform >>" | sed 's/^wasm-//')
               if [ x"${CIRCLE_BRANCH}" = xmaster ] || [ "<< parameters.openscad_build_type >>" != "snapshot" ]; then
                 export SUFFIX=""
@@ -231,14 +274,17 @@ jobs:
               if [ "<< parameters.openscad_build_type >>" == "snapshot" ]; then
                 export CMAKE_EXTRA_ARGS="-DSNAPSHOT=ON -DEXPERIMENTAL=ON"
               fi
-              emcmake cmake -B ../build . \
+              emcmake cmake -G Ninja -B ../build . \
                   -DCMAKE_BUILD_TYPE=Release \
+                  -DCMAKE_C_COMPILER_LAUNCHER=sccache \
+                  -DCMAKE_CXX_COMPILER_LAUNCHER=sccache \
                   -DWASM_BUILD_TYPE=$WASM_TYPE \
                   -DOPENSCAD_COMMIT="$OPENSCAD_COMMIT" \
                   -DOPENSCAD_VERSION="$OPENSCAD_VERSION" \
                   $CMAKE_EXTRA_ARGS
               cd ../build
-              make -j4 VERBOSE=1
+              cmake --build .
+              sccache --show-stats
               mkdir -p /tmp/artifacts
               zip -9r "/tmp/artifacts/OpenSCAD-${OPENSCAD_VERSION}${SUFFIX}-WebAssembly-$WASM_TYPE.zip" openscad.*
               if [ -n "${CODE_SIGNING_KEY}" ]; then
@@ -250,6 +296,7 @@ jobs:
               else
                   echo "Skipping code signing."
               fi
+      - save-sccache-cache
       - run:
           name: Verify OpenSCAD WASM build
           command: |
@@ -428,12 +475,6 @@ workflows:
               branches:
                   only:
                       - master
-      - openscad-appimage:
-          context: secret-context
-          filters:
-              branches:
-                  only:
-                      - master
       - openscad-wasm:
           matrix:
             parameters:
@@ -452,13 +493,6 @@ workflows:
   "CircleCI branch build (PR)":
     jobs:
       - openscad-mxe:
-          filters:
-              branches:
-                  ignore:
-                      - master
-                      - coverity_scan
-                      - /^(?i:continuous)$/
-      - openscad-appimage:
           filters:
               branches:
                   ignore:
