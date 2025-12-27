@@ -1,13 +1,12 @@
 # Nix Build
 
-This shell definition is intended for quick development. Run `nix-shell` in this directory to install all required dependencies for compiling manually.
+This shell definition is intended for quick development. The final results will not be portable, but this is a good way to run incremental builds and test locally.
 
-The final results will not be portable, but this is a good way to run incremental builds and test locally. __Running install is not recommended.__
+Run `nix develop` in this directory to enter a shell with all required dependencies:
 
-Testing instructions:
-```
+```bash
 cd scripts/nix
-nix-shell
+nix develop
 cd ../..
 
 # run compile commands from main README.md, with QT6 enabled
@@ -19,4 +18,27 @@ cmake --build build
 ./build/openscad
 ```
 
-For packaging see [nixpgs](https://github.com/NixOS/nixpkgs/blob/master/pkgs/applications/graphics/openscad/default.nix) for the Qt5 release, or [this gist](https://gist.github.com/AaronVerDow/b945a96dbcf35edfc13f543662966534) for a more up to date Qt6 pacakge.
+
+## Graphics errors when running
+
+When running the built application, you may see errors like this:
+
+```
+(nix:nix-shell-env)$ ./build/openscad
+qt.qpa.wayland: EGL not available
+QRhiGles2: Failed to create temporary context
+QRhiGles2: Failed to create context
+Failed to create QRhi for QBackingStoreRhiSupport
+```
+
+This is caused by some kind of graphics driver nonsense, and the solution [is to install and use nixGL](https://github.com/nix-community/nixGL). The following command will install a recent version of nixGL for your current user:
+
+```
+$ nix profile install github:guibou/nixGL --impure --override-input nixpkgs nixpkgs/nixos-25.11
+```
+
+You can then execute OpenSCAD like this:
+
+```
+(nix:nix-shell-env)$ nixGL ./build/openscad
+```
