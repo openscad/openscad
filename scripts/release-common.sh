@@ -63,6 +63,10 @@ fi
 
 CMAKE_CONFIG="-DCMAKE_BUILD_TYPE=Release -DENABLE_TESTS=OFF"
 
+if [ -n "${USE_SCCACHE}" ] && command -v sccache >/dev/null 2>&1; then
+  CMAKE_CONFIG="$CMAKE_CONFIG -DCMAKE_C_COMPILER_LAUNCHER=sccache -DCMAKE_CXX_COMPILER_LAUNCHER=sccache"
+fi
+
 if [[ "$OSTYPE" =~ "darwin" ]]; then
   OS=MACOSX
 elif [[ $OSTYPE == "msys" ]]; then
