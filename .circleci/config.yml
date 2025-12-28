@@ -27,25 +27,13 @@ executors:
 commands:
   # Provides OPENSCAD_VERSION and OPENSCAD_COMMIT
   establish_version:
-    parameters:
-      build_id:
-        type: string
-        default: ""
     steps:
       - run:
           name: Establish Version
           command: |
               source scripts/establish_version.sh
-              OPENSCAD_COMMIT=$(openscad_commit)
-              BASE_VERSION=$(openscad_version)
-              if [ -n "<< parameters.build_id >>" ]; then
-                  OPENSCAD_VERSION="${BASE_VERSION}.<< parameters.build_id >>"
-              else
-                  OPENSCAD_VERSION="${BASE_VERSION}"
-              fi
-              
-              echo "export OPENSCAD_COMMIT=$OPENSCAD_COMMIT" >> $BASH_ENV
-              echo "export OPENSCAD_VERSION=$OPENSCAD_VERSION" >> $BASH_ENV
+              echo "export OPENSCAD_COMMIT=$(openscad_commit)" >> $BASH_ENV
+              echo "export OPENSCAD_VERSION=$(openscad_version)" >> $BASH_ENV
   get_source:
     parameters:
       method:
@@ -114,8 +102,7 @@ jobs:
           method: << parameters.source_method >>
       - setup-sccache
       - restore-sccache-cache
-      - establish_version:
-          build_id: "ci${CIRCLE_BUILD_NUM}"
+      - establish_version
       - run:
           name: Build OpenSCAD Windows Application (64bit)
           no_output_timeout: 18000
@@ -168,8 +155,7 @@ jobs:
           method: << parameters.source_method >>
       - setup-sccache
       - restore-sccache-cache
-      - establish_version:
-          build_id: "ai"
+      - establish_version
       - run:
           name: Build OpenSCAD AppImage
           no_output_timeout: 18000
@@ -258,8 +244,7 @@ jobs:
                     npm init -y
                     npm i puppeteer
                     npx puppeteer browsers install chrome
-      - establish_version:
-          build_id: "wasm"
+      - establish_version
       - run:
           name: Build OpenSCAD WASM (<< parameters.openscad_platform >>)
           no_output_timeout: 18000
