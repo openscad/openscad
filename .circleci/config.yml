@@ -423,6 +423,7 @@ workflows:
                   only:
                       - master
       - openscad-wasm:
+          name: openscad-<< matrix.openscad_platform >>
           matrix:
             parameters:
               openscad_platform: [wasm-web, wasm-node]
@@ -455,7 +456,7 @@ workflows:
                       - coverity_scan
                       - /^(?i:continuous)$/
       - openscad-wasm:
-          name: openscad-<< matrix.openscad_platform >>
+          name: openscad-<< matrix.openscad_platform >>-pr
           matrix:
             parameters:
               openscad_platform: [wasm-web, wasm-node]
