@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.7.1](https://github.com/pythonscad/pythonscad/compare/v0.7.0...v0.7.1) (2025-12-28)
+
+
+### Bug Fixes
+
+* version detection, release artifact detection ([#248](https://github.com/pythonscad/pythonscad/issues/248)) ([abf087c](https://github.com/pythonscad/pythonscad/commit/abf087cad9bb0218a7dcdf837db538105e4b7c36))
+
 ## [0.7.0](https://github.com/pythonscad/pythonscad/compare/v0.6.0...v0.7.0) (2025-12-28)
 
 
