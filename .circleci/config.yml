@@ -432,6 +432,7 @@ workflows:
                   only:
                       - master
       - openscad-macos:
+          name: openscad-macos
           context: secret-context
           filters:
               branches:
@@ -454,6 +455,7 @@ workflows:
                       - coverity_scan
                       - /^(?i:continuous)$/
       - openscad-wasm:
+          name: openscad-<< matrix.openscad_platform >>
           matrix:
             parameters:
               openscad_platform: [wasm-web, wasm-node]
@@ -464,6 +466,7 @@ workflows:
                       - coverity_scan
                       - /^(?i:continuous)$/
       - openscad-macos:
+          name: openscad-macos-pr
           context: secret-context
           filters:
               branches:
@@ -474,6 +477,7 @@ workflows:
       - create-tarball:
           filters: *release-filters
       - openscad-macos:
+          name: openscad-macos-release
           filters: *release-filters
           openscad_build_type: ""
           source_method: tarball
