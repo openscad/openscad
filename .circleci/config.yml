@@ -423,12 +423,16 @@ workflows:
   "CircleCI snapshot build (master)":
     jobs:
       - openscad-mxe:
+          # Legacy name
+          name: openscad-mxe-64bit
           context: secret-context
           filters:
               branches:
                   only:
                       - master
       - openscad-appimage:
+          # Legacy name
+          name: openscad-appimage-64bit
           context: secret-context
           filters:
               branches:
@@ -454,6 +458,7 @@ workflows:
   "CircleCI branch build (PR)":
     jobs:
       - openscad-mxe:
+          name: openscad-mxe-pr
           filters:
               branches:
                   ignore:
@@ -461,6 +466,7 @@ workflows:
                       - coverity_scan
                       - /^(?i:continuous)$/
       - openscad-appimage:
+          name: openscad-appimage-pr
           filters:
               branches:
                   ignore:
@@ -489,8 +495,8 @@ workflows:
     jobs:
       - create-tarball:
           filters: *release-filters
-      - openscad-macos:
-          name: openscad-macos-release
+      - openscad-mxe:
+          name: openscad-mxe-release
           filters: *release-filters
           openscad_build_type: release
           source_method: tarball
@@ -498,13 +504,7 @@ workflows:
           requires:
             - create-tarball
       - openscad-appimage:
-          filters: *release-filters
-          openscad_build_type: release
-          source_method: tarball
-          context: secret-context
-          requires:
-            - create-tarball
-      - openscad-mxe:
+          name: openscad-appimage-release
           filters: *release-filters
           openscad_build_type: release
           source_method: tarball
@@ -512,6 +512,7 @@ workflows:
           requires:
             - create-tarball
       - openscad-wasm:
+          name: openscad-<< matrix.openscad_platform >>-release
           filters: *release-filters
           matrix:
             parameters:
@@ -521,14 +522,11 @@ workflows:
           context: secret-context
           requires:
             - create-tarball
-      # We may want to run a job _after_ all binary builds, e.g.
-      # to manage artifact collection, GitHub release creations, or other global tasks.
-      # We need, however, to deal with (transient) build failures.
-      # - openscad-deploy-release:
-      #     filters: *release-filters
-      #     context: secret-context
-      #     requires:
-      #       - openscad-macos
-      #       - openscad-appimage
-      #       - openscad-mxe
-      #       - openscad-wasm
+      - openscad-macos:
+          name: openscad-macos-release
+          filters: *release-filters
+          openscad_build_type: release
+          source_method: tarball
+          context: secret-context
+          requires:
+            - create-tarball
