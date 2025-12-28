@@ -1,49 +1,30 @@
 # Get OPENSCAD_VERSION
+# Use the standalone detect_version.sh script (single source of truth)
 if ("${OPENSCAD_VERSION}" STREQUAL "")
-  if (EXISTS "${CMAKE_SOURCE_DIR}/VERSION.txt")
-    file(READ "${CMAKE_SOURCE_DIR}/VERSION.txt" OPENSCAD_VERSION_FILE)
-    string(STRIP "${OPENSCAD_VERSION_FILE}" OPENSCAD_VERSION)
-    if (NOT "${OPENSCAD_VERSION}" STREQUAL "")
-      message(STATUS "Found VERSION.txt file, using VERSION=${OPENSCAD_VERSION}")
-    endif()
+  execute_process(
+    COMMAND bash "${CMAKE_SOURCE_DIR}/scripts/detect_version.sh"
+    OUTPUT_VARIABLE OPENSCAD_VERSION
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+    RESULT_VARIABLE VERSION_RESULT
+  )
+  if (VERSION_RESULT EQUAL 0 AND NOT "${OPENSCAD_VERSION}" STREQUAL "")
+    message(STATUS "Detected version: ${OPENSCAD_VERSION}")
+  else()
+    message(FATAL_ERROR "Version detection failed. Please ensure git tags are available or VERSION.txt exists.")
   endif()
 endif()
 
-# Default to today's date
-if ("${OPENSCAD_VERSION}" STREQUAL "")
-  string(TIMESTAMP OPENSCAD_VERSION "%Y.%m.%d")
-  message(STATUS "No VERSION.txt file found, defaulting VERSION=${OPENSCAD_VERSION}")
-endif()
-
 # Get OPENSCAD_COMMIT
+# Use the standalone detect_commit.sh script (single source of truth)
 if ("${OPENSCAD_COMMIT}" STREQUAL "")
-  if (EXISTS "${CMAKE_SOURCE_DIR}/COMMIT.txt")
-    file(READ "${CMAKE_SOURCE_DIR}/COMMIT.txt" OPENSCAD_COMMIT_FILE)
-    string(STRIP "${OPENSCAD_COMMIT_FILE}" OPENSCAD_COMMIT)
-    if (NOT "${OPENSCAD_COMMIT}" STREQUAL "")
-      message(STATUS "Found COMMIT.txt file, using COMMIT=${OPENSCAD_COMMIT}")
-    endif()
-  else()
-    find_package(Git QUIET)
-    if (GIT_FOUND)
-      execute_process(
-        COMMAND "${GIT_EXECUTABLE}" -C "${CMAKE_SOURCE_DIR}" rev-parse --is-inside-work-tree
-        RESULT_VARIABLE GIT_INSIDE_WORK_TREE
-        OUTPUT_QUIET
-        ERROR_QUIET
-      )
-      if ("${GIT_INSIDE_WORK_TREE}" EQUAL 0)
-        execute_process(
-          COMMAND "${GIT_EXECUTABLE}" -C "${CMAKE_SOURCE_DIR}" log -1 --pretty=format:%h
-          OUTPUT_VARIABLE OPENSCAD_COMMIT
-          OUTPUT_STRIP_TRAILING_WHITESPACE
-          ERROR_QUIET
-        )
-        if (NOT "${OPENSCAD_COMMIT}" STREQUAL "")
-           message(STATUS "No COMMIT.txt file found, using git commit: ${OPENSCAD_COMMIT}")
-        endif()
-      endif()
-    endif()
+  execute_process(
+    COMMAND bash "${CMAKE_SOURCE_DIR}/scripts/detect_commit.sh"
+    OUTPUT_VARIABLE OPENSCAD_COMMIT
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+    RESULT_VARIABLE COMMIT_RESULT
+  )
+  if (COMMIT_RESULT EQUAL 0 AND NOT "${OPENSCAD_COMMIT}" STREQUAL "")
+    message(STATUS "Detected commit: ${OPENSCAD_COMMIT}")
   endif()
 endif()
 
@@ -58,6 +39,12 @@ set(OPENSCAD_MINOR ${CMAKE_MATCH_3})
 set(OPENSCAD_PATCH ${CMAKE_MATCH_5})
 set(OPENSCAD_PRERELEASE ${CMAKE_MATCH_7})
 set(OPENSCAD_BUILD ${CMAKE_MATCH_9})
+
+# If regex didn't match (e.g., git describe returned just a commit hash with no tags),
+# fail with an error
+if ("${OPENSCAD_SHORTVERSION}" STREQUAL "")
+  message(FATAL_ERROR "Version string '${OPENSCAD_VERSION}' doesn't match expected format. Please ensure git tags are fetched or VERSION.txt contains a valid version.")
+endif()
 
 # For backward compatibility, also set YEAR/MONTH/DAY
 # If using semantic versioning (e.g., 0.6.0), these will be the version components

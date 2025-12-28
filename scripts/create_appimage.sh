@@ -203,19 +203,11 @@ export PATH="${TOOLS_DIR}:${PATH}"
 if [ -n "${OPENSCAD_VERSION:-}" ]; then
     export LINUXDEPLOY_OUTPUT_VERSION="${OPENSCAD_VERSION}"
     info "Using version from environment: ${LINUXDEPLOY_OUTPUT_VERSION}"
-elif [ -f "${PROJECT_ROOT}/VERSION.txt" ]; then
-    # Read version from VERSION.txt (canonical source)
-    export LINUXDEPLOY_OUTPUT_VERSION=$(cat "${PROJECT_ROOT}/VERSION.txt" | tr -d '[:space:]')
-    info "Using version from VERSION.txt: ${LINUXDEPLOY_OUTPUT_VERSION}"
 else
-    # Fall back to git describe
-    if git describe --tags --always >/dev/null 2>&1; then
-        export LINUXDEPLOY_OUTPUT_VERSION=$(git describe --tags --always)
-        info "Using version from git: ${LINUXDEPLOY_OUTPUT_VERSION}"
-    else
-        export LINUXDEPLOY_OUTPUT_VERSION="dev"
-        warn "No version source found, using: ${LINUXDEPLOY_OUTPUT_VERSION}"
-    fi
+    # Use centralized version establishment script
+    source "${PROJECT_ROOT}/scripts/establish_version.sh"
+    export LINUXDEPLOY_OUTPUT_VERSION=$(openscad_version)
+    info "Using version from establish_version.sh: ${LINUXDEPLOY_OUTPUT_VERSION}"
 fi
 
 # Remove problematic python.o file if it exists

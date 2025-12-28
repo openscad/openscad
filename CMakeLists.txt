@@ -9,7 +9,7 @@
 #
 
 
-cmake_minimum_required(VERSION 3.13)
+cmake_minimum_required(VERSION 3.16)
 
 # Let AUTOMOC and AUTOUIC process GENERATED files.
 cmake_policy(SET CMP0071 NEW)
@@ -134,6 +134,10 @@ set_target_properties(OpenSCADLibInternal PROPERTIES
 )
 
 if (MINGW)
+  # Add big-obj support for all MinGW builds (not just Debug) to handle
+  # template-heavy files like cgalutils.cc that exceed COFF section limits
+  target_compile_options(OpenSCADLibInternal PRIVATE -Wa,-mbig-obj)
+
   # Configure Debug flags (MinGW) to keep rich symbols and avoid PE/COFF
   # RIP-relative relocation overflows in large template-heavy builds.
   if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
@@ -727,19 +731,25 @@ if(ENABLE_PYTHON)
 endif()
 if(NOT HEADLESS)
   if(MXECROSS OR WIN32)
-    find_package(CURL REQUIRED)
- message(STATUS ${CURL_FOUND})
- message(STATUS ${CURL_INCLUDE_DIR})
- message(STATUS ${CURL_INCLUDE_LIBRARIES})
- message(STATUS ${CURL_VERSION_STRING})
-   target_compile_definitions(OpenSCADLibInternal PRIVATE CURL_STATICLIB)
-   target_include_directories(OpenSCADLibInternal SYSTEM PRIVATE ${CURL_INCLUDE_DIR})
-    if(WIN32 AND NOT MXECROSS)
-      # On Windows with MSYS2, use CURL_LIBRARIES from find_package
-      target_link_libraries(OpenSCADLibInternal PRIVATE ${CURL_LIBRARIES})
+    if(MXECROSS)
+      # For MXE cross-compilation, use pkg-config to get all static dependencies
+      find_package(PkgConfig REQUIRED)
+      pkg_check_modules(CURL REQUIRED IMPORTED_TARGET libcurl)
+      message(STATUS "CURL found via pkg-config: ${CURL_VERSION}")
+      message(STATUS "CURL include dirs: ${CURL_INCLUDE_DIRS}")
+      message(STATUS "CURL libraries: ${CURL_LIBRARIES}")
+      message(STATUS "CURL static libraries: ${CURL_STATIC_LIBRARIES}")
+      target_compile_definitions(OpenSCADLibInternal PRIVATE CURL_STATICLIB)
+      target_link_libraries(OpenSCADLibInternal PRIVATE PkgConfig::CURL)
     else()
-      # MXECROSS
-      target_link_libraries(OpenSCADLibInternal PRIVATE "libcurl.a;libidn2.a;libssh2.a;libunistring.a")
+      # Windows with MSYS2
+      find_package(CURL REQUIRED)
+      message(STATUS "CURL found: ${CURL_VERSION_STRING}")
+      message(STATUS "CURL include dir: ${CURL_INCLUDE_DIR}")
+      message(STATUS "CURL libraries: ${CURL_LIBRARIES}")
+      target_compile_definitions(OpenSCADLibInternal PRIVATE CURL_STATICLIB)
+      target_include_directories(OpenSCADLibInternal SYSTEM PRIVATE ${CURL_INCLUDE_DIR})
+      target_link_libraries(OpenSCADLibInternal PRIVATE ${CURL_LIBRARIES})
     endif()
   else()
 	  target_link_directories(OpenSCADLibInternal PRIVATE "/usr/lib64")
@@ -1907,13 +1917,25 @@ set(CPACK_PACKAGE_VENDOR "The OpenSCAD and PythonSCAD Developers")
 set(CPACK_PACKAGE_VERSION "${OPENSCAD_VERSION}")
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "The Programmer's Solid 3D CAD Modeler")
 
+# Note: DLL bundling removed - MXE produces statically linked binaries
+# that don't require separate DLL files
 
 if(MXECROSS)
   set(CPACK_GENERATOR ZIP;NSIS)
   set(CPACK_SYSTEM_NAME ${PACKAGE_ARCH})
-  set(CPACK_PACKAGE_EXECUTABLES "pythonscad;${CPACK_PACKAGE_NAME}${SNAPSHOT_NAME_SUFFIX}")
-  set(CPACK_PACKAGE_INSTALL_DIRECTORY "${CPACK_PACKAGE_NAME}${SNAPSHOT_NAME_SUFFIX}")
-  set(CPACK_PACKAGE_INSTALL_REGISTRY_KEY "${CPACK_PACKAGE_NAME}${SNAPSHOT_NAME_SUFFIX}")
+  set(CPACK_INCLUDE_TOPLEVEL_DIRECTORY ON)
+
+  # Custom filename format: PythonSCAD-qt6-0.6.0-28-g89c44cac7-windows-x86-64
+  # This overrides the default ${CPACK_PACKAGE_NAME}-${CPACK_PACKAGE_VERSION}-${CPACK_SYSTEM_NAME}
+  if(DEFINED QT_VERSION_STR)
+    set(CPACK_PACKAGE_FILE_NAME "${CPACK_PACKAGE_NAME}-${QT_VERSION_STR}${CPACK_PACKAGE_VERSION}-${CPACK_SYSTEM_NAME}")
+  else()
+    set(CPACK_PACKAGE_FILE_NAME "${CPACK_PACKAGE_NAME}-${CPACK_PACKAGE_VERSION}-${CPACK_SYSTEM_NAME}")
+  endif()
+
+  set(CPACK_PACKAGE_EXECUTABLES "pythonscad;${CPACK_PACKAGE_NAME}")
+  set(CPACK_PACKAGE_INSTALL_DIRECTORY "${CPACK_PACKAGE_NAME}")
+  set(CPACK_PACKAGE_INSTALL_REGISTRY_KEY "${CPACK_PACKAGE_NAME}")
   if("${CMAKE_VERSION}" VERSION_GREATER_EQUAL "3.22")
     set(CPACK_NSIS_IGNORE_LICENSE_PAGE ON)
   else()
@@ -1931,6 +1953,7 @@ if(MXECROSS)
     !include \\\"${CMAKE_BINARY_DIR}/nsis-extra-uninstall-commands.nsh\\\"\
   ")
   set (CPACK_NSIS_MODIFY_PATH "ON")
+
   else()
   set(CPACK_GENERATOR RPM;DEB)
   set(CPACK_RPM_COMPONENT_INSTALL OFF)

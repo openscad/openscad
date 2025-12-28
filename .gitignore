@@ -1,6 +1,8 @@
 dist/
 .uuid
 .cache/
+.claude/
+.venv/
 .vs/
 .vscode/
 .idea/

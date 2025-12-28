@@ -28,6 +28,11 @@ jobs:
         uses: actions/checkout@v6
         with:
           submodules: 'recursive'
+      - name: Fetch tags for version detection
+        shell: bash
+        run: |
+          git fetch --unshallow --tags || git fetch --tags
+          git describe --tags --always --dirty
       - name: Setup (detached) tmate session if enabled
         if: ${{ github.event_name == 'workflow_dispatch' && inputs.debug_enabled }}
         uses: mxschmitt/action-tmate@v3
@@ -68,60 +73,6 @@ jobs:
           path: |
             build/Testing/Temporary/*_report.html
             build/Testing/Temporary/LastTest.log
-
-      - name: Install NSIS for packaging
-        if: github.event_name != 'pull_request'
-        run: |
-          pacman --noconfirm -S mingw-w64-ucrt-x86_64-nsis
-
-      - name: Create distribution packages
-        if: github.event_name != 'pull_request'
-        run: |
-          cd build
-          cpack -G "ZIP;NSIS"
-
-      - name: Find generated packages
-        if: github.event_name != 'pull_request'
-        id: packages
-        shell: bash
-        env:
-          QT_VERSION: ${{ matrix.qt }}
-        run: |
-          cd build
-          ZIP_FILE=$(ls *.zip 2>/dev/null | head -1 || echo "")
-          EXE_FILE=$(ls *.exe 2>/dev/null | head -1 || echo "")
-
-          if [ -n "$ZIP_FILE" ]; then
-            # Insert Qt version after "PythonSCAD-" in artifact name
-            ARTIFACT_NAME="${ZIP_FILE/PythonSCAD-/PythonSCAD-${QT_VERSION}-}"
-            echo "zip_path=build/$ZIP_FILE" >> $GITHUB_OUTPUT
-            echo "zip_name=$ARTIFACT_NAME" >> $GITHUB_OUTPUT
-            echo "Found ZIP: $ZIP_FILE (artifact: $ARTIFACT_NAME)"
-          fi
-
-          if [ -n "$EXE_FILE" ]; then
-            # Insert Qt version after "PythonSCAD-" in artifact name
-            ARTIFACT_NAME="${EXE_FILE/PythonSCAD-/PythonSCAD-${QT_VERSION}-}"
-            echo "exe_path=build/$EXE_FILE" >> $GITHUB_OUTPUT
-            echo "exe_name=$ARTIFACT_NAME" >> $GITHUB_OUTPUT
-            echo "Found EXE: $EXE_FILE (artifact: $ARTIFACT_NAME)"
-          fi
-
-      - name: Upload ZIP package
-        if: github.event_name != 'pull_request' && steps.packages.outputs.zip_name != ''
-        uses: actions/upload-artifact@v5
-        with:
-          name: ${{ steps.packages.outputs.zip_name }}
-          path: ${{ steps.packages.outputs.zip_path }}
-          retention-days: 30
-
-      - name: Upload NSIS installer
-        if: github.event_name != 'pull_request' && steps.packages.outputs.exe_name != ''
-        uses: actions/upload-artifact@v5
-        with:
-          name: ${{ steps.packages.outputs.exe_name }}
-          path: ${{ steps.packages.outputs.exe_path }}
-          retention-days: 30
 
       - name: Setup (detached) tmate session if enabled
         uses: mxschmitt/action-tmate@v3

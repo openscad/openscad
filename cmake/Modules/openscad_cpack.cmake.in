@@ -4,7 +4,7 @@
 # It allows per-generator setting of CPACK_* variables at cpack time.
 
 if(CPACK_GENERATOR MATCHES "NSIS")
-  set(CPACK_NSIS_DISPLAY_NAME "${CPACK_PACKAGE_NAME}${SNAPSHOT_NAME_SUFFIX}")
+  set(CPACK_NSIS_DISPLAY_NAME "${CPACK_PACKAGE_NAME}")
   set(CPACK_NSIS_EXECUTABLES_DIRECTORY ".")
   set(CPACK_NSIS_INSTALLED_ICON_NAME "openscad.exe")
   set(CPACK_NSIS_URL_INFO_ABOUT "https://openscad.org/")
