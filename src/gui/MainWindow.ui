@@ -684,6 +684,43 @@
     </layout>
    </widget>
   </widget>
+  <widget class="Dock" name="chatDock">
+   <property name="windowTitle">
+    <string>GPT Chat</string>
+   </property>
+   <attribute name="dockWidgetArea">
+    <number>2</number>
+   </attribute>
+   <widget class="QWidget" name="chatDockContents">
+    <property name="focusPolicy">
+     <enum>Qt::StrongFocus</enum>
+    </property>
+    <layout class="QVBoxLayout" name="verticalLayout_Chat">
+     <property name="leftMargin">
+      <number>0</number>
+     </property>
+     <property name="topMargin">
+      <number>0</number>
+     </property>
+     <property name="rightMargin">
+      <number>0</number>
+     </property>
+     <property name="bottomMargin">
+      <number>0</number>
+     </property>
+     <item>
+      <widget class="QWidget" name="chatWidget" native="true">
+       <property name="minimumSize">
+        <size>
+         <width>250</width>
+         <height>200</height>
+        </size>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </widget>
+  </widget>
   <action name="fileActionNew">
    <property name="icon">
     <iconset theme="chokusen-new">

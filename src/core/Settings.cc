@@ -366,6 +366,10 @@ SettingsEntryDouble Settings::axisDeadzone8("input", "axisDeadzone8", 0.0, 0.01,
 
 SettingsEntryInt Settings::joystickNr("input", "joystickNr", 0, 9, 0);
 
+SettingsEntryString Settings::aiApiUrl("ai", "apiUrl", "");
+SettingsEntryString Settings::aiApiKey("ai", "apiKey", "");
+SettingsEntryString Settings::aiModel("ai", "model", "");
+
 SettingsEntryString SettingsPython::pythonTrustedFiles(SECTION_PYTHON, "trusted-files", "");
 SettingsEntryString SettingsPython::pythonVirtualEnv(SECTION_PYTHON, "virtual-env", "");
 

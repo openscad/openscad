@@ -514,6 +514,10 @@ public:
   static SettingsEntryDouble axisDeadzone8;
   static SettingsEntryInt joystickNr;
 
+  static SettingsEntryString aiApiUrl;
+  static SettingsEntryString aiApiKey;
+  static SettingsEntryString aiModel;
+
   static void visit(const SettingsVisitor& visitor);
 };
 
