@@ -60,7 +60,7 @@
       ],
       "extra-files": [
         {
-          "type": "plain-text",
+          "type": "generic",
           "path": "VERSION.txt"
         }
       ]

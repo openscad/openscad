@@ -101,7 +101,7 @@ jobs:
 
           echo "Looking for packages in $BUILD_DIR..."
 
-          # Copy distribution ZIP files as-is (for GitHub Releases)
+          # Copy distribution ZIP files (for GitHub Releases)
           find "$BUILD_DIR" -maxdepth 1 -name "*.zip" ! -name "*-Installer.zip" | while read f; do
             if [ -f "$f" ]; then
               basename_f=$(basename "$f")
@@ -110,21 +110,12 @@ jobs:
             fi
           done
 
-          # Extract NSIS installer .exe from its .zip wrapper
-          # CPack wraps NSIS exe in zip, but we want the .exe directly for releases
-          find "$BUILD_DIR" -maxdepth 1 -name "*-Installer.zip" | while read f; do
-            if [ -f "$f" ]; then
-              echo "Found NSIS installer zip: $f"
-              unzip -j "$f" '*.exe' -d /tmp/out/
-              echo "Extracted installer .exe to /tmp/out/"
-            fi
-          done
-
-          # Also check for direct .exe files (if CPack behavior changes)
-          find "$BUILD_DIR" -maxdepth 1 -name "*.exe" | while read f; do
+          # Copy NSIS installer executables
+          # CPack creates these as .exe files directly (not wrapped in .zip)
+          find "$BUILD_DIR" -maxdepth 1 -name "*-Installer.exe" | while read f; do
             if [ -f "$f" ]; then
               basename_f=$(basename "$f")
-              echo "Found EXE file: $f"
+              echo "Found NSIS installer: $f"
               cp -v "$f" /tmp/out/"$basename_f"
             fi
           done

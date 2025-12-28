@@ -1,30 +1,64 @@
 # Get OPENSCAD_VERSION
 # Use the standalone detect_version.sh script (single source of truth)
 if ("${OPENSCAD_VERSION}" STREQUAL "")
-  execute_process(
-    COMMAND bash "${CMAKE_SOURCE_DIR}/scripts/detect_version.sh"
-    OUTPUT_VARIABLE OPENSCAD_VERSION
-    OUTPUT_STRIP_TRAILING_WHITESPACE
-    RESULT_VARIABLE VERSION_RESULT
-  )
-  if (VERSION_RESULT EQUAL 0 AND NOT "${OPENSCAD_VERSION}" STREQUAL "")
-    message(STATUS "Detected version: ${OPENSCAD_VERSION}")
-  else()
+  # Try git describe first (preferred method, works cross-platform)
+  find_package(Git QUIET)
+  if (GIT_FOUND)
+    execute_process(
+      COMMAND "${GIT_EXECUTABLE}" describe --tags --always --dirty
+      WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
+      OUTPUT_VARIABLE GIT_VERSION
+      OUTPUT_STRIP_TRAILING_WHITESPACE
+      ERROR_QUIET
+      RESULT_VARIABLE GIT_RESULT
+    )
+    if (GIT_RESULT EQUAL 0 AND NOT "${GIT_VERSION}" STREQUAL "")
+      # Remove leading 'v' if present
+      string(REGEX REPLACE "^v" "" OPENSCAD_VERSION "${GIT_VERSION}")
+      message(STATUS "Detected version from git: ${OPENSCAD_VERSION}")
+    endif()
+  endif()
+
+  # Fallback to VERSION.txt if git didn't work
+  if ("${OPENSCAD_VERSION}" STREQUAL "")
+    set(VERSION_FILE "${CMAKE_SOURCE_DIR}/VERSION.txt")
+    if (EXISTS "${VERSION_FILE}")
+      file(STRINGS "${VERSION_FILE}" FILE_LINES)
+      # Extract version, ignoring comments (lines starting with #) and blank lines
+      foreach(LINE ${FILE_LINES})
+        string(STRIP "${LINE}" LINE_STRIPPED)
+        if (NOT "${LINE_STRIPPED}" STREQUAL "" AND NOT "${LINE_STRIPPED}" MATCHES "^#")
+          set(OPENSCAD_VERSION "${LINE_STRIPPED}")
+          break()
+        endif()
+      endforeach()
+      if (NOT "${OPENSCAD_VERSION}" STREQUAL "")
+        message(STATUS "Detected version from VERSION.txt: ${OPENSCAD_VERSION}")
+      endif()
+    endif()
+  endif()
+
+  # Final check - fail if no version found
+  if ("${OPENSCAD_VERSION}" STREQUAL "")
     message(FATAL_ERROR "Version detection failed. Please ensure git tags are available or VERSION.txt exists.")
   endif()
 endif()
 
 # Get OPENSCAD_COMMIT
-# Use the standalone detect_commit.sh script (single source of truth)
+# Use git to get the commit hash (works cross-platform)
 if ("${OPENSCAD_COMMIT}" STREQUAL "")
-  execute_process(
-    COMMAND bash "${CMAKE_SOURCE_DIR}/scripts/detect_commit.sh"
-    OUTPUT_VARIABLE OPENSCAD_COMMIT
-    OUTPUT_STRIP_TRAILING_WHITESPACE
-    RESULT_VARIABLE COMMIT_RESULT
-  )
-  if (COMMIT_RESULT EQUAL 0 AND NOT "${OPENSCAD_COMMIT}" STREQUAL "")
-    message(STATUS "Detected commit: ${OPENSCAD_COMMIT}")
+  if (GIT_FOUND)
+    execute_process(
+      COMMAND "${GIT_EXECUTABLE}" rev-parse --short=9 HEAD
+      WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
+      OUTPUT_VARIABLE OPENSCAD_COMMIT
+      OUTPUT_STRIP_TRAILING_WHITESPACE
+      ERROR_QUIET
+      RESULT_VARIABLE COMMIT_RESULT
+    )
+    if (COMMIT_RESULT EQUAL 0 AND NOT "${OPENSCAD_COMMIT}" STREQUAL "")
+      message(STATUS "Detected commit: ${OPENSCAD_COMMIT}")
+    endif()
   endif()
 endif()
 
