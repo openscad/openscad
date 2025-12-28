@@ -3,6 +3,7 @@
     ".": {
       "release-type": "simple",
       "package-name": "pythonscad",
+      "version-file": "VERSION.txt",
       "bump-minor-pre-major": true,
       "bump-patch-for-minor-pre-major": true,
       "changelog-sections": [
@@ -56,12 +57,6 @@
           "type": "ci",
           "section": "Continuous Integration",
           "hidden": true
-        }
-      ],
-      "extra-files": [
-        {
-          "type": "generic",
-          "path": "VERSION.txt"
         }
       ]
     }

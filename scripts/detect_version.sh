@@ -34,8 +34,7 @@ fi
 # Fallback to VERSION.txt file
 VERSION_FILE="${ROOT_DIR}/VERSION.txt"
 if [ -f "$VERSION_FILE" ]; then
-    # Extract version, ignoring comments and blank lines
-    VERSION=$(grep -v '^#' "$VERSION_FILE" | grep -v '^[[:space:]]*$' | head -n 1 | tr -d '[:space:]')
+    VERSION=$(tr -d '[:space:]' < "$VERSION_FILE")
     if [ -n "$VERSION" ]; then
         echo "$VERSION"
         exit 0
