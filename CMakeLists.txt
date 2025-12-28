@@ -30,11 +30,10 @@ endif()
 
 include("cmake/Modules/openscad_version.cmake")
 configure_file(
-  ${CMAKE_SOURCE_DIR}/src/version.c.in
-  ${CMAKE_BINARY_DIR}/version.c
+  ${CMAKE_SOURCE_DIR}/src/version.cc.in
+  ${CMAKE_BINARY_DIR}/version.cc
   @ONLY
 )
-set_source_files_properties(${CMAKE_BINARY_DIR}/version.c PROPERTIES LANGUAGE CXX)
 
 option(INFO "Display build configuration info at end of cmake config" ON)
 option(ENABLE_TESTS "Run testsuite after building." ON)
@@ -1441,7 +1440,7 @@ if (ENABLE_MANIFOLD AND ENABLE_CGAL)
 endif()
 list(APPEND Sources
   src/openscad.cc
-  ${CMAKE_BINARY_DIR}/version.c
+  ${CMAKE_BINARY_DIR}/version.cc
   ${CORE_SOURCES}
   ${OFFSCREEN_SOURCES}
 )
