@@ -113,8 +113,11 @@ bool Parameters::valid(const std::string& name, const Value& value, Value::Type 
   return false;
 }
 
-// Note:  unused, doesn't really work right because in some cases where the parameter
-// is not supplied, lookup() returns an existing Value with a value of undef.
+/*
+ * Note:  use this for parameters listed in the "optional_parameters" list for Parameters::parse().
+ * Counter-intuitively, parameters listed in "required_parameters" default to undef if missing,
+ * and so it is not possible to tell whether they have been omitted.
+ */
 bool Parameters::valid_required(const std::string& name, Value::Type type)
 {
   boost::optional<const Value&> value = lookup(name);

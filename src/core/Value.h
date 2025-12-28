@@ -78,6 +78,7 @@ using FunctionPtr = ValuePtr<FunctionType>;
 class Value
 {
 public:
+  // Caution:  this list must match the definition of Variant below.
   enum class Type { UNDEFINED, BOOL, NUMBER, STRING, VECTOR, EMBEDDED_VECTOR, RANGE, FUNCTION, OBJECT };
   // FIXME: eventually remove this in favor of specific messages for each undef usage
   static const Value undefined;
@@ -410,6 +411,7 @@ public:
     return stream;
   }
 
+  // Caution:  this list must match the definition of Type above.
   using Variant = std::variant<UndefType, bool, double, str_utf8_wrapper, VectorType, EmbeddedVectorType,
                                RangePtr, FunctionPtr, ObjectType>;
 
