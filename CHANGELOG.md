@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.7.0](https://github.com/pythonscad/pythonscad/compare/v0.6.0...v0.7.0) (2025-12-28)
+
+
+### Features
+
+* add Windows binary distribution packaging ([#245](https://github.com/pythonscad/pythonscad/issues/245)) ([fedc2ef](https://github.com/pythonscad/pythonscad/commit/fedc2ef811524c9e6d3c06e57644459852ed844c))
+
 ## 0.6.0 (2025-12-23)
 
 
