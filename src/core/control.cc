@@ -245,7 +245,7 @@ void register_builtin_control()
                    "echo(arg, ...)",
                  });
 
-  Builtins::init("print", new BuiltinModule(builtin_print),
+  Builtins::init("print", new BuiltinModule(builtin_print, &Feature::ExperimentalPrintModule),
                  {
                    "print(string)",
                  });

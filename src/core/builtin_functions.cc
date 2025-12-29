@@ -418,8 +418,11 @@ Value builtin_str(Arguments arguments, const Location& /*loc*/)
   return {stream.str()};
 }
 
-Value builtin_quote(Arguments arguments, const Location& /*loc*/)
+Value builtin_quote(Arguments arguments, const Location& loc)
 {
+  if (!check_arguments("quote", arguments, loc, 1)) {
+    return Value::undefined.clone();
+  }
   return arguments[0]->toParsableString();
 }
 
@@ -1111,6 +1114,135 @@ Value builtin_import(Arguments arguments, const Location& loc)
   return import_json(file, session, loc);
 }
 
+Value findarg(const Arguments& args, const std::string& name, int argStart)
+{
+  fprintf(stderr, "findarg(%s)\n", name.c_str()); fflush(stderr);
+  if (name.find_first_not_of("0123456789") == std::string::npos) {
+    int i = std::stoi(name) + argStart;
+  fprintf(stderr, "found %d\n", i); fflush(stderr);
+    return args[i].value.clone();
+  } else {
+    for (int i = argStart; i < args.size(); i++) {
+      if (args[i].name && *args[i].name == name) {
+  fprintf(stderr, "found %d\n", i); fflush(stderr);
+        return args[i].value.clone();
+      }
+    }
+    return Value::undefined.clone();
+  }
+}
+
+int format1(std::ostringstream& stream, const std::string& fmt, int fStart, Arguments& args,
+    int argStart, const Location& loc)
+{
+  std::ostringstream specstream;
+  int i;
+
+  i = fStart;
+  for (;;) {
+    if (i >= fmt.size()) {
+        LOG(message_group::Warning, loc, args.documentRoot(), "mismatched braces");
+        return i;
+    }
+    if (fmt[i] == '{') {
+      i = format1(specstream, fmt, i+1, args, argStart, loc);
+    } else if (fmt[i] == '}') {
+      i++;
+      break;
+    } else {
+      specstream << fmt[i];
+      i++;
+    }
+  }
+  int end = i;
+
+  std::string spec = specstream.str();
+
+  for (i = 0;
+      i < spec.size() && spec[i] != '!' && spec[i] != ':' && spec[i] != '.' && spec[i] != '[';
+      i++) {
+      // Loop
+  }
+  Value a = findarg(args, spec.substr(0, i), argStart);
+
+  while (spec[i] == '.' || spec[i] == '[') {
+    if (spec[i] == '.') {
+      i++;
+      int j = i;
+      for (; j < spec.size() && spec[j] != '!' && spec[j] != ':' && spec[j] != '.' && spec[j] != '['; 
+          j++) {
+        // Loop
+      }
+      a = a[spec.substr(i, j - i)];
+      i = j;
+    } else {
+      assert(spec[i] == '[');
+      i++;
+      int j = i;
+      for (;; j++) {
+        if (j >= spec.size()) {
+          LOG(message_group::Warning, loc, args.documentRoot(), "Unmatched bracket");
+          return end;
+        }
+        if (spec[j] == ']') {
+          break;
+        }
+      }
+      std::string index = spec.substr(i, j - i);
+      if (index.find_first_not_of("0123456789") == std::string::npos) {
+        a = a[std::stoi(index)];
+      } else {
+        a = a[index];
+      }
+      j++;
+      i = j;
+    }
+  }
+
+  stream << a.toString();
+
+  return end;
+}
+
+std::string format(const std::string& fmt, Arguments& args, int argstart, const Location& loc)
+{
+  std::ostringstream stream;
+  
+  for (int i = 0; i < fmt.size();) {
+    if (fmt[i] == '{') {
+      i++;
+      if (i >= fmt.size() || fmt[i] != '{') {
+        i = format1(stream, fmt, i, args, argstart, loc);
+        continue;
+      }
+    } else if (fmt[i] == '}') {
+      i++;
+      if (i >= fmt.size() || fmt[i] != '}') {
+        LOG(message_group::Warning, loc, args.documentRoot(), "Single close brace found");
+        continue;
+      }
+    }
+    stream << fmt[i];
+    i++;
+  }
+
+  return stream.str();
+}
+
+Value builtin_format(Arguments arguments, const Location& loc)
+{
+  if (arguments.size() < 1) {
+    print_argCnt_warning("format", arguments.size(), "at least one", loc,
+                         arguments.documentRoot());
+    return Value::undefined.clone();
+  }
+  if (arguments[0]->type() != Value::Type::STRING) {
+    print_argConvert_positioned_warning("format", "argument 0", arguments[0]->clone(),
+                                        {Value::Type::STRING}, loc, arguments.documentRoot());
+  }
+  return format(arguments[0]->toString(), arguments, 1, loc);
+}
+
 void register_builtin_functions()
 {
   Builtins::init("abs", new BuiltinFunction(&builtin_abs),
@@ -1227,7 +1359,7 @@ void register_builtin_functions()
                    "str(number or string, ...) -> string",
                  });
 
-  Builtins::init("quote", new BuiltinFunction(&builtin_quote),
+  Builtins::init("quote", new BuiltinFunction(&builtin_quote, &Feature::ExperimentalQuoteFunction),
                  {
                    "quote(value) -> string",
                  });
@@ -1346,5 +1478,10 @@ void register_builtin_functions()
   Builtins::init("import", new BuiltinFunction(&builtin_import, &Feature::ExperimentalImportFunction),
                  {
                    "import(file) -> object",
+                 });
+
+  Builtins::init("format", new BuiltinFunction(&builtin_format, &Feature::ExperimentalFormatFunction),
+                 {
+                   "format(format, ...) -> string",
                  });
 }
