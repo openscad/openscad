@@ -29,6 +29,11 @@ if(POLICY CMP0167) # Since CMake 3.30
 endif()
 
 include("cmake/Modules/openscad_version.cmake")
+configure_file(
+  ${CMAKE_SOURCE_DIR}/src/version.cc.in
+  ${CMAKE_BINARY_DIR}/version.cc
+  @ONLY
+)
 
 option(INFO "Display build configuration info at end of cmake config" ON)
 option(ENABLE_TESTS "Run testsuite after building." ON)
@@ -902,13 +907,6 @@ if(USE_CCACHE)
   endif()
 endif()
 
-target_compile_definitions(OpenSCADLibInternal PUBLIC OPENSCAD_VERSION=${OPENSCAD_VERSION} OPENSCAD_SHORTVERSION=${OPENSCAD_SHORTVERSION} OPENSCAD_YEAR=${OPENSCAD_YEAR} OPENSCAD_MONTH=${OPENSCAD_MONTH})
-if (DEFINED OPENSCAD_DAY)
-  target_compile_definitions(OpenSCADLibInternal PUBLIC OPENSCAD_DAY=${OPENSCAD_DAY})
-endif()
-if(DEFINED OPENSCAD_COMMIT)
-  target_compile_definitions(OpenSCADLibInternal PUBLIC OPENSCAD_COMMIT=${OPENSCAD_COMMIT})
-endif()
 
 #
 # Platform specific settings
@@ -1440,7 +1438,12 @@ endif()
 if (ENABLE_MANIFOLD AND ENABLE_CGAL)
   list(APPEND Sources ${MANIFOLD_CGAL_SOURCES})
 endif()
-list(APPEND Sources src/openscad.cc ${CORE_SOURCES} ${OFFSCREEN_SOURCES})
+list(APPEND Sources
+  src/openscad.cc
+  ${CMAKE_BINARY_DIR}/version.cc
+  ${CORE_SOURCES}
+  ${OFFSCREEN_SOURCES}
+)
 
 set_source_files_properties(
   # flex and bison tends to generate many macros, which does not work well with
