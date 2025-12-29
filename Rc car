@@ -1,0 +1,41 @@
+// Ready-to-Export RC Car 19T Pinion Gear for Creality K1 SE
+$fn = 100;
+
+// Parameters
+teeth = 19;
+module = 1.0;
+pressure_angle = 20;
+bore_diam = 3.2;           // Slightly larger for PETG fit
+gear_thickness = 5;         
+hub_thickness = 4;          
+hub_diam = 10;              
+set_screw_diam = 3;         
+
+// Derived dimensions
+pitch_diam = teeth * module;
+outer_diam = pitch_diam + 2 * module;
+
+// --- Gear body (simplified spur gear cylinder) ---
+gear = cylinder(d=outer_diam, h=gear_thickness);
+
+// --- Add hub/collar ---
+hub = translate([0,0,gear_thickness])
+      cylinder(d=hub_diam, h=hub_thickness);
+
+// --- Bore hole ---
+bore = cylinder(d=bore_diam, h=gear_thickness + hub_thickness + 2, center=true);
+
+// --- Set screw hole (radial) ---
+set_screw = translate([0,0,gear_thickness + hub_thickness/2])
+             rotate([0,90,0])
+             cylinder(d=set_screw_diam, h=hub_diam, center=true);
+
+// --- Combine geometry ---
+difference() {
+    union() {
+        gear;
+        hub;
+    }
+    bore;
+    set_screw;
+}
