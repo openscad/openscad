@@ -408,7 +408,7 @@ public:
   double_conversion::DoubleToStringConverter dc;
   bool parsable;
 
-  tostream_visitor(std::ostringstream& stream, bool parsable=false)
+  tostream_visitor(std::ostringstream& stream, bool parsable = false)
     : stream(stream),
       builder(buffer, DC_BUFFER_SIZE),
       dc(DC_FLAGS, DC_INF, DC_NAN, DC_EXP, DC_DECIMAL_LOW_EXP, DC_DECIMAL_HIGH_EXP,
@@ -490,7 +490,8 @@ public:
     stream << ")";
   }
 
-  virtual void operator()(const str_utf8_wrapper& v) const {
+  virtual void operator()(const str_utf8_wrapper& v) const
+  {
     if (parsable) {
       stream << QuotedString(v.toString());
     } else {
@@ -578,9 +579,9 @@ std::string Value::toEchoString() const
 
 std::string Value::toParsableString() const
 {
-    std::ostringstream stream;
-    std::visit(tostream_visitor(stream, true), this->value);
-    return stream.str();
+  std::ostringstream stream;
+  std::visit(tostream_visitor(stream, true), this->value);
+  return stream.str();
 }
 
 std::string Value::toEchoStringNoThrow() const

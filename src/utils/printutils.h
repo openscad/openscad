@@ -185,10 +185,7 @@ public:
   }
 };
 
-inline std::string STR(std::ostringstream& oss)
-{
-  return oss.str();
-}
+inline std::string STR(std::ostringstream& oss) { return oss.str(); }
 
 template <typename T, typename... Args>
 std::string STR(std::ostringstream& oss, T&& t, Args&&...args)

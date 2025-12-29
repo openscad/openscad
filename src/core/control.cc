@@ -154,7 +154,7 @@ static std::shared_ptr<AbstractNode> builtin_print(const ModuleInstantiation *in
                                                    const Children& children)
 {
   Parameters parameters = Parameters::parse(std::move(arguments), inst->location(), {}, {"message"});
-  (void) parameters.valid_required("message", Value::Type::STRING);
+  (void)parameters.valid_required("message", Value::Type::STRING);
   std::string message = parameters["message"].toString();
 
   LOG(message_group::NONE, "%1$s", message);
