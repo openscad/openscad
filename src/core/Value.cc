@@ -199,19 +199,64 @@ std::ostream& operator<<(std::ostream& stream, const Filename& filename)
   return stream;
 }
 
+void emitUnicodeEscape(std::ostream& stream, int c)
+{
+  if (c >= 0x10000) {
+    stream << "\\U" << std::hex << std::setfill('0') << std::setw(6) << c;
+  } else if (c >= 0x80) {
+    stream << "\\u" << std::hex << std::setfill('0') << std::setw(4) << c;
+  } else {
+    stream << "\\x" << std::hex << std::setfill('0') << std::setw(2) << c;
+  }
+}
+
 // FIXME: This could probably be done more elegantly using boost::regex
 std::ostream& operator<<(std::ostream& stream, const QuotedString& s)
 {
+  int inprocess = -1;
+
   stream << '"';
   for (char c : s) {
-    switch (c) {
-    case '\t': stream << "\\t"; break;
-    case '\n': stream << "\\n"; break;
-    case '\r': stream << "\\r"; break;
-    case '"':  stream << "\\\""; break;
-    case '\\': stream << "\\\\"; break;
-    default:   stream << c;
+    if (isascii(c)) {
+      if (inprocess >= 0) {
+        emitUnicodeEscape(stream, inprocess);
+        inprocess = -1;
+      }
+      switch (c) {
+      case '\t': stream << "\\t"; break;
+      case '\n': stream << "\\n"; break;
+      case '\r': stream << "\\r"; break;
+      case '"':  stream << "\\\""; break;
+      case '\\': stream << "\\\\"; break;
+      default:
+        if (isprint(c)) {
+          stream << c;
+        } else {
+          emitUnicodeEscape(stream, c);
+        }
+      }
+    } else {
+      if ((c & 0xc0) == 0x80) {
+        assert(inprocess >= 0);
+        // Continuation byte.
+        inprocess <<= 6;
+        inprocess |= c & 0x3f;
+      } else {
+        if (inprocess >= 0) {
+          emitUnicodeEscape(stream, inprocess);
+        }
+        if ((c & 0xe0) == 0xc0) {
+          inprocess = c & 0x1f;
+        } else if ((c & 0xf0) == 0xe0) {
+          inprocess = c & 0x0f;
+        } else if ((c & 0xf8) == 0xf0) {
+          inprocess = c & 0x07;
+        }
+      }
     }
+  }
+  if (inprocess >= 0) {
+    emitUnicodeEscape(stream, inprocess);
   }
   return stream << '"';
 }
@@ -335,6 +380,22 @@ const str_utf8_wrapper& Value::toStrUtf8Wrapper() const
   return std::get<str_utf8_wrapper>(this->value);
 }
 
+bool isIdentifier(std::string s)
+{
+  if (s.empty()) {
+    return false;
+  }
+  if (!isascii(s[0]) || !(isalpha(s[0]) || s[0] == '$' || s[0] == '_')) {
+    return false;
+  }
+  for (auto c : s) {
+    if (!isascii(c) || !(isalpha(c) || isdigit(c) || c == '$' || c == '_')) {
+      return false;
+    }
+  }
+  return true;
+}
+
 // Optimization to avoid multiple stream instantiations and copies to str for long vectors.
 // Functions identically to "class tostring_visitor", except outputting to stream and not returning
 // strings
@@ -345,12 +406,14 @@ public:
   mutable char buffer[DC_BUFFER_SIZE];
   mutable double_conversion::StringBuilder builder;
   double_conversion::DoubleToStringConverter dc;
+  bool parsable;
 
-  tostream_visitor(std::ostringstream& stream)
+  tostream_visitor(std::ostringstream& stream, bool parsable=false)
     : stream(stream),
       builder(buffer, DC_BUFFER_SIZE),
       dc(DC_FLAGS, DC_INF, DC_NAN, DC_EXP, DC_DECIMAL_LOW_EXP, DC_DECIMAL_HIGH_EXP,
-         DC_MAX_LEADING_ZEROES, DC_MAX_TRAILING_ZEROES)
+         DC_MAX_LEADING_ZEROES, DC_MAX_TRAILING_ZEROES),
+      parsable(parsable)
   {
   }
 
@@ -394,16 +457,46 @@ public:
     if (StackCheck::inst().check()) {
       throw VectorEchoStringException::create();
     }
-    stream << "{ ";
+    stream << "object(";
+    bool first = true;
+    bool inarray = false;
     for (auto& key : v.keys()) {
-      stream << key << " = ";
-      std::visit(*this, v.get(key).getVariant());
-      stream << "; ";
+      if (isIdentifier(key)) {
+        if (inarray) {
+          stream << "]";
+          inarray = false;
+        }
+        if (!first) {
+          stream << ", ";
+        }
+        stream << key << "=";
+        std::visit(*this, v.get(key).getVariant());
+      } else {
+        if (!inarray) {
+          if (!first) {
+            stream << ", ";
+          }
+          stream << "[";
+          inarray = true;
+        } else {
+          stream << ", ";
+        }
+        stream << "[" << QuotedString(key) << ", ";
+        std::visit(*this, v.get(key).getVariant());
+        stream << "]";
+      }
+      first = false;
     }
-    stream << '}';
+    stream << ")";
   }
 
-  void operator()(const str_utf8_wrapper& v) const { stream << '"' << v.toString() << '"'; }
+  virtual void operator()(const str_utf8_wrapper& v) const {
+    if (parsable) {
+      stream << QuotedString(v.toString());
+    } else {
+      stream << '"' << v.toString() << '"';
+    }
+  }
 
   void operator()(const RangePtr& v) const { stream << *v; }
 
@@ -481,6 +574,13 @@ std::string Value::toEchoString() const
   } else {
     return toString();
   }
+}
+
+std::string Value::toParsableString() const
+{
+    std::ostringstream stream;
+    std::visit(tostream_visitor(stream, true), this->value);
+    return stream.str();
 }
 
 std::string Value::toEchoStringNoThrow() const
@@ -1377,6 +1477,7 @@ const Value& ObjectType::operator[](const str_utf8_wrapper& v) const { return th
 // Copy explicitly only when necessary
 ObjectType ObjectType::clone() const { return ObjectType(this->ptr); }
 
+#if 0
 std::ostream& operator<<(std::ostream& stream, const ObjectType& v)
 {
   stream << "{ ";
@@ -1391,3 +1492,4 @@ std::ostream& operator<<(std::ostream& stream, const ObjectType& v)
   stream << "}";
   return stream;
 }
+#endif

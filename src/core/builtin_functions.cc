@@ -418,6 +418,11 @@ Value builtin_str(Arguments arguments, const Location& /*loc*/)
   return {stream.str()};
 }
 
+Value builtin_quote(Arguments arguments, const Location& /*loc*/)
+{
+  return arguments[0]->toParsableString();
+}
+
 Value builtin_chr(Arguments arguments, const Location& /*loc*/)
 {
   std::ostringstream stream;
@@ -1220,6 +1225,11 @@ void register_builtin_functions()
   Builtins::init("str", new BuiltinFunction(&builtin_str),
                  {
                    "str(number or string, ...) -> string",
+                 });
+
+  Builtins::init("quote", new BuiltinFunction(&builtin_quote),
+                 {
+                   "quote(value) -> string",
                  });
 
   Builtins::init("chr", new BuiltinFunction(&builtin_chr),

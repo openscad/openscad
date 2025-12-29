@@ -370,6 +370,7 @@ public:
   bool getUnsignedInt(unsigned int& v) const;
   bool getPositiveInt(unsigned int& v) const;
   [[nodiscard]] std::string toString() const;
+  [[nodiscard]] std::string toParsableString() const;
   [[nodiscard]] std::string toEchoString() const;
   [[nodiscard]] std::string toEchoStringNoThrow() const;  // use this for warnings
   [[nodiscard]] const UndefType& toUndef() const;
