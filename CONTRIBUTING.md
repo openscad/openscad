@@ -45,9 +45,13 @@ PythonSCAD requires the following tools for development:
    pre-commit install --hook-type commit-msg --hook-type pre-commit
    ```
 
+   **Important**: Both `--hook-type` flags are required:
+   - `--hook-type pre-commit`: Runs before commit (code formatting, trailing whitespace, YAML validation)
+   - `--hook-type commit-msg`: Validates commit message format (prevents invalid commit types)
+
    This sets up automated checks that run:
-   - Before each commit: code formatting (clang-format), trailing whitespace, YAML validation
-   - On commit messages: conventional commit format validation
+   - **Before each commit**: code formatting (clang-format), trailing whitespace, YAML validation
+   - **On commit messages**: conventional commit format validation (catches invalid types like "debug:", "update:", etc.)
 
 4. **Build the project**:
 

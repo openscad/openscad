@@ -29,7 +29,7 @@ DEBUG = False
 
 cxxlib = None
 
-macos_version_min = '11.0'
+macos_version_min = '15.0'
 
 def usage():
     print("Usage: " + sys.argv[0] + " <executable>", sys.stderr)
@@ -37,12 +37,19 @@ def usage():
 
 # Try to find the given library by searching in the typical locations
 # Returns the full path to the library or None if the library is not found.
-def lookup_library(file):
+def lookup_library(file, loader=None):
     found = None
     if re.search("@rpath", file):
         file = re.sub("^@rpath", lc_rpath, file)
         if os.path.exists(file): found = file
         if DEBUG: print("@rpath resolved: " + str(file))
+    if not found and re.search("@loader_path", file):
+        # Resolve @loader_path relative to the directory of the loading library
+        if loader:
+            loader_dir = os.path.dirname(loader)
+            abs = re.sub("^@loader_path", loader_dir, file)
+            if os.path.exists(abs): found = abs
+            if DEBUG: print("@loader_path resolved: " + str(abs) + " (loader: " + loader + ")")
     if not found:
         if re.search(r"\.app/", file):
             found = file
@@ -69,7 +76,7 @@ def find_dependencies(file):
     if DEBUG: print("Executing " + " ".join(args))
     p = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
     output,err = p.communicate()
-    if p.returncode != 0: 
+    if p.returncode != 0:
         print("Failed with return code " + str(p.returncode) + ":")
         print(err)
         return None
@@ -116,16 +123,6 @@ def validate_lib(lib):
         print("Error: Unsupported deployment target " + m.group(2) + " found: " + lib)
         return False
 
-    # This is a check for a weak symbols from a build made on 10.12 or newer sneaking into a build for an
-    # earlier deployment target. The 'mkostemp' symbol tends to be introduced by fontconfig.
-    p  = subprocess.Popen(["nm", "-g", lib], stdout=subprocess.PIPE, universal_newlines=True)
-    output = p.communicate()[0]
-    if p.returncode != 0: return False
-    match = re.search("mkostemp", output)
-    if match:
-        print("Error: Reference to mkostemp() found - only supported on macOS 10.12->")
-        return None
-
     # Check that both x86_64 and arm64 architectures exist
     p = subprocess.Popen(["lipo", lib, "-verify_arch", "x86_64"], stdout=subprocess.PIPE, universal_newlines=True)
     p.communicate()[0]
@@ -151,7 +148,7 @@ if __name__ == '__main__':
     # Find the Runpath search path (LC_RPATH)
     p  = subprocess.Popen(["otool", "-l", executable], stdout=subprocess.PIPE, universal_newlines=True)
     output = p.communicate()[0]
-    if p.returncode != 0: 
+    if p.returncode != 0:
         print('Error otool -l failed on main executable')
         sys.exit(1)
     # Check deployment target
@@ -170,7 +167,7 @@ if __name__ == '__main__':
 #        if DEBUG: print("Deps: " + ' '.join(deps))
         assert(deps)
         for d in deps:
-            absfile = lookup_library(d)
+            absfile = lookup_library(d, loader=dep)
             if absfile is None:
                 print("Not found: " + d)
                 print("  ..required by " + str(processed[dep]))
@@ -181,7 +178,7 @@ if __name__ == '__main__':
                 sys.exit(1)
             if absfile in processed:
                 processed[absfile].append(dep)
-            else: 
+            else:
                 processed[absfile] = [dep]
                 if DEBUG: print("Pending: " + absfile)
                 pending.append(absfile)

@@ -1,0 +1,706 @@
+name: Build and upload macOS build
+
+on:
+  release:
+    types: [published]
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      upload_to_release:
+        description: 'Upload to latest release (leave empty for test builds)'
+        required: false
+        default: ''
+      debug_enabled:
+        type: boolean
+        description: 'Run the build with tmate debugging enabled (https://github.com/marketplace/actions/debugging-with-tmate)'
+        required: false
+        default: false
+
+jobs:
+  build-intel:
+    runs-on: macos-15-intel
+    name: macOS x86_64 Build
+    timeout-minutes: 90
+    outputs:
+      app-name: ${{ steps.appname.outputs.app_name }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          submodules: 'recursive'
+
+      - name: Fetch tags for version detection
+        run: |
+          git fetch --unshallow --tags || git fetch --tags
+          git describe --tags --always --dirty
+
+      - name: Setup (detached) tmate session if enabled
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.debug_enabled }}
+        uses: mxschmitt/action-tmate@v3
+        timeout-minutes: 5
+        with:
+          detached: true
+          limit-access-to-actor: true
+
+      - name: Workaround for python3 linking issue
+        run: |
+          brew unlink python3
+          brew link --overwrite python3
+
+      - name: Install Homebrew prerequisites
+        env:
+          HOMEBREW_NO_AUTO_UPDATE: 1
+          HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK: 1
+        run: |
+          brew install automake libtool cmake pkg-config wget meson python-packaging
+
+      - name: Install Homebrew dependencies
+        env:
+          HOMEBREW_NO_AUTO_UPDATE: 1
+          HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK: 1
+        run: |
+          ./scripts/macosx-build-homebrew.sh qt6
+          brew install clipper2
+
+      - name: Build x86_64 Application
+        env:
+          NUMCPU: 4
+          LDFLAGS: "-L/usr/local/lib"
+        run: |
+          mkdir build_MACOSX
+          cd build_MACOSX
+
+          # Configure CMake for x86_64 only (NOT universal)
+          # On Intel Macs, Homebrew prefix is /usr/local
+          cmake .. \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_OSX_ARCHITECTURES=x86_64 \
+            -DCMAKE_PREFIX_PATH="/usr/local" \
+            -DENABLE_TESTS=OFF \
+            -DEXPERIMENTAL=ON \
+            -DSNAPSHOT=ON \
+            -DENABLE_PYTHON=ON \
+            -DENABLE_TBB=OFF \
+            -DENABLE_LIBFIVE=OFF \
+            -DENABLE_GAMEPAD=OFF \
+            -DUSE_BUILTIN_CLIPPER2=OFF \
+            -DUSE_BUILTIN_MANIFOLD=ON
+
+          # Build
+          make -j$NUMCPU
+
+          # Find the app bundle
+          APP_BUNDLE=$(find . -maxdepth 1 -name "*.app" -type d | head -1)
+          if [ -z "$APP_BUNDLE" ]; then
+            echo "ERROR: No .app bundle found"
+            exit 1
+          fi
+
+          echo "Built x86_64 app: $APP_BUNDLE"
+
+          # Update version in Info.plist
+          VERSION=$(git describe --tags --always --dirty)
+          /usr/libexec/PlistBuddy -c "Set :CFBundleVersion $VERSION" "$APP_BUNDLE/Contents/Info.plist"
+
+          # Bundle Qt frameworks
+          macdeployqt "$APP_BUNDLE" -no-strip
+
+          # Manually copy libbrotlicommon (dependency of libbrotlidec that macdeployqt misses)
+          if [ ! -f "$APP_BUNDLE/Contents/Frameworks/libbrotlicommon.1.dylib" ]; then
+            BROTLI_LIB="/usr/local/opt/brotli/lib/libbrotlicommon.1.dylib"
+            if [ -f "$BROTLI_LIB" ]; then
+              echo "Copying libbrotlicommon.1.dylib to app bundle"
+              cp "$BROTLI_LIB" "$APP_BUNDLE/Contents/Frameworks/"
+              # Fix install_name to use @executable_path
+              install_name_tool -id "@executable_path/../Frameworks/libbrotlicommon.1.dylib" \
+                "$APP_BUNDLE/Contents/Frameworks/libbrotlicommon.1.dylib"
+            fi
+          fi
+
+          echo "x86_64 build complete"
+
+      - name: Determine app bundle name
+        id: appname
+        run: |
+          APP_BUNDLE=$(find build_MACOSX -maxdepth 1 -name "*.app" -type d | head -1)
+          if [ -z "$APP_BUNDLE" ]; then
+            echo "ERROR: No .app bundle found in build_MACOSX"
+            exit 1
+          fi
+          echo "app_bundle=$APP_BUNDLE" >> $GITHUB_OUTPUT
+          echo "app_name=$(basename $APP_BUNDLE)" >> $GITHUB_OUTPUT
+          echo "Found app bundle: $APP_BUNDLE"
+
+      - name: Upload x86_64 artifact
+        uses: actions/upload-artifact@v5
+        with:
+          name: pythonscad-x86_64-app
+          path: ${{ steps.appname.outputs.app_bundle }}
+          retention-days: 1
+
+  build-arm64:
+    runs-on: macos-latest
+    name: macOS arm64 Build
+    timeout-minutes: 90
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          submodules: 'recursive'
+
+      - name: Fetch tags for version detection
+        run: |
+          git fetch --unshallow --tags || git fetch --tags
+          git describe --tags --always --dirty
+
+      - name: Setup (detached) tmate session if enabled
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.debug_enabled }}
+        uses: mxschmitt/action-tmate@v3
+        timeout-minutes: 5
+        with:
+          detached: true
+          limit-access-to-actor: true
+
+      - name: Workaround for python3 linking issue
+        run: |
+          brew unlink python3
+          brew link --overwrite python3
+
+      - name: Install Homebrew prerequisites
+        env:
+          HOMEBREW_NO_AUTO_UPDATE: 1
+          HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK: 1
+        run: |
+          brew install automake libtool cmake pkg-config wget meson python-packaging
+
+      - name: Install Homebrew dependencies
+        env:
+          HOMEBREW_NO_AUTO_UPDATE: 1
+          HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK: 1
+        run: |
+          ./scripts/macosx-build-homebrew.sh qt6
+          brew install clipper2
+
+      - name: Build arm64 Application
+        env:
+          NUMCPU: 4
+          LDFLAGS: "-L/opt/homebrew/lib"
+        run: |
+          mkdir build_MACOSX
+          cd build_MACOSX
+
+          # Configure CMake for arm64 only (NOT universal)
+          # On Apple Silicon, Homebrew prefix is /opt/homebrew
+          cmake .. \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_OSX_ARCHITECTURES=arm64 \
+            -DCMAKE_PREFIX_PATH="/opt/homebrew" \
+            -DENABLE_TESTS=OFF \
+            -DEXPERIMENTAL=ON \
+            -DSNAPSHOT=ON \
+            -DENABLE_PYTHON=ON \
+            -DENABLE_TBB=OFF \
+            -DENABLE_LIBFIVE=OFF \
+            -DENABLE_GAMEPAD=OFF \
+            -DUSE_BUILTIN_CLIPPER2=OFF \
+            -DUSE_BUILTIN_MANIFOLD=ON
+
+          # Build
+          make -j$NUMCPU
+
+          # Find the app bundle
+          APP_BUNDLE=$(find . -maxdepth 1 -name "*.app" -type d | head -1)
+          if [ -z "$APP_BUNDLE" ]; then
+            echo "ERROR: No .app bundle found"
+            exit 1
+          fi
+
+          echo "Built arm64 app: $APP_BUNDLE"
+
+          # Update version in Info.plist
+          VERSION=$(git describe --tags --always --dirty)
+          /usr/libexec/PlistBuddy -c "Set :CFBundleVersion $VERSION" "$APP_BUNDLE/Contents/Info.plist"
+
+          # Bundle Qt frameworks
+          macdeployqt "$APP_BUNDLE" -no-strip
+
+          # Manually copy libbrotlicommon (dependency of libbrotlidec that macdeployqt misses)
+          if [ ! -f "$APP_BUNDLE/Contents/Frameworks/libbrotlicommon.1.dylib" ]; then
+            BROTLI_LIB="/opt/homebrew/opt/brotli/lib/libbrotlicommon.1.dylib"
+            if [ -f "$BROTLI_LIB" ]; then
+              echo "Copying libbrotlicommon.1.dylib to app bundle"
+              cp "$BROTLI_LIB" "$APP_BUNDLE/Contents/Frameworks/"
+              # Fix install_name to use @executable_path
+              install_name_tool -id "@executable_path/../Frameworks/libbrotlicommon.1.dylib" \
+                "$APP_BUNDLE/Contents/Frameworks/libbrotlicommon.1.dylib"
+            fi
+          fi
+
+          echo "arm64 build complete"
+
+      - name: Determine app bundle name
+        id: appname
+        run: |
+          APP_BUNDLE=$(find build_MACOSX -maxdepth 1 -name "*.app" -type d | head -1)
+          if [ -z "$APP_BUNDLE" ]; then
+            echo "ERROR: No .app bundle found in build_MACOSX"
+            exit 1
+          fi
+          echo "app_bundle=$APP_BUNDLE" >> $GITHUB_OUTPUT
+          echo "app_name=$(basename $APP_BUNDLE)" >> $GITHUB_OUTPUT
+          echo "Found app bundle: $APP_BUNDLE"
+
+      - name: Upload arm64 artifact
+        uses: actions/upload-artifact@v5
+        with:
+          name: pythonscad-arm64-app
+          path: ${{ steps.appname.outputs.app_bundle }}
+          retention-days: 1
+
+  merge-and-package:
+    runs-on: macos-latest
+    needs: [build-intel, build-arm64]
+    name: Merge Universal Binary and Package
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        # No submodules needed, only for scripts
+
+      - name: Fetch tags for version detection
+        run: |
+          git fetch --unshallow --tags || git fetch --tags
+          git describe --tags --always --dirty
+
+      - name: Download x86_64 artifact
+        uses: actions/download-artifact@v5
+        with:
+          name: pythonscad-x86_64-app
+          path: /tmp/x86_64-app
+
+      - name: Download arm64 artifact
+        uses: actions/download-artifact@v5
+        with:
+          name: pythonscad-arm64-app
+          path: /tmp/arm64-app
+
+      - name: Merge architectures with lipo
+        id: merge
+        run: |
+          set -e
+
+          # Debug: List what was downloaded
+          echo "=== x86_64 artifact contents ==="
+          ls -la /tmp/x86_64-app/
+          echo "=== arm64 artifact contents ==="
+          ls -la /tmp/arm64-app/
+
+          # Find app bundle names (should be identical)
+          # GitHub Actions downloads the artifact contents, so look for .app directories or Contents directory
+          if [ -d "/tmp/x86_64-app/Contents" ]; then
+            # Artifact was uploaded as app bundle contents, reconstruct the path
+            X86_BUNDLE="/tmp/x86_64-app"
+            ARM_BUNDLE="/tmp/arm64-app"
+            # Get app name from uploaded artifact metadata or use default
+            APP_NAME="pythonscad.app"
+          else
+            # Artifact preserved the .app directory structure
+            X86_BUNDLE=$(find /tmp/x86_64-app -maxdepth 2 -name "*.app" -type d | head -1)
+            ARM_BUNDLE=$(find /tmp/arm64-app -maxdepth 2 -name "*.app" -type d | head -1)
+            APP_NAME=$(basename "$X86_BUNDLE")
+          fi
+
+          if [ -z "$X86_BUNDLE" ] || [ -z "$ARM_BUNDLE" ]; then
+            echo "ERROR: Could not find or reconstruct .app bundles"
+            echo "x86_64: $X86_BUNDLE"
+            echo "arm64: $ARM_BUNDLE"
+            exit 1
+          fi
+
+          echo "Merging $APP_NAME"
+          echo "x86_64 bundle: $X86_BUNDLE"
+          echo "arm64 bundle: $ARM_BUNDLE"
+
+          # Create merged bundle by copying x86_64 as base
+          MERGED_DIR=/tmp/merged
+          mkdir -p $MERGED_DIR
+          echo "Copying x86_64 bundle as base..."
+          cp -R "$X86_BUNDLE" "$MERGED_DIR/$APP_NAME"
+
+          # Debug: List frameworks in each bundle
+          echo "=== Debug: x86_64 frameworks ==="
+          if [ -d "$X86_BUNDLE/Contents/Frameworks" ]; then
+            find "$X86_BUNDLE/Contents/Frameworks" -name "*.framework" -type d -maxdepth 1 2>/dev/null | while read fw; do
+              fw_name=$(basename "$fw" .framework)
+              # Find actual version directory instead of using Current symlink
+              ACTUAL_VER=$(ls "$fw/Versions/" 2>/dev/null | grep -v "Current" | head -1)
+              if [ -n "$ACTUAL_VER" ] && [ -f "$fw/Versions/$ACTUAL_VER/$fw_name" ]; then
+                echo "$(basename "$fw"): $(lipo -info "$fw/Versions/$ACTUAL_VER/$fw_name" 2>&1 | grep -o 'x86_64\|arm64' | tr '\n' ' ')"
+              fi
+            done
+          fi
+          echo "=== Debug: arm64 frameworks ==="
+          if [ -d "$ARM_BUNDLE/Contents/Frameworks" ]; then
+            find "$ARM_BUNDLE/Contents/Frameworks" -name "*.framework" -type d -maxdepth 1 2>/dev/null | while read fw; do
+              fw_name=$(basename "$fw" .framework)
+              # Find actual version directory instead of using Current symlink
+              ACTUAL_VER=$(ls "$fw/Versions/" 2>/dev/null | grep -v "Current" | head -1)
+              if [ -n "$ACTUAL_VER" ] && [ -f "$fw/Versions/$ACTUAL_VER/$fw_name" ]; then
+                echo "$(basename "$fw"): $(lipo -info "$fw/Versions/$ACTUAL_VER/$fw_name" 2>&1 | grep -o 'x86_64\|arm64' | tr '\n' ' ')"
+              fi
+            done
+          fi
+
+          # Function to merge a single binary file
+          merge_binary() {
+            local rel_path="$1"
+            local x86_file="$X86_BUNDLE/$rel_path"
+            local arm_file="$ARM_BUNDLE/$rel_path"
+            local merged_file="$MERGED_DIR/$APP_NAME/$rel_path"
+
+            if [ -f "$x86_file" ] && [ -f "$arm_file" ]; then
+              # Check if it's a binary file (not a symlink or text file)
+              if file "$x86_file" | grep -q "Mach-O"; then
+                echo "Merging: $rel_path"
+                lipo -create "$x86_file" "$arm_file" -output "$merged_file"
+              fi
+            fi
+          }
+
+          # Determine executable name (pythonscad or pythonscad-snapshot)
+          EXEC_NAME=$(basename "$APP_NAME" .app)
+
+          # Merge main executable
+          echo "=== Merging main executable ==="
+          merge_binary "Contents/MacOS/$EXEC_NAME"
+
+          # Merge all .dylib files from both bundles
+          echo "=== Merging .dylib files ==="
+          # Create a list of all unique dylib paths from both bundles
+          DYLIB_PATHS=""
+          if [ -d "$X86_BUNDLE/Contents/Frameworks" ]; then
+            DYLIB_PATHS=$(find "$X86_BUNDLE/Contents/Frameworks" -name "*.dylib" -type f 2>/dev/null | sed "s|$X86_BUNDLE/||")
+          fi
+          if [ -d "$ARM_BUNDLE/Contents/Frameworks" ]; then
+            ARM_DYLIBS=$(find "$ARM_BUNDLE/Contents/Frameworks" -name "*.dylib" -type f 2>/dev/null | sed "s|$ARM_BUNDLE/||")
+            DYLIB_PATHS=$(echo -e "$DYLIB_PATHS\n$ARM_DYLIBS" | sort -u)
+          fi
+
+          echo "$DYLIB_PATHS" | while read rel_path; do
+            [ -z "$rel_path" ] && continue
+            x86_file="$X86_BUNDLE/$rel_path"
+            arm_file="$ARM_BUNDLE/$rel_path"
+            merged_file="$MERGED_DIR/$APP_NAME/$rel_path"
+
+            if [ -f "$x86_file" ] && [ -f "$arm_file" ]; then
+              # Both exist - merge with lipo
+              if file "$x86_file" | grep -q "Mach-O"; then
+                echo "Merging: $rel_path"
+                lipo -create "$x86_file" "$arm_file" -output "$merged_file"
+              fi
+            elif [ -f "$arm_file" ]; then
+              # Only in arm64 - copy it
+              echo "Copying arm64-only: $rel_path"
+              mkdir -p "$(dirname "$merged_file")"
+              cp "$arm_file" "$merged_file"
+            fi
+          done
+
+          # Merge Qt framework binaries from both bundles
+          echo "=== Merging Qt frameworks ==="
+          # Get unique list of frameworks from both bundles
+          FRAMEWORK_PATHS=""
+          if [ -d "$X86_BUNDLE/Contents/Frameworks" ]; then
+            FRAMEWORK_PATHS=$(find "$X86_BUNDLE/Contents/Frameworks" -name "*.framework" -type d 2>/dev/null | sed "s|$X86_BUNDLE/Contents/Frameworks/||")
+          fi
+          if [ -d "$ARM_BUNDLE/Contents/Frameworks" ]; then
+            ARM_FRAMEWORKS=$(find "$ARM_BUNDLE/Contents/Frameworks" -name "*.framework" -type d 2>/dev/null | sed "s|$ARM_BUNDLE/Contents/Frameworks/||")
+            FRAMEWORK_PATHS=$(echo -e "$FRAMEWORK_PATHS\n$ARM_FRAMEWORKS" | sort -u)
+          fi
+
+          echo "$FRAMEWORK_PATHS" | while read framework_rel; do
+            [ -z "$framework_rel" ] && continue
+            framework_name=$(basename "$framework_rel" .framework)
+
+            # Handle framework in both or only one architecture
+            x86_framework="$X86_BUNDLE/Contents/Frameworks/$framework_rel"
+            arm_framework="$ARM_BUNDLE/Contents/Frameworks/$framework_rel"
+            merged_framework="$MERGED_DIR/$APP_NAME/Contents/Frameworks/$framework_rel"
+
+            if [ ! -d "$x86_framework" ] && [ -d "$arm_framework" ]; then
+              # Only in arm64 - copy entire framework
+              echo "Copying arm64-only framework: $framework_rel"
+              mkdir -p "$(dirname "$merged_framework")"
+              cp -R "$arm_framework" "$merged_framework"
+              continue
+            fi
+
+            # Qt frameworks have binary at: QtCore.framework/Versions/A/QtCore
+            # Find the actual version directory (usually 'A') instead of using 'Current' symlink
+            if [ -d "$x86_framework/Versions" ]; then
+              ACTUAL_VERSION=$(ls "$x86_framework/Versions/" 2>/dev/null | grep -v "Current" | head -1)
+              if [ -n "$ACTUAL_VERSION" ]; then
+                framework_binary="Versions/$ACTUAL_VERSION/$framework_name"
+                if [ -f "$x86_framework/$framework_binary" ]; then
+                  x86_bin="$x86_framework/$framework_binary"
+                  arm_bin="$arm_framework/$framework_binary"
+                  merged_bin="$merged_framework/$framework_binary"
+
+                  if [ -f "$arm_bin" ]; then
+                    echo "Merging framework binary: $framework_rel/$framework_binary"
+                    lipo -create "$x86_bin" "$arm_bin" -output "$merged_bin"
+                  fi
+                fi
+
+                # Also merge framework Resources if they contain binaries
+                if [ -d "$x86_framework/Versions/$ACTUAL_VERSION" ]; then
+                  find "$x86_framework/Versions/$ACTUAL_VERSION" -name "*.dylib" -type f 2>/dev/null | while read lib; do
+                    lib_rel="${lib#$x86_framework/}"
+                    x86_lib="$x86_framework/$lib_rel"
+                    arm_lib="$arm_framework/$lib_rel"
+                    merged_lib="$merged_framework/$lib_rel"
+
+                    if [ -f "$arm_lib" ]; then
+                      if file "$x86_lib" | grep -q "Mach-O"; then
+                        echo "Merging framework lib: $framework_rel/$lib_rel"
+                        lipo -create "$x86_lib" "$arm_lib" -output "$merged_lib"
+                      fi
+                    fi
+                  done
+                fi
+              fi
+            fi
+          done
+
+          # Merge Python framework binary if present in either bundle
+          echo "=== Merging Python framework ==="
+          x86_python="$X86_BUNDLE/Contents/Frameworks/Python.framework"
+          arm_python="$ARM_BUNDLE/Contents/Frameworks/Python.framework"
+
+          if [ -d "$x86_python" ] || [ -d "$arm_python" ]; then
+            if [ ! -d "$x86_python" ] && [ -d "$arm_python" ]; then
+              # Only in arm64 - copy entire framework
+              echo "Copying arm64-only Python framework"
+              mkdir -p "$MERGED_DIR/$APP_NAME/Contents/Frameworks"
+              cp -R "$arm_python" "$MERGED_DIR/$APP_NAME/Contents/Frameworks/"
+            elif [ -d "$x86_python" ] && [ -d "$arm_python" ]; then
+              # In both - merge binaries
+              PYTHON_VERSION=$(ls "$x86_python/Versions/" 2>/dev/null | grep -E "^[0-9]+\.[0-9]+$" | head -1)
+              if [ -z "$PYTHON_VERSION" ]; then
+                PYTHON_VERSION=$(ls "$arm_python/Versions/" 2>/dev/null | grep -E "^[0-9]+\.[0-9]+$" | head -1)
+              fi
+
+              if [ -n "$PYTHON_VERSION" ]; then
+                x86_py_bin="$x86_python/Versions/$PYTHON_VERSION/Python"
+                arm_py_bin="$arm_python/Versions/$PYTHON_VERSION/Python"
+                merged_py_bin="$MERGED_DIR/$APP_NAME/Contents/Frameworks/Python.framework/Versions/$PYTHON_VERSION/Python"
+
+                if [ -f "$x86_py_bin" ] && [ -f "$arm_py_bin" ]; then
+                  echo "Merging Python binary"
+                  lipo -create "$x86_py_bin" "$arm_py_bin" -output "$merged_py_bin"
+
+                  # Fix install_name ID of the Python framework binary
+                  echo "Fixing Python framework install_name ID"
+                  install_name_tool -id "@executable_path/../Frameworks/Python.framework/Versions/$PYTHON_VERSION/Python" "$merged_py_bin"
+                fi
+
+                # Merge Python extension modules (.so files)
+                find "$x86_python" -name "*.so" -type f 2>/dev/null | while read so_file; do
+                  rel_path="${so_file#$x86_python/}"
+                  x86_so="$x86_python/$rel_path"
+                  arm_so="$arm_python/$rel_path"
+                  merged_so="$MERGED_DIR/$APP_NAME/Contents/Frameworks/Python.framework/$rel_path"
+
+                  if [ -f "$arm_so" ]; then
+                    if file "$x86_so" | grep -q "Mach-O"; then
+                      echo "Merging Python .so: $rel_path"
+                      lipo -create "$x86_so" "$arm_so" -output "$merged_so"
+                    fi
+                  fi
+                done
+              fi
+            fi
+          fi
+
+          # Merge Qt plugin .dylib files from both bundles
+          echo "=== Merging Qt plugins ==="
+          PLUGIN_PATHS=""
+          if [ -d "$X86_BUNDLE/Contents/PlugIns" ]; then
+            PLUGIN_PATHS=$(find "$X86_BUNDLE/Contents/PlugIns" -name "*.dylib" -type f 2>/dev/null | sed "s|$X86_BUNDLE/||")
+          fi
+          if [ -d "$ARM_BUNDLE/Contents/PlugIns" ]; then
+            ARM_PLUGINS=$(find "$ARM_BUNDLE/Contents/PlugIns" -name "*.dylib" -type f 2>/dev/null | sed "s|$ARM_BUNDLE/||")
+            PLUGIN_PATHS=$(echo -e "$PLUGIN_PATHS\n$ARM_PLUGINS" | sort -u)
+          fi
+
+          echo "$PLUGIN_PATHS" | while read rel_path; do
+            [ -z "$rel_path" ] && continue
+            x86_plugin="$X86_BUNDLE/$rel_path"
+            arm_plugin="$ARM_BUNDLE/$rel_path"
+            merged_plugin="$MERGED_DIR/$APP_NAME/$rel_path"
+
+            if [ -f "$x86_plugin" ] && [ -f "$arm_plugin" ]; then
+              # Both exist - merge
+              if file "$x86_plugin" | grep -q "Mach-O"; then
+                echo "Merging plugin: $rel_path"
+                lipo -create "$x86_plugin" "$arm_plugin" -output "$merged_plugin"
+              fi
+            elif [ -f "$arm_plugin" ]; then
+              # Only in arm64 - copy it
+              echo "Copying arm64-only plugin: $rel_path"
+              mkdir -p "$(dirname "$merged_plugin")"
+              cp "$arm_plugin" "$merged_plugin"
+            fi
+          done
+
+          echo "=== Merge complete ==="
+          echo "Merged app location: $MERGED_DIR/$APP_NAME"
+
+          # Manually merge any missing transitive dependencies
+          echo "=== Merging missing dependencies ==="
+          FRAMEWORKS_DIR="$MERGED_DIR/$APP_NAME/Contents/Frameworks"
+
+          # Merge libbrotlicommon if missing (dependency of libbrotlidec)
+          if [ ! -f "$FRAMEWORKS_DIR/libbrotlicommon.1.dylib" ]; then
+            echo "Merging libbrotlicommon.1.dylib from both architectures"
+            X86_BROTLI="/usr/local/opt/brotli/lib/libbrotlicommon.1.dylib"
+            ARM_BROTLI="/opt/homebrew/opt/brotli/lib/libbrotlicommon.1.dylib"
+
+            if [ -f "$X86_BROTLI" ] && [ -f "$ARM_BROTLI" ]; then
+              # Both exist - merge with lipo
+              lipo -create "$X86_BROTLI" "$ARM_BROTLI" -output "$FRAMEWORKS_DIR/libbrotlicommon.1.dylib"
+            elif [ -f "$ARM_BROTLI" ]; then
+              # Only ARM exists - copy it
+              cp "$ARM_BROTLI" "$FRAMEWORKS_DIR/"
+            elif [ -f "$X86_BROTLI" ]; then
+              # Only x86 exists - copy it
+              cp "$X86_BROTLI" "$FRAMEWORKS_DIR/"
+            fi
+
+            # Fix install_name ID of libbrotlicommon itself
+            if [ -f "$FRAMEWORKS_DIR/libbrotlicommon.1.dylib" ]; then
+              echo "Fixing libbrotlicommon.1.dylib install_name ID"
+              install_name_tool -id "@executable_path/../Frameworks/libbrotlicommon.1.dylib" "$FRAMEWORKS_DIR/libbrotlicommon.1.dylib"
+            fi
+          fi
+
+          echo "app_bundle=$MERGED_DIR/$APP_NAME" >> $GITHUB_OUTPUT
+
+          # Verify main executable is universal
+          echo "=== Verifying main executable ==="
+          lipo -info "$MERGED_DIR/$APP_NAME/Contents/MacOS/$EXEC_NAME"
+
+          # Debug: Check dependency references
+          echo "=== Debug: Checking library references ==="
+
+          # Check if ICU libraries exist
+          echo "ICU libraries in bundle:"
+          ls -la "$FRAMEWORKS_DIR"/libicu*.dylib || echo "No ICU libraries found"
+
+          # Check libbrotlicommon
+          echo ""
+          echo "Brotli libraries:"
+          ls -la "$FRAMEWORKS_DIR"/libbrotli*.dylib || echo "No brotli libraries found"
+
+          # Check what libbrotlidec references
+          echo ""
+          echo "libbrotlidec.1.dylib dependencies:"
+          otool -L "$FRAMEWORKS_DIR/libbrotlidec.1.dylib" || echo "Cannot read libbrotlidec"
+
+          # Check what libicuuc references (should reference libicudata)
+          echo ""
+          echo "libicuuc.78.dylib dependencies:"
+          otool -L "$FRAMEWORKS_DIR/libicuuc.78.dylib" || echo "Cannot read libicuuc"
+
+          # Check what libicui18n references
+          echo ""
+          echo "libicui18n.78.dylib dependencies:"
+          otool -L "$FRAMEWORKS_DIR/libicui18n.78.dylib" || echo "Cannot read libicui18n"
+
+          # Check QtCore framework references
+          echo ""
+          echo "QtCore framework dependencies:"
+          otool -L "$FRAMEWORKS_DIR/QtCore.framework/Versions/A/QtCore" | grep -E "icu|brotli" || echo "No ICU or brotli references found"
+
+      - name: Run macOS sanity check
+        run: |
+          # Validate the merged universal binary
+          APP_BUNDLE="${{ steps.merge.outputs.app_bundle }}"
+          # Determine executable name (pythonscad or pythonscad-snapshot)
+          EXEC_NAME=$(basename "$APP_BUNDLE" .app)
+          EXEC_PATH="$APP_BUNDLE/Contents/MacOS/$EXEC_NAME"
+
+          echo "Validating executable: $EXEC_PATH"
+          python3 ./scripts/macosx-sanity-check.py "$EXEC_PATH"
+
+      - name: Create DMG
+        id: dmg
+        run: |
+          # Get version from git
+          VERSION=$(git describe --tags --always --dirty)
+          APP_BUNDLE="${{ steps.merge.outputs.app_bundle }}"
+          DMG_NAME="PythonSCAD-${VERSION}.dmg"
+
+          # Create DMG using hdiutil
+          hdiutil create -volname "PythonSCAD" -srcfolder "$APP_BUNDLE" -ov -format UDZO "$DMG_NAME"
+
+          echo "dmg_file=$DMG_NAME" >> $GITHUB_OUTPUT
+          echo "Created DMG: $DMG_NAME"
+
+      - name: Prepare artifacts
+        id: artifacts
+        run: |
+          mkdir -p /tmp/out
+
+          DMG_FILE="${{ steps.dmg.outputs.dmg_file }}"
+          basename_dmg=$(basename "$DMG_FILE")
+
+          echo "Copying DMG: $DMG_FILE"
+          cp -v "$DMG_FILE" /tmp/out/"$basename_dmg"
+
+          # Generate checksums
+          cd /tmp/out
+          shasum -a 256 "$basename_dmg" > "$basename_dmg.sha256"
+          shasum -a 512 "$basename_dmg" > "$basename_dmg.sha512"
+          cd -
+
+          echo "dmg_path=/tmp/out/$basename_dmg" >> $GITHUB_OUTPUT
+          echo "dmg_name=$(basename "$basename_dmg" .dmg)" >> $GITHUB_OUTPUT
+
+          # List what we have
+          echo "Artifacts prepared:"
+          ls -lh /tmp/out/
+
+      - name: Upload DMG package
+        if: steps.artifacts.outputs.dmg_path != ''
+        uses: actions/upload-artifact@v5
+        with:
+          name: ${{ steps.artifacts.outputs.dmg_name }}
+          path: ${{ steps.artifacts.outputs.dmg_path }}
+          retention-days: 30
+
+      - name: Upload checksums
+        if: steps.artifacts.outputs.dmg_path != ''
+        uses: actions/upload-artifact@v5
+        with:
+          name: ${{ steps.artifacts.outputs.dmg_name }}-checksums
+          path: |
+            /tmp/out/*.sha256
+            /tmp/out/*.sha512
+          retention-days: 30
+
+      - name: Upload artifacts to release
+        if: github.event_name == 'release' || github.event.inputs.upload_to_release != ''
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            /tmp/out/*.dmg
+            /tmp/out/*.sha256
+            /tmp/out/*.sha512
+          tag_name: ${{ github.event.release.tag_name || github.event.inputs.upload_to_release }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup (attached) tmate session if enabled
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.debug_enabled }}
+        uses: mxschmitt/action-tmate@v3

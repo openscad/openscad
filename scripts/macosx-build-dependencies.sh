@@ -52,6 +52,30 @@ PACKAGES=(
     # https://www.mpfr.org/mpfr-current/
     "mpfr 4.2.2"
 
+    # https://ftp.gnu.org/gnu/nettle/
+    "nettle 3.10.2"
+
+    # https://www.openssl.org/source/
+    "openssl 3.4.0"
+
+    # https://ftp.gnu.org/gnu/libunistring/
+    "libunistring 1.3"
+
+    # https://ftp.gnu.org/gnu/libidn/
+    "libidn2 2.3.7"
+
+    # https://github.com/rockdaboot/libpsl/releases
+    "libpsl 0.21.5"
+
+    # https://github.com/facebook/zstd/releases
+    "zstd 1.5.6"
+
+    # https://github.com/google/brotli/releases
+    "brotli 1.1.0"
+
+    # https://curl.se/download.html
+    "curl 8.17.0"
+
     # https://savannah.gnu.org/news/?group=gettext
     "gettext 0.22.5"
 
@@ -344,8 +368,10 @@ build_gmp()
   cd $BASEDIR/src
   rm -rf gmp-$version
   if [ ! -f gmp-$version.tar.bz2 ]; then
-    # FIXME: -k is only to ignore libgmp's expired SSL certificate
-    curl -kO https://gmplib.org/download/gmp/gmp-$version.tar.bz2
+    # Try GNU FTP first (official GNU mirror), then gmplib.org, then ftpmirror
+    curl -LO https://ftp.gnu.org/gnu/gmp/gmp-$version.tar.bz2 || \
+    curl -LO https://gmplib.org/download/gmp/gmp-$version.tar.bz2 || \
+    curl -LO https://ftpmirror.gnu.org/gmp/gmp-$version.tar.bz2
   fi
   tar xjf gmp-$version.tar.bz2
   cd gmp-$version
@@ -385,7 +411,9 @@ build_mpfr()
   cd $BASEDIR/src
   rm -rf mpfr-$version
   if [ ! -f mpfr-$version.tar.bz2 ]; then
-    curl -L -O http://www.mpfr.org/mpfr-$version/mpfr-$version.tar.bz2
+    # Try GNU FTP first (official GNU mirror), then mpfr.org
+    curl -LO https://ftp.gnu.org/gnu/mpfr/mpfr-$version.tar.bz2 || \
+    curl -LO http://www.mpfr.org/mpfr-$version/mpfr-$version.tar.bz2
   fi
   tar xjf mpfr-$version.tar.bz2
   cd mpfr-$version
@@ -415,6 +443,347 @@ build_mpfr()
   install_name_tool -id @rpath/libmpfr.dylib $DEPLOYDIR/lib/libmpfr.dylib
 }
 
+build_nettle()
+{
+  version=$1
+  cd $BASEDIR/src
+  rm -rf nettle-$version
+  if [ ! -f nettle-$version.tar.gz ]; then
+    curl -LO https://ftp.gnu.org/gnu/nettle/nettle-$version.tar.gz
+  fi
+  tar xzf nettle-$version.tar.gz
+  cd nettle-$version
+
+  # Build each arch separately
+  for i in ${!ARCHS[@]}; do
+    arch=${ARCHS[$i]}
+    mkdir build-$arch
+    cd build-$arch
+    PKG_CONFIG_PATH=$DEPLOYDIR/lib/pkgconfig \
+    ../configure --prefix=$DEPLOYDIR \
+      CFLAGS="-arch $arch -mmacos-version-min=$MAC_OSX_VERSION_MIN -I$DEPLOYDIR/include" \
+      CPPFLAGS="-I$DEPLOYDIR/include" \
+      LDFLAGS="-arch $arch -mmacos-version-min=$MAC_OSX_VERSION_MIN -L$DEPLOYDIR/lib" \
+      --disable-static --disable-documentation \
+      --build=$LOCAL_GNU_ARCH-apple-darwin --host=${GNU_ARCHS[$i]}-apple-darwin17.0.0
+    make -j"$NUMCPU" install DESTDIR=$PWD/install/
+    cd ..
+  done
+
+  # Install the first arch
+  cp -R build-${ARCHS[0]}/install/$DEPLOYDIR/* $DEPLOYDIR
+
+  # If we're building for multiple archs, create fat binaries
+  if (( ${#ARCHS[@]} > 1 )); then
+    for lib in libnettle.dylib libhogweed.dylib; do
+      LIBS=()
+      for arch in ${ARCHS[*]}; do
+        LIBS+=(build-$arch/install/$DEPLOYDIR/lib/$lib)
+      done
+      lipo -create ${LIBS[@]} -output $DEPLOYDIR/lib/$lib
+    done
+  fi
+
+  install_name_tool -id @rpath/libnettle.dylib $DEPLOYDIR/lib/libnettle.dylib
+  install_name_tool -id @rpath/libhogweed.dylib $DEPLOYDIR/lib/libhogweed.dylib
+}
+
+build_openssl()
+{
+  version=$1
+  cd $BASEDIR/src
+  rm -rf openssl-$version
+  if [ ! -f openssl-$version.tar.gz ]; then
+    curl -LO https://www.openssl.org/source/openssl-$version.tar.gz
+  fi
+  tar xzf openssl-$version.tar.gz
+  cd openssl-$version
+
+  # Build each arch separately - OpenSSL uses Configure (capital C) not configure
+  for i in ${!ARCHS[@]}; do
+    arch=${ARCHS[$i]}
+
+    # Determine OpenSSL target for this architecture
+    if [ "$arch" = "arm64" ]; then
+      OPENSSL_TARGET="darwin64-arm64-cc"
+    elif [ "$arch" = "x86_64" ]; then
+      OPENSSL_TARGET="darwin64-x86_64-cc"
+    else
+      echo "ERROR: Unknown architecture $arch for OpenSSL"
+      exit 1
+    fi
+
+    mkdir build-$arch
+    cd build-$arch
+
+    # Configure OpenSSL for this architecture
+    ../Configure $OPENSSL_TARGET \
+      --prefix=$DEPLOYDIR \
+      -mmacosx-version-min=$MAC_OSX_VERSION_MIN \
+      no-shared \
+      no-tests
+
+    make -j"$NUMCPU"
+    make install_sw install_ssldirs DESTDIR=$PWD/install/
+    cd ..
+  done
+
+  # Install the first arch
+  cp -R build-${ARCHS[0]}/install/$DEPLOYDIR/* $DEPLOYDIR
+
+  # If we're building for multiple archs, create fat binaries
+  if (( ${#ARCHS[@]} > 1 )); then
+    for lib in libssl.a libcrypto.a; do
+      LIBS=()
+      for arch in ${ARCHS[*]}; do
+        LIBS+=(build-$arch/install/$DEPLOYDIR/lib/$lib)
+      done
+      lipo -create ${LIBS[@]} -output $DEPLOYDIR/lib/$lib
+    done
+  fi
+}
+
+build_libunistring()
+{
+  version=$1
+  cd $BASEDIR/src
+  rm -rf libunistring-$version
+  if [ ! -f libunistring-$version.tar.gz ]; then
+    curl -LO https://ftp.gnu.org/gnu/libunistring/libunistring-$version.tar.gz
+  fi
+  tar xzf libunistring-$version.tar.gz
+  cd libunistring-$version
+
+  # Build each arch separately
+  for i in ${!ARCHS[@]}; do
+    arch=${ARCHS[$i]}
+    mkdir build-$arch
+    cd build-$arch
+    ../configure --prefix=$DEPLOYDIR \
+      CFLAGS="-arch $arch -mmacos-version-min=$MAC_OSX_VERSION_MIN" \
+      LDFLAGS="-arch $arch -mmacos-version-min=$MAC_OSX_VERSION_MIN" \
+      --disable-static \
+      --build=$LOCAL_GNU_ARCH-apple-darwin --host=${GNU_ARCHS[$i]}-apple-darwin17.0.0
+    make -j"$NUMCPU" install DESTDIR=$PWD/install/
+    cd ..
+  done
+
+  # Install the first arch
+  cp -R build-${ARCHS[0]}/install/$DEPLOYDIR/* $DEPLOYDIR
+
+  # If we're building for multiple archs, create fat binaries
+  if (( ${#ARCHS[@]} > 1 )); then
+    LIBS=()
+    for arch in ${ARCHS[*]}; do
+      LIBS+=(build-$arch/install/$DEPLOYDIR/lib/libunistring.dylib)
+    done
+    lipo -create ${LIBS[@]} -output $DEPLOYDIR/lib/libunistring.dylib
+  fi
+
+  install_name_tool -id @rpath/libunistring.dylib $DEPLOYDIR/lib/libunistring.dylib
+}
+
+build_libidn2()
+{
+  version=$1
+  cd $BASEDIR/src
+  rm -rf libidn2-$version
+  if [ ! -f libidn2-$version.tar.gz ]; then
+    curl -LO https://ftp.gnu.org/gnu/libidn/libidn2-$version.tar.gz
+  fi
+  tar xzf libidn2-$version.tar.gz
+  cd libidn2-$version
+
+  # Build each arch separately
+  for i in ${!ARCHS[@]}; do
+    arch=${ARCHS[$i]}
+    mkdir build-$arch
+    cd build-$arch
+    PKG_CONFIG_PATH=$DEPLOYDIR/lib/pkgconfig \
+    ../configure --prefix=$DEPLOYDIR \
+      CFLAGS="-arch $arch -mmacos-version-min=$MAC_OSX_VERSION_MIN -I$DEPLOYDIR/include" \
+      CPPFLAGS="-I$DEPLOYDIR/include" \
+      LDFLAGS="-arch $arch -mmacos-version-min=$MAC_OSX_VERSION_MIN -L$DEPLOYDIR/lib" \
+      --disable-static \
+      --build=$LOCAL_GNU_ARCH-apple-darwin --host=${GNU_ARCHS[$i]}-apple-darwin17.0.0
+    make -j"$NUMCPU" install DESTDIR=$PWD/install/
+    cd ..
+  done
+
+  # Install the first arch
+  cp -R build-${ARCHS[0]}/install/$DEPLOYDIR/* $DEPLOYDIR
+
+  # If we're building for multiple archs, create fat binaries
+  if (( ${#ARCHS[@]} > 1 )); then
+    LIBS=()
+    for arch in ${ARCHS[*]}; do
+      LIBS+=(build-$arch/install/$DEPLOYDIR/lib/libidn2.dylib)
+    done
+    lipo -create ${LIBS[@]} -output $DEPLOYDIR/lib/libidn2.dylib
+  fi
+
+  install_name_tool -id @rpath/libidn2.dylib $DEPLOYDIR/lib/libidn2.dylib
+}
+
+build_libpsl()
+{
+  version=$1
+  cd $BASEDIR/src
+  rm -rf libpsl-$version
+  if [ ! -f libpsl-$version.tar.gz ]; then
+    curl -LO https://github.com/rockdaboot/libpsl/releases/download/$version/libpsl-$version.tar.gz
+  fi
+  tar xzf libpsl-$version.tar.gz
+  cd libpsl-$version
+
+  # Build each arch separately
+  for i in ${!ARCHS[@]}; do
+    arch=${ARCHS[$i]}
+    mkdir build-$arch
+    cd build-$arch
+    PKG_CONFIG_PATH=$DEPLOYDIR/lib/pkgconfig \
+    ../configure --prefix=$DEPLOYDIR \
+      CFLAGS="-arch $arch -mmacos-version-min=$MAC_OSX_VERSION_MIN -I$DEPLOYDIR/include" \
+      CPPFLAGS="-I$DEPLOYDIR/include" \
+      LDFLAGS="-arch $arch -mmacos-version-min=$MAC_OSX_VERSION_MIN -L$DEPLOYDIR/lib" \
+      --disable-static \
+      --build=$LOCAL_GNU_ARCH-apple-darwin --host=${GNU_ARCHS[$i]}-apple-darwin17.0.0
+    make -j"$NUMCPU" install DESTDIR=$PWD/install/
+    cd ..
+  done
+
+  # Install the first arch
+  cp -R build-${ARCHS[0]}/install/$DEPLOYDIR/* $DEPLOYDIR
+
+  # If we're building for multiple archs, create fat binaries
+  if (( ${#ARCHS[@]} > 1 )); then
+    LIBS=()
+    for arch in ${ARCHS[*]}; do
+      LIBS+=(build-$arch/install/$DEPLOYDIR/lib/libpsl.dylib)
+    done
+    lipo -create ${LIBS[@]} -output $DEPLOYDIR/lib/libpsl.dylib
+  fi
+
+  install_name_tool -id @rpath/libpsl.dylib $DEPLOYDIR/lib/libpsl.dylib
+}
+
+build_zstd()
+{
+  version=$1
+  cd $BASEDIR/src
+  rm -rf zstd-$version
+  if [ ! -f zstd-$version.tar.gz ]; then
+    curl -LO https://github.com/facebook/zstd/releases/download/v$version/zstd-$version.tar.gz
+  fi
+  tar xzf zstd-$version.tar.gz
+  cd zstd-$version/build/cmake
+
+  # Use CMake to build universal binary directly
+  mkdir build
+  cd build
+  cmake .. \
+    -DCMAKE_INSTALL_PREFIX=$DEPLOYDIR \
+    -DCMAKE_OSX_ARCHITECTURES="$ARCHS_COMBINED" \
+    -DCMAKE_OSX_DEPLOYMENT_TARGET=$MAC_OSX_VERSION_MIN \
+    -DZSTD_BUILD_SHARED=ON \
+    -DZSTD_BUILD_STATIC=OFF \
+    -DCMAKE_BUILD_TYPE=Release
+  make -j"$NUMCPU"
+  make install
+
+  install_name_tool -id @rpath/libzstd.dylib $DEPLOYDIR/lib/libzstd.*.dylib
+}
+
+build_brotli()
+{
+  version=$1
+  cd $BASEDIR/src
+  rm -rf brotli-$version
+  if [ ! -f brotli-$version.tar.gz ]; then
+    curl -LO https://github.com/google/brotli/archive/refs/tags/v$version.tar.gz -o brotli-$version.tar.gz
+  fi
+  tar xzf brotli-$version.tar.gz
+  cd brotli-$version
+
+  # Build each arch separately - brotli uses CMake
+  for i in ${!ARCHS[@]}; do
+    arch=${ARCHS[$i]}
+    mkdir build-$arch
+    cd build-$arch
+    cmake .. \
+      -DCMAKE_INSTALL_PREFIX=$DEPLOYDIR \
+      -DCMAKE_OSX_ARCHITECTURES=$arch \
+      -DCMAKE_OSX_DEPLOYMENT_TARGET=$MAC_OSX_VERSION_MIN \
+      -DBUILD_SHARED_LIBS=ON \
+      -DCMAKE_BUILD_TYPE=Release
+    make -j"$NUMCPU"
+    make install DESTDIR=$PWD/install/
+    cd ..
+  done
+
+  # Install the first arch
+  cp -R build-${ARCHS[0]}/install/$DEPLOYDIR/* $DEPLOYDIR
+
+  # If we're building for multiple archs, create fat binaries
+  if (( ${#ARCHS[@]} > 1 )); then
+    for lib in libbrotlicommon.dylib libbrotlidec.dylib libbrotlienc.dylib; do
+      LIBS=()
+      for arch in ${ARCHS[*]}; do
+        LIBS+=(build-$arch/install/$DEPLOYDIR/lib/$lib)
+      done
+      lipo -create ${LIBS[@]} -output $DEPLOYDIR/lib/$lib
+    done
+  fi
+
+  install_name_tool -id @rpath/libbrotlicommon.dylib $DEPLOYDIR/lib/libbrotlicommon.dylib
+  install_name_tool -id @rpath/libbrotlidec.dylib $DEPLOYDIR/lib/libbrotlidec.dylib
+  install_name_tool -id @rpath/libbrotlienc.dylib $DEPLOYDIR/lib/libbrotlienc.dylib
+}
+
+build_curl()
+{
+  version=$1
+  cd $BASEDIR/src
+  rm -rf curl-$version
+  if [ ! -f curl-$version.tar.bz2 ]; then
+    curl -LO https://curl.se/download/curl-$version.tar.bz2
+  fi
+  tar xjf curl-$version.tar.bz2
+  cd curl-$version
+
+  # Build each arch separately
+  for i in ${!ARCHS[@]}; do
+    arch=${ARCHS[$i]}
+    mkdir build-$arch
+    cd build-$arch
+    PKG_CONFIG_PATH=$DEPLOYDIR/lib/pkgconfig \
+    ../configure --prefix=$DEPLOYDIR \
+      --with-openssl=$DEPLOYDIR \
+      --without-librtmp \
+      CFLAGS="-arch $arch -mmacos-version-min=$MAC_OSX_VERSION_MIN -I$DEPLOYDIR/include" \
+      CPPFLAGS="-I$DEPLOYDIR/include" \
+      LDFLAGS="-arch $arch -mmacos-version-min=$MAC_OSX_VERSION_MIN -L$DEPLOYDIR/lib" \
+      --disable-static \
+      --build=$LOCAL_GNU_ARCH-apple-darwin --host=${GNU_ARCHS[$i]}-apple-darwin17.0.0
+    make -j"$NUMCPU" install DESTDIR=$PWD/install/
+    cd ..
+  done
+
+  # Install the first arch
+  cp -R build-${ARCHS[0]}/install/$DEPLOYDIR/* $DEPLOYDIR
+
+  # If we're building for multiple archs, create fat binaries
+  if (( ${#ARCHS[@]} > 1 )); then
+    LIBS=()
+    for arch in ${ARCHS[*]}; do
+      LIBS+=(build-$arch/install/$DEPLOYDIR/lib/libcurl.dylib)
+    done
+    lipo -create ${LIBS[@]} -output $DEPLOYDIR/lib/libcurl.dylib
+  fi
+
+  install_name_tool -id @rpath/libcurl.dylib $DEPLOYDIR/lib/libcurl.dylib
+}
+
 build_boost()
 {
   version=$1
@@ -422,7 +791,7 @@ build_boost()
   cd $BASEDIR/src
   rm -rf boost_$bversion
   if [ ! -f boost_$bversion.tar.bz2 ]; then
-    curl -LO http://downloads.sourceforge.net/project/boost/boost/$version/boost_$bversion.tar.bz2
+    curl -LO https://downloads.sourceforge.net/project/boost/boost/$version/boost_$bversion.tar.bz2
   fi
   tar xjf boost_$bversion.tar.bz2
   cd boost_$bversion
@@ -478,7 +847,7 @@ build_opencsg()
   cd $BASEDIR/src
   rm -rf OpenCSG-$version
   if [ ! -f OpenCSG-$version.tar.gz ]; then
-    curl -O http://www.opencsg.org/OpenCSG-$version.tar.gz
+    curl -LO http://www.opencsg.org/OpenCSG-$version.tar.gz
   fi
   tar xzf OpenCSG-$version.tar.gz
   cd OpenCSG-$version
@@ -561,7 +930,9 @@ build_freetype()
   cd "$BASEDIR"/src
   rm -rf "freetype-$version"
   if [ ! -f "freetype-$version.tar.gz" ]; then
-    curl --insecure -LO "http://downloads.sourceforge.net/project/freetype/freetype2/$version/freetype-$version.tar.gz"
+    # Try Savannah (official GNU) first, then SourceForge
+    curl -LO "https://download.savannah.gnu.org/releases/freetype/freetype-$version.tar.gz" || \
+    curl -LO "http://downloads.sourceforge.net/project/freetype/freetype2/$version/freetype-$version.tar.gz"
   fi
   tar xzf "freetype-$version.tar.gz"
   cd "freetype-$version"

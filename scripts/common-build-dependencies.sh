@@ -23,7 +23,9 @@ build_freetype()
   cd "$BASEDIR"/src
   rm -rf "freetype-$version"
   if [ ! -f "freetype-$version.tar.gz" ]; then
-    curl --insecure -LO "http://download.savannah.gnu.org/releases/freetype/freetype-$version.tar.gz"
+    # Try Savannah (official GNU) first, then SourceForge as fallback
+    curl -LO "https://download.savannah.gnu.org/releases/freetype/freetype-$version.tar.gz" || \
+    curl -LO "http://downloads.sourceforge.net/project/freetype/freetype2/$version/freetype-$version.tar.gz"
   fi
   tar xzf "freetype-$version.tar.gz"
   cd "freetype-$version"
@@ -31,7 +33,7 @@ build_freetype()
   make -j"$NUMCPU"
   make install
 }
- 
+
 build_libxml2()
 {
   version="$1"

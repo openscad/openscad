@@ -172,7 +172,7 @@ build_qt5scintilla2()
   fi
 
   if [ ! -e $DEPLOYDIR/include/Qsci ]; then
-    # workaround numerous bugs in qscintilla build system, see 
+    # workaround numerous bugs in qscintilla build system, see
     # ../qscintilla2.prf and ../scintilla.pri for more info
     qsci_staticlib=`find $tmpinstalldir -name libqscintilla2.a`
     qsci_include=`find $tmpinstalldir -name Qsci`
@@ -267,7 +267,10 @@ build_gmp()
   cd $BASEDIR/src
   rm -rf gmp-$version
   if [ ! -f gmp-$version.tar.bz2 ]; then
-    curl --insecure -O https://gmplib.org/download/gmp/gmp-$version.tar.bz2
+    # Try GNU FTP first (official GNU mirror), then gmplib.org, then ftpmirror
+    curl -LO https://ftp.gnu.org/gnu/gmp/gmp-$version.tar.bz2 || \
+    curl -LO https://gmplib.org/download/gmp/gmp-$version.tar.bz2 || \
+    curl -LO https://ftpmirror.gnu.org/gmp/gmp-$version.tar.bz2
   fi
   tar xjf gmp-$version.tar.bz2
   cd gmp-$version
@@ -313,10 +316,12 @@ build_boost()
   cd $BASEDIR/src
   rm -rf boost_$bversion
   if [ ! -f boost_$bversion.tar.bz2 ]; then
-    curl -LO https://downloads.sourceforge.net/project/boost/boost/$version/boost_$bversion.tar.bz2
+    # Try SourceForge first, then JFrog mirror
+    curl -LO https://downloads.sourceforge.net/project/boost/boost/$version/boost_$version.tar.bz2 || \
+    curl -LO https://boostorg.jfrog.io/artifactory/main/release/$version/source/boost_$bversion.tar.bz2
   fi
   if [ ! $? -eq 0 ]; then
-    echo download failed. 
+    echo download failed.
     exit 1
   fi
   tar xjf boost_$bversion.tar.bz2
@@ -524,7 +529,10 @@ build_opencsg()
   cd $BASEDIR/src
   rm -rf OpenCSG-$version
   if [ ! -f OpenCSG-$version.tar.gz ]; then
-    curl --insecure -O http://www.opencsg.org/OpenCSG-$version.tar.gz
+    # Try official site first, then GitHub mirror
+    curl -LO http://www.opencsg.org/OpenCSG-$version.tar.gz || \
+    curl -LO https://github.com/floriankirsch/OpenCSG/archive/refs/tags/opencsg-${version//./-}-release.tar.gz && \
+    mv opencsg-${version//./-}-release.tar.gz OpenCSG-$version.tar.gz
   fi
   tar xzf OpenCSG-$version.tar.gz
   cd OpenCSG-$version
@@ -830,11 +838,11 @@ fi
 # This is only for libraries most systems won't have new enough versions of.
 # For big things like Qt5, see the notes at the head of this file on
 # building individual dependencies.
-# 
+#
 # Some of these are defined in scripts/common-build-dependencies.sh
 
 build_eigen 3.3.7
-build_gmp 6.0.0
+build_gmp 6.0.0a
 build_mpfr 3.1.1
 build_boost 1.81.0
 # NB! For CGAL, also update the actual download URL in the function
