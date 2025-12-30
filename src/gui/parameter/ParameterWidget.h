@@ -48,7 +48,7 @@ private:
   ParameterObjects parameters;
   std::map<ParameterObject *, std::vector<ParameterVirtualWidget *>> widgets;
 
-  QString invalidJsonFile;  // set if a json file was read that could not be parsed
+  JsonErrorInfo jsonError;  // structured error info from parsing the json file
   QTimer autoPreviewTimer;
   bool modified = false;
 
@@ -59,6 +59,7 @@ public:
   void saveBackupFile(const QString& scadFile);
   void setParameters(const SourceFile *sourceFile, const std::string& source);
   void applyParameters(SourceFile *sourceFile);
+  void reportJsonErrors();
   bool childHasFocus();
   bool isModified() const { return modified; }
 

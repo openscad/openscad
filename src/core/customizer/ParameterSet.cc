@@ -8,19 +8,27 @@ static std::string parameterSetsKey("parameterSets");
 static std::string fileFormatVersionKey("fileFormatVersion");
 static std::string fileFormatVersionValue("1");
 
-bool ParameterSets::readFile(const std::string& filename)
+bool ParameterSets::readFile(const std::string& filename, JsonErrorInfo& errorInfo)
 {
   boost::property_tree::ptree root;
 
   std::ifstream f(std::filesystem::u8path(filename));
   if (!f.good()) {
+    errorInfo.message = "Cannot open file for reading";
+    errorInfo.filename = filename;
+    errorInfo.line = 0;
     LOG(message_group::Error, "Cannot open Parameter Set '%1$s' for reading", filename);
     return false;
   }
   try {
     boost::property_tree::read_json(f, root);
   } catch (const boost::property_tree::json_parser_error& e) {
-    LOG(message_group::Error, "Cannot open Parameter Set '%1$s': %2$s", filename, e.what());
+    // Extract structured error information from the exception
+    errorInfo.message = e.message();  // Just the error message without file/line
+    errorInfo.filename = filename;    // Use our filename (e.filename() may be empty for streams)
+    errorInfo.line = e.line();
+    // Don't LOG here - the caller is responsible for reporting the error
+    // This allows for proper file/line info in the ErrorLog or console output
     return false;
   }
 

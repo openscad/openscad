@@ -1,0 +1,21 @@
+{
+    "fileFormatVersion": "1",
+    "parameterSets": {
+        "New set 1": "",
+        "New set 2": "",
+        "New set 3": 
+            "Labeled_Strings": "S",
+            "Labeled_Values": "10",
+            "Nu5
+            "Strings": "foo",
+            "TextBox": "hello",
+            "Two_Bee": "true",
+            "Vector1": "[12]",
+            "Vector2": "[12, 34]",
+            "Vector3": "[12, 34, 46]",
+            "Vector4": "[0.5, 0.5, 0.5, 0.5]",
+            "slider": "34",
+            "stepSlider": "2"
+        }
+    }
+}
