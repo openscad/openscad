@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.8.0](https://github.com/pythonscad/pythonscad/compare/v0.7.2...v0.8.0) (2025-12-30)
+
+
+### Features
+
+* add macOS build and upload workflow ([#252](https://github.com/pythonscad/pythonscad/issues/252)) ([ad6f085](https://github.com/pythonscad/pythonscad/commit/ad6f085c9cbc27a9f2ef0f32a3313350636140a3))
+
 ## [0.7.2](https://github.com/pythonscad/pythonscad/compare/v0.7.1...v0.7.2) (2025-12-28)
 
 
