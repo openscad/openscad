@@ -17,13 +17,9 @@ jobs:
       - uses: googleapis/release-please-action@v4
         id: release
         with:
-          # Use simple release type for C++ projects
-          release-type: simple
-          # Package name for releases
-          package-name: pythonscad
-          # Bump minor version for features, patch for fixes
-          bump-minor-pre-major: true
-          bump-patch-for-minor-pre-major: true
+          # Use config files for all release-please configuration
+          config-file: .release-please-config.json
+          manifest-file: .release-please-manifest.json
 
       - name: Checkout code
         if: ${{ steps.release.outputs.release_created }}
