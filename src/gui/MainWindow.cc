@@ -252,8 +252,8 @@ namespace {
 
 const int autoReloadPollingPeriodMS = 200;
 const char copyrighttext[] =
-  "<p>Copyright (C) 2009-2025 The OpenSCAD Developers</p>"
-  "<p>Copyright (C) 2024-2025 The PythonSCAD Developers</p>"
+  "<p>Copyright (C) 2009-2026 The OpenSCAD Developers</p>"
+  "<p>Copyright (C) 2024-2026 The PythonSCAD Developers</p>"
   "<p>This program is free software; you can redistribute it and/or modify "
   "it under the terms of the GNU General Public License as published by "
   "the Free Software Foundation; either version 2 of the License, or "
