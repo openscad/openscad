@@ -332,11 +332,7 @@ void GeometryEvaluator::smartCacheInsert(const AbstractNode& node,
 {
   const std::string& key = this->tree.getIdString(node);
 
-  if (CGALCache::acceptsGeometry(geom)) {
-    if (!CGALCache::instance()->contains(key)) {
-      CGALCache::instance()->insert(key, geom);
-    }
-  } else if (!GeometryCache::instance()->contains(key)) {
+  if (!GeometryCache::instance()->contains(key)) {
     // FIXME: Sanity-check Polygon2d as well?
     // if (const auto ps = std::dynamic_pointer_cast<const PolySet>(geom)) {
     //   assert(!ps->hasDegeneratePolygons());
@@ -352,7 +348,7 @@ void GeometryEvaluator::smartCacheInsert(const AbstractNode& node,
 bool GeometryEvaluator::isSmartCached(const AbstractNode& node)
 {
   const std::string& key = this->tree.getIdString(node);
-  return GeometryCache::instance()->contains(key) || CGALCache::instance()->contains(key);
+  return GeometryCache::instance()->contains(key);
 }
 
 std::shared_ptr<const Geometry> GeometryEvaluator::smartCacheGet(const AbstractNode& node,
@@ -360,8 +356,7 @@ std::shared_ptr<const Geometry> GeometryEvaluator::smartCacheGet(const AbstractN
 {
   const std::string& key = this->tree.getIdString(node);
   const bool hasgeom = GeometryCache::instance()->contains(key);
-  const bool hascgal = CGALCache::instance()->contains(key);
-  if (hascgal && (preferNef || !hasgeom)) return CGALCache::instance()->get(key);
+
   if (hasgeom) return GeometryCache::instance()->get(key);
   return {};
 }
