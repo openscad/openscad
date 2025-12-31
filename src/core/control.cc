@@ -157,6 +157,7 @@ static std::shared_ptr<AbstractNode> builtin_print(const ModuleInstantiation *in
   (void)parameters.valid_required("message", Value::Type::STRING);
   std::string message = parameters["message"].toString();
 
+  // NEEDSWORK:  suppresses empty strings.
   LOG(message_group::NONE, "%1$s", message);
 
   auto node = children.instantiate(lazyUnionNode(inst));

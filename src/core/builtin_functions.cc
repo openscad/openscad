@@ -1114,105 +1114,367 @@ Value builtin_import(Arguments arguments, const Location& loc)
   return import_json(file, session, loc);
 }
 
-Value findarg(const Arguments& args, const std::string& name, int argStart)
+Value findArg(int& curArg, const Arguments& args, const std::string& name, const int argStart,
+  const Location& loc)
 {
-  fprintf(stderr, "findarg(%s)\n", name.c_str()); fflush(stderr);
-  if (name.find_first_not_of("0123456789") == std::string::npos) {
-    int i = std::stoi(name) + argStart;
-  fprintf(stderr, "found %d\n", i); fflush(stderr);
-    return args[i].value.clone();
-  } else {
-    for (int i = argStart; i < args.size(); i++) {
-      if (args[i].name && *args[i].name == name) {
-  fprintf(stderr, "found %d\n", i); fflush(stderr);
-        return args[i].value.clone();
-      }
-    }
-    return Value::undefined.clone();
-  }
-}
-
-int format1(std::ostringstream& stream, const std::string& fmt, int fStart, Arguments& args,
-    int argStart, const Location& loc)
-{
-  std::ostringstream specstream;
   int i;
 
-  i = fStart;
-  for (;;) {
-    if (i >= fmt.size()) {
-        LOG(message_group::Warning, loc, args.documentRoot(), "mismatched braces");
-        return i;
+  if (name.empty()) {
+    if (curArg < 0) {
+      LOG(message_group::Warning, loc, args.documentRoot(),
+        "cannot switch between manual and automatic numbering");
+      return Value::undefined.clone();
     }
-    if (fmt[i] == '{') {
-      i = format1(specstream, fmt, i+1, args, argStart, loc);
-    } else if (fmt[i] == '}') {
-      i++;
-      break;
-    } else {
-      specstream << fmt[i];
-      i++;
+    i = curArg + argStart;
+    curArg++;
+    if (i >= args.size()) {
+      LOG(message_group::Warning, loc, args.documentRoot(), "not enough arguments");
+      return Value::undefined.clone();
+    }
+  } else if (name.find_first_not_of("0123456789") == std::string::npos) {
+    if (curArg > 0) {
+      LOG(message_group::Warning, loc, args.documentRoot(),
+        "cannot switch between manual and automatic numbering");
+      return Value::undefined.clone();
+    }
+    curArg = -1;
+    i = std::stoi(name) + argStart;
+    if (i >= args.size()) {
+      LOG(message_group::Warning, loc, args.documentRoot(), "argument index out of range");
+      return Value::undefined.clone();
+    }
+  } else {
+    for (i = argStart; ; i++) {
+      if (i >= args.size()) {
+        LOG(message_group::Warning, loc, args.documentRoot(), "argument %1$s not found",
+          quoteVar(name));
+        return Value::undefined.clone();
+      }
+      if (args[i].name && *args[i].name == name) {
+        break;
+      }
     }
   }
-  int end = i;
+  return args[i].value.clone();
+}
 
-  std::string spec = specstream.str();
-
-  for (i = 0;
-      i < spec.size() && spec[i] != '!' && spec[i] != ':' && spec[i] != '.' && spec[i] != '[';
+// Given a format, with an index i pointing after the open brace, extract a field name and
+// return the associated Value.  Accept a current argument for automatic numbering, or -1
+// if we've switched to manual numbering.  Update the index i and the current argument as
+// appropriate.
+Value getField(int& i, int& curArg, const std::string& fmt, const Arguments& args,
+  const int argStart, const Location& loc)
+{
+  // Skip over the first "word".
+  int start = i;
+  for (;
+      i < fmt.size() && strchr("}!:.[", fmt[i]) == nullptr;
       i++) {
       // Loop
   }
-  Value a = findarg(args, spec.substr(0, i), argStart);
+  Value a = findArg(curArg, args, fmt.substr(start, i - start), argStart, loc);
 
-  while (spec[i] == '.' || spec[i] == '[') {
-    if (spec[i] == '.') {
+  // Now process any attributes or subscripts.
+  while (fmt[i] == '.' || fmt[i] == '[') {
+    if (fmt[i] == '.') {
       i++;
-      int j = i;
-      for (; j < spec.size() && spec[j] != '!' && spec[j] != ':' && spec[j] != '.' && spec[j] != '['; 
-          j++) {
+      start = i;
+      for (; i < fmt.size() && strchr("}!:.[", fmt[i]) == nullptr;
+          i++) {
         // Loop
       }
-      a = a[spec.substr(i, j - i)];
-      i = j;
+      a = a[fmt.substr(start, i - start)];
     } else {
-      assert(spec[i] == '[');
+      assert(fmt[i] == '[');
       i++;
-      int j = i;
-      for (;; j++) {
-        if (j >= spec.size()) {
+      start = i;
+      for (;; i++) {
+        if (i >= fmt.size()) {
           LOG(message_group::Warning, loc, args.documentRoot(), "Unmatched bracket");
-          return end;
+          return std::move(a);
         }
-        if (spec[j] == ']') {
+        if (fmt[i] == ']') {
           break;
         }
       }
-      std::string index = spec.substr(i, j - i);
+      std::string index = fmt.substr(start, i - start);
       if (index.find_first_not_of("0123456789") == std::string::npos) {
         a = a[std::stoi(index)];
       } else {
         a = a[index];
       }
-      j++;
-      i = j;
+      i++;
+    }
+  }
+  return std::move(a);
+}
+
+/* Forward */
+void format1(std::ostringstream& stream, int& i, int& curArg, const std::string& fmt,
+  Arguments& args, int argStart, const Location& loc);
+
+std::string expand(int& i, int& curArg, const std::string& fmt, Arguments& args,
+  int argStart, const Location& loc)
+{
+  std::ostringstream stream;
+
+  for (;;) {
+    if (i >= fmt.size()) {
+        LOG(message_group::Warning, loc, args.documentRoot(), "mismatched braces");
+        return "";
+    }
+    if (fmt[i] == '{') {
+      i++;
+      format1(stream, i, curArg, fmt, args, argStart, loc);
+    } else if (fmt[i] == '}') {
+      i++;
+      break;
+    } else {
+      stream << fmt[i];
+      i++;
     }
   }
 
-  stream << a.toString();
-
-  return end;
+  return stream.str();
 }
 
-std::string format(const std::string& fmt, Arguments& args, int argstart, const Location& loc)
+void convert(int& i, Value& a, const std::string& fmt, const Arguments& args,
+  const Location& loc)
+{
+  if (fmt[i] != '!') {
+    return;
+  }
+  i++;
+  if (i >= fmt.size()) {
+    LOG(message_group::Warning, loc, args.documentRoot(), "missing conversion");
+    return;
+  }
+  switch(fmt[i]) {
+    case 's':
+      a = Value(a.toString());
+      break;
+    case 'a':
+    case 'r':
+      LOG(message_group::Warning, loc, args.documentRoot(), "conversion %1$s not yet implemented",
+        fmt.substr(i,1));
+      break;
+    default:
+      LOG(message_group::Warning, loc, args.documentRoot(), "bad conversion %1$s",
+        fmt.substr(i,1));
+      break;
+  }
+  i++;
+}
+
+void format2(std::ostringstream& stream, const std::string& spec, Value& a, const Arguments& args,
+  const Location& loc)
+{
+  // Format parameters
+  std::string fill = "";
+  int align = 0;
+  int sign = 0;
+  int opt_z = false;
+  int opt_alternate = false;
+  int wgrouping = 0;
+  int width = -1;
+  int precision = -1;
+  int pgrouping = 0;
+  std::string type;
+
+  std::size_t i = 0;
+  const char aligns[] = "<>=^";
+
+  if (i < spec.size()) {
+    if (spec[i] == ':') {
+      i++;
+    } else {
+      LOG(message_group::Warning, loc, args.documentRoot(),
+        "expected ':' before format specification");
+    }
+  }
+
+  // Ugh:  recognizing fill requires looking ahead to see if it's followed by align.
+  // NEEDSWORK:  fill character should be allowed to be non-ASCII.
+  if (i + 1 < spec.size() && strchr(aligns, spec[i + 1]) != nullptr) {
+    fill = spec.substr(i, 1);
+    i++;
+  }
+
+  if (i < spec.size() && strchr(aligns, spec[i]) != nullptr) {
+    align = spec[i];
+    i++;
+  }
+
+  if (i < spec.size() && strchr("+- ", spec[i]) != nullptr) {
+    sign = spec[i];
+    i++;
+  }
+
+  if (i < spec.size() && spec[i] == 'z') {
+    opt_z = true;
+    i++;
+  }
+
+  if (i < spec.size() && spec[i] == '#') {
+    opt_alternate = true;
+    i++;
+  }
+
+  if (i < spec.size() && spec[i] == '0') {
+    if (align == 0) {
+      align = '=';
+    }
+    if (fill.empty()) {
+      fill = "0";
+    }
+    i++;
+  }
+
+  if (i < spec.size() && isdigit(spec[i])) {
+    std::size_t n;
+    width = std::stoi(spec.substr(i), &n);
+    i += n;
+  }
+
+  if (i < spec.size() && spec[i] == ',' || spec[i] == '_') {
+    wgrouping = spec[i];
+    i++;
+  }
+
+  if (i < spec.size() && spec[i] == '.') {
+    const int i0 = i;
+    i++;
+    if (i < spec.size() && isdigit(spec[i])) {
+      std::size_t n;
+      precision = std::stoi(spec.substr(i), &n);
+      i += n;
+    }
+    if (i < spec.size() && spec[i] == ',' || spec[i] == '_') {
+      pgrouping = spec[i];
+      i++;
+    }
+    if (i == i0) {
+      LOG(message_group::Warning, loc, args.documentRoot(), "missing precision");
+    }
+  }
+
+  type = spec.substr(i);
+
+  if (width >= 0) {
+    stream << std::setw(width);
+  }
+  if (precision >= 0) {
+    stream << std::setprecision(precision);
+  }
+  if (!fill.empty()) {
+    // NEEDSWORK:  fill should be allowed to be non-ASCII.
+    stream << std::setfill(fill[0]);
+  }
+  if (align == '<') {
+    stream << std::left;
+  } else if (align == '>') {
+    stream << std::right;
+  } else if (align == '=') {
+    stream << std::internal;
+  } else if (align == '^') {
+    // NEEDSWORK
+    LOG(message_group::Warning, loc, args.documentRoot(), "alignment code '^' not yet implemented");
+  }
+
+  switch (a.type()) {
+  case Value::Type::NUMBER:
+    if (!type.empty() && isupper(type[0])) {
+      stream << std::uppercase;
+    }
+    if (type == "c") {
+      stream << a.chrString();
+    } else if (type == "b") {
+      // NEEDSWORK:  NYI
+      stream << a.toString();
+    } else if (type == "d" || type == "n" || type == "o" || type == "x" || type == "X") {
+      double d = round(a.toDouble());
+      if (type == "o") {
+        stream << std::oct << (uintmax_t) d;
+      } else if (type == "x" || type == "X") {
+        stream << std::hex << (uintmax_t) d;
+      } else {
+        assert(type == "d" || type == "n");
+        // NEEDSWORK:  should this ever switch to exponential notation?
+        // And what does C++ do with large numbers with <<?
+        stream << d;
+      }
+    } else if (type == "e" || type == "E") {
+      double d = a.toDouble();
+      stream << std::scientific << d;
+    } else if (type == "f" || type == "F") {
+      double d = a.toDouble();
+      stream << std::fixed << d;
+    } else if (type == "g" || type == "G") {
+      double d = a.toDouble();
+      stream << std::defaultfloat << d;
+    } else if (type == "%") {
+      stream << a.toString();
+    } else if (type.empty()) {
+      // NEEDSWORK:  should this be like d, like g, or different?
+      double d = a.toDouble();
+      stream << std::defaultfloat << d;
+    } else {
+      LOG(message_group::Warning, loc, args.documentRoot(),
+        "format code '%1$s' not defined for '%2$s'", type, a.typeName());
+    }
+    break;
+  case Value::Type::STRING:
+    if (type == "s" || type.empty()) {
+      stream << a.toString();
+    } else {
+      LOG(message_group::Warning, loc, args.documentRoot(),
+        "format code '%1$s' not defined for '%2$s'", type, a.typeName());
+    }
+    break;
+  case Value::Type::VECTOR:
+  case Value::Type::RANGE:
+  case Value::Type::OBJECT:
+  case Value::Type::FUNCTION:
+    if (type.empty()) {
+      stream << a.toString();
+    } else {
+      LOG(message_group::Warning, loc, args.documentRoot(),
+        "format code '%1$s' not defined for '%2$s'", type, a.typeName());
+    }
+    break;
+  default:
+    LOG(message_group::Warning, loc, args.documentRoot(),
+      "format code '%1$s' not defined for '%2$s'", type, a.typeName());
+    break;
+  }
+}
+
+// Given a format string, where fStart points at the character after the open brace of a format
+// specification, format the corresponding argument, emit it to the specified stream, and
+// update the index to point after the close brace of the format specification.  Update the current
+// argument as appropriate.
+void format1(std::ostringstream& stream, int& i, int& curArg, const std::string& fmt,
+  Arguments& args, int argStart, const Location& loc)
+{
+  Value a = getField(i, curArg, fmt, args, argStart, loc);
+
+  convert(i, a, fmt, args, loc);
+
+  std::string spec = expand(i, curArg, fmt, args, argStart, loc);
+
+  format2(stream, spec, a, args, loc);
+}
+
+std::string format(const std::string& fmt, Arguments& args, int argStart, const Location& loc)
 {
   std::ostringstream stream;
+  int curArg = 0;
   
   for (int i = 0; i < fmt.size();) {
     if (fmt[i] == '{') {
       i++;
       if (i >= fmt.size() || fmt[i] != '{') {
-        i = format1(stream, fmt, i, args, argstart, loc);
+        format1(stream, i, curArg, fmt, args, argStart, loc);
         continue;
       }
     } else if (fmt[i] == '}') {
@@ -1222,6 +1484,7 @@ std::string format(const std::string& fmt, Arguments& args, int argstart, const 
         continue;
       }
     }
+    // Normal character or the second of a doubled pair; emit it.
     stream << fmt[i];
     i++;
   }
