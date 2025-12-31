@@ -2,7 +2,7 @@ name: Build and upload macOS build
 
 on:
   release:
-    types: [published]
+    types: [created]
   pull_request:
   workflow_dispatch:
     inputs:

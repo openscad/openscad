@@ -2,7 +2,7 @@ name: Build and upload Windows build (MXE Cross-Compile)
 
 on:
   release:
-    types: [published]
+    types: [created]
   workflow_dispatch:
     inputs:
       upload_to_release:
