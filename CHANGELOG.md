@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.8.1](https://github.com/pythonscad/pythonscad/compare/v0.8.0...v0.8.1) (2025-12-31)
+
+
+### Bug Fixes
+
+* add include-component-in-tag setting to maintain tag compatibility ([#266](https://github.com/pythonscad/pythonscad/issues/266)) ([9f92d99](https://github.com/pythonscad/pythonscad/commit/9f92d998f1109381707e40513fc3c7a3a883b4e1))
+* change release trigger from published to created ([#256](https://github.com/pythonscad/pythonscad/issues/256)) ([ea76cb4](https://github.com/pythonscad/pythonscad/commit/ea76cb454cdad1e1c725234ba9aa7b972c281e7d))
+* correct VERSION.txt which previously wasn't updated by Release Please ([#262](https://github.com/pythonscad/pythonscad/issues/262)) ([c75f75a](https://github.com/pythonscad/pythonscad/commit/c75f75a03c4a9ee3885d8e4a03b6098b6a9cceaf))
+* prevent macOS release builds from triggering on pull requests ([#258](https://github.com/pythonscad/pythonscad/issues/258)) ([a45e9f4](https://github.com/pythonscad/pythonscad/commit/a45e9f49be39b38a24aa760485881907d417d62b))
+* use config files for release-please to enable VERSION.txt updates ([#260](https://github.com/pythonscad/pythonscad/issues/260)) ([1916712](https://github.com/pythonscad/pythonscad/commit/1916712f2651edce4dc12b4014e9e08362cd0440))
+
 ## [0.8.0](https://github.com/pythonscad/pythonscad/compare/v0.7.2...v0.8.0) (2025-12-30)
 
 
