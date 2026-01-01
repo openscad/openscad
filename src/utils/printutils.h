@@ -58,6 +58,7 @@ enum class message_group {
   NONE,
   Error,
   Warning,
+  Info,  // allows HTML links, slow!
   UI_Warning,
   Font_Warning,
   Export_Warning,
