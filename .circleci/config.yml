@@ -505,7 +505,7 @@ workflows:
           source_method: tarball
           context: secret-context
           requires:
-            - openscad-tarball
+            - openscad-tarball-release
       - openscad-appimage:
           name: openscad-appimage-release
           filters: *release-filters
@@ -513,7 +513,7 @@ workflows:
           source_method: tarball
           context: secret-context
           requires:
-            - openscad-tarball
+            - openscad-tarball-release
       - openscad-wasm:
           name: openscad-<< matrix.openscad_platform >>-release
           filters: *release-filters
@@ -524,7 +524,7 @@ workflows:
           source_method: tarball
           context: secret-context
           requires:
-            - openscad-tarball
+            - openscad-tarball-release
       - openscad-macos:
           name: openscad-macos-release
           filters: *release-filters
@@ -532,4 +532,4 @@ workflows:
           source_method: tarball
           context: secret-context
           requires:
-            - openscad-tarball
+            - openscad-tarball-release
