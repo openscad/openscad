@@ -290,7 +290,7 @@ MainWindow::MainWindow(const QStringList& filenames) : rubberBandManager(this)
            {parameterDock, _("Customizer"), "view/hideCustomizer"},
            {errorLogDock, _("Error-Log"), "view/hideErrorLog"},
            {animateDock, _("Animate"), "view/hideAnimate"},
-           {fontListDock, _("Font Lists"), "view/hideFontList"},
+           {fontListDock, _("Font List"), "view/hideFontList"},
            {viewportControlDock, _("Viewport-Control"), "view/hideViewportControl"}};
 
   this->versionLabel = nullptr;  // must be initialized before calling updateStatusBar()
