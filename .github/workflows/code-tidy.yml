@@ -37,7 +37,7 @@ jobs:
         format: 'YYYY-MM-DD-HH-mm-ss'
 
     - name: Retrieve cached results
-      uses: actions/cache@v4
+      uses: actions/cache@v5
       with:
         # TODO: maybe cache based on time in push but based on some PR
         # identifier in pull requests ?
@@ -80,7 +80,7 @@ jobs:
         cp OpenSCAD_clang-tidy.summary ${BASE_DIR}/${{ github.sha }}.summary
 
     - name: Upload clang-tidy Results
-      uses: actions/upload-artifact@v5
+      uses: actions/upload-artifact@v6
       with:
         name: clang-tidy Results
         path: |
