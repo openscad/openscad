@@ -34,13 +34,15 @@
 #include <QStringLiteral>
 #include <QTextCharFormat>
 #include <QWidget>
-#include <cassert>
+#include <QWheelEvent>
 #include <QMenu>
 #include <QFileInfo>
 #include <QFileDialog>
 #include <QTextStream>
 #include <QRegularExpression>
 #include <QString>
+#include <algorithm>
+#include <cassert>
 #include "gui/MainWindow.h"
 #include "utils/printutils.h"
 #include "gui/Preferences.h"
@@ -52,8 +54,9 @@ Console::Console(QWidget *parent) : QPlainTextEdit(parent)
   connect(this->actionClear, &QAction::triggered, this, &Console::actionClearConsole_triggered);
   connect(this->actionSaveAs, &QAction::triggered, this, &Console::actionSaveAs_triggered);
   connect(this, &Console::linkActivated, this, &Console::hyperlinkClicked);
-  this->setUndoRedoEnabled(false);
   this->appendCursor = this->textCursor();
+  this->setUndoRedoEnabled(false);
+  this->setTextInteractionFlags(Qt::TextSelectableByKeyboard | Qt::TextSelectableByMouse);
 }
 
 void Console::focusInEvent(QFocusEvent * /*event*/)
@@ -65,6 +68,20 @@ void Console::focusInEvent(QFocusEvent * /*event*/)
   }
   assert(mw);
   if (mw) mw->setLastFocus(this);
+}
+
+void Console::wheelEvent(QWheelEvent *event)
+{
+  if (event->modifiers().testFlag(Qt::ControlModifier)) {
+    const auto delta = event->angleDelta().y() / 120.0;
+    if (delta != 0) {
+      const auto step = static_cast<int>(std::signbit(delta) ? std::floor(delta) : std::ceil(delta));
+      setConsoleFont(font().family(), std::clamp(font().pointSize() + step, 6, 72));
+      event->accept();
+      return;
+    }
+  }
+  QPlainTextEdit::wheelEvent(event);
 }
 
 void Console::addMessage(const Message& msg)
@@ -97,7 +114,7 @@ void Console::addHtml(const QString& html)
   this->setTextCursor(this->appendCursor);
 }
 
-void Console::setFont(const QString& fontFamily, uint ptSize)
+void Console::setConsoleFont(const QString& fontFamily, uint ptSize)
 {
   const auto stylesheet = QString(R"(
     QPlainTextEdit {
