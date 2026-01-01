@@ -290,6 +290,7 @@ MainWindow::MainWindow(const QStringList& filenames) : rubberBandManager(this)
            {errorLogDock, _("Error-Log"), "view/hideErrorLog"},
            {animateDock, _("Animate"), "view/hideAnimate"},
            {fontListDock, _("Font List"), "view/hideFontList"},
+           {colorListDock, _("Color List"), "view/hideColorList"},
            {viewportControlDock, _("Viewport-Control"), "view/hideViewportControl"}};
 
   this->versionLabel = nullptr;  // must be initialized before calling updateStatusBar()
@@ -339,6 +340,7 @@ MainWindow::MainWindow(const QStringList& filenames) : rubberBandManager(this)
   connect(tabManager, &TabManager::editorContentReloaded, this,
           &MainWindow::onTabManagerEditorContentReloaded);
 
+  connect(this->console, &Console::openWindowRequested, this, &MainWindow::showLink);
   connect(GlobalPreferences::inst(), &Preferences::consoleFontChanged, this->console, &Console::setFont);
   this->console->setConsoleFont(
     GlobalPreferences::inst()->getValue("advanced/consoleFontFamily").toString(),
@@ -684,7 +686,8 @@ MainWindow::MainWindow(const QStringList& filenames) : rubberBandManager(this)
     activeEditor->setInitialSizeHint(QSize((5 * this->width() / 11), 100));
     tabifyDockWidget(consoleDock, errorLogDock);
     tabifyDockWidget(errorLogDock, fontListDock);
-    tabifyDockWidget(fontListDock, animateDock);
+    tabifyDockWidget(fontListDock, colorListDock);
+    tabifyDockWidget(colorListDock, animateDock);
     consoleDock->show();
   } else {
 #ifdef Q_OS_WIN
@@ -770,6 +773,8 @@ MainWindow::MainWindow(const QStringList& filenames) : rubberBandManager(this)
                    &MainWindow::onAnimateDockVisibilityChanged);
   QObject::connect(fontListDock, &Dock::visibilityChanged, this,
                    &MainWindow::onFontListDockVisibilityChanged);
+  QObject::connect(colorListDock, &Dock::visibilityChanged, this,
+                   &MainWindow::onColorListDockVisibilityChanged);
   QObject::connect(viewportControlDock, &Dock::visibilityChanged, this,
                    &MainWindow::onViewportControlDockVisibilityChanged);
   QObject::connect(parameterDock, &Dock::visibilityChanged, this,
@@ -1058,6 +1063,7 @@ void MainWindow::updateUndockMode(bool undockMode)
     errorLogDock->setFeatures(errorLogDock->features() | QDockWidget::DockWidgetFloatable);
     animateDock->setFeatures(animateDock->features() | QDockWidget::DockWidgetFloatable);
     fontListDock->setFeatures(fontListDock->features() | QDockWidget::DockWidgetFloatable);
+    colorListDock->setFeatures(colorListDock->features() | QDockWidget::DockWidgetFloatable);
     viewportControlDock->setFeatures(viewportControlDock->features() | QDockWidget::DockWidgetFloatable);
   } else {
     if (editorDock->isFloating()) {
@@ -1089,6 +1095,11 @@ void MainWindow::updateUndockMode(bool undockMode)
       fontListDock->setFloating(false);
     }
     fontListDock->setFeatures(fontListDock->features() & ~QDockWidget::DockWidgetFloatable);
+
+    if (colorListDock->isFloating()) {
+      colorListDock->setFloating(false);
+    }
+    colorListDock->setFeatures(colorListDock->features() & ~QDockWidget::DockWidgetFloatable);
 
     if (viewportControlDock->isFloating()) {
       viewportControlDock->setFloating(false);
@@ -3234,6 +3245,8 @@ void MainWindow::showLink(const QString& link)
     consoleDock->show();
   } else if (link == "#errorlog") {
     errorLogDock->show();
+  } else if (link == "#colorlist") {
+    colorListDock->show();
   }
 }
 
@@ -3289,6 +3302,14 @@ void MainWindow::onFontListDockVisibilityChanged(bool isVisible)
     fontListWidget->update_font_list();
     fontListWidget->setFocus();
     fontListDock->raise();
+  }
+}
+
+void MainWindow::onColorListDockVisibilityChanged(bool isVisible)
+{
+  if (isVisible) {
+    colorListWidget->setFocus();
+    colorListDock->raise();
   }
 }
 
@@ -3459,6 +3480,7 @@ void MainWindow::onTabManagerEditorChanged(EditorInterface *newEditor)
   errorLogDock->setNameSuffix(name);
   animateDock->setNameSuffix(name);
   fontListDock->setNameSuffix(name);
+  colorListDock->setNameSuffix(name);
   viewportControlDock->setNameSuffix(name);
 
   // If there is no renderedEditor we request for a new preview if the

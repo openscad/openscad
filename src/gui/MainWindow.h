@@ -282,6 +282,7 @@ private slots:
   void onErrorLogDockVisibilityChanged(bool isVisible);
   void onAnimateDockVisibilityChanged(bool isVisible);
   void onFontListDockVisibilityChanged(bool isVisible);
+  void onColorListDockVisibilityChanged(bool isVisible);
   void onViewportControlDockVisibilityChanged(bool isVisible);
   void onParametersDockVisibilityChanged(bool isVisible);
 

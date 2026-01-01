@@ -395,8 +395,7 @@
    <addaction name="menuWindow"/>
    <addaction name="menuHelp"/>
   </widget>
-  <widget class="QStatusBar" name="statusbar">
-  </widget>
+  <widget class="QStatusBar" name="statusbar"/>
   <widget class="Dock" name="editorDock">
    <attribute name="dockWidgetArea">
     <number>1</number>
@@ -612,7 +611,7 @@
   </widget>
   <widget class="Dock" name="viewportControlDock">
    <attribute name="dockWidgetArea">
-    <number>2</number>
+    <number>8</number>
    </attribute>
    <widget class="QWidget" name="viewportControlDockContents">
     <property name="focusPolicy">
@@ -676,9 +675,45 @@
     <number>8</number>
    </attribute>
    <widget class="QWidget" name="fontListDockContents">
-    <layout class="QVBoxLayout" name="verticalLayout_4">
+    <layout class="QVBoxLayout" name="verticalLayoutFontList">
+     <property name="leftMargin">
+      <number>0</number>
+     </property>
+     <property name="topMargin">
+      <number>0</number>
+     </property>
+     <property name="rightMargin">
+      <number>0</number>
+     </property>
+     <property name="bottomMargin">
+      <number>0</number>
+     </property>
      <item>
       <widget class="FontList" name="fontListWidget" native="true"/>
+     </item>
+    </layout>
+   </widget>
+  </widget>
+  <widget class="Dock" name="colorListDock">
+   <attribute name="dockWidgetArea">
+    <number>8</number>
+   </attribute>
+   <widget class="QWidget" name="colorListDockContents">
+    <layout class="QVBoxLayout" name="verticalLayoutColorList">
+     <property name="leftMargin">
+      <number>0</number>
+     </property>
+     <property name="topMargin">
+      <number>0</number>
+     </property>
+     <property name="rightMargin">
+      <number>0</number>
+     </property>
+     <property name="bottomMargin">
+      <number>0</number>
+     </property>
+     <item>
+      <widget class="ColorList" name="colorListWidget" native="true"/>
      </item>
     </layout>
    </widget>
@@ -1675,6 +1710,12 @@
    <class>FontList</class>
    <extends>QWidget</extends>
    <header>gui/FontList.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>ColorList</class>
+   <extends>QWidget</extends>
+   <header>gui/ColorList.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

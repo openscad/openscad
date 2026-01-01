@@ -71,7 +71,8 @@ static std::shared_ptr<AbstractNode> builtin_color(const ModuleInstantiation *in
     } else {
       LOG(message_group::Warning, inst->location(), parameters.documentRoot(),
           "Unable to parse color \"%1$s\"", colorname);
-      LOG("Please see https://en.wikipedia.org/wiki/Web_colors");
+      LOG(message_group::Info,
+          "For a list of valid color names, see the <a href=\"#colorlist\">Color List</a> window.");
     }
   }
   if (parameters["alpha"].type() == Value::Type::NUMBER) {
