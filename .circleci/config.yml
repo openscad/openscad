@@ -67,7 +67,7 @@ commands:
                 at: /tmp/workspace
             - run:
                 name: "Unpack tarball"
-                command: tar -xzf /tmp/workspace/openscad-*.tar.gz --strip-components=1
+                command: tar -xzf /tmp/workspace/openscad-*.src.tar.gz --strip-components=1
 
 jobs:
   openscad-mxe:
@@ -360,7 +360,7 @@ jobs:
       - store_artifacts:
           path: /tmp/artifacts
           destination: macOS
-  create-tarball:
+  openscad-tarball:
     executor: python-executor
     parameters:
       openscad_platform:
@@ -394,20 +394,20 @@ jobs:
           name: "Create source tarball"
           command: |
             mkdir -p /tmp/workspace
-            git-archive-all --force-submodules --prefix=openscad-${OPENSCAD_VERSION}/ /tmp/workspace/openscad-${OPENSCAD_VERSION}.tar
+            git-archive-all --force-submodules --prefix=openscad-${OPENSCAD_VERSION}/ /tmp/workspace/openscad-${OPENSCAD_VERSION}.src.tar
             # git-archive-all only archives versioned files. Amending VERSION.txt and COMMIT.txt to the archive
-            tar -rf /tmp/workspace/openscad-${OPENSCAD_VERSION}.tar --transform "s|^|openscad-${OPENSCAD_VERSION}/|" VERSION.txt COMMIT.txt
-            gzip /tmp/workspace/openscad-${OPENSCAD_VERSION}.tar
+            tar -rf /tmp/workspace/openscad-${OPENSCAD_VERSION}.src.tar --transform "s|^|openscad-${OPENSCAD_VERSION}/|" VERSION.txt COMMIT.txt
+            gzip /tmp/workspace/openscad-${OPENSCAD_VERSION}.src.tar
             cd /tmp/workspace
-            sha256sum openscad-${OPENSCAD_VERSION}.tar.gz > openscad-${OPENSCAD_VERSION}.tar.gz.sha256
-            sha512sum openscad-${OPENSCAD_VERSION}.tar.gz > openscad-${OPENSCAD_VERSION}.tar.gz.sha512
+            sha256sum openscad-${OPENSCAD_VERSION}.src.tar.gz > openscad-${OPENSCAD_VERSION}.src.tar.gz.sha256
+            sha512sum openscad-${OPENSCAD_VERSION}.src.tar.gz > openscad-${OPENSCAD_VERSION}.src.tar.gz.sha512
             ls -l openscad-${OPENSCAD_VERSION}.*
       - persist_to_workspace:
           root: /tmp/workspace
           paths:
-            - openscad-*.tar.gz
-            - openscad-*.tar.gz.sha256
-            - openscad-*.tar.gz.sha512
+            - openscad-*.src.tar.gz
+            - openscad-*.src.tar.gz.sha256
+            - openscad-*.src.tar.gz.sha512
       - store_artifacts:
           path: /tmp/workspace
           destination: source-tarball
@@ -439,6 +439,7 @@ workflows:
                   only:
                       - master
       - openscad-wasm:
+          # Legacy name
           name: openscad-<< matrix.openscad_platform >>
           matrix:
             parameters:
@@ -449,6 +450,7 @@ workflows:
                   only:
                       - master
       - openscad-macos:
+          # Legacy name
           name: openscad-macos
           context: secret-context
           filters:
@@ -493,7 +495,8 @@ workflows:
                       - /.*-macos/
   "CircleCI release build (tag)":
     jobs:
-      - create-tarball:
+      - openscad-tarball:
+          name: openscad-tarball-release
           filters: *release-filters
       - openscad-mxe:
           name: openscad-mxe-release
@@ -502,7 +505,7 @@ workflows:
           source_method: tarball
           context: secret-context
           requires:
-            - create-tarball
+            - openscad-tarball
       - openscad-appimage:
           name: openscad-appimage-release
           filters: *release-filters
@@ -510,7 +513,7 @@ workflows:
           source_method: tarball
           context: secret-context
           requires:
-            - create-tarball
+            - openscad-tarball
       - openscad-wasm:
           name: openscad-<< matrix.openscad_platform >>-release
           filters: *release-filters
@@ -521,7 +524,7 @@ workflows:
           source_method: tarball
           context: secret-context
           requires:
-            - create-tarball
+            - openscad-tarball
       - openscad-macos:
           name: openscad-macos-release
           filters: *release-filters
@@ -529,4 +532,4 @@ workflows:
           source_method: tarball
           context: secret-context
           requires:
-            - create-tarball
+            - openscad-tarball
