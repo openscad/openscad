@@ -39,7 +39,7 @@ jobs:
 
     - name: Upload patch artifact
       if: steps.check.outcome == 'failure'
-      uses: actions/upload-artifact@v5
+      uses: actions/upload-artifact@v6
       with:
         name: beautify-patch
         path: ${{ runner.temp }}/beautify.patch
