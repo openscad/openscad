@@ -1285,7 +1285,6 @@ set(GUI_SOURCES
   src/gui/ExportPdfDialog.cc
   src/gui/ExportSvgDialog.cc
   src/gui/OctoPrintApiKeyDialog.cc
-  src/gui/FontListDialog.cc
   src/gui/FontListTableView.cc
   src/gui/InitConfigurator.cc
   src/gui/ImportUtils.cc
@@ -1358,7 +1357,6 @@ set(GUI_HEADERS
     src/gui/ExportSvgDialog.h
     src/gui/OctoPrintApiKeyDialog.h
     src/gui/FontList.h
-    src/gui/FontListDialog.h
     src/gui/FontListTableView.h
     src/gui/IgnoreWheelWhenNotFocused.h
     src/gui/ImportUtils.h
@@ -1414,7 +1412,6 @@ set(GUI_UIS
     src/gui/ExportSvgDialog.ui
     src/gui/OctoPrintApiKeyDialog.ui
     src/gui/FontList.ui
-    src/gui/FontListDialog.ui
     src/gui/LaunchingScreen.ui
     src/gui/LibraryInfoDialog.ui
     src/gui/MainWindow.ui
