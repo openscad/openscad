@@ -653,7 +653,8 @@ workflows:
             - publish-appimage-base-x86_64
             - publish-appimage-base-arm64
       - openscad-appimage:
-          name: openscad-appimage-release
+          # Legacy name, for openscad-ansible/.../circleci-download-artifacts.py
+          name: openscad-appimage-64bit
           openscad_build_type: release
           source_method: tarball
           context: secret-context
