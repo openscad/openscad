@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.8.2](https://github.com/pythonscad/pythonscad/compare/v0.8.1...v0.8.2) (2026-01-02)
+
+
+### Features
+
+* add Debian package build system ([#268](https://github.com/pythonscad/pythonscad/issues/268)) ([13d7e93](https://github.com/pythonscad/pythonscad/commit/13d7e9373f988bab86f0e9ff822e0d8d4a7f0598))
+
 ## [0.8.1](https://github.com/pythonscad/pythonscad/compare/v0.8.0...v0.8.1) (2025-12-31)
 
 
