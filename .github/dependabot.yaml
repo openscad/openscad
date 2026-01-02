@@ -10,3 +10,6 @@ updates:
       github-actions:
         patterns:
           - "*"
+    ignore:
+      - dependency-name: "takanome-dev/assign-issue-action"
+        versions: ["2.3.x"]
