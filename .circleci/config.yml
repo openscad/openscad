@@ -8,10 +8,6 @@ executors:
     docker:
       - image: openscad/mxe-x86_64-gui:latest
     resource_class: large
-  appimage-executor:
-    docker:
-      - image: ${CIRCLE_PROJECT_USERNAME}/appimage-base:${CIRCLE_SHA1}
-    resource_class: large
   docker-x86_64:
     machine:
       image: ubuntu-2204:current
@@ -76,12 +72,15 @@ commands:
               curl -fsSL -o "/tmp/${SCCACHE_TGZ}" \
                 "https://github.com/mozilla/sccache/releases/download/v${SCCACHE_VERSION}/${SCCACHE_TGZ}"
               tar -xzf "/tmp/${SCCACHE_TGZ}" -C /tmp
-              install -m 0755 "/tmp/sccache-v${SCCACHE_VERSION}-x86_64-unknown-linux-musl/sccache" /usr/local/bin/sccache
+              mkdir -p "${HOME}/.local/bin"
+              install -m 0755 "/tmp/sccache-v${SCCACHE_VERSION}-x86_64-unknown-linux-musl/sccache" "${HOME}/.local/bin/sccache"
+              echo 'export PATH=$HOME/.local/bin:$PATH' >> "${BASH_ENV}"
   restore-sccache-cache:
     steps:
       - restore_cache:
           name: Restore sccache cache
-          key: sccache-cache-stable-{{ arch }}-{{ .Environment.CIRCLE_JOB }}
+          keys:
+            - sccache-{{ arch }}-{{ .Environment.CIRCLE_JOB }}-
   save-sccache-cache:
     steps:
       - save_cache:
@@ -90,7 +89,7 @@ commands:
           # Of course, restore_cache will not find this exact key,
           # but it will fall back to the closest key (aka the most recent).
           # See https://discuss.circleci.com/t/add-mechanism-to-update-existing-cache-key/9014/13
-          key: sccache-cache-stable-{{ arch }}-{{ .Environment.CIRCLE_JOB }}-{{ epoch }}
+          key: sccache-{{ arch }}-{{ .Environment.CIRCLE_JOB }}-{{ epoch }}
           paths:
             - "~/.cache/sccache"
 
@@ -149,7 +148,7 @@ jobs:
           path: /tmp/artifacts
           destination: MXE
   openscad-appimage:
-    executor: appimage-executor
+    executor: docker-x86_64
     parameters:
       openscad_platform:
         type: string
@@ -169,20 +168,33 @@ jobs:
       - run:
           name: Build OpenSCAD AppImage
           no_output_timeout: 18000
-          command: |
+          environment:
+            OPENSCAD_BUILD_TYPE: << parameters.openscad_build_type >>
+            APPIMAGE_BUILD_SCRIPT: |
+              #!/usr/bin/env bash
+              set -euo pipefail
+
+              build_type="${OPENSCAD_BUILD_TYPE:-snapshot}"
+              branch="${CIRCLE_BRANCH:-}"
+
               sccache --start-server
-              if [ x"${CIRCLE_BRANCH}" = xmaster ] || [ "<< parameters.openscad_build_type >>" != "snapshot" ]; then
-                export SUFFIX=""
+
+              if [ "x${branch}" = xmaster ] || [ "${build_type}" != "snapshot" ]; then
+                SUFFIX=""
               else
-                export SUFFIX="_$(echo ${CIRCLE_BRANCH} | sed -e 's,pull/,PR,; s,/head,h,; s,/merge,m,; s,/,.,g')"
+                SUFFIX="_$(echo "${branch}" | sed -e 's,pull/,PR,; s,/head,h,; s,/merge,m,; s,/,.,g')"
               fi
-              if [ "<< parameters.openscad_build_type >>" == "snapshot" ]; then
-                export CMAKE_EXTRA_ARGS="-DSNAPSHOT=ON -DEXPERIMENTAL=ON"
+
+              if [ "${build_type}" == "snapshot" ]; then
+                CMAKE_EXTRA_ARGS="-DSNAPSHOT=ON -DEXPERIMENTAL=ON"
+              else
+                CMAKE_EXTRA_ARGS=""
               fi
-              mkdir build && cd build
-              cmake .. \
-                  -DOPENSCAD_VERSION="$OPENSCAD_VERSION" \
-                  -DOPENSCAD_COMMIT="$OPENSCAD_COMMIT" \
+
+              cmake \
+                  -B build \
+                  -DOPENSCAD_VERSION="${OPENSCAD_VERSION}" \
+                  -DOPENSCAD_COMMIT="${OPENSCAD_COMMIT}" \
                   -DCMAKE_INSTALL_PREFIX=/usr \
                   -DCMAKE_BUILD_TYPE=Release \
                   -DCMAKE_C_COMPILER_LAUNCHER=sccache \
@@ -192,72 +204,71 @@ jobs:
                   -DMANIFOLD_TEST=OFF \
                   -DENABLE_PYTHON=ON \
                   -DENABLE_TESTS=OFF \
-                  $CMAKE_EXTRA_ARGS
-              cmake --build . -j 2  # using all 4 cores OOMs
-              DESTDIR=../AppDir cmake --install .
-              cd ..
+                  ${CMAKE_EXTRA_ARGS}
+              cmake --build build -j
+              DESTDIR=./AppDir cmake --install build
+
               export PATH=/appimage/usr/bin:"$PATH"
               export EXTRA_QT_PLUGINS=svg
-              export PYTHON_VERSION=$(python3 -c "import sys; v=sys.version_info; print(f'{v.major}.{v.minor}.{v.micro}')")
+              export PYTHON_VERSION
+              PYTHON_VERSION=$(python3 -c "import sys; v=sys.version_info; print('%s.%s.%s' % (v.major, v.minor, v.micro))")
               export LINUXDEPLOY_OUTPUT_VERSION="${OPENSCAD_VERSION}${SUFFIX}"
+
               linuxdeploy --plugin python --plugin qt --output appimage --appdir AppDir
+
               sccache --show-stats
+
               mkdir -p /tmp/artifacts
               cp -iv OpenSCAD-*.AppImage /tmp/artifacts
-              if [ -n "${CODE_SIGNING_KEY}" ]; then
+
+              if [ -n "${CODE_SIGNING_KEY:-}" ]; then
                   cd /tmp/artifacts
-                  echo $CODE_SIGNING_DATA | base64 -d | gzip -d | gpg --import --allow-secret-key-import --pinentry-mode loopback --passphrase-file <(echo $CODE_SIGNING_PW)
+                  echo "${CODE_SIGNING_DATA:-}" | base64 -d | gzip -d | gpg --import --allow-secret-key-import --pinentry-mode loopback --passphrase-file <(echo "${CODE_SIGNING_PW:-}")
                   export GPG_ARGS="--batch --yes --passphrase-fd 0 --pinentry-mode loopback --detach-sign --armor"
-                  for a in *.AppImage; do echo "$CODE_SIGNING_PW" | gpg -u "$CODE_SIGNING_KEY" $GPG_ARGS "$a"; sha256sum "$a" | tee "${a}.sha256"; sha512sum "$a" | tee "${a}.sha512"; done
+                  for a in *.AppImage; do
+                    echo "${CODE_SIGNING_PW:-}" | gpg -u "${CODE_SIGNING_KEY}" ${GPG_ARGS} "$a"
+                    sha256sum "$a" | tee "${a}.sha256"
+                    sha512sum "$a" | tee "${a}.sha512"
+                  done
                   rm -rf ~/.gnupg
               else
                   echo "Skipping code signing."
               fi
+          command: |
+              docker build \
+                --file scripts/docker/appimage-base/Dockerfile \
+                --target appimage-base \
+                --tag appimage-base \
+                .
+
+              mkdir -p /tmp/artifacts
+              printf '%s' "$APPIMAGE_BUILD_SCRIPT" > /tmp/circleci-appimage-build.sh
+              chmod +x /tmp/circleci-appimage-build.sh
+              docker run --rm \
+                -e CIRCLE_BRANCH \
+                -e OPENSCAD_VERSION \
+                -e OPENSCAD_COMMIT \
+                -e OPENSCAD_BUILD_TYPE \
+                -e CODE_SIGNING_KEY \
+                -e CODE_SIGNING_DATA \
+                -e CODE_SIGNING_PW \
+                -e SCCACHE_DIR=/root/.cache/sccache \
+                -v "$PWD:/openscad" \
+                -v /tmp/artifacts:/tmp/artifacts \
+                -v /tmp/circleci-appimage-build.sh:/tmp/circleci-appimage-build.sh:ro \
+                -v "$HOME/.local/bin/sccache:/usr/local/bin/sccache:ro" \
+                -v "$HOME/.cache/sccache:/root/.cache/sccache" \
+                -w /openscad \
+                appimage-base \
+                /tmp/circleci-appimage-build.sh
+
+              # fix cache permissions
+              sudo chown -R circleci:circleci "$HOME/.cache/sccache" || true
+              chmod -R a+rX "$HOME/.cache/sccache" || true
       - save-sccache-cache
       - store_artifacts:
           path: /tmp/artifacts
           destination: AppImage
-  publish-docker:
-    parameters:
-      arch_suffix:
-        type: string
-      image:
-        type: string
-      executor:
-        type: executor
-    executor: << parameters.executor >>
-    steps:
-      - checkout
-      - run:
-          name: Build and push appimage base (<< parameters.arch_suffix >>)
-          command: |
-              # Name the builder so DLC can retain its cache volume across runs.
-              docker buildx create --name builder --use
-              echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
-              docker buildx build \
-                --progress=plain \
-                --file scripts/docker/<< parameters.image >>/Dockerfile \
-                --target << parameters.image >> \
-                --tag "${CIRCLE_PROJECT_USERNAME}/<< parameters.image >>:${CIRCLE_SHA1}-<< parameters.arch_suffix >>" \
-                --push \
-                .
-  publish-multiarch-manifest:
-    parameters:
-      image:
-        type: string
-    executor: docker-x86_64
-    steps:
-      - run:
-          name: Create multi-arch manifest
-          command: |
-              # Name the builder so DLC can retain its cache volume across runs.
-              docker buildx create --name builder --use
-              echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
-              docker buildx imagetools create \
-                --progress=plain \
-                --tag "${CIRCLE_PROJECT_USERNAME}/<< parameters.image >>:${CIRCLE_SHA1}" \
-                "${CIRCLE_PROJECT_USERNAME}/<< parameters.image >>:${CIRCLE_SHA1}-x86_64" \
-                "${CIRCLE_PROJECT_USERNAME}/<< parameters.image >>:${CIRCLE_SHA1}-arm64"
   openscad-wasm:
     executor: wasm-executor
     parameters:
@@ -516,31 +527,10 @@ workflows:
           # Legacy name, for openscad-ansible/.../circleci-download-artifacts.py
           name: openscad-macos
           context: secret-context
-      - publish-docker:
-          name: publish-appimage-base-x86_64
-          context: secret-context
-          arch_suffix: x86_64
-          image: appimage-base
-          executor: docker-x86_64
-      - publish-docker:
-          name: publish-appimage-base-arm64
-          context: secret-context
-          arch_suffix: arm64
-          image: appimage-base
-          executor: docker-arm64
-      - publish-multiarch-manifest:
-          name: publish-appimage-base-manifest
-          context: secret-context
-          image: appimage-base
-          requires:
-            - publish-appimage-base-x86_64
-            - publish-appimage-base-arm64
       - openscad-appimage:
           # Legacy name, for openscad-ansible/.../circleci-download-artifacts.py
           name: openscad-appimage-64bit
           context: secret-context
-          requires:
-            - publish-appimage-base-manifest
   "CircleCI branch build (PR)":
     jobs:
       - openscad-mxe:
@@ -569,49 +559,7 @@ workflows:
               branches:
                   only:
                       - /.*-macos/
-      - publish-docker:
-          name: publish-appimage-base-x86_64
-          # TODO: avoid needing this secret in PRs
-          context: secret-context
-          arch_suffix: x86_64
-          image: appimage-base
-          executor: docker-x86_64
-          filters:
-              branches:
-                  ignore:
-                      - master
-                      - coverity_scan
-                      - /^(?i:continuous)$/
-      - publish-docker:
-          name: publish-appimage-base-arm64
-          # TODO: avoid needing this secret in PRs
-          context: secret-context
-          arch_suffix: arm64
-          image: appimage-base
-          executor: docker-arm64
-          filters:
-              branches:
-                  ignore:
-                      - master
-                      - coverity_scan
-                      - /^(?i:continuous)$/
-      - publish-multiarch-manifest:
-          name: publish-appimage-base-manifest
-          # TODO: avoid needing this secret in PRs
-          context: secret-context
-          image: appimage-base
-          requires:
-            - publish-appimage-base-x86_64
-            - publish-appimage-base-arm64
-          filters:
-              branches:
-                  ignore:
-                      - master
-                      - coverity_scan
-                      - /^(?i:continuous)$/
       - openscad-appimage:
-          requires:
-            - publish-appimage-base-manifest
           filters:
               branches:
                   ignore:
@@ -633,25 +581,6 @@ workflows:
           context: secret-context
           requires:
             - openscad-tarball-release
-      - publish-docker:
-          name: publish-appimage-base-x86_64
-          context: secret-context
-          arch_suffix: x86_64
-          image: appimage-base
-          executor: docker-x86_64
-      - publish-docker:
-          name: publish-appimage-base-arm64
-          context: secret-context
-          arch_suffix: arm64
-          image: appimage-base
-          executor: docker-arm64
-      - publish-multiarch-manifest:
-          name: publish-appimage-base-manifest
-          context: secret-context
-          image: appimage-base
-          requires:
-            - publish-appimage-base-x86_64
-            - publish-appimage-base-arm64
       - openscad-appimage:
           # Legacy name, for openscad-ansible/.../circleci-download-artifacts.py
           name: openscad-appimage-64bit
@@ -660,7 +589,6 @@ workflows:
           context: secret-context
           requires:
             - openscad-tarball-release
-            - publish-appimage-base-manifest
       - openscad-wasm:
           name: openscad-<< matrix.openscad_platform >>-release
           matrix:
