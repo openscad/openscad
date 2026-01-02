@@ -1,0 +1,52 @@
+Source: pythonscad
+Section: graphics
+Priority: optional
+Maintainer: PythonSCAD Developers <noreply@pythonscad.org>
+Build-Depends: debhelper-compat (= 13),
+               cmake (>= 3.16),
+               qt6-base-dev,
+               libqt6svg6-dev,
+               libqscintilla2-qt6-dev,
+               libqt6core5compat6-dev,
+               qt6-multimedia-dev,
+               qt6-tools-dev,
+               libcgal-dev,
+               libboost-all-dev,
+               libeigen3-dev,
+               libgl1-mesa-dev,
+               libglew-dev,
+               libgmp-dev,
+               libmpfr-dev,
+               libharfbuzz-dev,
+               libfreetype-dev,
+               libfontconfig-dev,
+               libdouble-conversion-dev,
+               libzip-dev,
+               libxml2-dev,
+               libtbb-dev,
+               libopencsg-dev,
+               python3-dev,
+               python3-setuptools,
+               libcurl4-openssl-dev,
+               nettle-dev,
+               ninja-build,
+               pkg-config,
+               bison,
+               flex,
+               git
+Standards-Version: 4.6.2
+Homepage: https://pythonscad.org/
+Vcs-Browser: https://github.com/pythonscad/pythonscad
+Vcs-Git: https://github.com/pythonscad/pythonscad.git
+Rules-Requires-Root: no
+
+Package: pythonscad
+Architecture: amd64 arm64
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Recommends: meshlab, openscad-mcad
+Description: The Programmer's Solid 3D CAD Modeller
+ PythonSCAD is a software for creating solid 3D CAD objects with Python
+ and OpenSCAD scripting languages.
+ .
+ It provides both a command-line interface and a Qt6-based GUI for
+ creating parametric 3D models suitable for CAD applications.

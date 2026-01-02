@@ -1,5 +1,22 @@
 dist/
 .uuid
+
+# Debian packaging build artifacts
+obj-x86_64-linux-gnu/
+deb-build.log
+deb-build-clean.log
+*.deb
+*.ddeb
+*.changes
+*.buildinfo
+*.sha256
+debian/pythonscad/
+debian/.debhelper/
+debian/*.substvars
+debian/*.debhelper.log
+debian/debhelper-build-stamp
+debian/files
+debian/changelog
 .cache/
 .claude/
 .venv/

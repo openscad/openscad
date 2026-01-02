@@ -1,0 +1,31 @@
+#!/usr/bin/make -f
+
+export DEB_BUILD_MAINT_OPTIONS = hardening=+all
+PYTHON_VERSION := $(shell python3 -c "import sys; print(f'{sys.version_info.major}.{sys.version_info.minor}')")
+
+%:
+	dh $@ --buildsystem=cmake
+
+override_dh_auto_configure:
+	dh_auto_configure -- \
+		-DCMAKE_BUILD_TYPE=Release \
+		-DCMAKE_INSTALL_PREFIX=/usr \
+		-DCMAKE_SKIP_BUILD_RPATH=FALSE \
+		-DCMAKE_BUILD_WITH_INSTALL_RPATH=FALSE \
+		-DCMAKE_INSTALL_RPATH=/usr/lib \
+		-DCMAKE_INSTALL_RPATH_USE_LINK_PATH=FALSE \
+		-DEXPERIMENTAL=ON \
+		-DENABLE_PYTHON=ON \
+		-DPYTHON_VERSION=$(PYTHON_VERSION) \
+		-DENABLE_LIBFIVE=ON \
+		-DUSE_QT6=ON \
+		-DENABLE_TESTS=OFF \
+		-DUSE_BUILTIN_MANIFOLD=ON \
+		-DUSE_BUILTIN_CLIPPER2=ON \
+		-DSNAPSHOT=OFF
+
+override_dh_auto_build:
+	dh_auto_build -- -j$(shell nproc)
+
+override_dh_shlibdeps:
+	dh_shlibdeps -l$(CURDIR)/debian/pythonscad/usr/lib

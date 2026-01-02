@@ -1979,12 +1979,6 @@ if(MXECROSS)
   set(CPACK_DEBIAN_PACKAGE_PRIORITY "optional")
   set(CPACK_DEBIAN_PACKAGE_DEPENDS "")
 
-  # Create openscad symlink pointing to pythonscad (Linux/Unix only, not Windows)
-  if(UNIX AND NOT APPLE)
-    execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink "./pythonscad" "openscad")
-    install(FILES ${CMAKE_CURRENT_BINARY_DIR}/pythonscad DESTINATION "." COMPONENT libraries)
-  endif()
-
 endif()
 set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/COPYING")
 # None of config time variables are available for CPACK_PROJECT_CONFIG_FILE, so we configure it now with values.
