@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OpenSCAD AI - Generate 3D Models with AI</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/monokai.min.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="logo">
+                <svg width="32" height="32" viewBox="0 0 100 100" fill="none">
+                    <circle cx="50" cy="50" r="45" stroke="#4CAF50" stroke-width="6" fill="none"/>
+                    <path d="M30 50 L50 30 L70 50 L50 70 Z" fill="#4CAF50"/>
+                </svg>
+                <h1>OpenSCAD AI</h1>
+            </div>
+            <div class="header-actions">
+                <button id="settingsBtn" class="btn btn-icon" title="Settings">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="3"/>
+                        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+                    </svg>
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- AI Chat Panel -->
+            <aside class="chat-panel">
+                <div class="panel-header">
+                    <h2>AI Assistant</h2>
+                    <button id="clearChatBtn" class="btn btn-small" title="Clear chat">Clear</button>
+                </div>
+                <div class="chat-messages" id="chatMessages">
+                    <div class="message assistant">
+                        <div class="message-content">
+                            <p>Hello! I'm your OpenSCAD AI assistant. Describe the 3D model you'd like to create, and I'll generate the OpenSCAD code for you.</p>
+                            <p><strong>Examples:</strong></p>
+                            <ul>
+                                <li>"Create a simple gear with 20 teeth"</li>
+                                <li>"Make a box with rounded corners"</li>
+                                <li>"Design a phone stand with adjustable angle"</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="chat-input-container">
+                    <textarea id="chatInput" placeholder="Describe your 3D model..." rows="3"></textarea>
+                    <button id="sendBtn" class="btn btn-primary">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="22" y1="2" x2="11" y2="13"/>
+                            <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+                        </svg>
+                        Send
+                    </button>
+                </div>
+            </aside>
+
+            <!-- Editor Panel -->
+            <section class="editor-panel">
+                <div class="panel-header">
+                    <h2>OpenSCAD Code</h2>
+                    <div class="editor-actions">
+                        <button id="copyCodeBtn" class="btn btn-small" title="Copy code">Copy</button>
+                        <button id="downloadBtn" class="btn btn-small" title="Download .scad file">Download</button>
+                        <button id="renderBtn" class="btn btn-primary btn-small">Render</button>
+                    </div>
+                </div>
+                <div class="editor-container">
+                    <textarea id="codeEditor">// OpenSCAD code will appear here
+// You can also edit the code directly
+
+// Example: A simple cube
+cube([10, 10, 10]);
+</textarea>
+                </div>
+            </section>
+
+            <!-- Preview Panel -->
+            <section class="preview-panel">
+                <div class="panel-header">
+                    <h2>Preview</h2>
+                    <div class="preview-actions">
+                        <button id="exportStlBtn" class="btn btn-small" title="Export STL">Export STL</button>
+                    </div>
+                </div>
+                <div class="preview-container" id="previewContainer">
+                    <div class="preview-placeholder">
+                        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+                            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+                            <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
+                            <line x1="12" y1="22.08" x2="12" y2="12"/>
+                        </svg>
+                        <p>Click "Render" to preview your model</p>
+                    </div>
+                    <canvas id="previewCanvas" style="display: none;"></canvas>
+                </div>
+                <div class="console-container">
+                    <div class="console-header">
+                        <span>Console</span>
+                        <button id="clearConsoleBtn" class="btn btn-tiny">Clear</button>
+                    </div>
+                    <pre id="consoleOutput"></pre>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Settings Modal -->
+    <div class="modal" id="settingsModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Settings</h2>
+                <button class="modal-close" id="closeSettingsBtn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="apiKeyInput">OpenAI API Key</label>
+                    <input type="password" id="apiKeyInput" placeholder="sk-...">
+                    <small>Your API key is stored locally in your browser and never sent to our servers.</small>
+                </div>
+                <div class="form-group">
+                    <label for="modelSelect">Model</label>
+                    <select id="modelSelect">
+                        <option value="gpt-4o">GPT-4o (Recommended)</option>
+                        <option value="gpt-4o-mini">GPT-4o Mini (Faster)</option>
+                        <option value="gpt-4-turbo">GPT-4 Turbo</option>
+                        <option value="gpt-3.5-turbo">GPT-3.5 Turbo (Budget)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="wasmPathInput">OpenSCAD WASM Path</label>
+                    <input type="text" id="wasmPathInput" placeholder="../build/openscad.js" value="../build/openscad.js">
+                    <small>Path to the OpenSCAD WebAssembly module.</small>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="saveSettingsBtn" class="btn btn-primary">Save Settings</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-spinner"></div>
+        <p id="loadingText">Loading...</p>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/clike/clike.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/STLLoader.js"></script>
+    <script type="module" src="js/app.js"></script>
+</body>
+</html>
