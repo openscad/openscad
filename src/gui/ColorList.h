@@ -19,6 +19,7 @@
 #pragma once
 
 #include "gui/ColorList.h"
+
 #include <QWidget>
 #include <QString>
 #include <QColor>
@@ -58,6 +59,9 @@ protected slots:
   void on_actionResetSampleTextBackground_triggered();
   void on_actionCopyColorName_triggered();
   void on_actionCopyColorRGB_triggered();
+
+signals:
+  void colorSelected(QString);
 
 private:
   QColor asForeground;

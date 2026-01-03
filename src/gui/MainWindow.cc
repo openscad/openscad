@@ -112,6 +112,7 @@
 #include "glview/RenderSettings.h"
 #include "gui/AboutDialog.h"
 #include "gui/CGALWorker.h"
+#include "gui/ColorList.h"
 #include "gui/Editor.h"
 #include "gui/Dock.h"
 #include "gui/Measurement.h"
@@ -779,6 +780,10 @@ MainWindow::MainWindow(const QStringList& filenames) : rubberBandManager(this)
                    &MainWindow::onViewportControlDockVisibilityChanged);
   QObject::connect(parameterDock, &Dock::visibilityChanged, this,
                    &MainWindow::onParametersDockVisibilityChanged);
+
+  // Other dock specific signals
+  QObject::connect(colorListWidget, &ColorList::colorSelected, this,
+                   &MainWindow::onColorListColorSelected);
 
   connect(this->activeEditor, &EditorInterface::escapePressed, this, &MainWindow::measureFinished);
   // display this window and check for OpenGL 2.0 (OpenCSG) support
@@ -3327,6 +3332,11 @@ void MainWindow::onParametersDockVisibilityChanged(bool isVisible)
     parameterDock->raise();
     activeEditor->parameterWidget->scrollArea->setFocus();
   }
+}
+
+void MainWindow::onColorListColorSelected(const QString& selectedColor)
+{
+  activeEditor->insertOrReplaceText(selectedColor);
 }
 
 // Use the sender's to detect if we are moving forward/backward in docks

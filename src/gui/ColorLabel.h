@@ -33,8 +33,11 @@ public:
   ~ColorLabel() = default;
 
   void mousePressEvent(QMouseEvent *event) override;
+  void mouseReleaseEvent(QMouseEvent *event) override;
   void mouseMoveEvent(QMouseEvent *event) override;
+  void mouseDoubleClickEvent(QMouseEvent *event) override;
 
+  QString labelText();
   void setColorInfo(const QString& message, const QColor& bgColor);
   void setSelected(const bool selected);
   const QColor& foregroundColor() const { return fgColor; }
@@ -42,13 +45,17 @@ public:
 
 protected:
   void updateStyleSheet();
+  bool isValidButton(QMouseEvent *event);
+  bool isValidButtonState(QMouseEvent *event);
   QString calculateBorderColor(const QColor& ref, const bool selected);
 
 signals:
   void clicked();
+  void doubleClicked();
 
 private:
   bool selected{};
+  bool doubleClick{};
   QColor fgColor;
   QColor bgColor;
   QPoint dragStartPosition;
