@@ -19,6 +19,7 @@
 #pragma once
 
 #include "gui/ColorList.h"
+
 #include <QWidget>
 #include <QString>
 #include <QColor>
@@ -59,12 +60,13 @@ protected slots:
   void on_actionCopyColorName_triggered();
   void on_actionCopyColorRGB_triggered();
 
-<<<<<<< HEAD
 signals:
   void colorSelected(QString);
 
-=======
->>>>>>> 8c8a766c8 (Add color list window.)
+signals:
+  void colorSelected(QString);
+
+>>>>>>> fc1cfce5a (Add support for double-click to insert the color name / color() call.)
 private:
   QColor asForeground;
   QColor asBackground;
