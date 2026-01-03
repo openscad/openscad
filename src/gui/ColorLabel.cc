@@ -16,37 +16,76 @@
  *  License along with this program; if not, see
  *  <https://www.gnu.org/licenses/>.
  */
-#include "ColorLabel.h"
-#include <qchar.h>
-#include <QDebug>
+
+#include "gui/ColorLabel.h"
+
 #include <QDrag>
 #include <QMimeData>
 #include <QPainter>
 #include <QApplication>
+
 #include "core/ColorUtil.h"
+
+bool ColorLabel::isValidButton(QMouseEvent *event)
+{
+  // Check the button directly triggering the event.
+  const auto leftButton = event->button() == Qt::LeftButton;
+  const auto rightButton = event->button() == Qt::RightButton;
+  return leftButton || rightButton;
+}
+
+bool ColorLabel::isValidButtonState(QMouseEvent *event)
+{
+  // Check the whole current button state to be a single button.
+  const auto leftButton = event->buttons() == Qt::LeftButton;
+  const auto rightButton = event->buttons() == Qt::RightButton;
+  return leftButton || rightButton;
+}
 
 void ColorLabel::mousePressEvent(QMouseEvent *event)
 {
-  emit clicked();
+  if (!isValidButton(event) || doubleClick) {
+    return;
+  }
   dragStartPosition = event->pos();
+  QLabel::mousePressEvent(event);
+}
+
+void ColorLabel::mouseReleaseEvent(QMouseEvent *event)
+{
+  if (!isValidButton(event) || doubleClick) {
+    doubleClick = false;
+    return;
+  }
+  emit clicked();
+  QLabel::mouseReleaseEvent(event);
+}
+
+void ColorLabel::mouseDoubleClickEvent(QMouseEvent *event)
+{
+  doubleClick = true;
+  if (!isValidButton(event)) {
+    return;
+  }
+  if (selected) {
+    emit doubleClicked();
+  }
+  QLabel::mouseDoubleClickEvent(event);
 }
 
 void ColorLabel::mouseMoveEvent(QMouseEvent *event)
 {
-  const bool leftButton = event->buttons() & Qt::LeftButton;
-  const bool rightButton = event->buttons() & Qt::RightButton;
-  if (!leftButton && !rightButton) {
+  if (!isValidButtonState(event)) {
     return;
   }
   if ((event->pos() - dragStartPosition).manhattanLength() < QApplication::startDragDistance()) {
     return;
   }
+  if (!selected) {
+    emit clicked();
+  }
 
-  const auto isShift = 0 != (QApplication::keyboardModifiers() & Qt::ShiftModifier);
-  const auto isXkcdColorMap =
-    property(PROPERTY_COLOR_MAP_NAME).toString() == OpenSCAD::COLOR_MAP_NAME_XKCD_COLORS;
-  const auto tmpl = isShift || rightButton ? QString("color(\"%1\") ") : QString("\"%1\"");
-  const auto dragText = tmpl.arg(isXkcdColorMap ? QString("xkcd:%1").arg(text()) : text());
+  const auto dragText = labelText();
 
   const QFontMetrics fm{font()};
   QRect rect(0, 0, fm.boundingRect(dragText).width() + fm.height() + 16, fm.height() + 8);
@@ -74,13 +113,23 @@ void ColorLabel::mouseMoveEvent(QMouseEvent *event)
   drag->exec(Qt::CopyAction);
 }
 
+QString ColorLabel::labelText()
+{
+  const auto isShift = QApplication::keyboardModifiers().testFlag(Qt::ShiftModifier);
+  const auto isXkcdColorMap =
+    property(PROPERTY_COLOR_MAP_NAME).toString() == OpenSCAD::COLOR_MAP_NAME_XKCD_COLORS;
+  const auto rightButton = QApplication::mouseButtons() == Qt::RightButton;
+  const auto tmpl = isShift || rightButton ? QString("color(\"%1\") ") : QString("\"%1\"");
+  return tmpl.arg(isXkcdColorMap ? QString("xkcd:%1").arg(text()) : text());
+}
+
 void ColorLabel::setColorInfo(const QString& name, const QColor& color)
 {
   setText(name);
   setObjectName(name);
   bgColor = color.toRgb();
-  fgColor =
-    QColor(bgColor.toHsl().lightnessF() < 0.5 ? Qt::GlobalColor::white : Qt::GlobalColor::black).toRgb();
+  const auto dark = bgColor.toHsl().lightnessF() < 0.5;
+  fgColor = QColor(dark ? Qt::GlobalColor::white : Qt::GlobalColor::black).toRgb();
   updateStyleSheet();
 }
 

@@ -215,6 +215,8 @@ void ColorList::addColor(const QString& mapName, const QString& name, const QCol
     }
     updateSelectedColor();
   });
+  connect(label, &ColorLabel::doubleClicked,
+          [this, label]() { emit colorSelected(label->labelText()); });
 
   label->show();
   auto item = new QWidgetItem(label);
