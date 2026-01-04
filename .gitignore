@@ -17,6 +17,13 @@ debian/*.debhelper.log
 debian/debhelper-build-stamp
 debian/files
 debian/changelog
+
+# RPM packaging build artifacts
+*.rpm
+*.src.rpm
+rpm-build.log
+pythonscad-*.tar.gz
+
 .cache/
 .claude/
 .venv/

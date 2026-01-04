@@ -20,6 +20,8 @@ jobs:
           # Use config files for all release-please configuration
           config-file: .release-please-config.json
           manifest-file: .release-please-manifest.json
+          # Use bot account PAT to allow release events to trigger other workflows
+          token: ${{ secrets.RELEASE_TOKEN }}
 
       - name: Checkout code
         if: ${{ steps.release.outputs.release_created }}
