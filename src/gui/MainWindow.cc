@@ -2448,15 +2448,15 @@ void MainWindow::handleMeasurementClicked(QAction *clickedAction)
 
 void MainWindow::leftClick(QPoint mouse)
 {
-  std::vector<QString> strs = meas.statemachine(mouse);
-  if (strs.size() > 0) {
+  auto state = meas.statemachine(mouse);
+  if (state.status != MeasurementResult::Status::NoChange) {
     this->qglview->measure_state = MEASURE_DIRTY;
     QMenu resultmenu(this);
     // Ensures we clean the display regardless of how menu gets closed.
     connect(&resultmenu, &QMenu::aboutToHide, this, &MainWindow::measureFinished);
 
     // Can eventually be replaced with C++20 std::views::reverse
-    for (const auto& str : boost::adaptors::reverse(strs)) {
+    for (const auto& str : boost::adaptors::reverse(state.messages)) {
       auto action = resultmenu.addAction(str);
       connect(action, &QAction::triggered, this, [str]() { QApplication::clipboard()->setText(str); });
     }

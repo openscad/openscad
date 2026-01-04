@@ -66,14 +66,14 @@ bool Measurement::stopMeasure()
   return ret;
 }
 
-std::vector<QString> Measurement::statemachine(QPoint mouse)
+MeasurementResult Measurement::statemachine(QPoint mouse)
 {
-  if (qglview->measure_state == MEASURE_IDLE || qglview->measure_state == MEASURE_DIRTY) return {};
+  MeasurementResult ret{MeasurementResult::Status::NoChange};
+  if (qglview->measure_state == MEASURE_IDLE || qglview->measure_state == MEASURE_DIRTY) return ret;
   qglview->selectPoint(mouse.x(), mouse.y());
   double ang = NAN;
   double dist = NAN;
   SelectedObject obj1, obj2, obj3;
-  std::vector<QString> ret;
   switch (qglview->measure_state) {
   case MEASURE_DIST1:
     if (qglview->selected_obj.size() == 1) qglview->measure_state = MEASURE_DIST2;
@@ -86,7 +86,7 @@ std::vector<QString> Measurement::statemachine(QPoint mouse)
       if (obj1.type == SelectionType::SELECTION_POINT && obj2.type == SelectionType::SELECTION_POINT) {
         const auto diff = obj2.p1 - obj1.p1;
         dist = diff.norm();
-        ret.push_back(QStringLiteral("dx: %1  dy: %2  dz: %3").arg(diff[0]).arg(diff[1]).arg(diff[2]));
+        ret.messages.push_back(QStringLiteral("dx: %1  dy: %2  dz: %3").arg(diff[0]).arg(diff[1]).arg(diff[2]));
       } else if ((obj1.type == SelectionType::SELECTION_POINT &&
                   obj2.type == SelectionType::SELECTION_LINE) ||
                  (obj2.type == SelectionType::SELECTION_POINT &&
@@ -115,7 +115,7 @@ std::vector<QString> Measurement::statemachine(QPoint mouse)
 
           // 5. Shortest distance vector V_dist (P - C)
           Eigen::Vector3d V_dist = V - V_proj;
-          ret.push_back(
+          ret.messages.push_back(
             QStringLiteral("Perpendicular distance to (infinite) line: dx: %1  dy: %2  dz: %3")
               .arg(V_dist.x())
               .arg(V_dist.y())
@@ -127,12 +127,12 @@ std::vector<QString> Measurement::statemachine(QPoint mouse)
         double dont_care;
         dist = calculateLinePointDistance(A, B, P, dont_care);
         auto diff = B - P;
-        ret.push_back(QStringLiteral("Point to Line Endpoint2: dx: %1  dy: %2  dz: %3")
+        ret.messages.push_back(QStringLiteral("Point to Line Endpoint2: dx: %1  dy: %2  dz: %3")
                         .arg(diff[0])
                         .arg(diff[1])
                         .arg(diff[2]));
         auto diff2 = A - P;
-        ret.push_back(QStringLiteral("Point to Line Endpoint1: dx: %1  dy: %2  dz: %3")
+        ret.messages.push_back(QStringLiteral("Point to Line Endpoint1: dx: %1  dy: %2  dz: %3")
                         .arg(diff2[0])
                         .arg(diff2[1])
                         .arg(diff2[2]));
@@ -140,13 +140,15 @@ std::vector<QString> Measurement::statemachine(QPoint mouse)
                  obj2.type == SelectionType::SELECTION_LINE) {
         dist = calculateSegSegDistance(obj1.p1, obj1.p2, obj2.p1, obj2.p2);
       } else {
-        ret.push_back("Only coded to handle lines and points; sorry");
+        ret.messages.push_back("Only coded to handle lines and points; sorry");
       }
       if (std::isnan(dist)) {
-        ret.push_back("Got Not-a-Number when calculating distance; sorry");
+        ret.messages.push_back("Got Not-a-Number when calculating distance; sorry");
+        ret.status = MeasurementResult::Status::Error;
         return ret;
       }
-      ret.push_back(QStringLiteral("Distance is %1").arg(std::fabs(dist)));
+      ret.messages.push_back(QStringLiteral("Distance is %1").arg(std::fabs(dist)));
+      ret.status = MeasurementResult::Status::Success;
     }
     break;
   case MEASURE_ANG1:
@@ -204,15 +206,18 @@ std::vector<QString> Measurement::statemachine(QPoint mouse)
         Vector3d side2 = (obj2.p1 - obj3.p1).normalized();
         ang = acos(side1.dot(side2)) * 180.0 / 3.14159265359;
       } else {
-        ret.push_back("If selecting three things, they must all be points");
+        ret.messages.push_back("If selecting three things, they must all be points");
+        ret.status = MeasurementResult::Status::Error;
         return ret;
       }
     display_angle:
       if (std::isnan(ang)) {
-        ret.push_back("Got Not-a-Number when calculating angle; sorry");
+        ret.messages.push_back("Got Not-a-Number when calculating angle; sorry");
+        ret.status = MeasurementResult::Status::Error;
         return ret;
       }
-      ret.push_back(QStringLiteral("Angle is %1 Degrees").arg(ang));
+      ret.messages.push_back(QStringLiteral("Angle is %1 Degrees").arg(ang));
+      ret.status = MeasurementResult::Status::Success;
     }
     break;
   }
