@@ -1118,14 +1118,14 @@ Value builtin_import(Arguments arguments, const Location& loc)
 }
 
 Value findArg(int& curArg, const Arguments& args, const std::string& name, const int argStart,
-  const Location& loc)
+              const Location& loc)
 {
   int i;
 
   if (name.empty()) {
     if (curArg < 0) {
       LOG(message_group::Warning, loc, args.documentRoot(),
-        "cannot switch between manual and automatic numbering");
+          "cannot switch between manual and automatic numbering");
       return Value::undefined.clone();
     }
     i = curArg + argStart;
@@ -1137,7 +1137,7 @@ Value findArg(int& curArg, const Arguments& args, const std::string& name, const
   } else if (name.find_first_not_of("0123456789") == std::string::npos) {
     if (curArg > 0) {
       LOG(message_group::Warning, loc, args.documentRoot(),
-        "cannot switch between manual and automatic numbering");
+          "cannot switch between manual and automatic numbering");
       return Value::undefined.clone();
     }
     curArg = -1;
@@ -1147,10 +1147,9 @@ Value findArg(int& curArg, const Arguments& args, const std::string& name, const
       return Value::undefined.clone();
     }
   } else {
-    for (i = argStart; ; i++) {
+    for (i = argStart;; i++) {
       if (i >= args.size()) {
-        LOG(message_group::Warning, loc, args.documentRoot(), "argument %1$s not found",
-          quoteVar(name));
+        LOG(message_group::Warning, loc, args.documentRoot(), "argument %1$s not found", quoteVar(name));
         return Value::undefined.clone();
       }
       if (args[i].name && *args[i].name == name) {
@@ -1165,15 +1164,13 @@ Value findArg(int& curArg, const Arguments& args, const std::string& name, const
 // return the associated Value.  Accept a current argument for automatic numbering, or -1
 // if we've switched to manual numbering.  Update the index i and the current argument as
 // appropriate.
-Value getField(int& i, int& curArg, const std::string& fmt, const Arguments& args,
-  const int argStart, const Location& loc)
+Value getField(int& i, int& curArg, const std::string& fmt, const Arguments& args, const int argStart,
+               const Location& loc)
 {
   // Skip over the first "word".
   int start = i;
-  for (;
-      i < fmt.size() && strchr("}!:.[", fmt[i]) == nullptr;
-      i++) {
-      // Loop
+  while (i < fmt.size() && strchr("}!:.[", fmt[i]) == nullptr) {
+    i++;
   }
   Value a = findArg(curArg, args, fmt.substr(start, i - start), argStart, loc);
 
@@ -1182,9 +1179,8 @@ Value getField(int& i, int& curArg, const std::string& fmt, const Arguments& arg
     if (fmt[i] == '.') {
       i++;
       start = i;
-      for (; i < fmt.size() && strchr("}!:.[", fmt[i]) == nullptr;
-          i++) {
-        // Loop
+      while (i < fmt.size() && strchr("}!:.[", fmt[i]) == nullptr) {
+        i++;
       }
       a = a[fmt.substr(start, i - start)];
     } else {
@@ -1213,18 +1209,18 @@ Value getField(int& i, int& curArg, const std::string& fmt, const Arguments& arg
 }
 
 /* Forward */
-void format1(std::ostringstream& stream, int& i, int& curArg, const std::string& fmt,
-  Arguments& args, int argStart, const Location& loc);
+void format1(std::ostringstream& stream, int& i, int& curArg, const std::string& fmt, Arguments& args,
+             int argStart, const Location& loc);
 
-std::string expand(int& i, int& curArg, const std::string& fmt, Arguments& args,
-  int argStart, const Location& loc)
+std::string expand(int& i, int& curArg, const std::string& fmt, Arguments& args, int argStart,
+                   const Location& loc)
 {
   std::ostringstream stream;
 
   for (;;) {
     if (i >= fmt.size()) {
-        LOG(message_group::Warning, loc, args.documentRoot(), "mismatched braces");
-        return "";
+      LOG(message_group::Warning, loc, args.documentRoot(), "mismatched braces");
+      return "";
     }
     if (fmt[i] == '{') {
       i++;
@@ -1241,8 +1237,7 @@ std::string expand(int& i, int& curArg, const std::string& fmt, Arguments& args,
   return stream.str();
 }
 
-void convert(int& i, Value& a, const std::string& fmt, const Arguments& args,
-  const Location& loc)
+void convert(int& i, Value& a, const std::string& fmt, const Arguments& args, const Location& loc)
 {
   if (fmt[i] != '!') {
     return;
@@ -1253,25 +1248,19 @@ void convert(int& i, Value& a, const std::string& fmt, const Arguments& args,
     return;
   }
   switch(fmt[i]) {
-    case 's':
-      a = Value(a.toString());
-      break;
-    case 'r':
-      a = Value(a.toParsableString(QuotedString::Mode::REPR));
-      break;
-    case 'a':
-      a = Value(a.toParsableString(QuotedString::Mode::ASCII));
-      break;
-    default:
-      LOG(message_group::Warning, loc, args.documentRoot(), "bad conversion %1$s",
+  case 's': a = Value(a.toString()); break;
+  case 'r': a = Value(a.toParsableString(QuotedString::Mode::REPR)); break;
+  case 'a': a = Value(a.toParsableString(QuotedString::Mode::ASCII)); break;
+  default:
+    LOG(message_group::Warning, loc, args.documentRoot(), "bad conversion %1$s",
         fmt.substr(i,1));
-      break;
+    break;
   }
   i++;
 }
 
 void format2(std::ostringstream& stream, const std::string& spec, Value& a, const Arguments& args,
-  const Location& loc)
+             const Location& loc)
 {
   // Format parameters
   std::string fill = "";
@@ -1292,8 +1281,7 @@ void format2(std::ostringstream& stream, const std::string& spec, Value& a, cons
     if (spec[i] == ':') {
       i++;
     } else {
-      LOG(message_group::Warning, loc, args.documentRoot(),
-        "expected ':' before format specification");
+      LOG(message_group::Warning, loc, args.documentRoot(), "expected ':' before format specification");
     }
   }
 
@@ -1398,9 +1386,9 @@ void format2(std::ostringstream& stream, const std::string& spec, Value& a, cons
     } else if (type == "d" || type == "n" || type == "o" || type == "x" || type == "X") {
       double d = round(a.toDouble());
       if (type == "o") {
-        stream << std::oct << (uintmax_t) d;
+        stream << std::oct << (uintmax_t)d;
       } else if (type == "x" || type == "X") {
-        stream << std::hex << (uintmax_t) d;
+        stream << std::hex << (uintmax_t)d;
       } else {
         assert(type == "d");
         // NEEDSWORK:  should this ever switch to exponential notation?
@@ -1409,7 +1397,7 @@ void format2(std::ostringstream& stream, const std::string& spec, Value& a, cons
         // NEEDSWORK: Note that this currently limits d (and o and x) to 2^63/2^64.
         // It should really use a custom number-to-text processor that yields an
         // unlimited number of digits, with only the first ~16 really being meaningful.
-        stream << (intmax_t) d;
+        stream << (intmax_t)d;
       }
     } else if (type == "e" || type == "E") {
       double d = a.toDouble();
@@ -1422,7 +1410,7 @@ void format2(std::ostringstream& stream, const std::string& spec, Value& a, cons
       double d = a.toDouble();
       stream << std::defaultfloat << d;
     } else if (type == "%") {
-      stream << a.toString(); // NEEDSWORK NYI
+      stream << a.toString();  // NEEDSWORK NYI
     } else if (type.empty()) {
       // NEEDSWORK:  should this be like d, like g, or different?
       // Current answer:  like g, but with a different default precision.
@@ -1434,33 +1422,33 @@ void format2(std::ostringstream& stream, const std::string& spec, Value& a, cons
       }
       stream << std::defaultfloat << d;
     } else {
-      LOG(message_group::Warning, loc, args.documentRoot(),
-        "format code '%1$s' not defined for '%2$s'", type, a.typeName());
+      LOG(message_group::Warning, loc, args.documentRoot(), "format code '%1$s' not defined for '%2$s'",
+          type, a.typeName());
     }
     break;
   case Value::Type::STRING:
     if (type == "s" || type.empty()) {
       stream << a.toString();
     } else {
-      LOG(message_group::Warning, loc, args.documentRoot(),
-        "format code '%1$s' not defined for '%2$s'", type, a.typeName());
+      LOG(message_group::Warning, loc, args.documentRoot(), "format code '%1$s' not defined for '%2$s'",
+          type, a.typeName());
     }
     break;
   case Value::Type::VECTOR:
   case Value::Type::RANGE:
   case Value::Type::OBJECT:
   case Value::Type::FUNCTION:
-  case Value::Type::BOOL:
+  case Value::Type::BOOL: // NEEDSWORK:  support for :d, :f, et cetera.
     if (type.empty()) {
       stream << a.toString();
     } else {
-      LOG(message_group::Warning, loc, args.documentRoot(),
-        "format code '%1$s' not defined for '%2$s'", type, a.typeName());
+      LOG(message_group::Warning, loc, args.documentRoot(), "format code '%1$s' not defined for '%2$s'",
+          type, a.typeName());
     }
     break;
   default:
-    LOG(message_group::Warning, loc, args.documentRoot(),
-      "format code '%1$s' not defined for '%2$s'", type, a.typeName());
+    LOG(message_group::Warning, loc, args.documentRoot(), "format code '%1$s' not defined for '%2$s'",
+        type, a.typeName());
     break;
   }
 }
@@ -1469,8 +1457,8 @@ void format2(std::ostringstream& stream, const std::string& spec, Value& a, cons
 // specification, format the corresponding argument, emit it to the specified stream, and
 // update the index to point after the close brace of the format specification.  Update the current
 // argument as appropriate.
-void format1(std::ostringstream& stream, int& i, int& curArg, const std::string& fmt,
-  Arguments& args, int argStart, const Location& loc)
+void format1(std::ostringstream& stream, int& i, int& curArg, const std::string& fmt, Arguments& args,
+             int argStart, const Location& loc)
 {
   Value a = getField(i, curArg, fmt, args, argStart, loc);
 
@@ -1485,7 +1473,7 @@ std::string format(const std::string& fmt, Arguments& args, int argStart, const 
 {
   std::ostringstream stream;
   int curArg = 0;
-  
+
   for (int i = 0; i < fmt.size();) {
     if (fmt[i] == '{') {
       i++;
@@ -1511,8 +1499,7 @@ std::string format(const std::string& fmt, Arguments& args, int argStart, const 
 Value builtin_format(Arguments arguments, const Location& loc)
 {
   if (arguments.size() < 1) {
-    print_argCnt_warning("format", arguments.size(), "at least one", loc,
-                         arguments.documentRoot());
+    print_argCnt_warning("format", arguments.size(), "at least one", loc, arguments.documentRoot());
     return Value::undefined.clone();
   }
   if (arguments[0]->type() != Value::Type::STRING) {

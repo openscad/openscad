@@ -201,7 +201,7 @@ std::ostream& operator<<(std::ostream& stream, const Filename& filename)
 
 void QuotedString::emitUnicode(std::ostream& stream, int c) const
 {
-  switch(mode) {
+  switch (mode) {
   case Mode::ASCII:
     if (c >= 0x10000) {
       stream << "\\U" << std::hex << std::setfill('0') << std::setw(6) << c;
@@ -225,8 +225,8 @@ void QuotedString::emitUnicode(std::ostream& stream, int c) const
     if (c <= 0x1f
       || c == 0x7f
       || (c >= 0x80 && c <= 0x9f)) {
-        stream << "\\u" << std::hex << std::setfill('0') << std::setw(4) << c;
-        return;
+      stream << "\\u" << std::hex << std::setfill('0') << std::setw(4) << c;
+      return;
     }
     // FALLSTHROUGH
 
@@ -257,11 +257,11 @@ std::ostream& operator<<(std::ostream& stream, const QuotedString& s)
   // Perhaps this should use the gunicode.h functions, or str_utf8_wrapper.
   for (unsigned char b : s) {
     if ((b & 0xc0) == 0x80) {
-        // Continuation byte.
-        assert(c >= 0);
-        c <<= 6;
-        c |= b & 0x3f;
-        continue;
+      // Continuation byte.
+      assert(c >= 0);
+      c <<= 6;
+      c |= b & 0x3f;
+      continue;
     }
 
     if (c >= 0) {
@@ -439,8 +439,7 @@ public:
   double_conversion::DoubleToStringConverter dc;
   QuotedString::Mode stringMode;
 
-  tostream_visitor(std::ostringstream& stream,
-    QuotedString::Mode stringMode = QuotedString::Mode::RAW)
+  tostream_visitor(std::ostringstream& stream, QuotedString::Mode stringMode = QuotedString::Mode::RAW)
     : stream(stream),
       builder(buffer, DC_BUFFER_SIZE),
       dc(DC_FLAGS, DC_INF, DC_NAN, DC_EXP, DC_DECIMAL_LOW_EXP, DC_DECIMAL_HIGH_EXP,
@@ -1505,20 +1504,3 @@ const Value& ObjectType::operator[](const str_utf8_wrapper& v) const { return th
 
 // Copy explicitly only when necessary
 ObjectType ObjectType::clone() const { return ObjectType(this->ptr); }
-
-#if 0
-std::ostream& operator<<(std::ostream& stream, const ObjectType& v)
-{
-  stream << "{ ";
-  auto iter = v.ptr->keys.begin();
-  if (iter != v.ptr->keys.end()) {
-    str_utf8_wrapper k(*iter);
-    for (; iter != v.ptr->keys.end(); ++iter) {
-      str_utf8_wrapper k2(*iter);
-      stream << k2.toString() << " = " << v[k2] << "; ";
-    }
-  }
-  stream << "}";
-  return stream;
-}
-#endif
