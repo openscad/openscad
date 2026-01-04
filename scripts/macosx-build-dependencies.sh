@@ -30,7 +30,7 @@ BASEDIR=$PWD/../libraries
 OPENSCADDIR=$PWD
 SRCDIR=$BASEDIR/src
 DEPLOYDIR=$BASEDIR/install
-MAC_OSX_VERSION_MIN=11.0
+MAC_OSX_VERSION_MIN=12.0
 OPTION_DEPLOY=false
 OPTION_FORCE=0
 OPTION_ARM64=false
@@ -927,12 +927,18 @@ OPTION_PACKAGES="${@:$OPTIND}"
 
 OSX_MAJOR_VERSION=`sw_vers -productVersion | cut -d. -f1`
 OSX_VERSION=`sw_vers -productVersion | cut -d. -f2`
-if (( $OSX_MAJOR_VERSION >= 14 )); then
+if (( $OSX_MAJOR_VERSION >= 26 )); then
+  echo "Detected Tahoe (26.x) or later"
+elif (( $OSX_MAJOR_VERSION >= 15 )); then
+  echo "Detected Sequoia (15.x) or later"
+elif (( $OSX_MAJOR_VERSION >= 14 )); then
   echo "Detected Sonoma (14.x) or later"
 elif (( $OSX_MAJOR_VERSION >= 13 )); then
   echo "Detected Ventura (13.x) or later"
+elif (( $OSX_MAJOR_VERSION >= 12 )); then
+  echo "Detected Monterey (12.x) or later"
 elif (( $OSX_MAJOR_VERSION >= 11 )); then
-  echo "Detected BigSur (11.x) or later"
+  echo "Detected Big Sur (11.x) or later"
 elif (( $OSX_VERSION >= 15 )); then
   echo "Detected Catalina (10.15) or later"
 elif (( $OSX_VERSION >= 14 )); then
