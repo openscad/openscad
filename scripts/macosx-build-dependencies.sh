@@ -91,10 +91,8 @@ PACKAGES=(
     # https://github.com/CGAL/cgal/releases
     "cgal 6.1"
 
-    # Using Qt6 going forward, leaving Qt5 config just in case
-    # "qt5 5.15.16"
-    # https://download.qt.io/official_releases/qt/6.5/
-    "qt6 6.5.7"
+    # https://download.qt.io/official_releases/qt/6.8/
+    "qt6 6.8.3"
 
     # https://opencsg.org/news.html
     "opencsg 1.8.1"
@@ -239,77 +237,19 @@ build_double_conversion()
   make install
 }
 
-build_qt5()
-{
-  version=$1
-  cd $BASEDIR/src
-  v=(${version//./ }) # Split into array
-  rm -rf qt-everywhere-src-$version
-  if [ ! -f qt-everywhere-opensource-src-$version.tar.xz ]; then
-    curl -LO --insecure https://download.qt.io/official_releases/qt/${v[0]}.${v[1]}/$version/single/qt-everywhere-opensource-src-$version.tar.xz
-  fi
-  tar xzf qt-everywhere-opensource-src-$version.tar.xz
-  cd qt-everywhere-src-$version
-  patch -p1 < $OPENSCADDIR/patches/qt5/qt-5.15-memory_resource.patch
-
-  # Build each arch separately
-  for arch in ${ARCHS[*]}; do
-    mkdir build-$arch
-    cd build-$arch
-    ../configure -prefix $DEPLOYDIR -release -no-static -opensource -confirm-license \
-		-nomake examples -nomake tests \
-		-no-xcb -no-glib -no-harfbuzz -no-cups \
-		-skip qt3d -skip qtactiveqt -skip qtandroidextras -skip qtcharts -skip qtconnectivity -skip qtdatavis3d \
-		-skip qtdeclarative -skip qtdoc -skip qtgraphicaleffects -skip qtimageformats -skip qtlocation -skip qtlottie \
-		-skip qtnetworkauth -skip qtpurchasing -skip qtquick3d -skip qtquickcontrols \
-		-skip qtquickcontrols2 -skip qtquicktimeline -skip qtremoteobjects -skip qtscript -skip qtscxml -skip qtsensors \
-		-skip qtserialbus -skip qtserialport -skip qtspeech -skip qttranslations -skip qtvirtualkeyboard \
-		-skip qtwayland -skip qtwebchannel -skip qtwebengine -skip qtwebglplugin -skip qtwebsockets -skip qtwebview \
-		-skip qtwinextras -skip qtx11extras -skip qtxmlpatterns \
-		-no-feature-assistant -no-feature-designer -no-feature-distancefieldgenerator -no-feature-kmap2qmap \
-		-no-feature-linguist -no-feature-makeqpf -no-feature-qev -no-feature-qtattributionsscanner \
-		-no-feature-qtdiag -no-feature-qtpaths -no-feature-qtplugininfo \
-		-no-feature-openal -no-feature-avfoundation -no-feature-gstreamer -no-feature-qdoc \
-		-device-option QMAKE_APPLE_DEVICE_ARCHS=$arch
-    make -j"$NUMCPU"
-    make -j"$NUMCPU" install INSTALL_ROOT=$PWD/install/
-    cd ..
-  done
-
-  # Install the first arch
-  cp -R build-${ARCHS[0]}/install/$DEPLOYDIR/* $DEPLOYDIR
-
-  # If we're building for multiple archs, create fat binaries
-  if (( ${#ARCHS[@]} > 1 )); then
-    frameworks="QtConcurrent QtCore QtDBus QtGamepad QtGui QtMacExtras QtMultimedia QtMultimediaWidgets QtNetwork QtOpenGL QtPrintSupport QtSql QtSvg QtTest QtWidgets QtXml"
-    for framework in $frameworks; do
-	LIBS=()
-	for arch in ${ARCHS[*]}; do
-	    LIBS+=(build-$arch/install/$DEPLOYDIR/lib/$framework.framework/Versions/Current/$framework)
-	done
-	lipo -create ${LIBS[@]} -output $DEPLOYDIR/lib/$framework.framework/Versions/Current/$framework
-    done
-    # We also need to merge plugins into universal binaries
-    for plugin in $(find $DEPLOYDIR/plugins -name "*.dylib"); do
-	libname=$(basename $plugin)
-	lipo -create $(find build-*/install -name $libname) -output $plugin
-    done
-  fi
-}
-
 build_qt6()
 {
   version=$1
   cd $BASEDIR/src
   v=(${version//./ }) # Split into array
   rm -rf qt-everywhere-src-$version
-  if [ ! -f qt-everywhere-opensource-src-$version.tar.xz ]; then
-    curl -LO --insecure https://download.qt.io/official_releases/qt/${v[0]}.${v[1]}/$version/src/single/qt-everywhere-opensource-src-$version.tar.xz
+  if [ ! -f qt-everywhere-src-$version.tar.xz ]; then
+    curl -LO --insecure https://download.qt.io/official_releases/qt/${v[0]}.${v[1]}/$version/single/qt-everywhere-src-$version.tar.xz
   fi
-  tar xjf qt-everywhere-opensource-src-$version.tar.xz
+  tar xjf qt-everywhere-src-$version.tar.xz
   cd qt-everywhere-src-$version
 
-  patch -p1 < $OPENSCADDIR/patches/qt6/qt-6.5.5-AGL-macos.patch
+  patch -p1 < $OPENSCADDIR/patches/qt6/qt-6.8.3-AGL-macos.patch
 
   mkdir build
   cd build
