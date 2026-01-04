@@ -199,65 +199,102 @@ std::ostream& operator<<(std::ostream& stream, const Filename& filename)
   return stream;
 }
 
-void emitUnicodeEscape(std::ostream& stream, int c)
+void emitUnicode(std::ostream& stream, int c, QuotedString::Mode m)
 {
-  if (c >= 0x10000) {
-    stream << "\\U" << std::hex << std::setfill('0') << std::setw(6) << c;
-  } else if (c >= 0x80) {
-    stream << "\\u" << std::hex << std::setfill('0') << std::setw(4) << c;
-  } else {
-    stream << "\\x" << std::hex << std::setfill('0') << std::setw(2) << c;
+  switch(m) {
+  case QuotedString::Mode::ASCII:
+    if (c >= 0x10000) {
+      stream << "\\U" << std::hex << std::setfill('0') << std::setw(6) << c;
+      return;
+    } else if (c >= 0x80) {
+      stream << "\\u" << std::hex << std::setfill('0') << std::setw(4) << c;
+      return;
+    }
+    // FALLSTHROUGH
+
+  case QuotedString::Mode::REPR:
+    switch (c) {
+    case '\t': stream << "\\t"; return;
+    case '\n': stream << "\\n"; return;
+    case '\r': stream << "\\r"; return;
+    case '"':  stream << "\\\""; return;
+    case '\\': stream << "\\\\"; return;
+    }
+
+    // There are probably a bunch of non-ASCII code points that should be caught here too.
+    if (c <= 0x1f
+      || c == 0x7f
+      || (c >= 0x80 && c <= 0x9f)) {
+        stream << "\\u" << std::hex << std::setfill('0') << std::setw(4) << c;
+        return;
+    }
+    // FALLSTHROUGH
+
+  case QuotedString::Mode::RAW:
+    // And now we decode back to UTF-8.
+    if (c < 0x80) {
+      stream
+        << (char) c;
+    } else if (c < 0x800) {
+      stream
+        << (char) (((c & 0x7c0) >> 6) | 0xc0)
+        << (char) ((c & 0x3f) | 0x80);
+    } else if (c < 0x10000) {
+      stream
+        << (char) (((c & 0xf000) >> 12) | 0xe0)
+        << (char) (((c & 0xfc0) >> 6) | 0x80)
+        << (char) ((c & 0x3f) | 0x80);
+    } else {
+      stream
+        << (char) (((c & 0x1c0000) >> 18) | 0xf0)
+        << (char) (((c & 0x3f000) >> 12) | 0x80)
+        << (char) (((c & 0xfc0) >> 6) | 0x80)
+        << (char) ((c & 0x3f) | 0x80);
+    }
+    return;
   }
+  // NOTREACHED
 }
 
 // FIXME: This could probably be done more elegantly using boost::regex
 std::ostream& operator<<(std::ostream& stream, const QuotedString& s)
 {
-  int inprocess = -1;
+  int c = -1;
 
   stream << '"';
-  for (char c : s) {
-    if (isascii(c)) {
-      if (inprocess >= 0) {
-        emitUnicodeEscape(stream, inprocess);
-        inprocess = -1;
-      }
-      switch (c) {
-      case '\t': stream << "\\t"; break;
-      case '\n': stream << "\\n"; break;
-      case '\r': stream << "\\r"; break;
-      case '"':  stream << "\\\""; break;
-      case '\\': stream << "\\\\"; break;
-      default:
-        if (isprint(c)) {
-          stream << c;
-        } else {
-          emitUnicodeEscape(stream, c);
-        }
-      }
-    } else {
-      if ((c & 0xc0) == 0x80) {
-        assert(inprocess >= 0);
+
+  // Decode the UTF-8 out to UTF-32.
+  // Note:  This is not a robust UTF-8 decoder; it relies on our internal strings
+  // being valid UTF-8.  (Which may not be a valid assumption.)
+  for (unsigned char b : s) {
+    if ((b & 0xc0) == 0x80) {
         // Continuation byte.
-        inprocess <<= 6;
-        inprocess |= c & 0x3f;
-      } else {
-        if (inprocess >= 0) {
-          emitUnicodeEscape(stream, inprocess);
-        }
-        if ((c & 0xe0) == 0xc0) {
-          inprocess = c & 0x1f;
-        } else if ((c & 0xf0) == 0xe0) {
-          inprocess = c & 0x0f;
-        } else if ((c & 0xf8) == 0xf0) {
-          inprocess = c & 0x07;
-        }
-      }
+        assert(c >= 0);
+        c <<= 6;
+        c |= b & 0x3f;
+        continue;
+    }
+
+    if (c >= 0) {
+      emitUnicode(stream, c, s.mode);
+      c = -1;
+    }
+
+    if ((b & 0x80) == 0) {
+      emitUnicode(stream, b, s.mode);
+    } else if ((b & 0xe0) == 0xc0) {
+      c = b & 0x1f;
+    } else if ((b & 0xf0) == 0xe0) {
+      c = b & 0x0f;
+    } else if ((b & 0xf8) == 0xf0) {
+      c = b & 0x07;
     }
   }
-  if (inprocess >= 0) {
-    emitUnicodeEscape(stream, inprocess);
+
+  if (c >= 0) {
+    emitUnicode(stream, c, s.mode);
   }
+
   return stream << '"';
 }
 
@@ -406,14 +443,15 @@ public:
   mutable char buffer[DC_BUFFER_SIZE];
   mutable double_conversion::StringBuilder builder;
   double_conversion::DoubleToStringConverter dc;
-  bool parsable;
+  QuotedString::Mode stringMode;
 
-  tostream_visitor(std::ostringstream& stream, bool parsable = false)
+  tostream_visitor(std::ostringstream& stream,
+    QuotedString::Mode stringMode = QuotedString::Mode::RAW)
     : stream(stream),
       builder(buffer, DC_BUFFER_SIZE),
       dc(DC_FLAGS, DC_INF, DC_NAN, DC_EXP, DC_DECIMAL_LOW_EXP, DC_DECIMAL_HIGH_EXP,
          DC_MAX_LEADING_ZEROES, DC_MAX_TRAILING_ZEROES),
-      parsable(parsable)
+      stringMode(stringMode)
   {
   }
 
@@ -492,11 +530,7 @@ public:
 
   virtual void operator()(const str_utf8_wrapper& v) const
   {
-    if (parsable) {
-      stream << QuotedString(v.toString());
-    } else {
-      stream << '"' << v.toString() << '"';
-    }
+    stream << QuotedString(v.toString(), stringMode);
   }
 
   void operator()(const RangePtr& v) const { stream << *v; }
@@ -577,10 +611,10 @@ std::string Value::toEchoString() const
   }
 }
 
-std::string Value::toParsableString() const
+std::string Value::toParsableString(QuotedString::Mode m) const
 {
   std::ostringstream stream;
-  std::visit(tostream_visitor(stream, true), this->value);
+  std::visit(tostream_visitor(stream, m), this->value);
   return stream.str();
 }
 

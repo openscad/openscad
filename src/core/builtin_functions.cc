@@ -418,12 +418,15 @@ Value builtin_str(Arguments arguments, const Location& /*loc*/)
   return {stream.str()};
 }
 
+// NEEDSWORK:  this is equivalent to format()'s !r (or maybe !a) conversion,
+// so maybe it isn't necessary.
 Value builtin_quote(Arguments arguments, const Location& loc)
 {
   if (!check_arguments("quote", arguments, loc, 1)) {
     return Value::undefined.clone();
   }
-  return arguments[0]->toParsableString();
+  // NEEDSWORK or QuotedString::Mode::ASCII?
+  return arguments[0]->toParsableString(QuotedString::Mode::REPR);
 }
 
 Value builtin_chr(Arguments arguments, const Location& /*loc*/)
@@ -1253,10 +1256,11 @@ void convert(int& i, Value& a, const std::string& fmt, const Arguments& args,
     case 's':
       a = Value(a.toString());
       break;
-    case 'a':
     case 'r':
-      LOG(message_group::Warning, loc, args.documentRoot(), "conversion %1$s not yet implemented",
-        fmt.substr(i,1));
+      a = Value(a.toParsableString(QuotedString::Mode::REPR));
+      break;
+    case 'a':
+      a = Value(a.toParsableString(QuotedString::Mode::ASCII));
       break;
     default:
       LOG(message_group::Warning, loc, args.documentRoot(), "bad conversion %1$s",
@@ -1398,10 +1402,14 @@ void format2(std::ostringstream& stream, const std::string& spec, Value& a, cons
       } else if (type == "x" || type == "X") {
         stream << std::hex << (uintmax_t) d;
       } else {
-        assert(type == "d" || type == "n");
+        assert(type == "d");
         // NEEDSWORK:  should this ever switch to exponential notation?
         // And what does C++ do with large numbers with <<?
-        stream << d;
+        // Current answer:  never switch to exponential notation.
+        // NEEDSWORK: Note that this currently limits d (and o and x) to 2^63/2^64.
+        // It should really use a custom number-to-text processor that yields an
+        // unlimited number of digits, with only the first ~16 really being meaningful.
+        stream << (intmax_t) d;
       }
     } else if (type == "e" || type == "E") {
       double d = a.toDouble();
@@ -1409,14 +1417,21 @@ void format2(std::ostringstream& stream, const std::string& spec, Value& a, cons
     } else if (type == "f" || type == "F") {
       double d = a.toDouble();
       stream << std::fixed << d;
-    } else if (type == "g" || type == "G") {
+    } else if (type == "g" || type == "G" || type == "n") {
+      // NEEDSWORK does n need different handling?
       double d = a.toDouble();
       stream << std::defaultfloat << d;
     } else if (type == "%") {
-      stream << a.toString();
+      stream << a.toString(); // NEEDSWORK NYI
     } else if (type.empty()) {
       // NEEDSWORK:  should this be like d, like g, or different?
+      // Current answer:  like g, but with a different default precision.
+      // This is similar to, but not quite identical to, Python behavior for floating point
+      // numbers.
       double d = a.toDouble();
+      if (precision < 0) {
+        stream << std::setprecision(17);
+      }
       stream << std::defaultfloat << d;
     } else {
       LOG(message_group::Warning, loc, args.documentRoot(),
@@ -1435,6 +1450,7 @@ void format2(std::ostringstream& stream, const std::string& spec, Value& a, cons
   case Value::Type::RANGE:
   case Value::Type::OBJECT:
   case Value::Type::FUNCTION:
+  case Value::Type::BOOL:
     if (type.empty()) {
       stream << a.toString();
     } else {

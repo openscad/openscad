@@ -26,8 +26,11 @@ class Value;
 class QuotedString : public std::string
 {
 public:
-  QuotedString() : std::string() {}
-  QuotedString(const std::string& s) : std::string(s) {}
+  enum class Mode { RAW, REPR, ASCII };
+  Mode mode;
+
+  QuotedString() : std::string(), mode(Mode::REPR) {}
+  QuotedString(const std::string& s, Mode m = Mode::REPR) : std::string(s), mode(m) {}
 };
 std::ostream& operator<<(std::ostream& stream, const QuotedString& s);
 
@@ -370,7 +373,7 @@ public:
   bool getUnsignedInt(unsigned int& v) const;
   bool getPositiveInt(unsigned int& v) const;
   [[nodiscard]] std::string toString() const;
-  [[nodiscard]] std::string toParsableString() const;
+  [[nodiscard]] std::string toParsableString(QuotedString::Mode m) const;
   [[nodiscard]] std::string toEchoString() const;
   [[nodiscard]] std::string toEchoStringNoThrow() const;  // use this for warnings
   [[nodiscard]] const UndefType& toUndef() const;
