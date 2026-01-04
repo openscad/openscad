@@ -199,20 +199,91 @@ std::ostream& operator<<(std::ostream& stream, const Filename& filename)
   return stream;
 }
 
+void QuotedString::emitUnicode(std::ostream& stream, int c) const
+{
+  switch (mode) {
+  case Mode::ASCII:
+    if (c >= 0x10000) {
+      stream << "\\U" << std::hex << std::setfill('0') << std::setw(6) << c;
+      return;
+    } else if (c >= 0x80) {
+      stream << "\\u" << std::hex << std::setfill('0') << std::setw(4) << c;
+      return;
+    }
+    // FALLSTHROUGH
+
+  case Mode::REPR:
+    switch (c) {
+    case '\t': stream << "\\t"; return;
+    case '\n': stream << "\\n"; return;
+    case '\r': stream << "\\r"; return;
+    case '"':  stream << "\\\""; return;
+    case '\\': stream << "\\\\"; return;
+    }
+
+    // There are probably a bunch of non-ASCII code points that should be caught here too.
+    if (c <= 0x1f
+      || c == 0x7f
+      || (c >= 0x80 && c <= 0x9f)) {
+      stream << "\\u" << std::hex << std::setfill('0') << std::setw(4) << c;
+      return;
+    }
+    // FALLSTHROUGH
+
+  case Mode::RAW:
+    // And now we encode back to UTF-8.
+    char buf[5] = {0};
+    const gunichar gc = c;
+    if (g_unichar_validate(gc) && (gc != 0)) {
+      g_unichar_to_utf8(gc, buf);
+    }
+    stream << buf;
+    return;
+  }
+  // NOTREACHED
+}
+
 // FIXME: This could probably be done more elegantly using boost::regex
 std::ostream& operator<<(std::ostream& stream, const QuotedString& s)
 {
+  int c = -1;
+
   stream << '"';
-  for (char c : s) {
-    switch (c) {
-    case '\t': stream << "\\t"; break;
-    case '\n': stream << "\\n"; break;
-    case '\r': stream << "\\r"; break;
-    case '"':  stream << "\\\""; break;
-    case '\\': stream << "\\\\"; break;
-    default:   stream << c;
+
+  // Decode the UTF-8 out to UTF-32.
+  // Note:  This is not a robust UTF-8 decoder; it relies on our internal strings
+  // being valid UTF-8.  (Which may not be a valid assumption; I'm not sure that
+  // anything really checks constant strings.)
+  // Perhaps this should use the gunicode.h functions, or str_utf8_wrapper.
+  for (unsigned char b : s) {
+    if ((b & 0xc0) == 0x80) {
+      // Continuation byte.
+      assert(c >= 0);
+      c <<= 6;
+      c |= b & 0x3f;
+      continue;
+    }
+
+    if (c >= 0) {
+      s.emitUnicode(stream, c);
+      c = -1;
+    }
+
+    if ((b & 0x80) == 0) {
+      s.emitUnicode(stream, b);
+    } else if ((b & 0xe0) == 0xc0) {
+      c = b & 0x1f;
+    } else if ((b & 0xf0) == 0xe0) {
+      c = b & 0x0f;
+    } else if ((b & 0xf8) == 0xf0) {
+      c = b & 0x07;
     }
   }
+
+  if (c >= 0) {
+    s.emitUnicode(stream, c);
+  }
+
   return stream << '"';
 }
 
@@ -335,6 +406,27 @@ const str_utf8_wrapper& Value::toStrUtf8Wrapper() const
   return std::get<str_utf8_wrapper>(this->value);
 }
 
+// Return true if the string is allowed as an identifier, and in particular if it can be
+// used directly an unquoted name in an object call object(name=val).  This duplicates
+// rules defined in the lexer, but it doesn't seem practical to share them.
+// Note also that, for its application (toString on an object), it's OK if it's conservative.
+// The caller will do something sensible, just maybe not as pretty as one might like.
+bool isIdentifier(std::string s)
+{
+  if (s.empty()) {
+    return false;
+  }
+  if (!isascii(s[0]) || !(isalpha(s[0]) || s[0] == '$' || s[0] == '_')) {
+    return false;
+  }
+  for (auto c : s) {
+    if (!isascii(c) || !(isalpha(c) || isdigit(c) || c == '$' || c == '_')) {
+      return false;
+    }
+  }
+  return true;
+}
+
 // Optimization to avoid multiple stream instantiations and copies to str for long vectors.
 // Functions identically to "class tostring_visitor", except outputting to stream and not returning
 // strings
@@ -345,12 +437,14 @@ public:
   mutable char buffer[DC_BUFFER_SIZE];
   mutable double_conversion::StringBuilder builder;
   double_conversion::DoubleToStringConverter dc;
+  QuotedString::Mode stringMode;
 
-  tostream_visitor(std::ostringstream& stream)
+  tostream_visitor(std::ostringstream& stream, QuotedString::Mode stringMode = QuotedString::Mode::RAW)
     : stream(stream),
       builder(buffer, DC_BUFFER_SIZE),
       dc(DC_FLAGS, DC_INF, DC_NAN, DC_EXP, DC_DECIMAL_LOW_EXP, DC_DECIMAL_HIGH_EXP,
-         DC_MAX_LEADING_ZEROES, DC_MAX_TRAILING_ZEROES)
+         DC_MAX_LEADING_ZEROES, DC_MAX_TRAILING_ZEROES),
+      stringMode(stringMode)
   {
   }
 
@@ -394,16 +488,43 @@ public:
     if (StackCheck::inst().check()) {
       throw VectorEchoStringException::create();
     }
-    stream << "{ ";
+    stream << "object(";
+    bool first = true;
+    bool inarray = false;
     for (auto& key : v.keys()) {
-      stream << key << " = ";
-      std::visit(*this, v.get(key).getVariant());
-      stream << "; ";
+      if (isIdentifier(key)) {
+        if (inarray) {
+          stream << "]";
+          inarray = false;
+        }
+        if (!first) {
+          stream << ", ";
+        }
+        stream << key << "=";
+        std::visit(*this, v.get(key).getVariant());
+      } else {
+        if (!inarray) {
+          if (!first) {
+            stream << ", ";
+          }
+          stream << "[";
+          inarray = true;
+        } else {
+          stream << ", ";
+        }
+        stream << "[" << QuotedString(key, stringMode) << ", ";
+        std::visit(*this, v.get(key).getVariant());
+        stream << "]";
+      }
+      first = false;
     }
-    stream << '}';
+    stream << ")";
   }
 
-  void operator()(const str_utf8_wrapper& v) const { stream << '"' << v.toString() << '"'; }
+  virtual void operator()(const str_utf8_wrapper& v) const
+  {
+    stream << QuotedString(v.toString(), stringMode);
+  }
 
   void operator()(const RangePtr& v) const { stream << *v; }
 
@@ -481,6 +602,13 @@ std::string Value::toEchoString() const
   } else {
     return toString();
   }
+}
+
+std::string Value::toParsableString(QuotedString::Mode m) const
+{
+  std::ostringstream stream;
+  std::visit(tostream_visitor(stream, m), this->value);
+  return stream.str();
 }
 
 std::string Value::toEchoStringNoThrow() const
@@ -1376,18 +1504,3 @@ const Value& ObjectType::operator[](const str_utf8_wrapper& v) const { return th
 
 // Copy explicitly only when necessary
 ObjectType ObjectType::clone() const { return ObjectType(this->ptr); }
-
-std::ostream& operator<<(std::ostream& stream, const ObjectType& v)
-{
-  stream << "{ ";
-  auto iter = v.ptr->keys.begin();
-  if (iter != v.ptr->keys.end()) {
-    str_utf8_wrapper k(*iter);
-    for (; iter != v.ptr->keys.end(); ++iter) {
-      str_utf8_wrapper k2(*iter);
-      stream << k2.toString() << " = " << v[k2] << "; ";
-    }
-  }
-  stream << "}";
-  return stream;
-}

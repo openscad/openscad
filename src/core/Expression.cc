@@ -360,6 +360,8 @@ Value MemberLookup::evaluate(const std::shared_ptr<const Context>& context) cons
       if (this->member.length() > 1 && boost::regex_match(this->member, re_swizzle_validation)) {
         VectorType ret(context->session());
         ret.reserve(this->member.length());
+        // NEEDSWORK:  these should really be supported by VectorType::operator[ so that they
+        // can be exercised from contexts other than the AST.
         for (const char& ch : this->member) {
           switch (ch) {
           case 'r':

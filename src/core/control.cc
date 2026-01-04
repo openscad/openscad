@@ -150,6 +150,24 @@ static std::shared_ptr<AbstractNode> builtin_echo(const ModuleInstantiation *ins
   return node;
 }
 
+static std::shared_ptr<AbstractNode> builtin_print(const ModuleInstantiation *inst, Arguments arguments,
+                                                   const Children& children)
+{
+  Parameters parameters = Parameters::parse(std::move(arguments), inst->location(), {}, {"message"});
+  (void)parameters.valid_required("message", Value::Type::STRING);
+  std::string message = parameters["message"].toString();
+
+  // NEEDSWORK:  suppresses empty strings.
+  LOG(message_group::NONE, "%1$s", message);
+
+  auto node = children.instantiate(lazyUnionNode(inst));
+  // echo without child geometries should not count as valid CSGNode
+  if (node->children.empty()) {
+    return {};
+  }
+  return node;
+}
+
 static std::shared_ptr<AbstractNode> builtin_assert(const ModuleInstantiation *inst,
                                                     const std::shared_ptr<const Context>& context)
 {
@@ -226,6 +244,11 @@ void register_builtin_control()
   Builtins::init("echo", new BuiltinModule(builtin_echo),
                  {
                    "echo(arg, ...)",
+                 });
+
+  Builtins::init("print", new BuiltinModule(builtin_print, &Feature::ExperimentalPrintModule),
+                 {
+                   "print(string)",
                  });
 
   Builtins::init("assert", new BuiltinModule(builtin_assert),

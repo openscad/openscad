@@ -262,12 +262,22 @@ void FreetypeRenderer::Params::detect_properties()
 
 std::ostream& operator<<(std::ostream& stream, const FreetypeRenderer::Params& params)
 {
-  stream << "text = \"" << params.text << "\", size = " << params.size
-         << ", spacing = " << params.spacing << ", font = \"" << params.font << "\", direction = \""
-         << params.direction << "\", language = \"" << params.language
-         << (params.script.empty() ? "" : "\", script = \"") << params.script << "\", halign = \""
-         << params.halign << "\", valign = \"" << params.valign;
-  if (params.discretizer) stream << "\", " << *(params.discretizer);
+  stream
+    << "text = " << QuotedString(params.text)
+    << ", size = " << params.size
+    << ", spacing = " << params.spacing
+    << ", font = " << QuotedString(params.font)
+    << ", direction = " << QuotedString(params.direction)
+    << ", language = " << QuotedString(params.language);
+  if (!params.script.empty()) {
+    stream << ", script = " << QuotedString(params.script);
+  }
+  stream
+    << ", halign = " << QuotedString(params.halign)
+    << ", valign = " << QuotedString(params.valign);
+  if (params.discretizer) {
+    stream << ", " << *(params.discretizer);
+  }
   return stream;
 }
 
