@@ -232,25 +232,12 @@ void QuotedString::emitUnicode(std::ostream& stream, int c) const
 
   case Mode::RAW:
     // And now we decode back to UTF-8.
-    if (c < 0x80) {
-      stream
-        << (char) c;
-    } else if (c < 0x800) {
-      stream
-        << (char) (((c & 0x7c0) >> 6) | 0xc0)
-        << (char) ((c & 0x3f) | 0x80);
-    } else if (c < 0x10000) {
-      stream
-        << (char) (((c & 0xf000) >> 12) | 0xe0)
-        << (char) (((c & 0xfc0) >> 6) | 0x80)
-        << (char) ((c & 0x3f) | 0x80);
-    } else {
-      stream
-        << (char) (((c & 0x1c0000) >> 18) | 0xf0)
-        << (char) (((c & 0x3f000) >> 12) | 0x80)
-        << (char) (((c & 0xfc0) >> 6) | 0x80)
-        << (char) ((c & 0x3f) | 0x80);
+    char buf[5] = {0};
+    const gunichar gc = c;
+    if (g_unichar_validate(gc) && (gc != 0)) {
+      g_unichar_to_utf8(gc, buf);
     }
+    stream << buf;
     return;
   }
   // NOTREACHED
@@ -267,6 +254,7 @@ std::ostream& operator<<(std::ostream& stream, const QuotedString& s)
   // Note:  This is not a robust UTF-8 decoder; it relies on our internal strings
   // being valid UTF-8.  (Which may not be a valid assumption; I'm not sure that
   // anything really checks constant strings.)
+  // Perhaps this should use the gunicode.h functions, or str_utf8_wrapper.
   for (unsigned char b : s) {
     if ((b & 0xc0) == 0x80) {
         // Continuation byte.
@@ -418,6 +406,11 @@ const str_utf8_wrapper& Value::toStrUtf8Wrapper() const
   return std::get<str_utf8_wrapper>(this->value);
 }
 
+// Return true if the string is allowed as an identifier, and in particular if it can be
+// used directly an unquoted name in an object call object(name=val).  This duplicates
+// rules defined in the lexer, but it doesn't seem practical to share them.
+// Note also that, for its application (toString on an object), it's OK if it's conservative.
+// The caller will do something sensible, just maybe not as pretty as one might like.
 bool isIdentifier(std::string s)
 {
   if (s.empty()) {
