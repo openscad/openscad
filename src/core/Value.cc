@@ -231,7 +231,7 @@ void QuotedString::emitUnicode(std::ostream& stream, int c) const
     // FALLSTHROUGH
 
   case Mode::RAW:
-    // And now we decode back to UTF-8.
+    // And now we encode back to UTF-8.
     char buf[5] = {0};
     const gunichar gc = c;
     if (g_unichar_validate(gc) && (gc != 0)) {

@@ -1247,13 +1247,12 @@ void convert(int& i, Value& a, const std::string& fmt, const Arguments& args, co
     LOG(message_group::Warning, loc, args.documentRoot(), "missing conversion");
     return;
   }
-  switch(fmt[i]) {
+  switch (fmt[i]) {
   case 's': a = Value(a.toString()); break;
   case 'r': a = Value(a.toParsableString(QuotedString::Mode::REPR)); break;
   case 'a': a = Value(a.toParsableString(QuotedString::Mode::ASCII)); break;
   default:
-    LOG(message_group::Warning, loc, args.documentRoot(), "bad conversion %1$s",
-        fmt.substr(i,1));
+    LOG(message_group::Warning, loc, args.documentRoot(), "bad conversion %1$s", fmt.substr(i,1));
     break;
   }
   i++;
@@ -1438,7 +1437,7 @@ void format2(std::ostringstream& stream, const std::string& spec, Value& a, cons
   case Value::Type::RANGE:
   case Value::Type::OBJECT:
   case Value::Type::FUNCTION:
-  case Value::Type::BOOL: // NEEDSWORK:  support for :d, :f, et cetera.
+  case Value::Type::BOOL:  // NEEDSWORK:  support for :d, :f, et cetera.
     if (type.empty()) {
       stream << a.toString();
     } else {
