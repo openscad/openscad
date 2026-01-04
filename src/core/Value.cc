@@ -199,10 +199,10 @@ std::ostream& operator<<(std::ostream& stream, const Filename& filename)
   return stream;
 }
 
-void emitUnicode(std::ostream& stream, int c, QuotedString::Mode m)
+void QuotedString::emitUnicode(std::ostream& stream, int c) const
 {
-  switch(m) {
-  case QuotedString::Mode::ASCII:
+  switch(mode) {
+  case Mode::ASCII:
     if (c >= 0x10000) {
       stream << "\\U" << std::hex << std::setfill('0') << std::setw(6) << c;
       return;
@@ -212,7 +212,7 @@ void emitUnicode(std::ostream& stream, int c, QuotedString::Mode m)
     }
     // FALLSTHROUGH
 
-  case QuotedString::Mode::REPR:
+  case Mode::REPR:
     switch (c) {
     case '\t': stream << "\\t"; return;
     case '\n': stream << "\\n"; return;
@@ -230,7 +230,7 @@ void emitUnicode(std::ostream& stream, int c, QuotedString::Mode m)
     }
     // FALLSTHROUGH
 
-  case QuotedString::Mode::RAW:
+  case Mode::RAW:
     // And now we decode back to UTF-8.
     if (c < 0x80) {
       stream
@@ -265,7 +265,8 @@ std::ostream& operator<<(std::ostream& stream, const QuotedString& s)
 
   // Decode the UTF-8 out to UTF-32.
   // Note:  This is not a robust UTF-8 decoder; it relies on our internal strings
-  // being valid UTF-8.  (Which may not be a valid assumption.)
+  // being valid UTF-8.  (Which may not be a valid assumption; I'm not sure that
+  // anything really checks constant strings.)
   for (unsigned char b : s) {
     if ((b & 0xc0) == 0x80) {
         // Continuation byte.
@@ -276,12 +277,12 @@ std::ostream& operator<<(std::ostream& stream, const QuotedString& s)
     }
 
     if (c >= 0) {
-      emitUnicode(stream, c, s.mode);
+      s.emitUnicode(stream, c);
       c = -1;
     }
 
     if ((b & 0x80) == 0) {
-      emitUnicode(stream, b, s.mode);
+      s.emitUnicode(stream, b);
     } else if ((b & 0xe0) == 0xc0) {
       c = b & 0x1f;
     } else if ((b & 0xf0) == 0xe0) {
@@ -292,7 +293,7 @@ std::ostream& operator<<(std::ostream& stream, const QuotedString& s)
   }
 
   if (c >= 0) {
-    emitUnicode(stream, c, s.mode);
+    s.emitUnicode(stream, c);
   }
 
   return stream << '"';
@@ -519,7 +520,7 @@ public:
         } else {
           stream << ", ";
         }
-        stream << "[" << QuotedString(key) << ", ";
+        stream << "[" << QuotedString(key, stringMode) << ", ";
         std::visit(*this, v.get(key).getVariant());
         stream << "]";
       }

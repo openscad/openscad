@@ -27,12 +27,15 @@ class QuotedString : public std::string
 {
 public:
   enum class Mode { RAW, REPR, ASCII };
-  Mode mode;
 
   QuotedString() : std::string(), mode(Mode::REPR) {}
   QuotedString(const std::string& s, Mode m = Mode::REPR) : std::string(s), mode(m) {}
+  friend std::ostream& operator<<(std::ostream& stream, const QuotedString& s);
+
+private:
+  Mode mode;
+  void emitUnicode(std::ostream& stream, int c) const;
 };
-std::ostream& operator<<(std::ostream& stream, const QuotedString& s);
 
 class Filename : public QuotedString
 {
