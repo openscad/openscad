@@ -221,11 +221,23 @@ void QuotedString::emitUnicode(std::ostream& stream, int c) const
     case '\\': stream << "\\\\"; return;
     }
 
-    // There are probably a bunch of non-ASCII code points that should be caught here too.
+    // This list is probably incomplete, but it's a stab at it.
+    // To do anything more elaborate it would probably be best to import the Unicode database
+    // and use its classifications.
     // clang-format off
-    if (c <= 0x1f
-      || c == 0x7f
-      || (c >= 0x80 && c <= 0x9f)) {
+    if (c <= 0x1f                          // C0 (ASCII) control characters
+      || c == 0x7f                         // DEL
+      || (c >= 0x80 && c <= 0x9f)          // C1 control characters
+      || (c >= 0x2000 && c <= 0x200f)      // Spaces, formatting
+      || (c >= 0x2028 && c <= 0x202f)      // Formatting
+      || (c >= 0x206a && c <= 0x206f)      // Deprecated
+      || (c >= 0xd800 && c <= 0xdfff)      // Surrogates
+      || (c >= 0xe000 && c <= 0xf8ff)      // Private Use
+      || c == 0xfeff                       // Zero Width No-Break Space / Byte Order Mark
+      || (c >= 0xfff9 && c <= 0xffff)      // Specials
+      || (c >= 0xf0000 && c <= 0xfffff)    // Supplementary Private Use Area-A
+      || (c >= 0x100000 && c <= 0x10ffff)  // Supplementary Private Use Area-B
+      ) {
       stream << "\\u" << std::hex << std::setfill('0') << std::setw(4) << c;
       return;
     }
@@ -234,7 +246,9 @@ void QuotedString::emitUnicode(std::ostream& stream, int c) const
 
   case Mode::RAW:
     // And now we encode back to UTF-8.
-    char buf[5] = {0};
+    // The longest UTF-8 symbol is four bytes, plus a terminating null is five, but the documentation
+    // for g_unichar_to_utf8 says to allow six.
+    char buf[6] = {0};
     const gunichar gc = c;
     if (g_unichar_validate(gc) && (gc != 0)) {
       g_unichar_to_utf8(gc, buf);
