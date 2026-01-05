@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.8.3](https://github.com/pythonscad/pythonscad/compare/v0.8.2...v0.8.3) (2026-01-05)
+
+
+### Features
+
+* add RPM package build system ([#274](https://github.com/pythonscad/pythonscad/issues/274)) ([dd59cab](https://github.com/pythonscad/pythonscad/commit/dd59cab59dcfc3e3e231da7d086adc1b05ccaab1))
+
+
+### Bug Fixes
+
+* macOS app bundle not launching due to missing permissions and code signing ([#271](https://github.com/pythonscad/pythonscad/issues/271)) ([b0e16c1](https://github.com/pythonscad/pythonscad/commit/b0e16c1fa5b3f305a12a47197d5a453f35e1cba5))
+
 ## [0.8.2](https://github.com/pythonscad/pythonscad/compare/v0.8.1...v0.8.2) (2026-01-02)
 
 
