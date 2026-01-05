@@ -262,6 +262,7 @@ void FreetypeRenderer::Params::detect_properties()
 
 std::ostream& operator<<(std::ostream& stream, const FreetypeRenderer::Params& params)
 {
+  // clang-format off
   stream << "text = " << QuotedString(params.text)
          << ", size = " << params.size
          << ", spacing = " << params.spacing
@@ -276,6 +277,7 @@ std::ostream& operator<<(std::ostream& stream, const FreetypeRenderer::Params& p
   if (params.discretizer) {
     stream << ", " << *(params.discretizer);
   }
+  // clang-format on
   return stream;
 }
 

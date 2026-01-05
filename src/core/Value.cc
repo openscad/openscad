@@ -222,12 +222,14 @@ void QuotedString::emitUnicode(std::ostream& stream, int c) const
     }
 
     // There are probably a bunch of non-ASCII code points that should be caught here too.
+    // clang-format off
     if (c <= 0x1f
       || c == 0x7f
       || (c >= 0x80 && c <= 0x9f)) {
       stream << "\\u" << std::hex << std::setfill('0') << std::setw(4) << c;
       return;
     }
+    // clang-format on
     // FALLSTHROUGH
 
   case Mode::RAW:
