@@ -622,7 +622,14 @@ int cmdline(const CommandLine& cmd)
   if (!cmd.parameterFile.empty() && !cmd.setName.empty()) {
     ParameterObjects parameters = ParameterObjects::fromSourceFile(root_file);
     ParameterSets sets;
-    sets.readFile(cmd.parameterFile);
+    JsonErrorInfo errorInfo;
+    sets.readFile(cmd.parameterFile, errorInfo);
+    if (errorInfo.hasError()) {
+      LOG(message_group::Error,
+          Location(static_cast<int>(errorInfo.line), 0, static_cast<int>(errorInfo.line), 0,
+                   std::make_shared<fs::path>(errorInfo.filename)),
+          "", "%1$s", errorInfo.message);
+    }
     for (const auto& set : sets) {
       if (set.name() == cmd.setName) {
         parameters.importValues(set);
