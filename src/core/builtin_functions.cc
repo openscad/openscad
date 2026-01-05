@@ -1252,7 +1252,7 @@ void convert(int& i, Value& a, const std::string& fmt, const Arguments& args, co
   case 'r': a = Value(a.toParsableString(QuotedString::Mode::REPR)); break;
   case 'a': a = Value(a.toParsableString(QuotedString::Mode::ASCII)); break;
   default:
-    LOG(message_group::Warning, loc, args.documentRoot(), "bad conversion %1$s", fmt.substr(i,1));
+    LOG(message_group::Warning, loc, args.documentRoot(), "bad conversion %1$s", fmt.substr(i, 1));
     break;
   }
   i++;
