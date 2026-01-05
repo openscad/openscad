@@ -613,11 +613,7 @@ std::string Value::toString() const { return std::visit(tostring_visitor(), this
 
 std::string Value::toEchoString() const
 {
-  if (type() == Value::Type::STRING) {
-    return std::string("\"") + toString() + '"';
-  } else {
-    return toString();
-  }
+  return toParsableString(QuotedString::Mode::RAW);
 }
 
 std::string Value::toParsableString(QuotedString::Mode m) const
