@@ -621,6 +621,71 @@ jobs:
           echo "QtCore framework dependencies:"
           otool -L "$FRAMEWORKS_DIR/QtCore.framework/Versions/A/QtCore" | grep -E "icu|brotli" || echo "No ICU or brotli references found"
 
+      - name: Fix app bundle for macOS distribution
+        run: |
+          APP_BUNDLE="${{ steps.merge.outputs.app_bundle }}"
+          EXEC_NAME=$(basename "$APP_BUNDLE" .app)
+          
+          echo "=== Fixing executable permissions ==="
+          chmod +x "$APP_BUNDLE/Contents/MacOS/$EXEC_NAME"
+          if [ -f "$APP_BUNDLE/Contents/MacOS/$EXEC_NAME-python" ]; then
+            chmod +x "$APP_BUNDLE/Contents/MacOS/$EXEC_NAME-python"
+          fi
+          
+          echo "=== Fixing framework structure ==="
+          cd "$APP_BUNDLE/Contents/Frameworks"
+          for fw in Qt*.framework Python.framework 2>/dev/null; do
+            [ ! -d "$fw" ] && continue
+            fw_name=$(basename "$fw" .framework)
+            
+            # If the framework has a duplicate binary at the root (not a symlink), fix it
+            if [ -f "$fw/$fw_name" ] && [ ! -L "$fw/$fw_name" ]; then
+              echo "Fixing $fw: removing duplicate binary, creating symlink"
+              rm "$fw/$fw_name"
+              ln -s "Versions/Current/$fw_name" "$fw/$fw_name"
+            fi
+          done
+          
+          echo "=== Signing all binaries ==="
+          # Sign all dylibs
+          find "$APP_BUNDLE/Contents/Frameworks" -name "*.dylib" -type f -exec codesign --force --sign - {} \; 2>&1 | grep -v "replacing existing signature" || true
+          find "$APP_BUNDLE/Contents/PlugIns" -name "*.dylib" -type f -exec codesign --force --sign - {} \; 2>&1 | grep -v "replacing existing signature" || true
+          
+          # Sign Qt framework binaries
+          for fw in "$APP_BUNDLE/Contents/Frameworks"/Qt*.framework; do
+            [ ! -d "$fw" ] && continue
+            fw_name=$(basename "$fw" .framework)
+            
+            # Sign the versioned binary
+            if [ -f "$fw/Versions/A/$fw_name" ]; then
+              codesign --force --sign - "$fw/Versions/A/$fw_name" 2>&1 | grep -v "replacing existing signature" || true
+            fi
+          done
+          
+          # Sign Python framework
+          if [ -d "$APP_BUNDLE/Contents/Frameworks/Python.framework" ]; then
+            # Find Python version
+            PY_VER=$(ls "$APP_BUNDLE/Contents/Frameworks/Python.framework/Versions/" 2>/dev/null | grep -E "^[0-9]+\.[0-9]+$" | head -1)
+            if [ -n "$PY_VER" ] && [ -f "$APP_BUNDLE/Contents/Frameworks/Python.framework/Versions/$PY_VER/Python" ]; then
+              codesign --force --sign - "$APP_BUNDLE/Contents/Frameworks/Python.framework/Versions/$PY_VER/Python" 2>&1 | grep -v "replacing existing signature" || true
+            fi
+          fi
+          
+          # Sign helper and main executables
+          if [ -f "$APP_BUNDLE/Contents/MacOS/$EXEC_NAME-python" ]; then
+            codesign --force --sign - "$APP_BUNDLE/Contents/MacOS/$EXEC_NAME-python"
+          fi
+          codesign --force --sign - "$APP_BUNDLE/Contents/MacOS/$EXEC_NAME"
+          
+          # Sign the app bundle itself
+          codesign --force --sign - "$APP_BUNDLE"
+          
+          # Remove quarantine attributes
+          xattr -cr "$APP_BUNDLE" 2>/dev/null || true
+          
+          echo "=== App bundle fixed and signed ==="
+          codesign -dv "$APP_BUNDLE" 2>&1 || echo "Verification complete"
+
       - name: Run macOS sanity check
         run: |
           # Validate the merged universal binary
