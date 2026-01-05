@@ -662,6 +662,8 @@ if(ENABLE_PYTHON)
   endif() # endif MXE
   target_include_directories(OpenSCADPy PRIVATE ${Nettle_INCLUDE_DIRS})
   target_link_libraries(OpenSCADPy PRIVATE ${Nettle_LIBRARIES})
+  # OpenSCADExe also needs nettle (used in MainWindow.cc)
+  target_link_libraries(OpenSCADExe PRIVATE ${Nettle_LIBRARIES})
   # Create pythonscad-python symlink
   # On macOS bundles, this will be created via POST_BUILD command
   # On other platforms, create it in the build directory

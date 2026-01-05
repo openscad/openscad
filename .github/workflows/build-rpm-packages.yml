@@ -9,33 +9,44 @@ on:
         description: 'Release tag to upload to (leave empty for test build)'
         required: false
         default: ''
+      debug_enabled:
+        type: boolean
+        description: 'Run the build with tmate debugging enabled (https://github.com/marketplace/actions/debugging-with-tmate)'
+        required: false
+        default: false
 
 jobs:
   build-rpm:
-    name: Build .rpm (${{ matrix.distro }} ${{ matrix.arch }})
+    name: Build .rpm (${{ matrix.distro }} ${{ matrix.version }} ${{ matrix.arch }})
     runs-on: ${{ matrix.runner }}
     strategy:
       fail-fast: false
       matrix:
         include:
-          # Fedora 40 (amd64)
+          # Fedora 42 (amd64)
           - distro: fedora
-            version: '40'
+            version: '42'
             arch: amd64
             runner: ubuntu-24.04
-            container: fedora:40
-          # Fedora 40 (arm64)
+            container: fedora:42
+          # Fedora 42 (arm64)
           - distro: fedora
-            version: '40'
+            version: '42'
             arch: arm64
             runner: ubuntu-24.04
-            container: fedora:40
-          # Fedora 41 (amd64)
+            container: fedora:42
+          # Fedora 43 (amd64)
           - distro: fedora
-            version: '41'
+            version: '43'
             arch: amd64
             runner: ubuntu-24.04
-            container: fedora:41
+            container: fedora:43
+          # Fedora 43 (arm64)
+          - distro: fedora
+            version: '43'
+            arch: arm64
+            runner: ubuntu-24.04
+            container: fedora:43
           # RHEL 9 compatible (amd64)
           - distro: el
             version: '9'
@@ -67,6 +78,13 @@ jobs:
           git fetch --unshallow --tags 2>/dev/null || git fetch --tags
           git describe --tags --always --dirty || echo "No tags found"
 
+      - name: Setup (detached) tmate session if enabled
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.debug_enabled }}
+        uses: mxschmitt/action-tmate@v3
+        timeout-minutes: 5
+        with:
+          detached: true
+          limit-access-to-actor: true
       - name: Set up QEMU for ARM64
         if: matrix.arch == 'arm64'
         run: |
@@ -92,6 +110,10 @@ jobs:
             dnf config-manager --set-enabled crb || true
           fi
 
+          # Set VERSION environment variable for spec file parsing
+          export VERSION=$(cat VERSION.txt | tr -d '\n' | tr -d '\r')
+          export CHANGELOG_DATE=$(date "+%a %b %d %Y")
+
           # Install build dependencies from spec file
           dnf builddep -y pythonscad.spec
 
@@ -114,7 +136,7 @@ jobs:
           dnf install -y /tmp/rpms/pythonscad-*.rpm
 
           # Verify binary exists and shows version
-          which pythonscad
+          command -v pythonscad
           pythonscad --version || echo "Version check skipped (may require display)"
 
           # Verify library dependencies

@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
     inputs:
       upload_to_release:
-        description: 'Upload to latest release (leave empty for test builds)'
+        description: 'Release tag to upload to (leave empty for test build)'
         required: false
         default: ''
       debug_enabled:
@@ -625,19 +625,19 @@ jobs:
         run: |
           APP_BUNDLE="${{ steps.merge.outputs.app_bundle }}"
           EXEC_NAME=$(basename "$APP_BUNDLE" .app)
-          
+
           echo "=== Fixing executable permissions ==="
           chmod +x "$APP_BUNDLE/Contents/MacOS/$EXEC_NAME"
           if [ -f "$APP_BUNDLE/Contents/MacOS/$EXEC_NAME-python" ]; then
             chmod +x "$APP_BUNDLE/Contents/MacOS/$EXEC_NAME-python"
           fi
-          
+
           echo "=== Fixing framework structure ==="
           cd "$APP_BUNDLE/Contents/Frameworks"
-          for fw in Qt*.framework Python.framework 2>/dev/null; do
+          for fw in Qt*.framework Python.framework; do
             [ ! -d "$fw" ] && continue
             fw_name=$(basename "$fw" .framework)
-            
+
             # If the framework has a duplicate binary at the root (not a symlink), fix it
             if [ -f "$fw/$fw_name" ] && [ ! -L "$fw/$fw_name" ]; then
               echo "Fixing $fw: removing duplicate binary, creating symlink"
@@ -645,23 +645,23 @@ jobs:
               ln -s "Versions/Current/$fw_name" "$fw/$fw_name"
             fi
           done
-          
+
           echo "=== Signing all binaries ==="
           # Sign all dylibs
           find "$APP_BUNDLE/Contents/Frameworks" -name "*.dylib" -type f -exec codesign --force --sign - {} \; 2>&1 | grep -v "replacing existing signature" || true
           find "$APP_BUNDLE/Contents/PlugIns" -name "*.dylib" -type f -exec codesign --force --sign - {} \; 2>&1 | grep -v "replacing existing signature" || true
-          
+
           # Sign Qt framework binaries
           for fw in "$APP_BUNDLE/Contents/Frameworks"/Qt*.framework; do
             [ ! -d "$fw" ] && continue
             fw_name=$(basename "$fw" .framework)
-            
+
             # Sign the versioned binary
             if [ -f "$fw/Versions/A/$fw_name" ]; then
               codesign --force --sign - "$fw/Versions/A/$fw_name" 2>&1 | grep -v "replacing existing signature" || true
             fi
           done
-          
+
           # Sign Python framework
           if [ -d "$APP_BUNDLE/Contents/Frameworks/Python.framework" ]; then
             # Find Python version
@@ -670,19 +670,43 @@ jobs:
               codesign --force --sign - "$APP_BUNDLE/Contents/Frameworks/Python.framework/Versions/$PY_VER/Python" 2>&1 | grep -v "replacing existing signature" || true
             fi
           fi
-          
-          # Sign helper and main executables
-          if [ -f "$APP_BUNDLE/Contents/MacOS/$EXEC_NAME-python" ]; then
-            codesign --force --sign - "$APP_BUNDLE/Contents/MacOS/$EXEC_NAME-python"
-          fi
-          codesign --force --sign - "$APP_BUNDLE/Contents/MacOS/$EXEC_NAME"
-          
-          # Sign the app bundle itself
-          codesign --force --sign - "$APP_BUNDLE"
-          
+
+          # Diagnose framework structure before signing
+          echo "=== Diagnosing framework structures ==="
+          for fw in "$APP_BUNDLE/Contents/Frameworks"/*.framework; do
+            [ ! -d "$fw" ] && continue
+            fw_name=$(basename "$fw")
+            echo "--- Framework: $fw_name ---"
+            echo "Top-level structure:"
+            ls -la "$fw/" 2>/dev/null | head -15
+            echo ""
+            echo "Recursive structure (max depth 3):"
+            find "$fw" -maxdepth 3 -ls 2>/dev/null | head -30
+            echo ""
+            echo "Info.plist locations:"
+            find "$fw" -name "Info.plist" -type f 2>/dev/null || echo "No Info.plist found"
+            if [ -f "$fw/Resources/Info.plist" ]; then
+              echo "Bundle type from Resources/Info.plist:"
+              /usr/libexec/PlistBuddy -c "Print :CFBundlePackageType" "$fw/Resources/Info.plist" 2>/dev/null || echo "No CFBundlePackageType"
+            fi
+            if [ -f "$fw/Versions/A/Resources/Info.plist" ]; then
+              echo "Bundle type from Versions/A/Resources/Info.plist:"
+              /usr/libexec/PlistBuddy -c "Print :CFBundlePackageType" "$fw/Versions/A/Resources/Info.plist" 2>/dev/null || echo "No CFBundlePackageType"
+            fi
+            echo "All symlinks in framework:"
+            find "$fw" -type l -ls 2>/dev/null | head -10 || echo "No symlinks found"
+            echo "==="
+            echo ""
+          done
+
+          # Sign the app bundle with --deep to recursively sign all nested code
+          # This handles frameworks, plugins, and executables in one pass
+          echo "=== Signing app bundle (deep) ==="
+          codesign --deep --force --sign - --verbose=4 "$APP_BUNDLE" 2>&1 || true
+
           # Remove quarantine attributes
           xattr -cr "$APP_BUNDLE" 2>/dev/null || true
-          
+
           echo "=== App bundle fixed and signed ==="
           codesign -dv "$APP_BUNDLE" 2>&1 || echo "Verification complete"
 
@@ -764,7 +788,3 @@ jobs:
           tag_name: ${{ github.event.release.tag_name || github.event.inputs.upload_to_release }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Setup (attached) tmate session if enabled
-        if: ${{ github.event_name == 'workflow_dispatch' && inputs.debug_enabled }}
-        uses: mxschmitt/action-tmate@v3

@@ -3,6 +3,9 @@
 
 %global debug_package %{nil}
 
+# Filter out automatic requires for built-in libraries that aren't installed separately
+%global __requires_exclude ^(libClipper2\\.so\\.1|libOpenSCADPy\\.so|libmanifold\\.so\\.3)\\(
+
 Name:           pythonscad
 Version:        %{getenv:VERSION}
 Release:        1%{?dist}
@@ -45,6 +48,7 @@ BuildRequires:  qt6-qtmultimedia-devel
 BuildRequires:  qt6-qtsvg-devel
 BuildRequires:  qt6-qt5compat-devel
 BuildRequires:  qscintilla-qt6-devel
+BuildRequires:  chrpath
 
 Requires:       python3
 Requires:       qt6-qtbase
@@ -52,7 +56,6 @@ Requires:       qt6-qtmultimedia
 Requires:       qt6-qtsvg
 Requires:       qt6-qt5compat
 Requires:       opencsg >= 1.3.2
-Requires:       CGAL >= 5.0
 Requires:       glew >= 1.5.4
 Requires:       harfbuzz >= 0.9.19
 Requires:       freetype >= 2.4
@@ -77,10 +80,7 @@ modern features.
 %cmake \
     -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_INSTALL_PREFIX=%{_prefix} \
-    -DCMAKE_SKIP_BUILD_RPATH=FALSE \
-    -DCMAKE_BUILD_WITH_INSTALL_RPATH=FALSE \
-    -DCMAKE_INSTALL_RPATH=%{_libdir} \
-    -DCMAKE_INSTALL_RPATH_USE_LINK_PATH=FALSE \
+    -DCMAKE_SKIP_INSTALL_RPATH=TRUE \
     -DEXPERIMENTAL=ON \
     -DENABLE_PYTHON=ON \
     -DPYTHON_VERSION=%{python3_version} \
@@ -96,17 +96,22 @@ modern features.
 %install
 %cmake_install
 
+# Remove RPATH from all binaries and libraries
+# This ensures clean packaging without RPATH warnings
+find %{buildroot} -type f \( -name "*.so*" -o -perm /111 \) -exec chrpath --delete {} \; 2>/dev/null || true
+
 %files
-%license LICENSE
+%license COPYING
 %doc README.md CHANGELOG.md
 %{_bindir}/pythonscad
 %{_bindir}/pythonscad-python
-%{_libdir}/pythonscad/
-%{_datadir}/pixmaps/pythonscad.png
+/usr/lib/libfive.so*
+%{_datadir}/pythonscad/
+%{_datadir}/icons/hicolor/*/apps/pythonscad.png
 %{_datadir}/applications/pythonscad.desktop
 %{_datadir}/mime/packages/pythonscad.xml
-%{_datadir}/metainfo/pythonscad.appdata.xml
-%{_mandir}/man1/pythonscad.1*
+%{_datadir}/metainfo/org.pythonscad.PythonSCAD.appdata.xml
+%{_mandir}/man1/openscad.1*
 
 %post
 /sbin/ldconfig

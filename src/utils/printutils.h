@@ -185,6 +185,12 @@ public:
   }
 };
 
+// Undefine any STR macro that might have been defined elsewhere (e.g., in manifold's utils.h)
+// to avoid conflicts with our STR template functions below
+#ifdef STR
+#undef STR
+#endif
+
 inline std::string STR(std::ostringstream& oss)
 {
   auto s = oss.str();

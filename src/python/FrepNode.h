@@ -1,6 +1,6 @@
 #pragma once
 
-#include "node.h"
+#include "core/node.h"
 #include "Value.h"
 #include <linalg.h>
 #include "PolySet.h"

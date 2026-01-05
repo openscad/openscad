@@ -6,9 +6,14 @@ on:
   workflow_dispatch:
     inputs:
       upload_to_release:
-        description: 'Upload to latest release (leave empty for test builds)'
+        description: 'Release tag to upload to (leave empty for test build)'
         required: false
         default: ''
+      debug_enabled:
+        type: boolean
+        description: 'Run the build with tmate debugging enabled (https://github.com/marketplace/actions/debugging-with-tmate)'
+        required: false
+        default: false
 
 jobs:
   build-appimage:
@@ -23,7 +28,13 @@ jobs:
       run: |
         git fetch --unshallow --tags || git fetch --tags
         git describe --tags --always --dirty
-
+    - name: Setup (detached) tmate session if enabled
+      if: ${{ github.event_name == 'workflow_dispatch' && inputs.debug_enabled }}
+      uses: mxschmitt/action-tmate@v3
+      timeout-minutes: 5
+      with:
+        detached: true
+        limit-access-to-actor: true
     - name: Install dependencies
       env:
         DEBIAN_FRONTEND: noninteractive

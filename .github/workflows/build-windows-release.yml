@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
     inputs:
       upload_to_release:
-        description: 'Upload to latest release (leave empty for test builds)'
+        description: 'Release tag to upload to (leave empty for test build)'
         required: false
         default: ''
       debug_enabled:
@@ -164,7 +164,3 @@ jobs:
           tag_name: ${{ github.event.release.tag_name || github.event.inputs.upload_to_release }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Setup (attached) tmate session if enabled
-        if: ${{ github.event_name == 'workflow_dispatch' && inputs.debug_enabled }}
-        uses: mxschmitt/action-tmate@v3
