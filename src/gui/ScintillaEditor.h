@@ -62,7 +62,8 @@ public:
   QString selectedText() override;
   int updateFindIndicators(const QString& findText, bool visibility = true) override;
   bool find(const QString&, bool findNext = false, bool findBackwards = false) override;
-  void replaceSelectedText(const QString&) override;
+  bool replaceSelectedText(const QString&) override;
+  void insertOrReplaceText(const QString&) override;
   void replaceAll(const QString& findText, const QString& replaceText) override;
   QStringList colorSchemes() override;
   bool canUndo() override;

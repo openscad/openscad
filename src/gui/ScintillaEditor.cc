@@ -852,9 +852,20 @@ bool ScintillaEditor::find(const QString& expr, bool findNext, bool findBackward
   return qsci->findFirst(expr, false, false, false, true, !findBackwards, startline, startindex);
 }
 
-void ScintillaEditor::replaceSelectedText(const QString& newText)
+bool ScintillaEditor::replaceSelectedText(const QString& newText)
 {
-  if ((qsci->selectedText() != newText) && (qsci->hasSelectedText())) qsci->replaceSelectedText(newText);
+  if ((qsci->selectedText() != newText) && (qsci->hasSelectedText())) {
+    qsci->replaceSelectedText(newText);
+    return true;
+  }
+  return false;
+}
+
+void ScintillaEditor::insertOrReplaceText(const QString& newText)
+{
+  if (!replaceSelectedText(newText)) {
+    qsci->insert(newText);
+  }
 }
 
 void ScintillaEditor::replaceAll(const QString& findText, const QString& replaceText)

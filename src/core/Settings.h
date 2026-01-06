@@ -10,6 +10,7 @@
 #include <tuple>
 
 #include "io/export_enums.h"
+#include "core/SettingsGuiEnums.h"
 
 namespace Settings {
 
@@ -28,6 +29,7 @@ constexpr inline auto SECTION_PYTHON = "python";
 constexpr inline auto SECTION_EXPORT_PDF = "export-pdf";
 constexpr inline auto SECTION_EXPORT_3MF = "export-3mf";
 constexpr inline auto SECTION_EXPORT_SVG = "export-svg";
+constexpr inline auto SECTION_COLOR_LIST = "color-list";
 
 class SettingsEntryBase
 {
@@ -610,6 +612,16 @@ public:
   static constexpr std::array<const SettingsEntryBase *, 5> cmdline{
     &exportSvgFill, &exportSvgFillColor, &exportSvgStroke, &exportSvgStrokeColor, &exportSvgStrokeWidth,
   };
+};
+
+class SettingsColorList
+{
+public:
+  static SettingsEntryBool colorListWebColors;
+  static SettingsEntryBool colorListXkcdColors;
+  static SettingsEntryBool colorListSortAscending;
+  static SettingsEntryEnum<ColorListFilterType> colorListFilterType;
+  static SettingsEntryEnum<ColorListSortType> colorListSortType;
 };
 
 class SettingsVisitor

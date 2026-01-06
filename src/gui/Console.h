@@ -40,6 +40,12 @@ struct ConsoleMessageBlock {
   QString message;
   QString link;
   message_group group;
+  QString color;
+
+  ConsoleMessageBlock(QString& m, QString& l, message_group g, QString& c)
+    : message(std::move(m)), link(std::move(l)), group(g), color(std::move(c))
+  {
+  }
 };
 
 class Console : public QPlainTextEdit, public Ui::Console
@@ -81,6 +87,7 @@ public:
 signals:
   void linkActivated(QString);
   void openFile(QString, int);
+  void openWindowRequested(const QString& window);
 
 public slots:
   void actionClearConsole_triggered();
