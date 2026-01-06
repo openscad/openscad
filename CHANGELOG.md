@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.8.5](https://github.com/pythonscad/pythonscad/compare/v0.8.4...v0.8.5) (2026-01-06)
+
+
+### Bug Fixes
+
+* resolve race condition in APT and YUM repository workflows ([#280](https://github.com/pythonscad/pythonscad/issues/280)) ([9690849](https://github.com/pythonscad/pythonscad/commit/969084929a32b87025452949fe7a66697d779911))
+
 ## [0.8.4](https://github.com/pythonscad/pythonscad/compare/v0.8.3...v0.8.4) (2026-01-05)
 
 
