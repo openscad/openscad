@@ -20,7 +20,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        qt: [qt5, qt6]
+        qt: [qt6]
     container:
       image: openscad/mxe-x86_64-gui:latest
     name: Windows MXE 64-bit (${{ matrix.qt }})
