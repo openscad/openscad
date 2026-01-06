@@ -173,31 +173,14 @@ fi
 # Packages will be verified via repository-level GPG signing
 # (Release file signature in the APT repository)
 
-# Generate checksums
-info "Generating checksums..."
-# Convert to absolute path before changing directory
-DEB_FILE_ABS="$(cd "$(dirname "$DEB_FILE")" && pwd)/$(basename "$DEB_FILE")"
-CHANGES_FILE_ABS="$(cd "$(dirname "$CHANGES_FILE")" && pwd)/$(basename "$CHANGES_FILE")" 2>/dev/null || true
-BUILDINFO_FILE_ABS="$(cd "$(dirname "$BUILDINFO_FILE")" && pwd)/$(basename "$BUILDINFO_FILE")" 2>/dev/null || true
-
-cd "$(dirname "$DEB_FILE_ABS")"
-sha256sum "$(basename "$DEB_FILE_ABS")" > "$(basename "$DEB_FILE_ABS").sha256"
-info "SHA256: $(cat "$(basename "$DEB_FILE_ABS").sha256")"
-
 # Create output directory and copy files
 info "Copying files to output directory: ${OUTPUT_DIR}"
 mkdir -p "${OUTPUT_DIR}"
 
-cp "$DEB_FILE_ABS" "${OUTPUT_DIR}/"
-cp "$(basename "$DEB_FILE_ABS").sha256" "${OUTPUT_DIR}/"
+# Convert to absolute path
+DEB_FILE_ABS="$(cd "$(dirname "$DEB_FILE")" && pwd)/$(basename "$DEB_FILE")"
 
-# Copy .changes and .buildinfo if they exist (useful for uploads)
-if [ -n "$CHANGES_FILE_ABS" ] && [ -f "$CHANGES_FILE_ABS" ]; then
-    cp "$CHANGES_FILE_ABS" "${OUTPUT_DIR}/"
-fi
-if [ -n "$BUILDINFO_FILE_ABS" ] && [ -f "$BUILDINFO_FILE_ABS" ]; then
-    cp "$BUILDINFO_FILE_ABS" "${OUTPUT_DIR}/"
-fi
+cp "$DEB_FILE_ABS" "${OUTPUT_DIR}/"
 
 # Package info
 info "Package information:"

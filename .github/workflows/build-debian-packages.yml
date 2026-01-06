@@ -15,6 +15,10 @@ on:
         required: false
         default: false
 
+concurrency:
+  group: publish-apt-repo
+  cancel-in-progress: false
+
 jobs:
   build-debian:
     name: Build .deb (${{ matrix.arch }})
@@ -128,7 +132,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   publish-apt-repo:
-    name: Update APT repository
+    name: Publish APT repository to SFTP
     needs: build-debian
     runs-on: ubuntu-24.04
     if: github.event_name == 'release' || github.event.inputs.upload_to_release != ''
@@ -136,16 +140,6 @@ jobs:
     steps:
       - name: Checkout main repository
         uses: actions/checkout@v4
-        with:
-          path: main-repo
-
-      - name: Checkout apt-repo branch
-        uses: actions/checkout@v4
-        with:
-          ref: apt-repo
-          path: apt-repo
-          # Create branch if it doesn't exist
-          fetch-depth: 0
 
       - name: Download amd64 packages
         uses: actions/download-artifact@v4
@@ -171,78 +165,49 @@ jobs:
           echo "${{ secrets.DEB_SIGNING_KEY }}" | gpg --batch --import
           gpg --list-secret-keys
 
-      - name: Update APT repository
+      - name: Setup SSH key for SFTP
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.REPO_SFTP_SSH_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H ${{ secrets.REPO_SFTP_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Download existing repository from SFTP
+        run: |
+          # Download existing repo to preserve old versions
+          mkdir -p /tmp/apt-repo-existing
+
+          # Download existing repo (ignore errors if doesn't exist yet)
+          rsync -avz \
+            -e "ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no" \
+            ${{ secrets.REPO_SFTP_USER }}@${{ secrets.REPO_SFTP_HOST }}:${{ secrets.REPO_SFTP_BASE_PATH }}/apt/ \
+            /tmp/apt-repo-existing/ || echo "No existing repository found (first run)"
+
+          # Copy existing packages to new repo location
+          if [ -d /tmp/apt-repo-existing/pool ]; then
+            mkdir -p /tmp/apt-repo/pool/main/p/pythonscad
+            cp /tmp/apt-repo-existing/pool/main/p/pythonscad/*.deb /tmp/apt-repo/pool/main/p/pythonscad/ || true
+          fi
+
+      - name: Build APT repository structure
         env:
-          REPO_DIR: apt-repo
+          REPO_DIR: /tmp/apt-repo
           GPG_KEY: ${{ secrets.GPG_KEY_ID }}
+          KEEP_VERSIONS: ${{ vars.REPO_KEEP_VERSIONS || '3' }}
+          REPO_BASE_URL: ${{ secrets.REPO_BASE_URL }}
         run: |
-          cp main-repo/scripts/update-apt-repo.sh /tmp/
-          chmod +x /tmp/update-apt-repo.sh
-          cd apt-repo
-          /tmp/update-apt-repo.sh /tmp/debs/all
+          # Repository now contains both old and new packages
+          # update-apt-repo.sh will clean up old versions based on KEEP_VERSIONS
+          chmod +x ./scripts/update-apt-repo.sh
+          ./scripts/update-apt-repo.sh /tmp/debs/all
 
-      - name: Commit and push repository updates
+      - name: Upload to SFTP server
         run: |
-          cd apt-repo
-          git config user.name "GitHub Actions"
-          git config user.email "actions@github.com"
-          git add .
+          rsync -avz --delete \
+            -e "ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no" \
+            /tmp/apt-repo/ \
+            ${{ secrets.REPO_SFTP_USER }}@${{ secrets.REPO_SFTP_HOST }}:${{ secrets.REPO_SFTP_BASE_PATH }}/apt/
 
-          # Get version from main repo
-          VERSION=$(cat ../main-repo/VERSION.txt 2>/dev/null || echo "unknown")
-
-          if git diff --staged --quiet; then
-            echo "No changes to commit"
-          else
-            git commit -m "Update repository with version ${VERSION}"
-            git push origin apt-repo
-          fi
-
-  create-apt-repo-branch:
-    name: Create apt-repo branch if needed
-    runs-on: ubuntu-24.04
-    if: github.event_name == 'release' || github.event.inputs.upload_to_release != ''
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Check if apt-repo branch exists
-        id: check_branch
-        run: |
-          if git ls-remote --heads origin apt-repo | grep -q apt-repo; then
-            echo "exists=true" >> $GITHUB_OUTPUT
-          else
-            echo "exists=false" >> $GITHUB_OUTPUT
-          fi
-
-      - name: Create apt-repo branch
-        if: steps.check_branch.outputs.exists == 'false'
-        run: |
-          git config user.name "GitHub Actions"
-          git config user.email "actions@github.com"
-
-          # Create orphan branch
-          git checkout --orphan apt-repo
-          git rm -rf .
-
-          # Create initial README
-          cat > README.md <<'EOF'
-          # PythonSCAD APT Repository
-
-          This branch contains the APT repository for PythonSCAD Debian packages.
-
-          Visit the repository at: https://pythonscad.github.io/pythonscad
-
-          ## Structure
-
-          - `dists/stable/` - Repository metadata
-          - `pool/main/p/pythonscad/` - Package pool
-          - `pythonscad-archive-keyring.gpg` - Public GPG key
-          - `index.html` - Repository homepage
-          EOF
-
-          git add README.md
-          git commit -m "Initialize apt-repo branch"
-          git push origin apt-repo
+      - name: Cleanup SSH key
+        if: always()
+        run: rm -f ~/.ssh/deploy_key

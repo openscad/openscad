@@ -746,12 +746,6 @@ jobs:
           echo "Copying DMG: $DMG_FILE"
           cp -v "$DMG_FILE" /tmp/out/"$basename_dmg"
 
-          # Generate checksums
-          cd /tmp/out
-          shasum -a 256 "$basename_dmg" > "$basename_dmg.sha256"
-          shasum -a 512 "$basename_dmg" > "$basename_dmg.sha512"
-          cd -
-
           echo "dmg_path=/tmp/out/$basename_dmg" >> $GITHUB_OUTPUT
           echo "dmg_name=$(basename "$basename_dmg" .dmg)" >> $GITHUB_OUTPUT
 
@@ -767,24 +761,11 @@ jobs:
           path: ${{ steps.artifacts.outputs.dmg_path }}
           retention-days: 30
 
-      - name: Upload checksums
-        if: steps.artifacts.outputs.dmg_path != ''
-        uses: actions/upload-artifact@v5
-        with:
-          name: ${{ steps.artifacts.outputs.dmg_name }}-checksums
-          path: |
-            /tmp/out/*.sha256
-            /tmp/out/*.sha512
-          retention-days: 30
-
       - name: Upload artifacts to release
         if: github.event_name == 'release' || github.event.inputs.upload_to_release != ''
         uses: softprops/action-gh-release@v2
         with:
-          files: |
-            /tmp/out/*.dmg
-            /tmp/out/*.sha256
-            /tmp/out/*.sha512
+          files: /tmp/out/*.dmg
           tag_name: ${{ github.event.release.tag_name || github.event.inputs.upload_to_release }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

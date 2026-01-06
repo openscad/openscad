@@ -15,6 +15,10 @@ on:
         required: false
         default: false
 
+concurrency:
+  group: publish-yum-repo
+  cancel-in-progress: false
+
 jobs:
   build-rpm:
     name: Build .rpm (${{ matrix.distro }} ${{ matrix.version }} ${{ matrix.arch }})
@@ -159,7 +163,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   publish-yum-repo:
-    name: Update YUM repository
+    name: Publish YUM repository to SFTP
     needs: build-rpm
     runs-on: ubuntu-24.04
     if: github.event_name == 'release' || github.event.inputs.upload_to_release != ''
@@ -167,15 +171,6 @@ jobs:
     steps:
       - name: Checkout main repository
         uses: actions/checkout@v4
-        with:
-          path: main-repo
-
-      - name: Checkout yum-repo branch
-        uses: actions/checkout@v4
-        with:
-          ref: yum-repo
-          path: yum-repo
-          fetch-depth: 0
 
       - name: Download all RPM artifacts
         uses: actions/download-artifact@v4
@@ -199,79 +194,48 @@ jobs:
           echo "${{ secrets.DEB_SIGNING_KEY }}" | gpg --batch --import
           gpg --list-secret-keys
 
-      - name: Update YUM repository
+      - name: Setup SSH key for SFTP
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.REPO_SFTP_SSH_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H ${{ secrets.REPO_SFTP_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Download existing repository from SFTP
+        run: |
+          # Download existing repo to preserve old versions
+          mkdir -p /tmp/yum-repo-existing
+
+          # Download existing repo (ignore errors if doesn't exist yet)
+          rsync -avz \
+            -e "ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no" \
+            ${{ secrets.REPO_SFTP_USER }}@${{ secrets.REPO_SFTP_HOST }}:${{ secrets.REPO_SFTP_BASE_PATH }}/yum/ \
+            /tmp/yum-repo-existing/ || echo "No existing repository found (first run)"
+
+          # Copy existing packages to new repo location
+          if [ -d /tmp/yum-repo-existing/packages ]; then
+            cp -r /tmp/yum-repo-existing/packages /tmp/yum-repo/ || true
+          fi
+
+      - name: Build YUM repository structure
         env:
-          REPO_DIR: yum-repo
+          REPO_DIR: /tmp/yum-repo
           GPG_KEY: ${{ secrets.GPG_KEY_ID }}
+          KEEP_VERSIONS: ${{ vars.REPO_KEEP_VERSIONS || '3' }}
+          REPO_BASE_URL: ${{ secrets.REPO_BASE_URL }}
         run: |
-          cp main-repo/scripts/update-yum-repo.sh /tmp/
-          chmod +x /tmp/update-yum-repo.sh
-          cd yum-repo
-          /tmp/update-yum-repo.sh /tmp/rpms/all
+          # Repository now contains both old and new packages
+          # update-yum-repo.sh will clean up old versions based on KEEP_VERSIONS
+          chmod +x ./scripts/update-yum-repo.sh
+          ./scripts/update-yum-repo.sh /tmp/rpms/all
 
-      - name: Commit and push repository updates
+      - name: Upload to SFTP server
         run: |
-          cd yum-repo
-          git config user.name "GitHub Actions"
-          git config user.email "actions@github.com"
-          git add .
+          rsync -avz --delete \
+            -e "ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no" \
+            /tmp/yum-repo/ \
+            ${{ secrets.REPO_SFTP_USER }}@${{ secrets.REPO_SFTP_HOST }}:${{ secrets.REPO_SFTP_BASE_PATH }}/yum/
 
-          # Get version from main repo
-          VERSION=$(cat ../main-repo/VERSION.txt 2>/dev/null || echo "unknown")
-
-          if git diff --staged --quiet; then
-            echo "No changes to commit"
-          else
-            git commit -m "Update repository with version ${VERSION}"
-            git push origin yum-repo
-          fi
-
-  create-yum-repo-branch:
-    name: Create yum-repo branch if needed
-    runs-on: ubuntu-24.04
-    if: github.event_name == 'release' || github.event.inputs.upload_to_release != ''
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Check if yum-repo branch exists
-        id: check_branch
-        run: |
-          if git ls-remote --heads origin yum-repo | grep -q yum-repo; then
-            echo "exists=true" >> $GITHUB_OUTPUT
-          else
-            echo "exists=false" >> $GITHUB_OUTPUT
-          fi
-
-      - name: Create yum-repo branch
-        if: steps.check_branch.outputs.exists == 'false'
-        run: |
-          git config user.name "GitHub Actions"
-          git config user.email "actions@github.com"
-
-          # Create orphan branch
-          git checkout --orphan yum-repo
-          git rm -rf .
-
-          # Create initial README
-          cat > README.md <<'EOF'
-          # PythonSCAD YUM Repository
-
-          This branch contains the YUM/DNF repository for PythonSCAD RPM packages.
-
-          Visit the repository at: https://pythonscad.github.io/pythonscad
-
-          ## Structure
-
-          - `repodata/` - Repository metadata
-          - `packages/` - RPM packages organized by distribution
-          - `pythonscad.repo` - Repository configuration file
-          - `RPM-GPG-KEY-pythonscad` - Public GPG key
-          - `index.html` - Repository homepage
-          EOF
-
-          git add README.md
-          git commit -m "Initialize yum-repo branch"
-          git push origin yum-repo
+      - name: Cleanup SSH key
+        if: always()
+        run: rm -f ~/.ssh/deploy_key

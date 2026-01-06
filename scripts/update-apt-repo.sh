@@ -34,6 +34,7 @@ PACKAGES_DIR="${1:?Missing packages directory argument}"
 REPO_DIR="${REPO_DIR:-.}"
 GPG_KEY="${GPG_KEY:-}"
 KEEP_VERSIONS="${KEEP_VERSIONS:-3}"
+REPO_BASE_URL="${REPO_BASE_URL:-https://pythonscad-repos.nomike.org}"
 
 info "APT Repository Updater"
 info "======================"
@@ -85,7 +86,6 @@ if [ "$KEEP_VERSIONS" -gt 0 ]; then
             echo "$OLD_PACKAGES" | while read -r pkg; do
                 info "  Removing old package: $(basename "$pkg")"
                 rm -f "$pkg"
-                rm -f "${pkg}.sha256"
             done
         fi
     done
@@ -174,6 +174,91 @@ fi
 if [ -f pythonscad-archive-keyring.gpg ]; then
     info "Public key exported to pythonscad-archive-keyring.gpg"
 fi
+
+# Create index.html
+info "Creating repository index..."
+
+cat > index.html <<EOF
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PythonSCAD APT Repository</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 0 20px;
+            line-height: 1.6;
+            color: #333;
+        }
+        h1 { color: #2c3e50; }
+        h2 { color: #34495e; margin-top: 30px; }
+        code {
+            background: #f4f4f4;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+        }
+        pre {
+            background: #f4f4f4;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+        .warning {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 12px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>PythonSCAD APT Repository</h1>
+
+    <p>This repository provides Debian packages for PythonSCAD on Debian and Ubuntu-based distributions.</p>
+
+    <h2>Installation</h2>
+
+    <h3>Debian/Ubuntu</h3>
+    <pre># Download and install GPG key
+wget -qO - ${REPO_BASE_URL}/apt/pythonscad-archive-keyring.gpg | \\
+  sudo gpg --dearmor -o /usr/share/keyrings/pythonscad-archive-keyring.gpg
+
+# Add repository
+echo "deb [signed-by=/usr/share/keyrings/pythonscad-archive-keyring.gpg] ${REPO_BASE_URL}/apt stable main" | \\
+  sudo tee /etc/apt/sources.list.d/pythonscad.list
+
+# Install
+sudo apt update
+sudo apt install pythonscad</pre>
+
+    <h2>Supported Architectures</h2>
+    <ul>
+        <li>amd64 (x86_64)</li>
+        <li>arm64 (aarch64)</li>
+    </ul>
+
+    <h2>Manual Download</h2>
+    <p>You can also download packages directly:</p>
+    <ul>
+        <li><a href="pool/main/p/pythonscad/">All packages</a></li>
+        <li><a href="dists/stable/">Repository metadata</a></li>
+    </ul>
+
+    <h2>GPG Key</h2>
+    <p>Packages are signed with the PythonSCAD GPG key:</p>
+    <pre>wget -qO - ${REPO_BASE_URL}/apt/pythonscad-archive-keyring.gpg | \\
+  sudo gpg --dearmor -o /usr/share/keyrings/pythonscad-archive-keyring.gpg</pre>
+
+    <h2>More Information</h2>
+    <p>Visit <a href="https://github.com/pythonscad/pythonscad">github.com/pythonscad/pythonscad</a> for documentation and source code.</p>
+</body>
+</html>
+EOF
 
 # Summary
 info ""

@@ -57,6 +57,8 @@ fi
 # Configuration
 REPO_DIR="${REPO_DIR:-.}"
 GPG_KEY="${GPG_KEY:-}"
+KEEP_VERSIONS="${KEEP_VERSIONS:-3}"
+REPO_BASE_URL="${REPO_BASE_URL:-https://pythonscad-repos.nomike.org}"
 
 info "PythonSCAD YUM Repository Updater"
 info "================================="
@@ -120,6 +122,34 @@ for rpm in "${RPM_SOURCE_DIR}"/*.rpm; do
     cp "$rpm" "$dest/"
 done
 
+# Clean up old versions (keep last N versions per distro/arch)
+if [ "$KEEP_VERSIONS" -gt 0 ]; then
+    info "Cleaning up old versions (keeping last ${KEEP_VERSIONS} per distro/arch)..."
+
+    for distro_dir in "${REPO_DIR}/packages"/*/*; do
+        if [ ! -d "$distro_dir" ]; then
+            continue
+        fi
+
+        for arch_dir in "$distro_dir"/*; do
+            if [ ! -d "$arch_dir" ]; then
+                continue
+            fi
+
+            # Find all pythonscad RPMs in this arch directory
+            # Sort by modification time (newest first), skip first N, delete the rest
+            OLD_PACKAGES=$(ls -t "$arch_dir"/pythonscad-*.rpm 2>/dev/null | tail -n +$((KEEP_VERSIONS + 1)) || true)
+
+            if [ -n "$OLD_PACKAGES" ]; then
+                echo "$OLD_PACKAGES" | while read -r pkg; do
+                    info "  Removing old package: $(basename "$pkg")"
+                    rm -f "$pkg"
+                done
+            fi
+        done
+    done
+fi
+
 # Create repository metadata for each directory
 info "Generating repository metadata..."
 
@@ -166,35 +196,35 @@ fi
 # Create .repo file for users
 info "Creating repository configuration file..."
 
-cat > "${REPO_DIR}/pythonscad.repo" <<'EOF'
+cat > "${REPO_DIR}/pythonscad.repo" <<EOF
 # PythonSCAD YUM/DNF Repository
 #
 # Installation:
-#   sudo curl -o /etc/yum.repos.d/pythonscad.repo \
-#     https://pythonscad.github.io/pythonscad/pythonscad.repo
+#   sudo curl -o /etc/yum.repos.d/pythonscad.repo \\
+#     ${REPO_BASE_URL}/yum/pythonscad.repo
 #   sudo dnf install pythonscad
 
 [pythonscad]
 name=PythonSCAD
-baseurl=https://pythonscad.github.io/pythonscad/packages/fedora/$releasever/$basearch
+baseurl=${REPO_BASE_URL}/yum/packages/fedora/\$releasever/\$basearch
 enabled=1
 gpgcheck=1
-gpgkey=https://pythonscad.github.io/pythonscad/RPM-GPG-KEY-pythonscad
+gpgkey=${REPO_BASE_URL}/yum/RPM-GPG-KEY-pythonscad
 metadata_expire=1d
 
 [pythonscad-el9]
 name=PythonSCAD EL9
-baseurl=https://pythonscad.github.io/pythonscad/packages/el/9/$basearch
+baseurl=${REPO_BASE_URL}/yum/packages/el/9/\$basearch
 enabled=0
 gpgcheck=1
-gpgkey=https://pythonscad.github.io/pythonscad/RPM-GPG-KEY-pythonscad
+gpgkey=${REPO_BASE_URL}/yum/RPM-GPG-KEY-pythonscad
 metadata_expire=1d
 EOF
 
 # Create index.html
 info "Creating repository index..."
 
-cat > "${REPO_DIR}/index.html" <<'EOF'
+cat > "${REPO_DIR}/index.html" <<EOF
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -239,14 +269,14 @@ cat > "${REPO_DIR}/index.html" <<'EOF'
 
     <h2>Installation</h2>
 
-    <h3>Fedora 40/41</h3>
-    <pre>sudo curl -o /etc/yum.repos.d/pythonscad.repo \
-  https://pythonscad.github.io/pythonscad/pythonscad.repo
+    <h3>Fedora 42/43</h3>
+    <pre>sudo curl -o /etc/yum.repos.d/pythonscad.repo \\
+  ${REPO_BASE_URL}/yum/pythonscad.repo
 sudo dnf install pythonscad</pre>
 
     <h3>RHEL/Rocky/AlmaLinux 9</h3>
-    <pre>sudo curl -o /etc/yum.repos.d/pythonscad.repo \
-  https://pythonscad.github.io/pythonscad/pythonscad.repo
+    <pre>sudo curl -o /etc/yum.repos.d/pythonscad.repo \\
+  ${REPO_BASE_URL}/yum/pythonscad.repo
 sudo dnf config-manager --set-enabled pythonscad-el9
 sudo dnf install pythonscad</pre>
 
@@ -259,17 +289,17 @@ sudo dnf install pythonscad</pre>
     <h2>Manual Download</h2>
     <p>You can also download packages directly:</p>
     <ul>
-        <li><a href="packages/fedora/40/">Fedora 40 packages</a></li>
-        <li><a href="packages/fedora/41/">Fedora 41 packages</a></li>
+        <li><a href="packages/fedora/42/">Fedora 42 packages</a></li>
+        <li><a href="packages/fedora/43/">Fedora 43 packages</a></li>
         <li><a href="packages/el/9/">EL 9 packages</a></li>
     </ul>
 
     <h2>GPG Key</h2>
     <p>Packages are signed with the PythonSCAD GPG key:</p>
-    <pre>sudo rpm --import https://pythonscad.github.io/pythonscad/RPM-GPG-KEY-pythonscad</pre>
+    <pre>sudo rpm --import ${REPO_BASE_URL}/yum/RPM-GPG-KEY-pythonscad</pre>
 
     <h2>More Information</h2>
-    <p>Visit <a href="https://pythonscad.org">pythonscad.org</a> for documentation and source code.</p>
+    <p>Visit <a href="https://github.com/pythonscad/pythonscad">github.com/pythonscad/pythonscad</a> for documentation and source code.</p>
 </body>
 </html>
 EOF

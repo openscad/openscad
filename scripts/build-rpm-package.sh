@@ -226,19 +226,12 @@ if [ "$RUN_RPMLINT" = "yes" ]; then
     fi
 fi
 
-# Generate checksums
-info "Generating checksums..."
-cd "$(dirname "$RPM_FILE")"
-sha256sum "$(basename "$RPM_FILE")" > "$(basename "$RPM_FILE").sha256"
-info "SHA256: $(cat "$(basename "$RPM_FILE").sha256")"
-
 # Create output directory and copy files
 info "Copying files to output directory: ${OUTPUT_DIR}"
 mkdir -p "${OUTPUT_DIR}"
 
 RPM_FILE_ABS="$(realpath "$RPM_FILE")"
 cp "$RPM_FILE_ABS" "${OUTPUT_DIR}/"
-cp "$(basename "$RPM_FILE_ABS").sha256" "${OUTPUT_DIR}/"
 
 # Package info
 info "Package information:"
