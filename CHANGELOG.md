@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.8.4](https://github.com/pythonscad/pythonscad/compare/v0.8.3...v0.8.4) (2026-01-05)
+
+
+### Bug Fixes
+
+* resolve RPM and Debian packaging workflow failures ([#278](https://github.com/pythonscad/pythonscad/issues/278)) ([bf4620a](https://github.com/pythonscad/pythonscad/commit/bf4620a6d4320bb710471a3a6a37ee2d56c61c00))
+
 ## [0.8.3](https://github.com/pythonscad/pythonscad/compare/v0.8.2...v0.8.3) (2026-01-05)
 
 
