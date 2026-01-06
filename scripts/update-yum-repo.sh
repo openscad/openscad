@@ -73,16 +73,6 @@ if ! command_exists createrepo_c; then
     CREATEREPO_CMD="createrepo"
 fi
 
-# Create repository structure
-info "Setting up repository structure..."
-
-mkdir -p "${REPO_DIR}/packages/fedora/40/x86_64"
-mkdir -p "${REPO_DIR}/packages/fedora/40/aarch64"
-mkdir -p "${REPO_DIR}/packages/fedora/41/x86_64"
-mkdir -p "${REPO_DIR}/packages/fedora/41/aarch64"
-mkdir -p "${REPO_DIR}/packages/el/9/x86_64"
-mkdir -p "${REPO_DIR}/packages/el/9/aarch64"
-
 # Copy new packages to appropriate directories
 info "Organizing packages..."
 
@@ -106,17 +96,23 @@ for rpm in "${RPM_SOURCE_DIR}"/*.rpm; do
         continue
     fi
 
-    # Determine distribution
-    if [[ "$filename" == *".fc40."* ]]; then
-        dest="${REPO_DIR}/packages/fedora/40/${arch}"
-    elif [[ "$filename" == *".fc41."* ]]; then
-        dest="${REPO_DIR}/packages/fedora/41/${arch}"
-    elif [[ "$filename" == *".el9."* ]]; then
-        dest="${REPO_DIR}/packages/el/9/${arch}"
+    # Dynamically extract distribution and version from dist tag
+    # Examples: .fc43. -> fedora/43, .el9. -> el/9, .el10. -> el/10
+    if [[ "$filename" =~ \.fc([0-9]+)\. ]]; then
+        distro="fedora"
+        version="${BASH_REMATCH[1]}"
+        dest="${REPO_DIR}/packages/fedora/${version}/${arch}"
+    elif [[ "$filename" =~ \.el([0-9]+)\. ]]; then
+        distro="el"
+        version="${BASH_REMATCH[1]}"
+        dest="${REPO_DIR}/packages/el/${version}/${arch}"
     else
-        warn "Unknown distribution for $filename, defaulting to Fedora 40"
-        dest="${REPO_DIR}/packages/fedora/40/${arch}"
+        warn "Could not determine distribution from filename: $filename, skipping"
+        continue
     fi
+
+    # Create directory if it doesn't exist
+    mkdir -p "$dest"
 
     info "Copying $filename to $dest"
     cp "$rpm" "$dest/"
@@ -224,6 +220,35 @@ EOF
 # Create index.html
 info "Creating repository index..."
 
+# Dynamically discover available distributions and versions
+FEDORA_VERSIONS=$(find "${REPO_DIR}/packages/fedora" -mindepth 1 -maxdepth 1 -type d 2>/dev/null | sed 's|.*/||' | sort -n || true)
+EL_VERSIONS=$(find "${REPO_DIR}/packages/el" -mindepth 1 -maxdepth 1 -type d 2>/dev/null | sed 's|.*/||' | sort -n || true)
+
+# Generate package download links
+PACKAGE_LINKS=""
+if [ -n "$FEDORA_VERSIONS" ]; then
+    for ver in $FEDORA_VERSIONS; do
+        PACKAGE_LINKS="${PACKAGE_LINKS}        <li><a href=\"packages/fedora/${ver}/\">Fedora ${ver} packages</a></li>\n"
+    done
+fi
+if [ -n "$EL_VERSIONS" ]; then
+    for ver in $EL_VERSIONS; do
+        PACKAGE_LINKS="${PACKAGE_LINKS}        <li><a href=\"packages/el/${ver}/\">EL ${ver} packages</a></li>\n"
+    done
+fi
+
+# Determine example Fedora versions for installation instructions
+LATEST_FEDORA=$(echo "$FEDORA_VERSIONS" | tail -n1)
+FEDORA_RANGE=""
+if [ -n "$FEDORA_VERSIONS" ]; then
+    FIRST_FEDORA=$(echo "$FEDORA_VERSIONS" | head -n1)
+    if [ "$FIRST_FEDORA" = "$LATEST_FEDORA" ]; then
+        FEDORA_RANGE="Fedora $LATEST_FEDORA"
+    else
+        FEDORA_RANGE="Fedora $FIRST_FEDORA-$LATEST_FEDORA"
+    fi
+fi
+
 cat > "${REPO_DIR}/index.html" <<EOF
 <!DOCTYPE html>
 <html lang="en">
@@ -269,12 +294,12 @@ cat > "${REPO_DIR}/index.html" <<EOF
 
     <h2>Installation</h2>
 
-    <h3>Fedora 42/43</h3>
+    <h3>${FEDORA_RANGE:-Fedora}</h3>
     <pre>sudo curl -o /etc/yum.repos.d/pythonscad.repo \\
   ${REPO_BASE_URL}/yum/pythonscad.repo
 sudo dnf install pythonscad</pre>
 
-    <h3>RHEL/Rocky/AlmaLinux 9</h3>
+    <h3>RHEL/Rocky/AlmaLinux</h3>
     <pre>sudo curl -o /etc/yum.repos.d/pythonscad.repo \\
   ${REPO_BASE_URL}/yum/pythonscad.repo
 sudo dnf config-manager --set-enabled pythonscad-el9
@@ -289,9 +314,7 @@ sudo dnf install pythonscad</pre>
     <h2>Manual Download</h2>
     <p>You can also download packages directly:</p>
     <ul>
-        <li><a href="packages/fedora/42/">Fedora 42 packages</a></li>
-        <li><a href="packages/fedora/43/">Fedora 43 packages</a></li>
-        <li><a href="packages/el/9/">EL 9 packages</a></li>
+$(echo -e "$PACKAGE_LINKS")
     </ul>
 
     <h2>GPG Key</h2>

@@ -176,6 +176,7 @@ jobs:
         run: |
           # Download existing repo to preserve old versions
           mkdir -p /tmp/apt-repo-existing
+          mkdir -p /tmp/apt-repo
 
           # Download existing repo (ignore errors if doesn't exist yet)
           rsync -avz \

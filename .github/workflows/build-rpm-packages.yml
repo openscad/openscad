@@ -26,6 +26,11 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
+        # To add new Fedora/RHEL versions:
+        # 1. Add new matrix entries below (copy existing pattern)
+        # 2. No changes needed to scripts - they auto-detect versions from RPM dist tags
+        # 3. Remove EOL versions by deleting their matrix entries
+        # 4. Check available containers: https://hub.docker.com/_/fedora or https://hub.docker.com/_/rockylinux
         include:
           # Fedora 42 (amd64)
           - distro: fedora
@@ -125,6 +130,7 @@ jobs:
         env:
           OUTPUT_DIR: /tmp/rpms
           FEDORA_RELEASE: ${{ matrix.version }}
+          DISTRO_TYPE: ${{ matrix.distro }}
         run: |
           # Set architecture for cross-compilation if needed
           if [ "${{ matrix.arch }}" = "arm64" ]; then
@@ -205,6 +211,7 @@ jobs:
         run: |
           # Download existing repo to preserve old versions
           mkdir -p /tmp/yum-repo-existing
+          mkdir -p /tmp/yum-repo
 
           # Download existing repo (ignore errors if doesn't exist yet)
           rsync -avz \

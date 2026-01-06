@@ -177,7 +177,23 @@ if [ -z "$FEDORA_RELEASE" ]; then
         info "Building on non-Fedora/RHEL system, using .local dist tag"
     fi
 else
-    DIST_TAG=".fc${FEDORA_RELEASE}"
+    # FEDORA_RELEASE is set - determine if it's Fedora or EL
+    # Check for DISTRO_TYPE environment variable first
+    if [ -n "${DISTRO_TYPE}" ]; then
+        if [ "${DISTRO_TYPE}" = "el" ]; then
+            DIST_TAG=".el${FEDORA_RELEASE}"
+        else
+            DIST_TAG=".fc${FEDORA_RELEASE}"
+        fi
+    # Fall back to detecting from system files
+    elif [ -f /etc/fedora-release ]; then
+        DIST_TAG=".fc${FEDORA_RELEASE}"
+    elif [ -f /etc/redhat-release ]; then
+        DIST_TAG=".el${FEDORA_RELEASE}"
+    else
+        # Default to Fedora if we can't detect
+        DIST_TAG=".fc${FEDORA_RELEASE}"
+    fi
 fi
 
 info "Using dist tag: ${DIST_TAG}"
