@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.8.6](https://github.com/pythonscad/pythonscad/compare/v0.8.5...v0.8.6) (2026-01-06)
+
+
+### Bug Fixes
+
+* improve YUM repository version handling and fix first-run issues ([#282](https://github.com/pythonscad/pythonscad/issues/282)) ([d7a1555](https://github.com/pythonscad/pythonscad/commit/d7a1555cd964d1b64d1b4fc034c8fce241865c92))
+
 ## [0.8.5](https://github.com/pythonscad/pythonscad/compare/v0.8.4...v0.8.5) (2026-01-06)
 
 
