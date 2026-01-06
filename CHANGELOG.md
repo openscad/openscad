@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.8.7](https://github.com/pythonscad/pythonscad/compare/v0.8.6...v0.8.7) (2026-01-06)
+
+
+### Bug Fixes
+
+* add GPG pinentry-mode loopback for non-interactive signing ([#284](https://github.com/pythonscad/pythonscad/issues/284)) ([05f075c](https://github.com/pythonscad/pythonscad/commit/05f075c7be5c28e2c1cbc02d0b5a16c1f941f245))
+* disable qt5 builds in Windows workflows ([#286](https://github.com/pythonscad/pythonscad/issues/286)) ([5f99971](https://github.com/pythonscad/pythonscad/commit/5f9997158d0694ec047607d3b6f3b4edea52507c))
+
 ## [0.8.6](https://github.com/pythonscad/pythonscad/compare/v0.8.5...v0.8.6) (2026-01-06)
 
 
