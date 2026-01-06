@@ -133,7 +133,7 @@ info "Release file generated"
 # Sign Release file with GPG
 info "Signing Release file..."
 
-GPG_OPTS="--batch --yes"
+GPG_OPTS="--batch --yes --pinentry-mode loopback"
 if [ -n "$GPG_KEY" ]; then
     GPG_OPTS="$GPG_OPTS --local-user $GPG_KEY"
     info "Using GPG key: $GPG_KEY"
@@ -160,12 +160,12 @@ cd - > /dev/null
 # Export public GPG key for users
 info "Exporting public GPG key..."
 if [ -n "$GPG_KEY" ]; then
-    gpg --armor --export "$GPG_KEY" > pythonscad-archive-keyring.gpg
+    gpg --batch --pinentry-mode loopback --armor --export "$GPG_KEY" > pythonscad-archive-keyring.gpg
 else
     # Export default key
-    DEFAULT_KEY=$(gpg --list-secret-keys --keyid-format LONG | grep sec | head -n1 | awk '{print $2}' | cut -d'/' -f2)
+    DEFAULT_KEY=$(gpg --batch --list-secret-keys --keyid-format LONG | grep sec | head -n1 | awk '{print $2}' | cut -d'/' -f2)
     if [ -n "$DEFAULT_KEY" ]; then
-        gpg --armor --export "$DEFAULT_KEY" > pythonscad-archive-keyring.gpg
+        gpg --batch --pinentry-mode loopback --armor --export "$DEFAULT_KEY" > pythonscad-archive-keyring.gpg
     else
         warn "No GPG key found, skipping keyring export"
     fi

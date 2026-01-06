@@ -176,7 +176,7 @@ for distro_dir in "${REPO_DIR}/packages"/*/*; do
         # Sign repository metadata if GPG key is provided
         if [ -n "$GPG_KEY" ] && command_exists gpg; then
             info "Signing repository metadata in $arch_dir"
-            gpg --batch --yes --detach-sign --armor \
+            gpg --batch --yes --pinentry-mode loopback --detach-sign --armor \
                 --local-user "$GPG_KEY" \
                 "$arch_dir/repodata/repomd.xml" || warn "Failed to sign repomd.xml"
         fi
@@ -186,7 +186,7 @@ done
 # Export GPG public key
 if [ -n "$GPG_KEY" ] && command_exists gpg; then
     info "Exporting GPG public key..."
-    gpg --export --armor "$GPG_KEY" > "${REPO_DIR}/RPM-GPG-KEY-pythonscad"
+    gpg --batch --pinentry-mode loopback --export --armor "$GPG_KEY" > "${REPO_DIR}/RPM-GPG-KEY-pythonscad"
 fi
 
 # Create .repo file for users
