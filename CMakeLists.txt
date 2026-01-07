@@ -1027,6 +1027,7 @@ set(CORE_SOURCES
   src/core/RenderVariables.cc
   src/core/RotateExtrudeNode.cc
   src/core/ScopeContext.cc
+  src/core/Selection.cc
   src/core/Settings.cc
   src/core/SourceFile.cc
   src/core/SourceFileCache.cc

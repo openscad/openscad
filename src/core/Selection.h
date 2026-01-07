@@ -30,14 +30,7 @@
 
 enum class SelectionType { SELECTION_POINT, SELECTION_LINE };
 
-std::string SelectionTypeToString(SelectionType type)
-{
-  switch (type) {
-  case SelectionType::SELECTION_POINT: return "point";
-  case SelectionType::SELECTION_LINE:  return "line";
-  default:                             return "unknown_SelectionType";
-  }
-}
+std::string SelectionTypeToString(SelectionType type);
 
 struct SelectedObject {
   SelectionType type;
