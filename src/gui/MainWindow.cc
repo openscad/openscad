@@ -2449,7 +2449,7 @@ void MainWindow::handleMeasurementClicked(QAction *clickedAction)
 void MainWindow::leftClick(QPoint mouse)
 {
   auto state = meas.statemachine(mouse);
-  if (state.status != MeasurementResult::Status::NoChange) {
+  if (state.status != Measurement::Result::Status::NoChange) {
     this->qglview->measure_state = MEASURE_DIRTY;
     QMenu resultmenu(this);
     // Ensures we clean the display regardless of how menu gets closed.
@@ -2459,10 +2459,13 @@ void MainWindow::leftClick(QPoint mouse)
     // boost adaptor can eventually be replaced with C++20 std::views::reverse
     bool first = true;
     for (const auto& str : boost::adaptors::reverse(state.messages)) {
-      if (state.status == MeasurementResult::Status::Success) {
-	if (auto m = make_message_obj((first? "" : "  ") "%1$s", str.toStdString())) {
-	  this->consoleOutput(*m);
-	}
+      if (state.status == Measurement::Result::Status::Success) {
+        if (auto m = make_message_obj(first ? ""
+                                            : "  "
+                                              "%1$s",
+                                      str.toStdString())) {
+          this->consoleOutput(*m);
+        }
       }
       auto action = resultmenu.addAction(str);
       connect(action, &QAction::triggered, this, [str]() { QApplication::clipboard()->setText(str); });
