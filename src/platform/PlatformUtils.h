@@ -119,4 +119,9 @@ void ensureStdIO();
  * a given number of digits.
  */
 std::string toMemorySizeString(uint64_t bytes, int digits);
+
+/**
+ * Print any platform-specific information about command-line arguments.
+ */
+void dumpArgs(int argc, char **argv);
 }  // namespace PlatformUtils

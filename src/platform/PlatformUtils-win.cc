@@ -202,3 +202,8 @@ void PlatformUtils::ensureStdIO(void)
   mi_register_output(&mi_output, nullptr);
 #endif
 }
+
+void PlatformUtils::dumpArgs(int argc, char **argv)
+{
+  std::cout << "Raw: >" << GetCommandLineA() << "<\n\n";
+}
