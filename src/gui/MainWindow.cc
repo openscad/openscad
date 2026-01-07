@@ -2455,10 +2455,18 @@ void MainWindow::leftClick(QPoint mouse)
     // Ensures we clean the display regardless of how menu gets closed.
     connect(&resultmenu, &QMenu::aboutToHide, this, &MainWindow::measureFinished);
 
-    // Can eventually be replaced with C++20 std::views::reverse
+    // Create the context menu and write successful measurements to the console.
+    // boost adaptor can eventually be replaced with C++20 std::views::reverse
+    bool first = true;
     for (const auto& str : boost::adaptors::reverse(state.messages)) {
+      if (state.status == MeasurementResult::Status::Success) {
+	if (auto m = make_message_obj((first? "" : "  ") "%1$s", str.toStdString())) {
+	  this->consoleOutput(*m);
+	}
+      }
       auto action = resultmenu.addAction(str);
       connect(action, &QAction::triggered, this, [str]() { QApplication::clipboard()->setText(str); });
+      first = false;
     }
     resultmenu.addAction("Click any above to copy its text to the clipboard");
     resultmenu.exec(qglview->mapToGlobal(mouse));
