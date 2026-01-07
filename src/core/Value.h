@@ -369,6 +369,7 @@ public:
   bool getUnsignedInt(unsigned int& v) const;
   bool getPositiveInt(unsigned int& v) const;
   [[nodiscard]] std::string toString() const;
+  [[nodiscard]] std::string toString(int precision) const;
   [[nodiscard]] std::string toEchoString() const;
   [[nodiscard]] std::string toEchoStringNoThrow() const;  // use this for warnings
   [[nodiscard]] const UndefType& toUndef() const;
@@ -403,21 +404,39 @@ public:
 
   static bool cmp_less(const Value& v1, const Value& v2);
 
-  friend std::ostream& operator<<(std::ostream& stream, const Value& value)
-  {
-    if (value.type() == Value::Type::STRING) stream << QuotedString(value.toString());
-    else stream << value.toString();
-    return stream;
-  }
+  friend std::ostream& operator<<(std::ostream& stream, const Value& value);
 
   using Variant = std::variant<UndefType, bool, double, str_utf8_wrapper, VectorType, EmbeddedVectorType,
                                RangePtr, FunctionPtr, ObjectType>;
 
-  static_assert(sizeof(Value::Variant) <= 24, "Memory size of Value too big");
+  static_assert(sizeof(Value::Variant) <= 24,     // FIXME: What is the basis for this requirement?
+                "Memory size of Value too big");  // FIXME: Why is a magic number (24) specified?
   [[nodiscard]] const Variant& getVariant() const { return value; }
 
-private:
+  void setPrecision(const int new_precision) { precision = new_precision; }
+
+  [[nodiscard]] const int getPrecision() { return precision; }
+
+protected:
   Variant value;
+
+  // The precision (significant digits) to use when outputting numbers (echo) or
+  // when creating strings (e.g. using str).
+  // Valid (and useful) values range from 1 to 17.
+  // A value of 17 can losslessly represent any IEEE 754 64-bit (double) value.
+  // 0 specifies that the default (typically 6) should be used.
+
+public:
+  static const int UNINITIALIZED_PRECISION = -1;
+
+protected:
+  int precision = UNINITIALIZED_PRECISION;
+
+  // The precision is recorded with the Value since expression evaluation is
+  // done separately from construction of the final string,  Only the former has
+  // access to the $fp value (which specifies the precision to use) at various
+  // points in the parse tree.  The precision active at each node is thus stored
+  // in the former step and read in the latter.
 };
 
 static const size_t NOINDEX = std::string::npos;
