@@ -1,5 +1,6 @@
 #include <catch2/catch_all.hpp>
 #include "vector_math.h"
+#include "src/geometry/Grid.h"
 
 #define NOT_APPLICABLE 0.0
 
@@ -177,6 +178,48 @@ TEST_CASE("calculateLineLineDistance handles various line arrangements (Eigen)",
      0.0,
      NaN},
 
+    {"Parallel but L1 is indistinguishable from a point",
+     {0, 0, 0},
+     {GRID_FINE * 0.95, 0, 0},
+     {0, 1, 0},
+     {10, 1, 0},
+     NaN,
+     NaN},
+
+    {"Parallel but L2 is indistinguishable from a point",
+     {0, 0, 0},
+     {5, 0, 0},
+     {0, 1, 0},
+     {GRID_FINE * 0.95, 1, 0},
+     NaN,
+     NaN},
+
+    {"Skew: A little apart, but L1 is indistinguishable from a point",
+     {0, 0, 0},
+     {GRID_FINE * 0.95, 0, 0},
+     {2, 0, 10},
+     {2, 1, 10},
+     NaN,
+     NaN},
+
+    // L1: x-axis. L2: Parallel to y-axis, shifted by z=10, x=2.
+    {"Skew: A little apart, but L1 is nearly a point",
+     {0, 0, 0},
+     {GRID_FINE * 1.05, 0, 0},
+     {2, 0, 10},
+     {2, 1, 10},
+     -10.0,
+     1997287},
+
+    // L1: x-axis. L2: Parallel to y-axis, shifted by z=10, x=2.
+    {"Skew: A little apart, but L1 is barely a line",
+     {0, 0, 0},
+     {0.0001, 0, 0},
+     {2, 0, 10},
+     {2, 1, 10},
+     -10.0,
+     20000.0},
+
   };
 
   const double epsilon = 1e-4;
@@ -187,7 +230,11 @@ TEST_CASE("calculateLineLineDistance handles various line arrangements (Eigen)",
       double actual_t;
       double actual_dist = calculateLineLineDistance(test.l1b, test.l1e, test.l2b, test.l2e, actual_t);
 
-      CHECK(actual_dist == Catch::Approx(test.expected_dist).margin(epsilon));
+      if (std::isnan(test.expected_dist)) {
+        CHECK(std::isnan(actual_dist));
+      } else {
+        CHECK(actual_dist == Catch::Approx(test.expected_dist).margin(epsilon));
+      }
 
       if (std::isnan(test.expected_t)) {
         CHECK(std::isnan(actual_t));

@@ -29,6 +29,9 @@ double calculateLinePointDistance(const Vector3d& l1b, const Vector3d& l1e, cons
  * The shortest distance vector is perpendicular to both lines. The sign of the
  * returned distance indicates the relative orientation or side of the lines.
  *
+ * If the points defining a line are too close to floating point error, then
+ * everything returns NaN.
+ *
  * @param l1b The beginning point of the first line.
  * @param l1e The ending point of the first line.
  * @param l2b The beginning point of the second line.
