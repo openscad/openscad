@@ -1478,12 +1478,12 @@ class Format
         return;
       }
       break;
-    default:
-      break;
+    default: break;
     }
     LOG(message_group::Warning, loc, args.documentRoot(), "format code '%1$s' not defined for '%2$s'",
         type, a.typeName());
   }
+
 public:
   Format(const std::string& fmt, const Arguments& args, int argStart, const Location& loc)
     : args(args), argStart(argStart), loc(loc), curArg(0)
@@ -1510,9 +1510,7 @@ public:
 
     result = stream.str();
   }
-  const std::string str() const {
-    return result;
-  };
+  const std::string str() const { return result; };
 };
 
 Value builtin_format(Arguments arguments, const Location& loc)
