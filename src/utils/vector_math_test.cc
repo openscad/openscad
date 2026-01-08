@@ -77,7 +77,17 @@ TEST_CASE("calculateSegSegDistance handles standard geometry", "[vector_math][se
      4.0},
     {"Displacement of unit line segments, Z+4, X+1 units apart", Vector3d(0.0, 0.0, 0.0),
      Vector3d(0.0, 0.0, 1.0), Vector3d(1.0, 0.0, 6.0), Vector3d(1.0, 0.0, 5.0), 4.12311},
-
+    // The following was gathered from the tops of linear_extrude_invisible-tests.scad.
+    // The previous implementation was returning NaN, so don't delete unless you must.
+    {"I can't believe it's not parallel", Vector3d(-32.928932189941406, 0, 30),
+     Vector3d(-40, -7.0710678100585938, 30), Vector3d(-12.92893123626709, 0, 30),
+     Vector3d(-20, -7.0710678100585938, 30), 14.73623039},
+    // The two are the above but decreasingly less parallel.
+    // The previous implementation was failing these, so don't delete unless you must.
+    {"Almost parallel", Vector3d(-32.93, 0, 30), Vector3d(-40, -7.0710678100585938, 30),
+     Vector3d(-12.92893123626709, 0, 30), Vector3d(-20, -7.0710678100585938, 30), 14.73719},
+    {"Not quite parallel", Vector3d(-33, 0, 30), Vector3d(-40, -7.0710678100585938, 30),
+     Vector3d(-12.92893123626709, 0, 30), Vector3d(-20, -7.0710678100585938, 30), 14.79865},
   };
 
   for (const auto& test : test_cases) {
