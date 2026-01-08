@@ -1041,47 +1041,6 @@ PyObject *python_spline(PyObject *self, PyObject *args, PyObject *kwargs)
   return PyOpenSCADObjectFromNode(&PyOpenSCADType, node);
 }
 
-int python_tomatrix(PyObject *pyt, Matrix4d& mat)
-{
-  if (pyt == nullptr) return 1;
-  PyObject *row, *cell;
-  double val;
-  mat = Matrix4d::Identity();
-  if (!PyList_Check(pyt)) return 1;
-  for (int i = 0; i < std::min(4, (int)PyList_Size(pyt)); i++) {
-    row = PyList_GetItem(pyt, i);
-    if (!PyList_Check(row)) return 1;
-    for (int j = 0; j < std::min(4, (int)PyList_Size(row)); j++) {
-      cell = PyList_GetItem(row, j);
-      if (python_numberval(cell, &val)) return 1;
-      mat(i, j) = val;
-    }
-  }
-  return 0;
-}
-
-int python_tovector(PyObject *pyt, Vector3d& vec)
-{
-  if (pyt == nullptr) return 1;
-  PyObject *cell;
-  double val;
-  if (!PyList_Check(pyt)) return 1;
-  if (PyList_Size(pyt) != 3) return 1;
-  for (int i = 0; i < 3; i++) {
-    cell = PyList_GetItem(pyt, i);
-    if (python_numberval(cell, &val)) return 1;
-    vec[i] = val;
-  }
-  return 0;
-}
-
-PyObject *python_fromvector(const Vector3d vec)
-{
-  PyObject *res = PyList_New(3);
-  for (int i = 0; i < 3; i++) PyList_SetItem(res, i, PyFloat_FromDouble(vec[i]));
-  return res;
-}
-
 PyObject *python_number_scale(PyObject *pynum, Vector3d scalevec, int vecs)
 {
   Matrix4d mat;
