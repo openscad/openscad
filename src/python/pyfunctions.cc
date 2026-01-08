@@ -2306,6 +2306,7 @@ PyObject *python__getitem_hier(std::shared_ptr<AbstractNode> node, const std::st
       result = python_from2dlong(polyhedron->faces);
     }
   }
+  if (result != nullptr) return result;
 
   if (hier > 0) {
     for (auto& child : node->children) {
