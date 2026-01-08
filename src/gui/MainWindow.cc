@@ -2460,9 +2460,8 @@ void MainWindow::leftClick(QPoint mouse)
     bool first = true;
     for (const auto& str : boost::adaptors::reverse(state.messages)) {
       if (state.status == Measurement::Result::Status::Success) {
-        if (auto m = make_message_obj(first ? ""
-                                            : "  "
-                                              "%1$s",
+        if (auto m = make_message_obj(first ? "%1$s"
+				      : "  %1$s",
                                       str.toStdString())) {
           this->consoleOutput(*m);
         }

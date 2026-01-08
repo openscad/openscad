@@ -25,6 +25,7 @@ public:
 
   struct Distance {
     double distance;
+    int line_count;
     QString codingError;
     std::optional<Eigen::Vector3d> ptDiff, toInfiniteLine, toEndpoint1, toEndpoint2;
   };

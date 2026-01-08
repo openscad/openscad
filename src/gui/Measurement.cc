@@ -123,10 +123,11 @@ Measurement::Result Measurement::statemachine(QPoint mouse)
 
       if (res.toInfiniteLine) {
         ret.messages.push_back(
-          QStringLiteral("Perpendicular distance to (infinite) line: dx: %1  dy: %2  dz: %3")
+          QStringLiteral("Perpendicular distance to (infinite) line%4: dx: %1  dy: %2  dz: %3")
             .arg(res.toInfiniteLine->x())
             .arg(res.toInfiniteLine->y())
-            .arg(res.toInfiniteLine->z()));
+            .arg(res.toInfiniteLine->z())
+            .arg(res.line_count == 1 ? "" : "s"));
       }
 
       if (res.toEndpoint2) {
@@ -231,6 +232,7 @@ Measurement::Distance Measurement::distMeasurement(SelectedObject& obj1, Selecte
   if (obj1.type == SelectionType::SELECTION_POINT && obj2.type == SelectionType::SELECTION_POINT) {
     ret.ptDiff = obj2.p1 - obj1.p1;
     ret.distance = ret.ptDiff->norm();
+    ret.line_count = 0;
   } else if ((obj1.type == SelectionType::SELECTION_POINT &&
               obj2.type == SelectionType::SELECTION_LINE) ||
              (obj2.type == SelectionType::SELECTION_POINT &&
@@ -250,7 +252,9 @@ Measurement::Distance Measurement::distMeasurement(SelectedObject& obj1, Selecte
     // Calculate components for projection
     double D_squared_norm = D.squaredNorm();
 
+    ret.line_count = 0;
     if (D_squared_norm > 1e-6) {  // Check if line is not a single point
+      ret.line_count = 1;
       // 3. Scalar projection parameter 't'
       double t = V.dot(D) / D_squared_norm;
 
@@ -268,7 +272,13 @@ Measurement::Distance Measurement::distMeasurement(SelectedObject& obj1, Selecte
 
     ret.toEndpoint1 = A - P;
   } else if (obj1.type == SelectionType::SELECTION_LINE && obj2.type == SelectionType::SELECTION_LINE) {
+    ret.line_count = 2;
     ret.distance = calculateSegSegDistance(obj1.p1, obj1.p2, obj2.p1, obj2.p2);
+    double dummy1, sd;
+    if (Vector3d inf = calculateLineLineVector(obj1.p1, obj1.p2, obj2.p1, obj2.p2, dummy1, sd); !std::isnan(sd))
+    {
+      ret.toInfiniteLine = inf;
+    }
   } else {
     ret.codingError = "Only coded to handle lines and points; sorry";
   }

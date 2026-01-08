@@ -1,9 +1,10 @@
 #include <catch2/catch_all.hpp>
 #include "Measurement.h"
 
-class MeasurementTest {
+class MeasurementTest
+{
 public:
-  MeasurementTest(Measurement & m) : m(m) {}
+  MeasurementTest(Measurement& m) : m(m) {}
   Measurement& m;
   Measurement::Distance distMeasurement(SelectedObject& obj1, SelectedObject& obj2)
   {
