@@ -100,47 +100,39 @@ Measurement::Result Measurement::statemachine(QPoint mouse)
         ret.addText(res.codingError);
       }
 
-      ret.addText(QStringLiteral("Second selection %1 is at %2%3")
+      auto obj2s = QString::fromStdString(obj2.toString());
+      ret.addText(QStringLiteral("Second selection %1 is at %2")
                     .arg(QString::fromStdString(SelectionTypeToString(obj2.type)))
-                    .arg(Vector3dtoQString(obj2.p1))
-                    .arg(obj2.type == SelectionType::SELECTION_POINT
-                           ? QString()
-                           : QStringLiteral(" to %1").arg(Vector3dtoQString(obj2.p2))));
+                    .arg(obj2s),
+                  obj2s);
 
-      ret.addText(QStringLiteral("First selection %1 is at %2%3")
+      auto obj1s = QString::fromStdString(obj1.toString());
+      ret.addText(QStringLiteral("First selection %1 is at %2")
                     .arg(QString::fromStdString(SelectionTypeToString(obj1.type)))
-                    .arg(Vector3dtoQString(obj1.p1))
-                    .arg(obj1.type == SelectionType::SELECTION_POINT
-                           ? QString()
-                           : QStringLiteral(" to %1").arg(Vector3dtoQString(obj1.p2))));
+                    .arg(obj1s),
+                  obj1s);
 
       if (res.ptDiff) {
-        ret.addText(QStringLiteral("dx: %1  dy: %2  dz: %3")
-                      .arg(res.ptDiff->x())
-                      .arg(res.ptDiff->y())
-                      .arg(res.ptDiff->z()));
+        auto s = Vector3dtoQString(*res.ptDiff);
+        ret.addText(QStringLiteral("Δ = %1").arg(s), s);
       }
 
       if (res.toInfiniteLine) {
-        ret.addText(QStringLiteral("Perpendicular distance to (infinite) line%4: dx: %1  dy: %2  dz: %3")
-                      .arg(res.toInfiniteLine->x())
-                      .arg(res.toInfiniteLine->y())
-                      .arg(res.toInfiniteLine->z())
-                      .arg(res.line_count == 1 ? "" : "s"));
+        auto s = Vector3dtoQString(*res.toInfiniteLine);
+        ret.addText(QStringLiteral("Perpendicular to (infinite) line%1 Δ = %2")
+                      .arg(res.line_count == 1 ? "" : "s")
+                      .arg(s),
+                    s);
       }
 
       if (res.toEndpoint2) {
-        ret.addText(QStringLiteral("Point to Line Endpoint2: dx: %1  dy: %2  dz: %3")
-                      .arg(res.toEndpoint2->x())
-                      .arg(res.toEndpoint2->y())
-                      .arg(res.toEndpoint2->z()));
+        auto s = Vector3dtoQString(*res.toEndpoint2);
+        ret.addText(QStringLiteral("Point to Line Endpoint2 Δ = %1").arg(s), s);
       }
 
       if (res.toEndpoint1) {
-        ret.addText(QStringLiteral("Point to Line Endpoint1: dx: %1  dy: %2  dz: %3")
-                      .arg(res.toEndpoint1->x())
-                      .arg(res.toEndpoint1->y())
-                      .arg(res.toEndpoint1->z()));
+        auto s = Vector3dtoQString(*res.toEndpoint1);
+        ret.addText(QStringLiteral("Point to Line Endpoint1 Δ = %1").arg(s), s);
       }
 
       if (std::isnan(res.distance)) {
@@ -148,7 +140,8 @@ Measurement::Result Measurement::statemachine(QPoint mouse)
         ret.status = Measurement::Result::Status::Error;
         return ret;
       }
-      ret.addText(QStringLiteral("Distance is %1").arg(std::fabs(res.distance)));
+      ret.addText(QStringLiteral("Distance is %1").arg(std::fabs(res.distance)),
+                  QStringLiteral("%1").arg(std::fabs(res.distance)));
       ret.status = Measurement::Result::Status::Success;
     }
     break;
@@ -275,7 +268,7 @@ Measurement::Distance Measurement::distMeasurement(SelectedObject& obj1, Selecte
     ret.distance = calculateSegSegDistance(obj1.p1, obj1.p2, obj2.p1, obj2.p2);
     double dummy1, sd;
     if (Vector3d inf = calculateLineLineVector(obj1.p1, obj1.p2, obj2.p1, obj2.p2, dummy1, sd);
-        !std::isnan(sd)) {
+        !std::isnan(sd) && (inf[0] != 0 || inf[1] != 0 || inf[2] != 0)) {
       ret.toInfiniteLine = inf;
     }
   } else {

@@ -26,7 +26,7 @@
 
 #pragma once
 #include "geometry/linalg.h"
-#include <cstring>
+#include <string>
 
 enum class SelectionType { SELECTION_POINT, SELECTION_LINE };
 
@@ -36,4 +36,5 @@ struct SelectedObject {
   SelectionType type;
   Vector3d p1;
   Vector3d p2;
+  std::string toString() const;
 };
