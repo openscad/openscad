@@ -1161,7 +1161,8 @@ class Format
     } else {
       for (i = argStart;; i++) {
         if (i >= args.size()) {
-          LOG(message_group::Warning, loc, args.documentRoot(), "argument %1$s not found", quoteVar(name));
+          LOG(message_group::Warning, loc, args.documentRoot(), "argument %1$s not found",
+              quoteVar(name));
           return Value::undefined.clone();
         }
         if (args[i].name && *args[i].name == name) {
@@ -1176,18 +1177,18 @@ class Format
   // specification, format the corresponding argument, emit it to the specified stream, and
   // update the index to point after the close brace of the format specification.  Update the current
   // argument as appropriate.
-  void format1(std::ostringstream& stream, const std::string& fmt, int& i)
+  void format1(std::ostringstream& stream, const std::string& fmt, int& i, bool is_recurse)
   {
     Value a = getField(i, fmt);
 
     convert(i, a, fmt);
 
-    std::string spec = expand(fmt, i);
+    std::string spec = expand(fmt, i, is_recurse);
 
     format2(stream, spec, a, args, loc);
   }
 
-  std::string expand(const std::string& fmt, int& i)
+  std::string expand(const std::string& fmt, int& i, bool is_recurse)
   {
     std::ostringstream stream;
 
@@ -1198,7 +1199,15 @@ class Format
       }
       if (fmt[i] == '{') {
         i++;
-        format1(stream, fmt, i);
+        if (is_recurse) {
+          // Because this consumes the open brace but not the close brace, if you're not
+          // set for "stop on first warning" you're likely to get a cascading "Single close
+          // brace found" warning after this one.  Perhaps this should be smarter, and
+          // cleanly ignore the entire nested {...} sequence.  But it's/ an error, after all.
+          LOG(message_group::Warning, loc, args.documentRoot(), "only two levels of braces allowed");
+        } else {
+          format1(stream, fmt, i, true);
+        }
       } else if (fmt[i] == '}') {
         i++;
         break;
@@ -1279,7 +1288,6 @@ class Format
     return std::move(a);
   }
 
-
   void format2(std::ostringstream& stream, const std::string& spec, Value& a, const Arguments& args,
                const Location& loc)
   {
@@ -1302,7 +1310,8 @@ class Format
       if (spec[i] == ':') {
         i++;
       } else {
-        LOG(message_group::Warning, loc, args.documentRoot(), "expected ':' before format specification");
+        LOG(message_group::Warning, loc, args.documentRoot(),
+            "expected ':' before format specification");
       }
     }
 
@@ -1398,12 +1407,15 @@ class Format
     case Value::Type::NUMBER:
       if (!type.empty() && isupper(type[0])) {
         stream << std::uppercase;
+        return;
       }
       if (type == "c") {
         stream << a.chrString();
+        return;
       } else if (type == "b") {
         // NEEDSWORK:  NYI
         stream << a.toString();
+        return;
       } else if (type == "d" || type == "n" || type == "o" || type == "x" || type == "X") {
         double d = round(a.toDouble());
         if (type == "o") {
@@ -1420,18 +1432,23 @@ class Format
           // unlimited number of digits, with only the first ~16 really being meaningful.
           stream << (intmax_t)d;
         }
+        return;
       } else if (type == "e" || type == "E") {
         double d = a.toDouble();
         stream << std::scientific << d;
+        return;
       } else if (type == "f" || type == "F") {
         double d = a.toDouble();
         stream << std::fixed << d;
+        return;
       } else if (type == "g" || type == "G" || type == "n") {
         // NEEDSWORK does n need different handling?
         double d = a.toDouble();
         stream << std::defaultfloat << d;
+        return;
       } else if (type == "%") {
         stream << a.toString();  // NEEDSWORK NYI
+        return;
       } else if (type.empty()) {
         // NEEDSWORK:  should this be like d, like g, or different?
         // Current answer:  like g, but with a different default precision.
@@ -1442,17 +1459,13 @@ class Format
           stream << std::setprecision(17);
         }
         stream << std::defaultfloat << d;
-      } else {
-        LOG(message_group::Warning, loc, args.documentRoot(), "format code '%1$s' not defined for '%2$s'",
-            type, a.typeName());
+        return;
       }
       break;
     case Value::Type::STRING:
       if (type == "s" || type.empty()) {
         stream << a.toString();
-      } else {
-        LOG(message_group::Warning, loc, args.documentRoot(), "format code '%1$s' not defined for '%2$s'",
-            type, a.typeName());
+        return;
       }
       break;
     case Value::Type::VECTOR:
@@ -1462,16 +1475,14 @@ class Format
     case Value::Type::BOOL:  // NEEDSWORK:  support for :d, :f, et cetera.
       if (type.empty()) {
         stream << a.toString();
-      } else {
-        LOG(message_group::Warning, loc, args.documentRoot(), "format code '%1$s' not defined for '%2$s'",
-            type, a.typeName());
+        return;
       }
       break;
     default:
-      LOG(message_group::Warning, loc, args.documentRoot(), "format code '%1$s' not defined for '%2$s'",
-          type, a.typeName());
       break;
     }
+    LOG(message_group::Warning, loc, args.documentRoot(), "format code '%1$s' not defined for '%2$s'",
+        type, a.typeName());
   }
 public:
   Format(const std::string& fmt, const Arguments& args, int argStart, const Location& loc)
@@ -1482,7 +1493,7 @@ public:
       if (fmt[i] == '{') {
         i++;
         if (i >= fmt.size() || fmt[i] != '{') {
-          format1(stream, fmt, i);
+          format1(stream, fmt, i, false);
           continue;
         }
       } else if (fmt[i] == '}') {

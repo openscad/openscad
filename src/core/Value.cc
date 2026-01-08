@@ -611,10 +611,7 @@ public:
 
 std::string Value::toString() const { return std::visit(tostring_visitor(), this->value); }
 
-std::string Value::toEchoString() const
-{
-  return toParsableString(QuotedString::Mode::RAW);
-}
+std::string Value::toEchoString() const { return toParsableString(QuotedString::Mode::RAW); }
 
 std::string Value::toParsableString(QuotedString::Mode m) const
 {
