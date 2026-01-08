@@ -97,59 +97,58 @@ Measurement::Result Measurement::statemachine(QPoint mouse)
       obj2 = qglview->selected_obj[1];
       Measurement::Distance res = distMeasurement(obj1, obj2);
       if (!res.codingError.isEmpty()) {
-        ret.messages.push_back(res.codingError);
+        ret.addText(res.codingError);
       }
 
-      ret.messages.push_back(QStringLiteral("Second selection %1 is at %2%3")
-                               .arg(QString::fromStdString(SelectionTypeToString(obj2.type)))
-                               .arg(Vector3dtoQString(obj2.p1))
-                               .arg(obj2.type == SelectionType::SELECTION_POINT
-                                      ? QString()
-                                      : QStringLiteral(" to %1").arg(Vector3dtoQString(obj2.p2))));
+      ret.addText(QStringLiteral("Second selection %1 is at %2%3")
+                    .arg(QString::fromStdString(SelectionTypeToString(obj2.type)))
+                    .arg(Vector3dtoQString(obj2.p1))
+                    .arg(obj2.type == SelectionType::SELECTION_POINT
+                           ? QString()
+                           : QStringLiteral(" to %1").arg(Vector3dtoQString(obj2.p2))));
 
-      ret.messages.push_back(QStringLiteral("First selection %1 is at %2%3")
-                               .arg(QString::fromStdString(SelectionTypeToString(obj1.type)))
-                               .arg(Vector3dtoQString(obj1.p1))
-                               .arg(obj1.type == SelectionType::SELECTION_POINT
-                                      ? QString()
-                                      : QStringLiteral(" to %1").arg(Vector3dtoQString(obj1.p2))));
+      ret.addText(QStringLiteral("First selection %1 is at %2%3")
+                    .arg(QString::fromStdString(SelectionTypeToString(obj1.type)))
+                    .arg(Vector3dtoQString(obj1.p1))
+                    .arg(obj1.type == SelectionType::SELECTION_POINT
+                           ? QString()
+                           : QStringLiteral(" to %1").arg(Vector3dtoQString(obj1.p2))));
 
       if (res.ptDiff) {
-        ret.messages.push_back(QStringLiteral("dx: %1  dy: %2  dz: %3")
-                                 .arg(res.ptDiff->x())
-                                 .arg(res.ptDiff->y())
-                                 .arg(res.ptDiff->z()));
+        ret.addText(QStringLiteral("dx: %1  dy: %2  dz: %3")
+                      .arg(res.ptDiff->x())
+                      .arg(res.ptDiff->y())
+                      .arg(res.ptDiff->z()));
       }
 
       if (res.toInfiniteLine) {
-        ret.messages.push_back(
-          QStringLiteral("Perpendicular distance to (infinite) line%4: dx: %1  dy: %2  dz: %3")
-            .arg(res.toInfiniteLine->x())
-            .arg(res.toInfiniteLine->y())
-            .arg(res.toInfiniteLine->z())
-            .arg(res.line_count == 1 ? "" : "s"));
+        ret.addText(QStringLiteral("Perpendicular distance to (infinite) line%4: dx: %1  dy: %2  dz: %3")
+                      .arg(res.toInfiniteLine->x())
+                      .arg(res.toInfiniteLine->y())
+                      .arg(res.toInfiniteLine->z())
+                      .arg(res.line_count == 1 ? "" : "s"));
       }
 
       if (res.toEndpoint2) {
-        ret.messages.push_back(QStringLiteral("Point to Line Endpoint2: dx: %1  dy: %2  dz: %3")
-                                 .arg(res.toEndpoint2->x())
-                                 .arg(res.toEndpoint2->y())
-                                 .arg(res.toEndpoint2->z()));
+        ret.addText(QStringLiteral("Point to Line Endpoint2: dx: %1  dy: %2  dz: %3")
+                      .arg(res.toEndpoint2->x())
+                      .arg(res.toEndpoint2->y())
+                      .arg(res.toEndpoint2->z()));
       }
 
       if (res.toEndpoint1) {
-        ret.messages.push_back(QStringLiteral("Point to Line Endpoint1: dx: %1  dy: %2  dz: %3")
-                                 .arg(res.toEndpoint1->x())
-                                 .arg(res.toEndpoint1->y())
-                                 .arg(res.toEndpoint1->z()));
+        ret.addText(QStringLiteral("Point to Line Endpoint1: dx: %1  dy: %2  dz: %3")
+                      .arg(res.toEndpoint1->x())
+                      .arg(res.toEndpoint1->y())
+                      .arg(res.toEndpoint1->z()));
       }
 
       if (std::isnan(res.distance)) {
-        ret.messages.push_back("Got Not-a-Number when calculating distance; sorry");
+        ret.addText("Got Not-a-Number when calculating distance; sorry");
         ret.status = Measurement::Result::Status::Error;
         return ret;
       }
-      ret.messages.push_back(QStringLiteral("Distance is %1").arg(std::fabs(res.distance)));
+      ret.addText(QStringLiteral("Distance is %1").arg(std::fabs(res.distance)));
       ret.status = Measurement::Result::Status::Success;
     }
     break;
@@ -208,17 +207,17 @@ Measurement::Result Measurement::statemachine(QPoint mouse)
         Vector3d side2 = (obj2.p1 - obj3.p1).normalized();
         ang = acos(side1.dot(side2)) * 180.0 / 3.14159265359;
       } else {
-        ret.messages.push_back("If selecting three things, they must all be points");
+        ret.addText("If selecting three things, they must all be points");
         ret.status = Measurement::Result::Status::Error;
         return ret;
       }
     display_angle:
       if (std::isnan(ang)) {
-        ret.messages.push_back("Got Not-a-Number when calculating angle; sorry");
+        ret.addText("Got Not-a-Number when calculating angle; sorry");
         ret.status = Measurement::Result::Status::Error;
         return ret;
       }
-      ret.messages.push_back(QStringLiteral("Angle is %1 Degrees").arg(ang));
+      ret.addText(QStringLiteral("Angle is %1 Degrees").arg(ang));
       ret.status = Measurement::Result::Status::Success;
     }
     break;
@@ -275,8 +274,8 @@ Measurement::Distance Measurement::distMeasurement(SelectedObject& obj1, Selecte
     ret.line_count = 2;
     ret.distance = calculateSegSegDistance(obj1.p1, obj1.p2, obj2.p1, obj2.p2);
     double dummy1, sd;
-    if (Vector3d inf = calculateLineLineVector(obj1.p1, obj1.p2, obj2.p1, obj2.p2, dummy1, sd); !std::isnan(sd))
-    {
+    if (Vector3d inf = calculateLineLineVector(obj1.p1, obj1.p2, obj2.p1, obj2.p2, dummy1, sd);
+        !std::isnan(sd)) {
       ret.toInfiniteLine = inf;
     }
   } else {

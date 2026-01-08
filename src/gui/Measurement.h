@@ -30,6 +30,11 @@ public:
     std::optional<Eigen::Vector3d> ptDiff, toInfiniteLine, toEndpoint1, toEndpoint2;
   };
 
+  struct Message {
+    QString display_text;
+    std::optional<QString> clipboard_text;
+  };
+
   struct Result {
     enum class Status { NoChange, Success, Error };
 
@@ -38,7 +43,9 @@ public:
     /**
      * Reverse-ordered list of responses.
      */
-    std::vector<QString> messages;
+    std::vector<Message> messages;
+    void addText(QString str) { messages.push_back(Message{str}); }
+    void addText(QString str, QString clipboard) { messages.push_back(Message{str, clipboard}); }
   };
 
   /**
