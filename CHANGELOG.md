@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.8.9](https://github.com/pythonscad/pythonscad/compare/v0.8.8...v0.8.9) (2026-01-09)
+
+
+### Bug Fixes
+
+* correct path for installing generated openscad.1 man page ([#293](https://github.com/pythonscad/pythonscad/issues/293)) ([8aa58bc](https://github.com/pythonscad/pythonscad/commit/8aa58bc05ed3109bf467f1983fd5564609878501))
+* evalauting fn for path_extrude again ([#287](https://github.com/pythonscad/pythonscad/issues/287)) ([61a1f7a](https://github.com/pythonscad/pythonscad/commit/61a1f7a713ad538cb4147df33d9dae28a17cfced))
+
 ## [0.8.8](https://github.com/pythonscad/pythonscad/compare/v0.8.7...v0.8.8) (2026-01-09)
 
 
