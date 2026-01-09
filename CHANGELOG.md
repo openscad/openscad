@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.8.10](https://github.com/pythonscad/pythonscad/compare/v0.8.9...v0.8.10) (2026-01-09)
+
+
+### Bug Fixes
+
+* **ci:** add GPG passphrase support for repository signing ([#295](https://github.com/pythonscad/pythonscad/issues/295)) ([2239a97](https://github.com/pythonscad/pythonscad/commit/2239a977b98e8ebd2db7ba8e5fb4d721fa535f18))
+
 ## [0.8.9](https://github.com/pythonscad/pythonscad/compare/v0.8.8...v0.8.9) (2026-01-09)
 
 
