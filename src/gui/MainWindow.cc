@@ -3120,8 +3120,6 @@ void MainWindow::editorContentChanged()
   }
 
   if (autoPreviewEnabled && autoPreviewTimer && docChanged) {
-    autoPreviewTimer->stop();
-    autoPreviewTimer->setInterval(autoPreviewDelayMs);
     autoPreviewTimer->start(autoPreviewDelayMs);
   }
 }
