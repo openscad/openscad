@@ -38,6 +38,7 @@
 #include "PlatformUtils.h"
 #include <Context.h>
 #include <Selection.h>
+#include "core/CurveDiscretizer.h"
 #include "platform/PlatformUtils.h"
 #include "primitives.h"
 namespace fs = std::filesystem;
@@ -340,7 +341,8 @@ std::vector<Vector3d> python_vectors(PyObject *vec, int mindim, int maxdim, int 
         if (PyList_Size(item) >= mindim && PyList_Size(item) <= maxdim) {
           for (int i = 0; i < PyList_Size(item); i++) {
             if (PyList_Size(item) > i) {
-              if (python_numberval(PyList_GetItem(item, i), &result[i])) return results;  // Error
+              if (python_numberval(PyList_GetItem(item, i), &result[i], nullptr, 0))
+                return results;  // Error
             }
           }
         }
@@ -360,7 +362,7 @@ std::vector<Vector3d> python_vectors(PyObject *vec, int mindim, int maxdim, int 
     results.push_back(result);
   }
   Vector3d result(0, 0, 0);
-  if (!python_numberval(vec, &result[0])) {
+  if (!python_numberval(vec, &result[0], nullptr, 0)) {
     result[1] = result[0];
     result[2] = result[1];
     results.push_back(result);
@@ -372,6 +374,7 @@ std::vector<Vector3d> python_vectors(PyObject *vec, int mindim, int maxdim, int 
  * Create a CurveDiscretizer by extracting parameters from __main__ and kwargs
  * @param kwargs *Remove* any control parameter arguments found.
  */
+
 CurveDiscretizer CreateCurveDiscretizer(PyObject *kwargs)
 {
   PyObject *mainModule = pythonMainModule.get();
@@ -381,7 +384,8 @@ CurveDiscretizer CreateCurveDiscretizer(PyObject *kwargs)
       if (PyObject *value = PyDict_GetItemString(kwargs, key); value != nullptr) {
         // PyArg_ParseTupleAndKeywords does not allow unspecified keyword args.
         PyDict_DelItemString(kwargs, key);
-        if (!(python_numberval(value, &result))) return result;  // value can be Integer, Number, ...
+        if (!(python_numberval(value, &result, nullptr, 0)))
+          return result;  // value can be Integer, Number, ...
       }
     }
     if (mainModule != nullptr) {

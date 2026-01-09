@@ -39,6 +39,7 @@
 #include "utils/degree_trig.h"
 #include "io/import.h"
 #include "io/fileutils.h"
+#include "version.h"
 
 #include <utility>
 #include <cstdint>
@@ -832,9 +833,6 @@ Value builtin_search(Arguments arguments, const Location& loc)
   }
   return std::move(returnvec);
 }
-
-#define QUOTE(x__) #x__
-#define QUOTED(x__) QUOTE(x__)
 
 Value builtin_version(Arguments arguments, const Location& /*loc*/)
 {

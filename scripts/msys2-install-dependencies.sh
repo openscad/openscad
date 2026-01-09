@@ -1,26 +1,29 @@
 #!/usr/bin/env bash
+set -e
 
 QT="$1"
 
-if [ -z $MSYSTEM ]; then
-  MSYSTEM_DEFAULT=UCRT64
-  # Possible values: (MSYS|UCRT64|CLANG64|CLANGARM64|CLANG32|MINGW64|MINGW32)
-  # For explanation of options see: https://www.msys2.org/docs/environments/
-  echo "MSYSTEM is unset or blank, defaulting to '${MSYSTEM_DEFAULT}'";
-  export MSYSTEM=$MSYSTEM_DEFAULT
-else
-  echo "MSYSTEM is set to '$MSYSTEM'";
-fi
-
 date "+### %Y-%m-%d %T msys2-install-dependencies started"
 
-pacman --query --explicit
+if [[ -z "${GITHUB_RUN_ID}" ]]; then
+    if [ -z $MSYSTEM ]; then
+	MSYSTEM_DEFAULT=UCRT64
+	# Possible values: (MSYS|UCRT64|CLANG64|CLANGARM64|CLANG32|MINGW64|MINGW32)
+	# For explanation of options see: https://www.msys2.org/docs/environments/
+	echo "MSYSTEM is unset or blank, defaulting to '${MSYSTEM_DEFAULT}'";
+	export MSYSTEM=$MSYSTEM_DEFAULT
+    else
+	echo "MSYSTEM is set to '$MSYSTEM'";
+    fi
 
-date "+### %Y-%m-%d %T install pactoys (for pacboy)"
-pacman --noconfirm --sync --needed pactoys libxml2
-# pacboy is a pacman wrapper for MSYS2 which handles the package prefixes automatically
-#            name:p means MINGW_PACKAGE_PREFIX-only
-#            name:  disables any translation for name
+    pacman --query --explicit
+
+    date "+### %Y-%m-%d %T install pactoys (for pacboy)"
+    pacman --noconfirm --sync --needed pactoys libxml2
+    # pacboy is a pacman wrapper for MSYS2 which handles the package prefixes automatically
+    #            name:p means MINGW_PACKAGE_PREFIX-only
+    #            name:  disables any translation for name
+fi
 
 if [[ "$QT" == "qt6" ]]; then
   QT_PACKAGES="qscintilla-qt6:p qt6-5compat:p qt6-multimedia:p qt6-svg:p"
@@ -62,12 +65,16 @@ PACKAGE_LIST=(
 # Expand array to a single space-separated string
 PACBOY_PACKAGES="${PACKAGE_LIST[*]}"
 
-date "+### %Y-%m-%d %T install remaining packages start"
-pacboy --noconfirm --sync --needed $PACBOY_PACKAGES
-date "+### %Y-%m-%d %T install remaining packages done"
+if [[ -z "${GITHUB_RUN_ID}" ]]; then
+    date "+### %Y-%m-%d %T install remaining packages start"
+    pacboy --noconfirm --sync --needed $PACBOY_PACKAGES
+    date "+### %Y-%m-%d %T install remaining packages done"
 
-# Install bsdiff4 via pip for libpython_patch.sh (provides bspatch4 command)
-date "+### %Y-%m-%d %T install bsdiff4 via pip"
-pip install bsdiff4
+    # Install bsdiff4 via pip for libpython_patch.sh (provides bspatch4 command)
+    date "+### %Y-%m-%d %T install bsdiff4 via pip"
+    pip install bsdiff4
+else
+    echo "PACBOY_PACKAGES=${PACBOY_PACKAGES}" >> ${GITHUB_ENV}
+fi
 
 date "+### %Y-%m-%d %T msys2-install-dependencies finished"
