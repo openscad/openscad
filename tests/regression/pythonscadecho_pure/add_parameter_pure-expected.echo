@@ -1,0 +1,8 @@
+Return: True
+Global: undefined (correct)
+Return: 42
+Global: undefined (correct)
+Return: 3.14159
+Global: undefined (correct)
+Return: hello
+Global: undefined (correct)

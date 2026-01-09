@@ -87,6 +87,7 @@ extern bool parse(SourceFile *& file, const std::string& text, const std::string
 #include <boost/functional/hash.hpp>
 #include <ScopeContext.h>
 #include "PlatformUtils.h"
+#include "Feature.h"
 #include <iostream>
 #include <filesystem>
 
@@ -5338,8 +5339,14 @@ PyObject *python_add_parameter(PyObject *self, PyObject *args, PyObject *kwargs,
         }
       }
     }
-    PyObject *maindict = PyModule_GetDict(pythonMainModule.get());
-    PyDict_SetItemString(maindict, name, value_effective);
+    // Only set global variable if the pure function feature is not enabled
+    // (default: creates variable for backward compatibility)
+    if (!Feature::ExperimentalAddParameterPureFunction.is_enabled()) {
+      PyObject *maindict = PyModule_GetDict(pythonMainModule.get());
+      PyDict_SetItemString(maindict, name, value_effective);
+    }
+    Py_INCREF(value_effective);
+    return value_effective;
   }
   return Py_None;
 }
