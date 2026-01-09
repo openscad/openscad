@@ -1,0 +1,10 @@
+Return: True
+Global: True
+Return: False
+Global: False
+Return: 42
+Global: 42
+Return: 3.14159
+Global: 3.14159
+Return: hello
+Global: hello

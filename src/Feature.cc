@@ -51,6 +51,10 @@ const Feature Feature::ExperimentalVectorSwizzle(
 #ifdef ENABLE_PYTHON
 const Feature Feature::ExperimentalPythonEngine(
   "python-engine", "Enable experimental Python Engine (implies risk of malicious scripts downloaded).");
+const Feature Feature::ExperimentalAddParameterPureFunction(
+  "add-parameter-pure-function",
+  "Make <code>add_parameter()</code> a pure function that only returns the value without creating a "
+  "global variable.");
 #endif
 
 Feature::Feature(const std::string& name, std::string description, bool hidden)
