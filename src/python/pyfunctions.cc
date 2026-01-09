@@ -1885,6 +1885,10 @@ PyObject *python_wrap_core(PyObject *obj, PyObject *target, double r, double d, 
     return NULL;
   }
 
+  get_fnas(node->fn, node->fa, node->fs);
+  if (!isnan(fn)) node->fn = fn;
+  if (!isnan(fa)) node->fa = fa;
+  if (!isnan(fs)) node->fs = fs;
   node->children.push_back(child);
   return PyOpenSCADObjectFromNode(type, node);
 }
@@ -3516,6 +3520,11 @@ PyObject *path_extrude_core(PyObject *obj, PyObject *path, PyObject *xdir, int c
     PyErr_SetString(PyExc_TypeError, "error in path_extrude xdir parameter has zero size\n");
     return NULL;
   }
+
+  get_fnas(node->fn, node->fa, node->fs);
+  if (fn != -1) node->fn = fn;
+  if (fa != -1) node->fa = fa;
+  if (fs != -1) node->fs = fs;
 
   node->convexity = convexity;
 

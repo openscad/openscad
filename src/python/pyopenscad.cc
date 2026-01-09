@@ -400,6 +400,36 @@ CurveDiscretizer CreateCurveDiscretizer(PyObject *kwargs)
   });
 }
 
+void get_fnas(double& fn, double& fa, double& fs)
+{
+  PyObject *mainModule = PyImport_AddModule("__main__");
+  if (mainModule == nullptr) return;
+  fn = 0;
+  fa = 12;
+  fs = 2;
+
+  if (PyObject_HasAttrString(mainModule, "fn")) {
+    PyObjectUniquePtr varFn(PyObject_GetAttrString(mainModule, "fn"), PyObjectDeleter);
+    if (varFn.get() != nullptr) {
+      fn = PyFloat_AsDouble(varFn.get());
+    }
+  }
+
+  if (PyObject_HasAttrString(mainModule, "fa")) {
+    PyObjectUniquePtr varFa(PyObject_GetAttrString(mainModule, "fa"), PyObjectDeleter);
+    if (varFa.get() != nullptr) {
+      fa = PyFloat_AsDouble(varFa.get());
+    }
+  }
+
+  if (PyObject_HasAttrString(mainModule, "fs")) {
+    PyObjectUniquePtr varFs(PyObject_GetAttrString(mainModule, "fs"), PyObjectDeleter);
+    if (varFs.get() != nullptr) {
+      fs = PyFloat_AsDouble(varFs.get());
+    }
+  }
+}
+
 /*
  * Type specific init function. nothing special here
  */
