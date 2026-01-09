@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.8.8](https://github.com/pythonscad/pythonscad/compare/v0.8.7...v0.8.8) (2026-01-09)
+
+
+### Features
+
+* **python:** make add_parameter return value and add feature toggle ([#290](https://github.com/pythonscad/pythonscad/issues/290)) ([97c4c11](https://github.com/pythonscad/pythonscad/commit/97c4c115a4b4f92a83014618cf4ef8f5c56239d0))
+
+
+### Documentation
+
+* add CLAUDE.md for project guidance and development workf ([#288](https://github.com/pythonscad/pythonscad/issues/288)) ([67f075e](https://github.com/pythonscad/pythonscad/commit/67f075e4a1f57fce6c5dfa0405b6bafe07120231))
+
 ## [0.8.7](https://github.com/pythonscad/pythonscad/compare/v0.8.6...v0.8.7) (2026-01-06)
 
 
