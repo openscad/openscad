@@ -11,6 +11,7 @@
 # Environment variables:
 #   REPO_DIR         - Repository root directory (default: current directory)
 #   GPG_KEY          - GPG key ID for signing (uses default key if not set)
+#   GPG_PASSPHRASE   - GPG key passphrase (optional, for password-protected keys)
 #   KEEP_VERSIONS    - Number of old versions to keep per architecture (default: 3)
 #
 
@@ -33,6 +34,7 @@ command_exists() { command -v "$1" >/dev/null 2>&1; }
 PACKAGES_DIR="${1:?Missing packages directory argument}"
 REPO_DIR="${REPO_DIR:-.}"
 GPG_KEY="${GPG_KEY:-}"
+GPG_PASSPHRASE="${GPG_PASSPHRASE:-}"
 KEEP_VERSIONS="${KEEP_VERSIONS:-3}"
 REPO_BASE_URL="${REPO_BASE_URL:-https://pythonscad-repos.nomike.org}"
 
@@ -134,6 +136,11 @@ info "Release file generated"
 info "Signing Release file..."
 
 GPG_OPTS="--batch --yes --pinentry-mode loopback"
+
+# Add passphrase option - always use passphrase-fd for consistency
+# If GPG_PASSPHRASE is not set, we'll use an empty string which works for keys without passphrase
+GPG_OPTS="$GPG_OPTS --passphrase-fd 0"
+
 if [ -n "$GPG_KEY" ]; then
     GPG_OPTS="$GPG_OPTS --local-user $GPG_KEY"
     info "Using GPG key: $GPG_KEY"
@@ -141,15 +148,18 @@ else
     info "Using default GPG key"
 fi
 
+# Use passphrase from environment or empty string
+PASSPHRASE="${GPG_PASSPHRASE:-}"
+
 # Create detached signature
-if gpg $GPG_OPTS -abs -o Release.gpg Release; then
+if echo "$PASSPHRASE" | gpg $GPG_OPTS -abs -o Release.gpg Release; then
     info "Created Release.gpg (detached signature)"
 else
     die "Failed to create detached signature"
 fi
 
 # Create clearsigned file
-if gpg $GPG_OPTS --clearsign -o InRelease Release; then
+if echo "$PASSPHRASE" | gpg $GPG_OPTS --clearsign -o InRelease Release; then
     info "Created InRelease (clearsigned)"
 else
     die "Failed to create clearsigned InRelease"

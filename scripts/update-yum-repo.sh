@@ -9,8 +9,9 @@
 #   ./update-yum-repo.sh /path/to/rpm/files
 #
 # Environment variables:
-#   GPG_KEY    - GPG key ID to use for signing (optional)
-#   REPO_DIR   - Repository directory (default: current directory)
+#   GPG_KEY          - GPG key ID to use for signing (optional)
+#   GPG_PASSPHRASE   - GPG key passphrase (optional, for password-protected keys)
+#   REPO_DIR         - Repository directory (default: current directory)
 #
 
 set -euo pipefail
@@ -57,6 +58,7 @@ fi
 # Configuration
 REPO_DIR="${REPO_DIR:-.}"
 GPG_KEY="${GPG_KEY:-}"
+GPG_PASSPHRASE="${GPG_PASSPHRASE:-}"
 KEEP_VERSIONS="${KEEP_VERSIONS:-3}"
 REPO_BASE_URL="${REPO_BASE_URL:-https://pythonscad-repos.nomike.org}"
 
@@ -176,17 +178,29 @@ for distro_dir in "${REPO_DIR}/packages"/*/*; do
         # Sign repository metadata if GPG key is provided
         if [ -n "$GPG_KEY" ] && command_exists gpg; then
             info "Signing repository metadata in $arch_dir"
-            gpg --batch --yes --pinentry-mode loopback --detach-sign --armor \
-                --local-user "$GPG_KEY" \
-                "$arch_dir/repodata/repomd.xml" || warn "Failed to sign repomd.xml"
+
+            GPG_OPTS="--batch --yes --pinentry-mode loopback --passphrase-fd 0"
+            GPG_OPTS="$GPG_OPTS --detach-sign --armor --local-user $GPG_KEY"
+
+            # Use passphrase from environment or empty string
+            PASSPHRASE="${GPG_PASSPHRASE:-}"
+
+            if echo "$PASSPHRASE" | gpg $GPG_OPTS "$arch_dir/repodata/repomd.xml"; then
+                info "Successfully signed repomd.xml"
+            else
+                die "Failed to sign repomd.xml"
+            fi
         fi
     done
 done
 
-# Export GPG public key
+# Export GPG public key (doesn't require passphrase)
 if [ -n "$GPG_KEY" ] && command_exists gpg; then
     info "Exporting GPG public key..."
-    gpg --batch --pinentry-mode loopback --export --armor "$GPG_KEY" > "${REPO_DIR}/RPM-GPG-KEY-pythonscad"
+    gpg --batch --export --armor "$GPG_KEY" > "${REPO_DIR}/RPM-GPG-KEY-pythonscad"
+    if [ -f "${REPO_DIR}/RPM-GPG-KEY-pythonscad" ]; then
+        info "Public key exported to RPM-GPG-KEY-pythonscad"
+    fi
 fi
 
 # Create .repo file for users

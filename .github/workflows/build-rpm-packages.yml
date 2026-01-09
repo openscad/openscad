@@ -228,6 +228,7 @@ jobs:
         env:
           REPO_DIR: /tmp/yum-repo
           GPG_KEY: ${{ secrets.GPG_KEY_ID }}
+          GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
           KEEP_VERSIONS: ${{ vars.REPO_KEEP_VERSIONS || '3' }}
           REPO_BASE_URL: ${{ secrets.REPO_BASE_URL }}
         run: |
