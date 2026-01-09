@@ -68,7 +68,7 @@ do_coverage() {
 	(
 		cd "$BUILDDIR"
 		echo "Generating code coverage report..."
-		gcovr -r ../src CMakeFiles/OpenSCADLibInternal.dir $PARALLEL_GCOVR --html --html-details --sort uncovered-percent -o coverage.html
+		gcovr -r ../src CMakeFiles/OpenSCADLibInternal.dir $PARALLEL_GCOVR --merge-mode-functions=merge-use-line-0 --html --html-details --sort uncovered-percent -o coverage.html
 		if [[ $? != 0 ]]; then
 			exit 1
 		fi

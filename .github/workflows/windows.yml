@@ -16,6 +16,7 @@ on:
 jobs:
   build:
     strategy:
+      fail-fast: false
       matrix:
         qt: [ qt6 ]
     runs-on: windows-latest
@@ -39,16 +40,19 @@ jobs:
         timeout-minutes: 5
         with:
           detached: true
-          limit-access-to-actor: true
-      - name: Setup MSYS2 Environment
-        uses: msys2/setup-msys2@v2
-        with:
-          msystem: UCRT64
-          update: true
-      - name: Install MSYS2 Dependencies
+      - name: Calculate PACBOY_PACKAGES
+        shell: bash
         run: |
           pwd
           ./scripts/msys2-install-dependencies.sh ${{ matrix.qt }}
+      - name: Setup MSYS2 Environment
+        uses: msys2/setup-msys2@v2
+        id: msys2
+        with:
+          msystem: UCRT64
+          update: true
+          install: libxml2
+          pacboy: ${{ env.PACBOY_PACKAGES }}
       - name: Install Mesa
         uses: ssciwr/setup-mesa-dist-win@v2
         with:
@@ -66,7 +70,7 @@ jobs:
           ctest -j4
 
       - name: Upload Test Result Report
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         if: ${{ always() }}
         with:
           name: Test Result Report (Windows ${{ matrix.qt }})

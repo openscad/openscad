@@ -104,8 +104,6 @@ void Builtins::initialize()
   register_builtin_roof();
 #endif
   register_builtin_text();
-
-  this->deprecations.emplace("assign", "a regular assignment");
 }
 
 std::string Builtins::isDeprecated(const std::string& name) const

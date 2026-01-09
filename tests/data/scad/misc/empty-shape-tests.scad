@@ -22,7 +22,6 @@ difference();
 intersection();
 render();
 projection();
-assign();
 if(1) { }
 intersection_for();
 for();

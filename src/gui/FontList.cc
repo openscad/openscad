@@ -81,8 +81,10 @@ void FontItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem& opti
   const auto fontName = FontList::colStr(idx, FontList::COL_FONT_NAME);
   const auto fontStyle = FontList::colStr(idx, FontList::COL_FONT_STYLE);
 
-  opt.font.setFamily(fontName);
-  opt.font.setStyleName(fontStyle);
+  auto font = QFont(fontName);
+  font.setStyleName(fontStyle);
+
+  opt.font = font;
   opt.text = text();  // only used if idx points to empty string
 
   QStyledItemDelegate::paint(painter, opt, idx);

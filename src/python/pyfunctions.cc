@@ -225,7 +225,7 @@ int sphereCalcIndInt(PyObject *func, Vector3d& dir)
     LOG(message_group::Error, errorstr.c_str());
     return 1;
   }
-  python_numberval(len_p, &len);
+  python_numberval(len_p, &len, nullptr, 0);
   dir *= len;
   return 0;
 }
@@ -577,7 +577,7 @@ PyObject *python_cylinder(PyObject *self, PyObject *args, PyObject *kwargs)
 {
   DECLARE_INSTANCE();
 
-  char *kwlist[] = {"h", "r1", "r2", "center", "r", "d", "d1", "d2", "angle", "fn", "fa", "fs", NULL};
+  char *kwlist[] = {"h", "r1", "r2", "center", "r", "d", "d1", "d2", "angle", NULL};
   PyObject *h_ = nullptr;
   PyObject *r_ = nullptr;
   double r1 = NAN;
@@ -587,20 +587,19 @@ PyObject *python_cylinder(PyObject *self, PyObject *args, PyObject *kwargs)
   double d2 = NAN;
   double angle = NAN;
 
-  double fn = NAN, fa = NAN, fs = NAN;
-
   PyObject *center = NULL;
   double vr1 = 1, vr2 = 1, vh = 1;
 
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|OddOOddddddd", kwlist, &h_, &r1, &r2, &center, &r_,
-                                   &d, &d1, &d2, &angle, &fn, &fa, &fs)) {
+  auto discretizer = CreateCurveDiscretizer(kwargs);
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|OddOOdddd", kwlist, &h_, &r1, &r2, &center, &r_, &d,
+                                   &d1, &d2, &angle)) {
     PyErr_SetString(PyExc_TypeError, "Error during parsing cylinder(h,r|r1+r2|d1+d2)");
     return NULL;
   }
   double r = NAN;
   double h = NAN;
 
-  auto node = std::make_shared<CylinderNode>(instance, CreateCurveDiscretizer(kwargs));
+  auto node = std::make_shared<CylinderNode>(instance, discretizer);
   python_numberval(r_, &r, &(node->dragflags), 1);
   python_numberval(h_, &h, &(node->dragflags), 2);
 
@@ -1052,7 +1051,7 @@ int python_tomatrix(PyObject *pyt, Matrix4d& mat)
     if (!PyList_Check(row)) return 1;
     for (int j = 0; j < std::min(4, (int)PyList_Size(row)); j++) {
       cell = PyList_GetItem(row, j);
-      if (python_numberval(cell, &val)) return 1;
+      if (python_numberval(cell, &val, nullptr, 0)) return 1;
       mat(i, j) = val;
     }
   }
@@ -1068,7 +1067,7 @@ int python_tovector(PyObject *pyt, Vector3d& vec)
   if (PyList_Size(pyt) != 3) return 1;
   for (int i = 0; i < 3; i++) {
     cell = PyList_GetItem(pyt, i);
-    if (python_numberval(cell, &val)) return 1;
+    if (python_numberval(cell, &val, nullptr, 0)) return 1;
     vec[i] = val;
   }
   return 0;
@@ -1317,7 +1316,7 @@ PyObject *python_rotate_core(PyObject *obj, PyObject *val_a, PyObject *val_v, Py
   if (val_a != nullptr && PyList_Check(val_a) && val_v == nullptr) {
     python_vectorval(val_a, 1, 3, &(vec3[0]), &(vec3[1]), &(vec3[2]), nullptr, &dragflags);
     return python_rotate_sub(obj, vec3, NAN, ref, dragflags);
-  } else if (val_a != nullptr && val_v != nullptr && !python_numberval(val_a, &angle) &&
+  } else if (val_a != nullptr && val_v != nullptr && !python_numberval(val_a, &angle, nullptr, 0) &&
              PyList_Check(val_v) && PyList_Size(val_v) == 3) {
     vec3[0] = PyFloat_AsDouble(PyList_GetItem(val_v, 0));
     vec3[1] = PyFloat_AsDouble(PyList_GetItem(val_v, 1));
@@ -1921,7 +1920,7 @@ PyObject *python_wrap_core(PyObject *obj, PyObject *target, double r, double d, 
     return NULL;
   }
 
-  if (!python_numberval(target, &node->r)) {
+  if (!python_numberval(target, &node->r, nullptr, 0)) {
     node->shape = nullptr;
   } else if (target != nullptr &&
              PyObject_IsInstance(target, reinterpret_cast<PyObject *>(&PyOpenSCADType))) {
@@ -3323,8 +3322,7 @@ PyObject *python_oo_rotate_extrude(PyObject *obj, PyObject *args, PyObject *kwar
   double fn = NAN, fa = NAN, fs = NAN;
   PyObject *v = NULL;
   char *method = NULL;
-  char *kwlist[] = {"convexity", "scale",  "angle", "twist", "origin", "offset",
-                    "v",         "method", "fn",    "fa",    "fs",     NULL};
+  char *kwlist[] = {"convexity", "scale", "angle", "twist", "origin", "offset", "v", "method", NULL};
   auto discretizer = CreateCurveDiscretizer(kwargs);
   if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|iddOOOOs", kwlist, &convexity, &scale, &angle, &twist,
                                    &origin, &offset, &v, &method)) {
@@ -3363,7 +3361,7 @@ PyObject *linear_extrude_core(PyObject *obj, PyObject *height, int convexity, Py
 
   Vector3d height_vec(0, 0, 0);
   double dummy;
-  if (!python_numberval(height, &height_vec[2])) {
+  if (!python_numberval(height, &height_vec[2], nullptr, 0)) {
     node->height = height_vec;
   } else if (!python_vectorval(height, 3, 3, &height_vec[0], &height_vec[1], &height_vec[2], &dummy)) {
     node->height = height_vec;
@@ -3647,18 +3645,18 @@ PyObject *python_skin(PyObject *self, PyObject *args, PyObject *kwargs)
         PyErr_SetString(PyExc_TypeError, "Unkown parameter name in CSG.");
         return nullptr;
       } else if (strcmp(value_str, "convexity") == 0) {
-        python_numberval(value, &tmp);
+        python_numberval(value, &tmp, nullptr, 0);
         node->convexity = (int)tmp;
       } else if (strcmp(value_str, "align_angle") == 0) {
-        python_numberval(value, &tmp);
+        python_numberval(value, &tmp, nullptr, 0);
         node->align_angle = tmp;
         node->has_align_angle = true;
       } else if (strcmp(value_str, "segments") == 0) {
-        python_numberval(value, &tmp);
+        python_numberval(value, &tmp, nullptr, 0);
         node->has_segments = true;
         node->segments = (int)tmp;
       } else if (strcmp(value_str, "interpolate") == 0) {
-        python_numberval(value, &tmp);
+        python_numberval(value, &tmp, nullptr, 0);
         node->has_interpolate = true;
         node->interpolate = tmp;
       } else {
@@ -3758,10 +3756,10 @@ PyObject *python_csg_sub(PyObject *self, PyObject *args, PyObject *kwargs, OpenS
         PyErr_SetString(PyExc_TypeError, "Unkown parameter name in CSG.");
         return nullptr;
       } else if (strcmp(value_str, "r") == 0) {
-        python_numberval(value, &(node->r));
+        python_numberval(value, &(node->r), nullptr, 0);
       } else if (strcmp(value_str, "fn") == 0) {
         double fn;
-        python_numberval(value, &fn);
+        python_numberval(value, &fn, nullptr);
         node->fn = (int)fn;
       } else {
         PyErr_SetString(PyExc_TypeError, "Unkown parameter name in CSG.");
@@ -3866,10 +3864,10 @@ PyObject *python_oo_csg_sub(PyObject *self, PyObject *args, PyObject *kwargs, Op
         PyErr_SetString(PyExc_TypeError, "Unkown parameter name in CSG.");
         return nullptr;
       } else if (strcmp(value_str, "r") == 0) {
-        python_numberval(value, &(node->r));
+        python_numberval(value, &(node->r), nullptr, 0);
       } else if (strcmp(value_str, "fn") == 0) {
         double fn;
-        python_numberval(value, &fn);
+        python_numberval(value, &fn, nullptr, 0);
         node->fn = (int)fn;
       } else {
         PyErr_SetString(PyExc_TypeError, "Unkown parameter name in CSG.");
@@ -4015,7 +4013,7 @@ PyObject *python_nb_sub_vec3(PyObject *arg1, PyObject *arg2,
         int m = PyList_Size(item);
         for (int j = 0; j < m; j++) {
           auto *item1 = PyList_GetItem(item, j);
-          if (!python_numberval(item1, &dmy)) vals[i].push_back(dmy);
+          if (!python_numberval(item1, &dmy, nullptr, 0)) vals[i].push_back(dmy);
         }
       } else {
         PyErr_SetString(PyExc_TypeError, "Unknown explode spec");
@@ -4148,7 +4146,7 @@ PyObject *python_nb_subtract(PyObject *arg1, PyObject *arg2)
   double dmy;
   if (PyList_Check(arg2) && PyList_Size(arg2) > 0) {
     PyObject *sub = PyList_GetItem(arg2, 0);
-    if (!python_numberval(sub, &dmy) || PyList_Check(sub)) {
+    if (!python_numberval(sub, &dmy, nullptr, 0) || PyList_Check(sub)) {
       return python_nb_sub_vec3(arg1, arg2, 2);
     }
   }

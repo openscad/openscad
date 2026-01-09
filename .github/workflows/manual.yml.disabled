@@ -145,7 +145,7 @@ jobs:
       run: ./scripts/github-ci.sh test
       if: ${{ ! inputs.enable_wasm }}
     - name: Upload Test Result Report
-      uses: actions/upload-artifact@v5
+      uses: actions/upload-artifact@v6
       if: ${{ always() }}
       with:
         name: Test Result Report (${{ matrix.os }})
