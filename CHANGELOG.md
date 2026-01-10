@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.8.12](https://github.com/pythonscad/pythonscad/compare/v0.8.11...v0.8.12) (2026-01-10)
+
+
+### Bug Fixes
+
+* **ci:** write matrix output to GITHUB_OUTPUT file ([#299](https://github.com/pythonscad/pythonscad/issues/299)) ([b4be64f](https://github.com/pythonscad/pythonscad/commit/b4be64fa8e8ddc3876219eac3550a23608a41b7e))
+
 ## [0.8.11](https://github.com/pythonscad/pythonscad/compare/v0.8.10...v0.8.11) (2026-01-10)
 
 
