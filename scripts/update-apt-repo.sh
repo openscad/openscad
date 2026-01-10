@@ -72,7 +72,7 @@ info "Repository directory: $(pwd)"
 info "Packages directory: $PACKAGES_DIR"
 
 # Extract distribution codenames from supported-distributions.json
-CODENAMES=$(python3 << 'PYSCRIPT'
+CODENAMES=$(python3 << PYSCRIPT
 import json
 with open("$SCRIPT_DIR/supported-distributions.json") as f:
     config = json.load(f)
