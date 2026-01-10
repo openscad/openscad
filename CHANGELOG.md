@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.8.11](https://github.com/pythonscad/pythonscad/compare/v0.8.10...v0.8.11) (2026-01-10)
+
+
+### Features
+
+* **ci:** support multiple Debian/Ubuntu distributions in APT repository ([#297](https://github.com/pythonscad/pythonscad/issues/297)) ([9bb88fc](https://github.com/pythonscad/pythonscad/commit/9bb88fc146ffc26542ad1ae5b41553a4b59e2ed3))
+
 ## [0.8.10](https://github.com/pythonscad/pythonscad/compare/v0.8.9...v0.8.10) (2026-01-09)
 
 
