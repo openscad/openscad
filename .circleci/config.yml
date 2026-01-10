@@ -492,16 +492,32 @@ jobs:
           path: /tmp/workspace
           destination: source-tarball
 
+filters: &release-filters
+  tags:
+    only: /^openscad-.*$/
+  branches:
+    ignore: /.*/
+
 workflows:
   version: 2
   "CircleCI snapshot build (master)":
-    when:
-      equal: [ master, << pipeline.git.branch >> ]
     jobs:
       - openscad-mxe:
           # Legacy name, for openscad-ansible/.../circleci-download-artifacts.py
           name: openscad-mxe-64bit
           context: secret-context
+          filters:
+              branches:
+                  only:
+                      - master
+      - openscad-appimage:
+          # Legacy name, for openscad-ansible/.../circleci-download-artifacts.py
+          name: openscad-appimage-64bit
+          context: secret-context
+          filters:
+              branches:
+                  only:
+                      - master
       - openscad-wasm:
           # Legacy name, for openscad-ansible/.../circleci-download-artifacts.py
           name: openscad-<< matrix.openscad_platform >>
@@ -509,14 +525,18 @@ workflows:
             parameters:
               openscad_platform: [wasm-web, wasm-node]
           context: secret-context
+          filters:
+              branches:
+                  only:
+                      - master
       - openscad-macos:
           # Legacy name, for openscad-ansible/.../circleci-download-artifacts.py
           name: openscad-macos
           context: secret-context
-      - openscad-appimage:
-          # Legacy name, for openscad-ansible/.../circleci-download-artifacts.py
-          name: openscad-appimage-64bit
-          context: secret-context
+          filters:
+              branches:
+                  only:
+                      - master
   "CircleCI branch build (PR)":
     jobs:
       - openscad-mxe:
@@ -553,15 +573,13 @@ workflows:
                   only:
                       - /.*-macos/
   "CircleCI release build (tag)":
-    when:
-      matches:
-        pattern: "^openscad-.*$"
-        value: << pipeline.git.tag >>
     jobs:
       - openscad-tarball:
           name: openscad-tarball-release
+          filters: *release-filters
       - openscad-mxe:
           name: openscad-mxe-release
+          filters: *release-filters
           openscad_build_type: release
           source_method: tarball
           context: secret-context
@@ -570,6 +588,7 @@ workflows:
       - openscad-appimage:
           # Legacy name, for openscad-ansible/.../circleci-download-artifacts.py
           name: openscad-appimage-64bit
+          filters: *release-filters
           openscad_build_type: release
           source_method: tarball
           context: secret-context
@@ -577,6 +596,7 @@ workflows:
             - openscad-tarball-release
       - openscad-wasm:
           name: openscad-<< matrix.openscad_platform >>-release
+          filters: *release-filters
           matrix:
             parameters:
               openscad_platform: [wasm-web, wasm-node]
@@ -587,6 +607,7 @@ workflows:
             - openscad-tarball-release
       - openscad-macos:
           name: openscad-macos-release
+          filters: *release-filters
           openscad_build_type: release
           source_method: tarball
           context: secret-context
