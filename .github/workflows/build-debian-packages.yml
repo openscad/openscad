@@ -38,7 +38,7 @@ jobs:
           # Extract matrix for Debian/Ubuntu only, expand to distro x arch combinations
           python3 << 'EOF'
           import json
-          import sys
+          import os
 
           with open('supported-distributions.json') as f:
               config = json.load(f)
@@ -66,9 +66,9 @@ jobs:
               'include': matrix_include
           }
 
-          # Output as JSON for GitHub Actions
-          import sys
-          print(f"matrix={json.dumps(matrix)}", file=sys.stdout)
+          # Output as JSON for GitHub Actions by writing to $GITHUB_OUTPUT
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as output_file:
+              output_file.write(f"matrix={json.dumps(matrix)}\n")
           EOF
 
   build-debian:
