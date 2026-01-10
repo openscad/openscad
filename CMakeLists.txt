@@ -666,31 +666,69 @@ if(ENABLE_PYTHON)
   if(WIN32)
     #MINGW environment
     SET(CALLSTACK "ucrt")
-    SET(PYTHON_MINGW_VERSION "3.12") # define python version here
     #	SET(CALLSTACK "mingw")
     #	SET(CALLSTACK "clang")
 
-    # Caller side
+    # Auto-detect Python version from MSYS2 environment
+    # First check if PYTHON_VERSION env var is set (from CI), otherwise detect
+    if(DEFINED ENV{PYTHON_VERSION})
+      SET(PYTHON_MINGW_VERSION "$ENV{PYTHON_VERSION}")
+      message(STATUS "Using Python version from environment: ${PYTHON_MINGW_VERSION}")
+    else()
+      # Detect Python version by checking installed libraries
+      file(GLOB PYTHON_LIBS "/${CALLSTACK}64/lib/libpython3.*.dll.a")
+      if(PYTHON_LIBS)
+        list(GET PYTHON_LIBS 0 FIRST_LIB)
+        string(REGEX MATCH "libpython([0-9]+\\.[0-9]+)\\.dll\\.a" _ ${FIRST_LIB})
+        SET(PYTHON_MINGW_VERSION ${CMAKE_MATCH_1})
+        message(STATUS "Auto-detected Python version: ${PYTHON_MINGW_VERSION}")
+      else()
+        message(FATAL_ERROR "Could not detect Python version. Ensure Python is installed via MSYS2.")
+      endif()
+    endif()
+
+    # Use MSYS2-installed Python instead of downloading it separately
     SET(PYTHON_MINGW_DEVPATH "${CMAKE_CURRENT_SOURCE_DIR}/python_mingw")
-    SET(PYTHON_MINGW_PACKAGEFOLDER "https://mirror.msys2.org/mingw/${CALLSTACK}64")
-    SET(PYTHON_MINGW_PACKAGETAR "mingw-w64-${CALLSTACK}-x86_64-python-${PYTHON_MINGW_VERSION}.9-5-any.pkg.tar")   # adapt here
-    SET(PYTHON_MINGW_PACKAGEZST "${PYTHON_MINGW_PACKAGETAR}.zst")
+    SET(PYTHON_MINGW_SYSTEM_LIB "/${CALLSTACK}64/lib/libpython${PYTHON_MINGW_VERSION}.dll.a")
     SET(PYTHON_MINGW_ARCHIVE "${PYTHON_MINGW_DEVPATH}/${CALLSTACK}64/lib/libpython${PYTHON_MINGW_VERSION}.dll.a")
+    SET(PYTHON_MINGW_INCLUDE "/${CALLSTACK}64/include/python${PYTHON_MINGW_VERSION}")
 
-    # these dll are actually used
-    SET(PYTHON_EMBED_DEVPATH "${CMAKE_CURRENT_SOURCE_DIR}/python_embed")
-    SET(PYTHON_EMBED_FILENAME "python-${PYTHON_MINGW_VERSION}.2-embed-amd64.zip") #adapt here
-    SET(PYTHON_EMBED_ARCHIVE "${PYTHON_EMBED_DEVPATH}/${PYTHON_EMBED_FILENAME}")
-    SET(PYTHON_EMBED_SHLIB "${PYTHON_EMBED_DEVPATH}/python312.dll")
-    SET(PYTHON_EMBED_URL "https://www.python.org/ftp/python/${PYTHON_MINGW_VERSION}.2/${PYTHON_EMBED_FILENAME}")
-
+    # Copy MSYS2 Python to local directory for patching
+    # Use bash to ensure Unix commands work in MSYS2 environment
     add_custom_command(
       WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-      COMMAND rm -rf python_mingw && mkdir python_mingw && cd python_mingw && wget ${PYTHON_MINGW_PACKAGEFOLDER}/${PYTHON_MINGW_PACKAGEZST} && bsdtar -xf ${PYTHON_MINGW_PACKAGEZST} && ${CMAKE_CURRENT_SOURCE_DIR}/scripts/libpython_patch.sh
+      COMMAND bash -c "rm -rf python_mingw && mkdir -p python_mingw/${CALLSTACK}64/lib && mkdir -p python_mingw/${CALLSTACK}64/include && cp -r ${PYTHON_MINGW_SYSTEM_LIB} python_mingw/${CALLSTACK}64/lib/ && cp -r ${PYTHON_MINGW_INCLUDE} python_mingw/${CALLSTACK}64/include/ && cd python_mingw && ${CMAKE_CURRENT_SOURCE_DIR}/scripts/libpython_patch.sh"
       OUTPUT ${PYTHON_MINGW_ARCHIVE}
     )
     add_custom_target(tgt_python_mingw DEPENDS ${PYTHON_MINGW_ARCHIVE})
     add_dependencies(OpenSCADPy tgt_python_mingw)
+
+    # Get the full Python version for embed downloads (e.g., 3.13.2)
+    # Check if PYTHON_FULL_VERSION env var is set (from CI), otherwise try to detect
+    if(DEFINED ENV{PYTHON_FULL_VERSION})
+      SET(PYTHON_FULL_VERSION "$ENV{PYTHON_FULL_VERSION}")
+      message(STATUS "Using full Python version from environment: ${PYTHON_FULL_VERSION}")
+    else()
+      # Try to detect full version by running python
+      execute_process(
+        COMMAND python --version
+        OUTPUT_VARIABLE PYTHON_VERSION_OUTPUT
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+      )
+      string(REGEX MATCH "Python ([0-9]+\\.[0-9]+\\.[0-9]+)" _ ${PYTHON_VERSION_OUTPUT})
+      SET(PYTHON_FULL_VERSION ${CMAKE_MATCH_1})
+      message(STATUS "Auto-detected full Python version: ${PYTHON_FULL_VERSION}")
+    endif()
+
+    # Calculate the DLL name based on version (e.g., python313.dll for 3.13)
+    string(REPLACE "." "" PYTHON_DLL_VER ${PYTHON_MINGW_VERSION})
+
+    # These dll are actually used
+    SET(PYTHON_EMBED_DEVPATH "${CMAKE_CURRENT_SOURCE_DIR}/python_embed")
+    SET(PYTHON_EMBED_FILENAME "python-${PYTHON_FULL_VERSION}-embed-amd64.zip")
+    SET(PYTHON_EMBED_ARCHIVE "${PYTHON_EMBED_DEVPATH}/${PYTHON_EMBED_FILENAME}")
+    SET(PYTHON_EMBED_SHLIB "${PYTHON_EMBED_DEVPATH}/python${PYTHON_DLL_VER}.dll")
+    SET(PYTHON_EMBED_URL "https://www.python.org/ftp/python/${PYTHON_FULL_VERSION}/${PYTHON_EMBED_FILENAME}")
 
     add_custom_command(
       WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}

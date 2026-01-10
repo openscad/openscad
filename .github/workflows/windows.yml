@@ -53,6 +53,18 @@ jobs:
           update: true
           install: libxml2
           pacboy: ${{ env.PACBOY_PACKAGES }}
+      - name: Detect Python version
+        id: detect-python
+        run: |
+          # Get the Python version installed by MSYS2
+          PYTHON_VERSION=$(python --version | cut -d' ' -f2 | cut -d'.' -f1,2)
+          echo "Python version detected: $PYTHON_VERSION"
+          echo "PYTHON_VERSION=$PYTHON_VERSION" >> $GITHUB_ENV
+
+          # Get the full Python version for embed downloads
+          PYTHON_FULL_VERSION=$(python --version | cut -d' ' -f2)
+          echo "Full Python version: $PYTHON_FULL_VERSION"
+          echo "PYTHON_FULL_VERSION=$PYTHON_FULL_VERSION" >> $GITHUB_ENV
       - name: Install Mesa
         uses: ssciwr/setup-mesa-dist-win@v2
         with:
