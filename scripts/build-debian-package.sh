@@ -61,6 +61,13 @@ RUN_LINTIAN="${RUN_LINTIAN:-yes}"
 OUTPUT_DIR="${OUTPUT_DIR:-${PROJECT_ROOT}/dist/debian}"
 DEBIAN_DISTRO="${DEBIAN_DISTRO:-unstable}"
 
+# Detect if running in Docker container
+if [ -f /.dockerenv ]; then
+    IN_DOCKER=true
+else
+    IN_DOCKER=false
+fi
+
 info "PythonSCAD Debian Package Builder"
 info "=================================="
 
@@ -105,6 +112,10 @@ if [ -z "$VERSION" ]; then
 fi
 
 info "Building version: ${VERSION}"
+info "Target distribution: ${DEBIAN_DISTRO}"
+if [ "$IN_DOCKER" = true ]; then
+    info "Running in Docker container"
+fi
 
 # Generate debian/changelog
 info "Generating debian/changelog..."
@@ -144,10 +155,19 @@ if command_exists nproc; then
 fi
 
 # Run dpkg-buildpackage
-if dpkg-buildpackage ${BUILD_OPTS}; then
-    info "Package built successfully"
+# In Docker, use fakeroot to avoid permission issues
+if [ "$IN_DOCKER" = true ]; then
+    if fakeroot dpkg-buildpackage ${BUILD_OPTS}; then
+        info "Package built successfully (in Docker)"
+    else
+        die "Package build failed"
+    fi
 else
-    die "Package build failed"
+    if dpkg-buildpackage ${BUILD_OPTS}; then
+        info "Package built successfully"
+    else
+        die "Package build failed"
+    fi
 fi
 
 # The .deb file is created in the parent directory

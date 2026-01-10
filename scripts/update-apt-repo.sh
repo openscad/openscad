@@ -3,7 +3,8 @@
 # Update APT repository with new packages
 #
 # This script updates the APT repository structure with new .deb packages.
-# It generates the Packages indices and signs the Release file with GPG.
+# It organizes packages by distribution codename and generates Packages indices
+# for each distribution, then signs the Release files with GPG.
 #
 # Usage:
 #   update-apt-repo.sh <packages_dir>
@@ -12,8 +13,8 @@
 #   REPO_DIR         - Repository root directory (default: current directory)
 #   GPG_KEY          - GPG key ID for signing (uses default key if not set)
 #   GPG_PASSPHRASE   - GPG key passphrase (optional, for password-protected keys)
-#   KEEP_VERSIONS    - Number of old versions to keep per architecture (default: 3)
-#
+#   KEEP_VERSIONS    - Number of old versions to keep per architecture per distro (default: 3)
+#   REPO_BASE_URL    - Base URL for the repository (used in HTML index)
 
 set -euo pipefail
 
@@ -36,7 +37,8 @@ REPO_DIR="${REPO_DIR:-.}"
 GPG_KEY="${GPG_KEY:-}"
 GPG_PASSPHRASE="${GPG_PASSPHRASE:-}"
 KEEP_VERSIONS="${KEEP_VERSIONS:-3}"
-REPO_BASE_URL="${REPO_BASE_URL:-https://pythonscad-repos.nomike.org}"
+REPO_BASE_URL="${REPO_BASE_URL:-https://repo.pythonscad.org}"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
 info "APT Repository Updater"
 info "======================"
@@ -44,6 +46,11 @@ info "======================"
 # Validate packages directory
 if [ ! -d "$PACKAGES_DIR" ]; then
     die "Packages directory not found: $PACKAGES_DIR"
+fi
+
+# Check for supported-distributions.json
+if [ ! -f "$SCRIPT_DIR/supported-distributions.json" ]; then
+    die "supported-distributions.json not found in $SCRIPT_DIR"
 fi
 
 # Check for required tools
@@ -64,131 +71,185 @@ cd "$REPO_DIR"
 info "Repository directory: $(pwd)"
 info "Packages directory: $PACKAGES_DIR"
 
+# Extract distribution codenames from supported-distributions.json
+CODENAMES=$(python3 << 'PYSCRIPT'
+import json
+with open("$SCRIPT_DIR/supported-distributions.json") as f:
+    config = json.load(f)
+codenames = set()
+for dist in config["distributions"]:
+    if dist["family"] in ["debian", "ubuntu"]:
+        codenames.add(dist["codename"])
+for codename in sorted(codenames):
+    print(codename)
+PYSCRIPT
+)
+
 # Create repository structure
 info "Creating repository structure..."
+
+# Create pool directory
 mkdir -p pool/main/p/pythonscad
-mkdir -p dists/stable/main/binary-amd64
-mkdir -p dists/stable/main/binary-arm64
 
-# Copy new packages to pool
-info "Copying packages to pool..."
-find "$PACKAGES_DIR" -name "*.deb" -exec cp -v {} pool/main/p/pythonscad/ \;
+# Copy new packages to pool (they have distro in the filename)
+info "Organizing packages into repository..."
+PACKAGE_COUNT=0
 
-# Count packages
-PACKAGE_COUNT=$(find pool/main/p/pythonscad -name "*.deb" | wc -l)
-info "Total packages in pool: $PACKAGE_COUNT"
+for deb in "$PACKAGES_DIR"/*.deb; do
+    if [ ! -f "$deb" ]; then
+        continue
+    fi
 
-# Clean up old versions (keep last N versions per architecture)
-if [ "$KEEP_VERSIONS" -gt 0 ]; then
-    info "Cleaning up old versions (keeping last ${KEEP_VERSIONS} per architecture)..."
+    BASENAME=$(basename "$deb")
 
-    for arch in amd64 arm64; do
-        OLD_PACKAGES=$(ls -t pool/main/p/pythonscad/pythonscad_*_${arch}.deb 2>/dev/null | tail -n +$((KEEP_VERSIONS + 1)) || true)
-        if [ -n "$OLD_PACKAGES" ]; then
-            echo "$OLD_PACKAGES" | while read -r pkg; do
-                info "  Removing old package: $(basename "$pkg")"
-                rm -f "$pkg"
-            done
-        fi
-    done
-fi
-
-# Generate Packages files for each architecture
-info "Generating Packages indices..."
-
-for arch in amd64 arm64; do
-    BINARY_DIR="dists/stable/main/binary-${arch}"
-
-    if find pool/main/p/pythonscad -name "*_${arch}.deb" | grep -q .; then
-        info "  Generating Packages file for ${arch}..."
-        cd "$BINARY_DIR"
-        dpkg-scanpackages --arch "$arch" ../../../../pool/main/p/pythonscad /dev/null > Packages
-        gzip -k -f Packages
-        info "    $(wc -l < Packages) package entries for ${arch}"
-        cd - > /dev/null
+    # Extract distro from filename: pythonscad_VERSION-1_DISTRO_ARCH.deb
+    # Using sed to extract DISTRO from the filename
+    if [[ $BASENAME =~ pythonscad_[^_]+_([^_]+)_[^_]+\.deb ]]; then
+        DISTRO="${BASH_REMATCH[1]}"
     else
-        warn "  No packages found for ${arch}, skipping"
+        warn "Could not parse distro from filename: $BASENAME (skipping)"
+        continue
+    fi
+
+    # Verify distro is in our supported list
+    if ! echo "$CODENAMES" | grep -q "^${DISTRO}$"; then
+        warn "Distribution '$DISTRO' not in supported-distributions.json (skipping: $BASENAME)"
+        continue
+    fi
+
+    cp "$deb" "pool/main/p/pythonscad/$BASENAME"
+    ((PACKAGE_COUNT++))
+done
+
+info "Total packages copied: $PACKAGE_COUNT"
+
+# Create distribution directories and clean up old versions
+info "Setting up distribution-specific directories..."
+
+for DISTRO in $CODENAMES; do
+    info "  Processing distribution: $DISTRO"
+
+    mkdir -p "dists/$DISTRO/main/binary-amd64"
+    mkdir -p "dists/$DISTRO/main/binary-arm64"
+
+    # Clean up old versions (keep last N versions per architecture)
+    if [ "$KEEP_VERSIONS" -gt 0 ]; then
+        for arch in amd64 arm64; do
+            # Find all packages for this distro and arch, sort by name, keep newest
+            OLD_PACKAGES=$(ls -t pool/main/p/pythonscad/*_${DISTRO}_${arch}.deb 2>/dev/null | tail -n +$((KEEP_VERSIONS + 1)) || true)
+            if [ -n "$OLD_PACKAGES" ]; then
+                while IFS= read -r pkg; do
+                    info "    Removing old: $(basename "$pkg")"
+                    rm -f "$pkg"
+                done <<< "$OLD_PACKAGES"
+            fi
+        done
     fi
 done
 
-# Generate Release file
-info "Generating Release file..."
+# Generate Packages files for each distribution and architecture
+info "Generating Packages indices..."
 
-cd dists/stable
+for DISTRO in $CODENAMES; do
+    for arch in amd64 arm64; do
+        BINARY_DIR="dists/$DISTRO/main/binary-${arch}"
 
-cat > Release <<EOF
+        # Check if there are packages for this distro/arch combination
+        if ls pool/main/p/pythonscad/*_${DISTRO}_${arch}.deb >/dev/null 2>&1; then
+            info "  Generating Packages file for ${DISTRO}/${arch}..."
+
+            cd "$BINARY_DIR"
+            dpkg-scanpackages --arch "$arch" ../../../../pool/main/p/pythonscad /dev/null > Packages
+            gzip -k -f Packages
+
+            # Calculate checksums for Release file
+            md5sum Packages >> ../../../../.checksums_temp || true
+            sha256sum Packages >> ../../../../.checksums_temp || true
+
+            info "    $(wc -l < Packages) package entries for ${DISTRO}/${arch}"
+            cd - > /dev/null
+        else
+            info "  No packages found for ${DISTRO}/${arch}"
+        fi
+    done
+
+    # Generate Release file for this distribution
+    info "  Generating Release file for ${DISTRO}..."
+
+    cd "dists/$DISTRO"
+
+    cat > Release <<EOF
 Origin: PythonSCAD
 Label: PythonSCAD
-Suite: stable
-Codename: stable
+Suite: $DISTRO
+Codename: $DISTRO
 Architectures: amd64 arm64
 Components: main
-Description: PythonSCAD Official Repository
+Description: PythonSCAD Official Repository - $DISTRO
 Date: $(date -Ru)
 EOF
 
-# Add file checksums to Release
-apt-ftparchive release . >> Release
+    # Add file checksums to Release
+    apt-ftparchive release . >> Release
 
-info "Release file generated"
+    info "  Release file generated for $DISTRO"
 
-# Sign Release file with GPG
-info "Signing Release file..."
+    # Sign Release file with GPG
+    info "  Signing Release file for ${DISTRO}..."
 
-GPG_OPTS="--batch --yes --pinentry-mode loopback"
+    GPG_OPTS="--batch --yes --pinentry-mode loopback"
+    GPG_OPTS="$GPG_OPTS --passphrase-fd 0"
 
-# Add passphrase option - always use passphrase-fd for consistency
-# If GPG_PASSPHRASE is not set, we'll use an empty string which works for keys without passphrase
-GPG_OPTS="$GPG_OPTS --passphrase-fd 0"
-
-if [ -n "$GPG_KEY" ]; then
-    GPG_OPTS="$GPG_OPTS --local-user $GPG_KEY"
-    info "Using GPG key: $GPG_KEY"
-else
-    info "Using default GPG key"
-fi
-
-# Use passphrase from environment or empty string
-PASSPHRASE="${GPG_PASSPHRASE:-}"
-
-# Create detached signature
-if echo "$PASSPHRASE" | gpg $GPG_OPTS -abs -o Release.gpg Release; then
-    info "Created Release.gpg (detached signature)"
-else
-    die "Failed to create detached signature"
-fi
-
-# Create clearsigned file
-if echo "$PASSPHRASE" | gpg $GPG_OPTS --clearsign -o InRelease Release; then
-    info "Created InRelease (clearsigned)"
-else
-    die "Failed to create clearsigned InRelease"
-fi
-
-cd - > /dev/null
-
-# Export public GPG key for users
-info "Exporting public GPG key..."
-if [ -n "$GPG_KEY" ]; then
-    gpg --batch --pinentry-mode loopback --armor --export "$GPG_KEY" > pythonscad-archive-keyring.gpg
-else
-    # Export default key
-    DEFAULT_KEY=$(gpg --batch --list-secret-keys --keyid-format LONG | grep sec | head -n1 | awk '{print $2}' | cut -d'/' -f2)
-    if [ -n "$DEFAULT_KEY" ]; then
-        gpg --batch --pinentry-mode loopback --armor --export "$DEFAULT_KEY" > pythonscad-archive-keyring.gpg
+    if [ -n "$GPG_KEY" ]; then
+        GPG_OPTS="$GPG_OPTS --local-user $GPG_KEY"
+        info "    Using GPG key: $GPG_KEY"
     else
-        warn "No GPG key found, skipping keyring export"
+        info "    Using default GPG key"
+    fi
+
+    PASSPHRASE="${GPG_PASSPHRASE:-}"
+
+    # Create detached signature
+    if echo "$PASSPHRASE" | gpg $GPG_OPTS -abs -o Release.gpg Release; then
+        info "    Created Release.gpg"
+    else
+        die "Failed to create detached signature for $DISTRO"
+    fi
+
+    # Create clearsigned file
+    if echo "$PASSPHRASE" | gpg $GPG_OPTS --clearsign -o InRelease Release; then
+        info "    Created InRelease"
+    else
+        die "Failed to create clearsigned InRelease for $DISTRO"
+    fi
+
+    cd - > /dev/null
+done
+
+# Export public GPG key for users (once, at repo root)
+if [ ! -f pythonscad-archive-keyring.gpg ]; then
+    info "Exporting public GPG key..."
+
+    if [ -n "$GPG_KEY" ]; then
+        gpg --batch --pinentry-mode loopback --armor --export "$GPG_KEY" > pythonscad-archive-keyring.gpg
+    else
+        DEFAULT_KEY=$(gpg --batch --list-secret-keys --keyid-format LONG 2>/dev/null | grep sec | head -n1 | awk '{print $2}' | cut -d'/' -f2 || true)
+        if [ -n "$DEFAULT_KEY" ]; then
+            gpg --batch --pinentry-mode loopback --armor --export "$DEFAULT_KEY" > pythonscad-archive-keyring.gpg
+        else
+            warn "No GPG key found, skipping keyring export"
+        fi
     fi
 fi
 
 if [ -f pythonscad-archive-keyring.gpg ]; then
-    info "Public key exported to pythonscad-archive-keyring.gpg"
+    info "Public key available at: pythonscad-archive-keyring.gpg"
 fi
 
-# Create index.html
+# Create index.html with distribution-specific instructions
 info "Creating repository index..."
 
-cat > index.html <<EOF
+cat > index.html <<'HTMLEOF'
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -198,7 +259,7 @@ cat > index.html <<EOF
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            max-width: 800px;
+            max-width: 900px;
             margin: 40px auto;
             padding: 0 20px;
             line-height: 1.6;
@@ -217,6 +278,7 @@ cat > index.html <<EOF
             padding: 15px;
             border-radius: 5px;
             overflow-x: auto;
+            border-left: 4px solid #3498db;
         }
         .warning {
             background: #fff3cd;
@@ -224,60 +286,160 @@ cat > index.html <<EOF
             padding: 12px;
             margin: 20px 0;
         }
+        .distro-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .distro-card {
+            border: 1px solid #ddd;
+            padding: 15px;
+            border-radius: 5px;
+            background: #fafafa;
+        }
+        .distro-card h3 {
+            margin-top: 0;
+            color: #2c3e50;
+        }
     </style>
 </head>
 <body>
-    <h1>PythonSCAD APT Repository</h1>
+    <h1>🎉 PythonSCAD APT Repository</h1>
 
     <p>This repository provides Debian packages for PythonSCAD on Debian and Ubuntu-based distributions.</p>
 
-    <h2>Installation</h2>
+    <h2>Quick Setup (Automatic Distro Detection)</h2>
 
-    <h3>Debian/Ubuntu</h3>
-    <pre># Download and install GPG key
-wget -qO - ${REPO_BASE_URL}/apt/pythonscad-archive-keyring.gpg | \\
+    <p>Copy and paste this command to automatically detect your distribution and add the repository:</p>
+
+    <pre><code>wget -qO - REPO_BASE_URL/apt/pythonscad-archive-keyring.gpg | \
   sudo gpg --dearmor -o /usr/share/keyrings/pythonscad-archive-keyring.gpg
 
-# Add repository
-echo "deb [signed-by=/usr/share/keyrings/pythonscad-archive-keyring.gpg] ${REPO_BASE_URL}/apt stable main" | \\
+echo "deb [signed-by=/usr/share/keyrings/pythonscad-archive-keyring.gpg] REPO_BASE_URL/apt $(lsb_release -sc) main" | \
   sudo tee /etc/apt/sources.list.d/pythonscad.list
 
-# Install
 sudo apt update
-sudo apt install pythonscad</pre>
+sudo apt install pythonscad</code></pre>
+
+    <p><strong>Note:</strong> The command above uses <code>$(lsb_release -sc)</code> to automatically detect your distribution codename. If <code>lsb_release</code> is not available, you can manually replace <code>$(lsb_release -sc)</code> with your distribution codename (see list below).</p>
+
+    <h2>Supported Distributions</h2>
+
+    <p>This repository provides packages for the following distributions:</p>
+
+    <div class="distro-list">
+        <div class="distro-card">
+            <h3>Ubuntu 22.04 LTS</h3>
+            <p><strong>Codename:</strong> <code>jammy</code></p>
+            <p>Long-term support until April 2027</p>
+        </div>
+        <div class="distro-card">
+            <h3>Ubuntu 24.04 LTS</h3>
+            <p><strong>Codename:</strong> <code>noble</code></p>
+            <p>Long-term support until April 2029</p>
+        </div>
+        <div class="distro-card">
+            <h3>Ubuntu 24.10</h3>
+            <p><strong>Codename:</strong> <code>oracular</code></p>
+            <p>Support until July 2025</p>
+        </div>
+        <div class="distro-card">
+            <h3>Ubuntu 25.10</h3>
+            <p><strong>Codename:</strong> <code>questing</code></p>
+            <p>Support until July 2026</p>
+        </div>
+        <div class="distro-card">
+            <h3>Debian 11 (Bullseye)</h3>
+            <p><strong>Codename:</strong> <code>bullseye</code></p>
+            <p>Long-term support until August 2026</p>
+        </div>
+        <div class="distro-card">
+            <h3>Debian 12 (Bookworm)</h3>
+            <p><strong>Codename:</strong> <code>bookworm</code></p>
+            <p>Long-term support until June 2028</p>
+        </div>
+        <div class="distro-card">
+            <h3>Debian 13 (Trixie)</h3>
+            <p><strong>Codename:</strong> <code>trixie</code></p>
+            <p>Testing distribution, support until June 2025</p>
+        </div>
+    </div>
+
+    <h2>Check Your Distribution</h2>
+
+    <p>To find your distribution codename, run:</p>
+    <pre><code>lsb_release -sc</code></pre>
 
     <h2>Supported Architectures</h2>
     <ul>
-        <li>amd64 (x86_64)</li>
-        <li>arm64 (aarch64)</li>
+        <li><strong>amd64</strong> - Intel/AMD 64-bit processors</li>
+        <li><strong>arm64</strong> - ARM 64-bit processors (including Apple Silicon, Raspberry Pi 4/5, etc.)</li>
     </ul>
 
-    <h2>Manual Download</h2>
-    <p>You can also download packages directly:</p>
+    <h2>Manual Package Download</h2>
+
+    <p>Alternatively, you can download packages directly:</p>
     <ul>
         <li><a href="pool/main/p/pythonscad/">All packages</a></li>
-        <li><a href="dists/stable/">Repository metadata</a></li>
+        <li><a href="dists/">Repository metadata by distribution</a></li>
     </ul>
 
-    <h2>GPG Key</h2>
-    <p>Packages are signed with the PythonSCAD GPG key:</p>
-    <pre>wget -qO - ${REPO_BASE_URL}/apt/pythonscad-archive-keyring.gpg | \\
-  sudo gpg --dearmor -o /usr/share/keyrings/pythonscad-archive-keyring.gpg</pre>
+    <h2>GPG Key Information</h2>
+
+    <p>Packages are signed with the PythonSCAD GPG key for security. The key is automatically imported in the setup command above.</p>
+
+    <p>To manually import the key:</p>
+    <pre><code>wget -qO - REPO_BASE_URL/apt/pythonscad-archive-keyring.gpg | \
+  sudo gpg --dearmor -o /usr/share/keyrings/pythonscad-archive-keyring.gpg</code></pre>
+
+    <h2>Troubleshooting</h2>
+
+    <h3>Command not found: lsb_release</h3>
+    <p>If <code>lsb_release</code> is not available, you can:</p>
+    <ol>
+        <li>Install it: <code>sudo apt install lsb-release</code></li>
+        <li>Or manually replace <code>$(lsb_release -sc)</code> with your codename from the list above</li>
+        <li>Or check <code>/etc/os-release</code>: <code>grep VERSION_CODENAME /etc/os-release</code></li>
+    </ol>
+
+    <h3>Package dependencies not satisfied</h3>
+    <p>If you see dependency errors, ensure you have the latest package list:</p>
+    <pre><code>sudo apt update
+sudo apt install -f</code></pre>
 
     <h2>More Information</h2>
-    <p>Visit <a href="https://github.com/pythonscad/pythonscad">github.com/pythonscad/pythonscad</a> for documentation and source code.</p>
+    <ul>
+        <li><a href="https://github.com/pythonscad/pythonscad">PythonSCAD on GitHub</a></li>
+        <li><a href="https://pythonscad.org">PythonSCAD Website</a></li>
+    </ul>
 </body>
 </html>
-EOF
+HTMLEOF
+
+# Replace placeholder with actual URL
+sed -i "s|REPO_BASE_URL|$REPO_BASE_URL|g" index.html
 
 # Summary
 info ""
 info "Repository update complete!"
 info ""
 info "Repository structure:"
-tree -L 3 -I '*.deb' dists/ 2>/dev/null || find dists/ -type f | head -20
+find dists/ -type f | head -20
 info ""
-info "To use this repository, users should:"
-info "  1. wget -qO - https://YOUR_DOMAIN/pythonscad-archive-keyring.gpg | sudo gpg --dearmor -o /usr/share/keyrings/pythonscad-archive-keyring.gpg"
-info "  2. echo 'deb [signed-by=/usr/share/keyrings/pythonscad-archive-keyring.gpg] https://YOUR_DOMAIN stable main' | sudo tee /etc/apt/sources.list.d/pythonscad.list"
-info "  3. sudo apt update && sudo apt install pythonscad"
+info "Package statistics:"
+for DISTRO in $CODENAMES; do
+    for arch in amd64 arm64; do
+        COUNT=$(ls pool/main/p/pythonscad/*_${DISTRO}_${arch}.deb 2>/dev/null | wc -l)
+        if [ "$COUNT" -gt 0 ]; then
+            info "  $DISTRO/$arch: $COUNT packages"
+        fi
+    done
+done
+info ""
+info "To use this repository, users should run:"
+info "  wget -qO - $REPO_BASE_URL/apt/pythonscad-archive-keyring.gpg | \\"
+info "    sudo gpg --dearmor -o /usr/share/keyrings/pythonscad-archive-keyring.gpg"
+info "  echo 'deb [signed-by=/usr/share/keyrings/pythonscad-archive-keyring.gpg] $REPO_BASE_URL/apt \$(lsb_release -sc) main' | \\"
+info "    sudo tee /etc/apt/sources.list.d/pythonscad.list"
+info "  sudo apt update && sudo apt install pythonscad"

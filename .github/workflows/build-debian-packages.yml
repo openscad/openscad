@@ -20,19 +20,63 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  prepare-matrix:
+    name: Prepare build matrix from supported distributions
+    runs-on: ubuntu-24.04
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Validate and prepare matrix
+        id: set-matrix
+        run: |
+          # Validate JSON syntax
+          python3 -c "import json; json.load(open('supported-distributions.json'))"
+
+          # Extract matrix for Debian/Ubuntu only, expand to distro x arch combinations
+          python3 << 'EOF'
+          import json
+          import sys
+
+          with open('supported-distributions.json') as f:
+              config = json.load(f)
+
+          matrix_include = []
+          for dist in config['distributions']:
+              if dist['family'] not in ['debian', 'ubuntu']:
+                  continue
+
+              for arch in dist['architectures']:
+                  entry = {
+                      'distro': dist['codename'],
+                      'distro_name': dist['name'],
+                      'distro_version': dist['version'],
+                      'family': dist['family'],
+                      'arch': arch,
+                      'runner': dist['runner'] if dist['runner'] else 'ubuntu-24.04',
+                      'docker_image': dist['docker_image'],
+                      'qemu': arch == 'arm64'
+                  }
+                  matrix_include.append(entry)
+
+          matrix = {
+              'fail-fast': False,
+              'include': matrix_include
+          }
+
+          # Output as JSON for GitHub Actions
+          import sys
+          print(f"matrix={json.dumps(matrix)}", file=sys.stdout)
+          EOF
+
   build-debian:
-    name: Build .deb (${{ matrix.arch }})
+    name: Build .deb (${{ matrix.distro }} / ${{ matrix.arch }})
+    needs: prepare-matrix
     runs-on: ${{ matrix.runner }}
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - arch: amd64
-            runner: ubuntu-24.04
-            qemu: false
-          - arch: arm64
-            runner: ubuntu-24.04
-            qemu: true
+    strategy: ${{ fromJson(needs.prepare-matrix.outputs.matrix) }}
+    container: ${{ matrix.docker_image || null }}
 
     steps:
       - name: Checkout code
@@ -53,13 +97,15 @@ jobs:
         with:
           detached: true
           limit-access-to-actor: true
+
       - name: Set up QEMU for ARM64
-        if: matrix.qemu
+        if: matrix.qemu && !matrix.docker_image
         uses: docker/setup-qemu-action@v3
         with:
           platforms: arm64
 
-      - name: Install build dependencies
+      - name: Install build dependencies (native runner)
+        if: '!matrix.docker_image'
         env:
           DEBIAN_FRONTEND: noninteractive
           TZ: Etc/UTC
@@ -77,32 +123,67 @@ jobs:
           # Install Build-Depends from debian/control
           sudo apt-get install -y libboost-all-dev
 
+      - name: Install build dependencies (Docker container)
+        if: matrix.docker_image
+        env:
+          DEBIAN_FRONTEND: noninteractive
+          TZ: Etc/UTC
+        run: |
+          apt-get update
+          # Install git and Python first (needed for uni-get-dependencies)
+          apt-get install -y git python3
+          # Install base dependencies using uni-get-dependencies
+          ./scripts/uni-get-dependencies.py --yes --profile pythonscad-qt6
+          # Install Debian packaging tools
+          apt-get install -y \
+            debhelper \
+            devscripts \
+            lintian \
+            dpkg-dev \
+            fakeroot \
+            sudo
+          # Install Build-Depends from debian/control
+          apt-get install -y libboost-all-dev
+
       - name: Import GPG signing key
         if: github.event_name == 'release' || github.event.inputs.upload_to_release != ''
+        env:
+          DEBIAN_FRONTEND: noninteractive
         run: |
+          which gpg || (apt-get update && apt-get install -y gnupg)
           echo "${{ secrets.DEB_SIGNING_KEY }}" | gpg --batch --import
           gpg --list-secret-keys
 
-      - name: Build Debian package (amd64)
-        if: matrix.arch == 'amd64'
+      - name: Build Debian package
         env:
           OUTPUT_DIR: /tmp/debs
-        run: ./scripts/build-debian-package.sh
-
-      - name: Build Debian package (arm64 via QEMU)
-        if: matrix.arch == 'arm64'
-        env:
-          OUTPUT_DIR: /tmp/debs
+          DEBIAN_DISTRO: ${{ matrix.distro }}
         run: |
-          # For ARM64, we use QEMU emulation
-          # Note: This is slower but works without native ARM64 runners
-          sudo apt-get install -y qemu-user-static
-
-          # Build in QEMU environment
+          mkdir -p "$OUTPUT_DIR"
+          chmod +x ./scripts/build-debian-package.sh
           ./scripts/build-debian-package.sh
 
-      - name: Test package installation
-        if: matrix.arch == 'amd64'
+      - name: Get version for release upload
+        id: version
+        run: |
+          VERSION=$(cat VERSION.txt | tr -d '\n' | tr -d '\r')
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Rename package for GitHub Release (distro + arch)
+        run: |
+          DEB_FILE=$(ls /tmp/debs/pythonscad_*.deb | head -1)
+          if [ -z "$DEB_FILE" ]; then
+            echo "Error: No .deb file found"
+            exit 1
+          fi
+
+          VERSION="${{ steps.version.outputs.version }}"
+          NEW_NAME="pythonscad_${VERSION}-1_${{ matrix.distro }}_${{ matrix.arch }}.deb"
+          mv "$DEB_FILE" "/tmp/debs/$NEW_NAME"
+          ls -lh /tmp/debs/
+
+      - name: Test package installation (amd64 only)
+        if: matrix.arch == 'amd64' && !matrix.docker_image
         run: |
           # Try to install the package to verify it works
           sudo dpkg -i /tmp/debs/pythonscad_*.deb || true
@@ -115,18 +196,19 @@ jobs:
           # Verify library dependencies
           ldd /usr/bin/pythonscad | head -20
 
-      - name: Upload package artifacts
+      - name: Upload build log as artifact
+        if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: pythonscad-${{ matrix.arch }}-deb
-          path: /tmp/debs/*
-          retention-days: 30
+          name: build-log-${{ matrix.distro }}-${{ matrix.arch }}
+          path: /tmp/debs/*.log.txt
+          retention-days: 7
 
       - name: Upload to GitHub Release
         if: github.event_name == 'release' || github.event.inputs.upload_to_release != ''
         uses: softprops/action-gh-release@v2
         with:
-          files: /tmp/debs/*
+          files: /tmp/debs/pythonscad_*.deb
           tag_name: ${{ github.event.release.tag_name || github.event.inputs.upload_to_release }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -141,24 +223,29 @@ jobs:
       - name: Checkout main repository
         uses: actions/checkout@v4
 
-      - name: Download amd64 packages
-        uses: actions/download-artifact@v4
-        with:
-          name: pythonscad-amd64-deb
-          path: /tmp/debs/amd64
-
-      - name: Download arm64 packages
-        uses: actions/download-artifact@v4
-        with:
-          name: pythonscad-arm64-deb
-          path: /tmp/debs/arm64
-
-      - name: Merge packages
+      - name: Download packages from GitHub Release
         run: |
-          mkdir -p /tmp/debs/all
-          cp /tmp/debs/amd64/*.deb /tmp/debs/all/ || true
-          cp /tmp/debs/arm64/*.deb /tmp/debs/all/ || true
-          ls -lh /tmp/debs/all/
+          mkdir -p /tmp/debs
+          cd /tmp/debs
+
+          # Determine release tag
+          if [ "${{ github.event_name }}" = "release" ]; then
+            TAG="${{ github.event.release.tag_name }}"
+          else
+            TAG="${{ github.event.inputs.upload_to_release }}"
+          fi
+
+          echo "Downloading packages from release: $TAG"
+
+          # Use GitHub CLI to download all .deb files from release
+          gh release download "$TAG" \
+            -R "${{ github.repository }}" \
+            -p "pythonscad_*_*.deb" \
+            --dir /tmp/debs
+
+          ls -lh /tmp/debs/
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Import GPG signing key
         run: |
@@ -187,7 +274,7 @@ jobs:
           # Copy existing packages to new repo location
           if [ -d /tmp/apt-repo-existing/pool ]; then
             mkdir -p /tmp/apt-repo/pool/main/p/pythonscad
-            cp /tmp/apt-repo-existing/pool/main/p/pythonscad/*.deb /tmp/apt-repo/pool/main/p/pythonscad/ || true
+            cp /tmp/apt-repo-existing/pool/main/p/pythonscad/*.deb /tmp/apt-repo/pool/main/p/pythonscad/ 2>/dev/null || true
           fi
 
       - name: Build APT repository structure
@@ -201,7 +288,7 @@ jobs:
           # Repository now contains both old and new packages
           # update-apt-repo.sh will clean up old versions based on KEEP_VERSIONS
           chmod +x ./scripts/update-apt-repo.sh
-          ./scripts/update-apt-repo.sh /tmp/debs/all
+          ./scripts/update-apt-repo.sh /tmp/debs
 
       - name: Upload to SFTP server
         run: |

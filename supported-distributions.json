@@ -1,0 +1,117 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$comment":
+    "Supported Linux distributions for PythonSCAD package builds. Used for both Debian/Ubuntu (deb) and Fedora/CentOS (rpm) builds.",
+  "version": "1.0",
+  "description": "Configuration for PythonSCAD distribution targets",
+  "distributions": [
+    {
+      "family": "ubuntu",
+      "name": "Ubuntu",
+      "version": "22.04",
+      "codename": "jammy",
+      "lts": true,
+      "eol_date": "2027-04",
+      "runner": "ubuntu-22.04",
+      "docker_image": null,
+      "architectures": [
+        "amd64",
+        "arm64"
+      ]
+    },
+    {
+      "family": "ubuntu",
+      "name": "Ubuntu",
+      "version": "24.04",
+      "codename": "noble",
+      "lts": true,
+      "eol_date": "2029-04",
+      "runner": "ubuntu-24.04",
+      "docker_image": null,
+      "architectures": [
+        "amd64",
+        "arm64"
+      ]
+    },
+    {
+      "family": "ubuntu",
+      "name": "Ubuntu",
+      "version": "24.10",
+      "codename": "oracular",
+      "lts": false,
+      "eol_date": "2025-07",
+      "runner": "ubuntu-24.04",
+      "docker_image": "ubuntu:oracular",
+      "architectures": [
+        "amd64",
+        "arm64"
+      ]
+    },
+    {
+      "family": "ubuntu",
+      "name": "Ubuntu",
+      "version": "25.10",
+      "codename": "questing",
+      "lts": false,
+      "eol_date": "2026-07",
+      "runner": "ubuntu-24.04",
+      "docker_image": "ubuntu:questing",
+      "architectures": [
+        "amd64",
+        "arm64"
+      ]
+    },
+    {
+      "family": "debian",
+      "name": "Debian",
+      "version": "11",
+      "codename": "bullseye",
+      "lts": true,
+      "eol_date": "2026-08",
+      "runner": null,
+      "docker_image": "debian:bullseye",
+      "architectures": [
+        "amd64",
+        "arm64"
+      ]
+    },
+    {
+      "family": "debian",
+      "name": "Debian",
+      "version": "12",
+      "codename": "bookworm",
+      "lts": true,
+      "eol_date": "2028-06",
+      "runner": null,
+      "docker_image": "debian:bookworm",
+      "architectures": [
+        "amd64",
+        "arm64"
+      ]
+    },
+    {
+      "family": "debian",
+      "name": "Debian",
+      "version": "13",
+      "codename": "trixie",
+      "lts": false,
+      "eol_date": "2025-06",
+      "runner": null,
+      "docker_image": "debian:trixie",
+      "architectures": [
+        "amd64",
+        "arm64"
+      ]
+    }
+  ],
+  "notes": {
+    "eol_dates":
+      "Approximate end-of-life dates. Non-LTS versions should be removed from this file after EOL.",
+    "native_runners":
+      "Use native GitHub runner if available (runner field is not null). Otherwise use Docker image.",
+    "docker_images":
+      "Docker base images for distributions without native runners. Requires installation of build tools.",
+    "future_extension":
+      "This schema can be extended for RPM-based distributions by adding family: 'fedora', 'centos', etc. with package_manager: 'dnf'/'yum' fields."
+  }
+}
