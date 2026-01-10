@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.8.13](https://github.com/pythonscad/pythonscad/compare/v0.8.12...v0.8.13) (2026-01-10)
+
+
+### Bug Fixes
+
+* **actions:** correct strategy structure; matrix include output ([#301](https://github.com/pythonscad/pythonscad/issues/301)) ([d5105a0](https://github.com/pythonscad/pythonscad/commit/d5105a0c94dfc368a21440a2be80b1ee80e7d143))
+
 ## [0.8.12](https://github.com/pythonscad/pythonscad/compare/v0.8.11...v0.8.12) (2026-01-10)
 
 
