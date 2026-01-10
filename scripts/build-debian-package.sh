@@ -137,6 +137,22 @@ info "Changelog generated for version ${VERSION}-1"
 ARCH=$(dpkg --print-architecture)
 info "Building for architecture: ${ARCH}"
 
+# Adjust Qt dependencies in debian/control based on USE_QT6 environment variable
+if [ "${USE_QT6:-ON}" = "OFF" ]; then
+    info "Configuring build for Qt5 (USE_QT6=OFF)"
+    # Replace Qt6 packages with Qt5 equivalents
+    sed -i 's/qt6-base-dev/qtbase5-dev/g' "${PROJECT_ROOT}/debian/control"
+    sed -i 's/libqt6svg6-dev/libqt5svg5-dev/g' "${PROJECT_ROOT}/debian/control"
+    sed -i 's/libqscintilla2-qt6-dev/libqscintilla2-qt5-dev/g' "${PROJECT_ROOT}/debian/control"
+    sed -i 's/libqt6core5compat6-dev/libqt5opengl5-dev/g' "${PROJECT_ROOT}/debian/control"
+    sed -i 's/qt6-multimedia-dev/qtmultimedia5-dev/g' "${PROJECT_ROOT}/debian/control"
+    sed -i 's/qt6-tools-dev/qttools5-dev/g' "${PROJECT_ROOT}/debian/control"
+    # Update description
+    sed -i 's/Qt6-based/Qt5-based/g' "${PROJECT_ROOT}/debian/control"
+else
+    info "Configuring build for Qt6 (USE_QT6=ON)"
+fi
+
 # Build the package
 info "Building Debian package..."
 info "This may take several minutes depending on your system..."

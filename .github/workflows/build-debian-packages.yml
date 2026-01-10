@@ -36,49 +36,61 @@ jobs:
           python3 -c "import json; json.load(open('supported-distributions.json'))"
 
           # Extract matrix for Debian/Ubuntu only, expand to distro x arch combinations
-          python3 << 'EOF'
+          python3 - <<'EOF'
+          from datetime import datetime
           import json
           import os
 
           with open('supported-distributions.json') as f:
-              config = json.load(f)
+            config = json.load(f)
 
+          today = datetime.utcnow().strftime('%Y-%m')
           matrix_include = []
-          for dist in config['distributions']:
-              if dist['family'] not in ['debian', 'ubuntu']:
-                  continue
 
-              for arch in dist['architectures']:
-                  entry = {
-                      'distro': dist['codename'],
-                      'distro_name': dist['name'],
-                      'distro_version': dist['version'],
-                      'family': dist['family'],
-                      'arch': arch,
-                      'runner': dist['runner'] if dist['runner'] else 'ubuntu-24.04',
-                      'docker_image': dist['docker_image'],
-                      'qemu': arch == 'arm64'
-                  }
-                  matrix_include.append(entry)
+          for dist in config['distributions']:
+            if dist['family'] not in ['debian', 'ubuntu']:
+              continue
+
+            if dist.get('eol_date') and dist['eol_date'] < today:
+              continue
+
+            for arch in dist['architectures']:
+              matrix_include.append({
+                'distro': dist['codename'],
+                'distro_name': dist['name'],
+                'distro_version': dist['version'],
+                'family': dist['family'],
+                'arch': arch,
+                'runner': dist['runner'] if dist['runner'] else 'ubuntu-24.04',
+                'docker_image': dist['docker_image'],
+                'qemu': arch == 'arm64'
+              })
 
           matrix = {
-              'fail-fast': False,
-              'include': matrix_include
+            'include': matrix_include
           }
 
-          # Output as JSON for GitHub Actions by writing to $GITHUB_OUTPUT
           with open(os.environ['GITHUB_OUTPUT'], 'a') as output_file:
-              output_file.write(f"matrix={json.dumps(matrix)}\n")
+            output_file.write(f"matrix={json.dumps(matrix)}\n")
           EOF
 
   build-debian:
-    name: Build .deb (${{ matrix.distro }} / ${{ matrix.arch }})
+    name: Build .deb (${{ matrix.family }} / ${{ matrix.distro }} / ${{ matrix.arch }})
     needs: prepare-matrix
     runs-on: ${{ matrix.runner }}
-    strategy: ${{ fromJson(needs.prepare-matrix.outputs.matrix) }}
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJson(needs.prepare-matrix.outputs.matrix) }}
     container: ${{ matrix.docker_image || null }}
 
     steps:
+      - name: Ensure git is available and configure
+        if: matrix.docker_image
+        run: |
+          apt-get update
+          apt-get install -y git ca-certificates
+          git config --global --add safe.directory '*'
+
       - name: Checkout code
         uses: actions/checkout@v4
         with:
@@ -88,7 +100,7 @@ jobs:
       - name: Fetch tags for version detection
         run: |
           git fetch --unshallow --tags 2>/dev/null || git fetch --tags
-          git describe --tags --always --dirty || echo "No tags found"
+          git describe --tags --always --dirty
 
       - name: Setup (detached) tmate session if enabled
         if: ${{ github.event_name == 'workflow_dispatch' && inputs.debug_enabled }}
@@ -111,8 +123,18 @@ jobs:
           TZ: Etc/UTC
         run: |
           sudo apt-get update
+
+          # Determine Qt profile based on distribution version
+          # Older distros (Ubuntu 22.04, Debian 11) use Qt5, newer use Qt6
+          if [ "${{ matrix.distro }}" = "jammy" ] || [ "${{ matrix.distro }}" = "bullseye" ]; then
+            QT_PROFILE="pythonscad-qt5"
+          else
+            QT_PROFILE="pythonscad-qt6"
+          fi
+          echo "Using profile: $QT_PROFILE for ${{ matrix.distro }}"
+
           # Install base dependencies using uni-get-dependencies
-          sudo ./scripts/uni-get-dependencies.py --yes --profile pythonscad-qt6
+          sudo ./scripts/uni-get-dependencies.py --yes --profile "$QT_PROFILE"
           # Install Debian packaging tools
           sudo apt-get install -y \
             debhelper \
@@ -132,16 +154,25 @@ jobs:
           apt-get update
           # Install git and Python first (needed for uni-get-dependencies)
           apt-get install -y git python3
-          # Install base dependencies using uni-get-dependencies
-          ./scripts/uni-get-dependencies.py --yes --profile pythonscad-qt6
+
+          # Determine Qt profile based on distribution version
+          # Older distros (Ubuntu 22.04, Debian 11) use Qt5, newer use Qt6
+          if [ "${{ matrix.distro }}" = "jammy" ] || [ "${{ matrix.distro }}" = "bullseye" ]; then
+            QT_PROFILE="pythonscad-qt5"
+          else
+            QT_PROFILE="pythonscad-qt6"
+          fi
+          echo "Using profile: $QT_PROFILE for ${{ matrix.distro }}"
+
+          # Install base dependencies using uni-get-dependencies (running as root, no sudo needed)
+          ./scripts/uni-get-dependencies.py --yes --profile "$QT_PROFILE"
           # Install Debian packaging tools
           apt-get install -y \
             debhelper \
             devscripts \
             lintian \
             dpkg-dev \
-            fakeroot \
-            sudo
+            fakeroot
           # Install Build-Depends from debian/control
           apt-get install -y libboost-all-dev
 
@@ -158,6 +189,8 @@ jobs:
         env:
           OUTPUT_DIR: /tmp/debs
           DEBIAN_DISTRO: ${{ matrix.distro }}
+          # Set Qt version for older distros
+          USE_QT6: ${{ (matrix.distro == 'jammy' || matrix.distro == 'bullseye') && 'OFF' || 'ON' }}
         run: |
           mkdir -p "$OUTPUT_DIR"
           chmod +x ./scripts/build-debian-package.sh

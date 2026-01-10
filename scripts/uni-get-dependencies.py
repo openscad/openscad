@@ -228,23 +228,23 @@ def build_commands(cfg: dict, distro: DistroInfo, packages: List[str], assume_ye
     if mgr == "apt":
         if assume_yes:
             yes_flag = ["-y"]
-        cmds.append(["sudo", "apt-get", "update"])
-        cmds.append(["sudo", "apt-get", "install", *yes_flag, *packages])
+        cmds.append(["apt-get", "update"])
+        cmds.append(["apt-get", "install", *yes_flag, *packages])
     elif mgr == "dnf":
         if assume_yes:
             yes_flag = ["-y"]
-        cmds.append(["sudo", "dnf", *yes_flag, "install", *packages])
+        cmds.append(["dnf", *yes_flag, "install", *packages])
     elif mgr == "pacman":
         # sync first
-        cmds.append(["sudo", "pacman", "-Sy", "--needed", "--noconfirm" if assume_yes else "--needed", *packages])
+        cmds.append(["pacman", "-Sy", "--needed", "--noconfirm" if assume_yes else "--needed", *packages])
     elif mgr == "emerge":
         # assume pre_commands contains sync if needed
-        base = ["sudo", "emerge", "--ask=n" if assume_yes else "--ask=y", "--quiet-build" , *packages]
+        base = ["emerge", "--ask=n" if assume_yes else "--ask=y", "--quiet-build" , *packages]
         cmds.append(base)
     elif mgr == "pkg":
-        cmds.append(["sudo", "pkg", "install", "-y" if assume_yes else "-y", *packages])
+        cmds.append(["pkg", "install", "-y" if assume_yes else "-y", *packages])
     elif mgr == "pkgin":
-        cmds.append(["sudo", "pkgin", "-y" if assume_yes else "-y", "install", *packages])
+        cmds.append(["pkgin", "-y" if assume_yes else "-y", "install", *packages])
     elif mgr == "brew":
         if shutil.which("brew") is None:
             raise SystemExit("Homebrew not found. Install from https://brew.sh first.")
@@ -252,15 +252,15 @@ def build_commands(cfg: dict, distro: DistroInfo, packages: List[str], assume_ye
         cmds.append(["brew", "install", *packages])
     elif mgr == "zypper":
         if assume_yes:
-            cmds.append(["sudo", "zypper", "--non-interactive", "install", *packages])
+            cmds.append(["zypper", "--non-interactive", "install", *packages])
         else:
-            cmds.append(["sudo", "zypper", "install", *packages])
+            cmds.append(["zypper", "install", *packages])
     elif mgr == "urpmi":
         # Mageia
-        cmds.append(["sudo", "urpmi", "--auto", *packages])
+        cmds.append(["urpmi", "--auto", *packages])
     elif mgr == "eopkg":
         # Solus
-        cmds.append(["sudo", "eopkg", "-y", "install", *packages])
+        cmds.append(["eopkg", "-y", "install", *packages])
     else:
         raise SystemExit(f"Unsupported manager '{mgr}'")
     for pc in d.get("post_commands", []):
