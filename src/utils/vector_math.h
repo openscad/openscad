@@ -20,6 +20,23 @@ double calculateLinePointDistance(const Vector3d& l1b, const Vector3d& l1e, cons
                                   double& dist_lat);
 
 /**
+ * @brief Calculates the shortest vector between two infinite 3D lines.
+ *
+ * See calculateLineLineDistance for details. This returns the actual vector in
+ * addition to signed distance returned by that.
+ *
+ * @param l1b The beginning point of the first line.
+ * @param l1e The ending point of the first line.
+ * @param l2b The beginning point of the second line.
+ * @param l2e The ending point of the second line.
+ * @param parametric_t Returns the **ratio** of intersection point distance to L1b over L1's length.
+ * @param signed_distance Returns the **signed shortest distance** between the two infinite lines.
+ * @return Vector3d The shortest vector between infinite lines.
+ */
+Vector3d calculateLineLineVector(const Vector3d& l1b, const Vector3d& l1e, const Vector3d& l2b,
+                                 const Vector3d& l2e, double& parametric_t, double& signed_distance);
+
+/**
  * @brief Calculates the signed shortest distance between two infinite 3D lines.
  *
  * This function determines the minimum separation distance between the two lines
@@ -28,6 +45,9 @@ double calculateLinePointDistance(const Vector3d& l1b, const Vector3d& l1e, cons
  *
  * The shortest distance vector is perpendicular to both lines. The sign of the
  * returned distance indicates the relative orientation or side of the lines.
+ *
+ * If the points defining a line are too close to floating point error, then
+ * everything returns NaN.
  *
  * @param l1b The beginning point of the first line.
  * @param l1e The ending point of the first line.
