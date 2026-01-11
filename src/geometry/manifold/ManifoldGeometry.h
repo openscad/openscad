@@ -73,9 +73,11 @@ public:
 private:
   ManifoldGeometry binOp(const ManifoldGeometry& lhs, const ManifoldGeometry& rhs,
                          manifold::OpType opType) const;
+  void updateCachedSize() const;
 
   manifold::Manifold manifold_;
   std::set<uint32_t> originalIDs_;
   std::map<uint32_t, Color4f> originalIDToColor_;
   std::set<uint32_t> subtractedIDs_;
+  mutable size_t cached_size_{0};
 };

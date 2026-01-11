@@ -330,6 +330,29 @@ std::vector<std::shared_ptr<const Polygon2d>> GeometryEvaluator::collectChildren
 void GeometryEvaluator::smartCacheInsert(const AbstractNode& node,
                                          const std::shared_ptr<const Geometry>& geom)
 {
+#ifdef ENABLE_MANIFOLD
+  if (RenderSettings::inst()->backend3D == RenderBackend3D::ManifoldBackend) {
+    bool skipCache = false;
+    if (const auto opNode = dynamic_cast<const CsgOpNode *>(&node)) {
+      // Skip caching UNION to enable BatchUnion optimizations.
+      // We still cache DIFFERENCE and INTERSECTION as they are destructive/expensive
+      // and valid candidates for reuse boundaries.
+      if (opNode->type == OpenSCADOperator::UNION) {
+        skipCache = true;
+      }
+    } else if (dynamic_cast<const TransformNode *>(&node) || dynamic_cast<const ColorNode *>(&node)) {
+      skipCache = true;
+    } else if (dynamic_cast<const GroupNode *>(&node)) {
+      // Don't skip the RootNode, as we want to cache the final result
+      if (!dynamic_cast<const RootNode *>(&node)) {
+        skipCache = true;
+      }
+    }
+
+    if (skipCache) return;
+  }
+#endif
+
   const std::string& key = this->tree.getIdString(node);
 
   if (CGALCache::acceptsGeometry(geom)) {

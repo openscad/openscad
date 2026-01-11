@@ -54,11 +54,29 @@ std::unique_ptr<Geometry> ManifoldGeometry::copy() const
 
 const manifold::Manifold& ManifoldGeometry::getManifold() const { return manifold_; }
 
-bool ManifoldGeometry::isEmpty() const { return getManifold().IsEmpty(); }
+bool ManifoldGeometry::isEmpty() const
+{
+  bool empty = getManifold().IsEmpty();
+  // IsEmpty() forces evaluation, so we must update the cached size to reflect the loaded mesh.
+  updateCachedSize();
+  return empty;
+}
 
-size_t ManifoldGeometry::numFacets() const { return getManifold().NumTri(); }
+size_t ManifoldGeometry::numFacets() const
+{
+  size_t n = getManifold().NumTri();
+  // NumTri() forces evaluation.
+  updateCachedSize();
+  return n;
+}
 
-size_t ManifoldGeometry::numVertices() const { return getManifold().NumVert(); }
+size_t ManifoldGeometry::numVertices() const
+{
+  size_t n = getManifold().NumVert();
+  // NumVert() forces evaluation.
+  updateCachedSize();
+  return n;
+}
 
 bool ManifoldGeometry::isManifold() const
 {
@@ -70,19 +88,25 @@ bool ManifoldGeometry::isValid() const
   return manifold_.Status() == manifold::Manifold::Error::NoError;
 }
 
-void ManifoldGeometry::clear() { manifold_ = manifold::Manifold(); }
+void ManifoldGeometry::clear()
+{
+  manifold_ = manifold::Manifold();
+  cached_size_ = 0;
+}
 
 size_t ManifoldGeometry::memsize() const
 {
   // We don't introspect on the manifold here, as this would force it to leaf node (ie. would render it).
-  return 0;
+  return cached_size_;
 }
 
 std::string ManifoldGeometry::dump() const
 {
   std::ostringstream out;
   auto& manifold = getManifold();
+  // GetMeshGL64() forces evaluation.
   auto meshgl = manifold.GetMeshGL64();
+  updateCachedSize();
   out << "Manifold:" << "\n status: " << ManifoldUtils::statusToString(manifold.Status())
       << "\n genus: " << manifold.Genus() << "\n num vertices: " << meshgl.NumVert()
       << "\n num polygons: " << meshgl.NumTri() << "\n polygons data:";
@@ -100,7 +124,9 @@ std::string ManifoldGeometry::dump() const
 
 std::shared_ptr<PolySet> ManifoldGeometry::toPolySet() const
 {
+  // GetMeshGL64() forces evaluation.
   manifold::MeshGL64 mesh = getManifold().GetMeshGL64();
+  updateCachedSize();
   auto ps = std::make_shared<PolySet>(3);
   ps->setTriangular(true);
   ps->vertices.reserve(mesh.NumVert());
@@ -219,7 +245,9 @@ std::shared_ptr<Polyhedron> ManifoldGeometry::toPolyhedron() const
 {
   auto p = std::make_shared<Polyhedron>();
   try {
+    // GetMeshGL64() forces evaluation.
     auto meshgl = getManifold().GetMeshGL64();
+    updateCachedSize();
     CGALPolyhedronBuilderFromManifold<Polyhedron> builder(meshgl);
     p->delegate(builder);
   } catch (const CGAL::Assertion_exception& e) {
@@ -311,13 +339,17 @@ ManifoldGeometry ManifoldGeometry::minkowski(const ManifoldGeometry& other) cons
 
 Polygon2d ManifoldGeometry::slice() const
 {
+  // Slice() forces evaluation.
   auto cross_section = manifold::CrossSection(manifold_.Slice());
+  updateCachedSize();
   return ManifoldUtils::polygonsToPolygon2d(cross_section.ToPolygons());
 }
 
 Polygon2d ManifoldGeometry::project() const
 {
+  // Project() forces evaluation.
   auto cross_section = manifold::CrossSection(manifold_.Project());
+  updateCachedSize();
   return ManifoldUtils::polygonsToPolygon2d(cross_section.ToPolygons());
 }
 
@@ -356,7 +388,9 @@ void ManifoldGeometry::toOriginal()
 BoundingBox ManifoldGeometry::getBoundingBox() const
 {
   BoundingBox result;
+  // BoundingBox() forces evaluation.
   manifold::Box bbox = getManifold().BoundingBox();
+  updateCachedSize();
   result.extend(vector_convert<Eigen::Vector3d>(bbox.min));
   result.extend(vector_convert<Eigen::Vector3d>(bbox.max));
   return result;
@@ -367,11 +401,24 @@ void ManifoldGeometry::resize(const Vector3d& newsize, const Eigen::Matrix<bool,
   transform(GeometryUtils::getResizeTransform(this->getBoundingBox(), newsize, autosize));
 }
 
+void ManifoldGeometry::updateCachedSize() const
+{
+  // Estimated memory usage per vertex:
+  // - Position: 24 bytes
+  // - Halfedges (approx 6 per vert): 6 * 16 = 96 bytes
+  // - Normals (vert + 2*face): 24 + 48 = 72 bytes
+  // - Mesh Relation (2*face): 32 bytes
+  // Total ~ 224 bytes + vector overhead + properties
+  cached_size_ = getManifold().NumVert() * 250;
+}
+
 /*! Iterate over all vertices' points until the function returns true (for done). */
 void ManifoldGeometry::foreachVertexUntilTrue(
   const std::function<bool(const manifold::vec3& pt)>& f) const
 {
+  // GetMeshGL64() forces evaluation.
   auto mesh = getManifold().GetMeshGL64();
+  updateCachedSize();
   const auto numVert = mesh.NumVert();
   for (size_t v = 0; v < numVert; ++v) {
     if (f(mesh.GetVertPos(v))) {
