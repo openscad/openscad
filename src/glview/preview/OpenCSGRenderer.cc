@@ -67,9 +67,9 @@ private:
 // Primitive for drawing using OpenCSG
 // Makes a copy of the given VertexState enabling just unlit/uncolored vertex
 // rendering
-std::unique_ptr<OpenCSGVBOPrim> createVBOPrimitive(const std::shared_ptr<OpenCSGVertexState>& vertex_state,
-                                                   const OpenCSG::Operation operation,
-                                                   const unsigned int convexity)
+std::unique_ptr<OpenCSGVBOPrim> createVBOPrimitive(
+  const std::shared_ptr<OpenCSGVertexState>& vertex_state, const OpenCSG::Operation operation,
+  const unsigned int convexity)
 {
   std::unique_ptr<VertexState> opencsg_vs = std::make_unique<VertexState>(
     vertex_state->drawMode(), vertex_state->drawSize(), vertex_state->drawType(),
