@@ -3030,6 +3030,44 @@ PyObject *python_oo_faces(PyObject *obj, PyObject *args, PyObject *kwargs)
   return python_faces_core(obj, tess == Py_True);
 }
 
+PyObject *python_children_core(PyObject *obj)
+{
+  PyObject *dummydict;
+  auto solid = PyOpenSCADObjectToNode(obj, &dummydict);
+  PyTypeObject *type = PyOpenSCADObjectType(obj);
+  if(solid == nullptr) {
+    PyErr_SetString(PyExc_TypeError, "not a solid\n");
+    return NULL;
+  }
+  int n = solid->children.size();
+  PyObject *result = PyTuple_New(n);
+  for(int i=0;i<n;i++) {
+    PyTuple_SetItem(result, i, PyOpenSCADObjectFromNode(type, solid->children[i]));
+  }
+  return result;
+}
+
+PyObject *python_children(PyObject *self, PyObject *args, PyObject *kwargs)
+{
+  char *kwlist[] = {"obj", NULL};
+  PyObject *obj = NULL;
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O", kwlist, &obj)) {
+    PyErr_SetString(PyExc_TypeError, "error during parsing\n");
+    return NULL;
+  }
+  return python_children_core(obj);
+}
+
+PyObject *python_oo_children(PyObject *obj, PyObject *args, PyObject *kwargs)
+{
+  char *kwlist[] = {NULL};
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "", kwlist)) {
+    PyErr_SetString(PyExc_TypeError, "error during parsing\n");
+    return NULL;
+  }
+  return python_children_core(obj);
+}
+
 PyObject *python_oversample_core(PyObject *obj, int n, PyObject *round)
 {
   PyObject *dummydict;
@@ -5900,6 +5938,7 @@ PyMethodDef PyOpenSCADFunctions[] = {
   {"position", (PyCFunction)python_position, METH_VARARGS | METH_KEYWORDS,
    "get position (minimum coordinates) of object."},
   {"faces", (PyCFunction)python_faces, METH_VARARGS | METH_KEYWORDS, "exports a list of faces."},
+  {"children", (PyCFunction)python_children, METH_VARARGS | METH_KEYWORDS, "create Tuple from children"},
   {"edges", (PyCFunction)python_edges, METH_VARARGS | METH_KEYWORDS,
    "exports a list of edges from a face."},
   {"explode", (PyCFunction)python_explode, METH_VARARGS | METH_KEYWORDS,
@@ -5975,7 +6014,9 @@ PyMethodDef PyOpenSCADMethods[] = {
 
                         OO_METHOD_ENTRY(explode, "Explode a solid with a vector") OO_METHOD_ENTRY(
                           mesh, "Mesh Object") OO_METHOD_ENTRY(bbox, "Evaluate Bound Box of object")
-                          OO_METHOD_ENTRY(faces, "Create Faces list") OO_METHOD_ENTRY(
+                          OO_METHOD_ENTRY(faces, "Create Faces list") 
+                          OO_METHOD_ENTRY(children, "Return Tupple from solid children") 
+			  OO_METHOD_ENTRY(
                             edges, "Create Edges list") OO_METHOD_ENTRY(oversample, "Oversample Object")
                             OO_METHOD_ENTRY(debug, "Debug Object Faces") OO_METHOD_ENTRY(
                               repair, "Make solid watertight") OO_METHOD_ENTRY(fillet, "Fillet Object")
