@@ -24,12 +24,17 @@ debian/changelog
 rpm-build.log
 pythonscad-*.tar.gz
 
-.cache/
-.claude/
+# Python virtual environments and caches
+__pycache__/
 .venv/
+
+# IDEs and editors
 .vs/
 .vscode/
 .idea/
+
+.cache/
+.claude/
 .clangd/
 /*.scad
 **/out*.*

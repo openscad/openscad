@@ -72,18 +72,7 @@ info "Repository directory: $(pwd)"
 info "Packages directory: $PACKAGES_DIR"
 
 # Extract distribution codenames from supported-distributions.json
-CODENAMES=$(python3 << PYSCRIPT
-import json
-with open("$SCRIPT_DIR/supported-distributions.json") as f:
-    config = json.load(f)
-codenames = set()
-for dist in config["distributions"]:
-    if dist["family"] in ["debian", "ubuntu"]:
-        codenames.add(dist["codename"])
-for codename in sorted(codenames):
-    print(codename)
-PYSCRIPT
-)
+CODENAMES=$(python3 "$SCRIPT_DIR/scripts/extract-codenames.py" "$SCRIPT_DIR/supported-distributions.json")
 
 # Create repository structure
 info "Creating repository structure..."
