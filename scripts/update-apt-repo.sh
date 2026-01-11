@@ -91,9 +91,9 @@ for deb in "$PACKAGES_DIR"/*.deb; do
 
     BASENAME=$(basename "$deb")
 
-    # Extract distro from filename: pythonscad_VERSION-1_DISTRO_ARCH.deb
-    # Using sed to extract DISTRO from the filename
-    if [[ $BASENAME =~ pythonscad_[^_]+_([^_]+)_[^_]+\.deb ]]; then
+    # Extract distro from filename: pythonscad_VERSION-1_FAMILY_DISTRO_ARCH.deb
+    # Regex captures the DISTRO field (3rd underscore-separated field)
+    if [[ $BASENAME =~ pythonscad_[^_]+_[^_]+_([^_]+)_[^_]+\.deb ]]; then
         DISTRO="${BASH_REMATCH[1]}"
     else
         warn "Could not parse distro from filename: $BASENAME (skipping)"
@@ -107,7 +107,7 @@ for deb in "$PACKAGES_DIR"/*.deb; do
     fi
 
     cp "$deb" "pool/main/p/pythonscad/$BASENAME"
-    ((PACKAGE_COUNT++))
+    ((++PACKAGE_COUNT))
 done
 
 info "Total packages copied: $PACKAGE_COUNT"
@@ -125,7 +125,7 @@ for DISTRO in $CODENAMES; do
     if [ "$KEEP_VERSIONS" -gt 0 ]; then
         for arch in amd64 arm64; do
             # Find all packages for this distro and arch, sort by name, keep newest
-            OLD_PACKAGES=$(ls -t pool/main/p/pythonscad/*_${DISTRO}_${arch}.deb 2>/dev/null | tail -n +$((KEEP_VERSIONS + 1)) || true)
+            OLD_PACKAGES=$(ls -t pool/main/p/pythonscad/*_*_${DISTRO}_${arch}.deb 2>/dev/null | tail -n +$((KEEP_VERSIONS + 1)) || true)
             if [ -n "$OLD_PACKAGES" ]; then
                 while IFS= read -r pkg; do
                     info "    Removing old: $(basename "$pkg")"
@@ -144,7 +144,7 @@ for DISTRO in $CODENAMES; do
         BINARY_DIR="dists/$DISTRO/main/binary-${arch}"
 
         # Check if there are packages for this distro/arch combination
-        if ls pool/main/p/pythonscad/*_${DISTRO}_${arch}.deb >/dev/null 2>&1; then
+        if ls pool/main/p/pythonscad/*_*_${DISTRO}_${arch}.deb >/dev/null 2>&1; then
             info "  Generating Packages file for ${DISTRO}/${arch}..."
 
             cd "$BINARY_DIR"
@@ -419,7 +419,7 @@ info ""
 info "Package statistics:"
 for DISTRO in $CODENAMES; do
     for arch in amd64 arm64; do
-        COUNT=$(ls pool/main/p/pythonscad/*_${DISTRO}_${arch}.deb 2>/dev/null | wc -l)
+        COUNT=$(ls pool/main/p/pythonscad/*_*_${DISTRO}_${arch}.deb 2>/dev/null | wc -l)
         if [ "$COUNT" -gt 0 ]; then
             info "  $DISTRO/$arch: $COUNT packages"
         fi

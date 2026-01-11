@@ -202,7 +202,7 @@ jobs:
           VERSION=$(cat VERSION.txt | tr -d '\n' | tr -d '\r')
           echo "version=$VERSION" >> $GITHUB_OUTPUT
 
-      - name: Rename package for GitHub Release (distro + arch)
+      - name: Rename package for GitHub Release (family + distro + arch)
         run: |
           DEB_FILE=$(ls /tmp/debs/pythonscad_*.deb | head -1)
           if [ -z "$DEB_FILE" ]; then
@@ -211,7 +211,7 @@ jobs:
           fi
 
           VERSION="${{ steps.version.outputs.version }}"
-          NEW_NAME="pythonscad_${VERSION}-1_${{ matrix.distro }}_${{ matrix.arch }}.deb"
+          NEW_NAME="pythonscad_${VERSION}-1_${{ matrix.family }}_${{ matrix.distro }}_${{ matrix.arch }}.deb"
           mv "$DEB_FILE" "/tmp/debs/$NEW_NAME"
           ls -lh /tmp/debs/
 
