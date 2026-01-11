@@ -113,6 +113,14 @@ jobs:
               # Fix install_name to use @executable_path
               install_name_tool -id "@executable_path/../Frameworks/libbrotlicommon.1.dylib" \
                 "$APP_BUNDLE/Contents/Frameworks/libbrotlicommon.1.dylib"
+
+              # Fix references in libbrotlidec to use the bundled version
+              if [ -f "$APP_BUNDLE/Contents/Frameworks/libbrotlidec.1.dylib" ]; then
+                echo "Updating libbrotlidec references to use bundled libbrotlicommon"
+                install_name_tool -change "/usr/local/opt/brotli/lib/libbrotlicommon.1.dylib" \
+                  "@executable_path/../Frameworks/libbrotlicommon.1.dylib" \
+                  "$APP_BUNDLE/Contents/Frameworks/libbrotlidec.1.dylib"
+              fi
             fi
           fi
 
@@ -232,6 +240,14 @@ jobs:
               # Fix install_name to use @executable_path
               install_name_tool -id "@executable_path/../Frameworks/libbrotlicommon.1.dylib" \
                 "$APP_BUNDLE/Contents/Frameworks/libbrotlicommon.1.dylib"
+
+              # Fix references in libbrotlidec to use the bundled version
+              if [ -f "$APP_BUNDLE/Contents/Frameworks/libbrotlidec.1.dylib" ]; then
+                echo "Updating libbrotlidec references to use bundled libbrotlicommon"
+                install_name_tool -change "/opt/homebrew/opt/brotli/lib/libbrotlicommon.1.dylib" \
+                  "@executable_path/../Frameworks/libbrotlicommon.1.dylib" \
+                  "$APP_BUNDLE/Contents/Frameworks/libbrotlidec.1.dylib"
+              fi
             fi
           fi
 
@@ -581,6 +597,18 @@ jobs:
               echo "Fixing libbrotlicommon.1.dylib install_name ID"
               install_name_tool -id "@executable_path/../Frameworks/libbrotlicommon.1.dylib" "$FRAMEWORKS_DIR/libbrotlicommon.1.dylib"
             fi
+          fi
+
+          # Fix references in libbrotlidec to use the bundled libbrotlicommon
+          if [ -f "$FRAMEWORKS_DIR/libbrotlidec.1.dylib" ]; then
+            echo "Updating libbrotlidec references to use bundled libbrotlicommon"
+            # Try to change both possible paths (x86_64 and arm64)
+            install_name_tool -change "/usr/local/opt/brotli/lib/libbrotlicommon.1.dylib" \
+              "@executable_path/../Frameworks/libbrotlicommon.1.dylib" \
+              "$FRAMEWORKS_DIR/libbrotlidec.1.dylib" 2>/dev/null || true
+            install_name_tool -change "/opt/homebrew/opt/brotli/lib/libbrotlicommon.1.dylib" \
+              "@executable_path/../Frameworks/libbrotlicommon.1.dylib" \
+              "$FRAMEWORKS_DIR/libbrotlidec.1.dylib" 2>/dev/null || true
           fi
 
           echo "app_bundle=$MERGED_DIR/$APP_NAME" >> $GITHUB_OUTPUT
