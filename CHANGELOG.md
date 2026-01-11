@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.8.16](https://github.com/pythonscad/pythonscad/compare/v0.8.15...v0.8.16) (2026-01-11)
+
+
+### Bug Fixes
+
+* **ci:** exclude MXE cross-compilation from MSYS2 Python detection ([#314](https://github.com/pythonscad/pythonscad/issues/314)) ([a1fafda](https://github.com/pythonscad/pythonscad/commit/a1fafda951e2cde3f9c18a30cab0ff147d3af35e))
+* **ci:** fix apt-repo script exit and improve package naming ([#311](https://github.com/pythonscad/pythonscad/issues/311)) ([b12e6ad](https://github.com/pythonscad/pythonscad/commit/b12e6ad4b3246800be4c9459abfaeedc9fc3d6e0))
+* **ci:** update libbrotlidec references to use bundled libbrotlicommon ([#313](https://github.com/pythonscad/pythonscad/issues/313)) ([e02af62](https://github.com/pythonscad/pythonscad/commit/e02af62154ded2168fe4f27d4bf5266c4913ca8d))
+* **scripts:** extract heredoc Python code to separate script ([#307](https://github.com/pythonscad/pythonscad/issues/307)) ([9027d6d](https://github.com/pythonscad/pythonscad/commit/9027d6d268bd5ddfcd5506662c31230329245f47))
+
 ## [0.8.15](https://github.com/pythonscad/pythonscad/compare/v0.8.14...v0.8.15) (2026-01-10)
 
 
