@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.8.15](https://github.com/pythonscad/pythonscad/compare/v0.8.14...v0.8.15) (2026-01-10)
+
+
+### Bug Fixes
+
+* **ci:** use version-agnostic Python detection for Windows builds ([#309](https://github.com/pythonscad/pythonscad/issues/309)) ([50febc2](https://github.com/pythonscad/pythonscad/commit/50febc2e37e7e3091e56eeb110497cbd5460ad18))
+
 ## [0.8.14](https://github.com/pythonscad/pythonscad/compare/v0.8.13...v0.8.14) (2026-01-10)
 
 
