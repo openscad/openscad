@@ -67,8 +67,9 @@ private:
 // Primitive for drawing using OpenCSG
 // Makes a copy of the given VertexState enabling just unlit/uncolored vertex
 // rendering
-OpenCSGVBOPrim *createVBOPrimitive(const std::shared_ptr<OpenCSGVertexState>& vertex_state,
-                                   const OpenCSG::Operation operation, const unsigned int convexity)
+std::unique_ptr<OpenCSGVBOPrim> createVBOPrimitive(
+  const std::shared_ptr<OpenCSGVertexState>& vertex_state, const OpenCSG::Operation operation,
+  const unsigned int convexity)
 {
   std::unique_ptr<VertexState> opencsg_vs = std::make_unique<VertexState>(
     vertex_state->drawMode(), vertex_state->drawSize(), vertex_state->drawType(),
@@ -81,7 +82,7 @@ OpenCSGVBOPrim *createVBOPrimitive(const std::shared_ptr<OpenCSGVertexState>& ve
   opencsg_vs->glEnd().insert(opencsg_vs->glEnd().begin(), vertex_state->glEnd().begin(),
                              vertex_state->glEnd().begin() + 1);
 
-  return new OpenCSGVBOPrim(operation, convexity, std::move(opencsg_vs));
+  return std::make_unique<OpenCSGVBOPrim>(operation, convexity, std::move(opencsg_vs));
 }
 
 }  // namespace
@@ -187,7 +188,6 @@ void OpenCSGRenderer::createCSGVBOProducts(const CSGProducts& products, bool hig
     std::unique_ptr<OpenCSGVBOProduct> vertex_state_container = std::make_unique<OpenCSGVBOProduct>();
 
     Color4f last_color;
-    std::vector<OpenCSG::Primitive *>& primitives = vertex_state_container->primitives();
     auto& vertex_states = vertex_state_container->states();
     VBOBuilder vbo_builder(std::make_unique<OpenCSGVertexStateFactory>(), *vertex_state_container.get());
     vbo_builder.addSurfaceData();
@@ -238,7 +238,7 @@ void OpenCSGRenderer::createCSGVBOProducts(const CSGProducts& products, bool hig
                                      enable_barycentric, override_color);
           if (const auto csg_vs = std::dynamic_pointer_cast<OpenCSGVertexState>(vertex_states.back())) {
             csg_vs->setCsgObjectIndex(csgobj.leaf->index);
-            primitives.emplace_back(
+            vertex_state_container->addPrimitive(
               createVBOPrimitive(csg_vs, OpenCSG::Intersection, csgobj.leaf->polyset->getConvexity()));
           }
         } else {
@@ -257,7 +257,7 @@ void OpenCSGRenderer::createCSGVBOProducts(const CSGProducts& products, bool hig
           if (const auto csg_vs = std::dynamic_pointer_cast<OpenCSGVertexState>(vertex_states.back())) {
             csg_vs->setCsgObjectIndex(csgobj.leaf->index);
 
-            primitives.emplace_back(
+            vertex_state_container->addPrimitive(
               createVBOPrimitive(csg_vs, OpenCSG::Intersection, csgobj.leaf->polyset->getConvexity()));
 
             cull = std::make_shared<VertexState>();
@@ -325,7 +325,7 @@ void OpenCSGRenderer::createCSGVBOProducts(const CSGProducts& products, bool hig
                                    override_color);
         if (const auto csg_vs = std::dynamic_pointer_cast<OpenCSGVertexState>(vertex_states.back())) {
           csg_vs->setCsgObjectIndex(csgobj.leaf->index);
-          primitives.emplace_back(
+          vertex_state_container->addPrimitive(
             createVBOPrimitive(csg_vs, OpenCSG::Subtraction, csgobj.leaf->polyset->getConvexity()));
         } else {
           assert(false && "Subtraction surface state was nullptr");
