@@ -1,0 +1,7 @@
+[project]
+name = "openscad-ci-coverage"
+version = "0.0.0"
+requires-python = ">=3.9"
+dependencies = [
+  "gcovr",
+]
