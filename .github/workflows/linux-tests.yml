@@ -34,11 +34,11 @@ jobs:
       run: |
         which sudo || apt install -y sudo
         sudo ./scripts/uni-get-dependencies.sh ${{ matrix.qt }}
-    - uses: actions/setup-python@v6
+    - uses: astral-sh/setup-uv@v7
       with:
-        python-version: '3.x'
+        python-version: '3.13'
     - name: Install gcovr
-      run: python -m pip install -U gcovr
+      run: uv sync --project .github/ci/openscad-coverage
     - name: Build and test
       run: ./scripts/github-ci.sh experimental enable_python ${{ matrix.qt == 'qt6' && 'qt6' || '' }} build test coverage
     - name: Upload Test Result Report

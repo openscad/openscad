@@ -6,6 +6,8 @@ PARALLEL_MAKE=-j2  # runners have insufficient memory for -j4
 PARALLEL_CTEST=-j4
 PARALLEL_GCOVR=-j4
 
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+
 BUILDDIR=b
 GCOVRDIR=c
 
@@ -68,7 +70,7 @@ do_coverage() {
 	(
 		cd "$BUILDDIR"
 		echo "Generating code coverage report..."
-		gcovr -r ../src CMakeFiles/OpenSCADLibInternal.dir $PARALLEL_GCOVR --html --html-details --sort uncovered-percent -o coverage.html
+		uv run --project "$REPO_ROOT/.github/ci/openscad-coverage" gcovr -r ../src CMakeFiles/OpenSCADLibInternal.dir $PARALLEL_GCOVR --html --html-details --sort uncovered-percent -o coverage.html
 		if [[ $? != 0 ]]; then
 			exit 1
 		fi
