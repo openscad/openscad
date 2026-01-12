@@ -2450,7 +2450,7 @@ void MainWindow::leftClick(QPoint mouse)
 {
   auto state = meas.statemachine(mouse);
   if (state.status != Measurement::Result::Status::NoChange) {
-    this->qglview->measure_state = MEASURE_DIRTY;
+    this->qglview->measure_state = Measurement::MEASURE_DIRTY;
     QMenu resultmenu(this);
     // Ensures we clean the display regardless of how menu gets closed.
     connect(&resultmenu, &QMenu::aboutToHide, this, &MainWindow::measureFinished);

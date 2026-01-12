@@ -33,6 +33,8 @@
 #include <cmath>
 #include <sstream>
 
+namespace Measurement {
+
 /**
  * Converts an Eigen::Vector3d to a QString in the format "[x, y, z]".
  * Uses full double precision by default (usually 17 digits).
@@ -47,29 +49,33 @@ inline QString Vector3dtoQString(const Eigen::Vector3d& vec,
     .arg(vec.z(), 0, 'g', precision);
 }
 
-Measurement::Measurement() {}
+template <typename TView>
+Template<TView>::Template() {}
 
-void Measurement::setView(QGLView *qglview)
-{
-  this->qglview = qglview;
+template <typename TView>
+void Template<TView>::setView(TView *view) {
+  this->qglview = view;
   this->qglview->measure_state = MEASURE_IDLE;
 }
 
-void Measurement::startMeasureDist(void)
+template <typename TView>
+void Template<TView>::startMeasureDist(void)
 {
   this->qglview->selected_obj.clear();
   this->qglview->update();
   this->qglview->measure_state = MEASURE_DIST1;
 }
 
-void Measurement::startMeasureAngle(void)
+template <typename TView>
+void Template<TView>::startMeasureAngle(void)
 {
   this->qglview->selected_obj.clear();
   this->qglview->update();
   this->qglview->measure_state = MEASURE_ANG1;
 }
 
-bool Measurement::stopMeasure()
+template <typename TView>
+bool Template<TView>::stopMeasure()
 {
   if (qglview->measure_state == MEASURE_IDLE) return false;
   bool ret = qglview->measure_state != MEASURE_DIRTY;
@@ -80,9 +86,10 @@ bool Measurement::stopMeasure()
   return ret;
 }
 
-Measurement::Result Measurement::statemachine(QPoint mouse)
+template <typename TView>
+Result Template<TView>::statemachine(QPoint mouse)
 {
-  Measurement::Result ret{Measurement::Result::Status::NoChange};
+  Result ret{Result::Status::NoChange};
   if (qglview->measure_state == MEASURE_IDLE || qglview->measure_state == MEASURE_DIRTY) return ret;
   qglview->selectPoint(mouse.x(), mouse.y());
   double ang = NAN;
@@ -95,7 +102,7 @@ Measurement::Result Measurement::statemachine(QPoint mouse)
     if (qglview->selected_obj.size() == 2) {
       obj1 = qglview->selected_obj[0];
       obj2 = qglview->selected_obj[1];
-      Measurement::Distance res = distMeasurement(obj1, obj2);
+      Distance res = distMeasurement(obj1, obj2);
       if (!res.codingError.isEmpty()) {
         ret.addText(res.codingError);
       }
@@ -137,12 +144,12 @@ Measurement::Result Measurement::statemachine(QPoint mouse)
 
       if (std::isnan(res.distance)) {
         ret.addText("Got Not-a-Number when calculating distance; sorry");
-        ret.status = Measurement::Result::Status::Error;
+        ret.status = Result::Status::Error;
         return ret;
       }
       ret.addText(QStringLiteral("Distance is %1").arg(std::fabs(res.distance)),
                   QStringLiteral("%1").arg(std::fabs(res.distance)));
-      ret.status = Measurement::Result::Status::Success;
+      ret.status = Result::Status::Success;
     }
     break;
   case MEASURE_ANG1:
@@ -201,26 +208,27 @@ Measurement::Result Measurement::statemachine(QPoint mouse)
         ang = acos(side1.dot(side2)) * 180.0 / 3.14159265359;
       } else {
         ret.addText("If selecting three things, they must all be points");
-        ret.status = Measurement::Result::Status::Error;
+        ret.status = Result::Status::Error;
         return ret;
       }
     display_angle:
       if (std::isnan(ang)) {
         ret.addText("Got Not-a-Number when calculating angle; sorry");
-        ret.status = Measurement::Result::Status::Error;
+        ret.status = Result::Status::Error;
         return ret;
       }
       ret.addText(QStringLiteral("Angle is %1 Degrees").arg(ang));
-      ret.status = Measurement::Result::Status::Success;
+      ret.status = Result::Status::Success;
     }
     break;
   }
   return ret;
 }
 
-Measurement::Distance Measurement::distMeasurement(SelectedObject& obj1, SelectedObject& obj2)
+template <typename TView>
+typename Template<TView>::Distance Template<TView>::distMeasurement(SelectedObject& obj1, SelectedObject& obj2)
 {
-  Measurement::Distance ret{NAN};
+  Distance ret{NAN};
   if (obj1.type == SelectionType::SELECTION_POINT && obj2.type == SelectionType::SELECTION_POINT) {
     ret.ptDiff = obj2.p1 - obj1.p1;
     ret.distance = ret.ptDiff->norm();
@@ -276,3 +284,7 @@ Measurement::Distance Measurement::distMeasurement(SelectedObject& obj1, Selecte
   }
   return ret;
 }
+
+template class Template<QGLView>;
+template class Template<FakeGLView>;
+};
