@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.8.20](https://github.com/pythonscad/pythonscad/compare/v0.8.19...v0.8.20) (2026-01-12)
+
+
+### Bug Fixes
+
+* **ci:** correct package file paths in APT repository ([#325](https://github.com/pythonscad/pythonscad/issues/325)) ([9d6b463](https://github.com/pythonscad/pythonscad/commit/9d6b463fbe564738272738990e5be7d118036791))
+
 ## [0.8.19](https://github.com/pythonscad/pythonscad/compare/v0.8.18...v0.8.19) (2026-01-12)
 
 
