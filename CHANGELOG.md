@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.8.17](https://github.com/pythonscad/pythonscad/compare/v0.8.16...v0.8.17) (2026-01-12)
+
+
+### Bug Fixes
+
+* **ci:** fix issues with Debian macOS and Windows release builds ([#317](https://github.com/pythonscad/pythonscad/issues/317)) ([88cd316](https://github.com/pythonscad/pythonscad/commit/88cd316e3cffaa0212495d070d31742977bd051f))
+
 ## [0.8.16](https://github.com/pythonscad/pythonscad/compare/v0.8.15...v0.8.16) (2026-01-11)
 
 
