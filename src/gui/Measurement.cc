@@ -50,10 +50,13 @@ inline QString Vector3dtoQString(const Eigen::Vector3d& vec,
 }
 
 template <typename TView>
-Template<TView>::Template() {}
+Template<TView>::Template()
+{
+}
 
 template <typename TView>
-void Template<TView>::setView(TView *view) {
+void Template<TView>::setView(TView *view)
+{
   this->qglview = view;
   this->qglview->measure_state = MEASURE_IDLE;
 }
@@ -226,7 +229,8 @@ Result Template<TView>::statemachine(QPoint mouse)
 }
 
 template <typename TView>
-typename Template<TView>::Distance Template<TView>::distMeasurement(SelectedObject& obj1, SelectedObject& obj2)
+typename Template<TView>::Distance Template<TView>::distMeasurement(SelectedObject& obj1,
+                                                                    SelectedObject& obj2)
 {
   Distance ret{NAN};
   if (obj1.type == SelectionType::SELECTION_POINT && obj2.type == SelectionType::SELECTION_POINT) {
@@ -287,4 +291,4 @@ typename Template<TView>::Distance Template<TView>::distMeasurement(SelectedObje
 
 template class Template<QGLView>;
 template class Template<FakeGLView>;
-};
+};  // namespace Measurement

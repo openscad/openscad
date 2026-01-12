@@ -3,16 +3,17 @@
 
 enum class MeasureMode { DISTANCE, ANGLE };
 
-TEST_CASE("Measurement Values Plumbed to GUI", "[measurement]") {
+TEST_CASE("Measurement Values Plumbed to GUI", "[measurement]")
+{
   // Reference the template inside the namespace
   using MTemplate = Measurement::Template<Measurement::FakeGLView>;
-    
+
   struct MathTestCase {
     std::string name;
     MeasureMode mode;
     std::vector<SelectedObject> objects;
     // Substrings to find in result.messages, starting from the LAST message added
-    std::vector<QString> expectedSubstrings; 
+    std::vector<QString> expectedSubstrings;
   };
 
   auto p = [](double x, double y, double z) {
@@ -31,31 +32,17 @@ TEST_CASE("Measurement Values Plumbed to GUI", "[measurement]") {
   };
 
   std::vector<MathTestCase> cases = {
-    {
-      "Point to Point",
-      MeasureMode::DISTANCE,
-      { p(0,0,0), p(3,4,0) },
-      { "5", "3, 4, 0" } 
-    },
-    {
-      "90 Degree Angle",
-      MeasureMode::ANGLE,
-      { p(1,0,0), p(0,0,0), p(0,1,0) },
-      { "90" }
-    },
-    {
-      "Skew Lines",
-      MeasureMode::DISTANCE,
-      { 
-        l(0, 0, 0, 10, 0, 0),
-        l(0, 0, 5, 0, 10, 5)
-      },
-      { "5", "0, 0, 5" } 
-    },
+    {"Point to Point", MeasureMode::DISTANCE, {p(0, 0, 0), p(3, 4, 0)}, {"5", "3, 4, 0"}},
+    {"90 Degree Angle", MeasureMode::ANGLE, {p(1, 0, 0), p(0, 0, 0), p(0, 1, 0)}, {"90"}},
+    {"Skew Lines",
+     MeasureMode::DISTANCE,
+     {l(0, 0, 0, 10, 0, 0), l(0, 0, 5, 0, 10, 5)},
+     {"5", "0, 0, 5"}},
   };
 
   for (const auto& tc : cases) {
-    SECTION(tc.name) {
+    SECTION(tc.name)
+    {
       MTemplate meas;
       Measurement::FakeGLView fake;
       meas.setView(&fake);
@@ -74,7 +61,7 @@ TEST_CASE("Measurement Values Plumbed to GUI", "[measurement]") {
       Measurement::Result result;
       int safety_break = 0;
       do {
-        result = meas.statemachine(QPoint(0,0));
+        result = meas.statemachine(QPoint(0, 0));
         // Safety break to prevent infinite loops if state doesn't advance
       } while (result.status == Measurement::Result::Status::NoChange && ++safety_break < 10);
 
@@ -90,7 +77,7 @@ TEST_CASE("Measurement Values Plumbed to GUI", "[measurement]") {
 
         UNSCOPED_INFO("Expected substring: " << expected.toStdString());
         UNSCOPED_INFO("Actual message: " << actualMsg.toStdString());
-                
+
         CHECK(actualMsg.contains(expected));
       }
     }
