@@ -146,17 +146,11 @@ for DISTRO in $CODENAMES; do
         if [ -d "pool/$DISTRO/main/p/pythonscad" ] && ls "pool/$DISTRO/main/p/pythonscad"/*_*_${DISTRO}_${arch}.deb >/dev/null 2>&1; then
             info "  Generating Packages file for ${DISTRO}/${arch}..."
 
-            cd "$BINARY_DIR"
-            # Scan only packages in this distribution's pool
-            dpkg-scanpackages --arch "$arch" "../../../../pool/$DISTRO/main/p/pythonscad" /dev/null > Packages
-            gzip -k -f Packages
+            # Scan packages from repo root so paths are relative to repo root
+            dpkg-scanpackages --arch "$arch" "pool/$DISTRO/main/p/pythonscad" /dev/null > "$BINARY_DIR/Packages"
+            gzip -k -f "$BINARY_DIR/Packages"
 
-            # Calculate checksums for Release file
-            md5sum Packages >> ../../../../.checksums_temp || true
-            sha256sum Packages >> ../../../../.checksums_temp || true
-
-            info "    $(wc -l < Packages) package entries for ${DISTRO}/${arch}"
-            cd - > /dev/null
+            info "    $(wc -l < "$BINARY_DIR/Packages") package entries for ${DISTRO}/${arch}"
         else
             info "  No packages found for ${DISTRO}/${arch}"
         fi
