@@ -28,7 +28,7 @@ fi
 if [[ "$QT" == "qt6" ]]; then
   QT_PACKAGES="qscintilla-qt6:p qt6-5compat:p qt6-multimedia:p qt6-svg:p"
 else
-  QT_PACKAGES="qscintilla:p qt5-multimedia:p qt5-svg:p"
+  QT_PACKAGES="qscintilla-qt5:p qt5-multimedia:p qt5-svg:p"
 fi
 
 PACKAGE_LIST=(
