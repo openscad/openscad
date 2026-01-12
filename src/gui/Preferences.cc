@@ -853,9 +853,9 @@ void Preferences::on_enableRangeCheckBox_toggled(bool state)
 void Preferences::on_comboBoxRenderBackend3D_activated(int val)
 {
   applyComboBox(this->comboBoxRenderBackend3D, val, Settings::Settings::renderBackend3D);
-  RenderSettings::inst()->backend3D =
-    renderBackend3DFromString(Settings::Settings::renderBackend3D.value())
-      .value_or(DEFAULT_RENDERING_BACKEND_3D);
+  auto backend = renderBackend3DFromString(Settings::Settings::renderBackend3D.value())
+                   .value_or(DEFAULT_RENDERING_BACKEND_3D);
+  emit renderBackend3DChanged(backend);
 }
 
 void Preferences::on_comboBoxToolbarExport3D_activated(int val)
