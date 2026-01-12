@@ -663,62 +663,110 @@ if(ENABLE_PYTHON)
   target_compile_definitions(OpenSCADPy PRIVATE ENABLE_CGAL)
   target_compile_definitions(OpenSCADPy PRIVATE ENABLE_EXPERIMENTAL)
   find_package(Nettle 3.4)
-  if(WIN32 AND NOT MXECROSS)
-    # Native MSYS2 Windows build (not MXE cross-compilation)
+  if(WIN32)
+    # Windows target build.
+    # - Native MSYS2 build: use MSYS2-installed Python files.
+    # - MXE cross-compilation: download MSYS2 python package to get Windows headers/libs.
     #MINGW environment
     SET(CALLSTACK "ucrt")
     #	SET(CALLSTACK "mingw")
     #	SET(CALLSTACK "clang")
 
-    # Auto-detect Python version from MSYS2 environment
-    # First check if PYTHON_VERSION env var is set (from CI), otherwise detect
-    if(DEFINED ENV{PYTHON_VERSION})
-      SET(PYTHON_MINGW_VERSION "$ENV{PYTHON_VERSION}")
-      message(STATUS "Using Python version from environment: ${PYTHON_MINGW_VERSION}")
-    else()
-      # Detect Python version by checking installed libraries
-      file(GLOB PYTHON_LIBS "/${CALLSTACK}64/lib/libpython3.*.dll.a")
-      if(PYTHON_LIBS)
-        list(GET PYTHON_LIBS 0 FIRST_LIB)
-        string(REGEX MATCH "libpython([0-9]+\\.[0-9]+)\\.dll\\.a" _ ${FIRST_LIB})
-        SET(PYTHON_MINGW_VERSION ${CMAKE_MATCH_1})
-        message(STATUS "Auto-detected Python version: ${PYTHON_MINGW_VERSION}")
-      else()
-        message(FATAL_ERROR "Could not detect Python version. Ensure Python is installed via MSYS2.")
-      endif()
-    endif()
+    if(MXECROSS)
+      # MXE cross-compilation: obtain Windows Python headers/libs from MSYS2 mirror.
+      set(PYTHON_MINGW_DEVPATH "${CMAKE_CURRENT_SOURCE_DIR}/python_mingw")
+      set(PYTHON_MINGW_REPODIR "${CALLSTACK}64")
+      set(PYTHON_MINGW_REPOURL "https://mirror.msys2.org/mingw/${PYTHON_MINGW_REPODIR}")
 
-    # Use MSYS2-installed Python instead of downloading it separately
-    SET(PYTHON_MINGW_DEVPATH "${CMAKE_CURRENT_SOURCE_DIR}/python_mingw")
-    SET(PYTHON_MINGW_SYSTEM_LIB "/${CALLSTACK}64/lib/libpython${PYTHON_MINGW_VERSION}.dll.a")
-    SET(PYTHON_MINGW_ARCHIVE "${PYTHON_MINGW_DEVPATH}/${CALLSTACK}64/lib/libpython${PYTHON_MINGW_VERSION}.dll.a")
-    SET(PYTHON_MINGW_INCLUDE "/${CALLSTACK}64/include/python${PYTHON_MINGW_VERSION}")
-
-    # Copy MSYS2 Python to local directory for patching
-    # Use bash to ensure Unix commands work in MSYS2 environment
-    add_custom_command(
-      WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-      COMMAND bash -c "rm -rf python_mingw && mkdir -p python_mingw/${CALLSTACK}64/lib && mkdir -p python_mingw/${CALLSTACK}64/include && cp -r ${PYTHON_MINGW_SYSTEM_LIB} python_mingw/${CALLSTACK}64/lib/ && cp -r ${PYTHON_MINGW_INCLUDE} python_mingw/${CALLSTACK}64/include/ && cd python_mingw && ${CMAKE_CURRENT_SOURCE_DIR}/scripts/libpython_patch.sh"
-      OUTPUT ${PYTHON_MINGW_ARCHIVE}
-    )
-    add_custom_target(tgt_python_mingw DEPENDS ${PYTHON_MINGW_ARCHIVE})
-    add_dependencies(OpenSCADPy tgt_python_mingw)
-
-    # Get the full Python version for embed downloads (e.g., 3.13.2)
-    # Check if PYTHON_FULL_VERSION env var is set (from CI), otherwise try to detect
-    if(DEFINED ENV{PYTHON_FULL_VERSION})
-      SET(PYTHON_FULL_VERSION "$ENV{PYTHON_FULL_VERSION}")
-      message(STATUS "Using full Python version from environment: ${PYTHON_FULL_VERSION}")
-    else()
-      # Try to detect full version by running python
+      # Resolve the latest mingw-w64-<callstack>-x86_64-python package filename from the mirror.
+      # Example filename: mingw-w64-ucrt-x86_64-python-3.13.2-2-any.pkg.tar.zst
       execute_process(
-        COMMAND python --version
-        OUTPUT_VARIABLE PYTHON_VERSION_OUTPUT
+        COMMAND bash -c "set -euo pipefail; html=$(curl -fsSL '${PYTHON_MINGW_REPOURL}/'); echo \"$html\" | grep -oE 'mingw-w64-${CALLSTACK}-x86_64-python-[0-9]+\\.[0-9]+\\.[0-9]+-[0-9]+-any\\.pkg\\.tar\\.(zst|xz|gz)' | sort -V | tail -n 1"
+        OUTPUT_VARIABLE PYTHON_MINGW_PACKAGEFILE
         OUTPUT_STRIP_TRAILING_WHITESPACE
       )
-      string(REGEX MATCH "Python ([0-9]+\\.[0-9]+\\.[0-9]+)" _ ${PYTHON_VERSION_OUTPUT})
-      SET(PYTHON_FULL_VERSION ${CMAKE_MATCH_1})
-      message(STATUS "Auto-detected full Python version: ${PYTHON_FULL_VERSION}")
+      if(NOT PYTHON_MINGW_PACKAGEFILE)
+        message(FATAL_ERROR "Could not resolve MSYS2 python package filename from ${PYTHON_MINGW_REPOURL}.")
+      endif()
+
+      # Extract Python versions from the package filename.
+      string(REGEX MATCH "python-([0-9]+\\.[0-9]+\\.[0-9]+)-" _ ${PYTHON_MINGW_PACKAGEFILE})
+      set(PYTHON_FULL_VERSION "${CMAKE_MATCH_1}")
+      string(REGEX MATCH "^([0-9]+\\.[0-9]+)" _ "${PYTHON_FULL_VERSION}")
+      set(PYTHON_MINGW_VERSION "${CMAKE_MATCH_1}")
+      if(NOT PYTHON_MINGW_VERSION OR NOT PYTHON_FULL_VERSION)
+        message(FATAL_ERROR "Failed to parse Python version from MSYS2 package filename: ${PYTHON_MINGW_PACKAGEFILE}")
+      endif()
+
+      set(PYTHON_MINGW_ARCHIVE "${PYTHON_MINGW_DEVPATH}/${PYTHON_MINGW_REPODIR}/lib/libpython${PYTHON_MINGW_VERSION}.dll.a")
+      message(STATUS "MXE: Using MSYS2 python package: ${PYTHON_MINGW_PACKAGEFILE}")
+      message(STATUS "MXE: Python version: ${PYTHON_MINGW_VERSION} (full: ${PYTHON_FULL_VERSION})")
+
+      add_custom_command(
+        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+        COMMAND bash ${CMAKE_CURRENT_SOURCE_DIR}/scripts/download-msys2-python.sh
+                "${PYTHON_MINGW_REPOURL}"
+                "${PYTHON_MINGW_PACKAGEFILE}"
+                "${PYTHON_MINGW_DEVPATH}"
+        OUTPUT ${PYTHON_MINGW_ARCHIVE}
+      )
+      add_custom_target(tgt_python_mingw DEPENDS ${PYTHON_MINGW_ARCHIVE})
+      add_dependencies(OpenSCADPy tgt_python_mingw)
+    else()
+      # Native MSYS2 Windows build: use MSYS2-installed Python.
+      # Auto-detect Python version from MSYS2 environment
+      # First check if PYTHON_VERSION env var is set (from CI), otherwise detect
+      if(DEFINED ENV{PYTHON_VERSION})
+        SET(PYTHON_MINGW_VERSION "$ENV{PYTHON_VERSION}")
+        message(STATUS "Using Python version from environment: ${PYTHON_MINGW_VERSION}")
+      else()
+        # Detect Python version by checking installed libraries
+        file(GLOB PYTHON_LIBS "/${CALLSTACK}64/lib/libpython3.*.dll.a")
+        if(PYTHON_LIBS)
+          list(GET PYTHON_LIBS 0 FIRST_LIB)
+          string(REGEX MATCH "libpython([0-9]+\\.[0-9]+)\\.dll\\.a" _ ${FIRST_LIB})
+          SET(PYTHON_MINGW_VERSION ${CMAKE_MATCH_1})
+          message(STATUS "Auto-detected Python version: ${PYTHON_MINGW_VERSION}")
+        else()
+          message(FATAL_ERROR "Could not detect Python version. Ensure Python is installed via MSYS2.")
+        endif()
+      endif()
+
+      # Use MSYS2-installed Python instead of downloading it separately
+      SET(PYTHON_MINGW_DEVPATH "${CMAKE_CURRENT_SOURCE_DIR}/python_mingw")
+      SET(PYTHON_MINGW_SYSTEM_LIB "/${CALLSTACK}64/lib/libpython${PYTHON_MINGW_VERSION}.dll.a")
+      SET(PYTHON_MINGW_ARCHIVE "${PYTHON_MINGW_DEVPATH}/${CALLSTACK}64/lib/libpython${PYTHON_MINGW_VERSION}.dll.a")
+      SET(PYTHON_MINGW_INCLUDE "/${CALLSTACK}64/include/python${PYTHON_MINGW_VERSION}")
+
+      # Copy MSYS2 Python to local directory for patching
+      # Use bash to ensure Unix commands work in MSYS2 environment
+      add_custom_command(
+        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+        COMMAND bash ${CMAKE_CURRENT_SOURCE_DIR}/scripts/prepare-msys2-python.sh
+                "${CALLSTACK}"
+                "${PYTHON_MINGW_VERSION}"
+                "${PYTHON_MINGW_DEVPATH}"
+        OUTPUT ${PYTHON_MINGW_ARCHIVE}
+      )
+      add_custom_target(tgt_python_mingw DEPENDS ${PYTHON_MINGW_ARCHIVE})
+      add_dependencies(OpenSCADPy tgt_python_mingw)
+
+      # Get the full Python version for embed downloads (e.g., 3.13.2)
+      # Check if PYTHON_FULL_VERSION env var is set (from CI), otherwise try to detect
+      if(DEFINED ENV{PYTHON_FULL_VERSION})
+        SET(PYTHON_FULL_VERSION "$ENV{PYTHON_FULL_VERSION}")
+        message(STATUS "Using full Python version from environment: ${PYTHON_FULL_VERSION}")
+      else()
+        # Try to detect full version by running python
+        execute_process(
+          COMMAND python --version
+          OUTPUT_VARIABLE PYTHON_VERSION_OUTPUT
+          OUTPUT_STRIP_TRAILING_WHITESPACE
+        )
+        string(REGEX MATCH "Python ([0-9]+\\.[0-9]+\\.[0-9]+)" _ ${PYTHON_VERSION_OUTPUT})
+        SET(PYTHON_FULL_VERSION ${CMAKE_MATCH_1})
+        message(STATUS "Auto-detected full Python version: ${PYTHON_FULL_VERSION}")
+      endif()
     endif()
 
     # Calculate the DLL name based on version (e.g., python313.dll for 3.13)
@@ -745,10 +793,19 @@ if(ENABLE_PYTHON)
     target_include_directories(OpenSCADPy SYSTEM PRIVATE ${FREETYPE_INCLUDE_DIRS})
     target_include_directories(OpenSCADPy PRIVATE "${CMAKE_SOURCE_DIR}/submodules/Clipper2/CPP/Clipper2Lib/include")
   else() #MXE
-	  if (${PYTHON_VERSION}  STREQUAL "OFF")
-      find_package(Python3  REQUIRED COMPONENTS Development)
+	  if (MXECROSS)
+      # Cross builds only need the host interpreter for tooling; avoid pulling host dev libs
+      find_package(Python3 REQUIRED COMPONENTS Interpreter)
+      set(Python_Eff_LIBRARIES "")
+      set(Python_Eff_INCLUDE_DIRS "")
     else()
-      find_package(Python3  ${PYTHON_VERSION} EXACT REQUIRED COMPONENTS Development)
+      if (${PYTHON_VERSION}  STREQUAL "OFF")
+        find_package(Python3  REQUIRED COMPONENTS Development)
+      else()
+        find_package(Python3  ${PYTHON_VERSION} EXACT REQUIRED COMPONENTS Development)
+      endif()
+      SET(Python_Eff_LIBRARIES ${Python3_LIBRARIES} )
+      SET(Python_Eff_INCLUDE_DIRS ${Python3_INCLUDE_DIRS} )
     endif()
     if(NOT Nettle_FOUND)
       message(WARNING "Nettle not found, disabling python support.")
@@ -760,14 +817,18 @@ if(ENABLE_PYTHON)
         set(ENABLE_PYTHON OFF CACHE BOOL "" FORCE)
       endif()
     endif()
-    SET(Python_Eff_LIBRARIES ${Python3_LIBRARIES} )
-    SET(Python_Eff_INCLUDE_DIRS ${Python3_INCLUDE_DIRS} )
-    target_link_libraries(OpenSCADPy PRIVATE ${Python_Eff_LIBRARIES})
-    target_include_directories(OpenSCADPy PRIVATE ${Python_Eff_INCLUDE_DIRS})
+    if(Python_Eff_LIBRARIES)
+      target_link_libraries(OpenSCADPy PRIVATE ${Python_Eff_LIBRARIES})
+    endif()
+    if(Python_Eff_INCLUDE_DIRS)
+      target_include_directories(OpenSCADPy PRIVATE ${Python_Eff_INCLUDE_DIRS})
+    endif()
     target_include_directories(OpenSCADPy PRIVATE "${CMAKE_SOURCE_DIR}/submodules/Clipper2/CPP/Clipper2Lib/include")
     message(STATUS "Python enabled")
     target_include_directories(OpenSCADPy SYSTEM PRIVATE ${FREETYPE_INCLUDE_DIRS})
-    target_link_libraries(OpenSCADPy PRIVATE ${Python3_LIBRARIES})
+    if(Python3_LIBRARIES)
+      target_link_libraries(OpenSCADPy PRIVATE ${Python3_LIBRARIES})
+    endif()
   endif() # endif MXE
   target_include_directories(OpenSCADPy PRIVATE ${Nettle_INCLUDE_DIRS})
   target_link_libraries(OpenSCADPy PRIVATE ${Nettle_LIBRARIES})

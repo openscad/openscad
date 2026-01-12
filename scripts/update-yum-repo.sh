@@ -210,7 +210,7 @@ cat > "${REPO_DIR}/pythonscad.repo" <<EOF
 # PythonSCAD YUM/DNF Repository
 #
 # Installation:
-#   sudo curl -o /etc/yum.repos.d/pythonscad.repo \\
+#   sudo curl -L -o /etc/yum.repos.d/pythonscad.repo \\
 #     ${REPO_BASE_URL}/yum/pythonscad.repo
 #   sudo dnf install pythonscad
 
@@ -309,12 +309,12 @@ cat > "${REPO_DIR}/index.html" <<EOF
     <h2>Installation</h2>
 
     <h3>${FEDORA_RANGE:-Fedora}</h3>
-    <pre>sudo curl -o /etc/yum.repos.d/pythonscad.repo \\
+    <pre>sudo curl -L -o /etc/yum.repos.d/pythonscad.repo \\
   ${REPO_BASE_URL}/yum/pythonscad.repo
 sudo dnf install pythonscad</pre>
 
     <h3>RHEL/Rocky/AlmaLinux</h3>
-    <pre>sudo curl -o /etc/yum.repos.d/pythonscad.repo \\
+    <pre>sudo curl -L -o /etc/yum.repos.d/pythonscad.repo \\
   ${REPO_BASE_URL}/yum/pythonscad.repo
 sudo dnf config-manager --set-enabled pythonscad-el9
 sudo dnf install pythonscad</pre>

@@ -419,12 +419,14 @@ info ""
 info "Package statistics:"
 for DISTRO in $CODENAMES; do
     for arch in amd64 arm64; do
-        COUNT=$(ls pool/main/p/pythonscad/*_*_${DISTRO}_${arch}.deb 2>/dev/null | wc -l)
+        COUNT=$(ls pool/main/p/pythonscad/*_*_${DISTRO}_${arch}.deb 2>/dev/null | wc -l) || COUNT=0
         if [ "$COUNT" -gt 0 ]; then
             info "  $DISTRO/$arch: $COUNT packages"
         fi
     done
 done
+# Ensure we have a successful exit code from the loop
+true
 info ""
 info "To use this repository, users should run:"
 info "  wget -qO - $REPO_BASE_URL/apt/pythonscad-archive-keyring.gpg | \\"

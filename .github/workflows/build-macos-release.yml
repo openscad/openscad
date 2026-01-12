@@ -110,18 +110,22 @@ jobs:
             if [ -f "$BROTLI_LIB" ]; then
               echo "Copying libbrotlicommon.1.dylib to app bundle"
               cp "$BROTLI_LIB" "$APP_BUNDLE/Contents/Frameworks/"
-              # Fix install_name to use @executable_path
-              install_name_tool -id "@executable_path/../Frameworks/libbrotlicommon.1.dylib" \
-                "$APP_BUNDLE/Contents/Frameworks/libbrotlicommon.1.dylib"
-
-              # Fix references in libbrotlidec to use the bundled version
-              if [ -f "$APP_BUNDLE/Contents/Frameworks/libbrotlidec.1.dylib" ]; then
-                echo "Updating libbrotlidec references to use bundled libbrotlicommon"
-                install_name_tool -change "/usr/local/opt/brotli/lib/libbrotlicommon.1.dylib" \
-                  "@executable_path/../Frameworks/libbrotlicommon.1.dylib" \
-                  "$APP_BUNDLE/Contents/Frameworks/libbrotlidec.1.dylib"
-              fi
             fi
+          fi
+
+          # Always fix libbrotlicommon install_name (macdeployqt may have copied it)
+          if [ -f "$APP_BUNDLE/Contents/Frameworks/libbrotlicommon.1.dylib" ]; then
+            echo "Fixing libbrotlicommon.1.dylib install_name ID"
+            install_name_tool -id "@executable_path/../Frameworks/libbrotlicommon.1.dylib" \
+              "$APP_BUNDLE/Contents/Frameworks/libbrotlicommon.1.dylib"
+          fi
+
+          # Fix references in libbrotlidec to use the bundled libbrotlicommon (always run this)
+          if [ -f "$APP_BUNDLE/Contents/Frameworks/libbrotlidec.1.dylib" ]; then
+            echo "Updating libbrotlidec references to use bundled libbrotlicommon"
+            install_name_tool -change "/usr/local/opt/brotli/lib/libbrotlicommon.1.dylib" \
+              "@executable_path/../Frameworks/libbrotlicommon.1.dylib" \
+              "$APP_BUNDLE/Contents/Frameworks/libbrotlidec.1.dylib"
           fi
 
           echo "x86_64 build complete"
@@ -138,11 +142,21 @@ jobs:
           echo "app_name=$(basename $APP_BUNDLE)" >> $GITHUB_OUTPUT
           echo "Found app bundle: $APP_BUNDLE"
 
+      - name: Create x86_64 app archive
+        run: |
+          set -e
+          APP_BUNDLE="${{ steps.appname.outputs.app_bundle }}"
+          APP_DIR=$(dirname "$APP_BUNDLE")
+          APP_NAME=$(basename "$APP_BUNDLE")
+          echo "Archiving $APP_BUNDLE (preserve symlinks)"
+          tar --xattrs -C "$APP_DIR" -cf pythonscad-x86_64-app.tar "$APP_NAME"
+          ls -lh pythonscad-x86_64-app.tar
+
       - name: Upload x86_64 artifact
         uses: actions/upload-artifact@v5
         with:
           name: pythonscad-x86_64-app
-          path: ${{ steps.appname.outputs.app_bundle }}
+          path: pythonscad-x86_64-app.tar
           retention-days: 1
 
   build-arm64:
@@ -237,18 +251,22 @@ jobs:
             if [ -f "$BROTLI_LIB" ]; then
               echo "Copying libbrotlicommon.1.dylib to app bundle"
               cp "$BROTLI_LIB" "$APP_BUNDLE/Contents/Frameworks/"
-              # Fix install_name to use @executable_path
-              install_name_tool -id "@executable_path/../Frameworks/libbrotlicommon.1.dylib" \
-                "$APP_BUNDLE/Contents/Frameworks/libbrotlicommon.1.dylib"
-
-              # Fix references in libbrotlidec to use the bundled version
-              if [ -f "$APP_BUNDLE/Contents/Frameworks/libbrotlidec.1.dylib" ]; then
-                echo "Updating libbrotlidec references to use bundled libbrotlicommon"
-                install_name_tool -change "/opt/homebrew/opt/brotli/lib/libbrotlicommon.1.dylib" \
-                  "@executable_path/../Frameworks/libbrotlicommon.1.dylib" \
-                  "$APP_BUNDLE/Contents/Frameworks/libbrotlidec.1.dylib"
-              fi
             fi
+          fi
+
+          # Always fix libbrotlicommon install_name (macdeployqt may have copied it)
+          if [ -f "$APP_BUNDLE/Contents/Frameworks/libbrotlicommon.1.dylib" ]; then
+            echo "Fixing libbrotlicommon.1.dylib install_name ID"
+            install_name_tool -id "@executable_path/../Frameworks/libbrotlicommon.1.dylib" \
+              "$APP_BUNDLE/Contents/Frameworks/libbrotlicommon.1.dylib"
+          fi
+
+          # Fix references in libbrotlidec to use the bundled libbrotlicommon (always run this)
+          if [ -f "$APP_BUNDLE/Contents/Frameworks/libbrotlidec.1.dylib" ]; then
+            echo "Updating libbrotlidec references to use bundled libbrotlicommon"
+            install_name_tool -change "/opt/homebrew/opt/brotli/lib/libbrotlicommon.1.dylib" \
+              "@executable_path/../Frameworks/libbrotlicommon.1.dylib" \
+              "$APP_BUNDLE/Contents/Frameworks/libbrotlidec.1.dylib"
           fi
 
           echo "arm64 build complete"
@@ -265,11 +283,21 @@ jobs:
           echo "app_name=$(basename $APP_BUNDLE)" >> $GITHUB_OUTPUT
           echo "Found app bundle: $APP_BUNDLE"
 
+      - name: Create arm64 app archive
+        run: |
+          set -e
+          APP_BUNDLE="${{ steps.appname.outputs.app_bundle }}"
+          APP_DIR=$(dirname "$APP_BUNDLE")
+          APP_NAME=$(basename "$APP_BUNDLE")
+          echo "Archiving $APP_BUNDLE (preserve symlinks)"
+          tar --xattrs -C "$APP_DIR" -cf pythonscad-arm64-app.tar "$APP_NAME"
+          ls -lh pythonscad-arm64-app.tar
+
       - name: Upload arm64 artifact
         uses: actions/upload-artifact@v5
         with:
           name: pythonscad-arm64-app
-          path: ${{ steps.appname.outputs.app_bundle }}
+          path: pythonscad-arm64-app.tar
           retention-days: 1
 
   merge-and-package:
@@ -291,13 +319,38 @@ jobs:
         uses: actions/download-artifact@v5
         with:
           name: pythonscad-x86_64-app
-          path: /tmp/x86_64-app
+          path: /tmp/x86_64-archive
 
       - name: Download arm64 artifact
         uses: actions/download-artifact@v5
         with:
           name: pythonscad-arm64-app
-          path: /tmp/arm64-app
+          path: /tmp/arm64-archive
+
+      - name: Extract build artifacts
+        run: |
+          set -e
+          mkdir -p /tmp/x86_64-app /tmp/arm64-app
+
+          X86_TAR=$(find /tmp/x86_64-archive -maxdepth 1 -name "*.tar" -type f | head -1)
+          ARM_TAR=$(find /tmp/arm64-archive -maxdepth 1 -name "*.tar" -type f | head -1)
+
+          if [ -z "$X86_TAR" ] || [ -z "$ARM_TAR" ]; then
+            echo "ERROR: Missing tar artifacts"
+            echo "x86_64 tar: $X86_TAR"
+            echo "arm64 tar: $ARM_TAR"
+            echo "x86_64 archive contents:"
+            ls -la /tmp/x86_64-archive || true
+            echo "arm64 archive contents:"
+            ls -la /tmp/arm64-archive || true
+            exit 1
+          fi
+
+          echo "Extracting $X86_TAR -> /tmp/x86_64-app"
+          tar -xf "$X86_TAR" -C /tmp/x86_64-app
+
+          echo "Extracting $ARM_TAR -> /tmp/arm64-app"
+          tar -xf "$ARM_TAR" -C /tmp/arm64-app
 
       - name: Merge architectures with lipo
         id: merge
@@ -602,6 +655,10 @@ jobs:
           # Fix references in libbrotlidec to use the bundled libbrotlicommon
           if [ -f "$FRAMEWORKS_DIR/libbrotlidec.1.dylib" ]; then
             echo "Updating libbrotlidec references to use bundled libbrotlicommon"
+            # Some builds use @rpath for libbrotlicommon; rewrite it to the bundled location.
+            install_name_tool -change "@rpath/libbrotlicommon.1.dylib" \
+              "@executable_path/../Frameworks/libbrotlicommon.1.dylib" \
+              "$FRAMEWORKS_DIR/libbrotlidec.1.dylib" 2>/dev/null || true
             # Try to change both possible paths (x86_64 and arm64)
             install_name_tool -change "/usr/local/opt/brotli/lib/libbrotlicommon.1.dylib" \
               "@executable_path/../Frameworks/libbrotlicommon.1.dylib" \
@@ -609,6 +666,13 @@ jobs:
             install_name_tool -change "/opt/homebrew/opt/brotli/lib/libbrotlicommon.1.dylib" \
               "@executable_path/../Frameworks/libbrotlicommon.1.dylib" \
               "$FRAMEWORKS_DIR/libbrotlidec.1.dylib" 2>/dev/null || true
+          fi
+
+          # Always fix libbrotlicommon install_name after merge
+          if [ -f "$FRAMEWORKS_DIR/libbrotlicommon.1.dylib" ]; then
+            echo "Fixing merged libbrotlicommon.1.dylib install_name ID"
+            install_name_tool -id "@executable_path/../Frameworks/libbrotlicommon.1.dylib" \
+              "$FRAMEWORKS_DIR/libbrotlicommon.1.dylib"
           fi
 
           echo "app_bundle=$MERGED_DIR/$APP_NAME" >> $GITHUB_OUTPUT
