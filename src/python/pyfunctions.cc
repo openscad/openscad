@@ -1724,17 +1724,26 @@ PyObject *python_multmatrix_sub(PyObject *pyobj, PyObject *pymat, int div)
     return python_frommatrix(objmat);
   }
 
+  Vector3d objvec;
+  if (!python_tovector(pyobj, objvec)) {
+    printf("rr\n");
+    Vector4d objvec4(objvec[0], objvec[1], objvec[2], 1);
+    objvec4 = mat * objvec4;
+    printf("rr\n");
+
+    return python_fromvector(objvec4.head<3>());
+  }
   DECLARE_INSTANCE();
   auto node = std::make_shared<TransformNode>(instance, "multmatrix");
   std::shared_ptr<AbstractNode> child;
   PyObject *child_dict;
   PyTypeObject *type = PyOpenSCADObjectType(pyobj);
   child = PyOpenSCADObjectToNodeMulti(pyobj, &child_dict);
-  node->setPyName(child->getPyName());
-  if (child == NULL) {
+  if (!child) {
     PyErr_SetString(PyExc_TypeError, "Invalid type for Object in multmatrix");
     return NULL;
   }
+  node->setPyName(child->getPyName());
 
   node->matrix = mat;
   node->children.push_back(child);
@@ -3034,13 +3043,13 @@ PyObject *python_children_core(PyObject *obj)
   PyObject *dummydict;
   auto solid = PyOpenSCADObjectToNode(obj, &dummydict);
   PyTypeObject *type = PyOpenSCADObjectType(obj);
-  if(solid == nullptr) {
+  if (solid == nullptr) {
     PyErr_SetString(PyExc_TypeError, "not a solid\n");
     return NULL;
   }
   int n = solid->children.size();
   PyObject *result = PyTuple_New(n);
-  for(int i=0;i<n;i++) {
+  for (int i = 0; i < n; i++) {
     PyTuple_SetItem(result, i, PyOpenSCADObjectFromNode(type, solid->children[i]));
   }
   return result;
@@ -5988,48 +5997,49 @@ PyMethodDef PyOpenSCADFunctions[] = {
 PyMethodDef PyOpenSCADMethods[] = {
   OO_METHOD_ENTRY(translate, "Move Object") OO_METHOD_ENTRY(rotate, "Rotate Object") OO_METHOD_ENTRY(
     right, "Right Object") OO_METHOD_ENTRY(left, "Left Object") OO_METHOD_ENTRY(back, "Back Object")
-    OO_METHOD_ENTRY(front, "Front Object") OO_METHOD_ENTRY(up, "Up Object") OO_METHOD_ENTRY(
-      down, "Lower Object")
+    OO_METHOD_ENTRY(front, "Front Object") OO_METHOD_ENTRY(up, "Up Object")
+      OO_METHOD_ENTRY(down, "Lower Object")
 
-      OO_METHOD_ENTRY(union, "Union Object") OO_METHOD_ENTRY(
-        difference, "Difference Object") OO_METHOD_ENTRY(intersection, "Intersection Object")
+        OO_METHOD_ENTRY(union, "Union Object") OO_METHOD_ENTRY(difference, "Difference Object")
+          OO_METHOD_ENTRY(intersection, "Intersection Object")
 
-        OO_METHOD_ENTRY(rotx, "Rotx Object") OO_METHOD_ENTRY(roty, "Roty Object") OO_METHOD_ENTRY(
-          rotz, "Rotz Object")
+            OO_METHOD_ENTRY(rotx, "Rotx Object") OO_METHOD_ENTRY(roty, "Roty Object") OO_METHOD_ENTRY(
+              rotz, "Rotz Object")
 
-          OO_METHOD_ENTRY(scale, "Scale Object") OO_METHOD_ENTRY(mirror, "Mirror Object")
-            OO_METHOD_ENTRY(multmatrix, "Multmatrix Object") OO_METHOD_ENTRY(
-              divmatrix, "Divmatrix Object") OO_METHOD_ENTRY(offset, "Offset Object")
+              OO_METHOD_ENTRY(scale, "Scale Object") OO_METHOD_ENTRY(mirror, "Mirror Object")
+                OO_METHOD_ENTRY(multmatrix, "Multmatrix Object") OO_METHOD_ENTRY(
+                  divmatrix, "Divmatrix Object") OO_METHOD_ENTRY(offset, "Offset Object")
 #if defined(ENABLE_EXPERIMENTAL) && defined(ENABLE_CGAL)
-              OO_METHOD_ENTRY(roof, "Roof Object")
+                  OO_METHOD_ENTRY(roof, "Roof Object")
 #endif
-                OO_METHOD_ENTRY(color, "Color Object") OO_METHOD_ENTRY(
-                  separate, "Split into separate Objects") OO_METHOD_ENTRY(export, "Export Object")
-                  OO_METHOD_ENTRY(find_face, "Find Face") OO_METHOD_ENTRY(sitonto, "Sit onto")
+                    OO_METHOD_ENTRY(color, "Color Object") OO_METHOD_ENTRY(
+                      separate, "Split into separate Objects") OO_METHOD_ENTRY(export, "Export Object")
+                      OO_METHOD_ENTRY(find_face, "Find Face") OO_METHOD_ENTRY(sitonto, "Sit onto")
 
-                    OO_METHOD_ENTRY(linear_extrude, "Linear_extrude Object")
-                      OO_METHOD_ENTRY(rotate_extrude, "Rotate_extrude Object") OO_METHOD_ENTRY(
-                        path_extrude, "Path_extrude Object") OO_METHOD_ENTRY(resize, "Resize Object")
+                        OO_METHOD_ENTRY(linear_extrude, "Linear_extrude Object")
+                          OO_METHOD_ENTRY(rotate_extrude, "Rotate_extrude Object") OO_METHOD_ENTRY(
+                            path_extrude, "Path_extrude Object") OO_METHOD_ENTRY(resize, "Resize Object")
 
-                        OO_METHOD_ENTRY(explode, "Explode a solid with a vector") OO_METHOD_ENTRY(
-                          mesh, "Mesh Object") OO_METHOD_ENTRY(bbox, "Evaluate Bound Box of object")
-                          OO_METHOD_ENTRY(faces, "Create Faces list") 
-                          OO_METHOD_ENTRY(children, "Return Tupple from solid children") 
-			  OO_METHOD_ENTRY(
-                            edges, "Create Edges list") OO_METHOD_ENTRY(oversample, "Oversample Object")
-                            OO_METHOD_ENTRY(debug, "Debug Object Faces") OO_METHOD_ENTRY(
-                              repair, "Make solid watertight") OO_METHOD_ENTRY(fillet, "Fillet Object")
-                              OO_METHOD_ENTRY(align, "Align Object to another")
+                            OO_METHOD_ENTRY(explode, "Explode a solid with a vector") OO_METHOD_ENTRY(
+                              mesh, "Mesh Object") OO_METHOD_ENTRY(bbox, "Evaluate Bound Box of object")
+                              OO_METHOD_ENTRY(faces, "Create Faces list") OO_METHOD_ENTRY(
+                                children, "Return Tupple from solid children")
+                                OO_METHOD_ENTRY(edges, "Create Edges list")
+                                  OO_METHOD_ENTRY(oversample, "Oversample Object") OO_METHOD_ENTRY(
+                                    debug, "Debug Object Faces")
+                                    OO_METHOD_ENTRY(repair, "Make solid watertight") OO_METHOD_ENTRY(
+                                      fillet, "Fillet Object") OO_METHOD_ENTRY(align,
+                                                                               "Align Object to another")
 
-                                OO_METHOD_ENTRY(highlight, "Highlight Object") OO_METHOD_ENTRY(
-                                  background, "Background Object") OO_METHOD_ENTRY(only, "Only Object")
-                                  OO_METHOD_ENTRY(show, "Show Object")
-                                    OO_METHOD_ENTRY(projection, "Projection Object")
-                                      OO_METHOD_ENTRY(pull, "Pull Obejct apart")
-                                        OO_METHOD_ENTRY(wrap, "Wrap Object around Cylinder")
-                                          OO_METHOD_ENTRY(render, "Render Object")
-                                            OO_METHOD_ENTRY(clone, "Clone Object") OO_METHOD_ENTRY(
-                                              dict, "return all dictionary"){NULL, NULL, 0, NULL}};
+                                      OO_METHOD_ENTRY(highlight, "Highlight Object")
+                                        OO_METHOD_ENTRY(background, "Background Object") OO_METHOD_ENTRY(
+                                          only, "Only Object") OO_METHOD_ENTRY(show, "Show Object")
+                                          OO_METHOD_ENTRY(projection, "Projection Object")
+                                            OO_METHOD_ENTRY(pull, "Pull Obejct apart")
+                                              OO_METHOD_ENTRY(wrap, "Wrap Object around Cylinder")
+                                                OO_METHOD_ENTRY(render, "Render Object")
+                                                  OO_METHOD_ENTRY(clone, "Clone Object") OO_METHOD_ENTRY(
+                                                    dict, "return all dictionary"){NULL, NULL, 0, NULL}};
 
 PyNumberMethods PyOpenSCADNumbers = {
   python_nb_add,        // binaryfunc nb_add
