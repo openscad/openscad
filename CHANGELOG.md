@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.8.18](https://github.com/pythonscad/pythonscad/compare/v0.8.17...v0.8.18) (2026-01-12)
+
+
+### Bug Fixes
+
+* **ci:** use distribution-specific pools in APT repository ([#321](https://github.com/pythonscad/pythonscad/issues/321)) ([0201d61](https://github.com/pythonscad/pythonscad/commit/0201d6158a168f8d05bae8e5f5e72d303f901e91))
+
 ## [0.8.17](https://github.com/pythonscad/pythonscad/compare/v0.8.16...v0.8.17) (2026-01-12)
 
 
