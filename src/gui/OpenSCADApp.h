@@ -4,6 +4,7 @@
 #include <QObject>
 #include <QString>
 #include <QApplication>
+#include "glview/RenderSettings.h"
 #include "gui/WindowManager.h"
 
 class QProgressDialog;
@@ -27,6 +28,7 @@ public slots:
   void showFontCacheDialog();
   void hideFontCacheDialog();
   void setApplicationFont(const QString& family, uint size);
+  void setRenderBackend3D(RenderBackend3D backend);
 
 public:
   WindowManager windowManager;
