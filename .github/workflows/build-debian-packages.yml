@@ -310,7 +310,7 @@ jobs:
             if [ -d /tmp/apt-repo-existing/pool/main ]; then
               # Old structure - migrate to new structure
               echo "Migrating from old pool structure to distribution-specific pools..."
-              for deb in /tmp/apt-repo-existing/pool/main/p/pythonscad/*.deb 2>/dev/null; do
+              for deb in /tmp/apt-repo-existing/pool/main/p/pythonscad/*.deb; do
                 [ -f "$deb" ] || continue
                 BASENAME=$(basename "$deb")
                 # Extract distro from filename
