@@ -96,10 +96,13 @@ void Console::addMessage(const Message& msg)
   auto color = QString::fromStdString(getGroupColor(msg.group));
   const auto messageHasNoLocation = msg.loc.isNone();
   const auto bufferHasMessages = !this->msgBuffer.empty();
-  const auto lastMessageHasLink = bufferHasMessages && this->msgBuffer.back().link.isEmpty();
+  const auto lastMessageHasNoLink = bufferHasMessages && this->msgBuffer.back().link.isEmpty();
+  const auto lastMessageNotInfo =
+    bufferHasMessages && this->msgBuffer.back().group != message_group::HtmlLink;
   const auto sameColor = bufferHasMessages && color == this->msgBuffer.back().color;
 
-  if (bufferHasMessages && messageHasNoLocation && lastMessageHasLink && sameColor) {
+  if (bufferHasMessages && messageHasNoLocation && lastMessageHasNoLink && lastMessageNotInfo &&
+      sameColor) {
     auto& lastmsg = this->msgBuffer.back().message;
     lastmsg += QChar('\n');
     lastmsg += msgstr;
@@ -138,7 +141,7 @@ void Console::update()
   // Faster to ignore block count until group of messages are done inserting.
   this->setMaximumBlockCount(0);
   for (const auto& line : this->msgBuffer) {
-    if (line.group == message_group::Info) {
+    if (line.group == message_group::HtmlLink) {
       addHtml(line.message);
     } else {
       QTextCharFormat charFormat;
