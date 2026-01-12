@@ -304,10 +304,27 @@ jobs:
             ${{ secrets.REPO_SFTP_USER }}@${{ secrets.REPO_SFTP_HOST }}:${{ secrets.REPO_SFTP_BASE_PATH }}/apt/ \
             /tmp/apt-repo-existing/ || echo "No existing repository found (first run)"
 
-          # Copy existing packages to new repo location
+          # Copy existing packages to new repo location (distribution-specific pools)
           if [ -d /tmp/apt-repo-existing/pool ]; then
-            mkdir -p /tmp/apt-repo/pool/main/p/pythonscad
-            cp /tmp/apt-repo-existing/pool/main/p/pythonscad/*.deb /tmp/apt-repo/pool/main/p/pythonscad/ 2>/dev/null || true
+            # Check if existing repo uses old structure (pool/main) or new structure (pool/DISTRO)
+            if [ -d /tmp/apt-repo-existing/pool/main ]; then
+              # Old structure - migrate to new structure
+              echo "Migrating from old pool structure to distribution-specific pools..."
+              for deb in /tmp/apt-repo-existing/pool/main/p/pythonscad/*.deb 2>/dev/null; do
+                [ -f "$deb" ] || continue
+                BASENAME=$(basename "$deb")
+                # Extract distro from filename
+                if [[ $BASENAME =~ pythonscad_[^_]+_[^_]+_([^_]+)_[^_]+\.deb ]]; then
+                  DISTRO="${BASH_REMATCH[1]}"
+                  mkdir -p "/tmp/apt-repo/pool/$DISTRO/main/p/pythonscad"
+                  cp "$deb" "/tmp/apt-repo/pool/$DISTRO/main/p/pythonscad/"
+                fi
+              done
+            else
+              # New structure - just copy
+              echo "Copying existing distribution-specific pools..."
+              cp -r /tmp/apt-repo-existing/pool/* /tmp/apt-repo/pool/ 2>/dev/null || true
+            fi
           fi
 
       - name: Build APT repository structure

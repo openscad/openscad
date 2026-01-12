@@ -74,14 +74,11 @@ info "Packages directory: $PACKAGES_DIR"
 # Extract distribution codenames from supported-distributions.json
 CODENAMES=$(python3 "$SCRIPT_DIR/scripts/extract-codenames.py" "$SCRIPT_DIR/supported-distributions.json")
 
-# Create repository structure
-info "Creating repository structure..."
+# Create repository structure with separate pools per distribution
+info "Creating repository structure with separate pools per distribution..."
 
-# Create pool directory
-mkdir -p pool/main/p/pythonscad
-
-# Copy new packages to pool (they have distro in the filename)
-info "Organizing packages into repository..."
+# Copy new packages to distribution-specific pools
+info "Organizing packages into distribution-specific pools..."
 PACKAGE_COUNT=0
 
 for deb in "$PACKAGES_DIR"/*.deb; do
@@ -106,7 +103,9 @@ for deb in "$PACKAGES_DIR"/*.deb; do
         continue
     fi
 
-    cp "$deb" "pool/main/p/pythonscad/$BASENAME"
+    # Create pool directory for this specific distribution
+    mkdir -p "pool/$DISTRO/main/p/pythonscad"
+    cp "$deb" "pool/$DISTRO/main/p/pythonscad/$BASENAME"
     ((++PACKAGE_COUNT))
 done
 
@@ -122,10 +121,10 @@ for DISTRO in $CODENAMES; do
     mkdir -p "dists/$DISTRO/main/binary-arm64"
 
     # Clean up old versions (keep last N versions per architecture)
-    if [ "$KEEP_VERSIONS" -gt 0 ]; then
+    if [ "$KEEP_VERSIONS" -gt 0 ] && [ -d "pool/$DISTRO/main/p/pythonscad" ]; then
         for arch in amd64 arm64; do
             # Find all packages for this distro and arch, sort by name, keep newest
-            OLD_PACKAGES=$(ls -t pool/main/p/pythonscad/*_*_${DISTRO}_${arch}.deb 2>/dev/null | tail -n +$((KEEP_VERSIONS + 1)) || true)
+            OLD_PACKAGES=$(ls -t "pool/$DISTRO/main/p/pythonscad"/*_*_${DISTRO}_${arch}.deb 2>/dev/null | tail -n +$((KEEP_VERSIONS + 1)) || true)
             if [ -n "$OLD_PACKAGES" ]; then
                 while IFS= read -r pkg; do
                     info "    Removing old: $(basename "$pkg")"
@@ -144,11 +143,12 @@ for DISTRO in $CODENAMES; do
         BINARY_DIR="dists/$DISTRO/main/binary-${arch}"
 
         # Check if there are packages for this distro/arch combination
-        if ls pool/main/p/pythonscad/*_*_${DISTRO}_${arch}.deb >/dev/null 2>&1; then
+        if [ -d "pool/$DISTRO/main/p/pythonscad" ] && ls "pool/$DISTRO/main/p/pythonscad"/*_*_${DISTRO}_${arch}.deb >/dev/null 2>&1; then
             info "  Generating Packages file for ${DISTRO}/${arch}..."
 
             cd "$BINARY_DIR"
-            dpkg-scanpackages --arch "$arch" ../../../../pool/main/p/pythonscad /dev/null > Packages
+            # Scan only packages in this distribution's pool
+            dpkg-scanpackages --arch "$arch" "../../../../pool/$DISTRO/main/p/pythonscad" /dev/null > Packages
             gzip -k -f Packages
 
             # Calculate checksums for Release file
@@ -368,10 +368,21 @@ sudo apt install pythonscad</code></pre>
 
     <h2>Manual Package Download</h2>
 
-    <p>Alternatively, you can download packages directly:</p>
+    <p>Alternatively, you can download packages directly by distribution:</p>
     <ul>
-        <li><a href="pool/main/p/pythonscad/">All packages</a></li>
+        <li><a href="pool/">Browse packages by distribution</a></li>
         <li><a href="dists/">Repository metadata by distribution</a></li>
+    </ul>
+
+    <p>Package pools by distribution:</p>
+    <ul>
+        <li><a href="pool/jammy/main/p/pythonscad/">Ubuntu 22.04 (jammy)</a></li>
+        <li><a href="pool/noble/main/p/pythonscad/">Ubuntu 24.04 (noble)</a></li>
+        <li><a href="pool/oracular/main/p/pythonscad/">Ubuntu 24.10 (oracular)</a></li>
+        <li><a href="pool/questing/main/p/pythonscad/">Ubuntu 25.10 (questing)</a></li>
+        <li><a href="pool/bullseye/main/p/pythonscad/">Debian 11 (bullseye)</a></li>
+        <li><a href="pool/bookworm/main/p/pythonscad/">Debian 12 (bookworm)</a></li>
+        <li><a href="pool/trixie/main/p/pythonscad/">Debian 13 (trixie)</a></li>
     </ul>
 
     <h2>GPG Key Information</h2>
@@ -419,7 +430,11 @@ info ""
 info "Package statistics:"
 for DISTRO in $CODENAMES; do
     for arch in amd64 arm64; do
-        COUNT=$(ls pool/main/p/pythonscad/*_*_${DISTRO}_${arch}.deb 2>/dev/null | wc -l) || COUNT=0
+        if [ -d "pool/$DISTRO/main/p/pythonscad" ]; then
+            COUNT=$(ls "pool/$DISTRO/main/p/pythonscad"/*_*_${DISTRO}_${arch}.deb 2>/dev/null | wc -l) || COUNT=0
+        else
+            COUNT=0
+        fi
         if [ "$COUNT" -gt 0 ]; then
             info "  $DISTRO/$arch: $COUNT packages"
         fi
