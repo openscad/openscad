@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.8.19](https://github.com/pythonscad/pythonscad/compare/v0.8.18...v0.8.19) (2026-01-12)
+
+
+### Bug Fixes
+
+* **ci:** correct shell syntax in APT repository migration ([#323](https://github.com/pythonscad/pythonscad/issues/323)) ([698a5f0](https://github.com/pythonscad/pythonscad/commit/698a5f0cd39b911e217414f4cb5a7076e9f72dca))
+
 ## [0.8.18](https://github.com/pythonscad/pythonscad/compare/v0.8.17...v0.8.18) (2026-01-12)
 
 
