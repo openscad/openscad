@@ -33,6 +33,7 @@
 #include <cmath>
 #include <sstream>
 
+namespace Measurement {
 Measurement::Measurement() {}
 
 void Measurement::setView(QGLView *qglview)
@@ -279,3 +280,4 @@ std::vector<QString> Measurement::statemachine(QPoint mouse)
   }
   return ret;
 }
+};  // namespace Measurement

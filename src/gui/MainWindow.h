@@ -117,7 +117,7 @@ public:
   QLabel *versionLabel;
   QLabel *languageLabel;
 
-  Measurement meas;
+  Measurement::Measurement meas;
 
   int compileErrors;
   int compileWarnings;

@@ -2349,7 +2349,7 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event)
 
   auto keyEvent = static_cast<QKeyEvent *>(event);
   if (keyEvent != nullptr && keyEvent->key() == Qt::Key_Escape) {
-    if (this->qglview->measure_state != MEASURE_IDLE) {
+    if (this->qglview->measure_state != Measurement::MEASURE_IDLE) {
       this->designActionMeasureDistance->setChecked(false);
       this->designActionMeasureAngle->setChecked(false);
       this->designActionFindHandle->setChecked(false);
@@ -2855,13 +2855,13 @@ void MainWindow::leftClick(QPoint mouse)
 
   // Can eventually be replaced with C++20 std::views::reverse
   for (const auto& str : strs) {
-    this->qglview->measure_state = MEASURE_DIRTY;
+    this->qglview->measure_state = Measurement::MEASURE_DIRTY;
     if (str.startsWith("I:")) {
       this->activeEditor->insert(QString(str.toStdString().c_str() + 2));
       this->qglview->selected_obj.clear();
       this->qglview->shown_obj = nullptr;
       this->qglview->update();
-      this->qglview->measure_state = MEASURE_IDLE;
+      this->qglview->measure_state = Measurement::MEASURE_IDLE;
       this->qglview->handle_mode = false;
       return;
     }

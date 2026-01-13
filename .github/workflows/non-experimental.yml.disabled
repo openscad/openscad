@@ -24,7 +24,7 @@ jobs:
         which sudo || ( apt update && apt install -y sudo )
         sudo -E ./scripts/uni-get-dependencies.py --yes --profile pythonscad-qt5
     - name: Install gcovr
-      run: python -m pip install -U gcovr
+      run: uv sync --frozen --system --project .github/ci/openscad-coverage
     - name: Build and test
       run: ./scripts/github-ci.sh enable_python build test coverage
     - name: Upload Test Result Report
