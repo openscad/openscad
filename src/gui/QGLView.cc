@@ -359,7 +359,7 @@ void QGLView::mouseMoveEvent(QMouseEvent *event)
 #else
   auto this_mouse = event->globalPos();
 #endif
-  if (measure_state != Measurement::MEASURE_IDLE) {
+  if (measure_state != MEASURE_IDLE) {
     QPoint pt = event->pos();
     this->shown_obj = findObject(pt.x(), pt.y());
     update();

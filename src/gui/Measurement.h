@@ -3,11 +3,8 @@
 
 #include <QPoint>
 #include <QString>
-#include <optional>
 #include "geometry/linalg.h"
 #include "gui/QGLView.h"
-
-namespace Measurement {
 
 enum {
   MEASURE_IDLE,
@@ -20,42 +17,17 @@ enum {
   MEASURE_DIRTY
 };
 
-struct Result {
-  struct Message {
-    QString display_text;
-    std::optional<QString> clipboard_text;
-  };
-  enum class Status { NoChange, Success, Error };
-
-  Status status;
-
-  /**
-   * Reverse-ordered list of responses.
-   */
-  std::vector<Message> messages;
-
-  void addText(QString str) { messages.push_back(Message{str}); }
-  void addText(QString str, QString clipboard) { messages.push_back(Message{str, clipboard}); }
-};
-
-template <typename TView>
-class Template
+class Measurement
 {
 public:
-  Template(void);
-  void setView(TView *qglview);
-
-  struct Distance {
-    double distance;
-    int line_count;
-    std::optional<Eigen::Vector3d> ptDiff, toInfiniteLine, toEndpoint1, toEndpoint2;
-  };
+  Measurement(void);
+  void setView(QGLView *qglview);
 
   /**
    * Advance the Measurement state machine.
-   * @return When success or error, has reverse-ordered list of responses in `messages`.
+   * @return When non-empty, is reverse-ordered list of responses. Errors always produce response(s).
    */
-  Result statemachine(QPoint mouse);
+  std::vector<QString> statemachine(QPoint mouse);
 
   void startMeasureDistance(void);
   void startMeasureAngle(void);
@@ -69,29 +41,5 @@ public:
   bool stopMeasure();
 
 private:
-  TView *qglview;
-  Distance distMeasurement(SelectedObject& obj1, SelectedObject& obj2);
-  // Should break out angle measurement for testing too!
-  // Then un-reverse the messages because it's entirely unnecessary once all values are accessible.
+  QGLView *qglview;
 };
-
-using Measurement = Template<QGLView>;
-
-struct FakeGLView {
-  int measure_state = 0;
-  std::vector<SelectedObject> selected_obj;
-  std::vector<SelectedObject> shown_obj;
-
-  std::vector<SelectedObject> selection_queue;
-
-  void update() {}
-  void selectPoint(int, int)
-  {
-    if (!selection_queue.empty()) {
-      selected_obj.push_back(selection_queue.front());
-      selection_queue.erase(selection_queue.begin());
-    }
-  }
-};
-
-};  // namespace Measurement

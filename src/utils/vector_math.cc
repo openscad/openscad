@@ -66,8 +66,10 @@ Vector3d calculateLineLineVector(const Vector3d& l1b, const Vector3d& l1e, const
 
   if (t < GRID_FINE) {
     // Lines are parallel (or collinear). `parametric_t` makes no sense.
+    Vector3d c = l2b - l1b;
     Vector3d c_original = l1b - l2b;
     double v1_mag = sqrt(v1_squaredNorm);
+    Vector3d cross_c_v1 = c.cross(v1);
 
     double dist_numerator = cross_c_v1.norm();
     double v1_norm = v1.norm();
@@ -76,10 +78,10 @@ Vector3d calculateLineLineVector(const Vector3d& l1b, const Vector3d& l1e, const
       // Leave parametric_t as NaN because it's meaningless.
       double dummy;
       auto ret = calculateLinePointDistance(l2b, l2e, l1b, dummy);
-      return (ret.pt[0] = ret.pt[1]).norm();
+      return (ret.pt[0] = ret.pt[1]);
     }
     // This handles line 2 being a point or line:
-    return dist_numerator / v1_norm;
+    return v1 * dist_numerator / (v1_norm * v1_norm);
   }
 
   n /= t;  // Normalize n.
