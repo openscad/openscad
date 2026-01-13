@@ -106,9 +106,6 @@ Result Template<TView>::statemachine(QPoint mouse)
       obj1 = qglview->selected_obj[0];
       obj2 = qglview->selected_obj[1];
       Distance res = distMeasurement(obj1, obj2);
-      if (!res.codingError.isEmpty()) {
-        ret.addText(res.codingError);
-      }
 
       auto obj2s = QString::fromStdString(obj2.toString());
       ret.addText(QStringLiteral("Second selection %1 is at %2")
@@ -284,7 +281,8 @@ typename Template<TView>::Distance Template<TView>::distMeasurement(SelectedObje
       ret.toInfiniteLine = inf;
     }
   } else {
-    ret.codingError = "Only coded to handle lines and points; sorry";
+    assert("It should not have been possible to select something other than a point and a line" &&
+           false);
   }
   return ret;
 }
