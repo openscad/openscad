@@ -70,15 +70,30 @@ std::optional<Color4f> parse_hex_color(const std::string& hex)
   return rgba;
 }
 
+/**
+ * Search a named color in the supported color maps.
+ *
+ * If the name starts prefixed by "xkcd:", it will checked against the list
+ * of XKCD colors (https://xkcd.com/color/rgb/).
+ *
+ * Otherwise it will be searched in the default OpenSCAD color map which has
+ * the official web colors list (CSS Color Module Level 4).
+ *
+ * @param col The color string with optional prefix.
+ * @return An optional Color4f containing the parsed color, or std::nullopt
+ *         if the color was not found in any color map.
+ */
 std::optional<Color4f> parse_named_color(const std::string& col)
 {
   const auto colorname = boost::algorithm::to_lower_copy(col);
+  if (colorname.rfind("xkcd:", 0) == 0) {
+    const auto xkcdname = colorname.substr(5);
+    if (OpenSCAD::xkcd_colors.find(xkcdname) != OpenSCAD::xkcd_colors.end()) {
+      return OpenSCAD::xkcd_colors.at(xkcdname);
+    }
+  }
   if (OpenSCAD::web_colors.find(colorname) != OpenSCAD::web_colors.end()) {
     return OpenSCAD::web_colors.at(colorname);
-  }
-  const auto xkcdname = colorname.rfind("xkcd:", 0) == 0 ? colorname.substr(5) : colorname;
-  if (OpenSCAD::xkcd_colors.find(xkcdname) != OpenSCAD::xkcd_colors.end()) {
-    return OpenSCAD::xkcd_colors.at(xkcdname);
   }
   return {};
 }
