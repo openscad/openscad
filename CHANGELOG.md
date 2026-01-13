@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.8.23](https://github.com/pythonscad/pythonscad/compare/v0.8.22...v0.8.23) (2026-01-13)
+
+
+### Bug Fixes
+
+* **rpm:** resolve build failures and missing package signatures ([#336](https://github.com/pythonscad/pythonscad/issues/336)) ([3bf2d36](https://github.com/pythonscad/pythonscad/commit/3bf2d36b4a5359385e58a06cede3c31f7fb5c8c8))
+
 ## [0.8.22](https://github.com/pythonscad/pythonscad/compare/v0.8.21...v0.8.22) (2026-01-13)
 
 
