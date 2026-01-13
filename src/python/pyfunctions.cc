@@ -1726,11 +1726,8 @@ PyObject *python_multmatrix_sub(PyObject *pyobj, PyObject *pymat, int div)
 
   Vector3d objvec;
   if (!python_tovector(pyobj, objvec)) {
-    printf("rr\n");
     Vector4d objvec4(objvec[0], objvec[1], objvec[2], 1);
     objvec4 = mat * objvec4;
-    printf("rr\n");
-
     return python_fromvector(objvec4.head<3>());
   }
   DECLARE_INSTANCE();
