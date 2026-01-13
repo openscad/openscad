@@ -1,4 +1,6 @@
-#!/bin/sh
+#!/usr/bin/env bash
+
+set -euo pipefail
 
 # see doc/translation.txt for more info
 BASEDIR=$PWD
@@ -20,10 +22,9 @@ updatepot()
    exit 1
  fi
 
- # extract example names from the index JSON file
- cat -n examples/examples.json \
-	| grep '\[$' | sed -e 's/^[ \ŧ]*//; s/:.*//' \
-	| awk '{ printf "#: examples/examples.json:%d\nmsgid %s\nmsgstr \"\"\n\n", $1, $2 }' \
+ # example folder names
+ find examples -mindepth 1 -maxdepth 1 -type d -printf "%f\n" \
+	| awk '{ printf "#: examples\nmsgid \"%s\"\nmsgstr \"\"\n\n", $1 }' \
 	> ./locale/json-strings.pot
 
  # extract strings from appdata file
@@ -34,7 +35,7 @@ updatepot()
  OPTS=$OPTS' --package-name=OpenSCAD'
  OPTS=$OPTS' --package-version='$VER
  OPTS=$OPTS' --default-domain=openscad'
- OPTS=$OPTS' --language=c++' 
+ OPTS=$OPTS' --language=c++'
  OPTS=$OPTS' --keyword=' #without WORD means not to use default keywords
  OPTS=$OPTS' --keyword=_'
  OPTS=$OPTS' --keyword=q_'
@@ -77,7 +78,6 @@ updatepo()
 
 updatemo()
 {
-  SUFFIX="$1"
   for LANGCODE in `cat locale/LINGUAS | grep -v "#"`; do
     mkdir -p ./locale/$LANGCODE/LC_MESSAGES
     OPTS='-c -v'
@@ -122,11 +122,18 @@ CURDIR="`python3 -c "import os; print(os.path.relpath(os.path.realpath('$BASEDIR
 
 cd "$TOPDIR" || exit 1
 
-if [ "x$1" = xupdatemo ]; then
- updatemo "$2"
+if [ -z ${1+x} ]; then
+  echo "Generating POTFILES..."
+  BUILDDIR=$(
+	find "$CURDIR" -name ui_MainWindow.h \
+	| grep OpenSCAD.*_autogen/include/ui_MainWindow.h \
+	| sed -e 's,/*OpenSCAD.*_autogen/include/ui_MainWindow.h,,'
+  )
+  echo "Found directory: $BUILDDIR"
+  ./scripts/generate-potfiles.sh "$BUILDDIR" > locale/POTFILES
+  updatepot && updatepo && updatemo
+elif [ "$1" = updatemo ]; then
+  updatemo
 else
- echo "Generating POTFILES..."
- BUILDDIR=$(find "$CURDIR" -name ui_MainWindow.h | grep OpenSCAD_autogen/include/ui_MainWindow.h | sed -e 's,/*OpenSCAD_autogen/include/ui_MainWindow.h,,')
- ./scripts/generate-potfiles.sh "$BUILDDIR" > locale/POTFILES
- updatepot && updatepo && updatemo ""
+  echo "usage: $0 [updatemo]"
 fi
