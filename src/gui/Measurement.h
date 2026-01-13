@@ -6,6 +6,8 @@
 #include "geometry/linalg.h"
 #include "gui/QGLView.h"
 
+namespace Measurement {
+
 enum {
   MEASURE_IDLE,
   MEASURE_DIST1,
@@ -43,3 +45,5 @@ public:
 private:
   QGLView *qglview;
 };
+
+};  // namespace Measurement
