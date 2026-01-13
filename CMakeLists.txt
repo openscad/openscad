@@ -371,7 +371,11 @@ else()
   set(SUFFIX_WITH_DASH "")
 endif()
 
-set(EXECUTABLE_NAME pythonscad${SUFFIX_WITH_DASH})
+if (APPLE)
+  set(EXECUTABLE_NAME PythonSCAD${SUFFIX_WITH_DASH})
+else()
+  set(EXECUTABLE_NAME pythonscad${SUFFIX_WITH_DASH})
+endif()
 set(PYTHON_EXECUTABLE_NAME pythonscad-python${SUFFIX_WITH_DASH})
 
 if (MXECROSS OR WIN32)

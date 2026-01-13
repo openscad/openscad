@@ -11,7 +11,7 @@
 	<key>CFBundleSignature</key>
 	<string>????</string>
 	<key>CFBundleExecutable</key>
-	<string>pythonscad</string>
+	<string>PythonSCAD</string>
 	<key>CFBundleIdentifier</key>
 	<string>org.pythonscad.PythonSCAD</string>
 	<key>CFBundleVersion</key>
