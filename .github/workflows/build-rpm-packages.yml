@@ -142,8 +142,21 @@ jobs:
       - name: Sign RPM packages
         if: github.event_name == 'release' || github.event.inputs.upload_to_release != ''
         run: |
+          set -e  # Exit on error
+
+          # Install GPG and rpm-sign if not already installed
+          if [ -f /etc/fedora-release ]; then
+            dnf install -y gnupg2 rpm-sign
+          else
+            dnf install -y gnupg2 rpm-sign
+          fi
+
           # Import GPG key
           echo "${{ secrets.DEB_SIGNING_KEY }}" | gpg --batch --import
+
+          # List imported keys for verification
+          echo "Imported GPG keys:"
+          gpg --list-secret-keys
 
           # Configure RPM signing
           echo "%_signature gpg" > ~/.rpmmacros
@@ -151,13 +164,22 @@ jobs:
           echo "%_gpg_digest_algo SHA256" >> ~/.rpmmacros
 
           # Sign all RPM packages
-          echo "${{ secrets.GPG_PASSPHRASE }}" | rpm --addsign \
-            --define "_gpg_sign_cmd_extra_args --batch --pinentry-mode loopback --passphrase-fd 0" \
-            /tmp/rpms/*.rpm
+          echo "Signing RPM packages..."
+          for rpm in /tmp/rpms/*.rpm; do
+            echo "Signing: $(basename "$rpm")"
+            echo "${{ secrets.GPG_PASSPHRASE }}" | rpm --addsign \
+              --define "_gpg_sign_cmd_extra_args --batch --pinentry-mode loopback --passphrase-fd 0" \
+              "$rpm"
+          done
 
           # Verify signatures
           echo "Verifying RPM signatures:"
-          rpm --checksig /tmp/rpms/*.rpm
+          for rpm in /tmp/rpms/*.rpm; do
+            echo "Checking: $(basename "$rpm")"
+            rpm --checksig "$rpm"
+            # Also check detailed signature info
+            rpm -qpi "$rpm" | grep -i signature || echo "Warning: No signature found"
+          done
 
       - name: Test package installation (amd64 only)
         if: matrix.arch == 'amd64'
