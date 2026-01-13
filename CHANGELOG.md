@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.8.22](https://github.com/pythonscad/pythonscad/compare/v0.8.21...v0.8.22) (2026-01-13)
+
+
+### Features
+
+* **web:** add website ([#334](https://github.com/pythonscad/pythonscad/issues/334)) ([7aefdd9](https://github.com/pythonscad/pythonscad/commit/7aefdd9c0b028dfb027c2429f44f92e758d4b503))
+
 ## [0.8.21](https://github.com/pythonscad/pythonscad/compare/v0.8.20...v0.8.21) (2026-01-13)
 
 
