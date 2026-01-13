@@ -143,3 +143,7 @@ src/core/parser.hxx
 src/core/parser.tab.h
 src/core/parser.cc
 pythonscad.egg-info/
+
+# MkDocs build output
+web/site/
+web/.venv/
