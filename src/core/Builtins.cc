@@ -115,6 +115,7 @@ Builtins::Builtins()
   this->assignments.emplace_back(new Assignment("$fn", std::make_shared<Literal>(0.0)));
   this->assignments.emplace_back(new Assignment("$fs", std::make_shared<Literal>(2.0)));
   this->assignments.emplace_back(new Assignment("$fa", std::make_shared<Literal>(12.0)));
+  this->assignments.emplace_back(new Assignment("$fp", std::make_shared<Literal>(0.0)));
   this->assignments.emplace_back(new Assignment("$t", std::make_shared<Literal>(0.0)));
   this->assignments.emplace_back(
     new Assignment("$preview", std::make_shared<Literal>()));  // undef as should always be overwritten.

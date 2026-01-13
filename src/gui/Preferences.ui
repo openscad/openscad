@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>865</width>
-    <height>860</height>
+    <width>819</width>
+    <height>818</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -27,7 +27,7 @@
     <item row="0" column="0">
      <widget class="QStackedWidget" name="stackedWidget">
       <property name="currentIndex">
-       <number>7</number>
+       <number>5</number>
       </property>
       <widget class="QWidget" name="page3DView">
        <layout class="QVBoxLayout" name="verticalLayout_4">
@@ -136,8 +136,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>668</width>
-             <height>953</height>
+             <width>658</width>
+             <height>849</height>
             </rect>
            </property>
            <layout class="QGridLayout" name="gridLayout_5">
@@ -1292,8 +1292,8 @@
               <rect>
                <x>0</x>
                <y>0</y>
-               <width>100</width>
-               <height>30</height>
+               <width>84</width>
+               <height>26</height>
               </rect>
              </property>
              <layout class="QVBoxLayout" name="verticalLayout_10">
@@ -1349,8 +1349,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>701</width>
-             <height>710</height>
+             <width>845</width>
+             <height>774</height>
             </rect>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_9">
@@ -1949,9 +1949,9 @@
            <property name="geometry">
             <rect>
              <x>0</x>
-             <y>0</y>
-             <width>699</width>
-             <height>1471</height>
+             <y>-724</y>
+             <width>785</width>
+             <height>1567</height>
             </rect>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_12">
@@ -2576,6 +2576,117 @@
                  </layout>
                 </widget>
                </item>
+               <item>
+                <widget class="QGroupBox" name="groupBox_precision">
+                 <property name="title">
+                  <string>Displayed number precision</string>
+                 </property>
+                 <layout class="QVBoxLayout" name="verticalLayout_20">
+                  <item>
+                   <widget class="QLabel" name="precisionLabel">
+                    <property name="text">
+                     <string>Precision to use when outputting numbers.  17 is full precision.  The default is 6 significant digits.
+Note that this only effects how numbers are displayed; internally all numbers are stored as IEEE 754 64-bit floating point.</string>
+                    </property>
+                    <property name="wordWrap">
+                     <bool>true</bool>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <layout class="QGridLayout" name="gridLayout_precision">
+                    <item row="2" column="1">
+                     <widget class="QSpinBox" name="precisionASTEdit">
+                      <property name="minimum">
+                       <number>1</number>
+                      </property>
+                      <property name="maximum">
+                       <number>17</number>
+                      </property>
+                      <property name="value">
+                       <number>17</number>
+                      </property>
+                     </widget>
+                    </item>
+                    <item row="2" column="0">
+                     <widget class="QLabel" name="precisionASTLabel">
+                      <property name="text">
+                       <string>AST:</string>
+                      </property>
+                     </widget>
+                    </item>
+                    <item row="2" column="2">
+                     <widget class="QLabel" name="precisionASTLabel2">
+                      <property name="text">
+                       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;(Used only for &lt;span style=&quot; font-family: monospace;&quot;&gt;Design&lt;/span&gt; → &lt;span style=&quot; font-family: monospace;&quot;&gt;Display AST&lt;/span&gt;)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                      </property>
+                     </widget>
+                    </item>
+                    <item row="1" column="0">
+                     <widget class="QLabel" name="precisionGlobalLabel">
+                      <property name="text">
+                       <string>Global:</string>
+                      </property>
+                     </widget>
+                    </item>
+                    <item row="1" column="1">
+                     <widget class="QSpinBox" name="precisionGlobalEdit">
+                      <property name="minimum">
+                       <number>1</number>
+                      </property>
+                      <property name="maximum">
+                       <number>17</number>
+                      </property>
+                      <property name="value">
+                       <number>6</number>
+                      </property>
+                     </widget>
+                    </item>
+                    <item row="1" column="2">
+                     <layout class="QHBoxLayout" name="horizontalLayout_3">
+                      <item>
+                       <widget class="QLabel" name="precisionGlobalLabel2">
+                        <property name="text">
+                         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Can be overridden in any block by setting &lt;span style=&quot; font-family: monospace;&quot;&gt;$fp&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                        </property>
+                        <property name="textFormat">
+                         <enum>Qt::AutoText</enum>
+                        </property>
+                       </widget>
+                      </item>
+                      <item>
+                       <spacer name="horizontalSpacer_40">
+                        <property name="orientation">
+                         <enum>Qt::Horizontal</enum>
+                        </property>
+                        <property name="sizeHint" stdset="0">
+                         <size>
+                          <width>40</width>
+                          <height>20</height>
+                         </size>
+                        </property>
+                       </spacer>
+                      </item>
+                     </layout>
+                    </item>
+                   </layout>
+                  </item>
+                  <item>
+                   <widget class="QLabel" name="label_11">
+                    <property name="text">
+                     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;div&gt;To set the global precision when running OpenSCAD without the GUI pass &lt;/div&gt;&lt;div style=&quot;margin:0.125em;&quot;&gt;&lt;span style=&quot;font-family:'monospace';&quot;&gt;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;-O advanced/numberOutputPrecision=&lt;/span&gt;&lt;span style=&quot; font-family:'monospace'; font-style:italic;&quot;&gt;N&lt;/span&gt;&lt;/div&gt;&lt;div&gt;on the command line where &lt;span style=&quot; font-family:'monospace'; font-style:italic;&quot;&gt;N&lt;/span&gt; is the desired precision.&lt;/div&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                    </property>
+                    <property name="wordWrap">
+                     <bool>true</bool>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <layout class="QHBoxLayout" name="horizontalLayout_2"/>
+                  </item>
+                 </layout>
+                </widget>
+               </item>
               </layout>
              </widget>
             </item>
@@ -2731,8 +2842,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>845</width>
-             <height>770</height>
+             <width>98</width>
+             <height>28</height>
             </rect>
            </property>
           </widget>
@@ -2765,7 +2876,7 @@
              <x>0</x>
              <y>0</y>
              <width>845</width>
-             <height>770</height>
+             <height>774</height>
             </rect>
            </property>
           </widget>
@@ -2800,8 +2911,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>845</width>
-             <height>770</height>
+             <width>98</width>
+             <height>28</height>
             </rect>
            </property>
           </widget>

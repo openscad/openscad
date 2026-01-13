@@ -173,6 +173,8 @@ void Preferences::init()
   this->defaultmap["advanced/enableHardwarnings"] = false;
   this->defaultmap["advanced/traceDepth"] = 12;
   this->defaultmap["advanced/enableTraceUsermoduleParameters"] = true;
+  this->defaultmap["advanced/precisionGlobal"] = 6;
+  this->defaultmap["advanced/precisionAST"] = 17;
   this->defaultmap["advanced/enableParameterCheck"] = true;
   this->defaultmap["advanced/enableParameterRangeCheck"] = false;
   this->defaultmap["view/hideEditor"] = false;
@@ -832,6 +834,18 @@ void Preferences::on_traceDepthEdit_textChanged(const QString& text)
   settings.setValue("advanced/traceDepth", text);
 }
 
+void Preferences::on_precisionGlobalEdit_textChanged(const QString& text)
+{
+  QSettingsCached settings;
+  settings.setValue("advanced/precisionGlobal", text);
+}
+
+void Preferences::on_precisionASTEdit_textChanged(const QString& text)
+{
+  QSettingsCached settings;
+  settings.setValue("advanced/precisionAST", text);
+}
+
 void Preferences::on_enableTraceUsermoduleParametersCheckBox_toggled(bool state)
 {
   QSettingsCached settings;
@@ -1350,6 +1364,9 @@ void Preferences::updateGUI()
   BlockSignals<QCheckBox *>(this->enableHardwarningsCheckBox)
     ->setChecked(getValue("advanced/enableHardwarnings").toBool());
   BlockSignals<QLineEdit *>(this->traceDepthEdit)->setText(getValue("advanced/traceDepth").toString());
+  BlockSignals<QSpinBox *>(this->precisionGlobalEdit)
+    ->setValue(getValue("advanced/precisionGlobal").toInt());
+  BlockSignals<QSpinBox *>(this->precisionASTEdit)->setValue(getValue("advanced/precisionAST").toInt());
   BlockSignals<QCheckBox *>(this->enableTraceUsermoduleParametersCheckBox)
     ->setChecked(getValue("advanced/enableTraceUsermoduleParameters").toBool());
   BlockSignals<QCheckBox *>(this->enableParameterCheckBox)

@@ -73,6 +73,8 @@ public slots:
   void on_enableHardwarningsCheckBox_toggled(bool);
   void on_traceDepthEdit_textChanged(const QString&);
   void on_enableTraceUsermoduleParametersCheckBox_toggled(bool);
+  void on_precisionGlobalEdit_textChanged(const QString&);
+  void on_precisionASTEdit_textChanged(const QString&);
   void on_enableParameterCheckBox_toggled(bool);
   void on_enableRangeCheckBox_toggled(bool);
   void on_comboBoxRenderBackend3D_activated(int);
