@@ -837,11 +837,11 @@ Value builtin_search(Arguments arguments, const Location& loc)
 Value builtin_version(Arguments arguments, const Location& /*loc*/)
 {
   VectorType vec(arguments.session());
-  vec.emplace_back(double(OPENSCAD_YEAR));
-  vec.emplace_back(double(OPENSCAD_MONTH));
-#ifdef OPENSCAD_DAY
-  vec.emplace_back(double(OPENSCAD_DAY));
-#endif
+  vec.emplace_back(double(openscad_version_year));
+  vec.emplace_back(double(openscad_version_month));
+  if (openscad_has_day) {
+    vec.emplace_back(double(openscad_version_day));
+  }
   return std::move(vec);
 }
 

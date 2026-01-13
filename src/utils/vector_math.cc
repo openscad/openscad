@@ -47,20 +47,27 @@ SelectedObject calculateLinePointDistance(const Vector3d& l1, const Vector3d& l2
   return ruler;
 }
 
-double calculateLineLineDistance(const Vector3d& l1b, const Vector3d& l1e, const Vector3d& l2b,
-                                 const Vector3d& l2e, double& parametric_t)
+Vector3d calculateLineLineVector(const Vector3d& l1b, const Vector3d& l1e, const Vector3d& l2b,
+                                 const Vector3d& l2e, double& parametric_t, double& signed_distance)
 {
-  double d;
+  parametric_t = std::numeric_limits<double>::quiet_NaN();
   Vector3d v1 = l1e - l1b;
   Vector3d v2 = l2e - l2b;
   Vector3d n = v1.cross(v2);
   double t = n.norm();
 
+  double v1_squaredNorm = v1.squaredNorm();
+  double v2_squaredNorm = v2.squaredNorm();
+  if (v1_squaredNorm < GRID_FINE * GRID_FINE || v2_squaredNorm < GRID_FINE * GRID_FINE) {
+    // An input is indistinguishable from a point, so we can't usefully calculate a result.
+    signed_distance = std::numeric_limits<double>::quiet_NaN();
+    return Vector3d(signed_distance, signed_distance, signed_distance);
+  }
+
   if (t < GRID_FINE) {
     // Lines are parallel (or collinear). `parametric_t` makes no sense.
-    parametric_t = std::numeric_limits<double>::quiet_NaN();
-    Vector3d c = l2b - l1b;
-    Vector3d cross_c_v1 = c.cross(v1);
+    Vector3d c_original = l1b - l2b;
+    double v1_mag = sqrt(v1_squaredNorm);
 
     double dist_numerator = cross_c_v1.norm();
     double v1_norm = v1.norm();
@@ -74,10 +81,25 @@ double calculateLineLineDistance(const Vector3d& l1b, const Vector3d& l1e, const
     // This handles line 2 being a point or line:
     return dist_numerator / v1_norm;
   }
-  n.normalize();
-  d = n.dot(l1b - l2b);
+
+  n /= t;  // Normalize n.
+
+  signed_distance = n.dot(l1b - l2b);
+
+  // parametric_t logic remains the same
   parametric_t = (v2.cross(n)).dot(l2b - l1b) / t;
-  return d;
+
+  // The vector pointing from Line 1 to Line 2 is actually -(signed_distance * n)
+  // because signed_distance was calculated using (l1b - l2b).
+  return -signed_distance * n;
+}
+
+double calculateLineLineDistance(const Vector3d& l1b, const Vector3d& l1e, const Vector3d& l2b,
+                                 const Vector3d& l2e, double& parametric_t)
+{
+  double dist;
+  calculateLineLineVector(l1b, l1e, l2b, l2e, parametric_t, dist);
+  return dist;
 }
 
 SelectedObject calculateSegSegDistance(const Vector3d& l1b, const Vector3d& l1e, const Vector3d& l2b,

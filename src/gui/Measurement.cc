@@ -33,11 +33,31 @@
 #include <cmath>
 #include <sstream>
 
-Measurement::Measurement() {}
+namespace Measurement {
 
-void Measurement::setView(QGLView *qglview)
+/**
+ * Converts an Eigen::Vector3d to a QString in the format "[x, y, z]".
+ * Uses full double precision by default (usually 17 digits).
+ * FIXME: I can probably be used more places, should be in a header somewhere.
+ */
+inline QString Vector3dtoQString(const Eigen::Vector3d& vec,
+                                 int precision = std::numeric_limits<double>::max_digits10)
 {
-  this->qglview = qglview;
+  return QString("[%1, %2, %3]")
+    .arg(vec.x(), 0, 'g', precision)
+    .arg(vec.y(), 0, 'g', precision)
+    .arg(vec.z(), 0, 'g', precision);
+}
+
+template <typename TView>
+Template<TView>::Template()
+{
+}
+
+template <typename TView>
+void Template<TView>::setView(TView *view)
+{
+  this->qglview = view;
   this->qglview->measure_state = MEASURE_IDLE;
 }
 
@@ -49,7 +69,8 @@ void Measurement::startMeasureDistance(void)
   this->qglview->update();
 }
 
-void Measurement::startMeasureAngle(void)
+template <typename TView>
+void Template<TView>::startMeasureAngle(void)
 {
   this->qglview->selected_obj.clear();
   this->qglview->measure_state = MEASURE_ANG1;
@@ -57,7 +78,8 @@ void Measurement::startMeasureAngle(void)
   this->qglview->update();
 }
 
-bool Measurement::stopMeasure()
+template <typename TView>
+bool Template<TView>::stopMeasure()
 {
   bool ret = qglview->measure_state != MEASURE_DIRTY;
   qglview->selected_obj.clear();
@@ -80,10 +102,10 @@ void Measurement::startFindHandle(void)
 }
 std::vector<QString> Measurement::statemachine(QPoint mouse)
 {
-  if (qglview->measure_state == MEASURE_IDLE || qglview->measure_state == MEASURE_DIRTY) return {};
+  Result ret{Result::Status::NoChange};
+  if (qglview->measure_state == MEASURE_IDLE || qglview->measure_state == MEASURE_DIRTY) return ret;
   qglview->selectPoint(mouse.x(), mouse.y());
   double ang = NAN;
-  double dist = NAN;
   SelectedObject obj1, obj2, obj3;
   std::vector<QString> ret;
   SelectedObject ruler = {.type = SelectionType::SELECTION_INVALID};
@@ -141,11 +163,17 @@ std::vector<QString> Measurement::statemachine(QPoint mouse)
         const Eigen::Vector3d& A = ln.pt[0];
         const Eigen::Vector3d& B = ln.pt[1];
 
-        // 1. Line direction vector D
-        Eigen::Vector3d D = B - A;
+      auto obj2s = QString::fromStdString(obj2.toString());
+      ret.addText(QStringLiteral("Second selection %1 is at %2")
+                    .arg(QString::fromStdString(SelectionTypeToString(obj2.type)))
+                    .arg(obj2s),
+                  obj2s);
 
-        // 2. Vector from A to P (V)
-        Eigen::Vector3d V = P - A;
+      auto obj1s = QString::fromStdString(obj1.toString());
+      ret.addText(QStringLiteral("First selection %1 is at %2")
+                    .arg(QString::fromStdString(SelectionTypeToString(obj1.type)))
+                    .arg(obj1s),
+                  obj1s);
 
         // Calculate components for projection
         double D_squared_norm = D.squaredNorm();
@@ -203,11 +231,33 @@ std::vector<QString> Measurement::statemachine(QPoint mouse)
           ret.push_back("Only coded to handle lines and points; sorry");
         }
       }
-      if (std::isnan(dist)) {
-        ret.push_back("Got Not-a-Number when calculating distance; sorry");
+
+      if (res.toInfiniteLine) {
+        auto s = Vector3dtoQString(*res.toInfiniteLine);
+        ret.addText(QStringLiteral("Perpendicular to (infinite) line%1 Δ = %2")
+                      .arg(res.line_count == 1 ? "" : "s")
+                      .arg(s),
+                    s);
+      }
+
+      if (res.toEndpoint2) {
+        auto s = Vector3dtoQString(*res.toEndpoint2);
+        ret.addText(QStringLiteral("Point to Line Endpoint2 Δ = %1").arg(s), s);
+      }
+
+      if (res.toEndpoint1) {
+        auto s = Vector3dtoQString(*res.toEndpoint1);
+        ret.addText(QStringLiteral("Point to Line Endpoint1 Δ = %1").arg(s), s);
+      }
+
+      if (std::isnan(res.distance)) {
+        ret.addText("Got Not-a-Number when calculating distance; sorry");
+        ret.status = Result::Status::Error;
         return ret;
       }
-      ret.push_back(QStringLiteral("Distance is %1").arg(std::fabs(dist)));
+      ret.addText(QStringLiteral("Distance is %1").arg(std::fabs(res.distance)),
+                  QStringLiteral("%1").arg(std::fabs(res.distance)));
+      ret.status = Result::Status::Success;
     }
     break;
   case MEASURE_ANG1:
@@ -265,17 +315,86 @@ std::vector<QString> Measurement::statemachine(QPoint mouse)
         Vector3d side2 = (obj2.pt[0] - obj3.pt[0]).normalized();
         ang = acos(side1.dot(side2)) * 180.0 / 3.14159265359;
       } else {
-        ret.push_back("If selecting three things, they must all be points");
+        ret.addText("If selecting three things, they must all be points");
+        ret.status = Result::Status::Error;
         return ret;
       }
     display_angle:
       if (std::isnan(ang)) {
-        ret.push_back("Got Not-a-Number when calculating angle; sorry");
+        ret.addText("Got Not-a-Number when calculating angle; sorry");
+        ret.status = Result::Status::Error;
         return ret;
       }
-      ret.push_back(QStringLiteral("Angle is %1 Degrees").arg(ang));
+      ret.addText(QStringLiteral("Angle is %1 Degrees").arg(ang));
+      ret.status = Result::Status::Success;
     }
     break;
   }
   return ret;
 }
+
+template <typename TView>
+typename Template<TView>::Distance Template<TView>::distMeasurement(SelectedObject& obj1,
+                                                                    SelectedObject& obj2)
+{
+  Distance ret{NAN};
+  if (obj1.type == SelectionType::SELECTION_POINT && obj2.type == SelectionType::SELECTION_POINT) {
+    ret.ptDiff = obj2.p1 - obj1.p1;
+    ret.distance = ret.ptDiff->norm();
+    ret.line_count = 0;
+  } else if ((obj1.type == SelectionType::SELECTION_POINT &&
+              obj2.type == SelectionType::SELECTION_LINE) ||
+             (obj2.type == SelectionType::SELECTION_POINT &&
+              obj1.type == SelectionType::SELECTION_LINE)) {
+    SelectedObject pt = obj1.type == SelectionType::SELECTION_POINT ? obj1 : obj2;
+    SelectedObject ln = obj1.type == SelectionType::SELECTION_LINE ? obj1 : obj2;
+    const Eigen::Vector3d& P = pt.p1;
+    const Eigen::Vector3d& A = ln.p1;
+    const Eigen::Vector3d& B = ln.p2;
+
+    // 1. Line direction vector D
+    Eigen::Vector3d D = B - A;
+
+    // 2. Vector from A to P (V)
+    Eigen::Vector3d V = P - A;
+
+    // Calculate components for projection
+    double D_squared_norm = D.squaredNorm();
+
+    ret.line_count = 0;
+    if (D_squared_norm > 1e-6) {  // Check if line is not a single point
+      ret.line_count = 1;
+      // 3. Scalar projection parameter 't'
+      double t = V.dot(D) / D_squared_norm;
+
+      // 4. Projection vector V_proj (from A to the closest point C on the line)
+      Eigen::Vector3d V_proj = t * D;
+
+      // 5. Shortest distance vector V_dist (P - C)
+      Eigen::Vector3d V_dist = V - V_proj;
+      ret.toInfiniteLine = V_dist;
+    }
+
+    double dont_care;
+    ret.distance = calculateLinePointDistance(A, B, P, dont_care);
+    ret.toEndpoint2 = B - P;
+
+    ret.toEndpoint1 = A - P;
+  } else if (obj1.type == SelectionType::SELECTION_LINE && obj2.type == SelectionType::SELECTION_LINE) {
+    ret.line_count = 2;
+    ret.distance = calculateSegSegDistance(obj1.p1, obj1.p2, obj2.p1, obj2.p2);
+    double dummy1, sd;
+    if (Vector3d inf = calculateLineLineVector(obj1.p1, obj1.p2, obj2.p1, obj2.p2, dummy1, sd);
+        !std::isnan(sd) && (inf[0] != 0 || inf[1] != 0 || inf[2] != 0)) {
+      ret.toInfiniteLine = inf;
+    }
+  } else {
+    assert("It should not have been possible to select something other than a point and a line" &&
+           false);
+  }
+  return ret;
+}
+
+template class Template<QGLView>;
+template class Template<FakeGLView>;
+};  // namespace Measurement

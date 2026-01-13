@@ -292,9 +292,6 @@ jobs:
       - store_artifacts:
           path: /tmp/artifacts
           destination: wasm
-  # We essentially want to run this job in multiple modes
-  # * Source from tarball vs. source from git
-  # * Snapshot vs. release build
   openscad-macos:
     executor: macos-executor
     parameters:
