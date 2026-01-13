@@ -2031,7 +2031,23 @@ if(NOT APPLE OR APPLE_UNIX)
   endif()
   if(WIN32)
     if(ENABLE_PYTHON)
-	    install(DIRECTORY "${PYTHON_EMBED_DEVPATH}/" DESTINATION "." )
+	    if(MXECROSS)
+	      # For MXE cross-compilation, install Python runtime from MSYS2 package
+	      # This ensures ABI compatibility since the executable was linked against MSYS2 Python
+
+	      # Install all DLLs from ucrt64/bin/ (includes libpython3.13.dll and dependencies)
+	      install(DIRECTORY "${PYTHON_MINGW_DEVPATH}/${PYTHON_MINGW_REPODIR}/bin/"
+	              DESTINATION "."
+	              FILES_MATCHING PATTERN "*.dll")
+
+	      # Install Python standard library and extension modules
+	      # Python will search for lib/python3.x/ relative to the DLL location
+	      install(DIRECTORY "${PYTHON_MINGW_DEVPATH}/${PYTHON_MINGW_REPODIR}/lib/"
+	              DESTINATION "lib")
+	    else()
+	      # For native MSYS2 Windows builds, use python.org embed package
+	      install(DIRECTORY "${PYTHON_EMBED_DEVPATH}/" DESTINATION "." )
+	    endif()
     endif()
     if(USE_MIMALLOC AND MI_LINK_SHARED)
       if(CMAKE_SIZEOF_VOID_P EQUAL 8)
