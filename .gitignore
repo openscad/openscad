@@ -136,3 +136,10 @@ scripts/run-clang-tidy-cached
 resources/icons/pythonscad.desktop
 pythonscad.appdata.xml.in2
 .clangd
+
+# Python pip build artifacts
+src/core/lexer.cc
+src/core/parser.hxx
+src/core/parser.tab.h
+src/core/parser.cc
+pythonscad.egg-info/
