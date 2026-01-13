@@ -61,6 +61,13 @@ RUN_LINTIAN="${RUN_LINTIAN:-yes}"
 OUTPUT_DIR="${OUTPUT_DIR:-${PROJECT_ROOT}/dist/debian}"
 DEBIAN_DISTRO="${DEBIAN_DISTRO:-unstable}"
 
+# Detect if running in Docker container
+if [ -f /.dockerenv ]; then
+    IN_DOCKER=true
+else
+    IN_DOCKER=false
+fi
+
 info "PythonSCAD Debian Package Builder"
 info "=================================="
 
@@ -105,6 +112,10 @@ if [ -z "$VERSION" ]; then
 fi
 
 info "Building version: ${VERSION}"
+info "Target distribution: ${DEBIAN_DISTRO}"
+if [ "$IN_DOCKER" = true ]; then
+    info "Running in Docker container"
+fi
 
 # Generate debian/changelog
 info "Generating debian/changelog..."
@@ -126,6 +137,22 @@ info "Changelog generated for version ${VERSION}-1"
 ARCH=$(dpkg --print-architecture)
 info "Building for architecture: ${ARCH}"
 
+# Adjust Qt dependencies in debian/control based on USE_QT6 environment variable
+if [ "${USE_QT6:-ON}" = "OFF" ]; then
+    info "Configuring build for Qt5 (USE_QT6=OFF)"
+    # Replace Qt6 packages with Qt5 equivalents
+    sed -i 's/qt6-base-dev/qtbase5-dev/g' "${PROJECT_ROOT}/debian/control"
+    sed -i 's/libqt6svg6-dev/libqt5svg5-dev/g' "${PROJECT_ROOT}/debian/control"
+    sed -i 's/libqscintilla2-qt6-dev/libqscintilla2-qt5-dev/g' "${PROJECT_ROOT}/debian/control"
+    sed -i 's/libqt6core5compat6-dev/libqt5opengl5-dev/g' "${PROJECT_ROOT}/debian/control"
+    sed -i 's/qt6-multimedia-dev/qtmultimedia5-dev/g' "${PROJECT_ROOT}/debian/control"
+    sed -i 's/qt6-tools-dev/qttools5-dev/g' "${PROJECT_ROOT}/debian/control"
+    # Update description
+    sed -i 's/Qt6-based/Qt5-based/g' "${PROJECT_ROOT}/debian/control"
+else
+    info "Configuring build for Qt6 (USE_QT6=ON)"
+fi
+
 # Build the package
 info "Building Debian package..."
 info "This may take several minutes depending on your system..."
@@ -144,10 +171,19 @@ if command_exists nproc; then
 fi
 
 # Run dpkg-buildpackage
-if dpkg-buildpackage ${BUILD_OPTS}; then
-    info "Package built successfully"
+# In Docker, use fakeroot to avoid permission issues
+if [ "$IN_DOCKER" = true ]; then
+    if fakeroot dpkg-buildpackage ${BUILD_OPTS}; then
+        info "Package built successfully (in Docker)"
+    else
+        die "Package build failed"
+    fi
 else
-    die "Package build failed"
+    if dpkg-buildpackage ${BUILD_OPTS}; then
+        info "Package built successfully"
+    else
+        die "Package build failed"
+    fi
 fi
 
 # The .deb file is created in the parent directory

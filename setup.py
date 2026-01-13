@@ -1,24 +1,11 @@
-from distutils.core import setup, Extension
-from setuptools.command.build import build
+from setuptools import setup, Extension
+from setuptools.command.build_ext import build_ext
 import subprocess
-import sys
 import os
 import shutil
-# rm build/lib.linux-x86_64-cpython-312/openscad.cpython-312-x86_64-linux-gnu.so
-class BuildWithLexYacc(build):
-    """Custom build_py command to run lex/yacc before building Python modules."""
 
-    def run(self):
-        print(">>> Running lex/yacc...")
-
-from setuptools import setup
-from setuptools.command.build import build
-import subprocess
-import os
-import time
-
-class BuildWithLexYacc(build):
-    """Nur Flex/Bison ausführen, wenn Quell- oder Ausgabedateien neuer/älter sind."""
+class BuildExtWithLexYacc(build_ext):
+    """Custom build_ext command to run lex/yacc before building extension modules."""
 
     def run(self):
 
@@ -342,7 +329,7 @@ def main():
           classifiers=[
             "Programming Language :: Python :: 3",
             "Programming Language :: Python :: 3.11" ],
-          cmdclass={"build": BuildWithLexYacc},
+          cmdclass={"build_ext": BuildExtWithLexYacc},
           ext_modules=[ pythonscad_ext ]
           )
 

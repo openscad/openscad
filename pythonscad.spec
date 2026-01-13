@@ -105,7 +105,11 @@ find %{buildroot} -type f \( -name "*.so*" -o -perm /111 \) -exec chrpath --dele
 %doc README.md CHANGELOG.md
 %{_bindir}/pythonscad
 %{_bindir}/pythonscad-python
-/usr/lib/libfive.so*
+# Bundled libraries (excluded from auto-requires on line 7)
+%{_libdir}/libfive.so*
+%{_libdir}/libClipper2.so*
+%{_libdir}/libOpenSCADPy.so*
+%{_libdir}/libmanifold.so*
 %{_datadir}/pythonscad/
 %{_datadir}/icons/hicolor/*/apps/pythonscad.png
 %{_datadir}/applications/pythonscad.desktop

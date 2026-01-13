@@ -536,7 +536,6 @@ PyObject *python_sphere(PyObject *self, PyObject *args, PyObject *kwargs)
   double r = NAN;
   PyObject *rp = nullptr;
   double d = NAN;
-  double fn = NAN, fa = NAN, fs = NAN;
 
   double vr = 1;
 

@@ -1,0 +1,13 @@
+from openscad import *
+import pyqrcode
+
+txt="scan me!"
+lines = pyqrcode.create(txt).text().split()
+bits=[]
+bit=cube([1.1,1.1,1.1])
+for y in range(len(lines)):
+    for x in range(len(lines[y])):
+        if lines[y][x] == "1":
+            bits.append(bit.translate([x,-y,0]))
+
+output(bits)

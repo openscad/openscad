@@ -6,6 +6,8 @@ PARALLEL_MAKE=-j2  # runners have insufficient memory for -j4
 PARALLEL_CTEST=-j4
 PARALLEL_GCOVR=-j4
 
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+
 BUILDDIR=b
 GCOVRDIR=c
 

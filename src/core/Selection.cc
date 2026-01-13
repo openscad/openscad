@@ -25,21 +25,5 @@
  */
 
 #include <Eigen/Core>
-#include "Selection.h"
-#include "system-gl.h"
-
-void SelectedObject::paint(double zoomval) const { printf("paint base\n"); }
-
-SelectedPoint::SelectedPoint(const Vector3d& pt) { this->pt = pt; }
-void SelectedPoint::paint(double zoomval) const
-{
-  auto vd = zoomval * 0.005;
-  glBegin(GL_LINES);
-  for (double xf : {-1.0, 1.0}) {
-    for (double yf : {-1.0, 1.0}) {
-      glVertex3d(pt[0] + xf * vd, pt[1] + yf * vd, pt[2] - vd);
-      glVertex3d(pt[0] - xf * vd, pt[1] - yf * vd, pt[2] + vd);
-    }
-  }
-  glEnd();
-}
+#include "core/Selection.h"
+// #include "system-gl.h"

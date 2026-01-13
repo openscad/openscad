@@ -4,6 +4,13 @@
 #include "gui/EventFilter.h"
 #endif
 
+#include "geometry/GeometryCache.h"
+#ifdef ENABLE_CGAL
+#include "geometry/cgal/CGALCache.h"
+#endif
+#include "glview/RenderSettings.h"
+#include "gui/Preferences.h"
+
 #include <QApplication>
 #include <QEvent>
 #include <QObject>
@@ -19,6 +26,9 @@ OpenSCADApp::OpenSCADApp(int& argc, char **argv) : QApplication(argc, argv)
 #ifdef Q_OS_MACOS
   this->installEventFilter(new SCADEventFilter(this));
 #endif
+
+  connect(GlobalPreferences::inst(), &Preferences::renderBackend3DChanged, this,
+          &OpenSCADApp::setRenderBackend3D);
 }
 
 OpenSCADApp::~OpenSCADApp() { delete this->fontCacheDialog; }
@@ -75,6 +85,13 @@ void OpenSCADApp::hideFontCacheDialog()
 {
   assert(this->fontCacheDialog);
   this->fontCacheDialog->reset();
+}
+
+void OpenSCADApp::setRenderBackend3D(RenderBackend3D backend)
+{
+  RenderSettings::inst()->backend3D = backend;
+  CGALCache::instance()->clear();
+  GeometryCache::instance()->clear();
 }
 
 void OpenSCADApp::setApplicationFont(const QString& family, uint size)

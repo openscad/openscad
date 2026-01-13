@@ -2,6 +2,8 @@
 
 export DEB_BUILD_MAINT_OPTIONS = hardening=+all
 PYTHON_VERSION := $(shell python3 -c "import sys; print(f'{sys.version_info.major}.{sys.version_info.minor}')")
+# Allow overriding Qt version via environment variable (defaults to ON for Qt6)
+USE_QT6 ?= ON
 
 %:
 	dh $@ --buildsystem=cmake
@@ -18,7 +20,7 @@ override_dh_auto_configure:
 		-DENABLE_PYTHON=ON \
 		-DPYTHON_VERSION=$(PYTHON_VERSION) \
 		-DENABLE_LIBFIVE=ON \
-		-DUSE_QT6=ON \
+		-DUSE_QT6=$(USE_QT6) \
 		-DENABLE_TESTS=OFF \
 		-DUSE_BUILTIN_MANIFOLD=ON \
 		-DUSE_BUILTIN_CLIPPER2=ON \

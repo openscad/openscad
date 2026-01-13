@@ -1,5 +1,121 @@
 # Changelog
 
+## [0.8.23](https://github.com/pythonscad/pythonscad/compare/v0.8.22...v0.8.23) (2026-01-13)
+
+
+### Bug Fixes
+
+* **rpm:** resolve build failures and missing package signatures ([#336](https://github.com/pythonscad/pythonscad/issues/336)) ([3bf2d36](https://github.com/pythonscad/pythonscad/commit/3bf2d36b4a5359385e58a06cede3c31f7fb5c8c8))
+
+## [0.8.22](https://github.com/pythonscad/pythonscad/compare/v0.8.21...v0.8.22) (2026-01-13)
+
+
+### Features
+
+* **web:** add website ([#334](https://github.com/pythonscad/pythonscad/issues/334)) ([7aefdd9](https://github.com/pythonscad/pythonscad/commit/7aefdd9c0b028dfb027c2429f44f92e758d4b503))
+
+## [0.8.21](https://github.com/pythonscad/pythonscad/compare/v0.8.20...v0.8.21) (2026-01-13)
+
+
+### Features
+
+* **ci:** add automated website deployment workflow ([#332](https://github.com/pythonscad/pythonscad/issues/332)) ([0a9cc3a](https://github.com/pythonscad/pythonscad/commit/0a9cc3a48ad3567c316c63c00f1efadfae4859d3))
+
+
+### Bug Fixes
+
+* **build:** auto-generate lexer and parser files during pip install ([#329](https://github.com/pythonscad/pythonscad/issues/329)) ([202ae08](https://github.com/pythonscad/pythonscad/commit/202ae08664efdd76833f469d3a6e3726f44ccc4c))
+* **macos:** correct CFBundleExecutable to match actual binary name ([#327](https://github.com/pythonscad/pythonscad/issues/327)) ([b7c8991](https://github.com/pythonscad/pythonscad/commit/b7c8991f557e976ae590f6fcbf22444ec095fee5))
+* **windows:** bundle MSYS2 Python runtime for MXE cross-compiled builds ([#330](https://github.com/pythonscad/pythonscad/issues/330)) ([68fdb86](https://github.com/pythonscad/pythonscad/commit/68fdb86005b98cad9baffb75ed822b23d7cada9b)), closes [#328](https://github.com/pythonscad/pythonscad/issues/328)
+
+## [0.8.20](https://github.com/pythonscad/pythonscad/compare/v0.8.19...v0.8.20) (2026-01-12)
+
+
+### Bug Fixes
+
+* **ci:** correct package file paths in APT repository ([#325](https://github.com/pythonscad/pythonscad/issues/325)) ([9d6b463](https://github.com/pythonscad/pythonscad/commit/9d6b463fbe564738272738990e5be7d118036791))
+
+## [0.8.19](https://github.com/pythonscad/pythonscad/compare/v0.8.18...v0.8.19) (2026-01-12)
+
+
+### Bug Fixes
+
+* **ci:** correct shell syntax in APT repository migration ([#323](https://github.com/pythonscad/pythonscad/issues/323)) ([698a5f0](https://github.com/pythonscad/pythonscad/commit/698a5f0cd39b911e217414f4cb5a7076e9f72dca))
+
+## [0.8.18](https://github.com/pythonscad/pythonscad/compare/v0.8.17...v0.8.18) (2026-01-12)
+
+
+### Bug Fixes
+
+* **ci:** use distribution-specific pools in APT repository ([#321](https://github.com/pythonscad/pythonscad/issues/321)) ([0201d61](https://github.com/pythonscad/pythonscad/commit/0201d6158a168f8d05bae8e5f5e72d303f901e91))
+
+## [0.8.17](https://github.com/pythonscad/pythonscad/compare/v0.8.16...v0.8.17) (2026-01-12)
+
+
+### Bug Fixes
+
+* **ci:** fix issues with Debian macOS and Windows release builds ([#317](https://github.com/pythonscad/pythonscad/issues/317)) ([88cd316](https://github.com/pythonscad/pythonscad/commit/88cd316e3cffaa0212495d070d31742977bd051f))
+
+## [0.8.16](https://github.com/pythonscad/pythonscad/compare/v0.8.15...v0.8.16) (2026-01-11)
+
+
+### Bug Fixes
+
+* **ci:** exclude MXE cross-compilation from MSYS2 Python detection ([#314](https://github.com/pythonscad/pythonscad/issues/314)) ([a1fafda](https://github.com/pythonscad/pythonscad/commit/a1fafda951e2cde3f9c18a30cab0ff147d3af35e))
+* **ci:** fix apt-repo script exit and improve package naming ([#311](https://github.com/pythonscad/pythonscad/issues/311)) ([b12e6ad](https://github.com/pythonscad/pythonscad/commit/b12e6ad4b3246800be4c9459abfaeedc9fc3d6e0))
+* **ci:** update libbrotlidec references to use bundled libbrotlicommon ([#313](https://github.com/pythonscad/pythonscad/issues/313)) ([e02af62](https://github.com/pythonscad/pythonscad/commit/e02af62154ded2168fe4f27d4bf5266c4913ca8d))
+* **scripts:** extract heredoc Python code to separate script ([#307](https://github.com/pythonscad/pythonscad/issues/307)) ([9027d6d](https://github.com/pythonscad/pythonscad/commit/9027d6d268bd5ddfcd5506662c31230329245f47))
+
+## [0.8.15](https://github.com/pythonscad/pythonscad/compare/v0.8.14...v0.8.15) (2026-01-10)
+
+
+### Bug Fixes
+
+* **ci:** use version-agnostic Python detection for Windows builds ([#309](https://github.com/pythonscad/pythonscad/issues/309)) ([50febc2](https://github.com/pythonscad/pythonscad/commit/50febc2e37e7e3091e56eeb110497cbd5460ad18))
+
+## [0.8.14](https://github.com/pythonscad/pythonscad/compare/v0.8.13...v0.8.14) (2026-01-10)
+
+
+### Bug Fixes
+
+* **scripts:** allow bash variable expansion in update-apt-repo.sh ([#304](https://github.com/pythonscad/pythonscad/issues/304)) ([3440af7](https://github.com/pythonscad/pythonscad/commit/3440af714a6909cb8871af36e88ef740ae2d56f0))
+
+## [0.8.13](https://github.com/pythonscad/pythonscad/compare/v0.8.12...v0.8.13) (2026-01-10)
+
+
+### Bug Fixes
+
+* **actions:** correct strategy structure; matrix include output ([#301](https://github.com/pythonscad/pythonscad/issues/301)) ([d5105a0](https://github.com/pythonscad/pythonscad/commit/d5105a0c94dfc368a21440a2be80b1ee80e7d143))
+
+## [0.8.12](https://github.com/pythonscad/pythonscad/compare/v0.8.11...v0.8.12) (2026-01-10)
+
+
+### Bug Fixes
+
+* **ci:** write matrix output to GITHUB_OUTPUT file ([#299](https://github.com/pythonscad/pythonscad/issues/299)) ([b4be64f](https://github.com/pythonscad/pythonscad/commit/b4be64fa8e8ddc3876219eac3550a23608a41b7e))
+
+## [0.8.11](https://github.com/pythonscad/pythonscad/compare/v0.8.10...v0.8.11) (2026-01-10)
+
+
+### Features
+
+* **ci:** support multiple Debian/Ubuntu distributions in APT repository ([#297](https://github.com/pythonscad/pythonscad/issues/297)) ([9bb88fc](https://github.com/pythonscad/pythonscad/commit/9bb88fc146ffc26542ad1ae5b41553a4b59e2ed3))
+
+## [0.8.10](https://github.com/pythonscad/pythonscad/compare/v0.8.9...v0.8.10) (2026-01-09)
+
+
+### Bug Fixes
+
+* **ci:** add GPG passphrase support for repository signing ([#295](https://github.com/pythonscad/pythonscad/issues/295)) ([2239a97](https://github.com/pythonscad/pythonscad/commit/2239a977b98e8ebd2db7ba8e5fb4d721fa535f18))
+
+## [0.8.9](https://github.com/pythonscad/pythonscad/compare/v0.8.8...v0.8.9) (2026-01-09)
+
+
+### Bug Fixes
+
+* correct path for installing generated openscad.1 man page ([#293](https://github.com/pythonscad/pythonscad/issues/293)) ([8aa58bc](https://github.com/pythonscad/pythonscad/commit/8aa58bc05ed3109bf467f1983fd5564609878501))
+* evalauting fn for path_extrude again ([#287](https://github.com/pythonscad/pythonscad/issues/287)) ([61a1f7a](https://github.com/pythonscad/pythonscad/commit/61a1f7a713ad538cb4147df33d9dae28a17cfced))
+
 ## [0.8.8](https://github.com/pythonscad/pythonscad/compare/v0.8.7...v0.8.8) (2026-01-09)
 
 
