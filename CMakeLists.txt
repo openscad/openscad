@@ -29,6 +29,11 @@ if(POLICY CMP0167) # Since CMake 3.30
 endif()
 
 include("cmake/Modules/openscad_version.cmake")
+configure_file(
+  ${CMAKE_SOURCE_DIR}/src/version.cc.in
+  ${CMAKE_BINARY_DIR}/version.cc
+  @ONLY
+)
 
 option(INFO "Display build configuration info at end of cmake config" ON)
 option(ENABLE_TESTS "Run testsuite after building." ON)
