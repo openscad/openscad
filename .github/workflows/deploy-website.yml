@@ -1,0 +1,78 @@
+name: Deploy Website
+
+on:
+  release:
+    types: [created]
+  workflow_dispatch:
+    inputs:
+      debug_enabled:
+        type: boolean
+        description: 'Run the build with tmate debugging enabled (https://github.com/marketplace/actions/debugging-with-tmate)'
+        required: false
+        default: false
+
+concurrency:
+  group: deploy-website
+  cancel-in-progress: false
+
+jobs:
+  deploy-website:
+    name: Build and deploy mkdocs website
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup (detached) tmate session if enabled
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.debug_enabled }}
+        uses: mxschmitt/action-tmate@v3
+        timeout-minutes: 5
+        with:
+          detached: true
+          limit-access-to-actor: true
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Create virtual environment and install dependencies
+        run: |
+          cd web
+          python -m venv .venv
+          source .venv/bin/activate
+          pip install -r requirements.txt
+
+      - name: Build mkdocs site
+        run: |
+          cd web
+          source .venv/bin/activate
+          mkdocs build --strict
+
+      - name: Setup SSH key for SFTP
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.WEB_SFTP_SSH_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+
+          # Setup SSH known_hosts
+          PORT="${{ vars.WEB_SFTP_PORT || '22' }}"
+          if [ "$PORT" = "22" ]; then
+            ssh-keyscan -H ${{ vars.WEB_SFTP_HOST }} >> ~/.ssh/known_hosts
+          else
+            ssh-keyscan -p $PORT -H ${{ vars.WEB_SFTP_HOST }} >> ~/.ssh/known_hosts
+          fi
+
+      - name: Deploy to SFTP server
+        run: |
+          PORT="${{ vars.WEB_SFTP_PORT || '22' }}"
+
+          rsync -avz --delete \
+            -e "ssh -i ~/.ssh/deploy_key -p $PORT -o StrictHostKeyChecking=no" \
+            web/site/ \
+            ${{ vars.WEB_SFTP_USER }}@${{ vars.WEB_SFTP_HOST }}:${{ vars.WEB_SFTP_PATH }}/
+
+      - name: Cleanup SSH key
+        if: always()
+        run: rm -f ~/.ssh/deploy_key

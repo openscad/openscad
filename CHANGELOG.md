@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.8.21](https://github.com/pythonscad/pythonscad/compare/v0.8.20...v0.8.21) (2026-01-13)
+
+
+### Features
+
+* **ci:** add automated website deployment workflow ([#332](https://github.com/pythonscad/pythonscad/issues/332)) ([0a9cc3a](https://github.com/pythonscad/pythonscad/commit/0a9cc3a48ad3567c316c63c00f1efadfae4859d3))
+
+
+### Bug Fixes
+
+* **build:** auto-generate lexer and parser files during pip install ([#329](https://github.com/pythonscad/pythonscad/issues/329)) ([202ae08](https://github.com/pythonscad/pythonscad/commit/202ae08664efdd76833f469d3a6e3726f44ccc4c))
+* **macos:** correct CFBundleExecutable to match actual binary name ([#327](https://github.com/pythonscad/pythonscad/issues/327)) ([b7c8991](https://github.com/pythonscad/pythonscad/commit/b7c8991f557e976ae590f6fcbf22444ec095fee5))
+* **windows:** bundle MSYS2 Python runtime for MXE cross-compiled builds ([#330](https://github.com/pythonscad/pythonscad/issues/330)) ([68fdb86](https://github.com/pythonscad/pythonscad/commit/68fdb86005b98cad9baffb75ed822b23d7cada9b)), closes [#328](https://github.com/pythonscad/pythonscad/issues/328)
+
 ## [0.8.20](https://github.com/pythonscad/pythonscad/compare/v0.8.19...v0.8.20) (2026-01-12)
 
 
