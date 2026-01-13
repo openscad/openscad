@@ -1,0 +1,160 @@
+import sys
+import math
+from openscad import *
+
+layer_info={}
+
+# Google Sky process mapping layer , datatype, start, height, color
+layer_info[0x4114]=[-0.25,0.25,"brown"] # Diffusion
+layer_info[0x4214]=[0,0.1,"lightblue"]  # Poly-Silicon
+layer_info[0x422c]=[0,0.25,"green"]     # Contact
+layer_info[0x4314]=[0.25,0.25,"gray"]   # Metal
+
+# GDS File is public domain from https://github.com/google/skywater-pdk-libs-sky130_fd_sc_hd/blob/main/cells/a2111o/
+
+gdsfile="sky130_fd_sc_hd__a2111o_1.gds"
+topcell="sky130_fd_sc_hd__a2111o_1"
+
+currentview = []
+cells = {}
+
+fh=open(gdsfile,"rb")
+layer=0
+datatype=0
+element=-1
+coords=[]
+sys_scale=1
+strname=""
+while True:
+    l=int.from_bytes(fh.read(2), byteorder='big')
+    rtyp=int.from_bytes(fh.read(1), byteorder='big')
+    dtyp=int.from_bytes(fh.read(1), byteorder='big')
+    data = []
+    if dtyp == 0: # nothing
+        pass
+    elif dtyp == 1: # bitarray
+            ba = fh.read(l-4)
+    elif dtyp == 2: # uint16
+        for i in range((l-4)>>1):
+            data.append(int.from_bytes(fh.read(2), byteorder='big', signed = True) )
+    elif dtyp == 3: # uint32
+        for i in range((l-4)>>2):
+            data.append(int.from_bytes(fh.read(4), byteorder='big', signed = True) )
+    elif dtyp == 5: # double
+        for i in range((l-4)>>3):
+            ba=fh.read(8)
+            d=0.0
+            for j in range(7):
+                d/=256.0;
+                d+=ba[7-j];
+            d/=256;
+            d = d*math.pow(16, (ba[0]&0x7f)-64)
+            data.append(d)
+
+    elif dtyp == 6: # string
+            ba = fh.read(l-4)
+            if ba[-1] == 0:
+                ba=ba[:-1]
+            data.append(ba.decode("utf-8"))
+    else:
+        print("Unknown data type %d"%(dtyp))
+
+    if rtyp == 0: #0 HEADER
+        pass
+    elif rtyp == 1: #1 BGNLIB
+        pass
+    elif rtyp == 2: #2 LIBNAME
+        pass
+    elif rtyp == 3: #3 UNITS
+        sys_scale=data[0]
+        pass
+    elif rtyp == 4: #4 ENDLIB
+        break
+    elif rtyp == 5:#5 BGNSTR
+        currentview = []
+        pass
+    elif rtyp == 6: #6 STRNAME
+        strname=data[0]
+        print("strname %s"%(data[0]))
+    elif rtyp == 7: #7 ENDSTR
+        cells[strname]=currentview
+        pass
+    elif rtyp == 8:#8 BOUNDARY
+        element=0
+    elif rtyp == 9:#9 PATH
+        element=3
+    elif rtyp == 10:#10 SREF
+        element=1
+        pass
+    elif rtyp == 11: #11 AREF
+        element=2
+        pass
+    elif rtyp == 12:#12 TEXT
+        pass
+    elif rtyp == 13:#13 LAYER
+        layer=data[0]
+    elif rtyp == 14:#14 DATATYPE
+        datatype=data[0]
+    elif rtyp == 15: #15 WIDTH
+        width=data[0]
+    elif rtyp == 16: #16 XY
+        coords=[]
+        for i in range(len(data)>>1):
+            coords.append([data[2*i+0]*sys_scale, data[2*i+1]*sys_scale])
+    elif rtyp == 18: #18 SNAME
+        sname=data[0]
+    elif rtyp == 17: #17 ENDEL
+        if element == 0: # Boundary
+            coords.pop()
+            layer_dt = (layer<<8)|datatype
+            if layer_dt in layer_info:
+                print("bnd info for %04X"%(layer<<8|datatype))
+                info = layer_info[layer_dt]
+                bnd = linear_extrude(polygon(coords), info[1]).up(info[0]).color(info[2])
+                print(bnd)
+                currentview.append(bnd)
+            else:
+                pass
+#                print("No Mapping for Layer %d"%(layer))
+        elif element == 1: # SREF
+            print("coords is")
+            print(coords)
+            print(sname)
+            if sname in cells:
+                subcell = union(cells[sname])
+                currentview.append(subcell.translate([coords[0][0],coords[0][1],0]))
+                print("found")
+            else:
+                print("not found")
+            pass
+        elif element == 2: # AREF
+            pass
+        elif element == 3: # PATH
+            print("missing path")
+            layer_dt = (layer<<8)|datatype
+            print("path info for %04X"%(layer<<8|datatype))
+            if layer_dt in layer_info:
+                info = layer_info[(layer<<8|datatype)]
+        element=-1
+    elif rtyp == 22: #22 TEXTTYPE
+        pass
+    elif rtyp == 23:#23 PRSNTTON
+        pass
+    elif rtyp == 25:#25 STRING
+        pass
+    elif rtyp == 26: #26 STRANS
+        pass
+    elif rtyp == 27: #27 MAG
+        pass
+    elif rtyp == 28:#28 ANGLE
+        pass
+    elif rtyp == 43:#43 PROPATTR
+        pass
+    elif rtyp == 44: #44 PRPVALUE
+        pass
+    else:
+        print("Unknown record type %d"%(rtyp))
+if topcell in cells:
+    output(union(cells[topcell]))
+else:
+    print("topcell not found")

@@ -1,0 +1,59 @@
+site_name: PythonSCAD
+site_url: https://www.pythonscad.org/
+repo_url: https://github.com/pythonscad/pythonscad/
+repo_name: pythonscad/pythonscad
+theme:
+  logo: pictures/pythonscad-128.png
+  name: material
+  highlightjs: true
+  features:
+    - navigation.footer
+    - navigation.instant
+    - content.tabs.link
+    - content.code.copy
+  icon:
+    repo: fontawesome/brands/github
+
+  palette:
+    # Palette toggle for dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+
+    # Palette toggle for light mode
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+nav:
+  - Home: index.md
+  - Get started: get_started.md
+  - Downloads: downloads.md
+  - Tutorial:
+      - Getting Started: tutorial/getting_started.md
+      - Combining Objects: tutorial/combining_objects.md
+      - Positioning Objects: tutorial/positioning_objects.md
+      - Python Specialities: tutorial/python_specialities.md
+      - OpenSCAD together with Python: tutorial/python_together.md
+      - New Functions in pythonscad: tutorial/python_new.md
+  - Examples: examples.md
+  - References: references.md
+  - Future: future.md
+  - Contact: contact.md
+
+markdown_extensions:
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.highlight:
+      use_pygments: true
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences
+  - attr_list

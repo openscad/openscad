@@ -1,0 +1,11 @@
+from openscad import *
+from  pylibfive import *;
+from math import *
+
+c=lv_coord()
+sdf =lv.sin(c[0])*lv.cos(c[1])+lv.sin(c[1])*lv.cos(c[2])+         lv.sin(c[2]) * lv.cos(c[0])+t
+sdf = sdf+0.5*sin(t*6.283)
+sdf =lv.abs(sdf)-0.2
+result=lv.max(sdf, lv_box(c,[4,4,4]))
+fobj=frep(result,[-5,-5,-5],[5,5,5],6).color("pink");
+output(fobj)

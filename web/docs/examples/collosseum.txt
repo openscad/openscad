@@ -1,0 +1,35 @@
+from openscad import *
+from  pylibfive import *
+
+levels=4
+diameter=7
+c=lv_coord()
+
+ang=((lv.atan2(c[0],c[1]))%(3.1415/20.0))
+mag=lv.sqrt(c[0]*c[0]+c[1]*c[1])
+cir_c=[mag*lv.cos(ang),mag*lv.sin(ang),(lv_clamp(c[2]/1.5,0,3))%1.0]
+cir_c1=[cir_c[0], cir_c[1], lv.min(cir_c[2],1-cir_c[2])]
+cir_c2=[mag*lv.cos(ang),mag*lv.sin(ang),(lv_clamp(c[2]/1.5,3,4))%1.0]
+out=lv_cylinder(c,levels*1.5,diameter+0.2*lv.pow(0.5*lv.cos(2*3.1415*c[2]/1.5)+0.5,10.0)-0.2)
+inn=lv_cylinder(lv_trans(c,[0,0,-0.2]),levels*1.5+0.4,diameter-0.5)
+
+# Saeulen
+cyl1=lv_cylinder(lv_trans(cir_c1,[diameter+0.10,0.6,0.1]) ,0.98,0.05)
+cyl2=lv_box(     lv_trans(cir_c1,[diameter+0.10,0.6,0.1]) ,[0.1,0.1,0.05])
+cyl=lv_union(cyl1,cyl2)
+
+# Doors
+door1=lv_box(lv_trans(cir_c,[diameter-1,+0.15,0.4]),[2,0.3,0.3])
+door2=lv_cylinder([cir_c[2]-0.5,cir_c[1]-0.15,cir_c[0]],diameter+2,0.3)
+door=lv_union(door1,door2)
+
+# Windows
+window=lv_box(lv_trans(cir_c2,[diameter-1,+0.15,0.5]),[2,0.3,0.2])
+
+# Compile
+notbuilt=lv_box(lv_trans(c,[0,-3.9,1.5*5]),[9,4+0.2*c[2],4.5])
+negatives=lv_union(inn, lv_union(lv_union(door,window),notbuilt))
+collosseum=lv_union(lv_difference(out,negatives)-0.1,lv_difference(cyl,notbuilt))
+fobj=frep(collosseum,[-15,-15,-1],[15,15,8],40)
+
+output(fobj)
