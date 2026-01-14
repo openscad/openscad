@@ -881,8 +881,8 @@ void MainWindow::onNavigationTriggerContextMenuEntry()
   Dock *dock = action->property("id").value<Dock *>();
   assert(dock != nullptr);
 
-  dock->raise();
   dock->show();
+  dock->raise();
   dock->setFocus();
 
   // Forward the focus on the content of the tabmanager
