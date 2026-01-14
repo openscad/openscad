@@ -81,11 +81,13 @@ jobs:
     strategy:
       fail-fast: false
       matrix: ${{ fromJson(needs.prepare-matrix.outputs.matrix) }}
-    container: ${{ matrix.docker_image || null }}
+    # Note: Don't use container field for ARM64 - it pulls amd64 images
+    # ARM64 builds use explicit docker run with --platform flag
+    container: ${{ matrix.arch == 'amd64' && matrix.docker_image || null }}
 
     steps:
-      - name: Ensure git is available and configure
-        if: matrix.docker_image
+      - name: Ensure git is available and configure (amd64 container)
+        if: matrix.arch == 'amd64' && matrix.docker_image
         run: |
           apt-get update
           apt-get install -y git ca-certificates
@@ -111,13 +113,13 @@ jobs:
           limit-access-to-actor: true
 
       - name: Set up QEMU for ARM64
-        if: matrix.qemu && !matrix.docker_image
+        if: matrix.arch == 'arm64'
         uses: docker/setup-qemu-action@v3
         with:
           platforms: arm64
 
-      - name: Install build dependencies (native runner)
-        if: '!matrix.docker_image'
+      - name: Install build dependencies (amd64 native runner)
+        if: matrix.arch == 'amd64' && !matrix.docker_image
         env:
           DEBIAN_FRONTEND: noninteractive
           TZ: Etc/UTC
@@ -145,8 +147,8 @@ jobs:
           # Install Build-Depends from debian/control
           sudo apt-get install -y libboost-all-dev
 
-      - name: Install build dependencies (Docker container)
-        if: matrix.docker_image
+      - name: Install build dependencies (amd64 Docker container)
+        if: matrix.arch == 'amd64' && matrix.docker_image
         env:
           DEBIAN_FRONTEND: noninteractive
           TZ: Etc/UTC
@@ -176,8 +178,8 @@ jobs:
           # Install Build-Depends from debian/control
           apt-get install -y libboost-all-dev
 
-      - name: Import GPG signing key
-        if: github.event_name == 'release' || github.event.inputs.upload_to_release != ''
+      - name: Import GPG signing key (amd64)
+        if: matrix.arch == 'amd64' && (github.event_name == 'release' || github.event.inputs.upload_to_release != '')
         env:
           DEBIAN_FRONTEND: noninteractive
         run: |
@@ -185,7 +187,8 @@ jobs:
           echo "${{ secrets.DEB_SIGNING_KEY }}" | gpg --batch --import
           gpg --list-secret-keys
 
-      - name: Build Debian package
+      - name: Build Debian package (amd64)
+        if: matrix.arch == 'amd64'
         env:
           OUTPUT_DIR: /tmp/debs
           DEBIAN_DISTRO: ${{ matrix.distro }}
@@ -195,6 +198,54 @@ jobs:
           mkdir -p "$OUTPUT_DIR"
           chmod +x ./scripts/build-debian-package.sh
           ./scripts/build-debian-package.sh
+
+      - name: Build Debian package (arm64) in Docker
+        if: matrix.arch == 'arm64'
+        run: |
+          # Determine Qt profile based on distribution version
+          if [ "${{ matrix.distro }}" = "jammy" ] || [ "${{ matrix.distro }}" = "bullseye" ]; then
+            QT_PROFILE="pythonscad-qt5"
+            USE_QT6="OFF"
+          else
+            QT_PROFILE="pythonscad-qt6"
+            USE_QT6="ON"
+          fi
+
+          # Run the entire build inside a Docker container with proper ARM64 emulation
+          docker run --rm \
+            --platform linux/arm64 \
+            -v "$PWD:/workspace" \
+            -w /workspace \
+            -e OUTPUT_DIR=/tmp/debs \
+            -e DEBIAN_DISTRO=${{ matrix.distro }} \
+            -e USE_QT6="$USE_QT6" \
+            -e DEBIAN_FRONTEND=noninteractive \
+            -e TZ=Etc/UTC \
+            ${{ matrix.docker_image }} \
+            bash -c "
+              set -e
+              apt-get update
+              apt-get install -y git python3 gnupg
+
+              # Install build dependencies
+              ./scripts/uni-get-dependencies.py --yes --profile \"$QT_PROFILE\"
+              apt-get install -y debhelper devscripts lintian dpkg-dev fakeroot libboost-all-dev
+
+              # Import GPG signing key if building for release
+              if [ '${{ github.event_name }}' = 'release' ] || [ '${{ github.event.inputs.upload_to_release }}' != '' ]; then
+                echo '${{ secrets.DEB_SIGNING_KEY }}' | gpg --batch --import
+                gpg --list-secret-keys
+              fi
+
+              # Build package
+              mkdir -p \"\$OUTPUT_DIR\"
+              chmod +x ./scripts/build-debian-package.sh
+              ./scripts/build-debian-package.sh
+            "
+
+          # Copy built packages from Docker to host
+          sudo cp -r /tmp/debs /tmp/debs-host || true
+          sudo mv /tmp/debs-host /tmp/debs || true
 
       - name: Get version for release upload
         id: version

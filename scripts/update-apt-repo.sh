@@ -357,7 +357,6 @@ sudo apt install pythonscad</code></pre>
     <h2>Supported Architectures</h2>
     <ul>
         <li><strong>amd64</strong> - Intel/AMD 64-bit processors</li>
-        <li><strong>arm64</strong> - ARM 64-bit processors (including Apple Silicon, Raspberry Pi 4/5, etc.)</li>
     </ul>
 
     <h2>Manual Package Download</h2>
