@@ -4,7 +4,9 @@
 # which is needed for the xgettext call.
 # Call from project root, with build directory as first parameter.
 
-for ui in {$1,ming64,mingw32}/OpenSCAD_autogen/include/ui_*.h
+set -euo pipefail
+
+for ui in {$1,ming64,mingw32}/OpenSCAD*_autogen/include/ui_*.h
 do
     if [ -f "$ui" ]
     then
@@ -18,4 +20,5 @@ find src \
 	-o -name \*.cc \
 	-o -name \*.cpp \
 	-o -name \*.mm \
+	| egrep -v 'src/ext/(glad|hidapi|libtess2|lodepng)/' \
 	| sort -f
