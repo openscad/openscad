@@ -57,7 +57,11 @@ float get_color_sort_value(const QColor& color)
 // Based on examples shown at https://onlinepngtools.com/sort-colors
 float get_warmth_sort_value(const QColor& color)
 {
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
   qreal h, s, l;
+#else
+  float h, s, l;
+#endif
   color.toHsl().getHslF(&h, &s, &l);
 
   const auto s1 = s < 0.2 ? 1.0 : 0.0;  // gray to the end
