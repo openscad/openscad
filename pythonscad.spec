@@ -3,8 +3,8 @@
 
 %global debug_package %{nil}
 
-# Filter out automatic requires for built-in libraries that aren't installed separately
-%global __requires_exclude ^(libClipper2\\.so\\.1|libOpenSCADPy\\.so|libmanifold\\.so\\.3)\\(
+# Filter out automatic requires for libfive which is bundled
+%global __requires_exclude ^(libfive\\.so)\\(
 
 Name:           pythonscad
 Version:        %{getenv:VERSION}
@@ -81,6 +81,7 @@ modern features.
     -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_INSTALL_PREFIX=%{_prefix} \
     -DCMAKE_SKIP_INSTALL_RPATH=TRUE \
+    -DBUILD_SHARED_LIBS=OFF \
     -DEXPERIMENTAL=ON \
     -DENABLE_PYTHON=ON \
     -DPYTHON_VERSION=%{python3_version} \
@@ -105,11 +106,8 @@ find %{buildroot} -type f \( -name "*.so*" -o -perm /111 \) -exec chrpath --dele
 %doc README.md CHANGELOG.md
 %{_bindir}/pythonscad
 %{_bindir}/pythonscad-python
-# Bundled libraries (excluded from auto-requires on line 7)
+# Bundled libfive library (excluded from auto-requires on line 7)
 %{_libdir}/libfive.so*
-%{_libdir}/libClipper2.so*
-%{_libdir}/libOpenSCADPy.so*
-%{_libdir}/libmanifold.so*
 %{_datadir}/pythonscad/
 %{_datadir}/icons/hicolor/*/apps/pythonscad.png
 %{_datadir}/applications/pythonscad.desktop
