@@ -5,6 +5,7 @@
       "package-name": "pythonscad",
       "include-component-in-tag": false,
       "version-file": "VERSION.txt",
+      "draft": true,
       "bump-minor-pre-major": true,
       "bump-patch-for-minor-pre-major": true,
       "changelog-sections": [

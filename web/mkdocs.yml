@@ -41,6 +41,7 @@ nav:
       - OpenSCAD together with Python: tutorial/python_together.md
       - New Functions in pythonscad: tutorial/python_new.md
   - Examples: examples.md
+  - Cheat-Sheet: cheatsheet.md
   - References: references.md
   - Future: future.md
   - Contact: contact.md

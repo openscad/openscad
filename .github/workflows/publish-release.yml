@@ -1,0 +1,219 @@
+name: Publish Release
+
+on:
+  release:
+    types: [created]
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: 'Release tag to publish (leave empty to find latest draft)'
+        required: false
+        default: ''
+
+permissions:
+  contents: write
+  actions: read
+
+jobs:
+  wait-and-publish:
+    runs-on: ubuntu-latest
+    # Only run for draft releases
+    if: github.event_name == 'workflow_dispatch' || github.event.release.draft == true
+    steps:
+      - name: Wait for build workflows and publish
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const BUILD_WORKFLOWS = [
+              'Build and Upload AppImage',
+              'Build Debian packages',
+              'Build and upload macOS build',
+              'Build RPM packages',
+              'Build and upload Windows build (MXE Cross-Compile)',
+            ];
+
+            const MAX_WAIT_MS = 90 * 60 * 1000; // 90 minutes
+            const POLL_INTERVAL_MS = 60 * 1000; // 60 seconds
+            const start = Date.now();
+
+            // Determine which release to work with
+            let release;
+            let releaseTag;
+
+            if (context.eventName === 'workflow_dispatch') {
+              // Manual trigger - find the release
+              const inputTag = '${{ github.event.inputs.release_tag }}';
+
+              if (inputTag) {
+                // Specific tag provided
+                try {
+                  const { data: rel } = await github.rest.repos.getReleaseByTag({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    tag: inputTag,
+                  });
+                  release = rel;
+                  releaseTag = inputTag;
+                } catch (error) {
+                  core.setFailed(`Release not found for tag: ${inputTag}`);
+                  return;
+                }
+              } else {
+                // Find latest draft release
+                const { data: releases } = await github.rest.repos.listReleases({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  per_page: 10,
+                });
+
+                release = releases.find(r => r.draft);
+                if (!release) {
+                  core.setFailed('No draft release found');
+                  return;
+                }
+                releaseTag = release.tag_name;
+              }
+            } else {
+              // Triggered by release creation
+              release = context.payload.release;
+              releaseTag = release.tag_name;
+            }
+
+            console.log(`🔍 Monitoring release: ${releaseTag}`);
+            console.log(`📦 Release ID: ${release.id}`);
+            console.log(`🏗️  Waiting for ${BUILD_WORKFLOWS.length} build workflows to complete...`);
+
+            // Main polling loop
+            while (Date.now() - start < MAX_WAIT_MS) {
+              // Get all workflow runs for this release's tag/commit
+              // We need to find runs that were triggered by this specific release
+              const { data: runs } = await github.rest.actions.listWorkflowRunsForRepo({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                event: 'release',
+                per_page: 100,
+              });
+
+              // Filter to runs for this specific release (by checking the ref matches the tag)
+              const releaseRuns = runs.workflow_runs.filter(r => {
+                // The ref for release-triggered runs is in format 'refs/tags/v1.2.3'
+                const runTag = r.head_branch; // This is the tag name for release events
+                return runTag === releaseTag;
+              });
+
+              // Match our build workflows
+              const buildRuns = releaseRuns.filter(r =>
+                BUILD_WORKFLOWS.includes(r.name)
+              );
+
+              // Status summary
+              const statusByWorkflow = {};
+              BUILD_WORKFLOWS.forEach(name => {
+                const run = buildRuns.find(r => r.name === name);
+                statusByWorkflow[name] = run ? {
+                  status: run.status,
+                  conclusion: run.conclusion,
+                  url: run.html_url,
+                  id: run.id,
+                } : null;
+              });
+
+              // Log current status
+              console.log('\n📊 Current status:');
+              for (const [name, info] of Object.entries(statusByWorkflow)) {
+                if (!info) {
+                  console.log(`  ⏳ ${name}: Not started yet`);
+                } else if (info.status === 'completed') {
+                  const icon = info.conclusion === 'success' ? '✅' :
+                               info.conclusion === 'failure' ? '❌' :
+                               info.conclusion === 'cancelled' ? '🚫' : '⚠️';
+                  console.log(`  ${icon} ${name}: ${info.conclusion}`);
+                } else {
+                  console.log(`  🔄 ${name}: ${info.status}`);
+                }
+              }
+
+              // Check if all workflows have started
+              const allStarted = BUILD_WORKFLOWS.every(name => statusByWorkflow[name] !== null);
+
+              if (!allStarted) {
+                const notStarted = BUILD_WORKFLOWS.filter(name => !statusByWorkflow[name]).length;
+                console.log(`\n⏳ Waiting... ${notStarted} workflow(s) not started yet`);
+                await new Promise(r => setTimeout(r, POLL_INTERVAL_MS));
+                continue;
+              }
+
+              // Check if all completed
+              const allCompleted = Object.values(statusByWorkflow).every(
+                info => info && info.status === 'completed'
+              );
+
+              if (!allCompleted) {
+                const running = Object.values(statusByWorkflow).filter(
+                  info => info && info.status !== 'completed'
+                ).length;
+                console.log(`\n⏳ Waiting... ${running} workflow(s) still running`);
+                await new Promise(r => setTimeout(r, POLL_INTERVAL_MS));
+                continue;
+              }
+
+              // All completed - check conclusions
+              console.log('\n✨ All workflows completed!');
+
+              const allSucceeded = Object.values(statusByWorkflow).every(
+                info => info && info.conclusion === 'success'
+              );
+
+              if (allSucceeded) {
+                // 🎉 Success - publish the release!
+                console.log('\n🎉 All builds succeeded! Publishing release...');
+
+                await github.rest.repos.updateRelease({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  release_id: release.id,
+                  draft: false,
+                });
+
+                console.log(`\n✅ Release ${releaseTag} published successfully!`);
+                console.log(`🔗 ${release.html_url}`);
+                return;
+              } else {
+                // Some builds failed - update release notes and keep as draft
+                console.log('\n⚠️  Some builds failed. Keeping release as draft.');
+
+                // Build status report
+                let statusReport = '\n\n---\n\n## 🏗️ Build Status\n\n';
+                statusReport += '⚠️ **Some builds failed.** This release remains as a draft.\n\n';
+
+                for (const [name, info] of Object.entries(statusByWorkflow)) {
+                  const icon = info.conclusion === 'success' ? '✅' :
+                               info.conclusion === 'failure' ? '❌' :
+                               info.conclusion === 'cancelled' ? '🚫' : '⚠️';
+                  statusReport += `- ${icon} [${name}](${info.url})\n`;
+                }
+
+                statusReport += '\n**To publish this release:**\n';
+                statusReport += '1. Fix any failed builds and re-run them\n';
+                statusReport += '2. Re-run the [Publish Release workflow](../../actions/workflows/publish-release.yml)\n';
+                statusReport += '3. Or manually publish from the GitHub UI once builds are fixed\n';
+
+                // Append status to existing release body
+                const updatedBody = (release.body || '') + statusReport;
+
+                await github.rest.repos.updateRelease({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  release_id: release.id,
+                  body: updatedBody,
+                });
+
+                // Fail the workflow so it's visible in Actions
+                core.setFailed(`Some build workflows failed. Release kept as draft.`);
+                return;
+              }
+            }
+
+            // Timeout
+            console.log('\n⏱️  Timeout reached');
+            core.setFailed(`Timed out waiting for build workflows after ${MAX_WAIT_MS / 60000} minutes`);
