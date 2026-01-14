@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.8.26](https://github.com/pythonscad/pythonscad/compare/v0.8.25...v0.8.26) (2026-01-14)
+
+
+### Features
+
+* **web:** improve releases page and add cheat sheet ([#348](https://github.com/pythonscad/pythonscad/issues/348)) ([821a064](https://github.com/pythonscad/pythonscad/commit/821a0643d6d29340445d382177b4a8cab0aa5150))
+
 ## [0.8.25](https://github.com/pythonscad/pythonscad/compare/v0.8.24...v0.8.25) (2026-01-14)
 
 
