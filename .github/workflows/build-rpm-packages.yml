@@ -63,11 +63,13 @@ jobs:
             runner: ubuntu-24.04
             container: rockylinux:9
 
-    container:
-      image: ${{ matrix.container }}
+    # Note: Don't use container field for ARM64 - it pulls amd64 images
+    # ARM64 builds use explicit docker run with --platform flag
+    container: ${{ matrix.arch == 'amd64' && matrix.container || null }}
 
     steps:
-      - name: Install git and basic tools
+      - name: Install git and basic tools (amd64 container)
+        if: matrix.arch == 'amd64'
         run: |
           if [ -f /etc/fedora-release ]; then
             dnf install -y git tar gzip
@@ -83,7 +85,7 @@ jobs:
 
       - name: Fetch tags for version detection
         run: |
-          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          git config --global --add safe.directory "$GITHUB_WORKSPACE" || true
           git fetch --unshallow --tags 2>/dev/null || git fetch --tags
           git describe --tags --always --dirty || echo "No tags found"
 
@@ -94,12 +96,15 @@ jobs:
         with:
           detached: true
           limit-access-to-actor: true
+
       - name: Set up QEMU for ARM64
         if: matrix.arch == 'arm64'
-        run: |
-          dnf install -y qemu-user-static
+        uses: docker/setup-qemu-action@v3
+        with:
+          platforms: arm64
 
-      - name: Install build dependencies
+      - name: Install build dependencies (amd64)
+        if: matrix.arch == 'amd64'
         run: |
           # Install RPM build tools
           if [ -f /etc/fedora-release ]; then
@@ -126,21 +131,17 @@ jobs:
           # Install build dependencies from spec file
           dnf builddep -y pythonscad.spec
 
-      - name: Build RPM package
+      - name: Build RPM package (amd64)
+        if: matrix.arch == 'amd64'
         env:
           OUTPUT_DIR: /tmp/rpms
           FEDORA_RELEASE: ${{ matrix.version }}
           DISTRO_TYPE: ${{ matrix.distro }}
         run: |
-          # Set architecture for cross-compilation if needed
-          if [ "${{ matrix.arch }}" = "arm64" ]; then
-            export ARCH=aarch64
-          fi
-
           ./scripts/build-rpm-package.sh
 
-      - name: Sign RPM packages
-        if: github.event_name == 'release' || github.event.inputs.upload_to_release != ''
+      - name: Sign RPM packages (amd64)
+        if: matrix.arch == 'amd64' && (github.event_name == 'release' || github.event.inputs.upload_to_release != '')
         run: |
           set -e  # Exit on error
 
@@ -187,6 +188,80 @@ jobs:
             # Also check detailed signature info
             rpm -qpi "$rpm" | grep -i signature || echo "Warning: No signature found"
           done
+
+      - name: Build RPM package (arm64) in Docker
+        if: matrix.arch == 'arm64'
+        run: |
+          # Run the entire build inside a Docker container with proper ARM64 emulation
+          docker run --rm \
+            --platform linux/arm64 \
+            -v "$PWD:/workspace" \
+            -w /workspace \
+            -e OUTPUT_DIR=/tmp/rpms \
+            -e FEDORA_RELEASE=${{ matrix.version }} \
+            -e DISTRO_TYPE=${{ matrix.distro }} \
+            -e ARCH=aarch64 \
+            ${{ matrix.container }} \
+            bash -c '
+              set -e
+
+              # Install git and basic tools
+              if [ -f /etc/fedora-release ]; then
+                dnf install -y git tar gzip rpm-build rpmdevtools rpmlint dnf-plugins-core gnupg2 rpm-sign
+              else
+                dnf install -y git tar gzip epel-release rpm-build rpmdevtools rpmlint dnf-plugins-core '\''dnf-command(config-manager)'\'' gnupg2 rpm-sign
+                dnf config-manager --set-enabled crb || true
+              fi
+
+              # Set VERSION environment variable for spec file parsing
+              export VERSION=$(cat VERSION.txt | tr -d '\''\n'\'' | tr -d '\''\r'\'')
+              export CHANGELOG_DATE=$(date "+%a %b %d %Y")
+
+              # Install build dependencies from spec file
+              dnf builddep -y pythonscad.spec
+
+              # Build package
+              ./scripts/build-rpm-package.sh
+
+              # Sign packages if building for release
+              if [ "${{ github.event_name }}" = "release" ] || [ "${{ github.event.inputs.upload_to_release }}" != "" ]; then
+                # Import GPG key
+                echo '\''${{ secrets.DEB_SIGNING_KEY }}'\'' | gpg --batch --import
+                gpg --list-secret-keys
+
+                # Create temporary passphrase file
+                PASSPHRASE_FILE=$(mktemp)
+                echo '\''${{ secrets.GPG_PASSPHRASE }}'\'' > "$PASSPHRASE_FILE"
+
+                # Configure RPM signing
+                echo "%_signature gpg" > ~/.rpmmacros
+                echo "%_gpg_name ${{ secrets.GPG_KEY_ID }}" >> ~/.rpmmacros
+                echo "%_gpg_digest_algo SHA256" >> ~/.rpmmacros
+                echo "%__gpg_sign_cmd %{__gpg} gpg --batch --no-verbose --no-armor --pinentry-mode loopback --passphrase-file $PASSPHRASE_FILE --no-secmem-warning -u \"%{_gpg_name}\" --sign --detach-sign --output %{__signature_filename} %{__plaintext_filename}" >> ~/.rpmmacros
+
+                # Sign all RPM packages
+                echo "Signing RPM packages..."
+                for rpm in /tmp/rpms/*.rpm; do
+                  echo "Signing: $(basename "$rpm")"
+                  rpmsign --addsign "$rpm"
+                done
+
+                # Clean up
+                rm -f "$PASSPHRASE_FILE"
+
+                # Verify signatures
+                echo "Verifying RPM signatures:"
+                for rpm in /tmp/rpms/*.rpm; do
+                  echo "Checking: $(basename "$rpm")"
+                  rpm --checksig "$rpm"
+                  rpm -qpi "$rpm" | grep -i signature || echo "Warning: No signature found"
+                done
+              fi
+            '
+
+          # Copy built packages from Docker to host
+          sudo cp -r /tmp/rpms /tmp/rpms-host || true
+          sudo mv /tmp/rpms-host /tmp/rpms || true
 
       - name: Test package installation (amd64 only)
         if: matrix.arch == 'amd64'

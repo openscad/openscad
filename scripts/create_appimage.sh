@@ -54,6 +54,15 @@ DIST_DIR="${PROJECT_ROOT}/dist"
 TOOLS_DIR="${DIST_DIR}/tools"
 APPDIR="${DIST_DIR}/AppDir"
 NUM_JOBS="${NUM_JOBS:-$(nproc)}"
+QT_VERSION="${QT_VERSION:-6}"  # Default to Qt6, can be overridden with QT_VERSION=5
+
+# Auto-detect architecture if not specified
+if [ -z "${ARCH:-}" ]; then
+    ARCH=$(uname -m)
+    info "Auto-detected architecture: ${ARCH}"
+else
+    info "Using architecture from environment: ${ARCH}"
+fi
 
 # Auto-detect Python version
 info "Detecting Python version..."
@@ -75,12 +84,12 @@ fi
 if ! command_exists linuxdeploy; then
     warn "linuxdeploy not found, will download it..."
     mkdir -p "${TOOLS_DIR}"
-    LINUXDEPLOY_PATH="${TOOLS_DIR}/linuxdeploy-x86_64.AppImage"
+    LINUXDEPLOY_PATH="${TOOLS_DIR}/linuxdeploy-${ARCH}.AppImage"
 
     if [ ! -f "${LINUXDEPLOY_PATH}" ]; then
-        info "Downloading linuxdeploy..."
+        info "Downloading linuxdeploy for ${ARCH}..."
         wget -O "${LINUXDEPLOY_PATH}" \
-            "https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage" \
+            "https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-${ARCH}.AppImage" \
             || die "Failed to download linuxdeploy"
         chmod +x "${LINUXDEPLOY_PATH}"
     fi
@@ -94,12 +103,12 @@ fi
 if ! command_exists appimagetool; then
     warn "appimagetool not found, will download it..."
     mkdir -p "${TOOLS_DIR}"
-    APPIMAGETOOL_PATH="${TOOLS_DIR}/appimagetool-x86_64.AppImage"
+    APPIMAGETOOL_PATH="${TOOLS_DIR}/appimagetool-${ARCH}.AppImage"
 
     if [ ! -f "${APPIMAGETOOL_PATH}" ]; then
-        info "Downloading appimagetool..."
+        info "Downloading appimagetool for ${ARCH}..."
         wget -O "${APPIMAGETOOL_PATH}" \
-            "https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage" \
+            "https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-${ARCH}.AppImage" \
             || die "Failed to download appimagetool"
         chmod +x "${APPIMAGETOOL_PATH}"
     fi
@@ -117,12 +126,12 @@ if command_exists linuxdeploy-plugin-qt; then
 else
     warn "linuxdeploy-plugin-qt not found, will download it..."
     mkdir -p "${TOOLS_DIR}"
-    PLUGIN_QT_PATH="${TOOLS_DIR}/linuxdeploy-plugin-qt-x86_64.AppImage"
+    PLUGIN_QT_PATH="${TOOLS_DIR}/linuxdeploy-plugin-qt-${ARCH}.AppImage"
 
     if [ ! -f "${PLUGIN_QT_PATH}" ]; then
-        info "Downloading linuxdeploy-plugin-qt..."
+        info "Downloading linuxdeploy-plugin-qt for ${ARCH}..."
         wget -O "${PLUGIN_QT_PATH}" \
-            "https://github.com/linuxdeploy/linuxdeploy-plugin-qt/releases/download/continuous/linuxdeploy-plugin-qt-x86_64.AppImage" \
+            "https://github.com/linuxdeploy/linuxdeploy-plugin-qt/releases/download/continuous/linuxdeploy-plugin-qt-${ARCH}.AppImage" \
             || die "Failed to download linuxdeploy-plugin-qt"
         chmod +x "${PLUGIN_QT_PATH}"
     fi
@@ -148,17 +157,25 @@ if [ ! -d "${BUILD_DIR}" ]; then
 fi
 
 # Configure with CMake
-info "Configuring with CMake..."
+info "Configuring with CMake for Qt${QT_VERSION}..."
 cd "${BUILD_DIR}"
+
+# Determine USE_QT6 flag based on QT_VERSION
+if [ "${QT_VERSION}" = "6" ]; then
+    USE_QT6_FLAG=ON
+else
+    USE_QT6_FLAG=OFF
+fi
 
 cmake .. \
     -DCMAKE_INSTALL_PREFIX=/usr \
     -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_INSTALL_LIBDIR=lib \
     -DEXPERIMENTAL=ON \
     -DENABLE_PYTHON=ON \
     -DPYTHON_VERSION="${PYTHON_VERSION}" \
     -DENABLE_LIBFIVE=ON \
-    -DUSE_QT6=ON \
+    -DUSE_QT6="${USE_QT6_FLAG}" \
     || die "CMake configuration failed"
 
 # Build
@@ -185,15 +202,27 @@ fi
 # Note: linuxdeploy-plugin-qt uses semicolons as delimiters
 export EXTRA_QT_PLUGINS="svg;platforms"
 
-# Configure Qt6 paths for linuxdeploy-plugin-qt
-if command -v qmake6 >/dev/null 2>&1; then
-    export QMAKE=$(command -v qmake6)
-    QT_PLUGIN_PATH=$(qmake6 -query QT_INSTALL_PLUGINS)
-    export QT_PLUGIN_PATH
-    info "Using Qt6 from: $(qmake6 -query QT_INSTALL_PREFIX)"
-    info "Qt plugins at: ${QT_PLUGIN_PATH}"
+# Configure Qt paths for linuxdeploy-plugin-qt
+if [ "${QT_VERSION}" = "6" ]; then
+    if command -v qmake6 >/dev/null 2>&1; then
+        export QMAKE=$(command -v qmake6)
+        QT_PLUGIN_PATH=$(qmake6 -query QT_INSTALL_PLUGINS)
+        export QT_PLUGIN_PATH
+        info "Using Qt6 from: $(qmake6 -query QT_INSTALL_PREFIX)"
+        info "Qt plugins at: ${QT_PLUGIN_PATH}"
+    else
+        warn "qmake6 not found, linuxdeploy may not find Qt plugins correctly"
+    fi
 else
-    warn "qmake6 not found, linuxdeploy may not find Qt plugins correctly"
+    if command -v qmake >/dev/null 2>&1; then
+        export QMAKE=$(command -v qmake)
+        QT_PLUGIN_PATH=$(qmake -query QT_INSTALL_PLUGINS)
+        export QT_PLUGIN_PATH
+        info "Using Qt5 from: $(qmake -query QT_INSTALL_PREFIX)"
+        info "Qt plugins at: ${QT_PLUGIN_PATH}"
+    else
+        warn "qmake not found, linuxdeploy may not find Qt plugins correctly"
+    fi
 fi
 
 # Add tools directory to PATH so linuxdeploy can find downloaded plugins
@@ -201,14 +230,19 @@ export PATH="${TOOLS_DIR}:${PATH}"
 
 # Set the output version (you can override with OPENSCAD_VERSION environment variable)
 if [ -n "${OPENSCAD_VERSION:-}" ]; then
-    export LINUXDEPLOY_OUTPUT_VERSION="${OPENSCAD_VERSION}"
-    info "Using version from environment: ${LINUXDEPLOY_OUTPUT_VERSION}"
+    BASE_VERSION="${OPENSCAD_VERSION}"
+    info "Using base version from environment: ${BASE_VERSION}"
 else
     # Use centralized version establishment script
     source "${PROJECT_ROOT}/scripts/establish_version.sh"
-    export LINUXDEPLOY_OUTPUT_VERSION=$(openscad_version)
-    info "Using version from establish_version.sh: ${LINUXDEPLOY_OUTPUT_VERSION}"
+    BASE_VERSION=$(openscad_version)
+    info "Using base version from establish_version.sh: ${BASE_VERSION}"
 fi
+
+# Append Qt version to the version string for unique filenames
+# This ensures Qt5/Qt6 builds have different names
+export LINUXDEPLOY_OUTPUT_VERSION="${BASE_VERSION}-qt${QT_VERSION}-${ARCH}"
+info "AppImage version: ${LINUXDEPLOY_OUTPUT_VERSION}"
 
 # Remove problematic python.o file if it exists
 # This file can cause issues with AppImage creation

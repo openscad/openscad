@@ -17,7 +17,19 @@ on:
 
 jobs:
   build-appimage:
+    name: Build AppImage (Qt${{ matrix.qt_version }} / ${{ matrix.arch }})
     runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        qt_version: [5, 6]
+        arch: [x86_64]
+        include:
+          - qt_version: 5
+            profile: pythonscad-qt5
+          - qt_version: 6
+            profile: pythonscad-qt6
+
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
@@ -28,6 +40,7 @@ jobs:
       run: |
         git fetch --unshallow --tags || git fetch --tags
         git describe --tags --always --dirty
+
     - name: Setup (detached) tmate session if enabled
       if: ${{ github.event_name == 'workflow_dispatch' && inputs.debug_enabled }}
       uses: mxschmitt/action-tmate@v3
@@ -35,23 +48,53 @@ jobs:
       with:
         detached: true
         limit-access-to-actor: true
-    - name: Install dependencies
+
+    - name: Set up QEMU for ARM64
+      if: matrix.arch == 'aarch64'
+      uses: docker/setup-qemu-action@v3
+      with:
+        platforms: arm64
+
+    - name: Install dependencies (x86_64)
+      if: matrix.arch == 'x86_64'
       env:
         DEBIAN_FRONTEND: noninteractive
         TZ: Etc/UTC
       run: |
-        which sudo || ( apt update && apt install -y sudo )
-        sudo -E ./scripts/uni-get-dependencies.py --yes --profile pythonscad-qt6
-
-    - name: Install additional AppImage dependencies
-      run: |
         sudo apt-get update
+        sudo -E ./scripts/uni-get-dependencies.py --yes --profile ${{ matrix.profile }}
         sudo apt-get install -y wget file libfuse2
 
-    - name: Build AppImage
+    - name: Build AppImage (x86_64)
+      if: matrix.arch == 'x86_64'
+      env:
+        QT_VERSION: ${{ matrix.qt_version }}
+        ARCH: ${{ matrix.arch }}
       run: |
         chmod +x ./scripts/create_appimage.sh
         ./scripts/create_appimage.sh
+
+    - name: Build AppImage (aarch64) in Docker
+      if: matrix.arch == 'aarch64'
+      run: |
+        # Run the entire build inside a Docker container with proper ARM64 emulation
+        docker run --rm \
+          --platform linux/arm64 \
+          -v "$PWD:/workspace" \
+          -w /workspace \
+          -e QT_VERSION=${{ matrix.qt_version }} \
+          -e ARCH=aarch64 \
+          -e DEBIAN_FRONTEND=noninteractive \
+          -e TZ=Etc/UTC \
+          ubuntu:24.04 \
+          bash -c '
+            set -e
+            apt-get update
+            apt-get install -y git python3 wget file libfuse2
+            ./scripts/uni-get-dependencies.py --yes --profile ${{ matrix.profile }}
+            chmod +x ./scripts/create_appimage.sh
+            ./scripts/create_appimage.sh
+          '
 
     - name: Get AppImage filename
       id: appimage
@@ -63,7 +106,7 @@ jobs:
     - name: Upload AppImage as artifact
       uses: actions/upload-artifact@v4
       with:
-        name: ${{ steps.appimage.outputs.filename }}
+        name: pythonscad-qt${{ matrix.qt_version }}-${{ matrix.arch }}-appimage
         path: ${{ steps.appimage.outputs.filepath }}
         retention-days: 30
 

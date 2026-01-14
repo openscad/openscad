@@ -11,12 +11,11 @@
       "version": "22.04",
       "codename": "jammy",
       "lts": true,
-      "eol_date": "2027-04",
+      "eol_date": "2027-06",
       "runner": "ubuntu-22.04",
-      "docker_image": null,
+      "docker_image": "ubuntu:jammy",
       "architectures": [
-        "amd64",
-        "arm64"
+        "amd64"
       ]
     },
     {
@@ -25,26 +24,11 @@
       "version": "24.04",
       "codename": "noble",
       "lts": true,
-      "eol_date": "2029-04",
+      "eol_date": "2029-05",
       "runner": "ubuntu-24.04",
-      "docker_image": null,
+      "docker_image": "ubuntu:noble",
       "architectures": [
-        "amd64",
-        "arm64"
-      ]
-    },
-    {
-      "family": "ubuntu",
-      "name": "Ubuntu",
-      "version": "24.10",
-      "codename": "oracular",
-      "lts": false,
-      "eol_date": "2025-07",
-      "runner": "ubuntu-24.04",
-      "docker_image": "ubuntu:oracular",
-      "architectures": [
-        "amd64",
-        "arm64"
+        "amd64"
       ]
     },
     {
@@ -57,8 +41,7 @@
       "runner": "ubuntu-24.04",
       "docker_image": "ubuntu:questing",
       "architectures": [
-        "amd64",
-        "arm64"
+        "amd64"
       ]
     },
     {
@@ -71,8 +54,7 @@
       "runner": null,
       "docker_image": "debian:bullseye",
       "architectures": [
-        "amd64",
-        "arm64"
+        "amd64"
       ]
     },
     {
@@ -85,8 +67,7 @@
       "runner": null,
       "docker_image": "debian:bookworm",
       "architectures": [
-        "amd64",
-        "arm64"
+        "amd64"
       ]
     },
     {
@@ -95,12 +76,11 @@
       "version": "13",
       "codename": "trixie",
       "lts": false,
-      "eol_date": "2025-06",
+      "eol_date": "2030-06",
       "runner": null,
       "docker_image": "debian:trixie",
       "architectures": [
-        "amd64",
-        "arm64"
+        "amd64"
       ]
     }
   ],

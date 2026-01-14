@@ -322,7 +322,6 @@ sudo dnf install pythonscad</pre>
     <h2>Supported Architectures</h2>
     <ul>
         <li>x86_64 (AMD64)</li>
-        <li>aarch64 (ARM64)</li>
     </ul>
 
     <h2>Manual Download</h2>
