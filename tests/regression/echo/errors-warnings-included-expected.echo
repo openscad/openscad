@@ -32,6 +32,9 @@ WARNING: Python: 'function not executed' in file errors-warnings.scad, line 44
 WARNING: Ignoring unknown module 'box' in file errors-warnings.scad, line 44
 WARNING: Ignoring unknown module 'box' in file errors-warnings.scad, line 44
 WARNING: Python: 'function not executed' in file errors-warnings.scad, line 44
+=======
+WARNING: Ignoring unknown module 'box' in file errors-warnings.scad, line 44
+>>>>>>> d3ee90fee (Suppress log messages of type HtmlLink on command line.)
 WARNING: $fs too small - clamping to 0.010000 in file errors-warnings.scad, line 46
 WARNING: $fa too small - clamping to 0.010000 in file errors-warnings.scad, line 47
 WARNING: $fs too small - clamping to 0.010000 in file errors-warnings.scad, line 54

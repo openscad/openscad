@@ -27,9 +27,15 @@ WARNING: color() expects numbers between 0.0 and 1.0. Value of -1.0 is out of ra
 WARNING: color() expects numbers between 0.0 and 1.0. Value of 2.0 is out of range in file errors-warnings.scad, line 42
 WARNING: Unable to parse color "notAName" in file errors-warnings.scad, line 43
 WARNING: Python: 'function not executed' in file errors-warnings.scad, line 44
+<<<<<<< HEAD
 WARNING: Ignoring unknown module 'box' in file errors-warnings.scad, line 44
 WARNING: Ignoring unknown module 'box' in file errors-warnings.scad, line 44
 WARNING: Python: 'function not executed' in file errors-warnings.scad, line 44
+=======
+=======
+WARNING: Ignoring unknown module 'box' in file errors-warnings.scad, line 44
+>>>>>>> d3ee90fee (Suppress log messages of type HtmlLink on command line.)
+>>>>>>> efeb96c7d (Suppress log messages of type HtmlLink on command line.)
 WARNING: $fs too small - clamping to 0.010000 in file errors-warnings.scad, line 46
 WARNING: $fa too small - clamping to 0.010000 in file errors-warnings.scad, line 47
 WARNING: $fs too small - clamping to 0.010000 in file errors-warnings.scad, line 54
