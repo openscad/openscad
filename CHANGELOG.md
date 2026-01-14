@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.8.24](https://github.com/pythonscad/pythonscad/compare/v0.8.23...v0.8.24) (2026-01-14)
+
+
+### Features
+
+* add installation documentation to website ([#342](https://github.com/pythonscad/pythonscad/issues/342)) ([b397940](https://github.com/pythonscad/pythonscad/commit/b3979403ef422d76f73591bccfd6f51bf1ab855d))
+
+
+### Bug Fixes
+
+* **rpm:** resolve RPM build failures by forcing static linking ([#341](https://github.com/pythonscad/pythonscad/issues/341)) ([5059125](https://github.com/pythonscad/pythonscad/commit/50591251c51b55b30ade401e213533968d39faa0))
+* uv ([460b288](https://github.com/pythonscad/pythonscad/commit/460b288b21795b37b194346547168aac3f41dd55))
+
 ## [0.8.23](https://github.com/pythonscad/pythonscad/compare/v0.8.22...v0.8.23) (2026-01-13)
 
 
