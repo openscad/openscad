@@ -26,33 +26,23 @@
 
 #pragma once
 
-#include <string_view>
-
-#define QUOTE_(x_) #x_
-#define QUOTED_(x__) QUOTE_(x__)
+#include <string>
 
 // Version number without any patch level indicator
-inline constexpr std::string_view openscad_shortversionnumber = QUOTED_(OPENSCAD_SHORTVERSION);
+extern const std::string openscad_shortversionnumber;
 
 // The full version number, e.g. 2014.03, 2015.03-1, 2014.12.23
-inline constexpr std::string_view openscad_versionnumber = QUOTED_(OPENSCAD_VERSION);
+extern const std::string openscad_versionnumber;
 
 // Version used for display, typically without patchlevel indicator,
 // but may include git commit id for snapshot builds
-inline constexpr std::string_view openscad_displayversionnumber =
-#ifdef OPENSCAD_COMMIT
-  QUOTED_(OPENSCAD_VERSION) " (git " QUOTED_(OPENSCAD_COMMIT) ")";
-#else
-  QUOTED_(OPENSCAD_SHORTVERSION);
-#endif
+extern const std::string openscad_displayversionnumber;
 
 // Version used for detailed display
-inline constexpr std::string_view openscad_detailedversionnumber =
-#ifdef OPENSCAD_COMMIT
-  openscad_displayversionnumber;
-#else
-  openscad_versionnumber;
-#endif
+extern const std::string openscad_detailedversionnumber;
 
-#undef QUOTED_
-#undef QUOTE_
+extern const int openscad_version_year;
+extern const int openscad_version_month;
+extern const int openscad_version_day;
+extern const bool openscad_has_day;
+extern const bool openscad_has_commit;

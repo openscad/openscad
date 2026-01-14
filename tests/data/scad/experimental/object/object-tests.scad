@@ -141,7 +141,7 @@ testEq( object( this = 42, f=function(this) this.this ).f(), 42, "but functions 
     test( function() !is_undef(object(f=fthis).f()), "must work as method");
 }
 {
-    p=object( f = function(child,this) child());
+    p=object( f = function(f2,this) f2());
     c=function(this) this;
     test( function() is_undef(p.f( c )),"leaks from nested invocation" );
 }

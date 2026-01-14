@@ -103,13 +103,13 @@ PACKAGES=(
     "qscintilla 2.14.1"
 
     # https://github.com/uxlfoundation/oneTBB/releases
-    "onetbb 2022.1.0"
+    "onetbb 2022.3.0"
 
     # https://github.com/AngusJohnson/Clipper2/releases
     "clipper2 1.5.3"
 
     # https://github.com/elalish/manifold/releases
-    "manifold 3.2.1"
+    "manifold 3.3.2"
 )
 DEPLOY_PACKAGES=(
     # https://github.com/sparkle-project/Sparkle/releases

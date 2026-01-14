@@ -119,7 +119,6 @@
 #include "gui/ExportPdfDialog.h"
 #include "gui/ExportSvgDialog.h"
 #include "gui/ExternalToolInterface.h"
-#include "gui/FontListDialog.h"
 #include "gui/ImportUtils.h"
 #include "gui/input/InputDriverEvent.h"
 #include "gui/input/InputDriverManager.h"
@@ -290,7 +289,7 @@ MainWindow::MainWindow(const QStringList& filenames) : rubberBandManager(this)
            {parameterDock, _("Customizer"), "view/hideCustomizer"},
            {errorLogDock, _("Error-Log"), "view/hideErrorLog"},
            {animateDock, _("Animate"), "view/hideAnimate"},
-           {fontListDock, _("Font Lists"), "view/hideFontList"},
+           {fontListDock, _("Font List"), "view/hideFontList"},
            {viewportControlDock, _("Viewport-Control"), "view/hideViewportControl"}};
 
   this->versionLabel = nullptr;  // must be initialized before calling updateStatusBar()
@@ -341,8 +340,9 @@ MainWindow::MainWindow(const QStringList& filenames) : rubberBandManager(this)
           &MainWindow::onTabManagerEditorContentReloaded);
 
   connect(GlobalPreferences::inst(), &Preferences::consoleFontChanged, this->console, &Console::setFont);
-  this->console->setFont(GlobalPreferences::inst()->getValue("advanced/consoleFontFamily").toString(),
-                         GlobalPreferences::inst()->getValue("advanced/consoleFontSize").toUInt());
+  this->console->setConsoleFont(
+    GlobalPreferences::inst()->getValue("advanced/consoleFontFamily").toString(),
+    GlobalPreferences::inst()->getValue("advanced/consoleFontSize").toUInt());
 
   const QString version =
     QString("<b>OpenSCAD %1</b>").arg(QString::fromStdString(std::string(openscad_versionnumber)));
@@ -578,7 +578,6 @@ MainWindow::MainWindow(const QStringList& filenames) : rubberBandManager(this)
   connect(this->helpActionManual, &QAction::triggered, this, &MainWindow::helpManual);
   connect(this->helpActionCheatSheet, &QAction::triggered, this, &MainWindow::helpCheatSheet);
   connect(this->helpActionLibraryInfo, &QAction::triggered, this, &MainWindow::helpLibrary);
-  connect(this->helpActionFontInfo, &QAction::triggered, this, &MainWindow::helpFontInfo);
 
   // Checks if the Documentation has been downloaded and hides the Action otherwise
   if (UIUtils::hasOfflineUserManual()) {
@@ -2458,19 +2457,30 @@ void MainWindow::handleMeasurementClicked(QAction *clickedAction)
 
 void MainWindow::leftClick(QPoint mouse)
 {
-  std::vector<QString> strs = meas.statemachine(mouse);
-  if (strs.size() > 0) {
-    this->qglview->measure_state = MEASURE_DIRTY;
+  auto state = meas.statemachine(mouse);
+  if (state.status != Measurement::Result::Status::NoChange) {
+    this->qglview->measure_state = Measurement::MEASURE_DIRTY;
     QMenu resultmenu(this);
     // Ensures we clean the display regardless of how menu gets closed.
     connect(&resultmenu, &QMenu::aboutToHide, this, &MainWindow::measureFinished);
 
-    // Can eventually be replaced with C++20 std::views::reverse
-    for (const auto& str : boost::adaptors::reverse(strs)) {
+    // Create the context menu and write successful measurements to the console.
+    // boost adaptor can eventually be replaced with C++20 std::views::reverse
+    bool first = true;
+    for (const auto& msg : boost::adaptors::reverse(state.messages)) {
+      auto str = msg.display_text;
+      if (state.status == Measurement::Result::Status::Success) {
+        if (auto m = make_message_obj(first ? "%1$s" : "  %1$s", str.toStdString())) {
+          this->consoleOutput(*m);
+        }
+      }
       auto action = resultmenu.addAction(str);
-      connect(action, &QAction::triggered, this, [str]() { QApplication::clipboard()->setText(str); });
+      auto clipboard = msg.clipboard_text ? *msg.clipboard_text : str;
+      connect(action, &QAction::triggered, this,
+              [clipboard]() { QApplication::clipboard()->setText(clipboard); });
+      first = false;
     }
-    resultmenu.addAction("Click any above to copy its text to the clipboard");
+    resultmenu.addAction("Click any above to copy its data to the clipboard");
     resultmenu.exec(qglview->mapToGlobal(mouse));
     resetMeasurementsState(true, "Click to start measuring");
   }
@@ -3606,16 +3616,6 @@ void MainWindow::helpLibrary()
     this->libraryInfoDialog = dialog;
   }
   this->libraryInfoDialog->show();
-}
-
-void MainWindow::helpFontInfo()
-{
-  if (!this->fontListDialog) {
-    auto dialog = new FontListDialog();
-    this->fontListDialog = dialog;
-  }
-  this->fontListDialog->updateFontList();
-  this->fontListDialog->show();
 }
 
 void MainWindow::closeEvent(QCloseEvent *event)

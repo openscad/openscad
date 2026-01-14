@@ -377,7 +377,6 @@
     <addaction name="helpActionCheatSheet"/>
     <addaction name="helpActionOfflineCheatSheet"/>
     <addaction name="helpActionLibraryInfo"/>
-    <addaction name="helpActionFontInfo"/>
    </widget>
    <widget class="QMenu" name="menuWindow">
     <property name="title">
@@ -1452,11 +1451,6 @@
    </property>
    <property name="text">
     <string>Reset View</string>
-   </property>
-  </action>
-  <action name="helpActionFontInfo">
-   <property name="text">
-    <string>&amp;Font List</string>
    </property>
   </action>
   <action name="fileActionExportSVG">

@@ -5,11 +5,6 @@ module children_test() {
 }
 children_test() noop();
 
-module child_test() {
-	child() noop();
-}
-child_test() noop();
-
 import("../../dxf/circle.dxf") noop();
 
 surface("../../image/smiley.png") noop();

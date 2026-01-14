@@ -116,7 +116,7 @@ public:
 
   QLabel *versionLabel;
 
-  Measurement meas;
+  Measurement::Measurement meas;
 
   int compileErrors;
   int compileWarnings;
@@ -394,7 +394,6 @@ public slots:
   void helpCheatSheet();
   void helpOfflineCheatSheet();
   void helpLibrary();
-  void helpFontInfo();
   void checkAutoReload();
   void waitAfterReload();
   void autoReloadSet(bool);

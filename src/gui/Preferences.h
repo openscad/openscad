@@ -17,6 +17,7 @@
 #include <QSettings>
 #include <string>
 
+#include "glview/RenderSettings.h"
 #include "gui/qtgettext.h"  // IWYU pragma: keep
 #include "openscad_gui.h"
 #include "ui_Preferences.h"
@@ -179,6 +180,7 @@ signals:
   void stepSizeChanged(int val) const;
   void autoPreviewDelayChanged() const;
   void toolbarExportChanged() const;
+  void renderBackend3DChanged(RenderBackend3D backend) const;
 
 private slots:
   void on_lineEditStepSize_textChanged(const QString& arg1);
