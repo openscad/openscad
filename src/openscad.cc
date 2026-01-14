@@ -140,7 +140,9 @@ public:
   static void output(const Message& msgObj, void *userdata)
   {
     auto self = static_cast<Echostream *>(userdata);
-    self->stream << msgObj.str() << "\n";
+    if (msgObj.group != message_group::HtmlLink) {
+      self->stream << msgObj.str() << "\n";
+    }
   }
   ~Echostream()
   {

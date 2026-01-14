@@ -55,7 +55,7 @@ enum class message_group {
   NONE,
   Error,
   Warning,
-  HtmlLink,  // allows HTML links, slow!
+  HtmlLink,  // Slow! Allows HTML links. Suppressed on command line.
   UI_Warning,
   Font_Warning,
   Export_Warning,
