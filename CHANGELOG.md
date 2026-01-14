@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.8.25](https://github.com/pythonscad/pythonscad/compare/v0.8.24...v0.8.25) (2026-01-14)
+
+
+### Bug Fixes
+
+* **ci:** AppImage libfive dependency, Qt5 support, ARM64 support, and distribution updates ([#347](https://github.com/pythonscad/pythonscad/issues/347)) ([c4f90fe](https://github.com/pythonscad/pythonscad/commit/c4f90fee300df4c3a0afb2a6c986a0db60db3038))
+* **ci:** resolve RPM signing passphrase issue ([#345](https://github.com/pythonscad/pythonscad/issues/345)) ([2defd11](https://github.com/pythonscad/pythonscad/commit/2defd1163cd5e4f0067cc67632ae3eacb33fe4b5))
+
 ## [0.8.24](https://github.com/pythonscad/pythonscad/compare/v0.8.23...v0.8.24) (2026-01-14)
 
 
