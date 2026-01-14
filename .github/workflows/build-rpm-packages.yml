@@ -158,19 +158,26 @@ jobs:
           echo "Imported GPG keys:"
           gpg --list-secret-keys
 
-          # Configure RPM signing
+          # Create temporary passphrase file
+          PASSPHRASE_FILE=$(mktemp)
+          echo "${{ secrets.GPG_PASSPHRASE }}" > "$PASSPHRASE_FILE"
+
+          # Configure RPM signing with passphrase file
           echo "%_signature gpg" > ~/.rpmmacros
           echo "%_gpg_name ${{ secrets.GPG_KEY_ID }}" >> ~/.rpmmacros
           echo "%_gpg_digest_algo SHA256" >> ~/.rpmmacros
+          # Override the GPG sign command to use passphrase file
+          echo "%__gpg_sign_cmd %{__gpg} gpg --batch --no-verbose --no-armor --pinentry-mode loopback --passphrase-file $PASSPHRASE_FILE --no-secmem-warning -u \"%{_gpg_name}\" --sign --detach-sign --output %{__signature_filename} %{__plaintext_filename}" >> ~/.rpmmacros
 
           # Sign all RPM packages
           echo "Signing RPM packages..."
           for rpm in /tmp/rpms/*.rpm; do
             echo "Signing: $(basename "$rpm")"
-            echo "${{ secrets.GPG_PASSPHRASE }}" | rpm --addsign \
-              --define "_gpg_sign_cmd_extra_args --batch --pinentry-mode loopback --passphrase-fd 0" \
-              "$rpm"
+            rpmsign --addsign "$rpm"
           done
+
+          # Clean up passphrase file
+          rm -f "$PASSPHRASE_FILE"
 
           # Verify signatures
           echo "Verifying RPM signatures:"
