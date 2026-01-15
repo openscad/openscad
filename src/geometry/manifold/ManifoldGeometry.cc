@@ -35,7 +35,9 @@ Result vector_convert(V const& v)
 
 }  // namespace
 
-ManifoldGeometry::ManifoldGeometry() : manifold_(manifold::Manifold()) {}
+ManifoldGeometry::ManifoldGeometry() : manifold_(manifold::Manifold())
+{
+}
 
 ManifoldGeometry::ManifoldGeometry(manifold::Manifold mani, const std::set<uint32_t>& originalIDs,
                                    const std::map<uint32_t, Color4f>& originalIDToColor,
@@ -52,13 +54,25 @@ std::unique_ptr<Geometry> ManifoldGeometry::copy() const
   return std::make_unique<ManifoldGeometry>(*this);
 }
 
-const manifold::Manifold& ManifoldGeometry::getManifold() const { return manifold_; }
+const manifold::Manifold& ManifoldGeometry::getManifold() const
+{
+  return manifold_;
+}
 
-bool ManifoldGeometry::isEmpty() const { return getManifold().IsEmpty(); }
+bool ManifoldGeometry::isEmpty() const
+{
+  return getManifold().IsEmpty();
+}
 
-size_t ManifoldGeometry::numFacets() const { return getManifold().NumTri(); }
+size_t ManifoldGeometry::numFacets() const
+{
+  return getManifold().NumTri();
+}
 
-size_t ManifoldGeometry::numVertices() const { return getManifold().NumVert(); }
+size_t ManifoldGeometry::numVertices() const
+{
+  return getManifold().NumVert();
+}
 
 bool ManifoldGeometry::isManifold() const
 {
@@ -70,7 +84,10 @@ bool ManifoldGeometry::isValid() const
   return manifold_.Status() == manifold::Manifold::Error::NoError;
 }
 
-void ManifoldGeometry::clear() { manifold_ = manifold::Manifold(); }
+void ManifoldGeometry::clear()
+{
+  manifold_ = manifold::Manifold();
+}
 
 // Note: We promise to only call memsize if we've already evaluated the object.
 // However, there is no way of querying this on the Manifold object itself.

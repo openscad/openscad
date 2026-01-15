@@ -13,4 +13,7 @@ OpenCSGWarningDialog::OpenCSGWarningDialog(QWidget *)
           &Preferences::on_openCSGWarningBox_toggled);
 }
 
-void OpenCSGWarningDialog::setText(const QString& text) { this->warningText->setPlainText(text); }
+void OpenCSGWarningDialog::setText(const QString& text)
+{
+  this->warningText->setPlainText(text);
+}

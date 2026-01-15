@@ -26,7 +26,10 @@ CGALWorker::CGALWorker()
   moveToThread(this->thread);
 }
 
-CGALWorker::~CGALWorker() { delete this->thread; }
+CGALWorker::~CGALWorker()
+{
+  delete this->thread;
+}
 
 void CGALWorker::start(const Tree& tree)
 {

@@ -392,7 +392,10 @@ RoofDiscretizer::RoofDiscretizer(const CurveDiscretizer& d, double scale)
 {
 }
 
-bool RoofDiscretizer::overMaxAngle(double radians) const { return radians > max_angle_deviation; }
+bool RoofDiscretizer::overMaxAngle(double radians) const
+{
+  return radians > max_angle_deviation;
+}
 
 bool RoofDiscretizer::overMaxSegmentSqrLength(double segment_sqr_length) const
 {

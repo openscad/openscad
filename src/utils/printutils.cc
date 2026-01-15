@@ -62,7 +62,10 @@ bool would_have_thrown()
   return would_throw;
 }
 
-void print_messages_push() { print_messages_stack.emplace_back(); }
+void print_messages_push()
+{
+  print_messages_stack.emplace_back();
+}
 
 void print_messages_pop()
 {
@@ -163,7 +166,10 @@ std::string two_digit_exp_format(std::string doublestr)
   return doublestr;
 }
 
-std::string two_digit_exp_format(double x) { return two_digit_exp_format(std::to_string(x)); }
+std::string two_digit_exp_format(double x)
+{
+  return two_digit_exp_format(std::to_string(x));
+}
 
 void resetSuppressedMessages()
 {
@@ -211,4 +217,7 @@ bool getGroupTextPlain(const enum message_group& group)
   return group == message_group::NONE || group == message_group::Echo;
 }
 
-std::string quoteVar(const std::string& varname) { return '"' + varname + '"'; }
+std::string quoteVar(const std::string& varname)
+{
+  return '"' + varname + '"';
+}

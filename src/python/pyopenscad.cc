@@ -38,7 +38,10 @@ extern "C" PyObject *PyInit_openscad(void);
 bool python_active;
 bool python_trusted;
 
-void PyObjectDeleter(PyObject *pObject) { Py_XDECREF(pObject); };
+void PyObjectDeleter(PyObject *pObject)
+{
+  Py_XDECREF(pObject);
+};
 
 PyObjectUniquePtr pythonInitDict(nullptr, PyObjectDeleter);
 PyObjectUniquePtr pythonMainModule(nullptr, PyObjectDeleter);
@@ -442,7 +445,9 @@ void initPython(const std::string& binDir, double time)
   PyRun_String(stream.str().c_str(), Py_file_input, pythonInitDict.get(), pythonInitDict.get());
 }
 
-void finishPython(void) {}
+void finishPython(void)
+{
+}
 
 std::string evaluatePython(const std::string& code, bool dry_run)
 {
@@ -589,7 +594,10 @@ static PyModuleDef OpenSCADModule = {PyModuleDef_HEAD_INIT,
                                      NULL,
                                      NULL};
 
-extern "C" PyObject *PyInit_openscad(void) { return PyModule_Create(&OpenSCADModule); }
+extern "C" PyObject *PyInit_openscad(void)
+{
+  return PyModule_Create(&OpenSCADModule);
+}
 
 PyMODINIT_FUNC PyInit_PyOpenSCAD(void)
 {

@@ -37,7 +37,10 @@ void Assignment::addAnnotations(AnnotationList *annotations)
   }
 }
 
-bool Assignment::hasAnnotations() const { return !annotations.empty(); }
+bool Assignment::hasAnnotations() const
+{
+  return !annotations.empty();
+}
 
 const Annotation *Assignment::annotation(const std::string& name) const
 {

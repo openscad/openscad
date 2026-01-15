@@ -37,7 +37,9 @@
 #include "core/function.h"
 #include "utils/printutils.h"
 
-Context::Context(EvaluationSession *session) : ContextFrame(session), parent(nullptr) {}
+Context::Context(EvaluationSession *session) : ContextFrame(session), parent(nullptr)
+{
+}
 
 Context::Context(const std::shared_ptr<const Context>& parent)
   : ContextFrame(parent->evaluation_session), parent(parent)

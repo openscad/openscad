@@ -203,7 +203,10 @@ QStringList UIUtils::recentFiles()
   return files;
 }
 
-const QList<UIUtils::ExampleCategory>& UIUtils::exampleCategories() { return readExamples(); }
+const QList<UIUtils::ExampleCategory>& UIUtils::exampleCategories()
+{
+  return readExamples();
+}
 
 QFileInfoList UIUtils::exampleFiles(const QString& category)
 {
@@ -217,9 +220,15 @@ QFileInfoList UIUtils::exampleFiles(const QString& category)
   return examples;
 }
 
-void UIUtils::openURL(const QString& url) { QDesktopServices::openUrl(QUrl(url)); }
+void UIUtils::openURL(const QString& url)
+{
+  QDesktopServices::openUrl(QUrl(url));
+}
 
-void UIUtils::openHomepageURL() { QDesktopServices::openUrl(QUrl("https://www.openscad.org/")); }
+void UIUtils::openHomepageURL()
+{
+  QDesktopServices::openUrl(QUrl("https://www.openscad.org/"));
+}
 
 static void openVersionedURL(const QString& url)
 {
