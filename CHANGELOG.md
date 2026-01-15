@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.8.27](https://github.com/pythonscad/pythonscad/compare/v0.8.26...v0.8.27) (2026-01-15)
+
+
+### Bug Fixes
+
+* **ci:** use prerelease instead of draft for release workflow ([#351](https://github.com/pythonscad/pythonscad/issues/351)) ([148fc2a](https://github.com/pythonscad/pythonscad/commit/148fc2a6f0eee57d3a0b26a0ab39e009818ccdcc))
+
 ## [0.8.26](https://github.com/pythonscad/pythonscad/compare/v0.8.25...v0.8.26) (2026-01-14)
 
 
