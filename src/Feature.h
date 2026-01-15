@@ -19,6 +19,9 @@ public:
   static const Feature ExperimentalTextMetricsFunctions;
   static const Feature ExperimentalImportFunction;
   static const Feature ExperimentalObjectFunction;
+  static const Feature ExperimentalQuoteFunction;
+  static const Feature ExperimentalFormatFunction;
+  static const Feature ExperimentalPrintModule;
   static const Feature ExperimentalPredictibleOutput;
   static const Feature ExperimentalVectorSwizzle;
 #ifdef ENABLE_PYTHON

@@ -44,6 +44,9 @@ const Feature Feature::ExperimentalPredictibleOutput(
   "order)");
 const Feature Feature::ExperimentalVectorSwizzle(
   "vector-swizzle", "Enable vector swizzling (e.g. <code>vec4.zyx</code> to reverse a 3D vector).");
+const Feature Feature::ExperimentalQuoteFunction("quote-function", "Enable quote() function.");
+const Feature Feature::ExperimentalFormatFunction("format-function", "Enable format() function.");
+const Feature Feature::ExperimentalPrintModule("print-module", "Enable print() module.");
 
 #ifdef ENABLE_PYTHON
 const Feature Feature::ExperimentalPythonEngine(

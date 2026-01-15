@@ -17,8 +17,6 @@
 #include "core/str_utf8_wrapper.h"
 #include "core/UndefType.h"
 
-class tostring_visitor;
-class tostream_visitor;
 class EvaluationSession;
 class Expression;
 class Value;
@@ -26,10 +24,16 @@ class Value;
 class QuotedString : public std::string
 {
 public:
-  QuotedString() : std::string() {}
-  QuotedString(const std::string& s) : std::string(s) {}
+  enum class Mode { RAW, REPR, ASCII };
+
+  QuotedString() : std::string(), mode(Mode::REPR) {}
+  QuotedString(const std::string& s, Mode m = Mode::REPR) : std::string(s), mode(m) {}
+  friend std::ostream& operator<<(std::ostream& stream, const QuotedString& s);
+
+private:
+  Mode mode;
+  void emitUnicode(std::ostream& stream, int c) const;
 };
-std::ostream& operator<<(std::ostream& stream, const QuotedString& s);
 
 class Filename : public QuotedString
 {
@@ -78,6 +82,7 @@ using FunctionPtr = ValuePtr<FunctionType>;
 class Value
 {
 public:
+  // Caution:  this list must match the definition of Variant below.
   enum class Type { UNDEFINED, BOOL, NUMBER, STRING, VECTOR, EMBEDDED_VECTOR, RANGE, FUNCTION, OBJECT };
   // FIXME: eventually remove this in favor of specific messages for each undef usage
   static const Value undefined;
@@ -369,6 +374,7 @@ public:
   bool getUnsignedInt(unsigned int& v) const;
   bool getPositiveInt(unsigned int& v) const;
   [[nodiscard]] std::string toString() const;
+  [[nodiscard]] std::string toParsableString(QuotedString::Mode m) const;
   [[nodiscard]] std::string toEchoString() const;
   [[nodiscard]] std::string toEchoStringNoThrow() const;  // use this for warnings
   [[nodiscard]] const UndefType& toUndef() const;
@@ -410,6 +416,7 @@ public:
     return stream;
   }
 
+  // Caution:  this list must match the definition of Type above.
   using Variant = std::variant<UndefType, bool, double, str_utf8_wrapper, VectorType, EmbeddedVectorType,
                                RangePtr, FunctionPtr, ObjectType>;
 
