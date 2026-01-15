@@ -72,6 +72,8 @@ bool ManifoldGeometry::isValid() const
 
 void ManifoldGeometry::clear() { manifold_ = manifold::Manifold(); }
 
+// Note: We promise to only call memsize if we've already evaluated the object.
+// However, there is no way of querying this on the Manifold object itself.
 size_t ManifoldGeometry::memsize() const
 {
   // Estimated memory usage per vertex:
@@ -80,8 +82,6 @@ size_t ManifoldGeometry::memsize() const
   // - Normals (vert + 2*face): 24 + 48 = 72 bytes
   // - Mesh Relation (2*face): 32 bytes
   // Total ~ 224 bytes + vector overhead + properties
-  // Note: We promise to only call memsize if we've already evaluated the object.
-  // assert(evaluated); // TODO: How to check this?
   return getManifold().NumVert() * 250;
 }
 
