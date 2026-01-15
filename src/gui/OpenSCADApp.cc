@@ -9,7 +9,6 @@
 #include "geometry/cgal/CGALCache.h"
 #endif
 #include "glview/RenderSettings.h"
-#include "gui/Preferences.h"
 
 #include <QApplication>
 #include <QEvent>
@@ -27,8 +26,9 @@ OpenSCADApp::OpenSCADApp(int& argc, char **argv) : QApplication(argc, argv)
   this->installEventFilter(new SCADEventFilter(this));
 #endif
 
-  connect(GlobalPreferences::inst(), &Preferences::renderBackend3DChanged, this,
-          &OpenSCADApp::setRenderBackend3D);
+  // Note: It may be tempting to add more initialization code here, but keep in mind that this is run as
+  // part of QApplication initialization, so it's usually better to that in the main gui() function after
+  // the OpenSCADApp instance is created.
 }
 
 OpenSCADApp::~OpenSCADApp() { delete this->fontCacheDialog; }

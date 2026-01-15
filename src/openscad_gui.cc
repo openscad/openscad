@@ -249,6 +249,8 @@ int gui(std::vector<std::string>& inputFiles, const std::filesystem::path& origi
 
   QObject::connect(GlobalPreferences::inst(), &Preferences::applicationFontChanged, &app,
                    &OpenSCADApp::setApplicationFont);
+  QObject::connect(GlobalPreferences::inst(), &Preferences::renderBackend3DChanged, &app,
+                   &OpenSCADApp::setRenderBackend3D);
 
   set_render_color_scheme(arg_colorscheme, false);
   auto noInputFiles = false;
