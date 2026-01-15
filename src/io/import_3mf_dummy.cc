@@ -32,7 +32,10 @@
 #include "geometry/PolySet.h"
 #include "io/lib3mf_utils.h"
 
-std::string get_lib3mf_version() { return "(not enabled)"; }
+std::string get_lib3mf_version()
+{
+  return "(not enabled)";
+}
 
 std::unique_ptr<class PolySet> import_3mf(const std::string&, const Location& loc)
 {

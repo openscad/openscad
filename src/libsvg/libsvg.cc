@@ -221,6 +221,9 @@ shapes_list_t *libsvg_read_file(const char *filename, void *context)
   return shape_list;
 }
 
-void libsvg_free(shapes_list_t *shapes) { delete shapes; }
+void libsvg_free(shapes_list_t *shapes)
+{
+  delete shapes;
+}
 
 }  // namespace libsvg

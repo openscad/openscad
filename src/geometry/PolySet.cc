@@ -52,9 +52,14 @@
 
  */
 
-PolySet::PolySet(unsigned int dim, boost::tribool convex) : dim_(dim), convex_(convex) {}
+PolySet::PolySet(unsigned int dim, boost::tribool convex) : dim_(dim), convex_(convex)
+{
+}
 
-std::unique_ptr<Geometry> PolySet::copy() const { return std::make_unique<PolySet>(*this); }
+std::unique_ptr<Geometry> PolySet::copy() const
+{
+  return std::make_unique<PolySet>(*this);
+}
 
 std::string PolySet::dump() const
 {

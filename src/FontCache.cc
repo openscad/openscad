@@ -74,7 +74,10 @@ std::string get_harfbuzz_version()
   return OpenSCAD::get_version_string(header_version, runtime_version);
 }
 
-std::string get_freetype_version() { return FontCache::instance()->get_freetype_version(); }
+std::string get_freetype_version()
+{
+  return FontCache::instance()->get_freetype_version();
+}
 
 FontInfo::FontInfo(std::string family, std::string style, std::string file, uint32_t hash)
   : family(std::move(family)), style(std::move(style)), file(std::move(file)), hash(hash)
@@ -92,13 +95,25 @@ bool FontInfo::operator<(const FontInfo& rhs) const
   return file < rhs.file;
 }
 
-const std::string& FontInfo::get_family() const { return family; }
+const std::string& FontInfo::get_family() const
+{
+  return family;
+}
 
-const std::string& FontInfo::get_style() const { return style; }
+const std::string& FontInfo::get_style() const
+{
+  return style;
+}
 
-const std::string& FontInfo::get_file() const { return file; }
+const std::string& FontInfo::get_file() const
+{
+  return file;
+}
 
-const uint32_t FontInfo::get_hash() const { return hash; }
+const uint32_t FontInfo::get_hash() const
+{
+  return hash;
+}
 
 FontCache *FontCache::self = nullptr;
 FontCache::InitHandlerFunc *FontCache::cb_handler = FontCache::defaultInitHandler;
@@ -110,7 +125,10 @@ const std::string FontCache::DEFAULT_FONT("Liberation Sans:style=Regular");
  * handler is registered, the cache build is just called synchronously in the
  * current thread by this handler.
  */
-void FontCache::defaultInitHandler(FontCacheInitializer *initializer, void *) { initializer->run(); }
+void FontCache::defaultInitHandler(FontCacheInitializer *initializer, void *)
+{
+  initializer->run();
+}
 
 FontCache::FontCache()
 {
@@ -302,9 +320,15 @@ FontInfoList *FontCache::list_fonts() const
   return list;
 }
 
-bool FontCache::is_init_ok() const { return this->init_ok; }
+bool FontCache::is_init_ok() const
+{
+  return this->init_ok;
+}
 
-void FontCache::clear() { this->cache.clear(); }
+void FontCache::clear()
+{
+  this->cache.clear();
+}
 
 void FontCache::dump_cache(const std::string& info)
 {

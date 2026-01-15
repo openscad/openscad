@@ -9,7 +9,9 @@
 #include "core/module.h"
 #include "utils/printutils.h"
 
-BuiltinContext::BuiltinContext(EvaluationSession *session) : Context(session) {}
+BuiltinContext::BuiltinContext(EvaluationSession *session) : Context(session)
+{
+}
 
 void BuiltinContext::init()
 {

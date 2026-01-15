@@ -852,9 +852,15 @@ void MainWindow::setAllMouseViewActions()
                                    Settings::Settings::inputMouseCtrlShiftRightClick.value())));
 }
 
-void MainWindow::onNavigationOpenContextMenu() { navigationMenu->exec(QCursor::pos()); }
+void MainWindow::onNavigationOpenContextMenu()
+{
+  navigationMenu->exec(QCursor::pos());
+}
 
-void MainWindow::onNavigationCloseContextMenu() { rubberBandManager.hide(); }
+void MainWindow::onNavigationCloseContextMenu()
+{
+  rubberBandManager.hide();
+}
 
 void MainWindow::onNavigationTriggerContextMenuEntry()
 {
@@ -955,9 +961,13 @@ void MainWindow::updateWindowSettings(bool isEditorToolbarVisible, bool isViewTo
   hide3DViewToolbar();
 }
 
-void MainWindow::onAxisChanged(InputEventAxisChanged *) {}
+void MainWindow::onAxisChanged(InputEventAxisChanged *)
+{
+}
 
-void MainWindow::onButtonChanged(InputEventButtonChanged *) {}
+void MainWindow::onButtonChanged(InputEventButtonChanged *)
+{
+}
 
 void MainWindow::onTranslateEvent(InputEventTranslate *event)
 {
@@ -1000,7 +1010,10 @@ void MainWindow::onActionEvent(InputEventAction *event)
   }
 }
 
-void MainWindow::onZoomEvent(InputEventZoom *event) { qglview->zoom(event->zoom, event->relative); }
+void MainWindow::onZoomEvent(InputEventZoom *event)
+{
+  qglview->zoom(event->zoom, event->relative);
+}
 
 void MainWindow::loadViewSettings()
 {
@@ -1116,7 +1129,10 @@ MainWindow::~MainWindow()
   }
 }
 
-void MainWindow::showProgress() { updateStatusBar(qobject_cast<ProgressWidget *>(sender())); }
+void MainWindow::showProgress()
+{
+  updateStatusBar(qobject_cast<ProgressWidget *>(sender()));
+}
 
 void MainWindow::report_func(const std::shared_ptr<const AbstractNode>&, void *vp, int mark)
 {
@@ -1284,7 +1300,10 @@ void MainWindow::waitAfterReload()
   this->waitAfterReloadTimer->start();
 }
 
-void MainWindow::on_toolButtonCompileResultClose_clicked() { frameCompileResult->hide(); }
+void MainWindow::on_toolButtonCompileResultClose_clicked()
+{
+  frameCompileResult->hide();
+}
 
 void MainWindow::updateCompileResult()
 {
@@ -1568,7 +1587,10 @@ void MainWindow::actionOpen()
   }
 }
 
-void MainWindow::actionNewWindow() { new MainWindow(QStringList()); }
+void MainWindow::actionNewWindow()
+{
+  new MainWindow(QStringList());
+}
 
 void MainWindow::actionOpenWindow()
 {
@@ -1695,9 +1717,15 @@ void MainWindow::saveBackup()
   return writeBackup(this->tempFile);
 }
 
-void MainWindow::actionSave() { tabManager->save(activeEditor); }
+void MainWindow::actionSave()
+{
+  tabManager->save(activeEditor);
+}
 
-void MainWindow::actionSaveAs() { tabManager->saveAs(activeEditor); }
+void MainWindow::actionSaveAs()
+{
+  tabManager->saveAs(activeEditor);
+}
 
 void MainWindow::actionPythonRevokeTrustedFiles()
 {
@@ -1771,7 +1799,10 @@ void MainWindow::actionPythonSelectVenv()
 #endif  // ifdef ENABLE_PYTHON
 }
 
-void MainWindow::actionSaveACopy() { tabManager->saveACopy(activeEditor); }
+void MainWindow::actionSaveACopy()
+{
+  tabManager->saveACopy(activeEditor);
+}
 
 void MainWindow::actionShowLibraryFolder()
 {
@@ -1884,7 +1915,10 @@ void MainWindow::showFind(bool doFindAndReplace)
   findInputField->selectAll();
 }
 
-void MainWindow::actionShowFind() { showFind(false); }
+void MainWindow::actionShowFind()
+{
+  showFind(false);
+}
 
 void MainWindow::findString(const QString& textToFind)
 {
@@ -1893,7 +1927,10 @@ void MainWindow::findString(const QString& textToFind)
   activeEditor->find(textToFind);
 }
 
-void MainWindow::actionShowFindAndReplace() { showFind(true); }
+void MainWindow::actionShowFindAndReplace()
+{
+  showFind(true);
+}
 
 void MainWindow::actionSelectFind(int type)
 {
@@ -1935,11 +1972,20 @@ void MainWindow::convertTabsToSpaces()
   activeEditor->setText(converted);
 }
 
-void MainWindow::findNext() { activeEditor->find(this->findInputField->text(), true); }
+void MainWindow::findNext()
+{
+  activeEditor->find(this->findInputField->text(), true);
+}
 
-void MainWindow::findPrev() { activeEditor->find(this->findInputField->text(), true, true); }
+void MainWindow::findPrev()
+{
+  activeEditor->find(this->findInputField->text(), true, true);
+}
 
-void MainWindow::useSelectionForFind() { findInputField->setText(activeEditor->selectedText()); }
+void MainWindow::useSelectionForFind()
+{
+  findInputField->setText(activeEditor->selectedText());
+}
 
 void MainWindow::updateFindBuffer(const QString& s)
 {
@@ -2151,7 +2197,10 @@ void MainWindow::parseTopLevelDocument()
   this->parsedFile = this->rootFile;
 }
 
-void MainWindow::changeParameterWidget() { parameterDock->setVisible(true); }
+void MainWindow::changeParameterWidget()
+{
+  parameterDock->setVisible(true);
+}
 
 void MainWindow::checkAutoReload()
 {
@@ -2571,7 +2620,10 @@ void MainWindow::measureFinished()
   if (didSomething) resetMeasurementsState(true, "Click to start measuring");
 }
 
-void MainWindow::clearAllSelectionIndicators() { this->activeEditor->clearAllSelectionIndicators(); }
+void MainWindow::clearAllSelectionIndicators()
+{
+  this->activeEditor->clearAllSelectionIndicators();
+}
 
 void MainWindow::setSelectionIndicatorStatus(EditorInterface *editor, int nodeIndex,
                                              EditorSelectionIndicatorStatus status)
@@ -2674,7 +2726,10 @@ void MainWindow::onHoveredObjectInSelectionMenu()
   setSelection(action->property("id").toInt());
 }
 
-void MainWindow::setLastFocus(QWidget *widget) { this->lastFocus = widget; }
+void MainWindow::setLastFocus(QWidget *widget)
+{
+  this->lastFocus = widget;
+}
 
 /**
  * Switch version label and progress widget. When switching to the progress
@@ -3104,7 +3159,10 @@ void MainWindow::viewModeShowScaleProportional()
   this->qglview->update();
 }
 
-bool MainWindow::isEmpty() { return activeEditor->toPlainText().isEmpty(); }
+bool MainWindow::isEmpty()
+{
+  return activeEditor->toPlainText().isEmpty();
+}
 
 void MainWindow::editorContentChanged()
 {
@@ -3179,9 +3237,15 @@ void MainWindow::setProjectionType(ProjectionType mode)
   qglview->update();
 }
 
-void MainWindow::viewPerspective() { setProjectionType(ProjectionType::PERSPECTIVE); }
+void MainWindow::viewPerspective()
+{
+  setProjectionType(ProjectionType::PERSPECTIVE);
+}
 
-void MainWindow::viewOrthogonal() { setProjectionType(ProjectionType::ORTHOGONAL); }
+void MainWindow::viewOrthogonal()
+{
+  setProjectionType(ProjectionType::ORTHOGONAL);
+}
 
 void MainWindow::viewTogglePerspective()
 {
@@ -3382,9 +3446,15 @@ void MainWindow::onWindowShortcutExport3DActivated()
   }
 }
 
-void MainWindow::on_editActionInsertTemplate_triggered() { activeEditor->displayTemplates(); }
+void MainWindow::on_editActionInsertTemplate_triggered()
+{
+  activeEditor->displayTemplates();
+}
 
-void MainWindow::on_editActionFoldAll_triggered() { activeEditor->foldUnfold(); }
+void MainWindow::on_editActionFoldAll_triggered()
+{
+  activeEditor->foldUnfold();
+}
 
 QString MainWindow::getCurrentFileName() const
 {
@@ -3556,15 +3626,30 @@ void MainWindow::helpAbout()
   dialog->deleteLater();
 }
 
-void MainWindow::helpHomepage() { UIUtils::openHomepageURL(); }
+void MainWindow::helpHomepage()
+{
+  UIUtils::openHomepageURL();
+}
 
-void MainWindow::helpManual() { UIUtils::openUserManualURL(); }
+void MainWindow::helpManual()
+{
+  UIUtils::openUserManualURL();
+}
 
-void MainWindow::helpOfflineManual() { UIUtils::openOfflineUserManual(); }
+void MainWindow::helpOfflineManual()
+{
+  UIUtils::openOfflineUserManual();
+}
 
-void MainWindow::helpCheatSheet() { UIUtils::openCheatSheetURL(); }
+void MainWindow::helpCheatSheet()
+{
+  UIUtils::openCheatSheetURL();
+}
 
-void MainWindow::helpOfflineCheatSheet() { UIUtils::openOfflineCheatSheet(); }
+void MainWindow::helpOfflineCheatSheet()
+{
+  UIUtils::openOfflineCheatSheet();
+}
 
 void MainWindow::helpLibrary()
 {
@@ -3662,7 +3747,10 @@ void MainWindow::errorLogOutput(const Message& log_msg, void *userdata)
   QMetaObject::invokeMethod(thisp, "errorLogOutput", Q_ARG(Message, log_msg));
 }
 
-void MainWindow::errorLogOutput(const Message& log_msg) { this->errorLogWidget->toErrorLog(log_msg); }
+void MainWindow::errorLogOutput(const Message& log_msg)
+{
+  this->errorLogWidget->toErrorLog(log_msg);
+}
 
 void MainWindow::setCurrentOutput()
 {
@@ -3674,7 +3762,10 @@ void MainWindow::hideCurrentOutput()
   set_output_handler(&MainWindow::noOutputConsole, &MainWindow::noOutputErrorLog, this);
 }
 
-void MainWindow::clearCurrentOutput() { set_output_handler(nullptr, nullptr, nullptr); }
+void MainWindow::clearCurrentOutput()
+{
+  set_output_handler(nullptr, nullptr, nullptr);
+}
 
 void MainWindow::openCSGSettingsChanged()
 {
@@ -3707,7 +3798,10 @@ QString MainWindow::exportPath(const QString& suffix)
   return QString("%1/%2.%3").arg(dir, basename, suffix);
 }
 
-void MainWindow::jumpToLine(int line, int col) { this->activeEditor->setCursorPosition(line, col); }
+void MainWindow::jumpToLine(int line, int col)
+{
+  this->activeEditor->setCursorPosition(line, col);
+}
 
 void MainWindow::resetMeasurementsState(bool enable, const QString& tooltipMessage)
 {

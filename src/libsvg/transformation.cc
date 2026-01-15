@@ -50,7 +50,9 @@ const std::string transformation::get_args() const
   return str.str();
 }
 
-matrix::matrix() : transformation("m", "matrix") {}
+matrix::matrix() : transformation("m", "matrix")
+{
+}
 
 /**
  * matrix(<a> <b> <c> <d> <e> <f>), which specifies a transformation in
@@ -76,7 +78,9 @@ std::vector<Eigen::Matrix3d> matrix::get_matrices()
   return result;
 }
 
-translate::translate() : transformation("t", "translate") {}
+translate::translate() : transformation("t", "translate")
+{
+}
 
 /**
  * translate(<tx> [<ty>]), which specifies a translation by tx and ty.
@@ -104,7 +108,9 @@ std::vector<Eigen::Matrix3d> translate::get_matrices()
   return result;
 }
 
-scale::scale() : transformation("s", "scale") {}
+scale::scale() : transformation("s", "scale")
+{
+}
 
 /**
  * scale(<sx> [<sy>]), which specifies a scale operation by sx and sy.
@@ -132,7 +138,9 @@ std::vector<Eigen::Matrix3d> scale::get_matrices()
   return result;
 }
 
-rotate::rotate() : transformation("r", "rotate") {}
+rotate::rotate() : transformation("r", "rotate")
+{
+}
 
 /**
  * rotate(<rotate-angle> [<cx> <cy>]), which specifies a rotation by
@@ -185,7 +193,9 @@ std::vector<Eigen::Matrix3d> rotate::get_matrices()
   return result;
 }
 
-skew_x::skew_x() : transformation("x", "skew_x") {}
+skew_x::skew_x() : transformation("x", "skew_x")
+{
+}
 
 /**
  * skewX(<skew-angle>), which specifies a skew transformation along the x-axis.
@@ -211,7 +221,9 @@ std::vector<Eigen::Matrix3d> skew_x::get_matrices()
   return result;
 }
 
-skew_y::skew_y() : transformation("y", "skew_y") {}
+skew_y::skew_y() : transformation("y", "skew_y")
+{
+}
 
 /**
  * skewY(<skew-angle>), which specifies a skew transformation along the y-axis.

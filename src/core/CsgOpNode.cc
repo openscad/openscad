@@ -58,7 +58,10 @@ static std::shared_ptr<AbstractNode> builtin_intersection(const ModuleInstantiat
   return children.instantiate(std::make_shared<CsgOpNode>(inst, OpenSCADOperator::INTERSECTION));
 }
 
-std::string CsgOpNode::toString() const { return this->name() + "()"; }
+std::string CsgOpNode::toString() const
+{
+  return this->name() + "()";
+}
 
 std::string CsgOpNode::name() const
 {

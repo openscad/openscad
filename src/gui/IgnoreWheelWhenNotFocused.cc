@@ -35,7 +35,9 @@ void installIgnoreWheelWhenNotFocused(QWidget *parent)
 
 }  // NOLINT(clang-analyzer-cplusplus.NewDeleteLeaks): False positive
 
-IgnoreWheelWhenNotFocused::IgnoreWheelWhenNotFocused(QWidget *parent) : QObject(parent) {}
+IgnoreWheelWhenNotFocused::IgnoreWheelWhenNotFocused(QWidget *parent) : QObject(parent)
+{
+}
 
 // https://stackoverflow.com/questions/5821802/qspinbox-inside-a-qscrollarea-how-to-prevent-spin-box-from-stealing-focus-when
 bool IgnoreWheelWhenNotFocused::eventFilter(QObject *obj, QEvent *event)

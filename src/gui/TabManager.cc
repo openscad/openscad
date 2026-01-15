@@ -236,41 +236,95 @@ void TabManager::createTab(const QString& filename)
   emit tabCountChanged(editorList.size());
 }
 
-size_t TabManager::count() { return tabWidget->count(); }
+size_t TabManager::count()
+{
+  return tabWidget->count();
+}
 
-void TabManager::highlightError(int i) { editor->highlightError(i); }
+void TabManager::highlightError(int i)
+{
+  editor->highlightError(i);
+}
 
-void TabManager::unhighlightLastError() { editor->unhighlightLastError(); }
+void TabManager::unhighlightLastError()
+{
+  editor->unhighlightLastError();
+}
 
-void TabManager::undo() { editor->undo(); }
+void TabManager::undo()
+{
+  editor->undo();
+}
 
-void TabManager::redo() { editor->redo(); }
+void TabManager::redo()
+{
+  editor->redo();
+}
 
-void TabManager::cut() { editor->cut(); }
+void TabManager::cut()
+{
+  editor->cut();
+}
 
-void TabManager::copy() { editor->copy(); }
+void TabManager::copy()
+{
+  editor->copy();
+}
 
-void TabManager::paste() { editor->paste(); }
+void TabManager::paste()
+{
+  editor->paste();
+}
 
-void TabManager::indentSelection() { editor->indentSelection(); }
+void TabManager::indentSelection()
+{
+  editor->indentSelection();
+}
 
-void TabManager::unindentSelection() { editor->unindentSelection(); }
+void TabManager::unindentSelection()
+{
+  editor->unindentSelection();
+}
 
-void TabManager::commentSelection() { editor->commentSelection(); }
+void TabManager::commentSelection()
+{
+  editor->commentSelection();
+}
 
-void TabManager::uncommentSelection() { editor->uncommentSelection(); }
+void TabManager::uncommentSelection()
+{
+  editor->uncommentSelection();
+}
 
-void TabManager::toggleBookmark() { editor->toggleBookmark(); }
+void TabManager::toggleBookmark()
+{
+  editor->toggleBookmark();
+}
 
-void TabManager::nextBookmark() { editor->nextBookmark(); }
+void TabManager::nextBookmark()
+{
+  editor->nextBookmark();
+}
 
-void TabManager::prevBookmark() { editor->prevBookmark(); }
+void TabManager::prevBookmark()
+{
+  editor->prevBookmark();
+}
 
-void TabManager::jumpToNextError() { editor->jumpToNextError(); }
+void TabManager::jumpToNextError()
+{
+  editor->jumpToNextError();
+}
 
-void TabManager::setFocus() { editor->setFocus(); }
+void TabManager::setFocus()
+{
+  editor->setFocus();
+}
 
-void TabManager::updateActionUndoState() { par->editActionUndo->setEnabled(editor->canUndo()); }
+void TabManager::updateActionUndoState()
+{
+  par->editActionUndo->setEnabled(editor->canUndo());
+}
 
 void TabManager::onHyperlinkIndicatorClicked(int val)
 {

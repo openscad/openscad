@@ -31,7 +31,10 @@ OpenSCADApp::OpenSCADApp(int& argc, char **argv) : QApplication(argc, argv)
           &OpenSCADApp::setRenderBackend3D);
 }
 
-OpenSCADApp::~OpenSCADApp() { delete this->fontCacheDialog; }
+OpenSCADApp::~OpenSCADApp()
+{
+  delete this->fontCacheDialog;
+}
 
 #include <QMessageBox>
 

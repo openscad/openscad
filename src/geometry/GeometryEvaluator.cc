@@ -58,7 +58,9 @@ class Geometry;
 class Polygon2d;
 class Tree;
 
-GeometryEvaluator::GeometryEvaluator(const Tree& tree) : tree(tree) {}
+GeometryEvaluator::GeometryEvaluator(const Tree& tree) : tree(tree)
+{
+}
 
 /*!
    Set allownef to false to force the result to _not_ be a Nef polyhedron

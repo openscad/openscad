@@ -25,7 +25,10 @@ QWordSearchField::QWordSearchField(QFrame *parent) : QLineEdit(parent)
   fieldLabel->setAlignment(Qt::AlignRight);
 }
 
-void QWordSearchField::resizeEvent(QResizeEvent *) { resizeSearchField(); }
+void QWordSearchField::resizeEvent(QResizeEvent *)
+{
+  resizeSearchField();
+}
 
 void QWordSearchField::resizeSearchField()
 {
