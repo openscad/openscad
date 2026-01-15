@@ -246,7 +246,10 @@ void PrintInitDialog::on_pushButtonOk_clicked()
   accept();
 }
 
-void PrintInitDialog::on_pushButtonCancel_clicked() { reject(); }
+void PrintInitDialog::on_pushButtonCancel_clicked()
+{
+  reject();
+}
 
 int PrintInitDialog::exec()
 {
@@ -273,8 +276,17 @@ int PrintInitDialog::exec()
   return result;
 }
 
-print_service_t PrintInitDialog::getServiceType() const { return this->selectedPrintService; }
+print_service_t PrintInitDialog::getServiceType() const
+{
+  return this->selectedPrintService;
+}
 
-QString PrintInitDialog::getServiceName() const { return this->selectedServiceName; }
+QString PrintInitDialog::getServiceName() const
+{
+  return this->selectedServiceName;
+}
 
-FileFormat PrintInitDialog::getFileFormat() const { return this->selectedFileFormat; }
+FileFormat PrintInitDialog::getFileFormat() const
+{
+  return this->selectedFileFormat;
+}

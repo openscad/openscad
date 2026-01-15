@@ -16,7 +16,9 @@
 
 CGALCache *CGALCache::inst = nullptr;
 
-CGALCache::CGALCache(size_t limit) : cache(limit) {}
+CGALCache::CGALCache(size_t limit) : cache(limit)
+{
+}
 
 std::shared_ptr<const Geometry> CGALCache::get(const std::string& id) const
 {
@@ -50,15 +52,30 @@ bool CGALCache::insert(const std::string& id, const std::shared_ptr<const Geomet
   return inserted;
 }
 
-size_t CGALCache::size() const { return cache.size(); }
+size_t CGALCache::size() const
+{
+  return cache.size();
+}
 
-size_t CGALCache::totalCost() const { return cache.totalCost(); }
+size_t CGALCache::totalCost() const
+{
+  return cache.totalCost();
+}
 
-size_t CGALCache::maxSizeMB() const { return this->cache.maxCost() / (1024ul * 1024ul); }
+size_t CGALCache::maxSizeMB() const
+{
+  return this->cache.maxCost() / (1024ul * 1024ul);
+}
 
-void CGALCache::setMaxSizeMB(size_t limit) { this->cache.setMaxCost(limit * 1024ul * 1024ul); }
+void CGALCache::setMaxSizeMB(size_t limit)
+{
+  this->cache.setMaxCost(limit * 1024ul * 1024ul);
+}
 
-void CGALCache::clear() { cache.clear(); }
+void CGALCache::clear()
+{
+  cache.clear();
+}
 
 void CGALCache::print()
 {

@@ -20,7 +20,10 @@ ParameterText::ParameterText(QWidget *parent, StringParameter *parameter,
   ParameterText::setValue();
 }
 
-void ParameterText::valueApplied() { lastApplied = lastSent; }
+void ParameterText::valueApplied()
+{
+  lastApplied = lastSent;
+}
 
 void ParameterText::onEdit(const QString& text)
 {

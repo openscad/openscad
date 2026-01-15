@@ -20,7 +20,10 @@ bool RubberBandManager::isEmphasized(Dock *dock)
   return rubberBand.isVisible() && emphasizedDock == dock;
 }
 
-bool RubberBandManager::isVisible() { return rubberBand.isVisible(); }
+bool RubberBandManager::isVisible()
+{
+  return rubberBand.isVisible();
+}
 
 void RubberBandManager::emphasize(Dock *dock)
 {

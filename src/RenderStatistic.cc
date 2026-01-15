@@ -175,9 +175,14 @@ static nlohmann::json getCache(C cache)
 
 }  // namespace
 
-RenderStatistic::RenderStatistic() : begin(std::chrono::steady_clock::now()) {}
+RenderStatistic::RenderStatistic() : begin(std::chrono::steady_clock::now())
+{
+}
 
-void RenderStatistic::start() { begin = std::chrono::steady_clock::now(); }
+void RenderStatistic::start()
+{
+  begin = std::chrono::steady_clock::now();
+}
 
 std::chrono::milliseconds RenderStatistic::ms()
 {
@@ -365,9 +370,13 @@ void LogVisitor::printRenderingTime(const std::chrono::milliseconds ms)
       (ms.count() / 1000 / 60 % 60), (ms.count() / 1000 % 60), (ms.count() % 1000));
 }
 
-void LogVisitor::finish() {}
+void LogVisitor::finish()
+{
+}
 
-void StreamVisitor::visit(const GeometryList& geomlist) {}
+void StreamVisitor::visit(const GeometryList& geomlist)
+{
+}
 
 void StreamVisitor::visit(const Polygon2d& poly)
 {
@@ -488,4 +497,7 @@ void StreamVisitor::printRenderingTime(const std::chrono::milliseconds ms)
   }
 }
 
-void StreamVisitor::finish() { stream << json; }
+void StreamVisitor::finish()
+{
+  stream << json;
+}

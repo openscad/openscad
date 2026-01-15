@@ -233,7 +233,10 @@ void Animate::animateUpdate()
   }
 }
 
-bool Animate::dumpPictures() { return this->e_dump->isChecked() && this->animateTimer->isActive(); }
+bool Animate::dumpPictures()
+{
+  return this->e_dump->isChecked() && this->animateTimer->isActive();
+}
 
 int Animate::nextFrame()
 {
@@ -273,7 +276,10 @@ void Animate::resizeEvent(QResizeEvent *event)
   QWidget::resizeEvent(event);
 }
 
-const QList<QAction *>& Animate::actions() { return actionList; }
+const QList<QAction *>& Animate::actions()
+{
+  return actionList;
+}
 
 void Animate::onActionEvent(InputEventAction *event)
 {
@@ -286,7 +292,10 @@ void Animate::onActionEvent(InputEventAction *event)
   }
 }
 
-double Animate::getAnimTval() { return animTVal; }
+double Animate::getAnimTval()
+{
+  return animTVal;
+}
 
 void Animate::on_pushButton_MoveToBeginning_clicked()
 {

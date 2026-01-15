@@ -31,7 +31,10 @@
 // Not wanting to risk breaking translations by changing every usage of this,
 // I've opted to just disable the check in this case. - Hans L
 // NOLINTBEGIN(bugprone-reserved-identifier)
-inline char *_(const char *msgid) { return gettext(msgid); }
+inline char *_(const char *msgid)
+{
+  return gettext(msgid);
+}
 inline const char *_(const char *msgid, const char *msgctxt)
 {
   /* The separator between msgctxt and msgid in a .mo file.  */

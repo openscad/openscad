@@ -122,7 +122,10 @@ int scaleBitsFromBounds(const BoundingBox& bounds, int total_bits)
   return (actual_bits - 1) - exp;
 }
 
-int scaleBitsFromPrecision(int precision) { return std::ilogb(std::pow(10, precision)) + 1; }
+int scaleBitsFromPrecision(int precision)
+{
+  return std::ilogb(std::pow(10, precision)) + 1;
+}
 
 Clipper2Lib::Paths64 fromPolygon2d(const Polygon2d& poly, int scale_bits, Color4f *col)
 {

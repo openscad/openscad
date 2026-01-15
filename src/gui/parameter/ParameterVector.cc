@@ -88,7 +88,10 @@ ParameterVector::ParameterVector(QWidget *parent, VectorParameter *parameter,
   ParameterVector::setValue();
 }
 
-void ParameterVector::valueApplied() { lastApplied = lastSent; }
+void ParameterVector::valueApplied()
+{
+  lastApplied = lastSent;
+}
 
 void ParameterVector::onChanged()
 {

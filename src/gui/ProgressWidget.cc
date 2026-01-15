@@ -14,20 +14,35 @@ ProgressWidget::ProgressWidget(QWidget *parent) : QWidget(parent)
   QTimer::singleShot(1000, this, &ProgressWidget::requestShow);
 }
 
-bool ProgressWidget::wasCanceled() const { return this->wascanceled; }
+bool ProgressWidget::wasCanceled() const
+{
+  return this->wascanceled;
+}
 
 /*!
    Returns milliseconds since this widget was created
  */
-int ProgressWidget::elapsedTime() const { return this->starttime.elapsed(); }
+int ProgressWidget::elapsedTime() const
+{
+  return this->starttime.elapsed();
+}
 
-void ProgressWidget::cancel() { this->wascanceled = true; }
+void ProgressWidget::cancel()
+{
+  this->wascanceled = true;
+}
 
 void ProgressWidget::setRange(int minimum, int maximum)
 {
   this->progressBar->setRange(minimum, maximum);
 }
 
-void ProgressWidget::setValue(int progress) { this->progressBar->setValue(progress); }
+void ProgressWidget::setValue(int progress)
+{
+  this->progressBar->setValue(progress);
+}
 
-int ProgressWidget::value() const { return this->progressBar->value(); }
+int ProgressWidget::value() const
+{
+  return this->progressBar->value();
+}

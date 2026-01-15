@@ -116,9 +116,15 @@ int OctoPrintApiKeyDialog::exec()
   return QDialog::exec();
 }
 
-void OctoPrintApiKeyDialog::on_pushButtonRetry_clicked() { startRequest(); }
+void OctoPrintApiKeyDialog::on_pushButtonRetry_clicked()
+{
+  startRequest();
+}
 
-void OctoPrintApiKeyDialog::on_pushButtonOk_clicked() { accept(); }
+void OctoPrintApiKeyDialog::on_pushButtonOk_clicked()
+{
+  accept();
+}
 
 void OctoPrintApiKeyDialog::on_pushButtonCancel_clicked()
 {

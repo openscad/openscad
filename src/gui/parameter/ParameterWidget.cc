@@ -140,7 +140,10 @@ void ParameterWidget::setParameters(const SourceFile *sourceFile, const std::str
   loadSet(comboBoxPreset->currentIndex());
 }
 
-void ParameterWidget::applyParameters(SourceFile *sourceFile) { this->parameters.apply(sourceFile); }
+void ParameterWidget::applyParameters(SourceFile *sourceFile)
+{
+  this->parameters.apply(sourceFile);
+}
 
 bool ParameterWidget::childHasFocus()
 {

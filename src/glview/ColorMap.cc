@@ -81,21 +81,45 @@ RenderColorScheme::RenderColorScheme(const fs::path& path) : _path(path)
   }
 }
 
-bool RenderColorScheme::valid() const { return !_name.empty(); }
+bool RenderColorScheme::valid() const
+{
+  return !_name.empty();
+}
 
-const std::string& RenderColorScheme::name() const { return _name; }
+const std::string& RenderColorScheme::name() const
+{
+  return _name;
+}
 
-int RenderColorScheme::index() const { return _index; }
+int RenderColorScheme::index() const
+{
+  return _index;
+}
 
-bool RenderColorScheme::showInGui() const { return _show_in_gui; }
+bool RenderColorScheme::showInGui() const
+{
+  return _show_in_gui;
+}
 
-std::string RenderColorScheme::path() const { return _path.string(); }
+std::string RenderColorScheme::path() const
+{
+  return _path.string();
+}
 
-std::string RenderColorScheme::error() const { return _error; }
+std::string RenderColorScheme::error() const
+{
+  return _error;
+}
 
-ColorScheme& RenderColorScheme::colorScheme() { return _color_scheme; }
+ColorScheme& RenderColorScheme::colorScheme()
+{
+  return _color_scheme;
+}
 
-const boost::property_tree::ptree& RenderColorScheme::propertyTree() const { return pt; }
+const boost::property_tree::ptree& RenderColorScheme::propertyTree() const
+{
+  return pt;
+}
 
 void RenderColorScheme::addColor(RenderColor colorKey, const std::string& key)
 {
@@ -130,7 +154,10 @@ ColorMap::ColorMap()
   dump();
 }
 
-const char *ColorMap::defaultColorSchemeName() const { return DEFAULT_COLOR_SCHEME_NAME; }
+const char *ColorMap::defaultColorSchemeName() const
+{
+  return DEFAULT_COLOR_SCHEME_NAME;
+}
 
 const ColorScheme& ColorMap::defaultColorScheme() const
 {

@@ -161,10 +161,19 @@ std::string PlatformUtils::pythonUserPath(const std::string& name)
   return path.generic_string();
 }
 
-std::string PlatformUtils::userLibraryPath() { return userPath("libraries"); }
-std::string PlatformUtils::userPythonLibraryPath() { return pythonUserPath("libraries"); }
+std::string PlatformUtils::userLibraryPath()
+{
+  return userPath("libraries");
+}
+std::string PlatformUtils::userPythonLibraryPath()
+{
+  return pythonUserPath("libraries");
+}
 
-std::string PlatformUtils::userExamplesPath() { return userPath("examples"); }
+std::string PlatformUtils::userExamplesPath()
+{
+  return userPath("examples");
+}
 
 std::string PlatformUtils::backupPath()
 {
