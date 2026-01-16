@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.8.29](https://github.com/pythonscad/pythonscad/compare/v0.8.28...v0.8.29) (2026-01-16)
+
+
+### Bug Fixes
+
+* **ci:** import GPG public key to RPM keyring for signature verification ([#361](https://github.com/pythonscad/pythonscad/issues/361)) ([5c990d1](https://github.com/pythonscad/pythonscad/commit/5c990d105ce1c2dee262bae9be2700b712350dfe))
+
 ## [0.8.28](https://github.com/pythonscad/pythonscad/compare/v0.8.27...v0.8.28) (2026-01-16)
 
 
