@@ -1,12 +1,6 @@
 <style>
-body {
-    font-family: Arial, sans-serif;
-    margin: 2em;
-    background-color: #f9f9f9;
-}
-
-h1, h2 {
-    color: #2c3e50;
+.section {
+    margin-bottom: 2em;
 }
 
 #searchInput {
@@ -14,27 +8,24 @@ h1, h2 {
     font-size: 16px;
     padding: 12px 20px;
     margin-bottom: 24px;
-    border: 1px solid #ccc;
+    border: 1px solid var(--md-default-fg-color--lighter);
     border-radius: 4px;
+    background-color: var(--md-default-bg-color);
+    color: var(--md-default-fg-color);
 }
-.section {
-    margin-bottom: 2em;
-}
+
 .grid {
     display: grid;
     grid-template-columns: 1fr 2fr 2fr;
     gap: 1em;
     align-items: start;
 }
-.grid div {
-    background-color: #ecf0f1;
+
+.grid div, .grid pre {
+    background-color: var(--md-code-bg-color);
     padding: 1em;
     border-radius: 5px;
     overflow-x: auto;
-}
-
-code {
-    font-family: Consolas, monospace;
 }
 </style>
 <h1>PythonSCAD Cheat Sheet</h1>
@@ -188,7 +179,7 @@ time, phi                # like in openSCAD , phi = 2*PI*time</code></pre>
 
 
 
-</-- **************************************************-->
+
 <!-- do not alter anything below here-->
 
 
