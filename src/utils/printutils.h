@@ -58,6 +58,7 @@ enum class message_group {
   NONE,
   Error,
   Warning,
+  HtmlLink,  // Slow! Allows HTML links. Suppressed on command line.
   UI_Warning,
   Font_Warning,
   Export_Warning,
@@ -89,7 +90,9 @@ struct Message {
 
   [[nodiscard]] std::string str() const
   {
-    const auto g = group == message_group::NONE ? "" : getGroupName(group) + ": ";
+    const auto g = (group == message_group::NONE || group == message_group::HtmlLink)
+                     ? ""
+                     : getGroupName(group) + ": ";
     const auto l = loc.isNone() ? "" : " " + loc.toRelativeString(docPath);
     return g + msg + l;
   }

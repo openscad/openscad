@@ -181,6 +181,7 @@ void Preferences::init()
   this->defaultmap["view/hideAnimate"] = true;
   this->defaultmap["view/hideCustomizer"] = true;
   this->defaultmap["view/hideFontList"] = true;
+  this->defaultmap["view/hideColorList"] = true;
   this->defaultmap["view/hideViewportControl"] = true;
   this->defaultmap["editor/enableAutocomplete"] = true;
   this->defaultmap["editor/characterThreshold"] = 1;

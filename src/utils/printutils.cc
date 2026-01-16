@@ -93,8 +93,9 @@ void PRINT(const Message& msgObj)
   PRINT_NOCACHE(msgObj);
 
   // to error log
-  if (outputhandler2 && !(msgObj.group == message_group::NONE || msgObj.group == message_group::Echo ||
-                          msgObj.group == message_group::Trace)) {
+  if (outputhandler2 &&
+      !(msgObj.group == message_group::NONE || msgObj.group == message_group::Echo ||
+        msgObj.group == message_group::Trace || msgObj.group == message_group::HtmlLink)) {
     outputhandler2(msgObj, outputhandler_data);
   }
 }
@@ -182,6 +183,7 @@ std::string getGroupName(const enum message_group& group)
   switch (group) {
   case message_group::NONE:
   case message_group::Warning:
+  case message_group::HtmlLink:
   case message_group::UI_Warning:     return "WARNING";
   case message_group::Error:
   case message_group::UI_Error:       return "ERROR";

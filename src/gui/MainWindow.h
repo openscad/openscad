@@ -282,8 +282,11 @@ private slots:
   void onErrorLogDockVisibilityChanged(bool isVisible);
   void onAnimateDockVisibilityChanged(bool isVisible);
   void onFontListDockVisibilityChanged(bool isVisible);
+  void onColorListDockVisibilityChanged(bool isVisible);
   void onViewportControlDockVisibilityChanged(bool isVisible);
   void onParametersDockVisibilityChanged(bool isVisible);
+
+  void onColorListColorSelected(const QString&);
 
   void on_editActionInsertTemplate_triggered();
   void on_editActionFoldAll_triggered();
