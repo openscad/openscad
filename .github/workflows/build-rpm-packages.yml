@@ -208,9 +208,12 @@ jobs:
             # Start gpg-agent if not running
             gpg-connect-agent /bye 2>/dev/null || gpg-agent --daemon
 
-            # Get the keygrip for the signing key
-            KEYGRIP=$(gpg --list-secret-keys --with-keygrip "${{ secrets.GPG_KEY_ID }}" | grep -A1 '^\s*sec' | grep Keygrip | awk '{print $3}')
-            echo "Keygrip: $KEYGRIP"
+            # Get the keygrip for the signing key (sec = primary signing key)
+            # GPG output format: "sec   rsa3072..." followed by "      Keygrip = XXXX"
+            echo "GPG key details with keygrip:"
+            gpg --list-secret-keys --with-keygrip "${{ secrets.GPG_KEY_ID }}"
+            KEYGRIP=$(gpg --list-secret-keys --with-keygrip "${{ secrets.GPG_KEY_ID }}" | awk '/^sec/{found=1} found && /Keygrip/{print $3; exit}')
+            echo "Extracted keygrip: $KEYGRIP"
 
             if [ -z "$KEYGRIP" ]; then
               echo "Error: Could not determine keygrip for signing key"
@@ -339,9 +342,12 @@ jobs:
                   # Start gpg-agent if not running
                   gpg-connect-agent /bye 2>/dev/null || gpg-agent --daemon
 
-                  # Get the keygrip for the signing key
-                  KEYGRIP=$(gpg --list-secret-keys --with-keygrip "$GPG_KEY_ID" | grep -A1 '\''^\s*sec'\'' | grep Keygrip | awk '\''{print $3}'\'')
-                  echo "Keygrip: $KEYGRIP"
+                  # Get the keygrip for the signing key (sec = primary signing key)
+                  # GPG output format: "sec   rsa3072..." followed by "      Keygrip = XXXX"
+                  echo "GPG key details with keygrip:"
+                  gpg --list-secret-keys --with-keygrip "$GPG_KEY_ID"
+                  KEYGRIP=$(gpg --list-secret-keys --with-keygrip "$GPG_KEY_ID" | awk '\''/^sec/{found=1} found && /Keygrip/{print $3; exit}'\'')
+                  echo "Extracted keygrip: $KEYGRIP"
 
                   if [ -z "$KEYGRIP" ]; then
                     echo "Error: Could not determine keygrip for signing key"
