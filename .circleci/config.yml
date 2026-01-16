@@ -13,11 +13,6 @@ executors:
       image: ubuntu-2204:current
       docker_layer_caching: true
     resource_class: large
-  docker-arm64:
-    machine:
-      image: ubuntu-2204:current
-      docker_layer_caching: true
-    resource_class: arm.large
   wasm-executor:
     docker:
       - image: openscad/wasm-base-release:latest
@@ -503,7 +498,7 @@ workflows:
   "CircleCI snapshot build (master)":
     jobs:
       - openscad-mxe:
-          # Legacy name, for openscad-ansible/.../circleci-download-artifacts.py
+          # for openscad-ansible/.../circleci-download-artifacts.py
           name: openscad-mxe-64bit
           context: secret-context
           filters:
@@ -511,7 +506,7 @@ workflows:
                   only:
                       - master
       - openscad-appimage:
-          # Legacy name, for openscad-ansible/.../circleci-download-artifacts.py
+          # for openscad-ansible/.../circleci-download-artifacts.py
           name: openscad-appimage-64bit
           context: secret-context
           filters:
@@ -519,7 +514,7 @@ workflows:
                   only:
                       - master
       - openscad-wasm:
-          # Legacy name, for openscad-ansible/.../circleci-download-artifacts.py
+          # for openscad-ansible/.../circleci-download-artifacts.py
           name: openscad-<< matrix.openscad_platform >>
           matrix:
             parameters:
@@ -530,7 +525,7 @@ workflows:
                   only:
                       - master
       - openscad-macos:
-          # Legacy name, for openscad-ansible/.../circleci-download-artifacts.py
+          # for openscad-ansible/.../circleci-download-artifacts.py
           name: openscad-macos
           context: secret-context
           filters:
@@ -548,6 +543,7 @@ workflows:
                       - coverity_scan
                       - /^(?i:continuous)$/
       - openscad-appimage:
+          name: openscad-appimage-pr
           filters:
               branches:
                   ignore:
@@ -586,7 +582,7 @@ workflows:
           requires:
             - openscad-tarball-release
       - openscad-appimage:
-          # Legacy name, for openscad-ansible/.../circleci-download-artifacts.py
+          # for openscad-ansible/.../circleci-download-artifacts.py
           name: openscad-appimage-64bit
           filters: *release-filters
           openscad_build_type: release
