@@ -172,14 +172,19 @@ jobs:
             dnf install -y gnupg2 rpm-sign
           fi
 
+          # Detect RPM major version (4.x vs 6.x have different signing approaches)
+          RPM_VERSION=$(rpm --version | grep -oP '\d+' | head -1)
+          echo "Detected RPM major version: $RPM_VERSION"
+
           # Set up GNUPGHOME for this step
           export GNUPGHOME="${GNUPGHOME:-$HOME/.gnupg}"
           mkdir -p "$GNUPGHOME"
           chmod 700 "$GNUPGHOME"
 
-          # Configure gpg-agent for loopback pinentry (required for non-TTY environments)
+          # Configure gpg-agent for loopback pinentry and preset passphrase
           cat > "$GNUPGHOME/gpg-agent.conf" << 'AGENTCONF'
           allow-loopback-pinentry
+          allow-preset-passphrase
           AGENTCONF
 
           # Kill any existing agent to pick up new config
@@ -192,20 +197,51 @@ jobs:
           echo "Imported GPG keys:"
           gpg --list-secret-keys
 
-          # Create passphrase file safely using printf (no trailing newline)
-          PASSPHRASE_FILE=$(mktemp)
-          printf '%s' "$GPG_PASSPHRASE" > "$PASSPHRASE_FILE"
-          chmod 600 "$PASSPHRASE_FILE"
+          # Set GPG_TTY to empty to avoid TTY-related warnings in CI
+          export GPG_TTY=""
 
-          # Configure RPM signing macros with passphrase file and loopback pinentry
-          cat > ~/.rpmmacros << MACROS
+          if [ "$RPM_VERSION" -ge 6 ]; then
+            # RPM 6.x: Custom %__gpg_sign_cmd no longer works (parametric macros)
+            # Use gpg-preset-passphrase to cache the passphrase in gpg-agent
+            echo "Using RPM 6.x signing approach (gpg-preset-passphrase)"
+
+            # Start gpg-agent if not running
+            gpg-connect-agent /bye 2>/dev/null || gpg-agent --daemon
+
+            # Get the keygrip for the signing key
+            KEYGRIP=$(gpg --list-secret-keys --with-keygrip "${{ secrets.GPG_KEY_ID }}" | grep -A1 '^\s*sec' | grep Keygrip | awk '{print $3}')
+            echo "Keygrip: $KEYGRIP"
+
+            if [ -z "$KEYGRIP" ]; then
+              echo "Error: Could not determine keygrip for signing key"
+              exit 1
+            fi
+
+            # Preset the passphrase in gpg-agent
+            echo "$GPG_PASSPHRASE" | /usr/libexec/gpg-preset-passphrase --preset "$KEYGRIP"
+
+            # Configure RPM signing macros for RPM 6.x
+            cat > ~/.rpmmacros << MACROS
+          %_signature gpg
+          %_openpgp_sign_id ${{ secrets.GPG_KEY_ID }}
+          MACROS
+
+          else
+            # RPM 4.x: Use custom %__gpg_sign_cmd with passphrase file
+            echo "Using RPM 4.x signing approach (custom __gpg_sign_cmd)"
+
+            # Create passphrase file safely using printf (no trailing newline)
+            PASSPHRASE_FILE=$(mktemp)
+            printf '%s' "$GPG_PASSPHRASE" > "$PASSPHRASE_FILE"
+            chmod 600 "$PASSPHRASE_FILE"
+
+            # Configure RPM signing macros with passphrase file and loopback pinentry
+            cat > ~/.rpmmacros << MACROS
           %_signature gpg
           %_gpg_name ${{ secrets.GPG_KEY_ID }}
           %__gpg_sign_cmd %{__gpg} --batch --pinentry-mode loopback --passphrase-file $PASSPHRASE_FILE --no-verbose --no-armor --no-secmem-warning -u "%{_gpg_name}" -sbo %{__signature_filename} %{__plaintext_filename}
           MACROS
-
-          # Set GPG_TTY to empty to avoid TTY-related warnings in CI
-          export GPG_TTY=""
+          fi
 
           # Sign all RPM packages
           echo "Signing RPM packages..."
@@ -214,8 +250,8 @@ jobs:
             rpmsign --addsign "$rpm"
           done
 
-          # Clean up passphrase file
-          rm -f "$PASSPHRASE_FILE"
+          # Clean up passphrase file if it exists (RPM 4.x path)
+          [ -n "${PASSPHRASE_FILE:-}" ] && rm -f "$PASSPHRASE_FILE" || true
 
           # Import public key into RPM keyring for verification
           gpg --export -a "${{ secrets.GPG_KEY_ID }}" > /tmp/pubkey.asc
@@ -273,14 +309,19 @@ jobs:
 
               # Sign packages if building for release
               if [ "$DO_SIGN" = "true" ]; then
+                # Detect RPM major version (4.x vs 6.x have different signing approaches)
+                RPM_VERSION=$(rpm --version | grep -oP '\''\d+'\'' | head -1)
+                echo "Detected RPM major version: $RPM_VERSION"
+
                 # Set up GNUPGHOME
                 export GNUPGHOME="${GNUPGHOME:-$HOME/.gnupg}"
                 mkdir -p "$GNUPGHOME"
                 chmod 700 "$GNUPGHOME"
 
-                # Configure gpg-agent for loopback pinentry
+                # Configure gpg-agent for loopback pinentry and preset passphrase
                 cat > "$GNUPGHOME/gpg-agent.conf" << AGENTCONF
                 allow-loopback-pinentry
+                allow-preset-passphrase
           AGENTCONF
                 gpgconf --kill gpg-agent 2>/dev/null || true
 
@@ -288,19 +329,50 @@ jobs:
                 echo "$GPG_SIGNING_KEY" | gpg --batch --import
                 gpg --list-secret-keys
 
-                # Create passphrase file safely using printf (no trailing newline)
-                PASSPHRASE_FILE=$(mktemp)
-                printf "%s" "$GPG_PASSPHRASE" > "$PASSPHRASE_FILE"
-                chmod 600 "$PASSPHRASE_FILE"
+                export GPG_TTY=""
 
-                # Configure RPM signing macros with passphrase file
-                cat > ~/.rpmmacros << MACROS
+                if [ "$RPM_VERSION" -ge 6 ]; then
+                  # RPM 6.x: Custom %__gpg_sign_cmd no longer works (parametric macros)
+                  # Use gpg-preset-passphrase to cache the passphrase in gpg-agent
+                  echo "Using RPM 6.x signing approach (gpg-preset-passphrase)"
+
+                  # Start gpg-agent if not running
+                  gpg-connect-agent /bye 2>/dev/null || gpg-agent --daemon
+
+                  # Get the keygrip for the signing key
+                  KEYGRIP=$(gpg --list-secret-keys --with-keygrip "$GPG_KEY_ID" | grep -A1 '\''^\s*sec'\'' | grep Keygrip | awk '\''{print $3}'\'')
+                  echo "Keygrip: $KEYGRIP"
+
+                  if [ -z "$KEYGRIP" ]; then
+                    echo "Error: Could not determine keygrip for signing key"
+                    exit 1
+                  fi
+
+                  # Preset the passphrase in gpg-agent
+                  echo "$GPG_PASSPHRASE" | /usr/libexec/gpg-preset-passphrase --preset "$KEYGRIP"
+
+                  # Configure RPM signing macros for RPM 6.x
+                  cat > ~/.rpmmacros << MACROS
+          %_signature gpg
+          %_openpgp_sign_id $GPG_KEY_ID
+          MACROS
+
+                else
+                  # RPM 4.x: Use custom %__gpg_sign_cmd with passphrase file
+                  echo "Using RPM 4.x signing approach (custom __gpg_sign_cmd)"
+
+                  # Create passphrase file safely using printf (no trailing newline)
+                  PASSPHRASE_FILE=$(mktemp)
+                  printf "%s" "$GPG_PASSPHRASE" > "$PASSPHRASE_FILE"
+                  chmod 600 "$PASSPHRASE_FILE"
+
+                  # Configure RPM signing macros with passphrase file
+                  cat > ~/.rpmmacros << MACROS
           %_signature gpg
           %_gpg_name $GPG_KEY_ID
           %__gpg_sign_cmd %{__gpg} --batch --pinentry-mode loopback --passphrase-file $PASSPHRASE_FILE --no-verbose --no-armor --no-secmem-warning -u "%{_gpg_name}" -sbo %{__signature_filename} %{__plaintext_filename}
           MACROS
-
-                export GPG_TTY=""
+                fi
 
                 # Sign all RPM packages
                 echo "Signing RPM packages..."
@@ -309,8 +381,8 @@ jobs:
                   rpmsign --addsign "$rpm"
                 done
 
-                # Clean up passphrase file
-                rm -f "$PASSPHRASE_FILE"
+                # Clean up passphrase file if it exists (RPM 4.x path)
+                [ -n "${PASSPHRASE_FILE:-}" ] && rm -f "$PASSPHRASE_FILE" || true
 
                 # Import public key into RPM keyring for verification
                 gpg --export -a "$GPG_KEY_ID" > /tmp/pubkey.asc
