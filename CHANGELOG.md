@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.8.30](https://github.com/pythonscad/pythonscad/compare/v0.8.29...v0.8.30) (2026-01-16)
+
+
+### Bug Fixes
+
+* **ci:** fix RPM signing for Fedora 43 (RPM 6.x) ([#363](https://github.com/pythonscad/pythonscad/issues/363)) ([c3d6eb2](https://github.com/pythonscad/pythonscad/commit/c3d6eb291d67eea43db466dc24ad542b4ffbca2d))
+
 ## [0.8.29](https://github.com/pythonscad/pythonscad/compare/v0.8.28...v0.8.29) (2026-01-16)
 
 
