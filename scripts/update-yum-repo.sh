@@ -179,6 +179,11 @@ for distro_dir in "${REPO_DIR}/packages"/*/*; do
         if [ -n "$GPG_KEY" ] && command_exists gpg; then
             info "Signing repository metadata in $arch_dir"
 
+            # Set GPG_TTY to empty to avoid TTY-related warnings in CI environments
+            export GPG_TTY=""
+
+            # GPG options for non-interactive signing
+            # --batch must come first for proper option parsing
             GPG_OPTS="--batch --yes --pinentry-mode loopback --passphrase-fd 0"
             GPG_OPTS="$GPG_OPTS --detach-sign --armor --local-user $GPG_KEY"
 
