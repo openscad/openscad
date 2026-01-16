@@ -260,6 +260,10 @@ jobs:
           gpg --export -a "${{ secrets.GPG_KEY_ID }}" > /tmp/pubkey.asc
           rpm --import /tmp/pubkey.asc
 
+          # Import public key into RPM keyring for verification
+          gpg --export -a "${{ secrets.GPG_KEY_ID }}" > /tmp/pubkey.asc
+          rpm --import /tmp/pubkey.asc
+
           # Verify signatures
           echo "Verifying RPM signatures:"
           for rpm in /tmp/rpms/*.rpm; do
@@ -389,6 +393,10 @@ jobs:
 
                 # Clean up passphrase file if it exists (RPM 4.x path)
                 [ -n "${PASSPHRASE_FILE:-}" ] && rm -f "$PASSPHRASE_FILE" || true
+
+                # Import public key into RPM keyring for verification
+                gpg --export -a "$GPG_KEY_ID" > /tmp/pubkey.asc
+                rpm --import /tmp/pubkey.asc
 
                 # Import public key into RPM keyring for verification
                 gpg --export -a "$GPG_KEY_ID" > /tmp/pubkey.asc
