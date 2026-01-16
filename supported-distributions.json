@@ -82,6 +82,45 @@
       "architectures": [
         "amd64"
       ]
+    },
+    {
+      "family": "fedora",
+      "name": "Fedora",
+      "version": "42",
+      "codename": "42",
+      "lts": false,
+      "eol_date": "2026-05",
+      "runner": "ubuntu-24.04",
+      "docker_image": "fedora:42",
+      "architectures": [
+        "amd64"
+      ]
+    },
+    {
+      "family": "fedora",
+      "name": "Fedora",
+      "version": "43",
+      "codename": "43",
+      "lts": false,
+      "eol_date": "2026-11",
+      "runner": "ubuntu-24.04",
+      "docker_image": "fedora:43",
+      "architectures": [
+        "amd64"
+      ]
+    },
+    {
+      "family": "el",
+      "name": "Rocky Linux",
+      "version": "9",
+      "codename": "9",
+      "lts": true,
+      "eol_date": "2032-05",
+      "runner": "ubuntu-24.04",
+      "docker_image": "rockylinux:9",
+      "architectures": [
+        "amd64"
+      ]
     }
   ],
   "notes": {
@@ -91,7 +130,7 @@
       "Use native GitHub runner if available (runner field is not null). Otherwise use Docker image.",
     "docker_images":
       "Docker base images for distributions without native runners. Requires installation of build tools.",
-    "future_extension":
-      "This schema can be extended for RPM-based distributions by adding family: 'fedora', 'centos', etc. with package_manager: 'dnf'/'yum' fields."
+    "families":
+      "Supported families: 'debian', 'ubuntu' (for .deb packages), 'fedora', 'el' (for .rpm packages)."
   }
 }
