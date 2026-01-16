@@ -583,7 +583,7 @@ workflows:
             - openscad-tarball-release
       - openscad-appimage:
           # for openscad-ansible/.../circleci-download-artifacts.py
-          name: openscad-appimage-64bit
+          name: openscad-appimage-release
           filters: *release-filters
           openscad_build_type: release
           source_method: tarball
