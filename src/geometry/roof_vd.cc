@@ -93,9 +93,15 @@ struct segment_traits<roof_vd::Segment> {
 
 namespace roof_vd {
 
-bool operator==(const Point& lhs, const Point& rhs) { return lhs.a == rhs.a && lhs.b == rhs.b; }
+bool operator==(const Point& lhs, const Point& rhs)
+{
+  return lhs.a == rhs.a && lhs.b == rhs.b;
+}
 
-bool operator==(const Segment& lhs, const Segment& rhs) { return lhs.p0 == rhs.p0 && lhs.p1 == rhs.p1; }
+bool operator==(const Segment& lhs, const Segment& rhs)
+{
+  return lhs.p0 == rhs.p0 && lhs.p1 == rhs.p1;
+}
 
 bool segment_has_endpoint(const Segment& segment, const Point& point)
 {

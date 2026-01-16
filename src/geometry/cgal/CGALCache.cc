@@ -16,15 +16,17 @@
 
 CGALCache *CGALCache::inst = nullptr;
 
-CGALCache::CGALCache(size_t limit) : cache(limit) {}
+CGALCache::CGALCache(size_t limit) : cache(limit)
+{
+}
 
 std::shared_ptr<const Geometry> CGALCache::get(const std::string& id) const
 {
-  const auto& N = this->cache[id]->N;
+  const auto& geom = this->cache[id]->N;
 #ifdef DEBUG
-  LOG("CGAL Cache hit: %1$s (%2$d bytes)", id.substr(0, 40), N ? N->memsize() : 0);
+  LOG("CGAL Cache hit: %1$s (%2$d bytes)", id.substr(0, 40), geom ? geom->memsize() : 0);
 #endif
-  return N;
+  return geom;
 }
 
 bool CGALCache::acceptsGeometry(const std::shared_ptr<const Geometry>& geom)
@@ -39,26 +41,41 @@ bool CGALCache::acceptsGeometry(const std::shared_ptr<const Geometry>& geom)
     ;
 }
 
-bool CGALCache::insert(const std::string& id, const std::shared_ptr<const Geometry>& N)
+bool CGALCache::insert(const std::string& id, const std::shared_ptr<const Geometry>& geom)
 {
-  assert(acceptsGeometry(N));
-  auto inserted = this->cache.insert(id, new cache_entry(N), N ? N->memsize() : 0);
+  assert(acceptsGeometry(geom));
+  auto inserted = this->cache.insert(id, new cache_entry(geom), geom->memsize());
 #ifdef DEBUG
-  if (inserted) LOG("CGAL Cache insert: %1$s (%2$d bytes)", id.substr(0, 40), (N ? N->memsize() : 0));
-  else LOG("CGAL Cache insert failed: %1$s (%2$d bytes)", id.substr(0, 40), (N ? N->memsize() : 0));
+  LOG("CGAL Cache %1$s: %2$s (%3$d bytes)", inserted ? "inserted" : "insert failed", id.substr(0, 40),
+      geom->memsize());
 #endif
   return inserted;
 }
 
-size_t CGALCache::size() const { return cache.size(); }
+size_t CGALCache::size() const
+{
+  return cache.size();
+}
 
-size_t CGALCache::totalCost() const { return cache.totalCost(); }
+size_t CGALCache::totalCost() const
+{
+  return cache.totalCost();
+}
 
-size_t CGALCache::maxSizeMB() const { return this->cache.maxCost() / (1024ul * 1024ul); }
+size_t CGALCache::maxSizeMB() const
+{
+  return this->cache.maxCost() / (1024ul * 1024ul);
+}
 
-void CGALCache::setMaxSizeMB(size_t limit) { this->cache.setMaxCost(limit * 1024ul * 1024ul); }
+void CGALCache::setMaxSizeMB(size_t limit)
+{
+  this->cache.setMaxCost(limit * 1024ul * 1024ul);
+}
 
-void CGALCache::clear() { cache.clear(); }
+void CGALCache::clear()
+{
+  cache.clear();
+}
 
 void CGALCache::print()
 {

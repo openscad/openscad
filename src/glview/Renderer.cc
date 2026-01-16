@@ -174,7 +174,9 @@ std::shared_ptr<SelectedObject> Renderer::findModelObject(const Vector3d& near_p
 }
 #else  // NULLGL
 
-Renderer::Renderer() : colorscheme_(nullptr) {}
+Renderer::Renderer() : colorscheme_(nullptr)
+{
+}
 bool Renderer::getColorSchemeColor(Renderer::ColorMode colormode, Color4f& outcolor) const
 {
   return false;
@@ -184,8 +186,13 @@ bool Renderer::getShaderColor(Renderer::ColorMode colormode, const Color4f& obje
 {
   return false;
 }
-std::string ShaderUtils::loadShaderSource(const std::string& name) { return ""; }
-void Renderer::setColorScheme(const ColorScheme& cs) {}
+std::string ShaderUtils::loadShaderSource(const std::string& name)
+{
+  return "";
+}
+void Renderer::setColorScheme(const ColorScheme& cs)
+{
+}
 std::shared_ptr<SelectedObject> Renderer::findModelObject(const Vector3d& near_pt,
                                                           const Vector3d& far_pt, int mouse_x,
                                                           int mouse_y, double tolerance)

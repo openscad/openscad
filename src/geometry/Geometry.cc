@@ -8,9 +8,14 @@
 #include <string>
 #include <utility>
 
-GeometryList::GeometryList(Geometry::Geometries geometries) : children(std::move(geometries)) {}
+GeometryList::GeometryList(Geometry::Geometries geometries) : children(std::move(geometries))
+{
+}
 
-std::unique_ptr<Geometry> GeometryList::copy() const { return std::make_unique<GeometryList>(*this); }
+std::unique_ptr<Geometry> GeometryList::copy() const
+{
+  return std::make_unique<GeometryList>(*this);
+}
 
 size_t GeometryList::memsize() const
 {

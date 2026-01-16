@@ -116,7 +116,9 @@ namespace {
 #define GLint int
 #define GLuint unsigned int
 #define GLdouble unsigned int
-inline void glColor4fv(float *c) {}
+inline void glColor4fv(float *c)
+{
+}
 
 #endif  // NULLGL
 

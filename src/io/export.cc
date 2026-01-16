@@ -142,7 +142,10 @@ std::vector<FileFormat> all3D()
   return all3DFormats;
 }
 
-const FileFormatInfo& info(FileFormat fileFormat) { return containers().fileFormatToInfo[fileFormat]; }
+const FileFormatInfo& info(FileFormat fileFormat)
+{
+  return containers().fileFormatToInfo[fileFormat];
+}
 
 bool fromIdentifier(const std::string& identifier, FileFormat& format)
 {
@@ -152,7 +155,10 @@ bool fromIdentifier(const std::string& identifier, FileFormat& format)
   return true;
 }
 
-const std::string& toSuffix(FileFormat format) { return containers().fileFormatToInfo[format].suffix; }
+const std::string& toSuffix(FileFormat format)
+{
+  return containers().fileFormatToInfo[format].suffix;
+}
 
 bool canPreview(FileFormat format)
 {
@@ -276,7 +282,10 @@ bool exportFileByName(const std::shared_ptr<const Geometry>& root_geom, const st
 
 namespace {
 
-double remove_negative_zero(double x) { return x == -0 ? 0 : x; }
+double remove_negative_zero(double x)
+{
+  return x == -0 ? 0 : x;
+}
 
 Vector3d remove_negative_zero(const Vector3d& pt)
 {

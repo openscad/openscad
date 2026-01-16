@@ -75,8 +75,11 @@ public:
   virtual ~GeometryVisitor() = default;
 };
 
-#define VISITABLE_GEOMETRY() \
-  void accept(GeometryVisitor& visitor) const override { visitor.visit(*this); }
+#define VISITABLE_GEOMETRY()                           \
+  void accept(GeometryVisitor& visitor) const override \
+  {                                                    \
+    visitor.visit(*this);                              \
+  }
 
 class GeometryList : public Geometry
 {

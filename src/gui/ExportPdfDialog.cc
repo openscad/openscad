@@ -190,6 +190,12 @@ void ExportPdfDialog::on_toolButtonStrokeWidthReset_clicked()
   this->doubleSpinBoxStrokeWidth->setValue(this->defaultStrokeWidth);
 }
 
-void ExportPdfDialog::on_checkBoxEnableFill_toggled(bool checked) { updateFillControlsEnabled(); }
+void ExportPdfDialog::on_checkBoxEnableFill_toggled(bool checked)
+{
+  updateFillControlsEnabled();
+}
 
-void ExportPdfDialog::on_checkBoxEnableStroke_toggled(bool checked) { updateStrokeControlsEnabled(); }
+void ExportPdfDialog::on_checkBoxEnableStroke_toggled(bool checked)
+{
+  updateStrokeControlsEnabled();
+}

@@ -59,13 +59,21 @@ ParameterSlider::ParameterSlider(QWidget *parent, NumberParameter *parameter,
   ParameterSlider::setValue();
 }
 
-void ParameterSlider::valueApplied() { lastApplied = lastSent; }
+void ParameterSlider::valueApplied()
+{
+  lastApplied = lastSent;
+}
 
 // slider handle grabbed
-void ParameterSlider::onSliderPressed() {}
+void ParameterSlider::onSliderPressed()
+{
+}
 
 // slider handle released
-void ParameterSlider::onSliderReleased() { this->commitChange(true); }
+void ParameterSlider::onSliderReleased()
+{
+  this->commitChange(true);
+}
 
 // slider handle dragged
 void ParameterSlider::onSliderMoved(int position)
@@ -98,7 +106,10 @@ void ParameterSlider::onSpinBoxChanged(double value)
 }
 
 // Enter key pressed or spinbox focus lost
-void ParameterSlider::onSpinBoxEditingFinished() { commitChange(true); }
+void ParameterSlider::onSpinBoxEditingFinished()
+{
+  commitChange(true);
+}
 
 void ParameterSlider::commitChange(bool immediate)
 {

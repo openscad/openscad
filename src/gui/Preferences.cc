@@ -182,6 +182,7 @@ void Preferences::init()
   this->defaultmap["view/hideAnimate"] = true;
   this->defaultmap["view/hideCustomizer"] = true;
   this->defaultmap["view/hideFontList"] = true;
+  this->defaultmap["view/hideColorList"] = true;
   this->defaultmap["view/hideViewportControl"] = true;
   this->defaultmap["editor/enableAutocomplete"] = true;
   this->defaultmap["editor/characterThreshold"] = 1;
@@ -300,7 +301,10 @@ void Preferences::init()
   emit editorConfigChanged();
 }
 
-Preferences::~Preferences() { removeDefaultSettings(); }
+Preferences::~Preferences()
+{
+  removeDefaultSettings();
+}
 
 void Preferences::update()
 {
@@ -1265,7 +1269,10 @@ void Preferences::writeSettings()
   fireEditorConfigChanged();
 }
 
-void Preferences::fireEditorConfigChanged() const { emit editorConfigChanged(); }
+void Preferences::fireEditorConfigChanged() const
+{
+  emit editorConfigChanged();
+}
 
 void Preferences::keyPressEvent(QKeyEvent *e)
 {

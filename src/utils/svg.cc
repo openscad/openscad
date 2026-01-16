@@ -202,7 +202,10 @@ std::string point_dump(const CGAL::Sphere_point<CGAL_Kernel3>& p)
   return out.str();
 }
 
-std::string vert_dump(CGAL_Nef_polyhedron3::Vertex_const_handle vch) { return point_dump(vch->point()); }
+std::string vert_dump(CGAL_Nef_polyhedron3::Vertex_const_handle vch)
+{
+  return point_dump(vch->point());
+}
 
 std::string vert_dump(CGAL_Nef_polyhedron3::Nef_polyhedron_S2::SVertex_const_handle vch)
 {

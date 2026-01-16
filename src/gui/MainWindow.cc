@@ -117,6 +117,7 @@
 #include "glview/RenderSettings.h"
 #include "gui/AboutDialog.h"
 #include "gui/CGALWorker.h"
+#include "gui/ColorList.h"
 #include "gui/Editor.h"
 #include "gui/Dock.h"
 #include "gui/Measurement.h"
@@ -436,6 +437,7 @@ MainWindow::MainWindow(const QStringList& filenames) : rubberBandManager(this)
            {errorLogDock, _("Error-Log"), "view/hideErrorLog"},
            {animateDock, _("Animate"), "view/hideAnimate"},
            {fontListDock, _("Font List"), "view/hideFontList"},
+           {colorListDock, _("Color List"), "view/hideColorList"},
            {viewportControlDock, _("Viewport-Control"), "view/hideViewportControl"}};
 
   this->versionLabel = nullptr;   // must be initialized before calling updateStatusBar()
@@ -490,6 +492,7 @@ MainWindow::MainWindow(const QStringList& filenames) : rubberBandManager(this)
   connect(tabManager, &TabManager::editorContentReloaded, this,
           &MainWindow::onTabManagerEditorContentReloaded);
 
+  connect(this->console, &Console::openWindowRequested, this, &MainWindow::showLink);
   connect(GlobalPreferences::inst(), &Preferences::consoleFontChanged, this->console, &Console::setFont);
   this->console->setConsoleFont(
     GlobalPreferences::inst()->getValue("advanced/consoleFontFamily").toString(),
@@ -849,7 +852,8 @@ MainWindow::MainWindow(const QStringList& filenames) : rubberBandManager(this)
     activeEditor->setInitialSizeHint(QSize((5 * this->width() / 11), 100));
     tabifyDockWidget(consoleDock, errorLogDock);
     tabifyDockWidget(errorLogDock, fontListDock);
-    tabifyDockWidget(fontListDock, animateDock);
+    tabifyDockWidget(fontListDock, colorListDock);
+    tabifyDockWidget(colorListDock, animateDock);
     consoleDock->show();
   } else {
 #ifdef Q_OS_WIN
@@ -935,10 +939,16 @@ MainWindow::MainWindow(const QStringList& filenames) : rubberBandManager(this)
                    &MainWindow::onAnimateDockVisibilityChanged);
   QObject::connect(fontListDock, &Dock::visibilityChanged, this,
                    &MainWindow::onFontListDockVisibilityChanged);
+  QObject::connect(colorListDock, &Dock::visibilityChanged, this,
+                   &MainWindow::onColorListDockVisibilityChanged);
   QObject::connect(viewportControlDock, &Dock::visibilityChanged, this,
                    &MainWindow::onViewportControlDockVisibilityChanged);
   QObject::connect(parameterDock, &Dock::visibilityChanged, this,
                    &MainWindow::onParametersDockVisibilityChanged);
+
+  // Other dock specific signals
+  QObject::connect(colorListWidget, &ColorList::colorSelected, this,
+                   &MainWindow::onColorListColorSelected);
 
   connect(this->activeEditor, &EditorInterface::escapePressed, this, &MainWindow::measureFinished);
   // display this window and check for OpenGL 2.0 (OpenCSG) support
@@ -1017,9 +1027,15 @@ void MainWindow::setAllMouseViewActions()
                                    Settings::Settings::inputMouseCtrlShiftRightClick.value())));
 }
 
-void MainWindow::onNavigationOpenContextMenu() { navigationMenu->exec(QCursor::pos()); }
+void MainWindow::onNavigationOpenContextMenu()
+{
+  navigationMenu->exec(QCursor::pos());
+}
 
-void MainWindow::onNavigationCloseContextMenu() { rubberBandManager.hide(); }
+void MainWindow::onNavigationCloseContextMenu()
+{
+  rubberBandManager.hide();
+}
 
 void MainWindow::onNavigationTriggerContextMenuEntry()
 {
@@ -1274,9 +1290,13 @@ void MainWindow::updateWindowSettings(bool isEditorToolbarVisible, bool isViewTo
   hide3DViewToolbar();
 }
 
-void MainWindow::onAxisChanged(InputEventAxisChanged *) {}
+void MainWindow::onAxisChanged(InputEventAxisChanged *)
+{
+}
 
-void MainWindow::onButtonChanged(InputEventButtonChanged *) {}
+void MainWindow::onButtonChanged(InputEventButtonChanged *)
+{
+}
 
 void MainWindow::onTranslateEvent(InputEventTranslate *event)
 {
@@ -1319,7 +1339,10 @@ void MainWindow::onActionEvent(InputEventAction *event)
   }
 }
 
-void MainWindow::onZoomEvent(InputEventZoom *event) { qglview->zoom(event->zoom, event->relative); }
+void MainWindow::onZoomEvent(InputEventZoom *event)
+{
+  qglview->zoom(event->zoom, event->relative);
+}
 
 void MainWindow::loadViewSettings()
 {
@@ -1377,6 +1400,7 @@ void MainWindow::updateUndockMode(bool undockMode)
     errorLogDock->setFeatures(errorLogDock->features() | QDockWidget::DockWidgetFloatable);
     animateDock->setFeatures(animateDock->features() | QDockWidget::DockWidgetFloatable);
     fontListDock->setFeatures(fontListDock->features() | QDockWidget::DockWidgetFloatable);
+    colorListDock->setFeatures(colorListDock->features() | QDockWidget::DockWidgetFloatable);
     viewportControlDock->setFeatures(viewportControlDock->features() | QDockWidget::DockWidgetFloatable);
   } else {
     if (editorDock->isFloating()) {
@@ -1409,6 +1433,11 @@ void MainWindow::updateUndockMode(bool undockMode)
     }
     fontListDock->setFeatures(fontListDock->features() & ~QDockWidget::DockWidgetFloatable);
 
+    if (colorListDock->isFloating()) {
+      colorListDock->setFloating(false);
+    }
+    colorListDock->setFeatures(colorListDock->features() & ~QDockWidget::DockWidgetFloatable);
+
     if (viewportControlDock->isFloating()) {
       viewportControlDock->setFloating(false);
     }
@@ -1435,7 +1464,10 @@ MainWindow::~MainWindow()
   }
 }
 
-void MainWindow::showProgress() { updateStatusBar(qobject_cast<ProgressWidget *>(sender())); }
+void MainWindow::showProgress()
+{
+  updateStatusBar(qobject_cast<ProgressWidget *>(sender()));
+}
 
 void MainWindow::report_func(const std::shared_ptr<const AbstractNode>&, void *vp, int mark)
 {
@@ -1603,7 +1635,10 @@ void MainWindow::waitAfterReload()
   this->waitAfterReloadTimer->start();
 }
 
-void MainWindow::on_toolButtonCompileResultClose_clicked() { frameCompileResult->hide(); }
+void MainWindow::on_toolButtonCompileResultClose_clicked()
+{
+  frameCompileResult->hide();
+}
 
 void MainWindow::updateCompileResult()
 {
@@ -1908,7 +1943,10 @@ void MainWindow::actionOpen()
   }
 }
 
-void MainWindow::actionNewWindow() { new MainWindow(QStringList()); }
+void MainWindow::actionNewWindow()
+{
+  new MainWindow(QStringList());
+}
 
 void MainWindow::actionOpenWindow()
 {
@@ -2036,9 +2074,15 @@ void MainWindow::saveBackup()
   return writeBackup(this->tempFile);
 }
 
-void MainWindow::actionSave() { tabManager->save(activeEditor); }
+void MainWindow::actionSave()
+{
+  tabManager->save(activeEditor);
+}
 
-void MainWindow::actionSaveAs() { tabManager->saveAs(activeEditor); }
+void MainWindow::actionSaveAs()
+{
+  tabManager->saveAs(activeEditor);
+}
 
 void MainWindow::actionPythonRevokeTrustedFiles()
 {
@@ -2112,7 +2156,10 @@ void MainWindow::actionPythonSelectVenv()
 #endif  // ifdef ENABLE_PYTHON
 }
 
-void MainWindow::actionSaveACopy() { tabManager->saveACopy(activeEditor); }
+void MainWindow::actionSaveACopy()
+{
+  tabManager->saveACopy(activeEditor);
+}
 
 void MainWindow::actionShowLibraryFolder()
 {
@@ -2236,7 +2283,10 @@ void MainWindow::showFind(bool doFindAndReplace)
   findInputField->selectAll();
 }
 
-void MainWindow::actionShowFind() { showFind(false); }
+void MainWindow::actionShowFind()
+{
+  showFind(false);
+}
 
 void MainWindow::findString(const QString& textToFind)
 {
@@ -2245,7 +2295,10 @@ void MainWindow::findString(const QString& textToFind)
   activeEditor->find(textToFind);
 }
 
-void MainWindow::actionShowFindAndReplace() { showFind(true); }
+void MainWindow::actionShowFindAndReplace()
+{
+  showFind(true);
+}
 
 void MainWindow::actionSelectFind(int type)
 {
@@ -2287,11 +2340,20 @@ void MainWindow::convertTabsToSpaces()
   activeEditor->setText(converted);
 }
 
-void MainWindow::findNext() { activeEditor->find(this->findInputField->text(), true); }
+void MainWindow::findNext()
+{
+  activeEditor->find(this->findInputField->text(), true);
+}
 
-void MainWindow::findPrev() { activeEditor->find(this->findInputField->text(), true, true); }
+void MainWindow::findPrev()
+{
+  activeEditor->find(this->findInputField->text(), true, true);
+}
 
-void MainWindow::useSelectionForFind() { findInputField->setText(activeEditor->selectedText()); }
+void MainWindow::useSelectionForFind()
+{
+  findInputField->setText(activeEditor->selectedText());
+}
 
 void MainWindow::updateFindBuffer(const QString& s)
 {
@@ -2552,7 +2614,10 @@ void MainWindow::parseTopLevelDocument()
   this->parsedFile = this->rootFile;
 }
 
-void MainWindow::changeParameterWidget() { parameterDock->setVisible(true); }
+void MainWindow::changeParameterWidget()
+{
+  parameterDock->setVisible(true);
+}
 
 void MainWindow::checkAutoReload()
 {
@@ -2974,7 +3039,10 @@ void MainWindow::measureFinished()
   if (didSomething) resetMeasurementsState(true, "Click to start measuring");
 }
 
-void MainWindow::clearAllSelectionIndicators() { this->activeEditor->clearAllSelectionIndicators(); }
+void MainWindow::clearAllSelectionIndicators()
+{
+  this->activeEditor->clearAllSelectionIndicators();
+}
 
 void MainWindow::setSelectionIndicatorStatus(EditorInterface *editor, int nodeIndex,
                                              EditorSelectionIndicatorStatus status)
@@ -3077,7 +3145,10 @@ void MainWindow::onHoveredObjectInSelectionMenu()
   setSelection(action->property("id").toInt());
 }
 
-void MainWindow::setLastFocus(QWidget *widget) { this->lastFocus = widget; }
+void MainWindow::setLastFocus(QWidget *widget)
+{
+  this->lastFocus = widget;
+}
 
 /**
  * Switch version label and progress widget. When switching to the progress
@@ -3777,7 +3848,10 @@ void MainWindow::viewModeShowScaleProportional()
   this->qglview->update();
 }
 
-bool MainWindow::isEmpty() { return activeEditor->toPlainText().isEmpty(); }
+bool MainWindow::isEmpty()
+{
+  return activeEditor->toPlainText().isEmpty();
+}
 
 void MainWindow::editorContentChanged()
 {
@@ -3858,9 +3932,15 @@ void MainWindow::setProjectionType(ProjectionType mode)
   qglview->update();
 }
 
-void MainWindow::viewPerspective() { setProjectionType(ProjectionType::PERSPECTIVE); }
+void MainWindow::viewPerspective()
+{
+  setProjectionType(ProjectionType::PERSPECTIVE);
+}
 
-void MainWindow::viewOrthogonal() { setProjectionType(ProjectionType::ORTHOGONAL); }
+void MainWindow::viewOrthogonal()
+{
+  setProjectionType(ProjectionType::ORTHOGONAL);
+}
 
 void MainWindow::viewTogglePerspective()
 {
@@ -3913,6 +3993,8 @@ void MainWindow::showLink(const QString& link)
     consoleDock->show();
   } else if (link == "#errorlog") {
     errorLogDock->show();
+  } else if (link == "#colorlist") {
+    colorListDock->show();
   }
 }
 
@@ -3971,6 +4053,14 @@ void MainWindow::onFontListDockVisibilityChanged(bool isVisible)
   }
 }
 
+void MainWindow::onColorListDockVisibilityChanged(bool isVisible)
+{
+  if (isVisible) {
+    colorListWidget->setFocus();
+    colorListDock->raise();
+  }
+}
+
 void MainWindow::onViewportControlDockVisibilityChanged(bool isVisible)
 {
   if (isVisible) {
@@ -3985,6 +4075,11 @@ void MainWindow::onParametersDockVisibilityChanged(bool isVisible)
     parameterDock->raise();
     activeEditor->parameterWidget->scrollArea->setFocus();
   }
+}
+
+void MainWindow::onColorListColorSelected(const QString& selectedColor)
+{
+  activeEditor->insertOrReplaceText(selectedColor);
 }
 
 // Use the sender's to detect if we are moving forward/backward in docks
@@ -4061,9 +4156,15 @@ void MainWindow::onWindowShortcutExport3DActivated()
   }
 }
 
-void MainWindow::on_editActionInsertTemplate_triggered() { activeEditor->displayTemplates(); }
+void MainWindow::on_editActionInsertTemplate_triggered()
+{
+  activeEditor->displayTemplates();
+}
 
-void MainWindow::on_editActionFoldAll_triggered() { activeEditor->foldUnfold(); }
+void MainWindow::on_editActionFoldAll_triggered()
+{
+  activeEditor->foldUnfold();
+}
 
 QString MainWindow::getCurrentFileName() const
 {
@@ -4138,6 +4239,7 @@ void MainWindow::onTabManagerEditorChanged(EditorInterface *newEditor)
   errorLogDock->setNameSuffix(name);
   animateDock->setNameSuffix(name);
   fontListDock->setNameSuffix(name);
+  colorListDock->setNameSuffix(name);
   viewportControlDock->setNameSuffix(name);
 
   // If there is no renderedEditor we request for a new preview if the
@@ -4235,17 +4337,35 @@ void MainWindow::helpAbout()
   dialog->deleteLater();
 }
 
-void MainWindow::helpHomepage() { UIUtils::openHomepageURL(); }
+void MainWindow::helpHomepage()
+{
+  UIUtils::openHomepageURL();
+}
 
-void MainWindow::helpManual() { UIUtils::openUserManualURL(); }
+void MainWindow::helpManual()
+{
+  UIUtils::openUserManualURL();
+}
 
-void MainWindow::helpOfflineManual() { UIUtils::openOfflineUserManual(); }
+void MainWindow::helpOfflineManual()
+{
+  UIUtils::openOfflineUserManual();
+}
 
-void MainWindow::helpCheatSheet() { UIUtils::openCheatSheetURL(); }
+void MainWindow::helpCheatSheet()
+{
+  UIUtils::openCheatSheetURL();
+}
 
-void MainWindow::helpPythonCheatSheet() { UIUtils::openPythonCheatSheetURL(); }
+void MainWindow::helpPythonCheatSheet()
+{
+  UIUtils::openPythonCheatSheetURL();
+}
 
-void MainWindow::helpOfflineCheatSheet() { UIUtils::openOfflineCheatSheet(); }
+void MainWindow::helpOfflineCheatSheet()
+{
+  UIUtils::openOfflineCheatSheet();
+}
 
 void MainWindow::helpLibrary()
 {
@@ -4343,7 +4463,10 @@ void MainWindow::errorLogOutput(const Message& log_msg, void *userdata)
   QMetaObject::invokeMethod(thisp, "errorLogOutput", Q_ARG(Message, log_msg));
 }
 
-void MainWindow::errorLogOutput(const Message& log_msg) { this->errorLogWidget->toErrorLog(log_msg); }
+void MainWindow::errorLogOutput(const Message& log_msg)
+{
+  this->errorLogWidget->toErrorLog(log_msg);
+}
 
 void MainWindow::setCurrentOutput()
 {
@@ -4355,7 +4478,10 @@ void MainWindow::hideCurrentOutput()
   set_output_handler(&MainWindow::noOutputConsole, &MainWindow::noOutputErrorLog, this);
 }
 
-void MainWindow::clearCurrentOutput() { set_output_handler(nullptr, nullptr, nullptr); }
+void MainWindow::clearCurrentOutput()
+{
+  set_output_handler(nullptr, nullptr, nullptr);
+}
 
 void MainWindow::openCSGSettingsChanged()
 {
@@ -4388,7 +4514,10 @@ QString MainWindow::exportPath(const QString& suffix)
   return QString("%1/%2.%3").arg(dir, basename, suffix);
 }
 
-void MainWindow::jumpToLine(int line, int col) { this->activeEditor->setCursorPosition(line, col); }
+void MainWindow::jumpToLine(int line, int col)
+{
+  this->activeEditor->setCursorPosition(line, col);
+}
 
 void MainWindow::resetMeasurementsState(bool enable, const QString& tooltipMessage)
 {
