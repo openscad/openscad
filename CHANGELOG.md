@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.8.28](https://github.com/pythonscad/pythonscad/compare/v0.8.27...v0.8.28) (2026-01-16)
+
+
+### Bug Fixes
+
+* **ci:** fix GPG signing and unify build matrices ([#357](https://github.com/pythonscad/pythonscad/issues/357)) ([f2114a8](https://github.com/pythonscad/pythonscad/commit/f2114a8616b8243c072be581704174f1e5325bbb))
+* **web:** use theme CSS variables for cheatsheet dark mode support ([#358](https://github.com/pythonscad/pythonscad/issues/358)) ([38f956e](https://github.com/pythonscad/pythonscad/commit/38f956eee0cb978975763233f49aae883c37e84c))
+
 ## [0.8.27](https://github.com/pythonscad/pythonscad/compare/v0.8.26...v0.8.27) (2026-01-15)
 
 
