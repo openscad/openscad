@@ -160,6 +160,8 @@ jobs:
 
       - name: Sign RPM packages (amd64)
         if: matrix.arch == 'amd64' && (github.event_name == 'release' || github.event.inputs.upload_to_release != '')
+        env:
+          GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
         run: |
           set -e  # Exit on error
 
@@ -176,7 +178,9 @@ jobs:
           chmod 700 "$GNUPGHOME"
 
           # Configure gpg-agent for loopback pinentry (required for non-TTY environments)
-          echo "allow-loopback-pinentry" > "$GNUPGHOME/gpg-agent.conf"
+          cat > "$GNUPGHOME/gpg-agent.conf" << 'AGENTCONF'
+          allow-loopback-pinentry
+          AGENTCONF
 
           # Kill any existing agent to pick up new config
           gpgconf --kill gpg-agent 2>/dev/null || true
@@ -188,17 +192,17 @@ jobs:
           echo "Imported GPG keys:"
           gpg --list-secret-keys
 
-          # Create temporary passphrase file
+          # Create passphrase file safely using printf (no trailing newline)
           PASSPHRASE_FILE=$(mktemp)
-          echo "${{ secrets.GPG_PASSPHRASE }}" > "$PASSPHRASE_FILE"
+          printf '%s' "$GPG_PASSPHRASE" > "$PASSPHRASE_FILE"
           chmod 600 "$PASSPHRASE_FILE"
 
-          # Configure RPM signing with passphrase file
-          # IMPORTANT: --batch must come FIRST before other options for proper parsing
-          # The macro uses -sbo which is short for: --sign --binary --output
-          echo "%_signature gpg" > ~/.rpmmacros
-          echo "%_gpg_name ${{ secrets.GPG_KEY_ID }}" >> ~/.rpmmacros
-          echo "%__gpg_sign_cmd %{__gpg} --batch --no-verbose --no-armor --passphrase-file $PASSPHRASE_FILE --pinentry-mode loopback --no-secmem-warning -u \"%{_gpg_name}\" -sbo %{__signature_filename} %{__plaintext_filename}" >> ~/.rpmmacros
+          # Configure RPM signing macros with passphrase file and loopback pinentry
+          cat > ~/.rpmmacros << MACROS
+          %_signature gpg
+          %_gpg_name ${{ secrets.GPG_KEY_ID }}
+          %__gpg_sign_cmd %{__gpg} --batch --pinentry-mode loopback --passphrase-file $PASSPHRASE_FILE --no-verbose --no-armor --no-secmem-warning -u "%{_gpg_name}" -sbo %{__signature_filename} %{__plaintext_filename}
+          MACROS
 
           # Set GPG_TTY to empty to avoid TTY-related warnings in CI
           export GPG_TTY=""
@@ -213,17 +217,24 @@ jobs:
           # Clean up passphrase file
           rm -f "$PASSPHRASE_FILE"
 
+          # Import public key into RPM keyring for verification
+          gpg --export -a "${{ secrets.GPG_KEY_ID }}" > /tmp/pubkey.asc
+          rpm --import /tmp/pubkey.asc
+
           # Verify signatures
           echo "Verifying RPM signatures:"
           for rpm in /tmp/rpms/*.rpm; do
             echo "Checking: $(basename "$rpm")"
             rpm --checksig "$rpm"
-            # Also check detailed signature info
-            rpm -qpi "$rpm" | grep -i signature || echo "Warning: No signature found"
           done
 
       - name: Build RPM package (arm64) in Docker
         if: matrix.arch == 'arm64'
+        env:
+          GPG_SIGNING_KEY: ${{ secrets.DEB_SIGNING_KEY }}
+          GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+          GPG_KEY_ID: ${{ secrets.GPG_KEY_ID }}
+          DO_SIGN: ${{ (github.event_name == 'release' || github.event.inputs.upload_to_release != '') && 'true' || 'false' }}
         run: |
           # Run the entire build inside a Docker container with proper ARM64 emulation
           docker run --rm \
@@ -234,6 +245,10 @@ jobs:
             -e FEDORA_RELEASE=${{ matrix.version }} \
             -e DISTRO_TYPE=${{ matrix.distro }} \
             -e ARCH=aarch64 \
+            -e GPG_SIGNING_KEY="$GPG_SIGNING_KEY" \
+            -e GPG_PASSPHRASE="$GPG_PASSPHRASE" \
+            -e GPG_KEY_ID="$GPG_KEY_ID" \
+            -e DO_SIGN="$DO_SIGN" \
             ${{ matrix.container }} \
             bash -c '
               set -e
@@ -257,32 +272,34 @@ jobs:
               ./scripts/build-rpm-package.sh
 
               # Sign packages if building for release
-              if [ "${{ github.event_name }}" = "release" ] || [ "${{ github.event.inputs.upload_to_release }}" != "" ]; then
+              if [ "$DO_SIGN" = "true" ]; then
                 # Set up GNUPGHOME
                 export GNUPGHOME="${GNUPGHOME:-$HOME/.gnupg}"
                 mkdir -p "$GNUPGHOME"
                 chmod 700 "$GNUPGHOME"
 
-                # Configure gpg-agent for loopback pinentry (required for non-TTY)
-                echo "allow-loopback-pinentry" > "$GNUPGHOME/gpg-agent.conf"
+                # Configure gpg-agent for loopback pinentry
+                cat > "$GNUPGHOME/gpg-agent.conf" << AGENTCONF
+                allow-loopback-pinentry
+          AGENTCONF
                 gpgconf --kill gpg-agent 2>/dev/null || true
 
                 # Import GPG key
-                echo '\''${{ secrets.DEB_SIGNING_KEY }}'\'' | gpg --batch --import
+                echo "$GPG_SIGNING_KEY" | gpg --batch --import
                 gpg --list-secret-keys
 
-                # Create temporary passphrase file
+                # Create passphrase file safely using printf (no trailing newline)
                 PASSPHRASE_FILE=$(mktemp)
-                echo '\''${{ secrets.GPG_PASSPHRASE }}'\'' > "$PASSPHRASE_FILE"
+                printf "%s" "$GPG_PASSPHRASE" > "$PASSPHRASE_FILE"
                 chmod 600 "$PASSPHRASE_FILE"
 
-                # Configure RPM signing
-                # IMPORTANT: --batch must come FIRST before other options
-                echo "%_signature gpg" > ~/.rpmmacros
-                echo "%_gpg_name ${{ secrets.GPG_KEY_ID }}" >> ~/.rpmmacros
-                echo "%__gpg_sign_cmd %{__gpg} --batch --no-verbose --no-armor --passphrase-file $PASSPHRASE_FILE --pinentry-mode loopback --no-secmem-warning -u \"%{_gpg_name}\" -sbo %{__signature_filename} %{__plaintext_filename}" >> ~/.rpmmacros
+                # Configure RPM signing macros with passphrase file
+                cat > ~/.rpmmacros << MACROS
+          %_signature gpg
+          %_gpg_name $GPG_KEY_ID
+          %__gpg_sign_cmd %{__gpg} --batch --pinentry-mode loopback --passphrase-file $PASSPHRASE_FILE --no-verbose --no-armor --no-secmem-warning -u "%{_gpg_name}" -sbo %{__signature_filename} %{__plaintext_filename}
+          MACROS
 
-                # Set GPG_TTY to empty to avoid warnings
                 export GPG_TTY=""
 
                 # Sign all RPM packages
@@ -292,15 +309,18 @@ jobs:
                   rpmsign --addsign "$rpm"
                 done
 
-                # Clean up
+                # Clean up passphrase file
                 rm -f "$PASSPHRASE_FILE"
+
+                # Import public key into RPM keyring for verification
+                gpg --export -a "$GPG_KEY_ID" > /tmp/pubkey.asc
+                rpm --import /tmp/pubkey.asc
 
                 # Verify signatures
                 echo "Verifying RPM signatures:"
                 for rpm in /tmp/rpms/*.rpm; do
                   echo "Checking: $(basename "$rpm")"
                   rpm --checksig "$rpm"
-                  rpm -qpi "$rpm" | grep -i signature || echo "Warning: No signature found"
                 done
               fi
             '
