@@ -101,9 +101,9 @@ FROM base AS qscintilla-builder
 # Install Qt5 dependencies specifically for QScintilla
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
-        qt5-qmake \
-        qtbase5-dev \
-        libqt5svg5-dev \
+        qmake6 \
+        qt6-base-dev \
+        libqt6svg6-dev \
         && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /build
@@ -111,7 +111,7 @@ RUN wget -q https://www.riverbankcomputing.com/static/Downloads/QScintilla/2.14.
     tar xvf QScintilla_src-2.14.1.tar.gz
 
 WORKDIR /build/QScintilla_src-2.14.1/src
-RUN qmake && \
+RUN qmake6 && \
     make -j$(nproc) && \
     make install INSTALL_ROOT=/inst
 
