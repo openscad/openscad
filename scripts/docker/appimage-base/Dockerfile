@@ -67,18 +67,18 @@ RUN apt-get update && \
     apt-get install -y --no-install-recommends \
         libgmp-dev \
         libboost-dev \
-        libmpfr-dev \
-        && rm -rf /var/lib/apt/lists/*
+        libmpfr-dev && \
+    rm -rf /var/lib/apt/lists/*
 
-# v5.6.3
-ARG CGAL_COMMIT=3654f780ae0c64675cabaef0e5ddaf904c48b4b7
+ARG CGAL_URL=https://github.com/CGAL/cgal/releases/download
+ARG CGAL_VERSION=6.1
 
 WORKDIR /tmp/build
 
-RUN wget -q https://github.com/CGAL/cgal/archive/${CGAL_COMMIT}.tar.gz -O cgal.tar.gz && \
+RUN wget -q ${CGAL_URL}/v${CGAL_VERSION}/CGAL-${CGAL_VERSION}-library.tar.xz -O cgal.tar.xz && \
     mkdir cgal && \
-    tar -xzf cgal.tar.gz -C cgal --strip-components=1 && \
-    rm cgal.tar.gz
+    tar -xf cgal.tar.xz -C cgal --strip-components=1 && \
+    rm cgal.tar.xz
 
 WORKDIR /tmp/build/cgal/build
 
