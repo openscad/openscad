@@ -157,15 +157,13 @@ FROM base AS appimage-base
 
 # Install Runtime/Link-time dependencies required for the final OpenSCAD aggregation
 # These are things that OpenSCAD itself needs to compile or run the dependency scripts.
-RUN apt-get update && \
+RUN apt-get update && apt-get -y full-upgrade && \
     apt-get install -y --no-install-recommends \
         appstream \
         apt-transport-https \
         apt-utils \
-        file \
         libbz2-dev \
         liblzma-dev \
-        libqt5svg5-dev \
         libsqlite3-dev \
         libssl-dev \
         libgmp-dev \
@@ -174,23 +172,20 @@ RUN apt-get update && \
         nettle-dev \
         openssh-client \
         python3-dev \
-        qt5-qmake \
-        qtbase5-dev \
-        software-properties-common \
-        unzip \
-        uuid-dev \
-        && rm -rf /var/lib/apt/lists/*
+	qmake6 \
+        software-properties-common && \
+    rm -rf /var/lib/apt/lists/*
 
 WORKDIR /openscad
 
 RUN --mount=type=bind,source=scripts/uni-get-dependencies.sh,target=./uni-get-dependencies.sh \
-    ./uni-get-dependencies.sh && \
+    ./uni-get-dependencies.sh qt6 && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
 COPY --from=lib3mf-builder /inst /usr/
 COPY --from=cgal-builder /inst /usr/
-COPY --from=qscintilla-builder /inst /usr/
+COPY --from=qscintilla-builder /inst/usr /usr/
 RUN ldconfig
 
 COPY --from=deploy-tools /appimage /appimage
