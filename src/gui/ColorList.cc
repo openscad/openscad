@@ -135,7 +135,10 @@ ColorList::ColorList(QWidget *parent) : QWidget(parent), ui(new Ui_ColorListWidg
                    &ColorList::updateSort);
 }
 
-ColorList::~ColorList() { delete ui; }
+ColorList::~ColorList()
+{
+  delete ui;
+}
 
 void ColorList::updateSort()
 {
@@ -315,7 +318,10 @@ void ColorList::updateColorDialog(QColor& target)
   }
 }
 
-void ColorList::on_toolButtonAsForegroundColorDialog_clicked() { updateColorDialog(asForeground); }
+void ColorList::on_toolButtonAsForegroundColorDialog_clicked()
+{
+  updateColorDialog(asForeground);
+}
 
 void ColorList::on_toolButtonAsBackgroundReset_clicked()
 {
@@ -324,7 +330,10 @@ void ColorList::on_toolButtonAsBackgroundReset_clicked()
   updateSelectedColor();
 }
 
-void ColorList::on_toolButtonAsbackgroundColorDialog_clicked() { updateColorDialog(asBackground); }
+void ColorList::on_toolButtonAsbackgroundColorDialog_clicked()
+{
+  updateColorDialog(asBackground);
+}
 
 void ColorList::on_actionResetSampleTextForeground_triggered()
 {
