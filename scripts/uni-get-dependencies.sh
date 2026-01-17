@@ -111,7 +111,7 @@ get_debian_deps()
   libdouble-conversion-dev libeigen3-dev libffi-dev libfontconfig-dev \
   libfreetype-dev libgl1-mesa-dev libglew-dev libglib2.0-dev libgmp-dev \
   libharfbuzz-dev libmimalloc-dev libmpfr-dev libopencsg-dev \
-  libqt5gamepad5-dev libtbb-dev libxi-dev libxml2-dev libxmu-dev \
+  libtbb-dev libxi-dev libxml2-dev libxmu-dev \
   libzip-dev nettle-dev ninja-build nodejs pkg-config python3-dev \
   python3-setuptools python3-venv ragel xvfb
  apt-get -y install catch2 || echo "catch2 pkg deprecated on Debian, so if you're seeing this, it's probably been removed from the repo"
@@ -128,14 +128,15 @@ get_qt5_deps_debian()
 {
  apt-get -y install \
   libqscintilla2-qt5-dev libqt5multimedia5-plugins libqt5opengl5-dev \
-  libqt5svg5-dev qt5-qmake qtbase5-dev qtmultimedia5-dev
+  libqt5svg5-dev qt5-qmake qtbase5-dev qtmultimedia5-dev libqt5gamepad5-dev
 }
 
 get_qt6_deps_debian()
 {
  apt-get -y install \
-  libqscintilla2-qt6-dev libqt6core5compat6-dev libqt6svg6-dev \
-  qt6-base-dev qt6-multimedia-dev
+  qt6-base-dev qt6-multimedia-dev \
+  libqt6svg6-dev libqt6opengl6-dev libqt6core5compat6-dev
+ apt-get -y install libqscintilla2-qt6-dev || echo "libqscintilla2-qt6-dev is not available"
 }
 
 get_arch_deps()

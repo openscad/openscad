@@ -11,13 +11,14 @@ RUN apt-get update && \
     apt-get install -y --no-install-recommends \
         build-essential \
         ca-certificates \
-        ccache \
         cmake \
         curl \
         git \
         gnupg \
         ninja-build \
         wget \
+        file \
+        unzip \
         && rm -rf /var/lib/apt/lists/*
 
 # -----------------------------------------------------------------------------
@@ -26,18 +27,17 @@ RUN apt-get update && \
 FROM base AS lib3mf-builder
 
 # Install Lib3MF specific dependencies
-# uuid-dev, libssl-dev etc. are required for Lib3MF
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
-        uuid-dev \
-        && rm -rf /var/lib/apt/lists/*
+    apt-get install -y --no-install-recommends pkg-config libzip-dev && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
-# 1.8.1
-ARG LIB3MF_COMMIT=ff914b9fae76cd6a365952728f44f8d79a9f8f75
+ARG LIB3MF_VERSION=2.4.1
+ARG LIB3MF_URL=https://github.com/3MFConsortium/lib3mf/archive/refs/tags
 
 WORKDIR /tmp/build
 
-RUN wget -q https://github.com/3MFConsortium/lib3mf/archive/${LIB3MF_COMMIT}.tar.gz -O lib3mf.tar.gz && \
+RUN wget -q "${LIB3MF_URL}/v${LIB3MF_VERSION}.tar.gz" -O lib3mf.tar.gz && \
     mkdir lib3mf && \
     tar -xzf lib3mf.tar.gz -C lib3mf --strip-components=1 && \
     rm lib3mf.tar.gz
@@ -48,6 +48,8 @@ RUN cmake .. \
     -GNinja \
     -DCMAKE_BUILD_TYPE=Release \
     -DLIB3MF_TESTS=OFF \
+    -DUSE_INCLUDED_ZLIB=OFF \
+    -DUSE_INCLUDED_LIBZIP=OFF \
     -DUSE_INCLUDED_SSL=OFF \
     -DCMAKE_INSTALL_PREFIX=/inst \
     -DCMAKE_INSTALL_LIBDIR=lib && \
@@ -65,18 +67,18 @@ RUN apt-get update && \
     apt-get install -y --no-install-recommends \
         libgmp-dev \
         libboost-dev \
-        libmpfr-dev \
-        && rm -rf /var/lib/apt/lists/*
+        libmpfr-dev && \
+    rm -rf /var/lib/apt/lists/*
 
-# v5.6.3
-ARG CGAL_COMMIT=3654f780ae0c64675cabaef0e5ddaf904c48b4b7
+ARG CGAL_URL=https://github.com/CGAL/cgal/releases/download
+ARG CGAL_VERSION=6.1
 
 WORKDIR /tmp/build
 
-RUN wget -q https://github.com/CGAL/cgal/archive/${CGAL_COMMIT}.tar.gz -O cgal.tar.gz && \
+RUN wget -q ${CGAL_URL}/v${CGAL_VERSION}/CGAL-${CGAL_VERSION}-library.tar.xz -O cgal.tar.xz && \
     mkdir cgal && \
-    tar -xzf cgal.tar.gz -C cgal --strip-components=1 && \
-    rm cgal.tar.gz
+    tar -xf cgal.tar.xz -C cgal --strip-components=1 && \
+    rm cgal.tar.xz
 
 WORKDIR /tmp/build/cgal/build
 
@@ -99,9 +101,9 @@ FROM base AS qscintilla-builder
 # Install Qt5 dependencies specifically for QScintilla
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
-        qt5-qmake \
-        qtbase5-dev \
-        libqt5svg5-dev \
+        qmake6 \
+        qt6-base-dev \
+        libqt6svg6-dev \
         && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /build
@@ -109,7 +111,7 @@ RUN wget -q https://www.riverbankcomputing.com/static/Downloads/QScintilla/2.14.
     tar xvf QScintilla_src-2.14.1.tar.gz
 
 WORKDIR /build/QScintilla_src-2.14.1/src
-RUN qmake && \
+RUN qmake6 && \
     make -j$(nproc) && \
     make install INSTALL_ROOT=/inst
 
@@ -155,15 +157,13 @@ FROM base AS appimage-base
 
 # Install Runtime/Link-time dependencies required for the final OpenSCAD aggregation
 # These are things that OpenSCAD itself needs to compile or run the dependency scripts.
-RUN apt-get update && \
+RUN apt-get update && apt-get -y full-upgrade && \
     apt-get install -y --no-install-recommends \
         appstream \
         apt-transport-https \
         apt-utils \
-        file \
         libbz2-dev \
         liblzma-dev \
-        libqt5svg5-dev \
         libsqlite3-dev \
         libssl-dev \
         libgmp-dev \
@@ -172,23 +172,20 @@ RUN apt-get update && \
         nettle-dev \
         openssh-client \
         python3-dev \
-        qt5-qmake \
-        qtbase5-dev \
-        software-properties-common \
-        unzip \
-        uuid-dev \
-        && rm -rf /var/lib/apt/lists/*
+	qmake6 \
+        software-properties-common && \
+    rm -rf /var/lib/apt/lists/*
 
 WORKDIR /openscad
 
 RUN --mount=type=bind,source=scripts/uni-get-dependencies.sh,target=./uni-get-dependencies.sh \
-    ./uni-get-dependencies.sh && \
+    ./uni-get-dependencies.sh qt6 && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
 COPY --from=lib3mf-builder /inst /usr/
 COPY --from=cgal-builder /inst /usr/
-COPY --from=qscintilla-builder /inst /usr/
+COPY --from=qscintilla-builder /inst/usr /usr/
 RUN ldconfig
 
 COPY --from=deploy-tools /appimage /appimage

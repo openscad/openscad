@@ -119,10 +119,10 @@ jobs:
               ln -sf /usr/bin/python{3,}
               if [ x"${CIRCLE_BRANCH}" = xmaster ] || [ "<< parameters.openscad_build_type >>" != "snapshot" ]; then
                 export SUFFIX=""
-              else 
+              else
                 export SUFFIX="_$(echo ${CIRCLE_BRANCH} | sed -e 's,pull/,PR,; s,/head,h,; s,/merge,m,; s,/,.,g')"
               fi
-              
+
               ./scripts/release-common.sh mingw64 -v "$OPENSCAD_VERSION" -c "$OPENSCAD_COMMIT" << parameters.openscad_build_type >>
               sccache --show-stats
               mkdir -p /tmp/artifacts
@@ -193,6 +193,7 @@ jobs:
                   -DMANIFOLD_TEST=OFF \
                   -DENABLE_PYTHON=ON \
                   -DENABLE_TESTS=OFF \
+                  -DUSE_QT6=ON \
                   $CMAKE_EXTRA_ARGS
               cmake --build . -j
               DESTDIR=../AppDir cmake --install .
@@ -202,6 +203,7 @@ jobs:
               export EXTRA_QT_PLUGINS=svg
               export PYTHON_VERSION=$(python3 -c "import sys; v=sys.version_info; print(f'{v.major}.{v.minor}.{v.micro}')")
               export LINUXDEPLOY_OUTPUT_VERSION="${OPENSCAD_VERSION}${SUFFIX}"
+              export QMAKE=/usr/bin/qmake6
               linuxdeploy --plugin python --plugin qt --output appimage --appdir AppDir
               sccache --show-stats
               mkdir -p /tmp/artifacts
@@ -216,7 +218,8 @@ jobs:
                   echo "Skipping code signing."
               fi
           command: |
-              docker build \
+              docker buildx build \
+                --progress plain \
                 --file scripts/docker/appimage-base/Dockerfile \
                 --target appimage-base \
                 --tag appimage-base \
@@ -296,7 +299,7 @@ jobs:
               export WASM_TYPE=$(echo "<< parameters.openscad_platform >>" | sed 's/^wasm-//')
               if [ x"${CIRCLE_BRANCH}" = xmaster ] || [ "<< parameters.openscad_build_type >>" != "snapshot" ]; then
                 export SUFFIX=""
-              else 
+              else
                 export SUFFIX="_$(echo ${CIRCLE_BRANCH} | sed -e 's,pull/,PR,; s,/head,h,; s,/merge,m,; s,/,.,g')"
               fi
               if [ "<< parameters.openscad_build_type >>" == "snapshot" ]; then
@@ -372,7 +375,7 @@ jobs:
             brew install automake libtool cmake pkg-config wget meson python-packaging
       - restore_cache:
           keys:
-            # CircleCI library caching. If we ever need invalidate the cache (e.g. to remove any old files 
+            # CircleCI library caching. If we ever need invalidate the cache (e.g. to remove any old files
             # from a library cache), the safest, change the MACOS_CACHE_VERSION variable to a random value at
             # https://app.circleci.com/settings/project/github/openscad/openscad/environment-variables.
             - macos-libraries-{{ .Environment.MACOS_CACHE_VERSION }}-{{ checksum "scripts/macosx-build-dependencies.sh" }}-{{ checksum ".circleci/config.yml" }}
@@ -419,7 +422,7 @@ jobs:
             security -v set-key-partition-list -S apple-tool:,apple: -s -k "" OpenSCAD.keychain
             codesign --options=runtime --keychain OpenSCAD.keychain -s "Marius Kintel" --force --deep build/OpenSCAD.app
 
-            hdiutil create -volname "OpenSCAD" -srcfolder build/OpenSCAD.app -ov -format UDZO "OpenSCAD-$OPENSCAD_VERSION.dmg"  
+            hdiutil create -volname "OpenSCAD" -srcfolder build/OpenSCAD.app -ov -format UDZO "OpenSCAD-$OPENSCAD_VERSION.dmg"
             codesign --keychain OpenSCAD.keychain -s "Marius Kintel" --force OpenSCAD-$OPENSCAD_VERSION.dmg
 
             xcrun notarytool submit OpenSCAD-$OPENSCAD_VERSION.dmg --wait --apple-id $APPLE_NOTARIZATION_ACCOUNT --team-id $APPLE_NOTARIZATION_TEAM --password $APPLE_NOTARIZATION_PASSWORD
