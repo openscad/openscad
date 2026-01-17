@@ -11,13 +11,14 @@ RUN apt-get update && \
     apt-get install -y --no-install-recommends \
         build-essential \
         ca-certificates \
-        ccache \
         cmake \
         curl \
         git \
         gnupg \
         ninja-build \
         wget \
+        file \
+        unzip \
         && rm -rf /var/lib/apt/lists/*
 
 # -----------------------------------------------------------------------------
@@ -26,18 +27,17 @@ RUN apt-get update && \
 FROM base AS lib3mf-builder
 
 # Install Lib3MF specific dependencies
-# uuid-dev, libssl-dev etc. are required for Lib3MF
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
-        uuid-dev \
-        && rm -rf /var/lib/apt/lists/*
+    apt-get install -y --no-install-recommends pkg-config libzip-dev && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
-# 1.8.1
-ARG LIB3MF_COMMIT=ff914b9fae76cd6a365952728f44f8d79a9f8f75
+ARG LIB3MF_VERSION=2.4.1
+ARG LIB3MF_URL=https://github.com/3MFConsortium/lib3mf/archive/refs/tags
 
 WORKDIR /tmp/build
 
-RUN wget -q https://github.com/3MFConsortium/lib3mf/archive/${LIB3MF_COMMIT}.tar.gz -O lib3mf.tar.gz && \
+RUN wget -q "${LIB3MF_URL}/v${LIB3MF_VERSION}.tar.gz" -O lib3mf.tar.gz && \
     mkdir lib3mf && \
     tar -xzf lib3mf.tar.gz -C lib3mf --strip-components=1 && \
     rm lib3mf.tar.gz
@@ -48,6 +48,8 @@ RUN cmake .. \
     -GNinja \
     -DCMAKE_BUILD_TYPE=Release \
     -DLIB3MF_TESTS=OFF \
+    -DUSE_INCLUDED_ZLIB=OFF \
+    -DUSE_INCLUDED_LIBZIP=OFF \
     -DUSE_INCLUDED_SSL=OFF \
     -DCMAKE_INSTALL_PREFIX=/inst \
     -DCMAKE_INSTALL_LIBDIR=lib && \
