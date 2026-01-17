@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.8.31](https://github.com/pythonscad/pythonscad/compare/v0.8.30...v0.8.31) (2026-01-16)
+
+
+### Bug Fixes
+
+* **ci:** fix keygrip extraction for RPM 6.x signing ([#366](https://github.com/pythonscad/pythonscad/issues/366)) ([5d3b069](https://github.com/pythonscad/pythonscad/commit/5d3b0697c82ad3de3b12aa7f989c637fff9ac7d0))
+
 ## [0.8.30](https://github.com/pythonscad/pythonscad/compare/v0.8.29...v0.8.30) (2026-01-16)
 
 
