@@ -8,9 +8,10 @@ executors:
     docker:
       - image: openscad/mxe-x86_64-gui:latest
     resource_class: large
-  appimage-executor:
-    docker:
-      - image: openscad/appimage-x86_64-base:latest
+  docker-x86_64:
+    machine:
+      image: ubuntu-2204:current
+      docker_layer_caching: true
     resource_class: large
   wasm-executor:
     docker:
@@ -66,7 +67,9 @@ commands:
               curl -fsSL -o "/tmp/${SCCACHE_TGZ}" \
                 "https://github.com/mozilla/sccache/releases/download/v${SCCACHE_VERSION}/${SCCACHE_TGZ}"
               tar -xzf "/tmp/${SCCACHE_TGZ}" -C /tmp
-              install -m 0755 "/tmp/sccache-v${SCCACHE_VERSION}-x86_64-unknown-linux-musl/sccache" /usr/local/bin/sccache
+              mkdir -p "${HOME}/.local/bin"
+              install -m 0755 "/tmp/sccache-v${SCCACHE_VERSION}-x86_64-unknown-linux-musl/sccache" "${HOME}/.local/bin/sccache"
+              echo 'export PATH=$HOME/.local/bin:$PATH' >> "${BASH_ENV}"
   restore-sccache-cache:
     steps:
       - restore_cache:
@@ -124,7 +127,7 @@ jobs:
               sccache --show-stats
               mkdir -p /tmp/artifacts
               for f in mingw*/*.zip mingw*/*.exe; do N=$(basename "$f" | sed -e "s/\\(-x86-[36][24]\\)/\\1${SUFFIX}/;"); cp -iv "$f" /tmp/artifacts/"$N"; done
-              if [ -n "${CODE_SIGNING_KEY}" ]
+              if [ -n "${CODE_SIGNING_KEY:-}" ]
               then
                   cd /tmp/artifacts
                   echo $CODE_SIGNING_DATA | base64 -d | gzip -d | gpg --import --allow-secret-key-import --pinentry-mode loopback --passphrase-file <(echo $CODE_SIGNING_PW)
@@ -139,7 +142,7 @@ jobs:
           path: /tmp/artifacts
           destination: MXE
   openscad-appimage:
-    executor: appimage-executor
+    executor: docker-x86_64
     parameters:
       openscad_platform:
         type: string
@@ -159,15 +162,23 @@ jobs:
       - run:
           name: Build OpenSCAD AppImage
           no_output_timeout: 18000
-          command: |
+          environment:
+            OPENSCAD_BUILD_TYPE: << parameters.openscad_build_type >>
+            APPIMAGE_BUILD_SCRIPT: |
+              #!/usr/bin/env bash
+              set -euo pipefail
+
               sccache --start-server
-              if [ x"${CIRCLE_BRANCH}" = xmaster ] || [ "<< parameters.openscad_build_type >>" != "snapshot" ]; then
-                export SUFFIX=""
+              if [ "x${CIRCLE_BRANCH}" = xmaster ] || [ "${OPENSCAD_BUILD_TYPE}" != "snapshot" ]; then
+                SUFFIX=""
               else
-                export SUFFIX="_$(echo ${CIRCLE_BRANCH} | sed -e 's,pull/,PR,; s,/head,h,; s,/merge,m,; s,/,.,g')"
+                SUFFIX="_$(echo "${CIRCLE_BRANCH}" | sed -e 's,pull/,PR,; s,/head,h,; s,/merge,m,; s,/,.,g')"
               fi
-              if [ "<< parameters.openscad_build_type >>" == "snapshot" ]; then
-                export CMAKE_EXTRA_ARGS="-DSNAPSHOT=ON -DEXPERIMENTAL=ON"
+
+              if [ "${OPENSCAD_BUILD_TYPE}" == "snapshot" ]; then
+                CMAKE_EXTRA_ARGS="-DSNAPSHOT=ON -DEXPERIMENTAL=ON"
+              else
+                CMAKE_EXTRA_ARGS=""
               fi
               mkdir build && cd build
               cmake .. \
@@ -183,9 +194,10 @@ jobs:
                   -DENABLE_PYTHON=ON \
                   -DENABLE_TESTS=OFF \
                   $CMAKE_EXTRA_ARGS
-              cmake --build . -j 2  # using all 4 cores OOMs
+              cmake --build . -j
               DESTDIR=../AppDir cmake --install .
               cd ..
+
               export PATH=/appimage/usr/bin:"$PATH"
               export EXTRA_QT_PLUGINS=svg
               export PYTHON_VERSION=$(python3 -c "import sys; v=sys.version_info; print(f'{v.major}.{v.minor}.{v.micro}')")
@@ -194,15 +206,46 @@ jobs:
               sccache --show-stats
               mkdir -p /tmp/artifacts
               cp -iv OpenSCAD-*.AppImage /tmp/artifacts
-              if [ -n "${CODE_SIGNING_KEY}" ]; then
+              if [ -n "${CODE_SIGNING_KEY:-}" ]; then
                   cd /tmp/artifacts
-                  echo $CODE_SIGNING_DATA | base64 -d | gzip -d | gpg --import --allow-secret-key-import --pinentry-mode loopback --passphrase-file <(echo $CODE_SIGNING_PW)
+                  echo "$CODE_SIGNING_DATA" | base64 -d | gzip -d | gpg --import --allow-secret-key-import --pinentry-mode loopback --passphrase-file <(echo "$CODE_SIGNING_PW")
                   export GPG_ARGS="--batch --yes --passphrase-fd 0 --pinentry-mode loopback --detach-sign --armor"
                   for a in *.AppImage; do echo "$CODE_SIGNING_PW" | gpg -u "$CODE_SIGNING_KEY" $GPG_ARGS "$a"; sha256sum "$a" | tee "${a}.sha256"; sha512sum "$a" | tee "${a}.sha512"; done
                   rm -rf ~/.gnupg
               else
                   echo "Skipping code signing."
               fi
+          command: |
+              docker build \
+                --file scripts/docker/appimage-base/Dockerfile \
+                --target appimage-base \
+                --tag appimage-base \
+                .
+
+              mkdir -p /tmp/artifacts
+              printf '%s' "$APPIMAGE_BUILD_SCRIPT" > /tmp/circleci-appimage-build.sh
+              chmod +x /tmp/circleci-appimage-build.sh
+              docker run --rm \
+                -e CIRCLE_BRANCH \
+                -e OPENSCAD_VERSION \
+                -e OPENSCAD_COMMIT \
+                -e OPENSCAD_BUILD_TYPE \
+                -e CODE_SIGNING_KEY \
+                -e CODE_SIGNING_DATA \
+                -e CODE_SIGNING_PW \
+                -e SCCACHE_DIR=/root/.cache/sccache \
+                -v "$PWD:/openscad" \
+                -v /tmp/artifacts:/tmp/artifacts \
+                -v /tmp/circleci-appimage-build.sh:/tmp/circleci-appimage-build.sh:ro \
+                -v "$HOME/.local/bin/sccache:/usr/local/bin/sccache:ro" \
+                -v "$HOME/.cache/sccache:/root/.cache/sccache" \
+                -w /openscad \
+                appimage-base \
+                /tmp/circleci-appimage-build.sh
+
+              # fix cache permissions
+              sudo chown -R circleci:circleci "$HOME/.cache/sccache" || true
+              chmod -R a+rX "$HOME/.cache/sccache" || true
       - save-sccache-cache
       - store_artifacts:
           path: /tmp/artifacts
@@ -455,7 +498,7 @@ workflows:
   "CircleCI snapshot build (master)":
     jobs:
       - openscad-mxe:
-          # Legacy name
+          # for openscad-ansible/.../circleci-download-artifacts.py
           name: openscad-mxe-64bit
           context: secret-context
           filters:
@@ -463,7 +506,7 @@ workflows:
                   only:
                       - master
       - openscad-appimage:
-          # Legacy name
+          # for openscad-ansible/.../circleci-download-artifacts.py
           name: openscad-appimage-64bit
           context: secret-context
           filters:
@@ -471,7 +514,7 @@ workflows:
                   only:
                       - master
       - openscad-wasm:
-          # Legacy name
+          # for openscad-ansible/.../circleci-download-artifacts.py
           name: openscad-<< matrix.openscad_platform >>
           matrix:
             parameters:
@@ -482,7 +525,7 @@ workflows:
                   only:
                       - master
       - openscad-macos:
-          # Legacy name
+          # for openscad-ansible/.../circleci-download-artifacts.py
           name: openscad-macos
           context: secret-context
           filters:
@@ -539,6 +582,7 @@ workflows:
           requires:
             - openscad-tarball-release
       - openscad-appimage:
+          # for openscad-ansible/.../circleci-download-artifacts.py
           name: openscad-appimage-release
           filters: *release-filters
           openscad_build_type: release
