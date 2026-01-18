@@ -274,7 +274,10 @@ void UIUtils::openCheatSheetURL()
 #endif
 }
 
-void UIUtils::openPythonCheatSheetURL() { openURL("https://pythonscad.org/cheatsheet/"); }
+void UIUtils::openPythonCheatSheetURL()
+{
+  openURL("https://pythonscad.org/cheatsheet/");
+}
 
 fs::path UIUtils::returnOfflineCheatSheetPath()
 {

@@ -899,7 +899,10 @@ void Map3D::dump_hier(int i, int hier, float minx, float miny, float minz, float
   if (items[i].ind[6] != -1) dump_hier(items[i].ind[6], hier + 1, minx, midy, midz, midx, maxy, maxz);
   if (items[i].ind[7] != -1) dump_hier(items[i].ind[7], hier + 1, midx, midy, midz, maxx, maxy, maxz);
 }
-void Map3D::dump(void) { dump_hier(0, 0, min[0], min[1], min[2], max[0], max[1], max[2]); }
+void Map3D::dump(void)
+{
+  dump_hier(0, 0, min[0], min[1], min[2], max[0], max[1], max[2]);
+}
 
 GeometryEvaluator::ResultObject GeometryEvaluator::applyToChildren(const AbstractNode& node,
                                                                    OpenSCADOperator op)

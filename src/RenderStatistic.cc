@@ -273,7 +273,10 @@ void LogVisitor::visit(const Polygon2d& poly)
   }
 }
 
-void LogVisitor::visit(const Barcode1d& poly) { LOG("Top level object is a 1D object:"); }
+void LogVisitor::visit(const Barcode1d& poly)
+{
+  LOG("Top level object is a 1D object:");
+}
 
 void LogVisitor::printBoundingBox3(const BoundingBox& bb)
 {
