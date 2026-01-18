@@ -1544,7 +1544,10 @@ elseif(WIN32)
 endif()
 
 file(GLOB_RECURSE TEST_SOURCES
-  "src/*_test.cc"
+  "src/utils/*_test.cc"
+)
+file(GLOB_RECURSE GUI_TEST_SOURCES
+  "src/gui/*_test.cc"
 )
 list(FILTER Sources EXCLUDE REGEX ".*_test[.]cc")
 list(REMOVE_ITEM Sources "src/main_wrapper.cc")
@@ -1757,7 +1760,11 @@ if(ENABLE_TESTS)
     # You can ignore it. Something about incompatibility with POSITION_INDEPENDENT_CODE
     # and how the system Catch2 static library is compiled. It should be fine.
 
-    add_executable(OpenSCADUnitTests ${TEST_SOURCES})
+    if(HEADLESS)
+      add_executable(OpenSCADUnitTests ${TEST_SOURCES})
+    else()
+      add_executable(OpenSCADUnitTests ${TEST_SOURCES} ${GUI_TEST_SOURCES})
+    endif()
     target_link_libraries(OpenSCADUnitTests PRIVATE Catch2::Catch2WithMain OpenSCADLibInternal svg)
     include(CTest)
     include(Catch)
