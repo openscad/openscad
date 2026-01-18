@@ -9,85 +9,104 @@ class LaserCutter:
     def __init__(self, facelist, depth=5):
 
         self.depth=depth
-        conn_plain = [[1,0]]
-        conn_type1 = [ # x is realtive, y is absolute
-            [0.0,-1],
-            [0.25,-1],
-            [0.25,1],
-            [0.5,1],
-            [0.5,-1],
-            [0.75,-1],
-            [0.75, 1],
-            [1,1]]
+        conn_plain = [[0,0],[1,0]]
+
+                # x is realtive, y is absolute
+        conn_type1 = [ [0.0,-1], [0.25,-1], [0.25,1], [0.5,1], [0.5,-1], [0.75,-1], [0.75, 1], [1,1]]
+        conn_type2 = [ [0.0,-1], [0.4,-1], [0.4,1], [0.6,1], [0.6,-1], [1,-1] ]
+        conn_type2_ = [[0.4,-1],[0.6 , -1] ,[0.6,1],[0.4,1]]
+
+        late_cuts = []
 
         #LUT
         lut = {}
         vertices = []
 
         edge_inv = {}
+        ifaces = []
         for f in facelist:
+            late_cuts.append(False) # dummy void
             mat = f.matrix
             pol, = f.children()
             #pt inventur
+            ipaths=[]
+            if len(pol.paths) == 0:
+                pol.paths=[list(range(len(pol.points)))]
             for path in pol.paths:
 
-                newind = []
+                ipath = []
 
                 for ind in path:
                     pt = pol.points[ind]
-                    pt3 = tuple(multmatrix(pt + [0] , mat))
+                    pt3 = multmatrix(pt + [0] , mat)
+                    # check if pt3 is very similar to an exising one
+                    for x, v in enumerate(vertices):
+                        if abs(v[0] - pt3[0]) < 1e-3 and abs(v[1] - pt3[1] ) < 1e-3 and  abs(v[2] - pt3[2]) < 1e-3:
+                            pt3=v
+                            lut[tuple(pt3)]=x
+                            break
+                    pt3t = tuple(pt3)
                     # Create LUT from vertices
-                    if not pt3 in lut:
+                    if not pt3t in lut:
                         ind=len(vertices)
-                        lut[pt3]=ind
+                        lut[pt3t]=ind
                         vertices.append(pt3)
-                    newind.append(lut[pt3])
+                    ipath.append(lut[pt3t])
+
                     # Create Eedge inventory
-                n=len(newind)
+                ipaths.append(ipath)
+                n=len(ipath)
                 for i in range(n):
-                    edge=[newind[i],newind[(i+1)%n]]
+                    edge=[ipath[i],ipath[(i+1)%n]]
                     edge_inv[tuple(edge)]=1
+            ifaces.append(ipaths)
 
 
         # Process faces and edges now
         self.pieces = []
-        for f in facelist:
+        for i, f in enumerate(facelist):
             mat = f.matrix
             pol, = f.children()
-            for path in pol.paths:
-                newind = []
-                for ind in path:
-                    pt = pol.points[ind]
-                    pt3 = tuple(multmatrix(pt + [0] , mat))
-                    newind.append(lut[pt3])
+            if len(pol.paths) == 0:
+                pol.paths=[list(range(len(pol.points)))]
+            for j, path in enumerate(pol.paths):
+                curface=ifaces[i][j]
 
-                n=len(newind)
+                n=len(curface)
 
                 stripes = []
-                for i in range(n):
+                for k in range(n):
                     conn=conn_plain
-                    partedge=[newind[(i+1)%n],newind[i]]
+                    partedge=[curface[(k+1)%n],curface[k]]
                     if tuple(partedge) in edge_inv:
-                        print("has part")
+                        print("has #1 partner ")
                         conn = conn_type1
                     else:
-                        print("noo poart")
+                        pt1=multmatrix(pol.points[path[k]] + [0], mat)
+                        pt2=multmatrix(pol.points[path[(k+1)%n]] + [0], mat) # TODO hier out of index
 
-                    beg = pol.points[path[i]]
-                    end = pol.points[path[(i+1)%n]]
-                    diff = [end[0]-beg[0], end[1]-beg[1]]
-                    dl = norm(diff)
-                    stripe = []
-                    for jig in conn:
-                        pt = [
-                                beg[0] + jig[0]*diff[0] + jig[1]*diff[1]*self.depth/2/dl,
-                                beg[1] + jig[0]*diff[1] - jig[1]*diff[0]*self.depth/2/dl
-                        ]
-                        stripe.append(pt)
+                        # go through all faces and check if they are inside
+                        for l, oface in enumerate(facelist):
+                            if l == i:
+                                continue
+                            # pos auf oface
+                            pt1x=divmatrix(pt1, oface.matrix)
+                            pt2x=divmatrix(pt2, oface.matrix)
+                            if abs(pt1x[2]) < 1e-3 and abs(pt2x[2]) < 1e-3:
+                                print("match #2 ",i, l)
+                                conn = conn_type2
+                                cutout = self.jigging(pt1x, pt2x, conn_type2_)
+                                late_cuts[l] = union(late_cuts[l], polygon(cutout))
+
+
+
+                    beg = pol.points[path[k]]
+                    end = pol.points[path[(k+1)%n]]
+                    stripe = self.jigging(beg,end, conn)
                     stripes.append(stripe)
 
 
-                # Now concatenate all srtrips with extrapolation
+                # Now concatenate all strips with extrapolation
                 newpts=[]
                 for i, stripe in enumerate(stripes):
                     nextstr = stripes[(i+1)%n]
@@ -113,6 +132,25 @@ class LaserCutter:
 
                 piece = polygon(newpts).multmatrix(mat)
                 self.pieces.append(piece)
+        # Apply late cuts now
+        newpieces = []
+        for i, piece in enumerate(self.pieces):
+            pol, = piece.children()
+            newpol = pol - late_cuts[i]
+            newpieces.append(multmatrix(newpol, piece.matrix))
+        self.pieces = newpieces
+
+    def jigging(self, beg, end, conn):
+        diff = [end[0]-beg[0], end[1]-beg[1]]
+        dl = norm(diff)
+        stripe = []
+        for jig in conn:
+            pt = [
+                    beg[0] + jig[0]*diff[0] + jig[1]*diff[1]*self.depth/2/dl,
+                    beg[1] + jig[0]*diff[1] - jig[1]*diff[0]*self.depth/2/dl
+            ]
+            stripe.append(pt)
+        return stripe
 
 
     def preview(self):
@@ -188,7 +226,6 @@ class LaserCutter:
                             bestscore= score
                             bestcomb = [1,i,j]
 
-            print(bestcomb)
 
 
 
