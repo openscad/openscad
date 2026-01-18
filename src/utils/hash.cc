@@ -8,9 +8,18 @@
 #include "geometry/linalg.h"
 
 namespace std {
-std::size_t hash<Vector3f>::operator()(const Vector3f& s) const { return Eigen::hash_value(s); }
-std::size_t hash<Vector3d>::operator()(const Vector3d& s) const { return Eigen::hash_value(s); }
-std::size_t hash<Vector3l>::operator()(const Vector3l& s) const { return Eigen::hash_value(s); }
+std::size_t hash<Vector3f>::operator()(const Vector3f& s) const
+{
+  return Eigen::hash_value(s);
+}
+std::size_t hash<Vector3d>::operator()(const Vector3d& s) const
+{
+  return Eigen::hash_value(s);
+}
+std::size_t hash<Vector3l>::operator()(const Vector3l& s) const
+{
+  return Eigen::hash_value(s);
+}
 }  // namespace std
 
 namespace Eigen {

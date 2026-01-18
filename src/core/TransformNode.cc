@@ -377,9 +377,15 @@ std::shared_ptr<const Geometry> TransformNode::dragPoint(const Vector3d& pt, con
   return result_geom;
 }
 
-std::string TransformNode::name() const { return "transform"; }
+std::string TransformNode::name() const
+{
+  return "transform";
+}
 
-std::string TransformNode::verbose_name() const { return _name; }
+std::string TransformNode::verbose_name() const
+{
+  return _name;
+}
 
 void register_builtin_transform()
 {

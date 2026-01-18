@@ -123,7 +123,10 @@ std::time_t SourceFileCache::process(const std::string& mainFile, const std::str
   return std::max({deps_mtime, cacheEntry.mtime, cacheEntry.includes_mtime});
 }
 
-void SourceFileCache::clear() { this->entries.clear(); }
+void SourceFileCache::clear()
+{
+  this->entries.clear();
+}
 
 SourceFile *SourceFileCache::lookup(const std::string& filename)
 {

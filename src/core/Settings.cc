@@ -14,6 +14,7 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/range/adaptors.hpp>
 
+#include "core/SettingsGuiEnums.h"
 #include "io/export_enums.h"
 #include "io/export.h"
 #include "utils/printutils.h"
@@ -71,7 +72,10 @@ SettingsEntryBase::SettingsEntryBase(std::string category, std::string name)
   entries.push_back(this);
 }
 
-std::string SettingsEntryBool::encode() const { return _value ? "true" : "false"; }
+std::string SettingsEntryBool::encode() const
+{
+  return _value ? "true" : "false";
+}
 
 const bool SettingsEntryBool::decode(const std::string& encoded) const
 {
@@ -89,7 +93,10 @@ const bool SettingsEntryBool::decode(const std::string& encoded) const
   }
 }
 
-std::string SettingsEntryInt::encode() const { return STR(_value); }
+std::string SettingsEntryInt::encode() const
+{
+  return STR(_value);
+}
 
 const int SettingsEntryInt::decode(const std::string& encoded) const
 {
@@ -100,7 +107,10 @@ const int SettingsEntryInt::decode(const std::string& encoded) const
   }
 }
 
-std::string SettingsEntryDouble::encode() const { return STR(_value); }
+std::string SettingsEntryDouble::encode() const
+{
+  return STR(_value);
+}
 
 const double SettingsEntryDouble::decode(const std::string& encoded) const
 {
@@ -483,5 +493,27 @@ SettingsEntryBool SettingsExportSvg::exportSvgStroke(SECTION_EXPORT_SVG, "stroke
 SettingsEntryString SettingsExportSvg::exportSvgStrokeColor(SECTION_EXPORT_SVG, "stroke-color", "black");
 SettingsEntryDouble SettingsExportSvg::exportSvgStrokeWidth(SECTION_EXPORT_SVG, "stroke-width", 0, 0.01,
                                                             999, 0.35);
+
+SettingsEntryEnum<ColorListFilterType> SettingsColorList::colorListFilterType(
+  SECTION_COLOR_LIST, "filter-type",
+  {
+    {ColorListFilterType::fixed, "fixed", _("Fixed")},
+    {ColorListFilterType::wildcard, "wildcard", _("Wildcard")},
+    {ColorListFilterType::regexp, "regexp", _("RegExp")},
+  },
+  ColorListFilterType::fixed);
+SettingsEntryBool SettingsColorList::colorListWebColors(SECTION_COLOR_LIST, "enable-web-colors", true);
+SettingsEntryBool SettingsColorList::colorListXkcdColors(SECTION_COLOR_LIST, "enable-xkcd-colors",
+                                                         false);
+SettingsEntryEnum<ColorListSortType> SettingsColorList::colorListSortType(
+  SECTION_COLOR_LIST, "sort-type",
+  {
+    {ColorListSortType::alphabetical, "alphabetical", _("Alphabetical")},
+    {ColorListSortType::by_color, "by-color", _("By color")},
+    {ColorListSortType::by_color_warmth, "by-color-warmth", _("By color warmth")},
+    {ColorListSortType::by_lightness, "by-lightness", _("By lightness")},
+  },
+  ColorListSortType::alphabetical);
+SettingsEntryBool SettingsColorList::colorListSortAscending(SECTION_COLOR_LIST, "sort-ascending", true);
 
 }  // namespace Settings

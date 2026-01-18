@@ -100,7 +100,9 @@ void CGALRenderer::addGeometry(const std::shared_ptr<const Geometry>& geom)
   }
 }
 
-CGALRenderer::~CGALRenderer() {}
+CGALRenderer::~CGALRenderer()
+{
+}
 
 #ifdef ENABLE_CGAL
 void CGALRenderer::createPolyhedrons()

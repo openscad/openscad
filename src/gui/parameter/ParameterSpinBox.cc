@@ -51,7 +51,10 @@ ParameterSpinBox::ParameterSpinBox(QWidget *parent, NumberParameter *parameter,
   ParameterSpinBox::setValue();
 }
 
-void ParameterSpinBox::valueApplied() { lastApplied = lastSent; }
+void ParameterSpinBox::valueApplied()
+{
+  lastApplied = lastSent;
+}
 
 void ParameterSpinBox::onChanged(double value)
 {

@@ -144,9 +144,15 @@ static const device_id *match_device(const struct hid_device_info *info)
   return nullptr;
 }
 
-HidApiInputDriver::HidApiInputDriver() { name = "HidApiInputDriver"; }
+HidApiInputDriver::HidApiInputDriver()
+{
+  name = "HidApiInputDriver";
+}
 
-void HidApiInputDriver::run() { hidapi_input(hid_dev); }
+void HidApiInputDriver::run()
+{
+  hidapi_input(hid_dev);
+}
 
 void HidApiInputDriver::hidapi_decode_axis(const unsigned char *buf, unsigned int len)
 {
@@ -304,7 +310,10 @@ void HidApiInputDriver::close()
   logstream.close();
 }
 
-const std::string& HidApiInputDriver::get_name() const { return name; }
+const std::string& HidApiInputDriver::get_name() const
+{
+  return name;
+}
 
 std::string HidApiInputDriver::get_info() const
 {

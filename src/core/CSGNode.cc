@@ -168,9 +168,15 @@ void CSGOperation::initBoundingBox()
   }
 }
 
-bool CSGLeaf::isEmptySet() const { return polyset == nullptr || polyset->isEmpty(); }
+bool CSGLeaf::isEmptySet() const
+{
+  return polyset == nullptr || polyset->isEmpty();
+}
 
-std::string CSGLeaf::dump() const { return this->label; }
+std::string CSGLeaf::dump() const
+{
+  return this->label;
+}
 
 void CSGLeaf::applyMatrix(const Transform3d& mat)
 {

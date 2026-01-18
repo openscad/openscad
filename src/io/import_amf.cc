@@ -104,7 +104,9 @@ public:
   virtual xmlTextReaderPtr createXmlReader(const char *filename);
 };
 
-AmfImporter::AmfImporter(const Location& loc) : loc(loc) {}
+AmfImporter::AmfImporter(const Location& loc) : loc(loc)
+{
+}
 
 void AmfImporter::set_x(AmfImporter *importer, const xmlChar *value)
 {
@@ -307,7 +309,9 @@ public:
   xmlTextReaderPtr createXmlReader(const char *filename) override;
 };
 
-AmfImporterZIP::AmfImporterZIP(const Location& loc) : AmfImporter(loc) {}
+AmfImporterZIP::AmfImporterZIP(const Location& loc) : AmfImporter(loc)
+{
+}
 
 int AmfImporterZIP::read_callback(void *context, char *buffer, int len)
 {

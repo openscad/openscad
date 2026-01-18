@@ -31,7 +31,10 @@ GroupWidget::GroupWidget(const QString& title, QWidget *parent) : QWidget(parent
   QObject::connect(&toggleButton, &QToolButton::toggled, this, &GroupWidget::setExpanded);
 }
 
-void GroupWidget::addWidget(QWidget *widget) { contentLayout.addWidget(widget); }
+void GroupWidget::addWidget(QWidget *widget)
+{
+  contentLayout.addWidget(widget);
+}
 
 void GroupWidget::setExpanded(bool expanded)
 {

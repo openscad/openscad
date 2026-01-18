@@ -115,6 +115,7 @@ static std::map<ViewAction, std::string> viewActionNames = {
 
 const static int ACTION_DIMENSION = 15;
 static std::map<ViewAction, std::array<float, ACTION_DIMENSION>> viewActionArrays = {
+  // clang-format off
   {NONE,
    {
      0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f,  // Rotation
@@ -164,5 +165,6 @@ static std::map<ViewAction, std::array<float, ACTION_DIMENSION>> viewActionArray
      0.0f, 0.0f,                          // Zoom
      1                                    // Special Function Drag Point
    }},
+  // clang-format on
 };
 };  // namespace MouseConfig

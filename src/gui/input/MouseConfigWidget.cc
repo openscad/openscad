@@ -39,7 +39,10 @@
 #include "gui/IgnoreWheelWhenNotFocused.h"
 #include "gui/Preferences.h"
 
-MouseConfigWidget::MouseConfigWidget(QWidget *parent) : QWidget(parent) { setupUi(this); }
+MouseConfigWidget::MouseConfigWidget(QWidget *parent) : QWidget(parent)
+{
+  setupUi(this);
+}
 
 void MouseConfigWidget::updateMouseState(int nr, bool pressed) const
 {
@@ -234,7 +237,10 @@ void MouseConfigWidget::applyComboBox(QComboBox *comboBox, int val, Settings::Se
   writeSettings();
 }
 
-void MouseConfigWidget::writeSettings() { Settings::Settings::visit(SettingsWriter()); }
+void MouseConfigWidget::writeSettings()
+{
+  Settings::Settings::visit(SettingsWriter());
+}
 
 void MouseConfigWidget::initActionComboBox(QComboBox *comboBox, Settings::SettingsEntryInt& entry)
 {

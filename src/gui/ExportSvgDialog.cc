@@ -17,17 +17,35 @@ ExportSvgDialog::ExportSvgDialog()
   connect(pushButtonCancel, &QPushButton::clicked, this, &ExportSvgDialog::reject);
 }
 
-int ExportSvgDialog::exec() { return QDialog::exec(); }
+int ExportSvgDialog::exec()
+{
+  return QDialog::exec();
+}
 
-QColor ExportSvgDialog::getFillColor() const { return fillColor; }
+QColor ExportSvgDialog::getFillColor() const
+{
+  return fillColor;
+}
 
-bool ExportSvgDialog::isFillEnabled() const { return checkBoxEnableFill->isChecked(); }
+bool ExportSvgDialog::isFillEnabled() const
+{
+  return checkBoxEnableFill->isChecked();
+}
 
-QColor ExportSvgDialog::getStrokeColor() const { return strokeColor; }
+QColor ExportSvgDialog::getStrokeColor() const
+{
+  return strokeColor;
+}
 
-bool ExportSvgDialog::isStrokeEnabled() const { return checkBoxEnableStroke->isChecked(); }
+bool ExportSvgDialog::isStrokeEnabled() const
+{
+  return checkBoxEnableStroke->isChecked();
+}
 
-double ExportSvgDialog::getStrokeWidth() const { return doubleSpinBoxStrokeWidth->value(); }
+double ExportSvgDialog::getStrokeWidth() const
+{
+  return doubleSpinBoxStrokeWidth->value();
+}
 
 ExportSvgOptions ExportSvgDialog::getOptions() const
 {
@@ -48,9 +66,15 @@ void ExportSvgDialog::on_toolButtonFillColor_clicked()
   }
 }
 
-void ExportSvgDialog::on_toolButtonFillColorReset_clicked() { updateFillColor(QColor(Qt::white)); }
+void ExportSvgDialog::on_toolButtonFillColorReset_clicked()
+{
+  updateFillColor(QColor(Qt::white));
+}
 
-void ExportSvgDialog::on_checkBoxEnableFill_toggled(bool checked) { updateFillControlsEnabled(); }
+void ExportSvgDialog::on_checkBoxEnableFill_toggled(bool checked)
+{
+  updateFillControlsEnabled();
+}
 
 void ExportSvgDialog::on_toolButtonStrokeColor_clicked()
 {
@@ -60,9 +84,15 @@ void ExportSvgDialog::on_toolButtonStrokeColor_clicked()
   }
 }
 
-void ExportSvgDialog::on_toolButtonStrokeColorReset_clicked() { updateStrokeColor(QColor(Qt::black)); }
+void ExportSvgDialog::on_toolButtonStrokeColorReset_clicked()
+{
+  updateStrokeColor(QColor(Qt::black));
+}
 
-void ExportSvgDialog::on_checkBoxEnableStroke_toggled(bool checked) { updateStrokeControlsEnabled(); }
+void ExportSvgDialog::on_checkBoxEnableStroke_toggled(bool checked)
+{
+  updateStrokeControlsEnabled();
+}
 
 void ExportSvgDialog::on_toolButtonStrokeWidthReset_clicked()
 {

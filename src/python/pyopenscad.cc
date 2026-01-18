@@ -52,7 +52,10 @@ bool python_trusted;
 fs::path python_scriptpath;
 // https://docs.python.org/3.10/extending/newtypes.html
 
-void PyObjectDeleter(PyObject *pObject) { Py_XDECREF(pObject); };
+void PyObjectDeleter(PyObject *pObject)
+{
+  Py_XDECREF(pObject);
+};
 
 PyObjectUniquePtr pythonInitDict(nullptr, PyObjectDeleter);
 PyObjectUniquePtr pythonMainModule(nullptr, PyObjectDeleter);
@@ -967,23 +970,6 @@ void initPython(const std::string& binDir, const std::string& scriptpath, double
 
 void finishPython(void)
 {
-#ifdef HAVE_PYTHON_YIELD
-  set_object_callback(NULL);
-  if (python_result_node == nullptr) {
-    if (python_orphan_objs.size() == 1) {
-      python_result_node = PyOpenSCADObjectToNode(python_orphan_objs[0]);
-    } else if (python_orphan_objs.size() > 1) {
-      DECLARE_INSTANCE
-      auto node = std::make_shared<CsgOpNode>(instance, OpenSCADOperator::UNION);
-      int n = python_orphan_objs.size();
-      for (int i = 0; i < n; i++) {
-        std::shared_ptr<AbstractNode> child = PyOpenSCADObjectToNode(python_orphan_objs[i]);
-        node->children.push_back(child);
-      }
-      python_result_node = node;
-    }
-  }
-#endif
   show_final();
 }
 
@@ -1211,7 +1197,10 @@ static PyModuleDef OpenSCADModule = {PyModuleDef_HEAD_INIT,
                                      NULL,
                                      NULL};
 
-extern "C" PyObject *PyInit_openscad(void) { return PyModule_Create(&OpenSCADModule); }
+extern "C" PyObject *PyInit_openscad(void)
+{
+  return PyModule_Create(&OpenSCADModule);
+}
 
 PyMODINIT_FUNC PyInit_PyOpenSCAD(void)
 {

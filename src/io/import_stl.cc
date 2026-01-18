@@ -55,7 +55,10 @@ static void uint32_byte_swap(unsigned char *p)
 #endif
 }
 
-static void uint32_byte_swap(uint32_t& x) { uint32_byte_swap(reinterpret_cast<unsigned char *>(&x)); }
+static void uint32_byte_swap(uint32_t& x)
+{
+  uint32_byte_swap(reinterpret_cast<unsigned char *>(&x));
+}
 #endif  // if BOOST_ENDIAN_BIG_BYTE
 
 static void read_stl_facet(std::ifstream& f, stl_facet& facet)

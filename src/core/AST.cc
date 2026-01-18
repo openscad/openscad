@@ -15,9 +15,15 @@ bool operator==(Location const& lhs, Location const& rhs)
          lhs.filePath() == rhs.filePath();
 }
 
-bool operator!=(Location const& lhs, Location const& rhs) { return !(lhs == rhs); }
+bool operator!=(Location const& lhs, Location const& rhs)
+{
+  return !(lhs == rhs);
+}
 
-bool Location::isNone() const { return ((*this) == Location::NONE); }
+bool Location::isNone() const
+{
+  return ((*this) == Location::NONE);
+}
 
 std::string Location::toRelativeString(const std::string& docPath) const
 {

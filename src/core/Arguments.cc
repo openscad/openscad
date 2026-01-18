@@ -53,7 +53,10 @@ Arguments Arguments::clone() const
   return output;
 }
 
-const std::string& Arguments::documentRoot() const { return evaluation_session->documentRoot(); }
+const std::string& Arguments::documentRoot() const
+{
+  return evaluation_session->documentRoot();
+}
 
 std::ostream& operator<<(std::ostream& stream, const Argument& argument)
 {
