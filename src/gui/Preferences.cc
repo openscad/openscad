@@ -186,6 +186,7 @@ void Preferences::init()
   this->defaultmap["editor/enableAutocomplete"] = true;
   this->defaultmap["editor/characterThreshold"] = 1;
   this->defaultmap["editor/stepSize"] = 1;
+  this->defaultmap["editor/autoPreviewDelayMs"] = "";
 
   // Toolbar
   auto *group = new QActionGroup(this);
@@ -232,6 +233,7 @@ void Preferences::init()
   this->consoleMaxLinesEdit->setValidator(uintValidator);
   this->lineEditCharacterThreshold->setValidator(validator1);
   this->lineEditStepSize->setValidator(validator1);
+  this->autoPreviewDelayEdit->setValidator(uintValidator);
   this->traceDepthEdit->setValidator(uintValidator);
 
   auto menu = new QMenu();
@@ -819,6 +821,25 @@ void Preferences::on_lineEditStepSize_textChanged(const QString& text)
   emit stepSizeChanged(text.toInt());
 }
 
+void Preferences::on_autoPreviewDelayEdit_textChanged(const QString& text)
+{
+  QSettingsCached settings;
+  const QString key("editor/autoPreviewDelayMs");
+  const auto trimmed = text.trimmed();
+  if (trimmed.isEmpty()) {
+    settings.remove(key);
+    emit autoPreviewDelayChanged();
+    return;
+  }
+
+  bool ok = false;
+  const int val = trimmed.toInt(&ok);
+  if (ok && val >= 0) {
+    settings.setValue(key, val);
+    emit autoPreviewDelayChanged();
+  }
+}
+
 void Preferences::on_comboBoxModifierNumberScrollWheel_activated(int val)
 {
   applyComboBox(comboBoxModifierNumberScrollWheel, val, Settings::Settings::modifierNumberScrollWheel);
@@ -1380,6 +1401,8 @@ void Preferences::updateGUI()
   BlockSignals<QLineEdit *>(this->lineEditCharacterThreshold)
     ->setText(getValue("editor/characterThreshold").toString());
   BlockSignals<QLineEdit *>(this->lineEditStepSize)->setText(getValue("editor/stepSize").toString());
+  BlockSignals<QLineEdit *>(this->autoPreviewDelayEdit)
+    ->setText(getValue("editor/autoPreviewDelayMs").toString());
 
   this->secLabelOnRenderCompleteSound->setEnabled(getValue("advanced/enableSoundNotification").toBool());
   this->undockCheckBox->setEnabled(this->reorderCheckBox->isChecked());
