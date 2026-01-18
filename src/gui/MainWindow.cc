@@ -669,7 +669,9 @@ MainWindow::MainWindow(const QStringList& filenames) : rubberBandManager(this)
     setGeometry(screen()->availableGeometry());
   }
 #endif
-  restoreState(windowState);
+  // Use QT_VERSION_MAJOR as the version number to invalidate incompatible states
+  // from older Qt versions (e.g. Qt5 -> Qt6 migration), which can cause a crash.
+  restoreState(windowState, QT_VERSION_MAJOR);
 
   if (windowState.size() == 0) {
     /*
@@ -3705,7 +3707,7 @@ void MainWindow::closeEvent(QCloseEvent *event)
 
     QSettingsCached settings;
     settings.setValue("window/geometry", saveGeometry());
-    settings.setValue("window/state", saveState());
+    settings.setValue("window/state", saveState(QT_VERSION_MAJOR));
     if (this->tempFile) {
       delete this->tempFile;
       this->tempFile = nullptr;
