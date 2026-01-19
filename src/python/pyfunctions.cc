@@ -929,37 +929,25 @@ PyObject *python_polygon(PyObject *self, PyObject *args, PyObject *kwargs)
   auto node = std::make_shared<PolygonNode>(instance, CreateCurveDiscretizer(kwargs));
 
   char *kwlist[] = {"points", "paths", "convexity", NULL};
-  PyObject *points = NULL;
+  PyObject *pypoints = NULL;
   PyObject *paths = NULL;
   int convexity = 2;
 
   PyObject *element;
   Vector3d point;
 
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O!|O!i", kwlist, &PyList_Type, &points, &PyList_Type,
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O!|O!i", kwlist, &PyList_Type, &pypoints, &PyList_Type,
                                    &paths, &convexity)) {
     PyErr_SetString(PyExc_TypeError, "Error during parsing polygon(points,paths)");
     return NULL;
   }
 
-  if (points != NULL && PyList_Check(points)) {
-    if (PyList_Size(points) == 0) {
-      PyErr_SetString(PyExc_TypeError, "There must at least be one point in the polygon");
-      return NULL;
-    }
-    for (i = 0; i < PyList_Size(points); i++) {
-      element = PyList_GetItem(points, i);
-      point[2] = 0;  // default no radius
-      if (python_vectorval(element, 2, 3, &point[0], &point[1], &point[2])) {
-        PyErr_SetString(PyExc_TypeError, "Coordinate must contain 2 or 3 numbers");
-        return NULL;
-      }
-      node->points.push_back(point);
-    }
-  } else {
-    PyErr_SetString(PyExc_TypeError, "Polygon points must be a list of coordinates");
+  std::vector<Vector3d> points = python_to2dvarpointlist(pypoints);
+  if (points.size() == 0) {
     return NULL;
   }
+
+  node->points = points;
 
   if (paths != NULL && PyList_Check(paths)) {
     if (PyList_Size(paths) == 0) {
@@ -1442,7 +1430,10 @@ PyObject *python_translate_sub(PyObject *obj, Vector3d translatevec, int dragfla
   return pyresult;
 }
 
-PyObject *python_translate_core(PyObject *obj, PyObject *v) { return python_nb_sub_vec3(obj, v, 0); }
+PyObject *python_translate_core(PyObject *obj, PyObject *v)
+{
+  return python_nb_sub_vec3(obj, v, 0);
+}
 
 PyObject *python_translate(PyObject *self, PyObject *args, PyObject *kwargs)
 {
@@ -2360,9 +2351,33 @@ PyObject *python__getitem__(PyObject *obj, PyObject *key)
   return result;
 }
 
-int python__setitem__(PyObject *dict, PyObject *key, PyObject *v)
+PyObject *python__setitem_hier(std::shared_ptr<AbstractNode> node, const std::string& keystr,
+                               PyObject *v, int hier)
 {
-  PyOpenSCADObject *self = (PyOpenSCADObject *)dict;
+  if (keystr == "points") {
+    std::shared_ptr<PolygonNode> polygon = std::dynamic_pointer_cast<PolygonNode>(node);
+    if (polygon != nullptr) {
+      polygon->points = python_to2dvarpointlist(v);
+    }
+  }
+
+  return Py_None;
+}
+
+int python__setitem__(PyObject *obj, PyObject *key, PyObject *v)
+{
+  PyObject *keyname = PyUnicode_AsEncodedString(key, "utf-8", "~");
+  if (keyname == nullptr) return 0;
+  std::string keystr = PyBytes_AS_STRING(keyname);
+
+  PyOpenSCADObject *self = (PyOpenSCADObject *)obj;
+
+  PyObject *dummy_dict;
+  std::shared_ptr<AbstractNode> node = PyOpenSCADObjectToNode(obj, &dummy_dict);
+  if (node != nullptr) {
+    python__setitem_hier(node, keystr, v, 2);
+  }
+
   if (self->dict == NULL) {
     return 0;
   }
@@ -5570,11 +5585,20 @@ PyObject *python_oo_only(PyObject *self, PyObject *args, PyObject *kwargs)
   return python_debug_modifier_func_oo(self, args, kwargs, 2);
 }
 
-PyObject *python_nb_invert(PyObject *arg) { return python_debug_modifier(arg, 2); }
+PyObject *python_nb_invert(PyObject *arg)
+{
+  return python_debug_modifier(arg, 2);
+}
 
-PyObject *python_nb_neg(PyObject *arg) { return python_debug_modifier(arg, 1); }
+PyObject *python_nb_neg(PyObject *arg)
+{
+  return python_debug_modifier(arg, 1);
+}
 
-PyObject *python_nb_pos(PyObject *arg) { return python_debug_modifier(arg, 0); }
+PyObject *python_nb_pos(PyObject *arg)
+{
+  return python_debug_modifier(arg, 0);
+}
 
 #ifndef OPENSCAD_NOGUI
 extern void add_menuitem_trampoline(const char *menuname, const char *itemname, const char *callback);

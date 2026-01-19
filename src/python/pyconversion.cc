@@ -171,6 +171,33 @@ PyObject *python_fromvector(const Vector3d vec)
   return res;
 }
 
+std::vector<Vector3d> python_to2dvarpointlist(PyObject *pypoints)
+{
+  std::vector<Vector3d> points;
+  Vector3d point;
+  if (pypoints != NULL && PyList_Check(pypoints)) {
+    if (PyList_Size(pypoints) == 0) {
+      PyErr_SetString(PyExc_TypeError, "There must at least be one point in the polygon");
+      return points;
+    }
+    for (int i = 0; i < PyList_Size(pypoints); i++) {
+      PyObject *element = PyList_GetItem(pypoints, i);
+      point[2] = 0;  // default no radius
+      if (python_vectorval(element, 2, 3, &point[0], &point[1], &point[2])) {
+        PyErr_SetString(PyExc_TypeError, "Coordinate must contain 2 or 3 numbers");
+        points.clear();
+        return points;
+      }
+      points.push_back(point);
+    }
+  } else {
+    PyErr_SetString(PyExc_TypeError, "Polygon points must be a list of coordinates");
+    points.clear();
+    return points;
+  }
+  return points;
+}
+
 PyObject *python_from2dvarpointlist(const std::vector<Vector3d>& ptlist)
 {
   PyObject *result;

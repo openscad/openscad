@@ -2,6 +2,7 @@
 PyObject *python_frommatrix(const Matrix4d& mat);
 int python_tomatrix(PyObject *pyt, Matrix4d& mat);
 int python_tovector(PyObject *pyt, Vector3d& vec);
+std::vector<Vector3d> python_to2dvarpointlist(PyObject *pypoints);
 PyObject *python_fromvector(const Vector3d vec);
 PyObject *python_from2dvarpointlist(const std::vector<Vector3d>& ptlist);
 PyObject *python_from3dpointlist(const std::vector<Vector3d>& ptlist);
