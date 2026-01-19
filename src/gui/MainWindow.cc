@@ -413,8 +413,6 @@ MainWindow::MainWindow(const QStringList& filenames) : rubberBandManager(this)
   waitAfterReloadTimer->setSingleShot(true);
   waitAfterReloadTimer->setInterval(autoReloadPollingPeriodMS);
   connect(waitAfterReloadTimer, &QTimer::timeout, this, &MainWindow::waitAfterReload);
-  connect(GlobalPreferences::inst(), &Preferences::ExperimentalChanged, this,
-          &MainWindow::changeParameterWidget);
 
   progressThrottle->start();
 
@@ -2212,11 +2210,6 @@ void MainWindow::parseTopLevelDocument()
   activeEditor->resetHighlighting();
   this->rootFile = parseDocument(activeEditor);
   this->parsedFile = this->rootFile;
-}
-
-void MainWindow::changeParameterWidget()
-{
-  parameterDock->setVisible(true);
 }
 
 void MainWindow::checkAutoReload()
