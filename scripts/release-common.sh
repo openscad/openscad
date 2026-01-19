@@ -61,7 +61,7 @@ if [ ! -f $OPENSCADDIR/src/openscad.cc ]; then
   exit 1
 fi
 
-CMAKE_CONFIG="-DCMAKE_BUILD_TYPE=Release -DENABLE_TESTS=OFF"
+CMAKE_CONFIG="-DCMAKE_BUILD_TYPE=Release -DENABLE_TESTS=OFF -DUSE_QT6=ON"
 
 if [ -n "${USE_SCCACHE}" ] && command -v sccache >/dev/null 2>&1; then
   CMAKE_CONFIG="$CMAKE_CONFIG -DCMAKE_C_COMPILER_LAUNCHER=sccache -DCMAKE_CXX_COMPILER_LAUNCHER=sccache"
