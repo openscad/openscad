@@ -191,6 +191,7 @@ private:
   void keyPressEvent(QKeyEvent *e) override;
   void showEvent(QShowEvent *e) override;
   void closeEvent(QCloseEvent *e) override;
+  bool event(QEvent *e) override;
   void removeDefaultSettings();
   void setupFeaturesPage();
   void setup3DPrintPage();
