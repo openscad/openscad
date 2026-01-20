@@ -1,8 +1,22 @@
 !define ARP "Software\Microsoft\Windows\CurrentVersion\Uninstall\@CPACK_PACKAGE_INSTALL_REGISTRY_KEY@"
 
+; Calculate and store installed size
 ${GetSize} "$INSTDIR" "/S=0K" $0 $1 $2
 IntFmt $0 "0x%08X" $0
 WriteRegDWORD HKLM "${ARP}" "EstimatedSize" "$0"
 
-${RegisterExtension} "$INSTDIR\openscad.exe" ".scad" "OpenSCAD_File"
+; Register file association for .scad files (using pythonscad.exe, not openscad.exe)
+${RegisterExtension} "$INSTDIR\pythonscad.exe" ".scad" "PythonSCAD_File"
+${RegisterExtension} "$INSTDIR\pythonscad.exe" ".py" "PythonSCAD_Python_File"
+
+; Create start menu shortcuts
+; SetShellVarContext all puts shortcuts in the All Users start menu
+SetShellVarContext all
+CreateDirectory "$SMPROGRAMS\PythonSCAD"
+CreateShortCut "$SMPROGRAMS\PythonSCAD\PythonSCAD.lnk" "$INSTDIR\pythonscad.exe" "" "$INSTDIR\pythonscad.exe" 0
+CreateShortCut "$SMPROGRAMS\PythonSCAD\Uninstall PythonSCAD.lnk" "$INSTDIR\Uninstall.exe" "" "$INSTDIR\Uninstall.exe" 0
+
+; Also create a shortcut directly in the start menu root for better discoverability
+CreateShortCut "$SMPROGRAMS\PythonSCAD.lnk" "$INSTDIR\pythonscad.exe" "" "$INSTDIR\pythonscad.exe" 0
+
 ${RefreshShellIcons}
