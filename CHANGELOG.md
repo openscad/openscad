@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.9.0](https://github.com/pythonscad/pythonscad/compare/v0.8.31...v0.9.0) (2026-01-20)
+
+
+### Features
+
+* **ci:** add native Windows packaging workflow ([#371](https://github.com/pythonscad/pythonscad/issues/371)) ([88e06fa](https://github.com/pythonscad/pythonscad/commit/88e06fad708b4cdcc381ac2d19aa581383875038))
+* **python:** extend add_parameter() with customizer options ([#368](https://github.com/pythonscad/pythonscad/issues/368)) ([2781253](https://github.com/pythonscad/pythonscad/commit/27812538fceca260f5352ed04521a8f6c5c4993c))
+
+
+### Bug Fixes
+
+* udpated tests ([0efb4a3](https://github.com/pythonscad/pythonscad/commit/0efb4a35102d0cee37a37b6b94e656a710bde685))
+
 ## [0.8.31](https://github.com/pythonscad/pythonscad/compare/v0.8.30...v0.8.31) (2026-01-16)
 
 

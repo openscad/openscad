@@ -29,7 +29,7 @@ jobs:
               'Build Debian packages',
               'Build and upload macOS build',
               'Build RPM packages',
-              'Build and upload Windows build (MXE Cross-Compile)',
+              'Build Windows Native Package',
             ];
 
             const MAX_WAIT_MS = 90 * 60 * 1000; // 90 minutes
