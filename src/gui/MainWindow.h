@@ -134,6 +134,7 @@ private:
   std::vector<std::tuple<Dock *, QString, QString>> docks;
 
   volatile bool isClosing = false;
+  bool isBeingDestroyed = false;  // Set in destructor to guard eventFilter
   void consoleOutputRaw(const QString& msg);
   void clearAllSelectionIndicators();
   void setSelectionIndicatorStatus(EditorInterface *editor, int nodeIndex,

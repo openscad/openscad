@@ -25,6 +25,7 @@
  */
 #include "gui/parameter/ParameterWidget.h"
 
+#include <QCoreApplication>
 #include <QLayoutItem>
 #include <QString>
 #include <stdexcept>
@@ -135,6 +136,32 @@ void ParameterWidget::setParameters(const SourceFile *sourceFile, const std::str
 {
   this->source = source;
 
+  // Store old parameters temporarily - they must stay alive until widgets using them
+  // are fully deleted. Using deleteLater() defers widget deletion until the event
+  // loop, but if the parameters are destroyed first, the widgets will access freed
+  // memory when Qt delivers pending events (like mouse release on a slider).
+  ParameterObjects oldParameters = std::move(this->parameters);
+
+  // Schedule widgets for deletion. Use deleteLater() because Qt may have captured
+  // pointers to widgets during mouse press events. Direct deletion would leave
+  // Qt with dangling pointers when it tries to deliver the mouse release event.
+  widgets.clear();
+  QLayout *layout = this->scrollAreaWidgetContents->layout();
+  while (layout->count() > 0) {
+    QLayoutItem *child = layout->takeAt(0);
+    if (child->widget()) {
+      child->widget()->deleteLater();
+    }
+    delete child;
+  }
+
+  // Process pending events to ensure widgets are deleted while old parameters
+  // are still valid. This handles the case where a slider is being dragged
+  // when F5 is pressed - the release event will be processed here.
+  QCoreApplication::processEvents();
+
+  // Now it's safe to load new parameters - old widgets have been deleted
+  // and oldParameters will be destroyed when this function returns.
   this->parameters = ParameterObjects::fromSourceFile(sourceFile);
   rebuildWidgets();
   loadSet(comboBoxPreset->currentIndex());

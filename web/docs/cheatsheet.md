@@ -168,6 +168,39 @@ time, phi                # like in openSCAD , phi = 2*PI*time</code></pre>
   </div>
 
   <div class="section">
+    <h2>🎛️ Customizer</h2>
+    <div class="grid">
+    <div class="func"><code>add_parameter(name, default)</code></div>
+    <div>Add a customizer parameter</div>
+    <div><code>width = add_parameter("width", 10)</code></div>
+
+    <div class="func"><code>add_parameter(..., range=)</code></div>
+    <div>Slider with min/max (use range() or tuple)</div>
+    <div><code>add_parameter("x", 50, range=range(0, 101))</code></div>
+
+    <div class="func"><code>add_parameter(..., options=)</code></div>
+    <div>Dropdown menu</div>
+    <div><code>add_parameter("c", "red", options=["red", "green"])</code></div>
+
+    <div class="func"><code>add_parameter(..., group=)</code></div>
+    <div>Organize into tabs</div>
+    <div><code>add_parameter("x", 10, group="Size")</code></div>
+
+    <div class="func"><code>add_parameter(..., description=)</code></div>
+    <div>Add help text</div>
+    <div><code>add_parameter("x", 10, description="Width in mm")</code></div>
+
+    <div class="func"><code>add_parameter(..., step=)</code></div>
+    <div>Spinbox with custom step</div>
+    <div><code>add_parameter("angle", 45.0, step=0.5)</code></div>
+
+    <div class="func"><code>add_parameter(..., max_length=)</code></div>
+    <div>String max length</div>
+    <div><code>add_parameter("name", "hi", max_length=20)</code></div>
+    </div>
+  </div>
+
+  <div class="section">
     <h2>📚 Additional Resources</h2>
     <ul>
       <li><a href="https://pythonscad.org/">PythonSCAD Official Website</a></li>

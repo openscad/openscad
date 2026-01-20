@@ -84,7 +84,9 @@ extern bool parse(SourceFile *& file, const std::string& text, const std::string
 #include "handle_dep.h"
 #include <fstream>
 #include <ostream>
+#include <cmath>
 #include <boost/functional/hash.hpp>
+#include "core/customizer/Annotation.h"
 #include <ScopeContext.h>
 #include "PlatformUtils.h"
 #include "Feature.h"
@@ -5359,42 +5361,226 @@ PyObject *python_str(PyObject *self)
 
 PyObject *python_add_parameter(PyObject *self, PyObject *args, PyObject *kwargs, ImportType type)
 {
-  char *kwlist[] = {"name", "default", NULL};
+  char *kwlist[] = {"name", "default",    "description", "group", "range",
+                    "step", "max_length", "options",     NULL};
   char *name = NULL;
   PyObject *value = NULL;
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "sO", kwlist, &name, &value)) {
-    PyErr_SetString(PyExc_TypeError, "Error during parsing add_parameter(name,defval)");
+  const char *description = NULL;
+  const char *group = NULL;
+  PyObject *range_obj = NULL;
+  double step_val = -1.0;
+  int max_length = -1;
+  PyObject *options = NULL;
+
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "sO|zzOdiO", kwlist, &name, &value, &description,
+                                   &group, &range_obj, &step_val, &max_length, &options)) {
+    PyErr_SetString(PyExc_TypeError,
+                    "Error during parsing add_parameter(name, default, [description], [group], "
+                    "[range], [step], [max_length], [options])");
     return NULL;
   }
+
+  // Type-specific parameter validation
+  bool is_string = PyUnicode_Check(value);
+  bool is_number = PyFloat_Check(value) || PyLong_Check(value);
+  bool is_bool = (value == Py_True || value == Py_False);
+  bool is_list = PyList_Check(value);
+
+  if (max_length > 0 && !is_string) {
+    PyErr_SetString(PyExc_TypeError, "add_parameter(): 'max_length' only applies to string parameters");
+    return NULL;
+  }
+
+  if ((range_obj != NULL || step_val > 0) && !is_number && !is_list) {
+    PyErr_SetString(PyExc_TypeError,
+                    "add_parameter(): 'range' and 'step' only apply to numeric or vector parameters");
+    return NULL;
+  }
+
+  if (is_list) {
+    Py_ssize_t size = PyList_Size(value);
+    if (size < 1 || size > 4) {
+      PyErr_SetString(PyExc_ValueError, "add_parameter(): vector parameters must have 1-4 elements");
+      return NULL;
+    }
+  }
+
+  // Extract range constraints from range() object or tuple
+  double min_val = NAN, max_val = NAN, range_step = NAN;
+  if (range_obj != NULL) {
+    if (PyObject_HasAttrString(range_obj, "start") && PyObject_HasAttrString(range_obj, "stop") &&
+        PyObject_HasAttrString(range_obj, "step")) {
+      // Python range() object - extract start, stop, step
+      PyObject *start = PyObject_GetAttrString(range_obj, "start");
+      PyObject *stop = PyObject_GetAttrString(range_obj, "stop");
+      PyObject *step = PyObject_GetAttrString(range_obj, "step");
+      if (start && stop && step) {
+        min_val = PyLong_AsDouble(start);
+        max_val = PyLong_AsDouble(stop) - 1;  // Convert exclusive to inclusive
+        range_step = PyLong_AsDouble(step);
+      }
+      Py_XDECREF(start);
+      Py_XDECREF(stop);
+      Py_XDECREF(step);
+    } else if (PyTuple_Check(range_obj)) {
+      // Tuple: (min, max) or (min, max, step)
+      Py_ssize_t size = PyTuple_Size(range_obj);
+      if (size >= 2) {
+        PyObject *item0 = PyTuple_GetItem(range_obj, 0);
+        PyObject *item1 = PyTuple_GetItem(range_obj, 1);
+        if (item0 != Py_None) {
+          if (PyFloat_Check(item0)) min_val = PyFloat_AsDouble(item0);
+          else if (PyLong_Check(item0)) min_val = PyLong_AsDouble(item0);
+        }
+        if (item1 != Py_None) {
+          if (PyFloat_Check(item1)) max_val = PyFloat_AsDouble(item1);
+          else if (PyLong_Check(item1)) max_val = PyLong_AsDouble(item1);
+        }
+      }
+      if (size >= 3) {
+        PyObject *item2 = PyTuple_GetItem(range_obj, 2);
+        if (item2 != Py_None) {
+          if (PyFloat_Check(item2)) range_step = PyFloat_AsDouble(item2);
+          else if (PyLong_Check(item2)) range_step = PyLong_AsDouble(item2);
+        }
+      }
+    }
+  }
+  // Use 'step' kwarg if range didn't provide one
+  if (std::isnan(range_step) && step_val > 0) {
+    range_step = step_val;
+  }
+
+  // Create default value expression
+  std::shared_ptr<Expression> default_expr;
   bool found = false;
-  std::shared_ptr<Literal> lit;
-  if (value == Py_True) {
-    lit = std::make_shared<Literal>(true, Location::NONE);
-    found = true;
-  } else if (value == Py_False) {
-    lit = std::make_shared<Literal>(false, Location::NONE);
+
+  if (is_bool) {
+    default_expr = std::make_shared<Literal>(value == Py_True, Location::NONE);
     found = true;
   } else if (PyFloat_Check(value)) {
-    lit = std::make_shared<Literal>(PyFloat_AsDouble(value), Location::NONE);
+    default_expr = std::make_shared<Literal>(PyFloat_AsDouble(value), Location::NONE);
     found = true;
   } else if (PyLong_Check(value)) {
-    lit = std::make_shared<Literal>(PyLong_AsLong(value) * 1.0, Location::NONE);
+    default_expr = std::make_shared<Literal>(PyLong_AsLong(value) * 1.0, Location::NONE);
     found = true;
-  } else if (PyUnicode_Check(value)) {
+  } else if (is_string) {
     PyObject *value1 = PyUnicode_AsEncodedString(value, "utf-8", "~");
     const char *value_str = PyBytes_AS_STRING(value1);
-    lit = std::make_shared<Literal>(value_str, Location::NONE);
+    std::string value_string(value_str);
+    Py_DECREF(value1);
+    default_expr = std::make_shared<Literal>(value_string, Location::NONE);
+    found = true;
+  } else if (is_list) {
+    // Vector parameter
+    auto vec = std::make_shared<Vector>(Location::NONE);
+    Py_ssize_t size = PyList_Size(value);
+    for (Py_ssize_t i = 0; i < size; i++) {
+      PyObject *item = PyList_GetItem(value, i);
+      double item_val = 0.0;
+      if (PyFloat_Check(item)) {
+        item_val = PyFloat_AsDouble(item);
+      } else if (PyLong_Check(item)) {
+        item_val = PyLong_AsDouble(item);
+      } else {
+        PyErr_SetString(PyExc_TypeError, "add_parameter(): vector elements must be numeric");
+        return NULL;
+      }
+      vec->emplace_back(new Literal(item_val, Location::NONE));
+    }
+    default_expr = vec;
     found = true;
   }
 
   if (found) {
-    AnnotationList annotationList;
-    //    annotationList.push_back(Annotation("Parameter",std::make_shared<Literal>("Parameter")));
-    //    annotationList.push_back(Annotation("Description",std::make_shared<Literal>("Description")));
-    //    annotationList.push_back(Annotation("Group",std::make_shared<Literal>("Group")));
-    auto assignment = std::make_shared<Assignment>(name, lit);
-    //    assignment->addAnnotations(&annotationList);
+    auto *annotationList = new AnnotationList();
+
+    // Create Parameter annotation with constraints
+    std::shared_ptr<Expression> param_expr;
+
+    if (options != NULL) {
+      // Enum/dropdown parameter
+      auto vec = std::make_shared<Vector>(Location::NONE);
+      if (PyList_Check(options)) {
+        // Simple list: ["a", "b", "c"]
+        Py_ssize_t size = PyList_Size(options);
+        for (Py_ssize_t i = 0; i < size; i++) {
+          PyObject *item = PyList_GetItem(options, i);
+          if (PyUnicode_Check(item)) {
+            PyObject *encoded = PyUnicode_AsEncodedString(item, "utf-8", "~");
+            std::string item_string(PyBytes_AS_STRING(encoded));
+            Py_DECREF(encoded);
+            vec->emplace_back(new Literal(item_string, Location::NONE));
+          } else if (PyFloat_Check(item)) {
+            vec->emplace_back(new Literal(PyFloat_AsDouble(item), Location::NONE));
+          } else if (PyLong_Check(item)) {
+            vec->emplace_back(new Literal(PyLong_AsDouble(item), Location::NONE));
+          }
+        }
+      } else if (PyDict_Check(options)) {
+        // Dict with labels: {10: "Low", 20: "High"}
+        PyObject *key, *label;
+        Py_ssize_t pos = 0;
+        while (PyDict_Next(options, &pos, &key, &label)) {
+          auto item_vec = new Vector(Location::NONE);
+          // Value
+          if (PyFloat_Check(key)) {
+            item_vec->emplace_back(new Literal(PyFloat_AsDouble(key), Location::NONE));
+          } else if (PyLong_Check(key)) {
+            item_vec->emplace_back(new Literal(PyLong_AsDouble(key), Location::NONE));
+          } else if (PyUnicode_Check(key)) {
+            PyObject *encoded = PyUnicode_AsEncodedString(key, "utf-8", "~");
+            std::string key_string(PyBytes_AS_STRING(encoded));
+            Py_DECREF(encoded);
+            item_vec->emplace_back(new Literal(key_string, Location::NONE));
+          }
+          // Label
+          if (PyUnicode_Check(label)) {
+            PyObject *encoded = PyUnicode_AsEncodedString(label, "utf-8", "~");
+            std::string label_string(PyBytes_AS_STRING(encoded));
+            Py_DECREF(encoded);
+            item_vec->emplace_back(new Literal(label_string, Location::NONE));
+          }
+          vec->emplace_back(item_vec);
+        }
+      }
+      param_expr = vec;
+    } else if (!std::isnan(min_val) && !std::isnan(max_val)) {
+      // Range with min and max -> slider
+      if (!std::isnan(range_step)) {
+        param_expr = std::make_shared<Range>(new Literal(min_val, Location::NONE),
+                                             new Literal(range_step, Location::NONE),
+                                             new Literal(max_val, Location::NONE), Location::NONE);
+      } else {
+        param_expr = std::make_shared<Range>(new Literal(min_val, Location::NONE),
+                                             new Literal(max_val, Location::NONE), Location::NONE);
+      }
+    } else if (!std::isnan(range_step)) {
+      // Step only -> spinbox
+      param_expr = std::make_shared<Literal>(range_step, Location::NONE);
+    } else if (max_length > 0) {
+      // String max length
+      param_expr = std::make_shared<Literal>((double)max_length, Location::NONE);
+    } else {
+      // No constraints - create empty marker for Parameter annotation
+      param_expr = std::make_shared<Literal>("", Location::NONE);
+    }
+
+    annotationList->push_back(Annotation("Parameter", param_expr));
+
+    if (description != NULL) {
+      annotationList->push_back(
+        Annotation("Description", std::make_shared<Literal>(description, Location::NONE)));
+    }
+
+    if (group != NULL) {
+      annotationList->push_back(Annotation("Group", std::make_shared<Literal>(group, Location::NONE)));
+    }
+
+    auto assignment = std::make_shared<Assignment>(name, default_expr);
+    assignment->addAnnotations(annotationList);
     customizer_parameters.push_back(assignment);
+
     PyObject *value_effective = value;
     for (unsigned int i = 0; i < customizer_parameters_finished.size(); i++) {
       if (customizer_parameters_finished[i]->getName() == name) {
@@ -5403,6 +5589,19 @@ PyObject *python_add_parameter(PyObject *self, PyObject *args, PyObject *kwargs,
         if (lit != nullptr) {
           if (lit->isDouble()) value_effective = PyFloat_FromDouble(lit->toDouble());
           if (lit->isString()) value_effective = PyUnicode_FromString(lit->toString().c_str());
+          if (lit->isBool()) value_effective = lit->toBool() ? Py_True : Py_False;
+        }
+        // Handle vector values
+        const auto& vec = std::dynamic_pointer_cast<Vector>(expr);
+        if (vec != nullptr) {
+          PyObject *result_list = PyList_New(vec->getChildren().size());
+          for (size_t j = 0; j < vec->getChildren().size(); j++) {
+            const auto& child_lit = std::dynamic_pointer_cast<Literal>(vec->getChildren()[j]);
+            if (child_lit && child_lit->isDouble()) {
+              PyList_SetItem(result_list, j, PyFloat_FromDouble(child_lit->toDouble()));
+            }
+          }
+          value_effective = result_list;
         }
       }
     }

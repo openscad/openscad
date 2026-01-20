@@ -1,0 +1,21 @@
+basic_int: 42
+basic_float: 3.14
+basic_str: hello
+basic_bool: True
+with_desc: 10
+with_group: 20
+with_both: 30
+slider_int: 50
+slider_float: 1.0
+slider_no_step: 25
+spinbox: 45.0
+str_limited: short
+vec3: [10.0, 20.0, 30.0]
+vec_range: [5.0, 10.0, 15.0]
+dropdown_list: red
+dropdown_dict: 10
+dropdown_nums: 1
+hidden_param: False
+global_param: mm
+full_example: 50
+All extended add_parameter tests passed!

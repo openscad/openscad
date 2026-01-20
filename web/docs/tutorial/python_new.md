@@ -259,15 +259,93 @@ s.show()
 
 ## add\_parameter
 
-This is how pythonscad can interact with the customizer
+This is how PythonSCAD can interact with the customizer. The customizer allows users
+to modify parameters through a GUI without editing code.
 
+### Basic Usage
 
 ```py
 from openscad import *
 
-# This will add an entry for myvar in customnizer with default value of 5
-add_parameter("myvar",5)
+# Simple parameter with default value
+width = add_parameter("width", 10)
+name = add_parameter("name", "default")
+enabled = add_parameter("enabled", True)
 
+cube([width, width, width]).show()
+```
+
+### Parameter Options
+
+| Option | Type | Description |
+|--------|------|-------------|
+| `description` | str | Help text shown in customizer |
+| `group` | str | Tab name (default: "Parameters") |
+| `range` | range/tuple | Min/max for slider (numbers/vectors) |
+| `step` | float | Step increment for spinbox |
+| `max_length` | int | Maximum length (strings only) |
+| `options` | list/dict | Dropdown options |
+
+### Sliders (Numbers)
+
+```py
+from openscad import *
+
+# Integer slider using range() - note: range is exclusive, use 101 for max 100
+quality = add_parameter("quality", 50, range=range(0, 101, 5))
+
+# Float slider using tuple (min, max) or (min, max, step)
+scale = add_parameter("scale", 1.0, range=(0.1, 10.0, 0.1))
+
+# Spinbox with step (no slider)
+angle = add_parameter("angle", 45.0, step=0.5)
+```
+
+### Dropdown Menus
+
+```py
+from openscad import *
+
+# Simple options list
+color = add_parameter("color", "red", options=["red", "green", "blue"])
+
+# Labeled options (value: label)
+quality = add_parameter("quality", 10, options={10: "Low", 20: "Medium", 30: "High"})
+```
+
+### Vectors
+
+```py
+from openscad import *
+
+# Vector with constraints (applied to all elements, max 4 elements)
+size = add_parameter("size", [10, 20, 30], range=(1, 100, 1))
+```
+
+### Groups and Organization
+
+```py
+from openscad import *
+
+# Organize parameters into tabs
+width = add_parameter("width", 10, group="Dimensions")
+height = add_parameter("height", 20, group="Dimensions")
+color = add_parameter("color", "red", group="Appearance")
+
+# Special groups
+debug = add_parameter("debug", False, group="Hidden")    # Not shown in UI
+units = add_parameter("units", "mm", group="Global")     # Appears on all tabs
+```
+
+### Descriptions
+
+```py
+from openscad import *
+
+# Add help text
+width = add_parameter("width", 10,
+    description="Width of the model in mm",
+    group="Dimensions")
 ```
 
 ## concat
