@@ -1,2 +1,13 @@
+; Unregister file associations
+${UnRegisterExtension} ".scad" "PythonSCAD_File"
 ${UnRegisterExtension} ".scad" "OpenSCAD_File"
+${UnRegisterExtension} ".py" "PythonSCAD_Python_File"
+
+; Remove start menu shortcuts
+SetShellVarContext all
+Delete "$SMPROGRAMS\PythonSCAD\PythonSCAD.lnk"
+Delete "$SMPROGRAMS\PythonSCAD\Uninstall PythonSCAD.lnk"
+RMDir "$SMPROGRAMS\PythonSCAD"
+Delete "$SMPROGRAMS\PythonSCAD.lnk"
+
 ${RefreshShellIcons}

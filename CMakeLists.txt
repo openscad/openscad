@@ -2058,8 +2058,25 @@ if(NOT APPLE OR APPLE_UNIX)
 	      install(DIRECTORY "${PYTHON_MINGW_DEVPATH}/${PYTHON_MINGW_REPODIR}/lib/"
 	              DESTINATION "lib")
 	    else()
-	      # For native MSYS2 Windows builds, use python.org embed package
-	      install(DIRECTORY "${PYTHON_EMBED_DEVPATH}/" DESTINATION "." )
+	      # For native MSYS2 Windows builds, install from system MSYS2 Python
+	      # This ensures ABI compatibility since the executable is linked against MSYS2 Python
+	      # (The python.org embed package uses a different DLL name and structure)
+	      if(DEFINED ENV{MSYSTEM_PREFIX})
+	        set(_MSYS2_PYTHON_PREFIX "$ENV{MSYSTEM_PREFIX}")
+	      else()
+	        set(_MSYS2_PYTHON_PREFIX "/ucrt64")
+	      endif()
+
+	      # Install Python standard library and extension modules
+	      # Python will search for lib/python3.x/ relative to the DLL location
+	      install(DIRECTORY "${_MSYS2_PYTHON_PREFIX}/lib/python${PYTHON_MINGW_VERSION}/"
+	              DESTINATION "lib/python${PYTHON_MINGW_VERSION}"
+	              PATTERN "__pycache__" EXCLUDE
+	              PATTERN "test" EXCLUDE
+	              PATTERN "tests" EXCLUDE
+	              PATTERN "*.pyc" EXCLUDE)
+
+	      message(STATUS "Native MSYS2 build: Python stdlib will be installed from ${_MSYS2_PYTHON_PREFIX}/lib/python${PYTHON_MINGW_VERSION}")
 	    endif()
     endif()
     if(USE_MIMALLOC AND MI_LINK_SHARED)
@@ -2069,6 +2086,78 @@ if(NOT APPLE OR APPLE_UNIX)
         install(FILES ${CMAKE_SOURCE_DIR}/submodules/mimalloc/bin/mimalloc-redirect32.dll DESTINATION ".")
       endif()
       install(FILES ${CMAKE_BINARY_DIR}/submodules/mimalloc/mimalloc.dll DESTINATION ".")
+    endif()
+
+    # For native MSYS2 Windows builds, bundle runtime DLLs and Qt plugins
+    # This is needed because unlike MXE (which uses static linking), MSYS2 uses dynamic linking
+    if(NOT MXECROSS)
+      # Get the MSYS2 prefix directory
+      if(DEFINED ENV{MSYSTEM_PREFIX})
+        set(MSYS2_PREFIX "$ENV{MSYSTEM_PREFIX}")
+      else()
+        set(MSYS2_PREFIX "/ucrt64")
+      endif()
+      set(MSYS2_BIN_DIR "${MSYS2_PREFIX}/bin")
+
+      # Install Qt platform plugins (required for Qt to start)
+      if(USE_QT6)
+        set(QT_PLUGINS_DIR "${MSYS2_PREFIX}/share/qt6/plugins")
+      else()
+        set(QT_PLUGINS_DIR "${MSYS2_PREFIX}/share/qt5/plugins")
+      endif()
+
+      # Platform plugin is mandatory
+      install(FILES "${QT_PLUGINS_DIR}/platforms/qwindows.dll"
+              DESTINATION "platforms")
+
+      # Install style plugins for native look
+      install(DIRECTORY "${QT_PLUGINS_DIR}/styles/"
+              DESTINATION "styles"
+              FILES_MATCHING PATTERN "*.dll")
+
+      # Install image format plugins (for icons, etc.)
+      install(DIRECTORY "${QT_PLUGINS_DIR}/imageformats/"
+              DESTINATION "imageformats"
+              FILES_MATCHING PATTERN "*.dll")
+
+      # Install icon engine plugins (for SVG icons)
+      install(DIRECTORY "${QT_PLUGINS_DIR}/iconengines/"
+              DESTINATION "iconengines"
+              FILES_MATCHING PATTERN "*.dll")
+
+      # Ensure Qt SVG runtime library is bundled (required by SVG plugins)
+      if(USE_QT6)
+        install(FILES "${MSYS2_BIN_DIR}/Qt6Svg.dll" DESTINATION ".")
+      else()
+        install(FILES "${MSYS2_BIN_DIR}/Qt5Svg.dll" DESTINATION ".")
+      endif()
+
+      # Create qt.conf to tell Qt where to find plugins
+      # Without this, Qt won't find the plugins in the non-standard locations
+      file(WRITE "${CMAKE_BINARY_DIR}/qt.conf" "[Paths]\nPlugins = .\n")
+      install(FILES "${CMAKE_BINARY_DIR}/qt.conf" DESTINATION ".")
+
+      message(STATUS "Native MSYS2 build: Qt plugins will be bundled from ${QT_PLUGINS_DIR}")
+
+      # Use CMake's runtime dependency resolution to find and install required DLLs
+      if(CMAKE_VERSION VERSION_GREATER_EQUAL "3.21")
+        install(TARGETS OpenSCADExe
+          RUNTIME_DEPENDENCY_SET runtime_deps
+        )
+        install(RUNTIME_DEPENDENCY_SET runtime_deps
+          PRE_EXCLUDE_REGEXES
+            "api-ms-.*"    # Windows API sets
+            "ext-ms-.*"    # Windows extension API sets
+          POST_EXCLUDE_REGEXES
+            ".*[Ss]ystem32.*"  # System DLLs
+            ".*[Ww]indows.*"   # Windows DLLs
+          DIRECTORIES
+            "${MSYS2_BIN_DIR}"
+            "${CMAKE_BINARY_DIR}"
+          DESTINATION "."
+        )
+        message(STATUS "Native MSYS2 build: Runtime DLLs will be bundled from ${MSYS2_BIN_DIR}")
+      endif()
     endif()
   else()
     install(FILES ${CMAKE_CURRENT_BINARY_DIR}/doc/openscad.1 DESTINATION ${CMAKE_INSTALL_MANDIR}/man1 RENAME openscad${SUFFIX_WITH_DASH}.1)
@@ -2109,13 +2198,17 @@ set(CPACK_PACKAGE_VENDOR "The OpenSCAD and PythonSCAD Developers")
 set(CPACK_PACKAGE_VERSION "${OPENSCAD_VERSION}")
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "The Programmer's Solid 3D CAD Modeler")
 
-# Note: DLL bundling removed - MXE produces statically linked binaries
-# that don't require separate DLL files
-
-if(MXECROSS)
+# Windows NSIS installer configuration - applies to both cross-compile (MXE) and native builds
+if(WIN32)
   set(CPACK_GENERATOR ZIP;NSIS)
-  set(CPACK_SYSTEM_NAME ${PACKAGE_ARCH})
   set(CPACK_INCLUDE_TOPLEVEL_DIRECTORY ON)
+
+  # MXE cross-compile uses PACKAGE_ARCH; native builds detect architecture
+  if(MXECROSS)
+    set(CPACK_SYSTEM_NAME ${PACKAGE_ARCH})
+  else()
+    set(CPACK_SYSTEM_NAME "windows-x86-64")
+  endif()
 
   # Custom filename format: PythonSCAD-qt6-0.6.0-28-g89c44cac7-windows-x86-64
   # This overrides the default ${CPACK_PACKAGE_NAME}-${CPACK_PACKAGE_VERSION}-${CPACK_SYSTEM_NAME}
@@ -2128,25 +2221,49 @@ if(MXECROSS)
   set(CPACK_PACKAGE_EXECUTABLES "pythonscad;${CPACK_PACKAGE_NAME}")
   set(CPACK_PACKAGE_INSTALL_DIRECTORY "${CPACK_PACKAGE_NAME}")
   set(CPACK_PACKAGE_INSTALL_REGISTRY_KEY "${CPACK_PACKAGE_NAME}")
+
   if("${CMAKE_VERSION}" VERSION_GREATER_EQUAL "3.22")
     set(CPACK_NSIS_IGNORE_LICENSE_PAGE ON)
   else()
     message(FATAL_ERROR "CPACK_NSIS_IGNORE_LICENSE_PAGE requires cmake 3.22")
   endif()
+
+  # NSIS installer configuration
+  set(CPACK_NSIS_DISPLAY_NAME "${CPACK_PACKAGE_NAME}")
+  set(CPACK_NSIS_PACKAGE_NAME "${CPACK_PACKAGE_NAME}")
+
+  # Enable per-user installation option (no admin required)
+  # This allows installing to user's local AppData instead of Program Files
+  set(CPACK_NSIS_ENABLE_UNINSTALL_BEFORE_INSTALL ON)
+
+  # Add "Run PythonSCAD" checkbox on finish page
+  set(CPACK_NSIS_MUI_FINISHPAGE_RUN "pythonscad.exe")
+
+  # Copy NSIS helper files to build directory so they're accessible with simple paths
+  configure_file("${CMAKE_SOURCE_DIR}/cmake/nsis/mingw-file-association.nsh"
+                 "${CMAKE_BINARY_DIR}/nsis-mingw-file-association.nsh" COPYONLY)
+
+  # Pre-install includes for file association and utility macros
+  # CPack runs NSIS from build/_CPack_Packages/<system>/NSIS/
+  # Use relative path back to build directory: ../../../
   set(CPACK_NSIS_EXTRA_PREINSTALL_COMMANDS "\
     !include \\\"FileFunc.nsh\\\"\n\
-    !include \\\"${CMAKE_SOURCE_DIR}/cmake/nsis/mingw-file-association.nsh\\\"\
+    !include \\\"..\\\\..\\\\..\\\\nsis-mingw-file-association.nsh\\\"\
   ")
+
+  # Extra install commands - includes file association and compatibility shortcut
   set(CPACK_NSIS_EXTRA_INSTALL_COMMANDS "\
-    !include \\\"${CMAKE_BINARY_DIR}/nsis-extra-install-commands.nsh\\\"\n\
+    !include \\\"..\\\\..\\\\..\\\\nsis-extra-install-commands.nsh\\\"\n\
     CreateShortCut $INSTDIR\\\\openscad.lnk $INSTDIR\\\\pythonscad.exe\
   ")
-  set(CPACK_NSIS_EXTRA_UNINSTALL_COMMANDS "\
-    !include \\\"${CMAKE_BINARY_DIR}/nsis-extra-uninstall-commands.nsh\\\"\
-  ")
-  set (CPACK_NSIS_MODIFY_PATH "ON")
 
-  else()
+  set(CPACK_NSIS_EXTRA_UNINSTALL_COMMANDS "\
+    !include \\\"..\\\\..\\\\..\\\\nsis-extra-uninstall-commands.nsh\\\"\
+  ")
+
+  set(CPACK_NSIS_MODIFY_PATH "ON")
+
+elseif(UNIX AND NOT APPLE)
   set(CPACK_GENERATOR RPM;DEB)
   set(CPACK_RPM_COMPONENT_INSTALL OFF)
   set(CPACK_RPM_PACKAGE_SUMMARY "The Programmer's Solid 3D CAD Modeler")
