@@ -198,6 +198,38 @@ std::vector<Vector3d> python_to2dvarpointlist(PyObject *pypoints)
   return points;
 }
 
+std::vector<std::vector<size_t>> python_to2dintlist(PyObject *pypaths)
+{
+  std::vector<std::vector<size_t>> result;
+  int pointIndex;
+  PyObject *element;
+  if (pypaths != NULL && PyList_Check(pypaths)) {
+    if (PyList_Size(pypaths) == 0) {
+      PyErr_SetString(PyExc_TypeError, "must specify at least 1 path when specified");
+      return result;
+    }
+    for (int i = 0; i < PyList_Size(pypaths); i++) {
+      element = PyList_GetItem(pypaths, i);
+      if (PyList_Check(element)) {
+        std::vector<size_t> path;
+        for (int j = 0; j < PyList_Size(element); j++) {
+          pointIndex = PyLong_AsLong(PyList_GetItem(element, j));
+          if (pointIndex < 0) {  // TODO fix || pointIndex >= node->points.size()) {
+            PyErr_SetString(PyExc_TypeError, "Polyhedron Point Index out of range");
+            return result;
+          }
+          path.push_back(pointIndex);
+        }
+        result.push_back(std::move(path));
+      } else {
+        PyErr_SetString(PyExc_TypeError, "Polygon path must be a list of indices");
+        result.clear();
+      }
+    }
+  }
+  return result;
+}
+
 PyObject *python_from2dvarpointlist(const std::vector<Vector3d>& ptlist)
 {
   PyObject *result;

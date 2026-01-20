@@ -932,14 +932,14 @@ PyObject *python_polygon(PyObject *self, PyObject *args, PyObject *kwargs)
 
   char *kwlist[] = {"points", "paths", "convexity", NULL};
   PyObject *pypoints = NULL;
-  PyObject *paths = NULL;
+  PyObject *pypaths = NULL;
   int convexity = 2;
 
   PyObject *element;
   Vector3d point;
 
   if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O!|O!i", kwlist, &PyList_Type, &pypoints, &PyList_Type,
-                                   &paths, &convexity)) {
+                                   &pypaths, &convexity)) {
     PyErr_SetString(PyExc_TypeError, "Error during parsing polygon(points,paths)");
     return NULL;
   }
@@ -951,30 +951,11 @@ PyObject *python_polygon(PyObject *self, PyObject *args, PyObject *kwargs)
 
   node->points = points;
 
-  if (paths != NULL && PyList_Check(paths)) {
-    if (PyList_Size(paths) == 0) {
-      PyErr_SetString(PyExc_TypeError, "must specify at least 1 path when specified");
-      return NULL;
-    }
-    for (i = 0; i < PyList_Size(paths); i++) {
-      element = PyList_GetItem(paths, i);
-      if (PyList_Check(element)) {
-        std::vector<size_t> path;
-        for (j = 0; j < PyList_Size(element); j++) {
-          pointIndex = PyLong_AsLong(PyList_GetItem(element, j));
-          if (pointIndex < 0 || pointIndex >= node->points.size()) {
-            PyErr_SetString(PyExc_TypeError, "Polyhedron Point Index out of range");
-            return NULL;
-          }
-          path.push_back(pointIndex);
-        }
-        node->paths.push_back(std::move(path));
-      } else {
-        PyErr_SetString(PyExc_TypeError, "Polygon path must be a list of indices");
-        return NULL;
-      }
-    }
-  }
+  std::vector<std::vector<size_t>> paths = python_to2dintlist(pypaths);
+  //  if (paths.size() == 0) { TODO fehlercode ?
+  //    return NULL;
+  //  }
+  node->paths = paths;
 
   node->convexity = convexity;
   if (node->convexity < 1) node->convexity = 1;
@@ -2269,7 +2250,8 @@ PyObject *python_oo_sitonto(PyObject *obj, PyObject *args, PyObject *kwargs)
   return python_sitonto_core(obj, vecx, vecy, vecz);
 }
 
-PyObject *python__getitem_hier(std::shared_ptr<AbstractNode> node, const std::string& keystr, int hier)
+PyObject *python__getsetitem_hier(std::shared_ptr<AbstractNode> node, const std::string& keystr,
+                                  PyObject *v, int hier)
 {
   PyObject *result = nullptr;
 
@@ -2283,8 +2265,13 @@ PyObject *python__getitem_hier(std::shared_ptr<AbstractNode> node, const std::st
   }
 
   if (keystr == "points") {
-    std::shared_ptr<const PolygonNode> polygon = std::dynamic_pointer_cast<const PolygonNode>(node);
+    std::shared_ptr<PolygonNode> polygon = std::dynamic_pointer_cast<PolygonNode>(node);
     if (polygon != nullptr) {
+      if (v != nullptr) {
+        polygon->points = python_to2dvarpointlist(v);
+        return Py_None;
+      }
+
       result = python_from2dvarpointlist(polygon->points);
     }
     std::shared_ptr<const PolyhedronNode> polyhedron =
@@ -2295,8 +2282,13 @@ PyObject *python__getitem_hier(std::shared_ptr<AbstractNode> node, const std::st
   }
 
   if (keystr == "paths") {
-    std::shared_ptr<const PolygonNode> polygon = std::dynamic_pointer_cast<const PolygonNode>(node);
+    std::shared_ptr<PolygonNode> polygon = std::dynamic_pointer_cast<PolygonNode>(node);
     if (polygon != nullptr) {
+      if (v != nullptr) {
+        polygon->paths = python_to2dintlist(v);
+        return Py_None;
+      }
+
       result = python_from2dint(polygon->paths);
     }
   }
@@ -2312,7 +2304,7 @@ PyObject *python__getitem_hier(std::shared_ptr<AbstractNode> node, const std::st
 
   if (hier > 0) {
     for (auto& child : node->children) {
-      result = python__getitem_hier(child, keystr, hier - 1);
+      result = python__getsetitem_hier(child, keystr, v, hier - 1);
       if (result != nullptr) return result;
     }
   }
@@ -2338,7 +2330,7 @@ PyObject *python__getitem__(PyObject *obj, PyObject *key)
   PyObject *dummy_dict;
   std::shared_ptr<AbstractNode> node = PyOpenSCADObjectToNode(obj, &dummy_dict);
   if (node != nullptr) {
-    result = python__getitem_hier(node, keystr, 2);
+    result = python__getsetitem_hier(node, keystr, nullptr, 2);
     if (result != nullptr) return result;
   }
 
@@ -2353,19 +2345,6 @@ PyObject *python__getitem__(PyObject *obj, PyObject *key)
   return result;
 }
 
-PyObject *python__setitem_hier(std::shared_ptr<AbstractNode> node, const std::string& keystr,
-                               PyObject *v, int hier)
-{
-  if (keystr == "points") {
-    std::shared_ptr<PolygonNode> polygon = std::dynamic_pointer_cast<PolygonNode>(node);
-    if (polygon != nullptr) {
-      polygon->points = python_to2dvarpointlist(v);
-    }
-  }
-
-  return Py_None;
-}
-
 int python__setitem__(PyObject *obj, PyObject *key, PyObject *v)
 {
   PyObject *keyname = PyUnicode_AsEncodedString(key, "utf-8", "~");
@@ -2377,7 +2356,7 @@ int python__setitem__(PyObject *obj, PyObject *key, PyObject *v)
   PyObject *dummy_dict;
   std::shared_ptr<AbstractNode> node = PyOpenSCADObjectToNode(obj, &dummy_dict);
   if (node != nullptr) {
-    python__setitem_hier(node, keystr, v, 2);
+    python__getsetitem_hier(node, keystr, v, 2);
   }
 
   if (self->dict == NULL) {
