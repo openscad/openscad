@@ -63,10 +63,6 @@ protected slots:
 signals:
   void colorSelected(QString);
 
-signals:
-  void colorSelected(QString);
-
->>>>>>> fc1cfce5a (Add support for double-click to insert the color name / color() call.)
 private:
   QColor asForeground;
   QColor asBackground;
