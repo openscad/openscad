@@ -18,6 +18,13 @@ class LaserCutter:
 
         late_cuts = []
 
+        # make sure, that all faces are polygons
+        for i, face in enumerate(facelist):
+            xsection, = face.children()
+            if not hasattr(xsection, "points"):
+                xsection = polygon(xsection.mesh()[0])
+                facelist[i]=multmatrix(xsection, face.matrix)
+
         #LUT
         lut = {}
         vertices = []
