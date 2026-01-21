@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.10.0](https://github.com/pythonscad/pythonscad/compare/v0.9.1...v0.10.0) (2026-01-21)
+
+
+### Features
+
+* better lasercutter support ([#374](https://github.com/pythonscad/pythonscad/issues/374)) ([521e500](https://github.com/pythonscad/pythonscad/commit/521e5009503443ccb297dab6166c1409be98a7a0))
+
+
+### Bug Fixes
+
+* use PythonSCAD icon in application overview ([b8292a4](https://github.com/pythonscad/pythonscad/commit/b8292a498330c53266de07fc3afb3b107bc27f91))
+* use PythonSCAD icon in application overview ([cefb7d5](https://github.com/pythonscad/pythonscad/commit/cefb7d5694b85d22689d8b69d4a949b96d0044b8)), closes [#376](https://github.com/pythonscad/pythonscad/issues/376)
+
 ## [0.9.1](https://github.com/pythonscad/pythonscad/compare/v0.9.0...v0.9.1) (2026-01-21)
 
 
