@@ -32,6 +32,7 @@
 #include <Python.h>
 #include "pyfunctions.h"
 #include "python/pyopenscad.h"
+#include "python/pyconversion.h"
 #include "core/primitives.h"
 #include "core/CsgOpNode.h"
 #include "core/ColorNode.h"
@@ -930,62 +931,31 @@ PyObject *python_polygon(PyObject *self, PyObject *args, PyObject *kwargs)
   auto node = std::make_shared<PolygonNode>(instance, CreateCurveDiscretizer(kwargs));
 
   char *kwlist[] = {"points", "paths", "convexity", NULL};
-  PyObject *points = NULL;
-  PyObject *paths = NULL;
+  PyObject *pypoints = NULL;
+  PyObject *pypaths = NULL;
   int convexity = 2;
 
   PyObject *element;
   Vector3d point;
 
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O!|O!i", kwlist, &PyList_Type, &points, &PyList_Type,
-                                   &paths, &convexity)) {
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O!|O!i", kwlist, &PyList_Type, &pypoints, &PyList_Type,
+                                   &pypaths, &convexity)) {
     PyErr_SetString(PyExc_TypeError, "Error during parsing polygon(points,paths)");
     return NULL;
   }
 
-  if (points != NULL && PyList_Check(points)) {
-    if (PyList_Size(points) == 0) {
-      PyErr_SetString(PyExc_TypeError, "There must at least be one point in the polygon");
-      return NULL;
-    }
-    for (i = 0; i < PyList_Size(points); i++) {
-      element = PyList_GetItem(points, i);
-      point[2] = 0;  // default no radius
-      if (python_vectorval(element, 2, 3, &point[0], &point[1], &point[2])) {
-        PyErr_SetString(PyExc_TypeError, "Coordinate must contain 2 or 3 numbers");
-        return NULL;
-      }
-      node->points.push_back(point);
-    }
-  } else {
-    PyErr_SetString(PyExc_TypeError, "Polygon points must be a list of coordinates");
+  std::vector<Vector3d> points = python_to2dvarpointlist(pypoints);
+  if (points.size() == 0) {
     return NULL;
   }
 
-  if (paths != NULL && PyList_Check(paths)) {
-    if (PyList_Size(paths) == 0) {
-      PyErr_SetString(PyExc_TypeError, "must specify at least 1 path when specified");
-      return NULL;
-    }
-    for (i = 0; i < PyList_Size(paths); i++) {
-      element = PyList_GetItem(paths, i);
-      if (PyList_Check(element)) {
-        std::vector<size_t> path;
-        for (j = 0; j < PyList_Size(element); j++) {
-          pointIndex = PyLong_AsLong(PyList_GetItem(element, j));
-          if (pointIndex < 0 || pointIndex >= node->points.size()) {
-            PyErr_SetString(PyExc_TypeError, "Polyhedron Point Index out of range");
-            return NULL;
-          }
-          path.push_back(pointIndex);
-        }
-        node->paths.push_back(std::move(path));
-      } else {
-        PyErr_SetString(PyExc_TypeError, "Polygon path must be a list of indices");
-        return NULL;
-      }
-    }
-  }
+  node->points = points;
+
+  std::vector<std::vector<size_t>> paths = python_to2dintlist(pypaths);
+  //  if (paths.size() == 0) { TODO fehlercode ?
+  //    return NULL;
+  //  }
+  node->paths = paths;
 
   node->convexity = convexity;
   if (node->convexity < 1) node->convexity = 1;
@@ -1039,60 +1009,6 @@ PyObject *python_spline(PyObject *self, PyObject *args, PyObject *kwargs)
 
   python_retrieve_pyname(node);
   return PyOpenSCADObjectFromNode(&PyOpenSCADType, node);
-}
-
-int python_tomatrix(PyObject *pyt, Matrix4d& mat)
-{
-  if (pyt == nullptr) return 1;
-  PyObject *row, *cell;
-  double val;
-  mat = Matrix4d::Identity();
-  if (!PyList_Check(pyt)) return 1;
-  for (int i = 0; i < std::min(4, (int)PyList_Size(pyt)); i++) {
-    row = PyList_GetItem(pyt, i);
-    if (!PyList_Check(row)) return 1;
-    for (int j = 0; j < std::min(4, (int)PyList_Size(row)); j++) {
-      cell = PyList_GetItem(row, j);
-      if (python_numberval(cell, &val, nullptr, 0)) return 1;
-      mat(i, j) = val;
-    }
-  }
-  return 0;
-}
-
-int python_tovector(PyObject *pyt, Vector3d& vec)
-{
-  if (pyt == nullptr) return 1;
-  PyObject *cell;
-  double val;
-  if (!PyList_Check(pyt)) return 1;
-  if (PyList_Size(pyt) != 3) return 1;
-  for (int i = 0; i < 3; i++) {
-    cell = PyList_GetItem(pyt, i);
-    if (python_numberval(cell, &val, nullptr, 0)) return 1;
-    vec[i] = val;
-  }
-  return 0;
-}
-
-PyObject *python_frommatrix(const Matrix4d& mat)
-{
-  PyObject *pyo = PyList_New(4);
-  PyObject *row;
-  for (int i = 0; i < 4; i++) {
-    row = PyList_New(4);
-    for (int j = 0; j < 4; j++) PyList_SetItem(row, j, PyFloat_FromDouble(mat(i, j)));
-    PyList_SetItem(pyo, i, row);
-    //      Py_XDECREF(row);
-  }
-  return pyo;
-}
-
-PyObject *python_fromvector(const Vector3d vec)
-{
-  PyObject *res = PyList_New(3);
-  for (int i = 0; i < 3; i++) PyList_SetItem(res, i, PyFloat_FromDouble(vec[i]));
-  return res;
 }
 
 PyObject *python_number_scale(PyObject *pynum, Vector3d scalevec, int vecs)
@@ -1497,7 +1413,10 @@ PyObject *python_translate_sub(PyObject *obj, Vector3d translatevec, int dragfla
   return pyresult;
 }
 
-PyObject *python_translate_core(PyObject *obj, PyObject *v) { return python_nb_sub_vec3(obj, v, 0); }
+PyObject *python_translate_core(PyObject *obj, PyObject *v)
+{
+  return python_nb_sub_vec3(obj, v, 0);
+}
 
 PyObject *python_translate(PyObject *self, PyObject *args, PyObject *kwargs)
 {
@@ -1779,17 +1698,23 @@ PyObject *python_multmatrix_sub(PyObject *pyobj, PyObject *pymat, int div)
     return python_frommatrix(objmat);
   }
 
+  Vector3d objvec;
+  if (!python_tovector(pyobj, objvec)) {
+    Vector4d objvec4(objvec[0], objvec[1], objvec[2], 1);
+    objvec4 = mat * objvec4;
+    return python_fromvector(objvec4.head<3>());
+  }
   DECLARE_INSTANCE();
   auto node = std::make_shared<TransformNode>(instance, "multmatrix");
   std::shared_ptr<AbstractNode> child;
   PyObject *child_dict;
   PyTypeObject *type = PyOpenSCADObjectType(pyobj);
   child = PyOpenSCADObjectToNodeMulti(pyobj, &child_dict);
-  node->setPyName(child->getPyName());
-  if (child == NULL) {
+  if (!child) {
     PyErr_SetString(PyExc_TypeError, "Invalid type for Object in multmatrix");
     return NULL;
   }
+  node->setPyName(child->getPyName());
 
   node->matrix = mat;
   node->children.push_back(child);
@@ -2325,39 +2250,115 @@ PyObject *python_oo_sitonto(PyObject *obj, PyObject *args, PyObject *kwargs)
   return python_sitonto_core(obj, vecx, vecy, vecz);
 }
 
+PyObject *python__getsetitem_hier(std::shared_ptr<AbstractNode> node, const std::string& keystr,
+                                  PyObject *v, int hier)
+{
+  PyObject *result = nullptr;
+
+  if (keystr == "matrix") {
+    std::shared_ptr<const TransformNode> trans = std::dynamic_pointer_cast<const TransformNode>(node);
+    if (trans != nullptr) {
+      Matrix4d matrix = Matrix4d::Identity();
+      matrix = trans->matrix.matrix();
+      result = python_frommatrix(matrix);
+    }
+  }
+
+  if (keystr == "points") {
+    std::shared_ptr<PolygonNode> polygon = std::dynamic_pointer_cast<PolygonNode>(node);
+    if (polygon != nullptr) {
+      if (v != nullptr) {
+        polygon->points = python_to2dvarpointlist(v);
+        return Py_None;
+      }
+
+      result = python_from2dvarpointlist(polygon->points);
+    }
+    std::shared_ptr<const PolyhedronNode> polyhedron =
+      std::dynamic_pointer_cast<const PolyhedronNode>(node);
+    if (polyhedron != nullptr) {
+      result = python_from3dpointlist(polyhedron->points);
+    }
+  }
+
+  if (keystr == "paths") {
+    std::shared_ptr<PolygonNode> polygon = std::dynamic_pointer_cast<PolygonNode>(node);
+    if (polygon != nullptr) {
+      if (v != nullptr) {
+        polygon->paths = python_to2dintlist(v);
+        return Py_None;
+      }
+
+      result = python_from2dint(polygon->paths);
+    }
+  }
+
+  if (keystr == "faces") {
+    std::shared_ptr<const PolyhedronNode> polyhedron =
+      std::dynamic_pointer_cast<const PolyhedronNode>(node);
+    if (polyhedron != nullptr) {
+      result = python_from2dlong(polyhedron->faces);
+    }
+  }
+  if (result != nullptr) return result;
+
+  if (hier > 0) {
+    for (auto& child : node->children) {
+      result = python__getsetitem_hier(child, keystr, v, hier - 1);
+      if (result != nullptr) return result;
+    }
+  }
+  return result;
+}
+
 PyObject *python__getitem__(PyObject *obj, PyObject *key)
 {
   PyOpenSCADObject *self = (PyOpenSCADObject *)obj;
   if (self->dict == nullptr) {
     return nullptr;
   }
+  // object dict
   PyObject *result = PyDict_GetItem(self->dict, key);
-  if (result == NULL) {
-    PyObject *keyname = PyUnicode_AsEncodedString(key, "utf-8", "~");
-    if (keyname == nullptr) return nullptr;
-    std::string keystr = PyBytes_AS_STRING(keyname);
-    result = Py_None;
-    if (keystr == "matrix") {
-      PyObject *dummy_dict;
-      std::shared_ptr<AbstractNode> node = PyOpenSCADObjectToNode(obj, &dummy_dict);
-      std::shared_ptr<const TransformNode> trans = std::dynamic_pointer_cast<const TransformNode>(node);
-      Matrix4d matrix = Matrix4d::Identity();
-      if (trans != nullptr) matrix = trans->matrix.matrix();
-      result = python_frommatrix(matrix);
-    } else if (keystr == "size") {
-      return python_size_core(obj);
-    } else if (keystr == "position") {
-      return python_position_core(obj);
-    } else if (keystr == "bbox") {
-      return python_bbox_core(obj);
-    }
-  } else Py_INCREF(result);
+  if (result != NULL) {
+    Py_INCREF(result);
+    return result;
+  }
+  PyObject *keyname = PyUnicode_AsEncodedString(key, "utf-8", "~");
+  if (keyname == nullptr) return nullptr;
+  std::string keystr = PyBytes_AS_STRING(keyname);
+
+  PyObject *dummy_dict;
+  std::shared_ptr<AbstractNode> node = PyOpenSCADObjectToNode(obj, &dummy_dict);
+  if (node != nullptr) {
+    result = python__getsetitem_hier(node, keystr, nullptr, 2);
+    if (result != nullptr) return result;
+  }
+
+  result = Py_None;
+  if (keystr == "size") {
+    return python_size_core(obj);
+  } else if (keystr == "position") {
+    return python_position_core(obj);
+  } else if (keystr == "bbox") {
+    return python_bbox_core(obj);
+  }
   return result;
 }
 
-int python__setitem__(PyObject *dict, PyObject *key, PyObject *v)
+int python__setitem__(PyObject *obj, PyObject *key, PyObject *v)
 {
-  PyOpenSCADObject *self = (PyOpenSCADObject *)dict;
+  PyObject *keyname = PyUnicode_AsEncodedString(key, "utf-8", "~");
+  if (keyname == nullptr) return 0;
+  std::string keystr = PyBytes_AS_STRING(keyname);
+
+  PyOpenSCADObject *self = (PyOpenSCADObject *)obj;
+
+  PyObject *dummy_dict;
+  std::shared_ptr<AbstractNode> node = PyOpenSCADObjectToNode(obj, &dummy_dict);
+  if (node != nullptr) {
+    python__getsetitem_hier(node, keystr, v, 2);
+  }
+
   if (self->dict == NULL) {
     return 0;
   }
@@ -3028,6 +3029,44 @@ PyObject *python_oo_faces(PyObject *obj, PyObject *args, PyObject *kwargs)
     return NULL;
   }
   return python_faces_core(obj, tess == Py_True);
+}
+
+PyObject *python_children_core(PyObject *obj)
+{
+  PyObject *dummydict;
+  auto solid = PyOpenSCADObjectToNode(obj, &dummydict);
+  PyTypeObject *type = PyOpenSCADObjectType(obj);
+  if (solid == nullptr) {
+    PyErr_SetString(PyExc_TypeError, "not a solid\n");
+    return NULL;
+  }
+  int n = solid->children.size();
+  PyObject *result = PyTuple_New(n);
+  for (int i = 0; i < n; i++) {
+    PyTuple_SetItem(result, i, PyOpenSCADObjectFromNode(type, solid->children[i]));
+  }
+  return result;
+}
+
+PyObject *python_children(PyObject *self, PyObject *args, PyObject *kwargs)
+{
+  char *kwlist[] = {"obj", NULL};
+  PyObject *obj = NULL;
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O", kwlist, &obj)) {
+    PyErr_SetString(PyExc_TypeError, "error during parsing\n");
+    return NULL;
+  }
+  return python_children_core(obj);
+}
+
+PyObject *python_oo_children(PyObject *obj, PyObject *args, PyObject *kwargs)
+{
+  char *kwlist[] = {NULL};
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "", kwlist)) {
+    PyErr_SetString(PyExc_TypeError, "error during parsing\n");
+    return NULL;
+  }
+  return python_children_core(obj);
 }
 
 PyObject *python_oversample_core(PyObject *obj, int n, PyObject *round)
@@ -5724,11 +5763,20 @@ PyObject *python_oo_only(PyObject *self, PyObject *args, PyObject *kwargs)
   return python_debug_modifier_func_oo(self, args, kwargs, 2);
 }
 
-PyObject *python_nb_invert(PyObject *arg) { return python_debug_modifier(arg, 2); }
+PyObject *python_nb_invert(PyObject *arg)
+{
+  return python_debug_modifier(arg, 2);
+}
 
-PyObject *python_nb_neg(PyObject *arg) { return python_debug_modifier(arg, 1); }
+PyObject *python_nb_neg(PyObject *arg)
+{
+  return python_debug_modifier(arg, 1);
+}
 
-PyObject *python_nb_pos(PyObject *arg) { return python_debug_modifier(arg, 0); }
+PyObject *python_nb_pos(PyObject *arg)
+{
+  return python_debug_modifier(arg, 0);
+}
 
 #ifndef OPENSCAD_NOGUI
 extern void add_menuitem_trampoline(const char *menuname, const char *itemname, const char *callback);
@@ -6097,6 +6145,7 @@ PyMethodDef PyOpenSCADFunctions[] = {
   {"position", (PyCFunction)python_position, METH_VARARGS | METH_KEYWORDS,
    "get position (minimum coordinates) of object."},
   {"faces", (PyCFunction)python_faces, METH_VARARGS | METH_KEYWORDS, "exports a list of faces."},
+  {"children", (PyCFunction)python_children, METH_VARARGS | METH_KEYWORDS, "create Tuple from children"},
   {"edges", (PyCFunction)python_edges, METH_VARARGS | METH_KEYWORDS,
    "exports a list of edges from a face."},
   {"explode", (PyCFunction)python_explode, METH_VARARGS | METH_KEYWORDS,
@@ -6147,46 +6196,49 @@ PyMethodDef PyOpenSCADFunctions[] = {
 PyMethodDef PyOpenSCADMethods[] = {
   OO_METHOD_ENTRY(translate, "Move Object") OO_METHOD_ENTRY(rotate, "Rotate Object") OO_METHOD_ENTRY(
     right, "Right Object") OO_METHOD_ENTRY(left, "Left Object") OO_METHOD_ENTRY(back, "Back Object")
-    OO_METHOD_ENTRY(front, "Front Object") OO_METHOD_ENTRY(up, "Up Object") OO_METHOD_ENTRY(
-      down, "Lower Object")
+    OO_METHOD_ENTRY(front, "Front Object") OO_METHOD_ENTRY(up, "Up Object")
+      OO_METHOD_ENTRY(down, "Lower Object")
 
-      OO_METHOD_ENTRY(union, "Union Object") OO_METHOD_ENTRY(
-        difference, "Difference Object") OO_METHOD_ENTRY(intersection, "Intersection Object")
+        OO_METHOD_ENTRY(union, "Union Object") OO_METHOD_ENTRY(difference, "Difference Object")
+          OO_METHOD_ENTRY(intersection, "Intersection Object")
 
-        OO_METHOD_ENTRY(rotx, "Rotx Object") OO_METHOD_ENTRY(roty, "Roty Object") OO_METHOD_ENTRY(
-          rotz, "Rotz Object")
+            OO_METHOD_ENTRY(rotx, "Rotx Object") OO_METHOD_ENTRY(roty, "Roty Object") OO_METHOD_ENTRY(
+              rotz, "Rotz Object")
 
-          OO_METHOD_ENTRY(scale, "Scale Object") OO_METHOD_ENTRY(mirror, "Mirror Object")
-            OO_METHOD_ENTRY(multmatrix, "Multmatrix Object") OO_METHOD_ENTRY(
-              divmatrix, "Divmatrix Object") OO_METHOD_ENTRY(offset, "Offset Object")
+              OO_METHOD_ENTRY(scale, "Scale Object") OO_METHOD_ENTRY(mirror, "Mirror Object")
+                OO_METHOD_ENTRY(multmatrix, "Multmatrix Object") OO_METHOD_ENTRY(
+                  divmatrix, "Divmatrix Object") OO_METHOD_ENTRY(offset, "Offset Object")
 #if defined(ENABLE_EXPERIMENTAL) && defined(ENABLE_CGAL)
-              OO_METHOD_ENTRY(roof, "Roof Object")
+                  OO_METHOD_ENTRY(roof, "Roof Object")
 #endif
-                OO_METHOD_ENTRY(color, "Color Object") OO_METHOD_ENTRY(
-                  separate, "Split into separate Objects") OO_METHOD_ENTRY(export, "Export Object")
-                  OO_METHOD_ENTRY(find_face, "Find Face") OO_METHOD_ENTRY(sitonto, "Sit onto")
+                    OO_METHOD_ENTRY(color, "Color Object") OO_METHOD_ENTRY(
+                      separate, "Split into separate Objects") OO_METHOD_ENTRY(export, "Export Object")
+                      OO_METHOD_ENTRY(find_face, "Find Face") OO_METHOD_ENTRY(sitonto, "Sit onto")
 
-                    OO_METHOD_ENTRY(linear_extrude, "Linear_extrude Object")
-                      OO_METHOD_ENTRY(rotate_extrude, "Rotate_extrude Object") OO_METHOD_ENTRY(
-                        path_extrude, "Path_extrude Object") OO_METHOD_ENTRY(resize, "Resize Object")
+                        OO_METHOD_ENTRY(linear_extrude, "Linear_extrude Object")
+                          OO_METHOD_ENTRY(rotate_extrude, "Rotate_extrude Object") OO_METHOD_ENTRY(
+                            path_extrude, "Path_extrude Object") OO_METHOD_ENTRY(resize, "Resize Object")
 
-                        OO_METHOD_ENTRY(explode, "Explode a solid with a vector") OO_METHOD_ENTRY(
-                          mesh, "Mesh Object") OO_METHOD_ENTRY(bbox, "Evaluate Bound Box of object")
-                          OO_METHOD_ENTRY(faces, "Create Faces list") OO_METHOD_ENTRY(
-                            edges, "Create Edges list") OO_METHOD_ENTRY(oversample, "Oversample Object")
-                            OO_METHOD_ENTRY(debug, "Debug Object Faces") OO_METHOD_ENTRY(
-                              repair, "Make solid watertight") OO_METHOD_ENTRY(fillet, "Fillet Object")
-                              OO_METHOD_ENTRY(align, "Align Object to another")
+                            OO_METHOD_ENTRY(explode, "Explode a solid with a vector") OO_METHOD_ENTRY(
+                              mesh, "Mesh Object") OO_METHOD_ENTRY(bbox, "Evaluate Bound Box of object")
+                              OO_METHOD_ENTRY(faces, "Create Faces list") OO_METHOD_ENTRY(
+                                children, "Return Tupple from solid children")
+                                OO_METHOD_ENTRY(edges, "Create Edges list")
+                                  OO_METHOD_ENTRY(oversample, "Oversample Object") OO_METHOD_ENTRY(
+                                    debug, "Debug Object Faces")
+                                    OO_METHOD_ENTRY(repair, "Make solid watertight") OO_METHOD_ENTRY(
+                                      fillet, "Fillet Object") OO_METHOD_ENTRY(align,
+                                                                               "Align Object to another")
 
-                                OO_METHOD_ENTRY(highlight, "Highlight Object") OO_METHOD_ENTRY(
-                                  background, "Background Object") OO_METHOD_ENTRY(only, "Only Object")
-                                  OO_METHOD_ENTRY(show, "Show Object")
-                                    OO_METHOD_ENTRY(projection, "Projection Object")
-                                      OO_METHOD_ENTRY(pull, "Pull Obejct apart")
-                                        OO_METHOD_ENTRY(wrap, "Wrap Object around Cylinder")
-                                          OO_METHOD_ENTRY(render, "Render Object")
-                                            OO_METHOD_ENTRY(clone, "Clone Object") OO_METHOD_ENTRY(
-                                              dict, "return all dictionary"){NULL, NULL, 0, NULL}};
+                                      OO_METHOD_ENTRY(highlight, "Highlight Object")
+                                        OO_METHOD_ENTRY(background, "Background Object") OO_METHOD_ENTRY(
+                                          only, "Only Object") OO_METHOD_ENTRY(show, "Show Object")
+                                          OO_METHOD_ENTRY(projection, "Projection Object")
+                                            OO_METHOD_ENTRY(pull, "Pull Obejct apart")
+                                              OO_METHOD_ENTRY(wrap, "Wrap Object around Cylinder")
+                                                OO_METHOD_ENTRY(render, "Render Object")
+                                                  OO_METHOD_ENTRY(clone, "Clone Object") OO_METHOD_ENTRY(
+                                                    dict, "return all dictionary"){NULL, NULL, 0, NULL}};
 
 PyNumberMethods PyOpenSCADNumbers = {
   python_nb_add,        // binaryfunc nb_add
