@@ -87,8 +87,8 @@ set(WASM_BUILD_TYPE "web" CACHE STRING
   "WebAssembly build type. Support web (builds an OpenSCAD module) or node (standalone .js executable)")
 
 if (USE_QT6)
-  # Minimum version required for Qt-6.5
-  set(DEPLOYMENT_TARGET "11.0")
+  # Minimum version required for Qt-6.8
+  set(DEPLOYMENT_TARGET "12.0")
 else()
   # Minimum version required for std::filesystem
   set(DEPLOYMENT_TARGET "10.15")
@@ -1887,7 +1887,10 @@ elseif(WIN32)
 endif()
 
 file(GLOB_RECURSE TEST_SOURCES
-  "src/*_test.cc"
+  "src/utils/*_test.cc"
+)
+file(GLOB_RECURSE GUI_TEST_SOURCES
+  "src/gui/*_test.cc"
 )
 list(FILTER Sources EXCLUDE REGEX ".*_test[.]cc")
 list(REMOVE_ITEM Sources "src/main_wrapper.cc")
@@ -2335,11 +2338,15 @@ if(ENABLE_TESTS)
     # You can ignore it. Something about incompatibility with POSITION_INDEPENDENT_CODE
     # and how the system Catch2 static library is compiled. It should be fine.
 
-    #    add_executable(OpenSCADUnitTests ${TEST_SOURCES})
-    #target_link_libraries(OpenSCADUnitTests PRIVATE Catch2::Catch2WithMain OpenSCADLibInternal)
-    #include(CTest)
-    #include(Catch)
-    #catch_discover_tests(OpenSCADUnitTests ADD_TAGS_AS_LABELS)
+    if(HEADLESS)
+      add_executable(OpenSCADUnitTests ${TEST_SOURCES})
+    else()
+      add_executable(OpenSCADUnitTests ${TEST_SOURCES} ${GUI_TEST_SOURCES})
+    endif()
+    target_link_libraries(OpenSCADUnitTests PRIVATE Catch2::Catch2WithMain OpenSCADLibInternal svg)
+    include(CTest)
+    include(Catch)
+    catch_discover_tests(OpenSCADUnitTests ADD_TAGS_AS_LABELS)
   else()
     message(WARNING "Catch2 3 was not found. OpenSCADUnitTests will not be built.")
   endif()
