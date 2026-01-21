@@ -5,6 +5,7 @@ Name=PythonSCAD
 Comment=The Programmers Solid 3D CAD Modeller
 Icon=pythonscad
 Exec=${EXECUTABLE_NAME} %f
+StartupWMClass=org.pythonscad.pythonscad
 MimeType=application/x-openscad;
 Categories=Graphics;3DGraphics;Engineering;
 Keywords=3d;solid;geometry;csg;model;stl;
