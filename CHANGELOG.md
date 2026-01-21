@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.9.1](https://github.com/pythonscad/pythonscad/compare/v0.9.0...v0.9.1) (2026-01-21)
+
+
+### Documentation
+
+* **web:** various improvements to the website ([#377](https://github.com/pythonscad/pythonscad/issues/377)) ([56ddc34](https://github.com/pythonscad/pythonscad/commit/56ddc34f979734102a5aac6421990fbbbe708a79))
+
 ## [0.9.0](https://github.com/pythonscad/pythonscad/compare/v0.8.31...v0.9.0) (2026-01-20)
 
 

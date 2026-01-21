@@ -8,13 +8,13 @@ This page explains how to install PythonSCAD on common platforms.
 
 PythonSCAD packages are published to an APT repository. See <https://repos.pythonscad.org/apt/> for detailed instructions on how to use it.
 
-Alternatively you can download the latest Debian package from our [downlaods page](/downloads/).
+Alternatively you can download the latest Debian package from our [downlaods page](downloads.md).
 
 ## Linux (Fedora / CentOS / RHEL / YUM / DNF)
 
 PythonSCAD packages are published to a YUM repository. See <https://repos.pythonscad.org/yum/> for detailed instructions on how to use it.
 
-Alternatively you can download the latest RPM package from our [downlaods page](/downloads/).
+Alternatively you can download the latest RPM package from our [downlaods page](downloads.md).
 
 ## GNU Guix
 
@@ -24,7 +24,7 @@ We try to keep PythonSCAD up to date in GNU Guix by periodically submitting upda
 
 AppImages should be distribution agnostic and should run on most Linux distributions.
 
-Download the AppImage from the [downlaods page](/downloads/). To use it system-wide you can make it executable and move it into a directory on your `PATH` (for example `/usr/local/bin`):
+Download the AppImage from the [downlaods page](downloads.md). To use it system-wide you can make it executable and move it into a directory on your `PATH` (for example `/usr/local/bin`):
 
 ```shell
 chmod +x PythonSCAD-<version>.AppImage
