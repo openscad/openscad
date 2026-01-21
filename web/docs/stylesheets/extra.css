@@ -1,0 +1,41 @@
+.md-grid {
+  max-width: initial;
+}
+
+@font-face {
+  font-family: 'Intel One Mono';
+  src: url('/fonts/IntelOneMono/IntelOneMono-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+.cheatsheet-section {
+    margin-bottom: 2em;
+}
+
+#searchInput {
+    width: 100%;
+    font-size: 16px;
+    padding: 12px 20px;
+    margin-bottom: 24px;
+    border: 1px solid var(--md-default-fg-color--lighter);
+    border-radius: 4px;
+    background-color: var(--md-default-bg-color);
+    color: var(--md-default-fg-color);
+}
+
+.cheatsheet-grid {
+    display: grid;
+    grid-template-columns: auto auto auto;
+    gap: 1em;
+    align-items: stretch;
+    margin-bottom: 1em;
+}
+
+.cheatsheet-grid div, .cheatsheet-grid pre {
+    background-color: var(--md-code-bg-color);
+    padding: 0.5em;
+    border-radius: 5px;
+    overflow-x: auto;
+}

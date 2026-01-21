@@ -11,8 +11,12 @@ theme:
     - navigation.instant
     - content.tabs.link
     - content.code.copy
+    - content.code.select
   icon:
     repo: fontawesome/brands/github
+
+  font:
+    code: Intel One Mono
 
   palette:
     # Palette toggle for dark mode
@@ -28,11 +32,16 @@ theme:
       toggle:
         icon: material/brightness-7
         name: Switch to dark mode
+
+extra_css:
+  - stylesheets/extra.css
+
 nav:
   - Home: index.md
   - Get started: get_started.md
   - Downloads: downloads.md
   - Installation: installation.md
+  - Building: building.md
   - Tutorial:
       - Getting Started: tutorial/getting_started.md
       - Combining Objects: tutorial/combining_objects.md
@@ -42,8 +51,7 @@ nav:
       - New Functions in pythonscad: tutorial/python_new.md
   - Examples: examples.md
   - Cheat-Sheet: cheatsheet.md
-  - References: references.md
-  - Future: future.md
+  - Resources: resources.md
   - Contact: contact.md
 
 markdown_extensions:
