@@ -1,0 +1,227 @@
+.TH PYTHONSCAD 1 "@OPENSCAD_VERSION@"
+.SH NAME
+pythonscad \- Script-based 3D modeling app with Python support
+.SH SYNOPSIS
+.B pythonscad
+.RI [ options ]
+.RI [ file ]
+.SH DESCRIPTION
+This manual page documents briefly the \fBpythonscad\fP command.
+.PP
+\fBPythonSCAD\fP is a programmatic 3D modeling application. It allows you to
+turn simple code into 3D models suitable for 3D printing.
+
+PythonSCAD is a fork of OpenSCAD which not only adds support for using Python
+as a native language, but also adds new features and improves existing ones.
+
+PythonSCAD will start as a graphical program unless export options are given (see
+below). For a description of the OpenSCAD language see the OpenSCAD user manual at
+https://en.wikibooks.org/wiki/OpenSCAD_User_Manual. For PythonSCAD-specific
+documentation visit https://pythonscad.org.
+.SH OPTIONS
+
+.TP
+\fB\-o\fP \fIoutputfile\fP
+Export the given file to \fIoutputfile\fP instead of running the GUI. The file
+extension specifies the type. If this option is given, the GUI will not be started.
+May be used multiple times for different exports. Use '\-' for stdout.
+
+Known extensions: stl, off, wrl, amf, 3mf, csg, dxf, svg, pdf, png, echo, ast, term,
+nef3, nefdbg, param, pov.
+
+Additional formats, which are mainly used for debugging and testing (but can
+also be used in automation), are AST (the input file as parsed and serialized
+again), CSG (an OpenSCAD language representation of the input file with
+calculations done and module calls applied), TERM (the constructive solid
+geometry expression passed to OpenCSG).  If \fIoutputfile\fP is \fBnull\fP, no
+output file will be written, but the file will still be evaluated and all
+\fBecho\fP commands will be written to the standard error output. (The
+rendering process will still take place if the \fB\-\-render\fP option is
+given.)
+.TP
+\fB\-\-export\-format=\fIformat
+Overrides format of exported scad file when using option \fB\-o\fP. \fIformat\fP
+can be any of its supported file extensions. For ASCII stl export, specify
+\fBasciistl\fP, and for binary stl export, specify \fBbinstl\fP. ASCII export is
+the current stl default, but binary stl is planned as the future default so
+\fBasciistl\fP should be explicitly specified in scripts when needed.
+.TP
+\fB\-q\fP, \fB\-\-quiet\fP
+Quiet mode (don't print anything except errors)
+.TP
+\fB\-d\fP \fIfile.deps\fP
+If the \fB-d\fP option is given, all files accessed while exporting are written
+to the given deps file in the syntax of a Makefile.
+.TP
+\fB\-m\fP \fImake_command\fP
+If a nonexisting file is accessed during PythonSCAD's operation, it will try to
+invoke \fImake_command missing_file\fP to create the missing file, and then
+read it again.
+.TP
+\fB\-O\fP \fIsection/key=val\fP
+Pass settings value to the file export using the format section/key=value, e.g
+export-pdf/paper-size=a3. Use \-\-help\-export to list all available settings.
+More than one \fB-O\fP option can be given.
+.TP
+\fB\-D\fP \fIvar=val\fP
+This option can be used to assign constant values to OpenSCAD variables. The
+variable's value is an expression, so if this mechanism is used to assign
+strings, care has to be taken that the shell does not consume quotation marks.
+More than one \fB\-D\fP option can be given.
+.TP
+\fB\-p\fP \fIfile\fP
+Customizer parameter file.
+.TP
+\fB\-P\fP \fIname\fP
+Customizer parameter set.
+.TP
+\fB\-h\fP, \fB\-\-help\fP
+Print basic program usage and exit.
+.TP
+\fB\-\-help\-export\fP
+Print list of export parameters and values that can be set via \-O.
+.TP
+\fB\-v\fP, \fB\-\-version\fP
+Print version.
+.TP
+\fB\-\-info\fP
+Show which versions of libraries were used to compile the program, and which
+OpenGL details are discovered.
+.TP
+\fB\-\-enable\fP \fIfeature\fP
+Enable experimental features. Specify 'all' for enabling all available features.
+Available features: roof, input-driver-dbus, skin, lazy-union,
+vertex-object-renderers-indexing, textmetrics, import-function, object-function,
+predictible-output, wrap-polygon, vector-swizzle, python-engine,
+add-parameter-pure-function.
+.TP
+\fB\-\-backend\fP \fIbackend\fP
+3D rendering backend to use: 'CGAL' (old/slow) or 'Manifold' (new/fast) [default].
+
+.SS Image Export Options
+.TP
+\fB\-\-render\fP
+If exporting an image, render the model fully. (Default is preview)
+.TP
+\fB\-\-preview\fP[=throwntogether]
+If exporting an image, use an OpenCSG preview (optionally in throwntogether mode for quicker rendering).
+.TP
+\fB\-\-animate\fP \fIN\fP
+Export N animated frames as PNG images.
+.TP
+\fB\-\-animate_sharding\fP \fIshard/num_shards\fP
+Divide animation work into \fInum_shards\fP and only output frames for \fIshard\fP.
+E.g. 2/5 only outputs the second 1/5 of frames. Use to parallelize work on multiple
+cores or machines.
+.TP
+\fB\-\-view\fP \fIoptions\fP
+View options: axes, crosshairs, edges, scales.
+.TP
+\fB\-\-csglimit=\fIlimit\fP
+If exporting an image as an OpenCSG preview, stop rendering after encountering \fIlimit\fP elements to avoid runaway resource usage.
+.TP
+\fB\-\-camera=\fItransx,transy,transz,rotx,roty,rotz,distance\fP
+If exporting an image, use a Gimbal camera with the given parameters.
+Rot is rotation around the x, y, and z axis, trans is the distance to
+move the object in the x, y, and z directions, and distance is the
+distance between the camera and the center of the object.
+.TP
+\fB\-\-camera=\fIeyex,eyey,eyez,centerx,centery,centerz\fP
+If exporting an image, use a Vector camera with the given parameters.
+The first three are for the Eye position, while the next three are for
+the Center (or target) that the camera will look at. The 'up' vector is
+not currently supported.
+.TP
+\fB\-\-viewall\fP
+If exporting an image, adjust camera distance to fit the whole design in the frame.
+.TP
+\fB\-\-autocenter\fP
+If exporting an image, center the design in the frame.
+.TP
+\fB\-\-imgsize=\fIwidth,height\fP
+If exporting an image, specify the pixel width and height.
+.TP
+\fB\-\-projection=\fP[o|ortho|p|perspective]
+If exporting an image, specify whether to use orthographic or perspective
+projection.
+.TP
+\fB\-\-colorscheme=\fIscheme\fP
+If exporting an image, use the specified color scheme for the rendering.
+\fIscheme\fP can be any of \fBCornfield\fP (default), \fBMetallic\fP, \fBSunset\fP,
+\fBStarnight\fP, \fBBeforeDawn\fP, \fBNature\fP, \fBDaylight Gem\fP,
+\fBNocturnal Gem\fP, \fBDeepOcean\fP, \fBSolarized\fP, \fBTomorrow\fP,
+\fBTomorrow Night\fP, \fBClearSky\fP, or \fBMonotone\fP.
+
+.SS Summary and Statistics Options
+.TP
+\fB\-\-summary\fP \fIoptions\fP
+Enable additional render summary and statistics. Options: all, cache, time,
+camera, geometry, bounding-box, area.
+.TP
+\fB\-\-summary\-file\fP \fIfile\fP
+Output summary information in JSON format to the given file. Use '\-' for stdout.
+
+.SS Warning and Debugging Options
+.TP
+\fB\-\-hardwarnings\fP
+Stop on the first warning.
+.TP
+\fB\-\-check\-parameters=\fP[true|false]
+Configure the parameter check for user modules and functions.
+.TP
+\fB\-\-check\-parameter\-ranges=\fP[true|false]
+Configure the parameter range check for builtin modules.
+.TP
+\fB\-\-trace\-depth\fP \fIn\fP
+Maximum number of trace messages.
+.TP
+\fB\-\-trace\-usermodule\-parameters=\fP[true|false]
+Configure the output of user module parameters in a trace.
+.TP
+\fB\-\-debug\fP \fIarg\fP
+Special debug info - specify 'all' or a set of source file names.
+
+.SS GUI Options
+.TP
+\fB\-\-reset\-window\-settings\fP
+Reset GUI settings for window placement and fonts.
+
+.SS Python-specific Options
+.TP
+\fB\-\-trust\-python\fP
+Trust Python scripts (disable security prompts).
+.TP
+\fB\-\-ipython\fP
+Run IPython interpreter.
+.TP
+\fB\-\-python\-module\fP \fImodule\fP
+Call pip Python module.
+
+.SH COMMAND LINE EXAMPLES
+.PP
+
+Render example001.scad into the .stl format (raw triangle data):
+.PP
+.B pythonscad -o example001.stl examples/example001.scad
+.PP
+Compile a 2d image using a camera rotated 25 degrees in x and 35 in z,
+distance 500, with orthographic projection:
+.PP
+.B pythonscad -o o.png o.scad --camera=0,0,0,25,0,35,500 --projection=ortho
+.PP
+Set the 'mode' variable in example017 so that it will render only the
+parts of the shape. Export to a .dxf file.
+.PP
+.B pythonscad -o example017.dxf -D'mode="parts"' examples/example017.scad
+.PP
+Run a Python script:
+.PP
+.B pythonscad -o output.stl model.py
+
+.SH AUTHOR
+PythonSCAD was forked from OpenSCAD by Guenther Sohler and others.
+OpenSCAD was written by Claire 'Clifford' Wolf, Marius Kintel, and others.
+.PP
+This manual page was originally written by chrysn <chrysn@fsfe.org>,
+for the Debian project (and may be used by others). Updated by
+the PythonSCAD team.
