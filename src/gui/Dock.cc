@@ -7,7 +7,6 @@
 Dock::Dock(QWidget *parent) : QDockWidget(parent)
 {
   connect(this, &QDockWidget::topLevelChanged, this, &Dock::onTopLevelStatusChanged);
-  connect(this, &QDockWidget::visibilityChanged, this, &Dock::onVisibilityChanged);
 
   dockTitleWidget = new QWidget();
 }
@@ -17,28 +16,12 @@ Dock::~Dock()
   delete dockTitleWidget;
 }
 
-void Dock::disableSettingsUpdate()
-{
-  updateSettings = false;
-}
-
-void Dock::onVisibilityChanged(bool isDockVisible)
-{
-  if (updateSettings) {
-    QSettingsCached settings;
-    settings.setValue(configKey, !isVisible());
-  }
-}
 
 void Dock::setTitleBarVisibility(bool isVisible)
 {
   setTitleBarWidget(isVisible ? dockTitleWidget : nullptr);
 }
 
-void Dock::setConfigKey(const QString& configKey)
-{
-  this->configKey = configKey;
-}
 
 void Dock::updateTitle()
 {

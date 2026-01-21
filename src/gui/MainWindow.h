@@ -126,13 +126,24 @@ public:
 private:
   RubberBandManager rubberBandManager;
 
-  std::vector<std::tuple<Dock *, QString, QString>> docks;
+  std::vector<std::tuple<Dock *, QString>> docks;
 
   volatile bool isClosing = false;
   void consoleOutputRaw(const QString& msg);
   void clearAllSelectionIndicators();
   void setSelectionIndicatorStatus(EditorInterface *editor, int nodeIndex,
                                    EditorSelectionIndicatorStatus status);
+
+  void setupOutputWindows();
+  void setupCoreSubsystems();
+  void setupTabManager(const QStringList& filenames);
+  void setupPreferences();
+  void setup3DView();
+  void setupInput();
+  void initDocks();
+  void setupMenusAndActions();
+  void restoreWindowState();
+  void openRemainingFiles(const QStringList& filenames);
 
 protected:
   void closeEvent(QCloseEvent *event) override;
