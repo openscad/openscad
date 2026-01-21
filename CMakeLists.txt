@@ -645,7 +645,8 @@ if(ENABLE_PYTHON)
     src/python/pyopenscad.cc
     src/python/pydata.cc
     src/python/pymod.cc
-    src/python/pyfunctions.cc)
+    src/python/pyfunctions.cc
+    src/python/pyconversion.cc)
   if(ENABLE_LIBFIVE)
     list(APPEND PYTHON_SOURCES
       src/python/FrepNode.cc)
