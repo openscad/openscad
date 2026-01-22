@@ -124,7 +124,7 @@ supported 3D model formats.
 
 ## Python
 
-One obvious difference is that you can us Python when programming in
+One obvious difference is that you can use Python when programming in
 PythonSCAD. While part of the Python support has been merged to
 OpenSCAD already, not all of it is in there yet, so you probably will
 have a better experience when using PythonSCAD for writing models in
