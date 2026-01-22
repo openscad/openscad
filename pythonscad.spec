@@ -113,7 +113,7 @@ find %{buildroot} -type f \( -name "*.so*" -o -perm /111 \) -exec chrpath --dele
 %{_datadir}/applications/pythonscad.desktop
 %{_datadir}/mime/packages/pythonscad.xml
 %{_datadir}/metainfo/org.pythonscad.PythonSCAD.appdata.xml
-%{_mandir}/man1/openscad.1*
+%{_mandir}/man1/pythonscad.1*
 
 %post
 /sbin/ldconfig

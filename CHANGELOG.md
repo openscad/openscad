@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.10.2](https://github.com/pythonscad/pythonscad/compare/v0.10.1...v0.10.2) (2026-01-22)
+
+
+### Bug Fixes
+
+* **spec:** correct man page reference from openscad to pythonscad ([#385](https://github.com/pythonscad/pythonscad/issues/385)) ([b9fb68c](https://github.com/pythonscad/pythonscad/commit/b9fb68c1d869a95b7895904509dafb95e987c66c))
+
+## [0.10.1](https://github.com/pythonscad/pythonscad/compare/v0.10.0...v0.10.1) (2026-01-21)
+
+
+### Documentation
+
+* migrate manpage from openscad to pythonscad with new options ([#383](https://github.com/pythonscad/pythonscad/issues/383)) ([62a23be](https://github.com/pythonscad/pythonscad/commit/62a23be9edb06b722162026b2be9d47c2ff74e0e))
+
 ## [0.10.0](https://github.com/pythonscad/pythonscad/compare/v0.9.1...v0.10.0) (2026-01-21)
 
 
