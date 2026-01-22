@@ -239,6 +239,9 @@ qscintilla2_sysver()
   if qmake -v >/dev/null 2>&1 ; then
     QMAKE=qmake
   fi
+  if qmake6 -v >/dev/null 2>&1 ; then
+    QMAKE=qmake6
+  fi
   debug using qmake: $QMAKE
 
   qtincdir="`$QMAKE -query QT_INSTALL_HEADERS`"

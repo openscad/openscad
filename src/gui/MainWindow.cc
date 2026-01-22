@@ -431,14 +431,14 @@ MainWindow::MainWindow(const QStringList& filenames) : rubberBandManager(this)
   this->addAction(editActionInsertTemplate);
   this->addAction(editActionFoldAll);
 
-  docks = {{editorDock, _("Editor"), "view/hideEditor"},
-           {consoleDock, _("Console"), "view/hideConsole"},
-           {parameterDock, _("Customizer"), "view/hideCustomizer"},
-           {errorLogDock, _("Error-Log"), "view/hideErrorLog"},
-           {animateDock, _("Animate"), "view/hideAnimate"},
-           {fontListDock, _("Font List"), "view/hideFontList"},
-           {colorListDock, _("Color List"), "view/hideColorList"},
-           {viewportControlDock, _("Viewport-Control"), "view/hideViewportControl"}};
+  docks = {{editorDock, _("&Editor"), "view/hideEditor"},
+           {consoleDock, _("&Console"), "view/hideConsole"},
+           {parameterDock, _("C&ustomizer"), "view/hideCustomizer"},
+           {errorLogDock, _("Error-&Log"), "view/hideErrorLog"},
+           {animateDock, _("&Animate"), "view/hideAnimate"},
+           {fontListDock, _("&Font List"), "view/hideFontList"},
+           {colorListDock, _("C&olor List"), "view/hideColorList"},
+           {viewportControlDock, _("&Viewport-Control"), "view/hideViewportControl"}};
 
   this->versionLabel = nullptr;   // must be initialized before calling updateStatusBar()
   this->languageLabel = nullptr;  // must be initialized before calling updateLanguageLabel()
@@ -566,8 +566,6 @@ MainWindow::MainWindow(const QStringList& filenames) : rubberBandManager(this)
   waitAfterReloadTimer->setSingleShot(true);
   waitAfterReloadTimer->setInterval(autoReloadPollingPeriodMS);
   connect(waitAfterReloadTimer, &QTimer::timeout, this, &MainWindow::waitAfterReload);
-  connect(GlobalPreferences::inst(), &Preferences::ExperimentalChanged, this,
-          &MainWindow::changeParameterWidget);
 
   progressThrottle->start();
 
@@ -898,6 +896,7 @@ MainWindow::MainWindow(const QStringList& filenames) : rubberBandManager(this)
     menuWindow->addAction(dock->toggleViewAction());
 
     auto dockAction = navigationMenu->addAction(title);
+    dockAction->setShortcut(QKeySequence::mnemonic(title));
     dockAction->setProperty("id", QVariant::fromValue(dock));
     connect(dockAction, &QAction::triggered, this, &MainWindow::onNavigationTriggerContextMenuEntry);
     connect(dockAction, &QAction::hovered, this, &MainWindow::onNavigationHoveredContextMenuEntry);
@@ -1045,8 +1044,8 @@ void MainWindow::onNavigationTriggerContextMenuEntry()
   Dock *dock = action->property("id").value<Dock *>();
   assert(dock != nullptr);
 
-  dock->raise();
   dock->show();
+  dock->raise();
   dock->setFocus();
 
   // Forward the focus on the content of the tabmanager
@@ -2622,11 +2621,6 @@ void MainWindow::parseTopLevelDocument()
   activeEditor->resetHighlighting();
   this->rootFile = parseDocument(activeEditor);
   this->parsedFile = this->rootFile;
-}
-
-void MainWindow::changeParameterWidget()
-{
-  parameterDock->setVisible(true);
 }
 
 void MainWindow::checkAutoReload()
