@@ -250,7 +250,18 @@ use[ \t\r\n]*"<"        { BEGIN(cond_use); LOCATION_COUNT_LINES(parserlloc, yyte
  files on the cmd-line as in the editor.
 */%}
 
-[\xc2\xa0]+
+"\xc2\xa0"
+
+%{/*
+ U+FEFF (UTF-8 encoded: EF BB BF) is ZERO WIDTH NO-BREAK SPACE, also used in UTF-16
+ as a byte order indicator (since FFFE is not a legal Unicode code point).  It is perhaps
+ most commonly (ab)used as a marker at the start of a UTF-8 text stream to indicate that
+ the text is in UTF-8.  We slightly-incorrectly treat it as a breaking space.
+ Note that we treat it as a space anywhere in a file, not just at the top.  This is both
+ easier and handles cases where you "cat" two files together and so end up with one in
+ the middle.
+*/%}
+"\xEF\xBB\xBF"
 
 {UNICODE}+              { parser_error_pos -= strlen(yytext); return TOK_ERROR; }
 
