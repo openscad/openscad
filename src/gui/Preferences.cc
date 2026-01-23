@@ -181,6 +181,7 @@ void Preferences::init()
   this->defaultmap["view/hideAnimate"] = true;
   this->defaultmap["view/hideCustomizer"] = true;
   this->defaultmap["view/hideFontList"] = true;
+  this->defaultmap["view/hideColorList"] = true;
   this->defaultmap["view/hideViewportControl"] = true;
   this->defaultmap["editor/enableAutocomplete"] = true;
   this->defaultmap["editor/characterThreshold"] = 1;
@@ -296,7 +297,10 @@ void Preferences::init()
   emit editorConfigChanged();
 }
 
-Preferences::~Preferences() { removeDefaultSettings(); }
+Preferences::~Preferences()
+{
+  removeDefaultSettings();
+}
 
 void Preferences::update()
 {
@@ -853,9 +857,9 @@ void Preferences::on_enableRangeCheckBox_toggled(bool state)
 void Preferences::on_comboBoxRenderBackend3D_activated(int val)
 {
   applyComboBox(this->comboBoxRenderBackend3D, val, Settings::Settings::renderBackend3D);
-  RenderSettings::inst()->backend3D =
-    renderBackend3DFromString(Settings::Settings::renderBackend3D.value())
-      .value_or(DEFAULT_RENDERING_BACKEND_3D);
+  auto backend = renderBackend3DFromString(Settings::Settings::renderBackend3D.value())
+                   .value_or(DEFAULT_RENDERING_BACKEND_3D);
+  emit renderBackend3DChanged(backend);
 }
 
 void Preferences::on_comboBoxToolbarExport3D_activated(int val)
@@ -1235,7 +1239,10 @@ void Preferences::writeSettings()
   fireEditorConfigChanged();
 }
 
-void Preferences::fireEditorConfigChanged() const { emit editorConfigChanged(); }
+void Preferences::fireEditorConfigChanged() const
+{
+  emit editorConfigChanged();
+}
 
 void Preferences::keyPressEvent(QKeyEvent *e)
 {

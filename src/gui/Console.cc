@@ -34,13 +34,15 @@
 #include <QStringLiteral>
 #include <QTextCharFormat>
 #include <QWidget>
-#include <cassert>
+#include <QWheelEvent>
 #include <QMenu>
 #include <QFileInfo>
 #include <QFileDialog>
 #include <QTextStream>
 #include <QRegularExpression>
 #include <QString>
+#include <algorithm>
+#include <cassert>
 #include "gui/MainWindow.h"
 #include "utils/printutils.h"
 #include "gui/Preferences.h"
@@ -52,8 +54,9 @@ Console::Console(QWidget *parent) : QPlainTextEdit(parent)
   connect(this->actionClear, &QAction::triggered, this, &Console::actionClearConsole_triggered);
   connect(this->actionSaveAs, &QAction::triggered, this, &Console::actionSaveAs_triggered);
   connect(this, &Console::linkActivated, this, &Console::hyperlinkClicked);
-  this->setUndoRedoEnabled(false);
   this->appendCursor = this->textCursor();
+  this->setUndoRedoEnabled(false);
+  this->setTextInteractionFlags(Qt::TextSelectableByKeyboard | Qt::TextSelectableByMouse);
 }
 
 void Console::focusInEvent(QFocusEvent * /*event*/)
@@ -67,6 +70,20 @@ void Console::focusInEvent(QFocusEvent * /*event*/)
   if (mw) mw->setLastFocus(this);
 }
 
+void Console::wheelEvent(QWheelEvent *event)
+{
+  if (event->modifiers().testFlag(Qt::ControlModifier)) {
+    const auto delta = event->angleDelta().y() / 120.0;
+    if (delta != 0) {
+      const auto step = static_cast<int>(std::signbit(delta) ? std::floor(delta) : std::ceil(delta));
+      setConsoleFont(font().family(), std::clamp(font().pointSize() + step, 6, 72));
+      event->accept();
+      return;
+    }
+  }
+  QPlainTextEdit::wheelEvent(event);
+}
+
 void Console::addMessage(const Message& msg)
 {
   // Messages with links to source must be inserted separately,
@@ -74,22 +91,33 @@ void Console::addMessage(const Message& msg)
   //    QTextCursor::insertText(const QString &text, const QTextCharFormat &format)
   // But if no link, and matching colors, then concat message strings with newline in between.
   // This results in less calls to insertText in Console::update(), and much better performance.
-  if (!this->msgBuffer.empty() && msg.loc.isNone() && this->msgBuffer.back().link.isEmpty() &&
-      (getGroupColor(msg.group) == getGroupColor(this->msgBuffer.back().group))) {
+
+  auto msgstr = QString::fromStdString(msg.str());
+  auto color = QString::fromStdString(getGroupColor(msg.group));
+  const auto messageHasNoLocation = msg.loc.isNone();
+  const auto bufferHasMessages = !this->msgBuffer.empty();
+  const auto lastMessageHasNoLink = bufferHasMessages && this->msgBuffer.back().link.isEmpty();
+  const auto lastMessageNotInfo =
+    bufferHasMessages && this->msgBuffer.back().group != message_group::HtmlLink;
+  const auto sameColor = bufferHasMessages && color == this->msgBuffer.back().color;
+
+  if (bufferHasMessages && messageHasNoLocation && lastMessageHasNoLink && lastMessageNotInfo &&
+      sameColor) {
     auto& lastmsg = this->msgBuffer.back().message;
     lastmsg += QChar('\n');
-    lastmsg += QString::fromStdString(msg.str());
+    lastmsg += msgstr;
   } else {
-    this->msgBuffer.push_back(
-      {QString::fromStdString(msg.str()),
-       (getGroupTextPlain(msg.group) || msg.loc.isNone())
-         ? QString()
-         : QString("%1,%2").arg(msg.loc.firstLine()).arg(QString::fromStdString(msg.loc.fileName())),
-       msg.group});
+    const auto isPlain = getGroupTextPlain(msg.group) || msg.loc.isNone();
+    auto link =
+      isPlain
+        ? QString()
+        : QString("%1,%2").arg(msg.loc.firstLine()).arg(QString::fromStdString(msg.loc.fileName()));
+    this->msgBuffer.emplace_back(msgstr, link, msg.group, color);
   }
 }
 
-// Slow due to HTML parsing required, only used for initial Console header.
+// Slow due to HTML parsing required, only used for initial Console header
+// and Info messages with links.
 void Console::addHtml(const QString& html)
 {
   this->appendHtml(html + QStringLiteral("&nbsp;"));
@@ -97,7 +125,7 @@ void Console::addHtml(const QString& html)
   this->setTextCursor(this->appendCursor);
 }
 
-void Console::setFont(const QString& fontFamily, uint ptSize)
+void Console::setConsoleFont(const QString& fontFamily, uint ptSize)
 {
   const auto stylesheet = QString(R"(
     QPlainTextEdit {
@@ -113,22 +141,27 @@ void Console::update()
   // Faster to ignore block count until group of messages are done inserting.
   this->setMaximumBlockCount(0);
   for (const auto& line : this->msgBuffer) {
-    QTextCharFormat charFormat;
-    if (line.group != message_group::NONE && line.group != message_group::Echo)
-      charFormat.setForeground(QBrush(QColor("#000000")));
-    charFormat.setBackground(QBrush(QColor(getGroupColor(line.group).c_str())));
-    if (!line.link.isEmpty()) {
-      charFormat.setAnchor(true);
-      charFormat.setAnchorHref(line.link);
-      charFormat.setFontUnderline(true);
-    }
-    // TODO insert timestamp as tooltip? (see #3570)
-    //   may have to get rid of concatenation feature of Console::addMessage,
-    //   or just live with grouped messages using the same timestamp
-    // charFormat.setToolTip(timestr);
+    if (line.group == message_group::HtmlLink) {
+      addHtml(line.message);
+    } else {
+      QTextCharFormat charFormat;
+      if (line.group != message_group::NONE && line.group != message_group::Echo) {
+        charFormat.setForeground(QBrush(QColor("#000000")));
+      }
+      charFormat.setBackground(QBrush(QColor(line.color)));
+      if (!line.link.isEmpty()) {
+        charFormat.setAnchor(true);
+        charFormat.setAnchorHref(line.link);
+        charFormat.setFontUnderline(true);
+      }
+      // TODO insert timestamp as tooltip? (see #3570)
+      //   may have to get rid of concatenation feature of Console::addMessage,
+      //   or just live with grouped messages using the same timestamp
+      // charFormat.setToolTip(timestr);
 
-    appendCursor.insertBlock();
-    appendCursor.insertText(line.message, charFormat);
+      appendCursor.insertBlock();
+      appendCursor.insertText(line.message, charFormat);
+    }
   }
   msgBuffer.clear();
   this->setTextCursor(appendCursor);
@@ -174,6 +207,10 @@ void Console::hyperlinkClicked(const QString& url)
   if (url.startsWith("http://") || url.startsWith("https://")) {
     UIUtils::openURL(url);
     return;
+  }
+
+  if (url.startsWith("open-window://")) {
+    emit openWindowRequested(QString("#%1").arg(url.mid(14)));
   }
 
   const QRegularExpression regEx("^(\\d+),(.*)$");

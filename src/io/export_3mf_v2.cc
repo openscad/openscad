@@ -84,7 +84,10 @@ uint32_t lib3mf_seek_callback(uint64_t pos, std::ostream *stream)
   return !(*stream);
 }
 
-void export_3mf_error(std::string msg) { LOG(message_group::Export_Error, std::move(msg)); }
+void export_3mf_error(std::string msg)
+{
+  LOG(message_group::Export_Error, std::move(msg));
+}
 
 int count_mesh_objects(const Lib3MF::PModel& model)
 {

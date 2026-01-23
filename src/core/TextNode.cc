@@ -63,7 +63,10 @@ std::vector<std::shared_ptr<const Polygon2d>> TextNode::createPolygonList() cons
   return renderer.render(params);
 }
 
-std::string TextNode::toString() const { return STR(name(), "(", this->params, ")"); }
+std::string TextNode::toString() const
+{
+  return STR(name(), "(", this->params, ")");
+}
 
 void register_builtin_text()
 {

@@ -1,0 +1,17 @@
+#include "version.h"
+
+const std::string openscad_shortversionnumber = "@OPENSCAD_SHORTVERSION@";
+const std::string openscad_versionnumber = "@OPENSCAD_VERSION@";
+const bool openscad_has_commit = @OPENSCAD_HAS_COMMIT@;
+const bool openscad_has_day = @OPENSCAD_HAS_DAY@;
+const int openscad_version_year = @OPENSCAD_YEAR@;
+const int openscad_version_month = @OPENSCAD_MONTH@;
+const int openscad_version_day = @OPENSCAD_DAY@;
+
+const std::string openscad_displayversionnumber = openscad_has_commit
+  ? (openscad_versionnumber + " (git " + std::string("@OPENSCAD_COMMIT@") + ")")
+  : openscad_shortversionnumber;
+
+const std::string openscad_detailedversionnumber = openscad_has_commit
+  ? openscad_displayversionnumber
+  : openscad_versionnumber;

@@ -137,6 +137,9 @@ std::unique_ptr<OffscreenView> prepare_preview(Tree& tree, const ViewOptions& op
 {
   return nullptr;
 }
-bool export_png(const OffscreenView& glview, std::ostream& output) { return false; }
+bool export_png(const OffscreenView& glview, std::ostream& output)
+{
+  return false;
+}
 
 #endif  // NULLGL

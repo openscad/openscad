@@ -3,7 +3,9 @@
 #include "platform/PlatformUtils.h"
 #include "TestTabManager.h"
 
-void TestTabManager::initTestCase() {}
+void TestTabManager::initTestCase()
+{
+}
 
 void TestTabManager::checkOpenClose()
 {

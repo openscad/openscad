@@ -1,7 +1,7 @@
 name: OpenSCAD Stale bot
 on:
   schedule:
-    - cron: "10 * * * *"
+    - cron: "10 3 * * *"
   workflow_dispatch:
     inputs:
       logLevel:

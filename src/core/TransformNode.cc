@@ -272,9 +272,15 @@ TransformNode::TransformNode(const ModuleInstantiation *mi, std::string verbose_
 {
 }
 
-std::string TransformNode::name() const { return "transform"; }
+std::string TransformNode::name() const
+{
+  return "transform";
+}
 
-std::string TransformNode::verbose_name() const { return _name; }
+std::string TransformNode::verbose_name() const
+{
+  return _name;
+}
 
 void register_builtin_transform()
 {

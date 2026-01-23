@@ -9,9 +9,11 @@
 * Hex constants using 0x prefix #4833
 * Bitwise and shift operators: ~, |, &, <<, >> #4833
 * New modules:
+  * fill() #4348
+* New functions:
   * textmetrics() #3684
   * fontmetrics() #3684
-  * fill() #4348
+  * object() #6012
 * linear_extrude()
   * Added v= and segments= parameters #3770 #5080
   * h= is an alias for height= #5572
@@ -118,6 +120,7 @@
 * Removed support for dxf_linear_extrude(), dxf_rotate_extrude(), import_dxf(), import_stl() and import_off()
 * Removed deprecated -s and -x cmd-line options #5733
 * Variable names starting with a digit is deprecated (but still allowed for the time being, except when conflicting with hex constants) #4833
+* Removed deprecated child() and assign() modules.
 
 **Misc:**
 

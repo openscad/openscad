@@ -31,7 +31,10 @@
 // Not wanting to risk breaking translations by changing every usage of this,
 // I've opted to just disable the check in this case. - Hans L
 // NOLINTBEGIN(bugprone-reserved-identifier)
-inline char *_(const char *msgid) { return gettext(msgid); }
+inline char *_(const char *msgid)
+{
+  return gettext(msgid);
+}
 inline const char *_(const char *msgid, const char *msgctxt)
 {
   /* The separator between msgctxt and msgid in a .mo file.  */
@@ -55,6 +58,7 @@ enum class message_group {
   NONE,
   Error,
   Warning,
+  HtmlLink,  // Slow! Allows HTML links. Suppressed on command line.
   UI_Warning,
   Font_Warning,
   Export_Warning,
@@ -86,7 +90,9 @@ struct Message {
 
   [[nodiscard]] std::string str() const
   {
-    const auto g = group == message_group::NONE ? "" : getGroupName(group) + ": ";
+    const auto g = (group == message_group::NONE || group == message_group::HtmlLink)
+                     ? ""
+                     : getGroupName(group) + ": ";
     const auto l = loc.isNone() ? "" : " " + loc.toRelativeString(docPath);
     return g + msg + l;
   }

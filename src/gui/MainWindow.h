@@ -115,7 +115,7 @@ public:
 
   QLabel *versionLabel;
 
-  Measurement meas;
+  Measurement::Measurement meas;
 
   int compileErrors;
   int compileWarnings;
@@ -253,7 +253,6 @@ private slots:
   void instantiateRoot();
   void compileDone(bool didchange);
   void compileEnded();
-  void changeParameterWidget();
 
 private slots:
   void copyViewportTranslation();
@@ -282,8 +281,11 @@ private slots:
   void onErrorLogDockVisibilityChanged(bool isVisible);
   void onAnimateDockVisibilityChanged(bool isVisible);
   void onFontListDockVisibilityChanged(bool isVisible);
+  void onColorListDockVisibilityChanged(bool isVisible);
   void onViewportControlDockVisibilityChanged(bool isVisible);
   void onParametersDockVisibilityChanged(bool isVisible);
+
+  void onColorListColorSelected(const QString&);
 
   void on_editActionInsertTemplate_triggered();
   void on_editActionFoldAll_triggered();
@@ -392,7 +394,6 @@ public slots:
   void helpCheatSheet();
   void helpOfflineCheatSheet();
   void helpLibrary();
-  void helpFontInfo();
   void checkAutoReload();
   void waitAfterReload();
   void autoReloadSet(bool);

@@ -55,9 +55,15 @@ void draw_text(const char *text, cairo_t *cr, double x, double y, double fontSiz
   cairo_show_text(cr, text);
 }
 
-double mm_to_points(double mm) { return mm * PTS_IN_MM; }
+double mm_to_points(double mm)
+{
+  return mm * PTS_IN_MM;
+}
 
-double points_to_mm(double pts) { return pts / PTS_IN_MM; }
+double points_to_mm(double pts)
+{
+  return pts / PTS_IN_MM;
+}
 
 void draw_grid(cairo_t *cr, double left, double right, double bottom, double top, double gridSize)
 {

@@ -36,7 +36,10 @@ GLView::GLView()
 #endif
 }
 
-GLView::~GLView() { teardownShader(); }
+GLView::~GLView()
+{
+  teardownShader();
+}
 
 void GLView::setupShader()
 {
@@ -70,7 +73,10 @@ void GLView::teardownShader()
   }
 }
 
-void GLView::setRenderer(std::shared_ptr<Renderer> r) { this->renderer = r; }
+void GLView::setRenderer(std::shared_ptr<Renderer> r)
+{
+  this->renderer = r;
+}
 
 /* update the color schemes of the Renderer attached to this GLView
    to match the colorscheme of this GLView.*/
@@ -108,7 +114,10 @@ void GLView::resizeGL(int w, int h)
   setupShader();
 }
 
-void GLView::setCamera(const Camera& cam) { this->cam = cam; }
+void GLView::setCamera(const Camera& cam)
+{
+  this->cam = cam;
+}
 
 void GLView::setupCamera()
 {

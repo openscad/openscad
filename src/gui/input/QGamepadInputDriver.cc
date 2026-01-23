@@ -30,9 +30,13 @@
 
 #include <string>
 
-void QGamepadInputDriver::run() {}
+void QGamepadInputDriver::run()
+{
+}
 
-QGamepadInputDriver::QGamepadInputDriver() : gamepad(nullptr) {}
+QGamepadInputDriver::QGamepadInputDriver() : gamepad(nullptr)
+{
+}
 
 bool QGamepadInputDriver::open()
 {
@@ -119,7 +123,10 @@ bool QGamepadInputDriver::open()
   return true;
 }
 
-void QGamepadInputDriver::close() { gamepad.reset(); }
+void QGamepadInputDriver::close()
+{
+  gamepad.reset();
+}
 
 const std::string& QGamepadInputDriver::get_name() const
 {
@@ -127,7 +134,10 @@ const std::string& QGamepadInputDriver::get_name() const
   return name;
 }
 
-bool QGamepadInputDriver::isOpen() const { return this->gamepad ? this->gamepad->isConnected() : false; }
+bool QGamepadInputDriver::isOpen() const
+{
+  return this->gamepad ? this->gamepad->isConnected() : false;
+}
 
 std::string QGamepadInputDriver::get_info() const
 {
