@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.10.3](https://github.com/pythonscad/pythonscad/compare/v0.10.2...v0.10.3) (2026-01-23)
+
+
+### Bug Fixes
+
+* **ci:** mark published release as latest in GitHub ([#394](https://github.com/pythonscad/pythonscad/issues/394)) ([30f22bf](https://github.com/pythonscad/pythonscad/commit/30f22bf676fdb92ad94dbe5dabeb2e5d1241f704))
+* disable -march=native for portable AppImage builds ([#395](https://github.com/pythonscad/pythonscad/issues/395)) ([390cf27](https://github.com/pythonscad/pythonscad/commit/390cf27773baaa47fc3ccd0ef370bd96f2d00f3f))
+
 ## [0.10.2](https://github.com/pythonscad/pythonscad/compare/v0.10.1...v0.10.2) (2026-01-22)
 
 
