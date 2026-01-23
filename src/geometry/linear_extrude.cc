@@ -148,13 +148,16 @@ std::unique_ptr<PolySet> assemblePolySetForCGAL(const Polygon2d& polyref,
  * @param scale_slice_top The vector of scaling applied to the polygon at the top of this slice.
  */
 void add_slice_indices(PolygonIndices& indices, int slice_idx, int slice_stride, const Polygon2d& poly,
-                       double rotation_slice_bottom, double rotation_slice_top, const Vector2d& scale_slice_bottom, const Vector2d& scale_slice_top)
+                       double rotation_slice_bottom, double rotation_slice_top,
+                       const Vector2d& scale_slice_bottom, const Vector2d& scale_slice_top)
 {
   int bottom_offset = (slice_idx - 1) * slice_stride;
   int top_offset = slice_idx * slice_stride;
 
-  Eigen::Affine2d trans_bot(Eigen::Scaling(scale_slice_bottom) * Eigen::Affine2d(rotate_degrees(-rotation_slice_bottom)));
-  Eigen::Affine2d trans_top(Eigen::Scaling(scale_slice_top) * Eigen::Affine2d(rotate_degrees(-rotation_slice_top)));
+  Eigen::Affine2d trans_bot(Eigen::Scaling(scale_slice_bottom) *
+                            Eigen::Affine2d(rotate_degrees(-rotation_slice_bottom)));
+  Eigen::Affine2d trans_top(Eigen::Scaling(scale_slice_top) *
+                            Eigen::Affine2d(rotate_degrees(-rotation_slice_top)));
 
   bool any_zero = scale_slice_top[0] == 0 || scale_slice_top[1] == 0;
   // setting back_twist true helps keep diagonals same as previous builds.
@@ -344,8 +347,7 @@ void prepareVerticesAndIndices(const Polygon2d& polyref, Vector3d h1, Vector3d h
                        1 - (1 - scale_y) * (slice_idx - 1) / num_slices);
     Vector2d scale_top(1 - (1 - scale_x) * slice_idx / num_slices,
                        1 - (1 - scale_y) * slice_idx / num_slices);
-    add_slice_indices(indices, slice_idx, slice_stride, polyref, rot_bot, rot_top, scale_bot,
-                      scale_top);
+    add_slice_indices(indices, slice_idx, slice_stride, polyref, rot_bot, rot_top, scale_bot, scale_top);
   }
 }
 
