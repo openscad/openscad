@@ -113,6 +113,10 @@ std::string Builtins::isDeprecated(const std::string& name) const
 Builtins::Builtins()
 {
   this->assignments.emplace_back(new Assignment("$fn", std::make_shared<Literal>(0.0)));
+  // $fe doesn't need initializing because `undef` is treated identical to 0.0,
+  // but it could be used for feature detection when complete,
+  // but does have the problem that these are initialized only once in `openscad_main`,
+  // so enabling the feature wouldn't initialize the variable until the program is restarted.
   this->assignments.emplace_back(new Assignment("$fs", std::make_shared<Literal>(2.0)));
   this->assignments.emplace_back(new Assignment("$fa", std::make_shared<Literal>(12.0)));
   this->assignments.emplace_back(new Assignment("$t", std::make_shared<Literal>(0.0)));
