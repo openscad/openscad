@@ -18,7 +18,10 @@
 // This must precede including measure.h
 #include <CGAL/Gmpq.h>
 namespace CGAL {
-inline const CGAL::Gmpq& exact(const CGAL::Gmpq& d) { return d; }
+inline const CGAL::Gmpq& exact(const CGAL::Gmpq& d)
+{
+  return d;
+}
 }  // namespace CGAL
 #endif
 #include <CGAL/boost/graph/convert_nef_polyhedron_to_polygon_mesh.h>
