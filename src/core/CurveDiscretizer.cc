@@ -76,9 +76,15 @@ CurveDiscretizer::CurveDiscretizer(std::function<std::optional<double>(const cha
   fs = std::max(valueLookup("fs").value_or(2.0), F_MINIMUM);
 }
 
-double segments_given_fa(double r, double fa) { return 360.0 / fa; }
+double segments_given_fa(double r, double fa)
+{
+  return 360.0 / fa;
+}
 
-double segments_given_fs(double r, double fs) { return r * 2 * M_PI / fs; }
+double segments_given_fs(double r, double fs)
+{
+  return r * 2 * M_PI / fs;
+}
 
 /*!
    Returns the number of subdivision of a whole circle, given radius and
