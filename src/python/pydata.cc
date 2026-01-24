@@ -5,6 +5,9 @@
 #include <Python.h>
 #include "pydata.h"
 
+#include <filesystem>
+namespace fs = std::filesystem;
+
 #include "Assignment.h"
 #include "ModuleInstantiation.h"
 #include "BuiltinContext.h"
@@ -204,7 +207,10 @@ std::vector<libfive::Tree *> PyDataObjectToTree(PyObject *obj)
 }
 
 #endif
-static int PyDataInit(PyDataObject *self, PyObject *args, PyObject *kwds) { return 0; }
+static int PyDataInit(PyDataObject *self, PyObject *args, PyObject *kwds)
+{
+  return 0;
+}
 
 #ifdef ENABLE_LIBFIVE
 PyObject *python_lv_void_int(PyObject *self, PyObject *args, PyObject *kwargs, libfive::Tree *t)
@@ -447,14 +453,35 @@ PyObject *python_lv_divide(PyObject *arg1, PyObject *arg2)
 {
   return python_lv_binop_int(arg1, arg2, libfive::Opcode::OP_DIV);
 }
-PyObject *python_lv_negate(PyObject *arg) { return python_lv_unop_int(arg, libfive::Opcode::OP_NEG); }
+PyObject *python_lv_negate(PyObject *arg)
+{
+  return python_lv_unop_int(arg, libfive::Opcode::OP_NEG);
+}
 #else
-PyObject *python_lv_add(PyObject *arg1, PyObject *arg2) { return Py_None; }
-PyObject *python_lv_substract(PyObject *arg1, PyObject *arg2) { return Py_None; }
-PyObject *python_lv_multiply(PyObject *arg1, PyObject *arg2) { return Py_None; }
-PyObject *python_lv_remainder(PyObject *arg1, PyObject *arg2) { return Py_None; }
-PyObject *python_lv_divide(PyObject *arg1, PyObject *arg2) { return Py_None; }
-PyObject *python_lv_negate(PyObject *arg) { return Py_None; }
+PyObject *python_lv_add(PyObject *arg1, PyObject *arg2)
+{
+  return Py_None;
+}
+PyObject *python_lv_substract(PyObject *arg1, PyObject *arg2)
+{
+  return Py_None;
+}
+PyObject *python_lv_multiply(PyObject *arg1, PyObject *arg2)
+{
+  return Py_None;
+}
+PyObject *python_lv_remainder(PyObject *arg1, PyObject *arg2)
+{
+  return Py_None;
+}
+PyObject *python_lv_divide(PyObject *arg1, PyObject *arg2)
+{
+  return Py_None;
+}
+PyObject *python_lv_negate(PyObject *arg)
+{
+  return Py_None;
+}
 #endif
 
 Value python_convertresult(PyObject *arg, int& error);
@@ -604,15 +631,19 @@ PyObject *PyDataObject_call_function(PyObject *self, PyObject *args, PyObject *k
   std::ostringstream stream;
   stream << "include <" << functionpath << ">";
 
+  // Use the function's file path as the source file for proper Location tracking
+  fs::path funcFilePath(functionpath);
+  std::string parentPath = funcFilePath.parent_path().string();
+
   SourceFile *source;
-  if (!parse(source, stream.str(), "python", "python", false)) {
+  if (!parse(source, stream.str(), parentPath, parentPath, false)) {
     PyErr_SetString(PyExc_TypeError, "Error parsing SCAD file for function");
     return Py_None;
   }
   source->handleDependencies(true);
 
-  // Create evaluation context
-  EvaluationSession session{"python"};
+  // Create evaluation context with proper document path
+  EvaluationSession session{parentPath};
   ContextHandle<BuiltinContext> builtin_context{Context::create<BuiltinContext>(&session)};
   std::shared_ptr<const FileContext> file_context;
   source->instantiate(*builtin_context, &file_context);
@@ -764,4 +795,7 @@ PyMODINIT_FUNC PyInit_PyData(void)
   return m;
 }
 
-PyObject *PyInit_data(void) { return PyModule_Create(&DataModule); }
+PyObject *PyInit_data(void)
+{
+  return PyModule_Create(&DataModule);
+}

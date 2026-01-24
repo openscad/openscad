@@ -5635,18 +5635,21 @@ PyObject *python_osuse_include(int mode, PyObject *self, PyObject *args, PyObjec
     else PyErr_SetString(PyExc_TypeError, "Error during parsing osuse(path)");
     return NULL;
   }
-  const std::string filename = lookup_file(file, python_scriptpath.parent_path().u8string(), ".");
-  stream << "include <" << filename << ">\n";
+  const std::string includedfile = lookup_file(file, python_scriptpath.parent_path().u8string(), ".");
+  stream << "include <" << includedfile << ">\n";
+
+  // Pass the Python script path as the "source" file doing the including
+  std::string scriptpath = python_scriptpath.u8string();
 
   SourceFile *source;
-  if (!parse(source, stream.str(), "python", "python", false)) {
+  if (!parse(source, stream.str(), scriptpath, scriptpath, false)) {
     PyErr_SetString(PyExc_TypeError, "Error in SCAD code");
     return Py_None;
   }
   if (mode == 0) source->scope->moduleInstantiations.clear();
   source->handleDependencies(true);
 
-  EvaluationSession *session = new EvaluationSession("python");
+  EvaluationSession *session = new EvaluationSession(python_scriptpath.parent_path().u8string());
   ContextHandle<BuiltinContext> builtin_context{Context::create<BuiltinContext>(session)};
 
   std::shared_ptr<const FileContext> osinclude_context;
@@ -5663,13 +5666,13 @@ PyObject *python_osuse_include(int mode, PyObject *self, PyObject *args, PyObjec
     //    m.module=mod.second.get();
     //    boost::optional<InstantiableModule> res(m);
     PyDict_SetItemString(result->dict, mod.first.c_str(),
-                         PyDataObjectFromModule(&PyDataType, filename, mod.first));
+                         PyDataObjectFromModule(&PyDataType, includedfile, mod.first));
   }
 
   for (auto fun : source->scope->functions) {  // copy functions
     std::shared_ptr<UserFunction> usfunc = fun.second;
     PyDict_SetItemString(result->dict, fun.first.c_str(),
-                         PyDataObjectFromFunction(&PyDataType, filename, fun.first));
+                         PyDataObjectFromFunction(&PyDataType, includedfile, fun.first));
   }
 
   for (auto ass : source->scope->assignments) {  // copy assignments
