@@ -1163,7 +1163,7 @@ std::shared_ptr<const Geometry> offset3D(const std::shared_ptr<const PolySet>& p
     startarc.push_back(p1 + off * fan);
     endarc.push_back(p2 + off * fan);
 
-    int eff_fn = discretizer.getCircularSegmentCount(off, totang).value_or(3);
+    int eff_fn = discretizer.getCircularSegmentCountAlt(fabs(off), 180.0*totang/M_PI).value_or(3);
 
     for (int i = 1; i < eff_fn - 1; i++) {
       Transform3d matrix = Transform3d::Identity();

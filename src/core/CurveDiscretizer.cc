@@ -86,6 +86,21 @@ std::optional<int> CurveDiscretizer::getCircularSegmentCount(double r, double an
   return std::max(1, static_cast<int>(std::ceil(result)));
 }
 
+
+std::optional<int> CurveDiscretizer::getCircularSegmentCountAlt(double r, double angle_degrees) const
+{
+  // getCircularSegmentCount creates absolutely too less segments.
+  // My understanding is that fn, fa, and fs requirement needs to me met at the same time
+  // lets add an extra function to keep all their tests clean
+
+  if (r < GRID_FINE || std::isinf(fn) || std::isnan(fn) || std::isinf(angle_degrees) ||
+      std::isnan(angle_degrees))
+    return {};
+
+  double  result =  std::max(fn, std::max(360.0 / fa, r * 2 * M_PI*angle_degrees/360.0 / fs));
+  return std::max(1, static_cast<int>(std::ceil(result)));
+}
+
 /*
    https://mathworld.wolfram.com/Helix.html
    For a helix defined as:         F(t) = [r*cost(t), r*sin(t), c*t]  for t in [0,T)
