@@ -2,7 +2,7 @@
 # CMake build system to download Documentation
 #
 
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.10)
 
 if(MSVC)
     execute_process(
