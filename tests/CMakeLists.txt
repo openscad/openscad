@@ -1150,7 +1150,7 @@ add_cmdline_test(openscad-camvp-override      OPENSCAD FILES ${CAMERA_TEST_VP} S
 # View Options tests
 #
 
-# Kinda weird these tests all set both --camera and --viewall
+# --camera for the position and angle, --viewall for zoom
 set(VIEW_OPTIONS_TEST "${TEST_SCAD_DIR}/3D/misc/view-options-tests.scad")
 add_cmdline_test(preview-view-axes              OPENSCAD FILES ${VIEW_OPTIONS_TEST} SUFFIX png ARGS ${IMGSIZE} --camera=80,14,19,0,0,0 --viewall --view axes)
 add_cmdline_test(preview-view-axes-scales       OPENSCAD FILES ${VIEW_OPTIONS_TEST} SUFFIX png ARGS ${IMGSIZE} --camera=80,14,19,0,0,0 --viewall --view axes,scales)
@@ -1191,7 +1191,9 @@ endif(EXAMPLES_DIR)
 
 set(WITH_EDGES_TESTS "${TEST_SCAD_DIR}/3D/features/linear_extrude_invisible-tests.scad")
 add_cmdline_test(preview-with-edges-cgal    OPENSCAD FILES ${WITH_EDGES_TESTS} SUFFIX png ARGS ${IMGSIZE} --viewall --view edges --backend=cgal)
-add_cmdline_test(render-with-edges-manifold OPENSCAD FILES ${WITH_EDGES_TESTS} SUFFIX png ARGS ${IMGSIZE} --viewall --view edges --render --backend=manifold)
+if (ENABLE_MANIFOLD_TESTS)
+  add_cmdline_test(render-with-edges-manifold OPENSCAD FILES ${WITH_EDGES_TESTS} SUFFIX png ARGS ${IMGSIZE} --viewall --view edges --render --backend=manifold)
+endif()
 
 
 ############################
