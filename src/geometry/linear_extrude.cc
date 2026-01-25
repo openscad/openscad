@@ -251,8 +251,9 @@ size_t calc_num_slices(const LinearExtrudeNode& node, const Polygon2d& poly)
       for (const auto& v : o.vertices) max_r1_sqr = fmax(max_r1_sqr, v.squaredNorm());
     if (node.scale_x == 1.0 && node.scale_y == 1.0) {
       // Calculate Helical curve length for Twist with no Scaling
-      num_slices = (unsigned int)node.discretizer.getHelixSlices(max_r1_sqr, node.height[2], node.twist)
-                     .value_or(std::max(static_cast<int>(std::ceil(node.twist / 120.0)), 1));
+      num_slices = static_cast<unsigned int>(
+        node.discretizer.getHelixSlices(max_r1_sqr, node.height[2], node.twist)
+          .value_or(std::max(static_cast<int>(std::ceil(node.twist / 120.0)), 1)));
     } else if (node.scale_x != node.scale_y) {
       // Non-uniform scaling with twist.
 
@@ -265,20 +266,20 @@ size_t calc_num_slices(const LinearExtrudeNode& node, const Polygon2d& poly)
       // And you would need to check every vertex, because the vertex that's furthest away
       // before you start twisting may not be the furthest throughout the twist.
       // Consider vertices at (3.99,2) and (4,-2), and a scale=(1,2).
-      // If you rotate 90 degrees ACW, the first vertex will be further away,
+      // If you rotate 90 degrees CCW, the first vertex will be further away,
       // but the second vertex starts and ends out further.
 
-      size_t slicesNonUniScale =
-        (unsigned int)node.discretizer.getDiagonalSlices(max_delta_sqr, node.height[2]).value_or(1);
-      size_t slicesTwist =
-        (unsigned int)node.discretizer.getHelixSlices(max_r1_sqr, node.height[2], node.twist)
-          .value_or(std::max(static_cast<int>(std::ceil(node.twist / 120.0)), 1));
+      size_t slicesNonUniScale = static_cast<unsigned int>(
+        node.discretizer.getDiagonalSlices(max_delta_sqr, node.height[2]).value_or(1));
+      size_t slicesTwist = static_cast<unsigned int>(
+        node.discretizer.getHelixSlices(max_r1_sqr, node.height[2], node.twist)
+          .value_or(std::max(static_cast<int>(std::ceil(node.twist / 120.0)), 1)));
       num_slices = std::max(slicesNonUniScale, slicesTwist);
     } else {
       // uniform scaling with twist, use conical helix calculation
-      num_slices = (unsigned int)node.discretizer
-                     .getConicalHelixSlices(max_r1_sqr, node.height[2], node.twist, node.scale_x)
-                     .value_or(std::max(static_cast<int>(std::ceil(node.twist / 120.0)), 1));
+      num_slices = static_cast<unsigned int>(
+        node.discretizer.getConicalHelixSlices(max_r1_sqr, node.height[2], node.twist, node.scale_x)
+          .value_or(std::max(static_cast<int>(std::ceil(node.twist / 120.0)), 1)));
     }
   } else if (node.scale_x != node.scale_y) {
     // Non uniform scaling, w/o twist
