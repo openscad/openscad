@@ -11,7 +11,7 @@ OpenSCAD is a software for creating solid 3D CAD objects. It is free software an
 available for Linux/UNIX, MS Windows and macOS.</p>
 
 Unlike most free software for creating 3D models (such as the famous
-application Blender), OpenSCAD focuses on the CAD aspects rather than the 
+application Blender), OpenSCAD focuses on the CAD aspects rather than the
 artistic aspects of 3D modeling. Thus this might be the application you are
 looking for when you are planning to create 3D models of machine parts but
 probably not the tool for creating computer-animated movies.
@@ -97,9 +97,9 @@ To build OpenSCAD, you need some libraries and tools. The version
 numbers in brackets specify the versions which have been used for
 development. Other versions may or may not work as well.
 
-If you're using a newer version of Ubuntu, you can install these 
-libraries from aptitude. If you're using Mac, or an older Linux/BSD, there 
-are build scripts that download and compile the libraries from source. 
+If you're using a newer version of Ubuntu, you can install these
+libraries from aptitude. If you're using Mac, or an older Linux/BSD, there
+are build scripts that download and compile the libraries from source.
 Follow the instructions for the platform you're compiling on below.
 
 * A C++ compiler supporting C++17
@@ -178,29 +178,29 @@ After building dependencies using one of the following options, follow the instr
 
 ### Building for Linux/BSD
 
-First, make sure that you have git installed (often packaged as 'git-core' 
-or 'scmgit'). Once you've cloned this git repository, download and install 
-the dependency packages listed above using your system's package 
-manager. A convenience script is provided that can help with this 
+First, make sure that you have git installed (often packaged as 'git-core'
+or 'scmgit'). Once you've cloned this git repository, download and install
+the dependency packages listed above using your system's package
+manager. A convenience script is provided that can help with this
 process on some systems:
 
-    sudo ./scripts/uni-get-dependencies.sh
+    sudo ./scripts/uni-get-dependencies.sh qt6
 
-After installing dependencies, check their versions. You can run this 
+After installing dependencies, check their versions. You can run this
 script to help you:
 
     ./scripts/check-dependencies.sh
 
-Take care that you don't have old local copies anywhere (`/usr/local/`). 
-If all dependencies are present and of a high enough version, skip ahead 
-to the Compilation instructions. 
+Take care that you don't have old local copies anywhere (`/usr/local/`).
+If all dependencies are present and of a high enough version, skip ahead
+to the Compilation instructions.
 
 ### Building for Linux/BSD on systems with older or missing dependencies
 
-If some of your system dependency libraries are missing or old, then you 
-can download and build newer versions into `$HOME/openscad_deps` by 
-following this process. First, run the script that sets up the 
-environment variables. 
+If some of your system dependency libraries are missing or old, then you
+can download and build newer versions into `$HOME/openscad_deps` by
+following this process. First, run the script that sets up the
+environment variables.
 
     source ./scripts/setenv-unibuild.sh
 
@@ -208,8 +208,8 @@ Then run the script to compile all the prerequisite libraries above:
 
     ./scripts/uni-build-dependencies.sh
 
-Note that huge dependencies like gcc, qt, or glib2 are not included 
-here, only the smaller ones (boost, CGAL, opencsg, etc). After the 
+Note that huge dependencies like gcc, qt, or glib2 are not included
+here, only the smaller ones (boost, CGAL, opencsg, etc). After the
 build, again check dependencies.
 
     ./scripts/check-dependencies.sh
@@ -229,12 +229,12 @@ https://en.wikibooks.org/wiki/OpenSCAD_User_Manual/Building_on_Windows
 MSVC build support has been added to OpenSCAD. For instructions on how to build it,
 refer to [building with MSVC](doc/win-build.md).
 
-To cross-build, first make sure that you have all necessary dependencies 
+To cross-build, first make sure that you have all necessary dependencies
 of the MXE project ( listed at https://mxe.cc/#requirements ). Don't install
 MXE itself, the scripts below will do that for you under `$HOME/openscad_deps/mxe`
 
-Then get your development tools installed to get GCC. Then after you've 
-cloned this git repository, start a new clean bash shell and run the 
+Then get your development tools installed to get GCC. Then after you've
+cloned this git repository, start a new clean bash shell and run the
 script that sets up the environment variables.
 
     source ./scripts/setenv-mingw-xbuild.sh 64
@@ -243,14 +243,14 @@ Then run the script to download & compile all the prerequisite libraries above:
 
     ./scripts/mingw-x-build-dependencies.sh 64
 
-Note that this process can take several hours, and tens of gigabytes of 
+Note that this process can take several hours, and tens of gigabytes of
 disk space, as it uses the [https://mxe.cc](https://mxe.cc) system to cross-build many
-libraries. After it is complete, build OpenSCAD and package it to an 
+libraries. After it is complete, build OpenSCAD and package it to an
 installer:
 
     ./scripts/release-common.sh mingw64
 
-For a 32-bit Windows cross-build, replace 64 with 32 in the above instructions. 
+For a 32-bit Windows cross-build, replace 64 with 32 in the above instructions.
 
 ### Building for WebAssembly
 
@@ -325,7 +325,7 @@ Note: Both `cmake --build` and `ctest` accepts a `-j N` argument for distributin
 	```
 
 	Then once you get the console:
-	
+
 	```bash
 	git clone https://github.com/%your username%/openscad.git workspace
 	cd workspace
