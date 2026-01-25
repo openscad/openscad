@@ -27,7 +27,7 @@ jobs:
     - name: Install dependencies
       run: |
         which sudo || apt install -y sudo
-        sudo ./scripts/uni-get-dependencies.sh
+        sudo ./scripts/uni-get-dependencies.sh qt6
     - name: Run CMake
       run: >
         cmake -S . -B build -GNinja \
