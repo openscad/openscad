@@ -247,7 +247,6 @@ inline int helix_slices_given_fe(double fe, double r_sqr, double twist_degrees, 
 std::optional<int> CurveDiscretizer::getHelixSlices(double r_sqr, double height,
                                                     double twist_degrees) const
 {
-  // std::cerr << "getHelixSlices("<<r_sqr<<","<<height<<","<<twist_degrees<<")\n";
   twist_degrees = std::fabs(twist_degrees);
   // 180 twist per slice is worst case, guaranteed non-manifold.
   // Make sure we have at least 3 slices per 360 twist
