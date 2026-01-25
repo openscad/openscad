@@ -17,6 +17,11 @@
 #include <cstdint>
 #include <memory>
 #include <windows.h>
+// wingdi.h (which windows.h includes) rudely #defines ERROR, which causes problems not only in
+// the global namespace (which would be bad enough), but also for enums inside C++ namespaces.
+// We don't actually use it, but if we ever want to, here's a substitute.
+static const int WINGDI_ERROR = ERROR;
+#undef ERROR
 
 #include <string>
 #include <sstream>

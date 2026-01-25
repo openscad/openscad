@@ -215,4 +215,5 @@ class GlobalPreferences
 {
 public:
   static Preferences *inst();
+  static OpenSCAD::HardFailLevel getHardFailLevel();
 };

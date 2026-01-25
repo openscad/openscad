@@ -1501,3 +1501,9 @@ Preferences *GlobalPreferences::inst()
   static auto *instance = new Preferences();
   return instance;
 };
+
+OpenSCAD::HardFailLevel GlobalPreferences::getHardFailLevel() {
+  return inst()->getValue("advanced/enableHardwarnings").toBool()
+    ? OpenSCAD::HardFailLevel::WARNING
+    : OpenSCAD::HardFailLevel::ERROR;
+}

@@ -23,7 +23,7 @@ OutputHandlerFunc *outputhandler = nullptr;
 void *outputhandler_data = nullptr;
 std::string OpenSCAD::debug("");
 bool OpenSCAD::quiet = false;
-bool OpenSCAD::hardwarnings = false;
+OpenSCAD::HardFailLevel OpenSCAD::hardFailLevel = OpenSCAD::HardFailLevel::FATAL;
 int OpenSCAD::traceDepth = 12;
 bool OpenSCAD::traceUsermoduleParameters = true;
 bool OpenSCAD::parameterCheck = true;
@@ -124,12 +124,23 @@ void PRINT_NOCACHE(const Message& msgObj)
       }
     }
   if (!std::current_exception()) {
-    if ((OpenSCAD::hardwarnings && msgObj.group == message_group::Warning) ||
-        (no_throw && msgObj.group == message_group::Error)) {
-      if (no_throw) deferred = true;
-      else throw HardWarningException(msgObj.msg);
+    switch (msgObj.group) {
+      case message_group::Warning:
+        if (OpenSCAD::hardFailLevel < OpenSCAD::HardFailLevel::WARNING) {
+          return;
+        }
+        break;
+      case message_group::Error:
+        if (OpenSCAD::hardFailLevel < OpenSCAD::HardFailLevel::ERROR) {
+          return;
+        }
+        break;
+      default:
+        return;
     }
   }
+  if (no_throw) deferred = true;
+  else throw HardFailException(msgObj.msg);
 }
 
 void PRINTDEBUG(const std::string& filename, const std::string& msg)

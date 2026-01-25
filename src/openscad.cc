@@ -989,7 +989,7 @@ int openscad_main(int argc, char **argv)
   }
 
   if (vm.count("hardwarnings")) {
-    OpenSCAD::hardwarnings = true;
+    OpenSCAD::hardFailLevel = OpenSCAD::HardFailLevel::WARNING;
   }
 
   if (vm.count("traceDepth")) {
@@ -1176,7 +1176,7 @@ int openscad_main(int argc, char **argv)
           rc |= cmdline(cmd);
         }
       }
-    } catch (const HardWarningException&) {
+    } catch (const HardFailException&) {
       rc = 1;
     }
 

@@ -823,8 +823,8 @@ bool parse(SourceFile *&file, const std::string& text, const std::string &filena
   int parserretval = -1;
   try{
     parserretval = parserparse();
-  }catch (const HardWarningException &e) {
-    yyerror("stop on first warning");
+  }catch (const HardFailException &e) {
+    yyerror("stop on hard failure");
   }
 
   lexerdestroy();
