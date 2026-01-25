@@ -1386,7 +1386,7 @@ void MainWindow::compileEnded()
   GuiLocker::unlock();
   if (designActionAutoReload->isChecked()) autoReloadTimer->start();
 #ifdef ENABLE_GUI_TESTS
-  emit compilationDone(this->rootFile);
+  emit compilationDone(this->rootFile.get());
 #endif
 }
 
