@@ -40,7 +40,7 @@ jobs:
     - name: Install gcovr
       run: uv sync --project .github/ci/openscad-coverage
     - name: Build and test
-      run: ./scripts/github-ci.sh experimental enable_python ${{ matrix.qt == 'qt6' && 'qt6' || '' }} build test coverage
+      run: ./scripts/github-ci.sh experimental enable_python ${{ matrix.qt }} build test coverage
     - name: Upload Test Result Report
       uses: actions/upload-artifact@v6
       if: ${{ always() }}
