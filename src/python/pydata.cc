@@ -659,7 +659,9 @@ PyObject *PyDataObject_call_function(PyObject *self, PyObject *args, PyObject *k
 
   // Create body context from file context
   ContextHandle<Context> body_context{Context::create<Context>(file_context)};
-  body_context->apply_config_variables(**builtin_context);
+  // Apply config variables ($-prefixed) from file_context so they're available during function
+  // evaluation
+  body_context->apply_config_variables(*file_context);
 
   // Parse arguments against function parameters
   Arguments arguments{pargs, *builtin_context};
