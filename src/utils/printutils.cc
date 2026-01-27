@@ -136,8 +136,7 @@ void PRINT_NOCACHE(const Message& msgObj)
         return;
       }
       break;
-    default:
-      return;
+    default: return;
     }
     if (no_throw) deferred = true;
     else throw HardFailException(msgObj.msg);
