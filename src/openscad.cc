@@ -912,7 +912,9 @@ int openscad_main(int argc, char **argv)
     ("m,m", po::value<std::string>(), "make_cmd -runs make_cmd file if file is missing")
     ("quiet,q", "quiet mode (don't print anything *except* errors)")
     ("reset-window-settings", "Reset GUI settings for window placement and fonts.")
-    ("hardwarnings", "Stop on the first warning")
+    // Ideally, the fatal/error/warning selection would come from SettingsEntryBase.help().
+    ("hardfail", po::value<std::string>(),
+      "=fatal/error/warning, stop on fatal errors, ordinary errors, or warnings")
     ("trace-depth", po::value<unsigned int>(), "=n, maximum number of trace messages")
     ("trace-usermodule-parameters", po::value<std::string>(),
       "=true/false, configure the output of user module parameters in a trace")
@@ -941,7 +943,9 @@ int openscad_main(int argc, char **argv)
 #ifdef Q_OS_MACOS
     ("psn", po::value<std::string>(), "process serial number")
 #endif
-    ("input-file", po::value<std::vector<std::string>>(), "input file");
+    ("input-file", po::value<std::vector<std::string>>(), "input file")
+    ("hardwarnings", "Stop on the first warning")
+    ;
   // clang-format on
 
   po::positional_options_description p;
@@ -991,9 +995,24 @@ int openscad_main(int argc, char **argv)
   if (vm.count("hardwarnings")) {
     OpenSCAD::hardFailLevel = OpenSCAD::HardFailLevel::WARNING;
   }
+  if (vm.count("hardfail")) {
+    auto hf =  vm["hardfail"].as<std::string>();
+    // Ideally, this would be done by SettingsEntryEnum<std::string>::setValue(), or perhaps
+    // ::decode().  But those have no error handling; they just silently ignore mismatches.
+    if (hf == "fatal") {
+      OpenSCAD::hardFailLevel = OpenSCAD::HardFailLevel::FATAL;
+    } else if (hf == "error") {
+      OpenSCAD::hardFailLevel = OpenSCAD::HardFailLevel::ERROR;
+    } else if (hf == "warning") {
+      OpenSCAD::hardFailLevel = OpenSCAD::HardFailLevel::WARNING;
+    } else {
+      LOG("hardfail needs to be fatal, error, or warning\n");
+      exit(1);
+    }
+  }
 
-  if (vm.count("traceDepth")) {
-    OpenSCAD::traceDepth = vm["traceDepth"].as<unsigned int>();
+  if (vm.count("trace-depth")) {
+    OpenSCAD::traceDepth = vm["trace-depth"].as<unsigned int>();
   }
   std::map<std::string, bool *> flags;
   flags.insert(std::make_pair("trace-usermodule-parameters", &OpenSCAD::traceUsermoduleParameters));

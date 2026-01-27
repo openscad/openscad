@@ -171,6 +171,14 @@ void Preferences::init()
   this->defaultmap["advanced/consoleMaxLines"] = 5000;
   this->defaultmap["advanced/consoleAutoClear"] = false;
   this->defaultmap["advanced/enableHardwarnings"] = false;
+  if (getValue("advanced/enableHardwarnings").toBool()) {
+printf("defaulting to Warning\n"); fflush(stdout);
+    this->defaultmap["advanced/hardFailLevel"] = "Warning";
+  } else {
+printf("defaulting to Fatal\n"); fflush(stdout);
+    this->defaultmap["advanced/hardFailLevel"] = "Fatal";
+  }
+printf("after defaulting, value is %s\n", getValue("advanced/hardFailLevel").toString().toStdString().c_str()); fflush(stdout);
   this->defaultmap["advanced/traceDepth"] = 12;
   this->defaultmap["advanced/enableTraceUsermoduleParameters"] = true;
   this->defaultmap["advanced/enableParameterCheck"] = true;
@@ -244,7 +252,9 @@ void Preferences::init()
 
   Settings::Settings::visit(SettingsReader());
 
+printf("after visiting: %s\n", Settings::Settings::hardFailLevel.value().c_str()); fflush(stdout);
   initComboBox(this->comboBoxIndentUsing, Settings::Settings::indentStyle);
+  initComboBox(this->comboBoxHardFailLevel, Settings::Settings::hardFailLevel);
   initComboBox(this->comboBoxLineWrap, Settings::Settings::lineWrap);
   initComboBox(this->comboBoxLineWrapIndentationStyle, Settings::Settings::lineWrapIndentationStyle);
   initComboBox(this->comboBoxLineWrapVisualizationEnd, Settings::Settings::lineWrapVisualizationEnd);
@@ -299,6 +309,7 @@ void Preferences::init()
 
 Preferences::~Preferences()
 {
+printf("%s %d %s\n", __FILE__, __LINE__, __func__); fflush(stdout);
   removeDefaultSettings();
 }
 
@@ -824,10 +835,10 @@ void Preferences::on_comboBoxModifierNumberScrollWheel_activated(int val)
   applyComboBox(comboBoxModifierNumberScrollWheel, val, Settings::Settings::modifierNumberScrollWheel);
 }
 
-void Preferences::on_enableHardwarningsCheckBox_toggled(bool state)
+void Preferences::on_comboBoxHardFailLevel_activated(int val)
 {
-  QSettingsCached settings;
-  settings.setValue("advanced/enableHardwarnings", state);
+  applyComboBox(comboBoxHardFailLevel, val, Settings::Settings::hardFailLevel);
+printf("set to %s\n", Settings::Settings::hardFailLevel.value().c_str());
 }
 
 void Preferences::on_traceDepthEdit_textChanged(const QString& text)
@@ -1354,8 +1365,7 @@ void Preferences::updateGUI()
   updateGUIFontFamily(customizerFontChooser, "advanced/customizerFontFamily");
   updateGUIFontSize(customizerFontSize, "advanced/customizerFontSize");
 
-  BlockSignals<QCheckBox *>(this->enableHardwarningsCheckBox)
-    ->setChecked(getValue("advanced/enableHardwarnings").toBool());
+  updateComboBox(this->comboBoxHardFailLevel, Settings::Settings::hardFailLevel);
   BlockSignals<QLineEdit *>(this->traceDepthEdit)->setText(getValue("advanced/traceDepth").toString());
   BlockSignals<QCheckBox *>(this->enableTraceUsermoduleParametersCheckBox)
     ->setChecked(getValue("advanced/enableTraceUsermoduleParameters").toBool());
@@ -1503,7 +1513,15 @@ Preferences *GlobalPreferences::inst()
 };
 
 OpenSCAD::HardFailLevel GlobalPreferences::getHardFailLevel() {
-  return inst()->getValue("advanced/enableHardwarnings").toBool()
-    ? OpenSCAD::HardFailLevel::WARNING
-    : OpenSCAD::HardFailLevel::ERROR;
+  std::string hfl = Settings::Settings::hardFailLevel.value();
+  if (hfl == "Fatal") {
+    return OpenSCAD::HardFailLevel::FATAL;
+  } else if (hfl == "Error") {
+    return OpenSCAD::HardFailLevel::ERROR;
+  } else if (hfl == "Warning") {
+    return OpenSCAD::HardFailLevel::WARNING;
+  } else {
+    // Shouldn't happen, but just in case...
+    return OpenSCAD::HardFailLevel::FATAL;
+  }
 }

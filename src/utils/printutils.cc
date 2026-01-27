@@ -23,6 +23,7 @@ OutputHandlerFunc *outputhandler = nullptr;
 void *outputhandler_data = nullptr;
 std::string OpenSCAD::debug("");
 bool OpenSCAD::quiet = false;
+// FATAL is compatible with the old default behavior, but ERROR is probably more correct.
 OpenSCAD::HardFailLevel OpenSCAD::hardFailLevel = OpenSCAD::HardFailLevel::FATAL;
 int OpenSCAD::traceDepth = 12;
 bool OpenSCAD::traceUsermoduleParameters = true;
@@ -138,9 +139,9 @@ void PRINT_NOCACHE(const Message& msgObj)
       default:
         return;
     }
+    if (no_throw) deferred = true;
+    else throw HardFailException(msgObj.msg);
   }
-  if (no_throw) deferred = true;
-  else throw HardFailException(msgObj.msg);
 }
 
 void PRINTDEBUG(const std::string& filename, const std::string& msg)

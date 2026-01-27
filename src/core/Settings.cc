@@ -245,6 +245,11 @@ SettingsEntryEnum<std::string> Settings::toolbarExport3D(
 SettingsEntryEnum<std::string> Settings::toolbarExport2D("advanced", "toolbarExport2D",
                                                          createFileFormatItems(fileformat::all2D()),
                                                          fileformat::info(FileFormat::DXF).description);
+SettingsEntryEnum<std::string> Settings::hardFailLevel("advanced", "hardFailLevel",
+                                                  {{"Fatal", "Fatal", _("Fatal error")},
+                                                   {"Error", "Error", _("Error")},
+                                                   {"Warning", "Warning", _("Warning")}},
+                                                  "Fatal");
 
 SettingsEntryBool Settings::summaryCamera("summary", "camera", false);
 SettingsEntryBool Settings::summaryArea("summary", "measurementArea", false);
