@@ -16,12 +16,10 @@ Dock::~Dock()
   delete dockTitleWidget;
 }
 
-
 void Dock::setTitleBarVisibility(bool isVisible)
 {
   setTitleBarWidget(isVisible ? dockTitleWidget : nullptr);
 }
-
 
 void Dock::updateTitle()
 {
