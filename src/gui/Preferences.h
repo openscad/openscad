@@ -206,6 +206,8 @@ private:
 
   /** Set value from combobox to settings */
   void applyComboBox(QComboBox *comboBox, int val, Settings::SettingsEntryEnum<std::string>& entry);
+  void applyComboBox(QComboBox *comboBox, int val,
+    Settings::SettingsEntryEnum<OpenSCAD::HardFailLevel>& entry);
 
   QSettings::SettingsMap defaultmap;
   QHash<const QAction *, QWidget *> prefPages;
@@ -215,5 +217,4 @@ class GlobalPreferences
 {
 public:
   static Preferences *inst();
-  static OpenSCAD::HardFailLevel getHardFailLevel();
 };

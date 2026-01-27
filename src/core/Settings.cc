@@ -245,11 +245,11 @@ SettingsEntryEnum<std::string> Settings::toolbarExport3D(
 SettingsEntryEnum<std::string> Settings::toolbarExport2D("advanced", "toolbarExport2D",
                                                          createFileFormatItems(fileformat::all2D()),
                                                          fileformat::info(FileFormat::DXF).description);
-SettingsEntryEnum<std::string> Settings::hardFailLevel("advanced", "hardFailLevel",
-                                                  {{"Fatal", "Fatal", _("Fatal error")},
-                                                   {"Error", "Error", _("Error")},
-                                                   {"Warning", "Warning", _("Warning")}},
-                                                  "Fatal");
+SettingsEntryEnum<OpenSCAD::HardFailLevel> Settings::hardFailLevel("advanced", "hardFailLevel",
+                                  {{OpenSCAD::HardFailLevel::FATAL, "Fatal", _("Fatal error")},
+                                   {OpenSCAD::HardFailLevel::ERROR, "Error", _("Error")},
+                                   {OpenSCAD::HardFailLevel::WARNING, "Warning", _("Warning")}},
+                                  OpenSCAD::HardFailLevel::FATAL);
 
 SettingsEntryBool Settings::summaryCamera("summary", "camera", false);
 SettingsEntryBool Settings::summaryArea("summary", "measurementArea", false);

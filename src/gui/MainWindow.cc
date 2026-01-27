@@ -1201,7 +1201,7 @@ void MainWindow::updateRecentFiles(const QString& FileSavedOrOpened)
  */
 void MainWindow::compile(bool reload, bool forcedone)
 {
-  OpenSCAD::hardFailLevel = GlobalPreferences::getHardFailLevel();
+  OpenSCAD::hardFailLevel = Settings::Settings::hardFailLevel.value();
   OpenSCAD::traceDepth = GlobalPreferences::inst()->getValue("advanced/traceDepth").toUInt();
   OpenSCAD::traceUsermoduleParameters =
     GlobalPreferences::inst()->getValue("advanced/enableTraceUsermoduleParameters").toBool();
@@ -1362,7 +1362,7 @@ void MainWindow::updateCompileResult()
 
 void MainWindow::compileDone(bool didchange)
 {
-  OpenSCAD::hardFailLevel = GlobalPreferences::getHardFailLevel();
+  OpenSCAD::hardFailLevel = Settings::Settings::hardFailLevel.value();
   try {
     const char *callslot;
     if (didchange) {
@@ -1486,7 +1486,7 @@ void MainWindow::instantiateRoot()
  */
 void MainWindow::compileCSG()
 {
-  OpenSCAD::hardFailLevel = GlobalPreferences::getHardFailLevel();
+  OpenSCAD::hardFailLevel = Settings::Settings::hardFailLevel.value();
   try {
     assert(this->rootNode);
     LOG("Compiling design (CSG Products generation)...");

@@ -171,14 +171,6 @@ void Preferences::init()
   this->defaultmap["advanced/consoleMaxLines"] = 5000;
   this->defaultmap["advanced/consoleAutoClear"] = false;
   this->defaultmap["advanced/enableHardwarnings"] = false;
-  if (getValue("advanced/enableHardwarnings").toBool()) {
-printf("defaulting to Warning\n"); fflush(stdout);
-    this->defaultmap["advanced/hardFailLevel"] = "Warning";
-  } else {
-printf("defaulting to Fatal\n"); fflush(stdout);
-    this->defaultmap["advanced/hardFailLevel"] = "Fatal";
-  }
-printf("after defaulting, value is %s\n", getValue("advanced/hardFailLevel").toString().toStdString().c_str()); fflush(stdout);
   this->defaultmap["advanced/traceDepth"] = 12;
   this->defaultmap["advanced/enableTraceUsermoduleParameters"] = true;
   this->defaultmap["advanced/enableParameterCheck"] = true;
@@ -250,9 +242,11 @@ printf("after defaulting, value is %s\n", getValue("advanced/hardFailLevel").toS
   menu->addAction(actionLocalAppParameterSourceDir);
   toolButtonLocalAppParameterAddFile->setMenu(menu);
 
+  if (getValue("advanced/enableHardwarnings").toBool()) {
+    Settings::Settings::hardFailLevel.setValue(OpenSCAD::HardFailLevel::WARNING);
+  }
   Settings::Settings::visit(SettingsReader());
 
-printf("after visiting: %s\n", Settings::Settings::hardFailLevel.value().c_str()); fflush(stdout);
   initComboBox(this->comboBoxIndentUsing, Settings::Settings::indentStyle);
   initComboBox(this->comboBoxHardFailLevel, Settings::Settings::hardFailLevel);
   initComboBox(this->comboBoxLineWrap, Settings::Settings::lineWrap);
@@ -309,7 +303,6 @@ printf("after visiting: %s\n", Settings::Settings::hardFailLevel.value().c_str()
 
 Preferences::~Preferences()
 {
-printf("%s %d %s\n", __FILE__, __LINE__, __func__); fflush(stdout);
   removeDefaultSettings();
 }
 
@@ -838,7 +831,6 @@ void Preferences::on_comboBoxModifierNumberScrollWheel_activated(int val)
 void Preferences::on_comboBoxHardFailLevel_activated(int val)
 {
   applyComboBox(comboBoxHardFailLevel, val, Settings::Settings::hardFailLevel);
-printf("set to %s\n", Settings::Settings::hardFailLevel.value().c_str());
 }
 
 void Preferences::on_traceDepthEdit_textChanged(const QString& text)
@@ -1453,6 +1445,13 @@ void Preferences::applyComboBox(QComboBox * /*comboBox*/, int val,
   writeSettings();
 }
 
+void Preferences::applyComboBox(QComboBox * /*comboBox*/, int val,
+                                Settings::SettingsEntryEnum<OpenSCAD::HardFailLevel>& entry)
+{
+  entry.setIndex(val);
+  writeSettings();
+}
+
 void Preferences::apply_win() const
 {
   emit requestRedraw();
@@ -1511,17 +1510,3 @@ Preferences *GlobalPreferences::inst()
   static auto *instance = new Preferences();
   return instance;
 };
-
-OpenSCAD::HardFailLevel GlobalPreferences::getHardFailLevel() {
-  std::string hfl = Settings::Settings::hardFailLevel.value();
-  if (hfl == "Fatal") {
-    return OpenSCAD::HardFailLevel::FATAL;
-  } else if (hfl == "Error") {
-    return OpenSCAD::HardFailLevel::ERROR;
-  } else if (hfl == "Warning") {
-    return OpenSCAD::HardFailLevel::WARNING;
-  } else {
-    // Shouldn't happen, but just in case...
-    return OpenSCAD::HardFailLevel::FATAL;
-  }
-}
