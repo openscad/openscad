@@ -126,7 +126,7 @@ public:
 private:
   RubberBandManager rubberBandManager;
 
-  std::vector<std::tuple<Dock *, QString>> docks;
+  std::vector<std::pair<Dock *, QString>> docks;
 
   volatile bool isClosing = false;
   void consoleOutputRaw(const QString& msg);

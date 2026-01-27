@@ -3036,9 +3036,8 @@ void MainWindow::onTabManagerEditorChanged(EditorInterface *newEditor)
 
 Dock *MainWindow::findVisibleDockToActivate(int offset) const
 {
-  const unsigned int dockCount = docks.size();
-
-  int focusedDockIndice = -1;
+  const auto dockCount = docks.size();
+  int focusedDockIndex = 0;
 
   // search among the docks the one that is having the focus. This is done by
   // traversing the widget hierarchy from the focused widget up to the docks that
@@ -3046,23 +3045,18 @@ Dock *MainWindow::findVisibleDockToActivate(int offset) const
   const auto focusWidget = QApplication::focusWidget();
   for (auto widget = focusWidget; widget != nullptr; widget = widget->parentWidget()) {
     for (unsigned int index = 0; index < dockCount; ++index) {
-      auto dock = std::get<0>(docks[index]);
-      if (dock == focusWidget) {
-        focusedDockIndice = index;
+      if (docks[index].first == focusWidget) {
+        focusedDockIndex = index;
       }
     }
   }
 
-  if (focusedDockIndice < 0) {
-    focusedDockIndice = 0;
-  }
-
   for (size_t o = 1; o < dockCount; ++o) {
-    // starting from dockCount + focusedDockIndice move left or right (o*offset)
+    // starting from dockCount + focusedDockIndex move left or right (o*offset)
     // to find the first visible one. dockCount is there so there is no situation in which
     // (-1) % dockCount
-    const int target = (dockCount + focusedDockIndice + o * offset) % dockCount;
-    const auto& dock = std::get<0>(docks.at(target));
+    const int target = (dockCount + focusedDockIndex + o * offset) % dockCount;
+    const auto& dock = docks.at(target).first;
 
     if (dock->isVisible()) {
       return dock;
@@ -3323,10 +3317,6 @@ void MainWindow::setupCoreSubsystems()
   renderCompleteSoundEffect = new QSoundEffect();
   renderCompleteSoundEffect->setSource(QUrl("qrc:/sounds/complete.wav"));
 
-  setCorner(Qt::TopLeftCorner, Qt::LeftDockWidgetArea);
-  setCorner(Qt::TopRightCorner, Qt::RightDockWidgetArea);
-  setCorner(Qt::BottomLeftCorner, Qt::LeftDockWidgetArea);
-  setCorner(Qt::BottomRightCorner, Qt::RightDockWidgetArea);
 
   this->setAttribute(Qt::WA_DeleteOnClose);
 
@@ -3334,8 +3324,6 @@ void MainWindow::setupCoreSubsystems()
 
   this->cgalworker = new CGALWorker();
   connect(this->cgalworker, &CGALWorker::done, this, &MainWindow::actionRenderDone);
-
-  rootNode = nullptr;
 
   autoReloadTimer = new QTimer(this);
   autoReloadTimer->setSingleShot(false);
@@ -3513,10 +3501,23 @@ void MainWindow::setupInput()
 
 void MainWindow::initDocks()
 {
-  docks = {{editorDock, _("&Editor")},        {consoleDock, _("&Console")},
-           {parameterDock, _("C&ustomizer")}, {errorLogDock, _("Error-&Log")},
-           {animateDock, _("&Animate")},      {fontListDock, _("&Font List")},
-           {colorListDock, _("C&olor List")}, {viewportControlDock, _("&Viewport-Control")}};
+  setCorner(Qt::TopLeftCorner, Qt::LeftDockWidgetArea);
+  setCorner(Qt::TopRightCorner, Qt::RightDockWidgetArea);
+  setCorner(Qt::BottomLeftCorner, Qt::LeftDockWidgetArea);
+  setCorner(Qt::BottomRightCorner, Qt::RightDockWidgetArea);
+
+  // clang-format off
+  docks = {
+    {editorDock, _("&Editor")},
+    {consoleDock, _("&Console")},
+    {parameterDock, _("C&ustomizer")},
+    {errorLogDock, _("Error-&Log")},
+    {animateDock, _("&Animate")},
+    {fontListDock, _("&Font List")},
+    {colorListDock, _("C&olor List")},
+    {viewportControlDock, _("&Viewport-Control")},
+  };
+  // clang-format off
 
   // Connect the menu "Windows/Navigation" to slot that process it by opening in a pop menu
   // the navigationMenu.
