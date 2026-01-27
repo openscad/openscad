@@ -24,15 +24,21 @@ import sys
 import os
 import subprocess
 import re
+import argparse
 
 DEBUG = False
 
 cxxlib = None
 
-macos_version_min = '12.0'
+# PythonSCAD uses Homebrew bottles which target macOS 15.0 on GitHub Actions runners.
+# Upstream OpenSCAD builds dependencies from source with older deployment targets.
+macos_version_min = '15.0'
+
+# Global flag to skip architecture validation (for single-arch test builds)
+skip_arch_check = False
 
 def usage():
-    print("Usage: " + sys.argv[0] + " <executable>", sys.stderr)
+    print("Usage: " + sys.argv[0] + " [--skip-arch-check] <executable>", sys.stderr)
     sys.exit(1)
 
 # Try to find the given library by searching in the typical locations
@@ -123,25 +129,35 @@ def validate_lib(lib):
         print("Error: Unsupported deployment target " + m.group(2) + " found: " + lib)
         return False
 
-    # Check that both x86_64 and arm64 architectures exist
-    p = subprocess.Popen(["lipo", lib, "-verify_arch", "x86_64"], stdout=subprocess.PIPE, universal_newlines=True)
-    p.communicate()[0]
-    if p.returncode != 0:
-        print("Error: x86_64 architecture not found in " + lib)
-        return False
+    # Check that both x86_64 and arm64 architectures exist (unless skipped)
+    if not skip_arch_check:
+        p = subprocess.Popen(["lipo", lib, "-verify_arch", "x86_64"], stdout=subprocess.PIPE, universal_newlines=True)
+        p.communicate()[0]
+        if p.returncode != 0:
+            print("Error: x86_64 architecture not found in " + lib)
+            return False
 
-    p  = subprocess.Popen(["lipo", lib, "-verify_arch", "arm64"], stdout=subprocess.PIPE, universal_newlines=True)
-    p.communicate()[0]
-    if p.returncode != 0:
-        print("Error: arm64 architecture not found in " + lib)
-        return False
+        p  = subprocess.Popen(["lipo", lib, "-verify_arch", "arm64"], stdout=subprocess.PIPE, universal_newlines=True)
+        p.communicate()[0]
+        if p.returncode != 0:
+            print("Error: arm64 architecture not found in " + lib)
+            return False
 
     return True
 
 if __name__ == '__main__':
+    parser = argparse.ArgumentParser(
+        description='Verify macOS executable dependencies and deployment targets')
+    parser.add_argument('executable', help='Path to the executable to check')
+    parser.add_argument('--skip-arch-check', action='store_true',
+                        help='Skip universal binary (x86_64/arm64) architecture validation')
+    parser.add_argument('--allow-homebrew-deps', action='store_true',
+                        help='Allow external dependencies from Homebrew (/usr/local/opt/) for test builds')
+    args = parser.parse_args()
+
+    skip_arch_check = args.skip_arch_check
     error = False
-    if len(sys.argv) != 2: usage()
-    executable = sys.argv[1]
+    executable = args.executable
     if DEBUG: print("Processing " + executable)
     executable_path = os.path.dirname(executable)
 
@@ -173,9 +189,15 @@ if __name__ == '__main__':
                 print("  ..required by " + str(processed[dep]))
                 error = True
                 continue
-            if not re.match(executable_path, absfile):
+            # Allow Homebrew dependencies in test builds if flag is set
+            is_homebrew_dep = absfile.startswith('/usr/local/opt/') or absfile.startswith('/opt/homebrew/')
+            if not absfile.startswith(executable_path) and not (args.allow_homebrew_deps and is_homebrew_dep):
                 print("Error: External dependency " + d)
                 sys.exit(1)
+            # Skip validation of external Homebrew dependencies (they're not bundled)
+            if args.allow_homebrew_deps and is_homebrew_dep:
+                if DEBUG: print("Skipping validation of Homebrew dependency: " + absfile)
+                continue
             if absfile in processed:
                 processed[absfile].append(dep)
             else:
