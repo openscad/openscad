@@ -19,7 +19,7 @@ jobs:
     - name: Install dependencies
       run: |
         which sudo || apt install -y sudo
-        sudo ./scripts/uni-get-dependencies.sh
+        sudo ./scripts/uni-get-dependencies.sh qt6
     - uses: astral-sh/setup-uv@v7
       with:
         python-version: '3.13'

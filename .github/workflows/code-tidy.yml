@@ -21,7 +21,7 @@ jobs:
     - name: Install dependencies
       run: |
         which sudo || apt install -y sudo
-        sudo ./scripts/uni-get-dependencies.sh
+        sudo ./scripts/uni-get-dependencies.sh qt6
         sudo apt -qq -y install clang-tidy
 
     - name: Run CMake
