@@ -996,9 +996,9 @@ int openscad_main(int argc, char **argv)
     OpenSCAD::hardFailLevel = OpenSCAD::HardFailLevel::WARNING;
   }
   if (vm.count("hardfail")) {
-    auto hf =  vm["hardfail"].as<std::string>();
-    // Ideally, this would be done by SettingsEntryEnum<std::string>::setValue(), or perhaps
-    // ::decode().  But those have no error handling; they just silently ignore mismatches.
+    auto hf = vm["hardfail"].as<std::string>();
+    // Ideally, this would be done by SettingsEntryEnum<std::string>::decode().
+    // But that has no error handling; it just silently returns a default.
     if (hf == "fatal") {
       OpenSCAD::hardFailLevel = OpenSCAD::HardFailLevel::FATAL;
     } else if (hf == "error") {

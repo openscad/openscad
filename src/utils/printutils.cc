@@ -126,18 +126,18 @@ void PRINT_NOCACHE(const Message& msgObj)
     }
   if (!std::current_exception()) {
     switch (msgObj.group) {
-      case message_group::Warning:
-        if (OpenSCAD::hardFailLevel < OpenSCAD::HardFailLevel::WARNING) {
-          return;
-        }
-        break;
-      case message_group::Error:
-        if (OpenSCAD::hardFailLevel < OpenSCAD::HardFailLevel::ERROR) {
-          return;
-        }
-        break;
-      default:
+    case message_group::Warning:
+      if (OpenSCAD::hardFailLevel < OpenSCAD::HardFailLevel::WARNING) {
         return;
+      }
+      break;
+    case message_group::Error:
+      if (OpenSCAD::hardFailLevel < OpenSCAD::HardFailLevel::ERROR) {
+        return;
+      }
+      break;
+    default:
+      return;
     }
     if (no_throw) deferred = true;
     else throw HardFailException(msgObj.msg);
