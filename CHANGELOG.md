@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.11.0](https://github.com/pythonscad/pythonscad/compare/v0.10.4...v0.11.0) (2026-01-27)
+
+
+### Features
+
+* **macos:** improve DMG install experience and fix release build ([#401](https://github.com/pythonscad/pythonscad/issues/401)) ([f9cccb3](https://github.com/pythonscad/pythonscad/commit/f9cccb3a1c5c085f56a64396131559af50a9af76))
+
 ## [0.10.4](https://github.com/pythonscad/pythonscad/compare/v0.10.3...v0.10.4) (2026-01-26)
 
 
