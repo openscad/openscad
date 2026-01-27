@@ -3513,14 +3513,10 @@ void MainWindow::setupInput()
 
 void MainWindow::initDocks()
 {
-  docks = {{editorDock, _("&Editor")},
-           {consoleDock, _("&Console")},
-           {parameterDock, _("C&ustomizer")},
-           {errorLogDock, _("Error-&Log")},
-           {animateDock, _("&Animate")},
-           {fontListDock, _("&Font List")},
-           {colorListDock, _("C&olor List")},
-           {viewportControlDock, _("&Viewport-Control")}};
+  docks = {{editorDock, _("&Editor")},        {consoleDock, _("&Console")},
+           {parameterDock, _("C&ustomizer")}, {errorLogDock, _("Error-&Log")},
+           {animateDock, _("&Animate")},      {fontListDock, _("&Font List")},
+           {colorListDock, _("C&olor List")}, {viewportControlDock, _("&Viewport-Control")}};
 
   // Connect the menu "Windows/Navigation" to slot that process it by opening in a pop menu
   // the navigationMenu.
