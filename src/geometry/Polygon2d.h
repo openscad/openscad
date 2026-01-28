@@ -86,6 +86,7 @@ public:
   void setColorUndef(const Color4f& c);
   void stamp_color(const Polygon2d& src);
   void stamp_color(const Outline2d& src);
+  bool point_inside(const Vector2d& pt) const;
 
 private:
   Outlines2d theoutlines;

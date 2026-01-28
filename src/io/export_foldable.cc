@@ -47,27 +47,6 @@ Vector2d pointrecht(Vector2d x)
   return y;
 }
 
-int point_in_polygon(const std::vector<Vector2d>& pol, const Vector2d& pt)
-{
-  // polygons are clockwise
-  int cuts = 0;
-  int n = pol.size();
-  for (int i = 0; i < n; i++) {
-    Vector2d p1 = pol[i];
-    Vector2d p2 = pol[(i + 1) % n];
-    if (fabs(p1[1] - p2[1]) > 1e-9) {
-      if (pt[1] < p1[1] && pt[1] > p2[1]) {
-        double x = p1[0] + (p2[0] - p1[0]) * (pt[1] - p1[1]) / (p2[1] - p1[1]);
-        if (x > pt[0]) cuts++;
-      }
-      if (pt[1] < p2[1] && pt[1] > p1[1]) {
-        double x = p1[0] + (p2[0] - p1[0]) * (pt[1] - p1[1]) / (p2[1] - p1[1]);
-        if (x > pt[0]) cuts++;
-      }
-    }
-  }
-  return cuts & 1;
-}
 int edge_outwards(std::vector<connS>& con, unsigned int plate, unsigned int face)
 {
   int outwards = 0;
@@ -162,15 +141,17 @@ int plot_try(unsigned int refplate, unsigned int destplate, Vector2d px, Vector2
     if (j == destplate) continue;                    // nicht mit sich selbst
     if (plate[j].done != 1) continue;                // und nicht wenn sie nicht existiert
     for (unsigned int i = 0; i < n; i++) {
-      if (point_in_polygon(plate[j].bnd, plate[destplate].pt[i])) success = 0;  // alle neue punkte
+      Outline2d o;
+      o.vertices = plate[j].bnd;
+      if (Polygon2d(o).point_inside(plate[destplate].pt[i])) success = 0;  // alle neue punkte
       if (j == refplate && i == destedge) {
       }  // joker
       else {
         // jede neue lasche wenn sie auswaerts geht
         // plate destplate, pt i
         //        if(edge_outwards(con, destplate, i) ) {
-        // if(point_in_polygon(plate[j].pt,plate[destplate].pt_l1[i])) success=0; // alle neue laschen
-        // if(point_in_polygon(plate[j].pt,plate[destplate].pt_l2[i])) success=0;
+        // if(point_inside_polygon(plate[j].pt,plate[destplate].pt_l1[i])) success=0; // alle neue
+        // laschen if(point_inside_polygon(plate[j].pt,plate[destplate].pt_l2[i])) success=0;
         //	}
       }
     }
@@ -184,7 +165,9 @@ int plot_try(unsigned int refplate, unsigned int destplate, Vector2d px, Vector2
     for (unsigned int i = 0; i < n; i++) {
       if (j == refplate) continue;
       for (unsigned int i = 0; i < plate[j].pt.size(); i++) {
-        if (point_in_polygon(plate[destplate].pt, plate[j].pt[i])) success = 0;
+        Outline2d o;
+        o.vertices = plate[destplate].pt;
+        if (Polygon2d(o).point_inside(plate[j].pt[i])) success = 0;
       }
     }
   }
