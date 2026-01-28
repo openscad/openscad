@@ -42,6 +42,7 @@ class LaserCutter:
             late_cuts.append(False) # dummy void
             mat = f.matrix
             pol, = f.children()
+
             #pt inventur
             ipaths=[]
             if len(pol.paths) == 0:
@@ -99,18 +100,27 @@ class LaserCutter:
                         conn = conn_type1
                     else:
                         pt1=multmatrix(pol.points[path[k]] + [0], mat)
-                        pt2=multmatrix(pol.points[path[(k+1)%n]] + [0], mat) 
+                        pt2=multmatrix(pol.points[path[(k+1)%n]] + [0], mat) # TODO hier out of index
 
                         # go through all faces and check if they are inside
                         for l, oface in enumerate(facelist):
                             if l == i:
                                 continue
-                            #if oface.matrix with mat
-                            # if coplanar: continue
                             # pos auf oface
                             pt1x=divmatrix(pt1, oface.matrix)
                             pt2x=divmatrix(pt2, oface.matrix)
-                            if abs(pt1x[2]) < 1e-3 and abs(pt2x[2]) < 1e-3:
+                            oshape,  = oface.children()
+                            valid=True
+                            if abs(pt1x[2]) > 1e-3:
+                                valid = False
+                            if abs(pt2x[2]) > 1e-3:
+                                valid = False
+                            if not oface.inside(pt1x):
+                                valid = False
+                            if not oface.inside(pt2x):
+                                valid = False
+
+                            if valid == True:
                                 conn = conn_type2
                                 cutout = self.jigging(pt1x, pt2x, conn_type2_)
                                 late_cuts[l] = union(late_cuts[l], polygon(cutout))

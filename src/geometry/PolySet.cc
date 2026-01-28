@@ -166,3 +166,29 @@ void PolySet::quantizeVertices(std::vector<Vector3d> *pPointsOut)
     }
   }
 }
+
+bool PolySet::point_inside(const Vector3d& pt) const
+{
+  Vector3d dir(0.9, 0.1234, 0.4);
+  auto ps_tess = PolySetUtils::tessellate_faces(*this);
+  int count = 0;
+  for (const auto& ind : ps_tess->indices) {
+    Vector3d e1 = ps_tess->vertices[ind[1]] - ps_tess->vertices[ind[0]];
+    Vector3d e2 = ps_tess->vertices[ind[2]] - ps_tess->vertices[ind[0]];
+    Vector3d h = dir.cross(e2);
+    double a = e1.dot(h);
+    if (fabs(a) < 1e-6) continue;  // is parallel
+    double f = 1.0 / a;
+    Vector3d s = pt - ps_tess->vertices[ind[0]];
+    double u = f * s.dot(h);
+    if (u < 0.0 || u >= 1) continue;
+    Vector3d q = s.cross(e1);
+    double v = f * dir.dot(q);
+    if (v < 0.0 || u + v > 1.0) continue;
+    double t = f * e2.dot(q);
+    if (t < 1e-6) continue;
+    if (a > 0) count++;
+    else count--;
+  }
+  return count == 0 ? false : true;
+}

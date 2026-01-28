@@ -176,6 +176,7 @@ cmake .. \
     -DPYTHON_VERSION="${PYTHON_VERSION}" \
     -DENABLE_LIBFIVE=ON \
     -DUSE_QT6="${USE_QT6_FLAG}" \
+    -DPORTABLE_BINARY=ON \
     || die "CMake configuration failed"
 
 # Build

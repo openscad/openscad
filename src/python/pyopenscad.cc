@@ -169,12 +169,17 @@ int python_more_obj(std::vector<std::shared_ptr<AbstractNode>>& children, PyObje
 
 std::shared_ptr<AbstractNode> PyOpenSCADObjectToNode(PyObject *obj, PyObject **dict)
 {
+  printf("aa\n");
   std::shared_ptr<AbstractNode> result = ((PyOpenSCADObject *)obj)->node;
+  printf("bb\n");
   if (result != nullptr) {
+    printf("cc\n");
     if (result.use_count() > 2 && result != void_node && result != full_node) {
       result = result->clone();
     }
+    printf("dd\n");
     *dict = ((PyOpenSCADObject *)obj)->dict;
+    printf("ee\n");
   } else if (obj == Py_None || obj == Py_False) {
     result = void_node;
     *dict = nullptr;

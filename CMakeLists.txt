@@ -77,6 +77,7 @@ option(ENABLE_PYTHON "Enable experimental Python Interpreter" ON)
 option(PYTHON_VERSION "Specify Exact Python Version" "")
 option(ENABLE_LIBFIVE "Enable libfive Library" OFF)
 option(USE_BUILTIN_LIBFIVE "Use libfive from submodule." ON)
+option(PORTABLE_BINARY "Build portable binary without -march=native (for distribution)" OFF)
 option(BUILD_SHARED_LIBS "Build shared library" OFF)
 include(CMakeDependentOption)
 cmake_dependent_option(APPLE_UNIX "Build PythonSCAD in Unix mode in MacOS X instead of an Apple Bundle" OFF "APPLE" OFF)
@@ -87,8 +88,8 @@ set(WASM_BUILD_TYPE "web" CACHE STRING
   "WebAssembly build type. Support web (builds an OpenSCAD module) or node (standalone .js executable)")
 
 if (USE_QT6)
-  # Minimum version required for Qt-6.5
-  set(DEPLOYMENT_TARGET "11.0")
+  # Minimum version required for Qt-6.8
+  set(DEPLOYMENT_TARGET "12.0")
 else()
   # Minimum version required for std::filesystem
   set(DEPLOYMENT_TARGET "10.15")
@@ -656,6 +657,12 @@ if(ENABLE_PYTHON)
     target_compile_definitions(OpenSCADLibInternal PRIVATE ENABLE_LIBFIVE)
     target_compile_definitions(OpenSCADPy PRIVATE ENABLE_LIBFIVE)
     if(USE_BUILTIN_LIBFIVE)
+      # For portable builds (e.g., AppImage), disable -march=native to avoid
+      # generating AVX-512 or other CPU-specific instructions that may not be
+      # available on all target machines.
+      if(PORTABLE_BINARY)
+        set(MARCH_SUPPORTED OFF CACHE BOOL "Disable -march=native for portable builds" FORCE)
+      endif()
       add_subdirectory(submodules/libfive EXCLUDE_FROM_ALL)
       target_link_libraries(OpenSCADPy PRIVATE libfive)
     else()
@@ -1887,7 +1894,10 @@ elseif(WIN32)
 endif()
 
 file(GLOB_RECURSE TEST_SOURCES
-  "src/*_test.cc"
+  "src/utils/*_test.cc"
+)
+file(GLOB_RECURSE GUI_TEST_SOURCES
+  "src/gui/*_test.cc"
 )
 list(FILTER Sources EXCLUDE REGEX ".*_test[.]cc")
 list(REMOVE_ITEM Sources "src/main_wrapper.cc")
@@ -2018,7 +2028,7 @@ else()
 endif()
 
 # Configure icon-related files, for release vs nightly
-configure_file(doc/openscad.1.in doc/openscad.1)
+configure_file(doc/pythonscad.1.in doc/pythonscad.1)
 configure_file(${CMAKE_CURRENT_LIST_DIR}/pythonscad.appdata.xml.in ${CMAKE_CURRENT_LIST_DIR}/pythonscad.appdata.xml.in2)
 configure_file(${RESOURCE_DIR}/icons/pythonscad.desktop.in ${RESOURCE_DIR}/icons/pythonscad.desktop)
 configure_file(${RESOURCE_DIR}/common.qrc.in ${RESOURCE_DIR}/common.qrc)
@@ -2161,7 +2171,7 @@ if(NOT APPLE OR APPLE_UNIX)
       endif()
     endif()
   else()
-    install(FILES ${CMAKE_CURRENT_BINARY_DIR}/doc/openscad.1 DESTINATION ${CMAKE_INSTALL_MANDIR}/man1 RENAME openscad${SUFFIX_WITH_DASH}.1)
+    install(FILES ${CMAKE_CURRENT_BINARY_DIR}/doc/pythonscad.1 DESTINATION ${CMAKE_INSTALL_MANDIR}/man1 RENAME pythonscad${SUFFIX_WITH_DASH}.1)
     install(FILES ${CMAKE_CURRENT_LIST_DIR}/pythonscad.appdata.xml DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/metainfo RENAME org.pythonscad.PythonSCAD.appdata.xml)
     if(ENABLE_LIBFIVE AND USE_BUILTIN_LIBFIVE)
       install(FILES ${CMAKE_BINARY_DIR}/submodules/libfive/libfive/src/libfive.so DESTINATION ${CMAKE_INSTALL_LIBDIR})

@@ -2313,28 +2313,37 @@ PyObject *python__getsetitem_hier(std::shared_ptr<AbstractNode> node, const std:
 
 PyObject *python__getitem__(PyObject *obj, PyObject *key)
 {
+  printf("getitem start\n");
   PyOpenSCADObject *self = (PyOpenSCADObject *)obj;
   if (self->dict == nullptr) {
+    printf("a\n");
     return nullptr;
   }
   // object dict
   PyObject *result = PyDict_GetItem(self->dict, key);
   if (result != NULL) {
+    printf("b\n");
     Py_INCREF(result);
     return result;
   }
   PyObject *keyname = PyUnicode_AsEncodedString(key, "utf-8", "~");
   if (keyname == nullptr) return nullptr;
   std::string keystr = PyBytes_AS_STRING(keyname);
+  printf("key is %s obj is %p\n", keystr.c_str(), obj);
 
   PyObject *dummy_dict;
   std::shared_ptr<AbstractNode> node = PyOpenSCADObjectToNode(obj, &dummy_dict);
+  printf("1\n");
   if (node != nullptr) {
+    printf("c\n");
     result = python__getsetitem_hier(node, keystr, nullptr, 2);
+    printf("e\n");
     if (result != nullptr) return result;
   }
+  printf("2\n");
 
   result = Py_None;
+  printf("d\n");
   if (keystr == "size") {
     return python_size_core(obj);
   } else if (keystr == "position") {
@@ -2536,6 +2545,73 @@ PyObject *python_oo_mesh(PyObject *obj, PyObject *args, PyObject *kwargs)
     return NULL;
   }
   return python_mesh_core(obj, tess == Py_True, color == Py_True);
+}
+
+PyObject *python_inside_core(PyObject *pyobj, PyObject *pypoint)
+{
+  PyObject *dummydict;
+  Vector3d vec3;
+  std::shared_ptr<AbstractNode> node = PyOpenSCADObjectToNode(pyobj, &dummydict);
+  if (node == nullptr) {
+    PyErr_SetString(PyExc_TypeError, "Object must be a solid\n");
+    return nullptr;
+  }
+  if (python_vectorval(pypoint, 1, 3, &(vec3[0]), &(vec3[1]), &(vec3[2]), nullptr)) {
+    PyErr_SetString(PyExc_TypeError, "must specify a point to check\n");
+    return nullptr;
+  }
+  const std::shared_ptr<const PolygonNode> polygonnode =
+    std::dynamic_pointer_cast<const PolygonNode>(node);
+  if (polygonnode != nullptr) {
+    auto geom = polygonnode->createGeometry();
+    const Polygon2d poly2 = dynamic_cast<const Polygon2d&>(*geom);
+    Vector2d vec2(vec3[0], vec3[1]);
+    return poly2.point_inside(vec2) ? Py_True : Py_False;
+  }
+
+  const std::shared_ptr<const PolyhedronNode> polyhedronnode =
+    std::dynamic_pointer_cast<const PolyhedronNode>(node);
+  if (polyhedronnode != nullptr) {
+    auto geom = polyhedronnode->createGeometry();
+    const PolySet ps = dynamic_cast<const PolySet&>(*geom);
+    return ps.point_inside(vec3) ? Py_True : Py_False;
+  }
+
+  Tree tree(node, "");
+  GeometryEvaluator geomevaluator(tree);
+  std::shared_ptr<const Geometry> geom = geomevaluator.evaluateGeometry(*tree.root(), true);
+  std::shared_ptr<const PolySet> ps = PolySetUtils::getGeometryAsPolySet(geom);
+  if (auto poly2 = std::dynamic_pointer_cast<const Polygon2d>(geom)) {
+    Vector2d vec2(vec3[0], vec3[1]);
+    return poly2->point_inside(vec2) ? Py_True : Py_False;
+  }
+  if (ps != nullptr) {
+    return ps->point_inside(vec3) ? Py_True : Py_False;
+  }
+  return Py_None;
+}
+
+PyObject *python_inside(PyObject *self, PyObject *args, PyObject *kwargs)
+{
+  char *kwlist[] = {"obj", "point", NULL};
+  PyObject *obj = NULL;
+  PyObject *pypoint;
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "OO", kwlist, &obj, &pypoint)) {
+    PyErr_SetString(PyExc_TypeError, "error during parsing\n");
+    return NULL;
+  }
+  return python_inside_core(obj, pypoint);
+}
+
+PyObject *python_oo_inside(PyObject *obj, PyObject *args, PyObject *kwargs)
+{
+  char *kwlist[] = {"point", NULL};
+  PyObject *pypoint;
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O", kwlist, &pypoint)) {
+    PyErr_SetString(PyExc_TypeError, "error during parsing\n");
+    return NULL;
+  }
+  return python_inside_core(obj, pypoint);
 }
 
 PyObject *python_bbox_core(PyObject *obj)
@@ -5635,18 +5711,21 @@ PyObject *python_osuse_include(int mode, PyObject *self, PyObject *args, PyObjec
     else PyErr_SetString(PyExc_TypeError, "Error during parsing osuse(path)");
     return NULL;
   }
-  const std::string filename = lookup_file(file, python_scriptpath.parent_path().u8string(), ".");
-  stream << "include <" << filename << ">\n";
+  const std::string includedfile = lookup_file(file, python_scriptpath.parent_path().u8string(), ".");
+  stream << "include <" << includedfile << ">\n";
+
+  // Pass the Python script path as the "source" file doing the including
+  std::string scriptpath = python_scriptpath.u8string();
 
   SourceFile *source;
-  if (!parse(source, stream.str(), "python", "python", false)) {
+  if (!parse(source, stream.str(), scriptpath, scriptpath, false)) {
     PyErr_SetString(PyExc_TypeError, "Error in SCAD code");
     return Py_None;
   }
   if (mode == 0) source->scope->moduleInstantiations.clear();
   source->handleDependencies(true);
 
-  EvaluationSession *session = new EvaluationSession("python");
+  EvaluationSession *session = new EvaluationSession(python_scriptpath.parent_path().u8string());
   ContextHandle<BuiltinContext> builtin_context{Context::create<BuiltinContext>(session)};
 
   std::shared_ptr<const FileContext> osinclude_context;
@@ -5663,13 +5742,13 @@ PyObject *python_osuse_include(int mode, PyObject *self, PyObject *args, PyObjec
     //    m.module=mod.second.get();
     //    boost::optional<InstantiableModule> res(m);
     PyDict_SetItemString(result->dict, mod.first.c_str(),
-                         PyDataObjectFromModule(&PyDataType, filename, mod.first));
+                         PyDataObjectFromModule(&PyDataType, includedfile, mod.first));
   }
 
   for (auto fun : source->scope->functions) {  // copy functions
     std::shared_ptr<UserFunction> usfunc = fun.second;
     PyDict_SetItemString(result->dict, fun.first.c_str(),
-                         PyDataObjectFromFunction(&PyDataType, filename, fun.first));
+                         PyDataObjectFromFunction(&PyDataType, includedfile, fun.first));
   }
 
   for (auto ass : source->scope->assignments) {  // copy assignments
@@ -6140,6 +6219,8 @@ PyMethodDef PyOpenSCADFunctions[] = {
   {"surface", (PyCFunction)python_surface, METH_VARARGS | METH_KEYWORDS, "Surface Object."},
   {"sheet", (PyCFunction)python_sheet, METH_VARARGS | METH_KEYWORDS, "Sheet Object."},
   {"mesh", (PyCFunction)python_mesh, METH_VARARGS | METH_KEYWORDS, "exports mesh."},
+  {"inside", (PyCFunction)python_inside, METH_VARARGS | METH_KEYWORDS,
+   "checks if a given point is inside"},
   {"bbox", (PyCFunction)python_bbox, METH_VARARGS | METH_KEYWORDS, "caluculate bbox of object."},
   {"size", (PyCFunction)python_size, METH_VARARGS | METH_KEYWORDS, "get size dimensions of object."},
   {"position", (PyCFunction)python_position, METH_VARARGS | METH_KEYWORDS,
@@ -6196,33 +6277,34 @@ PyMethodDef PyOpenSCADFunctions[] = {
 PyMethodDef PyOpenSCADMethods[] = {
   OO_METHOD_ENTRY(translate, "Move Object") OO_METHOD_ENTRY(rotate, "Rotate Object") OO_METHOD_ENTRY(
     right, "Right Object") OO_METHOD_ENTRY(left, "Left Object") OO_METHOD_ENTRY(back, "Back Object")
-    OO_METHOD_ENTRY(front, "Front Object") OO_METHOD_ENTRY(up, "Up Object")
-      OO_METHOD_ENTRY(down, "Lower Object")
+    OO_METHOD_ENTRY(front, "Front Object") OO_METHOD_ENTRY(up, "Up Object") OO_METHOD_ENTRY(
+      down, "Lower Object")
 
-        OO_METHOD_ENTRY(union, "Union Object") OO_METHOD_ENTRY(difference, "Difference Object")
-          OO_METHOD_ENTRY(intersection, "Intersection Object")
+      OO_METHOD_ENTRY(union, "Union Object") OO_METHOD_ENTRY(
+        difference, "Difference Object") OO_METHOD_ENTRY(intersection, "Intersection Object")
 
-            OO_METHOD_ENTRY(rotx, "Rotx Object") OO_METHOD_ENTRY(roty, "Roty Object") OO_METHOD_ENTRY(
-              rotz, "Rotz Object")
+        OO_METHOD_ENTRY(rotx, "Rotx Object") OO_METHOD_ENTRY(roty, "Roty Object") OO_METHOD_ENTRY(
+          rotz, "Rotz Object")
 
-              OO_METHOD_ENTRY(scale, "Scale Object") OO_METHOD_ENTRY(mirror, "Mirror Object")
-                OO_METHOD_ENTRY(multmatrix, "Multmatrix Object") OO_METHOD_ENTRY(
-                  divmatrix, "Divmatrix Object") OO_METHOD_ENTRY(offset, "Offset Object")
+          OO_METHOD_ENTRY(scale, "Scale Object") OO_METHOD_ENTRY(mirror, "Mirror Object")
+            OO_METHOD_ENTRY(multmatrix, "Multmatrix Object") OO_METHOD_ENTRY(
+              divmatrix, "Divmatrix Object") OO_METHOD_ENTRY(offset, "Offset Object")
 #if defined(ENABLE_EXPERIMENTAL) && defined(ENABLE_CGAL)
-                  OO_METHOD_ENTRY(roof, "Roof Object")
+              OO_METHOD_ENTRY(roof, "Roof Object")
 #endif
-                    OO_METHOD_ENTRY(color, "Color Object") OO_METHOD_ENTRY(
-                      separate, "Split into separate Objects") OO_METHOD_ENTRY(export, "Export Object")
-                      OO_METHOD_ENTRY(find_face, "Find Face") OO_METHOD_ENTRY(sitonto, "Sit onto")
+                OO_METHOD_ENTRY(color, "Color Object") OO_METHOD_ENTRY(
+                  separate, "Split into separate Objects") OO_METHOD_ENTRY(export, "Export Object")
+                  OO_METHOD_ENTRY(find_face, "Find Face") OO_METHOD_ENTRY(sitonto, "Sit onto")
 
-                        OO_METHOD_ENTRY(linear_extrude, "Linear_extrude Object")
-                          OO_METHOD_ENTRY(rotate_extrude, "Rotate_extrude Object") OO_METHOD_ENTRY(
-                            path_extrude, "Path_extrude Object") OO_METHOD_ENTRY(resize, "Resize Object")
+                    OO_METHOD_ENTRY(linear_extrude, "Linear_extrude Object")
+                      OO_METHOD_ENTRY(rotate_extrude, "Rotate_extrude Object") OO_METHOD_ENTRY(
+                        path_extrude, "Path_extrude Object") OO_METHOD_ENTRY(resize, "Resize Object")
 
-                            OO_METHOD_ENTRY(explode, "Explode a solid with a vector") OO_METHOD_ENTRY(
-                              mesh, "Mesh Object") OO_METHOD_ENTRY(bbox, "Evaluate Bound Box of object")
-                              OO_METHOD_ENTRY(faces, "Create Faces list") OO_METHOD_ENTRY(
-                                children, "Return Tupple from solid children")
+                        OO_METHOD_ENTRY(explode, "Explode a solid with a vector") OO_METHOD_ENTRY(
+                          mesh, "Mesh Object") OO_METHOD_ENTRY(inside, "check if given point is inside")
+                          OO_METHOD_ENTRY(bbox, "Evaluate Bound Box of object")
+                            OO_METHOD_ENTRY(faces, "Create Faces list")
+                              OO_METHOD_ENTRY(children, "Return Tupple from solid children")
                                 OO_METHOD_ENTRY(edges, "Create Edges list")
                                   OO_METHOD_ENTRY(oversample, "Oversample Object") OO_METHOD_ENTRY(
                                     debug, "Debug Object Faces")

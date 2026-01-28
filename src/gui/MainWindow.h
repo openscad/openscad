@@ -268,7 +268,6 @@ private slots:
   void instantiateRoot();
   void compileDone(bool didchange);
   void compileEnded();
-  void changeParameterWidget();
 
 private slots:
   void copyViewportTranslation();

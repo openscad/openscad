@@ -819,10 +819,25 @@ jobs:
           # Get version from git
           VERSION=$(git describe --tags --always --dirty)
           APP_BUNDLE="${{ steps.merge.outputs.app_bundle }}"
+          APP_NAME=$(basename "$APP_BUNDLE")
           DMG_NAME="PythonSCAD-${VERSION}.dmg"
 
+          # Create staging directory for DMG contents
+          DMG_STAGING="/tmp/dmg-staging"
+          rm -rf "$DMG_STAGING"
+          mkdir -p "$DMG_STAGING"
+
+          # Copy app bundle to staging directory
+          cp -R "$APP_BUNDLE" "$DMG_STAGING/"
+
+          # Create symlink to Applications folder for drag-and-drop installation
+          ln -s /Applications "$DMG_STAGING/Applications"
+
+          echo "DMG staging contents:"
+          ls -la "$DMG_STAGING"
+
           # Create DMG using hdiutil
-          hdiutil create -volname "PythonSCAD" -srcfolder "$APP_BUNDLE" -ov -format UDZO "$DMG_NAME"
+          hdiutil create -volname "PythonSCAD" -srcfolder "$DMG_STAGING" -ov -format UDZO "$DMG_NAME"
 
           echo "dmg_file=$DMG_NAME" >> $GITHUB_OUTPUT
           echo "Created DMG: $DMG_NAME"

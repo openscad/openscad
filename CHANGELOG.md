@@ -1,5 +1,56 @@
 # Changelog
 
+## [0.11.0](https://github.com/pythonscad/pythonscad/compare/v0.10.4...v0.11.0) (2026-01-27)
+
+
+### Features
+
+* **macos:** improve DMG install experience and fix release build ([#401](https://github.com/pythonscad/pythonscad/issues/401)) ([f9cccb3](https://github.com/pythonscad/pythonscad/commit/f9cccb3a1c5c085f56a64396131559af50a9af76))
+
+## [0.10.4](https://github.com/pythonscad/pythonscad/compare/v0.10.3...v0.10.4) (2026-01-26)
+
+
+### Bug Fixes
+
+* include filename in warnings for files included via osuse() ([#387](https://github.com/pythonscad/pythonscad/issues/387)) ([#397](https://github.com/pythonscad/pythonscad/issues/397)) ([103fa36](https://github.com/pythonscad/pythonscad/commit/103fa36272e9e76ac9d628e82ef276a6c8b0bff5))
+* negative offset3d creates correct number of roundings ([#392](https://github.com/pythonscad/pythonscad/issues/392)) ([d62134e](https://github.com/pythonscad/pythonscad/commit/d62134ed78fa4579a72bc3d6b85711c3d4cb6809))
+* **python:** handle $-variables correctly when calling functions via osuse() ([#386](https://github.com/pythonscad/pythonscad/issues/386)) ([#398](https://github.com/pythonscad/pythonscad/issues/398)) ([900afa4](https://github.com/pythonscad/pythonscad/commit/900afa47ab56be7639218ad28e70d6907c5a038c))
+
+## [0.10.3](https://github.com/pythonscad/pythonscad/compare/v0.10.2...v0.10.3) (2026-01-23)
+
+
+### Bug Fixes
+
+* **ci:** mark published release as latest in GitHub ([#394](https://github.com/pythonscad/pythonscad/issues/394)) ([30f22bf](https://github.com/pythonscad/pythonscad/commit/30f22bf676fdb92ad94dbe5dabeb2e5d1241f704))
+* disable -march=native for portable AppImage builds ([#395](https://github.com/pythonscad/pythonscad/issues/395)) ([390cf27](https://github.com/pythonscad/pythonscad/commit/390cf27773baaa47fc3ccd0ef370bd96f2d00f3f))
+
+## [0.10.2](https://github.com/pythonscad/pythonscad/compare/v0.10.1...v0.10.2) (2026-01-22)
+
+
+### Bug Fixes
+
+* **spec:** correct man page reference from openscad to pythonscad ([#385](https://github.com/pythonscad/pythonscad/issues/385)) ([b9fb68c](https://github.com/pythonscad/pythonscad/commit/b9fb68c1d869a95b7895904509dafb95e987c66c))
+
+## [0.10.1](https://github.com/pythonscad/pythonscad/compare/v0.10.0...v0.10.1) (2026-01-21)
+
+
+### Documentation
+
+* migrate manpage from openscad to pythonscad with new options ([#383](https://github.com/pythonscad/pythonscad/issues/383)) ([62a23be](https://github.com/pythonscad/pythonscad/commit/62a23be9edb06b722162026b2be9d47c2ff74e0e))
+
+## [0.10.0](https://github.com/pythonscad/pythonscad/compare/v0.9.1...v0.10.0) (2026-01-21)
+
+
+### Features
+
+* better lasercutter support ([#374](https://github.com/pythonscad/pythonscad/issues/374)) ([521e500](https://github.com/pythonscad/pythonscad/commit/521e5009503443ccb297dab6166c1409be98a7a0))
+
+
+### Bug Fixes
+
+* use PythonSCAD icon in application overview ([b8292a4](https://github.com/pythonscad/pythonscad/commit/b8292a498330c53266de07fc3afb3b107bc27f91))
+* use PythonSCAD icon in application overview ([cefb7d5](https://github.com/pythonscad/pythonscad/commit/cefb7d5694b85d22689d8b69d4a949b96d0044b8)), closes [#376](https://github.com/pythonscad/pythonscad/issues/376)
+
 ## [0.9.1](https://github.com/pythonscad/pythonscad/compare/v0.9.0...v0.9.1) (2026-01-21)
 
 

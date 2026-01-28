@@ -34,6 +34,7 @@ public:
    * Calculate segments for a circle or circular arc.
    */
   std::optional<int> getCircularSegmentCount(double r, double angle_degrees = 360.0) const;
+  std::optional<int> getCircularSegmentCountAlt(double r, double angle_degrees = 360.0) const;
 
   /**
    * @brief Calculate segments for a path.
