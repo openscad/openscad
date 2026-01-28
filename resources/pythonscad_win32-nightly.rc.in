@@ -41,5 +41,8 @@ VS_VERSION_INFO VERSIONINFO
 	END
 /* End of Version info */
 
-IDI_ICON1   ICON    DISCARDABLE "resources/icons/openscad-nightly.ico"
-IDI_ICON2   ICON    DISCARDABLE "resources/icons/openscad_doc.ico"
+/* Application icon ID 1 so Explorer and taskbar use PythonSCAD icon */
+1 ICON DISCARDABLE "@CMAKE_SOURCE_DIR@/resources/icons/icon-nightly.ico"
+
+IDI_ICON1   ICON    DISCARDABLE "@CMAKE_SOURCE_DIR@/resources/icons/icon-nightly.ico"
+IDI_ICON2   ICON    DISCARDABLE "@CMAKE_SOURCE_DIR@/resources/icons/icon-nightly.ico"

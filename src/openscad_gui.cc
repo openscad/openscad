@@ -40,8 +40,6 @@
 #include <QGuiApplication>
 #include <QIcon>
 #include <QObject>
-#include <QPalette>
-#include <QStyleHints>
 #include <QStringList>
 #include <QtConcurrentRun>
 
@@ -85,30 +83,6 @@ Q_DECLARE_METATYPE(Message);
 Q_DECLARE_METATYPE(std::shared_ptr<const Geometry>);
 
 extern std::string arg_colorscheme;
-
-namespace {
-
-// Check if running with light or dark theme. This should really just be used
-// to switch the icon theme globally.
-//
-// For applying a color change, e.g. highlighting the background of an input
-// field, see:
-// UIUtils::blendForBackgroundColorStyleSheet(const QColor& input, const QColor& blend)
-
-bool isDarkMode()
-{
-#if QT_VERSION >= QT_VERSION_CHECK(6, 5, 0)
-  const auto scheme = QGuiApplication::styleHints()->colorScheme();
-  return scheme == Qt::ColorScheme::Dark;
-#else
-  const QPalette defaultPalette;
-  const auto& text = defaultPalette.color(QPalette::WindowText);
-  const auto& window = defaultPalette.color(QPalette::Window);
-  return text.lightness() > window.lightness();
-#endif  // QT_VERSION
-}
-
-}  // namespace
 
 namespace {
 
@@ -177,7 +151,6 @@ int gui(std::vector<std::string>& inputFiles, const std::filesystem::path& origi
         char **argv, const std::string& gui_test, const bool reset_window_settings)
 {
   OpenSCADApp app(argc, argv);
-  QIcon::setThemeName(isDarkMode() ? "chokusen-dark" : "chokusen");
 
   // set up groups for QSettings
   QCoreApplication::setOrganizationName("PythonSCAD");
@@ -241,9 +214,7 @@ int gui(std::vector<std::string>& inputFiles, const std::filesystem::path& origi
 #endif
 
   registerDefaultIcon(app.applicationFilePath());
-  app.setApplicationFont(
-    GlobalPreferences::inst()->getValue("advanced/applicationFontFamily").toString(),
-    GlobalPreferences::inst()->getValue("advanced/applicationFontSize").toUInt());
+  app.setGuiTheme(GlobalPreferences::inst()->getValue("advanced/guiTheme").toString());
 
 #ifdef OPENSCAD_UPDATER
   AutoUpdater *updater = new SparkleAutoUpdater;
@@ -254,6 +225,8 @@ int gui(std::vector<std::string>& inputFiles, const std::filesystem::path& origi
 
   QObject::connect(GlobalPreferences::inst(), &Preferences::applicationFontChanged, &app,
                    &OpenSCADApp::setApplicationFont);
+  QObject::connect(GlobalPreferences::inst(), &Preferences::guiThemeChanged, &app,
+                   &OpenSCADApp::setGuiTheme);
   QObject::connect(GlobalPreferences::inst(), &Preferences::renderBackend3DChanged, &app,
                    &OpenSCADApp::setRenderBackend3D);
 
