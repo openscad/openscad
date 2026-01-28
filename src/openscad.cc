@@ -912,9 +912,8 @@ int openscad_main(int argc, char **argv)
     ("m,m", po::value<std::string>(), "make_cmd -runs make_cmd file if file is missing")
     ("quiet,q", "quiet mode (don't print anything *except* errors)")
     ("reset-window-settings", "Reset GUI settings for window placement and fonts.")
-    // Ideally, the fatal/error/warning selection would come from SettingsEntryBase.help().
     ("hardfail", po::value<std::string>(),
-      "=fatal/error/warning, stop on fatal errors, ordinary errors, or warnings")
+      ("stop on first " + std::get<1>(Settings::Settings::hardFailLevel.help())).c_str())
     ("trace-depth", po::value<unsigned int>(), "=n, maximum number of trace messages")
     ("trace-usermodule-parameters", po::value<std::string>(),
       "=true/false, configure the output of user module parameters in a trace")
