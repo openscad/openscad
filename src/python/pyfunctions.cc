@@ -1440,9 +1440,18 @@ PyObject *python_nb_sub(PyObject *arg1, PyObject *arg2, OpenSCADOperator mode)
   std::shared_ptr<AbstractNode> child[2];
   PyObject *child_dict[2];
 
-  if (arg1 == Py_None && mode == OpenSCADOperator::UNION) return arg2;
-  if (arg2 == Py_None && mode == OpenSCADOperator::UNION) return arg1;
-  if (arg2 == Py_None && mode == OpenSCADOperator::DIFFERENCE) return arg1;
+  if (arg1 == Py_None && mode == OpenSCADOperator::UNION) {
+    Py_INCREF(arg2);
+    return arg2;
+  }
+  if (arg2 == Py_None && mode == OpenSCADOperator::UNION) {
+    Py_INCREF(arg1);
+    return arg1;
+  }
+  if (arg2 == Py_None && mode == OpenSCADOperator::DIFFERENCE) {
+    Py_INCREF(arg1);
+    return arg1;
+  }
 
   child[0] = PyOpenSCADObjectToNodeMulti(arg1, &child_dict[0]);
   if (child[0] == NULL) {
