@@ -72,6 +72,7 @@ option(CMAKE_REQUIRE_FIND_PACKAGE_Lib3MF "Require Lib3MF." ON)
 option(ALLOW_BUNDLED_HIDAPI "Allow usage of bundled HIDAPI library (Windows only)." OFF)
 option(ENABLE_PYTHON "Enable experimental Python Interpreter" OFF)
 option(BUILD_SHARED_LIBS "Build shared library" OFF)
+set(OPENSCAD_APPNAME "OpenSCAD" CACHE STRING "Application name for branding (e.g., OpenSCAD or PythonSCAD)")
 include(CMakeDependentOption)
 cmake_dependent_option(APPLE_UNIX "Build OpenSCAD in Unix mode in MacOS X instead of an Apple Bundle" OFF "APPLE" OFF)
 cmake_dependent_option(ENABLE_QTDBUS "Enable DBus input driver for Qt." ON "NOT HEADLESS" OFF)
@@ -365,6 +366,8 @@ if (NOT "${SUFFIX}" STREQUAL "")
 else()
   set(SUFFIX_WITH_DASH "")
 endif()
+
+target_compile_definitions(OpenSCADLibInternal PUBLIC OPENSCAD_APPNAME="${OPENSCAD_APPNAME}")
 
 if (MXECROSS OR WIN32)
   add_subdirectory(winconsole)
@@ -1314,6 +1317,7 @@ set(GUI_SOURCES
   src/gui/ScintillaEditor.cc
   src/gui/SettingsWriter.cc
   src/gui/TabManager.cc
+  src/gui/UnsavedChangesDialog.cc
   src/gui/UIUtils.cc
   src/gui/WindowManager.cc
   src/gui/IgnoreWheelWhenNotFocused.cc
@@ -1387,6 +1391,7 @@ set(GUI_HEADERS
     src/gui/ScintillaEditor.h
     src/gui/SettingsWriter.h
     src/gui/TabManager.h
+    src/gui/UnsavedChangesDialog.h
     src/gui/UIUtils.h
     src/gui/ViewportControl.h
     src/gui/WindowManager.h

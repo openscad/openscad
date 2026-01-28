@@ -31,6 +31,7 @@
 #include "gui/ScintillaEditor.h"
 #include "gui/Preferences.h"
 #include "gui/MainWindow.h"
+#include "gui/UnsavedChangesDialog.h"
 
 #include <cstddef>
 
@@ -134,6 +135,15 @@ void TabManager::prevTab()
 {
   assert(tabWidget != nullptr);
   tabWidget->setCurrentIndex((tabWidget->currentIndex() + tabWidget->count() - 1) % tabWidget->count());
+}
+
+void TabManager::switchToEditor(EditorInterface *editor)
+{
+  assert(tabWidget != nullptr);
+  int index = tabWidget->indexOf(editor);
+  if (index >= 0) {
+    tabWidget->setCurrentIndex(index);
+  }
 }
 
 void TabManager::actionNew()
@@ -594,35 +604,36 @@ bool TabManager::maybeSave(int x)
 /*!
  * Called for whole window close, returning false will abort the close
  * operation.
+ *
+ * Uses a GIMP-style dialog that shows a list of unsaved files, allowing
+ * the user to click on individual files to switch to them and save them
+ * one by one, or discard all changes.
  */
 bool TabManager::shouldClose()
 {
+  // Check if there are any unsaved changes
+  bool hasUnsavedChanges = false;
   foreach (EditorInterface *edt, editorList) {
-    if (!(edt->isContentModified() || edt->parameterWidget->isModified())) continue;
-
-    QMessageBox box(par);
-    box.setText(_("Some tabs have unsaved changes."));
-    box.setInformativeText(_("Do you want to save all your changes?"));
-    box.setStandardButtons(QMessageBox::SaveAll | QMessageBox::Discard | QMessageBox::Cancel);
-    box.setDefaultButton(QMessageBox::SaveAll);
-    box.setIcon(QMessageBox::Warning);
-    box.setWindowModality(Qt::ApplicationModal);
-#ifdef Q_OS_MACOS
-    // Cmd-D is the standard shortcut for this button on Mac
-    box.button(QMessageBox::Discard)->setShortcut(QKeySequence("Ctrl+D"));
-    box.button(QMessageBox::Discard)->setShortcutEnabled(true);
-#endif
-    auto ret = (QMessageBox::StandardButton)box.exec();
-
-    if (ret == QMessageBox::Cancel) {
-      return false;
-    } else if (ret == QMessageBox::Discard) {
-      return true;
-    } else if (ret == QMessageBox::SaveAll) {
-      return saveAll();
+    if (edt->isContentModified() || edt->parameterWidget->isModified()) {
+      hasUnsavedChanges = true;
+      break;
     }
   }
-  return true;
+
+  if (!hasUnsavedChanges) {
+    return true;
+  }
+
+  // Show the GIMP-style unsaved changes dialog
+  UnsavedChangesDialog dialog(this, par, par);
+  dialog.exec();
+
+  switch (dialog.result()) {
+  case UnsavedChangesDialog::AllSaved:   return true;
+  case UnsavedChangesDialog::DiscardAll: return true;
+  case UnsavedChangesDialog::Cancel:
+  default:                               return false;
+  }
 }
 
 void TabManager::saveError(const QIODevice& file, const std::string& msg, const QString& filepath)

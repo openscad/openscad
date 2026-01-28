@@ -1,27 +1,39 @@
+# #-#-#-#-#  pythonscad-tmp.pot (OpenSCAD 2026.01.28)  #-#-#-#-#
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the OpenSCAD package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: OpenSCAD 2020.02.01\n"
+"#-#-#-#-#  pythonscad-tmp.pot (OpenSCAD 2026.01.28)  #-#-#-#-#\n"
+"Project-Id-Version: OpenSCAD 2026.01.28\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-01-28 02:36+0100\n"
-"PO-Revision-Date: 2020-04-20 17:00+0400\n"
-"Last-Translator: Sargis Malkonyan <melkonyansarg@gmail.com>\n"
-"Language-Team: Agarak Armath Engineering Laboratories\n"
-"Language: hy_AM\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=2; plural=(n > 1);\n"
-"X-Generator: Poedit 2.3\n"
-"X-Language: hy_AM\n"
-"X-Source-Language: hy_AM\n"
+"Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
+"#-#-#-#-#  appdata-strings.pot (PACKAGE VERSION)  #-#-#-#-#\n"
+"Project-Id-Version: PACKAGE VERSION\n"
+"POT-Creation-Date: 2026-01-28 02:36+0100\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_AboutDialog.h:102
-#, fuzzy
 msgid "About Open(Python)SCAD"
-msgstr "OpenSCAD-ի մասին"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_AboutDialog.h:104
-#, fuzzy
 msgid ""
 "<html><head/><body>\n"
 "<p style=\"font-family: 'Open Sans', 'Droid Sans', 'sans-serif'; font-"
@@ -35,16 +47,6 @@ msgid ""
 "\n"
 "\n"
 msgstr ""
-"<html><head/><body>\n"
-"<p style=\"font-family: 'Open Sans', 'Droid Sans', 'sans-serif'; font-"
-"weight: bold; padding-bottom: 0; margin-bottom: 0; font-size: 22pt;\"><span "
-"style=\"color: green;\">Open</span>SCAD</p>\n"
-"<p style=\"font-family: 'Open Sans', 'Droid Sans', 'sans-serif'; font-"
-"weight: normal; font-size: 14pt; padding-top: 0; margin-top: 0; margin-left: "
-"2em;\">Եռաչափ մոդելավորում ծրագրավորման միջոցով</p>\n"
-"</body></html>\n"
-"\n"
-"\n"
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_AboutDialog.h:111
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_Export3mfDialog.h:516
@@ -53,11 +55,11 @@ msgstr ""
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_OctoPrintApiKeyDialog.h:110
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_PrintInitDialog.h:186
 msgid "OK"
-msgstr "Լավ"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_Animate.h:256
 msgid "Animate"
-msgstr "Կենդանացնել"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_Animate.h:257
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_Animate.h:259
@@ -86,26 +88,26 @@ msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_Animate.h:278
 msgid "Time:"
-msgstr "ժամ։"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_Animate.h:279
 msgid "FPS:"
-msgstr "FPS:"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_Animate.h:280
 msgid "Steps:"
-msgstr "Քայլեր։"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_Animate.h:281
 msgid "Dump Pictures"
-msgstr "Թափոն նկարները"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_AxisConfigWidget.h:852
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_ButtonConfigWidget.h:362
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MouseConfigWidget.h:214
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2291
 msgid "Preferences"
-msgstr "Կարգավորումներ"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_AxisConfigWidget.h:853
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_AxisConfigWidget.h:854
@@ -117,11 +119,11 @@ msgstr "Կարգավորումներ"
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_AxisConfigWidget.h:870
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_AxisConfigWidget.h:881
 msgid "Trim"
-msgstr "Կտրել"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_AxisConfigWidget.h:855
 msgid "Reset Trim"
-msgstr "Չեղարկել կտրումը"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_AxisConfigWidget.h:856
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_AxisConfigWidget.h:859
@@ -133,259 +135,246 @@ msgstr "Չեղարկել կտրումը"
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_AxisConfigWidget.h:869
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_AxisConfigWidget.h:880
 msgid "DeadZone"
-msgstr "Մեռյալ գոտի"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_AxisConfigWidget.h:857
 msgid "Auto Trim Axes"
-msgstr "Ավտոմատ հետ բերել կտրած հատվածը"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_AxisConfigWidget.h:871
 msgid "Axis 2"
-msgstr "Առանցք 2"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_AxisConfigWidget.h:872
 msgid "Axis 0"
-msgstr "Առանցք 0"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_AxisConfigWidget.h:873
 msgid "Axis 3"
-msgstr "Առանցք 3"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_AxisConfigWidget.h:874
 msgid "Axis 6"
-msgstr "Առանցք 6"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_AxisConfigWidget.h:875
 msgid "Axis 8"
-msgstr "Առանցք 8"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_AxisConfigWidget.h:876
 msgid "Axis 7"
-msgstr "Առանցք 7"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_AxisConfigWidget.h:877
 msgid "Axis 5"
-msgstr "Առանցք 5"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_AxisConfigWidget.h:878
 msgid "Axis 1"
-msgstr "Առանցք 1"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_AxisConfigWidget.h:879
 msgid "Axis 4"
-msgstr "Առանցք 4"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_AxisConfigWidget.h:882
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_ViewportControl.h:279
 msgid "Rotation"
-msgstr "Պտտում"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_AxisConfigWidget.h:883
 msgid "Zoom"
-msgstr "Խոշորացում"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_AxisConfigWidget.h:884
 msgid "X"
-msgstr "X"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_AxisConfigWidget.h:885
 msgid "Gain"
-msgstr "Աճացնել"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_AxisConfigWidget.h:886
 msgid "Y"
-msgstr "Y"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_AxisConfigWidget.h:887
 msgid "Z"
-msgstr "Z"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_AxisConfigWidget.h:888
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_ViewportControl.h:280
 msgid "Translation"
-msgstr "Մոդելի թարգմանություն"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_AxisConfigWidget.h:889
 msgid "ViewPort rel.<br/>Translation"
-msgstr "ViewPort rel.<br/>Թարգմանություն"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_AxisConfigWidget.h:890
 msgid "ViewPort rel.<br />Rotation"
-msgstr "ViewPort rel.<br />Պտտում"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_AxisConfigWidget.h:891
 msgid "Axis Setup:"
-msgstr "Առանցքի կարգաբերում ՝"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_AxisConfigWidget.h:892
 msgid "<b>Driver selection:</b> <i>(changes requires restarting OpenSCAD)</i>"
 msgstr ""
-"<b>Driver֊ի ընտրություն:</b> <i>(փոփոխությունից հետո անհրաժեշտ է "
-"վերագործարկել OpenSCAD֊ը)</i>"
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_AxisConfigWidget.h:893
 msgid "SpaceNav"
-msgstr "SpaceNav"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_AxisConfigWidget.h:894
 msgid "HIDAPI"
-msgstr "HIDAPI"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_AxisConfigWidget.h:895
 msgid "QGamepad"
-msgstr "QGamepad"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_AxisConfigWidget.h:896
 msgid "Joystick"
-msgstr "Joystick"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_AxisConfigWidget.h:897
 msgid "DBus"
-msgstr "DBus"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_AxisConfigWidget.h:898
 msgid "Axes Mapping:"
-msgstr "Առանցքների տեղորոշում ՝"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_AxisConfigWidget.h:899
 msgid "Status:"
 msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_AxisConfigWidget.h:900
-#, fuzzy
 msgid "TextLabel"
-msgstr "Տեքստ"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_AxisConfigWidget.h:901
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2295
 msgid "Update"
-msgstr "Թարմացնել"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_ButtonConfigWidget.h:363
-#, fuzzy
 msgid "Button 19"
-msgstr "Կոճակ 1"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_ButtonConfigWidget.h:364
 msgid "Button 5"
-msgstr "Կոճակ 5"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_ButtonConfigWidget.h:365
 msgid "Button 14"
-msgstr "Կոճակ 14"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_ButtonConfigWidget.h:366
 msgid "Button 7"
-msgstr "Կոճակ 7"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_ButtonConfigWidget.h:367
-#, fuzzy
 msgid "Button 16"
-msgstr "Կոճակ 1"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_ButtonConfigWidget.h:368
-#, fuzzy
 msgid "Button 20"
-msgstr "Կոճակ 2"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_ButtonConfigWidget.h:369
 msgid "Button 1"
-msgstr "Կոճակ 1"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_ButtonConfigWidget.h:370
-#, fuzzy
 msgid "Button 21"
-msgstr "Կոճակ 2"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_ButtonConfigWidget.h:371
-#, fuzzy
 msgid "Button 18"
-msgstr "Կոճակ 1"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_ButtonConfigWidget.h:372
 msgid "Button 0"
-msgstr "Կոճակ 0"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_ButtonConfigWidget.h:373
 msgid "Button 4"
-msgstr "Կոճակ 4"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_ButtonConfigWidget.h:374
 msgid "Button 10"
-msgstr "Կոճակ 10"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_ButtonConfigWidget.h:375
 msgid "Button 6"
-msgstr "Կոճակ 6"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_ButtonConfigWidget.h:376
 msgid "Button 8"
-msgstr "Կոճակ 8"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_ButtonConfigWidget.h:377
 msgid "Button 15"
-msgstr "Կոճակ 15"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_ButtonConfigWidget.h:378
 msgid "Button 11"
-msgstr "Կոճակ 11"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_ButtonConfigWidget.h:379
 msgid "Button 3"
-msgstr "Կոճակ 3"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_ButtonConfigWidget.h:380
-#, fuzzy
 msgid "Button 23"
-msgstr "Կոճակ 2"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_ButtonConfigWidget.h:381
 msgid "Button 9"
-msgstr "Կոճակ 9"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_ButtonConfigWidget.h:382
 msgid "Button 2"
-msgstr "Կոճակ 2"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_ButtonConfigWidget.h:383
 msgid "Button 13"
-msgstr "Կոճակ 13"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_ButtonConfigWidget.h:384
 msgid "Button 12"
-msgstr "Կոճակ 12"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_ButtonConfigWidget.h:385
-#, fuzzy
 msgid "Button 17"
-msgstr "Կոճակ 1"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_ButtonConfigWidget.h:386
-#, fuzzy
 msgid "Button 22"
-msgstr "Կոճակ 2"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_Console.h:42
 msgid "Clear"
-msgstr "Մաքրել"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_Console.h:44
 msgid "Clear console"
-msgstr "Մաքրել հրամանների վահանակը"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_Console.h:46
-#, fuzzy
 msgid "Save As..."
-msgstr "Պահել &որպես..."
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_Console.h:48
 msgid "Save console content to file"
-msgstr "Պահել վահանակի պարունակությունը նիշքում"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_ErrorLog.h:92
-#, fuzzy
 msgid "Error Log"
-msgstr "Սխալմունք"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_ErrorLog.h:93
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_ViewportControl.h:267
@@ -402,15 +391,14 @@ msgid "double click to jump to file and line"
 msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_ErrorLog.h:100
-#, fuzzy
 msgid "&Show"
-msgstr "Ցույց տալ"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_ErrorLog.h:101
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_FontList.h:306
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1594
 msgid "All"
-msgstr "Ամբողջը"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_ErrorLog.h:102
 msgid "ERROR"
@@ -441,9 +429,8 @@ msgid "DEPRECATED"
 msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_Export3mfDialog.h:448
-#, fuzzy
 msgid "Export 3MF Options"
-msgstr "Հնարավորություններ"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_Export3mfDialog.h:450
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_ExportPdfDialog.h:543
@@ -487,9 +474,8 @@ msgid "Meter"
 msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_Export3mfDialog.h:460
-#, fuzzy
 msgid "meter"
-msgstr "Պարամետր"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_Export3mfDialog.h:461
 #: src/core/Settings.cc:449
@@ -509,9 +495,8 @@ msgid "foot"
 msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_Export3mfDialog.h:468
-#, fuzzy
 msgid "Colors"
-msgstr "Գունային համակարգ։"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_Export3mfDialog.h:469
 msgid "Use colors from model and color scheme"
@@ -585,12 +570,11 @@ msgstr ""
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_ParameterDescriptionWidget.h:100
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_ParameterDescriptionWidget.h:101
 msgid "Description"
-msgstr "Նկարագրություն"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_Export3mfDialog.h:486
-#, fuzzy
 msgid "Designer"
-msgstr "&Դիզայն"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_Export3mfDialog.h:487
 msgid "License terms"
@@ -619,9 +603,8 @@ msgid "A description of the document"
 msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_Export3mfDialog.h:507
-#, fuzzy
 msgid "Format"
-msgstr "Ձև"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_Export3mfDialog.h:508
 msgid "Decimal precision"
@@ -648,17 +631,15 @@ msgstr ""
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_PrintInitDialog.h:185
 #: src/gui/UnsavedChangesDialog.cc:59
 msgid "Cancel"
-msgstr "Չեղարկել"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_ExportPdfDialog.h:541
-#, fuzzy
 msgid "Export PDF Options"
-msgstr "Հնարավորություններ"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_ExportPdfDialog.h:545
-#, fuzzy
 msgid "Page Size"
-msgstr "Չափս"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_ExportPdfDialog.h:546
 #: src/core/Settings.cc:390
@@ -748,9 +729,8 @@ msgid ""
 msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_ExportPdfDialog.h:582
-#, fuzzy
 msgid "Page Orientation"
-msgstr "Կտրվածքների պատրաստում"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_ExportPdfDialog.h:583
 #: src/core/Settings.cc:400
@@ -782,9 +762,8 @@ msgid "auto"
 msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_ExportPdfDialog.h:592
-#, fuzzy
 msgid "Annotations"
-msgstr "Պտտում"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_ExportPdfDialog.h:594
 msgid ""
@@ -802,9 +781,8 @@ msgid ""
 msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_ExportPdfDialog.h:600
-#, fuzzy
 msgid "Show Scale"
-msgstr "Ցուցադրել մասշատբի նշումները"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_ExportPdfDialog.h:602
 msgid ""
@@ -813,9 +791,8 @@ msgid ""
 msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_ExportPdfDialog.h:604
-#, fuzzy
 msgid "Show Grid"
-msgstr "Ցուցադրել եզրերը"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_ExportPdfDialog.h:605
 msgid "2mm"
@@ -844,9 +821,8 @@ msgid ""
 msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_ExportPdfDialog.h:613
-#, fuzzy
 msgid "Show Scale Usage"
-msgstr "Ցուցադրել մասշատբի նշումները"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_ExportPdfDialog.h:614
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_ExportSvgDialog.h:203
@@ -886,9 +862,8 @@ msgid " mm"
 msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_ExportSvgDialog.h:202
-#, fuzzy
 msgid "Export SVG Options"
-msgstr "Հնարավորություններ"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_ExportSvgDialog.h:205
 msgid "Enable filling of exported geometry with a color."
@@ -900,20 +875,20 @@ msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_FontListDialog.h:106
 msgid "OpenSCAD Font List"
-msgstr "OpenSCAD Տառատեսակների ցանկ"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_FontListDialog.h:107
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_LibraryInfoDialog.h:77
 msgid "&OK"
-msgstr "&Հաստատել"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_FontListDialog.h:108
 msgid "Copy to Clipboard"
-msgstr "Պատճենել պատկերը"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_FontListDialog.h:109
 msgid "Filter:"
-msgstr "Զտիչ ՝"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_FontListDialog.h:110
 msgid ""
@@ -927,30 +902,18 @@ msgid ""
 "family:'Courier New,courier';\">  text(&quot;OpenSCAD&quot;, font = "
 "&quot;Liberation Sans:style=Italic&quot;);</span></pre></body></html>"
 msgstr ""
-"<html><head/><body><p>Այս ցանկը ցույց է տալիս այն տառատեսակները, որոնք արդեն "
-"իսկ գրանցված են OpenSCAD֊ում.</p><p>Օրինակ:</p><pre style=\" margin-"
-"top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-"
-"indent:0; text-indent:0px;\"><span style=\" font-family:'Courier "
-"New,courier';\">  Տեքստ(&quot;OpenSCAD&quot;, տառատեսակը = &quot;DejaVu "
-"Sans&quot;);</span></pre><pre style=\" margin-top:0px; margin-bottom:12px; "
-"margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;"
-"\"><span style=\" font-family:'Courier New,courier';\">  "
-"text(&quot;OpenSCAD&quot;, font = &quot;Liberation Sans:style=Italic&quot;);"
-"</span></pre></body></html>"
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_FontList.h:291
-#, fuzzy
 msgid "Font List"
-msgstr "&Տառատեսակի ցանկ"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_FontList.h:292
 msgid "ResetSampleText"
 msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_FontList.h:293
-#, fuzzy
 msgid "Open Font Folder"
-msgstr "&Նիշք"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_FontList.h:294
 msgid "Copy Font Folder"
@@ -961,53 +924,44 @@ msgid "Copy Full Path to Font"
 msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_FontList.h:296
-#, fuzzy
 msgid "Copy Font Style"
-msgstr "&Տառատեսակի ցանկ"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_FontList.h:297
-#, fuzzy
 msgid "Copy Font Name"
-msgstr "Տառատեսակ"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_FontList.h:298
-#, fuzzy
 msgid "Show Font Name"
-msgstr "Տառատեսակ"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_FontList.h:299
 msgid "Show Styled Font Name"
 msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_FontList.h:300
-#, fuzzy
 msgid "Show Font Style"
-msgstr "&Տառատեսակի ցանկ"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_FontList.h:301
-#, fuzzy
 msgid "Show Sample Text"
-msgstr "Ցուցադրել մասշատբի նշումները"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_FontList.h:302
-#, fuzzy
 msgid "ShowFileName"
-msgstr "&Նիշք"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_FontList.h:303
-#, fuzzy
 msgid "Show File Path"
-msgstr "Ցուցադրել մասշատբի նշումները"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_FontList.h:304
-#, fuzzy
 msgid "Reset Columns"
-msgstr "Չեղարկել կտրումը"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_FontList.h:305
-#, fuzzy
 msgid "Filter"
-msgstr "Զտիչ ՝"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_FontList.h:307
 msgid "Any"
@@ -1017,7 +971,7 @@ msgstr ""
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2342
 #: src/core/Settings.cc:162 src/core/Settings.cc:500
 msgid "Fixed"
-msgstr "Ֆիքսված"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_FontList.h:310
 #: src/core/Settings.cc:501
@@ -1032,9 +986,8 @@ msgstr ""
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_FontList.h:313
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_FontList.h:317
 #: src/gui/FontList.cc:404
-#, fuzzy
 msgid "Font name"
-msgstr "Տառատեսակ"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_FontList.h:314
 #: src/gui/FontList.cc:408
@@ -1046,56 +999,52 @@ msgid "Chars"
 msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_FontList.h:316
-#, fuzzy
 msgid "Selection"
-msgstr "Գործողություն"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_FontList.h:318
-#, fuzzy
 msgid "Font path"
-msgstr "Տառատեսակ"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_FontList.h:319
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2341
 msgid "Style"
-msgstr "Ոճ"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_LaunchingScreen.h:293
-#, fuzzy
 msgid "Welcome to PythonSCAD"
-msgstr "Բարի գալուստ OpenSCAD"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_LaunchingScreen.h:294
 msgid "New"
-msgstr "Նոր"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_LaunchingScreen.h:295
 msgid "Open"
-msgstr "Բացել"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_LaunchingScreen.h:296
 msgid "Help"
-msgstr "Օգնություն"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_LaunchingScreen.h:297
 msgid "Recents"
-msgstr "Վերջին նիշքերը"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_LaunchingScreen.h:298
 msgid "Open Recent"
-msgstr "Բացել վերջին նիշքերը"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_LaunchingScreen.h:299
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_LaunchingScreen.h:301
 msgid "Examples"
-msgstr "Օրինակներ"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_LaunchingScreen.h:302
 msgid "Open Example"
-msgstr "Բացել օրինակ"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_LaunchingScreen.h:304
-#, fuzzy
 msgid ""
 "<html><head/><body>\n"
 "\t\t<p style=\"font-family: 'Open Sans', 'Droid Sans', 'sans-serif'; font-"
@@ -1108,64 +1057,50 @@ msgid ""
 "\n"
 "\n"
 msgstr ""
-"<html><head/><body>\n"
-"<p style=\"font-family: 'Open Sans', 'Droid Sans', 'sans-serif'; font-"
-"weight: bold; padding-bottom: 0; margin-bottom: 0; font-size: 22pt;\"><span "
-"style=\"color: green;\">Open</span>SCAD</p>\n"
-"<p style=\"font-family: 'Open Sans', 'Droid Sans', 'sans-serif'; font-"
-"weight: normal; font-size: 14pt; padding-top: 0; margin-top: 0; margin-left: "
-"2em;\">Եռաչափ մոդելավորում ծրագրավորման միջոցով</p>\n"
-"</body></html>\n"
-"\n"
-"\n"
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_LaunchingScreen.h:311
 msgid "Don't show again"
-msgstr "Այլևս չցուցադրել"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_LaunchingScreen.h:312
 msgid "Version"
-msgstr "Տարբերակ"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_LibraryInfoDialog.h:75
 msgid "Lib & Build Info"
-msgstr "Գրադար․ և կառուց․ տեղեկ․"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_LibraryInfoDialog.h:76
 msgid "OpenSCAD Detailed Library and Build Information"
-msgstr "OpenSCAD֊ի ամբողջական գրադարանները և կառուցման տեղեկատվությունը"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_LoadShareDesignDialog.h:62
 msgid "Loading a shared Design from pythonscad.org"
 msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_LoadShareDesignDialog.h:63
-#, fuzzy
 msgid "Select Design"
-msgstr "Գործողություն"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1288
-#, fuzzy
 msgid "&New File"
-msgstr "&Նիշք"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1290
 msgid "Ctrl+N"
-msgstr "Ctrl+N"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1292
-#, fuzzy
 msgid "New Window"
-msgstr "&Փնտրել նախորդը"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1293
-#, fuzzy
 msgid "&Open File"
-msgstr "&Նիշք"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1295
 msgid "Ctrl+O"
-msgstr "Ctrl+O"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1297
 msgid "Open in New Window"
@@ -1173,209 +1108,203 @@ msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1298
 msgid "&Save"
-msgstr "&Պահել"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1300
 msgid "Ctrl+S"
-msgstr "Ctrl+S"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1302
 msgid "Save &As..."
-msgstr "Պահել &որպես..."
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1304
 msgid "Ctrl+Shift+S"
-msgstr "Ctrl+Shift+S"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1306
 msgid "Save a Copy"
 msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1307
-#, fuzzy
 msgid "Save All"
-msgstr "Պահպանել որպես՝"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1308
 msgid "&Reload"
-msgstr "&Կրկին բեռնել"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1310
 msgid "Ctrl+R"
-msgstr "Ctrl+R"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1312
 msgid "&Quit"
-msgstr "&Փակել"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1314
 msgid "Ctrl+Q"
-msgstr "Ctrl+Q"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1316
 msgid "&Undo"
-msgstr "& Հետ գնալ"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1318
 msgid "Ctrl+Z"
-msgstr "Ctrl+Z"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1320
 msgid "&Redo"
-msgstr "&Առաջ գնալ"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1322
 msgid "Ctrl+Shift+Z"
-msgstr "Ctrl+Shift+Z"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1325
 msgid "Ctrl+Y"
-msgstr "Ctrl+Y"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1327
 msgid "Cu&t"
-msgstr "&Կտրել"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1329
 msgid "Ctrl+X"
-msgstr "Ctrl+X"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1331
 msgid "&Copy"
-msgstr "&Պատճենել"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1333
 msgid "Ctrl+C"
-msgstr "Ctrl+C"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1335
 msgid "&Paste"
-msgstr "&Տեղադրել"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1337
 msgid "Ctrl+V"
-msgstr "Ctrl+V"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1339
 msgid "&Indent"
-msgstr "&Դրոշմել"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1341
 msgid "Ctrl+I"
-msgstr "Ctrl+I"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1343
 msgid "C&omment"
-msgstr "&Մեկնաբանություն"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1345
 msgid "Ctrl+D"
-msgstr "Ctrl+D"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1347
 msgid "Unco&mment"
-msgstr "&Առանց մեկնաբանության"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1349
 msgid "Ctrl+Shift+D"
-msgstr "Ctrl+Shift+D"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1351
-#, fuzzy
 msgid "Show Next Tab"
-msgstr "Ցույց տալ բոլոր մասերը"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1353
-#, fuzzy
 msgid "Ctrl+Tab"
-msgstr "Ctrl+T"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1355
-#, fuzzy
 msgid "Show Previous Tab"
-msgstr "Ցույց տալ բոլոր մասերը"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1357
-#, fuzzy
 msgid "Ctrl+Shift+Tab"
-msgstr "Ctrl+Shift+C"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1359
 msgid "Copy viewport ima&ge"
-msgstr "Պատճենել &դիտման պատկերը"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1361
 msgid "Ctrl+Shift+C"
-msgstr "Ctrl+Shift+C"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1363
 msgid "Copy viewport transl&ation"
-msgstr "Պատճենել &դիտման թարգմանություն"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1365
 msgid "Ctrl+T"
-msgstr "Ctrl+T"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1367
 msgid "Cop&y viewport rotation"
-msgstr "Պատճենել դիտման պտտումը"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1368
 msgid "Copy vie&wport distance"
-msgstr "Պատճենել դիտման հեռավորությունը"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1369
-#, fuzzy
 msgid "Copy vie&wport fov"
-msgstr "Պատճենել &դիտման պատկերը"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1370
 msgid "Increase Font &Size"
-msgstr "Մեծացնել տառաչափը"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1372
 msgid "Ctrl++"
-msgstr "Ctrl++"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1374
 msgid "Decrease Font Si&ze"
-msgstr "Փոքրացնել տառաչափը"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1376
 msgid "Ctrl+-"
-msgstr "Ctrl+-"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1378
 msgid "&Reload and Preview"
-msgstr "&Կրկին բեռնել և ցուցադրել"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1380
 msgid "F4"
-msgstr "F4"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1382
 msgid "&Preview"
-msgstr "&Ցուցադրել"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1384
 msgid "F5"
-msgstr "F5"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1386
 msgid "R&ender"
-msgstr "Հրապարակել"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1388
 msgid "F6"
-msgstr "F6"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1390
 msgid "&3D Print"
-msgstr "&3D տպագրություն"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1392
 msgid "F8"
-msgstr "F8"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1394
 msgid "Measure &Distance"
@@ -1394,14 +1323,12 @@ msgid "A"
 msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1402
-#, fuzzy
 msgid "Find Handle"
-msgstr "&Փնտրել հաջորդը"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1403
-#, fuzzy
 msgid "&Share Design"
-msgstr "&Դիզայն"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1404
 msgid "&Load shared Design"
@@ -1409,11 +1336,11 @@ msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1405
 msgid "&Check Validity"
-msgstr "&Ստուգել վավերականությունը"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1406
 msgid "Display A&ST..."
-msgstr "Ցուցադրել A&ST..."
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1407
 msgid "Display Python conversion"
@@ -1421,193 +1348,183 @@ msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1408
 msgid "Display CSG &Tree..."
-msgstr "Ցուցադրել CSG &Tree..."
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1409
 msgid "Display CSG Pr&oducts..."
-msgstr "Ցուցադրել CSG Pr&oducts..."
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1410
-#, fuzzy
 msgid "Export as &STL (binary)..."
-msgstr "Արտահանել որպես &STL..."
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1411
-#, fuzzy
 msgid "Export as &STL (ascii)..."
-msgstr "Արտահանել որպես &STL..."
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1412
-#, fuzzy
 msgid "Export as &OBJ..."
-msgstr "Արտահանել որպես &OFF"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1413
-#, fuzzy
 msgid "Export as &POV..."
-msgstr "Արտահանել որպես &OFF"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1414
 msgid "Export as &OFF..."
-msgstr "Արտահանել որպես &OFF"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1415
-#, fuzzy
 msgid "Export as &WRL..."
-msgstr "Արտահանել որպես &STL..."
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1416
-#, fuzzy
 msgid "Export as &Foldable PS..."
-msgstr "&Արտահանել որպես նկար..."
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1417
-#, fuzzy
 msgid "Export as &Step..."
-msgstr "Արտահանել որպես &CSG..."
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1418
 msgid "Preview"
-msgstr "Նախատեսք"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1420
 msgid "F9"
-msgstr "F9"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1422
 msgid "Thrown Together"
-msgstr "Միասին ոլորած"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1424
 msgid "F12"
-msgstr "F12"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1426
 msgid "Show Edges"
-msgstr "Ցուցադրել եզրերը"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1428
 msgid "Ctrl+1"
-msgstr "Ctrl+1"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1430
 msgid "Show Axes"
-msgstr "Ցուցադրել առանցքները"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1432
 msgid "Ctrl+2"
-msgstr "Ctrl+2"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1434
 msgid "Show Crosshairs"
-msgstr "Ցույց տալ հատման կետերը"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1436
 msgid "Ctrl+3"
-msgstr "Ctrl+3"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1438
 msgid "Show Scale Markers"
-msgstr "Ցուցադրել մասշատբի նշումները"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1439
 msgid "&Top"
-msgstr "&Գագաթ"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1441
 msgid "Ctrl+4"
-msgstr "Ctrl+4"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1443
 msgid "&Bottom"
-msgstr "&Ներգևի մաս"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1445
 msgid "Ctrl+5"
-msgstr "Ctrl+5"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1447
 msgid "&Left"
-msgstr "&Ձախ"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1449
 msgid "Ctrl+6"
-msgstr "Ctrl+6"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1451
 msgid "&Right"
-msgstr "&Աջ"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1453
 msgid "Ctrl+7"
-msgstr "Ctrl+7"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1455
 msgid "&Front"
-msgstr "&Դիմաց"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1457
 msgid "Ctrl+8"
-msgstr "Ctrl+8"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1459
 msgid "Bac&k"
-msgstr "&Հետև"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1461
 msgid "Ctrl+9"
-msgstr "Ctrl+9"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1463
 msgid "&Diagonal"
-msgstr "&Անկյունագիծ"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1465
 msgid "Ctrl+0"
-msgstr "Ctrl+0"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1467
 msgid "Ce&nter"
-msgstr "&Կենտրոն"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1469
-#, fuzzy
 msgid "Ctrl+Shift+0"
-msgstr "Ctrl+Shift+S"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1471
 msgid "&Perspective"
-msgstr "&Տեսարան"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1472
 msgid "&Orthogonal"
-msgstr "&Օրթոգոնալ/անկյունների ներգրավում"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1473
 msgid "&About"
-msgstr "&Մեր մասին"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1474
 msgid "&Documentation"
-msgstr "&Փաստաթղթեր"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1475
-#, fuzzy
 msgid "&Offline Documentation"
-msgstr "&Փաստաթղթեր"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1476
-#, fuzzy
 msgid "&Offline Cheat Sheet"
-msgstr "&Սևագրիր"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1477
 msgid "Clear Recent"
-msgstr "Մաքրել վերջին նիշքերը"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1478
 msgid "Export as &DXF..."
-msgstr "Պահպանել որպես &DXF..."
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1479
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1481
@@ -1616,220 +1533,208 @@ msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1483
 msgid "&Close"
-msgstr "&Փակել"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1485
 msgid "Ctrl+W"
-msgstr "Ctrl+W"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1487
 msgid "&Preferences"
-msgstr "&Կարգավորումներ"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1488
 msgid "&Find..."
-msgstr "&Գտնել"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1490
 msgid "Ctrl+F"
-msgstr "Ctrl+F"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1492
 msgid "Fin&d and Replace..."
-msgstr "Գտնել և &փոխարինել"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1494
 msgid "Ctrl+Alt+F"
-msgstr "Ctrl+Alt+F"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1496
 msgid "Find Ne&xt"
-msgstr "&Փնտրել հաջորդը"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1498
 msgid "Ctrl+G"
-msgstr "Ctrl+G"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1500
 msgid "Find Pre&vious"
-msgstr "&Փնտրել նախորդը"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1502
 msgid "Ctrl+Shift+G"
-msgstr "Ctrl+Shift+G"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1504
 msgid "Use Se&lection for Find"
-msgstr "&Օգտագործել ընտրանքը փնտրելու համար"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1506
 msgid "Ctrl+E"
-msgstr "Ctrl+E"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1508
 msgid "Jump to next error"
 msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1510
-#, fuzzy
 msgid "Ctrl+Alt+E"
-msgstr "Ctrl+Alt+F"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1512
 msgid "&Flush Caches"
-msgstr "&Մաքրել «քեշը»"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1513
 msgid "&OpenSCAD Homepage"
-msgstr "&OpenSCAD գլխավոր կայք"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1514
 msgid "&Automatic Reload and Preview"
-msgstr "&Ավտոմատ բեռնում և նախադիտում"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1515
 msgid "Export as &Image..."
-msgstr "&Արտահանել որպես նկար..."
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1516
 msgid "Export as &CSG..."
-msgstr "Արտահանել որպես &CSG..."
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1517
 msgid "&Library info"
-msgstr "&Գրադարանի մասին"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1518
 msgid "Show &Library Folder..."
-msgstr "Ցուցադրել &Գրադարանի պանակը..."
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1519
-#, fuzzy
 msgid "Show Backup Files"
-msgstr "Ցույց տալ բոլոր մասերը"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1520
 msgid "Reset View"
-msgstr "Բերել սկզբնական տեսքի"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1521
 #: src/gui/MainWindow.cc:439
 msgid "&Font List"
-msgstr "&Տառատեսակի ցանկ"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1522
 msgid "Export as S&VG..."
-msgstr "Արտահանել որպես &SVG..."
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1523
 msgid "Export as &AMF..."
-msgstr "Արտահանել որպես &AMF..."
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1524
 msgid "Export as &3MF..."
-msgstr "Արտահանել որպես &AMF..."
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1525
 msgid "Zoom In"
-msgstr "Մոտեցնել"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1527
 msgid "Ctrl+]"
-msgstr "Ctrl+]"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1529
 msgid "Zoom Out"
-msgstr "Հեռվացնել"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1531
 msgid "Ctrl+["
-msgstr "Ctrl+["
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1533
 msgid "View All"
-msgstr "Տեսնել բոլորը"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1535
 msgid "Ctrl+Shift+V"
-msgstr "Ctrl+Shift+V"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1537
 msgid "Conv&ert Tabs to Spaces"
-msgstr "Փոխակերպել ներդիները տարածքների"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1538
 msgid "Toggle Bookmark"
 msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1540
-#, fuzzy
 msgid "Ctrl+F2"
-msgstr "Ctrl+F"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1542
 msgid "Jump to next bookmark"
 msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1544
-#, fuzzy
 msgid "F2"
-msgstr "F12"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1546
 msgid "Jump to previous bookmark"
 msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1548
-#, fuzzy
 msgid "Shift+F2"
-msgstr "Ctrl+Shift+C"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1550
-#, fuzzy
 msgid "Hide Editor toolbar"
-msgstr "Թաքցնել գործիքների վահանակը"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1551
 msgid "U&nindent"
-msgstr "Հեռացնել դատարկ տողերը"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1553
 msgid "Ctrl+Shift+I"
-msgstr "Ctrl+Shift+I"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1555
 msgid "&Cheat Sheet"
-msgstr "&Սևագրիր"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1556
-#, fuzzy
 msgid "&Python Cheat Sheet"
-msgstr "&Սևագրիր"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1557
-#, fuzzy
 msgid "Export as PDF..."
-msgstr "Պահպանել որպես &DXF..."
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1558
-#, fuzzy
 msgid "Hide 3D View toolbar"
-msgstr "Թաքցնել գործիքների վահանակը"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1559
-#, fuzzy
 msgid "&Next Window\tCtrl+K"
-msgstr "&Փնտրել նախորդը"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1560
-#, fuzzy
 msgid "&Previous Window\tCtrl+H"
-msgstr "&Փնտրել նախորդը"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1561
-#, fuzzy
 msgid "Insert Template"
-msgstr "Տեղադրել ներդիր"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1563
 msgid "Alt+Ins"
@@ -1844,9 +1749,8 @@ msgid "Jump To ..."
 msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1568
-#, fuzzy
 msgid "Ctrl+J"
-msgstr "Ctrl+N"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1570
 msgid "Create Virtual Environment..."
@@ -1859,23 +1763,23 @@ msgstr ""
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1572
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_OctoPrintApiKeyDialog.h:107
 msgid "Message"
-msgstr "Հաղորդագրություն"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1575
 msgid "&File"
-msgstr "&Նիշք"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1576
 msgid "Recen&t Files"
-msgstr "&Վերջին նիշքերը"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1577
 msgid "&Examples"
-msgstr "&Օրինակներ"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1578
 msgid "E&xport"
-msgstr "&Արտահանել"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1579
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2306
@@ -1885,58 +1789,56 @@ msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1580
 msgid "&Edit"
-msgstr "&Խմբագրել"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1581
 msgid "&Design"
-msgstr "&Դիզայն"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1582
 msgid "&View"
-msgstr "&Տեսք"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1583
 msgid "&Help"
-msgstr "&Օգնություն"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1584
-#, fuzzy
 msgid "&Window"
-msgstr "&Փնտրել նախորդը"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1585
 msgid "Find"
-msgstr "Փնտրել"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1586
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1593
 msgid "Replace"
-msgstr "Փոխարինել"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1588
 msgid "Search string"
-msgstr "Գտնել շարք"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1589
-#, fuzzy
 msgid "Previous"
-msgstr "&Փնտրել նախորդը"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1590
 msgid "Next"
-msgstr "Հաջորդ"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1591
 msgid "Done"
-msgstr "Կատարված"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1592
 msgid "Replacement string"
-msgstr "Փոխարինել շարքը"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MainWindow.h:1595
 msgid "Customizer Widget"
-msgstr "Հարմարեցնել Widget֊ը"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MouseConfigWidget.h:215
 msgid "Ctrl + Shift + Middle-click"
@@ -1959,9 +1861,8 @@ msgid "Ctrl + Shift + Right-click"
 msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MouseConfigWidget.h:220
-#, fuzzy
 msgid "Preset"
-msgstr "Բերել սկզբնական վիճակի"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_MouseConfigWidget.h:221
 msgid "Right-click"
@@ -2001,7 +1902,7 @@ msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_OpenCSGWarningDialog.h:76
 msgid "OpenGL Warning"
-msgstr "OpenGL զգուշացում"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_OpenCSGWarningDialog.h:77
 msgid ""
@@ -2016,24 +1917,14 @@ msgid ""
 "margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"></"
 "p></body></html>"
 msgstr ""
-"<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/"
-"REC-html40/strict.dtd\">\n"
-"<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/"
-"css\">\n"
-"p, li { white-space: pre-wrap; }\n"
-"</style></head><body style=\" font-family:'Lucida Grande'; font-size:13pt; "
-"font-weight:400; font-style:normal;\">\n"
-"<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; "
-"margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"></"
-"p></body></html>"
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_OpenCSGWarningDialog.h:82
 msgid "Show this message again"
-msgstr "Կրկին ցուցադրել այս հաղորդագրությունը"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_OpenCSGWarningDialog.h:83
 msgid "Close"
-msgstr "Փակել"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_ParameterCheckBox.h:60
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_ParameterComboBox.h:56
@@ -2044,93 +1935,90 @@ msgstr "Փակել"
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_ParameterVector.h:108
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_ParameterWidget.h:141
 msgid "Form"
-msgstr "Ձև"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_ParameterDescriptionWidget.h:99
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2418
 msgid "Parameter"
-msgstr "Պարամետր"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_ParameterWidget.h:142
 msgid "Automatic Preview"
-msgstr "Ավտոմատ նախադիտում"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_ParameterWidget.h:143
 msgid "Show Details"
-msgstr "Ցույց տալ բոլոր մասերը"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_ParameterWidget.h:144
 msgid "Inline Details"
-msgstr "Ներգծել բոլոր մասները"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_ParameterWidget.h:145
 msgid "Hide Details"
-msgstr "Թաքցնել մանրամասները"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_ParameterWidget.h:146
 msgid "Description Only"
-msgstr "Միայն նկարագրություն"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_ParameterWidget.h:148
-#, fuzzy
 msgid "<design default>"
-msgstr "Դիզայնի սկզբնական արժեքները"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_ParameterWidget.h:151
 msgid "preset selection"
-msgstr "նախադրել ընտրությունը"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_ParameterWidget.h:154
-#, fuzzy
 msgid "Add new preset"
-msgstr "ավելացնել նոր նախադրություն"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_ParameterWidget.h:156
 msgid "+"
-msgstr "+"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_ParameterWidget.h:158
-#, fuzzy
 msgid "Remove current preset"
-msgstr "հեռացնել ընթացիկ նախադրվածը"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_ParameterWidget.h:160
 msgid "-"
-msgstr "-"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2292
 msgid "3D View"
-msgstr "3D տեսք"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2293
 msgctxt "preferences"
 msgid "Advanced"
-msgstr "Առաջատար"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2294
 msgid "Editor"
-msgstr "Խմբագիր"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2296
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2391
 msgid "Features"
-msgstr "Հնարավորություններ"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2298
 msgid "Enable/Disable experimental features"
-msgstr "Միացնել/Անջատել փորձնական հնարավորությունները"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2300
 msgid "Axes"
-msgstr "Առանցքներ"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2302
 msgid "Input driver configuration and Axis mapping"
-msgstr "Ներմուծել driver֊ի կարգաբերումը և առանցքների տեղորոշումը"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2304
 msgid "Buttons"
-msgstr "Կոճակներ"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2305
 msgid "Mouse"
@@ -2143,11 +2031,11 @@ msgstr ""
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2310
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_PrintInitDialog.h:178
 msgid "3D Print"
-msgstr "Եռաչափ տպագրություն"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2312
 msgid "3D Printing Services"
-msgstr "Եռաչափ տպագրության ծառայություններ"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2314
 msgid "Dialogs"
@@ -2175,15 +2063,15 @@ msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2320
 msgid "Color scheme:"
-msgstr "Գունային համակարգ։"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2321
 msgid "Show Warnings and Errors in 3D View"
-msgstr "Ցուցադրել զգուշացումները և սխալները 3D տեսքով"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2322
 msgid "mouse centric zoom"
-msgstr "մկնիկի կենտրոնային խոշորացում"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2323
 msgid "Number Scroll"
@@ -2191,9 +2079,8 @@ msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2324
 #: src/core/Settings.cc:199
-#, fuzzy
 msgid "Alt"
-msgstr "Ամբողջը"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2325
 #: src/core/Settings.cc:200
@@ -2206,9 +2093,8 @@ msgid "Either"
 msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2328
-#, fuzzy
 msgid "Step Size"
-msgstr "Չափս"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2329
 msgid "Number Scroll Via Mouse Wheel"
@@ -2233,7 +2119,7 @@ msgstr ""
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2334
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2359
 msgid "Line wrap"
-msgstr "Գծի փաթաթում"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2335
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2348
@@ -2241,98 +2127,98 @@ msgstr "Գծի փաթաթում"
 #: src/core/Settings.cc:46 src/core/Settings.cc:156 src/core/Settings.cc:167
 #: src/core/Settings.cc:173 src/gui/input/ButtonConfigWidget.cc:247
 msgid "None"
-msgstr "Ոչ մեկը"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2336
 #: src/core/Settings.cc:157
 msgid "Wrap at character boundaries"
-msgstr "Փաթեավորել կերպարի սահմանները"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2337
 #: src/core/Settings.cc:158
 msgid "Wrap at word boundaries"
-msgstr "Պահել բառի սահմաններում"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2339
 msgid "Line wrap indentation"
-msgstr "Կտրել գծի սահմանում"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2340
 msgid "Line wrap visualization"
-msgstr "Գծի փաթեթավորման վիզուալիզացիա"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2343
 #: src/core/Settings.cc:162
 msgid "Same"
-msgstr "Նույնությամբ"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2344
 #: src/core/Settings.cc:162
 msgid "Indented"
-msgstr "Ատամնավոր"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2346
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2378
 #: src/core/Settings.cc:190
 msgid "Indent"
-msgstr "Կտրվածք"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2347
 msgid "Start"
-msgstr "Մեկնարկ"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2349
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2355
 #: src/core/Settings.cc:168 src/core/Settings.cc:174
 msgid "Text"
-msgstr "Տեքստ"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2350
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2356
 #: src/core/Settings.cc:169 src/core/Settings.cc:175
 msgid "Border"
-msgstr "Սահման"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2351
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2357
 #: src/core/Settings.cc:170 src/core/Settings.cc:176
 msgid "Margin"
-msgstr "Եզրեր"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2353
 msgid "End"
-msgstr "Վերջ"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2360
 msgid "Display"
-msgstr "Ցուցադրել"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2361
 msgid "Highlight current line"
-msgstr "Ընդգծել այս գիծը"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2362
 msgid "Display Line Numbers"
-msgstr "Ցուցադրել գծի համարները"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2363
 msgid "Enable brace matching"
-msgstr "Միացնել փակագծի համընկնումը"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2364
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2437
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2450
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2452
 msgid "Font"
-msgstr "Տառատեսակ"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2365
 msgid "Color syntax highlighting"
-msgstr "Գունային այլագրի առանձնացում"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2366
 msgid "Ctrl/Cmd-Mouse-wheel zooms text"
-msgstr "Ctrl/Cmd-Mouse-wheel zooms text"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2367
 msgid "Use gvim as editor"
@@ -2340,93 +2226,92 @@ msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2368
 msgid "Indentation"
-msgstr "Կտրվածքների պատրաստում"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2369
 msgid "Auto Indent"
-msgstr "Ավտոմատ կտրվածք"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2370
 msgid "Backspace unindents"
-msgstr "Backspace unindents"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2371
 msgid "Indent using"
-msgstr "Օգտագործել կտրվածքը"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2372
 #: src/core/Settings.cc:188
 msgid "Spaces"
-msgstr "Տարածքներ"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2373
 #: src/core/Settings.cc:188
 msgid "Tabs"
-msgstr "Ներդիրներ"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2375
 msgid "Indentation width"
-msgstr "Կտրվածքի հաստություն"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2376
 msgid "Tab width"
-msgstr "Ներդիրի հաստություն"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2377
 msgid "Tab key function"
-msgstr "Ներդիրի ստեղնի գործառույթ"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2379
 #: src/core/Settings.cc:191
 msgid "Insert Tab"
-msgstr "Տեղադրել ներդիր"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2381
 msgid "Show whitespace"
-msgstr "Ցուցադրել դատարկ տարածքները"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2382
 #: src/core/Settings.cc:179
 msgid "Never"
-msgstr "Երբեք"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2383
 #: src/core/Settings.cc:180
 msgid "Always"
-msgstr "Մշտապես"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2384
 msgid "Only after indentation"
-msgstr "Միայն կտրատումից հետո"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2386
 msgid "Size"
-msgstr "Չափս"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2387
 msgid "Automatically check for updates"
-msgstr "Ինքնուրույն ստուգել թարմացումները"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2388
 msgid "Include development snapshots"
-msgstr "Ներառել ծրագրավորման դրվագները"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2389
 msgid "Check Now"
-msgstr "Ստուգել հիմա"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2390
 msgid "Last checked: "
-msgstr "Վերջին ստուգումը:"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2392
 msgid "General"
 msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2393
-#, fuzzy
 msgid "Default Print Service"
-msgstr "Եռաչափ տպագրության ծառայություններ"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2394
 msgid "Enable remote print services"
@@ -2436,41 +2321,41 @@ msgstr ""
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_PrintInitDialog.h:181
 #: src/gui/Preferences.cc:445
 msgid "OctoPrint"
-msgstr "OctoPrint"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2396
 msgid "URL"
-msgstr "URL"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2397
 msgid "API Key"
-msgstr "API Key"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2398
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2399
 msgid "Load"
-msgstr "Բեռնել"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2401
 msgid "Check"
-msgstr "Ստուգել"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2402
 msgid "Slicing Profile"
-msgstr "Շերտավորել պրոֆիլը"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2403
 msgid "Slicing Engine"
-msgstr "Շերտավորել գործիքը"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2404
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2410
 msgid "File Format"
-msgstr "Նիշքի ձևաչափը"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2405
 msgid "Action"
-msgstr "Գործողություն"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2406
 msgid "Request"
@@ -2478,22 +2363,20 @@ msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2407
 msgid "Show"
-msgstr "Ցույց տալ"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2408
 msgid "Note: The API key is stored unencrypted in the application settings."
-msgstr "Նշում:  API֊ի կոճակը գաղտնագրով պահված է հավելվածի կարգաբերումներում."
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2409
 #: src/gui/Preferences.cc:446
-#, fuzzy
 msgid "Local Application"
-msgstr "Ծրագիր"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2411
-#, fuzzy
 msgid "File"
-msgstr "&Նիշք"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2416
 msgid "Executable"
@@ -2515,24 +2398,23 @@ msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2426
 msgid "Show capability warning"
-msgstr "Ցուցադրել հնարավոր զգուշացումները"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2427
 msgid "Turn off rendering at "
-msgstr "Անջատել տարածումը"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2428
 msgid "elements"
-msgstr "տարրեր"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2429
 msgid "Force Goldfeather"
-msgstr "Ստիպել Goldfeather"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2430
-#, fuzzy
 msgid "3D Rendering"
-msgstr "Հրապարակել"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2431
 msgid "Backend"
@@ -2540,49 +2422,48 @@ msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2432
 msgid "CGAL Cache size"
-msgstr "CGAL֊ի «քեշ»- ի չափը"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2433
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2435
 msgid "MB"
-msgstr "ՄԲ"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2434
 msgid "PolySet Cache size"
-msgstr "PolySet֊ի «քեշ»- ի չափը"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2436
 msgid "User Interface"
-msgstr "Միջերես"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2438
 msgid "Enable docking of Editor and Console in different places"
-msgstr "Միացնել խմբագրիչի եւ կառավարման վահանակի պահումը տարբեր տեղերում"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2439
 msgid "Enable undocking of Editor and Console to separate windows"
-msgstr "Անջատել խմբագրիչի եւ կառավարման վահանակի պահումը տարբեր պատուհաններում"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2440
 msgid "Show Welcome Screen"
-msgstr "Ցույց տալ ԲԱՐԻ ԳԱԼՈՒՍՏ֊ը"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2441
 msgid "Enable user interface localization (requires restart of OpenSCAD)"
-msgstr "Միացնել միջերեսի տեղայնացումը (պահանջում է OpenSCAD֊ի վերագործարկում)"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2442
 msgid "Bring window to front after automatic reload"
-msgstr "Բերել պատուհանը առջևի մաս  ավտոմատ բեռնումից հետո"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2443
 msgid "Play sound notification on render complete"
-msgstr "Ձայնով ծանուցել նիշքի վերարտադրումից հետո"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2444
-#, fuzzy
 msgid "Play sound when render completion time is at least"
-msgstr "Ձայնով ծանուցել նիշքի վերարտադրումից հետո"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2445
 msgid "sec"
@@ -2590,7 +2471,7 @@ msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2446
 msgid "Console"
-msgstr "Վահանակ"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2447
 msgid "Clear console before Preview/Render"
@@ -2606,29 +2487,27 @@ msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2451
 msgid "Customizer"
-msgstr "Անհատական հարմարեցում"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2453
 msgid "OpenSCAD Language Features"
-msgstr "OpenSCAD լեզվային հատկություններ"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2454
-#, fuzzy
 msgid "Warnings"
-msgstr "OpenGL զգուշացում"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2455
 msgid "Stop on the first warning"
-msgstr "Կանգնեցնել առաջին զգուշացումից"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2456
-#, fuzzy
 msgid "Check the parameter range for builtin modules"
-msgstr "ստուգել պարամետրերի միջակայքը ներքին մոդուլների համար"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2457
 msgid "Warn when there is a parameter mismatch in user module calls"
-msgstr "Շգուշացնել, երբ օգտատերը կանչել է սխալ պարամետրեր "
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2458
 msgid "Trace"
@@ -2667,9 +2546,8 @@ msgid "Measurements: Volume"
 msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2467
-#, fuzzy
 msgid "Export Features"
-msgstr "Հնարավորություններ"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2468
 msgid "Toolbar Export 3D"
@@ -2684,9 +2562,8 @@ msgid "Debugging"
 msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2471
-#, fuzzy
 msgid "Enable tracing of HIDAPI events (requires restart of OpenSCAD)"
-msgstr "Միացնել միջերեսի տեղայնացումը (պահանջում է OpenSCAD֊ի վերագործարկում)"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_Preferences.h:2472
 msgid "Network Import List"
@@ -2717,14 +2594,12 @@ msgid "Always show Print Service dialog"
 msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_PrintInitDialog.h:180
-#, fuzzy
 msgid "Run local Application"
-msgstr "Ծրագիր"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_PrintInitDialog.h:182
-#, fuzzy
 msgid "File format"
-msgstr "Նիշքի ձևաչափը"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_PrintInitDialog.h:183
 msgid "Enable remote services that need network access"
@@ -2732,16 +2607,15 @@ msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_ProgressWidget.h:70
 msgid "%v / %m"
-msgstr "%v / %m"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_ShareDesignDialog.h:86
 msgid "Sharing Design on pythonscad.org"
 msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_ShareDesignDialog.h:87
-#, fuzzy
 msgid "Design name"
-msgstr "&Դիզայն"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_ShareDesignDialog.h:88
 msgid "Author name(optional)"
@@ -2752,37 +2626,32 @@ msgid "Publish on pythonscad.org"
 msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_ViewportControl.h:266
-#, fuzzy
 msgid "ViewportControlWidget"
-msgstr "Թաքցնել գործիքների վահանակը"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_ViewportControl.h:271
-#, fuzzy
 msgid "Aspect Ratio"
-msgstr "Ծրագիր"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_ViewportControl.h:272
 msgid "Width"
 msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_ViewportControl.h:273
-#, fuzzy
 msgid "Height"
-msgstr "&Աջ"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_ViewportControl.h:275
 msgid "Lock"
 msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_ViewportControl.h:276
-#, fuzzy
 msgid "Details"
-msgstr "Ցույց տալ բոլոր մասերը"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_ViewportControl.h:277
-#, fuzzy
 msgid "Distance"
-msgstr "Բարդ"
+msgstr ""
 
 #: obj-x86_64-linux-gnu/OpenSCADLibInternal_autogen/include/ui_ViewportControl.h:278
 msgid "FOV"
@@ -2796,60 +2665,57 @@ msgstr ""
 #: src/core/Settings.cc:50
 #, c-format
 msgid "Axis %d"
-msgstr "Առանցք %d"
+msgstr ""
 
 #: src/core/Settings.cc:53
-#, fuzzy, c-format
+#, c-format
 msgid "axis-inverted-%d"
-msgstr "Առանցք %d (փոխակերպված)"
+msgstr ""
 
 #: src/core/Settings.cc:54
 #, c-format
 msgid "Axis %d (inverted)"
-msgstr "Առանցք %d (փոխակերպված)"
+msgstr ""
 
 #: src/core/Settings.cc:182
 msgid "After indentation"
-msgstr "Ատամնաձեւ կտրումից հետո"
+msgstr ""
 
 #: src/core/Settings.cc:216
 msgid "Upload only"
-msgstr "Միայն վերբեռնել"
+msgstr ""
 
 #: src/core/Settings.cc:217
 msgid "Upload & Slice"
-msgstr "Վերբեռնել և մասնատել"
+msgstr ""
 
 #: src/core/Settings.cc:218
 msgid "Upload, Slice & Select for printing"
-msgstr "Վերբեռնել, մասնատել և ընտրել տպագրության համար"
+msgstr ""
 
 #: src/core/Settings.cc:219
 msgid "Upload, Slice & Start printing"
-msgstr "Վերբեռնել, մասնատել և սկսել տպագրությունը"
+msgstr ""
 
 #: src/core/Settings.cc:437
 msgid "Use colors from model"
 msgstr ""
 
 #: src/core/Settings.cc:439
-#, fuzzy
 msgid "Use selected color only"
-msgstr "&Օգտագործել ընտրանքը փնտրելու համար"
+msgstr ""
 
 #: src/core/Settings.cc:446
-#, fuzzy
 msgid "Millimeter"
-msgstr "Պարամետր"
+msgstr ""
 
 #: src/core/Settings.cc:450
 msgid "Feet"
 msgstr ""
 
 #: src/core/Settings.cc:458
-#, fuzzy
 msgid "Color"
-msgstr "Գունային համակարգ։"
+msgstr ""
 
 #: src/core/Settings.cc:459
 msgid "Base Material"
@@ -2860,9 +2726,8 @@ msgid "Alphabetical"
 msgstr ""
 
 #: src/core/Settings.cc:512
-#, fuzzy
 msgid "By color"
-msgstr "Գունային համակարգ։"
+msgstr ""
 
 #: src/core/Settings.cc:513
 msgid "By color warmth"
@@ -2873,23 +2738,19 @@ msgid "By lightness"
 msgstr ""
 
 #: src/glview/Camera.cc:207
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "Viewport: translate = [ %.2f %.2f %.2f ], rotate = [ %.2f %.2f %.2f ], "
 "distance = %.2f, fov = %.2f"
 msgstr ""
-"Տեսաշերտ՝ թարգմանել = [ %.2f %.2f %.2f ], պտտել = [ %.2f %.2f %.2f ], "
-"հեռավորություն = %.2f"
 
 #: src/gui/AboutDialog.h:17
-#, fuzzy
 msgid "About PythonSCAD"
-msgstr "OpenSCAD-ի մասին"
+msgstr ""
 
 #: src/gui/Animate.cc:201
-#, fuzzy
 msgid "press to pause animation"
-msgstr "նախադրել ընտրությունը"
+msgstr ""
 
 #: src/gui/Animate.cc:205
 msgid "press to start animation"
@@ -2905,7 +2766,7 @@ msgstr ""
 
 #: src/gui/Console.cc:181
 msgid "Save console content"
-msgstr "Պահել վահանակի պարունակությունը"
+msgstr ""
 
 #: src/gui/Export3mfDialog.cc:77
 msgid ""
@@ -2915,27 +2776,23 @@ msgstr ""
 
 #: src/gui/ExternalToolInterface.cc:185
 msgid "Exported design exceeds the service upload limit of (%1 MB)."
-msgstr "Տարածվող էսքիզը գերազանցում է 1ՄԲ նիշքի սահմանափակումը"
+msgstr ""
 
 #: src/gui/FontList.cc:405
-#, fuzzy
 msgid "Styled font name"
-msgstr "Տառատեսակ"
+msgstr ""
 
 #: src/gui/FontList.cc:406
-#, fuzzy
 msgid "Font style"
-msgstr "&Տառատեսակի ցանկ"
+msgstr ""
 
 #: src/gui/FontList.cc:409
-#, fuzzy
 msgid "File name"
-msgstr "&Նիշք"
+msgstr ""
 
 #: src/gui/FontList.cc:410
-#, fuzzy
 msgid "File path"
-msgstr "Նիշքի ձևաչափը"
+msgstr ""
 
 #: src/gui/FontList.cc:411
 msgid "Hash"
@@ -2945,101 +2802,84 @@ msgstr ""
 msgid ""
 "This driver was not enabled during build time and is thus not available."
 msgstr ""
-"Այս սարքավարը չի ակտիվացել ծրագրի կառուցման ընթացքում, ուստի այն հասանելի չէ:"
 
 #: src/gui/input/AxisConfigWidget.h:90
 msgid ""
 "The DBUS driver is not for actual devices but for remote control, Linux only."
 msgstr ""
-"DBUS սարքավարը իրական սարքերի համար չե, այլ հեռավար սարքերի, միայն Լինուքսի "
-"համար։"
 
 #: src/gui/input/AxisConfigWidget.h:92
 msgid ""
 "The HIDAPI driver communicates directly with the 3D mice, Windows and macOS."
 msgstr ""
-"HIDAPI սարքավարը ուղիղ կապակցվում է եռաչափ մկնիկի հետ, հասանելի է Windows և "
-"macOS համակարգերում։"
 
 #: src/gui/input/AxisConfigWidget.h:94
 msgid ""
 "The SpaceNav driver enables 3D-input-devices using the spacenavd daemon, "
 "Linux only."
 msgstr ""
-"SpaceNav սարքավարը հնարավորություն է տալիս միացնել եռաչափ-մուտքային սարքերին "
-"օգտագործելով spacenavd daemon, հասանելի է միայն Լինուքսում։"
 
 #: src/gui/input/AxisConfigWidget.h:96
 msgid ""
 "The Joystick driver uses the Linux joystick device (fixed to /dev/input/"
 "js0), Linux only."
 msgstr ""
-"Joystick սարքավարը օգտագործվում է Լինուքսի ղեկավարման սարքը (ֆիքսված հասցե "
-"՝ /dev/input/js0), հասանելի է միայն Լինուքսում։ "
 
 #: src/gui/input/AxisConfigWidget.h:98
 msgid "The QGAMEPAD driver is for multiplattform Gamepad Support."
-msgstr "The QGAMEPAD դրայվերը  multiplattform Gamepad֊ի աւակցման համար է։"
+msgstr ""
 
 #: src/gui/input/ButtonConfigWidget.cc:248
 msgid "Toggle Perspective"
-msgstr "Փոխարկել հեռանկարը"
+msgstr ""
 
 #: src/gui/MainWindow.cc:434
-#, fuzzy
 msgid "&Editor"
-msgstr "Խմբագիր"
+msgstr ""
 
 #: src/gui/MainWindow.cc:435
-#, fuzzy
 msgid "&Console"
-msgstr "Վահանակ"
+msgstr ""
 
 #: src/gui/MainWindow.cc:436
-#, fuzzy
 msgid "C&ustomizer"
-msgstr "Անհատական հարմարեցում"
+msgstr ""
 
 #: src/gui/MainWindow.cc:437
-#, fuzzy
 msgid "Error-&Log"
-msgstr "Սխալմունք"
+msgstr ""
 
 #: src/gui/MainWindow.cc:438
-#, fuzzy
 msgid "&Animate"
-msgstr "Կենդանացնել"
+msgstr ""
 
 #: src/gui/MainWindow.cc:440
-#, fuzzy
 msgid "C&olor List"
-msgstr "Գունային համակարգ։"
+msgstr ""
 
 #: src/gui/MainWindow.cc:441
-#, fuzzy
 msgid "&Viewport-Control"
-msgstr "Թաքցնել գործիքների վահանակը"
+msgstr ""
 
 #: src/gui/MainWindow.cc:1659
 msgid "Compile error."
-msgstr "Կառուցման/կամպիլիացիայի/ սխալմունք։"
+msgstr ""
 
 #: src/gui/MainWindow.cc:1662
 msgid "Error while compiling '%1'."
-msgstr "Կոմպիլացիայի ժամանակ խնդիր է ծագել '%1'."
+msgstr ""
 
 #: src/gui/MainWindow.cc:1667
 msgid "Compilation generated %1 warning."
 msgid_plural "Compilation generated %1 warnings."
-msgstr[0] " Կառուցումը իրականացվել %1 Զգուշացում։"
-msgstr[1] "Կոմպիլացիան ստեղծված է %1 զգուշացումներ։"
+msgstr[0] ""
+msgstr[1] ""
 
 #: src/gui/MainWindow.cc:1680
-#, fuzzy
 msgid ""
 " For details see the <a href=\"#errorlog\">error log</a> and <a "
 "href=\"#console\">console window</a>."
-msgstr "Տեսնել ավելին՝ <a href=\"#console\">վահանակի պատուհանը</a>."
+msgstr ""
 
 #: src/gui/MainWindow.cc:2097
 msgid "Trusted Files"
@@ -3062,15 +2902,13 @@ msgstr ""
 
 #: src/gui/MainWindow.cc:2647
 msgid "Application"
-msgstr "Ծրագիր"
+msgstr ""
 
 #: src/gui/MainWindow.cc:2648
 msgid ""
 "The document has been modified.\n"
 "Do you really want to reload the file?"
 msgstr ""
-"Փաստաթուղթը փոփոխված է.\n"
-"Իսկապե՞ս ցանկանում եք այն վերաբեռնել։"
 
 #: src/gui/MainWindow.cc:3199
 msgid "Click to change language"
@@ -3082,36 +2920,36 @@ msgstr ""
 
 #: src/gui/MainWindow.cc:3641
 msgid "Export %1 File"
-msgstr "Արտահանել նիշք %1"
+msgstr ""
 
 #: src/gui/MainWindow.cc:3642
 msgid "%1 Files (*%2)"
-msgstr "%1 Նիշքեր (*%2)"
+msgstr ""
 
 #: src/gui/MainWindow.cc:3692
 msgid "Export CSG File"
-msgstr "Արտահանել CSG նիշքը"
+msgstr ""
 
 #: src/gui/MainWindow.cc:3693
 msgid "CSG Files (*.csg)"
-msgstr "CSG Նիշքեր (*.csg)"
+msgstr ""
 
 #: src/gui/MainWindow.cc:3717
 msgid "Export Image"
-msgstr "Արտահանել նկար"
+msgstr ""
 
 #: src/gui/MainWindow.cc:3717
 msgid "PNG Files (*.png)"
-msgstr "PNG Նիշքեր (*.png)"
+msgstr ""
 
 #: src/gui/MainWindow.cc:4178 src/gui/TabManager.cc:783
 #: src/gui/TabManager.cc:849
 msgid "Untitled.scad"
-msgstr "Անանուն.scad"
+msgstr ""
 
 #: src/gui/Network.h:151
 msgid "Timeout error"
-msgstr "Ժամանակի ավարտի սխալմունք"
+msgstr ""
 
 #: src/gui/OctoPrintApiKeyDialog.cc:57
 msgid "API key created, waiting for approval in OctoPrint..."
@@ -3127,43 +2965,39 @@ msgstr ""
 
 #: src/gui/OpenSCADApp.cc:49
 msgid "Unknown error"
-msgstr "Անհայտ սխալ"
+msgstr ""
 
 #: src/gui/OpenSCADApp.cc:53
 msgid "Critical Error"
-msgstr "Վճռորոշ սխալ"
+msgstr ""
 
 #: src/gui/OpenSCADApp.cc:54
 msgid ""
 "A critical error was caught. The application may have become unstable:\n"
 "%1"
 msgstr ""
-"Վճռորոշ սխալ է իհայտ եկել. Ծրագիրը կարող է դառնալ անկայուն:\n"
-" %1"
 
 #: src/gui/OpenSCADApp.cc:80
 msgid ""
 "Fontconfig needs to update its font cache.\n"
 "This can take up to a couple of minutes."
 msgstr ""
-"Տառաչափի կարգավորմանը անհրաժեշտ է թարմացնել տառատեսակի cache֊ը։\n"
-"Այն կարող է տևել մի քանի րոպե։"
 
 #: src/gui/parameter/ParameterWidget.cc:112
 msgid "Saving presets"
-msgstr "Պահպանված նախադրումներ"
+msgstr ""
 
 #: src/gui/parameter/ParameterWidget.cc:113
 msgid "%1 was found, but was unreadable. Do you want to overwrite %1?"
-msgstr "%1 ֊ը գտնվեց, բայց անընթեռնելի էր: Ցանկանո՞ւմ եք վերագրել %1:"
+msgstr ""
 
 #: src/gui/parameter/ParameterWidget.cc:237
 msgid "Create new set of parameter"
-msgstr "Ստեղծեք պարամետրերի նոր հավաքածու"
+msgstr ""
 
 #: src/gui/parameter/ParameterWidget.cc:237
 msgid "Enter name of the parameter set"
-msgstr "Մուտքագրեք պարամետրերի հավաքածուի անունը"
+msgstr ""
 
 #: src/gui/parameter/ParameterWidget.cc:279
 msgid "New set "
@@ -3172,7 +3006,7 @@ msgstr ""
 #: src/gui/Preferences.cc:291 src/gui/Preferences.cc:296
 #: src/gui/Preferences.cc:1179 src/gui/Preferences.cc:1218
 msgid "<Default>"
-msgstr "<Default>"
+msgstr ""
 
 #: src/gui/Preferences.cc:444
 msgid "NONE"
@@ -3180,12 +3014,12 @@ msgstr ""
 
 #: src/gui/Preferences.cc:1162
 msgid "Success: Server Version = %2, API Version = %1"
-msgstr "Հաջողված ՝ Server-ի տարբերակը = %2, API-ի տարբերակը = %1"
+msgstr ""
 
 #: src/gui/Preferences.cc:1164 src/gui/Preferences.cc:1189
 #: src/gui/Preferences.cc:1228
 msgid "Error"
-msgstr "Սխալմունք"
+msgstr ""
 
 #: src/gui/QGLView.cc:173
 msgid ""
@@ -3193,9 +3027,6 @@ msgid ""
 "disabled.\n"
 "\n"
 msgstr ""
-"Զհուշացում: Բացակայում է OpenGL֊ը  OpenCSG - ի համար։ OpenCSG ֊ն անջատված "
-"է։\n"
-"\n"
 
 #: src/gui/QGLView.cc:175
 msgid ""
@@ -3203,9 +3034,6 @@ msgid ""
 "later.\n"
 "Your renderer information is as follows:\n"
 msgstr ""
-"Խորհուրդ է տրվում օգտագործել OpenSCAD֊ը  OpenGL 2.0 կամ ավելի նոր համակարգի "
-"վրա\n"
-"Ձեր տեղեկություններն այսպիսինն են:\n"
 
 #: src/gui/QGLView.cc:179
 msgid ""
@@ -3213,20 +3041,13 @@ msgid ""
 "%2 (%3)\n"
 "OpenGL version %4\n"
 msgstr ""
-"GLEW֊ի տեսակը%1\n"
-"%2 (%3)\n"
-"OpenGL֊ի  տեսակը %4\n"
 
 #: src/gui/QGLView.cc:185
-#, fuzzy
 msgid ""
 "GLAD version %1\n"
 "%2 (%3)\n"
 "OpenGL version %4\n"
 msgstr ""
-"GLEW֊ի տեսակը%1\n"
-"%2 (%3)\n"
-"OpenGL֊ի  տեսակը %4\n"
 
 #: src/gui/TabManager.cc:463
 msgid "Copy file name"
@@ -3237,56 +3058,50 @@ msgid "Copy full path"
 msgstr ""
 
 #: src/gui/TabManager.cc:475
-#, fuzzy
 msgid "Open Folder"
-msgstr "&Նիշք"
+msgstr ""
 
 #: src/gui/TabManager.cc:480
-#, fuzzy
 msgid "Close Tab"
-msgstr "Փակել"
+msgstr ""
 
 #: src/gui/TabManager.cc:652
 msgid "The document has been modified."
-msgstr "Փաստաթուղթը ձևափոխվել է"
+msgstr ""
 
 #: src/gui/TabManager.cc:653
 msgid "Do you want to save your changes?"
-msgstr "Ցանկանում եք պահպանել կատարած փոփոխությունները?"
+msgstr ""
 
 #: src/gui/TabManager.cc:750 src/gui/TabManager.cc:882
 msgid "Failed to open file for writing"
-msgstr "Չհաջողվեց բացել նիշքը խմբագրելու համար"
+msgstr ""
 
 #: src/gui/TabManager.cc:774 src/gui/TabManager.cc:896
 msgid "Error saving design"
-msgstr "Էսքիզը չհաջողվեց պահպանել"
+msgstr ""
 
 #: src/gui/TabManager.cc:786
-#, fuzzy
 msgid "PythonSCAD Designs (*.py)"
-msgstr "OpenSCAD֊ի դիզայն (*.scad)"
+msgstr ""
 
 #: src/gui/TabManager.cc:787 src/gui/TabManager.cc:790
 msgid "Save File"
-msgstr "Պահպանել նիշքը"
+msgstr ""
 
 #: src/gui/TabManager.cc:790
 msgid "OpenSCAD Designs (*.scad)"
-msgstr "OpenSCAD֊ի դիզայն (*.scad)"
+msgstr ""
 
 #: src/gui/TabManager.cc:814
 msgid ""
 "%1 already exists.\n"
 "Do you want to replace it?"
 msgstr ""
-"%1 արդեն գոյություն ունի.\n"
-"Ցանկանո՞ւմ եք փոխարինել այն։"
 
 #: src/gui/TabManager.cc:852
-#, fuzzy
 msgid "Untitled.py"
-msgstr "/Անանուն"
+msgstr ""
 
 #: src/gui/UnsavedChangesDialog.cc:23
 msgid "Unsaved Changes"
@@ -3305,14 +3120,12 @@ msgid "Discard Changes"
 msgstr ""
 
 #: src/gui/UnsavedChangesDialog.cc:101 src/gui/UnsavedChangesDialog.cc:118
-#, fuzzy
 msgid "Untitled"
-msgstr "/Անանուն"
+msgstr ""
 
 #: src/gui/UnsavedChangesDialog.cc:107
-#, fuzzy
 msgid "Save this file"
-msgstr "Պահպանել նիշքը"
+msgstr ""
 
 #: src/gui/UnsavedChangesDialog.cc:128
 msgid "There is 1 file with unsaved changes:"
@@ -3332,34 +3145,34 @@ msgid "negative distances are not supported"
 msgstr ""
 
 #: src/io/export.cc:261
-#, fuzzy, c-format
+#, c-format
 msgid "Can't open file \"%1$s\" for export"
-msgstr "Նիշքը բացել հնարավոր չէ\"%1$s\" տարածման համար"
+msgstr ""
 
 #: src/io/export.cc:277
-#, fuzzy, c-format
+#, c-format
 msgid "\"%1$s\" write error. (Disk full?)"
-msgstr "ՍԽԱԼՄՈՒՆՔ: \"%1$s\" չստացվեց պահել/գրել (Սկավառակը լցված է?)"
+msgstr ""
 
 #: examples
 msgid "Advanced"
-msgstr "Բարդ"
+msgstr ""
 
 #: examples
 msgid "Basics"
-msgstr "Հիմունքներ"
+msgstr ""
 
 #: examples
 msgid "Old"
-msgstr "Նախկինում օգտագործած"
+msgstr ""
 
 #: examples
 msgid "Functions"
-msgstr "Գործառույթներ/Ֆունկցիաներ"
+msgstr ""
 
 #: examples
 msgid "Parametric"
-msgstr "Նախընտրանքային"
+msgstr ""
 
 #. (itstool) path: component/summary
 #: pythonscad.appdata.xml.in2:6
@@ -3376,13 +3189,6 @@ msgid ""
 "3D models of machine parts but pretty sure is not what you are looking for "
 "when you are more interested in creating computer-animated movies."
 msgstr ""
-"OpenSCAD- ը 3D CAD մոդելներ ստեղծելու ծրագիր է: Ի տարբերություն 3D մոդելների "
-"ստեղծման համար նախատեսված շատ անվճար ծրագրաշարի (օրինակ ՝ Blender), այն չի "
-"կենտրոնանում 3D մոդելավորման գեղարվեստական բաղադրիչի վրա, փոխարենը ՝ CAD ֊ի: "
-"Այսպիսով, սա կարող է լինել այն ծրագիրը, որը փնտրում եք, երբ նախատեսում եք "
-"ստեղծել մեքենայական մասերի 3D մոդելներ, բայց միանգամայն համոզված ենք, որ այն "
-"ձեզ պետք չի գա, եթե ավելի շատ հետաքրքրված եք համակարգչային անիմացիոն "
-"կերպարների/ կինոնկարների ստեղծմամբ:"
 
 #. (itstool) path: description/p
 #: pythonscad.appdata.xml.in2:21
@@ -3394,12 +3200,6 @@ msgid ""
 "in the modelling process or make designs that are defined by configurable "
 "parameters."
 msgstr ""
-"OpenSCAD- ը ինտերակտիվ մոդերատոր չէ: Փոխարենը այն 3D կազմողի պես մի բան է, "
-"որը կարդում է օբյեկտը նկարագրող սցենարի նիշքը  և այս սցենարի նիշքից "
-"ներկայացնում է 3D մոդելը: Սա ձեզ (դիզայներին) լիակատար վերահսկողություն է "
-"տալիս մոդելավորման գործընթացի վրա և հնարավորություն է տալիս հեշտությամբ "
-"փոխել մոդելավորման գործընթացում կատարված ցանկացած քայլ կամ կատարել այնպիսի "
-"ձևավորումներ, որոնք որոշվում են կարգավորելի պարամետրերով:"
 
 #. (itstool) path: description/p
 #: pythonscad.appdata.xml.in2:22
@@ -3411,235 +3211,3 @@ msgid ""
 "parameters from DXF files. Besides DXF files OpenSCAD can read and create 3D "
 "models in the STL and OFF file formats."
 msgstr ""
-"OpenSCAD- ը տրամադրում է մոդելավորման երկու հիմնական տեխնիկա. Նախ կա "
-"կառուցողական ամուր երկրաչափություն (aka CSG), երկրորդը `2D ուրվագծերի "
-"արտահոսքն է: Որպես այս 2D ուրվագծերի տվյալների փոխանակման ձևաչափ ՝ "
-"օգտագործվում են Autocad DXF նիշքեր: Բացի արտածման համար 2D ուրվագծերից "
-"հնարավոր է նաև կարդալ դիզայնի կարգաբերումները DXF նիշքերից: Բացի DXF "
-"նիշքերից, OpenSCAD- ը կարող է կարդալ և ստեղծել 3D մոդելներ STL և OFF նիշքերի "
-"ձևաչափերով:"
-
-#, fuzzy
-#~ msgid "Reset Sample Text"
-#~ msgstr "Ցուցադրել մասշատբի նշումները"
-
-#, fuzzy
-#~ msgid "Copy Color Name"
-#~ msgstr "Տառատեսակ"
-
-#, fuzzy
-#~ msgid "Color name"
-#~ msgstr "Գունային համակարգ։"
-
-#, fuzzy
-#~ msgid "Sort order"
-#~ msgstr "Սահման"
-
-#, fuzzy
-#~ msgid "Color RGB"
-#~ msgstr "Գունային համակարգ։"
-
-#, fuzzy
-#~ msgid "Do you want to save all your changes?"
-#~ msgstr "Ցանկանում եք պահպանել կատարած փոփոխությունները?"
-
-#~ msgid "F7"
-#~ msgstr "F7"
-
-#, fuzzy
-#~ msgid "Line"
-#~ msgstr "Գծի փաթաթում"
-
-#, fuzzy
-#~ msgid "Filename"
-#~ msgstr "&Նիշք"
-
-#, fuzzy
-#~ msgid "Font Lists"
-#~ msgstr "&Տառատեսակի ցանկ"
-
-#, fuzzy
-#~ msgid "PushButton"
-#~ msgstr "Կոճակներ"
-
-#, fuzzy
-#~ msgid "Hide Editor"
-#~ msgstr "Թաքցնել խմբագիչը"
-
-#~ msgid "Surfaces"
-#~ msgstr "Հարթություններ"
-
-#~ msgid "F10"
-#~ msgstr "F10"
-
-#~ msgid "F11"
-#~ msgstr "F11"
-
-#, fuzzy
-#~ msgid "Hide Console"
-#~ msgstr "&Թաքցնել վահանակը"
-
-#~ msgid "Hide Customizer"
-#~ msgstr "Թաքցնել հարմարեցման վահանակը "
-
-#, fuzzy
-#~ msgid "Hide Error Log"
-#~ msgstr "Թաքցնել գործիքների վահանակը"
-
-#, fuzzy
-#~ msgid "Hide ErrorLog"
-#~ msgstr "Թաքցնել գործիքների վահանակը"
-
-#, fuzzy
-#~ msgid "Hide Animation Toolbar/Window"
-#~ msgstr "Թաքցնել գործիքների վահանակը"
-
-#, fuzzy
-#~ msgid "Error &Log"
-#~ msgstr "Սխալմունք"
-
-#~ msgid "OpenCSG"
-#~ msgstr "OpenCSG"
-
-#~ msgid "CGAL"
-#~ msgstr "CGAL"
-
-#, fuzzy
-#~ msgid "WRL"
-#~ msgstr "URL"
-
-#~ msgid "%1"
-#~ msgstr "%1"
-
-#, fuzzy
-#~ msgid "translate"
-#~ msgstr "Մոդելի թարգմանություն"
-
-#, fuzzy
-#~ msgid "play animation"
-#~ msgstr "Ծրագիր"
-
-#~ msgid "Upload Error"
-#~ msgstr "Վերբեռնման սխալմունք"
-
-#~ msgid "Print Service not available"
-#~ msgstr "Տպագրության ծառայությունը անհասանելի է"
-
-#~ msgid "Enable OpenCSG"
-#~ msgstr "Միացնել OpenCSG"
-
-#~ msgid "Enable for OpenGL 1.x"
-#~ msgstr "Միացնել OpenGL 1.x տարբերակի համար"
-
-#~ msgid ""
-#~ "Warning: You may experience OpenCSG rendering errors.\n"
-#~ "\n"
-#~ msgstr ""
-#~ "Զգուշացում։ Հնարավոր է առաջանան OpenCSG֊ի սխալմունքներ.\n"
-#~ "\n"
-
-#~ msgid "save preset"
-#~ msgstr "պահպանել նախադրվածը"
-
-#~ msgid "delete current preset"
-#~ msgstr "հեռացնել առկա նախադրվածը"
-
-#~ msgid "add new preset"
-#~ msgstr "ավելացնել նոր նախադրություն"
-
-#~ msgid "reset all parameters to the currently selected preset"
-#~ msgstr "Վերականգնել բոլոր պարամետրերը ներկա ընտրված տարբերակի"
-
-#, fuzzy
-#~ msgid "Search"
-#~ msgstr "Գտնել շարք"
-
-#~ msgid "changes on current preset not saved"
-#~ msgstr "ընթացիկ նախադրվածքի փոփոխությունները չեն պահպանվել"
-
-#~ msgid ""
-#~ "The changes on the current preset %1 are not saved yet. Do you really "
-#~ "want to reset this preset and lose your changes?"
-#~ msgstr ""
-#~ "Ընթացիկ կանխադրված% 1-ի փոփոխությունները դեռևս չեն պահպանվել: Իսկապե՞ս "
-#~ "ցանկանում եք վերագործարկել այս նախադրվածը և կորցնել ձեր փոփոխությունները:"
-
-#, fuzzy
-#~ msgid "Save current preset"
-#~ msgstr "պահպանեք ընթացիկ նախադրվածը"
-
-#~ msgid "JSON file read only"
-#~ msgstr "միայն JSON նիշքերը կարդալու համար"
-
-#~ msgid ""
-#~ "The current preset %1 contains changes, but is not saved yet. Do you "
-#~ "really want to change the preset and lose your changes?"
-#~ msgstr ""
-#~ "Ընթացիկ նախադրված %1 -ը պարունակում է փոփոխություններ, բայց դեռևս "
-#~ "պահպանված չէ: Իսկապե՞ս ցանկանում եք փոխել նախադրվածը և կորցնել ձեր "
-#~ "փոփոխությունները:"
-
-#~ msgid "Do you want to delete the current preset?"
-#~ msgstr "Ցանկանո՞ւմ եք ջնջել ընթացիկ նախադրվածը:"
-
-#~ msgid "Do you want to delete the current preset '%1'?"
-#~ msgstr "Ցանկանում եք ջնջել ընթացիկ փոփոխությունները %1'?"
-
-#~ msgid "Set Name %1 already exists"
-#~ msgstr "Անուն %1-ը արդեն գոյություն ունի"
-
-#~ msgid "The set name  %1 already exists. Do you want overwrite it?"
-#~ msgstr ""
-#~ "%1 Արդեն գոյություն ունի.\n"
-#~ "Վերաշարադրե՞նք"
-
-#~ msgid "(not supported)"
-#~ msgstr "(չի աջակցվում)"
-
-#, fuzzy
-#~ msgid "ErrorLog"
-#~ msgstr "Սխալմունք"
-
-#, fuzzy
-#~ msgid "Find Previous"
-#~ msgstr "&Փնտրել նախորդը"
-
-#, fuzzy
-#~ msgid "Some of the tabs are modified."
-#~ msgstr "Փաստաթուղթը ձևափոխվել է"
-
-#~ msgid "Saved design '%s'."
-#~ msgstr "Պահպանված տեսքը'%s'"
-
-#~ msgid "Save As"
-#~ msgstr "Պահպանել որպես՝"
-
-#~ msgid "Prev."
-#~ msgstr "Նախորդ"
-
-#~ msgid "&New"
-#~ msgstr "&Նոր"
-
-#~ msgid "&Open..."
-#~ msgstr "&Բացել..."
-
-#~ msgid "(requires restart)"
-#~ msgstr "(Անհրաժեշտ է վերագործարկել)"
-
-#~ msgid "/"
-#~ msgstr "/"
-
-#~ msgid "Allow opening multiple documents"
-#~ msgstr "Թույլատրել բազմակի փաստաթղթեր բացելը"
-
-#~ msgid "Editor Type"
-#~ msgstr "Խմբագրիչի Տեսակը"
-
-#~ msgid "QScintilla Editor"
-#~ msgstr "QScintilla խմբագրիչ"
-
-#~ msgid "Simple Editor"
-#~ msgstr "Պարզ խմբագրիչ"
-
-#~ msgid "Եռաչափ մոդելավորում ծրագրավորման միջոցով"
-#~ msgstr "Եռաչափ մոդելավորում ծրագրավորման միջոցով"
