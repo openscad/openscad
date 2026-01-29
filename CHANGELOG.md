@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.12.1](https://github.com/pythonscad/pythonscad/compare/v0.12.0...v0.12.1) (2026-01-29)
+
+
+### Bug Fixes
+
+* **python:** fix segfault and reference counting bugs in CSG operators ([#407](https://github.com/pythonscad/pythonscad/issues/407)) ([a016057](https://github.com/pythonscad/pythonscad/commit/a016057dcb01c60e677182832580881e62169839))
+* **windows:** remove '-dirty' suffix from build version in package filenames ([#409](https://github.com/pythonscad/pythonscad/issues/409)) ([7963144](https://github.com/pythonscad/pythonscad/commit/7963144a3e3ef306422c2d5ab4e9056ec63ecbfc))
+
+## [0.12.0](https://github.com/pythonscad/pythonscad/compare/v0.11.0...v0.12.0) (2026-01-28)
+
+
+### Features
+
+* add GUI theme preference (light/dark/auto) with native look for light mode ([#405](https://github.com/pythonscad/pythonscad/issues/405)) ([3a1fe90](https://github.com/pythonscad/pythonscad/commit/3a1fe900f2a49e464966f56c23450ae3a5f12c1f))
+
 ## [0.11.0](https://github.com/pythonscad/pythonscad/compare/v0.10.4...v0.11.0) (2026-01-27)
 
 

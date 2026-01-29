@@ -89,6 +89,7 @@ public slots:
   void on_timeThresholdOnRenderCompleteSoundEdit_textChanged(const QString&);
   void on_enableClearConsoleCheckBox_toggled(bool);
   void on_consoleMaxLinesEdit_textChanged(const QString&);
+  void on_comboBoxGuiTheme_activated(int);
   void on_fontComboBoxApplicationFontFamily_currentFontChanged(const QFont&);
   void on_comboBoxApplicationFontSize_currentIndexChanged(int);
   void on_consoleFontChooser_currentFontChanged(const QFont&);
@@ -173,6 +174,7 @@ signals:
   void consoleFontChanged(const QString& family, uint size) const;
   void customizerFontChanged(const QString& family, uint size) const;
   void colorSchemeChanged(const QString& scheme) const;
+  void guiThemeChanged(const QString& theme) const;
   void openCSGSettingsChanged() const;
   void syntaxHighlightChanged(const QString& s) const;
   void editorConfigChanged() const;

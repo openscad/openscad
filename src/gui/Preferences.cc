@@ -125,6 +125,7 @@ void Preferences::init()
   const QFont applicationFont = QTextDocument().defaultFont();
   this->defaultmap["advanced/applicationFontFamily"] = applicationFont.family();
   this->defaultmap["advanced/applicationFontSize"] = applicationFont.pointSize();
+  this->defaultmap["advanced/guiTheme"] = "auto";
 
   // Leave Console font with default if user has not chosen another.
   this->defaultmap["advanced/consoleFontFamily"] = applicationFont.family();
@@ -762,6 +763,31 @@ void Preferences::fireApplicationFontChanged() const
   emit applicationFontChanged(family, size);
 }
 
+static QString guiThemeValueFromIndex(int index)
+{
+  switch (index) {
+  case 0: return "light";
+  case 1: return "dark";
+  case 2: return "auto";
+  default: return "auto";
+  }
+}
+
+static int guiThemeIndexFromValue(const QString& value)
+{
+  if (value == "light") return 0;
+  if (value == "dark") return 1;
+  return 2;  // "auto" or unknown
+}
+
+void Preferences::on_comboBoxGuiTheme_activated(int index)
+{
+  const QString value = guiThemeValueFromIndex(index);
+  QSettingsCached settings;
+  settings.setValue("advanced/guiTheme", value);
+  emit guiThemeChanged(value);
+}
+
 void Preferences::on_fontComboBoxApplicationFontFamily_currentFontChanged(const QFont& font)
 {
   QSettingsCached settings;
@@ -1376,6 +1402,8 @@ void Preferences::updateGUI()
   BlockSignals<QLineEdit *>(this->consoleMaxLinesEdit)
     ->setText(getValue("advanced/consoleMaxLines").toString());
 
+  BlockSignals<QComboBox *>(this->comboBoxGuiTheme)
+    ->setCurrentIndex(guiThemeIndexFromValue(getValue("advanced/guiTheme").toString()));
   updateGUIFontFamily(fontComboBoxApplicationFontFamily, "advanced/applicationFontFamily");
   updateGUIFontSize(comboBoxApplicationFontSize, "advanced/applicationFontSize");
 

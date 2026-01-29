@@ -28,6 +28,7 @@ public slots:
   void showFontCacheDialog();
   void hideFontCacheDialog();
   void setApplicationFont(const QString& family, uint size);
+  void setGuiTheme(const QString& preference);
   void setRenderBackend3D(RenderBackend3D backend);
 
 public:
@@ -35,6 +36,7 @@ public:
 
 private:
   QProgressDialog *fontCacheDialog{nullptr};
+  QString platformStyleName;
 };
 
 #define scadApp (static_cast<OpenSCADApp *>(QCoreApplication::instance()))

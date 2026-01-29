@@ -169,24 +169,31 @@ int python_more_obj(std::vector<std::shared_ptr<AbstractNode>>& children, PyObje
 
 std::shared_ptr<AbstractNode> PyOpenSCADObjectToNode(PyObject *obj, PyObject **dict)
 {
-  printf("aa\n");
+  // Check for special Python objects BEFORE casting to PyOpenSCADObject
+  if (obj == Py_None || obj == Py_False) {
+    *dict = nullptr;
+    return void_node;
+  }
+  if (obj == Py_True) {
+    *dict = nullptr;
+    return full_node;
+  }
+
+  // Verify obj is actually a PyOpenSCADType before casting
+  if (!PyObject_IsInstance(obj, reinterpret_cast<PyObject *>(&PyOpenSCADType))) {
+    *dict = nullptr;
+    return void_node;
+  }
+
   std::shared_ptr<AbstractNode> result = ((PyOpenSCADObject *)obj)->node;
-  printf("bb\n");
   if (result != nullptr) {
-    printf("cc\n");
     if (result.use_count() > 2 && result != void_node && result != full_node) {
       result = result->clone();
     }
-    printf("dd\n");
     *dict = ((PyOpenSCADObject *)obj)->dict;
-    printf("ee\n");
-  } else if (obj == Py_None || obj == Py_False) {
-    result = void_node;
-    *dict = nullptr;
-  } else if (obj == Py_True) {
-    result = full_node;
-    *dict = nullptr;
-  } else result = nullptr;
+  } else {
+    result = nullptr;
+  }
   return result;
 }
 

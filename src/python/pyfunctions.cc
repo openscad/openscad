@@ -2313,37 +2313,28 @@ PyObject *python__getsetitem_hier(std::shared_ptr<AbstractNode> node, const std:
 
 PyObject *python__getitem__(PyObject *obj, PyObject *key)
 {
-  printf("getitem start\n");
   PyOpenSCADObject *self = (PyOpenSCADObject *)obj;
   if (self->dict == nullptr) {
-    printf("a\n");
     return nullptr;
   }
   // object dict
   PyObject *result = PyDict_GetItem(self->dict, key);
   if (result != NULL) {
-    printf("b\n");
     Py_INCREF(result);
     return result;
   }
   PyObject *keyname = PyUnicode_AsEncodedString(key, "utf-8", "~");
   if (keyname == nullptr) return nullptr;
   std::string keystr = PyBytes_AS_STRING(keyname);
-  printf("key is %s obj is %p\n", keystr.c_str(), obj);
 
   PyObject *dummy_dict;
   std::shared_ptr<AbstractNode> node = PyOpenSCADObjectToNode(obj, &dummy_dict);
-  printf("1\n");
   if (node != nullptr) {
-    printf("c\n");
     result = python__getsetitem_hier(node, keystr, nullptr, 2);
-    printf("e\n");
     if (result != nullptr) return result;
   }
-  printf("2\n");
 
   result = Py_None;
-  printf("d\n");
   if (keystr == "size") {
     return python_size_core(obj);
   } else if (keystr == "position") {
@@ -4067,9 +4058,18 @@ PyObject *python_nb_sub(PyObject *arg1, PyObject *arg2, OpenSCADOperator mode)
   std::vector<std::shared_ptr<AbstractNode>> child;
   std::vector<PyObject *> child_dict;
 
-  if (arg1 == Py_None && mode == OpenSCADOperator::UNION) return arg2;
-  if (arg2 == Py_None && mode == OpenSCADOperator::UNION) return arg1;
-  if (arg2 == Py_None && mode == OpenSCADOperator::DIFFERENCE) return arg1;
+  if (arg1 == Py_None && mode == OpenSCADOperator::UNION) {
+    Py_INCREF(arg2);
+    return arg2;
+  }
+  if (arg2 == Py_None && mode == OpenSCADOperator::UNION) {
+    Py_INCREF(arg1);
+    return arg1;
+  }
+  if (arg2 == Py_None && mode == OpenSCADOperator::DIFFERENCE) {
+    Py_INCREF(arg1);
+    return arg1;
+  }
 
   for (int i = 0; i < 2; i++) {
     PyObject *dict;
