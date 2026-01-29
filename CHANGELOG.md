@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.12.1](https://github.com/pythonscad/pythonscad/compare/v0.12.0...v0.12.1) (2026-01-29)
+
+
+### Bug Fixes
+
+* **python:** fix segfault and reference counting bugs in CSG operators ([#407](https://github.com/pythonscad/pythonscad/issues/407)) ([a016057](https://github.com/pythonscad/pythonscad/commit/a016057dcb01c60e677182832580881e62169839))
+* **windows:** remove '-dirty' suffix from build version in package filenames ([#409](https://github.com/pythonscad/pythonscad/issues/409)) ([7963144](https://github.com/pythonscad/pythonscad/commit/7963144a3e3ef306422c2d5ab4e9056ec63ecbfc))
+
 ## [0.12.0](https://github.com/pythonscad/pythonscad/compare/v0.11.0...v0.12.0) (2026-01-28)
 
 
