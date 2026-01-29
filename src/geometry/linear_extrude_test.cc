@@ -68,7 +68,7 @@ Polygon2d makeSquare(double s)
 
   Outline2d o;
   o.vertices = {v1, {v2[0], v1[1]}, v2, {v1[0], v2[1]}};
-  return std::move(Polygon2d(o));
+  return Polygon2d(o);
 }
 
 Polygon2d makeCross(double s)
@@ -76,7 +76,7 @@ Polygon2d makeCross(double s)
   Outline2d o;
   o.vertices = {{0, 0}, {s / 2, s / 4},     {s, 0}, {s * 3 / 4, s / 2},
                 {s, s}, {s / 2, s * 3 / 4}, {0, s}, {s / 4, s / 2}};
-  return std::move(Polygon2d(o));
+  return Polygon2d(o);
 }
 
 TEST_CASE("sgn_vdiff basic functionality")
@@ -159,17 +159,6 @@ TEST_CASE("linear_extrude gives essentially the same results for Manifold and CG
 
     auto cps = LinearExtrudeInternals::assemblePolySetForCGAL(polyref, vertices, indices, 1, unknown,
                                                               1.0, 1.0, h1, h2, twist);
-    // This works too and has some repair mechanisms for bad inputs, which is not a problem here.
-    // auto nef_shape = *CGALUtils::createNefPolyhedronFromPolySet(*cps)->p3;
-    // CGAL::Surface_mesh<CGAL_Point_3> mesh;
-    // CGAL::convert_nef_polyhedron_to_polygon_mesh(
-    //   nef_shape,
-    //   mesh,
-    //   true /* triangulate_all_faces = true */
-    //   );
-    // namespace PMP = CGAL::Polygon_mesh_processing;
-    // PMP::orient(mesh);
-
     auto mesh = *CGALUtils::createSurfaceMeshFromPolySet<CGAL_Kernel3Mesh>(*cps);
     if (!CGAL::is_triangle_mesh(mesh)) {
       CGAL::Polygon_mesh_processing::triangulate_faces(mesh);
