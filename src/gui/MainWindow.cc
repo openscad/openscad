@@ -342,7 +342,6 @@ MainWindow::MainWindow(const QStringList& filenames) : rubberBandManager(this)
           &MainWindow::onTabManagerEditorContentReloaded);
 
   connect(this->console, &Console::openWindowRequested, this, &MainWindow::showLink);
-  connect(GlobalPreferences::inst(), &Preferences::consoleFontChanged, this->console, &Console::setFont);
   connect(GlobalPreferences::inst(), &Preferences::consoleFontChanged, this->console,
           &Console::setConsoleFont);
   this->console->setConsoleFont(
