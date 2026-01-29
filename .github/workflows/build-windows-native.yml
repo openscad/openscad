@@ -29,6 +29,12 @@ jobs:
         with:
           submodules: 'recursive'
 
+      - name: Configure git (disable line-ending conversion for accurate dirty check)
+        shell: bash
+        run: |
+          git config --global core.autocrlf false
+          git config --global core.safecrlf false
+
       - name: Fetch tags for version detection
         shell: bash
         run: |
