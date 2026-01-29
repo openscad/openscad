@@ -115,6 +115,12 @@ void python_unlock(void)
 
 std::shared_ptr<AbstractNode> PyOpenSCADObjectToNode(PyObject *obj, PyObject **dict)
 {
+  // Verify obj is actually a PyOpenSCADType before casting to avoid segfault
+  if (!PyObject_IsInstance(obj, reinterpret_cast<PyObject *>(&PyOpenSCADType))) {
+    *dict = nullptr;
+    return nullptr;
+  }
+
   std::shared_ptr<AbstractNode> result = ((PyOpenSCADObject *)obj)->node;
   if (result.use_count() > 2) {
     result = result->clone();
