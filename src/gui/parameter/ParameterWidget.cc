@@ -69,6 +69,7 @@ ParameterWidget::ParameterWidget(QWidget *parent) : QWidget(parent)
   // connect(comboBoxPreset, &QComboBox::editTextChanged, this, &ParameterWidget::onSetNameChanged);
   connect(addButton, &QPushButton::clicked, this, &ParameterWidget::onSetAdd);
   connect(deleteButton, &QPushButton::clicked, this, &ParameterWidget::onSetDelete);
+  connect(collapseButton, &QPushButton::clicked, this, &ParameterWidget::onCollapseAll);
 
   QString fontfamily = GlobalPreferences::inst()->getValue("advanced/customizerFontFamily").toString();
   uint fontsize = GlobalPreferences::inst()->getValue("advanced/customizerFontSize").toUInt();
@@ -236,6 +237,13 @@ void ParameterWidget::onSetDelete()
   sets.erase(sets.begin() + (index - 1));
   setModified();
   autoPreview(true);
+}
+
+void ParameterWidget::onCollapseAll()
+{
+  for (GroupWidget *groupWidget : this->findChildren<GroupWidget *>()) {
+    groupWidget->setExpanded(false);
+  }
 }
 
 void ParameterWidget::parameterModified(bool immediate)
