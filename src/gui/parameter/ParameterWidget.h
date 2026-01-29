@@ -74,6 +74,7 @@ protected slots:
   void onSetAdd();
   void onSetDelete();
   void onCollapseAll();
+  void onExpandAll();
   void parameterModified(bool immediate);
   void loadSet(size_t index);
   void createSet(const QString& name);

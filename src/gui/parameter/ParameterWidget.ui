@@ -162,7 +162,7 @@
       </widget>
      </item>
      <item>
-      <widget class="QPushButton" name="collapseButton">
+      <widget class="QToolButton" name="parameterMenuButton">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Fixed" vsizetype="Minimum">
          <horstretch>0</horstretch>
@@ -182,10 +182,13 @@
         </size>
        </property>
        <property name="toolTip">
-        <string>Collapse all tabs</string>
+        <string>More actions</string>
        </property>
        <property name="text">
-        <string>^</string>
+        <string>...</string>
+       </property>
+       <property name="popupMode">
+        <enum>QToolButton::InstantPopup</enum>
        </property>
       </widget>
      </item>
@@ -233,7 +236,7 @@
   <tabstop>comboBoxPreset</tabstop>
   <tabstop>addButton</tabstop>
   <tabstop>deleteButton</tabstop>
-  <tabstop>collapseButton</tabstop>
+  <tabstop>parameterMenuButton</tabstop>
   <tabstop>scrollArea</tabstop>
  </tabstops>
  <resources/>
