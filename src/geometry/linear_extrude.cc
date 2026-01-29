@@ -21,18 +21,18 @@
 #include "geometry/PolySetUtils.h"
 #include "utils/degree_trig.h"
 
-namespace {
+namespace LinearExtrudeInternals {
 
 /*
   Compare Euclidean length of vectors
   Return:
    -1 : if v1  < v2
-    0 : if v1 ~= v2 (approximation to compoensate for floating point precision)
+    0 : if v1 ~= v2 (approximation to compensate for floating point precision)
     1 : if v1  > v2
 */
 int sgn_vdiff(const Vector2d& v1, const Vector2d& v2)
 {
-  constexpr double ratio_threshold = 1e5;  // 10ppm difference
+  constexpr double ratio_threshold = 1e5;  // 5 orders-of-magnitude difference
   double l1 = v1.norm();
   double l2 = v2.norm();
   // Compare the average and difference, to be independent of geometry scale.
@@ -42,9 +42,16 @@ int sgn_vdiff(const Vector2d& v1, const Vector2d& v2)
   return diff > scale ? (l1 < l2 ? -1 : 1) : 0;
 }
 
+/**
+ *
+ * @param vertices The first polyref.length() vertices must be in the same order as polyref and represent
+ * the bottom face. Similarly, the last polyref.length() vertices must be in the same order as polyref
+ * and represent the top face.
+ * @param indices These indexed face sets must not include the top nor bottom faces.
+ */
 std::unique_ptr<PolySet> assemblePolySetForManifold(const Polygon2d& polyref,
-                                                    std::vector<Vector3d>& vertices,
-                                                    PolygonIndices& indices, int convexity,
+                                                    std::vector<Vector3d>&& vertices,
+                                                    PolygonIndices&& indices, int convexity,
                                                     boost::tribool isConvex, int index_offset)
 {
   auto final_polyset = std::make_unique<PolySet>(3, isConvex);
@@ -53,22 +60,28 @@ std::unique_ptr<PolySet> assemblePolySetForManifold(const Polygon2d& polyref,
   final_polyset->vertices = std::move(vertices);
   final_polyset->indices = std::move(indices);
 
-  // Create top and bottom face.
-  auto ps_bottom = polyref.tessellate();  // bottom
-  // Flip vertex ordering for bottom polygon
-  for (auto& p : ps_bottom->indices) {
-    std::reverse(p.begin(), p.end());
-  }
-  std::copy(ps_bottom->indices.begin(), ps_bottom->indices.end(),
-            std::back_inserter(final_polyset->indices));
+  // Get valid top and bottom edges (as Indexed Face Sets aka Indices).
+  // If top is scaled it doesn't matter: we're only using the edges and not vertices.
+  auto ps_topbottom = polyref.tessellate();
+  // Manifold tessellating doesn't add vertices (at least in this case? ever? not sure), so the indices
+  // remain valid.
 
-  for (auto& p : ps_bottom->indices) {
-    std::reverse(p.begin(), p.end());
-    for (auto& i : p) {
-      i += index_offset;
+  // Copy indices for the top face, with appropriate offset.
+  for (const auto& p_original : ps_topbottom->indices) {
+    final_polyset->indices.emplace_back();
+    auto& p_offset = final_polyset->indices.back();
+
+    for (int index : p_original) {
+      p_offset.push_back(index + index_offset);
     }
   }
-  std::copy(ps_bottom->indices.begin(), ps_bottom->indices.end(),
+
+  // Flip vertex ordering for bottom polygon and move it.
+  for (auto& p : ps_topbottom->indices) {
+    std::reverse(p.begin(), p.end());
+  }
+  std::copy(std::make_move_iterator(ps_topbottom->indices.begin()),
+            std::make_move_iterator(ps_topbottom->indices.end()),
             std::back_inserter(final_polyset->indices));
 
   // LOG(PolySetUtils::polySetToPolyhedronSource(*final_polyset));
@@ -121,32 +134,41 @@ std::unique_ptr<PolySet> assemblePolySetForCGAL(const Polygon2d& polyref,
   return builder.build();
 }
 
-/*
-   Attempt to triangulate quads in an ideal way.
-   Each quad is composed of two adjacent outline vertices: (prev1, curr1)
-   and their corresponding transformed points one step up: (prev2, curr2).
-   Quads are triangulated across the shorter of the two diagonals, which works well in most cases.
-   However, when diagonals are equal length, decision may flip depending on other factors.
+/**
+ * Attempt to triangulate quads in an ideal way.
+ * Each quad is composed of two adjacent outline vertices: (prev_vtx_bot, vtx_bot)
+ * and their corresponding transformed points one step up: (prev_vtx_top, vtx_top).
+ * Quads are triangulated across the shorter of the two diagonals, which works well in most cases.
+ * However, when diagonals are equal length, decision may flip depending on other factors.
+ * @param indices All faces for this slice are added to this.
+ * @param slice_idx Which slice is currently having faces added **1-indexed** not 0-indexed.
+ * @param slice_stride Total count of vertices in all polygons being extruded.
+ * @param poly The polygon being extruded.
+ * @param rotation_slice_bottom The degrees(?) of rotation for the polygon at the bottom of this slice.
+ * @param scale_slice_top The vector of scaling applied to the polygon at the top of this slice.
  */
 void add_slice_indices(PolygonIndices& indices, int slice_idx, int slice_stride, const Polygon2d& poly,
-                       double rot1, double rot2, const Vector2d& scale1, const Vector2d& scale2)
+                       double rotation_slice_bottom, double rotation_slice_top,
+                       const Vector2d& scale_slice_bottom, const Vector2d& scale_slice_top)
 {
-  int prev_slice = (slice_idx - 1) * slice_stride;
-  int curr_slice = slice_idx * slice_stride;
+  int bottom_offset = (slice_idx - 1) * slice_stride;
+  int top_offset = slice_idx * slice_stride;
 
-  Eigen::Affine2d trans1(Eigen::Scaling(scale1) * Eigen::Affine2d(rotate_degrees(-rot1)));
-  Eigen::Affine2d trans2(Eigen::Scaling(scale2) * Eigen::Affine2d(rotate_degrees(-rot2)));
+  Eigen::Affine2d trans_bot(Eigen::Scaling(scale_slice_bottom) *
+                            Eigen::Affine2d(rotate_degrees(-rotation_slice_bottom)));
+  Eigen::Affine2d trans_top(Eigen::Scaling(scale_slice_top) *
+                            Eigen::Affine2d(rotate_degrees(-rotation_slice_top)));
 
-  bool any_zero = scale2[0] == 0 || scale2[1] == 0;
+  bool any_zero = scale_slice_top[0] == 0 || scale_slice_top[1] == 0;
   // setting back_twist true helps keep diagonals same as previous builds.
-  bool back_twist = rot2 <= rot1;
+  bool back_twist = rotation_slice_top <= rotation_slice_bottom;
 
   int curr_outline = 0;
   for (const auto& o : poly.outlines()) {
-    // prev1: previous slice, previous vertex
-    // prev2: current slice, previous vertex
-    Vector2d prev1 = trans1 * o.vertices[0];
-    Vector2d prev2 = trans2 * o.vertices[0];
+    // prev_vtx_bot: previous vertex, on the bottom of this slice
+    // prev_vtx_top: previous vertex, on the top of this slice
+    Vector2d prev_vtx_bot = trans_bot * o.vertices[0];
+    Vector2d prev_vtx_top = trans_top * o.vertices[0];
 
     // For equal length diagonals, flip selected choice depending on direction of twist and
     // whether the outline is negative (eg circle hole inside a larger circle).
@@ -156,43 +178,45 @@ void add_slice_indices(PolygonIndices& indices, int slice_idx, int slice_stride,
     bool flip = ((!o.positive) xor (back_twist));
 
     for (size_t i = 1; i <= o.vertices.size(); ++i) {
-      // curr1: previous slice, current vertex
-      // curr2: current slice, current vertex
-      Vector2d curr1 = trans1 * o.vertices[i % o.vertices.size()];
-      Vector2d curr2 = trans2 * o.vertices[i % o.vertices.size()];
-      int curr_idx = curr_outline + (i % o.vertices.size());
+      auto o_vertices_idx = i % o.vertices.size();
+      // vtx_bot: current vertex, on the bottom of this slice
+      // vtx_top: current vertex, on the top of this slice
+      Vector2d vtx_bot = trans_bot * o.vertices[o_vertices_idx];
+      Vector2d vtx_top = trans_top * o.vertices[o_vertices_idx];
+      int idx = curr_outline + o_vertices_idx;
       int prev_idx = curr_outline + i - 1;
 
-      int diff_sign = sgn_vdiff(prev1 - curr2, curr1 - prev2);
+      // -1 if diagonal from current-slice-current-vertex to previous-slice-previous-vertex is smaller
+      int diff_sign = sgn_vdiff(prev_vtx_bot - vtx_top, vtx_bot - prev_vtx_top);
       bool splitfirst = diff_sign == -1 || (diff_sign == 0 && !flip);
 
       // Split along shortest diagonal,
       // unless at top for a 0-scaled axis (which can create 0 thickness "ears")
       if (splitfirst xor any_zero) {
         indices.push_back({
-          prev_slice + curr_idx,
-          curr_slice + curr_idx,
-          prev_slice + prev_idx,
+          bottom_offset + idx,
+          top_offset + idx,
+          bottom_offset + prev_idx,
         });
         indices.push_back({
-          curr_slice + prev_idx,
-          prev_slice + prev_idx,
-          curr_slice + curr_idx,
+          top_offset + prev_idx,
+          bottom_offset + prev_idx,
+          top_offset + idx,
         });
       } else {
         indices.push_back({
-          prev_slice + curr_idx,
-          curr_slice + prev_idx,
-          prev_slice + prev_idx,
+          bottom_offset + idx,
+          top_offset + prev_idx,
+          bottom_offset + prev_idx,
         });
         indices.push_back({
-          prev_slice + curr_idx,
-          curr_slice + curr_idx,
-          curr_slice + prev_idx,
+          bottom_offset + idx,
+          top_offset + idx,
+          top_offset + prev_idx,
         });
       }
-      prev1 = curr1;
-      prev2 = curr2;
+      prev_vtx_bot = vtx_bot;
+      prev_vtx_top = vtx_top;
     }
     curr_outline += o.vertices.size();
   }
@@ -283,7 +307,54 @@ size_t calc_num_slices(const LinearExtrudeNode& node, const Polygon2d& poly)
   return num_slices;
 }
 
-}  // namespace
+/**
+ * Break out extrusion logic to be used in unit tests.
+ * @param slice_stride return value
+ * @param vertices return value
+ * @param indices return value
+ */
+void prepareVerticesAndIndices(const Polygon2d& polyref, Vector3d h1, Vector3d h2, int num_slices,
+                               double scale_x, double scale_y, double twist,
+                               std::vector<Vector3d>& vertices, PolygonIndices& indices,
+                               int& slice_stride)
+{
+  for (const auto& o : polyref.outlines()) {
+    slice_stride += o.vertices.size();
+  }
+  vertices.reserve(slice_stride * (num_slices + 1));
+  indices.reserve(slice_stride * (num_slices + 1) * 2);  // sides + endcaps
+
+  // Calculate all vertices
+  Vector2d full_scale(1 - scale_x, 1 - scale_y);
+  double full_rot = -twist;
+  auto full_height = (h2 - h1);
+  for (unsigned int slice_idx = 0; slice_idx <= num_slices; slice_idx++) {
+    Eigen::Affine2d trans(Eigen::Scaling(Vector2d(1, 1) - full_scale * slice_idx / num_slices) *
+                          Eigen::Affine2d(rotate_degrees(full_rot * slice_idx / num_slices)));
+
+    for (const auto& o : polyref.outlines()) {
+      for (const auto& v : o.vertices) {
+        auto tmp = trans * v;
+        vertices.emplace_back(Vector3d(tmp[0], tmp[1], 0.0) + h1 + full_height * slice_idx / num_slices);
+      }
+    }
+  }
+
+  // Create indices for sides
+  for (unsigned int slice_idx = 1; slice_idx <= num_slices; slice_idx++) {
+    double rot_bot = twist * (slice_idx - 1) / num_slices;
+    double rot_top = twist * slice_idx / num_slices;
+    Vector2d scale_bot(1 - (1 - scale_x) * (slice_idx - 1) / num_slices,
+                       1 - (1 - scale_y) * (slice_idx - 1) / num_slices);
+    Vector2d scale_top(1 - (1 - scale_x) * slice_idx / num_slices,
+                       1 - (1 - scale_y) * slice_idx / num_slices);
+    add_slice_indices(indices, slice_idx, slice_stride, polyref, rot_bot, rot_top, scale_bot, scale_top);
+  }
+}
+
+}  // namespace LinearExtrudeInternals
+
+using namespace LinearExtrudeInternals;
 
 /*!
    Input to extrude should be sanitized. This means non-intersecting, correct winding order
@@ -329,41 +400,10 @@ std::unique_ptr<Geometry> extrudePolygon(const LinearExtrudeNode& node, const Po
   }
 
   int slice_stride = 0;
-  for (const auto& o : polyref.outlines()) {
-    slice_stride += o.vertices.size();
-  }
   std::vector<Vector3d> vertices;
-  vertices.reserve(slice_stride * (num_slices + 1));
   PolygonIndices indices;
-  indices.reserve(slice_stride * (num_slices + 1) * 2);  // sides + endcaps
-
-  // Calculate all vertices
-  Vector2d full_scale(1 - node.scale_x, 1 - node.scale_y);
-  double full_rot = -node.twist;
-  auto full_height = (h2 - h1);
-  for (unsigned int slice_idx = 0; slice_idx <= num_slices; slice_idx++) {
-    Eigen::Affine2d trans(Eigen::Scaling(Vector2d(1, 1) - full_scale * slice_idx / num_slices) *
-                          Eigen::Affine2d(rotate_degrees(full_rot * slice_idx / num_slices)));
-
-    for (const auto& o : polyref.outlines()) {
-      for (const auto& v : o.vertices) {
-        auto tmp = trans * v;
-        vertices.emplace_back(Vector3d(tmp[0], tmp[1], 0.0) + h1 + full_height * slice_idx / num_slices);
-      }
-    }
-  }
-
-  // Create indices for sides
-  for (unsigned int slice_idx = 1; slice_idx <= num_slices; slice_idx++) {
-    double rot_prev = node.twist * (slice_idx - 1) / num_slices;
-    double rot_curr = node.twist * slice_idx / num_slices;
-    Vector2d scale_prev(1 - (1 - node.scale_x) * (slice_idx - 1) / num_slices,
-                        1 - (1 - node.scale_y) * (slice_idx - 1) / num_slices);
-    Vector2d scale_curr(1 - (1 - node.scale_x) * slice_idx / num_slices,
-                        1 - (1 - node.scale_y) * slice_idx / num_slices);
-    add_slice_indices(indices, slice_idx, slice_stride, polyref, rot_prev, rot_curr, scale_prev,
-                      scale_curr);
-  }
+  prepareVerticesAndIndices(polyref, h1, h2, num_slices, node.scale_x, node.scale_y, node.twist,
+                            vertices, indices, slice_stride);
 
   // For Manifold, we can tesselate the endcaps using existing vertices to build a manifold mesh.
   // Without Manifold, however, we don't have such a tessellator available, so we'll have to build
@@ -371,8 +411,8 @@ std::unique_ptr<Geometry> extrudePolygon(const LinearExtrudeNode& node, const Po
 
 #ifdef ENABLE_MANIFOLD
   if (RenderSettings::inst()->backend3D == RenderBackend3D::ManifoldBackend) {
-    return assemblePolySetForManifold(polyref, vertices, indices, node.convexity, isConvex,
-                                      slice_stride * num_slices);
+    return assemblePolySetForManifold(polyref, std::move(vertices), std::move(indices), node.convexity,
+                                      isConvex, slice_stride * num_slices);
   } else
 #endif
     return assemblePolySetForCGAL(polyref, vertices, indices, node.convexity, isConvex, node.scale_x,
