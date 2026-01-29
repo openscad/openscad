@@ -272,19 +272,6 @@ int operator==(const SphereEdgeDb& t1, const SphereEdgeDb& t2)
   return 0;
 }
 
-int sphereCalcSplitInd(PolySetBuilder& builder, std::vector<Vector3d>& vertices,
-                       std::unordered_map<SphereEdgeDb, int, boost::hash<SphereEdgeDb>>& edges,
-                       PyObject *func, int ind1, int ind2)
-{
-  SphereEdgeDb edge(ind1, ind2);
-  if (edges.count(edge) > 0) {
-    return edges[edge];
-  }
-  int result = sphereCalcInd(builder, vertices, func, vertices[ind1] + vertices[ind2]);
-  if (result != -1) edges[edge] = result;
-  return result;
-}
-
 std::unique_ptr<const Geometry> sphereCreateFuncGeometry(void *funcptr, double fs, int n)
 {
   PyObject *func = (PyObject *)funcptr;
@@ -1975,12 +1962,6 @@ PyObject *python_output(PyObject *obj, PyObject *args, PyObject *kwargs)
 {
   LOG(message_group::Deprecated, "output is deprecated, please use show() instead");
   return python_show(obj, args, kwargs);
-}
-
-PyObject *python_oo_output(PyObject *obj, PyObject *args, PyObject *kwargs)
-{
-  LOG(message_group::Deprecated, "output is deprecated, please use show() instead");
-  return python_oo_show(obj, args, kwargs);
 }
 
 void Export3mfPartInfo::writeProps(void *obj) const
@@ -5345,7 +5326,7 @@ PyObject *python_import(PyObject *self, PyObject *args, PyObject *kwargs)
 #ifndef OPENSCAD_NOGUI
 std::vector<std::string> nimport_downloaded;
 
-extern int curl_download(std::string url, std::string path);
+extern int curl_download(const std::string& url, const std::string& path);
 PyObject *python_nimport(PyObject *self, PyObject *args, PyObject *kwargs)
 {
   static bool called_already = false;

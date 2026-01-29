@@ -204,7 +204,7 @@ static size_t curl_download_write(void *ptr, size_t size, size_t nmemb, void *st
   return size * nmemb;
 }
 
-int curl_download(std::string url, std::string path)
+int curl_download(const std::string& url, const std::string& path)
 {
   CURLcode status;
   QFile fh((path).c_str());

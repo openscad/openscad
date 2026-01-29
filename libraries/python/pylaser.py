@@ -6,7 +6,7 @@ from random import *
  Its based an the faces() interface
 """
 class LaserCutter:
-    def __init__(self, facelist, depth=5):
+    def __init__(self, facelist, depth=4):
 
         self.depth=depth
         conn_plain = [[0,0],[1,0]]
@@ -21,13 +21,28 @@ class LaserCutter:
         #LUT
         lut = {}
         vertices = []
-
         edge_inv = {}
-        ifaces = []
+
+        # make sure all faces are polygons
+        for i,f in enumerate(facelist):
+            pol, = f.children()
+            points = []
+            paths = []
+            for pts in pol.mesh():
+                s=len(points)
+                n=len(pts)
+                points = points + pts
+                paths.append(list(range(s, s+n)))
+            pol = polygon(points=points, paths = paths)
+            facelist[i] = pol.multmatrix(f.matrix)
+
+
+        ifaces = [] # indexed ifaces[face][pathnum][ptnum]
         for f in facelist:
             late_cuts.append(False) # dummy void
             mat = f.matrix
             pol, = f.children()
+
             #pt inventur
             ipaths=[]
             if len(pol.paths) == 0:
@@ -69,17 +84,18 @@ class LaserCutter:
             pol, = f.children()
             if len(pol.paths) == 0:
                 pol.paths=[list(range(len(pol.points)))]
+            newpolpoints=[]
+            newpolpaths=[]
             for j, path in enumerate(pol.paths):
+                newpts=[]
                 curface=ifaces[i][j]
-
                 n=len(curface)
 
-                stripes = []
+                stripes = [] # pattern on each side
                 for k in range(n):
                     conn=conn_plain
                     partedge=[curface[(k+1)%n],curface[k]]
                     if tuple(partedge) in edge_inv:
-                        print("has #1 partner ")
                         conn = conn_type1
                     else:
                         pt1=multmatrix(pol.points[path[k]] + [0], mat)
@@ -92,8 +108,18 @@ class LaserCutter:
                             # pos auf oface
                             pt1x=divmatrix(pt1, oface.matrix)
                             pt2x=divmatrix(pt2, oface.matrix)
-                            if abs(pt1x[2]) < 1e-3 and abs(pt2x[2]) < 1e-3:
-                                print("match #2 ",i, l)
+                            oshape,  = oface.children()
+                            valid=True
+                            if abs(pt1x[2]) > 1e-3:
+                                valid = False
+                            if abs(pt2x[2]) > 1e-3:
+                                valid = False
+                            if not oface.inside(pt1x):
+                                valid = False
+                            if not oface.inside(pt2x):
+                                valid = False
+
+                            if valid == True:
                                 conn = conn_type2
                                 cutout = self.jigging(pt1x, pt2x, conn_type2_)
                                 late_cuts[l] = union(late_cuts[l], polygon(cutout))
@@ -107,9 +133,8 @@ class LaserCutter:
 
 
                 # Now concatenate all strips with extrapolation
-                newpts=[]
-                for i, stripe in enumerate(stripes):
-                    nextstr = stripes[(i+1)%n]
+                for k, stripe in enumerate(stripes):
+                    nextstr = stripes[(k+1)%n]
 
                     # middle part of edge
                     newpts = newpts + stripe[1:-1] # skip 1st and last
@@ -128,10 +153,35 @@ class LaserCutter:
                     pt = [p1[0]+ s*x21, p1[1] + s*y21]
                     newpts.append(pt)
 
+                s=len(newpolpoints)
+                n=len(newpts)
+                newpolpoints = newpolpoints + newpts
+                newpolpaths.append(list(range(s, s+n)))
+            piece = polygon(points=newpolpoints, paths=newpolpaths).multmatrix(mat)
+            self.pieces.append(piece)
+
+            zvec = list(zip(*f.matrix))[2][:3] # Z vector
+            for j, fo in enumerate(facelist): # check face/face cuts
+                if i == j:
+                    continue
+                # alle edges cuteach nur dot0
+                zveco = list(zip(*fo.matrix))[2][:3] # Z vector
+                if  abs(dot(zvec, zveco)) > 0.7: # too parallel
+                    continue
+                print("real cut",i,j)
+                for k, path in enumerate(pol.paths):
+                    curface=ifaces[i][k]
+                    n=len(curface)
+
+                    for l in range(n):
+                        pt3=multmatrix(pol.points[path[l]] + [0], mat)
+                        pass
+                #dann poly2  als 3d divmatrix mit plane1 z=0 punkte sammeln sortieren nach x oder y, 2er gruppen bilden
+                #nur wenn 1 gruppe und auf kante liegt
+                #n1 cross n2 z>0: oben  sonst uinten
+                pass
 
 
-                piece = polygon(newpts).multmatrix(mat)
-                self.pieces.append(piece)
         # Apply late cuts now
         newpieces = []
         for i, piece in enumerate(self.pieces):
@@ -191,11 +241,12 @@ class LaserCutter:
         return [xmin, ymin, xmax, ymax]
 
 
-    def finalize(self):
+    def finalize(self,kerf=0.25, dist=1):
         # Calculate boundingbox
         puzzles = []
         for piece in self.pieces:
             puzzle, = piece.children()
+            puzzle = puzzle.offset(kerf)
             puzzle.bbox = self.calc_bbox(puzzle)
             puzzles.append(puzzle)
 
@@ -241,7 +292,7 @@ class LaserCutter:
                     comb = puzzles[i]
                     comb |= puzzles[j] + [
                                        puzzles[i].bbox[0] - puzzles[j].bbox[0],
-                                       puzzles[i].bbox[3] - puzzles[j].bbox[1]+1]
+                                       puzzles[i].bbox[3] - puzzles[j].bbox[1]+dist]
 
                     comb.bbox = self.calc_bbox(comb)
                     puzzles[i]  = comb
@@ -252,7 +303,7 @@ class LaserCutter:
 
                     comb = puzzles[i]
                     comb |= puzzles[j] + [
-                                       puzzles[i].bbox[2] - puzzles[j].bbox[0]+1,
+                                       puzzles[i].bbox[2] - puzzles[j].bbox[0]+dist,
                                        puzzles[i].bbox[1] - puzzles[j].bbox[1]]
 
                     comb.bbox = self.calc_bbox(comb)
@@ -260,5 +311,4 @@ class LaserCutter:
 
                     del puzzles[j]
                     done=True
-        print("res",len(puzzles))
         puzzles[0].show()

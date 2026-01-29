@@ -35,12 +35,12 @@ extern std::vector<std::shared_ptr<AbstractNode>> nodes_hold;
 extern std::shared_ptr<AbstractNode> void_node, full_node;
 bool trust_python_file(const std::string& file, const std::string& content);
 PyObject *PyOpenSCADObjectFromNode(PyTypeObject *type, const std::shared_ptr<AbstractNode>& node);
-std::shared_ptr<AbstractNode> PyOpenSCADObjectToNode(PyObject *object, PyObject **dict);
-std::shared_ptr<AbstractNode> PyOpenSCADObjectToNodeMulti(PyObject *object, PyObject **dict);
+std::shared_ptr<AbstractNode> PyOpenSCADObjectToNode(PyObject *obj, PyObject **dict);
+std::shared_ptr<AbstractNode> PyOpenSCADObjectToNodeMulti(PyObject *objs, PyObject **dict);
 PyTypeObject *PyOpenSCADObjectType(PyObject *objs);
 int python_more_obj(std::vector<std::shared_ptr<AbstractNode>>& children, PyObject *more_obj);
-Outline2d python_getprofile(void *cbfunc, int fn, double arg);
-double python_doublefunc(void *cbfunc, double arg);
+Outline2d python_getprofile(void *v_cbfunc, int fn, double arg);
+double python_doublefunc(void *v_cbfunc, double arg);
 std::shared_ptr<AbstractNode> python_modulefunc(const ModuleInstantiation *module,
                                                 const std::shared_ptr<const Context>& context,
                                                 std::string& error);
