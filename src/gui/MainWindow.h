@@ -109,7 +109,7 @@ public:
 
   QString lastCompiledDoc;
 
-  QAction *actionRecentFile[UIUtils::maxRecentFiles];
+  QAction *fileActionRecentFiles[UIUtils::maxRecentFiles];
   QShortcut *shortcutNextWindow{nullptr};
   QShortcut *shortcutPreviousWindow{nullptr};
 
@@ -134,13 +134,21 @@ private:
   void setSelectionIndicatorStatus(EditorInterface *editor, int nodeIndex,
                                    EditorSelectionIndicatorStatus status);
 
-  void setupOutputWindows();
+  void setupWindow();
   void setupCoreSubsystems();
-  void setupTabManager(const QStringList& filenames);
+  void setupStatusBar();
+  void setupConsole();
+  void setupErrorLog();
+  void setupEditor(const QStringList& filenames);
+  void setupCustomizer();
+  void setupAnimate();
+  void setupFontList();
+  void setupColorList();
+  void setupViewportControl();
   void setupPreferences();
   void setup3DView();
   void setupInput();
-  void initDocks();
+  void setupDocks();
   void setupMenusAndActions();
   void restoreWindowState();
   void openRemainingFiles(const QStringList& filenames);

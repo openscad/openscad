@@ -202,12 +202,6 @@ QElapsedTimer *MainWindow::progressThrottle = new QElapsedTimer();
 namespace {
 
 const int autoReloadPollingPeriodMS = 200;
-const char copyrighttext[] =
-  "<p>Copyright (C) 2009-2025 The OpenSCAD Developers</p>"
-  "<p>This program is free software; you can redistribute it and/or modify "
-  "it under the terms of the GNU General Public License as published by "
-  "the Free Software Foundation; either version 2 of the License, or "
-  "(at your option) any later version.<p>";
 
 struct DockFocus {
   Dock *widget;
@@ -272,20 +266,33 @@ std::unique_ptr<ExternalToolInterface> createExternalToolService(print_service_t
 
 MainWindow::MainWindow(const QStringList& filenames) : rubberBandManager(this)
 {
-  installEventFilter(this);
-  setupUi(this);
+  // Main UI setup
+  setupWindow();
 
+  // Workers, timers etc.
+  // Set up early as some reactions to GUI state changes may trigger
   setupCoreSubsystems();
-  setupOutputWindows();
-  setupPreferences();
-  setup3DView();
-  setupTabManager(filenames);
-  setupMenusAndActions();
 
+  // Docks
+  setupConsole();
+  setupStatusBar();
+  setupViewportControl();
+  setupAnimate();
+  setupEditor(filenames);
+  setupCustomizer();
+  setupErrorLog();
+  setupFontList();
+  setupColorList();
+  setupDocks();
+
+  setup3DView();
+  setupPreferences();
+
+  setupMenusAndActions();
   setupInput();
 
-  initDocks();
   restoreWindowState();
+
   show();
   openRemainingFiles(filenames);
 }
@@ -1109,13 +1116,14 @@ void MainWindow::updateRecentFileActions()
 {
   auto files = UIUtils::recentFiles();
 
-  for (int i = 0; i < files.size(); ++i) {
-    this->actionRecentFile[i]->setText(QFileInfo(files[i]).fileName().replace("&", "&&"));
-    this->actionRecentFile[i]->setData(files[i]);
-    this->actionRecentFile[i]->setVisible(true);
-  }
-  for (int i = files.size(); i < UIUtils::maxRecentFiles; ++i) {
-    this->actionRecentFile[i]->setVisible(false);
+  for (int i = 0; i < UIUtils::maxRecentFiles; ++i) {
+    if (i < files.size()) {
+      this->fileActionRecentFiles[i]->setText(QFileInfo(files[i]).fileName().replace("&", "&&"));
+      this->fileActionRecentFiles[i]->setData(files[i]);
+      this->fileActionRecentFiles[i]->setVisible(true);
+    } else {
+      this->fileActionRecentFiles[i]->setVisible(false);
+    }
   }
 }
 
@@ -3312,15 +3320,25 @@ void MainWindow::resetMeasurementsState(bool enable, const QString& tooltipMessa
   activeMeasurement = nullptr;
 }
 
+/**
+  Initialize the GUI from the .ui design file and other top-level GUI setup.
+ */
+void MainWindow::setupWindow()
+{
+  installEventFilter(this);
+  setupUi(this);
+  this->setAttribute(Qt::WA_DeleteOnClose);
+  scadApp->windowManager.add(this);
+  setAcceptDrops(true);
+}
+
+/**
+  Set up non-GUI elements like timers, workers, sounds, etc.
+ */
 void MainWindow::setupCoreSubsystems()
 {
   renderCompleteSoundEffect = new QSoundEffect();
   renderCompleteSoundEffect->setSource(QUrl("qrc:/sounds/complete.wav"));
-
-
-  this->setAttribute(Qt::WA_DeleteOnClose);
-
-  scadApp->windowManager.add(this);
 
   this->cgalworker = new CGALWorker();
   connect(this->cgalworker, &CGALWorker::done, this, &MainWindow::actionRenderDone);
@@ -3335,11 +3353,21 @@ void MainWindow::setupCoreSubsystems()
   waitAfterReloadTimer->setInterval(autoReloadPollingPeriodMS);
   connect(waitAfterReloadTimer, &QTimer::timeout, this, &MainWindow::waitAfterReload);
 
+  consoleUpdater = new QTimer(this);
+  consoleUpdater->setSingleShot(true);
+  connect(consoleUpdater, &QTimer::timeout, this->console, &Console::update);
+  this->consoleUpdater->start(0);  // Show initial messages immediately
+
   progressThrottle->start();
 }
 
+/**
+  Initialize preferences and set up connections to respond to preference changes.
+ */
 void MainWindow::setupPreferences()
 {
+  connect(GlobalPreferences::inst(), &Preferences::consoleFontChanged, this->console, &Console::setFont);
+
   connect(GlobalPreferences::inst(), &Preferences::updateReorderMode, this,
           &MainWindow::updateReorderMode);
   connect(GlobalPreferences::inst(), &Preferences::updateUndockMode, this,
@@ -3363,40 +3391,68 @@ void MainWindow::setupPreferences()
   connect(GlobalPreferences::inst()->AxisConfig, &AxisConfigWidget::inputGainChanged,
           InputDriverManager::instance(), &InputDriverManager::onInputGainUpdated, Qt::UniqueConnection);
 
+  connect(GlobalPreferences::inst(), &Preferences::requestRedraw, this->qglview,
+          QOverload<>::of(&QGLView::update));
+  connect(GlobalPreferences::inst(), &Preferences::updateMouseCentricZoom, this->qglview,
+          &QGLView::setMouseCentricZoom);
+  connect(GlobalPreferences::inst()->MouseConfig, &MouseConfigWidget::updateMouseActions, this,
+          &MainWindow::setAllMouseViewActions);
+
   GlobalPreferences::inst()->apply_win();
   GlobalPreferences::inst()->ButtonConfig->init();
   GlobalPreferences::inst()->MouseConfig->init();
 }
 
-void MainWindow::setupOutputWindows()
+/**
+  Set up resources related to the Status Bar
+ */
+void MainWindow::setupStatusBar()
 {
-  consoleUpdater = new QTimer(this);
-  consoleUpdater->setSingleShot(true);
-  connect(consoleUpdater, &QTimer::timeout, this->console, &Console::update);
-
   this->versionLabel = nullptr;  // must be initialized before calling updateStatusBar()
   updateStatusBar(nullptr);
+}
 
+/**
+  Set up resources related to the Console dock widget
+ */
+void MainWindow::setupConsole()
+{
   connect(this->console, &Console::openWindowRequested, this, &MainWindow::showLink);
-  connect(GlobalPreferences::inst(), &Preferences::consoleFontChanged, this->console, &Console::setFont);
+  connect(this->console, &Console::openFile, this, &MainWindow::openFileFromPath);
+
+  QObject::connect(consoleDock, &Dock::visibilityChanged, this,
+                   &MainWindow::onConsoleDockVisibilityChanged);
+
   this->console->setConsoleFont(
     GlobalPreferences::inst()->getValue("advanced/consoleFontFamily").toString(),
     GlobalPreferences::inst()->getValue("advanced/consoleFontSize").toUInt());
 
-  const QString version =
-    QString("<b>OpenSCAD %1</b>").arg(QString::fromStdString(std::string(openscad_versionnumber)));
-  const QString weblink = "<a href=\"https://www.openscad.org/\">https://www.openscad.org/</a><br>";
-
-  consoleOutputRaw(version);
-  consoleOutputRaw(weblink);
-  consoleOutputRaw(copyrighttext);
-  this->consoleUpdater->start(0);  // Show "Loaded Design" message from TabManager
-
-  connect(this->errorLogWidget, &ErrorLog::openFile, this, &MainWindow::openFileFromPath);
-  connect(this->console, &Console::openFile, this, &MainWindow::openFileFromPath);
+  consoleOutputRaw(
+    QString("<b>OpenSCAD %1</b>").arg(QString::fromStdString(std::string(openscad_versionnumber))));
+  consoleOutputRaw(QString("<a href=\"https://www.openscad.org/\">https://www.openscad.org/</a><br>"));
+  consoleOutputRaw(
+    QString("<p>Copyright (C) 2009-2026 The OpenSCAD Developers</p>"
+            "<p>This program is free software; you can redistribute it and/or modify "
+            "it under the terms of the GNU General Public License as published by "
+            "the Free Software Foundation; either version 2 of the License, or "
+            "(at your option) any later version.</p>"));
 }
 
-void MainWindow::setupTabManager(const QStringList& filenames)
+/**
+  Set up resources related to the Error Log dock widget
+ */
+void MainWindow::setupErrorLog()
+{
+  connect(this->errorLogWidget, &ErrorLog::openFile, this, &MainWindow::openFileFromPath);
+
+  QObject::connect(errorLogDock, &Dock::visibilityChanged, this,
+                   &MainWindow::onErrorLogDockVisibilityChanged);
+}
+
+/**
+  Set up resources related to the Editor dock widget
+ */
+void MainWindow::setupEditor(const QStringList& filenames)
 {
   // Preferences initialization happens on first tab creation, and depends on colorschemes from editor.
   // Any code dependent on Preferences must come after the TabManager instantiation
@@ -3440,13 +3496,64 @@ void MainWindow::setupTabManager(const QStringList& filenames)
     preferences->setHighlightingColorSchemes(activeEditor->colorSchemes());
 
   onTabManagerEditorChanged(activeEditor);
+  QObject::connect(editorDock, &Dock::visibilityChanged, this,
+                   &MainWindow::onEditorDockVisibilityChanged);
 }
 
-void MainWindow::setup3DView()
+/**
+  Set up resources related to the Customizer dock widget
+ */
+void MainWindow::setupCustomizer()
+{
+  QObject::connect(parameterDock, &Dock::visibilityChanged, this,
+                   &MainWindow::onParametersDockVisibilityChanged);
+}
+
+/**
+  Set up resources related to the Animate dock widget
+ */
+void MainWindow::setupAnimate()
 {
   this->animateWidget->setMainWindow(this);
-  this->viewportControlWidget->setMainWindow(this);
+  QObject::connect(animateDock, &Dock::visibilityChanged, this,
+                   &MainWindow::onAnimateDockVisibilityChanged);
+}
 
+/**
+  Set up resources related to the Font List  dock widget
+ */
+void MainWindow::setupFontList()
+{
+  QObject::connect(fontListDock, &Dock::visibilityChanged, this,
+                   &MainWindow::onFontListDockVisibilityChanged);
+}
+
+/**
+  Set up resources related to the Color List  dock widget
+ */
+void MainWindow::setupColorList()
+{
+  QObject::connect(colorListDock, &Dock::visibilityChanged, this,
+                   &MainWindow::onColorListDockVisibilityChanged);
+  QObject::connect(colorListWidget, &ColorList::colorSelected, this,
+                   &MainWindow::onColorListColorSelected);
+}
+
+/**
+  Set up resources related to the Viewport Control dock widget
+ */
+void MainWindow::setupViewportControl()
+{
+  this->viewportControlWidget->setMainWindow(this);
+  QObject::connect(viewportControlDock, &Dock::visibilityChanged, this,
+                   &MainWindow::onViewportControlDockVisibilityChanged);
+}
+
+/**
+  Set up resources related to the 3d View
+ */
+void MainWindow::setup3DView()
+{
   this->qglview->statusLabel = new QLabel(this);
   this->qglview->statusLabel->setMinimumWidth(100);
   statusBar()->addWidget(this->qglview->statusLabel);
@@ -3481,25 +3588,22 @@ void MainWindow::setup3DView()
   connect(this->qglview, &QGLView::resized, viewportControlWidget, &ViewportControl::viewResized);
   connect(this->qglview, &QGLView::doRightClick, this, &MainWindow::rightClick);
   connect(this->qglview, &QGLView::doLeftClick, this, &MainWindow::leftClick);
-
-  connect(GlobalPreferences::inst(), &Preferences::requestRedraw, this->qglview,
-          QOverload<>::of(&QGLView::update));
-  connect(GlobalPreferences::inst(), &Preferences::updateMouseCentricZoom, this->qglview,
-          &QGLView::setMouseCentricZoom);
-  connect(GlobalPreferences::inst()->MouseConfig, &MouseConfigWidget::updateMouseActions, this,
-          &MainWindow::setAllMouseViewActions);
 }
 
+/**
+FIXME(kintel): Is this the right place for this?
+ */
 void MainWindow::setupInput()
 {
   InputDriverManager::instance()->registerActions(this->menuBar()->actions(), "", "");
   InputDriverManager::instance()->registerActions(this->animateWidget->actions(), "animation",
                                                   "animate");
-
-  setAcceptDrops(true);
 }
 
-void MainWindow::initDocks()
+/**
+ Set up glocal Dock widget handling.
+ */
+void MainWindow::setupDocks()
 {
   setCorner(Qt::TopLeftCorner, Qt::LeftDockWidgetArea);
   setCorner(Qt::TopRightCorner, Qt::RightDockWidgetArea);
@@ -3547,30 +3651,11 @@ void MainWindow::initDocks()
   connect(navigationMenu, &QMenu::aboutToHide, this, &MainWindow::onNavigationCloseContextMenu);
   connect(menuWindow, &QMenu::aboutToHide, this, &MainWindow::onNavigationCloseContextMenu);
   windowActionJumpTo->setMenu(navigationMenu);
-
-  // Adds dock specific behavior on visibility change
-  QObject::connect(editorDock, &Dock::visibilityChanged, this,
-                   &MainWindow::onEditorDockVisibilityChanged);
-  QObject::connect(consoleDock, &Dock::visibilityChanged, this,
-                   &MainWindow::onConsoleDockVisibilityChanged);
-  QObject::connect(errorLogDock, &Dock::visibilityChanged, this,
-                   &MainWindow::onErrorLogDockVisibilityChanged);
-  QObject::connect(animateDock, &Dock::visibilityChanged, this,
-                   &MainWindow::onAnimateDockVisibilityChanged);
-  QObject::connect(fontListDock, &Dock::visibilityChanged, this,
-                   &MainWindow::onFontListDockVisibilityChanged);
-  QObject::connect(colorListDock, &Dock::visibilityChanged, this,
-                   &MainWindow::onColorListDockVisibilityChanged);
-  QObject::connect(viewportControlDock, &Dock::visibilityChanged, this,
-                   &MainWindow::onViewportControlDockVisibilityChanged);
-  QObject::connect(parameterDock, &Dock::visibilityChanged, this,
-                   &MainWindow::onParametersDockVisibilityChanged);
-
-  // Other dock specific signals
-  QObject::connect(colorListWidget, &ColorList::colorSelected, this,
-                   &MainWindow::onColorListColorSelected);
 }
 
+/**
+  Connect menus and other actions.
+ */
 void MainWindow::setupMenusAndActions()
 {
   this->exportFormatMapper = new QSignalMapper(this);
@@ -3591,27 +3676,51 @@ void MainWindow::setupMenusAndActions()
   this->addAction(editActionInsertTemplate);
   this->addAction(editActionFoldAll);
 
-  // Open Recent
-  for (auto& recent : this->actionRecentFile) {
+  //
+  // File menu
+  // 
+
+
+  connect(this->fileActionNew, &QAction::triggered, tabManager, &TabManager::actionNew);
+  connect(this->fileActionOpen, &QAction::triggered, this, &MainWindow::actionOpen);
+
+  // Recent files
+  for (auto& recent : this->fileActionRecentFiles) {
     recent = new QAction(this);
     recent->setVisible(false);
     this->menuOpenRecent->addAction(recent);
     connect(recent, &QAction::triggered, this, &MainWindow::actionOpenRecent);
   }
+  updateRecentFileActions();
+  this->menuOpenRecent->addSeparator();
+  this->menuOpenRecent->addAction(this->fileActionClearRecent);
+  connect(this->fileActionClearRecent, &QAction::triggered, this, &MainWindow::clearRecentFiles);
 
-  // File menu
+  show_examples();
+
+  connect(this->fileActionReload, &QAction::triggered, this, &MainWindow::actionReload);
+#ifndef __APPLE__
+  auto shortcuts = this->fileActionReload->shortcuts();
+  shortcuts.push_back(QKeySequence(Qt::Key_F3));
+  this->fileActionReload->setShortcuts(shortcuts);
+#endif
+
   connect(this->fileActionNewWindow, &QAction::triggered, this, &MainWindow::actionNewWindow);
-  connect(this->fileActionNew, &QAction::triggered, tabManager, &TabManager::actionNew);
   connect(this->fileActionOpenWindow, &QAction::triggered, this, &MainWindow::actionOpenWindow);
-  connect(this->fileActionOpen, &QAction::triggered, this, &MainWindow::actionOpen);
+  connect(this->fileActionClose, &QAction::triggered, tabManager, &TabManager::closeCurrentTab);
+
   connect(this->fileActionSave, &QAction::triggered, this, &MainWindow::actionSave);
+#ifndef __APPLE__
+  shortcuts = this->fileActionSave->shortcuts();
+  this->fileActionSave->setShortcuts(shortcuts);
+#endif
   connect(this->fileActionSaveAs, &QAction::triggered, this, &MainWindow::actionSaveAs);
   connect(this->fileActionSaveACopy, &QAction::triggered, this, &MainWindow::actionSaveACopy);
   connect(this->fileActionSaveAll, &QAction::triggered, tabManager, &TabManager::saveAll);
-  connect(this->fileActionReload, &QAction::triggered, this, &MainWindow::actionReload);
-  connect(this->fileActionClose, &QAction::triggered, tabManager, &TabManager::closeCurrentTab);
-  connect(this->fileActionQuit, &QAction::triggered, scadApp, &OpenSCADApp::quit, Qt::QueuedConnection);
+
   connect(this->fileShowLibraryFolder, &QAction::triggered, this, &MainWindow::actionShowLibraryFolder);
+
+  connect(this->fileActionQuit, &QAction::triggered, scadApp, &OpenSCADApp::quit, Qt::QueuedConnection);
 
 #ifdef ENABLE_PYTHON
   connect(this->fileActionPythonRevoke, &QAction::triggered, this,
@@ -3624,20 +3733,9 @@ void MainWindow::setupMenusAndActions()
   this->menuPython->menuAction()->setVisible(false);
 #endif
 
-#ifndef __APPLE__
-  auto shortcuts = this->fileActionSave->shortcuts();
-  this->fileActionSave->setShortcuts(shortcuts);
-  shortcuts = this->fileActionReload->shortcuts();
-  shortcuts.push_back(QKeySequence(Qt::Key_F3));
-  this->fileActionReload->setShortcuts(shortcuts);
-#endif
-
-  this->menuOpenRecent->addSeparator();
-  this->menuOpenRecent->addAction(this->fileActionClearRecent);
-  connect(this->fileActionClearRecent, &QAction::triggered, this, &MainWindow::clearRecentFiles);
-
-  show_examples();
-
+  //
+  // Edit menu
+  //
   connect(this->editActionCopy, &QAction::triggered, this, &MainWindow::copyText);
   connect(this->editActionCopyViewport, &QAction::triggered, this, &MainWindow::actionCopyViewport);
   connect(this->editActionConvertTabsToSpaces, &QAction::triggered, this,
@@ -3659,7 +3757,9 @@ void MainWindow::setupMenusAndActions()
   connect(this->editActionUseSelectionForFind, &QAction::triggered, this,
           &MainWindow::useSelectionForFind);
 
+  //
   // Design menu
+  //
   measurementGroup = new QActionGroup(this);
   measurementGroup->addAction(designActionMeasureDist);
   measurementGroup->addAction(designActionMeasureAngle);
@@ -3702,7 +3802,9 @@ void MainWindow::setupMenusAndActions()
   this->fileActionExport3MF->setVisible(false);
 #endif
 
+  //
   // View menu
+  //
   this->viewActionThrownTogether->setEnabled(false);
   this->viewActionPreview->setEnabled(false);
   if (this->qglview->hasOpenCSGSupport()) {
@@ -3739,7 +3841,9 @@ void MainWindow::setupMenusAndActions()
   connect(this->viewActionHideEditorToolBar, &QAction::triggered, this, &MainWindow::hideEditorToolbar);
   connect(this->viewActionHide3DViewToolBar, &QAction::triggered, this, &MainWindow::hide3DViewToolbar);
 
+  //
   // Help menu
+  //
   connect(this->helpActionAbout, &QAction::triggered, this, &MainWindow::helpAbout);
   connect(this->helpActionHomepage, &QAction::triggered, this, &MainWindow::helpHomepage);
   connect(this->helpActionManual, &QAction::triggered, this, &MainWindow::helpManual);
@@ -3809,9 +3913,11 @@ void MainWindow::setupMenusAndActions()
                    &MainWindow::onWindowShortcutExport3DActivated);
 
   updateExportActions();
-  updateRecentFileActions();
 }
 
+/**
+  Restore GUI state from settings.
+ */
 void MainWindow::restoreWindowState()
 {
   const QSettingsCached settings;
