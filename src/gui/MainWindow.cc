@@ -343,7 +343,8 @@ MainWindow::MainWindow(const QStringList& filenames) : rubberBandManager(this)
 
   connect(this->console, &Console::openWindowRequested, this, &MainWindow::showLink);
   connect(GlobalPreferences::inst(), &Preferences::consoleFontChanged, this->console, &Console::setFont);
-  connect(GlobalPreferences::inst(), &Preferences::consoleFontChanged, this->console, &Console::setConsoleFont);
+  connect(GlobalPreferences::inst(), &Preferences::consoleFontChanged, this->console,
+          &Console::setConsoleFont);
   this->console->setConsoleFont(
     GlobalPreferences::inst()->getValue("advanced/consoleFontFamily").toString(),
     GlobalPreferences::inst()->getValue("advanced/consoleFontSize").toUInt());
