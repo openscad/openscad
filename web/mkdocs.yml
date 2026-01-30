@@ -41,6 +41,8 @@ nav:
   - Get started: get_started.md
   - Downloads: downloads.md
   - Installation: installation.md
+  - Development:
+      - Upstream Sync: development/upstream-sync.md
   - Building: building.md
   - Tutorial:
       - Getting Started: tutorial/getting_started.md

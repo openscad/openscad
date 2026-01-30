@@ -24,21 +24,31 @@
 
 ---
 repos:
--   repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v5.0.0
-    hooks:
-    -   id: trailing-whitespace
-    -   id: end-of-file-fixer
-    -   id: check-yaml
-    -   id: detect-private-key
--   repo: https://github.com/pre-commit/mirrors-clang-format
-    rev: 'HEAD'
-    hooks:
-    -   id: clang-format
-        args: ['--style=file']
--   repo: https://github.com/alessandrojcm/commitlint-pre-commit-hook
-    rev: v9.18.0
-    hooks:
-    -   id: commitlint
-        stages: [commit-msg]
-        additional_dependencies: ['@commitlint/config-conventional@19']
+    - repo: https://github.com/pre-commit/pre-commit-hooks
+      rev: v5.0.0
+      hooks:
+          - id: trailing-whitespace
+          - id: end-of-file-fixer
+          - id: check-yaml
+          - id: detect-private-key
+    - repo: https://github.com/pre-commit/mirrors-clang-format
+      rev: "v21.1.8"
+      hooks:
+          - id: clang-format
+            args: ["--style=file"]
+    - repo: https://github.com/alessandrojcm/commitlint-pre-commit-hook
+      rev: v9.18.0
+      hooks:
+          - id: commitlint
+            stages: [commit-msg]
+            additional_dependencies: ["@commitlint/config-conventional@19"]
+    - repo: https://github.com/DavidAnson/markdownlint-cli2
+      rev: v0.20.0
+      hooks:
+          - id: markdownlint-cli2
+    - repo: https://github.com/RodrigoGonzalez/check-mkdocs
+      rev: v1.2.0
+      hooks:
+          - id: check-mkdocs
+            name: check-mkdocs
+            args: ["--config", "web/mkdocs.yml"]
