@@ -72,13 +72,13 @@ ParameterWidget::ParameterWidget(QWidget *parent) : QWidget(parent)
   // connect(comboBoxPreset, &QComboBox::editTextChanged, this, &ParameterWidget::onSetNameChanged);
   connect(addButton, &QPushButton::clicked, this, &ParameterWidget::onSetAdd);
   connect(deleteButton, &QPushButton::clicked, this, &ParameterWidget::onSetDelete);
-  
+
   auto *customizer_menu = new QMenu(this);
   parameterMenuButton->setMenu(customizer_menu);
-  
+
   QAction *collapseAction = customizer_menu->addAction(_("Collapse All"));
   connect(collapseAction, &QAction::triggered, this, &ParameterWidget::onCollapseAll);
-  
+
   QAction *expandAction = customizer_menu->addAction(_("Expand All"));
   connect(expandAction, &QAction::triggered, this, &ParameterWidget::onExpandAll);
 
