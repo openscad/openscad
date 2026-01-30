@@ -3366,7 +3366,8 @@ void MainWindow::setupCoreSubsystems()
  */
 void MainWindow::setupPreferences()
 {
-  connect(GlobalPreferences::inst(), &Preferences::consoleFontChanged, this->console, &Console::setFont);
+  connect(GlobalPreferences::inst(), &Preferences::consoleFontChanged, this->console,
+          &Console::setConsoleFont);
 
   connect(GlobalPreferences::inst(), &Preferences::updateReorderMode, this,
           &MainWindow::updateReorderMode);
