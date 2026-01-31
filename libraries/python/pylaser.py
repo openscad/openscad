@@ -38,7 +38,7 @@ class LaserCutter:
             pol = polygon(points=points, paths = paths)
             facelist[i] = pol.multmatrix(f.matrix)
 
-
+        # faces, outlines, segments, other
         ifaces = [] # indexed ifaces[face][pathnum][ptnum]
         for f in facelist:
             late_cuts.append(False) # dummy void
@@ -83,7 +83,6 @@ class LaserCutter:
         # Process faces and edges now
         self.pieces = []
         for i, f in enumerate(facelist):
-            print("f",f)
             mat = f.matrix
             pol, = f.children()
             if len(pol.paths) == 0:
@@ -98,7 +97,8 @@ class LaserCutter:
                 n=len(curface)
 
                 stripes = [] # pattern on each side
-                for k in range(n):
+
+                for k in range(n): # all edges
                     conn=conn_plain
                     partedge=[curface[(k+1)%n],curface[k]]
                     if tuple(partedge) in edge_inv:
@@ -107,8 +107,6 @@ class LaserCutter:
                     if conn == conn_plain:
                         pt1=multmatrix(pol.points[path[k]] + [0], mat)
                         pt2=multmatrix(pol.points[path[(k+1)%n]] + [0], mat) # TODO hier out of index
-                        print("pt1",pt1)
-                        print("pt2",pt2)
 
                         # go through all faces and check if they are inside
                         for l, oface in enumerate(facelist):
@@ -133,26 +131,42 @@ class LaserCutter:
                                 cutout = self.jigging(pt1x, pt2x, conn_type2_)
                                 late_cuts[l] = union(late_cuts[l], polygon(cutout))
 
-                            print("face",l)
-                            fact=None
-                            if pt1x[2] < -1e-3 and pt2x[2] > 1e-3:
-                                # calculate exact cut
-                                fact=pt1x[2]/(pt1x[2]-pt2x[2])
-
-                            if pt2x[2] < -1e-3 and pt1x[2] > 1e-3:
-                                fact= pt1x[2]/(pt1x[2]-pt2x[2])
-
-                            if fact is not None:
-                                ptcut=[ pt1x[i]+(pt2x[i]-pt1x[i])*fact for i in range(2) ]
-                                total_cuts[l].append(ptcut) # gilt fuer face n
-
-
                     beg = pol.points[path[k]]
                     end = pol.points[path[(k+1)%n]]
                     stripe = self.jigging(beg,end, conn)
                     stripes.append(stripe)
 
 
+                for k, oface in enumerate(facelist):
+                    if k == i:
+                        continue
+                    pt1x=divmatrix(pt1, oface.matrix)
+                    pt2x=divmatrix(pt2, oface.matrix)
+                    oshape,  = oface.children()
+
+                    for l in range(n):
+
+                        pt1=multmatrix(pol.points[path[l]] + [0], mat)
+                        pt2=multmatrix(pol.points[path[(l+1)%n]] + [0], mat) # TODO hier out of index
+                        pt1x=divmatrix(pt1, oface.matrix)
+                        pt2x=divmatrix(pt2, oface.matrix)
+
+                        fact=None
+                        if pt1x[2] < -1e-3 and pt2x[2] > 1e-3:
+                            # calculate exact cut
+                            fact=pt1x[2]/(pt1x[2]-pt2x[2])
+
+                        if pt2x[2] < -1e-3 and pt1x[2] > 1e-3:
+                            fact= pt1x[2]/(pt1x[2]-pt2x[2])
+                        if fact is not None:
+                            ptcut=[ pt1x[i]+(pt2x[i]-pt1x[i])*fact for i in range(2) ]
+                            total_cuts[k].append(ptcut)
+                        if len(total_cuts[k])%3 == 2:
+                            total_cuts[k].append(i) # 2->3, info about other plate
+
+
+
+                #finished all edges, alle
                 # Now concatenate all strips with extrapolation
                 for k, stripe in enumerate(stripes):
                     nextstr = stripes[(k+1)%n]
@@ -178,6 +192,7 @@ class LaserCutter:
                 n=len(newpts)
                 newpolpoints = newpolpoints + newpts
                 newpolpaths.append(list(range(s, s+n)))
+            # finished all outlines
             piece = polygon(points=newpolpoints, paths=newpolpaths).multmatrix(mat)
             self.pieces.append(piece)
 
@@ -187,9 +202,26 @@ class LaserCutter:
             #n1 cross n2 z>0: oben  sonst uinten
 
         # create more late cuts from toal cuts
+        # finished all faces
         for i, cuts in enumerate(total_cuts):
-            for j in range(int(len(cuts)/2)):
-                cutout = self.jigging(cuts[2*j+0], cuts[2*j+1], conn_type3)
+            f = facelist[i]
+
+            fn = [f.matrix[0][2], f.matrix[1][2], f.matrix[2][2]]
+
+            for j in range(int(len(cuts)/3)):
+                p1=cuts[3*j+0]
+                p2=cuts[3*j+1]
+
+                oi=cuts[3*j+2]
+                fo = facelist[oi]
+                fno = [fo.matrix[0][2], fo.matrix[1][2], fo.matrix[2][2]]
+                fc=cross(fn, fno)
+                pmid = [(p1[i]+p2[i])/2.0 for i in range(2) ]
+                # Strecke halbierem oben oder unten
+                if cross(fn, fno)[2] > 0:
+                    cutout = self.jigging(pmid,p1, conn_type3)
+                else:
+                    cutout = self.jigging(pmid,p2, conn_type3)
                 late_cuts[i] = union(late_cuts[i], polygon(cutout))
 
         # Apply late cuts now
