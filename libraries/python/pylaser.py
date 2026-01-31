@@ -6,7 +6,35 @@ from random import *
  Its based an the faces() interface
 """
 class LaserCutter:
+
     def __init__(self, facelist, depth=4):
+        self.init_sub(facelist, depth)
+
+    def __init__(self, obj, depth=4, rows=4, cols=4):
+        unitmatrix = rotx(cube().origin, 90)
+
+        height=obj.size[2]
+
+        xpitch=obj.size[0]/cols
+        ypitch=obj.size[1]/rows
+        pos=obj.position
+
+        faces = []
+        for r in range(rows):
+            mat = translate(rotz(unitmatrix,0),[0,pos[1]+ypitch*(r+0.5),0])
+            cut=obj.divmatrix(mat).projection(cut=True)
+            faces.append(cut.multmatrix(mat))
+
+
+        for c in range(cols):
+            mat = translate(rotz(unitmatrix,90),[pos[0]+xpitch*(c+0.5),0,0])
+            cut=obj.divmatrix(mat).projection(cut=True)
+            faces.append(cut.multmatrix(mat))
+
+        self.init_sub(faces, depth)
+        print(len(faces))
+
+    def init_sub(self, facelist, depth):
 
         self.depth=depth
         conn_plain = [[0,0],[1,0]]
