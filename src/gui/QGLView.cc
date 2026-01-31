@@ -289,15 +289,10 @@ void QGLView::mouseDoubleClickEvent(QMouseEvent *event)
   glReadBuffer(GL_BACK);
   glReadPixels((GLint)x, (GLint)y, 1, 1, GL_DEPTH_COMPONENT, GL_FLOAT, &z);
 
-  if (z < 0.9999f) { // if z is 1 we clicked on empty space
+  if (z < 0.9999f) {  // if z is 1 we clicked on empty space
     GLdouble px, py, pz;
 
-    if (gluUnProject(x, y, z,
-                     matModelView,
-                     matProjection,
-                     viewport,
-                     &px, &py, &pz) == GL_TRUE) { 
-
+    if (gluUnProject(x, y, z, matModelView, matProjection, viewport, &px, &py, &pz) == GL_TRUE) {
       cam.object_trans -= Vector3d(px, py, pz);
 
       emit cameraChanged();
