@@ -311,7 +311,7 @@ class LaserCutter:
         return [xmin, ymin, xmax, ymax]
 
 
-    def finalize(self,kerf=0.25, dist=1):
+    def finalize(self,kerf=0.1, dist=1):
         # Calculate boundingbox
         puzzles = []
         for piece in self.pieces:
@@ -381,4 +381,4 @@ class LaserCutter:
 
                     del puzzles[j]
                     done=True
-        puzzles[0].show()
+        return puzzles[0]
