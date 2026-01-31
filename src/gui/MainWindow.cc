@@ -3560,7 +3560,8 @@ void MainWindow::onTabManagerEditorChanged(EditorInterface *newEditor)
 
   // If there is no renderedEditor we request for a new preview if the
   // auto-reload is enabled.
-  if (renderedEditor == nullptr && designActionAutoReload->isChecked()) {
+  if (renderedEditor == nullptr && designActionAutoReload->isChecked() &&
+      !activeEditor->toPlainText().trimmed().isEmpty()) {
     actionRenderPreview();
   }
 }
