@@ -262,47 +262,49 @@ void QGLView::mouseDoubleClickEvent(QMouseEvent *event)
 {
   QOpenGLContext *oldContext = getGLContext();
   this->makeCurrent();
-  setupCamera();
 
-  int viewport[4];
-  GLdouble modelview[16];
-  GLdouble projection[16];
+  glMatrixMode(GL_MODELVIEW);
+  glPushMatrix();
 
+  this->setupCamera();
+
+  GLdouble matModelView[16];
+  GLdouble matProjection[16];
+  GLint viewport[4];
+
+  glGetDoublev(GL_MODELVIEW_MATRIX, matModelView);
+  glGetDoublev(GL_PROJECTION_MATRIX, matProjection);
   glGetIntegerv(GL_VIEWPORT, viewport);
-  glGetDoublev(GL_MODELVIEW_MATRIX, modelview);
-  glGetDoublev(GL_PROJECTION_MATRIX, projection);
+
+  glPopMatrix();
+
+  this->paintGL();
+  glFlush();
 
   const double dpi = this->getDPI();
   const double x = event->pos().x() * dpi;
-  const double y = viewport[3] - event->pos().y() * dpi;
-  GLfloat z = 0;
+  const double y = viewport[3] - (event->pos().y() * dpi);
 
-  glGetError();  // clear error state so we don't pick up previous errors
-  glReadPixels(x, y, 1, 1, GL_DEPTH_COMPONENT, GL_FLOAT, &z);
-  if (const auto glError = glGetError(); glError != GL_NO_ERROR) {
-    if (statusLabel) {
-      auto status = QString("Center View: OpenGL Error reading Pixel: %s")
-                      .arg(QString::fromLocal8Bit((const char *)gluErrorString(glError)));
-      statusLabel->setText(status);
+  GLfloat z = 1.0f;
+  glReadBuffer(GL_BACK);
+  glReadPixels((GLint)x, (GLint)y, 1, 1, GL_DEPTH_COMPONENT, GL_FLOAT, &z);
+
+  if (z < 0.9999f) { // if z is 1 we clicked on empty space
+    GLdouble px, py, pz;
+
+    if (gluUnProject(x, y, z,
+                     matModelView,
+                     matProjection,
+                     viewport,
+                     &px, &py, &pz) == GL_TRUE) { 
+
+      cam.object_trans -= Vector3d(px, py, pz);
+
+      emit cameraChanged();
+      update();
     }
-    setGLContext(oldContext);
-    return;
   }
 
-  if (z == 1) {
-    setGLContext(oldContext);
-    return;  // outside object
-  }
-
-  GLdouble px, py, pz;
-
-  auto success = gluUnProject(x, y, z, modelview, projection, viewport, &px, &py, &pz);
-
-  if (success == GL_TRUE) {
-    cam.object_trans -= Vector3d(px, py, pz);
-    update();
-    emit cameraChanged();
-  }
   setGLContext(oldContext);
 }
 
