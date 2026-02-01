@@ -384,6 +384,7 @@ public slots:
   void viewModePreview();
 #endif
   void viewModeThrownTogether();
+  void updateViewModeAfterGLInit();
   void viewModeShowEdges();
   void viewModeShowAxes();
   void viewModeShowCrosshairs();

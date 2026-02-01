@@ -2609,6 +2609,15 @@ void MainWindow::viewModePreview()
 
 #endif /* ENABLE_OPENCSG */
 
+void MainWindow::updateViewModeAfterGLInit()
+{
+#ifdef ENABLE_OPENCSG
+  if (this->qglview->hasOpenCSGSupport()) {
+    viewModePreview();
+  }
+#endif
+}
+
 void MainWindow::viewModeThrownTogether()
 {
   viewActionThrownTogether->setEnabled(true);
@@ -3579,11 +3588,10 @@ void MainWindow::setup3DView()
   // Initialize View Mode and Logging
   setCurrentOutput();
 
-#ifdef ENABLE_OPENCSG
-  viewModePreview();
-#else
+  // Default to ThrownTogether as OpenCSG support is not known until initializeGL()
+  // runs (after show()). The initialized() signal will trigger an update to
+  // Preview mode if supported.
   viewModeThrownTogether();
-#endif
 
   loadViewSettings();
   loadDesignSettings();
@@ -3596,6 +3604,7 @@ void MainWindow::setup3DView()
   connect(this->qglview, &QGLView::resized, viewportControlWidget, &ViewportControl::viewResized);
   connect(this->qglview, &QGLView::doRightClick, this, &MainWindow::rightClick);
   connect(this->qglview, &QGLView::doLeftClick, this, &MainWindow::leftClick);
+  connect(this->qglview, &QGLView::initialized, this, &MainWindow::updateViewModeAfterGLInit);
 }
 
 /**
