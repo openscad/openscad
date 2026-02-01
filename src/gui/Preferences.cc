@@ -1542,10 +1542,9 @@ void Preferences::setHighlightingColorSchemes(const QStringList& colorSchemes)
 
 void Preferences::createFontSizeMenu(QComboBox *boxarg, const QString& setting)
 {
-  uint savedsize = getValue(setting).toUInt();
-  const QFontDatabase db;
+  const uint savedsize = getValue(setting).toUInt();
   BlockSignals<QComboBox *> box{boxarg};
-  for (auto size : db.standardSizes()) {
+  for (auto size : QFontDatabase::standardSizes()) {
     box->addItem(QString::number(size));
     if (static_cast<uint>(size) == savedsize) {
       box->setCurrentIndex(box->count() - 1);
