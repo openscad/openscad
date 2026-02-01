@@ -37,13 +37,13 @@ class LaserCutter:
     def init_sub(self, facelist, depth):
 
         self.depth=depth
-        conn_plain = [[0,0],[1,0]]
+        conn_plain = [[0,0, 0],[1,0, 0]]
 
-                # x is realtive, y is absolute
-        conn_type1 = [ [0.0,-1], [0.25,-1], [0.25,1], [0.5,1], [0.5,-1], [0.75,-1], [0.75, 1], [1,1]]
-        conn_type2 = [ [0.0,-1], [0.4,-1], [0.4,1], [0.6,1], [0.6,-1], [1,-1] ]
-        conn_type2_ = [[0.4,-1],[0.6 , -1] ,[0.6,1],[0.4,1]]
-        conn_type3  = [[0,-1],[1, -1],[1,1],[0,1]]
+        # [x realtive, y is absolute, x absolute
+        conn_type1 = [ [0.0,-1, 0], [0.25,-1, 0], [0.25,1, 0], [0.5,1, 0], [0.5,-1, 0], [0.75,-1, 0], [0.75, 1, 0], [1,1, 0]]
+        conn_type2 = [ [0.0,-1, 0], [0.4,-1, 0], [0.4,1, 0], [0.6,1, 0], [0.6,-1, 0], [1,-1, 0] ]
+        conn_type2_ = [[0.4,-1, 0],[0.6 , -1, 0] ,[0.6,1, 0],[0.4,1, 0]]
+        conn_type3  = [[0,-1, 0],[1, -1,3],[1,1,3],[0,1,0]]
 
         late_cuts = []
         total_cuts = []
@@ -266,8 +266,8 @@ class LaserCutter:
         stripe = []
         for jig in conn:
             pt = [
-                    beg[0] + jig[0]*diff[0] + jig[1]*diff[1]*self.depth/2/dl,
-                    beg[1] + jig[0]*diff[1] - jig[1]*diff[0]*self.depth/2/dl
+                    beg[0] + jig[0]*diff[0] + jig[1]*diff[1]*self.depth/2/dl + jig[2]*diff[0]/dl,
+                    beg[1] + jig[0]*diff[1] - jig[1]*diff[0]*self.depth/2/dl + jig[2]*diff[1]/dl
             ]
             stripe.append(pt)
         return stripe
