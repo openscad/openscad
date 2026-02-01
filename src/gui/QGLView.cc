@@ -197,45 +197,44 @@ void QGLView::paintGL()
   GLView::paintGL();
 
   if (mouse_has_pending_double_click) {
-      glMatrixMode(GL_PROJECTION);
-      glPushMatrix(); 
-      
-      glMatrixMode(GL_MODELVIEW);
-      glPushMatrix(); 
+    glMatrixMode(GL_PROJECTION);
+    glPushMatrix();
 
-      this->setupCamera();
+    glMatrixMode(GL_MODELVIEW);
+    glPushMatrix();
 
-      GLdouble matModelView[16];
-      GLdouble matProjection[16];
-      GLint viewport[4];
+    this->setupCamera();
 
-      glGetDoublev(GL_MODELVIEW_MATRIX, matModelView);
-      glGetDoublev(GL_PROJECTION_MATRIX, matProjection);
-      glGetIntegerv(GL_VIEWPORT, viewport);
+    GLdouble matModelView[16];
+    GLdouble matProjection[16];
+    GLint viewport[4];
 
-      glPopMatrix(); 
-      glMatrixMode(GL_PROJECTION);
-      glPopMatrix();
-      glMatrixMode(GL_MODELVIEW);
+    glGetDoublev(GL_MODELVIEW_MATRIX, matModelView);
+    glGetDoublev(GL_PROJECTION_MATRIX, matProjection);
+    glGetIntegerv(GL_VIEWPORT, viewport);
 
-      const double dpi = this->getDPI();
-      const double x = mouse_pending_double_click_pos.x() * dpi;
-      const double y = viewport[3] - (mouse_pending_double_click_pos.y() * dpi);
+    glPopMatrix();
+    glMatrixMode(GL_PROJECTION);
+    glPopMatrix();
+    glMatrixMode(GL_MODELVIEW);
 
-      GLfloat z = 1.0f;
-      glReadPixels((GLint)x, (GLint)y, 1, 1, GL_DEPTH_COMPONENT, GL_FLOAT, &z);
+    const double dpi = this->getDPI();
+    const double x = mouse_pending_double_click_pos.x() * dpi;
+    const double y = viewport[3] - (mouse_pending_double_click_pos.y() * dpi);
 
-      if (z < 1.0f) {
-          GLdouble px, py, pz;
-          if (gluUnProject(x, y, z, matModelView, matProjection, viewport, &px, &py, &pz) == GL_TRUE) {
-              
-              cam.object_trans -= Vector3d(px, py, pz);
-              emit cameraChanged();
+    GLfloat z = 1.0f;
+    glReadPixels((GLint)x, (GLint)y, 1, 1, GL_DEPTH_COMPONENT, GL_FLOAT, &z);
 
-              this->update();
-          }
+    if (z < 1.0f) {
+      GLdouble px, py, pz;
+      if (gluUnProject(x, y, z, matModelView, matProjection, viewport, &px, &py, &pz) == GL_TRUE) {
+        cam.object_trans -= Vector3d(px, py, pz);
+        emit cameraChanged();
+
+        this->update();
       }
-      mouse_has_pending_double_click = false;
+    }
+    mouse_has_pending_double_click = false;
   }
 
   if (statusLabel) {
@@ -305,7 +304,7 @@ void QGLView::mouseDoubleClickEvent(QMouseEvent *event)
   mouse_has_pending_double_click = true;
   mouse_pending_double_click_pos = event->pos();
 
-  this->update(); 
+  this->update();
 }
 
 void QGLView::normalizeAngle(GLdouble& angle)
