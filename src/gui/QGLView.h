@@ -83,6 +83,10 @@ private:
   // Information held for each mouse action is a 3x2 rotation matrix, a 3x2 translation matrix, and a
   // zoom 2-vector.
   float mouseActions[MouseConfig::MouseAction::NUM_MOUSE_ACTIONS * MouseConfig::ACTION_DIMENSION];
+
+  bool mouse_has_pending_double_click = false;
+  QPoint mouse_pending_double_click_pos;
+
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
   QPointF last_mouse;
 #else
