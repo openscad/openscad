@@ -1300,16 +1300,38 @@ void Preferences::fireEditorConfigChanged() const
   emit editorConfigChanged();
 }
 
+// Make sure Ctrl-W isn't passed up to MainWindow and only affects Preferences
+bool Preferences::event(QEvent *e)
+{
+  if (e->type() == QEvent::ShortcutOverride) {
+    QKeyEvent *ke = static_cast<QKeyEvent *>(e);
+    if (ke->matches(QKeySequence::Close) || ke->key() == Qt::Key_Escape) {
+      e->accept();
+      return true;
+    }
+#ifdef Q_OS_MACOS
+    if (ke->modifiers() == Qt::ControlModifier && ke->key() == Qt::Key_Period) {
+      e->accept();
+      return true;
+    }
+#endif
+  }
+  return QMainWindow::event(e);
+}
+
 void Preferences::keyPressEvent(QKeyEvent *e)
 {
+  if (e->matches(QKeySequence::Close) || e->key() == Qt::Key_Escape) {
+    close();
+    return;
+  }
 #ifdef Q_OS_MACOS
   if (e->modifiers() == Qt::ControlModifier && e->key() == Qt::Key_Period) {
     close();
-  } else
-#endif
-    if ((e->modifiers() == Qt::ControlModifier && e->key() == Qt::Key_W) || e->key() == Qt::Key_Escape) {
-    close();
+    return;
   }
+#endif
+  QMainWindow::keyPressEvent(e);
 }
 
 void Preferences::showEvent(QShowEvent *e)
