@@ -131,7 +131,7 @@ public:
 private:
   RubberBandManager rubberBandManager;
 
-  std::vector<std::pair<Dock *, QString>> docks;
+  std::vector<std::tuple<Dock *, QString, QString>> docks;
 
   volatile bool isClosing = false;
   bool isBeingDestroyed = false;  // Set in destructor to guard eventFilter
