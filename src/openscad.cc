@@ -859,61 +859,61 @@ int openscad_main(int argc, char **argv)
 
   ViewOptions viewOptions{};
   po::options_description desc("Allowed options");
-  desc.add_options()(
-    "export-format", po::value<std::string>(),
-    "overrides format of exported scad file when using option '-o', arg can be any of its supported "
-    "file extensions.  For ASCII stl export, specify 'asciistl', and for binary stl export, specify "
-    "'binstl'.  ASCII export is the current stl default, but binary stl is planned as the future "
-    "default so asciistl should be explicitly specified in scripts when needed.\n")(
-    "o,o", po::value<std::vector<std::string>>(),
-    "output specified file instead of running the GUI. The file extension specifies the type: stl, off, "
-    "wrl, amf, 3mf, csg, dxf, svg, pdf, png, echo, ast, term, nef3, nefdbg, param, pov. May be used "
-    "multiple times for different exports. Use '-' for stdout.\n")(
-    "O,O", po::value<std::vector<std::string>>(),
-    "pass settings value to the file export using the format section/key=value, e.g "
-    "export-pdf/paper-size=a3. Use --help-export to list all available settings.")(
-    "D,D", po::value<std::vector<std::string>>(), "var=val -pre-define variables")(
-    "p,p", po::value<std::string>(), "customizer parameter file")("P,P", po::value<std::string>(),
-                                                                  "customizer parameter set")
+  // clang-format off
+  desc.add_options()
+    ("export-format", po::value<std::string>(),
+      "overrides format of exported scad file when using option '-o', arg can be any of its supported "
+      "file extensions.  For ASCII stl export, specify 'asciistl', and for binary stl export, specify "
+      "'binstl'.  ASCII export is the current stl default, but binary stl is planned as the future "
+      "default so asciistl should be explicitly specified in scripts when needed.\n")
+    ("o,o", po::value<std::vector<std::string>>(),
+      "output specified file instead of running the GUI. The file extension specifies the type: stl, "
+      "off, wrl, amf, 3mf, csg, dxf, svg, pdf, png, echo, ast, term, nef3, nefdbg, param, pov. May be "
+      "used multiple times for different exports. Use '-' for stdout.\n")
+    ("O,O", po::value<std::vector<std::string>>(),
+      "pass settings value to the file export using the format section/key=value, e.g "
+      "export-pdf/paper-size=a3. Use --help-export to list all available settings.")
+    ("D,D", po::value<std::vector<std::string>>(), "var=val -pre-define variables")
+    ("p,p", po::value<std::string>(), "customizer parameter file")
+    ("P,P", po::value<std::string>(), "customizer parameter set")
 #ifdef ENABLE_EXPERIMENTAL
     ("enable", po::value<std::vector<std::string>>(),
-     ("enable experimental features (specify 'all' for enabling all available features): " +
+      ("enable experimental features (specify 'all' for enabling all available features): " +
       str_join(boost::make_iterator_range(Feature::begin(), Feature::end()), " | ",
                [](const Feature *feature) { return feature->get_name(); }) +
       "\n")
-       .c_str())
+      .c_str())
 #endif
-      ("help,h", "print this help message and exit")(
-        "help-export", "print list of export parameters and values that can be set via -O")(
-        "version,v", "print the version")("info", "print information about the build process\n")
-
-        ("camera", po::value<std::string>(),
-         "camera parameters when exporting png: =translate_x,y,z,rot_x,y,z,dist or "
-         "=eye_x,y,z,center_x,y,z")("autocenter", "adjust camera to look at object's center")(
-          "viewall", "adjust camera to fit object")(
-          "backend", po::value<std::string>(),
-          "3D rendering backend to use: 'CGAL' (old/slow) or 'Manifold' (new/fast) [default]")(
-          "imgsize", po::value<std::string>(), "=width,height of exported png")(
-          "render", po::value<std::string>()->implicit_value(""),
-          "for full geometry evaluation when exporting png")(
-          "preview", po::value<std::string>()->implicit_value(""),
-          "[=throwntogether] -for ThrownTogether preview png")("animate", po::value<unsigned>(),
-                                                               "export N animated frames")(
-          "animate_sharding", po::value<std::string>(),
-          "Parameter <shard>/<num_shards> - Divide work into <num_shards> and only output frames for "
-          "<shard>. E.g. 2/5 only outputs the second 1/5 of frames. Use to parallelize work on multiple "
-          "cores or machines.")(
-          "view", po::value<CommaSeparatedVector>(),
-          ("=view options: " + boost::algorithm::join(viewOptions.names(), " | ")).c_str())(
-          "projection", po::value<std::string>(), "=(o)rtho or (p)erspective when exporting png")(
-          "csglimit", po::value<unsigned int>(),
-          "=n -stop rendering at n CSG elements when exporting png")(
-          "summary", po::value<std::vector<std::string>>(),
-          "enable additional render summary and statistics: all | cache | time | camera | geometry | "
-          "bounding-box | area")(
-          "summary-file", po::value<std::string>(),
-          "output summary information in JSON format to the given file, using '-' outputs to stdout")(
-          "colorscheme", po::value<std::string>(),
+    ("help,h", "print this help message and exit")
+    ("help-export", "print list of export parameters and values that can be set via -O")
+    ("version,v", "print the version")
+    ("info", "print information about the build process\n")
+    ("camera", po::value<std::string>(),
+      "camera parameters when exporting png: =translate_x,y,z,rot_x,y,z,dist or "
+      "=eye_x,y,z,center_x,y,z")("autocenter", "adjust camera to look at object's center")
+    ("viewall", "adjust camera to fit object")
+    ("backend", po::value<std::string>(),
+      "3D rendering backend to use: 'CGAL' (old/slow) or 'Manifold' (new/fast) [default]")
+    ("imgsize", po::value<std::string>(), "=width,height of exported png")
+    ("render", po::value<std::string>()->implicit_value(""),
+      "for full geometry evaluation when exporting png")
+    ("preview", po::value<std::string>()->implicit_value(""),
+      "[=throwntogether] -for ThrownTogether preview png")
+    ("animate", po::value<unsigned>(), "export N animated frames")
+    ("animate_sharding", po::value<std::string>(),
+      "Parameter <shard>/<num_shards> - Divide work into <num_shards> and only output frames for "
+      "<shard>. E.g. 2/5 only outputs the second 1/5 of frames. Use to parallelize work on multiple "
+      "cores or machines.")
+    ("view", po::value<CommaSeparatedVector>(),
+      ("=view options: " + boost::algorithm::join(viewOptions.names(), " | ")).c_str())
+    ("projection", po::value<std::string>(), "=(o)rtho or (p)erspective when exporting png")
+    ("csglimit", po::value<unsigned int>(), "=n -stop rendering at n CSG elements when exporting png")
+    ("summary", po::value<std::vector<std::string>>(),
+      "enable additional render summary and statistics: all | cache | time | camera | geometry | "
+      "bounding-box | area")
+    ("summary-file", po::value<std::string>(),
+      "output summary information in JSON format to the given file, using '-' outputs to stdout")
+    ("colorscheme", po::value<std::string>(),
           ("=colorscheme: " +
            str_join(ColorMap::inst()->colorSchemeNames(), " | ",
                     [](const std::string& colorScheme) {
@@ -921,36 +921,42 @@ int openscad_main(int argc, char **argv)
                              colorScheme;
                     }) +
            "\n")
-            .c_str())("d,d", po::value<std::string>(), "deps_file -generate a dependency file for make")(
-          "m,m", po::value<std::string>(), "make_cmd -runs make_cmd file if file is missing")(
-          "quiet,q", "quiet mode (don't print anything *except* errors)")(
-          "reset-window-settings", "Reset GUI settings for window placement and fonts.")(
-          "hardwarnings", "Stop on the first warning")("trace-depth", po::value<unsigned int>(),
-                                                       "=n, maximum number of trace messages")(
-          "trace-usermodule-parameters", po::value<std::string>(),
-          "=true/false, configure the output of user module parameters in a trace")(
-          "check-parameters", po::value<std::string>(),
-          "=true/false, configure the parameter check for user modules and functions")(
-          "check-parameter-ranges", po::value<std::string>(),
-          "=true/false, configure the parameter range check for builtin modules")(
-          "debug", po::value<std::string>(),
-          "special debug info - specify 'all' or a set of source file names")
+            .c_str())
+    ("d,d", po::value<std::string>(), "deps_file -generate a dependency file for make")
+    ("m,m", po::value<std::string>(), "make_cmd -runs make_cmd file if file is missing")
+    ("quiet,q", "quiet mode (don't print anything *except* errors)")
+    ("reset-window-settings", "Reset GUI settings for window placement and fonts.")
+    ("hardwarnings", "Stop on the first warning")
+    ("trace-depth", po::value<unsigned int>(), "=n, maximum number of trace messages")
+    ("trace-usermodule-parameters", po::value<std::string>(),
+      "=true/false, configure the output of user module parameters in a trace")
+    ("check-parameters", po::value<std::string>(),
+      "=true/false, configure the parameter check for user modules and functions")
+    ("check-parameter-ranges", po::value<std::string>(),
+      "=true/false, configure the parameter range check for builtin modules")
+    ("debug", po::value<std::string>(),
+      "special debug info - specify 'all' or a set of source file names")
 #ifdef ENABLE_PYTHON
           ("trust-python", "Trust python")("ipython", "Run ipython Interpreter")(
             "python-module", po::value<std::string>(), "=module Call pip python module")
 #endif
     ;
+  // clang-format on
 
 #ifdef ENABLE_GUI_TESTS
+  // clang-format off
   desc.add_options()("run-all-gui-tests", "special gui testing mode - run all the tests");
+  // clang-format on
 #endif
 
   po::options_description hidden("Hidden options");
+  // clang-format off
   hidden.add_options()
 #ifdef Q_OS_MACOS
     ("psn", po::value<std::string>(), "process serial number")
 #endif
-      ("input-file", po::value<std::vector<std::string>>(), "input file");
+    ("input-file", po::value<std::vector<std::string>>(), "input file");
+  // clang-format on
 
   po::positional_options_description p;
   p.add("input-file", -1);
