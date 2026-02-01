@@ -110,7 +110,7 @@ public:
 
   QString lastCompiledDoc;
 
-  QAction *fileActionRecentFiles[UIUtils::maxRecentFiles];
+  std::vector<QAction *> fileActionRecentFiles;
   QShortcut *shortcutNextWindow{nullptr};
   QShortcut *shortcutPreviousWindow{nullptr};
 

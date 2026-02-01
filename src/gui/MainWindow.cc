@@ -1956,15 +1956,22 @@ void MainWindow::updateRecentFileActions()
 {
   auto files = UIUtils::recentFiles();
 
-  for (int i = 0; i < UIUtils::maxRecentFiles; ++i) {
-    if (i < files.size()) {
-      this->fileActionRecentFiles[i]->setText(QFileInfo(files[i]).fileName().replace("&", "&&"));
-      this->fileActionRecentFiles[i]->setData(files[i]);
-      this->fileActionRecentFiles[i]->setVisible(true);
+  for (int i = 0; i < files.size(); ++i) {
+    QAction *recent;
+    if (i < this->fileActionRecentFiles.size()) {
+      recent = this->fileActionRecentFiles[i];
     } else {
-      this->fileActionRecentFiles[i]->setVisible(false);
+      recent = new QAction(this);
+      connect(recent, &QAction::triggered, this, &MainWindow::actionOpenRecent);
+      this->fileActionRecentFiles.push_back(recent);
     }
+    this->menuOpenRecent->addAction(recent);
+    recent->setText(QFileInfo(files[i]).fileName().replace("&", "&&"));
+    recent->setData(files[i]);
+    recent->setVisible(true);
   }
+  this->menuOpenRecent->addSeparator();
+  this->menuOpenRecent->addAction(this->fileActionClearRecent);
 }
 
 void MainWindow::show_examples()
@@ -4878,15 +4885,7 @@ void MainWindow::setupMenusAndActions()
   connect(this->fileActionOpen, &QAction::triggered, this, &MainWindow::actionOpen);
 
   // Recent files
-  for (auto& recent : this->fileActionRecentFiles) {
-    recent = new QAction(this);
-    recent->setVisible(false);
-    this->menuOpenRecent->addAction(recent);
-    connect(recent, &QAction::triggered, this, &MainWindow::actionOpenRecent);
-  }
   updateRecentFileActions();
-  this->menuOpenRecent->addSeparator();
-  this->menuOpenRecent->addAction(this->fileActionClearRecent);
   connect(this->fileActionClearRecent, &QAction::triggered, this, &MainWindow::clearRecentFiles);
 
   show_examples();
