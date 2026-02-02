@@ -108,12 +108,12 @@ Shader::~Shader()
 void Shader::use() const
 {
   glUseProgram(shader_program);
-  if (type == ShaderType::EDGE_RENDERING) glEnableVertexAttribArray(attributes("barycentric"));
+  if (type == ShaderType::MAIN_RENDERING) glEnableVertexAttribArray(attributes("barycentric"));
 }
 
 void Shader::unuse() const
 {
-  if (type == ShaderType::EDGE_RENDERING) glDisableVertexAttribArray(attributes("barycentric"));
+  if (type == ShaderType::MAIN_RENDERING) glDisableVertexAttribArray(attributes("barycentric"));
   glUseProgram(0);
 }
 
@@ -125,7 +125,7 @@ void Shader::draw(const std::shared_ptr<VertexState>& vertex_state) const
           ((vertex_state->csgObjectIndex() >> 16) & 0xff) / 255.0f);
   }
   const auto shader_vs = std::dynamic_pointer_cast<VBOShaderVertexState>(vertex_state);
-  if (!shader_vs || type == ShaderType::EDGE_RENDERING) {
+  if (!shader_vs || type == ShaderType::MAIN_RENDERING) {
     vertex_state->draw();
   }
 }
@@ -139,6 +139,11 @@ GLint Shader::attributes(const std::string& name) const
 void Shader::set3f(const std::string& name, GLfloat v0, GLfloat v1, GLfloat v2) const
 {
   glUniform3f(glGetUniformLocation(shader_program, name.c_str()), v0, v1, v2);
+}
+
+void Shader::set3fv(const std::string& name, int count, GLfloat *v) const
+{
+  glUniform3fv(glGetUniformLocation(shader_program, name.c_str()), count, v);
 }
 
 void Shader::set1i(const std::string& name, GLint v0) const
