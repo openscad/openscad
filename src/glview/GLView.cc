@@ -44,11 +44,11 @@ GLView::~GLView()
 
 void GLView::setupShader()
 {
-  if (edge_shader) return;
-  edge_shader = std::make_unique<ShaderUtils::Shader>(
-    "ViewEdges.vert",
-    "ViewEdges.frag",
-    ShaderUtils::ShaderType::EDGE_RENDERING
+  if (main_shader) return;
+  main_shader = std::make_unique<ShaderUtils::Shader>(
+    "Main.vert",
+    "Main.frag",
+    ShaderUtils::ShaderType::MAIN_RENDERING
   );
 }
 
@@ -181,17 +181,17 @@ void GLView::paintGL()
   glLineWidth(2);
   glColor3d(1.0, 0.0, 0.0);
 
-  edge_shader->use();
-  edge_shader->set1i("show_edges", showedges?1:0);
-  edge_shader->unuse();
+  main_shader->use();
+  main_shader->set1i("show_edges", showedges?1:0);
+  main_shader->unuse();
 
   if (this->renderer) {
 #if defined(ENABLE_OPENCSG)
     // FIXME: This belongs in the OpenCSG renderer, but it doesn't know about this ID yet
     OpenCSG::setContext(this->opencsg_id);
 #endif
-    this->renderer->prepare(edge_shader.get());
-    this->renderer->draw(showedges, edge_shader.get());
+    this->renderer->prepare(main_shader.get());
+    this->renderer->draw(showedges, main_shader.get());
   }
   Vector3d eyedir(this->modelview[2], this->modelview[6], this->modelview[10]);
   glColor3f(1, 0, 0);

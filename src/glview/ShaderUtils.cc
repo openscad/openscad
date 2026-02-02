@@ -106,13 +106,13 @@ Shader::~Shader()
 void Shader::use() const
 {
   glUseProgram(shader_program);
-  if (type == ShaderType::EDGE_RENDERING)
+  if (type == ShaderType::MAIN_RENDERING)
     glEnableVertexAttribArray(attributes("barycentric"));
 }
 
 void Shader::unuse() const
 {
-  if (type == ShaderType::EDGE_RENDERING)
+  if (type == ShaderType::MAIN_RENDERING)
     glDisableVertexAttribArray(attributes("barycentric"));
   glUseProgram(0);
 }
@@ -128,7 +128,7 @@ void Shader::draw(const std::shared_ptr<VertexState>& vertex_state) const
     }
   }
   const auto shader_vs = std::dynamic_pointer_cast<VBOShaderVertexState>(vertex_state);
-  if (!shader_vs || type == ShaderType::EDGE_RENDERING) {
+  if (!shader_vs || type == ShaderType::MAIN_RENDERING) {
     vertex_state->draw();
   }
 }
