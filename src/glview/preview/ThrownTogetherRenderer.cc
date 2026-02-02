@@ -117,15 +117,9 @@ void ThrownTogetherRenderer::prepare(const ShaderUtils::Shader *shader)
   }
 }
 
-void ThrownTogetherRenderer::draw(bool showedges, const ShaderUtils::Shader *shader) const
+void ThrownTogetherRenderer::draw(bool /* showedges */, const ShaderUtils::Shader *shader) const
 {
-  // Only use shader if select rendering or showedges
-  const bool enable_shader =
-    ((shader->type == ShaderUtils::ShaderType::EDGE_RENDERING && showedges) ||
-      shader->type == ShaderUtils::ShaderType::SELECT_RENDERING);
-  if (enable_shader) {
-    shader->use();
-  }
+  shader->use();
 
   GL_TRACE0("glDepthFunc(GL_LEQUAL)");
   GL_CHECKD(glDepthFunc(GL_LEQUAL));
@@ -141,15 +135,13 @@ void ThrownTogetherRenderer::draw(bool showedges, const ShaderUtils::Shader *sha
         }
       }
       const auto shader_vs = std::dynamic_pointer_cast<VBOShaderVertexState>(vertex_state);
-      if (!shader_vs || (shader_vs && showedges)) {
+      if (!shader_vs || shader->type == ShaderUtils::ShaderType::EDGE_RENDERING) {
         vertex_state->draw();
       }
     }
   }
 
-  if (enable_shader) {
-    shader->unuse();
-  }
+  shader->unuse();
 }
 
 void ThrownTogetherRenderer::createChainObject(VertexStateContainer& container, VBOBuilder& vbo_builder,

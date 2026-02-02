@@ -114,28 +114,20 @@ void OpenCSGRenderer::prepare(const ShaderUtils::Shader *shader)
   }
 }
 
-void OpenCSGRenderer::draw(bool showedges, const ShaderUtils::Shader *shader) const
+void OpenCSGRenderer::draw(bool /* showedges */, const ShaderUtils::Shader *shader) const
 {
 #ifdef ENABLE_OPENCSG
-  // Only use shader if select rendering or showedges
-  const bool enable_shader =
-    ((shader->type == ShaderUtils::ShaderType::EDGE_RENDERING && showedges) ||
-      shader->type == ShaderUtils::ShaderType::SELECT_RENDERING);
-
   for (const auto& product : vertex_state_containers_) {
     if (product->primitives().size() > 1) {
 #if OPENCSG_VERSION >= 0x0180
-      if (enable_shader) OpenCSG::setVertexShader(opencsg_vertex_shader_code_);
-      else OpenCSG::setVertexShader({});
+      OpenCSG::setVertexShader(opencsg_vertex_shader_code_);
 #endif
       GL_CHECKD(OpenCSG::render(product->primitives()));
       GL_TRACE0("glDepthFunc(GL_EQUAL)");
       GL_CHECKD(glDepthFunc(GL_EQUAL));
     }
 
-    if (enable_shader) {
-      shader->use();
-    }
+    shader->use();
 
     for (const auto& vertex_state : product->states()) {
       // Specify ID color if we're using select rendering
@@ -148,14 +140,12 @@ void OpenCSGRenderer::draw(bool showedges, const ShaderUtils::Shader *shader) co
         }
       }
       const auto shader_vs = std::dynamic_pointer_cast<VBOShaderVertexState>(vertex_state);
-      if (!shader_vs || (showedges && shader_vs)) {
+      if (!shader_vs || shader->type == ShaderUtils::ShaderType::EDGE_RENDERING) {
         vertex_state->draw();
       }
     }
 
-    if (enable_shader) {
-      shader->unuse();
-    }
+    shader->unuse();
     GL_TRACE0("glDepthFunc(GL_LEQUAL)");
     GL_CHECKD(glDepthFunc(GL_LEQUAL));
   }
