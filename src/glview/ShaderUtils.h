@@ -1,5 +1,7 @@
 #pragma once
 
+#include "VertexState.h"
+
 #include <unordered_map>
 #include <string>
 #include "glview/system-gl.h"
@@ -24,6 +26,7 @@ public:
 
   void use() const;
   void unuse() const;
+  void draw(const std::shared_ptr<VertexState> &vertex_state) const;
   GLint attributes(const std::string& name) const;
   void set3f(const std::string& name, GLfloat v0, GLfloat v1, GLfloat v2) const;
   void set1i(const std::string& name, GLint v0) const;

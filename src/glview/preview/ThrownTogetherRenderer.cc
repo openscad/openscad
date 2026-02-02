@@ -26,6 +26,8 @@
 
 #include "glview/preview/ThrownTogetherRenderer.h"
 
+#include "OpenCSGRenderer.h"
+
 #include <cstddef>
 #include <memory>
 #include <utility>
@@ -92,7 +94,7 @@ void ThrownTogetherRenderer::prepare(const ShaderUtils::Shader *shader)
   if (vertex_state_containers_.empty()) {
     VertexStateContainer& vertex_state_container = vertex_state_containers_.emplace_back();
 
-    VBOBuilder vbo_builder(std::make_unique<TTRVertexStateFactory>(), vertex_state_container);
+    VBOBuilder vbo_builder(std::make_unique<OpenCSGVertexStateFactory>(), vertex_state_container);
     vbo_builder.addSurfaceData();
     vbo_builder.addShaderData();  // Always enable barycentric coordinates
 
@@ -125,19 +127,7 @@ void ThrownTogetherRenderer::draw(bool /* showedges */, const ShaderUtils::Shade
   GL_CHECKD(glDepthFunc(GL_LEQUAL));
   for (const auto& container : vertex_state_containers_) {
     for (const auto& vertex_state : container.states()) {
-      // Specify ID color if we're using select rendering
-      if (shader->type == ShaderUtils::ShaderType::SELECT_RENDERING) {
-        if (const auto ttr_vs = std::dynamic_pointer_cast<TTRVertexState>(vertex_state)) {
-          shader->set3f("frag_idcolor",
-                                ((ttr_vs->csgObjectIndex() >> 0) & 0xff) / 255.0f,
-                                ((ttr_vs->csgObjectIndex() >> 8) & 0xff) / 255.0f,
-                                ((ttr_vs->csgObjectIndex() >> 16) & 0xff) / 255.0f);
-        }
-      }
-      const auto shader_vs = std::dynamic_pointer_cast<VBOShaderVertexState>(vertex_state);
-      if (!shader_vs || shader->type == ShaderUtils::ShaderType::EDGE_RENDERING) {
-        vertex_state->draw();
-      }
+      shader->draw(vertex_state);
     }
   }
 
@@ -168,7 +158,7 @@ void ThrownTogetherRenderer::createChainObject(VertexStateContainer& container, 
     add_shader_pointers(vbo_builder, shader);
 
     vbo_builder.create_surface(*csgobj.leaf->polyset, csgobj.leaf->matrix, color, enable_barycentric);
-    if (const auto ttr_vs = std::dynamic_pointer_cast<TTRVertexState>(vbo_builder.states().back())) {
+    if (const auto ttr_vs = std::dynamic_pointer_cast<OpenCSGVertexState>(vbo_builder.states().back())) {
       ttr_vs->setCsgObjectIndex(csgobj.leaf->index);
     }
   } else {  // root mode
@@ -192,7 +182,7 @@ void ThrownTogetherRenderer::createChainObject(VertexStateContainer& container, 
       mat *= Eigen::Scaling(1.0, 1.0, 1.1);
     }
     vbo_builder.create_surface(*csgobj.leaf->polyset, mat, color, enable_barycentric);
-    if (auto ttr_vs = std::dynamic_pointer_cast<TTRVertexState>(vbo_builder.states().back())) {
+    if (auto ttr_vs = std::dynamic_pointer_cast<OpenCSGVertexState>(vbo_builder.states().back())) {
       ttr_vs->setCsgObjectIndex(csgobj.leaf->index);
     }
 
@@ -211,7 +201,7 @@ void ThrownTogetherRenderer::createChainObject(VertexStateContainer& container, 
     container.states().emplace_back(std::move(cull));
 
     vbo_builder.create_surface(*csgobj.leaf->polyset, csgobj.leaf->matrix, color, enable_barycentric);
-    if (auto ttr_vs = std::dynamic_pointer_cast<TTRVertexState>(vbo_builder.states().back())) {
+    if (auto ttr_vs = std::dynamic_pointer_cast<OpenCSGVertexState>(vbo_builder.states().back())) {
       ttr_vs->setCsgObjectIndex(csgobj.leaf->index);
     }
 
