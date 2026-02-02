@@ -3890,9 +3890,9 @@ void MainWindow::setupMenusAndActions()
     this->findInputField->setText(QApplication::clipboard()->text(QClipboard::FindBuffer));
   }
 
-  connect(this->findPrevButton, &QPushButton::clicked, this, &MainWindow::findPrev);
-  connect(this->findNextButton, &QPushButton::clicked, this, &MainWindow::findNext);
-  connect(this->cancelButton, &QPushButton::clicked, this, &MainWindow::hideFind);
+  this->findPrevButton->setDefaultAction(editActionFindPrevious);
+  this->findNextButton->setDefaultAction(editActionFindNext);
+  connect(this->findDoneButton, &QPushButton::clicked, this, &MainWindow::hideFind);
   connect(this->replaceButton, &QPushButton::clicked, this, &MainWindow::replace);
   connect(this->replaceAllButton, &QPushButton::clicked, this, &MainWindow::replaceAll);
   connect(this->replaceInputField, &QLineEdit::returnPressed, this->replaceButton,
