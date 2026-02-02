@@ -24,6 +24,7 @@ override_dh_auto_configure:
 		-DENABLE_TESTS=OFF \
 		-DUSE_BUILTIN_MANIFOLD=ON \
 		-DUSE_BUILTIN_CLIPPER2=ON \
+		-DPORTABLE_BINARY=ON \
 		-DSNAPSHOT=OFF
 
 override_dh_auto_build:
