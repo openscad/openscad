@@ -236,7 +236,7 @@ void CGALRenderer::createPolygonEdgeStates()
   vbo_builder.createInterleavedVBOs();
 }
 
-void CGALRenderer::prepare(const ShaderUtils::ShaderInfo * /*shaderinfo*/)
+void CGALRenderer::prepare(const ShaderUtils::Shader * /*shader*/)
 {
   PRINTD("prepare()");
   if (!vertex_state_containers_.size()) {
@@ -256,7 +256,7 @@ void CGALRenderer::prepare(const ShaderUtils::ShaderInfo * /*shaderinfo*/)
   PRINTD("prepare() end");
 }
 
-void CGALRenderer::draw(bool showedges, const ShaderUtils::ShaderInfo * /*shaderinfo*/) const
+void CGALRenderer::draw(bool showedges, const ShaderUtils::Shader * /*shader*/) const
 {
   PRINTD("draw()");
   // grab current state to restore after
