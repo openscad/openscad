@@ -87,6 +87,7 @@ std::unique_ptr<PolySet> assemblePolySetForManifold(const Polygon2d& polyref,
       i += index_offset;
     }
   }
+
   // Flip vertex ordering for bottom polygon and move it.
   std::copy(ps_bottom->indices.begin(), ps_bottom->indices.end(),
             std::back_inserter(final_polyset->indices));
@@ -180,6 +181,7 @@ void add_slice_indices(PolygonIndices& indices, std::vector<Color4f>& colors,
     curr_outline += o.vertices.size();
   }
 }
+
 /**
  *  max(2Ddistance(vertex->scaled_vertex)^2 of all vertices).
  */
