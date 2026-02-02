@@ -233,28 +233,20 @@ void PolySetRenderer::draw(bool showedges, const ShaderUtils::Shader *shader) co
   drawPolygons();
 }
 
-void PolySetRenderer::drawPolySets(bool showedges, const ShaderUtils::Shader *shader) const
+void PolySetRenderer::drawPolySets(bool /* showedges */, const ShaderUtils::Shader *shader) const
 {
-  // Only use shader if select rendering or showedges
-  const bool enable_shader =
-    ((shader->type == ShaderUtils::ShaderType::EDGE_RENDERING && showedges) ||
-      shader->type == ShaderUtils::ShaderType::SELECT_RENDERING);
-  if (enable_shader) {
-    shader->use();
-  }
+  shader->use();
 
   for (const auto& container : polyset_vertex_state_containers_) {
     for (const auto& vertex_state : container.states()) {
       const auto shader_vs = std::dynamic_pointer_cast<VBOShaderVertexState>(vertex_state);
-      if (!shader_vs || (shader_vs && showedges)) {
+      if (!shader_vs || shader->type == ShaderUtils::ShaderType::EDGE_RENDERING) {
         vertex_state->draw();
       }
     }
   }
 
-  if (enable_shader) {
-    shader->unuse();
-  }
+  shader->unuse();
 }
 
 void PolySetRenderer::drawPolygons() const

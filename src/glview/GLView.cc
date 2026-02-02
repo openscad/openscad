@@ -181,6 +181,10 @@ void GLView::paintGL()
   glLineWidth(2);
   glColor3d(1.0, 0.0, 0.0);
 
+  edge_shader->use();
+  edge_shader->set1i("show_edges", showedges?1:0);
+  edge_shader->unuse();
+
   if (this->renderer) {
 #if defined(ENABLE_OPENCSG)
     // FIXME: This belongs in the OpenCSG renderer, but it doesn't know about this ID yet
