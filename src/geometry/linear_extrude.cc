@@ -377,7 +377,11 @@ std::unique_ptr<Geometry> extrudePolygon(const LinearExtrudeNode& node, const Po
   }
 
   int slice_stride = 0;
+  for (const auto& o : polyref.outlines()) {
+    slice_stride += o.vertices.size();
+  }
   std::vector<Vector3d> vertices;
+  vertices.reserve(slice_stride * (num_slices + 1));
   PolygonIndices indices;
   indices.reserve(slice_stride * (num_slices + 1) * 2);  // sides + endcaps
 
