@@ -26,6 +26,7 @@ public:
   void unuse() const;
   GLint attributes(const std::string& name) const;
   void set3f(const std::string& name, GLfloat v0, GLfloat v1, GLfloat v2) const;
+  void set1i(const std::string& name, GLint v0) const;
 
   const ShaderType type;
 
