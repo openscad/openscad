@@ -99,28 +99,28 @@ OpenCSGRenderer::OpenCSGRenderer(std::shared_ptr<CSGProducts> root_products,
   opencsg_vertex_shader_code_ = ShaderUtils::loadShaderSource("OpenCSG.vert");
 }
 
-void OpenCSGRenderer::prepare(const ShaderUtils::ShaderInfo *shaderinfo)
+void OpenCSGRenderer::prepare(const ShaderUtils::Shader *shader)
 {
   if (vertex_state_containers_.empty()) {
     if (root_products_) {
-      createCSGVBOProducts(*root_products_, false, false, shaderinfo);
+      createCSGVBOProducts(*root_products_, false, false, shader);
     }
     if (background_products_) {
-      createCSGVBOProducts(*background_products_, false, true, shaderinfo);
+      createCSGVBOProducts(*background_products_, false, true, shader);
     }
     if (highlights_products_) {
-      createCSGVBOProducts(*highlights_products_, true, false, shaderinfo);
+      createCSGVBOProducts(*highlights_products_, true, false, shader);
     }
   }
 }
 
-void OpenCSGRenderer::draw(bool showedges, const ShaderUtils::ShaderInfo *shaderinfo) const
+void OpenCSGRenderer::draw(bool showedges, const ShaderUtils::Shader *shader) const
 {
 #ifdef ENABLE_OPENCSG
   // Only use shader if select rendering or showedges
-  bool enable_shader =
-    shaderinfo && ((shaderinfo->type == ShaderUtils::ShaderType::EDGE_RENDERING && showedges) ||
-                   shaderinfo->type == ShaderUtils::ShaderType::SELECT_RENDERING);
+  const bool enable_shader =
+    ((shader->type == ShaderUtils::ShaderType::EDGE_RENDERING && showedges) ||
+      shader->type == ShaderUtils::ShaderType::SELECT_RENDERING);
 
   for (const auto& product : vertex_state_containers_) {
     if (product->primitives().size() > 1) {
@@ -134,24 +134,17 @@ void OpenCSGRenderer::draw(bool showedges, const ShaderUtils::ShaderInfo *shader
     }
 
     if (enable_shader) {
-      GL_TRACE("glUseProgram(%d)", shaderinfo->resource.shader_program);
-      GL_CHECKD(glUseProgram(shaderinfo->resource.shader_program));
-      VBOUtils::shader_attribs_enable(*shaderinfo);
+      shader->use();
     }
 
     for (const auto& vertex_state : product->states()) {
       // Specify ID color if we're using select rendering
-      if (shaderinfo && shaderinfo->type == ShaderUtils::ShaderType::SELECT_RENDERING) {
+      if (shader->type == ShaderUtils::ShaderType::SELECT_RENDERING) {
         if (const auto csg_vs = std::dynamic_pointer_cast<OpenCSGVertexState>(vertex_state)) {
-          GL_TRACE("glUniform3f(%d, %f, %f, %f)",
-                   shaderinfo->uniforms.at("frag_idcolor") %
-                     (((csg_vs->csgObjectIndex() >> 0) & 0xff) / 255.0f) %
-                     (((csg_vs->csgObjectIndex() >> 8) & 0xff) / 255.0f) %
-                     (((csg_vs->csgObjectIndex() >> 16) & 0xff) / 255.0f));
-          GL_CHECKD(glUniform3f(shaderinfo->uniforms.at("frag_idcolor"),
+          shader->set3f("frag_idcolor",
                                 ((csg_vs->csgObjectIndex() >> 0) & 0xff) / 255.0f,
                                 ((csg_vs->csgObjectIndex() >> 8) & 0xff) / 255.0f,
-                                ((csg_vs->csgObjectIndex() >> 16) & 0xff) / 255.0f));
+                                ((csg_vs->csgObjectIndex() >> 16) & 0xff) / 255.0f);
         }
       }
       const auto shader_vs = std::dynamic_pointer_cast<VBOShaderVertexState>(vertex_state);
@@ -161,9 +154,7 @@ void OpenCSGRenderer::draw(bool showedges, const ShaderUtils::ShaderInfo *shader
     }
 
     if (enable_shader) {
-      GL_TRACE0("glUseProgram(0)");
-      GL_CHECKD(glUseProgram(0));
-      VBOUtils::shader_attribs_disable(*shaderinfo);
+      shader->unuse();
     }
     GL_TRACE0("glDepthFunc(GL_LEQUAL)");
     GL_CHECKD(glDepthFunc(GL_LEQUAL));
@@ -180,7 +171,7 @@ void OpenCSGRenderer::draw(bool showedges, const ShaderUtils::ShaderInfo *shader
 // Each call will add to vbo_vertex_products_.
 void OpenCSGRenderer::createCSGVBOProducts(const CSGProducts& products, bool highlight_mode,
                                            bool background_mode,
-                                           const ShaderUtils::ShaderInfo *shaderinfo)
+                                           const ShaderUtils::Shader *shader)
 {
 #ifdef ENABLE_OPENCSG
   bool enable_barycentric = true;
@@ -230,7 +221,7 @@ void OpenCSGRenderer::createCSGVBOProducts(const CSGProducts& products, bool hig
           last_color = color;
         }
 
-        add_shader_pointers(vbo_builder, shaderinfo);
+        add_shader_pointers(vbo_builder, shader);
 
         if (color.a() == 1.0f) {
           // object is opaque, draw normally
@@ -303,7 +294,7 @@ void OpenCSGRenderer::createCSGVBOProducts(const CSGProducts& products, bool hig
           last_color = color;
         }
 
-        add_shader_pointers(vbo_builder, shaderinfo);
+        add_shader_pointers(vbo_builder, shader);
 
         // negative objects should only render rear faces
         std::shared_ptr<VertexState> cull = std::make_shared<VertexState>();

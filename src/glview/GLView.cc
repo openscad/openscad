@@ -40,39 +40,16 @@ GLView::GLView()
 
 GLView::~GLView()
 {
-  teardownShader();
 }
 
 void GLView::setupShader()
 {
   if (edge_shader) return;
-
-  auto resource = ShaderUtils::compileShaderProgram(ShaderUtils::loadShaderSource("ViewEdges.vert"),
-                                                    ShaderUtils::loadShaderSource("ViewEdges.frag"));
-
-  edge_shader = std::make_unique<ShaderUtils::ShaderInfo>(ShaderUtils::ShaderInfo{
-    .resource = resource,
-    .type = ShaderUtils::ShaderType::EDGE_RENDERING,
-    .uniforms = {},
-    .attributes =
-      {
-        {"barycentric", glGetAttribLocation(resource.shader_program, "barycentric")},
-      },
-  });
-}
-
-void GLView::teardownShader()
-{
-  if (edge_shader == nullptr) return;  // if OpenGL context was not initialized
-  if (edge_shader->resource.shader_program) {
-    glDeleteProgram(edge_shader->resource.shader_program);
-  }
-  if (edge_shader->resource.vertex_shader) {
-    glDeleteShader(edge_shader->resource.vertex_shader);
-  }
-  if (edge_shader->resource.fragment_shader) {
-    glDeleteShader(edge_shader->resource.fragment_shader);
-  }
+  edge_shader = std::make_unique<ShaderUtils::Shader>(
+    "ViewEdges.vert",
+    "ViewEdges.frag",
+    ShaderUtils::ShaderType::EDGE_RENDERING
+  );
 }
 
 void GLView::setRenderer(std::shared_ptr<Renderer> r)
@@ -244,18 +221,6 @@ void GLView::paintGL()
 }
 
 #ifdef ENABLE_OPENCSG
-
-void glCompileCheck(GLuint shader)
-{
-  GLint status;
-  glGetShaderiv(shader, GL_COMPILE_STATUS, &status);
-  if (status == GL_FALSE) {
-    int loglen;
-    char logbuffer[1000];
-    glGetShaderInfoLog(shader, sizeof(logbuffer), &loglen, logbuffer);
-    PRINTDB("OpenGL Shader Program Compile Error:\n%s", logbuffer);
-  }
-}
 
 void GLView::enable_opencsg_shaders()
 {

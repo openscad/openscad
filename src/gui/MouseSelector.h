@@ -20,7 +20,7 @@ public:
 
   int select(const Renderer *renderer, int x, int y);
 
-  ShaderUtils::ShaderInfo shaderinfo;
+  std::unique_ptr<ShaderUtils::Shader> shader;
 
 private:
   void initShader();

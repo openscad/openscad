@@ -45,23 +45,11 @@ void MouseSelector::initShader()
   // Attributes:
   // frag_idcolor - (uniform) 24 bit of the selected object's id encoded into R/G/B components as float
   // values
-  const auto selectshader =
-    ShaderUtils::compileShaderProgram(ShaderUtils::loadShaderSource("MouseSelector.vert"),
-                                      ShaderUtils::loadShaderSource("MouseSelector.frag"));
-
-  const GLint frag_idcolor = glGetUniformLocation(selectshader.shader_program, "frag_idcolor");
-  if (frag_idcolor < 0) {
-    // TODO: Surface error better
-    fprintf(stderr, __FILE__ ": OpenGL symbol retrieval went wrong, id is %i\n\n", frag_idcolor);
-  }
-  this->shaderinfo = {
-    .resource = selectshader,
-    .type = ShaderUtils::ShaderType::SELECT_RENDERING,
-    .uniforms =
-      {
-        {"frag_idcolor", glGetUniformLocation(selectshader.shader_program, "frag_idcolor")},
-      },
-  };
+  shader = std::make_unique<ShaderUtils::Shader>(
+    "MouseSelector.vert",
+    "MouseSelector.frag",
+    ShaderUtils::ShaderType::SELECT_RENDERING
+  );
 }
 
 /**
@@ -134,7 +122,7 @@ int MouseSelector::select(const Renderer *renderer, int x, int y)
   glEnable(GL_DEPTH_TEST);
 
   // call the renderer with the selector shader
-  GL_CHECKD(renderer->draw(false, &this->shaderinfo));
+  GL_CHECKD(renderer->draw(false, shader.get()));
 
   // Not strictly necessary, but a nop if not required.
   glFlush();

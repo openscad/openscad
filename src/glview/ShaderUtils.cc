@@ -1,5 +1,7 @@
 #include "glview/ShaderUtils.h"
 
+#include "VertexState.h"
+
 #include <cstdio>
 #include <sstream>
 #include <string>
@@ -23,13 +25,15 @@ std::string loadShaderSource(const std::string& name)
   return buffer.str();
 }
 
-ShaderResource compileShaderProgram(const std::string& vs_str, const std::string& fs_str)
+Shader::Shader(const std::string& vs_str, const std::string& fs_str, const ShaderType type) : type(type)
 {
   int shaderstatus;
-  const char *vs_source = vs_str.c_str();
-  const char *fs_source = fs_str.c_str();
+  const std::string vs = loadShaderSource(vs_str);
+  const std::string fs = loadShaderSource(fs_str);
+  const char *vs_source = vs.c_str();
+  const char *fs_source = fs.c_str();
   // Compile the shaders
-  GL_CHECKD(auto vertex_shader = glCreateShader(GL_VERTEX_SHADER));
+  GL_CHECKD(vertex_shader = glCreateShader(GL_VERTEX_SHADER));
   glShaderSource(vertex_shader, 1, (const GLchar **)&vs_source, nullptr);
   glCompileShader(vertex_shader);
   glGetShaderiv(vertex_shader, GL_COMPILE_STATUS, &shaderstatus);
@@ -38,11 +42,11 @@ ShaderResource compileShaderProgram(const std::string& vs_str, const std::string
     char logbuffer[1000];
     glGetShaderInfoLog(vertex_shader, sizeof(logbuffer), &loglen, logbuffer);
     // FIXME: Use OpenCAD log to error instead of stderr
-    fprintf(stderr, __FILE__ ": OpenGL vertex shader Error:\n%.*s\n\n", loglen, logbuffer);
-    return {};
+    fprintf(stderr, __FILE__ " %s: OpenGL vertex shader Error:\n%.*s\n\n", vs_str.c_str(), loglen, logbuffer);
+    return;
   }
 
-  GL_CHECKD(auto fragment_shader = glCreateShader(GL_FRAGMENT_SHADER));
+  GL_CHECKD(fragment_shader = glCreateShader(GL_FRAGMENT_SHADER));
   glShaderSource(fragment_shader, 1, (const GLchar **)&fs_source, nullptr);
   glCompileShader(fragment_shader);
   glGetShaderiv(fragment_shader, GL_COMPILE_STATUS, &shaderstatus);
@@ -51,43 +55,75 @@ ShaderResource compileShaderProgram(const std::string& vs_str, const std::string
     char logbuffer[1000];
     glGetShaderInfoLog(fragment_shader, sizeof(logbuffer), &loglen, logbuffer);
     // FIXME: Use OpenCAD log to error instead of stderr
-    fprintf(stderr, __FILE__ ": OpenGL fragment shader Error:\n%.*s\n\n", loglen, logbuffer);
-    return {};
+    fprintf(stderr, __FILE__ " %s: OpenGL fragment shader Error:\n%.*s\n\n", fs_str.c_str(), loglen, logbuffer);
+    return;
   }
 
   // Link
-  auto shader_prog = glCreateProgram();
-  glAttachShader(shader_prog, vertex_shader);
-  glAttachShader(shader_prog, fragment_shader);
-  GL_CHECKD(glLinkProgram(shader_prog));
+  shader_program = glCreateProgram();
+  glAttachShader(shader_program, vertex_shader);
+  glAttachShader(shader_program, fragment_shader);
+  GL_CHECKD(glLinkProgram(shader_program));
 
   GLint status;
-  glGetProgramiv(shader_prog, GL_LINK_STATUS, &status);
+  glGetProgramiv(shader_program, GL_LINK_STATUS, &status);
   if (status == GL_FALSE) {
     int loglen;
     char logbuffer[1000];
-    glGetProgramInfoLog(shader_prog, sizeof(logbuffer), &loglen, logbuffer);
+    glGetProgramInfoLog(shader_program, sizeof(logbuffer), &loglen, logbuffer);
     // FIXME: Use OpenCAD log to error instead of stderr
     fprintf(stderr, __FILE__ ": OpenGL Program Linker Error:\n%.*s\n\n", loglen, logbuffer);
-    return {};
-  } else {
-    glValidateProgram(shader_prog);
-    glGetProgramiv(shader_prog, GL_VALIDATE_STATUS, &status);
-    if (!status) {
-      int loglen;
-      char logbuffer[1000];
-      glGetProgramInfoLog(shader_prog, sizeof(logbuffer), &loglen, logbuffer);
-      // FIXME: Use OpenCAD log to error instead of stderr
-      fprintf(stderr, __FILE__ ": OpenGL Program Validation results:\n%.*s\n\n", loglen, logbuffer);
-      return {};
-    }
+    return;
   }
 
-  return {
-    .shader_program = shader_prog,
-    .vertex_shader = vertex_shader,
-    .fragment_shader = fragment_shader,
-  };
+  glValidateProgram(shader_program);
+  glGetProgramiv(shader_program, GL_VALIDATE_STATUS, &status);
+  if (!status) {
+    int loglen;
+    char logbuffer[1000];
+    glGetProgramInfoLog(shader_program, sizeof(logbuffer), &loglen, logbuffer);
+    // FIXME: Use OpenCAD log to error instead of stderr
+    fprintf(stderr, __FILE__ ": OpenGL Program Validation results:\n%.*s\n\n", loglen, logbuffer);
+    return;
+  }
+}
+
+Shader::~Shader()
+{
+  if (shader_program) {
+    glDeleteProgram(shader_program);
+  }
+  if (vertex_shader) {
+    glDeleteShader(vertex_shader);
+  }
+  if (fragment_shader) {
+    glDeleteShader(fragment_shader);
+  }
+}
+
+void Shader::use() const
+{
+  glUseProgram(shader_program);
+  if (type == ShaderType::EDGE_RENDERING)
+    glEnableVertexAttribArray(attributes("barycentric"));
+}
+
+void Shader::unuse() const
+{
+  if (type == ShaderType::EDGE_RENDERING)
+    glDisableVertexAttribArray(attributes("barycentric"));
+  glUseProgram(0);
+}
+
+GLint Shader::attributes(const std::string& name) const
+{
+  return glGetAttribLocation(shader_program, name.c_str());
+}
+
+// TODO: template this?
+void Shader::set3f(const std::string& name, GLfloat v0, GLfloat v1, GLfloat v2) const
+{
+  glUniform3f(glGetUniformLocation(shader_program, name.c_str()), v0, v1, v2);
 }
 
 }  // namespace ShaderUtils

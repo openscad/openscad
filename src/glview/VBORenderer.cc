@@ -40,25 +40,6 @@
 #include <memory>
 #include <cstddef>
 
-namespace VBOUtils {
-
-void shader_attribs_enable(const ShaderUtils::ShaderInfo& shaderinfo)
-{
-  for (const auto& [name, location] : shaderinfo.attributes) {
-    GL_TRACE("glEnableVertexAttribArray(%d)", location);
-    GL_CHECKD(glEnableVertexAttribArray(location));
-  }
-}
-
-void shader_attribs_disable(const ShaderUtils::ShaderInfo& shaderinfo)
-{
-  for (const auto& [name, location] : shaderinfo.attributes) {
-    GL_TRACE("glEnableVertexAttribArray(%d)", location);
-    GL_CHECKD(glDisableVertexAttribArray(location));
-  }
-}
-
-}  // namespace VBOUtils
 
 VBORenderer::VBORenderer() : Renderer()
 {
@@ -130,7 +111,7 @@ size_t VBORenderer::calcNumEdgeVertices(const Polygon2d& polygon) const
   return buffer_size;
 }
 
-void VBORenderer::add_shader_pointers(VBOBuilder& vbo_builder, const ShaderUtils::ShaderInfo *shaderinfo)
+void VBORenderer::add_shader_pointers(VBOBuilder& vbo_builder, const ShaderUtils::Shader *shader)
 {
   const std::shared_ptr<VertexData> vertex_data = vbo_builder.data();
 
@@ -144,7 +125,7 @@ void VBORenderer::add_shader_pointers(VBOBuilder& vbo_builder, const ShaderUtils
   GLenum type = 0;
   size_t offset = 0;
 
-  GLuint attribute_index = shaderinfo->attributes.at("barycentric");
+  GLuint attribute_index = shader->attributes("barycentric");
   if (attribute_index > 0) {
     count =
       vertex_data->attributes()[vbo_builder.shader_attributes_index_ + BARYCENTRIC_ATTRIB]->count();

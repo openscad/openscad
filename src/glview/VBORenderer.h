@@ -17,13 +17,6 @@
 #include <unordered_map>
 #include <boost/functional/hash.hpp>
 
-namespace VBOUtils {
-
-void shader_attribs_enable(const ShaderUtils::ShaderInfo& shaderinfo);
-void shader_attribs_disable(const ShaderUtils::ShaderInfo& shaderinfo);
-
-}  // namespace VBOUtils
-
 class VBOShaderVertexState : public VertexState
 {
 public:
@@ -47,13 +40,11 @@ public:
 
   void add_shader_pointers(
     VBOBuilder& vbo_builder,
-    const ShaderUtils::ShaderInfo
-      *shaderinfo);  // This could stay protected, were it not for VertexStateManager
+    const ShaderUtils::Shader
+      *shader);  // This could stay protected, were it not for VertexStateManager
 
 protected:
   void add_shader_data(VBOBuilder& vbo_builder);
-  void shader_attribs_enable(const ShaderUtils::ShaderInfo&) const;
-  void shader_attribs_disable(const ShaderUtils::ShaderInfo&) const;
 
   mutable std::unordered_map<std::pair<const PolySet *, const Transform3d *>, int,
                              boost::hash<std::pair<const PolySet *, const Transform3d *>>>

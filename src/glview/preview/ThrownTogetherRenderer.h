@@ -59,23 +59,23 @@ public:
                          std::shared_ptr<CSGProducts> highlight_products,
                          std::shared_ptr<CSGProducts> background_products);
   ~ThrownTogetherRenderer() override = default;
-  void prepare(const ShaderUtils::ShaderInfo *shaderinfo = nullptr) override;
-  void draw(bool showedges, const ShaderUtils::ShaderInfo *shaderinfo = nullptr) const override;
+  void prepare(const ShaderUtils::Shader *shader) override;
+  void draw(bool showedges, const ShaderUtils::Shader *shader) const override;
 
   BoundingBox getBoundingBox() const override;
 
 private:
   void renderCSGProducts(const std::shared_ptr<CSGProducts>& products, bool showedges = false,
-                         const ShaderUtils::ShaderInfo *shaderinfo = nullptr,
+                         const ShaderUtils::Shader *shader = nullptr,
                          bool highlight_mode = false, bool background_mode = false,
                          bool fberror = false) const;
 
   void createCSGProducts(const CSGProducts& products, VertexStateContainer& container,
                          VBOBuilder& vbo_builder, bool highlight_mode, bool background_mode,
-                         const ShaderUtils::ShaderInfo *shaderinfo);
+                         const ShaderUtils::Shader *shader);
   void createChainObject(VertexStateContainer& container, VBOBuilder& vbo_builder,
                          const CSGChainObject& csgobj, bool highlight_mode, bool background_mode,
-                         OpenSCADOperator type, const ShaderUtils::ShaderInfo *shaderinfo);
+                         OpenSCADOperator type, const ShaderUtils::Shader *shader);
 
   std::shared_ptr<CSGProducts> root_products_;
   std::shared_ptr<CSGProducts> highlight_products_;

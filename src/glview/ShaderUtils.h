@@ -12,21 +12,27 @@ enum class ShaderType {
   SELECT_RENDERING,
 };
 
-struct ShaderResource {
+std::string loadShaderSource(const std::string& name);
+
+class Shader
+{
+public:
+  Shader(const std::string& vs_str, const std::string& fs_str, ShaderType type);
+  Shader(const Shader&) = delete;
+  Shader & operator=(const Shader&) = delete;
+  ~Shader();
+
+  void use() const;
+  void unuse() const;
+  GLint attributes(const std::string& name) const;
+  void set3f(const std::string& name, GLfloat v0, GLfloat v1, GLfloat v2) const;
+
+  const ShaderType type;
+
+private:
   GLuint shader_program;
   GLuint vertex_shader;
   GLuint fragment_shader;
 };
-
-// Shader attribute identifiers
-struct ShaderInfo {
-  ShaderResource resource;
-  ShaderType type;
-  std::unordered_map<std::string, int> uniforms;
-  std::unordered_map<std::string, int> attributes;
-};
-
-std::string loadShaderSource(const std::string& name);
-ShaderResource compileShaderProgram(const std::string& vs_str, const std::string& fs_str);
 
 }  // namespace ShaderUtils
