@@ -239,10 +239,7 @@ void PolySetRenderer::drawPolySets(bool /* showedges */, const ShaderUtils::Shad
 
   for (const auto& container : polyset_vertex_state_containers_) {
     for (const auto& vertex_state : container.states()) {
-      const auto shader_vs = std::dynamic_pointer_cast<VBOShaderVertexState>(vertex_state);
-      if (!shader_vs || shader->type == ShaderUtils::ShaderType::EDGE_RENDERING) {
-        vertex_state->draw();
-      }
+      shader->draw(vertex_state);
     }
   }
 
