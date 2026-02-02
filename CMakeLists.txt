@@ -34,7 +34,7 @@ configure_file(
   ${CMAKE_BINARY_DIR}/version.cc
   @ONLY
 )
-
+option(ENABLE_R14 "Test R14 compatible DXF output" ON)
 option(INFO "Display build configuration info at end of cmake config" ON)
 option(ENABLE_TESTS "Run testsuite after building." ON)
 option(ENABLE_GUI_TESTS "Compile a special version of the openscad gui with feature for testing." OFF)
@@ -1080,6 +1080,7 @@ set(CORE_SOURCES
   src/io/export.cc
   src/io/export_amf.cc
   src/io/export_dxf.cc
+  src/io/export_dxf_R14.cc
   src/io/export_obj.cc
   src/io/export_off.cc
   src/io/export_param.cc
