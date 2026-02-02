@@ -10,7 +10,7 @@ namespace ShaderUtils {
 
 enum class ShaderType {
   NONE,
-  EDGE_RENDERING,
+  MAIN_RENDERING,
   SELECT_RENDERING,
 };
 

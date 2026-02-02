@@ -64,7 +64,7 @@ public:
   [[nodiscard]] virtual std::string getRendererInfo() const = 0;
   virtual float getDPI() { return 1.0f; }
 
-  std::unique_ptr<ShaderUtils::Shader> edge_shader;
+  std::unique_ptr<ShaderUtils::Shader> main_shader;
   std::shared_ptr<Renderer> renderer;
   const ColorScheme *colorscheme;
   Camera cam;
