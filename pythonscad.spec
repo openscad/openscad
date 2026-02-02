@@ -90,6 +90,7 @@ modern features.
     -DENABLE_TESTS=OFF \
     -DUSE_BUILTIN_MANIFOLD=ON \
     -DUSE_BUILTIN_CLIPPER2=ON \
+    -DPORTABLE_BINARY=ON \
     -DSNAPSHOT=OFF
 
 %cmake_build
