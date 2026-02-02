@@ -16,42 +16,6 @@
 class CSGProducts;
 class CSGChainObject;
 
-class TTRVertexState : public VertexState
-{
-public:
-  TTRVertexState(size_t csg_object_index = 0) : csg_object_index_(csg_object_index) {}
-  TTRVertexState(GLenum draw_mode, GLsizei draw_size, GLenum draw_type, size_t draw_offset,
-                 size_t element_offset, GLuint vertices_vbo, GLuint elements_vbo,
-                 size_t csg_object_index = 0)
-    : VertexState(draw_mode, draw_size, draw_type, draw_offset, element_offset, vertices_vbo,
-                  elements_vbo),
-      csg_object_index_(csg_object_index)
-  {
-  }
-
-  [[nodiscard]] size_t csgObjectIndex() const { return csg_object_index_; }
-  void setCsgObjectIndex(size_t csg_object_index) { csg_object_index_ = csg_object_index; }
-
-private:
-  size_t csg_object_index_;
-};
-
-class TTRVertexStateFactory : public VertexStateFactory
-{
-public:
-  TTRVertexStateFactory() = default;
-
-  [[nodiscard]] std::shared_ptr<VertexState> createVertexState(GLenum draw_mode, size_t draw_size,
-                                                               GLenum draw_type, size_t draw_offset,
-                                                               size_t element_offset,
-                                                               GLuint vertices_vbo,
-                                                               GLuint elements_vbo) const override
-  {
-    return std::make_shared<TTRVertexState>(draw_mode, draw_size, draw_type, draw_offset, element_offset,
-                                            vertices_vbo, elements_vbo);
-  }
-};
-
 class ThrownTogetherRenderer : public VBORenderer
 {
 public:

@@ -139,7 +139,7 @@ void CGALRenderer::createPolySetStates()
 
   VertexStateContainer& vertex_state_container = vertex_state_containers_.emplace_back();
 
-  VBOBuilder vbo_builder(std::make_unique<VertexStateFactory>(), vertex_state_container);
+  VBOBuilder vbo_builder(vertex_state_container);
 
   vbo_builder.addSurfaceData();  // position, normal, color
 
@@ -168,7 +168,7 @@ void CGALRenderer::createPolygonStates()
 void CGALRenderer::createPolygonSurfaceStates()
 {
   VertexStateContainer& vertex_state_container = vertex_state_containers_.emplace_back();
-  VBOBuilder vbo_builder(std::make_unique<VertexStateFactory>(), vertex_state_container);
+  VBOBuilder vbo_builder(vertex_state_container);
   vbo_builder.addSurfaceData();
 
   size_t num_vertices = 0;
@@ -199,7 +199,7 @@ void CGALRenderer::createPolygonEdgeStates()
   PRINTD("createPolygonStates()");
 
   VertexStateContainer& vertex_state_container = vertex_state_containers_.emplace_back();
-  VBOBuilder vbo_builder(std::make_unique<VertexStateFactory>(), vertex_state_container);
+  VBOBuilder vbo_builder(vertex_state_container);
 
   vbo_builder.addEdgeData();
 
