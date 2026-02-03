@@ -94,7 +94,7 @@ void ThrownTogetherRenderer::prepare(const ShaderUtils::Shader *shader)
   if (vertex_state_containers_.empty()) {
     VertexStateContainer& vertex_state_container = vertex_state_containers_.emplace_back();
 
-    VBOBuilder vbo_builder(std::make_unique<OpenCSGVertexStateFactory>(), vertex_state_container);
+    VBOBuilder vbo_builder(vertex_state_container);
     vbo_builder.addSurfaceData();
     vbo_builder.addShaderData();  // Always enable barycentric coordinates
 
@@ -158,7 +158,7 @@ void ThrownTogetherRenderer::createChainObject(VertexStateContainer& container, 
     add_shader_pointers(vbo_builder, shader);
 
     vbo_builder.create_surface(*csgobj.leaf->polyset, csgobj.leaf->matrix, color, enable_barycentric);
-    if (const auto ttr_vs = std::dynamic_pointer_cast<OpenCSGVertexState>(vbo_builder.states().back())) {
+    if (const auto ttr_vs = std::dynamic_pointer_cast<VertexState>(vbo_builder.states().back())) {
       ttr_vs->setCsgObjectIndex(csgobj.leaf->index);
     }
   } else {  // root mode
@@ -182,7 +182,7 @@ void ThrownTogetherRenderer::createChainObject(VertexStateContainer& container, 
       mat *= Eigen::Scaling(1.0, 1.0, 1.1);
     }
     vbo_builder.create_surface(*csgobj.leaf->polyset, mat, color, enable_barycentric);
-    if (auto ttr_vs = std::dynamic_pointer_cast<OpenCSGVertexState>(vbo_builder.states().back())) {
+    if (auto ttr_vs = std::dynamic_pointer_cast<VertexState>(vbo_builder.states().back())) {
       ttr_vs->setCsgObjectIndex(csgobj.leaf->index);
     }
 
@@ -201,7 +201,7 @@ void ThrownTogetherRenderer::createChainObject(VertexStateContainer& container, 
     container.states().emplace_back(std::move(cull));
 
     vbo_builder.create_surface(*csgobj.leaf->polyset, csgobj.leaf->matrix, color, enable_barycentric);
-    if (auto ttr_vs = std::dynamic_pointer_cast<OpenCSGVertexState>(vbo_builder.states().back())) {
+    if (auto ttr_vs = std::dynamic_pointer_cast<VertexState>(vbo_builder.states().back())) {
       ttr_vs->setCsgObjectIndex(csgobj.leaf->index);
     }
 
