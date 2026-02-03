@@ -3397,7 +3397,6 @@ void MainWindow::setupPreferences()
   connect(GlobalPreferences::inst(), &Preferences::toolbarExportChanged, this,
           &MainWindow::updateExportActions);
 
-
   connect(GlobalPreferences::inst(), &Preferences::requestRedraw, this->qglview,
           QOverload<>::of(&QGLView::update));
   connect(GlobalPreferences::inst(), &Preferences::updateMouseCentricZoom, this->qglview,

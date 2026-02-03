@@ -65,7 +65,7 @@ void Animate::connectAction(QAction *action, QPushButton *button)
   this->actionList.append(action);
 }
 
-void Animate::on_e_tval_textChanged(const QString &)
+void Animate::on_e_tval_textChanged(const QString&)
 {
   double t = this->e_tval->text().toDouble(&this->tOK);
   // Clamp t to 0-1
@@ -81,12 +81,12 @@ void Animate::on_e_tval_textChanged(const QString &)
   updatePauseButtonIcon();
 }
 
-void Animate::on_e_fps_textChanged(const QString &)
+void Animate::on_e_fps_textChanged(const QString&)
 {
   updatedAnimFpsAndAnimSteps();
 }
 
-void Animate::on_e_fsteps_textChanged(const QString &)
+void Animate::on_e_fsteps_textChanged(const QString&)
 {
   updatedAnimFpsAndAnimSteps();
 }
