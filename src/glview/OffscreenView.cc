@@ -96,11 +96,6 @@ OffscreenView::OffscreenView(uint32_t width, uint32_t height)
   GLView::resizeGL(width, height);
 }
 
-OffscreenView::~OffscreenView()
-{
-  fbo.reset();
-}
-
 #ifdef ENABLE_OPENCSG
 void OffscreenView::display_opencsg_warning()
 {

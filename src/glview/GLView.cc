@@ -38,10 +38,6 @@ GLView::GLView()
 #endif
 }
 
-GLView::~GLView()
-{
-}
-
 void GLView::setupShader()
 {
   if (main_shader) return;
