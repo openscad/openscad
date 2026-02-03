@@ -219,8 +219,7 @@ public:
 
     points_edges_container_ = std::make_unique<VertexStateContainer>();
 
-    VBOBuilder points_edges_builder(std::make_unique<VertexStateFactory>(),
-                                    *points_edges_container_.get());
+    VBOBuilder points_edges_builder(*points_edges_container_.get());
 
     points_edges_builder.addEdgeData();
     points_edges_builder.writeEdge();
@@ -295,7 +294,7 @@ public:
 
     // FIXME: We don't know the size of this VertexArray in advanced, so we have to deal with some
     // fallback mechanism for filling in the data. This complicates code quite a bit
-    VBOBuilder halffacets_builder(std::make_unique<VertexStateFactory>(), *halffacets_container_.get());
+    VBOBuilder halffacets_builder(*halffacets_container_.get());
     halffacets_builder.addSurfaceData();
     halffacets_builder.writeSurface();
 

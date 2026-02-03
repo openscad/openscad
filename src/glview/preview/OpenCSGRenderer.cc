@@ -68,7 +68,7 @@ private:
 // Makes a copy of the given VertexState enabling just unlit/uncolored vertex
 // rendering
 std::unique_ptr<OpenCSGVBOPrim> createVBOPrimitive(
-  const std::shared_ptr<OpenCSGVertexState>& vertex_state, const OpenCSG::Operation operation,
+  const std::shared_ptr<VertexState>& vertex_state, const OpenCSG::Operation operation,
   const unsigned int convexity)
 {
   std::unique_ptr<VertexState> opencsg_vs = std::make_unique<VertexState>(
@@ -158,7 +158,7 @@ void OpenCSGRenderer::createCSGVBOProducts(const CSGProducts& products, bool hig
 
     Color4f last_color;
     auto& vertex_states = vertex_state_container->states();
-    VBOBuilder vbo_builder(std::make_unique<OpenCSGVertexStateFactory>(), *vertex_state_container.get());
+    VBOBuilder vbo_builder(*vertex_state_container.get());
     vbo_builder.addSurfaceData();
     vbo_builder.writeSurface();
     vbo_builder.addShaderData();  // Always enable barycentric coordinates
@@ -205,7 +205,7 @@ void OpenCSGRenderer::createCSGVBOProducts(const CSGProducts& products, bool hig
           // object is opaque, draw normally
           vbo_builder.create_surface(*csgobj.leaf->polyset, csgobj.leaf->matrix, last_color,
                                      enable_barycentric, override_color);
-          if (const auto csg_vs = std::dynamic_pointer_cast<OpenCSGVertexState>(vertex_states.back())) {
+          if (const auto csg_vs = std::dynamic_pointer_cast<VertexState>(vertex_states.back())) {
             csg_vs->setCsgObjectIndex(csgobj.leaf->index);
             vertex_state_container->addPrimitive(
               createVBOPrimitive(csg_vs, OpenCSG::Intersection, csgobj.leaf->polyset->getConvexity()));
@@ -223,7 +223,7 @@ void OpenCSGRenderer::createCSGVBOProducts(const CSGProducts& products, bool hig
 
           vbo_builder.create_surface(*csgobj.leaf->polyset, csgobj.leaf->matrix, last_color,
                                      enable_barycentric, override_color);
-          if (const auto csg_vs = std::dynamic_pointer_cast<OpenCSGVertexState>(vertex_states.back())) {
+          if (const auto csg_vs = std::dynamic_pointer_cast<VertexState>(vertex_states.back())) {
             csg_vs->setCsgObjectIndex(csgobj.leaf->index);
 
             vertex_state_container->addPrimitive(
@@ -292,7 +292,7 @@ void OpenCSGRenderer::createCSGVBOProducts(const CSGProducts& products, bool hig
         }
         vbo_builder.create_surface(*csgobj.leaf->polyset, tmp, last_color, enable_barycentric,
                                    override_color);
-        if (const auto csg_vs = std::dynamic_pointer_cast<OpenCSGVertexState>(vertex_states.back())) {
+        if (const auto csg_vs = std::dynamic_pointer_cast<VertexState>(vertex_states.back())) {
           csg_vs->setCsgObjectIndex(csgobj.leaf->index);
           vertex_state_container->addPrimitive(
             createVBOPrimitive(csg_vs, OpenCSG::Subtraction, csgobj.leaf->polyset->getConvexity()));

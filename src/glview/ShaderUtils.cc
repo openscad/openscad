@@ -120,12 +120,10 @@ void Shader::unuse() const
 void Shader::draw(const std::shared_ptr<VertexState>& vertex_state) const
 {
   if (type == ShaderType::SELECT_RENDERING) {
-    if (const auto csg_vs = std::dynamic_pointer_cast<OpenCSGVertexState>(vertex_state)) {
-      set3f("frag_idcolor",
-      ((csg_vs->csgObjectIndex() >> 0) & 0xff) / 255.0f,
-      ((csg_vs->csgObjectIndex() >> 8) & 0xff) / 255.0f,
-      ((csg_vs->csgObjectIndex() >> 16) & 0xff) / 255.0f);
-    }
+    set3f("frag_idcolor",
+    ((vertex_state->csgObjectIndex() >> 0) & 0xff) / 255.0f,
+    ((vertex_state->csgObjectIndex() >> 8) & 0xff) / 255.0f,
+    ((vertex_state->csgObjectIndex() >> 16) & 0xff) / 255.0f);
   }
   const auto shader_vs = std::dynamic_pointer_cast<VBOShaderVertexState>(vertex_state);
   if (!shader_vs || type == ShaderType::MAIN_RENDERING) {

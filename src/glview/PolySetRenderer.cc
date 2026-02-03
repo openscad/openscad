@@ -114,7 +114,7 @@ void PolySetRenderer::setColorScheme(const ColorScheme& cs)
 void PolySetRenderer::createPolySetStates(const ShaderUtils::Shader *shader)
 {
   VertexStateContainer& vertex_state_container = polyset_vertex_state_containers_.emplace_back();
-  VBOBuilder vbo_builder(std::make_unique<VertexStateFactory>(), vertex_state_container);
+  VBOBuilder vbo_builder(vertex_state_container);
 
   vbo_builder.addSurfaceData();  // position, normal, color
   vbo_builder.addShaderData();
@@ -148,7 +148,7 @@ void PolySetRenderer::createPolygonStates()
 void PolySetRenderer::createPolygonSurfaceStates()
 {
   VertexStateContainer& vertex_state_container = polygon_vertex_state_containers_.emplace_back();
-  VBOBuilder vbo_builder(std::make_unique<VertexStateFactory>(), vertex_state_container);
+  VBOBuilder vbo_builder(vertex_state_container);
   vbo_builder.addSurfaceData();
 
   size_t num_vertices = 0;
@@ -177,7 +177,7 @@ void PolySetRenderer::createPolygonSurfaceStates()
 void PolySetRenderer::createPolygonEdgeStates()
 {
   VertexStateContainer& vertex_state_container = polygon_vertex_state_containers_.emplace_back();
-  VBOBuilder vbo_builder(std::make_unique<VertexStateFactory>(), vertex_state_container);
+  VBOBuilder vbo_builder(vertex_state_container);
 
   vbo_builder.addEdgeData();
 
