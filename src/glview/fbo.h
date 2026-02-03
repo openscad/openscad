@@ -9,7 +9,7 @@ class FBO
 {
 public:
   FBO(int width, int height, bool useEXT);
-  ~FBO() { destroy(); };
+  ~FBO();
 
   int width() const { return this->width_; }
   int height() const { return this->height_; }
@@ -20,8 +20,6 @@ public:
   void unbind();
 
 private:
-  void destroy();
-
   int width_ = 0;
   int height_ = 0;
   bool use_ext_;

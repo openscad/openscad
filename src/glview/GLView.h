@@ -33,7 +33,6 @@ class GLView
 {
 public:
   GLView();
-  virtual ~GLView();
 
   void setupShader();
 
