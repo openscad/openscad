@@ -217,13 +217,13 @@ static void exportFile(const std::shared_ptr<const Geometry>& root_geom, std::os
   case FileFormat::AMF:        export_amf(root_geom, output); break;
   case FileFormat::_3MF:       export_3mf(root_geom, output, exportInfo); break;
 #ifdef ENABLE_R14
-  case FileFormat::DXF:        export_dxf_R14(root_geom, output); break;
+  case FileFormat::DXF: export_dxf_R14(root_geom, output); break;
 #else
-  case FileFormat::DXF:        export_dxf(root_geom, output); break;
+  case FileFormat::DXF: export_dxf(root_geom, output); break;
 #endif
-  case FileFormat::SVG:        export_svg(root_geom, output, exportInfo); break;
-  case FileFormat::PDF:        export_pdf(root_geom, output, exportInfo); break;
-  case FileFormat::POV:        export_pov(root_geom, output, exportInfo); break;
+  case FileFormat::SVG: export_svg(root_geom, output, exportInfo); break;
+  case FileFormat::PDF: export_pdf(root_geom, output, exportInfo); break;
+  case FileFormat::POV: export_pov(root_geom, output, exportInfo); break;
 #ifdef ENABLE_CGAL
   case FileFormat::NEFDBG: export_nefdbg(root_geom, output); break;
   case FileFormat::NEF3:   export_nef3(root_geom, output); break;
