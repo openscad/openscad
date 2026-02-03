@@ -114,6 +114,7 @@ signals:
   void resized();
   void doRightClick(QPoint screen_coordinate);
   void doLeftClick(QPoint screen_coordinate);
+  void initialized();
 };
 
 /* These are defined in QLGView2.cc.  See the commentary there. */

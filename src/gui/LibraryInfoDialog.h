@@ -14,4 +14,7 @@ public:
   LibraryInfoDialog(const QString& rendererInfo);
 
   void updateLibraryInfo(const QString& rendererInfo);
+
+private slots:
+  void on_okButton_clicked();
 };
