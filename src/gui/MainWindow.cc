@@ -268,6 +268,7 @@ MainWindow::MainWindow(const QStringList& filenames) : rubberBandManager(this)
 {
   // Main UI setup
   setupWindow();
+  setupMenusAndActions();
 
   // Workers, timers etc.
   // Set up early as some reactions to GUI state changes may trigger
@@ -288,11 +289,11 @@ MainWindow::MainWindow(const QStringList& filenames) : rubberBandManager(this)
   setup3DView();
   setupPreferences();
 
-  setupMenusAndActions();
   setupInput();
 
   restoreWindowState();
 
+  this->hideFind();
   show();
   openRemainingFiles(filenames);
 }
@@ -2572,16 +2573,14 @@ void MainWindow::on_designActionFlushCaches_triggered()
 
 void MainWindow::viewModeActionsUncheck()
 {
-  viewActionPreview->setChecked(false);
-  viewActionThrownTogether->setChecked(false);
+  previewModeGroup->setEnabled(false);
 }
 
 #ifdef ENABLE_OPENCSG
 
 void MainWindow::viewModeRender()
 {
-  viewActionThrownTogether->setEnabled(false);
-  viewActionPreview->setEnabled(false);
+  previewModeGroup->setEnabled(false);
   this->qglview->setRenderer(this->geomRenderer);
   this->qglview->updateColorScheme();
   this->qglview->update();
@@ -2598,11 +2597,9 @@ void MainWindow::on_viewActionPreview_triggered()
 
 void MainWindow::viewModePreview()
 {
-  viewActionThrownTogether->setEnabled(true);
-  viewActionPreview->setEnabled(this->qglview->hasOpenCSGSupport());
+  previewModeGroup->setEnabled(true);
   if (this->qglview->hasOpenCSGSupport()) {
     viewActionPreview->setChecked(true);
-    viewActionThrownTogether->setChecked(false);
     this->qglview->setRenderer(this->previewRenderer ? this->previewRenderer
                                                      : this->thrownTogetherRenderer);
     this->qglview->updateColorScheme();
@@ -2617,6 +2614,7 @@ void MainWindow::viewModePreview()
 void MainWindow::updateViewModeAfterGLInit()
 {
 #ifdef ENABLE_OPENCSG
+  viewActionPreview->setEnabled(this->qglview->hasOpenCSGSupport());
   if (this->qglview->hasOpenCSGSupport()) {
     viewModePreview();
   }
@@ -2630,10 +2628,8 @@ void MainWindow::on_viewActionThrownTogether_triggered()
 
 void MainWindow::viewModeThrownTogether()
 {
-  viewActionThrownTogether->setEnabled(true);
-  viewActionPreview->setEnabled(this->qglview->hasOpenCSGSupport());
+  previewModeGroup->setEnabled(true);
   viewActionThrownTogether->setChecked(true);
-  viewActionPreview->setChecked(false);
   this->qglview->setRenderer(this->thrownTogetherRenderer);
   this->qglview->updateColorScheme();
   this->qglview->update();
@@ -3485,6 +3481,10 @@ void MainWindow::setupEditor(const QStringList& filenames)
   activeEditor = tabManager->editor;
   editorDockContents->layout()->addWidget(tabManager->getTabContent());
 
+  connect(this->fileActionNew, &QAction::triggered, tabManager, &TabManager::actionNew);
+  connect(this->fileActionClose, &QAction::triggered, tabManager, &TabManager::closeCurrentTab);
+  connect(this->fileActionSaveAll, &QAction::triggered, tabManager, &TabManager::saveAll);
+
   connect(this, &MainWindow::highlightError, tabManager, &TabManager::highlightError);
   connect(this, &MainWindow::unhighlightLastError, tabManager, &TabManager::unhighlightLastError);
 
@@ -3692,7 +3692,6 @@ void MainWindow::setupMenusAndActions()
           this, &MainWindow::actionExportFileFormat);
 #endif
 
-  this->hideFind();
   frameCompileResult->hide();
   this->labelCompileResultMessage->setOpenExternalLinks(false);
   connect(this->labelCompileResultMessage, &QLabel::linkActivated, this, &MainWindow::showLink);
@@ -3706,7 +3705,6 @@ void MainWindow::setupMenusAndActions()
   // 
 
 
-  connect(this->fileActionNew, &QAction::triggered, tabManager, &TabManager::actionNew);
   // Recent files
   updateRecentFileActions();
 
@@ -3717,13 +3715,11 @@ void MainWindow::setupMenusAndActions()
   this->fileActionReload->setShortcuts(shortcuts);
 #endif
 
-  connect(this->fileActionClose, &QAction::triggered, tabManager, &TabManager::closeCurrentTab);
 
 #ifndef __APPLE__
   shortcuts = this->fileActionSave->shortcuts();
   this->fileActionSave->setShortcuts(shortcuts);
 #endif
-  connect(this->fileActionSaveAll, &QAction::triggered, tabManager, &TabManager::saveAll);
 
 
   connect(this->fileActionQuit, &QAction::triggered, scadApp, &OpenSCADApp::quit, Qt::QueuedConnection);
@@ -3775,13 +3771,13 @@ void MainWindow::setupMenusAndActions()
   //
   // View menu
   //
-  this->viewActionThrownTogether->setEnabled(false);
-  this->viewActionPreview->setEnabled(false);
+  previewModeGroup = new QActionGroup(this);
+  previewModeGroup->setExclusive(true);
+  previewModeGroup->addAction(this->viewActionPreview);
+  previewModeGroup->addAction(this->viewActionThrownTogether);
   if (this->qglview->hasOpenCSGSupport()) {
     this->viewActionPreview->setChecked(true);
-    this->viewActionThrownTogether->setChecked(false);
   } else {
-    this->viewActionPreview->setChecked(false);
     this->viewActionThrownTogether->setChecked(true);
   }
 

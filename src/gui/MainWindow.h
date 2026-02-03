@@ -465,6 +465,7 @@ private:
   QAction *activeMeasurement = nullptr;
 
   QActionGroup *viewActionProjectionGroup;
+  QActionGroup *previewModeGroup;
 
 signals:
   void highlightError(int);
