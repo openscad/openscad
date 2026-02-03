@@ -27,7 +27,7 @@
     <item row="0" column="0">
      <widget class="QStackedWidget" name="stackedWidget">
       <property name="currentIndex">
-       <number>7</number>
+       <number>5</number>
       </property>
       <widget class="QWidget" name="page3DView">
        <layout class="QVBoxLayout" name="verticalLayout_4">
@@ -136,7 +136,7 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>578</width>
+             <width>824</width>
              <height>933</height>
             </rect>
            </property>
@@ -1292,8 +1292,8 @@
               <rect>
                <x>0</x>
                <y>0</y>
-               <width>98</width>
-               <height>36</height>
+               <width>839</width>
+               <height>750</height>
               </rect>
              </property>
              <layout class="QVBoxLayout" name="verticalLayout_10">
@@ -1349,8 +1349,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>557</width>
-             <height>767</height>
+             <width>839</width>
+             <height>774</height>
             </rect>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_9">
@@ -1950,7 +1950,7 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>570</width>
+             <width>824</width>
              <height>1276</height>
             </rect>
            </property>
@@ -2195,14 +2195,14 @@
                <item>
                 <widget class="QCheckBox" name="reorderCheckBox">
                  <property name="text">
-                  <string>Enable docking of Editor and Console in different places</string>
+                  <string>Enable docking helper widgets in different places</string>
                  </property>
                 </widget>
                </item>
                <item>
                 <widget class="QCheckBox" name="undockCheckBox">
                  <property name="text">
-                  <string>Enable undocking of Editor and Console to separate windows</string>
+                  <string>Enable undocking of helper widgets to separate windows</string>
                  </property>
                 </widget>
                </item>
@@ -2800,8 +2800,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>98</width>
-             <height>28</height>
+             <width>839</width>
+             <height>774</height>
             </rect>
            </property>
           </widget>
