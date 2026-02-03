@@ -90,8 +90,8 @@ signals:
   void openWindowRequested(const QString& window);
 
 public slots:
-  void actionClearConsole_triggered();
-  void actionSaveAs_triggered();
+  void on_actionClear_triggered();
+  void on_actionSaveAs_triggered();
   void hyperlinkClicked(const QString& loc);
   void setConsoleFont(const QString& fontFamily, uint ptSize);
   void update();
