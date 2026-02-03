@@ -419,6 +419,7 @@ MainWindow::MainWindow(const QStringList& filenames) : rubberBandManager(this)
   customSetup();
 #endif
   setupWindow();
+  setupMenusAndActions();
 
   // Workers, timers etc.
   // Set up early as some reactions to GUI state changes may trigger
@@ -448,6 +449,7 @@ MainWindow::MainWindow(const QStringList& filenames) : rubberBandManager(this)
 
   restoreWindowState();
 
+  this->hideFind();
   show();
   openRemainingFiles(filenames);
 }
@@ -751,9 +753,7 @@ void MainWindow::addKeyboardShortCut(const QList<QAction *>& actions)
 void MainWindow::updateWindowSettings(bool isEditorToolbarVisible, bool isViewToolbarVisible)
 {
   viewActionHideEditorToolBar->setChecked(!isEditorToolbarVisible);
-  hideEditorToolbar();
   viewActionHide3DViewToolBar->setChecked(!isViewToolbarVisible);
-  hide3DViewToolbar();
 }
 
 void MainWindow::onAxisChanged(InputEventAxisChanged *)
@@ -816,25 +816,17 @@ void MainWindow::loadViewSettings()
 
   if (settings.value("view/showEdges").toBool()) {
     viewActionShowEdges->setChecked(true);
-    viewModeShowEdges();
   }
   if (settings.value("view/showAxes", true).toBool()) {
     viewActionShowAxes->setChecked(true);
-    viewModeShowAxes();
   }
   if (settings.value("view/showCrosshairs").toBool()) {
     viewActionShowCrosshairs->setChecked(true);
-    viewModeShowCrosshairs();
   }
   if (settings.value("view/showScaleProportional", true).toBool()) {
     viewActionShowScaleProportional->setChecked(true);
-    viewModeShowScaleProportional();
   }
-  if (settings.value("view/orthogonalProjection").toBool()) {
-    viewOrthogonal();
-  } else {
-    viewPerspective();
-  }
+  viewTogglePerspective();
 
   updateUndockMode(GlobalPreferences::inst()->getValue("advanced/undockableWindows").toBool());
   updateReorderMode(GlobalPreferences::inst()->getValue("advanced/reorderWindows").toBool());
@@ -1047,7 +1039,7 @@ void MainWindow::compile(bool reload, bool forcedone)
       initialize_rng();
       this->errorLogWidget->clearModel();
       if (GlobalPreferences::inst()->getValue("advanced/consoleAutoClear").toBool()) {
-        this->console->actionClearConsole_triggered();
+        this->console->clear();
       }
       if (activeEditor->isContentModified()) saveBackup();
       parseTopLevelDocument();
@@ -1401,7 +1393,7 @@ void MainWindow::compileCSGDone()
   csgRenderFinished();
 }
 
-void MainWindow::actionOpen()
+void MainWindow::on_fileActionOpen_triggered()
 {
   auto fileInfoList = UIUtils::openFiles(this);
   for (auto& i : fileInfoList) {
@@ -1412,12 +1404,12 @@ void MainWindow::actionOpen()
   }
 }
 
-void MainWindow::actionNewWindow()
+void MainWindow::on_fileActionNewWindow_triggered()
 {
   new MainWindow(QStringList());
 }
 
-void MainWindow::actionOpenWindow()
+void MainWindow::on_fileActionOpenWindow_triggered()
 {
   auto fileInfoList = UIUtils::openFiles(this);
   for (auto& i : fileInfoList) {
@@ -1435,7 +1427,7 @@ void MainWindow::actionOpenRecent()
   // recomputeLanguageActive(); // should be done in open
 }
 
-void MainWindow::clearRecentFiles()
+void MainWindow::on_fileActionClearRecent_triggered()
 {
   QSettingsCached settings;  // already set up properly via main.cpp
   const QStringList files;
@@ -1551,17 +1543,17 @@ void MainWindow::saveBackup()
   return writeBackup(this->tempFile);
 }
 
-void MainWindow::actionSave()
+void MainWindow::on_fileActionSave_triggered()
 {
   tabManager->save(activeEditor);
 }
 
-void MainWindow::actionSaveAs()
+void MainWindow::on_fileActionSaveAs_triggered()
 {
   tabManager->saveAs(activeEditor);
 }
 
-void MainWindow::actionPythonRevokeTrustedFiles()
+void MainWindow::on_fileActionPythonRevoke_triggered()
 {
   QSettingsCached settings;
 #ifdef ENABLE_PYTHON
@@ -1573,7 +1565,7 @@ void MainWindow::actionPythonRevokeTrustedFiles()
                            QMessageBox::Ok);
 }
 
-void MainWindow::actionPythonCreateVenv()
+void MainWindow::on_fileActionPythonCreateVenv_triggered()
 {
 #ifdef ENABLE_PYTHON
   const QString selectedDir = QFileDialog::getExistingDirectory(this, "Create Virtual Environment");
@@ -1615,7 +1607,7 @@ void MainWindow::actionPythonCreateVenv()
 #endif  // ifdef ENABLE_PYTHON
 }
 
-void MainWindow::actionPythonSelectVenv()
+void MainWindow::on_fileActionPythonSelectVenv_triggered()
 {
 #ifdef ENABLE_PYTHON
   const QString venvDir = QFileDialog::getExistingDirectory(this, "Select Virtual Environment");
@@ -1633,12 +1625,12 @@ void MainWindow::actionPythonSelectVenv()
 #endif  // ifdef ENABLE_PYTHON
 }
 
-void MainWindow::actionSaveACopy()
+void MainWindow::on_fileActionSaveACopy_triggered()
 {
   tabManager->saveACopy(activeEditor);
 }
 
-void MainWindow::actionShowLibraryFolder()
+void MainWindow::on_fileShowLibraryFolder_triggered()
 {
   auto path = PlatformUtils::userLibraryPath();
   if (!fs::exists(path)) {
@@ -1652,7 +1644,7 @@ void MainWindow::actionShowLibraryFolder()
   QDesktopServices::openUrl(QUrl::fromLocalFile(url));
 }
 
-void MainWindow::actionShowBackupFiles()
+void MainWindow::on_fileShowBackupFiles_triggered()
 {
   QString filename = UIUtils::getBackupFileName(this);
   if (filename.size() == 0) return;  // dont proceed when cancelled
@@ -1663,7 +1655,7 @@ void MainWindow::actionShowBackupFiles()
   activeEditor->setText("assert(0);\n" + result);
 }
 
-void MainWindow::actionReload()
+void MainWindow::on_fileActionReload_triggered()
 {
   if (checkEditorModified()) {
     fileChangedOnDisk();                  // force cached autoReloadId to update
@@ -1671,7 +1663,7 @@ void MainWindow::actionReload()
   }
 }
 
-void MainWindow::copyViewportTranslation()
+void MainWindow::on_editActionCopyVPT_triggered()
 {
   const auto vpt = qglview->cam.getVpt();
   const QString txt =
@@ -1679,7 +1671,7 @@ void MainWindow::copyViewportTranslation()
   QApplication::clipboard()->setText(txt);
 }
 
-void MainWindow::copyViewportRotation()
+void MainWindow::on_editActionCopyVPR_triggered()
 {
   const auto vpr = qglview->cam.getVpr();
   const QString txt =
@@ -1687,13 +1679,13 @@ void MainWindow::copyViewportRotation()
   QApplication::clipboard()->setText(txt);
 }
 
-void MainWindow::copyViewportDistance()
+void MainWindow::on_editActionCopyVPD_triggered()
 {
   const QString txt = QString::number(qglview->cam.zoomValue(), 'f', 2);
   QApplication::clipboard()->setText(txt);
 }
 
-void MainWindow::copyViewportFov()
+void MainWindow::on_editActionCopyVPF_triggered()
 {
   const QString txt = QString::number(qglview->cam.fovValue(), 'f', 2);
   QApplication::clipboard()->setText(txt);
@@ -1760,7 +1752,7 @@ void MainWindow::showFind(bool doFindAndReplace)
   findInputField->selectAll();
 }
 
-void MainWindow::actionShowFind()
+void MainWindow::on_editActionFind_triggered()
 {
   showFind(false);
 }
@@ -1772,7 +1764,7 @@ void MainWindow::findString(const QString& textToFind)
   activeEditor->find(textToFind);
 }
 
-void MainWindow::actionShowFindAndReplace()
+void MainWindow::on_editActionFindAndReplace_triggered()
 {
   showFind(true);
 }
@@ -1794,7 +1786,7 @@ void MainWindow::replaceAll()
   activeEditor->replaceAll(this->findInputField->text(), this->replaceInputField->text());
 }
 
-void MainWindow::convertTabsToSpaces()
+void MainWindow::on_editActionConvertTabsToSpaces_triggered()
 {
   const auto text = activeEditor->toPlainText();
 
@@ -1817,17 +1809,17 @@ void MainWindow::convertTabsToSpaces()
   activeEditor->setText(converted);
 }
 
-void MainWindow::findNext()
+void MainWindow::on_editActionFindNext_triggered()
 {
   activeEditor->find(this->findInputField->text(), true);
 }
 
-void MainWindow::findPrev()
+void MainWindow::on_editActionFindPrevious_triggered()
 {
   activeEditor->find(this->findInputField->text(), true, true);
 }
 
-void MainWindow::useSelectionForFind()
+void MainWindow::on_editActionUseSelectionForFind_triggered()
 {
   findInputField->setText(activeEditor->selectedText());
 }
@@ -2105,7 +2097,7 @@ void MainWindow::checkAutoReload()
   }
 }
 
-void MainWindow::autoReloadSet(bool on)
+void MainWindow::on_designActionAutoReload_toggled(bool on)
 {
   QSettingsCached settings;
   settings.setValue("design/autoReload", designActionAutoReload->isChecked());
@@ -2128,6 +2120,11 @@ bool MainWindow::checkEditorModified()
     }
   }
   return true;
+}
+
+void MainWindow::on_designActionReloadAndPreview_triggered()
+{
+  actionReloadRenderPreview();
 }
 
 void MainWindow::actionReloadRenderPreview()
@@ -2158,6 +2155,11 @@ void MainWindow::prepareCompile(const char *afterCompileSlot, bool procevents, b
   this->afterCompileSlot = afterCompileSlot;
   this->procevents = procevents;
   this->isPreview = preview;
+}
+
+void MainWindow::on_designActionPreview_triggered()
+{
+  actionRenderPreview();
 }
 
 void MainWindow::actionRenderPreview()
@@ -2246,7 +2248,7 @@ void MainWindow::sendToExternalTool(ExternalToolInterface& externalToolService)
   }
 }
 
-void MainWindow::action3DPrint()
+void MainWindow::on_designAction3DPrint_triggered()
 {
   if (GuiLocker::isLocked()) return;
   const GuiLocker lock;
@@ -2278,7 +2280,7 @@ void MainWindow::action3DPrint()
   }
 }
 
-void MainWindow::actionRender()
+void MainWindow::on_designActionRender_triggered()
 {
   if (GuiLocker::isLocked()) return;
   GuiLocker::lock();
@@ -2768,7 +2770,7 @@ void MainWindow::showTextInWindow(const QString& type, const QString& content)
   e->show();
 }
 
-void MainWindow::actionDisplayAST()
+void MainWindow::on_designActionDisplayAST_triggered()
 {
   setCurrentOutput();
   QString text = (rootFile) ? QString::fromStdString(rootFile->dump("")) : "";
@@ -2776,7 +2778,7 @@ void MainWindow::actionDisplayAST()
   clearCurrentOutput();
 }
 
-void MainWindow::actionDisplayPython()
+void MainWindow::on_designActionDisplayPython_triggered()
 {
   setCurrentOutput();
   auto e = new QTextEdit(this);
@@ -2795,7 +2797,7 @@ void MainWindow::actionDisplayPython()
   clearCurrentOutput();
 }
 
-void MainWindow::actionDisplayCSGTree()
+void MainWindow::on_designActionDisplayCSGTree_triggered()
 {
   setCurrentOutput();
   QString text = (rootNode) ? QString::fromStdString(tree.getString(*rootNode, "  ")) : "";
@@ -2803,7 +2805,7 @@ void MainWindow::actionDisplayCSGTree()
   clearCurrentOutput();
 }
 
-void MainWindow::actionDisplayCSGProducts()
+void MainWindow::on_designActionDisplayCSGProducts_triggered()
 {
   setCurrentOutput();
   // a small lambda to avoid code duplication
@@ -2891,7 +2893,7 @@ void MainWindow::actionShareDesignPublish()
   //  else QMessageBox::information(this,"Share Design","Error during submission");
 }
 
-void MainWindow::actionShareDesign()
+void MainWindow::on_designShareDesign_triggered()
 {
   shareDesignDialog = new ShareDesignDialog();
   connect(shareDesignDialog->publishButton, SIGNAL(clicked()), this, SLOT(actionShareDesignPublish()));
@@ -2941,7 +2943,7 @@ void MainWindow::actionLoadShareDesignSelect()
   loadShareDesignDialog->close();
 }
 
-void MainWindow::actionLoadShareDesign()
+void MainWindow::on_designLoadShareDesign_triggered()
 {
   CURL *curl;
   CURLcode res;
@@ -3001,7 +3003,7 @@ void MainWindow::actionLoadShareDesign()
   };
 }
 
-void MainWindow::actionCheckValidity()
+void MainWindow::on_designCheckValidity_triggered()
 {
   if (GuiLocker::isLocked()) return;
   const GuiLocker lock;
@@ -3215,7 +3217,7 @@ void MainWindow::actionExportFileFormat(int fmt)
   }
 }
 
-void MainWindow::copyText()
+void MainWindow::on_editActionCopy_triggered()
 {
   auto *c = dynamic_cast<Console *>(lastFocus);
   if (c) {
@@ -3225,14 +3227,14 @@ void MainWindow::copyText()
   }
 }
 
-void MainWindow::actionCopyViewport()
+void MainWindow::on_editActionCopyViewport_triggered()
 {
   const auto& image = qglview->grabFrame();
   auto clipboard = QApplication::clipboard();
   clipboard->setImage(image);
 }
 
-void MainWindow::actionFlushCaches()
+void MainWindow::on_designActionFlushCaches_triggered()
 {
   GeometryCache::instance()->clear();
   CGALCache::instance()->clear();
@@ -3246,16 +3248,14 @@ void MainWindow::actionFlushCaches()
 
 void MainWindow::viewModeActionsUncheck()
 {
-  viewActionPreview->setChecked(false);
-  viewActionThrownTogether->setChecked(false);
+  previewModeGroup->setEnabled(false);
 }
 
 #ifdef ENABLE_OPENCSG
 
 void MainWindow::viewModeRender()
 {
-  viewActionThrownTogether->setEnabled(false);
-  viewActionPreview->setEnabled(false);
+  previewModeGroup->setEnabled(false);
   this->qglview->setRenderer(this->geomRenderer);
   this->qglview->updateColorScheme();
   this->qglview->update();
@@ -3265,13 +3265,16 @@ void MainWindow::viewModeRender()
    Go to the OpenCSG view mode.
    Falls back to thrown together mode if OpenCSG is not available
  */
+void MainWindow::on_viewActionPreview_triggered()
+{
+  viewModePreview();
+}
+
 void MainWindow::viewModePreview()
 {
-  viewActionThrownTogether->setEnabled(true);
-  viewActionPreview->setEnabled(this->qglview->hasOpenCSGSupport());
+  previewModeGroup->setEnabled(true);
   if (this->qglview->hasOpenCSGSupport()) {
     viewActionPreview->setChecked(true);
-    viewActionThrownTogether->setChecked(false);
     this->qglview->setRenderer(this->previewRenderer ? this->previewRenderer
                                                      : this->thrownTogetherRenderer);
     this->qglview->updateColorScheme();
@@ -3283,48 +3286,60 @@ void MainWindow::viewModePreview()
 
 #endif /* ENABLE_OPENCSG */
 
+void MainWindow::updateViewModeAfterGLInit()
+{
+#ifdef ENABLE_OPENCSG
+  viewActionPreview->setEnabled(this->qglview->hasOpenCSGSupport());
+  if (this->qglview->hasOpenCSGSupport()) {
+    viewModePreview();
+  }
+#endif
+}
+
+void MainWindow::on_viewActionThrownTogether_triggered()
+{
+  viewModeThrownTogether();
+}
+
 void MainWindow::viewModeThrownTogether()
 {
-  viewActionThrownTogether->setEnabled(true);
-  viewActionPreview->setEnabled(this->qglview->hasOpenCSGSupport());
+  previewModeGroup->setEnabled(true);
   viewActionThrownTogether->setChecked(true);
-  viewActionPreview->setChecked(false);
   this->qglview->setRenderer(this->thrownTogetherRenderer);
   this->qglview->updateColorScheme();
   this->qglview->update();
 }
 
-void MainWindow::viewModeShowEdges()
+void MainWindow::on_viewActionShowEdges_toggled(bool checked)
 {
   QSettingsCached settings;
-  settings.setValue("view/showEdges", viewActionShowEdges->isChecked());
-  this->qglview->setShowEdges(viewActionShowEdges->isChecked());
+  settings.setValue("view/showEdges", checked);
+  this->qglview->setShowEdges(checked);
   this->qglview->update();
 }
 
-void MainWindow::viewModeShowAxes()
+void MainWindow::on_viewActionShowAxes_toggled(bool checked)
 {
-  const bool showaxes = viewActionShowAxes->isChecked();
   QSettingsCached settings;
-  settings.setValue("view/showAxes", showaxes);
-  this->viewActionShowScaleProportional->setEnabled(showaxes);
-  this->qglview->setShowAxes(showaxes);
+  settings.setValue("view/showAxes", checked);
+  this->viewActionShowScaleProportional->setEnabled(checked);
+  this->qglview->setShowAxes(checked);
   this->qglview->update();
 }
 
-void MainWindow::viewModeShowCrosshairs()
+void MainWindow::on_viewActionShowCrosshairs_toggled(bool checked)
 {
   QSettingsCached settings;
-  settings.setValue("view/showCrosshairs", viewActionShowCrosshairs->isChecked());
-  this->qglview->setShowCrosshairs(viewActionShowCrosshairs->isChecked());
+  settings.setValue("view/showCrosshairs", checked);
+  this->qglview->setShowCrosshairs(checked);
   this->qglview->update();
 }
 
-void MainWindow::viewModeShowScaleProportional()
+void MainWindow::on_viewActionShowScaleProportional_toggled(bool checked)
 {
   QSettingsCached settings;
-  settings.setValue("view/showScaleProportional", viewActionShowScaleProportional->isChecked());
-  this->qglview->setShowScaleProportional(viewActionShowScaleProportional->isChecked());
+  settings.setValue("view/showScaleProportional", checked);
+  this->qglview->setShowScaleProportional(checked);
   this->qglview->update();
 }
 
@@ -3347,55 +3362,55 @@ void MainWindow::editorContentChanged()
   }
 }
 
-void MainWindow::viewAngleTop()
+void MainWindow::on_viewActionTop_triggered()
 {
   qglview->cam.object_rot << 90, 0, 0;
   qglview->cam.object_trans << 0, 0, 0;
   this->qglview->update();
 }
 
-void MainWindow::viewAngleBottom()
+void MainWindow::on_viewActionBottom_triggered()
 {
   qglview->cam.object_rot << 270, 0, 0;
   qglview->cam.object_trans << 0, 0, 0;
   this->qglview->update();
 }
 
-void MainWindow::viewAngleLeft()
+void MainWindow::on_viewActionLeft_triggered()
 {
   qglview->cam.object_rot << 0, 0, 90;
   qglview->cam.object_trans << 0, 0, 0;
   this->qglview->update();
 }
 
-void MainWindow::viewAngleRight()
+void MainWindow::on_viewActionRight_triggered()
 {
   qglview->cam.object_rot << 0, 0, 270;
   qglview->cam.object_trans << 0, 0, 0;
   this->qglview->update();
 }
 
-void MainWindow::viewAngleFront()
+void MainWindow::on_viewActionFront_triggered()
 {
   qglview->cam.object_rot << 0, 0, 0;
   qglview->cam.object_trans << 0, 0, 0;
   this->qglview->update();
 }
 
-void MainWindow::viewAngleBack()
+void MainWindow::on_viewActionBack_triggered()
 {
   qglview->cam.object_rot << 0, 0, 180;
   qglview->cam.object_trans << 0, 0, 0;
   this->qglview->update();
 }
 
-void MainWindow::viewAngleDiagonal()
+void MainWindow::on_viewActionDiagonal_triggered()
 {
   qglview->cam.object_rot << 35, 0, -25;
   this->qglview->update();
 }
 
-void MainWindow::viewCenter()
+void MainWindow::on_viewActionCenter_triggered()
 {
   qglview->cam.object_trans << 0, 0, 0;
   this->qglview->update();
@@ -3403,21 +3418,19 @@ void MainWindow::viewCenter()
 
 void MainWindow::setProjectionType(ProjectionType mode)
 {
-  bool isOrthogonal = ProjectionType::ORTHOGONAL == mode;
+  const bool isOrthogonal = ProjectionType::ORTHOGONAL == mode;
   QSettingsCached settings;
   settings.setValue("view/orthogonalProjection", isOrthogonal);
-  viewActionPerspective->setChecked(!isOrthogonal);
-  viewActionOrthogonal->setChecked(isOrthogonal);
   qglview->setOrthoMode(isOrthogonal);
   qglview->update();
 }
 
-void MainWindow::viewPerspective()
+void MainWindow::on_viewActionPerspective_triggered()
 {
   setProjectionType(ProjectionType::PERSPECTIVE);
 }
 
-void MainWindow::viewOrthogonal()
+void MainWindow::on_viewActionOrthogonal_triggered()
 {
   setProjectionType(ProjectionType::ORTHOGONAL);
 }
@@ -3425,42 +3438,43 @@ void MainWindow::viewOrthogonal()
 void MainWindow::viewTogglePerspective()
 {
   const QSettingsCached settings;
-  bool isOrtho = settings.value("view/orthogonalProjection").toBool();
-  setProjectionType(isOrtho ? ProjectionType::PERSPECTIVE : ProjectionType::ORTHOGONAL);
+  const bool isOrthogonal = settings.value("view/orthogonalProjection").toBool();
+  if (isOrthogonal) {
+    viewActionOrthogonal->setChecked(true);
+  } else {
+    viewActionPerspective->setChecked(true);
+  }
 }
 
-void MainWindow::viewResetView()
+void MainWindow::on_viewActionResetView_triggered()
 {
   this->qglview->resetView();
   this->qglview->update();
 }
 
-void MainWindow::viewAll()
+void MainWindow::on_viewActionViewAll_triggered()
 {
   this->qglview->viewAll();
   this->qglview->update();
 }
 
-void MainWindow::hideEditorToolbar()
+void MainWindow::on_viewActionHideEditorToolBar_toggled(bool checked)
 {
   QSettingsCached settings;
-  const bool shouldHide = viewActionHideEditorToolBar->isChecked();
-  settings.setValue("view/hideEditorToolbar", shouldHide);
-
-  if (shouldHide) {
+  settings.setValue("view/hideEditorToolbar", checked);
+  if (checked) {
     editortoolbar->hide();
   } else {
     editortoolbar->show();
   }
 }
 
-void MainWindow::hide3DViewToolbar()
+void MainWindow::on_viewActionHide3DViewToolBar_toggled(bool checked)
 {
   QSettingsCached settings;
-  const bool shouldHide = viewActionHide3DViewToolBar->isChecked();
-  settings.setValue("view/hide3DViewToolbar", shouldHide);
+  settings.setValue("view/hide3DViewToolbar", checked);
 
-  if (shouldHide) {
+  if (checked) {
     viewerToolBar->hide();
   } else {
     viewerToolBar->show();
@@ -3809,7 +3823,7 @@ void MainWindow::handleFileDrop(const QUrl& url)
   }
 }
 
-void MainWindow::helpAbout()
+void MainWindow::on_helpActionAbout_triggered()
 {
   qApp->setWindowIcon(QApplication::windowIcon());
   auto dialog = new AboutDialog(this);
@@ -3817,37 +3831,37 @@ void MainWindow::helpAbout()
   dialog->deleteLater();
 }
 
-void MainWindow::helpHomepage()
+void MainWindow::on_helpActionHomepage_triggered()
 {
   UIUtils::openHomepageURL();
 }
 
-void MainWindow::helpManual()
+void MainWindow::on_helpActionManual_triggered()
 {
   UIUtils::openUserManualURL();
 }
 
-void MainWindow::helpOfflineManual()
+void MainWindow::on_helpActionOfflineManual_triggered()
 {
   UIUtils::openOfflineUserManual();
 }
 
-void MainWindow::helpCheatSheet()
+void MainWindow::on_helpActionCheatSheet_triggered()
 {
   UIUtils::openCheatSheetURL();
 }
 
-void MainWindow::helpPythonCheatSheet()
+void MainWindow::on_helpActionPythonCheatSheet_triggered()
 {
   UIUtils::openPythonCheatSheetURL();
 }
 
-void MainWindow::helpOfflineCheatSheet()
+void MainWindow::on_helpActionOfflineCheatSheet_triggered()
 {
   UIUtils::openOfflineCheatSheet();
 }
 
-void MainWindow::helpLibrary()
+void MainWindow::on_helpActionLibraryInfo_triggered()
 {
   if (!this->libraryInfoDialog) {
     const QString rendererInfo(qglview->getRendererInfo().c_str());
@@ -3879,7 +3893,7 @@ void MainWindow::closeEvent(QCloseEvent *event)
   }
 }
 
-void MainWindow::preferences()
+void MainWindow::on_editActionPreferences_triggered()
 {
   GlobalPreferences::inst()->update();
   GlobalPreferences::inst()->show();
@@ -4068,9 +4082,6 @@ void MainWindow::setupCoreSubsystems()
  */
 void MainWindow::setupPreferences()
 {
-  connect(GlobalPreferences::inst(), &Preferences::consoleFontChanged, this->console,
-          &Console::setConsoleFont);
-
   connect(GlobalPreferences::inst(), &Preferences::updateReorderMode, this,
           &MainWindow::updateReorderMode);
   connect(GlobalPreferences::inst(), &Preferences::updateUndockMode, this,
@@ -4081,18 +4092,6 @@ void MainWindow::setupPreferences()
           &MainWindow::setColorScheme);
   connect(GlobalPreferences::inst(), &Preferences::toolbarExportChanged, this,
           &MainWindow::updateExportActions);
-
-  connect(GlobalPreferences::inst()->ButtonConfig, &ButtonConfigWidget::inputMappingChanged,
-          InputDriverManager::instance(), &InputDriverManager::onInputMappingUpdated,
-          Qt::UniqueConnection);
-  connect(GlobalPreferences::inst()->AxisConfig, &AxisConfigWidget::inputMappingChanged,
-          InputDriverManager::instance(), &InputDriverManager::onInputMappingUpdated,
-          Qt::UniqueConnection);
-  connect(GlobalPreferences::inst()->AxisConfig, &AxisConfigWidget::inputCalibrationChanged,
-          InputDriverManager::instance(), &InputDriverManager::onInputCalibrationUpdated,
-          Qt::UniqueConnection);
-  connect(GlobalPreferences::inst()->AxisConfig, &AxisConfigWidget::inputGainChanged,
-          InputDriverManager::instance(), &InputDriverManager::onInputGainUpdated, Qt::UniqueConnection);
 
   connect(GlobalPreferences::inst(), &Preferences::requestRedraw, this->qglview,
           QOverload<>::of(&QGLView::update));
@@ -4161,6 +4160,10 @@ void MainWindow::setupEditor(const QStringList& filenames)
   tabManager = new TabManager(this, filenames.isEmpty() ? QString() : filenames[0]);
   activeEditor = tabManager->editor;
   editorDockContents->layout()->addWidget(tabManager->getTabContent());
+
+  connect(this->fileActionNew, &QAction::triggered, tabManager, &TabManager::actionNew);
+  connect(this->fileActionClose, &QAction::triggered, tabManager, &TabManager::closeCurrentTab);
+  connect(this->fileActionSaveAll, &QAction::triggered, tabManager, &TabManager::saveAll);
 
   connect(this, &MainWindow::highlightError, tabManager, &TabManager::highlightError);
   connect(this, &MainWindow::unhighlightLastError, tabManager, &TabManager::unhighlightLastError);
@@ -4273,11 +4276,10 @@ void MainWindow::setup3DView()
   // Initialize View Mode and Logging
   setCurrentOutput();
 
-#ifdef ENABLE_OPENCSG
-  viewModePreview();
-#else
+  // Default to ThrownTogether as OpenCSG support is not known until initializeGL()
+  // runs (after show()). The initialized() signal will trigger an update to
+  // Preview mode if supported.
   viewModeThrownTogether();
-#endif
 
   loadViewSettings();
   loadDesignSettings();
@@ -4293,6 +4295,7 @@ void MainWindow::setup3DView()
   connect(this->qglview, &QGLView::toolTipShow, this, &MainWindow::toolTipShow);
   connect(this->qglview, &QGLView::dragPoint, this, &MainWindow::dragPoint);
   connect(this->qglview, &QGLView::dragPointEnd, this, &MainWindow::dragPointEnd);
+  connect(this->qglview, &QGLView::initialized, this, &MainWindow::updateViewModeAfterGLInit);
 }
 
 /**
@@ -4374,7 +4377,6 @@ void MainWindow::setupMenusAndActions()
           this, &MainWindow::actionExportFileFormat);
 #endif
 
-  this->hideFind();
   frameCompileResult->hide();
   this->labelCompileResultMessage->setOpenExternalLinks(false);
   connect(this->labelCompileResultMessage, &QLabel::linkActivated, this, &MainWindow::showLink);
@@ -4388,46 +4390,26 @@ void MainWindow::setupMenusAndActions()
   // 
 
 
-  connect(this->fileActionNew, &QAction::triggered, tabManager, &TabManager::actionNew);
-  connect(this->fileActionOpen, &QAction::triggered, this, &MainWindow::actionOpen);
-
   // Recent files
   updateRecentFileActions();
-  connect(this->fileActionClearRecent, &QAction::triggered, this, &MainWindow::clearRecentFiles);
 
   show_examples();
-
-  connect(this->fileActionReload, &QAction::triggered, this, &MainWindow::actionReload);
 #ifndef __APPLE__
   auto shortcuts = this->fileActionReload->shortcuts();
   shortcuts.push_back(QKeySequence(Qt::Key_F3));
   this->fileActionReload->setShortcuts(shortcuts);
 #endif
 
-  connect(this->fileActionNewWindow, &QAction::triggered, this, &MainWindow::actionNewWindow);
-  connect(this->fileActionOpenWindow, &QAction::triggered, this, &MainWindow::actionOpenWindow);
-  connect(this->fileActionClose, &QAction::triggered, tabManager, &TabManager::closeCurrentTab);
 
-  connect(this->fileActionSave, &QAction::triggered, this, &MainWindow::actionSave);
 #ifndef __APPLE__
   shortcuts = this->fileActionSave->shortcuts();
   this->fileActionSave->setShortcuts(shortcuts);
 #endif
-  connect(this->fileActionSaveAs, &QAction::triggered, this, &MainWindow::actionSaveAs);
-  connect(this->fileActionSaveACopy, &QAction::triggered, this, &MainWindow::actionSaveACopy);
-  connect(this->fileActionSaveAll, &QAction::triggered, tabManager, &TabManager::saveAll);
 
-  connect(this->fileShowLibraryFolder, &QAction::triggered, this, &MainWindow::actionShowLibraryFolder);
 
   connect(this->fileActionQuit, &QAction::triggered, scadApp, &OpenSCADApp::quit, Qt::QueuedConnection);
 
 #ifdef ENABLE_PYTHON
-  connect(this->fileActionPythonRevoke, &QAction::triggered, this,
-          &MainWindow::actionPythonRevokeTrustedFiles);
-  connect(this->fileActionPythonCreateVenv, &QAction::triggered, this,
-          &MainWindow::actionPythonCreateVenv);
-  connect(this->fileActionPythonSelectVenv, &QAction::triggered, this,
-          &MainWindow::actionPythonSelectVenv);
 #else
   this->menuPython->menuAction()->setVisible(false);
 #endif
@@ -4435,26 +4417,10 @@ void MainWindow::setupMenusAndActions()
   //
   // Edit menu
   //
-  connect(this->editActionCopy, &QAction::triggered, this, &MainWindow::copyText);
-  connect(this->editActionCopyViewport, &QAction::triggered, this, &MainWindow::actionCopyViewport);
-  connect(this->editActionConvertTabsToSpaces, &QAction::triggered, this,
-          &MainWindow::convertTabsToSpaces);
-  connect(this->editActionCopyVPT, &QAction::triggered, this, &MainWindow::copyViewportTranslation);
-  connect(this->editActionCopyVPR, &QAction::triggered, this, &MainWindow::copyViewportRotation);
-  connect(this->editActionCopyVPD, &QAction::triggered, this, &MainWindow::copyViewportDistance);
-  connect(this->editActionCopyVPF, &QAction::triggered, this, &MainWindow::copyViewportFov);
-  connect(this->editActionPreferences, &QAction::triggered, this, &MainWindow::preferences);
   // Edit->Find
-  connect(this->editActionFind, &QAction::triggered, this, &MainWindow::actionShowFind);
-  connect(this->editActionFindAndReplace, &QAction::triggered, this,
-          &MainWindow::actionShowFindAndReplace);
 #ifdef Q_OS_WIN
   this->editActionFindAndReplace->setShortcut(QKeySequence("Ctrl+Shift+F"));
 #endif
-  connect(this->editActionFindNext, &QAction::triggered, this, &MainWindow::findNext);
-  connect(this->editActionFindPrevious, &QAction::triggered, this, &MainWindow::findPrev);
-  connect(this->editActionUseSelectionForFind, &QAction::triggered, this,
-          &MainWindow::useSelectionForFind);
 
   //
   // Design menu
@@ -4462,23 +4428,7 @@ void MainWindow::setupMenusAndActions()
   measurementGroup = new QActionGroup(this);
   measurementGroup->addAction(designActionMeasureDistance);
   measurementGroup->addAction(designActionMeasureAngle);
-  measurementGroup->addAction(designActionFindHandle);
-  connect(this->designActionAutoReload, &QAction::toggled, this, &MainWindow::autoReloadSet);
-  connect(this->designActionReloadAndPreview, &QAction::triggered, this,
-          &MainWindow::actionReloadRenderPreview);
-  connect(this->designActionPreview, &QAction::triggered, this, &MainWindow::actionRenderPreview);
-  connect(this->designActionRender, &QAction::triggered, this, &MainWindow::actionRender);
   connect(this->measurementGroup, &QActionGroup::triggered, this, &MainWindow::handleMeasurementClicked);
-  connect(this->designAction3DPrint, &QAction::triggered, this, &MainWindow::action3DPrint);
-  connect(this->designShareDesign, &QAction::triggered, this, &MainWindow::actionShareDesign);
-  connect(this->designLoadShareDesign, &QAction::triggered, this, &MainWindow::actionLoadShareDesign);
-  connect(this->designCheckValidity, &QAction::triggered, this, &MainWindow::actionCheckValidity);
-  connect(this->designActionDisplayAST, &QAction::triggered, this, &MainWindow::actionDisplayAST);
-  connect(this->designActionDisplayPython, &QAction::triggered, this, &MainWindow::actionDisplayPython);
-  connect(this->designActionDisplayCSGTree, &QAction::triggered, this,
-          &MainWindow::actionDisplayCSGTree);
-  connect(this->designActionDisplayCSGProducts, &QAction::triggered, this,
-          &MainWindow::actionDisplayCSGProducts);
 
   exportMap[FileFormat::BINARY_STL] = this->fileActionExportBinarySTL;
   exportMap[FileFormat::ASCII_STL] = this->fileActionExportAsciiSTL;
@@ -4501,8 +4451,6 @@ void MainWindow::setupMenusAndActions()
     this->exportFormatMapper->setMapping(action, int(format));
   }
 
-  connect(this->designActionFlushCaches, &QAction::triggered, this, &MainWindow::actionFlushCaches);
-
 #ifndef ENABLE_LIB3MF
   this->fileActionExport3MF->setVisible(false);
 #endif
@@ -4510,63 +4458,34 @@ void MainWindow::setupMenusAndActions()
   //
   // View menu
   //
-  this->viewActionThrownTogether->setEnabled(false);
-  this->viewActionPreview->setEnabled(false);
+  previewModeGroup = new QActionGroup(this);
+  previewModeGroup->setExclusive(true);
+  previewModeGroup->addAction(this->viewActionPreview);
+  previewModeGroup->addAction(this->viewActionThrownTogether);
   if (this->qglview->hasOpenCSGSupport()) {
     this->viewActionPreview->setChecked(true);
-    this->viewActionThrownTogether->setChecked(false);
   } else {
-    this->viewActionPreview->setChecked(false);
     this->viewActionThrownTogether->setChecked(true);
   }
 
-  connect(this->viewActionPreview, &QAction::triggered, this, &MainWindow::viewModePreview);
-  connect(this->viewActionThrownTogether, &QAction::triggered, this,
-          &MainWindow::viewModeThrownTogether);
-  connect(this->viewActionShowEdges, &QAction::triggered, this, &MainWindow::viewModeShowEdges);
-  connect(this->viewActionShowAxes, &QAction::triggered, this, &MainWindow::viewModeShowAxes);
-  connect(this->viewActionShowCrosshairs, &QAction::triggered, this,
-          &MainWindow::viewModeShowCrosshairs);
-  connect(this->viewActionShowScaleProportional, &QAction::triggered, this,
-          &MainWindow::viewModeShowScaleProportional);
-  connect(this->viewActionTop, &QAction::triggered, this, &MainWindow::viewAngleTop);
-  connect(this->viewActionBottom, &QAction::triggered, this, &MainWindow::viewAngleBottom);
-  connect(this->viewActionLeft, &QAction::triggered, this, &MainWindow::viewAngleLeft);
-  connect(this->viewActionRight, &QAction::triggered, this, &MainWindow::viewAngleRight);
-  connect(this->viewActionFront, &QAction::triggered, this, &MainWindow::viewAngleFront);
-  connect(this->viewActionBack, &QAction::triggered, this, &MainWindow::viewAngleBack);
-  connect(this->viewActionDiagonal, &QAction::triggered, this, &MainWindow::viewAngleDiagonal);
-  connect(this->viewActionCenter, &QAction::triggered, this, &MainWindow::viewCenter);
-  connect(this->viewActionResetView, &QAction::triggered, this, &MainWindow::viewResetView);
-  connect(this->viewActionViewAll, &QAction::triggered, this, &MainWindow::viewAll);
-  connect(this->viewActionPerspective, &QAction::triggered, this, &MainWindow::viewPerspective);
-  connect(this->viewActionOrthogonal, &QAction::triggered, this, &MainWindow::viewOrthogonal);
+  viewActionProjectionGroup = new QActionGroup(this);
+  viewActionProjectionGroup->setExclusive(true);
+  viewActionProjectionGroup->addAction(this->viewActionPerspective);
+  viewActionProjectionGroup->addAction(this->viewActionOrthogonal);
+
+
   connect(this->viewActionZoomIn, &QAction::triggered, qglview, &QGLView::ZoomIn);
   connect(this->viewActionZoomOut, &QAction::triggered, qglview, &QGLView::ZoomOut);
-  connect(this->viewActionHideEditorToolBar, &QAction::triggered, this, &MainWindow::hideEditorToolbar);
-  connect(this->viewActionHide3DViewToolBar, &QAction::triggered, this, &MainWindow::hide3DViewToolbar);
 
   //
   // Help menu
   //
-  connect(this->helpActionAbout, &QAction::triggered, this, &MainWindow::helpAbout);
-  connect(this->helpActionHomepage, &QAction::triggered, this, &MainWindow::helpHomepage);
-  connect(this->helpActionManual, &QAction::triggered, this, &MainWindow::helpManual);
-  connect(this->helpActionCheatSheet, &QAction::triggered, this, &MainWindow::helpCheatSheet);
-  connect(this->helpActionPythonCheatSheet, &QAction::triggered, this,
-          &MainWindow::helpPythonCheatSheet);
-  connect(this->helpActionLibraryInfo, &QAction::triggered, this, &MainWindow::helpLibrary);
 
   // Checks if the Documentation has been downloaded and hides the Action otherwise
-  if (UIUtils::hasOfflineUserManual()) {
-    connect(this->helpActionOfflineManual, &QAction::triggered, this, &MainWindow::helpOfflineManual);
-  } else {
+  if (!UIUtils::hasOfflineUserManual()) {
     this->helpActionOfflineManual->setVisible(false);
   }
-  if (UIUtils::hasOfflineCheatSheet()) {
-    connect(this->helpActionOfflineCheatSheet, &QAction::triggered, this,
-            &MainWindow::helpOfflineCheatSheet);
-  } else {
+  if (!UIUtils::hasOfflineCheatSheet()) {
     this->helpActionOfflineCheatSheet->setVisible(false);
   }
 #ifdef OPENSCAD_UPDATER
@@ -4588,9 +4507,9 @@ void MainWindow::setupMenusAndActions()
     this->findInputField->setText(QApplication::clipboard()->text(QClipboard::FindBuffer));
   }
 
-  connect(this->findPrevButton, &QPushButton::clicked, this, &MainWindow::findPrev);
-  connect(this->findNextButton, &QPushButton::clicked, this, &MainWindow::findNext);
-  connect(this->cancelButton, &QPushButton::clicked, this, &MainWindow::hideFind);
+  this->findPrevButton->setDefaultAction(editActionFindPrevious);
+  this->findNextButton->setDefaultAction(editActionFindNext);
+  connect(this->findDoneButton, &QPushButton::clicked, this, &MainWindow::hideFind);
   connect(this->replaceButton, &QPushButton::clicked, this, &MainWindow::replace);
   connect(this->replaceAllButton, &QPushButton::clicked, this, &MainWindow::replaceAll);
   connect(this->replaceInputField, &QLineEdit::returnPressed, this->replaceButton,

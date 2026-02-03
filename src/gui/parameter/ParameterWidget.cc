@@ -65,14 +65,7 @@ ParameterWidget::ParameterWidget(QWidget *parent) : QWidget(parent)
   autoPreviewTimer.setSingleShot(true);
 
   connect(&autoPreviewTimer, &QTimer::timeout, this, &ParameterWidget::emitParametersChanged);
-  connect(checkBoxAutoPreview, &QCheckBox::toggled, [this]() { this->autoPreview(true); });
-  connect(comboBoxDetails, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
-          &ParameterWidget::rebuildWidgets);
-  connect(comboBoxPreset, QOverload<int>::of(&QComboBox::activated), this,
-          &ParameterWidget::onSetChanged);
   // connect(comboBoxPreset, &QComboBox::editTextChanged, this, &ParameterWidget::onSetNameChanged);
-  connect(addButton, &QPushButton::clicked, this, &ParameterWidget::onSetAdd);
-  connect(deleteButton, &QPushButton::clicked, this, &ParameterWidget::onSetDelete);
 
   auto *customizer_menu = new QMenu(this);
   parameterMenuButton->setMenu(customizer_menu);
@@ -228,7 +221,17 @@ void ParameterWidget::autoPreview(bool immediate)
   }
 }
 
-void ParameterWidget::onSetChanged(int index)
+void ParameterWidget::on_checkBoxAutoPreview_toggled(bool)
+{
+  autoPreview(true);
+}
+
+void ParameterWidget::on_comboBoxDetails_currentIndexChanged(int)
+{
+  rebuildWidgets();
+}
+
+void ParameterWidget::on_comboBoxPreset_activated(int index)
 {
   loadSet(index);
   autoPreview(true);
@@ -242,7 +245,7 @@ void ParameterWidget::onSetNameChanged()
   setModified();
 }
 
-void ParameterWidget::onSetAdd()
+void ParameterWidget::on_addButton_clicked()
 {
   bool ok = true;
   QString result =
@@ -255,7 +258,7 @@ void ParameterWidget::onSetAdd()
   setModified();
 }
 
-void ParameterWidget::onSetDelete()
+void ParameterWidget::on_deleteButton_clicked()
 {
   int index = comboBoxPreset->currentIndex();
   assert(index > 0);

@@ -33,6 +33,8 @@ private slots:
   void on_toolButtonStrokeColorReset_clicked();
   void on_checkBoxEnableStroke_toggled(bool checked);
   void on_toolButtonStrokeWidthReset_clicked();
+  void on_pushButtonOk_clicked();
+  void on_pushButtonCancel_clicked();
 
 private:
   void updateFillColor(const QColor& color);
