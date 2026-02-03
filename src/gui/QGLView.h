@@ -117,6 +117,7 @@ signals:
   void toolTipShow(QPoint, QString msg);
   void dragPoint(Vector3d pt, Vector3d newpt);
   void dragPointEnd(Vector3d pt);
+  void initialized();
 };
 
 /* These are defined in QLGView2.cc.  See the commentary there. */
