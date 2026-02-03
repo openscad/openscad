@@ -3492,6 +3492,16 @@ QString MainWindow::getCurrentFileName() const
   return fname.replace("&", "&&");
 }
 
+void MainWindow::updateWindowTitles()
+{
+  const QString name = getCurrentFileName();
+  setWindowTitle(name);
+
+  for (const auto& d : docks) {
+    std::get<0>(d)->setNameSuffix(name);
+  }
+}
+
 void MainWindow::onTabManagerAboutToCloseEditor(EditorInterface *closingEditor)
 {
   // This slots is in charge of closing properly the preview when the
@@ -3537,6 +3547,7 @@ void MainWindow::onTabManagerEditorContentReloaded(EditorInterface *reloadedEdit
   // associated with the created editor. The reason is that an editor can be created
   // or updated without a file associated with it.
   updateRecentFileActions();
+  updateWindowTitles();
 }
 
 void MainWindow::onTabManagerEditorChanged(EditorInterface *newEditor)
@@ -3548,15 +3559,7 @@ void MainWindow::onTabManagerEditorChanged(EditorInterface *newEditor)
   parameterDock->setWidget(newEditor->parameterWidget);
   editActionUndo->setEnabled(newEditor->canUndo());
 
-  const QString name = getCurrentFileName();
-  setWindowTitle(name);
-
-  consoleDock->setNameSuffix(name);
-  errorLogDock->setNameSuffix(name);
-  animateDock->setNameSuffix(name);
-  fontListDock->setNameSuffix(name);
-  colorListDock->setNameSuffix(name);
-  viewportControlDock->setNameSuffix(name);
+  updateWindowTitles();
 
   // If there is no renderedEditor we request for a new preview if the
   // auto-reload is enabled.

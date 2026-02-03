@@ -186,6 +186,7 @@ public:
   void parseTopLevelDocument();
   void exceptionCleanup();
   void setLastFocus(QWidget *widget);
+  void updateWindowTitles();
   void UnknownExceptionCleanup(std::string msg = "");
   void showFind(bool doFindAndReplace);
 

@@ -499,7 +499,7 @@ void TabManager::openTabFile(const QString& filename)
 
   auto [fname, fpath] = getEditorTabNameWithModifier(editor);
   setEditorTabName(fname, fpath, editor);
-  par->setWindowTitle(fname);
+  par->updateWindowTitles();
 
   emit editorContentReloaded(editor);
 }
@@ -729,7 +729,7 @@ bool TabManager::saveAs(EditorInterface *edt, const QString& filepath)
   if (saveOk) {
     auto [fname, fpath] = getEditorTabNameWithModifier(edt);
     setEditorTabName(fname, fpath, edt);
-    par->setWindowTitle(fname);
+    par->updateWindowTitles();
   }
   return saveOk;
 }
