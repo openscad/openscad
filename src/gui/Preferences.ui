@@ -136,8 +136,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>668</width>
-             <height>953</height>
+             <width>578</width>
+             <height>933</height>
             </rect>
            </property>
            <layout class="QGridLayout" name="gridLayout_5">
@@ -637,7 +637,7 @@
                  <widget class="QFontComboBox" name="fontChooser">
                   <property name="currentFont">
                    <font>
-                    <family>DejaVu Sans</family>
+                    <family>Academy Engraved LET</family>
                     <pointsize>12</pointsize>
                    </font>
                   </property>
@@ -1292,8 +1292,8 @@
               <rect>
                <x>0</x>
                <y>0</y>
-               <width>100</width>
-               <height>30</height>
+               <width>98</width>
+               <height>36</height>
               </rect>
              </property>
              <layout class="QVBoxLayout" name="verticalLayout_10">
@@ -1349,8 +1349,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>701</width>
-             <height>710</height>
+             <width>557</width>
+             <height>767</height>
             </rect>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_9">
@@ -1950,8 +1950,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>699</width>
-             <height>1471</height>
+             <width>570</width>
+             <height>1276</height>
             </rect>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_12">
@@ -2731,8 +2731,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>845</width>
-             <height>770</height>
+             <width>98</width>
+             <height>28</height>
             </rect>
            </property>
           </widget>
@@ -2764,8 +2764,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>845</width>
-             <height>770</height>
+             <width>839</width>
+             <height>774</height>
             </rect>
            </property>
           </widget>
@@ -2800,8 +2800,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>845</width>
-             <height>770</height>
+             <width>98</width>
+             <height>28</height>
             </rect>
            </property>
           </widget>
