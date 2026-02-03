@@ -91,6 +91,7 @@ signals:
 
 public slots:
   void on_actionClear_triggered();
+  void clear();
   void on_actionSaveAs_triggered();
   void hyperlinkClicked(const QString& loc);
   void setConsoleFont(const QString& fontFamily, uint ptSize);

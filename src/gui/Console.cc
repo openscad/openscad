@@ -55,6 +55,8 @@ Console::Console(QWidget *parent) : QPlainTextEdit(parent)
   this->appendCursor = this->textCursor();
   this->setUndoRedoEnabled(false);
   this->setTextInteractionFlags(Qt::TextSelectableByKeyboard | Qt::TextSelectableByMouse);
+
+  connect(GlobalPreferences::inst(), &Preferences::consoleFontChanged, this, &Console::setConsoleFont);
 }
 
 void Console::focusInEvent(QFocusEvent * /*event*/)
@@ -167,6 +169,11 @@ void Console::update()
 }
 
 void Console::on_actionClear_triggered()
+{
+  clear();
+}
+
+void Console::clear()
 {
   this->msgBuffer.clear();
   this->document()->clear();

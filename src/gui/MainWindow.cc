@@ -726,7 +726,7 @@ void MainWindow::compile(bool reload, bool forcedone)
       initialize_rng();
       this->errorLogWidget->clearModel();
       if (GlobalPreferences::inst()->getValue("advanced/consoleAutoClear").toBool()) {
-        this->console->actionClearConsole_triggered();
+        this->console->clear();
       }
       if (activeEditor->isContentModified()) saveBackup();
       parseTopLevelDocument();
@@ -3386,9 +3386,6 @@ void MainWindow::setupCoreSubsystems()
  */
 void MainWindow::setupPreferences()
 {
-  connect(GlobalPreferences::inst(), &Preferences::consoleFontChanged, this->console,
-          &Console::setConsoleFont);
-
   connect(GlobalPreferences::inst(), &Preferences::updateReorderMode, this,
           &MainWindow::updateReorderMode);
   connect(GlobalPreferences::inst(), &Preferences::updateUndockMode, this,
@@ -3400,17 +3397,6 @@ void MainWindow::setupPreferences()
   connect(GlobalPreferences::inst(), &Preferences::toolbarExportChanged, this,
           &MainWindow::updateExportActions);
 
-  connect(GlobalPreferences::inst()->ButtonConfig, &ButtonConfigWidget::inputMappingChanged,
-          InputDriverManager::instance(), &InputDriverManager::onInputMappingUpdated,
-          Qt::UniqueConnection);
-  connect(GlobalPreferences::inst()->AxisConfig, &AxisConfigWidget::inputMappingChanged,
-          InputDriverManager::instance(), &InputDriverManager::onInputMappingUpdated,
-          Qt::UniqueConnection);
-  connect(GlobalPreferences::inst()->AxisConfig, &AxisConfigWidget::inputCalibrationChanged,
-          InputDriverManager::instance(), &InputDriverManager::onInputCalibrationUpdated,
-          Qt::UniqueConnection);
-  connect(GlobalPreferences::inst()->AxisConfig, &AxisConfigWidget::inputGainChanged,
-          InputDriverManager::instance(), &InputDriverManager::onInputGainUpdated, Qt::UniqueConnection);
 
   connect(GlobalPreferences::inst(), &Preferences::requestRedraw, this->qglview,
           QOverload<>::of(&QGLView::update));
