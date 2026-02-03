@@ -1300,16 +1300,38 @@ void Preferences::fireEditorConfigChanged() const
   emit editorConfigChanged();
 }
 
+// Make sure Ctrl-W isn't passed up to MainWindow and only affects Preferences
+bool Preferences::event(QEvent *e)
+{
+  if (e->type() == QEvent::ShortcutOverride) {
+    QKeyEvent *ke = static_cast<QKeyEvent *>(e);
+    if (ke->matches(QKeySequence::Close) || ke->key() == Qt::Key_Escape) {
+      e->accept();
+      return true;
+    }
+#ifdef Q_OS_MACOS
+    if (ke->modifiers() == Qt::ControlModifier && ke->key() == Qt::Key_Period) {
+      e->accept();
+      return true;
+    }
+#endif
+  }
+  return QMainWindow::event(e);
+}
+
 void Preferences::keyPressEvent(QKeyEvent *e)
 {
+  if (e->matches(QKeySequence::Close) || e->key() == Qt::Key_Escape) {
+    close();
+    return;
+  }
 #ifdef Q_OS_MACOS
   if (e->modifiers() == Qt::ControlModifier && e->key() == Qt::Key_Period) {
     close();
-  } else
-#endif
-    if ((e->modifiers() == Qt::ControlModifier && e->key() == Qt::Key_W) || e->key() == Qt::Key_Escape) {
-    close();
+    return;
   }
+#endif
+  QMainWindow::keyPressEvent(e);
 }
 
 void Preferences::showEvent(QShowEvent *e)
@@ -1542,10 +1564,9 @@ void Preferences::setHighlightingColorSchemes(const QStringList& colorSchemes)
 
 void Preferences::createFontSizeMenu(QComboBox *boxarg, const QString& setting)
 {
-  uint savedsize = getValue(setting).toUInt();
-  const QFontDatabase db;
+  const uint savedsize = getValue(setting).toUInt();
   BlockSignals<QComboBox *> box{boxarg};
-  for (auto size : db.standardSizes()) {
+  for (auto size : QFontDatabase::standardSizes()) {
     box->addItem(QString::number(size));
     if (static_cast<uint>(size) == savedsize) {
       box->setCurrentIndex(box->count() - 1);

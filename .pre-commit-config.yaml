@@ -52,3 +52,4 @@ repos:
           - id: check-mkdocs
             name: check-mkdocs
             args: ["--config", "web/mkdocs.yml"]
+            files: ^web/
