@@ -25,6 +25,7 @@
  */
 
 #include <Python.h>
+#include "genlang/genlang.h"
 #include "python/pyopenscad.h"
 #include "core/primitives.h"
 #include "core/CsgOpNode.h"
