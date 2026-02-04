@@ -19,7 +19,7 @@ multmatrix([[1, 0, 0, 31.5], [0, 1, 0, 2.5], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 		polygon(points = [[-5, -2.5], [5, -2.5], [0, 2.5]], paths = undef, convexity = 1);
 	}
 }
-multmatrix([[1, 0, 0, 1], [0, 1, 0, 21], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+multmatrix([[1, 0, 0, -19], [0, 1, 0, 21], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 	linear_extrude(height = 20, twist = 30, slices = 2, segments = 0) {
 		difference() {
 			multmatrix([[1, 0, 0, -1], [0, 1, 0, -1], [0, 0, 1, 0], [0, 0, 0, 1]]) {
@@ -29,9 +29,21 @@ multmatrix([[1, 0, 0, 1], [0, 1, 0, 21], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 		}
 	}
 }
-multmatrix([[1, 0, 0, 19], [0, 1, 0, 20], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+multmatrix([[1, 0, 0, -1], [0, 1, 0, 20], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 	linear_extrude(height = 20, twist = 45, slices = 10, $fn = 0, $fa = 12, $fs = 2) {
 		square(size = [10, 10], center = false);
+	}
+}
+multmatrix([[1, 0, 0, 20], [0, 1, 0, 25], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+	linear_extrude(height = 20, twist = -90, $fn = 0, $fa = 12, $fs = 2) {
+		square(size = [10, 10], center = false);
+	}
+}
+multmatrix([[1, 0, 0, 40], [0, 1, 0, 20], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+	linear_extrude(height = 20, twist = 90, $fn = 0, $fa = 12, $fs = 2) {
+		multmatrix([[1, 0, 0, -5], [0, 1, 0, -5], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+			square(size = [10, 10], center = false);
+		}
 	}
 }
 multmatrix([[1, 0, 0, 0], [0, 1, 0, -15], [0, 0, 1, 0], [0, 0, 0, 1]]) {
@@ -54,7 +66,7 @@ multmatrix([[1, 0, 0, -25], [0, 1, 0, -10], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 		square(size = [5, 5], center = true);
 	}
 }
-multmatrix([[1, 0, 0, -15], [0, 1, 0, 20], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+multmatrix([[1, 0, 0, -35], [0, 1, 0, 20], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 	linear_extrude(height = 20, $fn = 0, $fa = 12, $fs = 2) {
 		square(size = [10, 10], center = false);
 	}

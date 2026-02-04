@@ -7,10 +7,14 @@ from random import *
 """
 class LaserCutter:
 
-    def __init__(self, facelist, depth=4):
-        self.init_sub(facelist, depth)
+    def __init__(self, depth=4, rows=4, cols=4):
+        self.depth=depth
+        self.faces = []
 
-    def __init__(self, obj, depth=4, rows=4, cols=4):
+    def add_surface(self,obj):
+        self.faces = self.faces + obj.faces()
+
+    def add_volume(self,obj, rows=4, cols=4):
         unitmatrix = rotx(cube().origin, 90)
 
         height=obj.size[2]
@@ -19,24 +23,23 @@ class LaserCutter:
         ypitch=obj.size[1]/rows
         pos=obj.position
 
-        faces = []
         for r in range(rows):
             mat = translate(rotz(unitmatrix,0),[0,pos[1]+ypitch*(r+0.5),0])
             cut=obj.divmatrix(mat).projection(cut=True)
-            faces.append(cut.multmatrix(mat))
+            self.faces.append(cut.multmatrix(mat))
 
 
         for c in range(cols):
             mat = translate(rotz(unitmatrix,90),[pos[0]+xpitch*(c+0.5),0,0])
             cut=obj.divmatrix(mat).projection(cut=True)
-            faces.append(cut.multmatrix(mat))
+            self.faces.append(cut.multmatrix(mat))
 
-        self.init_sub(faces, depth)
-        print(len(faces))
 
-    def init_sub(self, facelist, depth):
+    def add_faces(self, facelist):
+        self.faces = self.faces + facelist
 
-        self.depth=depth
+    def link(self):
+
         conn_plain = [[0,0, 0],[1,0, 0]]
 
         # [x realtive, y is absolute, x absolute
@@ -54,7 +57,7 @@ class LaserCutter:
         edge_inv = {}
 
         # make sure all faces are polygons
-        for i,f in enumerate(facelist):
+        for i,f in enumerate(self.faces):
             pol, = f.children()
             points = []
             paths = []
@@ -64,11 +67,11 @@ class LaserCutter:
                 points = points + pts
                 paths.append(list(range(s, s+n)))
             pol = polygon(points=points, paths = paths)
-            facelist[i] = pol.multmatrix(f.matrix)
+            self.faces[i] = pol.multmatrix(f.matrix)
 
         # faces, outlines, segments, other
         ifaces = [] # indexed ifaces[face][pathnum][ptnum]
-        for f in facelist:
+        for f in self.faces:
             late_cuts.append(False) # dummy void
             total_cuts.append([])
             mat = f.matrix
@@ -109,8 +112,10 @@ class LaserCutter:
 
 
         # Process faces and edges now
-        self.pieces = []
-        for i, f in enumerate(facelist):
+
+        faceprocess = self.faces
+        self.faces = []
+        for i, f in enumerate(faceprocess):
             mat = f.matrix
             pol, = f.children()
             if len(pol.paths) == 0:
@@ -137,7 +142,7 @@ class LaserCutter:
                         pt2=multmatrix(pol.points[path[(k+1)%n]] + [0], mat) # TODO hier out of index
 
                         # go through all faces and check if they are inside
-                        for l, oface in enumerate(facelist):
+                        for l, oface in enumerate(faceprocess):
                             if l == i:
                                 continue
                             # pos auf oface
@@ -165,11 +170,9 @@ class LaserCutter:
                     stripes.append(stripe)
 
 
-                for k, oface in enumerate(facelist):
+                for k, oface in enumerate(faceprocess):
                     if k == i:
                         continue
-                    pt1x=divmatrix(pt1, oface.matrix)
-                    pt2x=divmatrix(pt2, oface.matrix)
                     oshape,  = oface.children()
 
                     for l in range(n):
@@ -222,7 +225,7 @@ class LaserCutter:
                 newpolpaths.append(list(range(s, s+n)))
             # finished all outlines
             piece = polygon(points=newpolpoints, paths=newpolpaths).multmatrix(mat)
-            self.pieces.append(piece)
+            self.faces.append(piece)
 
             #zvec = list(zip(*f.matrix))[2][:3] # Z vector
             #dann poly2  als 3d divmatrix mit plane1 z=0 punkte sammeln sortieren nach x oder y, 2er gruppen bilden
@@ -232,7 +235,7 @@ class LaserCutter:
         # create more late cuts from toal cuts
         # finished all faces
         for i, cuts in enumerate(total_cuts):
-            f = facelist[i]
+            f = faceprocess[i]
 
             fn = [f.matrix[0][2], f.matrix[1][2], f.matrix[2][2]]
 
@@ -241,7 +244,7 @@ class LaserCutter:
                 p2=cuts[3*j+1]
 
                 oi=cuts[3*j+2]
-                fo = facelist[oi]
+                fo = faceprocess[oi]
                 fno = [fo.matrix[0][2], fo.matrix[1][2], fo.matrix[2][2]]
                 fc=cross(fn, fno)
                 pmid = [(p1[i]+p2[i])/2.0 for i in range(2) ]
@@ -253,12 +256,12 @@ class LaserCutter:
                 late_cuts[i] = union(late_cuts[i], polygon(cutout))
 
         # Apply late cuts now
-        newpieces = []
-        for i, piece in enumerate(self.pieces):
+        newfaces = []
+        for i, piece in enumerate(self.faces):
             pol, = piece.children()
             newpol = pol - late_cuts[i]
-            newpieces.append(multmatrix(newpol, piece.matrix))
-        self.pieces = newpieces
+            newfaces.append(multmatrix(newpol, piece.matrix))
+        self.faces = newfaces
 
     def jigging(self, beg, end, conn):
         diff = [end[0]-beg[0], end[1]-beg[1]]
@@ -274,14 +277,14 @@ class LaserCutter:
 
 
     def preview(self):
-        for piece in self.pieces:
+        for piece in self.faces:
             col = [ (random()+1)*0.5 for i in range(3)]
             pol, = piece.children()
             pol.linear_extrude(height=self.depth).down(self.depth/2).multmatrix(piece.matrix).color(col).show()
 
     def collision(self):
         items=[]
-        for piece in self.pieces:
+        for piece in self.faces:
             pol, = piece.children()
             item = pol.offset(-0.01).linear_extrude(height=self.depth).down(self.depth/2).multmatrix(piece.matrix)
             items.append(item)
@@ -314,7 +317,7 @@ class LaserCutter:
     def finalize(self,kerf=0.1, dist=1):
         # Calculate boundingbox
         puzzles = []
-        for piece in self.pieces:
+        for piece in self.faces:
             puzzle, = piece.children()
             puzzle = puzzle.offset(kerf)
             puzzle.bbox = self.calc_bbox(puzzle)
@@ -382,3 +385,17 @@ class LaserCutter:
                     del puzzles[j]
                     done=True
         return puzzles[0]
+
+
+    def alter_face(self, dir, alterfunc):
+        def maxfunc(i):
+            m=self.faces[i].matrix
+            return m[0][3]*dir[0]+m[1][3]*dir[1]+m[2][3]*dir[2]
+        ind=max(list(range(len(self.faces))), key=maxfunc)
+        shape,=self.faces[ind].children()    
+        newshape=alterfunc(shape)       
+        if newshape == False:
+            del self.faces[ind]
+            return
+        self.faces[ind]=newshape.multmatrix(self.faces[ind].matrix)
+

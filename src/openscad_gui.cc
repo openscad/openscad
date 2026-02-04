@@ -239,7 +239,14 @@ int gui(std::vector<std::string>& inputFiles, const std::filesystem::path& origi
   }
 
   auto showOnStartup = settings.value("launcher/showOnStartup");
-  if (noInputFiles && (showOnStartup.isNull() || showOnStartup.toBool())) {
+  bool showLauncher = noInputFiles && (showOnStartup.isNull() || showOnStartup.toBool());
+#ifdef ENABLE_GUI_TESTS
+  if (gui_test != "none") {
+    showLauncher = false;
+  }
+#endif
+
+  if (showLauncher) {
     LaunchingScreen launcher;
     if (launcher.exec() == QDialog::Accepted) {
       if (launcher.isForceShowEditor()) {

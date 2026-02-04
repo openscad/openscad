@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.12.3](https://github.com/pythonscad/pythonscad/compare/v0.12.2...v0.12.3) (2026-02-02)
+
+
+### Bug Fixes
+
+* **build:** enable PORTABLE_BINARY for Debian/APT and RPM package builds ([#418](https://github.com/pythonscad/pythonscad/issues/418)) ([582f989](https://github.com/pythonscad/pythonscad/commit/582f98927abf191894f11c027097a79ebd97b0a5))
+
+## [0.12.2](https://github.com/pythonscad/pythonscad/compare/v0.12.1...v0.12.2) (2026-01-30)
+
+
+### Documentation
+
+* **web:** upstream sync ([#412](https://github.com/pythonscad/pythonscad/issues/412)) ([46e17ab](https://github.com/pythonscad/pythonscad/commit/46e17ab6c61f713ee10e62a842bdfb83c90cce22))
+
 ## [0.12.1](https://github.com/pythonscad/pythonscad/compare/v0.12.0...v0.12.1) (2026-01-29)
 
 

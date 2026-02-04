@@ -1,0 +1,3 @@
+Traceback (most recent call last):
+  File "<string>", line 5, in <module>
+TypeError: invalid argument right to operator

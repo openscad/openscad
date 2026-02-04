@@ -1200,6 +1200,8 @@ add_cmdline_test(openscad-camvp-override      OPENSCAD FILES ${CAMERA_TEST_VP} S
 #
 # View Options tests
 #
+
+# --camera for the position and angle, --viewall for zoom
 set(VIEW_OPTIONS_TEST "${TEST_SCAD_DIR}/3D/misc/view-options-tests.scad")
 add_cmdline_test(preview-view-axes              OPENSCAD FILES ${VIEW_OPTIONS_TEST} SUFFIX png ARGS ${IMGSIZE} --camera=80,14,19,0,0,0 --viewall --view axes --trust-python)
 add_cmdline_test(preview-view-axes-scales       OPENSCAD FILES ${VIEW_OPTIONS_TEST} SUFFIX png ARGS ${IMGSIZE} --camera=80,14,19,0,0,0 --viewall --view axes,scales --trust-python)
@@ -1228,6 +1230,22 @@ if(EXAMPLES_DIR)
   add_cmdline_test(openscad-colorscheme-clearsky        OPENSCAD FILES ${LOGO_EXAMPLE} SUFFIX png ARGS --colorscheme=ClearSky --trust-python)
   add_cmdline_test(openscad-colorscheme-metallic-render OPENSCAD FILES ${CSG_EXAMPLE}  SUFFIX png ARGS --colorscheme=Metallic --render --trust-python)
 endif(EXAMPLES_DIR)
+
+#
+# Invisible geometry tests
+#
+
+# More about checking otherwise-invisible faces were created than whether the rendering
+# engine(s) are working correctly.
+# CGAL and Manifold both added just to ensure coverage during the transition.
+# Only one needs to exist long-term.
+
+set(WITH_EDGES_TESTS "${TEST_SCAD_DIR}/3D/features/linear_extrude_invisible-tests.scad")
+add_cmdline_test(preview-with-edges-cgal    OPENSCAD FILES ${WITH_EDGES_TESTS} SUFFIX png ARGS ${IMGSIZE} --viewall --view edges --backend=cgal)
+if (ENABLE_MANIFOLD_TESTS)
+  add_cmdline_test(render-with-edges-manifold OPENSCAD FILES ${WITH_EDGES_TESTS} SUFFIX png ARGS ${IMGSIZE} --viewall --view edges --render --backend=manifold)
+endif()
+
 
 ############################
 # Experimental tests       #
@@ -1307,6 +1325,22 @@ add_cmdline_test(pythonscad          EXPERIMENTAL OPENSCAD SUFFIX png FILES ${PY
 add_cmdline_test(pythonscadecho      EXPERIMENTAL OPENSCAD SUFFIX echo FILES ${PYTHONSCAD_ECHO_FILES} ARGS --trust-python)
 add_cmdline_test(pythonscadecho_pure EXPERIMENTAL OPENSCAD SUFFIX echo FILES ${TEST_PYTHONSCAD_ECHO_DIR}/add_parameter_pure.py ARGS --enable=add-parameter-pure-function --trust-python)
 add_cmdline_test(echo EXPERIMENTAL OPENSCAD SUFFIX echo FILES ${TEST_SCAD_DIR}/misc/vector-swizzling.scad ARGS --enable=vector-swizzle --trust-python)
+
+#
+# --enable=discretization-by-error tests
+#
+# Piggy-back on existing tests which have $fe in them. We don't care about preview vs cgal etc for just this feature.
+
+list(APPEND EXPERIMENTAL_DISCRETIZATION_FILES
+  ${TEST_SCAD_DIR}/2D/features/circle-tests.scad
+  ${TEST_SCAD_DIR}/3D/features/sphere-tests.scad
+)
+
+if (ENABLE_MANIFOLD_TESTS)
+  add_cmdline_test(render-manifold-discretization-by-error EXPERIMENTAL OPENSCAD FILES ${EXPERIMENTAL_DISCRETIZATION_FILES} EXPECTEDDIR render-discretization-by-error SUFFIX png ARGS --render --backend=manifold --enable=discretization-by-error)
+endif()
+add_cmdline_test(dump-discretization-by-error EXPERIMENTAL OPENSCAD FILES ${EXPERIMENTAL_DISCRETIZATION_FILES} EXPECTEDDIR dump-discretization-by-error SUFFIX csg ARGS --enable=discretization-by-error)
+
 
 ############################
 # Relative filenames tests #

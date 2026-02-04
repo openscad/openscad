@@ -161,6 +161,37 @@
        </property>
       </widget>
      </item>
+     <item>
+      <widget class="QToolButton" name="parameterMenuButton">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Fixed" vsizetype="Minimum">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="minimumSize">
+        <size>
+         <width>40</width>
+         <height>0</height>
+        </size>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>40</width>
+         <height>16777215</height>
+        </size>
+       </property>
+       <property name="toolTip">
+        <string>More actions</string>
+       </property>
+       <property name="text">
+        <string>...</string>
+       </property>
+       <property name="popupMode">
+        <enum>QToolButton::InstantPopup</enum>
+       </property>
+      </widget>
+     </item>
     </layout>
    </item>
    <item>
@@ -205,6 +236,7 @@
   <tabstop>comboBoxPreset</tabstop>
   <tabstop>addButton</tabstop>
   <tabstop>deleteButton</tabstop>
+  <tabstop>parameterMenuButton</tabstop>
   <tabstop>scrollArea</tabstop>
  </tabstops>
  <resources/>

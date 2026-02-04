@@ -58,9 +58,9 @@ int python_numberval(PyObject *number, double *result, int *flags, int flagor)
   }
   if (PyUnicode_Check(number) && flags != nullptr) {
     PyObjectUniquePtr str(PyUnicode_AsEncodedString(number, "utf-8", "~"), PyObjectDeleter);
-    char *str1 = PyBytes_AS_STRING(str.get());
+    const char *str1 = PyBytes_AS_STRING(str.get());
     sscanf(str1, "%lf", result);
-    if (flags != nullptr) *flags |= flagor;
+    *flags |= flagor;
     return 0;
   }
   return 1;
@@ -69,13 +69,12 @@ int python_numberval(PyObject *number, double *result, int *flags, int flagor)
 std::vector<int> python_intlistval(PyObject *list)
 {
   std::vector<int> result;
-  PyObject *item;
   if (PyLong_Check(list)) {
     result.push_back(PyLong_AsLong(list));
   }
   if (PyList_Check(list)) {
     for (int i = 0; i < PyList_Size(list); i++) {
-      item = PyList_GetItem(list, i);
+      PyObject *item = PyList_GetItem(list, i);
       if (PyLong_Check(item)) {
         result.push_back(PyLong_AsLong(item));
       }
@@ -121,9 +120,8 @@ int python_vectorval(PyObject *vec, int minval, int maxval, double *x, double *y
 PyObject *python_frommatrix(const Matrix4d& mat)
 {
   PyObject *pyo = PyList_New(4);
-  PyObject *row;
   for (int i = 0; i < 4; i++) {
-    row = PyList_New(4);
+    PyObject *row = PyList_New(4);
     for (int j = 0; j < 4; j++) PyList_SetItem(row, j, PyFloat_FromDouble(mat(i, j)));
     PyList_SetItem(pyo, i, row);
   }
@@ -133,15 +131,14 @@ PyObject *python_frommatrix(const Matrix4d& mat)
 int python_tomatrix(PyObject *pyt, Matrix4d& mat)
 {
   if (pyt == nullptr) return 1;
-  PyObject *row, *cell;
   double val;
   mat = Matrix4d::Identity();
   if (!PyList_Check(pyt)) return 1;
   for (int i = 0; i < std::min(4, (int)PyList_Size(pyt)); i++) {
-    row = PyList_GetItem(pyt, i);
+    PyObject *row = PyList_GetItem(pyt, i);
     if (!PyList_Check(row)) return 1;
     for (int j = 0; j < std::min(4, (int)PyList_Size(row)); j++) {
-      cell = PyList_GetItem(row, j);
+      PyObject *cell = PyList_GetItem(row, j);
       if (python_numberval(cell, &val, nullptr, 0)) return 1;
       mat(i, j) = val;
     }
@@ -152,12 +149,11 @@ int python_tomatrix(PyObject *pyt, Matrix4d& mat)
 int python_tovector(PyObject *pyt, Vector3d& vec)
 {
   if (pyt == nullptr) return 1;
-  PyObject *cell;
   double val;
   if (!PyList_Check(pyt)) return 1;
   if (PyList_Size(pyt) != 3) return 1;
   for (int i = 0; i < 3; i++) {
-    cell = PyList_GetItem(pyt, i);
+    PyObject *cell = PyList_GetItem(pyt, i);
     if (python_numberval(cell, &val, nullptr, 0)) return 1;
     vec[i] = val;
   }
@@ -201,19 +197,17 @@ std::vector<Vector3d> python_to2dvarpointlist(PyObject *pypoints)
 std::vector<std::vector<size_t>> python_to2dintlist(PyObject *pypaths)
 {
   std::vector<std::vector<size_t>> result;
-  int pointIndex;
-  PyObject *element;
   if (pypaths != NULL && PyList_Check(pypaths)) {
     if (PyList_Size(pypaths) == 0) {
       PyErr_SetString(PyExc_TypeError, "must specify at least 1 path when specified");
       return result;
     }
     for (int i = 0; i < PyList_Size(pypaths); i++) {
-      element = PyList_GetItem(pypaths, i);
+      PyObject *element = PyList_GetItem(pypaths, i);
       if (PyList_Check(element)) {
         std::vector<size_t> path;
         for (int j = 0; j < PyList_Size(element); j++) {
-          pointIndex = PyLong_AsLong(PyList_GetItem(element, j));
+          int pointIndex = PyLong_AsLong(PyList_GetItem(element, j));
           if (pointIndex < 0) {  // TODO fix || pointIndex >= node->points.size()) {
             PyErr_SetString(PyExc_TypeError, "Polyhedron Point Index out of range");
             return result;

@@ -3,4 +3,7 @@
 
 std::string commandline_commands;
 
-int curl_download(std::string url, std::string path) { return 0; }
+int curl_download(const std::string& url, const std::string& path)
+{
+  return 0;
+}

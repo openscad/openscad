@@ -136,6 +136,8 @@ void QGLView::initializeGL()
   GLView::initializeGL();
 
   this->selector = std::make_unique<MouseSelector>(this);
+
+  emit initialized();
 }
 
 std::string QGLView::getRendererInfo() const

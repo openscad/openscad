@@ -21,6 +21,7 @@
 
 #include "gui/Editor.h"
 #include "gui/ScadApi.h"
+#include "gui/EditorColorMap.h"
 
 // don't need the full definition, because it confuses Qt
 class ScadLexer;
@@ -28,30 +29,9 @@ class ScadLexer2;
 
 #define ENABLE_LEXERTL 1
 
-class EditorColorScheme
-{
-private:
-  const fs::path path;
-
-  boost::property_tree::ptree pt;
-  QString _name;
-  int _index;
-
-public:
-  EditorColorScheme(const fs::path& path);
-  virtual ~EditorColorScheme() = default;
-
-  const QString& name() const;
-  int index() const;
-  bool valid() const;
-  const boost::property_tree::ptree& propertyTree() const;
-};
-
 class ScintillaEditor : public EditorInterface
 {
   Q_OBJECT;
-
-  using colorscheme_set_t = std::multimap<int, std::shared_ptr<EditorColorScheme>, std::less<>>;
 
 public:
   ScintillaEditor(QWidget *parent);
@@ -91,8 +71,6 @@ private:
                          const std::string& defaultValue);
   QColor readColor(const boost::property_tree::ptree& pt, const std::string& name,
                    const QColor& defaultColor);
-  void enumerateColorSchemesInPath(colorscheme_set_t& result_set, const fs::path& path);
-  colorscheme_set_t enumerateColorSchemes();
 
   bool eventFilter(QObject *obj, QEvent *event) override;
   bool handleKeyEventNavigateNumber(QKeyEvent *);

@@ -29,7 +29,7 @@ jobs:
         TZ: Etc/UTC
       run: |
         which sudo || ( apt update && apt install -y sudo )
-        sudo -E ./scripts/uni-get-dependencies.py --yes --profile pythonscad-qt5
+        sudo -E ./scripts/uni-get-dependencies.py --yes --profile pythonscad-qt6
         sudo -E apt -qq -y install clang-tidy
 
     - name: Run CMake

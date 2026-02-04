@@ -60,6 +60,38 @@ If you know there are tests in file `vector_math_test.cc`, then you can run them
 ./OpenSCADUnitTests -# #vector_math_test
 ```
 
+## Running GUI Tests
+
+GUI tests verify the user interface behavior. They require a window system to run (even if headless).
+
+To run all GUI tests:
+
+```bash
+./OpenSCAD --run-all-gui-tests
+```
+
+On macOS, you need to run the executable inside the app bundle:
+
+```bash
+./OpenSCAD.app/Contents/MacOS/OpenSCAD --run-all-gui-tests
+```
+
+The GUI tests must be enabled during build with `-DENABLE_GUI_TESTS=ON` (enabled by default).
+
+### Available GUI Tests
+
+The following test suites are currently implemented:
+
+*   **TestTabManager**: Tests tab opening, closing, and management.
+*   **TestMainWindow**: Tests main window properties and behaviors.
+*   **TestModuleCache**: Tests the caching of modules and file reloading.
+
+### Test Parameters
+
+Currently, the `--run-all-gui-tests` flag runs all available GUI tests. There are no command-line parameters to run specific GUI tests or filter them at this time.
+
+When running GUI tests, the welcome screen (launching screen) is automatically skipped to prevent blocking the tests.
+
 ## Adding a New Test
 
 1.  Create a test file at an appropriate location under `tests/data/`.
