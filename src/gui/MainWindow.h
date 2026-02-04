@@ -97,7 +97,7 @@ public:
   bool trust_python_file(const std::string& file, const std::string& content);
 #endif
   Tree tree;
-  EditorInterface *activeEditor;
+  EditorInterface *activeEditor = nullptr;
   TabManager *tabManager;
 
   std::shared_ptr<const Geometry> rootGeom;
