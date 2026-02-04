@@ -451,6 +451,7 @@ private:
   std::unordered_map<QString, QString> exportPaths;  // for each file type, where it was exported to last
   QString exportPath(
     const QString& suffix);    // look up the last export path and generate one if not found
+  QString enforceExportSuffix(const QString& filename, const QString& suffix);
   int lastParserErrorPos{-1};  // last highlighted error position
   int tabCount = 0;
   ExportPdfPaperSize sizeString2Enum(const QString& current);
