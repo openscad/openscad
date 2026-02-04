@@ -314,7 +314,7 @@ class LaserCutter:
         return [xmin, ymin, xmax, ymax]
 
 
-    def finalize(self,kerf=0.1, dist=1):
+    def finalize(self,kerf=0.1, dist=1, maxwidth=None, maxheight=None):
         # Calculate boundingbox
         puzzles = []
         for piece in self.faces:
@@ -342,13 +342,15 @@ class LaserCutter:
                         wid_j = puzzles[j].bbox[2] - puzzles[j].bbox[0]
                         hei_j = puzzles[j].bbox[3] - puzzles[j].bbox[1]
                         score=max(wid_j,wid_i)*(hei_i+hei_j)-wid_i*hei_i - wid_j*hei_j
-                        if score < bestscore:
-                            bestscore= score
-                            bestcomb = [0,i,j]
-                        score=max(hei_j,hei_i)*(wid_i+wid_j)-wid_i*hei_i - wid_j*hei_j
-                        if score < bestscore:
-                            bestscore= score
-                            bestcomb = [1,i,j]
+                        if maxheight == None or hei_i+ hei_j < maxheight:
+                            if score < bestscore :
+                                bestscore= score
+                                bestcomb = [0,i,j]
+                        if maxwidth == None or wid_i + wid_j < maxwidth:
+                            score=max(hei_j,hei_i)*(wid_i+wid_j)-wid_i*hei_i - wid_j*hei_j
+                            if score < bestscore:
+                                bestscore= score
+                                bestcomb = [1,i,j]
 
 
 

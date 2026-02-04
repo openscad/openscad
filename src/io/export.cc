@@ -93,7 +93,7 @@ Containers& containers()
     add_item(*containers, {FileFormat::PARAM, "param", "param", "param"});
     add_item(*containers, {FileFormat::AST, "ast", "ast", "AST"});
     add_item(*containers, {FileFormat::STEP, "step", "stp", "STEP"});
-    add_item(*containers, {FileFormat::STEP, "step", "step", "STEP"});
+    add_item(*containers, {FileFormat::GCODE, "gcode", "gcode", "GCDODE"});
     add_item(*containers, {FileFormat::TERM, "term", "term", "term"});
     add_item(*containers, {FileFormat::ECHO, "echo", "echo", "echo"});
     add_item(*containers, {FileFormat::PNG, "png", "png", "PNG"});
@@ -177,7 +177,7 @@ bool is3D(FileFormat format)
 
 bool is2D(FileFormat format)
 {
-  return format == FileFormat::DXF || format == FileFormat::SVG || format == FileFormat::PDF;
+  return format == FileFormat::DXF || format == FileFormat::SVG || format == FileFormat::PDF || format == FileFormat::GCODE;
 }
 
 }  // namespace fileformat
@@ -229,6 +229,7 @@ static void exportFile(const std::shared_ptr<const Geometry>& root_geom, std::os
   case FileFormat::PDF:  export_pdf(root_geom, output, exportInfo); break;
   case FileFormat::POV:  export_pov(root_geom, output, exportInfo); break;
   case FileFormat::STEP: export_step(root_geom, output, exportInfo); break;
+  case FileFormat::GCODE: export_gcode(root_geom, output, exportInfo); break;
 #ifdef ENABLE_CGAL
   case FileFormat::NEFDBG: export_nefdbg(root_geom, output); break;
   case FileFormat::NEF3:   export_nef3(root_geom, output); break;

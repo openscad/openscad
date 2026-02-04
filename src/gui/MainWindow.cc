@@ -444,7 +444,6 @@ MainWindow::MainWindow(const QStringList& filenames) : rubberBandManager(this)
   this->languageLabel = nullptr;  // must be initialized before calling updateLanguageLabel()
   updateStatusBar(nullptr);
   updateLanguageLabel();
-  setupMenusAndActions();
   setupInput();
 
   restoreWindowState();
@@ -4436,6 +4435,7 @@ void MainWindow::setupMenusAndActions()
   exportMap[FileFormat::POV] = this->fileActionExportPOV;
   exportMap[FileFormat::PS] = this->fileActionExportFoldable;
   exportMap[FileFormat::STEP] = this->fileActionExportSTP;
+  exportMap[FileFormat::GCODE] = this->fileActionExportGCode;
   exportMap[FileFormat::AMF] = this->fileActionExportAMF;
   exportMap[FileFormat::DXF] = this->fileActionExportDXF;
   exportMap[FileFormat::SVG] = this->fileActionExportSVG;
