@@ -65,6 +65,7 @@
 #include "geometry/cgal/CGALCache.h"
 #endif
 #include "glview/ColorMap.h"
+#include "gui/EditorColorMap.h"
 #include "glview/RenderSettings.h"
 #include "gui/QSettingsCached.h"
 #include "gui/SettingsWriter.h"
@@ -103,6 +104,8 @@ Preferences::Preferences(QWidget *parent) : QMainWindow(parent)
   for (const auto& name : names) renderColorSchemes << name.c_str();
 
   syntaxHighlight->clear();
+  syntaxHighlight->addItems(EditorColorMap::inst()->colorSchemeNames());
+
   colorSchemeChooser->clear();
   colorSchemeChooser->addItems(renderColorSchemes);
   init();
@@ -1530,36 +1533,6 @@ void Preferences::apply_win() const
 {
   emit requestRedraw();
   emit openCSGSettingsChanged();
-}
-
-bool Preferences::hasHighlightingColorScheme() const
-{
-  //  if (instance != nullptr) {
-  //    return;
-  //  }
-
-  std::list<std::string> names = ColorMap::inst()->colorSchemeNames(true);
-  QStringList renderColorSchemes;
-  for (const auto& name : names) renderColorSchemes << name.c_str();
-
-  //  instance = new Preferences();
-  //  instance->syntaxHighlight->clear();
-  //  BlockSignals<QComboBox *>(instance->syntaxHighlight)->addItems(colorSchemes);
-  //  instance->colorSchemeChooser->clear();
-  //  instance->colorSchemeChooser->addItems(renderColorSchemes);
-  //  instance->init();
-  //  instance->AxisConfig->init();
-  //  instance->setupFeaturesPage();
-  //  instance->setup3DPrintPage();
-  //  instance->updateGUI();
-  return BlockSignals<QComboBox *>(syntaxHighlight)->count() != 0;
-}
-
-void Preferences::setHighlightingColorSchemes(const QStringList& colorSchemes)
-{
-  auto combobox = BlockSignals<QComboBox *>(syntaxHighlight);
-  combobox->clear();
-  combobox->addItems(colorSchemes);
 }
 
 void Preferences::createFontSizeMenu(QComboBox *boxarg, const QString& setting)

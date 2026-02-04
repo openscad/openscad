@@ -1712,11 +1712,14 @@ QList<double> MainWindow::getRotation() const
 void MainWindow::hideFind()
 {
   find_panel->hide();
-  activeEditor->findState = TabManager::FIND_HIDDEN;
+  if (activeEditor) {
+    activeEditor->findState = TabManager::FIND_HIDDEN;
+  }
   editActionFindNext->setEnabled(false);
   editActionFindPrevious->setEnabled(false);
-  this->findInputField->setFindCount(
-    activeEditor->updateFindIndicators(this->findInputField->text(), false));
+  const int findCount =
+    (activeEditor) ? activeEditor->updateFindIndicators(this->findInputField->text(), false) : 0;
+  this->findInputField->setFindCount(findCount);
   this->processEvents();
 }
 
@@ -1759,6 +1762,8 @@ void MainWindow::on_editActionFind_triggered()
 
 void MainWindow::findString(const QString& textToFind)
 {
+  if (!activeEditor) return;
+
   this->findInputField->setFindCount(activeEditor->updateFindIndicators(textToFind));
   this->processEvents();
   activeEditor->find(textToFind);
@@ -4155,8 +4160,6 @@ void MainWindow::setupErrorLog()
  */
 void MainWindow::setupEditor(const QStringList& filenames)
 {
-  // Preferences initialization happens on first tab creation, and depends on colorschemes from editor.
-  // Any code dependent on Preferences must come after the TabManager instantiation
   tabManager = new TabManager(this, filenames.isEmpty() ? QString() : filenames[0]);
   activeEditor = tabManager->editor;
   editorDockContents->layout()->addWidget(tabManager->getTabContent());
@@ -4193,12 +4196,6 @@ void MainWindow::setupEditor(const QStringList& filenames)
 
   connect(this->editActionNextTab, &QAction::triggered, tabManager, &TabManager::nextTab);
   connect(this->editActionPrevTab, &QAction::triggered, tabManager, &TabManager::prevTab);
-
-  // Configure the highlighting color scheme from the active editor one.
-  // This is done only one time at creation of the first MainWindow instance
-  auto preferences = GlobalPreferences::inst();
-  if (!preferences->hasHighlightingColorScheme())
-    preferences->setHighlightingColorSchemes(activeEditor->colorSchemes());
 
   onTabManagerEditorChanged(activeEditor);
   QObject::connect(editorDock, &Dock::visibilityChanged, this,

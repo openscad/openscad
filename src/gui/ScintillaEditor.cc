@@ -102,39 +102,6 @@ QsciScintilla::WhitespaceVisibility SettingsConverter::toShowWhitespaces(const s
   }
 }
 
-EditorColorScheme::EditorColorScheme(const fs::path& path) : path(path)
-{
-  try {
-    boost::property_tree::read_json(path.generic_string(), pt);
-    _name = QString::fromStdString(pt.get<std::string>("name"));
-    _index = pt.get<int>("index");
-  } catch (const std::exception& e) {
-    LOG("Error reading color scheme file '%1$s': %2$s", path.generic_string(), e.what());
-    _name = "";
-    _index = 0;
-  }
-}
-
-bool EditorColorScheme::valid() const
-{
-  return !_name.isEmpty();
-}
-
-const QString& EditorColorScheme::name() const
-{
-  return _name;
-}
-
-int EditorColorScheme::index() const
-{
-  return _index;
-}
-
-const boost::property_tree::ptree& EditorColorScheme::propertyTree() const
-{
-  return pt;
-}
-
 ScintillaEditor::ScintillaEditor(QWidget *parent) : EditorInterface(parent)
 {
   api = nullptr;
@@ -798,45 +765,9 @@ void ScintillaEditor::noColor()
   qsci->setEdgeColor(Qt::black);
 }
 
-void ScintillaEditor::enumerateColorSchemesInPath(ScintillaEditor::colorscheme_set_t& result_set,
-                                                  const fs::path& path)
-{
-  const auto color_schemes = path / "color-schemes" / "editor";
-
-  if (fs::exists(color_schemes) && fs::is_directory(color_schemes)) {
-    for (const auto& dirEntry : boost::make_iterator_range(fs::directory_iterator{color_schemes}, {})) {
-      if (!fs::is_regular_file(dirEntry.status())) continue;
-
-      const auto& path = dirEntry.path();
-      if (!(path.extension() == ".json")) continue;
-
-      auto colorScheme = std::make_shared<EditorColorScheme>(path);
-      if (colorScheme->valid()) {
-        result_set.emplace(colorScheme->index(), colorScheme);
-      }
-    }
-  }
-}
-
-ScintillaEditor::colorscheme_set_t ScintillaEditor::enumerateColorSchemes()
-{
-  colorscheme_set_t result_set;
-
-  enumerateColorSchemesInPath(result_set, PlatformUtils::resourceBasePath());
-  enumerateColorSchemesInPath(result_set, PlatformUtils::userConfigPath());
-
-  return result_set;
-}
-
 QStringList ScintillaEditor::colorSchemes()
 {
-  QStringList colorSchemes;
-  for (const auto& colorSchemeEntry : enumerateColorSchemes()) {
-    colorSchemes << colorSchemeEntry.second.get()->name();
-  }
-  colorSchemes << "Off";
-
-  return colorSchemes;
+  return EditorColorMap::inst()->colorSchemeNames();
 }
 
 bool ScintillaEditor::canUndo()
@@ -846,15 +777,12 @@ bool ScintillaEditor::canUndo()
 
 void ScintillaEditor::setHighlightScheme(const QString& name)
 {
-  for (const auto& colorSchemeEntry : enumerateColorSchemes()) {
-    const auto colorScheme = colorSchemeEntry.second.get();
-    if (colorScheme->name() == name) {
-      setColormap(colorScheme);
-      return;
-    }
+  auto scheme = EditorColorMap::inst()->getColorScheme(name);
+  if (scheme) {
+    setColormap(scheme.get());
+  } else {
+    noColor();
   }
-
-  noColor();
 }
 
 void ScintillaEditor::insert(const QString& text)
