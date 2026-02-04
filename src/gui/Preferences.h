@@ -41,12 +41,6 @@ public:
   void fireApplicationFontChanged() const;
   void insertListItem(QListWidget *listBox, QListWidgetItem *listItem);
 
-  // Returns true if there is an higlightling color scheme configured.
-  bool hasHighlightingColorScheme() const;
-
-  // Set a new colorScheme.
-  void setHighlightingColorSchemes(const QStringList& colorSchemes);
-
 public slots:
   void actionTriggered(class QAction *);
   void featuresCheckBoxToggled(bool);
