@@ -1417,7 +1417,7 @@ void MainWindow::on_editActionFind_triggered()
 void MainWindow::findString(const QString& textToFind)
 {
   if (!activeEditor) return;
-  
+
   this->findInputField->setFindCount(activeEditor->updateFindIndicators(textToFind));
   this->processEvents();
   activeEditor->find(textToFind);
