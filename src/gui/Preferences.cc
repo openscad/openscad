@@ -65,6 +65,7 @@
 #include "geometry/cgal/CGALCache.h"
 #endif
 #include "glview/ColorMap.h"
+#include "gui/EditorColorMap.h"
 #include "glview/RenderSettings.h"
 #include "gui/QSettingsCached.h"
 #include "gui/SettingsWriter.h"
@@ -103,6 +104,8 @@ Preferences::Preferences(QWidget *parent) : QMainWindow(parent)
   for (const auto& name : names) renderColorSchemes << name.c_str();
 
   syntaxHighlight->clear();
+  syntaxHighlight->addItems(EditorColorMap::inst()->colorSchemeNames());
+
   colorSchemeChooser->clear();
   colorSchemeChooser->addItems(renderColorSchemes);
   init();
@@ -1469,18 +1472,6 @@ void Preferences::apply_win() const
 {
   emit requestRedraw();
   emit openCSGSettingsChanged();
-}
-
-bool Preferences::hasHighlightingColorScheme() const
-{
-  return BlockSignals<QComboBox *>(syntaxHighlight)->count() != 0;
-}
-
-void Preferences::setHighlightingColorSchemes(const QStringList& colorSchemes)
-{
-  auto combobox = BlockSignals<QComboBox *>(syntaxHighlight);
-  combobox->clear();
-  combobox->addItems(colorSchemes);
 }
 
 void Preferences::createFontSizeMenu(QComboBox *boxarg, const QString& setting)

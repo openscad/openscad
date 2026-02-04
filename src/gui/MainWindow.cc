@@ -3499,12 +3499,6 @@ void MainWindow::setupEditor(const QStringList& filenames)
   connect(this->editActionNextTab, &QAction::triggered, tabManager, &TabManager::nextTab);
   connect(this->editActionPrevTab, &QAction::triggered, tabManager, &TabManager::prevTab);
 
-  // Configure the highlighting color scheme from the active editor one.
-  // This is done only one time at creation of the first MainWindow instance
-  auto preferences = GlobalPreferences::inst();
-  if (!preferences->hasHighlightingColorScheme())
-    preferences->setHighlightingColorSchemes(activeEditor->colorSchemes());
-
   onTabManagerEditorChanged(activeEditor);
   QObject::connect(editorDock, &Dock::visibilityChanged, this,
                    &MainWindow::onEditorDockVisibilityChanged);
