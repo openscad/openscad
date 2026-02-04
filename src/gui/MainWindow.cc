@@ -2442,17 +2442,8 @@ QString MainWindow::enforceExportSuffix(const QString& filename, const QString& 
   const QFileInfo info(filename);
   if (info.suffix().isEmpty()) {
     const auto suffixedName = filename + "." + normalizedSuffix;
-    const QFileInfo suffixedInfo(suffixedName);
-    if (suffixedInfo.exists()) {
-      const auto text =
-        QString(_("%1 already exists.\nDo you want to replace it?")).arg(suffixedInfo.fileName());
-      const auto overwrite = QMessageBox::warning(this, windowTitle(), text,
-                                                  QMessageBox::Yes | QMessageBox::No, QMessageBox::No);
-      if (overwrite != QMessageBox::Yes) return {};
-    }
     return suffixedName;
   }
-
   return filename;
 }
 
