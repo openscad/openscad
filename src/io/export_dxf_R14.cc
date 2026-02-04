@@ -27,9 +27,9 @@
 // ---------------------------------------------------------------------
 // R14 (AC1014) compatible DXF exporter — full object model.
 //
-// This is a drop-in replacement for src/io/export_dxf.cc.  It emits
+// This could be a drop-in replacement for src/io/export_dxf.cc.  It emits
 // AC1014 instead of AC1006 and implements the R14 object model that
-// the upstream exporter lacks entirely.
+// the upstream exporter lacks entirely.  Function calls have '_R14' names
 //
 // What changed from upstream and why:
 //
@@ -76,13 +76,22 @@
 //   $DWGCODEPAGE header variable
 //       Declares character encoding.  Set to ansi_1252.
 //
-//   Unit variables: $MEASUREMENT and $LUNITS
-//       $MEASUREMENT (group 70): 0 = imperial, 1 = metric.  R14-era
-//       toggle; readers that don't understand $LUNITS fall back here.
-//       $LUNITS (group 70): specifies precise linear units.  Value 4
-//       = millimeters is the default; callers can pass a different
-//       value (1=inches, 5=centimeters, 7=meters, etc.).  Both are
-//       emitted so the file is correct for R14 and R2000+ readers.
+//   Unit variables: $MEASUREMENT, $INSUNITS, and $LUNITS
+//       $MEASUREMENT (group 70): 0 = imperial, 1 = metric (mm).
+//       R14-native variable; the only unit indicator R14 recognizes.
+//
+//       $INSUNITS (group 70): precise unit for INSERT/XREF scaling.
+//       Introduced in AC2000.  R14 readers ignore it, but AC2000+
+//       readers use it as the authoritative unit.  Value 4 = mm is
+//       the default; callers can override (1=inches, 5=cm, 6=meters).
+//
+//       $LUNITS (group 70): linear unit DISPLAY FORMAT, not the unit
+//       itself.  1=Scientific, 2=Decimal, 3=Engineering, 4=Architectural,
+//       5=Fractional.  Default 2 (Decimal) for standard numeric display.
+//
+//       All three are emitted so the file works correctly for both
+//       R14 readers (use $MEASUREMENT) and AC2000+ readers (use
+//       $INSUNITS + $LUNITS).
 //
 //   Root DICTIONARY owner -> handle 0
 //       Handle 0 is the implicit "drawing object" in the AutoCAD
@@ -144,43 +153,44 @@
 // OBJECTS dictionaries is constant regardless of geometry content.
 // Entities are allocated sequentially starting at HANDLE_ENT_START.
 // ---------------------------------------------------------------------
-static constexpr int H_LTYPE_TABLE = 0x1;
-static constexpr int H_LTYPE_CONT = 0x2;
-static constexpr int H_LAYER_TABLE = 0x3;
-static constexpr int H_LAYER_0 = 0x4;
-static constexpr int H_STYLE_TABLE = 0x5;
+static constexpr int H_LTYPE_TABLE    = 0x1;
+static constexpr int H_LTYPE_CONT     = 0x2;
+static constexpr int H_LAYER_TABLE    = 0x3;
+static constexpr int H_LAYER_0        = 0x4;
+static constexpr int H_STYLE_TABLE    = 0x5;
 static constexpr int H_BLOCKREC_TABLE = 0x6;
 static constexpr int H_BLOCKREC_MODEL = 0x7;
 static constexpr int H_BLOCKREC_PAPER = 0x8;
-static constexpr int H_BLOCK_MODEL = 0x9;
-static constexpr int H_ENDBLK_MODEL = 0xA;
-static constexpr int H_BLOCK_PAPER = 0xB;
-static constexpr int H_ENDBLK_PAPER = 0xC;
-static constexpr int H_DICT_ROOT = 0xD;
-static constexpr int H_DICT_GROUP = 0xE;
-static constexpr int H_ENT_START = 0xF;  // first entity
+static constexpr int H_BLOCK_MODEL    = 0x9;
+static constexpr int H_ENDBLK_MODEL   = 0xA;
+static constexpr int H_BLOCK_PAPER    = 0xB;
+static constexpr int H_ENDBLK_PAPER   = 0xC;
+static constexpr int H_DICT_ROOT      = 0xD;
+static constexpr int H_DICT_GROUP     = 0xE;
+static constexpr int H_ENT_START      = 0xF;  // first entity
 
 // Emit group 5 (handle) as uppercase hex.
-static void h(std::ostream& o, int handle)
-{
+static void h(std::ostream& o, int handle) {
   o << "  5\n" << std::uppercase << std::hex << handle << std::dec << "\n";
 }
 
 // Emit group 330 (owner handle) as uppercase hex.
-static void own(std::ostream& o, int handle)
-{
+static void own(std::ostream& o, int handle) {
   o << "330\n" << std::uppercase << std::hex << handle << std::dec << "\n";
 }
 
 // Emit a bare hex value (no group code) — used for 350 soft-pointer
 // and $HANDSEED value lines.
-static void hexval(std::ostream& o, int handle)
-{
+static void hexval(std::ostream& o, int handle) {
   o << std::uppercase << std::hex << handle << std::dec << "\n";
 }
 
-static void export_dxf_header(std::ostream& output, double xMin, double yMin, double xMax, double yMax,
-                              int handseed, int lunits)
+static void export_dxf_header_R14(std::ostream& output,
+                              double xMin, double yMin,
+                              double xMax, double yMax,
+                              int handseed,
+                              int insunits,
+                              int lunits)
 {
   output << "999\n"
          << "DXF from OpenSCAD\n";
@@ -201,43 +211,38 @@ static void export_dxf_header(std::ostream& output, double xMin, double yMin, do
          << " 30\n0.0\n"
 
          << "  9\n$EXTMIN\n"
-         << " 10\n"
-         << xMin << "\n"
-         << " 20\n"
-         << yMin << "\n"
+         << " 10\n" << xMin << "\n"
+         << " 20\n" << yMin << "\n"
 
          << "  9\n$EXTMAX\n"
-         << " 10\n"
-         << xMax << "\n"
-         << " 20\n"
-         << yMax << "\n"
+         << " 10\n" << xMax << "\n"
+         << " 20\n" << yMax << "\n"
 
          << "  9\n$LINMIN\n"
-         << " 10\n"
-         << xMin << "\n"
-         << " 20\n"
-         << yMin << "\n"
+         << " 10\n" << xMin << "\n"
+         << " 20\n" << yMin << "\n"
 
          << "  9\n$LINMAX\n"
-         << " 10\n"
-         << xMax << "\n"
-         << " 20\n"
-         << yMax
-         << "\n"
+         << " 10\n" << xMax << "\n"
+         << " 20\n" << yMax << "\n"
 
          // $HANDSEED — uses group code 5 (it is a handle value).
          << "  9\n$HANDSEED\n"
          << "  5\n";
   hexval(output, handseed);
 
-  // $MEASUREMENT: 1 = metric.  R14-era metric/imperial toggle.
-  // $LUNITS: precise linear unit.  Default 4 = millimeters; caller
-  // can override (1=inches, 5=centimeters, 7=meters, etc.).
+  // --- Unit variables ---
+  // $MEASUREMENT: R14-native metric/imperial toggle (1 = metric).
+  // $INSUNITS: AC2000+ precise unit for block insertion scaling.
+  //   Default 4 = mm; caller can override (1=inches, 5=cm, 6=m, etc.).
+  // $LUNITS: AC2000+ display format (not the unit itself).
+  //   Default 2 = decimal; caller can override (4=architectural, etc.).
   output << "  9\n$MEASUREMENT\n"
          << " 70\n1\n"
+         << "  9\n$INSUNITS\n"
+         << " 70\n" << insunits << "\n"
          << "  9\n$LUNITS\n"
-         << " 70\n"
-         << lunits << "\n";
+         << " 70\n" << lunits << "\n";
 
   output << "  0\nENDSEC\n";
 
@@ -279,12 +284,12 @@ static void export_dxf_header(std::ostream& output, double xMin, double yMin, do
 
          << "  0\nLAYER\n";
   h(output, H_LAYER_0);
-  own(output, H_LAYER_TABLE);  // LAYER "0" owns -> LAYER table
+  own(output, H_LAYER_TABLE);   // LAYER "0" owns -> LAYER table
   output << "100\nAcDbSymbolTableRecord\n"
          << "100\nAcDbLayerTableRecord\n"
-         << "  2\n0\n"  // layer name
+         << "  2\n0\n"           // layer name
          << " 70\n0\n"
-         << " 62\n7\n"  // color
+         << " 62\n7\n"           // color
          << "  6\nCONTINUOUS\n"
 
          << "  0\nENDTAB\n";
@@ -301,7 +306,7 @@ static void export_dxf_header(std::ostream& output, double xMin, double yMin, do
   output << "  0\nTABLE\n"
          << "  2\nBLOCK_RECORD\n";
   h(output, H_BLOCKREC_TABLE);
-  output << " 70\n2\n"  // 2 entries
+  output << " 70\n2\n"           // 2 entries
 
          << "  0\nBLOCK_RECORD\n";
   h(output, H_BLOCKREC_MODEL);
@@ -366,7 +371,7 @@ static void export_dxf_header(std::ostream& output, double xMin, double yMin, do
          << "  0\nENDSEC\n";
 }
 
-static void export_dxf_objects(std::ostream& output)
+static void export_dxf_objects_R14(std::ostream& output)
 {
   // ---- OBJECTS section -------------------------------------------------
   // Minimal root dictionary + ACAD_GROUP child.  The root's owner
@@ -380,7 +385,7 @@ static void export_dxf_objects(std::ostream& output)
          // Root dictionary
          << "  0\nDICTIONARY\n";
   h(output, H_DICT_ROOT);
-  own(output, 0);  // owner -> handle 0 (drawing object)
+  own(output, 0);                // owner -> handle 0 (drawing object)
   output << "100\nAcDbDictionary\n"
          << "281\n1\n"           // hard-owner flag
          << "  3\nACAD_GROUP\n"  // key
@@ -390,14 +395,14 @@ static void export_dxf_objects(std::ostream& output)
   // ACAD_GROUP child dictionary (empty)
   output << "  0\nDICTIONARY\n";
   h(output, H_DICT_GROUP);
-  own(output, H_DICT_ROOT);  // owner -> root
+  own(output, H_DICT_ROOT);     // owner -> root
   output << "100\nAcDbDictionary\n"
          << "281\n1\n"
 
          << "  0\nENDSEC\n";
 }
 
-static void export_dxf(const Polygon2d& poly, std::ostream& output)
+static void export_dxf_R14(const Polygon2d& poly, std::ostream& output)
 {
   setlocale(LC_NUMERIC, "C");  // Ensure radix is . (not ,) in output
 
@@ -419,7 +424,7 @@ static void export_dxf(const Polygon2d& poly, std::ostream& output)
   }
 
   int handseed = H_ENT_START + outline_count;
-  export_dxf_header(output, xMin, yMin, xMax, yMax, handseed, 4);  // 4 = mm
+  export_dxf_header_R14(output, xMin, yMin, xMax, yMax, handseed, 4, 2);  // 4=mm, 2=decimal
 
   // ---- ENTITIES section ------------------------------------------------
   output << "  0\nSECTION\n"
@@ -438,10 +443,8 @@ static void export_dxf(const Polygon2d& poly, std::ostream& output)
              << "  6\nByLayer\n"
              << " 62\n256\n"
              << "100\nAcDbPoint\n"
-             << " 10\n"
-             << p[0] << "\n"
-             << " 20\n"
-             << p[1] << "\n";
+             << " 10\n" << p[0] << "\n"
+             << " 20\n" << p[1] << "\n";
     } break;
     case 2: {
       // LINE
@@ -454,14 +457,10 @@ static void export_dxf(const Polygon2d& poly, std::ostream& output)
              << "  6\nByLayer\n"
              << " 62\n256\n"
              << "100\nAcDbLine\n"
-             << " 10\n"
-             << p1[0] << "\n"
-             << " 20\n"
-             << p1[1] << "\n"
-             << " 11\n"
-             << p2[0] << "\n"
-             << " 21\n"
-             << p2[1] << "\n";
+             << " 10\n" << p1[0] << "\n"
+             << " 20\n" << p1[1] << "\n"
+             << " 11\n" << p2[0] << "\n"
+             << " 21\n" << p2[1] << "\n";
     } break;
     default:
       // LWPOLYLINE (closed)
@@ -472,15 +471,12 @@ static void export_dxf(const Polygon2d& poly, std::ostream& output)
              << "  6\nByLayer\n"
              << " 62\n256\n"
              << "100\nAcDbPolyline\n"
-             << " 90\n"
-             << o.vertices.size() << "\n"
-             << " 70\n1\n"   // closed
-             << " 43\n0\n";  // constant width
+             << " 90\n" << o.vertices.size() << "\n"
+             << " 70\n1\n"       // closed
+             << " 43\n0\n";      // constant width
       for (const auto& p : o.vertices) {
-        output << " 10\n"
-               << p[0] << "\n"
-               << " 20\n"
-               << p[1] << "\n";
+        output << " 10\n" << p[0] << "\n"
+               << " 20\n" << p[1] << "\n";
       }
       break;
     }
@@ -489,21 +485,21 @@ static void export_dxf(const Polygon2d& poly, std::ostream& output)
   output << "  0\nENDSEC\n";
 
   // OBJECTS goes after ENTITIES per R14 section order.
-  export_dxf_objects(output);
+  export_dxf_objects_R14(output);
 
   output << "  0\nEOF\n";
 
   setlocale(LC_NUMERIC, "");  // restore default locale
 }
 
-void export_dxf(const std::shared_ptr<const Geometry>& geom, std::ostream& output)
+void export_dxf_R14(const std::shared_ptr<const Geometry>& geom, std::ostream& output)
 {
   if (const auto geomlist = std::dynamic_pointer_cast<const GeometryList>(geom)) {
     for (const auto& item : geomlist->getChildren()) {
-      export_dxf(item.second, output);
+      export_dxf_R14(item.second, output);
     }
   } else if (const auto poly = std::dynamic_pointer_cast<const Polygon2d>(geom)) {
-    export_dxf(*poly, output);
+    export_dxf_R14(*poly, output);
   } else if (std::dynamic_pointer_cast<const PolySet>(geom)) {  // NOLINT(bugprone-branch-clone)
     assert(false && "Unsupported file format");
   } else {  // NOLINT(bugprone-branch-clone)
