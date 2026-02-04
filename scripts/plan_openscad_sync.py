@@ -134,7 +134,7 @@ def main():
     print()
     print(f"# finally:")
     print("# git tag -a \"upstream-sync/openscad-%s\" \"%s\" -m \"Synced OpenSCAD up to %s\""%(newtag, tip, tip))
-    print("# git push origin \"%s\""%(newtag))
+    print("# git push origin \"upstream-sync/openscad-%s\""%(newtag))
 
 if __name__ == "__main__":
     main()
