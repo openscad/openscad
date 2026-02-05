@@ -20,6 +20,6 @@ private:
   ColorParameter *parameter;
   QPushButton *colorButton;
   ParameterDescriptionWidget *descriptionWidget;
-  
+
   void updateButtonColor();
 };

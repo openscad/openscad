@@ -19,12 +19,12 @@ ParameterColor::ParameterColor(QWidget *parent, ColorParameter *parameter,
 
   auto *contentLayout = new QHBoxLayout();
   contentLayout->setContentsMargins(0, 2, 0, 2);
-  
+
   colorButton = new QPushButton(this);
   colorButton->setMinimumHeight(30);
   colorButton->setCursor(Qt::PointingHandCursor);
   connect(colorButton, &QPushButton::clicked, this, &ParameterColor::onClicked);
-  
+
   contentLayout->addWidget(colorButton);
   rootLayout->addLayout(contentLayout);
 
@@ -62,7 +62,7 @@ void ParameterColor::onClicked()
       }
     }
     updateButtonColor();
-    emit changed(true); // Immediate update
+    emit changed(true);  // Immediate update
   }
 }
 
@@ -87,15 +87,19 @@ void ParameterColor::updateButtonColor()
       int a = (v.size() == 4) ? static_cast<int>(v[3] * 255) : 255;
       color = QColor(r, g, b, a);
       text = QString("[%1, %2, %3%4]")
-        .arg(v[0]).arg(v[1]).arg(v[2])
-        .arg(v.size() == 4 ? QString(", %1").arg(v[3]) : "");
+               .arg(v[0])
+               .arg(v[1])
+               .arg(v[2])
+               .arg(v.size() == 4 ? QString(", %1").arg(v[3]) : "");
     }
   }
 
   if (color.isValid()) {
-    QString style = QString("background-color: %1; color: %2; border: 1px solid #999; border-radius: 4px; font-weight: bold;")
-      .arg(color.name())
-      .arg(color.lightness() > 128 ? "black" : "white");
+    QString style = QString(
+                      "background-color: %1; color: %2; border: 1px solid #999; border-radius: 4px; "
+                      "font-weight: bold;")
+                      .arg(color.name())
+                      .arg(color.lightness() > 128 ? "black" : "white");
     colorButton->setStyleSheet(style);
     colorButton->setText(text);
   }
