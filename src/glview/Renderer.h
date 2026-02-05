@@ -36,7 +36,7 @@ public:
   virtual ~Renderer() = default;
 
   virtual void prepare(const ShaderUtils::Shader *shader) = 0;
-  virtual void draw(bool showedges, const ShaderUtils::Shader *shader) const = 0;
+  virtual void draw(const ShaderUtils::Shader *shader) const = 0;
   [[nodiscard]] virtual BoundingBox getBoundingBox() const = 0;
 
   enum class ColorMode {
