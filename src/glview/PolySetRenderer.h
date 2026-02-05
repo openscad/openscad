@@ -20,7 +20,7 @@ public:
   PolySetRenderer(const std::shared_ptr<const class Geometry>& geom);
   ~PolySetRenderer() override = default;
   void prepare(const ShaderUtils::Shader *shader) override;
-  void draw(bool showedges, const ShaderUtils::Shader *shader) const override;
+  void draw(const ShaderUtils::Shader *shader) const override;
   void setColorScheme(const ColorScheme& cs) override;
   BoundingBox getBoundingBox() const override;
 
@@ -40,7 +40,7 @@ private:
   void createPolygonSurfaceStates();
   void createPolygonEdgeStates();
 
-  void drawPolySets(bool showedges, const ShaderUtils::Shader *shader) const;
+  void drawPolySets(const ShaderUtils::Shader *shader) const;
   void drawPolygons() const;
 
   std::vector<std::shared_ptr<const class PolySet>> polysets_;

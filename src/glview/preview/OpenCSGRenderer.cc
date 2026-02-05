@@ -114,7 +114,7 @@ void OpenCSGRenderer::prepare(const ShaderUtils::Shader *shader)
   }
 }
 
-void OpenCSGRenderer::draw(bool /* showedges */, const ShaderUtils::Shader *shader) const
+void OpenCSGRenderer::draw(const ShaderUtils::Shader *shader) const
 {
 #ifdef ENABLE_OPENCSG
   for (const auto& product : vertex_state_containers_) {
