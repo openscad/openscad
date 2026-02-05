@@ -579,10 +579,12 @@ std::unique_ptr<ParameterObject> ParameterObject::fromAssignment(const Assignmen
         value = expression->toString();
         key = expression->toString();
       }
-      EnumValues values = parseEnumItems(parameter, key, value);
-      if (!values.items.empty()) {
-        return std::make_unique<EnumParameter>(name, description, group, values.defaultValueIndex,
-                                               values.items);
+      if (!isColor) {
+        EnumValues values = parseEnumItems(parameter, key, value);
+        if (!values.items.empty()) {
+          return std::make_unique<EnumParameter>(name, description, group, values.defaultValueIndex,
+                                                 values.items);
+        }
       }
     }
 
