@@ -35,7 +35,23 @@ void ParameterColor::onClicked()
 {
   QColor initial;
   if (parameter->format == ColorParameter::ColorFormat::Hex) {
-    initial = QColor(QString::fromStdString(parameter->stringValue));
+    QString hex = QString::fromStdString(parameter->stringValue);
+    if (hex.startsWith('#')) {
+      bool ok;
+      if (hex.length() == 7) {
+        initial = QColor(hex);
+      } else if (hex.length() == 9) {
+        // OpenSCAD #RRGGBBAA -> Qt #AARRGGBB
+        unsigned int val = hex.mid(1).toUInt(&ok, 16);
+        if (ok) {
+          int r = (val >> 24) & 0xFF;
+          int g = (val >> 16) & 0xFF;
+          int b = (val >> 8) & 0xFF;
+          int a = val & 0xFF;
+          initial = QColor(r, g, b, a);
+        }
+      }
+    }
   } else {
     auto& v = parameter->vectorValue;
     if (v.size() >= 3) {
@@ -51,13 +67,20 @@ void ParameterColor::onClicked()
     QColorDialog::getColor(initial, this, _("Select Color"), QColorDialog::ShowAlphaChannel);
   if (selected.isValid()) {
     if (parameter->format == ColorParameter::ColorFormat::Hex) {
-      parameter->stringValue = selected.name(QColor::HexArgb).toStdString();
+      QString hex = QString("#%1%2%3")
+                      .arg(selected.red(), 2, 16, QChar('0'))
+                      .arg(selected.green(), 2, 16, QChar('0'))
+                      .arg(selected.blue(), 2, 16, QChar('0'));
+      if (selected.alpha() < 255) {
+        hex += QString("%1").arg(selected.alpha(), 2, 16, QChar('0'));
+      }
+      parameter->stringValue = hex.toStdString();
     } else {
       parameter->vectorValue.clear();
       parameter->vectorValue.push_back(selected.redF());
       parameter->vectorValue.push_back(selected.greenF());
       parameter->vectorValue.push_back(selected.blueF());
-      if (parameter->vectorValue.size() == 4) {
+      if (selected.alpha() < 255) {
         parameter->vectorValue.push_back(selected.alphaF());
       }
     }
@@ -76,8 +99,17 @@ void ParameterColor::updateButtonColor()
   QColor color;
   QString text;
   if (parameter->format == ColorParameter::ColorFormat::Hex) {
-    color = QColor(QString::fromStdString(parameter->stringValue));
-    text = QString::fromStdString(parameter->stringValue);
+    QString hex = QString::fromStdString(parameter->stringValue);
+    if (hex.length() == 9) {
+      bool ok;
+      unsigned int val = hex.mid(1).toUInt(&ok, 16);
+      if (ok) {
+        color = QColor((val >> 24) & 0xFF, (val >> 16) & 0xFF, (val >> 8) & 0xFF, val & 0xFF);
+      }
+    } else {
+      color = QColor(hex);
+    }
+    text = hex;
   } else {
     auto& v = parameter->vectorValue;
     if (v.size() >= 3) {
@@ -95,11 +127,15 @@ void ParameterColor::updateButtonColor()
   }
 
   if (color.isValid()) {
+    // Buttons don't usually show transparency well, but we can at least ensure
+    // the label color is correct based on the "flat" version of the color.
+    QColor opaqueColor = color;
+    opaqueColor.setAlpha(255);
     QString style = QString(
                       "background-color: %1; color: %2; border: 1px solid #999; border-radius: 4px; "
                       "font-weight: bold;")
-                      .arg(color.name())
-                      .arg(color.lightness() > 128 ? "black" : "white");
+                      .arg(color.name(QColor::HexRgb))
+                      .arg(opaqueColor.lightness() > 128 ? "black" : "white");
     colorButton->setStyleSheet(style);
     colorButton->setText(text);
   }

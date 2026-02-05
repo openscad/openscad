@@ -337,7 +337,7 @@ bool ColorParameter::importValue(boost::property_tree::ptree encodedValue, bool 
       decoded.push_back(itemValue);
     }
 
-    if (decoded.size() != vectorValue.size()) {
+    if (decoded.size() < 3 || decoded.size() > 4) {
       return false;
     }
 
