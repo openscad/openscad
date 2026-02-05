@@ -47,6 +47,7 @@ enum class FileFormat {
   PS,
   POV,
   STEP,
+  GCODE,
   PARAM
 };
 
@@ -338,6 +339,8 @@ void export_ps(const std::shared_ptr<const Geometry>& geom, std::ostream& output
 void export_amf(const std::shared_ptr<const Geometry>& geom, std::ostream& output);
 void export_dxf(const std::shared_ptr<const Geometry>& geom, std::ostream& output);
 void export_svg(const std::shared_ptr<const Geometry>& geom, std::ostream& output,
+                const ExportInfo& exportInfo);
+void export_gcode(const std::shared_ptr<const Geometry>& geom, std::ostream& output,
                 const ExportInfo& exportInfo);
 void export_pov(const std::shared_ptr<const Geometry>& geom, std::ostream& output,
                 const ExportInfo& exportInfo);
