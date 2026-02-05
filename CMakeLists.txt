@@ -1328,6 +1328,7 @@ set(GUI_SOURCES
   src/gui/parameter/ParameterComboBox.cc
   src/gui/parameter/ParameterSlider.cc
   src/gui/parameter/ParameterSpinBox.cc
+  src/gui/parameter/ParameterColor.cc
   src/gui/parameter/ParameterText.cc
   src/gui/parameter/ParameterVector.cc
   src/gui/parameter/ParameterVirtualWidget.cc
@@ -1398,6 +1399,7 @@ set(GUI_HEADERS
     src/gui/parameter/ParameterComboBox.h
     src/gui/parameter/ParameterSlider.h
     src/gui/parameter/ParameterSpinBox.h
+    src/gui/parameter/ParameterColor.h
     src/gui/parameter/ParameterText.h
     src/gui/parameter/ParameterVector.h
     src/gui/parameter/ParameterVirtualWidget.h
