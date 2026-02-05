@@ -1295,6 +1295,7 @@ set(GUI_SOURCES
   src/gui/ColorList.cc
   src/gui/ColorLabel.cc
   src/gui/ColorLayout.cc
+  src/gui/EditorColorMap.cc
   src/gui/MouseSelector.cc
   src/gui/OctoPrint.cc
   src/gui/OpenCSGWarningDialog.cc

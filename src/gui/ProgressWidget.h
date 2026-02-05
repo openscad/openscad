@@ -21,6 +21,9 @@ public slots:
   int value() const;
   void cancel();
 
+private slots:
+  void on_stopButton_clicked();
+
 signals:
   void requestShow();
 

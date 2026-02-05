@@ -6,11 +6,12 @@
 OpenCSGWarningDialog::OpenCSGWarningDialog(QWidget *)
 {
   setupUi(this);
+}
 
-  connect(this->showBox, &QCheckBox::toggled, GlobalPreferences::inst()->openCSGWarningBox,
-          &QCheckBox::setChecked);
-  connect(this->showBox, &QCheckBox::toggled, GlobalPreferences::inst(),
-          &Preferences::on_openCSGWarningBox_toggled);
+void OpenCSGWarningDialog::on_showBox_toggled(bool checked)
+{
+  GlobalPreferences::inst()->openCSGWarningBox->setChecked(checked);
+  GlobalPreferences::inst()->on_openCSGWarningBox_toggled(checked);
 }
 
 void OpenCSGWarningDialog::setText(const QString& text)
