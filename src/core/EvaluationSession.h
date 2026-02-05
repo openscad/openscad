@@ -2,6 +2,7 @@
 
 #include <boost/optional.hpp>
 #include <cstddef>
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
@@ -16,7 +17,13 @@ class ContextFrame;
 class EvaluationSession
 {
 public:
-  EvaluationSession(std::string documentRoot) : document_root(std::move(documentRoot)) {}
+  EvaluationSession(std::string documentRoot);
+  ~EvaluationSession();
+
+  enum class TimerType {
+    Monotonic,
+    Cpu,
+  };
 
   size_t push_frame(ContextFrame *frame);
   void replace_frame(size_t index, ContextFrame *frame);
@@ -33,8 +40,19 @@ public:
   ContextMemoryManager& contextMemoryManager() { return context_memory_manager; }
   HeapSizeAccounting& accounting() { return context_memory_manager.accounting(); }
 
+  int timer_new(const std::string& name, TimerType type);
+  void timer_start(int id, const Location& loc);
+  void timer_clear(int id, const Location& loc);
+  double timer_stop(int id, const Location& loc);
+  double timer_elapsed(int id, const Location& loc);
+  void timer_delete(int id, const Location& loc);
+  const std::string& timer_name(int id, const Location& loc) const;
+
 private:
+  struct TimerRegistry;
+
   std::string document_root;
   std::vector<ContextFrame *> stack;
   ContextMemoryManager context_memory_manager;
+  std::unique_ptr<TimerRegistry> timer_registry;
 };
