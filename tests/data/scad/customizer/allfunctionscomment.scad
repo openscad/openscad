@@ -63,17 +63,3 @@ zc = parent_module();//parameter
 w = dxf_dim();//parameter
 //description
 x = dxf_cross();
-//description
-ta = timer_new();//parameter
-//description
-tb = timer_start();//parameter
-//description
-tc = timer_clear();//parameter
-//description
-td = timer_stop();//parameter
-//description
-te = timer_elapsed();//parameter
-//description
-tf = timer_delete();//parameter
-//description
-tg = timer_run();//parameter

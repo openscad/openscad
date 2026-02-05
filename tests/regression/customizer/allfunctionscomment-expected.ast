@@ -32,10 +32,3 @@ zc = parent_module();
 w = dxf_dim();
 x = dxf_cross();
 
-ta = timer_new();
-tb = timer_start();
-tc = timer_clear();
-td = timer_stop();
-te = timer_elapsed();
-tf = timer_delete();
-tg = timer_run();
