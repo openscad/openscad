@@ -1247,7 +1247,6 @@ else()
     src/glview/GLView.cc
     src/glview/hershey.cc
     src/glview/OffscreenView.cc
-    src/glview/cgal/CGALRenderer.cc
     src/glview/PolySetRenderer.cc
     src/glview/preview/OpenCSGRenderer.cc
     src/glview/preview/ThrownTogetherRenderer.cc
