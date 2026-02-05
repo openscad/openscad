@@ -47,7 +47,8 @@ void ParameterColor::onClicked()
     }
   }
 
-  QColor selected = QColorDialog::getColor(initial, this, _("Select Color"), QColorDialog::ShowAlphaChannel);
+  QColor selected =
+    QColorDialog::getColor(initial, this, _("Select Color"), QColorDialog::ShowAlphaChannel);
   if (selected.isValid()) {
     if (parameter->format == ColorParameter::ColorFormat::Hex) {
       parameter->stringValue = selected.name(QColor::HexArgb).toStdString();
