@@ -46,9 +46,26 @@
 #include "core/FreetypeRenderer.h"
 #include "core/Parameters.h"
 #include "core/UserModule.h"
+#include "utils/printutils.h"
+#include "utils/exceptions.h"
+#include "utils/degree_trig.h"
+#include "io/import.h"
 #include "core/function.h"
 #include "io/fileutils.h"
-#include "io/import.h"
+#include "version.h"
+
+#include <utility>
+#include <cstdint>
+#include <memory>
+#include <cmath>
+#include <sstream>
+#include <ctime>
+#include <limits>
+#include <algorithm>
+#include <cctype>
+#include <random>
+#include <vector>
+
 #include "utils/boost-utils.h"
 #include "utils/degree_trig.h"
 #include "utils/printutils.h"
@@ -1105,6 +1122,214 @@ Value builtin_import(Arguments arguments, const Location& loc)
   return import_json(file, session, loc);
 }
 
+static void timer_error(const char *function_name, const Location& loc, const std::string& document_root,
+                        const std::string& msg)
+{
+  LOG(message_group::Error, loc, document_root, "%1$s", msg);
+  throw EvaluationException(msg);
+}
+
+static int parse_timer_id(const char *function_name, const Arguments& arguments, const Location& loc,
+                          size_t index)
+{
+  if (arguments.size() <= index) {
+    timer_error(function_name, loc, arguments.documentRoot(),
+                STR(function_name, "() missing timer_id"));
+  }
+  if (arguments[index]->type() != Value::Type::NUMBER) {
+    timer_error(function_name, loc, arguments.documentRoot(),
+                STR(function_name, "() timer_id must be a number"));
+  }
+  const double id_val = arguments[index]->toDouble();
+  if (!std::isfinite(id_val)) {
+    timer_error(function_name, loc, arguments.documentRoot(),
+                STR(function_name, "() timer_id must be finite"));
+  }
+  return static_cast<int>(id_val);
+}
+
+static EvaluationSession::TimerType parse_timer_type(const char *function_name,
+                                                     const Arguments& arguments, const Location& loc,
+                                                     size_t index)
+{
+  if (arguments.size() <= index) {
+    return EvaluationSession::TimerType::Monotonic;
+  }
+  if (arguments[index]->type() != Value::Type::STRING) {
+    timer_error(function_name, loc, arguments.documentRoot(),
+                STR(function_name, "() type must be a string"));
+  }
+  std::string type = arguments[index]->toStrUtf8Wrapper().toString();
+  std::transform(type.begin(), type.end(), type.begin(),
+                 [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
+  if (type.empty() || type == "monotonic") {
+    return EvaluationSession::TimerType::Monotonic;
+  }
+  if (type == "cpu") {
+    return EvaluationSession::TimerType::Cpu;
+  }
+  timer_error(function_name, loc, arguments.documentRoot(),
+              STR(function_name, "() unknown timer type '", type, "'"));
+  return EvaluationSession::TimerType::Monotonic;
+}
+
+static void timer_echo(const Arguments& arguments, const Location& loc, int id, double elapsed_ms)
+{
+  const auto& name = arguments.session()->timer_name(id, loc);
+  std::string label = name.empty() ? std::to_string(id) : name;
+  LOG(message_group::Echo, "%1$s", STR("timer ", label, " = ", elapsed_ms));
+}
+
+static void timer_echo(const std::shared_ptr<const Context>& context, const Location& loc, int id,
+                       double elapsed_ms)
+{
+  const auto& name = context->session()->timer_name(id, loc);
+  std::string label = name.empty() ? std::to_string(id) : name;
+  LOG(message_group::Echo, "%1$s", STR("timer ", label, " = ", elapsed_ms));
+}
+
+Value builtin_timer_new(Arguments arguments, const Location& loc)
+{
+  if (arguments.size() > 2) {
+    timer_error("timer_new", loc, arguments.documentRoot(),
+                STR("timer_new() expected 0-2 arguments, got ", arguments.size()));
+  }
+  std::string name;
+  if (arguments.size() >= 1) {
+    if (arguments[0]->type() != Value::Type::STRING) {
+      timer_error("timer_new", loc, arguments.documentRoot(),
+                  "timer_new() name must be a string");
+    }
+    name = arguments[0]->toStrUtf8Wrapper().toString();
+  }
+  auto type = parse_timer_type("timer_new", arguments, loc, 1);
+  const int id = arguments.session()->timer_new(name, type);
+  return Value(static_cast<double>(id));
+}
+
+Value builtin_timer_start(Arguments arguments, const Location& loc)
+{
+  if (arguments.size() != 1) {
+    timer_error("timer_start", loc, arguments.documentRoot(),
+                STR("timer_start() expected 1 argument, got ", arguments.size()));
+  }
+  const int id = parse_timer_id("timer_start", arguments, loc, 0);
+  arguments.session()->timer_start(id, loc);
+  return Value::undefined.clone();
+}
+
+Value builtin_timer_clear(Arguments arguments, const Location& loc)
+{
+  if (arguments.size() != 1) {
+    timer_error("timer_clear", loc, arguments.documentRoot(),
+                STR("timer_clear() expected 1 argument, got ", arguments.size()));
+  }
+  const int id = parse_timer_id("timer_clear", arguments, loc, 0);
+  arguments.session()->timer_clear(id, loc);
+  return Value::undefined.clone();
+}
+
+Value builtin_timer_stop(Arguments arguments, const Location& loc)
+{
+  if (arguments.size() < 1 || arguments.size() > 2) {
+    timer_error("timer_stop", loc, arguments.documentRoot(),
+                STR("timer_stop() expected 1-2 arguments, got ", arguments.size()));
+  }
+  const int id = parse_timer_id("timer_stop", arguments, loc, 0);
+  const double elapsed_ms = arguments.session()->timer_stop(id, loc);
+  const bool do_echo = (arguments.size() > 1) ? arguments[1]->toBool() : false;
+  if (do_echo) {
+    timer_echo(arguments, loc, id, elapsed_ms);
+  }
+  return Value(elapsed_ms);
+}
+
+Value builtin_timer_elapsed(Arguments arguments, const Location& loc)
+{
+  if (arguments.size() < 1 || arguments.size() > 2) {
+    timer_error("timer_elapsed", loc, arguments.documentRoot(),
+                STR("timer_elapsed() expected 1-2 arguments, got ", arguments.size()));
+  }
+  const int id = parse_timer_id("timer_elapsed", arguments, loc, 0);
+  const double elapsed_ms = arguments.session()->timer_elapsed(id, loc);
+  const bool do_echo = (arguments.size() > 1) ? arguments[1]->toBool() : false;
+  if (do_echo) {
+    timer_echo(arguments, loc, id, elapsed_ms);
+  }
+  return Value(elapsed_ms);
+}
+
+Value builtin_timer_delete(Arguments arguments, const Location& loc)
+{
+  if (arguments.size() != 1) {
+    timer_error("timer_delete", loc, arguments.documentRoot(),
+                STR("timer_delete() expected 1 argument, got ", arguments.size()));
+  }
+  const int id = parse_timer_id("timer_delete", arguments, loc, 0);
+  arguments.session()->timer_delete(id, loc);
+  return Value::undefined.clone();
+}
+
+static Value call_function_value(const std::shared_ptr<const Context>& context, const Location& loc,
+                                 Value fn_value, const Arguments& arguments, size_t arg_start)
+{
+  AssignmentList arglist;
+  arglist.reserve(arguments.size() - arg_start);
+  for (size_t i = arg_start; i < arguments.size(); ++i) {
+    auto arg_expr = std::make_shared<Literal>(arguments[i].value.clone(), loc);
+    arglist.emplace_back(std::make_shared<Assignment>("", arg_expr, loc));
+  }
+  auto *fn_expr = new Literal(std::move(fn_value), loc);
+  FunctionCall fn_call(fn_expr, std::move(arglist), loc);
+  return fn_call.evaluate(context);
+}
+
+Value builtin_timer_run(const std::shared_ptr<const Context>& context, const FunctionCall *call)
+{
+  Arguments arguments{call->arguments, context};
+  if (arguments.empty()) {
+    timer_error("timer_run", call->location(), arguments.documentRoot(),
+                "timer_run() requires a function");
+  }
+
+  std::string name;
+  size_t fn_index = 0;
+  if (arguments[0].value.type() == Value::Type::STRING) {
+    name = arguments[0].value.toStrUtf8Wrapper().toString();
+    fn_index = 1;
+  }
+
+  if (fn_index >= arguments.size()) {
+    timer_error("timer_run", call->location(), arguments.documentRoot(),
+                "timer_run() requires a function");
+  }
+
+  if (arguments[fn_index].value.type() != Value::Type::FUNCTION) {
+    const char *msg = (fn_index == 0)
+                        ? "timer_run() first argument must be a function or name"
+                        : "timer_run() second argument must be a function";
+    timer_error("timer_run", call->location(), arguments.documentRoot(), msg);
+  }
+
+  EvaluationSession *session = arguments.session();
+  const int id = session->timer_new(name, EvaluationSession::TimerType::Monotonic);
+  session->timer_start(id, call->location());
+
+  Value result = Value::undefined.clone();
+  try {
+    result = call_function_value(context, call->location(), arguments[fn_index].value.clone(),
+                                 arguments, fn_index + 1);
+  } catch (...) {
+    session->timer_delete(id, call->location());
+    throw;
+  }
+
+  const double elapsed_ms = session->timer_stop(id, call->location());
+  timer_echo(context, call->location(), id, elapsed_ms);
+  session->timer_delete(id, call->location());
+  return result;
+}
+
 void register_builtin_functions()
 {
   Builtins::init("abs", new BuiltinFunction(&builtin_abs),
@@ -1284,6 +1509,39 @@ void register_builtin_functions()
   Builtins::init("parent_module", new BuiltinFunction(&builtin_parent_module),
                  {
                    "parent_module(number) -> string",
+                 });
+
+  Builtins::init("timer_new", new BuiltinFunction(&builtin_timer_new),
+                 {
+                   "timer_new() -> number",
+                   "timer_new(name) -> number",
+                   "timer_new(name, type) -> number",
+                 });
+  Builtins::init("timer_start", new BuiltinFunction(&builtin_timer_start),
+                 {
+                   "timer_start(timer_id) -> undef",
+                 });
+  Builtins::init("timer_clear", new BuiltinFunction(&builtin_timer_clear),
+                 {
+                   "timer_clear(timer_id) -> undef",
+                 });
+  Builtins::init("timer_stop", new BuiltinFunction(&builtin_timer_stop),
+                 {
+                   "timer_stop(timer_id) -> number",
+                   "timer_stop(timer_id, echo) -> number",
+                 });
+  Builtins::init("timer_elapsed", new BuiltinFunction(&builtin_timer_elapsed),
+                 {
+                   "timer_elapsed(timer_id) -> number",
+                   "timer_elapsed(timer_id, echo) -> number",
+                 });
+  Builtins::init("timer_delete", new BuiltinFunction(&builtin_timer_delete),
+                 {
+                   "timer_delete(timer_id) -> undef",
+                 });
+  Builtins::init("timer_run", new BuiltinFunction(&builtin_timer_run),
+                 {
+                   "timer_run(name, fn, ...) -> any",
                  });
 
   Builtins::init("is_undef", new BuiltinFunction(&builtin_is_undef),

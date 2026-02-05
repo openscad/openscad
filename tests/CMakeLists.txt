@@ -381,6 +381,7 @@ list(APPEND ECHO_FILES ${FUNCTION_FILES} ${MISC_FILES} ${REDEFINITION_FILES}
   ${TEST_SCAD_DIR}/misc/root-modifier-for.scad
   ${TEST_DATA_DIR}/use-order-test/use-order-test.scad
   ${TEST_SCAD_DIR}/misc/linenumber.scad
+  ${TEST_SCAD_DIR}/misc/timer-tests.scad
 )
 
 list(APPEND ASTDUMP_FILES ${MISC_FILES}
