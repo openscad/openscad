@@ -119,7 +119,7 @@ void ThrownTogetherRenderer::prepare(const ShaderUtils::Shader *shader)
   }
 }
 
-void ThrownTogetherRenderer::draw(bool /* showedges */, const ShaderUtils::Shader *shader) const
+void ThrownTogetherRenderer::draw(const ShaderUtils::Shader *shader) const
 {
   shader->use();
 

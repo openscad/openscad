@@ -227,13 +227,13 @@ void PolySetRenderer::prepare(const ShaderUtils::Shader *shader)
   }
 }
 
-void PolySetRenderer::draw(bool showedges, const ShaderUtils::Shader *shader) const
+void PolySetRenderer::draw(const ShaderUtils::Shader *shader) const
 {
-  drawPolySets(showedges, shader);
+  drawPolySets(shader);
   drawPolygons();
 }
 
-void PolySetRenderer::drawPolySets(bool /* showedges */, const ShaderUtils::Shader *shader) const
+void PolySetRenderer::drawPolySets(const ShaderUtils::Shader *shader) const
 {
   shader->use();
 

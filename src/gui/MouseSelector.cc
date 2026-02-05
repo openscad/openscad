@@ -122,7 +122,7 @@ int MouseSelector::select(const Renderer *renderer, int x, int y)
   glEnable(GL_DEPTH_TEST);
 
   // call the renderer with the selector shader
-  GL_CHECKD(renderer->draw(false, shader.get()));
+  GL_CHECKD(renderer->draw(shader.get()));
 
   // Not strictly necessary, but a nop if not required.
   glFlush();

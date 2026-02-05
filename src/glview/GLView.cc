@@ -187,7 +187,7 @@ void GLView::paintGL()
     OpenCSG::setContext(this->opencsg_id);
 #endif
     this->renderer->prepare(main_shader.get());
-    this->renderer->draw(showedges, main_shader.get());
+    this->renderer->draw(main_shader.get());
   }
   Vector3d eyedir(this->modelview[2], this->modelview[6], this->modelview[10]);
   glColor3f(1, 0, 0);
