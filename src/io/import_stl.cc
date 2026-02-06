@@ -55,7 +55,10 @@ static void uint32_byte_swap(unsigned char *p)
 #endif
 }
 
-static void uint32_byte_swap(uint32_t& x) { uint32_byte_swap(reinterpret_cast<unsigned char *>(&x)); }
+static void uint32_byte_swap(uint32_t& x)
+{
+  uint32_byte_swap(reinterpret_cast<unsigned char *>(&x));
+}
 #endif  // if BOOST_ENDIAN_BIG_BYTE
 
 static void read_stl_facet(std::ifstream& f, stl_facet& facet)
@@ -75,7 +78,7 @@ static void read_stl_facet(std::ifstream& f, stl_facet& facet)
 std::unique_ptr<PolySet> import_stl(const std::string& filename, const Location& loc)
 {
   // Open file and position at the end
-  std::ifstream f(filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
+  std::ifstream f(std::filesystem::u8path(filename), std::ios::in | std::ios::binary | std::ios::ate);
   if (!f.good()) {
     LOG(message_group::Warning, "Can't open import file '%1$s', import() at line %2$d", filename,
         loc.firstLine());

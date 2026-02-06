@@ -39,6 +39,7 @@
 #include <utility>
 #include <variant>
 
+#include "Feature.h"
 #include "core/Context.h"
 #include "core/EvaluationSession.h"
 #include "core/function.h"
@@ -62,7 +63,10 @@ Value Expression::checkUndef(Value&& val, const std::shared_ptr<const Context>& 
   return std::move(val);
 }
 
-bool Expression::isLiteral() const { return false; }
+bool Expression::isLiteral() const
+{
+  return false;
+}
 
 UnaryOp::UnaryOp(UnaryOp::Op op, Expression *expr, const Location& loc)
   : Expression(loc), op(op), expr(expr)
@@ -93,7 +97,10 @@ const char *UnaryOp::opString() const
   }
 }
 
-bool UnaryOp::isLiteral() const { return this->expr->isLiteral(); }
+bool UnaryOp::isLiteral() const
+{
+  return this->expr->isLiteral();
+}
 
 void UnaryOp::print(std::ostream& stream, const std::string&) const
 {
@@ -217,9 +224,15 @@ void ArrayLookup::print(std::ostream& stream, const std::string&) const
   stream << *array << "[" << *index << "]";
 }
 
-Value Literal::evaluate(const std::shared_ptr<const Context>&) const { return value.clone(); }
+Value Literal::evaluate(const std::shared_ptr<const Context>&) const
+{
+  return value.clone();
+}
 
-void Literal::print(std::ostream& stream, const std::string&) const { stream << value; }
+void Literal::print(std::ostream& stream, const std::string&) const
+{
+  stream << value;
+}
 
 Range::Range(Expression *begin, Expression *end, const Location& loc)
   : Expression(loc), begin(begin), end(end)
@@ -284,7 +297,9 @@ bool Range::isLiteral() const
                     : begin->isLiteral() && end->isLiteral();
 }
 
-Vector::Vector(const Location& loc) : Expression(loc), literal_flag(unknown) {}
+Vector::Vector(const Location& loc) : Expression(loc), literal_flag(unknown)
+{
+}
 
 bool Vector::isLiteral() const
 {
@@ -302,7 +317,10 @@ bool Vector::isLiteral() const
   }
 }
 
-void Vector::emplace_back(Expression *expr) { this->children.emplace_back(expr); }
+void Vector::emplace_back(Expression *expr)
+{
+  this->children.emplace_back(expr);
+}
 
 Value Vector::evaluate(const std::shared_ptr<const Context>& context) const
 {
@@ -334,14 +352,19 @@ void Vector::print(std::ostream& stream, const std::string&) const
   stream << "]";
 }
 
-Lookup::Lookup(std::string name, const Location& loc) : Expression(loc), name(std::move(name)) {}
+Lookup::Lookup(std::string name, const Location& loc) : Expression(loc), name(std::move(name))
+{
+}
 
 Value Lookup::evaluate(const std::shared_ptr<const Context>& context) const
 {
   return context->lookup_variable(this->name, loc).clone();
 }
 
-void Lookup::print(std::ostream& stream, const std::string&) const { stream << this->name; }
+void Lookup::print(std::ostream& stream, const std::string&) const
+{
+  stream << this->name;
+}
 
 MemberLookup::MemberLookup(Expression *expr, std::string member, const Location& loc)
   : Expression(loc), expr(expr), member(std::move(member))
@@ -355,29 +378,33 @@ Value MemberLookup::evaluate(const std::shared_ptr<const Context>& context) cons
 
   switch (v.type()) {
   case Value::Type::VECTOR:
-    if (this->member.length() > 1 && boost::regex_match(this->member, re_swizzle_validation)) {
-      VectorType ret(context->session());
-      ret.reserve(this->member.length());
-      for (const char& ch : this->member) switch (ch) {
-        case 'r':
-        case 'x': ret.emplace_back(v[0]); break;
-        case 'g':
-        case 'y': ret.emplace_back(v[1]); break;
-        case 'b':
-        case 'z': ret.emplace_back(v[2]); break;
-        case 'a':
-        case 'w': ret.emplace_back(v[3]); break;
+    if (Feature::ExperimentalVectorSwizzle.is_enabled()) {
+      if (this->member.length() > 1 && boost::regex_match(this->member, re_swizzle_validation)) {
+        VectorType ret(context->session());
+        ret.reserve(this->member.length());
+        for (const char& ch : this->member) {
+          switch (ch) {
+          case 'r':
+          case 'x': ret.emplace_back(v[0]); break;
+          case 'g':
+          case 'y': ret.emplace_back(v[1]); break;
+          case 'b':
+          case 'z': ret.emplace_back(v[2]); break;
+          case 'a':
+          case 'w': ret.emplace_back(v[3]); break;
+          }
         }
-      return {std::move(ret)};
+        return {std::move(ret)};
+      }
+      if (this->member == "w") return v[3];
+      if (this->member == "r") return v[0];
+      if (this->member == "g") return v[1];
+      if (this->member == "b") return v[2];
+      if (this->member == "a") return v[3];
     }
     if (this->member == "x") return v[0];
     if (this->member == "y") return v[1];
     if (this->member == "z") return v[2];
-    if (this->member == "w") return v[3];
-    if (this->member == "r") return v[0];
-    if (this->member == "g") return v[1];
-    if (this->member == "b") return v[2];
-    if (this->member == "a") return v[3];
     break;
   case Value::Type::RANGE:
     if (this->member == "begin") return v[0];
@@ -440,10 +467,11 @@ static void NOINLINE print_err(const char *name, const Location& loc,
  * noinline is required, as we here specifically optimize for stack usage
  * during normal operating, not runtime during error handling.
  */
-static void NOINLINE print_trace(const FunctionCall *val, const std::shared_ptr<const Context>& context)
+static void NOINLINE print_trace(EvaluationException& e, const FunctionCall *val,
+                                 const std::shared_ptr<const Context>& context)
 {
-  LOG(message_group::Trace, val->location(), context->documentRoot(), "called by '%1$s'",
-      val->get_name());
+  e.LOG(message_group::Trace, val->location(), context->documentRoot(), "called by '%1$s'",
+        val->get_name());
 }
 
 FunctionCall::FunctionCall(Expression *expr, AssignmentList args, const Location& loc)
@@ -595,10 +623,8 @@ Value FunctionCall::evaluate(const std::shared_ptr<const Context>& context) cons
         }
       }
     } catch (EvaluationException& e) {
-      if (e.traceDepth > 0) {
-        print_trace(current_call, *expression_context);
-        e.traceDepth--;
-      }
+      print_trace(e, current_call, *expression_context);
+      e.traceDepth--;
       throw;
     }
   }
@@ -746,7 +772,9 @@ void Let::print(std::ostream& stream, const std::string&) const
   stream << "let(" << this->arguments << ") " << *expr;
 }
 
-ListComprehension::ListComprehension(const Location& loc) : Expression(loc) {}
+ListComprehension::ListComprehension(const Location& loc) : Expression(loc)
+{
+}
 
 LcIf::LcIf(Expression *cond, Expression *ifexpr, Expression *elseexpr, const Location& loc)
   : ListComprehension(loc), cond(cond), ifexpr(ifexpr), elseexpr(elseexpr)
@@ -772,7 +800,9 @@ void LcIf::print(std::ostream& stream, const std::string&) const
   }
 }
 
-LcEach::LcEach(Expression *expr, const Location& loc) : ListComprehension(loc), expr(expr) {}
+LcEach::LcEach(Expression *expr, const Location& loc) : ListComprehension(loc), expr(expr)
+{
+}
 
 // Need this for recurring into already embedded vectors, and performing "each" on their elements
 //    Context is only passed along for the possible use in Range warning.

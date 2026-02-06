@@ -26,11 +26,11 @@
 
 #include "core/OffsetNode.h"
 
+#include "core/Builtins.h"
 #include "core/Children.h"
 #include "core/module.h"
 #include "core/ModuleInstantiation.h"
 #include "core/Parameters.h"
-#include "core/Builtins.h"
 
 #include <clipper2/clipper.offset.h>
 #include <ios>
@@ -43,14 +43,9 @@ using namespace boost::assign;  // bring 'operator+=()' into scope
 static std::shared_ptr<AbstractNode> builtin_offset(const ModuleInstantiation *inst, Arguments arguments,
                                                     const Children& children)
 {
-  auto node = std::make_shared<OffsetNode>(inst);
-
   Parameters parameters =
     Parameters::parse(std::move(arguments), inst->location(), {"r"}, {"delta", "chamfer"});
-
-  node->fn = parameters["$fn"].toDouble();
-  node->fs = parameters["$fs"].toDouble();
-  node->fa = parameters["$fa"].toDouble();
+  auto node = std::make_shared<OffsetNode>(inst, CurveDiscretizer(parameters));
 
   // default with no argument at all is (r = 1, chamfer = false)
   // radius takes precedence if both r and delta are given.
@@ -58,6 +53,10 @@ static std::shared_ptr<AbstractNode> builtin_offset(const ModuleInstantiation *i
   node->chamfer = false;
   node->join_type = Clipper2Lib::JoinType::Round;
   if (parameters["r"].isDefinedAs(Value::Type::NUMBER)) {
+    if (parameters["delta"].isDefinedAs(Value::Type::NUMBER)) {
+      LOG(message_group::Warning, inst->location(), parameters.documentRoot(),
+          "Ignoring %1$s argument as %2$s is defined too.", quoteVar("delta"), quoteVar("r"));
+    }
     node->delta = parameters["r"].toDouble();
   } else if (parameters["delta"].isDefinedAs(Value::Type::NUMBER)) {
     node->delta = parameters["delta"].toDouble();
@@ -82,7 +81,7 @@ std::string OffsetNode::toString() const
   if (!isRadius) {
     stream << ", chamfer = " << (this->chamfer ? "true" : "false");
   }
-  stream << ", $fn = " << this->fn << ", $fa = " << this->fa << ", $fs = " << this->fs << ")";
+  stream << ", " << this->discretizer << ")";
 
   return stream.str();
 }

@@ -4,8 +4,14 @@
 #include "core/Value.h"
 #include "core/Expression.h"
 
-Value FunctionType::operator==(const FunctionType& other) const { return this == &other; }
-Value FunctionType::operator!=(const FunctionType& other) const { return this != &other; }
+Value FunctionType::operator==(const FunctionType& other) const
+{
+  return this == &other;
+}
+Value FunctionType::operator!=(const FunctionType& other) const
+{
+  return this != &other;
+}
 Value FunctionType::operator<(const FunctionType& /*other*/) const
 {
   return Value::undef("operation undefined (function < function)");

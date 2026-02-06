@@ -31,6 +31,7 @@
 #include "core/State.h"
 #include "core/TextNode.h"
 #include "core/TransformNode.h"
+#include "core/CurveDiscretizer.h"
 #include "core/Tree.h"
 #include "utils/calc.h"
 #include "utils/degree_trig.h"
@@ -57,7 +58,9 @@ class Geometry;
 class Polygon2d;
 class Tree;
 
-GeometryEvaluator::GeometryEvaluator(const Tree& tree) : tree(tree) {}
+GeometryEvaluator::GeometryEvaluator(const Tree& tree) : tree(tree)
+{
+}
 
 /*!
    Set allownef to false to force the result to _not_ be a Nef polyhedron
@@ -602,7 +605,7 @@ Response GeometryEvaluator::visit(State& state, const OffsetNode& node)
       if (const auto polygon = applyToChildren2D(node, OpenSCADOperator::UNION)) {
         // ClipperLib documentation: The formula for the number of steps in a full
         // circular arc is ... Pi / acos(1 - arc_tolerance / abs(delta))
-        double n = Calc::get_fragments_from_r(std::abs(node.delta), node.fn, node.fs, node.fa);
+        double n = node.discretizer.getCircularSegmentCount(std::abs(node.delta)).value_or(3);
         double arc_tolerance = std::abs(node.delta) * (1 - cos_degrees(180 / n));
         geom = ClipperUtils::applyOffset(*polygon, node.delta, node.join_type, node.miter_limit,
                                          arc_tolerance);
@@ -997,7 +1000,7 @@ static std::unique_ptr<Geometry> roofOverPolygon(const RoofNode& node, const Pol
 {
   std::unique_ptr<PolySet> roof;
   if (node.method == "voronoi") {
-    roof = roof_vd::voronoi_diagram_roof(poly, node.fa, node.fs);
+    roof = roof_vd::voronoi_diagram_roof(poly, node.discretizer);
     roof->setConvexity(node.convexity);
   } else if (node.method == "straight") {
     roof = roof_ss::straight_skeleton_roof(poly);

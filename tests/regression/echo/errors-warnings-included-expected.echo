@@ -28,7 +28,6 @@ WARNING: Cylinder parameters ambiguous in file errors-warnings.scad, line 35
 WARNING: color() expects numbers between 0.0 and 1.0. Value of -1.0 is out of range in file errors-warnings.scad, line 42
 WARNING: color() expects numbers between 0.0 and 1.0. Value of 2.0 is out of range in file errors-warnings.scad, line 42
 WARNING: Unable to parse color "notAName" in file errors-warnings.scad, line 43
-Please see https://en.wikipedia.org/wiki/Web_colors
 WARNING: Ignoring unknown module 'box' in file errors-warnings.scad, line 44
 WARNING: $fs too small - clamping to 0.010000 in file errors-warnings.scad, line 46
 WARNING: $fa too small - clamping to 0.010000 in file errors-warnings.scad, line 47
@@ -48,6 +47,7 @@ ECHO: undef
 ECHO: "dim-all.dxf"
 WARNING: module cube() does not support child modules in file errors-warnings.scad, line 96
 WARNING: module sphere() does not support child modules in file errors-warnings.scad, line 99
+WARNING: Ignoring "delta" argument as "r" is defined too. in file errors-warnings.scad, line 103
 WARNING: begin is greater than the end, but step is positive in file ../3D/features/for-tests.scad, line 19
 WARNING: begin is greater than the end, but step is positive in file ../3D/features/for-tests.scad, line 31
 WARNING: Bad range parameter in for statement: too many elements (4294967295) in file ../3D/features/for-tests.scad, line 35

@@ -17,6 +17,7 @@
 #include <QSettings>
 #include <string>
 
+#include "glview/RenderSettings.h"
 #include "gui/qtgettext.h"  // IWYU pragma: keep
 #include "openscad_gui.h"
 #include "ui_Preferences.h"
@@ -39,12 +40,6 @@ public:
   void fireEditorConfigChanged() const;
   void fireApplicationFontChanged() const;
   void insertListItem(QListWidget *listBox, QListWidgetItem *listItem);
-
-  // Returns true if there is an higlightling color scheme configured.
-  bool hasHighlightingColorScheme() const;
-
-  // Set a new colorScheme.
-  void setHighlightingColorSchemes(const QStringList& colorSchemes);
 
 public slots:
   void actionTriggered(class QAction *);
@@ -177,6 +172,7 @@ signals:
   void characterThresholdChanged(int val) const;
   void stepSizeChanged(int val) const;
   void toolbarExportChanged() const;
+  void renderBackend3DChanged(RenderBackend3D backend) const;
 
 private slots:
   void on_lineEditStepSize_textChanged(const QString& arg1);
@@ -189,6 +185,7 @@ private:
   void keyPressEvent(QKeyEvent *e) override;
   void showEvent(QShowEvent *e) override;
   void closeEvent(QCloseEvent *e) override;
+  bool event(QEvent *e) override;
   void removeDefaultSettings();
   void setupFeaturesPage();
   void setup3DPrintPage();

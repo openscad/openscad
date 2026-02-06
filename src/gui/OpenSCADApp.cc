@@ -4,6 +4,12 @@
 #include "gui/EventFilter.h"
 #endif
 
+#include "geometry/GeometryCache.h"
+#ifdef ENABLE_CGAL
+#include "geometry/cgal/CGALCache.h"
+#endif
+#include "glview/RenderSettings.h"
+
 #include <QApplication>
 #include <QEvent>
 #include <QObject>
@@ -19,9 +25,16 @@ OpenSCADApp::OpenSCADApp(int& argc, char **argv) : QApplication(argc, argv)
 #ifdef Q_OS_MACOS
   this->installEventFilter(new SCADEventFilter(this));
 #endif
+
+  // Note: It may be tempting to add more initialization code here, but keep in mind that this is run as
+  // part of QApplication initialization, so it's usually better to that in the main gui() function after
+  // the OpenSCADApp instance is created.
 }
 
-OpenSCADApp::~OpenSCADApp() { delete this->fontCacheDialog; }
+OpenSCADApp::~OpenSCADApp()
+{
+  delete this->fontCacheDialog;
+}
 
 #include <QMessageBox>
 
@@ -77,6 +90,13 @@ void OpenSCADApp::hideFontCacheDialog()
   this->fontCacheDialog->reset();
 }
 
+void OpenSCADApp::setRenderBackend3D(RenderBackend3D backend)
+{
+  RenderSettings::inst()->backend3D = backend;
+  CGALCache::instance()->clear();
+  GeometryCache::instance()->clear();
+}
+
 void OpenSCADApp::setApplicationFont(const QString& family, uint size)
 {
   // Trigger style sheet refresh to update the application font
@@ -93,3 +113,24 @@ void OpenSCADApp::setApplicationFont(const QString& family, uint size)
   )");
   scadApp->setStyleSheet(stylesheet.arg(family, QString::number(size)));
 }
+
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+// https://doc.qt.io/qt-6/qtcore-changes-qt6.html#other-classes
+//
+//     In Qt 5, QCoreApplication::quit() was equivalent to calling QCoreApplication::exit().
+//     This just exited the main event loop.
+//
+//     In Qt 6, the method will instead try to close all top-level windows by posting a close
+//     event. The windows are free to cancel the shutdown process by ignoring the event.
+//
+// For Qt5, simulate the Qt6 behavior.
+void OpenSCADApp::quit()
+{
+  for (MainWindow *mw : scadApp->windowManager.getWindows()) {
+    if (!mw->close()) {
+      return;
+    }
+  }
+  QApplication::quit();
+}
+#endif

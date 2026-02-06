@@ -34,9 +34,14 @@
 #include <QMimeData>
 #include <QTableView>
 
-FontListTableView::FontListTableView(QWidget *parent) : QTableView(parent) {}
+FontListTableView::FontListTableView(QWidget *parent) : QTableView(parent)
+{
+}
 
-void FontListTableView::setDragText(const QString& text) { this->text = text.trimmed(); }
+void FontListTableView::setDragText(const QString& text)
+{
+  this->text = text.trimmed();
+}
 
 void FontListTableView::startDrag(Qt::DropActions supportedActions)
 {

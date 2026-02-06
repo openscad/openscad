@@ -60,7 +60,7 @@ module user_defined_special2() {
 
 user_defined_special(7);
 
-echo("assign only visible in children's scope");
+echo("assignment only visible in current scope");
 module assigning() {
   echo(c);
 }
@@ -69,7 +69,8 @@ module assigning2(c) {
   echo(c);
 }
 
-assign(c=5) {
+union() {
+  c=5;
   assigning();
   assigning2(c);
 }

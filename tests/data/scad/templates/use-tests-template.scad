@@ -16,6 +16,10 @@ use<use-test5.scad>
 //Test that filenames with spaces work
 use <use test6.scad>
 
+//Test UTF-8 file name
+use <use-☠.scad>
+utf8_module();
+
 //Test with empty file
 use<test/>
 

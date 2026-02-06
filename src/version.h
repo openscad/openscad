@@ -29,11 +29,20 @@
 #include <string>
 
 // Version number without any patch level indicator
-extern std::string openscad_shortversionnumber;
+extern const std::string openscad_shortversionnumber;
+
 // The full version number, e.g. 2014.03, 2015.03-1, 2014.12.23
-extern std::string openscad_versionnumber;
+extern const std::string openscad_versionnumber;
+
 // Version used for display, typically without patchlevel indicator,
 // but may include git commit id for snapshot builds
-extern std::string openscad_displayversionnumber;
+extern const std::string openscad_displayversionnumber;
+
 // Version used for detailed display
-extern std::string openscad_detailedversionnumber;
+extern const std::string openscad_detailedversionnumber;
+
+extern const int openscad_version_year;
+extern const int openscad_version_month;
+extern const int openscad_version_day;
+extern const bool openscad_has_day;
+extern const bool openscad_has_commit;

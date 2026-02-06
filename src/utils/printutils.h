@@ -10,6 +10,7 @@
 #include <string>
 #include <tuple>
 #include <utility>
+#include <optional>
 
 #include <libintl.h>
 // Undefine some defines from libintl.h to presolve
@@ -30,7 +31,10 @@
 // Not wanting to risk breaking translations by changing every usage of this,
 // I've opted to just disable the check in this case. - Hans L
 // NOLINTBEGIN(bugprone-reserved-identifier)
-inline char *_(const char *msgid) { return gettext(msgid); }
+inline char *_(const char *msgid)
+{
+  return gettext(msgid);
+}
 inline const char *_(const char *msgid, const char *msgctxt)
 {
   /* The separator between msgctxt and msgid in a .mo file.  */
@@ -54,6 +58,7 @@ enum class message_group {
   NONE,
   Error,
   Warning,
+  HtmlLink,  // Slow! Allows HTML links. Suppressed on command line.
   UI_Warning,
   Font_Warning,
   Export_Warning,
@@ -85,7 +90,9 @@ struct Message {
 
   [[nodiscard]] std::string str() const
   {
-    const auto g = group == message_group::NONE ? "" : getGroupName(group) + ": ";
+    const auto g = (group == message_group::NONE || group == message_group::HtmlLink)
+                     ? ""
+                     : getGroupName(group) + ": ";
     const auto l = loc.isNone() ? "" : " " + loc.toRelativeString(docPath);
     return g + msg + l;
   }
@@ -245,31 +252,38 @@ public:
 extern std::set<std::string> printedDeprecations;
 
 template <typename... Args>
-void LOG(const message_group& msgGroup, Location loc, std::string docPath, std::string&& f,
-         Args&&...args)
+std::optional<Message> make_message_obj(const message_group& msgGroup, Location loc, std::string docPath,
+                                        std::string&& f, Args&&...args)
 {
   auto formatted = MessageClass<Args...>{std::move(f), std::forward<Args>(args)...}.format();
 
   // check for deprecations
   if (msgGroup == message_group::Deprecated &&
       printedDeprecations.find(formatted + loc.toRelativeString(docPath)) != printedDeprecations.end())
-    return;
+    return {};
   if (msgGroup == message_group::Deprecated)
     printedDeprecations.insert(formatted + loc.toRelativeString(docPath));
 
-  Message msgObj{std::move(formatted), msgGroup, std::move(loc), std::move(docPath)};
-
-  PRINT(msgObj);
+  return std::make_optional<Message>(std::move(formatted), msgGroup, std::move(loc), std::move(docPath));
 }
 
 template <typename... Args>
-void LOG(const message_group& msgGroup, std::string&& f, Args&&...args)
+std::optional<Message> make_message_obj(const message_group& msgGroup, std::string&& f, Args&&...args)
 {
-  LOG(msgGroup, Location::NONE, "", std::move(f), std::forward<Args>(args)...);
+  return make_message_obj(msgGroup, Location::NONE, "", std::move(f), std::forward<Args>(args)...);
 }
 
 template <typename... Args>
-void LOG(std::string&& f, Args&&...args)
+std::optional<Message> make_message_obj(std::string&& f, Args&&...args)
 {
-  LOG(message_group::NONE, Location::NONE, "", std::move(f), std::forward<Args>(args)...);
+  return make_message_obj(message_group::NONE, Location::NONE, "", std::move(f),
+                          std::forward<Args>(args)...);
+}
+
+template <typename... Args>
+void LOG(Args&&...args)
+{
+  if (auto msg = make_message_obj(std::forward<Args>(args)...)) {
+    PRINT(*msg);
+  }
 }

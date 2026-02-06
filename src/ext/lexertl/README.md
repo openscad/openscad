@@ -1,3 +1,8 @@
+This was copied from https://github.com/BenHanson/lexertl14/tree/488602f9994b70fabc3e4869a48a50ef18a1e159 and its subdirectory include/lexertl too
+
+There was local modification afterward in OpenSCAD commit 304897b8147de6f24ec1d9bc9382a52d7d634043
+
+
 lexertl14: The Modular Lexical Analyser Generator
 =======
 

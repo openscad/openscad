@@ -246,13 +246,23 @@ void PrintInitDialog::on_pushButtonOk_clicked()
   accept();
 }
 
-void PrintInitDialog::on_pushButtonCancel_clicked() { reject(); }
+void PrintInitDialog::on_pushButtonCancel_clicked()
+{
+  reject();
+}
 
 int PrintInitDialog::exec()
 {
   bool showDialog = this->checkBoxAlwaysShowDialog->isChecked();
-  if ((QApplication::keyboardModifiers() & Qt::ShiftModifier) != 0 ||
-      this->selectedPrintService == print_service_t::NONE) {
+
+  // Show the dialog if icon was shift-clicked, if no print service is selected,
+  // or if the selected print service is not available.
+  const bool isShiftKeyModifier = (QApplication::keyboardModifiers() & Qt::ShiftModifier) != 0;
+  const bool isNoPrintService = this->selectedPrintService == print_service_t::NONE;
+  const bool isRemotePrintService = this->selectedPrintService == print_service_t::PRINT_SERVICE;
+  const auto printService = PrintService::getPrintService(this->selectedServiceName.toStdString());
+  const bool noRemotePrintServiceSelected = isRemotePrintService && !printService;
+  if (isShiftKeyModifier || isNoPrintService || noRemotePrintServiceSelected) {
     showDialog = true;
   }
 
@@ -266,8 +276,17 @@ int PrintInitDialog::exec()
   return result;
 }
 
-print_service_t PrintInitDialog::getServiceType() const { return this->selectedPrintService; }
+print_service_t PrintInitDialog::getServiceType() const
+{
+  return this->selectedPrintService;
+}
 
-QString PrintInitDialog::getServiceName() const { return this->selectedServiceName; }
+QString PrintInitDialog::getServiceName() const
+{
+  return this->selectedServiceName;
+}
 
-FileFormat PrintInitDialog::getFileFormat() const { return this->selectedFileFormat; }
+FileFormat PrintInitDialog::getFileFormat() const
+{
+  return this->selectedFileFormat;
+}

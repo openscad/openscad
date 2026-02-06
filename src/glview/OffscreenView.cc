@@ -96,10 +96,16 @@ OffscreenView::OffscreenView(uint32_t width, uint32_t height)
   GLView::resizeGL(width, height);
 }
 
-OffscreenView::~OffscreenView() { fbo.reset(); }
+OffscreenView::~OffscreenView()
+{
+  fbo.reset();
+}
 
 #ifdef ENABLE_OPENCSG
-void OffscreenView::display_opencsg_warning() { LOG("OpenSCAD recommended OpenGL version is 2.0."); }
+void OffscreenView::display_opencsg_warning()
+{
+  LOG("OpenSCAD recommended OpenGL version is 2.0.");
+}
 #endif
 
 bool OffscreenView::save(const char *filename) const

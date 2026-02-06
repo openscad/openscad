@@ -6,7 +6,10 @@
 #include <string>
 #include <tuple>
 
-Tree::~Tree() { this->nodecachemap.clear(); }
+Tree::~Tree()
+{
+  this->nodecachemap.clear();
+}
 
 /*!
    Returns the cached string representation of the subtree rooted by \a node.
@@ -63,6 +66,12 @@ void Tree::setRoot(const std::shared_ptr<const AbstractNode>& root)
   this->nodecachemap.clear();
 }
 
-void Tree::setDocumentPath(const std::string& path) { this->document_path = path; }
+void Tree::setDocumentPath(const std::string& path)
+{
+  this->document_path = path;
+}
 
-const std::string Tree::getDocumentPath() const { return this->document_path; }
+const std::string Tree::getDocumentPath() const
+{
+  return this->document_path;
+}

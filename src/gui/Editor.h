@@ -4,7 +4,6 @@
 #include <QObject>
 #include <QString>
 #include <QWidget>
-#include <QWheelEvent>
 #include <QScrollBar>
 #include <QTextEdit>
 #include "core/IndicatorData.h"
@@ -26,7 +25,6 @@ public:
     return size;
   }
   virtual void setInitialSizeHint(const QSize&) {}
-  void wheelEvent(QWheelEvent *) override;
   virtual QString toPlainText() = 0;
   virtual QTextDocument *document()
   {
@@ -36,7 +34,16 @@ public:
   virtual QString selectedText() = 0;
   virtual int updateFindIndicators(const QString& findText, bool visibility = true) = 0;
   virtual bool find(const QString&, bool findNext = false, bool findBackwards = false) = 0;
-  virtual void replaceSelectedText(const QString& newText) = 0;
+  /**
+   * Replace the selected text and return true if there was a selection, if nothing
+   * is selected, no action is taken and false is returned.
+   */
+  virtual bool replaceSelectedText(const QString& newText) = 0;
+  /**
+   * Use #replaceSelectedText() for replacing text, if this returns false, insert
+   * the given text at the current cursor position.
+   */
+  virtual void insertOrReplaceText(const QString& newText) = 0;
   virtual void replaceAll(const QString& findText, const QString& replaceText) = 0;
   virtual QStringList colorSchemes() = 0;
   virtual bool canUndo() = 0;

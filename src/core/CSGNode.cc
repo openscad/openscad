@@ -157,9 +157,15 @@ void CSGOperation::initBoundingBox()
   }
 }
 
-bool CSGLeaf::isEmptySet() const { return polyset == nullptr || polyset->isEmpty(); }
+bool CSGLeaf::isEmptySet() const
+{
+  return polyset == nullptr || polyset->isEmpty();
+}
 
-std::string CSGLeaf::dump() const { return this->label; }
+std::string CSGLeaf::dump() const
+{
+  return this->label;
+}
 
 // Recursive traversal can cause stack overflow with very large loops of child nodes,
 // so tree is traverse iteratively, managing our own stack.

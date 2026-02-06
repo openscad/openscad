@@ -59,7 +59,9 @@ void shader_attribs_disable(const ShaderUtils::ShaderInfo& shaderinfo)
 
 }  // namespace VBOUtils
 
-VBORenderer::VBORenderer() : Renderer() {}
+VBORenderer::VBORenderer() : Renderer()
+{
+}
 
 size_t VBORenderer::calcNumVertices(const std::shared_ptr<CSGProducts>& products,
                                     bool unique_geometry) const

@@ -17,8 +17,8 @@ public:
                       const Location& loc = Location::NONE)
     : ASTNode(loc),
       arguments(std::move(args)),
-      modname(std::move(name)),
-      scope(std::make_shared<LocalScope>())
+      scope(std::make_shared<LocalScope>()),
+      modname(std::move(name))
   {
   }
 

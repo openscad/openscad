@@ -63,9 +63,15 @@ void NodeDumper::initCache()
   this->cache.clear();
 }
 
-void NodeDumper::finalizeCache() { this->cache.setRootString(this->dumpstream.str()); }
+void NodeDumper::finalizeCache()
+{
+  this->cache.setRootString(this->dumpstream.str());
+}
 
-bool NodeDumper::isCached(const AbstractNode& node) const { return this->cache.contains(node); }
+bool NodeDumper::isCached(const AbstractNode& node) const
+{
+  return this->cache.contains(node);
+}
 
 Response NodeDumper::visit(State& state, const GroupNode& node)
 {

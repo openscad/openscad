@@ -99,3 +99,5 @@ cylinder();
 sphere()
 cylinder()
 cube();
+
+offset(r=1, delta=1);

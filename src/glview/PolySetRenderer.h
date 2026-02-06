@@ -23,6 +23,13 @@ public:
   void draw(bool showedges, const ShaderUtils::ShaderInfo *shaderinfo) const override;
   void setColorScheme(const ColorScheme& cs) override;
   BoundingBox getBoundingBox() const override;
+
+  /**
+   * @brief Search for a segment or vertex on the line between near_pt and far_pt (with some tolerance)
+   * and closest to near_pt. Mostly that's true, but line segment searching seems a little whack. And if
+   * there's any points "behind" near_pt but on the near_pt<->far_pt infinite line, which is chosen is
+   * likely non-optimal.
+   */
   std::vector<SelectedObject> findModelObject(const Vector3d& near_pt, const Vector3d& far_pt,
                                               int mouse_x, int mouse_y, double tolerance) override;
 

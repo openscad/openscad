@@ -39,8 +39,10 @@
 #include <cstddef>
 #include <string>
 #include <vector>
-
-ContextFrame::ContextFrame(EvaluationSession *session) : evaluation_session(session) {}
+#include <boost/format.hpp>
+ContextFrame::ContextFrame(EvaluationSession *session) : evaluation_session(session)
+{
+}
 
 boost::optional<const Value&> ContextFrame::lookup_local_variable(const std::string& name) const
 {
@@ -149,7 +151,10 @@ bool ContextFrame::is_config_variable(const std::string& name)
   return name[0] == '$' && name != "$children";
 }
 
-const std::string& ContextFrame::documentRoot() const { return evaluation_session->documentRoot(); }
+const std::string& ContextFrame::documentRoot() const
+{
+  return evaluation_session->documentRoot();
+}
 
 #ifdef DEBUG
 std::string ContextFrame::dumpFrame() const

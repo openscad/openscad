@@ -36,9 +36,9 @@
 #include <cstdint>
 #include <bitset>
 #include <boost/format.hpp>
+#include <boost/nowide/convert.hpp>
 #include <chrono>
 #include <cmath>
-#include <codecvt>
 #include <fstream>
 #include <iomanip>
 #include <string>
@@ -130,11 +130,7 @@ static void hidapi_log_input(unsigned char *buf, int len)
 
 static std::string to_string(const wchar_t *wstr)
 {
-  if (wstr) {
-    std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> conv;
-    return conv.to_bytes(wstr);
-  }
-  return "<null>";
+  return wstr ? boost::nowide::narrow(wstr) : "<null>";
 }
 
 static const device_id *match_device(const struct hid_device_info *info)
@@ -148,9 +144,15 @@ static const device_id *match_device(const struct hid_device_info *info)
   return nullptr;
 }
 
-HidApiInputDriver::HidApiInputDriver() { name = "HidApiInputDriver"; }
+HidApiInputDriver::HidApiInputDriver()
+{
+  name = "HidApiInputDriver";
+}
 
-void HidApiInputDriver::run() { hidapi_input(hid_dev); }
+void HidApiInputDriver::run()
+{
+  hidapi_input(hid_dev);
+}
 
 void HidApiInputDriver::hidapi_decode_axis(const unsigned char *buf, unsigned int len)
 {
@@ -308,7 +310,10 @@ void HidApiInputDriver::close()
   logstream.close();
 }
 
-const std::string& HidApiInputDriver::get_name() const { return name; }
+const std::string& HidApiInputDriver::get_name() const
+{
+  return name;
+}
 
 std::string HidApiInputDriver::get_info() const
 {

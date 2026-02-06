@@ -19,7 +19,7 @@ jobs:
         language: ['cpp']
 
     steps:
-    - uses: actions/checkout@v5
+    - uses: actions/checkout@v6
       with:
         submodules: 'recursive'
         # We must fetch at least the immediate parents so that if this is
@@ -28,21 +28,21 @@ jobs:
 
     # Initializes the CodeQL tools for scanning.
     - name: Initialize CodeQL
-      uses: github/codeql-action/init@v3
+      uses: github/codeql-action/init@v4
       with:
         languages: ${{ matrix.language }}
         # If you wish to specify custom queries, you can do so here or in a config file.
-        # By default, queries listed here will override any specified in a config file. 
+        # By default, queries listed here will override any specified in a config file.
         # Prefix the list here with "+" to use these queries and those in the config file.
         # queries: ./path/to/local/query, your-org/your-repo/queries@main
 
     - name: Install dependencies
       run: |
         which sudo || apt install -y sudo
-        sudo ./scripts/uni-get-dependencies.sh
+        sudo ./scripts/uni-get-dependencies.sh qt6
 
     - name: Build
       run: ./scripts/github-ci.sh experimental build
 
     - name: Perform CodeQL Analysis
-      uses: github/codeql-action/analyze@v3
+      uses: github/codeql-action/analyze@v4

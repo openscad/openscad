@@ -41,6 +41,7 @@ multmatrix([[1, 0, 0, 2.5], [0, 1, 0, 3], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 	group() {
 		group() {
 			cylinder($fn = 16, $fa = 12, $fs = 2, h = 2, r1 = 1, r2 = 1, center = true);
+			sphere($fn = 16, $fa = 12, $fs = 2, r = 1);
 		}
 	}
 }

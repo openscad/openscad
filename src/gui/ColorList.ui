@@ -1,0 +1,550 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>ColorListWidget</class>
+ <widget class="QWidget" name="ColorListWidget">
+  <property name="enabled">
+   <bool>true</bool>
+  </property>
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>686</width>
+    <height>787</height>
+   </rect>
+  </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
+  </property>
+  <property name="windowTitle">
+   <string>Color List</string>
+  </property>
+  <property name="lineWidth" stdset="0">
+   <number>0</number>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <property name="spacing">
+    <number>10</number>
+   </property>
+   <property name="sizeConstraint">
+    <enum>QLayout::SetDefaultConstraint</enum>
+   </property>
+   <property name="leftMargin">
+    <number>10</number>
+   </property>
+   <property name="topMargin">
+    <number>10</number>
+   </property>
+   <property name="rightMargin">
+    <number>10</number>
+   </property>
+   <property name="bottomMargin">
+    <number>10</number>
+   </property>
+   <item>
+    <widget class="QScrollArea" name="scrollArea">
+     <property name="widgetResizable">
+      <bool>true</bool>
+     </property>
+     <widget class="QWidget" name="scrollAreaWidgetContents">
+      <property name="geometry">
+       <rect>
+        <x>0</x>
+        <y>0</y>
+        <width>662</width>
+        <height>763</height>
+       </rect>
+      </property>
+      <layout class="QVBoxLayout" name="verticalLayout_2">
+       <item>
+        <widget class="QScrollArea" name="scrollAreaColorList">
+         <property name="widgetResizable">
+          <bool>true</bool>
+         </property>
+         <widget class="QWidget" name="scrollAreaWidgetContentsColorList">
+          <property name="geometry">
+           <rect>
+            <x>0</x>
+            <y>0</y>
+            <width>646</width>
+            <height>334</height>
+           </rect>
+          </property>
+         </widget>
+        </widget>
+       </item>
+       <item>
+        <widget class="QGroupBox" name="groupBoxFilter">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="title">
+          <string>Filter</string>
+         </property>
+         <layout class="QGridLayout" name="gridLayout">
+          <item row="0" column="0">
+           <widget class="QLabel" name="labelColorName">
+            <property name="text">
+             <string>Color name</string>
+            </property>
+            <property name="buddy">
+             <cstring>lineEditColorName</cstring>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="3">
+           <widget class="QComboBox" name="comboBoxFilterType">
+            <item>
+             <property name="text">
+              <string>Fixed</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Wildcard</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>RegExp</string>
+             </property>
+            </item>
+           </widget>
+          </item>
+          <item row="0" column="2">
+           <widget class="QLineEdit" name="lineEditColorName">
+            <property name="clearButtonEnabled">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="2" colspan="2">
+           <layout class="QHBoxLayout" name="horizontalLayoutFilter">
+            <property name="topMargin">
+             <number>0</number>
+            </property>
+            <item>
+             <widget class="QCheckBox" name="checkBoxWebColors">
+              <property name="text">
+               <string notr="true">Web Colors</string>
+              </property>
+              <property name="checked">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QCheckBox" name="checkBoxXkcdColors">
+              <property name="text">
+               <string notr="true">XKCD Colors</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <spacer name="horizontalSpacerFilter">
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>40</width>
+                <height>20</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+           </layout>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <widget class="QGroupBox" name="groupBoxSort">
+         <property name="title">
+          <string>Sort order</string>
+         </property>
+         <layout class="QGridLayout" name="gridLayout_3">
+          <item row="0" column="2">
+           <widget class="QRadioButton" name="radioButtonSortAscending">
+            <property name="text">
+             <string>Ascending</string>
+            </property>
+            <property name="checked">
+             <bool>true</bool>
+            </property>
+            <attribute name="buttonGroup">
+             <string notr="true">buttonGroupSortDirection</string>
+            </attribute>
+           </widget>
+          </item>
+          <item row="0" column="4">
+           <spacer name="horizontalSpacerSort">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>40</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item row="0" column="3">
+           <widget class="QRadioButton" name="radioButtonSortDescending">
+            <property name="text">
+             <string>Descending</string>
+            </property>
+            <attribute name="buttonGroup">
+             <string notr="true">buttonGroupSortDirection</string>
+            </attribute>
+           </widget>
+          </item>
+          <item row="0" column="0">
+           <widget class="QComboBox" name="comboBoxSortType">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <item>
+             <property name="text">
+              <string>Alphabetically</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>By color</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>By color warmth</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>By lightness</string>
+             </property>
+            </item>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <spacer name="horizontalSpacer">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeType">
+             <enum>QSizePolicy::Fixed</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>16</width>
+              <height>0</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <widget class="QGroupBox" name="groupBoxSelection">
+         <property name="title">
+          <string>Selection</string>
+         </property>
+         <layout class="QGridLayout" name="gridLayout_2" columnstretch="0,1,0">
+          <item row="2" column="1" colspan="2">
+           <layout class="QHBoxLayout" name="horizontalLayoutAsForeground">
+            <item>
+             <widget class="QLineEdit" name="lineEditAsForeground">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="text">
+               <string/>
+              </property>
+              <property name="dragEnabled">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QToolButton" name="toolButtonAsForegroundReset">
+              <property name="toolTip">
+               <string>Reset background color</string>
+              </property>
+              <property name="text">
+               <string>...</string>
+              </property>
+              <property name="icon">
+               <iconset theme="chokusen-undo">
+                <normaloff>../../../../../.designer/backup</normaloff>../../../../../.designer/backup</iconset>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QToolButton" name="toolButtonAsForegroundColorDialog">
+              <property name="toolTip">
+               <string>Select background color</string>
+              </property>
+              <property name="text">
+               <string>...</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item row="0" column="1" colspan="2">
+           <widget class="QLineEdit" name="lineEditColorNameSelected">
+            <property name="dragEnabled">
+             <bool>true</bool>
+            </property>
+            <property name="readOnly">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="0">
+           <widget class="QLabel" name="labelColorRgbSelected">
+            <property name="text">
+             <string>Color RGB</string>
+            </property>
+            <property name="buddy">
+             <cstring>lineEditColorRgbSelected</cstring>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="0">
+           <widget class="QLabel" name="labelAsForeground">
+            <property name="text">
+             <string>As Foreground</string>
+            </property>
+            <property name="buddy">
+             <cstring>lineEditAsForeground</cstring>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="0">
+           <widget class="QLabel" name="labelAsBackground">
+            <property name="text">
+             <string>As Background</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="2">
+           <layout class="QHBoxLayout" name="horizontalLayoutColorRgbSelected">
+            <property name="leftMargin">
+             <number>16</number>
+            </property>
+            <item>
+             <widget class="QLabel" name="labelColorRgbSelectedR">
+              <property name="text">
+               <string>R:</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLineEdit" name="lineEditColorRgbSelectedR">
+              <property name="styleSheet">
+               <string notr="true">QLineEdit { max-width: 2em; }</string>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
+              <property name="dragEnabled">
+               <bool>true</bool>
+              </property>
+              <property name="readOnly">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLabel" name="labelColorRgbSelectedG">
+              <property name="text">
+               <string>G:</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLineEdit" name="lineEditColorRgbSelectedG">
+              <property name="styleSheet">
+               <string notr="true">QLineEdit { max-width: 2em; }</string>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
+              <property name="dragEnabled">
+               <bool>true</bool>
+              </property>
+              <property name="readOnly">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLabel" name="labelColorRgbSelectedB">
+              <property name="text">
+               <string>B:</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLineEdit" name="lineEditColorRgbSelectedB">
+              <property name="styleSheet">
+               <string notr="true">QLineEdit { max-width: 2em; }</string>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
+              <property name="dragEnabled">
+               <bool>true</bool>
+              </property>
+              <property name="readOnly">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item row="0" column="0">
+           <widget class="QLabel" name="labelColorNameSelected">
+            <property name="text">
+             <string>Color name</string>
+            </property>
+            <property name="buddy">
+             <cstring>lineEditColorNameSelected</cstring>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="QLineEdit" name="lineEditColorRgbSelected">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+              <horstretch>1</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="dragEnabled">
+             <bool>true</bool>
+            </property>
+            <property name="readOnly">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="1" colspan="2">
+           <layout class="QHBoxLayout" name="horizontalLayoutAsBackground">
+            <item>
+             <widget class="QLineEdit" name="lineEditAsBackground">
+              <property name="text">
+               <string/>
+              </property>
+              <property name="dragEnabled">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QToolButton" name="toolButtonAsBackgroundReset">
+              <property name="toolTip">
+               <string>Reset foreground color</string>
+              </property>
+              <property name="text">
+               <string>...</string>
+              </property>
+              <property name="icon">
+               <iconset theme="chokusen-undo">
+                <normaloff>../../../../../.designer/backup</normaloff>../../../../../.designer/backup</iconset>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QToolButton" name="toolButtonAsbackgroundColorDialog">
+              <property name="toolTip">
+               <string>Select foreground color</string>
+              </property>
+              <property name="text">
+               <string>...</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+         </layout>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </widget>
+   </item>
+  </layout>
+  <action name="actionResetSampleTextForeground">
+   <property name="icon">
+    <iconset theme="chokusen-undo">
+     <normaloff>../../../../../.designer/backup</normaloff>../../../../../.designer/backup</iconset>
+   </property>
+   <property name="text">
+    <string>Reset Sample Text</string>
+   </property>
+   <property name="toolTip">
+    <string>Reset Sample Text</string>
+   </property>
+  </action>
+  <action name="actionResetSampleTextBackground">
+   <property name="icon">
+    <iconset theme="chokusen-undo">
+     <normaloff>../../../../../.designer/backup</normaloff>../../../../../.designer/backup</iconset>
+   </property>
+   <property name="text">
+    <string>Reset Sample Text</string>
+   </property>
+   <property name="toolTip">
+    <string>Reset Sample Text</string>
+   </property>
+  </action>
+  <action name="actionCopyColorName">
+   <property name="icon">
+    <iconset theme="chokusen-edit-copy"/>
+   </property>
+   <property name="text">
+    <string>Copy Color Name</string>
+   </property>
+   <property name="toolTip">
+    <string>Copy Color Name</string>
+   </property>
+  </action>
+  <action name="actionCopyColorRGB">
+   <property name="icon">
+    <iconset theme="chokusen-edit-copy"/>
+   </property>
+   <property name="text">
+    <string>Copy Color RGB</string>
+   </property>
+   <property name="toolTip">
+    <string>Copy Color RGB</string>
+   </property>
+  </action>
+ </widget>
+ <resources>
+  <include location="../../resources/common.qrc"/>
+ </resources>
+ <connections/>
+ <slots>
+  <slot>updateSettings()</slot>
+ </slots>
+ <buttongroups>
+  <buttongroup name="buttonGroupSortDirection"/>
+ </buttongroups>
+</ui>
