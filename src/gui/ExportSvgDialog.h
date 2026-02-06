@@ -23,7 +23,7 @@ public:
   QColor getStrokeColor() const;
   bool isStrokeEnabled() const;
   double getStrokeWidth() const;
-  ExportSvgOptions getOptions() const;
+  ExportSvgOptions getOptions() ;
 
 private slots:
   void on_toolButtonFillColor_clicked();

@@ -17,5 +17,5 @@ M 22,-166 L 22,-186 L 42,-186 L 42,-166 z
 M 72,-156 L 72,-196 L 112,-196 L 112,-156 z
 M 107,-191 L 77,-191 L 77,-161 L 107,-161 z
 M 82,-166 L 82,-186 L 102,-186 L 102,-166 z
-" stroke="magenta" fill="#000000" stroke-width="3"/>
+" stroke="magenta" stroke-width="3" fill="#000000"/>
 </svg>
