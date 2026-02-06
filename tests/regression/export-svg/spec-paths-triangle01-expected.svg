@@ -4,5 +4,5 @@
 <title>OpenSCAD Model</title>
 <path d="
 M 21,-83 L 1,-83 L 11,-63 z
-" stroke="black" fill="#ff0000" stroke-width="0.35"/>
+" stroke="black" stroke-width="0.35" fill="#ff0000"/>
 </svg>

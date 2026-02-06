@@ -20,5 +20,5 @@ M 11,-293 L 1,-293 L 1,-283 L 11,-283 z
 M 31,-293 L 21,-293 L 21,-283 L 31,-283 z
 M 71,-293 L 61,-293 L 61,-283 L 71,-283 z
 M 131,-293 L 121,-293 L 121,-283 L 131,-283 z
-" stroke="black" fill="#f9d72c" stroke-width="0.35"/>
+" stroke="black" stroke-width="0.35" fill="#f9d72c"/>
 </svg>

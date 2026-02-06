@@ -156,6 +156,7 @@ public slots:
   // Dialogs
   void on_checkBoxAlwaysShowExportPdfDialog_toggled(bool);
   void on_checkBoxAlwaysShowExport3mfDialog_toggled(bool);
+  void on_checkBoxAlwaysShowExportSvgDialog_toggled(bool);
   void on_checkBoxAlwaysShowPrintServiceDialog_toggled(bool);
   void on_checkBoxGlobalTrustPython_toggled(bool);
 

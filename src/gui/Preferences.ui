@@ -2954,6 +2954,13 @@
             </widget>
            </item>
            <item>
+            <widget class="QCheckBox" name="checkBoxAlwaysShowExportSvgDialog">
+             <property name="text">
+              <string>Always show SVF export dialog</string>
+             </property>
+            </widget>
+           </item>
+           <item>
             <widget class="QCheckBox" name="checkBoxAlwaysShowPrintServiceDialog">
              <property name="text">
               <string>Always show Print Service dialog</string>
