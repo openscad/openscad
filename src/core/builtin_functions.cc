@@ -1174,28 +1174,17 @@ static EvaluationSession::TimerType parse_timer_type(const char *function_name,
   return EvaluationSession::TimerType::Monotonic;
 }
 
-static void replace_all(std::string& text, const std::string& needle, const std::string& value)
-{
-  if (needle.empty()) {
-    return;
-  }
-  std::string::size_type pos = 0;
-  while ((pos = text.find(needle, pos)) != std::string::npos) {
-    text.replace(pos, needle.size(), value);
-    pos += value.size();
-  }
-}
-
-static std::string format_timer_value_us(double time_us, const std::string& format)
+static bool format_timer_value_us(double time_us, const std::string& format, const std::string& name,
+                                  std::string& rendered, std::string& error)
 {
   const bool negative = time_us < 0.0;
   const uint64_t total_us = static_cast<uint64_t>(std::llround(std::fabs(time_us)));
 
   const uint64_t total_seconds = total_us / 1000000ULL;
   const uint64_t hours = total_seconds / 3600ULL;
+  const uint64_t total_minutes = total_seconds / 60ULL;
   const uint64_t minutes = (total_seconds / 60ULL) % 60ULL;
   const uint64_t seconds = total_seconds % 60ULL;
-  const uint64_t millis = (total_us / 1000ULL) % 1000ULL;
   const uint64_t micros = total_us % 1000000ULL;
 
   auto zero_pad = [](uint64_t value, int width) {
@@ -1204,24 +1193,102 @@ static std::string format_timer_value_us(double time_us, const std::string& form
     return ss.str();
   };
 
-  std::string out = format;
-  replace_all(out, "uuuuuu", zero_pad(micros, 6));
-  replace_all(out, "uuu", zero_pad(millis, 3));
-  replace_all(out, "hh", zero_pad(hours, 2));
-  replace_all(out, "mm", zero_pad(minutes, 2));
-  replace_all(out, "ss", zero_pad(seconds, 2));
+  auto is_all_d = [](const std::string& token) {
+    if (token.empty()) {
+      return false;
+    }
+    return std::all_of(token.begin(), token.end(), [](char c) { return c == 'd'; });
+  };
 
-  if (negative) {
-    out.insert(out.begin(), '-');
+  auto fractional_seconds = [&](size_t places) {
+    if (places == 0) {
+      return std::string();
+    }
+    if (places <= 6) {
+      uint64_t divisor = 1;
+      for (size_t i = 0; i < 6 - places; ++i) {
+        divisor *= 10;
+      }
+      const uint64_t scaled = micros / divisor;
+      return zero_pad(scaled, static_cast<int>(places));
+    }
+    const std::string head = zero_pad(micros, 6);
+    return head + std::string(places - 6, '0');
+  };
+
+  std::ostringstream out;
+  for (size_t i = 0; i < format.size(); ++i) {
+    if (format[i] == '{') {
+      if (i + 1 < format.size() && format[i + 1] == '{') {
+        out << '{';
+        ++i;
+        continue;
+      }
+
+      const size_t close = format.find('}', i + 1);
+      if (close == std::string::npos) {
+        error = STR("invalid format: unmatched '{' at index ", static_cast<int>(i));
+        return false;
+      }
+
+      const std::string token = format.substr(i + 1, close - i - 1);
+      if (token == "n") {
+        out << name;
+      } else if (token == "f") {
+        out << Value(time_us).toString();
+      } else if (token == "hh") {
+        out << zero_pad(hours, 2);
+      } else if (token == "h") {
+        out << hours;
+      } else if (token == "mmm") {
+        out << total_minutes;
+      } else if (token == "mm") {
+        out << zero_pad(minutes, 2);
+      } else if (token == "m") {
+        out << minutes;
+      } else if (token == "ss") {
+        out << zero_pad(seconds, 2);
+      } else if (token == "sss") {
+        out << total_seconds;
+      } else if (token == "s") {
+        out << seconds;
+      } else if (is_all_d(token)) {
+        out << fractional_seconds(token.size());
+      } else {
+        error = STR("invalid format token '{", token, "}'");
+        return false;
+      }
+      i = close;
+      continue;
+    }
+
+    if (format[i] == '}') {
+      if (i + 1 < format.size() && format[i + 1] == '}') {
+        out << '}';
+        ++i;
+        continue;
+      }
+      error = STR("invalid format: unmatched '}' at index ", static_cast<int>(i));
+      return false;
+    }
+
+    {
+      out << format[i];
+    }
   }
-  return out;
+
+  rendered = out.str();
+  if (negative) {
+    rendered.insert(rendered.begin(), '-');
+  }
+  return true;
 }
 
 static void timer_echo(const Arguments& arguments, const Location& loc, int id, double elapsed_us)
 {
   const auto& name = arguments.session()->timer_name(id, loc);
   std::string label = name.empty() ? std::to_string(id) : name;
-  LOG(message_group::Echo, "%1$s", STR("timer ", label, " = ", elapsed_us, " us"));
+  LOG(message_group::Echo, "%1$s", STR("timer ", label, " = ", elapsed_us, " μs"));
 }
 
 static void timer_echo(const std::shared_ptr<const Context>& context, const Location& loc, int id,
@@ -1229,7 +1296,52 @@ static void timer_echo(const std::shared_ptr<const Context>& context, const Loca
 {
   const auto& name = context->session()->timer_name(id, loc);
   std::string label = name.empty() ? std::to_string(id) : name;
-  LOG(message_group::Echo, "%1$s", STR("timer ", label, " = ", elapsed_us, " us"));
+  LOG(message_group::Echo, "%1$s", STR("timer ", label, " = ", elapsed_us, " μs"));
+}
+
+static Value timer_value_or_formatted(const char *function_name, const Arguments& arguments, const Location& loc, int id,
+                                      double elapsed_us)
+{
+  bool return_number = false;
+  bool do_echo = false;
+  std::string format = "timer {n} {mmm}:{ss}.{ddd}";
+
+  if (arguments.size() > 1) {
+    if (arguments[1]->type() == Value::Type::UNDEFINED) {
+      return_number = true;
+    } else if (arguments[1]->type() == Value::Type::BOOL) {
+      do_echo = arguments[1]->toBool();
+    } else if (arguments[1]->type() == Value::Type::STRING) {
+      format = arguments[1]->toStrUtf8Wrapper().toString();
+    } else {
+      timer_error(function_name, loc, arguments.documentRoot(),
+                  STR(function_name, "() fmt_str must be a string or undef, or output must be bool"));
+    }
+  }
+
+  if (arguments.size() > 2) {
+    do_echo = arguments[2]->toBool();
+  }
+
+  if (return_number) {
+    if (do_echo) {
+      timer_echo(arguments, loc, id, elapsed_us);
+    }
+    return Value(elapsed_us);
+  }
+
+  const auto& name = arguments.session()->timer_name(id, loc);
+  std::string label = name.empty() ? std::to_string(id) : name;
+  std::string formatted;
+  std::string format_error;
+  if (!format_timer_value_us(elapsed_us, format, label, formatted, format_error)) {
+    timer_error(function_name, loc, arguments.documentRoot(),
+                STR(function_name, "() ", format_error));
+  }
+  if (do_echo) {
+    LOG(message_group::Echo, "%1$s", formatted);
+  }
+  return Value(formatted);
 }
 
 Value builtin_timer_new(Arguments arguments, const Location& loc)
@@ -1275,70 +1387,24 @@ Value builtin_timer_clear(Arguments arguments, const Location& loc)
 
 Value builtin_timer_stop(Arguments arguments, const Location& loc)
 {
-  if (arguments.size() < 1 || arguments.size() > 2) {
+  if (arguments.size() < 1 || arguments.size() > 3) {
     timer_error("timer_stop", loc, arguments.documentRoot(),
-                STR("timer_stop() expected 1-2 arguments, got ", arguments.size()));
+                STR("timer_stop() expected 1-3 arguments, got ", arguments.size()));
   }
   const int id = parse_timer_id("timer_stop", arguments, loc, 0);
   const double elapsed_us = arguments.session()->timer_stop(id, loc);
-  const bool do_echo = (arguments.size() > 1) ? arguments[1]->toBool() : false;
-  if (do_echo) {
-    timer_echo(arguments, loc, id, elapsed_us);
-  }
-  return Value(elapsed_us);
+  return timer_value_or_formatted("timer_stop", arguments, loc, id, elapsed_us);
 }
 
 Value builtin_timer_elapsed(Arguments arguments, const Location& loc)
 {
-  if (arguments.size() < 1 || arguments.size() > 2) {
+  if (arguments.size() < 1 || arguments.size() > 3) {
     timer_error("timer_elapsed", loc, arguments.documentRoot(),
-                STR("timer_elapsed() expected 1-2 arguments, got ", arguments.size()));
+                STR("timer_elapsed() expected 1-3 arguments, got ", arguments.size()));
   }
   const int id = parse_timer_id("timer_elapsed", arguments, loc, 0);
   const double elapsed_us = arguments.session()->timer_elapsed(id, loc);
-  const bool do_echo = (arguments.size() > 1) ? arguments[1]->toBool() : false;
-  if (do_echo) {
-    timer_echo(arguments, loc, id, elapsed_us);
-  }
-  return Value(elapsed_us);
-}
-
-Value builtin_timer_format(Arguments arguments, const Location& loc)
-{
-  if (arguments.size() < 1 || arguments.size() > 3) {
-    timer_error("timer_format", loc, arguments.documentRoot(),
-                STR("timer_format() expected 1-3 arguments, got ", arguments.size()));
-  }
-  if (arguments[0]->type() != Value::Type::NUMBER) {
-    timer_error("timer_format", loc, arguments.documentRoot(),
-                "timer_format() time_in_us must be a number");
-  }
-  const double time_us = arguments[0]->toDouble();
-  if (!std::isfinite(time_us)) {
-    timer_error("timer_format", loc, arguments.documentRoot(),
-                "timer_format() time_in_us must be finite");
-  }
-
-  std::string format = "mm:ss.uuu";
-  bool do_echo = false;
-  if (arguments.size() > 1 && arguments[1]->type() == Value::Type::STRING) {
-    format = arguments[1]->toStrUtf8Wrapper().toString();
-    if (arguments.size() > 2) {
-      do_echo = arguments[2]->toBool();
-    }
-  } else if (arguments.size() > 1) {
-    if (arguments.size() > 2) {
-      timer_error("timer_format", loc, arguments.documentRoot(),
-                  "timer_format() second argument must be fmt_str when third argument is provided");
-    }
-    do_echo = arguments[1]->toBool();
-  }
-
-  const std::string formatted = format_timer_value_us(time_us, format);
-  if (do_echo) {
-    LOG(message_group::Echo, "%1$s", STR("timer_format = ", formatted));
-  }
-  return Value(formatted);
+  return timer_value_or_formatted("timer_elapsed", arguments, loc, id, elapsed_us);
 }
 
 Value builtin_timer_delete(Arguments arguments, const Location& loc)
@@ -1609,20 +1675,21 @@ void register_builtin_functions()
                  });
   Builtins::init("timer_stop", new BuiltinFunction(&builtin_timer_stop),
                  {
-                   "timer_stop(timer_id) -> number",
-                   "timer_stop(timer_id, echo) -> number",
+                   "timer_stop(timer_id) -> string",
+                   "timer_stop(timer_id, fmt_str) -> string",
+                   "timer_stop(timer_id, fmt_str, output) -> string",
+                   "timer_stop(timer_id, output) -> string",
+                   "timer_stop(timer_id, undef) -> number",
+                   "timer_stop(timer_id, undef, output) -> number",
                  });
   Builtins::init("timer_elapsed", new BuiltinFunction(&builtin_timer_elapsed),
                  {
-                   "timer_elapsed(timer_id) -> number",
-                   "timer_elapsed(timer_id, echo) -> number",
-                 });
-  Builtins::init("timer_format", new BuiltinFunction(&builtin_timer_format),
-                 {
-                   "timer_format(time_in_us) -> string",
-                   "timer_format(time_in_us, fmt_str) -> string",
-                   "timer_format(time_in_us, echo) -> string",
-                   "timer_format(time_in_us, fmt_str, echo) -> string",
+                   "timer_elapsed(timer_id) -> string",
+                   "timer_elapsed(timer_id, fmt_str) -> string",
+                   "timer_elapsed(timer_id, fmt_str, output) -> string",
+                   "timer_elapsed(timer_id, output) -> string",
+                   "timer_elapsed(timer_id, undef) -> number",
+                   "timer_elapsed(timer_id, undef, output) -> number",
                  });
   Builtins::init("timer_delete", new BuiltinFunction(&builtin_timer_delete),
                  {

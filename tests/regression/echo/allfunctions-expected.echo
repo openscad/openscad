@@ -26,3 +26,4 @@ WARNING: cross() number of parameters does not match: expected 2, found 0 in fil
 WARNING: Parent module index (1) greater than the number of modules on the stack in file allfunctions.scad, line 31
 WARNING: Can't open DXF file ''! in file allfunctions.scad, line 32
 WARNING: Can't open DXF file ''! in file allfunctions.scad, line 33
+ECHO: timer 0 0:00.000
