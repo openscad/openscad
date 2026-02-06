@@ -80,8 +80,10 @@ std::unique_ptr<PolySet> import_stl(const std::string& filename, const Location&
   // Open file and position at the end
   std::ifstream f(std::filesystem::u8path(filename), std::ios::in | std::ios::binary | std::ios::ate);
   if (!f.good()) {
-    LOG(message_group::Warning, "Can't open import file '%1$s', import() at line %2$d", filename,
-        loc.firstLine());
+    LOG(message_group::Warning,
+        _("Can't open import file  \"%1$s\", import() at line %2$d: %3$s [%4$i], working directory is "
+          "%5$s"),
+        std::filesystem::u8path(filename), loc.firstLine(), strerror(errno), errno, fs::current_path());
     return PolySet::createEmpty();
   }
 

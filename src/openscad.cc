@@ -281,7 +281,8 @@ bool with_output(const bool is_stdout, const std::string& filename, const F& f,
   }
   std::ofstream fstream(std::filesystem::u8path(filename), mode);
   if (!fstream.is_open()) {
-    LOG("Can't open file \"%1$s\" for export", filename);
+    LOG(_("Can't open file \"%1$s\" for export: %2$s [%3$i], working directory is %4$s"), filename,
+        strerror(errno), errno, fs::current_path());
     return false;
   } else {
     f(fstream);
@@ -583,7 +584,8 @@ int cmdline(const CommandLine& cmd)
   } else {
     std::ifstream ifs(std::filesystem::u8path(cmd.filename));
     if (!ifs.is_open()) {
-      LOG("Can't open input file '%1$s'!\n", cmd.filename);
+      LOG(_("Can't open input file \"%1$s\": %2$s [%3$i], working directory is %4$s"), cmd.filename,
+          strerror(errno), errno, fs::current_path());
       return 1;
     }
     handle_dep(cmd.filename);

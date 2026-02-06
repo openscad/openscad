@@ -248,7 +248,8 @@ bool exportFileByName(const std::shared_ptr<const Geometry>& root_geom, const st
   const std::filesystem::path path(filename);
   std::ofstream fstream(path, mode);
   if (!fstream.is_open()) {
-    LOG(_("Can't open file \"%1$s\" for export"), filename);
+    LOG(_("Can't open file \"%1$s\" for export: %2$s [%3$i], working directory is %4$s"), filename,
+        strerror(errno), errno, fs::current_path());
     return false;
   } else {
     bool onerror = false;
