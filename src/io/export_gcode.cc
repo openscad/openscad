@@ -58,22 +58,22 @@ void output_gcode_pars(std::ostream& output, int gnum, double x, double y, doubl
 }
 static void append_gcode(const Polygon2d& poly, std::ostream& output, const ExportInfo& exportInfo)
 {
+  auto  options = exportInfo.optionsGcode;
   gnum_cached=-1;
   x_cached=NAN;
   y_cached=NAN;
   feed_cached=NAN;
   power_cached=NAN;
 
-  double laserpower=1000;
   double feed=500;  
   for (const auto& o : poly.outlines()) {
     const Eigen::Vector2d& p0 = o.vertices[0];
     output_gcode_pars(output, 0, p0.x(), p0.y(), NAN, NAN);
-    output_gcode_pars(output, -1, NAN, NAN, NAN, laserpower);
+    output_gcode_pars(output, -1, NAN, NAN, NAN, options->laserpower);
     int n=o.vertices.size();
     for (unsigned int idx = 1; idx <=  n; ++idx) {
       const Eigen::Vector2d& p = o.vertices[idx%n];
-      output_gcode_pars(output, 1, p.x(), p.y(), feed, laserpower);
+      output_gcode_pars(output, 1, p.x(), p.y(), options->feedrate, options->laserpower);
     }
     output_gcode_pars(output, -1, NAN, NAN, NAN, 0);
   }
@@ -100,26 +100,13 @@ void export_gcode(const std::shared_ptr<const Geometry>& geom, std::ostream& out
 {
   setlocale(LC_NUMERIC, "C");  // Ensure radix is . (not ,) in output
   BoundingBox bbox = geom->getBoundingBox();
-  const ExportGcodeOptions *options;
-//  const ExportSvgOptions defaultSvgOptions;
 
-  if (exportInfo.optionsSvg) {
-    options = exportInfo.optionsGcode.get();
-  } 
-//  else {
-//    options = &defaultSvgOptions;
-//  }
 
-//  const double strokePad = options->stroke ? options->strokeWidth / 2.0 : 0.0;
-//  const int minx = (int)floor(bbox.min().x() - strokePad);
-//  const int miny = (int)floor(-bbox.max().y() - strokePad);
-//  const int maxx = (int)ceil(bbox.max().x() + strokePad);
-//  const int maxy = (int)ceil(-bbox.min().y() + strokePad);
-//  const int width = maxx - minx;
-//  const int height = maxy - miny;
 
-  output	<< "M3 S0\r\n"
-	  	<< "S0\r\n" ;
+  auto  options = exportInfo.optionsGcode;
+  if(options->lasermode == 1) output	<< "M4 S0\r\n";
+	  else output	<< "M3 S0\r\n";
+	  output << "S0\r\n" ;
   append_gcode(geom, output, exportInfo);
   output	<< "M5 S0\r\n";
   setlocale(LC_NUMERIC, "");  // Set default locale

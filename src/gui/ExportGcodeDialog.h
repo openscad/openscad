@@ -18,33 +18,20 @@ public:
 
   int exec() override;
 
-//  QColor getFillColor() const;
-//  bool isFillEnabled() const;
-//  QColor getStrokeColor() const;
-//  bool isStrokeEnabled() const;
-//  double getStrokeWidth() const;
-  ExportGcodeOptions getOptions() const;
+  double getLaserSpeed() const;
+  double getLaserPower() const;
+  int getLaserMode()  const;
+  ExportGcodeOptions getOptions() ;
 
 private slots:
-/*	
-  void on_toolButtonFillColor_clicked();
-  void on_toolButtonFillColorReset_clicked();
-  void on_checkBoxEnableFill_toggled(bool checked);
-  void on_toolButtonStrokeColor_clicked();
-  void on_toolButtonStrokeColorReset_clicked();
-  void on_checkBoxEnableStroke_toggled(bool checked);
-  void on_toolButtonStrokeWidthReset_clicked();
-  void on_pushButtonOk_clicked();
+  void on_valueLaserSpeed_textChanged(const QString&);
+  void on_valueLaserPower_textChanged(const QString&);
+  void on_valueLaserMode_activated(int);
   void on_pushButtonCancel_clicked();
 
 private:
-  void updateFillColor(const QColor& color);
-  void updateFillControlsEnabled();
-  void updateStrokeColor(const QColor& color);
-  void updateStrokeControlsEnabled();
+  double laserSpeed;
+  double laserPower;
+  int laserMode;
 
-  QColor fillColor;
-  QColor strokeColor;
-  double defaultStrokeWidth = 0.35;
-*/  
 };

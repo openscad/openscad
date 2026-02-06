@@ -292,6 +292,7 @@ struct ExportSvgOptions {
 struct ExportGcodeOptions {
   double feedrate;
   double laserpower;  
+  int lasermode;
 };
 
 struct ExportInfo {
