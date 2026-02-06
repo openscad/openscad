@@ -76,4 +76,6 @@ te = timer_elapsed();//parameter
 //description
 tf = timer_delete();//parameter
 //description
-tg = timer_run();//parameter
+tg = timer_format();//parameter
+//description
+th = timer_run();//parameter
