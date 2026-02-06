@@ -66,16 +66,16 @@ x = dxf_cross();
 //description
 ta = timer_new();//parameter
 //description
-tb = timer_start();//parameter
+tb = timer_start(ta);//parameter
 //description
-tc = timer_clear();//parameter
+tc = timer_clear(ta);//parameter
 //description
-td = timer_stop();//parameter
+td = timer_start(ta);//parameter
 //description
-te = timer_elapsed();//parameter
+te = timer_stop(ta);//parameter
 //description
-tf = timer_delete();//parameter
+tf = timer_delete(ta);//parameter
 //description
-tg = timer_format();//parameter
+tg = timer_new("", "CPU");//parameter
 //description
-th = timer_run();//parameter
+th = timer_delete(tg);//parameter
