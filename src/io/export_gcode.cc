@@ -100,22 +100,23 @@ void export_gcode(const std::shared_ptr<const Geometry>& geom, std::ostream& out
 {
   setlocale(LC_NUMERIC, "C");  // Ensure radix is . (not ,) in output
   BoundingBox bbox = geom->getBoundingBox();
-  const ExportSvgOptions *options;
-  const ExportSvgOptions defaultSvgOptions;
+  const ExportGcodeOptions *options;
+//  const ExportSvgOptions defaultSvgOptions;
 
   if (exportInfo.optionsSvg) {
-    options = exportInfo.optionsSvg.get();
-  } else {
-    options = &defaultSvgOptions;
-  }
+    options = exportInfo.optionsGcode.get();
+  } 
+//  else {
+//    options = &defaultSvgOptions;
+//  }
 
-  const double strokePad = options->stroke ? options->strokeWidth / 2.0 : 0.0;
-  const int minx = (int)floor(bbox.min().x() - strokePad);
-  const int miny = (int)floor(-bbox.max().y() - strokePad);
-  const int maxx = (int)ceil(bbox.max().x() + strokePad);
-  const int maxy = (int)ceil(-bbox.min().y() + strokePad);
-  const int width = maxx - minx;
-  const int height = maxy - miny;
+//  const double strokePad = options->stroke ? options->strokeWidth / 2.0 : 0.0;
+//  const int minx = (int)floor(bbox.min().x() - strokePad);
+//  const int miny = (int)floor(-bbox.max().y() - strokePad);
+//  const int maxx = (int)ceil(bbox.max().x() + strokePad);
+//  const int maxy = (int)ceil(-bbox.min().y() + strokePad);
+//  const int width = maxx - minx;
+//  const int height = maxy - miny;
 
   output	<< "M3 S0\r\n"
 	  	<< "S0\r\n" ;

@@ -289,6 +289,11 @@ struct ExportSvgOptions {
   }
 };
 
+struct ExportGcodeOptions {
+  double feedrate;
+  double laserpower;  
+};
+
 struct ExportInfo {
   FileFormat format;
   FileFormatInfo info;
@@ -301,6 +306,7 @@ struct ExportInfo {
   std::shared_ptr<const ExportPdfOptions> optionsPdf;
   std::shared_ptr<const Export3mfOptions> options3mf;
   std::shared_ptr<const ExportSvgOptions> optionsSvg;
+  std::shared_ptr<const ExportGcodeOptions> optionsGcode;
 };
 
 class Export3mfPartInfo

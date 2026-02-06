@@ -1630,6 +1630,7 @@ set(GUI_SOURCES
   src/gui/ErrorLog.cc
   src/gui/EventFilter.h
   src/gui/Export3mfDialog.cc
+  src/gui/ExportGcodeDialog.cc
   src/gui/ExportPdfDialog.cc
   src/gui/LoadShareDesignDialog.cc
   src/gui/ShareDesignDialog.cc
