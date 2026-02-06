@@ -1,8 +1,13 @@
 #include "core/customizer/ParameterSet.h"
 #include "utils/printutils.h"
 #include <boost/property_tree/json_parser.hpp>
-
 #include <string>
+
+#if !defined(OPENSCAD_NOGUI)
+#include <QApplication>
+#include <QMessageBox>
+#endif
+
 
 static std::string parameterSetsKey("parameterSets");
 static std::string fileFormatVersionKey("fileFormatVersion");
@@ -21,6 +26,17 @@ bool ParameterSets::readFile(const std::string& filename)
     boost::property_tree::read_json(f, root);
   } catch (const boost::property_tree::json_parser_error& e) {
     LOG(message_group::Error, "Cannot open Parameter Set '%1$s': %2$s", filename, e.what());
+
+#if !defined(OPENSCAD_NOGUI)
+    if (QApplication::instance()) {
+        QString msg = QString("Failed to load parameter set JSON:\n%1\n\nReason: %2")
+            .arg(QString::fromStdString(filename))
+            .arg(QString::fromStdString(e.what()));
+        QMessageBox::critical(nullptr,
+                QObject::tr("JSON Load Error"), msg);
+    }
+#endif
+
     return false;
   }
 
