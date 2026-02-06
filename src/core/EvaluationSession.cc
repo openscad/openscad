@@ -52,7 +52,7 @@ struct EvaluationSession::TimerRegistry {
     std::string name;
     TimerType type = TimerType::Monotonic;
     State state = State::Stopped;
-    double elapsed_ms = 0.0;
+    double elapsed_us = 0.0;
     std::chrono::steady_clock::time_point steady_start;
     std::clock_t cpu_start = 0;
   };
@@ -67,16 +67,16 @@ static void timer_error(const EvaluationSession& session, const Location& loc, c
   throw EvaluationException(msg);
 }
 
-static double cpu_elapsed_ms(std::clock_t start)
+static double cpu_elapsed_us(std::clock_t start)
 {
-  return (static_cast<double>(std::clock() - start) * 1000.0) / CLOCKS_PER_SEC;
+  return (static_cast<double>(std::clock() - start) * 1000000.0) / CLOCKS_PER_SEC;
 }
 
-static double steady_elapsed_ms(const std::chrono::steady_clock::time_point& start)
+static double steady_elapsed_us(const std::chrono::steady_clock::time_point& start)
 {
   const auto now = std::chrono::steady_clock::now();
   const auto us = std::chrono::duration_cast<std::chrono::microseconds>(now - start).count();
-  return static_cast<double>(us) / 1000.0;
+  return static_cast<double>(us);
 }
 
 size_t EvaluationSession::push_frame(ContextFrame *frame)
@@ -172,7 +172,7 @@ int EvaluationSession::timer_new(const std::string& name, TimerType type)
   timer.name = name;
   timer.type = type;
   timer.state = TimerRegistry::Timer::State::Stopped;
-  timer.elapsed_ms = 0.0;
+  timer.elapsed_us = 0.0;
 
   if (id == static_cast<int>(timer_registry->timers.size())) {
     timer_registry->timers.emplace_back(std::move(timer));
@@ -195,7 +195,7 @@ void EvaluationSession::timer_start(int id, const Location& loc)
   if (timer.state == TimerRegistry::Timer::State::Running) {
     timer_error(*this, loc, STR("timer_start(", id, ") timer already running"));
   }
-  timer.elapsed_ms = 0.0;
+  timer.elapsed_us = 0.0;
   if (timer.type == TimerType::Cpu) {
     timer.cpu_start = std::clock();
   } else {
@@ -214,7 +214,7 @@ void EvaluationSession::timer_clear(int id, const Location& loc)
     timer_error(*this, loc, STR("timer_clear(", id, ") unknown timer id"));
   }
   auto& timer = *timer_registry->timers[id];
-  timer.elapsed_ms = 0.0;
+  timer.elapsed_us = 0.0;
   timer.state = TimerRegistry::Timer::State::Stopped;
 }
 
@@ -232,12 +232,12 @@ double EvaluationSession::timer_stop(int id, const Location& loc)
     timer_error(*this, loc, STR("timer_stop(", id, ") timer not running"));
   }
   if (timer.type == TimerType::Cpu) {
-    timer.elapsed_ms = cpu_elapsed_ms(timer.cpu_start);
+    timer.elapsed_us = cpu_elapsed_us(timer.cpu_start);
   } else {
-    timer.elapsed_ms = steady_elapsed_ms(timer.steady_start);
+    timer.elapsed_us = steady_elapsed_us(timer.steady_start);
   }
   timer.state = TimerRegistry::Timer::State::Stopped;
-  return timer.elapsed_ms;
+  return timer.elapsed_us;
 }
 
 double EvaluationSession::timer_elapsed(int id, const Location& loc)
@@ -252,11 +252,11 @@ double EvaluationSession::timer_elapsed(int id, const Location& loc)
   auto& timer = *timer_registry->timers[id];
   if (timer.state == TimerRegistry::Timer::State::Running) {
     if (timer.type == TimerType::Cpu) {
-      return cpu_elapsed_ms(timer.cpu_start);
+      return cpu_elapsed_us(timer.cpu_start);
     }
-    return steady_elapsed_ms(timer.steady_start);
+    return steady_elapsed_us(timer.steady_start);
   }
-  return timer.elapsed_ms;
+  return timer.elapsed_us;
 }
 
 void EvaluationSession::timer_delete(int id, const Location& loc)

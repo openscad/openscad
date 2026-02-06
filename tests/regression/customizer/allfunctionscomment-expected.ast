@@ -38,4 +38,5 @@ tc = timer_clear();
 td = timer_stop();
 te = timer_elapsed();
 tf = timer_delete();
-tg = timer_run();
+tg = timer_format();
+th = timer_run();
