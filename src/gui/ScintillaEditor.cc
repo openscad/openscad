@@ -12,6 +12,7 @@
 #include <QTimer>
 #include <QVBoxLayout>
 #include <QWidget>
+#include <QFileDialog>
 #include <functional>
 #include <exception>
 #include <memory>
@@ -278,8 +279,9 @@ void ScintillaEditor::addTemplate(const fs::path& path)
         const QString key = QString::fromStdString(pt.get<std::string>("key"));
         const QString content = QString::fromStdString(pt.get<std::string>("content"));
         const int cursor_offset = pt.get<int>("offset", -1);
+        const QString fileFilter = QString::fromStdString(pt.get<std::string>("fileFilter", ""));
 
-        templateMap.insert(key, ScadTemplate(content, cursor_offset));
+        templateMap.insert(key, ScadTemplate(content, cursor_offset, fileFilter));
       } catch (const std::exception& e) {
         LOG("Error reading template file '%1$s': %2$s", path.generic_string(), e.what());
       }
@@ -1357,8 +1359,17 @@ void ScintillaEditor::onUserListSelected(const int, const QString& text)
   ScadTemplate& t = templateMap[text];
   QString content = t.get_text();
   int cursor_offset = t.get_cursor_offset();
+  QString fileFilter = t.get_fileFilter();
 
-  if (cursor_offset < 0) {
+  if (!fileFilter.isEmpty()) {
+    // NEEDSWORK probably shouldn't be nullptr
+    QString filename = QFileDialog::getOpenFileName(nullptr, _("Select file"), "", fileFilter);
+    if (filename.isEmpty()) {
+      return;
+    }
+    content.replace(ScintillaEditor::cursorPlaceHolder, filename);
+    cursor_offset = 0;
+  } else if (cursor_offset < 0) {
     if (tabReplace.size() != 0) content.replace("\t", tabReplace);
 
     cursor_offset = content.indexOf(ScintillaEditor::cursorPlaceHolder);

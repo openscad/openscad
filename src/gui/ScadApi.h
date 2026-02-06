@@ -41,18 +41,24 @@ class ScadTemplate
 private:
   QString text;
   int cursor_offset;
+  QString fileFilter;
 
 public:
-  ScadTemplate() : text(""), cursor_offset(0) {}
-  ScadTemplate(QString text, int cursor_offset) : text(std::move(text)), cursor_offset(cursor_offset) {}
+  ScadTemplate() : text(""), cursor_offset(0), fileFilter("") {}
+  ScadTemplate(QString text, int cursor_offset, QString fileFilter)
+    : text(std::move(text)), cursor_offset(cursor_offset), fileFilter(std::move(fileFilter))
+  {
+  }
   const QString& get_text() const { return text; }
   int get_cursor_offset() const { return cursor_offset; }
+  const QString& get_fileFilter() const { return fileFilter; }
 
   ScadTemplate& operator=(const ScadTemplate& other)
   {
     if (this != &other) {
       this->text = other.text;
       this->cursor_offset = other.cursor_offset;
+      this->fileFilter = other.fileFilter;
     }
     return *this;
   }
