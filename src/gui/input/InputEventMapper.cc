@@ -69,15 +69,6 @@ InputEventMapper::InputEventMapper()
   onInputCalibrationUpdated();
   onInputGainUpdated();
 
-  connect(GlobalPreferences::inst()->ButtonConfig, &ButtonConfigWidget::inputMappingChanged, this,
-          &InputEventMapper::onInputMappingUpdated, Qt::UniqueConnection);
-  connect(GlobalPreferences::inst()->AxisConfig, &AxisConfigWidget::inputMappingChanged, this,
-          &InputEventMapper::onInputMappingUpdated, Qt::UniqueConnection);
-  connect(GlobalPreferences::inst()->AxisConfig, &AxisConfigWidget::inputCalibrationChanged, this,
-          &InputEventMapper::onInputCalibrationUpdated, Qt::UniqueConnection);
-  connect(GlobalPreferences::inst()->AxisConfig, &AxisConfigWidget::inputGainChanged, this,
-          &InputEventMapper::onInputGainUpdated, Qt::UniqueConnection);
-
   self = this;
 }
 

@@ -4116,6 +4116,18 @@ void MainWindow::setupPreferences()
   GlobalPreferences::inst()->apply_win();
   GlobalPreferences::inst()->ButtonConfig->init();
   GlobalPreferences::inst()->MouseConfig->init();
+
+  connect(GlobalPreferences::inst()->ButtonConfig, &ButtonConfigWidget::inputMappingChanged,
+          InputDriverManager::instance(), &InputDriverManager::onInputMappingUpdated,
+          Qt::UniqueConnection);
+  connect(GlobalPreferences::inst()->AxisConfig, &AxisConfigWidget::inputMappingChanged,
+          InputDriverManager::instance(), &InputDriverManager::onInputMappingUpdated,
+          Qt::UniqueConnection);
+  connect(GlobalPreferences::inst()->AxisConfig, &AxisConfigWidget::inputCalibrationChanged,
+          InputDriverManager::instance(), &InputDriverManager::onInputCalibrationUpdated,
+          Qt::UniqueConnection);
+  connect(GlobalPreferences::inst()->AxisConfig, &AxisConfigWidget::inputGainChanged,
+          InputDriverManager::instance(), &InputDriverManager::onInputGainUpdated, Qt::UniqueConnection);
 }
 
 /**
