@@ -2432,6 +2432,21 @@ bool MainWindow::canExport(unsigned int dim)
   return true;
 }
 
+QString MainWindow::enforceExportSuffix(const QString& filename, const QString& suffix)
+{
+  if (filename.isEmpty()) return filename;
+
+  const auto normalizedSuffix = suffix.startsWith('.') ? suffix.mid(1) : suffix;
+  if (normalizedSuffix.isEmpty()) return filename;
+
+  const QFileInfo info(filename);
+  if (info.suffix().isEmpty()) {
+    const auto suffixedName = filename + "." + normalizedSuffix;
+    return suffixedName;
+  }
+  return filename;
+}
+
 void MainWindow::actionExport(unsigned int dim, ExportInfo& exportInfo)
 {
   const auto type_name = QString::fromStdString(exportInfo.info.description);
@@ -2449,6 +2464,7 @@ void MainWindow::actionExport(unsigned int dim, ExportInfo& exportInfo)
   auto title = QString(_("Export %1 File")).arg(type_name);
   auto filter = QString(_("%1 Files (*%2)")).arg(type_name, suffix);
   auto exportFilename = QFileDialog::getSaveFileName(this, title, exportPath(suffix), filter);
+  exportFilename = enforceExportSuffix(exportFilename, suffix);
   if (exportFilename.isEmpty()) {
     clearCurrentOutput();
     return;
