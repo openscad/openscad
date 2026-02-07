@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg viewBox="0 -776 523.20171 540.51448" width="348.34756" height="356.62811" version="1.1" id="svg1" sodipodi:docname="filetype-python.svg" inkscape:version="1.4.2 (f4327f4, 2025-05-13)" xml:space="preserve" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" xmlns="http://www.w3.org/2000/svg" xmlns:svg="http://www.w3.org/2000/svg"><link xmlns="" type="text/css" id="dark-mode" rel="stylesheet" href=""/><style xmlns="" type="text/css" id="dark-mode-custom-style"/><defs id="defs1"/><sodipodi:namedview id="namedview1" pagecolor="#ffffff" bordercolor="#000000" borderopacity="0.25" inkscape:showpageshadow="2" inkscape:pageopacity="0.0" inkscape:pagecheckerboard="0" inkscape:deskcolor="#d1d1d1" inkscape:zoom="2.2400922" inkscape:cx="225.21394" inkscape:cy="114.50421" inkscape:window-width="2560" inkscape:window-height="1351" inkscape:window-x="2391" inkscape:window-y="-9" inkscape:window-maximized="1" inkscape:current-layer="svg1"/><g id="g2"><path d="m 273.21429,-489.65217 h 62 q 33,0 52.5,-19.5 19.5,-19.5 19.5,-52.5 v -57 q 0,-9 9,-9 h 28 q 44,0 63,38 16,31 16,56 5,62 -10,103 -16,48 -59,56 h -181 q -10,0 -10,3 v 16 l 4,2 q 4,1 6,1 h 106 q 7,0 9.5,3 2.5,3 2.5,10 v 40 q 0,35 -28,44 -31,12 -47,16 -60,10 -112,-4 -26,-5 -44,-18 -11,-11 -15,-20 -6,-11 -4,-24 v -113 q 0,-32 18,-50 18,-18 51,-18 22,-3 63,-3 z m 87,187 q 0,-10 -7,-17.5 -7,-7.5 -17,-7.5 -10,0 -18,8 -8,8 -8,17 0,9 7.5,16 7.5,7 17.5,9 11,0 18,-7.5 7,-7.5 7,-17.5 z" id="path2" style="fill:#ffe873;fill-opacity:1"/><path d="m 248.21429,-521.65217 h -63 q -33,0 -52.5,19.5 -19.5,19.5 -19.5,52.5 v 56 q 0,10 -9,10 h -28 q -44,0 -63,-38 -15,-31 -15,-56 -6,-62 9,-103 16,-48 59,-56 h 181 q 10,0 10,-3 v -16 l -4,-2 q -4,-1 -5,-1 h -107 q -7,0 -9.5,-3 -2.5,-3 -2.5,-10 v -40 q 0,-35 28,-44 31,-13 47,-16 60,-10 112,3 26,6 44,19 11,11 15,20 6,11 4,24 v 112 q 0,33 -18,51 -18,18 -51,18 -22,3 -62,3 z m -88,-187 q 0,10 7,17.5 7,7.5 17,7.5 10,0 18,-8 8,-8 8,-17 0,-9 -7.5,-16 -7.5,-7 -17.5,-9 -11,0 -18,7.5 -7,7.5 -7,17.5 z" id="path1" style="fill:#4b8bbe;fill-opacity:1"/></g><script xmlns="">
+  {
+    const open = XMLHttpRequest.prototype.open;
+    XMLHttpRequest.prototype.open = function (method, url) {
+      open.apply(this, arguments);
+      this.addEventListener('readystatechange', function _() {
+        if(this.readyState == this.HEADERS_RECEIVED) {
+          const contentType = this.getResponseHeader('Content-Type') || '';
+          if (contentType.startsWith('video/') || contentType.startsWith('audio/')) {
+            window.postMessage({
+              source: 'xmlhttprequest-open-open-in-vlc',
+              url,
+              mime: contentType,
+              method,
+              contentType
+            }, '*');
+          }
+          this.removeEventListener('readystatechange', _);
+        }
+      })
+    }
+  }
+  </script></svg>

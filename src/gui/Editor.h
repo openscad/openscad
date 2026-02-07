@@ -54,6 +54,10 @@ public:
   virtual QPoint mapToGlobal(const QPoint&) = 0;
   virtual void setCursorPosition(int /*line*/, int /*col*/) {}
   virtual void setFocus() = 0;
+  virtual void onLanguageChanged(int lang) = 0;
+  void recomputeLanguageActive(void);
+  void setLanguageManually(int lang);
+  void resetLanguageDetection();
 
 signals:
   void contentsChanged();
@@ -103,4 +107,6 @@ public:
   std::string autoReloadId;
   std::vector<IndicatorData> indicatorData;
   ParameterWidget *parameterWidget;
+  int language;
+  bool languageManuallySet = false;
 };

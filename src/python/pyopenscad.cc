@@ -26,6 +26,7 @@
 #include <Python.h>
 #include <filesystem>
 
+#include "genlang/genlang.h"
 #include "pyopenscad.h"
 #include "core/CsgOpNode.h"
 #include "core/CurveDiscretizer.h"
