@@ -2961,6 +2961,13 @@
             </widget>
            </item>
            <item>
+            <widget class="QCheckBox" name="checkBoxAlwaysShowExportGcodeDialog">
+             <property name="text">
+              <string>Always show GCODE export dialog</string>
+             </property>
+            </widget>
+           </item>
+           <item>
             <widget class="QCheckBox" name="checkBoxAlwaysShowPrintServiceDialog">
              <property name="text">
               <string>Always show Print Service dialog</string>

@@ -318,6 +318,8 @@ void Preferences::update()
     Settings::SettingsExport3mf::export3mfAlwaysShowDialog.value());
   this->checkBoxAlwaysShowExportSvgDialog->setChecked(
     Settings::SettingsExportSvg::exportSvgAlwaysShowDialog.value());
+  this->checkBoxAlwaysShowExportGcodeDialog->setChecked(
+    Settings::SettingsExportGcode::exportGcodeAlwaysShowDialog.value());
   this->checkBoxAlwaysShowPrintServiceDialog->setChecked(
     Settings::Settings::printServiceAlwaysShowDialog.value());
   this->checkBoxGlobalTrustPython->setChecked(Settings::SettingsPython::globalTrustPython.value());
@@ -1285,6 +1287,12 @@ void Preferences::on_checkBoxAlwaysShowExport3mfDialog_toggled(bool state)
 void Preferences::on_checkBoxAlwaysShowExportSvgDialog_toggled(bool state)
 {
   Settings::SettingsExportSvg::exportSvgAlwaysShowDialog.setValue(state);
+  writeSettings();
+}
+
+void Preferences::on_checkBoxAlwaysShowExportGcodeDialog_toggled(bool state)
+{
+  Settings::SettingsExportGcode::exportGcodeAlwaysShowDialog.setValue(state);
   writeSettings();
 }
 
