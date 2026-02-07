@@ -1768,7 +1768,7 @@ void MainWindow::csgReloadRender()
 
 void MainWindow::prepareCompile(const char *afterCompileSlot, bool procevents, bool preview)
 {
-  auto guard = scopedSetCurrentOutput();
+  setCurrentOutput();
   autoReloadTimer->stop();
   LOG(" ");
   LOG("Parsing design (AST generation)...");
