@@ -27,7 +27,7 @@
     <item row="0" column="0">
      <widget class="QStackedWidget" name="stackedWidget">
       <property name="currentIndex">
-       <number>5</number>
+       <number>7</number>
       </property>
       <widget class="QWidget" name="page3DView">
        <layout class="QVBoxLayout" name="verticalLayout_4">
@@ -136,8 +136,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>824</width>
-             <height>933</height>
+             <width>668</width>
+             <height>953</height>
             </rect>
            </property>
            <layout class="QGridLayout" name="gridLayout_5">
@@ -637,7 +637,7 @@
                  <widget class="QFontComboBox" name="fontChooser">
                   <property name="currentFont">
                    <font>
-                    <family>Academy Engraved LET</family>
+                    <family>DejaVu Sans</family>
                     <pointsize>12</pointsize>
                    </font>
                   </property>
@@ -1292,8 +1292,8 @@
               <rect>
                <x>0</x>
                <y>0</y>
-               <width>839</width>
-               <height>750</height>
+               <width>100</width>
+               <height>30</height>
               </rect>
              </property>
              <layout class="QVBoxLayout" name="verticalLayout_10">
@@ -1349,8 +1349,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>839</width>
-             <height>774</height>
+             <width>701</width>
+             <height>710</height>
             </rect>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_9">
@@ -1950,8 +1950,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>824</width>
-             <height>1276</height>
+             <width>699</width>
+             <height>1471</height>
             </rect>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_12">
@@ -2195,14 +2195,14 @@
                <item>
                 <widget class="QCheckBox" name="reorderCheckBox">
                  <property name="text">
-                  <string>Enable docking helper widgets in different places</string>
+                  <string>Enable docking of Editor and Console in different places</string>
                  </property>
                 </widget>
                </item>
                <item>
                 <widget class="QCheckBox" name="undockCheckBox">
                  <property name="text">
-                  <string>Enable undocking of helper widgets to separate windows</string>
+                  <string>Enable undocking of Editor and Console to separate windows</string>
                  </property>
                 </widget>
                </item>
@@ -2731,8 +2731,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>98</width>
-             <height>28</height>
+             <width>845</width>
+             <height>770</height>
             </rect>
            </property>
           </widget>
@@ -2764,8 +2764,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>839</width>
-             <height>774</height>
+             <width>845</width>
+             <height>770</height>
             </rect>
            </property>
           </widget>
@@ -2800,8 +2800,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>839</width>
-             <height>774</height>
+             <width>845</width>
+             <height>770</height>
             </rect>
            </property>
           </widget>

@@ -33,9 +33,6 @@
 #include <set>
 #include <memory>
 #include <QWidget>
-#include <QMenu>
-#include <QAction>
-#include <QToolButton>
 
 #include "gui/parameter/GroupWidget.h"
 #include "gui/parameter/ParameterSpinBox.h"
@@ -64,16 +61,14 @@ ParameterWidget::ParameterWidget(QWidget *parent) : QWidget(parent)
   autoPreviewTimer.setSingleShot(true);
 
   connect(&autoPreviewTimer, &QTimer::timeout, this, &ParameterWidget::emitParametersChanged);
+  connect(checkBoxAutoPreview, &QCheckBox::toggled, [this]() { this->autoPreview(true); });
+  connect(comboBoxDetails, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
+          &ParameterWidget::rebuildWidgets);
+  connect(comboBoxPreset, QOverload<int>::of(&QComboBox::activated), this,
+          &ParameterWidget::onSetChanged);
   // connect(comboBoxPreset, &QComboBox::editTextChanged, this, &ParameterWidget::onSetNameChanged);
-
-  auto *customizer_menu = new QMenu(this);
-  parameterMenuButton->setMenu(customizer_menu);
-
-  QAction *collapseAction = customizer_menu->addAction(_("Collapse All"));
-  connect(collapseAction, &QAction::triggered, this, &ParameterWidget::onCollapseAll);
-
-  QAction *expandAction = customizer_menu->addAction(_("Expand All"));
-  connect(expandAction, &QAction::triggered, this, &ParameterWidget::onExpandAll);
+  connect(addButton, &QPushButton::clicked, this, &ParameterWidget::onSetAdd);
+  connect(deleteButton, &QPushButton::clicked, this, &ParameterWidget::onSetDelete);
 
   QString fontfamily = GlobalPreferences::inst()->getValue("advanced/customizerFontFamily").toString();
   uint fontsize = GlobalPreferences::inst()->getValue("advanced/customizerFontSize").toUInt();
@@ -197,17 +192,7 @@ void ParameterWidget::autoPreview(bool immediate)
   }
 }
 
-void ParameterWidget::on_checkBoxAutoPreview_toggled(bool)
-{
-  autoPreview(true);
-}
-
-void ParameterWidget::on_comboBoxDetails_currentIndexChanged(int)
-{
-  rebuildWidgets();
-}
-
-void ParameterWidget::on_comboBoxPreset_activated(int index)
+void ParameterWidget::onSetChanged(int index)
 {
   loadSet(index);
   autoPreview(true);
@@ -221,7 +206,7 @@ void ParameterWidget::onSetNameChanged()
   setModified();
 }
 
-void ParameterWidget::on_addButton_clicked()
+void ParameterWidget::onSetAdd()
 {
   bool ok = true;
   QString result =
@@ -234,7 +219,7 @@ void ParameterWidget::on_addButton_clicked()
   setModified();
 }
 
-void ParameterWidget::on_deleteButton_clicked()
+void ParameterWidget::onSetDelete()
 {
   int index = comboBoxPreset->currentIndex();
   assert(index > 0);
@@ -251,20 +236,6 @@ void ParameterWidget::on_deleteButton_clicked()
   sets.erase(sets.begin() + (index - 1));
   setModified();
   autoPreview(true);
-}
-
-void ParameterWidget::onCollapseAll()
-{
-  for (GroupWidget *groupWidget : this->findChildren<GroupWidget *>()) {
-    groupWidget->setExpanded(false);
-  }
-}
-
-void ParameterWidget::onExpandAll()
-{
-  for (GroupWidget *groupWidget : this->findChildren<GroupWidget *>()) {
-    groupWidget->setExpanded(true);
-  }
 }
 
 void ParameterWidget::parameterModified(bool immediate)

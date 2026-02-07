@@ -54,10 +54,10 @@
        <item>
         <widget class="QFrame" name="frameCompileResult">
          <property name="frameShape">
-          <enum>QFrame::Shape::Box</enum>
+          <enum>QFrame::Box</enum>
          </property>
          <property name="frameShadow">
-          <enum>QFrame::Shadow::Raised</enum>
+          <enum>QFrame::Raised</enum>
          </property>
          <layout class="QGridLayout" name="gridLayoutCompileResult">
           <property name="leftMargin">
@@ -85,6 +85,7 @@
             </property>
             <property name="font">
              <font>
+              <weight>75</weight>
               <bold>true</bold>
              </font>
             </property>
@@ -115,7 +116,7 @@
              </size>
             </property>
             <property name="toolButtonStyle">
-             <enum>Qt::ToolButtonStyle::ToolButtonIconOnly</enum>
+             <enum>Qt::ToolButtonIconOnly</enum>
             </property>
             <property name="autoRaise">
              <bool>true</bool>
@@ -205,7 +206,7 @@
      <x>0</x>
      <y>0</y>
      <width>1354</width>
-     <height>37</height>
+     <height>24</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu_File">
@@ -445,10 +446,10 @@
         </sizepolicy>
        </property>
        <property name="frameShape">
-        <enum>QFrame::Shape::NoFrame</enum>
+        <enum>QFrame::NoFrame</enum>
        </property>
        <property name="frameShadow">
-        <enum>QFrame::Shadow::Raised</enum>
+        <enum>QFrame::Raised</enum>
        </property>
        <property name="lineWidth">
         <number>0</number>
@@ -484,6 +485,27 @@
           </property>
          </widget>
         </item>
+        <item row="0" column="2">
+         <widget class="QPushButton" name="findPrevButton">
+          <property name="text">
+           <string>Previous</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="3">
+         <widget class="QPushButton" name="findNextButton">
+          <property name="text">
+           <string>Next</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="4">
+         <widget class="QPushButton" name="cancelButton">
+          <property name="text">
+           <string>Done</string>
+          </property>
+         </widget>
+        </item>
         <item row="1" column="1">
          <widget class="QLineEdit" name="replaceInputField">
           <property name="placeholderText">
@@ -505,27 +527,6 @@
           </property>
          </widget>
         </item>
-        <item row="0" column="2">
-         <widget class="QToolButton" name="findPrevButton">
-          <property name="text">
-           <string>Previous</string>
-          </property>
-         </widget>
-        </item>
-        <item row="0" column="3">
-         <widget class="QToolButton" name="findNextButton">
-          <property name="text">
-           <string>Next</string>
-          </property>
-         </widget>
-        </item>
-        <item row="0" column="4">
-         <widget class="QToolButton" name="findDoneButton">
-          <property name="text">
-           <string>Done</string>
-          </property>
-         </widget>
-        </item>
        </layout>
       </widget>
      </item>
@@ -539,7 +540,7 @@
    </attribute>
    <widget class="QWidget" name="consoleDockContents">
     <property name="focusPolicy">
-     <enum>Qt::FocusPolicy::NoFocus</enum>
+     <enum>Qt::NoFocus</enum>
     </property>
     <layout class="QVBoxLayout" name="verticalLayout_5">
      <property name="leftMargin">
@@ -563,7 +564,7 @@
         </size>
        </property>
        <property name="focusPolicy">
-        <enum>Qt::FocusPolicy::StrongFocus</enum>
+        <enum>Qt::StrongFocus</enum>
        </property>
        <property name="readOnly">
         <bool>true</bool>
@@ -587,7 +588,7 @@
    </attribute>
    <widget class="QWidget" name="animateDockContents">
     <property name="focusPolicy">
-     <enum>Qt::FocusPolicy::StrongFocus</enum>
+     <enum>Qt::StrongFocus</enum>
     </property>
     <layout class="QVBoxLayout" name="verticalLayout_Animate">
      <property name="leftMargin">
@@ -614,7 +615,7 @@
    </attribute>
    <widget class="QWidget" name="viewportControlDockContents">
     <property name="focusPolicy">
-     <enum>Qt::FocusPolicy::StrongFocus</enum>
+     <enum>Qt::StrongFocus</enum>
     </property>
     <layout class="QVBoxLayout" name="verticalLayout_ViewportControl">
      <property name="leftMargin">
@@ -641,7 +642,7 @@
    </attribute>
    <widget class="QWidget" name="errorLogDockContents">
     <property name="focusPolicy">
-     <enum>Qt::FocusPolicy::StrongFocus</enum>
+     <enum>Qt::StrongFocus</enum>
     </property>
     <layout class="QVBoxLayout" name="verticalLayout_6">
      <property name="leftMargin">
@@ -719,7 +720,8 @@
   </widget>
   <action name="fileActionNew">
    <property name="icon">
-    <iconset theme="chokusen-new"/>
+    <iconset theme="chokusen-new">
+     <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
     <string>&amp;New File</string>
@@ -735,7 +737,8 @@
   </action>
   <action name="fileActionOpen">
    <property name="icon">
-    <iconset theme="chokusen-open"/>
+    <iconset theme="chokusen-open">
+     <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
     <string>&amp;Open File</string>
@@ -751,7 +754,8 @@
   </action>
   <action name="fileActionSave">
    <property name="icon">
-    <iconset theme="chokusen-save"/>
+    <iconset theme="chokusen-save">
+     <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
     <string>&amp;Save</string>
@@ -794,7 +798,7 @@
     <string>Ctrl+Q</string>
    </property>
    <property name="menuRole">
-    <enum>QAction::MenuRole::QuitRole</enum>
+    <enum>QAction::QuitRole</enum>
    </property>
   </action>
   <action name="editActionUndo">
@@ -802,7 +806,8 @@
     <bool>false</bool>
    </property>
    <property name="icon">
-    <iconset theme="chokusen-undo"/>
+    <iconset theme="chokusen-undo">
+     <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
     <string>&amp;Undo</string>
@@ -811,12 +816,13 @@
     <string>Ctrl+Z</string>
    </property>
    <property name="shortcutContext">
-    <enum>Qt::ShortcutContext::WidgetWithChildrenShortcut</enum>
+    <enum>Qt::WidgetWithChildrenShortcut</enum>
    </property>
   </action>
   <action name="editActionRedo">
    <property name="icon">
-    <iconset theme="chokusen-redo"/>
+    <iconset theme="chokusen-redo">
+     <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
     <string>&amp;Redo</string>
@@ -825,7 +831,7 @@
     <string>Ctrl+Shift+Z</string>
    </property>
    <property name="shortcutContext">
-    <enum>Qt::ShortcutContext::WidgetWithChildrenShortcut</enum>
+    <enum>Qt::WidgetWithChildrenShortcut</enum>
    </property>
   </action>
   <action name="editActionRedo_2">
@@ -833,7 +839,7 @@
     <string>Ctrl+Y</string>
    </property>
    <property name="shortcutContext">
-    <enum>Qt::ShortcutContext::WidgetWithChildrenShortcut</enum>
+    <enum>Qt::WidgetWithChildrenShortcut</enum>
    </property>
   </action>
   <action name="editActionCut">
@@ -844,7 +850,7 @@
     <string>Ctrl+X</string>
    </property>
    <property name="shortcutContext">
-    <enum>Qt::ShortcutContext::WidgetWithChildrenShortcut</enum>
+    <enum>Qt::WidgetWithChildrenShortcut</enum>
    </property>
   </action>
   <action name="editActionCopy">
@@ -855,7 +861,7 @@
     <string>Ctrl+C</string>
    </property>
    <property name="shortcutContext">
-    <enum>Qt::ShortcutContext::WidgetWithChildrenShortcut</enum>
+    <enum>Qt::WidgetWithChildrenShortcut</enum>
    </property>
   </action>
   <action name="editActionPaste">
@@ -866,12 +872,13 @@
     <string>Ctrl+V</string>
    </property>
    <property name="shortcutContext">
-    <enum>Qt::ShortcutContext::WidgetWithChildrenShortcut</enum>
+    <enum>Qt::WidgetWithChildrenShortcut</enum>
    </property>
   </action>
   <action name="editActionIndent">
    <property name="icon">
-    <iconset theme="chokusen-indent"/>
+    <iconset theme="chokusen-indent">
+     <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
     <string>&amp;Indent</string>
@@ -945,7 +952,8 @@
   </action>
   <action name="editActionZoomTextIn">
    <property name="icon">
-    <iconset theme="chokusen-zoom-text-in"/>
+    <iconset theme="chokusen-zoom-text-in">
+     <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
     <string>Increase Font &amp;Size</string>
@@ -956,7 +964,8 @@
   </action>
   <action name="editActionZoomTextOut">
    <property name="icon">
-    <iconset theme="chokusen-zoom-text-out"/>
+    <iconset theme="chokusen-zoom-text-out">
+     <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
     <string>Decrease Font Si&amp;ze</string>
@@ -975,7 +984,8 @@
   </action>
   <action name="designActionPreview">
    <property name="icon">
-    <iconset theme="chokusen-preview"/>
+    <iconset theme="chokusen-preview">
+     <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
     <string>&amp;Preview</string>
@@ -986,7 +996,8 @@
   </action>
   <action name="designActionRender">
    <property name="icon">
-    <iconset theme="chokusen-render"/>
+    <iconset theme="chokusen-render">
+     <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
     <string>R&amp;ender</string>
@@ -997,7 +1008,8 @@
   </action>
   <action name="designAction3DPrint">
    <property name="icon">
-    <iconset theme="chokusen-send"/>
+    <iconset theme="chokusen-send">
+     <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
     <string>&amp;3D Print</string>
@@ -1011,7 +1023,8 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset theme="chokusen-measure-distance"/>
+    <iconset theme="chokusen-measure-distance">
+     <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
     <string>Measure &amp;Distance</string>
@@ -1025,7 +1038,8 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset theme="chokusen-measure-angle"/>
+    <iconset theme="chokusen-measure-angle">
+     <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
     <string>Measure &amp;Angle</string>
@@ -1056,7 +1070,8 @@
   </action>
   <action name="fileActionExportBinarySTL">
    <property name="icon">
-    <iconset theme="chokusen-export-stl"/>
+    <iconset theme="chokusen-export-stl">
+     <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
     <string>Export as &amp;STL (binary)...</string>
@@ -1064,7 +1079,8 @@
   </action>
   <action name="fileActionExportAsciiSTL">
    <property name="icon">
-    <iconset theme="chokusen-export-stl"/>
+    <iconset theme="chokusen-export-stl">
+     <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
     <string>Export as &amp;STL (ascii)...</string>
@@ -1072,7 +1088,8 @@
   </action>
   <action name="fileActionExportOBJ">
    <property name="icon">
-    <iconset theme="chokusen-export-obj"/>
+    <iconset theme="chokusen-export-obj">
+     <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
     <string>Export as &amp;OBJ...</string>
@@ -1080,7 +1097,8 @@
   </action>
   <action name="fileActionExportPOV">
    <property name="icon">
-    <iconset theme="chokusen-export-pov"/>
+    <iconset theme="chokusen-export-pov">
+     <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
     <string>Export as &amp;POV...</string>
@@ -1088,7 +1106,8 @@
   </action>
   <action name="fileActionExportOFF">
    <property name="icon">
-    <iconset theme="chokusen-export-off"/>
+    <iconset theme="chokusen-export-off">
+     <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
     <string>Export as &amp;OFF...</string>
@@ -1096,7 +1115,8 @@
   </action>
   <action name="fileActionExportWRL">
    <property name="icon">
-    <iconset theme="chokusen-export-wrl"/>
+    <iconset theme="chokusen-export-wrl">
+     <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
     <string>Export as &amp;WRL...</string>
@@ -1107,7 +1127,8 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset theme="chokusen-surface"/>
+    <iconset theme="chokusen-surface">
+     <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
     <string>Preview</string>
@@ -1121,7 +1142,8 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset theme="chokusen-throwntogether"/>
+    <iconset theme="chokusen-throwntogether">
+     <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
     <string>Thrown Together</string>
@@ -1135,7 +1157,8 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset theme="chokusen-show-edges"/>
+    <iconset theme="chokusen-show-edges">
+     <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
     <string>Show Edges</string>
@@ -1149,7 +1172,8 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset theme="chokusen-axes"/>
+    <iconset theme="chokusen-axes">
+     <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
     <string>Show Axes</string>
@@ -1163,7 +1187,8 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset theme="chokusen-crosshairs"/>
+    <iconset theme="chokusen-crosshairs">
+     <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
     <string>Show Crosshairs</string>
@@ -1177,7 +1202,8 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset theme="chokusen-scalemarkers"/>
+    <iconset theme="chokusen-scalemarkers">
+     <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
     <string>Show Scale Markers</string>
@@ -1185,7 +1211,8 @@
   </action>
   <action name="viewActionTop">
    <property name="icon">
-    <iconset theme="chokusen-view-top"/>
+    <iconset theme="chokusen-view-top">
+     <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
     <string>&amp;Top</string>
@@ -1196,7 +1223,8 @@
   </action>
   <action name="viewActionBottom">
    <property name="icon">
-    <iconset theme="chokusen-view-bottom"/>
+    <iconset theme="chokusen-view-bottom">
+     <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
     <string>&amp;Bottom</string>
@@ -1207,7 +1235,8 @@
   </action>
   <action name="viewActionLeft">
    <property name="icon">
-    <iconset theme="chokusen-view-left"/>
+    <iconset theme="chokusen-view-left">
+     <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
     <string>&amp;Left</string>
@@ -1218,7 +1247,8 @@
   </action>
   <action name="viewActionRight">
    <property name="icon">
-    <iconset theme="chokusen-view-right"/>
+    <iconset theme="chokusen-view-right">
+     <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
     <string>&amp;Right</string>
@@ -1229,7 +1259,8 @@
   </action>
   <action name="viewActionFront">
    <property name="icon">
-    <iconset theme="chokusen-view-front"/>
+    <iconset theme="chokusen-view-front">
+     <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
     <string>&amp;Front</string>
@@ -1240,7 +1271,8 @@
   </action>
   <action name="viewActionBack">
    <property name="icon">
-    <iconset theme="chokusen-view-back"/>
+    <iconset theme="chokusen-view-back">
+     <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
     <string>Bac&amp;k</string>
@@ -1270,7 +1302,8 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset theme="chokusen-perspective"/>
+    <iconset theme="chokusen-perspective">
+     <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
     <string>&amp;Perspective</string>
@@ -1281,7 +1314,8 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset theme="chokusen-orthogonal"/>
+    <iconset theme="chokusen-orthogonal">
+     <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
     <string>&amp;Orthogonal</string>
@@ -1295,7 +1329,7 @@
     <string>&amp;About</string>
    </property>
    <property name="menuRole">
-    <enum>QAction::MenuRole::AboutRole</enum>
+    <enum>QAction::AboutRole</enum>
    </property>
   </action>
   <action name="helpActionManual">
@@ -1320,7 +1354,8 @@
   </action>
   <action name="fileActionExportDXF">
    <property name="icon">
-    <iconset theme="chokusen-export-dxf"/>
+    <iconset theme="chokusen-export-dxf">
+     <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
     <string>Export as &amp;DXF...</string>
@@ -1347,7 +1382,7 @@
     <string>&amp;Preferences</string>
    </property>
    <property name="menuRole">
-    <enum>QAction::MenuRole::PreferencesRole</enum>
+    <enum>QAction::PreferencesRole</enum>
    </property>
   </action>
   <action name="editActionFind">
@@ -1418,7 +1453,8 @@
   </action>
   <action name="fileActionExportImage">
    <property name="icon">
-    <iconset theme="chokusen-export-png"/>
+    <iconset theme="chokusen-export-png">
+     <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
     <string>Export as &amp;Image...</string>
@@ -1426,7 +1462,8 @@
   </action>
   <action name="fileActionExportCSG">
    <property name="icon">
-    <iconset theme="chokusen-export-csg"/>
+    <iconset theme="chokusen-export-csg">
+     <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
     <string>Export as &amp;CSG...</string>
@@ -1444,7 +1481,8 @@
   </action>
   <action name="viewActionResetView">
    <property name="icon">
-    <iconset theme="chokusen-reset-view"/>
+    <iconset theme="chokusen-reset-view">
+     <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
     <string>Reset View</string>
@@ -1452,7 +1490,8 @@
   </action>
   <action name="fileActionExportSVG">
    <property name="icon">
-    <iconset theme="chokusen-export-svg"/>
+    <iconset theme="chokusen-export-svg">
+     <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
     <string>Export as S&amp;VG...</string>
@@ -1460,7 +1499,8 @@
   </action>
   <action name="fileActionExportAMF">
    <property name="icon">
-    <iconset theme="chokusen-export-amf"/>
+    <iconset theme="chokusen-export-amf">
+     <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
     <string>Export as &amp;AMF...</string>
@@ -1468,7 +1508,8 @@
   </action>
   <action name="fileActionExport3MF">
    <property name="icon">
-    <iconset theme="chokusen-export-3mf"/>
+    <iconset theme="chokusen-export-3mf">
+     <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
     <string>Export as &amp;3MF...</string>
@@ -1476,7 +1517,8 @@
   </action>
   <action name="viewActionZoomIn">
    <property name="icon">
-    <iconset theme="chokusen-zoom-in"/>
+    <iconset theme="chokusen-zoom-in">
+     <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
     <string>Zoom In</string>
@@ -1487,7 +1529,8 @@
   </action>
   <action name="viewActionZoomOut">
    <property name="icon">
-    <iconset theme="chokusen-zoom-out"/>
+    <iconset theme="chokusen-zoom-out">
+     <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
     <string>Zoom Out</string>
@@ -1498,7 +1541,8 @@
   </action>
   <action name="viewActionViewAll">
    <property name="icon">
-    <iconset theme="chokusen-zoom-all"/>
+    <iconset theme="chokusen-zoom-all">
+     <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
     <string>View All</string>
@@ -1546,7 +1590,8 @@
   </action>
   <action name="editActionUnindent">
    <property name="icon">
-    <iconset theme="chokusen-unindent"/>
+    <iconset theme="chokusen-unindent">
+     <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
     <string>U&amp;nindent</string>
@@ -1562,7 +1607,8 @@
   </action>
   <action name="fileActionExportPDF">
    <property name="icon">
-    <iconset theme="chokusen-export-pdf"/>
+    <iconset theme="chokusen-export-pdf">
+     <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
     <string>Export as PDF...</string>

@@ -12,6 +12,9 @@ ExportSvgDialog::ExportSvgDialog()
   updateStrokeColor(strokeColor);
   updateFillControlsEnabled();
   updateStrokeControlsEnabled();
+
+  connect(pushButtonOk, &QPushButton::clicked, this, &ExportSvgDialog::accept);
+  connect(pushButtonCancel, &QPushButton::clicked, this, &ExportSvgDialog::reject);
 }
 
 int ExportSvgDialog::exec()
@@ -94,16 +97,6 @@ void ExportSvgDialog::on_checkBoxEnableStroke_toggled(bool checked)
 void ExportSvgDialog::on_toolButtonStrokeWidthReset_clicked()
 {
   doubleSpinBoxStrokeWidth->setValue(defaultStrokeWidth);
-}
-
-void ExportSvgDialog::on_pushButtonOk_clicked()
-{
-  accept();
-}
-
-void ExportSvgDialog::on_pushButtonCancel_clicked()
-{
-  reject();
 }
 
 void ExportSvgDialog::updateFillColor(const QColor& color)

@@ -20,9 +20,8 @@ public:
 
 public slots:
   // Input Driver
-  void on_pushButtonAxisTrim_clicked();
-  void on_pushButtonAxisTrimReset_clicked();
-  void on_pushButtonUpdate_clicked();
+  void on_AxisTrim();
+  void on_AxisTrimReset();
   void on_comboBoxTranslationX_activated(int val);
   void on_comboBoxTranslationY_activated(int val);
   void on_comboBoxTranslationZ_activated(int val);

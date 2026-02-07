@@ -38,6 +38,7 @@ protected:
   bool focusNextPrevChild(bool next) override;
 
 private:
+  MainWindow *mainWindow;
   QGLView *qglview;
   std::mutex inputMutex;
   std::mutex resizeMutex;
