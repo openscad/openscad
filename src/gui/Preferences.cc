@@ -65,6 +65,7 @@
 #include "geometry/cgal/CGALCache.h"
 #endif
 #include "glview/ColorMap.h"
+#include "gui/EditorColorMap.h"
 #include "glview/RenderSettings.h"
 #include "gui/QSettingsCached.h"
 #include "gui/SettingsWriter.h"
@@ -103,6 +104,8 @@ Preferences::Preferences(QWidget *parent) : QMainWindow(parent)
   for (const auto& name : names) renderColorSchemes << name.c_str();
 
   syntaxHighlight->clear();
+  syntaxHighlight->addItems(EditorColorMap::inst()->colorSchemeNames());
+
   colorSchemeChooser->clear();
   colorSchemeChooser->addItems(renderColorSchemes);
   init();
@@ -1244,16 +1247,38 @@ void Preferences::fireEditorConfigChanged() const
   emit editorConfigChanged();
 }
 
+// Make sure Ctrl-W isn't passed up to MainWindow and only affects Preferences
+bool Preferences::event(QEvent *e)
+{
+  if (e->type() == QEvent::ShortcutOverride) {
+    QKeyEvent *ke = static_cast<QKeyEvent *>(e);
+    if (ke->matches(QKeySequence::Close) || ke->key() == Qt::Key_Escape) {
+      e->accept();
+      return true;
+    }
+#ifdef Q_OS_MACOS
+    if (ke->modifiers() == Qt::ControlModifier && ke->key() == Qt::Key_Period) {
+      e->accept();
+      return true;
+    }
+#endif
+  }
+  return QMainWindow::event(e);
+}
+
 void Preferences::keyPressEvent(QKeyEvent *e)
 {
+  if (e->matches(QKeySequence::Close) || e->key() == Qt::Key_Escape) {
+    close();
+    return;
+  }
 #ifdef Q_OS_MACOS
   if (e->modifiers() == Qt::ControlModifier && e->key() == Qt::Key_Period) {
     close();
-  } else
-#endif
-    if ((e->modifiers() == Qt::ControlModifier && e->key() == Qt::Key_W) || e->key() == Qt::Key_Escape) {
-    close();
+    return;
   }
+#endif
+  QMainWindow::keyPressEvent(e);
 }
 
 void Preferences::showEvent(QShowEvent *e)
@@ -1449,24 +1474,11 @@ void Preferences::apply_win() const
   emit openCSGSettingsChanged();
 }
 
-bool Preferences::hasHighlightingColorScheme() const
-{
-  return BlockSignals<QComboBox *>(syntaxHighlight)->count() != 0;
-}
-
-void Preferences::setHighlightingColorSchemes(const QStringList& colorSchemes)
-{
-  auto combobox = BlockSignals<QComboBox *>(syntaxHighlight);
-  combobox->clear();
-  combobox->addItems(colorSchemes);
-}
-
 void Preferences::createFontSizeMenu(QComboBox *boxarg, const QString& setting)
 {
-  uint savedsize = getValue(setting).toUInt();
-  const QFontDatabase db;
+  const uint savedsize = getValue(setting).toUInt();
   BlockSignals<QComboBox *> box{boxarg};
-  for (auto size : db.standardSizes()) {
+  for (auto size : QFontDatabase::standardSizes()) {
     box->addItem(QString::number(size));
     if (static_cast<uint>(size) == savedsize) {
       box->setCurrentIndex(box->count() - 1);

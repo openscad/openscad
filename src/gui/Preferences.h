@@ -41,12 +41,6 @@ public:
   void fireApplicationFontChanged() const;
   void insertListItem(QListWidget *listBox, QListWidgetItem *listItem);
 
-  // Returns true if there is an higlightling color scheme configured.
-  bool hasHighlightingColorScheme() const;
-
-  // Set a new colorScheme.
-  void setHighlightingColorSchemes(const QStringList& colorSchemes);
-
 public slots:
   void actionTriggered(class QAction *);
   void featuresCheckBoxToggled(bool);
@@ -191,6 +185,7 @@ private:
   void keyPressEvent(QKeyEvent *e) override;
   void showEvent(QShowEvent *e) override;
   void closeEvent(QCloseEvent *e) override;
+  bool event(QEvent *e) override;
   void removeDefaultSettings();
   void setupFeaturesPage();
   void setup3DPrintPage();
