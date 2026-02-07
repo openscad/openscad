@@ -14,7 +14,4 @@ public:
 
 public slots:
   void setText(const QString& text);
-
-private slots:
-  void on_showBox_toggled(bool checked);
 };

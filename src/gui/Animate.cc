@@ -45,6 +45,11 @@ void Animate::initGUI()
 
   animateTimer = new QTimer(this);
   connect(animateTimer, &QTimer::timeout, this, &Animate::incrementTVal);
+
+  connect(this->e_tval, &QLineEdit::textChanged, this, &Animate::updatedAnimTval);
+  connect(this->e_fps, &QLineEdit::textChanged, this, &Animate::updatedAnimFpsAndAnimSteps);
+  connect(this->e_fsteps, &QLineEdit::textChanged, this, &Animate::updatedAnimFpsAndAnimSteps);
+  connect(this->e_dump, &QCheckBox::toggled, this, &Animate::updatedAnimDump);
 }
 
 void Animate::setMainWindow(MainWindow *mainWindow)
@@ -65,7 +70,7 @@ void Animate::connectAction(QAction *action, QPushButton *button)
   this->actionList.append(action);
 }
 
-void Animate::on_e_tval_textChanged(const QString&)
+void Animate::updatedAnimTval()
 {
   double t = this->e_tval->text().toDouble(&this->tOK);
   // Clamp t to 0-1
@@ -79,16 +84,6 @@ void Animate::on_e_tval_textChanged(const QString&)
   emit mainWindow->actionRenderPreview();
 
   updatePauseButtonIcon();
-}
-
-void Animate::on_e_fps_textChanged(const QString&)
-{
-  updatedAnimFpsAndAnimSteps();
-}
-
-void Animate::on_e_fsteps_textChanged(const QString&)
-{
-  updatedAnimFpsAndAnimSteps();
 }
 
 void Animate::updatedAnimFpsAndAnimSteps()
@@ -131,7 +126,7 @@ void Animate::updatedAnimFpsAndAnimSteps()
   updatePauseButtonIcon();
 }
 
-void Animate::on_e_dump_toggled(bool checked)
+void Animate::updatedAnimDump(bool checked)
 {
   if (!checked) this->animDumping = false;
 

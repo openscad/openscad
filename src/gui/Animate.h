@@ -80,11 +80,9 @@ private:
 signals:
 
 private slots:
-  void on_e_tval_textChanged(const QString&);
-  void on_e_fps_textChanged(const QString&);
-  void on_e_fsteps_textChanged(const QString&);
-  void on_e_dump_toggled(bool checked);
+  void updatedAnimTval();
   void updatedAnimFpsAndAnimSteps();
+  void updatedAnimDump(bool checked);
   void incrementTVal();
   void updateTVal();
   void on_pauseButton_pressed();

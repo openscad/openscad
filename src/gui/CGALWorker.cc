@@ -28,8 +28,6 @@ CGALWorker::CGALWorker()
 
 CGALWorker::~CGALWorker()
 {
-  this->thread->quit();
-  this->thread->wait();
   delete this->thread;
 }
 

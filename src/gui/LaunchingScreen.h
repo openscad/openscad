@@ -7,7 +7,6 @@
 #include <QString>
 #include <QDialog>
 #include <QTreeWidgetItem>
-#include <QListWidgetItem>
 
 #include "gui/qtgettext.h"  // IWYU pragma: keep
 #include "ui_LaunchingScreen.h"
@@ -27,20 +26,13 @@ public slots:
   void openFile(const QString& filename);
 
 private slots:
-  void on_checkBox_toggled(bool checked) const;
+  void checkboxState(bool state) const;
   void enableRecentButton(const QModelIndex& current, const QModelIndex& previous);
-  void on_treeWidget_currentItemChanged(QTreeWidgetItem *current, QTreeWidgetItem *previous);
+  void enableExampleButton(QTreeWidgetItem *current, QTreeWidgetItem *previous);
   void openUserFile();
   void openRecent();
   void openExample();
   void openUserManualURL() const;
-  void on_pushButtonNew_clicked();
-  void on_pushButtonOpen_clicked();
-  void on_pushButtonHelp_clicked();
-  void on_recentList_itemDoubleClicked(QListWidgetItem *item);
-  void on_treeWidget_itemDoubleClicked(QTreeWidgetItem *item, int column);
-  void on_openRecentButton_clicked();
-  void on_openExampleButton_clicked();
 
 private:
   void checkOpen(const QVariant& data, bool forceShowEditor);

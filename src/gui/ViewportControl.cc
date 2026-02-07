@@ -48,6 +48,7 @@ void ViewportControl::initGUI()
 
 void ViewportControl::setMainWindow(MainWindow *mainWindow)
 {
+  this->mainWindow = mainWindow;
   this->qglview = mainWindow->qglview;
 }
 

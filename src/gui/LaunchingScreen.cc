@@ -66,8 +66,20 @@ LaunchingScreen::LaunchingScreen(QWidget *parent) : QDialog(parent)
     this->treeWidget->addTopLevelItem(categoryItem);
   }
 
+  connect(this->pushButtonNew, &QPushButton::clicked, this, &LaunchingScreen::accept);
+  connect(this->pushButtonOpen, &QPushButton::clicked, this, &LaunchingScreen::openUserFile);
+  connect(this->pushButtonHelp, &QPushButton::clicked, this, &LaunchingScreen::openUserManualURL);
   connect(this->recentList->selectionModel(), &QItemSelectionModel::currentRowChanged, this,
           &LaunchingScreen::enableRecentButton);
+
+  connect(this->recentList, &QListWidget::itemDoubleClicked, this, &LaunchingScreen::openRecent);
+  connect(this->treeWidget, &QTreeWidget::currentItemChanged, this,
+          &LaunchingScreen::enableExampleButton);
+
+  connect(this->treeWidget, &QTreeWidget::itemDoubleClicked, this, &LaunchingScreen::openExample);
+  connect(this->openRecentButton, &QPushButton::clicked, this, &LaunchingScreen::openRecent);
+  connect(this->openExampleButton, &QPushButton::clicked, this, &LaunchingScreen::openExample);
+  connect(this->checkBox, &QCheckBox::toggled, this, &LaunchingScreen::checkboxState);
 }
 
 LaunchingScreen::~LaunchingScreen()
@@ -101,7 +113,7 @@ void LaunchingScreen::openRecent()
   checkOpen(item->data(Qt::UserRole), false);
 }
 
-void LaunchingScreen::on_treeWidget_currentItemChanged(QTreeWidgetItem *current, QTreeWidgetItem *)
+void LaunchingScreen::enableExampleButton(QTreeWidgetItem *current, QTreeWidgetItem *)
 {
   const bool enable = current->childCount() == 0;
   this->openExampleButton->setEnabled(enable);
@@ -140,48 +152,13 @@ void LaunchingScreen::openUserFile()
   }
 }
 
-void LaunchingScreen::on_checkBox_toggled(bool checked) const
+void LaunchingScreen::checkboxState(bool state) const
 {
   QSettingsCached settings;
-  settings.setValue("launcher/showOnStartup", !checked);
+  settings.setValue("launcher/showOnStartup", !state);
 }
 
 void LaunchingScreen::openUserManualURL() const
 {
   UIUtils::openUserManualURL();
-}
-
-void LaunchingScreen::on_pushButtonNew_clicked()
-{
-  accept();
-}
-
-void LaunchingScreen::on_pushButtonOpen_clicked()
-{
-  openUserFile();
-}
-
-void LaunchingScreen::on_pushButtonHelp_clicked()
-{
-  openUserManualURL();
-}
-
-void LaunchingScreen::on_recentList_itemDoubleClicked(QListWidgetItem *)
-{
-  openRecent();
-}
-
-void LaunchingScreen::on_treeWidget_itemDoubleClicked(QTreeWidgetItem *, int)
-{
-  openExample();
-}
-
-void LaunchingScreen::on_openRecentButton_clicked()
-{
-  openRecent();
-}
-
-void LaunchingScreen::on_openExampleButton_clicked()
-{
-  openExample();
 }
