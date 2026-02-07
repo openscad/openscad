@@ -41,6 +41,7 @@ public:
   bool saveACopy(EditorInterface *edt);
   void open(const QString& filename);
   size_t count();
+  void switchToEditor(EditorInterface *editor);
 
 public:
   static constexpr const int FIND_HIDDEN = 0;
