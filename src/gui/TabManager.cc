@@ -632,7 +632,8 @@ void TabManager::saveError(const QIODevice& file, const std::string& msg, const 
 
   const std::string dialogFormatStr = msg + "\n\"%1\"\n(%2)";
   const QString dialogFormat(dialogFormatStr.c_str());
-  QMessageBox::warning(parent, parent->windowTitle(), dialogFormat.arg(filepath).arg(file.errorString()));
+  QMessageBox::warning(parent, parent->windowTitle(),
+                       dialogFormat.arg(filepath).arg(file.errorString()));
 }
 
 /*!
@@ -643,7 +644,7 @@ void TabManager::saveError(const QIODevice& file, const std::string& msg, const 
 bool TabManager::save(EditorInterface *edt)
 {
   assert(edt != nullptr);
-
+  auto guard = parent->scopedSetCurrentOutput();
   if (edt->filepath.isEmpty()) {
     return saveAs(edt);
   } else {
@@ -653,8 +654,6 @@ bool TabManager::save(EditorInterface *edt)
 
 bool TabManager::save(EditorInterface *edt, const QString& path)
 {
-  parent->setCurrentOutput();
-
   // If available (>= Qt 5.1), use QSaveFile to ensure the file is not
   // destroyed if the device is full. Unfortunately this is not working
   // as advertised (at least in Qt 5.3) as it does not detect the device
@@ -699,10 +698,13 @@ bool TabManager::saveAs(EditorInterface *edt)
   assert(edt != nullptr);
 
   const auto dir = edt->filepath.isEmpty() ? _("Untitled.scad") : edt->filepath;
-  auto filename = QFileDialog::getSaveFileName(parent, _("Save File"), dir, _("OpenSCAD Designs (*.scad)"));
+  auto filename =
+    QFileDialog::getSaveFileName(parent, _("Save File"), dir, _("OpenSCAD Designs (*.scad)"));
   if (filename.isEmpty()) {
     return false;
   }
+
+  auto guard = parent->scopedSetCurrentOutput();
 
   if (QFileInfo(filename).suffix().isEmpty()) {
     filename.append(".scad");
@@ -763,6 +765,8 @@ bool TabManager::saveACopy(EditorInterface *edt)
   saveCopyDialog.setDirectory(dir);
 
   if (saveCopyDialog.exec() != QDialog::Accepted) return false;
+
+  auto guard = parent->scopedSetCurrentOutput();
 
   QStringList selectedFiles = saveCopyDialog.selectedFiles();
   if (selectedFiles.isEmpty()) return false;

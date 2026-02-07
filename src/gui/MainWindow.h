@@ -67,6 +67,7 @@ class ThrownTogetherRenderer;
 #include "RenderStatistic.h"
 #include "ui_MainWindow.h"
 #include "utils/printutils.h"
+#include "utils/scope_guard.hpp"
 
 class UXTest;
 class MainWindow : public QMainWindow, public Ui::MainWindow, public InputEventHandler
@@ -358,6 +359,12 @@ public:
   void setCurrentOutput();
   void clearCurrentOutput();
   void hideCurrentOutput();
+  auto scopedSetCurrentOutput()
+  {
+    setCurrentOutput();
+    return sg::make_scope_guard([this] { clearCurrentOutput(); });
+  }
+
   bool isEmpty();
 
   void onAxisChanged(InputEventAxisChanged *event) override;
