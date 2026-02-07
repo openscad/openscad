@@ -1149,18 +1149,14 @@ static int parse_timer_id(const char *function_name, const Arguments& arguments,
   return static_cast<int>(id_val);
 }
 
-static EvaluationSession::TimerType parse_timer_type(const char *function_name,
-                                                     const Arguments& arguments, const Location& loc,
-                                                     size_t index)
+static EvaluationSession::TimerType parse_timer_type_value(const char *function_name, const Arguments& arguments,
+                                                           const Location& loc, const Value& value)
 {
-  if (arguments.size() <= index) {
-    return EvaluationSession::TimerType::Monotonic;
-  }
-  if (arguments[index]->type() != Value::Type::STRING) {
+  if (value.type() != Value::Type::STRING) {
     timer_error(function_name, loc, arguments.documentRoot(),
                 STR(function_name, "() type must be a string"));
   }
-  std::string type = arguments[index]->toStrUtf8Wrapper().toString();
+  std::string type = value.toStrUtf8Wrapper().toString();
   std::transform(type.begin(), type.end(), type.begin(),
                  [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
   if (type.empty() || type == "monotonic") {
@@ -1346,20 +1342,121 @@ static Value timer_value_or_formatted(const char *function_name, const Arguments
 
 Value builtin_timer_new(Arguments arguments, const Location& loc)
 {
-  if (arguments.size() > 2) {
+  if (arguments.size() > 3) {
     timer_error("timer_new", loc, arguments.documentRoot(),
-                STR("timer_new() expected 0-2 arguments, got ", arguments.size()));
+                STR("timer_new() expected 0-3 arguments, got ", arguments.size()));
   }
+
+  const Value *named_name = nullptr;
+  const Value *named_type = nullptr;
+  const Value *named_start = nullptr;
+  std::vector<const Value *> positional;
+  positional.reserve(arguments.size());
+  for (size_t i = 0; i < arguments.size(); ++i) {
+    const auto& argument = arguments[i];
+    if (argument.name) {
+      const auto& key = *argument.name;
+      if (key == "name") {
+        if (named_name) {
+          timer_error("timer_new", loc, arguments.documentRoot(),
+                      "timer_new() name supplied more than once");
+        }
+        named_name = &argument.value;
+      } else if (key == "type") {
+        if (named_type) {
+          timer_error("timer_new", loc, arguments.documentRoot(),
+                      "timer_new() type supplied more than once");
+        }
+        named_type = &argument.value;
+      } else if (key == "start") {
+        if (named_start) {
+          timer_error("timer_new", loc, arguments.documentRoot(),
+                      "timer_new() start supplied more than once");
+        }
+        named_start = &argument.value;
+      } else {
+        timer_error("timer_new", loc, arguments.documentRoot(),
+                    STR("timer_new() unknown named argument '", key, "'"));
+      }
+    } else {
+      positional.push_back(&argument.value);
+    }
+  }
+
   std::string name;
-  if (arguments.size() >= 1) {
-    if (arguments[0]->type() != Value::Type::STRING) {
+  EvaluationSession::TimerType type = EvaluationSession::TimerType::Monotonic;
+  bool start_now = false;
+  bool has_name = false;
+  bool has_type = false;
+  size_t pos = 0;
+
+  if (named_name) {
+    if (named_name->type() != Value::Type::STRING) {
       timer_error("timer_new", loc, arguments.documentRoot(),
                   "timer_new() name must be a string");
     }
-    name = arguments[0]->toStrUtf8Wrapper().toString();
+    name = named_name->toStrUtf8Wrapper().toString();
+    has_name = true;
+  } else if (pos < positional.size() && positional[pos]->type() == Value::Type::STRING) {
+    name = positional[pos]->toStrUtf8Wrapper().toString();
+    has_name = true;
+    ++pos;
   }
-  auto type = parse_timer_type("timer_new", arguments, loc, 1);
+
+  if (named_type) {
+    type = parse_timer_type_value("timer_new", arguments, loc, *named_type);
+    has_type = true;
+  } else if (pos < positional.size() && positional[pos]->type() == Value::Type::STRING) {
+    type = parse_timer_type_value("timer_new", arguments, loc, *positional[pos]);
+    has_type = true;
+    ++pos;
+  }
+
+  if (named_start) {
+    if (named_start->type() != Value::Type::BOOL) {
+      timer_error("timer_new", loc, arguments.documentRoot(),
+                  "timer_new() start must be bool (type mapping: string=>name/type, bool=>start)");
+    }
+    start_now = named_start->toBool();
+  } else if (pos < positional.size()) {
+    if (positional[pos]->type() != Value::Type::BOOL) {
+      const auto& bad = *positional[pos];
+      std::string expected;
+      if (pos == 0 && !has_name && !has_type) {
+        expected = "argument 1 must be string name or bool start";
+      } else if (pos == 1 && has_name && !has_type) {
+        expected = "argument 2 (after name) must be string type or bool start";
+      } else if (pos == 2 && has_name && has_type) {
+        expected = "argument 3 (after name and type) must be bool start";
+      } else {
+        expected = "argument must be bool start";
+      }
+      timer_error("timer_new", loc, arguments.documentRoot(),
+                  STR("timer_new() ", expected, "; got ", Value::typeName(bad.type()), " (",
+                      bad.toEchoStringNoThrow(), ")"));
+    }
+    start_now = positional[pos]->toBool();
+    ++pos;
+  }
+
+  if (pos < positional.size()) {
+    std::ostringstream received_types;
+    for (size_t i = 0; i < positional.size(); ++i) {
+      if (i > 0) received_types << ", ";
+      received_types << Value::typeName(positional[i]->type());
+    }
+    timer_error("timer_new", loc, arguments.documentRoot(),
+                STR("timer_new() too many positional arguments after parsing name/type/start. "
+                    "Received ", positional.size(), " positional args with types [",
+                    received_types.str(), "]. Valid forms: "
+                    "timer_new(), timer_new(name), timer_new(name, type), "
+                    "timer_new(name, start), timer_new(name, type, start), timer_new(start)."));
+  }
+
   const int id = arguments.session()->timer_new(name, type);
+  if (start_now) {
+    arguments.session()->timer_start(id, loc);
+  }
   return Value(static_cast<double>(id));
 }
 
@@ -1387,13 +1484,155 @@ Value builtin_timer_clear(Arguments arguments, const Location& loc)
 
 Value builtin_timer_stop(Arguments arguments, const Location& loc)
 {
-  if (arguments.size() < 1 || arguments.size() > 3) {
+  if (arguments.size() < 1 || arguments.size() > 4) {
     timer_error("timer_stop", loc, arguments.documentRoot(),
-                STR("timer_stop() expected 1-3 arguments, got ", arguments.size()));
+                STR("timer_stop() expected 1-4 arguments, got ", arguments.size()));
   }
+
+  const Value *named_fmt = nullptr;
+  const Value *named_output = nullptr;
+  const Value *named_delete = nullptr;
+  std::vector<const Value *> positional;
+  positional.reserve(arguments.size());
+  for (size_t i = 1; i < arguments.size(); ++i) {
+    const auto& argument = arguments[i];
+    if (argument.name) {
+      const auto& key = *argument.name;
+      if (key == "fmt_str") {
+        if (named_fmt) {
+          timer_error("timer_stop", loc, arguments.documentRoot(),
+                      "timer_stop() fmt_str supplied more than once");
+        }
+        named_fmt = &argument.value;
+      } else if (key == "output") {
+        if (named_output) {
+          timer_error("timer_stop", loc, arguments.documentRoot(),
+                      "timer_stop() output supplied more than once");
+        }
+        named_output = &argument.value;
+      } else if (key == "delete") {
+        if (named_delete) {
+          timer_error("timer_stop", loc, arguments.documentRoot(),
+                      "timer_stop() delete supplied more than once");
+        }
+        named_delete = &argument.value;
+      } else {
+        timer_error("timer_stop", loc, arguments.documentRoot(),
+                    STR("timer_stop() unknown named argument '", key, "'"));
+      }
+    } else {
+      positional.push_back(&argument.value);
+    }
+  }
+  if (positional.size() > 3) {
+    timer_error("timer_stop", loc, arguments.documentRoot(),
+                STR("timer_stop() expected up to 3 positional arguments after timer_id, got ",
+                    positional.size()));
+  }
+
+  bool return_number = false;
+  bool do_echo = false;
+  bool delete_timer = false;
+  std::string format = "timer {n} {mmm}:{ss}.{ddd}";
+  bool fmt_set = false;
+  bool output_set = false;
+  bool delete_set = false;
+
+  auto apply_fmt = [&](const Value& value) {
+    if (value.type() == Value::Type::UNDEFINED) {
+      return_number = true;
+    } else if (value.type() == Value::Type::STRING) {
+      format = value.toStrUtf8Wrapper().toString();
+    } else {
+      timer_error("timer_stop", loc, arguments.documentRoot(),
+                  "timer_stop() fmt_str must be a string or undef");
+    }
+    fmt_set = true;
+  };
+  auto apply_output = [&](const Value& value) {
+    if (value.type() != Value::Type::BOOL) {
+      timer_error("timer_stop", loc, arguments.documentRoot(),
+                  "timer_stop() output must be bool");
+    }
+    do_echo = value.toBool();
+    output_set = true;
+  };
+  auto apply_delete = [&](const Value& value) {
+    if (value.type() != Value::Type::BOOL) {
+      timer_error("timer_stop", loc, arguments.documentRoot(),
+                  "timer_stop() delete must be bool");
+    }
+    delete_timer = value.toBool();
+    delete_set = true;
+  };
+
+  if (!positional.empty()) {
+    const Value& first = *positional[0];
+    if (first.type() == Value::Type::UNDEFINED || first.type() == Value::Type::STRING) {
+      apply_fmt(first);
+      if (positional.size() >= 2) apply_output(*positional[1]);
+      if (positional.size() >= 3) apply_delete(*positional[2]);
+    } else if (first.type() == Value::Type::BOOL) {
+      apply_output(first);
+      if (positional.size() >= 2) apply_delete(*positional[1]);
+      if (positional.size() >= 3) {
+        timer_error("timer_stop", loc, arguments.documentRoot(),
+                    "timer_stop() too many positional arguments");
+      }
+    } else {
+      timer_error("timer_stop", loc, arguments.documentRoot(),
+                  "timer_stop() second argument must be fmt_str/undef/output");
+    }
+  }
+
+  if (named_fmt) {
+    if (fmt_set) {
+      timer_error("timer_stop", loc, arguments.documentRoot(),
+                  "timer_stop() fmt_str supplied both positional and named");
+    }
+    apply_fmt(*named_fmt);
+  }
+  if (named_output) {
+    if (output_set) {
+      timer_error("timer_stop", loc, arguments.documentRoot(),
+                  "timer_stop() output supplied both positional and named");
+    }
+    apply_output(*named_output);
+  }
+  if (named_delete) {
+    if (delete_set) {
+      timer_error("timer_stop", loc, arguments.documentRoot(),
+                  "timer_stop() delete supplied both positional and named");
+    }
+    apply_delete(*named_delete);
+  }
+
   const int id = parse_timer_id("timer_stop", arguments, loc, 0);
   const double elapsed_us = arguments.session()->timer_stop(id, loc);
-  return timer_value_or_formatted("timer_stop", arguments, loc, id, elapsed_us);
+  Value result = Value::undefined.clone();
+  if (return_number) {
+    if (do_echo) {
+      timer_echo(arguments, loc, id, elapsed_us);
+    }
+    result = Value(elapsed_us);
+  } else {
+    const auto& name = arguments.session()->timer_name(id, loc);
+    std::string label = name.empty() ? std::to_string(id) : name;
+    std::string formatted;
+    std::string format_error;
+    if (!format_timer_value_us(elapsed_us, format, label, formatted, format_error)) {
+      timer_error("timer_stop", loc, arguments.documentRoot(),
+                  STR("timer_stop() ", format_error));
+    }
+    if (do_echo) {
+      LOG(message_group::Echo, "%1$s", formatted);
+    }
+    result = Value(formatted);
+  }
+  if (delete_timer) {
+    arguments.session()->timer_delete(id, loc);
+  }
+  return result;
 }
 
 Value builtin_timer_elapsed(Arguments arguments, const Location& loc)
@@ -1664,6 +1903,9 @@ void register_builtin_functions()
                    "timer_new() -> number",
                    "timer_new(name) -> number",
                    "timer_new(name, type) -> number",
+                   "timer_new(name, type, start) -> number",
+                   "timer_new(name, start) -> number",
+                   "timer_new(start) -> number",
                  });
   Builtins::init("timer_start", new BuiltinFunction(&builtin_timer_start),
                  {
@@ -1678,9 +1920,12 @@ void register_builtin_functions()
                    "timer_stop(timer_id) -> string",
                    "timer_stop(timer_id, fmt_str) -> string",
                    "timer_stop(timer_id, fmt_str, output) -> string",
+                   "timer_stop(timer_id, fmt_str, output, delete) -> string",
                    "timer_stop(timer_id, output) -> string",
+                   "timer_stop(timer_id, output, delete) -> string",
                    "timer_stop(timer_id, undef) -> number",
                    "timer_stop(timer_id, undef, output) -> number",
+                   "timer_stop(timer_id, undef, output, delete) -> number",
                  });
   Builtins::init("timer_elapsed", new BuiltinFunction(&builtin_timer_elapsed),
                  {
