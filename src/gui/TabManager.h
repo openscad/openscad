@@ -60,7 +60,7 @@ signals:
   void editorContentReloaded(EditorInterface *editor);
 
 private:
-  MainWindow *par;
+  MainWindow *parent;
   QTabWidget *tabWidget;
 
   bool maybeSave(int);
